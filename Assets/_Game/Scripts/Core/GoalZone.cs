@@ -3,12 +3,10 @@ using UnityEngine;
 
 namespace DribbleToSchool.Core
 {
-    /// <summary>The school gate. Finishes the run when the ball arrives.</summary>
+    /// <summary>The school gate. Finishes the level when the ball arrives.</summary>
     [RequireComponent(typeof(Collider2D))]
     public class GoalZone : MonoBehaviour
     {
-        public TestTrackSession session;
-
         void Reset()
         {
             GetComponent<Collider2D>().isTrigger = true;
@@ -16,9 +14,10 @@ namespace DribbleToSchool.Core
 
         void OnTriggerEnter2D(Collider2D other)
         {
-            if (session == null) return;
+            var level = LevelManager.Current;
+            if (level == null) return;
             if (other.attachedRigidbody != null && other.attachedRigidbody.GetComponent<BallController>() != null)
-                session.ReachGoal();
+                level.ReachGoal();
         }
     }
 }

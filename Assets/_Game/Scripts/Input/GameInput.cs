@@ -17,7 +17,7 @@ namespace DribbleToSchool.InputHandling
     ///
     /// Keyboard + mouse (editor testing):
     ///  - A / Left / Shift: brake. Space / W / Up: jump. F / J: touch. Mouse drag from ball: kick.
-    ///  - R: reset. Tab: tuning panel.
+    ///  - R: restart. Esc / P: pause. Tab: tuning panel.
     /// </summary>
     [DefaultExecutionOrder(-100)]
     public class GameInput : MonoBehaviour
@@ -76,7 +76,14 @@ namespace DribbleToSchool.InputHandling
         public Vector2 KickStartScreen { get; private set; }
         public Vector2 KickCurrentScreen { get; private set; }
         public bool ResetPressed { get; private set; }
+        public bool PausePressed { get; private set; }
         public bool DebugTogglePressed { get; private set; }
+
+        /// <summary>
+        /// When true, gameplay intents are suppressed (pause, countdown, respawn, results).
+        /// Fingers already down stay ignored until lifted. Menu keys still work.
+        /// </summary>
+        public bool Blocked { get; set; }
 
         public Rect JumpButtonScreenRect
         {
@@ -113,10 +120,18 @@ namespace DribbleToSchool.InputHandling
         void Update()
         {
             BrakeHeld = JumpPressed = JumpHeld = TouchPressed = false;
-            KickAiming = KickReleased = ResetPressed = DebugTogglePressed = false;
+            KickAiming = KickReleased = ResetPressed = PausePressed = DebugTogglePressed = false;
 
             samples.Clear();
             GatherPointers(samples);
+            ReadMenuKeys();
+
+            if (Blocked)
+            {
+                pointers.Clear();
+                foreach (var s in samples) ignored.Add(s.id);
+                return;
+            }
 
             ended.Clear();
             foreach (var kv in pointers)
@@ -170,7 +185,7 @@ namespace DribbleToSchool.InputHandling
                 }
             }
 
-            ReadKeyboard();
+            ReadGameplayKeys();
         }
 
         Role ClassifyDown(Vector2 pos)
@@ -262,7 +277,7 @@ namespace DribbleToSchool.InputHandling
                 into.Add(new Sample(MousePointerId, mouse.position.ReadValue()));
         }
 
-        void ReadKeyboard()
+        void ReadGameplayKeys()
         {
             var kb = Keyboard.current;
             if (kb == null) return;
@@ -270,7 +285,14 @@ namespace DribbleToSchool.InputHandling
             if (kb.spaceKey.wasPressedThisFrame || kb.wKey.wasPressedThisFrame || kb.upArrowKey.wasPressedThisFrame) JumpPressed = true;
             if (kb.spaceKey.isPressed || kb.wKey.isPressed || kb.upArrowKey.isPressed) JumpHeld = true;
             if (kb.fKey.wasPressedThisFrame || kb.jKey.wasPressedThisFrame) TouchPressed = true;
+        }
+
+        void ReadMenuKeys()
+        {
+            var kb = Keyboard.current;
+            if (kb == null) return;
             if (kb.rKey.wasPressedThisFrame) ResetPressed = true;
+            if (kb.escapeKey.wasPressedThisFrame || kb.pKey.wasPressedThisFrame) PausePressed = true;
             if (kb.tabKey.wasPressedThisFrame) DebugTogglePressed = true;
         }
 #elif ENABLE_LEGACY_INPUT_MANAGER
@@ -286,18 +308,24 @@ namespace DribbleToSchool.InputHandling
                 into.Add(new Sample(MousePointerId, Input.mousePosition));
         }
 
-        void ReadKeyboard()
+        void ReadGameplayKeys()
         {
             if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.LeftShift)) BrakeHeld = true;
             if (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow)) JumpPressed = true;
             if (Input.GetKey(KeyCode.Space) || Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow)) JumpHeld = true;
             if (Input.GetKeyDown(KeyCode.F) || Input.GetKeyDown(KeyCode.J)) TouchPressed = true;
+        }
+
+        void ReadMenuKeys()
+        {
             if (Input.GetKeyDown(KeyCode.R)) ResetPressed = true;
+            if (Input.GetKeyDown(KeyCode.Escape) || Input.GetKeyDown(KeyCode.P)) PausePressed = true;
             if (Input.GetKeyDown(KeyCode.Tab)) DebugTogglePressed = true;
         }
 #else
         static void GatherPointers(List<Sample> into) { }
-        void ReadKeyboard() { }
+        void ReadGameplayKeys() { }
+        void ReadMenuKeys() { }
 #endif
     }
 }

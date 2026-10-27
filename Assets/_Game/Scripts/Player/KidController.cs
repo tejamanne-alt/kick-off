@@ -123,7 +123,6 @@ namespace DribbleToSchool.Player
             Body.linearVelocity = Vector2.zero;
             jumping = false;
             lastJumpPressedTime = -10f;
-            InputEnabled = true;
         }
 
         void OnDrawGizmosSelected()
