@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using DribbleToSchool.Cosmetics;
+using DribbleToSchool.FrontEnd;
 using DribbleToSchool.Levels;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -19,12 +21,14 @@ namespace DribbleToSchool.EditorTools
     public static class GeneratedContent
     {
         /// <summary>Bump when layouts or the scene rig change so scenes regenerate.</summary>
-        public const int Version = 3;
+        public const int Version = 4;
 
         const string ScenesDir = LevelBuildKit.Root + "/Scenes";
         const string LevelsDir = LevelBuildKit.Root + "/Levels";
         const string VersionFile = ScenesDir + "/GeneratedContentVersion.txt";
         const string TestTrackScene = ScenesDir + "/Phase1_TestTrack.unity";
+        const string FrontEndScene = ScenesDir + "/" + FrontEndController.SceneName + ".unity";
+        const string CosmeticsDir = LevelBuildKit.Root + "/Cosmetics";
         const string AutoBuildKey = "DribbleToSchool.AutoBuildChecked";
 
         struct LevelSpec
@@ -90,22 +94,56 @@ namespace DribbleToSchool.EditorTools
             EditorSceneManager.OpenScene(Levels[0].ScenePath);
         }
 
+        [MenuItem("Dribble To School/Open Menu (FrontEnd)")]
+        static void OpenFrontEnd()
+        {
+            if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
+            EditorSceneManager.OpenScene(FrontEndScene);
+        }
+
+        [MenuItem("Dribble To School/Reset Save Data")]
+        static void ResetSave()
+        {
+            Progression.SaveSystem.ResetProgress();
+            Debug.Log("[Dribble To School] Save data reset: " + Progression.SaveSystem.FilePath);
+        }
+
+        [MenuItem("Dribble To School/Give 1000 Coins (testing)")]
+        static void GiveCoins()
+        {
+            Progression.SaveSystem.AddCoins(1000);
+            Progression.SaveSystem.Save();
+        }
+
+        static readonly ChapterInfo[] Chapters =
+        {
+            new ChapterInfo { number = 1, title = "Home Street", subtitle = "Out the door and down the road", color = new Color(0.97f, 0.55f, 0.27f) },
+            new ChapterInfo { number = 2, title = "Market", subtitle = "Crates, crowds and crossings", color = new Color(0.9f, 0.42f, 0.42f) },
+            new ChapterInfo { number = 3, title = "The Beach", subtitle = "Sand, waves and seagulls", color = new Color(0.3f, 0.68f, 0.85f) },
+            new ChapterInfo { number = 4, title = "Underpass", subtitle = "Tunnels, pipes and building sites", color = new Color(0.55f, 0.48f, 0.72f) },
+            new ChapterInfo { number = 5, title = "Park & School", subtitle = "Dogs, fountains and the final bell", color = new Color(0.42f, 0.7f, 0.4f) },
+        };
+
         public static void BuildAll()
         {
             LevelBuildKit.LoadShared();
             LevelBuildKit.EnsureFolder(ScenesDir + "/Levels");
             LevelBuildKit.EnsureFolder(LevelsDir);
+            var cosmetics = BuildCosmetics();
+            LevelBuildKit.Cosmetics = cosmetics;
 
             var catalog = LevelBuildKit.LoadOrCreateAsset<LevelCatalog>(LevelsDir + "/LevelCatalog.asset");
             var defs = new List<LevelDefinition>();
             foreach (var spec in Levels) defs.Add(LoadOrCreateLevel(spec));
             catalog.levels = defs;
+            catalog.chapters = new List<ChapterInfo>(Chapters);
             EditorUtility.SetDirty(catalog);
             AssetDatabase.SaveAssets();
 
             DeleteStaleScenes();
 
-            var buildScenes = new List<EditorBuildSettingsScene>();
+            BuildFrontEndScene(catalog, cosmetics);
+            var buildScenes = new List<EditorBuildSettingsScene> { new EditorBuildSettingsScene(FrontEndScene, true) };
             for (int i = 0; i < Levels.Length; i++)
             {
                 LevelBuildKit.BuildScene(Levels[i].ScenePath, defs[i], catalog, Levels[i].layout);
@@ -119,8 +157,49 @@ namespace DribbleToSchool.EditorTools
             WriteVersion();
             AssetDatabase.SaveAssets();
 
-            EditorSceneManager.OpenScene(Levels[0].ScenePath);
-            Debug.Log("[Dribble To School] Built " + Levels.Length + " levels + test track. Level 1 is open - press Play.");
+            EditorSceneManager.OpenScene(FrontEndScene);
+            Debug.Log("[Dribble To School] Built the menu, " + Levels.Length + " levels and the test track. The menu is open - press Play.");
+        }
+
+        static CosmeticCatalog BuildCosmetics()
+        {
+            LevelBuildKit.EnsureFolder(CosmeticsDir);
+            var catalog = LevelBuildKit.LoadOrCreateAsset<CosmeticCatalog>(CosmeticsDir + "/CosmeticCatalog.asset");
+            catalog.items = new List<CosmeticItem>();
+            foreach (var row in CosmeticsTable.Rows())
+            {
+                var item = LevelBuildKit.LoadOrCreateAsset<CosmeticItem>(CosmeticsDir + "/" + row.id + ".asset");
+                item.id = row.id;
+                item.displayName = row.name;
+                item.category = row.category;
+                item.rarity = row.rarity;
+                item.price = row.price;
+                item.pattern = row.pattern;
+                item.primary = row.primary;
+                item.secondary = row.secondary;
+                item.accent = row.accent;
+                EditorUtility.SetDirty(item);
+                catalog.items.Add(item);
+            }
+            EditorUtility.SetDirty(catalog);
+            return catalog;
+        }
+
+        static void BuildFrontEndScene(LevelCatalog catalog, CosmeticCatalog cosmetics)
+        {
+            var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+            var camGo = new GameObject("Main Camera");
+            camGo.tag = "MainCamera";
+            var cam = camGo.AddComponent<Camera>();
+            cam.orthographic = true;
+            cam.clearFlags = CameraClearFlags.SolidColor;
+            cam.backgroundColor = LevelBuildKit.SkyColor;
+            camGo.AddComponent<AudioListener>();
+
+            var controller = new GameObject("FrontEnd").AddComponent<FrontEndController>();
+            controller.levels = catalog;
+            controller.cosmetics = cosmetics;
+            EditorSceneManager.SaveScene(scene, FrontEndScene);
         }
 
         static LevelDefinition LoadOrCreateLevel(LevelSpec spec)
@@ -158,6 +237,7 @@ namespace DribbleToSchool.EditorTools
         static bool AllScenesExist()
         {
             if (AssetDatabase.LoadAssetAtPath<SceneAsset>(TestTrackScene) == null) return false;
+            if (AssetDatabase.LoadAssetAtPath<SceneAsset>(FrontEndScene) == null) return false;
             foreach (var spec in Levels)
             {
                 if (AssetDatabase.LoadAssetAtPath<SceneAsset>(spec.ScenePath) == null) return false;

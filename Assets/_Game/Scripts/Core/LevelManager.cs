@@ -5,7 +5,9 @@ using DribbleToSchool.Ball;
 using DribbleToSchool.CameraRig;
 using DribbleToSchool.InputHandling;
 using DribbleToSchool.Levels;
+using DribbleToSchool.Pickups;
 using DribbleToSchool.Player;
+using DribbleToSchool.Progression;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -21,6 +23,16 @@ namespace DribbleToSchool.Core
         public int bestPerfectStreak;
         public int ballsLost;
         public int stars;
+        public int coins;
+        public int totalCoins;
+        public bool allCoins;
+        public int perfectTouches;
+        public bool stickerFound;
+        public bool stickerIsNew;
+
+        // Rewards (filled when the result is saved)
+        public int newStars;
+        public int coinsEarned;
     }
 
     /// <summary>
@@ -59,6 +71,12 @@ namespace DribbleToSchool.Core
         public bool BellRung { get; private set; }
         public int BallsLost { get; private set; }
         public int BestPerfectStreak { get; private set; }
+        public int PerfectTouches { get; private set; }
+        public int Juggles { get; private set; }
+        public int CoinsCollected { get; private set; }
+        public int TotalCoins { get; private set; }
+        public bool StickerCollected { get; private set; }
+        public bool HasSticker { get; private set; }
         public LevelResult Result { get; private set; }
         public Checkpoint ActiveCheckpoint { get; private set; }
         /// <summary>0 = clear, 1 = fully faded to black. Driven during respawn.</summary>
@@ -92,6 +110,8 @@ namespace DribbleToSchool.Core
             {
                 var r = behaviour as IResettable;
                 if (r != null) resettables.Add(r);
+                if (behaviour is Coin) TotalCoins += ((Coin)behaviour).value;
+                if (behaviour is Sticker) HasSticker = true;
             }
         }
 
@@ -101,8 +121,32 @@ namespace DribbleToSchool.Core
             TimeControl.ResetTime();
         }
 
-        void OnEnable() { ball.PerfectTouch += OnPerfectTouch; }
-        void OnDisable() { ball.PerfectTouch -= OnPerfectTouch; }
+        void OnEnable()
+        {
+            ball.PerfectTouch += OnPerfectTouch;
+            ball.Juggled += OnJuggled;
+        }
+
+        void OnDisable()
+        {
+            ball.PerfectTouch -= OnPerfectTouch;
+            ball.Juggled -= OnJuggled;
+        }
+
+        void OnJuggled(int count)
+        {
+            Juggles++;
+        }
+
+        public void CollectCoin(Coin coin)
+        {
+            CoinsCollected += coin.value;
+        }
+
+        public void CollectSticker()
+        {
+            StickerCollected = true;
+        }
 
         void Start()
         {
@@ -111,6 +155,7 @@ namespace DribbleToSchool.Core
 
         void OnPerfectTouch(int streak)
         {
+            PerfectTouches++;
             if (streak > BestPerfectStreak) BestPerfectStreak = streak;
         }
 
@@ -124,6 +169,10 @@ namespace DribbleToSchool.Core
             ElapsedTime = 0f;
             BallsLost = 0;
             BestPerfectStreak = 0;
+            PerfectTouches = 0;
+            Juggles = 0;
+            CoinsCollected = 0;
+            StickerCollected = false;
             BellRung = false;
             BellEnabled = GameSettings.BellTimerEnabled && BellTime > 0f;
             FadeAmount = 0f;
@@ -276,14 +325,40 @@ namespace DribbleToSchool.Core
                 beforeBell = BellTime <= 0f || ElapsedTime <= BellTime,
                 bestPerfectStreak = BestPerfectStreak,
                 ballsLost = BallsLost,
+                coins = CoinsCollected,
+                totalCoins = TotalCoins,
+                allCoins = CoinsCollected >= TotalCoins,
+                perfectTouches = PerfectTouches,
+                stickerFound = StickerCollected,
             };
             int target = level != null ? level.perfectStreakTarget : 0;
-            result.stars = 1 + (result.beforeBell ? 1 : 0) + (result.beforeBell && BestPerfectStreak >= target ? 1 : 0);
+            bool thirdStar = result.beforeBell && BestPerfectStreak >= target && result.allCoins;
+            result.stars = 1 + (result.beforeBell ? 1 : 0) + (thirdStar ? 1 : 0);
+            if (level != null) SaveResult(ref result);
             Result = result;
 
             SetState(LevelState.Complete);
             GameEvents.Raise(GameEventType.Goal, ball.transform.position, result.stars / 3f);
             if (Completed != null) Completed(result);
+        }
+
+        /// <summary>Persist the run and work out the coin rewards.</summary>
+        void SaveResult(ref LevelResult result)
+        {
+            result.newStars = SaveSystem.RecordLevel(level.levelId, result.stars, result.time, result.coins, result.allCoins);
+            result.stickerIsNew = result.stickerFound && SaveSystem.AddSticker(level.levelId);
+
+            result.coinsEarned = result.coins
+                + result.perfectTouches * Rewards.PerPerfectTouch
+                + result.newStars * Rewards.PerNewStar
+                + (result.stickerIsNew ? Rewards.NewSticker : 0)
+                + (result.allCoins && result.totalCoins > 0 ? Rewards.AllCoinsBonus : 0);
+            SaveSystem.AddCoins(result.coinsEarned);
+
+            var data = SaveSystem.Data;
+            data.totalPerfectTouches += result.perfectTouches;
+            data.totalJuggles += Juggles;
+            SaveSystem.Save();
         }
 
         public void TogglePause()
@@ -309,8 +384,14 @@ namespace DribbleToSchool.Core
         public void LoadNextLevel()
         {
             LevelDefinition next = NextLevel;
-            if (next == null) BeginRun();
+            if (next == null) QuitToMap();
             else LoadLevel(next);
+        }
+
+        /// <summary>Back to the chapter map, showing this level's chapter.</summary>
+        public void QuitToMap()
+        {
+            FrontEnd.FrontEndController.Open(FrontEnd.FrontEndScreenId.Map, level != null ? level.chapter : 0);
         }
 
         public static void LoadLevel(LevelDefinition def)

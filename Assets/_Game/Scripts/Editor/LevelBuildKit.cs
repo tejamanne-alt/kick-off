@@ -4,9 +4,11 @@ using System.IO;
 using DribbleToSchool.Ball;
 using DribbleToSchool.CameraRig;
 using DribbleToSchool.Core;
+using DribbleToSchool.Cosmetics;
 using DribbleToSchool.Hazards;
 using DribbleToSchool.InputHandling;
 using DribbleToSchool.Levels;
+using DribbleToSchool.Pickups;
 using DribbleToSchool.Player;
 using DribbleToSchool.Tuning;
 using DribbleToSchool.UI;
@@ -48,6 +50,8 @@ namespace DribbleToSchool.EditorTools
         static BallTuning ballTuning;
         static PlayerTuning playerTuning;
         static Font signFont;
+        static Material trailMaterial;
+        public static CosmeticCatalog Cosmetics { get; set; }
 
         /// <summary>Create or load every shared asset. Call once before building scenes.</summary>
         public static void LoadShared()
@@ -65,6 +69,14 @@ namespace DribbleToSchool.EditorTools
             kidMat = LoadOrCreateMaterial(PhysicsDir + "/Kid.physicsMaterial2D", 0f, 0f);
             CrateMat = LoadOrCreateMaterial(PhysicsDir + "/Crate.physicsMaterial2D", 0.5f, 0.1f);
             signFont = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+
+            const string trailPath = ArtDir + "/BallTrail.mat";
+            trailMaterial = AssetDatabase.LoadAssetAtPath<Material>(trailPath);
+            if (trailMaterial == null)
+            {
+                trailMaterial = new Material(Shader.Find("Sprites/Default"));
+                AssetDatabase.CreateAsset(trailMaterial, trailPath);
+            }
         }
 
         /// <summary>
@@ -105,7 +117,11 @@ namespace DribbleToSchool.EditorTools
             var capsule = kidGo.AddComponent<CapsuleCollider2D>();
             capsule.size = new Vector2(0.5f, 1.2f);
             capsule.sharedMaterial = kidMat;
-            Visual(kidGo.transform, "Body", Square, new Vector2(0f, -0.15f), new Vector2(0.5f, 0.9f), KidColor, 10);
+            Visual(kidGo.transform, "Backpack", Square, new Vector2(-0.3f, 0.02f), new Vector2(0.2f, 0.42f), new Color(0.85f, 0.45f, 0.3f), 8);
+            Visual(kidGo.transform, "FlagPole", Square, new Vector2(-0.38f, 0.35f), new Vector2(0.03f, 0.42f), new Color(0.3f, 0.25f, 0.2f), 7);
+            var flag = Visual(kidGo.transform, "BackpackFlag", Square, new Vector2(-0.52f, 0.47f), new Vector2(0.28f, 0.28f), Color.white, 7);
+            var shirt = Visual(kidGo.transform, "Shirt", Square, new Vector2(0f, 0f), new Vector2(0.5f, 0.6f), KidColor, 10);
+            var shorts = Visual(kidGo.transform, "Shorts", Square, new Vector2(0f, -0.42f), new Vector2(0.46f, 0.36f), new Color(0.2f, 0.25f, 0.35f), 10);
             Visual(kidGo.transform, "Head", Circle, new Vector2(0f, 0.38f), new Vector2(0.42f, 0.42f), SkinColor, 11);
             Visual(kidGo.transform, "Eye", Circle, new Vector2(0.11f, 0.42f), new Vector2(0.07f, 0.07f), Color.black, 12);
             var feet = new GameObject("Feet").transform;
@@ -122,9 +138,17 @@ namespace DribbleToSchool.EditorTools
             var circleCol = ballGo.AddComponent<CircleCollider2D>();
             circleCol.radius = 0.2f;
             Color patch = new Color(0.15f, 0.15f, 0.15f);
-            Visual(ballGo.transform, "Shell", Circle, Vector2.zero, new Vector2(0.4f, 0.4f), Color.white, 20);
-            Visual(ballGo.transform, "Patch", Circle, new Vector2(0.08f, 0.06f), new Vector2(0.12f, 0.12f), patch, 21);
-            Visual(ballGo.transform, "Patch2", Circle, new Vector2(-0.09f, -0.07f), new Vector2(0.09f, 0.09f), patch, 21);
+            var shell = Visual(ballGo.transform, "Shell", Circle, Vector2.zero, new Vector2(0.4f, 0.4f), Color.white, 20);
+            var patch1 = Visual(ballGo.transform, "Patch", Circle, new Vector2(0.08f, 0.06f), new Vector2(0.12f, 0.12f), patch, 21);
+            var patch2 = Visual(ballGo.transform, "Patch2", Circle, new Vector2(-0.09f, -0.07f), new Vector2(0.09f, 0.09f), patch, 21);
+            var trail = ballGo.AddComponent<TrailRenderer>();
+            trail.sharedMaterial = trailMaterial;
+            trail.time = 0.25f;
+            trail.minVertexDistance = 0.05f;
+            trail.widthMultiplier = 0.32f;
+            trail.widthCurve = AnimationCurve.Linear(0f, 1f, 1f, 0f);
+            trail.sortingOrder = 19;
+            trail.enabled = false;
             var ball = ballGo.AddComponent<BallController>();
             ball.tuning = ballTuning;
             ball.kid = kid;
@@ -157,6 +181,15 @@ namespace DribbleToSchool.EditorTools
             manager.checkpoints = new List<Checkpoint>(track.Checkpoints);
             manager.killY = track.LowestGroundTop - 6f;
 
+            var applier = new GameObject("CosmeticApplier").AddComponent<CosmeticApplier>();
+            applier.catalog = Cosmetics;
+            applier.ballRenderer = shell.GetComponent<SpriteRenderer>();
+            applier.ballPlaceholderDetails = new[] { patch1, patch2 };
+            applier.ballTrail = trail;
+            applier.shirtRenderers = new[] { shirt.GetComponent<SpriteRenderer>() };
+            applier.shortsRenderers = new[] { shorts.GetComponent<SpriteRenderer>() };
+            applier.backpackFlag = flag.GetComponent<SpriteRenderer>();
+
             var hud = new GameObject("LevelHud").AddComponent<LevelHud>();
             hud.level = manager;
             hud.kid = kid;
@@ -176,7 +209,7 @@ namespace DribbleToSchool.EditorTools
             PlayerSettings.allowedAutorotateToPortraitUpsideDown = false;
         }
 
-        static void Visual(Transform parent, string name, Sprite sprite, Vector2 localPos, Vector2 size, Color color, int order)
+        static GameObject Visual(Transform parent, string name, Sprite sprite, Vector2 localPos, Vector2 size, Color color, int order)
         {
             var go = new GameObject(name);
             go.transform.SetParent(parent, false);
@@ -186,6 +219,7 @@ namespace DribbleToSchool.EditorTools
             sr.sprite = sprite;
             sr.color = color;
             sr.sortingOrder = order;
+            return go;
         }
 
         // ---------- Track pieces ----------
@@ -262,6 +296,59 @@ namespace DribbleToSchool.EditorTools
                 body.gravityScale = 1.5f;
                 body.interpolation = RigidbodyInterpolation2D.Interpolate;
                 go.AddComponent<ResettableBody>();
+            }
+
+            // ---------- Pickups ----------
+
+            public void Coin(Vector2 position)
+            {
+                var go = new GameObject("Coin");
+                go.transform.SetParent(root, false);
+                go.transform.position = position;
+                var col = go.AddComponent<CircleCollider2D>();
+                col.isTrigger = true;
+                col.radius = 0.28f;
+                var visual = Visual(go.transform, "Visual", Circle, Vector2.zero, new Vector2(0.45f, 0.45f), new Color(1f, 0.8f, 0.25f), 25);
+                Visual(visual.transform, "Inner", Circle, Vector2.zero, new Vector2(0.62f, 0.62f), new Color(0.95f, 0.65f, 0.15f), 26);
+                Visual(visual.transform, "Shine", Circle, new Vector2(-0.18f, 0.18f), new Vector2(0.22f, 0.22f), new Color(1f, 1f, 0.85f), 27);
+                go.AddComponent<Pickups.Coin>().visual = visual.transform;
+            }
+
+            /// <summary>Coins in a straight line, start and end inclusive.</summary>
+            public void CoinRow(float fromX, float toX, float y, int count)
+            {
+                for (int i = 0; i < count; i++)
+                {
+                    float t = count == 1 ? 0.5f : i / (float)(count - 1);
+                    Coin(new Vector2(Mathf.Lerp(fromX, toX, t), y));
+                }
+            }
+
+            /// <summary>Coins along a jump-shaped arc, hinting at the path to take.</summary>
+            public void CoinArc(float fromX, float toX, float baseY, float height, int count)
+            {
+                for (int i = 0; i < count; i++)
+                {
+                    float t = count == 1 ? 0.5f : i / (float)(count - 1);
+                    Coin(new Vector2(Mathf.Lerp(fromX, toX, t), baseY + 4f * t * (1f - t) * height));
+                }
+            }
+
+            /// <summary>The level's hidden sticker. Put it somewhere that takes a good kick or a brave jump.</summary>
+            public void Sticker(Vector2 position)
+            {
+                var go = new GameObject("Sticker");
+                go.transform.SetParent(root, false);
+                go.transform.position = position;
+                var col = go.AddComponent<CircleCollider2D>();
+                col.isTrigger = true;
+                col.radius = 0.35f;
+                var visual = Visual(go.transform, "Visual", Circle, Vector2.zero, new Vector2(0.7f, 0.7f), new Color(1f, 0.55f, 0.75f), 25);
+                Visual(visual.transform, "Border", Circle, Vector2.zero, new Vector2(1.15f, 1.15f), Color.white, 24);
+                Visual(visual.transform, "Heart", Circle, new Vector2(0f, 0.05f), new Vector2(0.45f, 0.45f), new Color(1f, 0.95f, 0.5f), 26);
+                var sticker = go.AddComponent<Pickups.Sticker>();
+                sticker.visual = visual.transform;
+                sticker.visualRenderer = visual.GetComponent<SpriteRenderer>();
             }
 
             // ---------- Hazards & interactables ----------

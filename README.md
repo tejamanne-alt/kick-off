@@ -5,14 +5,14 @@ The full game brief is in [`GAME_PROMPT.md`](GAME_PROMPT.md).
 
 ## Status
 
-See [`PROGRESS.md`](PROGRESS.md) for the phase-by-phase status. Phases 1-3 are done: core feel, level flow, the hazard system, and Chapters 1-2 (10 levels).
+See [`PROGRESS.md`](PROGRESS.md) for the phase-by-phase status. Phases 1-4 are done: core feel, level flow, the hazard system, Chapters 1-2 (10 levels), coins and stickers, saving, the Locker Room shop and the chapter map.
 
 ## Open the project
 
 1. Install **Unity 6** (6000.0 LTS or newer) with **iOS Build Support** and/or **Android Build Support** from Unity Hub.
 2. In Unity Hub choose **Add > Add project from disk** and select this folder. If Hub asks about the editor version, pick any Unity 6 version you have installed.
 3. On the first open, Unity imports packages. If it asks to **enable the new Input System backend**, click **Yes** (the editor restarts). The code works with either input backend.
-4. Once importing finishes, an editor script generates every level scene and opens **Level 1**. It runs again automatically whenever the generated content is out of date. You can also run it from **Dribble To School > Rebuild All Levels**.
+4. Once importing finishes, an editor script generates the menu, every level scene and the shop items, then opens the **FrontEnd** menu scene. It runs again automatically whenever the generated content is out of date. You can also run it from **Dribble To School > Rebuild All Levels**.
 5. Press **Play**. Set the Game view to a landscape phone resolution (for example 1920x1080).
 
 Generated scenes are rebuilt from code, so edits made directly in those scenes get overwritten on the next rebuild. Change the layouts in `Editor/GreyboxLevels.cs` instead, or duplicate a scene before you edit it by hand. Tuning assets and level definitions are never overwritten.
@@ -129,6 +129,14 @@ Assets/_Game/
 
 The original plan named Cinemachine for the camera. For now the project uses its own `CameraFollow2D`, which already has look-ahead, a vertical dead zone, level bounds and a snap on respawn. The reason is that I couldn't compile against Cinemachine's API while building this, and a single wrong API call would stop the project from entering Play mode. It's a self-contained swap once the levels are verified in the editor.
 
+## Progression
+
+- **Coins:** collected by the kid or the ball. Bonuses come from perfect touches, new stars, new stickers, and collecting every coin in a level.
+- **Stickers:** one is hidden in each level, often high up, so a well-kicked ball can collect it.
+- **Stars:** 1 for finishing, 2 for beating the bell, 3 for also hitting the streak target and collecting every coin.
+- **Locker Room:** buy and equip ball skins, backpack flags, outfits and ball trails. All of them are drawn in code.
+- **Saving:** progress goes to `save.json` in the app's data folder. The **Dribble To School** menu has Reset Save Data and Give 1000 Coins for testing.
+
 ## Next
 
-Phase 4 adds coins, stickers, the save system, the cosmetics shop and the chapter map.
+Phase 5 adds Chapters 3-5 (13 more levels) and the ball-skill challenges.

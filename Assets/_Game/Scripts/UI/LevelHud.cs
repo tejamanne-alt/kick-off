@@ -153,8 +153,8 @@ namespace DribbleToSchool.UI
             }
 
             GUI.Label(new Rect(x, 60f, 700f, 28f),
-                string.Format("Perfect x{0} (best {1})    Juggles {2}    Balls lost {3}",
-                    ball.PerfectStreak, level.BestPerfectStreak, ball.JuggleCount, level.BallsLost), label);
+                string.Format("Coins {0}/{1}    Perfect x{2} (best {3})    Juggles {4}",
+                    level.CoinsCollected, level.TotalCoins, ball.PerfectStreak, level.BestPerfectStreak, ball.JuggleCount), label);
         }
 
         void DrawTouchZones(float w, float h)
@@ -222,7 +222,7 @@ namespace DribbleToSchool.UI
 
         void DrawPause(float w, float h)
         {
-            Rect panel = CenteredPanel(w, h, 420f, 380f);
+            Rect panel = CenteredPanel(w, h, 420f, 440f);
             GUI.Box(panel, GUIContent.none, box);
             GUI.Label(new Rect(panel.x, panel.y + 15f, panel.width, 50f), "Paused", bigLabel);
 
@@ -239,6 +239,8 @@ namespace DribbleToSchool.UI
             y += 58f;
             if (GUI.Button(new Rect(bx, y, bw, 48f), "Restart level", button)) level.BeginRun();
             y += 58f;
+            if (GUI.Button(new Rect(bx, y, bw, 48f), "Quit to map", button)) level.QuitToMap();
+            y += 58f;
             bool bellOn = GameSettings.BellTimerEnabled;
             string bellLabel = bellOn ? "School bell: ON" : "School bell: OFF (cozy)";
             if (GUI.Button(new Rect(bx, y, bw, 48f), bellLabel, button)) GameSettings.BellTimerEnabled = !bellOn;
@@ -250,7 +252,7 @@ namespace DribbleToSchool.UI
         void DrawResults(float w, float h)
         {
             LevelResult r = level.Result;
-            Rect panel = CenteredPanel(w, h, 560f, 420f);
+            Rect panel = CenteredPanel(w, h, 600f, 520f);
             GUI.Box(panel, GUIContent.none, box);
 
             GUI.Label(new Rect(panel.x, panel.y + 15f, panel.width, 50f),
@@ -270,16 +272,32 @@ namespace DribbleToSchool.UI
             float ly = panel.y + 150f;
             Check(panel, ref ly, true, "Reached school with the ball");
             Check(panel, ref ly, r.beforeBell, "Before the bell (" + FormatTime(level.BellTime, false) + ")");
-            Check(panel, ref ly, r.beforeBell && r.bestPerfectStreak >= target,
-                "Perfect-touch streak of " + target + " (best " + r.bestPerfectStreak + ")");
+            Check(panel, ref ly, r.beforeBell && r.bestPerfectStreak >= target && r.allCoins,
+                "Streak of " + target + " (best " + r.bestPerfectStreak + ") and all coins (" + r.coins + "/" + r.totalCoins + ")");
 
             GUI.Label(new Rect(panel.x, ly + 6f, panel.width, 28f),
                 string.Format("Time {0}    Balls lost {1}", FormatTime(r.time), r.ballsLost), centerLabel);
+            ly += 40f;
+
+            if (level.level != null)
+            {
+                GUI.color = Gold;
+                GUI.Label(new Rect(panel.x, ly, panel.width, 34f), "+" + r.coinsEarned + " coins", bigLabel);
+                GUI.color = Color.white;
+                ly += 40f;
+                string extras = "";
+                if (r.newStars > 0) extras += r.newStars + " new star" + (r.newStars > 1 ? "s" : "") + "!   ";
+                if (r.stickerIsNew) extras += "New sticker for the album!";
+                else if (r.stickerFound) extras += "Sticker found (already in album)";
+                if (extras.Length > 0) GUI.Label(new Rect(panel.x, ly, panel.width, 28f), extras, centerLabel);
+            }
 
             float by = panel.y + panel.height - 70f;
-            if (GUI.Button(new Rect(panel.x + 40f, by, 220f, 50f), "Retry", button)) level.BeginRun();
-            string next = level.NextLevel != null ? "Next level" : "Play again";
-            if (GUI.Button(new Rect(panel.x + panel.width - 260f, by, 220f, 50f), next, button)) level.LoadNextLevel();
+            float bw = (panel.width - 80f) / 3f;
+            if (GUI.Button(new Rect(panel.x + 30f, by, bw, 50f), "Retry", button)) level.BeginRun();
+            if (GUI.Button(new Rect(panel.x + 40f + bw, by, bw, 50f), "Map", button)) level.QuitToMap();
+            string next = level.NextLevel != null ? "Next level" : "Finish";
+            if (GUI.Button(new Rect(panel.x + 50f + bw * 2f, by, bw, 50f), next, button)) level.LoadNextLevel();
         }
 
         void Check(Rect panel, ref float y, bool done, string text)
