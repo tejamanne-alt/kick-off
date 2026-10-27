@@ -1,4 +1,5 @@
 using DribbleToSchool.Ball;
+using DribbleToSchool.InputHandling;
 using DribbleToSchool.Player;
 using UnityEngine;
 
@@ -38,16 +39,34 @@ namespace DribbleToSchool.CameraRig
         [Tooltip("Camera centre never goes below this height.")]
         public float minY = 2f;
 
+        [Header("Feel")]
+        [Tooltip("Zoom out by this factor while aiming a kick, to see where it lands.")]
+        public float aimZoom = 1.12f;
+        public float zoomSpeed = 4f;
+
         Camera cam;
         float velocityX;
         float velocityY;
         float lookAhead;
         float lookAheadVelocity;
         float trackedY;
+        float baseSize;
+        float shakeAmount;
+        float shakeUntil;
+        Vector3 shakeOffset;
 
         void Awake()
         {
             cam = GetComponent<Camera>();
+            baseSize = cam.orthographicSize;
+        }
+
+        /// <summary>Brief screen shake (world units). Uses unscaled time so it works in slow motion.</summary>
+        public void Shake(float amount, float duration)
+        {
+            if (Time.unscaledTime >= shakeUntil) shakeAmount = 0f;
+            shakeAmount = Mathf.Max(shakeAmount, amount);
+            shakeUntil = Mathf.Max(shakeUntil, Time.unscaledTime + duration);
         }
 
         void Start()
@@ -67,11 +86,23 @@ namespace DribbleToSchool.CameraRig
             if (Mathf.Abs(desiredY - trackedY) > verticalDeadZone * 0.5f)
                 trackedY = desiredY - Mathf.Sign(desiredY - trackedY) * verticalDeadZone * 0.5f;
 
+            bool aiming = GameInput.Instance != null && GameInput.Instance.KickAiming;
+            float wantedSize = baseSize * (aiming ? aimZoom : 1f);
+            cam.orthographicSize = Mathf.Lerp(cam.orthographicSize, wantedSize, 1f - Mathf.Exp(-zoomSpeed * Time.unscaledDeltaTime));
+
             Vector2 target = ClampToBounds(new Vector2(focus.x + offset.x + lookAhead, trackedY));
-            Vector3 pos = transform.position;
+            Vector3 pos = transform.position - shakeOffset;
             pos.x = Mathf.SmoothDamp(pos.x, target.x, ref velocityX, smoothTimeX);
             pos.y = Mathf.SmoothDamp(pos.y, target.y, ref velocityY, smoothTimeY);
-            transform.position = pos;
+
+            shakeOffset = Vector3.zero;
+            if (Time.unscaledTime < shakeUntil)
+            {
+                float t = Time.unscaledTime * 40f;
+                shakeOffset = new Vector3(Mathf.PerlinNoise(t, 0.3f) - 0.5f, Mathf.PerlinNoise(0.7f, t) - 0.5f, 0f) * 2f * shakeAmount;
+            }
+
+            transform.position = pos + shakeOffset;
         }
 
         /// <summary>Jump straight to the framing target (level start, respawn).</summary>
@@ -84,6 +115,7 @@ namespace DribbleToSchool.CameraRig
             trackedY = focus.y + offset.y;
             Vector2 target = ClampToBounds(new Vector2(focus.x + offset.x, trackedY));
             transform.position = new Vector3(target.x, target.y, transform.position.z);
+            shakeOffset = Vector3.zero;
         }
 
         Vector2 Focus()

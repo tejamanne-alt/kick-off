@@ -29,6 +29,8 @@ namespace DribbleToSchool.Ball
         /// <summary>Raised with the current juggle count.</summary>
         public event Action<int> Juggled;
         public event Action Kicked;
+        /// <summary>Raised on impacts with the world: contact normal and 0..1 strength.</summary>
+        public event Action<Vector2, float> Bounced;
 
         public Rigidbody2D Body { get; private set; }
         public CircleCollider2D Circle { get; private set; }
@@ -228,6 +230,16 @@ namespace DribbleToSchool.Ball
             PerfectStreak = 0;
             GameEvents.Raise(GameEventType.Kick, Body.position, velocity.magnitude / Mathf.Max(tuning.maxKickSpeed, 0.01f));
             if (Kicked != null) Kicked();
+        }
+
+        void OnCollisionEnter2D(Collision2D collision)
+        {
+            float speed = collision.relativeVelocity.magnitude;
+            if (speed < 1.2f) return;
+            Vector2 normal = collision.contactCount > 0 ? collision.GetContact(0).normal : Vector2.up;
+            float strength = Mathf.Clamp01(speed / 12f);
+            if (Bounced != null) Bounced(normal, strength);
+            GameEvents.Raise(GameEventType.BallBounce, collision.contactCount > 0 ? collision.GetContact(0).point : Body.position, strength);
         }
 
         public void ResetTo(Vector2 position)

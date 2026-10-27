@@ -148,6 +148,16 @@ The original plan named Cinemachine for the camera. For now the project uses its
 - **Locker Room:** buy and equip ball skins, backpack flags, outfits and ball trails. All of them are drawn in code.
 - **Saving:** progress goes to `save.json` in the app's data folder. The **Dribble To School** menu has Reset Save Data and Give 1000 Coins for testing.
 
+## Look and sound
+
+All art and audio are generated in code, so the repo has no art or audio files to maintain:
+
+- **Art.** A storybook style throughout: watercolour grain, wobbly ink outlines, and a warm palette per chapter that shifts through the school morning. The editor bakes it to `Assets/_Game/Art/Generated` when levels are rebuilt.
+- **Animation.** The kid is a paper-doll rig with run, jump, kick, land, celebrate and stumble animations. The ball squashes and stretches and casts a shadow.
+- **Feel.** Parallax backdrops, particles for every action, screen shake, a slow-motion finish, and the camera zooms out while aiming.
+- **Audio.** Synthesized sound effects for every action and a lo-fi music loop per chapter, plus a menu theme.
+- **Haptics.** Taptic feedback on iOS and short vibrations on Android.
+
 ## Next
 
-Phase 6 is the art pass: storybook visuals, kid animation, parallax backgrounds, particles, synthesized music and sound effects, and haptics.
+Phase 7 covers the full uGUI HUD, pause and results screens, the main menu, settings, sticker album, credits, contextual tutorial hints, localization and accessibility options.

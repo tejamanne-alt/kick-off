@@ -11,8 +11,8 @@ This file is the resume point. A new session should read it first, then continue
 | 3 | Hazard system + Chapters 1-2 (L01-L10) | Done |
 | 4 | Coins, stickers, save system, shop, cosmetics, chapter map (uGUI kit) | Done |
 | 5 | Chapters 3-5 (L11-L23) + ball skill challenges | Done |
-| 6 | Procedural storybook art, kid animation, parallax, FX, synthesized audio, haptics | Next |
-| 7 | uGUI HUD/menus, settings, tutorial, localization, accessibility | Pending |
+| 6 | Procedural storybook art, kid animation, parallax, FX, synthesized audio, haptics | Done |
+| 7 | uGUI HUD/menus, settings, tutorial, localization, accessibility | Next |
 | 8 | Store service + full-game unlock, analytics, perf, Android/iOS build setup | Pending |
 
 ## Conventions (keep these)
@@ -25,6 +25,9 @@ This file is the resume point. A new session should read it first, then continue
 - **Menus are uGUI built from code** with `UI/Kit/UIKit.cs`: canvas at 1920x1080 matched on height, procedural sprites, `UIButtonFx` presses, `UIPopIn` entrances. No prefabs.
 - **The shop's contents** live in `Editor/CosmeticsTable.cs`. Cosmetic art is drawn at runtime by `Cosmetics/CosmeticArt.cs`.
 - **Progress** is saved to `persistentDataPath/save.json` by `Progression/SaveSystem.cs` (atomic write, corrupt files backed up). Coin economy constants are in `Progression/Rewards.cs`.
+- **Art is code.** `Art/ProceduralArt.cs` draws everything on `Art/PixelCanvas.cs` (anti-aliased shapes, ink outline, watercolour grain, wrap-aware tiling). `Editor/ArtBaker.cs` bakes it to `Assets/_Game/Art/Generated` (FullRect meshes, 9-slice borders). Chapter palettes are in `Art/ChapterTheme.cs`.
+- **Previewing art and audio without Unity.** The scratchpad harnesses compile ProceduralArt/Synth against tiny Unity stubs (a Color/Vector2/Mathf/Perlin reimplementation) and render PNG/WAV. Use them to eyeball changes before committing.
+- **Audio is code.** `Audio/Synth.cs`, `SoundBank.cs` (26 SFX) and `MusicGenerator.cs` (6 loops) are pure C#. `AudioDirector` (auto-booted, DontDestroyOnLoad) maps GameEvents to SFX and haptics and crossfades music per chapter.
 - No Cinemachine yet: `CameraRig/CameraFollow2D.cs` covers look-ahead, the dead zone and bounds.
 
 ## Phase 3 summary
@@ -57,3 +60,18 @@ This file is the resume point. A new session should read it first, then continue
 - Chapter 4 Underpass: L15 The Underpass, L16 Building Site, L17 Cranes, L18 Tunnel Run, C04 Site Targets.
 - Chapter 5 Park & School: L19 Park Gates, L20 Fountain Square, L21 Playground, L22 Duck Pond, L23 The Final Bell, C05 Juggle Champion.
 - Also C01 Keepy-Uppy (Ch1) and C02 Window Shopping (Ch2). Total: 23 story levels + 5 challenges.
+
+## Phase 6 summary
+
+- Storybook look for every scene:
+  - Inked paper blocks (9-sliced) and wooden crates.
+  - Tiled ground with a chapter edge: grass, cobbles, sand, kerb or park path.
+  - Drawn cars, dogs, gulls and pedestrians.
+  - Wooden signposts.
+- Parallax backdrop per chapter: a sky gradient and sun on the camera, drifting clouds, a far strip (hills, towers, sea or skyline), mid props (houses, shops, palms, huts, cranes, pillars, trees, the school) and a near strip (hedges, bunting, dune grass, site fence).
+- The kid is a paper-doll rig (CharacterRig + KidAnimator): run cycle, idle breathing, jump and fall poses, kick swing, landing squash, celebration and stumble. Pedestrians walk with WalkerAnimator.
+- Ball: squash and stretch along velocity and on impacts (BallVisual), plus a ground shadow.
+- FX: pooled sprite particles (FxPool) driven by FxDirector. Dust, sparkles, splashes, feathers and confetti, screen shake (can be turned off in settings), a slow-motion goal moment, and the camera zooms out while aiming.
+- Audio: synthesized SFX for every event, lo-fi music per chapter plus a menu theme, a referee whistle at the start and the school bell.
+- Haptics: Taptic Engine on iOS (`Assets/Plugins/iOS/DTSHaptics.mm`), short amplitude vibrations on Android.
+- GameSettings gained music and SFX volume, haptics, screen shake, left-handed, colour-blind aim and language (the UI comes in Phase 7).

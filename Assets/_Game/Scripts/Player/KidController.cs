@@ -91,7 +91,11 @@ namespace DribbleToSchool.Player
         {
             CheckGround();
             if (IsGrounded) lastGroundedTime = Time.time;
-            if (IsGrounded && !wasGrounded && Landed != null) Landed(lastFallSpeed);
+            if (IsGrounded && !wasGrounded)
+            {
+                if (Landed != null) Landed(lastFallSpeed);
+                if (lastFallSpeed > 2f) GameEvents.Raise(GameEventType.Land, FeetPosition, lastFallSpeed / 15f);
+            }
             wasGrounded = IsGrounded;
 
             Vector2 v = Body.linearVelocity;
@@ -112,6 +116,7 @@ namespace DribbleToSchool.Player
                 lastJumpPressedTime = -10f;
                 lastGroundedTime = -10f;
                 if (Jumped != null) Jumped();
+                GameEvents.Raise(GameEventType.Jump, FeetPosition, 0.5f);
             }
             else if (IsGrounded && v.y <= 0.01f)
             {
