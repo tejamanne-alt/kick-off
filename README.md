@@ -3,10 +3,9 @@
 A cozy, hand-drawn soccer side-scroller for iOS and Android, built in Unity 6 (2D).
 The full game brief is in [`GAME_PROMPT.md`](GAME_PROMPT.md).
 
-## Status: Phase 2 (level flow)
+## Status
 
-- **Phase 1 (core feel):** kid controller, ball physics, dribbling, the slingshot kick with a trajectory preview.
-- **Phase 2 (level flow):** checkpoints, losing the ball and respawning, the school-bell timer with a cozy mode, the level-complete screen with stars, a pause menu, a level-framing camera, and 3 grey-box levels plus the test track.
+See [`PROGRESS.md`](PROGRESS.md) for the phase-by-phase status. Phases 1-3 are done: core feel, level flow, the hazard system, and Chapters 1-2 (10 levels).
 
 ## Open the project
 
@@ -20,14 +19,33 @@ Generated scenes are rebuilt from code, so edits made directly in those scenes g
 
 ## Levels
 
-| Scene | Level | Bell | 3rd-star streak | Teaches |
+| Ch | Level | Bell | 3rd-star streak | New idea |
 |---|---|---|---|---|
-| `L01_OutTheDoor` | Out the Door | 0:50 | 3 | dribble, perfect touch, brake, jump, chip, small gap |
-| `L02_CornerShop` | Corner Shop | 1:05 | 4 | crates, puddles, ramp and walkway, awning bounce |
-| `L03_UpTheHill` | Up the Hill | 1:20 | 5 | stairs, a plateau gap, step + high wall, juggling run-in |
-| `Phase1_TestTrack` | Test Track | none | none | every mechanic back to back, for tuning |
+| 1 | L01 Out the Door | 0:50 | 3 | Tutorial: dribble, perfect touch, brake, jump, chip, gap |
+| 1 | L02 Parked Cars | 0:55 | 3 | Hop onto cars, chip over roofs |
+| 1 | L03 Up the Hill | 1:20 | 4 | Stairs, plateau gap, step + high wall |
+| 1 | L04 Garden Gate | 1:00 | 3 | Kick the ball at a button to open a gate |
+| 1 | L05 Puddle Lane | 1:20 | 4 | Puddles slow the ball and the kid; chapter finale |
+| 2 | L06 Market Morning | 1:00 | 4 | Pedestrians: the ball bounces off them |
+| 2 | L07 First Crossing | 1:10 | 3 | Traffic lights: brake and wait for green |
+| 2 | L08 Corner Shop | 1:10 | 4 | Crates, puddles, walkway, awning bounce |
+| 2 | L09 Fruit Stalls | 1:15 | 5 | Springboards |
+| 2 | L10 Rush Hour | 1:35 | 6 | Everything at once; chapter finale |
 
-The bell times and streak targets live in `Assets/_Game/Levels/L0x.asset`. **Next level** follows the order in `LevelCatalog.asset`.
+`Phase1_TestTrack` is still included for tuning. The values above live in the level table in `Editor/GeneratedContent.cs`. Change them there, then run **Dribble To School > Rebuild All Levels**.
+
+## Hazards
+
+| Hazard | Behaviour |
+|---|---|
+| Pedestrian | Walks and pauses. The ball bounces off; the kid slips past. |
+| Crossing | Green, amber, red cycle. On red, the kid or the ball on the road loses the ball. |
+| Dog | Wanders and chases low balls, nosing them back. Chip over it. |
+| Puddle / Sand | Slows the ball and the kid. |
+| Wind | A headwind or an updraft on the ball; can gust. |
+| Moving platform | Slides back and forth and carries the kid. |
+| Button + gate | Kick the ball at the button to open the gate. |
+| Springboard | Launches the kid or the ball upward. |
 
 ## Level rules
 
@@ -111,6 +129,6 @@ Assets/_Game/
 
 The original plan named Cinemachine for the camera. For now the project uses its own `CameraFollow2D`, which already has look-ahead, a vertical dead zone, level bounds and a snap on respawn. The reason is that I couldn't compile against Cinemachine's API while building this, and a single wrong API call would stop the project from entering Play mode. It's a self-contained swap once the levels are verified in the editor.
 
-## Next: Phase 3
+## Next
 
-Phase 3 adds the hazard system (pedestrians, crossings with traffic lights, dogs, puddles that slow the ball, wind, moving platforms, switches and gates) and Chapters 1-2 (10 levels).
+Phase 4 adds coins, stickers, the save system, the cosmetics shop and the chapter map.

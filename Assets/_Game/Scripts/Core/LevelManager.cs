@@ -77,6 +77,7 @@ namespace DribbleToSchool.Core
 
         LevelState stateBeforePause;
         Coroutine respawnRoutine;
+        readonly List<IResettable> resettables = new List<IResettable>();
 
         void Awake()
         {
@@ -86,6 +87,12 @@ namespace DribbleToSchool.Core
             TimeControl.ResetTime();
             checkpoints.RemoveAll(c => c == null);
             checkpoints.Sort((a, b) => a.transform.position.x.CompareTo(b.transform.position.x));
+
+            foreach (var behaviour in FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None))
+            {
+                var r = behaviour as IResettable;
+                if (r != null) resettables.Add(r);
+            }
         }
 
         void OnDestroy()
@@ -120,6 +127,7 @@ namespace DribbleToSchool.Core
             BellRung = false;
             BellEnabled = GameSettings.BellTimerEnabled && BellTime > 0f;
             FadeAmount = 0f;
+            foreach (var r in resettables) r.ResetState();
 
             ActiveCheckpoint = null;
             foreach (var cp in checkpoints)
@@ -147,7 +155,11 @@ namespace DribbleToSchool.Core
             {
                 case LevelState.Intro:
                     IntroTimeLeft -= Time.unscaledDeltaTime;
-                    if (IntroTimeLeft <= 0f) SetState(LevelState.Playing);
+                    if (IntroTimeLeft <= 0f)
+                    {
+                        SetState(LevelState.Playing);
+                        GameEvents.Raise(GameEventType.LevelStart, kid.transform.position);
+                    }
                     break;
 
                 case LevelState.Playing:
@@ -168,6 +180,7 @@ namespace DribbleToSchool.Core
             if (BellEnabled && !BellRung && ElapsedTime >= BellTime)
             {
                 BellRung = true;
+                GameEvents.Raise(GameEventType.Bell, kid.transform.position);
                 if (BellRang != null) BellRang();
             }
         }
@@ -183,6 +196,7 @@ namespace DribbleToSchool.Core
                 if (kidX >= x && ballX >= x - checkpointBallTolerance)
                 {
                     cp.SetActive(true);
+                    GameEvents.Raise(GameEventType.Checkpoint, cp.transform.position);
                     if (ActiveCheckpoint == null || x > ActiveCheckpoint.transform.position.x)
                         ActiveCheckpoint = cp;
                     if (CheckpointReached != null) CheckpointReached(cp);
@@ -203,6 +217,7 @@ namespace DribbleToSchool.Core
         {
             if (State != LevelState.Playing) return;
             BallsLost++;
+            GameEvents.Raise(GameEventType.BallLost, ball.transform.position);
             if (BallLost != null) BallLost(reason);
             respawnRoutine = StartCoroutine(RespawnRoutine());
         }
@@ -218,6 +233,7 @@ namespace DribbleToSchool.Core
             SetState(LevelState.Respawning);
             yield return Fade(0f, 1f);
             PlaceAtCheckpoint();
+            GameEvents.Raise(GameEventType.Respawn, kid.transform.position);
             yield return Fade(1f, 0f);
             respawnRoutine = null;
             SetState(LevelState.Playing);
@@ -266,6 +282,7 @@ namespace DribbleToSchool.Core
             Result = result;
 
             SetState(LevelState.Complete);
+            GameEvents.Raise(GameEventType.Goal, ball.transform.position, result.stars / 3f);
             if (Completed != null) Completed(result);
         }
 

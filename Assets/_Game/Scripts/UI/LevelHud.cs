@@ -43,6 +43,7 @@ namespace DribbleToSchool.UI
             level.CheckpointReached += OnCheckpoint;
             level.BallLost += OnBallLost;
             level.BellRang += OnBellRang;
+            GameEvents.Raised += OnGameEvent;
         }
 
         void OnDisable()
@@ -52,6 +53,7 @@ namespace DribbleToSchool.UI
             level.CheckpointReached -= OnCheckpoint;
             level.BallLost -= OnBallLost;
             level.BellRang -= OnBellRang;
+            GameEvents.Raised -= OnGameEvent;
             GameInput.UIBlockers.Clear();
         }
 
@@ -65,6 +67,16 @@ namespace DribbleToSchool.UI
         void OnCheckpoint(Checkpoint cp) { Toast("Checkpoint!", new Color(0.5f, 1f, 0.6f)); }
         void OnBallLost(string reason) { Toast(reason, Late); }
         void OnBellRang() { Toast("BRRRING! The bell! Keep going!", Late); }
+
+        void OnGameEvent(GameEventType type, Vector2 position, float intensity)
+        {
+            switch (type)
+            {
+                case GameEventType.DogSteal: Toast("Woof! The dog wants to play", Gold); break;
+                case GameEventType.PedestrianBump: Toast("Oops - sorry!", Color.white); break;
+                case GameEventType.GateOpened: Toast("Gate open!", new Color(0.5f, 1f, 0.6f)); break;
+            }
+        }
 
         void Toast(string text, Color color)
         {

@@ -4,6 +4,7 @@ using System.IO;
 using DribbleToSchool.Ball;
 using DribbleToSchool.CameraRig;
 using DribbleToSchool.Core;
+using DribbleToSchool.Hazards;
 using DribbleToSchool.InputHandling;
 using DribbleToSchool.Levels;
 using DribbleToSchool.Player;
@@ -260,6 +261,218 @@ namespace DribbleToSchool.EditorTools
                 body.mass = 0.8f;
                 body.gravityScale = 1.5f;
                 body.interpolation = RigidbodyInterpolation2D.Interpolate;
+                go.AddComponent<ResettableBody>();
+            }
+
+            // ---------- Hazards & interactables ----------
+
+            /// <summary>A parked car: hop onto the bonnet, then the roof. The ball can't roll under it.</summary>
+            public void ParkedCar(float x, Color color, float groundTop = 0f)
+            {
+                Block("CarBody", new Vector2(x, groundTop + 0.575f), new Vector2(2.8f, 0.75f), color, GroundMat);
+                Block("CarCabin", new Vector2(x - 0.2f, groundTop + 1.2f), new Vector2(1.5f, 0.5f), Color.Lerp(color, Color.white, 0.35f), GroundMat);
+                Visual(root, "WheelL", Circle, new Vector2(x - 0.9f, groundTop + 0.22f), new Vector2(0.44f, 0.44f), new Color(0.15f, 0.15f, 0.15f), 1);
+                Visual(root, "WheelR", Circle, new Vector2(x + 0.9f, groundTop + 0.22f), new Vector2(0.44f, 0.44f), new Color(0.15f, 0.15f, 0.15f), 1);
+            }
+
+            /// <summary>Someone walking between minX and maxX. Solid to the ball and the kid.</summary>
+            public void Pedestrian(float minX, float maxX, Color coat, float groundTop = 0f, float speed = 1.1f)
+            {
+                var go = new GameObject("Pedestrian");
+                go.transform.SetParent(root, false);
+                go.transform.position = new Vector2(minX, groundTop + 0.8f);
+                var body = go.AddComponent<Rigidbody2D>();
+                body.bodyType = RigidbodyType2D.Kinematic;
+                var col = go.AddComponent<CapsuleCollider2D>();
+                col.size = new Vector2(0.5f, 1.6f);
+
+                var visual = new GameObject("Visual").transform;
+                visual.SetParent(go.transform, false);
+                Visual(visual, "Coat", Square, new Vector2(0f, -0.1f), new Vector2(0.55f, 1.2f), coat, 8);
+                Visual(visual, "Head", Circle, new Vector2(0f, 0.65f), new Vector2(0.4f, 0.4f), SkinColor, 9);
+                Visual(visual, "Eye", Circle, new Vector2(0.1f, 0.68f), new Vector2(0.06f, 0.06f), Color.black, 10);
+
+                var p = go.AddComponent<Hazards.Pedestrian>();
+                p.minX = minX;
+                p.maxX = maxX;
+                p.walkSpeed = speed;
+                p.visual = visual;
+            }
+
+            /// <summary>A zebra crossing from fromX to toX with a pedestrian light and passing traffic.</summary>
+            public void Crossing(float fromX, float toX, float phaseOffset = 0f, float groundTop = 0f)
+            {
+                float width = toX - fromX;
+                float center = (fromX + toX) * 0.5f;
+
+                Decor("Road", new Vector2(center, groundTop - 0.06f), new Vector2(width, 0.12f), new Color(0.25f, 0.25f, 0.28f)).GetComponent<SpriteRenderer>().sortingOrder = 1;
+                for (float sx = fromX + 0.3f; sx < toX - 0.2f; sx += 0.8f)
+                    Decor("Zebra", new Vector2(sx + 0.2f, groundTop - 0.06f), new Vector2(0.4f, 0.1f), Color.white).GetComponent<SpriteRenderer>().sortingOrder = 2;
+
+                var go = new GameObject("Crossing");
+                go.transform.SetParent(root, false);
+                go.transform.position = new Vector2(center, groundTop + 1.25f);
+                var trigger = go.AddComponent<BoxCollider2D>();
+                trigger.isTrigger = true;
+                trigger.size = new Vector2(width, 2.5f);
+                var crossing = go.AddComponent<Hazards.Crossing>();
+                crossing.phaseOffset = phaseOffset;
+
+                // Light on a pole before the crossing.
+                float poleX = fromX - 0.7f;
+                Decor("LightPole", new Vector2(poleX, groundTop + 1.3f), new Vector2(0.12f, 2.6f), new Color(0.3f, 0.3f, 0.32f));
+                Decor("LightBox", new Vector2(poleX, groundTop + 2.75f), new Vector2(0.45f, 1.2f), new Color(0.15f, 0.15f, 0.17f)).GetComponent<SpriteRenderer>().sortingOrder = 0;
+                crossing.redLamp = Lamp(go.transform, new Vector2(poleX, groundTop + 3.15f));
+                crossing.amberLamp = Lamp(go.transform, new Vector2(poleX, groundTop + 2.75f));
+                crossing.greenLamp = Lamp(go.transform, new Vector2(poleX, groundTop + 2.35f));
+
+                var car = new GameObject("Car").transform;
+                car.SetParent(go.transform, false);
+                car.localPosition = new Vector3(0f, -0.65f, 0f);
+                Visual(car, "Body", Square, new Vector2(0f, 0f), new Vector2(2.4f, 0.7f), new Color(0.85f, 0.25f, 0.25f), 15);
+                Visual(car, "Cabin", Square, new Vector2(0.1f, 0.55f), new Vector2(1.3f, 0.45f), new Color(0.95f, 0.6f, 0.55f), 15);
+                Visual(car, "WheelL", Circle, new Vector2(-0.8f, -0.4f), new Vector2(0.4f, 0.4f), new Color(0.12f, 0.12f, 0.12f), 16);
+                Visual(car, "WheelR", Circle, new Vector2(0.8f, -0.4f), new Vector2(0.4f, 0.4f), new Color(0.12f, 0.12f, 0.12f), 16);
+                crossing.car = car;
+                crossing.carTravel = width + 6f;
+            }
+
+            SpriteRenderer Lamp(Transform parent, Vector2 position)
+            {
+                var go = new GameObject("Lamp");
+                go.transform.SetParent(parent, false);
+                go.transform.position = position;
+                go.transform.localScale = new Vector3(0.3f, 0.3f, 1f);
+                var sr = go.AddComponent<SpriteRenderer>();
+                sr.sprite = Circle;
+                sr.sortingOrder = 1;
+                return sr;
+            }
+
+            /// <summary>A playful dog that patrols minX..maxX and noses low balls back.</summary>
+            public void Dog(float minX, float maxX, Color fur, float groundTop = 0f)
+            {
+                var go = new GameObject("Dog");
+                go.transform.SetParent(root, false);
+                go.transform.position = new Vector2((minX + maxX) * 0.5f, groundTop + 0.3f);
+                var visual = new GameObject("Visual").transform;
+                visual.SetParent(go.transform, false);
+                Visual(visual, "Body", Square, new Vector2(0f, 0f), new Vector2(0.8f, 0.38f), fur, 8);
+                Visual(visual, "Head", Circle, new Vector2(0.45f, 0.18f), new Vector2(0.36f, 0.36f), fur, 9);
+                Visual(visual, "Ear", Square, new Vector2(0.38f, 0.32f), new Vector2(0.12f, 0.2f), Color.Lerp(fur, Color.black, 0.4f), 10);
+                Visual(visual, "Tail", Square, new Vector2(-0.48f, 0.15f), new Vector2(0.25f, 0.08f), fur, 8);
+                Visual(visual, "LegF", Square, new Vector2(0.25f, -0.22f), new Vector2(0.1f, 0.2f), fur, 7);
+                Visual(visual, "LegB", Square, new Vector2(-0.25f, -0.22f), new Vector2(0.1f, 0.2f), fur, 7);
+                var dog = go.AddComponent<Hazards.Dog>();
+                dog.minX = minX;
+                dog.maxX = maxX;
+                dog.visual = visual;
+            }
+
+            /// <summary>A puddle: the ball drags, the kid wades.</summary>
+            public void Puddle(float fromX, float toX, float groundTop = 0f)
+            {
+                SlowArea("Puddle", fromX, toX, groundTop, new Color(0.45f, 0.65f, 0.9f, 0.85f), 2.5f, 0.6f);
+            }
+
+            /// <summary>Soft sand: gentler than a puddle but longer.</summary>
+            public void Sand(float fromX, float toX, float groundTop = 0f)
+            {
+                SlowArea("Sand", fromX, toX, groundTop, new Color(0.93f, 0.84f, 0.6f), 1.4f, 0.75f);
+            }
+
+            void SlowArea(string name, float fromX, float toX, float groundTop, Color color, float drag, float kidMultiplier)
+            {
+                float center = (fromX + toX) * 0.5f;
+                var surface = Decor(name + "Surface", new Vector2(center, groundTop - 0.04f), new Vector2(toX - fromX, 0.14f), color);
+                surface.GetComponent<SpriteRenderer>().sortingOrder = 2;
+
+                var go = new GameObject(name);
+                go.transform.SetParent(root, false);
+                go.transform.position = new Vector2(center, groundTop + 0.3f);
+                var trigger = go.AddComponent<BoxCollider2D>();
+                trigger.isTrigger = true;
+                trigger.size = new Vector2(toX - fromX, 0.6f);
+                var zone = go.AddComponent<SlowZone>();
+                zone.surfaceName = name;
+                zone.ballDrag = drag;
+                zone.kidSpeedMultiplier = kidMultiplier;
+            }
+
+            /// <summary>A wind area. Use a negative x for a headwind, positive y for an updraft.</summary>
+            public void Wind(float fromX, float toX, float bottom, float top, Vector2 acceleration, float gustPeriod = 0f)
+            {
+                var go = new GameObject("Wind");
+                go.transform.SetParent(root, false);
+                go.transform.position = new Vector2((fromX + toX) * 0.5f, (bottom + top) * 0.5f);
+                var trigger = go.AddComponent<BoxCollider2D>();
+                trigger.isTrigger = true;
+                trigger.size = new Vector2(toX - fromX, top - bottom);
+                var wind = go.AddComponent<WindArea>();
+                wind.ballAcceleration = acceleration;
+                wind.gustPeriod = gustPeriod;
+
+                var rng = new System.Random(Mathf.RoundToInt(fromX * 100f));
+                var streaks = new List<Transform>();
+                bool vertical = Mathf.Abs(acceleration.y) > Mathf.Abs(acceleration.x);
+                for (int i = 0; i < 10; i++)
+                {
+                    float sx = Mathf.Lerp(fromX, toX, (float)rng.NextDouble());
+                    float sy = Mathf.Lerp(bottom, top, (float)rng.NextDouble());
+                    Vector2 size = vertical ? new Vector2(0.04f, 0.6f) : new Vector2(0.6f, 0.04f);
+                    var streak = Decor("Streak", new Vector2(sx, sy), size, new Color(1f, 1f, 1f, 0.55f));
+                    streak.GetComponent<SpriteRenderer>().sortingOrder = 30;
+                    streaks.Add(streak.transform);
+                }
+                wind.streaks = streaks.ToArray();
+            }
+
+            /// <summary>A platform that slides by <paramref name="travel"/> and back.</summary>
+            public void MovingPlatform(Vector2 center, float width, Vector2 travel, float speed = 1.5f)
+            {
+                var go = Block("MovingPlatform", center, new Vector2(width, 0.35f), new Color(0.55f, 0.5f, 0.65f), GroundMat);
+                var body = go.AddComponent<Rigidbody2D>();
+                body.bodyType = RigidbodyType2D.Kinematic;
+                var mp = go.AddComponent<Hazards.MovingPlatform>();
+                mp.travel = travel;
+                mp.speed = speed;
+            }
+
+            /// <summary>A gate blocking the path, opened by kicking the ball at a switch.</summary>
+            public void SwitchAndGate(Vector2 switchPosition, float gateX, float gateHeight = 2.4f, float groundTop = 0f)
+            {
+                var gateGo = Block("Gate", new Vector2(gateX, groundTop + gateHeight * 0.5f), new Vector2(0.35f, gateHeight), new Color(0.45f, 0.35f, 0.55f), GroundMat);
+                var gate = gateGo.AddComponent<Gate>();
+                gate.openHeight = gateHeight + 0.2f;
+
+                var sw = Block("Switch", switchPosition, new Vector2(0.55f, 0.55f), new Color(0.3f, 0.3f, 0.32f), GroundMat);
+                var indicator = new GameObject("Indicator");
+                indicator.transform.SetParent(sw.transform, false);
+                indicator.transform.localScale = new Vector3(0.6f, 0.6f, 1f);
+                var sr = indicator.AddComponent<SpriteRenderer>();
+                sr.sprite = Circle;
+                sr.sortingOrder = 3;
+                var ballSwitch = sw.AddComponent<BallSwitch>();
+                ballSwitch.gates = new[] { gate };
+                ballSwitch.indicator = sr;
+                Decor("SwitchPost", new Vector2(switchPosition.x, (groundTop + switchPosition.y) * 0.5f),
+                    new Vector2(0.1f, switchPosition.y - groundTop), ObstacleColor);
+            }
+
+            /// <summary>A springy pad flush with the ground that launches the kid and the ball upward.</summary>
+            public void Springboard(float x, float groundTop = 0f)
+            {
+                var go = new GameObject("Springboard");
+                go.transform.SetParent(root, false);
+                go.transform.position = new Vector2(x, groundTop + 0.2f);
+                var col = go.AddComponent<BoxCollider2D>();
+                col.isTrigger = true;
+                col.size = new Vector2(1.2f, 0.4f);
+                var visual = new GameObject("Visual").transform;
+                visual.SetParent(go.transform, false);
+                visual.localPosition = new Vector3(0f, -0.14f, 0f);
+                Visual(visual, "Board", Square, Vector2.zero, new Vector2(1.3f, 0.14f), BouncyColor, 3);
+                go.AddComponent<Hazards.Springboard>().visual = visual;
             }
 
             /// <summary>Three crates in a little pyramid standing on <paramref name="groundTop"/>.</summary>

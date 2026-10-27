@@ -12,14 +12,14 @@ namespace DribbleToSchool.EditorTools
     /// <summary>
     /// Generates every grey-box scene, level definition and the level catalog.
     /// Runs automatically when the project opens and the generated content is
-    /// missing or older than <see cref="Version"/>. Tuning assets and existing
-    /// level definitions are kept; generated scenes are rebuilt.
+    /// missing or older than <see cref="Version"/>. Tuning assets are kept;
+    /// generated scenes and level definitions are rebuilt from the Levels table.
     /// </summary>
     [InitializeOnLoad]
     public static class GeneratedContent
     {
         /// <summary>Bump when layouts or the scene rig change so scenes regenerate.</summary>
-        public const int Version = 2;
+        public const int Version = 3;
 
         const string ScenesDir = LevelBuildKit.Root + "/Scenes";
         const string LevelsDir = LevelBuildKit.Root + "/Levels";
@@ -29,14 +29,15 @@ namespace DribbleToSchool.EditorTools
 
         struct LevelSpec
         {
+            public int chapter;
             public string id, name, scene;
             public float bell;
             public int streak;
             public Action<TrackBuilder> layout;
 
-            public LevelSpec(string id, string name, string scene, float bell, int streak, Action<TrackBuilder> layout)
+            public LevelSpec(int chapter, string id, string name, string scene, float bell, int streak, Action<TrackBuilder> layout)
             {
-                this.id = id; this.name = name; this.scene = scene;
+                this.chapter = chapter; this.id = id; this.name = name; this.scene = scene;
                 this.bell = bell; this.streak = streak; this.layout = layout;
             }
 
@@ -45,9 +46,18 @@ namespace DribbleToSchool.EditorTools
 
         static readonly LevelSpec[] Levels =
         {
-            new LevelSpec("L01", "Out the Door", "L01_OutTheDoor", 50f, 3, GreyboxLevels.OutTheDoor),
-            new LevelSpec("L02", "Corner Shop", "L02_CornerShop", 65f, 4, GreyboxLevels.CornerShop),
-            new LevelSpec("L03", "Up the Hill", "L03_UpTheHill", 80f, 5, GreyboxLevels.UpTheHill),
+            // Chapter 1: Home Street
+            new LevelSpec(1, "L01", "Out the Door", "L01_OutTheDoor", 50f, 3, GreyboxLevels.OutTheDoor),
+            new LevelSpec(1, "L02", "Parked Cars", "L02_ParkedCars", 55f, 3, GreyboxLevels.ParkedCars),
+            new LevelSpec(1, "L03", "Up the Hill", "L03_UpTheHill", 80f, 4, GreyboxLevels.UpTheHill),
+            new LevelSpec(1, "L04", "Garden Gate", "L04_GardenGate", 60f, 3, GreyboxLevels.GardenGate),
+            new LevelSpec(1, "L05", "Puddle Lane", "L05_PuddleLane", 80f, 4, GreyboxLevels.PuddleLane),
+            // Chapter 2: Market and Crossings
+            new LevelSpec(2, "L06", "Market Morning", "L06_MarketMorning", 60f, 4, GreyboxLevels.MarketMorning),
+            new LevelSpec(2, "L07", "First Crossing", "L07_FirstCrossing", 70f, 3, GreyboxLevels.FirstCrossing),
+            new LevelSpec(2, "L08", "Corner Shop", "L08_CornerShop", 70f, 4, GreyboxLevels.CornerShop),
+            new LevelSpec(2, "L09", "Fruit Stalls", "L09_FruitStalls", 75f, 5, GreyboxLevels.FruitStalls),
+            new LevelSpec(2, "L10", "Rush Hour", "L10_RushHour", 95f, 6, GreyboxLevels.RushHour),
         };
 
         static GeneratedContent()
@@ -93,6 +103,8 @@ namespace DribbleToSchool.EditorTools
             EditorUtility.SetDirty(catalog);
             AssetDatabase.SaveAssets();
 
+            DeleteStaleScenes();
+
             var buildScenes = new List<EditorBuildSettingsScene>();
             for (int i = 0; i < Levels.Length; i++)
             {
@@ -118,17 +130,29 @@ namespace DribbleToSchool.EditorTools
             if (def == null)
             {
                 def = ScriptableObject.CreateInstance<LevelDefinition>();
-                def.bellTime = spec.bell;
-                def.perfectStreakTarget = spec.streak;
                 AssetDatabase.CreateAsset(def, path);
             }
-            // Identity always follows the generator; balance values stay as you tuned them.
+            // The Levels table above is the single source of truth; tune values there.
+            def.bellTime = spec.bell;
+            def.perfectStreakTarget = spec.streak;
             def.levelId = spec.id;
             def.displayName = spec.name;
             def.sceneName = spec.scene;
-            def.chapter = 1;
+            def.chapter = spec.chapter;
             EditorUtility.SetDirty(def);
             return def;
+        }
+
+        /// <summary>Remove generated level scenes that are no longer in the Levels table.</summary>
+        static void DeleteStaleScenes()
+        {
+            var keep = new HashSet<string>();
+            foreach (var spec in Levels) keep.Add(spec.ScenePath);
+            foreach (string guid in AssetDatabase.FindAssets("t:Scene", new[] { ScenesDir + "/Levels" }))
+            {
+                string path = AssetDatabase.GUIDToAssetPath(guid);
+                if (!keep.Contains(path)) AssetDatabase.DeleteAsset(path);
+            }
         }
 
         static bool AllScenesExist()

@@ -26,7 +26,10 @@ namespace DribbleToSchool.Core
             Rigidbody2D rb = other.attachedRigidbody;
             if (rb == null) return;
             if (rb.GetComponent<BallController>() != null || rb.GetComponent<KidController>() != null)
+            {
+                if (message == "Splash!") GameEvents.Raise(GameEventType.Splash, rb.position);
                 level.LoseBall(message);
+            }
         }
     }
 }

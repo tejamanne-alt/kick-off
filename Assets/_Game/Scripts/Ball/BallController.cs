@@ -1,4 +1,5 @@
 using System;
+using DribbleToSchool.Core;
 using DribbleToSchool.InputHandling;
 using DribbleToSchool.Player;
 using DribbleToSchool.Tuning;
@@ -151,6 +152,7 @@ namespace DribbleToSchool.Ball
                     Body.linearVelocity = v;
                     Body.angularVelocity *= tuning.trapDamping;
                     nextTouchAllowedTime = Time.time + tuning.touchCooldown;
+                    GameEvents.Raise(GameEventType.Trap, Body.position, 0.4f);
                 }
                 return;
             }
@@ -161,6 +163,7 @@ namespace DribbleToSchool.Ball
             float lead = tuning.dribbleLeadSpeed * Random.Range(1f - tuning.autoTouchVariance, 1f + tuning.autoTouchVariance);
             ApplyTouch(Mathf.Max(kidSpeed, 0f) + lead, tuning.touchLift);
             PerfectStreak = 0;
+            GameEvents.Raise(GameEventType.Touch, Body.position, 0.5f);
         }
 
         void TryManualTouch()
@@ -179,6 +182,7 @@ namespace DribbleToSchool.Ball
             {
                 ApplyTouch(kidSpeed * tuning.juggleCarry, tuning.juggleUpSpeed);
                 JuggleCount++;
+                GameEvents.Raise(GameEventType.Juggle, Body.position, Mathf.Clamp01(JuggleCount / 10f));
                 if (Juggled != null) Juggled(JuggleCount);
                 return;
             }
@@ -192,6 +196,7 @@ namespace DribbleToSchool.Ball
             {
                 ApplyTouch(kidSpeed + tuning.dribbleLeadSpeed, tuning.perfectTouchLift);
                 PerfectStreak++;
+                GameEvents.Raise(GameEventType.PerfectTouch, Body.position, Mathf.Clamp01(PerfectStreak / 8f));
                 if (PerfectTouch != null) PerfectTouch(PerfectStreak);
             }
             else
@@ -199,6 +204,7 @@ namespace DribbleToSchool.Ball
                 float lead = tuning.dribbleLeadSpeed * Random.Range(1f - tuning.autoTouchVariance, 1f + tuning.autoTouchVariance);
                 ApplyTouch(kidSpeed + lead, tuning.touchLift);
                 PerfectStreak = 0;
+                GameEvents.Raise(GameEventType.Touch, Body.position, 0.6f);
             }
         }
 
@@ -220,6 +226,7 @@ namespace DribbleToSchool.Ball
             Body.angularVelocity = spinDirection * tuning.kickSpin * velocity.magnitude;
             nextTouchAllowedTime = Time.time + tuning.postKickNoTouchTime;
             PerfectStreak = 0;
+            GameEvents.Raise(GameEventType.Kick, Body.position, velocity.magnitude / Mathf.Max(tuning.maxKickSpeed, 0.01f));
             if (Kicked != null) Kicked();
         }
 
