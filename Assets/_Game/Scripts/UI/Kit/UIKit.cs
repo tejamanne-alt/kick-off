@@ -39,7 +39,8 @@ namespace DribbleToSchool.UI.Kit
             var go = new GameObject("EventSystem");
             go.AddComponent<EventSystem>();
 #if ENABLE_INPUT_SYSTEM
-            go.AddComponent<InputSystemUIInputModule>();
+            // Added at runtime, the module has no UI actions until we give it the defaults.
+            go.AddComponent<InputSystemUIInputModule>().AssignDefaultActions();
 #else
             go.AddComponent<StandaloneInputModule>();
 #endif
