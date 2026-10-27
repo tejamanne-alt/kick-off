@@ -70,6 +70,7 @@ namespace DribbleToSchool.FrontEnd
         void Start()
         {
             Application.targetFrameRate = 60;
+            Screen.sleepTimeout = SleepTimeout.SystemSetting;   // menus may dim; levels keep the screen on
             TimeControl.ResetTime();
 
             var canvas = UIKit.CreateCanvas("FrontEndCanvas", 0);
@@ -116,6 +117,8 @@ namespace DribbleToSchool.FrontEnd
             screens[FrontEndScreenId.Album] = new AlbumScreen();
             Show(current);
         }
+
+        public RectTransform CanvasRoot { get { return canvasRoot; } }
 
         public void OpenSettings()
         {

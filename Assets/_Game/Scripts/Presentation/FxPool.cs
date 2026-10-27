@@ -1,3 +1,4 @@
+using Unity.Profiling;
 using UnityEngine;
 
 namespace DribbleToSchool.Presentation
@@ -18,6 +19,8 @@ namespace DribbleToSchool.Presentation
             public float gravity, drag, life, maxLife, size0, size1, rotation, spin;
             public Color color;
         }
+
+        static readonly ProfilerMarker UpdateMarker = new ProfilerMarker("DTS.FxPool.Update");
 
         Particle[] particles;
         SpriteRenderer[] renderers;
@@ -70,7 +73,11 @@ namespace DribbleToSchool.Presentation
 
         void Update()
         {
-            float dt = Time.deltaTime;
+            using (UpdateMarker.Auto()) Step(Time.deltaTime);
+        }
+
+        void Step(float dt)
+        {
             for (int i = 0; i < capacity; i++)
             {
                 if (!particles[i].alive) continue;

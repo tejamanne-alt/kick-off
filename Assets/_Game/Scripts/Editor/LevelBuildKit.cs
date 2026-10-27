@@ -387,16 +387,6 @@ namespace DribbleToSchool.EditorTools
             nearSr.size = new Vector2(ns.y - ns.x, 1.5f);
         }
 
-        public static void ConfigurePlayerSettings()
-        {
-            PlayerSettings.productName = "Dribble To School";
-            PlayerSettings.defaultInterfaceOrientation = UIOrientation.AutoRotation;
-            PlayerSettings.allowedAutorotateToLandscapeLeft = true;
-            PlayerSettings.allowedAutorotateToLandscapeRight = true;
-            PlayerSettings.allowedAutorotateToPortrait = false;
-            PlayerSettings.allowedAutorotateToPortraitUpsideDown = false;
-        }
-
         static GameObject Visual(Transform parent, string name, Sprite sprite, Vector2 localPos, Vector2 size, Color color, int order)
         {
             var go = new GameObject(name);

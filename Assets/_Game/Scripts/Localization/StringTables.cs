@@ -130,6 +130,12 @@ namespace DribbleToSchool.Localization
                 { "level.C01", "Keepy-Uppy" }, { "level.C02", "Window Shopping" }, { "level.C03", "Beach Slalom" },
                 { "level.C04", "Site Targets" }, { "level.C05", "Juggle Champion" },
                 { "level.test", "Test Track" },
+                { "unlock.title", "Unlock the full game" },
+                { "unlock.body", "Keep dribbling all the way to school!\n\n4 more chapters, 18 more levels, 4 skill challenges\nand all the stickers to find.\n\nOne purchase. No ads, ever." },
+                { "unlock.buy", "Unlock for {0}" }, { "unlock.cta", "Unlock full game" },
+                { "unlock.restore", "Restore purchases" }, { "unlock.cancelled", "Purchase cancelled." },
+                { "unlock.failed", "The store isn't available right now. Please try again later." },
+                { "unlock.nothing", "No previous purchase found." },
             };
         }
 
@@ -236,6 +242,12 @@ namespace DribbleToSchool.Localization
                 { "level.C01", "Toques" }, { "level.C02", "De escaparates" }, { "level.C03", "Eslalon en la playa" },
                 { "level.C04", "Dianas en la obra" }, { "level.C05", "Campeón de toques" },
                 { "level.test", "Pista de prueba" },
+                { "unlock.title", "Desbloquea el juego completo" },
+                { "unlock.body", "¡Sigue regateando hasta el cole!\n\n4 capítulos más, 18 niveles, 4 retos\ny todas las pegatinas.\n\nUn solo pago. Sin anuncios." },
+                { "unlock.buy", "Desbloquear por {0}" }, { "unlock.cta", "Desbloquear juego completo" },
+                { "unlock.restore", "Restaurar compras" }, { "unlock.cancelled", "Compra cancelada." },
+                { "unlock.failed", "La tienda no está disponible. Inténtalo más tarde." },
+                { "unlock.nothing", "No hay compras anteriores." },
             };
         }
     }

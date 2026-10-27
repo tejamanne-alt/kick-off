@@ -184,7 +184,7 @@ namespace DribbleToSchool.EditorTools
             buildScenes.Add(new EditorBuildSettingsScene(TestTrackScene, true));
 
             EditorBuildSettings.scenes = buildScenes.ToArray();
-            LevelBuildKit.ConfigurePlayerSettings();
+            BuildScripts.ApplyPlayerSettings();
             WriteVersion();
             AssetDatabase.SaveAssets();
 

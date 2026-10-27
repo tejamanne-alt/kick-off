@@ -598,6 +598,78 @@ namespace DribbleToSchool.Art
             return c;
         }
 
+        // ===================== App icon =====================
+
+        /// <summary>
+        /// Square app icon (no transparency, stores add their own mask): a warm
+        /// sunrise, rolling hill, a big inked ball mid-bounce with speed lines,
+        /// and a little school flag.
+        /// </summary>
+        public static PixelCanvas AppIcon(int size = 512)
+        {
+            var c = new PixelCanvas(size, size);
+            float s = size / 512f;
+            Color top = new Color(0.98f, 0.7f, 0.42f), bottom = new Color(1f, 0.9f, 0.62f);
+            for (int y = 0; y < size; y++)
+            {
+                Color col = Color.Lerp(bottom, top, y / (float)size);
+                for (int x = 0; x < size; x++) c.Set(x, y, col);
+            }
+            c.FillCircle(380 * s, 380 * s, 90 * s, new Color(1f, 0.95f, 0.72f));   // sun
+            c.FillBelow(x => (120 + Mathf.Sin(x / size * Mathf.PI * 1.4f + 0.4f) * 40) * s, new Color(0.47f, 0.74f, 0.42f));
+            c.FillBelow(x => (70 + Mathf.Sin(x / size * Mathf.PI * 2f + 2f) * 18) * s, new Color(0.38f, 0.64f, 0.36f));
+
+            // School flag on a pole (right)
+            c.FillRect(400 * s, 120 * s, 408 * s, 300 * s, new Color(0.35f, 0.28f, 0.24f));
+            c.FillPolygon(new[] { new Vector2(408 * s, 300 * s), new Vector2(470 * s, 280 * s), new Vector2(408 * s, 258 * s) }, new Color(0.9f, 0.35f, 0.35f));
+
+            c.Grain(0.08f, 21, 0.02f);
+
+            // Speed lines
+            for (int i = 0; i < 3; i++)
+                c.Line(new Vector2((50 + i * 14) * s, (318 - i * 46) * s), new Vector2((150 + i * 14) * s, (318 - i * 46) * s), 14 * s, new Color(1f, 1f, 1f, 0.9f));
+
+            // The ball on its own layer so it gets a proper ink outline.
+            var layer = new PixelCanvas(size, size);
+            Vector2 ball = new Vector2(262 * s, 262 * s);
+            float r = 125 * s;
+            System.Func<float, float, bool> inBall = (x, y) => (x - ball.x) * (x - ball.x) + (y - ball.y) * (y - ball.y) <= r * r;
+            layer.FillCircle(ball.x, ball.y, r, Color.white);
+            layer.Fill((x, y) => inBall(x, y) && InPentagon(x, y, ball.x, ball.y, r * 0.3f, 15f) ? 1f : 0f, Ink);
+            for (int k = 0; k < 5; k++)
+            {
+                float ang = Mathf.Deg2Rad * (90 + 72 * k + 15);
+                float px = ball.x + Mathf.Cos(ang) * r * 0.86f, py = ball.y + Mathf.Sin(ang) * r * 0.86f;
+                layer.Fill((x, y) => inBall(x, y) && InPentagon(x, y, px, py, r * 0.27f, 15f + 36f) ? 1f : 0f, Ink);
+            }
+            // Seams from the centre patch to the outer ones.
+            for (int k = 0; k < 5; k++)
+            {
+                float ang = Mathf.Deg2Rad * (90 + 72 * k + 51);
+                layer.Line(ball + new Vector2(Mathf.Cos(ang), Mathf.Sin(ang)) * r * 0.32f,
+                           ball + new Vector2(Mathf.Cos(ang), Mathf.Sin(ang)) * r * 0.62f, 4f * s, new Color(0.55f, 0.55f, 0.6f));
+            }
+            layer.Shade((x, y) =>
+            {
+                float dx = (x - ball.x) / r, dy = (y - ball.y) / r;
+                return Mathf.Clamp01((dx - dy) * 0.45f) * 0.4f;
+            }, new Color(0.55f, 0.6f, 0.75f));
+            layer.Shade((x, y) => Mathf.Clamp01(1f - Vector2.Distance(new Vector2(x, y), ball + new Vector2(-0.4f, 0.45f) * r) / (r * 0.35f)) * 0.6f, Color.white);
+            layer.Ink(Ink, 7f * s, 4);
+            c.Stamp(layer);
+            return c;
+        }
+
+        /// <summary>Point inside a regular pentagon centred at (cx, cy), rotated by <paramref name="rotationDeg"/>.</summary>
+        static bool InPentagon(float x, float y, float cx, float cy, float radius, float rotationDeg)
+        {
+            float dx = x - cx, dy = y - cy;
+            float ang = Mathf.Atan2(dy, dx) - rotationDeg * Mathf.Deg2Rad;
+            float seg = Mathf.PI * 2f / 5f;
+            float local = Mathf.Repeat(ang, seg) - seg * 0.5f;
+            return Mathf.Sqrt(dx * dx + dy * dy) * Mathf.Cos(local) < radius * Mathf.Cos(seg * 0.5f);
+        }
+
         // ===================== Particles & small things =====================
 
         public static PixelCanvas Puff()

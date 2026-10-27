@@ -11,6 +11,7 @@ namespace DribbleToSchool.Progression
         /// </summary>
         public static bool IsUnlocked(LevelCatalog catalog, LevelDefinition level)
         {
+            if (!Store.Monetization.IsChapterUnlocked(level.chapter)) return false;
             if (level.isChallenge)
             {
                 foreach (var l in catalog.LevelsInChapter(level.chapter))

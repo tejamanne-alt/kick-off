@@ -49,7 +49,12 @@ namespace DribbleToSchool.UI
 
             // Bottom row: reset (with confirmation) and done.
             var reset = UIKit.Button(card.transform, "Reset", Loc.T("settings.reset"), UITheme.Red, () => ConfirmReset(canvas), 34);
-            UIKit.Place((RectTransform)reset.transform, new Vector2(0.27f, 0f), new Vector2(0f, 90f), new Vector2(380f, 100f));
+            UIKit.Place((RectTransform)reset.transform, new Vector2(0.27f, 0f), new Vector2(-110f, 90f), new Vector2(330f, 100f));
+            if (Store.Monetization.RequireUnlock)
+            {
+                var restore = UIKit.Button(card.transform, "Restore", Loc.T("unlock.restore"), UITheme.Paper, () => Store.StoreService.Restore(null), 30, UITheme.Ink);
+                UIKit.Place((RectTransform)restore.transform, new Vector2(0.27f, 0f), new Vector2(210f, 90f), new Vector2(280f, 100f));
+            }
             var done = UIKit.Button(card.transform, "Done", Loc.T("settings.done"), UITheme.Green, () =>
             {
                 Object.Destroy(root);

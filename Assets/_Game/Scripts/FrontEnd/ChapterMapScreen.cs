@@ -92,6 +92,7 @@ namespace DribbleToSchool.FrontEnd
 
             Color chapterColor = info != null ? info.color : UITheme.Accent;
             var next = LevelUnlocks.NextToPlay(catalog);
+            if (!Store.Monetization.IsChapterUnlocked(number)) ShowChapterLock(number);
             var positions = new List<Vector2>();
             // Story levels wind along the path; challenges sit beside it, top right.
             var story = levels.FindAll(l => !l.isChallenge);
@@ -120,6 +121,17 @@ namespace DribbleToSchool.FrontEnd
 
             for (int i = 0; i < levels.Count; i++)
                 BuildNode(levels[i], positions[i], chapterColor, levels[i] == next, i);
+            if (!Store.Monetization.IsChapterUnlocked(number)) pathLayer.Find("Unlock").SetAsLastSibling();
+        }
+
+        /// <summary>Paid chapters: an unlock button floats above the (locked) path.</summary>
+        void ShowChapterLock(int number)
+        {
+            var unlock = UIKit.Button(pathLayer, "Unlock", Loc.T("unlock.cta"), UITheme.Accent, () =>
+                UI.UnlockPanel.Open(Controller.CanvasRoot, () => ShowChapter(number)), 44);
+            UIKit.Place((RectTransform)unlock.transform, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(620f, 130f));
+            unlock.transform.SetAsLastSibling();
+            unlock.gameObject.AddComponent<UIPulse>().amount = 0.03f;
         }
 
         void BuildNode(LevelDefinition def, Vector2 anchor, Color color, bool isNext, int index)

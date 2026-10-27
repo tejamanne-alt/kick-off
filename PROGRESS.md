@@ -1,6 +1,6 @@
 # Build Progress
 
-This file is the resume point. A new session should read it first, then continue with the first phase that isn't done.
+This file is the resume point. A new session should read it first. All eight phases are done; next comes on-device playtesting and tuning (see "After Phase 8").
 
 ## Status
 
@@ -13,7 +13,7 @@ This file is the resume point. A new session should read it first, then continue
 | 5 | Chapters 3-5 (L11-L23) + ball skill challenges | Done |
 | 6 | Procedural storybook art, kid animation, parallax, FX, synthesized audio, haptics | Done |
 | 7 | uGUI HUD/menus, settings, tutorial, localization, accessibility | Done |
-| 8 | Store service + full-game unlock, analytics, perf, Android/iOS build setup | Next |
+| 8 | Store service + full-game unlock, analytics, perf, Android/iOS build setup | Done |
 
 ## Conventions (keep these)
 
@@ -92,3 +92,17 @@ This file is the resume point. A new session should read it first, then continue
 - Localization: every UI string is shipped in English and Spanish, with device-language detection. Changing language rebuilds the open screens.
 - Tutorial: `Tutorial/TutorialHint.cs` triggers show a once-per-player hint card the first time each mechanic appears. There are 18 hints, placed in L01, L04-L07, L09, L12, L13, L15-L17, L19-L21 and C01.
 - Accessibility: large touch targets, left-handed mirroring, colour-blind trajectory colours, and toggles for screen shake, vibration and the bell timer.
+
+## Phase 8 summary
+
+- Business model (Option A): `Store/Monetization.cs`, `IStoreService`, `MockStore` (dev purchases succeed; release builds report unavailable), and `UnityIapStore` (IAP 4.x, compiled only with the `DTS_UNITY_IAP` define). The unlock panel shows the localized price, Buy and Restore. Chapters after chapter 1 are gated only when `RequireUnlock` is on (off by default).
+- Analytics: `Analytics/AnalyticsService.cs` (local JSON-lines file plus the console in dev; add sinks for a backend) and `AnalyticsTracker` covering app_open, level_start, level_complete, level_quit, ball_lost (with x position, for balancing) and purchase.
+- Performance: the HUD only rebuilds text when values change; profiler markers on FX and music upload; menus let the screen sleep while levels keep it awake; pooled particles and allocation-free physics queries throughout.
+- Build: `Editor/BuildScripts.cs` applies store player settings, bakes the procedural 1024 px icon, signs from environment variables, and offers menu and CI builds (AAB, dev APK, iOS). The iOS privacy manifest is at `Assets/Plugins/iOS/PrivacyInfo.xcprivacy`.
+- `docs/RELEASE.md` has the full release guide, store listing copy, privacy answers and a checklist.
+
+## After Phase 8 (next steps)
+
+1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`.
+2. Playtest on devices and tune the feel (tuning assets plus the Tune panel), then the bell times and streak targets (the level table).
+3. Optional: swap `CameraFollow2D` for Cinemachine, and add more languages to `StringTables`.

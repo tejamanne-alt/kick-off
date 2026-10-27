@@ -234,6 +234,18 @@ namespace DribbleToSchool.Art
             }
         }
 
+        /// <summary>Alpha-composite another canvas of the same size on top of this one.</summary>
+        public void Stamp(PixelCanvas layer)
+        {
+            int w = Math.Min(Width, layer.Width), h = Math.Min(Height, layer.Height);
+            for (int y = 0; y < h; y++)
+                for (int x = 0; x < w; x++)
+                {
+                    Color c = layer.px[y * layer.Width + x];
+                    if (c.a > 0f) Blend(x, y, new Color(c.r, c.g, c.b, 1f), c.a);
+                }
+        }
+
         /// <summary>Make the left and right edges blend so the texture tiles horizontally.</summary>
         public void MakeTileableX(int blend)
         {

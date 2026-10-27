@@ -36,6 +36,10 @@ namespace DribbleToSchool.UI
         RectTransform pauseRect, tuneRect;
         GameObject pauseModal, resultsModal;
         float toastUntil, hintUntil, goUntil;
+
+        // Text is only rebuilt when the value behind it changes (no per-frame garbage).
+        int shownTenths = -1, shownBell = int.MinValue, shownCoins = -1, shownTotal = -1, shownStreak = -1, shownJuggles = -1;
+        float nextStatusRefresh;
         LevelState lastState = (LevelState)(-1);
 
         void Start()
@@ -216,23 +220,53 @@ namespace DribbleToSchool.UI
 
         void UpdateInfo()
         {
-            titleText.text = level.level != null ? Loc.T("level." + level.level.levelId, level.level.displayName) : Loc.T("level.test");
-            timeText.text = FormatTime(level.ElapsedTime, true);
+            if (titleText.text.Length == 0)
+                titleText.text = level.level != null ? Loc.T("level." + level.level.levelId, level.level.displayName) : Loc.T("level.test");
+
+            int tenths = Mathf.FloorToInt(level.ElapsedTime * 10f);
+            if (tenths != shownTenths)
+            {
+                shownTenths = tenths;
+                timeText.text = FormatTime(tenths / 10f, true);
+            }
 
             bool challenge = level.Objective != null;
             statusText.gameObject.SetActive(challenge);
             bellText.gameObject.SetActive(!challenge && level.BellEnabled);
-            if (challenge) statusText.text = level.Objective.StatusText;
+            if (challenge)
+            {
+                if (Time.unscaledTime >= nextStatusRefresh)
+                {
+                    nextStatusRefresh = Time.unscaledTime + 0.1f;
+                    statusText.text = level.Objective.StatusText;
+                }
+            }
             else if (level.BellEnabled)
             {
                 bool late = level.BellRung;
-                bellText.text = late ? Loc.T("hud.late") : Loc.F("hud.bellIn", FormatTime(level.BellTimeLeft, false));
-                bellText.color = late ? Late : level.BellTimeLeft <= 10f ? new Color(0.85f, 0.55f, 0.1f) : UITheme.Ink;
+                int bellKey = late ? -1 : Mathf.CeilToInt(level.BellTimeLeft);
+                if (bellKey != shownBell)
+                {
+                    shownBell = bellKey;
+                    bellText.text = late ? Loc.T("hud.late") : Loc.F("hud.bellIn", FormatTime(level.BellTimeLeft, false));
+                    bellText.color = late ? Late : level.BellTimeLeft <= 10f ? new Color(0.85f, 0.55f, 0.1f) : UITheme.Ink;
+                }
             }
 
-            coinText.text = level.CoinsCollected + "/" + level.TotalCoins;
-            streakText.text = ball.PerfectStreak > 0 ? Loc.F("hud.perfect", ball.PerfectStreak)
-                : ball.JuggleCount > 0 ? Loc.F("hud.juggles", ball.JuggleCount) : "";
+            if (level.CoinsCollected != shownCoins || level.TotalCoins != shownTotal)
+            {
+                shownCoins = level.CoinsCollected;
+                shownTotal = level.TotalCoins;
+                coinText.text = shownCoins + "/" + shownTotal;
+            }
+
+            if (ball.PerfectStreak != shownStreak || ball.JuggleCount != shownJuggles)
+            {
+                shownStreak = ball.PerfectStreak;
+                shownJuggles = ball.JuggleCount;
+                streakText.text = shownStreak > 0 ? Loc.F("hud.perfect", shownStreak)
+                    : shownJuggles > 0 ? Loc.F("hud.juggles", shownJuggles) : "";
+            }
         }
 
         void UpdateStateScreens()

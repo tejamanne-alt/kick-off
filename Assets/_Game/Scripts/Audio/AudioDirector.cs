@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using DribbleToSchool.Core;
+using Unity.Profiling;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -17,6 +18,7 @@ namespace DribbleToSchool.Audio
         const float CrossfadeTime = 1.2f;
 
         static AudioDirector instance;
+        static readonly ProfilerMarker MusicUploadMarker = new ProfilerMarker("DTS.Audio.MusicUpload");
 
         readonly Dictionary<Sfx, AudioClip> clips = new Dictionary<Sfx, AudioClip>();
         readonly Dictionary<int, AudioClip> musicClips = new Dictionary<int, AudioClip>();
@@ -117,10 +119,13 @@ namespace DribbleToSchool.Audio
                 done.Add(kv.Key);
                 if (kv.Value.Status == TaskStatus.RanToCompletion)
                 {
-                    float[] data = kv.Value.Result;
-                    var clip = AudioClip.Create("music_" + kv.Key, data.Length, 1, Synth.SampleRate, false);
-                    clip.SetData(data, 0);
-                    musicClips[kv.Key] = clip;
+                    using (MusicUploadMarker.Auto())
+                    {
+                        float[] data = kv.Value.Result;
+                        var clip = AudioClip.Create("music_" + kv.Key, data.Length, 1, Synth.SampleRate, false);
+                        clip.SetData(data, 0);
+                        musicClips[kv.Key] = clip;
+                    }
                 }
             }
             if (done != null) foreach (int k in done) musicJobs.Remove(k);

@@ -5,7 +5,15 @@ The full game brief is in [`GAME_PROMPT.md`](GAME_PROMPT.md).
 
 ## Status
 
-See [`PROGRESS.md`](PROGRESS.md) for the phase-by-phase status. Phases 1-5 are done: core feel, level flow, hazards, all 23 story levels across 5 chapters plus 5 ball-skill challenges, coins and stickers, saving, the Locker Room shop and the chapter map.
+All eight phases of the build plan are done (see [`PROGRESS.md`](PROGRESS.md)):
+
+- **Gameplay:** core dribbling and kicking, level flow, 13 hazard types, and 23 story levels across 5 chapters plus 5 ball-skill challenges.
+- **Progression:** coins, stickers, saving, the Locker Room shop and the chapter map.
+- **Presentation:** procedural storybook art, animation, FX, music and sound effects, and haptics.
+- **Menus and options:** settings, localization (English and Spanish), tutorial hints and accessibility options.
+- **Release setup:** store and unlock, local analytics, and build scripts.
+
+The next step is playtesting on real devices.
 
 ## Open the project
 
@@ -165,6 +173,10 @@ All art and audio are generated in code, so the repo has no art or audio files t
 - **Tutorial:** short hint cards appear the first time each new mechanic shows up.
 - **Developer tools:** the tuning sliders are only in the editor and development builds (Tab, or the Tune button in the HUD).
 
-## Next
+## Release
 
-Phase 8 is release prep: monetization, analytics hooks, a performance pass, and Android/iOS build setup.
+See [`docs/RELEASE.md`](docs/RELEASE.md) for:
+
+- the business model switch (paid app, or free with a one-time Full Game unlock) and the IAP setup,
+- one-click and CI builds (Android AAB and APK, iOS Xcode project) with signing from environment variables,
+- privacy answers (no data collected), store listing copy, a screenshot plan and the pre-submission checklist.
