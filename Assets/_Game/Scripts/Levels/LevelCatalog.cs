@@ -49,12 +49,20 @@ namespace DribbleToSchool.Levels
             return null;
         }
 
-        /// <summary>The level after <paramref name="current"/>, or null if it is the last one.</summary>
+        /// <summary>
+        /// The story level after <paramref name="current"/>, skipping optional challenges.
+        /// Null after the last level, and after a challenge (those return to the map).
+        /// </summary>
         public LevelDefinition NextAfter(LevelDefinition current)
         {
+            if (current == null || current.isChallenge) return null;
             int index = levels.IndexOf(current);
-            if (index < 0 || index + 1 >= levels.Count) return null;
-            return levels[index + 1];
+            if (index < 0) return null;
+            for (int i = index + 1; i < levels.Count; i++)
+            {
+                if (levels[i] != null && !levels[i].isChallenge) return levels[i];
+            }
+            return null;
         }
     }
 }

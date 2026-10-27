@@ -5,21 +5,41 @@ namespace DribbleToSchool.Progression
     /// <summary>Which levels can be played: the first one, and any level whose predecessor is completed.</summary>
     public static class LevelUnlocks
     {
+        /// <summary>
+        /// Story levels unlock when the previous story level is done. Challenges
+        /// unlock once the first story level of their chapter is done.
+        /// </summary>
         public static bool IsUnlocked(LevelCatalog catalog, LevelDefinition level)
         {
+            if (level.isChallenge)
+            {
+                foreach (var l in catalog.LevelsInChapter(level.chapter))
+                {
+                    if (!l.isChallenge) return SaveSystem.IsCompleted(l.levelId);
+                }
+                return true;
+            }
+
             int index = catalog.levels.IndexOf(level);
-            if (index <= 0) return true;
-            return SaveSystem.IsCompleted(catalog.levels[index - 1].levelId);
+            for (int i = index - 1; i >= 0; i--)
+            {
+                var prev = catalog.levels[i];
+                if (prev != null && !prev.isChallenge) return SaveSystem.IsCompleted(prev.levelId);
+            }
+            return true;
         }
 
-        /// <summary>The level the player should play next: the first unlocked, uncompleted one.</summary>
+        /// <summary>The story level the player should play next: the first unlocked, uncompleted one.</summary>
         public static LevelDefinition NextToPlay(LevelCatalog catalog)
         {
+            LevelDefinition last = null;
             foreach (var l in catalog.levels)
             {
+                if (l.isChallenge) continue;
+                last = l;
                 if (!SaveSystem.IsCompleted(l.levelId) && IsUnlocked(catalog, l)) return l;
             }
-            return catalog.levels.Count > 0 ? catalog.levels[catalog.levels.Count - 1] : null;
+            return last;
         }
 
         public static int StarsInChapter(LevelCatalog catalog, int chapter)

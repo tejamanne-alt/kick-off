@@ -11,6 +11,8 @@ namespace DribbleToSchool.Levels
         public int chapter = 1;
         [Tooltip("Scene name as listed in Build Profiles / Build Settings.")]
         public string sceneName = "L01_OutTheDoor";
+        [Tooltip("Optional ball-skill challenge: unlocked by the chapter's first level, skipped by Next level.")]
+        public bool isChallenge;
 
         [Header("Bell")]
         [Tooltip("Seconds until the school bell rings. Finishing before it earns a star.")]

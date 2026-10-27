@@ -5,7 +5,7 @@ The full game brief is in [`GAME_PROMPT.md`](GAME_PROMPT.md).
 
 ## Status
 
-See [`PROGRESS.md`](PROGRESS.md) for the phase-by-phase status. Phases 1-4 are done: core feel, level flow, the hazard system, Chapters 1-2 (10 levels), coins and stickers, saving, the Locker Room shop and the chapter map.
+See [`PROGRESS.md`](PROGRESS.md) for the phase-by-phase status. Phases 1-5 are done: core feel, level flow, hazards, all 23 story levels across 5 chapters plus 5 ball-skill challenges, coins and stickers, saving, the Locker Room shop and the chapter map.
 
 ## Open the project
 
@@ -19,20 +19,25 @@ Generated scenes are rebuilt from code, so edits made directly in those scenes g
 
 ## Levels
 
-| Ch | Level | Bell | 3rd-star streak | New idea |
-|---|---|---|---|---|
-| 1 | L01 Out the Door | 0:50 | 3 | Tutorial: dribble, perfect touch, brake, jump, chip, gap |
-| 1 | L02 Parked Cars | 0:55 | 3 | Hop onto cars, chip over roofs |
-| 1 | L03 Up the Hill | 1:20 | 4 | Stairs, plateau gap, step + high wall |
-| 1 | L04 Garden Gate | 1:00 | 3 | Kick the ball at a button to open a gate |
-| 1 | L05 Puddle Lane | 1:20 | 4 | Puddles slow the ball and the kid; chapter finale |
-| 2 | L06 Market Morning | 1:00 | 4 | Pedestrians: the ball bounces off them |
-| 2 | L07 First Crossing | 1:10 | 3 | Traffic lights: brake and wait for green |
-| 2 | L08 Corner Shop | 1:10 | 4 | Crates, puddles, walkway, awning bounce |
-| 2 | L09 Fruit Stalls | 1:15 | 5 | Springboards |
-| 2 | L10 Rush Hour | 1:35 | 6 | Everything at once; chapter finale |
+| Ch | Levels | New ideas |
+|---|---|---|
+| 1 Home Street | L01 Out the Door, L02 Parked Cars, L03 Up the Hill, L04 Garden Gate, L05 Puddle Lane | Tutorial, cars, stairs, button gates, puddles |
+| 2 Market | L06 Market Morning, L07 First Crossing, L08 Corner Shop, L09 Fruit Stalls, L10 Rush Hour | Pedestrians, traffic lights, springboards |
+| 3 The Beach | L11 Boardwalk, L12 Low Tide, L13 Seagull Bay, L14 Sandcastle Sprint | Sand, tides, seagulls, sea breeze |
+| 4 Underpass | L15 The Underpass, L16 Building Site, L17 Cranes, L18 Tunnel Run | Dark tunnels, rolling pipes, moving platforms |
+| 5 Park & School | L19 Park Gates, L20 Fountain Square, L21 Playground, L22 Duck Pond, L23 The Final Bell | Dogs, fountains, swings, the finale |
 
-`Phase1_TestTrack` is still included for tuning. The values above live in the level table in `Editor/GeneratedContent.cs`. Change them there, then run **Dribble To School > Rebuild All Levels**.
+**Ball-skill challenges** are optional. There's one per chapter, unlocked by finishing the chapter's first level:
+
+| Challenge | Type | Stars |
+|---|---|---|
+| C01 Keepy-Uppy | Juggling (45 s) | 5 / 10 / 15 juggles |
+| C02 Window Shopping | Accuracy (60 s) | 3 / 5 / 7 targets |
+| C03 Beach Slalom | Slalom: low bars and hoops | under 40 s / 28 s / 22 s (misses +3 s) |
+| C04 Site Targets | Accuracy (60 s) | 4 / 6 / 8 targets |
+| C05 Juggle Champion | Juggling (60 s) | 10 / 20 / 30 juggles |
+
+Bell times and streak targets are in the level table in `Editor/GeneratedContent.cs`. Change them there, then run **Dribble To School > Rebuild All Levels**.
 
 ## Hazards
 
@@ -46,6 +51,12 @@ Generated scenes are rebuilt from code, so edits made directly in those scenes g
 | Moving platform | Slides back and forth and carries the kid. |
 | Button + gate | Kick the ball at the button to open the gate. |
 | Springboard | Launches the kid or the ball upward. |
+| Seagull | Swoops across and knocks the ball. |
+| Tide | Water washes in and out; cross at low tide. |
+| Tunnel | Darkens the screen to a pool of light around the kid. |
+| Rolling pipes | Roll down slopes at you; jump them. |
+| Swing | A pendulum seat that carries the kid over pits. |
+| Fountain | Spray that lifts the ball. |
 
 ## Level rules
 
@@ -139,4 +150,4 @@ The original plan named Cinemachine for the camera. For now the project uses its
 
 ## Next
 
-Phase 5 adds Chapters 3-5 (13 more levels) and the ball-skill challenges.
+Phase 6 is the art pass: storybook visuals, kid animation, parallax backgrounds, particles, synthesized music and sound effects, and haptics.

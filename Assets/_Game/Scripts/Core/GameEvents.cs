@@ -9,7 +9,7 @@ namespace DribbleToSchool.Core
         Jump, Land, BallBounce,
         BallLost, Respawn, Checkpoint, Bell, Goal, LevelStart,
         Coin, Sticker,
-        PedestrianBump, DogSteal, Springboard, SwitchPressed, GateOpened, Splash, LightChange,
+        PedestrianBump, DogSteal, SeagullHit, Springboard, SwitchPressed, GateOpened, Splash, LightChange,
         UIClick, Purchase,
     }
 

@@ -18,6 +18,8 @@ namespace DribbleToSchool.Player
         [Tooltip("Point at the bottom of the kid's collider. Used for ground checks and dribbling.")]
         public Transform feet;
         public Vector2 groundCheckSize = new Vector2(0.4f, 0.1f);
+        [Tooltip("Off = the kid stands still unless pushed (juggling challenges).")]
+        public bool autoRun = true;
 
         public Rigidbody2D Body { get; private set; }
         public bool IsGrounded { get; private set; }
@@ -95,7 +97,7 @@ namespace DribbleToSchool.Player
             Vector2 v = Body.linearVelocity;
             if (!IsGrounded) lastFallSpeed = Mathf.Max(0f, -v.y);
 
-            float target = !InputEnabled ? 0f : IsBraking ? tuning.brakeSpeed : tuning.runSpeed * SpeedMultiplier;
+            float target = !InputEnabled || !autoRun ? 0f : IsBraking ? tuning.brakeSpeed : tuning.runSpeed * SpeedMultiplier;
             target += GroundVelocity.x;
             float rate = Mathf.Abs(target) > Mathf.Abs(v.x) ? tuning.acceleration : tuning.deceleration;
             if (!IsGrounded) rate *= tuning.airControl;

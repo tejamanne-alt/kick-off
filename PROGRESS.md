@@ -10,8 +10,8 @@ This file is the resume point. A new session should read it first, then continue
 | 2 | Level flow: checkpoints, lose/respawn, bell timer, results, pause, camera | Done |
 | 3 | Hazard system + Chapters 1-2 (L01-L10) | Done |
 | 4 | Coins, stickers, save system, shop, cosmetics, chapter map (uGUI kit) | Done |
-| 5 | Chapters 3-5 (L11-L23) + ball skill challenges | Next |
-| 6 | Procedural storybook art, kid animation, parallax, FX, synthesized audio, haptics | Pending |
+| 5 | Chapters 3-5 (L11-L23) + ball skill challenges | Done |
+| 6 | Procedural storybook art, kid animation, parallax, FX, synthesized audio, haptics | Next |
 | 7 | uGUI HUD/menus, settings, tutorial, localization, accessibility | Pending |
 | 8 | Store service + full-game unlock, analytics, perf, Android/iOS build setup | Pending |
 
@@ -41,3 +41,19 @@ This file is the resume point. A new session should read it first, then continue
 - `FrontEnd` scene (the first scene in the build) has three screens. Title has a bouncing equipped ball, Play and Locker Room. The Chapter Map has a winding path of nodes with stars, locks and a pulsing next level, plus chapter tabs. The Locker Room covers balls, flags, outfits and trails, with buy and equip.
 - Levels: the kid wears the equipped outfit, has a flag on the backpack, and the ball shows its skin and trail.
 - Editor menu: Open Menu, Reset Save Data, Give 1000 Coins (testing).
+
+## Phase 5 summary
+
+- New hazards:
+  - Seagull: swoops and knocks the ball.
+  - Tide: water that rises and falls, with a lose zone.
+  - DarkZone + DarknessOverlay: a light pool around the kid inside tunnels.
+  - PipeSpawner: rolling pipes.
+  - SwingPlatform: a pendulum seat that carries the kid.
+  - Fountain: an updraft WindArea with a spray visual.
+- Challenges (`Scripts/Challenges`): `ChallengeObjective` base (clock, score, star thresholds, lower-is-better), JuggleChallenge (kid stands still via `KidController.autoRun`), AccuracyChallenge with ChallengeTarget, SlalomChallenge with SlalomGate (low bars and hoops, +3 s per miss, finishes at the GoalZone).
+- Challenges are optional. One per chapter, unlocked by the chapter's first story level and skipped by "Next level". They show as gold "!" nodes on the map. A 0-star challenge result is not saved.
+- Chapter 3 The Beach: L11 Boardwalk, L12 Low Tide, L13 Seagull Bay, L14 Sandcastle Sprint, C03 Beach Slalom.
+- Chapter 4 Underpass: L15 The Underpass, L16 Building Site, L17 Cranes, L18 Tunnel Run, C04 Site Targets.
+- Chapter 5 Park & School: L19 Park Gates, L20 Fountain Square, L21 Playground, L22 Duck Pond, L23 The Final Bell, C05 Juggle Champion.
+- Also C01 Keepy-Uppy (Ch1) and C02 Window Shopping (Ch2). Total: 23 story levels + 5 challenges.

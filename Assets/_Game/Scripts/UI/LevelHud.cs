@@ -73,6 +73,7 @@ namespace DribbleToSchool.UI
             switch (type)
             {
                 case GameEventType.DogSteal: Toast("Woof! The dog wants to play", Gold); break;
+                case GameEventType.SeagullHit: Toast("Squawk!", Color.white); break;
                 case GameEventType.PedestrianBump: Toast("Oops - sorry!", Color.white); break;
                 case GameEventType.GateOpened: Toast("Gate open!", new Color(0.5f, 1f, 0.6f)); break;
             }
@@ -142,7 +143,13 @@ namespace DribbleToSchool.UI
             GUI.Label(new Rect(x, 8f, 600f, 28f), name, label);
             GUI.Label(new Rect(x, 34f, 200f, 28f), FormatTime(level.ElapsedTime), label);
 
-            if (level.BellEnabled)
+            if (level.Objective != null)
+            {
+                GUI.color = Gold;
+                GUI.Label(new Rect(x + 110f, 34f, 460f, 28f), level.Objective.StatusText, label);
+                GUI.color = Color.white;
+            }
+            else if (level.BellEnabled)
             {
                 bool late = level.BellRung;
                 bool close = !late && level.BellTimeLeft <= 10f;
@@ -208,6 +215,11 @@ namespace DribbleToSchool.UI
             if (level.State != LevelState.Intro) return;
             string text = level.IntroTimeLeft > 0.35f ? "Ready..." : "GO!";
             GUI.Label(new Rect(0f, h * 0.35f, w, 90f), text, hugeLabel);
+            if (level.Objective != null)
+            {
+                GUI.Label(new Rect(0f, h * 0.35f + 100f, w, 50f), level.Objective.challengeName, bigLabel);
+                GUI.Label(new Rect(w * 0.2f, h * 0.35f + 150f, w * 0.6f, 60f), level.Objective.instructions, centerLabel);
+            }
         }
 
         void DrawTopButtons(float w)
@@ -255,8 +267,10 @@ namespace DribbleToSchool.UI
             Rect panel = CenteredPanel(w, h, 600f, 520f);
             GUI.Box(panel, GUIContent.none, box);
 
-            GUI.Label(new Rect(panel.x, panel.y + 15f, panel.width, 50f),
-                r.beforeBell ? "Made it to school!" : "Made it... a bit late!", bigLabel);
+            string heading = r.isChallenge
+                ? (r.stars > 0 ? "Challenge complete!" : "So close - try again!")
+                : (r.beforeBell ? "Made it to school!" : "Made it... a bit late!");
+            GUI.Label(new Rect(panel.x, panel.y + 15f, panel.width, 50f), heading, bigLabel);
 
             // Stars
             float size = 56f;
@@ -270,16 +284,30 @@ namespace DribbleToSchool.UI
 
             int target = level.level != null ? level.level.perfectStreakTarget : 0;
             float ly = panel.y + 150f;
-            Check(panel, ref ly, true, "Reached school with the ball");
-            Check(panel, ref ly, r.beforeBell, "Before the bell (" + FormatTime(level.BellTime, false) + ")");
-            Check(panel, ref ly, r.beforeBell && r.bestPerfectStreak >= target && r.allCoins,
-                "Streak of " + target + " (best " + r.bestPerfectStreak + ") and all coins (" + r.coins + "/" + r.totalCoins + ")");
+            if (r.isChallenge && level.Objective != null)
+            {
+                var o = level.Objective;
+                GUI.Label(new Rect(panel.x, ly, panel.width, 30f), "Score: " + r.scoreText, centerLabel);
+                ly += 36f;
+                for (int i = 0; i < o.starThresholds.Length && i < 3; i++)
+                {
+                    string need = (o.lowerIsBetter ? "Under " : "Reach ") + o.FormatScore(o.starThresholds[i]);
+                    Check(panel, ref ly, r.stars > i, (i + 1) + " star" + (i > 0 ? "s" : "") + ": " + need);
+                }
+            }
+            else
+            {
+                Check(panel, ref ly, true, "Reached school with the ball");
+                Check(panel, ref ly, r.beforeBell, "Before the bell (" + FormatTime(level.BellTime, false) + ")");
+                Check(panel, ref ly, r.beforeBell && r.bestPerfectStreak >= target && r.allCoins,
+                    "Streak of " + target + " (best " + r.bestPerfectStreak + ") and all coins (" + r.coins + "/" + r.totalCoins + ")");
+            }
 
             GUI.Label(new Rect(panel.x, ly + 6f, panel.width, 28f),
                 string.Format("Time {0}    Balls lost {1}", FormatTime(r.time), r.ballsLost), centerLabel);
             ly += 40f;
 
-            if (level.level != null)
+            if (level.level != null && r.stars > 0)
             {
                 GUI.color = Gold;
                 GUI.Label(new Rect(panel.x, ly, panel.width, 34f), "+" + r.coinsEarned + " coins", bigLabel);

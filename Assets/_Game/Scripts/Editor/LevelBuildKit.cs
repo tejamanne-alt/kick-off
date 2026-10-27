@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using DribbleToSchool.Ball;
 using DribbleToSchool.CameraRig;
+using DribbleToSchool.Challenges;
 using DribbleToSchool.Core;
 using DribbleToSchool.Cosmetics;
 using DribbleToSchool.Hazards;
@@ -164,6 +165,10 @@ namespace DribbleToSchool.EditorTools
             aimer.ball = ball;
             aimer.preview = preview;
             aimer.worldCamera = cam;
+
+            var darkGo = new GameObject("Darkness");
+            darkGo.AddComponent<SpriteRenderer>();
+            darkGo.AddComponent<DarknessOverlay>().follow = kidGo.transform;
 
             follow.kid = kid;
             follow.ball = ball;
@@ -529,6 +534,7 @@ namespace DribbleToSchool.EditorTools
             public void SwitchAndGate(Vector2 switchPosition, float gateX, float gateHeight = 2.4f, float groundTop = 0f)
             {
                 var gateGo = Block("Gate", new Vector2(gateX, groundTop + gateHeight * 0.5f), new Vector2(0.35f, gateHeight), new Color(0.45f, 0.35f, 0.55f), GroundMat);
+                gateGo.AddComponent<Rigidbody2D>().bodyType = RigidbodyType2D.Kinematic;
                 var gate = gateGo.AddComponent<Gate>();
                 gate.openHeight = gateHeight + 0.2f;
 
@@ -544,6 +550,193 @@ namespace DribbleToSchool.EditorTools
                 ballSwitch.indicator = sr;
                 Decor("SwitchPost", new Vector2(switchPosition.x, (groundTop + switchPosition.y) * 0.5f),
                     new Vector2(0.1f, switchPosition.y - groundTop), ObstacleColor);
+            }
+
+            /// <summary>A seagull that swoops from fromX to toX (right to left = toward the kid).</summary>
+            public void Seagull(float fromX, float toX, float baseY, float phaseOffset = 0f)
+            {
+                var go = new GameObject("Seagull");
+                go.transform.SetParent(root, false);
+                go.transform.position = new Vector2(fromX, baseY);
+                go.AddComponent<Rigidbody2D>().bodyType = RigidbodyType2D.Kinematic;
+                var col = go.AddComponent<CircleCollider2D>();
+                col.isTrigger = true;
+                col.radius = 0.4f;
+                var visual = new GameObject("Visual").transform;
+                visual.SetParent(go.transform, false);
+                Visual(visual, "Body", Circle, Vector2.zero, new Vector2(0.55f, 0.3f), Color.white, 30);
+                Visual(visual, "Head", Circle, new Vector2(0.25f, 0.08f), new Vector2(0.2f, 0.2f), Color.white, 31);
+                Visual(visual, "Beak", Square, new Vector2(0.38f, 0.06f), new Vector2(0.12f, 0.05f), new Color(1f, 0.7f, 0.2f), 32);
+                Visual(visual, "WingL", Square, new Vector2(-0.05f, 0.18f), new Vector2(0.5f, 0.07f), new Color(0.75f, 0.78f, 0.82f), 29);
+                var gull = go.AddComponent<Hazards.Seagull>();
+                gull.fromX = fromX;
+                gull.toX = toX;
+                gull.baseY = baseY;
+                gull.phaseOffset = phaseOffset;
+                gull.visual = visual;
+            }
+
+            /// <summary>Sea water washing over the sand between fromX and toX. Cross at low tide.</summary>
+            public void Tide(float fromX, float toX, float period = 6f, float phaseOffset = 0f, float groundTop = 0f)
+            {
+                float width = toX - fromX;
+                var go = new GameObject("Tide");
+                go.transform.SetParent(root, false);
+                go.transform.position = new Vector2((fromX + toX) * 0.5f, groundTop);
+                go.AddComponent<Rigidbody2D>().bodyType = RigidbodyType2D.Kinematic;
+
+                Decor("WetSand", new Vector2((fromX + toX) * 0.5f, groundTop - 0.05f), new Vector2(width, 0.1f), new Color(0.78f, 0.7f, 0.5f)).GetComponent<SpriteRenderer>().sortingOrder = 1;
+                var water = Decor("Water", new Vector2((fromX + toX) * 0.5f, groundTop - 1.5f), new Vector2(width + 0.6f, 3f), new Color(0.35f, 0.65f, 0.9f, 0.85f));
+                water.transform.SetParent(go.transform, true);
+                water.GetComponent<SpriteRenderer>().sortingOrder = -3;   // behind the ground: only shows above the sand
+                var foam = Decor("Foam", new Vector2((fromX + toX) * 0.5f, groundTop - 0.04f), new Vector2(width + 0.6f, 0.08f), new Color(1f, 1f, 1f, 0.9f));
+                foam.transform.SetParent(go.transform, true);
+                foam.GetComponent<SpriteRenderer>().sortingOrder = -2;
+
+                var zoneGo = new GameObject("TideLoseZone");
+                zoneGo.transform.SetParent(go.transform, false);
+                zoneGo.transform.localPosition = new Vector3(0f, -0.35f, 0f);
+                var trigger = zoneGo.AddComponent<BoxCollider2D>();
+                trigger.isTrigger = true;
+                trigger.size = new Vector2(width, 0.5f);
+                zoneGo.AddComponent<LoseZone>().message = "Splash! Wait for the tide";
+
+                var tide = go.AddComponent<Hazards.Tide>();
+                tide.lowOffset = -0.9f;
+                tide.highOffset = 0.45f;
+                tide.period = period;
+                tide.phaseOffset = phaseOffset;
+            }
+
+            /// <summary>A dark tunnel with a ceiling: darkens the screen around the kid while inside.</summary>
+            public void Tunnel(float fromX, float toX, float groundTop = 0f, float height = 3.3f)
+            {
+                float center = (fromX + toX) * 0.5f;
+                float width = toX - fromX;
+                var back = Decor("TunnelBack", new Vector2(center, groundTop + height * 0.5f), new Vector2(width, height), new Color(0.3f, 0.28f, 0.33f));
+                back.GetComponent<SpriteRenderer>().sortingOrder = -5;
+                Block("TunnelCeiling", new Vector2(center, groundTop + height + 0.6f), new Vector2(width + 1f, 1.2f), new Color(0.42f, 0.4f, 0.45f), GroundMat);
+                for (float lx = fromX + 3f; lx < toX - 1f; lx += 6f)
+                    Visual(root, "TunnelLamp", Circle, new Vector2(lx, groundTop + height - 0.25f), new Vector2(0.35f, 0.25f), new Color(1f, 0.9f, 0.6f), -4);
+
+                var go = new GameObject("DarkZone");
+                go.transform.SetParent(root, false);
+                go.transform.position = new Vector2(center, groundTop + height * 0.5f);
+                var trigger = go.AddComponent<BoxCollider2D>();
+                trigger.isTrigger = true;
+                trigger.size = new Vector2(width, height);
+                go.AddComponent<DarkZone>();
+            }
+
+            /// <summary>Spawns pipes at <paramref name="position"/> that roll left until <paramref name="despawnX"/>.</summary>
+            public void Pipes(Vector2 position, float interval, float despawnX, float firstDelay = 1.5f)
+            {
+                var go = new GameObject("PipeSpawner");
+                go.transform.SetParent(root, false);
+                go.transform.position = position;
+                var spawner = go.AddComponent<PipeSpawner>();
+                spawner.interval = interval;
+                spawner.despawnX = despawnX;
+                spawner.firstDelay = firstDelay;
+                spawner.sprite = Circle;
+                Decor("PipeStack", position + new Vector2(0.9f, -0.2f), new Vector2(1.2f, 1.1f), new Color(0.5f, 0.5f, 0.55f));
+            }
+
+            /// <summary>A swing seat hanging from <paramref name="pivot"/>.</summary>
+            public void Swing(Vector2 pivot, float ropeLength, float amplitude = 35f, float period = 3f, float phaseOffset = 0f)
+            {
+                Decor("SwingBeam", pivot + new Vector2(0f, 0.1f), new Vector2(2.4f, 0.2f), new Color(0.55f, 0.4f, 0.3f));
+                Decor("SwingPostL", new Vector2(pivot.x - 1.1f, pivot.y * 0.5f), new Vector2(0.15f, pivot.y), new Color(0.55f, 0.4f, 0.3f));
+                Decor("SwingPostR", new Vector2(pivot.x + 1.1f, pivot.y * 0.5f), new Vector2(0.15f, pivot.y), new Color(0.55f, 0.4f, 0.3f));
+
+                var seat = Block("SwingSeat", pivot + Vector2.down * ropeLength, new Vector2(1.4f, 0.2f), new Color(0.85f, 0.35f, 0.3f), GroundMat);
+                seat.AddComponent<Rigidbody2D>().bodyType = RigidbodyType2D.Kinematic;
+                var rope = seat.AddComponent<LineRenderer>();
+                rope.sharedMaterial = trailMaterial;
+                rope.positionCount = 2;
+                rope.widthMultiplier = 0.05f;
+                rope.startColor = rope.endColor = new Color(0.35f, 0.3f, 0.25f);
+                rope.sortingOrder = -1;
+                rope.useWorldSpace = true;
+                var swing = seat.AddComponent<SwingPlatform>();
+                swing.pivot = pivot;
+                swing.ropeLength = ropeLength;
+                swing.amplitude = amplitude;
+                swing.period = period;
+                swing.phaseOffset = phaseOffset;
+                swing.rope = rope;
+            }
+
+            /// <summary>A fountain whose spray lifts the ball (dribble into it to pop the ball up).</summary>
+            public void Fountain(float x, float groundTop, float height, float strength)
+            {
+                Decor("FountainBasin", new Vector2(x, groundTop + 0.2f), new Vector2(1.6f, 0.4f), new Color(0.7f, 0.7f, 0.75f)).GetComponent<SpriteRenderer>().sortingOrder = 6;
+                var spray = Decor("FountainSpray", new Vector2(x, groundTop + height * 0.5f), new Vector2(0.5f, height), new Color(0.6f, 0.85f, 1f, 0.45f));
+                spray.GetComponent<SpriteRenderer>().sortingOrder = 6;
+                Wind(x - 0.5f, x + 0.5f, groundTop, groundTop + height, new Vector2(0f, strength));
+            }
+
+            // ---------- Challenges ----------
+
+            /// <summary>A target the ball must hit (accuracy challenge).</summary>
+            public ChallengeTarget Target(Vector2 position, bool onPost = true, float groundTop = 0f)
+            {
+                if (onPost)
+                    Decor("TargetPost", new Vector2(position.x, (groundTop + position.y) * 0.5f), new Vector2(0.1f, position.y - groundTop), ObstacleColor);
+                var go = new GameObject("Target");
+                go.transform.SetParent(root, false);
+                go.transform.position = position;
+                var col = go.AddComponent<CircleCollider2D>();
+                col.isTrigger = true;
+                col.radius = 0.45f;
+                Visual(go.transform, "Ring", Circle, Vector2.zero, new Vector2(0.95f, 0.95f), Color.white, 22);
+                var face = Visual(go.transform, "Face", Circle, Vector2.zero, new Vector2(0.75f, 0.75f), new Color(1f, 0.85f, 0.3f), 23);
+                Visual(go.transform, "Bull", Circle, Vector2.zero, new Vector2(0.3f, 0.3f), new Color(0.9f, 0.35f, 0.3f), 24);
+                var target = go.AddComponent<ChallengeTarget>();
+                target.face = face.GetComponent<SpriteRenderer>();
+                return target;
+            }
+
+            /// <summary>A slalom gate: Low = keep the ball under the bar; Hoop = loft it through.</summary>
+            public SlalomGate SlalomGate(float x, SlalomGate.Kind kind, float groundTop = 0f)
+            {
+                var go = new GameObject(kind == Challenges.SlalomGate.Kind.Low ? "LowGate" : "Hoop");
+                go.transform.SetParent(root, false);
+                go.transform.position = new Vector2(x, groundTop);
+                var gate = go.AddComponent<SlalomGate>();
+                gate.kind = kind;
+                var flags = new List<SpriteRenderer>();
+                Color c = new Color(1f, 0.85f, 0.3f);
+                if (kind == Challenges.SlalomGate.Kind.Low)
+                {
+                    gate.height = 0.7f;
+                    flags.Add(Visual(go.transform, "PostL", Square, new Vector2(-0.05f, 0.45f), new Vector2(0.08f, 0.9f), c, 3).GetComponent<SpriteRenderer>());
+                    flags.Add(Visual(go.transform, "Bar", Square, new Vector2(0f, 0.85f), new Vector2(0.9f, 0.08f), c, 3).GetComponent<SpriteRenderer>());
+                }
+                else
+                {
+                    gate.height = 1.4f;
+                    gate.hoopSize = 1.3f;
+                    Visual(go.transform, "Pole", Square, new Vector2(0f, 0.7f), new Vector2(0.08f, 1.4f), ObstacleColor, 2);
+                    flags.Add(Visual(go.transform, "HoopBottom", Square, new Vector2(0f, 1.4f), new Vector2(0.9f, 0.08f), c, 3).GetComponent<SpriteRenderer>());
+                    flags.Add(Visual(go.transform, "HoopTop", Square, new Vector2(0f, 2.7f), new Vector2(0.9f, 0.08f), c, 3).GetComponent<SpriteRenderer>());
+                    flags.Add(Visual(go.transform, "HoopSide", Square, new Vector2(0.45f, 2.05f), new Vector2(0.08f, 1.3f), c, 3).GetComponent<SpriteRenderer>());
+                }
+                gate.flags = flags.ToArray();
+                return gate;
+            }
+
+            /// <summary>Adds the challenge logic object; returns it for configuration.</summary>
+            public T Challenge<T>(string name, string instructions, float timeLimit, params int[] thresholds) where T : ChallengeObjective
+            {
+                var go = new GameObject("Challenge");
+                go.transform.SetParent(root, false);
+                var c = go.AddComponent<T>();
+                c.challengeName = name;
+                c.instructions = instructions;
+                c.timeLimit = timeLimit;
+                c.starThresholds = thresholds;
+                return c;
             }
 
             /// <summary>A springy pad flush with the ground that launches the kid and the ball upward.</summary>

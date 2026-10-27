@@ -92,15 +92,22 @@ namespace DribbleToSchool.FrontEnd
             Color chapterColor = info != null ? info.color : UITheme.Accent;
             var next = LevelUnlocks.NextToPlay(catalog);
             var positions = new List<Vector2>();
-            for (int i = 0; i < levels.Count; i++)
+            // Story levels wind along the path; challenges sit beside it, top right.
+            var story = levels.FindAll(l => !l.isChallenge);
+            var challenges = levels.FindAll(l => l.isChallenge);
+            for (int i = 0; i < story.Count; i++)
             {
-                float x = levels.Count == 1 ? 0.5f : Mathf.Lerp(0.08f, 0.92f, i / (float)(levels.Count - 1));
+                float x = story.Count == 1 ? 0.4f : Mathf.Lerp(0.06f, challenges.Count > 0 ? 0.8f : 0.94f, i / (float)(story.Count - 1));
                 float y = 0.5f + Mathf.Sin(i * 1.35f + number) * 0.28f;
                 positions.Add(new Vector2(x, y));
             }
+            for (int i = 0; i < challenges.Count; i++)
+                positions.Add(new Vector2(0.95f, 0.85f - i * 0.4f));
+            levels = new List<LevelDefinition>(story);
+            levels.AddRange(challenges);
 
-            // Dotted path between nodes, drawn first so nodes sit on top.
-            for (int i = 0; i + 1 < positions.Count; i++)
+            // Dotted path between story nodes, drawn first so nodes sit on top.
+            for (int i = 0; i + 1 < story.Count; i++)
             {
                 for (int d = 1; d < 6; d++)
                 {
@@ -127,7 +134,8 @@ namespace DribbleToSchool.FrontEnd
 
             var inner = UIKit.Rect(holder, "Inner");
             UIKit.Stretch(inner);
-            var button = UIKit.Button(inner, "Button", "", unlocked ? color : UITheme.Locked, () => Controller.PlayLevel(def));
+            Color face = def.isChallenge ? UITheme.Gold : color;
+            var button = UIKit.Button(inner, "Button", "", unlocked ? face : UITheme.Locked, () => Controller.PlayLevel(def));
             UIKit.Stretch((RectTransform)button.transform);
             button.interactable = unlocked;
             // Round buttons: swap the rounded-rect faces for circles.
@@ -139,7 +147,7 @@ namespace DribbleToSchool.FrontEnd
 
             if (unlocked)
             {
-                string number = def.levelId.TrimStart('L').TrimStart('0');
+                string number = def.isChallenge ? "!" : def.levelId.TrimStart('L').TrimStart('0');
                 var label = UIKit.Title(button.transform.Find("Face"), "Number", number, 72, Color.white);
                 UIKit.Stretch(label.rectTransform);
             }

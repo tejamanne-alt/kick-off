@@ -21,7 +21,7 @@ namespace DribbleToSchool.EditorTools
     public static class GeneratedContent
     {
         /// <summary>Bump when layouts or the scene rig change so scenes regenerate.</summary>
-        public const int Version = 4;
+        public const int Version = 5;
 
         const string ScenesDir = LevelBuildKit.Root + "/Scenes";
         const string LevelsDir = LevelBuildKit.Root + "/Levels";
@@ -37,12 +37,22 @@ namespace DribbleToSchool.EditorTools
             public string id, name, scene;
             public float bell;
             public int streak;
+            public bool challenge;
             public Action<TrackBuilder> layout;
 
             public LevelSpec(int chapter, string id, string name, string scene, float bell, int streak, Action<TrackBuilder> layout)
             {
                 this.chapter = chapter; this.id = id; this.name = name; this.scene = scene;
                 this.bell = bell; this.streak = streak; this.layout = layout;
+                challenge = false;
+            }
+
+            /// <summary>An optional ball-skill challenge (no bell; the objective sets the stars).</summary>
+            public static LevelSpec Challenge(int chapter, string id, string name, string scene, Action<TrackBuilder> layout)
+            {
+                var spec = new LevelSpec(chapter, id, name, scene, 0f, 0, layout);
+                spec.challenge = true;
+                return spec;
             }
 
             public string ScenePath { get { return ScenesDir + "/Levels/" + scene + ".unity"; } }
@@ -56,12 +66,33 @@ namespace DribbleToSchool.EditorTools
             new LevelSpec(1, "L03", "Up the Hill", "L03_UpTheHill", 80f, 4, GreyboxLevels.UpTheHill),
             new LevelSpec(1, "L04", "Garden Gate", "L04_GardenGate", 60f, 3, GreyboxLevels.GardenGate),
             new LevelSpec(1, "L05", "Puddle Lane", "L05_PuddleLane", 80f, 4, GreyboxLevels.PuddleLane),
+            LevelSpec.Challenge(1, "C01", "Keepy-Uppy", "C01_KeepyUppy", GreyboxLevels.KeepyUppy),
             // Chapter 2: Market and Crossings
             new LevelSpec(2, "L06", "Market Morning", "L06_MarketMorning", 60f, 4, GreyboxLevels.MarketMorning),
             new LevelSpec(2, "L07", "First Crossing", "L07_FirstCrossing", 70f, 3, GreyboxLevels.FirstCrossing),
             new LevelSpec(2, "L08", "Corner Shop", "L08_CornerShop", 70f, 4, GreyboxLevels.CornerShop),
             new LevelSpec(2, "L09", "Fruit Stalls", "L09_FruitStalls", 75f, 5, GreyboxLevels.FruitStalls),
             new LevelSpec(2, "L10", "Rush Hour", "L10_RushHour", 95f, 6, GreyboxLevels.RushHour),
+            LevelSpec.Challenge(2, "C02", "Window Shopping", "C02_WindowShopping", GreyboxLevels.WindowShopping),
+            // Chapter 3: The Beach
+            new LevelSpec(3, "L11", "Boardwalk", "L11_Boardwalk", 70f, 4, GreyboxLevels.Boardwalk),
+            new LevelSpec(3, "L12", "Low Tide", "L12_LowTide", 75f, 4, GreyboxLevels.LowTide),
+            new LevelSpec(3, "L13", "Seagull Bay", "L13_SeagullBay", 80f, 5, GreyboxLevels.SeagullBay),
+            new LevelSpec(3, "L14", "Sandcastle Sprint", "L14_SandcastleSprint", 95f, 6, GreyboxLevels.SandcastleSprint),
+            LevelSpec.Challenge(3, "C03", "Beach Slalom", "C03_BeachSlalom", GreyboxLevels.BeachSlalom),
+            // Chapter 4: Underpass & Construction
+            new LevelSpec(4, "L15", "The Underpass", "L15_TheUnderpass", 65f, 4, GreyboxLevels.TheUnderpass),
+            new LevelSpec(4, "L16", "Building Site", "L16_BuildingSite", 80f, 5, GreyboxLevels.BuildingSite),
+            new LevelSpec(4, "L17", "Cranes", "L17_Cranes", 85f, 4, GreyboxLevels.Cranes),
+            new LevelSpec(4, "L18", "Tunnel Run", "L18_TunnelRun", 105f, 6, GreyboxLevels.TunnelRun),
+            LevelSpec.Challenge(4, "C04", "Site Targets", "C04_SiteTargets", GreyboxLevels.SiteTargets),
+            // Chapter 5: Park & School
+            new LevelSpec(5, "L19", "Park Gates", "L19_ParkGates", 65f, 5, GreyboxLevels.ParkGates),
+            new LevelSpec(5, "L20", "Fountain Square", "L20_FountainSquare", 75f, 5, GreyboxLevels.FountainSquare),
+            new LevelSpec(5, "L21", "Playground", "L21_Playground", 80f, 5, GreyboxLevels.Playground),
+            new LevelSpec(5, "L22", "Duck Pond", "L22_DuckPond", 80f, 6, GreyboxLevels.DuckPond),
+            new LevelSpec(5, "L23", "The Final Bell", "L23_TheFinalBell", 120f, 7, GreyboxLevels.TheFinalBell),
+            LevelSpec.Challenge(5, "C05", "Juggle Champion", "C05_JuggleChampion", GreyboxLevels.JuggleChampion),
         };
 
         static GeneratedContent()
@@ -218,6 +249,7 @@ namespace DribbleToSchool.EditorTools
             def.displayName = spec.name;
             def.sceneName = spec.scene;
             def.chapter = spec.chapter;
+            def.isChallenge = spec.challenge;
             EditorUtility.SetDirty(def);
             return def;
         }

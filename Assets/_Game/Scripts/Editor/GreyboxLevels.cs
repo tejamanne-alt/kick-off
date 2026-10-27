@@ -1,3 +1,4 @@
+using DribbleToSchool.Challenges;
 using UnityEngine;
 using TrackBuilder = DribbleToSchool.EditorTools.LevelBuildKit.TrackBuilder;
 
@@ -20,6 +21,9 @@ namespace DribbleToSchool.EditorTools
         static readonly Color CoatB = new Color(0.3f, 0.55f, 0.55f);
         static readonly Color CoatC = new Color(0.75f, 0.5f, 0.3f);
         static readonly Color CoatD = new Color(0.4f, 0.4f, 0.7f);
+        static readonly Color DogBrown = new Color(0.6f, 0.42f, 0.28f);
+        static readonly Color DogWhite = new Color(0.92f, 0.9f, 0.85f);
+        static readonly Color DogBlack = new Color(0.25f, 0.22f, 0.22f);
 
         // ===================== Test track =====================
 
@@ -395,6 +399,540 @@ namespace DribbleToSchool.EditorTools
             t.CoinRow(111f, 114f, 0.5f, 3);
             t.Sticker(new Vector2(98f, 4.6f));
             t.Goal(122f);
+        }
+
+        // ===================== Chapter 3: The Beach =====================
+
+        /// <summary>L11: sand slows everything; a raised boardwalk with gaps.</summary>
+        public static void Boardwalk(TrackBuilder t)
+        {
+            t.Walls(-8f, 110f);
+            t.Start(0f);
+            t.Ground(-8f, 20f);
+            t.Sign("The beach! Sand slows the ball -\nkeep your touches light", new Vector2(5f, 3.2f));
+            t.Sand(8f, 18f);
+
+            t.Ground(20f, 32f, 0.9f);
+            t.Pit(32f, 33.8f, 0.9f);
+            t.Ground(33.8f, 46f, 0.9f);
+            t.Checkpoint(36f, 0.9f);
+
+            t.Ground(46f, 62f);
+            t.Sand(48f, 58f);
+            t.Ground(62f, 74f, 0.9f);
+            t.Checkpoint(64f, 0.9f);
+            t.Pit(74f, 75.8f, 0.9f);
+            t.Ground(75.8f, 88f, 0.9f);
+            t.Ground(88f, 110f);
+            t.Checkpoint(90f);
+            t.Sand(94f, 98f);
+
+            t.CoinRow(9f, 17f, 0.6f, 4);
+            t.CoinArc(31.5f, 34.3f, 1.6f, 1.2f, 3);
+            t.CoinRow(50f, 56f, 0.6f, 3);
+            t.CoinArc(73.5f, 76.3f, 1.6f, 1.2f, 3);
+            t.CoinRow(80f, 86f, 1.5f, 3);
+            t.Sticker(new Vector2(75f, 4.6f));
+            t.Goal(102f);
+        }
+
+        /// <summary>L12: the tide washes in and out; cross on low water.</summary>
+        public static void LowTide(TrackBuilder t)
+        {
+            t.Walls(-8f, 110f);
+            t.Start(0f);
+            t.Ground(-8f, 110f);
+            t.Sign("Low tide! Cross the wet sand\nwhen the water goes out", new Vector2(5f, 3.2f));
+
+            t.Sand(10f, 14f);
+            t.Tide(18f, 24f, 6f, 0f);
+            t.Checkpoint(27f);
+            t.Sand(30f, 34f);
+            t.Tide(38f, 45f, 7f, 2f);
+            t.Checkpoint(48f);
+            t.Wall(52f, 0.6f, 0f, 0.8f);
+            t.Sign("Sandcastle!", new Vector2(52f, 2.4f));
+            t.Tide(58f, 62f, 5f, 1f);
+            t.Tide(66f, 72f, 6f, 3f);
+            t.Checkpoint(75f);
+            t.Sand(78f, 84f);
+            t.Tide(88f, 93f, 6f, 0f);
+
+            t.CoinRow(19f, 23f, 0.6f, 3);
+            t.CoinRow(39f, 44f, 0.6f, 3);
+            t.CoinArc(51f, 53f, 1.4f, 1f, 3);
+            t.CoinRow(67f, 71f, 0.6f, 3);
+            t.CoinRow(89f, 92f, 0.6f, 3);
+            t.Sticker(new Vector2(62f, 4.2f));
+            t.Goal(102f);
+        }
+
+        /// <summary>L13: seagulls swoop at the ball; a gusty sea breeze.</summary>
+        public static void SeagullBay(TrackBuilder t)
+        {
+            t.Walls(-8f, 115f);
+            t.Start(0f);
+            t.Ground(-8f, 115f);
+            t.Sign("Seagulls swoop low -\nkeep the ball close!", new Vector2(5f, 3.4f));
+
+            t.Seagull(30f, 4f, 2.2f, 0f);
+            t.Sand(14f, 20f);
+            t.Checkpoint(24f);
+            t.Wind(28f, 45f, 0f, 5f, new Vector2(-5f, 0f), 4f);
+            t.Sign("Sea breeze!", new Vector2(32f, 4f));
+            t.Wall(40f, 0.9f);
+            t.Checkpoint(48f);
+            t.Seagull(60f, 32f, 2f, 1.5f);
+            t.Tide(52f, 57f, 6f, 1f);
+            t.Wall(66f, 0.6f, 0f, 0.8f);
+            t.Seagull(90f, 62f, 2.4f, 0.5f);
+            t.Checkpoint(72f);
+            t.Springboard(78f);
+            t.Wall(81f, 1.6f);
+            t.Seagull(112f, 86f, 2.6f, 2f);
+
+            t.CoinRow(15f, 19f, 0.6f, 3);
+            t.CoinRow(30f, 38f, 0.5f, 4);
+            t.CoinArc(39f, 41f, 1.4f, 1f, 3);
+            t.CoinRow(78f, 81f, 2.6f, 3);
+            t.CoinRow(88f, 96f, 0.5f, 4);
+            t.Sticker(new Vector2(81f, 5f));
+            t.Goal(106f);
+        }
+
+        /// <summary>L14: chapter finale on the sand.</summary>
+        public static void SandcastleSprint(TrackBuilder t)
+        {
+            t.Walls(-8f, 130f);
+            t.Start(0f);
+            t.Ground(-8f, 28f);
+            t.Sign("Sandcastle Sprint!\nEverything the beach can throw at you", new Vector2(5f, 3.4f));
+            t.Sand(6f, 12f);
+            t.Wall(16f, 0.6f, 0f, 0.9f);
+            t.Wall(16f, 1f, 0f, 0.35f);
+
+            t.Pit(28f, 29.6f);
+            t.Ground(29.6f, 44f, 0.6f);
+            t.Checkpoint(32f, 0.6f);
+            t.Seagull(52f, 30f, 2.8f, 0f);
+            t.Ground(44f, 130f);
+            t.Tide(48f, 54f, 6f, 2f);
+            t.Checkpoint(57f);
+            t.Wind(60f, 75f, 0f, 5f, new Vector2(-6f, 0f), 5f);
+            t.Sand(62f, 70f);
+            t.Wall(73f, 0.9f);
+            t.Checkpoint(78f);
+            t.Tide(82f, 86f, 5f, 0f);
+            t.Seagull(104f, 80f, 2.2f, 1f);
+            t.Springboard(92f);
+            t.Platform(94f, 100f, 2f);
+            t.Checkpoint(104f);
+            t.Tide(108f, 112f, 6f, 3f);
+
+            t.CoinArc(15f, 17f, 1.5f, 1f, 3);
+            t.CoinArc(27.6f, 30.2f, 1f, 1.2f, 3);
+            t.CoinRow(63f, 69f, 0.6f, 3);
+            t.CoinRow(95f, 99f, 2.6f, 3);
+            t.CoinRow(109f, 111f, 0.6f, 2);
+            t.Sticker(new Vector2(97f, 5.2f));
+            t.Goal(122f);
+        }
+
+        // ===================== Chapter 4: Underpass & Construction =====================
+
+        /// <summary>L15: dark tunnels and puddles.</summary>
+        public static void TheUnderpass(TrackBuilder t)
+        {
+            t.Walls(-8f, 105f);
+            t.Start(0f);
+            t.Ground(-8f, 105f);
+            t.Sign("Into the underpass -\nit's dark in there!", new Vector2(5f, 3.2f));
+
+            t.Tunnel(14f, 34f);
+            t.Puddle(20f, 23f);
+            t.Wall(28f, 0.3f, 0f, 0.6f);
+            t.Checkpoint(37f);
+            t.Ramp(new Vector2(42f, 0f), new Vector2(48f, 1.5f));
+            t.Platform(48f, 56f, 1.5f);
+            t.Ramp(new Vector2(56f, 1.5f), new Vector2(62f, 0f));
+            t.Tunnel(64f, 86f);
+            t.Puddle(70f, 74f);
+            t.CrateStack(79f);
+            t.Checkpoint(89f);
+
+            t.CoinRow(16f, 26f, 0.5f, 5);
+            t.CoinRow(49f, 55f, 2f, 4);
+            t.CoinRow(66f, 76f, 0.5f, 4);
+            t.Sticker(new Vector2(52f, 5f));
+            t.Goal(98f);
+        }
+
+        /// <summary>L16: rolling pipes down the building-site slopes.</summary>
+        public static void BuildingSite(TrackBuilder t)
+        {
+            t.Walls(-8f, 115f);
+            t.Start(0f);
+            t.Ground(-8f, 115f);
+            t.Sign("Building site! Pipes roll\ndown the slope - jump them", new Vector2(5f, 3.4f));
+
+            t.Ramp(new Vector2(18f, 0f), new Vector2(28f, 2.5f));
+            t.Platform(28f, 34f, 2.5f);
+            t.Pipes(new Vector2(33f, 3.2f), 4f, 5f);
+            t.Ramp(new Vector2(34f, 2.5f), new Vector2(40f, 0f));
+            t.Checkpoint(42f);
+            t.CrateStack(48f);
+            t.CrateStack(52f);
+            t.Ramp(new Vector2(58f, 0f), new Vector2(66f, 2f));
+            t.Platform(66f, 72f, 2f);
+            t.Pipes(new Vector2(71f, 2.8f), 3.5f, 50f, 0.5f);
+            t.Ramp(new Vector2(72f, 2f), new Vector2(78f, 0f));
+            t.Checkpoint(80f);
+            t.SwitchAndGate(new Vector2(88f, 2.6f), 92f);
+            t.Puddle(95f, 98f);
+
+            t.CoinArc(20f, 27f, 1.5f, 1.5f, 4);
+            t.CoinRow(29f, 33f, 3.1f, 3);
+            t.CoinArc(47.5f, 53f, 1.8f, 1f, 4);
+            t.CoinRow(67f, 71f, 2.6f, 3);
+            t.CoinRow(93f, 99f, 0.5f, 3);
+            t.Sticker(new Vector2(31f, 6f));
+            t.Goal(106f);
+        }
+
+        /// <summary>L17: ride crane platforms across open pits.</summary>
+        public static void Cranes(TrackBuilder t)
+        {
+            t.Walls(-8f, 110f);
+            t.Start(0f);
+            t.Ground(-8f, 20f);
+            t.Sign("Ride the crane platforms across.\nChip the ball on first!", new Vector2(5f, 3.4f));
+
+            t.Pit(20f, 30f);
+            t.MovingPlatform(new Vector2(22f, -0.175f), 2.6f, new Vector2(6f, 0f));
+            t.Ground(30f, 44f);
+            t.Checkpoint(32f);
+            t.Pit(44f, 52f);
+            t.MovingPlatform(new Vector2(45.5f, 0.6f), 2.6f, new Vector2(5f, 0f), 1.3f);
+            t.Ground(52f, 64f);
+            t.Checkpoint(55f);
+            t.Pit(64f, 70f);
+            t.MovingPlatform(new Vector2(66.5f, -0.175f), 2.6f, new Vector2(0f, 2.2f), 1f);
+            t.Sign("Going up!", new Vector2(66.5f, 4.6f));
+            t.Ground(70f, 82f, 2f);
+            t.Checkpoint(73f, 2f);
+            t.Pit(82f, 90f, 2f);
+            t.MovingPlatform(new Vector2(84f, 1.825f), 2.6f, new Vector2(4f, 0f));
+            t.Ground(90f, 110f);
+            t.Checkpoint(93f);
+
+            t.CoinRow(22f, 28f, 1f, 4);
+            t.CoinRow(46f, 50f, 1.8f, 3);
+            t.CoinRow(66.5f, 66.5f, 3f, 1);
+            t.CoinRow(74f, 80f, 2.5f, 3);
+            t.CoinRow(85f, 88f, 2.8f, 3);
+            t.Sticker(new Vector2(67f, 6f));
+            t.Goal(102f);
+        }
+
+        /// <summary>L18: chapter finale through tunnels, pipes and cranes.</summary>
+        public static void TunnelRun(TrackBuilder t)
+        {
+            t.Walls(-8f, 135f);
+            t.Start(0f);
+            t.Ground(-8f, 48f);
+            t.Sign("Tunnel Run!", new Vector2(5f, 3f));
+            t.Tunnel(10f, 40f, 0f, 3.4f);
+            t.Pipes(new Vector2(38f, 0.6f), 3.2f, 8f, 1f);
+            t.Puddle(18f, 21f);
+            t.Checkpoint(42f);
+            t.Pit(48f, 56f);
+            t.MovingPlatform(new Vector2(50f, -0.175f), 2.6f, new Vector2(4f, 0f));
+            t.Ground(56f, 135f);
+            t.Checkpoint(58f);
+            t.Ramp(new Vector2(62f, 0f), new Vector2(68f, 1.6f));
+            t.Platform(68f, 76f, 1.6f);
+            t.Ramp(new Vector2(76f, 1.6f), new Vector2(82f, 0f));
+            t.Tunnel(84f, 112f, 0f, 3.4f);
+            t.CrateStack(92f);
+            t.Puddle(98f, 101f);
+            t.Pipes(new Vector2(110f, 0.6f), 4f, 86f, 2f);
+            t.Checkpoint(114f);
+            t.SwitchAndGate(new Vector2(120f, 2.4f), 124f);
+
+            t.CoinRow(12f, 16f, 0.5f, 3);
+            t.CoinRow(26f, 34f, 1.6f, 4);
+            t.CoinRow(50f, 54f, 1f, 3);
+            t.CoinRow(69f, 75f, 2.1f, 3);
+            t.CoinRow(102f, 108f, 0.5f, 3);
+            t.Sticker(new Vector2(72f, 5f));
+            t.Goal(128f);
+        }
+
+        // ===================== Chapter 5: Park & School =====================
+
+        /// <summary>L19: dogs in the park.</summary>
+        public static void ParkGates(TrackBuilder t)
+        {
+            t.Walls(-8f, 105f);
+            t.Start(0f);
+            t.Ground(-8f, 105f);
+            t.Sign("The park! Dogs chase low balls -\nchip it over their heads", new Vector2(5f, 3.4f));
+
+            t.Dog(14f, 22f, DogBrown);
+            t.Checkpoint(26f);
+            t.SwitchAndGate(new Vector2(32f, 2.4f), 36f);
+            t.Dog(42f, 52f, DogWhite);
+            t.Wall(56f, 0.9f);
+            t.Checkpoint(60f);
+            t.Dog(66f, 76f, DogBlack);
+            t.Puddle(80f, 83f);
+
+            t.CoinArc(14f, 22f, 0.8f, 1.6f, 5);
+            t.CoinRow(37f, 40f, 0.5f, 3);
+            t.CoinArc(42f, 52f, 0.8f, 1.8f, 5);
+            t.CoinArc(66f, 76f, 0.8f, 1.6f, 5);
+            t.Sticker(new Vector2(47f, 4.5f));
+            t.Goal(96f);
+        }
+
+        /// <summary>L20: fountains lift the ball; springboards lift the kid.</summary>
+        public static void FountainSquare(TrackBuilder t)
+        {
+            t.Walls(-8f, 110f);
+            t.Start(0f);
+            t.Ground(-8f, 110f);
+            t.Sign("Fountains push the ball up -\ndribble into the spray!", new Vector2(5f, 3.4f));
+
+            t.Fountain(13f, 0f, 4f, 18f);
+            t.Springboard(15f);
+            t.Wall(17f, 1.6f);
+            t.Checkpoint(21f);
+            t.Dog(30f, 38f, DogBrown);
+            t.Checkpoint(42f);
+            t.Fountain(50f, 0f, 4f, 18f);
+            t.Springboard(52f);
+            t.Wall(54f, 1.6f);
+            t.Water(60f, 62f);
+            t.Checkpoint(65f);
+            t.Fountain(72f, 0f, 6f, 14f);
+            t.Dog(80f, 88f, DogWhite);
+
+            t.CoinRow(13f, 13f, 3f, 1);
+            t.CoinRow(15f, 17f, 2.6f, 2);
+            t.CoinArc(29f, 39f, 0.8f, 1.6f, 5);
+            t.CoinRow(50f, 54f, 2.8f, 3);
+            t.CoinRow(72f, 72f, 2f, 1);
+            t.CoinRow(72f, 72f, 3.5f, 1);
+            t.CoinRow(72f, 72f, 5f, 1);
+            t.Sticker(new Vector2(72f, 6.5f));
+            t.Goal(100f);
+        }
+
+        /// <summary>L21: swings across the sandpit.</summary>
+        public static void Playground(TrackBuilder t)
+        {
+            t.Walls(-8f, 110f);
+            t.Start(0f);
+            t.Ground(-8f, 22f);
+            t.Sign("Playground! Chip the ball across,\nthen jump on the swing", new Vector2(5f, 3.4f));
+
+            t.Pit(22f, 30f);
+            t.Swing(new Vector2(26f, 4.2f), 3.6f, 35f, 3f);
+            t.Ground(30f, 52f);
+            t.Checkpoint(32f);
+            t.Springboard(38f);
+            t.Platform(40f, 46f, 2.4f);
+            t.Sign("Climbing frame", new Vector2(43f, 4.3f));
+            t.Dog(47f, 51f, DogBlack);
+            t.Pit(52f, 62f);
+            t.Swing(new Vector2(55f, 4.4f), 3.8f, 35f, 3.2f, 1f);
+            t.Swing(new Vector2(59.5f, 4.4f), 3.8f, 35f, 3.2f, 0f);
+            t.Ground(62f, 110f);
+            t.Checkpoint(64f);
+            t.Fountain(72f, 0f, 4f, 18f);
+            t.Springboard(74f);
+            t.Wall(76f, 1.6f);
+            t.Checkpoint(80f);
+            t.Dog(86f, 94f, DogBrown);
+
+            t.CoinArc(22f, 30f, 1.2f, 2f, 5);
+            t.CoinRow(41f, 45f, 2.9f, 3);
+            t.CoinArc(52f, 62f, 1.2f, 2f, 5);
+            t.CoinArc(86f, 94f, 0.8f, 1.6f, 4);
+            t.Sticker(new Vector2(43f, 5.6f));
+            t.Goal(102f);
+        }
+
+        /// <summary>L22: lily pads and stepping stones over the duck pond.</summary>
+        public static void DuckPond(TrackBuilder t)
+        {
+            t.Walls(-8f, 115f);
+            t.Start(0f);
+            t.Ground(-8f, 18f);
+            t.Sign("Duck pond! Lily pads and stepping stones", new Vector2(5f, 3f));
+
+            t.Water(18f, 28f);
+            t.MovingPlatform(new Vector2(20f, -0.175f), 2.2f, new Vector2(5f, 0f), 1.4f);
+            t.Ground(28f, 46f);
+            t.Checkpoint(30f);
+            t.Dog(34f, 42f, DogWhite);
+            t.Water(46f, 49f);
+            t.Ground(49f, 70f);
+            t.Fountain(54f, 0f, 4f, 18f);
+            t.Springboard(56f);
+            t.Wall(58f, 1.6f);
+            t.Checkpoint(61f);
+            t.Water(70f, 72f);
+            t.Ground(72f, 73.5f);
+            t.Water(73.5f, 75.5f);
+            t.Ground(75.5f, 77f);
+            t.Water(77f, 79f);
+            t.Ground(79f, 115f);
+            t.Sign("Stepping stones", new Vector2(74.5f, 3f));
+            t.Checkpoint(82f);
+            t.Dog(88f, 96f, DogBrown);
+
+            t.CoinRow(20f, 26f, 1f, 4);
+            t.CoinArc(33f, 43f, 0.8f, 1.6f, 5);
+            t.CoinArc(45.5f, 49.5f, 0.7f, 1.3f, 3);
+            t.CoinRow(72.7f, 76.2f, 0.6f, 2);
+            t.CoinArc(88f, 96f, 0.8f, 1.6f, 4);
+            t.Sticker(new Vector2(54f, 5.5f));
+            t.Goal(106f);
+        }
+
+        /// <summary>L23: the grand finale, all the way to the school steps.</summary>
+        public static void TheFinalBell(TrackBuilder t)
+        {
+            t.Walls(-8f, 160f);
+            t.Start(0f);
+            t.Ground(-8f, 40f);
+            t.Sign("The final run!\nDon't be late for school!", new Vector2(5f, 3.2f));
+
+            t.Dog(10f, 18f, DogBrown);
+            t.Crossing(24f, 29f, 0f);
+            t.Checkpoint(32f);
+            t.Pit(40f, 48f);
+            t.Swing(new Vector2(44f, 4.2f), 3.6f, 35f, 3f);
+            t.Ground(48f, 90f);
+            t.Fountain(54f, 0f, 4f, 18f);
+            t.Springboard(56f);
+            t.Wall(58f, 1.6f);
+            t.Checkpoint(62f);
+            t.Pedestrian(66f, 72f, CoatB);
+            t.Puddle(74f, 77f);
+            t.Tunnel(80f, 96f, 0f, 3.4f);
+            t.Ground(90f, 160f);
+            t.Checkpoint(98f);
+            t.Seagull(122f, 100f, 2.4f, 0f);
+            t.SwitchAndGate(new Vector2(106f, 2.4f), 110f);
+            t.Dog(114f, 122f, DogBlack);
+            t.Checkpoint(126f);
+            t.Ramp(new Vector2(130f, 0f), new Vector2(136f, 1.2f));
+            t.Platform(136f, 156f, 1.2f);
+            t.Sign("School steps!", new Vector2(140f, 3.6f));
+
+            t.CoinArc(10f, 18f, 0.8f, 1.6f, 4);
+            t.CoinRow(25f, 28f, 0.5f, 3);
+            t.CoinArc(40f, 48f, 1.2f, 2f, 5);
+            t.CoinRow(82f, 94f, 0.5f, 5);
+            t.CoinArc(114f, 122f, 0.8f, 1.6f, 4);
+            t.CoinRow(138f, 146f, 1.7f, 4);
+            t.Sticker(new Vector2(58f, 5f));
+            t.Goal(150f, 1.2f);
+        }
+
+        // ===================== Ball skill challenges =====================
+
+        /// <summary>C01 (Ch1): keepy-uppy.</summary>
+        public static void KeepyUppy(TrackBuilder t)
+        {
+            t.Walls(-6f, 14f);
+            t.Start(0f);
+            t.Ground(-6f, 14f);
+            t.Sign("Kick the ball up (drag back),\nthen tap to juggle!", new Vector2(4f, 3.6f));
+            t.Challenge<JuggleChallenge>("Keepy-Uppy", "Kick the ball up, then tap each time it drops near you. Best run counts!", 45f, 5, 10, 15);
+            t.CoinRow(-2f, 2f, 2.4f, 3);
+        }
+
+        /// <summary>C02 (Ch2): hit the shop signs.</summary>
+        public static void WindowShopping(TrackBuilder t)
+        {
+            t.Walls(-8f, 72f);
+            t.Start(0f);
+            t.Ground(-8f, 72f);
+            var c = t.Challenge<AccuracyChallenge>("Window Shopping", "Hit every shop sign with the ball before time runs out!", 60f, 3, 5, 7);
+            c.targets = new[]
+            {
+                t.Target(new Vector2(10f, 1.6f)),
+                t.Target(new Vector2(18f, 2.6f)),
+                t.Target(new Vector2(26f, 1.2f)),
+                t.Target(new Vector2(34f, 3.2f)),
+                t.Target(new Vector2(42f, 2f)),
+                t.Target(new Vector2(52f, 3.6f)),
+                t.Target(new Vector2(62f, 2.4f)),
+            };
+            t.Pedestrian(28f, 33f, CoatA);
+            t.CrateStack(46f);
+            t.CoinRow(5f, 65f, 0.5f, 8);
+        }
+
+        /// <summary>C03 (Ch3): beach slalom of low gates and hoops.</summary>
+        public static void BeachSlalom(TrackBuilder t)
+        {
+            t.Walls(-8f, 84f);
+            t.Start(0f);
+            t.Ground(-8f, 84f);
+            var c = t.Challenge<SlalomChallenge>("Beach Slalom", "Keep the ball LOW under the bars and LOFT it through the hoops. Fastest time wins!", 0f, 400, 280, 220);
+            c.gates = new[]
+            {
+                t.SlalomGate(10f, SlalomGate.Kind.Low),
+                t.SlalomGate(18f, SlalomGate.Kind.Hoop),
+                t.SlalomGate(26f, SlalomGate.Kind.Low),
+                t.SlalomGate(34f, SlalomGate.Kind.Low),
+                t.SlalomGate(42f, SlalomGate.Kind.Hoop),
+                t.SlalomGate(50f, SlalomGate.Kind.Low),
+                t.SlalomGate(58f, SlalomGate.Kind.Hoop),
+                t.SlalomGate(66f, SlalomGate.Kind.Low),
+            };
+            t.Sand(28f, 32f);
+            t.CoinRow(12f, 64f, 0.5f, 8);
+            t.Goal(76f);
+        }
+
+        /// <summary>C04 (Ch4): targets on the building site, high and low.</summary>
+        public static void SiteTargets(TrackBuilder t)
+        {
+            t.Walls(-8f, 80f);
+            t.Start(0f);
+            t.Ground(-8f, 80f);
+            var c = t.Challenge<AccuracyChallenge>("Site Targets", "Eight targets around the site. Some need a big kick!", 60f, 4, 6, 8);
+            c.targets = new[]
+            {
+                t.Target(new Vector2(8f, 1.4f)),
+                t.Target(new Vector2(15f, 3.4f)),
+                t.Target(new Vector2(22f, 2.2f)),
+                t.Target(new Vector2(30f, 4.2f), false),
+                t.Target(new Vector2(38f, 1.6f)),
+                t.Target(new Vector2(46f, 3.8f)),
+                t.Target(new Vector2(56f, 2.6f)),
+                t.Target(new Vector2(66f, 4.6f), false),
+            };
+            t.Platform(28f, 32f, 1.6f);
+            t.CrateStack(50f);
+            t.MovingPlatform(new Vector2(60f, 1.2f), 2.4f, new Vector2(0f, 1.6f), 1f);
+            t.CoinRow(4f, 72f, 0.5f, 8);
+        }
+
+        /// <summary>C05 (Ch5): juggling for champions.</summary>
+        public static void JuggleChampion(TrackBuilder t)
+        {
+            t.Walls(-6f, 14f);
+            t.Start(0f);
+            t.Ground(-6f, 14f);
+            t.Sign("Juggle Champion!", new Vector2(4f, 3.6f));
+            t.Challenge<JuggleChallenge>("Juggle Champion", "The ultimate keepy-uppy. Can you reach 30?", 60f, 10, 20, 30);
+            t.CoinRow(-2f, 2f, 2.4f, 3);
         }
     }
 }

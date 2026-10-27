@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using DribbleToSchool.Ball;
 using DribbleToSchool.CameraRig;
+using DribbleToSchool.Challenges;
 using DribbleToSchool.InputHandling;
 using DribbleToSchool.Levels;
 using DribbleToSchool.Pickups;
@@ -29,6 +30,11 @@ namespace DribbleToSchool.Core
         public int perfectTouches;
         public bool stickerFound;
         public bool stickerIsNew;
+
+        // Challenges
+        public bool isChallenge;
+        public int score;
+        public string scoreText;
 
         // Rewards (filled when the result is saved)
         public int newStars;
@@ -77,6 +83,8 @@ namespace DribbleToSchool.Core
         public int TotalCoins { get; private set; }
         public bool StickerCollected { get; private set; }
         public bool HasSticker { get; private set; }
+        /// <summary>The ball-skill challenge in this level, if any (replaces the bell and the gate).</summary>
+        public ChallengeObjective Objective { get; private set; }
         public LevelResult Result { get; private set; }
         public Checkpoint ActiveCheckpoint { get; private set; }
         /// <summary>0 = clear, 1 = fully faded to black. Driven during respawn.</summary>
@@ -112,6 +120,7 @@ namespace DribbleToSchool.Core
                 if (r != null) resettables.Add(r);
                 if (behaviour is Coin) TotalCoins += ((Coin)behaviour).value;
                 if (behaviour is Sticker) HasSticker = true;
+                if (behaviour is ChallengeObjective) Objective = (ChallengeObjective)behaviour;
             }
         }
 
@@ -174,7 +183,7 @@ namespace DribbleToSchool.Core
             CoinsCollected = 0;
             StickerCollected = false;
             BellRung = false;
-            BellEnabled = GameSettings.BellTimerEnabled && BellTime > 0f;
+            BellEnabled = GameSettings.BellTimerEnabled && BellTime > 0f && Objective == null;
             FadeAmount = 0f;
             foreach (var r in resettables) r.ResetState();
 
@@ -318,6 +327,12 @@ namespace DribbleToSchool.Core
                 respawnRoutine = null;
                 FadeAmount = 0f;
             }
+            if (Objective != null)
+            {
+                // A slalom finishes at the gate; the objective decides the result.
+                Objective.OnGoalReached();
+                return;
+            }
 
             var result = new LevelResult
             {
@@ -335,6 +350,42 @@ namespace DribbleToSchool.Core
             bool thirdStar = result.beforeBell && BestPerfectStreak >= target && result.allCoins;
             result.stars = 1 + (result.beforeBell ? 1 : 0) + (thirdStar ? 1 : 0);
             if (level != null) SaveResult(ref result);
+            Result = result;
+
+            SetState(LevelState.Complete);
+            GameEvents.Raise(GameEventType.Goal, ball.transform.position, result.stars / 3f);
+            if (Completed != null) Completed(result);
+        }
+
+        /// <summary>Called by a challenge when it ends (time up, target reached, or finish line).</summary>
+        public void CompleteChallenge(ChallengeObjective objective)
+        {
+            if (State == LevelState.Complete) return;
+            if (respawnRoutine != null)
+            {
+                StopCoroutine(respawnRoutine);
+                respawnRoutine = null;
+                FadeAmount = 0f;
+            }
+
+            int score = objective.Score;
+            var result = new LevelResult
+            {
+                isChallenge = true,
+                score = score,
+                scoreText = objective.FormatScore(score),
+                time = ElapsedTime,
+                beforeBell = true,
+                bestPerfectStreak = BestPerfectStreak,
+                ballsLost = BallsLost,
+                coins = CoinsCollected,
+                totalCoins = TotalCoins,
+                allCoins = CoinsCollected >= TotalCoins,
+                perfectTouches = PerfectTouches,
+                stickerFound = StickerCollected,
+                stars = objective.StarsFor(score),
+            };
+            if (level != null && result.stars > 0) SaveResult(ref result);
             Result = result;
 
             SetState(LevelState.Complete);
