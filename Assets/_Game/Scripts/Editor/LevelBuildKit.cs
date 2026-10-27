@@ -222,11 +222,16 @@ namespace DribbleToSchool.EditorTools
             applier.shortsRenderers = new[] { kidRig.shorts };
             applier.backpackFlag = kidRig.flag;
 
-            var hud = new GameObject("LevelHud").AddComponent<LevelHud>();
+            var tuningPanel = new GameObject("DevTuning").AddComponent<DevTuningPanel>();
+            tuningPanel.kid = kid;
+            tuningPanel.ball = ball;
+
+            var hud = new GameObject("GameHud").AddComponent<GameHud>();
             hud.level = manager;
             hud.kid = kid;
             hud.ball = ball;
             hud.aimer = aimer;
+            hud.tuning = tuningPanel;
 
             EditorSceneManager.SaveScene(scene, scenePath);
         }
@@ -460,13 +465,13 @@ namespace DribbleToSchool.EditorTools
             /// <summary>A gap you fall into. Losing the ball or the kid here respawns at the checkpoint.</summary>
             public void Pit(float fromX, float toX, float top = 0f)
             {
-                Hole("Pit", fromX, toX, top, PitColor, "Into the gap!", 0f);
+                Hole("Pit", fromX, toX, top, PitColor, "lose.gap", 0f);
             }
 
             /// <summary>A puddle/stream. Same rules as a pit, but blue and splashy.</summary>
             public void Water(float fromX, float toX, float top = 0f)
             {
-                Hole("Water", fromX, toX, top, WaterColor, "Splash!", 0.35f);
+                Hole("Water", fromX, toX, top, WaterColor, "lose.splash", 0.35f);
             }
 
             void Hole(string name, float fromX, float toX, float top, Color color, string message, float surfaceDrop)
@@ -781,7 +786,7 @@ namespace DribbleToSchool.EditorTools
                 var trigger = zoneGo.AddComponent<BoxCollider2D>();
                 trigger.isTrigger = true;
                 trigger.size = new Vector2(width, 0.5f);
-                zoneGo.AddComponent<LoseZone>().message = "Splash! Wait for the tide";
+                zoneGo.AddComponent<LoseZone>().message = "lose.tide";
 
                 var tide = go.AddComponent<Hazards.Tide>();
                 tide.lowOffset = -0.9f;
@@ -856,6 +861,18 @@ namespace DribbleToSchool.EditorTools
                 var spray = Decor("FountainSpray", new Vector2(x, groundTop + height * 0.5f), new Vector2(0.5f, height), new Color(0.6f, 0.85f, 1f, 0.45f));
                 spray.GetComponent<SpriteRenderer>().sortingOrder = 6;
                 Wind(x - 0.5f, x + 0.5f, groundTop, groundTop + height, new Vector2(0f, strength));
+            }
+
+            /// <summary>First-time tutorial hint when the kid reaches x (text key tut.&lt;id&gt;).</summary>
+            public void Hint(float x, string id, float groundTop = 0f)
+            {
+                var go = new GameObject("Hint_" + id);
+                go.transform.SetParent(root, false);
+                go.transform.position = new Vector2(x, groundTop + 2f);
+                var trigger = go.AddComponent<BoxCollider2D>();
+                trigger.isTrigger = true;
+                trigger.size = new Vector2(0.6f, 4f);
+                go.AddComponent<Tutorial.TutorialHint>().hintId = id;
             }
 
             // ---------- Challenges ----------

@@ -265,12 +265,12 @@ namespace DribbleToSchool.Core
         void CheckBallLost()
         {
             if (ball.transform.position.y < killY || kid.transform.position.y < killY)
-                LoseBall("Lost the ball!");
+                LoseBall("lose.fell");
             else if (kid.transform.position.x - ball.transform.position.x > maxBallBehindDistance)
-                LoseBall("Left the ball behind!");
+                LoseBall("lose.behind");
         }
 
-        /// <summary>Lose the ball and respawn at the last checkpoint. Ignored unless playing.</summary>
+        /// <summary>Lose the ball and respawn at the last checkpoint. Ignored unless playing. <paramref name="reason"/> is a localization key.</summary>
         public void LoseBall(string reason)
         {
             if (State != LevelState.Playing) return;
@@ -283,7 +283,7 @@ namespace DribbleToSchool.Core
         /// <summary>Manually go back to the last checkpoint (e.g. ball stuck). Counts as a lost ball.</summary>
         public void RespawnAtCheckpoint()
         {
-            LoseBall("Back to the checkpoint");
+            LoseBall("lose.checkpoint");
         }
 
         IEnumerator RespawnRoutine()

@@ -12,8 +12,8 @@ This file is the resume point. A new session should read it first, then continue
 | 4 | Coins, stickers, save system, shop, cosmetics, chapter map (uGUI kit) | Done |
 | 5 | Chapters 3-5 (L11-L23) + ball skill challenges | Done |
 | 6 | Procedural storybook art, kid animation, parallax, FX, synthesized audio, haptics | Done |
-| 7 | uGUI HUD/menus, settings, tutorial, localization, accessibility | Next |
-| 8 | Store service + full-game unlock, analytics, perf, Android/iOS build setup | Pending |
+| 7 | uGUI HUD/menus, settings, tutorial, localization, accessibility | Done |
+| 8 | Store service + full-game unlock, analytics, perf, Android/iOS build setup | Next |
 
 ## Conventions (keep these)
 
@@ -28,6 +28,7 @@ This file is the resume point. A new session should read it first, then continue
 - **Art is code.** `Art/ProceduralArt.cs` draws everything on `Art/PixelCanvas.cs` (anti-aliased shapes, ink outline, watercolour grain, wrap-aware tiling). `Editor/ArtBaker.cs` bakes it to `Assets/_Game/Art/Generated` (FullRect meshes, 9-slice borders). Chapter palettes are in `Art/ChapterTheme.cs`.
 - **Previewing art and audio without Unity.** The scratchpad harnesses compile ProceduralArt/Synth against tiny Unity stubs (a Color/Vector2/Mathf/Perlin reimplementation) and render PNG/WAV. Use them to eyeball changes before committing.
 - **Audio is code.** `Audio/Synth.cs`, `SoundBank.cs` (26 SFX) and `MusicGenerator.cs` (6 loops) are pure C#. `AudioDirector` (auto-booted, DontDestroyOnLoad) maps GameEvents to SFX and haptics and crossfades music per chapter.
+- **All UI text goes through `Localization/Loc.T(key)`.** Tables live in `Localization/StringTables.cs` (en, es). Lose reasons are keys (`lose.*`); level names are `level.<id>`.
 - No Cinemachine yet: `CameraRig/CameraFollow2D.cs` covers look-ahead, the dead zone and bounds.
 
 ## Phase 3 summary
@@ -75,3 +76,19 @@ This file is the resume point. A new session should read it first, then continue
 - Audio: synthesized SFX for every event, lo-fi music per chapter plus a menu theme, a referee whistle at the start and the school bell.
 - Haptics: Taptic Engine on iOS (`Assets/Plugins/iOS/DTSHaptics.mm`), short amplitude vibrations on Android.
 - GameSettings gained music and SFX volume, haptics, screen shake, left-handed, colour-blind aim and language (the UI comes in Phase 7).
+
+## Phase 7 summary
+
+- In-level HUD is now uGUI (`UI/GameHud.cs`):
+  - Info card (level, timer, bell clock, coins, streak or challenge status) and a round pause button.
+  - Drawn jump button and brake zone, which follow the left-handed setting.
+  - Aim meter, toasts, Ready/GO and the respawn fade.
+  - Pause menu, and an animated results screen: stars pop in with chimes, coins count up, then Retry / Map / Next.
+- Developer tuning sliders moved to `UI/DevTuningPanel.cs`. They only exist in the editor and development builds (Tab key or the Tune button).
+- Menus:
+  - Title has Play, Locker Room, Stickers, Settings and Credits, plus a first-launch splash.
+  - Sticker Album (`FrontEnd/AlbumScreen.cs`) shows procedural die-cut stickers per level (`UI/StickerArt.cs`).
+  - Shared Settings modal (`UI/SettingsPanel.cs`): music and SFX volume, vibration, screen shake, school bell (cozy mode), left-handed, colour-blind aim, language, and reset progress with a confirmation.
+- Localization: every UI string is shipped in English and Spanish, with device-language detection. Changing language rebuilds the open screens.
+- Tutorial: `Tutorial/TutorialHint.cs` triggers show a once-per-player hint card the first time each mechanic appears. There are 18 hints, placed in L01, L04-L07, L09, L12, L13, L15-L17, L19-L21 and C01.
+- Accessibility: large touch targets, left-handed mirroring, colour-blind trajectory colours, and toggles for screen shake, vibration and the bell timer.

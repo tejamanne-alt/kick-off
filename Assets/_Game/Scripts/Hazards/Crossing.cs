@@ -93,8 +93,8 @@ namespace DribbleToSchool.Hazards
             if (Current != Light.Red || !IsLive) return;
             Ball.BallController ball;
             Player.KidController kid;
-            if (TryGetBall(other, out ball)) Lose("Honk! Wait for the green light");
-            else if (TryGetKid(other, out kid)) Lose("Honk! Wait for the green light");
+            if (TryGetBall(other, out ball)) Lose("lose.honk");
+            else if (TryGetKid(other, out kid)) Lose("lose.honk");
         }
     }
 }

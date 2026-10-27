@@ -11,8 +11,8 @@ namespace DribbleToSchool.Core
     [RequireComponent(typeof(Collider2D))]
     public class LoseZone : MonoBehaviour
     {
-        [Tooltip("Shown to the player, e.g. \"Into the pit!\" or \"Splash!\".")]
-        public string message = "Lost the ball!";
+        [Tooltip("Localization key shown to the player, e.g. lose.gap or lose.splash.")]
+        public string message = "lose.ball";
 
         void Reset()
         {
@@ -27,7 +27,7 @@ namespace DribbleToSchool.Core
             if (rb == null) return;
             if (rb.GetComponent<BallController>() != null || rb.GetComponent<KidController>() != null)
             {
-                if (message == "Splash!") GameEvents.Raise(GameEventType.Splash, rb.position);
+                if (message == "lose.splash" || message == "lose.tide") GameEvents.Raise(GameEventType.Splash, rb.position);
                 level.LoseBall(message);
             }
         }

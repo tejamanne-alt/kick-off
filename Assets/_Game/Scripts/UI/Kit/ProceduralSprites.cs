@@ -5,7 +5,32 @@ namespace DribbleToSchool.UI.Kit
     /// <summary>UI sprites drawn in code: rounded panels, circles, stars, coins, a padlock.</summary>
     public static class ProceduralSprites
     {
-        static Sprite rounded, roundedSmall, circle, star, coin, lockIcon, gradient;
+        static Sprite rounded, roundedSmall, circle, star, coin, lockIcon, gradient, arrow, pause;
+
+        /// <summary>Upward chevron (jump button).</summary>
+        public static Sprite ArrowUp
+        {
+            get
+            {
+                return arrow != null ? arrow : (arrow = MakeShape(96, (u, v) =>
+                {
+                    // Thick chevron: inside a wide triangle but outside a smaller one shifted down.
+                    bool outer = v > -0.6f && v < 0.75f - Mathf.Abs(u) * 1.35f;
+                    bool inner = v > -0.6f && v < 0.15f - Mathf.Abs(u) * 1.35f;
+                    return outer && !inner && Mathf.Abs(u) < 0.95f ? 1f : 0f;
+                }));
+            }
+        }
+
+        /// <summary>Two rounded bars.</summary>
+        public static Sprite Pause
+        {
+            get
+            {
+                return pause != null ? pause : (pause = MakeShape(96, (u, v) =>
+                    Mathf.Abs(v) < 0.6f && (Mathf.Abs(u - 0.3f) < 0.16f || Mathf.Abs(u + 0.3f) < 0.16f) ? 1f : 0f));
+            }
+        }
 
         /// <summary>9-sliced rounded rectangle with a faint hand-drawn inner edge.</summary>
         public static Sprite Rounded

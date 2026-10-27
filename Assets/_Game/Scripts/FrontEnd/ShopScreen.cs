@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using DribbleToSchool.Core;
 using DribbleToSchool.Cosmetics;
+using DribbleToSchool.Localization;
 using DribbleToSchool.Progression;
 using DribbleToSchool.UI.Kit;
 using UnityEngine;
@@ -16,7 +17,7 @@ namespace DribbleToSchool.FrontEnd
     {
         static readonly CosmeticCategory[] Categories =
             { CosmeticCategory.Ball, CosmeticCategory.Flag, CosmeticCategory.Outfit, CosmeticCategory.Trail };
-        static readonly string[] CategoryNames = { "Balls", "Flags", "Outfits", "Trails" };
+        static readonly string[] CategoryKeys = { "shop.balls", "shop.flags", "shop.outfits", "shop.trails" };
 
         CosmeticCategory category = CosmeticCategory.Ball;
         CosmeticItem selected;
@@ -31,7 +32,7 @@ namespace DribbleToSchool.FrontEnd
         RectTransform previewPrice;
         Text previewPriceText;
 
-        public override string Title { get { return "Locker Room"; } }
+        public override string Title { get { return Loc.T("menu.locker"); } }
 
         protected override void Build(RectTransform root)
         {
@@ -41,7 +42,7 @@ namespace DribbleToSchool.FrontEnd
             for (int i = 0; i < Categories.Length; i++)
             {
                 var cat = Categories[i];
-                var tab = UIKit.Button(tabRow, "Tab" + cat, CategoryNames[i], UITheme.Blue, () => SelectCategory(cat), 36);
+                var tab = UIKit.Button(tabRow, "Tab" + cat, Loc.T(CategoryKeys[i]), UITheme.Blue, () => SelectCategory(cat), 36);
                 UIKit.Place((RectTransform)tab.transform, new Vector2(0f, 0.5f), new Vector2(i * 290f, 0f), new Vector2(270f, 90f), new Vector2(0f, 0.5f));
                 tabButtons.Add(tab);
             }
@@ -138,7 +139,7 @@ namespace DribbleToSchool.FrontEnd
 
             if (equipped || owned)
             {
-                var status = UIKit.Label(face, "Status", equipped ? "Equipped" : "Owned", 28, equipped ? UITheme.Green : UITheme.InkSoft, TextAnchor.MiddleCenter, true);
+                var status = UIKit.Label(face, "Status", Loc.T(equipped ? "shop.equipped" : "shop.owned"), 28, equipped ? UITheme.Green : UITheme.InkSoft, TextAnchor.MiddleCenter, true);
                 UIKit.Place(status.rectTransform, new Vector2(0.5f, 0f), new Vector2(0f, 32f), new Vector2(225f, 40f), new Vector2(0.5f, 0.5f));
             }
             else
@@ -171,7 +172,7 @@ namespace DribbleToSchool.FrontEnd
             previewIcon.enabled = true;
             previewIcon.sprite = CosmeticArt.Icon(selected);
             previewName.text = selected.displayName;
-            previewRarity.text = selected.rarity.ToString();
+            previewRarity.text = Loc.T("rarity." + selected.rarity);
             previewRarity.color = UITheme.RarityColor(selected.rarity);
 
             bool owned = SaveSystem.Owns(selected.id);
@@ -182,20 +183,20 @@ namespace DribbleToSchool.FrontEnd
 
             if (equipped)
             {
-                actionLabel.text = "Equipped";
+                actionLabel.text = Loc.T("shop.equipped");
                 actionButton.interactable = false;
                 actionButton.targetGraphic.color = UITheme.Green;
             }
             else if (owned)
             {
-                actionLabel.text = "Equip";
+                actionLabel.text = Loc.T("shop.equip");
                 actionButton.interactable = true;
                 actionButton.targetGraphic.color = UITheme.Green;
             }
             else
             {
                 bool affordable = SaveSystem.Data.coins >= selected.price;
-                actionLabel.text = affordable ? "Buy" : "Need more coins";
+                actionLabel.text = Loc.T(affordable ? "shop.buy" : "shop.needCoins");
                 actionButton.interactable = affordable;
                 actionButton.targetGraphic.color = affordable ? UITheme.Accent : UITheme.Locked;
             }

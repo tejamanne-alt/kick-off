@@ -158,6 +158,13 @@ All art and audio are generated in code, so the repo has no art or audio files t
 - **Audio.** Synthesized sound effects for every action and a lo-fi music loop per chapter, plus a menu theme.
 - **Haptics.** Taptic feedback on iOS and short vibrations on Android.
 
+## Menus, settings and accessibility
+
+- **Menu:** Play (chapter map), Locker Room (shop), Stickers (album), Settings, Credits.
+- **Settings:** music and SFX volume, vibration, screen shake, school bell (off = cozy mode), left-handed controls, colour-blind aim colours, language (English / Español) and reset progress.
+- **Tutorial:** short hint cards appear the first time each new mechanic shows up.
+- **Developer tools:** the tuning sliders are only in the editor and development builds (Tab, or the Tune button in the HUD).
+
 ## Next
 
-Phase 7 covers the full uGUI HUD, pause and results screens, the main menu, settings, sticker album, credits, contextual tutorial hints, localization and accessibility options.
+Phase 8 is release prep: monetization, analytics hooks, a performance pass, and Android/iOS build setup.

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using DribbleToSchool.Core;
 using UnityEngine;
 #if ENABLE_INPUT_SYSTEM
 using UnityEngine.InputSystem;
@@ -85,12 +86,34 @@ namespace DribbleToSchool.InputHandling
         /// </summary>
         public bool Blocked { get; set; }
 
+        /// <summary>Jump button in normalized screen coords, mirrored for left-handed play.</summary>
+        public Rect JumpButtonNormalized
+        {
+            get
+            {
+                Rect r = jumpButtonRect;
+                if (GameSettings.LeftHanded) r.x = 1f - r.x - r.width;
+                return r;
+            }
+        }
+
+        /// <summary>Brake zone in normalized screen coords (left side, or right side when left-handed).</summary>
+        public Rect BrakeZoneNormalized
+        {
+            get
+            {
+                return GameSettings.LeftHanded
+                    ? new Rect(1f - brakeZoneWidth, 0f, brakeZoneWidth, 1f)
+                    : new Rect(0f, 0f, brakeZoneWidth, 1f);
+            }
+        }
+
         public Rect JumpButtonScreenRect
         {
             get
             {
-                return new Rect(jumpButtonRect.x * Screen.width, jumpButtonRect.y * Screen.height,
-                    jumpButtonRect.width * Screen.width, jumpButtonRect.height * Screen.height);
+                Rect r = JumpButtonNormalized;
+                return new Rect(r.x * Screen.width, r.y * Screen.height, r.width * Screen.width, r.height * Screen.height);
             }
         }
 
@@ -192,7 +215,9 @@ namespace DribbleToSchool.InputHandling
         {
             if (JumpButtonScreenRect.Contains(pos)) return Role.Jump;
             if (IsNearBall(pos) && !AnyPointerWithRole(Role.Kick)) return Role.Kick;
-            if (pos.x < Screen.width * brakeZoneWidth) return Role.Brake;
+            Rect brake = BrakeZoneNormalized;
+            float nx = pos.x / Mathf.Max(1f, Screen.width);
+            if (nx >= brake.x && nx <= brake.xMax) return Role.Brake;
             return Role.TapOrSwipe;
         }
 

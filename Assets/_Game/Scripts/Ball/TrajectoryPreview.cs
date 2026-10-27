@@ -45,7 +45,11 @@ namespace DribbleToSchool.Ball
         {
             int count = tuning.previewDots;
             EnsureDots(count);
-            Color baseColor = valid ? validColor : invalidColor;
+            // Colour-blind mode swaps white/red for blue/orange, which stay distinct for all common types.
+            bool cb = Core.GameSettings.ColorblindAim;
+            Color baseColor = valid
+                ? (cb ? new Color(0.3f, 0.7f, 1f, 0.95f) : validColor)
+                : (cb ? new Color(1f, 0.6f, 0.1f, 0.9f) : invalidColor);
 
             for (int i = 0; i < dots.Count; i++)
             {

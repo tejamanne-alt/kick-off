@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using DribbleToSchool.Levels;
+using DribbleToSchool.Localization;
 using DribbleToSchool.Progression;
 using DribbleToSchool.UI.Kit;
 using UnityEngine;
@@ -18,7 +19,7 @@ namespace DribbleToSchool.FrontEnd
         Text chapterStars;
         readonly List<Button> tabs = new List<Button>();
 
-        public override string Title { get { return "Way to School"; } }
+        public override string Title { get { return Loc.T("menu.map"); } }
 
         protected override void Build(RectTransform root)
         {
@@ -45,7 +46,7 @@ namespace DribbleToSchool.FrontEnd
             {
                 var info = catalog.chapters[i];
                 int number = info.number;
-                var tab = UIKit.Button(tabRow, "Tab" + number, number + "  " + info.title, info.color, () => ShowChapter(number), 30);
+                var tab = UIKit.Button(tabRow, "Tab" + number, number + "  " + Loc.T("chapter." + number, info.title), info.color, () => ShowChapter(number), 30);
                 UIKit.Place((RectTransform)tab.transform, new Vector2(0f, 0.5f), new Vector2(i * 330f, 0f), new Vector2(310f, 96f), new Vector2(0f, 0.5f));
                 tabs.Add(tab);
             }
@@ -70,9 +71,9 @@ namespace DribbleToSchool.FrontEnd
 
             var info = catalog.Chapter(number);
             var levels = catalog.LevelsInChapter(number);
-            chapterTitle.text = info != null ? "Chapter " + number + ": " + info.title : "Chapter " + number;
+            chapterTitle.text = Loc.F("menu.chapter", number, Loc.T("chapter." + number, info != null ? info.title : ""));
             chapterStars.text = levels.Count > 0
-                ? "Stars " + LevelUnlocks.StarsInChapter(catalog, number) + " / " + levels.Count * 3
+                ? Loc.F("menu.chapterStars", LevelUnlocks.StarsInChapter(catalog, number), levels.Count * 3)
                 : "";
 
             // Selected tab in full colour, others washed out (the press animation owns their scale).
@@ -84,7 +85,7 @@ namespace DribbleToSchool.FrontEnd
 
             if (levels.Count == 0)
             {
-                var soon = UIKit.Title(pathLayer, "ComingSoon", "Coming soon!", 72, Color.white);
+                var soon = UIKit.Title(pathLayer, "ComingSoon", Loc.T("menu.soon"), 72, Color.white);
                 UIKit.Stretch(soon.rectTransform);
                 return;
             }
@@ -160,7 +161,7 @@ namespace DribbleToSchool.FrontEnd
             var starRow = UIKit.Stars(holder, "Stars", stars, 44f);
             UIKit.Place(starRow, new Vector2(0.5f, 0f), new Vector2(0f, -36f), starRow.sizeDelta, new Vector2(0.5f, 0.5f));
 
-            var name = UIKit.Label(holder, "Name", def.displayName, 30, UITheme.Ink, TextAnchor.MiddleCenter, true);
+            var name = UIKit.Label(holder, "Name", Loc.T("level." + def.levelId, def.displayName), 30, UITheme.Ink, TextAnchor.MiddleCenter, true);
             UIKit.Place(name.rectTransform, new Vector2(0.5f, 0f), new Vector2(0f, -86f), new Vector2(320f, 44f), new Vector2(0.5f, 0.5f));
         }
     }

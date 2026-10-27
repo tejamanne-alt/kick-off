@@ -236,6 +236,76 @@ namespace DribbleToSchool.UI.Kit
             return pop;
         }
 
+        /// <summary>A chunky slider (0..1) in the storybook style.</summary>
+        public static Slider Slider(Transform parent, string name, float value, UnityAction<float> onChanged)
+        {
+            var root = Rect(parent, name);
+            var track = Panel(root, "Track", UITheme.PaperDark, ProceduralSprites.RoundedSmall);
+            track.rectTransform.anchorMin = new Vector2(0f, 0.35f);
+            track.rectTransform.anchorMax = new Vector2(1f, 0.65f);
+            track.rectTransform.offsetMin = track.rectTransform.offsetMax = Vector2.zero;
+
+            var fillArea = Rect(root, "FillArea");
+            fillArea.anchorMin = new Vector2(0f, 0.35f);
+            fillArea.anchorMax = new Vector2(1f, 0.65f);
+            fillArea.offsetMin = new Vector2(0f, 0f);
+            fillArea.offsetMax = new Vector2(0f, 0f);
+            var fill = Panel(fillArea, "Fill", UITheme.Accent, ProceduralSprites.RoundedSmall);
+            fill.rectTransform.sizeDelta = Vector2.zero;
+
+            var handleArea = Rect(root, "HandleArea");
+            Stretch(handleArea);
+            handleArea.offsetMin = new Vector2(30f, 0f);
+            handleArea.offsetMax = new Vector2(-30f, 0f);
+            var handle = Icon(handleArea, "Handle", ProceduralSprites.Circle, Color.white, 70f);
+            handle.raycastTarget = true;
+            handle.rectTransform.sizeDelta = new Vector2(70f, 0f);
+            handle.rectTransform.anchorMin = new Vector2(0f, 0f);
+            handle.rectTransform.anchorMax = new Vector2(0f, 1f);
+            var outline = handle.gameObject.AddComponent<Outline>();
+            outline.effectColor = UITheme.Ink;
+            outline.effectDistance = new Vector2(3f, -3f);
+
+            var slider = root.gameObject.AddComponent<UnityEngine.UI.Slider>();
+            slider.fillRect = fill.rectTransform;
+            slider.handleRect = handle.rectTransform;
+            slider.targetGraphic = handle;
+            slider.direction = UnityEngine.UI.Slider.Direction.LeftToRight;
+            slider.minValue = 0f;
+            slider.maxValue = 1f;
+            slider.value = value;
+            if (onChanged != null) slider.onValueChanged.AddListener(onChanged);
+            return slider;
+        }
+
+        /// <summary>On/Off pill. Calls <paramref name="onChanged"/> with the new state and updates itself.</summary>
+        public static Button Toggle(Transform parent, string name, bool value, System.Func<bool, string> label, UnityAction<bool> onChanged)
+        {
+            bool state = value;
+            Button button = null;
+            button = Button(parent, name, label(state), state ? UITheme.Green : UITheme.Locked, () =>
+            {
+                state = !state;
+                button.targetGraphic.color = state ? UITheme.Green : UITheme.Locked;
+                button.GetComponentInChildren<Text>().text = label(state);
+                if (onChanged != null) onChanged(state);
+            }, 36);
+            return button;
+        }
+
+        /// <summary>Full-screen dimmer with a centred paper card. Returns the card face; destroy the root to close.</summary>
+        public static Image Modal(Transform parent, string name, Vector2 size, out GameObject root)
+        {
+            var dimRect = Stretch(Rect(parent, name));
+            var dim = dimRect.gameObject.AddComponent<Image>();
+            dim.color = UITheme.Dim;
+            root = dimRect.gameObject;
+            var card = Card(dimRect, "Card", UITheme.Paper);
+            Place((RectTransform)card.transform.parent, new Vector2(0.5f, 0.5f), Vector2.zero, size);
+            PopIn(card.transform.parent.gameObject);
+            return card;
+        }
+
         /// <summary>Scrollable area. Returns the content rect to fill.</summary>
         public static RectTransform ScrollArea(Transform parent, string name, bool vertical, out ScrollRect scroll)
         {

@@ -2,7 +2,9 @@ using System.Collections.Generic;
 using DribbleToSchool.Core;
 using DribbleToSchool.Cosmetics;
 using DribbleToSchool.Levels;
+using DribbleToSchool.Localization;
 using DribbleToSchool.Progression;
+using DribbleToSchool.UI;
 using DribbleToSchool.UI.Kit;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -10,7 +12,7 @@ using UnityEngine.UI;
 
 namespace DribbleToSchool.FrontEnd
 {
-    public enum FrontEndScreenId { Title, Map, Shop }
+    public enum FrontEndScreenId { Title, Map, Shop, Album }
 
     /// <summary>Base for a front-end screen built from code on first show.</summary>
     public abstract class FrontEndScreen
@@ -48,6 +50,9 @@ namespace DribbleToSchool.FrontEnd
         public static int RequestedChapter;
 
         readonly Dictionary<FrontEndScreenId, FrontEndScreen> screens = new Dictionary<FrontEndScreenId, FrontEndScreen>();
+        static bool splashShown;
+        RectTransform canvasRoot;
+        FrontEndScreenId current;
         RectTransform screenLayer;
         RectTransform header;
         Text headerTitle;
@@ -69,6 +74,7 @@ namespace DribbleToSchool.FrontEnd
 
             var canvas = UIKit.CreateCanvas("FrontEndCanvas", 0);
             var root = (RectTransform)canvas.transform;
+            canvasRoot = root;
             MenuBackdrop.Build(root);
 
             screenLayer = UIKit.Stretch(UIKit.Rect(root, "Screens"));
@@ -77,15 +83,48 @@ namespace DribbleToSchool.FrontEnd
             screens[FrontEndScreenId.Title] = new TitleScreen();
             screens[FrontEndScreenId.Map] = new ChapterMapScreen();
             screens[FrontEndScreenId.Shop] = new ShopScreen();
+            screens[FrontEndScreenId.Album] = new AlbumScreen();
 
             SaveSystem.Changed += RefreshWallet;
+            Loc.Changed += OnLanguageChanged;
             Show(RequestedScreen);
             RequestedScreen = FrontEndScreenId.Title;
+
+            if (!splashShown)
+            {
+                splashShown = true;
+                Splash.Show(root);
+            }
         }
 
         void OnDestroy()
         {
             SaveSystem.Changed -= RefreshWallet;
+            Loc.Changed -= OnLanguageChanged;
+        }
+
+        /// <summary>Rebuild every screen so text appears in the new language.</summary>
+        void OnLanguageChanged()
+        {
+            foreach (var kv in screens)
+            {
+                if (kv.Value.Root != null) Destroy(kv.Value.Root.gameObject);
+            }
+            screens[FrontEndScreenId.Title] = new TitleScreen();
+            screens[FrontEndScreenId.Map] = new ChapterMapScreen();
+            screens[FrontEndScreenId.Shop] = new ShopScreen();
+            screens[FrontEndScreenId.Album] = new AlbumScreen();
+            Show(current);
+        }
+
+        public void OpenSettings()
+        {
+            SettingsPanel.Open(canvasRoot, null);
+        }
+
+        public void OpenCredits()
+        {
+            CreditsPanel.Open(canvasRoot);
         }
 
         public void Show(FrontEndScreenId id)
@@ -99,6 +138,7 @@ namespace DribbleToSchool.FrontEnd
             if (screen.Root == null) screen.Create(this, screenLayer, id.ToString());
             screen.Root.gameObject.SetActive(true);
             screen.OnShow();
+            current = id;
 
             backButton.SetActive(id != FrontEndScreenId.Title);
             headerTitle.text = screen.Title;

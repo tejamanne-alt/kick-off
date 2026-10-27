@@ -71,6 +71,10 @@ namespace DribbleToSchool.EditorTools
         {
             t.Walls(-8f, 78f);
             t.Start(0f);
+            t.Hint(1.5f, "dribble");
+            t.Hint(18f, "brake");
+            t.Hint(24f, "jump");
+            t.Hint(33f, "kick");
             t.Ground(-8f, 52f);
             t.Sign("The kid runs by himself.\nKeep the ball close!", new Vector2(4f, 3.2f));
             t.Sign("Tap the RIGHT side just as\nyou catch up with the ball:\nPerfect touch!", new Vector2(13f, 3.4f));
@@ -176,6 +180,7 @@ namespace DribbleToSchool.EditorTools
         {
             t.Walls(-8f, 96f);
             t.Start(0f);
+            t.Hint(8f, "gate");
             t.Ground(-8f, 96f);
             t.Sign("Locked gate!\nKick the ball at the red button", new Vector2(7f, 3.6f));
 
@@ -208,6 +213,7 @@ namespace DribbleToSchool.EditorTools
         {
             t.Walls(-8f, 120f);
             t.Start(0f);
+            t.Hint(7f, "puddle");
             t.Ground(-8f, 48f);
             t.Sign("Rainy morning.\nPuddles slow everything down", new Vector2(5f, 3.2f));
 
@@ -246,6 +252,7 @@ namespace DribbleToSchool.EditorTools
         {
             t.Walls(-8f, 100f);
             t.Start(0f);
+            t.Hint(9f, "pedestrian");
             t.Ground(-8f, 100f);
             t.Sign("Busy market! The ball bounces\noff people - chip over them\nor wait for a gap", new Vector2(6f, 3.4f));
 
@@ -273,6 +280,7 @@ namespace DribbleToSchool.EditorTools
         {
             t.Walls(-8f, 90f);
             t.Start(0f);
+            t.Hint(10f, "crossing");
             t.Ground(-8f, 90f);
             t.Sign("Zebra crossing ahead.\nWait for GREEN -\nhold the left side to brake", new Vector2(6f, 3.4f));
 
@@ -338,6 +346,7 @@ namespace DribbleToSchool.EditorTools
         {
             t.Walls(-8f, 110f);
             t.Start(0f);
+            t.Hint(9f, "springboard");
             t.Ground(-8f, 110f);
             t.Sign("Fruit crates make great springboards!\nRoll the ball onto one, then jump on", new Vector2(6f, 3.4f));
 
@@ -441,6 +450,7 @@ namespace DribbleToSchool.EditorTools
         {
             t.Walls(-8f, 110f);
             t.Start(0f);
+            t.Hint(13f, "tide");
             t.Ground(-8f, 110f);
             t.Sign("Low tide! Cross the wet sand\nwhen the water goes out", new Vector2(5f, 3.2f));
 
@@ -472,6 +482,7 @@ namespace DribbleToSchool.EditorTools
         {
             t.Walls(-8f, 115f);
             t.Start(0f);
+            t.Hint(8f, "seagull");
             t.Ground(-8f, 115f);
             t.Sign("Seagulls swoop low -\nkeep the ball close!", new Vector2(5f, 3.4f));
 
@@ -545,6 +556,7 @@ namespace DribbleToSchool.EditorTools
         {
             t.Walls(-8f, 105f);
             t.Start(0f);
+            t.Hint(10f, "tunnel");
             t.Ground(-8f, 105f);
             t.Sign("Into the underpass -\nit's dark in there!", new Vector2(5f, 3.2f));
 
@@ -572,6 +584,7 @@ namespace DribbleToSchool.EditorTools
         {
             t.Walls(-8f, 115f);
             t.Start(0f);
+            t.Hint(12f, "pipes");
             t.Ground(-8f, 115f);
             t.Sign("Building site! Pipes roll\ndown the slope - jump them", new Vector2(5f, 3.4f));
 
@@ -604,6 +617,7 @@ namespace DribbleToSchool.EditorTools
         {
             t.Walls(-8f, 110f);
             t.Start(0f);
+            t.Hint(15f, "platform");
             t.Ground(-8f, 20f);
             t.Sign("Ride the crane platforms across.\nChip the ball on first!", new Vector2(5f, 3.4f));
 
@@ -675,6 +689,7 @@ namespace DribbleToSchool.EditorTools
         {
             t.Walls(-8f, 105f);
             t.Start(0f);
+            t.Hint(8f, "dog");
             t.Ground(-8f, 105f);
             t.Sign("The park! Dogs chase low balls -\nchip it over their heads", new Vector2(5f, 3.4f));
 
@@ -700,6 +715,7 @@ namespace DribbleToSchool.EditorTools
         {
             t.Walls(-8f, 110f);
             t.Start(0f);
+            t.Hint(8f, "fountain");
             t.Ground(-8f, 110f);
             t.Sign("Fountains push the ball up -\ndribble into the spray!", new Vector2(5f, 3.4f));
 
@@ -733,6 +749,7 @@ namespace DribbleToSchool.EditorTools
         {
             t.Walls(-8f, 110f);
             t.Start(0f);
+            t.Hint(16f, "swing");
             t.Ground(-8f, 22f);
             t.Sign("Playground! Chip the ball across,\nthen jump on the swing", new Vector2(5f, 3.4f));
 
@@ -849,6 +866,7 @@ namespace DribbleToSchool.EditorTools
         {
             t.Walls(-6f, 14f);
             t.Start(0f);
+            t.Hint(0.5f, "juggle");
             t.Ground(-6f, 14f);
             t.Sign("Kick the ball up (drag back),\nthen tap to juggle!", new Vector2(4f, 3.6f));
             t.Challenge<JuggleChallenge>("Keepy-Uppy", "Kick the ball up, then tap each time it drops near you. Best run counts!", 45f, 5, 10, 15);
