@@ -33,8 +33,12 @@ namespace DribbleToSchool.Progression
             data = null;
             try
             {
-                if (File.Exists(FilePath))
-                    data = JsonUtility.FromJson<SaveData>(File.ReadAllText(FilePath));
+                // If the app died mid-save, the newest complete copy is the .tmp file.
+                string path = File.Exists(FilePath) ? FilePath
+                    : File.Exists(FilePath + ".tmp") ? FilePath + ".tmp"
+                    : File.Exists(FilePath + ".prev") ? FilePath + ".prev" : null;
+                if (path != null)
+                    data = JsonUtility.FromJson<SaveData>(File.ReadAllText(path));
             }
             catch (Exception e)
             {
@@ -52,7 +56,12 @@ namespace DribbleToSchool.Progression
             {
                 string tmp = FilePath + ".tmp";
                 File.WriteAllText(tmp, JsonUtility.ToJson(data, true));
-                if (File.Exists(FilePath)) File.Delete(FilePath);
+                // Keep the previous save until the new one is in place (File.Replace isn't portable to every mobile runtime).
+                if (File.Exists(FilePath))
+                {
+                    File.Copy(FilePath, FilePath + ".prev", true);
+                    File.Delete(FilePath);
+                }
                 File.Move(tmp, FilePath);
             }
             catch (Exception e)

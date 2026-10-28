@@ -12,6 +12,7 @@ namespace DribbleToSchool.UI.Kit
 
         CanvasGroup group;
         float startTime;
+        bool started;
 
         void Awake()
         {
@@ -20,12 +21,17 @@ namespace DribbleToSchool.UI.Kit
 
         void OnEnable()
         {
-            startTime = Time.unscaledTime + delay;
+            started = false;   // start time is taken on the first frame, after callers set delay/fromScale
             Apply(0f);
         }
 
         void Update()
         {
+            if (!started)
+            {
+                started = true;
+                startTime = Time.unscaledTime + delay;
+            }
             float t = Mathf.Clamp01((Time.unscaledTime - startTime) / duration);
             Apply(t);
             if (t >= 1f) enabled = false;

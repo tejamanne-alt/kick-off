@@ -8,9 +8,19 @@ namespace DribbleToSchool.UI.Kit
         public float amount = 0.06f;
         public float speed = 3f;
 
+        UIButtonFx fx;
+
+        void Awake()
+        {
+            fx = GetComponent<UIButtonFx>();
+        }
+
         void Update()
         {
-            transform.localScale = Vector3.one * (1f + Mathf.Sin(Time.unscaledTime * speed) * amount);
+            float s = 1f + Mathf.Sin(Time.unscaledTime * speed) * amount;
+            // On a button, let the press animation own the scale and just feed it the pulse.
+            if (fx != null) fx.pulse = s;
+            else transform.localScale = Vector3.one * s;
         }
     }
 }

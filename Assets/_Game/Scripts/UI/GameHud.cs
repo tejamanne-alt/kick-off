@@ -274,7 +274,15 @@ namespace DribbleToSchool.UI
             var state = level.State;
             if (state == lastState) return;
 
-            if (lastState == LevelState.Paused && pauseModal != null) Destroy(pauseModal);
+            if (lastState == LevelState.Paused)
+            {
+                if (pauseModal != null) Destroy(pauseModal);
+                foreach (var name in new[] { "Settings", "ConfirmReset" })
+                {
+                    var leftover = root.Find(name);
+                    if (leftover != null) Destroy(leftover.gameObject);
+                }
+            }
             if (state == LevelState.Paused) ShowPause();
             if (state == LevelState.Complete) ShowResults();
             if (state == LevelState.Intro && resultsModal != null) Destroy(resultsModal);

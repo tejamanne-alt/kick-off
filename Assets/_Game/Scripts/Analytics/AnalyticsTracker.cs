@@ -51,7 +51,8 @@ namespace DribbleToSchool.Analytics
 
         void Unhook()
         {
-            if (hooked == null) return;
+            // The old LevelManager is already destroyed when the next scene loads; its C# state is still readable.
+            if (ReferenceEquals(hooked, null)) return;
             if (hooked.State != LevelState.Complete)
                 AnalyticsService.Track("level_quit", "level", levelId, "time", hooked.ElapsedTime.ToString("0.0"), "lost", hooked.BallsLost);
             hooked.BallLost -= OnBallLost;

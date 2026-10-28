@@ -37,13 +37,13 @@ namespace DribbleToSchool.Hazards
             // The sprite is a 2x2-unit square with the hole in the middle; scale it so the
             // hole matches lightRadius and the dark part covers the whole view.
             transform.position = new Vector3(follow.position.x, follow.position.y + 0.3f, 0f);
-            float holeScale = lightRadius / 0.25f;   // hole radius is 0.25 units in the sprite
+            float holeScale = lightRadius / 0.125f;   // hole radius is ~0.125 units in the sprite (half-size 1)
             transform.localScale = new Vector3(holeScale, holeScale, 1f);
         }
 
         static Sprite BuildSprite()
         {
-            const int size = 256;
+            const int size = 512;
             var tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
             for (int y = 0; y < size; y++)
             {
@@ -51,13 +51,13 @@ namespace DribbleToSchool.Hazards
                 {
                     float u = (x + 0.5f) / size * 2f - 1f, v = (y + 0.5f) / size * 2f - 1f;
                     float d = Mathf.Sqrt(u * u + v * v) * 1f;     // 0 centre .. 1 edge (sprite is 2 units)
-                    float a = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0.12f, 0.3f, d));
+                    float a = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0.06f, 0.15f, d));
                     tex.SetPixel(x, y, new Color(1f, 1f, 1f, a));
                 }
             }
             tex.wrapMode = TextureWrapMode.Clamp;
             tex.Apply();
-            // 2 world units across at scale 1; hole edge ~0.25 units from centre.
+            // 2 world units across at scale 1; small hole so the dark part covers wide phones at any camera offset.
             return Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), size / 2f);
         }
     }

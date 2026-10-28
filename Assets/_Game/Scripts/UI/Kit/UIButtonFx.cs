@@ -8,6 +8,8 @@ namespace DribbleToSchool.UI.Kit
     public class UIButtonFx : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IPointerExitHandler, IPointerClickHandler
     {
         public float pressedScale = 0.92f;
+        /// <summary>Extra scale multiplier set by UIPulse on the same object.</summary>
+        [System.NonSerialized] public float pulse = 1f;
 
         Vector3 baseScale = Vector3.one;
         float target = 1f;
@@ -31,7 +33,7 @@ namespace DribbleToSchool.UI.Kit
         void Update()
         {
             current = Mathf.Lerp(current, target, 1f - Mathf.Exp(-18f * Time.unscaledDeltaTime));
-            transform.localScale = baseScale * current;
+            transform.localScale = baseScale * current * pulse;
         }
     }
 }

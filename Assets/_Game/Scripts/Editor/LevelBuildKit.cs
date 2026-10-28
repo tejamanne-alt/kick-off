@@ -472,10 +472,11 @@ namespace DribbleToSchool.EditorTools
 
                 var go = new GameObject(name + "LoseZone");
                 go.transform.SetParent(root, false);
-                go.transform.position = new Vector2((fromX + toX) * 0.5f, top - 2.2f);
+                // Deep enough that it can never reach the surface of lower ground on either side.
+                go.transform.position = new Vector2((fromX + toX) * 0.5f, Mathf.Min(top - 2.2f, -1f));
                 var trigger = go.AddComponent<BoxCollider2D>();
                 trigger.isTrigger = true;
-                trigger.size = new Vector2(toX - fromX + 1f, 1f);
+                trigger.size = new Vector2(toX - fromX, 1f);
                 go.AddComponent<LoseZone>().message = message;
             }
 

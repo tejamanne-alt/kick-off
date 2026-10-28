@@ -248,6 +248,8 @@ namespace DribbleToSchool.Ball
             transform.position = position;
             Body.linearVelocity = Vector2.zero;
             Body.angularVelocity = 0f;
+            var trail = GetComponent<TrailRenderer>();
+            if (trail != null) trail.Clear();
             PerfectStreak = 0;
             JuggleCount = 0;
             nextTouchAllowedTime = 0f;

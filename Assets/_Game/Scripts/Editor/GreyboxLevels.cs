@@ -195,7 +195,7 @@ namespace DribbleToSchool.EditorTools
 
             t.ParkedCar(55f, CarYellow);
             t.Checkpoint(62f);
-            t.SwitchAndGate(new Vector2(70f, 0.9f), 74f);
+            t.SwitchAndGate(new Vector2(70f, 0.3f), 74f);
             t.Sign("A low one - a hard dribble does it", new Vector2(69f, 3f));
 
             t.Wall(80f, 0.3f, 0f, 0.6f);
@@ -793,8 +793,8 @@ namespace DribbleToSchool.EditorTools
             t.Ground(28f, 46f);
             t.Checkpoint(30f);
             t.Dog(34f, 42f, DogWhite);
-            t.Water(46f, 49f);
-            t.Ground(49f, 70f);
+            t.Water(46f, 48f);
+            t.Ground(48f, 70f);
             t.Fountain(54f, 0f, 4f, 18f);
             t.Springboard(56f);
             t.Wall(58f, 1.6f);

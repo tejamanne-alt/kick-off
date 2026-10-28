@@ -126,11 +126,7 @@ namespace DribbleToSchool.InputHandling
 
         void Awake()
         {
-            if (Instance != null && Instance != this)
-            {
-                Destroy(gameObject);
-                return;
-            }
+            // One per scene; during a scene load the newest instance takes over.
             Instance = this;
             if (worldCamera == null) worldCamera = Camera.main;
         }

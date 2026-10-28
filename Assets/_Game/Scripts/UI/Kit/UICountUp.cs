@@ -14,16 +14,22 @@ namespace DribbleToSchool.UI.Kit
 
         Text text;
         float start;
+        bool started;
 
         void OnEnable()
         {
             text = GetComponent<Text>();
-            start = Time.unscaledTime + delay;
+            started = false;
             text.text = string.Format(format, 0);
         }
 
         void Update()
         {
+            if (!started)
+            {
+                started = true;
+                start = Time.unscaledTime + delay;
+            }
             float t = Mathf.Clamp01((Time.unscaledTime - start) / duration);
             float eased = 1f - (1f - t) * (1f - t);
             text.text = string.Format(format, Mathf.RoundToInt(target * eased));

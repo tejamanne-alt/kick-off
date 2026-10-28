@@ -337,7 +337,7 @@ namespace DribbleToSchool.Core
             var result = new LevelResult
             {
                 time = ElapsedTime,
-                beforeBell = BellTime <= 0f || ElapsedTime <= BellTime,
+                beforeBell = !BellEnabled || BellTime <= 0f || ElapsedTime <= BellTime,
                 bestPerfectStreak = BestPerfectStreak,
                 ballsLost = BallsLost,
                 coins = CoinsCollected,
