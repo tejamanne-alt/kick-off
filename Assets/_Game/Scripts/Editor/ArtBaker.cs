@@ -18,7 +18,7 @@ namespace DribbleToSchool.EditorTools
         public class ArtSet
         {
             public Sprite block, crate, groundFill, sun, puff, spark, drop, shadow, dog, seagull, car;
-            public Sprite carFront, walkFigure, standFigure, waterJet, sideStreet;
+            public Sprite carFront, walkFigure, standFigure, waterJet, sideStreet, tideWater;
             public Sprite[] clouds = new Sprite[3];
             public Sprite[] edge = new Sprite[6];
             public Sprite[] sky = new Sprite[6];
@@ -54,6 +54,7 @@ namespace DribbleToSchool.EditorTools
             Queue(pending, "SignalStand", ProceduralArt.SignalFigure(false), new ImportSpec(160, 0));
             Queue(pending, "WaterJet", ProceduralArt.WaterJet(), new ImportSpec(64, 0));
             Queue(pending, "SideStreet", ProceduralArt.SideStreet(), new ImportSpec(64, 0));
+            Queue(pending, "TideWater", ProceduralArt.TideWater(), new ImportSpec(64, 0));
             foreach (string part in PartNames) Queue(pending, "Part_" + part, ProceduralArt.Part(part), new ImportSpec(ProceduralArt.PartPpu(part), 0));
 
             for (int ch = 1; ch <= 5; ch++)
@@ -96,6 +97,7 @@ namespace DribbleToSchool.EditorTools
             set.standFigure = Load("SignalStand");
             set.waterJet = Load("WaterJet");
             set.sideStreet = Load("SideStreet");
+            set.tideWater = Load("TideWater");
             var poles = Load("Poles");
             foreach (string part in PartNames) set.parts[part] = Load("Part_" + part);
             for (int ch = 1; ch <= 5; ch++)

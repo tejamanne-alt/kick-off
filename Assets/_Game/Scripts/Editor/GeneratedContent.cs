@@ -21,7 +21,7 @@ namespace DribbleToSchool.EditorTools
     public static class GeneratedContent
     {
         /// <summary>Bump when layouts or the scene rig change so scenes regenerate.</summary>
-        public const int Version = 15;
+        public const int Version = 16;
 
         const string ScenesDir = LevelBuildKit.Root + "/Scenes";
         const string LevelsDir = LevelBuildKit.Root + "/Levels";
@@ -192,7 +192,11 @@ namespace DribbleToSchool.EditorTools
             var buildScenes = new List<EditorBuildSettingsScene> { new EditorBuildSettingsScene(FrontEndScene, true) };
             for (int i = 0; i < Levels.Length; i++)
             {
-                LevelBuildKit.BuildScene(Levels[i].ScenePath, defs[i], catalog, Levels[i].layout);
+                // Reload shared assets: building the previous scene may have unloaded them.
+                var def = AssetDatabase.LoadAssetAtPath<LevelDefinition>(LevelsDir + "/" + Levels[i].id + ".asset");
+                catalog = AssetDatabase.LoadAssetAtPath<LevelCatalog>(LevelsDir + "/LevelCatalog.asset");
+                LevelBuildKit.Cosmetics = AssetDatabase.LoadAssetAtPath<CosmeticCatalog>(CosmeticsDir + "/CosmeticCatalog.asset");
+                LevelBuildKit.BuildScene(Levels[i].ScenePath, def, catalog, Levels[i].layout, Levels[i].chapter);
                 buildScenes.Add(new EditorBuildSettingsScene(Levels[i].ScenePath, true));
             }
             LevelBuildKit.BuildScene(TestTrackScene, null, catalog, GreyboxLevels.TestTrack);

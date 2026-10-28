@@ -92,5 +92,33 @@ namespace DribbleToSchool.Art
             }
             return c;
         }
+
+        /// <summary>
+        /// Tidewater washing over a stretch of sand: a shallow lens of sea water that tapers to
+        /// nothing at both ends, darker in its depth, with a scalloped foam crest and glints.
+        /// 256 x 64; the water surface sits 44 px above the bottom.
+        /// </summary>
+        public static PixelCanvas TideWater()
+        {
+            var c = new PixelCanvas(256, 64);
+            System.Func<float, float> taper = x => { float e = Mathf.Clamp01(Mathf.Min(x, 256f - x) / 48f); return e * e * (3f - 2f * e); };
+            System.Func<float, float> surface = x => 44f + Mathf.Sin(x * 0.11f) * 2.5f;
+            Color shallow = new Color(0.42f, 0.78f, 0.9f, 0.85f), deep = new Color(0.22f, 0.52f, 0.8f, 0.9f);
+            c.Fill((x, y) => y <= surface(x) && y >= 44f - 44f * taper(x) ? 1f : 0f, shallow);
+            c.Shade((x, y) => y < 28f ? 1f : 0f, deep);
+            // Foam crest along the surface, thinning toward the tapered ends.
+            c.Fill((x, y) =>
+            {
+                float top = surface(x), t = taper(x);
+                float band = 3f + 4f * t + Mathf.Abs(Mathf.Sin(x * 0.23f)) * 3f * t;
+                return t > 0.05f && y <= top + 1.5f && y >= top - band ? 1f : 0f;
+            }, new Color(0.96f, 0.99f, 1f, 0.95f));
+            for (int i = 0; i < 6; i++)
+            {
+                float gx = 50 + i * 30, gy = 18 + (i % 3) * 6;
+                c.Line(new Vector2(gx, gy), new Vector2(gx + 14, gy), 2f, new Color(1f, 1f, 1f, 0.55f));
+            }
+            return c;
+        }
     }
 }

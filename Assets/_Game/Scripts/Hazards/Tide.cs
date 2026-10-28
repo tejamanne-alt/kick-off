@@ -15,15 +15,19 @@ namespace DribbleToSchool.Hazards
         public float highOffset = 0f;
         public float period = 6f;
         public float phaseOffset;
+        [Tooltip("The water sprite: it sloshes gently sideways as the tide moves.")]
+        public Transform surface;
 
         public bool IsHigh { get; private set; }
 
         Vector3 start;
+        Vector3 surfaceStart;
         float time;
 
         void Awake()
         {
             start = transform.position;
+            if (surface != null) surfaceStart = surface.localPosition;
             ResetState();
         }
 
@@ -46,6 +50,8 @@ namespace DribbleToSchool.Hazards
             s = s * s * (3f - 2f * s);
             transform.position = start + Vector3.up * Mathf.Lerp(lowOffset, highOffset, s);
             IsHigh = s > 0.5f;
+            if (surface != null)
+                surface.localPosition = surfaceStart + Vector3.right * Mathf.Sin(time * 1.4f) * 0.18f;
         }
     }
 }

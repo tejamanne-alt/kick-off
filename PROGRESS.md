@@ -128,6 +128,11 @@ This file is the resume point. A new session should read it first. All eight pha
   - This replaces a car that drove along the pavement.
 - Fountains are plaza floor fountains: three pulsing jets from a flush grate, with splash droplets.
   - The lift follows the visible jet height (`Hazards/Fountain.cs`), replacing a wind column beside a basin.
+- Fix: every level had been built with chapter 1 scenery.
+  - Cause: creating each new scene could unload the level definition, so `def != null` failed and the chapter fell back to 1.
+  - The chapter is now passed in from the level table, and the shared assets are reloaded per level.
+- The background house row leaves the side street clear at crossings, while the crossing is near screen centre (`BlocksOpenArea`).
+- The tide is a tapering lens of sea with a foam crest that washes over darker wet sand and sloshes gently, replacing a flat blue box.
 
 ## After Phase 8 (next steps)
 

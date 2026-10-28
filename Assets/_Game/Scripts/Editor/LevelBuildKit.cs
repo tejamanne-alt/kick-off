@@ -91,11 +91,15 @@ namespace DribbleToSchool.EditorTools
         /// Build and save one level scene: camera, input, the track from
         /// <paramref name="layout"/>, kid, ball, kick aimer, level manager and HUD.
         /// </summary>
-        public static void BuildScene(string scenePath, LevelDefinition def, LevelCatalog catalog, Action<TrackBuilder> layout)
+        /// <remarks>
+        /// <paramref name="chapter"/> is passed in rather than read from <paramref name="def"/>: creating a new
+        /// scene can unload level assets nothing references, after which <c>def</c> compares equal to null.
+        /// </remarks>
+        public static void BuildScene(string scenePath, LevelDefinition def, LevelCatalog catalog, Action<TrackBuilder> layout, int chapter = 1)
         {
             EnsureFolder(Path.GetDirectoryName(scenePath).Replace('\\', '/'));
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
-            Chapter = def != null ? Mathf.Clamp(def.chapter, 1, 5) : 1;
+            Chapter = Mathf.Clamp(chapter, 1, 5);
             Theme = ChapterTheme.For(Chapter);
 
             var camGo = new GameObject("Main Camera");
@@ -370,6 +374,24 @@ namespace DribbleToSchool.EditorTools
         }
 
         /// <summary>
+        /// Would a prop on a parallax layer cover one of the track's open areas (a side street) while
+        /// that area is near the middle of the screen? A layer with factor f drifts f * (camera move)
+        /// relative to the world, so its apparent position sweeps as the camera passes.
+        /// </summary>
+        static bool BlocksOpenArea(TrackBuilder track, float centerX, float width, float factor, float camStart)
+        {
+            const float watchedCameraRange = 6f;   // the open area stays clear while within this of screen centre
+            foreach (var area in track.OpenAreas)
+            {
+                float c = (area.x + area.y) * 0.5f;
+                float left = centerX - width * 0.5f + factor * (c - watchedCameraRange - camStart);
+                float right = centerX + width * 0.5f + factor * (c + watchedCameraRange - camStart);
+                if (right > area.x && left < area.y) return true;
+            }
+            return false;
+        }
+
+        /// <summary>
         /// Chapter backdrop: sky and sun glued to the camera, then clouds, far
         /// scenery, mid props and a near hedge/fence layer at decreasing parallax.
         /// </summary>
@@ -434,6 +456,11 @@ namespace DribbleToSchool.EditorTools
                 float sc = 0.95f + (float)rng.NextDouble() * 0.1f;
                 Vector2 size = sprite.bounds.size * sc;
                 float cx = x + size.x * 0.5f;
+                if (BlocksOpenArea(track, cx, size.x, 0.55f, camStart))
+                {
+                    x += 1f;   // keep the side street clear: try a little further along
+                    continue;
+                }
                 var prop = SpriteObject(mid, "Prop", sprite, new Vector3(cx, track.LowestGroundTop - 0.3f + size.y * 0.5f, 0f), -60);
                 x += size.x + 0.5f + (float)rng.NextDouble() * 2.5f;
                 prop.transform.localScale = new Vector3(sc, sc, 1f);
@@ -486,6 +513,8 @@ namespace DribbleToSchool.EditorTools
             public float MinX { get; private set; }
             public float MaxX { get; private set; }
             public float LowestGroundTop { get; private set; }
+            /// <summary>Stretches of the track where the backdrop must stay open (side streets at crossings).</summary>
+            public readonly List<Vector2> OpenAreas = new List<Vector2>();
             /// <summary>The wall at the level start: stops the kid, lets the ball through (see LevelManager).</summary>
             public Collider2D StartWall { get; private set; }
 
@@ -678,6 +707,7 @@ namespace DribbleToSchool.EditorTools
                     Decor("Zebra", new Vector2(sx + 0.2f, groundTop - 0.06f), new Vector2(0.4f, 0.1f), Color.white).GetComponent<SpriteRenderer>().sortingOrder = 2;
                 foreach (float kx in new[] { fromX, toX })
                     Decor("DroppedKerb", new Vector2(kx, groundTop - 0.04f), new Vector2(0.3f, 0.1f), new Color(0.8f, 0.8f, 0.78f)).GetComponent<SpriteRenderer>().sortingOrder = 2;
+                OpenAreas.Add(new Vector2(fromX - 0.8f, toX + 0.8f));
                 var street = SpriteObject(root, "SideStreet", Art.sideStreet, new Vector3(center, groundTop + 0.48f, 0f), -38);
                 street.transform.localScale = new Vector3(width / 4f, 0.65f, 1f);
 
@@ -851,13 +881,13 @@ namespace DribbleToSchool.EditorTools
                 go.transform.position = new Vector2((fromX + toX) * 0.5f, groundTop);
                 go.AddComponent<Rigidbody2D>().bodyType = RigidbodyType2D.Kinematic;
 
-                Decor("WetSand", new Vector2((fromX + toX) * 0.5f, groundTop - 0.05f), new Vector2(width, 0.1f), new Color(0.78f, 0.7f, 0.5f)).GetComponent<SpriteRenderer>().sortingOrder = 1;
-                var water = Decor("Water", new Vector2((fromX + toX) * 0.5f, groundTop - 1.5f), new Vector2(width + 0.6f, 3f), new Color(0.35f, 0.65f, 0.9f, 0.85f));
-                water.transform.SetParent(go.transform, true);
-                water.GetComponent<SpriteRenderer>().sortingOrder = -3;   // behind the ground: only shows above the sand
-                var foam = Decor("Foam", new Vector2((fromX + toX) * 0.5f, groundTop - 0.04f), new Vector2(width + 0.6f, 0.08f), new Color(1f, 1f, 1f, 0.9f));
-                foam.transform.SetParent(go.transform, true);
-                foam.GetComponent<SpriteRenderer>().sortingOrder = -2;
+                // Darker wet sand marks where the sea reaches. The water is a tapering lens of sea with a
+                // foam crest, behind the ground so only the part above the sand shows as it washes in.
+                Decor("WetSand", new Vector2((fromX + toX) * 0.5f, groundTop - 0.05f), new Vector2(width + 1f, 0.1f), new Color(0.72f, 0.62f, 0.44f)).GetComponent<SpriteRenderer>().sortingOrder = 1;
+                var water = SpriteObject(go.transform, "Water", Art.tideWater, Vector3.zero, -3);
+                const float surfaceAboveCentre = (44f - 32f) / 64f, depthScale = 1.2f;
+                water.transform.localScale = new Vector3((width + 1.6f) / Art.tideWater.bounds.size.x, depthScale, 1f);
+                water.transform.localPosition = new Vector3(0f, -surfaceAboveCentre * depthScale, 0f);   // surface at the tide's origin
 
                 var zoneGo = new GameObject("TideLoseZone");
                 zoneGo.transform.SetParent(go.transform, false);
@@ -872,6 +902,7 @@ namespace DribbleToSchool.EditorTools
                 tide.highOffset = 0.45f;
                 tide.period = period;
                 tide.phaseOffset = phaseOffset;
+                tide.surface = water.transform;
             }
 
             /// <summary>A dark tunnel with a ceiling: darkens the screen around the kid while inside.</summary>
