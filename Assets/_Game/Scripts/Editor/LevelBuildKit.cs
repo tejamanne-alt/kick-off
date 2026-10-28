@@ -368,8 +368,12 @@ namespace DribbleToSchool.EditorTools
 
             var sky = SpriteObject(cam.transform, "Sky", Art.sky[ch], new Vector3(0f, 0f, 20f), -100);
             sky.transform.localScale = new Vector3(130f, 1.9f, 1f);
-            var sun = SpriteObject(cam.transform, "Sun", Art.sun, new Vector3(6.5f, 3.1f, 19f), -95, Theme.sun);
-            sun.transform.localScale = Vector3.one * 0.85f;
+            if (ch == 5)
+            {
+                // Only the last chapter shows the low golden sun; the rest is clear summer blue.
+                var sun = SpriteObject(cam.transform, "Sun", Art.sun, new Vector3(6.5f, 3.1f, 19f), -95, Theme.sun);
+                sun.transform.localScale = Vector3.one * 0.85f;
+            }
 
             const float halfView = 11.5f;
             float camStart = Mathf.Max(track.MinX + halfView, kidSpawn.x + 1.5f);
@@ -392,10 +396,12 @@ namespace DribbleToSchool.EditorTools
             // Clouds
             var clouds = layer("Clouds", 0.93f, 0.95f);
             Vector2 cs = span(0.93f);
-            for (float x = cs.x; x < cs.y; x += 9f + (float)rng.NextDouble() * 8f)
+            for (float x = cs.x; x < cs.y; x += 7f + (float)rng.NextDouble() * 7f)
             {
-                var c = SpriteObject(clouds, "Cloud", Art.clouds[rng.Next(3)], new Vector3(x, 5f + (float)rng.NextDouble() * 2.2f, 0f), -90, Theme.cloud);
-                c.transform.localScale = Vector3.one * (0.7f + (float)rng.NextDouble() * 0.5f);
+                // Big cumulus sit low over the rooftops; the camera-relative layer keeps them there.
+                var c = SpriteObject(clouds, "Cloud", Art.clouds[rng.Next(3)], new Vector3(x, track.LowestGroundTop + 4.2f + (float)rng.NextDouble() * 2.3f, 0f), -90, Theme.cloud);
+                c.transform.localScale = Vector3.one * (0.55f + (float)rng.NextDouble() * 0.4f);
+                c.flipX = rng.NextDouble() < 0.5;
             }
 
             // Far scenery (tiled strip)
@@ -408,13 +414,24 @@ namespace DribbleToSchool.EditorTools
             // Mid props
             var mid = layer("Mid", 0.55f, 0.7f);
             Vector2 ms = span(0.55f);
-            for (float x = ms.x; x < ms.y; x += 6.5f + (float)rng.NextDouble() * 5f)
+            for (float x = ms.x; x < ms.y; x += 6f + (float)rng.NextDouble() * 4f)
             {
-                var prop = SpriteObject(mid, "Prop", Art.mid[ch, rng.Next(3)], new Vector3(x, track.LowestGroundTop + 1.6f, 0f), -60);
-                float sc = 0.85f + (float)rng.NextDouble() * 0.3f;
+                // Props are 6.4 units tall and stand on the canvas bottom: sit them just into the ground.
+                float sc = 0.9f + (float)rng.NextDouble() * 0.2f;
+                var prop = SpriteObject(mid, "Prop", Art.mid[ch, rng.Next(3)], new Vector3(x, track.LowestGroundTop - 0.3f + 3.2f * sc, 0f), -60);
                 prop.transform.localScale = new Vector3(sc, sc, 1f);
                 prop.flipX = Theme.scenery != SceneryStyle.Park && rng.NextDouble() < 0.35;
-                prop.color = Color.Lerp(Color.white, Theme.skyBottom, 0.18f);   // a touch of aerial haze
+                prop.color = Color.Lerp(Color.white, Theme.skyBottom, 0.08f);   // a touch of aerial haze
+            }
+
+            // Utility poles with sagging wires (suburb, market, city), between the props and the near strip.
+            if (Art.poles[ch] != null)
+            {
+                var poles = layer("Poles", 0.42f, 0.55f);
+                Vector2 ps = span(0.42f);
+                var polesSr = SpriteObject(poles, "PoleLine", Art.poles[ch], new Vector3((ps.x + ps.y) * 0.5f, track.LowestGroundTop - 0.3f + 4f, 0f), -50);
+                polesSr.drawMode = SpriteDrawMode.Tiled;
+                polesSr.size = new Vector2(ps.y - ps.x, 8f);
             }
 
             // Near hedges / fences / bunting

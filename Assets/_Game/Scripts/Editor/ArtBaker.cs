@@ -7,7 +7,7 @@ using UnityEngine;
 namespace DribbleToSchool.EditorTools
 {
     /// <summary>
-    /// Bakes the procedural storybook art (Art/ProceduralArt.cs) into sprite
+    /// Bakes the procedural anime-style art (Art/ProceduralArt.cs) into sprite
     /// assets with the right import settings, so scenes reference real sprites
     /// and look right in the editor too.
     /// </summary>
@@ -23,6 +23,8 @@ namespace DribbleToSchool.EditorTools
             public Sprite[] sky = new Sprite[6];
             public Sprite[] far = new Sprite[6];
             public Sprite[] near = new Sprite[6];
+            /// <summary>Utility-pole strip per chapter (null where the chapter has none).</summary>
+            public Sprite[] poles = new Sprite[6];
             public Sprite[,] mid = new Sprite[6, 3];
             public readonly Dictionary<string, Sprite> parts = new Dictionary<string, Sprite>();
         }
@@ -37,7 +39,8 @@ namespace DribbleToSchool.EditorTools
             Queue(pending, "Crate", ProceduralArt.Crate(), new ImportSpec(128, 14));
             Queue(pending, "GroundFill", ProceduralArt.GroundFill(), new ImportSpec(128, 0));
             Queue(pending, "Sun", ProceduralArt.Sun(new Color(1f, 0.93f, 0.65f)), new ImportSpec(64, 0));
-            for (int i = 0; i < 3; i++) Queue(pending, "Cloud" + i, ProceduralArt.Cloud(i * 17 + 3), new ImportSpec(64, 0));
+            for (int i = 0; i < 3; i++) Queue(pending, "Cloud" + i, ProceduralArt.Cloud(i * 17 + 3), new ImportSpec(48, 0));
+            Queue(pending, "Poles", ProceduralArt.PoleLine(1), new ImportSpec(64, 0));
             Queue(pending, "Puff", ProceduralArt.Puff(), new ImportSpec(64, 0));
             Queue(pending, "Spark", ProceduralArt.Spark(), new ImportSpec(64, 0));
             Queue(pending, "Drop", ProceduralArt.Drop(), new ImportSpec(64, 0));
@@ -55,7 +58,7 @@ namespace DribbleToSchool.EditorTools
                 Queue(pending, "Ch" + ch + "_Far", ProceduralArt.Far(t.scenery, t.far, ch * 7), new ImportSpec(40, 0));
                 Queue(pending, "Ch" + ch + "_Near", ProceduralArt.Near(t.scenery, t.near, ch * 5), new ImportSpec(64, 0));
                 for (int v = 0; v < 3; v++)
-                    Queue(pending, "Ch" + ch + "_Mid" + v, ProceduralArt.MidProp(t.scenery, v, t.mid), new ImportSpec(64, 0));
+                    Queue(pending, "Ch" + ch + "_Mid" + v, ProceduralArt.MidProp(t.scenery, v, t.mid), new ImportSpec(80, 0));
             }
 
             // Import everything in one batch, then apply settings.
@@ -82,6 +85,7 @@ namespace DribbleToSchool.EditorTools
             set.dog = Load("Dog");
             set.seagull = Load("Seagull");
             set.car = Load("Car");
+            var poles = Load("Poles");
             foreach (string part in PartNames) set.parts[part] = Load("Part_" + part);
             for (int ch = 1; ch <= 5; ch++)
             {
@@ -89,12 +93,19 @@ namespace DribbleToSchool.EditorTools
                 set.sky[ch] = Load("Ch" + ch + "_Sky");
                 set.far[ch] = Load("Ch" + ch + "_Far");
                 set.near[ch] = Load("Ch" + ch + "_Near");
+                set.poles[ch] = HasPoles(ChapterTheme.For(ch).scenery) ? poles : null;
                 for (int v = 0; v < 3; v++) set.mid[ch, v] = Load("Ch" + ch + "_Mid" + v);
             }
             return set;
         }
 
         static readonly string[] PartNames = ProceduralArt.PartNames;
+
+        /// <summary>Streets with overhead power lines: the suburb, the market and the city.</summary>
+        static bool HasPoles(SceneryStyle style)
+        {
+            return style == SceneryStyle.Houses || style == SceneryStyle.Market || style == SceneryStyle.City;
+        }
 
         struct ImportSpec
         {
@@ -120,7 +131,8 @@ namespace DribbleToSchool.EditorTools
             importer.textureType = TextureImporterType.Sprite;
             importer.spriteImportMode = SpriteImportMode.Single;
             importer.spritePixelsPerUnit = spec.ppu;
-            importer.mipmapEnabled = false;
+            // Character parts are drawn at 4x their on-screen size; mipmaps keep them from shimmering.
+            importer.mipmapEnabled = spec.ppu >= 256f;
             importer.alphaIsTransparency = true;
             importer.filterMode = FilterMode.Bilinear;
             importer.wrapMode = TextureWrapMode.Clamp;

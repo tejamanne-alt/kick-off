@@ -112,6 +112,11 @@ This file is the resume point. A new session should read it first. All eight pha
   - Signs: posts are now planted in the ground under each sign, with two legs on wide boards. Signs over gaps move to the near edge. SCHOOL hangs as a banner on the gate. The ball gate slides up into a wooden frame instead of floating.
   - Ground and pit fills now reach below the camera's lowest view, so no sky colour shows under the level.
 - Character animation: arms and legs are now two pieces each (thigh and shin, upper arm and forearm), with knee and elbow joints and shirt-coloured sleeves. The kid's run folds the knee in the swing and plants a straight leg, and the arms drive with bent elbows. The jump tucks the knee, the kick cocks the knee back and then snaps it straight, and landings crouch. Pedestrians stroll with soft knees. All of this is `RigPose` in `CharacterRig`.
+- Art direction moved to an anime look, matching the reference shots:
+  - `Art/CharacterArt.cs` draws the teen (512 px per unit, cel-shaded, thin line).
+  - `Art/SceneryArt.cs` draws the deep-blue skies, cumulus clouds, per-chapter far strips, large mid props, the tileable utility-pole line and the near strips.
+  - Chapter 1's ground is now asphalt with a white kerb.
+  - The menu sky matches.
 
 ## After Phase 8 (next steps)
 

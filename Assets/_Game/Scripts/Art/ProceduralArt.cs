@@ -23,9 +23,9 @@ namespace DribbleToSchool.Art
             var c = new PixelCanvas(64, 64);
             c.FillRoundRect(1, 1, 63, 63, 7, White);
             // Soft inner shading toward the bottom edge.
-            c.Shade((x, y) => y < 14 ? (14 - y) / 14f * 0.25f : 0f, Grey(0.6f));
-            c.Grain(0.12f, 3);
-            c.Ink(Ink, 2.6f, 5);
+            c.Shade((x, y) => y < 14 ? 0.22f : 0f, Grey(0.6f));       // hard cel shadow along the bottom
+            c.Grain(0.04f, 3);
+            c.Ink(Ink, 2f, 5);
             return c;
         }
 
@@ -109,6 +109,24 @@ namespace DribbleToSchool.Art
                         c.Wrapped(o => c.FillEllipse(sx + o, baseY + 1f, 5f, 3f, new Color(1f, 0.75f, 0.7f)));   // shells
                     }
                     break;
+                case EdgeStyle.Road:
+                    // Asphalt with a white concrete kerb along the top and the odd weed in the joints.
+                    c.FillRect(0, 2, w, baseY - 4f, fill);
+                    c.FillRect(0, baseY - 6f, w, baseY + 3f, edge);
+                    c.FillRect(0, baseY - 6f, w, baseY - 3f, Mul(edge, 0.82f));     // kerb face shadow
+                    for (int i = 0; i < 4; i++) c.FillRect(i * 64f + 30f, baseY - 6f, i * 64f + 31.5f, baseY + 3f, Mul(edge, 0.7f));
+                    for (int i = 0; i < 3; i++)
+                    {
+                        float gx = i * 85f + rng.Next(0, 30);
+                        for (int b = 0; b < 4; b++)
+                        {
+                            float lean = b * 2.5f - 4f;
+                            c.Wrapped(o => c.Line(new Vector2(gx + o + b * 2f, baseY + 2f), new Vector2(gx + o + b * 2f + lean, baseY + 9f + b % 2 * 3f), 2f, new Color(0.45f, 0.65f, 0.35f)));
+                        }
+                    }
+                    c.Grain(0.05f, (int)style, 0.06f, true);
+                    c.Ink(new Color(Ink.r, Ink.g, Ink.b, 0.5f), 1.5f, 3, true);
+                    return c;
                 case EdgeStyle.Concrete:
                     c.FillRect(0, 2, w, baseY + 2f, edge);
                     for (int i = 0; i < 4; i++) c.FillRect(i * 64f, 2, i * 64f + 2f, baseY + 2f, Mul(edge, 0.7f));
@@ -117,335 +135,6 @@ namespace DribbleToSchool.Art
             }
             c.Grain(0.12f, (int)style, 0.06f, true);
             c.Ink(Ink, 2f, 3, true);
-            return c;
-        }
-
-        // ===================== Sky =====================
-
-        /// <summary>Vertical sky gradient (stretched over the view).</summary>
-        public static PixelCanvas Sky(Color top, Color bottom)
-        {
-            var c = new PixelCanvas(8, 256);
-            for (int y = 0; y < 256; y++)
-            {
-                float t = Mathf.SmoothStep(0f, 1f, y / 255f);
-                Color col = Color.Lerp(bottom, top, t);
-                for (int x = 0; x < 8; x++) c.Set(x, y, col);
-            }
-            return c;
-        }
-
-        public static PixelCanvas Sun(Color color)
-        {
-            var c = new PixelCanvas(256, 256);
-            for (int i = 6; i >= 1; i--)
-                c.FillCircle(128, 128, 40 + i * 14, new Color(color.r, color.g, color.b, 0.06f));
-            c.FillCircle(128, 128, 56, color);
-            c.Grain(0.05f, 2);
-            return c;
-        }
-
-        public static PixelCanvas Cloud(int seed)
-        {
-            var c = new PixelCanvas(256, 128);
-            var rng = new System.Random(seed);
-            int puffs = 4 + rng.Next(3);
-            for (int i = 0; i < puffs; i++)
-            {
-                float x = 50 + i * (150f / puffs) + rng.Next(-10, 10);
-                float r = 26 + rng.Next(0, 22);
-                c.FillCircle(x, 50 + rng.Next(-6, 14), r, White);
-            }
-            c.FillRoundRect(30, 28, 226, 60, 20, White);
-            c.Shade((x, y) => y < 45 ? (45 - y) / 45f * 0.3f : 0f, new Color(0.75f, 0.8f, 0.95f));
-            c.Ink(new Color(0.55f, 0.6f, 0.75f, 0.6f), 2f, seed);
-            return c;
-        }
-
-        // ===================== Far layer (tileable) =====================
-
-        public static PixelCanvas Far(SceneryStyle style, Color color, int seed)
-        {
-            const int w = 512, h = 256;
-            var c = new PixelCanvas(w, h);
-            var rng = new System.Random(seed);
-            switch (style)
-            {
-                case SceneryStyle.Beach:
-                    // Sea with a soft horizon and wave crests.
-                    c.FillBelow(x => 120f, color);
-                    c.FillBelow(x => 70f, Mul(color, 0.9f));
-                    for (int i = 0; i < 30; i++)
-                    {
-                        float x = (float)rng.NextDouble() * w, y = 20 + (float)rng.NextDouble() * 90;
-                        c.Wrapped(o => c.Line(new Vector2(x + o, y), new Vector2(x + o + 18, y + 2), 2.5f, new Color(1f, 1f, 1f, 0.7f)));
-                    }
-                    for (int b = 0; b < 2; b++)
-                    {
-                        float bx = 100 + b * 230 + rng.Next(-20, 20);
-                        c.FillPolygon(new[] { new Vector2(bx - 30, 120), new Vector2(bx + 30, 120), new Vector2(bx + 20, 108), new Vector2(bx - 20, 108) }, new Color(0.9f, 0.5f, 0.4f));
-                        c.FillPolygon(new[] { new Vector2(bx, 122), new Vector2(bx, 175), new Vector2(bx + 28, 124) }, White);
-                    }
-                    break;
-                case SceneryStyle.City:
-                    for (int x = 0; x < w;)
-                    {
-                        int bw = Mathf.Min(30 + rng.Next(40), w - x);
-                        int bh = 70 + rng.Next(120);
-                        Color bc = Mul(color, 0.9f + (float)rng.NextDouble() * 0.15f);
-                        c.FillRect(x, 0, x + bw - 3, bh, bc);
-                        for (int wy = 12; wy < bh - 10; wy += 16)
-                            for (int wx = x + 5; wx < x + bw - 10; wx += 10)
-                                if (rng.NextDouble() < 0.6) c.FillRect(wx, wy, wx + 4, wy + 7, Mul(bc, 1.15f));
-                        x += bw;
-                    }
-                    break;
-                default:
-                    // Rolling hills; parks get round tree tops along the ridge.
-                    float phase = (float)rng.NextDouble() * 6f;
-                    System.Func<float, float> ridge = x => 110f + Mathf.Sin(x / w * Mathf.PI * 2f + phase) * 30f + Mathf.Sin(x / w * Mathf.PI * 6f + phase * 2f) * 12f;
-                    c.FillBelow(ridge, color);
-                    if (style == SceneryStyle.Park || style == SceneryStyle.Houses)
-                        for (int i = 0; i < 18; i++)
-                        {
-                            float x = (float)rng.NextDouble() * w;
-                            float r = 10f + (float)rng.NextDouble() * 10f;
-                            c.Wrapped(o => c.FillCircle(x + o, ridge(x) + 4f, r, Mul(color, 0.88f)));
-                        }
-                    if (style == SceneryStyle.Market)
-                        for (int i = 0; i < 4; i++)
-                        {
-                            float x = 60 + i * 120 + rng.Next(-20, 20);
-                            float top = ridge(x);
-                            c.FillRect(x - 10, top - 10, x + 10, top + 60, Mul(color, 0.85f));   // church/tower
-                            c.FillPolygon(new[] { new Vector2(x - 14, top + 60), new Vector2(x + 14, top + 60), new Vector2(x, top + 90) }, Mul(color, 0.75f));
-                        }
-                    break;
-            }
-            c.Grain(0.1f, seed, 0.03f, true);
-            c.Ink(new Color(Ink.r, Ink.g, Ink.b, 0.35f), 1.5f, seed, true);
-            return c;
-        }
-
-        // ===================== Mid layer props =====================
-
-        /// <summary>One of several scenery props for the chapter (house, shop, palm, crane, tree...).</summary>
-        public static PixelCanvas MidProp(SceneryStyle style, int variant, Color tint)
-        {
-            switch (style)
-            {
-                case SceneryStyle.Market: return Shop(variant, tint);
-                case SceneryStyle.Beach: return variant % 2 == 0 ? Palm(variant) : BeachHut(variant);
-                case SceneryStyle.City: return variant % 2 == 0 ? CraneProp(variant) : Pillar(variant);
-                case SceneryStyle.Park: return variant == 2 ? School() : Tree(variant, tint);
-                default: return variant == 2 ? Tree(variant, new Color(0.45f, 0.68f, 0.42f)) : House(variant, tint);
-            }
-        }
-
-        static readonly Color[] Walls =
-        {
-            new Color(0.97f, 0.86f, 0.72f), new Color(0.92f, 0.72f, 0.62f), new Color(0.86f, 0.86f, 0.76f),
-            new Color(0.96f, 0.8f, 0.56f), new Color(0.82f, 0.77f, 0.88f),
-        };
-
-        static PixelCanvas House(int variant, Color tint)
-        {
-            var c = new PixelCanvas(256, 256);
-            Color wall = Walls[variant % Walls.Length];
-            Color roof = new Color(0.78f, 0.4f, 0.34f);
-            c.FillRect(40, 0, 216, 150, wall);
-            c.FillPolygon(new[] { new Vector2(28, 148), new Vector2(228, 148), new Vector2(128, 230) }, roof);
-            c.FillRect(170, 175, 190, 230, Mul(roof, 0.8f));   // chimney
-            for (int i = 0; i < 2; i++)
-            {
-                float x = 70 + i * 90;
-                c.FillRoundRect(x, 85, x + 34, 125, 4, new Color(1f, 0.95f, 0.72f));
-                c.FillRect(x + 15, 85, x + 19, 125, wall);
-            }
-            c.FillRoundRect(112, 0, 144, 60, 10, new Color(0.5f, 0.35f, 0.3f));
-            c.Grain(0.12f, variant + 20);
-            c.Ink(Ink, 2.5f, variant);
-            return c;
-        }
-
-        static PixelCanvas Shop(int variant, Color tint)
-        {
-            var c = new PixelCanvas(256, 256);
-            Color wall = Walls[(variant + 2) % Walls.Length];
-            Color[] awn = { new Color(0.9f, 0.35f, 0.35f), new Color(0.35f, 0.6f, 0.85f), new Color(0.45f, 0.7f, 0.4f) };
-            Color a = awn[variant % awn.Length];
-            c.FillRect(30, 0, 226, 210, wall);
-            c.FillRect(24, 205, 232, 222, Mul(wall, 0.85f));
-            c.FillRoundRect(50, 150, 206, 190, 6, White);   // sign
-            c.FillRect(70, 166, 186, 174, Mul(a, 0.8f));
-            c.FillRect(50, 20, 150, 115, new Color(0.75f, 0.88f, 0.95f));   // window
-            c.FillRoundRect(165, 0, 205, 95, 8, new Color(0.5f, 0.35f, 0.3f));
-            for (int i = 0; i < 8; i++)
-                c.FillPolygon(new[] { new Vector2(30 + i * 24.5f, 140), new Vector2(54.5f + i * 24.5f, 140), new Vector2(42 + i * 24.5f, 118) }, i % 2 == 0 ? a : White);
-            for (int i = 0; i < 4; i++) c.FillCircle(70 + i * 22, 30, 9, new[] { new Color(1f, 0.6f, 0.2f), new Color(0.9f, 0.25f, 0.3f), new Color(0.95f, 0.85f, 0.3f), new Color(0.5f, 0.75f, 0.3f) }[i]);
-            c.Grain(0.12f, variant + 40);
-            c.Ink(Ink, 2.5f, variant + 3);
-            return c;
-        }
-
-        static PixelCanvas Palm(int variant)
-        {
-            var c = new PixelCanvas(256, 256);
-            Color trunk = new Color(0.68f, 0.5f, 0.32f), leaf = new Color(0.35f, 0.65f, 0.35f);
-            float lean = variant % 4 == 0 ? 18f : -14f;
-            for (int i = 0; i < 9; i++)
-            {
-                float t = i / 9f;
-                c.FillEllipse(128 + lean * t * t, 10 + t * 175, 13 - t * 4, 12, Mul(trunk, i % 2 == 0 ? 1f : 0.88f));
-            }
-            Vector2 top = new Vector2(128 + lean, 195);
-            for (int i = 0; i < 6; i++)
-            {
-                float ang = Mathf.Deg2Rad * (20 + i * 28);
-                Vector2 tip = top + new Vector2(Mathf.Cos(ang), Mathf.Sin(ang) * 0.55f - 0.35f) * 85f;
-                c.FillPolygon(new[] { top, top + (tip - top) * 0.5f + new Vector2(0, 12), tip, top + (tip - top) * 0.5f - new Vector2(0, 6) }, Mul(leaf, 0.9f + i % 2 * 0.15f));
-            }
-            c.FillCircle(top.x - 6, top.y - 6, 7, new Color(0.5f, 0.35f, 0.2f));
-            c.FillCircle(top.x + 6, top.y - 8, 7, new Color(0.5f, 0.35f, 0.2f));
-            c.Grain(0.12f, variant + 60);
-            c.Ink(Ink, 2.5f, variant + 5);
-            return c;
-        }
-
-        static PixelCanvas BeachHut(int variant)
-        {
-            var c = new PixelCanvas(256, 256);
-            Color[] stripes = { new Color(0.4f, 0.65f, 0.9f), new Color(0.95f, 0.5f, 0.5f), new Color(0.95f, 0.8f, 0.3f) };
-            Color s = stripes[variant % stripes.Length];
-            for (int i = 0; i < 8; i++) c.FillRect(60 + i * 17, 0, 77 + i * 17, 150, i % 2 == 0 ? s : White);
-            c.FillPolygon(new[] { new Vector2(48, 148), new Vector2(208, 148), new Vector2(128, 205) }, Mul(s, 0.75f));
-            c.FillRoundRect(110, 0, 146, 80, 8, White);
-            c.Grain(0.1f, variant + 70);
-            c.Ink(Ink, 2.5f, variant + 6);
-            return c;
-        }
-
-        static PixelCanvas CraneProp(int variant)
-        {
-            var c = new PixelCanvas(256, 256);
-            Color y = new Color(0.95f, 0.72f, 0.25f);
-            c.FillRect(110, 0, 130, 230, y);
-            for (int i = 0; i < 11; i++) c.Line(new Vector2(110, i * 21), new Vector2(130, i * 21 + 21), 3, Mul(y, 0.75f));
-            c.FillRect(20, 220, 250, 236, y);
-            for (int i = 0; i < 11; i++) c.Line(new Vector2(20 + i * 21, 220), new Vector2(41 + i * 21, 236), 3, Mul(y, 0.75f));
-            c.Line(new Vector2(200, 220), new Vector2(200, 140), 2, Ink);
-            c.FillRect(188, 120, 212, 140, new Color(0.5f, 0.5f, 0.55f));
-            c.FillRect(30, 200, 60, 220, new Color(0.45f, 0.45f, 0.5f));
-            c.Grain(0.1f, variant + 80);
-            c.Ink(Ink, 2.2f, variant + 7);
-            return c;
-        }
-
-        static PixelCanvas Pillar(int variant)
-        {
-            var c = new PixelCanvas(256, 256);
-            Color con = new Color(0.66f, 0.66f, 0.7f);
-            c.FillRect(0, 200, 256, 240, con);
-            c.FillRect(90, 0, 166, 200, Mul(con, 0.92f));
-            c.FillRect(100, 60, 156, 120, new Color(0.9f, 0.5f, 0.6f));   // poster / graffiti
-            c.FillCircle(128, 90, 18, new Color(0.4f, 0.75f, 0.9f));
-            c.Grain(0.14f, variant + 90);
-            c.Ink(Ink, 2.5f, variant + 8);
-            return c;
-        }
-
-        static PixelCanvas Tree(int variant, Color tint)
-        {
-            var c = new PixelCanvas(256, 256);
-            Color leaf = variant % 3 == 1 ? new Color(0.5f, 0.72f, 0.4f) : new Color(0.38f, 0.62f, 0.38f);
-            c.FillRoundRect(116, 0, 140, 120, 8, new Color(0.55f, 0.38f, 0.26f));
-            var rng = new System.Random(variant * 13 + 1);
-            for (int i = 0; i < 7; i++)
-                c.FillCircle(128 + rng.Next(-55, 55), 150 + rng.Next(-25, 45), 38 + rng.Next(0, 18), Mul(leaf, 0.9f + (float)rng.NextDouble() * 0.2f));
-            for (int i = 0; i < 5; i++)
-                c.FillCircle(128 + rng.Next(-50, 50), 150 + rng.Next(-20, 40), 5, new Color(0.95f, 0.45f, 0.4f));
-            c.Grain(0.12f, variant + 100);
-            c.Ink(Ink, 2.5f, variant + 9);
-            return c;
-        }
-
-        static PixelCanvas School()
-        {
-            var c = new PixelCanvas(256, 256);
-            Color brick = new Color(0.82f, 0.48f, 0.4f);
-            c.FillRect(10, 0, 246, 170, brick);
-            c.FillPolygon(new[] { new Vector2(0, 168), new Vector2(256, 168), new Vector2(128, 230) }, new Color(0.45f, 0.4f, 0.5f));
-            c.FillCircle(128, 192, 16, White);
-            c.Line(new Vector2(128, 192), new Vector2(128, 203), 2, Ink);
-            c.Line(new Vector2(128, 192), new Vector2(136, 192), 2, Ink);
-            for (int r = 0; r < 2; r++)
-                for (int i = 0; i < 5; i++)
-                    c.FillRoundRect(28 + i * 44, 50 + r * 60, 56 + i * 44, 90 + r * 60, 4, new Color(1f, 0.95f, 0.75f));
-            c.FillRoundRect(108, 0, 148, 45, 10, new Color(0.45f, 0.32f, 0.28f));
-            c.Grain(0.12f, 120);
-            c.Ink(Ink, 2.5f, 12);
-            return c;
-        }
-
-        // ===================== Near layer (tileable) =====================
-
-        public static PixelCanvas Near(SceneryStyle style, Color color, int seed)
-        {
-            const int w = 256, h = 96;
-            var c = new PixelCanvas(w, h);
-            var rng = new System.Random(seed);
-            switch (style)
-            {
-                case SceneryStyle.Market:
-                    // Bunting strings
-                    for (int s = 0; s < 2; s++)
-                    {
-                        float baseY = 70 - s * 12;
-                        for (int i = 0; i < 12; i++)
-                        {
-                            float x = i * 21.3f;
-                            float sag = Mathf.Sin(i / 12f * Mathf.PI) * 10f;
-                            Color f = new[] { new Color(0.95f, 0.4f, 0.4f), new Color(0.95f, 0.8f, 0.3f), new Color(0.4f, 0.65f, 0.9f), new Color(0.5f, 0.78f, 0.45f) }[(i + s) % 4];
-                            c.FillPolygon(new[] { new Vector2(x, baseY - sag), new Vector2(x + 16, baseY - sag), new Vector2(x + 8, baseY - sag - 16) }, f);
-                        }
-                    }
-                    break;
-                case SceneryStyle.City:
-                    // Site fence with hazard stripes
-                    c.FillRect(0, 0, w, 50, color);
-                    for (int i = 0; i < 16; i++) c.FillRect(i * 16, 50, i * 16 + 3, 70, Mul(color, 0.7f));
-                    for (int i = 0; i < 8; i++)
-                        c.FillPolygon(new[] { new Vector2(i * 32, 30), new Vector2(i * 32 + 16, 30), new Vector2(i * 32 + 26, 42), new Vector2(i * 32 + 10, 42) }, new Color(0.95f, 0.8f, 0.2f));
-                    break;
-                case SceneryStyle.Beach:
-                    // Dune grass tufts
-                    c.FillBelow(x => 18f + Mathf.Sin(x / w * Mathf.PI * 4f) * 6f, color);
-                    for (int i = 0; i < 30; i++)
-                    {
-                        float x = (float)rng.NextDouble() * w;
-                        float lean = rng.Next(-8, 8), top = 40 + rng.Next(0, 25);
-                        c.Wrapped(o => c.Line(new Vector2(x + o, 15), new Vector2(x + o + lean, top), 2.5f, new Color(0.55f, 0.65f, 0.35f)));
-                    }
-                    break;
-                default:
-                    // Hedges / bushes with flowers
-                    for (int i = 0; i < 10; i++)
-                    {
-                        float bx = i * 25.6f + rng.Next(-4, 4), by = 20 + rng.Next(0, 16), br = 22 + rng.Next(0, 10);
-                        Color bc = Mul(color, 0.9f + (float)rng.NextDouble() * 0.2f);
-                        c.Wrapped(o => c.FillCircle(bx + o, by, br, bc));
-                    }
-                    c.FillRect(0, 0, w, 22, color);
-                    for (int i = 0; i < 12; i++)
-                    {
-                        float fx = (float)rng.NextDouble() * w, fy = 25 + (float)rng.NextDouble() * 25;
-                        Color fc = new[] { White, new Color(1f, 0.8f, 0.3f), new Color(1f, 0.55f, 0.6f) }[i % 3];
-                        c.Wrapped(o => c.FillCircle(fx + o, fy, 3, fc));
-                    }
-                    break;
-            }
-            c.Grain(0.12f, seed, 0.06f, true);
-            c.Ink(new Color(Ink.r, Ink.g, Ink.b, 0.8f), 2f, seed, true);
             return c;
         }
 

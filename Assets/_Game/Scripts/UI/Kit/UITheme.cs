@@ -17,8 +17,8 @@ namespace DribbleToSchool.UI.Kit
         public static readonly Color Locked = new Color(0.7f, 0.68f, 0.66f);
         public static readonly Color Shadow = new Color(0.25f, 0.15f, 0.1f, 0.25f);
         public static readonly Color Dim = new Color(0.1f, 0.08f, 0.12f, 0.55f);
-        public static readonly Color SkyTop = new Color(0.55f, 0.78f, 0.95f);
-        public static readonly Color SkyBottom = new Color(0.98f, 0.9f, 0.78f);
+        public static readonly Color SkyTop = new Color(0.15f, 0.36f, 0.78f);
+        public static readonly Color SkyBottom = new Color(0.55f, 0.76f, 0.95f);
 
         public static readonly Color Common = new Color(0.6f, 0.75f, 0.6f);
         public static readonly Color Rare = new Color(0.4f, 0.6f, 0.95f);

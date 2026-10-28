@@ -20,12 +20,6 @@ namespace DribbleToSchool.FrontEnd
             top.preserveAspect = false;
             UIKit.Stretch(top.rectTransform);
 
-            var sun = UIKit.Icon(bg, "Sun", ProceduralSprites.Circle, new Color(1f, 0.93f, 0.6f), 260f);
-            UIKit.Place(sun.rectTransform, new Vector2(0.82f, 0.78f), Vector2.zero, new Vector2(260f, 260f), new Vector2(0.5f, 0.5f));
-            var glow = UIKit.Icon(bg, "SunGlow", ProceduralSprites.Circle, new Color(1f, 0.95f, 0.7f, 0.3f), 420f);
-            UIKit.Place(glow.rectTransform, new Vector2(0.82f, 0.78f), Vector2.zero, new Vector2(420f, 420f), new Vector2(0.5f, 0.5f));
-            glow.transform.SetSiblingIndex(sun.transform.GetSiblingIndex());
-
             for (int i = 0; i < 5; i++) Cloud(bg, i);
 
             Hill(bg, 0.15f, 1500f, 340f, new Color(0.6f, 0.8f, 0.55f));
@@ -39,10 +33,14 @@ namespace DribbleToSchool.FrontEnd
             var cloud = UIKit.Rect(parent, "Cloud" + index);
             float y = 0.6f + (index % 3) * 0.1f;
             UIKit.Place(cloud, new Vector2(0f, y), new Vector2(index * 450f, 0f), new Vector2(300f, 120f), new Vector2(0.5f, 0.5f));
-            Color white = new Color(1f, 1f, 1f, 0.9f);
-            Puff(cloud, new Vector2(-80f, -10f), 140f, white);
-            Puff(cloud, new Vector2(0f, 15f), 180f, white);
-            Puff(cloud, new Vector2(85f, -12f), 130f, white);
+            // Cel-shaded puffs: a pale blue shadow disc under each white one.
+            Color shadow = new Color(0.74f, 0.86f, 0.97f), white = Color.white;
+            Puff(cloud, new Vector2(-84f, -16f), 140f, shadow);
+            Puff(cloud, new Vector2(-4f, 8f), 180f, shadow);
+            Puff(cloud, new Vector2(80f, -18f), 130f, shadow);
+            Puff(cloud, new Vector2(-76f, -6f), 124f, white);
+            Puff(cloud, new Vector2(6f, 20f), 160f, white);
+            Puff(cloud, new Vector2(88f, -8f), 114f, white);
             var drift = cloud.gameObject.AddComponent<UIDrift>();
             drift.speed = 18f + index * 7f;
         }
