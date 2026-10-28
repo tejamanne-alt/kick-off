@@ -219,7 +219,9 @@ namespace DribbleToSchool.EditorTools
             applier.ballRenderer = shell.GetComponent<SpriteRenderer>();
             applier.ballPlaceholderDetails = new[] { patch1, patch2 };
             applier.ballTrail = trail;
-            applier.shirtRenderers = new[] { kidRig.torso };
+            var shirtParts = new List<SpriteRenderer> { kidRig.torso };
+            shirtParts.AddRange(kidRig.sleeves);
+            applier.shirtRenderers = shirtParts.ToArray();
             applier.shortsRenderers = new[] { kidRig.shorts };
             applier.backpackFlag = kidRig.flag;
 
@@ -242,6 +244,8 @@ namespace DribbleToSchool.EditorTools
         {
             public CharacterRig rig;
             public SpriteRenderer torso, shorts, hair, flag;
+            /// <summary>Shirt sleeves, tinted with the torso.</summary>
+            public SpriteRenderer[] sleeves;
             public Transform visual;
         }
 
@@ -270,21 +274,44 @@ namespace DribbleToSchool.EditorTools
                 Visual(body, "FlagPole", Square, new Vector2(-0.27f, 0.44f), new Vector2(0.025f, 0.46f), new Color(0.3f, 0.25f, 0.2f), baseOrder - 1);
                 parts.flag = Visual(body, "BackpackFlag", Square, new Vector2(-0.4f, 0.58f), new Vector2(0.28f, 0.28f), Color.white, baseOrder - 1).GetComponent<SpriteRenderer>();
             }
-            rig.armBack = Pivot(body, "ArmBack", new Vector2(-0.04f, 0.3f));
-            Part(rig.armBack, "Arm", "Arm", new Vector2(0f, -0.17f), 1f, new Color(0.92f, 0.92f, 0.92f), baseOrder + 1);
-            rig.legBack = Pivot(body, "LegBack", new Vector2(-0.05f, -0.12f));
-            Part(rig.legBack, "Leg", "Leg", new Vector2(0f, -0.23f), 1f, new Color(0.92f, 0.92f, 0.92f), baseOrder + 1);
-            rig.legFront = Pivot(body, "LegFront", new Vector2(0.06f, -0.12f));
-            Part(rig.legFront, "Leg", "Leg", new Vector2(0f, -0.23f), 1f, Color.white, baseOrder + 2);
-            parts.shorts = Part(body, "Shorts", "Shorts", new Vector2(0f, -0.13f), 1f, shorts, baseOrder + 3);
-            parts.torso = Part(body, "Torso", "Torso", new Vector2(0f, 0.13f), 1f, shirt, baseOrder + 4);
+            // Two-piece limbs: hip > knee > shin, shoulder > elbow > forearm. Back limbs are drawn
+            // slightly darker and behind the body; each joint's lower piece draws over the upper one.
+            Color backTint = new Color(0.88f, 0.88f, 0.88f);
+            Color shirtBack = Color.Lerp(shirt, Color.black, 0.12f);
+            var sleeves = new List<SpriteRenderer>();
+            BuildArm(body, rig, false, new Vector2(-0.04f, 0.3f), backTint, shirtBack, baseOrder + 1, sleeves);
+            BuildLeg(body, rig, false, new Vector2(-0.05f, -0.12f), backTint, baseOrder + 1);
+            BuildLeg(body, rig, true, new Vector2(0.06f, -0.12f), Color.white, baseOrder + 3);
+            parts.shorts = Part(body, "Shorts", "Shorts", new Vector2(0f, -0.13f), 1f, shorts, baseOrder + 5);
+            parts.torso = Part(body, "Torso", "Torso", new Vector2(0f, 0.13f), 1f, shirt, baseOrder + 6);
             rig.head = Pivot(body, "Head", new Vector2(0.02f, 0.36f));
-            Part(rig.head, "Face", "Head", new Vector2(0f, 0.17f), 0.95f, Color.white, baseOrder + 5);
-            parts.hair = Part(rig.head, "Hair", "Hair", new Vector2(-0.01f, 0.19f), 0.98f, hair, baseOrder + 6);
-            Part(rig.head, "Eye", "Eye", new Vector2(0.12f, 0.2f), 0.6f, Color.white, baseOrder + 7);
-            rig.armFront = Pivot(body, "ArmFront", new Vector2(0.04f, 0.3f));
-            Part(rig.armFront, "Arm", "Arm", new Vector2(0f, -0.17f), 1f, Color.white, baseOrder + 8);
+            Part(rig.head, "Face", "Head", new Vector2(0f, 0.17f), 0.95f, Color.white, baseOrder + 7);
+            parts.hair = Part(rig.head, "Hair", "Hair", new Vector2(-0.01f, 0.19f), 0.98f, hair, baseOrder + 8);
+            Part(rig.head, "Eye", "Eye", new Vector2(0.12f, 0.2f), 0.6f, Color.white, baseOrder + 9);
+            BuildArm(body, rig, true, new Vector2(0.04f, 0.3f), Color.white, shirt, baseOrder + 10, sleeves);
+            parts.sleeves = sleeves.ToArray();
             return parts;
+        }
+
+        static void BuildLeg(Transform body, CharacterRig rig, bool front, Vector2 hip, Color tint, int order)
+        {
+            var leg = Pivot(body, front ? "LegFront" : "LegBack", hip);
+            Part(leg, "Thigh", "Thigh", new Vector2(0f, -0.11f), 1f, tint, order);
+            var knee = Pivot(leg, "Knee", new Vector2(0f, -0.22f));
+            Part(knee, "Shin", "Shin", new Vector2(0.008f, -0.119f), 1f, tint, order + 1);
+            if (front) { rig.legFront = leg; rig.kneeFront = knee; }
+            else { rig.legBack = leg; rig.kneeBack = knee; }
+        }
+
+        static void BuildArm(Transform body, CharacterRig rig, bool front, Vector2 shoulder, Color tint, Color shirt, int order, List<SpriteRenderer> sleeves)
+        {
+            var arm = Pivot(body, front ? "ArmFront" : "ArmBack", shoulder);
+            Part(arm, "UpperArm", "UpperArm", new Vector2(0f, -0.09f), 1f, tint, order);
+            var elbow = Pivot(arm, "Elbow", new Vector2(0f, -0.19f));
+            Part(elbow, "Forearm", "Forearm", new Vector2(0f, -0.095f), 1f, tint, order + 1);
+            sleeves.Add(Part(arm, "Sleeve", "Sleeve", new Vector2(0f, -0.035f), 1f, shirt, order + 1));
+            if (front) { rig.armFront = arm; rig.elbowFront = elbow; }
+            else { rig.armBack = arm; rig.elbowBack = elbow; }
         }
 
         static Transform Pivot(Transform parent, string name, Vector2 localPos)

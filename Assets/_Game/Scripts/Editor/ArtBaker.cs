@@ -94,7 +94,7 @@ namespace DribbleToSchool.EditorTools
             return set;
         }
 
-        static readonly string[] PartNames = { "Head", "Hair", "Eye", "Torso", "Shorts", "Leg", "Arm", "Backpack" };
+        static readonly string[] PartNames = { "Head", "Hair", "Eye", "Torso", "Shorts", "Thigh", "Shin", "UpperArm", "Forearm", "Sleeve", "Backpack" };
 
         struct ImportSpec
         {

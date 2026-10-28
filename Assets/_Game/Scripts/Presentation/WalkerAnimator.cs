@@ -23,8 +23,28 @@ namespace DribbleToSchool.Presentation
             bool walking = pedestrian == null || pedestrian.IsWalking;
             if (walking) phase += Time.deltaTime * (pedestrian != null ? pedestrian.walkSpeed : 1f) * 5f;
             float s = walking ? Mathf.Sin(phase) : 0f;
-            float bob = walking ? Mathf.Abs(Mathf.Cos(phase)) * 0.03f : 0f;
-            rig.Pose(s * swing, -s * swing, -s * swing * 0.7f, s * swing * 0.7f, bob, Vector2.one);
+            var p = RigPose.Neutral;
+            p.bob = walking ? Mathf.Abs(Mathf.Cos(phase)) * 0.03f : 0f;
+            p.legF = s * swing;
+            p.legB = -s * swing;
+            p.armF = -s * swing * 0.7f;
+            p.armB = s * swing * 0.7f;
+            if (walking)
+            {
+                // A gentle stroll: knees lift a little in the swing, elbows stay soft.
+                p.kneeF = -Knee(phase);
+                p.kneeB = -Knee(phase + Mathf.PI);
+                p.elbowF = 16f + 12f * Mathf.Max(0f, -s);
+                p.elbowB = 16f + 12f * Mathf.Max(0f, s);
+                p.lean = 2f;
+            }
+            rig.Pose(p);
+        }
+
+        static float Knee(float legPhase)
+        {
+            float swing = Mathf.Max(0f, Mathf.Cos(legPhase + 0.9f));
+            return 5f + 35f * swing * swing;
         }
     }
 }

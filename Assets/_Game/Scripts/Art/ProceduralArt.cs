@@ -511,22 +511,52 @@ namespace DribbleToSchool.Art
                     c.Ink(Ink, 3f, 4);
                     return c;
                 }
-                case "Leg":
+                case "Thigh":
                 {
-                    var c = new PixelCanvas(48, 128);
-                    c.FillRoundRect(12, 30, 36, 124, 11, skin);
-                    c.FillRect(12, 30, 36, 56, White);   // sock
-                    c.FillRect(12, 46, 36, 52, new Color(0.4f, 0.55f, 0.85f));
-                    c.FillRoundRect(6, 4, 46, 32, 12, new Color(0.25f, 0.25f, 0.3f));   // shoe
-                    c.FillRect(6, 4, 46, 9, White);
+                    // Hip to knee; the round bottom end doubles as the knee.
+                    var c = new PixelCanvas(48, 72);
+                    c.FillRoundRect(12, 2, 36, 70, 11, skin);
+                    c.Grain(0.05f, 5);
                     c.Ink(Ink, 3f, 5);
                     return c;
                 }
-                case "Arm":
+                case "Shin":
                 {
-                    var c = new PixelCanvas(40, 112);
-                    c.FillRoundRect(8, 4, 32, 108, 12, skin);
+                    // Knee to sole, with sock and a shoe whose toe points forward (right).
+                    var c = new PixelCanvas(56, 80);
+                    c.FillRoundRect(16, 26, 40, 78, 11, skin);
+                    c.FillEllipse(31, 70, 6, 4, new Color(1f, 0.7f, 0.62f, 0.5f));   // knee blush
+                    c.FillRect(16, 26, 40, 46, White);                                  // sock
+                    c.FillRect(16, 38, 40, 43, new Color(0.4f, 0.55f, 0.85f));
+                    c.FillRoundRect(12, 4, 54, 30, 12, new Color(0.25f, 0.25f, 0.3f)); // shoe
+                    c.FillRect(12, 4, 54, 9, White);                                    // sole
+                    c.Ink(Ink, 3f, 8);
+                    return c;
+                }
+                case "UpperArm":
+                {
+                    var c = new PixelCanvas(40, 64);
+                    c.FillRoundRect(8, 2, 32, 62, 12, skin);
                     c.Ink(Ink, 3f, 6);
+                    return c;
+                }
+                case "Forearm":
+                {
+                    // Elbow to hand; a round mitten hand at the end.
+                    var c = new PixelCanvas(40, 64);
+                    c.FillRoundRect(9, 14, 31, 62, 11, skin);
+                    c.FillCircle(20, 13, 11, skin);
+                    c.Ink(Ink, 3f, 9);
+                    return c;
+                }
+                case "Sleeve":
+                {
+                    // Short shirt sleeve over the shoulder; tinted with the shirt colour.
+                    var c = new PixelCanvas(48, 40);
+                    c.FillRoundRect(4, 4, 44, 36, 10, Grey(0.95f));
+                    c.FillRect(4, 4, 44, 9, Grey(0.85f));   // hem shadow
+                    c.Grain(0.1f, 10);
+                    c.Ink(Ink, 3f, 10);
                     return c;
                 }
                 case "Backpack":

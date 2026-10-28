@@ -5,9 +5,10 @@ using UnityEngine;
 namespace DribbleToSchool.Presentation
 {
     /// <summary>
-    /// Bouncy procedural animation for the kid: run cycle scaled by speed,
-    /// idle breathing, jump/fall poses, a snappy kick swing, landing squash,
-    /// a celebration at the gate and a stumble when the ball is lost.
+    /// Procedural animation for the kid with knees and elbows: a run cycle whose
+    /// knees fold in the swing and straighten on the plant, bent-elbow arm drive,
+    /// idle breathing, jump tuck and reach, a cocked-knee kick that snaps through,
+    /// a crouching landing, a celebration at the gate and a stumble when the ball is lost.
     /// </summary>
     [RequireComponent(typeof(CharacterRig))]
     public class KidAnimator : MonoBehaviour
@@ -61,6 +62,13 @@ namespace DribbleToSchool.Presentation
 
         void OnJumped() { jumpTime = Time.time; }
 
+        /// <summary>How far a running knee folds (degrees) at a given leg phase: most early in the swing.</summary>
+        static float KneeFold(float legPhase)
+        {
+            float swing = Mathf.Max(0f, Mathf.Cos(legPhase + 0.9f));
+            return 14f + 80f * swing * swing;
+        }
+
         void OnGameEvent(GameEventType type, Vector2 position, float intensity)
         {
             switch (type)
@@ -91,67 +99,123 @@ namespace DribbleToSchool.Presentation
             float runK = Mathf.Clamp01(speed / Mathf.Max(kid.tuning.runSpeed, 0.1f));
             float vy = kid.Body.linearVelocity.y;
 
-            float legF, legB, armF, armB, bob = 0f, headTilt = 0f;
-            Vector2 squash = Vector2.one;
+            var p = RigPose.Neutral;
 
             if (celebrating)
             {
+                // Little hops with both arms punched up.
                 float t = Time.time * 6f;
-                bob = Mathf.Abs(Mathf.Sin(t)) * 0.12f;
-                legF = 10f; legB = -10f;
-                armF = 160f + Mathf.Sin(t) * 15f;
-                armB = -160f - Mathf.Sin(t) * 15f;
-                headTilt = Mathf.Sin(t * 0.5f) * 8f;
+                float air = Mathf.Abs(Mathf.Sin(t));
+                p.bob = air * 0.12f;
+                p.legF = 12f + 10f * (1f - air); p.legB = -8f + 10f * (1f - air);
+                p.kneeF = p.kneeB = -10f - 45f * (1f - air);
+                p.armF = 160f + Mathf.Sin(t) * 12f; p.elbowF = 15f;
+                p.armB = -160f - Mathf.Sin(t) * 12f; p.elbowB = 15f;
+                p.headTilt = Mathf.Sin(t * 0.5f) * 8f;
             }
             else if (!kid.IsGrounded)
             {
-                // Rising: tucked and reaching; falling: legs down, arms up for balance.
+                // Rising: front knee tucked high, arms driving; falling: legs reach down, arms out for balance.
                 float rising = Mathf.Clamp01(vy / 6f);
-                legF = Mathf.Lerp(-10f, 35f, rising);
-                legB = Mathf.Lerp(-25f, -40f, rising);
-                armF = Mathf.Lerp(70f, 40f, rising);
-                armB = Mathf.Lerp(-80f, -50f, rising);
+                float falling = Mathf.Clamp01(-vy / 8f);
+                p.legF = Mathf.Lerp(18f, 48f, rising);
+                p.kneeF = Mathf.Lerp(-25f, -95f, rising);
+                p.legB = Mathf.Lerp(-12f, -22f, rising);
+                p.kneeB = Mathf.Lerp(-35f, -70f, rising);
+                p.armF = Mathf.Lerp(Mathf.Lerp(60f, 80f, falling), -35f, rising);
+                p.elbowF = Mathf.Lerp(30f, 85f, rising);
+                p.armB = Mathf.Lerp(Mathf.Lerp(-40f, 70f, falling), 55f, rising);
+                p.elbowB = Mathf.Lerp(25f, 60f, rising);
+                p.lean = Mathf.Lerp(2f, 8f, rising);
                 float stretch = Mathf.Clamp01(1f - (Time.time - jumpTime) / 0.2f) * 0.12f;
-                squash = new Vector2(1f - stretch, 1f + stretch);
+                p.squash = new Vector2(1f - stretch, 1f + stretch);
             }
             else
             {
+                // Run cycle. Each knee folds most early in its swing (the foot flicks up behind),
+                // and is nearly straight while the foot is planted. Arms swing against the legs
+                // with bent elbows, bending more on the forward swing.
                 phase += Time.deltaTime * strideFrequency * Mathf.Max(speed, 0f) * Mathf.PI * 0.5f;
                 float s = Mathf.Sin(phase);
-                legF = s * maxLegSwing * runK;
-                legB = -s * maxLegSwing * runK;
-                armF = -s * maxArmSwing * runK - 10f * runK;
-                armB = s * maxArmSwing * runK - 10f * runK;
-                bob = Mathf.Abs(Mathf.Cos(phase)) * 0.05f * runK;
-                headTilt = -4f * runK;
+                p.legF = s * maxLegSwing * runK;
+                p.legB = -s * maxLegSwing * runK;
+                p.kneeF = -Mathf.Lerp(3f, KneeFold(phase), runK);
+                p.kneeB = -Mathf.Lerp(3f, KneeFold(phase + Mathf.PI), runK);
+                p.armF = -s * maxArmSwing * runK - 6f * runK;
+                p.armB = s * maxArmSwing * runK - 6f * runK;
+                p.elbowF = Mathf.Lerp(12f, 70f + 25f * Mathf.Max(0f, -s), runK);
+                p.elbowB = Mathf.Lerp(12f, 70f + 25f * Mathf.Max(0f, s), runK);
+                p.bob = Mathf.Abs(s) * 0.05f * runK - 0.02f * runK;
+                p.lean = 7f * runK;
+                p.headTilt = -4f * runK;
 
                 if (runK < 0.1f)
                 {
-                    // Idle breathing
-                    float breathe = Mathf.Sin(Time.time * 2.2f) * 0.015f;
-                    squash = new Vector2(1f - breathe, 1f + breathe);
+                    // Idle: breathing, a soft knee and loose arms.
+                    float breathe = Mathf.Sin(Time.time * 2.2f);
+                    p.squash = new Vector2(1f - breathe * 0.015f, 1f + breathe * 0.015f);
+                    p.armF = -3f + breathe * 2f;
+                    p.armB = 3f - breathe * 2f;
+                    p.elbowF = p.elbowB = 14f + breathe * 3f;
+                    p.kneeF = p.kneeB = -5f;
                 }
 
-                float land = Mathf.Clamp01(1f - (Time.time - landTime) / 0.18f) * landStrength;
-                squash = new Vector2(squash.x + land * 0.2f, squash.y - land * 0.22f);
+                // Landing: a quick crouch through the knees.
+                float land = Mathf.Clamp01(1f - (Time.time - landTime) / 0.22f) * landStrength;
+                p.legF += 30f * land; p.legB += 30f * land;
+                p.kneeF -= 60f * land; p.kneeB -= 60f * land;
+                p.elbowF += 20f * land; p.elbowB += 20f * land;
+                p.lean += 10f * land;
+                p.bob -= 0.07f * land;   // bent knees already lift the feet; keep them on the ground
+                p.squash = new Vector2(p.squash.x + land * 0.12f, p.squash.y - land * 0.12f);
             }
 
-            // Kick swing: wind up back, then whip forward.
-            float kt = (Time.time - kickTime) / 0.28f;
+            // Kick: knee cocks back during the wind-up, then the thigh whips through while
+            // the knee snaps straight just before the "contact", and follows through.
+            float kt = (Time.time - kickTime) / 0.3f;
             if (kt >= 0f && kt <= 1f)
             {
-                float swing = kt < 0.3f ? Mathf.Lerp(0f, -35f, kt / 0.3f) : Mathf.Lerp(-35f, 85f, Mathf.Sin((kt - 0.3f) / 0.7f * Mathf.PI * 0.5f));
-                if (kt > 0.75f) swing = Mathf.Lerp(85f, legF, (kt - 0.75f) / 0.25f);
-                legF = Mathf.Lerp(legF, swing, kickStrength);
-                armB = Mathf.Lerp(armB, 50f, kickStrength * 0.6f);
-                armF = Mathf.Lerp(armF, -40f, kickStrength * 0.6f);
+                float thigh, knee;
+                if (kt < 0.3f)
+                {
+                    float u = kt / 0.3f;
+                    thigh = Mathf.Lerp(p.legF, -30f, u);
+                    knee = Mathf.Lerp(p.kneeF, -100f, u);
+                }
+                else if (kt < 0.7f)
+                {
+                    float u = (kt - 0.3f) / 0.4f;
+                    thigh = Mathf.Lerp(-30f, 80f, Mathf.Sin(u * Mathf.PI * 0.5f));
+                    knee = Mathf.Lerp(-100f, 0f, Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(u * 1.6f)));
+                }
+                else
+                {
+                    float u = (kt - 0.7f) / 0.3f;
+                    thigh = Mathf.Lerp(80f, p.legF, u);
+                    knee = Mathf.Lerp(0f, p.kneeF, u);
+                }
+                float k = kickStrength;
+                p.legF = Mathf.Lerp(p.legF, thigh, k);
+                p.kneeF = Mathf.Lerp(p.kneeF, knee, k);
+                p.kneeB = Mathf.Lerp(p.kneeB, -14f, k);   // standing leg gives a little
+                p.armB = Mathf.Lerp(p.armB, 60f, k * 0.7f);
+                p.elbowB = Mathf.Lerp(p.elbowB, 35f, k * 0.7f);
+                p.armF = Mathf.Lerp(p.armF, -45f, k * 0.6f);
+                p.elbowF = Mathf.Lerp(p.elbowF, 40f, k * 0.6f);
+                p.lean = Mathf.Lerp(p.lean, -8f, k * Mathf.Sin(kt * Mathf.PI));
             }
 
             // Stumble: quick wobble.
             float st = (Time.time - stumbleTime) / 0.5f;
-            if (st >= 0f && st <= 1f) headTilt += Mathf.Sin(st * Mathf.PI * 4f) * 15f * (1f - st);
+            if (st >= 0f && st <= 1f)
+            {
+                float wobble = Mathf.Sin(st * Mathf.PI * 4f) * (1f - st);
+                p.headTilt += wobble * 15f;
+                p.lean += wobble * 8f;
+                p.armF += wobble * 40f; p.armB -= wobble * 40f;
+            }
 
-            rig.Pose(legF, legB, armF, armB, bob, squash, headTilt);
+            rig.Pose(p);
 
             // Turn around with a quick paper-flip rather than snapping.
             facingScale = Mathf.MoveTowards(facingScale, kid.Facing, Time.deltaTime * 12f);
