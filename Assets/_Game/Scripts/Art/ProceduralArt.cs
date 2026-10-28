@@ -7,7 +7,7 @@ namespace DribbleToSchool.Art
     /// wobbly ink outline so it reads as one hand-drawn world. Tintable pieces
     /// are drawn in light greys so SpriteRenderer colours show through.
     /// </summary>
-    public static class ProceduralArt
+    public static partial class ProceduralArt
     {
         static readonly Color Ink = ChapterTheme.Ink;
         static readonly Color White = Color.white;
@@ -447,130 +447,6 @@ namespace DribbleToSchool.Art
             c.Grain(0.12f, seed, 0.06f, true);
             c.Ink(new Color(Ink.r, Ink.g, Ink.b, 0.8f), 2f, seed, true);
             return c;
-        }
-
-        // ===================== Characters =====================
-
-        /// <summary>Kid and pedestrian parts. Shirt, shorts and hair are light grey so they can be tinted.</summary>
-        public static PixelCanvas Part(string name)
-        {
-            Color skin = new Color(0.98f, 0.8f, 0.66f);
-            switch (name)
-            {
-                case "Head":
-                {
-                    var c = new PixelCanvas(128, 128);
-                    c.FillCircle(64, 64, 58, skin);
-                    c.FillEllipse(100, 52, 10, 8, new Color(1f, 0.6f, 0.55f, 0.6f));   // cheek
-                    c.Grain(0.06f, 1);
-                    c.Ink(Ink, 3.5f, 1);
-                    return c;
-                }
-                case "Hair":
-                {
-                    // Messy mop: a cap over the top and back of the head with a tufty fringe at the front (facing right).
-                    var c = new PixelCanvas(128, 128);
-                    c.Fill((x, y) =>
-                    {
-                        float dx = x - 64, dy = y - 64;
-                        bool head = dx * dx + dy * dy < 63 * 63;
-                        bool cap = y > 74 - (x - 64) * 0.18f;
-                        bool back = x < 44 && y > 30;
-                        return head && (cap || back) ? 1f : 0f;
-                    }, Grey(0.95f));
-                    c.FillCircle(84, 80, 13, Grey(0.95f));
-                    c.FillCircle(100, 76, 12, Grey(0.95f));
-                    c.FillCircle(113, 70, 9, Grey(0.95f));
-                    c.FillCircle(50, 118, 12, Grey(0.95f));   // tuft on top
-                    c.Grain(0.12f, 2);
-                    c.Ink(Ink, 3.5f, 2);
-                    return c;
-                }
-                case "Eye":
-                {
-                    var c = new PixelCanvas(32, 32);
-                    c.FillCircle(16, 16, 13, Ink);
-                    c.FillCircle(12, 20, 4, White);
-                    return c;
-                }
-                case "Torso":
-                {
-                    var c = new PixelCanvas(96, 128);
-                    c.FillRoundRect(4, 4, 92, 124, 26, Grey(0.97f));
-                    c.FillRect(40, 108, 56, 124, Grey(0.85f));   // collar shadow
-                    c.Grain(0.1f, 3);
-                    c.Ink(Ink, 3f, 3);
-                    return c;
-                }
-                case "Shorts":
-                {
-                    var c = new PixelCanvas(96, 64);
-                    c.FillRoundRect(4, 4, 92, 60, 14, Grey(0.95f));
-                    c.FillRect(46, 4, 50, 34, Grey(0.7f));
-                    c.Grain(0.1f, 4);
-                    c.Ink(Ink, 3f, 4);
-                    return c;
-                }
-                case "Thigh":
-                {
-                    // Hip to knee; the round bottom end doubles as the knee.
-                    var c = new PixelCanvas(48, 72);
-                    c.FillRoundRect(12, 2, 36, 70, 11, skin);
-                    c.Grain(0.05f, 5);
-                    c.Ink(Ink, 3f, 5);
-                    return c;
-                }
-                case "Shin":
-                {
-                    // Knee to sole, with sock and a shoe whose toe points forward (right).
-                    var c = new PixelCanvas(56, 80);
-                    c.FillRoundRect(16, 26, 40, 78, 11, skin);
-                    c.FillEllipse(31, 70, 6, 4, new Color(1f, 0.7f, 0.62f, 0.5f));   // knee blush
-                    c.FillRect(16, 26, 40, 46, White);                                  // sock
-                    c.FillRect(16, 38, 40, 43, new Color(0.4f, 0.55f, 0.85f));
-                    c.FillRoundRect(12, 4, 54, 30, 12, new Color(0.25f, 0.25f, 0.3f)); // shoe
-                    c.FillRect(12, 4, 54, 9, White);                                    // sole
-                    c.Ink(Ink, 3f, 8);
-                    return c;
-                }
-                case "UpperArm":
-                {
-                    var c = new PixelCanvas(40, 64);
-                    c.FillRoundRect(8, 2, 32, 62, 12, skin);
-                    c.Ink(Ink, 3f, 6);
-                    return c;
-                }
-                case "Forearm":
-                {
-                    // Elbow to hand; a round mitten hand at the end.
-                    var c = new PixelCanvas(40, 64);
-                    c.FillRoundRect(9, 14, 31, 62, 11, skin);
-                    c.FillCircle(20, 13, 11, skin);
-                    c.Ink(Ink, 3f, 9);
-                    return c;
-                }
-                case "Sleeve":
-                {
-                    // Short shirt sleeve over the shoulder; tinted with the shirt colour.
-                    var c = new PixelCanvas(48, 40);
-                    c.FillRoundRect(4, 4, 44, 36, 10, Grey(0.95f));
-                    c.FillRect(4, 4, 44, 9, Grey(0.85f));   // hem shadow
-                    c.Grain(0.1f, 10);
-                    c.Ink(Ink, 3f, 10);
-                    return c;
-                }
-                case "Backpack":
-                {
-                    var c = new PixelCanvas(64, 96);
-                    c.FillRoundRect(4, 4, 60, 92, 16, new Color(0.88f, 0.48f, 0.32f));
-                    c.FillRoundRect(12, 14, 52, 46, 8, new Color(0.95f, 0.62f, 0.4f));
-                    c.Grain(0.1f, 7);
-                    c.Ink(Ink, 3f, 7);
-                    return c;
-                }
-                default:
-                    return new PixelCanvas(4, 4);
-            }
         }
 
         public static PixelCanvas Dog()

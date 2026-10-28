@@ -14,9 +14,9 @@ namespace DribbleToSchool.Presentation
     public class KidAnimator : MonoBehaviour
     {
         public KidController kid;
-        public float strideFrequency = 2.6f;
-        public float maxLegSwing = 38f;
-        public float maxArmSwing = 30f;
+        public float strideFrequency = 1.9f;   // long teen legs: fewer, longer strides
+        public float maxLegSwing = 42f;
+        public float maxArmSwing = 34f;
 
         CharacterRig rig;
         float phase;
@@ -28,6 +28,7 @@ namespace DribbleToSchool.Presentation
         float stumbleTime = -10f;
         bool celebrating;
         float facingScale = 1f;
+        float bagAngle, bagVelocity;
 
         void Awake()
         {
@@ -214,6 +215,13 @@ namespace DribbleToSchool.Presentation
                 p.lean += wobble * 8f;
                 p.armF += wobble * 40f; p.armB -= wobble * 40f;
             }
+
+            // The shoulder bag trails behind on the run, bounces with each stride and
+            // lags behind jumps, on a soft spring so it feels like it has weight.
+            float bagTarget = -10f * runK - Mathf.Sin(phase * 2f) * 6f * runK;
+            if (!kid.IsGrounded) bagTarget += Mathf.Clamp(-vy * 3f, -25f, 25f);
+            bagAngle = Mathf.SmoothDamp(bagAngle, bagTarget, ref bagVelocity, 0.09f);
+            p.bag = bagAngle;
 
             rig.Pose(p);
 

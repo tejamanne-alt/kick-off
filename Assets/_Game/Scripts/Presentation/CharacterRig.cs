@@ -12,6 +12,8 @@ namespace DribbleToSchool.Presentation
         public float legF, legB, kneeF, kneeB;
         public float armF, armB, elbowF, elbowB;
         public float bob, headTilt, lean;
+        /// <summary>Swing of the shoulder bag (degrees, positive swings it forward).</summary>
+        public float bag;
         public Vector2 squash;
 
         public static RigPose Neutral
@@ -34,6 +36,7 @@ namespace DribbleToSchool.Presentation
         public Transform elbowFront;
         public Transform elbowBack;
         public Transform head;
+        public Transform bag;
 
         Vector3 bodyBasePosition;
         Vector3 headBasePosition;
@@ -55,6 +58,7 @@ namespace DribbleToSchool.Presentation
             Rotate(armBack, p.armB);
             Rotate(elbowFront, Mathf.Max(p.elbowF, 0f));
             Rotate(elbowBack, Mathf.Max(p.elbowB, 0f));
+            Rotate(bag, p.bag);
             if (body != null)
             {
                 body.localPosition = bodyBasePosition + Vector3.up * p.bob;

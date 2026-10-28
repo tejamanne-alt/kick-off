@@ -45,7 +45,7 @@ namespace DribbleToSchool.EditorTools
             Queue(pending, "Dog", ProceduralArt.Dog(), new ImportSpec(192, 0));
             Queue(pending, "Seagull", ProceduralArt.Seagull(), new ImportSpec(160, 0));
             Queue(pending, "Car", ProceduralArt.Car(), new ImportSpec(110, 0));
-            foreach (string part in PartNames) Queue(pending, "Part_" + part, ProceduralArt.Part(part), new ImportSpec(256, 0));
+            foreach (string part in PartNames) Queue(pending, "Part_" + part, ProceduralArt.Part(part), new ImportSpec(ProceduralArt.PartPpu(part), 0));
 
             for (int ch = 1; ch <= 5; ch++)
             {
@@ -94,7 +94,7 @@ namespace DribbleToSchool.EditorTools
             return set;
         }
 
-        static readonly string[] PartNames = { "Head", "Hair", "Eye", "Torso", "Shorts", "Thigh", "Shin", "UpperArm", "Forearm", "Sleeve", "Backpack" };
+        static readonly string[] PartNames = ProceduralArt.PartNames;
 
         struct ImportSpec
         {

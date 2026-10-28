@@ -72,7 +72,7 @@ namespace DribbleToSchool.EditorTools
                 R("flag_stars", "Star Banner", Flag, Rare, 150, CosmeticPattern.Star, C(0.15f, 0.2f, 0.45f), C(1f, 0.82f, 0.25f), white),
 
                 // ---------- Outfits (shirt, shorts, collar/accent) ----------
-                R("outfit_school", "School Uniform", Outfit, Common, 0, CosmeticPattern.Solid, C(0.55f, 0.7f, 0.95f), C(0.3f, 0.33f, 0.42f), C(0.2f, 0.25f, 0.5f)),
+                R("outfit_school", "School Uniform", Outfit, Common, 0, CosmeticPattern.Solid, C(0.97f, 0.97f, 0.99f), C(0.22f, 0.23f, 0.42f), C(0.78f, 0.2f, 0.24f)),
                 R("outfit_red", "Red Kit", Outfit, Common, 120, CosmeticPattern.Solid, C(0.88f, 0.25f, 0.25f), white, white),
                 R("outfit_blue", "Blue Kit", Outfit, Common, 120, CosmeticPattern.Solid, C(0.2f, 0.4f, 0.85f), white, white),
                 R("outfit_hoops", "Green Hoops", Outfit, Common, 180, CosmeticPattern.Stripes, C(0.25f, 0.65f, 0.35f), ink, white),
