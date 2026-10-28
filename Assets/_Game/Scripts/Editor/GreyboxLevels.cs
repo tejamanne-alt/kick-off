@@ -282,7 +282,7 @@ namespace DribbleToSchool.EditorTools
             t.Start(0f);
             t.Hint(10f, "crossing");
             t.Ground(-8f, 90f);
-            t.Sign("Zebra crossing ahead.\nWait for GREEN -\nlet go of the arrows to stop", new Vector2(6f, 3.4f));
+            t.Sign("Zebra crossing ahead.\nWait for the GREEN man -\nlet go of the arrows to stop", new Vector2(6f, 3.4f));
 
             t.Crossing(16f, 21f, 0f);
             t.Checkpoint(24f);
@@ -717,7 +717,7 @@ namespace DribbleToSchool.EditorTools
             t.Start(0f);
             t.Hint(8f, "fountain");
             t.Ground(-8f, 110f);
-            t.Sign("Fountains push the ball up -\ndribble into the spray!", new Vector2(5f, 3.4f));
+            t.Sign("Fountain jets push the ball up -\ndribble into them!", new Vector2(5f, 3.4f));
 
             t.Fountain(13f, 0f, 4f, 18f);
             t.Springboard(15f);

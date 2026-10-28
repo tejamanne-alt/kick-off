@@ -123,6 +123,11 @@ This file is the resume point. A new session should read it first. All eight pha
   - Sizes: house 7.5 m to the ridge, shops 7 m, school about 9 m plus its clock tower, apartments 13 m, overpass clearance 5.8 m.
   - Vending machines 1.85 m, utility poles 10 m tall and about 21 m apart.
   - The parked car is 3 m long (its colliders were updated to match, and it is still jumpable). Adults are 1.7 m.
+- Crossings: a side street running away from the camera with a pedestrian signal (green man, flashing green man, red man).
+  - Cars are drawn front-on and moved in depth. They queue at the stop line while the man is green, then drive through the crossing and past the camera on red.
+  - This replaces a car that drove along the pavement.
+- Fountains are plaza floor fountains: three pulsing jets from a flush grate, with splash droplets.
+  - The lift follows the visible jet height (`Hazards/Fountain.cs`), replacing a wind column beside a basin.
 
 ## After Phase 8 (next steps)
 

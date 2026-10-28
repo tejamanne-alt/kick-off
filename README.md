@@ -52,7 +52,7 @@ Bell times and streak targets are in the level table in `Editor/GeneratedContent
 | Hazard | Behaviour |
 |---|---|
 | Pedestrian | Walks and pauses. The ball bounces off; the kid slips past. |
-| Crossing | Green, amber, red cycle. On red, the kid or the ball on the road loses the ball. |
+| Crossing | A zebra over a side street with a pedestrian signal: green man, flashing green man, red man. Cars wait at the stop line up the street, then drive through the crossing toward the camera on the red man; the kid or the ball on the road then loses the ball. |
 | Dog | Wanders and chases low balls, nosing them back. Chip over it. |
 | Puddle / Sand | Slows the ball and the kid. |
 | Wind | A headwind or an updraft on the ball; can gust. |
@@ -64,7 +64,7 @@ Bell times and streak targets are in the level table in `Editor/GeneratedContent
 | Tunnel | Darkens the screen to a pool of light around the kid. |
 | Rolling pipes | Roll down slopes at you; jump them. |
 | Swing | A pendulum seat that carries the kid over pits. |
-| Fountain | Spray that lifts the ball. |
+| Fountain | A plaza floor fountain: pulsing jets from a grate in the paving that lift the ball as high as the jet currently reaches. |
 
 ## Level rules
 

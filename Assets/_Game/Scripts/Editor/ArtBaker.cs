@@ -18,6 +18,7 @@ namespace DribbleToSchool.EditorTools
         public class ArtSet
         {
             public Sprite block, crate, groundFill, sun, puff, spark, drop, shadow, dog, seagull, car;
+            public Sprite carFront, walkFigure, standFigure, waterJet, sideStreet;
             public Sprite[] clouds = new Sprite[3];
             public Sprite[] edge = new Sprite[6];
             public Sprite[] sky = new Sprite[6];
@@ -48,6 +49,11 @@ namespace DribbleToSchool.EditorTools
             Queue(pending, "Dog", ProceduralArt.Dog(), new ImportSpec(192, 0));
             Queue(pending, "Seagull", ProceduralArt.Seagull(), new ImportSpec(160, 0));
             Queue(pending, "Car", ProceduralArt.Car(), new ImportSpec(115, 0));
+            Queue(pending, "CarFront", ProceduralArt.CarFront(), new ImportSpec(115, 0));
+            Queue(pending, "SignalWalk", ProceduralArt.SignalFigure(true), new ImportSpec(160, 0));
+            Queue(pending, "SignalStand", ProceduralArt.SignalFigure(false), new ImportSpec(160, 0));
+            Queue(pending, "WaterJet", ProceduralArt.WaterJet(), new ImportSpec(64, 0));
+            Queue(pending, "SideStreet", ProceduralArt.SideStreet(), new ImportSpec(64, 0));
             foreach (string part in PartNames) Queue(pending, "Part_" + part, ProceduralArt.Part(part), new ImportSpec(ProceduralArt.PartPpu(part), 0));
 
             for (int ch = 1; ch <= 5; ch++)
@@ -85,6 +91,11 @@ namespace DribbleToSchool.EditorTools
             set.dog = Load("Dog");
             set.seagull = Load("Seagull");
             set.car = Load("Car");
+            set.carFront = Load("CarFront");
+            set.walkFigure = Load("SignalWalk");
+            set.standFigure = Load("SignalStand");
+            set.waterJet = Load("WaterJet");
+            set.sideStreet = Load("SideStreet");
             var poles = Load("Poles");
             foreach (string part in PartNames) set.parts[part] = Load("Part_" + part);
             for (int ch = 1; ch <= 5; ch++)

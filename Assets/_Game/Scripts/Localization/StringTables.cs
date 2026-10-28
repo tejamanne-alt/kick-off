@@ -78,7 +78,7 @@ namespace DribbleToSchool.Localization
                 // Losing the ball
                 { "lose.ball", "Lost the ball!" }, { "lose.gap", "Into the gap!" }, { "lose.splash", "Splash!" },
                 { "lose.tide", "Splash! Wait for the tide" }, { "lose.fell", "Lost the ball!" },
-                { "lose.behind", "Left the ball behind!" }, { "lose.honk", "Honk! Wait for the green light" },
+                { "lose.behind", "Left the ball behind!" }, { "lose.honk", "Honk! Wait for the green man" },
                 { "lose.checkpoint", "Back to the checkpoint" }, { "lose.offStart", "The ball rolled back home!" },
 
                 // Pause
@@ -107,7 +107,7 @@ namespace DribbleToSchool.Localization
                 { "tut.gate", "Locked gate! Kick the ball hard at the red button." },
                 { "tut.puddle", "Puddles slow the ball and your feet." },
                 { "tut.pedestrian", "The ball bounces off people. Chip it over, or wait for a gap." },
-                { "tut.crossing", "Red light means cars! Stop and wait for green." },
+                { "tut.crossing", "Red man means cars are coming! Wait for the green man." },
                 { "tut.springboard", "Springboards bounce you and the ball up high." },
                 { "tut.tide", "The tide comes in and out. Cross while the water is low." },
                 { "tut.seagull", "Seagulls swoop at the ball. Keep it low and close." },
@@ -115,7 +115,7 @@ namespace DribbleToSchool.Localization
                 { "tut.pipes", "Pipes roll down the slope. Jump over them!" },
                 { "tut.platform", "Chip the ball onto the moving platform, then jump on." },
                 { "tut.dog", "Dogs chase low balls. Chip it over their heads!" },
-                { "tut.fountain", "Fountain spray lifts the ball. Dribble into it!" },
+                { "tut.fountain", "The fountain jets lift the ball. Dribble into them!" },
                 { "tut.swing", "Chip the ball across, then ride the swing." },
 
                 // Levels
@@ -194,7 +194,7 @@ namespace DribbleToSchool.Localization
 
                 { "lose.ball", "¡Balón perdido!" }, { "lose.gap", "¡Al hoyo!" }, { "lose.splash", "¡Chof!" },
                 { "lose.tide", "¡Chof! Espera a la marea" }, { "lose.fell", "¡Balón perdido!" },
-                { "lose.behind", "¡Te dejaste el balón!" }, { "lose.honk", "¡Piii! Espera al verde" },
+                { "lose.behind", "¡Te dejaste el balón!" }, { "lose.honk", "¡Piii! Espera al muñeco verde" },
                 { "lose.checkpoint", "Vuelta al control" }, { "lose.offStart", "¡El balón volvió a casa!" },
 
                 { "pause.title", "Pausa" }, { "pause.resume", "Seguir" }, { "pause.checkpoint", "Volver al control" },
@@ -220,7 +220,7 @@ namespace DribbleToSchool.Localization
                 { "tut.gate", "¡Puerta cerrada! Chuta fuerte al botón rojo." },
                 { "tut.puddle", "Los charcos frenan el balón y tus pies." },
                 { "tut.pedestrian", "El balón rebota en la gente. Pásalo por encima o espera." },
-                { "tut.crossing", "¡Rojo significa coches! Párate y espera al verde." },
+                { "tut.crossing", "¡Muñeco rojo: vienen coches! Espera al muñeco verde." },
                 { "tut.springboard", "Los trampolines te lanzan alto a ti y al balón." },
                 { "tut.tide", "La marea sube y baja. Cruza cuando el agua esté baja." },
                 { "tut.seagull", "Las gaviotas atacan el balón. Mantenlo bajo y cerca." },

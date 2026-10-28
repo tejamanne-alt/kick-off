@@ -671,9 +671,15 @@ namespace DribbleToSchool.EditorTools
                 float width = toX - fromX;
                 float center = (fromX + toX) * 0.5f;
 
+                // Where the pavement meets a side street: zebra bars across the road surface,
+                // dropped kerbs at both edges, and the street itself running away from the camera.
                 Decor("Road", new Vector2(center, groundTop - 0.06f), new Vector2(width, 0.12f), new Color(0.25f, 0.25f, 0.28f)).GetComponent<SpriteRenderer>().sortingOrder = 1;
                 for (float sx = fromX + 0.3f; sx < toX - 0.2f; sx += 0.8f)
                     Decor("Zebra", new Vector2(sx + 0.2f, groundTop - 0.06f), new Vector2(0.4f, 0.1f), Color.white).GetComponent<SpriteRenderer>().sortingOrder = 2;
+                foreach (float kx in new[] { fromX, toX })
+                    Decor("DroppedKerb", new Vector2(kx, groundTop - 0.04f), new Vector2(0.3f, 0.1f), new Color(0.8f, 0.8f, 0.78f)).GetComponent<SpriteRenderer>().sortingOrder = 2;
+                var street = SpriteObject(root, "SideStreet", Art.sideStreet, new Vector3(center, groundTop + 0.48f, 0f), -38);
+                street.transform.localScale = new Vector3(width / 4f, 0.65f, 1f);
 
                 var go = new GameObject("Crossing");
                 go.transform.SetParent(root, false);
@@ -684,33 +690,22 @@ namespace DribbleToSchool.EditorTools
                 var crossing = go.AddComponent<Hazards.Crossing>();
                 crossing.phaseOffset = phaseOffset;
 
-                // Light on a pole before the crossing.
-                float poleX = fromX - 0.7f;
-                Decor("LightPole", new Vector2(poleX, groundTop + 1.3f), new Vector2(0.12f, 2.6f), new Color(0.3f, 0.3f, 0.32f));
-                Decor("LightBox", new Vector2(poleX, groundTop + 2.75f), new Vector2(0.45f, 1.2f), new Color(0.15f, 0.15f, 0.17f)).GetComponent<SpriteRenderer>().sortingOrder = 0;
-                crossing.redLamp = Lamp(go.transform, new Vector2(poleX, groundTop + 3.15f));
-                crossing.amberLamp = Lamp(go.transform, new Vector2(poleX, groundTop + 2.75f));
-                crossing.greenLamp = Lamp(go.transform, new Vector2(poleX, groundTop + 2.35f));
+                // Pedestrian signal facing the kid: red standing man above, green walking man below.
+                float poleX = fromX - 0.55f;
+                Decor("SignalPole", new Vector2(poleX, groundTop + 1.25f), new Vector2(0.1f, 2.5f), new Color(0.55f, 0.56f, 0.58f));
+                Decor("SignalBox", new Vector2(poleX, groundTop + 2.35f), new Vector2(0.5f, 0.95f), new Color(0.15f, 0.15f, 0.17f)).GetComponent<SpriteRenderer>().sortingOrder = 0;
+                crossing.redFigure = SpriteObject(go.transform, "RedMan", Art.standFigure, Vector3.zero, 1);
+                crossing.redFigure.transform.position = new Vector3(poleX, groundTop + 2.58f, 0f);
+                crossing.greenFigure = SpriteObject(go.transform, "GreenMan", Art.walkFigure, Vector3.zero, 1);
+                crossing.greenFigure.transform.position = new Vector3(poleX, groundTop + 2.12f, 0f);
 
-                var car = new GameObject("Car").transform;
-                car.SetParent(go.transform, false);
-                car.localPosition = new Vector3(0f, -0.53f, 0f);
-                var carSr = SpriteObject(car, "Body", Art.car, Vector3.zero, 15, new Color(0.9f, 0.35f, 0.3f));
-                carSr.flipX = true;   // drives right-to-left
-                crossing.car = car;
-                crossing.carTravel = width + 6f;
-            }
-
-            SpriteRenderer Lamp(Transform parent, Vector2 position)
-            {
-                var go = new GameObject("Lamp");
-                go.transform.SetParent(parent, false);
-                go.transform.position = position;
-                go.transform.localScale = new Vector3(0.3f, 0.3f, 1f);
-                var sr = go.AddComponent<SpriteRenderer>();
-                sr.sprite = Circle;
-                sr.sortingOrder = 1;
-                return sr;
+                // Side-street traffic, drawn front-on; the Crossing script moves it in depth.
+                Color[] paint = { new Color(0.9f, 0.35f, 0.3f), new Color(0.35f, 0.55f, 0.85f) };
+                crossing.cars = new SpriteRenderer[paint.Length];
+                for (int i = 0; i < paint.Length; i++)
+                    crossing.cars[i] = SpriteObject(go.transform, "Car" + i, Art.carFront, Vector3.zero, -35, paint[i]);   // placed by Crossing
+                crossing.groundY = groundTop;
+                crossing.carHalfHeight = (98f - 4f) / 115f;   // CarFront: wheels on canvas y 4, 115 px per unit
             }
 
             /// <summary>A playful dog that patrols minX..maxX and noses low balls back.</summary>
@@ -939,12 +934,45 @@ namespace DribbleToSchool.EditorTools
             }
 
             /// <summary>A fountain whose spray lifts the ball (dribble into it to pop the ball up).</summary>
+            /// <summary>A plaza floor fountain: pulsing jets from a grate flush with the paving, which lift the ball.</summary>
             public void Fountain(float x, float groundTop, float height, float strength)
             {
-                Decor("FountainBasin", new Vector2(x, groundTop + 0.2f), new Vector2(1.6f, 0.4f), new Color(0.7f, 0.7f, 0.75f)).GetComponent<SpriteRenderer>().sortingOrder = 6;
-                var spray = Decor("FountainSpray", new Vector2(x, groundTop + height * 0.5f), new Vector2(0.5f, height), new Color(0.6f, 0.85f, 1f, 0.45f));
-                spray.GetComponent<SpriteRenderer>().sortingOrder = 6;
-                Wind(x - 0.5f, x + 0.5f, groundTop, groundTop + height, new Vector2(0f, strength));
+                Decor("WetPaving", new Vector2(x, groundTop - 0.03f), new Vector2(3.4f, 0.08f), new Color(0.2f, 0.32f, 0.45f, 0.35f)).GetComponent<SpriteRenderer>().sortingOrder = 2;
+                Decor("Grate", new Vector2(x, groundTop - 0.03f), new Vector2(1.5f, 0.08f), new Color(0.3f, 0.32f, 0.36f)).GetComponent<SpriteRenderer>().sortingOrder = 3;
+                for (float gx = x - 0.6f; gx <= x + 0.61f; gx += 0.2f)
+                    Decor("GrateSlot", new Vector2(gx, groundTop - 0.03f), new Vector2(0.08f, 0.05f), new Color(0.12f, 0.13f, 0.15f)).GetComponent<SpriteRenderer>().sortingOrder = 4;
+
+                var go = new GameObject("Fountain");
+                go.transform.SetParent(root, false);
+                go.transform.position = new Vector2(x, groundTop);
+                var trigger = go.AddComponent<BoxCollider2D>();
+                trigger.isTrigger = true;
+                trigger.size = new Vector2(1.1f, height);
+                trigger.offset = new Vector2(0f, height * 0.5f);
+                var fountain = go.AddComponent<Hazards.Fountain>();
+                fountain.maxHeight = height;
+                fountain.strength = strength;
+                fountain.phaseOffset = x * 0.37f;
+                fountain.jetSpriteHeight = Art.waterJet.bounds.size.y;
+
+                // One tall jet with a smaller one either side, leaning out a little.
+                float[] offsets = { 0f, -0.45f, 0.45f };
+                float[] widths = { 1f, 0.7f, 0.7f };
+                fountain.jets = new Transform[offsets.Length];
+                for (int i = 0; i < offsets.Length; i++)
+                {
+                    var jet = SpriteObject(go.transform, "Jet" + i, Art.waterJet, new Vector3(offsets[i], 1f, 0f), 6);
+                    jet.transform.localScale = new Vector3(widths[i], 1f, 1f);
+                    jet.transform.localRotation = Quaternion.Euler(0f, 0f, -offsets[i] * 18f);
+                    fountain.jets[i] = jet.transform;
+                }
+                fountain.droplets = new Transform[6];
+                for (int i = 0; i < fountain.droplets.Length; i++)
+                {
+                    var drop = SpriteObject(go.transform, "Droplet", Art.drop, new Vector3(0f, 0.5f, 0f), 7, new Color(0.75f, 0.9f, 1f, 0.9f));
+                    drop.transform.localScale = Vector3.one * 0.3f;
+                    fountain.droplets[i] = drop.transform;
+                }
             }
 
             /// <summary>First-time tutorial hint when the kid reaches x (text key tut.&lt;id&gt;).</summary>
