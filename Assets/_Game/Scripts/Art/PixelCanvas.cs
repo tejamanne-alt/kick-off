@@ -4,21 +4,34 @@ using UnityEngine;
 namespace DribbleToSchool.Art
 {
     /// <summary>
-    /// Tiny software rasterizer for procedural storybook art: anti-aliased
-    /// shapes, an ink-outline pass and watercolour paper grain. Pixel space,
-    /// y up, (0,0) at the bottom-left.
+    /// Tiny software rasterizer for procedural art: anti-aliased shapes, an
+    /// outline pass and paper grain. Drawing happens in logical units, y up,
+    /// (0,0) at the bottom-left. A canvas made with a <see cref="Scale"/> above 1
+    /// has that many pixels per logical unit, so the same drawing code can be
+    /// rendered bigger without losing sharpness.
     /// </summary>
     public class PixelCanvas
     {
+        /// <summary>Size in pixels.</summary>
         public readonly int Width;
         public readonly int Height;
+        /// <summary>Pixels per logical drawing unit.</summary>
+        public readonly float Scale;
         readonly Color[] px;
 
-        public PixelCanvas(int width, int height)
+        /// <summary>Logical size, the size the drawing code thinks in.</summary>
+        public float LogicalWidth { get { return Width / Scale; } }
+        public float LogicalHeight { get { return Height / Scale; } }
+
+        public PixelCanvas(int width, int height) : this(width, height, 1f) { }
+
+        /// <summary>A canvas of <paramref name="logicalWidth"/> x <paramref name="logicalHeight"/> drawing units, rendered at <paramref name="scale"/> pixels per unit.</summary>
+        public PixelCanvas(int logicalWidth, int logicalHeight, float scale)
         {
-            Width = width;
-            Height = height;
-            px = new Color[width * height];
+            Scale = Mathf.Max(0.01f, scale);
+            Width = Mathf.Max(1, Mathf.RoundToInt(logicalWidth * Scale));
+            Height = Mathf.Max(1, Mathf.RoundToInt(logicalHeight * Scale));
+            px = new Color[Width * Height];
         }
 
         public Color Get(int x, int y)
@@ -55,19 +68,24 @@ namespace DribbleToSchool.Art
             for (int i = 0; i < px.Length; i++) px[i] = c;
         }
 
-        /// <summary>Fill every pixel where <paramref name="coverage"/> returns 0..1 (sampled at pixel centres, 2x2 supersampled).</summary>
+        /// <summary>
+        /// Fill every pixel where <paramref name="coverage"/> (in logical units) returns 0..1,
+        /// 2x2 supersampled. The optional bounds are in logical units too.
+        /// </summary>
         public void Fill(Func<float, float, float> coverage, Color c, int x0 = 0, int y0 = 0, int x1 = -1, int y1 = -1)
         {
-            if (x1 < 0) x1 = Width - 1;
-            if (y1 < 0) y1 = Height - 1;
-            x0 = Mathf.Max(0, x0); y0 = Mathf.Max(0, y0);
-            x1 = Mathf.Min(Width - 1, x1); y1 = Mathf.Min(Height - 1, y1);
-            for (int y = y0; y <= y1; y++)
+            float s = Scale, inv = 1f / Scale;
+            int px0 = Mathf.FloorToInt(x0 * s) - 1, py0 = Mathf.FloorToInt(y0 * s) - 1;
+            int px1 = x1 < 0 ? Width - 1 : Mathf.CeilToInt((x1 + 1) * s) + 1;
+            int py1 = y1 < 0 ? Height - 1 : Mathf.CeilToInt((y1 + 1) * s) + 1;
+            px0 = Mathf.Max(0, px0); py0 = Mathf.Max(0, py0);
+            px1 = Mathf.Min(Width - 1, px1); py1 = Mathf.Min(Height - 1, py1);
+            for (int y = py0; y <= py1; y++)
             {
-                for (int x = x0; x <= x1; x++)
+                for (int x = px0; x <= px1; x++)
                 {
-                    float cov = (coverage(x + 0.25f, y + 0.25f) + coverage(x + 0.75f, y + 0.25f)
-                               + coverage(x + 0.25f, y + 0.75f) + coverage(x + 0.75f, y + 0.75f)) * 0.25f;
+                    float cov = (coverage((x + 0.25f) * inv, (y + 0.25f) * inv) + coverage((x + 0.75f) * inv, (y + 0.25f) * inv)
+                               + coverage((x + 0.25f) * inv, (y + 0.75f) * inv) + coverage((x + 0.75f) * inv, (y + 0.75f) * inv)) * 0.25f;
                     if (cov > 0f) Blend(x, y, c, cov);
                 }
             }
@@ -83,7 +101,7 @@ namespace DribbleToSchool.Art
                     int i = y * Width + x;
                     Color d = px[i];
                     if (d.a <= 0f) continue;
-                    float k = Mathf.Clamp01(amount(x + 0.5f, y + 0.5f)) * c.a;
+                    float k = Mathf.Clamp01(amount((x + 0.5f) / Scale, (y + 0.5f) / Scale)) * c.a;
                     if (k <= 0f) continue;
                     px[i] = new Color(Mathf.Lerp(d.r, c.r, k), Mathf.Lerp(d.g, c.g, k), Mathf.Lerp(d.b, c.b, k), d.a);
                 }
@@ -94,8 +112,8 @@ namespace DribbleToSchool.Art
         public void Wrapped(Action<float> drawAtOffset)
         {
             drawAtOffset(0f);
-            drawAtOffset(-Width);
-            drawAtOffset(Width);
+            drawAtOffset(-LogicalWidth);
+            drawAtOffset(LogicalWidth);
         }
 
         public void FillRect(float x0, float y0, float x1, float y1, Color c)
@@ -177,6 +195,7 @@ namespace DribbleToSchool.Art
         /// </summary>
         public void Ink(Color ink, float thickness, int seed = 0, bool wrapX = false)
         {
+            thickness *= Scale;
             var src = (Color[])px.Clone();
             int r = Mathf.CeilToInt(thickness) + 1;
             for (int y = 0; y < Height; y++)
@@ -213,6 +232,7 @@ namespace DribbleToSchool.Art
         /// <summary>Watercolour paper grain: soft blotches plus fine speckle, multiplied into colour.</summary>
         public void Grain(float amount, int seed = 0, float scale = 0.06f, bool wrapX = false)
         {
+            scale /= Scale;
             for (int y = 0; y < Height; y++)
             {
                 for (int x = 0; x < Width; x++)

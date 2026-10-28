@@ -118,6 +118,11 @@ This file is the resume point. A new session should read it first. All eight pha
   - Chapter 1's ground is now asphalt with a white kerb.
   - The menu sky matches.
   - The kid wears shorts with bare knees and long socks, and has smooth hair (a rounded cap, a soft fringe at the brow and a shine band). His head is a little bigger so he reads as younger. Adults keep long trousers.
+- Real-world scale: about 0.9 m per unit, so the kid is 1.4 m (1.55 units).
+  - Mid-layer props are drawn at true size. `PixelCanvas` can render the same drawing code larger at full sharpness.
+  - Sizes: house 7.5 m to the ridge, shops 7 m, school about 9 m plus its clock tower, apartments 13 m, overpass clearance 5.8 m.
+  - Vending machines 1.85 m, utility poles 10 m tall and about 21 m apart.
+  - The parked car is 3 m long (its colliders were updated to match, and it is still jumpable). Adults are 1.7 m.
 
 ## After Phase 8 (next steps)
 

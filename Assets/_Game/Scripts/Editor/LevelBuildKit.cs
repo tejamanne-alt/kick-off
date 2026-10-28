@@ -426,11 +426,16 @@ namespace DribbleToSchool.EditorTools
             // Mid props
             var mid = layer("Mid", 0.55f, 0.7f);
             Vector2 ms = span(0.55f);
-            for (float x = ms.x; x < ms.y; x += 6f + (float)rng.NextDouble() * 4f)
+            for (float x = ms.x; x < ms.y;)
             {
-                // Props are 6.4 units tall and stand on the canvas bottom: sit them just into the ground.
-                float sc = 0.9f + (float)rng.NextDouble() * 0.2f;
-                var prop = SpriteObject(mid, "Prop", Art.mid[ch, rng.Next(3)], new Vector3(x, track.LowestGroundTop - 0.3f + 3.2f * sc, 0f), -60);
+                // Props are drawn at real-world size (about 0.9 m per unit) and stand on the sprite's
+                // bottom edge: sit them just into the ground, a gap of 0.5 to 3 units between them.
+                var sprite = Art.mid[ch, rng.Next(3)];
+                float sc = 0.95f + (float)rng.NextDouble() * 0.1f;
+                Vector2 size = sprite.bounds.size * sc;
+                float cx = x + size.x * 0.5f;
+                var prop = SpriteObject(mid, "Prop", sprite, new Vector3(cx, track.LowestGroundTop - 0.3f + size.y * 0.5f, 0f), -60);
+                x += size.x + 0.5f + (float)rng.NextDouble() * 2.5f;
                 prop.transform.localScale = new Vector3(sc, sc, 1f);
                 prop.flipX = Theme.scenery != SceneryStyle.Park && rng.NextDouble() < 0.35;
                 prop.color = Color.Lerp(Color.white, Theme.skyBottom, 0.08f);   // a touch of aerial haze
@@ -441,9 +446,10 @@ namespace DribbleToSchool.EditorTools
             {
                 var poles = layer("Poles", 0.42f, 0.55f);
                 Vector2 ps = span(0.42f);
-                var polesSr = SpriteObject(poles, "PoleLine", Art.poles[ch], new Vector3((ps.x + ps.y) * 0.5f, track.LowestGroundTop - 0.3f + 4f, 0f), -50);
+                float poleHeight = Art.poles[ch].bounds.size.y;
+                var polesSr = SpriteObject(poles, "PoleLine", Art.poles[ch], new Vector3((ps.x + ps.y) * 0.5f, track.LowestGroundTop - 0.3f + poleHeight * 0.5f, 0f), -50);
                 polesSr.drawMode = SpriteDrawMode.Tiled;
-                polesSr.size = new Vector2(ps.y - ps.x, 8f);
+                polesSr.size = new Vector2(ps.y - ps.x, poleHeight);
             }
 
             // Near hedges / fences / bunting
@@ -628,9 +634,10 @@ namespace DribbleToSchool.EditorTools
             public void ParkedCar(float x, Color color, float groundTop = 0f)
             {
                 // Colliders only; the drawn car covers them.
-                Block("CarBody", new Vector2(x, groundTop + 0.575f), new Vector2(2.8f, 0.75f), color, GroundMat).GetComponent<SpriteRenderer>().enabled = false;
-                Block("CarCabin", new Vector2(x - 0.2f, groundTop + 1.2f), new Vector2(1.5f, 0.5f), color, GroundMat).GetComponent<SpriteRenderer>().enabled = false;
-                SpriteObject(root, "Car", Art.car, new Vector3(x, groundTop + 0.72f, 0f), 3, color);
+                // A small city car about 3.4 units (3 m) long: bonnet at 0.95, roof at 1.55, both jumpable.
+                Block("CarBody", new Vector2(x, groundTop + 0.575f), new Vector2(3.3f, 0.75f), color, GroundMat).GetComponent<SpriteRenderer>().enabled = false;
+                Block("CarCabin", new Vector2(x - 0.17f, groundTop + 1.25f), new Vector2(1.9f, 0.6f), color, GroundMat).GetComponent<SpriteRenderer>().enabled = false;
+                SpriteObject(root, "Car", Art.car, new Vector3(x, groundTop + 0.835f, 0f), 3, color);
             }
 
             /// <summary>Someone walking between minX and maxX. Solid to the ball and the kid.</summary>
@@ -638,15 +645,15 @@ namespace DribbleToSchool.EditorTools
             {
                 var go = new GameObject("Pedestrian");
                 go.transform.SetParent(root, false);
-                go.transform.position = new Vector2(minX, groundTop + 0.8f);
+                go.transform.position = new Vector2(minX, groundTop + 0.925f);
                 var body = go.AddComponent<Rigidbody2D>();
                 body.bodyType = RigidbodyType2D.Kinematic;
                 var col = go.AddComponent<CapsuleCollider2D>();
-                col.size = new Vector2(0.5f, 1.6f);
+                col.size = new Vector2(0.5f, 1.85f);
 
                 Color[] hairs = { new Color(0.46f, 0.34f, 0.28f), new Color(1f, 0.95f, 0.6f), new Color(0.92f, 0.92f, 0.95f), new Color(0.85f, 0.46f, 0.3f) };
-                // Adults: the teen rig at 1.1x (about 1.7 tall), feet on the capsule bottom (-0.8).
-                var parts = BuildCharacter(go.transform, "Visual", new Vector2(0f, -0.14f), 1.1f, coat, Color.Lerp(coat, Color.black, 0.45f),
+                // Adults: the kid rig at 1.22x (about 1.9 units, 1.7 m), feet on the capsule bottom (-0.925).
+                var parts = BuildCharacter(go.transform, "Visual", new Vector2(0f, -0.193f), 1.22f, coat, Color.Lerp(coat, Color.black, 0.45f),
                     hairs[Mathf.Abs(Mathf.RoundToInt(minX)) % hairs.Length], 4, false);
 
                 var p = go.AddComponent<Hazards.Pedestrian>();

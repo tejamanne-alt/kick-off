@@ -173,23 +173,33 @@ namespace DribbleToSchool.Art
         }
 
         /// <summary>Side view car body; tintable body, fixed windows and wheels.</summary>
+        /// <summary>
+        /// A small city car facing right, tintable body. Baked at 115 px per unit it is 3.4 units
+        /// (3 m) long with the wheels on the canvas line y = 4, the bonnet at 0.95 and the roof at 1.55.
+        /// </summary>
         public static PixelCanvas Car()
         {
-            var c = new PixelCanvas(320, 160);
-            Color body = Grey(0.96f);
-            c.FillRoundRect(8, 32, 312, 100, 22, body);
-            c.FillPolygon(new[] { new Vector2(70, 98), new Vector2(240, 98), new Vector2(210, 150), new Vector2(100, 150) }, body);
-            c.FillPolygon(new[] { new Vector2(92, 102), new Vector2(150, 102), new Vector2(150, 140), new Vector2(110, 140) }, new Color(0.7f, 0.85f, 0.95f));
-            c.FillPolygon(new[] { new Vector2(160, 102), new Vector2(222, 102), new Vector2(200, 140), new Vector2(160, 140) }, new Color(0.7f, 0.85f, 0.95f));
-            c.FillRoundRect(290, 62, 312, 76, 4, new Color(1f, 0.92f, 0.5f));
+            var c = new PixelCanvas(400, 200);
+            Color body = Grey(0.96f), glass = new Color(0.55f, 0.66f, 0.78f), dark = new Color(0.18f, 0.18f, 0.2f);
+            c.FillRoundRect(6, 30, 394, 113, 26, body);
+            c.FillPolygon(new[] { new Vector2(62, 110), new Vector2(300, 110), new Vector2(262, 182), new Vector2(96, 182) }, body);
+            c.Shade((x, y) => y < 62 ? 1f : 0f, Grey(0.78f));                          // lower body in shadow
+            c.FillPolygon(new[] { new Vector2(84, 116), new Vector2(172, 116), new Vector2(172, 172), new Vector2(106, 172) }, glass);
+            c.FillPolygon(new[] { new Vector2(182, 116), new Vector2(284, 116), new Vector2(254, 172), new Vector2(182, 172) }, glass);
+            c.FillPolygon(new[] { new Vector2(196, 120), new Vector2(214, 120), new Vector2(196, 160) }, Lighten(glass, 0.35f)); // glint
+            c.FillRect(176, 40, 179, 108, Grey(0.8f));                                 // door line
+            c.FillRect(150, 92, 168, 96, Grey(0.6f));                                  // handle
+            c.FillRoundRect(368, 78, 392, 96, 5, new Color(1f, 0.93f, 0.6f));         // headlight
+            c.FillRoundRect(8, 78, 22, 96, 4, new Color(0.9f, 0.3f, 0.28f));          // tail light
+            c.FillRect(6, 30, 394, 40, Grey(0.5f));                                    // bumper line
             for (int i = 0; i < 2; i++)
             {
-                float x = 76 + i * 168;
-                c.FillCircle(x, 34, 30, new Color(0.18f, 0.18f, 0.2f));
-                c.FillCircle(x, 34, 13, Grey(0.75f));
+                float x = 88 + i * 224;
+                c.FillCircle(x, 38, 36, Grey(0.85f));                                   // arch
+                c.FillCircle(x, 36, 32, dark);
+                c.FillCircle(x, 36, 14, Grey(0.75f));
             }
-            c.Grain(0.08f, 10);
-            c.Ink(Ink, 3f, 10);
+            c.Ink(Ink, 2.5f, 10);
             return c;
         }
 

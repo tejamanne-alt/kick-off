@@ -281,13 +281,15 @@ namespace DribbleToSchool.Art
         /// </summary>
         public static PixelCanvas PoleLine(int seed)
         {
-            const int w = 512, h = 512;
-            var c = new PixelCanvas(w, h);
-            const float px = 256f;
+            // Drawn 1024 x 512 at 1.45x: at 64 px per unit the pole stands about 11 units (10 m)
+            // and the tile, so the pole spacing, is about 23 units (21 m).
+            const int w = 1024;
+            var c = new PixelCanvas(w, 512, 1.45f);
+            const float px = 512f;
             Color wire = new Color(0.14f, 0.14f, 0.18f);
             float[] anchorsX = { -56f, 56f, -40f, 0f };
             float[] anchorsY = { 436f, 436f, 380f, 470f };
-            float[] sags = { 46f, 52f, 40f, 60f };
+            float[] sags = { 70f, 80f, 62f, 90f };
             for (int i = 0; i < anchorsX.Length; i++)
             {
                 float ax = px + anchorsX[i], ay = anchorsY[i], sag = sags[i];
@@ -295,7 +297,7 @@ namespace DribbleToSchool.Art
                 {
                     float t = ((x - ax) % w + w) % w / w;
                     float wy = ay - sag * 4f * t * (1f - t);
-                    return Mathf.Abs(y - wy) < 1.4f ? 1f : 0f;
+                    return Mathf.Abs(y - wy) < 1.1f ? 1f : 0f;
                 }, wire);
             }
             Color con = new Color(0.74f, 0.73f, 0.7f), conSh = new Color(0.6f, 0.6f, 0.6f);
@@ -315,6 +317,18 @@ namespace DribbleToSchool.Art
 
         // ===================== Mid layer props =====================
 
+        /// <summary>
+        /// A 512 x 512 prop canvas drawn at <paramref name="worldScale"/> times the base size, at the
+        /// same pixel density (props bake at 80 px per unit, so the base frame is 6.4 units).
+        /// Scales follow a real-world scale of about 0.9 m per unit, where the kid is 1.4 m (1.55 units):
+        /// a two-storey house is about 7.5 m to the ridge, a shop 7 m, the school 9 m to the roof,
+        /// apartments 13 m, a vending machine 1.85 m.
+        /// </summary>
+        static PixelCanvas Prop(float worldScale)
+        {
+            return new PixelCanvas(512, 512, worldScale);
+        }
+
         /// <summary>One of three large scenery props for the chapter, standing on the canvas bottom.</summary>
         public static PixelCanvas MidProp(SceneryStyle style, int variant, Color tint)
         {
@@ -333,44 +347,51 @@ namespace DribbleToSchool.Art
 
         static PixelCanvas House()
         {
-            var c = new PixelCanvas(512, 512);
+            // Two-storey house, gable end to the street: about 6.4 m wide, 7.5 m to the ridge.
+            // At this scale one unit (0.9 m) is 53 drawing units: storeys are 165 tall, the door 120.
+            var c = Prop(1.5f);
             Color wall = new Color(0.95f, 0.94f, 0.9f), shade = new Color(0.78f, 0.81f, 0.87f), roof = new Color(0.32f, 0.35f, 0.42f);
-            Foliage(c, 70, 380, 70, 100, Leaf, LeafDark, 3, 30);                       // tree behind
-            Trunk(c, new Vector2(70, 0), new Vector2(60, 300), 16, Bark);
-            c.FillRect(80, 0, 400, 300, wall);
-            c.FillPolygon(new[] { new Vector2(80, 300), new Vector2(400, 300), new Vector2(240, 412) }, wall);
-            System.Func<float, float> slope = x => x < 240f ? 300f + (x - 80f) / 160f * 112f : 300f + (400f - x) / 160f * 112f;
-            c.Shade((x, y) => x >= 80 && x <= 400 && y > slope(x) - 26f && y <= slope(x) ? 1f : 0f, shade);   // under the eaves
-            c.Shade((x, y) => x >= 80 && x < 108 && y < 300 ? 1f : 0f, shade);         // side turning away
-            c.Line(new Vector2(60, 286), new Vector2(240, 426), 16, roof);
-            c.Line(new Vector2(240, 426), new Vector2(420, 286), 16, roof);
-            c.Line(new Vector2(62, 280), new Vector2(240, 418), 3, new Color(0.62f, 0.4f, 0.32f));
-            c.Line(new Vector2(240, 418), new Vector2(418, 280), 3, new Color(0.62f, 0.4f, 0.32f));
-            Window(c, 195, 318, 285, 366);
-            Window(c, 250, 120, 378, 192);
-            c.FillRect(100, 0, 168, 196, new Color(0.46f, 0.34f, 0.26f));            // doorway
-            c.FillRect(108, 0, 160, 188, new Color(0.38f, 0.28f, 0.22f));
-            for (float x = 112; x < 160; x += 9) c.FillRect(x, 0, x + 2, 188, new Color(0.5f, 0.38f, 0.3f));
-            c.FillRect(168, 0, 192, 236, new Color(0.62f, 0.3f, 0.24f));             // brick pillar
-            for (float y = 6; y < 236; y += 12) c.FillRect(168, y, 192, y + 2, new Color(0.5f, 0.24f, 0.2f));
-            c.FillRect(214, 60, 238, 108, new Color(0.85f, 0.86f, 0.86f));           // meter box
-            c.FillRoundRect(292, 0, 362, 56, 4, new Color(0.9f, 0.91f, 0.92f));       // AC unit
-            c.FillCircle(316, 28, 18, new Color(0.35f, 0.37f, 0.4f));
-            c.FillCircle(316, 28, 6, new Color(0.7f, 0.72f, 0.74f));
-            c.FillRect(394, 0, 400, 296, new Color(0.62f, 0.64f, 0.66f));            // downpipe
-            c.Line(new Vector2(240, 426), new Vector2(240, 500), 4, new Color(0.35f, 0.35f, 0.38f)); // TV antenna
-            c.Line(new Vector2(200, 486), new Vector2(286, 486), 3, new Color(0.35f, 0.35f, 0.38f));
-            c.Line(new Vector2(214, 470), new Vector2(272, 470), 3, new Color(0.35f, 0.35f, 0.38f));
-            c.FillRoundRect(120, 0, 150, 36, 6, new Color(0.8f, 0.48f, 0.32f));      // pot plants
-            Foliage(c, 135, 46, 18, 16, Leaf, LeafDark, 5, 8);
-            c.FillRoundRect(368, 0, 392, 30, 5, new Color(0.8f, 0.48f, 0.32f));
-            Foliage(c, 380, 38, 14, 12, Leaf, LeafDark, 6, 7);
+            Trunk(c, new Vector2(30, 0), new Vector2(26, 330), 14, Bark);              // tree behind
+            Foliage(c, 36, 400, 60, 90, Leaf, LeafDark, 3, 30);
+            c.FillRect(60, 0, 440, 330, wall);
+            c.FillPolygon(new[] { new Vector2(60, 330), new Vector2(440, 330), new Vector2(250, 452) }, wall);
+            System.Func<float, float> slope = x => x < 250f ? 330f + (x - 60f) / 190f * 122f : 330f + (440f - x) / 190f * 122f;
+            c.Shade((x, y) => x >= 60 && x <= 440 && y > slope(x) - 24f && y <= slope(x) ? 1f : 0f, shade);   // under the eaves
+            c.Shade((x, y) => x >= 60 && x < 86 && y < 330 ? 1f : 0f, shade);          // side turning away
+            c.FillRect(60, 162, 440, 170, new Color(0.86f, 0.86f, 0.84f));            // floor band
+            c.Line(new Vector2(40, 316), new Vector2(250, 466), 14, roof);
+            c.Line(new Vector2(250, 466), new Vector2(460, 316), 14, roof);
+            c.Line(new Vector2(42, 310), new Vector2(250, 458), 3, new Color(0.62f, 0.4f, 0.32f));
+            c.Line(new Vector2(250, 458), new Vector2(458, 310), 3, new Color(0.62f, 0.4f, 0.32f));
+            Window(c, 100, 210, 200, 274);                                           // first floor
+            Window(c, 270, 210, 400, 274);
+            c.FillRect(232, 360, 268, 384, new Color(0.7f, 0.72f, 0.76f));            // gable vent
+            for (float y = 364; y < 384; y += 6) c.FillRect(234, y, 266, y + 2, new Color(0.55f, 0.57f, 0.62f));
+            Window(c, 280, 52, 404, 118);                                            // ground floor
+            c.FillRect(74, 0, 140, 124, new Color(0.46f, 0.34f, 0.26f));              // front door
+            c.FillRect(80, 0, 134, 118, new Color(0.38f, 0.28f, 0.22f));
+            for (float x = 84; x < 134; x += 8) c.FillRect(x, 0, x + 2, 118, new Color(0.5f, 0.38f, 0.3f));
+            c.FillRect(70, 124, 144, 132, new Color(0.5f, 0.53f, 0.58f));             // door canopy
+            c.FillRect(140, 0, 160, 162, new Color(0.62f, 0.3f, 0.24f));             // brick pillar
+            for (float y = 6; y < 162; y += 9) c.FillRect(140, y, 160, y + 2, new Color(0.5f, 0.24f, 0.2f));
+            c.FillRect(196, 56, 214, 84, new Color(0.85f, 0.86f, 0.86f));             // meter box
+            c.FillRoundRect(214, 0, 262, 40, 3, new Color(0.9f, 0.91f, 0.92f));       // AC unit
+            c.FillCircle(232, 20, 13, new Color(0.35f, 0.37f, 0.4f));
+            c.FillCircle(232, 20, 4, new Color(0.7f, 0.72f, 0.74f));
+            c.FillRect(434, 0, 440, 326, new Color(0.62f, 0.64f, 0.66f));            // downpipe
+            c.Line(new Vector2(250, 466), new Vector2(250, 510), 3, new Color(0.35f, 0.35f, 0.38f)); // TV antenna
+            c.Line(new Vector2(220, 500), new Vector2(284, 500), 2.5f, new Color(0.35f, 0.35f, 0.38f));
+            c.Line(new Vector2(230, 488), new Vector2(272, 488), 2.5f, new Color(0.35f, 0.35f, 0.38f));
+            c.FillRoundRect(162, 0, 184, 26, 4, new Color(0.8f, 0.48f, 0.32f));      // pot plants
+            Foliage(c, 173, 34, 13, 12, Leaf, LeafDark, 5, 8);
+            c.FillRoundRect(410, 0, 428, 22, 4, new Color(0.8f, 0.48f, 0.32f));
+            Foliage(c, 419, 28, 10, 9, Leaf, LeafDark, 6, 7);
             return c;
         }
 
         static PixelCanvas WallAndTrees()
         {
-            var c = new PixelCanvas(512, 512);
+            var c = Prop(1f);
             // Cloud-pruned garden pine and a big leafy tree behind a concrete block wall.
             Trunk(c, new Vector2(330, 0), new Vector2(320, 260), 22, Bark);
             Foliage(c, 320, 330, 170, 130, Leaf, LeafDark, 11, 60);
@@ -405,7 +426,7 @@ namespace DribbleToSchool.Art
 
         static PixelCanvas Bungalow()
         {
-            var c = new PixelCanvas(512, 512);
+            var c = Prop(1.2f);
             Trunk(c, new Vector2(430, 0), new Vector2(420, 250), 18, Bark);
             Foliage(c, 420, 320, 90, 120, new Color(0.62f, 0.82f, 0.42f), LeafDark, 17, 34);
             Color wall = new Color(0.88f, 0.89f, 0.9f);
@@ -424,7 +445,7 @@ namespace DribbleToSchool.Art
 
         static PixelCanvas Shop(int variant)
         {
-            var c = new PixelCanvas(512, 512);
+            var c = Prop(1.45f);
             Color[] walls = { new Color(0.95f, 0.9f, 0.82f), new Color(0.86f, 0.9f, 0.94f) };
             Color[] awnings = { new Color(0.25f, 0.45f, 0.75f), new Color(0.78f, 0.25f, 0.25f) };
             Color wall = walls[variant % 2], awn = awnings[variant % 2];
@@ -443,7 +464,7 @@ namespace DribbleToSchool.Art
                 c.FillRect(60, 0, 300, 186, new Color(0.42f, 0.5f, 0.6f));            // shop window
                 for (int i = 0; i < 9; i++)
                     c.FillCircle(84 + i * 26, 30 + (i % 3) * 30, 11, new[] { new Color(1f, 0.6f, 0.2f), new Color(0.9f, 0.3f, 0.3f), new Color(0.95f, 0.85f, 0.3f), new Color(0.5f, 0.75f, 0.3f) }[i % 4]);
-                c.FillRect(320, 0, 400, 180, new Color(0.36f, 0.26f, 0.2f));          // door
+                c.FillRect(320, 0, 390, 124, new Color(0.36f, 0.26f, 0.2f));          // door (2 m)
             }
             else
             {
@@ -460,31 +481,33 @@ namespace DribbleToSchool.Art
 
         static PixelCanvas VendingCorner()
         {
-            var c = new PixelCanvas(512, 512);
+            var c = Prop(1f);
             Trunk(c, new Vector2(420, 0), new Vector2(410, 260), 18, Bark);
             Foliage(c, 410, 330, 100, 120, Leaf, LeafDark, 21, 36);
-            VendingMachine(c, 80, new Color(0.85f, 0.22f, 0.24f));
-            VendingMachine(c, 214, new Color(0.25f, 0.45f, 0.78f));
+            VendingMachine(c, 150, new Color(0.85f, 0.22f, 0.24f));
+            VendingMachine(c, 232, new Color(0.25f, 0.45f, 0.78f));
             c.FillRoundRect(344, 0, 380, 70, 6, new Color(0.25f, 0.55f, 0.35f));     // recycling bin
             c.FillRect(340, 64, 384, 76, new Color(0.2f, 0.45f, 0.3f));
             return c;
         }
 
+        /// <summary>A drinks machine 1.85 m tall and 1 m wide (at 80 drawing units per 0.9 m).</summary>
         static void VendingMachine(PixelCanvas c, float x, Color body)
         {
-            c.FillRoundRect(x, 0, x + 126, 270, 6, body);
-            c.FillRect(x, 0, x + 18, 270, Mul(body, 0.82f));
-            c.FillRect(x + 14, 130, x + 112, 254, new Color(0.88f, 0.93f, 0.97f));
+            const float k = 0.61f;   // the drawing below was laid out 270 tall
+            c.FillRoundRect(x, 0, x + 126 * k, 270 * k, 4, body);
+            c.FillRect(x, 0, x + 18 * k, 270 * k, Mul(body, 0.82f));
+            c.FillRect(x + 14 * k, 130 * k, x + 112 * k, 254 * k, new Color(0.88f, 0.93f, 0.97f));
             for (int row = 0; row < 3; row++)
                 for (int i = 0; i < 6; i++)
-                    c.FillRoundRect(x + 20 + i * 15, 140 + row * 38, x + 30 + i * 15, 166 + row * 38, 3,
+                    c.FillRoundRect(x + (20 + i * 15) * k, (140 + row * 38) * k, x + (30 + i * 15) * k, (166 + row * 38) * k, 2,
                         new[] { new Color(0.9f, 0.5f, 0.2f), new Color(0.3f, 0.6f, 0.9f), new Color(0.4f, 0.75f, 0.4f), new Color(0.95f, 0.85f, 0.3f) }[(i + row) % 4]);
-            c.FillRect(x + 20, 40, x + 106, 64, new Color(0.15f, 0.15f, 0.18f));     // dispenser
+            c.FillRect(x + 20 * k, 40 * k, x + 106 * k, 64 * k, new Color(0.15f, 0.15f, 0.18f));     // dispenser
         }
 
         static PixelCanvas LifeguardTower()
         {
-            var c = new PixelCanvas(512, 512);
+            var c = Prop(0.85f);
             Color wood = new Color(0.94f, 0.92f, 0.86f), red = new Color(0.86f, 0.28f, 0.26f);
             c.Line(new Vector2(170, 0), new Vector2(200, 230), 12, wood);
             c.Line(new Vector2(330, 0), new Vector2(300, 230), 12, wood);
@@ -503,7 +526,7 @@ namespace DribbleToSchool.Art
 
         static PixelCanvas Parasol()
         {
-            var c = new PixelCanvas(512, 512);
+            var c = Prop(0.7f);
             c.Line(new Vector2(250, 0), new Vector2(262, 230), 6, Grey(0.85f));
             Color a = new Color(0.95f, 0.45f, 0.4f);
             for (int i = 0; i < 6; i++)
@@ -519,7 +542,7 @@ namespace DribbleToSchool.Art
 
         static PixelCanvas Rocks()
         {
-            var c = new PixelCanvas(512, 512);
+            var c = Prop(1f);
             Color rock = new Color(0.68f, 0.66f, 0.64f), rockSh = new Color(0.5f, 0.5f, 0.54f);
             foreach (var r in new[] { new Vector3(160, 50, 80), new Vector3(260, 40, 60), new Vector3(330, 30, 44) })
             {
@@ -534,7 +557,7 @@ namespace DribbleToSchool.Art
 
         static PixelCanvas Overpass()
         {
-            var c = new PixelCanvas(512, 512);
+            var c = Prop(1.35f);
             Color con = new Color(0.78f, 0.78f, 0.8f), sh = new Color(0.58f, 0.6f, 0.66f);
             c.FillRect(200, 0, 312, 380, con);
             c.FillRect(200, 0, 236, 380, sh);
@@ -550,7 +573,7 @@ namespace DribbleToSchool.Art
 
         static PixelCanvas Apartments()
         {
-            var c = new PixelCanvas(512, 512);
+            var c = Prop(2.3f);
             Color wall = new Color(0.92f, 0.88f, 0.82f);
             c.FillRect(50, 0, 460, 500, wall);
             c.FillRect(50, 0, 120, 500, Color.Lerp(wall, new Color(0.6f, 0.65f, 0.75f), 0.35f));
@@ -567,7 +590,7 @@ namespace DribbleToSchool.Art
 
         static PixelCanvas CraneProp()
         {
-            var c = new PixelCanvas(512, 512);
+            var c = Prop(2.4f);
             Color y = new Color(0.95f, 0.72f, 0.25f), yd = new Color(0.8f, 0.56f, 0.18f);
             c.FillRect(230, 0, 270, 470, y);
             for (int i = 0; i < 22; i++) c.Line(new Vector2(230, i * 21), new Vector2(270, i * 21 + 21), 4, yd);
@@ -582,7 +605,7 @@ namespace DribbleToSchool.Art
 
         static PixelCanvas School()
         {
-            var c = new PixelCanvas(512, 512);
+            var c = Prop(2.4f);
             Color wall = new Color(0.95f, 0.94f, 0.9f), shade = new Color(0.78f, 0.8f, 0.86f);
             c.FillRect(0, 0, 512, 340, wall);
             c.FillRect(0, 330, 512, 346, Grey(0.82f));
@@ -603,7 +626,7 @@ namespace DribbleToSchool.Art
 
         static PixelCanvas Tree(bool cherry)
         {
-            var c = new PixelCanvas(512, 512);
+            var c = Prop(cherry ? 1.25f : 1.4f);
             Trunk(c, new Vector2(256, 0), new Vector2(246, 240), 26, Bark);
             c.Line(new Vector2(250, 180), new Vector2(170, 280), 12, Bark);
             c.Line(new Vector2(250, 200), new Vector2(340, 300), 12, Bark);
