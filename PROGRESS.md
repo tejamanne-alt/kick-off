@@ -133,6 +133,13 @@ This file is the resume point. A new session should read it first. All eight pha
   - The chapter is now passed in from the level table, and the shared assets are reloaded per level.
 - The background house row leaves the side street clear at crossings, while the crossing is near screen centre (`BlocksOpenArea`).
 - The tide is a tapering lens of sea with a foam crest that washes over darker wet sand and sloshes gently, replacing a flat blue box.
+- 3D street (generated content v17):
+  - The camera is now perspective (FOV 30, slight downward pitch). Physics stays 2D on z = 0, and the kick feel no longer depends on the camera size.
+  - `Scripts/World`: procedural meshes for street slabs (strips by depth, kerbs, end caps), boxes, houses (four roof styles, facade submesh), pole lines with LineRenderer wires, the look globals (sun, haze) and static batching.
+  - `Shaders/Toon.shader` (cel bands, world-space texture projection, haze) and `Shaders/SpriteHaze.shader` for cut-outs.
+  - `Art/SurfaceArt.cs`: tileable asphalt, paving, kerb, cobbles, sand, gravel, grass, concrete, block wall, roof tiles, sea and hoarding textures, plus facades for houses, shops, apartments, the school and warehouses.
+  - `Editor/StreetBuilder.cs`: per-chapter strips and scenery. Crossings are real side streets with zebra stripes; cars drive along them in depth. Holes, the tide, the tunnel, fountains and the goal are 3D.
+  - Remaining 2D cut-outs: characters, the ball, trees, clouds, and small decor (switch posts, swings, pipes, springboards).
 
 ## After Phase 8 (next steps)
 

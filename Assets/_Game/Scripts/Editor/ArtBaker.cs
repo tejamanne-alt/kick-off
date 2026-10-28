@@ -28,6 +28,17 @@ namespace DribbleToSchool.EditorTools
             public Sprite[] poles = new Sprite[6];
             public Sprite[,] mid = new Sprite[6, 3];
             public readonly Dictionary<string, Sprite> parts = new Dictionary<string, Sprite>();
+
+            // 3D street
+            public Sprite pine, bush, headland;
+            public readonly Dictionary<ProceduralArt.Surface, Material> surfaces = new Dictionary<ProceduralArt.Surface, Material>();
+            public readonly Dictionary<ProceduralArt.FacadeKind, Material> facades = new Dictionary<ProceduralArt.FacadeKind, Material>();
+            /// <summary>Plain toon material for tinted solids (walls, trims, obstacles).</summary>
+            public Material solid;
+            public Material crateMaterial;
+            /// <summary>Sprite material with distance haze, for cut-outs placed in depth.</summary>
+            public Material hazeSprite;
+            public Material wire;
         }
 
         public static ArtSet BakeAll()
@@ -56,6 +67,14 @@ namespace DribbleToSchool.EditorTools
             Queue(pending, "SideStreet", ProceduralArt.SideStreet(), new ImportSpec(64, 0));
             Queue(pending, "TideWater", ProceduralArt.TideWater(), new ImportSpec(64, 0));
             foreach (string part in PartNames) Queue(pending, "Part_" + part, ProceduralArt.Part(part), new ImportSpec(ProceduralArt.PartPpu(part), 0));
+            Queue(pending, "Pine", ProceduralArt.Pine(), new ImportSpec(80, 0));
+            Queue(pending, "Bush", ProceduralArt.Bush(), new ImportSpec(110, 0));
+            Queue(pending, "Headland", ProceduralArt.Headland(), new ImportSpec(64, 0));
+            foreach (ProceduralArt.Surface surface in System.Enum.GetValues(typeof(ProceduralArt.Surface)))
+                Queue(pending, "Surface_" + surface, ProceduralArt.SurfaceTexture(surface), ImportSpec.Texture(true));
+            foreach (ProceduralArt.FacadeKind kind in System.Enum.GetValues(typeof(ProceduralArt.FacadeKind)))
+                Queue(pending, "Facade_" + kind, ProceduralArt.Facade(kind), ImportSpec.Texture(false));
+            Queue(pending, "CrateFace", ProceduralArt.Crate(), ImportSpec.Texture(false));
 
             for (int ch = 1; ch <= 5; ch++)
             {
@@ -100,6 +119,10 @@ namespace DribbleToSchool.EditorTools
             set.tideWater = Load("TideWater");
             var poles = Load("Poles");
             foreach (string part in PartNames) set.parts[part] = Load("Part_" + part);
+            set.pine = Load("Pine");
+            set.bush = Load("Bush");
+            set.headland = Load("Headland");
+            BakeMaterials(set);
             for (int ch = 1; ch <= 5; ch++)
             {
                 set.edge[ch] = Load("Ch" + ch + "_Edge");
@@ -124,7 +147,65 @@ namespace DribbleToSchool.EditorTools
         {
             public float ppu;
             public int border;
-            public ImportSpec(float ppu, int border) { this.ppu = ppu; this.border = border; }
+            /// <summary>Import as a plain texture (for 3D materials) rather than a sprite.</summary>
+            public bool texture;
+            public bool repeat;
+            public ImportSpec(float ppu, int border) { this.ppu = ppu; this.border = border; texture = false; repeat = false; }
+            public static ImportSpec Texture(bool repeat) { return new ImportSpec(100, 0) { texture = true, repeat = repeat }; }
+        }
+
+        const string MaterialDir = Dir + "/Materials";
+
+        /// <summary>Toon materials for every surface and facade, plus the haze sprite and wire materials.</summary>
+        static void BakeMaterials(ArtSet set)
+        {
+            LevelBuildKit.EnsureFolder(MaterialDir);
+            var toon = Shader.Find("DribbleToSchool/Toon");
+            foreach (ProceduralArt.Surface surface in System.Enum.GetValues(typeof(ProceduralArt.Surface)))
+            {
+                var m = ToonMaterial("Surface_" + surface, toon, LoadTexture("Surface_" + surface), true);
+                if (surface == ProceduralArt.Surface.Sea) m.SetVector("_Scroll", new Vector4(0.02f, 0.01f, 0f, 0f));
+                set.surfaces[surface] = m;
+            }
+            foreach (ProceduralArt.FacadeKind kind in System.Enum.GetValues(typeof(ProceduralArt.FacadeKind)))
+                set.facades[kind] = ToonMaterial("Facade_" + kind, toon, LoadTexture("Facade_" + kind), false);
+            set.solid = ToonMaterial("Solid", toon, null, false);
+            set.crateMaterial = ToonMaterial("Crate", toon, LoadTexture("CrateFace"), false);
+
+            set.hazeSprite = LoadOrCreateMaterial("HazeSprite", Shader.Find("DribbleToSchool/SpriteHaze"));
+            set.wire = LoadOrCreateMaterial("Wire", Shader.Find("Sprites/Default"));
+            AssetDatabase.SaveAssets();
+        }
+
+        static Material ToonMaterial(string name, Shader shader, Texture2D texture, bool worldUV)
+        {
+            var m = LoadOrCreateMaterial(name, shader);
+            m.mainTexture = texture;
+            m.SetFloat("_WorldUV", worldUV ? 1f : 0f);
+            m.SetFloat("_WorldUVScale", 0.25f);   // surface textures cover 4 x 4 units
+            EditorUtility.SetDirty(m);
+            return m;
+        }
+
+        static Material LoadOrCreateMaterial(string name, Shader shader)
+        {
+            string path = MaterialDir + "/" + name + ".mat";
+            var m = AssetDatabase.LoadAssetAtPath<Material>(path);
+            if (m == null)
+            {
+                m = new Material(shader != null ? shader : Shader.Find("Sprites/Default"));
+                AssetDatabase.CreateAsset(m, path);
+            }
+            else if (shader != null && m.shader != shader)
+            {
+                m.shader = shader;
+            }
+            return m;
+        }
+
+        static Texture2D LoadTexture(string name)
+        {
+            return AssetDatabase.LoadAssetAtPath<Texture2D>(PathFor(name));
         }
 
         static string PathFor(string name) { return Dir + "/" + name + ".png"; }
@@ -141,6 +222,17 @@ namespace DribbleToSchool.EditorTools
         {
             var importer = AssetImporter.GetAtPath(path) as TextureImporter;
             if (importer == null) return;
+            if (spec.texture)
+            {
+                importer.textureType = TextureImporterType.Default;
+                importer.mipmapEnabled = true;
+                importer.wrapMode = spec.repeat ? TextureWrapMode.Repeat : TextureWrapMode.Clamp;
+                importer.filterMode = FilterMode.Trilinear;
+                importer.anisoLevel = 4;
+                importer.textureCompression = TextureImporterCompression.CompressedHQ;
+                importer.SaveAndReimport();
+                return;
+            }
             importer.textureType = TextureImporterType.Sprite;
             importer.spriteImportMode = SpriteImportMode.Single;
             importer.spritePixelsPerUnit = spec.ppu;

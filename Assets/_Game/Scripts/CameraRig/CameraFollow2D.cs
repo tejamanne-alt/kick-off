@@ -6,9 +6,11 @@ using UnityEngine;
 namespace DribbleToSchool.CameraRig
 {
     /// <summary>
-    /// Side-scroller camera: keeps the kid on the left third with look-ahead
-    /// that grows with run speed, leans toward the ball, ignores small hops
-    /// (vertical dead zone) and never shows past the level edges.
+    /// Side-scroller camera for the 3D street: a perspective camera looking along +z,
+    /// tilted down a little so the road and pavements read as ground. It frames a point on
+    /// the gameplay plane (z = 0) with look-ahead that grows with run speed, leans toward
+    /// the ball, ignores small hops (vertical dead zone) and never shows past the level edges.
+    /// An orthographic camera still works (the old flat look).
     /// </summary>
     [RequireComponent(typeof(Camera))]
     public class CameraFollow2D : MonoBehaviour
@@ -39,12 +41,23 @@ namespace DribbleToSchool.CameraRig
         [Tooltip("Camera centre never goes below this height.")]
         public float minY = 2f;
 
+        [Header("Perspective")]
+        [Tooltip("Half the visible height at the gameplay plane (world units).")]
+        public float viewHalfHeight = 4.8f;
+        [Tooltip("Downward tilt in degrees, so the street surface shows.")]
+        public float pitch = 5f;
+
+        /// <summary>Unzoomed half-height of the view at the gameplay plane, for screen-to-world drag scaling.</summary>
+        public static float BaseViewHalfHeight = 4.8f;
+
         [Header("Feel")]
         [Tooltip("Zoom out by this factor while aiming a kick, to see where it lands.")]
         public float aimZoom = 1.12f;
         public float zoomSpeed = 4f;
 
         Camera cam;
+        Vector2 center;
+        float zoom = 1f;
         float velocityX;
         float velocityY;
         float lookAhead;
@@ -58,7 +71,28 @@ namespace DribbleToSchool.CameraRig
         void Awake()
         {
             cam = GetComponent<Camera>();
-            baseSize = cam.orthographicSize;
+            baseSize = cam.orthographic ? cam.orthographicSize : viewHalfHeight;
+            BaseViewHalfHeight = baseSize;
+        }
+
+        /// <summary>Distance from the camera to the gameplay plane for a given half-height.</summary>
+        float DistanceFor(float halfHeight)
+        {
+            return halfHeight / Mathf.Tan(cam.fieldOfView * 0.5f * Mathf.Deg2Rad);
+        }
+
+        float HalfHeight { get { return cam.orthographic ? cam.orthographicSize : viewHalfHeight * zoom; } }
+
+        void Place(Vector2 c, Vector3 shake)
+        {
+            if (cam.orthographic)
+            {
+                transform.position = new Vector3(c.x, c.y, transform.position.z) + shake;
+                return;
+            }
+            Quaternion rot = Quaternion.Euler(pitch, 0f, 0f);
+            transform.rotation = rot;
+            transform.position = new Vector3(c.x, c.y, 0f) - rot * Vector3.forward * DistanceFor(HalfHeight) + shake;
         }
 
         /// <summary>Brief screen shake (world units). Uses unscaled time so it works in slow motion.</summary>
@@ -88,13 +122,13 @@ namespace DribbleToSchool.CameraRig
                 trackedY = desiredY - Mathf.Sign(desiredY - trackedY) * verticalDeadZone * 0.5f;
 
             bool aiming = GameInput.Instance != null && GameInput.Instance.KickAiming;
-            float wantedSize = baseSize * (aiming ? aimZoom : 1f);
-            cam.orthographicSize = Mathf.Lerp(cam.orthographicSize, wantedSize, 1f - Mathf.Exp(-zoomSpeed * Time.unscaledDeltaTime));
+            float k = 1f - Mathf.Exp(-zoomSpeed * Time.unscaledDeltaTime);
+            zoom = Mathf.Lerp(zoom, aiming ? aimZoom : 1f, k);
+            if (cam.orthographic) cam.orthographicSize = baseSize * zoom;
 
             Vector2 target = ClampToBounds(new Vector2(focus.x + lookAhead, trackedY));
-            Vector3 pos = transform.position - shakeOffset;
-            pos.x = Mathf.SmoothDamp(pos.x, target.x, ref velocityX, smoothTimeX);
-            pos.y = Mathf.SmoothDamp(pos.y, target.y, ref velocityY, smoothTimeY);
+            center.x = Mathf.SmoothDamp(center.x, target.x, ref velocityX, smoothTimeX);
+            center.y = Mathf.SmoothDamp(center.y, target.y, ref velocityY, smoothTimeY);
 
             shakeOffset = Vector3.zero;
             if (Time.unscaledTime < shakeUntil)
@@ -103,7 +137,7 @@ namespace DribbleToSchool.CameraRig
                 shakeOffset = new Vector3(Mathf.PerlinNoise(t, 0.3f) - 0.5f, Mathf.PerlinNoise(0.7f, t) - 0.5f, 0f) * 2f * shakeAmount;
             }
 
-            transform.position = pos + shakeOffset;
+            Place(center, shakeOffset);
         }
 
         /// <summary>Jump straight to the framing target (level start, respawn).</summary>
@@ -114,9 +148,11 @@ namespace DribbleToSchool.CameraRig
             lookAheadVelocity = velocityX = velocityY = 0f;
             Vector2 focus = Focus();
             trackedY = focus.y + offset.y;
-            Vector2 target = ClampToBounds(new Vector2(focus.x + lookAhead, trackedY));
-            transform.position = new Vector3(target.x, target.y, transform.position.z);
+            if (cam == null) cam = GetComponent<Camera>();
+            zoom = 1f;
+            center = ClampToBounds(new Vector2(focus.x + lookAhead, trackedY));
             shakeOffset = Vector3.zero;
+            Place(center, Vector3.zero);
         }
 
         Vector2 Focus()
@@ -129,7 +165,7 @@ namespace DribbleToSchool.CameraRig
         Vector2 ClampToBounds(Vector2 p)
         {
             if (cam == null) cam = GetComponent<Camera>();
-            float halfWidth = cam.orthographicSize * cam.aspect;
+            float halfWidth = HalfHeight * cam.aspect;
             float left = minX + halfWidth;
             float right = maxX - halfWidth;
             p.x = left < right ? Mathf.Clamp(p.x, left, right) : (minX + maxX) * 0.5f;

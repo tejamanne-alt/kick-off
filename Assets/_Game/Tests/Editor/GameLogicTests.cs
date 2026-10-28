@@ -194,6 +194,25 @@ namespace DribbleToSchool.Tests
         }
 
         [Test]
+        public void BoxFacesPointOutward()
+        {
+            // Every face of a procedural box must wind so its normal points away from the centre,
+            // or the 3D street would show holes where back-faces are culled.
+            var b = new World.MeshBuilder();
+            b.Box(0, new Vector3(-1f, -2f, -3f), new Vector3(1f, 2f, 3f), Color.white, World.MeshBuilder.Faces.All);
+            var tris = b.Submeshes[0];
+            Assert.AreEqual(36, tris.Count);
+            for (int t = 0; t < tris.Count; t += 3)
+            {
+                Vector3 a = b.Vertices[tris[t]], c1 = b.Vertices[tris[t + 1]], c2 = b.Vertices[tris[t + 2]];
+                Vector3 n = Vector3.Cross(c1 - a, c2 - a);
+                Vector3 centre = (a + c1 + c2) / 3f;
+                Assert.Greater(Vector3.Dot(n, centre), 0f, "triangle " + t / 3 + " faces inward");
+                Assert.Greater(Vector3.Dot(b.Normals[tris[t]], centre), 0f, "normal of triangle " + t / 3 + " points inward");
+            }
+        }
+
+        [Test]
         public void PoleWiresTileSeamlessly()
         {
             var poles = ProceduralArt.PoleLine(1);

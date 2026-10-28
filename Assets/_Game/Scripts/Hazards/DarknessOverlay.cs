@@ -36,8 +36,22 @@ namespace DribbleToSchool.Hazards
 
             // The sprite is a 2x2-unit square with the hole in the middle; scale it so the
             // hole matches lightRadius and the dark part covers the whole view.
-            transform.position = new Vector3(follow.position.x, follow.position.y + 0.3f, 0f);
+            Vector3 target = new Vector3(follow.position.x, follow.position.y + 0.3f, 0f);
             float holeScale = lightRadius / 0.125f;   // hole radius is ~0.125 units in the sprite (half-size 1)
+            var cam = Camera.main;
+            if (cam != null && !cam.orthographic)
+            {
+                // With a perspective camera, sit most of the way toward the camera on the line to the
+                // kid, so nearer scenery (the front pavement) is covered too, and shrink to match.
+                Vector3 eye = cam.transform.position;
+                const float t = 0.6f;
+                transform.position = Vector3.Lerp(target, eye, t);
+                holeScale *= 1f - t;
+            }
+            else
+            {
+                transform.position = target;
+            }
             transform.localScale = new Vector3(holeScale, holeScale, 1f);
         }
 

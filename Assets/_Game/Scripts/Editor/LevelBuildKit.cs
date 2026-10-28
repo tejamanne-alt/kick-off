@@ -8,6 +8,7 @@ using DribbleToSchool.Challenges;
 using DribbleToSchool.Core;
 using DribbleToSchool.Cosmetics;
 using DribbleToSchool.Hazards;
+using DribbleToSchool.World;
 using DribbleToSchool.InputHandling;
 using DribbleToSchool.Levels;
 using DribbleToSchool.Pickups;
@@ -104,13 +105,20 @@ namespace DribbleToSchool.EditorTools
 
             var camGo = new GameObject("Main Camera");
             camGo.tag = "MainCamera";
+            // A perspective camera looking down the street at a slight tilt (see CameraFollow2D):
+            // gameplay stays on the z = 0 plane, the street and scenery are real 3D around it.
             var cam = camGo.AddComponent<Camera>();
-            cam.orthographic = true;
-            cam.orthographicSize = 5.5f;
+            cam.orthographic = false;
+            cam.fieldOfView = 30f;
+            cam.nearClipPlane = 0.3f;
+            cam.farClipPlane = 2500f;
             cam.clearFlags = CameraClearFlags.SolidColor;
             cam.backgroundColor = Theme.skyBottom;
             camGo.AddComponent<AudioListener>();
-            camGo.transform.position = new Vector3(3f, 2f, -10f);
+            camGo.transform.position = new Vector3(3f, 2f, -20f);
+            var look = camGo.AddComponent<WorldLook>();
+            look.hazeColor = Color.Lerp(Theme.skyBottom, Color.white, 0.12f);
+            look.Apply();
             var follow = camGo.AddComponent<CameraFollow2D>();
 
             var input = new GameObject("GameInput").AddComponent<GameInput>();
@@ -194,7 +202,10 @@ namespace DribbleToSchool.EditorTools
             follow.maxX = track.MaxX;
             follow.minY = track.LowestGroundTop + 2f;
 
-            BuildBackdrop(track, cam, kidSpawn);
+            BuildSky(track, cam);
+            var street = new GameObject("Street");
+            StreetBuilder.Scenery(track, street.transform);
+            street.AddComponent<StaticBatcher>();
 
             var fxGo = new GameObject("FX");
             var pool = fxGo.AddComponent<FxPool>();
@@ -374,117 +385,31 @@ namespace DribbleToSchool.EditorTools
         }
 
         /// <summary>
-        /// Would a prop on a parallax layer cover one of the track's open areas (a side street) while
-        /// that area is near the middle of the screen? A layer with factor f drifts f * (camera move)
-        /// relative to the world, so its apparent position sweeps as the camera passes.
+        /// The sky: a gradient glued far behind the camera, big cumulus clouds high and far away,
+        /// and the low golden sun in the last chapter. Distances are large so the 3D street,
+        /// scenery and haze all sit in front.
         /// </summary>
-        static bool BlocksOpenArea(TrackBuilder track, float centerX, float width, float factor, float camStart)
-        {
-            const float watchedCameraRange = 6f;   // the open area stays clear while within this of screen centre
-            foreach (var area in track.OpenAreas)
-            {
-                float c = (area.x + area.y) * 0.5f;
-                float left = centerX - width * 0.5f + factor * (c - watchedCameraRange - camStart);
-                float right = centerX + width * 0.5f + factor * (c + watchedCameraRange - camStart);
-                if (right > area.x && left < area.y) return true;
-            }
-            return false;
-        }
-
-        /// <summary>
-        /// Chapter backdrop: sky and sun glued to the camera, then clouds, far
-        /// scenery, mid props and a near hedge/fence layer at decreasing parallax.
-        /// </summary>
-        static void BuildBackdrop(TrackBuilder track, Camera cam, Vector2 kidSpawn)
+        static void BuildSky(TrackBuilder track, Camera cam)
         {
             int ch = Chapter;
-            var root = new GameObject("Backdrop").transform;
-
-            var sky = SpriteObject(cam.transform, "Sky", Art.sky[ch], new Vector3(0f, 0f, 20f), -100);
-            sky.transform.localScale = new Vector3(130f, 1.9f, 1f);
+            var sky = SpriteObject(cam.transform, "Sky", Art.sky[ch], new Vector3(0f, 0f, 1500f), -100);
+            sky.transform.localScale = new Vector3(9600f, 140f, 1f);
             if (ch == 5)
             {
-                // Only the last chapter shows the low golden sun; the rest is clear summer blue.
-                var sun = SpriteObject(cam.transform, "Sun", Art.sun, new Vector3(6.5f, 3.1f, 19f), -95, Theme.sun);
-                sun.transform.localScale = Vector3.one * 0.85f;
+                var sun = SpriteObject(cam.transform, "Sun", Art.sun, new Vector3(260f, 110f, 1400f), -95, Theme.sun);
+                sun.transform.localScale = Vector3.one * 55f;
             }
 
-            const float halfView = 11.5f;
-            float camStart = Mathf.Max(track.MinX + halfView, kidSpawn.x + 1.5f);
+            var clouds = new GameObject("Clouds").transform;
             var rng = new System.Random(ch * 101 + Mathf.RoundToInt(track.MaxX));
-
-            System.Func<string, float, float, Transform> layer = (layerName, fx, fy) =>
+            for (float x = track.MinX - 450f; x < track.MaxX + 450f; x += 70f + (float)rng.NextDouble() * 90f)
             {
-                var t = new GameObject(layerName).transform;
-                t.SetParent(root, false);
-                var p = t.gameObject.AddComponent<ParallaxLayer>();
-                p.factorX = fx;
-                p.factorY = fy;
-                p.cameraTransform = cam.transform;
-                return t;
-            };
-            System.Func<float, Vector2> span = f => new Vector2(
-                (track.MinX + halfView) * (1f - f) + camStart * f - halfView - 4f,
-                (track.MaxX - halfView) * (1f - f) + camStart * f + halfView + 4f);
-
-            // Clouds
-            var clouds = layer("Clouds", 0.93f, 0.95f);
-            Vector2 cs = span(0.93f);
-            for (float x = cs.x; x < cs.y; x += 7f + (float)rng.NextDouble() * 7f)
-            {
-                // Big cumulus sit low over the rooftops; the camera-relative layer keeps them there.
-                var c = SpriteObject(clouds, "Cloud", Art.clouds[rng.Next(3)], new Vector3(x, track.LowestGroundTop + 4.2f + (float)rng.NextDouble() * 2.3f, 0f), -90, Theme.cloud);
-                c.transform.localScale = Vector3.one * (0.55f + (float)rng.NextDouble() * 0.4f);
+                float z = 520f + (float)rng.NextDouble() * 180f;
+                var c = SpriteObject(clouds, "Cloud", Art.clouds[rng.Next(3)], new Vector3(x, track.LowestGroundTop + 30f + (float)rng.NextDouble() * 70f, z), -90, Theme.cloud);
+                c.transform.localScale = Vector3.one * (8f + (float)rng.NextDouble() * 6f);
                 c.flipX = rng.NextDouble() < 0.5;
+                c.sharedMaterial = Art.hazeSprite;
             }
-
-            // Far scenery (tiled strip)
-            var far = layer("Far", 0.8f, 0.85f);
-            Vector2 fs = span(0.8f);
-            var farSr = SpriteObject(far, "FarStrip", Art.far[ch], new Vector3((fs.x + fs.y) * 0.5f, track.LowestGroundTop + 2.4f, 0f), -80);
-            farSr.drawMode = SpriteDrawMode.Tiled;
-            farSr.size = new Vector2(fs.y - fs.x, 6.4f);
-
-            // Mid props
-            var mid = layer("Mid", 0.55f, 0.7f);
-            Vector2 ms = span(0.55f);
-            for (float x = ms.x; x < ms.y;)
-            {
-                // Props are drawn at real-world size (about 0.9 m per unit) and stand on the sprite's
-                // bottom edge: sit them just into the ground, a gap of 0.5 to 3 units between them.
-                var sprite = Art.mid[ch, rng.Next(3)];
-                float sc = 0.95f + (float)rng.NextDouble() * 0.1f;
-                Vector2 size = sprite.bounds.size * sc;
-                float cx = x + size.x * 0.5f;
-                if (BlocksOpenArea(track, cx, size.x, 0.55f, camStart))
-                {
-                    x += 1f;   // keep the side street clear: try a little further along
-                    continue;
-                }
-                var prop = SpriteObject(mid, "Prop", sprite, new Vector3(cx, track.LowestGroundTop - 0.3f + size.y * 0.5f, 0f), -60);
-                x += size.x + 0.5f + (float)rng.NextDouble() * 2.5f;
-                prop.transform.localScale = new Vector3(sc, sc, 1f);
-                prop.flipX = Theme.scenery != SceneryStyle.Park && rng.NextDouble() < 0.35;
-                prop.color = Color.Lerp(Color.white, Theme.skyBottom, 0.08f);   // a touch of aerial haze
-            }
-
-            // Utility poles with sagging wires (suburb, market, city), between the props and the near strip.
-            if (Art.poles[ch] != null)
-            {
-                var poles = layer("Poles", 0.42f, 0.55f);
-                Vector2 ps = span(0.42f);
-                float poleHeight = Art.poles[ch].bounds.size.y;
-                var polesSr = SpriteObject(poles, "PoleLine", Art.poles[ch], new Vector3((ps.x + ps.y) * 0.5f, track.LowestGroundTop - 0.3f + poleHeight * 0.5f, 0f), -50);
-                polesSr.drawMode = SpriteDrawMode.Tiled;
-                polesSr.size = new Vector2(ps.y - ps.x, poleHeight);
-            }
-
-            // Near hedges / fences / bunting
-            var near = layer("Near", 0.25f, 0.4f);
-            Vector2 ns = span(0.25f);
-            var nearSr = SpriteObject(near, "NearStrip", Art.near[ch], new Vector3((ns.x + ns.y) * 0.5f, track.LowestGroundTop + 0.5f, 0f), -40);
-            nearSr.drawMode = SpriteDrawMode.Tiled;
-            nearSr.size = new Vector2(ns.y - ns.x, 1.5f);
         }
 
         static GameObject Visual(Transform parent, string name, Sprite sprite, Vector2 localPos, Vector2 size, Color color, int order)
@@ -515,6 +440,13 @@ namespace DribbleToSchool.EditorTools
             public float LowestGroundTop { get; private set; }
             /// <summary>Stretches of the track where the backdrop must stay open (side streets at crossings).</summary>
             public readonly List<Vector2> OpenAreas = new List<Vector2>();
+            /// <summary>x of the school gate, once the layout has placed it.</summary>
+            public float GoalX = float.MinValue;
+            /// <summary>Every ground span as (fromX, toX, top).</summary>
+            public IEnumerable<Vector3> GroundSpans
+            {
+                get { foreach (var g in groundSpans) yield return new Vector3(g.from, g.to, g.top); }
+            }
             /// <summary>The wall at the level start: stops the kid, lets the ball through (see LevelManager).</summary>
             public Collider2D StartWall { get; private set; }
 
@@ -539,30 +471,18 @@ namespace DribbleToSchool.EditorTools
             {
                 MinX = minX;
                 MaxX = maxX;
-                StartWall = Block("BackWall", new Vector2(minX - 0.5f, 3f), new Vector2(1f, 14f), GroundColor, GroundMat).GetComponent<Collider2D>();
-                Block("EndWall", new Vector2(maxX + 0.5f, 3f), new Vector2(1f, 14f), GroundColor, GroundMat);
+                // Invisible: the 3D street carries on past both ends.
+                StartWall = Block("BackWall", new Vector2(minX - 0.5f, 3f), new Vector2(1f, 14f), GroundColor, GroundMat, false).GetComponent<Collider2D>();
+                Block("EndWall", new Vector2(maxX + 0.5f, 3f), new Vector2(1f, 14f), GroundColor, GroundMat, false);
             }
 
-            /// <summary>Solid ground from fromX to toX with its top at <paramref name="top"/>.</summary>
+            /// <summary>Solid ground from fromX to toX with its top at <paramref name="top"/>. The 3D street over it is built in Finish.</summary>
             public void Ground(float fromX, float toX, float top = 0f)
             {
                 float depth = FillDepth(top);
                 LowestGroundTop = Mathf.Min(LowestGroundTop, top);
                 groundSpans.Add(new GroundSpan { from = Mathf.Min(fromX, toX), to = Mathf.Max(fromX, toX), top = top });
-                var go = Block("Ground", new Vector2((fromX + toX) * 0.5f, top - depth * 0.5f), new Vector2(toX - fromX, depth), GroundColor, GroundMat);
-                var sr = go.GetComponent<SpriteRenderer>();
-                sr.sprite = Art.groundFill;
-                sr.drawMode = SpriteDrawMode.Tiled;
-                sr.size = new Vector2(toX - fromX, depth);
-
-                // Grass / cobbles / sand / kerb strip along the top.
-                var edge = new GameObject("Edge").AddComponent<SpriteRenderer>();
-                edge.transform.SetParent(go.transform, false);
-                edge.transform.localPosition = new Vector3(0f, depth * 0.5f + 0.02f, 0f);
-                edge.sprite = Art.edge[Chapter];
-                edge.drawMode = SpriteDrawMode.Tiled;
-                edge.size = new Vector2(toX - fromX, 0.375f);
-                edge.sortingOrder = 1;
+                Block("Ground", new Vector2((fromX + toX) * 0.5f, top - depth * 0.5f), new Vector2(toX - fromX, depth), GroundColor, GroundMat, false);
             }
 
             /// <summary>A gap you fall into. Losing the ball or the kid here respawns at the checkpoint.</summary>
@@ -579,9 +499,20 @@ namespace DribbleToSchool.EditorTools
 
             void Hole(string name, float fromX, float toX, float top, Color color, string message, float surfaceDrop)
             {
-                float depth = FillDepth(top);
-                Decor(name + "Fill", new Vector2((fromX + toX) * 0.5f, top - surfaceDrop - depth * 0.5f),
-                    new Vector2(toX - fromX, depth), color);
+                // A trench across the whole street: the slabs either side show their sides; a dark
+                // floor (or water) fills the bottom, all the way back to the property line.
+                float cx = (fromX + toX) * 0.5f, zc = (StreetBuilder.FrontZ + StreetBuilder.PropertyZ + 0.6f) * 0.5f;
+                Vector3 size = new Vector3(toX - fromX, 0.2f, StreetBuilder.PropertyZ + 0.6f - StreetBuilder.FrontZ);
+                if (surfaceDrop > 0f)
+                {
+                    var water = StreetBuilder.Solid(root, name + "Surface", new Vector3(cx, top - surfaceDrop - 0.1f, zc), size, Color.white, Art.surfaces[ProceduralArt.Surface.Sea]);
+                    water.faces = MeshBuilder.Faces.Top;
+                    water.Rebuild();
+                }
+                else
+                {
+                    StreetBuilder.Solid(root, name + "Floor", new Vector3(cx, top - 3f, zc), size, color);
+                }
 
                 var go = new GameObject(name + "LoseZone");
                 go.transform.SetParent(root, false);
@@ -595,8 +526,7 @@ namespace DribbleToSchool.EditorTools
 
             public void Crate(float x, float y)
             {
-                var go = Block("Crate", new Vector2(x, y), new Vector2(0.7f, 0.7f), Color.white, CrateMat);
-                go.GetComponent<SpriteRenderer>().sprite = Art.crate;
+                var go = Block("Crate", new Vector2(x, y), new Vector2(0.7f, 0.7f), Color.white, CrateMat, true, 0.7f, Art.crateMaterial);
                 var body = go.AddComponent<Rigidbody2D>();
                 body.mass = 0.8f;
                 body.gravityScale = 1.5f;
@@ -664,8 +594,8 @@ namespace DribbleToSchool.EditorTools
             {
                 // Colliders only; the drawn car covers them.
                 // A small city car about 3.4 units (3 m) long: bonnet at 0.95, roof at 1.55, both jumpable.
-                Block("CarBody", new Vector2(x, groundTop + 0.575f), new Vector2(3.3f, 0.75f), color, GroundMat).GetComponent<SpriteRenderer>().enabled = false;
-                Block("CarCabin", new Vector2(x - 0.17f, groundTop + 1.25f), new Vector2(1.9f, 0.6f), color, GroundMat).GetComponent<SpriteRenderer>().enabled = false;
+                Block("CarBody", new Vector2(x, groundTop + 0.575f), new Vector2(3.3f, 0.75f), color, GroundMat, false);
+                Block("CarCabin", new Vector2(x - 0.17f, groundTop + 1.25f), new Vector2(1.9f, 0.6f), color, GroundMat, false);
                 SpriteObject(root, "Car", Art.car, new Vector3(x, groundTop + 0.835f, 0f), 3, color);
             }
 
@@ -700,16 +630,10 @@ namespace DribbleToSchool.EditorTools
                 float width = toX - fromX;
                 float center = (fromX + toX) * 0.5f;
 
-                // Where the pavement meets a side street: zebra bars across the road surface,
-                // dropped kerbs at both edges, and the street itself running away from the camera.
-                Decor("Road", new Vector2(center, groundTop - 0.06f), new Vector2(width, 0.12f), new Color(0.25f, 0.25f, 0.28f)).GetComponent<SpriteRenderer>().sortingOrder = 1;
-                for (float sx = fromX + 0.3f; sx < toX - 0.2f; sx += 0.8f)
-                    Decor("Zebra", new Vector2(sx + 0.2f, groundTop - 0.06f), new Vector2(0.4f, 0.1f), Color.white).GetComponent<SpriteRenderer>().sortingOrder = 2;
-                foreach (float kx in new[] { fromX, toX })
-                    Decor("DroppedKerb", new Vector2(kx, groundTop - 0.04f), new Vector2(0.3f, 0.1f), new Color(0.8f, 0.8f, 0.78f)).GetComponent<SpriteRenderer>().sortingOrder = 2;
+                // The side street, zebra and stop line are 3D (see StreetBuilder.CrossingStreet);
+                // the main street's slabs leave this stretch open for it.
                 OpenAreas.Add(new Vector2(fromX - 0.8f, toX + 0.8f));
-                var street = SpriteObject(root, "SideStreet", Art.sideStreet, new Vector3(center, groundTop + 0.48f, 0f), -38);
-                street.transform.localScale = new Vector3(width / 4f, 0.65f, 1f);
+                StreetBuilder.CrossingStreet(root, fromX - 0.8f, toX + 0.8f, groundTop);
 
                 var go = new GameObject("Crossing");
                 go.transform.SetParent(root, false);
@@ -720,20 +644,24 @@ namespace DribbleToSchool.EditorTools
                 var crossing = go.AddComponent<Hazards.Crossing>();
                 crossing.phaseOffset = phaseOffset;
 
-                // Pedestrian signal facing the kid: red standing man above, green walking man below.
-                float poleX = fromX - 0.55f;
-                Decor("SignalPole", new Vector2(poleX, groundTop + 1.25f), new Vector2(0.1f, 2.5f), new Color(0.55f, 0.56f, 0.58f));
-                Decor("SignalBox", new Vector2(poleX, groundTop + 2.35f), new Vector2(0.5f, 0.95f), new Color(0.15f, 0.15f, 0.17f)).GetComponent<SpriteRenderer>().sortingOrder = 0;
+                // Pedestrian signal on the far pavement at the kerb, facing the kid:
+                // red standing man above, green walking man below.
+                float poleX = fromX - 1.2f, poleZ = StreetBuilder.RoadHalf + 0.6f, pave = groundTop + 0.14f;
+                StreetBuilder.Solid(root, "SignalPole", new Vector3(poleX, pave + 1.4f, poleZ), new Vector3(0.12f, 2.8f, 0.12f), new Color(0.55f, 0.56f, 0.58f));
+                StreetBuilder.Solid(root, "SignalBox", new Vector3(poleX, pave + 2.45f, poleZ - 0.1f), new Vector3(0.55f, 1f, 0.3f), new Color(0.15f, 0.15f, 0.17f));
                 crossing.redFigure = SpriteObject(go.transform, "RedMan", Art.standFigure, Vector3.zero, 1);
-                crossing.redFigure.transform.position = new Vector3(poleX, groundTop + 2.58f, 0f);
+                crossing.redFigure.transform.position = new Vector3(poleX, pave + 2.68f, poleZ - 0.27f);
                 crossing.greenFigure = SpriteObject(go.transform, "GreenMan", Art.walkFigure, Vector3.zero, 1);
-                crossing.greenFigure.transform.position = new Vector3(poleX, groundTop + 2.12f, 0f);
+                crossing.greenFigure.transform.position = new Vector3(poleX, pave + 2.22f, poleZ - 0.27f);
 
                 // Side-street traffic, drawn front-on; the Crossing script moves it in depth.
                 Color[] paint = { new Color(0.9f, 0.35f, 0.3f), new Color(0.35f, 0.55f, 0.85f) };
                 crossing.cars = new SpriteRenderer[paint.Length];
                 for (int i = 0; i < paint.Length; i++)
+                {
                     crossing.cars[i] = SpriteObject(go.transform, "Car" + i, Art.carFront, Vector3.zero, -35, paint[i]);   // placed by Crossing
+                    crossing.cars[i].sharedMaterial = Art.hazeSprite;
+                }
                 crossing.groundY = groundTop;
                 crossing.carHalfHeight = (98f - 4f) / 115f;   // CarFront: wheels on canvas y 4, 115 px per unit
             }
@@ -768,8 +696,7 @@ namespace DribbleToSchool.EditorTools
             void SlowArea(string name, float fromX, float toX, float groundTop, Color color, float drag, float kidMultiplier)
             {
                 float center = (fromX + toX) * 0.5f;
-                var surface = Decor(name + "Surface", new Vector2(center, groundTop - 0.04f), new Vector2(toX - fromX, 0.14f), color);
-                surface.GetComponent<SpriteRenderer>().sortingOrder = 2;
+                StreetBuilder.Patch(root, name + "Surface", fromX, toX, groundTop, -StreetBuilder.RoadHalf, StreetBuilder.RoadHalf, color);
 
                 var go = new GameObject(name);
                 go.transform.SetParent(root, false);
@@ -883,11 +810,15 @@ namespace DribbleToSchool.EditorTools
 
                 // Darker wet sand marks where the sea reaches. The water is a tapering lens of sea with a
                 // foam crest, behind the ground so only the part above the sand shows as it washes in.
-                Decor("WetSand", new Vector2((fromX + toX) * 0.5f, groundTop - 0.05f), new Vector2(width + 1f, 0.1f), new Color(0.72f, 0.62f, 0.44f)).GetComponent<SpriteRenderer>().sortingOrder = 1;
-                var water = SpriteObject(go.transform, "Water", Art.tideWater, Vector3.zero, -3);
-                const float surfaceAboveCentre = (44f - 32f) / 64f, depthScale = 1.2f;
-                water.transform.localScale = new Vector3((width + 1.6f) / Art.tideWater.bounds.size.x, depthScale, 1f);
-                water.transform.localPosition = new Vector3(0f, -surfaceAboveCentre * depthScale, 0f);   // surface at the tide's origin
+                StreetBuilder.Patch(root, "WetSand", fromX - 0.5f, toX + 0.5f, groundTop, StreetBuilder.FrontZ, 9f, new Color(0.78f, 0.68f, 0.52f), Art.surfaces[ProceduralArt.Surface.Sand]);
+                // A sheet of sea washing up the beach over this stretch: hidden under the sand at low
+                // water, covering it (with the waves scrolling) at high water.
+                float zc = (StreetBuilder.FrontZ + 9f) * 0.5f;
+                var water = StreetBuilder.Solid(root, "Water", new Vector3((fromX + toX) * 0.5f, groundTop - 0.1f, zc),
+                    new Vector3(width + 1.6f, 0.2f, 9f - StreetBuilder.FrontZ), Color.white, Art.surfaces[ProceduralArt.Surface.Sea]);
+                water.faces = MeshBuilder.Faces.Top | MeshBuilder.Faces.Front | MeshBuilder.Faces.Left | MeshBuilder.Faces.Right;
+                water.Rebuild();
+                water.transform.SetParent(go.transform, true);
 
                 var zoneGo = new GameObject("TideLoseZone");
                 zoneGo.transform.SetParent(go.transform, false);
@@ -910,11 +841,14 @@ namespace DribbleToSchool.EditorTools
             {
                 float center = (fromX + toX) * 0.5f;
                 float width = toX - fromX;
-                var back = Decor("TunnelBack", new Vector2(center, groundTop + height * 0.5f), new Vector2(width, height), new Color(0.3f, 0.28f, 0.33f));
-                back.GetComponent<SpriteRenderer>().sortingOrder = -5;
-                Block("TunnelCeiling", new Vector2(center, groundTop + height + 0.6f), new Vector2(width + 1f, 1.2f), new Color(0.42f, 0.4f, 0.45f), GroundMat);
+                // An underpass: a back wall and a deep concrete deck over the street.
+                StreetBuilder.Solid(root, "TunnelBack", new Vector3(center, groundTop + height * 0.5f, StreetBuilder.RoadHalf + 0.6f), new Vector3(width, height, 0.4f), new Color(0.36f, 0.34f, 0.38f));
+                Block("TunnelCeiling", new Vector2(center, groundTop + height + 0.6f), new Vector2(width + 1f, 1.2f), new Color(0.62f, 0.62f, 0.64f), GroundMat, true, 7.4f);
                 for (float lx = fromX + 3f; lx < toX - 1f; lx += 6f)
-                    Visual(root, "TunnelLamp", Circle, new Vector2(lx, groundTop + height - 0.25f), new Vector2(0.35f, 0.25f), new Color(1f, 0.9f, 0.6f), -4);
+                {
+                    var lamp = Visual(root, "TunnelLamp", Circle, new Vector2(lx, groundTop + height - 0.35f), new Vector2(0.45f, 0.22f), new Color(1f, 0.9f, 0.6f), -4);
+                    lamp.transform.position = new Vector3(lamp.transform.position.x, lamp.transform.position.y, StreetBuilder.RoadHalf + 0.35f);
+                }
 
                 var go = new GameObject("DarkZone");
                 go.transform.SetParent(root, false);
@@ -968,10 +902,10 @@ namespace DribbleToSchool.EditorTools
             /// <summary>A plaza floor fountain: pulsing jets from a grate flush with the paving, which lift the ball.</summary>
             public void Fountain(float x, float groundTop, float height, float strength)
             {
-                Decor("WetPaving", new Vector2(x, groundTop - 0.03f), new Vector2(3.4f, 0.08f), new Color(0.2f, 0.32f, 0.45f, 0.35f)).GetComponent<SpriteRenderer>().sortingOrder = 2;
-                Decor("Grate", new Vector2(x, groundTop - 0.03f), new Vector2(1.5f, 0.08f), new Color(0.3f, 0.32f, 0.36f)).GetComponent<SpriteRenderer>().sortingOrder = 3;
+                StreetBuilder.Patch(root, "WetPaving", x - 1.8f, x + 1.8f, groundTop, -2.2f, 2.2f, new Color(0.55f, 0.6f, 0.62f));
+                StreetBuilder.Patch(root, "Grate", x - 0.75f, x + 0.75f, groundTop, -0.75f, 0.75f, new Color(0.3f, 0.32f, 0.36f), null, 0.02f);
                 for (float gx = x - 0.6f; gx <= x + 0.61f; gx += 0.2f)
-                    Decor("GrateSlot", new Vector2(gx, groundTop - 0.03f), new Vector2(0.08f, 0.05f), new Color(0.12f, 0.13f, 0.15f)).GetComponent<SpriteRenderer>().sortingOrder = 4;
+                    StreetBuilder.Patch(root, "GrateSlot", gx - 0.04f, gx + 0.04f, groundTop, -0.65f, 0.65f, new Color(0.12f, 0.13f, 0.15f), null, 0.03f);
 
                 var go = new GameObject("Fountain");
                 go.transform.SetParent(root, false);
@@ -1172,8 +1106,12 @@ namespace DribbleToSchool.EditorTools
 
                 if (!isStart)
                 {
-                    Decor("FlagPole", new Vector2(x, groundTop + 1f), new Vector2(0.08f, 2f), ObstacleColor);
+                    // Flags stand at the far kerb, beside the line the kid crosses.
+                    float flagZ = StreetBuilder.RoadHalf + 0.4f;
+                    var pole = Decor("FlagPole", new Vector2(x, groundTop + 1f), new Vector2(0.08f, 2f), ObstacleColor);
+                    pole.transform.position = new Vector3(x, groundTop + 1.14f, flagZ);
                     var flag = Decor("Flag", new Vector2(x + 0.3f, groundTop + 1.8f), new Vector2(0.55f, 0.35f), Color.gray);
+                    flag.transform.position = new Vector3(x + 0.3f, groundTop + 1.94f, flagZ);
                     cp.flag = flag.GetComponent<SpriteRenderer>();
                     cp.flag.sortingOrder = 1;
                     flag.transform.SetParent(go.transform, true);
@@ -1187,9 +1125,12 @@ namespace DribbleToSchool.EditorTools
             {
                 var school = new GameObject("School").transform;
                 school.SetParent(root, false);
-                Decor("GatePostL", new Vector2(x - 1.5f, groundTop + 1.5f), new Vector2(0.3f, 3f), SchoolColor).transform.SetParent(school, true);
-                Decor("GatePostR", new Vector2(x + 1.5f, groundTop + 1.5f), new Vector2(0.3f, 3f), SchoolColor).transform.SetParent(school, true);
-                Decor("GateTop", new Vector2(x, groundTop + 3.1f), new Vector2(3.3f, 0.3f), SchoolColor).transform.SetParent(school, true);
+                // The school gate stands across the street: posts either side, a beam overhead.
+                GoalX = x;
+                float postZ = StreetBuilder.RoadHalf + 0.3f;
+                StreetBuilder.Solid(school, "GatePostNear", new Vector3(x, groundTop + 1.6f, -postZ), new Vector3(0.45f, 3.2f, 0.45f), SchoolColor);
+                StreetBuilder.Solid(school, "GatePostFar", new Vector3(x, groundTop + 1.6f, postZ), new Vector3(0.45f, 3.2f, 0.45f), SchoolColor);
+                StreetBuilder.Solid(school, "GateTop", new Vector3(x, groundTop + 3.35f, 0f), new Vector3(0.5f, 0.4f, postZ * 2f + 0.6f), SchoolColor);
 
                 var goalGo = new GameObject("GoalZone");
                 goalGo.transform.SetParent(school, false);
@@ -1198,7 +1139,7 @@ namespace DribbleToSchool.EditorTools
                 trigger.isTrigger = true;
                 trigger.size = new Vector2(2.6f, 3f);
                 goalGo.AddComponent<GoalZone>();
-                Banner("SCHOOL", new Vector2(x, groundTop + 3.75f), groundTop + 3.25f);
+                Banner("SCHOOL", new Vector2(x, groundTop + 3.95f), groundTop + 3.55f);
             }
 
             /// <summary>A signboard on posts. The posts are planted in the ground below once the layout is done (see Finish).</summary>
@@ -1228,6 +1169,42 @@ namespace DribbleToSchool.EditorTools
             {
                 foreach (var pending in pendingSigns) PlantSign(pending.sign, pending.boardSize);
                 pendingSigns.Clear();
+                BuildStreetSlabs();
+            }
+
+            /// <summary>
+            /// The 3D street over every ground span, leaving gaps where side streets cross, and
+            /// carrying on well past both ends of the level so the street never just stops.
+            /// </summary>
+            void BuildStreetSlabs()
+            {
+                var slabs = new GameObject("StreetSlabs").transform;
+                slabs.SetParent(root, false);
+                slabs.gameObject.AddComponent<StaticBatcher>();
+                foreach (var span in groundSpans)
+                {
+                    float a = span.from;
+                    bool closeLeft = true;
+                    var cuts = new List<Vector2>(OpenAreas);
+                    cuts.Sort((p, q) => p.x.CompareTo(q.x));
+                    foreach (var cut in cuts)
+                    {
+                        if (cut.y <= a || cut.x >= span.to) continue;
+                        if (cut.x > a) StreetBuilder.Slab(slabs, "Street", a, cut.x, span.top, closeLeft, false);
+                        a = Mathf.Max(a, cut.y);
+                        closeLeft = false;
+                    }
+                    if (span.to > a) StreetBuilder.Slab(slabs, "Street", a, span.to, span.top, closeLeft, true);
+                }
+                if (groundSpans.Count == 0) return;
+                float startTop = 0f, endTop = 0f, first = float.MaxValue, last = float.MinValue;
+                foreach (var span in groundSpans)
+                {
+                    if (span.from < first) { first = span.from; startTop = span.top; }
+                    if (span.to > last) { last = span.to; endTop = span.top; }
+                }
+                StreetBuilder.Slab(slabs, "StreetBefore", first - 70f, first, startTop, false, false);
+                StreetBuilder.Slab(slabs, "StreetAfter", last, last + 70f, endTop, false, false);
             }
 
             void PlantSign(Transform sign, Vector2 boardSize)
@@ -1272,7 +1249,8 @@ namespace DribbleToSchool.EditorTools
                     pos.y += minBottom - boardBottom;
                     boardBottom = minBottom;
                 }
-                sign.position = pos;
+                // Signs stand on the far pavement, facing the street.
+                sign.position = new Vector3(pos.x, pos.y + 0.14f, StreetBuilder.RoadHalf + 0.9f);
 
                 // Posts sink a little into the ground; the grass strip (drawn on top) hides the joint.
                 float postBottom = groundTop - 0.25f;
@@ -1335,16 +1313,24 @@ namespace DribbleToSchool.EditorTools
             }
 
             /// <summary>A coloured box with a matching collider. Scale drives both sprite and collider.</summary>
-            public GameObject Block(string name, Vector2 center, Vector2 size, Color color, PhysicsMaterial2D material)
+            /// <summary>
+            /// A solid box with a matching 2D collider on the gameplay plane, drawn as a 3D block
+            /// <paramref name="depth"/> deep (centred on z = 0). Invisible blocks are colliders only.
+            /// </summary>
+            public GameObject Block(string name, Vector2 center, Vector2 size, Color color, PhysicsMaterial2D material,
+                bool visible = true, float depth = 1.6f, Material look = null)
             {
                 var go = new GameObject(name);
                 go.transform.SetParent(root, false);
                 go.transform.position = center;
-                var sr = go.AddComponent<SpriteRenderer>();
-                sr.sprite = Art.block;
-                sr.drawMode = SpriteDrawMode.Sliced;   // inked rim keeps its width at any size
-                sr.size = size;
-                sr.color = color;
+                if (visible)
+                {
+                    var box = go.AddComponent<World.Box3D>();
+                    box.size = new Vector3(size.x, size.y, depth);
+                    box.color = color;
+                    go.GetComponent<MeshRenderer>().sharedMaterial = look != null ? look : Art.surfaces[ProceduralArt.Surface.Concrete];
+                    box.Rebuild();
+                }
                 var col = go.AddComponent<BoxCollider2D>();
                 col.size = size;
                 col.offset = Vector2.zero;

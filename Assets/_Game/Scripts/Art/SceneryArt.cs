@@ -701,5 +701,21 @@ namespace DribbleToSchool.Art
             }
             return c;
         }
+
+        /// <summary>A wooded headland seen across the sea: a low green hill on a transparent background.</summary>
+        public static PixelCanvas Headland()
+        {
+            var c = new PixelCanvas(512, 128);
+            Color hill = new Color(0.2f, 0.42f, 0.38f), lit = new Color(0.34f, 0.56f, 0.44f);
+            c.Fill((x, y) =>
+            {
+                float t = Mathf.Clamp01(x / 512f);
+                float top = 8f + 78f * Mathf.Pow(Mathf.Sin(t * Mathf.PI), 0.7f) * (t < 0.45f ? 1f : 0.82f);
+                return y <= top ? 1f : 0f;
+            }, hill);
+            Foliage(c, 230, 70, 190, 26, lit, hill, 53, 40);
+            c.FillRect(0, 0, 512, 6, new Color(0.18f, 0.38f, 0.36f));
+            return c;
+        }
     }
 }

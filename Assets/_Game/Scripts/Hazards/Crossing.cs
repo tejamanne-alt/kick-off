@@ -8,10 +8,9 @@ namespace DribbleToSchool.Hazards
     /// change. Red man: the side street's traffic goes, and cars drive toward the camera
     /// across the crossing; the kid or the ball on the road loses the ball.
     ///
-    /// While the man is green, cars queue at the stop line further up the side street.
-    /// Cars are drawn front-on and placed by a depth value: negative is up the street
-    /// (smaller, higher, behind the kid), 0 is the crossing, positive is between the
-    /// crossing and the camera (bigger, lower, in front of everything).
+    /// While the man is green, cars queue at the stop line up the side street. Cars are
+    /// drawn front-on and drive along the side street in real depth (z): far up the street,
+    /// through the crossing at z = 0, and past the camera.
     /// </summary>
     [RequireComponent(typeof(BoxCollider2D))]
     public class Crossing : HazardBase
@@ -35,14 +34,15 @@ namespace DribbleToSchool.Hazards
         public SpriteRenderer[] cars;
         [Tooltip("World y of the crossing's road surface.")]
         public float groundY;
-        [Tooltip("Half the car sprite's height at depth 0, so the wheels sit on the road.")]
+        [Tooltip("Half the car sprite's height, so the wheels sit on the road.")]
         public float carHalfHeight = 0.82f;
-        [Tooltip("How much higher on screen a car sits per unit of depth up the side street.")]
-        public float depthRise = 0.35f;
-        public float stopLineDepth = -1.3f;
-        public float queueGap = 1.4f;
-        public float farDepth = -4.6f;
-        public float exitDepth = 3f;
+        [Tooltip("Where the lead car waits, up the side street (world z).")]
+        public float stopLineZ = 7f;
+        public float queueGap = 6f;
+        [Tooltip("Where cars come from, far up the side street.")]
+        public float farZ = 60f;
+        [Tooltip("Where cars leave, past the camera.")]
+        public float exitZ = -24f;
         [Tooltip("Sorting order for cars up the street (behind the kid) and in front of the crossing.")]
         public int behindOrder = -35;
         public int frontOrder = 40;
@@ -101,38 +101,32 @@ namespace DribbleToSchool.Hazards
             for (int i = 0; i < cars.Length; i++)
             {
                 if (cars[i] == null) continue;
-                float queueDepth = stopLineDepth - i * queueGap;
-                float depth;
+                float queueZ = stopLineZ + i * queueGap;
+                float z;
                 if (c < waitTime)
                 {
                     // Pull up to the stop line from further up the street, then wait.
                     float u = Mathf.Clamp01((c / waitTime - i * 0.15f) / 0.5f);
-                    depth = Mathf.Lerp(farDepth - i * queueGap, queueDepth, Smooth(u));
+                    z = Mathf.Lerp(farZ + i * queueGap, queueZ, Smooth(u));
                 }
                 else
                 {
                     // Red man: drive through the crossing toward the camera, lead car first.
                     float k = (c - waitTime) / redTime;
                     float u = Mathf.Clamp01((k - i * 0.3f) / 0.65f);
-                    depth = Mathf.Lerp(queueDepth, exitDepth, u * u);
+                    z = Mathf.Lerp(queueZ, exitZ, u * u);
                 }
-                PlaceCar(cars[i], depth);
+                PlaceCar(cars[i], z);
             }
         }
 
-        void PlaceCar(SpriteRenderer car, float depth)
+        void PlaceCar(SpriteRenderer car, float z)
         {
-            float scale = Mathf.Pow(1.45f, depth);
-            car.transform.localScale = new Vector3(scale, scale, 1f);
-            car.transform.position = new Vector3(transform.position.x, groundY - depth * depthRise + carHalfHeight * scale, 0f);
-            car.sortingOrder = depth < 0f ? behindOrder : frontOrder;
-            float alpha = 1f;
-            if (depth > exitDepth - 0.8f) alpha = Mathf.Clamp01((exitDepth - depth) / 0.8f);
-            if (depth < farDepth + 0.6f) alpha = Mathf.Clamp01((depth - farDepth + 0.2f) / 0.8f);
-            Color col = car.color;
-            col.a = alpha;
-            car.color = col;
-            car.enabled = alpha > 0.01f;
+            car.transform.localScale = Vector3.one;
+            car.transform.position = new Vector3(transform.position.x, groundY + carHalfHeight, z);
+            // Behind the kid while up the street, in front once past the crossing.
+            car.sortingOrder = z > 0f ? behindOrder : frontOrder;
+            car.enabled = true;
         }
 
         static float Smooth(float u) { return u * u * (3f - 2f * u); }

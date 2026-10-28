@@ -27,13 +27,13 @@ namespace DribbleToSchool.Ball
         /// <summary>0..1 power of the current aim.</summary>
         public float AimPower { get; private set; }
 
-        // Drag is measured against the un-zoomed view so the aim zoom doesn't change kick power.
-        float baseOrthoSize = 5.5f;
+        const float baseOrthoSize = 5.5f;
 
         void Start()
         {
             if (worldCamera == null) worldCamera = Camera.main;
-            if (worldCamera != null) baseOrthoSize = worldCamera.orthographicSize;
+            // Kick power is set by how far the thumb drags across the screen, measured against a fixed
+            // reference view (5.5 units half-height), so camera framing changes never change the kick feel.
             var input = GameInput.Instance;
             if (input != null && input.worldCamera == null) input.worldCamera = worldCamera;
         }
