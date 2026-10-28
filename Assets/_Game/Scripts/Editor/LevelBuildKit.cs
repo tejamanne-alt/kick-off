@@ -76,7 +76,7 @@ namespace DribbleToSchool.EditorTools
             BouncyMat = LoadOrCreateMaterial(PhysicsDir + "/Bouncy.physicsMaterial2D", 0.2f, 0.9f);
             kidMat = LoadOrCreateMaterial(PhysicsDir + "/Kid.physicsMaterial2D", 0f, 0f);
             CrateMat = LoadOrCreateMaterial(PhysicsDir + "/Crate.physicsMaterial2D", 0.5f, 0.1f);
-            signFont = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            signFont = UI.Kit.UITheme.Display;
             Art = ArtBaker.BakeAll();
 
             const string trailPath = ArtDir + "/BallTrail.mat";
@@ -141,7 +141,7 @@ namespace DribbleToSchool.EditorTools
             capsule.size = new Vector2(0.5f, 1.2f);
             capsule.sharedMaterial = kidMat;
             var kidRig = BuildCharacter(kidGo.transform, "Visual", Vector2.zero, 1f, KidColor, new Color(0.22f, 0.23f, 0.42f),
-                new Color(0.24f, 0.22f, 0.28f), 7, true);   // near-black hair (the hair art is mid-grey)
+                new Color(0.16f, 0.15f, 0.2f), true);   // glossy near-black hair
             var feet = new GameObject("Feet").transform;
             feet.SetParent(kidGo.transform, false);
             feet.localPosition = new Vector3(0f, -0.6f, 0f);
@@ -156,16 +156,17 @@ namespace DribbleToSchool.EditorTools
             ballGo.AddComponent<Rigidbody2D>();
             var circleCol = ballGo.AddComponent<CircleCollider2D>();
             circleCol.radius = 0.2f;
-            Color patch = new Color(0.15f, 0.15f, 0.15f);
             var squashRoot = new GameObject("SquashRoot").transform;
             squashRoot.SetParent(ballGo.transform, false);
-            var shell = Visual(squashRoot, "Shell", Circle, Vector2.zero, new Vector2(0.4f, 0.4f), Color.white, 20);
-            var patch1 = Visual(shell.transform, "Patch", Circle, new Vector2(0.2f, 0.15f), new Vector2(0.3f, 0.3f), patch, 21);
-            var patch2 = Visual(shell.transform, "Patch2", Circle, new Vector2(-0.22f, -0.18f), new Vector2(0.22f, 0.22f), patch, 21);
-            var ballShadow = new GameObject("BallShadow").AddComponent<SpriteRenderer>();
-            ballShadow.sprite = Art.shadow;
-            ballShadow.sortingOrder = 3;
-            ballShadow.color = new Color(1f, 1f, 1f, 0.35f);
+            // A 3D ball; the equipped skin's drawing is projected onto it (CosmeticApplier).
+            var shell = new GameObject("Ball3D");
+            shell.transform.SetParent(squashRoot, false);
+            var sphere = shell.AddComponent<SphereShape>();
+            sphere.radius = 0.2f;
+            shell.GetComponent<MeshRenderer>().sharedMaterial = Art.ball;
+            sphere.Rebuild();
+            var ballShadow = ShadowSprite("BallShadow");
+            var kidShadow = ShadowSprite("KidShadow");
             var trail = ballGo.AddComponent<TrailRenderer>();
             trail.sharedMaterial = trailMaterial;
             trail.time = 0.25f;
@@ -180,7 +181,17 @@ namespace DribbleToSchool.EditorTools
             var ballVisual = ballGo.AddComponent<BallVisual>();
             ballVisual.ball = ball;
             ballVisual.squashRoot = squashRoot;
-            ballVisual.shadow = ballShadow;
+            var ballShade = ballGo.AddComponent<GroundShadow>();
+            ballShade.target = ballGo.GetComponent<Rigidbody2D>();
+            ballShade.ignore = new[] { kidBody };
+            ballShade.shadow = ballShadow;
+            ballShade.size = new Vector2(0.42f, 0.24f);
+            var kidShade = kidGo.AddComponent<GroundShadow>();
+            kidShade.target = kidBody;
+            kidShade.ignore = new[] { ballShade.target };
+            kidShade.shadow = kidShadow;
+            kidShade.size = new Vector2(0.7f, 0.36f);
+            kidShade.maxDistance = 6f;
 
             // Kick aiming
             var aimGo = new GameObject("KickAimer");
@@ -231,13 +242,9 @@ namespace DribbleToSchool.EditorTools
 
             var applier = new GameObject("CosmeticApplier").AddComponent<CosmeticApplier>();
             applier.catalog = Cosmetics;
-            applier.ballRenderer = shell.GetComponent<SpriteRenderer>();
-            applier.ballPlaceholderDetails = new[] { patch1, patch2 };
+            applier.ballRenderer = shell.GetComponent<MeshRenderer>();
             applier.ballTrail = trail;
-            var shirtParts = new List<SpriteRenderer> { kidRig.torso };
-            shirtParts.AddRange(kidRig.sleeves);
-            applier.shirtRenderers = shirtParts.ToArray();
-            applier.shortsRenderers = kidRig.trousers;
+            applier.kidBody = kidRig.body;
             applier.backpackFlag = kidRig.flag;
 
             var tuningPanel = new GameObject("DevTuning").AddComponent<DevTuningPanel>();
@@ -254,24 +261,22 @@ namespace DribbleToSchool.EditorTools
             EditorSceneManager.SaveScene(scene, scenePath);
         }
 
-        /// <summary>Renderers of a built character that other systems tint or animate.</summary>
+        /// <summary>The parts of a built character that other systems dress or animate.</summary>
         public struct CharacterParts
         {
             public CharacterRig rig;
-            public SpriteRenderer torso, shorts, hair, flag;
-            /// <summary>Shirt sleeves, tinted with the torso.</summary>
-            public SpriteRenderer[] sleeves;
-            /// <summary>Hips and shorts legs (or trouser legs on adults), tinted with the outfit's second colour.</summary>
-            public SpriteRenderer[] trousers;
+            public CharacterBody3D body;
+            public SpriteRenderer flag;
             public Transform visual;
         }
 
         /// <summary>
-        /// Paper-doll character from the baked parts: feet at local y -0.6 * scale,
-        /// facing right. Pivots at hips, shoulders and neck for CharacterRig.
+        /// A 3D character: joints for CharacterRig (hips, knees, shoulders, elbows, neck and the
+        /// bag) and one smooth skinned body (CharacterBody3D) on them. Feet at local y -0.6 * scale,
+        /// facing +x; limbs on the near side (toward the camera, -z) are the "front" ones.
         /// </summary>
-        static CharacterParts BuildCharacter(Transform parent, string name, Vector2 localPos, float scale, Color shirt, Color shorts,
-            Color hair, int baseOrder, bool backpack)
+        static CharacterParts BuildCharacter(Transform parent, string name, Vector2 localPos, float scale, Color shirt, Color legwear,
+            Color hair, bool kid)
         {
             var parts = new CharacterParts();
             var visual = new GameObject(name).transform;
@@ -285,73 +290,44 @@ namespace DribbleToSchool.EditorTools
             rig.body = body;
             parts.rig = rig;
 
-            // Anime-proportioned teen (about 1.55 tall, feet at -0.6). Two-piece limbs:
-            // hip > knee > shin + shoe, shoulder > elbow > forearm. Back limbs are drawn
-            // slightly darker and behind the body; each joint's lower piece draws over the upper one.
-            Color backTint = new Color(0.86f, 0.86f, 0.88f);
-            Color shirtBack = Color.Lerp(shirt, Color.black, 0.1f);
-            Color trousersBack = Color.Lerp(shorts, Color.black, 0.15f);
-            var sleeves = new List<SpriteRenderer>();
-            var trousers = new List<SpriteRenderer>();
-            BuildArm(body, rig, false, new Vector2(-0.03f, 0.56f), backTint, shirtBack, baseOrder + 1, sleeves);
-            // The kid (with the school bag) wears shorts over bare legs and long socks; adults wear trousers.
-            bool kidLegs = backpack;
-            BuildLeg(body, rig, false, new Vector2(-0.035f, 0.12f), trousersBack, backTint, baseOrder + 1, trousers, kidLegs);
-            BuildLeg(body, rig, true, new Vector2(0.035f, 0.12f), shorts, Color.white, baseOrder + 3, trousers, kidLegs);
-            parts.shorts = Part(body, "Hips", "Hips", new Vector2(0f, 0.12f), 1f, shorts, baseOrder + 5);
-            trousers.Add(parts.shorts);
-            parts.torso = Part(body, "Torso", "Torso", new Vector2(0f, 0.33f), 1f, shirt, baseOrder + 6);
-            if (backpack)
+            rig.legFront = Pivot(body, "LegFront", new Vector3(0f, 0.12f, -0.072f));
+            rig.kneeFront = Pivot(rig.legFront, "Knee", new Vector3(0f, -0.36f, 0f));
+            rig.legBack = Pivot(body, "LegBack", new Vector3(0f, 0.12f, 0.072f));
+            rig.kneeBack = Pivot(rig.legBack, "Knee", new Vector3(0f, -0.36f, 0f));
+            rig.armFront = Pivot(body, "ArmFront", new Vector3(0.005f, 0.555f, -0.168f));
+            rig.elbowFront = Pivot(rig.armFront, "Elbow", new Vector3(0f, -0.24f, 0f));
+            rig.armBack = Pivot(body, "ArmBack", new Vector3(0.005f, 0.555f, 0.168f));
+            rig.elbowBack = Pivot(rig.armBack, "Elbow", new Vector3(0f, -0.24f, 0f));
+            rig.head = Pivot(body, "Head", new Vector3(0.03f, 0.6f, 0f));
+            if (kid)
             {
-                Part(body, "Strap", "Strap", new Vector2(0f, 0.33f), 1f, Color.white, baseOrder + 7);
-                rig.bag = Pivot(body, "Bag", new Vector2(-0.12f, 0.15f));
-                Part(rig.bag, "BagBody", "Bag", new Vector2(-0.025f, -0.045f), 1f, Color.white, baseOrder + 8);
-                // A little pennant clipped to the bag (the shop's "backpack flags").
-                Visual(rig.bag, "FlagPole", Square, new Vector2(-0.1f, 0.1f), new Vector2(0.015f, 0.2f), new Color(0.3f, 0.25f, 0.2f), baseOrder + 7);
-                parts.flag = Visual(rig.bag, "BackpackFlag", Square, new Vector2(-0.16f, 0.17f), new Vector2(0.12f, 0.09f), Color.white, baseOrder + 7).GetComponent<SpriteRenderer>();
+                // The school bag hangs on the back of the hips from its strap; a pennant (the
+                // shop's "backpack flags") is clipped to it on the near side.
+                rig.bag = Pivot(body, "Bag", new Vector3(-0.12f, 0.32f, 0f));
+                var pole = Visual(rig.bag, "FlagPole", Square, new Vector2(-0.05f, 0.08f), new Vector2(0.015f, 0.2f), new Color(0.3f, 0.25f, 0.2f), 7);
+                pole.transform.localPosition = new Vector3(-0.05f, 0.08f, -0.12f);
+                var flag = Visual(rig.bag, "BackpackFlag", Square, new Vector2(-0.11f, 0.15f), new Vector2(0.12f, 0.09f), Color.white, 7);
+                flag.transform.localPosition = new Vector3(-0.11f, 0.15f, -0.12f);
+                parts.flag = flag.GetComponent<SpriteRenderer>();
             }
-            rig.head = Pivot(body, "Head", new Vector2(0.03f, 0.6f));
-            Part(rig.head, "Face", "Head", new Vector2(0.01f, 0.18f), 1f, Color.white, baseOrder + 9);
-            parts.hair = Part(rig.head, "Hair", "Hair", new Vector2(0.025f, 0.205f), 1f, hair, baseOrder + 10);
-            BuildArm(body, rig, true, new Vector2(0.03f, 0.56f), Color.white, shirt, baseOrder + 11, sleeves);
-            parts.sleeves = sleeves.ToArray();
-            parts.trousers = trousers.ToArray();
+
+            var meshGo = new GameObject("Body3D");
+            meshGo.transform.SetParent(visual, false);
+            var smr = meshGo.AddComponent<SkinnedMeshRenderer>();
+            smr.sharedMaterial = Art.character;
+            var body3D = meshGo.AddComponent<CharacterBody3D>();
+            body3D.rig = rig;
+            body3D.kidOutfit = kid;
+            body3D.shirt = shirt;
+            body3D.legwear = legwear;
+            body3D.hair = hair;
+            if (!kid) body3D.build = 1.05f;
+            body3D.Rebuild();
+            parts.body = body3D;
             return parts;
         }
 
-        static void BuildLeg(Transform body, CharacterRig rig, bool front, Vector2 hip, Color cloth, Color tint, int order, List<SpriteRenderer> clothes, bool shorts)
-        {
-            var leg = Pivot(body, front ? "LegFront" : "LegBack", hip);
-            var knee = Pivot(leg, "Knee", new Vector2(0f, -0.36f));
-            if (shorts)
-            {
-                // The shorts leg draws over the thigh; it ends above the knee, so it never meets the shin.
-                Part(leg, "Thigh", "Thigh", new Vector2(0f, -0.175f), 1f, tint, order);
-                clothes.Add(Part(leg, "ShortsLeg", "ShortsLeg", new Vector2(0f, -0.087f), 1f, cloth, order + 1));
-                Part(knee, "Shin", "Shin", new Vector2(0f, -0.165f), 1f, tint, order + 1);
-            }
-            else
-            {
-                clothes.Add(Part(leg, "Thigh", "TrouserThigh", new Vector2(0f, -0.175f), 1f, cloth, order));
-                clothes.Add(Part(knee, "Shin", "TrouserShin", new Vector2(0f, -0.165f), 1f, cloth, order + 1));
-            }
-            Part(knee, "Shoe", "Shoe", new Vector2(0.045f, -0.301f), 1f, tint, order + 1);
-            if (front) { rig.legFront = leg; rig.kneeFront = knee; }
-            else { rig.legBack = leg; rig.kneeBack = knee; }
-        }
-
-        static void BuildArm(Transform body, CharacterRig rig, bool front, Vector2 shoulder, Color tint, Color shirt, int order, List<SpriteRenderer> sleeves)
-        {
-            var arm = Pivot(body, front ? "ArmFront" : "ArmBack", shoulder);
-            Part(arm, "UpperArm", "UpperArm", new Vector2(0f, -0.116f), 1f, tint, order);
-            var elbow = Pivot(arm, "Elbow", new Vector2(0f, -0.24f));
-            Part(elbow, "Forearm", "Forearm", new Vector2(0f, -0.126f), 1f, tint, order + 1);
-            sleeves.Add(Part(arm, "Sleeve", "Sleeve", new Vector2(0f, -0.06f), 1f, shirt, order + 1));
-            if (front) { rig.armFront = arm; rig.elbowFront = elbow; }
-            else { rig.armBack = arm; rig.elbowBack = elbow; }
-        }
-
-        static Transform Pivot(Transform parent, string name, Vector2 localPos)
+        static Transform Pivot(Transform parent, string name, Vector3 localPos)
         {
             var t = new GameObject(name).transform;
             t.SetParent(parent, false);
@@ -359,16 +335,40 @@ namespace DribbleToSchool.EditorTools
             return t;
         }
 
-        static SpriteRenderer Part(Transform parent, string name, string sprite, Vector2 localPos, float scale, Color color, int order)
+        /// <summary>A 3D car with its wheels on <paramref name="position"/>, turned <paramref name="yaw"/> degrees (0 faces +x, 90 faces the camera).</summary>
+        static Car3D Car(Transform parent, string name, Vector3 position, float yaw, Color paint)
+        {
+            var go = new GameObject(name);
+            go.transform.SetParent(parent, false);
+            go.transform.position = position;
+            go.transform.rotation = Quaternion.Euler(0f, yaw, 0f);
+            var car = go.AddComponent<Car3D>();
+            car.paint = paint;
+            go.GetComponent<MeshRenderer>().sharedMaterial = Art.solid;
+            car.Rebuild();
+            return car;
+        }
+
+        /// <summary>A rounded 3D form of ellipsoids at a local position, in the outlined character style.</summary>
+        static BlobShape Blobs(Transform parent, string name, Vector3 localPos, params BlobShape.Blob[] blobs)
         {
             var go = new GameObject(name);
             go.transform.SetParent(parent, false);
             go.transform.localPosition = localPos;
-            go.transform.localScale = Vector3.one * scale;
-            var sr = go.AddComponent<SpriteRenderer>();
-            sr.sprite = Art.parts[sprite];
-            sr.color = color;
-            sr.sortingOrder = order;
+            var shape = go.AddComponent<BlobShape>();
+            shape.blobs = new List<BlobShape.Blob>(blobs);
+            go.GetComponent<MeshRenderer>().sharedMaterial = Art.character;
+            shape.Rebuild();
+            return shape;
+        }
+
+        /// <summary>A soft shadow sprite for a GroundShadow to lay on the ground.</summary>
+        static SpriteRenderer ShadowSprite(string name)
+        {
+            var sr = new GameObject(name).AddComponent<SpriteRenderer>();
+            sr.sprite = Art.shadow;
+            sr.sortingOrder = 3;
+            sr.color = new Color(0.1f, 0.1f, 0.2f, 0.35f);
             return sr;
         }
 
@@ -544,9 +544,18 @@ namespace DribbleToSchool.EditorTools
                 var col = go.AddComponent<CircleCollider2D>();
                 col.isTrigger = true;
                 col.radius = 0.28f;
-                var visual = Visual(go.transform, "Visual", Circle, Vector2.zero, new Vector2(0.45f, 0.45f), new Color(1f, 0.8f, 0.25f), 25);
-                Visual(visual.transform, "Inner", Circle, Vector2.zero, new Vector2(0.62f, 0.62f), new Color(0.95f, 0.65f, 0.15f), 26);
-                Visual(visual.transform, "Shine", Circle, new Vector2(-0.18f, 0.18f), new Vector2(0.22f, 0.22f), new Color(1f, 1f, 0.85f), 27);
+                // A gold coin: a thin disc with a raised face, spinning about its vertical axis.
+                var visual = new GameObject("Visual");
+                visual.transform.SetParent(go.transform, false);
+                var disc = visual.AddComponent<CylinderShape>();
+                disc.radius = 0.22f;
+                disc.length = 0.07f;
+                disc.sideColor = new Color(0.86f, 0.58f, 0.12f);
+                disc.endColor = new Color(1f, 0.8f, 0.25f);
+                disc.innerRadius = 0.14f;
+                disc.innerColor = new Color(1f, 0.88f, 0.45f);
+                visual.GetComponent<MeshRenderer>().sharedMaterial = Art.solid;
+                disc.Rebuild();
                 go.AddComponent<Pickups.Coin>().visual = visual.transform;
             }
 
@@ -592,11 +601,11 @@ namespace DribbleToSchool.EditorTools
             /// <summary>A parked car: hop onto the bonnet, then the roof. The ball can't roll under it.</summary>
             public void ParkedCar(float x, Color color, float groundTop = 0f)
             {
-                // Colliders only; the drawn car covers them.
+                // Colliders only; the 3D car covers them.
                 // A small city car about 3.4 units (3 m) long: bonnet at 0.95, roof at 1.55, both jumpable.
                 Block("CarBody", new Vector2(x, groundTop + 0.575f), new Vector2(3.3f, 0.75f), color, GroundMat, false);
                 Block("CarCabin", new Vector2(x - 0.17f, groundTop + 1.25f), new Vector2(1.9f, 0.6f), color, GroundMat, false);
-                SpriteObject(root, "Car", Art.car, new Vector3(x, groundTop + 0.835f, 0f), 3, color);
+                Car(root, "Car", new Vector3(x, groundTop, 0.15f), 0f, color);
             }
 
             /// <summary>Someone walking between minX and maxX. Solid to the ball and the kid.</summary>
@@ -613,7 +622,7 @@ namespace DribbleToSchool.EditorTools
                 Color[] hairs = { new Color(0.46f, 0.34f, 0.28f), new Color(1f, 0.95f, 0.6f), new Color(0.92f, 0.92f, 0.95f), new Color(0.85f, 0.46f, 0.3f) };
                 // Adults: the kid rig at 1.22x (about 1.9 units, 1.7 m), feet on the capsule bottom (-0.925).
                 var parts = BuildCharacter(go.transform, "Visual", new Vector2(0f, -0.193f), 1.22f, coat, Color.Lerp(coat, Color.black, 0.45f),
-                    hairs[Mathf.Abs(Mathf.RoundToInt(minX)) % hairs.Length], 4, false);
+                    hairs[Mathf.Abs(Mathf.RoundToInt(minX)) % hairs.Length], false);
 
                 var p = go.AddComponent<Hazards.Pedestrian>();
                 p.minX = minX;
@@ -654,16 +663,12 @@ namespace DribbleToSchool.EditorTools
                 crossing.greenFigure = SpriteObject(go.transform, "GreenMan", Art.walkFigure, Vector3.zero, 1);
                 crossing.greenFigure.transform.position = new Vector3(poleX, pave + 2.22f, poleZ - 0.27f);
 
-                // Side-street traffic, drawn front-on; the Crossing script moves it in depth.
+                // Side-street traffic driving toward the camera; the Crossing script moves it in depth.
                 Color[] paint = { new Color(0.9f, 0.35f, 0.3f), new Color(0.35f, 0.55f, 0.85f) };
-                crossing.cars = new SpriteRenderer[paint.Length];
+                crossing.cars = new Transform[paint.Length];
                 for (int i = 0; i < paint.Length; i++)
-                {
-                    crossing.cars[i] = SpriteObject(go.transform, "Car" + i, Art.carFront, Vector3.zero, -35, paint[i]);   // placed by Crossing
-                    crossing.cars[i].sharedMaterial = Art.hazeSprite;
-                }
+                    crossing.cars[i] = Car(go.transform, "Car" + i, new Vector3(center, groundTop, 30f), 90f, paint[i]).transform;   // placed by Crossing
                 crossing.groundY = groundTop;
-                crossing.carHalfHeight = (98f - 4f) / 115f;   // CarFront: wheels on canvas y 4, 115 px per unit
             }
 
             /// <summary>A playful dog that patrols minX..maxX and noses low balls back.</summary>
@@ -674,11 +679,32 @@ namespace DribbleToSchool.EditorTools
                 go.transform.position = new Vector2((minX + maxX) * 0.5f, groundTop + 0.3f);
                 var visual = new GameObject("Visual").transform;
                 visual.SetParent(go.transform, false);
-                SpriteObject(visual, "Sprite", Art.dog, new Vector3(0f, 0.03f, 0f), 8, fur);
+                // A small 3D dog of soft blobs (feet at -0.3), facing +x, with swinging legs.
+                Color light = Color.Lerp(fur, Color.white, 0.45f), darkFur = Color.Lerp(fur, Color.black, 0.35f), ink = new Color(0.1f, 0.08f, 0.1f);
+                Blobs(visual, "Body", Vector3.zero,
+                    new BlobShape.Blob(new Vector3(0f, 0.02f, 0f), new Vector3(0.3f, 0.14f, 0.13f), fur),
+                    new BlobShape.Blob(new Vector3(0.16f, 0.04f, 0f), new Vector3(0.15f, 0.15f, 0.13f), fur),
+                    new BlobShape.Blob(new Vector3(0.12f, -0.02f, 0f), new Vector3(0.14f, 0.1f, 0.11f), light),
+                    new BlobShape.Blob(new Vector3(0.25f, 0.1f, 0f), new Vector3(0.05f, 0.1f, 0.11f), new Color(0.85f, 0.25f, 0.25f)),
+                    new BlobShape.Blob(new Vector3(0.34f, 0.2f, 0f), new Vector3(0.12f, 0.11f, 0.1f), fur),
+                    new BlobShape.Blob(new Vector3(0.45f, 0.16f, 0f), new Vector3(0.08f, 0.055f, 0.055f), light),
+                    new BlobShape.Blob(new Vector3(0.525f, 0.18f, 0f), new Vector3(0.022f, 0.02f, 0.022f), ink),
+                    new BlobShape.Blob(new Vector3(0.42f, 0.245f, -0.06f), new Vector3(0.016f, 0.022f, 0.012f), ink),
+                    new BlobShape.Blob(new Vector3(0.42f, 0.245f, 0.06f), new Vector3(0.016f, 0.022f, 0.012f), ink),
+                    new BlobShape.Blob(new Vector3(0.29f, 0.29f, -0.075f), new Vector3(0.04f, 0.085f, 0.025f), darkFur),
+                    new BlobShape.Blob(new Vector3(0.29f, 0.29f, 0.075f), new Vector3(0.04f, 0.085f, 0.025f), darkFur),
+                    new BlobShape.Blob(new Vector3(-0.31f, 0.13f, 0f), new Vector3(0.08f, 0.035f, 0.035f), fur),
+                    new BlobShape.Blob(new Vector3(-0.37f, 0.19f, 0f), new Vector3(0.05f, 0.03f, 0.03f), light));
+                var legs = new List<Transform>();
+                foreach (var hip in new[] { new Vector3(0.18f, -0.02f, -0.08f), new Vector3(0.18f, -0.02f, 0.08f), new Vector3(-0.18f, -0.02f, -0.08f), new Vector3(-0.18f, -0.02f, 0.08f) })
+                    legs.Add(Blobs(visual, "Leg", hip,
+                        new BlobShape.Blob(new Vector3(0f, -0.12f, 0f), new Vector3(0.042f, 0.14f, 0.042f), fur),
+                        new BlobShape.Blob(new Vector3(0.02f, -0.255f, 0f), new Vector3(0.052f, 0.03f, 0.046f), light)).transform);
                 var dog = go.AddComponent<Hazards.Dog>();
                 dog.minX = minX;
                 dog.maxX = maxX;
                 dog.visual = visual;
+                dog.legs = legs.ToArray();
             }
 
             /// <summary>A puddle: the ball drags, the kid wades.</summary>
@@ -731,7 +757,7 @@ namespace DribbleToSchool.EditorTools
                     float sx = Mathf.Lerp(fromX, toX, (float)rng.NextDouble());
                     float sy = Mathf.Lerp(bottom, top, (float)rng.NextDouble());
                     Vector2 size = vertical ? new Vector2(0.04f, 0.6f) : new Vector2(0.6f, 0.04f);
-                    var streak = Decor("Streak", new Vector2(sx, sy), size, new Color(1f, 1f, 1f, 0.55f));
+                    var streak = FlatDecor("Streak", new Vector2(sx, sy), size, new Color(1f, 1f, 1f, 0.55f));
                     streak.GetComponent<SpriteRenderer>().sortingOrder = 30;
                     streaks.Add(streak.transform);
                 }
@@ -761,19 +787,23 @@ namespace DribbleToSchool.EditorTools
                 float frameTop = groundTop + gateHeight * 2f + 0.45f;
                 Color frame = new Color(0.55f, 0.4f, 0.3f);
                 foreach (float side in new[] { -0.3f, 0.3f })
-                    Decor("GateFrame", new Vector2(gateX + side, (groundTop + frameTop) * 0.5f - 0.1f), new Vector2(0.14f, frameTop - groundTop + 0.2f), frame);
-                Decor("GateLintel", new Vector2(gateX, frameTop), new Vector2(0.9f, 0.2f), frame).GetComponent<SpriteRenderer>().sortingOrder = 1;
+                    Decor("GateFrame", new Vector2(gateX + side, (groundTop + frameTop) * 0.5f - 0.1f), new Vector2(0.14f, frameTop - groundTop + 0.2f), frame, 1.8f);
+                Decor("GateLintel", new Vector2(gateX, frameTop), new Vector2(0.9f, 0.2f), frame, 1.8f);
 
-                var sw = Block("Switch", switchPosition, new Vector2(0.55f, 0.55f), new Color(0.3f, 0.3f, 0.32f), GroundMat);
-                var indicator = new GameObject("Indicator");
-                indicator.transform.SetParent(sw.transform, false);
-                indicator.transform.localScale = new Vector3(0.33f, 0.33f, 1f);
-                var sr = indicator.AddComponent<SpriteRenderer>();
-                sr.sprite = Circle;
-                sr.sortingOrder = 3;
+                var sw = Block("Switch", switchPosition, new Vector2(0.55f, 0.55f), new Color(0.3f, 0.3f, 0.32f), GroundMat, true, 0.55f);
+                // The lamp is a round button on the switch's face, lit by BallSwitch.
+                var lamp = new GameObject("Indicator");
+                lamp.transform.SetParent(sw.transform, false);
+                lamp.transform.localPosition = new Vector3(0f, 0f, -0.29f);
+                var button = lamp.AddComponent<CylinderShape>();
+                button.radius = 0.16f;
+                button.length = 0.06f;
+                button.sideColor = button.endColor = button.innerColor = Color.white;
+                lamp.GetComponent<MeshRenderer>().sharedMaterial = Art.solid;
+                button.Rebuild();
                 var ballSwitch = sw.AddComponent<BallSwitch>();
                 ballSwitch.gates = new[] { gate };
-                ballSwitch.indicator = sr;
+                ballSwitch.indicator = lamp.GetComponent<MeshRenderer>();
                 Decor("SwitchPost", new Vector2(switchPosition.x, (groundTop + switchPosition.y) * 0.5f),
                     new Vector2(0.1f, switchPosition.y - groundTop), ObstacleColor);
             }
@@ -790,13 +820,28 @@ namespace DribbleToSchool.EditorTools
                 col.radius = 0.4f;
                 var visual = new GameObject("Visual").transform;
                 visual.SetParent(go.transform, false);
-                SpriteObject(visual, "Sprite", Art.seagull, Vector3.zero, 30);
+                // A 3D gull: white body, grey back and wings with dark tips, a yellow beak.
+                Color white = new Color(0.97f, 0.97f, 0.98f), grey = new Color(0.66f, 0.7f, 0.76f), tip = new Color(0.18f, 0.18f, 0.22f);
+                Blobs(visual, "Body", Vector3.zero,
+                    new BlobShape.Blob(new Vector3(0f, 0f, 0f), new Vector3(0.24f, 0.09f, 0.09f), white),
+                    new BlobShape.Blob(new Vector3(-0.03f, 0.035f, 0f), new Vector3(0.18f, 0.06f, 0.075f), grey),
+                    new BlobShape.Blob(new Vector3(0.21f, 0.06f, 0f), new Vector3(0.085f, 0.075f, 0.07f), white),
+                    new BlobShape.Blob(new Vector3(0.31f, 0.05f, 0f), new Vector3(0.055f, 0.018f, 0.018f), new Color(1f, 0.8f, 0.25f)),
+                    new BlobShape.Blob(new Vector3(0.25f, 0.09f, -0.055f), new Vector3(0.012f, 0.014f, 0.01f), tip),
+                    new BlobShape.Blob(new Vector3(0.25f, 0.09f, 0.055f), new Vector3(0.012f, 0.014f, 0.01f), tip),
+                    new BlobShape.Blob(new Vector3(-0.26f, 0.01f, 0f), new Vector3(0.09f, 0.025f, 0.065f), grey));
+                var wings = new List<Transform>();
+                foreach (float side in new[] { -1f, 1f })
+                    wings.Add(Blobs(visual, "Wing", new Vector3(0f, 0.04f, side * 0.06f),
+                        new BlobShape.Blob(new Vector3(-0.02f, 0f, side * 0.22f), new Vector3(0.12f, 0.018f, 0.22f), grey),
+                        new BlobShape.Blob(new Vector3(-0.06f, 0f, side * 0.42f), new Vector3(0.08f, 0.014f, 0.08f), tip)).transform);
                 var gull = go.AddComponent<Hazards.Seagull>();
                 gull.fromX = fromX;
                 gull.toX = toX;
                 gull.baseY = baseY;
                 gull.phaseOffset = phaseOffset;
                 gull.visual = visual;
+                gull.wings = wings.ToArray();
             }
 
             /// <summary>Sea water washing over the sand between fromX and toX. Cross at low tide.</summary>
@@ -869,18 +914,37 @@ namespace DribbleToSchool.EditorTools
                 spawner.interval = interval;
                 spawner.despawnX = despawnX;
                 spawner.firstDelay = firstDelay;
-                spawner.sprite = Circle;
-                Decor("PipeStack", position + new Vector2(0.9f, -0.2f), new Vector2(1.2f, 1.1f), new Color(0.5f, 0.5f, 0.55f));
+                spawner.material = Art.solid;
+                // A stack of pipes beside the spawn point, lying across the street.
+                Vector2 stack = position + new Vector2(0.9f, -0.2f);
+                float r = spawner.radius;
+                Vector2[] at = { new Vector2(-r, -0.55f + r), new Vector2(r, -0.55f + r), new Vector2(0f, -0.55f + r * 2.7f) };
+                foreach (var o in at)
+                {
+                    var pipe = new GameObject("StackedPipe");
+                    pipe.transform.SetParent(root, false);
+                    pipe.transform.position = new Vector3(stack.x + o.x, stack.y + o.y, 0.6f);
+                    PipeSpawner.BuildPipe(pipe, r, spawner.color, Art.solid);
+                }
             }
 
             /// <summary>A swing seat hanging from <paramref name="pivot"/>.</summary>
             public void Swing(Vector2 pivot, float ropeLength, float amplitude = 35f, float period = 3f, float phaseOffset = 0f)
             {
-                Decor("SwingBeam", pivot + new Vector2(0f, 0.1f), new Vector2(2.4f, 0.2f), new Color(0.55f, 0.4f, 0.3f));
-                Decor("SwingPostL", new Vector2(pivot.x - 1.1f, pivot.y * 0.5f), new Vector2(0.15f, pivot.y), new Color(0.55f, 0.4f, 0.3f));
-                Decor("SwingPostR", new Vector2(pivot.x + 1.1f, pivot.y * 0.5f), new Vector2(0.15f, pivot.y), new Color(0.55f, 0.4f, 0.3f));
+                // A swing frame standing across the street: the beam runs in depth over the seat,
+                // on splayed A-frame legs at either end, clear of the kid's path.
+                Color wood = new Color(0.55f, 0.4f, 0.3f);
+                float frameZ = 1.1f, ground = GroundTopUnder(pivot.x, pivot.y);
+                Decor("SwingBeam", pivot + new Vector2(0f, 0.1f), new Vector2(0.2f, 0.2f), wood, frameZ * 2f + 0.3f);
+                foreach (float z in new[] { -frameZ, frameZ })
+                    foreach (float splay in new[] { -1f, 1f })
+                    {
+                        float height = pivot.y + 0.1f - ground;
+                        var leg = Decor("SwingLeg", new Vector2(pivot.x + splay * height * 0.18f, ground + height * 0.5f), new Vector2(0.15f, height / Mathf.Cos(Mathf.Atan(0.36f))), wood, 0.15f, z);
+                        leg.transform.rotation = Quaternion.Euler(0f, 0f, splay * Mathf.Atan(0.36f) * Mathf.Rad2Deg);
+                    }
 
-                var seat = Block("SwingSeat", pivot + Vector2.down * ropeLength, new Vector2(1.4f, 0.2f), new Color(0.85f, 0.35f, 0.3f), GroundMat);
+                var seat = Block("SwingSeat", pivot + Vector2.down * ropeLength, new Vector2(1.4f, 0.2f), new Color(0.85f, 0.35f, 0.3f), GroundMat, true, 0.7f);
                 seat.AddComponent<Rigidbody2D>().bodyType = RigidbodyType2D.Kinematic;
                 var rope = seat.AddComponent<LineRenderer>();
                 rope.sharedMaterial = trailMaterial;
@@ -965,11 +1029,30 @@ namespace DribbleToSchool.EditorTools
                 var col = go.AddComponent<CircleCollider2D>();
                 col.isTrigger = true;
                 col.radius = 0.45f;
-                Visual(go.transform, "Ring", Circle, Vector2.zero, new Vector2(0.95f, 0.95f), Color.white, 22);
-                var face = Visual(go.transform, "Face", Circle, Vector2.zero, new Vector2(0.75f, 0.75f), new Color(1f, 0.85f, 0.3f), 23);
-                Visual(go.transform, "Bull", Circle, Vector2.zero, new Vector2(0.3f, 0.3f), new Color(0.9f, 0.35f, 0.3f), 24);
+                // A round target board facing the street: white rim, tinted face, red bull's-eye.
+                var board = new GameObject("Board");
+                board.transform.SetParent(go.transform, false);
+                var disc = board.AddComponent<CylinderShape>();
+                disc.radius = 0.475f;
+                disc.length = 0.1f;
+                disc.sideColor = disc.endColor = Color.white;
+                disc.innerRadius = 0.375f;
+                disc.innerColor = Color.white;
+                board.GetComponent<MeshRenderer>().sharedMaterial = Art.solid;
+                disc.Rebuild();
+                var faceGo = new GameObject("Face");
+                faceGo.transform.SetParent(go.transform, false);
+                faceGo.transform.localPosition = new Vector3(0f, 0f, -0.04f);
+                var faceDisc = faceGo.AddComponent<CylinderShape>();
+                faceDisc.radius = 0.375f;
+                faceDisc.length = 0.04f;
+                faceDisc.sideColor = faceDisc.endColor = Color.white;
+                faceDisc.innerRadius = 0.15f;
+                faceDisc.innerColor = new Color(0.9f, 0.35f, 0.3f);
+                faceGo.GetComponent<MeshRenderer>().sharedMaterial = Art.solid;
+                faceDisc.Rebuild();
                 var target = go.AddComponent<ChallengeTarget>();
-                target.face = face.GetComponent<SpriteRenderer>();
+                target.face = faceGo.GetComponent<MeshRenderer>();
                 return target;
             }
 
@@ -981,25 +1064,45 @@ namespace DribbleToSchool.EditorTools
                 go.transform.position = new Vector2(x, groundTop);
                 var gate = go.AddComponent<SlalomGate>();
                 gate.kind = kind;
-                var flags = new List<SpriteRenderer>();
+                var flags = new List<Renderer>();
                 Color c = new Color(1f, 0.85f, 0.3f);
                 if (kind == Challenges.SlalomGate.Kind.Low)
                 {
                     gate.height = 0.7f;
-                    flags.Add(Visual(go.transform, "PostL", Square, new Vector2(-0.05f, 0.45f), new Vector2(0.08f, 0.9f), c, 3).GetComponent<SpriteRenderer>());
-                    flags.Add(Visual(go.transform, "Bar", Square, new Vector2(0f, 0.85f), new Vector2(0.9f, 0.08f), c, 3).GetComponent<SpriteRenderer>());
+                    // A low bar across the street on two posts.
+                    foreach (float z in new[] { -0.9f, 0.9f })
+                        flags.Add(Bar(go.transform, "Post", new Vector3(0f, 0.45f, z), new Vector3(0.08f, 0.9f, 0.08f)));
+                    flags.Add(Bar(go.transform, "Bar", new Vector3(0f, 0.85f, 0f), new Vector3(0.08f, 0.08f, 1.9f)));
                 }
                 else
                 {
                     gate.height = 1.4f;
                     gate.hoopSize = 1.3f;
-                    Visual(go.transform, "Pole", Square, new Vector2(0f, 0.7f), new Vector2(0.08f, 1.4f), ObstacleColor, 2);
-                    flags.Add(Visual(go.transform, "HoopBottom", Square, new Vector2(0f, 1.4f), new Vector2(0.9f, 0.08f), c, 3).GetComponent<SpriteRenderer>());
-                    flags.Add(Visual(go.transform, "HoopTop", Square, new Vector2(0f, 2.7f), new Vector2(0.9f, 0.08f), c, 3).GetComponent<SpriteRenderer>());
-                    flags.Add(Visual(go.transform, "HoopSide", Square, new Vector2(0.45f, 2.05f), new Vector2(0.08f, 1.3f), c, 3).GetComponent<SpriteRenderer>());
+                    // A square hoop on a pole beside the street, open toward the kid.
+                    Bar(go.transform, "Pole", new Vector3(0f, 0.7f, 0.75f), new Vector3(0.08f, 1.4f, 0.08f)).GetComponent<Box3D>().color = ObstacleColor;
+                    flags.Add(Bar(go.transform, "HoopBottom", new Vector3(0f, 1.4f, 0f), new Vector3(0.08f, 0.08f, 1.58f)));
+                    flags.Add(Bar(go.transform, "HoopTop", new Vector3(0f, 2.7f, 0f), new Vector3(0.08f, 0.08f, 1.58f)));
+                    flags.Add(Bar(go.transform, "HoopNear", new Vector3(0f, 2.05f, -0.75f), new Vector3(0.08f, 1.38f, 0.08f)));
+                    flags.Add(Bar(go.transform, "HoopFar", new Vector3(0f, 2.05f, 0.75f), new Vector3(0.08f, 1.38f, 0.08f)));
                 }
                 gate.flags = flags.ToArray();
+                foreach (var f in flags) World.Tint.Set(f, c);
                 return gate;
+            }
+
+            /// <summary>A white 3D bar (tinted at runtime with Tint) at a local position.</summary>
+            static Renderer Bar(Transform parent, string name, Vector3 localCenter, Vector3 size)
+            {
+                var go = new GameObject(name);
+                go.transform.SetParent(parent, false);
+                go.transform.localPosition = localCenter;
+                var box = go.AddComponent<Box3D>();
+                box.size = size;
+                box.color = Color.white;
+                var r = go.GetComponent<MeshRenderer>();
+                r.sharedMaterial = Art.solid;
+                box.Rebuild();
+                return r;
             }
 
             /// <summary>Adds the challenge logic object; returns it for configuration.</summary>
@@ -1027,7 +1130,22 @@ namespace DribbleToSchool.EditorTools
                 var visual = new GameObject("Visual").transform;
                 visual.SetParent(go.transform, false);
                 visual.localPosition = new Vector3(0f, -0.14f, 0f);
-                Visual(visual, "Board", Square, Vector2.zero, new Vector2(1.3f, 0.14f), BouncyColor, 3);
+                // A springy trampoline pad: a red mat on a dark frame, set into the street.
+                var mat = new GameObject("Board");
+                mat.transform.SetParent(visual, false);
+                var top = mat.AddComponent<Box3D>();
+                top.size = new Vector3(1.3f, 0.14f, 1.3f);
+                top.color = BouncyColor;
+                mat.GetComponent<MeshRenderer>().sharedMaterial = Art.solid;
+                top.Rebuild();
+                var frameGo = new GameObject("Frame");
+                frameGo.transform.SetParent(visual, false);
+                frameGo.transform.localPosition = new Vector3(0f, -0.06f, 0f);
+                var frameBox = frameGo.AddComponent<Box3D>();
+                frameBox.size = new Vector3(1.45f, 0.1f, 1.45f);
+                frameBox.color = new Color(0.25f, 0.25f, 0.28f);
+                frameGo.GetComponent<MeshRenderer>().sharedMaterial = Art.solid;
+                frameBox.Rebuild();
                 go.AddComponent<Hazards.Springboard>().visual = visual;
             }
 
@@ -1076,7 +1194,7 @@ namespace DribbleToSchool.EditorTools
             public void Awning(float x, float height, float groundTop = 0f)
             {
                 Block("Awning", new Vector2(x, groundTop + height), new Vector2(2.2f, 0.2f), BouncyColor, BouncyMat);
-                Decor("AwningPost", new Vector2(x + 1f, groundTop + height * 0.5f), new Vector2(0.12f, height), ObstacleColor);
+                Decor("AwningPost", new Vector2(x + 1f, groundTop + height * 0.5f), new Vector2(0.12f, height), ObstacleColor, -1f, 0.7f);
             }
 
             public void Start(float x, float groundTop = 0f)
@@ -1108,12 +1226,9 @@ namespace DribbleToSchool.EditorTools
                 {
                     // Flags stand at the far kerb, beside the line the kid crosses.
                     float flagZ = StreetBuilder.RoadHalf + 0.4f;
-                    var pole = Decor("FlagPole", new Vector2(x, groundTop + 1f), new Vector2(0.08f, 2f), ObstacleColor);
-                    pole.transform.position = new Vector3(x, groundTop + 1.14f, flagZ);
-                    var flag = Decor("Flag", new Vector2(x + 0.3f, groundTop + 1.8f), new Vector2(0.55f, 0.35f), Color.gray);
-                    flag.transform.position = new Vector3(x + 0.3f, groundTop + 1.94f, flagZ);
-                    cp.flag = flag.GetComponent<SpriteRenderer>();
-                    cp.flag.sortingOrder = 1;
+                    Decor("FlagPole", new Vector2(x, groundTop + 1.14f), new Vector2(0.08f, 2f), ObstacleColor, -1f, flagZ);
+                    var flag = Decor("Flag", new Vector2(x + 0.31f, groundTop + 1.94f), new Vector2(0.55f, 0.35f), Color.white, 0.03f, flagZ);
+                    cp.flag = flag.GetComponent<MeshRenderer>();
                     flag.transform.SetParent(go.transform, true);
                 }
 
@@ -1259,9 +1374,18 @@ namespace DribbleToSchool.EditorTools
                 var legs = twoLegs ? new[] { -legOffset, legOffset } : new[] { 0f };
                 foreach (float lx in legs)
                 {
-                    var post = Decor("SignPost", new Vector2(pos.x + lx, postBottom + height * 0.5f), new Vector2(0.14f, height), wood);
+                    var post = Decor("SignPost", new Vector2(pos.x + lx, postBottom + height * 0.5f), new Vector2(0.14f, height), wood, -1f, sign.position.z + 0.06f);
                     post.transform.SetParent(sign, true);
                 }
+            }
+
+            /// <summary>Top of the highest ground span under <paramref name="x"/> that is below <paramref name="belowY"/> (0 if none yet).</summary>
+            float GroundTopUnder(float x, float belowY)
+            {
+                float top = float.MinValue;
+                foreach (var span in groundSpans)
+                    if (x >= span.from && x <= span.to && span.top <= belowY) top = Mathf.Max(top, span.top);
+                return top == float.MinValue ? 0f : top;
             }
 
             /// <summary>Highest ground top under both x positions that is below <paramref name="belowY"/>.</summary>
@@ -1285,7 +1409,10 @@ namespace DribbleToSchool.EditorTools
                 var go = new GameObject("Sign_" + text.Split('\n')[0]);
                 go.transform.SetParent(root, false);
                 go.transform.position = position;
-                var mesh = go.AddComponent<TextMesh>();
+                var textGo = new GameObject("Text");
+                textGo.transform.SetParent(go.transform, false);
+                textGo.transform.localPosition = new Vector3(0f, 0f, -0.05f);
+                var mesh = textGo.AddComponent<TextMesh>();
                 mesh.text = text;
                 mesh.font = signFont;
                 mesh.fontSize = 48;
@@ -1293,7 +1420,7 @@ namespace DribbleToSchool.EditorTools
                 mesh.anchor = TextAnchor.MiddleCenter;
                 mesh.alignment = TextAlignment.Center;
                 mesh.color = new Color(0.25f, 0.3f, 0.4f);
-                var renderer = go.GetComponent<MeshRenderer>();
+                var renderer = textGo.GetComponent<MeshRenderer>();
                 if (signFont != null) renderer.sharedMaterial = signFont.material;
                 renderer.sortingOrder = 6;
 
@@ -1302,13 +1429,23 @@ namespace DribbleToSchool.EditorTools
                 int longest = 0;
                 foreach (var l in lines) longest = Mathf.Max(longest, l.Length);
                 boardSize = new Vector2(longest * 0.135f + 0.6f, lines.Length * 0.3f + 0.35f);
-                var board = new GameObject("SignBoard").AddComponent<SpriteRenderer>();
+                var board = new GameObject("SignBoard");
                 board.transform.SetParent(go.transform, false);
-                board.sprite = Art.block;
-                board.drawMode = SpriteDrawMode.Sliced;
-                board.size = boardSize;
-                board.color = new Color(0.98f, 0.9f, 0.74f);
-                board.sortingOrder = 4;
+                board.transform.localPosition = new Vector3(0f, 0f, 0.03f);
+                var face = board.AddComponent<Box3D>();
+                face.size = new Vector3(boardSize.x, boardSize.y, 0.08f);
+                face.color = new Color(0.98f, 0.9f, 0.74f);
+                board.GetComponent<MeshRenderer>().sharedMaterial = Art.solid;
+                face.Rebuild();
+                // A darker frame round the edge.
+                var rim = new GameObject("SignFrame");
+                rim.transform.SetParent(go.transform, false);
+                rim.transform.localPosition = new Vector3(0f, 0f, 0.05f);
+                var frameBox = rim.AddComponent<Box3D>();
+                frameBox.size = new Vector3(boardSize.x + 0.1f, boardSize.y + 0.1f, 0.06f);
+                frameBox.color = new Color(0.5f, 0.36f, 0.26f);
+                rim.GetComponent<MeshRenderer>().sharedMaterial = Art.solid;
+                frameBox.Rebuild();
                 return go;
             }
 
@@ -1338,8 +1475,26 @@ namespace DribbleToSchool.EditorTools
                 return go;
             }
 
-            /// <summary>A coloured box with no collider (background dressing).</summary>
-            public GameObject Decor(string name, Vector2 center, Vector2 size, Color color)
+            /// <summary>
+            /// A 3D box with no collider (posts, beams, frames, flags) centred at
+            /// (<paramref name="center"/>, <paramref name="z"/>). A negative depth makes it as deep as
+            /// it is thin (a square post).
+            /// </summary>
+            public GameObject Decor(string name, Vector2 center, Vector2 size, Color color, float depth = -1f, float z = 0f)
+            {
+                var go = new GameObject(name);
+                go.transform.SetParent(root, false);
+                go.transform.position = new Vector3(center.x, center.y, z);
+                var box = go.AddComponent<Box3D>();
+                box.size = new Vector3(size.x, size.y, depth > 0f ? depth : Mathf.Clamp(Mathf.Min(size.x, size.y), 0.03f, 0.5f));
+                box.color = color;
+                go.GetComponent<MeshRenderer>().sharedMaterial = Art.solid;
+                box.Rebuild();
+                return go;
+            }
+
+            /// <summary>A flat, see-through sprite (effects such as wind streaks).</summary>
+            public GameObject FlatDecor(string name, Vector2 center, Vector2 size, Color color)
             {
                 var go = new GameObject(name);
                 go.transform.SetParent(root, false);

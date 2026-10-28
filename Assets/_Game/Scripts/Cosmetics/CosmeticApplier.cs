@@ -12,17 +12,19 @@ namespace DribbleToSchool.Cosmetics
         public CosmeticCatalog catalog;
 
         [Header("Ball")]
-        public SpriteRenderer ballRenderer;
-        [Tooltip("Placeholder details hidden once a drawn skin is applied.")]
-        public GameObject[] ballPlaceholderDetails;
+        [Tooltip("The 3D ball; the skin's drawing is projected onto it.")]
+        public Renderer ballRenderer;
         public TrailRenderer ballTrail;
 
         [Header("Kid")]
-        [Tooltip("Renderers tinted with the outfit's shirt colour.")]
-        public SpriteRenderer[] shirtRenderers;
-        [Tooltip("Renderers tinted with the outfit's shorts colour.")]
-        public SpriteRenderer[] shortsRenderers;
+        [Tooltip("Dressed in the outfit's shirt and shorts colours.")]
+        public Presentation.CharacterBody3D kidBody;
         public SpriteRenderer backpackFlag;
+
+        static readonly int MainTexId = Shader.PropertyToID("_MainTex");
+        static readonly int MainTexStId = Shader.PropertyToID("_MainTex_ST");
+        MaterialPropertyBlock block;
+        string dressedIn;
 
         void OnEnable()
         {
@@ -43,23 +45,23 @@ namespace DribbleToSchool.Cosmetics
             var ball = catalog.Find(save.equippedBall);
             if (ball != null && ballRenderer != null)
             {
-                ballRenderer.sprite = CosmeticArt.BallSprite(ball);
-                ballRenderer.color = Color.white;
-                // The drawn skin already includes the patches, so hide the placeholder ones.
-                if (ballPlaceholderDetails != null)
-                {
-                    foreach (var go in ballPlaceholderDetails)
-                    {
-                        if (go != null) go.SetActive(false);
-                    }
-                }
+                // The ball's UVs map its front and back onto the skin's drawing of a ball.
+                var sprite = CosmeticArt.BallSprite(ball);
+                if (block == null) block = new MaterialPropertyBlock();
+                ballRenderer.GetPropertyBlock(block);
+                block.SetTexture(MainTexId, sprite.texture);
+                Rect r = sprite.textureRect;
+                float w = sprite.texture.width, h = sprite.texture.height;
+                block.SetVector(MainTexStId, new Vector4(r.width / w, r.height / h, r.x / w, r.y / h));
+                ballRenderer.SetPropertyBlock(block);
             }
 
             var outfit = catalog.Find(save.equippedOutfit);
-            if (outfit != null)
+            if (outfit != null && kidBody != null && dressedIn != outfit.id)
             {
-                if (shirtRenderers != null) foreach (var r in shirtRenderers) if (r != null) r.color = outfit.primary;
-                if (shortsRenderers != null) foreach (var r in shortsRenderers) if (r != null) r.color = outfit.secondary;
+                // Rebuilding the body is cheap but not free: only when the outfit changes.
+                dressedIn = outfit.id;
+                kidBody.SetOutfit(outfit.primary, outfit.secondary);
             }
 
             var flag = catalog.Find(save.equippedFlag);

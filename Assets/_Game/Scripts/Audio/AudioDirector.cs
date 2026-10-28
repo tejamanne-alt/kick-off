@@ -221,7 +221,7 @@ namespace DribbleToSchool.Audio
                 case GameEventType.SwitchPressed: PlayInternal(Sfx.Switch, 0.7f, 1f); break;
                 case GameEventType.GateOpened: PlayInternal(Sfx.Gate, 0.6f, 1f); break;
                 case GameEventType.LightChange: if (k > 0.5f) PlayInternal(Sfx.Beep, 0.35f, 1f); break;
-                case GameEventType.UIClick: PlayInternal(Sfx.Click, 0.5f, Vary(0.05f)); Haptics.Selection(); break;
+                case GameEventType.UIClick: PlayInternal(Sfx.Click, 0.5f, Vary(0.05f)); Haptics.Release(); break;
                 case GameEventType.Purchase: PlayInternal(Sfx.Purchase, 0.8f, 1f); Haptics.Success(); break;
             }
         }

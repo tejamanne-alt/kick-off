@@ -15,7 +15,7 @@ namespace DribbleToSchool.Challenges
         [Tooltip("Low: the ball must be below this height. Hoop: between this and +hoopSize.")]
         public float height = 0.7f;
         public float hoopSize = 1.2f;
-        public SpriteRenderer[] flags;
+        public Renderer[] flags;
 
         public bool Done { get; private set; }
         public bool Passed { get; private set; }
@@ -45,7 +45,7 @@ namespace DribbleToSchool.Challenges
         void Paint(Color c)
         {
             if (flags == null) return;
-            foreach (var f in flags) if (f != null) f.color = c;
+            foreach (var f in flags) World.Tint.Set(f, c);
         }
 
         public void ResetState()

@@ -18,6 +18,8 @@ namespace DribbleToSchool.Hazards
         public float phaseOffset;
         public Vector2 knockVelocity = new Vector2(-3f, 4f);
         public Transform visual;
+        [Tooltip("Wing pivots at the shoulders, flapped about the body's long axis.")]
+        public Transform[] wings;
 
         public event System.Action<Seagull> HitBall;
 
@@ -58,10 +60,15 @@ namespace DribbleToSchool.Hazards
 
             if (visual != null)
             {
-                // Face the direction of flight and flap.
+                // Face the direction of flight, bank with the swoop and flap.
                 float dir = Mathf.Sign(toX - fromX);
-                float flap = 0.7f + Mathf.Abs(Mathf.Sin(time * 12f)) * 0.3f;
-                visual.localScale = new Vector3(dir * 1f, flap, 1f);
+                float bank = Mathf.Cos(k * Mathf.PI * 3f) * 12f * dir;
+                visual.localRotation = Quaternion.Euler(0f, Presentation.CharacterRig.FacingYaw(dir), bank);
+                float flap = Mathf.Sin(time * 11f) * 38f;
+                if (wings != null)
+                    for (int i = 0; i < wings.Length; i++)
+                        if (wings[i] != null)
+                            wings[i].localRotation = Quaternion.Euler((i == 0 ? -1f : 1f) * flap, 0f, 0f);
             }
         }
 

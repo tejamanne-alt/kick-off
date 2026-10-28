@@ -20,6 +20,8 @@ namespace DribbleToSchool.Hazards
         public Vector2 stealVelocity = new Vector2(-4.5f, 3.5f);
         public float stealCooldown = 1.2f;
         public Transform visual;
+        [Tooltip("Leg pivots (at the hips and shoulders), swung while trotting.")]
+        public Transform[] legs;
 
         public bool IsChasing { get; private set; }
         public event System.Action<Dog> StoleBall;
@@ -28,6 +30,8 @@ namespace DribbleToSchool.Hazards
         int direction = 1;
         float nextStealTime;
         Vector3 visualBaseScale = Vector3.one;
+        float facing = 1f;
+        float stride;
 
         void Awake()
         {
@@ -78,11 +82,18 @@ namespace DribbleToSchool.Hazards
 
             if (visual != null)
             {
-                Vector3 s = visualBaseScale;
-                s.x = Mathf.Abs(s.x) * direction;
+                // Turn to face the way it trots (through facing the camera), bounce, swing the legs.
+                facing = Mathf.MoveTowards(facing, direction, Time.deltaTime * 6f);
+                visual.localRotation = Quaternion.Euler(0f, Presentation.CharacterRig.FacingYaw(facing), 0f);
                 float speed = IsChasing ? chaseSpeed : wanderSpeed;
-                s.y = visualBaseScale.y * (1f + Mathf.Sin(Time.time * speed * 5f) * 0.05f);
+                stride += Time.deltaTime * speed * 9f;
+                Vector3 s = visualBaseScale;
+                s.y = visualBaseScale.y * (1f + Mathf.Sin(stride * 2f) * 0.04f);
                 visual.localScale = s;
+                if (legs != null)
+                    for (int i = 0; i < legs.Length; i++)
+                        if (legs[i] != null)
+                            legs[i].localRotation = Quaternion.Euler(0f, 0f, Mathf.Sin(stride + (i == 0 || i == 3 ? 0f : Mathf.PI)) * 28f);
             }
         }
 

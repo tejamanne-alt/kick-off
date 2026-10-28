@@ -7,13 +7,37 @@ using System.Runtime.InteropServices;
 namespace DribbleToSchool.Audio
 {
     /// <summary>
-    /// Light taps for kicks, perfect touches and landings. iOS uses the Taptic
-    /// Engine (Plugins/iOS/DTSHaptics.mm); Android uses short vibrations with
-    /// amplitude on API 26+. No-op in the editor and when disabled in Settings.
+    /// Light taps for kicks, perfect touches and landings, and a crisp click when a
+    /// button goes down. iOS uses the Taptic Engine (Plugins/iOS/DTSHaptics.mm);
+    /// Android uses the system click effects on API 29+ and short vibrations with
+    /// amplitude before that. No-op in the editor and when disabled in Settings.
     /// </summary>
     public static class Haptics
     {
-        public enum Strength { Light, Medium, Heavy }
+        /// <summary>Soft is a dull, cushioned tap; Rigid a short, hard click (iOS 13+, else Light).</summary>
+        public enum Strength { Light, Medium, Heavy, Soft, Rigid }
+
+        /// <summary>A button going down: a crisp click, firmer for the main actions.</summary>
+        public static void Press(bool primary)
+        {
+            if (!GameSettings.HapticsEnabled) return;
+#if UNITY_IOS && !UNITY_EDITOR
+            DTS_HapticImpactIntensity((int)Strength.Rigid, primary ? 1f : 0.7f);
+#elif UNITY_ANDROID && !UNITY_EDITOR
+            AndroidEffect(primary ? EffectClick : EffectTick, primary ? 14 : 8, primary ? 150 : 80);
+#endif
+        }
+
+        /// <summary>A button coming back up: a faint, soft tap.</summary>
+        public static void Release()
+        {
+            if (!GameSettings.HapticsEnabled) return;
+#if UNITY_IOS && !UNITY_EDITOR
+            DTS_HapticImpactIntensity((int)Strength.Soft, 0.45f);
+#elif UNITY_ANDROID && !UNITY_EDITOR
+            AndroidEffect(EffectTick, 5, 35);
+#endif
+        }
 
 #if UNITY_ANDROID && !UNITY_EDITOR
         // Referencing Handheld.Vibrate makes Unity add the VIBRATE permission on Android.
@@ -31,9 +55,14 @@ namespace DribbleToSchool.Audio
 #if UNITY_IOS && !UNITY_EDITOR
             DTS_HapticImpact((int)strength);
 #elif UNITY_ANDROID && !UNITY_EDITOR
-            int ms = strength == Strength.Light ? 12 : strength == Strength.Medium ? 22 : 40;
-            int amplitude = strength == Strength.Light ? 60 : strength == Strength.Medium ? 140 : 255;
-            AndroidVibrate(ms, amplitude);
+            switch (strength)
+            {
+                case Strength.Medium: AndroidVibrate(22, 140); break;
+                case Strength.Heavy: AndroidEffect(EffectHeavyClick, 40, 255); break;
+                case Strength.Soft: AndroidVibrate(10, 50); break;
+                case Strength.Rigid: AndroidEffect(EffectClick, 12, 150); break;
+                default: AndroidVibrate(12, 60); break;
+            }
 #endif
         }
 
@@ -59,6 +88,7 @@ namespace DribbleToSchool.Audio
 
 #if UNITY_IOS && !UNITY_EDITOR
         [DllImport("__Internal")] static extern void DTS_HapticImpact(int style);
+        [DllImport("__Internal")] static extern void DTS_HapticImpactIntensity(int style, float intensity);
         [DllImport("__Internal")] static extern void DTS_HapticSuccess();
         [DllImport("__Internal")] static extern void DTS_HapticSelection();
 #endif
@@ -67,7 +97,31 @@ namespace DribbleToSchool.Audio
         static AndroidJavaObject vibrator;
         static int sdk = -1;
 
-        static void AndroidVibrate(int ms, int amplitude)
+        // android.os.VibrationEffect predefined effects (API 29+).
+        const int EffectClick = 0, EffectTick = 2, EffectHeavyClick = 5;
+
+        /// <summary>A system click effect where available (crisper than a timed buzz), else a short vibration.</summary>
+        static void AndroidEffect(int effect, int fallbackMs, int fallbackAmplitude)
+        {
+            if (!EnsureVibrator()) return;
+            if (sdk < 29)
+            {
+                AndroidVibrate(fallbackMs, fallbackAmplitude);
+                return;
+            }
+            try
+            {
+                using (var effectClass = new AndroidJavaClass("android.os.VibrationEffect"))
+                using (var e = effectClass.CallStatic<AndroidJavaObject>("createPredefined", effect))
+                    vibrator.Call("vibrate", e);
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogWarning("[Haptics] " + ex.Message);
+            }
+        }
+
+        static bool EnsureVibrator()
         {
             try
             {
@@ -79,7 +133,19 @@ namespace DribbleToSchool.Audio
                     using (var version = new AndroidJavaClass("android.os.Build$VERSION"))
                         sdk = version.GetStatic<int>("SDK_INT");
                 }
-                if (vibrator == null) return;
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogWarning("[Haptics] " + e.Message);
+            }
+            return vibrator != null;
+        }
+
+        static void AndroidVibrate(int ms, int amplitude)
+        {
+            if (!EnsureVibrator()) return;
+            try
+            {
                 if (sdk >= 26)
                 {
                     using (var effectClass = new AndroidJavaClass("android.os.VibrationEffect"))

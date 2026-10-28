@@ -8,9 +8,9 @@ namespace DribbleToSchool.Hazards
     /// change. Red man: the side street's traffic goes, and cars drive toward the camera
     /// across the crossing; the kid or the ball on the road loses the ball.
     ///
-    /// While the man is green, cars queue at the stop line up the side street. Cars are
-    /// drawn front-on and drive along the side street in real depth (z): far up the street,
-    /// through the crossing at z = 0, and past the camera.
+    /// While the man is green, cars queue at the stop line up the side street. The 3D cars
+    /// drive along the side street in real depth (z): far up the street, through the
+    /// crossing at z = 0, and past the camera.
     /// </summary>
     [RequireComponent(typeof(BoxCollider2D))]
     public class Crossing : HazardBase
@@ -30,12 +30,10 @@ namespace DribbleToSchool.Hazards
         public Color figureOff = new Color(0.22f, 0.22f, 0.24f);
 
         [Header("Traffic")]
-        [Tooltip("Front-view cars, lead car first.")]
-        public SpriteRenderer[] cars;
+        [Tooltip("Cars facing the camera (wheels at their origin), lead car first.")]
+        public Transform[] cars;
         [Tooltip("World y of the crossing's road surface.")]
         public float groundY;
-        [Tooltip("Half the car sprite's height, so the wheels sit on the road.")]
-        public float carHalfHeight = 0.82f;
         [Tooltip("Where the lead car waits, up the side street (world z).")]
         public float stopLineZ = 7f;
         public float queueGap = 6f;
@@ -43,9 +41,6 @@ namespace DribbleToSchool.Hazards
         public float farZ = 60f;
         [Tooltip("Where cars leave, past the camera.")]
         public float exitZ = -24f;
-        [Tooltip("Sorting order for cars up the street (behind the kid) and in front of the crossing.")]
-        public int behindOrder = -35;
-        public int frontOrder = 40;
 
         public Light Current { get; private set; }
         public float CycleLength { get { return greenTime + amberTime + redTime; } }
@@ -120,13 +115,9 @@ namespace DribbleToSchool.Hazards
             }
         }
 
-        void PlaceCar(SpriteRenderer car, float z)
+        void PlaceCar(Transform car, float z)
         {
-            car.transform.localScale = Vector3.one;
-            car.transform.position = new Vector3(transform.position.x, groundY + carHalfHeight, z);
-            // Behind the kid while up the street, in front once past the crossing.
-            car.sortingOrder = z > 0f ? behindOrder : frontOrder;
-            car.enabled = true;
+            car.position = new Vector3(transform.position.x, groundY, z);
         }
 
         static float Smooth(float u) { return u * u * (3f - 2f * u); }

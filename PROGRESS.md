@@ -140,6 +140,13 @@ This file is the resume point. A new session should read it first. All eight pha
   - `Art/SurfaceArt.cs`: tileable asphalt, paving, kerb, cobbles, sand, gravel, grass, concrete, block wall, roof tiles, sea and hoarding textures, plus facades for houses, shops, apartments, the school and warehouses.
   - `Editor/StreetBuilder.cs`: per-chapter strips and scenery. Crossings are real side streets with zebra stripes; cars drive along them in depth. Holes, the tide, the tunnel, fountains and the goal are 3D.
   - Remaining 2D cut-outs: characters, the ball, trees, clouds, and small decor (switch posts, swings, pipes, springboards).
+- 3D characters and props (generated content v18):
+  - Kid and pedestrians are one skinned mesh each (`World/SkinBuilder`, `Presentation/CharacterBody3D`): tubes blended across the knee and elbow, ellipsoid head, eyes, hair shell with fringe and shine. Outfit changes rebuild the mesh. `CharacterRig` keeps its base scale (adults were being reset to kid size) and squashes in depth too.
+  - Facing turns through the camera (`CharacterRig.FacingYaw`) for the kid, pedestrians, dog and gull.
+  - 3D ball (skin texture projected on the front), coins, parked and crossing cars (`World/Car3D`), pipes, switch lamp, sign boards, posts and frames (`Decor` is now a 3D box), swing A-frame, springboard, targets, slalom gates, dog and seagull (`World/BlobShape`). `World/Tint` recolours sprites or 3D parts.
+  - Ground shadows for the kid and ball (`Presentation/GroundShadow`).
+  - The 2D paper-doll parts and the unused car, dog and seagull sprites are gone.
+- Controls and type: `UI/Kit/TouchButton` key-cap buttons with press travel, ripple and glow; haptic click on press and soft tap on release (`Haptics.Press/Release`, rigid/soft styles on iOS, predefined effects on Android). Menu buttons push down onto a base. Fonts: Lilita One (display) and Varela Round (body).
 
 ## After Phase 8 (next steps)
 

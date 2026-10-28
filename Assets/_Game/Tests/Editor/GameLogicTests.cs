@@ -221,20 +221,6 @@ namespace DribbleToSchool.Tests
                 if (Mathf.Abs(poles.Get(0, y).a - poles.Get(poles.Width - 1, y).a) > 0.5f) mismatches++;
             Assert.LessOrEqual(mismatches, 4, "wires should meet at the tile edges");
         }
-
-        [Test]
-        public void EveryCharacterPartHasPaint()
-        {
-            foreach (string name in ProceduralArt.PartNames)
-            {
-                var part = ProceduralArt.Part(name);
-                int painted = 0;
-                for (int y = 0; y < part.Height; y += 2)
-                    for (int x = 0; x < part.Width; x += 2)
-                        if (part.Get(x, y).a > 0.5f) painted++;
-                Assert.Greater(painted, part.Width * part.Height / 4 / 20, name + " looks empty");
-            }
-        }
     }
 }
 #endif

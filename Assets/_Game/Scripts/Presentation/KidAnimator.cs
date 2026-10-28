@@ -27,7 +27,7 @@ namespace DribbleToSchool.Presentation
         float jumpTime = -10f;
         float stumbleTime = -10f;
         bool celebrating;
-        float facingScale = 1f;
+        float facing = 1f;
         float bagAngle, bagVelocity;
 
         void Awake()
@@ -225,15 +225,10 @@ namespace DribbleToSchool.Presentation
 
             rig.Pose(p);
 
-            // Turn around with a quick paper-flip rather than snapping.
-            facingScale = Mathf.MoveTowards(facingScale, kid.Facing, Time.deltaTime * 12f);
+            // Turn around in 3D: a quick spin through facing the camera.
+            facing = Mathf.MoveTowards(facing, kid.Facing, Time.deltaTime * 7f);
             Transform visual = transform.parent;
-            if (visual != null)
-            {
-                float flip = Mathf.Abs(facingScale) < 0.15f ? Mathf.Sign(facingScale) * 0.15f : facingScale;
-                Vector3 scale = visual.localScale;
-                visual.localScale = new Vector3(flip, scale.y, scale.z);
-            }
+            if (visual != null) visual.localRotation = Quaternion.Euler(0f, CharacterRig.FacingYaw(facing), 0f);
         }
     }
 }

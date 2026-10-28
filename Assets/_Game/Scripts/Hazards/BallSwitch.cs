@@ -12,7 +12,7 @@ namespace DribbleToSchool.Hazards
         public Gate[] gates;
         [Tooltip("Minimum impact speed. Low values let a dribble press it.")]
         public float minImpactSpeed = 3f;
-        public SpriteRenderer indicator;
+        public Renderer indicator;
         public Color offColor = new Color(0.9f, 0.3f, 0.3f);
         public Color onColor = new Color(0.3f, 0.9f, 0.4f);
 
@@ -52,7 +52,7 @@ namespace DribbleToSchool.Hazards
 
         void ApplyVisual()
         {
-            if (indicator != null) indicator.color = IsPressed ? onColor : offColor;
+            World.Tint.Set(indicator, IsPressed ? onColor : offColor);
         }
     }
 }

@@ -5,7 +5,7 @@ namespace DribbleToSchool.UI.Kit
     /// <summary>UI sprites drawn in code: rounded panels, circles, stars, coins, a padlock.</summary>
     public static class ProceduralSprites
     {
-        static Sprite rounded, roundedSmall, circle, star, coin, lockIcon, gradient, arrow, pause;
+        static Sprite rounded, roundedSmall, circle, star, coin, lockIcon, gradient, arrow, pause, ring, gloss, softDisc, ballIcon;
 
         /// <summary>Upward chevron (jump button).</summary>
         public static Sprite ArrowUp
@@ -104,6 +104,95 @@ namespace DribbleToSchool.UI.Kit
                 tex.Apply();
                 coin = Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 100f);
                 return coin;
+            }
+        }
+
+        /// <summary>Thin circle outline (ripples, rims).</summary>
+        public static Sprite Ring
+        {
+            get
+            {
+                return ring != null ? ring : (ring = MakeShape(160, (u, v) =>
+                {
+                    float r = Mathf.Sqrt(u * u + v * v);
+                    return Mathf.Clamp01((0.06f - Mathf.Abs(r - 0.92f)) * 80f);
+                }));
+            }
+        }
+
+        /// <summary>The shine on a glossy button: a soft-edged cap over the top half, fading downward.</summary>
+        public static Sprite Gloss
+        {
+            get
+            {
+                return gloss != null ? gloss : (gloss = MakeShape(128, (u, v) =>
+                {
+                    float inside = Mathf.Clamp01((1f - Mathf.Sqrt(u * u * 1.15f + (v - 0.38f) * (v - 0.38f) * 2.6f)) * 6f);
+                    return inside * Mathf.Clamp01((v + 0.1f) * 1.4f);
+                }));
+            }
+        }
+
+        /// <summary>Blurry disc for drop shadows and glows.</summary>
+        public static Sprite SoftDisc
+        {
+            get
+            {
+                return softDisc != null ? softDisc : (softDisc = MakeShape(96, (u, v) =>
+                {
+                    float r = Mathf.Sqrt(u * u + v * v);
+                    float k = Mathf.Clamp01((1f - r) / 0.45f);
+                    return k * k * (3f - 2f * k);
+                }));
+            }
+        }
+
+        /// <summary>Full-colour football icon: white with dark patches and an ink rim (kick button).</summary>
+        public static Sprite BallIcon
+        {
+            get
+            {
+                if (ballIcon != null) return ballIcon;
+                const int size = 128;
+                var tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
+                Color ink = new Color(0.12f, 0.12f, 0.16f);
+                var centres = new Vector2[6];
+                centres[0] = new Vector2(0.08f, 0.06f);
+                for (int i = 0; i < 5; i++)
+                {
+                    float a = i * Mathf.PI * 0.4f + 0.5f;
+                    centres[i + 1] = centres[0] + new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * 0.78f;
+                }
+                for (int y = 0; y < size; y++)
+                {
+                    for (int x = 0; x < size; x++)
+                    {
+                        float u = (x + 0.5f) / size * 2f - 1f, v = (y + 0.5f) / size * 2f - 1f;
+                        float r = Mathf.Sqrt(u * u + v * v);
+                        Color c = Color.white;
+                        for (int i = 0; i < centres.Length; i++)
+                        {
+                            Vector2 d = new Vector2(u, v) - centres[i];
+                            // Pentagonal patches, squashed toward the rim like on a sphere.
+                            float ang = Mathf.Atan2(d.y, d.x);
+                            float seg = Mathf.PI * 0.4f;
+                            float edge = Mathf.Cos(seg * 0.5f) / Mathf.Cos(Mathf.Repeat(ang + 0.3f, seg) - seg * 0.5f);
+                            float patch = (i == 0 ? 0.3f : 0.24f) * edge;
+                            if (d.magnitude < patch) c = ink;
+                        }
+                        // Cel shading: a shadow crescent at the lower right, a highlight top left.
+                        float shade = Vector2.Dot(new Vector2(u, v), new Vector2(0.6f, -0.8f));
+                        if (shade > 0.45f && c != ink) c = new Color(0.82f, 0.86f, 0.95f);
+                        if (Vector2.Distance(new Vector2(u, v), new Vector2(-0.38f, 0.42f)) < 0.14f && c != ink) c = Color.white;
+                        c = Color.Lerp(c, ink, Mathf.Clamp01((r - 0.86f) / 0.05f));
+                        c.a = Mathf.Clamp01((1f - r) * size * 0.5f);
+                        tex.SetPixel(x, y, c);
+                    }
+                }
+                tex.wrapMode = TextureWrapMode.Clamp;
+                tex.Apply();
+                ballIcon = Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 100f);
+                return ballIcon;
             }
         }
 

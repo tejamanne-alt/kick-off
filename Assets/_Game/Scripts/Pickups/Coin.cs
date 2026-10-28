@@ -53,12 +53,14 @@ namespace DribbleToSchool.Pickups
                 // Quick pop up and shrink away.
                 float t = Mathf.Clamp01((Time.time - collectedAt) / 0.3f);
                 visual.localPosition = basePosition + Vector3.up * t * 0.6f;
-                visual.localScale = Vector3.one * 0.45f * (1f - t);
+                visual.localScale = Vector3.one * (1f - t);
+                visual.localRotation = Quaternion.Euler(0f, Time.time * 900f + phase * 57f, 0f);
                 if (t >= 1f) visual.gameObject.SetActive(false);
                 return;
             }
-            float spin = Mathf.Cos(Time.time * 4f + phase);
-            visual.localScale = new Vector3(0.45f * Mathf.Max(0.15f, Mathf.Abs(spin)), 0.45f, 1f);
+            // A real 3D spin about the vertical axis.
+            visual.localRotation = Quaternion.Euler(0f, (Time.time * 4f + phase) * Mathf.Rad2Deg, 0f);
+            visual.localScale = Vector3.one;
             visual.localPosition = basePosition + Vector3.up * Mathf.Sin(Time.time * 2f + phase) * 0.06f;
         }
 

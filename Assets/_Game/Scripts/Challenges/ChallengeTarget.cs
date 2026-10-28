@@ -8,7 +8,7 @@ namespace DribbleToSchool.Challenges
     [RequireComponent(typeof(Collider2D))]
     public class ChallengeTarget : MonoBehaviour, IResettable
     {
-        public SpriteRenderer face;
+        public Renderer face;
         public Color idleColor = new Color(1f, 0.85f, 0.3f);
         public Color hitColor = new Color(0.4f, 0.9f, 0.5f);
 
@@ -44,7 +44,7 @@ namespace DribbleToSchool.Challenges
 
         void ApplyLook()
         {
-            if (face != null) face.color = IsHit ? hitColor : idleColor;
+            World.Tint.Set(face, IsHit ? hitColor : idleColor);
         }
 
         public void ResetState()

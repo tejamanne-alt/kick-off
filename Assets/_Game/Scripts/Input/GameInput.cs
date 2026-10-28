@@ -75,6 +75,8 @@ namespace DribbleToSchool.InputHandling
         public bool TouchPressed { get; private set; }
         /// <summary>True while a finger drags from the kick button.</summary>
         public bool KickAiming { get; private set; }
+        /// <summary>True while a finger is down on the kick button (tap or drag).</summary>
+        public bool KickHeld { get; private set; }
         /// <summary>The aimed kick was let go this frame (see KickDrag).</summary>
         public bool KickReleased { get; private set; }
         /// <summary>The kick button was tapped without dragging: a quick pass.</summary>
@@ -145,7 +147,7 @@ namespace DribbleToSchool.InputHandling
         void Update()
         {
             MoveAxis = 0f;
-            LeftHeld = RightHeld = JumpPressed = JumpHeld = TouchPressed = false;
+            LeftHeld = RightHeld = JumpPressed = JumpHeld = KickHeld = TouchPressed = false;
             KickAiming = KickReleased = KickTapped = ResetPressed = PausePressed = DebugTogglePressed = false;
 
             samples.Clear();
@@ -205,6 +207,7 @@ namespace DribbleToSchool.InputHandling
                     case Role.MoveRight: RightHeld = true; break;
                     case Role.Jump: JumpHeld = true; break;
                     case Role.Kick:
+                        KickHeld = true;
                         // Only a real drag aims (and slows time); a tap is a quick pass on release.
                         if (IsDrag(p))
                         {

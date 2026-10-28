@@ -26,12 +26,15 @@ namespace DribbleToSchool.UI
         public DevTuningPanel tuning;
 
         static readonly Color Late = new Color(0.95f, 0.4f, 0.35f);
+        static readonly Color WalkColor = new Color(0.2f, 0.27f, 0.45f);
+        static readonly Color KickReady = new Color(0.3f, 0.82f, 0.42f);
 
         RectTransform root;
         Text titleText, timeText, bellText, coinText, streakText, statusText;
         Image fade;
         RectTransform jumpRect, kickRect, leftRect, rightRect, aimKnob, aimBar, aimFill, hintCard;
-        Image jumpImage, kickImage, leftImage, rightImage, aimFillImage;
+        TouchButton jumpButton, kickButton, leftButton, rightButton;
+        Image aimFillImage;
         float tooFarUntil;
         Text tooFar, toast, bigText, hintText;
         RectTransform pauseRect, tuneRect;
@@ -102,32 +105,30 @@ namespace DribbleToSchool.UI
                 UIKit.Place(tuneRect, new Vector2(1f, 1f), new Vector2(-190f, -60f), new Vector2(130f, 80f), new Vector2(1f, 1f));
             }
 
-            // Touch control visuals
-            jumpImage = UIKit.Icon(root, "JumpButton", ProceduralSprites.Circle, new Color(1f, 1f, 1f, 0.3f), 10f);
-            jumpRect = jumpImage.rectTransform;
-            var arrow = UIKit.Icon(jumpRect, "Arrow", ProceduralSprites.ArrowUp, new Color(1f, 1f, 1f, 0.85f), 120f);
-            UIKit.Place(arrow.rectTransform, new Vector2(0.5f, 0.58f), Vector2.zero, new Vector2(120f, 120f));
-            var jumpLabel = UIKit.Label(jumpRect, "Label", Loc.T("hud.jump"), 34, new Color(1f, 1f, 1f, 0.9f), TextAnchor.MiddleCenter, true);
-            UIKit.Place(jumpLabel.rectTransform, new Vector2(0.5f, 0.25f), Vector2.zero, new Vector2(260f, 50f));
-            jumpLabel.gameObject.AddComponent<Shadow>().effectColor = new Color(0f, 0f, 0f, 0.4f);
+            // Touch controls: glossy key caps that push in when held (see TouchButton).
+            jumpButton = TouchButton.Create(root, "JumpButton", UITheme.Blue, 0.82f, true);
+            jumpButton.AddIcon(ProceduralSprites.ArrowUp, Color.white, 0.42f, 0f, 0.6f);
+            jumpButton.AddLabel(Loc.T("hud.jump"), 34);
+            jumpRect = (RectTransform)jumpButton.transform;
 
-            // Walk buttons: the arrow sprite turned to point back / forward.
-            leftImage = ArrowButton("LeftButton", 90f, out leftRect);
-            rightImage = ArrowButton("RightButton", -90f, out rightRect);
+            // Walk buttons: the chevron turned to point back / forward, on quieter glass caps.
+            leftButton = TouchButton.Create(root, "LeftButton", WalkColor, 0.5f, false);
+            leftButton.AddIcon(ProceduralSprites.ArrowUp, Color.white, 0.46f, 90f);
+            leftRect = (RectTransform)leftButton.transform;
+            rightButton = TouchButton.Create(root, "RightButton", WalkColor, 0.5f, false);
+            rightButton.AddIcon(ProceduralSprites.ArrowUp, Color.white, 0.46f, -90f);
+            rightRect = (RectTransform)rightButton.transform;
 
             // Kick button: a ball icon, and a knob that follows the aiming drag.
-            kickImage = UIKit.Icon(root, "KickButton", ProceduralSprites.Circle, new Color(1f, 1f, 1f, 0.3f), 10f);
-            kickRect = kickImage.rectTransform;
-            var kickBall = UIKit.Icon(kickRect, "Ball", ProceduralSprites.Circle, new Color(1f, 1f, 1f, 0.92f), 96f);
-            UIKit.Place(kickBall.rectTransform, new Vector2(0.5f, 0.6f), Vector2.zero, new Vector2(96f, 96f));
-            var patchA = UIKit.Icon(kickBall.rectTransform, "Patch", ProceduralSprites.Circle, new Color(0.15f, 0.15f, 0.15f, 0.85f), 40f);
-            UIKit.Place(patchA.rectTransform, new Vector2(0.62f, 0.6f), Vector2.zero, new Vector2(40f, 40f));
-            var patchB = UIKit.Icon(kickBall.rectTransform, "Patch2", ProceduralSprites.Circle, new Color(0.15f, 0.15f, 0.15f, 0.85f), 28f);
-            UIKit.Place(patchB.rectTransform, new Vector2(0.3f, 0.3f), Vector2.zero, new Vector2(28f, 28f));
-            var kickLabel = UIKit.Label(kickRect, "Label", Loc.T("hud.kick"), 34, new Color(1f, 1f, 1f, 0.9f), TextAnchor.MiddleCenter, true);
-            UIKit.Place(kickLabel.rectTransform, new Vector2(0.5f, 0.22f), Vector2.zero, new Vector2(260f, 50f));
-            kickLabel.gameObject.AddComponent<Shadow>().effectColor = new Color(0f, 0f, 0f, 0.4f);
-            aimKnob = UIKit.Icon(kickRect, "AimKnob", ProceduralSprites.Circle, new Color(1f, 1f, 1f, 0.85f), 70f).rectTransform;
+            kickButton = TouchButton.Create(root, "KickButton", UITheme.Accent, 0.82f, true);
+            kickButton.AddIcon(ProceduralSprites.BallIcon, Color.white, 0.44f, 0f, 0.6f);
+            kickButton.AddLabel(Loc.T("hud.kick"), 34);
+            kickRect = (RectTransform)kickButton.transform;
+            aimKnob = UIKit.Icon(kickButton.Content, "AimKnob", ProceduralSprites.Circle, new Color(1f, 1f, 1f, 0.9f), 70f).rectTransform;
+            UIKit.Icon(aimKnob, "Gloss", ProceduralSprites.Gloss, new Color(1f, 1f, 1f, 0.6f), 60f);
+            var knobRim = aimKnob.gameObject.AddComponent<Outline>();
+            knobRim.effectColor = new Color(0f, 0f, 0f, 0.25f);
+            knobRim.effectDistance = new Vector2(2f, -2f);
             aimKnob.gameObject.AddComponent<Shadow>().effectColor = new Color(0f, 0f, 0f, 0.35f);
 
             // Aim meter
@@ -173,31 +174,18 @@ namespace DribbleToSchool.UI
             return t;
         }
 
-        Image ArrowButton(string name, float angle, out RectTransform rect)
-        {
-            var image = UIKit.Icon(root, name, ProceduralSprites.Circle, new Color(1f, 1f, 1f, 0.3f), 10f);
-            rect = image.rectTransform;
-            var arrow = UIKit.Icon(rect, "Arrow", ProceduralSprites.ArrowUp, new Color(1f, 1f, 1f, 0.85f), 110f);
-            UIKit.Place(arrow.rectTransform, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(110f, 110f));
-            arrow.rectTransform.localRotation = Quaternion.Euler(0f, 0f, angle);
-            var shadow = arrow.gameObject.AddComponent<Shadow>();
-            shadow.effectColor = new Color(0f, 0f, 0f, 0.35f);
-            return image;
-        }
-
-        static void PlaceButton(RectTransform rect, Image image, Rect normalized)
+        static void PlaceButton(RectTransform rect, Rect normalized)
         {
             rect.anchorMin = new Vector2(normalized.x, normalized.y);
             rect.anchorMax = new Vector2(normalized.xMax, normalized.yMax);
             rect.offsetMin = rect.offsetMax = Vector2.zero;
-            image.preserveAspect = true;
         }
 
         static void MakeRound(Button button)
         {
             foreach (var img in button.GetComponentsInChildren<Image>())
             {
-                if (img.name == "Face" || img.name == "Shadow") { img.sprite = ProceduralSprites.Circle; img.type = Image.Type.Simple; }
+                if (img.name == "Face" || img.name == "Shadow" || img.name == "Base") { img.sprite = ProceduralSprites.Circle; img.type = Image.Type.Simple; }
                 if (img.name == "Shine") img.gameObject.SetActive(false);
             }
         }
@@ -336,18 +324,17 @@ namespace DribbleToSchool.UI
             bool aiming = aimer != null && aimer.IsAiming;
             if (show)
             {
-                PlaceButton(jumpRect, jumpImage, input.JumpButtonNormalized);
-                jumpImage.color = new Color(1f, 1f, 1f, input.JumpHeld ? 0.55f : 0.28f);
-                PlaceButton(leftRect, leftImage, input.LeftButtonNormalized);
-                leftImage.color = new Color(1f, 1f, 1f, input.LeftHeld ? 0.55f : 0.28f);
-                PlaceButton(rightRect, rightImage, input.RightButtonNormalized);
-                rightImage.color = new Color(1f, 1f, 1f, input.RightHeld ? 0.55f : 0.28f);
+                PlaceButton(jumpRect, input.JumpButtonNormalized);
+                jumpButton.SetState(input.JumpHeld, false);
+                PlaceButton(leftRect, input.LeftButtonNormalized);
+                leftButton.SetState(input.LeftHeld, false);
+                PlaceButton(rightRect, input.RightButtonNormalized);
+                rightButton.SetState(input.RightHeld, false);
 
-                // The kick button glows green while the ball is close enough to kick.
-                PlaceButton(kickRect, kickImage, input.KickButtonNormalized);
-                Color kickTint = ball.InKickReach ? new Color(0.55f, 1f, 0.6f) : Color.white;
-                kickTint.a = aiming ? 0.55f : ball.InKickReach ? 0.42f : 0.22f;
-                kickImage.color = kickTint;
+                // The kick button turns green and glows while the ball is close enough to kick.
+                PlaceButton(kickRect, input.KickButtonNormalized);
+                kickButton.SetColor(ball.InKickReach ? KickReady : UITheme.Accent);
+                kickButton.SetState(aiming || input.KickHeld, ball.InKickReach && !aiming);
 
                 if (input.KickTapped && !ball.InKickReach) tooFarUntil = Time.unscaledTime + 1.2f;
                 aimKnob.gameObject.SetActive(aiming);

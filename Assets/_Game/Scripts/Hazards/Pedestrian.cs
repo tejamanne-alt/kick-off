@@ -25,8 +25,8 @@ namespace DribbleToSchool.Hazards
         int direction = 1;
         float pauseUntil;
         float hopTime = -10f;
-        Vector3 visualBaseScale = Vector3.one;
         Vector3 visualBasePosition;
+        float facing = 1f;
 
         public bool IsWalking { get { return Time.time >= pauseUntil; } }
         public int Direction { get { return direction; } }
@@ -37,11 +37,7 @@ namespace DribbleToSchool.Hazards
             body.bodyType = RigidbodyType2D.Kinematic;
             body.interpolation = RigidbodyInterpolation2D.Interpolate;
             startPosition = body.position;
-            if (visual != null)
-            {
-                visualBaseScale = visual.localScale;
-                visualBasePosition = visual.localPosition;
-            }
+            if (visual != null) visualBasePosition = visual.localPosition;
         }
 
         void Start()
@@ -71,12 +67,12 @@ namespace DribbleToSchool.Hazards
         void Update()
         {
             if (visual == null) return;
-            // Face the walking direction and bob while walking; hop when bumped.
-            Vector3 scale = visualBaseScale;
-            scale.x = Mathf.Abs(scale.x) * direction;
+            // Face the walking direction (turning through facing the camera) and bob while
+            // walking; hop when bumped.
+            facing = Mathf.MoveTowards(facing, direction, Time.deltaTime * 4f);
+            visual.localRotation = Quaternion.Euler(0f, Presentation.CharacterRig.FacingYaw(facing), 0f);
             float bob = IsWalking ? Mathf.Abs(Mathf.Sin(Time.time * walkSpeed * 6f)) * 0.04f : 0f;
             float hop = Mathf.Max(0f, Mathf.Sin(Mathf.Clamp01((Time.time - hopTime) / 0.35f) * Mathf.PI)) * 0.3f;
-            visual.localScale = scale;
             visual.localPosition = visualBasePosition + Vector3.up * (bob + hop);
         }
 
@@ -95,6 +91,7 @@ namespace DribbleToSchool.Hazards
             body.position = startPosition;
             transform.position = startPosition;
             direction = 1;
+            facing = 1f;
             pauseUntil = 0f;
         }
     }

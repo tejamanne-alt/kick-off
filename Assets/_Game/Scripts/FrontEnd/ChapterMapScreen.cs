@@ -154,7 +154,7 @@ namespace DribbleToSchool.FrontEnd
             // Round buttons: swap the rounded-rect faces for circles.
             foreach (var img in button.GetComponentsInChildren<Image>())
             {
-                if (img.name == "Face" || img.name == "Shadow") { img.sprite = ProceduralSprites.Circle; img.type = Image.Type.Simple; }
+                if (img.name == "Face" || img.name == "Shadow" || img.name == "Base") { img.sprite = ProceduralSprites.Circle; img.type = Image.Type.Simple; }
                 if (img.name == "Shine") img.gameObject.SetActive(false);
             }
 

@@ -17,8 +17,8 @@ namespace DribbleToSchool.EditorTools
 
         public class ArtSet
         {
-            public Sprite block, crate, groundFill, sun, puff, spark, drop, shadow, dog, seagull, car;
-            public Sprite carFront, walkFigure, standFigure, waterJet, sideStreet, tideWater;
+            public Sprite crate, groundFill, sun, puff, spark, drop, shadow;
+            public Sprite walkFigure, standFigure, waterJet, sideStreet, tideWater;
             public Sprite[] clouds = new Sprite[3];
             public Sprite[] edge = new Sprite[6];
             public Sprite[] sky = new Sprite[6];
@@ -27,7 +27,6 @@ namespace DribbleToSchool.EditorTools
             /// <summary>Utility-pole strip per chapter (null where the chapter has none).</summary>
             public Sprite[] poles = new Sprite[6];
             public Sprite[,] mid = new Sprite[6, 3];
-            public readonly Dictionary<string, Sprite> parts = new Dictionary<string, Sprite>();
 
             // 3D street
             public Sprite pine, bush, headland;
@@ -38,6 +37,11 @@ namespace DribbleToSchool.EditorTools
             public Material crateMaterial;
             /// <summary>Sprite material with distance haze, for cut-outs placed in depth.</summary>
             public Material hazeSprite;
+            /// <summary>Cel-shaded, ink-outlined material for characters (vertex colours).</summary>
+            public Material character;
+            /// <summary>Like <see cref="character"/>, textured with the equipped ball skin at runtime.</summary>
+            public Material ball;
+
             public Material wire;
         }
 
@@ -47,7 +51,6 @@ namespace DribbleToSchool.EditorTools
             var set = new ArtSet();
             var pending = new List<KeyValuePair<string, ImportSpec>>();
 
-            Queue(pending, "Block", ProceduralArt.Block(), new ImportSpec(128, 12));
             Queue(pending, "Crate", ProceduralArt.Crate(), new ImportSpec(128, 14));
             Queue(pending, "GroundFill", ProceduralArt.GroundFill(), new ImportSpec(128, 0));
             Queue(pending, "Sun", ProceduralArt.Sun(new Color(1f, 0.93f, 0.65f)), new ImportSpec(64, 0));
@@ -57,16 +60,11 @@ namespace DribbleToSchool.EditorTools
             Queue(pending, "Spark", ProceduralArt.Spark(), new ImportSpec(64, 0));
             Queue(pending, "Drop", ProceduralArt.Drop(), new ImportSpec(64, 0));
             Queue(pending, "Shadow", ProceduralArt.Shadow(), new ImportSpec(64, 0));
-            Queue(pending, "Dog", ProceduralArt.Dog(), new ImportSpec(192, 0));
-            Queue(pending, "Seagull", ProceduralArt.Seagull(), new ImportSpec(160, 0));
-            Queue(pending, "Car", ProceduralArt.Car(), new ImportSpec(115, 0));
-            Queue(pending, "CarFront", ProceduralArt.CarFront(), new ImportSpec(115, 0));
             Queue(pending, "SignalWalk", ProceduralArt.SignalFigure(true), new ImportSpec(160, 0));
             Queue(pending, "SignalStand", ProceduralArt.SignalFigure(false), new ImportSpec(160, 0));
             Queue(pending, "WaterJet", ProceduralArt.WaterJet(), new ImportSpec(64, 0));
             Queue(pending, "SideStreet", ProceduralArt.SideStreet(), new ImportSpec(64, 0));
             Queue(pending, "TideWater", ProceduralArt.TideWater(), new ImportSpec(64, 0));
-            foreach (string part in PartNames) Queue(pending, "Part_" + part, ProceduralArt.Part(part), new ImportSpec(ProceduralArt.PartPpu(part), 0));
             Queue(pending, "Pine", ProceduralArt.Pine(), new ImportSpec(80, 0));
             Queue(pending, "Bush", ProceduralArt.Bush(), new ImportSpec(110, 0));
             Queue(pending, "Headland", ProceduralArt.Headland(), new ImportSpec(64, 0));
@@ -99,7 +97,6 @@ namespace DribbleToSchool.EditorTools
             }
             foreach (var kv in pending) ApplySettings(kv.Key, kv.Value);
 
-            set.block = Load("Block");
             set.crate = Load("Crate");
             set.groundFill = Load("GroundFill");
             set.sun = Load("Sun");
@@ -108,17 +105,12 @@ namespace DribbleToSchool.EditorTools
             set.spark = Load("Spark");
             set.drop = Load("Drop");
             set.shadow = Load("Shadow");
-            set.dog = Load("Dog");
-            set.seagull = Load("Seagull");
-            set.car = Load("Car");
-            set.carFront = Load("CarFront");
             set.walkFigure = Load("SignalWalk");
             set.standFigure = Load("SignalStand");
             set.waterJet = Load("WaterJet");
             set.sideStreet = Load("SideStreet");
             set.tideWater = Load("TideWater");
             var poles = Load("Poles");
-            foreach (string part in PartNames) set.parts[part] = Load("Part_" + part);
             set.pine = Load("Pine");
             set.bush = Load("Bush");
             set.headland = Load("Headland");
@@ -135,7 +127,6 @@ namespace DribbleToSchool.EditorTools
             return set;
         }
 
-        static readonly string[] PartNames = ProceduralArt.PartNames;
 
         /// <summary>Streets with overhead power lines: the suburb, the market and the city.</summary>
         static bool HasPoles(SceneryStyle style)
@@ -171,6 +162,12 @@ namespace DribbleToSchool.EditorTools
                 set.facades[kind] = ToonMaterial("Facade_" + kind, toon, LoadTexture("Facade_" + kind), false);
             set.solid = ToonMaterial("Solid", toon, null, false);
             set.crateMaterial = ToonMaterial("Crate", toon, LoadTexture("CrateFace"), false);
+
+            var toonCharacter = Shader.Find("DribbleToSchool/ToonCharacter");
+            set.character = LoadOrCreateMaterial("Character", toonCharacter);
+            set.ball = LoadOrCreateMaterial("Ball", toonCharacter);
+            set.ball.SetFloat("_OutlineWidth", 0.0018f);
+            EditorUtility.SetDirty(set.ball);
 
             set.hazeSprite = LoadOrCreateMaterial("HazeSprite", Shader.Find("DribbleToSchool/SpriteHaze"));
             set.wire = LoadOrCreateMaterial("Wire", Shader.Find("Sprites/Default"));
@@ -236,7 +233,7 @@ namespace DribbleToSchool.EditorTools
             importer.textureType = TextureImporterType.Sprite;
             importer.spriteImportMode = SpriteImportMode.Single;
             importer.spritePixelsPerUnit = spec.ppu;
-            // Character parts are drawn at 4x their on-screen size; mipmaps keep them from shimmering.
+            // Very high-resolution sprites get mipmaps so they do not shimmer when drawn small.
             importer.mipmapEnabled = spec.ppu >= 256f;
             importer.alphaIsTransparency = true;
             importer.filterMode = FilterMode.Bilinear;

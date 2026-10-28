@@ -118,12 +118,14 @@ namespace DribbleToSchool.UI.Kit
         {
             var rt = Rect(parent, name);
             var t = rt.gameObject.AddComponent<Text>();
-            t.font = UITheme.Font;
+            // "Bold" text uses the display face rather than a faked bold of the body face.
+            t.font = bold ? UITheme.Display : UITheme.Font;
             t.text = text;
             t.fontSize = size;
             t.color = color;
             t.alignment = align;
-            t.fontStyle = bold ? FontStyle.Bold : FontStyle.Normal;
+            t.fontStyle = FontStyle.Normal;
+            t.lineSpacing = bold ? 0.95f : 1.05f;
             t.horizontalOverflow = HorizontalWrapMode.Wrap;
             t.verticalOverflow = VerticalWrapMode.Overflow;
             t.raycastTarget = false;
@@ -151,9 +153,16 @@ namespace DribbleToSchool.UI.Kit
 
             var shadow = Panel(root, "Shadow", UITheme.Shadow);
             Stretch(shadow.rectTransform);
-            shadow.rectTransform.offsetMin += new Vector2(0f, -8f);
-            shadow.rectTransform.offsetMax += new Vector2(0f, -8f);
+            shadow.rectTransform.offsetMin += new Vector2(0f, -15f);
+            shadow.rectTransform.offsetMax += new Vector2(0f, -15f);
             shadow.raycastTarget = false;
+
+            // A darker base under the face: the button stands like a key and pushes down onto it.
+            var keyBase = Panel(root, "Base", UIButtonFx.BaseColor(color));
+            Stretch(keyBase.rectTransform);
+            keyBase.rectTransform.offsetMin += new Vector2(0f, -UIButtonFx.Depth);
+            keyBase.rectTransform.offsetMax += new Vector2(0f, -UIButtonFx.Depth);
+            keyBase.raycastTarget = false;
 
             var face = Panel(root, "Face", color);
             Stretch(face.rectTransform);

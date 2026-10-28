@@ -30,15 +30,32 @@ namespace DribbleToSchool.UI.Kit
         public const int SizeTitle = 72;
         public const int SizeHero = 120;
 
-        static Font font;
+        static Font font, display;
 
+        /// <summary>Body text: Varela Round, a soft rounded sans (SIL OFL, Resources/Fonts).</summary>
         public static Font Font
         {
             get
             {
-                if (font == null) font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+                if (font == null) font = Load("Fonts/VarelaRound-Regular");
                 return font;
             }
+        }
+
+        /// <summary>Titles, buttons and numbers: Lilita One, a chunky rounded display face (SIL OFL).</summary>
+        public static Font Display
+        {
+            get
+            {
+                if (display == null) display = Load("Fonts/LilitaOne-Regular");
+                return display;
+            }
+        }
+
+        static Font Load(string path)
+        {
+            var f = Resources.Load<Font>(path);
+            return f != null ? f : Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
         }
 
         public static Color RarityColor(Cosmetics.Rarity rarity)

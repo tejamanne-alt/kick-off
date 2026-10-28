@@ -13,7 +13,7 @@ namespace DribbleToSchool.Core
         [Tooltip("The level start: active from the beginning, no flag or toast.")]
         public bool isStart;
         [Tooltip("Optional flag that changes colour when reached.")]
-        public SpriteRenderer flag;
+        public Renderer flag;
         public Color inactiveColor = new Color(0.75f, 0.75f, 0.75f);
         public Color activeColor = new Color(0.30f, 0.80f, 0.40f);
 
@@ -30,7 +30,7 @@ namespace DribbleToSchool.Core
         public void SetActive(bool active)
         {
             IsActive = active;
-            if (flag != null) flag.color = active ? activeColor : inactiveColor;
+            World.Tint.Set(flag, active ? activeColor : inactiveColor);
         }
     }
 }

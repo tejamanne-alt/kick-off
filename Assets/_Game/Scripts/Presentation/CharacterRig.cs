@@ -22,7 +22,10 @@ namespace DribbleToSchool.Presentation
         }
     }
 
-    /// <summary>Pivots of a paper-doll character (kid or pedestrian), animated by code.</summary>
+    /// <summary>
+    /// Joints of a character (kid or pedestrian), animated by code. Limbs swing in the
+    /// character's side plane (about local z); the 3D body (CharacterBody3D) is skinned to these.
+    /// </summary>
     public class CharacterRig : MonoBehaviour
     {
         [Tooltip("Root of all visuals; squashed and bobbed as a whole.")]
@@ -39,11 +42,12 @@ namespace DribbleToSchool.Presentation
         public Transform bag;
 
         Vector3 bodyBasePosition;
+        Vector3 bodyBaseScale = Vector3.one;
         Vector3 headBasePosition;
 
         void Awake()
         {
-            if (body != null) bodyBasePosition = body.localPosition;
+            if (body != null) { bodyBasePosition = body.localPosition; bodyBaseScale = body.localScale; }
             if (head != null) headBasePosition = head.localPosition;
         }
 
@@ -64,13 +68,25 @@ namespace DribbleToSchool.Presentation
                 body.localPosition = bodyBasePosition + Vector3.up * p.bob;
                 body.localRotation = Quaternion.Euler(0f, 0f, -p.lean);
                 Vector2 squash = p.squash == Vector2.zero ? Vector2.one : p.squash;
-                body.localScale = new Vector3(squash.x, squash.y, 1f);
+                // Squash keeps the volume: wider in both x and depth when shorter.
+                body.localScale = Vector3.Scale(bodyBaseScale, new Vector3(squash.x, squash.y, squash.x));
             }
             if (head != null)
             {
                 head.localRotation = Quaternion.Euler(0f, 0f, p.headTilt);
                 head.localPosition = headBasePosition;
             }
+        }
+
+        /// <summary>
+        /// Yaw for a character facing right (+1) or left (-1), or turning in between. Characters
+        /// stand a little turned toward the camera so the face reads, and turn through facing it.
+        /// </summary>
+        public static float FacingYaw(float facing)
+        {
+            const float towardCamera = 24f;
+            float t = Mathf.SmoothStep(0f, 1f, (1f - Mathf.Clamp(facing, -1f, 1f)) * 0.5f);
+            return Mathf.Lerp(towardCamera, 180f - towardCamera, t);
         }
 
         static void Rotate(Transform t, float angle)

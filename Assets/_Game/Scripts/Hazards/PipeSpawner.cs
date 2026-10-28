@@ -9,12 +9,41 @@ namespace DribbleToSchool.Hazards
     /// </summary>
     public class PipeSpawner : HazardBase
     {
+        /// <summary>
+        /// A concrete-grey pipe lying across the street (along z) with a dark hollow and a
+        /// yellow stripe, as a child of <paramref name="go"/>. Used for rolling and stacked pipes.
+        /// </summary>
+        public static void BuildPipe(GameObject go, float radius, Color color, Material material)
+        {
+            var visual = new GameObject("Visual");
+            visual.transform.SetParent(go.transform, false);
+            var pipe = visual.AddComponent<World.CylinderShape>();
+            pipe.radius = radius;
+            pipe.length = 1.5f;
+            pipe.sideColor = color;
+            pipe.endColor = Color.Lerp(color, Color.white, 0.15f);
+            pipe.innerRadius = radius * 0.72f;
+            pipe.innerColor = Color.Lerp(color, Color.black, 0.65f);
+            visual.GetComponent<MeshRenderer>().sharedMaterial = material;
+            pipe.Rebuild();
+
+            // A painted stripe shows the pipe rolling.
+            var stripe = new GameObject("Stripe");
+            stripe.transform.SetParent(visual.transform, false);
+            stripe.transform.localPosition = new Vector3(0f, radius * 0.98f, -0.4f);
+            var box = stripe.AddComponent<World.Box3D>();
+            box.size = new Vector3(0.12f, 0.04f, 0.5f);
+            box.color = new Color(1f, 0.8f, 0.3f);
+            stripe.GetComponent<MeshRenderer>().sharedMaterial = material;
+            box.Rebuild();
+        }
+
         public float interval = 4f;
         public float firstDelay = 1.5f;
         public float startSpeed = 3f;
         public float radius = 0.45f;
         public float lifeTime = 9f;
-        public Sprite sprite;
+        public Material material;
         public Color color = new Color(0.55f, 0.55f, 0.6f);
         [Tooltip("Pipes are removed when they roll left of this x.")]
         public float despawnX = -20f;
@@ -71,29 +100,7 @@ namespace DribbleToSchool.Hazards
             var col = go.AddComponent<CircleCollider2D>();
             col.radius = radius;
 
-            var visual = new GameObject("Visual");
-            visual.transform.SetParent(go.transform, false);
-            visual.transform.localScale = Vector3.one * radius * 2f;
-            var sr = visual.AddComponent<SpriteRenderer>();
-            sr.sprite = sprite;
-            sr.color = color;
-            sr.sortingOrder = 9;
-            var hole = new GameObject("Hole");
-            hole.transform.SetParent(visual.transform, false);
-            hole.transform.localScale = Vector3.one * 0.55f;
-            var hsr = hole.AddComponent<SpriteRenderer>();
-            hsr.sprite = sprite;
-            hsr.color = Color.Lerp(color, Color.black, 0.6f);
-            hsr.sortingOrder = 10;
-            var mark = new GameObject("Mark");
-            mark.transform.SetParent(visual.transform, false);
-            mark.transform.localPosition = new Vector3(0.36f, 0f, 0f);
-            mark.transform.localScale = Vector3.one * 0.12f;
-            var msr = mark.AddComponent<SpriteRenderer>();
-            msr.sprite = sprite;
-            msr.color = new Color(1f, 0.8f, 0.3f);
-            msr.sortingOrder = 11;
-
+            BuildPipe(go, radius, color, material);
             pipes.Add(go);
             spawnTimes.Add(Time.time);
         }

@@ -342,6 +342,8 @@ namespace DribbleToSchool.Art
             }
         }
 
+        /// <summary>Ink colour for outlines and clock hands.</summary>
+        static readonly Color Line = new Color(0.16f, 0.12f, 0.15f);
         static readonly Color Leaf = new Color(0.55f, 0.78f, 0.38f), LeafDark = new Color(0.22f, 0.45f, 0.3f);
         static readonly Color Bark = new Color(0.45f, 0.33f, 0.26f);
 

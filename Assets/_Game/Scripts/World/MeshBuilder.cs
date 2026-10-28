@@ -61,6 +61,110 @@ namespace DribbleToSchool.World
             else { tris.Add(i); tris.Add(i + 2); tris.Add(i + 1); }
         }
 
+        /// <summary>A single vertex with its own normal (for smooth, rounded shapes).</summary>
+        public int Vertex(Vector3 p, Vector3 n, Color color, Vector2 uv)
+        {
+            Vertices.Add(p);
+            Normals.Add(n.sqrMagnitude > 1e-12f ? n.normalized : Vector3.up);
+            Colors.Add(color);
+            Uvs.Add(uv);
+            return Vertices.Count - 1;
+        }
+
+        /// <summary>A triangle over existing vertices, wound to face along their normals.</summary>
+        public void Tri(int submesh, int a, int b, int c)
+        {
+            Vector3 face = Vector3.Cross(Vertices[b] - Vertices[a], Vertices[c] - Vertices[a]);
+            var tris = Submeshes[Mathf.Clamp(submesh, 0, Submeshes.Length - 1)];
+            tris.Add(a);
+            if (Vector3.Dot(face, Normals[a] + Normals[b] + Normals[c]) >= 0f) { tris.Add(b); tris.Add(c); }
+            else { tris.Add(c); tris.Add(b); }
+        }
+
+        /// <summary>
+        /// A smooth sphere. UVs project the front (and, mirrored, the back) onto the texture
+        /// square, so a drawing of a ball maps straight onto the side the camera sees.
+        /// </summary>
+        public void Sphere(int submesh, Vector3 center, float radius, Color color, int lon = 24, int lat = 16)
+        {
+            Ellipsoid(submesh, center, Vector3.one * radius, color, lon, lat);
+        }
+
+        /// <summary>A smooth ellipsoid with the given radii along x, y and z (UVs as for <see cref="Sphere"/>).</summary>
+        public void Ellipsoid(int submesh, Vector3 center, Vector3 radii, Color color, int lon = 16, int lat = 10)
+        {
+            int start = Vertices.Count;
+            for (int i = 0; i <= lat; i++)
+            {
+                float phi = Mathf.Lerp(-Mathf.PI * 0.5f, Mathf.PI * 0.5f, i / (float)lat);
+                for (int j = 0; j <= lon; j++)
+                {
+                    float theta = j / (float)lon * Mathf.PI * 2f;
+                    Vector3 d = new Vector3(Mathf.Cos(phi) * Mathf.Cos(theta), Mathf.Sin(phi), Mathf.Cos(phi) * Mathf.Sin(theta));
+                    Vector3 n = new Vector3(d.x / radii.x, d.y / radii.y, d.z / radii.z);
+                    Vertex(center + Vector3.Scale(d, radii), n, color, new Vector2(d.x * 0.5f + 0.5f, d.y * 0.5f + 0.5f));
+                }
+            }
+            for (int i = 0; i < lat; i++)
+            {
+                for (int j = 0; j < lon; j++)
+                {
+                    int a = start + i * (lon + 1) + j, b = a + 1, c = a + lon + 1, d = c + 1;
+                    Tri(submesh, a, b, d);
+                    Tri(submesh, a, d, c);
+                }
+            }
+        }
+
+        /// <summary>
+        /// A cylinder along <paramref name="axis"/> with smooth sides and flat ends. Each end is
+        /// a disc of <paramref name="endColor"/> with an inner disc of <paramref name="innerColor"/>
+        /// (a pipe's hollow, a coin's face, a hubcap) out to <paramref name="innerRadius"/>.
+        /// </summary>
+        public void Cylinder(int submesh, Vector3 center, Vector3 axis, float radius, float length, Color sideColor,
+            Color endColor, float innerRadius, Color innerColor, int segments = 20)
+        {
+            axis = axis.normalized;
+            Vector3 u = Vector3.Cross(axis, Mathf.Abs(axis.y) < 0.9f ? Vector3.up : Vector3.right).normalized;
+            Vector3 v = Vector3.Cross(axis, u);
+            Vector3 half = axis * (length * 0.5f);
+            int side = Vertices.Count;
+            for (int s = 0; s <= segments; s++)
+            {
+                float a = s / (float)segments * Mathf.PI * 2f;
+                Vector3 n = u * Mathf.Cos(a) + v * Mathf.Sin(a);
+                Vertex(center - half + n * radius, n, sideColor, new Vector2(s / (float)segments, 0f));
+                Vertex(center + half + n * radius, n, sideColor, new Vector2(s / (float)segments, 1f));
+            }
+            for (int s = 0; s < segments; s++)
+            {
+                int a = side + s * 2;
+                Tri(submesh, a, a + 1, a + 3);
+                Tri(submesh, a, a + 3, a + 2);
+            }
+            foreach (float end in new[] { -1f, 1f })
+            {
+                Vector3 c = center + half * end, n = axis * end;
+                int hub = Vertex(c + n * 0.001f, n, innerColor, new Vector2(0.5f, 0.5f));
+                int inner = Vertices.Count;
+                for (int s = 0; s <= segments; s++)
+                {
+                    float a = s / (float)segments * Mathf.PI * 2f;
+                    Vector3 r = u * Mathf.Cos(a) + v * Mathf.Sin(a);
+                    Vertex(c + n * 0.001f + r * innerRadius, n, innerColor, new Vector2(0.5f, 0.5f));
+                    Vertex(c + r * innerRadius, n, endColor, new Vector2(0.5f, 0.5f));
+                    Vertex(c + r * radius, n, endColor, new Vector2(0.5f, 0.5f));
+                }
+                for (int s = 0; s < segments; s++)
+                {
+                    int a = inner + s * 3, b = a + 3;
+                    Tri(submesh, hub, a, b);
+                    Tri(submesh, a + 1, b + 1, b + 2);
+                    Tri(submesh, a + 1, b + 2, a + 2);
+                }
+            }
+        }
+
         [System.Flags]
         public enum Faces { None = 0, Front = 1, Back = 2, Top = 4, Bottom = 8, Left = 16, Right = 32, All = 63, NoBottom = 55 }
 

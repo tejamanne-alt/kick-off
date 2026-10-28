@@ -2,36 +2,9 @@ using UnityEngine;
 
 namespace DribbleToSchool.Art
 {
-    /// <summary>Street furniture for the hazards: a front-view car, pedestrian signal figures and a fountain jet.</summary>
+    /// <summary>Street furniture for the hazards: pedestrian signal figures and a fountain jet.</summary>
     public static partial class ProceduralArt
     {
-        /// <summary>
-        /// A small car seen from the front (driving toward the camera), tintable body.
-        /// Baked at 115 px per unit it is about 1.9 units (1.7 m) wide and 1.6 tall, wheels on y = 4.
-        /// </summary>
-        public static PixelCanvas CarFront()
-        {
-            var c = new PixelCanvas(240, 196);
-            Color body = Grey(0.96f), glass = new Color(0.5f, 0.6f, 0.72f), dark = new Color(0.16f, 0.16f, 0.18f);
-            c.FillRoundRect(14, 4, 54, 46, 10, dark);                                   // wheels
-            c.FillRoundRect(186, 4, 226, 46, 10, dark);
-            c.FillRoundRect(8, 28, 232, 112, 24, body);                                 // lower body
-            c.FillPolygon(new[] { new Vector2(30, 108), new Vector2(210, 108), new Vector2(188, 184), new Vector2(52, 184) }, body); // cabin
-            c.FillPolygon(new[] { new Vector2(42, 114), new Vector2(198, 114), new Vector2(180, 174), new Vector2(60, 174) }, glass); // windscreen
-            c.FillPolygon(new[] { new Vector2(130, 118), new Vector2(150, 118), new Vector2(116, 170), new Vector2(98, 170) }, Color.Lerp(glass, White, 0.35f)); // glint
-            c.FillRoundRect(0, 112, 22, 126, 5, body);                                  // mirrors
-            c.FillRoundRect(218, 112, 240, 126, 5, body);
-            c.Shade((x, y) => y < 52 ? 1f : 0f, Grey(0.76f));                           // bumper in shadow
-            c.FillRoundRect(22, 74, 66, 96, 8, new Color(1f, 0.95f, 0.7f));             // headlights
-            c.FillRoundRect(174, 74, 218, 96, 8, new Color(1f, 0.95f, 0.7f));
-            c.FillRoundRect(84, 64, 156, 92, 6, Grey(0.3f));                            // grille
-            for (float y = 70; y < 90; y += 6) c.FillRect(88, y, 152, y + 2, Grey(0.45f));
-            c.FillRect(96, 34, 144, 52, White);                                         // number plate
-            c.FillRect(100, 40, 140, 46, Grey(0.4f));
-            c.Ink(Ink, 2.5f, 41);
-            return c;
-        }
-
         /// <summary>Pedestrian signal figure, white so it can be lit red or green. walking = striding figure.</summary>
         public static PixelCanvas SignalFigure(bool walking)
         {
