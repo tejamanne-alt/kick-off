@@ -936,7 +936,9 @@ namespace DribbleToSchool.EditorTools
                 t.Target(new Vector2(56f, 2.6f)),
                 t.Target(new Vector2(66f, 4.6f), false),
             };
+            t.Ramp(new Vector2(22f, 0f), new Vector2(28f, 1.6f));
             t.Platform(28f, 32f, 1.6f);
+            t.Ramp(new Vector2(32f, 1.6f), new Vector2(36f, 0f));
             t.CrateStack(50f);
             t.MovingPlatform(new Vector2(60f, 1.2f), 2.4f, new Vector2(0f, 1.6f), 1f);
             t.CoinRow(4f, 72f, 0.5f, 8);
