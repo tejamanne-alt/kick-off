@@ -2,6 +2,12 @@
 
 Everything needed to take Dribble To School from this repo to the App Store and Google Play.
 
+## 0. Unity version for iOS
+
+Use **Unity 6000.0.68f1 or newer** (Unity 6.0 LTS) or **6000.3.8f1 or newer** (Unity 6.3 LTS). Older Unity 6 versions generate an Xcode project without the UIKit scene life cycle. Apps built that way with the newest Xcode SDK refuse to launch, with the error "UIScene life cycle is required for apps built with this SDK".
+
+After updating Unity, delete `Builds/iOS` and export the Xcode project again. Unity regenerates its iOS startup code on each export.
+
 ## 1. Before the first build
 
 1. Open the project in Unity 6. The editor generates the menu, the levels and the art automatically.
@@ -46,6 +52,18 @@ Environment variables:
 - `DTS_APPLE_TEAM_ID`: turns on automatic signing for iOS.
 
 Builds are written to `Builds/` (git-ignored). For iOS, open `Builds/iOS/Unity-iPhone.xcodeproj`, check signing, then Product > Archive.
+
+**On a Mac, one command builds the `.ipa`:**
+
+```
+DTS_APPLE_TEAM_ID=ABCDE12345 ./ci/ios/build_ios.sh development   # .ipa for your own devices
+DTS_APPLE_TEAM_ID=ABCDE12345 ./ci/ios/build_ios.sh appstore      # .ipa for TestFlight / App Store
+```
+
+The export options are in `ci/ios/`. A post-build step (`Editor/IosPostBuild.cs`) sets two Info.plist keys:
+
+- `ITSAppUsesNonExemptEncryption = NO`, so App Store Connect stops asking about encryption on every upload.
+- `UIRequiresFullScreen = YES`, which a landscape-only iPad app requires.
 
 ## 4. Privacy answers
 
