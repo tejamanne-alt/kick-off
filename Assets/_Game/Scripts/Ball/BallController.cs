@@ -11,8 +11,8 @@ namespace DribbleToSchool.Ball
     /// <summary>
     /// A real physics ball that the kid dribbles.
     ///
-    /// - Auto touch: when the kid catches up with the ball it gets a slightly
-    ///   random nudge ahead, so the run keeps flowing without input.
+    /// - Auto touch: when the kid walks into the ball it gets a slightly random
+    ///   nudge ahead (in whichever direction the kid is walking).
     /// - Perfect touch: tapping while the ball is in the sweet spot just ahead of
     ///   the feet gives a clean, controlled touch and builds a streak.
     /// - Juggle: tapping while the ball is in the air near the kid pops it up.
@@ -43,7 +43,7 @@ namespace DribbleToSchool.Ball
         /// <summary>Where the ball's centre sits when it rests at the kid's feet.</summary>
         public Vector2 FootPoint { get { return kid.FeetPosition + Vector2.up * Radius; } }
 
-        /// <summary>Ball position relative to the kid's foot point (+x = ahead).</summary>
+        /// <summary>Ball position relative to the kid's foot point (+x = right).</summary>
         public Vector2 OffsetFromFeet { get { return Body.position - FootPoint; } }
 
         public bool InKickReach
@@ -142,12 +142,15 @@ namespace DribbleToSchool.Ball
             if (offset.magnitude > tuning.reachRadius) return;
             if (offset.y > Radius * 2.5f) return; // too high: that's a juggle, not a dribble
 
-            float kidSpeed = kid.SpeedX;
+            // Work along the direction the kid faces, so dribbling back works the same as forward.
+            int dir = kid.Facing;
+            float ahead = offset.x * dir;
+            float kidSpeed = kid.SpeedX * dir;
 
-            if (kid.IsBraking && kidSpeed < tuning.trapSpeedThreshold)
+            if (kid.IsBraking && Mathf.Abs(kid.SpeedX) < tuning.trapSpeedThreshold)
             {
                 // Kid is stopping: trap the ball under the foot instead of pushing it away.
-                if (Mathf.Abs(Body.linearVelocity.x) > 0.3f && offset.x < tuning.autoTouchDistance + Radius)
+                if (Mathf.Abs(Body.linearVelocity.x) > 0.3f && Mathf.Abs(offset.x) < tuning.autoTouchDistance + Radius)
                 {
                     Vector2 v = Body.linearVelocity;
                     v.x *= tuning.trapDamping;
@@ -159,11 +162,13 @@ namespace DribbleToSchool.Ball
                 return;
             }
 
-            if (offset.x > tuning.autoTouchDistance) return; // still comfortably ahead
+            if (kidSpeed < 0.5f) return;                     // not walking into the ball
+            if (ahead > tuning.autoTouchDistance) return;     // still comfortably ahead
+            if (ahead < -Radius * 1.5f) return;               // behind the kid: walking away from it
 
             // The player missed the rhythm: the kid touches it anyway, a bit sloppily.
             float lead = tuning.dribbleLeadSpeed * Random.Range(1f - tuning.autoTouchVariance, 1f + tuning.autoTouchVariance);
-            ApplyTouch(Mathf.Max(kidSpeed, 0f) + lead, tuning.touchLift);
+            ApplyTouch(dir * (kidSpeed + lead), tuning.touchLift);
             PerfectStreak = 0;
             GameEvents.Raise(GameEventType.Touch, Body.position, 0.5f);
         }
@@ -173,7 +178,9 @@ namespace DribbleToSchool.Ball
             if (!CanTouch) return;
 
             Vector2 offset = OffsetFromFeet;
-            float kidSpeed = Mathf.Max(kid.SpeedX, 0f);
+            int dir = kid.Facing;
+            float ahead = offset.x * dir;
+            float kidSpeed = Mathf.Max(kid.SpeedX * dir, 0f);
 
             bool airborneNearKid = !IsGrounded
                 && Mathf.Abs(offset.x) <= tuning.juggleReachX
@@ -182,7 +189,7 @@ namespace DribbleToSchool.Ball
 
             if (airborneNearKid)
             {
-                ApplyTouch(kidSpeed * tuning.juggleCarry, tuning.juggleUpSpeed);
+                ApplyTouch(kid.SpeedX * tuning.juggleCarry, tuning.juggleUpSpeed);
                 JuggleCount++;
                 GameEvents.Raise(GameEventType.Juggle, Body.position, Mathf.Clamp01(JuggleCount / 10f));
                 if (Juggled != null) Juggled(JuggleCount);
@@ -192,11 +199,11 @@ namespace DribbleToSchool.Ball
             if (offset.magnitude > tuning.reachRadius) return;
 
             // Perfect = tapped in the sweet spot while the kid is catching up to the ball (the rhythm beat).
-            bool closing = Body.linearVelocity.x < kid.SpeedX;
-            bool perfect = closing && offset.x >= tuning.perfectTouchBand.x && offset.x <= tuning.perfectTouchBand.y;
+            bool closing = kidSpeed > 0.5f && Body.linearVelocity.x * dir < kidSpeed;
+            bool perfect = closing && ahead >= tuning.perfectTouchBand.x && ahead <= tuning.perfectTouchBand.y;
             if (perfect)
             {
-                ApplyTouch(kidSpeed + tuning.dribbleLeadSpeed, tuning.perfectTouchLift);
+                ApplyTouch(dir * (kidSpeed + tuning.dribbleLeadSpeed), tuning.perfectTouchLift);
                 PerfectStreak++;
                 GameEvents.Raise(GameEventType.PerfectTouch, Body.position, Mathf.Clamp01(PerfectStreak / 8f));
                 if (PerfectTouch != null) PerfectTouch(PerfectStreak);
@@ -204,7 +211,7 @@ namespace DribbleToSchool.Ball
             else
             {
                 float lead = tuning.dribbleLeadSpeed * Random.Range(1f - tuning.autoTouchVariance, 1f + tuning.autoTouchVariance);
-                ApplyTouch(kidSpeed + lead, tuning.touchLift);
+                ApplyTouch(dir * (kidSpeed + lead), tuning.touchLift);
                 PerfectStreak = 0;
                 GameEvents.Raise(GameEventType.Touch, Body.position, 0.6f);
             }
@@ -222,6 +229,7 @@ namespace DribbleToSchool.Ball
         public void Kick(Vector2 velocity)
         {
             Body.linearVelocity = velocity;
+            kid.FaceTowards(velocity.x);
             // A bit of backspin on lofted kicks, topspin on low drives.
             float loft = Mathf.Clamp01(velocity.y / Mathf.Max(velocity.magnitude, 0.01f));
             float spinDirection = Mathf.Sign(velocity.x) * (loft > 0.3f ? 1f : -1f);

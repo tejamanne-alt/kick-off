@@ -10,20 +10,23 @@ namespace DribbleToSchool.InputHandling
     /// <summary>
     /// Turns raw touches, mouse and keyboard into game intents, once per frame.
     ///
-    /// Touch layout (landscape):
-    ///  - Touch on/near the ball and drag back, then release: kick (slingshot).
-    ///  - Jump button (bottom-right) or swipe up on the right side: jump (hold for higher).
-    ///  - Hold the left part of the screen: brake.
-    ///  - Quick tap on the right side: touch the ball (perfect touch / juggle).
+    /// Touch layout (landscape, mirrored for left-handed play):
+    ///  - Left / right arrow buttons (bottom-left): walk backward / forward. Let go to stop.
+    ///  - Kick button (bottom-right, before Jump): drag from it in the direction you
+    ///    want the ball to go, then release. Longer drag = more power. A quick tap
+    ///    is a short pass the way the kid is facing.
+    ///  - Jump button (bottom-right) or swipe up anywhere else: jump (hold for higher).
+    ///  - Quick tap anywhere else: touch the ball (perfect touch / juggle).
     ///
     /// Keyboard + mouse (editor testing):
-    ///  - A / Left / Shift: brake. Space / W / Up: jump. F / J: touch. Mouse drag from ball: kick.
+    ///  - A / Left: walk back. D / Right: walk forward. Space / W / Up: jump.
+    ///  - F / J: touch. K: quick kick. Mouse drag from the kick button: aimed kick.
     ///  - R: restart. Esc / P: pause. Tab: tuning panel.
     /// </summary>
     [DefaultExecutionOrder(-100)]
     public class GameInput : MonoBehaviour
     {
-        enum Role { Brake, Kick, Jump, TapOrSwipe }
+        enum Role { MoveLeft, MoveRight, Kick, Jump, TapOrSwipe }
 
         class Pointer
         {
@@ -48,15 +51,15 @@ namespace DribbleToSchool.InputHandling
         /// <summary>Screen-space rects (origin bottom-left) owned by on-screen UI; touches starting there are ignored.</summary>
         public static readonly List<Rect> UIBlockers = new List<Rect>();
 
-        [Header("Layout")]
-        [Tooltip("Fraction of screen width, from the left, that acts as the brake zone.")]
-        [Range(0.1f, 0.6f)] public float brakeZoneWidth = 0.4f;
-        [Tooltip("Jump button in normalized screen coords (x, y, width, height), origin bottom-left.")]
+        [Header("Layout (normalized screen coords: x, y, width, height; origin bottom-left)")]
+        public Rect leftButtonRect = new Rect(0.025f, 0.04f, 0.115f, 0.24f);
+        public Rect rightButtonRect = new Rect(0.155f, 0.04f, 0.115f, 0.24f);
+        public Rect kickButtonRect = new Rect(0.675f, 0.04f, 0.14f, 0.26f);
         public Rect jumpButtonRect = new Rect(0.83f, 0.04f, 0.15f, 0.26f);
+        [Tooltip("Extra touch area around each button, in inches, so near misses still count.")]
+        public float buttonSlopInches = 0.12f;
 
         [Header("Gestures")]
-        [Tooltip("Radius around the ball, in inches, where a touch starts a kick.")]
-        public float ballGrabRadiusInches = 0.45f;
         public float tapMaxDuration = 0.25f;
         public float tapMaxMoveInches = 0.15f;
         public float swipeUpMinInches = 0.35f;
@@ -64,18 +67,20 @@ namespace DribbleToSchool.InputHandling
 
         [Header("References")]
         public Camera worldCamera;
-        [Tooltip("Used to start kick drags when a touch begins near the ball.")]
-        public Transform ball;
-        public float ballWorldRadius = 0.2f;
 
-        public bool BrakeHeld { get; private set; }
+        /// <summary>-1 = walk back, +1 = walk forward, 0 = stand still.</summary>
+        public float MoveAxis { get; private set; }
         public bool JumpPressed { get; private set; }
         public bool JumpHeld { get; private set; }
         public bool TouchPressed { get; private set; }
+        /// <summary>True while a finger drags from the kick button.</summary>
         public bool KickAiming { get; private set; }
+        /// <summary>The aimed kick was let go this frame (see KickDrag).</summary>
         public bool KickReleased { get; private set; }
-        public Vector2 KickStartScreen { get; private set; }
-        public Vector2 KickCurrentScreen { get; private set; }
+        /// <summary>The kick button was tapped without dragging: a quick pass.</summary>
+        public bool KickTapped { get; private set; }
+        /// <summary>Drag from the kick button, in screen pixels (the direction the ball should go).</summary>
+        public Vector2 KickDrag { get; private set; }
         public bool ResetPressed { get; private set; }
         public bool PausePressed { get; private set; }
         public bool DebugTogglePressed { get; private set; }
@@ -86,35 +91,36 @@ namespace DribbleToSchool.InputHandling
         /// </summary>
         public bool Blocked { get; set; }
 
-        /// <summary>Jump button in normalized screen coords, mirrored for left-handed play.</summary>
-        public Rect JumpButtonNormalized
+        // Buttons in normalized screen coords. Left-handed play swaps the two clusters
+        // but keeps "back" on the left of "forward" so the arrows still point the right way.
+        public Rect JumpButtonNormalized { get { return Mirror(jumpButtonRect); } }
+        public Rect KickButtonNormalized { get { return Mirror(kickButtonRect); } }
+        public Rect LeftButtonNormalized { get { return GameSettings.LeftHanded ? MirrorPair(rightButtonRect, leftButtonRect) : leftButtonRect; } }
+        public Rect RightButtonNormalized { get { return GameSettings.LeftHanded ? MirrorPair(leftButtonRect, rightButtonRect) : rightButtonRect; } }
+
+        /// <summary>True while the finger (or key) for that direction is down; used by the HUD.</summary>
+        public bool LeftHeld { get; private set; }
+        public bool RightHeld { get; private set; }
+
+        static Rect Mirror(Rect r)
         {
-            get
-            {
-                Rect r = jumpButtonRect;
-                if (GameSettings.LeftHanded) r.x = 1f - r.x - r.width;
-                return r;
-            }
+            if (GameSettings.LeftHanded) r.x = 1f - r.x - r.width;
+            return r;
         }
 
-        /// <summary>Brake zone in normalized screen coords (left side, or right side when left-handed).</summary>
-        public Rect BrakeZoneNormalized
+        /// <summary>Mirror the pair as a cluster: <paramref name="slot"/>'s mirrored spot, given to the other button.</summary>
+        static Rect MirrorPair(Rect slot, Rect self)
         {
-            get
-            {
-                return GameSettings.LeftHanded
-                    ? new Rect(1f - brakeZoneWidth, 0f, brakeZoneWidth, 1f)
-                    : new Rect(0f, 0f, brakeZoneWidth, 1f);
-            }
+            Rect r = self;
+            r.x = 1f - slot.x - slot.width;
+            return r;
         }
 
-        public Rect JumpButtonScreenRect
+        Rect ToScreen(Rect r, bool withSlop)
         {
-            get
-            {
-                Rect r = JumpButtonNormalized;
-                return new Rect(r.x * Screen.width, r.y * Screen.height, r.width * Screen.width, r.height * Screen.height);
-            }
+            float slop = withSlop ? buttonSlopInches * Dpi : 0f;
+            return new Rect(r.x * Screen.width - slop, r.y * Screen.height - slop,
+                r.width * Screen.width + slop * 2f, r.height * Screen.height + slop * 2f);
         }
 
         readonly Dictionary<int, Pointer> pointers = new Dictionary<int, Pointer>();
@@ -138,8 +144,9 @@ namespace DribbleToSchool.InputHandling
 
         void Update()
         {
-            BrakeHeld = JumpPressed = JumpHeld = TouchPressed = false;
-            KickAiming = KickReleased = ResetPressed = PausePressed = DebugTogglePressed = false;
+            MoveAxis = 0f;
+            LeftHeld = RightHeld = JumpPressed = JumpHeld = TouchPressed = false;
+            KickAiming = KickReleased = KickTapped = ResetPressed = PausePressed = DebugTogglePressed = false;
 
             samples.Clear();
             GatherPointers(samples);
@@ -194,31 +201,52 @@ namespace DribbleToSchool.InputHandling
             {
                 switch (p.role)
                 {
-                    case Role.Brake: BrakeHeld = true; break;
+                    case Role.MoveLeft: LeftHeld = true; break;
+                    case Role.MoveRight: RightHeld = true; break;
                     case Role.Jump: JumpHeld = true; break;
                     case Role.Kick:
-                        KickAiming = true;
-                        KickStartScreen = p.start;
-                        KickCurrentScreen = p.current;
+                        // Only a real drag aims (and slows time); a tap is a quick pass on release.
+                        if (IsDrag(p))
+                        {
+                            KickAiming = true;
+                            KickDrag = p.current - p.start;
+                        }
                         break;
                 }
             }
 
             ReadGameplayKeys();
+            MoveAxis = (RightHeld ? 1f : 0f) - (LeftHeld ? 1f : 0f);
+        }
+
+        bool IsDrag(Pointer p)
+        {
+            return (p.current - p.start).magnitude > tapMaxMoveInches * Dpi;
         }
 
         Role ClassifyDown(Vector2 pos)
         {
-            if (JumpButtonScreenRect.Contains(pos)) return Role.Jump;
-            if (IsNearBall(pos) && !AnyPointerWithRole(Role.Kick)) return Role.Kick;
-            Rect brake = BrakeZoneNormalized;
-            float nx = pos.x / Mathf.Max(1f, Screen.width);
-            if (nx >= brake.x && nx <= brake.xMax) return Role.Brake;
+            // Exact hits first, then the slop area, so neighbouring buttons never steal a touch.
+            for (int pass = 0; pass < 2; pass++)
+            {
+                bool slop = pass == 1;
+                if (ToScreen(JumpButtonNormalized, slop).Contains(pos)) return Role.Jump;
+                if (ToScreen(KickButtonNormalized, slop).Contains(pos) && !AnyPointerWithRole(Role.Kick)) return Role.Kick;
+                if (ToScreen(LeftButtonNormalized, slop).Contains(pos)) return Role.MoveLeft;
+                if (ToScreen(RightButtonNormalized, slop).Contains(pos)) return Role.MoveRight;
+            }
             return Role.TapOrSwipe;
         }
 
         void OnPointerMove(Pointer p)
         {
+            if (p.role == Role.MoveLeft || p.role == Role.MoveRight)
+            {
+                // Rocking the thumb across to the other arrow switches direction without lifting.
+                if (p.role == Role.MoveLeft && ToScreen(RightButtonNormalized, false).Contains(p.current)) p.role = Role.MoveRight;
+                else if (p.role == Role.MoveRight && ToScreen(LeftButtonNormalized, false).Contains(p.current)) p.role = Role.MoveLeft;
+                return;
+            }
             if (p.role != Role.TapOrSwipe) return;
             bool quick = Time.unscaledTime - p.startTime <= swipeMaxDuration;
             if (quick && p.current.y - p.start.y >= swipeUpMinInches * Dpi)
@@ -233,9 +261,15 @@ namespace DribbleToSchool.InputHandling
         {
             if (p.role == Role.Kick)
             {
-                KickReleased = true;
-                KickStartScreen = p.start;
-                KickCurrentScreen = p.current;
+                if (IsDrag(p))
+                {
+                    KickReleased = true;
+                    KickDrag = p.current - p.start;
+                }
+                else
+                {
+                    KickTapped = true;
+                }
             }
             else if (p.role == Role.TapOrSwipe)
             {
@@ -243,15 +277,6 @@ namespace DribbleToSchool.InputHandling
                 bool still = (p.current - p.start).magnitude <= tapMaxMoveInches * Dpi;
                 if (shortTap && still) TouchPressed = true;
             }
-        }
-
-        bool IsNearBall(Vector2 screenPos)
-        {
-            if (ball == null || worldCamera == null) return false;
-            Vector3 ballScreen = worldCamera.WorldToScreenPoint(ball.position);
-            float pixelsPerUnit = Screen.height / (2f * worldCamera.orthographicSize);
-            float radius = Mathf.Max(ballGrabRadiusInches * Dpi, ballWorldRadius * pixelsPerUnit * 1.5f);
-            return ((Vector2)ballScreen - screenPos).sqrMagnitude <= radius * radius;
         }
 
         bool AnyPointerWithRole(Role role)
@@ -302,7 +327,9 @@ namespace DribbleToSchool.InputHandling
         {
             var kb = Keyboard.current;
             if (kb == null) return;
-            if (kb.aKey.isPressed || kb.leftArrowKey.isPressed || kb.leftShiftKey.isPressed) BrakeHeld = true;
+            if (kb.aKey.isPressed || kb.leftArrowKey.isPressed) LeftHeld = true;
+            if (kb.dKey.isPressed || kb.rightArrowKey.isPressed) RightHeld = true;
+            if (kb.kKey.wasPressedThisFrame) KickTapped = true;
             if (kb.spaceKey.wasPressedThisFrame || kb.wKey.wasPressedThisFrame || kb.upArrowKey.wasPressedThisFrame) JumpPressed = true;
             if (kb.spaceKey.isPressed || kb.wKey.isPressed || kb.upArrowKey.isPressed) JumpHeld = true;
             if (kb.fKey.wasPressedThisFrame || kb.jKey.wasPressedThisFrame) TouchPressed = true;
@@ -331,7 +358,9 @@ namespace DribbleToSchool.InputHandling
 
         void ReadGameplayKeys()
         {
-            if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.LeftShift)) BrakeHeld = true;
+            if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow)) LeftHeld = true;
+            if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow)) RightHeld = true;
+            if (Input.GetKeyDown(KeyCode.K)) KickTapped = true;
             if (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow)) JumpPressed = true;
             if (Input.GetKey(KeyCode.Space) || Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow)) JumpHeld = true;
             if (Input.GetKeyDown(KeyCode.F) || Input.GetKeyDown(KeyCode.J)) TouchPressed = true;

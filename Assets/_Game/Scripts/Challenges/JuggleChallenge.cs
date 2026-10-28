@@ -25,7 +25,6 @@ namespace DribbleToSchool.Challenges
             var level = LevelManager.Current;
             if (level == null) return;
             level.ball.Juggled += OnJuggled;
-            level.kid.autoRun = false;   // stand and juggle
         }
 
         void OnDisable()
@@ -33,7 +32,6 @@ namespace DribbleToSchool.Challenges
             var level = LevelManager.Current;
             if (level == null) return;
             level.ball.Juggled -= OnJuggled;
-            level.kid.autoRun = true;
         }
 
         void OnJuggled(int count)

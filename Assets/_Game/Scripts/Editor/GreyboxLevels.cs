@@ -38,7 +38,7 @@ namespace DribbleToSchool.EditorTools
             t.Wall(18f, 0.3f, 0f, 0.6f);
             t.Sign("Kerb - jump!", new Vector2(18f, 2.2f));
             t.Wall(27f, 0.9f);
-            t.Sign("Chip it over:\ndrag back from the ball", new Vector2(25.5f, 3f));
+            t.Sign("Chip it over:\ndrag up from KICK", new Vector2(25.5f, 3f));
 
             t.Checkpoint(29.5f);
             t.Pit(34f, 36f);
@@ -56,7 +56,7 @@ namespace DribbleToSchool.EditorTools
             t.Sign("Bounce it off the awning", new Vector2(75f, 4.2f));
 
             t.StepAndHighWall(80.6f);
-            t.Sign("Step up, brake, chip over", new Vector2(80.5f, 3.6f));
+            t.Sign("Step up, stop, chip over", new Vector2(80.5f, 3.6f));
             t.Ground(80f, 115f);
 
             t.Checkpoint(86f);
@@ -76,16 +76,16 @@ namespace DribbleToSchool.EditorTools
             t.Hint(24f, "jump");
             t.Hint(33f, "kick");
             t.Ground(-8f, 52f);
-            t.Sign("The kid runs by himself.\nKeep the ball close!", new Vector2(4f, 3.2f));
-            t.Sign("Tap the RIGHT side just as\nyou catch up with the ball:\nPerfect touch!", new Vector2(13f, 3.4f));
-            t.Sign("Hold the LEFT side to brake", new Vector2(21f, 3f));
+            t.Sign("Hold the arrows to walk.\nKeep the ball close!", new Vector2(4f, 3.2f));
+            t.Sign("Tap the screen just as\nyou catch up with the ball:\nPerfect touch!", new Vector2(13f, 3.4f));
+            t.Sign("Let go of the arrows to stop -\nthe ball stops at your feet", new Vector2(21f, 3f));
 
             t.Wall(27f, 0.3f, 0f, 0.6f);
             t.Sign("Kerb! Jump\n(button or swipe up)", new Vector2(27f, 2.6f));
 
             t.Checkpoint(31f);
             t.Wall(37f, 0.8f);
-            t.Sign("Touch the ball, drag back,\nlet go: chip it over!", new Vector2(35f, 3.2f));
+            t.Sign("Drag from KICK the way the\nball should go: chip it over!", new Vector2(35f, 3.2f));
 
             t.Checkpoint(45f);
             t.Pit(52f, 53.5f);
@@ -154,7 +154,7 @@ namespace DribbleToSchool.EditorTools
             t.Ground(44f, 66f);
             t.Checkpoint(52f);
             t.StepAndHighWall(58f);
-            t.Sign("Step up, brake, chip over", new Vector2(58f, 3.6f));
+            t.Sign("Step up, stop, chip over", new Vector2(58f, 3.6f));
 
             t.Water(66f, 68f);
             t.Ground(68f, 128f);
@@ -275,14 +275,14 @@ namespace DribbleToSchool.EditorTools
             t.Goal(92f);
         }
 
-        /// <summary>L07: traffic lights. Brake and wait for green.</summary>
+        /// <summary>L07: traffic lights. Stop and wait for green.</summary>
         public static void FirstCrossing(TrackBuilder t)
         {
             t.Walls(-8f, 90f);
             t.Start(0f);
             t.Hint(10f, "crossing");
             t.Ground(-8f, 90f);
-            t.Sign("Zebra crossing ahead.\nWait for GREEN -\nhold the left side to brake", new Vector2(6f, 3.4f));
+            t.Sign("Zebra crossing ahead.\nWait for GREEN -\nlet go of the arrows to stop", new Vector2(6f, 3.4f));
 
             t.Crossing(16f, 21f, 0f);
             t.Checkpoint(24f);
@@ -868,7 +868,7 @@ namespace DribbleToSchool.EditorTools
             t.Start(0f);
             t.Hint(0.5f, "juggle");
             t.Ground(-6f, 14f);
-            t.Sign("Kick the ball up (drag back),\nthen tap to juggle!", new Vector2(4f, 3.6f));
+            t.Sign("Kick the ball up (drag up\nfrom KICK), then tap to juggle!", new Vector2(4f, 3.6f));
             t.Challenge<JuggleChallenge>("Keepy-Uppy", "Kick the ball up, then tap each time it drops near you. Best run counts!", 45f, 5, 10, 15);
             t.CoinRow(-2f, 2f, 2.4f, 3);
         }

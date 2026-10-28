@@ -5,7 +5,7 @@ namespace DribbleToSchool.Hazards
     /// <summary>
     /// A zebra crossing with a pedestrian light. Green: cross. Amber: hurry.
     /// Red: traffic flows, and the kid or the ball on the road loses the ball.
-    /// Brake and wait for green!
+    /// Stop and wait for green!
     /// </summary>
     [RequireComponent(typeof(BoxCollider2D))]
     public class Crossing : HazardBase

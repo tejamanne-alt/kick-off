@@ -65,7 +65,7 @@ namespace DribbleToSchool.Localization
                 { "hud.ready", "Ready..." }, { "hud.go", "GO!" },
                 { "hud.bellIn", "Bell {0}" }, { "hud.late", "LATE!" },
                 { "hud.perfect", "Perfect x{0}" }, { "hud.juggles", "Juggles {0}" },
-                { "hud.jump", "JUMP" }, { "hud.brake", "HOLD TO BRAKE" },
+                { "hud.jump", "JUMP" }, { "hud.kick", "KICK" },
                 { "hud.tooFar", "Too far - get closer to kick" },
 
                 // Toasts
@@ -79,7 +79,7 @@ namespace DribbleToSchool.Localization
                 { "lose.ball", "Lost the ball!" }, { "lose.gap", "Into the gap!" }, { "lose.splash", "Splash!" },
                 { "lose.tide", "Splash! Wait for the tide" }, { "lose.fell", "Lost the ball!" },
                 { "lose.behind", "Left the ball behind!" }, { "lose.honk", "Honk! Wait for the green light" },
-                { "lose.checkpoint", "Back to the checkpoint" },
+                { "lose.checkpoint", "Back to the checkpoint" }, { "lose.offStart", "The ball rolled back home!" },
 
                 // Pause
                 { "pause.title", "Paused" }, { "pause.resume", "Resume" }, { "pause.checkpoint", "Back to checkpoint" },
@@ -99,15 +99,15 @@ namespace DribbleToSchool.Localization
                 { "results.retry", "Retry" }, { "results.map", "Map" }, { "results.next", "Next" }, { "results.finish", "Finish" },
 
                 // Tutorial hints
-                { "tut.dribble", "The kid runs by himself. Tap the RIGHT side just as you catch up with the ball for a Perfect touch!" },
-                { "tut.brake", "Hold the LEFT side to brake. Stopping traps the ball under your foot." },
+                { "tut.dribble", "Hold the arrow buttons to walk. Tap the screen just as you catch up with the ball for a Perfect touch!" },
+                { "tut.brake", "Let go of the arrows to stop. Stopping traps the ball under your foot." },
                 { "tut.jump", "Tap JUMP or swipe up. Hold for a higher jump." },
-                { "tut.kick", "Touch the ball, drag BACK, and let go to kick. Longer drag = more power." },
+                { "tut.kick", "Drag from KICK the way you want the ball to go, then let go. Longer drag = more power. Tap KICK for a quick pass." },
                 { "tut.juggle", "Kick the ball up, then tap each time it drops near you to juggle." },
                 { "tut.gate", "Locked gate! Kick the ball hard at the red button." },
                 { "tut.puddle", "Puddles slow the ball and your feet." },
                 { "tut.pedestrian", "The ball bounces off people. Chip it over, or wait for a gap." },
-                { "tut.crossing", "Red light means cars! Brake and wait for green." },
+                { "tut.crossing", "Red light means cars! Stop and wait for green." },
                 { "tut.springboard", "Springboards bounce you and the ball up high." },
                 { "tut.tide", "The tide comes in and out. Cross while the water is low." },
                 { "tut.seagull", "Seagulls swoop at the ball. Keep it low and close." },
@@ -183,7 +183,7 @@ namespace DribbleToSchool.Localization
                 { "hud.ready", "¿Listos...?" }, { "hud.go", "¡YA!" },
                 { "hud.bellIn", "Campana {0}" }, { "hud.late", "¡TARDE!" },
                 { "hud.perfect", "Perfecto x{0}" }, { "hud.juggles", "Toques {0}" },
-                { "hud.jump", "SALTO" }, { "hud.brake", "MANTÉN PARA FRENAR" },
+                { "hud.jump", "SALTO" }, { "hud.kick", "CHUTA" },
                 { "hud.tooFar", "Muy lejos: acércate para chutar" },
 
                 { "toast.perfect", "¡Toque perfecto!" }, { "toast.perfectN", "Toque perfecto x{0}" },
@@ -195,7 +195,7 @@ namespace DribbleToSchool.Localization
                 { "lose.ball", "¡Balón perdido!" }, { "lose.gap", "¡Al hoyo!" }, { "lose.splash", "¡Chof!" },
                 { "lose.tide", "¡Chof! Espera a la marea" }, { "lose.fell", "¡Balón perdido!" },
                 { "lose.behind", "¡Te dejaste el balón!" }, { "lose.honk", "¡Piii! Espera al verde" },
-                { "lose.checkpoint", "Vuelta al control" },
+                { "lose.checkpoint", "Vuelta al control" }, { "lose.offStart", "¡El balón volvió a casa!" },
 
                 { "pause.title", "Pausa" }, { "pause.resume", "Seguir" }, { "pause.checkpoint", "Volver al control" },
                 { "pause.restart", "Reiniciar nivel" }, { "pause.settings", "Ajustes" }, { "pause.quit", "Salir al mapa" },
@@ -212,15 +212,15 @@ namespace DribbleToSchool.Localization
                 { "results.newSticker", "¡Pegatina nueva para el álbum!" }, { "results.oldSticker", "Pegatina repetida" },
                 { "results.retry", "Repetir" }, { "results.map", "Mapa" }, { "results.next", "Siguiente" }, { "results.finish", "Fin" },
 
-                { "tut.dribble", "El niño corre solo. ¡Toca el lado DERECHO justo al alcanzar el balón para un toque perfecto!" },
-                { "tut.brake", "Mantén el lado IZQUIERDO para frenar. Al pararte controlas el balón." },
+                { "tut.dribble", "Mantén las flechas para caminar. ¡Toca la pantalla justo al alcanzar el balón para un toque perfecto!" },
+                { "tut.brake", "Suelta las flechas para pararte. Al pararte controlas el balón." },
                 { "tut.jump", "Toca SALTO o desliza hacia arriba. Mantén para saltar más." },
-                { "tut.kick", "Toca el balón, arrastra HACIA ATRÁS y suelta para chutar." },
+                { "tut.kick", "Arrastra desde CHUTA hacia donde quieras mandar el balón y suelta. Toca CHUTA para un pase rápido." },
                 { "tut.juggle", "Levanta el balón y toca cada vez que baje para hacer toques." },
                 { "tut.gate", "¡Puerta cerrada! Chuta fuerte al botón rojo." },
                 { "tut.puddle", "Los charcos frenan el balón y tus pies." },
                 { "tut.pedestrian", "El balón rebota en la gente. Pásalo por encima o espera." },
-                { "tut.crossing", "¡Rojo significa coches! Frena y espera al verde." },
+                { "tut.crossing", "¡Rojo significa coches! Párate y espera al verde." },
                 { "tut.springboard", "Los trampolines te lanzan alto a ti y al balón." },
                 { "tut.tide", "La marea sube y baja. Cruza cuando el agua esté baja." },
                 { "tut.seagull", "Las gaviotas atacan el balón. Mantenlo bajo y cerca." },

@@ -64,8 +64,12 @@ namespace DribbleToSchool.Core
         [Header("Rules")]
         [Tooltip("Falling below this height loses the ball.")]
         public float killY = -6f;
-        [Tooltip("Ball this far behind the kid counts as lost.")]
-        public float maxBallBehindDistance = 9f;
+        [Tooltip("Ball this far behind the kid counts as lost (0 = never; the kid can walk back for it).")]
+        public float maxBallBehindDistance = 0f;
+        [Tooltip("Where the level starts. A ball kicked back past this line is lost.")]
+        public float startBoundaryX = float.NegativeInfinity;
+        [Tooltip("Wall at the start that stops the kid but lets the ball through.")]
+        public Collider2D startWall;
         [Tooltip("A checkpoint only activates if the ball is no further behind the kid than this.")]
         public float checkpointBallTolerance = 3f;
         public float introDuration = 1.1f;
@@ -159,6 +163,11 @@ namespace DribbleToSchool.Core
 
         void Start()
         {
+            if (startWall != null)
+            {
+                foreach (var c in ball.GetComponentsInChildren<Collider2D>())
+                    Physics2D.IgnoreCollision(c, startWall, true);
+            }
             BeginRun();
         }
 
@@ -266,7 +275,9 @@ namespace DribbleToSchool.Core
         {
             if (ball.transform.position.y < killY || kid.transform.position.y < killY)
                 LoseBall("lose.fell");
-            else if (kid.transform.position.x - ball.transform.position.x > maxBallBehindDistance)
+            else if (ball.transform.position.x < startBoundaryX)
+                LoseBall("lose.offStart");
+            else if (maxBallBehindDistance > 0f && kid.transform.position.x - ball.transform.position.x > maxBallBehindDistance)
                 LoseBall("lose.behind");
         }
 

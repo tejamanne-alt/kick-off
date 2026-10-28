@@ -114,6 +114,7 @@ namespace DribbleToSchool.EditorTools
 
             var track = new TrackBuilder(new GameObject("Level").transform);
             layout(track);
+            track.Finish();
             if (track.StartCheckpoint == null) throw new InvalidOperationException("Layout must call Start().");
 
             Vector2 kidSpawn = track.StartCheckpoint.KidSpawnPosition;
@@ -168,8 +169,6 @@ namespace DribbleToSchool.EditorTools
             ballVisual.ball = ball;
             ballVisual.squashRoot = squashRoot;
             ballVisual.shadow = ballShadow;
-            input.ball = ballGo.transform;
-            input.ballWorldRadius = circleCol.radius;
 
             // Kick aiming
             var aimGo = new GameObject("KickAimer");
@@ -212,6 +211,8 @@ namespace DribbleToSchool.EditorTools
             manager.cameraFollow = follow;
             manager.checkpoints = new List<Checkpoint>(track.Checkpoints);
             manager.killY = track.LowestGroundTop - 6f;
+            manager.startBoundaryX = track.MinX;
+            manager.startWall = track.StartWall;
 
             var applier = new GameObject("CosmeticApplier").AddComponent<CosmeticApplier>();
             applier.catalog = Cosmetics;
@@ -413,6 +414,16 @@ namespace DribbleToSchool.EditorTools
             public float MinX { get; private set; }
             public float MaxX { get; private set; }
             public float LowestGroundTop { get; private set; }
+            /// <summary>The wall at the level start: stops the kid, lets the ball through (see LevelManager).</summary>
+            public Collider2D StartWall { get; private set; }
+
+            struct GroundSpan { public float from, to, top; }
+            struct PendingSign { public Transform sign; public Vector2 boardSize; }
+            readonly List<GroundSpan> groundSpans = new List<GroundSpan>();
+            readonly List<PendingSign> pendingSigns = new List<PendingSign>();
+
+            // Ground and pit fills reach well below the lowest camera view, so no sky shows under the level.
+            static float FillDepth(float top) { return Mathf.Max(4f, top + 12f); }
 
             public TrackBuilder(Transform root)
             {
@@ -422,20 +433,21 @@ namespace DribbleToSchool.EditorTools
                 LowestGroundTop = float.MaxValue;
             }
 
-            /// <summary>Solid walls at both ends; also the camera's horizontal limits.</summary>
+            /// <summary>Walls at both ends; also the camera's horizontal limits. The ball can pass the back wall (and is then lost).</summary>
             public void Walls(float minX, float maxX)
             {
                 MinX = minX;
                 MaxX = maxX;
-                Block("BackWall", new Vector2(minX - 0.5f, 3f), new Vector2(1f, 14f), GroundColor, GroundMat);
+                StartWall = Block("BackWall", new Vector2(minX - 0.5f, 3f), new Vector2(1f, 14f), GroundColor, GroundMat).GetComponent<Collider2D>();
                 Block("EndWall", new Vector2(maxX + 0.5f, 3f), new Vector2(1f, 14f), GroundColor, GroundMat);
             }
 
             /// <summary>Solid ground from fromX to toX with its top at <paramref name="top"/>.</summary>
             public void Ground(float fromX, float toX, float top = 0f)
             {
-                const float depth = 4f;
+                float depth = FillDepth(top);
                 LowestGroundTop = Mathf.Min(LowestGroundTop, top);
+                groundSpans.Add(new GroundSpan { from = Mathf.Min(fromX, toX), to = Mathf.Max(fromX, toX), top = top });
                 var go = Block("Ground", new Vector2((fromX + toX) * 0.5f, top - depth * 0.5f), new Vector2(toX - fromX, depth), GroundColor, GroundMat);
                 var sr = go.GetComponent<SpriteRenderer>();
                 sr.sprite = Art.groundFill;
@@ -466,7 +478,7 @@ namespace DribbleToSchool.EditorTools
 
             void Hole(string name, float fromX, float toX, float top, Color color, string message, float surfaceDrop)
             {
-                const float depth = 4f;
+                float depth = FillDepth(top);
                 Decor(name + "Fill", new Vector2((fromX + toX) * 0.5f, top - surfaceDrop - depth * 0.5f),
                     new Vector2(toX - fromX, depth), color);
 
@@ -718,6 +730,13 @@ namespace DribbleToSchool.EditorTools
                 gateGo.AddComponent<Rigidbody2D>().bodyType = RigidbodyType2D.Kinematic;
                 var gate = gateGo.AddComponent<Gate>();
                 gate.openHeight = gateHeight + 0.2f;
+
+                // A frame for the gate to slide up into, so the open gate never floats.
+                float frameTop = groundTop + gateHeight * 2f + 0.45f;
+                Color frame = new Color(0.55f, 0.4f, 0.3f);
+                foreach (float side in new[] { -0.3f, 0.3f })
+                    Decor("GateFrame", new Vector2(gateX + side, (groundTop + frameTop) * 0.5f - 0.1f), new Vector2(0.14f, frameTop - groundTop + 0.2f), frame);
+                Decor("GateLintel", new Vector2(gateX, frameTop), new Vector2(0.9f, 0.2f), frame).GetComponent<SpriteRenderer>().sortingOrder = 1;
 
                 var sw = Block("Switch", switchPosition, new Vector2(0.55f, 0.55f), new Color(0.3f, 0.3f, 0.32f), GroundMat);
                 var indicator = new GameObject("Indicator");
@@ -979,7 +998,7 @@ namespace DribbleToSchool.EditorTools
                     new Vector2(toX - fromX, top - groundTop), PlatformColor, GroundMat);
             }
 
-            /// <summary>Hop onto a step, brake, chip the ball over the high wall behind it.</summary>
+            /// <summary>Hop onto a step, stop, chip the ball over the high wall behind it.</summary>
             public void StepAndHighWall(float x, float groundTop = 0f)
             {
                 Block("Step", new Vector2(x, groundTop + 0.4f), new Vector2(2f, 0.8f), ObstacleColor, GroundMat);
@@ -1046,10 +1065,111 @@ namespace DribbleToSchool.EditorTools
                 trigger.isTrigger = true;
                 trigger.size = new Vector2(2.6f, 3f);
                 goalGo.AddComponent<GoalZone>();
-                Sign("SCHOOL", new Vector2(x, groundTop + 4f));
+                Banner("SCHOOL", new Vector2(x, groundTop + 3.75f), groundTop + 3.25f);
             }
 
+            /// <summary>A signboard on posts. The posts are planted in the ground below once the layout is done (see Finish).</summary>
             public void Sign(string text, Vector2 position)
+            {
+                Vector2 boardSize;
+                var go = SignBoard(text, position, out boardSize);
+                pendingSigns.Add(new PendingSign { sign = go.transform, boardSize = boardSize });
+            }
+
+            /// <summary>A signboard hanging on short chains from something solid at <paramref name="hangFromY"/> (a gate, an awning).</summary>
+            public void Banner(string text, Vector2 position, float hangFromY)
+            {
+                Vector2 boardSize;
+                var go = SignBoard(text, position, out boardSize);
+                float bottom = position.y - boardSize.y * 0.5f;
+                float offset = boardSize.x * 0.5f - 0.3f;
+                foreach (float side in new[] { -offset, offset })
+                {
+                    var chain = Decor("BannerChain", new Vector2(position.x + side, (bottom + hangFromY) * 0.5f), new Vector2(0.06f, Mathf.Abs(hangFromY - bottom) + 0.1f), new Color(0.35f, 0.32f, 0.3f));
+                    chain.transform.SetParent(go.transform, true);
+                }
+            }
+
+            /// <summary>Plant every sign's posts in the ground under it. Called once the whole layout exists.</summary>
+            public void Finish()
+            {
+                foreach (var pending in pendingSigns) PlantSign(pending.sign, pending.boardSize);
+                pendingSigns.Clear();
+            }
+
+            void PlantSign(Transform sign, Vector2 boardSize)
+            {
+                Vector2 pos = sign.position;
+                float boardBottom = pos.y - boardSize.y * 0.5f;
+                float half = boardSize.x * 0.5f;
+                bool twoLegs = boardSize.x > 2.2f;
+                float legOffset = twoLegs ? half - 0.35f : 0f;
+
+                // Ground under every leg; a sign over a gap moves to the nearest edge instead of
+                // floating, preferring the near side so it is read before the gap.
+                float groundTop;
+                if (!GroundUnder(pos.x - legOffset, pos.x + legOffset, boardBottom, out groundTop))
+                {
+                    float bestX = pos.x, bestDistance = float.MaxValue, bestTop = 0f;
+                    for (int pass = 0; pass < 2 && bestDistance == float.MaxValue; pass++)
+                    {
+                        foreach (var span in groundSpans)
+                        {
+                            float lo = span.from + legOffset + 0.4f, hi = span.to - legOffset - 0.4f;
+                            if (lo > hi) continue;
+                            float x = Mathf.Clamp(pos.x, lo, hi);
+                            if (pass == 0 && x > pos.x) continue;
+                            if (Mathf.Abs(x - pos.x) < bestDistance)
+                            {
+                                bestDistance = Mathf.Abs(x - pos.x);
+                                bestX = x;
+                                bestTop = span.top;
+                            }
+                        }
+                    }
+                    if (bestDistance == float.MaxValue) return; // no ground at all: leave it be
+                    pos.x = bestX;
+                    groundTop = bestTop;
+                }
+
+                // Keep at least a short post so the board never sits in the grass.
+                float minBottom = groundTop + 0.6f;
+                if (boardBottom < minBottom)
+                {
+                    pos.y += minBottom - boardBottom;
+                    boardBottom = minBottom;
+                }
+                sign.position = pos;
+
+                // Posts sink a little into the ground; the grass strip (drawn on top) hides the joint.
+                float postBottom = groundTop - 0.25f;
+                float height = boardBottom - postBottom + 0.1f;
+                Color wood = new Color(0.55f, 0.4f, 0.3f);
+                var legs = twoLegs ? new[] { -legOffset, legOffset } : new[] { 0f };
+                foreach (float lx in legs)
+                {
+                    var post = Decor("SignPost", new Vector2(pos.x + lx, postBottom + height * 0.5f), new Vector2(0.14f, height), wood);
+                    post.transform.SetParent(sign, true);
+                }
+            }
+
+            /// <summary>Highest ground top under both x positions that is below <paramref name="belowY"/>.</summary>
+            bool GroundUnder(float xA, float xB, float belowY, out float top)
+            {
+                top = float.MinValue;
+                float topA = float.MinValue, topB = float.MinValue;
+                foreach (var span in groundSpans)
+                {
+                    if (span.top > belowY) continue;
+                    if (xA >= span.from && xA <= span.to) topA = Mathf.Max(topA, span.top);
+                    if (xB >= span.from && xB <= span.to) topB = Mathf.Max(topB, span.top);
+                }
+                if (topA == float.MinValue || topB == float.MinValue) return false;
+                top = Mathf.Max(topA, topB);
+                return true;
+            }
+
+            GameObject SignBoard(string text, Vector2 position, out Vector2 boardSize)
             {
                 var go = new GameObject("Sign_" + text.Split('\n')[0]);
                 go.transform.SetParent(root, false);
@@ -1066,12 +1186,11 @@ namespace DribbleToSchool.EditorTools
                 if (signFont != null) renderer.sharedMaterial = signFont.material;
                 renderer.sortingOrder = 6;
 
-                // Wooden signboard on a post behind the text.
+                // Wooden signboard behind the text.
                 string[] lines = text.Split('\n');
                 int longest = 0;
                 foreach (var l in lines) longest = Mathf.Max(longest, l.Length);
-                Vector2 boardSize = new Vector2(longest * 0.135f + 0.6f, lines.Length * 0.3f + 0.35f);
-                Decor("SignPost", position + Vector2.down * (boardSize.y * 0.5f + 0.9f), new Vector2(0.14f, 1.8f), new Color(0.55f, 0.4f, 0.3f)).GetComponent<SpriteRenderer>().sortingOrder = 3;
+                boardSize = new Vector2(longest * 0.135f + 0.6f, lines.Length * 0.3f + 0.35f);
                 var board = new GameObject("SignBoard").AddComponent<SpriteRenderer>();
                 board.transform.SetParent(go.transform, false);
                 board.sprite = Art.block;
@@ -1079,6 +1198,7 @@ namespace DribbleToSchool.EditorTools
                 board.size = boardSize;
                 board.color = new Color(0.98f, 0.9f, 0.74f);
                 board.sortingOrder = 4;
+                return go;
             }
 
             /// <summary>A coloured box with a matching collider. Scale drives both sprite and collider.</summary>

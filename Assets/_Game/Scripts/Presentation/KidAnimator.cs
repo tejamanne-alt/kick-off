@@ -26,6 +26,7 @@ namespace DribbleToSchool.Presentation
         float jumpTime = -10f;
         float stumbleTime = -10f;
         bool celebrating;
+        float facingScale = 1f;
 
         void Awake()
         {
@@ -151,6 +152,16 @@ namespace DribbleToSchool.Presentation
             if (st >= 0f && st <= 1f) headTilt += Mathf.Sin(st * Mathf.PI * 4f) * 15f * (1f - st);
 
             rig.Pose(legF, legB, armF, armB, bob, squash, headTilt);
+
+            // Turn around with a quick paper-flip rather than snapping.
+            facingScale = Mathf.MoveTowards(facingScale, kid.Facing, Time.deltaTime * 12f);
+            Transform visual = transform.parent;
+            if (visual != null)
+            {
+                float flip = Mathf.Abs(facingScale) < 0.15f ? Mathf.Sign(facingScale) * 0.15f : facingScale;
+                Vector3 scale = visual.localScale;
+                visual.localScale = new Vector3(flip, scale.y, scale.z);
+            }
         }
     }
 }

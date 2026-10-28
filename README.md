@@ -68,9 +68,9 @@ Bell times and streak targets are in the level table in `Editor/GeneratedContent
 
 ## Level rules
 
-- **Start:** a short "Ready... GO!" countdown, then the kid starts running.
+- **Start:** a short "Ready... GO!" countdown, then you're in control.
 - **Checkpoints** (grey flags) turn green when the kid passes them with the ball close by.
-- **Losing the ball** (falling into a gap or water, falling off the level, or leaving the ball about 9 m behind) fades the screen and sends you back to the last checkpoint. There's no game over, and the clock keeps running.
+- **Losing the ball** (falling into a gap or water, falling off the level, or kicking it back past the start of the level) fades the screen and sends you back to the last checkpoint. There's no game over, and the clock keeps running. If you walk off without the ball, just walk back for it.
 - **School bell:** a countdown to the bell. When it rings you can still finish, you're just late. Turn it off in the pause menu (cozy mode).
 - **Stars:**
   - 1 star for reaching school with the ball.
@@ -82,21 +82,23 @@ Bell times and streak targets are in the level table in `Editor/GeneratedContent
 
 | Action | Phone | Keyboard / mouse |
 |---|---|---|
-| Brake (hold) | Hold the left side of the screen | `A` / `←` / `Shift` |
+| Walk back / forward (hold) | ◀ ▶ buttons (bottom-left); let go to stop | `A` / `←`, `D` / `→` |
 | Jump (hold = higher) | JUMP button (bottom-right) or swipe up | `Space` / `W` / `↑` |
-| Touch / juggle | Quick tap on the right side | `F` / `J` |
-| Kick | Touch the ball, drag back, release | Mouse drag from the ball |
+| Touch / juggle | Quick tap anywhere else | `F` / `J` |
+| Kick (aimed) | Drag from the KICK button the way the ball should go, release | Mouse drag from KICK |
+| Kick (quick pass) | Tap KICK | `K` |
 | Pause | Pause button | `Esc` / `P` |
 | Restart level | Pause > Restart | `R` |
 | Tuning panel | Tuning button | `Tab` |
 
 ## How it plays
 
-- The kid **auto-runs** right. Whenever the kid catches up with the ball, it gets a slightly random touch forward.
+- **Walk** with the ◀ ▶ buttons. Whenever the kid walks into the ball, it gets a slightly random touch in the walking direction, so you can dribble forward or back.
 - **Perfect touch:** tap as the kid closes in and the ball sits in the sweet spot just ahead of the feet. Perfect touches have no randomness and they build a streak.
 - **Juggle:** tap while the ball is in the air near the kid.
-- **Kick:** drag back from the ball like a slingshot. The direction sets the angle and the length sets the power. Time slows while you aim, and only the first 0.5 s of the flight is previewed. Kicks only work when the ball is within reach (the dots turn red when it isn't).
-- **Brake** to stop. A stopping kid traps the ball under the foot.
+- **Kick:** drag from the KICK button (just left of JUMP) in the direction you want the ball to go: up-right to chip forward, up-left to chip back. The length sets the power. Time slows while you aim, and only the first 0.5 s of the flight is previewed. A quick tap on KICK is a short pass the way the kid faces. Kicks only work when the ball is within reach: the KICK button glows green when it is, and the dots turn red when it isn't.
+- **Stop** by letting go of the arrows. A stopping kid traps the ball under the foot.
+- **Left-handed mode** swaps the two button clusters.
 
 ## Tuning the feel
 
@@ -111,7 +113,7 @@ Values worth experimenting with first:
 
 1. `BallTuning.dribbleLeadSpeed` and `rollingResistance` set the dribble rhythm, meaning how far the ball runs ahead and how fast the kid catches up.
 2. `BallTuning.perfectTouchBand` sets how forgiving the perfect timing is.
-3. `BallTuning.maxKickSpeed`, `maxDragDistance` and `aimTimeScale` set kick power and comfort on a small screen.
+3. `BallTuning.maxKickSpeed`, `maxDragDistance` and `aimTimeScale` set kick power and comfort on a small screen. The button positions are on the `GameInput` object in each scene.
 4. `PlayerTuning.runSpeed` and `jumpVelocity` set whether the gap and the wall feel fair.
 
 Selecting the Ball in the Scene view draws gizmos for the reach radius (yellow) and the perfect band (green).
@@ -129,9 +131,9 @@ Touch drags feel very different from a mouse, so tune the kick on a real phone.
 Assets/_Game/
   Scripts/
     Input/      GameInput.cs           touch / mouse / keyboard -> game intents (blockable)
-    Player/     KidController.cs       auto-run, brake, variable jump, coyote time
+    Player/     KidController.cs       walk back/forward, stop, variable jump, coyote time
     Ball/       BallController.cs      physics ball, auto/perfect touches, juggle, kick
-                KickAimer.cs           slingshot aim + slow motion
+                KickAimer.cs           kick-button aim (forward or back) + slow motion
                 TrajectoryPreview.cs   dotted arc for the first ~0.5 s
     CameraRig/  CameraFollow2D.cs      look-ahead, vertical dead zone, level bounds
     Core/       LevelManager.cs        intro, bell, checkpoints, lose/respawn, pause, stars

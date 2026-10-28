@@ -30,8 +30,9 @@ namespace DribbleToSchool.UI
         RectTransform root;
         Text titleText, timeText, bellText, coinText, streakText, statusText;
         Image fade;
-        RectTransform jumpRect, brakeRect, aimBar, aimFill, hintCard;
-        Image jumpImage, brakeImage, aimFillImage;
+        RectTransform jumpRect, kickRect, leftRect, rightRect, aimKnob, aimBar, aimFill, hintCard;
+        Image jumpImage, kickImage, leftImage, rightImage, aimFillImage;
+        float tooFarUntil;
         Text tooFar, toast, bigText, hintText;
         RectTransform pauseRect, tuneRect;
         GameObject pauseModal, resultsModal;
@@ -110,12 +111,24 @@ namespace DribbleToSchool.UI
             UIKit.Place(jumpLabel.rectTransform, new Vector2(0.5f, 0.25f), Vector2.zero, new Vector2(260f, 50f));
             jumpLabel.gameObject.AddComponent<Shadow>().effectColor = new Color(0f, 0f, 0f, 0.4f);
 
-            brakeImage = UIKit.Panel(root, "BrakeHint", new Color(1f, 1f, 1f, 0.18f));
-            brakeRect = brakeImage.rectTransform;
-            brakeImage.raycastTarget = false;
-            var brakeLabel = UIKit.Label(brakeRect, "Label", Loc.T("hud.brake"), 30, new Color(1f, 1f, 1f, 0.9f), TextAnchor.MiddleCenter, true);
-            UIKit.Stretch(brakeLabel.rectTransform);
-            brakeLabel.gameObject.AddComponent<Shadow>().effectColor = new Color(0f, 0f, 0f, 0.4f);
+            // Walk buttons: the arrow sprite turned to point back / forward.
+            leftImage = ArrowButton("LeftButton", 90f, out leftRect);
+            rightImage = ArrowButton("RightButton", -90f, out rightRect);
+
+            // Kick button: a ball icon, and a knob that follows the aiming drag.
+            kickImage = UIKit.Icon(root, "KickButton", ProceduralSprites.Circle, new Color(1f, 1f, 1f, 0.3f), 10f);
+            kickRect = kickImage.rectTransform;
+            var kickBall = UIKit.Icon(kickRect, "Ball", ProceduralSprites.Circle, new Color(1f, 1f, 1f, 0.92f), 96f);
+            UIKit.Place(kickBall.rectTransform, new Vector2(0.5f, 0.6f), Vector2.zero, new Vector2(96f, 96f));
+            var patchA = UIKit.Icon(kickBall.rectTransform, "Patch", ProceduralSprites.Circle, new Color(0.15f, 0.15f, 0.15f, 0.85f), 40f);
+            UIKit.Place(patchA.rectTransform, new Vector2(0.62f, 0.6f), Vector2.zero, new Vector2(40f, 40f));
+            var patchB = UIKit.Icon(kickBall.rectTransform, "Patch2", ProceduralSprites.Circle, new Color(0.15f, 0.15f, 0.15f, 0.85f), 28f);
+            UIKit.Place(patchB.rectTransform, new Vector2(0.3f, 0.3f), Vector2.zero, new Vector2(28f, 28f));
+            var kickLabel = UIKit.Label(kickRect, "Label", Loc.T("hud.kick"), 34, new Color(1f, 1f, 1f, 0.9f), TextAnchor.MiddleCenter, true);
+            UIKit.Place(kickLabel.rectTransform, new Vector2(0.5f, 0.22f), Vector2.zero, new Vector2(260f, 50f));
+            kickLabel.gameObject.AddComponent<Shadow>().effectColor = new Color(0f, 0f, 0f, 0.4f);
+            aimKnob = UIKit.Icon(kickRect, "AimKnob", ProceduralSprites.Circle, new Color(1f, 1f, 1f, 0.85f), 70f).rectTransform;
+            aimKnob.gameObject.AddComponent<Shadow>().effectColor = new Color(0f, 0f, 0f, 0.35f);
 
             // Aim meter
             var aimBg = UIKit.Panel(root, "AimMeter", new Color(0f, 0f, 0f, 0.35f), ProceduralSprites.RoundedSmall);
@@ -140,7 +153,8 @@ namespace DribbleToSchool.UI
             // Tutorial hint card (bottom-centre, doesn't block touches)
             var hint = UIKit.Card(root, "Hint", new Color(1f, 0.97f, 0.88f, 0.96f));
             hintCard = (RectTransform)hint.transform.parent;
-            UIKit.Place(hintCard, new Vector2(0.5f, 0f), new Vector2(0f, 60f), new Vector2(1150f, 170f), new Vector2(0.5f, 0f));
+            // Sits above the touch buttons so it never covers them.
+            UIKit.Place(hintCard, new Vector2(0.5f, 0f), new Vector2(0f, 320f), new Vector2(1100f, 170f), new Vector2(0.5f, 0f));
             hintText = UIKit.Label(hint.transform, "Text", "", 36, UITheme.Ink, TextAnchor.MiddleCenter, true);
             UIKit.Stretch(hintText.rectTransform, 24f);
             foreach (var g in hintCard.GetComponentsInChildren<Graphic>()) g.raycastTarget = false;
@@ -157,6 +171,26 @@ namespace DribbleToSchool.UI
             var t = UIKit.Label(parent, name, "", size, UITheme.Ink, align, true);
             UIKit.Place(t.rectTransform, new Vector2(0f, 1f), pos, sizeDelta, new Vector2(0f, 0.5f));
             return t;
+        }
+
+        Image ArrowButton(string name, float angle, out RectTransform rect)
+        {
+            var image = UIKit.Icon(root, name, ProceduralSprites.Circle, new Color(1f, 1f, 1f, 0.3f), 10f);
+            rect = image.rectTransform;
+            var arrow = UIKit.Icon(rect, "Arrow", ProceduralSprites.ArrowUp, new Color(1f, 1f, 1f, 0.85f), 110f);
+            UIKit.Place(arrow.rectTransform, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(110f, 110f));
+            arrow.rectTransform.localRotation = Quaternion.Euler(0f, 0f, angle);
+            var shadow = arrow.gameObject.AddComponent<Shadow>();
+            shadow.effectColor = new Color(0f, 0f, 0f, 0.35f);
+            return image;
+        }
+
+        static void PlaceButton(RectTransform rect, Image image, Rect normalized)
+        {
+            rect.anchorMin = new Vector2(normalized.x, normalized.y);
+            rect.anchorMax = new Vector2(normalized.xMax, normalized.yMax);
+            rect.offsetMin = rect.offsetMax = Vector2.zero;
+            image.preserveAspect = true;
         }
 
         static void MakeRound(Button button)
@@ -294,27 +328,39 @@ namespace DribbleToSchool.UI
         {
             var input = GameInput.Instance;
             bool playing = level.State == LevelState.Playing;
-            jumpRect.gameObject.SetActive(playing && input != null);
-            brakeRect.gameObject.SetActive(playing && input != null);
-            if (input != null && playing)
+            bool show = playing && input != null;
+            jumpRect.gameObject.SetActive(show);
+            kickRect.gameObject.SetActive(show);
+            leftRect.gameObject.SetActive(show);
+            rightRect.gameObject.SetActive(show);
+            bool aiming = aimer != null && aimer.IsAiming;
+            if (show)
             {
-                Rect j = input.JumpButtonNormalized;
-                jumpRect.anchorMin = new Vector2(j.x, j.y);
-                jumpRect.anchorMax = new Vector2(j.xMax, j.yMax);
-                jumpRect.offsetMin = jumpRect.offsetMax = Vector2.zero;
+                PlaceButton(jumpRect, jumpImage, input.JumpButtonNormalized);
                 jumpImage.color = new Color(1f, 1f, 1f, input.JumpHeld ? 0.55f : 0.28f);
-                jumpImage.preserveAspect = true;
+                PlaceButton(leftRect, leftImage, input.LeftButtonNormalized);
+                leftImage.color = new Color(1f, 1f, 1f, input.LeftHeld ? 0.55f : 0.28f);
+                PlaceButton(rightRect, rightImage, input.RightButtonNormalized);
+                rightImage.color = new Color(1f, 1f, 1f, input.RightHeld ? 0.55f : 0.28f);
 
-                Rect b = input.BrakeZoneNormalized;
-                brakeRect.anchorMin = new Vector2(b.x + 0.02f, 0.03f);
-                brakeRect.anchorMax = new Vector2(b.xMax - 0.02f, 0.11f);
-                brakeRect.offsetMin = brakeRect.offsetMax = Vector2.zero;
-                brakeImage.color = new Color(1f, 1f, 1f, input.BrakeHeld ? 0.4f : 0.14f);
+                // The kick button glows green while the ball is close enough to kick.
+                PlaceButton(kickRect, kickImage, input.KickButtonNormalized);
+                Color kickTint = ball.InKickReach ? new Color(0.55f, 1f, 0.6f) : Color.white;
+                kickTint.a = aiming ? 0.55f : ball.InKickReach ? 0.42f : 0.22f;
+                kickImage.color = kickTint;
+
+                if (input.KickTapped && !ball.InKickReach) tooFarUntil = Time.unscaledTime + 1.2f;
+                aimKnob.gameObject.SetActive(aiming);
+                if (aiming)
+                {
+                    float scale = Mathf.Max(0.01f, root.lossyScale.x);
+                    Vector2 drag = input.KickDrag / scale;
+                    aimKnob.anchoredPosition = Vector2.ClampMagnitude(drag, 240f);
+                }
             }
 
-            bool aiming = aimer != null && aimer.IsAiming;
             aimBar.gameObject.SetActive(aiming);
-            tooFar.gameObject.SetActive(aiming && !ball.InKickReach);
+            tooFar.gameObject.SetActive((aiming && !ball.InKickReach) || Time.unscaledTime < tooFarUntil);
             if (aiming)
             {
                 float width = (aimBar.rect.width - 12f) * Mathf.Max(0.02f, aimer.AimPower);

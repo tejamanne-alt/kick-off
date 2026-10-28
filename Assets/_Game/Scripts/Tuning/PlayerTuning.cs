@@ -11,8 +11,6 @@ namespace DribbleToSchool.Tuning
         [Header("Run")]
         [Tooltip("Auto-run speed to the right.")]
         public float runSpeed = 4.2f;
-        [Tooltip("Speed while the brake is held (0 = full stop).")]
-        public float brakeSpeed = 0f;
         public float acceleration = 14f;
         public float deceleration = 22f;
         [Tooltip("Multiplier on acceleration while in the air.")]

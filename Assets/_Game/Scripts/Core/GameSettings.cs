@@ -41,7 +41,7 @@ namespace DribbleToSchool.Core
             set { SetBool("settings.shake", value); }
         }
 
-        /// <summary>Mirror the touch layout: jump on the left, brake on the right.</summary>
+        /// <summary>Mirror the touch layout: kick and jump on the left, walk arrows on the right.</summary>
         public static bool LeftHanded
         {
             get { return GetBool("settings.leftHanded", false); }

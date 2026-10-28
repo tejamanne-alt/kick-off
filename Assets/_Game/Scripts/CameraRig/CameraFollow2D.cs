@@ -78,7 +78,8 @@ namespace DribbleToSchool.CameraRig
         {
             if (kid == null) return;
 
-            float targetLook = Mathf.Clamp(kid.SpeedX * lookAheadTime, 0f, maxLookAhead);
+            // Lean the view the way the kid faces, and further while walking.
+            float targetLook = offset.x * kid.Facing + Mathf.Clamp(kid.SpeedX * lookAheadTime, -maxLookAhead, maxLookAhead);
             lookAhead = Mathf.SmoothDamp(lookAhead, targetLook, ref lookAheadVelocity, lookAheadSmoothing);
 
             Vector2 focus = Focus();
@@ -90,7 +91,7 @@ namespace DribbleToSchool.CameraRig
             float wantedSize = baseSize * (aiming ? aimZoom : 1f);
             cam.orthographicSize = Mathf.Lerp(cam.orthographicSize, wantedSize, 1f - Mathf.Exp(-zoomSpeed * Time.unscaledDeltaTime));
 
-            Vector2 target = ClampToBounds(new Vector2(focus.x + offset.x + lookAhead, trackedY));
+            Vector2 target = ClampToBounds(new Vector2(focus.x + lookAhead, trackedY));
             Vector3 pos = transform.position - shakeOffset;
             pos.x = Mathf.SmoothDamp(pos.x, target.x, ref velocityX, smoothTimeX);
             pos.y = Mathf.SmoothDamp(pos.y, target.y, ref velocityY, smoothTimeY);
@@ -109,11 +110,11 @@ namespace DribbleToSchool.CameraRig
         public void SnapToTarget()
         {
             if (kid == null) return;
-            lookAhead = 0f;
+            lookAhead = offset.x * kid.Facing;
             lookAheadVelocity = velocityX = velocityY = 0f;
             Vector2 focus = Focus();
             trackedY = focus.y + offset.y;
-            Vector2 target = ClampToBounds(new Vector2(focus.x + offset.x, trackedY));
+            Vector2 target = ClampToBounds(new Vector2(focus.x + lookAhead, trackedY));
             transform.position = new Vector3(target.x, target.y, transform.position.z);
             shakeOffset = Vector3.zero;
         }

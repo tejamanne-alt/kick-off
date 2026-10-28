@@ -8,7 +8,7 @@ using UnityEngine;
 namespace DribbleToSchool.Player
 {
     /// <summary>
-    /// The kid auto-runs to the right. The player only brakes and jumps;
+    /// The kid walks back and forth with the arrow buttons and jumps;
     /// the ball is never carried, it is dribbled (see BallController).
     /// </summary>
     [RequireComponent(typeof(Rigidbody2D))]
@@ -18,12 +18,15 @@ namespace DribbleToSchool.Player
         [Tooltip("Point at the bottom of the kid's collider. Used for ground checks and dribbling.")]
         public Transform feet;
         public Vector2 groundCheckSize = new Vector2(0.4f, 0.1f);
-        [Tooltip("Off = the kid stands still unless pushed (juggling challenges).")]
-        public bool autoRun = true;
 
         public Rigidbody2D Body { get; private set; }
         public bool IsGrounded { get; private set; }
+        /// <summary>No move input: the kid stops and traps a ball rolling at the feet.</summary>
         public bool IsBraking { get; private set; }
+        /// <summary>-1..1 move input this frame.</summary>
+        public float MoveAxis { get; private set; }
+        /// <summary>+1 facing forward (right), -1 facing back (left).</summary>
+        public int Facing { get; private set; }
         public bool InputEnabled { get; set; }
         public float SpeedX { get { return Body.linearVelocity.x; } }
         public Vector2 FeetPosition { get { return feet != null ? (Vector2)feet.position : Body.position; } }
@@ -51,6 +54,7 @@ namespace DribbleToSchool.Player
             Body = GetComponent<Rigidbody2D>();
             InputEnabled = true;
             SpeedMultiplier = 1f;
+            Facing = 1;
             groundFilter = new ContactFilter2D();
             groundFilter.useTriggers = false;
             ApplyTuning();
@@ -71,10 +75,14 @@ namespace DribbleToSchool.Player
             if (input == null || !InputEnabled)
             {
                 IsBraking = false;
+                MoveAxis = 0f;
                 return;
             }
 
-            IsBraking = input.BrakeHeld;
+            MoveAxis = input.MoveAxis;
+            IsBraking = Mathf.Approximately(MoveAxis, 0f);
+            if (MoveAxis > 0.1f) Facing = 1;
+            else if (MoveAxis < -0.1f) Facing = -1;
             if (input.JumpPressed) lastJumpPressedTime = Time.time;
 
             // Variable jump height: letting go early cuts the rise short.
@@ -101,7 +109,7 @@ namespace DribbleToSchool.Player
             Vector2 v = Body.linearVelocity;
             if (!IsGrounded) lastFallSpeed = Mathf.Max(0f, -v.y);
 
-            float target = !InputEnabled || !autoRun ? 0f : IsBraking ? tuning.brakeSpeed : tuning.runSpeed * SpeedMultiplier;
+            float target = InputEnabled ? MoveAxis * tuning.runSpeed * SpeedMultiplier : 0f;
             target += GroundVelocity.x;
             float rate = Mathf.Abs(target) > Mathf.Abs(v.x) ? tuning.acceleration : tuning.deceleration;
             if (!IsGrounded) rate *= tuning.airControl;
@@ -156,6 +164,13 @@ namespace DribbleToSchool.Player
             lastGroundedTime = -10f;
         }
 
+        /// <summary>Turn to face a direction (e.g. when kicking backward).</summary>
+        public void FaceTowards(float direction)
+        {
+            if (direction > 0.01f) Facing = 1;
+            else if (direction < -0.01f) Facing = -1;
+        }
+
         /// <summary>Apply a speed multiplier until removed by the same owner (e.g. a puddle).</summary>
         public void AddSpeedModifier(object owner, float multiplier)
         {
@@ -188,6 +203,8 @@ namespace DribbleToSchool.Player
             Body.linearVelocity = Vector2.zero;
             jumping = false;
             lastJumpPressedTime = -10f;
+            Facing = 1;
+            MoveAxis = 0f;
             speedModifierOwners.Clear();
             speedModifierValues.Clear();
             SpeedMultiplier = 1f;
