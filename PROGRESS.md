@@ -117,6 +117,7 @@ This file is the resume point. A new session should read it first. All eight pha
   - `Art/SceneryArt.cs` draws the deep-blue skies, cumulus clouds, per-chapter far strips, large mid props, the tileable utility-pole line and the near strips.
   - Chapter 1's ground is now asphalt with a white kerb.
   - The menu sky matches.
+  - The kid wears shorts with bare knees and long socks, and has smooth hair (a rounded cap, a soft fringe at the brow and a shine band). His head is a little bigger so he reads as younger. Adults keep long trousers.
 
 ## After Phase 8 (next steps)
 

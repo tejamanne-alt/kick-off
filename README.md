@@ -163,7 +163,7 @@ The original plan named Cinemachine for the camera. For now the project uses its
 All art and audio are generated in code, so the repo has no art or audio files to maintain:
 
 - **Art.** A bright anime look: deep-blue summer skies, towering cumulus clouds with hard cel shadows, and flat-colour scenery with one shadow tone. Each chapter has its own far strip (suburb, shops, sea, skyline, park), large mid-layer props (Japanese houses, block walls and pruned pines, shops and vending machines, a lifeguard tower, an expressway and apartments, the school and cherry trees) and, on streets, a line of utility poles with sagging wires. The editor bakes everything to `Assets/_Game/Art/Generated` when levels are rebuilt.
-- **Animation.** The kid is a teenager about seven heads tall, with spiky hair, a white school shirt and tie, navy trousers, sneakers and a messenger bag. He is a cut-out rig with knees and elbows: run, jump, kick, land, celebrate and stumble, and the bag swings on a spring. The ball squashes and stretches and casts a shadow.
+- **Animation.** The kid is a schoolboy with smooth, glossy black hair, a white school shirt and tie, navy shorts, long white socks, sneakers and a messenger bag. Adults in the street wear long trousers. He is a cut-out rig with knees and elbows: run, jump, kick, land, celebrate and stumble, and the bag swings on a spring. The ball squashes and stretches and casts a shadow.
 - **Feel.** Parallax backdrops, particles for every action, screen shake, a slow-motion finish, and the camera zooms out while aiming.
 - **Audio.** Synthesized sound effects for every action and a lo-fi music loop per chapter, plus a menu theme.
 - **Haptics.** Taptic feedback on iOS and short vibrations on Android.

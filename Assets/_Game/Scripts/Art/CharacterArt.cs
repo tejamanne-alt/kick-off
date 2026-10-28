@@ -4,7 +4,7 @@ namespace DribbleToSchool.Art
 {
     /// <summary>
     /// Character parts in an anime cel style: flat colour, one hard shadow tone and a
-    /// thin dark line. Drawn at 512 px per unit for a teenager about 1.55 units tall
+    /// thin dark line. Drawn at 512 px per unit for a kid about 1.55 units tall
     /// (feet at body y -0.6). Every part faces right; light comes from the front-top,
     /// so shadows sit on the back (left) side. Shirt, trousers and hair are drawn in
     /// light greys so they can be tinted.
@@ -21,7 +21,7 @@ namespace DribbleToSchool.Art
         /// <summary>Import scale per part: the head and hair are drawn a little larger.</summary>
         public static float PartPpu(string name)
         {
-            if (name == "Head" || name == "Hair") return 450f;
+            if (name == "Head" || name == "Hair") return 400f;   // a big head reads as a kid
             if (name == "Bag") return 620f;
             return PartPixelsPerUnit;
         }
@@ -29,7 +29,8 @@ namespace DribbleToSchool.Art
         /// <summary>Names of every character part, for baking.</summary>
         public static readonly string[] PartNames =
         {
-            "Head", "Hair", "Torso", "Hips", "Thigh", "Shin", "Shoe", "UpperArm", "Forearm", "Sleeve", "Strap", "Bag",
+            "Head", "Hair", "Torso", "Hips", "Thigh", "ShortsLeg", "Shin", "TrouserThigh", "TrouserShin",
+            "Shoe", "UpperArm", "Forearm", "Sleeve", "Strap", "Bag",
         };
 
         public static PixelCanvas Part(string name)
@@ -40,8 +41,11 @@ namespace DribbleToSchool.Art
                 case "Hair": return Hair();
                 case "Torso": return Torso();
                 case "Hips": return Hips();
-                case "Thigh": return Trouser(72, 210, 30, 25, 11, false);
+                case "Thigh": return Limb(52, 210, 19, Skin, SkinShadow, 11);   // bare thigh under the shorts
+                case "ShortsLeg": return ShortsLeg();
                 case "Shin": return Shin();
+                case "TrouserThigh": return Trouser(72, 210, 30, 25, 13, false); // adults wear long trousers
+                case "TrouserShin": return Trouser(68, 200, 25, 26, 25, true);
                 case "Shoe": return Shoe();
                 case "UpperArm": return Limb(48, 150, 16, Skin, SkinShadow, 12);
                 case "Forearm": return Forearm();
@@ -98,41 +102,40 @@ namespace DribbleToSchool.Art
 
         static PixelCanvas Hair()
         {
-            // Messy dark spikes: a cap over the top and back of the head (the cranium sits at
-            // (80, 84) on this canvas) with bangs falling over the forehead; the face stays clear.
+            // Smooth, glossy kid's hair: a rounded cap over the top and back of the head (the
+            // cranium sits at (80, 84) on this canvas), a soft scalloped fringe that stops at
+            // the brow, a gentle flick at the nape and a shine band. Drawn mid-grey so the
+            // shine still shows once the hair is tinted dark.
             var c = new PixelCanvas(176, 168);
-            Color hair = Grey(0.85f);
+            Color hair = Grey(0.55f);
             const float cx = 80f, cy = 84f;
             c.Fill((x, y) =>
             {
-                float dx = (x - cx + 4f) / 54f, dy = (y - cy - 6f) / 60f;
+                float dx = (x - cx + 2f) / 56f, dy = (y - cy - 10f) / 60f;
                 if (dx * dx + dy * dy > 1f) return 0f;
-                // Hairline: high over the face, dropping down the back of the head.
-                float hairline = x > cx - 14f ? cy + 6f + (x - cx) * 0.22f : cy - 30f;
+                // Hairline: high over the face, sweeping smoothly down the back of the head.
+                float t = Mathf.Clamp01((x - (cx - 30f)) / 70f);
+                float hairline = Mathf.Lerp(cy - 34f, cy + 24f, t * t * (3f - 2f * t));
                 return y > hairline ? 1f : 0f;
             }, hair);
-            var spikes = new[]
-            {
-                // Back and crown spikes (tip first).
-                new[] { new Vector2(8, 66), new Vector2(30, 98), new Vector2(34, 58) },
-                new[] { new Vector2(6, 112), new Vector2(26, 128), new Vector2(30, 92) },
-                new[] { new Vector2(24, 156), new Vector2(40, 132), new Vector2(60, 144) },
-                new[] { new Vector2(70, 166), new Vector2(60, 140), new Vector2(92, 142) },
-                new[] { new Vector2(118, 162), new Vector2(94, 142), new Vector2(124, 128) },
-                new[] { new Vector2(156, 134), new Vector2(120, 132), new Vector2(132, 108) },
-                // Bangs over the forehead, pointing down and forward.
-                new[] { new Vector2(146, 92), new Vector2(118, 120), new Vector2(136, 104) },
-                new[] { new Vector2(130, 86), new Vector2(104, 114), new Vector2(122, 110) },
-                new[] { new Vector2(112, 90), new Vector2(92, 112), new Vector2(110, 112) },
-                new[] { new Vector2(96, 94), new Vector2(80, 112), new Vector2(96, 114) },
-                // Nape
-                new[] { new Vector2(34, 36), new Vector2(30, 66), new Vector2(50, 58) },
-            };
-            foreach (var sp in spikes) c.FillPolygon(sp, hair);
-            c.Shade((x, y) => x < 54 || y < 76 ? 1f : 0f, Grey(0.6f));         // shadow side
+            // Fringe: rounded locks ending at the eyebrows.
+            c.FillEllipse(108, 118, 22, 16, hair);
+            c.FillEllipse(126, 116, 18, 16, hair);
+            c.FillEllipse(138, 120, 12, 14, hair);
+            c.FillPolygon(new[] { new Vector2(120, 132), new Vector2(148, 128), new Vector2(146, 106) }, hair);
+            // Soft flick at the nape.
+            c.FillPolygon(new[] { new Vector2(28, 70), new Vector2(18, 50), new Vector2(46, 62) }, hair);
+            c.Shade((x, y) => x < 52 || y < 76 ? 1f : 0f, Grey(0.38f));          // shadow side
             c.Ink(Line, LineWidth, 22);
-            c.Line(new Vector2(64, 132), new Vector2(104, 126), 5f, Grey(1f)); // shine
-            c.Line(new Vector2(56, 122), new Vector2(76, 120), 4f, Grey(1f));
+            // "Angel ring" shine across the crown, and strand lines in the fringe.
+            c.Fill((x, y) =>
+            {
+                float dx = (x - 84f) / 48f, dy = (y - 120f) / 30f;
+                float d = dx * dx + dy * dy;
+                return d > 0.72f && d < 1f && y > 116f && x > 44f && x < 126f ? 1f : 0f;
+            }, Grey(1f));
+            c.Line(new Vector2(124, 128), new Vector2(130, 108), 2.5f, Grey(0.38f));
+            c.Line(new Vector2(108, 130), new Vector2(110, 106), 2.5f, Grey(0.38f));
             return c;
         }
 
@@ -172,7 +175,30 @@ namespace DribbleToSchool.Art
 
         static PixelCanvas Shin()
         {
-            return Trouser(68, 200, 25, 26, 25, true);
+            // Bare shin with a long white school sock (striped top) down to the shoe.
+            var c = new PixelCanvas(56, 200);
+            c.FillRoundRect(10, 4, 46, 196, 18, Skin);
+            c.FillEllipse(30, 182, 8, 5, new Color(1f, 0.7f, 0.62f, 0.45f));   // knee blush
+            c.FillRoundRect(9, 4, 47, 92, 10, Grey(0.97f));
+            c.FillRect(9, 74, 47, 80, new Color(0.3f, 0.42f, 0.72f));
+            c.FillRect(9, 84, 47, 88, new Color(0.3f, 0.42f, 0.72f));
+            BackShadow(c, 20, SkinShadow);
+            c.Shade((x, y) => x < 20 && y < 92 ? 1f : 0f, Grey(0.8f));
+            c.Ink(Line, LineWidth * 0.8f, 25);
+            return c;
+        }
+
+        static PixelCanvas ShortsLeg()
+        {
+            // Wide shorts leg, flaring a little to the hem.
+            var c = new PixelCanvas(88, 132);
+            Color cloth = Grey(0.95f);
+            c.FillPolygon(new[] { new Vector2(4, 8), new Vector2(84, 8), new Vector2(76, 128), new Vector2(12, 128) }, cloth);
+            BackShadow(c, 28, Grey(0.74f));
+            c.Shade((x, y) => y < 20 ? 1f : 0f, Grey(0.84f));                   // hem
+            c.Line(new Vector2(52, 40), new Vector2(60, 90), 2.5f, Grey(0.8f)); // crease
+            c.Ink(Line, LineWidth * 0.8f, 26);
+            return c;
         }
 
         /// <summary>A trouser segment tapering from <paramref name="halfTop"/> to <paramref name="halfBottom"/>, with an optional hem.</summary>

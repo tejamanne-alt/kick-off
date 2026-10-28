@@ -129,7 +129,7 @@ namespace DribbleToSchool.EditorTools
             capsule.size = new Vector2(0.5f, 1.2f);
             capsule.sharedMaterial = kidMat;
             var kidRig = BuildCharacter(kidGo.transform, "Visual", Vector2.zero, 1f, KidColor, new Color(0.22f, 0.23f, 0.42f),
-                new Color(0.13f, 0.12f, 0.15f), 7, true);
+                new Color(0.24f, 0.22f, 0.28f), 7, true);   // near-black hair (the hair art is mid-grey)
             var feet = new GameObject("Feet").transform;
             feet.SetParent(kidGo.transform, false);
             feet.localPosition = new Vector3(0f, -0.6f, 0f);
@@ -246,7 +246,7 @@ namespace DribbleToSchool.EditorTools
             public SpriteRenderer torso, shorts, hair, flag;
             /// <summary>Shirt sleeves, tinted with the torso.</summary>
             public SpriteRenderer[] sleeves;
-            /// <summary>Hips, thighs and shins, tinted with the trousers.</summary>
+            /// <summary>Hips and shorts legs (or trouser legs on adults), tinted with the outfit's second colour.</summary>
             public SpriteRenderer[] trousers;
             public Transform visual;
         }
@@ -279,8 +279,10 @@ namespace DribbleToSchool.EditorTools
             var sleeves = new List<SpriteRenderer>();
             var trousers = new List<SpriteRenderer>();
             BuildArm(body, rig, false, new Vector2(-0.03f, 0.56f), backTint, shirtBack, baseOrder + 1, sleeves);
-            BuildLeg(body, rig, false, new Vector2(-0.035f, 0.12f), trousersBack, backTint, baseOrder + 1, trousers);
-            BuildLeg(body, rig, true, new Vector2(0.035f, 0.12f), shorts, Color.white, baseOrder + 3, trousers);
+            // The kid (with the school bag) wears shorts over bare legs and long socks; adults wear trousers.
+            bool kidLegs = backpack;
+            BuildLeg(body, rig, false, new Vector2(-0.035f, 0.12f), trousersBack, backTint, baseOrder + 1, trousers, kidLegs);
+            BuildLeg(body, rig, true, new Vector2(0.035f, 0.12f), shorts, Color.white, baseOrder + 3, trousers, kidLegs);
             parts.shorts = Part(body, "Hips", "Hips", new Vector2(0f, 0.12f), 1f, shorts, baseOrder + 5);
             trousers.Add(parts.shorts);
             parts.torso = Part(body, "Torso", "Torso", new Vector2(0f, 0.33f), 1f, shirt, baseOrder + 6);
@@ -294,21 +296,31 @@ namespace DribbleToSchool.EditorTools
                 parts.flag = Visual(rig.bag, "BackpackFlag", Square, new Vector2(-0.16f, 0.17f), new Vector2(0.12f, 0.09f), Color.white, baseOrder + 7).GetComponent<SpriteRenderer>();
             }
             rig.head = Pivot(body, "Head", new Vector2(0.03f, 0.6f));
-            Part(rig.head, "Face", "Head", new Vector2(0.009f, 0.16f), 1f, Color.white, baseOrder + 9);
-            parts.hair = Part(rig.head, "Hair", "Hair", new Vector2(0.0224f, 0.182f), 1f, hair, baseOrder + 10);
+            Part(rig.head, "Face", "Head", new Vector2(0.01f, 0.18f), 1f, Color.white, baseOrder + 9);
+            parts.hair = Part(rig.head, "Hair", "Hair", new Vector2(0.025f, 0.205f), 1f, hair, baseOrder + 10);
             BuildArm(body, rig, true, new Vector2(0.03f, 0.56f), Color.white, shirt, baseOrder + 11, sleeves);
             parts.sleeves = sleeves.ToArray();
             parts.trousers = trousers.ToArray();
             return parts;
         }
 
-        static void BuildLeg(Transform body, CharacterRig rig, bool front, Vector2 hip, Color cloth, Color shoeTint, int order, List<SpriteRenderer> trousers)
+        static void BuildLeg(Transform body, CharacterRig rig, bool front, Vector2 hip, Color cloth, Color tint, int order, List<SpriteRenderer> clothes, bool shorts)
         {
             var leg = Pivot(body, front ? "LegFront" : "LegBack", hip);
-            trousers.Add(Part(leg, "Thigh", "Thigh", new Vector2(0f, -0.175f), 1f, cloth, order));
             var knee = Pivot(leg, "Knee", new Vector2(0f, -0.36f));
-            trousers.Add(Part(knee, "Shin", "Shin", new Vector2(0f, -0.165f), 1f, cloth, order + 1));
-            Part(knee, "Shoe", "Shoe", new Vector2(0.045f, -0.301f), 1f, shoeTint, order + 1);
+            if (shorts)
+            {
+                // The shorts leg draws over the thigh; it ends above the knee, so it never meets the shin.
+                Part(leg, "Thigh", "Thigh", new Vector2(0f, -0.175f), 1f, tint, order);
+                clothes.Add(Part(leg, "ShortsLeg", "ShortsLeg", new Vector2(0f, -0.087f), 1f, cloth, order + 1));
+                Part(knee, "Shin", "Shin", new Vector2(0f, -0.165f), 1f, tint, order + 1);
+            }
+            else
+            {
+                clothes.Add(Part(leg, "Thigh", "TrouserThigh", new Vector2(0f, -0.175f), 1f, cloth, order));
+                clothes.Add(Part(knee, "Shin", "TrouserShin", new Vector2(0f, -0.165f), 1f, cloth, order + 1));
+            }
+            Part(knee, "Shoe", "Shoe", new Vector2(0.045f, -0.301f), 1f, tint, order + 1);
             if (front) { rig.legFront = leg; rig.kneeFront = knee; }
             else { rig.legBack = leg; rig.kneeBack = knee; }
         }
@@ -632,7 +644,7 @@ namespace DribbleToSchool.EditorTools
                 var col = go.AddComponent<CapsuleCollider2D>();
                 col.size = new Vector2(0.5f, 1.6f);
 
-                Color[] hairs = { new Color(0.3f, 0.22f, 0.18f), new Color(0.85f, 0.7f, 0.4f), new Color(0.6f, 0.6f, 0.62f), new Color(0.55f, 0.3f, 0.2f) };
+                Color[] hairs = { new Color(0.46f, 0.34f, 0.28f), new Color(1f, 0.95f, 0.6f), new Color(0.92f, 0.92f, 0.95f), new Color(0.85f, 0.46f, 0.3f) };
                 // Adults: the teen rig at 1.1x (about 1.7 tall), feet on the capsule bottom (-0.8).
                 var parts = BuildCharacter(go.transform, "Visual", new Vector2(0f, -0.14f), 1.1f, coat, Color.Lerp(coat, Color.black, 0.45f),
                     hairs[Mathf.Abs(Mathf.RoundToInt(minX)) % hairs.Length], 4, false);
