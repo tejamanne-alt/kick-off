@@ -95,6 +95,21 @@ namespace DribbleToSchool.EditorTools
             LevelSpec.Challenge(5, "C05", "Juggle Champion", "C05_JuggleChampion", GreyboxLevels.JuggleChampion),
         };
 
+        /// <summary>(id, chapter, isChallenge, scene name) for each entry of the level table. Used by tests.</summary>
+        public static List<KeyValuePair<string, int>> LevelTable(out List<bool> isChallenge, out List<string> scenes)
+        {
+            var list = new List<KeyValuePair<string, int>>();
+            isChallenge = new List<bool>();
+            scenes = new List<string>();
+            foreach (var spec in Levels)
+            {
+                list.Add(new KeyValuePair<string, int>(spec.id, spec.chapter));
+                isChallenge.Add(spec.challenge);
+                scenes.Add(spec.scene);
+            }
+            return list;
+        }
+
         static GeneratedContent()
         {
             EditorApplication.delayCall += AutoBuild;

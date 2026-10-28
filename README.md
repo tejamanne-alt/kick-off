@@ -173,6 +173,19 @@ All art and audio are generated in code, so the repo has no art or audio files t
 - **Tutorial:** short hint cards appear the first time each new mechanic shows up.
 - **Developer tools:** the tuning sliders are only in the editor and development builds (Tab, or the Tune button in the HUD).
 
+## Tests
+
+Edit-mode tests live in `Assets/_Game/Tests/Editor/GameLogicTests.cs`. Run them from **Window > General > Test Runner > EditMode**. They check:
+
+- every language has every string, and every level has a translated name,
+- the level table (23 story levels, one challenge per chapter, unique ids and scenes),
+- the shop table (unique ids, free defaults),
+- challenge star thresholds, and that Next level skips challenges,
+- generated sound effects and music (no invalid samples, no clipping),
+- generated art (solid blocks, seamless ground edges).
+
+The tests never touch the player's save file. The file is wrapped in `UNITY_INCLUDE_TESTS`, so it compiles to nothing unless the Test Framework is active.
+
 ## Release
 
 See [`docs/RELEASE.md`](docs/RELEASE.md) for:
