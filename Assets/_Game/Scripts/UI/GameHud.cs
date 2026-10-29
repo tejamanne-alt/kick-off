@@ -15,7 +15,7 @@ namespace DribbleToSchool.UI
     /// <summary>
     /// The in-level HUD (uGUI, built from code): info card, pause button,
     /// touch-control visuals, aim meter, toasts, countdown, respawn fade,
-    /// tutorial hints, the pause menu and the animated results screen.
+    /// tutorial hints (a dismissable banner at the top), the pause menu and the animated results screen.
     /// </summary>
     public class GameHud : MonoBehaviour
     {
@@ -130,7 +130,7 @@ namespace DribbleToSchool.UI
             // Aim meter
             var aimBg = UIKit.Panel(root, "AimMeter", new Color(0f, 0f, 0f, 0.35f), ProceduralSprites.RoundedSmall);
             aimBar = aimBg.rectTransform;
-            UIKit.Place(aimBar, new Vector2(0.5f, 1f), new Vector2(0f, -170f), new Vector2(560f, 44f));
+            UIKit.Place(aimBar, new Vector2(0.5f, 1f), new Vector2(0f, -196f), new Vector2(560f, 44f));
             aimFillImage = UIKit.Panel(aimBar, "Fill", UITheme.Green, ProceduralSprites.RoundedSmall);
             aimFill = aimFillImage.rectTransform;
             aimFill.anchorMin = new Vector2(0f, 0f);
@@ -139,7 +139,7 @@ namespace DribbleToSchool.UI
             aimFill.offsetMin = new Vector2(6f, 6f);
             aimFill.offsetMax = new Vector2(6f, -6f);
             tooFar = UIKit.Title(root, "TooFar", Loc.T("hud.tooFar"), 38, Color.white);
-            UIKit.Place(tooFar.rectTransform, new Vector2(0.5f, 1f), new Vector2(0f, -230f), new Vector2(1200f, 60f));
+            UIKit.Place(tooFar.rectTransform, new Vector2(0.5f, 1f), new Vector2(0f, -256f), new Vector2(1200f, 60f));
 
             // Messages
             toast = UIKit.Title(root, "Toast", "", 64, Color.white);
@@ -147,14 +147,30 @@ namespace DribbleToSchool.UI
             bigText = UIKit.Title(root, "Big", "", 150, Color.white);
             UIKit.Place(bigText.rectTransform, new Vector2(0.5f, 0.55f), Vector2.zero, new Vector2(1600f, 220f));
 
-            // Tutorial hint card (bottom-centre, doesn't block touches)
-            var hint = UIKit.Card(root, "Hint", new Color(1f, 0.97f, 0.88f, 0.96f));
+            // Tutorial hint: a slim banner across the top, between the info card and the pause
+            // button, clear of the play area. Tap it (or its ×) to dismiss; it also fades on its own.
+            var hint = UIKit.Card(root, "Hint", new Color(1f, 0.97f, 0.88f, 0.9f));
             hintCard = (RectTransform)hint.transform.parent;
-            // Sits above the touch buttons so it never covers them.
-            UIKit.Place(hintCard, new Vector2(0.5f, 0f), new Vector2(0f, 320f), new Vector2(1100f, 170f), new Vector2(0.5f, 0f));
-            hintText = UIKit.Label(hint.transform, "Text", "", 36, UITheme.Ink, TextAnchor.MiddleCenter, true);
-            UIKit.Stretch(hintText.rectTransform, 24f);
+            hintCard.anchorMin = new Vector2(0f, 1f);
+            hintCard.anchorMax = new Vector2(1f, 1f);
+            hintCard.pivot = new Vector2(0.5f, 1f);
+            hintCard.offsetMin = new Vector2(720f, -150f);
+            hintCard.offsetMax = new Vector2(-200f, -34f);
+            hintText = UIKit.Label(hint.transform, "Text", "", 30, UITheme.Ink, TextAnchor.MiddleLeft, true);
+            UIKit.Stretch(hintText.rectTransform, 18f);
+            hintText.rectTransform.offsetMin = new Vector2(28f, 10f);
+            hintText.rectTransform.offsetMax = new Vector2(-96f, -10f);
+            hintText.resizeTextForBestFit = true;
+            hintText.resizeTextMinSize = 20;
+            hintText.resizeTextMaxSize = 30;
+            hintText.verticalOverflow = VerticalWrapMode.Truncate;
             foreach (var g in hintCard.GetComponentsInChildren<Graphic>()) g.raycastTarget = false;
+            hint.raycastTarget = true;
+            var close = UIKit.Label(hint.transform, "Close", "\u00D7", 52, UITheme.InkSoft, TextAnchor.MiddleCenter, true);
+            UIKit.Place(close.rectTransform, new Vector2(1f, 0.5f), new Vector2(-48f, 2f), new Vector2(80f, 80f));
+            var dismiss = hint.gameObject.AddComponent<Button>();
+            dismiss.transition = Selectable.Transition.None;
+            dismiss.onClick.AddListener(DismissHint);
             hintCard.gameObject.SetActive(false);
 
             // Respawn fade on top of everything but the modals.
@@ -213,7 +229,13 @@ namespace DribbleToSchool.UI
             var pop = hintCard.GetComponent<UIPopIn>();
             if (pop == null) pop = UIKit.PopIn(hintCard.gameObject);
             pop.Play();
-            hintUntil = Time.unscaledTime + 5.5f;
+            hintUntil = Time.unscaledTime + 8f;
+        }
+
+        void DismissHint()
+        {
+            hintCard.gameObject.SetActive(false);
+            GameEvents.Raise(GameEventType.UIClick, Vector2.zero, 0.3f);
         }
 
         void Toast(string text, Color color)
@@ -394,6 +416,8 @@ namespace DribbleToSchool.UI
             GameInput.UIBlockers.Add(ScreenRect(pauseRect));
             if (tuneRect != null) GameInput.UIBlockers.Add(ScreenRect(tuneRect));
             if (tuning != null && tuning.visible) GameInput.UIBlockers.Add(tuning.ScreenRect);
+            // A tap on the hint dismisses it rather than counting as a game touch.
+            if (hintCard.gameObject.activeSelf) GameInput.UIBlockers.Add(ScreenRect(hintCard));
         }
 
         static Rect ScreenRect(RectTransform rt)
