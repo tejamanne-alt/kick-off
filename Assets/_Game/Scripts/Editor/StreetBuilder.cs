@@ -340,10 +340,148 @@ namespace DribbleToSchool.EditorTools
             }
         }
 
-        static House3D Building(Transform parent, float x, float groundY, float z, ProceduralArt.FacadeKind facade, House3D.RoofStyle roof,
+        // ---------------------------------------------------------------- kit models
+
+        /// <summary>A kit model standing at (x, groundY, z) facing the camera, or null if the kit hasn't got it.</summary>
+        public static Transform Model(Transform parent, string kit, string model, float x, float groundY, float z, float yaw = 0f, float scale = 1f,
+            Color? tint1 = null, Color? tint2 = null, Color? tint3 = null, bool castShadows = true)
+        {
+            return LevelBuildKit.KitModel(parent, kit, model, new Vector3(x, groundY, z), yaw, scale, tint1, tint2, tint3, castShadows);
+        }
+
+        /// <summary>
+        /// Lines up kit segments (walls, hedges, fences, hoardings) end to end from a to b, each
+        /// stretched a little so a whole number of them fills the run. False if the kit hasn't got
+        /// the model, so the caller can fall back.
+        /// </summary>
+        public static bool Row(Transform parent, string kit, string model, float a, float b, float groundY, float z, Color? tint1 = null)
+        {
+            float length = LevelBuildKit.KitSize(kit, model).x;
+            if (length < 0.1f || !LevelBuildKit.HasKitModel(kit, model)) return false;
+            int n = Mathf.Max(1, Mathf.RoundToInt((b - a) / length));
+            float step = (b - a) / n;
+            for (int i = 0; i < n; i++)
+            {
+                var piece = Model(parent, kit, model, a + step * (i + 0.5f), groundY, z, 0f, 1f, tint1);
+                if (piece != null) piece.localScale = new Vector3(step / length, 1f, 1f);
+            }
+            return true;
+        }
+
+        /// <summary>The first of these models the kit has, or null.</summary>
+        static string FirstModel(string kit, params string[] models)
+        {
+            foreach (var m in models)
+                if (LevelBuildKit.HasKitModel(kit, m)) return m;
+            return null;
+        }
+
+        /// <summary>The Buildings kit's model for each facade (tools/blender/kit_buildings.py).</summary>
+        static string BuildingModel(ProceduralArt.FacadeKind facade)
+        {
+            switch (facade)
+            {
+                case ProceduralArt.FacadeKind.Shop0: return "ShopFruit";
+                case ProceduralArt.FacadeKind.Shop1: return "ShopShutter";
+                default: return facade.ToString();
+            }
+        }
+
+        /// <summary>A paint scheme for a kit building: walls (part 1), trim (part 2) and roof (part 3), sRGB.</summary>
+        struct Paint
+        {
+            public Color wall, trim, roof;
+            public Paint(Color wall, Color trim, Color roof) { this.wall = wall; this.trim = trim; this.roof = roof; }
+        }
+
+        // A few curated, slightly faded schemes rather than random mixes: each look stays
+        // harmonious, and each building model only ever needs a handful of recoloured copies.
+        static readonly Paint[] HousePaints =
+        {
+            new Paint(new Color(0.96f, 0.92f, 0.82f), new Color(0.32f, 0.5f, 0.52f), new Color(0.38f, 0.43f, 0.52f)),   // cream, teal, slate
+            new Paint(new Color(0.98f, 0.85f, 0.6f), new Color(0.95f, 0.95f, 0.92f), new Color(0.72f, 0.38f, 0.3f)),    // butter, white, terracotta
+            new Paint(new Color(0.95f, 0.76f, 0.64f), new Color(0.36f, 0.42f, 0.56f), new Color(0.42f, 0.36f, 0.34f)),  // peach, navy, brown
+            new Paint(new Color(0.74f, 0.83f, 0.72f), new Color(0.96f, 0.94f, 0.88f), new Color(0.34f, 0.44f, 0.42f)),  // sage, cream, deep green
+            new Paint(new Color(0.73f, 0.82f, 0.9f), new Color(0.96f, 0.95f, 0.92f), new Color(0.36f, 0.4f, 0.5f)),     // powder blue, white, slate
+            new Paint(new Color(0.93f, 0.72f, 0.7f), new Color(0.97f, 0.95f, 0.9f), new Color(0.48f, 0.34f, 0.32f)),    // dusty pink, white, brown
+        };
+        static readonly Paint[] ShopPaints =
+        {
+            new Paint(new Color(0.97f, 0.93f, 0.84f), new Color(0.27f, 0.47f, 0.72f), new Color(0.6f, 0.6f, 0.62f)),
+            new Paint(new Color(0.95f, 0.82f, 0.62f), new Color(0.75f, 0.27f, 0.25f), new Color(0.6f, 0.6f, 0.62f)),
+            new Paint(new Color(0.8f, 0.87f, 0.84f), new Color(0.3f, 0.56f, 0.4f), new Color(0.6f, 0.6f, 0.62f)),
+            new Paint(new Color(0.94f, 0.78f, 0.7f), new Color(0.92f, 0.68f, 0.2f), new Color(0.6f, 0.6f, 0.62f)),
+        };
+        static readonly Paint[] WorkPaints =
+        {
+            new Paint(new Color(0.78f, 0.82f, 0.76f), new Color(0.85f, 0.6f, 0.2f), new Color(0.5f, 0.53f, 0.57f)),
+            new Paint(new Color(0.72f, 0.79f, 0.86f), new Color(0.78f, 0.3f, 0.26f), new Color(0.46f, 0.5f, 0.55f)),
+            new Paint(new Color(0.86f, 0.76f, 0.62f), new Color(0.3f, 0.45f, 0.6f), new Color(0.52f, 0.5f, 0.5f)),
+        };
+
+        /// <summary>
+        /// The Buildings kit's model of a facade, front wall on z, fitted to the facade's width and
+        /// painted from the schemes for its kind. False if the kit hasn't got it.
+        /// </summary>
+        static bool KitBuilding(Transform parent, float x, float groundY, float z, ProceduralArt.FacadeKind facade, int seed)
+        {
+            string model = BuildingModel(facade);
+            float width = LevelBuildKit.KitSize("Buildings", model).x;
+            if (width < 0.1f || !LevelBuildKit.HasKitModel("Buildings", model)) return false;
+            Paint[] schemes;
+            switch (facade)
+            {
+                case ProceduralArt.FacadeKind.Shop0:
+                case ProceduralArt.FacadeKind.Shop1: schemes = ShopPaints; break;
+                case ProceduralArt.FacadeKind.Warehouse: schemes = WorkPaints; break;
+                case ProceduralArt.FacadeKind.School: schemes = null; break;
+                default: schemes = HousePaints; break;
+            }
+            float scale = Mathf.Clamp(ProceduralArt.FacadeSize(facade).x / width, 0.8f, 1.25f);
+            Transform t;
+            if (schemes == null) t = Model(parent, "Buildings", model, x, groundY, z, 0f, scale);
+            else
+            {
+                var p = schemes[seed % schemes.Length];
+                t = Model(parent, "Buildings", model, x, groundY, z, 0f, scale, p.wall, p.trim, p.roof);
+            }
+            return t != null;
+        }
+
+        // Autumn colours for the park's broadleaf trees (Plants kit part 1).
+        static readonly Color[] AutumnLeaves =
+        {
+            new Color(0.96f, 0.72f, 0.3f), new Color(0.93f, 0.52f, 0.24f), new Color(0.82f, 0.36f, 0.25f),
+            new Color(0.98f, 0.84f, 0.4f), new Color(0.66f, 0.64f, 0.32f),
+        };
+
+        /// <summary>
+        /// A tree (or bush) from the Plants kit standing at (x, groundY, z), turned at random and in
+        /// autumn colours in the park; the old cut-out if the kit hasn't got the model.
+        /// </summary>
+        static void Plant(Transform parent, string model, Sprite fallback, float x, float groundY, float z, float scale, float spriteScale, int order, System.Random rng)
+        {
+            Color? leaves = null;
+            bool seasonal = model.StartsWith("Broadleaf") || model == "Birch" || model.StartsWith("Bush");
+            if (LevelBuildKit.Chapter == 5 && seasonal) leaves = AutumnLeaves[rng.Next(AutumnLeaves.Length)];
+            if (Model(parent, "Plants", model, x, groundY, z, Rand(rng, 0f, 360f), scale, leaves) != null) return;
+            if (fallback != null) CutOut(parent, model, fallback, x, groundY, z, spriteScale, order, rng.NextDouble() < 0.5);
+        }
+
+        /// <summary>
+        /// A building with its front wall on z: the Buildings kit's model of the facade, else the
+        /// procedural house with the painted facade and its dressing. True if it is the kit model.
+        /// </summary>
+        static bool Building(Transform parent, float x, float groundY, float z, ProceduralArt.FacadeKind facade, House3D.RoofStyle roof,
             float depth, float roofHeight, Color wall, Color roofColor)
         {
             Vector2 size = ProceduralArt.FacadeSize(facade);
+            int seed = Mathf.Abs(Mathf.RoundToInt(x * 7f + z * 13f));
+            if (KitBuilding(parent, x, groundY, z, facade, seed))
+            {
+                ContactShadow(parent, x - size.x * 0.5f, x + size.x * 0.5f, groundY, z - 0.45f, z);
+                return true;
+            }
             var go = new GameObject("Building_" + facade);
             go.transform.SetParent(parent, false);
             go.transform.position = new Vector3(x, groundY, z);
@@ -358,8 +496,8 @@ namespace DribbleToSchool.EditorTools
             go.GetComponent<MeshRenderer>().sharedMaterials = new[] { Art.solid, Art.facades[facade], Art.surfaces[ProceduralArt.Surface.RoofTiles] };
             house.Rebuild();
             ContactShadow(parent, x - size.x * 0.5f, x + size.x * 0.5f, groundY, z - 0.45f, z);
-            Dress(parent, x - size.x * 0.5f, groundY, z, facade, Mathf.Abs(Mathf.RoundToInt(x * 7f + z * 13f)));
-            return house;
+            Dress(parent, x - size.x * 0.5f, groundY, z, facade, seed);
+            return false;
         }
 
         // ---------------------------------------------------------------- facade dressing
@@ -555,15 +693,29 @@ namespace DribbleToSchool.EditorTools
             go.transform.SetParent(root, false);
             var line = go.AddComponent<PoleLine3D>();
             line.wireMaterial = Art.wire;
+            bool models = LevelBuildKit.HasKitModel("Street", "UtilityPole");
             for (float x = x0; x < x1; x += 21f)
             {
                 float skip;
                 if (Blocked(track, x - 0.5f, x + 0.5f, out skip)) continue;
-                line.poles.Add(new Vector3(x, GroundAt(track, x), PoleZ));
+                var pole = new Vector3(x, GroundAt(track, x), PoleZ);
+                line.poles.Add(pole);
+                if (!models) continue;
+                // The kit's concrete pole, turned side-on so its crossarm runs across the street like a
+                // real line's; the wires hang from its insulators.
+                var model = Model(go.transform, "Street", "UtilityPole", pole.x, pole.y, pole.z, PoleYaw);
+                if (model == null || line.anchorOffsets.Count > 0) continue;
+                foreach (var t in model.GetComponentsInChildren<Transform>())
+                    if (t.name.StartsWith("Attach.Wire") || t.name.StartsWith("Attach_Wire"))
+                        line.anchorOffsets.Add(t.position - pole);
             }
+            line.drawPoles = !models;
             go.GetComponent<MeshRenderer>().sharedMaterial = Art.solid;
             line.Rebuild();
         }
+
+        /// <summary>The utility pole model's turn: its crossarm (along the model's width) runs across the street, in depth.</summary>
+        const float PoleYaw = 90f;
 
         static void Suburb(LevelBuildKit.TrackBuilder track, Transform root, System.Random rng, float x0, float x1)
         {
@@ -577,24 +729,46 @@ namespace DribbleToSchool.EditorTools
 
                 // Block wall along the front of the lot with a gap for the gate.
                 float gate = Rand(rng, x + 2f, x + lot - 4f);
-                BlockWall(root, x + 0.1f, gate, gy, wallMat);
-                BlockWall(root, gate + 2.2f, x + lot - 0.1f, gy, wallMat);
+                BlockWall(root, x + 0.1f, gate, gy, wallMat, true, true);
+                BlockWall(root, gate + 2.2f, x + lot - 0.1f, gy, wallMat, true, false);
 
                 int kind = rng.Next(3);
                 float z = PropertyZ + 1.6f + Rand(rng, 0f, 1.4f);
                 Color roof = rng.NextDouble() < 0.75 ? roofDark : roofRed;
-                if (kind == 0) Building(root, cx, gy, z, ProceduralArt.FacadeKind.HouseGable, House3D.RoofStyle.GableToStreet, 7f, 2.6f, new Color(0.95f, 0.94f, 0.9f), roof);
-                else if (kind == 1 && lot >= 11f) Building(root, cx, gy, z, ProceduralArt.FacadeKind.HouseLong, House3D.RoofStyle.GableSideways, 7f, 2.4f, new Color(0.93f, 0.91f, 0.86f), roof);
-                else Building(root, cx, gy, z, ProceduralArt.FacadeKind.Bungalow, House3D.RoofStyle.Shed, 5.5f, 1f, new Color(0.88f, 0.89f, 0.9f), roofDark);
+                var facade = kind == 0 ? ProceduralArt.FacadeKind.HouseGable : kind == 1 && lot >= 11f ? ProceduralArt.FacadeKind.HouseLong : ProceduralArt.FacadeKind.Bungalow;
+                if (facade == ProceduralArt.FacadeKind.HouseGable) Building(root, cx, gy, z, facade, House3D.RoofStyle.GableToStreet, 7f, 2.6f, new Color(0.95f, 0.94f, 0.9f), roof);
+                else if (facade == ProceduralArt.FacadeKind.HouseLong) Building(root, cx, gy, z, facade, House3D.RoofStyle.GableSideways, 7f, 2.4f, new Color(0.93f, 0.91f, 0.86f), roof);
+                else Building(root, cx, gy, z, facade, House3D.RoofStyle.Shed, 5.5f, 1f, new Color(0.88f, 0.89f, 0.9f), roofDark);
 
-                // Garden trees behind the wall, and the odd big tree further back.
-                if (rng.NextDouble() < 0.6)
+                if (LevelBuildKit.HasKitModel("Plants", "Broadleaf"))
                 {
-                    bool pine = rng.NextDouble() < 0.4;
-                    CutOut(root, pine ? "Pine" : "Tree", pine ? Art.pine : Art.mid[5, 2], x + Rand(rng, 0.5f, 2f), gy, PropertyZ + 0.9f, pine ? 0.75f : Rand(rng, 0.7f, 0.9f), -60, rng.NextDouble() < 0.5);
+                    // Trees in the back garden rise over the roof; a slim one stands in the side yard
+                    // when the gap beside the house is wide enough for it.
+                    float houseHalf = ProceduralArt.FacadeSize(facade).x * 0.5f;
+                    if (rng.NextDouble() < 0.7)
+                    {
+                        string[] back = { "Broadleaf", "BroadleafLarge", "ConiferTall", "Broadleaf", "Birch" };
+                        Plant(root, back[rng.Next(back.Length)], null, cx + Rand(rng, -houseHalf, houseHalf), gy, z + 8f + Rand(rng, 0f, 3f), Rand(rng, 0.9f, 1.25f), 1f, -70, rng);
+                    }
+                    float gap = (cx - houseHalf) - x;
+                    if (gap > 1.8f && rng.NextDouble() < 0.6)
+                    {
+                        string[] side = { "Birch", "ConiferSmall", "ConiferMid", "ShrubFlowering" };
+                        string model = side[rng.Next(side.Length)];
+                        Plant(root, model, null, x + gap * 0.5f, gy, PropertyZ + 1.4f + Rand(rng, 0f, 1.2f), model == "ShrubFlowering" ? Rand(rng, 1.3f, 1.6f) : Rand(rng, 0.7f, 0.95f), 1f, -60, rng);
+                    }
                 }
-                if (rng.NextDouble() < 0.35)
-                    CutOut(root, "BigTree", Art.mid[5, rng.NextDouble() < 0.15 ? 1 : 2], cx + Rand(rng, -2f, 2f), gy, z + 9f, Rand(rng, 1.1f, 1.4f), -70);
+                else
+                {
+                    // Garden trees behind the wall, and the odd big tree further back.
+                    if (rng.NextDouble() < 0.6)
+                    {
+                        bool pine = rng.NextDouble() < 0.4;
+                        CutOut(root, pine ? "Pine" : "Tree", pine ? Art.pine : Art.mid[5, 2], x + Rand(rng, 0.5f, 2f), gy, PropertyZ + 0.9f, pine ? 0.75f : Rand(rng, 0.7f, 0.9f), -60, rng.NextDouble() < 0.5);
+                    }
+                    if (rng.NextDouble() < 0.35)
+                        CutOut(root, "BigTree", Art.mid[5, rng.NextDouble() < 0.15 ? 1 : 2], cx + Rand(rng, -2f, 2f), gy, z + 9f, Rand(rng, 1.1f, 1.4f), -70);
+                }
                 x += lot;
             }
             // A second row of houses further back gives the street depth (never on a side street).
@@ -608,11 +782,19 @@ namespace DribbleToSchool.EditorTools
             DistantHills(track, root, x0, x1);
         }
 
-        static void BlockWall(Transform root, float a, float b, float gy, Material mat)
+        /// <summary>A block wall along the front of a lot from a to b, with a square pillar at either end if asked (kit models only).</summary>
+        static void BlockWall(Transform root, float a, float b, float gy, Material mat, bool pillarA, bool pillarB)
         {
             if (b - a < 0.4f) return;
-            Solid(root, "BlockWall", new Vector3((a + b) * 0.5f, gy + 0.8f, PropertyZ + 0.15f), new Vector3(b - a, 1.6f, 0.25f), Color.white, mat);
             ContactShadow(root, a, b, gy, PropertyZ - 0.35f, PropertyZ + 0.02f);
+            if (Row(root, "Street", "BlockWall2", a, b, gy, PropertyZ + 0.15f))
+            {
+                // Square pillars at the gate and where the lot begins.
+                if (pillarA) Model(root, "Street", "WallPillar", a, gy, PropertyZ + 0.15f);
+                if (pillarB) Model(root, "Street", "WallPillar", b, gy, PropertyZ + 0.15f);
+                return;
+            }
+            Solid(root, "BlockWall", new Vector3((a + b) * 0.5f, gy + 0.8f, PropertyZ + 0.15f), new Vector3(b - a, 1.6f, 0.25f), Color.white, mat);
             Solid(root, "WallCap", new Vector3((a + b) * 0.5f, gy + 1.63f, PropertyZ + 0.15f), new Vector3(b - a + 0.04f, 0.06f, 0.3f), new Color(0.82f, 0.82f, 0.8f));
         }
 
@@ -626,18 +808,23 @@ namespace DribbleToSchool.EditorTools
                 if (Blocked(track, x, x + w, out skip)) { x = skip; continue; }
                 float cx = x + w * 0.5f, gy = GroundAt(track, cx);
                 var kind = i % 2 == 0 ? ProceduralArt.FacadeKind.Shop0 : ProceduralArt.FacadeKind.Shop1;
-                Building(root, cx, gy, PropertyZ + 0.6f, kind, House3D.RoofStyle.Flat, 8f, 0f, i % 3 == 0 ? new Color(0.95f, 0.9f, 0.82f) : new Color(0.88f, 0.9f, 0.94f), new Color(0.6f, 0.6f, 0.62f));
-                // Awning sticking out over the pavement.
-                Color awn = awnings[i % awnings.Length];
-                Solid(root, "Awning", new Vector3(cx, gy + 3.55f, PropertyZ - 0.1f), new Vector3(7.4f, 0.14f, 1.4f), awn);
-                Solid(root, "AwningValance", new Vector3(cx, gy + 3.3f, PropertyZ - 0.78f), new Vector3(7.4f, 0.5f, 0.06f), Color.Lerp(awn, Color.white, 0.15f));
+                bool model = Building(root, cx, gy, PropertyZ + 0.6f, kind, House3D.RoofStyle.Flat, 8f, 0f, i % 3 == 0 ? new Color(0.95f, 0.9f, 0.82f) : new Color(0.88f, 0.9f, 0.94f), new Color(0.6f, 0.6f, 0.62f));
                 ContactShadow(root, cx - 3.9f, cx + 3.9f, gy, PropertyZ - 0.7f, PropertyZ + 0.6f);
+                if (!model)
+                {
+                    // Awning sticking out over the pavement (the kit's shops have their own shopfronts).
+                    Color awn = awnings[i % awnings.Length];
+                    Solid(root, "Awning", new Vector3(cx, gy + 3.55f, PropertyZ - 0.1f), new Vector3(7.4f, 0.14f, 1.4f), awn);
+                    Solid(root, "AwningValance", new Vector3(cx, gy + 3.3f, PropertyZ - 0.78f), new Vector3(7.4f, 0.5f, 0.06f), Color.Lerp(awn, Color.white, 0.15f));
+                }
                 x += w;
                 if (rng.NextDouble() < 0.35 && x + 2.4f < x1)
                 {
                     // Drinks machines in the gap between shops.
-                    Solid(root, "Vending", new Vector3(x + 0.7f, gy + 0.93f, PropertyZ + 0.2f), new Vector3(1f, 1.85f, 0.8f), new Color(0.85f, 0.22f, 0.24f));
-                    Solid(root, "Vending", new Vector3(x + 1.75f, gy + 0.93f, PropertyZ + 0.2f), new Vector3(1f, 1.85f, 0.8f), new Color(0.25f, 0.45f, 0.78f));
+                    if (Model(root, "Street", "VendingRed", x + 0.7f, gy, PropertyZ + 0.2f) == null)
+                        Solid(root, "Vending", new Vector3(x + 0.7f, gy + 0.93f, PropertyZ + 0.2f), new Vector3(1f, 1.85f, 0.8f), new Color(0.85f, 0.22f, 0.24f));
+                    if (Model(root, "Street", "VendingBlue", x + 1.75f, gy, PropertyZ + 0.2f) == null)
+                        Solid(root, "Vending", new Vector3(x + 1.75f, gy + 0.93f, PropertyZ + 0.2f), new Vector3(1f, 1.85f, 0.8f), new Color(0.25f, 0.45f, 0.78f));
                     x += 2.6f;
                 }
             }
@@ -667,8 +854,12 @@ namespace DribbleToSchool.EditorTools
                     Foam(root, x, x + len, crests[i] + Rand(rng, -1f, 1f), crests[i] + w, sea - 0.04f, i * 1.7f + x);
                 }
 
+            var towers = new List<float>();
             for (float x = x0; x < x1; x += Rand(rng, 30f, 45f))
+            {
                 LifeguardTower(root, x, GroundAt(track, x), 7.4f);
+                towers.Add(x);
+            }
             for (float x = x0 + 8f; x < x1; x += Rand(rng, 10f, 18f))
             {
                 float gy = GroundAt(track, x), z = Rand(rng, 3.4f, 5.2f);
@@ -687,10 +878,19 @@ namespace DribbleToSchool.EditorTools
                 if (rng.NextDouble() < 0.4)
                     Solid(root, "CoolBox", new Vector3(x + 0.9f, gy + 0.18f, z + 0.3f), new Vector3(0.55f, 0.36f, 0.38f), new Color(0.3f, 0.55f, 0.85f));
             }
+            bool rockModels = LevelBuildKit.HasKitModel("Terrain", "RockCluster");
             for (float x = x0 + 15f; x < x1; x += Rand(rng, 22f, 38f))
             {
                 // Rocks at the water's edge, darker where the sea wets them.
                 float gy = GroundAt(track, x) - 0.12f, s = Rand(rng, 0.8f, 1.6f);
+                if (rockModels)
+                {
+                    float rz = Rand(rng, 8.6f, 11f);
+                    Model(root, "Terrain", "RockCluster", x, gy - 0.1f, rz, Rand(rng, -30f, 30f), s * 0.8f);
+                    if (rng.NextDouble() < 0.5)
+                        Model(root, "Terrain", rng.NextDouble() < 0.5 ? "Boulder2" : "Boulder1", x + Rand(rng, 2f, 3.5f), gy - 0.05f, rz - Rand(rng, 0.5f, 1.2f), Rand(rng, 0f, 360f), Rand(rng, 0.7f, 1.1f));
+                    continue;
+                }
                 var rock = new GameObject("Rocks");
                 rock.transform.SetParent(root, false);
                 rock.transform.position = new Vector3(x, gy, Rand(rng, 8.6f, 11f));
@@ -702,7 +902,27 @@ namespace DribbleToSchool.EditorTools
                 rock.GetComponent<MeshRenderer>().sharedMaterial = Art.solid;
                 blobs.Rebuild();
             }
+            // Palms in ones, twos and threes behind the parasols, clear of the lifeguard towers.
+            if (LevelBuildKit.HasKitModel("Plants", "Palm"))
+                for (float x = x0 + Rand(rng, 5f, 20f); x < x1; x += Rand(rng, 30f, 55f))
+                {
+                    int n = rng.Next(1, 4);
+                    for (int k = 0; k < n; k++)
+                    {
+                        float px = x + k * Rand(rng, 2.2f, 3.4f);
+                        if (towers.Any(t => Mathf.Abs(t - px) < 4.5f)) continue;
+                        Plant(root, rng.NextDouble() < 0.5 ? "Palm" : "PalmShort", null, px, GroundAt(track, px) - 0.1f, Rand(rng, 5.6f, 7f), Rand(rng, 0.85f, 1.15f), 1f, -60, rng);
+                    }
+                }
+
             // Tufts of beach grass in the soft sand nearer the camera.
+            if (LevelBuildKit.HasKitModel("Plants", "DuneGrass"))
+            {
+                for (float x = x0; x < x1; x += Rand(rng, 2.5f, 7f))
+                    Plant(root, "DuneGrass", null, x, GroundAt(track, x), Rand(rng, -9f, -2.4f), Rand(rng, 0.7f, 1.3f), 1f, -50, rng);
+                Headlands(root, rng, x0, x1, sea);
+                return;
+            }
             var grass = new GameObject("BeachGrass");
             grass.transform.SetParent(root, false);
             var tufts = grass.AddComponent<BlobShape>();
@@ -716,9 +936,18 @@ namespace DribbleToSchool.EditorTools
             }
             grass.GetComponent<MeshRenderer>().sharedMaterial = Art.solid;
             tufts.Rebuild();
-            // Wooded headlands out on the horizon.
+            Headlands(root, rng, x0, x1, sea);
+        }
+
+        /// <summary>Wooded headlands out on the horizon across the bay.</summary>
+        static void Headlands(Transform root, System.Random rng, float x0, float x1, float sea)
+        {
             for (int i = 0; i < 3; i++)
-                CutOut(root, "Headland", Art.headland, x0 + (x1 - x0) * (0.15f + i * 0.4f) + Rand(rng, -40f, 40f), sea - 0.5f, 650f + i * 60f, 10f, -85, i % 2 == 1);
+            {
+                float x = x0 + (x1 - x0) * (0.15f + i * 0.4f) + Rand(rng, -40f, 40f), z = 650f + i * 60f;
+                if (Model(root, "Terrain", "Headland", x, sea - 0.5f, z, Rand(rng, -15f, 15f), Rand(rng, 2.2f, 3f), null, null, null, false) == null)
+                    CutOut(root, "Headland", Art.headland, x, sea - 0.5f, z, 10f, -85, i % 2 == 1);
+            }
         }
 
         /// <summary>A white band of foam with a wavy edge toward the camera.</summary>
@@ -774,7 +1003,19 @@ namespace DribbleToSchool.EditorTools
                 if (Blocked(track, x, x + w, out skip)) { x = skip; continue; }
                 float cx = x + w * 0.5f, gy = GroundAt(track, cx);
                 if (rng.NextDouble() < 0.5)
-                    Solid(root, "Hoarding", new Vector3(cx, gy + 1.3f, PropertyZ + 0.2f), new Vector3(w - 0.3f, 2.6f, 0.2f), Color.white, hoarding);
+                {
+                    if (!Row(root, "Street", "Hoarding3", cx - w * 0.5f + 0.15f, cx + w * 0.5f - 0.15f, gy, PropertyZ + 0.2f))
+                        Solid(root, "Hoarding", new Vector3(cx, gy + 1.3f, PropertyZ + 0.2f), new Vector3(w - 0.3f, 2.6f, 0.2f), Color.white, hoarding);
+                }
+                else if (LevelBuildKit.HasKitModel("Terrain", "SandPile"))
+                {
+                    // An open yard: a heap of sand or gravel, a pallet of blocks, a few cones.
+                    float px = x + Rand(rng, 1.5f, 3f);
+                    Model(root, "Terrain", rng.NextDouble() < 0.5 ? "SandPile" : "GravelPile", px, gy, PropertyZ + 1.6f, Rand(rng, 0f, 360f), Rand(rng, 0.8f, 1.2f));
+                    Model(root, "Street", "Pallet", px + Rand(rng, 2.2f, 3f), gy, PropertyZ + 1.1f, Rand(rng, -20f, 20f));
+                    for (int k = 0; k < 2; k++)
+                        Model(root, "Street", "TrafficCone", x + w - 1.2f - k * 0.8f, gy, PropertyZ + 0.5f, Rand(rng, 0f, 360f));
+                }
                 if (rng.NextDouble() < 0.5)
                     Building(root, cx, gy, PropertyZ + 3f, ProceduralArt.FacadeKind.Warehouse, House3D.RoofStyle.Shed, 8f, 1.2f, new Color(0.78f, 0.74f, 0.7f), new Color(0.5f, 0.52f, 0.56f));
                 else
@@ -792,15 +1033,22 @@ namespace DribbleToSchool.EditorTools
         static void Park(LevelBuildKit.TrackBuilder track, Transform root, System.Random rng, float x0, float x1)
         {
             Color hedge = new Color(0.28f, 0.5f, 0.3f);
+            bool plants = LevelBuildKit.HasKitModel("Plants", "Broadleaf");
             for (float x = x0; x < x1;)
             {
                 float w = Rand(rng, 6f, 10f), skip;
                 if (Blocked(track, x, x + w, out skip)) { x = skip; continue; }
                 float cx = x + w * 0.5f, gy = GroundAt(track, cx) + 0.04f;
-                Solid(root, "Hedge", new Vector3(cx, gy + 0.5f, PropertyZ + 0.4f), new Vector3(w - 1.2f, 1f, 0.8f), hedge);
+                if (!Row(root, "Plants", "HedgeBlock2", cx - w * 0.5f + 0.6f, cx + w * 0.5f - 0.6f, gy, PropertyZ + 0.4f))
+                    Solid(root, "Hedge", new Vector3(cx, gy + 0.5f, PropertyZ + 0.4f), new Vector3(w - 1.2f, 1f, 0.8f), hedge);
                 ContactShadow(root, cx - w * 0.5f + 0.6f, cx + w * 0.5f - 0.6f, gy, PropertyZ - 0.25f, PropertyZ);
-                CutOut(root, "Bush", Art.bush, cx - w * 0.25f, gy + 0.6f, PropertyZ + 0.3f, 1f, -55);
-                if (rng.NextDouble() < 0.4)
+                if (plants)
+                {
+                    // A flowering shrub peeking over the hedge from the lawn behind it.
+                    Plant(root, rng.NextDouble() < 0.5 ? "ShrubFlowering" : "BushRound", null, cx - w * 0.25f, gy, PropertyZ + 1.5f, Rand(rng, 1.2f, 1.6f), 1f, -55, rng);
+                }
+                else CutOut(root, "Bush", Art.bush, cx - w * 0.25f, gy + 0.6f, PropertyZ + 0.3f, 1f, -55);
+                if (rng.NextDouble() < 0.4 && Model(root, "Street", "Bench", cx + 1.5f, gy, PropertyZ - 0.55f) == null)
                     Solid(root, "Bench", new Vector3(cx + 1.5f, gy + 0.25f, PropertyZ - 0.6f), new Vector3(1.8f, 0.5f, 0.5f), new Color(0.6f, 0.42f, 0.3f));
                 x += w;
             }
@@ -808,18 +1056,75 @@ namespace DribbleToSchool.EditorTools
             {
                 float skip;
                 if (Blocked(track, x - 3f, x + 3f, out skip)) continue;
-                bool cherry = rng.NextDouble() < 0.4;
+                double r = rng.NextDouble();
+                if (plants)
+                {
+                    string model = r < 0.3 ? "CherryBlossom" : r < 0.65 ? "Broadleaf" : r < 0.85 ? "BroadleafLarge" : "Birch";
+                    Plant(root, model, null, x, GroundAt(track, x), Rand(rng, 6.5f, 16f), Rand(rng, 0.85f, 1.15f), 1f, -62, rng);
+                    continue;
+                }
+                bool cherry = r < 0.4;
                 CutOut(root, cherry ? "Cherry" : "Tree", Art.mid[5, cherry ? 1 : 2], x, GroundAt(track, x), Rand(rng, 6.5f, 16f), Rand(rng, 0.9f, 1.2f), -62, rng.NextDouble() < 0.5);
+            }
+            if (plants)
+            {
+                // Long golden grass, tufts and wild flowers on the lawn in front of the path.
+                string[] low = { "TallGrass", "GrassTuft", "FlowerPatch", "GrassTuft" };
+                for (float x = x0; x < x1; x += Rand(rng, 1.8f, 5f))
+                    Plant(root, low[rng.Next(low.Length)], null, x, GroundAt(track, x) + 0.04f, Rand(rng, -10f, -2.6f), Rand(rng, 0.8f, 1.4f), 1f, -50, rng);
             }
             DistantHills(track, root, x0, x1);
         }
 
+        /// <summary>
+        /// The land beyond the street: fields running out to a wooded rise, rolling hills and a
+        /// mountain range, each layer further into the warm haze (Terrain kit); the painted hills
+        /// strip if the kit hasn't got them.
+        /// </summary>
         static void DistantHills(LevelBuildKit.TrackBuilder track, Transform root, float x0, float x1)
         {
             int ch = LevelBuildKit.Chapter;
+            if (LevelBuildKit.HasKitModel("Terrain", "HillsRolling"))
+            {
+                float y = track.LowestGroundTop;
+                bool autumn = ch == 5;
+                Color fields = autumn ? new Color(0.74f, 0.66f, 0.4f) : ch == 4 ? new Color(0.68f, 0.68f, 0.56f) : new Color(0.6f, 0.68f, 0.42f);
+                Color? grass = autumn ? new Color(0.8f, 0.68f, 0.36f) : (Color?)null;
+                // Flat fields from the end of the street ground out to the hills, so nothing floats.
+                var plain = Solid(root, "Fields", new Vector3((x0 + x1) * 0.5f, y - 0.06f, (BackZ + 700f) * 0.5f - 1f), new Vector3(x1 - x0 + 1800f, 0.1f, 700f - BackZ), fields);
+                plain.faces = MeshBuilder.Faces.Top;
+                plain.Rebuild();
+                var rng = new System.Random(ch * 977 + Mathf.RoundToInt(x0));
+                Layer(root, x0 - 250f, x1 + 250f, y - 0.3f, 120f, 15f, 1f, null, rng, "ForestStrip");
+                Layer(root, x0 - 450f, x1 + 450f, y - 0.5f, 230f, 30f, 1f, grass, rng, "HillsRolling");
+                Layer(root, x0 - 700f, x1 + 700f, y - 1f, 440f, 50f, 1.2f, grass, rng, "MountainRange1", "MountainRange2");
+                return;
+            }
             var far = CutOut(root, "DistantHills", Art.far[ch], (x0 + x1) * 0.5f, track.LowestGroundTop - 6f, 260f, 6f, -85);
             far.drawMode = SpriteDrawMode.Tiled;
             far.size = new Vector2((x1 - x0 + 900f) / 6f, Art.far[ch].bounds.size.y);
+        }
+
+        /// <summary>
+        /// One layer of the distant land: copies of a landform side by side from a to b around depth
+        /// z (staggered by up to <paramref name="zJitter"/>), alternating between the given models.
+        /// They cast no shadows: they are far beyond the shadow distance.
+        /// </summary>
+        static void Layer(Transform root, float a, float b, float y, float z, float zJitter, float scale, Color? grass, System.Random rng, params string[] models)
+        {
+            var available = models.Where(m => LevelBuildKit.HasKitModel("Terrain", m)).ToArray();
+            if (available.Length == 0) return;
+            int i = rng.Next(available.Length);
+            for (float x = a; x < b; i++)
+            {
+                string m = available[i % available.Length];
+                float width = LevelBuildKit.KitSize("Terrain", m).x * scale;
+                if (width < 1f) return;
+                float s = scale * Rand(rng, 0.9f, 1.1f);
+                // Overlap neighbours a little so the silhouette runs on without gaps.
+                Model(root, "Terrain", m, x + width * 0.5f, y, z + Rand(rng, -zJitter, zJitter), Rand(rng, -8f, 8f), s, grass, null, null, false);
+                x += width * 0.82f;
+            }
         }
     }
 }

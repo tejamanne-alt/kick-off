@@ -510,7 +510,6 @@ namespace DribbleToSchool.EditorTools
             return t;
         }
 
-        /// <summary>A 3D car with its wheels on <paramref name="position"/>, turned <paramref name="yaw"/> degrees (0 faces +x, 90 faces the camera).</summary>
         // ---------- Asset kits (tools/blender/kit_*.py, docs/ART_DIRECTION.md) ----------
 
         /// <summary>The asset kits made in Blender, each in Art/Models/&lt;kit&gt;/ with its atlas and manifest.</summary>
@@ -935,6 +934,7 @@ namespace DribbleToSchool.EditorTools
                 foreach (float x in new[] { fromX - 0.45f, toX + 0.45f })
                     foreach (float z in new[] { -zc, zc })
                     {
+                        if (StreetBuilder.Model(root, "Street", "TrafficCone", x, top, z, (x * 53f + z * 31f) % 360f) != null) continue;
                         var cone = new GameObject("Cone");
                         cone.transform.SetParent(root, false);
                         cone.transform.position = new Vector3(x, top, z);
@@ -944,6 +944,7 @@ namespace DribbleToSchool.EditorTools
                     }
                 // Barrier along the back edge of the hole: a yellow-and-black rail on two legs.
                 float bz = StreetBuilder.PathHalf + 0.12f, a = fromX - 0.25f, b = toX + 0.25f;
+                if (StreetBuilder.Row(root, "Street", "RoadBarrier", a, b, top, bz)) return;
                 foreach (float x in new[] { a + 0.1f, b - 0.1f })
                     StreetBuilder.Solid(root, "BarrierLeg", new Vector3(x, top + 0.45f, bz), new Vector3(0.06f, 0.9f, 0.3f), new Color(0.3f, 0.3f, 0.32f));
                 int n = Mathf.Max(2, Mathf.RoundToInt((b - a) / 0.3f));
@@ -955,7 +956,15 @@ namespace DribbleToSchool.EditorTools
 
             public void Crate(float x, float y)
             {
-                var go = Block("Crate", new Vector2(x, y), new Vector2(0.7f, 0.7f), Color.white, CrateMat, true, 0.7f, Art.crateMaterial);
+                // The Street kit's wooden crate when there is one, else a box with the painted crate.
+                Vector3 native = KitSize("Street", "Crate");
+                bool model = native.y > 0.05f && HasKitModel("Street", "Crate");
+                var go = Block("Crate", new Vector2(x, y), new Vector2(0.7f, 0.7f), Color.white, CrateMat, !model, 0.7f, Art.crateMaterial);
+                if (model)
+                {
+                    var t = KitModel(go.transform, "Street", "Crate", new Vector3(x, y - 0.35f, 0f));
+                    if (t != null) t.localScale = new Vector3(0.7f / native.x, 0.7f / native.y, 0.7f / Mathf.Max(0.05f, native.z));
+                }
                 var body = go.AddComponent<Rigidbody2D>();
                 body.mass = 0.8f;
                 body.gravityScale = 1.5f;
@@ -1099,20 +1108,26 @@ namespace DribbleToSchool.EditorTools
                 // Pedestrian signal on the far pavement at the kerb, facing the kid:
                 // red standing man above, green walking man below.
                 float poleX = fromX - 1.2f, poleZ = StreetBuilder.PathHalf + 0.15f, pave = groundTop;
-                Color poleGrey = new Color(0.56f, 0.58f, 0.6f), housing = new Color(0.2f, 0.21f, 0.23f);
-                Cylinder(root, "SignalBase", new Vector3(poleX, pave, poleZ), new Vector3(poleX, pave + 0.12f, poleZ), 0.13f, poleGrey);
-                Cylinder(root, "SignalPole", new Vector3(poleX, pave, poleZ), new Vector3(poleX, pave + 2.95f, poleZ), 0.06f, poleGrey);
-                // The push-button box at hand height, and the two-lamp head with hooded visors.
-                StreetBuilder.Solid(root, "ButtonBox", new Vector3(poleX, pave + 1.1f, poleZ - 0.1f), new Vector3(0.2f, 0.3f, 0.12f), new Color(0.95f, 0.78f, 0.22f));
-                StreetBuilder.Solid(root, "Button", new Vector3(poleX, pave + 1.06f, poleZ - 0.165f), new Vector3(0.08f, 0.08f, 0.02f), new Color(0.2f, 0.2f, 0.22f));
-                StreetBuilder.Solid(root, "SignalBox", new Vector3(poleX, pave + 2.45f, poleZ - 0.1f), new Vector3(0.5f, 1f, 0.3f), housing);
-                foreach (float vy in new[] { 2.68f, 2.22f })
-                    StreetBuilder.Solid(root, "Visor", new Vector3(poleX, pave + vy + 0.2f, poleZ - 0.33f), new Vector3(0.44f, 0.04f, 0.16f), housing);
-                StreetBuilder.Solid(root, "SignalCap", new Vector3(poleX, pave + 2.97f, poleZ - 0.1f), new Vector3(0.54f, 0.05f, 0.34f), Color.Lerp(housing, Color.white, 0.15f));
-                crossing.redFigure = SpriteObject(go.transform, "RedMan", Art.standFigure, Vector3.zero, 1);
-                crossing.redFigure.transform.position = new Vector3(poleX, pave + 2.68f, poleZ - 0.27f);
-                crossing.greenFigure = SpriteObject(go.transform, "GreenMan", Art.walkFigure, Vector3.zero, 1);
-                crossing.greenFigure.transform.position = new Vector3(poleX, pave + 2.22f, poleZ - 0.27f);
+                var signal = StreetBuilder.Model(root, "Street", "PedSignal", poleX, pave, poleZ);
+                if (signal != null)
+                {
+                    // The kit's signal: the red and green men light up on its lamp faces.
+                    Transform red = FindDeep(signal, "Attach.Red") ?? FindDeep(signal, "Attach_Red");
+                    Transform green = FindDeep(signal, "Attach.Green") ?? FindDeep(signal, "Attach_Green");
+                    if (red != null && green != null)
+                    {
+                        crossing.redFigure = SpriteObject(go.transform, "RedMan", Art.standFigure, Vector3.zero, 1);
+                        crossing.redFigure.transform.position = red.position + Vector3.back * 0.01f;
+                        crossing.greenFigure = SpriteObject(go.transform, "GreenMan", Art.walkFigure, Vector3.zero, 1);
+                        crossing.greenFigure.transform.position = green.position + Vector3.back * 0.01f;
+                    }
+                    else
+                    {
+                        Object.DestroyImmediate(signal.gameObject);
+                        signal = null;
+                    }
+                }
+                if (signal == null) ProceduralSignal(go.transform, crossing, poleX, poleZ, pave);
 
                 // Side-street traffic driving toward the camera; the Crossing script moves it in depth.
                 // A mix of everyday traffic: vans, estates, small trucks, an off-roader, in their own paint.
@@ -1123,6 +1138,27 @@ namespace DribbleToSchool.EditorTools
                     crossing.cars[i] = Car(go.transform, "Car" + i, new Vector3(center, groundTop, 30f), 90f, null, traffic[(first + i * 2) % traffic.Length]);   // placed by Crossing
                 crossing.groundY = groundTop;
                 crossing.stopLineZ = StreetBuilder.PathHalf + 3.05f;   // front bumper at the stop line
+            }
+
+            /// <summary>
+            /// The procedural pedestrian signal (without the Street kit's): a round pole, the push-button
+            /// box at hand height, and the two-lamp head with hooded visors, red man above, green below.
+            /// </summary>
+            void ProceduralSignal(Transform crossingGo, Hazards.Crossing crossing, float poleX, float poleZ, float pave)
+            {
+                Color poleGrey = new Color(0.56f, 0.58f, 0.6f), housing = new Color(0.2f, 0.21f, 0.23f);
+                Cylinder(root, "SignalBase", new Vector3(poleX, pave, poleZ), new Vector3(poleX, pave + 0.12f, poleZ), 0.13f, poleGrey);
+                Cylinder(root, "SignalPole", new Vector3(poleX, pave, poleZ), new Vector3(poleX, pave + 2.95f, poleZ), 0.06f, poleGrey);
+                StreetBuilder.Solid(root, "ButtonBox", new Vector3(poleX, pave + 1.1f, poleZ - 0.1f), new Vector3(0.2f, 0.3f, 0.12f), new Color(0.95f, 0.78f, 0.22f));
+                StreetBuilder.Solid(root, "Button", new Vector3(poleX, pave + 1.06f, poleZ - 0.165f), new Vector3(0.08f, 0.08f, 0.02f), new Color(0.2f, 0.2f, 0.22f));
+                StreetBuilder.Solid(root, "SignalBox", new Vector3(poleX, pave + 2.45f, poleZ - 0.1f), new Vector3(0.5f, 1f, 0.3f), housing);
+                foreach (float vy in new[] { 2.68f, 2.22f })
+                    StreetBuilder.Solid(root, "Visor", new Vector3(poleX, pave + vy + 0.2f, poleZ - 0.33f), new Vector3(0.44f, 0.04f, 0.16f), housing);
+                StreetBuilder.Solid(root, "SignalCap", new Vector3(poleX, pave + 2.97f, poleZ - 0.1f), new Vector3(0.54f, 0.05f, 0.34f), Color.Lerp(housing, Color.white, 0.15f));
+                crossing.redFigure = SpriteObject(crossingGo, "RedMan", Art.standFigure, Vector3.zero, 1);
+                crossing.redFigure.transform.position = new Vector3(poleX, pave + 2.68f, poleZ - 0.27f);
+                crossing.greenFigure = SpriteObject(crossingGo, "GreenMan", Art.walkFigure, Vector3.zero, 1);
+                crossing.greenFigure.transform.position = new Vector3(poleX, pave + 2.22f, poleZ - 0.27f);
             }
 
             /// <summary>A playful dog that patrols minX..maxX and noses low balls back.</summary>
@@ -1943,8 +1979,13 @@ namespace DribbleToSchool.EditorTools
             GameObject Obstacle(string name, Vector2 center, Vector2 size)
             {
                 var go = Block(name, center, size, ObstacleColor, GroundMat, false);
-                float h = size.y, w = size.x, bottom = center.y - h * 0.5f;
+                float h = size.y, w = size.x;
                 int seed = Mathf.Abs(Mathf.RoundToInt(center.x * 17f));
+                if (ObstacleModel(go.transform, center, size, seed))
+                {
+                    go.AddComponent<StaticBatcher>();
+                    return go;
+                }
                 if (Chapter == 3)
                 {
                     // A weathered rock: a few overlapping boulders filling the box.
@@ -2007,6 +2048,38 @@ namespace DribbleToSchool.EditorTools
                 }
                 go.AddComponent<StaticBatcher>();   // one draw call per material for all the parts
                 return go;
+            }
+
+            /// <summary>
+            /// Fills an obstacle's box with the asset kits' version of its look: a boulder on the beach,
+            /// a clipped hedge in the park, a planter of flowers when knee to waist high, a stack of
+            /// drinks crates when taller. Stretched so the solid part fills the collider. False if the
+            /// kit hasn't got the model (or the obstacle is a low step, which stays procedural).
+            /// </summary>
+            bool ObstacleModel(Transform parent, Vector2 center, Vector2 size, int seed)
+            {
+                float h = size.y, w = size.x, depth;
+                string kit, model;
+                if (Chapter == 3) { kit = "Terrain"; model = h > 1.3f ? "Boulder4" : h > 0.8f ? "Boulder3" : (seed % 2 == 0 ? "Boulder2" : "Boulder1"); depth = 1.3f; }
+                else if (h <= 0.45f) return false;
+                else if (Chapter == 5) { kit = "Plants"; model = w > 1.4f ? "HedgeBlock2" : "HedgeBlock1"; depth = 1.2f; }
+                else if (h <= 1.05f) { kit = "Street"; model = w > 1.4f ? "Planter2" : "Planter1"; depth = 1.1f; }
+                else { kit = "Street"; model = "DrinksCrates"; depth = 0.9f; }
+                Vector3 native = KitSize(kit, model);
+                if (native.x < 0.05f || native.y < 0.05f || native.z < 0.05f || !HasKitModel(kit, model)) return false;
+                // Rocks overfill their box a little so its corners don't poke out of the stone; crates
+                // stack whole crates rather than stretching one stack tall.
+                float fill = Chapter == 3 ? 1.08f : 1f;
+                int copies = model == "DrinksCrates" ? Mathf.Max(1, Mathf.RoundToInt(h / native.y)) : 1;
+                float each = h / copies;
+                for (int i = 0; i < copies; i++)
+                {
+                    float yaw = Chapter == 3 ? (seed * 37 % 50) - 25f : 0f;
+                    var t = KitModel(parent, kit, model, new Vector3(center.x, center.y - h * 0.5f + i * each, 0f), yaw);
+                    if (t == null) return false;
+                    t.localScale = new Vector3(w * fill / native.x, each / native.y, depth / native.z);
+                }
+                return true;
             }
 
             /// <summary>A coloured 3D box at a local position inside <paramref name="parent"/> (no collider).</summary>
@@ -2158,30 +2231,15 @@ namespace DribbleToSchool.EditorTools
                         new BlobShape.Blob(new Vector3(-0.08f, 0.07f, 0.04f), new Vector3(0.06f, 0.05f, 0.06f), new Color(1f, 0.9f, 0.4f)));
                 }
 
-                // The school across the yard, its front facing back down the street.
-                var building = new GameObject("SchoolBuilding");
-                building.transform.SetParent(school, false);
-                building.transform.position = new Vector3(x + 10f, groundTop, 4f);
-                building.transform.rotation = Quaternion.Euler(0f, 90f, 0f);
-                var house = building.AddComponent<House3D>();
-                Vector2 size = ProceduralArt.FacadeSize(ProceduralArt.FacadeKind.School);
-                house.width = size.x;
-                house.wallHeight = size.y;
-                house.depth = 12f;
-                house.roof = House3D.RoofStyle.Flat;
-                house.wallColor = new Color(0.95f, 0.94f, 0.9f);
-                house.roofColor = new Color(0.7f, 0.7f, 0.72f);
-                building.GetComponent<MeshRenderer>().sharedMaterials = new[] { Art.solid, Art.facades[ProceduralArt.FacadeKind.School], Art.surfaces[ProceduralArt.Surface.RoofTiles] };
-                house.Rebuild();
-                StreetBuilder.Solid(school, "ClockTower", new Vector3(x + 12f, groundTop + size.y + 1.8f, 4f), new Vector3(4f, 3.6f, 4f), house.wallColor);
-                foreach (float dz in new[] { -4.5f, 6.5f })
+                // The school across the yard, its front facing back down the street: the Buildings
+                // kit's school (with its clock tower) when there is one.
+                if (KitModel(school, "Buildings", "School", new Vector3(x + 10f, groundTop, 4f), 90f) != null)
                 {
-                    var tree = new GameObject("YardTree").AddComponent<SpriteRenderer>();
-                    tree.transform.SetParent(school, false);
-                    tree.sprite = Art.mid[5, 1];
-                    tree.sharedMaterial = Art.hazeSprite;
-                    tree.transform.position = new Vector3(x + 5f, groundTop + tree.sprite.bounds.size.y * 0.5f - 0.15f, dz);
+                    foreach (float dz in new[] { -4.5f, 6.5f })
+                        if (KitModel(school, "Plants", dz < 0f ? "BroadleafLarge" : "Broadleaf", new Vector3(x + 5f, groundTop, dz), dz * 40f) == null)
+                            YardTree(school, x, groundTop, dz);
                 }
+                else SchoolBuilding(school, x, groundTop);
 
                 // Through the gate: the whole school ground past the gate line counts, at any height,
                 // so the level ends as soon as the kid and the ball are both inside the gate.
@@ -2198,6 +2256,37 @@ namespace DribbleToSchool.EditorTools
                 board.transform.position = new Vector3(wx - 0.38f, board.transform.position.y, mid);
                 board.transform.rotation = Quaternion.Euler(0f, 90f, 0f);
                 school.gameObject.AddComponent<StaticBatcher>();
+            }
+
+            /// <summary>The procedural school building (without the Buildings kit's): a flat-roofed block with the painted facade, a clock tower and two yard trees.</summary>
+            void SchoolBuilding(Transform school, float x, float groundTop)
+            {
+                var building = new GameObject("SchoolBuilding");
+                building.transform.SetParent(school, false);
+                building.transform.position = new Vector3(x + 10f, groundTop, 4f);
+                building.transform.rotation = Quaternion.Euler(0f, 90f, 0f);
+                var house = building.AddComponent<House3D>();
+                Vector2 size = ProceduralArt.FacadeSize(ProceduralArt.FacadeKind.School);
+                house.width = size.x;
+                house.wallHeight = size.y;
+                house.depth = 12f;
+                house.roof = House3D.RoofStyle.Flat;
+                house.wallColor = new Color(0.95f, 0.94f, 0.9f);
+                house.roofColor = new Color(0.7f, 0.7f, 0.72f);
+                building.GetComponent<MeshRenderer>().sharedMaterials = new[] { Art.solid, Art.facades[ProceduralArt.FacadeKind.School], Art.surfaces[ProceduralArt.Surface.RoofTiles] };
+                house.Rebuild();
+                StreetBuilder.Solid(school, "ClockTower", new Vector3(x + 12f, groundTop + size.y + 1.8f, 4f), new Vector3(4f, 3.6f, 4f), house.wallColor);
+                foreach (float dz in new[] { -4.5f, 6.5f })
+                    YardTree(school, x, groundTop, dz);
+            }
+
+            static void YardTree(Transform school, float x, float groundTop, float dz)
+            {
+                var tree = new GameObject("YardTree").AddComponent<SpriteRenderer>();
+                tree.transform.SetParent(school, false);
+                tree.sprite = Art.mid[5, 1];
+                tree.sharedMaterial = Art.hazeSprite;
+                tree.transform.position = new Vector3(x + 5f, groundTop + tree.sprite.bounds.size.y * 0.5f - 0.15f, dz);
             }
 
             /// <summary>A signboard on posts. The posts are planted in the ground below once the layout is done (see Finish).</summary>

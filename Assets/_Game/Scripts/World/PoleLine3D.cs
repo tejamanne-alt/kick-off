@@ -17,6 +17,10 @@ namespace DribbleToSchool.World
         public float wireWidth = 0.035f;
         public Material wireMaterial;
         public Color poleColor = new Color(0.74f, 0.73f, 0.7f);
+        [Tooltip("Draw the poles themselves (off when model poles stand at the same places).")]
+        public bool drawPoles = true;
+        [Tooltip("Where the wires hang from, relative to each pole's base (e.g. a pole model's Attach.Wire points). Empty: the built-in crossarm points.")]
+        public List<Vector3> anchorOffsets = new List<Vector3>();
 
         static readonly Vector2[] WireAnchors = { new Vector2(-0.75f, -0.35f), new Vector2(0.75f, -0.35f), new Vector2(-0.55f, -1.15f), new Vector2(0f, 0f) };
         readonly List<LineRenderer> wires = new List<LineRenderer>();
@@ -24,7 +28,7 @@ namespace DribbleToSchool.World
         protected override void Build(MeshBuilder b)
         {
             var dark = new Color(0.45f, 0.45f, 0.48f);
-            for (int i = 0; i < poles.Count; i++)
+            for (int i = 0; i < poles.Count && drawPoles; i++)
             {
                 Vector3 p = poles[i] - transform.position;
                 float h = height;
@@ -53,7 +57,8 @@ namespace DribbleToSchool.World
             }
             wires.Clear();
             holder.GetComponentsInChildren(true, wires);
-            while (wires.Count < WireAnchors.Length)
+            int anchors = anchorOffsets.Count > 0 ? anchorOffsets.Count : WireAnchors.Length;
+            while (wires.Count < anchors)
             {
                 var go = new GameObject("Wire");
                 go.hideFlags = HideFlags.DontSave;
@@ -64,21 +69,21 @@ namespace DribbleToSchool.World
 
             const int perSpan = 10;
             var points = new List<Vector3>();
-            for (int w = 0; w < WireAnchors.Length; w++)
+            for (int w = 0; w < anchors; w++)
             {
                 points.Clear();
-                Vector2 a = WireAnchors[w];
+                Vector3 a = anchorOffsets.Count > 0 ? anchorOffsets[w] : new Vector3(WireAnchors[w].x, height + WireAnchors[w].y, 0f);
                 for (int i = 0; i < poles.Count - 1; i++)
                 {
-                    Vector3 p0 = poles[i] + new Vector3(a.x, height + a.y, 0f);
-                    Vector3 p1 = poles[i + 1] + new Vector3(a.x, height + a.y, 0f);
+                    Vector3 p0 = poles[i] + a;
+                    Vector3 p1 = poles[i + 1] + a;
                     for (int k = 0; k < perSpan; k++)
                     {
                         float t = k / (float)perSpan;
                         points.Add(Vector3.Lerp(p0, p1, t) + Vector3.down * wireSag * 4f * t * (1f - t));
                     }
                 }
-                points.Add(poles[poles.Count - 1] + new Vector3(a.x, height + a.y, 0f));
+                points.Add(poles[poles.Count - 1] + a);
 
                 var lr = wires[w];
                 lr.useWorldSpace = true;
