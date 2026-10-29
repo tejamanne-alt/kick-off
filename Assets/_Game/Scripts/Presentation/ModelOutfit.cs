@@ -5,8 +5,9 @@ namespace DribbleToSchool.Presentation
     /// <summary>
     /// Recolours an imported character model for the shop's outfits. The model marks each
     /// vertex's part in its second UV channel (x: 0 skin and fixed parts, 1 shirt, 2 shorts or
-    /// trousers); its vertex colours are the default outfit, so shading baked into them (hems,
-    /// folds) carries over to the new colours. Works on a copy of the mesh.
+    /// trousers, 3 hair); its vertex colours are the default outfit, so shading baked into them
+    /// (hems, the hair's shine) carries over to the new colours. Works on a copy of the mesh.
+    /// Pedestrians are dressed when they load (dressOnStart).
     /// </summary>
     [RequireComponent(typeof(SkinnedMeshRenderer))]
     public class ModelOutfit : MonoBehaviour, IOutfit
@@ -14,10 +15,26 @@ namespace DribbleToSchool.Presentation
         [Tooltip("The shirt and shorts colours the model was made with.")]
         public Color defaultShirt = new Color(0.97f, 0.97f, 0.99f);
         public Color defaultLegwear = new Color(0.2f, 0.22f, 0.4f);
+        public Color defaultHair = new Color(0.13f, 0.1f, 0.12f);
+
+        [Header("Dress on start (pedestrians)")]
+        public bool dressOnStart;
+        public Color shirt = Color.white;
+        public Color legwear = Color.gray;
+        public Color hair = new Color(0.13f, 0.1f, 0.12f);
+
+        Color currentHair;
 
         Mesh mesh;
         Color[] original;
         Vector2[] parts;
+
+        void Start()
+        {
+            if (!dressOnStart) return;
+            currentHair = hair;
+            SetOutfit(shirt, legwear);
+        }
 
         public void SetOutfit(Color shirt, Color legwear)
         {
@@ -42,6 +59,7 @@ namespace DribbleToSchool.Presentation
                 Color c = original[i];
                 if (part == 1) c = Recolor(c, defaultShirt, shirt);
                 else if (part == 2) c = Recolor(c, defaultLegwear, legwear);
+                else if (part == 3 && currentHair != default(Color)) c = Recolor(c, defaultHair, currentHair);
                 colors[i] = c;
             }
             mesh.colors = colors;

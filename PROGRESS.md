@@ -166,6 +166,7 @@ This file is the resume point. A new session should read it first. All eight pha
   - `LevelBuildKit.BuildKidModel` turns it to face +x, sizes it, and maps its bones to the `CharacterRig` (front = the limbs nearer the camera). The procedural kid remains as a fallback.
   - `CharacterRig` now swings each joint about the body's side axis measured from the joint's rest pose, so it drives imported bones and the procedural pivots alike.
   - `ModelOutfit` recolours the shirt and shorts for the shop's outfits from part ids in UV channel 2.
+- Pedestrians are the Blender-made adult (`Art/Models/Adult.fbx`, `kid.py --adult`): adult proportions, long sleeves, trousers, leather shoes, a side parting. `ModelOutfit` dresses each one when the level loads (coat, trousers and hair colours; hair is part 3). Both models carry a Nose marker bone so the builder knows which way they face.
 
 ## After Phase 8 (next steps)
 

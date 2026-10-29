@@ -5,7 +5,8 @@
 import bpy, bmesh, math, sys, os
 from mathutils import Vector, Matrix
 OUT=sys.argv[sys.argv.index('--')+1]
-FACE=os.path.join(os.path.dirname(os.path.abspath(__file__)),'face.png')
+ADULT='--adult' in sys.argv
+FACE=os.path.join(os.path.dirname(os.path.abspath(__file__)),'face_adult.png' if ADULT else 'face.png')
 bpy.ops.wm.read_factory_settings(use_empty=True)
 C=bpy.context
 SKIN=(1.0,0.87,0.78,1); SHIRT=(0.97,0.97,0.99,1); SHORTS=(0.2,0.22,0.4,1); SOCK=(0.97,0.97,0.98,1)
@@ -80,15 +81,20 @@ def shell(src,name,keep,offset,flare_fn=None):
     bm.to_mesh(o.data); bm.free()
     return o
 def arm_dist(co):
+    """How far down the arm (shoulder to wrist) a point is; 9 if it is not on an arm."""
     best=9
     for s in(1,-1):
-        a=Vector((s*0.152,0,1.19)); b=Vector((s*0.172,0,0.95))
-        ab=b-a; t=max(0,min(1,(co-a).dot(ab)/ab.length_squared)); 
-        if abs(co.x)>0.12: best=min(best,t*ab.length if (co-a).dot(ab)>0 else 0)
+        chain=[Vector((s*0.152,0,1.19)),Vector((s*0.172,0,0.95)),Vector((s*0.178,0,0.75))]
+        run=0
+        for a,b in zip(chain,chain[1:]):
+            ab=b-a; t=(co-a).dot(ab)/ab.length_squared
+            if abs(co.x)>0.12 and -0.2<=t<=1.0 and (co-(a+ab*max(0,t))).length<0.08:
+                best=min(best,run+max(0,t)*ab.length)
+            run+=ab.length
     return best
-shirt=shell(body,'Shirt',lambda c: c.z>0.9 and c.z<1.245 and (abs(c.x)<0.14 or arm_dist(c)<0.12),0.013,
+shirt=shell(body,'Shirt',lambda c: c.z<1.245 and ((c.z>0.9 and abs(c.x)<0.14) or arm_dist(c)<(0.41 if ADULT else 0.12)),0.013,
     lambda c: 0.012 if (abs(c.x)>0.13 and arm_dist(c)>0.09) else (0.008 if c.z<0.93 else 0))
-shorts=shell(body,'Shorts',lambda c: c.z>0.6 and c.z<0.96 and abs(c.x)<0.135,0.018,lambda c: 0.022*max(0,(0.7-c.z)/0.1))
+shorts=shell(body,'Shorts',lambda c: c.z>(0.07 if ADULT else 0.6) and c.z<0.96 and abs(c.x)<0.135,0.018 if not ADULT else 0.014,lambda c: 0 if ADULT else 0.022*max(0,(0.7-c.z)/0.1))
 apply_mods(shirt); apply_mods(shorts)
 for o in (shirt,shorts): activate(o); bpy.ops.object.shade_smooth()
 # collar and tie
@@ -135,13 +141,13 @@ def lock(loc,scale,rot):
     for v in o.data.vertices:
         if v.co.z<0: v.co.x*=1+v.co.z*0.75; v.co.y*=1+v.co.z*0.75
     hair_parts.append(o); return o
-for i,x in enumerate([-0.1,-0.05,0.0,0.05,0.1]):   # fringe, ending above the brows
+for i,x in enumerate([] if ADULT else [-0.1,-0.05,0.0,0.05,0.1]):   # fringe, ending above the brows
     lock((x,-0.14+abs(x)*0.3,1.548-abs(x)*0.25),(0.04,0.022,0.058),(math.radians(-22),math.radians(x*120),0))
 for s in(1,-1):   # sides over the ears, and the back
     lock((s*0.148,-0.03,1.43),(0.03,0.05,0.085),(0,math.radians(s*8),0))
     lock((s*0.12,0.09,1.39),(0.05,0.05,0.09),(math.radians(15),0,0))
 lock((0,0.13,1.36),(0.09,0.05,0.1),(math.radians(20),0,0))
-lock((0.02,-0.02,1.615),(0.05,0.03,0.035),(math.radians(-30),0,math.radians(20)))   # a little tuft
+lock((0.02,-0.02,1.615),(0.05,0.03,0.035),(math.radians(-30),0,math.radians(20))) if not ADULT else lock((-0.06,-0.1,1.56),(0.09,0.05,0.04),(math.radians(-25),0,math.radians(-15)))   # a tuft, or a side parting
 for o in hair_parts: apply_mods(o); activate(o); bpy.ops.object.shade_smooth()
 
 # ---------------- shoes and bag ----------------
@@ -170,27 +176,41 @@ s=strap.modifiers.new('solid','SOLIDIFY'); s.thickness=0.006; apply_mods(strap)
 def face_uv(co):
     u=co.x/0.34+0.5; v=(co.z-1.27)/0.34
     return (u*0.5, 0.5+v*0.5)
-colorize(body,lambda co,c: SOCK if co.z<0.33 else SKIN,lambda co,c: 0)
+colorize(body,lambda co,c: SOCK if co.z<0.33 and not ADULT else SKIN,lambda co,c: 0)
 colorize(head,lambda co,c: (1,1,1,1),uv_fn=face_uv)
 for e in ears: colorize(e,lambda co,c: SKIN)
 colorize(shirt,lambda co,c: SHIRT,lambda co,c: 1)
-colorize(shorts,lambda co,c: tuple(x*0.75 for x in SHORTS[:3])+(1,) if co.z<0.635 or co.z>0.94 else SHORTS,lambda co,c: 2)
+colorize(shorts,lambda co,c: tuple(x*0.75 for x in SHORTS[:3])+(1,) if co.z<(0.1 if ADULT else 0.635) or co.z>0.94 else SHORTS,lambda co,c: 2)
 colorize(collar,lambda co,c: SHIRT,lambda co,c: 1)
 for o in(tie,knot): colorize(o,lambda co,c: TIE)
 def hair_col(co,c):
     d=(co-Vector((0,0,1.44)))
     shine=0.44<d.normalized().z<0.6 and d.y>-0.05
     return (0.3,0.26,0.3,1) if shine else HAIR
-for o in hair_parts: colorize(o,hair_col)
-for sh in shoes: colorize(sh,lambda co,c: SOLE if co.z<0.03 else (SHOE if co.z>0.05 or co.y<-0.08 else (0.35,0.45,0.75,1)))
+for o in hair_parts: colorize(o,hair_col,lambda co,c: 3)
+for sh in shoes: colorize(sh,(lambda co,c: (0.12,0.1,0.1,1) if co.z<0.03 else (0.28,0.22,0.2,1)) if ADULT else (lambda co,c: SOLE if co.z<0.03 else (SHOE if co.z>0.05 or co.y<-0.08 else (0.35,0.45,0.75,1))))
 colorize(bag,lambda co,c: BAG if co.y>0.1 or co.z<0.95 else tuple(min(1,x*1.15) for x in BAG[:3])+(1,))
 colorize(strap,lambda co,c: (0.2,0.26,0.48,1))
+
+# ---------------- adult proportions ----------------
+def grow(co):
+    if not ADULT: return co
+    x,y,z=co
+    if z<0.86: nz=z*1.3
+    elif z<1.24: nz=0.86*1.3+(z-0.86)*1.32
+    else: nz=0.86*1.3+0.38*1.32+(z-1.24)*0.92
+    w=1.0 if z>1.24 else 1.14
+    return Vector((x*w,y*(1.0 if z>1.24 else 1.08),nz))
+if ADULT:
+    for o in [body,shirt,shorts,collar,head]+ears+hair_parts+shoes:
+        for v in o.data.vertices: v.co=grow(o.matrix_world@v.co)
+        o.matrix_world=Matrix()
 
 # ---------------- armature ----------------
 arm=bpy.data.armatures.new('Rig'); rig=new_obj('KidRig',arm); activate(rig); bpy.ops.object.mode_set(mode='EDIT')
 eb=arm.edit_bones
 def bone(n,h,t,parent=None):
-    b=eb.new(n); b.head=h; b.tail=t
+    b=eb.new(n); b.head=grow(Vector(h)); b.tail=grow(Vector(t))
     if parent: b.parent=eb[parent]; 
     return b
 bone('Hips',(0,0,0.86),(0,0,0.98)); bone('Spine',(0,0,0.98),(0,0,1.12),'Hips'); bone('Chest',(0,0,1.12),(0,0,1.235),'Spine')
@@ -202,7 +222,9 @@ for s,n in((1,'L'),(-1,'R')):
     bone('UpperArm.'+n,(s*0.152,0,1.19),(s*0.172,0,0.95),'Chest')
     bone('LowerArm.'+n,(s*0.172,0,0.95),(s*0.178,0,0.75),'UpperArm.'+n)
     bone('Hand.'+n,(s*0.178,0,0.75),(s*0.18,-0.004,0.64),'LowerArm.'+n)
-bone('Bag',(0,0.1,1.02),(0,0.13,0.9),'Hips')
+if not ADULT: bone('Bag',(0,0.1,1.02),(0,0.13,0.9),'Hips')
+# A marker in front of the face (no weights) so the game can tell which way the model faces.
+bone('Nose',(0,-0.2,1.42),(0,-0.26,1.42),'Head')
 for b in eb: b.roll=0
 bpy.ops.object.mode_set(mode='OBJECT')
 
@@ -217,13 +239,15 @@ def transfer(o):
     m.vert_mapping='POLYINTERP_NEAREST'; m.layers_vgroup_select_src='ALL'; m.layers_vgroup_select_dst='NAME'
     activate(o); bpy.ops.object.datalayout_transfer(modifier=m.name); bpy.ops.object.modifier_apply(modifier=m.name)
     o.parent=rig; a=o.modifiers.new('arm','ARMATURE'); a.object=rig
-for o in(shirt,shorts,collar,tie,knot,strap): transfer(o)
+for o in((shirt,shorts,collar) if ADULT else (shirt,shorts,collar,tie,knot,strap)): transfer(o)
 for o in [head]+ears+hair_parts: rigid(o,'Head')
 for s,sh in zip('LR',shoes): rigid(sh,'Foot.'+s)
-rigid(bag,'Bag')
+if not ADULT: rigid(bag,'Bag')
 
 # Join everything into one skinned mesh with the atlas material.
-parts=[body,shirt,shorts,collar,tie,knot,strap,head,bag]+ears+hair_parts+shoes
+parts=[body,shirt,shorts,collar,head]+([] if ADULT else [tie,knot,strap,bag])+ears+hair_parts+shoes
+if ADULT:
+    for o in (tie,knot,strap,bag): bpy.data.objects.remove(o)
 mat=bpy.data.materials.new('Kid'); mat.use_nodes=True
 nt=mat.node_tree; bsdf=nt.nodes['Principled BSDF']; tex=nt.nodes.new('ShaderNodeTexImage'); tex.image=bpy.data.images.load(FACE)
 vc=nt.nodes.new('ShaderNodeVertexColor'); mul=nt.nodes.new('ShaderNodeMix'); mul.data_type='RGBA'; mul.blend_type='MULTIPLY'; mul.inputs['Factor'].default_value=1

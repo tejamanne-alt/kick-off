@@ -5,7 +5,7 @@ import numpy as np, math, sys
 from PIL import Image, ImageDraw, ImageFilter
 S=1024; H=512   # face quadrant size
 SKIN=(250,222,198)
-def paint(path):
+def paint(path, adult=False):
     img=Image.new('RGBA',(S,S),SKIN+(255,))
     d=ImageDraw.Draw(img,'RGBA')
     # face quadrant: u in [0,0.5], v in [0.5,1]  -> pixel x 0..512, y 0..512 (top)
@@ -14,7 +14,7 @@ def paint(path):
         u=x/0.34+0.5; v=(z-1.27)/0.34
         return (u*H, (1-v)*H)
     # blush
-    for sx in(-1,1):
+    for sx in(() if adult else (-1,1)):
         cx,cy=P(sx*0.068,1.395)
         blush=Image.new('RGBA',(S,S),(0,0,0,0)); bd=ImageDraw.Draw(blush)
         bd.ellipse([cx-26,cy-12,cx+26,cy+12],fill=(255,140,140,110))
@@ -22,7 +22,7 @@ def paint(path):
     d=ImageDraw.Draw(img,'RGBA')
     for sx in(-1,1):
         cx,cy=P(sx*0.056,1.437)
-        w,h=42,56
+        w,h=(32,38) if adult else (42,56)
         # white of the eye (rounded), iris, pupil, highlights
         d.ellipse([cx-w*0.62,cy-h*0.5,cx+w*0.62,cy+h*0.52],fill=(255,255,255,255))
         iris=Image.new('RGBA',(S,S),(0,0,0,0)); idr=ImageDraw.Draw(iris)
@@ -57,4 +57,4 @@ def paint(path):
     # white swatch for vertex-coloured parts
     d.rectangle([S-64,S-64,S-1,S-1],fill=(255,255,255,255))
     img.convert('RGB').save(path)
-if __name__=='__main__': paint(sys.argv[1])
+if __name__=='__main__': paint(sys.argv[1], '--adult' in sys.argv)

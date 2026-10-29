@@ -141,7 +141,7 @@ namespace DribbleToSchool.EditorTools
             capsule.size = new Vector2(0.5f, 1.2f);
             capsule.sharedMaterial = kidMat;
             // The kid made in Blender (tools/blender/kid.py), or the procedural one if it is missing.
-            var kidRig = BuildKidModel(kidGo.transform);
+            var kidRig = BuildModelCharacter(kidGo.transform, "Kid", Art.kid, 1.3f, Vector3.zero, true);
             if (kidRig.rig == null)
                 kidRig = BuildCharacter(kidGo.transform, "Visual", Vector2.zero, 1f, KidColor, new Color(0.22f, 0.23f, 0.42f),
                     new Color(0.16f, 0.15f, 0.2f), true);   // glossy near-black hair
@@ -341,18 +341,19 @@ namespace DribbleToSchool.EditorTools
         /// Its bones become the rig's joints; the limbs nearer the camera are the "front" ones.
         /// Returns parts with no rig if the model is missing or not as expected.
         /// </summary>
-        static CharacterParts BuildKidModel(Transform parent)
+        static CharacterParts BuildModelCharacter(Transform parent, string file, Material material, float neckHeight, Vector3 visualPos, bool kid)
         {
             var parts = new CharacterParts();
-            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(ModelsDir + "/Kid.fbx");
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(ModelsDir + "/" + file + ".fbx");
             if (prefab == null) return parts;
 
             var visual = new GameObject("Visual").transform;
             visual.SetParent(parent, false);
+            visual.localPosition = visualPos;
             var body = new GameObject("Body").transform;
             body.SetParent(visual, false);
             var model = (GameObject)Object.Instantiate(prefab);
-            model.name = "KidModel";
+            model.name = file + "Model";
             model.transform.SetParent(body, false);
 
             System.Func<string, Transform> bone = n => FindDeep(model.transform, n) ?? FindDeep(model.transform, n.Replace('.', '_'));
@@ -360,23 +361,24 @@ namespace DribbleToSchool.EditorTools
             Transform legL = bone("UpperLeg.L"), legR = bone("UpperLeg.R"), kneeL = bone("LowerLeg.L"), kneeR = bone("LowerLeg.R");
             Transform armL = bone("UpperArm.L"), armR = bone("UpperArm.R"), elbowL = bone("LowerArm.L"), elbowR = bone("LowerArm.R");
             var smr = model.GetComponentInChildren<SkinnedMeshRenderer>();
-            if (hips == null || head == null || bag == null || legL == null || legR == null || kneeL == null || kneeR == null ||
+            if (hips == null || head == null || (kid && bag == null) || legL == null || legR == null || kneeL == null || kneeR == null ||
                 armL == null || armR == null || elbowL == null || elbowR == null || smr == null)
             {
-                Debug.LogWarning("[Dribble To School] Kid.fbx is missing bones; using the procedural kid.");
+                Debug.LogWarning("[Dribble To School] " + file + ".fbx is missing bones; using the procedural character.");
                 Object.DestroyImmediate(visual.gameObject);
                 return parts;
             }
 
-            // Face +x: the bag hangs on the kid's back.
-            Vector3 back = bag.position - hips.position;
+            // Face +x: the Nose marker bone sits in front of the face.
+            Transform nose = bone("Nose");
+            Vector3 back = nose != null ? head.position - nose.position : (bag != null ? bag.position - hips.position : Vector3.left);
             back.y = 0f;
             if (back.sqrMagnitude > 1e-6f)
                 model.transform.rotation = Quaternion.AngleAxis(Vector3.SignedAngle(-back, Vector3.right, Vector3.up), Vector3.up) * model.transform.rotation;
-            // Size: the neck joint 1.3 above the feet (the kid is about 1.55 tall).
+            // Size: the neck joint at neckHeight above the feet (1.3 for the kid, who is about 1.55 tall).
             float headHeight = head.position.y - model.transform.position.y;
-            if (headHeight > 0.01f) model.transform.localScale *= 1.3f / headHeight;
-            model.transform.localPosition = new Vector3(0f, -0.6f, 0f);
+            if (headHeight > 0.01f) model.transform.localScale *= neckHeight / headHeight;
+            model.transform.localPosition = new Vector3(0f, -0.6f * neckHeight / 1.3f, 0f);
             Vector3 offset = hips.position - body.position;
             model.transform.position -= new Vector3(offset.x, 0f, offset.z);
 
@@ -390,11 +392,15 @@ namespace DribbleToSchool.EditorTools
             rig.head = head;
             rig.bag = bag;
 
-            smr.sharedMaterial = Art.kid;
+            smr.sharedMaterial = material;
             smr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             smr.receiveShadows = false;
             smr.updateWhenOffscreen = false;
             var outfit = smr.gameObject.AddComponent<ModelOutfit>();
+            parts.rig = rig;
+            parts.visual = visual;
+            parts.outfit = outfit;
+            if (!kid) return parts;
 
             // The shop's pennant, clipped to the top of the bag on the camera side.
             var pole = Visual(bag, "FlagPole", Square, Vector2.zero, new Vector2(0.015f, 0.2f), new Color(0.3f, 0.25f, 0.2f), 7);
@@ -404,9 +410,6 @@ namespace DribbleToSchool.EditorTools
             flag.transform.position = body.TransformPoint(new Vector3(-0.24f, 0.66f, -0.16f));
             flag.transform.rotation = body.rotation;
 
-            parts.rig = rig;
-            parts.visual = visual;
-            parts.outfit = outfit;
             parts.flag = flag.GetComponent<SpriteRenderer>();
             return parts;
         }
@@ -786,16 +789,28 @@ namespace DribbleToSchool.EditorTools
 
                 Color[] hairs = { new Color(0.46f, 0.34f, 0.28f), new Color(1f, 0.95f, 0.6f), new Color(0.92f, 0.92f, 0.95f), new Color(0.85f, 0.46f, 0.3f) };
                 // Adults: the kid rig at 1.22x (about 1.9 units, 1.7 m), feet on the capsule bottom (-0.925).
-                var parts = BuildCharacter(go.transform, "Visual", new Vector2(0f, -0.193f), 1.22f, coat, Color.Lerp(coat, Color.black, 0.45f),
-                    hairs[Mathf.Abs(Mathf.RoundToInt(minX)) % hairs.Length], false);
+                // Adults are about 1.7 m (1.22 x the kid), feet on the capsule bottom (-0.925), a step behind the kid's line.
+                Color hair = hairs[Mathf.Abs(Mathf.RoundToInt(minX)) % hairs.Length], trousers = Color.Lerp(coat, Color.black, 0.45f);
+                var parts = BuildModelCharacter(go.transform, "Adult", Art.adult, 1.3f * 1.22f, new Vector3(0f, -0.193f, 0.75f), false);
+                if (parts.rig != null)
+                {
+                    var dress = (ModelOutfit)parts.outfit;
+                    dress.dressOnStart = true;
+                    dress.shirt = coat;
+                    dress.legwear = trousers;
+                    dress.hair = hair;
+                }
+                else
+                {
+                    parts = BuildCharacter(go.transform, "Visual", new Vector2(0f, -0.193f), 1.22f, coat, trousers, hair, false);
+                    parts.visual.localPosition = new Vector3(0f, -0.193f, 0.75f);
+                }
 
                 var p = go.AddComponent<Hazards.Pedestrian>();
                 p.minX = minX;
                 p.maxX = maxX;
                 p.walkSpeed = speed;
                 p.visual = parts.visual;
-                // They walk just behind the kid's line (the kid passes in front of them).
-                parts.visual.localPosition = new Vector3(0f, -0.193f, 0.75f);
                 var walker = parts.rig.gameObject.AddComponent<WalkerAnimator>();
                 walker.pedestrian = p;
             }
