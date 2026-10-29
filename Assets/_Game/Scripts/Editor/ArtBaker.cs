@@ -37,6 +37,10 @@ namespace DribbleToSchool.EditorTools
             public Material crateMaterial;
             /// <summary>Sprite material with distance haze, for cut-outs placed in depth.</summary>
             public Material hazeSprite;
+            /// <summary>Toon material for 3D clouds: little distance haze, soft blue-grey undersides.</summary>
+            public Material cloud;
+            /// <summary>Additive sprites for lamp light.</summary>
+            public Material glow;
             /// <summary>Cel-shaded, ink-outlined material for characters (vertex colours).</summary>
             public Material character;
             /// <summary>Like <see cref="character"/>, textured with the equipped ball skin at runtime.</summary>
@@ -162,6 +166,9 @@ namespace DribbleToSchool.EditorTools
                 set.facades[kind] = ToonMaterial("Facade_" + kind, toon, LoadTexture("Facade_" + kind), false);
             set.solid = ToonMaterial("Solid", toon, null, false);
             set.crateMaterial = ToonMaterial("Crate", toon, LoadTexture("CrateFace"), false);
+            set.cloud = ToonMaterial("Cloud", toon, null, false);
+            set.cloud.SetFloat("_Haze", 0.22f);
+            set.cloud.SetColor("_ShadowColor", new Color(0.8f, 0.85f, 0.97f));
 
             var toonCharacter = Shader.Find("DribbleToSchool/ToonCharacter");
             set.character = LoadOrCreateMaterial("Character", toonCharacter);
@@ -170,6 +177,7 @@ namespace DribbleToSchool.EditorTools
             EditorUtility.SetDirty(set.ball);
 
             set.hazeSprite = LoadOrCreateMaterial("HazeSprite", Shader.Find("DribbleToSchool/SpriteHaze"));
+            set.glow = LoadOrCreateMaterial("Glow", Shader.Find("Legacy Shaders/Particles/Additive"));
             set.wire = LoadOrCreateMaterial("Wire", Shader.Find("Sprites/Default"));
             AssetDatabase.SaveAssets();
         }

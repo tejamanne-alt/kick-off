@@ -12,6 +12,7 @@ Shader "DribbleToSchool/Toon"
         _WorldUV ("Project texture in world space (0/1)", Float) = 0
         _WorldUVScale ("World texture scale (tiles per unit)", Float) = 0.25
         _Scroll ("Texture scroll (xy per second)", Vector) = (0,0,0,0)
+        _Haze ("Distance haze amount", Range(0,1)) = 1
     }
     SubShader
     {
@@ -32,6 +33,7 @@ Shader "DribbleToSchool/Toon"
             float _WorldUV;
             float _WorldUVScale;
             float4 _Scroll;
+            float _Haze;
 
             float4 _DtsLightDir;     // xyz: direction toward the sun
             fixed4 _DtsFogColor;     // rgb: haze colour, a: max haze
@@ -85,7 +87,7 @@ Shader "DribbleToSchool/Toon"
                 fixed3 col = d > 0.55 ? tex.rgb : (d > 0.12 ? tex.rgb * 0.92 : tex.rgb * _ShadowColor.rgb);
 
                 float dist = distance(_WorldSpaceCameraPos, i.worldPos);
-                float f = saturate((dist - _DtsFogRange.x) / max(_DtsFogRange.y - _DtsFogRange.x, 0.01)) * _DtsFogColor.a;
+                float f = saturate((dist - _DtsFogRange.x) / max(_DtsFogRange.y - _DtsFogRange.x, 0.01)) * _DtsFogColor.a * _Haze;
                 col = lerp(col, _DtsFogColor.rgb, f);
                 return fixed4(col, 1);
             }

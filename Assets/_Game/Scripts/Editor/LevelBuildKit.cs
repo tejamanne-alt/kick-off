@@ -400,16 +400,23 @@ namespace DribbleToSchool.EditorTools
                 sun.transform.localScale = Vector3.one * 55f;
             }
 
+            // 3D cumulus far away over the street: flat bottoms, piled-up tops, cel-shaded.
             var clouds = new GameObject("Clouds").transform;
             var rng = new System.Random(ch * 101 + Mathf.RoundToInt(track.MaxX));
-            for (float x = track.MinX - 450f; x < track.MaxX + 450f; x += 70f + (float)rng.NextDouble() * 90f)
+            for (float x = track.MinX - 450f; x < track.MaxX + 450f; x += 80f + (float)rng.NextDouble() * 110f)
             {
-                float z = 520f + (float)rng.NextDouble() * 180f;
-                var c = SpriteObject(clouds, "Cloud", Art.clouds[rng.Next(3)], new Vector3(x, track.LowestGroundTop + 30f + (float)rng.NextDouble() * 70f, z), -90, Theme.cloud);
-                c.transform.localScale = Vector3.one * (8f + (float)rng.NextDouble() * 6f);
-                c.flipX = rng.NextDouble() < 0.5;
-                c.sharedMaterial = Art.hazeSprite;
+                float z = 480f + (float)rng.NextDouble() * 260f;
+                var go = new GameObject("Cloud");
+                go.transform.SetParent(clouds, false);
+                go.transform.position = new Vector3(x, track.LowestGroundTop + 25f + (float)rng.NextDouble() * 70f, z);
+                var cloud = go.AddComponent<CloudShape>();
+                cloud.seed = rng.Next();
+                cloud.width = 60f + (float)rng.NextDouble() * 90f;
+                cloud.height = cloud.width * (0.35f + (float)rng.NextDouble() * 0.2f);
+                go.GetComponent<MeshRenderer>().sharedMaterial = Art.cloud;
+                cloud.Rebuild();
             }
+            clouds.gameObject.AddComponent<StaticBatcher>();
         }
 
         static GameObject Visual(Transform parent, string name, Sprite sprite, Vector2 localPos, Vector2 size, Color color, int order)
@@ -1004,17 +1011,30 @@ namespace DribbleToSchool.EditorTools
                 go.transform.position = new Vector2((fromX + toX) * 0.5f, groundTop);
                 go.AddComponent<Rigidbody2D>().bodyType = RigidbodyType2D.Kinematic;
 
-                // Darker wet sand marks where the sea reaches. The water is a tapering lens of sea with a
-                // foam crest, behind the ground so only the part above the sand shows as it washes in.
-                StreetBuilder.Patch(root, "WetSand", fromX - 0.5f, toX + 0.5f, groundTop, StreetBuilder.FrontZ, 9f, new Color(0.78f, 0.68f, 0.52f), Art.surfaces[ProceduralArt.Surface.Sand]);
-                // A sheet of sea washing up the beach over this stretch: hidden under the sand at low
-                // water, covering it (with the waves scrolling) at high water.
-                float zc = (StreetBuilder.FrontZ + 9f) * 0.5f;
-                var water = StreetBuilder.Solid(root, "Water", new Vector3((fromX + toX) * 0.5f, groundTop - 0.1f, zc),
-                    new Vector3(width + 1.6f, 0.2f, 9f - StreetBuilder.FrontZ), Color.white, Art.surfaces[ProceduralArt.Surface.Sea]);
-                water.faces = MeshBuilder.Faces.Top | MeshBuilder.Faces.Front | MeshBuilder.Faces.Left | MeshBuilder.Faces.Right;
-                water.Rebuild();
-                water.transform.SetParent(go.transform, true);
+                // Darker wet sand where the waves reach, with a wavy edge; the wave itself runs up
+                // from the sea behind and over the path at high water (TideWash), not across it.
+                var wet = new GameObject("WetSand");
+                wet.transform.SetParent(root, false);
+                var wetStrip = wet.AddComponent<WavyStrip>();
+                wetStrip.fromX = fromX;
+                wetStrip.toX = toX;
+                wetStrip.frontZ = -3.3f;
+                wetStrip.backZ = 5.6f;
+                wetStrip.seaZ = 9.3f;
+                wetStrip.phase = 1.3f;
+                wetStrip.y = groundTop + 0.006f;
+                wetStrip.color = new Color(0.87f, 0.78f, 0.63f);
+                wet.GetComponent<MeshRenderer>().sharedMaterial = Art.surfaces[ProceduralArt.Surface.Sand];
+                wetStrip.Rebuild();
+
+                var washGo = new GameObject("Wash");
+                washGo.transform.SetParent(root, false);
+                washGo.AddComponent<MeshFilter>();
+                washGo.AddComponent<MeshRenderer>().sharedMaterials = new[] { Art.surfaces[ProceduralArt.Surface.Sea], Art.solid };
+                var wash = washGo.AddComponent<TideWash>();
+                wash.fromX = fromX;
+                wash.toX = toX;
+                wash.groundY = groundTop;
 
                 var zoneGo = new GameObject("TideLoseZone");
                 zoneGo.transform.SetParent(go.transform, false);
@@ -1029,7 +1049,7 @@ namespace DribbleToSchool.EditorTools
                 tide.highOffset = 0.45f;
                 tide.period = period;
                 tide.phaseOffset = phaseOffset;
-                tide.surface = water.transform;
+                tide.wash = wash;
             }
 
             /// <summary>A dark tunnel with a ceiling: darkens the screen around the kid while inside.</summary>
@@ -1040,10 +1060,16 @@ namespace DribbleToSchool.EditorTools
                 // An underpass: a back wall and a deep concrete deck over the street.
                 StreetBuilder.Solid(root, "TunnelBack", new Vector3(center, groundTop + height * 0.5f, StreetBuilder.PropertyZ + 0.2f), new Vector3(width, height, 0.4f), new Color(0.36f, 0.34f, 0.38f));
                 Block("TunnelCeiling", new Vector2(center, groundTop + height + 0.6f), new Vector2(width + 1f, 1.2f), new Color(0.62f, 0.62f, 0.64f), GroundMat, true, 7.4f);
-                for (float lx = fromX + 3f; lx < toX - 1f; lx += 6f)
+                // Dim lamps under the deck, lighting the footpath below them.
+                for (float lx = fromX + 2.5f; lx < toX - 1f; lx += 5f)
                 {
-                    var lamp = Visual(root, "TunnelLamp", Circle, new Vector2(lx, groundTop + height - 0.35f), new Vector2(0.45f, 0.22f), new Color(1f, 0.9f, 0.6f), -4);
-                    lamp.transform.position = new Vector3(lamp.transform.position.x, lamp.transform.position.y, StreetBuilder.PropertyZ - 0.05f);
+                    StreetBuilder.Solid(root, "LampFitting", new Vector3(lx, groundTop + height - 0.04f, 0.2f), new Vector3(0.9f, 0.08f, 0.3f), new Color(0.75f, 0.75f, 0.72f));
+                    var lamp = new GameObject("TunnelLamp");
+                    lamp.transform.SetParent(root, false);
+                    lamp.transform.position = new Vector3(lx, groundTop + height - 0.1f, 0.15f);
+                    var glow = lamp.AddComponent<LampGlow>();
+                    glow.material = Art.glow;
+                    glow.height = height - 0.1f;
                 }
 
                 var go = new GameObject("DarkZone");
@@ -1481,37 +1507,67 @@ namespace DribbleToSchool.EditorTools
             }
 
             /// <summary>
-            /// The school entrance: the school's front gate facing the street, set into its boundary
-            /// wall at the back of the footpath. A stone arch with a small tiled roof and the school's
-            /// name board spans the open gateway, the gates stand open, flower tubs flank it and the
-            /// school stands across the yard behind. The kid wins by bringing the ball to it.
+            /// The school at the end of the road. Its boundary wall runs across the street's end
+            /// (over the footpath and the road), and its gate, a stone arch with a small tiled roof
+            /// and the school's name board, faces back down the footpath toward the kid. The school
+            /// stands across the yard behind. The kid and the ball both have to get through.
             /// </summary>
             public void Goal(float x, float groundTop = 0f)
             {
                 var school = new GameObject("School").transform;
                 school.SetParent(root, false);
                 GoalX = x;
-                // Keep the street's own walls, houses and poles clear of the school grounds.
-                QuietAreas.Add(new Vector2(x - 14f, x + 14f));
+                // The street's own walls, houses and poles stop short of the school.
+                QuietAreas.Add(new Vector2(x - 1f, x + 200f));
 
                 Color stone = new Color(0.92f, 0.9f, 0.85f), trim = new Color(0.7f, 0.68f, 0.64f), roof = new Color(0.32f, 0.35f, 0.42f);
                 var concrete = Art.surfaces[ProceduralArt.Surface.Concrete];
-                float z = StreetBuilder.PropertyZ + 0.25f, halfOpen = 2.2f, pillarH = 3.1f, rise = 1.1f;
-                foreach (float side in new[] { -1f, 1f })
+                float wx = x + 0.4f;                                    // the gate line, across the street
+                float nearZ = -StreetBuilder.PathHalf - 0.3f, farZ = StreetBuilder.PathHalf + 0.35f;
+                float mid = (nearZ + farZ) * 0.5f, halfSpan = (farZ - nearZ) * 0.5f, pillarH = 3.1f, rise = 1.1f;
+                foreach (float z in new[] { nearZ, farZ })
                 {
-                    float px = x + side * (halfOpen + 0.35f);
-                    StreetBuilder.Solid(school, "GatePillar", new Vector3(px, groundTop + pillarH * 0.5f, z), new Vector3(0.7f, pillarH, 0.7f), stone, concrete);
-                    StreetBuilder.Solid(school, "GatePlinth", new Vector3(px, groundTop + 0.2f, z), new Vector3(0.82f, 0.4f, 0.82f), trim, concrete);
-                    // The boundary wall running on along the street from each pillar.
-                    float wx = px + side * 5.85f;
-                    StreetBuilder.Solid(school, "SchoolWall", new Vector3(wx, groundTop + 1.1f, z), new Vector3(11f, 2.2f, 0.35f), stone, concrete);
-                    StreetBuilder.Solid(school, "SchoolWallCap", new Vector3(wx, groundTop + 2.25f, z), new Vector3(11f, 0.1f, 0.45f), trim);
-                    // Gates folded back open against the inside of the wall.
-                    StreetBuilder.Solid(school, "OpenGate", new Vector3(px - side * 0.45f, groundTop + 0.95f, z + 1f), new Vector3(0.08f, 1.8f, 1.7f), new Color(0.25f, 0.33f, 0.3f));
-                    // A flower tub at the foot of each pillar, on the footpath's back edge.
+                    StreetBuilder.Solid(school, "GatePillar", new Vector3(wx, groundTop + pillarH * 0.5f, z), new Vector3(0.7f, pillarH, 0.7f), stone, concrete);
+                    StreetBuilder.Solid(school, "GatePlinth", new Vector3(wx, groundTop + 0.2f, z), new Vector3(0.82f, 0.4f, 0.82f), trim, concrete);
+                }
+                // The boundary wall runs on behind the far pillar; across the road in front, a low
+                // row of bollards closes the street end without hiding the gate.
+                StreetBuilder.Solid(school, "SchoolWall", new Vector3(wx, groundTop + 1.1f, farZ + 0.35f + 6f), new Vector3(0.4f, 2.2f, 12f), stone, concrete);
+                StreetBuilder.Solid(school, "SchoolWallCap", new Vector3(wx, groundTop + 2.25f, farZ + 0.35f + 6f), new Vector3(0.5f, 0.1f, 12f), trim);
+                for (float bz = nearZ - 0.9f; bz > StreetBuilder.RoadFar - 0.4f; bz -= 1.3f)
+                {
+                    var bollard = new GameObject("Bollard");
+                    bollard.transform.SetParent(school, false);
+                    bollard.transform.position = new Vector3(wx, groundTop - 0.14f + 0.45f, bz);
+                    var post = bollard.AddComponent<CylinderShape>();
+                    post.axis = Vector3.up;
+                    post.radius = 0.1f;
+                    post.length = 0.9f;
+                    post.sideColor = new Color(0.95f, 0.95f, 0.95f);
+                    post.endColor = post.innerColor = new Color(0.85f, 0.25f, 0.22f);
+                    bollard.GetComponent<MeshRenderer>().sharedMaterial = Art.solid;
+                    post.Rebuild();
+                    StreetBuilder.Solid(school, "BollardBand", new Vector3(wx, groundTop - 0.14f + 0.72f, bz), new Vector3(0.21f, 0.1f, 0.21f), new Color(0.85f, 0.25f, 0.22f));
+                }
+                // The arch over the footpath: stone voussoirs along a half-ellipse, in the plane of the wall.
+                const int pieces = 11;
+                for (int i = 0; i < pieces; i++)
+                {
+                    float t0 = i / (float)pieces * Mathf.PI, t1 = (i + 1) / (float)pieces * Mathf.PI, tm = (t0 + t1) * 0.5f;
+                    float z = mid - Mathf.Cos(tm) * halfSpan, y = groundTop + pillarH + Mathf.Sin(tm) * rise;
+                    float dz = halfSpan * (Mathf.Cos(t0) - Mathf.Cos(t1)), dy = rise * (Mathf.Sin(t1) - Mathf.Sin(t0));
+                    var piece = StreetBuilder.Solid(school, "ArchStone", new Vector3(wx, y, z), new Vector3(0.7f, 0.42f, Mathf.Sqrt(dz * dz + dy * dy) + 0.08f), stone, concrete);
+                    piece.transform.rotation = Quaternion.Euler(-Mathf.Atan2(dy, dz) * Mathf.Rad2Deg, 0f, 0f);
+                }
+                StreetBuilder.Solid(school, "ArchRoof", new Vector3(wx, groundTop + pillarH + rise + 0.38f, mid), new Vector3(1.3f, 0.2f, farZ - nearZ + 1.3f), roof, Art.surfaces[ProceduralArt.Surface.RoofTiles]);
+                StreetBuilder.Solid(school, "ArchRidge", new Vector3(wx, groundTop + pillarH + rise + 0.55f, mid), new Vector3(0.3f, 0.14f, farZ - nearZ + 1.4f), Color.Lerp(roof, Color.black, 0.2f));
+                // Flower tubs either side of the way in.
+                foreach (float z in new[] { nearZ, farZ })
+                {
+                    float inward = z < mid ? 1f : -1f;
                     var tub = new GameObject("FlowerTub");
                     tub.transform.SetParent(school, false);
-                    tub.transform.position = new Vector3(px + side * 0.75f, groundTop + 0.2f, StreetBuilder.PathHalf + 0.15f);
+                    tub.transform.position = new Vector3(wx - 0.75f, groundTop + 0.2f, z + inward * 0.1f);
                     var shape = tub.AddComponent<CylinderShape>();
                     shape.axis = Vector3.up;
                     shape.radius = 0.25f;
@@ -1525,59 +1581,44 @@ namespace DribbleToSchool.EditorTools
                         new BlobShape.Blob(new Vector3(0.06f, 0.08f, -0.05f), new Vector3(0.07f, 0.05f, 0.07f), new Color(1f, 0.6f, 0.7f)),
                         new BlobShape.Blob(new Vector3(-0.08f, 0.07f, 0.04f), new Vector3(0.06f, 0.05f, 0.06f), new Color(1f, 0.9f, 0.4f)));
                 }
-                // The arch: stone voussoirs along a half-ellipse from pillar to pillar, facing the street.
-                const int pieces = 13;
-                float span = halfOpen + 0.35f;
-                for (int i = 0; i < pieces; i++)
-                {
-                    float t0 = i / (float)pieces * Mathf.PI, t1 = (i + 1) / (float)pieces * Mathf.PI, tm = (t0 + t1) * 0.5f;
-                    float ax = x - Mathf.Cos(tm) * span, ay = groundTop + pillarH + Mathf.Sin(tm) * rise;
-                    float dx = span * (Mathf.Cos(t0) - Mathf.Cos(t1)), dy = rise * (Mathf.Sin(t1) - Mathf.Sin(t0));
-                    var piece = StreetBuilder.Solid(school, "ArchStone", new Vector3(ax, ay, z), new Vector3(Mathf.Sqrt(dx * dx + dy * dy) + 0.08f, 0.42f, 0.7f), stone, concrete);
-                    piece.transform.rotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(dy, dx) * Mathf.Rad2Deg);
-                }
-                // A small tiled roof over the arch.
-                StreetBuilder.Solid(school, "ArchRoof", new Vector3(x, groundTop + pillarH + rise + 0.38f, z), new Vector3(span * 2f + 1.3f, 0.2f, 1.3f), roof, Art.surfaces[ProceduralArt.Surface.RoofTiles]);
-                StreetBuilder.Solid(school, "ArchRidge", new Vector3(x, groundTop + pillarH + rise + 0.55f, z), new Vector3(span * 2f + 1.4f, 0.14f, 0.3f), Color.Lerp(roof, Color.black, 0.2f));
 
-                // The schoolyard and the school across it.
-                if (Chapter != 5)
+                // The school across the yard, its front facing back down the street.
+                var building = new GameObject("SchoolBuilding");
+                building.transform.SetParent(school, false);
+                building.transform.position = new Vector3(x + 10f, groundTop, 4f);
+                building.transform.rotation = Quaternion.Euler(0f, 90f, 0f);
+                var house = building.AddComponent<House3D>();
+                Vector2 size = ProceduralArt.FacadeSize(ProceduralArt.FacadeKind.School);
+                house.width = size.x;
+                house.wallHeight = size.y;
+                house.depth = 12f;
+                house.roof = House3D.RoofStyle.Flat;
+                house.wallColor = new Color(0.95f, 0.94f, 0.9f);
+                house.roofColor = new Color(0.7f, 0.7f, 0.72f);
+                building.GetComponent<MeshRenderer>().sharedMaterials = new[] { Art.solid, Art.facades[ProceduralArt.FacadeKind.School], Art.surfaces[ProceduralArt.Surface.RoofTiles] };
+                house.Rebuild();
+                StreetBuilder.Solid(school, "ClockTower", new Vector3(x + 12f, groundTop + size.y + 1.8f, 4f), new Vector3(4f, 3.6f, 4f), house.wallColor);
+                foreach (float dz in new[] { -4.5f, 6.5f })
                 {
-                    var building = new GameObject("SchoolBuilding");
-                    building.transform.SetParent(school, false);
-                    building.transform.position = new Vector3(x + 4f, groundTop, 16f);
-                    var house = building.AddComponent<House3D>();
-                    Vector2 size = ProceduralArt.FacadeSize(ProceduralArt.FacadeKind.School);
-                    house.width = size.x;
-                    house.wallHeight = size.y;
-                    house.depth = 12f;
-                    house.roof = House3D.RoofStyle.Flat;
-                    house.wallColor = new Color(0.95f, 0.94f, 0.9f);
-                    house.roofColor = new Color(0.7f, 0.7f, 0.72f);
-                    building.GetComponent<MeshRenderer>().sharedMaterials = new[] { Art.solid, Art.facades[ProceduralArt.FacadeKind.School], Art.surfaces[ProceduralArt.Surface.RoofTiles] };
-                    house.Rebuild();
-                    StreetBuilder.Solid(school, "ClockTower", new Vector3(x + 4f, groundTop + size.y + 1.8f, 18f), new Vector3(4f, 3.6f, 4f), house.wallColor);
-                    // Cherry trees in the yard.
-                    foreach (float dx in new[] { -9f, 9f, 15f })
-                    {
-                        var tree = new GameObject("YardTree").AddComponent<SpriteRenderer>();
-                        tree.transform.SetParent(school, false);
-                        tree.sprite = Art.mid[5, 1];
-                        tree.sharedMaterial = Art.hazeSprite;
-                        tree.transform.position = new Vector3(x + dx, groundTop + tree.sprite.bounds.size.y * 0.5f - 0.15f, 8f);
-                    }
+                    var tree = new GameObject("YardTree").AddComponent<SpriteRenderer>();
+                    tree.transform.SetParent(school, false);
+                    tree.sprite = Art.mid[5, 1];
+                    tree.sharedMaterial = Art.hazeSprite;
+                    tree.transform.position = new Vector3(x + 5f, groundTop + tree.sprite.bounds.size.y * 0.5f - 0.15f, dz);
                 }
 
+                // Through the gate: the kid and the ball must both get here.
                 var goalGo = new GameObject("GoalZone");
                 goalGo.transform.SetParent(school, false);
-                goalGo.transform.position = new Vector3(x, groundTop + 1.5f, 0f);
+                goalGo.transform.position = new Vector3(wx + 1.2f, groundTop + 1.5f, 0f);
                 var trigger = goalGo.AddComponent<BoxCollider2D>();
                 trigger.isTrigger = true;
                 trigger.size = new Vector2(2.6f, 3f);
                 goalGo.AddComponent<GoalZone>();
-                // The school's name board hangs in the arch, facing the street.
-                var board = Banner("SCHOOL", new Vector2(x, groundTop + pillarH + 0.2f), groundTop + pillarH + rise - 0.2f);
-                board.transform.position = new Vector3(x, board.transform.position.y, z - 0.1f);
+                // The name board on the arch, facing back down the footpath toward the kid.
+                var board = Banner("SCHOOL", new Vector2(wx, groundTop + pillarH + 0.3f), groundTop + pillarH + rise - 0.2f);
+                board.transform.position = new Vector3(wx - 0.38f, board.transform.position.y, mid);
+                board.transform.rotation = Quaternion.Euler(0f, 90f, 0f);
                 school.gameObject.AddComponent<StaticBatcher>();
             }
 

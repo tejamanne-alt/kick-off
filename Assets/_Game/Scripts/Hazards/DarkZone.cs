@@ -3,13 +3,13 @@ using UnityEngine;
 namespace DribbleToSchool.Hazards
 {
     /// <summary>
-    /// A tunnel or underpass: while the kid is inside, the screen darkens to a
-    /// pool of light around them (see DarknessOverlay).
+    /// A tunnel or underpass: while the kid is inside, the view dims (see DarknessOverlay)
+    /// and the lamps overhead light the way.
     /// </summary>
     [RequireComponent(typeof(Collider2D))]
     public class DarkZone : HazardBase
     {
-        [Range(0f, 1f)] public float darkness = 0.85f;
+        [Range(0f, 1f)] public float darkness = 0.55f;
 
         /// <summary>Darkness wanted right now (max of all zones the kid is in).</summary>
         public static float Wanted { get; private set; }

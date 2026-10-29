@@ -3,9 +3,9 @@ using UnityEngine;
 namespace DribbleToSchool.Hazards
 {
     /// <summary>
-    /// Sea water that washes in and out over a stretch of sand. Moves its whole
-    /// object (water visual + lose-zone trigger) between low and high water.
-    /// Cross while the tide is out.
+    /// The sea washing up the beach and back over a stretch of sand. The lose-zone trigger
+    /// rises and falls with the tide; the wash (TideWash) runs up from the water's edge and
+    /// over the kid's path at high water. Cross while the water is out.
     /// </summary>
     public class Tide : HazardBase
     {
@@ -15,8 +15,10 @@ namespace DribbleToSchool.Hazards
         public float highOffset = 0f;
         public float period = 6f;
         public float phaseOffset;
-        [Tooltip("The water sprite: it sloshes gently sideways as the tide moves.")]
+        [Tooltip("Optional: a water visual that sloshes gently sideways as the tide moves.")]
         public Transform surface;
+        [Tooltip("The wave running up the beach, driven by the tide.")]
+        public World.TideWash wash;
 
         public bool IsHigh { get; private set; }
 
@@ -50,6 +52,7 @@ namespace DribbleToSchool.Hazards
             s = s * s * (3f - 2f * s);
             transform.position = start + Vector3.up * Mathf.Lerp(lowOffset, highOffset, s);
             IsHigh = s > 0.5f;
+            if (wash != null) wash.Level = s;
             if (surface != null)
                 surface.localPosition = surfaceStart + Vector3.right * Mathf.Sin(time * 1.4f) * 0.18f;
         }

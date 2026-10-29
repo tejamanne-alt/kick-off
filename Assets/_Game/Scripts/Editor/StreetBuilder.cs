@@ -464,15 +464,113 @@ namespace DribbleToSchool.EditorTools
             var water = Solid(root, "Sea", new Vector3((x0 + x1) * 0.5f, sea - 0.05f, 480f), new Vector3(x1 - x0 + 1600f, 0.1f, 950f), Color.white, Art.surfaces[ProceduralArt.Surface.Sea]);
             water.faces = MeshBuilder.Faces.Top;
             water.Rebuild();
+
+            // Foam where the waves break on the sand, and lines of breaking crests out at sea.
+            Foam(root, x0 - 60f, x1 + 60f, 9.0f, 9.45f, sea + 0.19f, 0.3f);
+            float[] crests = { 13f, 19f, 28f, 42f };
+            for (int i = 0; i < crests.Length; i++)
+                for (float x = x0 - 60f + (float)rng.NextDouble() * 10f; x < x1 + 60f; x += Rand(rng, 14f, 30f))
+                {
+                    float len = Rand(rng, 5f, 14f), w = Mathf.Lerp(0.35f, 0.9f, i / (float)(crests.Length - 1));
+                    Foam(root, x, x + len, crests[i] + Rand(rng, -1f, 1f), crests[i] + w, sea - 0.04f, i * 1.7f + x);
+                }
+
             for (float x = x0; x < x1; x += Rand(rng, 30f, 45f))
-                CutOut(root, "Lifeguard", Art.mid[3, 0], x, GroundAt(track, x), 7.2f, 1f, -60);
-            for (float x = x0 + 8f; x < x1; x += Rand(rng, 12f, 20f))
-                CutOut(root, "Parasol", Art.mid[3, 1], x, GroundAt(track, x), Rand(rng, 3.6f, 5.4f), 1f, -58, rng.NextDouble() < 0.5);
-            for (float x = x0 + 15f; x < x1; x += Rand(rng, 25f, 40f))
-                CutOut(root, "Rocks", Art.mid[3, 2], x, GroundAt(track, x), 8f, 1f, -59);
+                LifeguardTower(root, x, GroundAt(track, x), 7.4f);
+            for (float x = x0 + 8f; x < x1; x += Rand(rng, 10f, 18f))
+            {
+                float gy = GroundAt(track, x), z = Rand(rng, 3.4f, 5.2f);
+                var go = new GameObject("Parasol");
+                go.transform.SetParent(root, false);
+                go.transform.position = new Vector3(x, gy, z);
+                var parasol = go.AddComponent<ParasolShape>();
+                Color[] canopy = { new Color(0.9f, 0.3f, 0.28f), new Color(0.25f, 0.5f, 0.85f), new Color(1f, 0.75f, 0.2f) };
+                parasol.colorA = canopy[rng.Next(canopy.Length)];
+                parasol.lean = Rand(rng, -9f, 9f);
+                go.GetComponent<MeshRenderer>().sharedMaterial = Art.solid;
+                parasol.Rebuild();
+                // A towel in its shade, and sometimes a cool box.
+                Color[] towels = { new Color(0.95f, 0.55f, 0.6f), new Color(0.45f, 0.75f, 0.9f), new Color(1f, 0.85f, 0.35f) };
+                Solid(root, "Towel", new Vector3(x + Rand(rng, -0.3f, 0.3f), gy + 0.008f, z - 0.4f), new Vector3(0.8f, 0.016f, 1.7f), towels[rng.Next(towels.Length)]);
+                if (rng.NextDouble() < 0.4)
+                    Solid(root, "CoolBox", new Vector3(x + 0.9f, gy + 0.18f, z + 0.3f), new Vector3(0.55f, 0.36f, 0.38f), new Color(0.3f, 0.55f, 0.85f));
+            }
+            for (float x = x0 + 15f; x < x1; x += Rand(rng, 22f, 38f))
+            {
+                // Rocks at the water's edge, darker where the sea wets them.
+                float gy = GroundAt(track, x) - 0.12f, s = Rand(rng, 0.8f, 1.6f);
+                var rock = new GameObject("Rocks");
+                rock.transform.SetParent(root, false);
+                rock.transform.position = new Vector3(x, gy, Rand(rng, 8.6f, 11f));
+                var blobs = rock.AddComponent<BlobShape>();
+                Color grey = new Color(0.55f, 0.53f, 0.5f), wet = new Color(0.38f, 0.37f, 0.36f);
+                blobs.blobs.Add(new BlobShape.Blob(new Vector3(0f, 0.2f * s, 0f), new Vector3(1.4f, 0.75f, 1.1f) * s, grey));
+                blobs.blobs.Add(new BlobShape.Blob(new Vector3(1.1f * s, 0.05f, 0.3f), new Vector3(0.8f, 0.45f, 0.7f) * s, wet));
+                blobs.blobs.Add(new BlobShape.Blob(new Vector3(-1f * s, 0.1f, -0.2f), new Vector3(0.6f, 0.4f, 0.5f) * s, grey));
+                rock.GetComponent<MeshRenderer>().sharedMaterial = Art.solid;
+                blobs.Rebuild();
+            }
+            // Tufts of beach grass in the soft sand nearer the camera.
+            var grass = new GameObject("BeachGrass");
+            grass.transform.SetParent(root, false);
+            var tufts = grass.AddComponent<BlobShape>();
+            for (float x = x0; x < x1; x += Rand(rng, 1.5f, 5f))
+            {
+                float gy = GroundAt(track, x), z = Rand(rng, -9f, -2.4f);
+                // A low, spreading clump of dune grass.
+                for (int k = 0; k < 4; k++)
+                    tufts.blobs.Add(new BlobShape.Blob(new Vector3(x + Rand(rng, -0.3f, 0.3f), gy + 0.03f, z + Rand(rng, -0.25f, 0.25f)),
+                        new Vector3(Rand(rng, 0.14f, 0.24f), Rand(rng, 0.06f, 0.11f), Rand(rng, 0.12f, 0.2f)), Color.Lerp(new Color(0.58f, 0.66f, 0.34f), new Color(0.82f, 0.8f, 0.5f), (float)rng.NextDouble())));
+            }
+            grass.GetComponent<MeshRenderer>().sharedMaterial = Art.solid;
+            tufts.Rebuild();
             // Wooded headlands out on the horizon.
             for (int i = 0; i < 3; i++)
                 CutOut(root, "Headland", Art.headland, x0 + (x1 - x0) * (0.15f + i * 0.4f) + Rand(rng, -40f, 40f), sea - 0.5f, 650f + i * 60f, 10f, -85, i % 2 == 1);
+        }
+
+        /// <summary>A white band of foam with a wavy edge toward the camera.</summary>
+        static void Foam(Transform root, float a, float b, float zFront, float zBack, float y, float phase)
+        {
+            var go = new GameObject("Foam");
+            go.transform.SetParent(root, false);
+            var strip = go.AddComponent<WavyStrip>();
+            strip.fromX = a;
+            strip.toX = b;
+            strip.frontZ = zFront;
+            strip.backZ = zBack;
+            strip.y = y;
+            strip.phase = phase;
+            strip.color = new Color(0.97f, 0.98f, 1f);
+            go.GetComponent<MeshRenderer>().sharedMaterial = Art.solid;
+            strip.Rebuild();
+        }
+
+        /// <summary>A white wooden lifeguard tower: legs and braces, a platform, a hut with a red roof, a ladder and a flag.</summary>
+        static void LifeguardTower(Transform root, float x, float gy, float z)
+        {
+            Color white = new Color(0.96f, 0.96f, 0.94f), red = new Color(0.85f, 0.25f, 0.22f), dark = new Color(0.3f, 0.35f, 0.42f);
+            const float deck = 2.6f;
+            foreach (float dx in new[] { -0.75f, 0.75f })
+                foreach (float dz in new[] { -0.75f, 0.75f })
+                    Solid(root, "TowerLeg", new Vector3(x + dx, gy + deck * 0.5f, z + dz), new Vector3(0.12f, deck, 0.12f), white);
+            foreach (float dz in new[] { -0.75f, 0.75f })
+                Solid(root, "TowerBrace", new Vector3(x, gy + 1.1f, z + dz), new Vector3(1.5f, 0.08f, 0.08f), white);
+            foreach (float dx in new[] { -0.75f, 0.75f })
+                Solid(root, "TowerBrace", new Vector3(x + dx, gy + 1.1f, z), new Vector3(0.08f, 0.08f, 1.5f), white);
+            Solid(root, "TowerDeck", new Vector3(x, gy + deck, z), new Vector3(1.9f, 0.12f, 1.9f), white);
+            Solid(root, "TowerRail", new Vector3(x, gy + deck + 0.45f, z - 0.92f), new Vector3(1.9f, 0.06f, 0.06f), white);
+            Solid(root, "TowerHut", new Vector3(x, gy + deck + 0.65f, z + 0.15f), new Vector3(1.3f, 1.2f, 1.2f), white);
+            Solid(root, "TowerWindow", new Vector3(x, gy + deck + 0.8f, z - 0.46f), new Vector3(0.8f, 0.45f, 0.02f), dark);
+            Solid(root, "TowerRoof", new Vector3(x, gy + deck + 1.35f, z + 0.15f), new Vector3(1.6f, 0.16f, 1.5f), red);
+            Solid(root, "TowerRoofTop", new Vector3(x, gy + deck + 1.5f, z + 0.15f), new Vector3(1.1f, 0.16f, 1f), red);
+            // Ladder up the front.
+            foreach (float dx in new[] { -0.25f, 0.25f })
+                Solid(root, "LadderRail", new Vector3(x + dx, gy + deck * 0.5f, z - 1.25f), new Vector3(0.06f, deck + 0.1f, 0.06f), white);
+            for (float y = 0.3f; y < deck; y += 0.32f)
+                Solid(root, "LadderRung", new Vector3(x, gy + y, z - 1.25f), new Vector3(0.5f, 0.04f, 0.05f), white);
+            Solid(root, "FlagPole", new Vector3(x + 0.55f, gy + deck + 2.1f, z + 0.15f), new Vector3(0.04f, 1.6f, 0.04f), white);
+            Solid(root, "Flag", new Vector3(x + 0.8f, gy + deck + 2.7f, z + 0.15f), new Vector3(0.5f, 0.32f, 0.02f), new Color(1f, 0.85f, 0.15f));
         }
 
         static void City(LevelBuildKit.TrackBuilder track, Transform root, System.Random rng, float x0, float x1)
@@ -518,10 +616,6 @@ namespace DribbleToSchool.EditorTools
                 bool cherry = rng.NextDouble() < 0.4;
                 CutOut(root, cherry ? "Cherry" : "Tree", Art.mid[5, cherry ? 1 : 2], x, GroundAt(track, x), Rand(rng, 6.5f, 16f), Rand(rng, 0.9f, 1.2f), -62, rng.NextDouble() < 0.5);
             }
-            // The school at the end of the run.
-            float schoolX = track.GoalX > track.MinX ? track.GoalX : track.MaxX - 10f;
-            var school = Building(root, schoolX, GroundAt(track, schoolX), 26f, ProceduralArt.FacadeKind.School, House3D.RoofStyle.Flat, 12f, 0f, new Color(0.95f, 0.94f, 0.9f), new Color(0.7f, 0.7f, 0.72f));
-            Solid(root, "ClockTower", school.transform.position + new Vector3(0f, 11.6f, 2f), new Vector3(4f, 3.6f, 4f), new Color(0.95f, 0.94f, 0.9f));
             DistantHills(track, root, x0, x1);
         }
 

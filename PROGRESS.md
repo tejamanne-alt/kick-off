@@ -155,6 +155,12 @@ This file is the resume point. A new session should read it first. All eight pha
   - The gate is a sliding steel gate with a no-entry sign, buzzed open by kicking the ball at an intercom on a gooseneck post (a push-button bollard when low). `Gate` can slide a panel aside and switch its collider off.
   - Decor is kept out of the kid's line or is solid: pedestrians and the dog walk just behind it, signs, flags, poles, pipes and target posts stand at the back of the footpath.
   - The level ends at the school's front gate: a stone arch with a tiled roof and name board in the school wall, gates open, the school across the yard.
+- Beach, underpass, school and sky (generated content v20):
+  - Tides wash up from the sea: `World/TideWash` is a sheet of sea with a foam edge whose front runs up the sand from the water's edge and over the path at high water, curling back toward the sea at its ends (`World/Shoreline`), over darker wet sand with a wavy edge (`World/WavyStrip`). The lose zone still rises with the tide.
+  - The beach is 3D: lifeguard towers, parasols (`World/ParasolShape`) with towels and cool boxes, wet rocks at the water's edge, dune grass, foam along the shore and lines of breaking crests out at sea.
+  - Clouds are 3D cumulus (`World/CloudShape`): flat bottoms, piled tops, cel-shaded with blue-grey undersides, with little haze (`_Haze` on the toon shader).
+  - The underpass is evenly dim (no spotlight round the kid) and lit by lamps under the deck whose additive light cones and floor pools light whoever walks under them (`World/LampGlow`).
+  - The level ends when the kid and the ball are both through the school gate (`GoalZone`). The school stands across the end of the road: its gate arch faces back down the footpath at the kid, bollards close the road, the building faces down the street.
 
 ## After Phase 8 (next steps)
 
