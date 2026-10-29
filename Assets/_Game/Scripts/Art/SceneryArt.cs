@@ -15,16 +15,63 @@ namespace DribbleToSchool.Art
         // ===================== Sky =====================
 
         /// <summary>Vertical sky gradient (stretched over the view).</summary>
+        /// <summary>
+        /// A painted summer sky (512 x 256, shown far behind everything): the chapter's colours
+        /// deepening toward the top, a pale glowing haze along the horizon, soft horizontal brush
+        /// streaks so it reads as paint rather than a flat gradient, and thin wisps of high cloud.
+        /// </summary>
         public static PixelCanvas Sky(Color top, Color bottom)
         {
-            var c = new PixelCanvas(8, 256);
-            for (int y = 0; y < 256; y++)
+            const int w = 512, h = 256;
+            var c = new PixelCanvas(w, h);
+            Color haze = Color.Lerp(bottom, Color.white, 0.45f);
+            for (int y = 0; y < h; y++)
             {
-                float t = Mathf.Pow(y / 255f, 0.8f);
-                Color col = Color.Lerp(bottom, top, t);
-                for (int x = 0; x < 8; x++) c.Set(x, y, col);
+                float v = y / (float)(h - 1);
+                for (int x = 0; x < w; x++)
+                {
+                    float u = x / (float)w;
+                    // Long, soft brush strokes: noise stretched along the horizon.
+                    float stroke = Noise(u * 6f, v * 40f, 3) * 0.6f + Noise(u * 18f, v * 90f, 11) * 0.4f;
+                    float t = Mathf.Pow(Mathf.Clamp01(v + (stroke - 0.5f) * 0.05f), 0.75f);
+                    Color col = Color.Lerp(bottom, top, t);
+                    // The glowing haze low down.
+                    float glow = Mathf.Clamp01(1f - v / 0.22f);
+                    col = Color.Lerp(col, haze, glow * glow * 0.7f);
+                    col *= 1f + (stroke - 0.5f) * 0.05f;
+                    // Wisps of high cirrus in the upper sky.
+                    if (v > 0.45f)
+                    {
+                        float wisp = Noise(u * 3f + Noise(u * 2f, v * 4f, 5) * 0.6f, v * 22f, 7);
+                        wisp = Mathf.Clamp01((wisp - 0.62f) / 0.25f) * Mathf.Clamp01((v - 0.45f) / 0.2f) * Mathf.Clamp01((0.95f - v) / 0.2f);
+                        col = Color.Lerp(col, Color.white, wisp * 0.32f);
+                    }
+                    col.a = 1f;
+                    c.Set(x, y, col);
+                }
             }
             return c;
+        }
+
+        /// <summary>Smooth value noise in 0..1, tiling every 64 cells in x so the sky wraps.</summary>
+        static float Noise(float x, float y, int seed)
+        {
+            int xi = Mathf.FloorToInt(x), yi = Mathf.FloorToInt(y);
+            float fx = x - xi, fy = y - yi;
+            fx = fx * fx * (3f - 2f * fx); fy = fy * fy * (3f - 2f * fy);
+            float a = Hash(xi, yi, seed), b = Hash(xi + 1, yi, seed), cc = Hash(xi, yi + 1, seed), d = Hash(xi + 1, yi + 1, seed);
+            return Mathf.Lerp(Mathf.Lerp(a, b, fx), Mathf.Lerp(cc, d, fx), fy);
+        }
+
+        static float Hash(int x, int y, int seed)
+        {
+            x = ((x % 64) + 64) % 64;
+            unchecked
+            {
+                int n = x * 374761393 + y * 668265263 + seed * 1442695041;
+                n = (n ^ (n >> 13)) * 1274126177;
+                return ((n ^ (n >> 16)) & 0xffff) / 65535f;
+            }
         }
 
         public static PixelCanvas Sun(Color color)

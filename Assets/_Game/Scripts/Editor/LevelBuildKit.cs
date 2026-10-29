@@ -491,7 +491,7 @@ namespace DribbleToSchool.EditorTools
         {
             int ch = Chapter;
             var sky = SpriteObject(cam.transform, "Sky", Art.sky[ch], new Vector3(0f, 0f, 1500f), -100);
-            sky.transform.localScale = new Vector3(9600f, 140f, 1f);
+            sky.transform.localScale = new Vector3(150f, 140f, 1f);   // the painted sky is 16 x 8 units at scale 1
             if (ch == 5)
             {
                 var sun = SpriteObject(cam.transform, "Sun", Art.sun, new Vector3(260f, 110f, 1400f), -95, Theme.sun);
