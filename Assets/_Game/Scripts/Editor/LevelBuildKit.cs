@@ -141,9 +141,10 @@ namespace DribbleToSchool.EditorTools
             capsule.size = new Vector2(0.5f, 1.2f);
             capsule.sharedMaterial = kidMat;
             // The teen boy and girl made in Blender (tools/blender/teen.py); Settings picks one.
+            // Neck heights make them about 1.75 m (him) and 1.68 m (her) tall.
             // Without them, the younger Blender kid, or the procedural one.
-            var boyRig = BuildModelCharacter(kidGo.transform, "Boy", Art.boy, 1.41f, TeenFeet(1.41f), true);
-            var girlRig = boyRig.rig != null ? BuildModelCharacter(kidGo.transform, "Girl", Art.girl, 1.37f, TeenFeet(1.37f), true) : new CharacterParts();
+            var boyRig = BuildModelCharacter(kidGo.transform, "Boy", Art.boy, 1.5f, TeenFeet(1.5f), true);
+            var girlRig = boyRig.rig != null ? BuildModelCharacter(kidGo.transform, "Girl", Art.girl, 1.43f, TeenFeet(1.43f), true) : new CharacterParts();
             var kidRig = boyRig;
             if (kidRig.rig == null) kidRig = BuildModelCharacter(kidGo.transform, "Kid", Art.kid, 1.3f, Vector3.zero, true);
             if (kidRig.rig == null)
