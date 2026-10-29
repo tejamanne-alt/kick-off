@@ -919,7 +919,7 @@ namespace DribbleToSchool.EditorTools
             if (LevelBuildKit.HasKitModel("Plants", "DuneGrass"))
             {
                 for (float x = x0; x < x1; x += Rand(rng, 2.5f, 7f))
-                    Plant(root, "DuneGrass", null, x, GroundAt(track, x), Rand(rng, -9f, -2.4f), Rand(rng, 0.7f, 1.3f), 1f, -50, rng);
+                    Plant(root, "DuneGrass", null, x, GroundAt(track, x), Rand(rng, -6.5f, -2.4f), Rand(rng, 0.7f, 1.3f), 1f, -50, rng);
                 Headlands(root, rng, x0, x1, sea);
                 return;
             }
@@ -1068,10 +1068,23 @@ namespace DribbleToSchool.EditorTools
             }
             if (plants)
             {
+                // Bushes between the trunks, and a wood further back that closes the view.
+                for (float x = x0; x < x1; x += Rand(rng, 4f, 9f))
+                {
+                    float skip;
+                    if (Blocked(track, x - 1.5f, x + 1.5f, out skip)) continue;
+                    Plant(root, rng.NextDouble() < 0.6 ? "BushWide" : "BushRound", null, x, GroundAt(track, x) + 0.04f, Rand(rng, 3.5f, 6f), Rand(rng, 1f, 1.5f), 1f, -58, rng);
+                }
+                string[] wood = { "BroadleafLarge", "Broadleaf", "ConiferTall", "BroadleafLarge", "ConiferMid", "Birch" };
+                for (float x = x0 - 20f; x < x1 + 20f; x += Rand(rng, 3f, 6f))
+                {
+                    if (OverlapsBackRow(track, x - 2f, x + 2f)) continue;
+                    Plant(root, wood[rng.Next(wood.Length)], null, x, GroundAt(track, x) + 0.04f, Rand(rng, 22f, 40f), Rand(rng, 0.95f, 1.35f), 1f, -70, rng);
+                }
                 // Long golden grass, tufts and wild flowers on the lawn in front of the path.
-                string[] low = { "TallGrass", "GrassTuft", "FlowerPatch", "GrassTuft" };
-                for (float x = x0; x < x1; x += Rand(rng, 1.8f, 5f))
-                    Plant(root, low[rng.Next(low.Length)], null, x, GroundAt(track, x) + 0.04f, Rand(rng, -10f, -2.6f), Rand(rng, 0.8f, 1.4f), 1f, -50, rng);
+                string[] low = { "TallGrass", "GrassTuft", "FlowerPatch", "GrassTuft", "TallGrass" };
+                for (float x = x0; x < x1; x += Rand(rng, 0.8f, 2.6f))
+                    Plant(root, low[rng.Next(low.Length)], null, x, GroundAt(track, x) + 0.04f, Rand(rng, -6.5f, -2.4f), Rand(rng, 1.1f, 1.8f), 1f, -50, rng);
             }
             DistantHills(track, root, x0, x1);
         }
@@ -1097,7 +1110,9 @@ namespace DribbleToSchool.EditorTools
                 var rng = new System.Random(ch * 977 + Mathf.RoundToInt(x0));
                 Layer(root, x0 - 250f, x1 + 250f, y - 0.3f, 120f, 15f, 1f, null, rng, "ForestStrip");
                 Layer(root, x0 - 450f, x1 + 450f, y - 0.5f, 230f, 30f, 1f, grass, rng, "HillsRolling");
-                Layer(root, x0 - 700f, x1 + 700f, y - 1f, 440f, 50f, 1.2f, grass, rng, "MountainRange1", "MountainRange2");
+                // The game camera sits about 4 m up and sees about 10 degrees above the horizon: the
+                // range peaks at 6 to 8 degrees, over the back row's roofs, leaving sky for the clouds.
+                Layer(root, x0 - 700f, x1 + 700f, y - 1f, 440f, 50f, 0.9f, grass, rng, "MountainRange1", "MountainRange2");
                 return;
             }
             var far = CutOut(root, "DistantHills", Art.far[ch], (x0 + x1) * 0.5f, track.LowestGroundTop - 6f, 260f, 6f, -85);
