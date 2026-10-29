@@ -146,7 +146,7 @@ This file is the resume point. A new session should read it first. All eight pha
   - 3D ball (skin texture projected on the front), coins, parked and crossing cars (`World/Car3D`), pipes, switch lamp, sign boards, posts and frames (`Decor` is now a 3D box), swing A-frame, springboard, targets, slalom gates, dog and seagull (`World/BlobShape`). `World/Tint` recolours sprites or 3D parts.
   - Ground shadows for the kid and ball (`Presentation/GroundShadow`).
   - The 2D paper-doll parts and the unused car, dog and seagull sprites are gone.
-- Controls and type: `UI/Kit/TouchButton` key-cap buttons with press travel, ripple and glow; haptic click on press and soft tap on release (`Haptics.Press/Release`, rigid/soft styles on iOS, predefined effects on Android). Menu buttons push down onto a base. Fonts: Lilita One (display) and Varela Round (body).
+- Controls and type: `UI/Kit/TouchButton` see-through glass buttons (no border, faint tint, soft white icons) that brighten and shrink when held, with a faint ripple and a halo on KICK when the ball is in reach; haptic click on press and soft tap on release (`Haptics.Press/Release`, rigid/soft styles on iOS, predefined effects on Android). Menu buttons push down onto a base. Fonts: Lilita One (display) and Varela Round (body).
 
 ## After Phase 8 (next steps)
 

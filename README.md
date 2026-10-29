@@ -167,7 +167,7 @@ All art and audio are generated in code, so the repo has no art or audio files t
 - **Feel.** Parallax backdrops, particles for every action, screen shake, a slow-motion finish, and the camera zooms out while aiming.
 - **Audio.** Synthesized sound effects for every action and a lo-fi music loop per chapter, plus a menu theme.
 - **Haptics.** Taptic feedback on iOS (prepared generators; a rigid click when a button goes down and a soft tap when it comes up) and the system click effects on Android 10+, short vibrations before that.
-- **Controls and type.** The on-screen buttons are glossy key caps that push down onto their base when held, with a ripple; KICK glows green while the ball is in reach. Menu buttons push in the same way. Text uses Lilita One for titles, buttons and numbers and Varela Round for body text (both SIL Open Font License, in `Resources/Fonts`).
+- **Controls and type.** The on-screen buttons are borderless, see-through glass discs with soft white icons, so they never compete with the game. Held, they brighten and shrink slightly with a faint ripple; a soft green halo pulses behind KICK while the ball is in reach. Menu buttons push in the same way. Text uses Lilita One for titles, buttons and numbers and Varela Round for body text (both SIL Open Font License, in `Resources/Fonts`).
 
 ## Menus, settings and accessibility
 

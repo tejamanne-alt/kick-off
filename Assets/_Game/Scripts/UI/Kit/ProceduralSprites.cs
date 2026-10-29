@@ -5,7 +5,7 @@ namespace DribbleToSchool.UI.Kit
     /// <summary>UI sprites drawn in code: rounded panels, circles, stars, coins, a padlock.</summary>
     public static class ProceduralSprites
     {
-        static Sprite rounded, roundedSmall, circle, star, coin, lockIcon, gradient, arrow, pause, ring, gloss, softDisc, ballIcon;
+        static Sprite rounded, roundedSmall, circle, star, coin, lockIcon, gradient, arrow, pause, ring, softDisc, softEdgeDisc, ballIcon;
 
         /// <summary>Upward chevron (jump button).</summary>
         public static Sprite ArrowUp
@@ -120,15 +120,20 @@ namespace DribbleToSchool.UI.Kit
             }
         }
 
-        /// <summary>The shine on a glossy button: a soft-edged cap over the top half, fading downward.</summary>
-        public static Sprite Gloss
+        /// <summary>
+        /// A disc of frosted glass: even in the middle, slightly brighter just inside the edge,
+        /// and fading out softly at the rim instead of having a border.
+        /// </summary>
+        public static Sprite SoftEdgeDisc
         {
             get
             {
-                return gloss != null ? gloss : (gloss = MakeShape(128, (u, v) =>
+                return softEdgeDisc != null ? softEdgeDisc : (softEdgeDisc = MakeShape(160, (u, v) =>
                 {
-                    float inside = Mathf.Clamp01((1f - Mathf.Sqrt(u * u * 1.15f + (v - 0.38f) * (v - 0.38f) * 2.6f)) * 6f);
-                    return inside * Mathf.Clamp01((v + 0.1f) * 1.4f);
+                    float r = Mathf.Sqrt(u * u + v * v);
+                    float fade = Mathf.Clamp01((1f - r) / 0.12f);
+                    float lip = Mathf.Clamp01(1f - Mathf.Abs(r - 0.86f) / 0.1f) * 0.35f;
+                    return fade * fade * (3f - 2f * fade) * (0.75f + lip);
                 }));
             }
         }

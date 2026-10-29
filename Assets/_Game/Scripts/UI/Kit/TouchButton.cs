@@ -5,34 +5,39 @@ using UnityEngine.UI;
 namespace DribbleToSchool.UI.Kit
 {
     /// <summary>
-    /// The look of an on-screen game control (walk, kick, jump): a glossy round key cap
-    /// standing on a darker base, with a soft drop shadow. Holding it pushes the cap down
-    /// onto its base, darkens it and fires a crisp haptic click; letting go springs it
-    /// back with a soft tap. A ripple ring spreads on each press, and a glow can pulse to
-    /// say "now" (the kick button while the ball is in reach).
+    /// The look of an on-screen game control (walk, kick, jump): a see-through disc of
+    /// frosted glass with a soft white icon, no border and only a hint of colour, so the
+    /// game shows through and the controls stay out of the way. Holding it brightens the
+    /// glass a little, shrinks it slightly and fires a crisp haptic click; letting go eases
+    /// it back with a soft tap. A faint ripple spreads on each press, and a soft halo can
+    /// pulse to say "now" (the kick button while the ball is in reach).
     /// GameInput reads the touches; GameHud tells this component when it is held.
     /// </summary>
     public class TouchButton : MonoBehaviour
     {
-        [Tooltip("How far the cap travels when pressed, as a fraction of the button size.")]
-        public float travel = 0.075f;
         [Tooltip("Main actions (kick, jump) click harder than the walk buttons.")]
         public bool primary = true;
+        [Tooltip("Opacity of the glass at rest and while held.")]
+        public float restAlpha = 0.14f;
+        public float heldAlpha = 0.3f;
 
         public RectTransform Content { get; private set; }
 
-        Image shadow, rim, cap, gloss, ripple, glow;
-        RectTransform capRect, rippleRect, glowRect;
-        Color capColor, rimColor;
+        Image glass, ripple, halo;
+        RectTransform discRect, rippleRect;
+        Color tint;
         float press, pressVelocity;
         float rippleTime = -10f;
         bool held, highlighted;
+        Graphic[] contentGraphics;
+        float[] contentAlpha;
 
         /// <summary>
         /// Builds the button under <paramref name="parent"/>. Place the returned object's
         /// RectTransform with anchors; the button keeps itself round inside that area.
+        /// <paramref name="color"/> only tints the glass faintly.
         /// </summary>
-        public static TouchButton Create(Transform parent, string name, Color color, float alpha, bool primary)
+        public static TouchButton Create(Transform parent, string name, Color color, bool primary)
         {
             var root = UIKit.Rect(parent, name);
             var button = root.gameObject.AddComponent<TouchButton>();
@@ -45,65 +50,63 @@ namespace DribbleToSchool.UI.Kit
             fitter.aspectMode = AspectRatioFitter.AspectMode.FitInParent;
             fitter.aspectRatio = 1f;
 
-            button.capColor = new Color(color.r, color.g, color.b, alpha);
-            button.rimColor = new Color(color.r * 0.62f, color.g * 0.62f, color.b * 0.7f, Mathf.Min(1f, alpha + 0.1f));
+            // Mostly white with a touch of the button's colour: reads on bright and dark scenes.
+            button.tint = Color.Lerp(Color.white, color, 0.25f);
 
-            button.glow = Layer(square, "Glow", ProceduralSprites.SoftDisc, new Color(1f, 1f, 1f, 0f), -0.22f, 0f);
-            button.glowRect = button.glow.rectTransform;
-            button.shadow = Layer(square, "Shadow", ProceduralSprites.SoftDisc, new Color(0f, 0f, 0.05f, 0.35f * alpha + 0.1f), -0.06f, -0.09f);
-            button.rim = Layer(square, "Rim", ProceduralSprites.Circle, button.rimColor, 0f, -0.075f);
-            button.cap = Layer(square, "Cap", ProceduralSprites.Circle, button.capColor, 0f, 0f);
-            button.capRect = button.cap.rectTransform;
-            var edge = Layer(button.capRect, "Edge", ProceduralSprites.Ring, new Color(1f, 1f, 1f, 0.45f * alpha + 0.15f), 0f, 0f);
-            edge.rectTransform.localScale = Vector3.one * 1.02f;
-            button.gloss = Layer(button.capRect, "Gloss", ProceduralSprites.Gloss, new Color(1f, 1f, 1f, 0.5f), 0.08f, 0f);
-            button.ripple = Layer(square, "Ripple", ProceduralSprites.Ring, new Color(1f, 1f, 1f, 0f), 0f, 0f);
+            button.halo = Layer(square, "Halo", ProceduralSprites.SoftDisc, new Color(1f, 1f, 1f, 0f), -0.2f);
+            button.discRect = UIKit.Rect(square, "Disc");
+            UIKit.Stretch(button.discRect);
+            button.glass = Layer(button.discRect, "Glass", ProceduralSprites.SoftEdgeDisc, new Color(button.tint.r, button.tint.g, button.tint.b, button.restAlpha), 0f);
+            button.ripple = Layer(square, "Ripple", ProceduralSprites.Ring, new Color(1f, 1f, 1f, 0f), 0f);
             button.rippleRect = button.ripple.rectTransform;
 
-            button.Content = UIKit.Rect(button.capRect, "Content");
+            button.Content = UIKit.Rect(button.discRect, "Content");
             UIKit.Stretch(button.Content);
             return button;
         }
 
-        /// <summary>A layer filling the square, inset by <paramref name="inset"/> (fraction of size), shifted down by <paramref name="drop"/>.</summary>
-        static Image Layer(RectTransform parent, string name, Sprite sprite, Color color, float inset, float drop)
+        /// <summary>A layer filling the square, inset by <paramref name="inset"/> (fraction of size).</summary>
+        static Image Layer(RectTransform parent, string name, Sprite sprite, Color color, float inset)
         {
             var image = UIKit.Icon(parent, name, sprite, color, 10f);
             var rt = image.rectTransform;
-            rt.anchorMin = new Vector2(inset, inset + drop);
-            rt.anchorMax = new Vector2(1f - inset, 1f - inset + drop);
+            rt.anchorMin = new Vector2(inset, inset);
+            rt.anchorMax = new Vector2(1f - inset, 1f - inset);
             rt.offsetMin = rt.offsetMax = Vector2.zero;
             image.preserveAspect = false;
             return image;
         }
 
-        /// <summary>An icon centred on the cap, sized as a fraction of the button, optionally turned.</summary>
-        public Image AddIcon(Sprite sprite, Color color, float size, float angle = 0f, float y = 0.5f)
+        /// <summary>A soft white icon centred on the disc, sized as a fraction of the button, optionally turned.</summary>
+        public Image AddIcon(Sprite sprite, float size, float angle = 0f, float y = 0.5f, Color? color = null)
         {
-            var icon = UIKit.Icon(Content, "Icon", sprite, color, 10f);
+            var icon = UIKit.Icon(Content, "Icon", sprite, color ?? new Color(1f, 1f, 1f, 0.8f), 10f);
             var rt = icon.rectTransform;
             float h = size * 0.5f;
             rt.anchorMin = new Vector2(0.5f - h, y - h);
             rt.anchorMax = new Vector2(0.5f + h, y + h);
             rt.offsetMin = rt.offsetMax = Vector2.zero;
             rt.localRotation = Quaternion.Euler(0f, 0f, angle);
+            // A faint shadow keeps it legible over bright sky and pavement.
             var sh = icon.gameObject.AddComponent<Shadow>();
-            sh.effectColor = new Color(0f, 0f, 0f, 0.3f);
-            sh.effectDistance = new Vector2(0f, -4f);
+            sh.effectColor = new Color(0f, 0f, 0f, 0.18f);
+            sh.effectDistance = new Vector2(0f, -2f);
+            contentGraphics = null;
             return icon;
         }
 
-        /// <summary>A label across the lower part of the cap.</summary>
+        /// <summary>A small, quiet label across the lower part of the disc.</summary>
         public Text AddLabel(string text, int size)
         {
-            var label = UIKit.Label(Content, "Label", text, size, Color.white, TextAnchor.MiddleCenter, true);
+            var label = UIKit.Label(Content, "Label", text, size, new Color(1f, 1f, 1f, 0.7f), TextAnchor.MiddleCenter, true);
             var rt = label.rectTransform;
-            rt.anchorMin = new Vector2(0f, 0.08f);
-            rt.anchorMax = new Vector2(1f, 0.34f);
+            rt.anchorMin = new Vector2(0f, 0.1f);
+            rt.anchorMax = new Vector2(1f, 0.32f);
             rt.offsetMin = rt.offsetMax = Vector2.zero;
-            var outline = label.gameObject.AddComponent<Outline>();
-            outline.effectColor = new Color(0f, 0f, 0f, 0.35f);
-            outline.effectDistance = new Vector2(2f, -2f);
+            var sh = label.gameObject.AddComponent<Shadow>();
+            sh.effectColor = new Color(0f, 0f, 0f, 0.18f);
+            sh.effectDistance = new Vector2(0f, -2f);
+            contentGraphics = null;
             return label;
         }
 
@@ -123,11 +126,10 @@ namespace DribbleToSchool.UI.Kit
             highlighted = isHighlighted;
         }
 
-        /// <summary>Tint for the cap (e.g. green while the ball is in reach).</summary>
+        /// <summary>Faint tint for the glass and halo (e.g. green while the ball is in reach).</summary>
         public void SetColor(Color color)
         {
-            capColor = new Color(color.r, color.g, color.b, capColor.a);
-            rimColor = new Color(color.r * 0.62f, color.g * 0.62f, color.b * 0.7f, rimColor.a);
+            tint = Color.Lerp(Color.white, color, 0.35f);
         }
 
         void OnDisable()
@@ -139,40 +141,51 @@ namespace DribbleToSchool.UI.Kit
         void Update()
         {
             float dt = Time.unscaledDeltaTime;
-            // Down fast, up with a little springy overshoot.
-            float target = held ? 1f : 0f;
+            // Down fast, back up softly.
             if (held) press = Mathf.MoveTowards(press, 1f, dt * 22f);
-            else press = Mathf.SmoothDamp(press, target, ref pressVelocity, 0.06f, Mathf.Infinity, dt);
+            else press = Mathf.SmoothDamp(press, 0f, ref pressVelocity, 0.07f, Mathf.Infinity, dt);
 
-            if (capRect != null)
+            if (discRect != null)
             {
-                float t = travel * press;
-                capRect.anchorMin = new Vector2(0f, -t);
-                capRect.anchorMax = new Vector2(1f, 1f - t);
-                capRect.localScale = Vector3.one * (1f - 0.035f * press);
-                cap.color = Color.Lerp(capColor, new Color(capColor.r * 0.82f, capColor.g * 0.82f, capColor.b * 0.86f, Mathf.Min(1f, capColor.a + 0.1f)), press);
-                rim.color = rimColor;
-                gloss.color = new Color(1f, 1f, 1f, Mathf.Lerp(0.5f, 0.28f, press));
-                shadow.rectTransform.localScale = Vector3.one * (1f - 0.08f * press);
+                discRect.localScale = Vector3.one * (1f - 0.07f * press);
+                glass.color = new Color(tint.r, tint.g, tint.b, Mathf.Lerp(restAlpha, heldAlpha, press));
+                FadeContent(Mathf.Lerp(1f, 1.2f, press));
             }
 
-            float rt = (Time.unscaledTime - rippleTime) / 0.38f;
+            float rt = (Time.unscaledTime - rippleTime) / 0.4f;
             if (rt >= 0f && rt <= 1f)
             {
-                rippleRect.localScale = Vector3.one * Mathf.Lerp(0.95f, 1.45f, 1f - (1f - rt) * (1f - rt));
-                ripple.color = new Color(1f, 1f, 1f, 0.7f * (1f - rt));
+                rippleRect.localScale = Vector3.one * Mathf.Lerp(0.9f, 1.3f, 1f - (1f - rt) * (1f - rt));
+                ripple.color = new Color(1f, 1f, 1f, 0.35f * (1f - rt));
             }
             else if (ripple != null)
             {
                 ripple.color = new Color(1f, 1f, 1f, 0f);
             }
 
-            if (glow != null)
+            if (halo != null)
             {
-                float pulse = highlighted ? 0.35f + 0.25f * Mathf.Sin(Time.unscaledTime * 7f) : 0f;
-                Color g = Color.Lerp(capColor, Color.white, 0.4f);
-                glow.color = new Color(g.r, g.g, g.b, Mathf.MoveTowards(glow.color.a, pulse, dt * 4f));
-                glowRect.localScale = Vector3.one * (1f + 0.04f * Mathf.Sin(Time.unscaledTime * 7f));
+                float pulse = highlighted ? 0.22f + 0.12f * Mathf.Sin(Time.unscaledTime * 6f) : 0f;
+                halo.color = new Color(tint.r, tint.g, tint.b, Mathf.MoveTowards(halo.color.a, pulse, dt * 3f));
+            }
+        }
+
+        /// <summary>Icons and labels brighten a little while held.</summary>
+        void FadeContent(float k)
+        {
+            if (contentGraphics == null)
+            {
+                contentGraphics = Content.GetComponentsInChildren<Graphic>();
+                contentAlpha = new float[contentGraphics.Length];
+                for (int i = 0; i < contentGraphics.Length; i++) contentAlpha[i] = contentGraphics[i].color.a;
+            }
+            for (int i = 0; i < contentGraphics.Length; i++)
+            {
+                var g = contentGraphics[i];
+                if (g == null || g.name == "AimKnob") continue;
+                Color c = g.color;
+                c.a = Mathf.Min(1f, contentAlpha[i] * k);
+                g.color = c;
             }
         }
     }

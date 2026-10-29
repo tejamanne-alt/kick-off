@@ -26,7 +26,7 @@ namespace DribbleToSchool.UI
         public DevTuningPanel tuning;
 
         static readonly Color Late = new Color(0.95f, 0.4f, 0.35f);
-        static readonly Color WalkColor = new Color(0.2f, 0.27f, 0.45f);
+        static readonly Color WalkColor = Color.white;
         static readonly Color KickReady = new Color(0.3f, 0.82f, 0.42f);
 
         RectTransform root;
@@ -105,31 +105,27 @@ namespace DribbleToSchool.UI
                 UIKit.Place(tuneRect, new Vector2(1f, 1f), new Vector2(-190f, -60f), new Vector2(130f, 80f), new Vector2(1f, 1f));
             }
 
-            // Touch controls: glossy key caps that push in when held (see TouchButton).
-            jumpButton = TouchButton.Create(root, "JumpButton", UITheme.Blue, 0.82f, true);
-            jumpButton.AddIcon(ProceduralSprites.ArrowUp, Color.white, 0.42f, 0f, 0.6f);
-            jumpButton.AddLabel(Loc.T("hud.jump"), 34);
+            // Touch controls: see-through glass discs with soft white icons, so they never
+            // compete with the game (see TouchButton).
+            jumpButton = TouchButton.Create(root, "JumpButton", UITheme.Blue, true);
+            jumpButton.AddIcon(ProceduralSprites.ArrowUp, 0.4f, 0f, 0.58f);
+            jumpButton.AddLabel(Loc.T("hud.jump"), 28);
             jumpRect = (RectTransform)jumpButton.transform;
 
-            // Walk buttons: the chevron turned to point back / forward, on quieter glass caps.
-            leftButton = TouchButton.Create(root, "LeftButton", WalkColor, 0.5f, false);
-            leftButton.AddIcon(ProceduralSprites.ArrowUp, Color.white, 0.46f, 90f);
+            // Walk buttons: the chevron turned to point back / forward.
+            leftButton = TouchButton.Create(root, "LeftButton", WalkColor, false);
+            leftButton.AddIcon(ProceduralSprites.ArrowUp, 0.42f, 90f);
             leftRect = (RectTransform)leftButton.transform;
-            rightButton = TouchButton.Create(root, "RightButton", WalkColor, 0.5f, false);
-            rightButton.AddIcon(ProceduralSprites.ArrowUp, Color.white, 0.46f, -90f);
+            rightButton = TouchButton.Create(root, "RightButton", WalkColor, false);
+            rightButton.AddIcon(ProceduralSprites.ArrowUp, 0.42f, -90f);
             rightRect = (RectTransform)rightButton.transform;
 
-            // Kick button: a ball icon, and a knob that follows the aiming drag.
-            kickButton = TouchButton.Create(root, "KickButton", UITheme.Accent, 0.82f, true);
-            kickButton.AddIcon(ProceduralSprites.BallIcon, Color.white, 0.44f, 0f, 0.6f);
-            kickButton.AddLabel(Loc.T("hud.kick"), 34);
+            // Kick button: a ball, and a knob that follows the aiming drag.
+            kickButton = TouchButton.Create(root, "KickButton", UITheme.Accent, true);
+            kickButton.AddIcon(ProceduralSprites.BallIcon, 0.38f, 0f, 0.58f, new Color(1f, 1f, 1f, 0.7f));
+            kickButton.AddLabel(Loc.T("hud.kick"), 28);
             kickRect = (RectTransform)kickButton.transform;
-            aimKnob = UIKit.Icon(kickButton.Content, "AimKnob", ProceduralSprites.Circle, new Color(1f, 1f, 1f, 0.9f), 70f).rectTransform;
-            UIKit.Icon(aimKnob, "Gloss", ProceduralSprites.Gloss, new Color(1f, 1f, 1f, 0.6f), 60f);
-            var knobRim = aimKnob.gameObject.AddComponent<Outline>();
-            knobRim.effectColor = new Color(0f, 0f, 0f, 0.25f);
-            knobRim.effectDistance = new Vector2(2f, -2f);
-            aimKnob.gameObject.AddComponent<Shadow>().effectColor = new Color(0f, 0f, 0f, 0.35f);
+            aimKnob = UIKit.Icon(kickButton.Content, "AimKnob", ProceduralSprites.SoftEdgeDisc, new Color(1f, 1f, 1f, 0.55f), 70f).rectTransform;
 
             // Aim meter
             var aimBg = UIKit.Panel(root, "AimMeter", new Color(0f, 0f, 0f, 0.35f), ProceduralSprites.RoundedSmall);
