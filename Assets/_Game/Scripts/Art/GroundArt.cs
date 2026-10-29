@@ -198,7 +198,7 @@ namespace DribbleToSchool.Art
             var t = new GroundTile(n, new Color(0.5f, 0.49f, 0.51f));
             t.Mottle(4, 4, seed, new Color(0.43f, 0.43f, 0.46f), new Color(0.58f, 0.56f, 0.55f), 0.6f);
             // Patched repairs: darker, fresher tarmac with ragged edges and a lighter worn seam.
-            for (int i = 0; i < 3; i++)
+            for (int i = 0; i < 2; i++)
             {
                 float x0 = GRand(rng, 0, n), y0 = GRand(rng, 0, n), w = GRand(rng, 50, 130), h = GRand(rng, 34, 90);
                 for (int yy = -4; yy < (int)h + 4; yy++)
@@ -207,8 +207,8 @@ namespace DribbleToSchool.Art
                         float edge = Mathf.Min(Mathf.Min(xx, w - xx), Mathf.Min(yy, h - yy));
                         edge += (t.Noise(x0 + xx, y0 + yy, 32, seed + 11 + i) - 0.5f) * 9f;
                         if (edge < -1f) continue;
-                        if (edge < 1.2f) t.Mix((int)x0 + xx, (int)y0 + yy, new Color(0.6f, 0.59f, 0.58f), 0.45f);
-                        else t.Mix((int)x0 + xx, (int)y0 + yy, new Color(0.42f, 0.42f, 0.45f), 0.45f);
+                        if (edge < 1.2f) t.Mix((int)x0 + xx, (int)y0 + yy, new Color(0.58f, 0.57f, 0.56f), 0.3f);
+                        else t.Mix((int)x0 + xx, (int)y0 + yy, new Color(0.44f, 0.44f, 0.47f), 0.3f);
                     }
             }
             // Fine sealed cracks.

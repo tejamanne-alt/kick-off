@@ -3,8 +3,10 @@
 # 18 m back and 4 m up, tilted 5 degrees down) in the chapter's light and haze (ChapterTheme moods).
 # Kit models get the street's paint schemes (ModelTint's brightness-ratio recolour). The shading is
 # Blender's, not the game's toon ramp, so judge layout, scale, silhouettes and colour, not shading.
-#   blenv/bin/python preview_street.py -- <kits dir> <out.png> [--chapter 1..5] [--seed N] [--wide] [--haze-end M]
+#   blenv/bin/python preview_street.py -- <kits dir> <out.png> [--chapter 1..5] [--seed N] [--wide] [--haze-end M] [--surfaces DIR]
 # <kits dir> holds one folder per kit with <Kit>.blend and <Kit>.json inside (any folder names).
+# --surfaces: a folder of the game's ground textures (Surface_<Name>.png, 8 x 8 units each), e.g.
+# exported from ProceduralArt.SurfaceTexture; without it the ground is flat colour.
 # Missing kits or models are left out, as the game falls back to its procedural look.
 import bpy, bmesh, math, sys, os, glob, json, random
 import numpy as np
@@ -15,6 +17,7 @@ kits_dir, out = args[0], args[1]
 chapter = int(args[args.index('--chapter') + 1]) if '--chapter' in args else 1
 seed = int(args[args.index('--seed') + 1]) if '--seed' in args else 7
 wide = '--wide' in args
+surfaces_dir = args[args.index('--surfaces') + 1] if '--surfaces' in args else None
 rng = random.Random(seed * 31 + chapter)
 
 # ---------------------------------------------------------------- the chapter's light (sRGB)
@@ -214,23 +217,38 @@ def row(kit, model, a, b, y, z, tints=None):
 
 # ---------------------------------------------------------------- ground
 mats = {}
+SURFACE_COLOUR = {'Asphalt': (.5, .5, .52), 'Paving': (.8, .78, .74), 'Kerb': (.86, .86, .84), 'Concrete': (.76, .75, .72),
+                  'Cobbles': (.62, .57, .52), 'Sand': (.92, .84, .66), 'Gravel': (.76, .68, .56), 'Grass': (.52, .62, .32), 'Sea': (.3, .6, .7)}
 
 
-def flat_mat(rgb):
-    key = tuple(round(v, 3) for v in rgb)
+def flat_mat(rgb, surface=None):
+    key = (tuple(round(v, 3) for v in rgb), surface)
     if key not in mats:
         m = bpy.data.materials.new('g%d' % len(mats)); m.use_nodes = True
-        b = m.node_tree.nodes.get('Principled BSDF')
-        b.inputs['Base Color'].default_value = lin(rgb) + (1,); b.inputs['Roughness'].default_value = 1.0
+        nt = m.node_tree
+        b = nt.nodes.get('Principled BSDF')
+        b.inputs['Roughness'].default_value = 1.0
+        flat = SURFACE_COLOUR.get(surface, (1, 1, 1))     # stands in for the texture when there is none
+        b.inputs['Base Color'].default_value = lin(tuple(a * c for a, c in zip(rgb, flat))) + (1,)
+        path = os.path.join(surfaces_dir, 'Surface_%s.png' % surface) if surfaces_dir and surface else None
+        if path and os.path.exists(path):
+            # The game projects ground textures from above in world space, one tile per 8 units.
+            tc = nt.nodes.new('ShaderNodeTexCoord'); mp = nt.nodes.new('ShaderNodeMapping')
+            mp.inputs['Scale'].default_value = (0.125, 0.125, 0.125)
+            img = nt.nodes.new('ShaderNodeTexImage'); img.image = bpy.data.images.load(path)
+            mul = nt.nodes.new('ShaderNodeMix'); mul.data_type = 'RGBA'; mul.blend_type = 'MULTIPLY'
+            mul.inputs['Factor'].default_value = 1.0; mul.inputs['B'].default_value = lin(rgb) + (1,)
+            nt.links.new(tc.outputs['Object'], mp.inputs['Vector']); nt.links.new(mp.outputs['Vector'], img.inputs['Vector'])
+            nt.links.new(img.outputs['Color'], mul.inputs['A']); nt.links.new(mul.outputs['Result'], b.inputs['Base Color'])
         mats[key] = m
     return mats[key]
 
 
-def box(x0, x1, y0, y1, z0, z1, rgb, name='box'):
+def box(x0, x1, y0, y1, z0, z1, rgb, name='box', surface=None):
     me = bpy.data.meshes.new(name)
     v = [B(x, y, z) for x in (x0, x1) for y in (y0, y1) for z in (z0, z1)]
     f = [(0, 1, 3, 2), (4, 6, 7, 5), (0, 4, 5, 1), (2, 3, 7, 6), (0, 2, 6, 4), (1, 5, 7, 3)]
-    me.from_pydata([tuple(p) for p in v], [], f); me.materials.append(flat_mat(rgb))
+    me.from_pydata([tuple(p) for p in v], [], f); me.materials.append(flat_mat(rgb, surface))
     bm = bmesh.new(); bm.from_mesh(me); bmesh.ops.recalc_face_normals(bm, faces=bm.faces); bm.to_mesh(me); bm.free()
     o = bpy.data.objects.new(name, me); S.collection.objects.link(o)
     return o
@@ -240,28 +258,32 @@ X0, X1 = -40.0, 40.0
 CAM_X = 0.0
 
 
-def strip(z0, z1, rgb, top=0.0, lift=0.0):
-    box(X0 - 600, X1 + 600, top + lift - 0.2, top + lift, z0, z1, rgb, 'strip')
+def strip(z0, z1, rgb, top=0.0, lift=0.0, surface=None):
+    box(X0 - 600, X1 + 600, top + lift - 0.2, top + lift, z0, z1, rgb, 'strip', surface)
 
 
+W = (1, 1, 1)
 FRONT, PATH, PROP, POLE_Z = -16.0, 1.5, 1.85, 1.55
 if chapter == 3:
-    strip(FRONT, -PATH, (.9, .8, .62)); strip(-PATH, PATH, (.86, .76, .6)); strip(PATH, 5.6, (.9, .8, .62))
-    strip(5.6, 9, (.74, .64, .5), lift=-0.12)
-    box(X0 - 1500, X1 + 1500, -0.5, -0.35, 9, 1000, (.36, .66, .74), 'sea')
+    strip(FRONT, -PATH, W, surface='Sand'); strip(-PATH, PATH, (.96, .93, .88), surface='Sand'); strip(PATH, 5.6, W, surface='Sand')
+    strip(5.6, 9, (.82, .74, .62), lift=-0.12, surface='Sand')
+    box(X0 - 1500, X1 + 1500, -0.5, -0.35, 9, 1000, W, 'sea', 'Sea')
 elif chapter == 5:
-    strip(FRONT, -PATH, (.56, .66, .36), lift=.04); strip(-PATH, PATH, (.8, .72, .6)); strip(PATH, 90, (.56, .66, .36), lift=.04)
+    strip(FRONT, -PATH, W, lift=.04, surface='Grass'); strip(-PATH, PATH, W, surface='Gravel')
+    strip(PATH, PROP + .6, W, lift=.04, surface='Grass'); strip(PROP + .6, 90, (.92, .95, .9), lift=.04, surface='Grass')
 elif chapter == 2:
-    strip(FRONT, -PATH, (.66, .6, .56), lift=-.06); strip(-PATH, 90, (.82, .79, .74))
+    strip(FRONT, -PATH, W, lift=-.06, surface='Cobbles'); strip(-PATH, PROP + .6, (1, .97, .92), surface='Paving')
+    strip(PROP + .6, 90, (.92, .9, .86), surface='Paving')
 else:
-    pave = (.74, .73, .7) if chapter == 4 else (.78, .76, .72)
-    strip(FRONT, -8.3, pave); strip(-8.3, -8.1, (.86, .86, .84)); strip(-8.1, -1.7, (.34, .34, .37), lift=-.14)
-    strip(-1.7, -PATH, (.86, .86, .84)); strip(-PATH, PROP + .6, pave); strip(PROP + .6, 90, (.72, .72, .7))
+    pave = 'Concrete' if chapter == 4 else 'Paving'
+    strip(FRONT, -8.3, W, surface=pave); strip(-8.3, -8.1, W, surface='Kerb'); strip(-8.1, -1.7, W, lift=-.14, surface='Asphalt')
+    strip(-1.7, -PATH, W, surface='Kerb'); strip(-PATH, PROP + .6, W, surface=pave)
+    if chapter == 4: strip(PROP + .6, 90, (.9, .9, .88), surface='Concrete')
+    else: strip(PROP + .6, 90, (.96, .97, .92), surface='Grass')
     for z in (-2.0, -7.8):
         box(X0 - 600, X1 + 600, -0.14, -0.13, z - .06, z + .06, (.95, .95, .93), 'line')
     for x in range(int(X0) - 60, int(X1) + 60, 6):
         box(x, x + 3, -0.14, -0.128, -4.96, -4.84, (.95, .95, .93), 'dash')
-
 # ---------------------------------------------------------------- scenery (as StreetBuilder)
 HOUSE = [((.96, .92, .82), (.32, .5, .52), (.38, .43, .52)), ((.98, .85, .6), (.95, .95, .92), (.72, .38, .3)),
          ((.95, .76, .64), (.36, .42, .56), (.42, .36, .34)), ((.74, .83, .72), (.96, .94, .88), (.34, .44, .42)),

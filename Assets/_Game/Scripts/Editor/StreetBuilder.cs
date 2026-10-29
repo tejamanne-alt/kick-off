@@ -92,8 +92,10 @@ namespace DribbleToSchool.EditorTools
                     s.Add(new StripSpec(RoadNear, -PathHalf, 0f, ProceduralArt.Surface.Kerb, white));
                     s.Add(new StripSpec(-PathHalf, PathHalf, 0f, pave, white));
                     s.Add(new StripSpec(PathHalf, PropertyZ + 0.6f, 0f, pave, white));
-                    // Driveways, yards and gardens behind the property line, under the houses.
-                    s.Add(new StripSpec(PropertyZ + 0.6f, BackZ, 0f, ProceduralArt.Surface.Concrete, new Color(0.9f, 0.9f, 0.88f)));
+                    // Behind the property line, under the houses: lawns and gardens on the home street,
+                    // yards and lots in the city.
+                    if (chapter == 4) s.Add(new StripSpec(PropertyZ + 0.6f, BackZ, 0f, ProceduralArt.Surface.Concrete, new Color(0.9f, 0.9f, 0.88f)));
+                    else s.Add(new StripSpec(PropertyZ + 0.6f, BackZ, 0f, ProceduralArt.Surface.Grass, new Color(0.96f, 0.97f, 0.92f)));
                     break;
                 }
             }
@@ -325,19 +327,16 @@ namespace DribbleToSchool.EditorTools
         static void ContactShadow(Transform parent, float a, float b, float groundY, float zFrom, float zTo)
         {
             if (b - a < 0.1f) return;
-            Patch(parent, "ContactShadow", a, b, groundY, zFrom, zTo, new Color(0.62f, 0.64f, 0.72f), SurfaceUnder(), 0.004f);
+            Patch(parent, "ContactShadow", a, b, groundY, zFrom, zTo, new Color(0.62f, 0.64f, 0.72f), SurfaceUnder((zFrom + zTo) * 0.5f), 0.004f);
         }
 
-        /// <summary>The ground material on the back pavement / lots, for shadows that keep its texture.</summary>
-        static Material SurfaceUnder()
+        /// <summary>The ground material at depth z behind the footpath, for shadows that keep its texture.</summary>
+        static Material SurfaceUnder(float z)
         {
-            switch (LevelBuildKit.Chapter)
-            {
-                case 2: return Art.surfaces[ProceduralArt.Surface.Paving];
-                case 3: return Art.surfaces[ProceduralArt.Surface.Sand];
-                case 5: return Art.surfaces[ProceduralArt.Surface.Grass];
-                default: return Art.surfaces[ProceduralArt.Surface.Concrete];
-            }
+            int ch = LevelBuildKit.Chapter;
+            foreach (var spec in StripsFor(ch))
+                if (spec.zFrom >= PathHalf - 0.001f && z >= spec.zFrom && z <= spec.zTo) return Art.surfaces[spec.surface];
+            return Art.surfaces[ch == 3 ? ProceduralArt.Surface.Sand : ch == 5 ? ProceduralArt.Surface.Grass : ProceduralArt.Surface.Concrete];
         }
 
         // ---------------------------------------------------------------- kit models
