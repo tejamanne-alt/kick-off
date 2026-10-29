@@ -161,8 +161,6 @@ namespace DribbleToSchool.EditorTools
             if (girlRig.rig != null)
             {
                 girlRig.rig.gameObject.AddComponent<KidAnimator>().kid = kid;
-                // Her dress is the model's "shirt" part.
-                ((ModelOutfit)girlRig.outfit).defaultShirt = new Color(0.86f, 0.4f, 0.42f);
                 boyRig.visual.name = "Boy";
                 girlRig.visual.name = "Girl";
                 var choice = kidGo.AddComponent<CharacterChoice>();
@@ -418,6 +416,7 @@ namespace DribbleToSchool.EditorTools
             smr.receiveShadows = false;
             smr.updateWhenOffscreen = false;
             var outfit = smr.gameObject.AddComponent<ModelOutfit>();
+            ReadOutfitColors(file, outfit);
             parts.rig = rig;
             parts.visual = visual;
             parts.outfit = outfit;
@@ -440,6 +439,25 @@ namespace DribbleToSchool.EditorTools
 
             parts.flag = flag.GetComponent<SpriteRenderer>();
             return parts;
+        }
+
+        [Serializable]
+        class ModelColors { public float[] top; public float[] legwear; public float[] hair; }
+
+        /// <summary>
+        /// The colours a model was made with (its top, legwear and hair), from the JSON file the
+        /// Blender script writes next to the FBX (tools/blender/teen.py), so the shop's outfits
+        /// recolour from the right base. Models without one keep ModelOutfit's defaults.
+        /// </summary>
+        static void ReadOutfitColors(string file, ModelOutfit outfit)
+        {
+            string path = ModelsDir + "/" + file + ".json";
+            if (!File.Exists(path)) return;
+            var colors = JsonUtility.FromJson<ModelColors>(File.ReadAllText(path));
+            System.Func<float[], Color, Color> rgb = (v, fallback) => v != null && v.Length >= 3 ? new Color(v[0], v[1], v[2]) : fallback;
+            outfit.defaultShirt = rgb(colors.top, outfit.defaultShirt);
+            outfit.defaultLegwear = rgb(colors.legwear, outfit.defaultLegwear);
+            outfit.defaultHair = rgb(colors.hair, outfit.defaultHair);
         }
 
         /// <summary>Lifts a model built with <paramref name="neckHeight"/> so its feet stay on the kid's (local y -0.6).</summary>

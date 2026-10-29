@@ -14,16 +14,27 @@ cp Kid.fbx ../../Assets/_Game/Art/Models/Kid.fbx
 cp face.png ../../Assets/_Game/Art/Models/KidAtlas.png
 cp Adult.fbx ../../Assets/_Game/Art/Models/Adult.fbx
 cp face_adult.png ../../Assets/_Game/Art/Models/AdultAtlas.png
-python face_teen.py face_boy.png && python face_teen.py face_girl.png --girl   # the teens' faces
-blenv/bin/python teen.py -- $PWD/Boy.fbx --boy     # the playable teen boy: white shirt, rolled sleeves, dark trousers
-blenv/bin/python teen.py -- $PWD/Girl.fbx --girl   # the playable teen girl: coral dress, belt, socks, satchel
-cp Boy.fbx Girl.fbx ../../Assets/_Game/Art/Models/
-cp face_boy.png ../../Assets/_Game/Art/Models/BoyAtlas.png
-cp face_girl.png ../../Assets/_Game/Art/Models/GirlAtlas.png
+blenv/bin/python teen.py -- $PWD/Boy.fbx --boy     # the playable teen boy (also paints BoyAtlas.png, writes Boy.json)
+blenv/bin/python teen.py -- $PWD/Girl.fbx --girl   # the playable teen girl
+blenv/bin/python review_teen.py -- $PWD/Girl.blend $PWD/girl_sheet.png   # review sheet: faces, poses, side, back, in-game size
+cp Boy.fbx Boy.json BoyAtlas.png Girl.fbx Girl.json GirlAtlas.png ../../Assets/_Game/Art/Models/
 ```
 
-The teens are original characters drawn in a soft hand-painted anime style; Settings → Player
-picks which one walks to school (both are built into each level, `CharacterChoice` shows one).
+The teens are original characters in a soft hand-painted anime style; Settings → Player picks
+which one walks to school (both are built into each level, `CharacterChoice` shows one).
+- Girl: chestnut high ponytail with a yellow scrunchie and a side-swept fringe, freckles, a
+  sky-blue blouse with a rounded white collar, a navy pleated skirt, knee socks, loafers and a
+  yellow backpack.
+- Boy: short dark hair with a side parting, a quiff and a cowlick, a plaster on his cheek, a
+  green ringer T-shirt, khaki shorts with turned-up hems, red sneakers and a navy backpack.
+- Both faces are an oblong-oval: fairly straight sides from the cheekbones to the mouth, rounding
+  into the chin (hers rounded, his softly squared).
+
+The teens are built from modules on a shared `Part` contract (`teen_lib.py`): `teen_body.py`
+(joints, a sculpted body, bones, teen proportions), `teen_outfit.py` (clothes, shoes, backpack,
+the outfit colours), `teen_head.py` (the head and ears), `face_teen.py` (the painted face atlas)
+and `teen_hair.py`. `teen.py` colours, rigs, joins and exports them; the `.json` it writes holds
+the top, legwear and hair colours, which the level builder gives `ModelOutfit` as its defaults.
 
 What the model carries:
 - One skinned mesh, one material: vertex colours times the atlas (the face is painted in the

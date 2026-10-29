@@ -1,19 +1,21 @@
 # The teens' hair (outfit part 3, follows the Head bone). Base space: see teen_lib; fitted to
-# teen_head's cranium.
+# the built head (whose top and back are teen_head's declared cranium).
 #
 # Each style is an under-layer shell plus swept locks:
-#   shell  a cap that hugs the head, built on a polar grid round a pole (her ponytail tie, his
-#          crown whorl), so its rows are rings round the pole and its columns run the way the
-#          hair is combed. The hairline is a smooth curve with a rolled, rounded edge that tucks
-#          under into the scalp; soft clump grooves run along the columns (shaped and lightly
-#          painted into the vertex colours).
-#   locks  tapered tubes swept along smooth curves (a lens-shaped section whose edges curl
-#          toward the head) ending in a soft point: fringe, face-framing strands, ponytail,
-#          the ends of his quiff, cowlick, sideburns.
-# The shine is a band of whole faces, so its edges stay crisp in the toon shading: a scalloped
-# crescent of shell rows, and a band of rows across each lock.
-# Everything sits on the built head when there is one (its top and back are the declared
-# cranium), otherwise on the cranium ellipsoid, so the hair never cuts into the face or ears.
+#   shell  a cap that hugs the head down to the nape, built on a polar grid round a pole (her
+#          ponytail tie, his crown whorl), so its rows are rings round the pole and its columns
+#          run the way the hair is combed. The hairline is a smooth curve; toward it the cap
+#          thins to about a millimetre and its edge tucks into the scalp, so it ends as a clean,
+#          tapered edge (no rim). The shine is a crescent bounded by two dedicated rows whose
+#          places are smooth functions round the pole, narrowing to points at its ends; the clump
+#          creases are thin painted lines bounded by dedicated pairs of columns that close to a
+#          point at both ends (plus a very shallow dent), so neither depends on the coarse grid.
+#   locks  tapered tubes swept along smooth curves, with a lens-shaped section whose edges curl
+#          toward the head and a soft or rounded end: fringe, face-framing strands, ponytail, the
+#          clumps of his quiff, the cowlick. Their highlights and creases are spans of the section
+#          bounded by vertices that move smoothly along the lock (lens shapes with pointed ends).
+# Everything sits on the built head when there is one, otherwise on the cranium ellipsoid, so
+# the hair never cuts into the face or ears.
 import bpy, math
 import numpy as np
 from mathutils import Vector
@@ -25,12 +27,19 @@ from teen_head import CRANIUM_CENTER
 CC = np.array(CRANIUM_CENTER, dtype=np.float64)
 CR = np.array(getattr(teen_head, 'CRANIUM_RADII', (0.15, 0.153, 0.162)), dtype=np.float64)
 SCRUNCHIE = (0.95, 0.75, 0.25, 1)
+BASE, SHINE, GROOVE = 0, 1, 2          # face tags
 
 
 def hair_colors(girl):
     """Base colour and shine colour. The base colour is the game's default hair colour."""
     if girl: return ((0.3, 0.16, 0.09, 1), (0.5, 0.3, 0.18, 1))
-    return ((0.13, 0.1, 0.09, 1), (0.32, 0.28, 0.29, 1))
+    # very dark brown; the shine a warm, low-contrast brown (a grey one reads as plastic)
+    return ((0.13, 0.095, 0.068, 1), (0.25, 0.185, 0.145, 1))
+
+
+def _groove_color(girl):
+    """The clump creases: the base colour darkened toward a warm brown (not toward blue)."""
+    return (0.205, 0.1, 0.055, 1) if girl else (0.082, 0.056, 0.04, 1)
 
 
 # ------------------------------------------------------------------------------- small maths
@@ -49,6 +58,12 @@ def _wrap(a):
     return np.angle(np.exp(1j * np.asarray(a, dtype=np.float64)))
 
 
+def _bump(x, p=1.0):
+    """0 outside 0..1, rising to 1 in the middle: sin(pi x)^p (p >= 1: pointed ends)."""
+    x = np.asarray(x, dtype=np.float64)
+    return np.where((x > 0) & (x < 1), np.abs(np.sin(np.pi * np.clip(x, 0, 1))) ** p, 0.0)
+
+
 def _keys(keys, t):
     """Piecewise-smooth interpolation of [(t, value), ...] at t (array)."""
     t = np.asarray(t, dtype=np.float64); out = np.full(t.shape, float(keys[0][1]))
@@ -57,7 +72,7 @@ def _keys(keys, t):
     return out
 
 
-def _catmull(ctrl, n=240):
+def _catmull(ctrl, n=300):
     """A smooth curve through the control points (centripetal Catmull-Rom), densely sampled."""
     P = np.asarray(ctrl, dtype=np.float64)
     P = np.vstack([2 * P[0] - P[1], P, 2 * P[-1] - P[-2]])
@@ -93,35 +108,12 @@ def _smooth_periodic(a_keys, v_keys, a, sigma):
     """A smooth periodic function through (angle, value) keys, sampled at angles a."""
     order = np.argsort(np.mod(a_keys, 2 * np.pi))
     ak = np.mod(np.asarray(a_keys)[order], 2 * np.pi); vk = np.asarray(v_keys)[order]
-    grid = np.linspace(0, 2 * np.pi, 720, endpoint=False)
+    grid = np.linspace(0, 2 * np.pi, 1440, endpoint=False)
     v = np.interp(grid, np.concatenate([ak - 2 * np.pi, ak, ak + 2 * np.pi]), np.concatenate([vk, vk, vk]))
-    k = np.arange(-180, 181) * (2 * np.pi / 720); w = np.exp(-0.5 * (k / sigma) ** 2); w /= w.sum()
-    vv = np.concatenate([v[-180:], v, v[:180]])
-    v = np.convolve(vv, w, mode='same')[180:-180]
+    k = np.arange(-360, 361) * (2 * np.pi / 1440); w = np.exp(-0.5 * (k / sigma) ** 2); w /= w.sum()
+    vv = np.concatenate([v[-360:], v, v[:360]])
+    v = np.convolve(vv, w, mode='same')[360:-360]
     return np.interp(np.mod(a, 2 * np.pi), np.concatenate([grid, [2 * np.pi]]), np.concatenate([v, v[:1]]))
-
-
-def lobes(a, creases):
-    """Clump profile round the pole: 1 on a clump's crest, 0 in the creases (sorted angles)."""
-    c = np.sort(np.mod(creases, 2 * np.pi)); c2 = np.concatenate([c, [c[0] + 2 * np.pi]])
-    am = np.mod(a, 2 * np.pi); am = np.where(am < c[0], am + 2 * np.pi, am)
-    idx = np.clip(np.searchsorted(c2, am, side='right') - 1, 0, len(c) - 1)
-    ph = (am - c2[idx]) / (c2[idx + 1] - c2[idx])
-    return np.sin(np.pi * np.clip(ph, 0, 1)) ** 0.55
-
-
-def _runs(idx):
-    """Runs of consecutive integers in a sorted index array -> [(first, last), ...]."""
-    out = []; start = prev = idx[0]
-    for i in idx[1:]:
-        if i != prev + 1: out.append((start, prev)); start = i
-        prev = i
-    out.append((start, prev)); return out
-
-
-def _creases(count, jitter, seed):
-    rng = np.random.RandomState(seed)
-    return np.arange(count) * 2 * np.pi / count + rng.uniform(-jitter, jitter, count) * 2 * np.pi / count
 
 
 # ----------------------------------------------------------------------------- the head fit
@@ -149,7 +141,7 @@ class Fit:
         r = re.copy(); o = Vector(CC)
         for i, d in enumerate(D):
             loc, nrm, idx, dist = self.head.ray_cast(o, Vector(d), 0.4)
-            if loc is not None and abs(dist - re[i]) < 0.045: r[i] = dist
+            if loc is not None and 0.45 * re[i] < dist < re[i] + 0.03: r[i] = dist
         return r
 
     def place(self, D, off):
@@ -160,11 +152,6 @@ class Fit:
         """Points moved along the ray from the cranium centre to `lift` above the head."""
         P = np.atleast_2d(np.asarray(P, dtype=np.float64))
         return self.place(P - CC, np.broadcast_to(np.asarray(lift, dtype=np.float64), (len(P),)))
-
-    def front(self, x, z, lift):
-        """A point on the front of the head at (x, z) (y from the cranium), lifted."""
-        y = CC[1] - CR[1] * math.sqrt(max(0.05, 1 - (x / CR[0]) ** 2 - ((z - CC[2]) / CR[2]) ** 2))
-        return self.drape([(x, y, z)], lift)[0]
 
     def clear(self, P, margin):
         """Push points that are closer than margin to the head or ears (or inside) outward."""
@@ -181,12 +168,20 @@ class Fit:
         return P
 
 
+def front_pt(x, z, y=None):
+    """A point on the front of the cranium at (x, z) (only its direction from the centre is used)."""
+    if y is None:
+        y = CC[1] - CR[1] * math.sqrt(max(0.05, 1 - (x / CR[0]) ** 2 - ((z - CC[2]) / CR[2]) ** 2))
+    return np.array([x, y, z], dtype=np.float64)
+
+
 # ------------------------------------------------------------------------- mesh accumulator
 def _key(p): return (round(p[0] * 2e4), round(p[1] * 2e4), round(p[2] * 2e4))
 
 
 class Mesh:
-    """Vertices and faces of one object, with a tag per face (1 = shine) and a shade per vertex."""
+    """Vertices and faces of one object, with a tag per face (BASE / SHINE / GROOVE) and a shade
+    per vertex."""
     def __init__(self):
         self.V, self.F, self.T, self.S = [], [], [], []
 
@@ -200,72 +195,118 @@ class Mesh:
         return finish(new_obj(name, me))
 
 
+def _orient(V, F, inside):
+    """Faces wound so their normals point away from `inside` (a point or fn(face centre))."""
+    tot = 0.0; V = np.asarray(V)
+    for f in F[:: max(1, len(F) // 60)]:
+        p0, p1, p2 = V[f[0]], V[f[1]], V[f[2]]
+        c = (p0 + p1 + p2) / 3; ins = inside(c) if callable(inside) else inside
+        tot += np.dot(np.cross(p1 - p0, p2 - p0), c - ins)
+    return F if tot >= 0 else [tuple(reversed(f)) for f in F]
+
+
 # ---------------------------------------------------------------------------------- locks
-def sweep(mesh, path, width, thick, n=10, m=18, up=None, side=None, inner=0.45, curl=0.35,
-          shine=None, root_cap=True, spacing=0.85, dense=None):
+def _alloc(total, sizes):
+    """total split into integer parts (each >= 1) proportional to sizes."""
+    sizes = np.asarray(sizes, dtype=np.float64); raw = sizes / sizes.sum() * total
+    k = np.maximum(1, np.floor(raw).astype(int))
+    while k.sum() < total: k[np.argmax(raw - k)] += 1
+    while k.sum() > total: k[np.argmax(k - raw)] -= 1
+    return k
+
+
+def sweep(mesh, path, width, thick, n=12, m=18, up=None, side=None, inner=0.4, curl=0.35,
+          shine=None, grooves=(), dents=(), tip=(0.6, 1.0), root=None, root_cap=True, tip_rows=1.2, shine_at=np.pi / 2):
     """A tapered lock along a smooth curve through `path`.
     width / thick: [(t, half-width)], [(t, half-thickness)] keys along the lock (t in 0..1).
     up: the lock's outward direction (default: away from the cranium centre); side: a fixed
-    sideways axis instead (e.g. +X for the ponytail). inner: the thickness under the centre
-    line as a fraction of the outer thickness; curl: how far the section's edges bend toward
-    the head. shine: (t0, t1) rows of the shine on the outer side, or fn(row centres) -> bools.
-    dense: (t0, t1, k) adds k extra rows between t0 and t1 (a smoother highlight there)."""
+    sideways axis instead (e.g. +X for the ponytail). inner: the thickness under the centre line
+    as a fraction of the outer thickness; curl: how far the section's edges bend toward the head.
+    tip = (t0, p): the end tapers from t0 as (1 - v^2)^p (p 0.5 round, 1 a soft point).
+    root = (t1, p): the same taper at the root, up to t1.
+    shine = (t0, t1, phi) or (fn(points) -> bools, phi): a lens-shaped highlight on the outer
+    side, at most phi radians either side of shine_at (pi/2 = the top of the section), closing to
+    points at t0, t1.
+    grooves: [(theta, t0, t1, psi)] thin painted creases along the lock (theta: place round the
+    section, pi/2 = the top), closing to points at both ends.
+    dents: [(theta, depth, sigma)] shallow dents of the section along the lock."""
     D = _catmull(path)
-    if callable(shine):
-        # a highlight placed by position (e.g. a height band shared by several locks): find where
-        # along this lock it falls, and give it extra rows there so its lens shape stays smooth
-        tf = np.linspace(0, 1, 241); Pf, _ = _resample(D, tf); on = np.nonzero(np.asarray(shine(Pf), dtype=bool))[0]
-        if len(on):
-            i0, i1 = _runs(on)[0]
-            shine = (tf[i0], tf[i1])
-            if dense is None and i1 > i0: dense = (tf[i0], tf[i1], 5)
-        else:
-            shine = None
-    ts = np.linspace(0, 1, m) ** spacing
-    if dense:
-        t0, t1, k = dense
-        ts = np.concatenate([ts[(ts < t0 - 1e-3) | (ts > t1 + 1e-3)], np.linspace(t0, t1, k)])
-        ts.sort(); m = len(ts)
+    if shine is not None and callable(shine[0]):
+        tf = np.linspace(0, 1, 401); Pf, _ = _resample(D, tf); on = np.nonzero(np.asarray(shine[0](Pf), dtype=bool))[0]
+        shine = (tf[on[0]], tf[on[-1]], shine[1]) if len(on) > 2 else None
+    # rows: evenly spread, with extra ones in the highlight and toward the tip
+    tt = np.linspace(0, 1, 2001); dens = np.ones_like(tt)
+    if shine is not None: dens += 1.4 * _ss(shine[0] - 0.04, shine[0], tt) * _ss(shine[1] + 0.04, shine[1], tt)
+    dens += tip_rows * _ss(tip[0], 1.0, tt)
+    if root is not None: dens += 0.6 * _ss(root[0], 0.0, tt)
+    cdf = np.concatenate([[0], np.cumsum(0.5 * (dens[1:] + dens[:-1]))])
+    ts = np.interp(np.linspace(0, cdf[-1], m), cdf, tt)
     P, T = _resample(D, ts)
     if side is not None:
         Bv = np.broadcast_to(np.asarray(side, dtype=np.float64), P.shape).copy()
         Bv = _unit(Bv - (Bv * T).sum(1)[:, None] * T); U = np.cross(Bv, T)
     else:
-        U = _unit(P - CC) if up is None else _unit(np.broadcast_to(np.asarray(up, dtype=np.float64), P.shape).copy())
+        if up is None: U = _unit(P - CC)
+        elif callable(up): U = _unit(up(P))
+        else: U = _unit(np.broadcast_to(np.asarray(up, dtype=np.float64), P.shape).copy())
         U = _unit(U - (U * T).sum(1)[:, None] * T); Bv = np.cross(T, U)
     W = _keys(width, ts); H = _keys(thick, ts)
-    al = np.linspace(0, 2 * np.pi, n, endpoint=False)
-    ca, sa = np.cos(al), np.sin(al)
-    tm = 0.5 * (ts[:-1] + ts[1:]); Pm = 0.5 * (P[:-1] + P[1:])
-    if shine is None: lit = np.zeros(m - 1, dtype=bool)
-    elif callable(shine): lit = np.asarray(shine(Pm), dtype=bool)
-    else: lit = (shine[0] <= tm) & (tm <= shine[1])
-    # the highlight is a lens: widest across the lock in the middle of the band, narrowing at its ends
-    lens = np.zeros(m - 1)
-    idx = np.nonzero(lit)[0]
-    if len(idx):
-        for i0, i1 in _runs(idx):
-            L = i1 - i0 + 1
-            for i in range(i0, i1 + 1):
-                u = (i - i0 + 0.5) / L
-                lens[i] = 0.95 - 0.75 * math.sin(math.pi * u) ** 0.7
-    V, F, TG = [], [], []
+    v = np.clip((ts - tip[0]) / (1 - tip[0]), 0, 1); end = (1 - v * v) ** tip[1]
+    if root is not None:
+        v = np.clip((root[0] - ts) / root[0], 0, 1); end = end * (0.25 + 0.75 * (1 - v * v) ** root[1])
+    W = W * end; H = H * end
+    # features round the section: [centre, max half-angle, faces, tag, t0, t1]
+    feats = []
+    if shine is not None: feats.append([np.mod(shine_at, 2 * np.pi), shine[2], 4, SHINE, shine[0], shine[1]])
+    for th, g0, g1, psi in grooves: feats.append([np.mod(th, 2 * np.pi), psi, 1, GROOVE, g0, g1])
+    feats.sort(key=lambda f: f[0])
+    nf = sum(f[2] for f in feats)
+    if feats:
+        cs = [f[0] for f in feats]
+        gaps = [np.mod(cs[(i + 1) % len(cs)] - cs[i], 2 * np.pi) or 2 * np.pi for i in range(len(cs))]
+        galloc = _alloc(n - nf, gaps)
     rows = m - 1                      # the last row is the tip point
+    V, F, TG = [], [], []
+    act = np.zeros((len(feats), rows))
     for i in range(rows):
-        y = np.where(sa > 0, sa, sa * inner) * H[i] - curl * H[i] * ca * ca
-        V += list(P[i] + np.outer(ca * W[i], Bv[i]) + np.outer(y, U[i]))
-    tip = len(V); V.append(P[-1])
+        t = ts[i]
+        if feats:
+            th, tg = [], []
+            hws = []
+            for fi, f in enumerate(feats):
+                b = _bump((t - f[4]) / (f[5] - f[4]), 1.0 if f[3] == SHINE else 0.8)
+                act[fi, i] = b; hws.append(f[1] * b + 0.012)
+            for fi, f in enumerate(feats):
+                a0, a1 = f[0] - hws[fi], f[0] + hws[fi]
+                th += list(np.linspace(a0, a1, f[2] + 1)[:-1]); tg += [fi] * f[2]
+                nx = feats[(fi + 1) % len(feats)]; b0 = nx[0] - hws[(fi + 1) % len(feats)]
+                if b0 <= a1: b0 += 2 * np.pi
+                th += list(np.linspace(a1, b0, galloc[fi] + 1)[:-1]); tg += [-1] * galloc[fi]
+            th = np.array(th); ftag = tg
+        else:
+            th = np.linspace(0, 2 * np.pi, n, endpoint=False) + np.pi / 2; ftag = [-1] * n
+        ca, sa = np.cos(th), np.sin(th)
+        prof = 0.5 * (1 + inner) * sa + 0.5 * (1 - inner) * sa * np.tanh(sa / 0.2)
+        y = prof * H[i] - curl * H[i] * ca * ca
+        x = ca * W[i]
+        k = np.ones_like(th)
+        for dth, depth, sig in dents: k = k - depth * np.exp(-(_wrap(th - dth) / sig) ** 2)
+        V += list(P[i] + np.outer(x * k, Bv[i]) + np.outer(y * k, U[i]))
+        if i == 0: ftag0 = ftag
+    tip_v = len(V); V.append(P[-1])
     for i in range(rows - 1):
-        for k in range(n):
-            a, b = i * n + k, i * n + (k + 1) % n
+        for kk in range(n):
+            a, b = i * n + kk, i * n + (kk + 1) % n
             F.append((a, b, b + n, a + n))
-            TG.append(1 if (lit[i] and 0.5 * (sa[k] + sa[(k + 1) % n]) > lens[i]) else 0)
-    for k in range(n):
-        a, b = (rows - 1) * n + k, (rows - 1) * n + (k + 1) % n
-        F.append((a, b, tip)); TG.append(0)
+            fi = ftag0[kk]
+            if fi >= 0 and (act[fi, i] > 0 or act[fi, i + 1] > 0): TG.append(feats[fi][3])
+            else: TG.append(BASE)
+    for kk in range(n):
+        a, b = (rows - 1) * n + kk, (rows - 1) * n + (kk + 1) % n
+        F.append((a, b, tip_v)); TG.append(BASE)
     if root_cap:
         c = len(V); V.append(P[0] - T[0] * 0.3 * min(W[0], H[0] + 1e-4))
-        for k in range(n): F.append((c, (k + 1) % n, k)); TG.append(0)
+        for kk in range(n): F.append((c, (kk + 1) % n, kk)); TG.append(BASE)
     p0, p1, p2 = (np.array(V[j]) for j in F[0][:3])         # outward winding
     if np.dot(np.cross(p1 - p0, p2 - p0), 0.5 * (p0 + p2) - P[0]) < 0: F = [tuple(reversed(f)) for f in F]
     mesh.add(V, F, TG)
@@ -273,86 +314,148 @@ def sweep(mesh, path, width, thick, n=10, m=18, up=None, side=None, inner=0.45, 
 
 
 # ---------------------------------------------------------------------------------- shell
-def shell(mesh, fit, pole, e1, edge_pts, off_fn, groove_fn, band, na=96, rows=(7, 2, 7), s0=0.06,
-          edge_sigma=0.09, crease_shade=0.0):
-    """The under-layer: a cap on a polar grid round `pole`.
+def _frame(pole, e1):
+    n = _unit(pole); e1 = _unit(np.asarray(e1, dtype=np.float64) - np.dot(e1, n) * n)
+    return n, e1, np.cross(n, e1)
+
+
+def _azimuth_fn(pole, e1=(1, 0, 0)):
+    """The azimuth round `pole` of a point (as the Shell built on that pole measures it)."""
+    n, e1, e2 = _frame(pole, e1)
+    def az(p):
+        d = _unit(np.asarray(p, dtype=np.float64) - CC)
+        return float(math.atan2(d @ e2, d @ e1))
+    return az
+
+
+class Shell:
+    """The under-layer: a cap on a polar grid round `pole` (see the file's header).
     edge_pts: points on the hairline (only their directions from the cranium centre matter).
-    off_fn(D, s, se, a) -> height above the head; groove_fn(a, s, se) -> (added height, clump
-    profile 0..1); band(a) -> (s_lo, s_hi, on): the shine rows' place (radians from the pole)
-    per column and whether they are shine. rows = (pole..band, in the band, band..hairline).
-    crease_shade darkens the vertex colour in the grooves. Returns a helper that places
-    points on the outside of the cap."""
-    n = _unit(pole); e1 = _unit(np.asarray(e1, dtype=np.float64) - np.dot(e1, n) * n); e2 = np.cross(n, e1)
-    E = _unit(np.asarray(edge_pts, dtype=np.float64) - CC)
-    ak = np.arctan2(E @ e2, E @ e1); sk = np.arccos(np.clip(E @ n, -1, 1))
-    a = np.linspace(0, 2 * np.pi, na, endpoint=False)
-    se = _smooth_periodic(ak, sk, a, edge_sigma)
-    s_lo, s_hi, on = band(a)
-    s_lo = np.minimum(s_lo, se - 0.25); s_hi = np.minimum(np.maximum(s_hi, s_lo + 0.004), se - 0.18)
-    n1, nb, n2 = rows
-    S = []
-    for j in range(n1):
-        u = (j + 1) / n1; S.append(s0 + (s_lo - s0) * (1 - (1 - u) ** 1.15))
-    for j in range(nb): S.append(s_lo + (s_hi - s_lo) * (j + 1) / nb)
-    for j in range(n2):                      # denser toward the hairline
-        u = (j + 1) / n2; S.append(s_hi + (se - s_hi) * (1 - (1 - u) ** 1.35))
-    S = np.array(S)
+    off_fn(D, s, se, a) -> height above the head (D unit directions, s the angle from the pole,
+    se the hairline's s at azimuth a); it should thin to about a millimetre at the hairline.
+    band(a) -> (centre, half-width) in s of the shine crescent per azimuth (half-width 0 where
+    there is none). grooves: [(azimuth, u0, u1, half-width m, depth m)] creases along the
+    columns from u0 to u1 (fractions of the way from the pole to the hairline).
+    twist(u) -> radians added to every column's azimuth at u (a spiral from the pole)."""
+    R = 0.155
 
-    def dirs(s, aa=a):
-        return _unit(np.cos(s)[:, None] * n + np.sin(s)[:, None] * (np.cos(aa)[:, None] * e1 + np.sin(aa)[:, None] * e2))
+    def __init__(self, mesh, fit, pole, e1, edge_pts, off_fn, band=None, grooves=(), na=96, dens=None,
+                 rows=(7, 1, 12), s0=0.06, sigma=0.05, twist=None, ease=1.35):
+        self.fit = fit; self.off_fn = off_fn; self.grooves = list(grooves)
+        n, e1, e2 = self.n, self.e1, self.e2 = _frame(pole, e1)
+        E = _unit(np.asarray(edge_pts, dtype=np.float64) - CC)
+        ak = np.arctan2(E @ e2, E @ e1); sk = np.arccos(np.clip(E @ n, -1, 1))
+        self.ag = np.linspace(0, 2 * np.pi, 1440, endpoint=False)
+        self.seg = _smooth_periodic(ak, sk, self.ag, sigma)
+        self.tw = twist if twist is not None else (lambda u: 0.0 * np.asarray(u, dtype=np.float64))
+        # columns: spread by dens(a) (finer where the detail is), with a pair for each crease
+        if dens is None: ac = np.arange(na) * 2 * np.pi / na
+        else:
+            d = dens(self.ag); c = np.concatenate([[0], np.cumsum(d)])
+            ac = np.interp(np.arange(na) / na * c[-1], c, np.append(self.ag, 2 * np.pi))
+        cols = [(a, -1, 0) for a in ac]
+        for gi, g in enumerate(self.grooves):
+            if g[3] <= 0: continue
+            a0 = np.mod(g[0], 2 * np.pi)
+            reg = np.array([c[0] for c in cols if c[1] < 0])
+            j = np.argmin(np.abs(_wrap(reg - a0)))
+            sp = np.sort(np.abs(_wrap(reg - reg[j])))[1]
+            if abs(_wrap(reg[j] - a0)) < 0.4 * sp: cols = [c for c in cols if not (c[1] < 0 and c[0] == reg[j])]
+            cols += [(a0, gi, -1), (a0, gi, 1)]
+        cols.sort(key=lambda c: (np.mod(c[0], 2 * np.pi), c[2]))
+        self.cols = cols
+        n1, nb, n2 = rows; nr = n1 + nb + n2; nc = len(cols)
+        jj = np.arange(nr)
+        f1 = np.clip((jj + 1) / n1, 0, 1); f2 = np.clip((jj - n1 + 1) / nb, 0, 1); f3 = np.clip((jj - n1 - nb + 1) / n2, 0, 1)
 
-    def height(D, s, se_, aa):
-        g, lob = groove_fn(aa, s, se_)
-        return off_fn(D, s, se_, aa) + g, lob
+        def srows(a):
+            se_ = self.SE(a)
+            if band is not None: c, hw = band(a)
+            else: c, hw = 0.5 * se_, np.zeros_like(se_)
+            c = np.clip(c, 0.35 * se_, se_ - 0.2); hw = np.maximum(hw, 0.0012)
+            lo = np.minimum(c - hw, se_ - 0.16); hi = np.maximum(np.minimum(c + hw, se_ - 0.11), lo + 0.0024)
+            s = np.where(jj < n1, s0 + (lo - s0) * (1 - (1 - f1) ** 1.15),
+                np.where(jj < n1 + nb, lo + (hi - lo) * f2, hi + (se_ - hi) * (1 - (1 - f3) ** ease)))
+            return s, se_, hw
 
-    grid, shade = [], []
-    for j in range(len(S)):
-        Dj = dirs(S[j]); h, lob = height(Dj, S[j], se, a)
-        grid.append(fit.place(Dj, h)); shade.append(1 - crease_shade * (1 - lob) ** 2)
-    # the rolled edge: rows past the hairline curling down into the scalp
-    D_e = dirs(se); off_e, lob_e = height(D_e, se, se, a)
-    ext = off_e * 0.9 / fit.radius(D_e)
-    for f_ext, f_off in ((0.55, 0.72), (0.9, 0.28)):
-        grid.append(fit.place(dirs(se + ext * f_ext), off_e * f_off)); shade.append(np.full(na, 0.92))
-    grid.append(fit.place(dirs(se + ext * 1.05), np.full(na, -0.004))); shade.append(np.full(na, 0.9))
-    G = np.array(grid)
-    pole_h, _ = height(n[None, :], np.zeros(1), se[:1], a[:1])
-    V = [fit.place(n[None, :], pole_h)[0]] + [tuple(p) for row in G for p in row]
-    SH = [1.0] + [float(v) for row in shade for v in row]
-    F, TG = [], []
-    def vid(j, i): return 1 + j * na + (i % na)
-    for i in range(na): F.append((0, vid(0, i + 1), vid(0, i))); TG.append(0)
-    for j in range(len(G) - 1):
-        for i in range(na):
-            F.append((vid(j, i), vid(j, i + 1), vid(j + 1, i + 1), vid(j + 1, i)))
-            TG.append(1 if (n1 - 1 <= j < n1 - 1 + nb and on[i] and on[(i + 1) % na]) else 0)
-    tot = 0.0                                # outward winding
-    for f in F[na:na * 4]:
-        p0, p1, p2 = (np.array(V[k]) for k in f[:3]); tot += np.dot(np.cross(p1 - p0, p2 - p0), p0 - CC)
-    if tot < 0: F = [tuple(reversed(f)) for f in F]
-    mesh.add(V, F, TG, SH)
+        A = np.zeros((nr, nc)); S = np.zeros((nr, nc)); HW = np.zeros(nc); WG = np.zeros((nr, nc))
+        for ci, (a_c, gi, sg) in enumerate(cols):
+            s1, se1, _ = srows(np.full(nr, a_c))
+            ab = a_c + self.tw(s1 / se1)
+            s2, se2, hw = srows(ab)
+            HW[ci] = hw[n1]
+            A[:, ci] = ab; S[:, ci] = s2
+            if gi >= 0:
+                g = self.grooves[gi]
+                w = g[3] * _bump((s2 / se2 - g[1]) / (g[2] - g[1]), 0.8)
+                WG[:, ci] = w
+                A[:, ci] = ab + sg * (w + 0.00006) / (self.R * np.sin(np.maximum(s2, 0.05)))
+        Dm = self.dirs(S, A)
+        G = np.zeros((nr + 1, nc, 3)); Hm = np.zeros((nr, nc))
+        for j in range(nr):
+            Hm[j] = self.height(Dm[j], S[j], A[j])
+            G[j] = fit.place(Dm[j], Hm[j])
+        # the edge tucks into the scalp just past the hairline
+        st = S[-1] + (np.maximum(Hm[-1], 0) + 0.0022) * 0.6 / self.R
+        G[nr] = fit.place(self.dirs(st, A[-1]), np.full(nc, -0.0025))
+        Vt = [fit.place(n[None, :], self.height(n[None, :], np.zeros(1), np.zeros(1)))[0]] + [tuple(p) for row in G for p in row]
+        SH = [1.0] * (1 + nr * nc) + [0.85] * nc
+        F, TG = [], []
+        def vid(j, i): return 1 + j * nc + (i % nc)
+        for i in range(nc): F.append((0, vid(0, i + 1), vid(0, i))); TG.append(BASE)
+        for j in range(nr):
+            for i in range(nc):
+                F.append((vid(j, i), vid(j, i + 1), vid(j + 1, i + 1), vid(j + 1, i)))
+                i2 = (i + 1) % nc; tag = BASE
+                if n1 - 1 <= j < n1 - 1 + nb and (HW[i] > 0.0025 or HW[i2] > 0.0025): tag = SHINE
+                c1, c2 = cols[i], cols[i2]
+                if c1[1] >= 0 and c1[1] == c2[1] and c1[2] < 0 < c2[2] and j < nr - 1 and \
+                        (WG[j, i] > 1.5e-4 or WG[j + 1, i] > 1.5e-4):
+                    tag = GROOVE
+                TG.append(tag)
+        F = _orient(Vt, F, CC)
+        mesh.add(Vt, F, TG, SH)
 
-    def on_shell(P, extra):
-        """Points (directions from the cranium centre) placed `extra` above the cap's surface."""
-        P = np.atleast_2d(np.asarray(P, dtype=np.float64)); D = _unit(P - CC)
-        aa = np.arctan2(D @ e2, D @ e1); ss_ = np.arccos(np.clip(D @ n, -1, 1))
-        sei = np.interp(np.mod(aa, 2 * np.pi), np.concatenate([a, [2 * np.pi]]), np.concatenate([se, se[:1]]))
-        h, _ = height(D, np.minimum(ss_, sei), sei, aa)
-        return fit.place(D, h + np.broadcast_to(np.asarray(extra, dtype=np.float64), (len(P),)))
-    return on_shell
+    def SE(self, a):
+        return np.interp(np.mod(a, 2 * np.pi), np.append(self.ag, 2 * np.pi), np.append(self.seg, self.seg[0]))
+
+    def dirs(self, s, a):
+        s = np.asarray(s, dtype=np.float64); a = np.asarray(a, dtype=np.float64)
+        return _unit(np.cos(s)[..., None] * self.n + np.sin(s)[..., None] * (np.cos(a)[..., None] * self.e1 + np.sin(a)[..., None] * self.e2))
+
+    def polar(self, D):
+        D = _unit(np.atleast_2d(D))
+        return np.arctan2(D @ self.e2, D @ self.e1), np.arccos(np.clip(D @ self.n, -1, 1))
+
+    def height(self, D, s, a):
+        se_ = self.SE(a); u = s / se_
+        h = self.off_fn(D, s, se_, a)
+        for (a0, u0, u1, w, depth) in self.grooves:
+            if depth <= 0: continue
+            d = _wrap(a - (a0 + self.tw(u))) * self.R * np.sin(s)
+            h = h - depth * _bump((u - u0) / (u1 - u0), 0.8) * np.exp(-(d / 0.0045) ** 2)
+        return h
+
+    def on(self, P, extra):
+        """Points (directions from the cranium centre) placed `extra` above the cap's surface (past
+        the hairline: above its edge)."""
+        D = _unit(np.atleast_2d(np.asarray(P, dtype=np.float64)) - CC); a, s = self.polar(D)
+        s = np.minimum(s, self.SE(a))
+        return self.fit.place(D, self.height(D, s, a) + np.broadcast_to(np.asarray(extra, dtype=np.float64), (len(D),)))
 
 
-def _ring(scr, centre, ax, Rm, rm, lobes_n=9, nt=45, nr=9):
-    """A puffy ruffled ring (the scrunchie) round axis ax."""
+def _ring(scr, centre, ax, Rm, rm, lobes_n=11, nt=64, nr=11):
+    """A soft gathered ring (the scrunchie) round axis ax: low, smooth ruffles."""
     ax = _unit(ax); b1 = _unit(np.cross(ax, [1, 0, 0])); b2 = np.cross(ax, b1)
-    V = []
+    V, S = [], []
     for i in range(nt):
         th = 2 * np.pi * i / nt; ruf = math.cos(lobes_n * th)
-        R_ = Rm + 0.0022 * ruf; r_ = rm * (1 + 0.14 * ruf)
+        R_ = Rm + 0.0011 * ruf; r_ = rm * (1 + 0.075 * ruf)
         rad = math.cos(th) * b1 + math.sin(th) * b2
         for k in range(nr):
             ph = 2 * np.pi * k / nr
-            V.append(centre + rad * (R_ + r_ * math.cos(ph)) + ax * (r_ * 0.8 * math.sin(ph) + 0.0016 * math.sin(lobes_n * th + 1.0)))
+            V.append(centre + rad * (R_ + r_ * math.cos(ph)) + ax * (r_ * 0.86 * math.sin(ph) + 0.0009 * math.sin(lobes_n * th + 1.0)))
+            S.append(0.94 + 0.06 * (0.5 + 0.5 * ruf))
     F = []
     for i in range(nt):
         for k in range(nr):
@@ -360,154 +463,190 @@ def _ring(scr, centre, ax, Rm, rm, lobes_n=9, nt=45, nr=9):
             F.append((i * nr + k, i1 * nr + k, i1 * nr + k1, i * nr + k1))
     p0, p1, p2 = (np.array(V[j]) for j in F[0][:3])
     if np.dot(np.cross(p1 - p0, p2 - p0), p0 - (centre + b1 * Rm)) < 0: F = [tuple(reversed(f)) for f in F]
-    # the folds of the gathered fabric a little darker
-    S = [0.9 + 0.1 * (0.5 + 0.5 * math.cos(lobes_n * 2 * np.pi * (j // nr) / nt)) for j in range(len(V))]
-    scr.add(V, F, [0] * len(F), S)
+    scr.add(V, F, [BASE] * len(F), S)
 
 
 # ---------------------------------------------------------------------------------- girl
 def _girl(fit, mesh, scr):
-    pole = _unit([0, math.cos(math.radians(44)), math.sin(math.radians(44))])   # the ponytail tie
-    tie = fit.place(pole[None], 0.0)[0]
-    hl = []
+    el = math.radians(35)
+    pole = _unit([0, math.cos(el), math.sin(el)])          # the ponytail tie, at the back of the crown
+    hl = [(0, -0.153, 1.548), (0, 0.072, 1.314)]
     for sx in (1, -1):
-        hl += [(sx * 0.06, -0.14, 1.545), (sx * 0.105, -0.112, 1.512), (sx * 0.13, -0.075, 1.487),
-               (sx * 0.148, -0.025, 1.47), (sx * 0.152, 0.015, 1.472), (sx * 0.146, 0.048, 1.458),
-               (sx * 0.13, 0.085, 1.405), (sx * 0.09, 0.11, 1.35)]
-    hl += [(0, -0.152, 1.548), (0, 0.12, 1.335)]
-    cre = _creases(15, 0.18, 3)
+        hl += [(sx * 0.055, -0.143, 1.546), (sx * 0.1, -0.112, 1.526), (sx * 0.125, -0.08, 1.5),
+               (sx * 0.14, -0.045, 1.478), (sx * 0.147, -0.012, 1.466), (sx * 0.15, 0.015, 1.47),
+               (sx * 0.143, 0.042, 1.452), (sx * 0.13, 0.052, 1.41), (sx * 0.117, 0.058, 1.378),
+               (sx * 0.085, 0.064, 1.35), (sx * 0.05, 0.068, 1.335), (sx * 0.024, 0.071, 1.309),
+               (sx * 0.012, 0.072, 1.318)]
+
     def off_fn(D, s, se, a):
-        o = 0.0105 + 0.0075 * _ss(0.2, 0.9, D[:, 2]) + 0.016 * np.exp(-(s / 0.3) ** 2)
-        o = o + 0.004 * _ss(0.45, 0.85, np.abs(D[:, 0])) * _ss(-0.15, 0.3, D[:, 2])     # a little fuller at the sides
-        e = 0.0062
-        return e + (o - e) * _ss(1.0, 0.8, s / se)
-    def groove_fn(a, s, se):
-        lob = lobes(a, cre); fade = _ss(0.3, 0.7, s) * (1 - 0.6 * _ss(0.9, 1.0, s / se))
-        return 0.0034 * fade * (lob - 1), 1 - fade * (1 - lob)
+        x, y, z = D[:, 0], D[:, 1], D[:, 2]
+        o = 0.0052 + 0.0036 * _ss(0.1, 0.85, z) + 0.0075 * np.exp(-(s / 0.24) ** 2)   # fuller on top, gathered at the tie
+        o = o + 0.0012 * _ss(0.3, -0.3, y) * _ss(0.6, 0.9, z)
+        o = o - 0.0018 * _ss(0.55, 0.9, np.abs(x)) * _ss(0.25, -0.25, z)          # pulled tight at the sides
+        o = o - 0.002 * _ss(0.0, -0.5, z) * _ss(0.1, 0.5, y)                       # and at the nape
+        dist = (se - s) * Shell.R
+        e = 0.0009
+        return e + (o - e) * _ss(0.0, 0.022, dist)
+
+    az = _azimuth_fn(pole)
+    a_front = 1.5 * np.pi                     # azimuth toward the forehead (a = pi/2 runs to the nape)
+
     def band(a):
-        # a scalloped crescent over the top and upper sides (a = 3pi/2 runs over the top to the front)
-        w = _ss(1.35, 0.85, np.abs(_wrap(a - 1.5 * np.pi)))
-        teeth = 0.045 * lobes(a, cre); c = 1.02
-        return c - 0.06 * np.maximum(w, 0.04), c + (0.05 + teeth) * np.maximum(w, 0.04), w > 0.3
-    shell(mesh, fit, pole, [1, 0, 0], hl, off_fn, groove_fn, band, crease_shade=0.1)
-
-    # --- the fringe: swept across the forehead from a parting on her right (-X), above the brows
-    fr_shine = lambda Pm: (Pm[:, 2] > 1.553) & (Pm[:, 2] < 1.571)
-    def flock(pts, w, h=0.0072):
-        path = [fit.front(x, z, l) for x, z, l in pts]
-        sweep(mesh, path, [(0, w * 0.6), (0.22, w), (0.62, w * 0.82), (1, 0.0)],
-              [(0, h * 0.7), (0.3, h), (0.8, h * 0.7), (1, 0.0)], n=12, m=15, inner=0.4, curl=0.5, shine=fr_shine)
-    # (x, z, lift) from the parting to the tip; the tips turn toward her left (+X)
-    flock([(-0.046, 1.603, 0.006), (-0.036, 1.575, 0.017), (-0.022, 1.542, 0.016), (0.0, 1.515, 0.011), (0.026, 1.502, 0.007)], 0.026)
-    flock([(-0.042, 1.605, 0.006), (-0.014, 1.582, 0.019), (0.022, 1.548, 0.018), (0.058, 1.515, 0.012), (0.09, 1.497, 0.007)], 0.03)
-    flock([(-0.036, 1.607, 0.006), (0.012, 1.59, 0.02), (0.062, 1.555, 0.018), (0.104, 1.516, 0.012), (0.132, 1.487, 0.007)], 0.03)
-    flock([(-0.028, 1.609, 0.006), (0.04, 1.598, 0.018), (0.1, 1.567, 0.016), (0.135, 1.522, 0.011), (0.149, 1.484, 0.007)], 0.026)
-    flock([(-0.05, 1.602, 0.006), (-0.07, 1.58, 0.016), (-0.094, 1.549, 0.014), (-0.116, 1.522, 0.01), (-0.132, 1.505, 0.007)], 0.026)
-    flock([(-0.05, 1.6, 0.006), (-0.054, 1.575, 0.014), (-0.064, 1.545, 0.013), (-0.078, 1.522, 0.009), (-0.094, 1.51, 0.007)], 0.021)
-
-    # --- face-framing strands in front of the ears, down to the jaw
+        al = _wrap(a - a_front)                # 0 at the front, +-pi/2 at the sides
+        w = _bump((al + 2.3) / 4.6, 1.2)
+        c = 1.0 - 0.3 * (al / 2.3) ** 2
+        return c, 0.088 * w
+    # creases: on each side from the temple and from above the ear toward the tie, two over the
+    # back, a short one either side of the crown; and the parting on her right (-X)
+    G = []
     for sx in (1, -1):
-        pts = [fit.front(sx * 0.118, 1.522, 0.008), (sx * 0.134, -0.074, 1.482), (sx * 0.143, -0.061, 1.43),
-               (sx * 0.14, -0.056, 1.38), (sx * 0.132, -0.062, 1.343), (sx * 0.122, -0.078, 1.322)]
-        sweep(mesh, fit.clear(pts, 0.012), [(0, 0.012), (0.25, 0.0135), (0.7, 0.0105), (1, 0.0)],
-              [(0, 0.006), (0.5, 0.0062), (1, 0.0)], n=12, m=20, inner=0.55, curl=0.35, shine=(0.1, 0.2))
+        G += [(az((sx * 0.125, -0.07, 1.52)), 0.3, 0.86, 0.0012, 0.0012),
+              (az((sx * 0.145, 0.0, 1.49)), 0.26, 0.84, 0.0013, 0.0012),
+              (az((sx * 0.13, 0.05, 1.45)), 0.32, 0.8, 0.0011, 0.001),
+              (az((sx * 0.07, -0.06, 1.58)), 0.34, 0.72, 0.001, 0.0006)]
+    G += [(az((0.03, 0.1, 1.37)), 0.3, 0.72, 0.001, 0.0006)]
+    a_part = az((-0.05, -0.1, 1.575))
+    G += [(a_part, 0.52, 0.97, 0.0016, 0.0025)]
 
-    # --- the high ponytail: a full lock arcing back and down in a gentle S to a flicked-out
-    #     tip, two side locks splitting off toward the end, and the scrunchie round the tie
-    out = tie + pole * 0.06
-    path = [tie - pole * 0.012, tie + pole * 0.028, out, (0.0, 0.192, 1.588), (0.0, 0.238, 1.56),
-            (0.004, 0.258, 1.5), (0.008, 0.258, 1.43), (0.011, 0.244, 1.37), (0.014, 0.25, 1.32), (0.018, 0.273, 1.284)]
-    sweep(mesh, path, [(0, 0.015), (0.06, 0.018), (0.15, 0.038), (0.32, 0.046), (0.55, 0.043), (0.8, 0.027), (1, 0.0)],
-          [(0, 0.015), (0.06, 0.018), (0.15, 0.031), (0.32, 0.036), (0.55, 0.033), (0.8, 0.02), (1, 0.0)],
-          n=18, m=30, side=(1, 0, 0), inner=1.0, curl=0.0, shine=(0.165, 0.265), spacing=0.92, dense=(0.15, 0.28, 9))
+    def dens(a):
+        al = _wrap(a - a_front)
+        return 1.0 + 0.5 * np.exp(-(al / 1.0) ** 2) + 0.5 * np.exp(-((np.abs(al) - np.pi / 2) / 0.35) ** 2)
+    sh = Shell(mesh, fit, pole, [1, 0, 0], hl, off_fn, band, G, na=84, dens=dens, rows=(7, 1, 12), sigma=0.045)
+    over = lambda pts, lifts: sh.on(np.array(pts, dtype=np.float64), np.asarray(lifts, dtype=np.float64))
+
+    # --- the fringe: swept across the forehead from the parting on her right (-X), above the brows
+    fr_shine = (lambda Pm: (Pm[:, 2] > 1.545) & (Pm[:, 2] < 1.586), 0.32)
+    def flock(pts, w, h=0.0062, tipt=0.55):
+        P = over([front_pt(x, z, y) for x, y, z, l in pts], [l for x, y, z, l in pts])
+        sweep(mesh, P, [(0, w * 0.45), (0.25, w), (0.6, w * 0.92), (1, w * 0.7)],
+              [(0, h * 0.35), (0.3, h), (0.8, h * 0.8), (1, h * 0.6)], n=12, m=15, inner=0.35, curl=0.55,
+              shine=fr_shine, tip=(tipt, 0.85), root=(0.2, 1.0))
+    # (x, y or None for the front surface, z, lift above the cap) from the parting to the tip
+    flock([(-0.05, -0.085, 1.592, -0.002), (-0.04, None, 1.572, 0.006), (-0.022, None, 1.545, 0.007), (0.0, None, 1.522, 0.005), (0.022, None, 1.506, 0.003)], 0.024)
+    flock([(-0.048, -0.07, 1.6, -0.002), (-0.018, None, 1.578, 0.009), (0.02, None, 1.55, 0.009), (0.056, None, 1.52, 0.006), (0.088, None, 1.502, 0.003)], 0.029)
+    flock([(-0.046, -0.055, 1.605, -0.002), (0.01, None, 1.588, 0.011), (0.062, None, 1.556, 0.01), (0.104, None, 1.518, 0.006), (0.13, None, 1.49, 0.003)], 0.029)
+    flock([(-0.044, -0.04, 1.608, -0.002), (0.04, -0.075, 1.6, 0.011), (0.1, None, 1.566, 0.009), (0.133, None, 1.52, 0.006), (0.146, None, 1.482, 0.003)], 0.025)
+    flock([(-0.054, -0.08, 1.595, -0.002), (-0.072, None, 1.575, 0.007), (-0.095, None, 1.548, 0.007), (-0.115, None, 1.522, 0.005), (-0.13, None, 1.502, 0.003)], 0.025)
+    flock([(-0.056, -0.095, 1.585, -0.002), (-0.058, None, 1.566, 0.006), (-0.066, None, 1.542, 0.006), (-0.079, None, 1.522, 0.004), (-0.093, None, 1.51, 0.003)], 0.019)
+
+    # --- face-framing strands in front of the ears, down to the jaw (roots tucked under the fringe)
     for sx in (1, -1):
-        p = [(sx * 0.012, 0.26, 1.49), (sx * 0.03, 0.262, 1.425), (sx * 0.036, 0.25, 1.368), (sx * 0.05, 0.262, 1.318)]
-        sweep(mesh, p, [(0, 0.012), (0.3, 0.02), (0.7, 0.014), (1, 0.0)], [(0, 0.012), (0.3, 0.017), (0.7, 0.011), (1, 0.0)],
-              n=12, m=18, side=(1, 0, 0), inner=1.0, curl=0.0)
-    _ring(scr, tie + pole * 0.028, pole, 0.03, 0.0155)
+        pts = [(sx * 0.118, -0.083, 1.512), (sx * 0.131, -0.062, 1.485), (sx * 0.14, -0.048, 1.45),
+               (sx * 0.138, -0.046, 1.41), (sx * 0.126, -0.05, 1.372), (sx * 0.108, -0.058, 1.342)]
+        P = fit.drape(pts, np.array([0.004, 0.0055, 0.0062, 0.0062, 0.0062, 0.006]))
+        P = fit.clear(P, 0.0058)
+        fwd_up = lambda Q, sx=sx: _unit(_unit(Q - CC) * np.array([1.0, 0.4, 0.4]) + np.array([0, -0.55, 0]))
+        sweep(mesh, P, [(0, 0.0075), (0.3, 0.0098), (0.7, 0.0088), (1, 0.0068)],
+              [(0, 0.0032), (0.5, 0.0036), (1, 0.003)], n=10, m=17, up=fwd_up, inner=0.6, curl=0.45,
+              tip=(0.6, 0.9), root=(0.15, 1.0))
+
+    # --- the high ponytail: a full lock arcing back and down in a gentle S to a flicked-out tip
+    top = sh.on(pole[None] * 0.1 + CC, 0.0)[0]        # the cap's surface at the tie
+    path = [top - pole * 0.012, top + pole * 0.01, top + pole * 0.028, (0.0, 0.188, 1.553), (0.0, 0.215, 1.536),
+            (0.002, 0.231, 1.502), (0.005, 0.236, 1.45), (0.008, 0.229, 1.4), (0.011, 0.221, 1.36),
+            (0.014, 0.224, 1.326), (0.019, 0.239, 1.299), (0.026, 0.26, 1.284)]
+    pw = [(0, 0.0145), (0.05, 0.0152), (0.11, 0.025), (0.22, 0.032), (0.45, 0.0355), (0.65, 0.0335), (0.8, 0.0275), (1, 0.019)]
+    ph = [(0, 0.0138), (0.05, 0.0145), (0.11, 0.018), (0.22, 0.0198), (0.4, 0.0205), (0.62, 0.0195), (0.78, 0.017), (1, 0.012)]
+    sweep(mesh, path, pw, ph, n=20, m=38, side=(1, 0, 0), inner=1.0, curl=0.0,
+          shine=(0.1, 0.36, 0.5), tip=(0.74, 0.8), tip_rows=1.8,
+          grooves=[(np.pi / 2 + 0.95, 0.16, 0.9, 0.035), (np.pi / 2 - 0.95, 0.18, 0.92, 0.035), (-0.15, 0.2, 0.86, 0.03)],
+          dents=[(np.pi / 2 + 0.95, 0.07, 0.25), (np.pi / 2 - 0.95, 0.07, 0.25), (-0.15, 0.05, 0.25)])
+    _ring(scr, top + pole * 0.008, pole, 0.0265, 0.0125)
 
 
 # ----------------------------------------------------------------------------------- boy
 def _boy(fit, mesh):
     pole = _unit([0.03, 0.42, 0.9])                 # the crown whorl
-    hl = []
+    # hairline: a softly squared front with the temple corners set back, short sideburns, the
+    # line arcing over the ears, behind them down to the nape, which ends in two soft points
+    hl = [(0, -0.135, 1.538), (0, 0.077, 1.33)]
+    hl += [(0.03, -0.13, 1.541), (0.056, -0.125, 1.546), (0.08, -0.113, 1.541), (0.1, -0.099, 1.535)]
+    hl += [(-0.03, -0.132, 1.538), (-0.065, -0.122, 1.537), (-0.09, -0.107, 1.534), (-0.105, -0.095, 1.527)]
     for sx in (1, -1):
-        hl += [(sx * 0.137, -0.06, 1.482), (sx * 0.148, -0.025, 1.468), (sx * 0.152, 0.012, 1.471),
-               (sx * 0.147, 0.045, 1.456), (sx * 0.135, 0.075, 1.405), (sx * 0.105, 0.1, 1.36), (sx * 0.05, 0.115, 1.337)]
-    hl += [(0.042, -0.141, 1.553), (0.075, -0.13, 1.542), (0.1, -0.115, 1.53), (0.122, -0.095, 1.508),
-           (-0.04, -0.147, 1.55), (-0.085, -0.13, 1.542), (-0.11, -0.108, 1.53), (-0.125, -0.093, 1.514)]
-    hl += [(0, -0.15, 1.551), (0, 0.12, 1.332)]
-    cre = _creases(17, 0.2, 7)
-    a_part = 1.5 * np.pi + 0.27                     # the column of his parting (+X of the front)
-    qc = _unit([-0.22, -0.56, 0.8])                 # centre of the quiff's volume
-    def rel(a): return _wrap(a - a_part)            # signed angle from the parting
-    def frontness(a): return _ss(1.5, 0.7, np.abs(_wrap(a - 1.5 * np.pi)))
+        hl += [(sx * 0.116, -0.083, 1.513), (sx * 0.126, -0.065, 1.488), (sx * 0.133, -0.049, 1.458),
+               (sx * 0.138, -0.032, 1.436), (sx * 0.141, -0.019, 1.444), (sx * 0.146, -0.005, 1.466),
+               (sx * 0.149, 0.015, 1.474), (sx * 0.143, 0.04, 1.456), (sx * 0.13, 0.05, 1.408),
+               (sx * 0.116, 0.058, 1.377), (sx * 0.085, 0.065, 1.35), (sx * 0.055, 0.07, 1.335),
+               (sx * 0.026, 0.074, 1.316), (sx * 0.012, 0.076, 1.322)]
+    az = _azimuth_fn(pole)
+    a_front = az((0, -0.14, 1.53)); a_part = az((0.056, -0.11, 1.55))
+    qc = _unit(np.array([-0.03, -0.1, 1.575]) - CC)          # where the quiff sits
+    def rel(a): return _wrap(a - a_part)                      # < 0: his right of the parting
+    def frontness(a): return _ss(1.45, 0.6, np.abs(_wrap(a - a_front)))
+
     def off_fn(D, s, se, a):
         x, y, z = D[:, 0], D[:, 1], D[:, 2]
-        o = 0.007 + 0.016 * _ss(0.05, 0.65, z) + 0.004 * _ss(0.2, 0.7, y)
-        o = o + 0.005 * _ss(0.45, 0.85, np.abs(x)) * _ss(-0.1, 0.35, z)                 # a little fuller at the sides
-        o = o + 0.026 * np.exp(-((1 - D @ qc) / 0.14) ** 2) * _ss(0.0, -0.12, rel(a))
-        o = o - 0.007 * frontness(a) * _ss(0.05, 0.3, rel(a)) * _ss(0.4, 0.8, s / se)   # combed flat left of the part
-        o = o - 0.01 * np.exp(-(rel(a) / 0.035) ** 2) * _ss(0.55, 0.8, s / se)            # the parting
-        e = 0.004
-        q = frontness(a) * _ss(0.05, -0.25, rel(a))          # the quiff rises steeply from the hairline
-        return e + (o - e) * _ss(1.0, 0.8 + 0.12 * q, s / se)
-    def groove_fn(a, s, se):
-        # the clumps sweep away from the parting toward the front: to his right on the quiff,
-        # to his left on the other side
-        tw = 0.75 * frontness(a) * _ss(0.35, 1.0, s / se) * np.where(rel(a) < 0, 1.0, -1.0)
-        lob = lobes(a + tw, cre); fade = _ss(0.12, 0.45, s) * (1 - 0.5 * _ss(0.92, 1.0, s / se))
-        return 0.0034 * fade * (lob - 1), 1 - fade * (1 - lob)
-    def band(a):
-        w = _ss(1.9, 1.3, np.abs(_wrap(a - 1.5 * np.pi)))
-        teeth = 0.045 * lobes(a, cre); c = 0.76
-        return c - 0.05 * np.maximum(w, 0.04), c + (0.045 + teeth) * np.maximum(w, 0.04), w > 0.3
-    on_shell = shell(mesh, fit, pole, [1, 0, 0], hl, off_fn, groove_fn, band, na=104, rows=(8, 2, 9), crease_shade=0.12)
+        # short and close at the sides and back, fuller over the top
+        o = 0.0032 + 0.0072 * _ss(0.35, 0.92, z) + 0.002 * _ss(0.2, -0.4, y) * _ss(0.5, 0.9, z)
+        o = o + 0.022 * np.exp(-((1 - D @ qc) / 0.07) ** 2) * _ss(0.03, -0.14, rel(a))   # under the quiff
+        o = o - 0.0015 * frontness(a) * _ss(0.03, 0.2, rel(a)) * _ss(0.5, 0.85, s / se)  # combed flat left of it
+        o = o - 0.005 * np.exp(-(rel(a) / 0.03) ** 2) * _ss(0.45, 0.75, s / se)          # the parting
+        dist = (se - s) * Shell.R
+        e = 0.0009
+        return e + (o - e) * _ss(0.0, 0.02, dist)
+    # a few irregular creases spiralling a little from the whorl, and the parting
+    G = []
+    for ang, u0, u1, w in [(-0.3, 0.1, 0.6, 0.0009), (0.5, 0.06, 0.48, 0.0008), (1.25, 0.12, 0.66, 0.0009),
+                           (2.15, 0.08, 0.52, 0.0008), (2.9, 0.12, 0.62, 0.0009), (-1.1, 0.14, 0.56, 0.0008)]:
+        G.append((np.pi / 2 + ang, u0, u1, w, 0.0005))
+    G.append((a_part, 0.42, 0.99, 0.0015, 0.0))
+    for da, u0, u1 in [(0.2, 0.55, 0.92), (0.42, 0.62, 0.9)]:                         # combed down to his left
+        G.append((a_part + da, u0, u1, 0.0009, 0.0005))
+    twist = lambda u: 0.32 * _ss(0.0, 0.75, u)
 
-    def on(x, y, z, lift): return fit.drape([(x, y, z)], lift)[0]
-    W = fit.place(pole[None], 0.0)[0]
-    fwd = _unit(np.cross(pole, [1, 0, 0])); side = np.cross(fwd, pole)
-    def tuft(pts, lifts, w, h, n=10, m=12, shine=None):
-        """A soft clump lying on the cap, its end lifting a little off it."""
-        P = np.vstack([on_shell([p], l) for p, l in zip(pts, lifts)])
-        sweep(mesh, P, [(0, w * 0.7), (0.35, w), (0.75, w * 0.75), (1, 0.0)], [(0, h * 0.7), (0.4, h), (1, 0.0)],
-              n=n, m=m, inner=0.5, curl=0.45, shine=shine)
-    # a few tousled-but-tidy clumps radiating from the crown, their ends lifting a little
-    for ang, ln, w in [(-0.95, 0.09, 0.024), (-0.1, 0.1, 0.027), (0.8, 0.095, 0.025)]:
-        dirv = -fwd * math.cos(ang) + side * math.sin(ang)
-        pts = [W + dirv * (ln * t) - pole * (ln * t) ** 2 * 3.0 for t in (0.05, 0.4, 0.75, 1.0)]
-        tuft(pts, [-0.002, 0.0015, 0.003, 0.005], w, 0.0045, m=14)
-    # the cowlick tuft at the crown: two small curling points
-    sweep(mesh, [W - pole * 0.004, W + pole * 0.03 - fwd * 0.004, W + pole * 0.05 + fwd * 0.008, W + pole * 0.056 + fwd * 0.028],
-          [(0, 0.012), (0.35, 0.011), (1, 0.0)], [(0, 0.008), (0.4, 0.007), (1, 0.0)], n=10, m=14, up=-fwd, inner=0.8, curl=0.2)
-    sweep(mesh, [W - pole * 0.004 + side * 0.006, W + pole * 0.024 + side * 0.014, W + pole * 0.036 + side * 0.03 - fwd * 0.006],
-          [(0, 0.009), (0.35, 0.008), (1, 0.0)], [(0, 0.006), (0.4, 0.005), (1, 0.0)], n=10, m=12, up=-side, inner=0.8, curl=0.2)
-    # the front of the quiff: a full, rounded swoop rising from the parting and sweeping over
-    # to his right, its end coming down past the corner of the forehead to his right temple
-    def swoop(xzl, w, h, m=22, shine=None, inner=0.55, curl=0.35):
-        P = np.vstack([on_shell([fit.front(x, z, 0.0)], l) for x, z, l in xzl])
-        sweep(mesh, P, [(0, w * 0.45), (0.22, w), (0.6, w * 0.9), (0.85, w * 0.55), (1, 0.0)],
-              [(0, h * 0.5), (0.3, h), (0.7, h * 0.85), (1, 0.0)], n=12, m=m, inner=inner, curl=curl, shine=shine)
-    sw_shine = lambda Pm: (Pm[:, 2] > 1.553) & (Pm[:, 2] < 1.568)
-    swoop([(0.052, 1.562, 0.0), (0.022, 1.568, 0.008), (-0.02, 1.562, 0.012), (-0.06, 1.546, 0.012),
-           (-0.095, 1.52, 0.009), (-0.12, 1.495, 0.006), (-0.135, 1.473, 0.004)], 0.031, 0.011, m=24, shine=sw_shine)
-    swoop([(0.03, 1.588, -0.004), (-0.01, 1.59, 0.0), (-0.06, 1.58, 0.001), (-0.1, 1.558, 0.001),
-           (-0.13, 1.528, 0.001), (-0.146, 1.498, 0.0)], 0.028, 0.007, shine=sw_shine)
-    # the other side of the parting, combed down to end above his left ear
-    swoop([(0.066, 1.558, 0.0), (0.094, 1.545, 0.005), (0.118, 1.524, 0.005), (0.136, 1.5, 0.003)], 0.02, 0.007, m=14)
-    # short tapered sideburns in front of the ears
-    for sx in (1, -1):
-        pts = [on(sx * 0.136, -0.066, 1.492, 0.004), on(sx * 0.141, -0.054, 1.47, 0.0035), on(sx * 0.143, -0.047, 1.452, 0.003)]
-        sweep(mesh, pts, [(0, 0.01), (0.4, 0.008), (1, 0.0)], [(0, 0.0035), (1, 0.0)], n=8, m=10, inner=0.4, curl=0.3)
+    def dens(a):
+        return 1.0 + 0.6 * frontness(a) + 0.45 * np.exp(-((np.abs(_wrap(a - a_front)) - np.pi / 2) / 0.35) ** 2)
+    sh = Shell(mesh, fit, pole, [1, 0, 0], hl, off_fn, None, G, na=100, dens=dens, rows=(8, 1, 12), sigma=0.04,
+               twist=twist)
+    over = lambda pts, lifts: sh.on(np.array(pts, dtype=np.float64), np.asarray(lifts, dtype=np.float64))
+    lens = lambda zlo, zhi, phi=0.3: (lambda Pm: (Pm[:, 2] > zlo) & (Pm[:, 2] < zhi), phi)
+
+    # the quiff: one broad rounded roll that rises out of the parting, crests over the front of
+    # the top and rolls over to his right (-X), tapering down past the corner of his forehead
+    roll = [(0.068, -0.1, 1.56, -0.008), (0.046, -0.114, 1.571, 0.002), (0.014, -0.123, 1.582, 0.012),
+            (-0.028, -0.12, 1.583, 0.017), (-0.066, -0.106, 1.574, 0.016), (-0.098, -0.085, 1.553, 0.013),
+            (-0.121, -0.063, 1.525, 0.008), (-0.136, -0.041, 1.494, 0.005)]
+    P = over([p[:3] for p in roll], [p[3] for p in roll])
+    sweep(mesh, P, [(0, 0.01), (0.3, 0.027), (0.46, 0.03), (0.72, 0.025), (1, 0.017)],
+          [(0, 0.005), (0.32, 0.018), (0.46, 0.021), (0.72, 0.016), (1, 0.009)], n=22, m=30, inner=0.55, curl=0.32,
+          shine=(0.2, 0.62, 0.3), shine_at=np.pi / 2 + 0.75, tip=(0.62, 0.9), root=(0.16, 1.0),
+          grooves=[(np.pi / 2 - 1.05, 0.2, 0.86, 0.04), (np.pi / 2 + 1.55, 0.22, 0.82, 0.035)],
+          dents=[(np.pi / 2 - 1.05, 0.06, 0.2), (np.pi / 2 + 1.55, 0.05, 0.2)])
+    # a flatter clump behind it, combed the same way
+    def clump(pts, w, h, m=18, shine=None):
+        P = over([p[:3] for p in pts], [p[3] for p in pts])
+        sweep(mesh, P, [(0, w * 0.5), (0.25, w), (0.6, w * 0.92), (1, w * 0.65)],
+              [(0, h * 0.4), (0.3, h), (0.75, h * 0.85), (1, h * 0.6)], n=12, m=m, inner=0.3, curl=0.5,
+              shine=shine, tip=(0.58, 0.85), root=(0.15, 1.0))
+    clump([(0.056, -0.06, 1.592, -0.002), (0.024, -0.066, 1.603, 0.0036), (-0.02, -0.06, 1.606, 0.004),
+           (-0.065, -0.046, 1.596, 0.0038), (-0.103, -0.026, 1.572, 0.0032), (-0.13, -0.004, 1.537, 0.0026)],
+          0.022, 0.0045, shine=lens(1.605, 1.616, 0.26))
+    # the other side of the parting: combed flat and down to his left
+    clump([(0.06, -0.112, 1.553, -0.002), (0.083, -0.106, 1.545, 0.0026), (0.104, -0.091, 1.53, 0.0026),
+           (0.12, -0.071, 1.508, 0.0022)], 0.016, 0.0036, m=14)
+
+    # the cowlick at the crown: a few small rounded points leaning back and to one side
+    Wp = sh.on((pole * 0.1 + CC)[None], 0.0)[0]
+    fwd = _unit(np.cross(pole, [1, 0, 0])); side = _unit(np.cross(fwd, pole))
+    for (dx, dy, ln, lean, w) in [(0.0, 0.0, 0.031, 0.4, 0.0088), (0.01, 0.006, 0.025, 0.85, 0.0074),
+                                  (-0.009, 0.007, 0.021, -0.15, 0.0066)]:
+        b = Wp + side * dx - fwd * dy - pole * 0.005
+        back = _unit(-fwd * math.cos(lean) + side * math.sin(lean))
+        pts = [b, b + pole * ln * 0.5 + back * ln * 0.12, b + pole * ln * 0.85 + back * ln * 0.5,
+               b + pole * ln * 0.95 + back * ln * 1.0]
+        sweep(mesh, pts, [(0, w), (0.45, w * 0.85), (1, w * 0.7)], [(0, w * 0.8), (0.45, w * 0.66), (1, w * 0.5)],
+              n=10, m=12, up=back, inner=0.85, curl=0.12, tip=(0.5, 0.6))
 
 
 # ---------------------------------------------------------------------------------- build
-def _colour_fn(o, mesh, base, shine):
-    """Per-corner colour: the face's tag picks base or shine, the vertex's shade darkens it."""
+def _colour_fn(o, mesh, base, shine, groove):
+    """Per-corner colour: the face's tag picks base, shine or crease colour; the vertex's shade
+    darkens it."""
     tags = {_key(p.center): t for p, t in zip(o.data.polygons, mesh.T) if t}
     shades = {_key(v.co): s for v, s in zip(o.data.vertices, mesh.S) if s != 1.0}
+    pal = {BASE: base, SHINE: shine, GROOVE: groove}
     def col(co, cen):
-        c = shine if tags.get(_key(cen)) == 1 else base
+        c = pal[tags.get(_key(cen), BASE)]
         k = shades.get(_key(co), 1.0)
         return (c[0] * k, c[1] * k, c[2] * k, 1)
     return col
@@ -520,8 +659,8 @@ def build_hair(girl):
     if girl: _girl(fit, mesh, scr)
     else: _boy(fit, mesh)
     hair = mesh.build('Hair')
-    parts = [Part(hair, _colour_fn(hair, mesh, base, shine), 3, 'Head')]
+    parts = [Part(hair, _colour_fn(hair, mesh, base, shine, _groove_color(girl)), 3, 'Head')]
     if scr.F:
         so = scr.build('Scrunchie')
-        parts.append(Part(so, _colour_fn(so, scr, SCRUNCHIE, SCRUNCHIE), 0, 'Head'))
+        parts.append(Part(so, _colour_fn(so, scr, SCRUNCHIE, SCRUNCHIE, SCRUNCHIE), 0, 'Head'))
     return parts
