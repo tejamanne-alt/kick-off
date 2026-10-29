@@ -161,6 +161,11 @@ This file is the resume point. A new session should read it first. All eight pha
   - Clouds are 3D cumulus (`World/CloudShape`): flat bottoms, piled tops, cel-shaded with blue-grey undersides, with little haze (`_Haze` on the toon shader).
   - The underpass is evenly dim (no spotlight round the kid) and lit by lamps under the deck whose additive light cones and floor pools light whoever walks under them (`World/LampGlow`).
   - The level ends when the kid and the ball are both through the school gate (`GoalZone`). The school stands across the end of the road: its gate arch faces back down the footpath at the kid, bollards close the road, the building faces down the street.
+- The kid is made in Blender (`tools/blender`): a skin-modifier body with one subdivision, a rounded head with a painted anime face (atlas texture), soft hair clumps with a shine band, a cut-out shirt with sleeves, tie, shorts, long socks, sneakers, a school bag with its strap; an armature with bone-heat weights (clothes copy the body's weights); about 17k triangles; exported as `Art/Models/Kid.fbx` with `KidAtlas.png`.
+  - `ModelImportSettings` imports it in metres without materials or clips, readable, bones kept as transforms.
+  - `LevelBuildKit.BuildKidModel` turns it to face +x, sizes it, and maps its bones to the `CharacterRig` (front = the limbs nearer the camera). The procedural kid remains as a fallback.
+  - `CharacterRig` now swings each joint about the body's side axis measured from the joint's rest pose, so it drives imported bones and the procedural pivots alike.
+  - `ModelOutfit` recolours the shirt and shorts for the shop's outfits from part ids in UV channel 2.
 
 ## After Phase 8 (next steps)
 

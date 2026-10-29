@@ -17,8 +17,8 @@ namespace DribbleToSchool.Cosmetics
         public TrailRenderer ballTrail;
 
         [Header("Kid")]
-        [Tooltip("Dressed in the outfit's shirt and shorts colours.")]
-        public Presentation.CharacterBody3D kidBody;
+        [Tooltip("Dressed in the outfit's shirt and shorts colours (a CharacterBody3D or ModelOutfit).")]
+        public MonoBehaviour kidBody;
         public SpriteRenderer backpackFlag;
 
         static readonly int MainTexId = Shader.PropertyToID("_MainTex");
@@ -57,11 +57,12 @@ namespace DribbleToSchool.Cosmetics
             }
 
             var outfit = catalog.Find(save.equippedOutfit);
-            if (outfit != null && kidBody != null && dressedIn != outfit.id)
+            var dressable = kidBody as Presentation.IOutfit;
+            if (outfit != null && dressable != null && dressedIn != outfit.id)
             {
-                // Rebuilding the body is cheap but not free: only when the outfit changes.
+                // Re-dressing is cheap but not free: only when the outfit changes.
                 dressedIn = outfit.id;
-                kidBody.SetOutfit(outfit.primary, outfit.secondary);
+                dressable.SetOutfit(outfit.primary, outfit.secondary);
             }
 
             var flag = catalog.Find(save.equippedFlag);

@@ -15,7 +15,7 @@ namespace DribbleToSchool.Presentation
     /// </summary>
     [ExecuteAlways]
     [RequireComponent(typeof(SkinnedMeshRenderer))]
-    public class CharacterBody3D : MonoBehaviour
+    public class CharacterBody3D : MonoBehaviour, IOutfit
     {
         public CharacterRig rig;
         [Tooltip("Schoolkid: shorts, long socks, short sleeves, tie and bag. Off: an adult in trousers and long sleeves.")]

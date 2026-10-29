@@ -43,6 +43,8 @@ namespace DribbleToSchool.EditorTools
             public Material glow;
             /// <summary>Cel-shaded, ink-outlined material for characters (vertex colours).</summary>
             public Material character;
+            /// <summary>The Blender-made kid: the character shader with the kid's face/atlas texture.</summary>
+            public Material kid;
             /// <summary>Like <see cref="character"/>, textured with the equipped ball skin at runtime.</summary>
             public Material ball;
 
@@ -172,6 +174,9 @@ namespace DribbleToSchool.EditorTools
 
             var toonCharacter = Shader.Find("DribbleToSchool/ToonCharacter");
             set.character = LoadOrCreateMaterial("Character", toonCharacter);
+            set.kid = LoadOrCreateMaterial("Kid", toonCharacter);
+            set.kid.mainTexture = AssetDatabase.LoadAssetAtPath<Texture2D>(LevelBuildKit.ModelsDir + "/KidAtlas.png");
+            EditorUtility.SetDirty(set.kid);
             set.ball = LoadOrCreateMaterial("Ball", toonCharacter);
             set.ball.SetFloat("_OutlineWidth", 0.0018f);
             EditorUtility.SetDirty(set.ball);

@@ -140,8 +140,11 @@ namespace DribbleToSchool.EditorTools
             var capsule = kidGo.AddComponent<CapsuleCollider2D>();
             capsule.size = new Vector2(0.5f, 1.2f);
             capsule.sharedMaterial = kidMat;
-            var kidRig = BuildCharacter(kidGo.transform, "Visual", Vector2.zero, 1f, KidColor, new Color(0.22f, 0.23f, 0.42f),
-                new Color(0.16f, 0.15f, 0.2f), true);   // glossy near-black hair
+            // The kid made in Blender (tools/blender/kid.py), or the procedural one if it is missing.
+            var kidRig = BuildKidModel(kidGo.transform);
+            if (kidRig.rig == null)
+                kidRig = BuildCharacter(kidGo.transform, "Visual", Vector2.zero, 1f, KidColor, new Color(0.22f, 0.23f, 0.42f),
+                    new Color(0.16f, 0.15f, 0.2f), true);   // glossy near-black hair
             var feet = new GameObject("Feet").transform;
             feet.SetParent(kidGo.transform, false);
             feet.localPosition = new Vector3(0f, -0.6f, 0f);
@@ -244,7 +247,7 @@ namespace DribbleToSchool.EditorTools
             applier.catalog = Cosmetics;
             applier.ballRenderer = shell.GetComponent<MeshRenderer>();
             applier.ballTrail = trail;
-            applier.kidBody = kidRig.body;
+            applier.kidBody = kidRig.outfit;
             applier.backpackFlag = kidRig.flag;
 
             var tuningPanel = new GameObject("DevTuning").AddComponent<DevTuningPanel>();
@@ -266,6 +269,8 @@ namespace DribbleToSchool.EditorTools
         {
             public CharacterRig rig;
             public CharacterBody3D body;
+            /// <summary>What the shop's outfits recolour (the body, or the imported model).</summary>
+            public MonoBehaviour outfit;
             public SpriteRenderer flag;
             public Transform visual;
         }
@@ -324,7 +329,97 @@ namespace DribbleToSchool.EditorTools
             if (!kid) body3D.build = 1.05f;
             body3D.Rebuild();
             parts.body = body3D;
+            parts.outfit = body3D;
             return parts;
+        }
+
+        public const string ModelsDir = "Assets/_Game/Art/Models";
+
+        /// <summary>
+        /// The kid modelled, rigged and textured in Blender (Art/Models/Kid.fbx), turned to face +x
+        /// with its feet at local y -0.6, under a Body transform the CharacterRig bobs and leans.
+        /// Its bones become the rig's joints; the limbs nearer the camera are the "front" ones.
+        /// Returns parts with no rig if the model is missing or not as expected.
+        /// </summary>
+        static CharacterParts BuildKidModel(Transform parent)
+        {
+            var parts = new CharacterParts();
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(ModelsDir + "/Kid.fbx");
+            if (prefab == null) return parts;
+
+            var visual = new GameObject("Visual").transform;
+            visual.SetParent(parent, false);
+            var body = new GameObject("Body").transform;
+            body.SetParent(visual, false);
+            var model = (GameObject)Object.Instantiate(prefab);
+            model.name = "KidModel";
+            model.transform.SetParent(body, false);
+
+            System.Func<string, Transform> bone = n => FindDeep(model.transform, n) ?? FindDeep(model.transform, n.Replace('.', '_'));
+            Transform hips = bone("Hips"), head = bone("Head"), bag = bone("Bag");
+            Transform legL = bone("UpperLeg.L"), legR = bone("UpperLeg.R"), kneeL = bone("LowerLeg.L"), kneeR = bone("LowerLeg.R");
+            Transform armL = bone("UpperArm.L"), armR = bone("UpperArm.R"), elbowL = bone("LowerArm.L"), elbowR = bone("LowerArm.R");
+            var smr = model.GetComponentInChildren<SkinnedMeshRenderer>();
+            if (hips == null || head == null || bag == null || legL == null || legR == null || kneeL == null || kneeR == null ||
+                armL == null || armR == null || elbowL == null || elbowR == null || smr == null)
+            {
+                Debug.LogWarning("[Dribble To School] Kid.fbx is missing bones; using the procedural kid.");
+                Object.DestroyImmediate(visual.gameObject);
+                return parts;
+            }
+
+            // Face +x: the bag hangs on the kid's back.
+            Vector3 back = bag.position - hips.position;
+            back.y = 0f;
+            if (back.sqrMagnitude > 1e-6f)
+                model.transform.rotation = Quaternion.AngleAxis(Vector3.SignedAngle(-back, Vector3.right, Vector3.up), Vector3.up) * model.transform.rotation;
+            // Size: the neck joint 1.3 above the feet (the kid is about 1.55 tall).
+            float headHeight = head.position.y - model.transform.position.y;
+            if (headHeight > 0.01f) model.transform.localScale *= 1.3f / headHeight;
+            model.transform.localPosition = new Vector3(0f, -0.6f, 0f);
+            Vector3 offset = hips.position - body.position;
+            model.transform.position -= new Vector3(offset.x, 0f, offset.z);
+
+            bool rightNear = legR.position.z < legL.position.z;
+            var rig = body.gameObject.AddComponent<CharacterRig>();
+            rig.body = body;
+            rig.legFront = rightNear ? legR : legL; rig.legBack = rightNear ? legL : legR;
+            rig.kneeFront = rightNear ? kneeR : kneeL; rig.kneeBack = rightNear ? kneeL : kneeR;
+            rig.armFront = rightNear ? armR : armL; rig.armBack = rightNear ? armL : armR;
+            rig.elbowFront = rightNear ? elbowR : elbowL; rig.elbowBack = rightNear ? elbowL : elbowR;
+            rig.head = head;
+            rig.bag = bag;
+
+            smr.sharedMaterial = Art.kid;
+            smr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            smr.receiveShadows = false;
+            smr.updateWhenOffscreen = false;
+            var outfit = smr.gameObject.AddComponent<ModelOutfit>();
+
+            // The shop's pennant, clipped to the top of the bag on the camera side.
+            var pole = Visual(bag, "FlagPole", Square, Vector2.zero, new Vector2(0.015f, 0.2f), new Color(0.3f, 0.25f, 0.2f), 7);
+            pole.transform.position = body.TransformPoint(new Vector3(-0.18f, 0.6f, -0.16f));
+            pole.transform.rotation = body.rotation;
+            var flag = Visual(bag, "BackpackFlag", Square, Vector2.zero, new Vector2(0.12f, 0.09f), Color.white, 7);
+            flag.transform.position = body.TransformPoint(new Vector3(-0.24f, 0.66f, -0.16f));
+            flag.transform.rotation = body.rotation;
+
+            parts.rig = rig;
+            parts.visual = visual;
+            parts.outfit = outfit;
+            parts.flag = flag.GetComponent<SpriteRenderer>();
+            return parts;
+        }
+
+        static Transform FindDeep(Transform root, string name)
+        {
+            if (root.name == name) return root;
+            for (int i = 0; i < root.childCount; i++)
+            {
+                var found = FindDeep(root.GetChild(i), name);
+                if (found != null) return found;
+            }
+            return null;
         }
 
         static Transform Pivot(Transform parent, string name, Vector3 localPos)

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace DribbleToSchool.Presentation
@@ -24,7 +25,9 @@ namespace DribbleToSchool.Presentation
 
     /// <summary>
     /// Joints of a character (kid or pedestrian), animated by code. Limbs swing in the
-    /// character's side plane (about local z); the 3D body (CharacterBody3D) is skinned to these.
+    /// character's side plane: about the body's z axis, measured from each joint's rest pose,
+    /// so the joints can be bones of an imported model (whatever their own axes) or the plain
+    /// pivots a CharacterBody3D is skinned to.
     /// </summary>
     public class CharacterRig : MonoBehaviour
     {
@@ -43,12 +46,24 @@ namespace DribbleToSchool.Presentation
 
         Vector3 bodyBasePosition;
         Vector3 bodyBaseScale = Vector3.one;
+        Quaternion bodyBaseRotation = Quaternion.identity;
         Vector3 headBasePosition;
+
+        struct Joint { public Quaternion rest; public Vector3 axis; }
+        readonly Dictionary<Transform, Joint> joints = new Dictionary<Transform, Joint>();
 
         void Awake()
         {
-            if (body != null) { bodyBasePosition = body.localPosition; bodyBaseScale = body.localScale; }
+            if (body != null) { bodyBasePosition = body.localPosition; bodyBaseScale = body.localScale; bodyBaseRotation = body.localRotation; }
             if (head != null) headBasePosition = head.localPosition;
+            // Each joint swings about the body's z axis (the character's side-to-side axis),
+            // expressed in the joint's own rest frame.
+            Vector3 swing = (body != null ? body : transform).TransformDirection(Vector3.forward);
+            foreach (var t in new[] { legFront, legBack, kneeFront, kneeBack, armFront, armBack, elbowFront, elbowBack, head, bag })
+            {
+                if (t == null || joints.ContainsKey(t)) continue;
+                joints[t] = new Joint { rest = t.localRotation, axis = Quaternion.Inverse(t.rotation) * swing };
+            }
         }
 
         public void Pose(RigPose p)
@@ -66,14 +81,14 @@ namespace DribbleToSchool.Presentation
             if (body != null)
             {
                 body.localPosition = bodyBasePosition + Vector3.up * p.bob;
-                body.localRotation = Quaternion.Euler(0f, 0f, -p.lean);
+                body.localRotation = bodyBaseRotation * Quaternion.Euler(0f, 0f, -p.lean);
                 Vector2 squash = p.squash == Vector2.zero ? Vector2.one : p.squash;
                 // Squash keeps the volume: wider in both x and depth when shorter.
                 body.localScale = Vector3.Scale(bodyBaseScale, new Vector3(squash.x, squash.y, squash.x));
             }
             if (head != null)
             {
-                head.localRotation = Quaternion.Euler(0f, 0f, p.headTilt);
+                Rotate(head, p.headTilt);
                 head.localPosition = headBasePosition;
             }
         }
@@ -89,9 +104,12 @@ namespace DribbleToSchool.Presentation
             return Mathf.Lerp(towardCamera, 180f - towardCamera, t);
         }
 
-        static void Rotate(Transform t, float angle)
+        void Rotate(Transform t, float angle)
         {
-            if (t != null) t.localRotation = Quaternion.Euler(0f, 0f, angle);
+            if (t == null) return;
+            Joint j;
+            if (joints.TryGetValue(t, out j)) t.localRotation = j.rest * Quaternion.AngleAxis(angle, j.axis);
+            else t.localRotation = Quaternion.Euler(0f, 0f, angle);
         }
     }
 }
