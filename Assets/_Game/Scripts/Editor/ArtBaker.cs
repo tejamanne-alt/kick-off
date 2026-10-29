@@ -52,6 +52,8 @@ namespace DribbleToSchool.EditorTools
             public Material girl;
             /// <summary>Like <see cref="character"/>, textured with the equipped ball skin at runtime.</summary>
             public Material ball;
+            /// <summary>The Blender-made cars (tools/blender/car.py), by type name: the character shader with each car's atlas.</summary>
+            public readonly Dictionary<string, Material> cars = new Dictionary<string, Material>();
 
             public Material wire;
         }
@@ -191,6 +193,14 @@ namespace DribbleToSchool.EditorTools
             set.girl = LoadOrCreateMaterial("Girl", toonCharacter);
             set.girl.mainTexture = AssetDatabase.LoadAssetAtPath<Texture2D>(LevelBuildKit.ModelsDir + "/GirlAtlas.png");
             EditorUtility.SetDirty(set.girl);
+            foreach (var type in LevelBuildKit.CarTypes)
+            {
+                var carMat = LoadOrCreateMaterial("Car" + type, toonCharacter);
+                carMat.mainTexture = AssetDatabase.LoadAssetAtPath<Texture2D>(LevelBuildKit.ModelsDir + "/Cars/" + type + "Atlas.png");
+                carMat.SetFloat("_OutlineWidth", 0.0018f);
+                EditorUtility.SetDirty(carMat);
+                set.cars[type] = carMat;
+            }
             set.ball = LoadOrCreateMaterial("Ball", toonCharacter);
             set.ball.SetFloat("_OutlineWidth", 0.0018f);
             EditorUtility.SetDirty(set.ball);

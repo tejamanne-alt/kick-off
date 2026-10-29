@@ -45,3 +45,21 @@ What the model carries:
   The game poses them in code (`CharacterRig`), measuring each swing from the bone's rest pose.
 
 Rendering previews with Eevee needs EGL (on Debian/Ubuntu: `libegl1 libegl-mesa0 libgl1-mesa-dri`).
+
+## Cars
+
+Five original cars in a chunky, cozy style (`car.py`, previews with `review_car.py`): `hatch` (the
+parked car; its body and cabin match the parked-car colliders), `wagon` (estate with roof-rack
+cargo), `van`, `pickup` (a small cab-over truck with produce in the bed) and `fourby` (a compact
+off-roader with a bull-bar, spare wheel and roof basket).
+
+```
+blenv/bin/python car.py -- $PWD/Hatch.fbx --type hatch       # also Wagon/Van/Pickup/Fourby
+blenv/bin/python review_car.py -- $PWD/Hatch.blend $PWD/hatch_sheet.png
+cp Hatch.fbx Hatch.json HatchAtlas.png ../../Assets/_Game/Art/Models/Cars/
+```
+
+Each car is one "Body" mesh plus four wheel meshes ("Wheel.FL/FR/RL/RR", origin at the hub, axle on
+local X) and a "Front" marker at the front bumper. Vertex colours times the car's own atlas (panel
+lines, grime, lights); body paint is part 1 in UV2 so `CarPaint` can repaint it. The `.json` holds
+the base paint (sRGB, as in the FBX) and the wheel radius for `WheelSpin`.

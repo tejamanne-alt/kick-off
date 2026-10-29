@@ -109,6 +109,10 @@ kid.select_set(True); rig.select_set(True)
 bpy.ops.export_scene.fbx(filepath=OUT, use_selection=True, apply_scale_options='FBX_SCALE_ALL', add_leaf_bones=False,
     bake_anim=False, mesh_smooth_type='FACE', use_mesh_modifiers=True, axis_forward='-Z', axis_up='Y', primary_bone_axis='Y', secondary_bone_axis='X', path_mode='STRIP')
 hair = teen_hair.hair_colors(GIRL)[0]
+# The palette is in Blender's linear space, but the byte vertex colours (and so the FBX, and Unity's
+# mesh.colors) hold it sRGB-encoded: write it that way so the game's recolour compares like with like.
+def srgb(rgb):
+    return [round(12.92 * c if c <= 0.0031308 else 1.055 * c ** (1 / 2.4) - 0.055, 4) for c in rgb[:3]]
 with open(OUT.replace('.fbx', '.json'), 'w') as f:
-    json.dump({'top': pal['top'][:3], 'legwear': pal['legwear'][:3], 'hair': hair[:3], 'tris': tris}, f)
+    json.dump({'top': srgb(pal['top']), 'legwear': srgb(pal['legwear']), 'hair': srgb(hair), 'tris': tris}, f)
 print('exported')

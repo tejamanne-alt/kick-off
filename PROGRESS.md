@@ -183,6 +183,7 @@ This file is the resume point. A new session should read it first. All eight pha
 - The park's swing crossings are rope swings hanging from a tree over a stream (water instead of a dry pit).
 - The Cranes level reads as a building site with trenches, crane-carried pallets and a builder's lift.
 - Warm sunlight against cool shadows, with soft cel edges and a gentle sky fill in both toon shaders (`_DtsSunColor`, set by `WorldLook.sunColor`).
+- Cars are original Blender models (`tools/blender/car.py`, `Art/Models/Cars`): a hatchback for parked cars (repainted in softened colours by `World/CarPaint`), and a van, an estate with roof-rack cargo, a small pickup and a compact off-roader for side-street traffic in their own paint. Their wheels roll as they drive (`World/WheelSpin`). The procedural `Car3D` remains as the fallback.
 - Building fronts get 3D dressing lined up with their painted facades: sills and lintels, window boxes of flowers, door canopies with lamps and potted plants, downpipes, and balconies with railings, plants and towels on the flats.
 
 ## After Phase 8 (next steps)

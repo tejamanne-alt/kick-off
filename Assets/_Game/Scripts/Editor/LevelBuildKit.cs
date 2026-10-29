@@ -487,17 +487,76 @@ namespace DribbleToSchool.EditorTools
         }
 
         /// <summary>A 3D car with its wheels on <paramref name="position"/>, turned <paramref name="yaw"/> degrees (0 faces +x, 90 faces the camera).</summary>
-        static Car3D Car(Transform parent, string name, Vector3 position, float yaw, Color paint)
+        /// <summary>The cars made in Blender (Art/Models/Cars/&lt;type&gt;.fbx).</summary>
+        public static readonly string[] CarTypes = { "Hatch", "Wagon", "Van", "Pickup", "Fourby" };
+
+        [Serializable]
+        class CarInfo { public float[] paint; public float wheelRadius = 0.32f; }
+
+        /// <summary>
+        /// A car standing with its wheels on <paramref name="position"/>, turned <paramref name="yaw"/>
+        /// degrees (0 faces +x, 90 faces the camera): the Blender-made car of that type, repainted
+        /// (null keeps its own paint), with wheels that roll as it moves; the procedural hatchback
+        /// if the model is missing.
+        /// </summary>
+        static Transform Car(Transform parent, string name, Vector3 position, float yaw, Color? paint, string type = "Hatch")
         {
             var go = new GameObject(name);
             go.transform.SetParent(parent, false);
             go.transform.position = position;
             go.transform.rotation = Quaternion.Euler(0f, yaw, 0f);
+
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(ModelsDir + "/Cars/" + type + ".fbx");
+            Material material;
+            if (prefab != null && Art.cars.TryGetValue(type, out material))
+            {
+                var model = (GameObject)Object.Instantiate(prefab);
+                model.name = type + "Model";
+                model.transform.SetParent(go.transform, false);
+                Transform body = FindDeep(model.transform, "Body"), front = FindDeep(model.transform, "Front");
+                if (body != null && front != null)
+                {
+                    // Face local +x: the Front marker sits at the front bumper.
+                    Vector3 dir = front.position - body.position;
+                    dir.y = 0f;
+                    if (dir.sqrMagnitude > 1e-6f)
+                        model.transform.rotation = Quaternion.AngleAxis(Vector3.SignedAngle(dir, go.transform.right, Vector3.up), Vector3.up) * model.transform.rotation;
+                    var info = new CarInfo();
+                    string json = ModelsDir + "/Cars/" + type + ".json";
+                    if (File.Exists(json)) JsonUtility.FromJsonOverwrite(File.ReadAllText(json), info);
+                    var wheels = new List<Transform>();
+                    foreach (var r in model.GetComponentsInChildren<MeshRenderer>())
+                    {
+                        r.sharedMaterial = material;
+                        r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                        r.receiveShadows = false;
+                        if (r.name.StartsWith("Wheel")) wheels.Add(r.transform);
+                    }
+                    if (paint.HasValue && info.paint != null && info.paint.Length >= 3)
+                    {
+                        var repaint = body.gameObject.AddComponent<CarPaint>();
+                        repaint.basePaint = new Color(info.paint[0], info.paint[1], info.paint[2]);
+                        repaint.paint = paint.Value;
+                    }
+                    var spin = go.AddComponent<WheelSpin>();
+                    spin.wheels = wheels.ToArray();
+                    spin.radius = info.wheelRadius;
+                    return go.transform;
+                }
+                Object.DestroyImmediate(model);
+            }
+
             var car = go.AddComponent<Car3D>();
-            car.paint = paint;
+            car.paint = paint ?? new Color(0.8f, 0.47f, 0.35f);
             go.GetComponent<MeshRenderer>().sharedMaterial = Art.solid;
             car.Rebuild();
-            return car;
+            return go.transform;
+        }
+
+        /// <summary>A paint colour softened toward a warm grey, for the cozy, slightly faded street palette.</summary>
+        static Color Faded(Color c)
+        {
+            return Color.Lerp(c, new Color(0.86f, 0.8f, 0.72f), 0.3f);
         }
 
         /// <summary>A rounded 3D form of ellipsoids at a local position, in the outlined character style.</summary>
@@ -827,7 +886,7 @@ namespace DribbleToSchool.EditorTools
                 // A small city car about 3.4 units (3 m) long: bonnet at 0.95, roof at 1.55, both jumpable.
                 Block("CarBody", new Vector2(x, groundTop + 0.575f), new Vector2(3.3f, 0.75f), color, GroundMat, false);
                 Block("CarCabin", new Vector2(x - 0.17f, groundTop + 1.25f), new Vector2(1.9f, 0.6f), color, GroundMat, false);
-                Car(root, "Car", new Vector3(x, groundTop, 0.15f), 0f, color);
+                Car(root, "Car", new Vector3(x, groundTop, 0.15f), 0f, Faded(color), "Hatch");
             }
 
             /// <summary>Someone walking between minX and maxX. Solid to the ball and the kid.</summary>
@@ -908,10 +967,12 @@ namespace DribbleToSchool.EditorTools
                 crossing.greenFigure.transform.position = new Vector3(poleX, pave + 2.22f, poleZ - 0.27f);
 
                 // Side-street traffic driving toward the camera; the Crossing script moves it in depth.
-                Color[] paint = { new Color(0.9f, 0.35f, 0.3f), new Color(0.35f, 0.55f, 0.85f) };
-                crossing.cars = new Transform[paint.Length];
-                for (int i = 0; i < paint.Length; i++)
-                    crossing.cars[i] = Car(go.transform, "Car" + i, new Vector3(center, groundTop, 30f), 90f, paint[i]).transform;   // placed by Crossing
+                // A mix of everyday traffic: vans, estates, small trucks, an off-roader, in their own paint.
+                string[] traffic = { "Van", "Fourby", "Pickup", "Wagon", "Hatch" };
+                int first = Mathf.Abs(Mathf.RoundToInt(fromX)) % traffic.Length;
+                crossing.cars = new Transform[2];
+                for (int i = 0; i < crossing.cars.Length; i++)
+                    crossing.cars[i] = Car(go.transform, "Car" + i, new Vector3(center, groundTop, 30f), 90f, null, traffic[(first + i * 2) % traffic.Length]);   // placed by Crossing
                 crossing.groundY = groundTop;
                 crossing.stopLineZ = StreetBuilder.PathHalf + 3.05f;   // front bumper at the stop line
             }
