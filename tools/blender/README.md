@@ -63,3 +63,41 @@ Each car is one "Body" mesh plus four wheel meshes ("Wheel.FL/FR/RL/RR", origin 
 local X) and a "Front" marker at the front bumper. Vertex colours times the car's own atlas (panel
 lines, grime, lights); body paint is part 1 in UV2 so `CarPaint` can repaint it. The `.json` holds
 the base paint (sRGB, as in the FBX) and the wheel radius for `WheelSpin`.
+
+## Asset kits
+
+Everything in the street is built from kits of original models in the look set out in
+`docs/ART_DIRECTION.md`. Each kit is one script that writes one FBX per model, one shared atlas
+(`<Kit>Atlas.png`) and a manifest (`<Kit>.json`: each model's size, bounds, triangle count and the
+sRGB base colour of its recolourable parts). `kit_lib.py` holds the shared helpers and the export
+contract: the front faces -Y, the origin is on the ground, `Attach.*` empties mark attachment points
+(`Attach.Front` 1 m in front of the model tells the game which way it faces), one material of
+vertex colours times the atlas, and recolourable parts in UV2.x.
+
+| Kit | Script | What's in it |
+|---|---|---|
+| Plants | `kit_plants.py` | conifers, broadleaf trees, birch, cherry, palms, bushes, hedge blocks, grasses, reeds, flowers |
+| Buildings | `kit_buildings.py` | gabled and long houses, bungalow, two shops, flats, warehouse, school, garage |
+| Street | `kit_street.py` | utility pole, lamp, pedestrian signal, walls, fences, hoarding, planters, benches, vending machines, signs, crates, pots, stalls, awnings |
+| Terrain | `kit_terrain.py` | boulders, rock clusters, cliffs, a headland, mountain ranges, rolling hills, a forest strip, dunes, sand and gravel piles |
+| Leisure | `kit_leisure.py` | lifeguard tower, parasols, beach things, trampoline, swing tree and frame, fountain, raft, sign board, checkpoint flag, targets, playground |
+| Works | `kit_works.py` | sliding gate, call bollard, intercom, tower crane, crane hook and load, hoist, site backdrop, underpass, school arch and wall |
+| Animals | `kit_animals.py` | dog, seagulls, pigeon, cat, duck, crab, butterfly, squirrel (moving parts as child objects), coin, sticker, star |
+
+```
+blenv/bin/python kit_plants.py -- $PWD/out/plants                       # writes the FBXs, atlas, manifest and Plants.blend
+blenv/bin/python review_kit.py -- $PWD/out/plants/Plants.blend $PWD/plants_sheet.png [--models A,B] [--cols 4]
+cp out/plants/*.fbx out/plants/PlantsAtlas.png out/plants/Plants.json ../../Assets/_Game/Art/Models/Plants/
+```
+
+The game places kit models with `LevelBuildKit.KitModel` (StreetBuilder for the scenery,
+TrackBuilder for gameplay pieces), recolours their parts with `ModelTint`, and falls back to the
+old procedural look for any model a kit doesn't have.
+
+`preview_street.py` lays the kits out the way StreetBuilder does and renders a stretch of street
+through the game camera in each chapter's light and haze (Blender's shading, not the toon ramp, so
+judge layout, scale, silhouettes and colour):
+
+```
+blenv/bin/python preview_street.py -- $PWD/out $PWD/street_ch1.png --chapter 1 [--seed 7] [--wide]
+```
