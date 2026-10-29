@@ -3,12 +3,16 @@ using UnityEditor;
 namespace DribbleToSchool.EditorTools
 {
     /// <summary>
-    /// Import settings for the character models made in Blender (tools/blender): metres, no
-    /// materials or animation clips (the game poses the bones in code and assigns its toon
-    /// material), and readable meshes so outfits can recolour them.
+    /// Import settings for the models made in Blender (tools/blender: characters and cars):
+    /// metres, no materials or animation clips (the game poses the bones in code and assigns
+    /// its toon material), readable meshes so outfits and paint can recolour them, and the
+    /// full hierarchy kept (a car's single root "Body" must not be folded into the asset root).
     /// </summary>
     public class ModelImportSettings : AssetPostprocessor
     {
+        // Bump to re-import the models when these settings change.
+        public override uint GetVersion() { return 2; }
+
         void OnPreprocessModel()
         {
             if (!assetPath.Replace('\\', '/').Contains("/_Game/Art/Models/")) return;
@@ -24,6 +28,7 @@ namespace DribbleToSchool.EditorTools
             importer.importCameras = false;
             importer.importLights = false;
             importer.importNormals = ModelImporterNormals.Import;
+            importer.preserveHierarchy = true;
         }
     }
 }

@@ -272,12 +272,21 @@ namespace DribbleToSchool.EditorTools
             return false;
         }
 
-        /// <summary>Would a building of this facade, centred on x, stand on a side street (they run
-        /// far back from the footpath) or in the school grounds?</summary>
+        /// <summary>Would a back-row building of this facade, centred on x, stand on a side street
+        /// (they run far back from the footpath) or on the school building past the gate?</summary>
         static bool OnSideStreet(LevelBuildKit.TrackBuilder track, float x, ProceduralArt.FacadeKind facade)
         {
-            float half = ProceduralArt.FacadeSize(facade).x * 0.5f + 0.3f, skip;
-            return Blocked(track, x - half, x + half, out skip);
+            float half = ProceduralArt.FacadeSize(facade).x * 0.5f + 0.3f;
+            return OverlapsBackRow(track, x - half, x + half);
+        }
+
+        /// <summary>[a, b] overlaps a side street, or the school building (it stands 10 to 22 units past the gate).</summary>
+        static bool OverlapsBackRow(LevelBuildKit.TrackBuilder track, float a, float b)
+        {
+            foreach (var area in track.OpenAreas)
+                if (b > area.x - 0.6f && a < area.y + 0.6f) return true;
+            float goal = track.GoalX;
+            return goal > track.MinX && b > goal + 8f && a < goal + 24f;
         }
 
         static float Rand(System.Random rng, float min, float max) { return min + (float)rng.NextDouble() * (max - min); }
@@ -774,8 +783,7 @@ namespace DribbleToSchool.EditorTools
             }
             for (float x = x0; x < x1; x += Rand(rng, 40f, 60f))
             {
-                float skip;
-                if (Blocked(track, x - 4f, x + 4f, out skip)) continue;
+                if (OverlapsBackRow(track, x - 4f, x + 4f)) continue;
                 CutOut(root, "Crane", Art.mid[4, 2], x, GroundAt(track, x), 45f, 2f, -75);
             }
             DistantHills(track, root, x0, x1);

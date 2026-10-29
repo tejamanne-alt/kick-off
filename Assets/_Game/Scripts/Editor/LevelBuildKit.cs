@@ -513,24 +513,39 @@ namespace DribbleToSchool.EditorTools
                 var model = (GameObject)Object.Instantiate(prefab);
                 model.name = type + "Model";
                 model.transform.SetParent(go.transform, false);
-                Transform body = FindDeep(model.transform, "Body"), front = FindDeep(model.transform, "Front");
-                if (body != null && front != null)
+                // The body is the mesh that isn't a wheel (Unity may have made it the asset root).
+                Transform body = null;
+                var wheels = new List<Transform>();
+                Vector3 frontWheels = Vector3.zero, rearWheels = Vector3.zero;
+                int fronts = 0, rears = 0;
+                foreach (var r in model.GetComponentsInChildren<MeshRenderer>())
                 {
-                    // Face local +x: the Front marker sits at the front bumper.
-                    Vector3 dir = front.position - body.position;
-                    dir.y = 0f;
-                    if (dir.sqrMagnitude > 1e-6f)
-                        model.transform.rotation = Quaternion.AngleAxis(Vector3.SignedAngle(dir, go.transform.right, Vector3.up), Vector3.up) * model.transform.rotation;
+                    string n = r.name.Replace('_', '.');
+                    if (n.StartsWith("Wheel"))
+                    {
+                        wheels.Add(r.transform);
+                        if (n.EndsWith(".FL") || n.EndsWith(".FR")) { frontWheels += r.transform.position; fronts++; }
+                        else { rearWheels += r.transform.position; rears++; }
+                    }
+                    else if (body == null || n == "Body") body = r.transform;
+                }
+                Transform front = FindDeep(model.transform, "Front");
+                // Which way the car faces: rear axle to front axle, else the Front marker.
+                Vector3 dir = fronts > 0 && rears > 0 ? frontWheels / fronts - rearWheels / rears
+                    : front != null && body != null ? front.position - body.position : Vector3.zero;
+                dir.y = 0f;
+                if (body != null && dir.sqrMagnitude > 1e-6f)
+                {
+                    // Face local +x.
+                    model.transform.rotation = Quaternion.AngleAxis(Vector3.SignedAngle(dir, go.transform.right, Vector3.up), Vector3.up) * model.transform.rotation;
                     var info = new CarInfo();
                     string json = ModelsDir + "/Cars/" + type + ".json";
                     if (File.Exists(json)) JsonUtility.FromJsonOverwrite(File.ReadAllText(json), info);
-                    var wheels = new List<Transform>();
                     foreach (var r in model.GetComponentsInChildren<MeshRenderer>())
                     {
                         r.sharedMaterial = material;
                         r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
                         r.receiveShadows = false;
-                        if (r.name.StartsWith("Wheel")) wheels.Add(r.transform);
                     }
                     if (paint.HasValue && info.paint != null && info.paint.Length >= 3)
                     {
@@ -543,9 +558,11 @@ namespace DribbleToSchool.EditorTools
                     spin.radius = info.wheelRadius;
                     return go.transform;
                 }
+                Debug.LogWarning("[Dribble To School] " + type + ".fbx has no body or wheels to face by; using the procedural car.");
                 Object.DestroyImmediate(model);
             }
 
+            if (prefab == null) Debug.LogWarning("[Dribble To School] Missing " + ModelsDir + "/Cars/" + type + ".fbx; using the procedural car.");
             var car = go.AddComponent<Car3D>();
             car.paint = paint ?? new Color(0.8f, 0.47f, 0.35f);
             go.GetComponent<MeshRenderer>().sharedMaterial = Art.solid;
