@@ -61,8 +61,8 @@ def tj(girl):
         j = dict(pelvis=(0, 0.006, 1.10), spine=(0, 0.002, 1.27), chest=(0, 0.004, 1.47),
                  neck0=(0, 0.012, 1.70), neck1=(0, 0.01, 1.30 + L), headtop=(0, 0.01, 1.60 + L))
         side = dict(hip=(0.084, 0.0, 1.075), knee=(0.088, -0.006, 0.575), ankle=(0.092, 0.02, 0.085),
-                    toe=(0.096, -0.15, 0.03), shoulder=(0.152, 0.010, 1.638), elbow=(0.208, 0.024, 1.30),
-                    wrist=(0.224, 0.006, 1.03), tip=(0.226, -0.004, 0.87))
+                    toe=(0.096, -0.15, 0.03), shoulder=(0.152, 0.010, 1.638), elbow=(0.211, 0.024, 1.30),
+                    wrist=(0.232, 0.006, 1.03), tip=(0.237, -0.004, 0.87))
     else:
         j = dict(pelvis=(0, 0.006, 1.135), spine=(0, 0.002, 1.32), chest=(0, 0.004, 1.52),
                  neck0=(0, 0.014, 1.765), neck1=(0, 0.01, 1.30 + L), headtop=(0, 0.01, 1.60 + L))
@@ -290,9 +290,12 @@ def relax(V, Q, f, iters=2, lam=0.5):
     return V
 
 
-def sdf_object(name, f, lo, hi, h, tris=None, relax_iters=2, girl=None, symmetric=True):
+def sdf_object(name, f, lo, hi, h, tris=None, relax_iters=2, girl=None, symmetric=True, dense=None):
     """Mesh the field f inside the box lo..hi with cell size h (teen space), decimate to about
-    `tris` triangles, then map to base space (if girl is not None)."""
+    `tris` triangles, then map to base space (if girl is not None). The normals are made
+    outward and set from the field's analytic gradient (clean cel bands, no decimation noise).
+    dense = (mask_fn(V) -> bool array, tris): a region (hems, necklines) kept denser, with its
+    own budget on top of `tris`."""
     V, Q = surface_nets(f, lo, hi, h)
     V = project(f, V, 4, h)
     if relax_iters: V = relax(V, Q, f, relax_iters)
@@ -300,15 +303,71 @@ def sdf_object(name, f, lo, hi, h, tris=None, relax_iters=2, girl=None, symmetri
     me.from_pydata(V.tolist(), [], Q.tolist())
     me.validate()
     o = new_obj(name, me)
-    if tris:
+    if tris and dense is not None:
+        m = np.asarray(dense[0](V), dtype=bool)
+        vg = o.vertex_groups.new(name='dense'); vg.add(np.nonzero(m)[0].tolist(), 1.0, 'REPLACE')
+        vo = o.vertex_groups.new(name='rest'); vo.add(np.nonzero(~m)[0].tolist(), 1.0, 'REPLACE')
+        inside = int(np.sum(m[Q].all(1))) * 2; cur = 2 * len(Q)
+        def dec(ratio, group):
+            dm = o.modifiers.new('dec', 'DECIMATE'); dm.ratio = min(1.0, ratio)
+            dm.vertex_group = group; dm.vertex_group_factor = 1.0
+            if symmetric: dm.use_symmetry = True; dm.symmetry_axis = 'X'
+            apply_mods(o)
+        dec((tris * (1 - inside / cur) + inside) / cur, 'rest')
+        cur = sum(len(p.vertices) - 2 for p in o.data.polygons)
+        gi = o.vertex_groups['dense'].index
+        w = np.zeros(len(o.data.vertices))
+        for v in o.data.vertices:
+            for g in v.groups:
+                if g.group == gi: w[v.index] = g.weight
+        inside = sum(len(p.vertices) - 2 for p in o.data.polygons if min(w[i] for i in p.vertices) >= 0.5)
+        dec((cur - inside + dense[1]) / cur, 'dense')
+        for g in list(o.vertex_groups): o.vertex_groups.remove(g)
+    elif tris:
         cur = 2 * len(Q)
         if cur > tris:
             dm = o.modifiers.new('dec', 'DECIMATE'); dm.ratio = tris / cur
             if symmetric: dm.use_symmetry = True; dm.symmetry_axis = 'X'
     apply_mods(o)
+    make_outward(o)
+    N = field_normals(o, f)
     if girl is not None: to_base(o, girl)
     smooth(o)
+    set_normals(o, N, girl)
     return o
+
+
+def make_outward(o):
+    import bmesh
+    bm = bmesh.new(); bm.from_mesh(o.data)
+    if bm.calc_volume(signed=True) < 0:
+        for fc in bm.faces: fc.normal_flip()
+        bm.to_mesh(o.data); o.data.update()
+    bm.free()
+
+
+def field_normals(o, f):
+    """Unit gradients of f at the mesh's (teen-space) vertices."""
+    me = o.data
+    V = np.empty(len(me.vertices) * 3); me.vertices.foreach_get('co', V); V = V.reshape(-1, 3)
+    g = grad(f, V)
+    return g / np.maximum(np.linalg.norm(g, axis=1), 1e-12)[:, None]
+
+
+def set_normals(o, N, girl=None):
+    """Set per-vertex custom normals N (teen space). If the mesh has been mapped to base space
+    (girl given), the normals are mapped too (z scaled by the inverse of ungrow's stretch), so
+    after teen.py's grow() they are the teen-space normals again."""
+    me = o.data
+    N = np.array(N, dtype=np.float64)
+    if girl is not None:
+        V = np.empty(len(me.vertices) * 3); me.vertices.foreach_get('co', V); V = V.reshape(-1, 3)
+        L = lift(girl)
+        k = np.where(V[:, 2] >= Z0, 1.0, (Z0 + L) / Z0)
+        N[:, 2] *= k
+    N /= np.maximum(np.linalg.norm(N, axis=1), 1e-12)[:, None]
+    me.normals_split_custom_set_from_vertices(N.tolist())
+    me.update()
 
 
 def to_base(o, girl):
@@ -333,28 +392,29 @@ class BodyField:
         self.girl = girl
         j = self.j = tj(girl)
         if girl:
+            # side profile: a gentle S (lumbar hollow at 1.27, chest a touch forward, upper back rounded)
             keys = [(1.035, 0.075, 0.060, 0.012, 2.0), (1.08, 0.132, 0.086, 0.012, 2.0),
-                    (1.13, 0.138, 0.089, 0.012, 2.0), (1.20, 0.123, 0.082, 0.007, 2.0),
-                    (1.27, 0.104, 0.072, 0.002, 2.1), (1.35, 0.108, 0.076, -0.003, 2.2),
-                    (1.43, 0.112, 0.083, -0.008, 2.2), (1.51, 0.113, 0.082, -0.005, 2.2),
-                    (1.58, 0.118, 0.077, 0.002, 2.2), (1.615, 0.134, 0.071, 0.006, 2.3),
+                    (1.13, 0.138, 0.089, 0.012, 2.0), (1.20, 0.123, 0.081, 0.006, 2.0),
+                    (1.27, 0.104, 0.069, -0.001, 2.1), (1.35, 0.108, 0.075, -0.004, 2.2),
+                    (1.43, 0.112, 0.086, -0.011, 2.2), (1.51, 0.113, 0.0865, -0.0065, 2.2),
+                    (1.58, 0.118, 0.0795, 0.0045, 2.2), (1.615, 0.134, 0.0725, 0.0075, 2.3),
                     (1.645, 0.140, 0.063, 0.009, 2.4), (1.672, 0.112, 0.055, 0.012, 2.1),
                     (1.695, 0.076, 0.049, 0.014, 2.0), (1.715, 0.052, 0.046, 0.015, 2.0)]
             self.torso_core = loft(keys, 1.03, 1.72, 0.02)
             self.r = dict(neck=(0.046, 0.041), uarm=(0.038, 0.031), farm=(0.033, 0.031, 0.022),
-                          thigh=(0.071, 0.060, 0.046), shin=(0.045, 0.029), calf=(0.040, 0.038, 0.10),
+                          thigh=(0.071, 0.060, 0.046), shin=(0.045, 0.026), calf=(0.046, 0.044, 0.11),
                           delt=(0.042, 0.044, 0.055))
             self.hand_scale = 1.08
         else:
             keys = [(1.07, 0.075, 0.062, 0.012, 2.0), (1.12, 0.127, 0.089, 0.012, 2.0),
-                    (1.18, 0.133, 0.090, 0.010, 2.0), (1.26, 0.129, 0.085, 0.004, 2.1),
-                    (1.34, 0.125, 0.082, 0.000, 2.2), (1.43, 0.128, 0.087, -0.004, 2.2),
-                    (1.52, 0.131, 0.092, -0.007, 2.2), (1.60, 0.138, 0.091, -0.003, 2.3),
-                    (1.65, 0.152, 0.083, 0.004, 2.4), (1.70, 0.13, 0.069, 0.010, 2.2),
+                    (1.18, 0.133, 0.090, 0.010, 2.0), (1.26, 0.129, 0.081, 0.000, 2.1),
+                    (1.34, 0.125, 0.0795, -0.0025, 2.2), (1.43, 0.128, 0.090, -0.007, 2.2),
+                    (1.52, 0.131, 0.0975, -0.0115, 2.2), (1.60, 0.138, 0.0955, -0.0045, 2.3),
+                    (1.65, 0.152, 0.084, 0.005, 2.4), (1.70, 0.13, 0.069, 0.010, 2.2),
                     (1.735, 0.088, 0.058, 0.014, 2.0), (1.765, 0.064, 0.053, 0.016, 2.0), (1.78, 0.06, 0.052, 0.016, 2.0)]
             self.torso_core = loft(keys, 1.065, 1.78, 0.03)
             self.r = dict(neck=(0.053, 0.047), uarm=(0.049, 0.038), farm=(0.04, 0.037, 0.026),
-                          thigh=(0.077, 0.067, 0.051), shin=(0.051, 0.032), calf=(0.047, 0.046, 0.115),
+                          thigh=(0.077, 0.067, 0.051), shin=(0.051, 0.029), calf=(0.053, 0.050, 0.12),
                           delt=(0.043, 0.045, 0.054))
             self.hand_scale = 1.16
         self.keys = keys
@@ -363,7 +423,18 @@ class BodyField:
         hz = j['hipL'][2]
         glutes = [ellipsoid((s * 0.052, 0.040, hz + 0.005), (0.068, 0.058, 0.075)) for s in (1, -1)]
         tc = self.torso_core
-        self.torso = lambda p: smin(smin(tc(p), glutes[0](p), 0.03), glutes[1](p), 0.03)
+        if girl:
+            self.torso = lambda p: smin(smin(tc(p), glutes[0](p), 0.03), glutes[1](p), 0.03)
+        else:
+            # the trapezius: one sloping line from the neck out to the shoulder (no dip before
+            # the shoulder ball)
+            n0 = j['neck0']
+            traps = [round_cone((s * 0.045, n0[1] + 0.006, n0[2] - 0.012), (s * 0.15, n0[1], n0[2] - 0.045), 0.03, 0.03)
+                     for s in (1, -1)]
+            def torso(p):
+                d = smin(smin(tc(p), glutes[0](p), 0.03), glutes[1](p), 0.03)
+                return smin(d, np.minimum(traps[0](p), traps[1](p)), 0.035)
+            self.torso = torso
         n0 = j['neck0']; n1 = j['neck1']
         self.neck = round_cone(n0 + (0, 0.003, -0.04), n1 + (0, 0.012, 0.01), r['neck'][0], r['neck'][1])
         self.hand = {}; self.foot = {}; self.uarm = {}; self.farm = {}
@@ -382,8 +453,10 @@ class BodyField:
             midt = hp + (kn - hp) * 0.5 + (0, -0.004, 0)
             th = chain([hp, midt, kn], r['thigh'], 0.0)
             sn = round_cone(kn, an, r['shin'][0], r['shin'][1])
-            calf = ellipsoid(kn + (an - kn) * 0.33 + (s * 0.001, 0.018, 0), r['calf'])
-            kcap = ellipsoid(kn + (0, -0.028, 0.012), (0.030, 0.02, 0.034))
+            # the calf sits behind the shin bone, a little to the inside; the knee keeps a
+            # rounded cap so a bent knee does not pinch to a point
+            calf = ellipsoid(kn + (an - kn) * 0.33 + (-s * 0.004, 0.024, 0), r['calf'])
+            kcap = ellipsoid(kn + (0, -0.027, 0.012), (0.031, 0.021, 0.036) if girl else (0.035, 0.024, 0.041))
             self.thigh[n] = th
             self.shin[n] = lambda p, sn=sn, calf=calf, kcap=kcap: smin(smin(sn(p), calf(p), 0.035), kcap(p), 0.02)
             fs = 1.0 if girl else 1.08
@@ -421,6 +494,7 @@ class BodyField:
 
 _FIELDS = {}
 BODY_TRIS = {True: (5850, 560, 780), False: (5850, 560, 200)}
+NECK_TRIS = {True: 520, False: 520}
 
 
 def field(girl):
@@ -450,6 +524,11 @@ def build_body(girl):
             if idx: vg.add(idx, float(val), 'REPLACE')
     hidden = np.clip((depth - 0.006) / 0.004, 0, 1)
     group('hidden', hidden); group('semi', semi * (hidden < 0.5) * 1.0)
+    # the neck shows big in the face close-ups: it gets its own, denser budget
+    jj = tj(girl); nz0, nz1 = jj['neck0'][2] - 0.035, jj['neck1'][2] + 0.03
+    rr = np.hypot(V[:, 0], V[:, 1] - jj['neck0'][1])
+    neck = ((V[:, 2] > nz0) & (V[:, 2] < nz1) & (rr < 0.085) & (hidden < 0.5)) * 1.0
+    group('neck', neck); group('notneck', 1.0 - neck)
     # Triangle budget: a uniform pass, then the hidden skin and the covered-at-rest skin
     # (thighs in the skirt, legs in the socks) are thinned out to their own small budgets.
     stage1, hid_budget, semi_budget = BODY_TRIS[girl]
@@ -468,10 +547,15 @@ def build_body(girl):
             t = len(p.vertices) - 2; tot += t
             if min(w[i] for i in p.vertices) >= 0.5: inside += t
         return tot, inside
-    dec(stage1 / (2 * len(Q)))
+    tot, inside = count('neck')
+    dec((stage1 * (1 - inside / tot) + inside) / tot, 'notneck')     # everything but the neck
+    tot, inside = count('neck')
+    dec((tot - inside + NECK_TRIS[girl]) / tot, 'neck')              # then the neck, to its budget
     tot, inside = count('hidden'); dec((tot - inside + hid_budget) / tot, 'hidden')
     tot, inside = count('semi'); dec((tot - inside + semi_budget) / tot, 'semi')
-    body.vertex_groups.remove(body.vertex_groups['semi'])
-    body.vertex_groups.remove(body.vertex_groups['hidden'])
+    for g in ('semi', 'hidden', 'neck', 'notneck'): body.vertex_groups.remove(body.vertex_groups[g])
+    make_outward(body)
+    N = field_normals(body, f)
     to_base(body, girl); smooth(body)
+    set_normals(body, N, girl)
     return body

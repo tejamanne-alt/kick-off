@@ -20,7 +20,7 @@ CRANIUM_CENTER = (0, -0.005, 1.425)
 CRANIUM_RADII = (0.15, 0.153, 0.162)
 
 # Ear centres (base space, +X ear; the other is mirrored) for anyone fitting hair round them.
-EAR_CENTER = (0.146, 0.014, 1.418)
+EAR_CENTER = (0.1505, 0.014, 1.418)
 
 
 def face_uv(co):
@@ -71,33 +71,65 @@ NECK = [0.02, 0.043, 0.042, 1.35]
 
 
 def measure_neck():
-    """Read the built body's neck (teen.py builds the body before the head)."""
+    """Read the built body's neck (teen.py builds the body before the head): the straight part
+    of the neck between z 1.245 and 1.325, and its top."""
     o = bpy.data.objects.get('Body')
     if o is None or o.type != 'MESH': return
     mw = o.matrix_world
     ring = []; top = 0.0
     for v in o.data.vertices:
         p = mw @ v.co
-        if abs(p.x) < 0.06 and -0.07 < p.y < 0.1 and p.z > 1.2: top = max(top, p.z)
-        if abs(p.z - 1.272) < 0.01 and abs(p.x) < 0.075 and -0.06 < p.y < 0.1: ring.append(p)
+        if abs(p.x) < 0.07 and -0.07 < p.y < 0.1 and p.z > 1.2: top = max(top, p.z)
+        if 1.245 < p.z < 1.325 and abs(p.x) < 0.07 and -0.06 < p.y < 0.1: ring.append(p)
     if len(ring) < 6 or top == 0: return
     xs = [abs(p.x) for p in ring]; ys = [p.y for p in ring]
     NECK[:] = [0.5 * (max(ys) + min(ys)), max(xs), 0.5 * (max(ys) - min(ys)), top]
 
 
 def _shape(girl):
-    """Per-character shape parameters."""
-    if girl:   # soft oval, gently rounded chin
-        return dict(taper=(0.31, 1.43, 1.27, 1.6), taper_front=0.055, funnel=0.3,
-                    fwd=(0.028, 1.38, 1.27),
-                    floor=(1.276, 0.45, 5.0), fk=0.022,
-                    nose=((0, -0.153, 1.392), (0.0105, 0.012, 0.015)), nk=0.012)
-    # boy: a little longer, a softly defined jaw and chin
-    return dict(taper=(0.26, 1.43, 1.26, 1.8), taper_front=0.06, funnel=0.28,
-                fwd=(0.031, 1.38, 1.26), down=0.008,
-                floor=(1.258, 0.42, 2.6), fk=0.012,
-                chin_flat=0.02,
-                nose=((0, -0.154, 1.39), (0.011, 0.0125, 0.016)), nk=0.012)
+    """Per-character shape parameters. Both faces are an oblong-oval: fairly straight, nearly
+    parallel sides from the cheekbones down to about the mouth, then a soft round into the chin.
+    width: the front outline's half-width by height (base z)."""
+    if girl:   # the softer one: gentle cheeks, a rounded chin
+        return dict(width=((1.46, 0.1463), (1.44, 0.1475), (1.42, 0.1425), (1.40, 0.1335), (1.38, 0.1285),
+                           (1.36, 0.124), (1.34, 0.118), (1.32, 0.108), (1.30, 0.092), (1.28, 0.068), (1.26, 0.036)),
+                    taper_front=0.04,
+                    nape=(0.40, 1.41, 1.335), funnel=0.5,
+                    fwd=(0.012, 1.38, 1.27), down=0.024,
+                    floor=(1.265, 0.85, 2.0, -0.05), back=(20.0, 0.07), fk=0.025,
+                    nose=((0, -0.160, 1.389), (0.010, 0.013, 0.013)), nk=0.008)
+    # boy: a little longer and straighter-sided, a softly squared chin
+    return dict(width=((1.46, 0.1463), (1.44, 0.1475), (1.42, 0.1435), (1.40, 0.1355), (1.38, 0.1315),
+                       (1.36, 0.1255), (1.34, 0.119), (1.32, 0.1105), (1.30, 0.097), (1.28, 0.0755), (1.26, 0.048), (1.24, 0.02)),
+                taper_front=0.03,
+                nape=(0.40, 1.41, 1.335), funnel=0.48,
+                fwd=(0.014, 1.38, 1.25), down=0.038,
+                floor=(1.252, 0.85, 2.4, -0.05), back=(20.0, 0.078), fk=0.022,
+                chin_flat=0.017,
+                nose=((0, -0.161, 1.386), (0.011, 0.014, 0.015)), nk=0.008)
+
+
+_WT = {}
+
+
+def _width_taper(keys, down):
+    """z -> x scale that takes the cranium ellipsoid to the half-widths `keys` [(z, w), ...]
+    below z = 1.46 (a piecewise-linear outline through the keys, smoothed)."""
+    key = (tuple(keys), down)
+    if key in _WT: return _WT[key]
+    ks = sorted(keys)
+    zf = np.linspace(1.18, 1.56, 761)
+    wl = np.interp(zf, [k[0] for k in ks], [k[1] for k in ks])
+    g = np.exp(-0.5 * (np.arange(-60, 61) * 0.0005 / 0.009) ** 2); g /= g.sum()
+    wpad = np.concatenate([np.full(60, wl[0]), wl, np.full(60, wl[-1])])
+    ws = np.convolve(wpad, g, mode='valid')
+    cz, rz, rx = CRANIUM_CENTER[2], CRANIUM_RADII[2], CRANIUM_RADII[0]
+    zc = zf + 0.3 * down * _ss(1.41, 1.25, zf)
+    we = rx * np.sqrt(np.clip(1 - ((zc - cz) / rz) ** 2, 0.0, 1.0))
+    tap = np.clip(ws / np.maximum(we, 1e-4), 0.25, 1.0)
+    tap = np.where(zf >= 1.46, 1.0, tap + (1.0 - tap) * _ss(1.44, 1.47, zf))
+    _WT[key] = f = (lambda z: np.interp(z, zf, tap))
+    return f
 
 
 def head_sdf(p, girl):
@@ -105,34 +137,63 @@ def head_sdf(p, girl):
     s = _shape(girl)
     x, y, z = p[:, 0], p[:, 1], p[:, 2]
     cc, cr = np.asarray(CRANIUM_CENTER), np.asarray(CRANIUM_RADII)
-    # Narrow the lower head toward the jaw: the same at every depth, so the front outline
-    # stays one smooth curve; taper_front narrows the chin a little more than the jaw.
-    ta, t0, t1, te = s['taper']
-    u = np.clip((t0 - z) / (t0 - t1), 0.0, 1.0)
-    k = ta * u ** te * (1 + s['taper_front'] * _ss(0.0, -0.1, y) / max(ta, 1e-6))
-    k = k + s.get('funnel', 0.0) * _ss(1.40, 1.29, z) * _ss(-0.03, 0.05, y)   # tuck the nape in
+    # Narrow the lower head toward the jaw from the temples down to the given front outline
+    # (half-widths by height, one smooth curve); the same at every depth, so the front outline
+    # stays one smooth curve; taper_front narrows the chin a little more.
+    tap0 = _width_taper(s['width'], s.get('down', 0.0))(z)
+    k = (1.0 - tap0) * (1 + s['taper_front'] * _ss(0.0, -0.1, y))
+    # ... except round the ear root, where the side of the skull stays full so the ears sit on it.
+    ez, ey = EAR_CENTER[2], EAR_CENTER[1]
+    g_ear = 0.9 * np.exp(-((y - ey) / 0.03) ** 2 - ((z - ez - 0.004) / 0.036) ** 4)
+    k = k * (1.0 - g_ear)
+    # Behind the ears the sides narrow toward the neck (never inside the neck's top) ...
+    ny, nx, nyr, ntop = NECK
+    cc_, cr_ = CRANIUM_CENTER, CRANIUM_RADII
+    zq = np.clip((z - cc_[2]) / cr_[2], -0.999, 0.999)
+    kf = s.get('funnel', 0.0) * _ss(1.43, 1.30, z) * _ss(-0.05, 0.03, y) * (1.0 - g_ear)
+    we = cr_[0] * np.sqrt(np.maximum(1 - zq ** 2 - ((ny - cc_[1]) / cr_[1]) ** 2, 0.02))
+    kmax = 1.0 - (nx + 0.006) / we
+    kf = np.maximum(_smin(kf, kmax - k, 0.03), 0.0)
+    k = k + kf
     tap = 1.0 - k
-    # Bring the mouth and chin forward (and so the chin down).
+    # ... and the back of the skull tucks in toward the nape (the back is scaled toward the
+    # centre below the widest point of the occiput), down to just behind the neck.
+    na, n0, n1 = s['nape']
+    sy = 1.0 - na * _ss(n0, n1, z)
+    yb = cc_[1]
+    yback = cr_[1] * np.sqrt(np.maximum(1 - zq ** 2, 0.02))
+    sy = np.minimum(_smax(sy, (ny + nyr + 0.007 - yb) / yback, 0.05), 1.0)
+    yw = y + _ss(-0.03, 0.05, y) * (y - yb) * (1.0 / sy - 1.0)
+    # Bring the mouth and chin forward a little (and so the chin down).
     fa, f0, f1 = s['fwd']
-    yw = y + fa * _ss(f0, f1, z) * _ss(0.02, -0.1, y)
-    zw = z + s.get('down', 0.0) * _ss(1.40, 1.26, z) * _ss(0.0, -0.1, y)   # a longer chin
+    yw = yw + fa * _ss(f0, f1, z) * _ss(0.02, -0.1, y)
+    zw = z + s.get('down', 0.0) * _ss(1.41, 1.25, z) * _ss(0.0, -0.1, y)   # a longer lower face
     pw = np.stack([x / tap, yw, zw], axis=1)
-    d = _ell(pw, cc, cr) * tap
+    d = _ell(pw, cc, cr) * tap * np.minimum(1.0, sy + 0.25)
     # The jaw line: below a surface rising from the chin toward the neck and the ears is cut away.
-    z0, slope, curve = s['floor']
-    yy = _smin(y, np.full_like(y, -0.01), 0.03)
+    z0, slope, curve, yc = s['floor']
+    yy = _smin(y, np.full_like(y, yc), 0.025)    # rises steeply behind the chin, then levels under the neck
     cw = s.get('chin_flat', 0.0)     # a flatter, squarer chin for him
     ax = np.abs(x) - cw
     xe = 0.5 * (ax + np.sqrt(ax * ax + 0.012 ** 2)) - 0.5 * (-cw + math.sqrt(cw * cw + 0.012 ** 2))
-    floor = z0 + slope * (yy + 0.09) + curve * xe * xe - 0.02 * _ss(0.0, 0.08, y)
-    ny, nx, nyr, ntop = NECK
-    plug = min(0.035, max(0.0, 1.318 - ntop))     # let the underside down over a short neck
+    # Behind the jaw angle the cut climbs faster toward the ears (but stays below the ear lobes),
+    # so under the ears the head narrows into the neck.
+    bw = _ss(-0.035, 0.02, y)
+    bc, bcap = s.get('back', (curve, 1.0))
+    lift = curve * xe * xe
+    xb = np.abs(x) - (nx + 0.002)               # beside the neck, not over it
+    xb = 0.5 * (xb + np.sqrt(xb * xb + 0.008 ** 2))
+    lift = lift + bw * (_smin(bc * xb * xb, np.full_like(x, bcap), 0.02) - lift)
+    floor = z0 + slope * (yy + 0.09) + lift - 0.02 * _ss(0.0, 0.08, y)
+    # let the underside down a little over the neck (more over a short neck), so the neck
+    # always enters it cleanly
+    plug = min(0.035, max(0.007, 1.318 - ntop))
     if plug > 0:
         floor = floor - plug * np.exp(-(x / (nx + 0.004)) ** 4 - ((y - ny) / (nyr + 0.004)) ** 4)
     d = _smax(d, floor - z, s['fk'])
     # Keep the top and back inside the cranium (a no-op where the shape is already inside).
     d = np.where(z > 1.45, np.maximum(d, _ell(p, cc, cr)), d)
-    # A small soft button nose.
+    # A small soft button nose: the most forward point of the profile.
     nc, nr = s['nose']
     d = _smin(d, _ell(p, nc, nr), s['nk'])
     return d
@@ -196,8 +257,8 @@ def _head_mesh(girl, nseg=46, nring=37):
     up = np.vstack([idx[1:], np.full((1, nseg), top)])
     dn = np.vstack([np.full((1, nseg), bot), idx[:-1]])
     lf = np.roll(idx, 1, axis=1); rt = np.roll(idx, -1, axis=1)
-    w = (0.5 * _ss(1.37, 1.31, pts[:nr * nseg, 2]))[:, None]
-    for _ in range(40):
+    w = (0.6 * _ss(1.40, 1.335, pts[:nr * nseg, 2]))[:, None]
+    for _ in range(70):
         avg = (pts[up.ravel()] + pts[dn.ravel()] + pts[lf.ravel()] + pts[rt.ravel()]) * 0.25
         q = pts.copy()
         q[:nr * nseg] += w * (avg - pts[:nr * nseg])
@@ -243,7 +304,7 @@ def ear_uv(co):
 def _ear(sx):
     """A tidy ear: a flattened egg with a rolled rim and a shallow bowl, tilted back and
     splayed a little from the head. Its fold lines are painted (face_teen)."""
-    bpy.ops.mesh.primitive_uv_sphere_add(segments=22, ring_count=8, radius=1, location=(0, 0, 0))
+    bpy.ops.mesh.primitive_uv_sphere_add(segments=20, ring_count=8, radius=1, location=(0, 0, 0))
     e = C.object; e.name = 'Ear'
     # local axes: X out of the head, Y front-back, Z up. Pole axis along X.
     e.rotation_euler = (0, math.radians(90), 0); bake(e)
@@ -256,7 +317,7 @@ def _ear(sx):
             bowl = max(0.0, 1 - (r / 0.78) ** 2)
             x = x * (1 - 0.9 * bowl) + 0.1 * bowl
         v.co = (x * 0.0075, y * 0.0195, z * 0.033)
-    rot = (math.radians(-12), 0, math.radians(sx * -14))
+    rot = (math.radians(-12), math.radians(sx * 9), math.radians(sx * -21))
     loc = (sx * EAR_CENTER[0], EAR_CENTER[1], EAR_CENTER[2])
     e.rotation_euler = rot; e.location = loc
     if sx < 0:
