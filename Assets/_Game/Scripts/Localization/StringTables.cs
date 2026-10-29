@@ -80,7 +80,8 @@ namespace DribbleToSchool.Localization
                 { "lose.ball", "Lost the ball!" }, { "lose.gap", "Into the hole!" }, { "lose.splash", "Splash!" },
                 { "lose.tide", "Splash! Wait for the tide" }, { "lose.fell", "Lost the ball!" },
                 { "lose.behind", "Left the ball behind!" }, { "lose.honk", "Honk! Wait for the green man" },
-                { "lose.checkpoint", "Back to the checkpoint" }, { "lose.offStart", "The ball rolled back home!" },
+                { "lose.checkpoint", "Back to the checkpoint" },
+                { "lose.unreachable", "The ball can't be reached - back to the checkpoint" }, { "lose.offStart", "The ball rolled back home!" },
 
                 // Pause
                 { "pause.title", "Paused" }, { "pause.resume", "Resume" }, { "pause.checkpoint", "Back to checkpoint" },
@@ -109,15 +110,15 @@ namespace DribbleToSchool.Localization
                 { "tut.puddle", "Puddles slow the ball and your feet." },
                 { "tut.pedestrian", "The ball bounces off people. Chip it over, or wait for a gap." },
                 { "tut.crossing", "Red man means cars are coming! Wait for the green man." },
-                { "tut.springboard", "Springboards bounce you and the ball up high." },
+                { "tut.springboard", "Trampolines bounce you and the ball up high." },
                 { "tut.tide", "The tide comes in and out. Cross while the water is low." },
                 { "tut.seagull", "Seagulls swoop at the ball. Keep it low and close." },
                 { "tut.tunnel", "It's dim in the underpass. Keep the ball close, under the lamps." },
                 { "tut.pipes", "Pipes roll down the slope. Jump over them!" },
-                { "tut.platform", "Chip the ball onto the moving platform, then jump on." },
+                { "tut.platform", "Chip the ball onto the moving pallet or raft, then hop on after it." },
                 { "tut.dog", "Dogs chase low balls. Chip it over their heads!" },
                 { "tut.fountain", "The fountain jets lift the ball. Dribble into them!" },
-                { "tut.swing", "Chip the ball across, then ride the swing." },
+                { "tut.swing", "Chip the ball across, then ride the rope swing over." },
 
                 // Levels
                 { "level.L01", "Out the Door" }, { "level.L02", "Parked Cars" }, { "level.L03", "Up the Hill" },
@@ -197,7 +198,8 @@ namespace DribbleToSchool.Localization
                 { "lose.ball", "¡Balón perdido!" }, { "lose.gap", "¡Al hoyo!" }, { "lose.splash", "¡Chof!" },
                 { "lose.tide", "¡Chof! Espera a la marea" }, { "lose.fell", "¡Balón perdido!" },
                 { "lose.behind", "¡Te dejaste el balón!" }, { "lose.honk", "¡Piii! Espera al muñeco verde" },
-                { "lose.checkpoint", "Vuelta al control" }, { "lose.offStart", "¡El balón volvió a casa!" },
+                { "lose.checkpoint", "Vuelta al control" },
+                { "lose.unreachable", "No puedes alcanzar el balón: vuelta al control" }, { "lose.offStart", "¡El balón volvió a casa!" },
 
                 { "pause.title", "Pausa" }, { "pause.resume", "Seguir" }, { "pause.checkpoint", "Volver al control" },
                 { "pause.restart", "Reiniciar nivel" }, { "pause.settings", "Ajustes" }, { "pause.quit", "Salir al mapa" },
@@ -228,10 +230,10 @@ namespace DribbleToSchool.Localization
                 { "tut.seagull", "Las gaviotas atacan el balón. Mantenlo bajo y cerca." },
                 { "tut.tunnel", "El paso subterráneo está en penumbra. Mantén el balón cerca, bajo las lámparas." },
                 { "tut.pipes", "Los tubos ruedan por la cuesta. ¡Sáltalos!" },
-                { "tut.platform", "Sube el balón a la plataforma móvil y salta detrás." },
+                { "tut.platform", "Sube el balón al palé o a la balsa que se mueve y súbete detrás." },
                 { "tut.dog", "Los perros persiguen balones bajos. ¡Pásalo por encima!" },
                 { "tut.fountain", "El agua de la fuente levanta el balón. ¡Llévalo dentro!" },
-                { "tut.swing", "Pasa el balón al otro lado y súbete al columpio." },
+                { "tut.swing", "Pasa el balón al otro lado y cruza en el columpio de cuerda." },
 
                 { "level.L01", "Salir de casa" }, { "level.L02", "Coches aparcados" }, { "level.L03", "Cuesta arriba" },
                 { "level.L04", "La verja del jardín" }, { "level.L05", "Calle de los charcos" }, { "level.L06", "Mañana de mercado" },

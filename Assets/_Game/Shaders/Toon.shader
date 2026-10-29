@@ -1,7 +1,8 @@
-// Cel-shaded opaque surface for the 3D street: flat colour bands from a fixed sun
-// direction, an optional world-space texture projection (so surfaces tile at any size)
-// and distance haze toward the sky colour. Lighting and haze come from globals set
-// by WorldLook, so no scene lights are needed.
+// Cel-shaded opaque surface for the 3D street: soft-edged colour bands from a fixed, warm
+// sun (cool lilac shadows), a gentle sky fill (upward faces a touch brighter, downward ones a
+// touch darker), an optional world-space texture projection (so surfaces tile at any size)
+// and distance haze toward the sky colour. Lighting and haze come from globals set by
+// WorldLook, so no scene lights are needed.
 Shader "DribbleToSchool/Toon"
 {
     Properties
@@ -38,6 +39,7 @@ Shader "DribbleToSchool/Toon"
             float4 _DtsLightDir;     // xyz: direction toward the sun
             fixed4 _DtsFogColor;     // rgb: haze colour, a: max haze
             float4 _DtsFogRange;     // x: start distance, y: full distance
+            fixed4 _DtsSunColor;     // rgb: sunlight tint (a = 0: not set, white)
 
             struct appdata
             {
@@ -84,7 +86,12 @@ Shader "DribbleToSchool/Toon"
                 float3 l = _DtsLightDir.xyz;
                 l = dot(l, l) > 0.0001 ? normalize(l) : float3(0, 1, 0);
                 float d = dot(n, l);
-                fixed3 col = d > 0.55 ? tex.rgb : (d > 0.12 ? tex.rgb * 0.92 : tex.rgb * _ShadowColor.rgb);
+                fixed3 sun = _DtsSunColor.a > 0.5 ? _DtsSunColor.rgb : fixed3(1, 1, 1);
+                // Three bands (full sun, a slightly turned-away tone, shadow) with soft, painted edges.
+                float lit = smoothstep(0.07, 0.17, d);
+                float full = smoothstep(0.5, 0.6, d);
+                fixed3 col = lerp(tex.rgb * _ShadowColor.rgb, tex.rgb * sun * lerp(0.92, 1.0, full), lit);
+                col *= lerp(0.9, 1.04, n.y * 0.5 + 0.5);
 
                 float dist = distance(_WorldSpaceCameraPos, i.worldPos);
                 float f = saturate((dist - _DtsFogRange.x) / max(_DtsFogRange.y - _DtsFogRange.x, 0.01)) * _DtsFogColor.a * _Haze;

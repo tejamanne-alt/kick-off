@@ -668,7 +668,8 @@ namespace DribbleToSchool.EditorTools
                 float cx = (fromX + toX) * 0.5f, w = toX - fromX, lane = StreetBuilder.PathHalf * 2f;
                 if (surfaceDrop > 0f)
                 {
-                    Color tint = beach ? Color.white : new Color(0.66f, 0.68f, 0.56f);   // muddy rainwater in town
+                    // Muddy rainwater in town; a clear stream in the park.
+                    Color tint = beach ? Color.white : Chapter == 5 ? new Color(0.78f, 0.95f, 0.98f) : new Color(0.66f, 0.68f, 0.56f);
                     var water = StreetBuilder.Solid(root, name + "Surface", new Vector3(cx, top - surfaceDrop - 0.1f, 0f), new Vector3(w, 0.2f, lane), tint, Art.surfaces[ProceduralArt.Surface.Sea]);
                     water.faces = MeshBuilder.Faces.Top;
                     water.Rebuild();
@@ -1019,14 +1020,199 @@ namespace DribbleToSchool.EditorTools
             }
 
             /// <summary>A platform that slides by <paramref name="travel"/> and back.</summary>
+            /// <summary>
+            /// Something that carries the kid and the ball across or up, always with a visible cause:
+            /// a builder's hoist when it travels straight up, a rope ferry raft on park and beach
+            /// water, otherwise a pallet hanging from a tower crane that slews to carry it.
+            /// </summary>
             public void MovingPlatform(Vector2 center, float width, Vector2 travel, float speed = 1.5f)
             {
-                var go = Block("MovingPlatform", center, new Vector2(width, 0.35f), PlatformColor, GroundMat);
+                var go = Block("MovingPlatform", center, new Vector2(width, 0.35f), PlatformColor, GroundMat, false);
                 var body = go.AddComponent<Rigidbody2D>();
                 body.bodyType = RigidbodyType2D.Kinematic;
                 var mp = go.AddComponent<Hazards.MovingPlatform>();
                 mp.travel = travel;
                 mp.speed = speed;
+                if (Mathf.Abs(travel.x) < 0.01f) Hoist(go.transform, center, width, travel);
+                else if (Chapter == 3 || Chapter == 5) Raft(go.transform, center, width, travel);
+                else CraneLoad(go.transform, center, width, travel);
+            }
+
+            static readonly Color CraneYellow = new Color(0.96f, 0.74f, 0.22f);
+            static readonly Color SteelGrey = new Color(0.56f, 0.58f, 0.62f);
+            static readonly Color IronDark = new Color(0.22f, 0.22f, 0.25f);
+
+            /// <summary>A steel plate on timber bearers, slung from a spreader beam behind the kid, on a tower crane's hook.</summary>
+            void CraneLoad(Transform load, Vector2 center, float w, Vector2 travel)
+            {
+                Color timber = new Color(0.62f, 0.45f, 0.3f);
+                Part(load, "Plate", new Vector3(0f, 0.115f, 0f), new Vector3(w, 0.12f, 1.5f), SteelGrey);
+                foreach (float dz in new[] { -0.45f, 0.45f })
+                    Part(load, "Bearer", new Vector3(0f, -0.04f, dz), new Vector3(w - 0.25f, 0.18f, 0.2f), timber);
+                int n = Mathf.Max(2, Mathf.RoundToInt(w / 0.3f));
+                for (int i = 0; i < n; i++)
+                    Part(load, "Stripe", new Vector3(-w * 0.5f + (i + 0.5f) * w / n, 0.115f, -0.755f), new Vector3(w / n, 0.12f, 0.01f), i % 2 == 0 ? CraneYellow : IronDark);
+                // Lifting gear at the back, behind the kid: chains up to a spreader beam, slings to the hook.
+                const float zb = 0.72f, beamY = 2.95f, hookY = 3.7f;
+                foreach (float sx in new[] { -1f, 1f })
+                {
+                    float x = sx * (w * 0.5f - 0.15f);
+                    Part(load, "Chain", new Vector3(x, (0.18f + beamY) * 0.5f, zb), new Vector3(0.05f, beamY - 0.18f, 0.05f), IronDark);
+                    Strut(load, "Sling", new Vector3(sx * (w * 0.5f - 0.25f), beamY + 0.07f, zb), new Vector3(0f, hookY - 0.14f, zb), 0.04f, IronDark);
+                }
+                Part(load, "Spreader", new Vector3(0f, beamY, zb), new Vector3(w - 0.2f, 0.14f, 0.14f), CraneYellow);
+                Part(load, "Hook", new Vector3(0f, hookY, zb), new Vector3(0.24f, 0.32f, 0.24f), CraneYellow);
+                Part(load, "HookBand", new Vector3(0f, hookY + 0.05f, zb - 0.125f), new Vector3(0.24f, 0.08f, 0.01f), IronDark);
+
+                // The tower crane, on its own plot behind the street, slewing to follow the load.
+                float ground = GroundTopUnder(center.x, center.y + 0.5f);
+                float mx = center.x + travel.x * 0.5f, mz = 5.2f, jibY = ground + 9.6f;
+                QuietAreas.Add(new Vector2(mx - 3f, mx + 3f));
+                var crane = new GameObject("TowerCrane").transform;
+                crane.SetParent(root, false);
+                crane.position = new Vector3(mx, ground, mz);
+                Part(crane, "Base", new Vector3(0f, 0.3f, 0f), new Vector3(2.2f, 0.6f, 2.2f), new Color(0.78f, 0.77f, 0.74f), Art.surfaces[ProceduralArt.Surface.Concrete]);
+                float mastTop = jibY - ground - 0.45f, half = 0.55f;
+                foreach (float sx in new[] { -half, half })
+                    foreach (float sz in new[] { -half, half })
+                        Part(crane, "MastPost", new Vector3(sx, 0.6f + (mastTop - 0.6f) * 0.5f, sz), new Vector3(0.12f, mastTop - 0.6f, 0.12f), CraneYellow);
+                for (float y = 0.6f; y < mastTop - 0.1f; y += 1.4f)
+                {
+                    float y1 = Mathf.Min(y + 1.4f, mastTop);
+                    foreach (float sz in new[] { -half, half })
+                        Part(crane, "MastBrace", new Vector3(0f, y, sz), new Vector3(half * 2f, 0.07f, 0.07f), CraneYellow);
+                    foreach (float sx in new[] { -half, half })
+                        Part(crane, "MastBrace", new Vector3(sx, y, 0f), new Vector3(0.07f, 0.07f, half * 2f), CraneYellow);
+                    Strut(crane, "MastDiagonal", new Vector3(-half, y, -half), new Vector3(half, y1, -half), 0.06f, CraneYellow);
+                    Strut(crane, "MastDiagonal", new Vector3(half, y, -half), new Vector3(half, y1, half), 0.06f, CraneYellow);
+                }
+                Part(crane, "Slewing", new Vector3(0f, mastTop + 0.15f, 0f), new Vector3(1.4f, 0.3f, 1.4f), Color.Lerp(CraneYellow, Color.black, 0.3f));
+
+                var jib = new GameObject("Jib").transform;
+                jib.SetParent(crane, false);
+                jib.localPosition = new Vector3(0f, jibY - ground, 0f);
+                Part(jib, "Cab", new Vector3(0.45f, -0.6f, -0.85f), new Vector3(1f, 0.9f, 0.8f), new Color(0.95f, 0.94f, 0.9f));
+                Part(jib, "CabWindow", new Vector3(0.96f, -0.55f, -0.85f), new Vector3(0.02f, 0.5f, 0.62f), new Color(0.35f, 0.48f, 0.6f));
+                const float jibLength = 10.5f;
+                foreach (float z in new[] { -0.3f, 0.3f })
+                    Part(jib, "Chord", new Vector3(jibLength * 0.5f + 0.4f, -0.1f, z), new Vector3(jibLength, 0.08f, 0.08f), CraneYellow);
+                Part(jib, "TopChord", new Vector3(jibLength * 0.5f + 0.4f, 0.55f, 0f), new Vector3(jibLength, 0.08f, 0.08f), CraneYellow);
+                for (float x = 0.4f; x < jibLength; x += 1.3f)
+                    foreach (float z in new[] { -0.3f, 0.3f })
+                    {
+                        Strut(jib, "Lacing", new Vector3(x, -0.1f, z), new Vector3(x + 0.65f, 0.55f, 0f), 0.045f, CraneYellow);
+                        Strut(jib, "Lacing", new Vector3(x + 0.65f, 0.55f, 0f), new Vector3(x + 1.3f, -0.1f, z), 0.045f, CraneYellow);
+                    }
+                // Counter-jib with its concrete counterweights, and the A-frame with its tie bars.
+                foreach (float z in new[] { -0.3f, 0.3f })
+                    Part(jib, "CounterChord", new Vector3(-1.9f, -0.1f, z), new Vector3(3.6f, 0.1f, 0.1f), CraneYellow);
+                Part(jib, "Counterweight", new Vector3(-3.2f, -0.55f, 0f), new Vector3(0.9f, 1.1f, 1f), new Color(0.72f, 0.71f, 0.68f), Art.surfaces[ProceduralArt.Surface.Concrete]);
+                foreach (float z in new[] { -0.3f, 0.3f })
+                    Strut(jib, "TowerTop", new Vector3(0f, 0f, z), new Vector3(0f, 2.3f, 0f), 0.08f, CraneYellow);
+                Strut(jib, "Tie", new Vector3(0f, 2.3f, 0f), new Vector3(jibLength * 0.6f, 0.55f, 0f), 0.03f, IronDark);
+                Strut(jib, "Tie", new Vector3(0f, 2.3f, 0f), new Vector3(-3.5f, 0f, 0f), 0.03f, IronDark);
+                var trolley = new GameObject("Trolley").transform;
+                trolley.SetParent(jib, false);
+                Part(trolley, "TrolleyBody", Vector3.zero, new Vector3(0.7f, 0.22f, 0.7f), Color.Lerp(CraneYellow, Color.black, 0.3f));
+
+                var cableGo = new GameObject("Cable");
+                cableGo.transform.SetParent(crane, false);
+                var cable = cableGo.AddComponent<LineRenderer>();
+                cable.sharedMaterial = trailMaterial;
+                cable.positionCount = 2;
+                cable.widthMultiplier = 0.04f;
+                cable.startColor = cable.endColor = new Color(0.18f, 0.18f, 0.2f);
+                cable.useWorldSpace = true;
+                cable.sortingOrder = -1;
+                var rig = crane.gameObject.AddComponent<CraneRig>();
+                rig.jib = jib;
+                rig.trolley = trolley;
+                rig.load = load;
+                rig.hookLocal = new Vector3(0f, hookY + 0.16f, zb);
+                rig.cable = cable;
+                rig.trolleyDrop = 0.25f;
+            }
+
+            /// <summary>A builder's hoist: a caged deck that climbs a rack-and-pinion mast standing behind it.</summary>
+            void Hoist(Transform deck, Vector2 center, float w, Vector2 travel)
+            {
+                Part(deck, "Deck", new Vector3(0f, 0.115f, 0f), new Vector3(w, 0.12f, 1.5f), SteelGrey);
+                Part(deck, "ToeBoard", new Vector3(0f, 0.24f, -0.74f), new Vector3(w, 0.12f, 0.02f), CraneYellow);
+                foreach (float sx in new[] { -1f, 1f })
+                    Part(deck, "CagePost", new Vector3(sx * (w * 0.5f - 0.03f), 0.7f, 0.74f), new Vector3(0.06f, 1.1f, 0.06f), CraneYellow);
+                Part(deck, "CageRail", new Vector3(0f, 1.22f, 0.74f), new Vector3(w, 0.06f, 0.06f), CraneYellow);
+                Part(deck, "CageRail", new Vector3(0f, 0.7f, 0.74f), new Vector3(w, 0.05f, 0.05f), CraneYellow);
+                Part(deck, "CageMesh", new Vector3(0f, 0.7f, 0.77f), new Vector3(w - 0.08f, 1f, 0.01f), new Color(0.4f, 0.42f, 0.45f));
+                Part(deck, "DriveUnit", new Vector3(0f, 0.55f, 1.05f), new Vector3(0.7f, 0.7f, 0.45f), Color.Lerp(CraneYellow, Color.black, 0.3f));
+
+                float ground = GroundTopUnder(center.x, center.y + 0.5f);
+                float top = center.y + travel.y + 2.6f, height = top - ground, mz = 1.45f;
+                var mast = new GameObject("HoistMast").transform;
+                mast.SetParent(root, false);
+                mast.position = new Vector3(center.x, ground, mz);
+                foreach (float sx in new[] { -0.25f, 0.25f })
+                    Part(mast, "MastPost", new Vector3(sx, height * 0.5f, 0f), new Vector3(0.08f, height, 0.08f), CraneYellow);
+                Part(mast, "Rack", new Vector3(0f, height * 0.5f, -0.1f), new Vector3(0.1f, height, 0.04f), IronDark);
+                for (float y = 0.4f; y < height; y += 0.8f)
+                    Strut(mast, "MastBrace", new Vector3(-0.25f, y, 0.02f), new Vector3(0.25f, Mathf.Min(y + 0.8f, height), 0.02f), 0.05f, CraneYellow);
+                Part(mast, "MastCap", new Vector3(0f, height + 0.05f, 0f), new Vector3(0.7f, 0.1f, 0.4f), Color.Lerp(CraneYellow, Color.black, 0.3f));
+            }
+
+            /// <summary>A plank raft on floats, pulled along a ferry rope strung between posts on the banks.</summary>
+            void Raft(Transform raft, Vector2 center, float w, Vector2 travel)
+            {
+                Color plank = new Color(0.66f, 0.5f, 0.34f), plankDark = new Color(0.52f, 0.38f, 0.26f), rope = new Color(0.84f, 0.76f, 0.58f);
+                int n = Mathf.Max(3, Mathf.RoundToInt(w / 0.3f));
+                for (int i = 0; i < n; i++)
+                    Part(raft, "Plank", new Vector3(-w * 0.5f + (i + 0.5f) * w / n, 0.105f, 0f), new Vector3(w / n - 0.03f, 0.14f, 1.5f), i % 2 == 0 ? plank : Color.Lerp(plank, plankDark, 0.5f));
+                foreach (float dz in new[] { -0.5f, 0.5f })
+                    Part(raft, "Float", new Vector3(0f, -0.07f, dz), new Vector3(w - 0.2f, 0.2f, 0.32f), new Color(0.32f, 0.44f, 0.52f));
+                Part(raft, "RopePost", new Vector3(0f, 0.6f, 0.72f), new Vector3(0.1f, 0.95f, 0.1f), plankDark);
+                Part(raft, "RopeRing", new Vector3(0f, 1.02f, 0.86f), new Vector3(0.16f, 0.16f, 0.04f), IronDark);
+
+                float ropeY = center.y + 0.175f + 0.85f;
+                float a = center.x - w * 0.5f - 0.7f, b = center.x + travel.x + w * 0.5f + 0.7f;
+                Part(root, "FerryRope", new Vector3((a + b) * 0.5f, ropeY, 0.9f), new Vector3(b - a, 0.035f, 0.035f), rope);
+                foreach (float px in new[] { a, b })
+                {
+                    float g = GroundTopUnder(px, ropeY);
+                    if (g < -50f) g = center.y;
+                    Part(root, "BankPost", new Vector3(px, (g + ropeY + 0.2f) * 0.5f, 0.9f), new Vector3(0.14f, ropeY + 0.2f - g, 0.14f), plankDark);
+                }
+            }
+
+            /// <summary>A cylinder from local point a to local point b inside <paramref name="parent"/>
+            /// (trunks, boughs, round pads). With innerRadius it shows a hollow end disc.</summary>
+            static void Cylinder(Transform parent, string name, Vector3 a, Vector3 b, float radius, Color color, float innerRadius = 0f)
+            {
+                var go = new GameObject(name);
+                go.transform.SetParent(parent, false);
+                go.transform.localPosition = (a + b) * 0.5f;
+                var shape = go.AddComponent<CylinderShape>();
+                shape.axis = (b - a).normalized;
+                shape.length = (b - a).magnitude;
+                shape.radius = radius;
+                shape.sideColor = color;
+                shape.endColor = Color.Lerp(color, Color.white, 0.12f);
+                shape.innerRadius = innerRadius;
+                shape.innerColor = Color.Lerp(color, Color.black, 0.4f);
+                shape.segments = 24;
+                go.GetComponent<MeshRenderer>().sharedMaterial = Art.solid;
+                shape.Rebuild();
+            }
+
+            /// <summary>A thin box from local point a to local point b inside <paramref name="parent"/> (lattice members, slings, ties).</summary>
+            static void Strut(Transform parent, string name, Vector3 a, Vector3 b, float thickness, Color color)
+            {
+                var go = new GameObject(name);
+                go.transform.SetParent(parent, false);
+                go.transform.localPosition = (a + b) * 0.5f;
+                go.transform.localRotation = Quaternion.FromToRotation(Vector3.up, b - a);
+                var box = go.AddComponent<Box3D>();
+                box.size = new Vector3(thickness, (b - a).magnitude, thickness);
+                box.color = color;
+                go.GetComponent<MeshRenderer>().sharedMaterial = Art.solid;
+                box.Rebuild();
             }
 
             /// <summary>
@@ -1039,6 +1225,7 @@ namespace DribbleToSchool.EditorTools
                 var gateGo = Block("Gate", new Vector2(gateX, groundTop + gateHeight * 0.5f), new Vector2(0.35f, gateHeight), Color.white, GroundMat, false);
                 gateGo.AddComponent<Rigidbody2D>().bodyType = RigidbodyType2D.Kinematic;
                 var gate = gateGo.AddComponent<Gate>();
+                gateGo.AddComponent<BallTrap>();      // a ball resting on top of the gate is out of reach
 
                 // A masonry pillar at the back of the footpath that the gate closes against (a sliding
                 // gate needs no post at its street end, which keeps its no-entry sign in view).
@@ -1222,7 +1409,8 @@ namespace DribbleToSchool.EditorTools
                 float width = toX - fromX;
                 // An underpass: a back wall and a deep concrete deck over the street.
                 StreetBuilder.Solid(root, "TunnelBack", new Vector3(center, groundTop + height * 0.5f, StreetBuilder.PropertyZ + 0.2f), new Vector3(width, height, 0.4f), new Color(0.36f, 0.34f, 0.38f));
-                Block("TunnelCeiling", new Vector2(center, groundTop + height + 0.6f), new Vector2(width + 1f, 1.2f), new Color(0.62f, 0.62f, 0.64f), GroundMat, true, 7.4f);
+                Block("TunnelCeiling", new Vector2(center, groundTop + height + 0.6f), new Vector2(width + 1f, 1.2f), new Color(0.62f, 0.62f, 0.64f), GroundMat, true, 7.4f)
+                    .AddComponent<BallTrap>();        // the deck over the underpass is out of reach
                 // Dim lamps under the deck, lighting the footpath below them.
                 for (float lx = fromX + 2.5f; lx < toX - 1f; lx += 5f)
                 {
@@ -1272,20 +1460,40 @@ namespace DribbleToSchool.EditorTools
             /// <summary>A swing seat hanging from <paramref name="pivot"/>.</summary>
             public void Swing(Vector2 pivot, float ropeLength, float amplitude = 35f, float period = 3f, float phaseOffset = 0f)
             {
-                // A swing frame standing across the street: the beam runs in depth over the seat,
-                // on splayed A-frame legs at either end, clear of the kid's path.
                 Color wood = new Color(0.55f, 0.4f, 0.3f);
-                float frameZ = 1.1f, ground = GroundTopUnder(pivot.x, pivot.y);
-                Decor("SwingBeam", pivot + new Vector2(0f, 0.1f), new Vector2(0.2f, 0.2f), wood, frameZ * 2f + 0.3f);
-                foreach (float z in new[] { -frameZ, frameZ })
-                    foreach (float splay in new[] { -1f, 1f })
-                    {
-                        float height = pivot.y + 0.1f - ground;
-                        var leg = Decor("SwingLeg", new Vector2(pivot.x + splay * height * 0.18f, ground + height * 0.5f), new Vector2(0.15f, height / Mathf.Cos(Mathf.Atan(0.36f))), wood, 0.15f, z);
-                        leg.transform.rotation = Quaternion.Euler(0f, 0f, splay * Mathf.Atan(0.36f) * Mathf.Rad2Deg);
-                    }
+                float ground = GroundTopUnder(pivot.x, pivot.y);
+                if (Chapter == 5)
+                {
+                    // A rope swing on a big old tree on the bank: the trunk stands behind the path
+                    // and a thick bough reaches out over it to where the rope is tied.
+                    Color bark = new Color(0.45f, 0.34f, 0.26f);
+                    float trunkTop = pivot.y + 1.4f;
+                    Cylinder(root, "Trunk", new Vector3(pivot.x - 0.5f, ground - 0.1f, 2.6f), new Vector3(pivot.x - 0.4f, trunkTop, 2.5f), 0.34f, bark);
+                    Cylinder(root, "Bough", new Vector3(pivot.x - 0.4f, pivot.y + 0.9f, 2.4f), new Vector3(pivot.x + 0.05f, pivot.y + 0.1f, -0.2f), 0.14f, bark);
+                    Cylinder(root, "Bough", new Vector3(pivot.x - 0.4f, trunkTop - 0.2f, 2.4f), new Vector3(pivot.x + 1.4f, trunkTop + 0.9f, 1.4f), 0.11f, bark);
+                    Color leaf = new Color(0.36f, 0.58f, 0.32f), leafLight = new Color(0.46f, 0.68f, 0.38f);
+                    Blobs(root, "Canopy", new Vector3(pivot.x, trunkTop + 1.1f, 1.8f),
+                        new BlobShape.Blob(new Vector3(0f, 0f, 0f), new Vector3(2f, 1.2f, 1.7f), leaf),
+                        new BlobShape.Blob(new Vector3(-1.3f, -0.3f, 0.3f), new Vector3(1.3f, 0.9f, 1.2f), leaf),
+                        new BlobShape.Blob(new Vector3(1.4f, -0.2f, -0.1f), new Vector3(1.3f, 0.95f, 1.2f), leafLight),
+                        new BlobShape.Blob(new Vector3(0.3f, 0.7f, -0.2f), new Vector3(1.2f, 0.8f, 1.1f), leafLight));
+                }
+                else
+                {
+                    // A swing frame standing across the street: the beam runs in depth over the seat,
+                    // on splayed A-frame legs at either end, clear of the kid's path.
+                    float frameZ = 1.1f;
+                    Decor("SwingBeam", pivot + new Vector2(0f, 0.1f), new Vector2(0.2f, 0.2f), wood, frameZ * 2f + 0.3f);
+                    foreach (float z in new[] { -frameZ, frameZ })
+                        foreach (float splay in new[] { -1f, 1f })
+                        {
+                            float height = pivot.y + 0.1f - ground;
+                            var leg = Decor("SwingLeg", new Vector2(pivot.x + splay * height * 0.18f, ground + height * 0.5f), new Vector2(0.15f, height / Mathf.Cos(Mathf.Atan(0.36f))), wood, 0.15f, z);
+                            leg.transform.rotation = Quaternion.Euler(0f, 0f, splay * Mathf.Atan(0.36f) * Mathf.Rad2Deg);
+                        }
+                }
 
-                var seat = Block("SwingSeat", pivot + Vector2.down * ropeLength, new Vector2(1.4f, 0.2f), new Color(0.85f, 0.35f, 0.3f), GroundMat, true, 0.7f);
+                var seat = Block("SwingSeat", pivot + Vector2.down * ropeLength, new Vector2(1.4f, 0.2f), Chapter == 5 ? new Color(0.62f, 0.46f, 0.32f) : new Color(0.85f, 0.35f, 0.3f), GroundMat, true, 0.7f);
                 seat.AddComponent<Rigidbody2D>().bodyType = RigidbodyType2D.Kinematic;
                 var rope = seat.AddComponent<LineRenderer>();
                 rope.sharedMaterial = trailMaterial;
@@ -1475,22 +1683,10 @@ namespace DribbleToSchool.EditorTools
                 var visual = new GameObject("Visual").transform;
                 visual.SetParent(go.transform, false);
                 visual.localPosition = new Vector3(0f, -0.14f, 0f);
-                // A springy trampoline pad: a red mat on a dark frame, set into the street.
-                var mat = new GameObject("Board");
-                mat.transform.SetParent(visual, false);
-                var top = mat.AddComponent<Box3D>();
-                top.size = new Vector3(1.3f, 0.14f, 1.3f);
-                top.color = BouncyColor;
-                mat.GetComponent<MeshRenderer>().sharedMaterial = Art.solid;
-                top.Rebuild();
-                var frameGo = new GameObject("Frame");
-                frameGo.transform.SetParent(visual, false);
-                frameGo.transform.localPosition = new Vector3(0f, -0.06f, 0f);
-                var frameBox = frameGo.AddComponent<Box3D>();
-                frameBox.size = new Vector3(1.45f, 0.1f, 1.45f);
-                frameBox.color = new Color(0.25f, 0.25f, 0.28f);
-                frameGo.GetComponent<MeshRenderer>().sharedMaterial = Art.solid;
-                frameBox.Rebuild();
+                // A small round garden trampoline: a black jumping mat inside a padded rim, on short legs.
+                Cylinder(visual, "Legs", new Vector3(0f, 0.02f, 0f), new Vector3(0f, 0.2f, 0f), 0.66f, new Color(0.35f, 0.36f, 0.4f), 0.6f);
+                Cylinder(visual, "Pad", new Vector3(0f, 0.2f, 0f), new Vector3(0f, 0.3f, 0f), 0.72f, new Color(0.3f, 0.55f, 0.85f));
+                Cylinder(visual, "Mat", new Vector3(0f, 0.3f, 0f), new Vector3(0f, 0.31f, 0f), 0.56f, new Color(0.14f, 0.14f, 0.16f));
                 go.AddComponent<Hazards.Springboard>().visual = visual;
             }
 
@@ -1770,13 +1966,15 @@ namespace DribbleToSchool.EditorTools
                     tree.transform.position = new Vector3(x + 5f, groundTop + tree.sprite.bounds.size.y * 0.5f - 0.15f, dz);
                 }
 
-                // Through the gate: the kid and the ball must both get here.
+                // Through the gate: the whole school ground past the gate line counts, at any height,
+                // so the level ends as soon as the kid and the ball are both inside the gate.
+                const float grounds = 40f;
                 var goalGo = new GameObject("GoalZone");
                 goalGo.transform.SetParent(school, false);
-                goalGo.transform.position = new Vector3(wx + 1.2f, groundTop + 1.5f, 0f);
+                goalGo.transform.position = new Vector3(wx + grounds * 0.5f, groundTop + 8f, 0f);
                 var trigger = goalGo.AddComponent<BoxCollider2D>();
                 trigger.isTrigger = true;
-                trigger.size = new Vector2(2.6f, 3f);
+                trigger.size = new Vector2(grounds, 20f);
                 goalGo.AddComponent<GoalZone>();
                 // The name board on the arch, facing back down the footpath toward the kid.
                 var board = Banner("SCHOOL", new Vector2(wx, groundTop + pillarH + 0.3f), groundTop + pillarH + rise - 0.2f);

@@ -7,7 +7,7 @@ namespace DribbleToSchool.Hazards
     /// <see cref="slide"/>) and stops blocking once it is half open; otherwise the whole gate
     /// slides up out of the way.
     /// </summary>
-    public class Gate : HazardBase
+    public class Gate : HazardBase, Core.IBallStrander
     {
         public float openHeight = 2.5f;
         public float openDuration = 0.6f;
@@ -35,6 +35,14 @@ namespace DribbleToSchool.Hazards
             IsOpen = true;
             Core.GameEvents.Raise(Core.GameEventType.GateOpened, transform.position);
             if (Opened != null) Opened(this);
+        }
+
+        /// <summary>The ball has gone over the closed gate while the kid is still on this side:
+        /// the switch that opens it is on this side too, so the ball can't be fetched.</summary>
+        public bool Strands(Vector2 ball, Vector2 kid)
+        {
+            float x = closedPosition.x;
+            return !IsOpen && ball.x > x + 0.35f && kid.x < x - 0.1f;
         }
 
         public override void ResetState()

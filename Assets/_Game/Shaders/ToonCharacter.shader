@@ -33,6 +33,7 @@ Shader "DribbleToSchool/ToonCharacter"
         float4 _DtsLightDir;
         fixed4 _DtsFogColor;
         float4 _DtsFogRange;
+        fixed4 _DtsSunColor;
 
         float HazeAmount(float3 worldPos)
         {
@@ -120,7 +121,8 @@ Shader "DribbleToSchool/ToonCharacter"
                 float d = dot(n, l);
                 // Two bands with a narrow soft edge (anime cel shading).
                 float lit = smoothstep(-0.02, 0.06, d);
-                fixed3 col = lerp(tex.rgb * _ShadowColor.rgb, tex.rgb, lit);
+                fixed3 sun = _DtsSunColor.a > 0.5 ? _DtsSunColor.rgb : fixed3(1, 1, 1);
+                fixed3 col = lerp(tex.rgb * _ShadowColor.rgb, tex.rgb * sun, lit);
 
                 // Rim light on the sunny side's silhouette.
                 float3 v = normalize(_WorldSpaceCameraPos - i.worldPos);

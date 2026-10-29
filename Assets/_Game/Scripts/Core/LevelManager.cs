@@ -108,6 +108,11 @@ namespace DribbleToSchool.Core
         LevelState stateBeforePause;
         Coroutine respawnRoutine;
         readonly List<IResettable> resettables = new List<IResettable>();
+        readonly List<IBallStrander> stranders = new List<IBallStrander>();
+        float strandedFor;
+
+        [Tooltip("How long the ball must stay out of the kid's reach before the run goes back to the checkpoint.")]
+        public float strandedDelay = 1.2f;
 
         void Awake()
         {
@@ -122,6 +127,8 @@ namespace DribbleToSchool.Core
             {
                 var r = behaviour as IResettable;
                 if (r != null) resettables.Add(r);
+                var strander = behaviour as IBallStrander;
+                if (strander != null) stranders.Add(strander);
                 if (behaviour is Coin) TotalCoins += ((Coin)behaviour).value;
                 if (behaviour is Sticker) HasSticker = true;
                 if (behaviour is ChallengeObjective) Objective = (ChallengeObjective)behaviour;
@@ -279,6 +286,24 @@ namespace DribbleToSchool.Core
                 LoseBall("lose.offStart");
             else if (maxBallBehindDistance > 0f && kid.transform.position.x - ball.transform.position.x > maxBallBehindDistance)
                 LoseBall("lose.behind");
+            else if (BallStranded())
+                LoseBall("lose.unreachable");
+        }
+
+        /// <summary>True once the ball has been somewhere the kid can't reach (over a closed
+        /// gate, on a ledge too high to climb) for <see cref="strandedDelay"/> seconds.</summary>
+        bool BallStranded()
+        {
+            Vector2 b = ball.transform.position, k = kid.transform.position;
+            bool now = false;
+            foreach (var s in stranders)
+            {
+                if (s != null && s.Strands(b, k)) { now = true; break; }
+            }
+            strandedFor = now ? strandedFor + Time.deltaTime : 0f;
+            if (strandedFor < strandedDelay) return false;
+            strandedFor = 0f;
+            return true;
         }
 
         /// <summary>Lose the ball and respawn at the last checkpoint. Ignored unless playing. <paramref name="reason"/> is a localization key.</summary>

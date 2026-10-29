@@ -272,6 +272,14 @@ namespace DribbleToSchool.EditorTools
             return false;
         }
 
+        /// <summary>Would a building of this facade, centred on x, stand on a side street (they run
+        /// far back from the footpath) or in the school grounds?</summary>
+        static bool OnSideStreet(LevelBuildKit.TrackBuilder track, float x, ProceduralArt.FacadeKind facade)
+        {
+            float half = ProceduralArt.FacadeSize(facade).x * 0.5f + 0.3f, skip;
+            return Blocked(track, x - half, x + half, out skip);
+        }
+
         static float Rand(System.Random rng, float min, float max) { return min + (float)rng.NextDouble() * (max - min); }
 
         /// <summary>A cut-out (tree, bush, prop) standing on the ground at (x, ground, z), with distance haze.</summary>
@@ -341,7 +349,176 @@ namespace DribbleToSchool.EditorTools
             go.GetComponent<MeshRenderer>().sharedMaterials = new[] { Art.solid, Art.facades[facade], Art.surfaces[ProceduralArt.Surface.RoofTiles] };
             house.Rebuild();
             ContactShadow(parent, x - size.x * 0.5f, x + size.x * 0.5f, groundY, z - 0.45f, z);
+            Dress(parent, x - size.x * 0.5f, groundY, z, facade, Mathf.Abs(Mathf.RoundToInt(x * 7f + z * 13f)));
             return house;
+        }
+
+        // ---------------------------------------------------------------- facade dressing
+
+        static readonly Color SillColor = new Color(0.9f, 0.89f, 0.85f);
+        static readonly Color[] Petals =
+        {
+            new Color(0.98f, 0.5f, 0.6f), new Color(0.95f, 0.3f, 0.32f), new Color(1f, 0.82f, 0.3f),
+            new Color(0.97f, 0.96f, 0.94f), new Color(0.72f, 0.5f, 0.9f),
+        };
+
+        /// <summary>
+        /// Real depth on a painted building front, lined up with the windows and doors painted on
+        /// its facade (see ProceduralArt.Facade; facade units are world units from the bottom-left
+        /// corner): sills and lintels, window boxes of flowers, a door canopy with a lamp and pots,
+        /// a downpipe, and balconies with railings (and the odd plant or towel) on the flats.
+        /// </summary>
+        static void Dress(Transform parent, float left, float gy, float z, ProceduralArt.FacadeKind facade, int seed)
+        {
+            var rng = new System.Random(seed);
+            System.Action<float, float, float, float, bool> window = (x0, y0, x1, y1, flowers) =>
+            {
+                float cx = left + (x0 + x1) * 0.5f, w = x1 - x0;
+                Solid(parent, "Sill", new Vector3(cx, gy + y0 - 0.05f, z - 0.09f), new Vector3(w + 0.24f, 0.08f, 0.2f), SillColor);
+                Solid(parent, "Lintel", new Vector3(cx, gy + y1 + 0.05f, z - 0.04f), new Vector3(w + 0.2f, 0.1f, 0.09f), SillColor);
+                if (flowers) FlowerBox(parent, cx, gy + y0 - 0.01f, z - 0.2f, w - 0.1f, rng);
+            };
+            System.Action<float, float, float> door = (x0, width, height) =>
+            {
+                float cx = left + x0 + width * 0.5f;
+                Solid(parent, "DoorCanopy", new Vector3(cx, gy + height + 0.22f, z - 0.32f), new Vector3(width + 0.5f, 0.08f, 0.62f), new Color(0.42f, 0.44f, 0.5f));
+                Solid(parent, "DoorStep", new Vector3(cx, gy + 0.06f, z - 0.22f), new Vector3(width + 0.3f, 0.12f, 0.42f), new Color(0.78f, 0.77f, 0.74f));
+                Solid(parent, "Lamp", new Vector3(cx + width * 0.5f + 0.32f, gy + height - 0.1f, z - 0.08f), new Vector3(0.16f, 0.24f, 0.14f), new Color(1f, 0.88f, 0.6f));
+                Pot(parent, cx - width * 0.5f - 0.35f, gy, z - 0.32f, rng);
+            };
+            System.Action<float, float> downpipe = (x, top) =>
+            {
+                var go = new GameObject("Downpipe");
+                go.transform.SetParent(parent, false);
+                go.transform.position = new Vector3(left + x, gy + top * 0.5f, z - 0.07f);
+                var pipe = go.AddComponent<CylinderShape>();
+                pipe.axis = Vector3.up;
+                pipe.radius = 0.055f;
+                pipe.length = top;
+                pipe.segments = 10;
+                pipe.sideColor = new Color(0.62f, 0.64f, 0.66f);
+                pipe.endColor = pipe.sideColor;
+                go.GetComponent<MeshRenderer>().sharedMaterial = Art.solid;
+                pipe.Rebuild();
+            };
+
+            switch (facade)
+            {
+                case ProceduralArt.FacadeKind.HouseGable:
+                    window(0.8f, 3.7f, 2.9f, 5f, true);
+                    window(3.8f, 3.7f, 6.3f, 5f, true);
+                    window(3.9f, 1f, 6.3f, 2.3f, rng.NextDouble() < 0.5);
+                    door(0.5f, 1.2f, 2.2f);
+                    downpipe(6.9f, 5.9f);
+                    break;
+                case ProceduralArt.FacadeKind.HouseLong:
+                    for (int i = 0; i < 3; i++) window(0.8f + i * 3.1f, 3.5f, 2.9f + i * 3.1f, 4.8f, i != 1);
+                    window(5.6f, 0.9f, 9.2f, 2.3f, true);
+                    door(1f, 1.4f, 2.2f);
+                    downpipe(9.9f, 5.5f);
+                    break;
+                case ProceduralArt.FacadeKind.Bungalow:
+                    window(1f, 1.2f, 1.9f, 2.8f, true);
+                    door(3.6f, 1.1f, 2.2f);
+                    Pot(parent, left + 5.7f, gy, z - 0.35f, rng);
+                    break;
+                case ProceduralArt.FacadeKind.Shop0:
+                case ProceduralArt.FacadeKind.Shop1:
+                    for (int i = 0; i < 3; i++) window(0.8f + i * 2.5f, 5f, 2.4f + i * 2.5f, 6.3f, true);
+                    downpipe(7.92f, 7.3f);
+                    break;
+                case ProceduralArt.FacadeKind.Apartment:
+                    for (int floor = 0; floor < 5; floor++)
+                    {
+                        float y = 0.6f + floor * 2.7f;
+                        if (floor == 0)
+                        {
+                            for (int i = 0; i < 3; i++) window(1f + i * 3.8f, y, 3.4f + i * 3.8f, y + 1.5f, false);
+                            continue;
+                        }
+                        Balcony(parent, left, gy + y - 0.18f, z, 12f, rng);
+                    }
+                    downpipe(11.92f, 13.9f);
+                    break;
+                case ProceduralArt.FacadeKind.Warehouse:
+                    window(8.8f, 2.6f, 10.2f, 3.6f, false);
+                    Solid(parent, "Lamp", new Vector3(left + 8f, gy + 2.6f, z - 0.1f), new Vector3(0.3f, 0.12f, 0.24f), new Color(1f, 0.88f, 0.6f));
+                    break;
+            }
+        }
+
+        /// <summary>A painted window box with a row of soft flower clumps along its top.</summary>
+        static void FlowerBox(Transform parent, float cx, float y, float z, float width, System.Random rng)
+        {
+            Color[] boxes = { new Color(0.72f, 0.42f, 0.3f), new Color(0.35f, 0.5f, 0.42f), new Color(0.92f, 0.9f, 0.84f) };
+            Solid(parent, "FlowerBox", new Vector3(cx, y + 0.11f, z), new Vector3(width, 0.22f, 0.26f), boxes[rng.Next(boxes.Length)]);
+            Color petal = Petals[rng.Next(Petals.Length)], petal2 = Petals[rng.Next(Petals.Length)];
+            var blobs = new List<BlobShape.Blob>();
+            for (float dx = -width * 0.5f + 0.14f; dx <= width * 0.5f - 0.12f; dx += 0.24f)
+            {
+                blobs.Add(new BlobShape.Blob(new Vector3(dx, 0.27f, 0f), new Vector3(0.15f, 0.09f, 0.12f), new Color(0.36f, 0.58f, 0.32f)));
+                blobs.Add(new BlobShape.Blob(new Vector3(dx + 0.04f, 0.34f, -0.04f), new Vector3(0.07f, 0.05f, 0.06f), rng.NextDouble() < 0.6 ? petal : petal2));
+            }
+            Blobs(parent, "Flowers", new Vector3(cx, y, z), blobs);
+        }
+
+        /// <summary>A terracotta pot with a round, leafy plant.</summary>
+        static void Pot(Transform parent, float x, float gy, float z, System.Random rng)
+        {
+            var go = new GameObject("Pot");
+            go.transform.SetParent(parent, false);
+            go.transform.position = new Vector3(x, gy + 0.2f, z);
+            var pot = go.AddComponent<CylinderShape>();
+            pot.axis = Vector3.up;
+            pot.radius = 0.2f;
+            pot.length = 0.4f;
+            pot.segments = 14;
+            pot.sideColor = new Color(0.76f, 0.44f, 0.32f);
+            pot.endColor = new Color(0.4f, 0.3f, 0.22f);
+            go.GetComponent<MeshRenderer>().sharedMaterial = Art.solid;
+            pot.Rebuild();
+            Color leaf = rng.NextDouble() < 0.5 ? new Color(0.36f, 0.58f, 0.32f) : new Color(0.3f, 0.5f, 0.3f);
+            var blobs = new List<BlobShape.Blob>
+            {
+                new BlobShape.Blob(new Vector3(0f, 0.55f, 0f), new Vector3(0.3f, 0.32f, 0.28f), leaf),
+                new BlobShape.Blob(new Vector3(0.12f, 0.75f, -0.05f), new Vector3(0.18f, 0.18f, 0.16f), Color.Lerp(leaf, Color.white, 0.15f)),
+            };
+            if (rng.NextDouble() < 0.5)
+                blobs.Add(new BlobShape.Blob(new Vector3(-0.1f, 0.8f, -0.12f), new Vector3(0.07f, 0.06f, 0.06f), Petals[rng.Next(Petals.Length)]));
+            Blobs(parent, "Plant", new Vector3(x, gy, z), blobs);
+        }
+
+        /// <summary>A balcony across a block of flats: a slab, a rail with balusters, and now and then a plant or a towel over the rail.</summary>
+        static void Balcony(Transform parent, float left, float y, float z, float width, System.Random rng)
+        {
+            Color rail = new Color(0.7f, 0.71f, 0.74f);
+            float cx = left + width * 0.5f;
+            Solid(parent, "BalconySlab", new Vector3(cx, y, z - 0.42f), new Vector3(width + 0.1f, 0.14f, 0.84f), new Color(0.86f, 0.85f, 0.83f));
+            Solid(parent, "BalconyRail", new Vector3(cx, y + 0.95f, z - 0.82f), new Vector3(width + 0.1f, 0.06f, 0.06f), rail);
+            for (float bx = left + 0.1f; bx <= left + width - 0.05f; bx += 0.36f)
+                Solid(parent, "Baluster", new Vector3(bx, y + 0.5f, z - 0.82f), new Vector3(0.035f, 0.88f, 0.035f), rail);
+            for (int i = 0; i < 3; i++)
+            {
+                float bx = left + 2.2f + i * 3.8f;
+                double r = rng.NextDouble();
+                if (r < 0.3) Pot(parent, bx, y + 0.07f, z - 0.45f, rng);
+                else if (r < 0.5)
+                {
+                    Color[] towels = { new Color(0.95f, 0.6f, 0.55f), new Color(0.55f, 0.75f, 0.9f), new Color(0.98f, 0.9f, 0.55f) };
+                    Solid(parent, "Towel", new Vector3(bx, y + 0.72f, z - 0.86f), new Vector3(0.8f, 0.5f, 0.03f), towels[rng.Next(towels.Length)]);
+                }
+            }
+        }
+
+        static void Blobs(Transform parent, string name, Vector3 position, List<BlobShape.Blob> blobs)
+        {
+            var go = new GameObject(name);
+            go.transform.SetParent(parent, false);
+            go.transform.position = position;
+            var shape = go.AddComponent<BlobShape>();
+            shape.blobs = blobs;
+            go.GetComponent<MeshRenderer>().sharedMaterial = Art.solid;
+            shape.Rebuild();
         }
 
         /// <summary>Everything beside the street for the current chapter, from well before the start to well past the end.</summary>
@@ -411,12 +588,13 @@ namespace DribbleToSchool.EditorTools
                     CutOut(root, "BigTree", Art.mid[5, rng.NextDouble() < 0.15 ? 1 : 2], cx + Rand(rng, -2f, 2f), gy, z + 9f, Rand(rng, 1.1f, 1.4f), -70);
                 x += lot;
             }
-            // A second row of houses further back gives the street depth.
+            // A second row of houses further back gives the street depth (never on a side street).
             for (float x = x0 - 20f; x < x1 + 20f; x += Rand(rng, 10f, 14f))
             {
-                float gy = GroundAt(track, x);
-                Building(root, x, gy, Rand(rng, 20f, 24f), rng.NextDouble() < 0.5 ? ProceduralArt.FacadeKind.HouseGable : ProceduralArt.FacadeKind.HouseLong,
-                    rng.NextDouble() < 0.5 ? House3D.RoofStyle.GableToStreet : House3D.RoofStyle.GableSideways, 7f, 2.4f, new Color(0.93f, 0.93f, 0.9f), roofDark);
+                var facade = rng.NextDouble() < 0.5 ? ProceduralArt.FacadeKind.HouseGable : ProceduralArt.FacadeKind.HouseLong;
+                var roofStyle = rng.NextDouble() < 0.5 ? House3D.RoofStyle.GableToStreet : House3D.RoofStyle.GableSideways;
+                if (OnSideStreet(track, x, facade)) continue;
+                Building(root, x, GroundAt(track, x), Rand(rng, 20f, 24f), facade, roofStyle, 7f, 2.4f, new Color(0.93f, 0.93f, 0.9f), roofDark);
             }
             DistantHills(track, root, x0, x1);
         }
@@ -454,8 +632,13 @@ namespace DribbleToSchool.EditorTools
                     x += 2.6f;
                 }
             }
+            // Flats behind the shops (never on a side street).
             for (float x = x0 - 20f; x < x1 + 20f; x += Rand(rng, 13f, 16f))
-                Building(root, x, GroundAt(track, x), Rand(rng, 22f, 28f), ProceduralArt.FacadeKind.Apartment, House3D.RoofStyle.Flat, 10f, 0f, new Color(0.92f, 0.88f, 0.82f), new Color(0.6f, 0.6f, 0.62f));
+            {
+                float z = Rand(rng, 22f, 28f);
+                if (OnSideStreet(track, x, ProceduralArt.FacadeKind.Apartment)) continue;
+                Building(root, x, GroundAt(track, x), z, ProceduralArt.FacadeKind.Apartment, House3D.RoofStyle.Flat, 10f, 0f, new Color(0.92f, 0.88f, 0.82f), new Color(0.6f, 0.6f, 0.62f));
+            }
         }
 
         static void Beach(LevelBuildKit.TrackBuilder track, Transform root, System.Random rng, float x0, float x1)
@@ -590,7 +773,11 @@ namespace DribbleToSchool.EditorTools
                 x += w;
             }
             for (float x = x0; x < x1; x += Rand(rng, 40f, 60f))
+            {
+                float skip;
+                if (Blocked(track, x - 4f, x + 4f, out skip)) continue;
                 CutOut(root, "Crane", Art.mid[4, 2], x, GroundAt(track, x), 45f, 2f, -75);
+            }
             DistantHills(track, root, x0, x1);
         }
 

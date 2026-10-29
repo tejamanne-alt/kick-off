@@ -341,14 +341,14 @@ namespace DribbleToSchool.EditorTools
             t.Goal(100f);
         }
 
-        /// <summary>L09: springboards made of fruit crates, awnings, a stall roof.</summary>
+        /// <summary>L09: a toy-shop trampoline, awnings, a stall roof.</summary>
         public static void FruitStalls(TrackBuilder t)
         {
             t.Walls(-8f, 110f);
             t.Start(0f);
             t.Hint(9f, "springboard");
             t.Ground(-8f, 110f);
-            t.Sign("Fruit crates make great springboards!\nRoll the ball onto one, then jump on", new Vector2(6f, 3.4f));
+            t.Sign("A trampoline outside the toy shop!\nRoll the ball onto it, then jump on", new Vector2(6f, 3.4f));
 
             t.Springboard(14f);
             t.Wall(17f, 1.6f);
@@ -612,14 +612,14 @@ namespace DribbleToSchool.EditorTools
             t.Goal(106f);
         }
 
-        /// <summary>L17: ride crane platforms across open pits.</summary>
+        /// <summary>L17: a building site: ride crane-carried pallets over the trenches and the hoist up to the loading dock.</summary>
         public static void Cranes(TrackBuilder t)
         {
             t.Walls(-8f, 110f);
             t.Start(0f);
             t.Hint(15f, "platform");
             t.Ground(-8f, 20f);
-            t.Sign("Ride the crane platforms across.\nChip the ball on first!", new Vector2(5f, 3.4f));
+            t.Sign("The crane is swinging pallets over the trenches.\nChip the ball onto one, then hop on!", new Vector2(5f, 3.4f));
 
             t.Pit(20f, 30f);
             t.MovingPlatform(new Vector2(22f, -0.175f), 2.6f, new Vector2(6f, 0f));
@@ -631,7 +631,7 @@ namespace DribbleToSchool.EditorTools
             t.Checkpoint(55f);
             t.Pit(64f, 70f);
             t.MovingPlatform(new Vector2(66.5f, -0.175f), 2.6f, new Vector2(0f, 2.2f), 1f);
-            t.Sign("Going up!", new Vector2(66.5f, 4.6f));
+            t.Sign("Builder's lift - going up!", new Vector2(66.5f, 4.6f));
             t.Ground(70f, 82f, 2f);
             t.Checkpoint(73f, 2f);
             t.Pit(82f, 90f, 2f);
@@ -744,16 +744,16 @@ namespace DribbleToSchool.EditorTools
             t.Goal(100f);
         }
 
-        /// <summary>L21: swings across the sandpit.</summary>
+        /// <summary>L21: rope swings over the park stream.</summary>
         public static void Playground(TrackBuilder t)
         {
             t.Walls(-8f, 110f);
             t.Start(0f);
             t.Hint(16f, "swing");
             t.Ground(-8f, 22f);
-            t.Sign("Playground! Chip the ball across,\nthen jump on the swing", new Vector2(5f, 3.4f));
+            t.Sign("A rope swing over the stream!\nChip the ball across, then swing over", new Vector2(5f, 3.4f));
 
-            t.Pit(22f, 30f);
+            t.Water(22f, 30f);
             t.Swing(new Vector2(26f, 4.2f), 3.6f, 35f, 3f);
             t.Ground(30f, 52f);
             t.Checkpoint(32f);
@@ -761,7 +761,7 @@ namespace DribbleToSchool.EditorTools
             t.Platform(40f, 46f, 2.4f);
             t.Sign("Climbing frame", new Vector2(43f, 4.3f));
             t.Dog(47f, 51f, DogBlack);
-            t.Pit(52f, 62f);
+            t.Water(52f, 62f);
             t.Swing(new Vector2(55f, 4.4f), 3.8f, 35f, 3.2f, 1f);
             t.Swing(new Vector2(59.5f, 4.4f), 3.8f, 35f, 3.2f, 0f);
             t.Ground(62f, 110f);
@@ -780,13 +780,13 @@ namespace DribbleToSchool.EditorTools
             t.Goal(102f);
         }
 
-        /// <summary>L22: lily pads and stepping stones over the duck pond.</summary>
+        /// <summary>L22: a rope ferry raft and stepping stones over the duck pond.</summary>
         public static void DuckPond(TrackBuilder t)
         {
             t.Walls(-8f, 115f);
             t.Start(0f);
             t.Ground(-8f, 18f);
-            t.Sign("Duck pond! Lily pads and stepping stones", new Vector2(5f, 3f));
+            t.Sign("Duck pond! Ride the rope ferry,\nthen hop the stepping stones", new Vector2(5f, 3f));
 
             t.Water(18f, 28f);
             t.MovingPlatform(new Vector2(20f, -0.175f), 2.2f, new Vector2(5f, 0f), 1.4f);
@@ -829,7 +829,7 @@ namespace DribbleToSchool.EditorTools
             t.Dog(10f, 18f, DogBrown);
             t.Crossing(24f, 29f, 0f);
             t.Checkpoint(32f);
-            t.Pit(40f, 48f);
+            t.Water(40f, 48f);
             t.Swing(new Vector2(44f, 4.2f), 3.6f, 35f, 3f);
             t.Ground(48f, 90f);
             t.Fountain(54f, 0f, 4f, 18f);

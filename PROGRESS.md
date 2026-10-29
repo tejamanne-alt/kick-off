@@ -170,6 +170,21 @@ This file is the resume point. A new session should read it first. All eight pha
 - The playable characters are two original teens made in Blender (`tools/blender/teen.py` and its modules), in a soft hand-painted anime style. The girl (`Art/Models/Girl.fbx`) has a chestnut high ponytail with a yellow scrunchie, freckles, a sky-blue blouse with a rounded white collar, a navy pleated skirt that follows her legs, knee socks, loafers and a yellow backpack. The boy (`Art/Models/Boy.fbx`) has short dark hair with a quiff and a cowlick, a plaster on his cheek, a green ringer T-shirt, khaki shorts, red sneakers and a navy backpack. Both have oblong-oval faces painted at 4x and downscaled, sculpted bodies with mitten hands, and fitted hair with tapered locks. Both are built into each level; `Presentation/CharacterChoice` shows the one picked in Settings → Player (saved as `GameSettings.Character`) and passes the shop's outfits to both. The school uniform keeps each model's own clothes (`IOutfit.ResetOutfit`); other outfits recolour the top (part 1) and the skirt or shorts (part 2), starting from the colours in each model's `.json`. The pennant sits on whichever backpack is showing. The younger kid (`Kid.fbx`) is the fallback.
 - The sky is painted (`ProceduralArt.Sky`, 512 x 256): the chapter colours deepening upward, a glowing haze on the horizon, soft horizontal brush streaks and wisps of high cirrus behind the 3D cumulus.
 
+## Realism and cozy pass
+
+- The level ends as soon as the kid and the ball are both through the school gate: the goal covers the whole school ground past the arch, at any height.
+- A ball the kid can no longer reach sends the run back to the last checkpoint with "The ball can't be reached" (`lose.unreachable`). That happens when it goes over a locked gate while the kid is still on this side (`Gate` is an `IBallStrander`), or when it comes to rest on top of the gate or the underpass deck (`Core/BallTrap`). `LevelManager` waits `strandedDelay` (1.2 s) before acting.
+- Side streets run far back from the footpath, and the second rows of houses and flats (and the distant cranes) now leave a gap for them, so no building stands on a road.
+- Moving platforms always have a visible cause:
+  - Building sites: a pallet hanging from a tower crane, which slews its jib and runs its trolley to follow the load (`World/CraneRig`).
+  - Vertical lifts: a builder's hoist climbing a rack mast.
+  - Park and beach water: a plank raft on a ferry rope between bank posts.
+- Springboards are round garden trampolines.
+- The park's swing crossings are rope swings hanging from a tree over a stream (water instead of a dry pit).
+- The Cranes level reads as a building site with trenches, crane-carried pallets and a builder's lift.
+- Warm sunlight against cool shadows, with soft cel edges and a gentle sky fill in both toon shaders (`_DtsSunColor`, set by `WorldLook.sunColor`).
+- Building fronts get 3D dressing lined up with their painted facades: sills and lintels, window boxes of flowers, door canopies with lamps and potted plants, downpipes, and balconies with railings, plants and towels on the flats.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`.
