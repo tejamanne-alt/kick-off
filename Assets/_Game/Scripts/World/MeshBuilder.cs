@@ -165,6 +165,40 @@ namespace DribbleToSchool.World
             }
         }
 
+        /// <summary>
+        /// A tapered tube standing on <paramref name="baseCenter"/> (smooth sides, flat top): cone
+        /// bands, posts. Radius goes from <paramref name="r0"/> at the bottom to <paramref name="r1"/>.
+        /// </summary>
+        public void Frustum(int submesh, Vector3 baseCenter, float r0, float r1, float height, Color color, bool capTop = false, int segments = 16)
+        {
+            int side = Vertices.Count;
+            float slope = (r0 - r1) / Mathf.Max(height, 1e-4f);
+            for (int s = 0; s <= segments; s++)
+            {
+                float a = s / (float)segments * Mathf.PI * 2f;
+                Vector3 d = new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a));
+                Vector3 n = d + Vector3.up * slope;
+                Vertex(baseCenter + d * r0, n, color, new Vector2(s / (float)segments, 0f));
+                Vertex(baseCenter + d * r1 + Vector3.up * height, n, color, new Vector2(s / (float)segments, 1f));
+            }
+            for (int s = 0; s < segments; s++)
+            {
+                int a = side + s * 2;
+                Tri(submesh, a, a + 1, a + 3);
+                Tri(submesh, a, a + 3, a + 2);
+            }
+            if (!capTop || r1 <= 0f) return;
+            Vector3 top = baseCenter + Vector3.up * height;
+            int hub = Vertex(top, Vector3.up, color, new Vector2(0.5f, 0.5f));
+            int ring = Vertices.Count;
+            for (int s = 0; s <= segments; s++)
+            {
+                float a = s / (float)segments * Mathf.PI * 2f;
+                Vertex(top + new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a)) * r1, Vector3.up, color, new Vector2(0.5f, 0.5f));
+            }
+            for (int s = 0; s < segments; s++) Tri(submesh, hub, ring + s, ring + s + 1);
+        }
+
         [System.Flags]
         public enum Faces { None = 0, Front = 1, Back = 2, Top = 4, Bottom = 8, Left = 16, Right = 32, All = 63, NoBottom = 55 }
 

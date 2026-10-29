@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using DribbleToSchool.Art;
 using DribbleToSchool.World;
 using UnityEngine;
@@ -6,22 +7,32 @@ using UnityEngine;
 namespace DribbleToSchool.EditorTools
 {
     /// <summary>
-    /// Builds the 3D street around the 2D gameplay plane (z = 0): ground slabs with
-    /// pavements, kerbs and the road, side streets at crossings, and the scenery along
-    /// both sides of the street for each chapter. Scale: about 0.9 m per unit.
+    /// Builds the 3D street around the 2D gameplay plane (z = 0): ground slabs with the
+    /// footpath, kerbs and the road, side streets at crossings, and the scenery along the
+    /// street for each chapter. Scale: about 0.9 m per unit.
     ///
     /// Depth layout (z grows away from the camera):
-    ///   z &lt; -2.6       front pavement / verge, running to the bottom of the screen
-    ///   -2.6 .. 2.6    the street the kid plays on (gameplay at z = 0)
-    ///   2.6 .. 4.6     back pavement with utility poles
-    ///   z &gt; 4.6        property walls, houses, shops, trees; the sea on the beach
+    ///   z &lt; -8.1        near pavement, below the bottom of the screen
+    ///   -8.1 .. -1.7    the road (two lanes), in the foreground
+    ///   -1.7 .. -1.5    kerb
+    ///   -1.5 .. 1.5     the footpath the kid runs along (gameplay at z = 0)
+    ///   1.5 .. 1.85     the rest of the footpath, with utility poles
+    ///   z &gt; 1.85       property walls, houses, shops, trees; the sea on the beach
+    ///
+    /// The road and everything behind the footpath run unbroken; gaps in the gameplay
+    /// ground only open holes in the footpath lane (drain works, flooded trenches).
     /// </summary>
     public static class StreetBuilder
     {
         public const float FrontZ = -16f;
-        public const float RoadHalf = 2.6f;
-        public const float PropertyZ = 4.6f;
-        public const float PoleZ = 4.1f;
+        /// <summary>Half the width of the footpath lane the kid runs in.</summary>
+        public const float PathHalf = 1.5f;
+        /// <summary>Road edges: nearer the kid, and nearer the camera.</summary>
+        public const float RoadNear = -1.7f, RoadFar = -8.1f;
+        public const float PropertyZ = 1.85f;
+        public const float PoleZ = 1.55f;
+        /// <summary>Kid-lane half depth: decor nearer z = 0 than this would be walked through.</summary>
+        public const float LaneClear = 0.5f;
         /// <summary>How far back the ground runs behind the street (under the houses and beyond).</summary>
         public const float BackZ = 90f;
 
@@ -38,38 +49,51 @@ namespace DribbleToSchool.EditorTools
 
         static ArtBaker.ArtSet Art { get { return LevelBuildKit.Art; } }
 
+        /// <summary>Which part of the street a strip belongs to (see <see cref="Slab"/>).</summary>
+        public enum Part { Front, Lane, Back }
+
+        static Part PartOf(StripSpec s)
+        {
+            if (s.zTo <= -PathHalf + 0.001f) return Part.Front;
+            if (s.zFrom >= PathHalf - 0.001f) return Part.Back;
+            return Part.Lane;
+        }
+
         static List<StripSpec> StripsFor(int chapter)
         {
             var white = Color.white;
             var s = new List<StripSpec>();
             switch (chapter)
             {
-                case 2:   // market: cobbled street between paved shop fronts
-                    s.Add(new StripSpec(FrontZ, -RoadHalf, 0.06f, ProceduralArt.Surface.Paving, new Color(1f, 0.97f, 0.92f)));
-                    s.Add(new StripSpec(-RoadHalf, RoadHalf, 0f, ProceduralArt.Surface.Cobbles, white));
-                    s.Add(new StripSpec(RoadHalf, PropertyZ + 0.6f, 0.06f, ProceduralArt.Surface.Paving, new Color(1f, 0.97f, 0.92f)));
-                    s.Add(new StripSpec(PropertyZ + 0.6f, BackZ, 0.06f, ProceduralArt.Surface.Paving, new Color(0.92f, 0.9f, 0.86f)));
+                case 2:   // market: a cobbled lane in front of the paved shop fronts
+                    s.Add(new StripSpec(FrontZ, -PathHalf, -0.06f, ProceduralArt.Surface.Cobbles, white));
+                    s.Add(new StripSpec(-PathHalf, PathHalf, 0f, ProceduralArt.Surface.Paving, new Color(1f, 0.97f, 0.92f)));
+                    s.Add(new StripSpec(PathHalf, PropertyZ + 0.6f, 0f, ProceduralArt.Surface.Paving, new Color(1f, 0.97f, 0.92f)));
+                    s.Add(new StripSpec(PropertyZ + 0.6f, BackZ, 0f, ProceduralArt.Surface.Paving, new Color(0.92f, 0.9f, 0.86f)));
                     break;
-                case 3:   // beach: sand down to wet sand at the water's edge
-                    s.Add(new StripSpec(FrontZ, 5.6f, 0f, ProceduralArt.Surface.Sand, white));
+                case 3:   // beach: sand, a firmer trodden track, then wet sand at the water's edge
+                    s.Add(new StripSpec(FrontZ, -PathHalf, 0f, ProceduralArt.Surface.Sand, white));
+                    s.Add(new StripSpec(-PathHalf, PathHalf, 0f, ProceduralArt.Surface.Sand, new Color(0.96f, 0.93f, 0.88f)));
+                    s.Add(new StripSpec(PathHalf, 5.6f, 0f, ProceduralArt.Surface.Sand, white));
                     s.Add(new StripSpec(5.6f, 9f, -0.12f, ProceduralArt.Surface.Sand, new Color(0.82f, 0.74f, 0.62f)));
                     break;
-                case 5:   // park: gravel path between lawns
-                    s.Add(new StripSpec(FrontZ, -RoadHalf, 0.04f, ProceduralArt.Surface.Grass, white));
-                    s.Add(new StripSpec(-RoadHalf, RoadHalf, 0f, ProceduralArt.Surface.Gravel, white));
-                    s.Add(new StripSpec(RoadHalf, PropertyZ + 0.6f, 0.04f, ProceduralArt.Surface.Grass, white));
+                case 5:   // park: a gravel path between lawns
+                    s.Add(new StripSpec(FrontZ, -PathHalf, 0.04f, ProceduralArt.Surface.Grass, white));
+                    s.Add(new StripSpec(-PathHalf, PathHalf, 0f, ProceduralArt.Surface.Gravel, white));
+                    s.Add(new StripSpec(PathHalf, PropertyZ + 0.6f, 0.04f, ProceduralArt.Surface.Grass, white));
                     s.Add(new StripSpec(PropertyZ + 0.6f, BackZ, 0.04f, ProceduralArt.Surface.Grass, new Color(0.92f, 0.95f, 0.9f)));
                     break;
-                default:  // home street (1) and underpass (4): road with kerbs and pavements
+                default:  // home street (1) and city (4): footpath, kerb and a road in front
                 {
                     var pave = chapter == 4 ? ProceduralArt.Surface.Concrete : ProceduralArt.Surface.Paving;
-                    s.Add(new StripSpec(FrontZ, -RoadHalf - 0.2f, 0.14f, pave, white));
-                    s.Add(new StripSpec(-RoadHalf - 0.2f, -RoadHalf, 0.16f, ProceduralArt.Surface.Kerb, white));
-                    s.Add(new StripSpec(-RoadHalf, RoadHalf, 0f, ProceduralArt.Surface.Asphalt, white));
-                    s.Add(new StripSpec(RoadHalf, RoadHalf + 0.2f, 0.16f, ProceduralArt.Surface.Kerb, white));
-                    s.Add(new StripSpec(RoadHalf + 0.2f, PropertyZ + 0.6f, 0.14f, pave, white));
+                    s.Add(new StripSpec(FrontZ, RoadFar - 0.2f, 0f, pave, white));
+                    s.Add(new StripSpec(RoadFar - 0.2f, RoadFar, 0f, ProceduralArt.Surface.Kerb, white));
+                    s.Add(new StripSpec(RoadFar, RoadNear, -0.14f, ProceduralArt.Surface.Asphalt, white));
+                    s.Add(new StripSpec(RoadNear, -PathHalf, 0f, ProceduralArt.Surface.Kerb, white));
+                    s.Add(new StripSpec(-PathHalf, PathHalf, 0f, pave, white));
+                    s.Add(new StripSpec(PathHalf, PropertyZ + 0.6f, 0f, pave, white));
                     // Driveways, yards and gardens behind the property line, under the houses.
-                    s.Add(new StripSpec(PropertyZ + 0.6f, BackZ, 0.14f, ProceduralArt.Surface.Concrete, new Color(0.9f, 0.9f, 0.88f)));
+                    s.Add(new StripSpec(PropertyZ + 0.6f, BackZ, 0f, ProceduralArt.Surface.Concrete, new Color(0.9f, 0.9f, 0.88f)));
                     break;
                 }
             }
@@ -90,11 +114,14 @@ namespace DribbleToSchool.EditorTools
 
         // ---------------------------------------------------------------- ground
 
-        /// <summary>One slab of street from fromX to toX with its gameplay surface at <paramref name="top"/>.</summary>
-        public static GameObject Slab(Transform parent, string name, float fromX, float toX, float top, bool closeLeft, bool closeRight)
+        /// <summary>
+        /// One slab of one part of the street (in front of the footpath, the footpath lane, or
+        /// behind it) from fromX to toX with its gameplay surface at <paramref name="top"/>.
+        /// </summary>
+        public static GameObject Slab(Transform parent, string name, float fromX, float toX, float top, bool closeLeft, bool closeRight, Part part)
         {
             int ch = LevelBuildKit.Chapter;
-            var specs = StripsFor(ch);
+            var specs = StripsFor(ch).FindAll(spec => PartOf(spec) == part);
             var materials = new List<Material>();
             var go = new GameObject(name);
             go.transform.SetParent(parent, false);
@@ -119,11 +146,31 @@ namespace DribbleToSchool.EditorTools
             go.GetComponent<MeshRenderer>().sharedMaterials = materials.ToArray();
             slab.Rebuild();
 
-            if (HasRoadLines(ch))
+            if (HasRoadLines(ch) && part == Part.Front)
             {
-                // White edge lines along the road.
-                foreach (float z in new[] { -RoadHalf + 0.35f, RoadHalf - 0.35f })
-                    Patch(go.transform, "EdgeLine", fromX + 0.1f, toX - 0.1f, top, z - 0.06f, z + 0.06f, new Color(0.95f, 0.95f, 0.93f));
+                // White edge lines along the road, a dashed centre line, and the odd manhole.
+                float road = top - 0.14f;
+                Color paint = new Color(0.95f, 0.95f, 0.93f);
+                foreach (float z in new[] { RoadNear - 0.3f, RoadFar + 0.3f })
+                    Patch(go.transform, "EdgeLine", fromX + 0.1f, toX - 0.1f, road, z - 0.06f, z + 0.06f, paint);
+                float mid = (RoadNear + RoadFar) * 0.5f;
+                for (float x = Mathf.Ceil(fromX / 6f) * 6f; x + 3f < toX; x += 6f)
+                    Patch(go.transform, "CentreDash", x, x + 3f, road, mid - 0.06f, mid + 0.06f, paint);
+                for (float x = Mathf.Ceil(fromX / 37f) * 37f + 11f; x < toX - 1f; x += 37f)
+                {
+                    var cover = new GameObject("Manhole");
+                    cover.transform.SetParent(go.transform, false);
+                    cover.transform.position = new Vector3(x, road + 0.005f, mid - 1.6f);
+                    var disc = cover.AddComponent<CylinderShape>();
+                    disc.axis = Vector3.up;
+                    disc.radius = 0.38f;
+                    disc.length = 0.01f;
+                    disc.sideColor = disc.endColor = new Color(0.36f, 0.36f, 0.38f);
+                    disc.innerRadius = 0.3f;
+                    disc.innerColor = new Color(0.42f, 0.42f, 0.44f);
+                    cover.GetComponent<MeshRenderer>().sharedMaterial = Art.solid;
+                    disc.Rebuild();
+                }
             }
             return go;
         }
@@ -158,9 +205,8 @@ namespace DribbleToSchool.EditorTools
         }
 
         /// <summary>
-        /// Where the pavement meets a side street: the main road surface runs straight through,
-        /// zebra stripes cross the street, and the side street runs away from the camera with
-        /// kerbs and a stop line.
+        /// Where the footpath crosses a side street: a raised zebra crossing, and the side street
+        /// running away from the camera with kerbs and a stop line. The main road in front runs on.
         /// </summary>
         public static void CrossingStreet(Transform parent, float fromX, float toX, float top)
         {
@@ -170,7 +216,7 @@ namespace DribbleToSchool.EditorTools
             var root = new GameObject("SideStreet").transform;
             root.SetParent(parent, false);
 
-            // Road surface from the bottom of the screen to far up the side street.
+            // Road surface from the footpath to far up the side street (the main road in front runs on).
             var surface = new GameObject("Road");
             surface.transform.SetParent(root, false);
             var slab = surface.AddComponent<StreetSlab>();
@@ -179,19 +225,20 @@ namespace DribbleToSchool.EditorTools
             slab.materials = 3;
             slab.sideColor = SideColor(ch);
             slab.sideSubmesh = 2;
-            slab.strips.Add(new StreetSlab.Strip(FrontZ, 70f, 0f, 0, Color.white));
+            // A raised crossing: the side street meets the footpath at footpath height.
+            slab.strips.Add(new StreetSlab.Strip(-PathHalf, 70f, 0f, 0, Color.white));
             surface.GetComponent<MeshRenderer>().sharedMaterials = new[] { asphalt, kerb, Art.solid };
             slab.Rebuild();
 
             // Kerbs along the side street, behind the main street.
             foreach (float x in new[] { fromX + 0.1f, toX - 0.1f })
-                Solid(root, "SideKerb", new Vector3(x, top + 0.08f, (PropertyZ + 70f) * 0.5f), new Vector3(0.22f, 0.16f, 70f - PropertyZ), Color.white, kerb);
+                Solid(root, "SideKerb", new Vector3(x, top + 0.08f, (PathHalf + 70f) * 0.5f), new Vector3(0.22f, 0.16f, 70f - PathHalf), Color.white, kerb);
 
-            // Zebra stripes across the main street, a stop line and centre dashes up the side street.
+            // Zebra stripes where the footpath crosses, a stop line and centre dashes up the side street.
             for (float x = fromX + 0.45f; x < toX - 0.3f; x += 0.95f)
-                Patch(root, "Zebra", x, x + 0.5f, top, -RoadHalf + 0.25f, RoadHalf - 0.25f, new Color(0.95f, 0.95f, 0.93f));
-            Patch(root, "StopLine", fromX + 0.3f, (fromX + toX) * 0.5f, top, PropertyZ + 1.2f, PropertyZ + 1.45f, new Color(0.95f, 0.95f, 0.93f));
-            for (float z = PropertyZ + 3f; z < 70f; z += 4f)
+                Patch(root, "Zebra", x, x + 0.5f, top, -PathHalf + 0.1f, PathHalf - 0.1f, new Color(0.95f, 0.95f, 0.93f));
+            Patch(root, "StopLine", fromX + 0.3f, (fromX + toX) * 0.5f, top, PathHalf + 1f, PathHalf + 1.25f, new Color(0.95f, 0.95f, 0.93f));
+            for (float z = PathHalf + 3f; z < 70f; z += 4f)
                 Patch(root, "CentreDash", (fromX + toX) * 0.5f - 0.06f, (fromX + toX) * 0.5f + 0.06f, top, z, z + 2f, new Color(0.95f, 0.85f, 0.4f));
         }
 
@@ -210,10 +257,10 @@ namespace DribbleToSchool.EditorTools
             return best > float.MinValue ? best : nearestTop;
         }
 
-        /// <summary>Does [a, b] overlap a side street (where the back row must stay open)?</summary>
+        /// <summary>Does [a, b] overlap a side street or the school grounds (where the street's scenery must stay out)?</summary>
         static bool Blocked(LevelBuildKit.TrackBuilder track, float a, float b, out float skipTo)
         {
-            foreach (var area in track.OpenAreas)
+            foreach (var area in track.OpenAreas.Concat(track.QuietAreas))
             {
                 if (b > area.x - 0.6f && a < area.y + 0.6f)
                 {
@@ -313,7 +360,6 @@ namespace DribbleToSchool.EditorTools
                 default: Suburb(track, root, rng, x0, x1); break;
             }
             if (ch != 3) Poles(track, root, x0, x1);
-            FrontVerge(track, root, rng, x0, x1, ch);
         }
 
         static void Poles(LevelBuildKit.TrackBuilder track, Transform root, float x0, float x1)
@@ -327,7 +373,7 @@ namespace DribbleToSchool.EditorTools
             {
                 float skip;
                 if (Blocked(track, x - 0.5f, x + 0.5f, out skip)) continue;
-                line.poles.Add(new Vector3(x, GroundAt(track, x) + 0.14f, PoleZ));
+                line.poles.Add(new Vector3(x, GroundAt(track, x), PoleZ));
             }
             go.GetComponent<MeshRenderer>().sharedMaterial = Art.solid;
             line.Rebuild();
@@ -341,7 +387,7 @@ namespace DribbleToSchool.EditorTools
             {
                 float lot = Rand(rng, 9f, 13f), skip;
                 if (Blocked(track, x, x + lot, out skip)) { x = skip; continue; }
-                float cx = x + lot * 0.5f, gy = GroundAt(track, cx) + 0.14f;
+                float cx = x + lot * 0.5f, gy = GroundAt(track, cx);
 
                 // Block wall along the front of the lot with a gap for the gate.
                 float gate = Rand(rng, x + 2f, x + lot - 4f);
@@ -368,7 +414,7 @@ namespace DribbleToSchool.EditorTools
             // A second row of houses further back gives the street depth.
             for (float x = x0 - 20f; x < x1 + 20f; x += Rand(rng, 10f, 14f))
             {
-                float gy = GroundAt(track, x) + 0.14f;
+                float gy = GroundAt(track, x);
                 Building(root, x, gy, Rand(rng, 20f, 24f), rng.NextDouble() < 0.5 ? ProceduralArt.FacadeKind.HouseGable : ProceduralArt.FacadeKind.HouseLong,
                     rng.NextDouble() < 0.5 ? House3D.RoofStyle.GableToStreet : House3D.RoofStyle.GableSideways, 7f, 2.4f, new Color(0.93f, 0.93f, 0.9f), roofDark);
             }
@@ -391,7 +437,7 @@ namespace DribbleToSchool.EditorTools
             {
                 float w = 8f, skip;
                 if (Blocked(track, x, x + w, out skip)) { x = skip; continue; }
-                float cx = x + w * 0.5f, gy = GroundAt(track, cx) + 0.06f;
+                float cx = x + w * 0.5f, gy = GroundAt(track, cx);
                 var kind = i % 2 == 0 ? ProceduralArt.FacadeKind.Shop0 : ProceduralArt.FacadeKind.Shop1;
                 Building(root, cx, gy, PropertyZ + 0.6f, kind, House3D.RoofStyle.Flat, 8f, 0f, i % 3 == 0 ? new Color(0.95f, 0.9f, 0.82f) : new Color(0.88f, 0.9f, 0.94f), new Color(0.6f, 0.6f, 0.62f));
                 // Awning sticking out over the pavement.
@@ -436,7 +482,7 @@ namespace DribbleToSchool.EditorTools
             {
                 float w = Rand(rng, 11f, 14f), skip;
                 if (Blocked(track, x, x + w, out skip)) { x = skip; continue; }
-                float cx = x + w * 0.5f, gy = GroundAt(track, cx) + 0.14f;
+                float cx = x + w * 0.5f, gy = GroundAt(track, cx);
                 if (rng.NextDouble() < 0.5)
                     Solid(root, "Hoarding", new Vector3(cx, gy + 1.3f, PropertyZ + 0.2f), new Vector3(w - 0.3f, 2.6f, 0.2f), Color.white, hoarding);
                 if (rng.NextDouble() < 0.5)
@@ -485,33 +531,6 @@ namespace DribbleToSchool.EditorTools
             var far = CutOut(root, "DistantHills", Art.far[ch], (x0 + x1) * 0.5f, track.LowestGroundTop - 6f, 260f, 6f, -85);
             far.drawMode = SpriteDrawMode.Tiled;
             far.size = new Vector2((x1 - x0 + 900f) / 6f, Art.far[ch].bounds.size.y);
-        }
-
-        /// <summary>Low things on the near side of the street: planters with shrubs, bike racks, verge plants.</summary>
-        static void FrontVerge(LevelBuildKit.TrackBuilder track, Transform root, System.Random rng, float x0, float x1, int ch)
-        {
-            if (ch == 3) return;
-            for (float x = x0; x < x1; x += Rand(rng, 12f, 22f))
-            {
-                float skip;
-                if (Blocked(track, x - 1f, x + 1f, out skip)) continue;
-                float gy = GroundAt(track, x) + 0.14f, z = Rand(rng, -6.5f, -4.5f);
-                if (rng.NextDouble() < 0.6)
-                {
-                    Solid(root, "Planter", new Vector3(x, gy + 0.22f, z), new Vector3(2f, 0.44f, 0.8f), new Color(0.72f, 0.36f, 0.28f));
-                    CutOut(root, "PlanterBush", Art.bush, x, gy + 0.4f, z, 0.8f, 30);
-                }
-                else
-                {
-                    // Bike rack: two inverted-U hoops.
-                    foreach (float dx in new[] { -0.5f, 0.5f })
-                    {
-                        Solid(root, "RackPost", new Vector3(x + dx - 0.35f, gy + 0.4f, z), new Vector3(0.06f, 0.8f, 0.06f), new Color(0.45f, 0.47f, 0.45f));
-                        Solid(root, "RackPost", new Vector3(x + dx + 0.35f, gy + 0.4f, z), new Vector3(0.06f, 0.8f, 0.06f), new Color(0.45f, 0.47f, 0.45f));
-                        Solid(root, "RackTop", new Vector3(x + dx, gy + 0.8f, z), new Vector3(0.76f, 0.06f, 0.06f), new Color(0.45f, 0.47f, 0.45f));
-                    }
-                }
-            }
         }
     }
 }

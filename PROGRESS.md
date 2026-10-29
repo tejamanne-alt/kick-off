@@ -147,6 +147,14 @@ This file is the resume point. A new session should read it first. All eight pha
   - Ground shadows for the kid and ball (`Presentation/GroundShadow`).
   - The 2D paper-doll parts and the unused car, dog and seagull sprites are gone.
 - Controls and type: `UI/Kit/TouchButton` see-through glass buttons (no border, faint tint, soft white icons) that brighten and shrink when held, with a faint ripple and a halo on KICK when the ball is in reach; haptic click on press and soft tap on release (`Haptics.Press/Release`, rigid/soft styles on iOS, predefined effects on Android). Menu buttons push down onto a base. Fonts: Lilita One (display) and Varela Round (body).
+- Footpath layout (generated content v19), from playtest feedback:
+  - The kid runs on the footpath (z = 0) with the house walls behind and the two-lane road in front, toward the camera. The road (edge lines, centre dashes, manholes) and the strip behind the footpath never break.
+  - Gaps open holes only in the footpath lane: drain works with a pipe, dark walls, a concrete lip, safety cones before and after and a striped barrier. Water gaps are rain-flooded trenches (a tidal stream on the beach). Raised ground makes a stepped walkway with a retaining wall above the road.
+  - Puddles and soft sand are irregular shapes (`World/PuddleShape`) with wet rims and reflected sky.
+  - Footpath obstacles look real: stone steps, flower planters, stacked drinks crates; rocks on the beach and hedges in the park (`TrackBuilder.Obstacle`).
+  - The gate is a sliding steel gate with a no-entry sign, buzzed open by kicking the ball at an intercom on a gooseneck post (a push-button bollard when low). `Gate` can slide a panel aside and switch its collider off.
+  - Decor is kept out of the kid's line or is solid: pedestrians and the dog walk just behind it, signs, flags, poles, pipes and target posts stand at the back of the footpath.
+  - The level ends at the school's front gate: a stone arch with a tiled roof and name board in the school wall, gates open, the school across the yard.
 
 ## After Phase 8 (next steps)
 

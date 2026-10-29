@@ -76,7 +76,7 @@ namespace DribbleToSchool.Localization
                 { "toast.gate", "Gate open!" }, { "toast.squawk", "Squawk!" }, { "toast.sticker", "Sticker found!" },
 
                 // Losing the ball
-                { "lose.ball", "Lost the ball!" }, { "lose.gap", "Into the gap!" }, { "lose.splash", "Splash!" },
+                { "lose.ball", "Lost the ball!" }, { "lose.gap", "Into the hole!" }, { "lose.splash", "Splash!" },
                 { "lose.tide", "Splash! Wait for the tide" }, { "lose.fell", "Lost the ball!" },
                 { "lose.behind", "Left the ball behind!" }, { "lose.honk", "Honk! Wait for the green man" },
                 { "lose.checkpoint", "Back to the checkpoint" }, { "lose.offStart", "The ball rolled back home!" },
@@ -104,7 +104,7 @@ namespace DribbleToSchool.Localization
                 { "tut.jump", "Tap JUMP or swipe up. Hold for a higher jump." },
                 { "tut.kick", "Drag from KICK the way you want the ball to go, then let go. Longer drag = more power. Tap KICK for a quick pass." },
                 { "tut.juggle", "Kick the ball up, then tap each time it drops near you to juggle." },
-                { "tut.gate", "Locked gate! Kick the ball hard at the red button." },
+                { "tut.gate", "Locked gate! Kick the ball hard at the call button to buzz it open." },
                 { "tut.puddle", "Puddles slow the ball and your feet." },
                 { "tut.pedestrian", "The ball bounces off people. Chip it over, or wait for a gap." },
                 { "tut.crossing", "Red man means cars are coming! Wait for the green man." },
@@ -217,7 +217,7 @@ namespace DribbleToSchool.Localization
                 { "tut.jump", "Toca SALTO o desliza hacia arriba. Mantén para saltar más." },
                 { "tut.kick", "Arrastra desde CHUTA hacia donde quieras mandar el balón y suelta. Toca CHUTA para un pase rápido." },
                 { "tut.juggle", "Levanta el balón y toca cada vez que baje para hacer toques." },
-                { "tut.gate", "¡Puerta cerrada! Chuta fuerte al botón rojo." },
+                { "tut.gate", "¡Puerta cerrada! Chuta fuerte al botón del portero automático para abrirla." },
                 { "tut.puddle", "Los charcos frenan el balón y tus pies." },
                 { "tut.pedestrian", "El balón rebota en la gente. Pásalo por encima o espera." },
                 { "tut.crossing", "¡Muñeco rojo: vienen coches! Espera al muñeco verde." },
