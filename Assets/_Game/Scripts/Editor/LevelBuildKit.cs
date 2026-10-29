@@ -892,8 +892,16 @@ namespace DribbleToSchool.EditorTools
                 // Pedestrian signal on the far pavement at the kerb, facing the kid:
                 // red standing man above, green walking man below.
                 float poleX = fromX - 1.2f, poleZ = StreetBuilder.PathHalf + 0.15f, pave = groundTop;
-                StreetBuilder.Solid(root, "SignalPole", new Vector3(poleX, pave + 1.4f, poleZ), new Vector3(0.12f, 2.8f, 0.12f), new Color(0.55f, 0.56f, 0.58f));
-                StreetBuilder.Solid(root, "SignalBox", new Vector3(poleX, pave + 2.45f, poleZ - 0.1f), new Vector3(0.55f, 1f, 0.3f), new Color(0.15f, 0.15f, 0.17f));
+                Color poleGrey = new Color(0.56f, 0.58f, 0.6f), housing = new Color(0.2f, 0.21f, 0.23f);
+                Cylinder(root, "SignalBase", new Vector3(poleX, pave, poleZ), new Vector3(poleX, pave + 0.12f, poleZ), 0.13f, poleGrey);
+                Cylinder(root, "SignalPole", new Vector3(poleX, pave, poleZ), new Vector3(poleX, pave + 2.95f, poleZ), 0.06f, poleGrey);
+                // The push-button box at hand height, and the two-lamp head with hooded visors.
+                StreetBuilder.Solid(root, "ButtonBox", new Vector3(poleX, pave + 1.1f, poleZ - 0.1f), new Vector3(0.2f, 0.3f, 0.12f), new Color(0.95f, 0.78f, 0.22f));
+                StreetBuilder.Solid(root, "Button", new Vector3(poleX, pave + 1.06f, poleZ - 0.165f), new Vector3(0.08f, 0.08f, 0.02f), new Color(0.2f, 0.2f, 0.22f));
+                StreetBuilder.Solid(root, "SignalBox", new Vector3(poleX, pave + 2.45f, poleZ - 0.1f), new Vector3(0.5f, 1f, 0.3f), housing);
+                foreach (float vy in new[] { 2.68f, 2.22f })
+                    StreetBuilder.Solid(root, "Visor", new Vector3(poleX, pave + vy + 0.2f, poleZ - 0.33f), new Vector3(0.44f, 0.04f, 0.16f), housing);
+                StreetBuilder.Solid(root, "SignalCap", new Vector3(poleX, pave + 2.97f, poleZ - 0.1f), new Vector3(0.54f, 0.05f, 0.34f), Color.Lerp(housing, Color.white, 0.15f));
                 crossing.redFigure = SpriteObject(go.transform, "RedMan", Art.standFigure, Vector3.zero, 1);
                 crossing.redFigure.transform.position = new Vector3(poleX, pave + 2.68f, poleZ - 0.27f);
                 crossing.greenFigure = SpriteObject(go.transform, "GreenMan", Art.walkFigure, Vector3.zero, 1);
