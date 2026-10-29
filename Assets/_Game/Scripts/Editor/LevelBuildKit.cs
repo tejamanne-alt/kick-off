@@ -159,6 +159,8 @@ namespace DribbleToSchool.EditorTools
             kidRig.rig.gameObject.AddComponent<KidAnimator>().kid = kid;
             MonoBehaviour kidOutfit = kidRig.outfit;
             var kidFlags = new List<SpriteRenderer> { kidRig.flag };
+            if (boyRig.rig != null && girlRig.rig == null)
+                Debug.LogWarning("[Dribble To School] The girl model did not load: Settings > Player will always show the boy.");
             if (girlRig.rig != null)
             {
                 girlRig.rig.gameObject.AddComponent<KidAnimator>().kid = kid;
@@ -365,7 +367,11 @@ namespace DribbleToSchool.EditorTools
         {
             var parts = new CharacterParts();
             var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(ModelsDir + "/" + file + ".fbx");
-            if (prefab == null) return parts;
+            if (prefab == null)
+            {
+                Debug.LogWarning("[Dribble To School] Missing " + ModelsDir + "/" + file + ".fbx; using a fallback character.");
+                return parts;
+            }
 
             var visual = new GameObject("Visual").transform;
             visual.SetParent(parent, false);
