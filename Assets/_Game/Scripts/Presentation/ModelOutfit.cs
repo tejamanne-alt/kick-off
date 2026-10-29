@@ -65,6 +65,11 @@ namespace DribbleToSchool.Presentation
             mesh.colors = colors;
         }
 
+        public void ResetOutfit()
+        {
+            if (mesh != null && original != null) mesh.colors = original;
+        }
+
         /// <summary>Keeps how much lighter or darker this vertex is than the default colour.</summary>
         static Color Recolor(Color c, Color from, Color to)
         {

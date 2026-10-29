@@ -17,9 +17,12 @@ namespace DribbleToSchool.Cosmetics
         public TrailRenderer ballTrail;
 
         [Header("Kid")]
-        [Tooltip("Dressed in the outfit's shirt and shorts colours (a CharacterBody3D or ModelOutfit).")]
+        [Tooltip("Dressed in the outfit's shirt and shorts colours (a CharacterBody3D, ModelOutfit or CharacterChoice).")]
         public MonoBehaviour kidBody;
-        public SpriteRenderer backpackFlag;
+        [Tooltip("The pennant on each playable character's bag.")]
+        public SpriteRenderer[] backpackFlags;
+        [Tooltip("The outfit that leaves the characters in the clothes they were made with.")]
+        public string uniformId = "outfit_school";
 
         static readonly int MainTexId = Shader.PropertyToID("_MainTex");
         static readonly int MainTexStId = Shader.PropertyToID("_MainTex_ST");
@@ -62,15 +65,20 @@ namespace DribbleToSchool.Cosmetics
             {
                 // Re-dressing is cheap but not free: only when the outfit changes.
                 dressedIn = outfit.id;
-                dressable.SetOutfit(outfit.primary, outfit.secondary);
+                if (outfit.id == uniformId) dressable.ResetOutfit();
+                else dressable.SetOutfit(outfit.primary, outfit.secondary);
             }
 
             var flag = catalog.Find(save.equippedFlag);
-            if (backpackFlag != null)
+            if (backpackFlags != null)
             {
                 bool show = flag != null && flag.pattern != CosmeticPattern.None;
-                backpackFlag.enabled = show;
-                if (show) backpackFlag.sprite = CosmeticArt.FlagSprite(flag);
+                foreach (var backpackFlag in backpackFlags)
+                {
+                    if (backpackFlag == null) continue;
+                    backpackFlag.enabled = show;
+                    if (show) backpackFlag.sprite = CosmeticArt.FlagSprite(flag);
+                }
             }
 
             var trail = catalog.Find(save.equippedTrail);

@@ -56,6 +56,11 @@ namespace DribbleToSchool.Presentation
             Rebuild();
         }
 
+        public void ResetOutfit()
+        {
+            SetOutfit(new Color(0.97f, 0.97f, 0.99f), new Color(0.22f, 0.23f, 0.42f));
+        }
+
         public void Rebuild()
         {
             if (rig == null || rig.body == null) return;

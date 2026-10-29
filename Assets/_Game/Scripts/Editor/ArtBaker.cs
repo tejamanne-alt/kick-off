@@ -47,6 +47,9 @@ namespace DribbleToSchool.EditorTools
             public Material kid;
             /// <summary>The Blender-made adult (pedestrians).</summary>
             public Material adult;
+            /// <summary>The Blender-made teen boy and girl (the playable characters).</summary>
+            public Material boy;
+            public Material girl;
             /// <summary>Like <see cref="character"/>, textured with the equipped ball skin at runtime.</summary>
             public Material ball;
 
@@ -182,6 +185,12 @@ namespace DribbleToSchool.EditorTools
             set.adult = LoadOrCreateMaterial("Adult", toonCharacter);
             set.adult.mainTexture = AssetDatabase.LoadAssetAtPath<Texture2D>(LevelBuildKit.ModelsDir + "/AdultAtlas.png");
             EditorUtility.SetDirty(set.adult);
+            set.boy = LoadOrCreateMaterial("Boy", toonCharacter);
+            set.boy.mainTexture = AssetDatabase.LoadAssetAtPath<Texture2D>(LevelBuildKit.ModelsDir + "/BoyAtlas.png");
+            EditorUtility.SetDirty(set.boy);
+            set.girl = LoadOrCreateMaterial("Girl", toonCharacter);
+            set.girl.mainTexture = AssetDatabase.LoadAssetAtPath<Texture2D>(LevelBuildKit.ModelsDir + "/GirlAtlas.png");
+            EditorUtility.SetDirty(set.girl);
             set.ball = LoadOrCreateMaterial("Ball", toonCharacter);
             set.ball.SetFloat("_OutlineWidth", 0.0018f);
             EditorUtility.SetDirty(set.ball);

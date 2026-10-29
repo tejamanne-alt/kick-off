@@ -14,7 +14,16 @@ cp Kid.fbx ../../Assets/_Game/Art/Models/Kid.fbx
 cp face.png ../../Assets/_Game/Art/Models/KidAtlas.png
 cp Adult.fbx ../../Assets/_Game/Art/Models/Adult.fbx
 cp face_adult.png ../../Assets/_Game/Art/Models/AdultAtlas.png
+python face_teen.py face_boy.png && python face_teen.py face_girl.png --girl   # the teens' faces
+blenv/bin/python teen.py -- $PWD/Boy.fbx --boy     # the playable teen boy: white shirt, rolled sleeves, dark trousers
+blenv/bin/python teen.py -- $PWD/Girl.fbx --girl   # the playable teen girl: coral dress, belt, socks, satchel
+cp Boy.fbx Girl.fbx ../../Assets/_Game/Art/Models/
+cp face_boy.png ../../Assets/_Game/Art/Models/BoyAtlas.png
+cp face_girl.png ../../Assets/_Game/Art/Models/GirlAtlas.png
 ```
+
+The teens are original characters drawn in a soft hand-painted anime style; Settings → Player
+picks which one walks to school (both are built into each level, `CharacterChoice` shows one).
 
 What the model carries:
 - One skinned mesh, one material: vertex colours times the atlas (the face is painted in the

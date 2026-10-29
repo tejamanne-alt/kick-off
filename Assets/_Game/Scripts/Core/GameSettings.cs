@@ -55,6 +55,13 @@ namespace DribbleToSchool.Core
             set { SetBool("settings.colorblindAim", value); }
         }
 
+        /// <summary>Who walks to school: "boy" or "girl".</summary>
+        public static string Character
+        {
+            get { return PlayerPrefs.GetString("settings.character", "boy") == "girl" ? "girl" : "boy"; }
+            set { PlayerPrefs.SetString("settings.character", value == "girl" ? "girl" : "boy"); Save(); }
+        }
+
         public static string Language
         {
             get { return PlayerPrefs.GetString("settings.language", ""); }

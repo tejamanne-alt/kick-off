@@ -25,6 +25,17 @@ namespace DribbleToSchool.UI
             ToggleRow(card.transform, new Vector2(0.27f, 1f), ref y, "settings.haptics", GameSettings.HapticsEnabled, v => GameSettings.HapticsEnabled = v);
             ToggleRow(card.transform, new Vector2(0.27f, 1f), ref y, "settings.shake", GameSettings.ScreenShakeEnabled, v => GameSettings.ScreenShakeEnabled = v);
 
+            // Who walks to school: the boy or the girl.
+            var playerLabel = UIKit.Label(card.transform, "PlayerLabel", Loc.T("settings.player"), 34, UITheme.Ink, TextAnchor.MiddleLeft, true);
+            UIKit.Place(playerLabel.rectTransform, new Vector2(0.27f, 1f), new Vector2(-100f, y), new Vector2(400f, 70f));
+            Button player = null;
+            player = UIKit.Button(card.transform, "Player", Loc.T("settings." + GameSettings.Character), UITheme.Blue, () =>
+            {
+                GameSettings.Character = GameSettings.Character == "girl" ? "boy" : "girl";
+                player.GetComponentInChildren<Text>().text = Loc.T("settings." + GameSettings.Character);
+            }, 34);
+            UIKit.Place((RectTransform)player.transform, new Vector2(0.27f, 1f), new Vector2(170f, y), new Vector2(220f, 80f));
+
             y = -170f;
             ToggleRow(card.transform, new Vector2(0.73f, 1f), ref y, "settings.bell", GameSettings.BellTimerEnabled, v => GameSettings.BellTimerEnabled = v);
             var hint = UIKit.Label(card.transform, "BellHint", Loc.T("settings.bellHint"), 28, UITheme.InkSoft);

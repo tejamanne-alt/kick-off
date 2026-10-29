@@ -6,5 +6,7 @@ namespace DribbleToSchool.Presentation
     public interface IOutfit
     {
         void SetOutfit(Color shirt, Color legwear);
+        /// <summary>Back to the clothes the character was made with (the school uniform).</summary>
+        void ResetOutfit();
     }
 }

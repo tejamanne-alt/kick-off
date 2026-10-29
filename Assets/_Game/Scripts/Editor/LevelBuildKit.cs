@@ -140,8 +140,12 @@ namespace DribbleToSchool.EditorTools
             var capsule = kidGo.AddComponent<CapsuleCollider2D>();
             capsule.size = new Vector2(0.5f, 1.2f);
             capsule.sharedMaterial = kidMat;
-            // The kid made in Blender (tools/blender/kid.py), or the procedural one if it is missing.
-            var kidRig = BuildModelCharacter(kidGo.transform, "Kid", Art.kid, 1.3f, Vector3.zero, true);
+            // The teen boy and girl made in Blender (tools/blender/teen.py); Settings picks one.
+            // Without them, the younger Blender kid, or the procedural one.
+            var boyRig = BuildModelCharacter(kidGo.transform, "Boy", Art.boy, 1.41f, TeenFeet(1.41f), true);
+            var girlRig = boyRig.rig != null ? BuildModelCharacter(kidGo.transform, "Girl", Art.girl, 1.37f, TeenFeet(1.37f), true) : new CharacterParts();
+            var kidRig = boyRig;
+            if (kidRig.rig == null) kidRig = BuildModelCharacter(kidGo.transform, "Kid", Art.kid, 1.3f, Vector3.zero, true);
             if (kidRig.rig == null)
                 kidRig = BuildCharacter(kidGo.transform, "Visual", Vector2.zero, 1f, KidColor, new Color(0.22f, 0.23f, 0.42f),
                     new Color(0.16f, 0.15f, 0.2f), true);   // glossy near-black hair
@@ -152,6 +156,23 @@ namespace DribbleToSchool.EditorTools
             kid.tuning = playerTuning;
             kid.feet = feet;
             kidRig.rig.gameObject.AddComponent<KidAnimator>().kid = kid;
+            MonoBehaviour kidOutfit = kidRig.outfit;
+            var kidFlags = new List<SpriteRenderer> { kidRig.flag };
+            if (girlRig.rig != null)
+            {
+                girlRig.rig.gameObject.AddComponent<KidAnimator>().kid = kid;
+                // Her dress is the model's "shirt" part.
+                ((ModelOutfit)girlRig.outfit).defaultShirt = new Color(0.86f, 0.4f, 0.42f);
+                boyRig.visual.name = "Boy";
+                girlRig.visual.name = "Girl";
+                var choice = kidGo.AddComponent<CharacterChoice>();
+                choice.boy = boyRig.visual.gameObject;
+                choice.girl = girlRig.visual.gameObject;
+                choice.boyOutfit = boyRig.outfit;
+                choice.girlOutfit = girlRig.outfit;
+                kidOutfit = choice;
+                kidFlags.Add(girlRig.flag);
+            }
 
             // Ball
             var ballGo = new GameObject("Ball");
@@ -247,8 +268,8 @@ namespace DribbleToSchool.EditorTools
             applier.catalog = Cosmetics;
             applier.ballRenderer = shell.GetComponent<MeshRenderer>();
             applier.ballTrail = trail;
-            applier.kidBody = kidRig.outfit;
-            applier.backpackFlag = kidRig.flag;
+            applier.kidBody = kidOutfit;
+            applier.backpackFlags = kidFlags.ToArray();
 
             var tuningPanel = new GameObject("DevTuning").AddComponent<DevTuningPanel>();
             tuningPanel.kid = kid;
@@ -402,16 +423,29 @@ namespace DribbleToSchool.EditorTools
             parts.outfit = outfit;
             if (!kid) return parts;
 
-            // The shop's pennant, clipped to the top of the bag on the camera side.
+            // The shop's pennant, clipped to the top of the bag on the camera side: the kid's
+            // backpack, or the teens' satchel (its bone sits at the bag's top edge).
+            Vector3 polePos = new Vector3(-0.18f, 0.6f, -0.16f);
+            if (file != "Kid")
+            {
+                Vector3 top = body.InverseTransformPoint(bag.position);
+                polePos = new Vector3(top.x - 0.02f, top.y + 0.08f, -0.15f);
+            }
             var pole = Visual(bag, "FlagPole", Square, Vector2.zero, new Vector2(0.015f, 0.2f), new Color(0.3f, 0.25f, 0.2f), 7);
-            pole.transform.position = body.TransformPoint(new Vector3(-0.18f, 0.6f, -0.16f));
+            pole.transform.position = body.TransformPoint(polePos);
             pole.transform.rotation = body.rotation;
             var flag = Visual(bag, "BackpackFlag", Square, Vector2.zero, new Vector2(0.12f, 0.09f), Color.white, 7);
-            flag.transform.position = body.TransformPoint(new Vector3(-0.24f, 0.66f, -0.16f));
+            flag.transform.position = body.TransformPoint(polePos + new Vector3(-0.06f, 0.06f, 0f));
             flag.transform.rotation = body.rotation;
 
             parts.flag = flag.GetComponent<SpriteRenderer>();
             return parts;
+        }
+
+        /// <summary>Lifts a model built with <paramref name="neckHeight"/> so its feet stay on the kid's (local y -0.6).</summary>
+        static Vector3 TeenFeet(float neckHeight)
+        {
+            return new Vector3(0f, 0.6f * neckHeight / 1.3f - 0.6f, 0f);
         }
 
         static Transform FindDeep(Transform root, string name)
