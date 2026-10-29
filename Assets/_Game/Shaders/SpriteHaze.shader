@@ -1,5 +1,5 @@
 // Sprite shader for cut-outs placed in the 3D street (trees, distant skyline, signs):
-// like Sprites/Default, plus the same distance haze as DribbleToSchool/Toon so
+// like Sprites/Default, plus the same warm distance haze as DribbleToSchool/Toon (DtsLook) so
 // far-away cards fade into the sky with the buildings around them.
 Shader "DribbleToSchool/SpriteHaze"
 {
@@ -22,11 +22,10 @@ Shader "DribbleToSchool/SpriteHaze"
             #pragma vertex vert
             #pragma fragment frag
             #include "UnityCG.cginc"
+            #include "DtsLook.cginc"
 
             sampler2D _MainTex;
             fixed4 _Color;
-            fixed4 _DtsFogColor;
-            float4 _DtsFogRange;
 
             struct appdata
             {
@@ -56,9 +55,7 @@ Shader "DribbleToSchool/SpriteHaze"
             fixed4 frag (v2f i) : SV_Target
             {
                 fixed4 c = tex2D(_MainTex, i.uv) * i.color;
-                float dist = distance(_WorldSpaceCameraPos, i.worldPos);
-                float f = saturate((dist - _DtsFogRange.x) / max(_DtsFogRange.y - _DtsFogRange.x, 0.01)) * _DtsFogColor.a;
-                c.rgb = lerp(c.rgb, _DtsFogColor.rgb, f);
+                c.rgb = DtsHaze(c.rgb, i.worldPos, 1.0);
                 c.rgb *= c.a;
                 return c;
             }

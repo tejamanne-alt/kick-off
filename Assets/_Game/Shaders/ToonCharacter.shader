@@ -21,6 +21,8 @@ Shader "DribbleToSchool/ToonCharacter"
 
         CGINCLUDE
         #include "UnityCG.cginc"
+        #include "AutoLight.cginc"
+        #include "DtsLook.cginc"
 
         sampler2D _MainTex;
         float4 _MainTex_ST;
@@ -29,17 +31,6 @@ Shader "DribbleToSchool/ToonCharacter"
         float _RimStrength;
         fixed4 _OutlineColor;
         float _OutlineWidth;
-
-        float4 _DtsLightDir;
-        fixed4 _DtsFogColor;
-        float4 _DtsFogRange;
-        fixed4 _DtsSunColor;
-
-        float HazeAmount(float3 worldPos)
-        {
-            float dist = distance(_WorldSpaceCameraPos, worldPos);
-            return saturate((dist - _DtsFogRange.x) / max(_DtsFogRange.y - _DtsFogRange.x, 0.01)) * _DtsFogColor.a;
-        }
         ENDCG
 
         // Ink outline: back faces pushed out in clip space, so the line stays the same
@@ -76,7 +67,7 @@ Shader "DribbleToSchool/ToonCharacter"
             fixed4 frag (v2f i) : SV_Target
             {
                 fixed3 col = lerp(_OutlineColor.rgb, i.color.rgb * _Color.rgb * 0.32, 0.35);
-                col = lerp(col, _DtsFogColor.rgb, HazeAmount(i.worldPos));
+                col = DtsHaze(col, i.worldPos, 1.0);
                 return fixed4(col, 1);
             }
             ENDCG
@@ -85,10 +76,12 @@ Shader "DribbleToSchool/ToonCharacter"
         Pass
         {
             Name "Toon"
+            Tags { "LightMode"="ForwardBase" }
             Cull Back
             CGPROGRAM
             #pragma vertex vert
             #pragma fragment frag
+            #pragma multi_compile_fwdbase nolightmap nodirlightmap nodynlightmap novertexlight
 
             struct appdata { float4 vertex : POSITION; float3 normal : NORMAL; float2 uv : TEXCOORD0; fixed4 color : COLOR; };
             struct v2f
@@ -98,6 +91,7 @@ Shader "DribbleToSchool/ToonCharacter"
                 float3 normal : TEXCOORD1;
                 float3 worldPos : TEXCOORD2;
                 fixed4 color : COLOR;
+                SHADOW_COORDS(3)
             };
 
             v2f vert (appdata v)
@@ -108,6 +102,7 @@ Shader "DribbleToSchool/ToonCharacter"
                 o.normal = UnityObjectToWorldNormal(v.normal);
                 o.uv = TRANSFORM_TEX(v.uv, _MainTex);
                 o.color = v.color;
+                TRANSFER_SHADOW(o);
                 return o;
             }
 
@@ -115,25 +110,24 @@ Shader "DribbleToSchool/ToonCharacter"
             {
                 float3 n = normalize(i.normal);
                 fixed4 tex = tex2D(_MainTex, i.uv) * _Color * i.color;
-
-                float3 l = _DtsLightDir.xyz;
-                l = dot(l, l) > 0.0001 ? normalize(l) : float3(0, 1, 0);
+                float3 l = DtsLightDir();
                 float d = dot(n, l);
-                // Two bands with a narrow soft edge (anime cel shading).
-                float lit = smoothstep(-0.02, 0.06, d);
-                fixed3 sun = _DtsSunColor.a > 0.5 ? _DtsSunColor.rgb : fixed3(1, 1, 1);
-                fixed3 col = lerp(tex.rgb * _ShadowColor.rgb, tex.rgb * sun, lit);
+                // Two cel bands with a narrow soft edge (the anime look), the shade tinted by the
+                // sky and the warm bounce like the street around it; sun shadows fall into the shade.
+                float lit = smoothstep(-0.02, 0.06, d) * lerp(0.15, 1.0, SHADOW_ATTENUATION(i));
+                fixed3 col = lerp(tex.rgb * DtsShadeTint(_ShadowColor.rgb, n), tex.rgb * DtsSun(), lit);
 
                 // Rim light on the sunny side's silhouette.
                 float3 v = normalize(_WorldSpaceCameraPos - i.worldPos);
                 float rim = smoothstep(0.62, 0.78, 1.0 - saturate(dot(n, v))) * saturate(d + 0.35);
-                col += rim * _RimStrength;
+                col += rim * _RimStrength * DtsSun();
 
-                col = lerp(col, _DtsFogColor.rgb, HazeAmount(i.worldPos));
+                col = DtsHaze(col, i.worldPos, 1.0);
                 return fixed4(col, 1);
             }
             ENDCG
         }
     }
-    FallBack "Unlit/Texture"
+    // The fallback supplies the shadow caster pass.
+    FallBack "Legacy Shaders/VertexLit"
 }

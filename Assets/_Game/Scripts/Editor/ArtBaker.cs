@@ -41,6 +41,8 @@ namespace DribbleToSchool.EditorTools
             public Material cloud;
             /// <summary>Additive sprites for lamp light.</summary>
             public Material glow;
+            /// <summary>The sky dome (gradient, glowing horizon, the sun).</summary>
+            public Material skyDome;
             /// <summary>Cel-shaded, ink-outlined material for characters (vertex colours).</summary>
             public Material character;
             /// <summary>The Blender-made kid: the character shader with the kid's face/atlas texture.</summary>
@@ -54,6 +56,8 @@ namespace DribbleToSchool.EditorTools
             public Material ball;
             /// <summary>The Blender-made cars (tools/blender/car.py), by type name: the character shader with each car's atlas.</summary>
             public readonly Dictionary<string, Material> cars = new Dictionary<string, Material>();
+            /// <summary>The Blender asset kits (tools/blender/kit_*.py), by kit name: the street's toon shader with each kit's atlas.</summary>
+            public readonly Dictionary<string, Material> kits = new Dictionary<string, Material>();
 
             public Material wire;
         }
@@ -175,6 +179,11 @@ namespace DribbleToSchool.EditorTools
                 set.facades[kind] = ToonMaterial("Facade_" + kind, toon, LoadTexture("Facade_" + kind), false);
             set.solid = ToonMaterial("Solid", toon, null, false);
             set.crateMaterial = ToonMaterial("Crate", toon, LoadTexture("CrateFace"), false);
+            foreach (var kit in LevelBuildKit.Kits)
+            {
+                var atlas = AssetDatabase.LoadAssetAtPath<Texture2D>(LevelBuildKit.ModelsDir + "/" + kit + "/" + kit + "Atlas.png");
+                if (atlas != null) set.kits[kit] = ToonMaterial("Kit" + kit, toon, atlas, false);
+            }
             set.cloud = ToonMaterial("Cloud", toon, null, false);
             set.cloud.SetFloat("_Haze", 0.22f);
             set.cloud.SetColor("_ShadowColor", new Color(0.8f, 0.85f, 0.97f));
@@ -207,6 +216,7 @@ namespace DribbleToSchool.EditorTools
 
             set.hazeSprite = LoadOrCreateMaterial("HazeSprite", Shader.Find("DribbleToSchool/SpriteHaze"));
             set.glow = LoadOrCreateMaterial("Glow", Shader.Find("Legacy Shaders/Particles/Additive"));
+            set.skyDome = LoadOrCreateMaterial("SkyDome", Shader.Find("DribbleToSchool/Sky"));
             set.wire = LoadOrCreateMaterial("Wire", Shader.Find("Sprites/Default"));
             AssetDatabase.SaveAssets();
         }

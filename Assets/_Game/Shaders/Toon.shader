@@ -1,8 +1,13 @@
-// Cel-shaded opaque surface for the 3D street: soft-edged colour bands from a fixed, warm
-// sun (cool lilac shadows), a gentle sky fill (upward faces a touch brighter, downward ones a
-// touch darker), an optional world-space texture projection (so surfaces tile at any size)
-// and distance haze toward the sky colour. Lighting and haze come from globals set by
-// WorldLook, so no scene lights are needed.
+// The painterly surface shader for the 3D street (see docs/ART_DIRECTION.md):
+// - a warm sun with a soft light-to-shade transition (a wrapped diffuse ramp, not hard bands);
+// - shade sides that carry the sky's colour (hemispheric ambient: sky above, warm ground bounce
+//   below), never black;
+// - a gentle warm rim where surfaces turn away toward the sun;
+// - real-time sun shadows from the scene's directional light, tinted like the shade side;
+// - an optional world-space texture projection (so surfaces tile at any size);
+// - distance haze that leans warm toward the sun, so far layers dissolve into a glowing sky.
+// Colours and directions come from globals set by WorldLook; the directional light only casts
+// the shadows.
 Shader "DribbleToSchool/Toon"
 {
     Properties
@@ -14,6 +19,7 @@ Shader "DribbleToSchool/Toon"
         _WorldUVScale ("World texture scale (tiles per unit)", Float) = 0.25
         _Scroll ("Texture scroll (xy per second)", Vector) = (0,0,0,0)
         _Haze ("Distance haze amount", Range(0,1)) = 1
+        _Rim ("Rim light", Range(0,1)) = 0.35
     }
     SubShader
     {
@@ -22,10 +28,14 @@ Shader "DribbleToSchool/Toon"
 
         Pass
         {
+            Tags { "LightMode"="ForwardBase" }
             CGPROGRAM
             #pragma vertex vert
             #pragma fragment frag
+            #pragma multi_compile_fwdbase nolightmap nodirlightmap nodynlightmap novertexlight
             #include "UnityCG.cginc"
+            #include "AutoLight.cginc"
+            #include "DtsLook.cginc"
 
             sampler2D _MainTex;
             float4 _MainTex_ST;
@@ -35,11 +45,7 @@ Shader "DribbleToSchool/Toon"
             float _WorldUVScale;
             float4 _Scroll;
             float _Haze;
-
-            float4 _DtsLightDir;     // xyz: direction toward the sun
-            fixed4 _DtsFogColor;     // rgb: haze colour, a: max haze
-            float4 _DtsFogRange;     // x: start distance, y: full distance
-            fixed4 _DtsSunColor;     // rgb: sunlight tint (a = 0: not set, white)
+            float _Rim;
 
             struct appdata
             {
@@ -56,6 +62,7 @@ Shader "DribbleToSchool/Toon"
                 float3 normal : TEXCOORD1;
                 float3 worldPos : TEXCOORD2;
                 fixed4 color : COLOR;
+                SHADOW_COORDS(3)
             };
 
             v2f vert (appdata v)
@@ -66,6 +73,7 @@ Shader "DribbleToSchool/Toon"
                 o.normal = UnityObjectToWorldNormal(v.normal);
                 o.uv = TRANSFORM_TEX(v.uv, _MainTex);
                 o.color = v.color;
+                TRANSFER_SHADOW(o);
                 return o;
             }
 
@@ -81,25 +89,15 @@ Shader "DribbleToSchool/Toon"
                     uv = uv * _WorldUVScale;
                 }
                 uv += _Scroll.xy * _Time.y;
-                fixed4 tex = tex2D(_MainTex, uv) * _Color * i.color;
-
-                float3 l = _DtsLightDir.xyz;
-                l = dot(l, l) > 0.0001 ? normalize(l) : float3(0, 1, 0);
-                float d = dot(n, l);
-                fixed3 sun = _DtsSunColor.a > 0.5 ? _DtsSunColor.rgb : fixed3(1, 1, 1);
-                // Three bands (full sun, a slightly turned-away tone, shadow) with soft, painted edges.
-                float lit = smoothstep(0.07, 0.17, d);
-                float full = smoothstep(0.5, 0.6, d);
-                fixed3 col = lerp(tex.rgb * _ShadowColor.rgb, tex.rgb * sun * lerp(0.92, 1.0, full), lit);
-                col *= lerp(0.9, 1.04, n.y * 0.5 + 0.5);
-
-                float dist = distance(_WorldSpaceCameraPos, i.worldPos);
-                float f = saturate((dist - _DtsFogRange.x) / max(_DtsFogRange.y - _DtsFogRange.x, 0.01)) * _DtsFogColor.a * _Haze;
-                col = lerp(col, _DtsFogColor.rgb, f);
+                fixed3 albedo = (tex2D(_MainTex, uv) * _Color * i.color).rgb;
+                float shadow = SHADOW_ATTENUATION(i);
+                fixed3 col = DtsShade(albedo, n, i.worldPos, _ShadowColor.rgb, shadow, _Rim);
+                col = DtsHaze(col, i.worldPos, _Haze);
                 return fixed4(col, 1);
             }
             ENDCG
         }
     }
-    FallBack "Unlit/Texture"
+    // The fallback supplies the shadow caster pass.
+    FallBack "Legacy Shaders/VertexLit"
 }

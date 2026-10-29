@@ -112,13 +112,31 @@ namespace DribbleToSchool.EditorTools
             cam.fieldOfView = 30f;
             cam.nearClipPlane = 0.3f;
             cam.farClipPlane = 2500f;
+            var mood = Theme.mood;
             cam.clearFlags = CameraClearFlags.SolidColor;
-            cam.backgroundColor = Theme.skyBottom;
+            cam.backgroundColor = mood.horizon;
             camGo.AddComponent<AudioListener>();
             camGo.transform.position = new Vector3(3f, 2f, -20f);
+            // The chapter's light and atmosphere (docs/ART_DIRECTION.md), then the finishing pass.
             var look = camGo.AddComponent<WorldLook>();
-            look.hazeColor = Color.Lerp(Theme.skyBottom, Color.white, 0.12f);
+            look.sunDirection = mood.sunDirection;
+            look.sunColor = mood.sun;
+            look.skySunDirection = mood.skySunDirection;
+            look.sunGlow = mood.glow;
+            look.ambientSky = mood.ambientSky;
+            look.ambientGround = mood.ambientGround;
+            look.skyZenith = mood.zenith;
+            look.skyHorizon = mood.horizon;
+            look.hazeColor = mood.haze;
+            look.hazeStart = mood.hazeStart;
+            look.hazeEnd = mood.hazeEnd;
+            look.hazeStrength = mood.hazeStrength;
             look.Apply();
+            var post = camGo.AddComponent<PostFX>();
+            post.shader = Shader.Find("Hidden/DribbleToSchool/PostFX");   // referenced, so builds include it
+            post.lift = mood.lift;
+            post.gain = mood.gain;
+            post.bloomTint = Color.Lerp(mood.glow, Color.white, 0.4f);
             var follow = camGo.AddComponent<CameraFollow2D>();
 
             var input = new GameObject("GameInput").AddComponent<GameInput>();
@@ -493,6 +511,108 @@ namespace DribbleToSchool.EditorTools
         }
 
         /// <summary>A 3D car with its wheels on <paramref name="position"/>, turned <paramref name="yaw"/> degrees (0 faces +x, 90 faces the camera).</summary>
+        // ---------- Asset kits (tools/blender/kit_*.py, docs/ART_DIRECTION.md) ----------
+
+        /// <summary>The asset kits made in Blender, each in Art/Models/&lt;kit&gt;/ with its atlas and manifest.</summary>
+        public static readonly string[] Kits = { "Plants", "Buildings", "Street", "Terrain", "Structures", "Animals" };
+
+        static readonly Dictionary<string, Dictionary<string, object>> kitManifests = new Dictionary<string, Dictionary<string, object>>();
+
+        /// <summary>A model's entry in its kit's manifest (size, min, max, tris, parts, ...), or null.</summary>
+        public static Dictionary<string, object> KitInfo(string kit, string model)
+        {
+            Dictionary<string, object> models;
+            if (!kitManifests.TryGetValue(kit, out models))
+            {
+                string path = ModelsDir + "/" + kit + "/" + kit + ".json";
+                if (File.Exists(path))
+                {
+                    var root = MiniJson.Parse(File.ReadAllText(path)) as Dictionary<string, object>;
+                    object m;
+                    if (root != null && root.TryGetValue("models", out m)) models = m as Dictionary<string, object>;
+                }
+                kitManifests[kit] = models;
+            }
+            object entry;
+            return models != null && models.TryGetValue(model, out entry) ? entry as Dictionary<string, object> : null;
+        }
+
+        /// <summary>A kit model's size from its manifest: x across, y up, z deep (Unity axes), or zero if unknown.</summary>
+        public static Vector3 KitSize(string kit, string model)
+        {
+            var info = KitInfo(kit, model);
+            object size;
+            if (info == null || !info.TryGetValue("size", out size)) return Vector3.zero;
+            var v = size as List<object>;
+            return v != null && v.Count >= 3 ? new Vector3(Convert.ToSingle(v[0]), Convert.ToSingle(v[2]), Convert.ToSingle(v[1])) : Vector3.zero;
+        }
+
+        public static bool HasKitModel(string kit, string model)
+        {
+            return AssetDatabase.LoadAssetAtPath<GameObject>(ModelsDir + "/" + kit + "/" + model + ".fbx") != null;
+        }
+
+        /// <summary>
+        /// Places a kit model with its origin at <paramref name="position"/>, its front turned toward the
+        /// camera (-z) and then by <paramref name="yaw"/> degrees. Tints recolour its parts 1 to 3 (by
+        /// brightness ratio to the manifest's base colours). Returns null if the model isn't there, so
+        /// the caller can fall back to the procedural look.
+        /// </summary>
+        public static Transform KitModel(Transform parent, string kit, string model, Vector3 position, float yaw = 0f, float scale = 1f,
+            Color? tint1 = null, Color? tint2 = null, Color? tint3 = null, bool castShadows = true)
+        {
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(ModelsDir + "/" + kit + "/" + model + ".fbx");
+            Material material;
+            if (prefab == null || Art == null || !Art.kits.TryGetValue(kit, out material) || material == null) return null;
+            var go = new GameObject(model);
+            go.transform.SetParent(parent, false);
+            go.transform.position = position;
+            go.transform.rotation = Quaternion.Euler(0f, yaw, 0f);
+            var inst = (GameObject)Object.Instantiate(prefab);
+            inst.name = model + "Model";
+            inst.transform.SetParent(go.transform, false);
+            // Face the camera: the Attach.Front marker sits 1 m in front of the model's origin.
+            Transform front = FindDeep(inst.transform, "Attach.Front") ?? FindDeep(inst.transform, "Attach_Front");
+            if (front != null)
+            {
+                Vector3 dir = front.position - inst.transform.position;
+                dir.y = 0f;
+                Vector3 want = go.transform.rotation * Vector3.back;
+                if (dir.sqrMagnitude > 1e-6f)
+                    inst.transform.rotation = Quaternion.AngleAxis(Vector3.SignedAngle(dir, want, Vector3.up), Vector3.up) * inst.transform.rotation;
+            }
+            go.transform.localScale = Vector3.one * scale;
+
+            var bases = KitPartColors(KitInfo(kit, model));
+            var tints = new[] { tint1 ?? Color.clear, tint2 ?? Color.clear, tint3 ?? Color.clear };
+            bool tinted = tint1.HasValue || tint2.HasValue || tint3.HasValue;
+            foreach (var r in inst.GetComponentsInChildren<MeshRenderer>())
+            {
+                r.sharedMaterial = material;
+                r.shadowCastingMode = castShadows ? UnityEngine.Rendering.ShadowCastingMode.On : UnityEngine.Rendering.ShadowCastingMode.Off;
+                r.receiveShadows = true;
+                if (!tinted) continue;
+                var tint = r.gameObject.AddComponent<ModelTint>();
+                tint.baseColors = bases;
+                tint.tints = tints;
+            }
+            return go.transform;
+        }
+
+        static Color[] KitPartColors(Dictionary<string, object> info)
+        {
+            var colors = new Color[3];
+            object partsObj;
+            var parts = info != null && info.TryGetValue("parts", out partsObj) ? partsObj as Dictionary<string, object> : null;
+            for (int p = 0; p < 3; p++)
+            {
+                object c;
+                var rgb = parts != null && parts.TryGetValue((p + 1).ToString(), out c) ? c as List<object> : null;
+                colors[p] = rgb != null && rgb.Count >= 3 ? new Color(Convert.ToSingle(rgb[0]), Convert.ToSingle(rgb[1]), Convert.ToSingle(rgb[2])) : Color.white;
+            }
+            return colors;
+        }
+
         /// <summary>The cars made in Blender (Art/Models/Cars/&lt;type&gt;.fbx).</summary>
         public static readonly string[] CarTypes = { "Hatch", "Wagon", "Van", "Pickup", "Fourby" };
 
@@ -625,13 +745,18 @@ namespace DribbleToSchool.EditorTools
         static void BuildSky(TrackBuilder track, Camera cam)
         {
             int ch = Chapter;
-            var sky = SpriteObject(cam.transform, "Sky", Art.sky[ch], new Vector3(0f, 0f, 1500f), -100);
-            sky.transform.localScale = new Vector3(150f, 140f, 1f);   // the painted sky is 16 x 8 units at scale 1
-            if (ch == 5)
-            {
-                var sun = SpriteObject(cam.transform, "Sun", Art.sun, new Vector3(260f, 110f, 1400f), -95, Theme.sun);
-                sun.transform.localScale = Vector3.one * 55f;
-            }
+            // The sky dome: a big inverted sphere that follows the camera, drawn behind everything
+            // (gradient, glowing horizon and the sun, from the WorldLook globals).
+            var dome = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            dome.name = "SkyDome";
+            Object.DestroyImmediate(dome.GetComponent<Collider>());
+            dome.transform.SetParent(cam.transform, false);
+            dome.transform.localPosition = Vector3.zero;
+            dome.transform.localScale = Vector3.one * 4000f;      // radius 2000, inside the far clip plane
+            var domeRenderer = dome.GetComponent<MeshRenderer>();
+            domeRenderer.sharedMaterial = Art.skyDome;
+            domeRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            domeRenderer.receiveShadows = false;
 
             // 3D cumulus far away over the street: flat bottoms, piled-up tops, cel-shaded.
             var clouds = new GameObject("Clouds").transform;
