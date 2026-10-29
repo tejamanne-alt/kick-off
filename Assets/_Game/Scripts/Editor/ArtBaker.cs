@@ -172,7 +172,8 @@ namespace DribbleToSchool.EditorTools
             foreach (ProceduralArt.Surface surface in System.Enum.GetValues(typeof(ProceduralArt.Surface)))
             {
                 var m = ToonMaterial("Surface_" + surface, toon, LoadTexture("Surface_" + surface), true);
-                if (surface == ProceduralArt.Surface.Sea) m.SetVector("_Scroll", new Vector4(0.02f, 0.01f, 0f, 0f));
+                if (surface == ProceduralArt.Surface.Sea) m.SetVector("_Scroll", new Vector4(0.01f, 0.005f, 0f, 0f));   // a slow drift (UV per second; a tile is 8 units)
+                m.SetFloat("_Macro", MacroVariation(surface));
                 set.surfaces[surface] = m;
             }
             foreach (ProceduralArt.FacadeKind kind in System.Enum.GetValues(typeof(ProceduralArt.FacadeKind)))
@@ -226,9 +227,28 @@ namespace DribbleToSchool.EditorTools
             var m = LoadOrCreateMaterial(name, shader);
             m.mainTexture = texture;
             m.SetFloat("_WorldUV", worldUV ? 1f : 0f);
-            m.SetFloat("_WorldUVScale", 0.25f);   // surface textures cover 4 x 4 units
+            m.SetFloat("_WorldUVScale", 0.125f);   // surface textures cover 8 x 8 units
+            m.SetFloat("_Macro", 0f);
             EditorUtility.SetDirty(m);
             return m;
+        }
+
+        /// <summary>How strongly the shader's world-scale patches break up each surface's repeat.</summary>
+        static float MacroVariation(ProceduralArt.Surface surface)
+        {
+            switch (surface)
+            {
+                case ProceduralArt.Surface.Grass: return 1f;
+                case ProceduralArt.Surface.Asphalt:
+                case ProceduralArt.Surface.Sand: return 0.8f;
+                case ProceduralArt.Surface.Gravel:
+                case ProceduralArt.Surface.Concrete: return 0.7f;
+                case ProceduralArt.Surface.Paving:
+                case ProceduralArt.Surface.Cobbles: return 0.6f;
+                case ProceduralArt.Surface.Sea: return 0.5f;
+                case ProceduralArt.Surface.Kerb: return 0.4f;
+                default: return 0f;
+            }
         }
 
         static Material LoadOrCreateMaterial(string name, Shader shader)

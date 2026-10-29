@@ -3,9 +3,10 @@ using UnityEngine;
 namespace DribbleToSchool.Art
 {
     /// <summary>
-    /// Textures for the 3D street. Surfaces are tileable 256 x 256 squares covering 4 x 4 world
-    /// units (64 px per unit, 0.9 m per unit), projected in world space by the toon shader.
-    /// Facades are drawn at 40 px per unit to the exact size of the building face they cover.
+    /// Textures for the 3D street. Surfaces are tileable 512 x 512 squares covering 8 x 8 world
+    /// units (64 px per unit, 0.9 m per unit), projected in world space by the toon shader; the
+    /// ground ones are painted in GroundArt.cs. Facades are drawn at 40 px per unit to the exact
+    /// size of the building face they cover.
     /// </summary>
     public static partial class ProceduralArt
     {
@@ -34,6 +35,12 @@ namespace DribbleToSchool.Art
         // ---------------------------------------------------------------- surfaces
 
         public static PixelCanvas SurfaceTexture(Surface surface)
+        {
+            return GroundTexture(surface) ?? Repeat2x2(FlatSurface(surface));
+        }
+
+        /// <summary>The 256 x 256 (4 x 4 unit) paintings of the wall, roof and hoarding surfaces.</summary>
+        static PixelCanvas FlatSurface(Surface surface)
         {
             const int w = 256;
             var c = new PixelCanvas(w, w);

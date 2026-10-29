@@ -50,6 +50,32 @@ fixed3 DtsShade(fixed3 albedo, float3 n, float3 worldPos, fixed3 shadowTint, flo
 }
 
 // Distance haze, warmer toward the sun's side of the sky.
+// Cheap value noise for world-scale variation (no texture needed).
+float DtsHash(float2 p)
+{
+    p = frac(p * float2(123.34, 456.21));
+    p += dot(p, p + 45.32);
+    return frac(p.x * p.y);
+}
+
+float DtsValueNoise(float2 p)
+{
+    float2 i = floor(p), f = frac(p);
+    f = f * f * (3.0 - 2.0 * f);
+    float a = DtsHash(i), b = DtsHash(i + float2(1, 0)), c = DtsHash(i + float2(0, 1)), d = DtsHash(i + float2(1, 1));
+    return lerp(lerp(a, b, f.x), lerp(c, d, f.x), f.y);
+}
+
+// Large soft patches of lighter, darker, warmer and cooler ground over a tiling texture, so its
+// repeat doesn't show across a long street. w: world position on the surface's plane.
+fixed3 DtsMacro(fixed3 albedo, float2 w, float amount)
+{
+    float m = DtsValueNoise(w * 0.11) * 0.55 + DtsValueNoise(w * 0.031 + 17.3) * 0.45;
+    float h = DtsValueNoise(w * 0.05 + 41.7);
+    fixed3 tint = lerp(fixed3(1.03, 1.0, 0.95), fixed3(0.97, 1.0, 1.04), h);
+    return albedo * lerp(fixed3(1, 1, 1), tint * (1.0 + (m - 0.5) * 0.3), amount);
+}
+
 fixed3 DtsHaze(fixed3 col, float3 worldPos, float amount)
 {
     float dist = distance(_WorldSpaceCameraPos, worldPos);

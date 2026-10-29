@@ -4,7 +4,8 @@
 //   below), never black;
 // - a gentle warm rim where surfaces turn away toward the sun;
 // - real-time sun shadows from the scene's directional light, tinted like the shade side;
-// - an optional world-space texture projection (so surfaces tile at any size);
+// - an optional world-space texture projection (so surfaces tile at any size), with soft
+//   world-scale patches of lighter, darker, warmer and cooler ground so the repeat doesn't show;
 // - distance haze that leans warm toward the sun, so far layers dissolve into a glowing sky.
 // Colours and directions come from globals set by WorldLook; the directional light only casts
 // the shadows.
@@ -16,7 +17,8 @@ Shader "DribbleToSchool/Toon"
         _Color ("Tint", Color) = (1,1,1,1)
         _ShadowColor ("Shadow tint", Color) = (0.72,0.76,0.9,1)
         _WorldUV ("Project texture in world space (0/1)", Float) = 0
-        _WorldUVScale ("World texture scale (tiles per unit)", Float) = 0.25
+        _WorldUVScale ("World texture scale (tiles per unit)", Float) = 0.125
+        _Macro ("World-scale variation (world UV only)", Range(0,1)) = 0
         _Scroll ("Texture scroll (xy per second)", Vector) = (0,0,0,0)
         _Haze ("Distance haze amount", Range(0,1)) = 1
         _Rim ("Rim light", Range(0,1)) = 0.35
@@ -43,6 +45,7 @@ Shader "DribbleToSchool/Toon"
             fixed4 _ShadowColor;
             float _WorldUV;
             float _WorldUVScale;
+            float _Macro;
             float4 _Scroll;
             float _Haze;
             float _Rim;
@@ -81,15 +84,17 @@ Shader "DribbleToSchool/Toon"
             {
                 float3 n = normalize(i.normal);
                 float2 uv = i.uv;
+                float2 plane = 0;
                 if (_WorldUV > 0.5)
                 {
                     // Project along the dominant axis: tops use xz, fronts xy, sides zy.
                     float3 a = abs(n);
-                    uv = (a.y >= a.x && a.y >= a.z) ? i.worldPos.xz : ((a.x >= a.z) ? i.worldPos.zy : i.worldPos.xy);
-                    uv = uv * _WorldUVScale;
+                    plane = (a.y >= a.x && a.y >= a.z) ? i.worldPos.xz : ((a.x >= a.z) ? i.worldPos.zy : i.worldPos.xy);
+                    uv = plane * _WorldUVScale;
                 }
                 uv += _Scroll.xy * _Time.y;
                 fixed3 albedo = (tex2D(_MainTex, uv) * _Color * i.color).rgb;
+                if (_Macro > 0.001) albedo = DtsMacro(albedo, plane, _Macro);
                 float shadow = SHADOW_ATTENUATION(i);
                 fixed3 col = DtsShade(albedo, n, i.worldPos, _ShadowColor.rgb, shadow, _Rim);
                 col = DtsHaze(col, i.worldPos, _Haze);
