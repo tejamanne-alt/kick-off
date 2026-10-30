@@ -527,7 +527,7 @@ def blob(center, radii, mat, n=7, rings=3, seed=0, jitter=0.12, flat_bottom=None
 
 
 def chain_links(a, b, w, mat='tex'):
-    """A chain as a flat bar textured with links (the 'chain' tile, 0.5 m per tile)."""
+    """A chain as a flat bar textured with links (the chain tile stretched over its length)."""
     bm = tube([a, b], w * 0.5, mat, sides=4, caps=True, sm=2, uvtile=('chain', None))
     return bm
 
@@ -667,7 +667,9 @@ def bake_ao(V, Fs, pts, nrms, radius, ground, rays=28):
             w = t * d.x + b * d.y + n * d.z
             hit = bvh.ray_cast(o, w, radius)
             h = 0.0
-            if hit[0] is not None:
+            # a back-face hit means the sample sits inside another part (overlapping pieces):
+            # that is not occlusion seen from outside, so it does not count
+            if hit[0] is not None and hit[1].dot(w) < 0:
                 q = hit[3] / radius
                 h = 1.0 - q * q * (3 - 2 * q)
             if ground and w.z < -1e-4:

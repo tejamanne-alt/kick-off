@@ -158,8 +158,11 @@ namespace DribbleToSchool.EditorTools
                 float mid = (RoadNear + RoadFar) * 0.5f;
                 for (float x = Mathf.Ceil(fromX / 6f) * 6f; x + 3f < toX; x += 6f)
                     Patch(go.transform, "CentreDash", x, x + 3f, road, mid - 0.06f, mid + 0.06f, paint);
+                for (float x = Mathf.Ceil(fromX / 13f) * 13f + 5f; x < toX - 1f; x += 13f)
+                    Model(go.transform, "Street", "DrainGrate", x, road, RoadNear - 0.35f);   // gullies along the kerb
                 for (float x = Mathf.Ceil(fromX / 37f) * 37f + 11f; x < toX - 1f; x += 37f)
                 {
+                    if (Model(go.transform, "Street", "ManholeCover", x, road, mid - 1.6f, (x * 31f) % 90f) != null) continue;
                     var cover = new GameObject("Manhole");
                     cover.transform.SetParent(go.transform, false);
                     cover.transform.position = new Vector3(x, road + 0.005f, mid - 1.6f);
@@ -687,7 +690,8 @@ namespace DribbleToSchool.EditorTools
 
         static void Poles(LevelBuildKit.TrackBuilder track, Transform root, float x0, float x1)
         {
-            if (LevelBuildKit.Chapter == 5) return;   // no overhead lines in the park
+            // No overhead lines in the park, or over the market's shopfronts (it has its own lamps).
+            if (LevelBuildKit.Chapter == 5 || (LevelBuildKit.Chapter == 2 && LevelBuildKit.HasKitModel("Buildings", "ShopFruit"))) return;
             var go = new GameObject("PoleLine");
             go.transform.SetParent(root, false);
             var line = go.AddComponent<PoleLine3D>();
@@ -711,6 +715,18 @@ namespace DribbleToSchool.EditorTools
             line.drawPoles = !models;
             go.GetComponent<MeshRenderer>().sharedMaterial = Art.solid;
             line.Rebuild();
+
+            // Street lamps halfway between the poles (the swan neck reads from the side), a bin by some.
+            if (!LevelBuildKit.HasKitModel("Street", "StreetLamp")) return;
+            var rng = new System.Random(LevelBuildKit.Chapter * 53 + Mathf.RoundToInt(x0));
+            for (float x = x0 + 10.5f; x < x1; x += 21f)
+            {
+                float skip;
+                if (Blocked(track, x - 1.5f, x + 1.5f, out skip)) continue;
+                float gy = GroundAt(track, x);
+                Model(root, "Street", "StreetLamp", x, gy, PoleZ);
+                if (rng.NextDouble() < 0.45) Model(root, "Street", "Bin", x + 0.7f, gy, PoleZ + 0.05f, Rand(rng, -10f, 10f));
+            }
         }
 
         /// <summary>The utility pole model's turn: its crossarm (along the model's width) runs across the street, in depth.</summary>
@@ -726,10 +742,25 @@ namespace DribbleToSchool.EditorTools
                 if (Blocked(track, x, x + lot, out skip)) { x = skip; continue; }
                 float cx = x + lot * 0.5f, gy = GroundAt(track, cx);
 
-                // Block wall along the front of the lot with a gap for the gate.
+                // Block wall along the front of the lot with a gap for the gate; a white picket fence
+                // round some front gardens instead.
                 float gate = Rand(rng, x + 2f, x + lot - 4f);
-                BlockWall(root, x + 0.1f, gate, gy, wallMat, true, true);
-                BlockWall(root, gate + 2.2f, x + lot - 0.1f, gy, wallMat, true, false);
+                bool picket = rng.NextDouble() < 0.3 && LevelBuildKit.HasKitModel("Street", "PicketFence2");
+                if (picket)
+                {
+                    ContactShadow(root, x + 0.1f, x + lot - 0.1f, gy, PropertyZ - 0.25f, PropertyZ + 0.02f);
+                    Row(root, "Street", "PicketFence2", x + 0.1f, gate, gy, PropertyZ + 0.15f);
+                    Row(root, "Street", "PicketFence2", gate + 1.4f, x + lot - 0.1f, gy, PropertyZ + 0.15f);
+                }
+                else
+                {
+                    BlockWall(root, x + 0.1f, gate, gy, wallMat, true, true);
+                    BlockWall(root, gate + 2.2f, x + lot - 0.1f, gy, wallMat, true, false);
+                }
+                // Now and then a post box at the kerb of the lot, or a bicycle leaning on the wall.
+                double life = rng.NextDouble();
+                if (life < 0.12) Model(root, "Street", "PostBox", x + Rand(rng, 1f, lot - 1f), gy, PoleZ - 0.1f);
+                else if (life < 0.3 && !picket && gate - x > 3.4f) Model(root, "Street", "Bicycle", Rand(rng, x + 1.2f, gate - 1f), gy, PropertyZ - 0.32f, 180f + Rand(rng, -6f, 6f), 1f, BikeColors[rng.Next(BikeColors.Length)]);
 
                 int kind = rng.Next(3);
                 float z = PropertyZ + 1.6f + Rand(rng, 0f, 1.4f);
@@ -787,6 +818,8 @@ namespace DribbleToSchool.EditorTools
             DistantHills(track, root, x0, x1);
         }
 
+        static readonly Color[] BikeColors = { new Color(0.52f, 0.72f, 0.68f), new Color(0.86f, 0.42f, 0.36f), new Color(0.95f, 0.8f, 0.35f), new Color(0.4f, 0.5f, 0.72f) };
+
         /// <summary>A block wall along the front of a lot from a to b, with a square pillar at either end if asked (kit models only).</summary>
         static void BlockWall(Transform root, float a, float b, float gy, Material mat, bool pillarA, bool pillarB)
         {
@@ -823,6 +856,22 @@ namespace DribbleToSchool.EditorTools
                     Solid(root, "AwningValance", new Vector3(cx, gy + 3.3f, PropertyZ - 0.78f), new Vector3(7.4f, 0.5f, 0.06f), Color.Lerp(awn, Color.white, 0.15f));
                 }
                 x += w;
+                bool between = model && rng.NextDouble() < 0.5;
+                if (model && !between && i % 2 == 1)
+                    Model(root, "Street", "StreetLamp", x, gy, PoleZ - 0.1f);   // where two shopfronts meet, clear of their stands
+                if (between)
+                {
+                    // Between shopfronts: a potted lemon tree or shrub, or crates and a sack waiting to go in.
+                    float gx = x + Rand(rng, -0.25f, 0.25f), gz = PropertyZ + 0.25f;
+                    double r = rng.NextDouble();
+                    if (r < 0.35) Model(root, "Street", "PotC", gx, gy, gz, Rand(rng, 0f, 360f));
+                    else if (r < 0.6) Model(root, "Street", "PotB", gx, gy, gz, Rand(rng, 0f, 360f));
+                    else
+                    {
+                        Model(root, "Street", rng.NextDouble() < 0.5 ? "CrateStack" : "ProduceCrate", gx, gy, gz, Rand(rng, -15f, 15f));
+                        Model(root, "Street", "Sack", gx + 0.75f, gy, gz - 0.1f, Rand(rng, 0f, 360f));
+                    }
+                }
                 if (rng.NextDouble() < 0.35 && x + 2.4f < x1)
                 {
                     // Drinks machines in the gap between shops.
@@ -1034,6 +1083,7 @@ namespace DribbleToSchool.EditorTools
                 float cx = x + w * 0.5f, gy = GroundAt(track, cx);
                 if (rng.NextDouble() < 0.5)
                 {
+                    if (rng.NextDouble() < 0.5) Model(root, "Street", "SignNoEntry", cx - w * 0.5f + 0.5f, gy, PoleZ - 0.15f);
                     if (!Row(root, "Street", "Hoarding3", cx - w * 0.5f + 0.15f, cx + w * 0.5f - 0.15f, gy, PropertyZ + 0.2f))
                         Solid(root, "Hoarding", new Vector3(cx, gy + 1.3f, PropertyZ + 0.2f), new Vector3(w - 0.3f, 2.6f, 0.2f), Color.white, hoarding);
                 }

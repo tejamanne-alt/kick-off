@@ -1,0 +1,1195 @@
+{
+ "kit": "Street",
+ "atlas": "StreetAtlas.png",
+ "models": {
+  "UtilityPole": {
+   "size": [
+    2.1,
+    0.592,
+    9.174
+   ],
+   "min": [
+    -1.05,
+    -0.296,
+    0.0
+   ],
+   "max": [
+    1.05,
+    0.296,
+    9.174
+   ],
+   "tris": 2182,
+   "parts": {},
+   "mount": "ground",
+   "attach": {
+    "WireL": [
+     -0.86,
+     -0.175,
+     8.545
+    ],
+    "WireR": [
+     0.86,
+     -0.175,
+     8.545
+    ],
+    "WireM": [
+     0.0,
+     0.0,
+     9.145
+    ],
+    "Front": [
+     0,
+     -1,
+     0
+    ]
+   },
+   "note": "Concrete pole; wires go from Attach.WireL/R/M to the next pole."
+  },
+  "StreetLamp": {
+   "size": [
+    1.738,
+    0.55,
+    5.93
+   ],
+   "min": [
+    -0.22,
+    -0.275,
+    0.0
+   ],
+   "max": [
+    1.518,
+    0.275,
+    5.93
+   ],
+   "tris": 1260,
+   "parts": {},
+   "mount": "ground",
+   "attach": {
+    "Light": [
+     1.25,
+     0.0,
+     5.44
+    ],
+    "Front": [
+     0,
+     -1,
+     0
+    ]
+   },
+   "note": "Arm reaches +X (reads in the side view); Attach.Light at the lamp bowl."
+  },
+  "PedSignal": {
+   "size": [
+    0.51,
+    0.535,
+    3.0
+   ],
+   "min": [
+    -0.255,
+    -0.415,
+    0.0
+   ],
+   "max": [
+    0.255,
+    0.12,
+    3.0
+   ],
+   "tris": 1498,
+   "parts": {},
+   "mount": "ground",
+   "attach": {
+    "Red": [
+     0.0,
+     -0.275,
+     2.68
+    ],
+    "Green": [
+     0.0,
+     -0.275,
+     2.22
+    ],
+    "Front": [
+     0,
+     -1,
+     0
+    ]
+   },
+   "note": "Lamp faces are dark: the game draws its red-man / green-man icons at Attach.Red / Attach.Green."
+  },
+  "BlockWall2": {
+   "size": [
+    2.0,
+    0.304,
+    1.6
+   ],
+   "min": [
+    -1.0,
+    -0.152,
+    0.0
+   ],
+   "max": [
+    1.0,
+    0.152,
+    1.6
+   ],
+   "tris": 812,
+   "parts": {
+    "1": [
+     0.79,
+     0.75,
+     0.68
+    ]
+   },
+   "mount": "ground",
+   "attach": {
+    "Front": [
+     0,
+     -1,
+     0
+    ]
+   },
+   "tile": 2.0,
+   "note": "Tiles along X every 2.0 m (flush ends, capped). Part 1 = the blocks."
+  },
+  "WallPillar": {
+   "size": [
+    0.5,
+    0.457,
+    1.946
+   ],
+   "min": [
+    -0.25,
+    -0.232,
+    0.004
+   ],
+   "max": [
+    0.25,
+    0.225,
+    1.95
+   ],
+   "tris": 684,
+   "parts": {
+    "1": [
+     0.79,
+     0.75,
+     0.68
+    ]
+   },
+   "mount": "ground",
+   "attach": {
+    "Front": [
+     0,
+     -1,
+     0
+    ]
+   },
+   "note": "Gate pillar for the ends of BlockWall2 runs; part 1 = the blocks (same base as the wall)."
+  },
+  "PicketFence2": {
+   "size": [
+    2.0,
+    0.15,
+    1.087
+   ],
+   "min": [
+    -1.0,
+    -0.024,
+    0.003
+   ],
+   "max": [
+    1.0,
+    0.126,
+    1.09
+   ],
+   "tris": 844,
+   "parts": {
+    "1": [
+     0.95,
+     0.93,
+     0.86
+    ]
+   },
+   "mount": "ground",
+   "attach": {
+    "Front": [
+     0,
+     -1,
+     0
+    ]
+   },
+   "tile": 2.0,
+   "note": "Tiles along X every 2.0 m (rails cut flush at the ends, a post at x = 0). Part 1 = paint."
+  },
+  "Hoarding3": {
+   "size": [
+    3.0,
+    1.188,
+    2.6
+   ],
+   "min": [
+    -1.5,
+    -0.038,
+    0.0
+   ],
+   "max": [
+    1.5,
+    1.15,
+    2.6
+   ],
+   "tris": 1414,
+   "parts": {},
+   "mount": "ground",
+   "attach": {
+    "Front": [
+     0,
+     -1,
+     0
+    ]
+   },
+   "tile": 3.0,
+   "note": "Tiles along X every 3.0 m: corrugated sheets with a painted landscape; a post and a weighted foot behind x = 0."
+  },
+  "SignNoEntry": {
+   "size": [
+    0.605,
+    0.139,
+    2.462
+   ],
+   "min": [
+    -0.302,
+    -0.069,
+    0.0
+   ],
+   "max": [
+    0.302,
+    0.069,
+    2.462
+   ],
+   "tris": 512,
+   "parts": {},
+   "mount": "ground",
+   "attach": {
+    "Front": [
+     0,
+     -1,
+     0
+    ]
+   },
+   "note": "Round sign, icon only."
+  },
+  "SignCrossing": {
+   "size": [
+    0.6,
+    0.139,
+    2.462
+   ],
+   "min": [
+    -0.3,
+    -0.069,
+    0.0
+   ],
+   "max": [
+    0.3,
+    0.069,
+    2.462
+   ],
+   "tris": 380,
+   "parts": {},
+   "mount": "ground",
+   "attach": {
+    "Front": [
+     0,
+     -1,
+     0
+    ]
+   },
+   "note": "Square sign, icon only (a figure on a crossing)."
+  },
+  "Bollard": {
+   "size": [
+    0.244,
+    0.25,
+    0.905
+   ],
+   "min": [
+    -0.122,
+    -0.125,
+    0.0
+   ],
+   "max": [
+    0.122,
+    0.125,
+    0.905
+   ],
+   "tris": 418,
+   "parts": {
+    "1": [
+     0.38,
+     0.4,
+     0.42
+    ]
+   },
+   "mount": "ground",
+   "attach": {
+    "Front": [
+     0,
+     -1,
+     0
+    ]
+   },
+   "note": "Steel bollard; part 1 = body paint."
+  },
+  "TrafficCone": {
+   "size": [
+    0.38,
+    0.38,
+    0.672
+   ],
+   "min": [
+    -0.19,
+    -0.19,
+    0.004
+   ],
+   "max": [
+    0.19,
+    0.19,
+    0.676
+   ],
+   "tris": 426,
+   "parts": {},
+   "mount": "ground",
+   "attach": {
+    "Front": [
+     0,
+     -1,
+     0
+    ]
+   },
+   "note": "Orange cone with two reflective bands on a rubber base."
+  },
+  "RoadBarrier": {
+   "size": [
+    1.8,
+    0.6,
+    1.205
+   ],
+   "min": [
+    -0.9,
+    -0.3,
+    0.007
+   ],
+   "max": [
+    0.9,
+    0.3,
+    1.212
+   ],
+   "tris": 1376,
+   "parts": {},
+   "mount": "ground",
+   "attach": {
+    "Lamp": [
+     -0.82,
+     -0.12,
+     1.14
+    ],
+    "Front": [
+     0,
+     -1,
+     0
+    ]
+   },
+   "note": "Road-works barrier, about 1.8 m; Attach.Lamp at the amber lamp."
+  },
+  "ManholeCover": {
+   "size": [
+    0.795,
+    0.795,
+    0.026
+   ],
+   "min": [
+    -0.397,
+    -0.397,
+    0.0
+   ],
+   "max": [
+    0.397,
+    0.397,
+    0.026
+   ],
+   "tris": 308,
+   "parts": {},
+   "mount": "ground",
+   "attach": {
+    "Front": [
+     0,
+     -1,
+     0
+    ]
+   },
+   "note": "Flat cover, 0.8 m across, 2.6 cm proud of the ground."
+  },
+  "DrainGrate": {
+   "size": [
+    0.64,
+    0.4,
+    0.022
+   ],
+   "min": [
+    -0.32,
+    -0.2,
+    0.002
+   ],
+   "max": [
+    0.32,
+    0.2,
+    0.024
+   ],
+   "tris": 90,
+   "parts": {},
+   "mount": "ground",
+   "attach": {
+    "Front": [
+     0,
+     -1,
+     0
+    ]
+   },
+   "note": "Gutter grate, flat on the ground."
+  },
+  "Planter1": {
+   "size": [
+    1.006,
+    0.598,
+    0.763
+   ],
+   "min": [
+    -0.507,
+    -0.299,
+    -0.0
+   ],
+   "max": [
+    0.499,
+    0.299,
+    0.763
+   ],
+   "tris": 1154,
+   "parts": {
+    "1": [
+     0.95,
+     0.56,
+     0.62
+    ],
+    "2": [
+     0.98,
+     0.83,
+     0.4
+    ]
+   },
+   "mount": "ground",
+   "attach": {
+    "Front": [
+     0,
+     -1,
+     0
+    ]
+   },
+   "note": "Concrete planter with flowers: part 1 = the pink flowers, part 2 = the yellow ones."
+  },
+  "Planter2": {
+   "size": [
+    2.051,
+    0.598,
+    0.767
+   ],
+   "min": [
+    -1.01,
+    -0.299,
+    -0.0
+   ],
+   "max": [
+    1.04,
+    0.299,
+    0.767
+   ],
+   "tris": 1454,
+   "parts": {
+    "1": [
+     0.95,
+     0.56,
+     0.62
+    ],
+    "2": [
+     0.98,
+     0.83,
+     0.4
+    ]
+   },
+   "mount": "ground",
+   "attach": {
+    "Front": [
+     0,
+     -1,
+     0
+    ]
+   },
+   "note": "Concrete planter with flowers: part 1 = the pink flowers, part 2 = the yellow ones."
+  },
+  "Bench": {
+   "size": [
+    1.7,
+    0.612,
+    0.88
+   ],
+   "min": [
+    -0.85,
+    -0.295,
+    -0.003
+   ],
+   "max": [
+    0.85,
+    0.317,
+    0.876
+   ],
+   "tris": 1108,
+   "parts": {
+    "1": [
+     0.72,
+     0.52,
+     0.35
+    ]
+   },
+   "mount": "ground",
+   "attach": {
+    "Front": [
+     0,
+     -1,
+     0
+    ]
+   },
+   "note": "Cast-iron ends, wooden slats; part 1 = the slats."
+  },
+  "Bin": {
+   "size": [
+    0.468,
+    0.48,
+    0.936
+   ],
+   "min": [
+    -0.234,
+    -0.24,
+    0.0
+   ],
+   "max": [
+    0.234,
+    0.24,
+    0.936
+   ],
+   "tris": 920,
+   "parts": {
+    "1": [
+     0.36,
+     0.52,
+     0.42
+    ]
+   },
+   "mount": "ground",
+   "attach": {
+    "Front": [
+     0,
+     -1,
+     0
+    ]
+   },
+   "note": "Round litter bin with a hooded mouth; part 1 = body paint."
+  },
+  "VendingRed": {
+   "size": [
+    1.04,
+    0.797,
+    1.864
+   ],
+   "min": [
+    -0.52,
+    -0.412,
+    0.006
+   ],
+   "max": [
+    0.52,
+    0.385,
+    1.87
+   ],
+   "tris": 998,
+   "parts": {
+    "1": [
+     0.8,
+     0.27,
+     0.24
+    ]
+   },
+   "mount": "ground",
+   "attach": {
+    "Front": [
+     0,
+     -1,
+     0
+    ]
+   },
+   "note": "Generic drinks machine (no brand, no text); part 1 = the body paint."
+  },
+  "VendingBlue": {
+   "size": [
+    1.04,
+    0.797,
+    1.864
+   ],
+   "min": [
+    -0.52,
+    -0.412,
+    0.006
+   ],
+   "max": [
+    0.52,
+    0.385,
+    1.87
+   ],
+   "tris": 998,
+   "parts": {
+    "1": [
+     0.3,
+     0.49,
+     0.73
+    ]
+   },
+   "mount": "ground",
+   "attach": {
+    "Front": [
+     0,
+     -1,
+     0
+    ]
+   },
+   "note": "Generic drinks machine (no brand, no text); part 1 = the body paint."
+  },
+  "PostBox": {
+   "size": [
+    0.534,
+    0.534,
+    1.425
+   ],
+   "min": [
+    -0.267,
+    -0.267,
+    0.0
+   ],
+   "max": [
+    0.267,
+    0.267,
+    1.425
+   ],
+   "tris": 708,
+   "parts": {
+    "1": [
+     0.8,
+     0.25,
+     0.21
+    ]
+   },
+   "mount": "ground",
+   "attach": {
+    "Front": [
+     0,
+     -1,
+     0
+    ]
+   },
+   "note": "Round pillar box; part 1 = body paint."
+  },
+  "Bicycle": {
+   "size": [
+    1.777,
+    0.593,
+    1.049
+   ],
+   "min": [
+    -0.887,
+    -0.227,
+    -0.001
+   ],
+   "max": [
+    0.89,
+    0.366,
+    1.048
+   ],
+   "tris": 1482,
+   "parts": {
+    "1": [
+     0.52,
+     0.72,
+     0.68
+    ]
+   },
+   "mount": "ground",
+   "attach": {
+    "Front": [
+     0,
+     -1,
+     0
+    ]
+   },
+   "note": "Parked city bike on its kickstand, leaning 4 degrees away from the camera; part 1 = frame paint."
+  },
+  "Crate": {
+   "size": [
+    0.6,
+    0.6,
+    0.6
+   ],
+   "min": [
+    -0.3,
+    -0.3,
+    -0.0
+   ],
+   "max": [
+    0.3,
+    0.3,
+    0.6
+   ],
+   "tris": 306,
+   "parts": {},
+   "mount": "ground",
+   "attach": {
+    "Front": [
+     0,
+     -1,
+     0
+    ]
+   },
+   "note": "Wooden crate, 0.6 m cube."
+  },
+  "CrateStack": {
+   "size": [
+    1.243,
+    0.648,
+    1.2
+   ],
+   "min": [
+    -0.624,
+    -0.324,
+    -0.0
+   ],
+   "max": [
+    0.62,
+    0.324,
+    1.2
+   ],
+   "tris": 918,
+   "parts": {},
+   "mount": "ground",
+   "attach": {
+    "Front": [
+     0,
+     -1,
+     0
+    ]
+   },
+   "note": "Three 0.6 m crates in a pyramid."
+  },
+  "DrinksCrates": {
+   "size": [
+    0.9,
+    0.368,
+    0.993
+   ],
+   "min": [
+    -0.454,
+    -0.181,
+    0.0
+   ],
+   "max": [
+    0.446,
+    0.187,
+    0.993
+   ],
+   "tris": 1136,
+   "parts": {
+    "1": [
+     0.93,
+     0.74,
+     0.26
+    ]
+   },
+   "mount": "ground",
+   "attach": {
+    "Front": [
+     0,
+     -1,
+     0
+    ]
+   },
+   "note": "Six plastic bottle crates, 2 wide x 3 high; part 1 = the yellow crates."
+  },
+  "Pallet": {
+   "size": [
+    1.203,
+    0.814,
+    0.144
+   ],
+   "min": [
+    -0.602,
+    -0.408,
+    0.0
+   ],
+   "max": [
+    0.601,
+    0.406,
+    0.144
+   ],
+   "tris": 880,
+   "parts": {},
+   "mount": "ground",
+   "attach": {
+    "Front": [
+     0,
+     -1,
+     0
+    ]
+   },
+   "note": "Wooden pallet, 1.2 x 0.8 m."
+  },
+  "ProduceCrate": {
+   "size": [
+    0.504,
+    0.364,
+    0.34
+   ],
+   "min": [
+    -0.252,
+    -0.182,
+    0.0
+   ],
+   "max": [
+    0.252,
+    0.182,
+    0.34
+   ],
+   "tris": 1394,
+   "parts": {
+    "2": [
+     0.95,
+     0.59,
+     0.22
+    ]
+   },
+   "mount": "ground",
+   "attach": {
+    "Front": [
+     0,
+     -1,
+     0
+    ]
+   },
+   "note": "Slatted crate heaped with oranges; part 2 = the fruit."
+  },
+  "Sack": {
+   "size": [
+    0.551,
+    0.409,
+    0.681
+   ],
+   "min": [
+    -0.273,
+    -0.203,
+    0.029
+   ],
+   "max": [
+    0.278,
+    0.206,
+    0.71
+   ],
+   "tris": 380,
+   "parts": {},
+   "mount": "ground",
+   "attach": {
+    "Front": [
+     0,
+     -1,
+     0
+    ]
+   },
+   "note": "A tied burlap sack with a faded stamp (no text)."
+  },
+  "PotA": {
+   "size": [
+    0.364,
+    0.352,
+    0.437
+   ],
+   "min": [
+    -0.182,
+    -0.176,
+    0.0
+   ],
+   "max": [
+    0.182,
+    0.176,
+    0.437
+   ],
+   "tris": 764,
+   "parts": {
+    "1": [
+     0.8,
+     0.48,
+     0.33
+    ],
+    "2": [
+     0.9,
+     0.36,
+     0.38
+    ]
+   },
+   "mount": "ground",
+   "attach": {
+    "Front": [
+     0,
+     -1,
+     0
+    ]
+   },
+   "note": "Small terracotta pot with a flowering bush; part 1 = pot, part 2 = flowers."
+  },
+  "PotB": {
+   "size": [
+    0.556,
+    0.555,
+    0.903
+   ],
+   "min": [
+    -0.299,
+    -0.259,
+    0.0
+   ],
+   "max": [
+    0.257,
+    0.296,
+    0.903
+   ],
+   "tris": 640,
+   "parts": {
+    "1": [
+     0.36,
+     0.52,
+     0.66
+    ]
+   },
+   "mount": "ground",
+   "attach": {
+    "Front": [
+     0,
+     -1,
+     0
+    ]
+   },
+   "note": "Glazed pot with a spiky leaf plant; part 1 = glaze."
+  },
+  "PotC": {
+   "size": [
+    0.76,
+    0.642,
+    1.578
+   ],
+   "min": [
+    -0.394,
+    -0.31,
+    0.0
+   ],
+   "max": [
+    0.366,
+    0.332,
+    1.578
+   ],
+   "tris": 894,
+   "parts": {
+    "1": [
+     0.86,
+     0.82,
+     0.74
+    ],
+    "2": [
+     0.96,
+     0.84,
+     0.34
+    ]
+   },
+   "mount": "ground",
+   "attach": {
+    "Front": [
+     0,
+     -1,
+     0
+    ]
+   },
+   "note": "Large pot with a little lemon tree; part 1 = pot, part 2 = lemons."
+  },
+  "ACUnit": {
+   "size": [
+    0.922,
+    0.384,
+    1.022
+   ],
+   "min": [
+    -0.4,
+    -0.384,
+    -0.742
+   ],
+   "max": [
+    0.522,
+    0.0,
+    0.28
+   ],
+   "tris": 692,
+   "parts": {},
+   "mount": "wall",
+   "attach": {
+    "Front": [
+     0,
+     -1,
+     0
+    ]
+   },
+   "note": "Wall-mounted AC condenser; origin at the back centre on the wall (y = 0), unit centred on z = 0.",
+   "blend_lift": "lifted in Street.blend only, so review renders show it above the ground plane"
+  },
+  "SatelliteDish": {
+   "size": [
+    0.591,
+    0.691,
+    0.561
+   ],
+   "min": [
+    -0.208,
+    -0.691,
+    -0.22
+   ],
+   "max": [
+    0.384,
+    0.0,
+    0.34
+   ],
+   "tris": 486,
+   "parts": {},
+   "mount": "wall",
+   "attach": {
+    "Front": [
+     0,
+     -1,
+     0
+    ]
+   },
+   "note": "Wall-mounted dish; origin at the centre of the wall plate (y = 0).",
+   "blend_lift": "lifted in Street.blend only, so review renders show it above the ground plane"
+  },
+  "GasMeter": {
+   "size": [
+    0.36,
+    0.205,
+    0.87
+   ],
+   "min": [
+    -0.18,
+    -0.205,
+    -0.64
+   ],
+   "max": [
+    0.18,
+    0.0,
+    0.23
+   ],
+   "tris": 712,
+   "parts": {},
+   "mount": "wall",
+   "attach": {
+    "Front": [
+     0,
+     -1,
+     0
+    ]
+   },
+   "note": "Wall-mounted gas meter; origin at the back centre (y = 0), box centred on z = 0; pipes run down.",
+   "blend_lift": "lifted in Street.blend only, so review renders show it above the ground plane"
+  },
+  "MarketStall": {
+   "size": [
+    2.4,
+    1.172,
+    2.476
+   ],
+   "min": [
+    -1.2,
+    -0.652,
+    0.0
+   ],
+   "max": [
+    1.2,
+    0.52,
+    2.476
+   ],
+   "tris": 2396,
+   "parts": {
+    "1": [
+     0.3,
+     0.56,
+     0.54
+    ],
+    "2": [
+     0.95,
+     0.59,
+     0.22
+    ]
+   },
+   "mount": "ground",
+   "attach": {
+    "Front": [
+     0,
+     -1,
+     0
+    ]
+   },
+   "note": "Table 2.2 m wide under a striped canopy with crates of produce. Part 1 = canopy stripes, part 2 = the oranges."
+  },
+  "Awning": {
+   "size": [
+    2.2,
+    1.035,
+    0.75
+   ],
+   "min": [
+    -1.1,
+    -1.035,
+    -0.69
+   ],
+   "max": [
+    1.1,
+    0.0,
+    0.06
+   ],
+   "tris": 966,
+   "parts": {
+    "1": [
+     0.82,
+     0.36,
+     0.3
+    ]
+   },
+   "mount": "wall",
+   "attach": {
+    "Front": [
+     0,
+     -1,
+     0
+    ]
+   },
+   "note": "Striped shop awning 2.2 m wide; origin at the wall attachment (top centre, wall plane y = 0); it slopes out to -Y and down. Part 1 = the coloured stripes.",
+   "blend_lift": "lifted in Street.blend only, so review renders show it above the ground plane"
+  }
+ }
+}

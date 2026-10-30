@@ -1133,6 +1133,9 @@ namespace DribbleToSchool.EditorTools
                         crossing.redFigure.transform.position = red.position + Vector3.back * 0.01f;
                         crossing.greenFigure = SpriteObject(go.transform, "GreenMan", Art.walkFigure, Vector3.zero, 1);
                         crossing.greenFigure.transform.position = green.position + Vector3.back * 0.01f;
+                        // Sized to the lamp lenses (about 0.29 m across).
+                        foreach (var figure in new[] { crossing.redFigure, crossing.greenFigure })
+                            figure.transform.localScale = Vector3.one * (0.24f / Mathf.Max(0.01f, figure.sprite.bounds.size.y));
                     }
                     else
                     {

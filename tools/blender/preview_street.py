@@ -314,7 +314,7 @@ def plant(model, x, y, z, scale):
 
 
 def poles():
-    if chapter in (3, 5) or not has('Street', 'UtilityPole'):
+    if chapter in (2, 3, 5) or not has('Street', 'UtilityPole'):
         return
     xs = [x for x in np.arange(X0 - 21, X1 + 21, 21.0)]
     anchors = attach_points('Street', 'UtilityPole', 'Attach.Wire')
@@ -322,6 +322,9 @@ def poles():
     R = Matrix.Rotation(-math.radians(yaw), 3, 'Z')
     for x in xs:
         place('Street', 'UtilityPole', float(x), 0, POLE_Z, yaw)
+        if has('Street', 'StreetLamp'):
+            place('Street', 'StreetLamp', float(x) + 10.5, 0, POLE_Z)
+            if rng.random() < .45: place('Street', 'Bin', float(x) + 11.2, 0, POLE_Z + .05, rng.uniform(-10, 10))
     for a in anchors:
         a = R @ a
         pts = []
@@ -363,10 +366,18 @@ def suburb():
     while x < X1:
         lot = rng.uniform(9, 13); cx = x + lot / 2
         gate = rng.uniform(x + 2, x + lot - 4)
-        for a, b, pa, pb in ((x + .1, gate, True, True), (gate + 2.2, x + lot - .1, True, False)):
-            if b - a >= .4 and row('Street', 'BlockWall2', a, b, 0, PROP + .15):
-                if pa: place('Street', 'WallPillar', a, 0, PROP + .15)
-                if pb: place('Street', 'WallPillar', b, 0, PROP + .15)
+        picket = rng.random() < .3 and has('Street', 'PicketFence2')
+        if picket:
+            row('Street', 'PicketFence2', x + .1, gate, 0, PROP + .15); row('Street', 'PicketFence2', gate + 1.4, x + lot - .1, 0, PROP + .15)
+        else:
+            for a, b, pa, pb in ((x + .1, gate, True, True), (gate + 2.2, x + lot - .1, True, False)):
+                if b - a >= .4 and row('Street', 'BlockWall2', a, b, 0, PROP + .15):
+                    if pa: place('Street', 'WallPillar', a, 0, PROP + .15)
+                    if pb: place('Street', 'WallPillar', b, 0, PROP + .15)
+        life = rng.random()
+        if life < .12: place('Street', 'PostBox', x + rng.uniform(1, lot - 1), 0, POLE_Z - .1)
+        elif life < .3 and not picket and gate - x > 3.4:
+            place('Street', 'Bicycle', rng.uniform(x + 1.2, gate - 1), 0, PROP - .32, 180 + rng.uniform(-6, 6), 1, [rng.choice([(.52, .72, .68), (.86, .42, .36), (.95, .8, .35), (.4, .5, .72)]), None, None])
         kind = rng.randrange(3)
         z = PROP + 1.6 + rng.uniform(0, 1.4)
         model = 'HouseGable' if kind == 0 else 'HouseLong' if kind == 1 and lot >= 11 else 'Bungalow'
@@ -394,6 +405,15 @@ def market():
     while x < X1:
         building('ShopFruit' if i % 2 == 0 else 'ShopShutter', x + 4, PROP + .6, SHOP)
         x += 8
+        between = rng.random() < .5
+        if not between and i % 2 == 1: place('Street', 'StreetLamp', x, 0, POLE_Z - .1)
+        if between:
+            gx, gz = x + rng.uniform(-.25, .25), PROP + .25
+            r = rng.random()
+            if r < .35: place('Street', 'PotC', gx, 0, gz, rng.uniform(0, 360))
+            elif r < .6: place('Street', 'PotB', gx, 0, gz, rng.uniform(0, 360))
+            else:
+                place('Street', rng.choice(['CrateStack', 'ProduceCrate']), gx, 0, gz, rng.uniform(-15, 15)); place('Street', 'Sack', gx + .75, 0, gz - .1, rng.uniform(0, 360))
         if rng.random() < .35:
             place('Street', 'VendingRed', x + .7, 0, PROP + .2); place('Street', 'VendingBlue', x + 1.75, 0, PROP + .2)
             x += 2.6
