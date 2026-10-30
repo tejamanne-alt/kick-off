@@ -18,14 +18,15 @@ namespace DribbleToSchool.EditorTools
     ///
     /// Environment overrides: DTS_BUILD_NUMBER, DTS_VERSION,
     /// DTS_KEYSTORE_PATH / DTS_KEYSTORE_PASS / DTS_KEY_ALIAS / DTS_KEY_PASS (Android signing),
-    /// DTS_APPLE_TEAM_ID (iOS automatic signing).
+    /// DTS_APPLE_TEAM_ID (iOS automatic signing; see AppleSigning).
     /// </summary>
     public static class BuildScripts
     {
-        // Change these to your own studio and app ids before the first store upload.
+        // Change the studio name to your own before the first store upload.
         public const string CompanyName = "Your Studio";
         public const string ProductName = "Dribble To School";
-        public const string ApplicationId = "com.yourstudio.dribbletoschool";
+        /// <summary>The app's bundle identifier (iOS) and package name (Android).</summary>
+        public const string ApplicationId = "com.astradite.kickoff";
         public const string DefaultVersion = "1.0.0";
 
         const string IconPath = LevelBuildKit.Root + "/Art/Generated/AppIcon.png";
@@ -65,12 +66,7 @@ namespace DribbleToSchool.EditorTools
             PlayerSettings.iOS.buildNumber = buildNumber.ToString();
             PlayerSettings.iOS.targetOSVersionString = "15.0";
             PlayerSettings.SetScriptingBackend(NamedBuildTarget.iOS, ScriptingImplementation.IL2CPP);
-            string team = Env("DTS_APPLE_TEAM_ID", "");
-            if (team.Length > 0)
-            {
-                PlayerSettings.iOS.appleEnableAutomaticSigning = true;
-                PlayerSettings.iOS.appleDeveloperTeamID = team;
-            }
+            AppleSigning.Apply();   // automatic signing with the team, as in Xcode
 
             ApplyIcon();
             AssetDatabase.SaveAssets();
