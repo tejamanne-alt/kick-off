@@ -181,23 +181,23 @@ def stepping_stone():
 
 
 def rock_cluster():
-    """A beach group of four rocks nested together, about 3 m wide."""
+    """A beach group of four rocks nested together, about 3 m wide: a big rounded rock, a
+    medium one leaning on its right, a flat slab in front-left, a small stone front-right."""
     rng = random.Random(812)
     pieces = [
         G.chunk(rng, (1.4, 1.15, 1.2), bevel=0.17, segments=2, n=9, majors=3, block=0.3, top_tilt=14,
-                loc=(-0.38, 0.18, 0), rot=15),
-        G.chunk(rng, (1.05, 0.9, 0.68), bevel=0.18, segments=2, n=8, majors=2, block=0.3, top_tilt=20,
-                loc=(0.5, -0.12, 0), rot=-35),
-        G.chunk(rng, (0.8, 0.7, 0.3), bevel=0.22, segments=1, n=7, majors=2, block=0.2, top_tilt=6,
-                loc=(1.12, -0.5, 0), rot=10),
-        G.chunk(rng, (0.52, 0.46, 0.34), bevel=0.22, segments=1, n=6, majors=2, block=0.3, top_tilt=20,
-                loc=(-1.02, -0.36, 0), rot=60),
+                loc=(-0.3, 0.22, 0), rot=15, sink=0.08),
+        G.chunk(rng, (1.0, 0.92, 0.72), bevel=0.18, segments=2, n=8, majors=2, block=0.3, top_tilt=20,
+                loc=(0.62, 0.0, 0), rot=-35, sink=0.05),
+        G.chunk(rng, (0.86, 0.72, 0.3), bevel=0.22, segments=1, n=7, majors=2, block=0.2, top_tilt=6,
+                loc=(-1.0, -0.45, 0), rot=-20, sink=0.04),
+        G.chunk(rng, (0.5, 0.45, 0.34), bevel=0.22, segments=1, n=6, majors=2, block=0.3, top_tilt=20,
+                loc=(1.22, -0.55, 0), rot=60, sink=0.04),
     ]
     bm = G.assemble(pieces, 0.03)
     return bm, rock_ctx(808, 3.0, 1.2, wet=0.18, notes='beach group; darker wet band near the ground')
 
 
-# ---------------------------------------------------------------- cliffs
 def slab(rng, lo, hi, n=8, majors=3, block=0.55, bevel=0.1, segments=2, kind='cliff', tilt=2.5, el=(-30, 50)):
     """One stratum: a faceted rock slab with a flat bed and a flat (slightly tilted) top, its
     sides cut by a few broad planes at random angles, rims rounded."""
@@ -239,7 +239,7 @@ def turf_cap(rng, hull, over=0.2, tuck=0.32, drop=0.5, n=22, lump=0.3, dome=0.18
     zt = lambda x, y: (td - tn.x * x - tn.y * y) / tn.z
     ph = rng.uniform(0, 6.3); ph2 = rng.uniform(0, 6.3)
     rings = []
-    spec = [(-tuck, -drop), (over, -drop * 0.42), (over * 0.72, 0.04), (-0.45, dome * 0.75)]
+    spec = [(-tuck, -drop), (over, -drop * 0.42), (over * 0.72, 0.04), (-0.45, dome * 0.6), (-1.1, dome * 0.9)]
     for off, dz in spec:
         ring = []
         for k, p in enumerate(samples):
@@ -248,7 +248,7 @@ def turf_cap(rng, hull, over=0.2, tuck=0.32, drop=0.5, n=22, lump=0.3, dome=0.18
             wob = 1 + lump * math.sin(k * 2.0 + ph) * math.sin(k * 0.7 + ph2) if off > 0 else 1.0
             o = off * wob
             x, y = p.x + d.x / dl * o, p.y + d.y / dl * o
-            jz = rng.uniform(-0.03, 0.03) if off > 0 else 0.0
+            jz = rng.uniform(-0.03, 0.03) if off > 0 else rng.uniform(-0.05, 0.07) if dz > 0 else 0.0
             ring.append(Vector((x, y, zt(x, y) + dz + jz)))
         rings.append(ring)
     bm = G.new_bm(); lk = G.klayer(bm)
@@ -336,9 +336,6 @@ def cliff_chunk2():
 
 
 # ---------------------------------------------------------------- headland
-SEG = [1]
-
-
 def headland():
     """A sea headland, about 60 m wide and 20 m tall: a grassy top rising from the land on the
     left to a high bluff, a layered cliff face toward the sea (front and right), a sea stack and
@@ -347,10 +344,13 @@ def headland():
     nz = G.Waves(1201, 18.0, 2, dims=2)
     X0, X1 = -30.0, 21.0                    # the main mass; the stack stands at x ~ 26
 
-    def top_x(x):                            # crest height along x
+    def top_x(x):                            # crest height along x: a rise, a dip, a seaward knoll
         t = (x - X0) / (X1 - X0)
-        rise = G.smooth01((t - 0.0) / 0.62) ** 0.85
-        return 0.6 + 19.4 * rise * (1 - 0.06 * G.smooth01((t - 0.75) / 0.25)) + 0.6 * nz(x, 0.0) * rise
+        rise = G.smooth01(t / 0.52) ** 0.85
+        z = 0.6 + 15.2 * rise
+        z += 4.6 * math.exp(-((x - 11.5) / 9.0) ** 2) - 1.3 * math.exp(-((x - 0.5) / 5.5) ** 2)
+        z -= 1.2 * G.smooth01((x - 17.0) / 4.0)
+        return z + 0.5 * nz(x, 0.0) * rise
 
     def front_y(x):
         return -9.0 + 1.6 * math.sin(x * 0.19 + 0.6) + 0.8 * math.sin(x * 0.47 + 2.0) - 2.0 * G.smooth01((x - 4) / 12)
@@ -360,18 +360,21 @@ def headland():
     # buttress columns of varied width and protrusion; each a stack of faceted strata, the top
     # block's face following the grass lip's front line so the lip tucks into it
     xs = [X0 + 3.5]
-    while xs[-1] < X1 - 3.0:
-        xs.append(min(xs[-1] + rng.uniform(4.5, 10.5), X1))
+    while xs[-1] < X1 - 4.0:
+        xs.append(min(xs[-1] + rng.uniform(5.5, 9.0), X1))
     xs[-1] = X1
     for i in range(len(xs) - 1):
         xa, xb = xs[i] - 0.3, xs[i + 1] + 0.3
         xm = (xa + xb) * 0.5
-        slope = (top_x(xb) - top_x(xa)) / (xb - xa)
-        ztop = top_x(xm) - 0.9
-        zmin = min(top_x(xa), top_x(xb)) - 1.0
+        # the top block's top: the chord under the grass, lowered until it is under it everywhere
+        za, zb = top_x(xa) - 0.9, top_x(xb) - 0.9
+        slope = (zb - za) / (xb - xa)
+        excess = max(0.0, max(za + slope * (x - xa) - (top_x(x) - 0.9) for x in [xa + (xb - xa) * i / 20 for i in range(21)]))
+        ztop = za + slope * (xm - xa) - excess
+        zmin = min(top_x(x) for x in (xa, xm, xb)) - 1.0
         if ztop < 1.2: continue
-        nl = max(1, min(4, int(round(zmin / 4.4)) + 1)) if zmin > 3.0 else 1
-        cuts = sorted(rng.uniform(0.25, 0.92) for _ in range(nl - 1))
+        nl = max(1, min(3, int(round(zmin / 6.0)) + 1)) if zmin > 3.5 else 1
+        cuts = sorted(rng.uniform(0.3, 0.9) for _ in range(nl - 1))
         hs = [(zmin - 1.2) * c for c in cuts] + [ztop]
         col = rng.uniform(-1.6, 1.3)             # the whole buttress proud (-) or set back (+)
         line = [(x, front_y(x)) for x in (xa, xm, xb)]
@@ -383,13 +386,13 @@ def headland():
                 pts = [(x, y + off) for x, y in line]
                 lo = (xa + rng.uniform(-0.3, 0.3), min(y for _, y in pts), z - 0.25)
                 hi = (xb + rng.uniform(-0.3, 0.3), back_y - 2.0, z1)
-                bm, h = block(rng, lo, hi, bevel=0.05, segments=SEG[0], top_slope=slope * 0.9, top_cham=(0.06, 0.14),
+                bm, h = block(rng, lo, hi, bevel=0.05, segments=1, top_slope=slope, tilt=0.0, top_cham=(0.06, 0.14),
                               corner=(0.05, 0.2), under=(0.0, 0.12), front_pts=pts)
             else:
                 fy = fm + col + rng.uniform(-0.6, 0.6) + (0.7 if k == 0 else 0.0)
                 lo = (xa + rng.uniform(-0.5, 0.2), fy, z - (0.3 if k == 0 else 0.25))
                 hi = (xb + rng.uniform(-0.2, 0.5), back_y - 2.0, z1 + 0.05)
-                bm, h = block(rng, lo, hi, bevel=0.06, segments=SEG[0], tilt=1.5, lean=5.0, corner=(0.1, 0.4),
+                bm, h = block(rng, lo, hi, bevel=0.06, segments=1, tilt=1.5, lean=5.0, corner=(0.1, 0.4),
                               top_cham=(0.08, 0.28), under=(0.0, 0.22), yaw=rng.uniform(-4, 4))
             pieces.append((bm, h))
             z = z1
@@ -397,7 +400,7 @@ def headland():
     for k, (z0, z1, x0, x1) in enumerate(((0.0, 6.5, X1 - 2.0, X1 + 2.6), (6.3, 12.5, X1 - 2.5, X1 + 1.4))):
         lo = (x0, front_y(X1) + 0.6 + k * 0.8, z0 - 0.25)
         hi = (x1, back_y - 4.0, z1)
-        bm, h = block(rng, lo, hi, bevel=0.06, segments=SEG[0], lean=5.0, corner=(0.1, 0.4), top_cham=(0.1, 0.3))
+        bm, h = block(rng, lo, hi, bevel=0.06, segments=1, lean=5.0, corner=(0.1, 0.4), top_cham=(0.1, 0.3))
         pieces.append((bm, h))
     # the sea stack: three tapering strata and a grass cap
     sx, sy = 26.6, -6.4
@@ -407,7 +410,7 @@ def headland():
         dx = rng.uniform(-0.4, 0.4)
         lo = (sx - w / 2 + dx, sy - 2.3 + k * 0.25, z0 - (0.25 if k == 0 else 0.1))
         hi = (sx + w / 2 + dx, sy + 2.5 - k * 0.25, z1)
-        bm, h = block(rng, lo, hi, bevel=0.08, segments=SEG[0], lean=6.0, corner=(0.15, 0.5), top_cham=(0.1, 0.3),
+        bm, h = block(rng, lo, hi, bevel=0.08, segments=1, lean=6.0, corner=(0.15, 0.5), top_cham=(0.1, 0.3),
                       yaw=rng.uniform(-10, 10))
         pieces.append((bm, h))
         if k == len(zs) - 1:

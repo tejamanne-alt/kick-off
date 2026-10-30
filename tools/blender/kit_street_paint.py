@@ -62,7 +62,7 @@ def weather(sub, X, Y, rng, dirt=0.35, scratches=20):
 # ---------------------------------------------------------------- block wall (periodic, 2 m)
 def paint_wall(img, rng):
     sl, P, Q = region('wall')
-    x = -1 + 2 * P; z = 1.6 * Q
+    x = -1 + 2 * P; z = 1.8 * Q
     zb, bh, bw = 0.10, 0.2, 0.4
     k = np.floor((z - zb) / bh); kz = (z - zb) / bh - k
     off = 0.2 * (np.mod(k, 2))
@@ -82,8 +82,8 @@ def paint_wall(img, rng):
     joint = np.maximum(ss(0.007, 0.003, np.minimum(dz_top, dz_bot)), ss(0.007, 0.003, dx))
     sub = blend(sub, joint, (0.56, 0.54, 0.50), 0.95)
     # chipped block corners
-    cents = [(rng.random(), (0.1 + 0.2 * rng.integers(0, 7) + 0.2 * rng.random()) / 1.6) for _ in range(26)]
-    sub, _ = blobs(sub, P, Q, rng, cents, 0.004, (0.66, 0.64, 0.60), 0.8, 2.0 / 1.6 * P.shape[0] / P.shape[1] * 0 + 1.25, lumps=3)
+    cents = [(rng.random(), (0.1 + 0.2 * rng.integers(0, 8) + 0.2 * rng.random()) / 1.8) for _ in range(26)]
+    sub, _ = blobs(sub, P, Q, rng, cents, 0.004, (0.66, 0.64, 0.60), 0.8, 2.0 / 1.8, lumps=3)
     # the open blocks of the decorative course (k = 5): a lighter raised frame round each opening
     for cx in (-0.6, -0.2, 0.2, 0.6):
         d = np.sqrt((x - cx) ** 2 + (z - 1.2) ** 2)
@@ -98,8 +98,8 @@ def paint_wall(img, rng):
     m = ss(0.55, 0.85, col) * ss(0.7, 1.5, z) * (z < 1.505)
     sub = blend(sub, m * (0.6 + 0.4 * fbm(P, Q, 50, 20, rng)), (0.70, 0.68, 0.64), 0.55)
     g = ss(0.55 + 0.15 * fbm(P, Q * 0, 12, 1, rng), 0.0, z)
-    sub = blend(sub, g * (0.5 + 0.6 * fbm(P, Q, 40, 10, rng)), GRIME, 0.55)
-    sub = blend(sub, ss(0.24, 0.10, z) * ss(0.45, 0.7, fbm(P, Q, 30, 8, rng)), MOSS, 0.6)
+    sub = blend(sub, g * (0.5 + 0.6 * fbm(P, Q, 40, 32, rng)), GRIME, 0.55)
+    sub = blend(sub, ss(0.24, 0.10, z) * ss(0.45, 0.7, fbm(P, Q, 30, 24, rng)), MOSS, 0.6)
     specks(sub, ss(0.35, 0.1, z), rng, 2500, 0.7, 2.0, (0.50, 0.58, 0.40), 0.55, True, period_px('wall', P))
     sub = blend(sub, ss(0.62, 0.8, fbm(P, Q, 9, 4, rng)) * ss(0.9, 0.2, z), (1.0, 1.0, 0.98), 0.45)
     img[sl] = sub
@@ -525,12 +525,14 @@ def paint_machines(img, rng):
         X, Y = (2 * P - 1) * 2, 2 * Q - 1
         sub = np.ones(P.shape + (3,), np.float32) * np.array((0.98, 0.96, 0.90))
         if kind == 0:
-            drop = np.sqrt(X ** 2 + (Y + 0.15) ** 2) - 0.45
-            drop = np.minimum(drop, np.maximum(np.abs(X) * 1.4 + (Y - 0.75) * 0.9, -(Y + 0.1)))
-            sub = blend(sub, fill(drop, 0.02), (0.82, 0.26, 0.24), 1.0)
-            sub = blend(sub, fill(d_circ(X, Y, -0.12, -0.05, 0.12), 0.02), (0.98, 0.9, 0.86), 0.9)
+            sub = blend(sub, fill(d_circ(X, Y, 0, -0.05, 0.6), 0.02), (0.84, 0.28, 0.24), 1.0)
+            band = np.abs(Y + 0.05 - 0.12 * np.sin(X * 6)) < 0.09
+            sub = blend(sub, band * fill(d_circ(X, Y, 0, -0.05, 0.6), 0.02), (0.98, 0.94, 0.88), 1.0)
+            leaf = ((((X - 0.2) * 0.8 + (Y - 0.7) * 0.6) / 0.28) ** 2 + (((Y - 0.7) * 0.8 - (X - 0.2) * 0.6) / 0.12) ** 2) < 1
+            sub = blend(sub, leaf.astype(np.float32), (0.42, 0.66, 0.36), 1.0)
             for sx in (-1, 1):
-                sub = blend(sub, ss(0.07, 0.0, np.abs(Y - 0.2 * np.sin(X * 2.5 * sx))) * (np.abs(X) > 0.75) * (np.abs(X) < 1.8), (0.82, 0.26, 0.24), 0.9)
+                for k in range(3):
+                    sub = blend(sub, fill(d_circ(X, Y, sx * (0.95 + 0.3 * k), -0.05, 0.09 - 0.02 * k), 0.02), (0.84, 0.28, 0.24), 1.0)
         else:
             for (cx, cy, r) in ((-0.25, -0.2, 0.32), (0.25, 0.25, 0.22), (0.5, -0.35, 0.14), (-0.55, 0.42, 0.12)):
                 sub = blend(sub, ss(0.06, 0.0, np.abs(d_circ(X, Y, cx, cy, r))), (0.28, 0.48, 0.74), 1.0)

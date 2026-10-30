@@ -330,7 +330,7 @@ def wall_map(B, mp):
                 for ax in xs:
                     LL = L * r.uniform(0.45, 1.0); wd = r.uniform(0.025, 0.07)
                     m = _ss(wd, 0.0, np.abs(A - ax)) * ((Z - (zb - LL)) / LL).clip(0, 1) ** 1.6 * (Z < zb)
-                    sub = _mul(sub, m * (0.55 + 0.45 * n3), (0.70, 0.66, 0.62), 0.75 * k)
+                    sub = _mul(sub, m * (0.55 + 0.45 * n3), (0.68, 0.64, 0.60), 0.85 * k)
                 wash = _ss(0.12, 0.0, np.maximum(s0 - A, A - s1)) * _ss(zb - L * 0.5, zb, Z) * (Z < zb)
                 sub = _mul(sub, wash, (0.86, 0.84, 0.8), 0.45 * k)
             elif kind == 'ao':
@@ -343,16 +343,19 @@ def wall_map(B, mp):
                 d = np.sqrt(dx * dx + dz * dz)
                 m = np.exp(-d / 0.07) * (1 - 0.5 * (Z > z1))
                 sub = _mul(sub, m, (0.66, 0.64, 0.7), k)
-            elif kind == 'patch':        # render fallen away, a few bricks showing
+            elif kind == 'patch':        # render fallen away, a few chunky bricks showing
                 cx, cz, rw, rh = kw['a'], kw['b'], kw['w'], kw['h']
-                e = ((A - cx) / rw) ** 2 + ((Z - cz) / rh) ** 2 + (n2 - 0.5) * 0.7 + (n3 - 0.5) * 0.5
+                e = ((A - cx) / rw) ** 2 + ((Z - cz) / rh) ** 2 + (n2 - 0.5) * 0.6 + (n3 - 0.5) * 0.35
                 m = (e < 1.0)
-                row = np.floor(Z / 0.075); xo = A + (row % 2) * 0.11
-                jz = np.minimum(Z % 0.075, 0.075 - Z % 0.075); jx = np.minimum(xo % 0.22, 0.22 - xo % 0.22)
-                bc = np.where((np.minimum(jz, jx) < 0.9 / ppm)[..., None], np.array((0.80, 0.77, 0.74)), np.array((0.93, 0.70, 0.60)))
+                row = np.floor(Z / 0.1); xo = A + (row % 2) * 0.14
+                jz = np.minimum(Z % 0.1, 0.1 - Z % 0.1); jx = np.minimum(xo % 0.28, 0.28 - xo % 0.28)
+                joint = np.minimum(jz, jx) < 1.3 / ppm
+                tone = np.sin(np.floor(xo / 0.28) * 12.9 + row * 78.2) * 0.5 + 0.5
+                brick = np.array((0.92, 0.66, 0.55))[None, None] * (0.92 + 0.12 * tone)[..., None]
+                bc = np.where(joint[..., None], np.array((0.86, 0.83, 0.8)), brick)
                 sub = np.where(m[..., None], sub * bc, sub)
-                rim = (e >= 1.0) & (e < 1.0 + 2.2 / (ppm * min(rw, rh)))
-                sub = np.where(rim[..., None], sub * 0.8, sub)
+                rim = (e >= 1.0) & (e < 1.0 + 3.0 / (ppm * min(rw, rh)))
+                sub = np.where(rim[..., None], sub * 0.82, sub)
             elif kind == 'line':        # a painted band (e.g. a stripe), multiplier col
                 s0, s1, z0, z1, col = kw['a0'], kw['a1'], kw['b0'], kw['b1'], kw['col']
                 m = (A >= s0) & (A <= s1) & (Z >= z0) & (Z <= z1)

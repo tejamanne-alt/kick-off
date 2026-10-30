@@ -43,11 +43,11 @@ PAL = {
     'cliff':   (lin((92, 88, 124)), lin((152, 142, 162)), lin((216, 192, 168))),
     'mrock':   (lin((86, 88, 128)), lin((132, 128, 158)), lin((200, 180, 172))),
     'pebble':  (lin((96, 92, 110)), lin((150, 144, 152)), lin((206, 196, 184))),
-    'grass':   (lin((62, 104, 74)), lin((112, 150, 70)), lin((166, 188, 90))),
+    'grass':   (lin((60, 100, 74)), lin((108, 146, 72)), lin((160, 182, 92))),
     'meadow':  (lin((74, 108, 82)), lin((122, 150, 82)), lin((172, 186, 100))),
     'hill':    (lin((70, 110, 80)), lin((116, 152, 76)), lin((170, 190, 94))),
     'conifer': (lin((30, 62, 66)), lin((52, 98, 80)), lin((104, 146, 96))),
-    'snow':    (lin((168, 170, 212)), lin((226, 226, 238)), lin((250, 244, 234))),
+    'snow':    (lin((160, 164, 210)), lin((218, 220, 236)), lin((240, 234, 226))),
     'sand':    (lin((196, 158, 138)), lin((228, 198, 154)), lin((244, 222, 182))),
     'gravel':  (lin((118, 112, 118)), lin((168, 160, 150)), lin((208, 198, 182))),
     'trunk':   (lin((60, 46, 44)), lin((92, 68, 56)), lin((120, 92, 72))),
@@ -61,15 +61,22 @@ PART = {'rock': 0, 'cliff': 0, 'mrock': 0, 'pebble': 0, 'trunk': 0, 'soil': 0,
 # How strongly each kind takes the warm top colour, its shadow floor and AO strength.
 LOOK = {
     'rock': (1.0, 0.44, 1.0), 'cliff': (0.9, 0.44, 1.0), 'mrock': (0.8, 0.5, 0.9), 'pebble': (0.7, 0.5, 0.8),
-    'grass': (0.7, 0.5, 0.9), 'meadow': (0.6, 0.55, 0.8), 'hill': (0.6, 0.55, 0.8), 'conifer': (0.7, 0.42, 1.0),
+    'grass': (0.5, 0.5, 0.9), 'meadow': (0.6, 0.55, 0.8), 'hill': (0.6, 0.55, 0.8), 'conifer': (0.7, 0.42, 1.0),
     'snow': (0.7, 0.6, 0.8), 'sand': (0.6, 0.62, 0.75), 'gravel': (0.6, 0.5, 0.9), 'trunk': (0.2, 0.6, 0.6),
     'soil': (0.2, 0.6, 0.6),
 }
 
 
+# How much convex edges and ridges lighten (and hollows darken) each kind.
+CAV = {'rock': 0.14, 'cliff': 0.14, 'mrock': 0.3, 'pebble': 0.1, 'grass': 0.12, 'meadow': 0.22, 'hill': 0.26,
+       'conifer': 0.12, 'snow': 0.26, 'sand': 0.2, 'gravel': 0.12, 'trunk': 0.0, 'soil': 0.0}
+
+
 def shade_fn(kind, ctx, vdata, noise):
     low, mid, top = PAL[kind]
     top_amt, floor, ao_k = LOOK[kind]
+    cav_k = CAV.get(kind, 0.15)
+    nz_k = {'grass': 0.15, 'hill': 0.1, 'meadow': 0.1}.get(kind, 0.07)     # painterly mottling
     top_amt *= ctx.top_amt if ctx.top_amt is not None else 1.0
     z0, z1 = ctx.z0, max(ctx.z1, 1e-3)
     wet = ctx.wet or 0.0
@@ -77,7 +84,7 @@ def shade_fn(kind, ctx, vdata, noise):
 
     def col(co, nf):
         key = (round(co.x, 3), round(co.y, 3), round(co.z, 3))
-        nv, ao = vdata.get(key, (nf, 1.0))
+        nv, ao, cv = vdata.get(key, (nf, 1.0, 0.0))
         n = (nv * 0.6 + nf * 0.4).normalized() if hard else nv
         up = n.z
         c = G.mix3(low, mid, G.sstep(-0.7, 0.3, up))
@@ -85,7 +92,8 @@ def shade_fn(kind, ctx, vdata, noise):
         hz = G.sstep(z0, z1, co.z)
         k = 0.8 + 0.24 * hz
         k *= floor + (1 - floor) * (1 - ao_k * (1 - ao))
-        k *= 1.0 + 0.07 * noise(co.x, co.y, co.z)
+        k *= 1.0 + nz_k * noise(co.x, co.y, co.z)
+        k *= 1.0 - cav_k * max(-1.0, min(1.0, cv * 2.5))
         if wet > 0 and hard:
             w = G.sstep(wet, wet - 0.5, co.z)
             c = G.mix3(c, (c[0] * 0.62, c[1] * 0.66, c[2] * 0.74), w)
@@ -101,7 +109,6 @@ def uv_fn(kind, ctx, lo, hi):
     W = ctx.period
     span = ctx.span or max(hi.x - lo.x, hi.y - lo.y, 1.0)
     cx, cy = (lo.x + hi.x) * 0.5, (lo.y + hi.y) * 0.5
-    ox = ctx.seed % 7 / 7.0 * 0.0
 
     def proj(co, n, side_reg, top_reg, sp, zsp=None, topcut=0.6):
         zsp = zsp or sp
@@ -127,8 +134,10 @@ def uv_fn(kind, ctx, lo, hi):
         return lambda co, n: A.reg_uv('fields', (co.x + W / 2) / W, (co.y - y0) / (y1 - y0))
     if kind == 'sand':
         reg = ctx.sand_region or 'sand'
-        sp = max(span, 6.0) if reg == 'sand' else 2.4
-        return lambda co, n: A.reg_uv(reg, 0.5 + (co.x - cx) / sp, 0.5 + (co.y - cy) / sp)
+        sp = max(span, 6.0)
+        if reg == 'grain':
+            return lambda co, n: A.reg_uv('grain', 0.5 + (co.x - cx) / 2.4, 0.5 + (co.y - cy) / 2.4)
+        return lambda co, n: A.reg_uv('sand' if n.z > 0.8 else 'grain', 0.5 + (co.x - cx) / sp, 0.5 + (co.y - cy) / sp)
     if kind == 'gravel':
         sp = 2.2
         return lambda co, n: proj(co, n, 'gravel', 'gravel', sp, sp, 0.45)
@@ -136,11 +145,17 @@ def uv_fn(kind, ctx, lo, hi):
 
 
 # ---------------------------------------------------------------- finalize
-def set_normals(o, mode):
+def set_normals(o, mode, W=None):
+    """Smooth shading; 'weighted' keeps broad planes flat up to their rounded edges (rocks).
+    A tiling strip (W) gets custom normals with its seam vertices averaged across the seam."""
     K.finish(o, None)
     if mode == 'weighted':
         m = o.modifiers.new('wn', 'WEIGHTED_NORMAL'); m.mode = 'FACE_AREA'; m.weight = 50; m.keep_sharp = False
         K.activate(o); bpy.ops.object.modifier_apply(modifier=m.name)
+    if W:
+        me = o.data
+        nv = G.seam_normals(G.vertex_normals(me), [v.co for v in me.vertices], W)
+        me.normals_split_custom_set_from_vertices([tuple(n) for n in nv])
 
 
 def fit(bm, ctx):
@@ -163,17 +178,19 @@ def finalize(name, bm, ctx, mat, man):
     fit(bm, ctx)
     bmesh.ops.triangulate(bm, faces=[f for f in bm.faces if len(f.verts) > 3], quad_method='BEAUTY', ngon_method='BEAUTY')
     bmesh.ops.remove_doubles(bm, verts=bm.verts[:], dist=1e-5)
-    G.fix_normals(bm)
+    if not ctx.period:
+        G.fix_normals(bm)
     lk = G.klayer(bm)
     # shading data on the whole model: normals as they will be, AO by ray casts
     me = bpy.data.meshes.new(name + '_shade'); bm.to_mesh(me)
     tmp = K.new_obj(name + '_shade', me)
-    set_normals(tmp, ctx.normals)
-    nv = G.vertex_normals(me)
     W = ctx.period
+    set_normals(tmp, ctx.normals, W)
+    nv = G.vertex_normals(me)
     shifts = [(W, 0, 0), (-W, 0, 0)] if W else []
     ao = G.bake_ao(me, nv, ctx.ao_radius, rays=ctx.ao_rays or 40, shifts=shifts)
-    vdata = {(round(v.co.x, 3), round(v.co.y, 3), round(v.co.z, 3)): (nv[i], ao[i]) for i, v in enumerate(me.vertices)}
+    cav = G.cavity(bm, nv, W)
+    vdata = {(round(v.co.x, 3), round(v.co.y, 3), round(v.co.z, 3)): (nv[i], ao[i], cav[i]) for i, v in enumerate(me.vertices)}
     lo = Vector((min(v.co.x for v in me.vertices), min(v.co.y for v in me.vertices), min(v.co.z for v in me.vertices)))
     hi = Vector((max(v.co.x for v in me.vertices), max(v.co.y for v in me.vertices), max(v.co.z for v in me.vertices)))
     bpy.data.objects.remove(tmp); bpy.data.meshes.remove(me)
@@ -199,7 +216,7 @@ def finalize(name, bm, ctx, mat, man):
     b3 = bmesh.new(); b3.from_mesh(root.data)
     bmesh.ops.remove_doubles(b3, verts=b3.verts[:], dist=1e-5)
     b3.to_mesh(root.data); b3.free()
-    set_normals(root, ctx.normals)
+    set_normals(root, ctx.normals, W)
     root.data.color_attributes.active_color = root.data.color_attributes[0]
     K.assign(root, mat)
     K.attach(root, 'Front', (0, -1, 0))
@@ -238,6 +255,7 @@ def main():
         bm, ctx = build()
         finalize(name, bm, ctx, mat, man)
     man.save(os.path.join(OUT, 'Terrain.json'))
+    bpy.context.preferences.filepaths.save_version = 0      # no Terrain.blend1 backups
     bpy.ops.wm.save_as_mainfile(filepath=os.path.join(OUT, 'Terrain.blend'))
     print('wrote', OUT)
 

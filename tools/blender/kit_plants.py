@@ -7,11 +7,11 @@
 # Look (docs/ART_DIRECTION.md): chunky, slightly exaggerated shapes with crisp silhouettes;
 # painted vertex-colour gradients (light, warm tops; dark, cool undersides and crevices); a few
 # crafted strokes from the atlas (bark, birch marks, needles, palm leaflets, hedge leaves).
-#   Conifers   stacked drooping tiers of spiky fronds (pleated skirts with a star rim), trunk at the base
+#   Conifers   stacked drooping tiers: smooth skirts that split into spiky fronds at the rim, trunk at the base
 #   Broadleaf  lumpy cumulus crowns of clumps, crevice shading and a dark core showing in the gaps
 #   Birch      white twin stems with dark marks, small airy clumps
-#   Cherry     a dark twisting trunk under a wide, flat-bottomed blossom crown
-#   Palms      ringed curved trunks, arching comb-edged fronds, coconuts
+#   Cherry     a dark twisting trunk under a wide, frothy blossom crown dotted with pale sprays
+#   Palms      ringed curved trunks, arching comb-edged fronds, coconuts, a dry frond hanging under
 #   Bushes     clump masses; the flowering shrub adds flower dots
 #   Hedges     clipped blocks with a lumpy leafy top that tile end to end along X
 #   Grasses    fans of solid tapered blades (triangular section, no alpha)
@@ -20,7 +20,7 @@
 # and hedges reach a few centimetres below z = 0 so they sit into uneven ground.
 # Each FBX: one mesh named after the model, plus Attach.Front at (0, -1, 0).
 # Vertex data (kit_lib contract): colour (sRGB in the FBX) x PlantsAtlas.png; UV0 the atlas;
-# UV1.x the recolour part (0 fixed: wood, coconuts, flower centres, reed heads; 1 foliage;
+# UV1.x the recolour part (0 fixed: wood, coconuts, dry palm fronds, flower centres, reed heads; 1 foliage;
 # 2 flowers and blossom). Part 1 and 2 colours carry baked shading around the part's base colour
 # (recorded in Plants.json), so the game's brightness-ratio recolour keeps it.
 # Vertex colour ALPHA is a wind weight: 0 at the rooted base, rising to 1 at the top and tips
@@ -48,7 +48,7 @@ R_CONIFER = G.Ramp('#123433', '#2f6450', '#93bb66')
 R_BROAD = G.Ramp('#284a38', '#5f9440', '#d2d872')
 R_BROAD_L = G.Ramp('#2a4636', '#6f9038', '#dccf6a')
 R_BIRCH = G.Ramp('#3e6038', '#93b84a', '#eeea86')
-R_BLOSSOM = G.Ramp('#a64b78', '#ee9cbb', '#ffd6e3')
+R_BLOSSOM = G.Ramp('#9c3f6e', '#ec93b5', '#ffcfdf')
 R_PALM = G.Ramp('#24503c', '#5c9a44', '#cfe07a')
 R_BUSH = G.Ramp('#223f30', '#4f863e', '#a9c862')
 R_SHRUB = G.Ramp('#1f3b33', '#477a40', '#97ba5e')
@@ -59,6 +59,7 @@ R_GOLD_T = G.Ramp('#6a5028', '#c9973f', '#f6dc96')
 R_DUNE = G.Ramp('#4f5f38', '#a2a660', '#f0e09a')
 R_REED = G.Ramp('#34502e', '#7a9646', '#cfd47c')
 R_MEADOW = G.Ramp('#2a5432', '#5b9a46', '#b4d874')
+R_DRY = G.Ramp('#5e4628', '#a5854f', '#dcc38a')        # old palm fronds (fixed, part 0)
 
 WOOD = '#6c5242'       # broadleaf bark
 WOOD_CONIFER = '#6e4a36'
@@ -76,7 +77,8 @@ def uvr(name, span, offset=0.0):
     return (u0 + m, v0 + m, u1 - m, v1 - m, lambda s, i: min(max((s + offset) / span, 0.0), 1.0))
 
 
-def wood_color(p, hexcol, ground=0.62, shade_z=None, shade=0.35, jitter=None):
+def wood_color(p, hexcol, ground=0.62, shade_z=None, shade=0.35):
+    """Bark colour, darker at the ground and in the crown's shade (part 0)."""
     z = p.V[:, 2]
     k = 1 - (1 - ground) * G.smoothstep(0.7, 0.0, z)
     if shade_z is not None:
@@ -84,6 +86,23 @@ def wood_color(p, hexcol, ground=0.62, shade_z=None, shade=0.35, jitter=None):
     p.color(G.hexc(hexcol)[None, :] * k[:, None])
     p.part(0)
     return p
+
+
+def sink_base(p, z=-0.15):
+    """Level a leaning trunk's first ring below the ground, so no edge of it peeks above z = 0."""
+    p.V[p.A['ring'] == 0, 2] = z
+    return p
+
+
+def ground(pieces, height=None, sink=0.03):
+    """Set a clump mass down on the ground: its lowest point `sink` below z = 0 and, if given,
+    its top at `height` (a vertical stretch; normals follow)."""
+    zmin = min(p.V[:, 2].min() for p in pieces); zmax = max(p.V[:, 2].max() for p in pieces)
+    k = 1.0 if height is None else (height + sink) / (zmax - zmin)
+    M = np.eye(4); M[2, 2] = k; M[2, 3] = -sink - zmin * k
+    for p in pieces:
+        p.move(M)
+    return pieces
 
 
 def flare(path, amount=0.45, height=0.75, roots=4, phase=0.0, ripple=0.04):
@@ -113,7 +132,7 @@ def make_clumps(spec, rng, freq_front=3, freq_back=2, small=0.42, big=None):
 
 
 def crown(clumps, ramp, part, rng, C0, Rc, core=0.62, nmix=(0.5, 0.35, 0.15), shade_bias=0.0,
-          bumps=(5, 8), amp=0.13, size=0.8, crev=0.38, keep_core=True):
+          bumps=(5, 8), amp=0.13, size=0.8, crev=0.38):
     """Lumpy clump masses: blobs, culled where hidden inside each other, shaded light on top, dark
     under and in the creases between clumps; a dark core fills the gaps with depth."""
     C0 = np.asarray(C0, float); Rc = np.asarray(Rc, float)
@@ -173,35 +192,30 @@ def branch(p0, p1, r0, r1, rng, sides=6, bend=0.25, segs=4, mid=None, region='ba
 
 
 # ---------------------------------------------------------------- broadleaf trees
-def broadleaf_tree(seed, H, crown_c, crown_r, n_clumps, trunk_r, fork_z, ramp, n_limbs=5,
-                   lobes=None, clump_rf=(0.36, 0.47), leader=True, wood=WOOD, core=0.6, big=1.05,
-                   flat=None, part=1, region='bark', limb_r=(0.42, 0.55), zlo=-0.55):
+def broadleaf_tree(seed, crown_c, crown_r, n_clumps, trunk_r, fork_z, ramp, n_limbs=5, clump_rf=(0.36, 0.47),
+                   leader=True, wood=WOOD, core=0.6, big=1.05, limb_r=(0.42, 0.55), zlo=-0.55):
+    """A cumulus crown (a big central clump and a golden-angle spiral of clumps over the crown
+    envelope, top to bottom) on a gently S-curved trunk whose limbs reach the lower clumps."""
     rng = RNG(seed)
     C0 = np.array(crown_c, float); Rc = np.array(crown_r, float)
-    spec = []
-    if lobes is None:
-        lobes = [(C0, Rc, n_clumps)]
-    for (lc, lr, n) in lobes:
-        lc = np.array(lc, float); lr = np.array(lr, float)
-        spec.append((lc + rng.normal(0, 0.05, 3), lr * 0.66))
-        ga = PI * (3 - 5 ** 0.5); ph = rng.uniform(0, 2 * PI)
-        for k in range(n):
-            zf = 1 - 1.55 * (k + 0.5) / n                      # from the top down, stop short of the bottom
-            zf = max(zf, zlo)
-            rr = math.sqrt(max(0.0, 1 - zf * zf))
-            a = ph + ga * k
-            d = np.array((rr * math.cos(a), rr * math.sin(a) * 0.9, zf))
-            pos = lc + d * lr * rng.uniform(0.6, 0.7)
-            rad = lr.mean() * rng.uniform(*clump_rf) * (1.0 + 0.12 * zf)
-            spec.append((pos, (rad, rad * 0.95, rad * 0.86)) + ((flat,) if flat else ()))
+    spec = [(C0 + rng.normal(0, 0.05, 3), Rc * 0.66)]
+    ga = PI * (3 - 5 ** 0.5); ph = rng.uniform(0, 2 * PI)
+    for k in range(n_clumps):
+        zf = max(1 - 1.55 * (k + 0.5) / n_clumps, zlo)      # from the top down, stop short of the bottom
+        rr = math.sqrt(max(0.0, 1 - zf * zf))
+        a = ph + ga * k
+        d = np.array((rr * math.cos(a), rr * math.sin(a) * 0.9, zf))
+        pos = C0 + d * Rc * rng.uniform(0.6, 0.7)
+        rad = Rc.mean() * rng.uniform(*clump_rf) * (1.0 + 0.12 * zf)
+        spec.append((pos, (rad, rad * 0.95, rad * 0.86)))
     clumps = make_clumps(spec, rng, big=big)
-    pieces = crown(clumps, ramp, part, rng, C0, Rc, core=core)
+    pieces = crown(clumps, ramp, 1, rng, C0, Rc, core=core)
     # trunk: a gentle S up to the fork, then on as a leader into the crown
     top_z = C0[2] + (0.15 * Rc[2] if leader else -0.3 * Rc[2])
     tpath = G.catmull([(0, 0, -0.12), (0.03, -0.02, fork_z * 0.45), (-0.04, 0.02, fork_z),
                        (0.05, 0.0, (fork_z + top_z) / 2), (0.0, 0.05, top_z)], 10)
     radii = trunk_r * (1 - 0.66 * np.linspace(0, 1, len(tpath)) ** 0.8)
-    trunk = G.tube(tpath, radii, 9, lobe=flare(tpath, 0.5, 0.8, 4, rng.uniform(0, 6)), uv=uvr(region, 8.0))
+    trunk = G.tube(tpath, radii, 9, lobe=flare(tpath, 0.5, 0.8, 4, rng.uniform(0, 6)), uv=uvr('bark', 8.0))
     wood_color(trunk, wood, shade_z=C0[2] - Rc[2] * 0.72)
     trunk = cull_in(trunk, clumps)
     parts = [trunk]
@@ -214,22 +228,24 @@ def broadleaf_tree(seed, H, crown_c, crown_r, n_clumps, trunk_r, fork_z, ramp, n
         p0 = np.array((0.0, 0.0, z0))
         p1 = cl['c'] + np.array((0, 0, -0.1 * cl['r'][2]))
         p1 = p0 + (p1 - p0) * 0.92
-        b = branch(p0, p1, trunk_r * rng.uniform(*limb_r), trunk_r * 0.16, rng, sides=6, bend=0.2, offset=z0, region=region)
+        b = branch(p0, p1, trunk_r * rng.uniform(*limb_r), trunk_r * 0.16, rng, sides=6, bend=0.2, offset=z0)
         wood_color(b, wood, shade_z=z0 + 0.3, shade=0.4)
         parts.append(cull_in(b, clumps))
     return pieces + parts, clumps
 
 
 def build_broadleaf():
-    pieces, clumps = broadleaf_tree(21, 7.0, (0, 0, 4.45), (2.75, 2.35, 2.45), 12, 0.27, 2.3, R_BROAD)
-    return pieces, {0: G.hexc(WOOD), 1: R_BROAD.base}, {'kind': 'tree', 'trunkRadius': 0.27}
+    tr = 0.27
+    pieces, clumps = broadleaf_tree(21, (0, 0, 4.45), (2.75, 2.35, 2.45), 12, tr, 2.3, R_BROAD)
+    return pieces, {0: G.hexc(WOOD), 1: R_BROAD.base}, {'kind': 'tree', 'trunkRadius': tr}
 
 
 def build_broadleaf_large():
     # a broad, spreading crown: wider than tall, on a stout trunk with two big limbs
-    pieces, clumps = broadleaf_tree(78, 9.0, (0, 0.05, 6.05), (4.1, 2.8, 2.75), 16, 0.4, 2.5, R_BROAD_L,
+    tr = 0.4
+    pieces, clumps = broadleaf_tree(78, (0, 0.05, 6.05), (4.1, 2.8, 2.75), 16, tr, 2.5, R_BROAD_L,
                                     n_limbs=7, clump_rf=(0.32, 0.41), core=0.5, limb_r=(0.4, 0.5), zlo=-0.45, big=1.2)
-    return pieces, {0: G.hexc(WOOD), 1: R_BROAD_L.base}, {'kind': 'tree', 'trunkRadius': 0.37}
+    return pieces, {0: G.hexc(WOOD), 1: R_BROAD_L.base}, {'kind': 'tree', 'trunkRadius': tr}
 
 
 def shell_clumps(center, radii, n, rng, rf=(0.42, 0.55), shell=(0.62, 0.74), zlo=-0.5, elong=1.12, flat=0.78):
@@ -254,27 +270,35 @@ def build_birch():
     s1 = G.catmull([(0.05, 0, -0.1), (0.12, 0.02, 2.0), (0.02, 0.05, 4.2), (0.22, 0.0, 6.5)], 9)
     s2 = G.catmull([(-0.08, 0.06, -0.1), (-0.3, 0.05, 1.8), (-0.7, 0.12, 3.8), (-0.98, 0.18, 5.4)], 8)
     stems = [(s1, 0.15), (s2, 0.11)]
-    envs = [((0.22, 0.05, 5.0), (1.05, 0.8, 1.85), 11), ((-0.98, 0.15, 4.35), (0.82, 0.72, 1.3), 7)]
+    # loose groups of small drooping clumps along the upper stems, with gaps between the groups
+    groups = [((0.85, -0.05, 3.75), 3, 0), ((0.6, 0.12, 5.05), 4, 0), ((0.12, -0.05, 6.3), 4, 0),
+              ((-0.32, -0.22, 5.45), 3, 0), ((-1.5, 0.08, 3.95), 3, 1), ((-1.02, 0.22, 5.25), 4, 1)]
     spec = []
-    for (c, r, n) in envs:
-        spec += shell_clumps(c, r, n, rng, rf=(0.4, 0.5), shell=(0.66, 0.8), zlo=-0.7, elong=1.25, flat=0.85)
-    spec += [((0.22, 0.0, 6.75), (0.42, 0.38, 0.5), 0.85), ((-0.98, 0.18, 5.6), (0.36, 0.33, 0.45), 0.85)]
-    clumps = make_clumps(spec, rng, small=0.4)
-    C0 = np.array((-0.3, 0.08, 4.9)); Rc = np.array((1.9, 1.1, 2.1))
-    pieces = crown(clumps, R_BIRCH, 1, rng, C0, Rc, core=0, nmix=(0.6, 0.25, 0.15), crev=0.3, amp=0.15, size=0.7)
+    for (gc, n, si) in groups:
+        gc = np.array(gc)
+        r = rng.uniform(0.47, 0.54)
+        spec.append((gc, (r, r * 0.9, r * 1.12), 0.85))
+        a0 = rng.uniform(0, 2 * PI)
+        for k in range(n - 1):
+            a = a0 + 2 * PI * k / (n - 1) + rng.normal(0, 0.3)
+            off = np.array((math.cos(a) * 0.46, math.sin(a) * 0.32, rng.uniform(-0.3, 0.12)))
+            rr = rng.uniform(0.34, 0.42)
+            spec.append((gc + off, (rr, rr * 0.9, rr * 1.15), 0.85))
+    clumps = make_clumps(spec, rng, small=0.44)
+    C0 = np.array((-0.3, 0.05, 5.0)); Rc = np.array((1.9, 1.0, 1.8))
+    pieces = crown(clumps, R_BIRCH, 1, rng, C0, Rc, core=0, nmix=(0.62, 0.23, 0.15), crev=0.32, amp=0.16, size=0.7)
     for (path, r0) in stems:
         radii = r0 * (1 - 0.75 * np.linspace(0, 1, len(path)) ** 1.1)
         t = G.tube(path, radii, 8, lobe=flare(path, 0.25, 0.5, 3, rng.uniform(0, 6), 0.02), uv=uvr('birch', 7.0))
         wood_color(t, WOOD_BIRCH, ground=0.8, shade_z=None)
         pieces.append(cull_in(t, clumps))
-    # thin dark twigs from the stems out into the lower and outer clumps
-    low = sorted(range(len(clumps)), key=lambda i: clumps[i]['c'][2])[:10]
-    for i in low:
-        cl = clumps[i]
-        path = s1 if cl['c'][0] > -0.45 else s2
-        j = int(np.argmin(np.linalg.norm(path - (cl['c'] - UP * 0.8), axis=1)))
+    # thin dark twigs from the stems out to each group
+    for (gc, n, si) in groups:
+        path = stems[si][0]
+        gc = np.array(gc)
+        j = int(np.argmin(np.linalg.norm(path - (gc - UP * 0.9), axis=1)))
         p0 = path[max(j, 2)]
-        b = branch(p0, cl['c'] - UP * 0.15 * cl['r'][2], 0.04, 0.014, rng, sides=4, bend=0.12, segs=3)
+        b = branch(p0, gc - UP * 0.1, 0.045, 0.016, rng, sides=4, bend=0.12, segs=3)
         wood_color(b, WOOD_TWIG, ground=1.0)
         pieces.append(cull_in(b, clumps))
     return pieces, {0: G.hexc(WOOD_BIRCH), 1: R_BIRCH.base}, {'kind': 'tree', 'trunkRadius': 0.15}
@@ -288,9 +312,10 @@ def build_cherry():
                    lobe=lambda i, ang: flare(tpath, 0.45, 0.6, 3, 0.5)(i, ang) * (1 + 0.10 * np.cos(3 * ang)),
                    uv=uvr('cherry', 7.0))
     wood_color(trunk, WOOD_CHERRY, ground=0.7, shade_z=2.6, shade=0.25)
-    C0 = np.array((0.0, 0.05, 4.3)); Rc = np.array((3.1, 2.1, 1.75))
-    spec = [(C0 + np.array((0, 0, 0.1)), Rc * np.array((0.6, 0.62, 0.62)), 0.6)]
-    spec += shell_clumps(C0, Rc, 15, rng, rf=(0.36, 0.45), shell=(0.62, 0.72), zlo=-0.5, elong=0.66, flat=0.55)
+    sink_base(trunk)
+    C0 = np.array((0.0, 0.05, 3.7)); Rc = np.array((3.05, 1.65, 2.05))
+    spec = [(C0 + np.array((0, 0, 0.15)), Rc * np.array((0.6, 0.62, 0.6)), 0.6)]
+    spec += shell_clumps(C0, Rc, 18, rng, rf=(0.31, 0.39), shell=(0.66, 0.76), zlo=-0.45, elong=0.86, flat=0.66)
     clumps = make_clumps(spec, rng, big=1.05)
     fork = np.array((-0.05, 0.0, 1.95))
     pieces = [trunk]
@@ -305,8 +330,16 @@ def build_cherry():
         t = G.tube(path, np.linspace(r0, r0 * 0.35, len(path)), 7, twist=1.2, uv=uvr('cherry', 7.0, a0[2]))
         wood_color(t, WOOD_CHERRY, ground=1.0, shade_z=3.2, shade=0.3)
         pieces.append(cull_in(t, clumps))
-    pieces += crown(clumps, R_BLOSSOM, 2, rng, C0, Rc, core=0.5, nmix=(0.55, 0.3, 0.15), amp=0.15, size=0.75)
+    blossom = crown(clumps, R_BLOSSOM, 2, rng, C0, Rc, core=0.5, nmix=(0.5, 0.35, 0.15), amp=0.2, size=0.62, crev=0.45,
+                    bumps=(6, 9))
+    pieces += blossom
     pieces[0] = cull_in(pieces[0], clumps)
+
+    # pale blossom sprays dotted over the sunny face of the crown
+    def col(h, rng):
+        sh = 0.86 + 0.14 * h + rng.uniform(-0.05, 0.03)
+        return R_BLOSSOM(sh), G.hexc('#fff3f6')
+    pieces += scatter_dots(blossom[:-1], rng, 18, (2, 3), (0.08, 0.11), 0.55, col, zmin=3.0, spread=0.17)
     return pieces, {0: G.hexc(WOOD_CHERRY), 2: R_BLOSSOM.base}, {'kind': 'tree', 'trunkRadius': 0.27}
 
 
@@ -435,18 +468,21 @@ def conifer(seed, H, Rmax, trunk_r, spacing, z_rim0, k=0.72, d=0.95, rmin=0.21, 
 
 
 def build_conifer_tall():
-    return conifer(3, 10.0, 2.1, 0.29, 1.2, 1.75), \
-        {0: G.hexc(WOOD_CONIFER), 1: R_CONIFER.base}, {'kind': 'tree', 'trunkRadius': 0.28}
+    tr = 0.29
+    return conifer(3, 10.0, 2.1, tr, 1.2, 1.75), \
+        {0: G.hexc(WOOD_CONIFER), 1: R_CONIFER.base}, {'kind': 'tree', 'trunkRadius': tr}
 
 
 def build_conifer_mid():
-    return conifer(8, 6.0, 1.7, 0.22, 1.0, 1.15, k=0.74), \
-        {0: G.hexc(WOOD_CONIFER), 1: R_CONIFER.base}, {'kind': 'tree', 'trunkRadius': 0.21}
+    tr = 0.22
+    return conifer(8, 6.0, 1.7, tr, 1.0, 1.15, k=0.74), \
+        {0: G.hexc(WOOD_CONIFER), 1: R_CONIFER.base}, {'kind': 'tree', 'trunkRadius': tr}
 
 
 def build_conifer_small():
-    return conifer(14, 3.5, 1.15, 0.15, 0.8, 0.78, k=0.78, rmin=0.3), \
-        {0: G.hexc(WOOD_CONIFER), 1: R_CONIFER.base}, {'kind': 'tree', 'trunkRadius': 0.14}
+    tr = 0.15
+    return conifer(14, 3.5, 1.15, tr, 0.8, 0.78, k=0.78, rmin=0.3), \
+        {0: G.hexc(WOOD_CONIFER), 1: R_CONIFER.base}, {'kind': 'tree', 'trunkRadius': tr}
 
 
 # ---------------------------------------------------------------- palms
@@ -498,7 +534,8 @@ def frond(base, az, elev, L, Wmax, rng, droop=0.35, rows=15, teeth=True, fold=0.
     return p
 
 
-def palm(seed, trunk_pts, r_base, r_top, ring_len, n_fronds, frond_len, frond_w, n_nuts, elev=(0.15, 0.85), droop=0.4):
+def palm(seed, trunk_pts, r_base, r_top, ring_len, n_fronds, frond_len, frond_w, n_nuts, elev=(0.15, 0.85), droop=0.4,
+         n_dead=1):
     rng = RNG(seed)
     dense = G.catmull(trunk_pts, 60)
     Ld = G.arclen(dense)
@@ -523,6 +560,7 @@ def palm(seed, trunk_pts, r_base, r_top, ring_len, n_fronds, frond_len, frond_w,
     lip = np.array([vr[int(r)] for r in trunk.A['ring']])
     k = (0.70 + 0.30 * lip) * (1 - 0.35 * G.smoothstep(0.5, 0.0, z))
     trunk.color(G.hexc(WOOD_PALM)[None, :] * k[:, None]); trunk.part(0)
+    sink_base(trunk, -0.2)
     pieces = [trunk]
     top = path[-1]; tdir = G.unit(path[-1] - path[-2])
     # crown shaft: a fibrous knob where the fronds spring from
@@ -538,6 +576,13 @@ def palm(seed, trunk_pts, r_base, r_top, ring_len, n_fronds, frond_len, frond_w,
         base = top + tdir * 0.12 + np.array((math.cos(az), math.sin(az), 0)) * r_top * 0.9
         pieces.append(frond(base, az, el, ln, frond_w * rng.uniform(0.9, 1.08), rng,
                             droop=droop * (1.15 - 0.5 * el), age=0.6 * f * (f > 0.75)))
+    # an old, dry frond or two hanging under the crown
+    for k in range(n_dead):
+        az = ph + PI * (0.35 + 0.8 * k) + rng.normal(0, 0.1)
+        base = top - tdir * 0.05 + np.array((math.cos(az), math.sin(az), 0)) * r_top * 0.9
+        f = frond(base, az, -1.0 - 0.15 * k, frond_len * 0.62, frond_w * 0.75, rng, droop=0.15, ramp=R_DRY, fold=0.7)
+        f.part(0)
+        pieces.append(f)
     # coconuts tucked under the crown
     for k in range(n_nuts):
         a = ph + 2 * PI * k / n_nuts + rng.normal(0, 0.2)
@@ -556,22 +601,16 @@ def build_palm():
 
 def build_palm_short():
     pieces = palm(57, [(0, 0, -0.12), (0.45, -0.05, 1.2), (1.15, -0.05, 2.4), (1.4, 0.0, 3.4), (1.38, 0.0, 3.8)],
-                  0.3, 0.2, 0.36, 10, 2.8, 0.42, 3, elev=(0.05, 0.9), droop=0.5)
+                  0.3, 0.2, 0.36, 10, 2.8, 0.42, 3, elev=(0.05, 0.9), droop=0.5, n_dead=2)
     return pieces, {0: G.hexc(WOOD_PALM), 1: R_PALM.base}, {'kind': 'tree', 'trunkRadius': 0.3}
 
 
 # ---------------------------------------------------------------- bushes
-def bush(seed, spec, ramp, C0, Rc, twigs=0, shade_bias=0.0, small=0.26):
+def bush(seed, spec, ramp, C0, Rc, shade_bias=0.0, small=0.26):
+    """A low clump mass sitting on the ground (no visible stems)."""
     rng = RNG(seed)
     clumps = make_clumps(spec, rng, freq_front=3, freq_back=2, small=small)
     pieces = crown(clumps, ramp, 1, rng, C0, Rc, core=0.55, shade_bias=shade_bias, amp=0.15, size=0.8)
-    for k in range(twigs):
-        a = rng.uniform(0, 2 * PI)
-        p0 = np.array((math.cos(a) * 0.1, math.sin(a) * 0.1, -0.05))
-        p1 = np.array((math.cos(a) * 0.35, math.sin(a) * 0.3, 0.45))
-        b = branch(p0, p1, 0.045, 0.02, rng, sides=5, segs=2, bend=0.1)
-        wood_color(b, WOOD, ground=0.6)
-        pieces.append(cull_in(b, clumps))
     return pieces, clumps
 
 
@@ -579,8 +618,8 @@ def build_bush_round():
     spec = [((0, 0.02, 0.6), (0.6, 0.55, 0.52)), ((-0.42, -0.08, 0.42), 0.38), ((0.44, -0.04, 0.45), 0.4),
             ((0.05, -0.38, 0.42), 0.38), ((-0.1, 0.4, 0.45), 0.36), ((0.2, -0.12, 0.92), 0.36),
             ((-0.25, 0.05, 0.86), 0.34)]
-    pieces, _ = bush(4, spec, R_BUSH, (0, 0, 0.6), (0.7, 0.62, 0.6), twigs=0)
-    return pieces, {1: R_BUSH.base}, {'kind': 'bush'}
+    pieces, _ = bush(4, spec, R_BUSH, (0, 0, 0.6), (0.7, 0.62, 0.6))
+    return ground(pieces, 1.2), {1: R_BUSH.base}, {'kind': 'bush'}
 
 
 def build_bush_wide():
@@ -588,8 +627,8 @@ def build_bush_wide():
             ((0.0, 0.05, 0.62), (0.5, 0.45, 0.38)), ((-0.85, -0.12, 0.35), 0.32), ((0.88, -0.1, 0.33), 0.3),
             ((-0.25, -0.3, 0.38), 0.33), ((0.28, -0.32, 0.4), 0.32), ((0.15, 0.2, 0.82), 0.25),
             ((-0.35, 0.05, 0.78), 0.26)]
-    pieces, _ = bush(9, spec, R_BUSH, (0, 0, 0.5), (1.1, 0.55, 0.5), twigs=0, shade_bias=0.02, small=0.36)
-    return pieces, {1: R_BUSH.base}, {'kind': 'bush'}
+    pieces, _ = bush(9, spec, R_BUSH, (0, 0, 0.5), (1.1, 0.55, 0.5), shade_bias=0.02, small=0.36)
+    return ground(pieces, 1.0), {1: R_BUSH.base}, {'kind': 'bush'}
 
 
 def flower_dot(c, n, r, rng, k=6):
@@ -608,35 +647,45 @@ def flower_dot(c, n, r, rng, k=6):
     return p
 
 
+def scatter_dots(leaf, rng, sites, per_site, size, spacing, color, zmin=0.25, part=2, spread=0.08):
+    """Clusters of flower dots on the sunny side the game camera sees (front, from above).
+    leaf: foliage pieces to sit on; color(height, rng) -> (rim RGB, centre RGB)."""
+    V = np.concatenate([p.V for p in leaf]); N = np.concatenate([p.N for p in leaf])
+    view = G.unit(np.array((0.15, -0.75, 0.65)))
+    score = N @ view + rng.uniform(0, 0.4, len(V))
+    chosen = []
+    for i in np.argsort(-score):
+        if len(chosen) >= sites or score[i] < 0.2: break
+        if V[i][2] < zmin: continue
+        if any(np.linalg.norm(V[i] - q) < spacing for q, _ in chosen): continue
+        chosen.append((V[i], N[i]))
+    out = []
+    zlo, zhi = V[:, 2].min(), V[:, 2].max()
+    for (c, n) in chosen:
+        t1 = G.unit(np.cross(n, rng.normal(size=3))); t2 = np.cross(n, t1)
+        for j in range(int(rng.integers(per_site[0], per_site[1] + 1))):
+            a = rng.uniform(0, 2 * PI); rr = 0.0 if j == 0 else rng.uniform(spread * 0.6, spread)
+            q = c + (t1 * math.cos(a) + t2 * math.sin(a)) * rr + n * 0.012
+            f = flower_dot(q, G.unit(n + rng.normal(0, 0.15, 3)), rng.uniform(*size), rng)
+            rim, ctr = color((q[2] - zlo) / max(zhi - zlo, 1e-3), rng)
+            col = np.tile(rim, (len(f), 1)); col[0] = ctr
+            f.color(col); f.part(part)
+            out.append(f)
+    return out
+
+
 def build_shrub_flowering():
     rng = RNG(12)
     spec = [((0, 0.0, 0.58), (0.55, 0.5, 0.52)), ((-0.38, -0.1, 0.42), 0.36), ((0.4, -0.06, 0.44), 0.37),
             ((0.02, -0.33, 0.4), 0.34), ((0.0, 0.36, 0.45), 0.34), ((0.16, -0.1, 0.86), 0.32),
             ((-0.2, 0.08, 0.82), 0.3)]
     pieces, clumps = bush(15, spec, R_SHRUB, (0, 0, 0.58), (0.65, 0.58, 0.55), small=0.35)
-    # clusters of flower dots on the sunny, visible side of the foliage
-    leaf = [p for p in pieces if p.P[0] == 1]
-    V = np.concatenate([p.V for p in leaf]); N = np.concatenate([p.N for p in leaf])
-    view = G.unit(np.array((0.15, -0.75, 0.65)))
-    score = N @ view + rng.uniform(0, 0.4, len(V))
-    order = np.argsort(-score)
-    sites = []
-    for i in order:
-        if len(sites) >= 12 or score[i] < 0.2: break
-        if V[i][2] < 0.25: continue
-        if any(np.linalg.norm(V[i] - q) < 0.26 for q, _ in sites): continue
-        sites.append((V[i], N[i]))
-    for (c, n) in sites:
-        t1 = G.unit(np.cross(n, rng.normal(size=3))); t2 = np.cross(n, t1)
-        for j in range(int(rng.integers(3, 5))):
-            a = rng.uniform(0, 2 * PI); rr = 0.0 if j == 0 else rng.uniform(0.05, 0.085)
-            q = c + (t1 * math.cos(a) + t2 * math.sin(a)) * rr + n * 0.012
-            f = flower_dot(q, G.unit(n + rng.normal(0, 0.15, 3)), rng.uniform(0.038, 0.05), rng)
-            sh = 0.5 + 0.3 * G.smoothstep(0.2, 1.1, q[2]) + rng.uniform(-0.1, 0.1)
-            col = np.tile(R_SHRUB_FL(sh), (len(f), 1)); col[0] = R_SHRUB_FL(min(sh + 0.35, 1.0))
-            f.color(col); f.part(2)
-            pieces.append(f)
-    return pieces, {1: R_SHRUB.base, 2: R_SHRUB_FL.base}, {'kind': 'bush'}
+
+    def col(h, rng):
+        sh = 0.45 + 0.35 * h + rng.uniform(-0.1, 0.1)
+        return R_SHRUB_FL(sh), R_SHRUB_FL(min(sh + 0.35, 1.0))
+    pieces += scatter_dots([p for p in pieces if p.P[0] == 1], rng, 12, (3, 4), (0.038, 0.05), 0.26, col)
+    return ground(pieces, 1.1), {1: R_SHRUB.base, 2: R_SHRUB_FL.base}, {'kind': 'bush'}
 
 
 # ---------------------------------------------------------------- hedges
@@ -656,8 +705,8 @@ def hedge_profile():
 def hedge_lumps(x, s):
     """Periodic lump field (period HEDGE_PERIOD along x); s is the position around the section (0..1)."""
     X = 2 * PI * x / HEDGE_PERIOD
-    return (0.6 * np.sin(2 * X + 5.1 * s + 0.4) + 0.4 * np.sin(3 * X - 7.3 * s + 1.9)
-            + 0.25 * np.sin(1 * X + 3.0 * s + 2.3)) / 1.25
+    return (0.65 * np.sin(2 * X + 5.1 * s + 0.4) + 0.35 * np.sin(2 * X - 7.3 * s + 1.9)
+            + 0.3 * np.sin(1 * X + 3.0 * s + 2.3)) / 1.3
 
 
 def build_hedge(length):
@@ -667,23 +716,29 @@ def build_hedge(length):
     pn = np.zeros_like(prof)                          # outward 2D normals of the section
     tang = np.gradient(prof, axis=0)
     pn[:, 0] = -tang[:, 1]; pn[:, 1] = tang[:, 0]
-    pn = -pn / np.linalg.norm(pn, axis=1, keepdims=True)
+    pn = pn / np.linalg.norm(pn, axis=1, keepdims=True)
     pn[0] = (-1, 0); pn[-1] = (1, 0)
     dx = 0.125
     nx = int(round(length / dx))
     xs = np.linspace(-length / 2, length / 2, nx + 1)
     xs_ext = np.concatenate([[xs[0] - dx], xs, [xs[-1] + dx]])
     zf = prof[:, 1]
-    amp = 0.016 + 0.05 * G.smoothstep(0.6, 0.95, zf)
+    amp = 0.026 + 0.04 * G.smoothstep(0.6, 0.95, zf)
     amp[0] = amp[-1] = 0.0
     P = len(prof)
+
+    def section(xl):
+        d = (0.45 + 0.55 * hedge_lumps(xl, S)) * amp            # leafy bulges, outward
+        return prof[:, 0] + pn[:, 0] * d, prof[:, 1] + pn[:, 1] * d
+    # fit the lumpy section to 0.8 m deep and 1.0 m high, measured over one lump period, so
+    # every block length gets the same scale and the ends still match
+    ref = [section(xl) for xl in np.arange(0, HEDGE_PERIOD, dx)]
+    ky = 0.4 / max(np.abs(y).max() for y, z in ref)
+    kz = 1.0 / max(z.max() for y, z in ref)
     V = []
     for x in xs_ext:
-        xl = x + length / 2
-        d = (0.45 + 0.55 * hedge_lumps(xl, S)) * amp
-        y = prof[:, 0] + pn[:, 0] * d
-        z = prof[:, 1] + pn[:, 1] * d
-        V.append(np.stack([np.full(P, x), y, z], axis=1))
+        y, z = section(x + length / 2)
+        V.append(np.stack([np.full(P, x), y * ky, z * kz], axis=1))
     V = np.concatenate(V)
     F = []
     for i in range(len(xs_ext) - 1):
@@ -721,7 +776,7 @@ def build_hedge(length):
     xl = Vs[:, 0] + length / 2
     lump = hedge_lumps(xl, Ss)
     z = Vs[:, 2]
-    s = 0.2 + 0.5 * G.smoothstep(-0.05, 0.95, z) ** 0.9 + 0.2 * G.smoothstep(0.78, 0.98, z) + 0.07 * lump
+    s = 0.2 + 0.5 * G.smoothstep(-0.05, 0.95, z) ** 0.9 + 0.2 * G.smoothstep(0.78, 0.98, z) + 0.1 * lump
     side.color(R_HEDGE(s)); side.part(1)
     side.U = AT.region_uv('hedge', Us, Ss)
     pieces = [side]
@@ -820,7 +875,9 @@ def build_tall_grass():
         stem.tag('t', G.smoothstep(base[2], top[2], stem.V[:, 2]))
         grass_color(stem, R_GOLD_T, rng, lo=0.2, hi=0.8)
         d = G.unit(top - mid)
-        head = G.tube(G.bezier(top, top + d * 0.08, top + d * 0.17, 4), [0.012, 0.028, 0.022, 0.0], 4, tip=True, seam=False)
+        hp = G.bezier(top, top + d * 0.09, top + d * 0.2, 5)
+        head = G.tube(hp, [0.01, 0.026, 0.028, 0.018, 0.0], 5, tip=True, seam=False)
+        head.N = G.unit(0.5 * head.N + 0.5 * G.unit(head.V - hp[2] + UP * 0.05))
         head.tag('t', np.ones(len(head)))
         grass_color(head, R_GOLD_T, rng, lo=0.8, hi=0.8, bias=0.1)
         pieces += [stem, head]
@@ -940,7 +997,7 @@ def main():
     man = K.Manifest('Plants', 'PlantsAtlas.png')
     man.data['notes'] = {
         'front': '-Y (Attach.Front at (0, -1, 0)); origin at the base on the ground',
-        'parts': '0 fixed (wood, coconuts, flower centres, reed heads), 1 foliage, 2 flowers/blossom',
+        'parts': '0 fixed (wood, coconuts, dry palm fronds, flower centres, reed heads), 1 foliage, 2 flowers/blossom',
         'vertexAlpha': 'wind weight: 0 at the rooted base -> 1 at the top / blade tips',
         'hedgeTiling': 'HedgeBlock1/2 tile end to end along X (lumps repeat every 1 m)',
     }
@@ -954,14 +1011,19 @@ def main():
             p.C[:, 3] = np.clip(p.V[:, 2] / H, 0, 1) ** 1.5
         o = G.to_object(name, p)
         K.assign(o, mat)
-        K.attach(o, 'Front', (0, -1, 0))
+        front = K.attach(o, 'Front', (0, -1, 0))
+        assert front.name == 'Attach.Front', front.name
         parts = {k: tuple(float(x) for x in v) for k, v in sorted(parts.items())}
         man.add(o, parts=parts, **extra)
         K.export_model(o, os.path.join(OUT, name + '.fbx'))
+        # object names are unique per .blend: once exported, give this marker a model-specific
+        # name so the next model's marker is exported as exactly 'Attach.Front' too
+        front.name = 'Attach.Front.' + name
         t = K.tree_tris(o)
         lim = BUDGET[extra['kind']]
         report.append((name, t, lim, man.data['models'][name]['size']))
     man.save(os.path.join(OUT, 'Plants.json'))
+    bpy.context.preferences.filepaths.save_version = 0          # no Plants.blend1 next to the kit
     bpy.ops.wm.save_as_mainfile(filepath=os.path.join(OUT, 'Plants.blend'))
     for name, t, lim, size in report:
         print('PLANT %-15s %5d / %4d tris %s  size %s' % (name, t, lim, 'OK ' if t <= lim else 'OVER', size))

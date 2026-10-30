@@ -49,7 +49,8 @@ REG = {
 }
 PERIODIC = {'conc', 'paint', 'plastic', 'wall', 'hoard', 'hazard', 'redwhite'}
 MARGIN_U = {k: 0.07 for k in PERIODIC}
-MARGIN_U['wall'] = MARGIN_U['hoard'] = 0.02     # tiles map exactly [0, 1]; a little bleed room
+MARGIN_U['hoard'] = 0.02     # the hoarding tile maps exactly [0, 1]; a little bleed room
+MARGIN_U['wall'] = 0.12      # the pillar samples up to 0.11 past either end of the period
 DEFAULT_MARGIN = 0.02
 # Wall-type grime maps: side faces use q in [0, SIDE_TOP] for the model's height; upward faces use
 # the clean band [TOP0, TOP1].
@@ -211,22 +212,22 @@ def paint_paint(img, rng):
     aspect = (P.shape[1] / P.shape[0])   # Q units are this many times larger than P units per pixel
     # rust: clusters weighted to the bottom and the top edge, with streaks running down
     cents = []
-    for k in range(70):
+    for k in range(38):
         q = rng.random() ** 1.8 * SIDE_TOP if rng.random() < 0.7 else SIDE_TOP - rng.random() * 0.12
         cents.append((rng.random(), q))
-    sub, acc = blobs(sub, P, Q, rng, cents, 0.006, RUST, 0.85, aspect, rim=RUST_DARK, lumps=4)
-    for (pc, qc) in cents[::2]:
+    sub, acc = blobs(sub, P, Q, rng, cents, 0.0042, RUST, 0.85, aspect, rim=RUST_DARK, lumps=4)
+    for (pc, qc) in cents[::4]:
         dp = (P - pc + 0.5) % 1.0 - 0.5
-        L = rng.uniform(0.08, 0.3)
-        m = ss(0.004, 0.0, np.abs(dp)) * ss(qc - L, qc, Q) * (Q < qc)
-        sub = blend(sub, m, (0.80, 0.60, 0.46), 0.45)
+        L = rng.uniform(0.05, 0.18)
+        m = ss(0.0035, 0.0, np.abs(dp)) * ss(qc - L, qc, Q) * (Q < qc)
+        sub = blend(sub, m, (0.84, 0.66, 0.52), 0.3)
     # chipped paint: small darker flecks with a light edge
-    cents = [(rng.random(), rng.random() * SIDE_TOP) for _ in range(110)]
-    sub, _ = blobs(sub, P, Q, rng, cents, 0.0028, (0.70, 0.68, 0.66), 0.8, aspect, rim=(0.50, 0.47, 0.44), lumps=3)
+    cents = [(rng.random(), rng.random() * SIDE_TOP) for _ in range(70)]
+    sub, _ = blobs(sub, P, Q, rng, cents, 0.0025, (0.76, 0.74, 0.72), 0.7, aspect, rim=(0.58, 0.55, 0.52), lumps=3)
     # scratches
-    for k in range(40):
+    for k in range(25):
         p0, q0 = rng.random(), rng.random() * SIDE_TOP
-        ang = rng.uniform(-0.6, 0.6); L = rng.uniform(0.01, 0.04)
+        ang = rng.uniform(-0.6, 0.6); L = rng.uniform(0.008, 0.03)
         dp = (P - p0 + 0.5) % 1.0 - 0.5; dq = (Q - q0) / aspect
         along = dp * math.cos(ang) + dq * math.sin(ang); across = -dp * math.sin(ang) + dq * math.cos(ang)
         m = ss(0.0012, 0.0, np.abs(across)) * (np.abs(along) < L)
@@ -314,8 +315,8 @@ def paint_pwood(img, rng):
     g, g2 = _grain(P, Q, rng, 7, 0.05)
     sub *= (0.93 + 0.04 * g + 0.03 * g2)[..., None]
     aspect = P.shape[1] / P.shape[0]
-    cents = [(rng.random(), rng.random()) for _ in range(28)]
-    sub, acc = blobs(sub, P, Q, rng, cents, 0.025, (0.80, 0.66, 0.52), 0.85, aspect, rim=(0.62, 0.52, 0.44), lumps=4, periodic=False)
+    cents = [(rng.random(), rng.random()) for _ in range(12)]
+    sub, acc = blobs(sub, P, Q, rng, cents, 0.02, (0.80, 0.66, 0.52), 0.85, aspect, rim=(0.62, 0.52, 0.44), lumps=4, periodic=False)
     edge = np.minimum(Q, 1 - Q)
     sub = blend(sub, ss(0.12, 0.0, edge) * ss(0.4, 0.7, fbm(P, Q, 30, 4, rng)), (0.80, 0.68, 0.56), 0.6)
     specks(sub, ss(0.2, 0.0, P), rng, 900, 0.6, 1.6, DARK_GRIME, 0.5)

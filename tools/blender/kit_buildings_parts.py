@@ -138,8 +138,10 @@ def wall(B, wf, u0, u1, top, openings=(), v0=0.0, mode='flat', mat='wall', zones
             ta, tb = top_at(top, a), top_at(top, b); tm = min(ta, tb)
             wa = rib_w(a, *rib) if mode == 'rib' else 0.0
             wb = rib_w(b, *rib) if mode == 'rib' else 0.0
-            cuts = sorted({v0} | {lv for lv in levels if v0 + 1e-6 < lv < tm - 1e-6})
             holes = [o for o in ops if o[0] - 1e-6 <= m <= o[1] + 1e-6]
+            zs = [z for z in zones if z[0] - 1e-6 <= m <= z[1] + 1e-6]
+            mine = set(vlines) | {v for o in holes for v in (o[2], o[3])} | {v for z in zs for v in (z[2], z[3])}
+            cuts = sorted({v0} | {lv for lv in mine if v0 + 1e-6 < lv < tm - 1e-6})
             for i, c in enumerate(cuts):
                 hi = cuts[i + 1] if i + 1 < len(cuts) else None
                 vm = (c + (hi if hi is not None else tm)) / 2
@@ -261,9 +263,13 @@ def window(B, wf, u0, u1, v0, v1, depth=0.16, fw=0.075, cols=2, rows=1, transom=
     c = 0.016
     o = (u0, v0, u1, v1); i = (u0 + fw, v0 + fw, u1 - fw, v1 - fw)
     ic = (i[0] - c, i[1] - c, i[2] + c, i[3] + c)
-    ring(mb, o, ic, zf, zf, frame, 'front')
-    ring(mb, ic, i, zf, zf - c, frame, 'front')
-    ring(mb, i, i, zf - c, zg, frame, 'in', 0.85)
+    if cheap:
+        ring(mb, o, i, zf, zf, frame, 'front')
+        ring(mb, i, i, zf, zg, frame, 'in', 0.85)
+    else:
+        ring(mb, o, ic, zf, zf, frame, 'front')
+        ring(mb, ic, i, zf, zf - c, frame, 'front')
+        ring(mb, i, i, zf - c, zg, frame, 'in', 0.85)
     mb.face([(i[0], i[1], zg), (i[2], i[1], zg), (i[2], i[3], zg), (i[0], i[3], zg)], 'glass', (0, 0, 1), 1.0, glass_uv(i, glass))
     iw, ih = i[2] - i[0], i[3] - i[1]
     zb = zf - 0.012
@@ -331,19 +337,19 @@ def window(B, wf, u0, u1, v0, v1, depth=0.16, fw=0.075, cols=2, rows=1, transom=
         B.windows.append({'center': [round(c3.x, 3), round(c3.y, 3), round(c3.z, 3)], 'size': [round(u1 - u0, 3), round(v1 - v0, 3)], 'wall': wf.mp})
 
 
-def flower_box(B, wf, x0, x1, ytop, mat='accent', seed=0, flowers=None, depth=0.24, h=0.22, z0=0.03):
+def flower_box(B, wf, x0, x1, ytop, mat='accent', seed=0, flowers=None, depth=0.24, h=0.22, z0=0.03, density=0.27, nfl=2):
     rng = np.random.default_rng(seed + 11)
     bx = fbox((x0, ytop - h, z0), (x1, ytop, z0 + depth), 0.03, mat if mat != 'accent' else 'accentp')
     put(B, wf, bx)
     put(B, wf, box((x0 + 0.03, ytop - 0.03, z0 + 0.03), (x1 - 0.03, ytop - 0.02, z0 + depth - 0.03), 'soil', skip=('-z', '-x', '+x', '-y', '+y')))
-    n = max(2, int((x1 - x0) / 0.27))
+    n = max(2, int((x1 - x0) / density))
     fl = flowers or rng.choice(['fl1', 'fl2', 'fl3', 'fl4', 'fl5', 'fl6'], 2)
     leaves = ['leaf', 'leafl', 'leafd']
     for k in range(n):
         x = x0 + 0.1 + (x1 - x0 - 0.2) * (k + 0.5) / n + rng.uniform(-0.03, 0.03)
         r = rng.uniform(0.11, 0.15)
         put(B, wf, blob((x, ytop + r * 0.45, z0 + depth * 0.55), (r, r * 0.95, r * 0.8), leaves[k % 3], n=6, rings=2, seed=seed * 31 + k))
-        for j in range(2):
+        for j in range(nfl):
             fx = x + rng.uniform(-0.1, 0.1); fy = ytop + r * 0.75 + rng.uniform(0.0, 0.07)
             put(B, wf, blob((fx, fy, z0 + depth * 0.55 + r * 0.55), (0.05, 0.045, 0.04), fl[(k + j) % len(fl)], n=4, rings=1, seed=seed * 7 + k * 3 + j, jitter=0.05))
     # trailing leaves over the front edge
@@ -472,8 +478,8 @@ def gooseneck(B, wf, x, y, reach=0.6, rise=0.32, name='Lamp', mat='metald', shad
 
 
 def ac_unit(B, wf, x, y, z=0.0, w=0.82, h=0.56, d=0.28, brackets=True, mat='whitep', pipe=True):
-    """An air-conditioner condenser on brackets: a rounded body, a grille face (atlas), feet."""
-    body = cbox2((x - w / 2, y, z + 0.02), (x + w / 2, y + h, z + d), 0.03, mat)
+    """An air-conditioner condenser on brackets: a rounded body, a grille face (atlas), a pipe."""
+    body = fbox((x - w / 2, y, z + 0.02), (x + w / 2, y + h, z + d), 0.035, mat)
     fr = [f for f in faces_facing(body, (0, 0, 1), 0.95)]
     setmat(body, 'tex', fr)
     uv_fn(body, fr, 'ac', lambda co: ((co.x - (x - w / 2)) / w, (co.y - y) / h), 0.02)
@@ -481,11 +487,9 @@ def ac_unit(B, wf, x, y, z=0.0, w=0.82, h=0.56, d=0.28, brackets=True, mat='whit
     if brackets:
         for sx in (-1, 1):
             bx = x + sx * (w / 2 - 0.1)
-            put(B, wf, box((bx - 0.02, y - 0.05, 0), (bx + 0.02, y, z + d + 0.03), 'metal', skip=('-z',)))
-            put(B, wf, box((bx - 0.02, y - 0.3, 0), (bx + 0.02, y - 0.05, 0.05), 'metal', skip=('-z',)))
+            put(B, wf, box((bx - 0.02, y - 0.05, 0), (bx + 0.02, y, z + d + 0.03), 'metal', skip=('-z', '+x' if sx < 0 else '-x')))
     if pipe:
-        put(B, wf, tube([(x + w / 2 - 0.05, y + h * 0.4, z + 0.12), (x + w / 2 + 0.08, y + h * 0.4, z + 0.1),
-                         (x + w / 2 + 0.1, y + h * 0.4, 0.05), (x + w / 2 + 0.1, y + h + 0.6, 0.05)], 0.025, 'white', 5))
+        put(B, wf, tube([(x + w / 2 - 0.05, y + h * 0.4, z + 0.12), (x + w / 2 + 0.1, y + h * 0.4, 0.05), (x + w / 2 + 0.1, y + h + 0.6, 0.05)], 0.025, 'white', 4))
     a0, b0 = wf.ab(x - w / 2, y); a1, b1 = wf.ab(x + w / 2, y + h)
     B.feat(wf.mp, 'ao_rect', a0=min(a0, a1), a1=max(a0, a1), b0=b0, b1=b1, k=0.28)
     B.feat(wf.mp, 'streak', a0=min(a0, a1) + 0.1, a1=max(a0, a1) - 0.1, b=b0, length=0.7, k=0.8)
@@ -517,11 +521,11 @@ def pot(B, P, r=0.2, h=0.3, mat='pot', plant='bush', seed=0, scale=1.0):
     top = P + Vector((0, 0, h * 0.9))
     s = scale
     if plant == 'bush':
-        for k in range(4):
+        for k in range(3):
             a = 2 * PI * k / 4 + rng.random()
             c = top + Vector((math.cos(a) * r * 0.45, math.sin(a) * r * 0.45, r * 0.6 * s + rng.random() * 0.1 * s))
-            B.add(blob(c, (r * 0.75 * s, r * 0.75 * s, r * 0.7 * s), ['leaf', 'leafl', 'leafd', 'leaf'][k], 7, 2, seed * 5 + k))
-        B.add(blob(top + Vector((0, 0, r * 1.3 * s)), (r * 0.7 * s, r * 0.7 * s, r * 0.65 * s), 'leafl', 7, 2, seed * 5 + 9))
+            B.add(blob(c, (r * 0.8 * s, r * 0.8 * s, r * 0.72 * s), ['leaf', 'leafl', 'leafd', 'leaf'][k], 6, 2, seed * 5 + k))
+        B.add(blob(top + Vector((0, 0, r * 1.25 * s)), (r * 0.72 * s, r * 0.72 * s, r * 0.66 * s), 'leafl', 6, 2, seed * 5 + 9))
     elif plant == 'flowers':
         for k in range(3):
             a = 2 * PI * k / 3 + rng.random()
@@ -533,13 +537,13 @@ def pot(B, P, r=0.2, h=0.3, mat='pot', plant='bush', seed=0, scale=1.0):
             c = top + Vector((math.cos(a) * r * 0.55, math.sin(a) * r * 0.55, r * 0.8 * s + rng.random() * 0.05))
             B.add(blob(c, (0.055, 0.055, 0.045), fl, 4, 1, seed * 3 + k, 0.05))
     elif plant == 'tall':          # a leafy upright plant (rubber plant / palm-ish clumps)
-        for k in range(5):
-            zc = r * 0.8 + k * r * 0.65 * s
+        for k in range(4):
+            zc = r * 0.8 + k * r * 0.8 * s
             a = rng.random() * 2 * PI
             c = top + Vector((math.cos(a) * r * 0.3, math.sin(a) * r * 0.3, zc))
             rr = r * (0.85 - 0.08 * k) * s
             B.add(blob(c, (rr, rr, rr * 0.75), ['leafd', 'leaf', 'leafl', 'leaf', 'leafl'][k], 6, 2, seed * 9 + k))
-        B.add(tube([top, top + Vector((0, 0, r * 2.5 * s))], 0.02, 'woodd', 5))
+        B.add(tube([top, top + Vector((0, 0, r * 2.5 * s))], 0.02, 'woodd', 4, caps=False))
     elif plant == 'grass':
         for k in range(5):
             a = 2 * PI * k / 5 + rng.random()
@@ -559,8 +563,7 @@ def laundry(B, wf, x0, x1, y, z, seed=0, n=4):
         m = cl[int(rng.integers(0, len(cl)))]
         if kind == 'tee':
             w, h = 0.46, 0.55
-            pts = [(-0.23, 0), (-0.09, 0), (-0.05, -0.04), (0.05, -0.04), (0.09, 0), (0.23, 0), (0.28, -0.16), (0.17, -0.2),
-                   (0.16, -0.55), (-0.16, -0.55), (-0.17, -0.2), (-0.28, -0.16)]
+            pts = [(-0.23, 0), (0.23, 0), (0.28, -0.16), (0.17, -0.2), (0.16, -0.55), (-0.16, -0.55), (-0.17, -0.2), (-0.28, -0.16)]
         elif kind == 'towel':
             w = rng.uniform(0.35, 0.5); h = rng.uniform(0.5, 0.75)
             pts = [(-w / 2, 0), (w / 2, 0), (w / 2, -h), (-w / 2, -h)]
@@ -573,8 +576,8 @@ def laundry(B, wf, x0, x1, y, z, seed=0, n=4):
             v.co.z += 0.03 * math.sin(v.co.x * 9 + k)
         xform(cb, T(xc, y - 0.01, z - 0.01) @ R(rng.uniform(-0.05, 0.05), 'Z'))
         put(B, wf, cb)
-        for px in (pts[0][0] + 0.03, pts[-1 if kind != 'tee' else 5][0] - 0.03):
-            put(B, wf, box((xc + px - 0.012, y - 0.03, z - 0.03), (xc + px + 0.012, y + 0.03, z + 0.03), 'woodc'))
+        for px in (pts[0][0] + 0.03, pts[1][0] - 0.03):
+            put(B, wf, box((xc + px - 0.012, y - 0.03, z - 0.03), (xc + px + 0.012, y + 0.03, z + 0.03), 'woodc', skip=('-z', '+y', '-y')))
 
 
 def awning(B, wf, x0, x1, z_top, out, drop, stripes, mat_a='accent', mat_b='cream', valance=0.24, scallops=True,
@@ -735,14 +738,24 @@ def eave_gutter(B, path, z, mat='pipe', size=0.13):
     prof = [(-0.005, z + 0.01), (0.0, z - 0.04), (0.02, z - s * 0.72), (s * 0.5, z - s * 0.95), (s * 0.9, z - s * 0.75),
             (s * 1.05, z - s * 0.2), (s * 1.08, z + 0.02), (s * 0.96, z + 0.02), (s * 0.9, z - s * 0.3), (s * 0.5, z - s * 0.55),
             (0.04, z - s * 0.35), (0.02, z + 0.01)]
-    return B.add(band(path, prof, mat, closed=False, caps=True))
+    bm = B.add(band(path, prof, mat, closed=False, caps=True))
+    # solid end plates, so the open section never shows as a dark hook
+    for (p0, p1) in ((path[0], path[1]), (path[-1], path[-2])):
+        d = Vector((p1[0] - p0[0], p1[1] - p0[1], 0)).normalized()
+        o = Vector((d.y, -d.x, 0))
+        ctr = Vector((p0[0], p0[1], 0)) + o * (s * 0.52) + d * 0.005
+        half = o * (s * 0.58) + d * 0.012
+        lo = Vector((min(ctr.x - half.x, ctr.x + half.x), min(ctr.y - half.y, ctr.y + half.y), z - s * 0.97))
+        hi = Vector((max(ctr.x - half.x, ctr.x + half.x), max(ctr.y - half.y, ctr.y + half.y), z + 0.025))
+        B.add(cbox2(lo, hi, 0.01, mat))
+    return bm
 
 
 def downpipe(B, pts, r=0.052, mat='pipe', brackets=None, shoe=True):
     """A downpipe along world points (top to bottom), with brackets."""
     B.add(tube(pts, r, mat, sides=7))
     for p in (brackets or []):
-        B.add(tube([Vector(p) + Vector((0, 0, 0.035)), Vector(p) - Vector((0, 0, 0.035))], r * 1.3, mat, sides=7))
+        B.add(tube([Vector(p) + Vector((0, 0, 0.035)), Vector(p) - Vector((0, 0, 0.035))], r * 1.3, mat, sides=7, caps=False))
 
 
 def coping(B, path, ztop, mat='trim', inner=0.24, out=0.07, h=0.1, closed=True):

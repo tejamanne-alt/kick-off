@@ -278,10 +278,12 @@ def grid_surface(xs, ys, fz, kind='hill'):
 
 
 def end_caps(bm, V, kind='soil'):
-    """Close the two x ends of a strip down to z = 0 (hidden when the strip is tiled)."""
+    """Close the two x ends of a strip down to z = 0 (hidden when the strip is tiled). The caps
+    have their own vertices, 2 mm inside the ends, so they never weld to the surface and never
+    bend its normals at the tiling seam."""
     lk = klayer(bm)
     for col, sgn in ((0, -1), (-1, 1)):
-        ring = [V[j][col] for j in range(len(V))]
+        ring = [bm.verts.new((V[j][col].co.x - sgn * 0.002, V[j][col].co.y, V[j][col].co.z)) for j in range(len(V))]
         y0, y1 = ring[0].co.y, ring[-1].co.y; x = ring[0].co.x
         pts = list(ring)
         if ring[-1].co.z > 1e-3: pts.append(bm.verts.new((x, y1, 0.0)))
@@ -357,7 +359,7 @@ def heap(rings, segs, fr, kind='sand', jitter=None):
 
 
 # ---------------------------------------------------------------- conifers
-def conifer(rng, base, height, radius, tiers=3, points=6, lean=(0.0, 0.0), trunk=0.35):
+def conifer(rng, base, height, radius, tiers=3, points=6, lean=(0.0, 0.0), trunk=0.35, trunk_stub=True):
     """A small stylized conifer: stacked drooping tiers with a spiky star rim, a pointed tip and
     a stub of trunk. Returns a bmesh (kinds 'conifer' and 'trunk')."""
     bm = new_bm(); lk = klayer(bm)
@@ -389,6 +391,9 @@ def conifer(rng, base, height, radius, tiers=3, points=6, lean=(0.0, 0.0), trunk
             f = bm.faces.new((ring[i], ring[(i + 1) % n], apex)); f[lk] = KID['conifer']
             f = bm.faces.new((ring[(i + 1) % n], ring[i], under)); f[lk] = KID['conifer']
     # trunk stub: a thin square prism from below the ground to the first tier
+    if not trunk_stub:
+        bm.normal_update()
+        return bm
     tw = radius * 0.13
     q = []
     for z in (bz - 0.3, z0 + span * 0.05):
@@ -409,6 +414,51 @@ def vertex_normals(me):
     out = []
     for v, a in zip(me.vertices, acc):
         out.append(a.normalized() if a.length > 1e-8 else v.normal.copy())
+    return out
+
+
+def seam_partners(cos, W):
+    """For a strip that tiles every W along x: {vertex index: partner index} pairing the
+    vertices of its two end columns (same y and z, x differing by W)."""
+    if not W: return {}
+    ends = {}
+    for i, c in enumerate(cos):
+        if abs(abs(c.x) - W / 2) < 1e-4:
+            ends.setdefault((round(c.y, 3), round(c.z, 3)), []).append(i)
+    out = {}
+    for ids in ends.values():
+        if len(ids) == 2:
+            out[ids[0]] = ids[1]; out[ids[1]] = ids[0]
+    return out
+
+
+def seam_normals(normals, cos, W):
+    """Average the normals of paired seam vertices, so tiled copies shade continuously."""
+    pr = seam_partners(cos, W)
+    out = list(normals)
+    for i, j in pr.items():
+        out[i] = (normals[i] + normals[j]).normalized()
+    return out
+
+
+def cavity(bm, normals, W=None):
+    """Per-vertex concavity (+) / convexity (-): the offset of a vertex's neighbours' mean from
+    it, along its normal, over the mean edge length. Ridges and bevels < 0 < gullies, creases.
+    For a tiling strip the end columns see their neighbours across the seam."""
+    bm.verts.ensure_lookup_table()
+    pr = seam_partners([v.co for v in bm.verts], W)
+    out = []
+    for i, (v, n) in enumerate(zip(bm.verts, normals)):
+        nb = [e.other_vert(v).co.copy() for e in v.link_edges]
+        if i in pr:
+            p = bm.verts[pr[i]]
+            shift = Vector((v.co.x - p.co.x, 0, 0))
+            nb += [e.other_vert(p).co + shift for e in p.link_edges]
+        if not nb:
+            out.append(0.0); continue
+        m = sum(nb, Vector((0, 0, 0))) / len(nb)
+        el = sum((o - v.co).length for o in nb) / len(nb)
+        out.append((m - v.co).dot(n) / max(el, 1e-6))
     return out
 
 

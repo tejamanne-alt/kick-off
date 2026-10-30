@@ -105,18 +105,44 @@ def allocate(bottom, maps, pad=6):
         y0 = AT - pad - h
         REG[name] = (x0 / AT, (AT - (y0 + h)) / AT, (x0 + w) / AT, (AT - y0) / AT)
     limit = AT - hrow
-    items = sorted(maps, key=lambda r: -r[2])
-    sx = 0; sy = 0; sh = 0
-    for name, w, h in items:
+    sky = [[0, 0, AT]]                    # skyline segments [x, y, width], y measured from the top
+    top = 0
+    for name, w, h in sorted(maps, key=lambda r: (-r[2], -r[1])):
         W2, H2 = w + 2 * pad, h + 2 * pad
-        if sx + W2 > AT:
-            sx = 0; sy += sh; sh = 0
-        if sy + H2 > limit:
+        best = None
+        for i in range(len(sky)):
+            x = sky[i][0]
+            if x + W2 > AT: break
+            y = 0; need = W2; j = i
+            while need > 0 and j < len(sky):
+                y = max(y, sky[j][1]); need -= sky[j][2]; j += 1
+            if need > 0: continue
+            if y + H2 <= limit and (best is None or (y + H2, x) < (best[0], best[1])):
+                best = (y + H2, x, y)
+        if best is None:
             raise RuntimeError('atlas full at ' + name)
-        x0, y0 = sx + pad, sy + pad
+        _, x, y = best
+        x0, y0 = x + pad, y + pad
         REG[name] = (x0 / AT, (AT - (y0 + h)) / AT, (x0 + w) / AT, (AT - y0) / AT)
-        sx += W2; sh = max(sh, H2)
-    return sy + sh
+        top = max(top, y + H2)
+        # update the skyline
+        new = []
+        for sx, sy, sw in sky:
+            ex = sx + sw
+            if ex <= x or sx >= x + W2:
+                new.append([sx, sy, sw]); continue
+            if sx < x: new.append([sx, sy, x - sx])
+            if ex > x + W2: new.append([x + W2, sy, ex - (x + W2)])
+        new.append([x, y + H2, W2])
+        new.sort()
+        merged = []
+        for seg in new:
+            if merged and merged[-1][1] == seg[1] and merged[-1][0] + merged[-1][2] == seg[0]:
+                merged[-1][2] += seg[2]
+            else:
+                merged.append(seg)
+        sky = merged
+    return top
 
 
 # ---------------------------------------------------------------- bmesh pieces
@@ -426,14 +452,14 @@ def band(path, profile, mat, closed=False, caps=True, sm=0, mats=None):
         do, dz = o1 - o0, z1 - z0
         exp = nrm[i] * dz + Vector((0, 0, -do))
         if exp.length > 1e-6 and f.normal.dot(exp) < 0: f.normal_flip()
-    if caps and not closed:
+    if caps and not closed and m >= 3:
         bm.verts.ensure_lookup_table()
-        lm = L(bm)[0]
+        lm, lsm, lsh, _ = L(bm)
         for i, sgn in ((0, -1), (n - 1, 1)):
             vs = [bm.verts[i * m + k] for k in range(m)]
             try:
                 f = bm.faces.new(vs)
-                f[lm] = MID[mat]
+                f[lm] = MID[mat]; f[lsm] = sm; f[lsh] = 0.9
                 for l in f.loops: l[lu].uv = WHITE_UV
                 d = (P[1] - P[0]) if i == 0 else (P[-1] - P[-2])
                 f.normal_update()

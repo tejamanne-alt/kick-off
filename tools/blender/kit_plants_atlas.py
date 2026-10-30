@@ -70,12 +70,15 @@ def _ellipse(img, cx, cy, rx, ry, val, soft=1.0, wrap=True, mode='set', alpha=1.
 
 
 def paint_bark(rng, h, w, U, V):
-    n1 = pnoise(h, w, 7, 9, rng)
-    n2 = pnoise(h, w, 20, 70, rng)
-    n3 = pnoise(h, w, 3, 6, rng)
-    ridged = 1 - np.abs(2 * n1 - 1)
-    furrow = ss(0.78, 0.97, ridged)
-    val = 0.97 - 0.34 * furrow - 0.10 * n2 - 0.06 * n3
+    # long bark plates split by wobbling vertical furrows (six round the trunk), a few cross-cracks
+    wob = pnoise(h, w, 3, 10, rng) - 0.5
+    wob2 = pnoise(h, w, 5, 34, rng) - 0.5
+    fc = U * 6 + 0.9 * wob + 0.25 * wob2
+    d = np.abs((fc % 1.0) - 0.5) * 2                  # 0 mid-plate, 1 in the furrow
+    furrow = ss(0.6, 0.92, d)
+    plate = 1 - 0.10 * ss(0.0, 0.6, d)
+    cracks = ss(0.84, 0.95, pnoise(h, w, 4, 120, rng)) * (1 - furrow)
+    val = 0.98 * plate - 0.36 * furrow - 0.16 * cracks - 0.06 * pnoise(h, w, 16, 60, rng)
     return np.clip(val, 0, 1)
 
 

@@ -68,6 +68,14 @@ def _noise(shape, cells, rng, periodic=False):
     return np.asarray(im, np.float32) / 255.0
 
 
+def _per(arr, S):
+    """Re-sample an array that repeats over the region's pixel width so it repeats over the mesh
+    coordinate S in [0, 1] instead (the strips' x maps to S inside the margins)."""
+    w = arr.shape[1]
+    cols = np.clip((np.mod(S[0], 1.0) * w).astype(int), 0, w - 1)
+    return arr[:, cols]
+
+
 def _fbm(shape, base, rng, octaves=4, periodic=False, aspect=1.0):
     acc = np.zeros(shape, np.float32); amp = 1.0; tot = 0.0
     for o in range(octaves):
@@ -163,8 +171,8 @@ def paint(path):
     seam = _ss(0.06, 0.0, np.minimum(fr, 1 - fr))
     sub = _blend(sub, seam, (0.72, 0.70, 0.76), 0.5)
     sub *= (0.92 + 0.08 * _fbm(sh, 6, rng, 3))[..., None]
-    streak = _noise(sh, (90, 6), rng)
-    sub *= (1 - 0.08 * _ss(0.6, 0.92, streak))[..., None]
+    streak = _noise(sh, (60, 7), rng) * _fbm(sh, 4, rng, 2)
+    sub *= (1 - 0.05 * _ss(0.35, 0.62, streak))[..., None]
     _dots(sub, rng, 1800, 0.5, 1.2, (0.72, 0.7, 0.74), 0.35)
     for _ in range(10):
         _crack(sub, rng, rng.uniform(0, sh[1]), rng.uniform(0, sh[0]), int(rng.integers(6, 18)), math.pi / 2 + rng.uniform(-0.3, 0.3), alpha=0.4, turn=0.1)
@@ -173,12 +181,12 @@ def paint(path):
     # ---- grass: short soft strokes
     sl, S, T = _region('grass')
     sh = S.shape
-    sub = np.ones(sh + (3,), np.float32) * (0.90 + 0.08 * _fbm(sh, 4, rng, 3))[..., None]
+    sub = np.ones(sh + (3,), np.float32) * (0.86 + 0.12 * _fbm(sh, 4, rng, 3))[..., None]
     h, w = sh
-    for _ in range(2600):
+    for _ in range(3200):
         x, y = rng.uniform(0, w), rng.uniform(0, h)
-        L = rng.uniform(3, 8); a = -math.pi / 2 + rng.uniform(-0.5, 0.5)
-        val = rng.uniform(0.80, 1.0)
+        L = rng.uniform(3, 9); a = -math.pi / 2 + rng.uniform(-0.5, 0.5)
+        val = rng.uniform(0.70, 1.0)
         for s in np.linspace(0, 1, 6):
             px, py = int(x + math.cos(a) * L * s) % w, int(y + math.sin(a) * L * s) % h
             sub[py, px] = sub[py, px] * 0.4 + val * 0.6
@@ -187,11 +195,11 @@ def paint(path):
     # ---- mountain: gullies (dark streaks running down), faint bands; periodic in S
     sl, S, T = _region('mountain')
     sh = S.shape
-    g1 = _noise(sh, (160, 4), rng, periodic=True)
-    g2 = _noise(sh, (60, 3), rng, periodic=True)
-    gul = _ss(0.62, 0.9, g1) * (0.6 + 0.4 * g2)
-    sub = np.ones(sh + (3,), np.float32) * (0.93 + 0.07 * _fbm(sh, 6, rng, 3, periodic=True))[..., None]
-    sub *= (1 - 0.07 * gul)[..., None]
+    g1 = _per(_noise(sh, (120, 5), rng, periodic=True), S)
+    g2 = _per(_noise(sh, (40, 3), rng, periodic=True), S)
+    gul = _ss(0.74, 0.92, g1) * _ss(0.35, 0.7, g2)
+    sub = np.ones(sh + (3,), np.float32) * (0.93 + 0.07 * _per(_fbm(sh, 6, rng, 3, periodic=True), S))[..., None]
+    sub *= (1 - 0.08 * gul)[..., None]
     ridge = _ss(0.25, 0.05, g1)
     sub = np.minimum(1.0, sub * (1 + 0.04 * ridge)[..., None])
     bands = 0.5 + 0.5 * np.sin(T * 2 * math.pi * 9 + (g2 - 0.5) * 2.0)
@@ -215,14 +223,17 @@ def paint(path):
             idx = np.where(closer, i, idx)
             best = np.where(closer, d, best)
     tones = 0.88 + 0.12 * rng.random(npts)
-    sub = np.ones(sh + (3,), np.float32) * tones[idx][..., None]
+    tints = np.array([(1.0, 0.97, 0.88) if r < 0.3 else (0.95, 1.0, 0.97) if r < 0.55 else (1.0, 1.0, 1.0)
+                      for r in rng.random(npts)], np.float32)
+    sub = tints[idx] * tones[idx][..., None]
     stripe_ang = rng.uniform(0, math.pi, npts); striped = rng.random(npts) < 0.35
     ang = stripe_ang[idx]
-    st = np.sin((S * aspect * np.cos(ang) + T * np.sin(ang)) * 2 * math.pi * 26)
+    kx = np.round(26 * aspect * np.cos(ang))          # whole cycles along S, so stripes tile
+    st = np.sin((S * kx + T * 26 * np.sin(ang)) * 2 * math.pi)
     sub *= (1 - 0.025 * (st > 0.2) * striped[idx])[..., None]
     edge = second - best
     sub = _blend(sub, _ss(0.007, 0.002, edge), (0.70, 0.72, 0.66), 0.5)
-    sub *= (0.95 + 0.05 * _fbm(sh, 8, rng, 3, periodic=True))[..., None]
+    sub *= (0.95 + 0.05 * _per(_fbm(sh, 8, rng, 3, periodic=True), S))[..., None]
     img[sl] = sub
 
     # ---- sand: wind ripples and grain

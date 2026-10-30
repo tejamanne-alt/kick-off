@@ -6,7 +6,7 @@ import math, random
 import bmesh
 from mathutils import Vector
 import kit_terrain_geo as G
-from kit_terrain_geo import smooth01, sstep, smax, wrap, Waves
+from kit_terrain_geo import smooth01, sstep, smax, smin, wrap, Waves
 from kit_terrain_rocks import Ctx
 
 
@@ -63,7 +63,11 @@ def facets(rng, front=0.62, n=5, spread=(0.8, 1.25)):
     return out
 
 
-def mountain_range(seed, W, peaks_spec, spurs, foot, snowline, depth=(-78.0, 58.0), ncols=78, name=''):
+def mountain_range(seed, W, peaks_spec, spurs, foot, snowline, depth=(-92.0, 56.0), ncols=78):
+    """A distant range W wide that tiles along x: pyramidal peaks (peaks_spec: x, y, height,
+    front slope, facets) and front spurs merged with a smooth maximum, a band of foothills (foot:
+    height, y, width), snow above the snowline (more in hollows, less on steep faces), meadow
+    on the gentle low ground; snow and meadow edges are cut into the mesh as crisp lines."""
     rng = random.Random(seed)
     y0, y1 = depth
     peaks = []
@@ -81,12 +85,14 @@ def mountain_range(seed, W, peaks_spec, spurs, foot, snowline, depth=(-78.0, 58.
         # foothills: low rolling band near the front
         fh = foot[0] * (0.65 + 0.35 * fnz(x, 0.0)) * math.exp(-((y - foot[1]) / foot[2]) ** 2)
         z = smax(z, fh, 6.0)
-        edge = sstep(y0, y0 + 16.0, y) * sstep(y1, y1 - 18.0, y)
-        return z * edge - 0.4 * (1 - edge)
+        # near the front and back edges the ground ramps down at no more than ~45 degrees, so a
+        # peak too near an edge flattens into a slope instead of being cut off as a wall
+        lim = min((y - y0) * 1.0, (y1 - y) * 2.4) - 0.4
+        return smin(z, lim, 10.0)
 
     xs = columns(W, ncols, [pk.px for pk in peaks[:len(peaks_spec)]])
-    base_rows = [y0, y0 + 9, y0 + 17, y0 + 24, y0 + 31, y0 + 38, y0 + 45, y0 + 52, y0 + 58, y0 + 64,
-                 y0 + 70, y0 + 76, y0 + 82, y0 + 88, y0 + 95, y0 + 104, y0 + 116, y1]
+    base_rows = [y0, y0 + 6, y0 + 14, y0 + 23, y0 + 32, y0 + 41, y0 + 50, y0 + 58, y0 + 66, y0 + 73,
+                 y0 + 80, y0 + 87, y0 + 94, y0 + 101, y0 + 108, y0 + 116, y0 + 126, y0 + 137, y1]
     ys = rows_with([y for y in base_rows if y <= y1], [pk.py for pk in peaks[:len(peaks_spec)]], 2.0)
     bm, V = G.grid_surface(xs, ys, h, 'mrock')
 
@@ -127,20 +133,20 @@ def mountain_range(seed, W, peaks_spec, spurs, foot, snowline, depth=(-78.0, 58.
 def mountain_range1():
     """Alpine: a twin-summit massif right of centre (90 m), a sharp secondary peak to the left,
     lower peaks and front spurs, a low saddle at the tiling seam."""
-    peaks = [(38, 6, 90, 0.66, 5), (70, 14, 77, 0.7, 5), (-92, 8, 71, 0.74, 5), (-148, 16, 58, 0.66, 4),
-             (128, 12, 63, 0.68, 5), (-38, 20, 56, 0.6, 4), (172, 24, 46, 0.6, 4), (-190, 22, 40, 0.58, 4)]
-    spurs = [(8, -26, 40, 0.72), (-70, -22, 38, 0.8), (102, -28, 33, 0.78), (-122, -30, 28, 0.8), (150, -18, 30, 0.75),
-             (58, -30, 26, 0.8)]
-    return mountain_range(4401, 400.0, peaks, spurs, (17.0, -50.0, 14.0), 52.0, name='MountainRange1')
+    peaks = [(38, 14, 90, 0.95, 5), (72, 22, 77, 0.95, 5), (-92, 14, 71, 0.95, 5), (-148, 20, 58, 0.85, 4),
+             (128, 18, 63, 0.9, 5), (-38, 26, 56, 0.8, 4), (172, 28, 46, 0.8, 4), (-190, 26, 40, 0.75, 4)]
+    spurs = [(8, -28, 40, 0.85), (-70, -26, 36, 0.9), (102, -30, 33, 0.85), (-122, -34, 28, 0.9), (150, -22, 30, 0.85),
+             (58, -36, 26, 0.9)]
+    return mountain_range(4401, 400.0, peaks, spurs, (17.0, -58.0, 14.0), 52.0)
 
 
 def mountain_range2():
     """Sawtooth: a run of steep, narrow peaks (to 72 m) on the left, a broad snowy massif with a
     long shoulder on the right, a low pass between them."""
-    peaks = [(-150, 12, 58, 0.9, 4), (-112, 6, 72, 0.95, 4), (-78, 14, 63, 0.95, 4), (-46, 8, 52, 0.9, 4),
-             (48, 12, 68, 0.56, 6), (96, 18, 60, 0.6, 5), (150, 8, 50, 0.8, 4)]
-    spurs = [(-128, -24, 32, 0.95), (-60, -24, 28, 0.95), (70, -26, 30, 0.75), (126, -22, 26, 0.85), (2, -14, 24, 0.7)]
-    return mountain_range(4402, 400.0, peaks, spurs, (15.0, -52.0, 13.0), 44.0, name='MountainRange2')
+    peaks = [(-150, 16, 58, 1.0, 4), (-112, 10, 72, 1.05, 4), (-78, 18, 63, 1.05, 4), (-46, 12, 52, 1.0, 4),
+             (48, 18, 68, 0.8, 6), (96, 24, 60, 0.8, 5), (150, 12, 50, 0.9, 4)]
+    spurs = [(-128, -26, 32, 0.95), (-60, -28, 28, 0.95), (70, -30, 30, 0.85), (126, -26, 26, 0.9), (2, -18, 24, 0.8)]
+    return mountain_range(4402, 400.0, peaks, spurs, (15.0, -60.0, 13.0), 44.0)
 
 
 # ---------------------------------------------------------------- rolling hills
@@ -148,10 +154,10 @@ def hills_rolling():
     W = 300.0
     rng = random.Random(4501)
     bumps = []
-    for (y, H, sx, sy, n) in ((18.0, (16, 25), (28, 44), 24.0, 7), (-6.0, (9, 15), (22, 34), 17.0, 8), (-28.0, (4, 8), (16, 26), 12.0, 9)):
+    for (y, H, sx, sy, n) in ((18.0, (13, 25), (24, 52), 24.0, 7), (-6.0, (7, 16), (18, 38), 17.0, 8), (-28.0, (3, 8), (14, 28), 12.0, 9)):
         off = rng.uniform(0, W)
         for i in range(n):
-            px = -W / 2 + off + W * (i + rng.uniform(-0.25, 0.25)) / n
+            px = -W / 2 + off + W * (i + rng.uniform(-0.32, 0.32)) / n
             bumps.append((px, y + rng.uniform(-6, 6), rng.uniform(*H), rng.uniform(*sx), sy * rng.uniform(0.85, 1.15)))
     nz = Waves(4502, 40.0, 2, W=W, dims=2)
     y0, y1 = -48.0, 48.0
@@ -191,20 +197,20 @@ def forest_strip():
     W = 100.0
     rng = random.Random(4601)
     nz = Waves(4602, 22.0, 2, W=W, dims=2)
-    y0, y1 = -9.0, 10.0
+    y0, y1 = -7.5, 10.0
 
     def mound(x, y):
         c = 1.8 + 0.55 * nz(x, 0.0)
         return c * math.exp(-((y - 0.6) / 5.5) ** 2) * sstep(y0, y0 + 3.0, y) * sstep(y1, y1 - 3.0, y) - 0.15
 
     xs = columns(W, 40)
-    ys = [y0, -7.2, -5.2, -3.0, -0.8, 1.4, 3.6, 5.8, 8.0, y1]
+    ys = [y0, -5.6, -3.6, -1.6, 0.4, 2.4, 4.4, 6.4, 8.4, y1]
     bm, V = G.grid_surface(xs, ys, mound, 'meadow')
     G.end_caps(bm, V, 'soil')
     # trees: three loose rows, tall at the back; periodic spacing so the band tiles
     trees = []
-    for (yr, hr, rr, gap) in ((4.2, (7.0, 8.6), (1.8, 2.2), (3.0, 4.2)), (0.6, (5.8, 7.6), (1.6, 2.0), (3.2, 4.8)),
-                              (-3.4, (4.0, 5.6), (1.3, 1.7), (3.8, 8.0))):
+    for (yr, hr, rr, gap) in ((4.4, (7.2, 8.6), (2.2, 2.6), (3.1, 4.0)), (1.0, (5.8, 7.4), (1.9, 2.3), (3.3, 4.6)),
+                              (-2.6, (4.0, 5.6), (1.5, 1.9), (4.0, 8.5))):
         x = -W / 2 + rng.uniform(0, 2)
         while x < W / 2 - 1.0:
             trees.append((x, yr + rng.uniform(-1.3, 1.3), rng.uniform(*hr), rng.uniform(*rr)))
@@ -213,8 +219,7 @@ def forest_strip():
     for (x, y, H, R) in trees:
         z = mound(x, y)
         tiers = 3 if H > 6.0 else 2
-        pts = 6 if H > 7.0 else 5
-        t = G.conifer(rng, (x, y, z), H, R, tiers=tiers, points=pts,
+        t = G.conifer(rng, (x, y, z), H, R, tiers=tiers, points=5, trunk_stub=(y < 0.0),
                       lean=(rng.uniform(-0.03, 0.03), rng.uniform(-0.02, 0.02)))
         G.merge(out, t)
     ctx = Ctx(seed=4601, normals='smooth', ao_radius=5.0, ao_rays=28, period=W, z0=0.0, z1=10.0, noise_scale=14.0,
@@ -250,10 +255,10 @@ def dune(seed, half_w, H_of_u, crest_of_u, Lw, Ls, windward_front=True, nu=40):
             av = abs(vv)
             if side == 's':
                 y = yc - sgn * Ls * k * av
-                z = H * herm(av, 1.25)
+                z = H * herm(av, 1.6)
             else:
                 y = yc + sgn * Lw * k * av
-                z = H * herm(av, 0.55)
+                z = H * herm(av, 0.75)
             x = half_w * u * (1 - 0.1 * av * av)
             row.append(bm.verts.new((x, y, z - 0.04)))
         V.append(row)
@@ -303,7 +308,7 @@ def sand_pile():
     R, Hh = 1.0, 0.86
     nz = Waves(4802, 0.6, 2)
     bite_a = math.radians(-58)
-    bite = Vector((math.cos(bite_a) * 0.62, math.sin(bite_a) * 0.62))
+    bite = Vector((math.cos(bite_a) * 0.56, math.sin(bite_a) * 0.56))
 
     def fr(u, a):
         r = R * (1 + 0.07 * math.sin(3 * a + 0.7) + 0.04 * math.sin(5 * a + 2.1))
@@ -311,7 +316,7 @@ def sand_pile():
         z = Hh * max(0.0, 1 - u ** 1.6) ** 1.25
         z += 0.03 * nz(x, y, 0.0) * (1 - u)
         d2 = ((x - bite.x) ** 2 + (y - bite.y) ** 2) / 0.09
-        z -= 0.3 * math.exp(-d2 * 1.4) * (1 - u * 0.5)
+        z -= 0.36 * math.exp(-d2 * 1.6) * (1 - u * 0.45)
         if u >= 1.0: z = -0.03
         return (x, y, z)
 
