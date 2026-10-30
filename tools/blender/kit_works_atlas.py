@@ -451,8 +451,8 @@ def model_map(M, mp, w, h):
         # grime and rust streaks under ledges
         if gr['streaks'] > 0 and M.ledges:
             led = M.ledges
-            budget = int(min(700, 30 + ext_a * ext_b * 18) * gr['streaks'])
             widths = np.array([(l[1] - l[0]) if mp == 'front' else (l[3] - l[2]) for l in led]) + 0.02
+            budget = int(min(220, 3.5 * widths.sum() * gr['streaks']))
             p = widths / widths.sum()
             picks = rng.choice(len(led), size=budget, p=p)
             for i in picks:
@@ -462,7 +462,7 @@ def model_map(M, mp, w, h):
                 ln = rng.uniform(0.08, 0.6) * gr.get('streak_len', 1.0) * min(1.0, 0.3 + l[4] * 0.5)
                 rust = rng.random() < gr['rust']
                 col = RUST if rust else STREAK
-                _streak(img, pa, pb, a0, b1, a, l[4] - 0.005, ln, rng.uniform(0.004, 0.02), col, rng.uniform(0.25, 0.6), rng)
+                _streak(img, pa, pb, a0, b1, a, l[4] - 0.005, ln, rng.uniform(0.004, 0.02), col, rng.uniform(0.15, 0.42), rng)
     # rust spots and chips: in patches, more of them low down, never more than a few per 1000 px
     if gr['rust'] > 0 or gr['chips'] > 0:
         area = ext_a * ext_b

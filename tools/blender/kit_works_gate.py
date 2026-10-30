@@ -173,7 +173,7 @@ def intercom_panel():
     M.add(xform(cyl(0.008, 0, 0.006, 6, 'green'), T(0.16, -0.115, 0.235) @ R(PI / 2, 'X')))
     # the button recess
     zb = -0.08
-    prof = [(0.155, 0.0), (0.155, 0.014), (0.146, 0.022), (0.128, 0.022), (0.125, 0.006), (0.0, 0.006)]
+    prof = [(0.142, 0.0), (0.142, 0.014), (0.135, 0.022), (0.125, 0.022), (0.121, 0.006), (0.0, 0.006)]
     ring, _ = lathe(prof, 24, ['iron', 'iron', 'chrome', 'iron', 'dark'], phase=0.0)
     xform(ring, T(0, -0.115, zb) @ R(PI / 2, 'X')); M.add(ring)
     for x in (-0.19, 0.19):
@@ -424,10 +424,10 @@ def school_sign():
     with a little arched crest, on two chains. Origin at the board's centre (as the game places
     its board); the face looks along -Y; Attach.Face is the face centre; the chains' hooks reach
     0.55 m above the centre (the arch's eye bolts)."""
-    M = Model('SchoolSign', p1=(0.98, 0.90, 0.74), p2=(0.32, 0.48, 0.41), ppm=200, ground=False,
-              grime=dict(ground=0.0, rust=0.0, chips=0.1, streaks=0.4, mottle=0.06))
+    M = Model('SchoolSign', p1=(0.98, 0.90, 0.74), p2=(0.32, 0.48, 0.41), ppm=200, ground=False, ao_radius=0.05, ao=0.4,
+              grime=dict(ground=0.0, rust=0.0, chips=0.1, streaks=0.0, mottle=0.04))
     w, h = 1.41, 0.65
-    M.add(rbox((-w / 2, -0.03, -h / 2), (w / 2, 0.04, h / 2), (0.02, 0.02, 0.02), 'p1', seg=(1, 1, 1)))
+    M.add(rbox((-w / 2, -0.03, -h / 2), (w / 2, 0.04, h / 2), (0.02, 0.02, 0.02), 'p1w', seg=(1, 1, 1)))
     fw = 0.055
     for (lo, hi) in (((-w / 2 - 0.02, -0.06, h / 2 - fw), (w / 2 + 0.02, 0.05, h / 2 + 0.02)),
                      ((-w / 2 - 0.02, -0.06, -h / 2 - 0.02), (w / 2 + 0.02, 0.05, -h / 2 + fw)),

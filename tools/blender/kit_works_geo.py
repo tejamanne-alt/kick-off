@@ -736,7 +736,7 @@ def paint_mesh(M, me):
     # ---- ambient occlusion per (vertex, corner normal)
     lo, hi = M.lo, M.hi
     diag = float(np.linalg.norm(np.array(hi) - np.array(lo)))
-    radius = M.ao_radius or min(max(0.16 * diag, 0.12), 2.5)
+    radius = M.ao_radius or min(max(0.1 * diag, 0.08), 2.0)
     keys = {}
     kidx = np.zeros(nl, np.int32)
     q = np.round(cn * 8).astype(np.int32)

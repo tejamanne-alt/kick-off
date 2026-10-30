@@ -151,8 +151,15 @@ def main():
         for k, (loc, on) in model.attach.items():
             extra['attach'][k] = {'at': [round(float(c), 4) for c in loc], 'parent': on or name}
         man.add(root, parts=parts, **extra)
+        bad = [o.name for o in [root] + list(root.children_recursive) if '.0' in o.name[-4:]]
+        if bad:
+            raise RuntimeError('suffixed names in %s: %s' % (name, bad))
         KL.export_model(root, os.path.join(OUT, name + '.fbx'))
         tris = KL.tree_tris(root)
+        # free the part names (Body, Head, WingL, Attach.Front...) for the next model: Blender
+        # suffixes clashing names, and the game matches the exported names exactly
+        for o in root.children_recursive:
+            o.name = name + ':' + o.name
         for part in model.parts:
             print('   part %-10s %5d tris %s' % (part.name, sum(p.tris() for p in part.pieces), [p.tris() for p in part.pieces]))
         report.append((name, tris, model.budget, man.data['models'][name]['size'], time.time() - t))

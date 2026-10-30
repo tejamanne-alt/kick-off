@@ -76,7 +76,12 @@ def main():
         if G.PROFILE:
             for k, v in sorted(M.prof.items(), key=lambda kv: -kv[1])[:12]:
                 print('    %6d  %s' % (v, k))
+        names = sorted(c.name for c in ob.children)
+        assert names == sorted('Attach.' + nm for nm, _ in M.attach), (M.name, names)
         K.export_model(ob, os.path.join(OUT, M.name + '.fbx'))
+        # free the Attach.* names for the next model (one scene holds the whole kit; each FBX
+        # carries the exact names, the .blend keeps them prefixed with the model's name)
+        for c in ob.children: c.name = M.name + ':' + c.name
         if LIFT and not M.ground:
             ob.location.z -= min((ob.matrix_world @ v.co).z for v in ob.data.vertices)
     man.save(os.path.join(OUT, 'Works.json'))

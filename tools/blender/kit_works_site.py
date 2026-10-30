@@ -8,7 +8,7 @@ import numpy as np
 from mathutils import Vector, Matrix
 from kit_works_geo import *
 
-CONCRETE = (0.76, 0.74, 0.70)
+CONCRETE = (0.73, 0.71, 0.67)
 OXIDE = (0.66, 0.36, 0.26)
 
 
@@ -486,7 +486,7 @@ def scaffold():
         M.add(wood_box((x - 0.11, -0.66, 0.0), (x + 0.11, 0.66, 0.045), band=3, along=1))
         for y in ys:
             M.add(cbox((x - 0.07, y - 0.07, 0.045), (x + 0.07, y + 0.07, 0.06), 0.004, 'iron'))
-            M.add(tube([(x, y, 0.06), (x, y, ztop)], r, 'p1', sides=6))
+            M.add(tube([(x, y, 0.06), (x, y, ztop)], 0.036, 'p1', sides=6))
     yl = {-0.5: -0.56, 0.5: 0.56}
     for z in (0.3, 2.05, 4.05):
         for y in ys:
@@ -621,7 +621,7 @@ def skip():
 def cement_mixer():
     """A small site concrete mixer: a tilted drum in a yoke on a two-wheeled stand, a motor
     housing, a tilting handwheel and a tow bar."""
-    M = Model('CementMixer', p1=SAFETY_ORANGE, p2=STEEL_BLUE, ppm=120, grime=dict(rust=0.25, chips=0.3, streaks=0.5, dirt_h=0.3))
+    M = Model('CementMixer', p1=SAFETY_ORANGE, p2=STEEL_BLUE, ppm=120, grime=dict(rust=0.15, chips=0.2, streaks=0.5, dirt_h=0.3))
     # stand
     for sy in (-1, 1):
         M.add(tube([(-0.38, sy * 0.30, 0.2), (-0.1, sy * 0.30, 0.6), (0.05, sy * 0.30, 0.78)], 0.03, 'p2', sides=6))
@@ -667,9 +667,9 @@ def cement_mixer():
         M.add(bar(hwc, (hwc.x + 0.15 * math.cos(a), hwc.y, hwc.z + 0.15 * math.sin(a)), 0.016, 'red', sides=4))
     M.add(xform(cyl(0.03, 0, 0.06, 8, 'iron'), T(hwc) @ R(-PI / 2, 'X')))
     # concrete splashes on the drum and the stand
-    M.feat('front', 'spatter', a0=-0.4, a1=0.6, b0=0.4, b1=1.4, n=500, r=(0.004, 0.018), col=(0.72, 0.70, 0.66), alpha=0.75)
-    M.feat('side', 'spatter', a0=-0.5, a1=0.5, b0=0.4, b1=1.4, n=300, r=(0.004, 0.018), col=(0.72, 0.70, 0.66), alpha=0.75)
-    M.feat('top', 'spatter', a0=-0.5, a1=0.7, b0=-0.5, b1=0.5, n=300, r=(0.004, 0.02), col=(0.72, 0.70, 0.66), alpha=0.7)
+    M.feat('front', 'spatter', a0=-0.4, a1=0.6, b0=0.4, b1=1.4, n=260, r=(0.003, 0.012), col=(0.86, 0.82, 0.78), alpha=0.5)
+    M.feat('side', 'spatter', a0=-0.5, a1=0.5, b0=0.4, b1=1.4, n=160, r=(0.003, 0.012), col=(0.86, 0.82, 0.78), alpha=0.5)
+    M.feat('top', 'spatter', a0=-0.5, a1=0.7, b0=-0.5, b1=0.5, n=160, r=(0.003, 0.012), col=(0.86, 0.82, 0.78), alpha=0.5)
     _front(M)
     return M
 
@@ -751,7 +751,7 @@ def steel_beams():
 def site_cabin():
     """A portable site office, 6 m long, on block stacks: ribbed steel walls, a door with steps,
     barred windows, a roof cap with a gutter and downpipe, an air-con unit and a lamp."""
-    M = Model('SiteCabin', p1=(0.90, 0.85, 0.72), p2=STEEL_BLUE, ppm=40, grime=dict(rust=0.3, chips=0.25, streaks=0.8, dirt_h=0.6, ground=0.6, streak_len=1.6))
+    M = Model('SiteCabin', p1=(0.90, 0.85, 0.72), p2=STEEL_BLUE, ppm=40, grime=dict(rust=0.25, chips=0.2, streaks=0.6, dirt_h=0.5, ground=0.55, streak_len=1.4))
     hx, hy = 3.0, 1.25; zb, zt = 0.3, 2.75
     for x in (-2.6, 0.0, 2.6):
         for y in (-0.9, 0.9):
@@ -768,7 +768,7 @@ def site_cabin():
     M.add(cbox((-hx - 0.05, -hy - 0.05, zt), (hx + 0.05, hy + 0.05, zt + 0.1), 0.02, 'p2'))
     M.add(cbox((-hx + 0.1, -hy + 0.1, zt + 0.1), (hx - 0.1, hy - 0.1, zt + 0.13), 0.01, 'galv'))
     for mp, (a0, a1) in (('front', (-hx + 0.14, hx - 0.14)), ('side', (-hy + 0.14, hy - 0.14))):
-        M.feat(mp, 'ribs', a0=a0, a1=a1, b0=zb + 0.14, b1=zt - 0.14, pitch=0.22, depth=0.13)
+        M.feat(mp, 'ribs', a0=a0, a1=a1, b0=zb + 0.14, b1=zt - 0.14, pitch=0.22, depth=0.09)
     # door with a small wired window, kick plate, handle
     dx0, dx1, dz0, dz1 = 1.55, 2.45, zb + 0.06, 2.4
     M.add(cbox((dx0 - 0.06, -hy - 0.03, dz0), (dx1 + 0.06, -hy + 0.02, dz1 + 0.06), 0.012, 'p2'))
@@ -826,7 +826,7 @@ def site_cabin():
     M.add(cbox((0.95, -hy - 0.04, 1.25), (1.4, -hy - 0.0, 1.75), 0.01, 'timberw'))
     for (x, z, w_, h_, mtl) in ((1.0, 1.38, 0.16, 0.22, 'white'), (1.2, 1.46, 0.15, 0.2, 'cream'), (1.06, 1.62, 0.12, 0.09, 'amber')):
         M.add(cbox((x, -hy - 0.046, z), (x + w_, -hy - 0.04, z + h_), 0.003, mtl))
-    M.feat('front', 'streaks', a0=-hx, a1=hx, top=zt - 0.15, n=60, length=(0.3, 1.4), col=(0.72, 0.62, 0.52), alpha=(0.25, 0.55), width=(0.01, 0.04))
+    M.feat('front', 'streaks', a0=-hx, a1=hx, top=zt - 0.15, n=22, length=(0.3, 1.2), col=(0.74, 0.66, 0.56), alpha=(0.2, 0.4), width=(0.01, 0.035))
     _front(M)
     return M
 
