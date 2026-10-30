@@ -45,6 +45,8 @@ namespace DribbleToSchool.Hazards
         public float lifeTime = 9f;
         public Material material;
         public Color color = new Color(0.55f, 0.55f, 0.6f);
+        [Tooltip("A pipe model to copy for each pipe (kept inactive; its centre on the spawner). None: the procedural pipe.")]
+        public GameObject template;
         [Tooltip("Pipes are removed when they roll left of this x.")]
         public float despawnX = -20f;
 
@@ -100,7 +102,14 @@ namespace DribbleToSchool.Hazards
             var col = go.AddComponent<CircleCollider2D>();
             col.radius = radius;
 
-            BuildPipe(go, radius, color, material);
+            if (template != null)
+            {
+                var visual = Instantiate(template, go.transform);
+                visual.name = "Visual";
+                visual.transform.localPosition = Vector3.zero;
+                visual.SetActive(true);
+            }
+            else BuildPipe(go, radius, color, material);
             pipes.Add(go);
             spawnTimes.Add(Time.time);
         }

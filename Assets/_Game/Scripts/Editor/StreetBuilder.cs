@@ -1076,17 +1076,27 @@ namespace DribbleToSchool.EditorTools
         static void City(LevelBuildKit.TrackBuilder track, Transform root, System.Random rng, float x0, float x1)
         {
             var hoarding = Art.surfaces[ProceduralArt.Surface.Hoarding];
+            bool site = LevelBuildKit.HasKitModel("Works", "Skip");
             for (float x = x0; x < x1;)
             {
                 float w = Rand(rng, 11f, 14f), skip;
                 if (Blocked(track, x, x + w, out skip)) { x = skip; continue; }
                 float cx = x + w * 0.5f, gy = GroundAt(track, cx);
-                if (rng.NextDouble() < 0.5)
+                bool flats = rng.NextDouble() >= 0.5, cabin = false;
+                double front = rng.NextDouble();
+                if (front < 0.35)
                 {
                     if (rng.NextDouble() < 0.5) Model(root, "Street", "SignNoEntry", cx - w * 0.5f + 0.5f, gy, PoleZ - 0.15f);
                     if (!Row(root, "Street", "Hoarding3", cx - w * 0.5f + 0.15f, cx + w * 0.5f - 0.15f, gy, PropertyZ + 0.2f))
                         Solid(root, "Hoarding", new Vector3(cx, gy + 1.3f, PropertyZ + 0.2f), new Vector3(w - 0.3f, 2.6f, 0.2f), Color.white, hoarding);
                 }
+                else if (front < 0.55 && site)
+                {
+                    // Mesh site fencing on block feet, with the yard showing through.
+                    Row(root, "Works", "SiteFence", cx - w * 0.5f + 0.2f, cx + w * 0.5f - 0.2f, gy, PropertyZ + 0.2f);
+                    cabin = SiteYard(root, rng, x, w, gy, flats);
+                }
+                else if (site) cabin = SiteYard(root, rng, x, w, gy, flats);
                 else if (LevelBuildKit.HasKitModel("Terrain", "SandPile"))
                 {
                     // An open yard: a heap of sand or gravel, a pallet of blocks, a few cones.
@@ -1096,19 +1106,66 @@ namespace DribbleToSchool.EditorTools
                     for (int k = 0; k < 2; k++)
                         Model(root, "Street", "TrafficCone", x + w - 1.2f - k * 0.8f, gy, PropertyZ + 0.5f, Rand(rng, 0f, 360f));
                 }
-                if (rng.NextDouble() < 0.5)
+                if (!flats)
                     Building(root, cx, gy, PropertyZ + 3f, ProceduralArt.FacadeKind.Warehouse, House3D.RoofStyle.Shed, 8f, 1.2f, new Color(0.78f, 0.74f, 0.7f), new Color(0.5f, 0.52f, 0.56f));
                 else
-                    Building(root, cx, gy, PropertyZ + 5f, ProceduralArt.FacadeKind.Apartment, House3D.RoofStyle.Flat, 10f, 0f, new Color(0.92f, 0.88f, 0.82f), new Color(0.6f, 0.6f, 0.62f));
+                {
+                    bool kit = Building(root, cx, gy, PropertyZ + 5f, ProceduralArt.FacadeKind.Apartment, House3D.RoofStyle.Flat, 10f, 0f, new Color(0.92f, 0.88f, 0.82f), new Color(0.6f, 0.6f, 0.62f));
+                    // Some blocks are still going up: scaffolding over the lower floors.
+                    if (kit && site && !cabin && rng.NextDouble() < 0.4)
+                        Row(root, "Works", "Scaffold", cx - 6.2f, cx + 6.2f, gy, PropertyZ + 5f - 0.9f);
+                }
                 x += w;
             }
+            // Tower cranes over the site, far enough off to stand whole above the street in the haze.
+            bool cranes = LevelBuildKit.HasKitModel("Works", "TowerCrane");
             for (float x = x0; x < x1; x += Rand(rng, 40f, 60f))
             {
+                if (cranes)
+                {
+                    Model(root, "Works", "TowerCrane", x + Rand(rng, -20f, 20f), GroundAt(track, x), Rand(rng, 170f, 230f), Rand(rng, -40f, 40f) + (rng.NextDouble() < 0.5 ? 180f : 0f), Rand(rng, 0.85f, 1.05f), null, null, null, false);
+                    x += Rand(rng, 30f, 60f);
+                    continue;
+                }
                 if (OverlapsBackRow(track, x - 4f, x + 4f)) continue;
                 CutOut(root, "Crane", Art.mid[4, 2], x, GroundAt(track, x), 45f, 2f, -75);
             }
             DistantHills(track, root, x0, x1);
         }
+
+        /// <summary>
+        /// A building site's yard behind the fence line (Works kit): one of a digger by a sand pile,
+        /// a skip with a wheelbarrow and a cement mixer, pipes and steel beams waiting, or (in front
+        /// of the deeper flats) the site cabin and a portable loo. True if it put the cabin there.
+        /// </summary>
+        static bool SiteYard(Transform root, System.Random rng, float x, float w, float gy, bool deep)
+        {
+            float z = PropertyZ + 1.4f;
+            switch (rng.Next(deep ? 4 : 3))
+            {
+                case 0:
+                    Model(root, "Works", "Digger", x + Rand(rng, 3f, 4.5f), gy, z + 0.4f, Rand(rng, -25f, 25f));
+                    Model(root, "Terrain", "SandPile", x + w - Rand(rng, 2f, 3f), gy, z, Rand(rng, 0f, 360f), Rand(rng, 0.9f, 1.2f));
+                    break;
+                case 1:
+                    Model(root, "Works", "Skip", x + Rand(rng, 2.5f, 3.5f), gy, z + 0.3f, Rand(rng, -10f, 10f), 1f, SkipColors[rng.Next(SkipColors.Length)]);
+                    Model(root, "Works", "Wheelbarrow", x + Rand(rng, 6f, 7f), gy, z - 0.2f, Rand(rng, -40f, 40f));
+                    Model(root, "Works", "CementMixer", x + w - Rand(rng, 1.8f, 2.6f), gy, z, Rand(rng, -30f, 30f));
+                    break;
+                case 2:
+                    Model(root, "Works", "PipeStack", x + Rand(rng, 2f, 3f), gy, z + 0.2f, Rand(rng, -10f, 10f));
+                    Model(root, "Works", "SteelBeams", x + Rand(rng, 6.5f, 7.5f), gy, z, Rand(rng, -15f, 15f));
+                    Model(root, "Street", "TrafficCone", x + w - 1.2f, gy, PropertyZ + 0.5f, Rand(rng, 0f, 360f));
+                    break;
+                default:
+                    Model(root, "Works", "SiteCabin", x + Rand(rng, 3.6f, 4.4f), gy, z + 1.3f, Rand(rng, -5f, 5f));
+                    Model(root, "Works", "PortaLoo", x + w - Rand(rng, 1.4f, 2f), gy, z + 0.4f, Rand(rng, -20f, 20f));
+                    return true;
+            }
+            return false;
+        }
+
+        static readonly Color[] SkipColors = { new Color(0.36f, 0.5f, 0.62f), new Color(0.9f, 0.6f, 0.22f), new Color(0.42f, 0.6f, 0.44f) };
 
         static void Park(LevelBuildKit.TrackBuilder track, Transform root, System.Random rng, float x0, float x1)
         {

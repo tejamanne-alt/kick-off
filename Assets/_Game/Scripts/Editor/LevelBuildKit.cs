@@ -1315,6 +1315,21 @@ namespace DribbleToSchool.EditorTools
             void CraneLoad(Transform load, Vector2 center, float w, Vector2 travel)
             {
                 Color timber = new Color(0.62f, 0.45f, 0.3f);
+                const float zb = 0.72f, beamY = 2.95f, hookY = 3.7f;
+                var kitLoad = KitModel(load, "Works", "CraneLoad", load.position);
+                if (kitLoad != null)
+                {
+                    // The Works kit's slung load: beams on bearers, chains to a spreader, its hook ring at hookLocal.
+                    kitLoad.localScale = new Vector3(w / 2.6f, 1f, 1f);
+                    KitModel(load, "Works", "CraneHook", load.TransformPoint(new Vector3(0f, hookY + 0.16f, zb)));
+                }
+                else CraneLoadParts(load, w, timber, zb, beamY, hookY);
+                TowerCraneRig(load, center, travel, hookY, zb);
+            }
+
+            /// <summary>The procedural slung load (without the Works kit's).</summary>
+            void CraneLoadParts(Transform load, float w, Color timber, float zb, float beamY, float hookY)
+            {
                 Part(load, "Plate", new Vector3(0f, 0.115f, 0f), new Vector3(w, 0.12f, 1.5f), SteelGrey);
                 foreach (float dz in new[] { -0.45f, 0.45f })
                     Part(load, "Bearer", new Vector3(0f, -0.04f, dz), new Vector3(w - 0.25f, 0.18f, 0.2f), timber);
@@ -1322,7 +1337,6 @@ namespace DribbleToSchool.EditorTools
                 for (int i = 0; i < n; i++)
                     Part(load, "Stripe", new Vector3(-w * 0.5f + (i + 0.5f) * w / n, 0.115f, -0.755f), new Vector3(w / n, 0.12f, 0.01f), i % 2 == 0 ? CraneYellow : IronDark);
                 // Lifting gear at the back, behind the kid: chains up to a spreader beam, slings to the hook.
-                const float zb = 0.72f, beamY = 2.95f, hookY = 3.7f;
                 foreach (float sx in new[] { -1f, 1f })
                 {
                     float x = sx * (w * 0.5f - 0.15f);
@@ -1332,8 +1346,11 @@ namespace DribbleToSchool.EditorTools
                 Part(load, "Spreader", new Vector3(0f, beamY, zb), new Vector3(w - 0.2f, 0.14f, 0.14f), CraneYellow);
                 Part(load, "Hook", new Vector3(0f, hookY, zb), new Vector3(0.24f, 0.32f, 0.24f), CraneYellow);
                 Part(load, "HookBand", new Vector3(0f, hookY + 0.05f, zb - 0.125f), new Vector3(0.24f, 0.08f, 0.01f), IronDark);
+            }
 
-                // The tower crane, on its own plot behind the street, slewing to follow the load.
+            /// <summary>The tower crane, on its own plot behind the street, slewing to follow the load.</summary>
+            void TowerCraneRig(Transform load, Vector2 center, Vector2 travel, float hookY, float zb)
+            {
                 float ground = GroundTopUnder(center.x, center.y + 0.5f);
                 float mx = center.x + travel.x * 0.5f, mz = 5.2f, jibY = ground + 9.6f;
                 QuietAreas.Add(new Vector2(mx - 3f, mx + 3f));
@@ -1382,7 +1399,8 @@ namespace DribbleToSchool.EditorTools
                 Strut(jib, "Tie", new Vector3(0f, 2.3f, 0f), new Vector3(-3.5f, 0f, 0f), 0.03f, IronDark);
                 var trolley = new GameObject("Trolley").transform;
                 trolley.SetParent(jib, false);
-                Part(trolley, "TrolleyBody", Vector3.zero, new Vector3(0.7f, 0.22f, 0.7f), Color.Lerp(CraneYellow, Color.black, 0.3f));
+                if (KitModel(trolley, "Works", "CraneTrolley", trolley.position) == null)
+                    Part(trolley, "TrolleyBody", Vector3.zero, new Vector3(0.7f, 0.22f, 0.7f), Color.Lerp(CraneYellow, Color.black, 0.3f));
 
                 var cableGo = new GameObject("Cable");
                 cableGo.transform.SetParent(crane, false);
@@ -1405,6 +1423,21 @@ namespace DribbleToSchool.EditorTools
             /// <summary>A builder's hoist: a caged deck that climbs a rack-and-pinion mast standing behind it.</summary>
             void Hoist(Transform deck, Vector2 center, float w, Vector2 travel)
             {
+                float groundK = GroundTopUnder(center.x, center.y + 0.5f);
+                var cage = KitModel(deck, "Works", "HoistCage", deck.position);
+                if (cage != null)
+                {
+                    // The Works kit's caged deck, and its mast stacked in 3 m sections with a cap on top.
+                    cage.localScale = new Vector3(w / 2.6f, 1f, 1f);
+                    float topK = center.y + travel.y + 2.6f;
+                    var mastK = new GameObject("HoistMast").transform;
+                    mastK.SetParent(root, false);
+                    float y = groundK;
+                    for (; y < topK - 0.01f; y += 3f)
+                        KitModel(mastK, "Works", "HoistMast", new Vector3(center.x, y, 1.45f));
+                    KitModel(mastK, "Works", "HoistMastCap", new Vector3(center.x, y, 1.45f));
+                    return;
+                }
                 Part(deck, "Deck", new Vector3(0f, 0.115f, 0f), new Vector3(w, 0.12f, 1.5f), SteelGrey);
                 Part(deck, "ToeBoard", new Vector3(0f, 0.24f, -0.74f), new Vector3(w, 0.12f, 0.02f), CraneYellow);
                 foreach (float sx in new[] { -1f, 1f })
@@ -1507,8 +1540,9 @@ namespace DribbleToSchool.EditorTools
                 // gate needs no post at its street end, which keeps its no-entry sign in view).
                 Color stone = new Color(0.86f, 0.84f, 0.8f), cap = new Color(0.62f, 0.6f, 0.58f);
                 float pillarH = gateHeight + 0.35f, half = StreetBuilder.PathHalf;
-                foreach (float z in new[] { half + 0.3f })
+                if (KitModel(root, "Works", "GatePillar", new Vector3(gateX, groundTop, half + 0.3f)) == null)
                 {
+                    float z = half + 0.3f;
                     StreetBuilder.Solid(root, "GatePillar", new Vector3(gateX, groundTop + pillarH * 0.5f, z), new Vector3(0.5f, pillarH, 0.45f), stone, Art.surfaces[ProceduralArt.Surface.Concrete]);
                     StreetBuilder.Solid(root, "GatePillarCap", new Vector3(gateX, groundTop + pillarH + 0.05f, z), new Vector3(0.6f, 0.1f, 0.55f), cap);
                 }
@@ -1521,6 +1555,17 @@ namespace DribbleToSchool.EditorTools
                 panel.SetParent(gateGo.transform, false);
                 Color steel = new Color(0.82f, 0.84f, 0.86f), dark = new Color(0.4f, 0.42f, 0.45f);
                 float z0 = -half + 0.05f, z1 = half + 0.1f, zc = (z0 + z1) * 0.5f, len = z1 - z0;
+                var kitGate = KitModel(panel, "Works", "SlidingGate", new Vector3(gateX, groundTop, 0.075f));
+                if (kitGate != null) kitGate.localScale = new Vector3(1f, gateHeight / 2.4f, 1f);
+                else GatePanel(panel, gateHeight, steel, dark, z0, z1, zc, len);
+                gate.slidingPanel = panel;
+                gate.slide = new Vector3(0f, 0f, len + 0.4f);
+                SwitchFor(gate, switchPosition, groundTop);
+            }
+
+            /// <summary>The procedural sliding gate (without the Works kit's): rails, two rows of bars, stiles, wheels and a no-entry sign.</summary>
+            void GatePanel(Transform panel, float gateHeight, Color steel, Color dark, float z0, float z1, float zc, float len)
+            {
                 float y0 = -gateHeight * 0.5f + 0.08f, y1 = gateHeight * 0.5f;
                 Part(panel, "Rail", new Vector3(0f, y1 - 0.06f, zc), new Vector3(0.3f, 0.12f, len), steel);
                 Part(panel, "Rail", new Vector3(0f, y0 + 0.06f, zc), new Vector3(0.3f, 0.12f, len), steel);
@@ -1545,10 +1590,11 @@ namespace DribbleToSchool.EditorTools
                 noEntry.GetComponent<MeshRenderer>().sharedMaterial = Art.solid;
                 disc.Rebuild();
                 Part(noEntry.transform, "Bar", new Vector3(0f, 0f, -0.025f), new Vector3(0.36f, 0.09f, 0.01f), Color.white);
-                gate.slidingPanel = panel;
-                gate.slide = new Vector3(0f, 0f, len + 0.4f);
+            }
 
-                // The call button the ball has to hit.
+            /// <summary>The call button the ball has to hit to open <paramref name="gate"/>: a push-button bollard when low, an intercom on a gooseneck post when high.</summary>
+            void SwitchFor(Gate gate, Vector2 switchPosition, float groundTop)
+            {
                 bool low = switchPosition.y - groundTop < 0.9f;
                 GameObject sw;
                 Transform buttonParent;
@@ -1557,14 +1603,33 @@ namespace DribbleToSchool.EditorTools
                     // A steel push-button bollard: solid from the ground to the top of the button.
                     float top = switchPosition.y + 0.275f;
                     sw = Block("Switch", new Vector2(switchPosition.x, (groundTop + top) * 0.5f), new Vector2(0.55f, top - groundTop), Color.white, GroundMat, false);
-                    Part(sw.transform, "Bollard", Vector3.zero, new Vector3(0.36f, top - groundTop, 0.36f), new Color(0.68f, 0.7f, 0.72f));
-                    Part(sw.transform, "BollardCap", new Vector3(0f, (top - groundTop) * 0.5f, 0f), new Vector3(0.4f, 0.05f, 0.4f), new Color(0.45f, 0.47f, 0.5f));
+                    // The Works kit's bollard is 1 m with its button 0.275 m below the top: sink it (or
+                    // stretch it if taller) so the button lands on the game's button.
+                    float h = top - groundTop;
+                    var bollard = KitModel(sw.transform, "Works", "CallBollard", new Vector3(switchPosition.x, groundTop - Mathf.Max(0f, 1f - h), 0f));
+                    if (bollard != null && h > 1f) bollard.localScale = new Vector3(1f, h, 1f);
+                    if (bollard == null)
+                    {
+                        Part(sw.transform, "Bollard", Vector3.zero, new Vector3(0.36f, top - groundTop, 0.36f), new Color(0.68f, 0.7f, 0.72f));
+                        Part(sw.transform, "BollardCap", new Vector3(0f, (top - groundTop) * 0.5f, 0f), new Vector3(0.4f, 0.05f, 0.4f), new Color(0.45f, 0.47f, 0.5f));
+                    }
                     buttonParent = sw.transform;
                 }
                 else
                 {
                     // An intercom panel hanging over the path from a gooseneck post behind it.
                     sw = Block("Switch", switchPosition, new Vector2(0.55f, 0.55f), Color.white, GroundMat, false);
+                    var post0 = KitModel(root, "Works", "IntercomPost", new Vector3(switchPosition.x, groundTop, 0f));
+                    var panelModel = post0 != null ? KitModel(sw.transform, "Works", "IntercomPanel", sw.transform.position) : null;
+                    if (panelModel != null)
+                    {
+                        // The gooseneck post (its panel hook 2 m up) stretched so the hook meets the switch.
+                        post0.localScale = new Vector3(1f, (switchPosition.y - groundTop) / 2f, 1f);
+                        buttonParent = sw.transform;
+                        AddButton(sw, buttonParent, false, switchPosition, groundTop, gate);
+                        return;
+                    }
+                    if (post0 != null) Object.DestroyImmediate(post0.gameObject);
                     Color post = new Color(0.55f, 0.57f, 0.6f);
                     float postZ = 1.15f, postTop = switchPosition.y + 0.45f;
                     StreetBuilder.Solid(root, "IntercomPost", new Vector3(switchPosition.x, (groundTop + postTop) * 0.5f, postZ), new Vector3(0.1f, postTop - groundTop, 0.1f), post);
@@ -1576,7 +1641,12 @@ namespace DribbleToSchool.EditorTools
                     Part(sw.transform, "Camera", new Vector3(0f, 0.23f, -0.125f), new Vector3(0.06f, 0.04f, 0.01f), new Color(0.1f, 0.1f, 0.12f));
                     buttonParent = sw.transform;
                 }
-                // The big round call button facing the street, lit by BallSwitch.
+                AddButton(sw, buttonParent, low, switchPosition, groundTop, gate);
+            }
+
+            /// <summary>The big round call button facing the street, lit by BallSwitch.</summary>
+            void AddButton(GameObject sw, Transform buttonParent, bool low, Vector2 switchPosition, float groundTop, Gate gate)
+            {
                 var lamp = new GameObject("Indicator");
                 lamp.transform.SetParent(buttonParent, false);
                 lamp.transform.localPosition = new Vector3(0f, low ? (switchPosition.y - (groundTop + switchPosition.y + 0.275f) * 0.5f) : -0.08f, low ? -0.19f : -0.13f);
@@ -1683,14 +1753,22 @@ namespace DribbleToSchool.EditorTools
             {
                 float center = (fromX + toX) * 0.5f;
                 float width = toX - fromX;
-                // An underpass: a back wall and a deep concrete deck over the street.
-                StreetBuilder.Solid(root, "TunnelBack", new Vector3(center, groundTop + height * 0.5f, StreetBuilder.PropertyZ + 0.2f), new Vector3(width, height, 0.4f), new Color(0.36f, 0.34f, 0.38f));
-                Block("TunnelCeiling", new Vector2(center, groundTop + height + 0.6f), new Vector2(width + 1f, 1.2f), new Color(0.62f, 0.62f, 0.64f), GroundMat, true, 7.4f)
+                // An underpass: a back wall and a deep concrete deck over the street (the Works kit's
+                // tiling wall and deck sections when there are some).
+                bool kit = HasKitModel("Works", "UnderpassWall") && HasKitModel("Works", "UnderpassDeck");
+                if (kit)
+                {
+                    TileAlong(root, "UnderpassWall", fromX, toX, groundTop, StreetBuilder.PropertyZ + 0.2f, height / 3.3f);
+                    TileAlong(root, "UnderpassDeck", fromX - 0.5f, toX + 0.5f, groundTop + height, 0f, 1f);
+                }
+                else StreetBuilder.Solid(root, "TunnelBack", new Vector3(center, groundTop + height * 0.5f, StreetBuilder.PropertyZ + 0.2f), new Vector3(width, height, 0.4f), new Color(0.36f, 0.34f, 0.38f));
+                Block("TunnelCeiling", new Vector2(center, groundTop + height + 0.6f), new Vector2(width + 1f, 1.2f), new Color(0.62f, 0.62f, 0.64f), GroundMat, !kit, 7.4f)
                     .AddComponent<BallTrap>();        // the deck over the underpass is out of reach
                 // Dim lamps under the deck, lighting the footpath below them.
                 for (float lx = fromX + 2.5f; lx < toX - 1f; lx += 5f)
                 {
-                    StreetBuilder.Solid(root, "LampFitting", new Vector3(lx, groundTop + height - 0.04f, 0.2f), new Vector3(0.9f, 0.08f, 0.3f), new Color(0.75f, 0.75f, 0.72f));
+                    if (KitModel(root, "Works", "TunnelLamp", new Vector3(lx, groundTop + height, 0.2f)) == null)
+                        StreetBuilder.Solid(root, "LampFitting", new Vector3(lx, groundTop + height - 0.04f, 0.2f), new Vector3(0.9f, 0.08f, 0.3f), new Color(0.75f, 0.75f, 0.72f));
                     var lamp = new GameObject("TunnelLamp");
                     lamp.transform.SetParent(root, false);
                     lamp.transform.position = new Vector3(lx, groundTop + height - 0.1f, 0.15f);
@@ -1708,6 +1786,18 @@ namespace DribbleToSchool.EditorTools
                 go.AddComponent<DarkZone>();
             }
 
+            /// <summary>Works kit sections 2 m along x (stretched to fill a to b exactly), stretched in height by <paramref name="heightScale"/>.</summary>
+            void TileAlong(Transform parent, string model, float a, float b, float y, float z, float heightScale)
+            {
+                int n = Mathf.Max(1, Mathf.RoundToInt((b - a) / 2f));
+                float step = (b - a) / n;
+                for (int i = 0; i < n; i++)
+                {
+                    var piece = KitModel(parent, "Works", model, new Vector3(a + step * (i + 0.5f), y, z));
+                    if (piece != null) piece.localScale = new Vector3(step / 2f, heightScale, 1f);
+                }
+            }
+
             /// <summary>Spawns pipes at <paramref name="position"/> that roll left until <paramref name="despawnX"/>.</summary>
             public void Pipes(Vector2 position, float interval, float despawnX, float firstDelay = 1.5f)
             {
@@ -1719,6 +1809,12 @@ namespace DribbleToSchool.EditorTools
                 spawner.despawnX = despawnX;
                 spawner.firstDelay = firstDelay;
                 spawner.material = Art.solid;
+                var pipeModel = KitModel(go.transform, "Works", "ConcretePipe", go.transform.position);
+                if (pipeModel != null)
+                {
+                    pipeModel.gameObject.SetActive(false);   // copied for each rolling pipe
+                    spawner.template = pipeModel.gameObject;
+                }
                 // A stack of pipes beside the spawn point, lying across the street.
                 Vector2 stack = position + new Vector2(0.9f, -0.2f);
                 float r = spawner.radius;
@@ -1728,6 +1824,8 @@ namespace DribbleToSchool.EditorTools
                     var pipe = new GameObject("StackedPipe");
                     pipe.transform.SetParent(root, false);
                     pipe.transform.position = new Vector3(stack.x + o.x, stack.y + o.y, 1.3f);
+                    var stacked = KitModel(pipe.transform, "Works", "ConcretePipe", pipe.transform.position);
+                    if (stacked != null) { stacked.localScale = new Vector3(1f, 1f, 0.75f); continue; }
                     PipeSpawner.BuildPipe(pipe, r, spawner.color, Art.solid);
                     pipe.transform.Find("Visual").localScale = new Vector3(1f, 1f, 0.75f);
                 }
@@ -2296,6 +2394,16 @@ namespace DribbleToSchool.EditorTools
                 float wx = x + 0.4f;                                    // the gate line, across the street
                 float nearZ = -StreetBuilder.PathHalf - 0.3f, farZ = StreetBuilder.PathHalf + 0.35f;
                 float mid = (nearZ + farZ) * 0.5f, halfSpan = (farZ - nearZ) * 0.5f, pillarH = 3.1f, rise = 1.1f;
+                if (KitModel(school, "Works", "SchoolArch", new Vector3(wx, groundTop, 0f)) != null)
+                {
+                    // The Works kit's stone arch (pillars, arch, little roof, lamps, flower tubs) and its
+                    // boundary wall running back from the far pillar in 2 m sections.
+                    for (float z = farZ + 0.35f + 1f; z < farZ + 0.35f + 12f; z += 2f)
+                        KitModel(school, "Works", "SchoolWall", new Vector3(wx, groundTop, z), 90f);
+                    RoadBollards(school, wx, nearZ, groundTop);
+                    SchoolGrounds(school, x, wx, groundTop, pillarH, rise, mid);
+                    return;
+                }
                 foreach (float z in new[] { nearZ, farZ })
                 {
                     StreetBuilder.Solid(school, "GatePillar", new Vector3(wx, groundTop + pillarH * 0.5f, z), new Vector3(0.7f, pillarH, 0.7f), stone, concrete);
@@ -2305,8 +2413,17 @@ namespace DribbleToSchool.EditorTools
                 // row of bollards closes the street end without hiding the gate.
                 StreetBuilder.Solid(school, "SchoolWall", new Vector3(wx, groundTop + 1.1f, farZ + 0.35f + 6f), new Vector3(0.4f, 2.2f, 12f), stone, concrete);
                 StreetBuilder.Solid(school, "SchoolWallCap", new Vector3(wx, groundTop + 2.25f, farZ + 0.35f + 6f), new Vector3(0.5f, 0.1f, 12f), trim);
+                RoadBollards(school, wx, nearZ, groundTop);
+                ArchStones(school, wx, groundTop, nearZ, farZ, mid, halfSpan, pillarH, rise, stone, concrete, roof);
+                SchoolGrounds(school, x, wx, groundTop, pillarH, rise, mid);
+            }
+
+            /// <summary>A low row of bollards across the road in front, closing the street end without hiding the gate.</summary>
+            void RoadBollards(Transform school, float wx, float nearZ, float groundTop)
+            {
                 for (float bz = nearZ - 0.9f; bz > StreetBuilder.RoadFar - 0.4f; bz -= 1.3f)
                 {
+                    if (KitModel(school, "Street", "Bollard", new Vector3(wx, groundTop - 0.14f, bz)) != null) continue;
                     var bollard = new GameObject("Bollard");
                     bollard.transform.SetParent(school, false);
                     bollard.transform.position = new Vector3(wx, groundTop - 0.14f + 0.45f, bz);
@@ -2320,6 +2437,11 @@ namespace DribbleToSchool.EditorTools
                     post.Rebuild();
                     StreetBuilder.Solid(school, "BollardBand", new Vector3(wx, groundTop - 0.14f + 0.72f, bz), new Vector3(0.21f, 0.1f, 0.21f), new Color(0.85f, 0.25f, 0.22f));
                 }
+            }
+
+            /// <summary>The procedural stone arch over the footpath (without the Works kit's), with its flower tubs.</summary>
+            void ArchStones(Transform school, float wx, float groundTop, float nearZ, float farZ, float mid, float halfSpan, float pillarH, float rise, Color stone, Material concrete, Color roof)
+            {
                 // The arch over the footpath: stone voussoirs along a half-ellipse, in the plane of the wall.
                 const int pieces = 11;
                 for (int i = 0; i < pieces; i++)
@@ -2352,7 +2474,11 @@ namespace DribbleToSchool.EditorTools
                         new BlobShape.Blob(new Vector3(0.06f, 0.08f, -0.05f), new Vector3(0.07f, 0.05f, 0.07f), new Color(1f, 0.6f, 0.7f)),
                         new BlobShape.Blob(new Vector3(-0.08f, 0.07f, 0.04f), new Vector3(0.06f, 0.05f, 0.06f), new Color(1f, 0.9f, 0.4f)));
                 }
+            }
 
+            /// <summary>The school building across the yard, the goal zone through the gate, and the name board on the arch.</summary>
+            void SchoolGrounds(Transform school, float x, float wx, float groundTop, float pillarH, float rise, float mid)
+            {
                 // The school across the yard, its front facing back down the street: the Buildings
                 // kit's school (with its clock tower) when there is one.
                 if (KitModel(school, "Buildings", "School", new Vector3(x + 10f, groundTop, 4f), 90f) != null)

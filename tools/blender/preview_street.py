@@ -470,23 +470,50 @@ def beach():
         place('Terrain', 'Headland', X0 + (X1 - X0) * (.15 + i * .4) + rng.uniform(-40, 40), -0.8, 650 + i * 60, rng.uniform(-15, 15), rng.uniform(2.2, 3))
 
 
+def site_yard(x, w, deep):
+    z = PROP + 1.4
+    k = rng.randrange(4 if deep else 3)
+    if k == 0:
+        place('Works', 'Digger', x + rng.uniform(3, 4.5), 0, z + .4, rng.uniform(-25, 25))
+        place('Terrain', 'SandPile', x + w - rng.uniform(2, 3), 0, z, rng.uniform(0, 360), rng.uniform(.9, 1.2))
+    elif k == 1:
+        place('Works', 'Skip', x + rng.uniform(2.5, 3.5), 0, z + .3, rng.uniform(-10, 10))
+        place('Works', 'Wheelbarrow', x + rng.uniform(6, 7), 0, z - .2, rng.uniform(-40, 40))
+        place('Works', 'CementMixer', x + w - rng.uniform(1.8, 2.6), 0, z, rng.uniform(-30, 30))
+    elif k == 2:
+        place('Works', 'PipeStack', x + rng.uniform(2, 3), 0, z + .2, rng.uniform(-10, 10))
+        place('Works', 'SteelBeams', x + rng.uniform(6.5, 7.5), 0, z, rng.uniform(-15, 15))
+        place('Street', 'TrafficCone', x + w - 1.2, 0, PROP + .5, rng.uniform(0, 360))
+    else:
+        place('Works', 'SiteCabin', x + rng.uniform(3.6, 4.4), 0, z + 1.3, rng.uniform(-5, 5))
+        place('Works', 'PortaLoo', x + w - rng.uniform(1.4, 2), 0, z + .4, rng.uniform(-20, 20))
+        return True
+    return False
+
+
 def city():
     x = X0
     while x < X1:
         w = rng.uniform(11, 14); cx = x + w / 2
-        if rng.random() < .5:
+        flats = rng.random() >= .5; cabin = False
+        front = rng.random()
+        if front < .35:
+            if rng.random() < .5: place('Street', 'SignNoEntry', cx - w / 2 + .5, 0, POLE_Z - .15)
             row('Street', 'Hoarding3', x + .15, x + w - .15, 0, PROP + .2)
+        elif front < .55:
+            row('Works', 'SiteFence', x + .2, x + w - .2, 0, PROP + .2); cabin = site_yard(x, w, flats)
         else:
-            px = x + rng.uniform(1.5, 3)
-            place('Terrain', rng.choice(['SandPile', 'GravelPile']), px, 0, PROP + 1.6, rng.uniform(0, 360), rng.uniform(.8, 1.2))
-            place('Street', 'Pallet', px + rng.uniform(2.2, 3), 0, PROP + 1.1, rng.uniform(-20, 20))
-            for k in range(2):
-                place('Street', 'TrafficCone', x + w - 1.2 - k * .8, 0, PROP + .5, rng.uniform(0, 360))
-        if rng.random() < .5:
+            cabin = site_yard(x, w, flats)
+        if not flats:
             building('Warehouse', cx, PROP + 3, WORK)
         else:
             building('Apartment', cx, PROP + 5, HOUSE)
+            if not cabin and rng.random() < .4: row('Works', 'Scaffold', cx - 6.2, cx + 6.2, 0, PROP + 5 - .9)
         x += w
+    x = X0
+    while x < X1:
+        place('Works', 'TowerCrane', x + rng.uniform(-20, 20), 0, rng.uniform(170, 230), rng.uniform(-40, 40) + (180 if rng.random() < .5 else 0), rng.uniform(.85, 1.05))
+        x += rng.uniform(70, 120)
     distant((.68, .68, .56), None)
 
 
