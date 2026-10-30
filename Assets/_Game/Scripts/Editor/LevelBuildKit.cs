@@ -580,6 +580,7 @@ namespace DribbleToSchool.EditorTools
             go.transform.SetParent(parent, false);
             go.transform.position = position;
             go.transform.rotation = Quaternion.Euler(0f, yaw, 0f);
+            go.AddComponent<KitInstance>();
             var inst = (GameObject)Object.Instantiate(prefab);
             inst.name = model + "Model";
             inst.transform.SetParent(go.transform, false);

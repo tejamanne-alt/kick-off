@@ -186,6 +186,7 @@ namespace DribbleToSchool.EditorTools
                 if (atlas == null) continue;
                 var m = ToonMaterial("Kit" + kit, toon, atlas, false);
                 m.SetFloat("_Wind", kit == "Plants" ? 0.1f : 0f);   // trees and grass sway; their alpha is a wind weight
+                m.enableInstancing = true;                          // repeats of a kit model draw together
                 set.kits[kit] = m;
             }
             set.cloud = ToonMaterial("Cloud", toon, null, false);

@@ -37,6 +37,7 @@ Shader "DribbleToSchool/Toon"
             #pragma vertex vert
             #pragma fragment frag
             #pragma multi_compile_fwdbase nolightmap nodirlightmap nodynlightmap novertexlight
+            #pragma multi_compile_instancing
             #include "UnityCG.cginc"
             #include "AutoLight.cginc"
             #include "DtsLook.cginc"
@@ -59,6 +60,7 @@ Shader "DribbleToSchool/Toon"
                 float3 normal : NORMAL;
                 float2 uv : TEXCOORD0;
                 fixed4 color : COLOR;
+                UNITY_VERTEX_INPUT_INSTANCE_ID
             };
 
             struct v2f
@@ -74,6 +76,7 @@ Shader "DribbleToSchool/Toon"
             v2f vert (appdata v)
             {
                 v2f o;
+                UNITY_SETUP_INSTANCE_ID(v);
                 o.worldPos = mul(unity_ObjectToWorld, v.vertex).xyz;
                 if (_Wind > 0.0)
                 {
