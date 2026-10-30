@@ -81,7 +81,7 @@ def planter(name, L, seed):
     m.add(body)
     m.add(rpiece((-L / 2 + 0.05, -D / 2 + 0.05, -0.0045), (L / 2 - 0.05, D / 2 - 0.05, 0.08), (0.015, 0.015, 0.015), 'concrete_d', skip=((2, -1),)))
     # foliage mounds along the trough, flowers scattered over their tops
-    nm = max(2, int(round(L / 0.26)))
+    nm = 4 if L < 1.5 else 7
     zs = H - 0.07
     greens = ['leaf', 'leaf_d', 'leaf_l']
     flowers = []
