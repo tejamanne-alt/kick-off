@@ -18,6 +18,9 @@ chapter = int(args[args.index('--chapter') + 1]) if '--chapter' in args else 1
 seed = int(args[args.index('--seed') + 1]) if '--seed' in args else 7
 wide = '--wide' in args
 surfaces_dir = args[args.index('--surfaces') + 1] if '--surfaces' in args else None
+# --spans x0:x1:top,...  the level's ground spans (beach: dunes and channels as LevelBuildKit.BeachGround draws them)
+spans_arg = [tuple(float(v) for v in t.split(':')) for t in args[args.index('--spans') + 1].split(',')] if '--spans' in args else None
+cam_x = float(args[args.index('--cam') + 1]) if '--cam' in args else 0.0
 rng = random.Random(seed * 31 + chapter)
 
 # ---------------------------------------------------------------- the chapter's light (sRGB)
@@ -254,8 +257,8 @@ def box(x0, x1, y0, y1, z0, z1, rgb, name='box', surface=None):
     return o
 
 
-X0, X1 = -40.0, 40.0
-CAM_X = 0.0
+CAM_X = cam_x
+X0, X1 = CAM_X - 40.0, CAM_X + 40.0
 
 
 def strip(z0, z1, rgb, top=0.0, lift=0.0, surface=None):
@@ -264,9 +267,99 @@ def strip(z0, z1, rgb, top=0.0, lift=0.0, surface=None):
 
 W = (1, 1, 1)
 FRONT, PATH, PROP, POLE_Z = -16.0, 1.5, 1.85, 1.55
+def patches(name, faces, rgb, surface):
+    # A mesh of quads and triangles given in game coordinates (LevelBuildKit's PatchShape).
+    verts, polys = [], []
+    for f in faces:
+        idx = []
+        for p in f:
+            verts.append(tuple(B(*p))); idx.append(len(verts) - 1)
+        polys.append(idx)
+    me = bpy.data.meshes.new(name); me.from_pydata(verts, [], polys); me.materials.append(flat_mat(rgb, surface))
+    bm = bmesh.new(); bm.from_mesh(me)
+    for f in bm.faces:
+        f.normal_update()
+        if f.normal.z < -0.01 or (abs(f.normal.z) <= 0.01 and f.normal.y > 0): f.normal_flip()
+    bm.to_mesh(me); bm.free()
+    o = bpy.data.objects.new(name, me); S.collection.objects.link(o)
+
+
+def beach_ground(spans):
+    # A port of LevelBuildKit.BeachGround (keep in step): flat sand cut by tidal channels at the gaps,
+    # dunes with sloping faces over raised spans, banks down to the water.
+    spans = sorted(spans)
+    base = min(t for _, _, t in spans); water_y = base - 0.3
+    zf, dune_back, shore, wet_from = -PATH, 8.0, 9.0, 5.6
+    gaps, gap_tops = [], []
+    reach, reach_top = spans[0][1], spans[0][2]
+    for a, b, t in spans[1:]:
+        if a > reach + 0.01: gaps.append((reach, a)); gap_tops.append((reach_top, t))
+        if b > reach: reach, reach_top = b, t
+    cuts = [X0 - 600] + [v for g in gaps for v in g] + [X1 + 600]
+    for k in range(0, len(cuts), 2):
+        a, b = cuts[k], cuts[k + 1]
+        box(a, b, base - 0.2, base, -PATH, PATH, (.96, .93, .88), 'lane', 'Sand')
+        box(a, b, base - 0.2, base, PATH, wet_from, W, 'back', 'Sand')
+        box(a, b, base - 0.32, base - 0.12, wet_from, shore, (.82, .74, .62), 'wet', 'Sand')
+    dunes, banks, wetbanks, streams = [], [], [], []
+    for (l, r), (tl, tr) in zip(gaps, gap_tops):
+        for x, top, d in ((l, tl, 1), (r, tr, -1)):
+            h = top - base
+            if h > .05:
+                dunes.append([(x, base, zf - 1.8 * h), (x, top, zf), (x + (top - base) * .6 * d, base, zf)])   # dry gully through the front slope
+            prof = [(zf, top, 0), (dune_back, top, 0), (dune_back + 1.2 * h, base - .12, 1)] if h > .05 else [(zf, top, 0), (wet_from, top, 0), (wet_from + .01, top - .12, 1)]
+            prof.append((shore + .5, base - .12, 1))
+            def bank_point(y, z, t):
+                # LevelBuildKit.BankPoint, with a sine hash standing in for Perlin noise.
+                run = (y - water_y) * .6
+                n = .5 * math.sin(z * 2.1 + x * 0.73 + t * 5.0) * math.cos(z * 0.9 - x * 0.4)
+                return (x + run * t * (1 + n * (.5 if t < 1 else .35)) * d, y + (water_y - y) * t, z)
+            for (z0, y0, _), (z1, y1, c1) in zip(prof, prof[1:]):
+                pieces = max(1, math.ceil(abs(z1 - z0)))
+                for q in range(pieces):
+                    za, zb = z0 + (z1 - z0) * q / pieces, z0 + (z1 - z0) * (q + 1) / pieces
+                    ya, yb = y0 + (y1 - y0) * q / pieces, y0 + (y1 - y0) * (q + 1) / pieces
+                    out = wetbanks if c1 else dunes
+                    out.append([(x, ya, za), (x, yb, zb), bank_point(yb, zb, .5), bank_point(ya, za, .5)])
+                    out.append([bank_point(ya, za, .5), bank_point(yb, zb, .5), bank_point(yb, zb, 1), bank_point(ya, za, 1)])
+        run = (base - water_y) * .6
+        banks.append([(l, base, zf), (l + run, water_y, zf + .25), (r - run, water_y, zf + .25), (r, base, zf)])
+        streams.append([(l, water_y, zf), (l, water_y, shore + .6), (r, water_y, shore + .6), (r, water_y, zf)])
+
+    def neighbour(x, left):
+        for a, b, t in spans:
+            if (abs(b - x) < .01 if left else abs(a - x) < .01): return t
+        return None
+
+    for a, b, top in spans:
+        h = top - base
+        if h < .05: continue
+        nl, nr = neighbour(a, True), neighbour(b, False)
+        end = lambda n: (top - (base if n is None else n)) * 2.4 if top - (base if n is None else n) > .05 else 0
+        eL, eR = end(nl), end(nr)
+        yL = base if nl is None else min(nl, top); yR = base if nr is None else min(nr, top)
+        if any(abs(g[1] - a) < .01 for g in gaps): eL, yL = 0, top
+        if any(abs(g[0] - b) < .01 for g in gaps): eR, yR = 0, top
+        eF, eB = 1.8 * h, 1.2 * h
+        tfl, tfr, tbl, tbr = (a, top, zf), (b, top, zf), (a, top, dune_back), (b, top, dune_back)
+        ffl, ffr = (a - eL, base, zf - eF), (b + eR, base, zf - eF)
+        bbl, bbr = (a - eL, base, dune_back + eB), (b + eR, base, dune_back + eB)
+        lf, lb, rf, rb = (a - eL, yL, zf), (a - eL, yL, dune_back), (b + eR, yR, zf), (b + eR, yR, dune_back)
+        dunes += [[tfl, tbl, tbr, tfr], [ffl, tfl, tfr, ffr], [tbl, bbl, bbr, tbr]]
+        if eL > .01: dunes += [[lf, lb, tbl, tfl], [ffl, lf, tfl], [tbl, lb, bbl]]
+        if eR > .01: dunes += [[tfr, tbr, rb, rf], [tfr, rf, ffr], [tbr, bbr, rb]]
+    if dunes: patches('dunes', dunes, W, 'Sand')
+    if banks: patches('banks', banks, (.9, .84, .74), 'Sand')
+    if wetbanks: patches('wetbanks', wetbanks, (.82, .74, .62), 'Sand')
+    if streams: patches('streams', streams, W, 'Sea')
+
+
 if chapter == 3:
-    strip(FRONT, -PATH, W, surface='Sand'); strip(-PATH, PATH, (.96, .93, .88), surface='Sand'); strip(PATH, 5.6, W, surface='Sand')
-    strip(5.6, 9, (.82, .74, .62), lift=-0.12, surface='Sand')
+    strip(FRONT, -PATH, W, surface='Sand')
+    if spans_arg: beach_ground(spans_arg)
+    else:
+        strip(-PATH, PATH, (.96, .93, .88), surface='Sand'); strip(PATH, 5.6, W, surface='Sand')
+        strip(5.6, 9, (.82, .74, .62), lift=-0.12, surface='Sand')
     box(X0 - 1500, X1 + 1500, -0.5, -0.35, 9, 1000, W, 'sea', 'Sea')
 elif chapter == 5:
     strip(FRONT, -PATH, W, lift=.04, surface='Grass'); strip(-PATH, PATH, W, surface='Gravel')

@@ -701,7 +701,139 @@ namespace DribbleToSchool.EditorTools
                 default: Suburb(track, root, rng, x0, x1); break;
             }
             if (ch != 3) Poles(track, root, x0, x1);
+            Depth(track, root, new System.Random(ch * 211 + Mathf.RoundToInt(x0)), x0, x1);
+            SchoolSurroundings(track, root, new System.Random(ch * 97 + Mathf.RoundToInt(track.GoalX)));
             Wildlife(track, new System.Random(ch * 389 + Mathf.RoundToInt(x0)), x0, x1);
+        }
+
+        // ---------------------------------------------------------------- depth
+
+        /// <summary>
+        /// The land deep behind the street, so nothing past the back gardens lies empty: a far row of
+        /// buildings and bands of trees for each chapter, fading into the haze toward the hills.
+        /// Side streets stay open all the way back.
+        /// </summary>
+        static void Depth(LevelBuildKit.TrackBuilder track, Transform root, System.Random rng, float x0, float x1)
+        {
+            if (!LevelBuildKit.HasKitModel("Buildings", "HouseGable")) return;
+            var gable = ProceduralArt.FacadeKind.HouseGable;
+            var longHouse = ProceduralArt.FacadeKind.HouseLong;
+            var flats = ProceduralArt.FacadeKind.Apartment;
+            string[] green = { "Broadleaf", "BroadleafLarge", "ConiferMid", "ConiferTall", "Birch" };
+            switch (LevelBuildKit.Chapter)
+            {
+                case 2:
+                    // (The distant wood begins about 62 units back.)
+                    FarRow(track, root, rng, x0, x1, 40f, 46f, flats, ProceduralArt.FacadeKind.Shop0, ProceduralArt.FacadeKind.Shop1, longHouse, gable);
+                    TreeBand(track, root, rng, x0, x1, 57f, 61f, green, 5f, 10f);
+                    break;
+                case 3:
+                    break;   // the sea
+                case 4:
+                    FarRow(track, root, rng, x0, x1, 32f, 40f, ProceduralArt.FacadeKind.Warehouse, flats, ProceduralArt.FacadeKind.Warehouse);
+                    TreeBand(track, root, rng, x0, x1, 54f, 64f, green, 4f, 9f);
+                    break;
+                case 5:
+                    TreeBand(track, root, rng, x0, x1, 44f, 62f, green, 3f, 6f);
+                    break;
+                default:
+                    TreeBand(track, root, rng, x0, x1, 34f, 37f, green, 5f, 10f);
+                    FarRow(track, root, rng, x0, x1, 40f, 46f, gable, longHouse, ProceduralArt.FacadeKind.Bungalow, gable);
+                    TreeBand(track, root, rng, x0, x1, 56f, 66f, green, 4f, 8f);
+                    break;
+            }
+        }
+
+        /// <summary>Where the first side street or quiet area blocking [a, b] begins (less its margin), or b if none does.</summary>
+        static float BlockStart(LevelBuildKit.TrackBuilder track, float a, float b)
+        {
+            float start = b;
+            foreach (var area in track.OpenAreas.Concat(track.QuietAreas))
+                if (b > area.x - 0.6f && a < area.y + 0.6f) start = Mathf.Min(start, area.x - 0.6f);
+            return Mathf.Max(a, start);
+        }
+
+        /// <summary>
+        /// The leftover strip of a lot that doesn't fit before a side street, the crane's plot or the
+        /// school: closed off as the chapter would (a garden wall, a market stall, the site hoarding, a
+        /// hedge) rather than left as a gap.
+        /// </summary>
+        static void FillGap(LevelBuildKit.TrackBuilder track, Transform root, System.Random rng, float a, float b)
+        {
+            float w = b - a;
+            if (w < 1.6f) return;
+            float gy = GroundAt(track, (a + b) * 0.5f);
+            switch (LevelBuildKit.Chapter)
+            {
+                case 2:
+                    if (w > 2.8f) Model(root, "Street", "MarketStall", (a + b) * 0.5f, gy, PropertyZ + 0.6f, Rand(rng, -5f, 5f));
+                    else Model(root, "Street", "PotC", (a + b) * 0.5f, gy, PropertyZ + 0.25f, Rand(rng, 0f, 360f));
+                    break;
+                case 3:
+                    break;
+                case 4:
+                    if (!Row(root, "Street", "Hoarding3", a + 0.15f, b - 0.15f, gy, PropertyZ + 0.2f))
+                        Solid(root, "Hoarding", new Vector3((a + b) * 0.5f, gy + 1.3f, PropertyZ + 0.2f), new Vector3(w - 0.3f, 2.6f, 0.2f), Color.white, Art.surfaces[ProceduralArt.Surface.Hoarding]);
+                    break;
+                case 5:
+                    Row(root, "Plants", "HedgeBlock2", a + 0.3f, b - 0.3f, gy + 0.04f, PropertyZ + 0.4f);
+                    break;
+                default:
+                    BlockWall(root, a + 0.1f, b - 0.1f, gy, Art.surfaces[ProceduralArt.Surface.BlockWall], true, true);
+                    if (w > 3f) Plant(root, rng.NextDouble() < 0.5 ? "Broadleaf" : "ConiferMid", null, (a + b) * 0.5f, gy, PropertyZ + 2.5f, Rand(rng, 0.8f, 1.05f), 1f, -60, rng);
+                    break;
+            }
+        }
+
+        /// <summary>Does [a, b] run into a side street (they run 70 units back from the footpath)?</summary>
+        static bool OnSideStreetRange(LevelBuildKit.TrackBuilder track, float a, float b)
+        {
+            foreach (var area in track.OpenAreas)
+                if (b > area.x - 0.6f && a < area.y + 0.6f) return true;
+            return false;
+        }
+
+        /// <summary>A row of buildings of the given kinds between depths zMin and zMax, with gaps between them, along the whole level.</summary>
+        static void FarRow(LevelBuildKit.TrackBuilder track, Transform root, System.Random rng, float x0, float x1, float zMin, float zMax, params ProceduralArt.FacadeKind[] kinds)
+        {
+            for (float x = x0 - 40f; x < x1 + 40f;)
+            {
+                var kind = kinds[rng.Next(kinds.Length)];
+                float width = ProceduralArt.FacadeSize(kind).x;
+                if (!OnSideStreetRange(track, x, x + width))
+                {
+                    float cx = x + width * 0.5f;
+                    KitBuilding(root, cx, GroundAt(track, cx), Rand(rng, zMin, zMax), kind, Mathf.Abs(Mathf.RoundToInt(cx * 7f + zMin * 13f)));
+                }
+                x += width + Rand(rng, 1.5f, 6f);
+            }
+        }
+
+        /// <summary>A band of trees between depths zMin and zMax, every so often along the whole level (in autumn colours in the park).</summary>
+        static void TreeBand(LevelBuildKit.TrackBuilder track, Transform root, System.Random rng, float x0, float x1, float zMin, float zMax, string[] models, float spacingMin, float spacingMax)
+        {
+            for (float x = x0 - 40f; x < x1 + 40f; x += Rand(rng, spacingMin, spacingMax))
+            {
+                if (OnSideStreetRange(track, x - 2f, x + 2f)) continue;
+                Plant(root, models[rng.Next(models.Length)], null, x, GroundAt(track, x), Rand(rng, zMin, zMax), Rand(rng, 0.9f, 1.35f), 1f, -70, rng);
+            }
+        }
+
+        /// <summary>Trees around the school: behind it, and in its grounds past the building (palms by the sea).</summary>
+        static void SchoolSurroundings(LevelBuildKit.TrackBuilder track, Transform root, System.Random rng)
+        {
+            float goal = track.GoalX;
+            if (goal <= track.MinX || !LevelBuildKit.HasKitModel("Plants", "Broadleaf")) return;
+            int ch = LevelBuildKit.Chapter;
+            string[] trees = ch == 3 ? new[] { "Palm", "PalmShort", "Palm" } : new[] { "Broadleaf", "BroadleafLarge", "ConiferMid", "Birch", "Broadleaf" };
+            float gy = GroundAt(track, goal);
+            // Behind the school (it stands 10 to 22 units past the gate, 12 deep, its 32-unit front along
+            // z from -12 to 20), where the back rows leave room for it.
+            for (float x = goal + 9f; x < goal + 24f; x += Rand(rng, 3.5f, 5.5f))
+                Plant(root, trees[rng.Next(trees.Length)], null, x, gy, Rand(rng, 22f, 27f), Rand(rng, 0.95f, 1.3f), 1f, -70, rng);
+            // The school grounds beyond the building, behind the footpath.
+            for (float x = goal + 26f; x < goal + 75f; x += Rand(rng, 4f, 7f))
+                Plant(root, trees[rng.Next(trees.Length)], null, x, gy, Rand(rng, 3.5f, 15f), Rand(rng, 0.9f, 1.2f), 1f, -65, rng);
         }
 
         // ---------------------------------------------------------------- animals
@@ -855,7 +987,7 @@ namespace DribbleToSchool.EditorTools
             for (float x = x0; x < x1;)
             {
                 float lot = Rand(rng, 9f, 13f), skip;
-                if (Blocked(track, x, x + lot, out skip)) { x = skip; continue; }
+                if (Blocked(track, x, x + lot, out skip)) { FillGap(track, root, rng, x, BlockStart(track, x, x + lot)); x = skip; continue; }
                 float cx = x + lot * 0.5f, gy = GroundAt(track, cx);
 
                 // Block wall along the front of the lot with a gap for the gate; a white picket fence
@@ -960,7 +1092,7 @@ namespace DribbleToSchool.EditorTools
             for (float x = x0; x < x1; i++)
             {
                 float w = 8f, skip;
-                if (Blocked(track, x, x + w, out skip)) { x = skip; continue; }
+                if (Blocked(track, x, x + w, out skip)) { FillGap(track, root, rng, x, BlockStart(track, x, x + w)); x = skip; continue; }
                 float cx = x + w * 0.5f, gy = GroundAt(track, cx);
                 var kind = i % 2 == 0 ? ProceduralArt.FacadeKind.Shop0 : ProceduralArt.FacadeKind.Shop1;
                 bool model = Building(root, cx, gy, PropertyZ + 0.6f, kind, House3D.RoofStyle.Flat, 8f, 0f, i % 3 == 0 ? new Color(0.95f, 0.9f, 0.82f) : new Color(0.88f, 0.9f, 0.94f), new Color(0.6f, 0.6f, 0.62f));
@@ -1006,6 +1138,7 @@ namespace DribbleToSchool.EditorTools
                 if (OnSideStreet(track, x, ProceduralArt.FacadeKind.Apartment)) continue;
                 Building(root, x, GroundAt(track, x), z, ProceduralArt.FacadeKind.Apartment, House3D.RoofStyle.Flat, 10f, 0f, new Color(0.92f, 0.88f, 0.82f), new Color(0.6f, 0.6f, 0.62f));
             }
+            DistantHills(track, root, x0, x1);
         }
 
         static void Beach(LevelBuildKit.TrackBuilder track, Transform root, System.Random rng, float x0, float x1)
@@ -1015,14 +1148,23 @@ namespace DribbleToSchool.EditorTools
             water.faces = MeshBuilder.Faces.Top;
             water.Rebuild();
 
-            // Foam where the waves break on the sand, and lines of breaking crests out at sea.
-            Foam(root, x0 - 60f, x1 + 60f, 9.0f, 9.45f, sea + 0.19f, 0.3f);
+            // Foam lapping up the sand where the waves break, and lines of breaking crests rolling in
+            // out at sea. They move, so they live outside the street's static batches.
+            var waves = new GameObject("Waves").transform;
+            var shoreline = Foam(waves, x0 - 60f, x1 + 60f, 9.0f, 9.45f, sea + 0.19f, 0.3f);
+            var lap = shoreline.AddComponent<Lapping>();
+            lap.reach = new Vector3(0f, 0f, -0.55f);
+            lap.period = 5.5f;
             float[] crests = { 13f, 19f, 28f, 42f };
             for (int i = 0; i < crests.Length; i++)
                 for (float x = x0 - 60f + (float)rng.NextDouble() * 10f; x < x1 + 60f; x += Rand(rng, 14f, 30f))
                 {
                     float len = Rand(rng, 5f, 14f), w = Mathf.Lerp(0.35f, 0.9f, i / (float)(crests.Length - 1));
-                    Foam(root, x, x + len, crests[i] + Rand(rng, -1f, 1f), crests[i] + w, sea - 0.04f, i * 1.7f + x);
+                    var crest = Foam(waves, x, x + len, crests[i] + Rand(rng, -1f, 1f), crests[i] + w, sea - 0.04f, i * 1.7f + x);
+                    var roll = crest.AddComponent<Lapping>();
+                    roll.reach = new Vector3(Rand(rng, -0.5f, 0.5f), 0f, -Rand(rng, 1.8f, 3.2f));
+                    roll.period = Rand(rng, 6.5f, 9f);
+                    roll.phase = (float)rng.NextDouble();
                 }
 
             var towers = new List<float>();
@@ -1070,8 +1212,8 @@ namespace DribbleToSchool.EditorTools
             bool rockModels = LevelBuildKit.HasKitModel("Terrain", "RockCluster");
             for (float x = x0 + 15f; x < x1; x += rockModels ? Rand(rng, 12f, 24f) : Rand(rng, 22f, 38f))
             {
-                // Rocks at the water's edge, darker where the sea wets them.
-                float gy = GroundAt(track, x) - 0.12f, s = Rand(rng, 0.8f, 1.6f);
+                // Rocks at the water's edge (at the shore's height, below any dune), darker where the sea wets them.
+                float gy = track.LowestGroundTop - 0.12f, s = Rand(rng, 0.8f, 1.6f);
                 if (rockModels)
                 {
                     float rz = Rand(rng, 8.6f, 11f);
@@ -1146,7 +1288,7 @@ namespace DribbleToSchool.EditorTools
         }
 
         /// <summary>A white band of foam with a wavy edge toward the camera.</summary>
-        static void Foam(Transform root, float a, float b, float zFront, float zBack, float y, float phase)
+        static GameObject Foam(Transform root, float a, float b, float zFront, float zBack, float y, float phase)
         {
             var go = new GameObject("Foam");
             go.transform.SetParent(root, false);
@@ -1160,6 +1302,7 @@ namespace DribbleToSchool.EditorTools
             strip.color = new Color(0.97f, 0.98f, 1f);
             go.GetComponent<MeshRenderer>().sharedMaterial = Art.solid;
             strip.Rebuild();
+            return go;
         }
 
         /// <summary>A white wooden lifeguard tower: legs and braces, a platform, a hut with a red roof, a ladder and a flag.</summary>
@@ -1197,7 +1340,7 @@ namespace DribbleToSchool.EditorTools
             for (float x = x0; x < x1;)
             {
                 float w = Rand(rng, 11f, 14f), skip;
-                if (Blocked(track, x, x + w, out skip)) { x = skip; continue; }
+                if (Blocked(track, x, x + w, out skip)) { FillGap(track, root, rng, x, BlockStart(track, x, x + w)); x = skip; continue; }
                 float cx = x + w * 0.5f, gy = GroundAt(track, cx);
                 bool flats = rng.NextDouble() >= 0.5, cabin = false;
                 double front = rng.NextDouble();
@@ -1292,7 +1435,7 @@ namespace DribbleToSchool.EditorTools
             for (float x = x0; x < x1;)
             {
                 float w = Rand(rng, 6f, 10f), skip;
-                if (Blocked(track, x, x + w, out skip)) { x = skip; continue; }
+                if (Blocked(track, x, x + w, out skip)) { FillGap(track, root, rng, x, BlockStart(track, x, x + w)); x = skip; continue; }
                 float cx = x + w * 0.5f, gy = GroundAt(track, cx) + 0.04f;
                 // A lamp in every other gap between the hedges.
                 if (segment++ % 2 == 0) Model(root, "Leisure", "ParkLamp", x, GroundAt(track, x) + 0.04f, PropertyZ - 0.1f);

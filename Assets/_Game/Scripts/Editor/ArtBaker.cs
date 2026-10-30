@@ -169,9 +169,12 @@ namespace DribbleToSchool.EditorTools
         {
             LevelBuildKit.EnsureFolder(MaterialDir);
             var toon = Shader.Find("DribbleToSchool/Toon");
+            var waterShader = Shader.Find("DribbleToSchool/Water");
             foreach (ProceduralArt.Surface surface in System.Enum.GetValues(typeof(ProceduralArt.Surface)))
             {
-                var m = ToonMaterial("Surface_" + surface, toon, LoadTexture("Surface_" + surface), true);
+                // The sea (and every channel, stream and puddle) moves: drifting layers, rolling swells, glints.
+                var shader = surface == ProceduralArt.Surface.Sea && waterShader != null ? waterShader : toon;
+                var m = ToonMaterial("Surface_" + surface, shader, LoadTexture("Surface_" + surface), true);
                 if (surface == ProceduralArt.Surface.Sea) m.SetVector("_Scroll", new Vector4(0.01f, 0.005f, 0f, 0f));   // a slow drift (UV per second; a tile is 8 units)
                 m.SetFloat("_Macro", MacroVariation(surface));
                 set.surfaces[surface] = m;
