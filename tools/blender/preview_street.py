@@ -405,20 +405,47 @@ def market():
 
 
 def beach():
-    x = X0 + 8
-    while x < X1:
-        if has('Terrain', 'RockCluster') and rng.random() < .5:
-            place('Terrain', 'RockCluster', x + rng.uniform(5, 15), -0.22, rng.uniform(8.6, 11), rng.uniform(-30, 30), rng.uniform(.65, 1.3))
-        x += rng.uniform(22, 38)
-    x = X0 + rng.uniform(5, 20)
-    while x < X1:
-        for k in range(rng.randrange(1, 4)):
-            plant(rng.choice(['Palm', 'PalmShort']), x + k * rng.uniform(2.2, 3.4), -0.1, rng.uniform(5.6, 7), rng.uniform(.85, 1.15))
-        x += rng.uniform(30, 55)
+    towers = []
     x = X0
     while x < X1:
-        plant('DuneGrass', x, 0, rng.uniform(-6.5, -2.4), rng.uniform(.7, 1.3))
-        x += rng.uniform(2.5, 7)
+        place('Leisure', 'LifeguardTower', x, 0, 7.4); towers.append(x)
+        x += rng.uniform(30, 45)
+    canopy = [(.9, .3, .28), (.25, .5, .85), (1, .75, .2), (.3, .66, .62)]
+    towels = [(.95, .55, .6), (.45, .75, .9), (1, .85, .35), (.55, .8, .55)]
+    x = X0 + 8
+    while x < X1:
+        z = rng.uniform(3.4, 5.2)
+        if any(abs(t - x) < 3 for t in towers):
+            x += rng.uniform(5, 11); continue
+        p = place('Leisure', 'Parasol', x, 0, z, rng.uniform(0, 360), 1, [rng.choice(canopy), None, None])
+        if p: p.rotation_euler = (math.radians(rng.uniform(-7, 7)), math.radians(rng.uniform(-7, 7)), p.rotation_euler.z)
+        place('Leisure', 'BeachTowel', x + rng.uniform(-.3, .3), 0, z - .4, 90 + rng.uniform(-15, 15), 1, [rng.choice(towels), None, None])
+        if rng.random() < .4:
+            place('Leisure', 'CoolBox', x + .9, 0, z + .3, rng.uniform(-25, 25), 1, [rng.choice(canopy), None, None])
+        if rng.random() < .3:
+            place('Leisure', 'SandCastle', x + rng.uniform(1.3, 1.8), 0, z - rng.uniform(1, 1.6), rng.uniform(-20, 20))
+            place('Leisure', 'BucketSpade', x + rng.uniform(2.1, 2.5), 0, z - rng.uniform(.8, 1.3), rng.uniform(0, 360))
+        x += rng.uniform(5, 11)
+    x = X0 + 15
+    while x < X1:
+        s_ = rng.uniform(.8, 1.6); rz = rng.uniform(8.6, 11)
+        place('Terrain', 'RockCluster', x, -0.22, rz, rng.uniform(-30, 30), s_ * .8)
+        if rng.random() < .5:
+            place('Terrain', rng.choice(['Boulder1', 'Boulder2']), x + rng.uniform(2, 3.5), -0.17, rz - rng.uniform(.5, 1.2), rng.uniform(0, 360), rng.uniform(.7, 1.1))
+        x += rng.uniform(12, 24)
+    x = X0 + rng.uniform(5, 15)
+    while x < X1:
+        for k in range(rng.randrange(1, 4)):
+            px = x + k * rng.uniform(2.2, 3.4)
+            if any(abs(t - px) < 4.5 for t in towers): continue
+            plant(rng.choice(['Palm', 'PalmShort']), px, -0.1, rng.uniform(5.6, 7), rng.uniform(.85, 1.15))
+        x += rng.uniform(16, 32)
+    x = X0
+    while x < X1:
+        z = rng.uniform(-6.5, -2.4)
+        for k in range(rng.randrange(1, 4)):
+            plant('DuneGrass', x + k * rng.uniform(.5, .9), 0, z + rng.uniform(-.4, .4), rng.uniform(.7, 1.4))
+        x += rng.uniform(1.2, 4)
     for i in range(3):
         place('Terrain', 'Headland', X0 + (X1 - X0) * (.15 + i * .4) + rng.uniform(-40, 40), -0.8, 650 + i * 60, rng.uniform(-15, 15), rng.uniform(2.2, 3))
 
@@ -443,23 +470,54 @@ def city():
     distant((.68, .68, .56), None)
 
 
+def park_features():
+    clearings = []
+    if not has('Leisure', 'Slide'):
+        return clearings
+    kind = rng.randrange(4)
+    x = X0 + rng.uniform(10, 30)
+    while x < X1:
+        k = kind % 4; kind += 1
+        if k == 0:
+            place('Leisure', 'Sandpit', x - .5, .04, 6.8, rng.uniform(-10, 10)); place('Leisure', 'Slide', x - 3.8, .04, 8.8, rng.uniform(-20, 20))
+            place('Leisure', 'SwingSet', x + 1.2, .04, 10, rng.uniform(-10, 10)); place('Leisure', 'SeeSaw', x + 4.6, .04, 7.4, rng.uniform(-25, 25))
+        elif k == 1:
+            place('Leisure', 'DuckPond', x, .02, 9, rng.uniform(-10, 10), rng.uniform(1.3, 1.6))
+            for j in range(4):
+                plant('Reeds', x + rng.uniform(-3.2, 3.2), .04, 9 + (-1 if j % 2 == 0 else 1) * rng.uniform(1.6, 2.2), rng.uniform(.9, 1.3))
+        elif k == 2:
+            place('Leisure', 'Gazebo', x, .04, 11, rng.uniform(-20, 20))
+        else:
+            place('Leisure', 'PicnicTable', x - 1.8, .04, 6.8, rng.uniform(-15, 15)); place('Leisure', 'PicnicTable', x + 2, .04, 8.2, rng.uniform(-15, 15))
+        clearings.append((x - 6, x + 6))
+        x += rng.uniform(45, 75)
+    return clearings
+
+
 def park():
     x = X0
+    seg = 0
     while x < X1:
         w = rng.uniform(6, 10); cx = x + w / 2
+        if seg % 2 == 0: place('Leisure', 'ParkLamp', x, .04, PROP - .1)
+        seg += 1
         row('Plants', 'HedgeBlock2', x + .6, x + w - .6, .04, PROP + .4)
         plant(rng.choice(['ShrubFlowering', 'BushRound']), cx - w * .25, .04, PROP + 1.5, rng.uniform(1.2, 1.6))
         if rng.random() < .4:
             place('Street', 'Bench', cx + 1.5, .04, PROP - .55)
         x += w
+    clearings = park_features()
     x = X0
     while x < X1:
         r = rng.random()
+        if any(a - 3 < x < b + 3 for a, b in clearings):
+            x += rng.uniform(4, 8); continue
         plant('CherryBlossom' if r < .3 else 'Broadleaf' if r < .65 else 'BroadleafLarge' if r < .85 else 'Birch', x, .04, rng.uniform(6.5, 16), rng.uniform(.85, 1.15))
         x += rng.uniform(4, 8)
     x = X0
     while x < X1:
-        plant('BushWide' if rng.random() < .6 else 'BushRound', x, .04, rng.uniform(3.5, 6), rng.uniform(1, 1.5))
+        if not any(a - 1.5 < x < b + 1.5 for a, b in clearings):
+            plant('BushWide' if rng.random() < .6 else 'BushRound', x, .04, rng.uniform(3.5, 6), rng.uniform(1, 1.5))
         x += rng.uniform(4, 9)
     x = X0 - 20
     while x < X1 + 20:

@@ -493,13 +493,26 @@ namespace DribbleToSchool.EditorTools
 
         static Transform FindDeep(Transform root, string name)
         {
-            if (root.name == name) return root;
+            if (SameName(root.name, name)) return root;
             for (int i = 0; i < root.childCount; i++)
             {
                 var found = FindDeep(root.GetChild(i), name);
                 if (found != null) return found;
             }
             return null;
+        }
+
+        /// <summary>
+        /// Is <paramref name="actual"/> the node called <paramref name="name"/>? Blender adds a ".001"
+        /// style suffix to duplicate names in a scene with many models, and it can reach the FBX.
+        /// </summary>
+        static bool SameName(string actual, string name)
+        {
+            if (actual == name) return true;
+            if (actual.Length != name.Length + 4 || !actual.StartsWith(name) || actual[name.Length] != '.') return false;
+            for (int i = name.Length + 1; i < actual.Length; i++)
+                if (!char.IsDigit(actual[i])) return false;
+            return true;
         }
 
         static Transform Pivot(Transform parent, string name, Vector3 localPos)
@@ -1415,13 +1428,20 @@ namespace DribbleToSchool.EditorTools
             void Raft(Transform raft, Vector2 center, float w, Vector2 travel)
             {
                 Color plank = new Color(0.66f, 0.5f, 0.34f), plankDark = new Color(0.52f, 0.38f, 0.26f), rope = new Color(0.84f, 0.76f, 0.58f);
-                int n = Mathf.Max(3, Mathf.RoundToInt(w / 0.3f));
-                for (int i = 0; i < n; i++)
-                    Part(raft, "Plank", new Vector3(-w * 0.5f + (i + 0.5f) * w / n, 0.105f, 0f), new Vector3(w / n - 0.03f, 0.14f, 1.5f), i % 2 == 0 ? plank : Color.Lerp(plank, plankDark, 0.5f));
-                foreach (float dz in new[] { -0.5f, 0.5f })
-                    Part(raft, "Float", new Vector3(0f, -0.07f, dz), new Vector3(w - 0.2f, 0.2f, 0.32f), new Color(0.32f, 0.44f, 0.52f));
-                Part(raft, "RopePost", new Vector3(0f, 0.6f, 0.72f), new Vector3(0.1f, 0.95f, 0.1f), plankDark);
-                Part(raft, "RopeRing", new Vector3(0f, 1.02f, 0.86f), new Vector3(0.16f, 0.16f, 0.04f), IronDark);
+                // The Leisure kit's raft of planks on barrels, its deck top on the collider's top and its
+                // rope ring on the ferry rope, stretched to the platform's width.
+                var model = KitModel(raft, "Leisure", "Raft", raft.position + new Vector3(0f, -0.075f, 0f));
+                if (model != null) model.localScale = new Vector3(w / 2f, 1f, 1f);
+                else
+                {
+                    int n = Mathf.Max(3, Mathf.RoundToInt(w / 0.3f));
+                    for (int i = 0; i < n; i++)
+                        Part(raft, "Plank", new Vector3(-w * 0.5f + (i + 0.5f) * w / n, 0.105f, 0f), new Vector3(w / n - 0.03f, 0.14f, 1.5f), i % 2 == 0 ? plank : Color.Lerp(plank, plankDark, 0.5f));
+                    foreach (float dz in new[] { -0.5f, 0.5f })
+                        Part(raft, "Float", new Vector3(0f, -0.07f, dz), new Vector3(w - 0.2f, 0.2f, 0.32f), new Color(0.32f, 0.44f, 0.52f));
+                    Part(raft, "RopePost", new Vector3(0f, 0.6f, 0.72f), new Vector3(0.1f, 0.95f, 0.1f), plankDark);
+                    Part(raft, "RopeRing", new Vector3(0f, 1.02f, 0.86f), new Vector3(0.16f, 0.16f, 0.04f), IronDark);
+                }
 
                 float ropeY = center.y + 0.175f + 0.85f;
                 float a = center.x - w * 0.5f - 0.7f, b = center.x + travel.x + w * 0.5f + 0.7f;
@@ -1715,7 +1735,11 @@ namespace DribbleToSchool.EditorTools
             {
                 Color wood = new Color(0.55f, 0.4f, 0.3f);
                 float ground = GroundTopUnder(pivot.x, pivot.y);
-                if (Chapter == 5)
+                if (SwingModel(pivot, ground))
+                {
+                    // The kit's swing tree or frame stands over the pivot.
+                }
+                else if (Chapter == 5)
                 {
                     // A rope swing on a big old tree on the bank: the trunk stands behind the path
                     // and a thick bough reaches out over it to where the rope is tied.
@@ -1746,7 +1770,9 @@ namespace DribbleToSchool.EditorTools
                         }
                 }
 
-                var seat = Block("SwingSeat", pivot + Vector2.down * ropeLength, new Vector2(1.4f, 0.2f), Chapter == 5 ? new Color(0.62f, 0.46f, 0.32f) : new Color(0.85f, 0.35f, 0.3f), GroundMat, true, 0.7f);
+                bool seatModel = HasKitModel("Leisure", "SwingSeat");
+                var seat = Block("SwingSeat", pivot + Vector2.down * ropeLength, new Vector2(1.4f, 0.2f), Chapter == 5 ? new Color(0.62f, 0.46f, 0.32f) : new Color(0.85f, 0.35f, 0.3f), GroundMat, !seatModel, 0.7f);
+                if (seatModel) KitModel(seat.transform, "Leisure", "SwingSeat", seat.transform.position);   // exactly the collider's size
                 seat.AddComponent<Rigidbody2D>().bodyType = RigidbodyType2D.Kinematic;
                 var rope = seat.AddComponent<LineRenderer>();
                 rope.sharedMaterial = trailMaterial;
@@ -1764,13 +1790,38 @@ namespace DribbleToSchool.EditorTools
                 swing.rope = rope;
             }
 
+            /// <summary>
+            /// The Leisure kit's swing: in the park a big old tree whose bough reaches over the path,
+            /// scaled so its rope tie meets the pivot; elsewhere a timber A-frame stretched up to it.
+            /// False if the kit hasn't got them.
+            /// </summary>
+            bool SwingModel(Vector2 pivot, float ground)
+            {
+                float height = pivot.y - ground;
+                if (Chapter == 5)
+                {
+                    var tree = KitModel(root, "Leisure", "SwingTree", new Vector3(pivot.x, ground, 0f), 0f, height / 4f);
+                    Transform tie = tree != null ? FindDeep(tree, "Attach.Rope") : null;
+                    if (tie == null) { if (tree != null) Object.DestroyImmediate(tree.gameObject); return false; }
+                    tree.position += new Vector3(pivot.x - tie.position.x, 0f, -tie.position.z);
+                    return true;
+                }
+                var frame = KitModel(root, "Leisure", "SwingFrame", new Vector3(pivot.x, ground, 0f));
+                if (frame == null) return false;
+                frame.localScale = new Vector3(1f, height / 4f, 1f);
+                return true;
+            }
+
             /// <summary>A plaza floor fountain: pulsing jets from a grate flush with the paving, which lift the ball.</summary>
             public void Fountain(float x, float groundTop, float height, float strength)
             {
                 StreetBuilder.Patch(root, "WetPaving", x - 1.8f, x + 1.8f, groundTop, -StreetBuilder.PathHalf, StreetBuilder.PathHalf, new Color(0.55f, 0.6f, 0.62f));
-                StreetBuilder.Patch(root, "Grate", x - 0.75f, x + 0.75f, groundTop, -0.75f, 0.75f, new Color(0.3f, 0.32f, 0.36f), null, 0.02f);
-                for (float gx = x - 0.6f; gx <= x + 0.61f; gx += 0.2f)
-                    StreetBuilder.Patch(root, "GrateSlot", gx - 0.04f, gx + 0.04f, groundTop, -0.65f, 0.65f, new Color(0.12f, 0.13f, 0.15f), null, 0.03f);
+                if (KitModel(root, "Leisure", "Fountain", new Vector3(x, groundTop, 0f)) == null)   // a stone-kerbed grate, jets at x 0 and +-0.45
+                {
+                    StreetBuilder.Patch(root, "Grate", x - 0.75f, x + 0.75f, groundTop, -0.75f, 0.75f, new Color(0.3f, 0.32f, 0.36f), null, 0.02f);
+                    for (float gx = x - 0.6f; gx <= x + 0.61f; gx += 0.2f)
+                        StreetBuilder.Patch(root, "GrateSlot", gx - 0.04f, gx + 0.04f, groundTop, -0.65f, 0.65f, new Color(0.12f, 0.13f, 0.15f), null, 0.03f);
+                }
 
                 var go = new GameObject("Fountain");
                 go.transform.SetParent(root, false);
@@ -1822,6 +1873,11 @@ namespace DribbleToSchool.EditorTools
             /// <summary>A target the ball must hit (accuracy challenge).</summary>
             public ChallengeTarget Target(Vector2 position, bool onPost = true, float groundTop = 0f)
             {
+                if (onPost && HasKitModel("Leisure", "Target"))
+                {
+                    var kitTarget = KitTarget(position, groundTop);
+                    if (kitTarget != null) return kitTarget;
+                }
                 if (onPost)
                 {
                     // On a post behind the kid's line, with a bracket out to the board.
@@ -1862,6 +1918,44 @@ namespace DribbleToSchool.EditorTools
             }
 
             /// <summary>A slalom gate: Low = keep the ball under the bar; Hoop = loft it through.</summary>
+            /// <summary>
+            /// The Leisure kit's target on a post: the post stretched from the ground to the board, and
+            /// the board and its face (tinted when hit) on the target object, so they pop with it.
+            /// </summary>
+            ChallengeTarget KitTarget(Vector2 position, float groundTop)
+            {
+                var model = KitModel(root, "Leisure", "Target", new Vector3(position.x, groundTop, 0f));
+                if (model == null) return null;
+                Transform post = FindDeep(model, "Post"), board = FindDeep(model, "Board"), face = FindDeep(model, "Face");
+                if (post == null || board == null || face == null || face.GetComponent<MeshRenderer>() == null)
+                {
+                    Object.DestroyImmediate(model.gameObject);
+                    return null;
+                }
+                var go = new GameObject("Target");
+                go.transform.SetParent(root, false);
+                go.transform.position = position;
+                var col = go.AddComponent<CircleCollider2D>();
+                col.isTrigger = true;
+                col.radius = 0.45f;
+                // The board's centre is 2 m up in the model; move board and face to the target's height.
+                float lift = position.y - board.position.y;
+                foreach (var t in new[] { board, face })
+                {
+                    t.position += Vector3.up * lift;
+                    t.SetParent(go.transform, true);
+                }
+                // Stretch the post (origin on the ground) through a level pivot, whatever its own axes.
+                var stretch = new GameObject("PostStretch").transform;
+                stretch.SetParent(model, false);
+                stretch.position = new Vector3(position.x, groundTop, 0f);
+                post.SetParent(stretch, true);
+                stretch.localScale = new Vector3(1f, Mathf.Max(0.3f, position.y - groundTop) / 2f, 1f);
+                var target = go.AddComponent<ChallengeTarget>();
+                target.face = face.GetComponent<MeshRenderer>();
+                return target;
+            }
+
             public SlalomGate SlalomGate(float x, SlalomGate.Kind kind, float groundTop = 0f)
             {
                 var go = new GameObject(kind == Challenges.SlalomGate.Kind.Low ? "LowGate" : "Hoop");
@@ -1874,9 +1968,18 @@ namespace DribbleToSchool.EditorTools
                 if (kind == Challenges.SlalomGate.Kind.Low)
                 {
                     gate.height = 0.7f;
-                    // A low bar across the street on two posts.
+                    // A low bar across the street on two posts (slalom poles with flags, from the Leisure kit).
                     foreach (float z in new[] { -0.9f, 0.9f })
-                        flags.Add(Bar(go.transform, "Post", new Vector3(0f, 0.45f, z), new Vector3(0.08f, 0.9f, 0.08f)));
+                    {
+                        var pole = KitModel(go.transform, "Leisure", "SlalomFlag", new Vector3(x, groundTop, z));
+                        Transform pennant = pole != null ? FindDeep(pole, "Flag") : null;
+                        if (pennant != null && pennant.GetComponent<Renderer>() != null) flags.Add(pennant.GetComponent<Renderer>());
+                        else
+                        {
+                            if (pole != null) Object.DestroyImmediate(pole.gameObject);
+                            flags.Add(Bar(go.transform, "Post", new Vector3(0f, 0.45f, z), new Vector3(0.08f, 0.9f, 0.08f)));
+                        }
+                    }
                     flags.Add(Bar(go.transform, "Bar", new Vector3(0f, 0.85f, 0f), new Vector3(0.08f, 0.08f, 1.9f)));
                 }
                 else
@@ -1934,6 +2037,14 @@ namespace DribbleToSchool.EditorTools
                 col.size = new Vector2(1.2f, 0.4f);
                 var visual = new GameObject("Visual").transform;
                 visual.SetParent(go.transform, false);
+                if (HasKitModel("Leisure", "Trampoline"))
+                {
+                    // The Leisure kit's garden trampoline, its feet on the ground (the squash keeps them planted).
+                    visual.localPosition = new Vector3(0f, -0.2f, 0f);
+                    KitModel(visual, "Leisure", "Trampoline", visual.position);
+                    go.AddComponent<Hazards.Springboard>().visual = visual;
+                    return;
+                }
                 visual.localPosition = new Vector3(0f, -0.14f, 0f);
                 // A small round garden trampoline: a black jumping mat inside a padded rim, on short legs.
                 Cylinder(visual, "Legs", new Vector3(0f, 0.02f, 0f), new Vector3(0f, 0.2f, 0f), 0.66f, new Color(0.35f, 0.36f, 0.4f), 0.6f);
@@ -2144,6 +2255,15 @@ namespace DribbleToSchool.EditorTools
                 {
                     // Flags stand at the far kerb, beside the line the kid crosses.
                     float flagZ = StreetBuilder.PathHalf - 0.15f;
+                    var flagModel = KitModel(go.transform, "Leisure", "CheckpointFlag", new Vector3(x, groundTop, flagZ));
+                    Transform pennant = flagModel != null ? FindDeep(flagModel, "Flag") : null;
+                    if (pennant != null && pennant.GetComponent<MeshRenderer>() != null)
+                    {
+                        cp.flag = pennant.GetComponent<MeshRenderer>();    // white, tinted by Checkpoint
+                        checkpoints.Add(cp);
+                        return cp;
+                    }
+                    if (flagModel != null) Object.DestroyImmediate(flagModel.gameObject);
                     Decor("FlagPole", new Vector2(x, groundTop + 1.14f), new Vector2(0.08f, 2f), ObstacleColor, -1f, flagZ);
                     var flag = Decor("Flag", new Vector2(x + 0.31f, groundTop + 1.94f), new Vector2(0.55f, 0.35f), Color.white, 0.03f, flagZ);
                     cp.flag = flag.GetComponent<MeshRenderer>();
@@ -2301,6 +2421,8 @@ namespace DribbleToSchool.EditorTools
             {
                 Vector2 boardSize;
                 var go = SignBoard(text, position, out boardSize);
+                var posts = FindDeep(go.transform, "Posts");      // a hanging board has no posts
+                if (posts != null) Object.DestroyImmediate(posts.gameObject);
                 float bottom = position.y - boardSize.y * 0.5f;
                 float offset = boardSize.x * 0.5f - 0.3f;
                 foreach (float side in new[] { -offset, offset })
@@ -2422,6 +2544,18 @@ namespace DribbleToSchool.EditorTools
 
                 // Posts sink a little into the ground; the grass strip (drawn on top) hides the joint.
                 float postBottom = groundTop - 0.25f;
+                var kitPosts = FindDeep(sign, "Posts");
+                if (kitPosts != null)
+                {
+                    // The kit's posts run from their foot up to the board's middle: stretch them from the ground.
+                    var stretch = new GameObject("PostsStretch").transform;
+                    stretch.SetParent(sign, false);
+                    stretch.position = new Vector3(pos.x, postBottom, kitPosts.position.z);
+                    kitPosts.position = new Vector3(kitPosts.position.x, postBottom, kitPosts.position.z);
+                    kitPosts.SetParent(stretch, true);
+                    stretch.localScale = new Vector3(boardSize.x / 1.8f, (pos.y - postBottom) / 1.45f, 1f);
+                    return;
+                }
                 float height = boardBottom - postBottom + 0.1f;
                 Color wood = new Color(0.55f, 0.4f, 0.3f);
                 var legs = twoLegs ? new[] { -legOffset, legOffset } : new[] { 0f };
@@ -2482,6 +2616,24 @@ namespace DribbleToSchool.EditorTools
                 int longest = 0;
                 foreach (var l in lines) longest = Mathf.Max(longest, l.Length);
                 boardSize = new Vector2(longest * 0.135f + 0.6f, lines.Length * 0.3f + 0.35f);
+                if (HasKitModel("Leisure", "SignBoard"))
+                {
+                    // The Leisure kit's wooden notice board (1.8 x 0.9 m, its middle 1.45 m above the
+                    // model's foot), stretched about its middle to fit the text. PlantSign stretches its
+                    // posts down to the ground once the layout is known.
+                    var model = KitModel(go.transform, "Leisure", "SignBoard", go.transform.position + new Vector3(0f, -1.45f, 0.03f));
+                    Transform kitBoard = model != null ? FindDeep(model, "Board") : null;
+                    if (kitBoard != null)
+                    {
+                        var stretch = new GameObject("BoardStretch").transform;
+                        stretch.SetParent(go.transform, false);
+                        stretch.localPosition = new Vector3(0f, 0f, 0.03f);
+                        kitBoard.SetParent(stretch, true);
+                        stretch.localScale = new Vector3(boardSize.x / 1.8f, boardSize.y / 0.9f, 1f);
+                        return go;
+                    }
+                    if (model != null) Object.DestroyImmediate(model.gameObject);
+                }
                 var board = new GameObject("SignBoard");
                 board.transform.SetParent(go.transform, false);
                 board.transform.localPosition = new Vector3(0f, 0f, 0.03f);

@@ -865,26 +865,44 @@ namespace DribbleToSchool.EditorTools
                 LifeguardTower(root, x, GroundAt(track, x), 7.4f);
                 towers.Add(x);
             }
-            for (float x = x0 + 8f; x < x1; x += Rand(rng, 10f, 18f))
+            Color[] canopy = { new Color(0.9f, 0.3f, 0.28f), new Color(0.25f, 0.5f, 0.85f), new Color(1f, 0.75f, 0.2f), new Color(0.3f, 0.66f, 0.62f) };
+            Color[] towels = { new Color(0.95f, 0.55f, 0.6f), new Color(0.45f, 0.75f, 0.9f), new Color(1f, 0.85f, 0.35f), new Color(0.55f, 0.8f, 0.55f) };
+            bool beachKit = LevelBuildKit.HasKitModel("Leisure", "Parasol");
+            for (float x = x0 + 8f; x < x1; x += beachKit ? Rand(rng, 5f, 11f) : Rand(rng, 10f, 18f))
             {
                 float gy = GroundAt(track, x), z = Rand(rng, 3.4f, 5.2f);
+                if (beachKit)
+                {
+                    if (towers.Any(t => Mathf.Abs(t - x) < 3f)) continue;
+                    // A parasol leaning a little over a towel; now and then a cool box, or a sandcastle
+                    // with a bucket and spade.
+                    var parasolModel = Model(root, "Leisure", "Parasol", x, gy, z, Rand(rng, 0f, 360f), 1f, canopy[rng.Next(canopy.Length)]);
+                    if (parasolModel != null) parasolModel.rotation = Quaternion.Euler(Rand(rng, -7f, 7f), 0f, Rand(rng, -7f, 7f)) * parasolModel.rotation;
+                    Model(root, "Leisure", "BeachTowel", x + Rand(rng, -0.3f, 0.3f), gy, z - 0.4f, 90f + Rand(rng, -15f, 15f), 1f, towels[rng.Next(towels.Length)]);
+                    if (rng.NextDouble() < 0.4)
+                        Model(root, "Leisure", "CoolBox", x + 0.9f, gy, z + 0.3f, Rand(rng, -25f, 25f), 1f, canopy[rng.Next(canopy.Length)]);
+                    if (rng.NextDouble() < 0.3)
+                    {
+                        Model(root, "Leisure", "SandCastle", x + Rand(rng, 1.3f, 1.8f), gy, z - Rand(rng, 1f, 1.6f), Rand(rng, -20f, 20f));
+                        Model(root, "Leisure", "BucketSpade", x + Rand(rng, 2.1f, 2.5f), gy, z - Rand(rng, 0.8f, 1.3f), Rand(rng, 0f, 360f));
+                    }
+                    continue;
+                }
                 var go = new GameObject("Parasol");
                 go.transform.SetParent(root, false);
                 go.transform.position = new Vector3(x, gy, z);
                 var parasol = go.AddComponent<ParasolShape>();
-                Color[] canopy = { new Color(0.9f, 0.3f, 0.28f), new Color(0.25f, 0.5f, 0.85f), new Color(1f, 0.75f, 0.2f) };
                 parasol.colorA = canopy[rng.Next(canopy.Length)];
                 parasol.lean = Rand(rng, -9f, 9f);
                 go.GetComponent<MeshRenderer>().sharedMaterial = Art.solid;
                 parasol.Rebuild();
                 // A towel in its shade, and sometimes a cool box.
-                Color[] towels = { new Color(0.95f, 0.55f, 0.6f), new Color(0.45f, 0.75f, 0.9f), new Color(1f, 0.85f, 0.35f) };
                 Solid(root, "Towel", new Vector3(x + Rand(rng, -0.3f, 0.3f), gy + 0.008f, z - 0.4f), new Vector3(0.8f, 0.016f, 1.7f), towels[rng.Next(towels.Length)]);
                 if (rng.NextDouble() < 0.4)
                     Solid(root, "CoolBox", new Vector3(x + 0.9f, gy + 0.18f, z + 0.3f), new Vector3(0.55f, 0.36f, 0.38f), new Color(0.3f, 0.55f, 0.85f));
             }
             bool rockModels = LevelBuildKit.HasKitModel("Terrain", "RockCluster");
-            for (float x = x0 + 15f; x < x1; x += Rand(rng, 22f, 38f))
+            for (float x = x0 + 15f; x < x1; x += rockModels ? Rand(rng, 12f, 24f) : Rand(rng, 22f, 38f))
             {
                 // Rocks at the water's edge, darker where the sea wets them.
                 float gy = GroundAt(track, x) - 0.12f, s = Rand(rng, 0.8f, 1.6f);
@@ -909,7 +927,7 @@ namespace DribbleToSchool.EditorTools
             }
             // Palms in ones, twos and threes behind the parasols, clear of the lifeguard towers.
             if (LevelBuildKit.HasKitModel("Plants", "Palm"))
-                for (float x = x0 + Rand(rng, 5f, 20f); x < x1; x += Rand(rng, 30f, 55f))
+                for (float x = x0 + Rand(rng, 5f, 15f); x < x1; x += Rand(rng, 16f, 32f))
                 {
                     int n = rng.Next(1, 4);
                     for (int k = 0; k < n; k++)
@@ -923,8 +941,14 @@ namespace DribbleToSchool.EditorTools
             // Tufts of beach grass in the soft sand nearer the camera.
             if (LevelBuildKit.HasKitModel("Plants", "DuneGrass"))
             {
-                for (float x = x0; x < x1; x += Rand(rng, 2.5f, 7f))
-                    Plant(root, "DuneGrass", null, x, GroundAt(track, x), Rand(rng, -6.5f, -2.4f), Rand(rng, 0.7f, 1.3f), 1f, -50, rng);
+                for (float x = x0; x < x1; x += Rand(rng, 1.2f, 4f))
+                {
+                    // Dune grass in little drifts, a clump or two at a time.
+                    float z = Rand(rng, -6.5f, -2.4f);
+                    int clumps = rng.Next(1, 4);
+                    for (int k = 0; k < clumps; k++)
+                        Plant(root, "DuneGrass", null, x + k * Rand(rng, 0.5f, 0.9f), GroundAt(track, x), z + Rand(rng, -0.4f, 0.4f), Rand(rng, 0.7f, 1.4f), 1f, -50, rng);
+                }
                 Headlands(root, rng, x0, x1, sea);
                 return;
             }
@@ -975,6 +999,7 @@ namespace DribbleToSchool.EditorTools
         /// <summary>A white wooden lifeguard tower: legs and braces, a platform, a hut with a red roof, a ladder and a flag.</summary>
         static void LifeguardTower(Transform root, float x, float gy, float z)
         {
+            if (Model(root, "Leisure", "LifeguardTower", x, gy, z) != null) return;
             Color white = new Color(0.96f, 0.96f, 0.94f), red = new Color(0.85f, 0.25f, 0.22f), dark = new Color(0.3f, 0.35f, 0.42f);
             const float deck = 2.6f;
             foreach (float dx in new[] { -0.75f, 0.75f })
@@ -1039,11 +1064,14 @@ namespace DribbleToSchool.EditorTools
         {
             Color hedge = new Color(0.28f, 0.5f, 0.3f);
             bool plants = LevelBuildKit.HasKitModel("Plants", "Broadleaf");
+            int segment = 0;
             for (float x = x0; x < x1;)
             {
                 float w = Rand(rng, 6f, 10f), skip;
                 if (Blocked(track, x, x + w, out skip)) { x = skip; continue; }
                 float cx = x + w * 0.5f, gy = GroundAt(track, cx) + 0.04f;
+                // A lamp in every other gap between the hedges.
+                if (segment++ % 2 == 0) Model(root, "Leisure", "ParkLamp", x, GroundAt(track, x) + 0.04f, PropertyZ - 0.1f);
                 if (!Row(root, "Plants", "HedgeBlock2", cx - w * 0.5f + 0.6f, cx + w * 0.5f - 0.6f, gy, PropertyZ + 0.4f))
                     Solid(root, "Hedge", new Vector3(cx, gy + 0.5f, PropertyZ + 0.4f), new Vector3(w - 1.2f, 1f, 0.8f), hedge);
                 ContactShadow(root, cx - w * 0.5f + 0.6f, cx + w * 0.5f - 0.6f, gy, PropertyZ - 0.25f, PropertyZ);
@@ -1057,10 +1085,11 @@ namespace DribbleToSchool.EditorTools
                     Solid(root, "Bench", new Vector3(cx + 1.5f, gy + 0.25f, PropertyZ - 0.6f), new Vector3(1.8f, 0.5f, 0.5f), new Color(0.6f, 0.42f, 0.3f));
                 x += w;
             }
+            var clearings = ParkFeatures(track, root, rng, x0, x1);
             for (float x = x0; x < x1; x += Rand(rng, 4f, 8f))
             {
                 float skip;
-                if (Blocked(track, x - 3f, x + 3f, out skip)) continue;
+                if (Blocked(track, x - 3f, x + 3f, out skip) || clearings.Any(c => x > c.x - 3f && x < c.y + 3f)) continue;
                 double r = rng.NextDouble();
                 if (plants)
                 {
@@ -1077,7 +1106,7 @@ namespace DribbleToSchool.EditorTools
                 for (float x = x0; x < x1; x += Rand(rng, 4f, 9f))
                 {
                     float skip;
-                    if (Blocked(track, x - 1.5f, x + 1.5f, out skip)) continue;
+                    if (Blocked(track, x - 1.5f, x + 1.5f, out skip) || clearings.Any(c => x > c.x - 1.5f && x < c.y + 1.5f)) continue;
                     Plant(root, rng.NextDouble() < 0.6 ? "BushWide" : "BushRound", null, x, GroundAt(track, x) + 0.04f, Rand(rng, 3.5f, 6f), Rand(rng, 1f, 1.5f), 1f, -58, rng);
                 }
                 string[] wood = { "BroadleafLarge", "Broadleaf", "ConiferTall", "BroadleafLarge", "ConiferMid", "Birch" };
@@ -1099,6 +1128,46 @@ namespace DribbleToSchool.EditorTools
         /// mountain range, each layer further into the warm haze (Terrain kit); the painted hills
         /// strip if the kit hasn't got them.
         /// </summary>
+        /// <summary>
+        /// Clearings on the park lawn every so often (Leisure kit): a playground, a duck pond fringed
+        /// with reeds, a bandstand, or picnic tables. Returns their x ranges, where trees stay out.
+        /// </summary>
+        static List<Vector2> ParkFeatures(LevelBuildKit.TrackBuilder track, Transform root, System.Random rng, float x0, float x1)
+        {
+            var clearings = new List<Vector2>();
+            if (!LevelBuildKit.HasKitModel("Leisure", "Slide")) return clearings;
+            int kind = rng.Next(4);
+            for (float x = x0 + Rand(rng, 10f, 30f); x < x1; x += Rand(rng, 45f, 75f))
+            {
+                float skip;
+                if (Blocked(track, x - 6f, x + 6f, out skip)) continue;
+                float gy = GroundAt(track, x) + 0.04f;
+                switch (kind++ % 4)
+                {
+                    case 0:
+                        Model(root, "Leisure", "Sandpit", x - 0.5f, gy, 6.8f, Rand(rng, -10f, 10f));
+                        Model(root, "Leisure", "Slide", x - 3.8f, gy, 8.8f, Rand(rng, -20f, 20f));
+                        Model(root, "Leisure", "SwingSet", x + 1.2f, gy, 10f, Rand(rng, -10f, 10f));
+                        Model(root, "Leisure", "SeeSaw", x + 4.6f, gy, 7.4f, Rand(rng, -25f, 25f));
+                        break;
+                    case 1:
+                        Model(root, "Leisure", "DuckPond", x, gy - 0.02f, 9f, Rand(rng, -10f, 10f), Rand(rng, 1.3f, 1.6f));
+                        for (int k = 0; k < 4; k++)
+                            Plant(root, "Reeds", null, x + Rand(rng, -3.2f, 3.2f), gy, 9f + (k % 2 == 0 ? -1f : 1f) * Rand(rng, 1.6f, 2.2f), Rand(rng, 0.9f, 1.3f), 1f, -58, rng);
+                        break;
+                    case 2:
+                        Model(root, "Leisure", "Gazebo", x, gy, 11f, Rand(rng, -20f, 20f));
+                        break;
+                    default:
+                        Model(root, "Leisure", "PicnicTable", x - 1.8f, gy, 6.8f, Rand(rng, -15f, 15f));
+                        Model(root, "Leisure", "PicnicTable", x + 2f, gy, 8.2f, Rand(rng, -15f, 15f));
+                        break;
+                }
+                clearings.Add(new Vector2(x - 6f, x + 6f));
+            }
+            return clearings;
+        }
+
         static void DistantHills(LevelBuildKit.TrackBuilder track, Transform root, float x0, float x1)
         {
             int ch = LevelBuildKit.Chapter;
