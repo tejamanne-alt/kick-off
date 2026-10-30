@@ -39,19 +39,9 @@ namespace DribbleToSchool.Audio
 #endif
         }
 
-#if UNITY_ANDROID && !UNITY_EDITOR
-        // Referencing Handheld.Vibrate makes Unity add the VIBRATE permission on Android.
-#pragma warning disable 0649
-        static bool forcePermission;
-#pragma warning restore 0649
-#endif
-
         public static void Impact(Strength strength)
         {
             if (!GameSettings.HapticsEnabled) return;
-#if UNITY_ANDROID && !UNITY_EDITOR
-            if (forcePermission) Handheld.Vibrate();
-#endif
 #if UNITY_IOS && !UNITY_EDITOR
             DTS_HapticImpact((int)strength);
 #elif UNITY_ANDROID && !UNITY_EDITOR
