@@ -7,7 +7,9 @@
 #                            v 0 at the shoulder -> 1 at the tip
 #   wingB                    value map of the butterfly's wing (veins, border, spots), mapped by the
 #                            wing's own planar coordinates (see wing_outline())
-#   fur                      soft painted fur strokes (value map, mostly near white), projected
+#   dog_face, cat_face       painted mouths and face stripes (side / head projections)
+#   cat_side, rings          tabby stripes on the flanks, rings along a tail
+#   pigeon_side, crab_face   the pigeon's wing bars, the crab's smile
 #   white                    the plain corner at UV (0.97, 0.03) for flat-coloured parts
 # Value maps are near-white greyscale so a recoloured part keeps its pattern.
 import math
@@ -21,7 +23,6 @@ REG = {
     'nose': (0.375, 0.875, 0.5, 1.0),
     'feather': (0.0, 0.5, 0.5, 0.75),
     'wingB': (0.5, 0.5, 1.0, 1.0),
-    'fur': (0.0, 0.0, 0.25, 0.25),
     'dog_face': (0.5, 0.25, 0.75, 0.5),
     'cat_face': (0.75, 0.25, 1.0, 0.5),
     'cat_side': (0.25, 0.25, 0.5, 0.5),
@@ -211,29 +212,6 @@ def _paint_feather(img):
     img[sl] = sub
 
 
-def _paint_fur(img, rng):
-    sl, U, V = _px('fur')
-    h, w = U.shape
-    sub = np.ones(U.shape + (3,), np.float32)
-    n1 = noise(h, w, (24, 24), rng); n2 = noise(h, w, (64, 64), rng)
-    sub *= (0.94 + 0.06 * (0.6 * n1 + 0.4 * n2))[..., None]
-    # short soft strokes
-    for _ in range(900):
-        x, y = rng.uniform(0, w), rng.uniform(0, h)
-        L = rng.uniform(6, 14); a = rng.uniform(-0.5, 0.5) + math.pi * 0.5
-        dx, dy = math.cos(a) * L, math.sin(a) * L
-        x0, x1 = int(max(0, min(x, x + dx) - 3)), int(min(w, max(x, x + dx) + 3))
-        y0, y1 = int(max(0, min(y, y + dy) - 3)), int(min(h, max(y, y + dy) + 3))
-        if x1 <= x0 or y1 <= y0:
-            continue
-        yy, xx = np.mgrid[y0:y1, x0:x1]
-        d = _seg_dist(xx, yy, x, y, x + dx, y + dy)
-        m = ss(1.6, 0.4, d) * rng.uniform(0.25, 0.5)
-        col = (0.86, 0.86, 0.86) if rng.random() < 0.6 else (1.0, 1.0, 1.0)
-        sub[y0:y1, x0:x1] = sub[y0:y1, x0:x1] * (1 - m[..., None]) + np.array(col)[None, None] * m[..., None]
-    img[sl] = sub
-
-
 # ---------------------------------------------------------------- face decals (side projections)
 # A head's vertices map by their side projection (x, z) into a decal region (both flanks share
 # it); the decal is white except for painted lines, so it multiplies over any fur colour.
@@ -294,7 +272,6 @@ def ring_uv(t_of, region='rings'):
 
 CAT_FACE = {'z0': -0.07, 'z1': 0.11}            # head-local heights covered by the decal
 CAT_SIDE = {'x0': -0.17, 'x1': 0.12, 'z0': 0.0, 'z1': 0.3}
-DOG_FUR = {'x0': -0.34, 'x1': 0.3, 'z0': -0.02, 'z1': 0.62}
 PIGEON_SIDE = {'x0': -0.2, 'x1': 0.1, 'z0': 0.05, 'z1': 0.22}
 CRAB_FACE = {'x0': -0.08, 'x1': 0.08, 'z0': 0.02, 'z1': 0.12}
 
@@ -394,7 +371,6 @@ def paint_atlas(path):
     _paint_nose(img)
     _paint_feather(img)
     _paint_wing(img)
-    _paint_fur(img, rng)
     _paint_dog_face(img)
     _paint_cat(img)
     _paint_crab(img)
