@@ -676,6 +676,9 @@ namespace DribbleToSchool.EditorTools
             int ch = LevelBuildKit.Chapter;
             var rng = new System.Random(ch * 131 + Mathf.RoundToInt(track.MaxX));
             float x0 = track.MinX - 50f, x1 = track.MaxX + 50f;
+            // The animals live outside the street root: its static batching would freeze their moving parts.
+            critters = new GameObject("Critters").transform;
+            wallTops.Clear();
 
             switch (ch)
             {
@@ -686,6 +689,107 @@ namespace DribbleToSchool.EditorTools
                 default: Suburb(track, root, rng, x0, x1); break;
             }
             if (ch != 3) Poles(track, root, x0, x1);
+            Wildlife(track, new System.Random(ch * 389 + Mathf.RoundToInt(x0)), x0, x1);
+        }
+
+        // ---------------------------------------------------------------- animals
+
+        static Transform critters;
+        /// <summary>The kit block walls' tops (from x, to x, height), where a cat may sit.</summary>
+        static readonly List<Vector3> wallTops = new List<Vector3>();
+
+        /// <summary>
+        /// An animal from the Animals kit at (x, y, z) (head toward +x at yaw 0), on the critters root,
+        /// ready for idle motions. Null if the kit hasn't got it.
+        /// </summary>
+        static CritterIdle Critter(string model, float x, float y, float z, float yaw = 0f, float scale = 1f)
+        {
+            var t = Model(critters, "Animals", model, x, y, z, yaw, scale);
+            return t != null ? t.gameObject.AddComponent<CritterIdle>() : null;
+        }
+
+        /// <summary>An idle swing of one of the animal's parts (axis in the part's own space, degrees, radians per second).</summary>
+        static CritterIdle.Motion Swing(CritterIdle c, string part, Vector3 axis, float amplitude, float speed, float offset = 0f, float phase = 0f)
+        {
+            return new CritterIdle.Motion { part = LevelBuildKit.FindDeep(c.transform, part), axis = axis, amplitude = amplitude, speed = speed, offset = offset, phase = phase };
+        }
+
+        /// <summary>
+        /// The street's animals, by chapter: cats on garden walls and butterflies in the front gardens;
+        /// pigeons pecking on the market and city pavements; gulls on the sand and crabs at the water's
+        /// edge; butterflies and squirrels on the park lawn. Kept off the side streets and out of the
+        /// kid's lane.
+        /// </summary>
+        static void Wildlife(LevelBuildKit.TrackBuilder track, System.Random rng, float x0, float x1)
+        {
+            if (!LevelBuildKit.HasKitModel("Animals", "Pigeon")) return;
+            int ch = LevelBuildKit.Chapter;
+            float skip;
+            switch (ch)
+            {
+                case 2:
+                case 4:
+                    for (float x = x0; x < x1; x += Rand(rng, ch == 2 ? 14f : 24f, ch == 2 ? 26f : 40f))
+                    {
+                        if (Blocked(track, x - 2f, x + 2f, out skip)) continue;
+                        int n = rng.Next(2, 5);
+                        for (int k = 0; k < n; k++)
+                        {
+                            float px = x + Rand(rng, -1.2f, 1.2f);
+                            var pigeon = Critter("Pigeon", px, GroundAt(track, px), Rand(rng, 0.9f, 1.35f), rng.NextDouble() < 0.5 ? 0f : 180f + Rand(rng, -20f, 20f));
+                            if (pigeon != null) pigeon.motions = new[] { Swing(pigeon, "Head", Vector3.up, 22f, Rand(rng, 3f, 5f), 18f) };
+                        }
+                    }
+                    break;
+                case 3:
+                    for (float x = x0; x < x1; x += Rand(rng, 9f, 18f))
+                    {
+                        float gx = x + Rand(rng, -1f, 1f);
+                        Critter("SeagullStanding", gx, GroundAt(track, gx), Rand(rng, 2.6f, 5.4f), rng.NextDouble() < 0.5 ? Rand(rng, -30f, 30f) : 180f + Rand(rng, -30f, 30f));
+                    }
+                    for (float x = x0 + 6f; x < x1; x += Rand(rng, 18f, 30f))
+                    {
+                        var crab = Critter("Crab", x, GroundAt(track, x) - 0.1f, Rand(rng, 6.2f, 8.2f), Rand(rng, -20f, 20f));
+                        if (crab == null) continue;
+                        crab.motions = new[] { Swing(crab, "ClawL", Vector3.up, 27f, 3f, 8f), Swing(crab, "ClawR", Vector3.up, 27f, 3f, 8f, Mathf.PI) };
+                        crab.drift = new Vector3(0.4f, 0f, 0.05f);
+                        crab.driftSpeed = 1.2f;
+                    }
+                    break;
+                case 5:
+                    for (float x = x0; x < x1; x += Rand(rng, 8f, 16f))
+                        Butterfly(rng, x, GroundAt(track, x) + Rand(rng, 0.6f, 1.6f), Rand(rng, 2.5f, 6f));
+                    for (float x = x0 + 10f; x < x1; x += Rand(rng, 25f, 45f))
+                    {
+                        var squirrel = Critter("Squirrel", x, GroundAt(track, x) + 0.04f, Rand(rng, 3.5f, 7f), rng.NextDouble() < 0.5 ? 10f : 170f);
+                        if (squirrel != null) squirrel.motions = new[] { Swing(squirrel, "Tail", Vector3.up, 20f, 2.2f, 5f) };
+                    }
+                    break;
+                default:
+                    // Cats sitting on garden walls, swishing their tails; butterflies over the front gardens.
+                    foreach (var top in wallTops)
+                    {
+                        if (top.y - top.x < 1f || rng.NextDouble() > 0.12) continue;
+                        var cat = Critter("Cat", Rand(rng, top.x, top.y), top.z, PropertyZ + 0.15f, Rand(rng, -10f, 10f));
+                        if (cat != null) cat.motions = new[] { Swing(cat, "Tail", Vector3.up, 17f, 1.6f, 3f) };
+                    }
+                    for (float x = x0; x < x1; x += Rand(rng, 14f, 26f))
+                    {
+                        if (Blocked(track, x - 1f, x + 1f, out skip)) continue;
+                        Butterfly(rng, x, GroundAt(track, x) + Rand(rng, 1.8f, 2.6f), PropertyZ + Rand(rng, 0.6f, 1.2f));
+                    }
+                    break;
+            }
+        }
+
+        /// <summary>A butterfly flitting about one spot, its wings beating fast.</summary>
+        static void Butterfly(System.Random rng, float x, float y, float z)
+        {
+            var b = Critter("Butterfly", x, y, z, Rand(rng, 0f, 360f), 1.4f);
+            if (b == null) return;
+            b.motions = new[] { Swing(b, "WingL", Vector3.right, 38f, 55f, 38f), Swing(b, "WingR", Vector3.right, -38f, 55f, -38f) };
+            b.drift = new Vector3(0.9f, 0.3f, 0.5f);
+            b.driftSpeed = 1.6f;
         }
 
         static void Poles(LevelBuildKit.TrackBuilder track, Transform root, float x0, float x1)
@@ -827,6 +931,7 @@ namespace DribbleToSchool.EditorTools
             ContactShadow(root, a, b, gy, PropertyZ - 0.35f, PropertyZ + 0.02f);
             if (Row(root, "Street", "BlockWall2", a, b, gy, PropertyZ + 0.15f))
             {
+                wallTops.Add(new Vector3(a + 0.4f, b - 0.4f, gy + 1.6f));
                 // Square pillars at the gate and where the lot begins.
                 if (pillarA) Model(root, "Street", "WallPillar", a, gy, PropertyZ + 0.15f);
                 if (pillarB) Model(root, "Street", "WallPillar", b, gy, PropertyZ + 0.15f);
@@ -1258,7 +1363,18 @@ namespace DribbleToSchool.EditorTools
                         Model(root, "Leisure", "SeeSaw", x + 4.6f, gy, 7.4f, Rand(rng, -25f, 25f));
                         break;
                     case 1:
-                        Model(root, "Leisure", "DuckPond", x, gy - 0.02f, 9f, Rand(rng, -10f, 10f), Rand(rng, 1.3f, 1.6f));
+                        float pond = Rand(rng, 1.3f, 1.6f);
+                        Model(root, "Leisure", "DuckPond", x, gy - 0.02f, 9f, Rand(rng, -10f, 10f), pond);
+                        int ducks = rng.Next(2, 4);
+                        for (int k = 0; k < ducks; k++)
+                        {
+                            // Ducks on the water (its surface 4.5 cm up the pond model), dabbling as they drift.
+                            var duck = Critter("Duck", x + Rand(rng, -1.2f, 1.2f), gy - 0.02f + 0.045f * pond, 9f + Rand(rng, -0.5f, 0.5f), Rand(rng, 0f, 360f));
+                            if (duck == null) break;
+                            duck.motions = new[] { Swing(duck, "Head", Vector3.up, 12f, Rand(rng, 0.8f, 1.4f), 10f) };
+                            duck.drift = new Vector3(0.45f, 0.01f, 0.18f);
+                            duck.driftSpeed = 0.35f;
+                        }
                         for (int k = 0; k < 4; k++)
                             Plant(root, "Reeds", null, x + Rand(rng, -3.2f, 3.2f), gy, 9f + (k % 2 == 0 ? -1f : 1f) * Rand(rng, 1.6f, 2.2f), Rand(rng, 0.9f, 1.3f), 1f, -58, rng);
                         break;

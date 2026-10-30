@@ -1,0 +1,790 @@
+{
+ "kit": "Animals",
+ "atlas": "AnimalsAtlas.png",
+ "models": {
+  "Dog": {
+   "size": [
+    0.638,
+    0.258,
+    0.575
+   ],
+   "min": [
+    -0.292,
+    -0.128,
+    0.004
+   ],
+   "max": [
+    0.346,
+    0.13,
+    0.578
+   ],
+   "tris": 1960,
+   "parts": {
+    "1": [
+     0.8118,
+     0.5412,
+     0.3216
+    ],
+    "2": [
+     0.8314,
+     0.2784,
+     0.2314
+    ]
+   },
+   "origin": "on the ground",
+   "head": "+X",
+   "rig": {
+    "Body": {
+     "pivot": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "parent": "Dog",
+     "tris": 666
+    },
+    "Head": {
+     "pivot": [
+      0.129,
+      0.0,
+      0.3694
+     ],
+     "parent": "Dog",
+     "tris": 580,
+     "motion": "nod about Y, turn about Z"
+    },
+    "Tail": {
+     "pivot": [
+      -0.178,
+      0.0,
+      0.3311
+     ],
+     "parent": "Dog",
+     "tris": 142,
+     "motion": "wag about Z, lift about Y"
+    },
+    "LegFL": {
+     "pivot": [
+      0.0979,
+      0.057,
+      0.2492
+     ],
+     "parent": "Dog",
+     "tris": 114,
+     "motion": "swing about Y (fore-aft), +-30 deg"
+    },
+    "LegFR": {
+     "pivot": [
+      0.0979,
+      -0.057,
+      0.2492
+     ],
+     "parent": "Dog",
+     "tris": 114,
+     "motion": "swing about Y (fore-aft), +-30 deg"
+    },
+    "LegBL": {
+     "pivot": [
+      -0.1113,
+      0.057,
+      0.2581
+     ],
+     "parent": "Dog",
+     "tris": 100,
+     "motion": "swing about Y (fore-aft), +-30 deg"
+    },
+    "LegBR": {
+     "pivot": [
+      -0.1113,
+      -0.057,
+      0.2581
+     ],
+     "parent": "Dog",
+     "tris": 100,
+     "motion": "swing about Y (fore-aft), +-30 deg"
+    },
+    "EarL": {
+     "pivot": [
+      0.1691,
+      0.0783,
+      0.5322
+     ],
+     "parent": "Head",
+     "tris": 76,
+     "motion": "flop: rotate about X (out from the head), 0..30 deg"
+    },
+    "EarR": {
+     "pivot": [
+      0.1691,
+      -0.0783,
+      0.5322
+     ],
+     "parent": "Head",
+     "tris": 76,
+     "motion": "flop: rotate about X (out from the head), 0..30 deg"
+    }
+   },
+   "attach": {
+    "Front": {
+     "at": [
+      0,
+      -1,
+      0
+     ],
+     "parent": "Dog"
+    },
+    "Nose": {
+     "at": [
+      0.3474,
+      0.0,
+      0.4414
+     ],
+     "parent": "Head"
+    }
+   }
+  },
+  "Seagull": {
+   "size": [
+    0.508,
+    0.9,
+    0.164
+   ],
+   "min": [
+    -0.235,
+    -0.45,
+    -0.073
+   ],
+   "max": [
+    0.273,
+    0.45,
+    0.091
+   ],
+   "tris": 1316,
+   "parts": {
+    "1": [
+     0.6392,
+     0.6824,
+     0.7373
+    ],
+    "2": [
+     0.9569,
+     0.7686,
+     0.2667
+    ]
+   },
+   "origin": "body centre (flying)",
+   "head": "+X",
+   "wingspan": 0.9,
+   "rig": {
+    "Body": {
+     "pivot": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "parent": "Seagull",
+     "tris": 760
+    },
+    "WingL": {
+     "pivot": [
+      0.0,
+      0.03,
+      0.025
+     ],
+     "parent": "Seagull",
+     "tris": 278,
+     "motion": "flap about X (the body axis), -40..+40 deg"
+    },
+    "WingR": {
+     "pivot": [
+      0.0,
+      -0.03,
+      0.025
+     ],
+     "parent": "Seagull",
+     "tris": 278,
+     "motion": "flap about X (mirror of WingL)"
+    }
+   },
+   "attach": {
+    "Front": {
+     "at": [
+      0,
+      -1,
+      0
+     ],
+     "parent": "Seagull"
+    },
+    "Beak": {
+     "at": [
+      0.27,
+      0.0,
+      0.022
+     ],
+     "parent": "Body"
+    }
+   }
+  },
+  "SeagullStanding": {
+   "size": [
+    0.462,
+    0.157,
+    0.359
+   ],
+   "min": [
+    -0.24,
+    -0.078,
+    0.001
+   ],
+   "max": [
+    0.222,
+    0.078,
+    0.36
+   ],
+   "tris": 1220,
+   "parts": {
+    "1": [
+     0.6392,
+     0.6824,
+     0.7373
+    ],
+    "2": [
+     0.9569,
+     0.7686,
+     0.2667
+    ]
+   },
+   "origin": "on the ground",
+   "head": "+X",
+   "attach": {
+    "Front": {
+     "at": [
+      0,
+      -1,
+      0
+     ],
+     "parent": "SeagullStanding"
+    }
+   }
+  },
+  "Pigeon": {
+   "size": [
+    0.397,
+    0.161,
+    0.266
+   ],
+   "min": [
+    -0.224,
+    -0.08,
+    -0.001
+   ],
+   "max": [
+    0.173,
+    0.08,
+    0.265
+   ],
+   "tris": 1428,
+   "parts": {
+    "1": [
+     0.6039,
+     0.6392,
+     0.7098
+    ],
+    "2": [
+     0.3725,
+     0.6039,
+     0.4863
+    ]
+   },
+   "origin": "on the ground",
+   "head": "+X",
+   "rig": {
+    "Body": {
+     "pivot": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "parent": "Pigeon",
+     "tris": 806
+    },
+    "Head": {
+     "pivot": [
+      0.06,
+      0.0,
+      0.165
+     ],
+     "parent": "Pigeon",
+     "tris": 628,
+     "motion": "peck: pitch about Y, 0..70 deg nose-down; bob: slide along X"
+    }
+   },
+   "attach": {
+    "Front": {
+     "at": [
+      0,
+      -1,
+      0
+     ],
+     "parent": "Pigeon"
+    },
+    "Beak": {
+     "at": [
+      0.172,
+      0.0,
+      0.216
+     ],
+     "parent": "Head"
+    }
+   }
+  },
+  "Duck": {
+   "size": [
+    0.457,
+    0.202,
+    0.298
+   ],
+   "min": [
+    -0.199,
+    -0.101,
+    -0.044
+   ],
+   "max": [
+    0.258,
+    0.101,
+    0.254
+   ],
+   "tris": 1419,
+   "parts": {
+    "1": [
+     0.851,
+     0.8314,
+     0.7922
+    ],
+    "2": [
+     0.9255,
+     0.7765,
+     0.298
+    ]
+   },
+   "origin": "centre of the waterline (z = 0 is the water surface)",
+   "head": "+X",
+   "rig": {
+    "Body": {
+     "pivot": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "parent": "Duck",
+     "tris": 756
+    },
+    "Head": {
+     "pivot": [
+      0.095,
+      0.0,
+      0.1
+     ],
+     "parent": "Duck",
+     "tris": 682,
+     "motion": "dabble: pitch about Y, 0..45 deg bill-down; look: turn about Z"
+    }
+   },
+   "attach": {
+    "Front": {
+     "at": [
+      0,
+      -1,
+      0
+     ],
+     "parent": "Duck"
+    },
+    "Bill": {
+     "at": [
+      0.266,
+      0.0,
+      0.167
+     ],
+     "parent": "Head"
+    }
+   }
+  },
+  "Cat": {
+   "size": [
+    0.381,
+    0.192,
+    0.421
+   ],
+   "min": [
+    -0.243,
+    -0.097,
+    0.003
+   ],
+   "max": [
+    0.138,
+    0.095,
+    0.423
+   ],
+   "tris": 1422,
+   "parts": {
+    "1": [
+     0.8784,
+     0.5412,
+     0.298
+    ],
+    "2": [
+     0.298,
+     0.5176,
+     0.7765
+    ]
+   },
+   "origin": "on the ground (the wall top)",
+   "head": "+X (turned 28 deg toward the camera)",
+   "rig": {
+    "Body": {
+     "pivot": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "parent": "Cat",
+     "tris": 1266
+    },
+    "Tail": {
+     "pivot": [
+      -0.12,
+      0.0,
+      0.032
+     ],
+     "parent": "Cat",
+     "tris": 168,
+     "motion": "swish about Y (in the camera plane), -15..+20 deg; flick about Z"
+    }
+   },
+   "attach": {
+    "Front": {
+     "at": [
+      0,
+      -1,
+      0
+     ],
+     "parent": "Cat"
+    }
+   }
+  },
+  "Crab": {
+   "size": [
+    0.356,
+    0.208,
+    0.186
+   ],
+   "min": [
+    -0.178,
+    -0.122,
+    0.002
+   ],
+   "max": [
+    0.178,
+    0.086,
+    0.188
+   ],
+   "tris": 1468,
+   "parts": {
+    "1": [
+     0.9098,
+     0.4157,
+     0.2471
+    ]
+   },
+   "origin": "on the ground",
+   "head": "-Y (faces the camera; scuttles sideways along X)",
+   "rig": {
+    "Body": {
+     "pivot": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "parent": "Crab",
+     "tris": 1008
+    },
+    "ClawL": {
+     "pivot": [
+      0.07,
+      -0.045,
+      0.062
+     ],
+     "parent": "Crab",
+     "tris": 230,
+     "motion": "wave/snap: rotate about Y (the depth axis, in the camera plane), -20..+35 deg"
+    },
+    "ClawR": {
+     "pivot": [
+      -0.07,
+      -0.045,
+      0.062
+     ],
+     "parent": "Crab",
+     "tris": 230,
+     "motion": "wave/snap: rotate about Y (the depth axis, in the camera plane), -20..+35 deg"
+    }
+   },
+   "attach": {
+    "Front": {
+     "at": [
+      0,
+      -1,
+      0
+     ],
+     "parent": "Crab"
+    }
+   }
+  },
+  "Butterfly": {
+   "size": [
+    0.139,
+    0.225,
+    0.045
+   ],
+   "min": [
+    -0.078,
+    -0.112,
+    -0.009
+   ],
+   "max": [
+    0.061,
+    0.112,
+    0.036
+   ],
+   "tris": 1258,
+   "parts": {
+    "1": [
+     0.9529,
+     0.6353,
+     0.2353
+    ]
+   },
+   "origin": "body centre (flying)",
+   "head": "+X",
+   "rig": {
+    "Body": {
+     "pivot": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "parent": "Butterfly",
+     "tris": 466
+    },
+    "WingL": {
+     "pivot": [
+      0.0,
+      0.0026,
+      0.0026
+     ],
+     "parent": "Butterfly",
+     "tris": 396,
+     "motion": "flap about X (the body axis), 0..+80 deg up"
+    },
+    "WingR": {
+     "pivot": [
+      0.0,
+      -0.0026,
+      0.0026
+     ],
+     "parent": "Butterfly",
+     "tris": 396,
+     "motion": "flap about X (mirror of WingL)"
+    }
+   },
+   "attach": {
+    "Front": {
+     "at": [
+      0,
+      -1,
+      0
+     ],
+     "parent": "Butterfly"
+    }
+   }
+  },
+  "Squirrel": {
+   "size": [
+    0.346,
+    0.115,
+    0.306
+   ],
+   "min": [
+    -0.198,
+    -0.058,
+    0.003
+   ],
+   "max": [
+    0.148,
+    0.058,
+    0.309
+   ],
+   "tris": 1342,
+   "parts": {
+    "1": [
+     0.7843,
+     0.4157,
+     0.2039
+    ]
+   },
+   "origin": "on the ground",
+   "head": "+X",
+   "rig": {
+    "Body": {
+     "pivot": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "parent": "Squirrel",
+     "tris": 992
+    },
+    "Tail": {
+     "pivot": [
+      -0.07,
+      0.0,
+      0.068
+     ],
+     "parent": "Squirrel",
+     "tris": 350,
+     "motion": "flick about Y, -15..+25 deg (up/back)"
+    }
+   },
+   "attach": {
+    "Front": {
+     "at": [
+      0,
+      -1,
+      0
+     ],
+     "parent": "Squirrel"
+    }
+   }
+  },
+  "Coin": {
+   "size": [
+    0.5,
+    0.1,
+    0.5
+   ],
+   "min": [
+    -0.25,
+    -0.05,
+    -0.25
+   ],
+   "max": [
+    0.25,
+    0.05,
+    0.25
+   ],
+   "tris": 584,
+   "parts": {
+    "1": [
+     0.949,
+     0.7098,
+     0.2275
+    ]
+   },
+   "origin": "centre",
+   "spin": "about the vertical axis (model Z)",
+   "attach": {
+    "Front": {
+     "at": [
+      0,
+      -1,
+      0
+     ],
+     "parent": "Coin"
+    }
+   }
+  },
+  "Sticker": {
+   "size": [
+    0.684,
+    0.09,
+    0.652
+   ],
+   "min": [
+    -0.342,
+    -0.07,
+    -0.326
+   ],
+   "max": [
+    0.342,
+    0.02,
+    0.326
+   ],
+   "tris": 520,
+   "parts": {
+    "1": [
+     0.9608,
+     0.549,
+     0.7216
+    ],
+    "2": [
+     1.0,
+     0.8784,
+     0.4784
+    ]
+   },
+   "origin": "centre",
+   "diameter": 0.7,
+   "attach": {
+    "Front": {
+     "at": [
+      0,
+      -1,
+      0
+     ],
+     "parent": "Sticker"
+    }
+   }
+  },
+  "Star": {
+   "size": [
+    0.492,
+    0.144,
+    0.47
+   ],
+   "min": [
+    -0.246,
+    -0.072,
+    -0.211
+   ],
+   "max": [
+    0.246,
+    0.072,
+    0.259
+   ],
+   "tris": 420,
+   "parts": {
+    "1": [
+     1.0,
+     0.8039,
+     0.251
+    ]
+   },
+   "origin": "centre",
+   "attach": {
+    "Front": {
+     "at": [
+      0,
+      -1,
+      0
+     ],
+     "parent": "Star"
+    }
+   }
+  }
+ },
+ "notes": {
+  "front": "-Y (Attach.Front at (0, -1, 0)). Animals are side-on with the head toward +X; the crab faces -Y.",
+  "axes": "model space: X head direction, Y depth (away from the camera), Z up. Parts have identity rest rotations.",
+  "parts": "0 fixed, 1 main colour (fur, feathers, wings, gold, sticker face), 2 secondary (collar, beak, sheen, heart)"
+ }
+}

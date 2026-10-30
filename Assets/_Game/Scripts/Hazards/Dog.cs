@@ -22,6 +22,11 @@ namespace DribbleToSchool.Hazards
         public Transform visual;
         [Tooltip("Leg pivots (at the hips and shoulders), swung while trotting.")]
         public Transform[] legs;
+        [Tooltip("The axis, in each leg's own space, the legs swing about (the kit's dog: up).")]
+        public Vector3 legAxis = Vector3.forward;
+        [Tooltip("Optional tail pivot, wagged (faster when chasing) about tailAxis in its own space.")]
+        public Transform tail;
+        public Vector3 tailAxis = Vector3.forward;
 
         public bool IsChasing { get; private set; }
         public event System.Action<Dog> StoleBall;
@@ -32,11 +37,17 @@ namespace DribbleToSchool.Hazards
         Vector3 visualBaseScale = Vector3.one;
         float facing = 1f;
         float stride;
+        Quaternion[] legRest;
+        Quaternion tailRest;
 
         void Awake()
         {
             startPosition = transform.position;
             if (visual != null) visualBaseScale = visual.localScale;
+            // Swing each part from its rest pose (model parts may come in rotated).
+            legRest = new Quaternion[legs != null ? legs.Length : 0];
+            for (int i = 0; i < legRest.Length; i++) legRest[i] = legs[i] != null ? legs[i].localRotation : Quaternion.identity;
+            if (tail != null) tailRest = tail.localRotation;
         }
 
         public override void ResetState()
@@ -91,9 +102,11 @@ namespace DribbleToSchool.Hazards
                 s.y = visualBaseScale.y * (1f + Mathf.Sin(stride * 2f) * 0.04f);
                 visual.localScale = s;
                 if (legs != null)
-                    for (int i = 0; i < legs.Length; i++)
+                    for (int i = 0; i < legs.Length && i < legRest.Length; i++)
                         if (legs[i] != null)
-                            legs[i].localRotation = Quaternion.Euler(0f, 0f, Mathf.Sin(stride + (i == 0 || i == 3 ? 0f : Mathf.PI)) * 28f);
+                            legs[i].localRotation = legRest[i] * Quaternion.AngleAxis(Mathf.Sin(stride + (i == 0 || i == 3 ? 0f : Mathf.PI)) * 28f, legAxis);
+                if (tail != null)
+                    tail.localRotation = tailRest * Quaternion.AngleAxis(Mathf.Sin(Time.time * (IsChasing ? 16f : 7f)) * 25f, tailAxis);
             }
         }
 

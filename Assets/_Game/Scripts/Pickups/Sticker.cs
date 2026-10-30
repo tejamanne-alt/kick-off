@@ -14,6 +14,10 @@ namespace DribbleToSchool.Pickups
     {
         public Transform visual;
         public SpriteRenderer visualRenderer;
+        [Tooltip("A 3D sticker's renderers (instead of the sprite): greyed when already owned, hidden once collected.")]
+        public Renderer[] meshes;
+
+        static readonly Color OwnedTint = new Color(0.72f, 0.72f, 0.78f);
 
         public bool Collected { get; private set; }
 
@@ -32,9 +36,11 @@ namespace DribbleToSchool.Pickups
         /// <summary>Stickers already in the album show faded, so players know it's a repeat.</summary>
         void ApplyOwnedLook()
         {
-            if (visualRenderer == null) return;
             var level = LevelManager.Current;
             bool owned = level != null && level.level != null && Progression.SaveSystem.HasSticker(level.level.levelId);
+            if (meshes != null)
+                foreach (var r in meshes) World.Tint.Set(r, owned ? OwnedTint : Color.white);
+            if (visualRenderer == null) return;
             Color c = visualRenderer.color;
             c.a = owned ? 0.4f : 1f;
             visualRenderer.color = c;
@@ -68,6 +74,7 @@ namespace DribbleToSchool.Pickups
                     c.a = 1f - t;
                     visualRenderer.color = c;
                 }
+                else if (t >= 1f) visual.gameObject.SetActive(false);
                 return;
             }
             visual.localRotation = Quaternion.Euler(0f, 0f, Mathf.Sin(Time.time * 2f) * 10f);
@@ -76,7 +83,11 @@ namespace DribbleToSchool.Pickups
         public void ResetState()
         {
             Collected = false;
-            if (visual != null) visual.localScale = Vector3.one * 0.7f;
+            if (visual != null)
+            {
+                visual.localScale = Vector3.one * 0.7f;
+                visual.gameObject.SetActive(true);
+            }
             ApplyOwnedLook();
         }
     }

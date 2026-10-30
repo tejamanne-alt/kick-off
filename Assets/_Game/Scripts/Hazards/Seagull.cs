@@ -25,9 +25,13 @@ namespace DribbleToSchool.Hazards
 
         float time;
         float lastHit = -10f;
+        Quaternion[] wingRest;
 
         void Awake()
         {
+            // Flap each wing from its rest pose (model parts may come in rotated).
+            wingRest = new Quaternion[wings != null ? wings.Length : 0];
+            for (int i = 0; i < wingRest.Length; i++) wingRest[i] = wings[i] != null ? wings[i].localRotation : Quaternion.identity;
             GetComponent<Collider2D>().isTrigger = true;
             ResetState();
         }
@@ -66,9 +70,9 @@ namespace DribbleToSchool.Hazards
                 visual.localRotation = Quaternion.Euler(0f, Presentation.CharacterRig.FacingYaw(dir), bank);
                 float flap = Mathf.Sin(time * 11f) * 38f;
                 if (wings != null)
-                    for (int i = 0; i < wings.Length; i++)
+                    for (int i = 0; i < wings.Length && i < wingRest.Length; i++)
                         if (wings[i] != null)
-                            wings[i].localRotation = Quaternion.Euler((i == 0 ? -1f : 1f) * flap, 0f, 0f);
+                            wings[i].localRotation = wingRest[i] * Quaternion.Euler((i == 0 ? -1f : 1f) * flap, 0f, 0f);
             }
         }
 

@@ -491,7 +491,7 @@ namespace DribbleToSchool.EditorTools
             return new Vector3(0f, 0.6f * neckHeight / 1.3f - 0.6f, 0f);
         }
 
-        static Transform FindDeep(Transform root, string name)
+        public static Transform FindDeep(Transform root, string name)
         {
             if (SameName(root.name, name)) return root;
             for (int i = 0; i < root.childCount; i++)
@@ -998,6 +998,11 @@ namespace DribbleToSchool.EditorTools
                 // A gold coin: a thin disc with a raised face, spinning about its vertical axis.
                 var visual = new GameObject("Visual");
                 visual.transform.SetParent(go.transform, false);
+                if (KitModel(visual.transform, "Animals", "Coin", visual.transform.position, 0f, 0.88f) != null)
+                {
+                    go.AddComponent<Pickups.Coin>().visual = visual.transform;
+                    return;
+                }
                 var disc = visual.AddComponent<CylinderShape>();
                 disc.radius = 0.22f;
                 disc.length = 0.07f;
@@ -1039,6 +1044,18 @@ namespace DribbleToSchool.EditorTools
                 var col = go.AddComponent<CircleCollider2D>();
                 col.isTrigger = true;
                 col.radius = 0.35f;
+                if (HasKitModel("Animals", "Sticker"))
+                {
+                    // The Animals kit's puffy badge, about 0.8 m across, wobbling under a 0.7-scaled visual.
+                    var holder = new GameObject("Visual").transform;
+                    holder.SetParent(go.transform, false);
+                    holder.localScale = Vector3.one * 0.7f;
+                    var badge = KitModel(holder, "Animals", "Sticker", holder.position, 0f, 1.68f);
+                    var badgeSticker = go.AddComponent<Pickups.Sticker>();
+                    badgeSticker.visual = holder;
+                    badgeSticker.meshes = badge != null ? badge.GetComponentsInChildren<Renderer>() : new Renderer[0];
+                    return;
+                }
                 var visual = Visual(go.transform, "Visual", Circle, Vector2.zero, new Vector2(0.7f, 0.7f), new Color(1f, 0.55f, 0.75f), 25);
                 Visual(visual.transform, "Border", Circle, Vector2.zero, new Vector2(1.15f, 1.15f), Color.white, 24);
                 Visual(visual.transform, "Heart", Circle, new Vector2(0f, 0.05f), new Vector2(0.45f, 0.45f), new Color(1f, 0.95f, 0.5f), 26);
@@ -1186,6 +1203,29 @@ namespace DribbleToSchool.EditorTools
                 var visual = new GameObject("Visual").transform;
                 visual.SetParent(go.transform, false);
                 visual.localPosition = new Vector3(0f, 0f, 0.55f);   // trots beside the kid's line, not through it
+                var kitDog = KitModel(visual, "Animals", "Dog", visual.position + Vector3.down * 0.3f, 0f, 1f, fur);
+                if (kitDog != null)
+                {
+                    // The Animals kit's dog (head toward +x, feet on the ground): its legs swing about
+                    // their own up axis, diagonal pairs together, and its tail wags.
+                    string[] legNames = { "LegFR", "LegFL", "LegBR", "LegBL" };
+                    var kitLegs = new Transform[legNames.Length];
+                    bool allLegs = true;
+                    for (int i = 0; i < legNames.Length; i++) allLegs &= (kitLegs[i] = FindDeep(kitDog, legNames[i])) != null;
+                    if (allLegs)
+                    {
+                        var hound = go.AddComponent<Hazards.Dog>();
+                        hound.minX = minX;
+                        hound.maxX = maxX;
+                        hound.visual = visual;
+                        hound.legs = kitLegs;
+                        hound.legAxis = Vector3.up;
+                        hound.tail = FindDeep(kitDog, "Tail");
+                        hound.tailAxis = Vector3.forward;
+                        return;
+                    }
+                    Object.DestroyImmediate(kitDog.gameObject);
+                }
                 // A small 3D dog of soft blobs (feet at -0.3), facing +x, with swinging legs.
                 Color light = Color.Lerp(fur, Color.white, 0.45f), darkFur = Color.Lerp(fur, Color.black, 0.35f), ink = new Color(0.1f, 0.08f, 0.1f);
                 Blobs(visual, "Body", Vector3.zero,
@@ -1674,6 +1714,21 @@ namespace DribbleToSchool.EditorTools
                 col.radius = 0.4f;
                 var visual = new GameObject("Visual").transform;
                 visual.SetParent(go.transform, false);
+                var kitGull = KitModel(visual, "Animals", "Seagull", visual.position);
+                Transform wingL = kitGull != null ? FindDeep(kitGull, "WingL") : null, wingR = kitGull != null ? FindDeep(kitGull, "WingR") : null;
+                if (wingL != null && wingR != null)
+                {
+                    // The Animals kit's gull (head toward +x, wings spread): the first wing flaps with a negative angle.
+                    var bird = go.AddComponent<Hazards.Seagull>();
+                    bird.fromX = fromX;
+                    bird.toX = toX;
+                    bird.baseY = baseY;
+                    bird.phaseOffset = phaseOffset;
+                    bird.visual = visual;
+                    bird.wings = new[] { wingR, wingL };
+                    return;
+                }
+                if (kitGull != null) Object.DestroyImmediate(kitGull.gameObject);
                 // A 3D gull: white body, grey back and wings with dark tips, a yellow beak.
                 Color white = new Color(0.97f, 0.97f, 0.98f), grey = new Color(0.66f, 0.7f, 0.76f), tip = new Color(0.18f, 0.18f, 0.22f);
                 Blobs(visual, "Body", Vector3.zero,
