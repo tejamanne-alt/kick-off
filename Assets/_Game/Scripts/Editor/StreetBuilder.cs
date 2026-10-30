@@ -444,10 +444,22 @@ namespace DribbleToSchool.EditorTools
             if (schemes == null) t = Model(parent, "Buildings", model, x, groundY, z, 0f, scale);
             else
             {
-                var p = schemes[seed % schemes.Length];
+                var p = schemes[Scramble(seed) % schemes.Length];
                 t = Model(parent, "Buildings", model, x, groundY, z, 0f, scale, p.wall, p.trim, p.roof);
             }
             return t != null;
+        }
+
+        /// <summary>Mixes a position-derived seed, so evenly spaced buildings don't fall into the same scheme.</summary>
+        static int Scramble(int seed)
+        {
+            unchecked
+            {
+                uint h = (uint)seed * 2654435761u;
+                h ^= h >> 15;
+                h *= 2246822519u;
+                return (int)((h ^ (h >> 13)) & 0x7fffffff);
+            }
         }
 
         // Autumn colours for the park's broadleaf trees (Plants kit part 1).
@@ -888,7 +900,7 @@ namespace DribbleToSchool.EditorTools
                     if (gap > 4f && rng.NextDouble() < 0.4 && LevelBuildKit.HasKitModel("Buildings", "Garage"))
                     {
                         // A garage beside the house, set back a little, painted to match it.
-                        var p = HousePaints[Mathf.Abs(Mathf.RoundToInt(cx * 7f + z * 13f)) % HousePaints.Length];
+                        var p = HousePaints[Scramble(Mathf.Abs(Mathf.RoundToInt(cx * 7f + z * 13f)) + 1) % HousePaints.Length];
                         Model(root, "Buildings", "Garage", x + gap * 0.5f, gy, z + 0.8f, 0f, 1f, p.wall, p.trim, p.roof);
                     }
                     else if (gap > 1.8f && rng.NextDouble() < 0.6)

@@ -296,12 +296,20 @@ WIDTH = {'HouseGable': 7, 'HouseLong': 10, 'Bungalow': 7, 'ShopFruit': 8, 'ShopS
 AUTUMN = [(.96, .72, .3), (.93, .52, .24), (.82, .36, .25), (.98, .84, .4), (.66, .64, .32)]
 
 
+def scramble(seed):
+    # StreetBuilder.Scramble: mixes a position-derived seed so evenly spaced buildings vary.
+    h = (seed * 2654435761) & 0xffffffff
+    h ^= h >> 15
+    h = (h * 2246822519) & 0xffffffff
+    return (h ^ (h >> 13)) & 0x7fffffff
+
+
 def building(model, x, z, schemes):
     if not has('Buildings', model):
         return False
     w = size('Buildings', model).x
     sc = min(1.25, max(0.8, WIDTH.get(model, w) / w))
-    p = schemes[abs(int(round(x * 7 + z * 13))) % len(schemes)] if schemes else None
+    p = schemes[scramble(abs(int(round(x * 7 + z * 13)))) % len(schemes)] if schemes else None
     place('Buildings', model, x, 0, z, 0, sc, list(p) if p else None)
     return True
 
@@ -387,7 +395,7 @@ def suburb():
             plant(rng.choice(['Broadleaf', 'BroadleafLarge', 'ConiferTall', 'Broadleaf', 'Birch']), cx + rng.uniform(-half, half), 0, z + 8 + rng.uniform(0, 3), rng.uniform(.9, 1.25))
         gap = (cx - half) - x
         if gap > 4 and rng.random() < .4 and has('Buildings', 'Garage'):
-            p = HOUSE[abs(int(round(cx * 7 + z * 13))) % len(HOUSE)]
+            p = HOUSE[scramble(abs(int(round(cx * 7 + z * 13))) + 1) % len(HOUSE)]
             place('Buildings', 'Garage', x + gap / 2, 0, z + .8, 0, 1, list(p))
         elif gap > 1.8 and rng.random() < .6:
             m = rng.choice(['Birch', 'ConiferSmall', 'ConiferMid', 'ShrubFlowering'])
