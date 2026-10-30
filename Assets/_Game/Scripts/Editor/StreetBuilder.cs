@@ -9,7 +9,8 @@ namespace DribbleToSchool.EditorTools
     /// <summary>
     /// Builds the 3D street around the 2D gameplay plane (z = 0): ground slabs with the
     /// footpath, kerbs and the road, side streets at crossings, and the scenery along the
-    /// street for each chapter. Scale: about 0.9 m per unit.
+    /// street for each chapter. Scale: 1 unit to the metre, as the asset kits are modelled (the kid
+    /// is about 1.55 tall, the ball a 22 cm football, a house about 9 to its ridge).
     ///
     /// Depth layout (z grows away from the camera):
     ///   z &lt; -8.1        near pavement, below the bottom of the screen
@@ -260,6 +261,12 @@ namespace DribbleToSchool.EditorTools
                 if (d < nearest) { nearest = d; nearestTop = span.z; }
             }
             return best > float.MinValue ? best : nearestTop;
+        }
+
+        /// <summary>The ground's height at (x, z): on the beach the sand's, which rolls (see <see cref="SandField"/>); elsewhere the gameplay ground's at x.</summary>
+        static float GroundAt(LevelBuildKit.TrackBuilder track, float x, float z)
+        {
+            return LevelBuildKit.Chapter == 3 ? track.SandHeight(x, z) : GroundAt(track, x);
         }
 
         /// <summary>Does [a, b] overlap a side street or the school grounds (where the street's scenery must stay out)?</summary>
@@ -888,12 +895,14 @@ namespace DribbleToSchool.EditorTools
                 case 3:
                     for (float x = x0; x < x1; x += Rand(rng, 9f, 18f))
                     {
-                        float gx = x + Rand(rng, -1f, 1f);
-                        Critter("SeagullStanding", gx, GroundAt(track, gx), Rand(rng, 2.6f, 5.4f), rng.NextDouble() < 0.5 ? Rand(rng, -30f, 30f) : 180f + Rand(rng, -30f, 30f));
+                        float gx = x + Rand(rng, -1f, 1f), gz = Rand(rng, 2.6f, 5.4f);
+                        Critter("SeagullStanding", gx, GroundAt(track, gx, gz), gz, rng.NextDouble() < 0.5 ? Rand(rng, -30f, 30f) : 180f + Rand(rng, -30f, 30f));
                     }
                     for (float x = x0 + 6f; x < x1; x += Rand(rng, 18f, 30f))
                     {
-                        var crab = Critter("Crab", x, GroundAt(track, x) - 0.1f, Rand(rng, 6.2f, 8.2f), Rand(rng, -20f, 20f));
+                        // A shore crab, a hand's width across.
+                        float cz = Rand(rng, 6.2f, 8.2f);
+                        var crab = Critter("Crab", x, GroundAt(track, x, cz), cz, Rand(rng, -20f, 20f), 0.5f);
                         if (crab == null) continue;
                         crab.motions = new[] { Swing(crab, "ClawL", Vector3.up, 27f, 3f, 8f), Swing(crab, "ClawR", Vector3.up, 27f, 3f, 8f, Mathf.PI) };
                         crab.drift = new Vector3(0.4f, 0f, 0.05f);
@@ -929,7 +938,7 @@ namespace DribbleToSchool.EditorTools
         /// <summary>A butterfly flitting about one spot, its wings beating fast.</summary>
         static void Butterfly(System.Random rng, float x, float y, float z)
         {
-            var b = Critter("Butterfly", x, y, z, Rand(rng, 0f, 360f), 1.4f);
+            var b = Critter("Butterfly", x, y, z, Rand(rng, 0f, 360f), Rand(rng, 0.45f, 0.6f));   // wings 6 to 8 cm across
             if (b == null) return;
             b.motions = new[] { Swing(b, "WingL", Vector3.right, 38f, 55f, 38f), Swing(b, "WingR", Vector3.right, -38f, 55f, -38f) };
             b.drift = new Vector3(0.9f, 0.3f, 0.5f);
@@ -1151,9 +1160,11 @@ namespace DribbleToSchool.EditorTools
             // Foam lapping up the sand where the waves break, and lines of breaking crests rolling in
             // out at sea. They move, so they live outside the street's static batches.
             var waves = new GameObject("Waves").transform;
-            var shoreline = Foam(waves, x0 - 60f, x1 + 60f, 9.0f, 9.45f, sea + 0.19f, 0.3f);
+            // The foam lies just above the sea, so where it meets the sand is where the water does; each
+            // surge carries it a little up the beach.
+            var shoreline = Foam(waves, x0 - 60f, x1 + 60f, 9.2f, 10f, sea + 0.02f, 0.3f);
             var lap = shoreline.AddComponent<Lapping>();
-            lap.reach = new Vector3(0f, 0f, -0.55f);
+            lap.reach = new Vector3(0f, 0.04f, -0.35f);
             lap.period = 5.5f;
             float[] crests = { 13f, 19f, 28f, 42f };
             for (int i = 0; i < crests.Length; i++)
@@ -1170,7 +1181,7 @@ namespace DribbleToSchool.EditorTools
             var towers = new List<float>();
             for (float x = x0; x < x1; x += Rand(rng, 30f, 45f))
             {
-                LifeguardTower(root, x, GroundAt(track, x), 7.4f);
+                LifeguardTower(root, x, GroundAt(track, x, 7.4f), 7.4f);
                 towers.Add(x);
             }
             Color[] canopy = { new Color(0.9f, 0.3f, 0.28f), new Color(0.25f, 0.5f, 0.85f), new Color(1f, 0.75f, 0.2f), new Color(0.3f, 0.66f, 0.62f) };
@@ -1178,21 +1189,23 @@ namespace DribbleToSchool.EditorTools
             bool beachKit = LevelBuildKit.HasKitModel("Leisure", "Parasol");
             for (float x = x0 + 8f; x < x1; x += beachKit ? Rand(rng, 5f, 11f) : Rand(rng, 10f, 18f))
             {
-                float gy = GroundAt(track, x), z = Rand(rng, 3.4f, 5.2f);
+                float z = Rand(rng, 3.4f, 5.2f), gy = GroundAt(track, x, z);
                 if (beachKit)
                 {
                     if (towers.Any(t => Mathf.Abs(t - x) < 3f)) continue;
                     // A parasol leaning a little over a towel; now and then a cool box, or a sandcastle
-                    // with a bucket and spade.
-                    var parasolModel = Model(root, "Leisure", "Parasol", x, gy, z, Rand(rng, 0f, 360f), 1f, canopy[rng.Next(canopy.Length)]);
+                    // with a bucket and spade. Each sits on the sand where it is.
+                    var parasolModel = Model(root, "Leisure", "Parasol", x, gy - 0.05f, z, Rand(rng, 0f, 360f), 1f, canopy[rng.Next(canopy.Length)]);
                     if (parasolModel != null) parasolModel.rotation = Quaternion.Euler(Rand(rng, -7f, 7f), 0f, Rand(rng, -7f, 7f)) * parasolModel.rotation;
-                    Model(root, "Leisure", "BeachTowel", x + Rand(rng, -0.3f, 0.3f), gy, z - 0.4f, 90f + Rand(rng, -15f, 15f), 1f, towels[rng.Next(towels.Length)]);
+                    float tx = x + Rand(rng, -0.3f, 0.3f);
+                    Model(root, "Leisure", "BeachTowel", tx, GroundAt(track, tx, z - 0.4f), z - 0.4f, 90f + Rand(rng, -15f, 15f), 1f, towels[rng.Next(towels.Length)]);
                     if (rng.NextDouble() < 0.4)
-                        Model(root, "Leisure", "CoolBox", x + 0.9f, gy, z + 0.3f, Rand(rng, -25f, 25f), 1f, canopy[rng.Next(canopy.Length)]);
+                        Model(root, "Leisure", "CoolBox", x + 0.9f, GroundAt(track, x + 0.9f, z + 0.3f), z + 0.3f, Rand(rng, -25f, 25f), 1f, canopy[rng.Next(canopy.Length)]);
                     if (rng.NextDouble() < 0.3)
                     {
-                        Model(root, "Leisure", "SandCastle", x + Rand(rng, 1.3f, 1.8f), gy, z - Rand(rng, 1f, 1.6f), Rand(rng, -20f, 20f));
-                        Model(root, "Leisure", "BucketSpade", x + Rand(rng, 2.1f, 2.5f), gy, z - Rand(rng, 0.8f, 1.3f), Rand(rng, 0f, 360f));
+                        float cx = x + Rand(rng, 1.3f, 1.8f), cz = z - Rand(rng, 1f, 1.6f), bx = x + Rand(rng, 2.1f, 2.5f), bz = z - Rand(rng, 0.8f, 1.3f);
+                        Model(root, "Leisure", "SandCastle", cx, GroundAt(track, cx, cz) - 0.03f, cz, Rand(rng, -20f, 20f));
+                        Model(root, "Leisure", "BucketSpade", bx, GroundAt(track, bx, bz), bz, Rand(rng, 0f, 360f));
                     }
                     continue;
                 }
@@ -1212,14 +1225,14 @@ namespace DribbleToSchool.EditorTools
             bool rockModels = LevelBuildKit.HasKitModel("Terrain", "RockCluster");
             for (float x = x0 + 15f; x < x1; x += rockModels ? Rand(rng, 12f, 24f) : Rand(rng, 22f, 38f))
             {
-                // Rocks at the water's edge (at the shore's height, below any dune), darker where the sea wets them.
+                // Rocks at the water's edge, bedded in the sand, darker where the sea wets them.
                 float gy = track.LowestGroundTop - 0.12f, s = Rand(rng, 0.8f, 1.6f);
                 if (rockModels)
                 {
-                    float rz = Rand(rng, 8.6f, 11f);
-                    Model(root, "Terrain", "RockCluster", x, gy - 0.1f, rz, Rand(rng, -30f, 30f), s * 0.8f);
+                    float rz = Rand(rng, 8.6f, 11f), bx = x + Rand(rng, 2f, 3.5f), bz = rz - Rand(rng, 0.5f, 1.2f);
+                    Model(root, "Terrain", "RockCluster", x, GroundAt(track, x, rz) - 0.15f, rz, Rand(rng, -30f, 30f), s * 0.8f);
                     if (rng.NextDouble() < 0.5)
-                        Model(root, "Terrain", rng.NextDouble() < 0.5 ? "Boulder2" : "Boulder1", x + Rand(rng, 2f, 3.5f), gy - 0.05f, rz - Rand(rng, 0.5f, 1.2f), Rand(rng, 0f, 360f), Rand(rng, 0.7f, 1.1f));
+                        Model(root, "Terrain", rng.NextDouble() < 0.5 ? "Boulder2" : "Boulder1", bx, GroundAt(track, bx, bz) - 0.1f, bz, Rand(rng, 0f, 360f), Rand(rng, 0.7f, 1.1f));
                     continue;
                 }
                 var rock = new GameObject("Rocks");
@@ -1240,9 +1253,9 @@ namespace DribbleToSchool.EditorTools
                     int n = rng.Next(1, 4);
                     for (int k = 0; k < n; k++)
                     {
-                        float px = x + k * Rand(rng, 2.2f, 3.4f);
+                        float px = x + k * Rand(rng, 2.2f, 3.4f), pz = Rand(rng, 5.6f, 7f);
                         if (towers.Any(t => Mathf.Abs(t - px) < 4.5f)) continue;
-                        Plant(root, rng.NextDouble() < 0.5 ? "Palm" : "PalmShort", null, px, GroundAt(track, px) - 0.1f, Rand(rng, 5.6f, 7f), Rand(rng, 0.85f, 1.15f), 1f, -60, rng);
+                        Plant(root, rng.NextDouble() < 0.5 ? "Palm" : "PalmShort", null, px, GroundAt(track, px, pz) - 0.1f, pz, Rand(rng, 0.85f, 1.15f), 1f, -60, rng);
                     }
                 }
 
@@ -1251,11 +1264,15 @@ namespace DribbleToSchool.EditorTools
             {
                 for (float x = x0; x < x1; x += Rand(rng, 1.2f, 4f))
                 {
-                    // Dune grass in little drifts, a clump or two at a time.
-                    float z = Rand(rng, -6.5f, -2.4f);
+                    // Dune grass in little drifts, a clump or two at a time, far enough in front of the path
+                    // not to hide the ball from the camera.
+                    float z = Rand(rng, -6.5f, -3.4f);
                     int clumps = rng.Next(1, 4);
                     for (int k = 0; k < clumps; k++)
-                        Plant(root, "DuneGrass", null, x + k * Rand(rng, 0.5f, 0.9f), GroundAt(track, x), z + Rand(rng, -0.4f, 0.4f), Rand(rng, 0.7f, 1.4f), 1f, -50, rng);
+                    {
+                        float gx = x + k * Rand(rng, 0.5f, 0.9f), gz = z + Rand(rng, -0.4f, 0.4f);
+                        Plant(root, "DuneGrass", null, gx, GroundAt(track, gx, gz) - 0.03f, gz, Rand(rng, 0.7f, 1.4f), 1f, -50, rng);
+                    }
                 }
                 Headlands(root, rng, x0, x1, sea);
                 return;
@@ -1265,7 +1282,7 @@ namespace DribbleToSchool.EditorTools
             var tufts = grass.AddComponent<BlobShape>();
             for (float x = x0; x < x1; x += Rand(rng, 1.5f, 5f))
             {
-                float gy = GroundAt(track, x), z = Rand(rng, -9f, -2.4f);
+                float z = Rand(rng, -9f, -2.4f), gy = GroundAt(track, x, z);
                 // A low, spreading clump of dune grass.
                 for (int k = 0; k < 4; k++)
                     tufts.blobs.Add(new BlobShape.Blob(new Vector3(x + Rand(rng, -0.3f, 0.3f), gy + 0.03f, z + Rand(rng, -0.25f, 0.25f)),
@@ -1483,9 +1500,14 @@ namespace DribbleToSchool.EditorTools
                     Plant(root, wood[rng.Next(wood.Length)], null, x, GroundAt(track, x) + 0.04f, Rand(rng, 22f, 40f), Rand(rng, 0.95f, 1.35f), 1f, -70, rng);
                 }
                 // Long golden grass, tufts and wild flowers on the lawn in front of the path.
+                // Sized as they grow: grass knee to thigh high, tufts and flowers lower.
                 string[] low = { "TallGrass", "GrassTuft", "FlowerPatch", "GrassTuft", "TallGrass" };
                 for (float x = x0; x < x1; x += Rand(rng, 0.8f, 2.6f))
-                    Plant(root, low[rng.Next(low.Length)], null, x, GroundAt(track, x) + 0.04f, Rand(rng, -6.5f, -2.4f), Rand(rng, 1.1f, 1.8f), 1f, -50, rng);
+                {
+                    string model = low[rng.Next(low.Length)];
+                    float scale = model == "TallGrass" ? Rand(rng, 0.6f, 0.9f) : model == "GrassTuft" ? Rand(rng, 0.6f, 0.9f) : Rand(rng, 0.8f, 1.1f);
+                    Plant(root, model, null, x, GroundAt(track, x) + 0.04f, Rand(rng, -6.5f, -2.4f), scale, 1f, -50, rng);
+                }
             }
             DistantHills(track, root, x0, x1);
         }

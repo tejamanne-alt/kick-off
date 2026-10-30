@@ -48,6 +48,8 @@ namespace DribbleToSchool.EditorTools
         public static readonly Color WaterColor = new Color(0.30f, 0.55f, 0.85f);
         static readonly Color KidColor = new Color(0.97f, 0.97f, 0.99f);   // white school shirt
         static readonly Color SchoolColor = new Color(0.95f, 0.75f, 0.30f);
+        /// <summary>The ball's radius: a size 5 football (the world is built 1 unit to the metre; the kid is about 1.55 tall).</summary>
+        public const float BallRadius = 0.11f;
 
         public static Sprite Square { get; private set; }
         public static Sprite Circle { get; private set; }
@@ -193,19 +195,19 @@ namespace DribbleToSchool.EditorTools
                 kidFlags.Add(girlRig.flag);
             }
 
-            // Ball
+            // Ball: a size 5 football, 22 cm across.
             var ballGo = new GameObject("Ball");
             ballGo.transform.position = ballSpawn;
             ballGo.AddComponent<Rigidbody2D>();
             var circleCol = ballGo.AddComponent<CircleCollider2D>();
-            circleCol.radius = 0.2f;
+            circleCol.radius = BallRadius;
             var squashRoot = new GameObject("SquashRoot").transform;
             squashRoot.SetParent(ballGo.transform, false);
             // A 3D ball; the equipped skin's drawing is projected onto it (CosmeticApplier).
             var shell = new GameObject("Ball3D");
             shell.transform.SetParent(squashRoot, false);
             var sphere = shell.AddComponent<SphereShape>();
-            sphere.radius = 0.2f;
+            sphere.radius = BallRadius;
             shell.GetComponent<MeshRenderer>().sharedMaterial = Art.ball;
             sphere.Rebuild();
             var ballShadow = ShadowSprite("BallShadow");
@@ -214,7 +216,7 @@ namespace DribbleToSchool.EditorTools
             trail.sharedMaterial = trailMaterial;
             trail.time = 0.25f;
             trail.minVertexDistance = 0.05f;
-            trail.widthMultiplier = 0.32f;
+            trail.widthMultiplier = BallRadius * 1.6f;
             trail.widthCurve = AnimationCurve.Linear(0f, 1f, 1f, 0f);
             trail.sortingOrder = 19;
             trail.enabled = false;
@@ -228,7 +230,7 @@ namespace DribbleToSchool.EditorTools
             ballShade.target = ballGo.GetComponent<Rigidbody2D>();
             ballShade.ignore = new[] { kidBody };
             ballShade.shadow = ballShadow;
-            ballShade.size = new Vector2(0.42f, 0.24f);
+            ballShade.size = new Vector2(BallRadius * 2.1f, BallRadius * 1.2f);
             var kidShade = kidGo.AddComponent<GroundShadow>();
             kidShade.target = kidBody;
             kidShade.ignore = new[] { ballShade.target };
@@ -862,6 +864,7 @@ namespace DribbleToSchool.EditorTools
                 float depth = FillDepth(top);
                 LowestGroundTop = Mathf.Min(LowestGroundTop, top);
                 groundSpans.Add(new GroundSpan { from = Mathf.Min(fromX, toX), to = Mathf.Max(fromX, toX), top = top });
+                sand = null;
                 Block("Ground", new Vector2((fromX + toX) * 0.5f, top - depth * 0.5f), new Vector2(toX - fromX, depth), GroundColor, GroundMat, false);
             }
 
@@ -1771,6 +1774,8 @@ namespace DribbleToSchool.EditorTools
             public void Tide(float fromX, float toX, float period = 6f, float phaseOffset = 0f, float groundTop = 0f)
             {
                 float width = toX - fromX;
+                calmSand.Add(new Vector2(fromX - 3f, toX + 3f));   // smooth sand under the wash
+                sand = null;
                 var go = new GameObject("Tide");
                 go.transform.SetParent(root, false);
                 go.transform.position = new Vector2((fromX + toX) * 0.5f, groundTop);
@@ -2443,7 +2448,7 @@ namespace DribbleToSchool.EditorTools
                 cp.kidSpawn.localPosition = new Vector3(0f, 0.65f, 0f);
                 cp.ballSpawn = new GameObject("BallSpawn").transform;
                 cp.ballSpawn.SetParent(go.transform, false);
-                cp.ballSpawn.localPosition = new Vector3(1f, 0.25f, 0f);
+                cp.ballSpawn.localPosition = new Vector3(1f, BallRadius + 0.05f, 0f);
 
                 if (!isStart)
                 {
@@ -2683,12 +2688,12 @@ namespace DribbleToSchool.EditorTools
                 foreach (var span in spans) if (span.to > last) { last = span.to; lastTop = span.top; }
                 float baseTop = LowestGroundTop;
 
-                StreetBuilder.Slab(slabs, "Road", first - 70f, last + 70f, baseTop, false, false, StreetBuilder.Part.Front);
                 if (Chapter == 3)
                 {
-                    BeachGround(slabs, spans, first, last);
+                    BeachGround(slabs, first, last);
                     return;
                 }
+                StreetBuilder.Slab(slabs, "Road", first - 70f, last + 70f, baseTop, false, false, StreetBuilder.Part.Front);
 
                 // The lane: one slab per ground span, plus the run-in and run-out.
                 foreach (var span in spans)
@@ -2710,221 +2715,116 @@ namespace DribbleToSchool.EditorTools
             }
 
             /// <summary>
-            /// The beach (chapter 3) has no sharp sand steps or square pits: the sand behind and
-            /// along the lane lies flat at the lowest ground height, raised ground becomes dunes
-            /// with sloping faces, and gaps become tidal channels running out to the sea between
-            /// sandy banks. A step between two touching spans gets a walkable slope (with its own
-            /// collider, matching the drawn slope) on the lower side; gaps keep their lose zone.
+            /// The beach (chapter 3): one smooth surface of sand (see <see cref="SandField"/>) in
+            /// stretches of 40 units, from well before the start to well past the end, with water
+            /// in any channel. Each step's slope gets a collider that follows the drawn curve, so the
+            /// kid and the ball go up and down the slope that's drawn; gaps keep their lose zone.
             /// </summary>
-            void BeachGround(Transform slabs, List<GroundSpan> spans, float first, float last)
+            void BeachGround(Transform slabs, float first, float last)
             {
-                float baseTop = LowestGroundTop, waterY = baseTop - 0.3f;
-                const float zFront = -StreetBuilder.PathHalf, duneBack = 8f, shore = 9f, wetFrom = 5.6f;
-                // The gaps between spans (channels), in order.
-                var gaps = new List<Vector2>();
-                var gapTops = new List<Vector2>();
-                float reach = spans[0].to, reachTop = spans[0].top;
-                for (int i = 1; i < spans.Count; i++)
+                var field = BeachSand;
+                float from = Mathf.Floor((first - 70f) / SandDunes.Step) * SandDunes.Step;
+                for (float a = from; a < last + 70f; a += 40f)
                 {
-                    if (spans[i].from > reach + 0.01f)
-                    {
-                        gaps.Add(new Vector2(reach, spans[i].from));
-                        gapTops.Add(new Vector2(reachTop, spans[i].top));
-                    }
-                    if (spans[i].to > reach) { reach = spans[i].to; reachTop = spans[i].top; }
-                }
-                // Flat sand in the lane and behind it, cut where the channels run.
-                float a = first - 70f;
-                bool closed = false;
-                foreach (var gap in gaps)
-                {
-                    StreetBuilder.Slab(slabs, "Footpath", a, gap.x, baseTop, closed, true, StreetBuilder.Part.Lane);
-                    StreetBuilder.Slab(slabs, "Verge", a, gap.x, baseTop, closed, true, StreetBuilder.Part.Back);
-                    a = gap.y;
-                    closed = true;
-                }
-                StreetBuilder.Slab(slabs, "Footpath", a, last + 70f, baseTop, closed, false, StreetBuilder.Part.Lane);
-                StreetBuilder.Slab(slabs, "Verge", a, last + 70f, baseTop, closed, false, StreetBuilder.Part.Back);
-
-                var sand = new GameObject("Dunes");
-                sand.transform.SetParent(slabs, false);
-                var dunes = sand.AddComponent<PatchShape>();
-                sand.GetComponent<MeshRenderer>().sharedMaterial = Art.surfaces[ProceduralArt.Surface.Sand];
-                var water = new GameObject("Channels");
-                water.transform.SetParent(slabs, false);
-                var streams = water.AddComponent<PatchShape>();
-                water.GetComponent<MeshRenderer>().sharedMaterial = Art.surfaces[ProceduralArt.Surface.Sea];
-                Color dry = Color.white, wet = new Color(0.82f, 0.74f, 0.62f), bank = new Color(0.9f, 0.84f, 0.74f);
-
-                // Channels: steep sandy banks down to the water on both sides and toward the camera,
-                // the water running out under the wet sand into the sea.
-                for (int g = 0; g < gaps.Count; g++)
-                {
-                    float l = gaps[g].x, r = gaps[g].y;
-                    foreach (var side in new[] { new Vector2(l, gapTops[g].x), new Vector2(r, gapTops[g].y) })
-                    {
-                        // The bank's top follows the ground beside it along the channel: a dune's top and
-                        // its back slope, or the beach and its lower wet sand.
-                        float x = side.x, top = side.y, dir = x == l ? 1f : -1f, h = top - baseTop;
-                        var profile = new List<Vector3>();   // (z, top, colour index)
-                        if (h > 0.05f)
-                        {
-                            // Through the dune's front slope the channel is a dry gully down to the beach.
-                            float zToe = zFront - 1.8f * h;
-                            dunes.AddTriangle(new Vector3(x, baseTop, zToe), new Vector3(x, top, zFront), new Vector3(x + (top - baseTop) * 0.6f * dir, baseTop, zFront), dry);
-                            profile.Add(new Vector3(zFront, top, 0f));
-                            profile.Add(new Vector3(duneBack, top, 0f));
-                            profile.Add(new Vector3(duneBack + 1.2f * h, baseTop - 0.12f, 1f));
-                        }
-                        else
-                        {
-                            profile.Add(new Vector3(zFront, top, 0f));
-                            profile.Add(new Vector3(wetFrom, top, 0f));
-                            profile.Add(new Vector3(wetFrom + 0.01f, top - 0.12f, 1f));
-                        }
-                        profile.Add(new Vector3(shore + 0.5f, baseTop - 0.12f, 1f));
-                        for (int k = 0; k + 1 < profile.Count; k++)
-                        {
-                            // Each stretch in metre-long pieces, the bank bulging and the waterline wandering
-                            // a little, so it reads as eroded sand rather than a cut.
-                            Vector3 p0 = profile[k], p1 = profile[k + 1];
-                            int pieces = Mathf.Max(1, Mathf.CeilToInt(Mathf.Abs(p1.x - p0.x)));
-                            for (int q = 0; q < pieces; q++)
-                            {
-                                float z0 = Mathf.Lerp(p0.x, p1.x, q / (float)pieces), z1 = Mathf.Lerp(p0.x, p1.x, (q + 1) / (float)pieces);
-                                float y0 = Mathf.Lerp(p0.y, p1.y, q / (float)pieces), y1 = Mathf.Lerp(p0.y, p1.y, (q + 1) / (float)pieces);
-                                Vector3 top0 = new Vector3(x, y0, z0), top1 = new Vector3(x, y1, z1);
-                                Vector3 mid0 = BankPoint(x, y0, z0, dir, waterY, 0.5f), mid1 = BankPoint(x, y1, z1, dir, waterY, 0.5f);
-                                Vector3 low0 = BankPoint(x, y0, z0, dir, waterY, 1f), low1 = BankPoint(x, y1, z1, dir, waterY, 1f);
-                                Color c = p1.z > 0.5f ? wet : dry;
-                                dunes.AddQuad(top0, top1, mid1, mid0, c);
-                                dunes.AddQuad(mid0, mid1, low1, low0, c);
-                            }
-                        }
-                    }
-                    // The bank in front, sloping down from the beach toward the camera's side of the water.
-                    dunes.AddQuad(new Vector3(l, baseTop, zFront), new Vector3(l + (baseTop - waterY) * 0.6f, waterY, zFront + 0.25f), new Vector3(r - (baseTop - waterY) * 0.6f, waterY, zFront + 0.25f), new Vector3(r, baseTop, zFront), bank);
-                    streams.AddQuad(new Vector3(l, waterY, zFront), new Vector3(l, waterY, shore + 0.6f), new Vector3(r, waterY, shore + 0.6f), new Vector3(r, waterY, zFront), Color.white);
+                    var go = new GameObject("Sand");
+                    go.transform.SetParent(slabs, false);
+                    var dunes = go.AddComponent<SandDunes>();
+                    dunes.field = field;
+                    dunes.fromX = a;
+                    dunes.toX = a + 40f;
+                    go.GetComponent<MeshRenderer>().sharedMaterial = Art.surfaces[ProceduralArt.Surface.Sand];
+                    dunes.Rebuild();
                 }
 
-                // Dunes over the raised spans: a flat top along the lane and sloping faces all round.
-                for (int i = 0; i < spans.Count; i++)
+                // Channels: water lying in the bed out to the sea; its edges are under the sand.
+                if (field.Gaps.Count > 0)
                 {
-                    var span = spans[i];
-                    float h = span.top - baseTop;
-                    if (h < 0.05f) continue;
-                    float left = NeighbourTop(spans, span.from, true), right = NeighbourTop(spans, span.to, false);
-                    float eL = DuneEnd(span.top, left, baseTop), eR = DuneEnd(span.top, right, baseTop);
-                    float yL = float.IsNaN(left) ? baseTop : Mathf.Min(left, span.top), yR = float.IsNaN(right) ? baseTop : Mathf.Min(right, span.top);
-                    if (gaps.Exists(gp => Mathf.Abs(gp.y - span.from) < 0.01f)) { eL = 0f; yL = span.top; }   // a channel bank instead
-                    if (gaps.Exists(gp => Mathf.Abs(gp.x - span.to) < 0.01f)) { eR = 0f; yR = span.top; }
-                    float x0 = span.from, x1 = span.to, top = span.top, eF = 1.8f * h, eB = 1.2f * h;
-                    Vector3 tfl = new Vector3(x0, top, zFront), tfr = new Vector3(x1, top, zFront), tbl = new Vector3(x0, top, duneBack), tbr = new Vector3(x1, top, duneBack);
-                    Vector3 ffl = new Vector3(x0 - eL, baseTop, zFront - eF), ffr = new Vector3(x1 + eR, baseTop, zFront - eF);
-                    Vector3 bbl = new Vector3(x0 - eL, baseTop, duneBack + eB), bbr = new Vector3(x1 + eR, baseTop, duneBack + eB);
-                    Vector3 lf = new Vector3(x0 - eL, yL, zFront), lb = new Vector3(x0 - eL, yL, duneBack);
-                    Vector3 rf = new Vector3(x1 + eR, yR, zFront), rb = new Vector3(x1 + eR, yR, duneBack);
-                    dunes.AddQuad(tfl, tbl, tbr, tfr, dry);                        // top
-                    dunes.AddQuad(ffl, tfl, tfr, ffr, dry);                        // front slope, toward the camera
-                    dunes.AddQuad(tbl, bbl, bbr, tbr, dry);                        // back slope, toward the sea
-                    if (eL > 0.01f)
-                    {
-                        dunes.AddQuad(lf, lb, tbl, tfl, dry);                      // left end
-                        dunes.AddTriangle(ffl, lf, tfl, dry);                      // corners
-                        dunes.AddTriangle(tbl, lb, bbl, dry);
-                        if (!float.IsNaN(left)) StepSlope(x0, span.top, -eL, yL);
-                    }
-                    if (eR > 0.01f)
-                    {
-                        dunes.AddQuad(tfr, tbr, rb, rf, dry);                      // right end
-                        dunes.AddTriangle(tfr, rf, ffr, dry);
-                        dunes.AddTriangle(tbr, bbr, rb, dry);
-                        if (!float.IsNaN(right)) StepSlope(x1, span.top, eR, yR);
-                    }
-                    // Where a dune ends at a channel, the channel's banks close its sides.
+                    var water = new GameObject("Channels");
+                    water.transform.SetParent(slabs, false);
+                    var streams = water.AddComponent<PatchShape>();
+                    water.GetComponent<MeshRenderer>().sharedMaterial = Art.surfaces[ProceduralArt.Surface.Sea];
+                    float waterY = field.baseTop - 0.3f;
+                    foreach (var gap in field.Gaps)
+                        streams.AddQuad(new Vector3(gap.l, waterY, -3.6f), new Vector3(gap.l, waterY, 12f), new Vector3(gap.r, waterY, 12f), new Vector3(gap.r, waterY, -3.6f), Color.white);
+                    streams.Rebuild();
                 }
-                dunes.Rebuild();
-                streams.Rebuild();
-                BeachDressing(spans, gaps, baseTop);
+
+                foreach (var step in field.Steps) StepSlope(step);
+                BeachDressing(field);
             }
 
-            /// <summary>
-            /// A point down a channel bank from its top (x, top) at depth z, a fraction t of the way to
-            /// the water (t = 1: the waterline), pushed in and out by noise so the bank looks eroded.
-            /// </summary>
-            static Vector3 BankPoint(float x, float top, float z, float dir, float waterY, float t)
+            /// <summary>The beach's sand, worked out from the ground spans (see <see cref="SandField"/>).</summary>
+            public SandField BeachSand
             {
-                float run = (top - waterY) * 0.6f;
-                float n = Mathf.PerlinNoise(z * 0.7f + x * 0.31f, x * 0.17f + t * 3.1f) - 0.5f;
-                float reach = run * t * (1f + n * (t < 1f ? 0.5f : 0.35f));
-                return new Vector3(x + reach * dir, Mathf.Lerp(top, waterY, t), z);
+                get
+                {
+                    if (sand == null) sand = new SandField(LowestGroundTop, GroundSpans, calmSand);
+                    return sand;
+                }
             }
+            SandField sand;
+            readonly List<Vector2> calmSand = new List<Vector2>();
 
-            /// <summary>Dune grass along a dune's front ridge and down its slope, and rocks and grass along a channel, clear of the lane.</summary>
-            void BeachDressing(List<GroundSpan> spans, List<Vector2> gaps, float baseTop)
+            /// <summary>The height of the sand at (x, z) on the beach.</summary>
+            public float SandHeight(float x, float z) { return BeachSand.Height(x, z); }
+
+            /// <summary>Dune grass on the dunes' slopes either side of the lane, and rocks and grass along any channel, clear of the lane.</summary>
+            void BeachDressing(SandField field)
             {
                 var dressing = new GameObject("BeachDressing").transform;
                 dressing.SetParent(root, false);
-                var rng = new System.Random(Mathf.RoundToInt(spans[0].from * 13f) + 7);
+                var rng = new System.Random(Mathf.RoundToInt(MinX * 13f) + 7);
                 System.Func<float, float, float> rand = (a, b) => a + (float)rng.NextDouble() * (b - a);
-                foreach (var span in spans)
+                foreach (var span in groundSpans)
                 {
-                    float h = span.top - baseTop;
+                    float h = span.top - field.baseTop;
                     if (h < 0.05f) continue;
-                    for (float x = span.from + rand(0.3f, 1.2f); x < span.to - 0.3f; x += rand(0.9f, 2.4f))
+                    for (float x = span.from + rand(0.3f, 1.2f); x < span.to - 0.3f; x += rand(0.7f, 2f))
                     {
-                        // On the ridge in front of the lane, and partway down the front slope.
-                        // The front slope falls h over 1.8 h, so a point d in front of the ridge is d / 1.8 lower.
-                        float ahead = rand(0.25f, 0.25f + 1.2f * h), z = -StreetBuilder.PathHalf - ahead;
-                        KitModel(dressing, "Plants", "DuneGrass", new Vector3(x, span.top - ahead / 1.8f, z), rand(0f, 360f), rand(0.7f, 1.3f));
+                        // Down the face toward the camera (far enough down not to hide the ball on top), and now
+                        // and then on the back slope.
+                        float z = rng.NextDouble() < 0.75 ? -rand(2.6f + 0.6f * h, 3.2f + 2f * h) : rand(2.4f, 3f + 2f * h);
+                        KitModel(dressing, "Plants", "DuneGrass", new Vector3(x, field.Height(x, z), z), rand(0f, 360f), rand(0.7f, 1.3f));
                     }
                 }
-                foreach (var gap in gaps)
-                    foreach (float edge in new[] { gap.x, gap.y })
+                foreach (var gap in field.Gaps)
+                    foreach (float edge in new[] { gap.l, gap.r })
                     {
-                        float inward = edge == gap.x ? 1f : -1f, top = GroundTopUnder(edge - inward * 0.2f, 50f);
+                        float outward = edge == gap.l ? -1f : 1f;
                         for (float z = 2.2f; z < 8.6f; z += rand(1.2f, 2.4f))
                         {
+                            float x = edge + outward * rand(0.2f, 0.7f);
                             if (rng.NextDouble() < 0.55)
-                                KitModel(dressing, "Plants", "DuneGrass", new Vector3(edge - inward * rand(0.2f, 0.6f), top, z), rand(0f, 360f), rand(0.7f, 1.2f));
+                                KitModel(dressing, "Plants", "DuneGrass", new Vector3(x, field.Height(x, z), z), rand(0f, 360f), rand(0.7f, 1.2f));
                             else
-                                KitModel(dressing, "Terrain", rng.NextDouble() < 0.5 ? "Boulder1" : "Boulder2", new Vector3(edge + inward * (top - baseTop + 0.3f) * 0.5f, (top + baseTop - 0.3f) * 0.5f - 0.1f, z), rand(0f, 360f), rand(0.35f, 0.6f));
+                                KitModel(dressing, "Terrain", rng.NextDouble() < 0.5 ? "Boulder1" : "Boulder2", new Vector3(x, field.Height(x, z) - 0.1f, z), rand(0f, 360f), rand(0.35f, 0.6f));
                         }
                     }
                 dressing.gameObject.AddComponent<StaticBatcher>();
             }
 
-            /// <summary>The top of the span touching x on the given side, or NaN if none touches.</summary>
-            static float NeighbourTop(List<GroundSpan> spans, float x, bool leftSide)
-            {
-                foreach (var s in spans)
-                    if (leftSide ? Mathf.Abs(s.to - x) < 0.01f : Mathf.Abs(s.from - x) < 0.01f) return s.top;
-                return float.NaN;
-            }
-
-            /// <summary>How far a dune's end slope runs out: a walkable 22 degrees down to a lower neighbour (or the level's open ends); nothing where the neighbour is as high or higher.</summary>
-            static float DuneEnd(float top, float neighbour, float baseTop)
-            {
-                float drop = top - (float.IsNaN(neighbour) ? baseTop : neighbour);
-                return drop > 0.05f ? drop * 2.4f : 0f;
-            }
-
             /// <summary>
-            /// The collider for a dune's end slope at <paramref name="edge"/>, down to
-            /// <paramref name="bottom"/> over <paramref name="run"/> (negative: to the left), so the kid
-            /// and the ball go up and down the slope that's drawn. It overlaps the top a little so
-            /// nothing catches on the seam.
+            /// The collider for a step's slope: the S-curve sampled every quarter unit from its foot
+            /// up to the top of the step, overlapping the top a little so nothing catches on the seam.
             /// </summary>
-            void StepSlope(float edge, float top, float run, float bottom)
+            void StepSlope(SandField.Step step)
             {
                 var go = new GameObject("DuneSlope");
                 go.transform.SetParent(root, false);
                 var poly = go.AddComponent<PolygonCollider2D>();
-                float inward = run < 0f ? 0.3f : -0.3f;
-                poly.points = new[]
+                float run = Mathf.Abs(step.run), dir = Mathf.Sign(step.run);
+                int pieces = Mathf.Max(4, Mathf.CeilToInt(run / 0.25f));
+                var points = new List<Vector2>();
+                for (int k = 0; k <= pieces; k++)
                 {
-                    new Vector2(edge + run, bottom), new Vector2(edge, top), new Vector2(edge + inward, top), new Vector2(edge + inward, bottom),
-                };
+                    float d = 1f - k / (float)pieces;   // from the foot (1) to the top (0)
+                    points.Add(new Vector2(step.edge + step.run * d, step.bottom + (step.top - step.bottom) * SandField.Ease(1f - d)));
+                }
+                float under = step.bottom - 0.6f;
+                points.Add(new Vector2(step.edge - dir * 0.3f, step.top));
+                points.Add(new Vector2(step.edge - dir * 0.3f, under));
+                points.Add(new Vector2(step.edge + step.run, under));
+                poly.points = points.ToArray();
                 poly.sharedMaterial = GroundMat;
             }
 

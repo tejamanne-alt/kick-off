@@ -284,83 +284,160 @@ def patches(name, faces, rgb, surface):
     o = bpy.data.objects.new(name, me); S.collection.objects.link(o)
 
 
-def beach_ground(spans):
-    # A port of LevelBuildKit.BeachGround (keep in step): flat sand cut by tidal channels at the gaps,
-    # dunes with sloping faces over raised spans, banks down to the water.
-    spans = sorted(spans)
-    base = min(t for _, _, t in spans); water_y = base - 0.3
-    zf, dune_back, shore, wet_from = -PATH, 8.0, 9.0, 5.6
-    gaps, gap_tops = [], []
-    reach, reach_top = spans[0][1], spans[0][2]
-    for a, b, t in spans[1:]:
-        if a > reach + 0.01: gaps.append((reach, a)); gap_tops.append((reach_top, t))
-        if b > reach: reach, reach_top = b, t
-    cuts = [X0 - 600] + [v for g in gaps for v in g] + [X1 + 600]
-    for k in range(0, len(cuts), 2):
-        a, b = cuts[k], cuts[k + 1]
-        box(a, b, base - 0.2, base, -PATH, PATH, (.96, .93, .88), 'lane', 'Sand')
-        box(a, b, base - 0.2, base, PATH, wet_from, W, 'back', 'Sand')
-        box(a, b, base - 0.32, base - 0.12, wet_from, shore, (.82, .74, .62), 'wet', 'Sand')
-    dunes, banks, wetbanks, streams = [], [], [], []
-    for (l, r), (tl, tr) in zip(gaps, gap_tops):
-        for x, top, d in ((l, tl, 1), (r, tr, -1)):
-            h = top - base
-            if h > .05:
-                dunes.append([(x, base, zf - 1.8 * h), (x, top, zf), (x + (top - base) * .6 * d, base, zf)])   # dry gully through the front slope
-            prof = [(zf, top, 0), (dune_back, top, 0), (dune_back + 1.2 * h, base - .12, 1)] if h > .05 else [(zf, top, 0), (wet_from, top, 0), (wet_from + .01, top - .12, 1)]
-            prof.append((shore + .5, base - .12, 1))
-            def bank_point(y, z, t):
-                # LevelBuildKit.BankPoint, with a sine hash standing in for Perlin noise.
-                run = (y - water_y) * .6
-                n = .5 * math.sin(z * 2.1 + x * 0.73 + t * 5.0) * math.cos(z * 0.9 - x * 0.4)
-                return (x + run * t * (1 + n * (.5 if t < 1 else .35)) * d, y + (water_y - y) * t, z)
-            for (z0, y0, _), (z1, y1, c1) in zip(prof, prof[1:]):
-                pieces = max(1, math.ceil(abs(z1 - z0)))
-                for q in range(pieces):
-                    za, zb = z0 + (z1 - z0) * q / pieces, z0 + (z1 - z0) * (q + 1) / pieces
-                    ya, yb = y0 + (y1 - y0) * q / pieces, y0 + (y1 - y0) * (q + 1) / pieces
-                    out = wetbanks if c1 else dunes
-                    out.append([(x, ya, za), (x, yb, zb), bank_point(yb, zb, .5), bank_point(ya, za, .5)])
-                    out.append([bank_point(ya, za, .5), bank_point(yb, zb, .5), bank_point(yb, zb, 1), bank_point(ya, za, 1)])
-        run = (base - water_y) * .6
-        banks.append([(l, base, zf), (l + run, water_y, zf + .25), (r - run, water_y, zf + .25), (r, base, zf)])
-        streams.append([(l, water_y, zf), (l, water_y, shore + .6), (r, water_y, shore + .6), (r, water_y, zf)])
+def _i32(v):
+    v &= 0xffffffff
+    return v - 0x100000000 if v & 0x80000000 else v
 
-    def neighbour(x, left):
-        for a, b, t in spans:
-            if (abs(b - x) < .01 if left else abs(a - x) < .01): return t
-        return None
 
-    for a, b, top in spans:
-        h = top - base
+def ease(t):
+    t = min(1.0, max(0.0, t))
+    return t * t * (3 - 2 * t)
+
+
+def noise(x, y):
+    # SandField.Noise: smooth value noise over an integer hash (C# int arithmetic).
+    def hsh(i, j):
+        h = _i32(i * 374761393 + j * 668265263)
+        h = _i32((h ^ (h >> 13)) * 1274126177)
+        return ((h ^ (h >> 16)) & 0xffff) / 65535.0
+    i, j = math.floor(x), math.floor(y)
+    u, v = ease(x - i), ease(y - j)
+    lerp = lambda a, b, t: a + (b - a) * t
+    return lerp(lerp(hsh(i, j), hsh(i + 1, j), u), lerp(hsh(i, j + 1), hsh(i + 1, j + 1), u), v)
+
+
+class Sand:
+    # A port of World/SandField (keep in step): the beach as one smooth surface from the ground spans.
+    SLOPE_RUN, WET_FROM, SHORE_FROM, CHANNEL_DEPTH = 3.6, 5.6, 8.6, 0.6
+    DRY, TRODDEN, WET = (1, 1, 1), (.96, .93, .88), (.82, .74, .62)
+
+    def __init__(self, spans, calm=()):
+        self.spans = sorted(spans); self.calm = list(calm)
+        self.base = min(t for _, _, t in self.spans)
+        self.first_from, self.first_top = self.spans[0][0], self.spans[0][2]
+        self.last_to, self.last_top = -1e9, 0
+        for a, b, t in self.spans:
+            if b > self.last_to: self.last_to, self.last_top = b, t
+        self.steps, self.gaps = [], []
+        for a in self.spans:
+            for b in self.spans:
+                if abs(a[1] - b[0]) > .01 or abs(a[2] - b[2]) < .02: continue
+                drop = abs(a[2] - b[2])
+                if a[2] > b[2]: st = (a[1], a[2], b[2], min(self.SLOPE_RUN * drop, (b[1] - b[0]) * .9))
+                else: st = (b[0], b[2], a[2], -min(self.SLOPE_RUN * drop, (a[1] - a[0]) * .9))
+                if abs(st[3]) > .05: self.steps.append(st)
+        reach, reach_top = self.spans[0][1], self.spans[0][2]
+        for a, b, t in self.spans[1:]:
+            if a > reach + .01: self.gaps.append((reach, a, reach_top, t))
+            if b > reach: reach, reach_top = b, t
+
+    def lane(self, x):
+        h = max([t for a, b, t in self.spans if a <= x <= b], default=None)
+        if h is None:
+            if x < self.first_from: h = self.first_top
+            elif x > self.last_to: h = self.last_top
+            else:
+                h = self.base - self.CHANNEL_DEPTH
+                for g in self.gaps:
+                    if g[0] < x < g[1]: h = self.channel(g, x)
+        for edge, top, bottom, run in self.steps:
+            d = (x - edge) / run
+            if 0 <= d < 1: h = max(h, bottom + (top - bottom) * ease(1 - d))
+        return h
+
+    def channel(self, g, x):
+        l, r, hl, hr = g
+        bed, bank = self.base - self.CHANNEL_DEPTH, min(.6, (r - l) * .4)
+        return max(hl + (bed - hl) * ease((x - l) / bank), hr + (bed - hr) * ease((r - x) / bank))
+
+    @staticmethod
+    def dune(x, z, lift):
+        front, back = -1.65 - .6 * noise(x * .09, 3.7), 1.8 + 1.8 * noise(x * .06, 9.2)
+        if z < front: return ease(1 - (front - z) / (1.4 + 2.2 * lift))
+        if z > back: return ease(1 - (z - back) / (1.8 + 2.8 * lift))
+        return 1.0
+
+    @staticmethod
+    def channel_reach(z):
+        return ease((z + 3.6) / 2)
+
+    def hummocks(self, x, z):
+        m = ease((abs(z) - 1.7) / 1.8) * (1 - ease((z - 4.4) / 1.2))
+        for a, b in self.calm:
+            d = a - x if x < a else x - b if x > b else 0
+            m *= ease(d / 3)
+        if m <= 0: return 0.0
+        return m * (.18 * (noise(x * .19, z * .26) - .5) + .07 * (noise(x * .55 + 11, z * .6 + 5) - .5))
+
+    def shore(self, z):
+        return -.12 * ease((z - self.WET_FROM) / 1.4) - .44 * ease((z - self.SHORE_FROM) / 2.4)
+
+    def height(self, x, z, lane=None):
+        lift = (self.lane(x) if lane is None else lane) - self.base
+        h = self.base + lift * (self.dune(x, z, lift) if lift > 0 else self.channel_reach(z))
+        return h + self.hummocks(x, z) + self.shore(z)
+
+    def tint(self, x, z, lane=None):
+        k = 1 - ease((abs(z) - 1.3) / .5)
+        c = [a + (b - a) * k for a, b in zip(self.DRY, self.TRODDEN)]
+        wet = ease((z - (self.WET_FROM - .2)) / 1.2)
+        lift = (self.lane(x) if lane is None else lane) - self.base
+        if lift < 0: wet = max(wet, min(1, -lift / self.CHANNEL_DEPTH) * self.channel_reach(z))
+        return [a + (b - a) * wet for a, b in zip(c, self.WET)]
+
+
+SAND = None
+SAND_ROWS = [-16 + k * 1.25 for k in range(8)] + [-6 + k * .4 for k in range(42)] + [11.2]
+
+
+def beach_ground(sand):
+    # LevelBuildKit.BeachGround: the sand as one smooth mesh (SandDunes) with vertex tints, water in any channel.
+    xs = [X0 - 60 + i * .5 for i in range(int((X1 - X0 + 120) / .5) + 1)]
+    verts, cols, faces = [], [], []
+    for x in xs:
+        lane = sand.lane(x)
+        for z in SAND_ROWS:
+            verts.append(tuple(B(x, sand.height(x, z, lane), z))); cols.append(sand.tint(x, z, lane))
+    n = len(SAND_ROWS)
+    for i in range(len(xs) - 1):
+        for j in range(n - 1):
+            a = i * n + j
+            faces.append((a, a + n, a + n + 1, a + 1))
+    me = bpy.data.meshes.new('sand'); me.from_pydata(verts, [], faces)
+    for f in me.polygons: f.use_smooth = True
+    attr = me.color_attributes.new('tint', 'FLOAT_COLOR', 'POINT')
+    for k, c in enumerate(cols): attr.data[k].color = lin(c) + (1,)
+    m = flat_mat(W, 'Sand').copy(); nt = m.node_tree
+    vc = nt.nodes.new('ShaderNodeVertexColor'); vc.layer_name = 'tint'
+    bsdf = nt.nodes.get('Principled BSDF')
+    mix = nt.nodes.new('ShaderNodeMix'); mix.data_type = 'RGBA'; mix.blend_type = 'MULTIPLY'; mix.inputs['Factor'].default_value = 1.0
+    src = bsdf.inputs['Base Color'].links[0].from_socket if bsdf.inputs['Base Color'].links else None
+    if src is not None: nt.links.new(src, mix.inputs['A'])
+    else: mix.inputs['A'].default_value = bsdf.inputs['Base Color'].default_value
+    nt.links.new(vc.outputs['Color'], mix.inputs['B']); nt.links.new(mix.outputs['Result'], bsdf.inputs['Base Color'])
+    me.materials.append(m)
+    bm = bmesh.new(); bm.from_mesh(me); bmesh.ops.recalc_face_normals(bm, faces=bm.faces); bm.to_mesh(me); bm.free()
+    for f in me.polygons: f.use_smooth = True
+    o = bpy.data.objects.new('sand', me); S.collection.objects.link(o)
+    if sand.gaps:
+        y = sand.base - .3
+        patches('streams', [[(l, y, -3.6), (l, y, 12), (r, y, 12), (r, y, -3.6)] for l, r, _, _ in sand.gaps], W, 'Sea')
+    # LevelBuildKit.BeachDressing: dune grass down the dunes' faces.
+    r_ = random.Random(seed + 5)
+    for a, b, top in sand.spans:
+        h = top - sand.base
         if h < .05: continue
-        nl, nr = neighbour(a, True), neighbour(b, False)
-        end = lambda n: (top - (base if n is None else n)) * 2.4 if top - (base if n is None else n) > .05 else 0
-        eL, eR = end(nl), end(nr)
-        yL = base if nl is None else min(nl, top); yR = base if nr is None else min(nr, top)
-        if any(abs(g[1] - a) < .01 for g in gaps): eL, yL = 0, top
-        if any(abs(g[0] - b) < .01 for g in gaps): eR, yR = 0, top
-        eF, eB = 1.8 * h, 1.2 * h
-        tfl, tfr, tbl, tbr = (a, top, zf), (b, top, zf), (a, top, dune_back), (b, top, dune_back)
-        ffl, ffr = (a - eL, base, zf - eF), (b + eR, base, zf - eF)
-        bbl, bbr = (a - eL, base, dune_back + eB), (b + eR, base, dune_back + eB)
-        lf, lb, rf, rb = (a - eL, yL, zf), (a - eL, yL, dune_back), (b + eR, yR, zf), (b + eR, yR, dune_back)
-        dunes += [[tfl, tbl, tbr, tfr], [ffl, tfl, tfr, ffr], [tbl, bbl, bbr, tbr]]
-        if eL > .01: dunes += [[lf, lb, tbl, tfl], [ffl, lf, tfl], [tbl, lb, bbl]]
-        if eR > .01: dunes += [[tfr, tbr, rb, rf], [tfr, rf, ffr], [tbr, bbr, rb]]
-    if dunes: patches('dunes', dunes, W, 'Sand')
-    if banks: patches('banks', banks, (.9, .84, .74), 'Sand')
-    if wetbanks: patches('wetbanks', wetbanks, (.82, .74, .62), 'Sand')
-    if streams: patches('streams', streams, W, 'Sea')
+        x = a + r_.uniform(.3, 1.2)
+        while x < b - .3:
+            z = -r_.uniform(2.6 + .6 * h, 3.2 + 2 * h) if r_.random() < .75 else r_.uniform(2.4, 3 + 2 * h)
+            place('Plants', 'DuneGrass', x, sand.height(x, z), z, r_.uniform(0, 360), r_.uniform(.7, 1.3))
+            x += r_.uniform(.7, 2)
 
 
 if chapter == 3:
-    strip(FRONT, -PATH, W, surface='Sand')
-    if spans_arg: beach_ground(spans_arg)
-    else:
-        strip(-PATH, PATH, (.96, .93, .88), surface='Sand'); strip(PATH, 5.6, W, surface='Sand')
-        strip(5.6, 9, (.82, .74, .62), lift=-0.12, surface='Sand')
-    box(X0 - 1500, X1 + 1500, -0.5, -0.35, 9, 1000, W, 'sea', 'Sea')
+    SAND = Sand(spans_arg or [(X0 - 600, X1 + 600, 0.0)])
+    beach_ground(SAND)
+    box(X0 - 1500, X1 + 1500, SAND.base - 0.5, SAND.base - 0.3, 9, 1000, W, 'sea', 'Sea')
 elif chapter == 5:
     strip(FRONT, -PATH, W, lift=.04, surface='Grass'); strip(-PATH, PATH, W, surface='Gravel')
     strip(PATH, PROP + .6, W, lift=.04, surface='Grass'); strip(PROP + .6, 90, (.92, .95, .9), lift=.04, surface='Grass')
@@ -526,10 +603,11 @@ def market():
 
 
 def beach():
+    g = SAND.height
     towers = []
     x = X0
     while x < X1:
-        place('Leisure', 'LifeguardTower', x, 0, 7.4); towers.append(x)
+        place('Leisure', 'LifeguardTower', x, g(x, 7.4), 7.4); towers.append(x)
         x += rng.uniform(30, 45)
     canopy = [(.9, .3, .28), (.25, .5, .85), (1, .75, .2), (.3, .66, .62)]
     towels = [(.95, .55, .6), (.45, .75, .9), (1, .85, .35), (.55, .8, .55)]
@@ -538,37 +616,42 @@ def beach():
         z = rng.uniform(3.4, 5.2)
         if any(abs(t - x) < 3 for t in towers):
             x += rng.uniform(5, 11); continue
-        p = place('Leisure', 'Parasol', x, 0, z, rng.uniform(0, 360), 1, [rng.choice(canopy), None, None])
+        p = place('Leisure', 'Parasol', x, g(x, z) - .05, z, rng.uniform(0, 360), 1, [rng.choice(canopy), None, None])
         if p: p.rotation_euler = (math.radians(rng.uniform(-7, 7)), math.radians(rng.uniform(-7, 7)), p.rotation_euler.z)
-        place('Leisure', 'BeachTowel', x + rng.uniform(-.3, .3), 0, z - .4, 90 + rng.uniform(-15, 15), 1, [rng.choice(towels), None, None])
+        tx = x + rng.uniform(-.3, .3)
+        place('Leisure', 'BeachTowel', tx, g(tx, z - .4), z - .4, 90 + rng.uniform(-15, 15), 1, [rng.choice(towels), None, None])
         if rng.random() < .4:
-            place('Leisure', 'CoolBox', x + .9, 0, z + .3, rng.uniform(-25, 25), 1, [rng.choice(canopy), None, None])
+            place('Leisure', 'CoolBox', x + .9, g(x + .9, z + .3), z + .3, rng.uniform(-25, 25), 1, [rng.choice(canopy), None, None])
         if rng.random() < .3:
-            place('Leisure', 'SandCastle', x + rng.uniform(1.3, 1.8), 0, z - rng.uniform(1, 1.6), rng.uniform(-20, 20))
-            place('Leisure', 'BucketSpade', x + rng.uniform(2.1, 2.5), 0, z - rng.uniform(.8, 1.3), rng.uniform(0, 360))
+            cx, cz, bx, bz = x + rng.uniform(1.3, 1.8), z - rng.uniform(1, 1.6), x + rng.uniform(2.1, 2.5), z - rng.uniform(.8, 1.3)
+            place('Leisure', 'SandCastle', cx, g(cx, cz) - .03, cz, rng.uniform(-20, 20))
+            place('Leisure', 'BucketSpade', bx, g(bx, bz), bz, rng.uniform(0, 360))
         x += rng.uniform(5, 11)
     x = X0 + 15
     while x < X1:
-        s_ = rng.uniform(.8, 1.6); rz = rng.uniform(8.6, 11)
-        place('Terrain', 'RockCluster', x, -0.22, rz, rng.uniform(-30, 30), s_ * .8)
+        s_ = rng.uniform(.8, 1.6); rz = rng.uniform(8.6, 11); bx, bz = x + rng.uniform(2, 3.5), rz - rng.uniform(.5, 1.2)
+        place('Terrain', 'RockCluster', x, g(x, rz) - .15, rz, rng.uniform(-30, 30), s_ * .8)
         if rng.random() < .5:
-            place('Terrain', rng.choice(['Boulder1', 'Boulder2']), x + rng.uniform(2, 3.5), -0.17, rz - rng.uniform(.5, 1.2), rng.uniform(0, 360), rng.uniform(.7, 1.1))
+            place('Terrain', rng.choice(['Boulder1', 'Boulder2']), bx, g(bx, bz) - .1, bz, rng.uniform(0, 360), rng.uniform(.7, 1.1))
         x += rng.uniform(12, 24)
     x = X0 + rng.uniform(5, 15)
     while x < X1:
         for k in range(rng.randrange(1, 4)):
-            px = x + k * rng.uniform(2.2, 3.4)
+            px, pz = x + k * rng.uniform(2.2, 3.4), rng.uniform(5.6, 7)
             if any(abs(t - px) < 4.5 for t in towers): continue
-            plant(rng.choice(['Palm', 'PalmShort']), px, -0.1, rng.uniform(5.6, 7), rng.uniform(.85, 1.15))
+            plant(rng.choice(['Palm', 'PalmShort']), px, g(px, pz) - .1, pz, rng.uniform(.85, 1.15))
         x += rng.uniform(16, 32)
     x = X0
     while x < X1:
-        z = rng.uniform(-6.5, -2.4)
+        z = rng.uniform(-6.5, -3.4)
         for k in range(rng.randrange(1, 4)):
-            plant('DuneGrass', x + k * rng.uniform(.5, .9), 0, z + rng.uniform(-.4, .4), rng.uniform(.7, 1.4))
+            gx, gz = x + k * rng.uniform(.5, .9), z + rng.uniform(-.4, .4)
+            plant('DuneGrass', gx, g(gx, gz) - .03, gz, rng.uniform(.7, 1.4))
         x += rng.uniform(1.2, 4)
     for i in range(3):
-        place('Terrain', 'Headland', X0 + (X1 - X0) * (.15 + i * .4) + rng.uniform(-40, 40), -0.8, 650 + i * 60, rng.uniform(-15, 15), rng.uniform(2.2, 3))
+        place('Terrain', 'Headland', X0 + (X1 - X0) * (.15 + i * .4) + rng.uniform(-40, 40), SAND.base - 0.8, 650 + i * 60, rng.uniform(-15, 15), rng.uniform(2.2, 3))
+    # The foam at the waterline (StreetBuilder.Beach's shoreline, at rest).
+    box(X0 - 60, X1 + 60, SAND.base - .3, SAND.base - .28, 9.2, 10, (.97, .98, 1), 'foam')
 
 
 def site_yard(x, w, deep):
@@ -681,8 +764,12 @@ def park():
 {1: suburb, 2: market, 3: beach, 4: city, 5: park}[chapter]()
 poles()
 
-# A kid-sized marker on the footpath for scale (1.55 m), where the player would stand.
-box(CAM_X - 1.5 - .2, CAM_X - 1.5 + .2, 0, 1.55, -.15, .15, (.9, .35, .3), 'kid')
+# A kid-sized marker on the footpath for scale (1.55 m), where the player would stand, and the ball
+# (a size 5 football, 22 cm) at their feet.
+kid_y = SAND.lane(CAM_X - 1.5) if SAND else 0.0
+box(CAM_X - 1.5 - .2, CAM_X - 1.5 + .2, kid_y, kid_y + 1.55, -.15, .15, (.9, .35, .3), 'kid')
+ball_y = SAND.lane(CAM_X - .9) if SAND else 0.0
+box(CAM_X - .9 - .11, CAM_X - .9 + .11, ball_y, ball_y + .22, -.11, .11, (.97, .97, .95), 'ball')
 
 # ---------------------------------------------------------------- the game camera
 cam = bpy.data.objects.new('cam', bpy.data.cameras.new('cam')); S.collection.objects.link(cam); S.camera = cam

@@ -412,29 +412,28 @@ namespace DribbleToSchool.EditorTools
 
         // ===================== Chapter 3: The Beach =====================
 
-        /// <summary>L11: sand slows everything; a raised boardwalk with gaps.</summary>
+        /// <summary>L11: sand slows everything; up over the dunes, with rocks to hop on top.</summary>
         public static void Boardwalk(TrackBuilder t)
         {
             t.Walls(-8f, 110f);
             t.Start(0f);
             t.Ground(-8f, 20f);
             t.Sign("The beach! Sand slows the ball -\nkeep your touches light", new Vector2(5f, 3.2f));
-            t.Sand(8f, 18f);
+            t.Sand(8f, 16f);
 
-            t.Ground(20f, 32f, 0.9f);
-            t.Pit(32f, 33.8f, 0.9f);
-            t.Ground(33.8f, 46f, 0.9f);
-            t.Checkpoint(36f, 0.9f);
+            // Dunes: the sand slopes up to each one and back down after it (see SandField).
+            t.Ground(20f, 46f, 0.9f);
+            t.Wall(33f, 0.55f, 0.9f, 0.9f);
+            t.Checkpoint(37f, 0.9f);
 
             t.Ground(46f, 62f);
-            t.Sand(48f, 58f);
-            t.Ground(62f, 74f, 0.9f);
-            t.Checkpoint(64f, 0.9f);
-            t.Pit(74f, 75.8f, 0.9f);
-            t.Ground(75.8f, 88f, 0.9f);
+            t.Sand(50f, 58f);
+            t.Ground(62f, 88f, 0.9f);
+            t.Checkpoint(65f, 0.9f);
+            t.Wall(75f, 0.55f, 0.9f, 0.9f);
             t.Ground(88f, 110f);
-            t.Checkpoint(90f);
-            t.Sand(94f, 98f);
+            t.Checkpoint(93f);
+            t.Sand(95f, 99f);
 
             t.CoinRow(9f, 17f, 0.6f, 4);
             t.CoinArc(31.5f, 34.3f, 1.6f, 1.2f, 3);
@@ -522,9 +521,9 @@ namespace DribbleToSchool.EditorTools
             t.Wall(16f, 0.6f, 0f, 0.9f);
             t.Wall(16f, 1f, 0f, 0.35f);
 
-            t.Pit(28f, 29.6f);
-            t.Ground(29.6f, 44f, 0.6f);
-            t.Checkpoint(32f, 0.6f);
+            t.Ground(28f, 44f, 0.6f);
+            t.Wall(31f, 0.5f, 0.6f, 0.8f);
+            t.Checkpoint(35f, 0.6f);
             t.Seagull(52f, 30f, 2.8f, 0f);
             t.Ground(44f, 130f);
             t.Tide(48f, 54f, 6f, 2f);
@@ -541,7 +540,7 @@ namespace DribbleToSchool.EditorTools
             t.Tide(108f, 112f, 6f, 3f);
 
             t.CoinArc(15f, 17f, 1.5f, 1f, 3);
-            t.CoinArc(27.6f, 30.2f, 1f, 1.2f, 3);
+            t.CoinArc(30f, 32f, 1.6f, 1f, 3);
             t.CoinRow(63f, 69f, 0.6f, 3);
             t.CoinRow(95f, 99f, 2.6f, 3);
             t.CoinRow(109f, 111f, 0.6f, 2);
