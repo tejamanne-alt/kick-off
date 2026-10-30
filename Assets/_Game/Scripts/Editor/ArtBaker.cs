@@ -183,7 +183,10 @@ namespace DribbleToSchool.EditorTools
             foreach (var kit in LevelBuildKit.Kits)
             {
                 var atlas = AssetDatabase.LoadAssetAtPath<Texture2D>(LevelBuildKit.ModelsDir + "/" + kit + "/" + kit + "Atlas.png");
-                if (atlas != null) set.kits[kit] = ToonMaterial("Kit" + kit, toon, atlas, false);
+                if (atlas == null) continue;
+                var m = ToonMaterial("Kit" + kit, toon, atlas, false);
+                m.SetFloat("_Wind", kit == "Plants" ? 0.1f : 0f);   // trees and grass sway; their alpha is a wind weight
+                set.kits[kit] = m;
             }
             set.cloud = ToonMaterial("Cloud", toon, null, false);
             set.cloud.SetFloat("_Haze", 0.22f);

@@ -6,7 +6,8 @@
 // - real-time sun shadows from the scene's directional light, tinted like the shade side;
 // - an optional world-space texture projection (so surfaces tile at any size), with soft
 //   world-scale patches of lighter, darker, warmer and cooler ground so the repeat doesn't show;
-// - distance haze that leans warm toward the sun, so far layers dissolve into a glowing sky.
+// - distance haze that leans warm toward the sun, so far layers dissolve into a glowing sky;
+// - an optional breeze (_Wind) that sways vertices by their alpha (the plants kit's wind weight).
 // Colours and directions come from globals set by WorldLook; the directional light only casts
 // the shadows.
 Shader "DribbleToSchool/Toon"
@@ -22,6 +23,7 @@ Shader "DribbleToSchool/Toon"
         _Scroll ("Texture scroll (xy per second)", Vector) = (0,0,0,0)
         _Haze ("Distance haze amount", Range(0,1)) = 1
         _Rim ("Rim light", Range(0,1)) = 0.35
+        _Wind ("Wind sway (m at the tips; vertex alpha weights it)", Range(0,0.5)) = 0
     }
     SubShader
     {
@@ -49,6 +51,7 @@ Shader "DribbleToSchool/Toon"
             float4 _Scroll;
             float _Haze;
             float _Rim;
+            float _Wind;
 
             struct appdata
             {
@@ -71,8 +74,18 @@ Shader "DribbleToSchool/Toon"
             v2f vert (appdata v)
             {
                 v2f o;
-                o.pos = UnityObjectToClipPos(v.vertex);
                 o.worldPos = mul(unity_ObjectToWorld, v.vertex).xyz;
+                if (_Wind > 0.0)
+                {
+                    // A gentle sway in the breeze: the plants kit bakes a wind weight into vertex
+                    // alpha (0 at the root, 1 at the tips); gusts roll along the street.
+                    float phase = _Time.y * 1.3 + o.worldPos.x * 0.35 + o.worldPos.z * 0.2;
+                    float sway = sin(phase) * 0.6 + sin(phase * 2.3 + 1.7) * 0.25;
+                    float w = v.color.a * _Wind;
+                    o.worldPos.x += sway * w;
+                    o.worldPos.z += sin(phase * 0.8 + 0.5) * w * 0.3;
+                }
+                o.pos = mul(UNITY_MATRIX_VP, float4(o.worldPos, 1.0));
                 o.normal = UnityObjectToWorldNormal(v.normal);
                 o.uv = TRANSFORM_TEX(v.uv, _MainTex);
                 o.color = v.color;
