@@ -90,7 +90,7 @@ def _streak(img, ppm_a, ppm_b, a0, b1, a, btop, length, width, col, alpha, rng):
 
 # ---------------------------------------------------------------- shared tiles
 LAT_BAR = (0.93, 0.72, 0.27)        # site yellow, as the chords
-LAT_GAP = (0.80, 0.76, 0.80)        # the hazy inside of the tower, seen through the near face
+LAT_GAP = (0.86, 0.82, 0.84)        # the hazy inside of the tower, seen through the near face
 LAT_FAR = (0.84, 0.74, 0.52)        # the far face's members, in shade
 
 
@@ -105,8 +105,8 @@ def t_lattice(w, h):
     img = _blend(img, _ss(0.05, 0.03, far), LAT_FAR, 1.0)
     img = _blend(img, _ss(0.06, 0.04, np.abs(V - 0.5)), LAT_FAR, 0.0)
     d = np.abs(U - V)
-    bw = 0.06
-    bar = np.maximum(_ss(bw, bw - 0.02, d), _ss(0.075, 0.055, V))
+    bw = 0.08
+    bar = np.maximum(_ss(bw, bw - 0.02, d), _ss(0.09, 0.07, V))
     img = _blend(img, bar, LAT_BAR, 1.0)
     img = _blend(img, _ss(bw, bw - 0.015, d) * (U > V) * _ss(bw - 0.03, bw, d), (0.70, 0.52, 0.20), 0.5)
     for (cu, cv) in ((0.0, 0.0), (1.0, 1.0), (1.0, 0.0), (0.0, 1.0)):

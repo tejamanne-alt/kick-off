@@ -34,11 +34,12 @@ def build_crab():
 
     def claw_f(sx):
         piv = np.array((sx * 0.07, -0.045, 0.062))
-        arm = G.round_cone(piv, (sx * 0.112, -0.082, 0.083), 0.015, 0.017)
-        palm = G.ellipsoid((sx * 0.128, -0.092, 0.113), (0.029, 0.026, 0.041), G.rot((0, 1, 0), math.radians(-14 * sx)))
-        fixed = G.round_cone((sx * 0.138, -0.093, 0.143), (sx * 0.152, -0.097, 0.184), 0.0155, 0.0055)
-        move = G.round_cone((sx * 0.113, -0.093, 0.147), (sx * 0.113, -0.097, 0.178), 0.0115, 0.0045)
-        return G.blend(arm, (palm, 0.02), (fixed, 0.012), (move, 0.008)), piv
+        arm = G.round_cone(piv, (sx * 0.112, -0.082, 0.083), 0.016, 0.019)
+        palm = G.ellipsoid((sx * 0.13, -0.092, 0.113), (0.036, 0.03, 0.038), G.rot((0, 1, 0), math.radians(-14 * sx)))
+        # a chunky rounded pincer: the outer finger curls in to meet the inner one
+        fixed = G.tube([(sx * 0.146, -0.094, 0.135), (sx * 0.15, -0.096, 0.16), (sx * 0.136, -0.098, 0.18)], [0.019, 0.014, 0.008], n=7)
+        move = G.tube([(sx * 0.113, -0.094, 0.14), (sx * 0.112, -0.096, 0.16), (sx * 0.122, -0.098, 0.172)], [0.014, 0.011, 0.007], n=7)
+        return G.blend(arm, (palm, 0.02), (fixed, 0.014), (move, 0.01)), piv
 
     claws = {'ClawL': claw_f(1), 'ClawR': claw_f(-1)}
     legs = []
@@ -46,7 +47,7 @@ def build_crab():
         for k, y in enumerate((-0.024, 0.01, 0.042)):
             path = G.catmull([(sx * 0.075, y, 0.056), (sx * 0.126, y - 0.004, 0.088), (sx * 0.162, y - 0.006, 0.058),
                               (sx * 0.172 - sx * 0.004 * k, y - 0.008, 0.003)], 5)
-            legs.append(G.tube_mesh(path, np.linspace(0.0105, 0.0058, len(path)), sides=5))
+            legs.append(G.tube_mesh(path, np.linspace(0.0115, 0.0062, len(path)), sides=6))
     everything = G.union(body, *[f for f, _ in claws.values()])
 
     under = lambda P: 0.052 - P[:, 2] + 0.25 * np.maximum(-P[:, 1] - 0.05, 0)
@@ -72,7 +73,7 @@ def build_crab():
         sx = 1 if name == 'ClawL' else -1
         lo = np.array((min(sx * 0.03, sx * 0.21), -0.14, 0.0)); hi = np.array((max(sx * 0.03, sx * 0.21), 0.0, 0.22))
         sc = G.Surface(f, lo, hi, 0.002, 175, sym=False)
-        tip = lambda P: P[:, 2] - 0.168
+        tip = lambda P: P[:, 2] - 0.165
         pcs = sc.pieces([('tip', tip)], {'base': K.painter(CRAB['shell'], 1, 0.06, 0.18, dark=0.8, light=1.1),
                                          'tip': K.painter(CRAB['tip'], 0, 0.06, 0.18, dark=0.85, light=1.1)},
                         ao_field=everything, ao_scale=0.02)

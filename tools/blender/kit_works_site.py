@@ -67,7 +67,7 @@ def tower_crane():
     """A backdrop tower crane: about 38 m to the top of its tower head, a 40 m jib along +X and
     a counter-jib with counterweights along -X; the lattice is painted on the faces between
     modelled chords. Static; origin at the centre of the mast's footing."""
-    M = Model('TowerCrane', p1=SITE_YELLOW, p2=(0.95, 0.92, 0.84), ppm=7, ao_radius=1.6,
+    M = Model('TowerCrane', p1=SITE_YELLOW, p2=(0.95, 0.92, 0.84), ppm=7, ao_radius=1.2, ao=0.45,
               grime=dict(rust=0.15, chips=0.1, streaks=0.4, dirt_h=1.2, streak_len=3.0, mottle=0.08))
     # footing and the mast's feet
     M.add(cbox((-2.6, -2.6, 0.0), (2.6, 2.6, 0.8), 0.06, 'conc'))

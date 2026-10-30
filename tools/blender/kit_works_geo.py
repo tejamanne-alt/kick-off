@@ -526,9 +526,9 @@ def blob(center, radii, mat, n=7, rings=3, seed=0, jitter=0.12, flat_bottom=None
     return bm
 
 
-def chain_links(a, b, w, mat='ironw'):
+def chain_links(a, b, w, mat='tex'):
     """A chain as a flat bar textured with links (the 'chain' tile, 0.5 m per tile)."""
-    bm = tube([a, b], w * 0.5, mat, sides=4, caps=True, sm=2, uvtile=('chain', 0.5))
+    bm = tube([a, b], w * 0.5, mat, sides=4, caps=True, sm=2, uvtile=('chain', None))
     return bm
 
 
@@ -745,11 +745,16 @@ def paint_mesh(M, me):
         j = keys.get(k)
         if j is None: j = keys[k] = len(keys)
         kidx[i] = j
+    # sample each corner a little way in toward its triangle's centre, so a big face whose corners
+    # sit in crevices is not darkened all over by its corners' occlusion
+    pc = np.zeros(npl * 3, np.float32); me.polygons.foreach_get('center', pc); pc = pc.reshape(-1, 3)
     pts = [None] * len(keys); nrm = [None] * len(keys)
     for i in range(nl):
         j = kidx[i]
         if pts[j] is None:
-            pts[j] = Vector(co[i]); nrm[j] = Vector(cn[i]).normalized()
+            d = pc[lp[i]] - co[i]; dl = float(np.linalg.norm(d))
+            step = min(0.4 * dl, 0.25) / dl if dl > 1e-6 else 0.0
+            pts[j] = Vector(co[i] + d * step); nrm[j] = Vector(cn[i]).normalized()
     Vl = [Vector(v) for v in vco]
     Fl = [tuple(p.vertices) for p in me.polygons]
     ao = bake_ao(Vl, Fl, pts, nrm, radius, M.ground)

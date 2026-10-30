@@ -86,7 +86,6 @@ def build_dog():
     tail_tip = lambda P: 0.05 - np.linalg.norm(P - np.array((-0.262, 0, 0.568)), axis=1)
 
     face_uv = A.side_uv(A.DOG_FACE, 'dog_face')       # the smile is painted in the atlas
-    fur_uv = A.side_uv(A.DOG_FUR, 'fur')               # soft painted fur strokes
 
     fur = lambda z0, z1, **kw: K.painter(DOG['fur'], 1, z0, z1, **kw)
     cream = lambda z0, z1, **kw: K.painter(DOG['cream'], 1, z0, z1, **kw)
@@ -94,7 +93,7 @@ def build_dog():
     # ---------------- Body
     sb = G.Surface(body, (-0.28, -0.16, 0.12), (0.27, 0.16, 0.5), 0.004, 390, sym=True)
     body_p = sb.pieces([('chest', K.either(cream_chest, cream_belly))],
-                       {'base': fur(0.17, 0.42, uv=fur_uv), 'chest': cream(0.17, 0.42, uv=fur_uv)}, ao_field=everything, ao_scale=0.035)
+                       {'base': fur(0.17, 0.42), 'chest': cream(0.17, 0.42)}, ao_field=everything, ao_scale=0.035)
     # collar: a flat band hugging the neck, with a little tag
     a0, a1 = np.array((0.09, 0, 0.33)), np.array((0.155, 0, 0.42))
     axis = G.unit(a1 - a0)
@@ -152,11 +151,11 @@ def build_dog():
         lo = np.array(piv) + np.array((-0.11, -0.09, -0.30)); hi = np.array(piv) + np.array((0.11, 0.09, 0.08))
         lo[2] = -0.01
         sl = G.Surface(f, lo, hi, 0.003, 74, sym=False)
-        pcs = sl.pieces([('sock', socks)], {'base': fur(0.0, 0.3, nz_w=0.35, uv=fur_uv), 'sock': cream(0.0, 0.3, nz_w=0.35, uv=fur_uv)},
+        pcs = sl.pieces([('sock', socks)], {'base': fur(0.0, 0.3, nz_w=0.35), 'sock': cream(0.0, 0.3, nz_w=0.35)},
                         ao_field=everything, ao_scale=0.03)
         leg_parts.append(K.Part(name, piv, pcs, motion='swing about Y (fore-aft), +-30 deg'))
     st = G.Surface(tail, (-0.36, -0.07, 0.3), (-0.15, 0.07, 0.63), 0.0028, 110, sym=True)
-    tail_p = st.pieces([('tip', tail_tip)], {'base': fur(0.36, 0.56, uv=fur_uv), 'tip': cream(0.36, 0.56, uv=fur_uv)},
+    tail_p = st.pieces([('tip', tail_tip)], {'base': fur(0.36, 0.56), 'tip': cream(0.36, 0.56)},
                        ao_field=everything, ao_scale=0.02)
 
     parts = [K.Part('Body', (0, 0, 0), body_pieces),

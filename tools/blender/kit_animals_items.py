@@ -144,13 +144,12 @@ STICKER = {'face': hexc('#f58cb8'), 'line': hexc('#d9628f'), 'border': hexc('#fb
 
 
 def build_sticker():
-    n = 30
+    n = 40
     Rf = 0.27
     scal = lambda a, r: r + 0.012 * math.cos(10 * a) * min(max((r - 0.28) / 0.04, 0), 1)
     face = _band([(0, 0.02), (0.244, 0.02)], n)
-    line = _band([(0.244, 0.02), (0.258, 0.02)], n)
-    edge = _band([(0.258, 0.02), (Rf, 0.02)], n)
-    border = _band([(Rf, 0.02), (0.286, 0.037), (0.324, 0.034), (0.336, 0.0), (0.316, -0.02)], n, rfun=scal)
+    line = _band([(0.244, 0.02), (Rf, 0.02)], n)
+    border = _band([(Rf, 0.02), (0.29, 0.037), (0.33, 0.026), (0.316, -0.02)], n, rfun=scal)
     back = _band([(0.316, -0.02), (0, -0.02)], n, rfun=scal)
     t = np.linspace(0, 2 * math.pi, 25)[:-1]
     hx = 16 * np.sin(t) ** 3
@@ -160,7 +159,7 @@ def build_sticker():
                   base_z=0.012, base_grow=1.03)
     heart.N = G.vnormals(heart.V, heart.T)
     out = []
-    for kind, p in (('face', face), ('line', line), ('face', edge), ('border', border), ('back', back), ('heart', heart)):
+    for kind, p in (('face', face), ('line', line), ('border', border), ('back', back), ('heart', heart)):
         p.move(TO_FRONT)
         z = p.V[:, 2]
         light = 0.88 + 0.2 * G.smoothstep(-0.32, 0.32, z)
