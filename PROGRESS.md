@@ -186,8 +186,47 @@ This file is the resume point. A new session should read it first. All eight pha
 - Cars are original Blender models (`tools/blender/car.py`, `Art/Models/Cars`): a hatchback for parked cars (repainted in softened colours by `World/CarPaint`), and a van, an estate with roof-rack cargo, a small pickup and a compact off-roader for side-street traffic in their own paint. Their wheels roll as they drive (`World/WheelSpin`). The procedural `Car3D` remains as the fallback.
 - Building fronts get 3D dressing lined up with their painted facades: sills and lintels, window boxes of flowers, door canopies with lamps and potted plants, downpipes, and balconies with railings, plants and towels on the flats.
 
+## Painterly world and asset kits
+
+The look follows `docs/ART_DIRECTION.md`: cozy golden-hour stylized realism with layered haze.
+- **Light and air:** the toon shaders share `Shaders/DtsLook.cginc`:
+  - a soft wrapped light ramp;
+  - shade tinted by the sky above and a warm bounce from the ground below;
+  - a rim light;
+  - soft real-time sun shadows;
+  - distance haze that eases out over about 600 m and leans warm toward the sun.
+  
+  The rest of the atmosphere:
+  - `WorldLook` sets the light per chapter (`ChapterTheme.mood`).
+  - A sky dome draws the gradient, the horizon glow and the sun.
+  - `PostFX` adds a soft bloom, a warm grade and a vignette.
+- **Ground:** the surfaces are painterly 512 px tiles over 8 x 8 units, wrapping both ways (`Art/GroundArt.cs`):
+  - asphalt with repairs and sealed cracks;
+  - bevelled paving with moss in the joints;
+  - irregular cobbles;
+  - rippled sand with shells;
+  - warm clumpy lawn with flowers;
+  - gravel with fallen leaves;
+  - turquoise water.
+  
+  The toon shader adds world-scale patches (`_Macro`), so the repeat never shows.
+- **Asset kits:** seven kits of original Blender models replace the procedural boxes, blobs and flat cut-outs. Each has one atlas, a manifest and recolourable parts (`tools/blender/kit_*.py`, `Art/Models/<Kit>/`).
+
+  | Kit | Models | What's in it |
+  |---|---|---|
+  | Plants | 19 | Trees, bushes, hedges, grasses and flowers. They sway in the breeze by a baked wind weight. |
+  | Buildings | 9 | Houses, shops, flats, warehouse, school, garage. Recoloured from curated paint schemes. |
+  | Street | 36 | Poles and wires, lamps, walls, fences, hoardings, vending machines, signals, road furniture, pots, crates. |
+  | Terrain | 19 | Rocks, piles, cliffs, a headland, and the far landscape: rows that tile seamlessly at 70, 230, 440 and 640 m. |
+  | Leisure | 24 | Beach life, the park's playground, pond, bandstand and lamps. Also gameplay pieces: trampoline, swings, fountain, raft, signs, flags, targets. |
+  | Works | 29 | The sliding gate, bollard and intercom, the crane load and hoist, pipes, underpass, school arch, and building-site yards. |
+  | Animals | 12 | The dog, gulls, wildlife with idle motions (`World/CritterIdle`), and the coin, sticker and star. |
+
+  `LevelBuildKit.KitModel` places a model facing the camera through its `Attach.Front` marker, and `ModelTint` recolours its parts. Every placement falls back to the old procedural look if a model is missing. Gameplay pieces keep their exact colliders, pivots and slides.
+- **Preview:** `tools/blender/preview_street.py` lays the kits out the way the street builder does and renders a stretch of each chapter through the game camera. Use it to judge layout and scale without Unity.
+
 ## After Phase 8 (next steps)
 
-1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`.
+1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.
 2. Playtest on devices and tune the feel (tuning assets plus the Tune panel), then the bell times and streak targets (the level table).
 3. Optional: swap `CameraFollow2D` for Cinemachine, and add more languages to `StringTables`.
