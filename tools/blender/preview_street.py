@@ -375,7 +375,10 @@ def suburb():
         if rng.random() < .7:
             plant(rng.choice(['Broadleaf', 'BroadleafLarge', 'ConiferTall', 'Broadleaf', 'Birch']), cx + rng.uniform(-half, half), 0, z + 8 + rng.uniform(0, 3), rng.uniform(.9, 1.25))
         gap = (cx - half) - x
-        if gap > 1.8 and rng.random() < .6:
+        if gap > 4 and rng.random() < .4 and has('Buildings', 'Garage'):
+            p = HOUSE[abs(int(round(cx * 7 + z * 13))) % len(HOUSE)]
+            place('Buildings', 'Garage', x + gap / 2, 0, z + .8, 0, 1, list(p))
+        elif gap > 1.8 and rng.random() < .6:
             m = rng.choice(['Birch', 'ConiferSmall', 'ConiferMid', 'ShrubFlowering'])
             plant(m, x + gap / 2, 0, PROP + 1.4 + rng.uniform(0, 1.2), rng.uniform(1.3, 1.6) if m == 'ShrubFlowering' else rng.uniform(.7, .95))
         x += lot

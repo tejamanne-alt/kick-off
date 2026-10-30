@@ -1215,6 +1215,9 @@ def main():
         print(B.name, 'tris', K.tree_tris(ob))
         if B.prof: print('  ', sorted(B.prof.items(), key=lambda kv: -kv[1])[:12])
         K.export_model(ob, os.path.join(OUT, B.name + '.fbx'))
+        # free the Attach.* names for the next model (one scene holds the whole kit; the FBX
+        # above carries the exact names the game looks up)
+        for c in ob.children: c.name = B.name + ':' + c.name
     man.save(os.path.join(OUT, 'Buildings.json'))
     bpy.ops.wm.save_as_mainfile(filepath=os.path.join(OUT, 'Buildings.blend'))
     print('done', OUT)
