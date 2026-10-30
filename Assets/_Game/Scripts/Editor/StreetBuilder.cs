@@ -1103,15 +1103,18 @@ namespace DribbleToSchool.EditorTools
                 Color fields = autumn ? new Color(0.74f, 0.66f, 0.4f) : ch == 4 ? new Color(0.68f, 0.68f, 0.56f) : new Color(0.6f, 0.68f, 0.42f);
                 Color? grass = autumn ? new Color(0.8f, 0.68f, 0.36f) : (Color?)null;
                 // Flat fields from the end of the street ground out to the hills, so nothing floats.
-                var plain = Solid(root, "Fields", new Vector3((x0 + x1) * 0.5f, y - 0.06f, (BackZ + 700f) * 0.5f - 1f), new Vector3(x1 - x0 + 1800f, 0.1f, 700f - BackZ), fields);
+                var plain = Solid(root, "Fields", new Vector3((x0 + x1) * 0.5f, y - 0.06f, (BackZ + 760f) * 0.5f - 1f), new Vector3(x1 - x0 + 2200f, 0.1f, 760f - BackZ), fields);
                 plain.faces = MeshBuilder.Faces.Top;
                 plain.Rebuild();
-                var rng = new System.Random(ch * 977 + Mathf.RoundToInt(x0));
-                Layer(root, x0 - 250f, x1 + 250f, y - 0.3f, 120f, 15f, 1f, null, rng, "ForestStrip");
-                Layer(root, x0 - 450f, x1 + 450f, y - 0.5f, 230f, 30f, 1f, grass, rng, "HillsRolling");
-                // The game camera sits about 4 m up and sees about 10 degrees above the horizon: the
-                // range peaks at 6 to 8 degrees, over the back row's roofs, leaving sky for the clouds.
-                Layer(root, x0 - 700f, x1 + 700f, y - 1f, 440f, 50f, 0.9f, grass, rng, "MountainRange1", "MountainRange2");
+                // Layers that tile seamlessly at the kit's tile widths, each deeper in the haze: a wooded
+                // rise, rolling hills, then two mountain ranges, the far one offset half a tile so its
+                // peaks show between the near one's. The camera sits about 4 m up and sees about 10
+                // degrees above the horizon: the near range peaks at about 8 degrees, over the back
+                // row's roofs, leaving sky for the clouds.
+                Layer(root, "ForestStrip", x0 - 250f, x1 + 250f, y - 0.3f, 70f, 1f, 0f, null);
+                Layer(root, "HillsRolling", x0 - 450f, x1 + 450f, y - 0.4f, 230f, 1f, 0f, grass);
+                Layer(root, "MountainRange1", x0 - 700f, x1 + 700f, y - 0.8f, 440f, 0.75f, 0f, grass);
+                Layer(root, "MountainRange2", x0 - 900f, x1 + 900f, y - 0.8f, 640f, 1f, 0.5f, grass);
                 return;
             }
             var far = CutOut(root, "DistantHills", Art.far[ch], (x0 + x1) * 0.5f, track.LowestGroundTop - 6f, 260f, 6f, -85);
@@ -1120,25 +1123,27 @@ namespace DribbleToSchool.EditorTools
         }
 
         /// <summary>
-        /// One layer of the distant land: copies of a landform side by side from a to b around depth
-        /// z (staggered by up to <paramref name="zJitter"/>), alternating between the given models.
-        /// They cast no shadows: they are far beyond the shadow distance.
+        /// One layer of the distant land: copies of a landform that tiles along x, side by side from
+        /// a to b at depth z, exactly a tile apart so the joins don't show (<paramref name="phase"/>
+        /// shifts the row by a fraction of a tile). They cast no shadows: they are far beyond the
+        /// shadow distance.
         /// </summary>
-        static void Layer(Transform root, float a, float b, float y, float z, float zJitter, float scale, Color? grass, System.Random rng, params string[] models)
+        static void Layer(Transform root, string model, float a, float b, float y, float z, float scale, float phase, Color? grass)
         {
-            var available = models.Where(m => LevelBuildKit.HasKitModel("Terrain", m)).ToArray();
-            if (available.Length == 0) return;
-            int i = rng.Next(available.Length);
-            for (float x = a; x < b; i++)
-            {
-                string m = available[i % available.Length];
-                float width = LevelBuildKit.KitSize("Terrain", m).x * scale;
-                if (width < 1f) return;
-                float s = scale * Rand(rng, 0.9f, 1.1f);
-                // Overlap neighbours a little so the silhouette runs on without gaps.
-                Model(root, "Terrain", m, x + width * 0.5f, y, z + Rand(rng, -zJitter, zJitter), Rand(rng, -8f, 8f), s, grass, null, null, false);
-                x += width * 0.82f;
-            }
+            if (!LevelBuildKit.HasKitModel("Terrain", model)) return;
+            float tile = TileWidth("Terrain", model) * scale;
+            if (tile < 1f) return;
+            for (float x = Mathf.Floor(a / tile) * tile + phase * tile; x < b + tile; x += tile)
+                Model(root, "Terrain", model, x, y, z, 0f, scale, grass, null, null, false);
+        }
+
+        /// <summary>The distance a kit model repeats at along x (its manifest's tileWidth), else its width.</summary>
+        static float TileWidth(string kit, string model)
+        {
+            var info = LevelBuildKit.KitInfo(kit, model);
+            object tile;
+            if (info != null && info.TryGetValue("tileWidth", out tile)) return System.Convert.ToSingle(tile);
+            return LevelBuildKit.KitSize(kit, model).x;
         }
     }
 }

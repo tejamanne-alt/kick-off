@@ -79,8 +79,11 @@ fixed3 DtsMacro(fixed3 albedo, float2 w, float amount)
 fixed3 DtsHaze(fixed3 col, float3 worldPos, float amount)
 {
     float dist = distance(_WorldSpaceCameraPos, worldPos);
+    // Eased out over a long range, so each layer of the distance sits a step deeper in the haze:
+    // the street stays clear, a wood 100 m off is softened, hills are half gone, far mountains
+    // are pale silhouettes.
     float f = saturate((dist - _DtsFogRange.x) / max(_DtsFogRange.y - _DtsFogRange.x, 0.01));
-    f = f * f * (3.0 - 2.0 * f) * _DtsFogColor.a * amount;
+    f = (1.0 - (1.0 - f) * (1.0 - f)) * _DtsFogColor.a * amount;
     float3 vdir = normalize(worldPos - _WorldSpaceCameraPos);
     float3 sdir = dot(_DtsSkySunDir.xyz, _DtsSkySunDir.xyz) > 0.0001 ? normalize(_DtsSkySunDir.xyz) : float3(0, 0.3, 1);
     float toward = pow(saturate(dot(vdir, sdir)), 5.0) * _DtsSunGlow.a;

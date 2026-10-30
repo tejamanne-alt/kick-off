@@ -23,15 +23,15 @@ rng = random.Random(seed * 31 + chapter)
 # ---------------------------------------------------------------- the chapter's light (sRGB)
 MOODS = {
     1: dict(sun=(1, .93, .8), zenith=(.42, .62, .9), horizon=(.98, .86, .75), glow=(1, .82, .6), shade=(.72, .75, .93),
-            haze=(.96, .86, .8), sun_dir=(.45, .75, -.45), haze_start=26, haze_end=260, haze_k=.82),
+            haze=(.96, .86, .8), sun_dir=(.45, .75, -.45), haze_start=26, haze_end=600, haze_k=.85),
     2: dict(sun=(1, .96, .87), zenith=(.38, .6, .92), horizon=(.95, .88, .8), glow=(1, .9, .74), shade=(.74, .78, .94),
-            haze=(.93, .88, .84), sun_dir=(.4, .85, -.35), haze_start=30, haze_end=280, haze_k=.75),
+            haze=(.93, .88, .84), sun_dir=(.4, .85, -.35), haze_start=30, haze_end=640, haze_k=.78),
     3: dict(sun=(1, .91, .8), zenith=(.5, .62, .9), horizon=(1, .83, .79), glow=(1, .78, .64), shade=(.77, .73, .93),
-            haze=(.98, .85, .83), sun_dir=(.5, .7, -.45), haze_start=24, haze_end=240, haze_k=.86),
+            haze=(.98, .85, .83), sun_dir=(.5, .7, -.45), haze_start=24, haze_end=580, haze_k=.88),
     4: dict(sun=(1, .89, .74), zenith=(.55, .62, .86), horizon=(.98, .81, .69), glow=(1, .75, .54), shade=(.75, .71, .88),
-            haze=(.96, .81, .71), sun_dir=(.5, .72, -.4), haze_start=22, haze_end=220, haze_k=.9),
+            haze=(.96, .81, .71), sun_dir=(.5, .72, -.4), haze_start=22, haze_end=520, haze_k=.92),
     5: dict(sun=(1, .88, .68), zenith=(.46, .58, .88), horizon=(1, .81, .63), glow=(1, .73, .46), shade=(.71, .69, .9),
-            haze=(.98, .83, .67), sun_dir=(.55, .6, -.45), haze_start=24, haze_end=240, haze_k=.86),
+            haze=(.98, .83, .67), sun_dir=(.55, .6, -.45), haze_start=24, haze_end=580, haze_k=.88),
 }
 mood = dict(MOODS[chapter])
 if '--haze-end' in args:          # try a different haze range
@@ -342,21 +342,20 @@ def poles():
 def distant(fields, grass):
     if not has('Terrain', 'HillsRolling'):
         return
-    box(X0 - 1500, X1 + 1500, -0.16, -0.06, 89, 700, fields, 'fields')
+    box(X0 - 2000, X1 + 2000, -0.16, -0.06, 89, 760, fields, 'fields')
 
-    def layer(models, a, b, y, z, zj, scale):
-        models = [m for m in models if has('Terrain', m)]
-        if not models:
+    def layer(model, a, b, y, z, scale, phase):
+        if not has('Terrain', model):
             return
-        i = rng.randrange(len(models)); x = a
-        while x < b:
-            m = models[i % len(models)]; w = size('Terrain', m).x * scale
-            place('Terrain', m, x + w / 2, y, z + rng.uniform(-zj, zj), rng.uniform(-8, 8), scale * rng.uniform(.9, 1.1),
-                  [grass, None, None] if grass else None)
-            x += w * 0.82; i += 1
-    layer(['ForestStrip'], X0 - 250, X1 + 250, -0.3, 120, 15, 1.0)
-    layer(['HillsRolling'], X0 - 450, X1 + 450, -0.5, 230, 30, 1.0)
-    layer(['MountainRange1', 'MountainRange2'], X0 - 700, X1 + 700, -1, 440, 50, 0.9)
+        tile = kits['Terrain']['models'][model].get('tileWidth', size('Terrain', model).x) * scale
+        x = math.floor(a / tile) * tile + phase * tile
+        while x < b + tile:
+            place('Terrain', model, x, y, z, 0, scale, [grass, None, None] if grass else None)
+            x += tile
+    layer('ForestStrip', X0 - 250, X1 + 250, -0.3, 70, 1.0, 0)
+    layer('HillsRolling', X0 - 450, X1 + 450, -0.4, 230, 1.0, 0)
+    layer('MountainRange1', X0 - 700, X1 + 700, -0.8, 440, 0.75, 0)
+    layer('MountainRange2', X0 - 900, X1 + 900, -0.8, 640, 1.0, 0.5)
 
 
 def suburb():
@@ -485,7 +484,7 @@ fwd = Vector((0, math.cos(pitch), -math.sin(pitch)))
 cam.location = focus - fwd * dist
 cam.rotation_euler = fwd.to_track_quat('-Z', 'Y').to_euler()
 
-# Distance haze like DtsHaze, in every material: toward the haze colour by a smoothstep of the
+# Distance haze like DtsHaze, in every material: toward the haze colour by an eased-out ramp of the
 # distance from the camera between haze_start and haze_end, times the strength. The sky stays clear.
 haze = lin(mood['haze']) + (1,)
 for m in bpy.data.materials:
@@ -497,12 +496,18 @@ for m in bpy.data.materials:
         continue
     shader = outn.inputs['Surface'].links[0].from_socket
     camd = t.nodes.new('ShaderNodeCameraData')
-    mr = t.nodes.new('ShaderNodeMapRange'); mr.interpolation_type = 'SMOOTHSTEP'
+    mr = t.nodes.new('ShaderNodeMapRange')       # linear, clamped: 0 at haze_start, 1 at haze_end
     mr.inputs['From Min'].default_value = mood['haze_start']; mr.inputs['From Max'].default_value = mood['haze_end']
-    mr.inputs['To Min'].default_value = 0.0; mr.inputs['To Max'].default_value = mood['haze_k']
+    inv = t.nodes.new('ShaderNodeMath'); inv.operation = 'SUBTRACT'; inv.inputs[0].default_value = 1.0
+    sq = t.nodes.new('ShaderNodeMath'); sq.operation = 'POWER'; sq.inputs[1].default_value = 2.0
+    ease = t.nodes.new('ShaderNodeMath'); ease.operation = 'SUBTRACT'; ease.inputs[0].default_value = 1.0
+    k = t.nodes.new('ShaderNodeMath'); k.operation = 'MULTIPLY'; k.inputs[1].default_value = mood['haze_k']
     em = t.nodes.new('ShaderNodeEmission'); em.inputs['Color'].default_value = haze; em.inputs['Strength'].default_value = 1.0
     mix = t.nodes.new('ShaderNodeMixShader')
-    t.links.new(camd.outputs['View Distance'], mr.inputs['Value']); t.links.new(mr.outputs['Result'], mix.inputs['Fac'])
+    t.links.new(camd.outputs['View Distance'], mr.inputs['Value'])
+    t.links.new(mr.outputs['Result'], inv.inputs[1]); t.links.new(inv.outputs[0], sq.inputs[0])
+    t.links.new(sq.outputs[0], ease.inputs[1]); t.links.new(ease.outputs[0], k.inputs[0])
+    t.links.new(k.outputs[0], mix.inputs['Fac'])
     t.links.new(shader, mix.inputs[1]); t.links.new(em.outputs['Emission'], mix.inputs[2])
     t.links.new(mix.outputs['Shader'], outn.inputs['Surface'])
 

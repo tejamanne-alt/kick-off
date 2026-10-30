@@ -13,7 +13,7 @@ namespace DribbleToSchool.EditorTools
     public class ModelImportSettings : AssetPostprocessor
     {
         // Bump to re-import the models when these settings change.
-        public override uint GetVersion() { return 3; }
+        public override uint GetVersion() { return 4; }
 
         void OnPreprocessModel()
         {
@@ -31,6 +31,23 @@ namespace DribbleToSchool.EditorTools
             importer.importLights = false;
             importer.importNormals = ModelImporterNormals.Import;
             importer.preserveHierarchy = true;
+        }
+
+        /// <summary>
+        /// The models' atlases (painted detail plus a plain white corner the flat-coloured parts
+        /// sample): clamped, so filtering never bleeds the far edge into the white corner.
+        /// </summary>
+        void OnPreprocessTexture()
+        {
+            string path = assetPath.Replace('\\', '/');
+            if (!path.Contains("/_Game/Art/Models/") || !path.EndsWith("Atlas.png")) return;
+            var importer = (TextureImporter)assetImporter;
+            importer.textureType = TextureImporterType.Default;
+            importer.sRGBTexture = true;
+            importer.mipmapEnabled = true;
+            importer.wrapMode = UnityEngine.TextureWrapMode.Clamp;
+            importer.filterMode = UnityEngine.FilterMode.Trilinear;
+            importer.anisoLevel = 2;
         }
 
         /// <summary>Is the model in one of the asset kits' folders (Art/Models/&lt;kit&gt;/)?</summary>

@@ -36,9 +36,9 @@ namespace DribbleToSchool.World
 
         [Header("Haze")]
         public Color hazeColor = new Color(0.96f, 0.86f, 0.8f);
-        [Range(0f, 1f)] public float hazeStrength = 0.82f;
+        [Range(0f, 1f)] public float hazeStrength = 0.85f;
         public float hazeStart = 26f;
-        public float hazeEnd = 260f;
+        public float hazeEnd = 600f;
 
         [Header("Shadows")]
         public bool castShadows = true;
