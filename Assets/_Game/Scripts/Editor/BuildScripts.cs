@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using DribbleToSchool.Art;
 using UnityEditor;
+using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
 using UnityEngine;
 
@@ -52,18 +53,18 @@ namespace DribbleToSchool.EditorTools
             PlayerSettings.SplashScreen.backgroundColor = new Color(0.99f, 0.9f, 0.76f);
 
             // Android
-            PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.Android, ApplicationId);
+            PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.Android, ApplicationId);
             PlayerSettings.Android.bundleVersionCode = buildNumber;
             PlayerSettings.Android.minSdkVersion = AndroidSdkVersions.AndroidApiLevel26;
             PlayerSettings.Android.targetSdkVersion = AndroidSdkVersions.AndroidApiLevelAuto;   // Play requires a recent target API
-            PlayerSettings.SetScriptingBackend(BuildTargetGroup.Android, ScriptingImplementation.IL2CPP);
+            PlayerSettings.SetScriptingBackend(NamedBuildTarget.Android, ScriptingImplementation.IL2CPP);
             PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;
 
             // iOS
-            PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.iOS, ApplicationId);
+            PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.iOS, ApplicationId);
             PlayerSettings.iOS.buildNumber = buildNumber.ToString();
             PlayerSettings.iOS.targetOSVersionString = "15.0";
-            PlayerSettings.SetScriptingBackend(BuildTargetGroup.iOS, ScriptingImplementation.IL2CPP);
+            PlayerSettings.SetScriptingBackend(NamedBuildTarget.iOS, ScriptingImplementation.IL2CPP);
             string team = Env("DTS_APPLE_TEAM_ID", "");
             if (team.Length > 0)
             {
@@ -94,7 +95,7 @@ namespace DribbleToSchool.EditorTools
                 importer.SaveAndReimport();
             }
             var icon = AssetDatabase.LoadAssetAtPath<Texture2D>(IconPath);
-            if (icon != null) PlayerSettings.SetIconsForTargetGroup(BuildTargetGroup.Unknown, new[] { icon });
+            if (icon != null) PlayerSettings.SetIcons(NamedBuildTarget.Unknown, new[] { icon }, IconKind.Any);
         }
 
         [MenuItem("Dribble To School/Build/Android App Bundle (release)")]

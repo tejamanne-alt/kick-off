@@ -35,7 +35,7 @@ namespace DribbleToSchool.UI.Kit
 
         public static void EnsureEventSystem()
         {
-            if (Object.FindFirstObjectByType<EventSystem>() != null) return;
+            if (Object.FindAnyObjectByType<EventSystem>() != null) return;
             var go = new GameObject("EventSystem");
             go.AddComponent<EventSystem>();
 #if ENABLE_INPUT_SYSTEM

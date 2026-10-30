@@ -123,7 +123,12 @@ namespace DribbleToSchool.Core
             checkpoints.RemoveAll(c => c == null);
             checkpoints.Sort((a, b) => a.transform.position.x.CompareTo(b.transform.position.x));
 
-            foreach (var behaviour in FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None))
+            // Every behaviour on the level's active objects (walking the scene works the same on
+            // every Unity 6 version; FindObjectsByType's overloads change between them).
+            var behaviours = new List<MonoBehaviour>();
+            foreach (var rootObject in gameObject.scene.GetRootGameObjects())
+                behaviours.AddRange(rootObject.GetComponentsInChildren<MonoBehaviour>());
+            foreach (var behaviour in behaviours)
             {
                 var r = behaviour as IResettable;
                 if (r != null) resettables.Add(r);

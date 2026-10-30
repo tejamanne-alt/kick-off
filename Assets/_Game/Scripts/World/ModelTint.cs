@@ -16,7 +16,8 @@ namespace DribbleToSchool.World
         [Tooltip("New colour for parts 1, 2 and 3; alpha 0 leaves a part as it is.")]
         public Color[] tints = new Color[3];
 
-        static readonly Dictionary<string, Mesh> Cache = new Dictionary<string, Mesh>();
+        // Recoloured copies, per source mesh and then per set of tints.
+        static readonly Dictionary<Mesh, Dictionary<string, Mesh>> Cache = new Dictionary<Mesh, Dictionary<string, Mesh>>();
 
         void Awake()
         {
@@ -27,7 +28,7 @@ namespace DribbleToSchool.World
         Mesh Tinted(Mesh source)
         {
             if (!source.isReadable) return source;
-            var key = new System.Text.StringBuilder(source.GetInstanceID().ToString());
+            var key = new System.Text.StringBuilder();
             bool any = false;
             for (int p = 0; p < 3; p++)
             {
@@ -36,8 +37,10 @@ namespace DribbleToSchool.World
                 key.Append('|').Append(p).Append(ColorUtility.ToHtmlStringRGB(tints[p]));
             }
             if (!any) return source;
+            Dictionary<string, Mesh> copies;
+            if (!Cache.TryGetValue(source, out copies)) Cache[source] = copies = new Dictionary<string, Mesh>();
             Mesh mesh;
-            if (Cache.TryGetValue(key.ToString(), out mesh) && mesh != null) return mesh;
+            if (copies.TryGetValue(key.ToString(), out mesh) && mesh != null) return mesh;
 
             mesh = Instantiate(source);
             mesh.name = source.name + " (tint)";
@@ -54,7 +57,7 @@ namespace DribbleToSchool.World
                 colors[i] = new Color(Mathf.Clamp01(to.r * k), Mathf.Clamp01(to.g * k), Mathf.Clamp01(to.b * k), c.a);
             }
             mesh.colors = colors;
-            Cache[key.ToString()] = mesh;
+            copies[key.ToString()] = mesh;
             return mesh;
         }
     }
