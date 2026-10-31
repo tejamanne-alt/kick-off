@@ -13,7 +13,7 @@ namespace DribbleToSchool.EditorTools
     public class ModelImportSettings : AssetPostprocessor
     {
         // Bump to re-import the models when these settings change.
-        public override uint GetVersion() { return 5; }
+        public override uint GetVersion() { return 6; }
 
         void OnPreprocessModel()
         {
@@ -50,6 +50,14 @@ namespace DribbleToSchool.EditorTools
             importer.filterMode = UnityEngine.FilterMode.Trilinear;
             importer.anisoLevel = 2;
             importer.maxTextureSize = 4096;
+            // The plants' leaf sprites are cut out at alpha 0.5: keep that coverage in every mip so
+            // far trees don't thin out, and keep colour under the transparent texels.
+            if (path.EndsWith("/PlantsAtlas.png"))
+            {
+                importer.alphaIsTransparency = true;
+                importer.mipMapsPreserveCoverage = true;
+                importer.alphaTestReferenceValue = 0.5f;
+            }
         }
 
         /// <summary>Is the model in one of the asset kits' folders (Art/Models/&lt;kit&gt;/)?</summary>

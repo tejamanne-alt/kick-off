@@ -201,6 +201,12 @@ The look follows `docs/ART_DIRECTION.md`: clear anime daylight (generated conten
   - `WorldLook` sets the light per chapter (`ChapterTheme.mood`): a fresh morning, a bright late morning, a brilliant beach midday, a clear city day and a summer afternoon.
   - A sky dome draws a deep blue gradient paling to the horizon; the sun sits high, so only its glow shows.
   - `PostFX` adds a faint bloom, a neutral grade with a little extra contrast and a light vignette.
+- **Kick-style round (generated content v43):**
+  - Trees are crowns of many small clover-leaf clumps on cut-out cards over a dark core, with branches showing through (`kit_plants_leaves.py`, `Toon.shader` `_ALPHATEST_ON`); new BroadleafWide, BroadleafSmall, BroadleafYoung and a cloud-pruned GardenPine.
+  - The town has eight new shopfronts with invented names (a small supermarket, a café, a bookshop, a florist, a noodle house, a convenience store, two narrow tiled buildings), three new house types and new street props (A-frame boards, banner flags, utility boxes, bike racks, bins, pots), dealt so nothing repeats too soon (`kit_buildings_town.py`, `kit_street_m4.py`).
+  - The teens are slim anime students: white short-sleeved shirt, long navy trousers (the girl a pleated skirt), dark hair, white sneakers; the boy carries a satchel.
+  - The kid can slide (SLIDE button, swipe down, S/Down) under obstacles drawn for each chapter (`TrackBuilder.SlideUnder`), and double jump.
+  - Side streets end at a T-junction with a back road and buildings; lots, shopfronts and back-row buildings never straddle a step in the ground; ground steps read as retaining walls; clouds paint their own white and cyan shade (`_Lighting` 0.25 on the cloud material).
 - **Characters stand out:** the kid has the boldest ink outline and a bright rim round the whole silhouette (`ToonCharacter`, set per material in `ArtBaker.CharacterMaterial`). The school uniform dresses both teens in a white shirt and navy shorts (`CosmeticApplier`); before, it left the boy in the sage shirt and khaki shorts he was modelled in, the same tones as the grass and paths.
 - **Ground:** the surfaces are painterly 512 px tiles over 8 x 8 units, wrapping both ways (`Art/GroundArt.cs`):
   - asphalt with repairs and sealed cracks;

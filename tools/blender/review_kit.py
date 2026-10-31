@@ -54,6 +54,9 @@ sun.data.color = (1.0, 0.88, 0.72); sun.data.energy = 3.6; sun.data.angle = math
 sun.rotation_euler = (math.radians(58), 0, math.radians(-38))   # from the front-right, above
 try:
     S.eevee.use_shadows = True
+    # Cut-out leaf cards (the plants kit) cast stochastic shadows that Eevee redraws every sample.
+    if any(m.node_tree is not None and m.node_tree.nodes.get('AlphaClip') for m in bpy.data.materials):
+        S.eevee.taa_render_samples = 16
 except AttributeError:
     pass
 

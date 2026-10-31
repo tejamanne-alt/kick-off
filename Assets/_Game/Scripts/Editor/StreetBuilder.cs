@@ -866,7 +866,7 @@ namespace DribbleToSchool.EditorTools
             var gable = ProceduralArt.FacadeKind.HouseGable;
             var longHouse = ProceduralArt.FacadeKind.HouseLong;
             var flats = ProceduralArt.FacadeKind.Apartment;
-            string[] green = { "Broadleaf", "BroadleafLarge", "ConiferMid", "ConiferTall", "Birch" };
+            string[] green = { "Broadleaf", "BroadleafLarge", "BroadleafWide", "ConiferMid", "ConiferTall", "Birch", "BroadleafSmall" };
             switch (LevelBuildKit.Chapter)
             {
                 case 2:
@@ -997,7 +997,7 @@ namespace DribbleToSchool.EditorTools
             float goal = track.GoalX;
             if (goal <= track.MinX || !LevelBuildKit.HasKitModel("Plants", "Broadleaf")) return;
             int ch = LevelBuildKit.Chapter;
-            string[] trees = ch == 3 ? new[] { "Palm", "PalmShort", "Palm" } : new[] { "Broadleaf", "BroadleafLarge", "ConiferMid", "Birch", "Broadleaf" };
+            string[] trees = ch == 3 ? new[] { "Palm", "PalmShort", "Palm" } : new[] { "Broadleaf", "BroadleafLarge", "BroadleafWide", "ConiferMid", "Birch", "Broadleaf", "BroadleafSmall" };
             float gy = GroundAt(track, goal);
             // Behind the school (it stands 10 to 22 units past the gate, 12 deep, its 32-unit front along
             // z from -12 to 20), where the back rows leave room for it.
@@ -1227,7 +1227,7 @@ namespace DribbleToSchool.EditorTools
                     // when the gap beside the house is wide enough for it.
                     if (rng.NextDouble() < 0.7)
                     {
-                        string[] back = { "Broadleaf", "BroadleafLarge", "ConiferTall", "Broadleaf", "Birch" };
+                        string[] back = { "Broadleaf", "BroadleafLarge", "BroadleafWide", "ConiferTall", "Broadleaf", "Birch", "BroadleafSmall" };
                         Plant(root, back[rng.Next(back.Length)], null, cx + Rand(rng, -houseHalf, houseHalf), gy, z + 8f + Rand(rng, 0f, 3f), Rand(rng, 0.9f, 1.25f), 1f, -70, rng);
                     }
                     float gap = (cx - houseHalf) - x;
@@ -1239,7 +1239,7 @@ namespace DribbleToSchool.EditorTools
                     }
                     else if (gap > 1.8f && rng.NextDouble() < 0.6)
                     {
-                        string[] side = { "Birch", "ConiferSmall", "ConiferMid", "ShrubFlowering" };
+                        string[] side = { "Birch", "ConiferSmall", "GardenPine", "ConiferMid", "ShrubFlowering", "BroadleafYoung" };
                         string model = side[rng.Next(side.Length)];
                         Plant(root, model, null, x + gap * 0.5f, gy, PropertyZ + 1.4f + Rand(rng, 0f, 1.2f), model == "ShrubFlowering" ? Rand(rng, 1.3f, 1.6f) : Rand(rng, 0.7f, 0.95f), 1f, -60, rng);
                     }
@@ -1922,7 +1922,7 @@ namespace DribbleToSchool.EditorTools
                     if (Blocked(track, x - 1.5f, x + 1.5f, out skip) || clearings.Any(c => x > c.x - 1.5f && x < c.y + 1.5f)) continue;
                     Plant(root, rng.NextDouble() < 0.6 ? "BushWide" : "BushRound", null, x, GroundAt(track, x) + 0.04f, Rand(rng, 3.5f, 6f), Rand(rng, 1f, 1.5f), 1f, -58, rng);
                 }
-                string[] wood = { "BroadleafLarge", "Broadleaf", "ConiferTall", "BroadleafLarge", "ConiferMid", "Birch" };
+                string[] wood = { "BroadleafLarge", "Broadleaf", "BroadleafWide", "ConiferTall", "BroadleafLarge", "ConiferMid", "Birch" };
                 for (float x = x0 - 20f; x < x1 + 20f; x += Rand(rng, 3f, 6f))
                 {
                     if (OverlapsBackRow(track, x - 2f, x + 2f)) continue;

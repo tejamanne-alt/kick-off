@@ -189,12 +189,14 @@ namespace DribbleToSchool.EditorTools
                 if (atlas == null) continue;
                 var m = ToonMaterial("Kit" + kit, toon, atlas, false);
                 m.SetFloat("_Wind", kit == "Plants" ? 0.1f : 0f);   // trees and grass sway; their alpha is a wind weight
+                LeafCards(m, kit == "Plants");
                 m.enableInstancing = true;                          // repeats of a kit model draw together
                 set.kits[kit] = m;
             }
             set.cloud = ToonMaterial("Cloud", toon, null, false);
             set.cloud.SetFloat("_Haze", 0.15f);
-            set.cloud.SetColor("_ShadowColor", new Color(0.86f, 0.9f, 0.97f));   // the clouds paint their own cyan shade (CloudShape); the light only adds a little
+            set.cloud.SetColor("_ShadowColor", new Color(0.86f, 0.9f, 0.97f));
+            set.cloud.SetFloat("_Lighting", 0.25f);   // the clouds paint their own white and cyan shade (CloudShape); the sun only adds a little
 
             var toonCharacter = Shader.Find("DribbleToSchool/ToonCharacter");
             // The playable characters get the boldest line and rim, so they read clearly against the
@@ -223,6 +225,25 @@ namespace DribbleToSchool.EditorTools
             AssetDatabase.SaveAssets();
         }
 
+        /// <summary>
+        /// The plants kit's trees and bushes wear their leaves as cut-out cards (clumps of leaves
+        /// painted in the atlas alpha): cut out at 0.5, both sides drawn, cards seen edge-on
+        /// shrinking away, sun shadows on the leaves softened, drawn after the opaque world.
+        /// Every other kit stays opaque.
+        /// </summary>
+        static void LeafCards(Material m, bool on)
+        {
+            m.SetFloat("_AlphaClip", on ? 1f : 0f);
+            m.SetFloat("_Cutoff", 0.5f);
+            m.SetFloat("_EdgeFade", on ? 1f : 0f);
+            m.SetFloat("_LeafShadow", on ? 0.4f : 1f);
+            m.SetFloat("_Cull", (float)(on ? UnityEngine.Rendering.CullMode.Off : UnityEngine.Rendering.CullMode.Back));
+            if (on) m.EnableKeyword("_ALPHATEST_ON");
+            else m.DisableKeyword("_ALPHATEST_ON");
+            m.SetOverrideTag("RenderType", on ? "TransparentCutout" : "");
+            m.renderQueue = on ? (int)UnityEngine.Rendering.RenderQueue.AlphaTest : -1;
+        }
+
         static Material CharacterMaterial(string name, Shader shader, string atlas, bool player)
         {
             var m = LoadOrCreateMaterial(name, shader);
@@ -244,6 +265,7 @@ namespace DribbleToSchool.EditorTools
             m.SetFloat("_WorldUV", worldUV ? 1f : 0f);
             m.SetFloat("_WorldUVScale", 0.125f);   // surface textures cover 8 x 8 units
             m.SetFloat("_Macro", 0f);
+            m.SetFloat("_Lighting", 1f);
             EditorUtility.SetDirty(m);
             return m;
         }
