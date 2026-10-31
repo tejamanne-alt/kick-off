@@ -138,7 +138,7 @@ namespace DribbleToSchool.EditorTools
             post.shader = Shader.Find("Hidden/DribbleToSchool/PostFX");   // referenced, so builds include it
             post.lift = mood.lift;
             post.gain = mood.gain;
-            post.bloomTint = Color.Lerp(mood.glow, Color.white, 0.4f);
+            post.bloomTint = Color.Lerp(mood.glow, Color.white, 0.7f);
             var follow = camGo.AddComponent<CameraFollow2D>();
 
             var input = new GameObject("GameInput").AddComponent<GameInput>();
@@ -753,9 +753,8 @@ namespace DribbleToSchool.EditorTools
         }
 
         /// <summary>
-        /// The sky: a gradient glued far behind the camera, big cumulus clouds high and far away,
-        /// and the low golden sun in the last chapter. Distances are large so the 3D street,
-        /// scenery and haze all sit in front.
+        /// The sky: a dome round the camera (WorldLook's clear blue gradient) and big cumulus clouds
+        /// high and far away. Distances are large so the 3D street, scenery and haze all sit in front.
         /// </summary>
         static void BuildSky(TrackBuilder track, Camera cam)
         {
@@ -1793,7 +1792,7 @@ namespace DribbleToSchool.EditorTools
                 wetStrip.seaZ = 9.3f;
                 wetStrip.phase = 1.3f;
                 wetStrip.y = groundTop + 0.006f;
-                wetStrip.color = new Color(0.87f, 0.78f, 0.63f);
+                wetStrip.color = new Color(0.86f, 0.79f, 0.72f);
                 wet.GetComponent<MeshRenderer>().sharedMaterial = Art.surfaces[ProceduralArt.Surface.Sand];
                 wetStrip.Rebuild();
 
@@ -1975,7 +1974,7 @@ namespace DribbleToSchool.EditorTools
                 float height = pivot.y - ground;
                 if (Chapter == 5)
                 {
-                    var tree = KitModel(root, "Leisure", "SwingTree", new Vector3(pivot.x, ground, 0f), 0f, height / 4f);
+                    var tree = KitModel(root, "Leisure", "SwingTree", new Vector3(pivot.x, ground, 0f), 0f, height / 4f, new Color(0.4f, 0.64f, 0.3f));   // in summer leaf
                     Transform tie = tree != null ? FindDeep(tree, "Attach.Rope") : null;
                     if (tie == null) { if (tree != null) Object.DestroyImmediate(tree.gameObject); return false; }
                     tree.position += new Vector3(pivot.x - tie.position.x, 0f, -tie.position.z);

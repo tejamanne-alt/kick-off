@@ -1,5 +1,5 @@
 // Sprite shader for cut-outs placed in the 3D street (trees, distant skyline, signs):
-// like Sprites/Default, plus the same warm distance haze as DribbleToSchool/Toon (DtsLook) so
+// like Sprites/Default, plus the same distance haze as DribbleToSchool/Toon (DtsLook) so
 // far-away cards fade into the sky with the buildings around them.
 Shader "DribbleToSchool/SpriteHaze"
 {

@@ -4,8 +4,8 @@ namespace DribbleToSchool.World
 {
     /// <summary>
     /// The shared light and atmosphere of the 3D street (Shaders/DtsLook.cginc): the sun's
-    /// direction and colour, the colour shade takes on from the sky and the warm ground bounce,
-    /// the distance haze (warmer toward the sun) and the sky dome's colours. Lives on the camera.
+    /// direction and colour, the colour shade takes on from the sky and the ground bounce, the
+    /// distance haze (lighter toward the sun) and the sky dome's colours. Lives on the camera.
     /// It also keeps a directional light pointed along the sun so the world casts soft shadows; the
     /// shaders do their own lighting and use the light only for those shadows.
     /// </summary>
@@ -15,30 +15,30 @@ namespace DribbleToSchool.World
         [Header("Sun")]
         [Tooltip("Direction toward the sun (up, to the right and toward the camera).")]
         public Vector3 sunDirection = new Vector3(0.45f, 0.8f, -0.4f);
-        [Tooltip("Sunlight tint on lit faces: a warm morning light against the cool shadows.")]
-        public Color sunColor = new Color(1f, 0.95f, 0.86f);
-        [Tooltip("Where the sun's disc shows in the sky, seen from the camera (behind the street).")]
-        public Vector3 skySunDirection = new Vector3(-0.45f, 0.22f, 1f);
-        public Color sunDisc = new Color(1f, 0.97f, 0.88f);
+        [Tooltip("Sunlight tint on lit faces: clear daylight, a hair warm against the cool shade.")]
+        public Color sunColor = new Color(1f, 0.97f, 0.92f);
+        [Tooltip("Where the sun sits in the sky, seen from the camera: high, so only its glow shows at the top of the view.")]
+        public Vector3 skySunDirection = new Vector3(-0.4f, 0.9f, 1f);
+        public Color sunDisc = new Color(1f, 0.99f, 0.95f);
         [Range(0f, 1f)] public float sunDiscSize = 0.5f;
-        public Color sunGlow = new Color(1f, 0.82f, 0.6f);
-        [Range(0f, 1f)] public float sunGlowInHaze = 0.55f;
+        public Color sunGlow = new Color(1f, 0.97f, 0.9f);
+        [Range(0f, 1f)] public float sunGlowInHaze = 0.3f;
 
         [Header("Shade")]
-        [Tooltip("The colour shade sides take from the sky above.")]
-        public Color ambientSky = new Color(0.72f, 0.75f, 0.93f);
-        [Tooltip("The warm bounce from the ground on downward-facing shade.")]
-        public Color ambientGround = new Color(0.86f, 0.76f, 0.74f);
+        [Tooltip("The colour shade sides take from the sky above: cool and clear.")]
+        public Color ambientSky = new Color(0.6f, 0.66f, 0.82f);
+        [Tooltip("The bounce from the ground on downward-facing shade.")]
+        public Color ambientGround = new Color(0.74f, 0.73f, 0.74f);
 
         [Header("Sky")]
-        public Color skyZenith = new Color(0.42f, 0.62f, 0.9f);
-        public Color skyHorizon = new Color(0.98f, 0.86f, 0.76f);
+        public Color skyZenith = new Color(0.15f, 0.38f, 0.8f);
+        public Color skyHorizon = new Color(0.64f, 0.81f, 0.95f);
 
         [Header("Haze")]
-        public Color hazeColor = new Color(0.96f, 0.86f, 0.8f);
-        [Range(0f, 1f)] public float hazeStrength = 0.85f;
-        public float hazeStart = 26f;
-        public float hazeEnd = 600f;
+        public Color hazeColor = new Color(0.7f, 0.81f, 0.93f);
+        [Range(0f, 1f)] public float hazeStrength = 0.6f;
+        public float hazeStart = 40f;
+        public float hazeEnd = 700f;
 
         [Header("Shadows")]
         public bool castShadows = true;

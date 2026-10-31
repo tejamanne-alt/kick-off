@@ -6,7 +6,8 @@ namespace DribbleToSchool.Art
     /// Painterly ground textures for the 3D street (docs/ART_DIRECTION.md): tileable in both
     /// directions, 512 x 512 pixels for 8 x 8 world units (64 px per unit), with soft large-scale
     /// mottling, bevelled and worn edges, moss in the joints and small signs of life (shells in the
-    /// sand, flowers in the lawn, fallen leaves on the park path), in a warm, slightly faded palette.
+    /// sand, flowers in the lawn, a few leaves on the park path), in clean daylight colours: neutral
+    /// greys for paving and concrete, fresh greens, peachy sand and a clear turquoise sea.
     /// The toon shader adds a world-scale variation on top (_Macro), so the repeat doesn't show.
     /// </summary>
     public static partial class ProceduralArt
@@ -180,8 +181,8 @@ namespace DribbleToSchool.Art
             switch (surface)
             {
                 case Surface.Asphalt: return Asphalt(rng, seed);
-                case Surface.Paving: return Slabbed(rng, seed, 64, 64, 2.2f, new Color(0.84f, 0.81f, 0.76f), new Color(0.64f, 0.61f, 0.57f), 0.07f, true);
-                case Surface.Kerb: return Slabbed(rng, seed, 64, 512, 2.5f, new Color(0.88f, 0.87f, 0.84f), new Color(0.6f, 0.59f, 0.57f), 0.05f, false);
+                case Surface.Paving: return Slabbed(rng, seed, 64, 64, 2.2f, new Color(0.8f, 0.8f, 0.79f), new Color(0.6f, 0.6f, 0.6f), 0.07f, true);
+                case Surface.Kerb: return Slabbed(rng, seed, 64, 512, 2.5f, new Color(0.88f, 0.88f, 0.87f), new Color(0.6f, 0.6f, 0.6f), 0.05f, false);
                 case Surface.Concrete: return Concrete(rng, seed);
                 case Surface.Cobbles: return Cobbles(rng, seed);
                 case Surface.Sand: return Sand(rng, seed);
@@ -279,9 +280,9 @@ namespace DribbleToSchool.Art
         static PixelCanvas Concrete(System.Random rng, int seed)
         {
             int n = GroundSize;
-            var slab = new Color(0.78f, 0.77f, 0.74f);
+            var slab = new Color(0.77f, 0.77f, 0.76f);
             var t = new GroundTile(n, slab);
-            t.Mottle(4, 4, seed, new Color(0.68f, 0.67f, 0.65f), new Color(0.85f, 0.84f, 0.81f), 0.6f);
+            t.Mottle(4, 4, seed, new Color(0.67f, 0.67f, 0.67f), new Color(0.85f, 0.85f, 0.84f), 0.6f);
             // Panels 4 units square, each a slightly different pour, with saw-cut joints.
             for (int y = 0; y < n; y++)
                 for (int x = 0; x < n; x++)
@@ -295,7 +296,7 @@ namespace DribbleToSchool.Art
                 }
             for (int i = 0; i < 5; i++)    // rust and damp stains
                 t.Blob(GRand(rng, 0, n), GRand(rng, 0, n), GRand(rng, 10f, 34f), GRand(rng, 8f, 20f),
-                    rng.NextDouble() < 0.4 ? new Color(0.74f, 0.62f, 0.5f) : new Color(0.62f, 0.62f, 0.62f), 0.3f, 10f, GRand(rng, 0f, 3f));
+                    rng.NextDouble() < 0.3 ? new Color(0.72f, 0.64f, 0.56f) : new Color(0.62f, 0.62f, 0.63f), 0.3f, 10f, GRand(rng, 0f, 3f));
             for (int i = 0; i < 3; i++)
                 t.Crack(rng, GRand(rng, 0, n), GRand(rng, 0, n), GRand(rng, 0f, 6.28f), 7, 12f, 1.5f, new Color(0.52f, 0.51f, 0.5f), 0.7f);
             for (int i = 0; i < 5000; i++)
@@ -311,17 +312,17 @@ namespace DribbleToSchool.Art
         {
             int n = GroundSize, cells = 24;
             float cell = n / (float)cells;
-            var t = new GroundTile(n, new Color(0.42f, 0.38f, 0.34f));
+            var t = new GroundTile(n, new Color(0.4f, 0.38f, 0.36f));
             var centre = new Vector2[cells * cells];
             var colour = new Color[cells * cells];
-            Color[] stones = { new Color(0.72f, 0.66f, 0.6f), new Color(0.66f, 0.62f, 0.6f), new Color(0.78f, 0.72f, 0.64f), new Color(0.62f, 0.58f, 0.56f), new Color(0.74f, 0.64f, 0.56f) };
+            Color[] stones = { new Color(0.7f, 0.68f, 0.65f), new Color(0.64f, 0.63f, 0.62f), new Color(0.77f, 0.74f, 0.69f), new Color(0.6f, 0.59f, 0.58f), new Color(0.72f, 0.67f, 0.62f) };
             for (int j = 0; j < cells; j++)
                 for (int i = 0; i < cells; i++)
                 {
                     centre[j * cells + i] = new Vector2((i + 0.5f + GRand(rng, -0.28f, 0.28f)) * cell, (j + 0.5f + GRand(rng, -0.28f, 0.28f)) * cell);
                     colour[j * cells + i] = Shift(stones[rng.Next(stones.Length)], GRand(rng, 0.92f, 1.06f));
                 }
-            Color joint = new Color(0.36f, 0.33f, 0.3f), moss = new Color(0.44f, 0.5f, 0.32f);
+            Color joint = new Color(0.35f, 0.34f, 0.32f), moss = new Color(0.4f, 0.52f, 0.3f);
             for (int y = 0; y < n; y++)
                 for (int x = 0; x < n; x++)
                 {
@@ -361,8 +362,8 @@ namespace DribbleToSchool.Art
         static PixelCanvas Sand(System.Random rng, int seed)
         {
             int n = GroundSize;
-            var t = new GroundTile(n, new Color(0.93f, 0.85f, 0.68f));
-            t.Mottle(4, 4, seed, new Color(0.86f, 0.76f, 0.58f), new Color(0.98f, 0.92f, 0.78f), 0.6f);
+            var t = new GroundTile(n, new Color(0.94f, 0.83f, 0.7f));
+            t.Mottle(4, 4, seed, new Color(0.87f, 0.75f, 0.62f), new Color(0.98f, 0.91f, 0.82f), 0.6f);
             // Soft wind ripples: crests running across, each lit on one side and shaded on the other.
             for (int y = 0; y < n; y++)
                 for (int x = 0; x < n; x++)
@@ -375,7 +376,7 @@ namespace DribbleToSchool.Art
                 }
             // Damp, darker patches, pebbles and bits of shell.
             for (int i = 0; i < 4; i++)
-                t.Blob(GRand(rng, 0, n), GRand(rng, 0, n), GRand(rng, 30, 70), GRand(rng, 20, 40), new Color(0.82f, 0.72f, 0.56f), 0.25f, 20f, GRand(rng, 0f, 3f));
+                t.Blob(GRand(rng, 0, n), GRand(rng, 0, n), GRand(rng, 30, 70), GRand(rng, 20, 40), new Color(0.83f, 0.71f, 0.6f), 0.25f, 20f, GRand(rng, 0f, 3f));
             for (int i = 0; i < 70; i++)
             {
                 float x = GRand(rng, 0, n), y = GRand(rng, 0, n);
@@ -386,16 +387,16 @@ namespace DribbleToSchool.Art
                 t.Blob(x, y, r, r * 0.7f, c, 0.95f, 0.8f, GRand(rng, 0f, 3f));
             }
             for (int i = 0; i < 9000; i++)
-                t.Mix(rng.Next(n), rng.Next(n), rng.NextDouble() < 0.5 ? new Color(0.8f, 0.7f, 0.54f) : new Color(1f, 0.95f, 0.84f), GRand(rng, 0.25f, 0.55f));
+                t.Mix(rng.Next(n), rng.Next(n), rng.NextDouble() < 0.5 ? new Color(0.81f, 0.69f, 0.57f) : new Color(1f, 0.95f, 0.88f), GRand(rng, 0.25f, 0.55f));
             return t.ToCanvas();
         }
 
         static PixelCanvas Gravel(System.Random rng, int seed)
         {
             int n = GroundSize;
-            var t = new GroundTile(n, new Color(0.76f, 0.68f, 0.56f));
-            t.Mottle(4, 3, seed, new Color(0.66f, 0.58f, 0.48f), new Color(0.84f, 0.77f, 0.66f), 0.6f);
-            Color[] stones = { new Color(0.84f, 0.78f, 0.68f), new Color(0.7f, 0.64f, 0.56f), new Color(0.9f, 0.86f, 0.78f), new Color(0.62f, 0.58f, 0.54f) };
+            var t = new GroundTile(n, new Color(0.8f, 0.75f, 0.66f));
+            t.Mottle(4, 3, seed, new Color(0.7f, 0.65f, 0.57f), new Color(0.87f, 0.83f, 0.75f), 0.6f);
+            Color[] stones = { new Color(0.86f, 0.82f, 0.74f), new Color(0.72f, 0.68f, 0.62f), new Color(0.92f, 0.9f, 0.85f), new Color(0.64f, 0.62f, 0.6f) };
             for (int i = 0; i < 5200; i++)
             {
                 float x = GRand(rng, 0, n), y = GRand(rng, 0, n), r = GRand(rng, 1.4f, 3.2f);
@@ -404,9 +405,9 @@ namespace DribbleToSchool.Art
                 t.Blob(x, y, r, r * 0.8f, c, 0.9f, 0.8f, GRand(rng, 0f, 3f));
                 t.Blob(x - r * 0.3f, y + r * 0.3f, r * 0.35f, r * 0.3f, Shift(c, 1.12f), 0.6f, 0.6f);
             }
-            // A few fallen leaves on the park path.
-            Color[] leaves = { new Color(0.9f, 0.55f, 0.22f), new Color(0.82f, 0.32f, 0.2f), new Color(0.95f, 0.78f, 0.3f), new Color(0.7f, 0.5f, 0.24f) };
-            for (int i = 0; i < 26; i++)
+            // A few leaves blown onto the park path.
+            Color[] leaves = { new Color(0.42f, 0.62f, 0.3f), new Color(0.56f, 0.7f, 0.34f), new Color(0.66f, 0.6f, 0.36f), new Color(0.36f, 0.52f, 0.28f) };
+            for (int i = 0; i < 14; i++)
             {
                 float x = GRand(rng, 0, n), y = GRand(rng, 0, n), a = GRand(rng, 0f, 3.14f);
                 Color c = leaves[rng.Next(leaves.Length)];
@@ -420,7 +421,7 @@ namespace DribbleToSchool.Art
         static PixelCanvas Grass(System.Random rng, int seed)
         {
             int n = GroundSize;
-            Color lush = new Color(0.5f, 0.61f, 0.31f), dry = new Color(0.74f, 0.71f, 0.42f), deep = new Color(0.36f, 0.48f, 0.27f);
+            Color lush = new Color(0.43f, 0.65f, 0.3f), dry = new Color(0.62f, 0.73f, 0.38f), deep = new Color(0.3f, 0.52f, 0.27f);
             var t = new GroundTile(n, Color.Lerp(lush, dry, 0.3f));
             // Big soft patches of lusher and drier grass.
             for (int y = 0; y < n; y++)
@@ -443,12 +444,12 @@ namespace DribbleToSchool.Art
                     var p0 = new Vector2(x + GRand(rng, -3f, 3f), y + GRand(rng, -2f, 2f));
                     var p1 = p0 + new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * len;
                     t.Stroke(p0, p1, GRand(rng, 1.1f, 1.8f), Shift(baseCol, GRand(rng, 0.78f, 0.9f)), 0.7f);
-                    t.Stroke(Vector2.Lerp(p0, p1, 0.45f), p1, GRand(rng, 0.9f, 1.3f), Color.Lerp(Shift(baseCol, 1.16f), new Color(0.88f, 0.86f, 0.56f), 0.3f), 0.75f);
+                    t.Stroke(Vector2.Lerp(p0, p1, 0.45f), p1, GRand(rng, 0.9f, 1.3f), Color.Lerp(Shift(baseCol, 1.16f), new Color(0.78f, 0.88f, 0.5f), 0.3f), 0.75f);
                 }
             }
             // Clover and a scatter of tiny white and yellow flowers, in little drifts.
             for (int i = 0; i < 26; i++)
-                t.Blob(GRand(rng, 0, n), GRand(rng, 0, n), GRand(rng, 12f, 26f), GRand(rng, 8f, 16f), new Color(0.36f, 0.5f, 0.28f), 0.3f, 6f, GRand(rng, 0f, 3f));
+                t.Blob(GRand(rng, 0, n), GRand(rng, 0, n), GRand(rng, 12f, 26f), GRand(rng, 8f, 16f), new Color(0.3f, 0.54f, 0.28f), 0.3f, 6f, GRand(rng, 0f, 3f));
             for (int d = 0; d < 9; d++)
             {
                 float cx = GRand(rng, 0, n), cy = GRand(rng, 0, n);
@@ -466,7 +467,7 @@ namespace DribbleToSchool.Art
         static PixelCanvas Water(System.Random rng, int seed)
         {
             int n = GroundSize;
-            Color deep = new Color(0.2f, 0.47f, 0.62f), mid = new Color(0.3f, 0.62f, 0.7f), shallow = new Color(0.48f, 0.78f, 0.78f);
+            Color deep = new Color(0.12f, 0.44f, 0.72f), mid = new Color(0.2f, 0.62f, 0.82f), shallow = new Color(0.42f, 0.82f, 0.88f);
             var t = new GroundTile(n, mid);
             for (int y = 0; y < n; y++)
                 for (int x = 0; x < n; x++)

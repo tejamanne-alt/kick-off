@@ -31,8 +31,8 @@ namespace DribbleToSchool.World
         public const float ChannelDepth = 0.6f;
 
         public static readonly Color Dry = Color.white;
-        public static readonly Color Trodden = new Color(0.96f, 0.93f, 0.88f);
-        public static readonly Color Wet = new Color(0.82f, 0.74f, 0.62f);
+        public static readonly Color Trodden = new Color(0.97f, 0.95f, 0.92f);
+        public static readonly Color Wet = new Color(0.8f, 0.74f, 0.7f);
 
         /// <summary>A step between two touching spans: its slope runs from (edge, top) down to bottom over run (negative: to the left).</summary>
         public struct Step { public float edge, top, bottom, run; }

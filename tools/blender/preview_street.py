@@ -25,16 +25,16 @@ rng = random.Random(seed * 31 + chapter)
 
 # ---------------------------------------------------------------- the chapter's light (sRGB)
 MOODS = {
-    1: dict(sun=(1, .93, .8), zenith=(.42, .62, .9), horizon=(.98, .86, .75), glow=(1, .82, .6), shade=(.72, .75, .93),
-            haze=(.96, .86, .8), sun_dir=(.45, .75, -.45), haze_start=26, haze_end=600, haze_k=.85),
-    2: dict(sun=(1, .96, .87), zenith=(.38, .6, .92), horizon=(.95, .88, .8), glow=(1, .9, .74), shade=(.74, .78, .94),
-            haze=(.93, .88, .84), sun_dir=(.4, .85, -.35), haze_start=30, haze_end=640, haze_k=.78),
-    3: dict(sun=(1, .91, .8), zenith=(.5, .62, .9), horizon=(1, .83, .79), glow=(1, .78, .64), shade=(.77, .73, .93),
-            haze=(.98, .85, .83), sun_dir=(.5, .7, -.45), haze_start=24, haze_end=580, haze_k=.88),
-    4: dict(sun=(1, .89, .74), zenith=(.55, .62, .86), horizon=(.98, .81, .69), glow=(1, .75, .54), shade=(.75, .71, .88),
-            haze=(.96, .81, .71), sun_dir=(.5, .72, -.4), haze_start=22, haze_end=520, haze_k=.92),
-    5: dict(sun=(1, .88, .68), zenith=(.46, .58, .88), horizon=(1, .81, .63), glow=(1, .73, .46), shade=(.71, .69, .9),
-            haze=(.98, .83, .67), sun_dir=(.55, .6, -.45), haze_start=24, haze_end=580, haze_k=.88),
+    1: dict(sun=(1, .97, .92), zenith=(.15, .38, .8), horizon=(.64, .81, .95), glow=(1, .97, .9), shade=(.6, .66, .82),
+            haze=(.7, .81, .93), sun_dir=(.45, .78, -.45), haze_start=40, haze_end=700, haze_k=.6),
+    2: dict(sun=(1, .98, .94), zenith=(.14, .37, .79), horizon=(.66, .82, .95), glow=(1, .98, .92), shade=(.6, .66, .82),
+            haze=(.7, .81, .93), sun_dir=(.4, .85, -.35), haze_start=40, haze_end=700, haze_k=.58),
+    3: dict(sun=(1, .99, .96), zenith=(.1, .33, .78), horizon=(.56, .78, .96), glow=(1, .98, .92), shade=(.6, .67, .84),
+            haze=(.68, .83, .96), sun_dir=(.5, .75, -.45), haze_start=45, haze_end=760, haze_k=.55),
+    4: dict(sun=(1, .98, .95), zenith=(.17, .4, .78), horizon=(.7, .82, .93), glow=(1, .98, .93), shade=(.6, .65, .8),
+            haze=(.73, .81, .9), sun_dir=(.5, .75, -.4), haze_start=38, haze_end=640, haze_k=.62),
+    5: dict(sun=(1, .97, .91), zenith=(.15, .38, .8), horizon=(.66, .83, .95), glow=(1, .97, .9), shade=(.6, .67, .82),
+            haze=(.7, .82, .93), sun_dir=(.55, .7, -.45), haze_start=40, haze_end=700, haze_k=.58),
 }
 mood = dict(MOODS[chapter])
 if '--haze-end' in args:          # try a different haze range
@@ -65,6 +65,14 @@ ramp.color_ramp.elements[0].position = 0.0; ramp.color_ramp.elements[0].color = 
 ramp.color_ramp.elements[1].position = 0.35; ramp.color_ramp.elements[1].color = lin(mood['zenith']) + (1,)
 wn.links.new(tc.outputs['Generated'], sep.inputs[0]); wn.links.new(sep.outputs['Z'], ramp.inputs['Fac'])
 wn.links.new(ramp.outputs['Color'], bg.inputs['Color']); bg.inputs['Strength'].default_value = 0.9
+# The camera sees the sky gradient; everything else is lit by the chapter's shade colour (like the
+# game's DtsShadeTint), not by the deep blue of the sky, which would tint the whole street blue.
+fill = wn.nodes.new('ShaderNodeBackground'); fill.inputs['Color'].default_value = lin(mood['shade']) + (1,)
+fill.inputs['Strength'].default_value = 0.75
+lp = wn.nodes.new('ShaderNodeLightPath'); mix = wn.nodes.new('ShaderNodeMixShader')
+wn.links.new(lp.outputs['Is Camera Ray'], mix.inputs['Fac'])
+wn.links.new(fill.outputs['Background'], mix.inputs[1]); wn.links.new(bg.outputs['Background'], mix.inputs[2])
+wn.links.new(mix.outputs['Shader'], wn.nodes['World Output'].inputs['Surface'])
 
 # Game axes (x right, y up, z away from the camera) to Blender's (x right, y away, z up).
 def B(x, y, z):
@@ -74,7 +82,7 @@ def B(x, y, z):
 sd = mood['sun_dir']
 sun_vec = Vector((sd[0], sd[2], sd[1])).normalized()       # toward the sun
 sun = bpy.data.objects.new('sun', bpy.data.lights.new('sun', 'SUN')); S.collection.objects.link(sun)
-sun.data.color = lin(mood['sun']); sun.data.energy = 3.4; sun.data.angle = math.radians(3)
+sun.data.color = lin(mood['sun']); sun.data.energy = 4.0; sun.data.angle = math.radians(3)
 sun.rotation_euler = (-sun_vec).to_track_quat('-Z', 'Y').to_euler()
 
 # ---------------------------------------------------------------- kits
@@ -309,7 +317,7 @@ def noise(x, y):
 class Sand:
     # A port of World/SandField (keep in step): the beach as one smooth surface from the ground spans.
     SLOPE_RUN, WET_FROM, SHORE_FROM, CHANNEL_DEPTH = 3.6, 5.6, 8.6, 0.6
-    DRY, TRODDEN, WET = (1, 1, 1), (.96, .93, .88), (.82, .74, .62)
+    DRY, TRODDEN, WET = (1, 1, 1), (.97, .95, .92), (.8, .74, .7)
 
     def __init__(self, spans, calm=()):
         self.spans = sorted(spans); self.calm = list(calm)
@@ -455,15 +463,16 @@ else:
     for x in range(int(X0) - 60, int(X1) + 60, 6):
         box(x, x + 3, -0.14, -0.128, -4.96, -4.84, (.95, .95, .93), 'dash')
 # ---------------------------------------------------------------- scenery (as StreetBuilder)
-HOUSE = [((.96, .92, .82), (.32, .5, .52), (.38, .43, .52)), ((.98, .85, .6), (.95, .95, .92), (.72, .38, .3)),
-         ((.95, .76, .64), (.36, .42, .56), (.42, .36, .34)), ((.74, .83, .72), (.96, .94, .88), (.34, .44, .42)),
-         ((.73, .82, .9), (.96, .95, .92), (.36, .4, .5)), ((.93, .72, .7), (.97, .95, .9), (.48, .34, .32))]
-SHOP = [((.97, .93, .84), (.27, .47, .72), (.6, .6, .62)), ((.95, .82, .62), (.75, .27, .25), (.6, .6, .62)),
-        ((.8, .87, .84), (.3, .56, .4), (.6, .6, .62)), ((.94, .78, .7), (.92, .68, .2), (.6, .6, .62))]
-WORK = [((.78, .82, .76), (.85, .6, .2), (.5, .53, .57)), ((.72, .79, .86), (.78, .3, .26), (.46, .5, .55)),
-        ((.86, .76, .62), (.3, .45, .6), (.52, .5, .5))]
+HOUSE = [((.95, .95, .93), (.3, .3, .32), (.32, .34, .38)), ((.9, .88, .84), (.97, .97, .95), (.66, .38, .3)),
+         ((.82, .84, .86), (.96, .96, .95), (.3, .38, .48)), ((.92, .88, .8), (.42, .32, .26), (.36, .33, .32)),
+         ((.88, .91, .92), (.96, .96, .95), (.24, .42, .46)), ((.96, .94, .9), (.55, .3, .25), (.42, .42, .44))]
+SHOP = [((.94, .94, .92), (.2, .42, .74), (.56, .57, .6)), ((.88, .86, .82), (.82, .22, .2), (.56, .57, .6)),
+        ((.84, .86, .86), (.18, .52, .36), (.56, .57, .6)), ((.93, .91, .86), (.96, .72, .12), (.56, .57, .6))]
+WORK = [((.82, .82, .81), (.9, .56, .14), (.5, .53, .57)), ((.8, .81, .82), (.8, .26, .22), (.46, .5, .55)),
+        ((.86, .84, .8), (.24, .44, .64), (.52, .52, .54))]
 WIDTH = {'HouseGable': 7, 'HouseLong': 10, 'Bungalow': 7, 'ShopFruit': 8, 'ShopShutter': 8, 'Apartment': 12, 'Warehouse': 11, 'School': 32}
-AUTUMN = [(.96, .72, .3), (.93, .52, .24), (.82, .36, .25), (.98, .84, .4), (.66, .64, .32)]
+SUMMER = [(.42, .66, .28), (.36, .6, .3), (.5, .7, .3), (.3, .54, .32), (.46, .64, .26)]
+MEADOW = [(.5, .7, .32), (.58, .72, .34), (.44, .64, .3)]
 
 
 def scramble(seed):
@@ -486,8 +495,10 @@ def building(model, x, z, schemes):
 
 def plant(model, x, y, z, scale):
     leaves = None
-    if chapter == 5 and (model.startswith('Broadleaf') or model == 'Birch' or model.startswith('Bush')):
-        leaves = rng.choice(AUTUMN)
+    if (model.startswith('Broadleaf') or model == 'Birch' or model.startswith('Bush')) and rng.random() < .85:
+        leaves = rng.choice(SUMMER)
+    elif model in ('TallGrass', 'GrassTuft') and rng.random() < .8:
+        leaves = rng.choice(MEADOW)
     place('Plants', model, x, y, z, rng.uniform(0, 360), scale, [leaves, None, None] if leaves else None)
 
 
@@ -575,7 +586,7 @@ def suburb():
     while x < X1 + 20:
         building(rng.choice(['HouseGable', 'HouseLong']), x, rng.uniform(20, 24), HOUSE)
         x += rng.uniform(10, 14)
-    distant((.6, .68, .42), None)
+    distant((.48, .68, .36), None)
 
 
 def market():
@@ -698,7 +709,7 @@ def city():
     while x < X1:
         place('Works', 'TowerCrane', x + rng.uniform(-20, 20), 0, rng.uniform(170, 230), rng.uniform(-40, 40) + (180 if rng.random() < .5 else 0), rng.uniform(.85, 1.05))
         x += rng.uniform(70, 120)
-    distant((.68, .68, .56), None)
+    distant((.6, .68, .5), None)
 
 
 def park_features():
@@ -758,7 +769,7 @@ def park():
     while x < X1:
         plant(rng.choice(['TallGrass', 'GrassTuft', 'FlowerPatch', 'GrassTuft', 'TallGrass']), x, .08, rng.uniform(-6.5, -2.4), rng.uniform(1.1, 1.8))
         x += rng.uniform(.8, 2.6)
-    distant((.74, .66, .4), (.8, .68, .36))
+    distant((.48, .68, .36), None)
 
 
 {1: suburb, 2: market, 3: beach, 4: city, 5: park}[chapter]()

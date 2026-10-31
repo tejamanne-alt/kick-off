@@ -21,8 +21,6 @@ namespace DribbleToSchool.Cosmetics
         public MonoBehaviour kidBody;
         [Tooltip("The pennant on each playable character's bag.")]
         public SpriteRenderer[] backpackFlags;
-        [Tooltip("The outfit that leaves the characters in the clothes they were made with.")]
-        public string uniformId = "outfit_school";
 
         static readonly int MainTexId = Shader.PropertyToID("_MainTex");
         static readonly int MainTexStId = Shader.PropertyToID("_MainTex_ST");
@@ -63,10 +61,11 @@ namespace DribbleToSchool.Cosmetics
             var dressable = kidBody as Presentation.IOutfit;
             if (outfit != null && dressable != null && dressedIn != outfit.id)
             {
-                // Re-dressing is cheap but not free: only when the outfit changes.
+                // Re-dressing is cheap but not free: only when the outfit changes. The school uniform
+                // is dressed like any other outfit (a white shirt, navy shorts): the teens were modelled
+                // in casual colours that sat too close to the street's greens and sand.
                 dressedIn = outfit.id;
-                if (outfit.id == uniformId) dressable.ResetOutfit();
-                else dressable.SetOutfit(outfit.primary, outfit.secondary);
+                dressable.SetOutfit(outfit.primary, outfit.secondary);
             }
 
             var flag = catalog.Find(save.equippedFlag);

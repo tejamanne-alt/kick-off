@@ -1,12 +1,12 @@
 // The painterly surface shader for the 3D street (see docs/ART_DIRECTION.md):
-// - a warm sun with a soft light-to-shade transition (a wrapped diffuse ramp, not hard bands);
-// - shade sides that carry the sky's colour (hemispheric ambient: sky above, warm ground bounce
+// - a clear sun with a crisp, slightly soft step to shade (anime daylight), easing across the lit side;
+// - shade sides that carry the sky's cool colour (hemispheric ambient: sky above, ground bounce
 //   below), never black;
-// - a gentle warm rim where surfaces turn away toward the sun;
+// - a gentle rim where surfaces turn away toward the sun;
 // - real-time sun shadows from the scene's directional light, tinted like the shade side;
 // - an optional world-space texture projection (so surfaces tile at any size), with soft
 //   world-scale patches of lighter, darker, warmer and cooler ground so the repeat doesn't show;
-// - distance haze that leans warm toward the sun, so far layers dissolve into a glowing sky;
+// - a little blue distance haze, lighter toward the sun, so far layers sit back without fading out;
 // - an optional breeze (_Wind) that sways vertices by their alpha (the plants kit's wind weight).
 // Colours and directions come from globals set by WorldLook; the directional light only casts
 // the shadows.

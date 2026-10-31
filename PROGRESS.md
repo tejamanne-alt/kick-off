@@ -189,26 +189,27 @@ This file is the resume point. A new session should read it first. All eight pha
 
 ## Painterly world and asset kits
 
-The look follows `docs/ART_DIRECTION.md`: cozy golden-hour stylized realism with layered haze.
+The look follows `docs/ART_DIRECTION.md`: clear anime daylight (generated content v37; it was a golden-hour haze before playtesting showed it tinted everything yellow and hid the kid).
 - **Light and air:** the toon shaders share `Shaders/DtsLook.cginc`:
-  - a soft wrapped light ramp;
-  - shade tinted by the sky above and a warm bounce from the ground below;
+  - a near-white sun with a crisp, slightly soft step into cool blue-grey shade;
+  - shade tinted by the sky above and a neutral bounce from the ground below;
   - a rim light;
   - soft real-time sun shadows;
-  - distance haze that eases out over about 600 m and leans warm toward the sun.
+  - a little blue distance haze that eases out over about 700 m.
   
   The rest of the atmosphere:
-  - `WorldLook` sets the light per chapter (`ChapterTheme.mood`).
-  - A sky dome draws the gradient, the horizon glow and the sun.
-  - `PostFX` adds a soft bloom, a warm grade and a vignette.
+  - `WorldLook` sets the light per chapter (`ChapterTheme.mood`): a fresh morning, a bright late morning, a brilliant beach midday, a clear city day and a summer afternoon.
+  - A sky dome draws a deep blue gradient paling to the horizon; the sun sits high, so only its glow shows.
+  - `PostFX` adds a faint bloom, a neutral grade with a little extra contrast and a light vignette.
+- **Characters stand out:** the kid has the boldest ink outline and a bright rim round the whole silhouette (`ToonCharacter`, set per material in `ArtBaker.CharacterMaterial`). The school uniform dresses both teens in a white shirt and navy shorts (`CosmeticApplier`); before, it left the boy in the sage shirt and khaki shorts he was modelled in, the same tones as the grass and paths.
 - **Ground:** the surfaces are painterly 512 px tiles over 8 x 8 units, wrapping both ways (`Art/GroundArt.cs`):
   - asphalt with repairs and sealed cracks;
-  - bevelled paving with moss in the joints;
+  - neutral grey bevelled paving with moss in the joints;
   - irregular cobbles;
-  - rippled sand with shells;
-  - warm clumpy lawn with flowers;
-  - gravel with fallen leaves;
-  - turquoise water.
+  - peachy rippled sand with shells;
+  - fresh green clumpy lawn with flowers;
+  - light gravel with a few leaves;
+  - turquoise to deep blue water.
   
   The toon shader adds world-scale patches (`_Macro`), so the repeat never shows.
 - **Asset kits:** seven kits of original Blender models replace the procedural boxes, blobs and flat cut-outs. Each has one atlas, a manifest and recolourable parts (`tools/blender/kit_*.py`, `Art/Models/<Kit>/`).

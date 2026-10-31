@@ -1,8 +1,9 @@
-// Anime-style shading for characters, the ball and other smooth, rounded things:
-// two cel bands (lit and a cool shadow) from the global sun, a thin rim light, an
-// ink outline of constant on-screen width (an inverted hull pushed out along the
-// smooth normals), and the same distance haze as the street. Colours come from the
-// vertex colours times the texture and tint. Lighting and haze are set by WorldLook.
+// Anime-style shading for characters, the ball and other smooth, rounded things, drawn to
+// stand apart from the painterly street: two flat cel bands (lit and a cool shadow) from the
+// global sun, a bright rim round the whole silhouette (strongest on the sunny side), a dark ink
+// outline of constant on-screen width (an inverted hull pushed out along the smooth normals),
+// and the same distance haze as the street. Colours come from the vertex colours times the
+// texture and tint. Lighting and haze are set by WorldLook.
 Shader "DribbleToSchool/ToonCharacter"
 {
     Properties
@@ -10,8 +11,8 @@ Shader "DribbleToSchool/ToonCharacter"
         _MainTex ("Texture", 2D) = "white" {}
         _Color ("Tint", Color) = (1,1,1,1)
         _ShadowColor ("Shadow tint", Color) = (0.74,0.72,0.9,1)
-        _RimStrength ("Rim light", Range(0,1)) = 0.22
-        _OutlineColor ("Outline colour", Color) = (0.13,0.1,0.14,1)
+        _RimStrength ("Rim light", Range(0,1)) = 0.3
+        _OutlineColor ("Outline colour", Color) = (0.08,0.07,0.1,1)
         _OutlineWidth ("Outline width (fraction of screen height)", Float) = 0.0022
     }
     SubShader
@@ -66,7 +67,7 @@ Shader "DribbleToSchool/ToonCharacter"
 
             fixed4 frag (v2f i) : SV_Target
             {
-                fixed3 col = lerp(_OutlineColor.rgb, i.color.rgb * _Color.rgb * 0.32, 0.35);
+                fixed3 col = lerp(_OutlineColor.rgb, i.color.rgb * _Color.rgb * 0.3, 0.2);
                 col = DtsHaze(col, i.worldPos, 1.0);
                 return fixed4(col, 1);
             }
@@ -117,9 +118,10 @@ Shader "DribbleToSchool/ToonCharacter"
                 float lit = smoothstep(-0.02, 0.06, d) * lerp(0.15, 1.0, SHADOW_ATTENUATION(i));
                 fixed3 col = lerp(tex.rgb * DtsShadeTint(_ShadowColor.rgb, n), tex.rgb * DtsSun(), lit);
 
-                // Rim light on the sunny side's silhouette.
+                // A rim of light round the silhouette, brightest on the sunny side, so the figure
+                // lifts off whatever is behind it.
                 float3 v = normalize(_WorldSpaceCameraPos - i.worldPos);
-                float rim = smoothstep(0.62, 0.78, 1.0 - saturate(dot(n, v))) * saturate(d + 0.35);
+                float rim = smoothstep(0.6, 0.76, 1.0 - saturate(dot(n, v))) * lerp(0.4, 1.0, saturate(d + 0.35));
                 col += rim * _RimStrength * DtsSun();
 
                 col = DtsHaze(col, i.worldPos, 1.0);

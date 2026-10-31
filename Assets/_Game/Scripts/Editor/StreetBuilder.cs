@@ -405,27 +405,30 @@ namespace DribbleToSchool.EditorTools
 
         // A few curated, slightly faded schemes rather than random mixes: each look stays
         // harmonious, and each building model only ever needs a handful of recoloured copies.
+        // Paint schemes (wall, trim, roof): mostly white, pale grey and light stucco walls under dark
+        // slate, charcoal, blue-grey or tiled roofs, as real streets are; colour comes in small doses
+        // (a shop's awning, a door, a tin roof).
         static readonly Paint[] HousePaints =
         {
-            new Paint(new Color(0.96f, 0.92f, 0.82f), new Color(0.32f, 0.5f, 0.52f), new Color(0.38f, 0.43f, 0.52f)),   // cream, teal, slate
-            new Paint(new Color(0.98f, 0.85f, 0.6f), new Color(0.95f, 0.95f, 0.92f), new Color(0.72f, 0.38f, 0.3f)),    // butter, white, terracotta
-            new Paint(new Color(0.95f, 0.76f, 0.64f), new Color(0.36f, 0.42f, 0.56f), new Color(0.42f, 0.36f, 0.34f)),  // peach, navy, brown
-            new Paint(new Color(0.74f, 0.83f, 0.72f), new Color(0.96f, 0.94f, 0.88f), new Color(0.34f, 0.44f, 0.42f)),  // sage, cream, deep green
-            new Paint(new Color(0.73f, 0.82f, 0.9f), new Color(0.96f, 0.95f, 0.92f), new Color(0.36f, 0.4f, 0.5f)),     // powder blue, white, slate
-            new Paint(new Color(0.93f, 0.72f, 0.7f), new Color(0.97f, 0.95f, 0.9f), new Color(0.48f, 0.34f, 0.32f)),    // dusty pink, white, brown
+            new Paint(new Color(0.95f, 0.95f, 0.93f), new Color(0.3f, 0.3f, 0.32f), new Color(0.32f, 0.34f, 0.38f)),    // white, charcoal, slate
+            new Paint(new Color(0.9f, 0.88f, 0.84f), new Color(0.97f, 0.97f, 0.95f), new Color(0.66f, 0.38f, 0.3f)),     // warm grey, white, terracotta tile
+            new Paint(new Color(0.82f, 0.84f, 0.86f), new Color(0.96f, 0.96f, 0.95f), new Color(0.3f, 0.38f, 0.48f)),    // pale grey, white, blue slate
+            new Paint(new Color(0.92f, 0.88f, 0.8f), new Color(0.42f, 0.32f, 0.26f), new Color(0.36f, 0.33f, 0.32f)),    // light stucco, brown, dark tile
+            new Paint(new Color(0.88f, 0.91f, 0.92f), new Color(0.96f, 0.96f, 0.95f), new Color(0.24f, 0.42f, 0.46f)),   // blue-white, white, green tin
+            new Paint(new Color(0.96f, 0.94f, 0.9f), new Color(0.55f, 0.3f, 0.25f), new Color(0.42f, 0.42f, 0.44f)),     // cream, brick, grey
         };
         static readonly Paint[] ShopPaints =
         {
-            new Paint(new Color(0.97f, 0.93f, 0.84f), new Color(0.27f, 0.47f, 0.72f), new Color(0.6f, 0.6f, 0.62f)),
-            new Paint(new Color(0.95f, 0.82f, 0.62f), new Color(0.75f, 0.27f, 0.25f), new Color(0.6f, 0.6f, 0.62f)),
-            new Paint(new Color(0.8f, 0.87f, 0.84f), new Color(0.3f, 0.56f, 0.4f), new Color(0.6f, 0.6f, 0.62f)),
-            new Paint(new Color(0.94f, 0.78f, 0.7f), new Color(0.92f, 0.68f, 0.2f), new Color(0.6f, 0.6f, 0.62f)),
+            new Paint(new Color(0.94f, 0.94f, 0.92f), new Color(0.2f, 0.42f, 0.74f), new Color(0.56f, 0.57f, 0.6f)),     // blue awning
+            new Paint(new Color(0.88f, 0.86f, 0.82f), new Color(0.82f, 0.22f, 0.2f), new Color(0.56f, 0.57f, 0.6f)),     // red awning
+            new Paint(new Color(0.84f, 0.86f, 0.86f), new Color(0.18f, 0.52f, 0.36f), new Color(0.56f, 0.57f, 0.6f)),    // green awning
+            new Paint(new Color(0.93f, 0.91f, 0.86f), new Color(0.96f, 0.72f, 0.12f), new Color(0.56f, 0.57f, 0.6f)),    // yellow awning
         };
         static readonly Paint[] WorkPaints =
         {
-            new Paint(new Color(0.78f, 0.82f, 0.76f), new Color(0.85f, 0.6f, 0.2f), new Color(0.5f, 0.53f, 0.57f)),
-            new Paint(new Color(0.72f, 0.79f, 0.86f), new Color(0.78f, 0.3f, 0.26f), new Color(0.46f, 0.5f, 0.55f)),
-            new Paint(new Color(0.86f, 0.76f, 0.62f), new Color(0.3f, 0.45f, 0.6f), new Color(0.52f, 0.5f, 0.5f)),
+            new Paint(new Color(0.82f, 0.82f, 0.81f), new Color(0.9f, 0.56f, 0.14f), new Color(0.5f, 0.53f, 0.57f)),
+            new Paint(new Color(0.8f, 0.81f, 0.82f), new Color(0.8f, 0.26f, 0.22f), new Color(0.46f, 0.5f, 0.55f)),
+            new Paint(new Color(0.86f, 0.84f, 0.8f), new Color(0.24f, 0.44f, 0.64f), new Color(0.52f, 0.52f, 0.54f)),
         };
 
         /// <summary>
@@ -469,22 +472,26 @@ namespace DribbleToSchool.EditorTools
             }
         }
 
-        // Autumn colours for the park's broadleaf trees (Plants kit part 1).
-        static readonly Color[] AutumnLeaves =
+        // Summer greens for broadleaf trees and bushes (Plants kit part 1), so neighbours differ a
+        // little: fresh yellow-greens, mid greens and deeper blue-greens.
+        static readonly Color[] SummerLeaves =
         {
-            new Color(0.96f, 0.72f, 0.3f), new Color(0.93f, 0.52f, 0.24f), new Color(0.82f, 0.36f, 0.25f),
-            new Color(0.98f, 0.84f, 0.4f), new Color(0.66f, 0.64f, 0.32f),
+            new Color(0.42f, 0.66f, 0.28f), new Color(0.36f, 0.6f, 0.3f), new Color(0.5f, 0.7f, 0.3f),
+            new Color(0.3f, 0.54f, 0.32f), new Color(0.46f, 0.64f, 0.26f),
         };
+        // Meadow grass in leaf (the kit's tall grass and tufts are made seeding, golden).
+        static readonly Color[] MeadowGreens = { new Color(0.5f, 0.7f, 0.32f), new Color(0.58f, 0.72f, 0.34f), new Color(0.44f, 0.64f, 0.3f) };
 
         /// <summary>
-        /// A tree (or bush) from the Plants kit standing at (x, groundY, z), turned at random and in
-        /// autumn colours in the park; the old cut-out if the kit hasn't got the model.
+        /// A tree (or bush) from the Plants kit standing at (x, groundY, z), turned at random, its
+        /// leaves in one of the summer greens; the old cut-out if the kit hasn't got the model.
         /// </summary>
         static void Plant(Transform parent, string model, Sprite fallback, float x, float groundY, float z, float scale, float spriteScale, int order, System.Random rng)
         {
             Color? leaves = null;
-            bool seasonal = model.StartsWith("Broadleaf") || model == "Birch" || model.StartsWith("Bush");
-            if (LevelBuildKit.Chapter == 5 && seasonal) leaves = AutumnLeaves[rng.Next(AutumnLeaves.Length)];
+            bool leafy = model.StartsWith("Broadleaf") || model == "Birch" || model.StartsWith("Bush");
+            if (leafy && rng.NextDouble() < 0.85) leaves = SummerLeaves[rng.Next(SummerLeaves.Length)];
+            else if ((model == "TallGrass" || model == "GrassTuft") && rng.NextDouble() < 0.8) leaves = MeadowGreens[rng.Next(MeadowGreens.Length)];
             if (Model(parent, "Plants", model, x, groundY, z, Rand(rng, 0f, 360f), scale, leaves) != null) return;
             if (fallback != null) CutOut(parent, model, fallback, x, groundY, z, spriteScale, order, rng.NextDouble() < 0.5);
         }
@@ -781,6 +788,9 @@ namespace DribbleToSchool.EditorTools
                 case 4:
                     if (!Row(root, "Street", "Hoarding3", a + 0.15f, b - 0.15f, gy, PropertyZ + 0.2f))
                         Solid(root, "Hoarding", new Vector3((a + b) * 0.5f, gy + 1.3f, PropertyZ + 0.2f), new Vector3(w - 0.3f, 2.6f, 0.2f), Color.white, Art.surfaces[ProceduralArt.Surface.Hoarding]);
+                    // Behind it the lot has gone wild: a tree or two over the hoarding, not bare concrete.
+                    for (float tx = a + Rand(rng, 1.4f, 2.4f); tx < b - 1.4f; tx += Rand(rng, 3.5f, 5.5f))
+                        Plant(root, rng.NextDouble() < 0.7 ? "Broadleaf" : "Birch", null, tx, gy, PropertyZ + Rand(rng, 3.5f, 7f), Rand(rng, 0.8f, 1.05f), 1f, -60, rng);
                     break;
                 case 5:
                     Row(root, "Plants", "HedgeBlock2", a + 0.3f, b - 0.3f, gy + 0.04f, PropertyZ + 0.4f);
@@ -816,7 +826,7 @@ namespace DribbleToSchool.EditorTools
             }
         }
 
-        /// <summary>A band of trees between depths zMin and zMax, every so often along the whole level (in autumn colours in the park).</summary>
+        /// <summary>A band of trees between depths zMin and zMax, every so often along the whole level.</summary>
         static void TreeBand(LevelBuildKit.TrackBuilder track, Transform root, System.Random rng, float x0, float x1, float zMin, float zMax, string[] models, float spacingMin, float spacingMax)
         {
             for (float x = x0 - 40f; x < x1 + 40f; x += Rand(rng, spacingMin, spacingMax))
@@ -1499,8 +1509,8 @@ namespace DribbleToSchool.EditorTools
                     if (OverlapsBackRow(track, x - 2f, x + 2f)) continue;
                     Plant(root, wood[rng.Next(wood.Length)], null, x, GroundAt(track, x) + 0.04f, Rand(rng, 22f, 40f), Rand(rng, 0.95f, 1.35f), 1f, -70, rng);
                 }
-                // Long golden grass, tufts and wild flowers on the lawn in front of the path.
-                // Sized as they grow: grass knee to thigh high, tufts and flowers lower.
+                // Long grass, tufts and wild flowers on the lawn in front of the path, sized as they
+                // grow: grass knee to thigh high, tufts and flowers lower.
                 string[] low = { "TallGrass", "GrassTuft", "FlowerPatch", "GrassTuft", "TallGrass" };
                 for (float x = x0; x < x1; x += Rand(rng, 0.8f, 2.6f))
                 {
@@ -1574,9 +1584,8 @@ namespace DribbleToSchool.EditorTools
             if (LevelBuildKit.HasKitModel("Terrain", "HillsRolling"))
             {
                 float y = track.LowestGroundTop;
-                bool autumn = ch == 5;
-                Color fields = autumn ? new Color(0.74f, 0.66f, 0.4f) : ch == 4 ? new Color(0.68f, 0.68f, 0.56f) : new Color(0.6f, 0.68f, 0.42f);
-                Color? grass = autumn ? new Color(0.8f, 0.68f, 0.36f) : (Color?)null;
+                Color fields = ch == 4 ? new Color(0.6f, 0.68f, 0.5f) : new Color(0.48f, 0.68f, 0.36f);
+                Color? grass = null;
                 // Flat fields from the end of the street ground out to the hills, so nothing floats.
                 var plain = Solid(root, "Fields", new Vector3((x0 + x1) * 0.5f, y - 0.06f, (BackZ + 760f) * 0.5f - 1f), new Vector3(x1 - x0 + 2200f, 0.1f, 760f - BackZ), fields);
                 plain.faces = MeshBuilder.Faces.Top;

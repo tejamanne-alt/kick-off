@@ -32,14 +32,15 @@ fixed3 DtsShadeTint(fixed3 shadowTint, float3 n)
     return lerp(shadowTint, hemi, 0.75);
 }
 
-// Soft painterly diffuse: a wrapped ramp from shade to sun, sun shadows tinted like the shade,
-// a gentle sky fill, and a warm rim on silhouettes that face away toward the sun.
+// Clean anime daylight: a crisp step from cool shade to sun (a narrow soft edge, not a long
+// ramp), a gentle falloff across the lit side so forms still read, sun shadows tinted like the
+// shade, and a light rim on silhouettes that face away toward the sun.
 fixed3 DtsShade(fixed3 albedo, float3 n, float3 worldPos, fixed3 shadowTint, float shadow, float rimAmount)
 {
     float3 l = DtsLightDir();
     float wrap = saturate((dot(n, l) + 0.3) / 1.3);
-    float lit = smoothstep(0.3, 0.56, wrap) * shadow;
-    float full = smoothstep(0.62, 0.86, wrap);
+    float lit = smoothstep(0.36, 0.46, wrap) * shadow;
+    float full = smoothstep(0.5, 0.86, wrap);
     fixed3 sun = DtsSun();
     fixed3 col = albedo * lerp(DtsShadeTint(shadowTint, n), sun * lerp(0.93, 1.0, full), lit);
     col *= lerp(0.9, 1.04, saturate(n.y * 0.5 + 0.5));
@@ -49,7 +50,6 @@ fixed3 DtsShade(fixed3 albedo, float3 n, float3 worldPos, fixed3 shadowTint, flo
     return col;
 }
 
-// Distance haze, warmer toward the sun's side of the sky.
 // Cheap value noise for world-scale variation (no texture needed).
 float DtsHash(float2 p)
 {
@@ -76,6 +76,7 @@ fixed3 DtsMacro(fixed3 albedo, float2 w, float amount)
     return albedo * lerp(fixed3(1, 1, 1), tint * (1.0 + (m - 0.5) * 0.3), amount);
 }
 
+// Distance haze: a little sky blue in the distance, lighter toward the sun's side of the sky.
 fixed3 DtsHaze(fixed3 col, float3 worldPos, float amount)
 {
     float dist = distance(_WorldSpaceCameraPos, worldPos);

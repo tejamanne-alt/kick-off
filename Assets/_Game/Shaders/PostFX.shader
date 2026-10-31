@@ -1,6 +1,5 @@
-// The camera's finishing pass (see PostFX.cs): a soft bloom around the brightest light (the sun's
-// glow, lit tops, white paint), then a gentle grade (warm lift in the shadows, a touch more
-// contrast and saturation) and a soft vignette. Cheap enough for phones: the bloom works on a
+// The camera's finishing pass (see PostFX.cs): a faint bloom on the brightest highlights, then a
+// clean grade (a touch of cool in the shadows, a little extra contrast) and a light vignette. Cheap enough for phones: the bloom works on a
 // quarter-size chain of a few textures.
 Shader "Hidden/DribbleToSchool/PostFX"
 {

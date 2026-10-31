@@ -3,25 +3,26 @@ using UnityEngine;
 namespace DribbleToSchool.World
 {
     /// <summary>
-    /// The camera's finishing pass (Shaders/PostFX.shader): a soft bloom around the brightest
-    /// light, a gentle warm grade and a vignette, for the hazy golden-hour look. The bloom runs on
-    /// a quarter-size chain so it stays cheap on phones; turn it off with <see cref="bloom"/>.
+    /// The camera's finishing pass (Shaders/PostFX.shader): a faint bloom on the brightest
+    /// highlights, a clean neutral grade with a little extra contrast for clear daylight, and a
+    /// light vignette. The bloom runs on a quarter-size chain so it stays cheap on phones; turn it
+    /// off with <see cref="bloom"/>.
     /// </summary>
     [RequireComponent(typeof(Camera))]
     public class PostFX : MonoBehaviour
     {
         public Shader shader;
         public bool bloom = true;
-        [Range(0f, 1f)] public float threshold = 0.78f;
-        [Range(0f, 2f)] public float bloomIntensity = 0.55f;
-        public Color bloomTint = new Color(1f, 0.9f, 0.78f);
-        [Tooltip("Added to the shadows (warm lift).")]
-        public Color lift = new Color(0.03f, 0.02f, 0.035f);
+        [Range(0f, 1f)] public float threshold = 0.9f;
+        [Range(0f, 2f)] public float bloomIntensity = 0.16f;
+        public Color bloomTint = Color.white;
+        [Tooltip("Added to the shadows (a touch of cool).")]
+        public Color lift = new Color(0f, 0.005f, 0.015f);
         [Tooltip("Multiplies the highlights.")]
-        public Color gain = new Color(1.02f, 1f, 0.97f);
-        [Range(0.5f, 1.5f)] public float contrast = 1.04f;
-        [Range(0f, 2f)] public float saturation = 1.06f;
-        [Range(0f, 1f)] public float vignette = 0.22f;
+        public Color gain = Color.white;
+        [Range(0.5f, 1.5f)] public float contrast = 1.08f;
+        [Range(0f, 2f)] public float saturation = 1f;
+        [Range(0f, 1f)] public float vignette = 0.1f;
 
         Material material;
         const int Levels = 4;

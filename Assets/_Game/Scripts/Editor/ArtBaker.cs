@@ -193,23 +193,17 @@ namespace DribbleToSchool.EditorTools
                 set.kits[kit] = m;
             }
             set.cloud = ToonMaterial("Cloud", toon, null, false);
-            set.cloud.SetFloat("_Haze", 0.22f);
-            set.cloud.SetColor("_ShadowColor", new Color(0.8f, 0.85f, 0.97f));
+            set.cloud.SetFloat("_Haze", 0.15f);
+            set.cloud.SetColor("_ShadowColor", new Color(0.72f, 0.8f, 0.95f));   // anime clouds: white tops, soft blue undersides
 
             var toonCharacter = Shader.Find("DribbleToSchool/ToonCharacter");
-            set.character = LoadOrCreateMaterial("Character", toonCharacter);
-            set.kid = LoadOrCreateMaterial("Kid", toonCharacter);
-            set.kid.mainTexture = AssetDatabase.LoadAssetAtPath<Texture2D>(LevelBuildKit.ModelsDir + "/KidAtlas.png");
-            EditorUtility.SetDirty(set.kid);
-            set.adult = LoadOrCreateMaterial("Adult", toonCharacter);
-            set.adult.mainTexture = AssetDatabase.LoadAssetAtPath<Texture2D>(LevelBuildKit.ModelsDir + "/AdultAtlas.png");
-            EditorUtility.SetDirty(set.adult);
-            set.boy = LoadOrCreateMaterial("Boy", toonCharacter);
-            set.boy.mainTexture = AssetDatabase.LoadAssetAtPath<Texture2D>(LevelBuildKit.ModelsDir + "/BoyAtlas.png");
-            EditorUtility.SetDirty(set.boy);
-            set.girl = LoadOrCreateMaterial("Girl", toonCharacter);
-            set.girl.mainTexture = AssetDatabase.LoadAssetAtPath<Texture2D>(LevelBuildKit.ModelsDir + "/GirlAtlas.png");
-            EditorUtility.SetDirty(set.girl);
+            // The playable characters get the boldest line and rim, so they read clearly against the
+            // street; pedestrians a lighter line.
+            set.character = CharacterMaterial("Character", toonCharacter, null, false);
+            set.kid = CharacterMaterial("Kid", toonCharacter, "KidAtlas", true);
+            set.adult = CharacterMaterial("Adult", toonCharacter, "AdultAtlas", false);
+            set.boy = CharacterMaterial("Boy", toonCharacter, "BoyAtlas", true);
+            set.girl = CharacterMaterial("Girl", toonCharacter, "GirlAtlas", true);
             foreach (var type in LevelBuildKit.CarTypes)
             {
                 var carMat = LoadOrCreateMaterial("Car" + type, toonCharacter);
@@ -227,6 +221,18 @@ namespace DribbleToSchool.EditorTools
             set.skyDome = LoadOrCreateMaterial("SkyDome", Shader.Find("DribbleToSchool/Sky"));
             set.wire = LoadOrCreateMaterial("Wire", Shader.Find("Sprites/Default"));
             AssetDatabase.SaveAssets();
+        }
+
+        static Material CharacterMaterial(string name, Shader shader, string atlas, bool player)
+        {
+            var m = LoadOrCreateMaterial(name, shader);
+            if (atlas != null) m.mainTexture = AssetDatabase.LoadAssetAtPath<Texture2D>(LevelBuildKit.ModelsDir + "/" + atlas + ".png");
+            m.SetColor("_OutlineColor", new Color(0.08f, 0.07f, 0.1f));
+            m.SetFloat("_OutlineWidth", player ? 0.0034f : 0.0022f);
+            m.SetFloat("_RimStrength", player ? 0.38f : 0.22f);
+            m.SetColor("_ShadowColor", new Color(0.68f, 0.7f, 0.88f));
+            EditorUtility.SetDirty(m);
+            return m;
         }
 
         static Material ToonMaterial(string name, Shader shader, Texture2D texture, bool worldUV)
