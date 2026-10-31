@@ -143,7 +143,10 @@ namespace DribbleToSchool.EditorTools
                 if (index < 0) { index = materials.Count; materials.Add(m); }
                 slab.strips.Add(new StreetSlab.Strip(spec.zFrom, spec.zTo, spec.lift, index, spec.tint));
             }
-            materials.Add(Art.solid);
+            // The faces where the ground steps up or down are retaining walls: concrete blocks on the
+            // home street and in the park, plain cast concrete at the market and in the city.
+            materials.Add(Art.surfaces[ch == 1 || ch == 5 ? ProceduralArt.Surface.BlockWall : ProceduralArt.Surface.Concrete]);
+            slab.sideColor = new Color(0.9f, 0.9f, 0.88f);
             slab.sideSubmesh = materials.Count - 1;
             slab.materials = materials.Count;
             go.GetComponent<MeshRenderer>().sharedMaterials = materials.ToArray();
