@@ -76,7 +76,7 @@ vertex colours times the atlas, and recolourable parts in UV2.x.
 
 | Kit | Script | What's in it |
 |---|---|---|
-| Plants | `kit_plants.py` | conifers, broadleaf trees, birch, cherry, palms, bushes, hedge blocks, grasses, reeds, flowers |
+| Plants | `kit_plants.py` | conifers, broadleaf trees (five), a cloud-pruned garden pine, birch, cherry, palms, bushes, hedge blocks, grasses, reeds, flowers; the trees' and bushes' leaves are cut-out leaf-clump cards (`kit_plants_leaves.py`) |
 | Buildings | `kit_buildings.py` | gabled and long houses, bungalow, two shops, flats, warehouse, school, garage |
 | Street | `kit_street.py` | utility pole, lamp, pedestrian signal, walls, fences, hoarding, planters, benches, vending machines, signs, crates, pots, stalls, awnings |
 | Terrain | `kit_terrain.py` | boulders, rock clusters, cliffs, a headland, mountain ranges, rolling hills, a forest strip, dunes, sand and gravel piles |

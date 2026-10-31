@@ -3,6 +3,16 @@
 # live in the vertex colours (and survive the game's recolour); the atlas adds the crafted
 # strokes: bark furrows, birch marks, cherry lenticels, palm-trunk fibre, conifer needles,
 # palm leaflets and clipped-hedge leaves. Plain white corner at UV (0.97, 0.03).
+#
+# Leaf sprites (the alpha channel): 128 px cells of leaf clusters for the trees' and bushes' leaf
+# cards, cut out by the game's Toon shader (_ALPHATEST_ON, _Cutoff 0.5). Each cell is a clump of
+# overlapping clover-like leaves (or small birch leaves, five-petal blossoms, or the bristly needle
+# tufts of a pruned pine), the ones behind
+# darker than the ones in front, inside a transparent margin. Their alpha is a soft ramp across
+# the outline (0.5 on it) that tops out at LEAF_ALPHA (< 1), so the shader can tell cut-out
+# texels from solid ones: only texels below 0.97 shrink away on cards seen edge-on (_EdgeFade);
+# every other region is fully opaque (alpha 1).
+import math
 import numpy as np
 from PIL import Image
 
@@ -19,6 +29,20 @@ REG = {
     'white':  (0.9375, 0.0, 1.0, 0.0625),
 }
 MARGIN = 3.0 / AT
+
+# Leaf-card sprite cells (u0, v0), 0.125 x 0.125 each: seven beside the needles (the white corner
+# keeps its own cell) and six above the palm ring.
+CELL = 0.125
+_CELLS = [(0.75, 0.375), (0.875, 0.375), (0.75, 0.25), (0.875, 0.25), (0.75, 0.125), (0.875, 0.125), (0.75, 0.0),
+          (0.375, 0.875), (0.375, 0.75), (0.375, 0.625), (0.375, 0.5), (0.375, 0.375), (0.375, 0.25)]
+SPRITES = {'leaf': _CELLS[0:7], 'birch': _CELLS[7:9], 'blossom': _CELLS[9:11], 'pine': _CELLS[11:13]}
+LEAF_ALPHA = 0.9          # the most opaque a sprite texel gets (solid regions are 1.0)
+
+
+def sprite_uv(kind, index, s, t, inset=2.0 / AT):
+    """(s, t) in [0, 1] across a leaf sprite cell -> atlas UV."""
+    u0, v0 = SPRITES[kind][index % len(SPRITES[kind])]
+    return np.stack([u0 + inset + np.asarray(s) * (CELL - 2 * inset), v0 + inset + np.asarray(t) * (CELL - 2 * inset)], axis=-1)
 
 
 def region_uv(name, s, t, margin=MARGIN):
@@ -170,17 +194,159 @@ PAINTERS = {'bark': paint_bark, 'birch': paint_birch, 'cherry': paint_cherry, 'p
             'needle': paint_needle, 'hedge': paint_hedge, 'frond': paint_frond}
 
 
+# ---------------------------------------------------------------- leaf sprites
+def _discs_sdf(P, discs):
+    """Signed distance (cell units) from points P (N, 2) to a union of discs (k, 3: x, y, r), or
+    (roughly) to a bristly tuft ('tuft', x, y, R, rot, teeth)."""
+    if discs and discs[0] == 'tuft':
+        _, x, y, R, rot, k = discs
+        q = P - (x, y)
+        ang = np.arctan2(q[:, 1], q[:, 0]) - rot
+        u = ang * k / (2 * math.pi)
+        f = u % 1.0
+        idx = np.floor(u) % k
+        tip = 0.45 + 0.55 * ((np.sin(idx * 12.9898 + rot * 78.233) * 43758.5453) % 1.0)   # uneven needle lengths
+        tooth = (1 - np.abs(2 * f - 1)) ** 1.5 * tip                                   # 1 at a long needle tip
+        return np.hypot(q[:, 0], q[:, 1]) - R * (0.76 + 0.3 * tooth)
+    d = np.full(len(P), 9.0)
+    for x, y, r in discs:
+        d = np.minimum(d, np.hypot(P[:, 0] - x, P[:, 1] - y) - r)
+    return d
+
+
+def tuft(x, y, R, rot, teeth=15):
+    """A pine-needle tuft: a round pom-pom with a bristly edge."""
+    return ('tuft', x, y, R, rot, teeth)
+
+
+def _centre(sh):
+    """(x, y, size) of a shape."""
+    if sh[0] == 'tuft':
+        return sh[1], sh[2], sh[3]
+    return sh[0][0], sh[0][1], max(r for _, _, r in sh)
+
+
+def clover(x, y, R, rot, lobes=4):
+    """A clover-like leaf: round lobes about a filled centre, R its outer radius."""
+    a, b = (0.52 * R, 0.48 * R) if lobes == 4 else (0.5 * R, 0.52 * R)
+    out = [(x, y, 0.45 * R)]
+    for k in range(lobes):
+        t = rot + 2 * math.pi * k / lobes
+        out.append((x + a * math.cos(t), y + a * math.sin(t), b))
+    return out
+
+
+def small_leaf(x, y, R, rot):
+    """A small ovate leaf (birch): two overlapping discs along its axis."""
+    c, s = math.cos(rot), math.sin(rot)
+    return [(x + c * 0.38 * R, y + s * 0.38 * R, 0.7 * R), (x - c * 0.3 * R, y - s * 0.3 * R, 0.62 * R)]
+
+
+def blossom(x, y, R, rot):
+    """A five-petal flower."""
+    out = [(x, y, 0.42 * R)]
+    for k in range(5):
+        t = rot + 2 * math.pi * k / 5
+        out.append((x + 0.55 * R * math.cos(t), y + 0.55 * R * math.sin(t), 0.43 * R))
+    return out
+
+
+def _scatter(rng, n, radius, rmin, rmax, sep=1.0, squash=1.0, tries=600):
+    """n shape centres (cell units, centre 0.5) inside an irregular blob, kept a little apart."""
+    lobe_ph = rng.uniform(0, 2 * math.pi, 3); lobe_a = rng.uniform(0.0, 0.12, 3)
+    out = []
+    for _ in range(tries):
+        if len(out) >= n: break
+        R = rng.uniform(rmin, rmax)
+        a = rng.uniform(0, 2 * math.pi)
+        lim = radius * (1 - sum(la * (0.5 + 0.5 * math.cos((k + 2) * a + p)) for k, (la, p) in enumerate(zip(lobe_a, lobe_ph))))
+        rr = (lim - R) * math.sqrt(rng.uniform(0, 1))
+        if rr < 0: continue
+        x, y = 0.5 + rr * math.cos(a), 0.5 + rr * math.sin(a) * squash
+        if any(math.hypot(x - q[0], y - q[1]) < sep * max(R, q[2]) for q in out): continue
+        out.append((x, y, R))
+    return out
+
+
+def paint_sprite(rng, kind, px=128, ss=4, ramp_px=7.0):
+    """One leaf-card sprite: grey value and alpha (px x px, row 0 at the top)."""
+    if kind == 'leaf':
+        n = int(rng.integers(10, 14))
+        pts = _scatter(rng, n, 0.45, 0.1, 0.145, sep=0.95, tries=1200)
+        shapes = [clover(x, y, R, rng.uniform(0, 2 * math.pi), 4 if rng.random() < 0.8 else 3) for x, y, R in pts]
+        lo, hi = 0.7, 1.0
+    elif kind == 'birch':
+        # an airy clump of small ovate leaves, most of them hanging
+        pts = _scatter(rng, int(rng.integers(48, 58)), 0.45, 0.05, 0.068, sep=0.8, tries=1500)
+        shapes = [small_leaf(x, y, R, math.pi / 2 + rng.normal(0, 0.7)) for x, y, R in pts]
+        lo, hi = 0.6, 1.0
+    elif kind == 'pine':
+        pts = _scatter(rng, int(rng.integers(11, 15)), 0.43, 0.1, 0.14, sep=0.85, tries=1200)
+        shapes = [tuft(x, y, R, rng.uniform(0, 2 * math.pi), int(rng.integers(20, 28))) for x, y, R in pts]
+        lo, hi = 0.55, 1.0
+    else:                                       # blossom
+        pts = _scatter(rng, int(rng.integers(20, 27)), 0.45, 0.06, 0.085, sep=1.05)
+        shapes = [blossom(x, y, R, rng.uniform(0, 2 * math.pi)) for x, y, R in pts]
+        lo, hi = 0.7, 1.0
+    order = np.argsort(rng.uniform(0, 1, len(shapes)))
+    shapes = [shapes[i] for i in order]
+    bright = np.sort(rng.uniform(0, 1, len(shapes)))       # back to front: dark to light
+    bright = lo + (hi - lo) * bright
+    N = px * ss
+    g = (np.arange(N) + 0.5) / N
+    X, Y = np.meshgrid(g, g)
+    P = np.stack([X.ravel(), Y.ravel()], axis=1)
+    val = np.zeros(len(P)); covered = np.zeros(len(P), bool)
+    near = np.full(len(P), 9.0); near_val = np.full(len(P), (lo + hi) / 2)
+    shadow = np.array((0.012, 0.02))                        # each leaf shades the one behind, below right
+    for sh, b in zip(shapes, bright):
+        d = _discs_sdf(P, sh)
+        ds = _discs_sdf(P - shadow, sh)
+        val = np.where(covered & (ds < 0) & (d >= 0), val * 0.8, val)
+        cx, cy, R = _centre(sh)
+        shade = b * (1.0 + 0.07 * np.clip((cy - P[:, 1]) / (R * 1.6), -1, 1))     # lit a little toward its top
+        if kind == 'blossom':
+            eye = np.hypot(P[:, 0] - cx, P[:, 1] - cy) < sh[0][2] * 0.42
+            shade = np.where(eye, shade * 0.62, shade)
+        elif kind == 'pine':                                 # needle strokes radiating from the heart
+            ang = np.arctan2(P[:, 1] - cy, P[:, 0] - cx)
+            rr = np.hypot(P[:, 0] - cx, P[:, 1] - cy) / R
+            shade = shade * (1 - 0.1 * (0.5 + 0.5 * np.cos(ang * 2 * sh[5] + 1.3)) * np.clip(rr * 1.4 - 0.2, 0, 1))
+        inside = d < 0
+        val = np.where(inside, shade, val)
+        covered |= inside
+        closer = d < near
+        near_val = np.where(closer, b, near_val); near = np.minimum(near, d)
+    val = np.where(covered, val, near_val)                  # outside: the nearest leaf's colour, so filtering never greys the edge
+    alpha = LEAF_ALPHA * np.clip(0.5 / LEAF_ALPHA - near * px / ramp_px, 0, 1)
+    val = val.reshape(px, ss, px, ss).mean(axis=(1, 3))
+    alpha = alpha.reshape(px, ss, px, ss).mean(axis=(1, 3))
+    return np.clip(val, 0, 1).astype(np.float32), alpha.astype(np.float32)
+
+
+def paint_sprites(img, alpha, rng):
+    for kind, cells in SPRITES.items():
+        for (u0, v0) in cells:
+            x0 = int(round(u0 * AT)); y0 = int(round((1 - v0 - CELL) * AT)); n = int(round(CELL * AT))
+            v, a = paint_sprite(rng, kind, n)
+            img[y0:y0 + n, x0:x0 + n] = v
+            alpha[y0:y0 + n, x0:x0 + n] = a
+
+
 def paint_atlas(path, seed=11):
     rng = np.random.default_rng(seed)
     img = np.ones((AT, AT), np.float32)
+    alpha = np.ones((AT, AT), np.float32)
     for name, fn in PAINTERS.items():
         sl, U, V = _px(name)
         h, w = U.shape
         img[sl] = fn(rng, h, w, U, V)
-    sl, _, _ = _px('white'); img[sl] = 1.0
+    paint_sprites(img, alpha, np.random.default_rng(seed + 100))
+    sl, _, _ = _px('white'); img[sl] = 1.0; alpha[sl] = 1.0
     rgb = np.repeat(img[..., None], 3, axis=2)
     # a faint warm cast in the bark tiles' dark strokes (painted, not grey)
     warm = np.array([0.90, 0.96, 1.0], np.float32)
-    rgb = 1 - (1 - rgb) * warm[None, None, :]
-    Image.fromarray((np.clip(rgb, 0, 1) * 255 + 0.5).astype(np.uint8), 'RGB').save(path)
+    rgb = np.where(alpha[..., None] >= 1.0, 1 - (1 - rgb) * warm[None, None, :], rgb)
+    rgba = np.concatenate([np.clip(rgb, 0, 1), np.clip(alpha, 0, 1)[..., None]], axis=2)
+    Image.fromarray((rgba * 255 + 0.5).astype(np.uint8), 'RGBA').save(path)
     return path

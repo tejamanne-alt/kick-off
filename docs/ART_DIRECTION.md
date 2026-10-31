@@ -22,9 +22,13 @@ ourselves. We don't reproduce any other game's assets, characters or vehicles.
 4. **Chunky, simple forms with crafted detail.** Shapes are bold and softly bevelled. Detail comes
    from a few well-chosen parts (AC units, gutters, poles and wires, letterboxes, planters, bikes)
    rather than surface noise.
-5. **Natural vegetation.** Broadleaf trees are clumpy masses in varied, slightly olive summer
-   greens, never lime; conifers dark green; lawns a calm green with a few flowers. Cherry blossom
-   is an occasional accent, never the main colour.
+5. **Natural vegetation.** Broadleaf trees are broad, irregular crowns of many small clover-like
+   leaf clumps gathered into a few lobes: bright yellow-green where the sun catches the outer
+   clumps, deep cool green in the shade inside, a ragged scalloped outline with little sky holes,
+   and dark branches showing through the gaps. Summer greens vary a little from tree to tree,
+   slightly olive, never lime; conifers and pruned garden pines dark green; bushes the same leaf
+   clumps, low; lawns a calm green with a few flowers. Cherry blossom is an occasional accent,
+   never the main colour.
 6. **Water.** A clear turquoise to deep blue sea with white foam where it meets the sand; peachy
    sand that darkens a little where it is wet.
 7. **Characters pop.** The kid is the clearest thing on screen: flat cel shading in two bands, a
@@ -60,7 +64,7 @@ around them has real depth.
   part's base colour. The kit manifest records each part's base colour (sRGB).
 - **Normals:** smooth or custom split normals so light falls softly. Stylized flat planes are fine on
   rocks and cliffs, as long as they are intended.
-- **Budgets (triangles):** building 6,000; tree 2,500; bush and grass 800; street prop 1,500;
+- **Budgets (triangles):** building 6,000; tree 6,000 (leaf-card crowns; 2,500 otherwise); bush 1,200; grass 800; street prop 1,500;
   boulder 600; landscape strip 6,000; gameplay structure 5,000.
 - **Review:** render every kit with `review_kit.py` and look at it critically before handing it over;
   check street layouts in daylight with `preview_street.py`.

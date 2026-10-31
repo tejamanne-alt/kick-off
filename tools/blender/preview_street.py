@@ -3,7 +3,7 @@
 # 12 m back and under 3 m up, tilted 4 degrees down) in the chapter's light and haze (ChapterTheme moods).
 # Kit models get the street's paint schemes (ModelTint's brightness-ratio recolour). The shading is
 # Blender's, not the game's toon ramp, so judge layout, scale, silhouettes and colour, not shading.
-#   blenv/bin/python preview_street.py -- <kits dir> <out.png> [--chapter 1..5] [--seed N] [--wide] [--haze-end M] [--surfaces DIR]
+#   blenv/bin/python preview_street.py -- <kits dir> <out.png> [--chapter 1..5] [--seed N] [--wide] [--haze-end M] [--surfaces DIR] [--samples N]
 # <kits dir> holds one folder per kit with <Kit>.blend and <Kit>.json inside (any folder names).
 # --surfaces: a folder of the game's ground textures (Surface_<Name>.png, 8 x 8 units each), e.g.
 # exported from ProceduralArt.SurfaceTexture; without it the ground is flat colour.
@@ -54,6 +54,9 @@ S.view_settings.look = 'None'
 S.render.resolution_x, S.render.resolution_y = (1950, 900) if wide else (1560, 720)
 try:
     S.eevee.use_shadows = True
+    # Cut-out leaf cards (the plants kit) cast stochastic shadows that Eevee redraws every sample,
+    # so fewer samples keep a preview to a few minutes; --samples raises them for a final image.
+    S.eevee.taa_render_samples = int(args[args.index('--samples') + 1]) if '--samples' in args else 16
 except AttributeError:
     pass
 
@@ -576,13 +579,13 @@ def suburb():
         building(model, cx, z, HOUSE)
         half = WIDTH[model] / 2
         if rng.random() < .7:
-            plant(rng.choice(['Broadleaf', 'BroadleafLarge', 'ConiferTall', 'Broadleaf', 'Birch']), cx + rng.uniform(-half, half), 0, z + 8 + rng.uniform(0, 3), rng.uniform(.9, 1.25))
+            plant(rng.choice(['Broadleaf', 'BroadleafLarge', 'BroadleafWide', 'ConiferTall', 'Broadleaf', 'Birch', 'BroadleafSmall']), cx + rng.uniform(-half, half), 0, z + 8 + rng.uniform(0, 3), rng.uniform(.9, 1.25))
         gap = (cx - half) - x
         if gap > 4 and rng.random() < .4 and has('Buildings', 'Garage'):
             p = HOUSE[scramble(abs(int(round(cx * 7 + z * 13))) + 1) % len(HOUSE)]
             place('Buildings', 'Garage', x + gap / 2, 0, z + .8, 0, 1, list(p))
         elif gap > 1.8 and rng.random() < .6:
-            m = rng.choice(['Birch', 'ConiferSmall', 'ConiferMid', 'ShrubFlowering'])
+            m = rng.choice(['Birch', 'ConiferSmall', 'GardenPine', 'ConiferMid', 'ShrubFlowering', 'BroadleafYoung'])
             plant(m, x + gap / 2, 0, PROP + 1.4 + rng.uniform(0, 1.2), rng.uniform(1.3, 1.6) if m == 'ShrubFlowering' else rng.uniform(.7, .95))
         x += lot
     x = X0 - 20
@@ -766,7 +769,7 @@ def park():
         x += rng.uniform(4, 9)
     x = X0 - 20
     while x < X1 + 20:
-        plant(rng.choice(['BroadleafLarge', 'Broadleaf', 'ConiferTall', 'BroadleafLarge', 'ConiferMid', 'Birch']), x, .04, rng.uniform(22, 40), rng.uniform(.95, 1.35))
+        plant(rng.choice(['BroadleafLarge', 'Broadleaf', 'BroadleafWide', 'ConiferTall', 'BroadleafLarge', 'ConiferMid', 'Birch']), x, .04, rng.uniform(22, 40), rng.uniform(.95, 1.35))
         x += rng.uniform(3, 6)
     x = X0
     while x < X1:
@@ -819,6 +822,11 @@ for m in bpy.data.materials:
     t.links.new(camd.outputs['View Distance'], mr.inputs['Value'])
     t.links.new(mr.outputs['Result'], inv.inputs[1]); t.links.new(inv.outputs[0], sq.inputs[0])
     t.links.new(sq.outputs[0], ease.inputs[1]); t.links.new(ease.outputs[0], k.inputs[0])
+    hole = t.nodes.get('AlphaMask')          # cut-out leaf cards (kit_plants.py): no haze in the holes
+    if hole is not None:
+        km = t.nodes.new('ShaderNodeMath'); km.operation = 'MULTIPLY'
+        t.links.new(k.outputs[0], km.inputs[0]); t.links.new(hole.outputs[0], km.inputs[1])
+        k = km
     t.links.new(k.outputs[0], mix.inputs['Fac'])
     t.links.new(shader, mix.inputs[1]); t.links.new(em.outputs['Emission'], mix.inputs[2])
     t.links.new(mix.outputs['Shader'], outn.inputs['Surface'])
