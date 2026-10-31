@@ -1278,13 +1278,13 @@ namespace DribbleToSchool.EditorTools
                 for (float x = x0; x < x1; x += Rand(rng, 1.2f, 4f))
                 {
                     // Dune grass in little drifts, a clump or two at a time, far enough in front of the path
-                    // not to hide the ball from the camera.
-                    float z = Rand(rng, -6.5f, -3.4f);
+                    // not to hide the ball from the low camera.
+                    float z = Rand(rng, -6.5f, -3.8f);
                     int clumps = rng.Next(1, 4);
                     for (int k = 0; k < clumps; k++)
                     {
                         float gx = x + k * Rand(rng, 0.5f, 0.9f), gz = z + Rand(rng, -0.4f, 0.4f);
-                        Plant(root, "DuneGrass", null, gx, GroundAt(track, gx, gz) - 0.03f, gz, Rand(rng, 0.7f, 1.4f), 1f, -50, rng);
+                        Plant(root, "DuneGrass", null, gx, GroundAt(track, gx, gz) - 0.03f, gz, Rand(rng, 0.7f, 1.3f), 1f, -50, rng);
                     }
                 }
                 Headlands(root, rng, x0, x1, sea);
@@ -1518,8 +1518,9 @@ namespace DribbleToSchool.EditorTools
                 for (float x = x0; x < x1; x += Rand(rng, 0.8f, 2.6f))
                 {
                     string model = low[rng.Next(low.Length)];
-                    float scale = model == "TallGrass" ? Rand(rng, 0.6f, 0.9f) : model == "GrassTuft" ? Rand(rng, 0.6f, 0.9f) : Rand(rng, 0.8f, 1.1f);
-                    Plant(root, model, null, x, GroundAt(track, x) + 0.04f, Rand(rng, -6.5f, -2.4f), scale, 1f, -50, rng);
+                    float scale = model == "TallGrass" ? Rand(rng, 0.6f, 0.8f) : model == "GrassTuft" ? Rand(rng, 0.6f, 0.9f) : Rand(rng, 0.8f, 1.1f);
+                    // Clear of the path's edge, so the low camera's view of the ball isn't blocked.
+                    Plant(root, model, null, x, GroundAt(track, x) + 0.04f, Rand(rng, -6.5f, -3.4f), scale, 1f, -50, rng);
                 }
             }
             DistantHills(track, root, x0, x1);

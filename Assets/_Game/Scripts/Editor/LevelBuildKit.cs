@@ -115,7 +115,7 @@ namespace DribbleToSchool.EditorTools
             // gameplay stays on the z = 0 plane, the street and scenery are real 3D around it.
             var cam = camGo.AddComponent<Camera>();
             cam.orthographic = false;
-            cam.fieldOfView = 30f;
+            cam.fieldOfView = 34f;     // with CameraFollow2D's close framing: about 12 m back, under 3 m up
             cam.nearClipPlane = 0.3f;
             cam.farClipPlane = 2500f;
             var mood = Theme.mood;
@@ -260,7 +260,7 @@ namespace DribbleToSchool.EditorTools
             follow.ball = ball;
             follow.minX = track.MinX;
             follow.maxX = track.MaxX;
-            follow.minY = track.LowestGroundTop + 2f;
+            follow.minY = track.LowestGroundTop + 1.8f;
 
             BuildSky(track, cam);
             var street = new GameObject("Street");

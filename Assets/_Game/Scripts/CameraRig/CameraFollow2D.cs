@@ -6,11 +6,13 @@ using UnityEngine;
 namespace DribbleToSchool.CameraRig
 {
     /// <summary>
-    /// Side-scroller camera for the 3D street: a perspective camera looking along +z,
-    /// tilted down a little so the road and pavements read as ground. It frames a point on
-    /// the gameplay plane (z = 0) with look-ahead that grows with run speed, leans toward
-    /// the ball, ignores small hops (vertical dead zone) and never shows past the level edges.
-    /// An orthographic camera still works (the old flat look).
+    /// Side-scroller camera for the 3D street: a perspective camera looking along +z from a
+    /// little above the kid's eye height, tilted down a touch so the road and pavements read as
+    /// ground. It frames the kid close (about a quarter of the screen tall) with the view ahead
+    /// of them, look-ahead that grows with run speed, a lean toward the ball, a vertical dead zone
+    /// for small hops, and never shows past the level edges. On narrower screens it pulls back
+    /// just enough to keep a minimum stretch of street in view. An orthographic camera still
+    /// works (the old flat look).
     /// </summary>
     [RequireComponent(typeof(Camera))]
     public class CameraFollow2D : MonoBehaviour
@@ -21,8 +23,8 @@ namespace DribbleToSchool.CameraRig
         [Header("Framing")]
         [Tooltip("How much the camera leans toward the ball (0 = kid only).")]
         [Range(0f, 1f)] public float ballWeight = 0.3f;
-        [Tooltip("Offset from the focus point when standing still.")]
-        public Vector2 offset = new Vector2(1.5f, 1.8f);
+        [Tooltip("Offset from the focus point when standing still (ahead of the kid, and up so their feet sit low in the frame).")]
+        public Vector2 offset = new Vector2(2.2f, 1.4f);
         [Tooltip("Extra look-ahead per unit of run speed (seconds).")]
         public float lookAheadTime = 0.4f;
         public float maxLookAhead = 2.5f;
@@ -32,7 +34,7 @@ namespace DribbleToSchool.CameraRig
         public float smoothTimeX = 0.15f;
         public float smoothTimeY = 0.35f;
         [Tooltip("The camera ignores vertical movement inside this band (jumps, bounces).")]
-        public float verticalDeadZone = 1.2f;
+        public float verticalDeadZone = 1.1f;
 
         [Header("Bounds")]
         [Tooltip("Left/right world edges the camera never shows past.")]
@@ -42,17 +44,19 @@ namespace DribbleToSchool.CameraRig
         public float minY = 2f;
 
         [Header("Perspective")]
-        [Tooltip("Half the visible height at the gameplay plane (world units).")]
-        public float viewHalfHeight = 4.8f;
+        [Tooltip("Half the visible height at the gameplay plane (world units): 3.6 shows 7.2 m, so the kid is about a quarter of the screen tall.")]
+        public float viewHalfHeight = 3.6f;
+        [Tooltip("At least this much of the street either side of the view's centre (world units); narrower screens pull back to keep it.")]
+        public float minHalfWidth = 7f;
         [Tooltip("Downward tilt in degrees, so the street surface shows.")]
-        public float pitch = 5f;
+        public float pitch = 4f;
 
         /// <summary>Unzoomed half-height of the view at the gameplay plane, for screen-to-world drag scaling.</summary>
-        public static float BaseViewHalfHeight = 4.8f;
+        public static float BaseViewHalfHeight = 3.6f;
 
         [Header("Feel")]
         [Tooltip("Zoom out by this factor while aiming a kick, to see where it lands.")]
-        public float aimZoom = 1.12f;
+        public float aimZoom = 1.2f;
         public float zoomSpeed = 4f;
 
         Camera cam;
@@ -71,7 +75,7 @@ namespace DribbleToSchool.CameraRig
         void Awake()
         {
             cam = GetComponent<Camera>();
-            baseSize = cam.orthographic ? cam.orthographicSize : viewHalfHeight;
+            baseSize = cam.orthographic ? cam.orthographicSize : FramedHalfHeight;
             BaseViewHalfHeight = baseSize;
         }
 
@@ -81,7 +85,10 @@ namespace DribbleToSchool.CameraRig
             return halfHeight / Mathf.Tan(cam.fieldOfView * 0.5f * Mathf.Deg2Rad);
         }
 
-        float HalfHeight { get { return cam.orthographic ? cam.orthographicSize : viewHalfHeight * zoom; } }
+        /// <summary>The unzoomed half-height: the close framing, or a little further out on a narrow screen.</summary>
+        float FramedHalfHeight { get { return Mathf.Max(viewHalfHeight, minHalfWidth / Mathf.Max(cam.aspect, 0.1f)); } }
+
+        float HalfHeight { get { return cam.orthographic ? cam.orthographicSize : FramedHalfHeight * zoom; } }
 
         void Place(Vector2 c, Vector3 shake)
         {

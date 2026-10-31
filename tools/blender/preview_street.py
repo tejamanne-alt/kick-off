@@ -1,6 +1,6 @@
 # A preview of a stretch of street in the game, built from the asset kits the way the game's
-# StreetBuilder places them, seen through the game camera (30 degree vertical field of view, about
-# 18 m back and 4 m up, tilted 5 degrees down) in the chapter's light and haze (ChapterTheme moods).
+# StreetBuilder places them, seen through the game camera (34 degree vertical field of view, about
+# 12 m back and under 3 m up, tilted 4 degrees down) in the chapter's light and haze (ChapterTheme moods).
 # Kit models get the street's paint schemes (ModelTint's brightness-ratio recolour). The shading is
 # Blender's, not the game's toon ramp, so judge layout, scale, silhouettes and colour, not shading.
 #   blenv/bin/python preview_street.py -- <kits dir> <out.png> [--chapter 1..5] [--seed N] [--wide] [--haze-end M] [--surfaces DIR]
@@ -780,16 +780,18 @@ poles()
 
 # A kid-sized marker on the footpath for scale (1.55 m), where the player would stand, and the ball
 # (34 cm across, a little larger than life, as in the game) at their feet.
-kid_y = SAND.lane(CAM_X - 1.5) if SAND else 0.0
-box(CAM_X - 1.5 - .2, CAM_X - 1.5 + .2, kid_y, kid_y + 1.55, -.15, .15, (.9, .35, .3), 'kid')
-ball_y = SAND.lane(CAM_X - .9) if SAND else 0.0
-box(CAM_X - .9 - .17, CAM_X - .9 + .17, ball_y, ball_y + .34, -.17, .17, (.97, .97, .95), 'ball')
+kid_y = SAND.lane(CAM_X - 2.2) if SAND else 0.0
+box(CAM_X - 2.2 - .2, CAM_X - 2.2 + .2, kid_y, kid_y + 1.55, -.15, .15, (.9, .35, .3), 'kid')
+ball_y = SAND.lane(CAM_X - 1.6) if SAND else 0.0
+box(CAM_X - 1.6 - .17, CAM_X - 1.6 + .17, ball_y, ball_y + .34, -.17, .17, (.97, .97, .95), 'ball')
 
 # ---------------------------------------------------------------- the game camera
 cam = bpy.data.objects.new('cam', bpy.data.cameras.new('cam')); S.collection.objects.link(cam); S.camera = cam
-cam.data.sensor_fit = 'VERTICAL'; cam.data.angle_y = math.radians(30); cam.data.clip_end = 3000
-pitch = math.radians(5); half = 4.8; dist = half / math.tan(math.radians(15))
-focus = Vector((CAM_X, 0, 2.5))            # Blender coords: (x, depth, up)
+# CameraFollow2D's framing: 34 degrees, 3.6 m half-height at the gameplay plane, tilted 4 degrees,
+# centred 1.9 m above the kid's feet and 2.2 m ahead of them.
+cam.data.sensor_fit = 'VERTICAL'; cam.data.angle_y = math.radians(34); cam.data.clip_end = 3000
+pitch = math.radians(4); half = 3.6; dist = half / math.tan(math.radians(17))
+focus = Vector((CAM_X, 0, 1.9))            # Blender coords: (x, depth, up)
 fwd = Vector((0, math.cos(pitch), -math.sin(pitch)))
 cam.location = focus - fwd * dist
 cam.rotation_euler = fwd.to_track_quat('-Z', 'Y').to_euler()
