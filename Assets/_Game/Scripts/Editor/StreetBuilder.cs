@@ -1502,6 +1502,10 @@ namespace DribbleToSchool.EditorTools
                 float w = front != null ? LevelBuildKit.KitSize("Buildings", front).x : 0f, skip;
                 if (w < 1f) { front = null; w = 8f; }
                 if (Blocked(track, x, x + w, out skip)) { FillGap(track, root, rng, x, BlockStart(track, x, x + w)); x = skip; continue; }
+                // A shopfront stands on one level: where the ground steps inside it, the piece before
+                // the step gets a stall or pots on its own level and the next front starts at the step.
+                float step = StepWithin(track, x, x + w);
+                if (!float.IsNaN(step)) { FillGap(track, root, rng, x, step); x = step; continue; }
                 float cx = x + w * 0.5f, gy = GroundAt(track, cx);
                 bool model = front != null && ShopFront(root, rng, front, cx, gy, w);
                 if (!model)
