@@ -89,8 +89,8 @@ vertex colours times the atlas, and recolourable parts in UV2.x.
 | Kit | Script | What's in it |
 |---|---|---|
 | Plants | `kit_plants.py` | conifers, broadleaf trees, birch, cherry, palms, bushes, hedge blocks, grasses, reeds, flowers |
-| Buildings | `kit_buildings.py` | gabled and long houses, bungalow, two shops, flats, warehouse, school, garage |
-| Street | `kit_street.py` | utility pole, lamp, pedestrian signal, walls, fences, hoarding, planters, benches, vending machines, signs, crates, pots, stalls, awnings |
+| Buildings | `kit_buildings.py` | gabled and long houses, bungalow, fruit shop and bakery, flats, warehouse, school, garage; the town's shops and houses (`kit_buildings_town.py`): a small supermarket, cafe, bookshop, florist, noodle house, convenience store, two narrow tiled three-storey buildings, a white house with a corrugated lean-to and a garden pine, a flat-roofed house with a balcony, a house with a carport |
+| Street | `kit_street.py` | utility pole, lamp, pedestrian signal, walls, fences, hoarding, planters, benches, vending machines, signs, crates, pots, stalls, awnings, A-frame board, banner flag, electrical cabinet, bicycle hoops, wheelie bins, doorstep pots |
 | Terrain | `kit_terrain.py` | boulders, rock clusters, cliffs, a headland, mountain ranges, rolling hills, a forest strip, dunes, sand and gravel piles |
 | Leisure | `kit_leisure.py` | lifeguard tower, parasols, beach things, trampoline, swing tree and frame, fountain, raft, sign board, checkpoint flag, targets, playground |
 | Works | `kit_works.py` | sliding gate, call bollard, intercom, tower crane, crane hook and load, hoist, site backdrop, underpass, school arch and wall |
@@ -101,6 +101,11 @@ blenv/bin/python kit_plants.py -- $PWD/out/plants                       # writes
 blenv/bin/python review_kit.py -- $PWD/out/plants/Plants.blend $PWD/plants_sheet.png [--models A,B] [--cols 4]
 cp out/plants/*.fbx out/plants/PlantsAtlas.png out/plants/Plants.json ../../Assets/_Game/Art/Models/Plants/
 ```
+
+The buildings kit's atlas is 2048 x 4096 (each building has its own grime maps; the shops' signs,
+interiors seen through glass, curtains and posters are painted by `kit_buildings_signs.py`, with
+invented names, using whatever fonts the machine has). Shops and houses are dealt along the street
+from shuffled decks (StreetBuilder's `Deck`), so every kind turns up and none stands twice in a row.
 
 The game places kit models with `LevelBuildKit.KitModel` (StreetBuilder for the scenery,
 TrackBuilder for gameplay pieces), recolours their parts with `ModelTint`, and falls back to the

@@ -13,7 +13,8 @@ from mathutils import Vector, Matrix
 import kit_lib as K
 
 PI = math.pi
-AT = 2048                      # atlas size (pixels)
+ATW, ATH = 2048, 4096           # atlas size (pixels): 2048 across, 4096 down
+AT = ATW
 WHITE_UV = K.WHITE_UV
 
 
@@ -66,6 +67,14 @@ MAT = {
     'green': (0, (0.36, 0.60, 0.30), 'white', 0.3), 'melon': (0, (1, 1, 1), 'keep', 0.25),
     'purple': (0, (0.50, 0.30, 0.52), 'white', 0.2), 'bread': (0, (0.88, 0.62, 0.34), 'white', 0.3),
     'crust': (0, (0.70, 0.42, 0.20), 'white', 0.2), 'tomato': (0, (0.88, 0.28, 0.22), 'white', 0.2),
+    # the town's shops and houses (kit_buildings_town.py)
+    'tile': (0, 'tile', 'grime', 0.0), 'tilew': (0, 'tile', 'white', 0.0),
+    'alu': (0, (0.80, 0.81, 0.82), 'white', 0.0), 'alud': (0, (0.36, 0.37, 0.39), 'white', 0.0),
+    'lantern': (0, (0.86, 0.27, 0.21), 'white', 0.15), 'paper': (0, (0.97, 0.93, 0.82), 'white', 0.05),
+    'bluebin': (0, (0.33, 0.64, 0.70), 'white', 0.25), 'navy': (0, (0.21, 0.26, 0.38), 'white', 0.0),
+    'bucket': (0, (0.70, 0.72, 0.74), 'white', 0.2), 'polyc': (0, (0.82, 0.88, 0.86), 'white', 0.0),
+    'teal': (0, (0.20, 0.42, 0.44), 'white', 0.0), 'gold': (0, (0.90, 0.74, 0.40), 'white', 0.0),
+    'clay': (0, (0.78, 0.46, 0.33), 'roofb', 0.0), 'kawara': (0, (0.40, 0.42, 0.46), 'roofb', 0.0),
 }
 MATS = list(MAT)
 MID = {n: i for i, n in enumerate(MATS)}
@@ -80,7 +89,7 @@ REG = {}          # name -> (u0, v0, u1, v1)
 
 def reg_px(name):
     u0, v0, u1, v1 = REG[name]
-    return int(round(u0 * AT)), int(round((1 - v1) * AT)), int(round(u1 * AT)), int(round((1 - v0) * AT))
+    return int(round(u0 * ATW)), int(round((1 - v1) * ATH)), int(round(u1 * ATW)), int(round((1 - v0) * ATH))
 
 
 def reg_uv(name, s, t, margin=0.0):
@@ -95,24 +104,24 @@ def allocate(bottom, maps, pad=6):
     white tile goes last, in the corner). maps: [(name, w, h)] shelf-packed above them, tallest
     first. Each region keeps `pad` pixels of bleed around it."""
     REG.clear()
-    x = 0; ybot = AT
+    x = 0; ybot = ATH
     hrow = max(h for _, _, h in bottom) + 2 * pad
     for name, w, h in bottom:
         if name == 'white':
-            x0 = AT - w
+            x0 = ATW - w
         else:
             x0 = x + pad; x = x0 + w + pad
-        y0 = AT - pad - h
-        REG[name] = (x0 / AT, (AT - (y0 + h)) / AT, (x0 + w) / AT, (AT - y0) / AT)
-    limit = AT - hrow
-    sky = [[0, 0, AT]]                    # skyline segments [x, y, width], y measured from the top
+        y0 = ATH - pad - h
+        REG[name] = (x0 / ATW, (ATH - (y0 + h)) / ATH, (x0 + w) / ATW, (ATH - y0) / ATH)
+    limit = ATH - hrow
+    sky = [[0, 0, ATW]]                    # skyline segments [x, y, width], y measured from the top
     top = 0
     for name, w, h in sorted(maps, key=lambda r: (-r[2], -r[1])):
         W2, H2 = w + 2 * pad, h + 2 * pad
         best = None
         for i in range(len(sky)):
             x = sky[i][0]
-            if x + W2 > AT: break
+            if x + W2 > ATW: break
             y = 0; need = W2; j = i
             while need > 0 and j < len(sky):
                 y = max(y, sky[j][1]); need -= sky[j][2]; j += 1
@@ -123,7 +132,7 @@ def allocate(bottom, maps, pad=6):
             raise RuntimeError('atlas full at ' + name)
         _, x, y = best
         x0, y0 = x + pad, y + pad
-        REG[name] = (x0 / AT, (AT - (y0 + h)) / AT, (x0 + w) / AT, (AT - y0) / AT)
+        REG[name] = (x0 / ATW, (ATH - (y0 + h)) / ATH, (x0 + w) / ATW, (ATH - y0) / ATH)
         top = max(top, y + H2)
         # update the skyline
         new = []

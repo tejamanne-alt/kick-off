@@ -809,9 +809,10 @@ def u_path(B, z_back=None, inset=0.0, back=None):
 
 
 def shed(B, x0, x1, y0, y1, zf, zb, t=0.12, pitch=0.24, depth=0.04, mat='roof', edge_mat='roofw', fascia_mat='trim',
-         soffit='soffit', flash_mat='galvw'):
+         soffit='soffit', flash_mat='galvw', feat=True):
     """A ribbed metal single-slope roof from the front edge (y0, zf: top of the ribs' troughs) to
-    the back (y1, zb); ribs run down the slope."""
+    the back (y1, zb); ribs run down the slope. feat: paint its rib lines and rust into the roof map
+    (off for small hoods and canopies under a bigger roof)."""
     mb = MB()
     us = []
     k = math.floor(x0 / pitch) - 1
@@ -846,7 +847,7 @@ def shed(B, x0, x1, y0, y1, zf, zb, t=0.12, pitch=0.24, depth=0.04, mat='roof', 
         fb.face([(xb if sg < 0 else xa, y0 - 0.02, za0), (xb if sg < 0 else xa, y0 - 0.02, za1), (xb if sg < 0 else xa, y1, zb1), (xb if sg < 0 else xa, y1, zb0)], flash_mat, (-sg, 0, 0), 0.7)
         B.add(fb.bm())
     B.add(cbox2((x0, y0 + 0.02, zf - t - 0.16), (x1, y0 + 0.07, zf - t + 0.02), 0.012, fascia_mat))
-    B.feat('roof', 'ribs', x0=x0, x1=x1, y0=y0, y1=y1, pitch=pitch)
+    if feat: B.feat('roof', 'ribs', x0=x0, x1=x1, y0=y0, y1=y1, pitch=pitch)
     return zb + depth
 
 

@@ -44,6 +44,7 @@ MODE = {
     'white': 'paint', 'cream': 'paint', 'paint': 'paint', 'ac': 'paint', 'meter': 'paint',
     'gaspipe': 'paint', 'dish': 'paint', 'blue': 'paint', 'green': 'paint',
     'orange': 'plastic', 'rubber': 'plastic', 'black': 'plastic', 'paintp': 'plastic', 'insul': 'plastic',
+    'paint2p': 'plastic',
 }
 NOSHADE = {'lampglow'}
 

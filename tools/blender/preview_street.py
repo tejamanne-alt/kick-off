@@ -553,7 +553,94 @@ def distant(fields, grass):
     layer('MountainRange2', X0 - 900, X1 + 900, -0.8, 640, 1.0, 0.5)
 
 
+# The town's fronts and houses (StreetBuilder.MarketFronts / HomeHouses / FrontPaints / Deck).
+MARKET = ['ShopFruit', 'ShopShutter', 'ShopMart', 'ShopCafe', 'ShopBooks', 'ShopFlorist', 'ShopNoodle', 'ShopTall', 'ShopBoutique', 'ShopKonbini']
+HOMES = ['HouseGable', 'HouseLong', 'Bungalow', 'HouseLeanTo', 'HouseFlat', 'HouseCarport']
+SR = (.56, .57, .6)
+FRONT = {
+    'ShopMart': [((.95, .95, .93), (.84, .26, .2), SR), ((.93, .91, .86), (.93, .55, .18), SR), ((.86, .87, .87), (.2, .42, .72), SR), ((.94, .92, .87), (.96, .76, .2), SR)],
+    'ShopCafe': [((.94, .93, .9), (.22, .4, .42), SR), ((.9, .88, .84), (.2, .26, .4), SR), ((.92, .9, .86), (.5, .2, .22), SR), ((.86, .87, .86), (.42, .46, .28), SR)],
+    'ShopBooks': [((.8, .62, .52), (.18, .36, .3), SR), ((.84, .8, .72), (.2, .27, .42), SR), ((.68, .52, .44), (.2, .34, .3), SR), ((.8, .8, .78), (.46, .18, .18), SR)],
+    'ShopFlorist': [((.95, .94, .9), (.34, .55, .37), SR), ((.9, .9, .88), (.52, .62, .5), SR), ((.94, .92, .87), (.4, .58, .74), SR), ((.88, .89, .9), (.74, .42, .32), SR)],
+    'ShopNoodle': [((.93, .9, .84), (.3, .22, .18), SR), ((.95, .95, .93), (.3, .22, .18), SR), ((.84, .85, .86), (.3, .22, .18), SR)],
+    'ShopTall': [((.84, .82, .78), (.62, .64, .66), SR), ((.9, .9, .89), (.72, .73, .72), SR), ((.32, .34, .4), (.66, .68, .7), SR),
+                 ((.66, .56, .48), (.6, .62, .6), SR), ((.78, .81, .84), (.5, .58, .54), SR)],
+    'ShopBoutique': [((.26, .28, .33), (.3, .31, .33), SR), ((.36, .31, .28), (.3, .31, .33), SR), ((.3, .35, .34), (.62, .64, .66), SR),
+                     ((.56, .54, .51), (.3, .31, .33), SR)],
+    'ShopKonbini': [((.95, .95, .94), (.62, .66, .7), SR), ((.88, .89, .9), (.62, .66, .7), SR)],
+}
+BANNERS = [(.84, .28, .22), (.24, .42, .72), (.26, .54, .36), (.94, .55, .2)]
+BANDS = [(.98, .82, .3), (.96, .95, .92)]
+CRATES = [(.93, .74, .26), (.3, .5, .74), (.36, .6, .42), (.84, .3, .26)]
+BINS = [(.32, .5, .4), (.36, .46, .6), (.46, .48, .5), (.26, .38, .3)]
+BIKES = [(.52, .72, .68), (.86, .42, .36), (.95, .8, .35), (.4, .5, .72)]
+PETALS = [(.98, .5, .6), (.95, .3, .32), (1, .82, .3), (.97, .96, .94), (.72, .5, .9)]
+
+
+class Deck:
+    def __init__(self, models):
+        self.models, self.left, self.last = models, [], None
+
+    def next(self, fits=lambda m: True):
+        for p in range(2):
+            if p == 1 or not self.left:
+                self.left = [m for m in self.models if has('Buildings', m)]
+                rng.shuffle(self.left)
+            for i, m in enumerate(self.left):
+                if m != self.last and fits(m):
+                    del self.left[i]; self.last = m
+                    return m
+        return None
+
+
+def paint_for(model, fallback, x, z):
+    schemes = FRONT.get(model, fallback)
+    return schemes[scramble(abs(int(round(x * 7 + z * 13)))) % len(schemes)]
+
+
+def banner(x):
+    place('Street', 'BannerFlag', x, 0, POLE_Z + .3, rng.uniform(-6, 6), 1, [rng.choice(BANNERS), rng.choice(BANDS), None])
+
+
+def shop_front(model, cx, w):
+    z = PROP + (2.6 if model == 'ShopKonbini' else .6)
+    p = paint_for(model, SHOP, cx, z)
+    place('Buildings', model, cx, 0, z, 0, 1, list(p))
+    board = PROP + .02
+    if model == 'ShopMart':
+        place('Street', 'DrinksCrates', cx + 3.55, 0, PROP + .32, rng.uniform(-8, 8), 1, [rng.choice(CRATES), None, None])
+        if rng.random() < .5: place('Street', 'CrateStack', cx - 3.1, 0, PROP + .35, rng.uniform(-10, 10))
+        banner(cx - 2.4); banner(cx + 2.2)
+    elif model == 'ShopCafe':
+        place('Street', 'SignBoardA', cx + .75, 0, board, rng.uniform(-15, 15), 1, [(.3, .26, .22), None, None])
+    elif model == 'ShopBooks':
+        place('Street', 'SignBoardA', cx - 1.7, 0, board, rng.uniform(-15, 15), 1, [(.2, .3, .26), None, None])
+    elif model == 'ShopNoodle':
+        place('Street', 'SignBoardA', cx + .1, 0, board, 180 + rng.uniform(-15, 15), 1, [(.3, .22, .18), None, None])
+        banner(cx + 2.75)
+    elif model == 'ShopTall':
+        place('Street', 'UtilityBox', cx - .5, 0, z - .32)
+        if rng.random() < .5: place('Street', 'Bicycle', cx + 1.35, 0, z - .45, 180 + rng.uniform(-6, 6), 1, [rng.choice(BIKES), None, None])
+    elif model == 'ShopBoutique':
+        banner(cx - 2.15)
+        if rng.random() < .5: place('Street', 'PotGroup', cx + 1.4, 0, z - .55, rng.uniform(-20, 20), 1, [rng.choice(PETALS), None, None])
+    elif model == 'ShopKonbini':
+        place('Street', 'VendingRed', cx - 4.1, 0, z - .45); place('Street', 'VendingBlue', cx - 3.05, 0, z - .45)
+        if place('Street', 'BikeRack', cx - .9, 0, z - 1.2):
+            for k in range(3):
+                if rng.random() < .6:
+                    place('Street', 'Bicycle', cx - 1.8 + .9 * k + .25, 0, z - 1.15 - .08 * k, 180 + rng.uniform(-5, 5), 1, [rng.choice(BIKES), None, None])
+
+
+def town_house(model, x, z):
+    if model in ('HouseGable', 'HouseLong', 'Bungalow') or not has('Buildings', model):
+        return False
+    place('Buildings', model, x, 0, z, 0, 1, list(paint_for(model, HOUSE, x, z)))
+    return True
+
+
 def suburb():
+    houses = Deck(HOMES)
     x = X0
     while x < X1:
         lot = rng.uniform(9, 13); cx = x + lot / 2
@@ -569,44 +656,72 @@ def suburb():
         life = rng.random()
         if life < .12: place('Street', 'PostBox', x + rng.uniform(1, lot - 1), 0, POLE_Z - .1)
         elif life < .3 and not picket and gate - x > 3.4:
-            place('Street', 'Bicycle', rng.uniform(x + 1.2, gate - 1), 0, PROP - .32, 180 + rng.uniform(-6, 6), 1, [rng.choice([(.52, .72, .68), (.86, .42, .36), (.95, .8, .35), (.4, .5, .72)]), None, None])
+            place('Street', 'Bicycle', rng.uniform(x + 1.2, gate - 1), 0, PROP - .32, 180 + rng.uniform(-6, 6), 1, [rng.choice(BIKES), None, None])
+        house = houses.next(lambda m: size('Buildings', m).x <= lot - .8)
         kind = rng.randrange(3)
-        z = PROP + 1.6 + rng.uniform(0, 1.4)
+        z = PROP + 1.6 + rng.uniform(0, 1.4) + (.3 if house == 'HouseLeanTo' else 0)
         model = 'HouseGable' if kind == 0 else 'HouseLong' if kind == 1 and lot >= 11 else 'Bungalow'
-        building(model, cx, z, HOUSE)
-        half = WIDTH[model] / 2
+        if house in ('HouseGable', 'HouseLong', 'Bungalow'): model = house
+        town = house is not None and town_house(house, cx, z)
+        if town: model = house
+        else: building(model, cx, z, HOUSE)
+        half = (size('Buildings', model).x if town else WIDTH[model]) / 2
+        if has('Street', 'BinPair'):
+            d = rng.random()
+            if d < .3 and not picket:
+                place('Street', 'BinPair', gate + 1.1, 0, PROP + .55, rng.uniform(-10, 10), 1, [rng.choice(BINS), rng.choice(BINS), None])
+            elif d < .55:
+                place('Street', 'PotGroup', gate + .55, 0, PROP + .6, rng.uniform(-20, 20), 1, [rng.choice(PETALS), None, None])
+        yard = x + lot - (cx + half)
+        if not picket and yard > 1.2 and rng.random() < .6 and has('Plants', 'BushRound'):
+            plant(rng.choice(['BushRound', 'ShrubFlowering']), x + lot - yard / 2, 0, PROP + 1.35, rng.uniform(1.3, 1.6))
+        if house == 'HouseCarport' and town and rng.random() < .8:
+            place('Street', 'Bicycle', cx + 3.4, 0, z + 1.3, 180 + rng.uniform(-5, 5), 1, [rng.choice(BIKES), None, None])
         if rng.random() < .7:
             plant(rng.choice(['Broadleaf', 'BroadleafLarge', 'ConiferTall', 'Broadleaf', 'Birch']), cx + rng.uniform(-half, half), 0, z + 8 + rng.uniform(0, 3), rng.uniform(.9, 1.25))
         gap = (cx - half) - x
-        if gap > 4 and rng.random() < .4 and has('Buildings', 'Garage'):
+        if gap > 4 and house != 'HouseCarport' and rng.random() < .4 and has('Buildings', 'Garage'):
             p = HOUSE[scramble(abs(int(round(cx * 7 + z * 13))) + 1) % len(HOUSE)]
             place('Buildings', 'Garage', x + gap / 2, 0, z + .8, 0, 1, list(p))
         elif gap > 1.8 and rng.random() < .6:
             m = rng.choice(['Birch', 'ConiferSmall', 'ConiferMid', 'ShrubFlowering'])
             plant(m, x + gap / 2, 0, PROP + 1.4 + rng.uniform(0, 1.2), rng.uniform(1.3, 1.6) if m == 'ShrubFlowering' else rng.uniform(.7, .95))
         x += lot
+    back = Deck(['HouseGable', 'HouseLong', 'HouseLeanTo', 'HouseFlat'])
     x = X0 - 20
     while x < X1 + 20:
-        building(rng.choice(['HouseGable', 'HouseLong']), x, rng.uniform(20, 24), HOUSE)
+        house = back.next()
+        bz = rng.uniform(20, 24)
+        if not town_house(house, x, bz):
+            building(house if house in ('HouseGable', 'HouseLong') else rng.choice(['HouseGable', 'HouseLong']), x, bz, HOUSE)
         x += rng.uniform(10, 14)
     distant((.44, .54, .32), None)
 
 
 def market():
+    deck = Deck(MARKET)
+    vended = False
     x, i = X0, 0
     while x < X1:
-        building('ShopFruit' if i % 2 == 0 else 'ShopShutter', x + 4, PROP + .6, SHOP)
-        x += 8
+        front = deck.next()
+        w = size('Buildings', front).x if front else 8
+        if front: shop_front(front, x + w / 2, w)
+        else: building('ShopFruit' if i % 2 == 0 else 'ShopShutter', x + 4, PROP + .6, SHOP)
+        x += w
         between = rng.random() < .5
         if not between and i % 2 == 1: place('Street', 'StreetLamp', x, 0, POLE_Z - .1)
         if between:
             gx, gz = x + rng.uniform(-.25, .25), PROP + .25
             r = rng.random()
-            if r < .35: place('Street', 'PotC', gx, 0, gz, rng.uniform(0, 360))
-            elif r < .6: place('Street', 'PotB', gx, 0, gz, rng.uniform(0, 360))
+            if r < .25: place('Street', 'PotC', gx, 0, gz, rng.uniform(0, 360))
+            elif r < .42: place('Street', 'PotB', gx, 0, gz, rng.uniform(0, 360))
+            elif r < .58: place('Street', 'PotGroup', gx, 0, gz, rng.uniform(-20, 20), 1, [rng.choice(PETALS), None, None])
+            elif r < .72: place('Street', 'BinPair', gx, 0, PROP + .35, rng.uniform(-8, 8), 1, [rng.choice(BINS), rng.choice(BINS), None])
             else:
                 place('Street', rng.choice(['CrateStack', 'ProduceCrate']), gx, 0, gz, rng.uniform(-15, 15)); place('Street', 'Sack', gx + .75, 0, gz - .1, rng.uniform(0, 360))
-        if rng.random() < .35:
+        vend = not vended and front != 'ShopKonbini' and rng.random() < .28
+        vended = vend
+        if vend:
             place('Street', 'VendingRed', x + .7, 0, PROP + .2); place('Street', 'VendingBlue', x + 1.75, 0, PROP + .2)
             x += 2.6
         i += 1
@@ -702,7 +817,14 @@ def city():
             row('Works', 'SiteFence', x + .2, x + w - .2, 0, PROP + .2); cabin = site_yard(x, w, flats)
         else:
             cabin = site_yard(x, w, flats)
-        if not flats:
+        if front >= .35 and rng.random() < .35: place('Street', 'UtilityBox', x + w - 1, 0, PROP + .65, rng.uniform(-4, 4))
+        if flats and rng.random() < .35 and has('Buildings', 'ShopTall') and has('Buildings', 'ShopBoutique'):
+            two = ['ShopTall', 'ShopBoutique'] if rng.random() < .5 else ['ShopBoutique', 'ShopTall']
+            for k, m in enumerate(two):
+                hw = size('Buildings', m).x / 2
+                bx = cx - hw - .1 if k == 0 else cx + hw + .1
+                place('Buildings', m, bx, 0, PROP + 4, 0, 1, list(paint_for(m, WORK, bx, PROP + 4)))
+        elif not flats:
             building('Warehouse', cx, PROP + 3, WORK)
         else:
             building('Apartment', cx, PROP + 5, HOUSE)

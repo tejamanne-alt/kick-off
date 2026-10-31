@@ -13,7 +13,7 @@ namespace DribbleToSchool.EditorTools
     public class ModelImportSettings : AssetPostprocessor
     {
         // Bump to re-import the models when these settings change.
-        public override uint GetVersion() { return 4; }
+        public override uint GetVersion() { return 5; }
 
         void OnPreprocessModel()
         {
@@ -35,7 +35,8 @@ namespace DribbleToSchool.EditorTools
 
         /// <summary>
         /// The models' atlases (painted detail plus a plain white corner the flat-coloured parts
-        /// sample): clamped, so filtering never bleeds the far edge into the white corner.
+        /// sample): clamped, so filtering never bleeds the far edge into the white corner, and kept at
+        /// full size (the buildings kit's atlas is 2048 x 4096; the default cap would halve it).
         /// </summary>
         void OnPreprocessTexture()
         {
@@ -48,6 +49,7 @@ namespace DribbleToSchool.EditorTools
             importer.wrapMode = UnityEngine.TextureWrapMode.Clamp;
             importer.filterMode = UnityEngine.FilterMode.Trilinear;
             importer.anisoLevel = 2;
+            importer.maxTextureSize = 4096;
         }
 
         /// <summary>Is the model in one of the asset kits' folders (Art/Models/&lt;kit&gt;/)?</summary>

@@ -46,6 +46,9 @@ REG = {
     'chalk':    (0.75, 0.0625, 0.875, 0.1875),
     'sackmark': (0.875, 0.0625, 0.9375, 0.1875),
     'white':    (0.9375, 0.0, 1.0, 0.0625),
+    'aboard1':  (0.0, 0.0, 0.0625, 0.125),
+    'aboard2':  (0.0625, 0.0, 0.125, 0.125),
+    'usticker': (0.125, 0.0625, 0.1875, 0.125),
 }
 PERIODIC = {'conc', 'paint', 'plastic', 'wall', 'hoard', 'hazard', 'redwhite'}
 MARGIN_U = {k: 0.07 for k in PERIODIC}

@@ -543,6 +543,55 @@ def paint_machines(img, rng):
         img[sl] = sub
 
 
+def paint_town(img, rng):
+    """The A-frame board's two faces and the electrical cabinet's warning sticker."""
+    chalk = (0.92, 0.91, 0.86)
+    # front: a chalk menu, a steaming bowl and a cup drawn over lines of 'writing' (dashes, no text)
+    sl, P, Q, X, Y = sq('aboard1')
+    Y2 = Y * 2.0                       # the tile is twice as tall as wide: square units
+    sub = np.ones(P.shape + (3,), np.float32) * np.array((0.17, 0.21, 0.19))
+    sub = blend(sub, ss(0.4, 0.9, fbm(P, Q, 4, 8, rng)), (0.30, 0.34, 0.31), 0.45)
+    bowl = (Y2 < 1.2) & (Y2 > 0.82) & (np.abs(X) < 0.55 * np.sqrt(np.clip(1 - ((Y2 - 1.2) / 0.38) ** 2, 0, 1)))
+    rim = ss(0.03, 0.0, np.abs(Y2 - 1.2)) * (np.abs(X) < 0.6)
+    sub = blend(sub, np.maximum(ss(0.035, 0.0, np.abs(d_circ(X, (Y2 - 1.2) * 1.4, 0, 0, 0.55))) * (Y2 < 1.2), rim), chalk, 0.9)
+    for k, cx in enumerate((-0.22, 0.0, 0.22)):
+        wx = cx + 0.05 * np.sin((Y2 - 1.3) * 14 + k)
+        sub = blend(sub, ss(0.025, 0.0, np.abs(X - wx)) * (Y2 > 1.3) * (Y2 < 1.62), chalk, 0.8)
+    for j in range(5):
+        yy = 0.45 - j * 0.3
+        L = 0.45 + 0.35 * ((j * 0.37) % 1.0)
+        sub = blend(sub, ss(0.025, 0.0, d_seg(X, Y2, (-0.7, yy), (-0.7 + L, yy))), chalk, 0.75)
+        sub = blend(sub, fill(d_circ(X, Y2, 0.55, yy, 0.06), 0.01), (0.98, 0.74, 0.42), 0.85)
+    sub = blend(sub, ss(0.03, 0.0, np.abs(d_box(X, Y2, 0, 0, 0.86, 1.86, 0.08))), chalk, 0.6)
+    img[sl] = sub
+    # back: a bright shop poster, a red field with a white bowl in a circle and two white bars
+    sl, P, Q, X, Y = sq('aboard2')
+    Y2 = Y * 2.0
+    sub = np.ones(P.shape + (3,), np.float32) * np.array((0.84, 0.24, 0.20))
+    sub = blend(sub, fill(d_circ(X, Y2, 0, 0.95, 0.62), 0.01), (0.98, 0.96, 0.90), 1.0)
+    bowl = (Y2 < 0.98) & (np.sqrt(X ** 2 + ((Y2 - 0.98) / 0.8) ** 2) < 0.42)
+    sub = blend(sub, bowl.astype(np.float32), (0.84, 0.24, 0.20), 1.0)
+    sub = blend(sub, fill(d_box(X, Y2, 0, 1.03, 0.46, 0.04), 0.01), (0.84, 0.24, 0.20), 1.0)
+    for k in range(2):
+        sub = blend(sub, fill(d_seg(X, Y2, (-0.12 + 0.24 * k, 1.12), (-0.05 + 0.24 * k, 1.42)) - 0.03, 0.01), (0.84, 0.24, 0.20), 1.0)
+    for j, w in enumerate((0.7, 0.5, 0.6)):
+        sub = blend(sub, fill(d_box(X, Y2, 0, -0.1 - j * 0.42, w, 0.1, 0.03), 0.01), (0.98, 0.96, 0.90), 1.0)
+    sub = blend(sub, fill(d_box(X, Y2, 0, -1.55, 0.9, 0.18), 0.01), (0.98, 0.80, 0.26), 1.0)
+    sub = weather(sub, X, Y, rng, 0.25, 8)
+    img[sl] = sub
+    # the cabinet's sticker: a yellow triangle with a lightning bolt over a white label
+    sl, P, Q, X, Y = sq('usticker')
+    sub = np.ones(P.shape + (3,), np.float32) * np.array((0.96, 0.95, 0.92))
+    tri = np.maximum.reduce([-(Y + 0.55), Y - 0.75 + 0.0 * X, (np.abs(X) * 1.73 + Y) - 0.75])
+    sub = blend(sub, fill(tri, 0.01), (0.12, 0.12, 0.13), 1.0)
+    sub = blend(sub, fill(tri + 0.1, 0.01), (0.98, 0.80, 0.18), 1.0)
+    bolt = np.minimum(d_seg(X, Y, (0.08, 0.45), (-0.1, 0.02)), np.minimum(d_seg(X, Y, (-0.1, 0.02), (0.1, 0.02)), d_seg(X, Y, (0.1, 0.02), (-0.08, -0.4))))
+    sub = blend(sub, fill(bolt - 0.045, 0.01), (0.12, 0.12, 0.13), 1.0)
+    sub = blend(sub, fill(d_box(X, Y, 0, -0.78, 0.8, 0.1), 0.01), (0.80, 0.22, 0.18), 1.0)
+    sub = weather(sub, X, Y, rng, 0.2, 4)
+    img[sl] = sub
+
+
 def paint_atlas(path, seed=11):
     from PIL import Image
     rng = np.random.default_rng(seed)
@@ -553,5 +602,6 @@ def paint_atlas(path, seed=11):
     paint_signs(img, rng); paint_ground(img, rng)
     paint_cloth(img, rng); paint_leaf(img, rng)
     paint_small(img, rng); paint_machines(img, rng)
+    paint_town(img, np.random.default_rng(seed + 101))
     img[AT - 128:, AT - 128:] = 1.0          # the plain white corner (UV 0.97, 0.03)
     Image.fromarray((np.clip(img, 0, 1) * 255 + 0.5).astype(np.uint8), 'RGB').save(path)
