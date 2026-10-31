@@ -7,7 +7,7 @@
 #   kit_street_atlas.py  the atlas layout and the painted weathering maps (concrete, paint, wood...)
 #   kit_street_paint.py  painted details: block wall, hoarding graphics, stripes, signs, icons
 #   kit_street_build.py  the palette and assembly: normals, baked shading and AO, UVs, recolour parts
-#   kit_street_m1/m2/m3.py  the models
+#   kit_street_m1/m2/m3/m4.py  the models
 # Conventions: metres, Z up, front faces -Y, origin at the base centre on the ground (wall-mounted
 # items: the back centre on the wall plane y = 0; the awning: its wall attachment). One material
 # (vertex colour x StreetAtlas.png). UV2.x is the recolour part: 1 main paint, 2 secondary (fruit
@@ -18,7 +18,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import kit_lib as K
 from kit_street_paint import paint_atlas
 from kit_street_build import build_object
-import kit_street_m1, kit_street_m2, kit_street_m3
+import kit_street_m1, kit_street_m2, kit_street_m3, kit_street_m4
 
 ARGS = sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else []
 OUT = os.path.abspath(ARGS[0]) if ARGS else os.path.abspath('street_out')
@@ -34,7 +34,7 @@ def main():
     paint_atlas(atlas)
     mat = K.material('Street', atlas)
     man = K.Manifest('Street', 'StreetAtlas.png')
-    builders = kit_street_m1.MODELS + kit_street_m2.MODELS + kit_street_m3.MODELS
+    builders = kit_street_m1.MODELS + kit_street_m2.MODELS + kit_street_m3.MODELS + kit_street_m4.MODELS
     rows = []
     for fn in builders:
         m = fn()

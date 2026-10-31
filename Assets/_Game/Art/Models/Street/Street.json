@@ -1190,6 +1190,255 @@
    },
    "note": "Striped shop awning 2.2 m wide; origin at the wall attachment (top centre, wall plane y = 0); it slopes out to -Y and down. Part 1 = the coloured stripes.",
    "blend_lift": "lifted in Street.blend only, so review renders show it above the ground plane"
+  },
+  "SignBoardA": {
+   "size": [
+    0.58,
+    0.507,
+    0.964
+   ],
+   "min": [
+    -0.29,
+    -0.254,
+    -0.002
+   ],
+   "max": [
+    0.29,
+    0.254,
+    0.962
+   ],
+   "tris": 480,
+   "parts": {
+    "1": [
+     0.3,
+     0.26,
+     0.22
+    ]
+   },
+   "mount": "ground",
+   "attach": {
+    "Top": [
+     0.0,
+     0.0,
+     0.96
+    ],
+    "Front": [
+     0,
+     -1,
+     0
+    ]
+   },
+   "note": "Folding A-frame pavement board: a chalk menu on the front face, a shop poster on the back (turn it 180 degrees to show that); part 1 = the frame."
+  },
+  "BannerFlag": {
+   "size": [
+    0.723,
+    0.386,
+    2.77
+   ],
+   "min": [
+    -0.193,
+    -0.193,
+    0.0
+   ],
+   "max": [
+    0.53,
+    0.193,
+    2.77
+   ],
+   "tris": 564,
+   "parts": {
+    "1": [
+     0.84,
+     0.28,
+     0.22
+    ],
+    "2": [
+     0.98,
+     0.82,
+     0.3
+    ]
+   },
+   "mount": "ground",
+   "attach": {
+    "Top": [
+     0.0,
+     0.0,
+     2.75
+    ],
+    "Front": [
+     0,
+     -1,
+     0
+    ]
+   },
+   "note": "A tall shop banner on a pole with a weighted base; part 1 = the cloth, part 2 = its top band. White shapes stand in for lettering (no text)."
+  },
+  "UtilityBox": {
+   "size": [
+    1.0,
+    0.54,
+    1.484
+   ],
+   "min": [
+    -0.5,
+    -0.27,
+    0.006
+   ],
+   "max": [
+    0.5,
+    0.27,
+    1.49
+   ],
+   "tris": 934,
+   "parts": {
+    "1": [
+     0.8,
+     0.81,
+     0.77
+    ]
+   },
+   "mount": "ground",
+   "attach": {
+    "Top": [
+     0.0,
+     0.0,
+     1.49
+    ],
+    "Front": [
+     0,
+     -1,
+     0
+    ]
+   },
+   "note": "A street electrical cabinet on a concrete plinth: two doors, a vent, a warning sticker; part 1 = paint."
+  },
+  "BikeRack": {
+   "size": [
+    2.47,
+    0.6,
+    0.852
+   ],
+   "min": [
+    -1.235,
+    -0.35,
+    0.0
+   ],
+   "max": [
+    1.235,
+    0.25,
+    0.852
+   ],
+   "tris": 798,
+   "parts": {
+    "1": [
+     0.36,
+     0.4,
+     0.42
+    ]
+   },
+   "mount": "ground",
+   "attach": {
+    "Slot0": [
+     -0.9,
+     0.0,
+     0.0
+    ],
+    "Slot1": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "Slot2": [
+     0.9,
+     0.0,
+     0.0
+    ],
+    "Front": [
+     0,
+     -1,
+     0
+    ]
+   },
+   "note": "Three inverted-U bicycle hoops in a row along X, 0.9 m apart (lean a Bicycle along one); part 1 = paint."
+  },
+  "BinPair": {
+   "size": [
+    1.28,
+    0.835,
+    1.045
+   ],
+   "min": [
+    -0.64,
+    -0.4,
+    0.005
+   ],
+   "max": [
+    0.64,
+    0.435,
+    1.05
+   ],
+   "tris": 780,
+   "parts": {
+    "1": [
+     0.32,
+     0.5,
+     0.4
+    ],
+    "2": [
+     0.36,
+     0.46,
+     0.6
+    ]
+   },
+   "mount": "ground",
+   "attach": {
+    "Front": [
+     0,
+     -1,
+     0
+    ]
+   },
+   "note": "Two wheelie bins side by side, lids to the front; part 1 = the left bin, part 2 = the right one."
+  },
+  "PotGroup": {
+   "size": [
+    1.136,
+    0.579,
+    1.34
+   ],
+   "min": [
+    -0.594,
+    -0.239,
+    0.0
+   ],
+   "max": [
+    0.542,
+    0.34,
+    1.34
+   ],
+   "tris": 1132,
+   "parts": {
+    "1": [
+     0.95,
+     0.56,
+     0.62
+    ],
+    "2": [
+     0.36,
+     0.52,
+     0.66
+    ]
+   },
+   "mount": "ground",
+   "attach": {
+    "Front": [
+     0,
+     -1,
+     0
+    ]
+   },
+   "note": "A doorstep group: a small tree in a glazed pot, a pot of flowers, herbs in plastic pots and a trough; part 1 = the flowers, part 2 = the glaze."
   }
  }
 }

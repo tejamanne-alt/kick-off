@@ -1006,6 +1006,7 @@ namespace DribbleToSchool.EditorTools
         {
             var wallMat = Art.surfaces[ProceduralArt.Surface.BlockWall];
             Color roofDark = new Color(0.34f, 0.37f, 0.44f), roofRed = new Color(0.7f, 0.36f, 0.3f);
+            var houses = new Deck(HomeHouses, rng);
             for (float x = x0; x < x1;)
             {
                 float lot = Rand(rng, 9f, 13f), skip;
@@ -1032,26 +1033,52 @@ namespace DribbleToSchool.EditorTools
                 if (life < 0.12) Model(root, "Street", "PostBox", x + Rand(rng, 1f, lot - 1f), gy, PoleZ - 0.1f);
                 else if (life < 0.3 && !picket && gate - x > 3.4f) Model(root, "Street", "Bicycle", Rand(rng, x + 1.2f, gate - 1f), gy, PropertyZ - 0.32f, 180f + Rand(rng, -6f, 6f), 1f, BikeColors[rng.Next(BikeColors.Length)]);
 
+                // The house: the next of the home street's houses that fits the lot (with no kit, one of
+                // the three painted kinds).
+                string house = houses.Next(m => LevelBuildKit.KitSize("Buildings", m).x <= lot - 0.8f);
                 int kind = rng.Next(3);
-                float z = PropertyZ + 1.6f + Rand(rng, 0f, 1.4f);
+                float z = PropertyZ + 1.6f + Rand(rng, 0f, 1.4f) + (house == "HouseLeanTo" ? 0.3f : 0f);
                 Color roof = rng.NextDouble() < 0.75 ? roofDark : roofRed;
                 var facade = kind == 0 ? ProceduralArt.FacadeKind.HouseGable : kind == 1 && lot >= 11f ? ProceduralArt.FacadeKind.HouseLong : ProceduralArt.FacadeKind.Bungalow;
-                if (facade == ProceduralArt.FacadeKind.HouseGable) Building(root, cx, gy, z, facade, House3D.RoofStyle.GableToStreet, 7f, 2.6f, new Color(0.95f, 0.94f, 0.9f), roof);
-                else if (facade == ProceduralArt.FacadeKind.HouseLong) Building(root, cx, gy, z, facade, House3D.RoofStyle.GableSideways, 7f, 2.4f, new Color(0.93f, 0.91f, 0.86f), roof);
-                else Building(root, cx, gy, z, facade, House3D.RoofStyle.Shed, 5.5f, 1f, new Color(0.88f, 0.89f, 0.9f), roofDark);
+                if (house == "HouseGable") facade = ProceduralArt.FacadeKind.HouseGable;
+                else if (house == "HouseLong") facade = ProceduralArt.FacadeKind.HouseLong;
+                else if (house == "Bungalow") facade = ProceduralArt.FacadeKind.Bungalow;
+                bool town = house != null && TownHouse(root, house, cx, gy, z);
+                if (!town)
+                {
+                    if (facade == ProceduralArt.FacadeKind.HouseGable) Building(root, cx, gy, z, facade, House3D.RoofStyle.GableToStreet, 7f, 2.6f, new Color(0.95f, 0.94f, 0.9f), roof);
+                    else if (facade == ProceduralArt.FacadeKind.HouseLong) Building(root, cx, gy, z, facade, House3D.RoofStyle.GableSideways, 7f, 2.4f, new Color(0.93f, 0.91f, 0.86f), roof);
+                    else Building(root, cx, gy, z, facade, House3D.RoofStyle.Shed, 5.5f, 1f, new Color(0.88f, 0.89f, 0.9f), roofDark);
+                }
+                float houseHalf = (town ? LevelBuildKit.KitSize("Buildings", house).x : ProceduralArt.FacadeSize(facade).x) * 0.5f;
+
+                // Life at the gate: the bins out for collection or a doorstep of pots; garden shrubs over
+                // the block wall; a bicycle under the carport.
+                if (LevelBuildKit.HasKitModel("Street", "BinPair"))
+                {
+                    double d = rng.NextDouble();
+                    if (d < 0.3 && !picket)
+                        Model(root, "Street", "BinPair", gate + 1.1f, gy, PropertyZ + 0.55f, Rand(rng, -10f, 10f), 1f, BinColors[rng.Next(BinColors.Length)], BinColors[rng.Next(BinColors.Length)]);
+                    else if (d < 0.55)
+                        Model(root, "Street", "PotGroup", gate + 0.55f, gy, PropertyZ + 0.6f, Rand(rng, -20f, 20f), 1f, Petals[rng.Next(Petals.Length)]);
+                }
+                float yard = x + lot - (cx + houseHalf);
+                if (!picket && yard > 1.2f && rng.NextDouble() < 0.6 && LevelBuildKit.HasKitModel("Plants", "BushRound"))
+                    Plant(root, rng.NextDouble() < 0.5 ? "BushRound" : "ShrubFlowering", null, x + lot - yard * 0.5f, gy, PropertyZ + 1.35f, Rand(rng, 1.3f, 1.6f), 1f, -60, rng);
+                if (house == "HouseCarport" && town && rng.NextDouble() < 0.8)
+                    Model(root, "Street", "Bicycle", cx + 3.4f, gy, z + 1.3f, 180f + Rand(rng, -5f, 5f), 1f, BikeColors[rng.Next(BikeColors.Length)]);
 
                 if (LevelBuildKit.HasKitModel("Plants", "Broadleaf"))
                 {
                     // Trees in the back garden rise over the roof; a slim one stands in the side yard
                     // when the gap beside the house is wide enough for it.
-                    float houseHalf = ProceduralArt.FacadeSize(facade).x * 0.5f;
                     if (rng.NextDouble() < 0.7)
                     {
                         string[] back = { "Broadleaf", "BroadleafLarge", "ConiferTall", "Broadleaf", "Birch" };
                         Plant(root, back[rng.Next(back.Length)], null, cx + Rand(rng, -houseHalf, houseHalf), gy, z + 8f + Rand(rng, 0f, 3f), Rand(rng, 0.9f, 1.25f), 1f, -70, rng);
                     }
                     float gap = (cx - houseHalf) - x;
-                    if (gap > 4f && rng.NextDouble() < 0.4 && LevelBuildKit.HasKitModel("Buildings", "Garage"))
+                    if (gap > 4f && house != "HouseCarport" && rng.NextDouble() < 0.4 && LevelBuildKit.HasKitModel("Buildings", "Garage"))
                     {
                         // A garage beside the house, set back a little, painted to match it.
                         var p = HousePaints[Scramble(Mathf.Abs(Mathf.RoundToInt(cx * 7f + z * 13f)) + 1) % HousePaints.Length];
@@ -1078,12 +1105,23 @@ namespace DribbleToSchool.EditorTools
                 x += lot;
             }
             // A second row of houses further back gives the street depth (never on a side street).
+            var backRow = new Deck(new[] { "HouseGable", "HouseLong", "HouseLeanTo", "HouseFlat" }, rng);
             for (float x = x0 - 20f; x < x1 + 20f; x += Rand(rng, 10f, 14f))
             {
+                string house = backRow.Next(m => true);
                 var facade = rng.NextDouble() < 0.5 ? ProceduralArt.FacadeKind.HouseGable : ProceduralArt.FacadeKind.HouseLong;
                 var roofStyle = rng.NextDouble() < 0.5 ? House3D.RoofStyle.GableToStreet : House3D.RoofStyle.GableSideways;
+                float bz = Rand(rng, 20f, 24f);
+                if (house == "HouseLeanTo" || house == "HouseFlat")
+                {
+                    float half = LevelBuildKit.KitSize("Buildings", house).x * 0.5f + 0.3f;
+                    if (!OverlapsBackRow(track, x - half, x + half)) TownHouse(root, house, x, GroundAt(track, x), bz);
+                    continue;
+                }
+                if (house == "HouseGable") facade = ProceduralArt.FacadeKind.HouseGable;
+                else if (house == "HouseLong") facade = ProceduralArt.FacadeKind.HouseLong;
                 if (OnSideStreet(track, x, facade)) continue;
-                Building(root, x, GroundAt(track, x), Rand(rng, 20f, 24f), facade, roofStyle, 7f, 2.4f, new Color(0.93f, 0.93f, 0.9f), roofDark);
+                Building(root, x, GroundAt(track, x), bz, facade, roofStyle, 7f, 2.4f, new Color(0.93f, 0.93f, 0.9f), roofDark);
             }
             DistantHills(track, root, x0, x1);
         }
@@ -1107,18 +1145,218 @@ namespace DribbleToSchool.EditorTools
             Solid(root, "WallCap", new Vector3((a + b) * 0.5f, gy + 1.63f, PropertyZ + 0.15f), new Vector3(b - a + 0.04f, 0.06f, 0.3f), new Color(0.82f, 0.82f, 0.8f));
         }
 
+        // ---------------------------------------------------------------- the town's shops and houses
+
+        /// <summary>The shopping street's fronts (Buildings kit), dealt from a shuffled deck.</summary>
+        static readonly string[] MarketFronts = { "ShopFruit", "ShopShutter", "ShopMart", "ShopCafe", "ShopBooks", "ShopFlorist", "ShopNoodle", "ShopTall", "ShopBoutique", "ShopKonbini" };
+        /// <summary>The home street's houses (HouseLong and HouseCarport want the wider lots).</summary>
+        static readonly string[] HomeHouses = { "HouseGable", "HouseLong", "Bungalow", "HouseLeanTo", "HouseFlat", "HouseCarport" };
+
+        /// <summary>
+        /// Deals kit models from a shuffled deck: each turns up once before any comes round again, the
+        /// same one never twice in a row, and only those that fit (and that the kit has).
+        /// </summary>
+        class Deck
+        {
+            readonly string[] models;
+            readonly System.Random rng;
+            readonly List<string> left = new List<string>();
+            string last;
+
+            public Deck(string[] models, System.Random rng) { this.models = models; this.rng = rng; }
+
+            public string Next(System.Func<string, bool> fits)
+            {
+                for (int pass = 0; pass < 2; pass++)
+                {
+                    if (pass == 1 || left.Count == 0) Refill();
+                    for (int i = 0; i < left.Count; i++)
+                    {
+                        string m = left[i];
+                        if (m == last || !fits(m)) continue;
+                        left.RemoveAt(i);
+                        last = m;
+                        return m;
+                    }
+                }
+                return null;
+            }
+
+            void Refill()
+            {
+                left.Clear();
+                foreach (var m in models)
+                    if (LevelBuildKit.HasKitModel("Buildings", m)) left.Add(m);
+                for (int i = left.Count - 1; i > 0; i--)
+                {
+                    int j = rng.Next(i + 1);
+                    var t = left[i]; left[i] = left[j]; left[j] = t;
+                }
+            }
+        }
+
+        // Paint schemes for the town's fronts (wall, trim / awning / shutter, roof), chosen to sit with
+        // each shop's own sign: mostly white, grey and stucco walls, tiled cladding in quiet tones (and
+        // the odd dark one), colour in the awning, door or shutter.
+        static readonly Color ShopRoof = new Color(0.56f, 0.57f, 0.6f);
+        static readonly Dictionary<string, Paint[]> FrontPaints = new Dictionary<string, Paint[]>
+        {
+            { "ShopMart", new[] {
+                new Paint(new Color(0.95f, 0.95f, 0.93f), new Color(0.84f, 0.26f, 0.2f), ShopRoof),
+                new Paint(new Color(0.93f, 0.91f, 0.86f), new Color(0.93f, 0.55f, 0.18f), ShopRoof),
+                new Paint(new Color(0.86f, 0.87f, 0.87f), new Color(0.2f, 0.42f, 0.72f), ShopRoof),
+                new Paint(new Color(0.94f, 0.92f, 0.87f), new Color(0.96f, 0.76f, 0.2f), ShopRoof) } },
+            { "ShopCafe", new[] {
+                new Paint(new Color(0.94f, 0.93f, 0.9f), new Color(0.22f, 0.4f, 0.42f), ShopRoof),
+                new Paint(new Color(0.9f, 0.88f, 0.84f), new Color(0.2f, 0.26f, 0.4f), ShopRoof),
+                new Paint(new Color(0.92f, 0.9f, 0.86f), new Color(0.5f, 0.2f, 0.22f), ShopRoof),
+                new Paint(new Color(0.86f, 0.87f, 0.86f), new Color(0.42f, 0.46f, 0.28f), ShopRoof) } },
+            { "ShopBooks", new[] {
+                new Paint(new Color(0.8f, 0.62f, 0.52f), new Color(0.18f, 0.36f, 0.3f), ShopRoof),
+                new Paint(new Color(0.84f, 0.8f, 0.72f), new Color(0.2f, 0.27f, 0.42f), ShopRoof),
+                new Paint(new Color(0.68f, 0.52f, 0.44f), new Color(0.2f, 0.34f, 0.3f), ShopRoof),
+                new Paint(new Color(0.8f, 0.8f, 0.78f), new Color(0.46f, 0.18f, 0.18f), ShopRoof) } },
+            { "ShopFlorist", new[] {
+                new Paint(new Color(0.95f, 0.94f, 0.9f), new Color(0.34f, 0.55f, 0.37f), ShopRoof),
+                new Paint(new Color(0.9f, 0.9f, 0.88f), new Color(0.52f, 0.62f, 0.5f), ShopRoof),
+                new Paint(new Color(0.94f, 0.92f, 0.87f), new Color(0.4f, 0.58f, 0.74f), ShopRoof),
+                new Paint(new Color(0.88f, 0.89f, 0.9f), new Color(0.74f, 0.42f, 0.32f), ShopRoof) } },
+            { "ShopNoodle", new[] {
+                new Paint(new Color(0.93f, 0.9f, 0.84f), new Color(0.3f, 0.22f, 0.18f), ShopRoof),
+                new Paint(new Color(0.95f, 0.95f, 0.93f), new Color(0.3f, 0.22f, 0.18f), ShopRoof),
+                new Paint(new Color(0.84f, 0.85f, 0.86f), new Color(0.3f, 0.22f, 0.18f), ShopRoof) } },
+            { "ShopTall", new[] {
+                new Paint(new Color(0.84f, 0.82f, 0.78f), new Color(0.62f, 0.64f, 0.66f), ShopRoof),
+                new Paint(new Color(0.9f, 0.9f, 0.89f), new Color(0.72f, 0.73f, 0.72f), ShopRoof),
+                new Paint(new Color(0.32f, 0.34f, 0.4f), new Color(0.66f, 0.68f, 0.7f), ShopRoof),
+                new Paint(new Color(0.66f, 0.56f, 0.48f), new Color(0.6f, 0.62f, 0.6f), ShopRoof),
+                new Paint(new Color(0.78f, 0.81f, 0.84f), new Color(0.5f, 0.58f, 0.54f), ShopRoof) } },
+            { "ShopBoutique", new[] {
+                new Paint(new Color(0.26f, 0.28f, 0.33f), new Color(0.3f, 0.31f, 0.33f), ShopRoof),
+                new Paint(new Color(0.36f, 0.31f, 0.28f), new Color(0.3f, 0.31f, 0.33f), ShopRoof),
+                new Paint(new Color(0.3f, 0.35f, 0.34f), new Color(0.62f, 0.64f, 0.66f), ShopRoof),
+                new Paint(new Color(0.56f, 0.54f, 0.51f), new Color(0.3f, 0.31f, 0.33f), ShopRoof) } },
+            { "ShopKonbini", new[] {
+                new Paint(new Color(0.95f, 0.95f, 0.94f), new Color(0.62f, 0.66f, 0.7f), ShopRoof),
+                new Paint(new Color(0.88f, 0.89f, 0.9f), new Color(0.62f, 0.66f, 0.7f), ShopRoof) } },
+        };
+
+        /// <summary>A paint scheme for a kit model, by its own schemes if it has any, else from the fallback set.</summary>
+        static Paint PaintFor(string model, Paint[] fallback, float x, float z)
+        {
+            Paint[] schemes;
+            if (!FrontPaints.TryGetValue(model, out schemes)) schemes = fallback;
+            return schemes[Scramble(Mathf.Abs(Mathf.RoundToInt(x * 7f + z * 13f))) % schemes.Length];
+        }
+
+        static readonly Color[] BannerColors =
+        {
+            new Color(0.84f, 0.28f, 0.22f), new Color(0.24f, 0.42f, 0.72f), new Color(0.26f, 0.54f, 0.36f), new Color(0.94f, 0.55f, 0.2f),
+        };
+        static readonly Color[] BannerBands = { new Color(0.98f, 0.82f, 0.3f), new Color(0.96f, 0.95f, 0.92f) };
+        static readonly Color[] CrateColors =
+        {
+            new Color(0.93f, 0.74f, 0.26f), new Color(0.3f, 0.5f, 0.74f), new Color(0.36f, 0.6f, 0.42f), new Color(0.84f, 0.3f, 0.26f),
+        };
+        static readonly Color[] BinColors =
+        {
+            new Color(0.32f, 0.5f, 0.4f), new Color(0.36f, 0.46f, 0.6f), new Color(0.46f, 0.48f, 0.5f), new Color(0.26f, 0.38f, 0.3f),
+        };
+
+        /// <summary>A standing shop banner on the footpath's back edge, clear of the kid's lane.</summary>
+        static void Banner(Transform root, System.Random rng, float x, float gy)
+        {
+            Model(root, "Street", "BannerFlag", x, gy, PoleZ + 0.3f, Rand(rng, -6f, 6f), 1f, BannerColors[rng.Next(BannerColors.Length)], BannerBands[rng.Next(BannerBands.Length)]);
+        }
+
+        /// <summary>
+        /// One of the town's shop fronts, centred on cx, with what stands outside it: crates and banners
+        /// at the supermarket, pavement boards at the cafe, bookshop and noodle house, an electrical
+        /// cabinet and a bicycle at the narrow tiled building, drinks machines and bicycles on the
+        /// convenience store's apron. False if the kit hasn't got the model.
+        /// </summary>
+        static bool ShopFront(Transform root, System.Random rng, string model, float cx, float gy, float w)
+        {
+            float z = PropertyZ + (model == "ShopKonbini" ? 2.6f : 0.6f);
+            var p = PaintFor(model, ShopPaints, cx, z);
+            if (Model(root, "Buildings", model, cx, gy, z, 0f, 1f, p.wall, p.trim, p.roof) == null) return false;
+            ContactShadow(root, cx - w * 0.5f, cx + w * 0.5f, gy, z - 0.45f, z);
+            float board = PropertyZ + 0.02f;
+            switch (model)
+            {
+                case "ShopMart":
+                    Model(root, "Street", "DrinksCrates", cx + 3.55f, gy, PropertyZ + 0.32f, Rand(rng, -8f, 8f), 1f, CrateColors[rng.Next(CrateColors.Length)]);
+                    if (rng.NextDouble() < 0.5) Model(root, "Street", "CrateStack", cx - 3.1f, gy, PropertyZ + 0.35f, Rand(rng, -10f, 10f));
+                    Banner(root, rng, cx - 2.4f, gy);
+                    Banner(root, rng, cx + 2.2f, gy);
+                    break;
+                case "ShopCafe":
+                    Model(root, "Street", "SignBoardA", cx + 0.75f, gy, board, Rand(rng, -15f, 15f), 1f, new Color(0.3f, 0.26f, 0.22f));
+                    break;
+                case "ShopBooks":
+                    Model(root, "Street", "SignBoardA", cx - 1.7f, gy, board, Rand(rng, -15f, 15f), 1f, new Color(0.2f, 0.3f, 0.26f));
+                    break;
+                case "ShopNoodle":
+                    Model(root, "Street", "SignBoardA", cx + 0.1f, gy, board, 180f + Rand(rng, -15f, 15f), 1f, new Color(0.3f, 0.22f, 0.18f));
+                    Banner(root, rng, cx + 2.75f, gy);
+                    break;
+                case "ShopTall":
+                    Model(root, "Street", "UtilityBox", cx - 0.5f, gy, z - 0.32f, 0f);
+                    if (rng.NextDouble() < 0.5)
+                        Model(root, "Street", "Bicycle", cx + 1.35f, gy, z - 0.45f, 180f + Rand(rng, -6f, 6f), 1f, BikeColors[rng.Next(BikeColors.Length)]);
+                    break;
+                case "ShopBoutique":
+                    Banner(root, rng, cx - 2.15f, gy);
+                    if (rng.NextDouble() < 0.5) Model(root, "Street", "PotGroup", cx + 1.4f, gy, z - 0.55f, Rand(rng, -20f, 20f), 1f, Petals[rng.Next(Petals.Length)]);
+                    break;
+                case "ShopKonbini":
+                    Model(root, "Street", "VendingRed", cx - 4.1f, gy, z - 0.45f);
+                    Model(root, "Street", "VendingBlue", cx - 3.05f, gy, z - 0.45f);
+                    if (Model(root, "Street", "BikeRack", cx - 0.9f, gy, z - 1.2f) != null)
+                        for (int k = 0; k < 3; k++)
+                            if (rng.NextDouble() < 0.6)
+                                Model(root, "Street", "Bicycle", cx - 1.8f + 0.9f * k + 0.25f, gy, z - 1.15f - 0.08f * k, 180f + Rand(rng, -5f, 5f), 1f, BikeColors[rng.Next(BikeColors.Length)]);
+                    break;
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// One of the town's kit houses (HouseLeanTo, HouseFlat, HouseCarport) with its front wall on z,
+        /// in a house scheme, with its contact shadow. False for the painted kinds (Building places
+        /// those) or if the kit hasn't got it.
+        /// </summary>
+        static bool TownHouse(Transform root, string model, float x, float gy, float z)
+        {
+            if (model == "HouseGable" || model == "HouseLong" || model == "Bungalow") return false;
+            float w = LevelBuildKit.KitSize("Buildings", model).x;
+            var p = PaintFor(model, HousePaints, x, z);
+            if (w < 1f || Model(root, "Buildings", model, x, gy, z, 0f, 1f, p.wall, p.trim, p.roof) == null) return false;
+            ContactShadow(root, x - w * 0.5f, x + w * 0.5f, gy, z - 0.45f, z);
+            return true;
+        }
+
         static void Market(LevelBuildKit.TrackBuilder track, Transform root, System.Random rng, float x0, float x1)
         {
             Color[] awnings = { new Color(0.25f, 0.45f, 0.75f), new Color(0.78f, 0.25f, 0.25f), new Color(0.3f, 0.6f, 0.4f) };
+            var deck = new Deck(MarketFronts, rng);
+            bool vended = false;
             int i = 0;
             for (float x = x0; x < x1; i++)
             {
-                float w = 8f, skip;
+                // The next front from the deck at its own width; the old pair of painted shops without the kit.
+                string front = deck.Next(m => true);
+                float w = front != null ? LevelBuildKit.KitSize("Buildings", front).x : 0f, skip;
+                if (w < 1f) { front = null; w = 8f; }
                 if (Blocked(track, x, x + w, out skip)) { FillGap(track, root, rng, x, BlockStart(track, x, x + w)); x = skip; continue; }
                 float cx = x + w * 0.5f, gy = GroundAt(track, cx);
-                var kind = i % 2 == 0 ? ProceduralArt.FacadeKind.Shop0 : ProceduralArt.FacadeKind.Shop1;
-                bool model = Building(root, cx, gy, PropertyZ + 0.6f, kind, House3D.RoofStyle.Flat, 8f, 0f, i % 3 == 0 ? new Color(0.95f, 0.9f, 0.82f) : new Color(0.88f, 0.9f, 0.94f), new Color(0.6f, 0.6f, 0.62f));
-                ContactShadow(root, cx - 3.9f, cx + 3.9f, gy, PropertyZ - 0.7f, PropertyZ + 0.6f);
+                bool model = front != null && ShopFront(root, rng, front, cx, gy, w);
+                if (!model)
+                {
+                    var kind = i % 2 == 0 ? ProceduralArt.FacadeKind.Shop0 : ProceduralArt.FacadeKind.Shop1;
+                    model = Building(root, cx, gy, PropertyZ + 0.6f, kind, House3D.RoofStyle.Flat, 8f, 0f, i % 3 == 0 ? new Color(0.95f, 0.9f, 0.82f) : new Color(0.88f, 0.9f, 0.94f), new Color(0.6f, 0.6f, 0.62f));
+                }
+                ContactShadow(root, cx - w * 0.5f + 0.1f, cx + w * 0.5f - 0.1f, gy, PropertyZ - 0.7f, PropertyZ + 0.6f);
                 if (!model)
                 {
                     // Awning sticking out over the pavement (the kit's shops have their own shopfronts).
@@ -1132,20 +1370,25 @@ namespace DribbleToSchool.EditorTools
                     Model(root, "Street", "StreetLamp", x, gy, PoleZ - 0.1f);   // where two shopfronts meet, clear of their stands
                 if (between)
                 {
-                    // Between shopfronts: a potted lemon tree or shrub, or crates and a sack waiting to go in.
+                    // Between shopfronts: a potted lemon tree or shrub, a doorstep of pots, a pair of bins,
+                    // or crates and a sack waiting to go in.
                     float gx = x + Rand(rng, -0.25f, 0.25f), gz = PropertyZ + 0.25f;
                     double r = rng.NextDouble();
-                    if (r < 0.35) Model(root, "Street", "PotC", gx, gy, gz, Rand(rng, 0f, 360f));
-                    else if (r < 0.6) Model(root, "Street", "PotB", gx, gy, gz, Rand(rng, 0f, 360f));
+                    if (r < 0.25) Model(root, "Street", "PotC", gx, gy, gz, Rand(rng, 0f, 360f));
+                    else if (r < 0.42) Model(root, "Street", "PotB", gx, gy, gz, Rand(rng, 0f, 360f));
+                    else if (r < 0.58) Model(root, "Street", "PotGroup", gx, gy, gz, Rand(rng, -20f, 20f), 1f, Petals[rng.Next(Petals.Length)]);
+                    else if (r < 0.72) Model(root, "Street", "BinPair", gx, gy, PropertyZ + 0.35f, Rand(rng, -8f, 8f), 1f, BinColors[rng.Next(BinColors.Length)], BinColors[rng.Next(BinColors.Length)]);
                     else
                     {
                         Model(root, "Street", rng.NextDouble() < 0.5 ? "CrateStack" : "ProduceCrate", gx, gy, gz, Rand(rng, -15f, 15f));
                         Model(root, "Street", "Sack", gx + 0.75f, gy, gz - 0.1f, Rand(rng, 0f, 360f));
                     }
                 }
-                if (rng.NextDouble() < 0.35 && x + 2.4f < x1)
+                bool vend = !vended && front != "ShopKonbini" && rng.NextDouble() < 0.28 && x + 2.4f < x1;
+                vended = vend;
+                if (vend)
                 {
-                    // Drinks machines in the gap between shops.
+                    // Drinks machines in the gap between shops (never two gaps running).
                     if (Model(root, "Street", "VendingRed", x + 0.7f, gy, PropertyZ + 0.2f) == null)
                         Solid(root, "Vending", new Vector3(x + 0.7f, gy + 0.93f, PropertyZ + 0.2f), new Vector3(1f, 1.85f, 0.8f), new Color(0.85f, 0.22f, 0.24f));
                     if (Model(root, "Street", "VendingBlue", x + 1.75f, gy, PropertyZ + 0.2f) == null)
@@ -1396,7 +1639,22 @@ namespace DribbleToSchool.EditorTools
                     for (int k = 0; k < 2; k++)
                         Model(root, "Street", "TrafficCone", x + w - 1.2f - k * 0.8f, gy, PropertyZ + 0.5f, Rand(rng, 0f, 360f));
                 }
-                if (!flats)
+                // An electrical cabinet in some yards; now and then a pair of narrow tiled buildings
+                // (one of each) instead of the flats.
+                if (front >= 0.35 && rng.NextDouble() < 0.35) Model(root, "Street", "UtilityBox", x + w - 1f, gy, PropertyZ + 0.65f, Rand(rng, -4f, 4f));
+                bool pair = flats && rng.NextDouble() < 0.35 && LevelBuildKit.HasKitModel("Buildings", "ShopTall") && LevelBuildKit.HasKitModel("Buildings", "ShopBoutique");
+                if (pair)
+                {
+                    string[] two = rng.NextDouble() < 0.5 ? new[] { "ShopTall", "ShopBoutique" } : new[] { "ShopBoutique", "ShopTall" };
+                    for (int k = 0; k < 2; k++)
+                    {
+                        float hw = LevelBuildKit.KitSize("Buildings", two[k]).x * 0.5f, bx = k == 0 ? cx - hw - 0.1f : cx + hw + 0.1f;
+                        var p = PaintFor(two[k], WorkPaints, bx, PropertyZ + 4f);
+                        Model(root, "Buildings", two[k], bx, gy, PropertyZ + 4f, 0f, 1f, p.wall, p.trim, p.roof);
+                        ContactShadow(root, bx - hw, bx + hw, gy, PropertyZ + 3.55f, PropertyZ + 4f);
+                    }
+                }
+                else if (!flats)
                     Building(root, cx, gy, PropertyZ + 3f, ProceduralArt.FacadeKind.Warehouse, House3D.RoofStyle.Shed, 8f, 1.2f, new Color(0.78f, 0.74f, 0.7f), new Color(0.5f, 0.52f, 0.56f));
                 else
                 {

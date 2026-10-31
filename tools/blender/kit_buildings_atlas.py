@@ -7,7 +7,7 @@
 #    streaks under sills, contact shadows under canopies and balconies, tile joints, moss, rust.
 import numpy as np
 from PIL import Image
-from kit_buildings_geo import REG, AT, reg_px
+from kit_buildings_geo import REG, ATW, ATH, reg_px
 
 PAD = 6
 rng = np.random.default_rng(5)
@@ -41,7 +41,7 @@ def grid(name, pad=PAD):
     in the bleed), V up."""
     x0, y0, x1, y1 = reg_px(name)
     w, h = x1 - x0, y1 - y0
-    xs = np.arange(max(0, x0 - pad), min(AT, x1 + pad)); ys = np.arange(max(0, y0 - pad), min(AT, y1 + pad))
+    xs = np.arange(max(0, x0 - pad), min(ATW, x1 + pad)); ys = np.arange(max(0, y0 - pad), min(ATH, y1 + pad))
     U = (xs - x0 + 0.5) / w
     V = 1 - (ys - y0 + 0.5) / h
     UU, VV = np.meshgrid(U, V)
@@ -356,6 +356,19 @@ def wall_map(B, mp):
                 sub = np.where(m[..., None], sub * bc, sub)
                 rim = (e >= 1.0) & (e < 1.0 + 3.0 / (ppm * min(rw, rh)))
                 sub = np.where(rim[..., None], sub * 0.82, sub)
+            elif kind == 'tilegrid':    # wall tiles: joints and a little tone per tile over a rect
+                s0, s1, z0, z1 = kw['a0'], kw['a1'], kw['b0'], kw['b1']
+                tw, th, bond = kw.get('tw', 0.3), kw.get('th', 0.15), kw.get('bond', 0.0)
+                inside = ((A >= s0) & (A <= s1) & (Z >= z0) & (Z <= z1))[..., None]
+                row = np.floor((Z - z0) / th)
+                xo = A - s0 + (row % 2) * bond * tw
+                col = np.floor(xo / tw)
+                tone = np.sin(col * 12.9898 + row * 78.233 + seed) * 43758.5453
+                tone = tone - np.floor(tone)
+                jz = np.minimum((Z - z0) % th, th - (Z - z0) % th); jx = np.minimum(xo % tw, tw - xo % tw)
+                jm = _ss(1.4 / ppm, 0.4 / ppm, np.minimum(jz, jx))
+                f_ = (1 + kw.get('var', 0.07) * (tone - 0.5) * 2) * (1 - kw.get('k', 0.3) * jm)
+                sub = np.where(inside, sub * f_[..., None], sub)
             elif kind == 'line':        # a painted band (e.g. a stripe), multiplier col
                 s0, s1, z0, z1, col = kw['a0'], kw['a1'], kw['b0'], kw['b1'], kw['col']
                 m = (A >= s0) & (A <= s1) & (Z >= z0) & (Z <= z1)
@@ -426,12 +439,14 @@ def roof_map(B, mp='roof'):
 
 
 def paint(path, buildings):
-    img = np.ones((AT, AT, 3), np.float32)
+    img = np.ones((ATH, ATW, 3), np.float32)
     for k in range(4): put(img, 'glass%d' % k, glass(k))
     put(img, 'louvre', louvre); put(img, 'wood', wood); put(img, 'crate', crate); put(img, 'brick', brick)
     for kind in ('orange', 'apple', 'lemon', 'green', 'tomato', 'plum'): put(img, 'p_' + kind, produce(kind))
     put(img, 'melon', melon); put(img, 'ac', ac); put(img, 'vent', vent); put(img, 'clock', clock)
     put(img, 'banner', banner); put(img, 'wear', wear); put(img, 'solar', solar)
+    import kit_buildings_signs as SG
+    SG.paint(img, put)
     for B in buildings:
         for mp in B.maps:
             name = B.name + '.' + mp
