@@ -454,17 +454,26 @@ namespace DribbleToSchool.EditorTools
             if (!kid) return parts;
 
             // The shop's pennant, clipped to the top of the bag on the camera side: the kid's
-            // backpack, or the teens' satchel (its bone sits at the bag's top edge).
+            // backpack, or the teens' bags (the bone sits at the bag's top edge). The boy's satchel
+            // hangs at his hip, so his rides on its strap behind the shoulder instead.
+            Transform holder = bag;
             Vector3 polePos = new Vector3(-0.18f, 0.6f, -0.16f);
-            if (file != "Kid")
+            Transform chest = file == "Boy" ? bone("Chest") : null;
+            if (chest != null)
+            {
+                holder = chest;
+                Vector3 c = body.InverseTransformPoint(chest.position);
+                polePos = new Vector3(c.x - 0.15f, c.y + 0.12f, -0.15f);
+            }
+            else if (file != "Kid")
             {
                 Vector3 top = body.InverseTransformPoint(bag.position);
                 polePos = new Vector3(top.x - 0.02f, top.y + 0.08f, -0.15f);
             }
-            var pole = Visual(bag, "FlagPole", Square, Vector2.zero, new Vector2(0.015f, 0.2f), new Color(0.3f, 0.25f, 0.2f), 7);
+            var pole = Visual(holder, "FlagPole", Square, Vector2.zero, new Vector2(0.015f, 0.2f), new Color(0.3f, 0.25f, 0.2f), 7);
             pole.transform.position = body.TransformPoint(polePos);
             pole.transform.rotation = body.rotation;
-            var flag = Visual(bag, "BackpackFlag", Square, Vector2.zero, new Vector2(0.12f, 0.09f), Color.white, 7);
+            var flag = Visual(holder, "BackpackFlag", Square, Vector2.zero, new Vector2(0.12f, 0.09f), Color.white, 7);
             flag.transform.position = body.TransformPoint(polePos + new Vector3(-0.06f, 0.06f, 0f));
             flag.transform.rotation = body.rotation;
 
