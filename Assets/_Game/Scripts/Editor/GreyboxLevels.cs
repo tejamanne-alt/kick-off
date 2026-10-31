@@ -8,6 +8,9 @@ namespace DribbleToSchool.EditorTools
     /// Grey-box layouts. Units are metres; the kid runs ~4.2 m/s, jumps ~1.4 m
     /// high and ~2.4 m far, so gaps stay at or under 2 m and walls the kid
     /// must climb stay under 1 m (higher ones come with a step or springboard).
+    /// A double jump reaches ~2.2 m up and ~3.6 m far: gates (2.4 m) and wide
+    /// gaps still hold, 1.6 m walls and high coins become its reward. Slides pass
+    /// under barriers with a 0.85 m gap (SlideUnder).
     /// Each chapter introduces one idea, then mixes it with what came before.
     /// </summary>
     public static class GreyboxLevels
@@ -61,6 +64,9 @@ namespace DribbleToSchool.EditorTools
 
             t.Checkpoint(86f);
             t.Sign("Kick it up and juggle:\ntap while it's in the air", new Vector2(92f, 3.2f));
+            t.SlideUnder(98.5f, 2.2f);
+            t.CoinRow(97.8f, 99.2f, 0.32f, 2);
+            t.CoinRow(101.6f, 102.4f, 3.2f, 2);
             t.Goal(105.5f);
         }
 
@@ -111,7 +117,9 @@ namespace DribbleToSchool.EditorTools
 
             t.ParkedCar(16f, CarRed);
             t.Checkpoint(22f);
-            t.Wall(28f, 0.3f, 0f, 0.6f);
+            t.Hint(23.5f, "slide");
+            t.Sign("Painters' boards!\nTap SLIDE or swipe down", new Vector2(25.2f, 3.4f));
+            t.SlideUnder(28.5f, 2.2f);
 
             t.ParkedCar(36f, CarBlue);
             t.ParkedCar(40f, CarGreen);
@@ -127,6 +135,7 @@ namespace DribbleToSchool.EditorTools
             t.Wall(78f, 0.3f, 0f, 0.6f);
             t.CoinRow(5f, 10f, 0.5f, 3);
             t.CoinRow(15.3f, 16.8f, 1.95f, 2);
+            t.CoinRow(27.6f, 29.4f, 0.32f, 3);
             t.CoinArc(34.5f, 41.5f, 1.9f, 0.8f, 5);
             t.CoinArc(57.5f, 60f, 0.7f, 1.3f, 3);
             t.CoinRow(67.3f, 68.8f, 1.95f, 2);
@@ -144,9 +153,10 @@ namespace DribbleToSchool.EditorTools
 
             t.Ground(20f, 23f, 0.6f);
             t.Ground(23f, 26f, 1.2f);
+            t.Hint(24f, "doublejump", 1.2f);
             t.Ground(26f, 32f, 1.8f);
             t.Pit(32f, 34f, 1.8f);
-            t.Sign("Big gap!", new Vector2(33f, 4.4f));
+            t.Sign("Big gap! Jump, then JUMP\nagain in the air!", new Vector2(30f, 4.6f));
             t.Ground(34f, 44f, 1.8f);
             t.Checkpoint(36f, 1.8f);
 
@@ -165,9 +175,12 @@ namespace DribbleToSchool.EditorTools
             t.Wall(100f, 0.3f, 0f, 0.6f);
             t.Checkpoint(103f);
             t.Wall(108f, 0.9f);
+            t.SlideUnder(113.5f, 2.2f);
 
             t.CoinRow(21.5f, 30.5f, 2.6f, 4);
             t.CoinArc(31.5f, 34.5f, 2.6f, 1.2f, 3);
+            t.CoinRow(32.6f, 33.4f, 4.9f, 2);       // only a double jump reaches these
+            t.CoinRow(112.8f, 114.2f, 0.32f, 2);
             t.CoinRow(46f, 49f, 1.6f, 3);
             t.CoinArc(57f, 60f, 1.4f, 1.5f, 3);
             t.CoinRow(86f, 96f, 2.2f, 5);
@@ -222,6 +235,7 @@ namespace DribbleToSchool.EditorTools
             t.Puddle(22f, 26f);
             t.Checkpoint(29f);
             t.ParkedCar(36f, CarPurple);
+            t.SlideUnder(42.5f, 2.2f);
 
             t.Pit(48f, 49.8f);
             t.Ground(49.8f, 78f);
@@ -241,6 +255,8 @@ namespace DribbleToSchool.EditorTools
             t.CoinArc(47.5f, 50.3f, 0.7f, 1.3f, 3);
             t.CoinRow(70.5f, 73.5f, 0.6f, 3);
             t.CoinArc(77.5f, 80.5f, 0.7f, 1.3f, 3);
+            t.CoinRow(78.6f, 79.4f, 3.2f, 2);       // double jump
+            t.CoinRow(41.8f, 43.2f, 0.32f, 2);
             t.Sticker(new Vector2(102f, 3.6f));
             t.Goal(112f);
         }
@@ -266,6 +282,8 @@ namespace DribbleToSchool.EditorTools
             t.CrateStack(66f);
             t.Crate(70f, 0.35f);
             t.Pedestrian(74f, 82f, CoatD, 0f, 0.9f);
+            t.Sign("Fruit stall! Slide\nunder the table", new Vector2(82.8f, 3.6f));
+            t.SlideUnder(86.5f, 2.2f);
             t.CoinRow(8f, 12f, 0.5f, 3);
             t.CoinArc(25.5f, 27.5f, 1.6f, 1f, 3);
             t.CoinRow(44f, 52f, 3.2f, 4);
@@ -335,6 +353,7 @@ namespace DribbleToSchool.EditorTools
             t.CoinArc(11.5f, 13.5f, 1.6f, 1f, 3);
             t.CoinArc(21.5f, 24.5f, 0.7f, 1.3f, 3);
             t.CoinRow(41f, 49f, 2f, 4);
+            t.CoinRow(42.5f, 43.5f, 4.55f, 2);      // double jump from the steps
             t.CoinArc(63.5f, 66.5f, 0.7f, 1.3f, 3);
             t.CoinRow(86f, 90f, 3.4f, 3);
             t.Sticker(new Vector2(45f, 4.4f));
@@ -366,11 +385,13 @@ namespace DribbleToSchool.EditorTools
             t.Pedestrian(70f, 75f, CoatA);
             t.Checkpoint(78f);
             t.Crossing(84f, 89f, 1f);
+            t.SlideUnder(94f, 2.2f);
             t.CoinRow(14f, 17f, 2.4f, 3);
             t.CoinRow(27f, 34f, 3.8f, 4);
             t.CoinArc(44.5f, 46.5f, 1.6f, 1f, 3);
             t.CoinRow(59f, 65f, 2.7f, 4);
             t.CoinRow(85f, 88f, 0.5f, 3);
+            t.CoinRow(93.3f, 94.7f, 0.32f, 2);
             t.Sticker(new Vector2(56f, 5.6f));
             t.Goal(100f);
         }
@@ -386,6 +407,7 @@ namespace DribbleToSchool.EditorTools
             t.Pedestrian(10f, 16f, CoatB);
             t.Crossing(22f, 27f, 0f);
             t.Checkpoint(30f);
+            t.SlideUnder(33f, 2.2f);
             t.CrateStack(36f);
             t.Pedestrian(40f, 46f, CoatC, 0f, 1.4f);
             t.Springboard(52f);
@@ -431,6 +453,8 @@ namespace DribbleToSchool.EditorTools
             t.Ground(62f, 88f, 0.9f);
             t.Checkpoint(65f, 0.9f);
             t.Wall(75f, 0.55f, 0.9f, 0.9f);
+            t.Sign("Surf school rack:\nslide under it!", new Vector2(77.9f, 3.7f));
+            t.SlideUnder(81.4f, 2.2f, 0.9f);
             t.Ground(88f, 110f);
             t.Checkpoint(93f);
             t.Sand(95f, 99f);
@@ -466,12 +490,15 @@ namespace DribbleToSchool.EditorTools
             t.Checkpoint(75f);
             t.Sand(78f, 84f);
             t.Tide(88f, 93f, 6f, 0f);
+            t.SlideUnder(96.5f, 2.2f);
 
             t.CoinRow(19f, 23f, 0.6f, 3);
             t.CoinRow(39f, 44f, 0.6f, 3);
             t.CoinArc(51f, 53f, 1.4f, 1f, 3);
+            t.CoinRow(59.6f, 60.4f, 3.2f, 2);       // double jump
             t.CoinRow(67f, 71f, 0.6f, 3);
             t.CoinRow(89f, 92f, 0.6f, 3);
+            t.CoinRow(95.8f, 97.2f, 0.32f, 2);
             t.Sticker(new Vector2(62f, 4.2f));
             t.Goal(102f);
         }
@@ -538,6 +565,7 @@ namespace DribbleToSchool.EditorTools
             t.Platform(94f, 100f, 2f);
             t.Checkpoint(104f);
             t.Tide(108f, 112f, 6f, 3f);
+            t.SlideUnder(116f, 2.2f);
 
             t.CoinArc(15f, 17f, 1.5f, 1f, 3);
             t.CoinArc(30f, 32f, 1.6f, 1f, 3);
@@ -563,6 +591,8 @@ namespace DribbleToSchool.EditorTools
             t.Puddle(20f, 23f);
             t.Wall(28f, 0.3f, 0f, 0.6f);
             t.Checkpoint(37f);
+            t.Sign("Scaffolding! Slide\nunder the boards", new Vector2(36.3f, 3.4f));
+            t.SlideUnder(39.6f, 2.2f);
             t.Ramp(new Vector2(42f, 0f), new Vector2(48f, 1.5f));
             t.Platform(48f, 56f, 1.5f);
             t.Ramp(new Vector2(56f, 1.5f), new Vector2(62f, 0f));
@@ -572,6 +602,7 @@ namespace DribbleToSchool.EditorTools
             t.Checkpoint(89f);
 
             t.CoinRow(16f, 26f, 0.5f, 5);
+            t.CoinRow(38.9f, 40.3f, 0.32f, 2);
             t.CoinRow(49f, 55f, 2f, 4);
             t.CoinRow(66f, 76f, 0.5f, 4);
             t.Sticker(new Vector2(52f, 5f));
@@ -592,6 +623,7 @@ namespace DribbleToSchool.EditorTools
             t.Pipes(new Vector2(33f, 3.2f), 4f, 5f);
             t.Ramp(new Vector2(34f, 2.5f), new Vector2(40f, 0f));
             t.Checkpoint(42f);
+            t.SlideUnder(45f, 2.2f);
             t.CrateStack(48f);
             t.CrateStack(52f);
             t.Ramp(new Vector2(58f, 0f), new Vector2(66f, 2f));
@@ -604,6 +636,7 @@ namespace DribbleToSchool.EditorTools
 
             t.CoinArc(20f, 27f, 1.5f, 1.5f, 4);
             t.CoinRow(29f, 33f, 3.1f, 3);
+            t.CoinRow(29.6f, 30.4f, 5.5f, 2);       // double jump, on the way to the sticker
             t.CoinArc(47.5f, 53f, 1.8f, 1f, 4);
             t.CoinRow(67f, 71f, 2.6f, 3);
             t.CoinRow(93f, 99f, 0.5f, 3);
@@ -624,6 +657,7 @@ namespace DribbleToSchool.EditorTools
             t.MovingPlatform(new Vector2(22f, -0.175f), 2.6f, new Vector2(6f, 0f));
             t.Ground(30f, 44f);
             t.Checkpoint(32f);
+            t.SlideUnder(38f, 2.2f);
             t.Pit(44f, 52f);
             t.MovingPlatform(new Vector2(45.5f, 0.6f), 2.6f, new Vector2(5f, 0f), 1.3f);
             t.Ground(52f, 64f);
@@ -700,11 +734,14 @@ namespace DribbleToSchool.EditorTools
             t.Checkpoint(60f);
             t.Dog(66f, 76f, DogBlack);
             t.Puddle(80f, 83f);
+            t.Sign("Fallen tree! Slide under,\nor double jump over", new Vector2(85f, 3.6f));
+            t.SlideUnder(88f, 0.7f);
 
             t.CoinArc(14f, 22f, 0.8f, 1.6f, 5);
             t.CoinRow(37f, 40f, 0.5f, 3);
             t.CoinArc(42f, 52f, 0.8f, 1.8f, 5);
             t.CoinArc(66f, 76f, 0.8f, 1.6f, 5);
+            t.CoinArc(87.1f, 88.9f, 1.9f, 0.6f, 3);   // over the trunk: double jump
             t.Sticker(new Vector2(47f, 4.5f));
             t.Goal(96f);
         }
@@ -798,6 +835,7 @@ namespace DribbleToSchool.EditorTools
             t.Springboard(56f);
             t.Wall(58f, 1.6f);
             t.Checkpoint(61f);
+            t.SlideUnder(65.5f, 0.7f);
             t.Water(70f, 72f);
             t.Ground(72f, 73.5f);
             t.Water(73.5f, 75.5f);
@@ -811,6 +849,7 @@ namespace DribbleToSchool.EditorTools
             t.CoinRow(20f, 26f, 1f, 4);
             t.CoinArc(33f, 43f, 0.8f, 1.6f, 5);
             t.CoinArc(45.5f, 49.5f, 0.7f, 1.3f, 3);
+            t.CoinRow(46.6f, 47.4f, 3.2f, 2);       // double jump
             t.CoinRow(72.7f, 76.2f, 0.6f, 2);
             t.CoinArc(88f, 96f, 0.8f, 1.6f, 4);
             t.Sticker(new Vector2(54f, 5.5f));
@@ -828,6 +867,7 @@ namespace DribbleToSchool.EditorTools
             t.Dog(10f, 18f, DogBrown);
             t.Crossing(24f, 29f, 0f);
             t.Checkpoint(32f);
+            t.SlideUnder(36f, 0.7f);
             t.Water(40f, 48f);
             t.Swing(new Vector2(44f, 4.2f), 3.6f, 35f, 3f);
             t.Ground(48f, 90f);

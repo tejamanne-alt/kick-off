@@ -7,6 +7,7 @@ namespace DribbleToSchool.Audio
     {
         Kick, Touch, Perfect, Juggle, Trap, Jump, Land, Bounce, Coin, Sticker, Checkpoint, Bell, Goal, Lose,
         Splash, Woof, Squawk, Oof, Boing, Switch, Gate, Beep, Click, Purchase, Whistle, Respawn,
+        DoubleJump, Slide,
     }
 
     /// <summary>Recipes for every sound effect, synthesized at startup (a few ms each).</summary>
@@ -193,6 +194,22 @@ namespace DribbleToSchool.Audio
                     b = Synth.Buffer(0.35f);
                     Synth.Sweep(b, 0, 0.3f, 300, 900, 0.02, 8, 0.25f);
                     Synth.Noise(b, 0, 0.3f, 0.05, 8, 0.15f, 0.2f, 13);
+                    break;
+                case Sfx.DoubleJump:
+                    // A light, higher whoosh than the jump, with a little airy pop on top.
+                    b = Synth.Buffer(0.3f);
+                    Synth.Noise(b, 0, 0.26f, 0.02, 14, 0.3f, 0.35f, 14);
+                    Synth.Sweep(b, 0, 0.2f, 480, 1100, 0.005, 16, 0.2f);
+                    Synth.Sweep(b, 0, 0.08f, 1500, 2100, 0.002, 40, 0.08f, p => Synth.Triangle(p));
+                    break;
+                case Sfx.Slide:
+                    // Shoes and shorts skidding over the ground: a soft thump, then a scuffing hiss
+                    // that wavers as it fades.
+                    b = Synth.Buffer(0.6f);
+                    Synth.Sweep(b, 0, 0.12f, 120, 70, 0.002, 30, 0.35f);
+                    Synth.Noise(b, 0, 0.58f, 0.03, 4.5, 0.32f, 0.18f, 15);
+                    for (int i = 0; i < b.Length; i++)
+                        b[i] *= 0.8f + 0.2f * (float)Math.Sin(i / (double)Synth.SampleRate * 2 * Math.PI * 23);
                     break;
                 default:
                     b = Synth.Buffer(0.05f);

@@ -2384,6 +2384,440 @@ namespace DribbleToSchool.EditorTools
                 box.Rebuild();
             }
 
+            // ---------- Things to slide under ----------
+
+            /// <summary>
+            /// Clear height under a slide-under barrier: a sliding kid (0.5 tall, see
+            /// PlayerTuning.slideHeight) and the ball pass with room to spare; a standing kid (1.2) can't.
+            /// </summary>
+            public const float SlideGap = 0.85f;
+
+            /// <summary>What a slide-under barrier is drawn as. Auto picks the chapter's own.</summary>
+            public enum SlideBarrier { Auto, Trestles, MarketStall, SurfRack, Scaffold, FallenTree }
+
+            /// <summary>
+            /// Something to slide under: solid from <see cref="SlideGap"/> above the ground up, from
+            /// x - width/2 to x + width/2, drawn as what really spans a footpath at that height. The home
+            /// street: decorators' boards on trestles (hop on, or slide under). The market: a fruit
+            /// stall's table under its canopy. The beach: a surf school's board rack. The building site:
+            /// a sheeted scaffold. (Those three are too tall to jump: slide under.) The park: a fallen
+            /// tree across the path, slide under or double jump over; its width is the trunk's
+            /// thickness, 0.56 to 0.84. The ball rolls under all of them.
+            /// </summary>
+            public void SlideUnder(float x, float width, float groundTop = 0f, SlideBarrier look = SlideBarrier.Auto)
+            {
+                if (look == SlideBarrier.Auto)
+                    look = Chapter == 2 ? SlideBarrier.MarketStall : Chapter == 3 ? SlideBarrier.SurfRack
+                        : Chapter == 4 ? SlideBarrier.Scaffold : Chapter == 5 ? SlideBarrier.FallenTree : SlideBarrier.Trestles;
+                var holder = new GameObject("SlideUnder_" + look).transform;
+                holder.SetParent(root, false);
+                holder.position = new Vector3(x, groundTop, 0f);
+                width = Mathf.Max(0.6f, width);
+                int seed = Mathf.Abs(Mathf.RoundToInt(x * 13f));
+                switch (look)
+                {
+                    case SlideBarrier.MarketStall: MarketStall(holder, width, seed); break;
+                    case SlideBarrier.SurfRack: SurfRack(holder, width, seed); break;
+                    case SlideBarrier.Scaffold: Scaffold(holder, width); break;
+                    case SlideBarrier.FallenTree: FallenTree(holder, width, seed); break;
+                    default: Trestles(holder, width, seed); break;
+                }
+                holder.gameObject.AddComponent<StaticBatcher>();   // one draw call per material for all the parts
+            }
+
+            /// <summary>The solid part of a slide-under barrier, <paramref name="width"/> long, from the gap up to <paramref name="top"/> above the ground.</summary>
+            GameObject SlideSolid(Transform holder, float width, float top, PhysicsMaterial2D material = null)
+            {
+                Vector3 p = holder.position;
+                var go = Block("SlideBarrier", new Vector2(p.x, p.y + (SlideGap + top) * 0.5f), new Vector2(width, top - SlideGap),
+                    ObstacleColor, material != null ? material : GroundMat, false);
+                go.transform.SetParent(holder, true);
+                return go;
+            }
+
+            /// <summary>A box seen from every side, undersides too (they show on things overhead), at a local position.</summary>
+            static void Piece(Transform parent, string name, Vector3 localCenter, Vector3 size, Color color, Material material = null)
+            {
+                var go = new GameObject(name);
+                go.transform.SetParent(parent, false);
+                go.transform.localPosition = localCenter;
+                var box = go.AddComponent<Box3D>();
+                box.size = size;
+                box.color = color;
+                box.faces = MeshBuilder.Faces.All;
+                go.GetComponent<MeshRenderer>().sharedMaterial = material != null ? material : Art.solid;
+                box.Rebuild();
+            }
+
+            /// <summary>
+            /// Painters at work on a house front: three scaffold boards laid on two folding trestles
+            /// that straddle the footpath (their legs either side of the kid's line), paint tins and a
+            /// roller tray on top, a dust sheet hanging off the back, and a stepladder by the garden
+            /// wall. Only the boards are solid: hop up onto them, or slide under.
+            /// </summary>
+            void Trestles(Transform holder, float w, int seed)
+            {
+                const float barH = 0.06f, boardT = 0.04f, legZ = 0.72f;
+                float deck = SlideGap + barH + boardT, half = w * 0.5f;
+                SlideSolid(holder, w, deck);
+                Color timber = new Color(0.7f, 0.54f, 0.36f), board = new Color(0.86f, 0.72f, 0.5f), band = new Color(0.64f, 0.66f, 0.68f);
+                Color tin = new Color(0.78f, 0.8f, 0.82f), cloth = new Color(0.93f, 0.91f, 0.86f);
+                Color[] paints = { new Color(0.55f, 0.72f, 0.9f), new Color(0.95f, 0.8f, 0.45f), new Color(0.6f, 0.82f, 0.62f), new Color(0.96f, 0.95f, 0.9f) };
+                Color paint = paints[seed % paints.Length];
+
+                // Each trestle: a top bar across the path on two pairs of splayed legs, with a stay
+                // between each pair low down (along the path, so nothing crosses the kid's line).
+                foreach (float tx in new[] { -half + 0.22f, half - 0.22f })
+                {
+                    Piece(holder, "TrestleBar", new Vector3(tx, SlideGap + barH * 0.5f, 0f), new Vector3(0.08f, barH, legZ * 2f + 0.12f), timber);
+                    foreach (float z in new[] { -legZ, legZ })
+                    {
+                        foreach (float splay in new[] { -1f, 1f })
+                            Strut(holder, "TrestleLeg", new Vector3(tx + splay * 0.03f, SlideGap + 0.01f, z), new Vector3(tx + splay * 0.2f, 0f, z), 0.045f, timber);
+                        Piece(holder, "TrestleStay", new Vector3(tx, 0.28f, z), new Vector3(0.3f, 0.03f, 0.03f), timber);
+                    }
+                }
+
+                // The boards, with galvanised hoop bands round their ends.
+                float boardY = SlideGap + barH + boardT * 0.5f;
+                for (int i = -1; i <= 1; i++)
+                {
+                    float z = i * 0.235f;
+                    Piece(holder, "Board", new Vector3(0f, boardY, z), new Vector3(w, boardT, 0.225f), i == 0 ? board : Color.Lerp(board, timber, 0.3f));
+                    foreach (float ex in new[] { -half + 0.03f, half - 0.03f })
+                        Piece(holder, "BoardBand", new Vector3(ex, boardY, z), new Vector3(0.035f, boardT + 0.008f, 0.229f), band);
+                }
+
+                // Two tins of the colour going on the house, one with a brush across it...
+                for (int i = 0; i < 2; i++)
+                {
+                    float px = -half + 0.5f + i * 0.26f, pz = i == 0 ? -0.12f : 0.14f;
+                    Cylinder(holder, "PaintTin", new Vector3(px, deck, pz), new Vector3(px, deck + 0.17f, pz), 0.085f, tin);
+                    Cylinder(holder, "PaintLid", new Vector3(px, deck + 0.17f, pz), new Vector3(px, deck + 0.18f, pz), 0.088f, i == 0 ? paint : tin);
+                }
+                Strut(holder, "Brush", new Vector3(-half + 0.38f, deck + 0.19f, -0.12f), new Vector3(-half + 0.62f, deck + 0.2f, -0.1f), 0.025f, new Color(0.55f, 0.36f, 0.22f));
+                // ...and a roller in its tray.
+                float rx = half - 0.55f;
+                Piece(holder, "RollerTray", new Vector3(rx, deck + 0.02f, 0.05f), new Vector3(0.36f, 0.04f, 0.3f), new Color(0.35f, 0.37f, 0.4f));
+                Piece(holder, "TrayPaint", new Vector3(rx - 0.03f, deck + 0.043f, 0.05f), new Vector3(0.26f, 0.006f, 0.24f), paint);
+                Cylinder(holder, "Roller", new Vector3(rx + 0.12f, deck + 0.075f, -0.07f), new Vector3(rx + 0.12f, deck + 0.075f, 0.15f), 0.032f, paint);
+                Strut(holder, "RollerHandle", new Vector3(rx + 0.12f, deck + 0.075f, 0.04f), new Vector3(rx + 0.4f, deck + 0.14f, 0.04f), 0.02f, new Color(0.85f, 0.3f, 0.25f));
+
+                // A dust sheet folded on the boards and hanging down behind the kid's line.
+                float sx = w * 0.12f, sw = Mathf.Min(w * 0.45f, 1.1f);
+                Piece(holder, "DustSheet", new Vector3(sx, deck + 0.008f, 0.2f), new Vector3(sw, 0.016f, 0.3f), cloth);
+                Piece(holder, "DustSheetDrop", new Vector3(sx, deck - 0.23f, 0.355f), new Vector3(sw, 0.47f, 0.014f), Color.Lerp(cloth, paint, 0.12f));
+
+                // An aluminium stepladder standing by the garden wall, past the far trestle.
+                Color alu = new Color(0.76f, 0.78f, 0.8f);
+                float lx = half + 0.6f, ladderTop = 1.6f;
+                foreach (float z in new[] { 1.08f, 1.46f })
+                {
+                    Strut(holder, "LadderStile", new Vector3(lx - 0.32f, 0f, z), new Vector3(lx, ladderTop, z), 0.04f, alu);
+                    Strut(holder, "LadderBack", new Vector3(lx + 0.3f, 0f, z), new Vector3(lx + 0.02f, ladderTop, z), 0.035f, alu);
+                }
+                for (int i = 1; i <= 4; i++)
+                {
+                    float t = i / 5f;
+                    Piece(holder, "LadderStep", new Vector3(lx - 0.32f * (1f - t), ladderTop * t, 1.27f), new Vector3(0.09f, 0.025f, 0.38f), alu);
+                }
+                Piece(holder, "LadderTop", new Vector3(lx + 0.01f, ladderTop + 0.02f, 1.27f), new Vector3(0.16f, 0.04f, 0.44f), new Color(0.3f, 0.5f, 0.8f));
+            }
+
+            /// <summary>
+            /// A fruit and veg stall set out on the footpath: a trestle table under a cloth with crates
+            /// of fruit on it, and a striped canopy on four poles above. The table is too low to walk
+            /// under, there's no room to stand on it under the canopy, and the canopy is too high to
+            /// jump: duck under the table. The canvas bounces the ball like the shop awnings.
+            /// </summary>
+            void MarketStall(Transform holder, float w, int seed)
+            {
+                const float topT = 0.07f, canopyY = 2.2f, canopyT = 0.1f, legZ = 0.52f;
+                float half = w * 0.5f, deck = SlideGap + topT;
+                Vector3 crateNative = KitSize("Street", "ProduceCrate");
+                bool kitCrates = crateNative.y > 0.05f && HasKitModel("Street", "ProduceCrate");
+                float crateH = kitCrates ? crateNative.y : 0.3f;
+                // The table and the fruit on it (a ball left up there is out of reach), and the canvas.
+                SlideSolid(holder, w, deck + 0.012f + crateH).AddComponent<BallTrap>();
+                Vector3 p = holder.position;
+                var canopy = Block("StallCanopy", new Vector2(p.x, p.y + canopyY + canopyT * 0.5f), new Vector2(w + 0.5f, canopyT), BouncyColor, BouncyMat, false);
+                canopy.transform.SetParent(holder, true);
+                canopy.AddComponent<BallTrap>();
+
+                Color wood = new Color(0.62f, 0.47f, 0.33f), pole = new Color(0.34f, 0.36f, 0.4f);
+                Color[] cloths = { new Color(0.32f, 0.55f, 0.36f), new Color(0.84f, 0.32f, 0.3f), new Color(0.3f, 0.45f, 0.72f) };
+                Color[] canvases = { new Color(0.86f, 0.3f, 0.28f), new Color(0.3f, 0.6f, 0.42f), new Color(0.95f, 0.66f, 0.2f), new Color(0.3f, 0.5f, 0.78f) };
+                Color cloth = cloths[seed % cloths.Length], stripe = canvases[(seed / 3) % canvases.Length], cream = new Color(0.97f, 0.95f, 0.9f);
+
+                // The table: a top on an apron round its edge, on four legs at its corners, which
+                // stand either side of the kid's line.
+                Piece(holder, "TableTop", new Vector3(0f, SlideGap + 0.055f, 0f), new Vector3(w, 0.03f, legZ * 2f + 0.08f), wood);
+                foreach (float z in new[] { -legZ, legZ })
+                    Piece(holder, "TableApron", new Vector3(0f, SlideGap + 0.02f, z), new Vector3(w - 0.04f, 0.04f, 0.03f), Color.Lerp(wood, Color.black, 0.15f));
+                foreach (float ex in new[] { -half + 0.03f, half - 0.03f })
+                {
+                    Piece(holder, "TableEnd", new Vector3(ex, SlideGap + 0.02f, 0f), new Vector3(0.03f, 0.04f, legZ * 2f), Color.Lerp(wood, Color.black, 0.15f));
+                    foreach (float z in new[] { -legZ, legZ })
+                        Piece(holder, "TableLeg", new Vector3(ex + (ex < 0f ? 0.03f : -0.03f), SlideGap * 0.5f, z), new Vector3(0.045f, SlideGap, 0.045f), wood);
+                }
+                // The cloth, with a short drop at the front (above a sliding kid's head) and a longer one at the back.
+                Piece(holder, "Cloth", new Vector3(0f, deck + 0.006f, 0f), new Vector3(w + 0.04f, 0.012f, legZ * 2f + 0.12f), cloth);
+                Piece(holder, "ClothFront", new Vector3(0f, deck - 0.04f, -legZ - 0.062f), new Vector3(w + 0.04f, 0.1f, 0.012f), cloth);
+                Piece(holder, "ClothBack", new Vector3(0f, deck - 0.12f, legZ + 0.062f), new Vector3(w + 0.04f, 0.26f, 0.012f), Color.Lerp(cloth, Color.black, 0.12f));
+
+                // Crates of oranges, apples, lemons and limes in two rows.
+                Color[] fruit = { new Color(1f, 0.58f, 0.15f), new Color(0.86f, 0.2f, 0.18f), new Color(0.98f, 0.86f, 0.28f), new Color(0.48f, 0.74f, 0.25f) };
+                int n = Mathf.Max(1, Mathf.FloorToInt((w - 0.1f) / 0.54f));
+                float step = (w - 0.1f) / n;
+                for (int i = 0; i < n; i++)
+                    foreach (float z in new[] { -0.22f, 0.22f })
+                    {
+                        float cx = -half + 0.05f + step * (i + 0.5f);
+                        Color f = fruit[(seed + i * 2 + (z > 0f ? 1 : 0)) % fruit.Length];
+                        if (kitCrates && KitModel(holder, "Street", "ProduceCrate", holder.position + new Vector3(cx, deck + 0.012f, z), 0f, 1f, null, f) != null) continue;
+                        Piece(holder, "FruitCrate", new Vector3(cx, deck + 0.012f + 0.09f, z), new Vector3(0.46f, 0.18f, 0.34f), new Color(0.8f, 0.62f, 0.4f));
+                        var heap = new List<BlobShape.Blob>();
+                        for (float fx = -0.16f; fx <= 0.161f; fx += 0.08f)
+                            for (float fz = -0.1f; fz <= 0.101f; fz += 0.1f)
+                                heap.Add(new BlobShape.Blob(new Vector3(fx, 0.03f * Mathf.Cos(fx * 8f) * Mathf.Cos(fz * 12f), fz), Vector3.one * 0.05f,
+                                    Color.Lerp(f, Color.white, ((i + Mathf.RoundToInt(fx * 50f)) % 3) * 0.06f)));
+                        Blobs(holder, "Fruit", new Vector3(cx, deck + 0.012f + 0.2f, z), heap.ToArray());
+                    }
+                // A pan scale on the cloth at the front corner.
+                Piece(holder, "Scale", new Vector3(half - 0.2f, deck + 0.05f, -0.49f), new Vector3(0.18f, 0.08f, 0.13f), new Color(0.88f, 0.88f, 0.9f));
+                Cylinder(holder, "ScalePan", new Vector3(half - 0.2f, deck + 0.095f, -0.49f), new Vector3(half - 0.2f, deck + 0.11f, -0.49f), 0.08f, new Color(0.75f, 0.76f, 0.78f));
+
+                // Striped canopy on four poles, with a scalloped valance along its front edge.
+                float cw = w + 0.5f;
+                int sn = Mathf.Max(4, Mathf.RoundToInt(cw / 0.32f));
+                float sw = cw / sn;
+                for (int i = 0; i < sn; i++)
+                {
+                    Color c = i % 2 == 0 ? stripe : cream;
+                    float cx = -cw * 0.5f + sw * (i + 0.5f);
+                    Piece(holder, "Canopy", new Vector3(cx, canopyY + 0.05f, 0f), new Vector3(sw, 0.05f, 1.72f), c);
+                    Piece(holder, "Valance", new Vector3(cx, canopyY - 0.04f, -0.86f), new Vector3(sw - 0.01f, 0.15f, 0.014f), c);
+                    Blobs(holder, "Scallop", new Vector3(cx, canopyY - 0.11f, -0.86f), new BlobShape.Blob(Vector3.zero, new Vector3(sw * 0.48f, 0.05f, 0.01f), c));
+                }
+                foreach (float px in new[] { -half - 0.12f, half + 0.12f })
+                    foreach (float z in new[] { -0.82f, 0.82f })
+                        Cylinder(holder, "StallPole", new Vector3(px, 0f, z), new Vector3(px, canopyY + 0.03f, z), 0.025f, pole);
+                // Spare stock behind: a sack and an empty crate on the ground at the back.
+                StreetBuilder.Model(holder, "Street", "Sack", p.x - half + 0.3f, p.y, 1.15f, 20f);
+                StreetBuilder.Model(holder, "Street", "Crate", p.x + half - 0.2f, p.y, 1.2f, -12f, 0.8f);
+            }
+
+            /// <summary>
+            /// A surf school's board rack across the beach path: two timber end frames with padded arms
+            /// and surfboards lying across them in five tiers, the lowest just above the gap, with a
+            /// beach flag flying from the top. The boards run the whole width; the frames stand in
+            /// from the ends, their posts either side of the kid's line. Too tall to jump: slide under.
+            /// </summary>
+            void SurfRack(Transform holder, float w, int seed)
+            {
+                const int tiers = 5;
+                const float spacing = 0.32f, armT = 0.05f, boardT = 0.07f, postZ = 0.62f;
+                float half = w * 0.5f, frameX = Mathf.Max(0.1f, half - 0.25f);
+                float top = SlideGap + (tiers - 1) * spacing + armT + boardT + 0.17f;
+                SlideSolid(holder, w, top).AddComponent<BallTrap>();
+                Color timber = new Color(0.7f, 0.56f, 0.4f), pad = new Color(0.25f, 0.27f, 0.32f);
+                Color[] boards =
+                {
+                    new Color(1f, 0.5f, 0.42f), new Color(0.3f, 0.76f, 0.78f), new Color(1f, 0.84f, 0.32f),
+                    new Color(0.96f, 0.96f, 0.94f), new Color(0.45f, 0.64f, 0.95f), new Color(0.62f, 0.86f, 0.38f),
+                };
+
+                // End frames: two posts (dug into the sand) and an arm for each tier, and a rail on top.
+                foreach (float fx in new[] { -frameX, frameX })
+                {
+                    foreach (float z in new[] { -postZ, postZ })
+                        Piece(holder, "RackPost", new Vector3(fx, (top - 0.35f) * 0.5f, z), new Vector3(0.09f, top + 0.35f, 0.09f), timber);
+                    for (int i = 0; i < tiers; i++)
+                    {
+                        float y = SlideGap + i * spacing;
+                        Piece(holder, "RackArm", new Vector3(fx, y + armT * 0.5f, 0f), new Vector3(0.08f, armT, postZ * 2f + 0.1f), timber);
+                        Piece(holder, "RackPad", new Vector3(fx, y + armT + 0.006f, 0f), new Vector3(0.09f, 0.012f, postZ * 2f - 0.1f), pad);
+                    }
+                }
+                foreach (float z in new[] { -postZ, postZ })
+                    Piece(holder, "RackRail", new Vector3(0f, top - 0.04f, z), new Vector3(frameX * 2f + 0.1f, 0.07f, 0.07f), timber);
+                Strut(holder, "RackBrace", new Vector3(-frameX, 0.3f, postZ + 0.06f), new Vector3(frameX, top - 0.15f, postZ + 0.06f), 0.05f, timber);
+
+                // The boards, two to a tier, each with a band of colour and a fin under its tail.
+                int k = seed;
+                for (int i = 0; i < tiers; i++)
+                    foreach (float z in new[] { -0.28f, 0.28f })
+                    {
+                        Color c = boards[k % boards.Length], bandColor = boards[(k + 3) % boards.Length];
+                        k += 5;
+                        float y = SlideGap + i * spacing + armT + 0.012f + boardT * 0.5f;
+                        float flip = (k % 2 == 0) ? 1f : -1f;   // noses either way
+                        Blobs(holder, "Surfboard", new Vector3(0f, y, z),
+                            new BlobShape.Blob(Vector3.zero, new Vector3(half, boardT * 0.5f, 0.25f), c),
+                            new BlobShape.Blob(new Vector3(flip * half * 0.35f, 0f, 0f), new Vector3(0.05f, boardT * 0.54f, 0.24f), bandColor),
+                            new BlobShape.Blob(new Vector3(-flip * half * 0.82f, -boardT * 0.6f, 0f), new Vector3(0.07f, 0.03f, 0.012f), pad));
+                    }
+
+                // A teardrop beach flag on a pole from the top of the far frame.
+                Color flag = boards[(seed + 1) % boards.Length];
+                Cylinder(holder, "FlagPole", new Vector3(frameX, top, postZ), new Vector3(frameX, top + 1.5f, postZ), 0.022f, new Color(0.85f, 0.85f, 0.88f));
+                Blobs(holder, "BeachFlag", new Vector3(frameX - 0.2f, top + 1.0f, postZ),
+                    new BlobShape.Blob(new Vector3(0f, 0.12f, 0f), new Vector3(0.2f, 0.42f, 0.012f), flag),
+                    new BlobShape.Blob(new Vector3(0.02f, -0.22f, 0f), new Vector3(0.12f, 0.2f, 0.013f), Color.Lerp(flag, Color.white, 0.5f)));
+                // A cool box left on the sand behind.
+                StreetBuilder.Model(holder, "Leisure", "CoolBox", holder.position.x + half + 0.5f, holder.position.y, 1.15f, -15f);
+            }
+
+            /// <summary>
+            /// A builders' scaffold over the footpath, wrapped in sheeting from its lowest lift up. That
+            /// lift of boards is low enough to stop a standing kid, and the scaffold rises two more lifts,
+            /// far too tall to jump: slide under the boards, between the standards. The tubes and the
+            /// open bottom lift show under the sheeting; cones mark its ends on the road side.
+            /// </summary>
+            void Scaffold(Transform holder, float w)
+            {
+                const float top = 4.1f, faceZ = 0.75f, tube = 0.026f;
+                SlideSolid(holder, w, top).AddComponent<BallTrap>();   // the top is out of reach
+                float half = w * 0.5f;
+                Color galv = new Color(0.66f, 0.68f, 0.7f), board = new Color(0.8f, 0.66f, 0.44f), toe = new Color(0.86f, 0.72f, 0.5f);
+                Color sheet = new Color(0.86f, 0.91f, 0.94f), seam = new Color(0.74f, 0.8f, 0.85f), banner = new Color(0.98f, 0.55f, 0.18f);
+                int bays = Mathf.Max(1, Mathf.RoundToInt(w / 1.8f));
+                float bay = (w - 0.1f) / bays, x0 = -half + 0.05f;
+
+                // Standards on base plates and sole boards, at both faces of every bay, up past the top lift.
+                for (int i = 0; i <= bays; i++)
+                {
+                    float sx = x0 + i * bay;
+                    foreach (float z in new[] { -faceZ, faceZ })
+                    {
+                        Cylinder(holder, "Standard", new Vector3(sx, 0.01f, z), new Vector3(sx, top + 1.05f, z), tube, galv);
+                        Piece(holder, "BasePlate", new Vector3(sx, 0.035f, z), new Vector3(0.15f, 0.01f, 0.15f), galv);
+                    }
+                    // Transoms across the path under the low boards: the lowest thing over the kid.
+                    Cylinder(holder, "Transom", new Vector3(sx, SlideGap + tube * 3f, -faceZ - 0.1f), new Vector3(sx, SlideGap + tube * 3f, faceZ + 0.1f), tube, galv);
+                }
+                foreach (float z in new[] { -faceZ, faceZ })
+                {
+                    Piece(holder, "SoleBoard", new Vector3(0f, 0.015f, z), new Vector3(w, 0.03f, 0.22f), board);
+                    // Ledgers along each face: under the low boards, at the next lift and at the top.
+                    foreach (float ly in new[] { SlideGap + tube, SlideGap + 1.65f, top - 0.1f })
+                        Cylinder(holder, "Ledger", new Vector3(-half, ly, z), new Vector3(half, ly, z), tube, galv);
+                    // Guard rails round the top.
+                    foreach (float ry in new[] { top + 0.5f, top + 1f })
+                        Cylinder(holder, "GuardRail", new Vector3(-half, ry, z), new Vector3(half, ry, z), tube, galv);
+                }
+
+                // The low lift: six boards across the transoms, with toe boards along both edges.
+                float deckY = SlideGap + tube * 4f + 0.019f;
+                for (int b = 0; b < 6; b++)
+                    Piece(holder, "LiftBoard", new Vector3(0f, deckY, -0.5625f + b * 0.225f), new Vector3(w, 0.038f, 0.222f), b % 2 == 0 ? board : Color.Lerp(board, Color.black, 0.08f));
+                float deck = deckY + 0.019f;
+                foreach (float z in new[] { -faceZ + 0.05f, faceZ - 0.05f })
+                    Piece(holder, "ToeBoard", new Vector3(0f, deck + 0.075f, z), new Vector3(w, 0.15f, 0.03f), toe);
+
+                // Sheeting on the outside of both faces and round the ends, from the low lift to the
+                // guard rail, in panels with seams and a tie line at each lift; an orange safety
+                // banner on the front.
+                float sheetBottom = deck + 0.02f, sheetTop = top + 1.02f, sheetH = sheetTop - sheetBottom, sy = (sheetBottom + sheetTop) * 0.5f;
+                foreach (float z in new[] { -faceZ - 0.06f, faceZ + 0.06f })
+                {
+                    float outward = Mathf.Sign(z) * 0.006f;
+                    Piece(holder, "Sheeting", new Vector3(0f, sy, z), new Vector3(w + 0.06f, sheetH, 0.012f), sheet);
+                    int panels = Mathf.Max(2, Mathf.RoundToInt(w / 1.2f));
+                    for (int i = 1; i < panels; i++)
+                        Piece(holder, "SheetSeam", new Vector3(-half + w * i / panels, sy, z + outward), new Vector3(0.03f, sheetH, 0.012f), seam);
+                    foreach (float ly in new[] { SlideGap + 1.65f, top - 0.1f })
+                        Piece(holder, "SheetTie", new Vector3(0f, ly, z + outward), new Vector3(w + 0.06f, 0.03f, 0.012f), seam);
+                }
+                foreach (float ex in new[] { -half - 0.03f, half + 0.03f })
+                    Piece(holder, "SheetingEnd", new Vector3(ex, sy, 0f), new Vector3(0.012f, sheetH, faceZ * 2f + 0.12f), sheet);
+                Piece(holder, "SafetyBanner", new Vector3(0f, SlideGap + 2.2f, -faceZ - 0.075f), new Vector3(Mathf.Min(w * 0.7f, 2.4f), 0.45f, 0.012f), banner);
+                Piece(holder, "SafetyBannerStripe", new Vector3(0f, SlideGap + 2.2f, -faceZ - 0.082f), new Vector3(Mathf.Min(w * 0.7f, 2.4f) - 0.1f, 0.12f, 0.012f), new Color(0.98f, 0.96f, 0.9f));
+
+                // Cones at both ends on the road side, and a wheelbarrow parked behind.
+                Vector3 p = holder.position;
+                foreach (float cx in new[] { -half - 0.35f, half + 0.35f })
+                    StreetBuilder.Model(holder, "Street", "TrafficCone", p.x + cx, p.y, -1.15f, cx * 40f);
+                StreetBuilder.Model(holder, "Works", "Wheelbarrow", p.x + half + 1.2f, p.y, 1.15f, 160f);
+            }
+
+            /// <summary>
+            /// A tree come down across the park path in a storm: the trunk lies across the footpath on
+            /// two boulders at its edges, sawn off by the park keepers either side of the path (the
+            /// rings show on the end facing the road; the rounds are stacked behind). It stays within
+            /// the footpath, clear of the hedges and the road. It's round, so nothing rests on top:
+            /// slide under, or double jump over (a single jump can't clear it). <paramref name="w"/>
+            /// is the trunk's thickness.
+            /// </summary>
+            void FallenTree(Transform holder, float w, int seed)
+            {
+                float r = Mathf.Clamp(w * 0.5f, 0.28f, 0.42f), cy = SlideGap + r;
+                const float zFront = -1.62f, zBack = 1.72f;
+                var solid = new GameObject("SlideBarrier");
+                solid.transform.SetParent(holder, false);
+                solid.transform.localPosition = new Vector3(0f, cy, 0f);
+                var circle = solid.AddComponent<CircleCollider2D>();
+                circle.radius = r;
+                circle.sharedMaterial = GroundMat;
+
+                Color bark = new Color(0.44f, 0.34f, 0.27f), wood = new Color(0.88f, 0.74f, 0.52f), ring = new Color(0.76f, 0.6f, 0.4f);
+                Color moss = new Color(0.42f, 0.58f, 0.3f), leaf = new Color(0.38f, 0.6f, 0.32f);
+                var trunk = new GameObject("Trunk");
+                trunk.transform.SetParent(holder, false);
+                trunk.transform.localPosition = new Vector3(0f, cy, (zFront + zBack) * 0.5f);
+                var shape = trunk.AddComponent<CylinderShape>();
+                shape.axis = Vector3.forward;
+                shape.length = zBack - zFront;
+                shape.radius = r;
+                shape.sideColor = bark;
+                shape.endColor = wood;
+                shape.segments = 24;
+                trunk.GetComponent<MeshRenderer>().sharedMaterial = Art.solid;
+                shape.Rebuild();
+                // Growth rings and the dark heart on the sawn end facing the road.
+                Cylinder(holder, "Rings", new Vector3(0f, cy, zFront - 0.004f), new Vector3(0f, cy, zFront - 0.01f), r * 0.66f, ring);
+                Cylinder(holder, "Heartwood", new Vector3(0f, cy, zFront - 0.01f), new Vector3(0f, cy, zFront - 0.016f), r * 0.3f, Color.Lerp(ring, bark, 0.4f));
+                // Moss along the top, and sawn-off branch stubs (clear of the kid's line).
+                Blobs(holder, "Moss", Vector3.zero,
+                    new BlobShape.Blob(new Vector3(0.02f, cy + r * 0.93f, 0.9f), new Vector3(r * 0.5f, 0.05f, 0.45f), moss),
+                    new BlobShape.Blob(new Vector3(-0.04f, cy + r * 0.9f, -1.0f), new Vector3(r * 0.45f, 0.045f, 0.3f), Color.Lerp(moss, bark, 0.3f)));
+                Cylinder(holder, "BranchStub", new Vector3(0.05f, cy + r * 0.7f, 1.25f), new Vector3(0.32f, cy + r + 0.32f, 1.32f), 0.07f, bark);
+                Cylinder(holder, "BranchStub", new Vector3(-0.05f, cy + r * 0.6f, -0.8f), new Vector3(-0.34f, cy + r + 0.24f, -0.86f), 0.06f, bark);
+                // A living twig still in leaf near the back.
+                Cylinder(holder, "Twig", new Vector3(0f, cy + r * 0.8f, 1.35f), new Vector3(0.22f, cy + r + 0.62f, 1.42f), 0.035f, bark);
+                Blobs(holder, "Leaves", new Vector3(0.24f, cy + r + 0.72f, 1.42f),
+                    new BlobShape.Blob(Vector3.zero, new Vector3(0.22f, 0.16f, 0.2f), leaf),
+                    new BlobShape.Blob(new Vector3(-0.16f, -0.08f, 0.06f), new Vector3(0.15f, 0.12f, 0.15f), Color.Lerp(leaf, Color.white, 0.12f)),
+                    new BlobShape.Blob(new Vector3(0.15f, 0.06f, -0.05f), new Vector3(0.14f, 0.11f, 0.14f), Color.Lerp(leaf, Color.black, 0.1f)));
+
+                // The boulders it came to rest on, either side of the kid's line.
+                Vector3 p = holder.position;
+                Vector3 native = KitSize("Terrain", "Boulder3");
+                foreach (float z in new[] { -1.05f, 1.1f })
+                {
+                    float h = SlideGap + 0.08f;   // their tops sink a little into the bark
+                    var rock = native.y > 0.05f ? KitModel(holder, "Terrain", "Boulder3", new Vector3(p.x, p.y, z), (seed * 37 + z * 50f) % 40f - 20f) : null;
+                    if (rock != null)
+                    {
+                        rock.localScale = new Vector3(0.95f / native.x, h / native.y, 0.62f / Mathf.Max(0.05f, native.z));
+                        continue;
+                    }
+                    Color stone = new Color(0.6f, 0.58f, 0.55f), dark = new Color(0.5f, 0.48f, 0.46f);
+                    Blobs(holder, "Boulder", new Vector3(0f, 0f, z),
+                        new BlobShape.Blob(new Vector3(0f, h * 0.5f, 0f), new Vector3(0.46f, h * 0.52f, 0.3f), stone),
+                        new BlobShape.Blob(new Vector3(0.22f, h * 0.25f, -0.05f), new Vector3(0.28f, h * 0.28f, 0.24f), dark));
+                }
+
+                // Rounds already sawn from the rest of it, stacked at the back of the path.
+                for (int i = 0; i < 3; i++)
+                {
+                    float lx = 1.15f + (i == 2 ? 0.24f : i * 0.48f), ly = i == 2 ? 0.6f : 0.21f;
+                    Cylinder(holder, "LogRound", new Vector3(lx, ly, 1.1f), new Vector3(lx, ly, 1.55f), 0.21f, bark);
+                }
+                StreetBuilder.Model(holder, "Plants", "GrassTuft", p.x - 0.45f, p.y, -1.3f, seed % 90f);
+                StreetBuilder.Model(holder, "Plants", "GrassTuft", p.x + 0.5f, p.y, 1.35f, seed % 70f);
+            }
+
             /// <summary>A raised slab standing on the ground.</summary>
             public void Platform(float fromX, float toX, float top, float groundTop = 0f)
             {

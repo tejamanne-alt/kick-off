@@ -28,12 +28,13 @@ namespace DribbleToSchool.UI
         static readonly Color Late = new Color(0.95f, 0.4f, 0.35f);
         static readonly Color WalkColor = Color.white;
         static readonly Color KickReady = new Color(0.3f, 0.82f, 0.42f);
+        static readonly Color SlideColor = new Color(0.62f, 0.5f, 0.92f);
 
         RectTransform root;
         Text titleText, timeText, bellText, coinText, streakText, statusText;
         Image fade;
-        RectTransform jumpRect, kickRect, leftRect, rightRect, aimKnob, aimBar, aimFill, hintCard;
-        TouchButton jumpButton, kickButton, leftButton, rightButton;
+        RectTransform jumpRect, slideRect, kickRect, leftRect, rightRect, aimKnob, aimBar, aimFill, hintCard;
+        TouchButton jumpButton, slideButton, kickButton, leftButton, rightButton;
         Image aimFillImage;
         float tooFarUntil;
         Text tooFar, toast, bigText, hintText;
@@ -111,6 +112,12 @@ namespace DribbleToSchool.UI
             jumpButton.AddIcon(ProceduralSprites.ArrowUp, 0.4f, 0f, 0.58f);
             jumpButton.AddLabel(Loc.T("hud.jump"), 28);
             jumpRect = (RectTransform)jumpButton.transform;
+
+            // Slide button, between kick and jump: the chevron turned down over a line of ground.
+            slideButton = TouchButton.Create(root, "SlideButton", SlideColor, true);
+            slideButton.AddIcon(ProceduralSprites.SlideIcon, 0.42f, 0f, 0.58f);
+            slideButton.AddLabel(Loc.T("hud.slide"), 26);
+            slideRect = (RectTransform)slideButton.transform;
 
             // Walk buttons: the chevron turned to point back / forward.
             leftButton = TouchButton.Create(root, "LeftButton", WalkColor, false);
@@ -336,6 +343,7 @@ namespace DribbleToSchool.UI
             bool playing = level.State == LevelState.Playing;
             bool show = playing && input != null;
             jumpRect.gameObject.SetActive(show);
+            slideRect.gameObject.SetActive(show);
             kickRect.gameObject.SetActive(show);
             leftRect.gameObject.SetActive(show);
             rightRect.gameObject.SetActive(show);
@@ -344,6 +352,9 @@ namespace DribbleToSchool.UI
             {
                 PlaceButton(jumpRect, input.JumpButtonNormalized);
                 jumpButton.SetState(input.JumpHeld, false);
+                // Slide glows while the kid is low under something (tap it again to keep sliding on).
+                PlaceButton(slideRect, input.SlideButtonNormalized);
+                slideButton.SetState(input.SlideHeld, kid != null && kid.IsLow && !kid.IsSliding);
                 PlaceButton(leftRect, input.LeftButtonNormalized);
                 leftButton.SetState(input.LeftHeld, false);
                 PlaceButton(rightRect, input.RightButtonNormalized);

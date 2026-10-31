@@ -7,7 +7,8 @@ namespace DribbleToSchool.Presentation
 {
     /// <summary>
     /// Turns gameplay events into visual feedback: dust, sparkles, splashes,
-    /// feathers, confetti, camera shake and the slow-motion goal moment.
+    /// feathers, confetti, a puff of air under a double jump, a dust trail behind
+    /// a slide, camera shake and the slow-motion goal moment.
     /// </summary>
     public class FxDirector : MonoBehaviour
     {
@@ -23,8 +24,10 @@ namespace DribbleToSchool.Presentation
             new Color(0.45f, 0.8f, 0.45f), new Color(0.85f, 0.5f, 0.9f),
         };
 
+        Coroutine slideTrail;
+
         void OnEnable() { GameEvents.Raised += OnEvent; }
-        void OnDisable() { GameEvents.Raised -= OnEvent; }
+        void OnDisable() { GameEvents.Raised -= OnEvent; slideTrail = null; }
 
         void OnEvent(GameEventType type, Vector2 p, float k)
         {
@@ -52,6 +55,15 @@ namespace DribbleToSchool.Presentation
                     break;
                 case GameEventType.Jump:
                     Dust(p, 3, 1.2f);
+                    break;
+                case GameEventType.DoubleJump:
+                    // A puff of air kicked away under the feet, and a glint.
+                    pool.Burst(puff, p, 7, Vector2.down, 220f, 1.4f, 3f, new Color(1f, 1f, 1f, 0.8f), 0.2f, 0.5f, 0.35f, -0.5f, 4f, 120f, 0.12f);
+                    pool.Burst(spark, p + Vector2.up * 0.3f, 4, Vector2.up, 140f, 1.5f, 3f, Color.white, 0.14f, 0.02f, 0.3f);
+                    break;
+                case GameEventType.Slide:
+                    Dust(p, 4 + Mathf.RoundToInt(k * 3f), 1.6f);
+                    if (slideTrail == null) slideTrail = StartCoroutine(SlideTrail());
                     break;
                 case GameEventType.BallBounce:
                     if (k > 0.25f) Dust(p + Vector2.down * 0.15f, 2, 1f + k);
@@ -98,6 +110,25 @@ namespace DribbleToSchool.Presentation
                     StartCoroutine(GoalSlowMo());
                     break;
             }
+        }
+
+        /// <summary>Dust thrown up from the heels all along a slide.</summary>
+        IEnumerator SlideTrail()
+        {
+            var level = LevelManager.Current;
+            var kid = level != null ? level.kid : null;
+            float next = 0f;
+            while (kid != null && kid.IsSliding)
+            {
+                if (Time.time >= next && kid.IsGrounded)
+                {
+                    next = Time.time + 0.06f;
+                    Vector2 heel = kid.FeetPosition + new Vector2(kid.Facing * 0.45f, 0.03f);
+                    pool.Burst(puff, heel, 1, new Vector2(-kid.Facing * 0.4f, 1f), 70f, 0.5f, 1.5f, dustColor, 0.2f, 0.45f, 0.4f, -0.4f, 3f, 90f, 0.06f);
+                }
+                yield return null;
+            }
+            slideTrail = null;
         }
 
         void Dust(Vector2 p, int count, float speed)

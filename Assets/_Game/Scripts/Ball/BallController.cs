@@ -16,6 +16,8 @@ namespace DribbleToSchool.Ball
     /// - Perfect touch: tapping while the ball is in the sweet spot just ahead of
     ///   the feet gives a clean, controlled touch and builds a streak.
     /// - Juggle: tapping while the ball is in the air near the kid pops it up.
+    /// - Slide poke: a sliding kid nudges a ball at the feet on along the ground, with no
+    ///   hop, so it rolls under the barrier too (and a perfect-touch streak survives it).
     /// - Kick: driven by KickAimer through Kick().
     /// </summary>
     [RequireComponent(typeof(Rigidbody2D), typeof(CircleCollider2D))]
@@ -51,6 +53,9 @@ namespace DribbleToSchool.Ball
             get { return kid != null && OffsetFromFeet.magnitude <= tuning.kickReach; }
         }
 
+        /// <summary>How far ahead of the feet a sliding kid's outstretched boot meets the ball.</summary>
+        const float SlideBootReach = 0.6f;
+
         readonly RaycastHit2D[] groundHits = new RaycastHit2D[4];
         ContactFilter2D groundFilter;
         PhysicsMaterial2D runtimeMaterial;
@@ -69,11 +74,21 @@ namespace DribbleToSchool.Ball
         void Start()
         {
             // The kid never physically shoves the ball; touches are applied by code.
-            if (kid != null)
-            {
-                foreach (var c in kid.GetComponentsInChildren<Collider2D>())
-                    Physics2D.IgnoreCollision(Circle, c, true);
-            }
+            IgnoreKid();
+            if (kid != null) kid.ShapeChanged += IgnoreKid;
+        }
+
+        void OnDestroy()
+        {
+            if (kid != null) kid.ShapeChanged -= IgnoreKid;
+        }
+
+        /// <summary>Again whenever the kid's collider changes shape (sliding), to be sure it holds.</summary>
+        void IgnoreKid()
+        {
+            if (kid == null) return;
+            foreach (var c in kid.GetComponentsInChildren<Collider2D>())
+                Physics2D.IgnoreCollision(Circle, c, true);
         }
 
         /// <summary>Push tuning values onto the rigidbody and material. Safe to call at runtime.</summary>
@@ -163,8 +178,18 @@ namespace DribbleToSchool.Ball
             }
 
             if (kidSpeed < 0.5f) return;                     // not walking into the ball
-            if (ahead > tuning.autoTouchDistance) return;     // still comfortably ahead
             if (ahead < -Radius * 1.5f) return;               // behind the kid: walking away from it
+
+            if (kid.IsLow)
+            {
+                // Sliding (or shuffling under a barrier): the outstretched boot, well ahead of the
+                // hips, nudges the ball on along the ground with no hop, so it rolls under too.
+                if (ahead > SlideBootReach) return;
+                ApplyTouch(dir * (kidSpeed + tuning.dribbleLeadSpeed * 0.5f), 0f);
+                GameEvents.Raise(GameEventType.Touch, Body.position, 0.4f);
+                return;
+            }
+            if (ahead > tuning.autoTouchDistance) return;     // still comfortably ahead
 
             // The player missed the rhythm: the kid touches it anyway, a bit sloppily.
             float lead = tuning.dribbleLeadSpeed * Random.Range(1f - tuning.autoTouchVariance, 1f + tuning.autoTouchVariance);

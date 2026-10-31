@@ -65,6 +65,7 @@ Bell times and streak targets are in the level table in `Editor/GeneratedContent
 | Rolling pipes | Roll down slopes at you; jump them. |
 | Swing | A pendulum seat that carries the kid over pits. |
 | Fountain | A plaza floor fountain: pulsing jets from a grate in the paving that lift the ball as high as the jet currently reaches. |
+| Slide-under barrier | Solid from 0.85 m up: slide under it (the ball rolls under too). Painters' boards on trestles in the home street (you can also hop on), a fruit stall under its canopy in the market, a surf school's board rack on the beach, a sheeted scaffold on the building site, a fallen tree in the park (or double jump over it). `TrackBuilder.SlideUnder`. |
 
 ## Level rules
 
@@ -84,6 +85,8 @@ Bell times and streak targets are in the level table in `Editor/GeneratedContent
 |---|---|---|
 | Walk back / forward (hold) | ◀ ▶ buttons (bottom-left); let go to stop | `A` / `←`, `D` / `→` |
 | Jump (hold = higher) | JUMP button (bottom-right) or swipe up | `Space` / `W` / `↑` |
+| Double jump | JUMP again in the air | `Space` / `W` / `↑` again |
+| Slide | SLIDE button (between KICK and JUMP) or swipe down | `S` / `↓` |
 | Touch / juggle | Quick tap anywhere else | `F` / `J` |
 | Kick (aimed) | Drag from the KICK button the way the ball should go, release | Mouse drag from KICK |
 | Kick (quick pass) | Tap KICK | `K` |
@@ -96,8 +99,10 @@ Bell times and streak targets are in the level table in `Editor/GeneratedContent
 - **Walk** with the ◀ ▶ buttons. Whenever the kid walks into the ball, it gets a slightly random touch in the walking direction, so you can dribble forward or back.
 - **Perfect touch:** tap as the kid closes in and the ball sits in the sweet spot just ahead of the feet. Perfect touches have no randomness and they build a streak.
 - **Juggle:** tap while the ball is in the air near the kid.
-- **Kick:** drag from the KICK button (just left of JUMP) in the direction you want the ball to go: up-right to chip forward, up-left to chip back. The length sets the power. Time slows while you aim, and only the first 0.5 s of the flight is previewed. A quick tap on KICK is a short pass the way the kid faces. Kicks only work when the ball is within reach: the KICK button glows green when it is, and the dots turn red when it isn't.
+- **Kick:** drag from the KICK button (left of SLIDE and JUMP) in the direction you want the ball to go: up-right to chip forward, up-left to chip back. The length sets the power. Time slows while you aim, and only the first 0.5 s of the flight is previewed. A quick tap on KICK is a short pass the way the kid faces. Kicks only work when the ball is within reach: the KICK button glows green when it is, and the dots turn red when it isn't.
 - **Stop** by letting go of the arrows. A stopping kid traps the ball under the foot.
+- **Double jump:** press JUMP again in the air for a second, slightly lower jump with a tucked somersault (hold for its full height, like the first). It reaches about 2.2 m: over 1.6 m walls and fallen trees and up to high coins, but not over the 2.4 m gates. A trampoline bounce gives it back.
+- **Slide:** tap SLIDE (or swipe down) for a feet-first slide along the ground, a little faster than running, for about 0.7 s. The kid is low enough to pass under anything with a 0.85 m gap, and won't stand up while something is overhead (they shuffle on until clear). A sliding kid nudges the ball on along the ground without breaking a perfect-touch streak. Jump out of a slide for a longer jump.
 - **Left-handed mode** swaps the two button clusters.
 
 ## Tuning the feel

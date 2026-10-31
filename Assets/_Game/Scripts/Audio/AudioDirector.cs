@@ -198,6 +198,14 @@ namespace DribbleToSchool.Audio
                     Haptics.Impact(Haptics.Strength.Light);
                     break;
                 case GameEventType.Jump: PlayInternal(Sfx.Jump, 0.4f, Vary()); break;
+                case GameEventType.DoubleJump:
+                    PlayInternal(Sfx.DoubleJump, 0.45f, Vary());
+                    Haptics.Impact(Haptics.Strength.Light);
+                    break;
+                case GameEventType.Slide:
+                    PlayInternal(Sfx.Slide, 0.4f + k * 0.2f, Vary());
+                    Haptics.Impact(Haptics.Strength.Soft);
+                    break;
                 case GameEventType.Land:
                     PlayInternal(Sfx.Land, 0.3f + k * 0.5f, Vary());
                     if (k > 0.6f) Haptics.Impact(Haptics.Strength.Light);
