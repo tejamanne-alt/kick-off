@@ -194,7 +194,7 @@ namespace DribbleToSchool.EditorTools
             }
             set.cloud = ToonMaterial("Cloud", toon, null, false);
             set.cloud.SetFloat("_Haze", 0.15f);
-            set.cloud.SetColor("_ShadowColor", new Color(0.72f, 0.8f, 0.95f));   // anime clouds: white tops, soft blue undersides
+            set.cloud.SetColor("_ShadowColor", new Color(0.86f, 0.9f, 0.97f));   // the clouds paint their own cyan shade (CloudShape); the light only adds a little
 
             var toonCharacter = Shader.Find("DribbleToSchool/ToonCharacter");
             // The playable characters get the boldest line and rim, so they read clearly against the

@@ -3,9 +3,11 @@ using UnityEngine;
 namespace DribbleToSchool.World
 {
     /// <summary>
-    /// A summer cumulus cloud: a flat-bottomed bank of big rounded puffs with towers of smaller
-    /// puffs piled on top, cel-shaded so the tops are bright white and the undersides a soft
-    /// blue-grey. Shape comes from the seed; origin at the middle of the cloud's base.
+    /// A summer cumulus cloud in the anime manner: a flat-bottomed bank of rounded puffs with towers
+    /// of smaller puffs piled on top, painted (in its vertex colours) bright white where the sun
+    /// catches the tops and a clear cyan-blue on the shaded lower parts, with a crisp edge between,
+    /// whatever side the sun lights it from. Shape comes from the seed; origin at the middle of the
+    /// cloud's base.
     /// </summary>
     public class CloudShape : ProceduralShape
     {
@@ -58,6 +60,17 @@ namespace DribbleToSchool.World
                 var v = b.Vertices[i];
                 b.Vertices[i] = new Vector3(v.x, 0f, v.z);
                 b.Normals[i] = Vector3.Lerp(b.Normals[i], Vector3.down, 0.7f).normalized;
+            }
+            // Paint the light and shade: white on the upper, sunward puffs, cyan-blue lower down and
+            // round the far side, with a narrow soft edge between (the painted anime look).
+            Color shade = new Color(0.6f, 0.76f, 0.9f), deep = new Color(0.52f, 0.68f, 0.86f);
+            for (int i = 0; i < b.Vertices.Count; i++)
+            {
+                Vector3 v = b.Vertices[i], normal = b.Normals[i];
+                float light = v.y / Mathf.Max(1f, height) * 0.9f + normal.y * 0.35f + normal.x * 0.15f - normal.z * 0.1f + 0.05f;
+                float k = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0.3f, 0.4f, light));
+                Color low = Color.Lerp(deep, shade, Mathf.Clamp01(v.y / Mathf.Max(1f, height) * 3f));
+                b.Colors[i] = Color.Lerp(low, Color.white, k);
             }
         }
     }

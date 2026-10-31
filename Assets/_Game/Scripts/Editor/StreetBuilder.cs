@@ -719,8 +719,135 @@ namespace DribbleToSchool.EditorTools
             }
             if (ch != 3) Poles(track, root, x0, x1);
             Depth(track, root, new System.Random(ch * 211 + Mathf.RoundToInt(x0)), x0, x1);
+            if (ch != 3)
+                foreach (var area in track.OpenAreas)
+                    SideStreetEnd(track, root, new System.Random(ch * 53 + Mathf.RoundToInt(area.x * 3f)), area);
             SchoolSurroundings(track, root, new System.Random(ch * 97 + Mathf.RoundToInt(track.GoalX)));
             Wildlife(track, new System.Random(ch * 389 + Mathf.RoundToInt(x0)), x0, x1);
+        }
+
+        // ---------------------------------------------------------------- side streets
+
+        /// <summary>Where a side street's road ends and the back road it meets begins (depth z).</summary>
+        const float BackRoadNear = 70f, BackRoadFar = 77.5f;
+
+        /// <summary>
+        /// The rest of a side street, so the view up it is a street scene rather than a road cut off
+        /// against the fields: pavements along both sides with a few street trees, and at its far
+        /// end a T-junction with a back road running across, its far pavement and a row of buildings
+        /// facing it (trees in the park) that close the view.
+        /// </summary>
+        static void SideStreetEnd(LevelBuildKit.TrackBuilder track, Transform root, System.Random rng, Vector2 area)
+        {
+            int ch = LevelBuildKit.Chapter;
+            float cx = (area.x + area.y) * 0.5f, top = GroundAt(track, cx);
+            var paving = Art.surfaces[ch == 4 ? ProceduralArt.Surface.Concrete : ProceduralArt.Surface.Paving];
+            var road = Art.surfaces[ch == 2 ? ProceduralArt.Surface.Cobbles : ProceduralArt.Surface.Asphalt];
+            var kerb = Art.surfaces[ProceduralArt.Surface.Kerb];
+            var street = new GameObject("SideStreetEnd").transform;
+            street.SetParent(root, false);
+            const float lift = 0.012f;   // just over the ground behind the street, so the two never flicker
+
+            // Pavements along the side street, kerbed, from the main footpath to the back road.
+            foreach (var side in new[] { new Vector2(area.x - 1.9f, area.x), new Vector2(area.y, area.y + 1.9f) })
+                Ground(street, "SidePavement", side.x, side.y, top + lift, PathHalf, BackRoadNear, paving, kerb);
+            // The back road across the end, kerbs either side of the mouth and along its far side, and
+            // the far pavement in front of the buildings.
+            float a = cx - 38f, b = cx + 38f;
+            Ground(street, "BackRoad", a, b, top + lift, BackRoadNear, BackRoadFar, road, kerb);
+            Ground(street, "BackPavement", a, b, top + lift, BackRoadFar + 0.25f, BackRoadFar + 3f, paving, kerb);
+            foreach (var run in new[] { new Vector2(a, area.x - 1.9f), new Vector2(area.y + 1.9f, b) })
+                Solid(street, "BackKerb", new Vector3((run.x + run.y) * 0.5f, top + 0.08f, BackRoadNear - 0.11f), new Vector3(run.y - run.x, 0.16f, 0.22f), Color.white, kerb);
+            Solid(street, "BackKerb", new Vector3(cx, top + 0.08f, BackRoadFar + 0.11f), new Vector3(b - a, 0.16f, 0.22f), Color.white, kerb);
+            for (float x = a + 1f; x < b - 1f; x += 4f)
+                Patch(street, "CentreDash", x, x + 2f, top + lift, (BackRoadNear + BackRoadFar) * 0.5f - 0.06f, (BackRoadNear + BackRoadFar) * 0.5f + 0.06f, new Color(0.95f, 0.95f, 0.93f));
+
+            // Street trees along the side street's pavements.
+            if (LevelBuildKit.HasKitModel("Plants", "Broadleaf"))
+                foreach (float tx in new[] { area.x - 1.1f, area.y + 1.1f })
+                    for (float z = Rand(rng, 14f, 18f); z < 34f; z += Rand(rng, 9f, 12f))   // clear of the far row behind
+                        Plant(street, rng.NextDouble() < 0.7 ? "Broadleaf" : "Birch", null, tx, top, z, Rand(rng, 0.75f, 0.95f), 1f, -65, rng);
+
+            // Across the end: buildings facing the back road, the first one squarely in the view.
+            ProceduralArt.FacadeKind[] kinds;
+            switch (ch)
+            {
+                case 2: kinds = new[] { ProceduralArt.FacadeKind.Shop0, ProceduralArt.FacadeKind.Apartment, ProceduralArt.FacadeKind.Shop1, ProceduralArt.FacadeKind.HouseLong }; break;
+                case 4: kinds = new[] { ProceduralArt.FacadeKind.Warehouse, ProceduralArt.FacadeKind.Apartment }; break;
+                case 5: kinds = null; break;
+                default: kinds = new[] { ProceduralArt.FacadeKind.HouseGable, ProceduralArt.FacadeKind.HouseLong, ProceduralArt.FacadeKind.Bungalow }; break;
+            }
+            float front = BackRoadFar + 3.4f;
+            if (kinds == null || !LevelBuildKit.HasKitModel("Buildings", "HouseGable"))
+            {
+                for (float x = a + 2f; x < b - 2f; x += Rand(rng, 3.5f, 6f))
+                    Plant(street, rng.NextDouble() < 0.6 ? "BroadleafLarge" : "Broadleaf", null, x, top, front + Rand(rng, 1f, 6f), Rand(rng, 0.9f, 1.2f), 1f, -70, rng);
+                return;
+            }
+            var first = kinds[rng.Next(kinds.Length)];
+            float x0 = cx - ProceduralArt.FacadeSize(first).x * Rand(rng, 0.3f, 0.7f);
+            // Rightward from the one closing the view, then leftward from it.
+            for (int dir = 1; dir >= -1; dir -= 2)
+            {
+                float x = dir > 0 ? x0 : x0 - Rand(rng, 1f, 3f);
+                for (int k = 0; k < 4; k++)
+                {
+                    var kind = dir > 0 && k == 0 ? first : kinds[rng.Next(kinds.Length)];
+                    float width = ProceduralArt.FacadeSize(kind).x;
+                    float bx = dir > 0 ? x + width * 0.5f : x - width * 0.5f;
+                    if (bx - width * 0.5f < a || bx + width * 0.5f > b) break;
+                    KitBuilding(street, bx, top, front, kind, Mathf.Abs(Mathf.RoundToInt(bx * 7f + front * 13f)));
+                    x += dir * (width + Rand(rng, 1f, 3f));
+                }
+            }
+        }
+
+        /// <summary>A strip of street surface from x a to b and depth z0 to z1, its top at y: road or pavement, kerb-sided.</summary>
+        static void Ground(Transform parent, string name, float a, float b, float y, float z0, float z1, Material surface, Material kerb)
+        {
+            var go = new GameObject(name);
+            go.transform.SetParent(parent, false);
+            var slab = go.AddComponent<StreetSlab>();
+            slab.fromX = a; slab.toX = b; slab.top = y; slab.bottom = y - 0.5f;
+            slab.closeLeft = slab.closeRight = true;
+            slab.materials = 3;
+            slab.sideColor = SideColor(LevelBuildKit.Chapter);
+            slab.sideSubmesh = 2;
+            slab.strips.Add(new StreetSlab.Strip(z0, z1, 0f, 0, Color.white));
+            go.GetComponent<MeshRenderer>().sharedMaterials = new[] { surface, kerb, Art.solid };
+            slab.Rebuild();
+        }
+
+        // ---------------------------------------------------------------- ground steps
+
+        /// <summary>The height of the ground behind the footpath at x: the span there, or across a gap the lower side (the back strip bridges gaps at that height).</summary>
+        static float BackTop(LevelBuildKit.TrackBuilder track, float x)
+        {
+            float inside = float.MinValue, left = float.NaN, right = float.NaN, leftGap = float.MaxValue, rightGap = float.MaxValue;
+            foreach (var s in track.GroundSpans)
+            {
+                if (x >= s.x && x <= s.y) inside = Mathf.Max(inside, s.z);
+                else if (s.y < x && x - s.y < leftGap) { leftGap = x - s.y; left = s.z; }
+                else if (s.x > x && s.x - x < rightGap) { rightGap = s.x - x; right = s.z; }
+            }
+            if (inside > float.MinValue) return inside;
+            if (float.IsNaN(left)) return float.IsNaN(right) ? 0f : right;
+            return float.IsNaN(right) ? left : Mathf.Min(left, right);
+        }
+
+        /// <summary>
+        /// The first place inside (a, b) where the ground steps up or down, or NaN. Lots and buildings
+        /// end there rather than straddle it, so walls and houses stand on their own ground.
+        /// </summary>
+        static float StepWithin(LevelBuildKit.TrackBuilder track, float a, float b)
+        {
+            float best = float.NaN;
+            foreach (var s in track.GroundSpans)
+                foreach (float e in new[] { s.x, s.y })
+                    if (e > a + 0.3f && e < b - 0.3f && (float.IsNaN(best) || e < best) &&
+                        Mathf.Abs(BackTop(track, e - 0.05f) - BackTop(track, e + 0.05f)) > 0.05f)
+                        best = e;
+            return best;
         }
 
         // ---------------------------------------------------------------- depth
@@ -778,8 +905,8 @@ namespace DribbleToSchool.EditorTools
         static void FillGap(LevelBuildKit.TrackBuilder track, Transform root, System.Random rng, float a, float b)
         {
             float w = b - a;
-            if (w < 1.6f) return;
-            float gy = GroundAt(track, (a + b) * 0.5f);
+            if (w < 0.6f) return;
+            float gy = BackTop(track, (a + b) * 0.5f);
             switch (LevelBuildKit.Chapter)
             {
                 case 2:
@@ -796,13 +923,33 @@ namespace DribbleToSchool.EditorTools
                         Plant(root, rng.NextDouble() < 0.7 ? "Broadleaf" : "Birch", null, tx, gy, PropertyZ + Rand(rng, 3.5f, 7f), Rand(rng, 0.8f, 1.05f), 1f, -60, rng);
                     break;
                 case 5:
-                    Row(root, "Plants", "HedgeBlock2", a + 0.3f, b - 0.3f, gy + 0.04f, PropertyZ + 0.4f, HedgeGreen);
+                    if (w > 1.2f) Row(root, "Plants", "HedgeBlock2", a + 0.3f, b - 0.3f, gy + 0.04f, PropertyZ + 0.4f, HedgeGreen);
                     break;
                 default:
                     BlockWall(root, a + 0.1f, b - 0.1f, gy, Art.surfaces[ProceduralArt.Surface.BlockWall], true, true);
                     if (w > 3f) Plant(root, rng.NextDouble() < 0.5 ? "Broadleaf" : "ConiferMid", null, (a + b) * 0.5f, gy, PropertyZ + 2.5f, Rand(rng, 0.8f, 1.05f), 1f, -60, rng);
                     break;
             }
+        }
+
+        /// <summary>
+        /// Where the ground steps up or down inside the lot [x, x + lot]: a piece before the step too
+        /// short for the lot's building (minLot) is closed off on its own level (FillGap) and x moves
+        /// on to the step (true: start the next lot there); otherwise the lot is shortened to end at
+        /// the step (false: build it).
+        /// </summary>
+        static bool LotEndsAtStep(LevelBuildKit.TrackBuilder track, Transform root, System.Random rng, ref float x, ref float lot, float minLot)
+        {
+            float step = StepWithin(track, x, x + lot);
+            if (float.IsNaN(step)) return false;
+            if (step - x < minLot)
+            {
+                FillGap(track, root, rng, x, step);
+                x = step;
+                return true;
+            }
+            lot = step - x;
+            return false;
         }
 
         /// <summary>Does [a, b] run into a side street (they run 70 units back from the footpath)?</summary>
@@ -820,6 +967,8 @@ namespace DribbleToSchool.EditorTools
             {
                 var kind = kinds[rng.Next(kinds.Length)];
                 float width = ProceduralArt.FacadeSize(kind).x;
+                float step = StepWithin(track, x, x + width);
+                if (!float.IsNaN(step)) { x = step + 0.5f; continue; }   // a building stands on one level
                 if (!OnSideStreetRange(track, x, x + width))
                 {
                     float cx = x + width * 0.5f;
@@ -1010,6 +1159,7 @@ namespace DribbleToSchool.EditorTools
             {
                 float lot = Rand(rng, 9f, 13f), skip;
                 if (Blocked(track, x, x + lot, out skip)) { FillGap(track, root, rng, x, BlockStart(track, x, x + lot)); x = skip; continue; }
+                if (LotEndsAtStep(track, root, rng, ref x, ref lot, 7.5f)) continue;
                 float cx = x + lot * 0.5f, gy = GroundAt(track, cx);
 
                 // Block wall along the front of the lot with a gap for the gate; a white picket fence
@@ -1371,6 +1521,7 @@ namespace DribbleToSchool.EditorTools
             {
                 float w = Rand(rng, 11f, 14f), skip;
                 if (Blocked(track, x, x + w, out skip)) { FillGap(track, root, rng, x, BlockStart(track, x, x + w)); x = skip; continue; }
+                if (LotEndsAtStep(track, root, rng, ref x, ref w, 12.5f)) continue;
                 float cx = x + w * 0.5f, gy = GroundAt(track, cx);
                 bool flats = rng.NextDouble() >= 0.5, cabin = false;
                 double front = rng.NextDouble();

@@ -54,7 +54,7 @@ namespace DribbleToSchool.Art
                     t.obstacle = C(0.8f, 0.68f, 0.6f); t.platform = C(0.72f, 0.6f, 0.52f);
                     t.edge = EdgeStyle.Cobbles; t.scenery = SceneryStyle.Market;
                     // Market: a bright late morning, the sun high.
-                    t.mood = MakeMood(C(1f, 0.97f, 0.92f), C(0.2f, 0.43f, 0.72f), C(0.63f, 0.79f, 0.92f), C(1f, 0.97f, 0.9f),
+                    t.mood = MakeMood(C(1f, 0.97f, 0.92f), C(0.16f, 0.39f, 0.75f), C(0.53f, 0.73f, 0.92f), C(1f, 0.97f, 0.9f),
                         C(0.52f, 0.56f, 0.66f), C(0.62f, 0.6f, 0.58f), C(0.68f, 0.78f, 0.88f), C(0f, 0f, 0.008f), C(1f, 0.99f, 0.97f),
                         new Vector3(0.4f, 0.85f, -0.35f), new Vector3(0.35f, 0.9f, 1f), 40f, 700f, 0.58f);
                     break;
@@ -65,7 +65,7 @@ namespace DribbleToSchool.Art
                     t.obstacle = C(0.86f, 0.72f, 0.52f); t.platform = C(0.72f, 0.56f, 0.4f);
                     t.edge = EdgeStyle.Sand; t.scenery = SceneryStyle.Beach;
                     // Beach: a brilliant midday, the deepest sky over a clear turquoise sea, warm bounce off the sand.
-                    t.mood = MakeMood(C(1f, 0.98f, 0.94f), C(0.17f, 0.43f, 0.74f), C(0.58f, 0.79f, 0.93f), C(1f, 0.97f, 0.9f),
+                    t.mood = MakeMood(C(1f, 0.98f, 0.94f), C(0.14f, 0.39f, 0.76f), C(0.48f, 0.74f, 0.93f), C(1f, 0.97f, 0.9f),
                         C(0.54f, 0.58f, 0.68f), C(0.72f, 0.66f, 0.6f), C(0.66f, 0.8f, 0.9f), C(0f, 0f, 0.008f), C(1f, 0.99f, 0.97f),
                         new Vector3(0.5f, 0.75f, -0.45f), new Vector3(-0.3f, 0.95f, 1f), 45f, 760f, 0.55f);
                     break;
@@ -76,7 +76,7 @@ namespace DribbleToSchool.Art
                     t.obstacle = C(0.7f, 0.66f, 0.62f); t.platform = C(0.95f, 0.72f, 0.3f);
                     t.edge = EdgeStyle.Concrete; t.scenery = SceneryStyle.City;
                     // Underpass and building site: a clear day, the sky a little paler over the city.
-                    t.mood = MakeMood(C(1f, 0.97f, 0.93f), C(0.22f, 0.44f, 0.72f), C(0.66f, 0.8f, 0.9f), C(1f, 0.97f, 0.91f),
+                    t.mood = MakeMood(C(1f, 0.97f, 0.93f), C(0.18f, 0.4f, 0.74f), C(0.56f, 0.74f, 0.9f), C(1f, 0.97f, 0.91f),
                         C(0.52f, 0.55f, 0.64f), C(0.6f, 0.59f, 0.58f), C(0.7f, 0.77f, 0.85f), C(0f, 0f, 0.008f), C(1f, 0.99f, 0.97f),
                         new Vector3(0.5f, 0.75f, -0.4f), new Vector3(0.4f, 0.9f, 1f), 38f, 640f, 0.62f);
                     break;
@@ -87,7 +87,7 @@ namespace DribbleToSchool.Art
                     t.obstacle = C(0.78f, 0.66f, 0.55f); t.platform = C(0.72f, 0.5f, 0.38f);
                     t.edge = EdgeStyle.ParkPath; t.scenery = SceneryStyle.Park;
                     // Park and school: a clear summer afternoon, the sun a touch warmer, green bounce off the lawns.
-                    t.mood = MakeMood(C(1f, 0.96f, 0.9f), C(0.2f, 0.43f, 0.72f), C(0.64f, 0.8f, 0.92f), C(1f, 0.96f, 0.88f),
+                    t.mood = MakeMood(C(1f, 0.96f, 0.9f), C(0.16f, 0.39f, 0.75f), C(0.54f, 0.74f, 0.92f), C(1f, 0.96f, 0.88f),
                         C(0.52f, 0.57f, 0.64f), C(0.56f, 0.6f, 0.52f), C(0.68f, 0.78f, 0.86f), C(0f, 0f, 0.008f), C(1f, 0.99f, 0.97f),
                         new Vector3(0.55f, 0.7f, -0.45f), new Vector3(-0.4f, 0.9f, 1f), 40f, 700f, 0.58f);
                     break;
@@ -98,7 +98,7 @@ namespace DribbleToSchool.Art
                     t.obstacle = C(0.8f, 0.7f, 0.62f); t.platform = C(0.68f, 0.56f, 0.46f);
                     t.edge = EdgeStyle.Road; t.scenery = SceneryStyle.Houses;
                     // Home street: a fresh, clear morning.
-                    t.mood = MakeMood(C(1f, 0.97f, 0.92f), C(0.2f, 0.43f, 0.72f), C(0.62f, 0.79f, 0.92f), C(1f, 0.97f, 0.9f),
+                    t.mood = MakeMood(C(1f, 0.97f, 0.92f), C(0.16f, 0.39f, 0.75f), C(0.52f, 0.73f, 0.92f), C(1f, 0.97f, 0.9f),
                         C(0.52f, 0.56f, 0.66f), C(0.62f, 0.6f, 0.58f), C(0.68f, 0.78f, 0.88f), C(0f, 0f, 0.008f), C(1f, 0.99f, 0.97f),
                         new Vector3(0.45f, 0.78f, -0.45f), new Vector3(-0.4f, 0.9f, 1f), 40f, 700f, 0.6f);
                     break;

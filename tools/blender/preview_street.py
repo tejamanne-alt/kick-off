@@ -25,15 +25,15 @@ rng = random.Random(seed * 31 + chapter)
 
 # ---------------------------------------------------------------- the chapter's light (sRGB)
 MOODS = {
-    1: dict(sun=(1, .97, .92), zenith=(.2, .43, .72), horizon=(.62, .79, .92), glow=(1, .97, .9), shade=(.52, .56, .66),
+    1: dict(sun=(1, .97, .92), zenith=(.16, .39, .75), horizon=(.52, .73, .92), glow=(1, .97, .9), shade=(.52, .56, .66),
             haze=(.68, .78, .88), sun_dir=(.45, .78, -.45), haze_start=40, haze_end=700, haze_k=.6),
-    2: dict(sun=(1, .97, .92), zenith=(.2, .43, .72), horizon=(.63, .79, .92), glow=(1, .97, .9), shade=(.52, .56, .66),
+    2: dict(sun=(1, .97, .92), zenith=(.16, .39, .75), horizon=(.53, .73, .92), glow=(1, .97, .9), shade=(.52, .56, .66),
             haze=(.68, .78, .88), sun_dir=(.4, .85, -.35), haze_start=40, haze_end=700, haze_k=.58),
-    3: dict(sun=(1, .98, .94), zenith=(.17, .43, .74), horizon=(.58, .79, .93), glow=(1, .97, .9), shade=(.54, .58, .68),
+    3: dict(sun=(1, .98, .94), zenith=(.14, .39, .76), horizon=(.48, .74, .93), glow=(1, .97, .9), shade=(.54, .58, .68),
             haze=(.66, .8, .9), sun_dir=(.5, .75, -.45), haze_start=45, haze_end=760, haze_k=.55),
-    4: dict(sun=(1, .97, .93), zenith=(.22, .44, .72), horizon=(.66, .8, .9), glow=(1, .97, .91), shade=(.52, .55, .64),
+    4: dict(sun=(1, .97, .93), zenith=(.18, .4, .74), horizon=(.56, .74, .9), glow=(1, .97, .91), shade=(.52, .55, .64),
             haze=(.7, .77, .85), sun_dir=(.5, .75, -.4), haze_start=38, haze_end=640, haze_k=.62),
-    5: dict(sun=(1, .96, .9), zenith=(.2, .43, .72), horizon=(.64, .8, .92), glow=(1, .96, .88), shade=(.52, .57, .64),
+    5: dict(sun=(1, .96, .9), zenith=(.16, .39, .75), horizon=(.54, .74, .92), glow=(1, .96, .88), shade=(.52, .57, .64),
             haze=(.68, .78, .86), sun_dir=(.55, .7, -.45), haze_start=40, haze_end=700, haze_k=.58),
 }
 mood = dict(MOODS[chapter])

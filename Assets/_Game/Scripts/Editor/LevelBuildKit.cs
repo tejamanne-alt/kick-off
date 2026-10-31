@@ -788,7 +788,7 @@ namespace DribbleToSchool.EditorTools
                 var cloud = go.AddComponent<CloudShape>();
                 cloud.seed = rng.Next();
                 cloud.width = 60f + (float)rng.NextDouble() * 90f;
-                cloud.height = cloud.width * (0.35f + (float)rng.NextDouble() * 0.2f);
+                cloud.height = cloud.width * (0.28f + (float)rng.NextDouble() * 0.16f);   // broad, flat-bottomed banks
                 go.GetComponent<MeshRenderer>().sharedMaterial = Art.cloud;
                 cloud.Rebuild();
             }
