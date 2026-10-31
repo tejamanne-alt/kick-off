@@ -228,8 +228,10 @@ namespace DribbleToSchool.EditorTools
             var m = LoadOrCreateMaterial(name, shader);
             if (atlas != null) m.mainTexture = AssetDatabase.LoadAssetAtPath<Texture2D>(LevelBuildKit.ModelsDir + "/" + atlas + ".png");
             m.SetColor("_OutlineColor", new Color(0.08f, 0.07f, 0.1f));
-            m.SetFloat("_OutlineWidth", player ? 0.0034f : 0.0022f);
-            m.SetFloat("_RimStrength", player ? 0.38f : 0.22f);
+            // The player: a thin, crisp ink line and a faint rim (flat anime cel look); the teens
+            // read against the street by their colours (white shirt, navy legwear, dark hair).
+            m.SetFloat("_OutlineWidth", player ? 0.0018f : 0.0022f);
+            m.SetFloat("_RimStrength", player ? 0.2f : 0.22f);
             m.SetColor("_ShadowColor", new Color(0.68f, 0.7f, 0.88f));
             EditorUtility.SetDirty(m);
             return m;

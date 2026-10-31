@@ -15,42 +15,82 @@ from mathutils import Vector
 from teen_lib import C, new_obj, apply_mods, smooth
 
 # ----------------------------------------------------------------------------------------------
-# Proportions. Base space below Z0 is stretched by a constant factor; above Z0 it is only lifted
-# (the head and hair keep their shape). The lift sets how many heads tall the teen is: the head
-# (chin ~1.27 to crown ~1.59 base, about 0.32) over the whole height.
+# Proportions. Base space below Z0 is stretched by a constant factor; above Z0 it is lifted and
+# the head (and hair, everything modelled above the neck) is scaled down about the neck axis,
+# blending in over the top of the neck (Z0 .. Z0 + HZ), so the head reads small on a long teen
+# body. The lift and the head scale set how many heads tall the teen is: the head (chin ~1.24 to
+# crown ~1.59 base, about 0.35, times the head scale) over the whole height.
 Z0 = 1.20
+HZ = 0.035                 # the height (base) over which the head scale blends in
+PIVOT = (0.0, 0.01)        # x, y of the axis the head is scaled about (the neck joint)
 
 
 def lift(girl):
-    return 0.49 if girl else 0.57      # girl ~6.5 heads, boy ~6.7 heads
+    return 0.49 if girl else 0.57
 
 
-def grow(co, girl):
-    """Base space -> teen proportions: legs and torso stretched, the head only lifted."""
-    L = lift(girl); x, y, z = co
-    nz = z + L if z >= Z0 else z * (Z0 + L) / Z0
-    return Vector((x, y, nz))
+def head_scale(girl):
+    """(x, y, z) scale of the head: a little narrower than it is tall, for a slimmer face.
+    girl ~6.8 heads, boy ~7.1 heads (crown to chin)."""
+    return (0.85, 0.89, 0.89) if girl else (0.8, 0.85, 0.85)
 
 
-def ungrow(co, girl):
-    """Teen space -> base space (the inverse of grow)."""
-    L = lift(girl); x, y, z = co
-    bz = z - L if z >= Z0 + L else z * Z0 / (Z0 + L)
-    return Vector((x, y, bz))
+def _hs(z, girl, ax):
+    """The scale along axis ax at base height z (>= Z0): 1 at Z0 easing to the head's scale
+    above Z0 + HZ."""
+    k = 1.0 - head_scale(girl)[ax]
+    u = np.clip((np.asarray(z, dtype=np.float64) - Z0) / HZ, 0.0, 1.0)
+    return 1.0 - k * u * u * (3 - 2 * u)
 
 
-def ungrow_np(V, girl):
-    L = lift(girl); V = np.array(V, dtype=np.float64)
-    z = V[:, 2]
-    V[:, 2] = np.where(z >= Z0 + L, z - L, z * Z0 / (Z0 + L))
-    return V
+def _hz(z, girl):
+    """Teen height of base height z >= Z0: Z0 + lift + the integral of the z scale from Z0 to z."""
+    k = 1.0 - head_scale(girl)[2]
+    t = np.asarray(z, dtype=np.float64) - Z0
+    u = np.clip(t / HZ, 0.0, 1.0)
+    blend = t - k * HZ * (u ** 3 - u ** 4 / 2)
+    past = HZ * (1 - k / 2) + (t - HZ) * (1 - k)
+    return Z0 + lift(girl) + np.where(t <= HZ, blend, past)
+
+
+def _hz_inv(nz, girl):
+    """Base height of a teen height nz >= Z0 + lift (bisection; _hz is monotonic)."""
+    nz = np.asarray(nz, dtype=np.float64)
+    lo = np.full(nz.shape, Z0); hi = np.full(nz.shape, Z0 + 2.0)
+    for _ in range(48):
+        mid = 0.5 * (lo + hi)
+        below = _hz(mid, girl) < nz
+        lo = np.where(below, mid, lo); hi = np.where(below, hi, mid)
+    return 0.5 * (lo + hi)
 
 
 def grow_np(V, girl):
-    L = lift(girl); V = np.array(V, dtype=np.float64)
-    z = V[:, 2]
-    V[:, 2] = np.where(z >= Z0, z + L, z * (Z0 + L) / Z0)
+    """Base space -> teen proportions: legs and torso stretched, the head lifted and scaled."""
+    L = lift(girl); V = np.array(V, dtype=np.float64).reshape(-1, 3)
+    z = V[:, 2]; up = z >= Z0; zc = np.maximum(z, Z0)
+    for ax in (0, 1):
+        V[:, ax] = np.where(up, PIVOT[ax] + (V[:, ax] - PIVOT[ax]) * _hs(zc, girl, ax), V[:, ax])
+    V[:, 2] = np.where(up, _hz(zc, girl), z * (Z0 + L) / Z0)
     return V
+
+
+def ungrow_np(V, girl):
+    """Teen space -> base space (the inverse of grow_np)."""
+    L = lift(girl); V = np.array(V, dtype=np.float64).reshape(-1, 3)
+    z = V[:, 2]; up = z >= Z0 + L
+    bz = np.where(up, _hz_inv(np.maximum(z, Z0 + L), girl), z * Z0 / (Z0 + L))
+    for ax in (0, 1):
+        V[:, ax] = np.where(up, PIVOT[ax] + (V[:, ax] - PIVOT[ax]) / _hs(np.maximum(bz, Z0), girl, ax), V[:, ax])
+    V[:, 2] = bz
+    return V
+
+
+def grow(co, girl):
+    return Vector(grow_np([tuple(co)], girl)[0])
+
+
+def ungrow(co, girl):
+    return Vector(ungrow_np([tuple(co)], girl)[0])
 
 
 # ----------------------------------------------------------------------------------------------
@@ -59,16 +99,18 @@ def tj(girl):
     L = lift(girl)
     if girl:
         j = dict(pelvis=(0, 0.006, 1.10), spine=(0, 0.002, 1.27), chest=(0, 0.004, 1.47),
-                 neck0=(0, 0.012, 1.70), neck1=(0, 0.01, 1.30 + L), headtop=(0, 0.01, 1.60 + L))
+                 neck0=(0, 0.012, 1.70))
         side = dict(hip=(0.084, 0.0, 1.075), knee=(0.088, -0.006, 0.575), ankle=(0.092, 0.02, 0.085),
                     toe=(0.096, -0.15, 0.03), shoulder=(0.152, 0.010, 1.638), elbow=(0.211, 0.024, 1.30),
                     wrist=(0.232, 0.006, 1.03), tip=(0.237, -0.004, 0.87))
     else:
         j = dict(pelvis=(0, 0.006, 1.135), spine=(0, 0.002, 1.32), chest=(0, 0.004, 1.52),
-                 neck0=(0, 0.014, 1.765), neck1=(0, 0.01, 1.30 + L), headtop=(0, 0.01, 1.60 + L))
+                 neck0=(0, 0.014, 1.765))
         side = dict(hip=(0.090, 0.0, 1.115), knee=(0.093, -0.006, 0.60), ankle=(0.097, 0.02, 0.09),
                     toe=(0.1, -0.17, 0.03), shoulder=(0.172, 0.010, 1.702), elbow=(0.232, 0.026, 1.36),
                     wrist=(0.25, 0.006, 1.075), tip=(0.252, -0.004, 0.90))
+    # the head joint and the crown are placed in base space (the head is modelled there)
+    j['neck1'] = tuple(grow((0, 0.01, 1.30), girl)); j['headtop'] = tuple(grow((0, 0.01, 1.60), girl))
     for k, (x, y, z) in side.items():
         j[k + 'L'] = (x, y, z); j[k + 'R'] = (-x, y, z)
     return {k: np.array(v, dtype=np.float64) for k, v in j.items()}
@@ -103,7 +145,7 @@ def _a(v): return np.asarray(v, dtype=np.float64)
 
 
 def smin(a, b, k):
-    if k <= 0: return np.minimum(a, b)
+    if np.ndim(k) == 0 and k <= 0: return np.minimum(a, b)
     h = np.maximum(k - np.abs(a - b), 0.0) / k
     return np.minimum(a, b) - h * h * k * 0.25
 
@@ -413,7 +455,7 @@ class BodyField:
                     (1.65, 0.152, 0.084, 0.005, 2.4), (1.70, 0.13, 0.069, 0.010, 2.2),
                     (1.735, 0.088, 0.058, 0.014, 2.0), (1.765, 0.064, 0.053, 0.016, 2.0), (1.78, 0.06, 0.052, 0.016, 2.0)]
             self.torso_core = loft(keys, 1.065, 1.78, 0.03)
-            self.r = dict(neck=(0.053, 0.047), uarm=(0.049, 0.038), farm=(0.04, 0.037, 0.026),
+            self.r = dict(neck=(0.048, 0.042), uarm=(0.049, 0.038), farm=(0.04, 0.037, 0.026),
                           thigh=(0.077, 0.067, 0.051), shin=(0.051, 0.029), calf=(0.053, 0.050, 0.12),
                           delt=(0.043, 0.045, 0.054))
             self.hand_scale = 1.16

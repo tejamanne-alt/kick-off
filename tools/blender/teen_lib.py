@@ -3,7 +3,8 @@
 # Coordinates are Blender's: metres, Z up, the character faces -Y, feet at z = 0, the
 # character's own left is +X. Everything is built in "base space" (a younger, shorter body);
 # teen_body.grow() then stretches the legs and torso to teen proportions. Above the neck
-# (z > 1.24) grow() only lifts things, so heads and hair keep their shape.
+# (z > 1.2) grow() lifts things and scales them down about the neck (teen_body.head_scale), so
+# heads and hair keep their shape, only smaller on the long teen body.
 #
 # Each module returns a list of Part records; teen.py colours them, rigs them and joins them
 # into one skinned mesh with one material (vertex colours times the face atlas).

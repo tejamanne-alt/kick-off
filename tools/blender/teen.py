@@ -49,11 +49,16 @@ def colorize(p):
             uv0.data[li].uv = p.uv(co) if p.uv else WHITE_UV
             uv1.data[li].uv = (p.part(co, cen) if callable(p.part) else p.part, 0)
 for p in parts: colorize(p)
+print('head/hair tris', ', '.join('%s %d' % (p.obj.name, sum(len(f.vertices) - 2 for f in p.obj.data.polygons)) for p in parts if p.bind == 'Head'))
 
 # ---------------- teen proportions ----------------
+import numpy as np
 for p in parts:
-    o = p.obj
-    for v in o.data.vertices: v.co = teen_body.grow(o.matrix_world @ v.co, GIRL)
+    o = p.obj; me = o.data
+    V = np.empty(len(me.vertices) * 3); me.vertices.foreach_get('co', V); V = V.reshape(-1, 3)
+    M = np.array(o.matrix_world)
+    V = V @ M[:3, :3].T + M[:3, 3]
+    me.vertices.foreach_set('co', teen_body.grow_np(V, GIRL).ravel()); me.update()
     o.matrix_world = Matrix()
 
 # ---------------- armature ----------------

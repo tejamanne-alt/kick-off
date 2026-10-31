@@ -11,8 +11,8 @@
 #          creases are thin painted lines bounded by dedicated pairs of columns that close to a
 #          point at both ends (plus a very shallow dent), so neither depends on the coarse grid.
 #   locks  tapered tubes swept along smooth curves, with a lens-shaped section whose edges curl
-#          toward the head and a soft or rounded end: fringe, face-framing strands, ponytail, the
-#          clumps of his quiff, the cowlick. Their highlights and creases are spans of the section
+#          toward the head and a soft or rounded end: fringe, face-framing strands, ponytail, his
+#          chunky locks, the cowlick. Their highlights and creases are spans of the section
 #          bounded by vertices that move smoothly along the lock (lens shapes with pointed ends).
 # Everything sits on the built head when there is one, otherwise on the cranium ellipsoid, so
 # the hair never cuts into the face or ears.
@@ -32,14 +32,14 @@ BASE, SHINE, GROOVE = 0, 1, 2          # face tags
 
 def hair_colors(girl):
     """Base colour and shine colour. The base colour is the game's default hair colour."""
-    if girl: return ((0.3, 0.16, 0.09, 1), (0.5, 0.3, 0.18, 1))
-    # very dark brown; the shine a warm, low-contrast brown (a grey one reads as plastic)
-    return ((0.13, 0.095, 0.068, 1), (0.25, 0.185, 0.145, 1))
+    if girl: return ((0.036, 0.022, 0.02, 1), (0.12, 0.08, 0.072, 1))     # near-black brown
+    # near-black with a cool cast; the shine a muted blue-grey band (anime hair)
+    return ((0.024, 0.02, 0.027, 1), (0.085, 0.08, 0.11, 1))
 
 
 def _groove_color(girl):
     """The clump creases: the base colour darkened toward a warm brown (not toward blue)."""
-    return (0.205, 0.1, 0.055, 1) if girl else (0.082, 0.056, 0.04, 1)
+    return (0.018, 0.011, 0.01, 1) if girl else (0.012, 0.01, 0.014, 1)
 
 
 # ------------------------------------------------------------------------------- small maths
@@ -511,7 +511,7 @@ def _girl(fit, mesh, scr):
     def dens(a):
         al = _wrap(a - a_front)
         return 1.0 + 0.5 * np.exp(-(al / 1.0) ** 2) + 0.5 * np.exp(-((np.abs(al) - np.pi / 2) / 0.35) ** 2)
-    sh = Shell(mesh, fit, pole, [1, 0, 0], hl, off_fn, band, G, na=84, dens=dens, rows=(7, 1, 12), sigma=0.045)
+    sh = Shell(mesh, fit, pole, [1, 0, 0], hl, off_fn, band, G, na=76, dens=dens, rows=(7, 1, 12), sigma=0.045)
     over = lambda pts, lifts: sh.on(np.array(pts, dtype=np.float64), np.asarray(lifts, dtype=np.float64))
 
     # --- the fringe: swept across the forehead from the parting on her right (-X), above the brows
@@ -519,7 +519,7 @@ def _girl(fit, mesh, scr):
     def flock(pts, w, h=0.0062, tipt=0.55):
         P = over([front_pt(x, z, y) for x, y, z, l in pts], [l for x, y, z, l in pts])
         sweep(mesh, P, [(0, w * 0.45), (0.25, w), (0.6, w * 0.92), (1, w * 0.7)],
-              [(0, h * 0.35), (0.3, h), (0.8, h * 0.8), (1, h * 0.6)], n=12, m=15, inner=0.35, curl=0.55,
+              [(0, h * 0.35), (0.3, h), (0.8, h * 0.8), (1, h * 0.6)], n=10, m=14, inner=0.35, curl=0.55,
               shine=fr_shine, tip=(tipt, 0.85), root=(0.2, 1.0))
     # (x, y or None for the front surface, z, lift above the cap) from the parting to the tip
     flock([(-0.05, -0.085, 1.592, -0.002), (-0.04, None, 1.572, 0.006), (-0.022, None, 1.545, 0.007), (0.0, None, 1.522, 0.005), (0.022, None, 1.506, 0.003)], 0.024)
@@ -551,14 +551,17 @@ def _girl(fit, mesh, scr):
           shine=(0.1, 0.36, 0.5), tip=(0.74, 0.8), tip_rows=1.8,
           grooves=[(np.pi / 2 + 0.95, 0.16, 0.9, 0.035), (np.pi / 2 - 0.95, 0.18, 0.92, 0.035), (-0.15, 0.2, 0.86, 0.03)],
           dents=[(np.pi / 2 + 0.95, 0.07, 0.25), (np.pi / 2 - 0.95, 0.07, 0.25), (-0.15, 0.05, 0.25)])
-    _ring(scr, top + pole * 0.008, pole, 0.0265, 0.0125)
+    _ring(scr, top + pole * 0.008, pole, 0.0265, 0.0125, nt=44, nr=8)
 
 
 # ----------------------------------------------------------------------------------- boy
 def _boy(fit, mesh):
+    """His hair: a full, messy near-black mop of big chunky locks: a fringe of pointed locks
+    falling over the forehead to the brows (combed a little toward his right), locks over the
+    temples and the tops of the ears, the back falling to the nape in points that flick out, and
+    a few short locks sticking up at the crown."""
     pole = _unit([0.03, 0.42, 0.9])                 # the crown whorl
-    # hairline: a softly squared front with the temple corners set back, short sideburns, the
-    # line arcing over the ears, behind them down to the nape, which ends in two soft points
+    # hairline: the front (under the fringe), short sideburns, over the ears, down to the nape
     hl = [(0, -0.135, 1.538), (0, 0.077, 1.33)]
     hl += [(0.03, -0.13, 1.541), (0.056, -0.125, 1.546), (0.08, -0.113, 1.541), (0.1, -0.099, 1.535)]
     hl += [(-0.03, -0.132, 1.538), (-0.065, -0.122, 1.537), (-0.09, -0.107, 1.534), (-0.105, -0.095, 1.527)]
@@ -569,73 +572,75 @@ def _boy(fit, mesh):
                (sx * 0.116, 0.058, 1.377), (sx * 0.085, 0.065, 1.35), (sx * 0.055, 0.07, 1.335),
                (sx * 0.026, 0.074, 1.316), (sx * 0.012, 0.076, 1.322)]
     az = _azimuth_fn(pole)
-    a_front = az((0, -0.14, 1.53)); a_part = az((0.056, -0.11, 1.55))
-    qc = _unit(np.array([-0.03, -0.1, 1.575]) - CC)          # where the quiff sits
-    def rel(a): return _wrap(a - a_part)                      # < 0: his right of the parting
-    def frontness(a): return _ss(1.45, 0.6, np.abs(_wrap(a - a_front)))
 
     def off_fn(D, s, se, a):
         x, y, z = D[:, 0], D[:, 1], D[:, 2]
-        # short and close at the sides and back, fuller over the top
-        o = 0.0032 + 0.0072 * _ss(0.35, 0.92, z) + 0.002 * _ss(0.2, -0.4, y) * _ss(0.5, 0.9, z)
-        o = o + 0.022 * np.exp(-((1 - D @ qc) / 0.07) ** 2) * _ss(0.03, -0.14, rel(a))   # under the quiff
-        o = o - 0.0015 * frontness(a) * _ss(0.03, 0.2, rel(a)) * _ss(0.5, 0.85, s / se)  # combed flat left of it
-        o = o - 0.005 * np.exp(-(rel(a) / 0.03) ** 2) * _ss(0.45, 0.75, s / se)          # the parting
+        # a full mop: thick over the top and the back of the crown, closer at the sides
+        o = 0.006 + 0.012 * _ss(0.3, 0.92, z) + 0.006 * _ss(-0.2, 0.5, y) * _ss(-0.1, 0.6, z)
+        o = o - 0.002 * _ss(0.6, 0.9, np.abs(x)) * _ss(0.3, -0.2, z)
         dist = (se - s) * Shell.R
         e = 0.0009
-        return e + (o - e) * _ss(0.0, 0.02, dist)
-    # a few irregular creases spiralling a little from the whorl, and the parting
+        return e + (o - e) * _ss(0.0, 0.022, dist)
+    # clump creases spiralling a little from the whorl
     G = []
-    for ang, u0, u1, w in [(-0.3, 0.1, 0.6, 0.0009), (0.5, 0.06, 0.48, 0.0008), (1.25, 0.12, 0.66, 0.0009),
-                           (2.15, 0.08, 0.52, 0.0008), (2.9, 0.12, 0.62, 0.0009), (-1.1, 0.14, 0.56, 0.0008)]:
-        G.append((np.pi / 2 + ang, u0, u1, w, 0.0005))
-    G.append((a_part, 0.42, 0.99, 0.0015, 0.0))
-    for da, u0, u1 in [(0.2, 0.55, 0.92), (0.42, 0.62, 0.9)]:                         # combed down to his left
-        G.append((a_part + da, u0, u1, 0.0009, 0.0005))
-    twist = lambda u: 0.32 * _ss(0.0, 0.75, u)
-
-    def dens(a):
-        return 1.0 + 0.6 * frontness(a) + 0.45 * np.exp(-((np.abs(_wrap(a - a_front)) - np.pi / 2) / 0.35) ** 2)
-    sh = Shell(mesh, fit, pole, [1, 0, 0], hl, off_fn, None, G, na=100, dens=dens, rows=(8, 1, 12), sigma=0.04,
-               twist=twist)
+    for ang, u0, u1, w in [(-0.3, 0.1, 0.7, 0.0011), (0.45, 0.08, 0.6, 0.001), (1.2, 0.12, 0.72, 0.0011),
+                           (2.1, 0.08, 0.62, 0.001), (2.85, 0.12, 0.7, 0.0011), (-1.05, 0.14, 0.66, 0.001),
+                           (-1.8, 0.1, 0.6, 0.001), (3.6, 0.1, 0.6, 0.001)]:
+        G.append((np.pi / 2 + ang, u0, u1, w, 0.0009))
+    twist = lambda u: 0.3 * _ss(0.0, 0.75, u)
+    sh = Shell(mesh, fit, pole, [1, 0, 0], hl, off_fn, None, G, na=76, rows=(6, 1, 10), sigma=0.04, twist=twist)
     over = lambda pts, lifts: sh.on(np.array(pts, dtype=np.float64), np.asarray(lifts, dtype=np.float64))
-    lens = lambda zlo, zhi, phi=0.3: (lambda Pm: (Pm[:, 2] > zlo) & (Pm[:, 2] < zhi), phi)
 
-    # the quiff: one broad rounded roll that rises out of the parting, crests over the front of
-    # the top and rolls over to his right (-X), tapering down past the corner of his forehead
-    roll = [(0.068, -0.1, 1.56, -0.008), (0.046, -0.114, 1.571, 0.002), (0.014, -0.123, 1.582, 0.012),
-            (-0.028, -0.12, 1.583, 0.017), (-0.066, -0.106, 1.574, 0.016), (-0.098, -0.085, 1.553, 0.013),
-            (-0.121, -0.063, 1.525, 0.008), (-0.136, -0.041, 1.494, 0.005)]
-    P = over([p[:3] for p in roll], [p[3] for p in roll])
-    sweep(mesh, P, [(0, 0.01), (0.3, 0.027), (0.46, 0.03), (0.72, 0.025), (1, 0.017)],
-          [(0, 0.005), (0.32, 0.018), (0.46, 0.021), (0.72, 0.016), (1, 0.009)], n=22, m=30, inner=0.55, curl=0.32,
-          shine=(0.2, 0.62, 0.3), shine_at=np.pi / 2 + 0.75, tip=(0.62, 0.9), root=(0.16, 1.0),
-          grooves=[(np.pi / 2 - 1.05, 0.2, 0.86, 0.04), (np.pi / 2 + 1.55, 0.22, 0.82, 0.035)],
-          dents=[(np.pi / 2 - 1.05, 0.06, 0.2), (np.pi / 2 + 1.55, 0.05, 0.2)])
-    # a flatter clump behind it, combed the same way
-    def clump(pts, w, h, m=18, shine=None):
-        P = over([p[:3] for p in pts], [p[3] for p in pts])
-        sweep(mesh, P, [(0, w * 0.5), (0.25, w), (0.6, w * 0.92), (1, w * 0.65)],
-              [(0, h * 0.4), (0.3, h), (0.75, h * 0.85), (1, h * 0.6)], n=12, m=m, inner=0.3, curl=0.5,
-              shine=shine, tip=(0.58, 0.85), root=(0.15, 1.0))
-    clump([(0.056, -0.06, 1.592, -0.002), (0.024, -0.066, 1.603, 0.0036), (-0.02, -0.06, 1.606, 0.004),
-           (-0.065, -0.046, 1.596, 0.0038), (-0.103, -0.026, 1.572, 0.0032), (-0.13, -0.004, 1.537, 0.0026)],
-          0.022, 0.0045, shine=lens(1.605, 1.616, 0.26))
-    # the other side of the parting: combed flat and down to his left
-    clump([(0.06, -0.112, 1.553, -0.002), (0.083, -0.106, 1.545, 0.0026), (0.104, -0.091, 1.53, 0.0026),
-           (0.12, -0.071, 1.508, 0.0022)], 0.016, 0.0036, m=14)
+    def lock(pts, w, h, n=10, m=13, shine=None, tip=(0.5, 0.95), clear=0.0, curl=0.45, inner=0.35):
+        """A chunky pointed lock through (x, y or None for the front of the head, z, lift) points."""
+        P = over([front_pt(x, z, y) for x, y, z, l in pts], [l for x, y, z, l in pts])
+        if clear: P = fit.clear(P, clear)
+        sweep(mesh, P, [(0, w * 0.55), (0.2, w), (0.55, w * 0.85), (1, w * 0.5)],
+              [(0, h * 0.5), (0.25, h), (0.7, h * 0.8), (1, h * 0.5)], n=n, m=m, inner=inner, curl=curl,
+              shine=shine, tip=tip, root=(0.14, 1.0))
 
-    # the cowlick at the crown: a few small rounded points leaning back and to one side
+    fr_shine = (lambda Pm: (Pm[:, 2] > 1.548) & (Pm[:, 2] < 1.585), 0.3)
+    # --- the fringe, from the top of the head over the hairline, to points above the brows
+    lock([(0.012, -0.06, 1.6, -0.002), (0.008, None, 1.567, 0.011), (-0.002, None, 1.527, 0.009), (-0.014, None, 1.492, 0.006), (-0.022, None, 1.47, 0.004)], 0.026, 0.0075, shine=fr_shine)
+    lock([(0.046, -0.055, 1.6, -0.002), (0.05, None, 1.566, 0.012), (0.053, None, 1.53, 0.009), (0.05, None, 1.5, 0.006), (0.043, None, 1.479, 0.004)], 0.025, 0.0075, shine=fr_shine)
+    lock([(0.078, -0.045, 1.596, -0.002), (0.088, None, 1.556, 0.012), (0.095, None, 1.522, 0.008), (0.097, None, 1.493, 0.005)], 0.023, 0.007, shine=fr_shine)
+    lock([(-0.024, -0.06, 1.6, -0.002), (-0.034, None, 1.566, 0.012), (-0.046, None, 1.53, 0.009), (-0.058, None, 1.497, 0.006), (-0.066, None, 1.477, 0.004)], 0.026, 0.0075, shine=fr_shine)
+    lock([(-0.058, -0.05, 1.598, -0.002), (-0.074, None, 1.56, 0.012), (-0.09, None, 1.524, 0.008), (-0.103, None, 1.497, 0.005)], 0.024, 0.007, shine=fr_shine)
+    lock([(0.1, -0.03, 1.585, -0.002), (0.114, None, 1.548, 0.011), (0.124, None, 1.513, 0.007), (0.128, None, 1.488, 0.004)], 0.02, 0.0065)
+    lock([(-0.095, -0.035, 1.588, -0.002), (-0.112, None, 1.55, 0.011), (-0.123, None, 1.514, 0.007), (-0.129, None, 1.486, 0.004)], 0.021, 0.0065)
+    # --- in front of the ears, and over their tops
+    for sx in (1, -1):
+        lock([(sx * 0.118, -0.04, 1.572, -0.002), (sx * 0.138, -0.052, 1.522, 0.009), (sx * 0.145, -0.05, 1.475, 0.007),
+              (sx * 0.144, -0.046, 1.438, 0.004)], 0.016, 0.006, clear=0.004)
+        lock([(sx * 0.125, 0.0, 1.585, -0.002), (sx * 0.148, 0.006, 1.53, 0.012), (sx * 0.158, 0.014, 1.482, 0.013),
+              (sx * 0.162, 0.024, 1.448, 0.016)], 0.022, 0.0068, clear=0.005)
+    # --- the back: falling to the nape in points that flick out a little
+    for x0, x1, x2, ln, fl in [(0.0, 0.0, 0.004, 1.322, 0.02), (0.055, 0.068, 0.08, 1.335, 0.022),
+                               (-0.055, -0.068, -0.082, 1.33, 0.021), (0.1, 0.12, 0.134, 1.36, 0.024),
+                               (-0.1, -0.12, -0.136, 1.362, 0.024)]:
+        yb = lambda x: 0.075 + 0.07 * (1 - (abs(x) / 0.16) ** 2)
+        lock([(x0, 0.09, 1.57, -0.002), (x1, yb(x1) + 0.03, 1.49, 0.014), (x2, yb(x2), 1.41, 0.013),
+              (x2 * 1.08, yb(x2) - 0.02, ln, fl)], 0.03, 0.008, n=10, m=13, clear=0.004, tip=(0.45, 1.1))
+    # two locks over the nape's corners, flicking out behind the ears
+    for sx in (1, -1):
+        lock([(sx * 0.12, 0.05, 1.56, -0.002), (sx * 0.142, 0.07, 1.49, 0.012), (sx * 0.15, 0.07, 1.43, 0.014),
+              (sx * 0.16, 0.06, 1.385, 0.026)], 0.022, 0.007, n=10, m=12, clear=0.005, tip=(0.45, 1.1))
+    # --- a few locks over the top, from the crown forward, so the top breaks into clumps
+    for x0, x1, up in ((0.04, 0.06, 0.016), (-0.04, -0.055, 0.018), (0.0, 0.01, 0.022)):
+        lock([(x0 * 0.5, 0.06, 1.592, -0.002), (x0, 0.0, 1.605, up), (x1, -0.045, 1.6, up), (x1 * 1.1, -0.075, 1.59, 0.008)],
+             0.028, 0.008, n=10, m=11, tip=(0.55, 1.0))
+
+    # the cowlick at the crown: a few short rounded points leaning back and to one side
     Wp = sh.on((pole * 0.1 + CC)[None], 0.0)[0]
     fwd = _unit(np.cross(pole, [1, 0, 0])); side = _unit(np.cross(fwd, pole))
-    for (dx, dy, ln, lean, w) in [(0.0, 0.0, 0.031, 0.4, 0.0088), (0.01, 0.006, 0.025, 0.85, 0.0074),
-                                  (-0.009, 0.007, 0.021, -0.15, 0.0066)]:
+    for (dx, dy, ln, lean, w) in [(0.0, 0.0, 0.034, 0.4, 0.0105), (0.012, 0.006, 0.028, 0.85, 0.009),
+                                  (-0.011, 0.007, 0.024, -0.2, 0.008)]:
         b = Wp + side * dx - fwd * dy - pole * 0.005
         back = _unit(-fwd * math.cos(lean) + side * math.sin(lean))
         pts = [b, b + pole * ln * 0.5 + back * ln * 0.12, b + pole * ln * 0.85 + back * ln * 0.5,
                b + pole * ln * 0.95 + back * ln * 1.0]
         sweep(mesh, pts, [(0, w), (0.45, w * 0.85), (1, w * 0.7)], [(0, w * 0.8), (0.45, w * 0.66), (1, w * 0.5)],
-              n=10, m=12, up=back, inner=0.85, curl=0.12, tip=(0.5, 0.6))
+              n=8, m=10, up=back, inner=0.85, curl=0.12, tip=(0.5, 0.8))
 
 
 # ---------------------------------------------------------------------------------- build
