@@ -48,8 +48,12 @@ namespace DribbleToSchool.EditorTools
         public static readonly Color WaterColor = new Color(0.30f, 0.55f, 0.85f);
         static readonly Color KidColor = new Color(0.97f, 0.97f, 0.99f);   // white school shirt
         static readonly Color SchoolColor = new Color(0.95f, 0.75f, 0.30f);
-        /// <summary>The ball's radius: a size 5 football (the world is built 1 unit to the metre; the kid is about 1.55 tall).</summary>
-        public const float BallRadius = 0.11f;
+        /// <summary>
+        /// The ball's radius: a football drawn a little larger than life (34 cm across against a
+        /// real 22 cm), as the camera is 18 m back, so the ball reads at a glance on a phone (the
+        /// world is built 1 unit to the metre; the kid is about 1.55 tall).
+        /// </summary>
+        public const float BallRadius = 0.17f;
 
         public static Sprite Square { get; private set; }
         public static Sprite Circle { get; private set; }
@@ -195,7 +199,7 @@ namespace DribbleToSchool.EditorTools
                 kidFlags.Add(girlRig.flag);
             }
 
-            // Ball: a size 5 football, 22 cm across.
+            // Ball (see BallRadius).
             var ballGo = new GameObject("Ball");
             ballGo.transform.position = ballSpawn;
             ballGo.AddComponent<Rigidbody2D>();
@@ -1974,7 +1978,7 @@ namespace DribbleToSchool.EditorTools
                 float height = pivot.y - ground;
                 if (Chapter == 5)
                 {
-                    var tree = KitModel(root, "Leisure", "SwingTree", new Vector3(pivot.x, ground, 0f), 0f, height / 4f, new Color(0.4f, 0.64f, 0.3f));   // in summer leaf
+                    var tree = KitModel(root, "Leisure", "SwingTree", new Vector3(pivot.x, ground, 0f), 0f, height / 4f, new Color(0.36f, 0.48f, 0.25f));   // in summer leaf
                     Transform tie = tree != null ? FindDeep(tree, "Attach.Rope") : null;
                     if (tie == null) { if (tree != null) Object.DestroyImmediate(tree.gameObject); return false; }
                     tree.position += new Vector3(pivot.x - tie.position.x, 0f, -tie.position.z);
@@ -2359,7 +2363,8 @@ namespace DribbleToSchool.EditorTools
                 for (int i = 0; i < copies; i++)
                 {
                     float yaw = Chapter == 3 ? (seed * 37 % 50) - 25f : 0f;
-                    var t = KitModel(parent, kit, model, new Vector3(center.x, center.y - h * 0.5f + i * each, 0f), yaw);
+                    var t = KitModel(parent, kit, model, new Vector3(center.x, center.y - h * 0.5f + i * each, 0f), yaw, 1f,
+                        model.StartsWith("Hedge") ? StreetBuilder.HedgeGreen : (Color?)null);
                     if (t == null) return false;
                     t.localScale = new Vector3(w * fill / native.x, each / native.y, depth / native.z);
                 }

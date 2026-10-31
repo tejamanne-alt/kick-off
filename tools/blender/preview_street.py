@@ -25,16 +25,16 @@ rng = random.Random(seed * 31 + chapter)
 
 # ---------------------------------------------------------------- the chapter's light (sRGB)
 MOODS = {
-    1: dict(sun=(1, .97, .92), zenith=(.15, .38, .8), horizon=(.64, .81, .95), glow=(1, .97, .9), shade=(.6, .66, .82),
-            haze=(.7, .81, .93), sun_dir=(.45, .78, -.45), haze_start=40, haze_end=700, haze_k=.6),
-    2: dict(sun=(1, .98, .94), zenith=(.14, .37, .79), horizon=(.66, .82, .95), glow=(1, .98, .92), shade=(.6, .66, .82),
-            haze=(.7, .81, .93), sun_dir=(.4, .85, -.35), haze_start=40, haze_end=700, haze_k=.58),
-    3: dict(sun=(1, .99, .96), zenith=(.1, .33, .78), horizon=(.56, .78, .96), glow=(1, .98, .92), shade=(.6, .67, .84),
-            haze=(.68, .83, .96), sun_dir=(.5, .75, -.45), haze_start=45, haze_end=760, haze_k=.55),
-    4: dict(sun=(1, .98, .95), zenith=(.17, .4, .78), horizon=(.7, .82, .93), glow=(1, .98, .93), shade=(.6, .65, .8),
-            haze=(.73, .81, .9), sun_dir=(.5, .75, -.4), haze_start=38, haze_end=640, haze_k=.62),
-    5: dict(sun=(1, .97, .91), zenith=(.15, .38, .8), horizon=(.66, .83, .95), glow=(1, .97, .9), shade=(.6, .67, .82),
-            haze=(.7, .82, .93), sun_dir=(.55, .7, -.45), haze_start=40, haze_end=700, haze_k=.58),
+    1: dict(sun=(1, .97, .92), zenith=(.2, .43, .72), horizon=(.62, .79, .92), glow=(1, .97, .9), shade=(.52, .56, .66),
+            haze=(.68, .78, .88), sun_dir=(.45, .78, -.45), haze_start=40, haze_end=700, haze_k=.6),
+    2: dict(sun=(1, .97, .92), zenith=(.2, .43, .72), horizon=(.63, .79, .92), glow=(1, .97, .9), shade=(.52, .56, .66),
+            haze=(.68, .78, .88), sun_dir=(.4, .85, -.35), haze_start=40, haze_end=700, haze_k=.58),
+    3: dict(sun=(1, .98, .94), zenith=(.17, .43, .74), horizon=(.58, .79, .93), glow=(1, .97, .9), shade=(.54, .58, .68),
+            haze=(.66, .8, .9), sun_dir=(.5, .75, -.45), haze_start=45, haze_end=760, haze_k=.55),
+    4: dict(sun=(1, .97, .93), zenith=(.22, .44, .72), horizon=(.66, .8, .9), glow=(1, .97, .91), shade=(.52, .55, .64),
+            haze=(.7, .77, .85), sun_dir=(.5, .75, -.4), haze_start=38, haze_end=640, haze_k=.62),
+    5: dict(sun=(1, .96, .9), zenith=(.2, .43, .72), horizon=(.64, .8, .92), glow=(1, .96, .88), shade=(.52, .57, .64),
+            haze=(.68, .78, .86), sun_dir=(.55, .7, -.45), haze_start=40, haze_end=700, haze_k=.58),
 }
 mood = dict(MOODS[chapter])
 if '--haze-end' in args:          # try a different haze range
@@ -471,8 +471,9 @@ SHOP = [((.94, .94, .92), (.2, .42, .74), (.56, .57, .6)), ((.88, .86, .82), (.8
 WORK = [((.82, .82, .81), (.9, .56, .14), (.5, .53, .57)), ((.8, .81, .82), (.8, .26, .22), (.46, .5, .55)),
         ((.86, .84, .8), (.24, .44, .64), (.52, .52, .54))]
 WIDTH = {'HouseGable': 7, 'HouseLong': 10, 'Bungalow': 7, 'ShopFruit': 8, 'ShopShutter': 8, 'Apartment': 12, 'Warehouse': 11, 'School': 32}
-SUMMER = [(.42, .66, .28), (.36, .6, .3), (.5, .7, .3), (.3, .54, .32), (.46, .64, .26)]
-MEADOW = [(.5, .7, .32), (.58, .72, .34), (.44, .64, .3)]
+SUMMER = [(.38, .5, .25), (.34, .46, .25), (.42, .52, .27), (.3, .43, .25), (.4, .48, .23)]
+MEADOW = [(.48, .58, .3), (.52, .6, .32), (.42, .54, .28)]
+PALM, HEDGE = (.36, .48, .24), (.27, .4, .22)
 
 
 def scramble(seed):
@@ -495,8 +496,10 @@ def building(model, x, z, schemes):
 
 def plant(model, x, y, z, scale):
     leaves = None
-    if (model.startswith('Broadleaf') or model == 'Birch' or model.startswith('Bush')) and rng.random() < .85:
+    if model.startswith('Broadleaf') or model == 'Birch' or model.startswith('Bush'):
         leaves = rng.choice(SUMMER)
+    elif model.startswith('Palm'):
+        leaves = PALM
     elif model in ('TallGrass', 'GrassTuft') and rng.random() < .8:
         leaves = rng.choice(MEADOW)
     place('Plants', model, x, y, z, rng.uniform(0, 360), scale, [leaves, None, None] if leaves else None)
@@ -586,7 +589,7 @@ def suburb():
     while x < X1 + 20:
         building(rng.choice(['HouseGable', 'HouseLong']), x, rng.uniform(20, 24), HOUSE)
         x += rng.uniform(10, 14)
-    distant((.48, .68, .36), None)
+    distant((.44, .54, .32), None)
 
 
 def market():
@@ -709,7 +712,7 @@ def city():
     while x < X1:
         place('Works', 'TowerCrane', x + rng.uniform(-20, 20), 0, rng.uniform(170, 230), rng.uniform(-40, 40) + (180 if rng.random() < .5 else 0), rng.uniform(.85, 1.05))
         x += rng.uniform(70, 120)
-    distant((.6, .68, .5), None)
+    distant((.54, .58, .46), None)
 
 
 def park_features():
@@ -743,7 +746,7 @@ def park():
         w = rng.uniform(6, 10); cx = x + w / 2
         if seg % 2 == 0: place('Leisure', 'ParkLamp', x, .04, PROP - .1)
         seg += 1
-        row('Plants', 'HedgeBlock2', x + .6, x + w - .6, .04, PROP + .4)
+        row('Plants', 'HedgeBlock2', x + .6, x + w - .6, .04, PROP + .4, [HEDGE, None, None])
         plant(rng.choice(['ShrubFlowering', 'BushRound']), cx - w * .25, .04, PROP + 1.5, rng.uniform(1.2, 1.6))
         if rng.random() < .4:
             place('Street', 'Bench', cx + 1.5, .04, PROP - .55)
@@ -769,18 +772,18 @@ def park():
     while x < X1:
         plant(rng.choice(['TallGrass', 'GrassTuft', 'FlowerPatch', 'GrassTuft', 'TallGrass']), x, .08, rng.uniform(-6.5, -2.4), rng.uniform(1.1, 1.8))
         x += rng.uniform(.8, 2.6)
-    distant((.48, .68, .36), None)
+    distant((.44, .54, .32), None)
 
 
 {1: suburb, 2: market, 3: beach, 4: city, 5: park}[chapter]()
 poles()
 
 # A kid-sized marker on the footpath for scale (1.55 m), where the player would stand, and the ball
-# (a size 5 football, 22 cm) at their feet.
+# (34 cm across, a little larger than life, as in the game) at their feet.
 kid_y = SAND.lane(CAM_X - 1.5) if SAND else 0.0
 box(CAM_X - 1.5 - .2, CAM_X - 1.5 + .2, kid_y, kid_y + 1.55, -.15, .15, (.9, .35, .3), 'kid')
 ball_y = SAND.lane(CAM_X - .9) if SAND else 0.0
-box(CAM_X - .9 - .11, CAM_X - .9 + .11, ball_y, ball_y + .22, -.11, .11, (.97, .97, .95), 'ball')
+box(CAM_X - .9 - .17, CAM_X - .9 + .17, ball_y, ball_y + .34, -.17, .17, (.97, .97, .95), 'ball')
 
 # ---------------------------------------------------------------- the game camera
 cam = bpy.data.objects.new('cam', bpy.data.cameras.new('cam')); S.collection.objects.link(cam); S.camera = cam

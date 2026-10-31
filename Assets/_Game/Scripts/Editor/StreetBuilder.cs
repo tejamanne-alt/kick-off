@@ -10,7 +10,7 @@ namespace DribbleToSchool.EditorTools
     /// Builds the 3D street around the 2D gameplay plane (z = 0): ground slabs with the
     /// footpath, kerbs and the road, side streets at crossings, and the scenery along the
     /// street for each chapter. Scale: 1 unit to the metre, as the asset kits are modelled (the kid
-    /// is about 1.55 tall, the ball a 22 cm football, a house about 9 to its ridge).
+    /// is about 1.55 tall, a house about 9 to its ridge); only the ball is drawn larger than life.
     ///
     /// Depth layout (z grows away from the camera):
     ///   z &lt; -8.1        near pavement, below the bottom of the screen
@@ -473,14 +473,16 @@ namespace DribbleToSchool.EditorTools
         }
 
         // Summer greens for broadleaf trees and bushes (Plants kit part 1), so neighbours differ a
-        // little: fresh yellow-greens, mid greens and deeper blue-greens.
+        // little: natural, slightly olive greens, never lime (the kit's own are brighter).
         static readonly Color[] SummerLeaves =
         {
-            new Color(0.42f, 0.66f, 0.28f), new Color(0.36f, 0.6f, 0.3f), new Color(0.5f, 0.7f, 0.3f),
-            new Color(0.3f, 0.54f, 0.32f), new Color(0.46f, 0.64f, 0.26f),
+            new Color(0.38f, 0.5f, 0.25f), new Color(0.34f, 0.46f, 0.25f), new Color(0.42f, 0.52f, 0.27f),
+            new Color(0.3f, 0.43f, 0.25f), new Color(0.4f, 0.48f, 0.23f),
         };
         // Meadow grass in leaf (the kit's tall grass and tufts are made seeding, golden).
-        static readonly Color[] MeadowGreens = { new Color(0.5f, 0.7f, 0.32f), new Color(0.58f, 0.72f, 0.34f), new Color(0.44f, 0.64f, 0.3f) };
+        static readonly Color[] MeadowGreens = { new Color(0.48f, 0.58f, 0.3f), new Color(0.52f, 0.6f, 0.32f), new Color(0.42f, 0.54f, 0.28f) };
+        /// <summary>Palm fronds and clipped hedges, in the same calm greens.</summary>
+        public static readonly Color PalmGreen = new Color(0.36f, 0.48f, 0.24f), HedgeGreen = new Color(0.27f, 0.4f, 0.22f);
 
         /// <summary>
         /// A tree (or bush) from the Plants kit standing at (x, groundY, z), turned at random, its
@@ -490,7 +492,8 @@ namespace DribbleToSchool.EditorTools
         {
             Color? leaves = null;
             bool leafy = model.StartsWith("Broadleaf") || model == "Birch" || model.StartsWith("Bush");
-            if (leafy && rng.NextDouble() < 0.85) leaves = SummerLeaves[rng.Next(SummerLeaves.Length)];
+            if (leafy) leaves = SummerLeaves[rng.Next(SummerLeaves.Length)];
+            else if (model.StartsWith("Palm")) leaves = PalmGreen;
             else if ((model == "TallGrass" || model == "GrassTuft") && rng.NextDouble() < 0.8) leaves = MeadowGreens[rng.Next(MeadowGreens.Length)];
             if (Model(parent, "Plants", model, x, groundY, z, Rand(rng, 0f, 360f), scale, leaves) != null) return;
             if (fallback != null) CutOut(parent, model, fallback, x, groundY, z, spriteScale, order, rng.NextDouble() < 0.5);
@@ -793,7 +796,7 @@ namespace DribbleToSchool.EditorTools
                         Plant(root, rng.NextDouble() < 0.7 ? "Broadleaf" : "Birch", null, tx, gy, PropertyZ + Rand(rng, 3.5f, 7f), Rand(rng, 0.8f, 1.05f), 1f, -60, rng);
                     break;
                 case 5:
-                    Row(root, "Plants", "HedgeBlock2", a + 0.3f, b - 0.3f, gy + 0.04f, PropertyZ + 0.4f);
+                    Row(root, "Plants", "HedgeBlock2", a + 0.3f, b - 0.3f, gy + 0.04f, PropertyZ + 0.4f, HedgeGreen);
                     break;
                 default:
                     BlockWall(root, a + 0.1f, b - 0.1f, gy, Art.surfaces[ProceduralArt.Surface.BlockWall], true, true);
@@ -1466,7 +1469,7 @@ namespace DribbleToSchool.EditorTools
                 float cx = x + w * 0.5f, gy = GroundAt(track, cx) + 0.04f;
                 // A lamp in every other gap between the hedges.
                 if (segment++ % 2 == 0) Model(root, "Leisure", "ParkLamp", x, GroundAt(track, x) + 0.04f, PropertyZ - 0.1f);
-                if (!Row(root, "Plants", "HedgeBlock2", cx - w * 0.5f + 0.6f, cx + w * 0.5f - 0.6f, gy, PropertyZ + 0.4f))
+                if (!Row(root, "Plants", "HedgeBlock2", cx - w * 0.5f + 0.6f, cx + w * 0.5f - 0.6f, gy, PropertyZ + 0.4f, HedgeGreen))
                     Solid(root, "Hedge", new Vector3(cx, gy + 0.5f, PropertyZ + 0.4f), new Vector3(w - 1.2f, 1f, 0.8f), hedge);
                 ContactShadow(root, cx - w * 0.5f + 0.6f, cx + w * 0.5f - 0.6f, gy, PropertyZ - 0.25f, PropertyZ);
                 if (plants)
@@ -1584,7 +1587,7 @@ namespace DribbleToSchool.EditorTools
             if (LevelBuildKit.HasKitModel("Terrain", "HillsRolling"))
             {
                 float y = track.LowestGroundTop;
-                Color fields = ch == 4 ? new Color(0.6f, 0.68f, 0.5f) : new Color(0.48f, 0.68f, 0.36f);
+                Color fields = ch == 4 ? new Color(0.54f, 0.58f, 0.46f) : new Color(0.44f, 0.54f, 0.32f);
                 Color? grass = null;
                 // Flat fields from the end of the street ground out to the hills, so nothing floats.
                 var plain = Solid(root, "Fields", new Vector3((x0 + x1) * 0.5f, y - 0.06f, (BackZ + 760f) * 0.5f - 1f), new Vector3(x1 - x0 + 2200f, 0.1f, 760f - BackZ), fields);

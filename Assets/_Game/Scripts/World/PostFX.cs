@@ -4,8 +4,8 @@ namespace DribbleToSchool.World
 {
     /// <summary>
     /// The camera's finishing pass (Shaders/PostFX.shader): a faint bloom on the brightest
-    /// highlights, a clean neutral grade with a little extra contrast for clear daylight, and a
-    /// light vignette. The bloom runs on a quarter-size chain so it stays cheap on phones; turn it
+    /// highlights, a natural grade (a little less saturation and a little more contrast, so colours
+    /// sit like a painted background rather than a toy box) and a light vignette. The bloom runs on a quarter-size chain so it stays cheap on phones; turn it
     /// off with <see cref="bloom"/>.
     /// </summary>
     [RequireComponent(typeof(Camera))]
@@ -17,11 +17,11 @@ namespace DribbleToSchool.World
         [Range(0f, 2f)] public float bloomIntensity = 0.16f;
         public Color bloomTint = Color.white;
         [Tooltip("Added to the shadows (a touch of cool).")]
-        public Color lift = new Color(0f, 0.005f, 0.015f);
-        [Tooltip("Multiplies the highlights.")]
-        public Color gain = Color.white;
-        [Range(0.5f, 1.5f)] public float contrast = 1.08f;
-        [Range(0f, 2f)] public float saturation = 1f;
+        public Color lift = new Color(0f, 0f, 0.008f);
+        [Tooltip("Multiplies the highlights (a touch warm).")]
+        public Color gain = new Color(1f, 0.99f, 0.97f);
+        [Range(0.5f, 1.5f)] public float contrast = 1.12f;
+        [Range(0f, 2f)] public float saturation = 0.88f;
         [Range(0f, 1f)] public float vignette = 0.1f;
 
         Material material;

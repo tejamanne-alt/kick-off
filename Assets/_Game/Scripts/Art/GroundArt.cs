@@ -406,7 +406,7 @@ namespace DribbleToSchool.Art
                 t.Blob(x - r * 0.3f, y + r * 0.3f, r * 0.35f, r * 0.3f, Shift(c, 1.12f), 0.6f, 0.6f);
             }
             // A few leaves blown onto the park path.
-            Color[] leaves = { new Color(0.42f, 0.62f, 0.3f), new Color(0.56f, 0.7f, 0.34f), new Color(0.66f, 0.6f, 0.36f), new Color(0.36f, 0.52f, 0.28f) };
+            Color[] leaves = { new Color(0.4f, 0.52f, 0.28f), new Color(0.5f, 0.58f, 0.32f), new Color(0.6f, 0.56f, 0.34f), new Color(0.34f, 0.46f, 0.26f) };
             for (int i = 0; i < 14; i++)
             {
                 float x = GRand(rng, 0, n), y = GRand(rng, 0, n), a = GRand(rng, 0f, 3.14f);
@@ -421,7 +421,7 @@ namespace DribbleToSchool.Art
         static PixelCanvas Grass(System.Random rng, int seed)
         {
             int n = GroundSize;
-            Color lush = new Color(0.43f, 0.65f, 0.3f), dry = new Color(0.62f, 0.73f, 0.38f), deep = new Color(0.3f, 0.52f, 0.27f);
+            Color lush = new Color(0.4f, 0.53f, 0.27f), dry = new Color(0.56f, 0.6f, 0.34f), deep = new Color(0.26f, 0.4f, 0.22f);
             var t = new GroundTile(n, Color.Lerp(lush, dry, 0.3f));
             // Big soft patches of lusher and drier grass.
             for (int y = 0; y < n; y++)
@@ -444,12 +444,12 @@ namespace DribbleToSchool.Art
                     var p0 = new Vector2(x + GRand(rng, -3f, 3f), y + GRand(rng, -2f, 2f));
                     var p1 = p0 + new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * len;
                     t.Stroke(p0, p1, GRand(rng, 1.1f, 1.8f), Shift(baseCol, GRand(rng, 0.78f, 0.9f)), 0.7f);
-                    t.Stroke(Vector2.Lerp(p0, p1, 0.45f), p1, GRand(rng, 0.9f, 1.3f), Color.Lerp(Shift(baseCol, 1.16f), new Color(0.78f, 0.88f, 0.5f), 0.3f), 0.75f);
+                    t.Stroke(Vector2.Lerp(p0, p1, 0.45f), p1, GRand(rng, 0.9f, 1.3f), Color.Lerp(Shift(baseCol, 1.16f), new Color(0.7f, 0.76f, 0.45f), 0.3f), 0.75f);
                 }
             }
             // Clover and a scatter of tiny white and yellow flowers, in little drifts.
             for (int i = 0; i < 26; i++)
-                t.Blob(GRand(rng, 0, n), GRand(rng, 0, n), GRand(rng, 12f, 26f), GRand(rng, 8f, 16f), new Color(0.3f, 0.54f, 0.28f), 0.3f, 6f, GRand(rng, 0f, 3f));
+                t.Blob(GRand(rng, 0, n), GRand(rng, 0, n), GRand(rng, 12f, 26f), GRand(rng, 8f, 16f), new Color(0.28f, 0.44f, 0.24f), 0.3f, 6f, GRand(rng, 0f, 3f));
             for (int d = 0; d < 9; d++)
             {
                 float cx = GRand(rng, 0, n), cy = GRand(rng, 0, n);

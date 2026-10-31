@@ -13,7 +13,8 @@ ourselves. We don't reproduce any other game's assets, characters or vehicles.
 2. **Neutral daylight.** A high, near-white sun. Lit faces show their true colour; shade is a cool
    blue-grey, clearly darker, with a crisp but soft edge between the two (anime, not a long ramp).
    Sun shadows are cool and readable. Only the faintest bloom on the brightest highlights; the
-   grade is neutral with a little extra contrast. No golden cast anywhere.
+   grade takes a little saturation out and adds a little contrast, so colours sit like a painted
+   background rather than a toy box. No golden cast anywhere; greys lean very slightly warm.
 3. **True, quiet materials.** Paving and concrete are neutral greys, asphalt a cool dark grey,
    walls white, pale grey or light stucco under dark slate, charcoal, blue-grey or terracotta
    roofs. Colour comes in small, deliberate doses: a shop awning, a vending machine, a door, a
@@ -21,9 +22,9 @@ ourselves. We don't reproduce any other game's assets, characters or vehicles.
 4. **Chunky, simple forms with crafted detail.** Shapes are bold and softly bevelled. Detail comes
    from a few well-chosen parts (AC units, gutters, poles and wires, letterboxes, planters, bikes)
    rather than surface noise.
-5. **Fresh vegetation.** Broadleaf trees are clumpy masses in varied summer greens (yellow-green
-   in the sun, blue-green in the shade); conifers dark green; lawns a fresh green with a few
-   flowers. Cherry blossom is an occasional accent, never the main colour.
+5. **Natural vegetation.** Broadleaf trees are clumpy masses in varied, slightly olive summer
+   greens, never lime; conifers dark green; lawns a calm green with a few flowers. Cherry blossom
+   is an occasional accent, never the main colour.
 6. **Water.** A clear turquoise to deep blue sea with white foam where it meets the sand; peachy
    sand that darkens a little where it is wet.
 7. **Characters pop.** The kid is the clearest thing on screen: flat cel shading in two bands, a

@@ -26,16 +26,16 @@ namespace DribbleToSchool.World
 
         [Header("Shade")]
         [Tooltip("The colour shade sides take from the sky above: cool and clear.")]
-        public Color ambientSky = new Color(0.6f, 0.66f, 0.82f);
+        public Color ambientSky = new Color(0.52f, 0.56f, 0.66f);
         [Tooltip("The bounce from the ground on downward-facing shade.")]
-        public Color ambientGround = new Color(0.74f, 0.73f, 0.74f);
+        public Color ambientGround = new Color(0.62f, 0.6f, 0.58f);
 
         [Header("Sky")]
-        public Color skyZenith = new Color(0.15f, 0.38f, 0.8f);
-        public Color skyHorizon = new Color(0.64f, 0.81f, 0.95f);
+        public Color skyZenith = new Color(0.2f, 0.43f, 0.72f);
+        public Color skyHorizon = new Color(0.62f, 0.79f, 0.92f);
 
         [Header("Haze")]
-        public Color hazeColor = new Color(0.7f, 0.81f, 0.93f);
+        public Color hazeColor = new Color(0.68f, 0.78f, 0.88f);
         [Range(0f, 1f)] public float hazeStrength = 0.6f;
         public float hazeStart = 40f;
         public float hazeEnd = 700f;

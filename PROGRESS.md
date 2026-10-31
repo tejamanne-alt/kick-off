@@ -189,7 +189,7 @@ This file is the resume point. A new session should read it first. All eight pha
 
 ## Painterly world and asset kits
 
-The look follows `docs/ART_DIRECTION.md`: clear anime daylight (generated content v37; it was a golden-hour haze before playtesting showed it tinted everything yellow and hid the kid).
+The look follows `docs/ART_DIRECTION.md`: clear anime daylight (generated content v37; it was a golden-hour haze before playtesting showed it tinted everything yellow and hid the kid). In v38 the palette was measured against the reference shots and calmed: olive summer greens instead of bright lime (leaves, grass, hedges, palms), a lighter cerulean sky, deeper neutral-cool shade, slightly warm greys, and a grade with 0.88 saturation and 1.12 contrast. The ball is 34 cm across (`LevelBuildKit.BallRadius`), larger than a real 22 cm football so it reads at a glance on a phone.
 - **Light and air:** the toon shaders share `Shaders/DtsLook.cginc`:
   - a near-white sun with a crisp, slightly soft step into cool blue-grey shade;
   - shade tinted by the sky above and a neutral bounce from the ground below;
