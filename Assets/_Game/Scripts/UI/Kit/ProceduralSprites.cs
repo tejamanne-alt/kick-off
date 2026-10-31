@@ -5,7 +5,7 @@ namespace DribbleToSchool.UI.Kit
     /// <summary>UI sprites drawn in code: rounded panels, circles, stars, coins, a padlock.</summary>
     public static class ProceduralSprites
     {
-        static Sprite rounded, roundedSmall, circle, star, coin, lockIcon, gradient, arrow, pause, ring, softDisc, softEdgeDisc, ballIcon;
+        static Sprite rounded, roundedSmall, circle, star, coin, lockIcon, gradient, arrow, pause, ring, softDisc, softEdgeDisc, ballIcon, slideIcon;
 
         /// <summary>Upward chevron (jump button).</summary>
         public static Sprite ArrowUp
@@ -18,6 +18,30 @@ namespace DribbleToSchool.UI.Kit
                     bool outer = v > -0.6f && v < 0.75f - Mathf.Abs(u) * 1.35f;
                     bool inner = v > -0.6f && v < 0.15f - Mathf.Abs(u) * 1.35f;
                     return outer && !inner && Mathf.Abs(u) < 0.95f ? 1f : 0f;
+                }));
+            }
+        }
+
+        /// <summary>
+        /// Slide button: the jump chevron turned to point down, a little smaller, over a short
+        /// rounded bar for the ground: "get down low".
+        /// </summary>
+        public static Sprite SlideIcon
+        {
+            get
+            {
+                return slideIcon != null ? slideIcon : (slideIcon = MakeShape(96, (u, v) =>
+                {
+                    // The ArrowUp chevron flipped and scaled about a centre above the bar.
+                    const float scale = 0.72f;
+                    float cu = u / scale, cv = (0.2f - v) / scale;
+                    bool outer = cv > -0.6f && cv < 0.75f - Mathf.Abs(cu) * 1.35f;
+                    bool inner = cv > -0.6f && cv < 0.15f - Mathf.Abs(cu) * 1.35f;
+                    bool chevron = outer && !inner && Mathf.Abs(cu) < 0.95f;
+                    // The ground: a bar with round ends below the chevron's point.
+                    float bx = Mathf.Max(0f, Mathf.Abs(u) - 0.58f), by = v + 0.7f;
+                    bool bar = bx * bx + by * by < 0.1f * 0.1f;
+                    return chevron || bar ? 1f : 0f;
                 }));
             }
         }

@@ -5,7 +5,7 @@ using UnityEngine.UI;
 namespace DribbleToSchool.UI.Kit
 {
     /// <summary>
-    /// The look of an on-screen game control (walk, kick, jump): a see-through disc of
+    /// The look of an on-screen game control (walk, kick, slide, jump): a see-through disc of
     /// frosted glass with a soft white icon, no border and only a hint of colour, so the
     /// game shows through and the controls stay out of the way. Holding it brightens the
     /// glass a little, shrinks it slightly and fires a crisp haptic click; letting go eases
@@ -15,7 +15,7 @@ namespace DribbleToSchool.UI.Kit
     /// </summary>
     public class TouchButton : MonoBehaviour
     {
-        [Tooltip("Main actions (kick, jump) click harder than the walk buttons.")]
+        [Tooltip("Main actions (kick, slide, jump) click harder than the walk buttons.")]
         public bool primary = true;
         [Tooltip("Opacity of the glass at rest and while held.")]
         public float restAlpha = 0.14f;

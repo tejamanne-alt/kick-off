@@ -17,7 +17,7 @@ namespace DribbleToSchool.Tutorial
         public static readonly string[] AllIds =
         {
             "dribble", "brake", "jump", "kick", "juggle", "gate", "puddle", "pedestrian", "crossing", "springboard",
-            "tide", "seagull", "tunnel", "pipes", "platform", "dog", "fountain", "swing",
+            "tide", "seagull", "tunnel", "pipes", "platform", "dog", "fountain", "swing", "slide", "doublejump",
         };
 
         /// <summary>Raised with the hint id when a hint should be displayed.</summary>

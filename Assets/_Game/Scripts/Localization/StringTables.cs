@@ -66,7 +66,7 @@ namespace DribbleToSchool.Localization
                 { "hud.ready", "Ready..." }, { "hud.go", "GO!" },
                 { "hud.bellIn", "Bell {0}" }, { "hud.late", "LATE!" },
                 { "hud.perfect", "Perfect x{0}" }, { "hud.juggles", "Juggles {0}" },
-                { "hud.jump", "JUMP" }, { "hud.kick", "KICK" },
+                { "hud.jump", "JUMP" }, { "hud.kick", "KICK" }, { "hud.slide", "SLIDE" },
                 { "hud.tooFar", "Too far - get closer to kick" },
 
                 // Toasts
@@ -119,6 +119,8 @@ namespace DribbleToSchool.Localization
                 { "tut.dog", "Dogs chase low balls. Chip it over their heads!" },
                 { "tut.fountain", "The fountain jets lift the ball. Dribble into them!" },
                 { "tut.swing", "Chip the ball across, then ride the rope swing over." },
+                { "tut.slide", "Tap SLIDE (or swipe down) to slide under things feet first. The ball rolls under too!" },
+                { "tut.doublejump", "Tap JUMP again in the air for a double jump. Hold it to go higher." },
 
                 // Levels
                 { "level.L01", "Out the Door" }, { "level.L02", "Parked Cars" }, { "level.L03", "Up the Hill" },
@@ -186,7 +188,7 @@ namespace DribbleToSchool.Localization
                 { "hud.ready", "¿Listos...?" }, { "hud.go", "¡YA!" },
                 { "hud.bellIn", "Campana {0}" }, { "hud.late", "¡TARDE!" },
                 { "hud.perfect", "Perfecto x{0}" }, { "hud.juggles", "Toques {0}" },
-                { "hud.jump", "SALTO" }, { "hud.kick", "CHUTA" },
+                { "hud.jump", "SALTO" }, { "hud.kick", "CHUTA" }, { "hud.slide", "DESLIZA" },
                 { "hud.tooFar", "Muy lejos: acércate para chutar" },
 
                 { "toast.perfect", "¡Toque perfecto!" }, { "toast.perfectN", "Toque perfecto x{0}" },
@@ -234,6 +236,8 @@ namespace DribbleToSchool.Localization
                 { "tut.dog", "Los perros persiguen balones bajos. ¡Pásalo por encima!" },
                 { "tut.fountain", "El agua de la fuente levanta el balón. ¡Llévalo dentro!" },
                 { "tut.swing", "Pasa el balón al otro lado y cruza en el columpio de cuerda." },
+                { "tut.slide", "Toca DESLIZA (o desliza el dedo hacia abajo) para pasar por debajo con los pies por delante. ¡El balón también pasa!" },
+                { "tut.doublejump", "Toca SALTO otra vez en el aire para un doble salto. Mantén para subir más." },
 
                 { "level.L01", "Salir de casa" }, { "level.L02", "Coches aparcados" }, { "level.L03", "Cuesta arriba" },
                 { "level.L04", "La verja del jardín" }, { "level.L05", "Calle de los charcos" }, { "level.L06", "Mañana de mercado" },

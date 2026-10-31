@@ -68,6 +68,12 @@ namespace DribbleToSchool.UI
             p.gravityScale = Slider("Gravity", p.gravityScale, 1f, 6f);
             p.jumpCutMultiplier = Slider("Short-hop cut", p.jumpCutMultiplier, 0f, 1f);
             p.fallGravityMultiplier = Slider("Fall gravity x", p.fallGravityMultiplier, 1f, 3f);
+            p.airJumps = Mathf.RoundToInt(Slider("Air jumps", p.airJumps, 0f, 2f));
+            p.airJumpVelocity = Slider("Air jump velocity", p.airJumpVelocity, 3f, 12f);
+            p.slideDuration = Slider("Slide time", p.slideDuration, 0.3f, 1.2f);
+            p.slideSpeedBoost = Slider("Slide boost x", p.slideSpeedBoost, 1f, 2f);
+            p.slideFriction = Slider("Slide friction", p.slideFriction, 0f, 10f);
+            p.slideMinSpeed = Slider("Slide min speed", p.slideMinSpeed, 0.5f, 5f);
 
             GUILayout.Space(8f);
             GUILayout.Label("BALL", label);

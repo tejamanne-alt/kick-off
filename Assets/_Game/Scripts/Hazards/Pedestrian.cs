@@ -40,13 +40,28 @@ namespace DribbleToSchool.Hazards
             if (visual != null) visualBasePosition = visual.localPosition;
         }
 
+        Player.KidController ignoredKid;
+
         void Start()
         {
-            // People only get in the ball's way; the kid slips past in front of them.
-            var kid = Kid;
-            if (kid == null) return;
+            // People only get in the ball's way; the kid slips past in front of them (again
+            // whenever the kid's collider changes shape for a slide, to be sure it holds).
+            ignoredKid = Kid;
+            if (ignoredKid == null) return;
+            IgnoreKid();
+            ignoredKid.ShapeChanged += IgnoreKid;
+        }
+
+        void OnDestroy()
+        {
+            if (ignoredKid != null) ignoredKid.ShapeChanged -= IgnoreKid;
+        }
+
+        void IgnoreKid()
+        {
+            if (ignoredKid == null) return;
             var own = GetComponentsInChildren<Collider2D>();
-            foreach (var kc in kid.GetComponentsInChildren<Collider2D>())
+            foreach (var kc in ignoredKid.GetComponentsInChildren<Collider2D>())
                 foreach (var c in own) Physics2D.IgnoreCollision(c, kc, true);
         }
 

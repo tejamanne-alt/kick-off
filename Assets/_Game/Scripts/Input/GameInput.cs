@@ -12,21 +12,24 @@ namespace DribbleToSchool.InputHandling
     ///
     /// Touch layout (landscape, mirrored for left-handed play):
     ///  - Left / right arrow buttons (bottom-left): walk backward / forward. Let go to stop.
-    ///  - Kick button (bottom-right, before Jump): drag from it in the direction you
+    ///  - Kick button (bottom-right, left of Slide): drag from it in the direction you
     ///    want the ball to go, then release. Longer drag = more power. A quick tap
     ///    is a short pass the way the kid is facing.
-    ///  - Jump button (bottom-right) or swipe up anywhere else: jump (hold for higher).
+    ///  - Slide button (between Kick and Jump) or swipe down anywhere else: a feet-first
+    ///    slide along the ground, low enough to pass under barriers.
+    ///  - Jump button (bottom-right) or swipe up anywhere else: jump (hold for higher);
+    ///    press again in the air for a double jump.
     ///  - Quick tap anywhere else: touch the ball (perfect touch / juggle).
     ///
     /// Keyboard + mouse (editor testing):
-    ///  - A / Left: walk back. D / Right: walk forward. Space / W / Up: jump.
-    ///  - F / J: touch. K: quick kick. Mouse drag from the kick button: aimed kick.
+    ///  - A / Left: walk back. D / Right: walk forward. Space / W / Up: jump (again in the air: double jump).
+    ///  - S / Down: slide. F / J: touch. K: quick kick. Mouse drag from the kick button: aimed kick.
     ///  - R: restart. Esc / P: pause. Tab: tuning panel.
     /// </summary>
     [DefaultExecutionOrder(-100)]
     public class GameInput : MonoBehaviour
     {
-        enum Role { MoveLeft, MoveRight, Kick, Jump, TapOrSwipe }
+        enum Role { MoveLeft, MoveRight, Kick, Slide, Jump, TapOrSwipe }
 
         class Pointer
         {
@@ -54,7 +57,9 @@ namespace DribbleToSchool.InputHandling
         [Header("Layout (normalized screen coords: x, y, width, height; origin bottom-left)")]
         public Rect leftButtonRect = new Rect(0.025f, 0.04f, 0.115f, 0.24f);
         public Rect rightButtonRect = new Rect(0.155f, 0.04f, 0.115f, 0.24f);
-        public Rect kickButtonRect = new Rect(0.675f, 0.04f, 0.14f, 0.26f);
+        public Rect kickButtonRect = new Rect(0.55f, 0.04f, 0.14f, 0.26f);
+        [Tooltip("A little smaller and lower than Jump, right next to it: slide, then jump, with one thumb.")]
+        public Rect slideButtonRect = new Rect(0.705f, 0.04f, 0.11f, 0.2f);
         public Rect jumpButtonRect = new Rect(0.83f, 0.04f, 0.15f, 0.26f);
         [Tooltip("Extra touch area around each button, in inches, so near misses still count.")]
         public float buttonSlopInches = 0.12f;
@@ -63,6 +68,7 @@ namespace DribbleToSchool.InputHandling
         public float tapMaxDuration = 0.25f;
         public float tapMaxMoveInches = 0.15f;
         public float swipeUpMinInches = 0.35f;
+        public float swipeDownMinInches = 0.35f;
         public float swipeMaxDuration = 0.35f;
 
         [Header("References")]
@@ -72,6 +78,10 @@ namespace DribbleToSchool.InputHandling
         public float MoveAxis { get; private set; }
         public bool JumpPressed { get; private set; }
         public bool JumpHeld { get; private set; }
+        /// <summary>Slide button tapped, swiped down or S / Down pressed this frame.</summary>
+        public bool SlidePressed { get; private set; }
+        /// <summary>True while the finger (or key) for the slide is down; used by the HUD.</summary>
+        public bool SlideHeld { get; private set; }
         public bool TouchPressed { get; private set; }
         /// <summary>True while a finger drags from the kick button.</summary>
         public bool KickAiming { get; private set; }
@@ -97,6 +107,7 @@ namespace DribbleToSchool.InputHandling
         // but keeps "back" on the left of "forward" so the arrows still point the right way.
         public Rect JumpButtonNormalized { get { return Mirror(jumpButtonRect); } }
         public Rect KickButtonNormalized { get { return Mirror(kickButtonRect); } }
+        public Rect SlideButtonNormalized { get { return Mirror(slideButtonRect); } }
         public Rect LeftButtonNormalized { get { return GameSettings.LeftHanded ? MirrorPair(rightButtonRect, leftButtonRect) : leftButtonRect; } }
         public Rect RightButtonNormalized { get { return GameSettings.LeftHanded ? MirrorPair(leftButtonRect, rightButtonRect) : rightButtonRect; } }
 
@@ -147,7 +158,7 @@ namespace DribbleToSchool.InputHandling
         void Update()
         {
             MoveAxis = 0f;
-            LeftHeld = RightHeld = JumpPressed = JumpHeld = KickHeld = TouchPressed = false;
+            LeftHeld = RightHeld = JumpPressed = JumpHeld = SlidePressed = SlideHeld = KickHeld = TouchPressed = false;
             KickAiming = KickReleased = KickTapped = ResetPressed = PausePressed = DebugTogglePressed = false;
 
             samples.Clear();
@@ -196,6 +207,7 @@ namespace DribbleToSchool.InputHandling
                     p.role = ClassifyDown(s.position);
                     pointers[s.id] = p;
                     if (p.role == Role.Jump) JumpPressed = true;
+                    if (p.role == Role.Slide) SlidePressed = true;
                 }
             }
 
@@ -206,6 +218,7 @@ namespace DribbleToSchool.InputHandling
                     case Role.MoveLeft: LeftHeld = true; break;
                     case Role.MoveRight: RightHeld = true; break;
                     case Role.Jump: JumpHeld = true; break;
+                    case Role.Slide: SlideHeld = true; break;
                     case Role.Kick:
                         KickHeld = true;
                         // Only a real drag aims (and slows time); a tap is a quick pass on release.
@@ -235,6 +248,7 @@ namespace DribbleToSchool.InputHandling
                 bool slop = pass == 1;
                 if (ToScreen(JumpButtonNormalized, slop).Contains(pos)) return Role.Jump;
                 if (ToScreen(KickButtonNormalized, slop).Contains(pos) && !AnyPointerWithRole(Role.Kick)) return Role.Kick;
+                if (ToScreen(SlideButtonNormalized, slop).Contains(pos)) return Role.Slide;
                 if (ToScreen(LeftButtonNormalized, slop).Contains(pos)) return Role.MoveLeft;
                 if (ToScreen(RightButtonNormalized, slop).Contains(pos)) return Role.MoveRight;
             }
@@ -257,6 +271,12 @@ namespace DribbleToSchool.InputHandling
                 // Swipe up turns into a held jump so the kid jumps higher while the finger stays down.
                 p.role = Role.Jump;
                 JumpPressed = true;
+            }
+            else if (quick && p.start.y - p.current.y >= swipeDownMinInches * Dpi)
+            {
+                // Swipe down: drop into a slide.
+                p.role = Role.Slide;
+                SlidePressed = true;
             }
         }
 
@@ -335,6 +355,8 @@ namespace DribbleToSchool.InputHandling
             if (kb.kKey.wasPressedThisFrame) KickTapped = true;
             if (kb.spaceKey.wasPressedThisFrame || kb.wKey.wasPressedThisFrame || kb.upArrowKey.wasPressedThisFrame) JumpPressed = true;
             if (kb.spaceKey.isPressed || kb.wKey.isPressed || kb.upArrowKey.isPressed) JumpHeld = true;
+            if (kb.sKey.wasPressedThisFrame || kb.downArrowKey.wasPressedThisFrame) SlidePressed = true;
+            if (kb.sKey.isPressed || kb.downArrowKey.isPressed) SlideHeld = true;
             if (kb.fKey.wasPressedThisFrame || kb.jKey.wasPressedThisFrame) TouchPressed = true;
         }
 
@@ -366,6 +388,8 @@ namespace DribbleToSchool.InputHandling
             if (Input.GetKeyDown(KeyCode.K)) KickTapped = true;
             if (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow)) JumpPressed = true;
             if (Input.GetKey(KeyCode.Space) || Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow)) JumpHeld = true;
+            if (Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.DownArrow)) SlidePressed = true;
+            if (Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow)) SlideHeld = true;
             if (Input.GetKeyDown(KeyCode.F) || Input.GetKeyDown(KeyCode.J)) TouchPressed = true;
         }
 
