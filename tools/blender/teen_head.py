@@ -329,6 +329,25 @@ def _ear(sx):
     return finish(e)
 
 
+def flat_face_normals(o):
+    """Anime face shading: the head's normals are taken from a smooth egg round the cranium,
+    and over the face they lean hard toward one forward (and slightly upward) direction, so the
+    cel bands sweep across the face as one clean shape (all lit, or all in shade) instead of
+    tracing the nose, cheeks and jaw."""
+    me = o.data
+    V = np.empty(len(me.vertices) * 3); me.vertices.foreach_get('co', V); V = V.reshape(-1, 3)
+    c = np.array([0.0, 0.0, 1.40]); r = np.array([0.15, 0.17, 0.21])
+    Ne = (V - c) / r ** 2
+    Ne /= np.linalg.norm(Ne, axis=1)[:, None]
+    fwd = np.array([0.0, -0.96, 0.28]); fwd /= np.linalg.norm(fwd)
+    # how much of the face: the front, fading out toward the ears and under the chin
+    face = _ss(-0.02, -0.11, V[:, 1]) * _ss(1.24, 1.30, V[:, 2])
+    N = Ne + (fwd[None] - Ne) * (0.8 * face)[:, None]
+    N /= np.linalg.norm(N, axis=1)[:, None]
+    me.normals_split_custom_set_from_vertices(N.tolist())
+    me.update()
+
+
 def build_head(girl, skin):
     """The head and both ears, all white vertex colour x the atlas (whose skin is the body's
     skin colour, see face_teen.skin_rgb), bound rigidly to the Head bone."""
@@ -336,6 +355,7 @@ def build_head(girl, skin):
     measure_neck()
     head = _head_mesh(girl)
     finish(head)
+    flat_face_normals(head)
     parts.append(Part(head, (1, 1, 1, 1), 0, 'Head', uv=head_uv))   # white x the painted atlas
     for s in (1, -1):
         parts.append(Part(_ear(s), (1, 1, 1, 1), 0, 'Head', uv=ear_uv))   # white x the atlas' ear

@@ -19,7 +19,7 @@ S = 2048          # atlas size
 Q = S // 2        # the face quadrant
 SS = 4            # supersampling
 CROP = (130, 200, 900, 1000)   # the part of the quadrant that holds painted features (px)
-SKIN_LINEAR = {True: (1.0, 0.88, 0.8), False: (0.96, 0.82, 0.7)}
+SKIN_LINEAR = {True: (0.89, 0.6, 0.42), False: (0.85, 0.53, 0.33)}
 # The ears' drawing in the upper-right quadrant: centre (u, v) and UV units per metre of the
 # ear's own side projection (teen_head.ear_uv): local y (front -, back +), local z (up).
 EAR_UV = (0.75, 0.75, 3.0)
@@ -143,15 +143,15 @@ def _spec(girl):
             upper=((-1.0, -0.1), (-0.7, 1.02), (0.48, 1.12), (1.0, 0.24)),
             lower=((-1.0, -0.1), (-0.55, -0.86), (0.58, -0.8), (1.0, 0.24)),
             iris=(0.03, 0.08, 0.64, 0.8),
-            iris_top=(66, 38, 26), iris_mid=(128, 82, 51), iris_bot=(176, 118, 66), iris_glow=(191, 128, 71),
-            pupil=(38, 21, 15), hl=1.0,
-            lash=(48, 29, 24), lash_w=(0.0012, 0.0036, 0.0052, 0.0030), flick=True,
-            lower_lash=(122, 76, 62), lower_a=0.85, crease=(206, 150, 136),
+            iris_top=(36, 22, 18), iris_mid=(74, 46, 32), iris_bot=(116, 74, 46), iris_glow=(132, 84, 52),
+            pupil=(20, 12, 10), hl=1.0,
+            lash=(30, 20, 19), lash_w=(0.0014, 0.0042, 0.0058, 0.0034), flick=True,
+            lower_lash=(110, 66, 54), lower_a=0.85, crease=(190, 128, 104),
             brow=((-0.0225, 0.0425), (-0.007, 0.0505), (0.014, 0.0548), (0.0305, 0.0442)),
             brow_w=((0.0, 0.0046), (0.33, 0.0042), (0.66, 0.0026), (1.0, 0.0003)),
-            brow_col=(112, 62, 42),
-            blush=((-0.076, 1.382, 0.022, 0.011), (0.076, 1.382, 0.022, 0.011), (255, 146, 140), 0.42),
-            mouth='smile', mouth_z=1.337, mouth_col=(160, 80, 72), mouth_k=1.2, mouth_w=1.0,
+            brow_col=(48, 32, 28),
+            blush=((-0.076, 1.382, 0.022, 0.011), (0.076, 1.382, 0.022, 0.011), (240, 128, 116), 0.36),
+            mouth='smile', mouth_z=1.337, mouth_col=(146, 70, 62), mouth_k=1.2, mouth_w=1.0,
             nose_z=1.389, nose_len=0.0165, nose_bend=0.0012, nose_a=0.55)
     # boy: eyes a little narrower and less tall, a flatter heavier lid without a flick;
     # straighter, thicker brows a little closer to the eyes; the plaster on his left cheek
@@ -160,15 +160,16 @@ def _spec(girl):
         upper=((-1.0, -0.05), (-0.6, 0.70), (0.52, 0.76), (1.0, 0.13)),
         lower=((-1.0, -0.05), (-0.5, -0.6), (0.56, -0.54), (1.0, 0.13)),
         iris=(0.03, 0.04, 0.66, 0.74),
-        iris_top=(44, 26, 18), iris_mid=(82, 51, 33), iris_bot=(116, 74, 46), iris_glow=(128, 82, 51),
-        pupil=(26, 15, 11), hl=0.7,
-        lash=(42, 29, 25), lash_w=(0.0013, 0.0038, 0.0050, 0.0040), flick=False,
-        lower_lash=(136, 94, 80), lower_a=0.65, crease=(202, 152, 132),
+        # dark eyes and a heavy lash line, so they still read as two dark marks at game size
+        iris_top=(24, 16, 14), iris_mid=(48, 32, 26), iris_bot=(78, 52, 38), iris_glow=(92, 60, 42),
+        pupil=(14, 9, 8), hl=0.7,
+        lash=(26, 19, 19), lash_w=(0.0016, 0.0046, 0.0060, 0.0050), flick=False,
+        lower_lash=(112, 70, 56), lower_a=0.7, crease=(186, 124, 98),
         brow=((-0.0245, 0.0352), (-0.009, 0.0398), (0.012, 0.0405), (0.0305, 0.0362)),
-        brow_w=((0.0, 0.0066), (0.4, 0.0064), (0.75, 0.0048), (1.0, 0.0022)),
-        brow_col=(50, 35, 30),
-        blush=((-0.076, 1.379, 0.021, 0.0105), (0.085, 1.370, 0.022, 0.011), (240, 140, 130), 0.2),
-        mouth='half', mouth_z=1.329, mouth_col=(142, 78, 68), mouth_k=1.2, mouth_w=1.3,
+        brow_w=((0.0, 0.0072), (0.4, 0.0068), (0.75, 0.0052), (1.0, 0.0024)),
+        brow_col=(32, 25, 26),
+        blush=((-0.076, 1.379, 0.021, 0.0105), (0.085, 1.370, 0.022, 0.011), (226, 120, 104), 0.18),
+        mouth='half', mouth_z=1.329, mouth_col=(122, 62, 52), mouth_k=1.2, mouth_w=1.3,
         nose_z=1.386, nose_len=0.02, nose_bend=0.0005, nose_a=0.6)
 
 
@@ -344,16 +345,16 @@ def _plaster(pp):
         return pp.poly(pts)
     # a soft contact shadow so it reads as stuck on
     sh = pp.blur(rrect(L2 + 0.0006, W2 + 0.0006, W2 * 0.8), 0.0009)
-    pp.fill(sh, (206, 160, 136), 0.5)
-    pp.fill(rrect(L2 + 0.0004, W2 + 0.0004, W2 * 0.75), (196, 150, 112))          # edge
-    pp.fill(rrect(L2, W2, W2 * 0.72), (234, 197, 152))                            # strip
-    pp.fill(rrect(L2 * 0.36, W2 * 0.86, W2 * 0.3), (248, 230, 204))               # pad
-    pp.fill(rrect(L2 * 0.36, W2 * 0.86, W2 * 0.3).filter(ImageFilter.FIND_EDGES), (226, 200, 168), 0.6)
+    pp.fill(sh, (176, 120, 90), 0.5)
+    pp.fill(rrect(L2 + 0.0004, W2 + 0.0004, W2 * 0.75), (190, 150, 118))          # edge
+    pp.fill(rrect(L2, W2, W2 * 0.72), (250, 236, 214))                            # strip (pale, on his tan)
+    pp.fill(rrect(L2 * 0.36, W2 * 0.86, W2 * 0.3), (255, 250, 242))               # pad
+    pp.fill(rrect(L2 * 0.36, W2 * 0.86, W2 * 0.3).filter(ImageFilter.FIND_EDGES), (226, 204, 178), 0.6)
     for end in (1, -1):
         for i in (0, 1):
             for j in (-1, 0, 1):
                 u = end * (L2 * 0.56 + i * 0.0051); w = j * 0.0029
-                pp.fill(pp.ellipse(*R(u, w), 0.0006, 0.0006, n=16), (208, 168, 124), 0.9)
+                pp.fill(pp.ellipse(*R(u, w), 0.0006, 0.0006, n=16), (214, 186, 150), 0.9)
     # a light catch along the top edge
     hl = _bez(R(-L2 * 0.8, W2 * 0.55), R(-L2 * 0.3, W2 * 0.62), R(L2 * 0.3, W2 * 0.62), R(L2 * 0.8, W2 * 0.55), n=40)
     pp.fill(pp.stroke(hl, _prof(np.linspace(0, 1, 40), [(0, 0.0), (0.5, 0.0009), (1, 0.0)])), (250, 228, 196), 0.6)
