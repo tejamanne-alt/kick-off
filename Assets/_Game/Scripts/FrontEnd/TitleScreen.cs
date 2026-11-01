@@ -40,7 +40,7 @@ namespace DribbleToSchool.FrontEnd
             play.gameObject.AddComponent<UIPulse>().amount = 0.025f;
 
             // HOLIDAY RUN under PLAY. Its label is built by hand below, so that the best distance can sit on the button once there is one.
-            var holiday = UIKit.Button(root, "Holiday", "", HolidayColor, FrontEndController.OpenHolidayRun, 42);
+            var holiday = UIKit.Button(root, "Holiday", "", HolidayColor, StartHolidayRun, 42);
             UIKit.Place((RectTransform)holiday.transform, new Vector2(0f, 1f), new Vector2(Column * 0.5f + 20f, -744f), new Vector2(450f, 112f), new Vector2(0.5f, 0.5f));
             UIKit.PopIn(holiday.gameObject, 0.19f);
             var holidayPulse = holiday.gameObject.AddComponent<UIPulse>();
@@ -92,6 +92,21 @@ namespace DribbleToSchool.FrontEnd
             tap.gameObject.AddComponent<Button>().onClick.AddListener(OpenPicker);
             tap.gameObject.AddComponent<StageTapZone>();
             BuildPlayerCard(root);
+        }
+
+        /// <summary>
+        /// The lap runs through every chapter, so where chapters are sold (Monetization.RequireUnlock) the endless
+        /// mode is part of the full game: the unlock panel opens first, and the run starts once it is bought.
+        /// </summary>
+        void StartHolidayRun()
+        {
+            int lastChapter = Holiday.HolidayStages.All[Holiday.HolidayStages.Count - 1].chapter;
+            if (!Store.Monetization.IsChapterUnlocked(lastChapter))
+            {
+                UI.UnlockPanel.Open(Controller.CanvasRoot, FrontEndController.OpenHolidayRun);
+                return;
+            }
+            FrontEndController.OpenHolidayRun();
         }
 
         /// <summary>

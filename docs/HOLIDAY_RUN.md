@@ -234,6 +234,10 @@ double jump clears about 2.1 m, a slide lasts 0.7 s and passes under 0.85 m.
 `holidayTotalDistance` and `holidayMissions` (a list of `HolidayMissionRecord`). Older saves load with
 zeros and no missions. Coins earned in a run go into the same wallet as the story mode.
 
+## Store
+
+The lap runs through every chapter, so where chapters are sold (`Monetization.RequireUnlock`, off by default) the Holiday Run is part of the full game: its title button opens the unlock panel first and starts the run once the game is bought. Nothing changes while `RequireUnlock` is off. A free taste (say, a lap that ends at the end of chapter 1) would be a different design: the director would need to end the day at the last free stage.
+
 ## Analytics
 
 `holiday_run_start`, `holiday_run_end` (score, distance, coins, stage, day, reason, revives, near misses) and

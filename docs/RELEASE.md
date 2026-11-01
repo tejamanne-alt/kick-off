@@ -21,7 +21,7 @@ SDK refuse to launch ("UIScene life cycle is required"). After changing Unity, d
 
 1. Open the project in Unity 6. The editor generates the menu, the levels and the art automatically.
 2. Choose the business model in `Assets/_Game/Scripts/Store/Monetization.cs`:
-   - **Free + Full Game unlock (recommended):** set `RequireUnlock = true` and enable IAP (section 2). Chapter 1 and its challenge are free; chapters 2–5 need a one-time purchase.
+   - **Free + Full Game unlock (recommended):** set `RequireUnlock = true` and enable IAP (section 2). Chapter 1 and its challenge are free; chapters 2–5 need a one-time purchase, and so does the Holiday Run (its lap runs through every chapter: its title button opens the unlock panel first).
    - **Paid app:** leave `RequireUnlock = false` and set the price in the store consoles.
 3. Run **Kick Off > Build > Apply Store Player Settings** once to check everything is set:
    - the app id, version and build number, company "Astradite", product "Kick Off 2";
