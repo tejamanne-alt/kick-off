@@ -21,16 +21,19 @@ import teen_lib, teen_body, teen_outfit, teen_head, teen_hair, face_teen
 for m in (teen_lib, teen_body, teen_outfit, teen_head, teen_hair, face_teen): importlib.reload(m)
 from teen_lib import C, activate, WHITE_UV
 
+# --fast (for iterating on the clothes): no head, no hair, and the face atlas painted only if it is not there yet
+FAST = '--fast' in sys.argv
 ATLAS = os.path.join(os.path.dirname(OUT), NAME + 'Atlas.png')
-face_teen.paint(ATLAS, GIRL)
+if not (FAST and os.path.exists(ATLAS)): face_teen.paint(ATLAS, GIRL)
 
 # ---------------- build ----------------
 body = teen_body.build_body(GIRL)
 pal = teen_outfit.palette(GIRL)
-parts = [teen_lib.Part(body, teen_outfit.skin_color(GIRL), 0, 'body')]
+parts = [teen_outfit.skin_part(GIRL, body)]
 parts += teen_outfit.build_outfit(GIRL, body)
-parts += teen_head.build_head(GIRL, pal['skin'])
-parts += teen_hair.build_hair(GIRL)
+if not FAST:
+    parts += teen_head.build_head(GIRL, pal['skin'])
+    parts += teen_hair.build_hair(GIRL)
 
 # ---------------- colours, UVs, part ids ----------------
 def colorize(p):
@@ -79,6 +82,7 @@ bpy.ops.object.mode_set(mode='OBJECT')
 # Body weights from bone heat; clothes copy the body's weights; the rest follows one bone.
 activate(body); rig.select_set(True); C.view_layer.objects.active = rig
 bpy.ops.object.parent_set(type='ARMATURE_AUTO')
+teen_outfit.refine_body_weights(body, GIRL)    # the wide knee blend, and the trousers' own weights on the skin under them
 def rigid(o, bname):
     vg = o.vertex_groups.new(name=bname); vg.add(range(len(o.data.vertices)), 1.0, 'REPLACE')
     o.parent = rig; m = o.modifiers.new('arm', 'ARMATURE'); m.object = rig
@@ -119,5 +123,5 @@ hair = teen_hair.hair_colors(GIRL)[0]
 def srgb(rgb):
     return [round(12.92 * c if c <= 0.0031308 else 1.055 * c ** (1 / 2.4) - 0.055, 4) for c in rgb[:3]]
 with open(OUT.replace('.fbx', '.json'), 'w') as f:
-    json.dump({'top': srgb(pal['top']), 'legwear': srgb(pal['legwear']), 'hair': srgb(hair), 'tris': tris}, f)
+    json.dump({'top': srgb(pal['top']), 'legwear': srgb(pal['legwear']), 'accent': srgb(pal['accent']), 'hair': srgb(hair), 'tris': tris}, f)
 print('exported')

@@ -332,7 +332,32 @@ def relax(V, Q, f, iters=2, lam=0.5):
     return V
 
 
-def sdf_object(name, f, lo, hi, h, tris=None, relax_iters=2, girl=None, symmetric=True, dense=None):
+def refine_edges(o, f, zone, max_len, passes=4):
+    """Split the long edges of o (teen space) that lie inside zone(V) -> bool, and snap the new
+    points back onto f's surface. Decimation leaves long flat tubes with no vertices near a joint
+    (a knee then bends as one hinge that pinches); this puts the rings back where a limb bends."""
+    import bmesh
+    me = o.data
+    bm = bmesh.new(); bm.from_mesh(me)
+    lay = bm.verts.layers.int.new('old')
+    for v in bm.verts: v[lay] = 1
+    for _ in range(passes):
+        bm.verts.ensure_lookup_table()
+        V = np.array([v.co for v in bm.verts]); inz = np.asarray(zone(V), dtype=bool)
+        edges = [e for e in bm.edges if (inz[e.verts[0].index] or inz[e.verts[1].index]) and (inz[e.verts[0].index] and inz[e.verts[1].index])
+                 and e.calc_length() > max_len]
+        if not edges: break
+        bmesh.ops.subdivide_edges(bm, edges=edges, cuts=1, use_grid_fill=True)
+    bm.verts.ensure_lookup_table()
+    new = [v for v in bm.verts if not v[lay]]
+    if new:
+        P = project(f, np.array([v.co for v in new]), 8, 0.03)
+        for v, c in zip(new, P): v.co = c
+    bm.verts.layers.int.remove(lay)
+    bm.to_mesh(me); bm.free(); me.update()
+
+
+def sdf_object(name, f, lo, hi, h, tris=None, relax_iters=2, girl=None, symmetric=True, dense=None, refine=None):
     """Mesh the field f inside the box lo..hi with cell size h (teen space), decimate to about
     `tris` triangles, then map to base space (if girl is not None). The normals are made
     outward and set from the field's analytic gradient (clean cel bands, no decimation noise).
@@ -371,6 +396,7 @@ def sdf_object(name, f, lo, hi, h, tris=None, relax_iters=2, girl=None, symmetri
             dm = o.modifiers.new('dec', 'DECIMATE'); dm.ratio = tris / cur
             if symmetric: dm.use_symmetry = True; dm.symmetry_axis = 'X'
     apply_mods(o)
+    if refine is not None: refine_edges(o, f, *refine)
     make_outward(o)
     N = field_normals(o, f)
     if girl is not None: to_base(o, girl)
@@ -534,6 +560,15 @@ class BodyField:
         return d
 
 
+def joint_zone(girl, knee=0.15, hip_below=0.2, hip_above=0.1):
+    """The legs round the knees and the hips (teen space): where limbs bend and the mesh needs rings."""
+    j = tj(girl); kz = j['kneeL'][2]; hz = j['hipL'][2]
+    def zone(V):
+        z = np.asarray(V)[:, 2]
+        return (np.abs(z - kz) < knee) | ((z > hz - hip_below) & (z < hz + hip_above))
+    return zone
+
+
 _FIELDS = {}
 BODY_TRIS = {True: (5850, 560, 780), False: (5850, 560, 200)}
 NECK_TRIS = {True: 520, False: 520}
@@ -596,6 +631,10 @@ def build_body(girl):
     tot, inside = count('hidden'); dec((tot - inside + hid_budget) / tot, 'hidden')
     tot, inside = count('semi'); dec((tot - inside + semi_budget) / tot, 'semi')
     for g in ('semi', 'hidden', 'neck', 'notneck'): body.vertex_groups.remove(body.vertex_groups[g])
+    # the thinned-out skin has no vertices near the knees and hips: put the rings back, so the skin
+    # bends there as the clothes over it do
+    if girl: refine_edges(body, f, joint_zone(girl, hip_below=0.12, hip_above=0.05), 0.06)     # (her thighs show when she lifts a knee)
+    else: refine_edges(body, f, joint_zone(girl), 0.045)
     make_outward(body)
     N = field_normals(body, f)
     to_base(body, girl); smooth(body)

@@ -21,7 +21,7 @@ class Part:
     obj    the Blender mesh object (transforms applied: mesh coordinates are world coordinates)
     color  an RGBA tuple, or fn(co, face_center) -> RGBA, evaluated per face corner (world coords)
     part   outfit part id for the game's recolouring (UV2.x): 0 skin and fixed parts,
-           1 shirt/blouse/dress top, 2 legwear (trousers, shorts, skirt), 3 hair;
+           1 shirt/blouse/dress top, 2 legwear (trousers, shorts, skirt), 3 hair, 4 accent (the tie);
            an int or fn(co, face_center) -> int
     bind   'transfer' to copy the body's bone weights (clothes that bend with the body), or a
            bone name to follow that bone rigidly ('Head', 'Hips', 'Foot.L', 'Bag', ...)
