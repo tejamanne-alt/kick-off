@@ -72,7 +72,7 @@ namespace DribbleToSchool.Holiday
         // ---- timing (seconds) ----
 
         const float RibbonHold = 3f, RibbonFold = 0.4f, RibbonLife = RibbonHold + RibbonFold;
-        const float BannerLife = 3.2f, SplashLife = 2.4f, ToastLife = 1.5f;
+        const float BannerLife = 3.2f, SplashLife = 2.4f, ToastLife = 1.5f, HintLife = 4.5f;
         const int ToastLines = 3, MaxQueuedToasts = 12;
 
         /// <summary>One power-up timer: a disc with the icon, ringed by what is left.</summary>
@@ -87,8 +87,8 @@ namespace DribbleToSchool.Holiday
             public float duration;
         }
 
-        struct ToastItem { public int line; public float born; }
-        struct PendingToast { public string text; public Color color; }
+        struct ToastItem { public int line; public float born, life; }
+        struct PendingToast { public string text; public Color color; public float life; }
 
         // ---- the built screen ----
 
@@ -164,6 +164,7 @@ namespace DribbleToSchool.Holiday
             director.StageChanged += OnStageChanged;
             director.DayStarted += OnDayStarted;
             director.Toast += OnToast;
+            director.Hint += OnHint;
             director.PowerUpCollected += OnPowerUp;
             Loc.Changed += OnLanguageChanged;
             // The director's own Start has already chosen the first phase (it runs before this one).
@@ -178,6 +179,7 @@ namespace DribbleToSchool.Holiday
                 director.StageChanged -= OnStageChanged;
                 director.DayStarted -= OnDayStarted;
                 director.Toast -= OnToast;
+                director.Hint -= OnHint;
                 director.PowerUpCollected -= OnPowerUp;
             }
             Loc.Changed -= OnLanguageChanged;
@@ -645,9 +647,20 @@ namespace DribbleToSchool.Holiday
 
         void OnToast(string text, Color color)
         {
+            AddToast(text, color, ToastLife);
+        }
+
+        /// <summary>A how-to-play tip (the first run only): a toast that stays long enough to read.</summary>
+        void OnHint(string text)
+        {
+            AddToast(text, new Color(1f, 0.95f, 0.72f), HintLife);
+        }
+
+        void AddToast(string text, Color color, float life)
+        {
             if (string.IsNullOrEmpty(text)) return;
-            if (toastCount < ToastLines && toastQueue.Count == 0) ShowToast(text, color, Time.unscaledTime);
-            else if (toastQueue.Count < MaxQueuedToasts) toastQueue.Enqueue(new PendingToast { text = text, color = color });
+            if (toastCount < ToastLines && toastQueue.Count == 0) ShowToast(text, color, Time.unscaledTime, life);
+            else if (toastQueue.Count < MaxQueuedToasts) toastQueue.Enqueue(new PendingToast { text = text, color = color, life = life });
         }
 
         void OnPowerUp(PowerUpKind kind)
@@ -981,7 +994,7 @@ namespace DribbleToSchool.Holiday
         /// Put a message on the first free line and push the older ones down (the newest is on top). When every
         /// line is busy the message waits in the queue, so none is lost.
         /// </summary>
-        void ShowToast(string text, Color color, float now)
+        void ShowToast(string text, Color color, float now, float life)
         {
             int line = -1;
             for (int k = 0; k < ToastLines && line < 0; k++)
@@ -993,7 +1006,7 @@ namespace DribbleToSchool.Holiday
             }
             if (line < 0) return;
             for (int i = toastCount; i > 0; i--) toasts[i] = toasts[i - 1];
-            toasts[0] = new ToastItem { line = line, born = now };
+            toasts[0] = new ToastItem { line = line, born = now, life = life };
             toastCount++;
 
             var label = toastTexts[line];
@@ -1006,7 +1019,7 @@ namespace DribbleToSchool.Holiday
         void UpdateToasts(float now, float dt)
         {
             // The oldest is the last in the list: when its time is up its line is free for the next.
-            while (toastCount > 0 && now - toasts[toastCount - 1].born >= ToastLife)
+            while (toastCount > 0 && now - toasts[toastCount - 1].born >= toasts[toastCount - 1].life)
             {
                 toastTexts[toasts[toastCount - 1].line].gameObject.SetActive(false);
                 toastCount--;
@@ -1014,7 +1027,7 @@ namespace DribbleToSchool.Holiday
             while (toastCount < ToastLines && toastQueue.Count > 0)
             {
                 var next = toastQueue.Dequeue();
-                ShowToast(next.text, next.color, now);
+                ShowToast(next.text, next.color, now, next.life);
             }
 
             float follow = 1f - Mathf.Exp(-16f * dt);
@@ -1025,7 +1038,7 @@ namespace DribbleToSchool.Holiday
                 var rt = label.rectTransform;
                 rt.anchoredPosition = Vector2.Lerp(rt.anchoredPosition, new Vector2(0f, -ToastTop - i * ToastStep), follow);
                 SetScale(rt, 1f + 0.3f * (1f - Ease(Since(toasts[i].born, 0.18f))));
-                SetAlpha(label, Mathf.Clamp01((ToastLife - age) / 0.3f));
+                SetAlpha(label, Mathf.Clamp01((toasts[i].life - age) / 0.3f));
             }
         }
 

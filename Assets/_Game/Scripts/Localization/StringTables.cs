@@ -165,6 +165,7 @@ namespace DribbleToSchool.Localization
 
                 // Holiday Run (the endless mode): the screen, the messages the director sends, the pause and results menus
                 { "holiday.getReady", "Get ready" }, { "holiday.oops", "OOPS!" }, { "holiday.lose.fell", "Whoa! You fell!" },
+                { "holiday.tip.jump", "JUMP low things. Twice = double jump!" }, { "holiday.tip.slide", "SLIDE under high bars" }, { "holiday.tip.kick", "KICK to smash crates" },
                 { "holiday.stage", "STAGE {0}" }, { "holiday.day", "DAY {0}" }, { "holiday.chapterN", "CHAPTER {0}" },
                 { "holiday.best", "BEST {0}" }, { "holiday.newBest", "NEW BEST!" }, { "holiday.dayFaster", "A bit faster this time!" },
                 { "holiday.nearMiss", "Close call! +{0}" }, { "holiday.smash", "Smash! +{0}" }, { "holiday.multiplier", "x{0} combo!" },
@@ -367,6 +368,7 @@ namespace DribbleToSchool.Localization
                 { "results.retry", "Repetir" }, { "results.map", "Mapa" }, { "results.next", "Siguiente" }, { "results.finish", "Fin" },
 
                 { "holiday.getReady", "Prepárate" }, { "holiday.oops", "¡UPS!" }, { "holiday.lose.fell", "¡Uy! ¡Te caíste!" },
+                { "holiday.tip.jump", "SALTA lo bajo. ¡Dos veces = doble salto!" }, { "holiday.tip.slide", "DESLIZA bajo las barras altas" }, { "holiday.tip.kick", "CHUTA para romper cajas" },
                 { "holiday.stage", "ETAPA {0}" }, { "holiday.day", "DÍA {0}" }, { "holiday.chapterN", "CAPÍTULO {0}" },
                 { "holiday.best", "RÉCORD {0}" }, { "holiday.newBest", "¡NUEVO RÉCORD!" }, { "holiday.dayFaster", "¡Un poco más rápido!" },
                 { "holiday.nearMiss", "¡Por poco! +{0}" }, { "holiday.smash", "¡Zas! +{0}" }, { "holiday.multiplier", "¡Combo x{0}!" },

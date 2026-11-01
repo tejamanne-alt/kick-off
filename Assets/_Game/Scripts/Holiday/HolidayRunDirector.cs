@@ -11,6 +11,7 @@ using DribbleToSchool.Localization;
 using DribbleToSchool.Pickups;
 using DribbleToSchool.Player;
 using DribbleToSchool.Progression;
+using DribbleToSchool.Tutorial;
 using DribbleToSchool.UI.Kit;
 using UnityEngine;
 
@@ -138,11 +139,16 @@ namespace DribbleToSchool.Holiday
         public event Action<int> DayStarted;
         /// <summary>A short message for the screen (localized text) and its colour.</summary>
         public event Action<string, Color> Toast;
+        /// <summary>A how-to-play tip for the very first run (long-lived, unlike a toast).</summary>
+        public event Action<string> Hint;
         public event Action<PowerUpKind> PowerUpCollected;
         public event Action<RunResult> Ended;
 
         static readonly Color Gold = new Color(1f, 0.82f, 0.2f);
         static readonly Color Mint = new Color(0.55f, 1f, 0.7f);
+
+        /// <summary>The tutorial-hint id that remembers the how-to-play tips were shown (cleared by Reset progress).</summary>
+        public const string FirstRunTipId = "holiday";
 
         RunStats stats;
         float scoreExact;
@@ -320,6 +326,7 @@ namespace DribbleToSchool.Holiday
                         // (The HUD announces the first stage itself a moment after GO; later stages and days come as StageChanged.)
                         SetPhase(RunPhase.Running);
                         AnalyticsService.Track("holiday_run_start", "character", GameSettings.Character);
+                        ShowFirstRunTips();
                     }
                     else
                     {
@@ -536,6 +543,17 @@ namespace DribbleToSchool.Holiday
         }
 
         // ================================================================ kid events
+
+        /// <summary>The very first run: three lines on what the buttons do (shown once, for the player, not the run).</summary>
+        void ShowFirstRunTips()
+        {
+            if (Hint == null || TutorialHint.Seen(FirstRunTipId)) return;
+            TutorialHint.MarkSeen(FirstRunTipId);
+            // The newest is on top: the last one said is the first one read.
+            Hint(Loc.T("holiday.tip.kick"));
+            Hint(Loc.T("holiday.tip.slide"));
+            Hint(Loc.T("holiday.tip.jump"));
+        }
 
         void OnJumped() { stats.jumps++; }
         void OnDoubleJumped() { stats.doubleJumps++; }

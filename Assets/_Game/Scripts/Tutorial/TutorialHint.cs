@@ -18,6 +18,7 @@ namespace DribbleToSchool.Tutorial
         {
             "dribble", "brake", "jump", "kick", "juggle", "gate", "puddle", "pedestrian", "crossing", "springboard",
             "tide", "seagull", "tunnel", "pipes", "platform", "dog", "fountain", "swing", "slide", "doublejump",
+            "holiday",   // the Holiday Run's first-run tips
         };
 
         /// <summary>Raised with the hint id when a hint should be displayed.</summary>
@@ -26,6 +27,13 @@ namespace DribbleToSchool.Tutorial
         static string Key(string id) { return "tutorial.seen." + id; }
 
         public static bool Seen(string id) { return PlayerPrefs.GetInt(Key(id), 0) == 1; }
+
+        /// <summary>Remember that a hint has been shown (it will not show again).</summary>
+        public static void MarkSeen(string id)
+        {
+            PlayerPrefs.SetInt(Key(id), 1);
+            PlayerPrefs.Save();
+        }
 
         /// <summary>Mark every hint as seen (no hints will show), e.g. for the store screenshot tour.</summary>
         public static void MarkAllSeen()
