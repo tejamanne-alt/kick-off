@@ -22,11 +22,12 @@ namespace DribbleToSchool.EditorTools
     /// </summary>
     public static class BuildScripts
     {
-        // Change the studio name to your own before the first store upload.
-        public const string CompanyName = "Your Studio";
+        public const string CompanyName = "Astradite";
         public const string ProductName = "Kick Off";
-        /// <summary>The app's bundle identifier (iOS) and package name (Android).</summary>
-        public const string ApplicationId = "com.astradite.kickoff";
+        /// <summary>The app's bundle identifier (iOS) and package name (Android). Fixed for good once the app is uploaded.</summary>
+        public const string ApplicationId = "com.astradite.kickoff.app";
+        /// <summary>Google Play's target API level for new apps and updates (Android 16, from 31 August 2026).</summary>
+        public const int AndroidTargetApi = 36;
         public const string DefaultVersion = "1.0.0";
 
         const string IconPath = LevelBuildKit.Root + "/Art/Generated/AppIcon.png";
@@ -57,7 +58,9 @@ namespace DribbleToSchool.EditorTools
             PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.Android, ApplicationId);
             PlayerSettings.Android.bundleVersionCode = buildNumber;
             PlayerSettings.Android.minSdkVersion = AndroidSdkVersions.AndroidApiLevel26;
-            PlayerSettings.Android.targetSdkVersion = AndroidSdkVersions.AndroidApiLevelAuto;   // Play requires a recent target API
+            // Play's current requirement, set explicitly so a build can't quietly target an older SDK
+            // (the editor must have the Android 16 SDK platform; Unity Hub installs it with Android Build Support).
+            PlayerSettings.Android.targetSdkVersion = (AndroidSdkVersions)AndroidTargetApi;
             PlayerSettings.SetScriptingBackend(NamedBuildTarget.Android, ScriptingImplementation.IL2CPP);
             PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;
 

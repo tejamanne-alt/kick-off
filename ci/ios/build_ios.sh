@@ -2,8 +2,14 @@
 # Build an iOS .ipa end to end on a Mac: Unity export -> Xcode archive -> .ipa.
 #
 # Usage:
-#   DTS_APPLE_TEAM_ID=ABCDE12345 ./ci/ios/build_ios.sh [appstore|development]
+#   DTS_APPLE_TEAM_ID=ABCDE12345 ./ci/ios/build_ios.sh [appstore|upload|development]
+#     development: an .ipa for your own registered devices
+#     appstore:    an .ipa for App Store Connect (upload it with Apple's Transporter app)
+#     upload:      archives and uploads straight to App Store Connect (then it appears in TestFlight).
+#                  Signs in with Xcode's account, or with an App Store Connect API key when
+#                  ASC_KEY_PATH (the .p8 file), ASC_KEY_ID and ASC_ISSUER_ID are set.
 #
+# Needs Xcode 26 or later (App Store Connect only accepts builds made with the iOS 26 SDK or later).
 # Optional: UNITY=/path/to/Unity (defaults to the pinned version, else the newest
 #           Unity 6 in Unity Hub that supports UIScene),
 #           DTS_VERSION=1.0.1 DTS_BUILD_NUMBER=7
@@ -52,9 +58,22 @@ fi
 
 case "$MODE" in
   appstore) OPTIONS="$ROOT/ci/ios/ExportOptions-AppStore.plist" ;;
+  upload) OPTIONS="$ROOT/ci/ios/ExportOptions-Upload.plist" ;;
   development) OPTIONS="$ROOT/ci/ios/ExportOptions-Development.plist" ;;
-  *) echo "Mode must be appstore or development"; exit 1 ;;
+  *) echo "Mode must be appstore, upload or development"; exit 1 ;;
 esac
+
+XCODE_MAJOR="$(xcodebuild -version | sed -n 's/^Xcode \([0-9]*\).*/\1/p')"
+if [ "$MODE" != development ] && [ "${XCODE_MAJOR:-0}" -lt 26 ]; then
+  echo "Xcode $XCODE_MAJOR found: App Store Connect needs builds from Xcode 26 or later. Update Xcode and run again."; exit 1
+fi
+
+# Optional App Store Connect API key, for uploading without an Xcode account sign-in (e.g. on CI).
+AUTH=()
+if [ -n "${ASC_KEY_PATH:-}" ]; then
+  : "${ASC_KEY_ID:?Set ASC_KEY_ID with ASC_KEY_PATH}" "${ASC_ISSUER_ID:?Set ASC_ISSUER_ID with ASC_KEY_PATH}"
+  AUTH=(-authenticationKeyPath "$ASC_KEY_PATH" -authenticationKeyID "$ASC_KEY_ID" -authenticationKeyIssuerID "$ASC_ISSUER_ID")
+fi
 
 echo "==> Exporting Xcode project with Unity $UNITY_VERSION"
 # Always export fresh: an Xcode project left over from an older Unity keeps the old app delegate.
@@ -72,13 +91,17 @@ echo "==> Archiving"
 xcodebuild -project "$ROOT/Builds/iOS/Unity-iPhone.xcodeproj" -scheme Unity-iPhone \
   -configuration Release -destination "generic/platform=iOS" \
   -archivePath "$ROOT/Builds/KickOff.xcarchive" \
-  -allowProvisioningUpdates DEVELOPMENT_TEAM="$DTS_APPLE_TEAM_ID" archive
+  -allowProvisioningUpdates ${AUTH[@]+"${AUTH[@]}"} DEVELOPMENT_TEAM="$DTS_APPLE_TEAM_ID" archive
 
-echo "==> Exporting .ipa ($MODE)"
+echo "==> Exporting ($MODE)"
 TMP_OPTIONS="$(mktemp)"
 sed "s/TEAM_ID/$DTS_APPLE_TEAM_ID/" "$OPTIONS" > "$TMP_OPTIONS"
 xcodebuild -exportArchive -archivePath "$ROOT/Builds/KickOff.xcarchive" \
-  -exportPath "$ROOT/Builds/ipa-$MODE" -exportOptionsPlist "$TMP_OPTIONS" -allowProvisioningUpdates
+  -exportPath "$ROOT/Builds/ipa-$MODE" -exportOptionsPlist "$TMP_OPTIONS" -allowProvisioningUpdates ${AUTH[@]+"${AUTH[@]}"}
 rm -f "$TMP_OPTIONS"
 
-echo "==> Done: $(ls "$ROOT/Builds/ipa-$MODE"/*.ipa)"
+if [ "$MODE" = upload ]; then
+  echo "==> Uploaded to App Store Connect. It shows in TestFlight once Apple has processed it (usually 10-30 minutes)."
+else
+  echo "==> Done: $(ls "$ROOT/Builds/ipa-$MODE"/*.ipa)"
+fi

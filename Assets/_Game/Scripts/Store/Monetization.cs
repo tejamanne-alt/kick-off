@@ -17,7 +17,7 @@ namespace DribbleToSchool.Store
         public static readonly int FreeChapters = 1;
 
         /// <summary>Non-consumable product id; create the same id in App Store Connect and Google Play Console.</summary>
-        public const string FullGameProductId = "dribbletoschool.fullgame";
+        public const string FullGameProductId = "kickoff.fullgame";
 
         /// <summary>Shown when the store can't provide a localized price.</summary>
         public const string FallbackPrice = "$3.99";

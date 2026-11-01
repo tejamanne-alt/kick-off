@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <!--
-  App privacy manifest for Dribble To School.
+  App privacy manifest for Kick Off.
   The game does not track users and collects no data off the device.
   Gameplay analytics are written only to a local file on the device.
   PlayerPrefs is backed by NSUserDefaults (reason CA92.1: app's own data).
