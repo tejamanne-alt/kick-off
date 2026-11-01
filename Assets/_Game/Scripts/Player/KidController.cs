@@ -25,6 +25,11 @@ namespace DribbleToSchool.Player
         public Transform feet;
         public Vector2 groundCheckSize = new Vector2(0.4f, 0.1f);
 
+        [Header("Auto run (Holiday Run)")]
+        [Tooltip("Runs forward by itself at autoRunSpeed instead of following the walk buttons.")]
+        public bool autoRun;
+        public float autoRunSpeed = 6.5f;
+
         public Rigidbody2D Body { get; private set; }
         public bool IsGrounded { get; private set; }
         /// <summary>No move input: the kid stops and traps a ball rolling at the feet.</summary>
@@ -60,6 +65,10 @@ namespace DribbleToSchool.Player
         public event System.Action Slid;
         /// <summary>Raised after the collider changes shape (into a slide and back up), for anything that set up ignored collisions with it.</summary>
         public event System.Action ShapeChanged;
+        /// <summary>Raised when the kid's body touches something new (Holiday Run reads a head-on hit as a crash).</summary>
+        public event System.Action<Collision2D> Collided;
+        /// <summary>How fast the kid runs flat out: the walk speed of the tuning, or the auto-run speed.</summary>
+        public float RunSpeed { get { return autoRun ? autoRunSpeed : tuning.runSpeed; } }
 
         readonly Collider2D[] groundHits = new Collider2D[8];
         readonly Collider2D[] roomHits = new Collider2D[8];
@@ -120,7 +129,7 @@ namespace DribbleToSchool.Player
                 return;
             }
 
-            MoveAxis = input.MoveAxis;
+            MoveAxis = autoRun ? 1f : input.MoveAxis;
             IsBraking = Mathf.Approximately(MoveAxis, 0f);
             // A slide holds its line; the kid turns once back on their feet.
             if (!IsSliding)
@@ -180,12 +189,14 @@ namespace DribbleToSchool.Player
                 float dir = Mathf.Abs(MoveAxis) > 0.1f ? Mathf.Sign(MoveAxis) : slideDirection;
                 if (!InputEnabled) dir = 0f;
                 if (dir != 0f) Facing = dir > 0f ? 1 : -1;
-                float target = dir * tuning.slideMinSpeed * SpeedMultiplier + GroundVelocity.x;
+                // Auto-running, keep most of the pace while low under something rather than crawl.
+                float shuffle = autoRun ? Mathf.Max(tuning.slideMinSpeed, autoRunSpeed * 0.75f) : tuning.slideMinSpeed;
+                float target = dir * shuffle * SpeedMultiplier + GroundVelocity.x;
                 v.x = Mathf.MoveTowards(v.x, target, tuning.acceleration * Time.fixedDeltaTime);
             }
             else
             {
-                float target = InputEnabled ? MoveAxis * tuning.runSpeed * SpeedMultiplier : 0f;
+                float target = InputEnabled ? MoveAxis * RunSpeed * SpeedMultiplier : 0f;
                 target += GroundVelocity.x;
                 float rate = Mathf.Abs(target) > Mathf.Abs(v.x) ? tuning.acceleration : tuning.deceleration;
                 if (!IsGrounded) rate *= tuning.airControl;
@@ -223,6 +234,11 @@ namespace DribbleToSchool.Player
             if (v.y < -tuning.maxFallSpeed) v.y = -tuning.maxFallSpeed;
 
             Body.linearVelocity = v;
+        }
+
+        void OnCollisionEnter2D(Collision2D collision)
+        {
+            if (Collided != null) Collided(collision);
         }
 
         void CheckGround()
@@ -303,7 +319,7 @@ namespace DribbleToSchool.Player
             Facing = slideDirection;
             // Keep the run's speed and add a little: a slide is a lunge, never a brake.
             float along = Mathf.Max(0f, relative * slideDirection);
-            slideSpeed = Mathf.Max(along, tuning.runSpeed * SpeedMultiplier) * tuning.slideSpeedBoost;
+            slideSpeed = Mathf.Max(along, RunSpeed * SpeedMultiplier) * tuning.slideSpeedBoost;
             slideStartTime = Time.time;
             IsSliding = true;
             wasSliding = true;

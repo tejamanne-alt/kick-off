@@ -114,6 +114,13 @@ namespace DribbleToSchool.Core
         [Tooltip("How long the ball must stay out of the kid's reach before the run goes back to the checkpoint.")]
         public float strandedDelay = 1.2f;
 
+        [Header("Endless mode (Holiday Run)")]
+        [Tooltip("No bell, checkpoints or goal: the level only hosts the hazards and the countdown, and losing " +
+            "the ball ends the run (Crashed) instead of going back to a checkpoint.")]
+        public bool endless;
+        /// <summary>Endless mode only: the run is over; the reason is a localization key (lose.*).</summary>
+        public event Action<string> Crashed;
+
         void Awake()
         {
             Current = this;
@@ -285,6 +292,12 @@ namespace DribbleToSchool.Core
 
         void CheckBallLost()
         {
+            if (endless)
+            {
+                // The ball is only for show out here: the kid falling out of the world is the one way to lose.
+                if (kid.transform.position.y < killY) LoseBall("lose.fell");
+                return;
+            }
             if (ball.transform.position.y < killY || kid.transform.position.y < killY)
                 LoseBall("lose.fell");
             else if (ball.transform.position.x < startBoundaryX)
@@ -315,10 +328,25 @@ namespace DribbleToSchool.Core
         public void LoseBall(string reason)
         {
             if (State != LevelState.Playing) return;
+            if (endless)
+            {
+                BallsLost++;
+                GameEvents.Raise(GameEventType.BallLost, kid.transform.position);
+                if (BallLost != null) BallLost(reason);
+                SetState(LevelState.Complete);
+                if (Crashed != null) Crashed(reason);
+                return;
+            }
             BallsLost++;
             GameEvents.Raise(GameEventType.BallLost, ball.transform.position);
             if (BallLost != null) BallLost(reason);
             respawnRoutine = StartCoroutine(RespawnRoutine());
+        }
+
+        /// <summary>Endless mode: carry on after a crash (a revive). The caller has already put the kid somewhere safe.</summary>
+        public void ResumeAfterCrash()
+        {
+            if (endless && State == LevelState.Complete) SetState(LevelState.Playing);
         }
 
         /// <summary>Manually go back to the last checkpoint (e.g. ball stuck). Counts as a lost ball.</summary>

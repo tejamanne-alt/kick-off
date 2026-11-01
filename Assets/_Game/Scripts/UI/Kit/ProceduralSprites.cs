@@ -6,7 +6,69 @@ namespace DribbleToSchool.UI.Kit
     public static class ProceduralSprites
     {
         static Sprite rounded, roundedSmall, circle, star, coin, lockIcon, gradient, arrow, pause, ring, softDisc, softEdgeDisc, ballIcon, slideIcon;
-        static Sprite roundedEdge, roundedEdgeSmall, circleEdge, check, pitchBadge, holoSheen, goldSheen, stickerIcon, streak, swoosh;
+        static Sprite roundedEdge, roundedEdgeSmall, circleEdge, check, pitchBadge, holoSheen, goldSheen, stickerIcon, streak, swoosh, bolt, shield, magnet;
+
+        /// <summary>A lightning bolt (the turbo power-up).</summary>
+        public static Sprite Bolt
+        {
+            get
+            {
+                if (bolt != null) return bolt;
+                var pts = new[]
+                {
+                    new Vector2(0.18f, 0.95f), new Vector2(-0.5f, -0.08f), new Vector2(-0.04f, -0.08f),
+                    new Vector2(-0.2f, -0.95f), new Vector2(0.52f, 0.14f), new Vector2(0.06f, 0.14f),
+                };
+                return bolt = MakeShape(96, (u, v) => InPolygon(u, v, pts) ? 1f : 0f);
+            }
+        }
+
+        /// <summary>A heater shield with a bold chevron cut out of it (the shield power-up).</summary>
+        public static Sprite Shield
+        {
+            get
+            {
+                return shield != null ? shield : (shield = MakeShape(96, (u, v) =>
+                {
+                    if (v > 0.88f || v < -0.95f) return 0f;
+                    // Flat top, straight sides to the middle, then curving in to a point at the bottom.
+                    float half = v >= 0f ? 0.72f : 0.72f * Mathf.Cos(Mathf.Clamp01(-v / 0.95f) * Mathf.PI * 0.5f);
+                    if (Mathf.Abs(u) > half) return 0f;
+                    // A chevron cut out of it: two slanted bars meeting on the middle line.
+                    bool cut = Mathf.Abs(v - (0.1f - Mathf.Abs(u) * 0.85f)) < 0.09f && Mathf.Abs(u) < 0.48f;
+                    return cut ? 0f : 1f;
+                }));
+            }
+        }
+
+        /// <summary>A horseshoe magnet, opening downward (the magnet power-up).</summary>
+        public static Sprite Magnet
+        {
+            get
+            {
+                return magnet != null ? magnet : (magnet = MakeShape(96, (u, v) =>
+                {
+                    float r = Mathf.Sqrt(u * u + v * v);
+                    bool arch = v >= 0f && r < 0.76f && r > 0.4f;
+                    bool leg = v < 0f && v > -0.78f && Mathf.Abs(u) < 0.76f && Mathf.Abs(u) > 0.4f;
+                    // The two pole tips are left as a gap from the legs, so they read as separate pieces.
+                    if (leg && v < -0.5f && v > -0.56f) return 0f;
+                    return arch || leg ? 1f : 0f;
+                }));
+            }
+        }
+
+        static bool InPolygon(float u, float v, Vector2[] pts)
+        {
+            bool inside = false;
+            for (int i = 0, j = pts.Length - 1; i < pts.Length; j = i++)
+            {
+                if ((pts[i].y > v) != (pts[j].y > v) &&
+                    u < (pts[j].x - pts[i].x) * (v - pts[i].y) / (pts[j].y - pts[i].y) + pts[i].x)
+                    inside = !inside;
+            }
+            return inside;
+        }
 
         /// <summary>
         /// A speed line pointing right: fat and bright at its head, tapering to nothing at its tail (so a

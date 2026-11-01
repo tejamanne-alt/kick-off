@@ -143,7 +143,7 @@ namespace DribbleToSchool.Presentation
         {
             if (kid == null) return;
             float speed = Mathf.Abs(kid.SpeedX);
-            float runK = Mathf.Clamp01(speed / Mathf.Max(kid.tuning.runSpeed, 0.1f));
+            float runK = Mathf.Clamp01(speed / Mathf.Max(kid.RunSpeed, 0.1f));
             float vy = kid.Body.linearVelocity.y;
 
             var p = RigPose.Neutral;
@@ -413,7 +413,7 @@ namespace DribbleToSchool.Presentation
             var s = RigPose.Neutral;
             // The lean dives in with a quick overshoot, then eases upright as the slide runs out of speed.
             float t = kid.IsSliding ? kid.SlideTime : 1f;
-            float top = Mathf.Max(0.1f, kid.tuning.runSpeed * kid.tuning.slideSpeedBoost);
+            float top = Mathf.Max(0.1f, kid.RunSpeed * kid.tuning.slideSpeedBoost);
             float spent = kid.IsSliding ? 1f - Mathf.Clamp01(kid.SlideSpeed / top) : 0.6f;
             float lean = slideLean * (1f + 0.15f * Mathf.Exp(-t * 15f) * Mathf.Sin(t * 28f + 0.4f)) * (1f - 0.15f * spent);
             s.lean = -lean;

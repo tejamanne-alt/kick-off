@@ -92,6 +92,13 @@ namespace DribbleToSchool.InputHandling
         [Tooltip("Keep the two clusters at least this far apart (screen heights) on narrow screens, by shrinking the layout.")]
         public float clusterGap = 0.1f;
 
+        [Header("Runner layout (Holiday Run: the kid runs by itself, so both thumbs are free and there are no arrows)")]
+        [Tooltip("On: JUMP under the right thumb, SLIDE under the left, KICK small beside JUMP; no walk arrows and no aim drag.")]
+        public bool runnerLayout;
+        public ControlSpec runnerJump = new ControlSpec(0.23f, 0.25f, 0.19f);
+        public ControlSpec runnerSlide = new ControlSpec(0.23f, 0.25f, 0.19f);
+        public ControlSpec runnerKick = new ControlSpec(0.52f, 0.6f, 0.115f);
+
         [Header("Gestures")]
         public float tapMaxDuration = 0.25f;
         public float tapMaxMoveInches = 0.15f;
@@ -134,9 +141,9 @@ namespace DribbleToSchool.InputHandling
         // The buttons as the HUD draws them: normalized screen rects (origin bottom-left), square on
         // screen. Left-handed play swaps the two clusters but keeps "back" on the left of "forward"
         // so the arrows still point the right way.
-        public Rect JumpButtonNormalized { get { return Normalized(Disc(jumpButton, true)); } }
-        public Rect KickButtonNormalized { get { return Normalized(Disc(kickButton, true)); } }
-        public Rect SlideButtonNormalized { get { return Normalized(Disc(slideButton, true)); } }
+        public Rect JumpButtonNormalized { get { return Normalized(JumpDisc()); } }
+        public Rect KickButtonNormalized { get { return Normalized(KickDisc()); } }
+        public Rect SlideButtonNormalized { get { return Normalized(SlideDisc()); } }
         public Rect LeftButtonNormalized { get { return Normalized(WalkDisc(false)); } }
         public Rect RightButtonNormalized { get { return Normalized(WalkDisc(true)); } }
 
@@ -166,10 +173,24 @@ namespace DribbleToSchool.InputHandling
         /// </summary>
         float LayoutScale(float aspect)
         {
-            float left = Mathf.Max(walkBackButton.x + walkBackButton.radius, walkForwardButton.x + walkForwardButton.radius);
-            float right = Mathf.Max(jumpButton.x + jumpButton.radius, Mathf.Max(slideButton.x + slideButton.radius, kickButton.x + kickButton.radius));
+            float left, right;
+            if (runnerLayout)
+            {
+                left = runnerSlide.x + runnerSlide.radius;
+                right = Mathf.Max(runnerJump.x + runnerJump.radius, runnerKick.x + runnerKick.radius);
+            }
+            else
+            {
+                left = Mathf.Max(walkBackButton.x + walkBackButton.radius, walkForwardButton.x + walkForwardButton.radius);
+                right = Mathf.Max(jumpButton.x + jumpButton.radius, Mathf.Max(slideButton.x + slideButton.radius, kickButton.x + kickButton.radius));
+            }
             return Mathf.Clamp((aspect - clusterGap) / (left + right), 0.6f, 1f);
         }
+
+        Round JumpDisc() { return Disc(runnerLayout ? runnerJump : jumpButton, true); }
+        Round KickDisc() { return Disc(runnerLayout ? runnerKick : kickButton, true); }
+        /// <summary>In the runner layout, slide sits under the other thumb.</summary>
+        Round SlideDisc() { return runnerLayout ? Disc(runnerSlide, false) : Disc(slideButton, true); }
 
         /// <summary>A right-hand button (or, with <paramref name="rightCluster"/> false, a left-hand one), mirrored for left-handed play.</summary>
         Round Disc(ControlSpec spec, bool rightCluster)
@@ -291,7 +312,8 @@ namespace DribbleToSchool.InputHandling
                     case Role.Kick:
                         KickHeld = true;
                         // Only a real drag aims (and slows time); a tap is a quick pass on release.
-                        if (IsDrag(p))
+                        // (Running by itself there is nothing to aim: any press of the button is a shot.)
+                        if (IsDrag(p) && !runnerLayout)
                         {
                             KickAiming = true;
                             KickDrag = p.current - p.start;
@@ -323,11 +345,14 @@ namespace DribbleToSchool.InputHandling
             float slop = buttonSlopInches * Dpi;
             Role best = Role.TapOrSwipe;
             float bestEdge = slop;
-            Consider(Role.Jump, Disc(jumpButton, true), pos, ref best, ref bestEdge);
-            if (!AnyPointerWithRole(Role.Kick)) Consider(Role.Kick, Disc(kickButton, true), pos, ref best, ref bestEdge);
-            Consider(Role.Slide, Disc(slideButton, true), pos, ref best, ref bestEdge);
-            Consider(Role.MoveLeft, WalkDisc(false), pos, ref best, ref bestEdge);
-            Consider(Role.MoveRight, WalkDisc(true), pos, ref best, ref bestEdge);
+            Consider(Role.Jump, JumpDisc(), pos, ref best, ref bestEdge);
+            if (!AnyPointerWithRole(Role.Kick)) Consider(Role.Kick, KickDisc(), pos, ref best, ref bestEdge);
+            Consider(Role.Slide, SlideDisc(), pos, ref best, ref bestEdge);
+            if (!runnerLayout)
+            {
+                Consider(Role.MoveLeft, WalkDisc(false), pos, ref best, ref bestEdge);
+                Consider(Role.MoveRight, WalkDisc(true), pos, ref best, ref bestEdge);
+            }
             return best;
         }
 
@@ -368,7 +393,7 @@ namespace DribbleToSchool.InputHandling
         {
             if (p.role == Role.Kick)
             {
-                if (IsDrag(p))
+                if (IsDrag(p) && !runnerLayout)
                 {
                     KickReleased = true;
                     KickDrag = p.current - p.start;
