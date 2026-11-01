@@ -98,6 +98,10 @@ To upload without signing in to Xcode (e.g. on CI), create an App Store Connect 
 By hand instead: **Kick Off > Build > iOS Xcode Project**, open `Builds/iOS/Unity-iPhone.xcodeproj`, then Product > Archive >
 Distribute App > App Store Connect.
 
+That project is for real iPhones and iPads: in the Simulator it installs but fails to launch ("Launchd job spawn failed").
+To try the game in the Simulator, or to take store screenshots there, use **Kick Off > Build > iOS Simulator Project (testing
+only)** instead. It writes a separate project to `Builds/iOS-Simulator`, which needs no signing and can't be uploaded.
+
 A post-build step (`Editor/IosPostBuild.cs`) sets two Info.plist keys:
 - `ITSAppUsesNonExemptEncryption = NO`, so App Store Connect stops asking about encryption on every upload.
 - `UIRequiresFullScreen = YES`, which a landscape-only iPad app requires.

@@ -137,11 +137,53 @@ namespace DribbleToSchool.EditorTools
                 BuildOptions.Development | BuildOptions.AllowDebugging);
         }
 
+        /// <summary>The Xcode project for real iPhones and iPads: the one to archive and upload.</summary>
         [MenuItem("Kick Off/Build/iOS Xcode Project")]
         public static void BuildIOS()
         {
             ApplyPlayerSettings();
+            PlayerSettings.iOS.sdkVersion = iOSSdkVersion.DeviceSDK;
             Build(BuildTarget.iOS, Path.Combine(BuildRoot, "iOS"), BuildOptions.None);
+        }
+
+        /// <summary>
+        /// A separate Xcode project for the Simulator (Unity builds the Simulator and devices
+        /// separately: a device project installs in the Simulator but can't launch there). For
+        /// testing and store screenshots only; it can't be uploaded. Player Settings go back to the
+        /// device SDK afterwards, so the store build is never affected.
+        /// </summary>
+        [MenuItem("Kick Off/Build/iOS Simulator Project (testing only)")]
+        public static void BuildIOSSimulator()
+        {
+            ApplyPlayerSettings();
+            PlayerSettings.iOS.sdkVersion = iOSSdkVersion.SimulatorSDK;
+            SetSimulatorArchitecture();
+            try { Build(BuildTarget.iOS, Path.Combine(BuildRoot, "iOS-Simulator"), BuildOptions.None); }
+            finally
+            {
+                PlayerSettings.iOS.sdkVersion = iOSSdkVersion.DeviceSDK;
+                AssetDatabase.SaveAssets();
+            }
+        }
+
+        /// <summary>
+        /// Build the Simulator app for this Mac's own processor (Apple silicon: arm64), so it runs
+        /// natively rather than through Rosetta. Set by name, as the setting's API differs between
+        /// Unity versions; if it isn't there, Unity's default stays.
+        /// </summary>
+        static void SetSimulatorArchitecture()
+        {
+            var prop = typeof(PlayerSettings.iOS).GetProperty("simulatorSdkArchitecture",
+                System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+            if (prop == null || !prop.PropertyType.IsEnum) return;
+            bool arm = System.Runtime.InteropServices.RuntimeInformation.OSArchitecture == System.Runtime.InteropServices.Architecture.Arm64;
+            string want = arm ? "ARM64" : "X86_64";
+            foreach (string name in Enum.GetNames(prop.PropertyType))
+                if (string.Equals(name, want, StringComparison.OrdinalIgnoreCase))
+                {
+                    prop.SetValue(null, Enum.Parse(prop.PropertyType, name), null);
+                    return;
+                }
         }
 
         static void ConfigureAndroidSigning()
