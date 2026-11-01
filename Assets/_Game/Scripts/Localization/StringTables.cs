@@ -164,7 +164,7 @@ namespace DribbleToSchool.Localization
                 { "results.retry", "Retry" }, { "results.map", "Map" }, { "results.next", "Next" }, { "results.finish", "Finish" },
 
                 // Holiday Run (the endless mode): the screen, the messages the director sends, the pause and results menus
-                { "holiday.getReady", "Get ready" }, { "holiday.oops", "OOPS!" },
+                { "holiday.getReady", "Get ready" }, { "holiday.oops", "OOPS!" }, { "holiday.lose.fell", "Whoa! You fell!" },
                 { "holiday.stage", "STAGE {0}" }, { "holiday.day", "DAY {0}" }, { "holiday.chapterN", "CHAPTER {0}" },
                 { "holiday.best", "BEST {0}" }, { "holiday.newBest", "NEW BEST!" }, { "holiday.dayFaster", "A bit faster this time!" },
                 { "holiday.nearMiss", "Close call! +{0}" }, { "holiday.smash", "Smash! +{0}" }, { "holiday.multiplier", "x{0} combo!" },
@@ -366,7 +366,7 @@ namespace DribbleToSchool.Localization
                 { "results.newSticker", "¡Pegatina nueva para el álbum!" }, { "results.oldSticker", "Pegatina repetida" },
                 { "results.retry", "Repetir" }, { "results.map", "Mapa" }, { "results.next", "Siguiente" }, { "results.finish", "Fin" },
 
-                { "holiday.getReady", "Prepárate" }, { "holiday.oops", "¡UPS!" },
+                { "holiday.getReady", "Prepárate" }, { "holiday.oops", "¡UPS!" }, { "holiday.lose.fell", "¡Uy! ¡Te caíste!" },
                 { "holiday.stage", "ETAPA {0}" }, { "holiday.day", "DÍA {0}" }, { "holiday.chapterN", "CAPÍTULO {0}" },
                 { "holiday.best", "RÉCORD {0}" }, { "holiday.newBest", "¡NUEVO RÉCORD!" }, { "holiday.dayFaster", "¡Un poco más rápido!" },
                 { "holiday.nearMiss", "¡Por poco! +{0}" }, { "holiday.smash", "¡Zas! +{0}" }, { "holiday.multiplier", "¡Combo x{0}!" },

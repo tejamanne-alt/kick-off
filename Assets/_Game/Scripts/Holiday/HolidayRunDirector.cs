@@ -317,9 +317,8 @@ namespace DribbleToSchool.Holiday
                     if (Phase == RunPhase.Ready)
                     {
                         lastX = kid.transform.position.x;
+                        // (The HUD announces the first stage itself a moment after GO; later stages and days come as StageChanged.)
                         SetPhase(RunPhase.Running);
-                        // GO: the first stage's banner.
-                        if (StageChanged != null) StageChanged(StageIndex, Day);
                         AnalyticsService.Track("holiday_run_start", "character", GameSettings.Character);
                     }
                     else
@@ -602,10 +601,24 @@ namespace DribbleToSchool.Holiday
 
         // ================================================================ crash, results, revive
 
+        /// <summary>The story's reasons are about losing the ball; on a run what happened is the kid's (they fell).</summary>
+        static string RunnerReason(string reason)
+        {
+            switch (reason)
+            {
+                case "lose.crash":
+                case "lose.gap":
+                case "lose.splash":
+                    return reason;
+                default:
+                    return "holiday.lose.fell";
+            }
+        }
+
         void OnCrashed(string reason)
         {
             if (Phase == RunPhase.Crashed || Phase == RunPhase.Results) return;
-            crashReason = reason;
+            crashReason = RunnerReason(reason);
             crashX = kid.transform.position.x;
             crashTime = Time.unscaledTime;
             streak = 0;
