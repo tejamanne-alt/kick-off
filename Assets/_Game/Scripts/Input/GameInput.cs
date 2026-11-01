@@ -158,7 +158,7 @@ namespace DribbleToSchool.InputHandling
         public bool RightHeld { get; private set; }
 
         /// <summary>A round button on screen, in pixels.</summary>
-        struct Round
+        public struct Round
         {
             public Vector2 center;
             public float radius;
@@ -166,6 +166,53 @@ namespace DribbleToSchool.InputHandling
             /// <summary>Distance from the button's edge: negative inside it.</summary>
             public float EdgeDistance(Vector2 p) { return (p - center).magnitude - radius; }
         }
+
+        /// <summary>Where every touch button sits on one screen (in pixels, origin bottom-left).</summary>
+        public struct ControlLayout
+        {
+            public Round jump, kick, slide, walkBack, walkForward;
+        }
+
+        /// <summary>
+        /// The whole layout for a screen of the given size, safe area and handedness. Pure (it reads no
+        /// screen state), so it can be checked on any aspect ratio: see Tests/Editor/ControlLayoutTests.
+        /// </summary>
+        public ControlLayout LayoutOn(float width, float height, Rect safeArea, bool leftHanded)
+        {
+            float scale = LayoutScale(width / Mathf.Max(1f, height));
+            var layout = new ControlLayout();
+            if (runnerLayout)
+            {
+                layout.jump = Place(runnerJump, true, leftHanded, width, height, safeArea, scale);
+                layout.kick = Place(runnerKick, true, leftHanded, width, height, safeArea, scale);
+                layout.slide = Place(runnerSlide, false, leftHanded, width, height, safeArea, scale);
+                return layout;
+            }
+            layout.jump = Place(jumpButton, true, leftHanded, width, height, safeArea, scale);
+            layout.kick = Place(kickButton, true, leftHanded, width, height, safeArea, scale);
+            layout.slide = Place(slideButton, true, leftHanded, width, height, safeArea, scale);
+            // Left-handed, the arrows move to the right-hand side and swap places, so "back" is still the one on the left.
+            ControlSpec back = walkBackButton, forward = walkForwardButton;
+            if (leftHanded) { back.x = walkForwardButton.x; forward.x = walkBackButton.x; }
+            layout.walkBack = Place(back, false, leftHanded, width, height, safeArea, scale);
+            layout.walkForward = Place(forward, false, leftHanded, width, height, safeArea, scale);
+            return layout;
+        }
+
+        static Round Place(ControlSpec spec, bool rightCluster, bool leftHanded, float w, float h, Rect safe, float scale)
+        {
+            bool onRight = rightCluster != leftHanded;
+            // Keep clear of a notch or rounded corner: part of the unsafe margin, since the thumb sits further in anyway.
+            float inset = onRight ? Mathf.Max(0f, w - safe.xMax) : Mathf.Max(0f, safe.xMin);
+            float x = spec.x * scale * h + inset * 0.5f;
+            return new Round
+            {
+                center = new Vector2(onRight ? w - x : x, spec.y * scale * h + Mathf.Max(0f, safe.yMin) * 0.5f),
+                radius = spec.radius * scale * h,
+            };
+        }
+
+        ControlLayout Current { get { return LayoutOn(Screen.width, Screen.height, Screen.safeArea, GameSettings.LeftHanded); } }
 
         /// <summary>
         /// How much the layout shrinks so both clusters fit side by side: 1 on phones (16:9 and wider),
@@ -187,38 +234,11 @@ namespace DribbleToSchool.InputHandling
             return Mathf.Clamp((aspect - clusterGap) / (left + right), 0.6f, 1f);
         }
 
-        Round JumpDisc() { return Disc(runnerLayout ? runnerJump : jumpButton, true); }
-        Round KickDisc() { return Disc(runnerLayout ? runnerKick : kickButton, true); }
-        /// <summary>In the runner layout, slide sits under the other thumb.</summary>
-        Round SlideDisc() { return runnerLayout ? Disc(runnerSlide, false) : Disc(slideButton, true); }
-
-        /// <summary>A right-hand button (or, with <paramref name="rightCluster"/> false, a left-hand one), mirrored for left-handed play.</summary>
-        Round Disc(ControlSpec spec, bool rightCluster)
-        {
-            float w = Screen.width, h = Screen.height;
-            float s = LayoutScale(w / h);
-            bool onRight = rightCluster != GameSettings.LeftHanded;
-            // Keep clear of a notch or rounded corner: part of the unsafe margin, since the thumb sits further in anyway.
-            Rect safe = Screen.safeArea;
-            float inset = onRight ? Mathf.Max(0f, w - safe.xMax) : Mathf.Max(0f, safe.xMin);
-            float x = spec.x * s * h + inset * 0.5f;
-            return new Round
-            {
-                center = new Vector2(onRight ? w - x : x, spec.y * s * h + Mathf.Max(0f, safe.yMin) * 0.5f),
-                radius = spec.radius * s * h,
-            };
-        }
-
-        /// <summary>
-        /// One of the two walk arrows. Left-handed, the arrows move to the right-hand side and swap
-        /// places, so "back" is still the one on the left.
-        /// </summary>
-        Round WalkDisc(bool forward)
-        {
-            ControlSpec spec = forward ? walkForwardButton : walkBackButton;
-            if (GameSettings.LeftHanded) spec.x = forward ? walkBackButton.x : walkForwardButton.x;
-            return Disc(spec, false);
-        }
+        // In the runner layout, slide sits under the other thumb.
+        Round JumpDisc() { return Current.jump; }
+        Round KickDisc() { return Current.kick; }
+        Round SlideDisc() { return Current.slide; }
+        Round WalkDisc(bool forward) { return forward ? Current.walkForward : Current.walkBack; }
 
         static Rect Normalized(Round r)
         {

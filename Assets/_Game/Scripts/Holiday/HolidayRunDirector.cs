@@ -295,11 +295,29 @@ namespace DribbleToSchool.Holiday
             switch (state)
             {
                 case LevelState.Intro:
+                    // The level was restarted (Restart, or the R key): everything starts over with it.
+                    if (Phase != RunPhase.Ready)
+                    {
+                        Commit();
+                        TimeControl.ResetTime();
+                        ResetRun();
+                        if (endlessBall != null) endlessBall.ResetAt(kid.transform.position);
+                        if (cameraFollow != null) cameraFollow.SnapToTarget();
+                    }
                     SetPhase(RunPhase.Ready);
                     break;
                 case LevelState.Playing:
-                    if (Phase == RunPhase.Ready) lastX = kid.transform.position.x;
-                    SetPhase(RunPhase.Running);
+                    if (Phase == RunPhase.Ready)
+                    {
+                        lastX = kid.transform.position.x;
+                        SetPhase(RunPhase.Running);
+                        // GO: the first stage's banner.
+                        if (StageChanged != null) StageChanged(StageIndex, Day);
+                    }
+                    else
+                    {
+                        SetPhase(RunPhase.Running);
+                    }
                     break;
                 case LevelState.Paused:
                     SetPhase(RunPhase.Paused);
@@ -663,12 +681,8 @@ namespace DribbleToSchool.Holiday
         /// <summary>A fresh run from the start of day 1 (saves the one that just ended).</summary>
         public void Restart()
         {
-            Commit();
-            TimeControl.ResetTime();
+            // BeginRun puts the level back at its start; OnLevelState then starts the run over.
             level.BeginRun();
-            ResetRun();
-            if (endlessBall != null) endlessBall.ResetAt(kid.transform.position);
-            if (cameraFollow != null) cameraFollow.SnapToTarget();
         }
 
         public void QuitToMenu()
