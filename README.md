@@ -8,6 +8,7 @@ The full game brief is in [`GAME_PROMPT.md`](GAME_PROMPT.md).
 All eight phases of the build plan are done (see [`PROGRESS.md`](PROGRESS.md)):
 
 - **Gameplay:** core dribbling and kicking, level flow, 13 hazard types, and 23 story levels across 5 chapters plus 5 ball-skill challenges.
+- **Holiday Run:** an endless runner through the whole story world, one 120 m stage for each of the 23 levels in story order, a lap a day and a faster day after day. See [`docs/HOLIDAY_RUN.md`](docs/HOLIDAY_RUN.md).
 - **Progression:** coins, stickers, saving, the Locker Room shop and the chapter map.
 - **Presentation:** procedural storybook art, animation, FX, music and sound effects, and haptics.
 - **Menus and options:** settings, localization (English and Spanish), tutorial hints and accessibility options.
@@ -94,6 +95,8 @@ Bell times and streak targets are in the level table in `Editor/GeneratedContent
 | Restart level | Pause > Restart | `R` |
 | Tuning panel | Tuning button | `Tab` |
 
+In **Holiday Run** the kid runs by themselves, so there are no walk arrows or aiming: JUMP stays under the right thumb, SLIDE moves to the left thumb, and KICK (a press) shoots the ball ahead at crates and targets.
+
 ## How it plays
 
 - **Walk** with the ◀ ▶ buttons. Whenever the kid walks into the ball, it gets a slightly random touch in the walking direction, so you can dribble forward or back.
@@ -105,6 +108,17 @@ Bell times and streak targets are in the level table in `Editor/GeneratedContent
 - **Slide:** tap SLIDE (or swipe down) for a feet-first slide along the ground, a little faster than running, for about 0.7 s. The kid is low enough to pass under anything with a 0.85 m gap, and won't stand up while something is overhead (they shuffle on until clear). A sliding kid nudges the ball on along the ground without breaking a perfect-touch streak. Jump out of a slide for a longer jump.
 - **Left-handed mode** swaps the two button clusters.
 - **Touch layout:** the right thumb works a fan of three round buttons around its resting place in the corner, each in its own direction: JUMP (biggest, in the corner), SLIDE (a flick to the left, same baseline) and KICK (up and to the left, with room to drag either way). Nothing sits in the path to anything else, every button is coloured differently (blue, violet, orange then green when the ball is in reach) and a touch goes to whichever button's edge it is nearest, so there are no gaps or overlaps to hit by mistake. Sizes are in screen heights, so the buttons are the same size on every phone and shrink only on 4:3 tablets. Positions are on the `GameInput` object (`jumpButton`, `slideButton`, `kickButton`, `walkBackButton`, `walkForwardButton`).
+
+## Holiday Run
+
+A continuous mode like Temple Run or Subway Surfers, from the title screen. The kid runs by themselves along one long street made of all 23 story levels end to end (Home Street, the Market, the Beach, the Underpass and building site, then the Park and the school gate), and you jump, double jump, slide and kick to get through. Reaching the school gate ends the day and the next one starts again at home, faster. Along the way:
+
+- Obstacles use the same kit models and hazards as the story levels, in three random layouts per stage, so no two days play the same. Light, haze and music change gradually from one chapter to the next.
+- Score is distance, coins and a multiplier that climbs with every obstacle cleared in a row; close passes score near misses, and a kick smashes crates and targets for coins.
+- Magnet, Shield and Turbo power-ups; three missions at a time that pay coins; spend coins to revive after a crash (they are banked when the run ends).
+- Stages stream in as additive scenes, so only about three exist at a time however long the run.
+
+Design, scoring, tuning knobs, the streaming contract and a first-run checklist are in [`docs/HOLIDAY_RUN.md`](docs/HOLIDAY_RUN.md).
 
 ## Tuning the feel
 
@@ -147,9 +161,14 @@ Assets/_Game/
     Levels/     LevelDefinition.cs, LevelCatalog.cs (ScriptableObjects)
     UI/         LevelHud.cs            grey-box HUD, pause, results, live tuning panel
     Tuning/     BallTuning.cs, PlayerTuning.cs (ScriptableObjects)
+    Holiday/    HolidayRunDirector.cs  the endless mode's rules: pace, score, combo, power-ups, revive, days
+                RunWorldStreamer.cs    loads and unloads the 23 stage scenes round the kid
+                HolidayStages.cs       the stage table (one per story level) and the world's geometry
+                EndlessBall.cs, HolidayAtmosphere.cs, HolidayRunHud.cs, HolidayMissions.cs, RunMarkers.cs
     Editor/     LevelBuildKit.cs       sprites, assets, gameplay rig, track pieces
                 GreyboxLevels.cs       the level layouts
                 GeneratedContent.cs    builds every scene + build settings
+                HolidayRunBuilder.cs   builds the Holiday Run core scene and its 23 stage scenes
 ```
 
 ## About the camera
