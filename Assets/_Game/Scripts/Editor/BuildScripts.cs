@@ -24,7 +24,7 @@ namespace DribbleToSchool.EditorTools
     {
         // Change the studio name to your own before the first store upload.
         public const string CompanyName = "Your Studio";
-        public const string ProductName = "Dribble To School";
+        public const string ProductName = "Kick Off";
         /// <summary>The app's bundle identifier (iOS) and package name (Android).</summary>
         public const string ApplicationId = "com.astradite.kickoff";
         public const string DefaultVersion = "1.0.0";
@@ -32,7 +32,7 @@ namespace DribbleToSchool.EditorTools
         const string IconPath = LevelBuildKit.Root + "/Art/Generated/AppIcon.png";
         const string BuildRoot = "Builds";
 
-        [MenuItem("Dribble To School/Build/Apply Store Player Settings")]
+        [MenuItem("Kick Off/Build/Apply Store Player Settings")]
         public static void ApplyPlayerSettings()
         {
             string version = Env("DTS_VERSION", DefaultVersion);
@@ -50,8 +50,8 @@ namespace DribbleToSchool.EditorTools
             PlayerSettings.allowedAutorotateToPortraitUpsideDown = false;
             PlayerSettings.runInBackground = false;
 
-            // Splash: warm paper colour behind the (required) Unity logo.
-            PlayerSettings.SplashScreen.backgroundColor = new Color(0.99f, 0.9f, 0.76f);
+            // Splash: the game's deep blue sky behind the (required) Unity logo, as the menu's splash.
+            PlayerSettings.SplashScreen.backgroundColor = new Color(0.16f, 0.39f, 0.75f);
 
             // Android
             PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.Android, ApplicationId);
@@ -94,25 +94,25 @@ namespace DribbleToSchool.EditorTools
             if (icon != null) PlayerSettings.SetIcons(NamedBuildTarget.Unknown, new[] { icon }, IconKind.Any);
         }
 
-        [MenuItem("Dribble To School/Build/Android App Bundle (release)")]
+        [MenuItem("Kick Off/Build/Android App Bundle (release)")]
         public static void BuildAndroidRelease()
         {
             ApplyPlayerSettings();
             ConfigureAndroidSigning();
             EditorUserBuildSettings.buildAppBundle = true;
-            Build(BuildTarget.Android, Path.Combine(BuildRoot, "Android", "DribbleToSchool.aab"), BuildOptions.None);
+            Build(BuildTarget.Android, Path.Combine(BuildRoot, "Android", "KickOff.aab"), BuildOptions.None);
         }
 
-        [MenuItem("Dribble To School/Build/Android APK (development)")]
+        [MenuItem("Kick Off/Build/Android APK (development)")]
         public static void BuildAndroidDev()
         {
             ApplyPlayerSettings();
             EditorUserBuildSettings.buildAppBundle = false;
-            Build(BuildTarget.Android, Path.Combine(BuildRoot, "Android", "DribbleToSchool-dev.apk"),
+            Build(BuildTarget.Android, Path.Combine(BuildRoot, "Android", "KickOff-dev.apk"),
                 BuildOptions.Development | BuildOptions.AllowDebugging);
         }
 
-        [MenuItem("Dribble To School/Build/iOS Xcode Project")]
+        [MenuItem("Kick Off/Build/iOS Xcode Project")]
         public static void BuildIOS()
         {
             ApplyPlayerSettings();

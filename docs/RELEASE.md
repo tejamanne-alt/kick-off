@@ -1,6 +1,6 @@
 # Release Guide
 
-Everything needed to take Dribble To School from this repo to the App Store and Google Play.
+Everything needed to take Kick Off from this repo to the App Store and Google Play.
 
 ## 0. Unity version for iOS
 
@@ -11,8 +11,8 @@ After updating Unity, delete `Builds/iOS` and export the Xcode project again. Un
 ## 1. Before the first build
 
 1. Open the project in Unity 6. The editor generates the menu, the levels and the art automatically.
-2. In `Assets/_Game/Scripts/Editor/BuildScripts.cs`, set `CompanyName` and `ApplicationId` (for example `com.yourstudio.dribbletoschool`). The bundle id can't change after the first upload.
-3. Run **Dribble To School > Build > Apply Store Player Settings**. This sets:
+2. In `Assets/_Game/Scripts/Editor/BuildScripts.cs`, set `CompanyName` and `ApplicationId` (for example `com.yourstudio.kickoff`). The bundle id can't change after the first upload.
+3. Run **Kick Off > Build > Apply Store Player Settings**. This sets:
    - the ids, version and build number,
    - landscape-only orientation,
    - Android API 26+ (target: highest installed), ARM64 + IL2CPP,
@@ -76,17 +76,18 @@ The game has no ads, no accounts, no network calls and no third-party SDKs (Unit
 
 ## 5. Store listing (draft)
 
-**Name:** Dribble To School
-**Subtitle (iOS, 30 chars):** Cozy soccer side-scroller
-**Short description (Play, 80 chars):** Dribble a ball all the way to school. Cozy, hand-drawn, no rush (unless you like).
+**Name:** Kick Off
+**Subtitle (iOS, 30 chars):** Dribble all the way to school
+**Short description (Play, 80 chars):** Dribble a football through town all the way to school. No rush (unless you like).
 
 **Description:**
 
 > Late for school? Grab your ball and go!
 >
-> Dribble To School is a cozy, hand-drawn soccer side-scroller. Keep the ball at your feet as you run through town: tap in rhythm for perfect touches, drag back to chip it over walls, juggle it past dogs, and wait for the green light before you cross.
+> Kick Off is a football side-scroller in bright anime daylight. Keep the ball at your feet as you run through town: tap in rhythm for perfect touches, drag back to chip it over walls, juggle it past dogs, and wait for the green light before you cross.
 >
-> - 23 levels across 5 storybook chapters: Home Street, the Market, the Beach, the Underpass and the Park
+> - Play as the boy or the girl
+> - 23 levels across 5 chapters: Home Street, the Market, the Beach, the Underpass and the Park
 > - Real ball physics: every kick is about angle and timing
 > - Ball-skill challenges: keepy-uppy, target practice and beach slalom
 > - Earn coins to unlock ball skins, backpack flags, outfits and trails

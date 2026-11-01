@@ -1,14 +1,14 @@
-using DribbleToSchool.Localization;
+using DribbleToSchool.UI;
 using DribbleToSchool.UI.Kit;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace DribbleToSchool.FrontEnd
 {
-    /// <summary>First-launch splash: the title pops in over a warm wash, a ball bounces, then it fades away.</summary>
+    /// <summary>First-launch splash: the Kick Off logo pops in over the deep blue sky, then it all fades to the menu.</summary>
     public class Splash : MonoBehaviour
     {
-        const float Hold = 1.4f;
+        const float Hold = 1.5f;
         const float FadeTime = 0.5f;
 
         CanvasGroup group;
@@ -19,16 +19,13 @@ namespace DribbleToSchool.FrontEnd
             var root = UIKit.Stretch(UIKit.Rect(canvas, "Splash"));
             root.SetAsLastSibling();
             var bg = root.gameObject.AddComponent<Image>();
-            bg.color = new Color(0.99f, 0.9f, 0.76f);
-            var title = UIKit.Title(root, "Title", Loc.T("menu.title"), UITheme.SizeHero, Color.white);
-            UIKit.Place(title.rectTransform, new Vector2(0.5f, 0.55f), Vector2.zero, new Vector2(1400f, 320f));
-            UIKit.PopIn(title.gameObject, 0.1f);
-            var ball = UIKit.Icon(root, "Ball", ProceduralSprites.Circle, Color.white, 110f);
-            UIKit.Place(ball.rectTransform, new Vector2(0.5f, 0.28f), Vector2.zero, new Vector2(110f, 110f));
-            var outline = ball.gameObject.AddComponent<Outline>();
-            outline.effectColor = UITheme.Ink;
-            outline.effectDistance = new Vector2(4f, -4f);
-            ball.gameObject.AddComponent<UIBounce>();
+            bg.color = UITheme.SkyBottom;
+            var top = UIKit.Icon(root, "SkyTop", ProceduralSprites.VerticalGradient, UITheme.SkyTop, 10f);
+            top.preserveAspect = false;
+            UIKit.Stretch(top.rectTransform);
+            var logo = KickOffLogo.Build(root, 1.15f);
+            UIKit.Place(logo, new Vector2(0.5f, 0.5f), new Vector2(0f, 10f), logo.sizeDelta);
+            UIKit.PopIn(logo.gameObject, 0.1f);
             var splash = root.gameObject.AddComponent<Splash>();
             splash.group = root.gameObject.AddComponent<CanvasGroup>();
             splash.start = Time.unscaledTime;

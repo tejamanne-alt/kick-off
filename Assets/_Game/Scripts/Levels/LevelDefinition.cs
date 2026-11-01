@@ -3,7 +3,7 @@ using UnityEngine;
 namespace DribbleToSchool.Levels
 {
     /// <summary>Data for one level: which scene, how long until the bell, star targets.</summary>
-    [CreateAssetMenu(menuName = "Dribble To School/Level Definition", fileName = "Level")]
+    [CreateAssetMenu(menuName = "Kick Off/Level Definition", fileName = "Level")]
     public class LevelDefinition : ScriptableObject
     {
         public string levelId = "L01";

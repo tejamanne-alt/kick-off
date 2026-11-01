@@ -141,38 +141,64 @@ namespace DribbleToSchool.Art
         // ===================== App icon =====================
 
         /// <summary>
-        /// Square app icon (no transparency, stores add their own mask): a warm
-        /// sunrise, rolling hill, a big inked ball mid-bounce with speed lines,
-        /// and a little school flag.
+        /// Square app icon (no transparency, stores add their own mask) in the game's clear anime
+        /// daylight, like the Kick Off logo: a deep blue sky with a white cumulus, a mown pitch with
+        /// the centre circle chalked on it, and a big inked ball flying in on chalk speed lines.
         /// </summary>
         public static PixelCanvas AppIcon(int size = 512)
         {
             var c = new PixelCanvas(size, size);
             float s = size / 512f;
-            Color top = new Color(0.98f, 0.7f, 0.42f), bottom = new Color(1f, 0.9f, 0.62f);
+            Color top = new Color(0.13f, 0.36f, 0.76f), bottom = new Color(0.55f, 0.76f, 0.95f);
             for (int y = 0; y < size; y++)
             {
-                Color col = Color.Lerp(bottom, top, y / (float)size);
+                Color col = Color.Lerp(bottom, top, Mathf.SmoothStep(0f, 1f, y / (float)size));
                 for (int x = 0; x < size; x++) c.Set(x, y, col);
             }
-            c.FillCircle(380 * s, 380 * s, 90 * s, new Color(1f, 0.95f, 0.72f));   // sun
-            c.FillBelow(x => (120 + Mathf.Sin(x / size * Mathf.PI * 1.4f + 0.4f) * 40) * s, new Color(0.47f, 0.74f, 0.42f));
-            c.FillBelow(x => (70 + Mathf.Sin(x / size * Mathf.PI * 2f + 2f) * 18) * s, new Color(0.38f, 0.64f, 0.36f));
 
-            // School flag on a pole (right)
-            c.FillRect(400 * s, 120 * s, 408 * s, 300 * s, new Color(0.35f, 0.28f, 0.24f));
-            c.FillPolygon(new[] { new Vector2(408 * s, 300 * s), new Vector2(470 * s, 280 * s), new Vector2(408 * s, 258 * s) }, new Color(0.9f, 0.35f, 0.35f));
+            // A cumulus, top left: a cool blue belly under bright white tops, flat-bottomed.
+            Color belly = new Color(0.78f, 0.87f, 0.98f), cloudTop = Color.white;
+            float[,] puffs = { { 60, 372, 58 }, { 128, 400, 74 }, { 205, 380, 56 }, { 250, 360, 40 } };
+            float cloudBase = 326f * s;
+            System.Func<float, float, float, float, bool> inPuffs = (x, y, lift, k) =>
+            {
+                if (y < cloudBase + lift * s) return false;
+                for (int i = 0; i < puffs.GetLength(0); i++)
+                {
+                    float dx = x - puffs[i, 0] * s, dy = y - (puffs[i, 1] + lift) * s, pr = puffs[i, 2] * k * s;
+                    if (dx * dx + dy * dy <= pr * pr) return true;
+                }
+                return false;
+            };
+            c.Fill((x, y) => inPuffs(x, y, 0f, 1f) ? 1f : 0f, belly);
+            c.Fill((x, y) => inPuffs(x + 4f * s, y, 12f, 0.84f) ? 1f : 0f, cloudTop);
 
-            c.Grain(0.08f, 21, 0.02f);
+            // The pitch: mown stripes, and the centre circle and halfway line in chalk.
+            System.Func<float, float> turfTop = x => (130f + Mathf.Sin(x / size * Mathf.PI * 1.2f + 0.3f) * 14f) * s;
+            c.FillBelow(turfTop, new Color(0.27f, 0.6f, 0.32f));
+            c.Fill((x, y) => y <= turfTop(x) && Mathf.FloorToInt((x + y * 0.35f) / (46f * s)) % 2 == 0 ? 1f : 0f, new Color(0.33f, 0.66f, 0.37f));
+            Vector2 spot = new Vector2(256f * s, 40f * s);
+            c.Fill((x, y) =>
+            {
+                if (y > turfTop(x) - 3f * s) return 0f;
+                float d = Vector2.Distance(new Vector2(x, (y - spot.y) * 2.4f + spot.y), spot);
+                return Mathf.Abs(d - 190f * s) < 6f * s || Mathf.Abs(x - spot.x) < 4f * s ? 1f : 0f;
+            }, new Color(0.96f, 0.98f, 0.95f, 0.92f));
 
-            // Speed lines
+            c.Grain(0.05f, 21, 0.02f);
+
+            // Chalk speed lines streaming up and back from the ball.
             for (int i = 0; i < 3; i++)
-                c.Line(new Vector2((50 + i * 14) * s, (318 - i * 46) * s), new Vector2((150 + i * 14) * s, (318 - i * 46) * s), 14 * s, new Color(1f, 1f, 1f, 0.9f));
+            {
+                Vector2 from = new Vector2((150 - i * 4) * s, (300 + i * 34) * s), dir = new Vector2(-0.88f, 0.47f);
+                c.Line(from, from + dir * (120f - i * 25f) * s, 18 * s, new Color(0.12f, 0.14f, 0.22f));
+                c.Line(from, from + dir * (120f - i * 25f) * s, 11 * s, Color.white);
+            }
 
             // The ball on its own layer so it gets a proper ink outline.
             var layer = new PixelCanvas(size, size);
-            Vector2 ball = new Vector2(262 * s, 262 * s);
-            float r = 125 * s;
+            Vector2 ball = new Vector2(286 * s, 236 * s);
+            float r = 138 * s;
             System.Func<float, float, bool> inBall = (x, y) => (x - ball.x) * (x - ball.x) + (y - ball.y) * (y - ball.y) <= r * r;
             layer.FillCircle(ball.x, ball.y, r, Color.white);
             layer.Fill((x, y) => inBall(x, y) && InPentagon(x, y, ball.x, ball.y, r * 0.3f, 15f) ? 1f : 0f, Ink);

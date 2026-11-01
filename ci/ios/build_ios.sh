@@ -71,13 +71,13 @@ fi
 echo "==> Archiving"
 xcodebuild -project "$ROOT/Builds/iOS/Unity-iPhone.xcodeproj" -scheme Unity-iPhone \
   -configuration Release -destination "generic/platform=iOS" \
-  -archivePath "$ROOT/Builds/DribbleToSchool.xcarchive" \
+  -archivePath "$ROOT/Builds/KickOff.xcarchive" \
   -allowProvisioningUpdates DEVELOPMENT_TEAM="$DTS_APPLE_TEAM_ID" archive
 
 echo "==> Exporting .ipa ($MODE)"
 TMP_OPTIONS="$(mktemp)"
 sed "s/TEAM_ID/$DTS_APPLE_TEAM_ID/" "$OPTIONS" > "$TMP_OPTIONS"
-xcodebuild -exportArchive -archivePath "$ROOT/Builds/DribbleToSchool.xcarchive" \
+xcodebuild -exportArchive -archivePath "$ROOT/Builds/KickOff.xcarchive" \
   -exportPath "$ROOT/Builds/ipa-$MODE" -exportOptionsPlist "$TMP_OPTIONS" -allowProvisioningUpdates
 rm -f "$TMP_OPTIONS"
 

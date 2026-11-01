@@ -81,7 +81,7 @@ namespace DribbleToSchool.UI
             root = (RectTransform)canvas.transform;
 
             // Info card (top-left)
-            var info = UIKit.Card(root, "Info", new Color(1f, 0.97f, 0.9f, 0.94f));
+            var info = UIKit.Card(root, "Info", UITheme.Paper);
             UIKit.Place((RectTransform)info.transform.parent, new Vector2(0f, 1f), new Vector2(30f, -30f), new Vector2(660f, 200f), new Vector2(0f, 1f));
             var t = info.transform;
             titleText = Text(t, "Title", 34, new Vector2(30f, -38f), new Vector2(600f, 50f), TextAnchor.MiddleLeft);
@@ -96,8 +96,8 @@ namespace DribbleToSchool.UI
             var pause = UIKit.Button(root, "Pause", "", UITheme.Paper, () => level.TogglePause());
             pauseRect = (RectTransform)pause.transform;
             UIKit.Place(pauseRect, new Vector2(1f, 1f), new Vector2(-40f, -40f), new Vector2(130f, 130f), new Vector2(1f, 1f));
-            MakeRound(pause);
-            UIKit.Icon(pause.transform.Find("Face"), "Icon", ProceduralSprites.Pause, UITheme.Ink, 64f);
+            UIKit.MakeRound(pause);
+            UIKit.Icon(pause.transform.Find("Face"), "Icon", ProceduralSprites.Pause, UITheme.Navy, 64f);
 
             if (tuning != null && DevTuningPanel.Available)
             {
@@ -156,7 +156,7 @@ namespace DribbleToSchool.UI
 
             // Tutorial hint: a slim banner across the top, between the info card and the pause
             // button, clear of the play area. Tap it (or its ×) to dismiss; it also fades on its own.
-            var hint = UIKit.Card(root, "Hint", new Color(1f, 0.97f, 0.88f, 0.9f));
+            var hint = UIKit.Card(root, "Hint", new Color(1f, 1f, 1f, 0.92f));
             hintCard = (RectTransform)hint.transform.parent;
             hintCard.anchorMin = new Vector2(0f, 1f);
             hintCard.anchorMax = new Vector2(1f, 1f);
@@ -198,15 +198,6 @@ namespace DribbleToSchool.UI
             rect.anchorMin = new Vector2(normalized.x, normalized.y);
             rect.anchorMax = new Vector2(normalized.xMax, normalized.yMax);
             rect.offsetMin = rect.offsetMax = Vector2.zero;
-        }
-
-        static void MakeRound(Button button)
-        {
-            foreach (var img in button.GetComponentsInChildren<Image>())
-            {
-                if (img.name == "Face" || img.name == "Shadow" || img.name == "Base") { img.sprite = ProceduralSprites.Circle; img.type = Image.Type.Simple; }
-                if (img.name == "Shine") img.gameObject.SetActive(false);
-            }
         }
 
         // ---------- Events ----------
@@ -443,8 +434,7 @@ namespace DribbleToSchool.UI
         void ShowPause()
         {
             var card = UIKit.Modal(root, "Pause", new Vector2(720f, 900f), out pauseModal);
-            var title = UIKit.Title(card.transform, "Title", Loc.T("pause.title"), 70, Color.white);
-            UIKit.Place(title.rectTransform, new Vector2(0.5f, 1f), new Vector2(0f, -80f), new Vector2(600f, 100f));
+            UIKit.Header(card.transform, Loc.T("pause.title"), 460f);
 
             float y = -200f;
             PauseButton(card.transform, ref y, "pause.resume", UITheme.Green, () => level.Resume());
@@ -473,8 +463,7 @@ namespace DribbleToSchool.UI
             string heading = r.isChallenge
                 ? Loc.T(r.stars > 0 ? "results.challengeDone" : "results.challengeFail")
                 : Loc.T(r.beforeBell ? "results.made" : "results.late");
-            var title = UIKit.Title(card.transform, "Title", heading, 68, Color.white);
-            UIKit.Place(title.rectTransform, new Vector2(0.5f, 1f), new Vector2(0f, -80f), new Vector2(1050f, 100f));
+            UIKit.Header(card.transform, heading, 760f);
 
             // Stars pop in one by one.
             for (int i = 0; i < 3; i++)

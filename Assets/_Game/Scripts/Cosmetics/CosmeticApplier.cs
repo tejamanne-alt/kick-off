@@ -42,22 +42,44 @@ namespace DribbleToSchool.Cosmetics
         {
             if (catalog == null) return;
             var save = SaveSystem.Data;
+            ApplyBall(catalog.Find(save.equippedBall));
+            ApplyOutfit(catalog.Find(save.equippedOutfit));
+            ApplyFlag(catalog.Find(save.equippedFlag));
+            ApplyTrail(catalog.Find(save.equippedTrail));
+        }
 
-            var ball = catalog.Find(save.equippedBall);
-            if (ball != null && ballRenderer != null)
+        /// <summary>
+        /// Show one item without equipping it (the Locker Room's try-on on the menu's teen).
+        /// <see cref="Apply"/> puts the equipped things back.
+        /// </summary>
+        public void Preview(CosmeticItem item)
+        {
+            if (item == null) return;
+            switch (item.category)
             {
-                // The ball's UVs map its front and back onto the skin's drawing of a ball.
-                var sprite = CosmeticArt.BallSprite(ball);
-                if (block == null) block = new MaterialPropertyBlock();
-                ballRenderer.GetPropertyBlock(block);
-                block.SetTexture(MainTexId, sprite.texture);
-                Rect r = sprite.textureRect;
-                float w = sprite.texture.width, h = sprite.texture.height;
-                block.SetVector(MainTexStId, new Vector4(r.width / w, r.height / h, r.x / w, r.y / h));
-                ballRenderer.SetPropertyBlock(block);
+                case CosmeticCategory.Ball: ApplyBall(item); break;
+                case CosmeticCategory.Outfit: ApplyOutfit(item); break;
+                case CosmeticCategory.Flag: ApplyFlag(item); break;
+                case CosmeticCategory.Trail: ApplyTrail(item); break;
             }
+        }
 
-            var outfit = catalog.Find(save.equippedOutfit);
+        void ApplyBall(CosmeticItem ball)
+        {
+            if (ball == null || ballRenderer == null) return;
+            // The ball's UVs map its front and back onto the skin's drawing of a ball.
+            var sprite = CosmeticArt.BallSprite(ball);
+            if (block == null) block = new MaterialPropertyBlock();
+            ballRenderer.GetPropertyBlock(block);
+            block.SetTexture(MainTexId, sprite.texture);
+            Rect r = sprite.textureRect;
+            float w = sprite.texture.width, h = sprite.texture.height;
+            block.SetVector(MainTexStId, new Vector4(r.width / w, r.height / h, r.x / w, r.y / h));
+            ballRenderer.SetPropertyBlock(block);
+        }
+
+        void ApplyOutfit(CosmeticItem outfit)
+        {
             var dressable = kidBody as Presentation.IOutfit;
             if (outfit != null && dressable != null && dressedIn != outfit.id)
             {
@@ -67,38 +89,36 @@ namespace DribbleToSchool.Cosmetics
                 dressedIn = outfit.id;
                 dressable.SetOutfit(outfit.primary, outfit.secondary);
             }
+        }
 
-            var flag = catalog.Find(save.equippedFlag);
-            if (backpackFlags != null)
+        void ApplyFlag(CosmeticItem flag)
+        {
+            if (backpackFlags == null) return;
+            bool show = flag != null && flag.pattern != CosmeticPattern.None;
+            foreach (var backpackFlag in backpackFlags)
             {
-                bool show = flag != null && flag.pattern != CosmeticPattern.None;
-                foreach (var backpackFlag in backpackFlags)
-                {
-                    if (backpackFlag == null) continue;
-                    backpackFlag.enabled = show;
-                    if (show) backpackFlag.sprite = CosmeticArt.FlagSprite(flag);
-                }
+                if (backpackFlag == null) continue;
+                backpackFlag.enabled = show;
+                if (show) backpackFlag.sprite = CosmeticArt.FlagSprite(flag);
             }
+        }
 
-            var trail = catalog.Find(save.equippedTrail);
-            if (ballTrail != null)
-            {
-                bool show = trail != null && trail.pattern != CosmeticPattern.None;
-                ballTrail.enabled = show;
-                if (show)
+        void ApplyTrail(CosmeticItem trail)
+        {
+            if (ballTrail == null) return;
+            bool show = trail != null && trail.pattern != CosmeticPattern.None;
+            ballTrail.enabled = show;
+            if (!show) return;
+            var gradient = new Gradient();
+            gradient.SetKeys(
+                new[]
                 {
-                    var gradient = new Gradient();
-                    gradient.SetKeys(
-                        new[]
-                        {
-                            new GradientColorKey(CosmeticArt.TrailColor(trail, 0f), 0f),
-                            new GradientColorKey(CosmeticArt.TrailColor(trail, 0.5f), 0.5f),
-                            new GradientColorKey(CosmeticArt.TrailColor(trail, 1f), 1f),
-                        },
-                        new[] { new GradientAlphaKey(0.85f, 0f), new GradientAlphaKey(0f, 1f) });
-                    ballTrail.colorGradient = gradient;
-                }
-            }
+                    new GradientColorKey(CosmeticArt.TrailColor(trail, 0f), 0f),
+                    new GradientColorKey(CosmeticArt.TrailColor(trail, 0.5f), 0.5f),
+                    new GradientColorKey(CosmeticArt.TrailColor(trail, 1f), 1f),
+                },
+                new[] { new GradientAlphaKey(0.85f, 0f), new GradientAlphaKey(0f, 1f) });
+            ballTrail.colorGradient = gradient;
         }
     }
 }

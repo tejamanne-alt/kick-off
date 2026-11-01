@@ -1,4 +1,4 @@
-# Dribble To School: art direction
+# Kick Off: art direction
 
 The look is clear anime daylight over a believable everyday town: a deep blue sky with big white
 cumulus, clean neutral streets and buildings, fresh greens, and characters drawn so they stand

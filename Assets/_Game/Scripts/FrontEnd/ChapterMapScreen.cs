@@ -25,8 +25,9 @@ namespace DribbleToSchool.FrontEnd
         {
             chapterTitle = UIKit.Title(root, "ChapterTitle", "", 60, Color.white);
             UIKit.Place(chapterTitle.rectTransform, new Vector2(0.5f, 1f), new Vector2(0f, -200f), new Vector2(1400f, 90f));
-            chapterStars = UIKit.Label(root, "ChapterStars", "", UITheme.SizeBody, UITheme.Ink, TextAnchor.MiddleCenter, true);
-            UIKit.Place(chapterStars.rectTransform, new Vector2(0.5f, 1f), new Vector2(0f, -265f), new Vector2(800f, 50f));
+            chapterStars = UIKit.Label(root, "ChapterStars", "", UITheme.SizeBody, Color.white, TextAnchor.MiddleCenter, true);
+            UIKit.Place(chapterStars.rectTransform, new Vector2(0.5f, 1f), new Vector2(0f, -268f), new Vector2(800f, 50f));
+            Inked(chapterStars);
 
             pathLayer = UIKit.Rect(root, "Path");
             pathLayer.anchorMin = new Vector2(0f, 0.2f);
@@ -114,7 +115,7 @@ namespace DribbleToSchool.FrontEnd
                 for (int d = 1; d < 6; d++)
                 {
                     Vector2 p = Vector2.Lerp(positions[i], positions[i + 1], d / 6f);
-                    var dot = UIKit.Icon(pathLayer, "Dot", ProceduralSprites.Circle, new Color(1f, 1f, 1f, 0.85f), 22f);
+                    var dot = UIKit.Icon(pathLayer, "Dot", ProceduralSprites.CircleEdge, new Color(1f, 1f, 1f, 0.95f), 22f);
                     UIKit.Place(dot.rectTransform, p, Vector2.zero, new Vector2(22f, 22f), new Vector2(0.5f, 0.5f));
                 }
             }
@@ -151,12 +152,7 @@ namespace DribbleToSchool.FrontEnd
             var button = UIKit.Button(inner, "Button", "", unlocked ? face : UITheme.Locked, () => Controller.PlayLevel(def));
             UIKit.Stretch((RectTransform)button.transform);
             button.interactable = unlocked;
-            // Round buttons: swap the rounded-rect faces for circles.
-            foreach (var img in button.GetComponentsInChildren<Image>())
-            {
-                if (img.name == "Face" || img.name == "Shadow" || img.name == "Base") { img.sprite = ProceduralSprites.Circle; img.type = Image.Type.Simple; }
-                if (img.name == "Shine") img.gameObject.SetActive(false);
-            }
+            UIKit.MakeRound(button);
 
             if (unlocked)
             {
@@ -173,8 +169,21 @@ namespace DribbleToSchool.FrontEnd
             var starRow = UIKit.Stars(holder, "Stars", stars, 44f);
             UIKit.Place(starRow, new Vector2(0.5f, 0f), new Vector2(0f, -36f), starRow.sizeDelta, new Vector2(0.5f, 0.5f));
 
-            var name = UIKit.Label(holder, "Name", Loc.T("level." + def.levelId, def.displayName), 30, UITheme.Ink, TextAnchor.MiddleCenter, true);
+            var name = UIKit.Label(holder, "Name", Loc.T("level." + def.levelId, def.displayName), 30, Color.white, TextAnchor.MiddleCenter, true);
             UIKit.Place(name.rectTransform, new Vector2(0.5f, 0f), new Vector2(0f, -86f), new Vector2(320f, 44f), new Vector2(0.5f, 0.5f));
+            UIKit.Fit(name, 22);
+            Inked(name);
+        }
+
+        /// <summary>White lettering with a dark line round it, so it reads on the sky.</summary>
+        static void Inked(Text text)
+        {
+            var line = text.gameObject.AddComponent<Outline>();
+            line.effectColor = UITheme.Ink;
+            line.effectDistance = new Vector2(2.5f, -2.5f);
+            var drop = text.gameObject.AddComponent<Shadow>();
+            drop.effectColor = new Color(0.03f, 0.06f, 0.2f, 0.4f);
+            drop.effectDistance = new Vector2(0f, -5f);
         }
     }
 }

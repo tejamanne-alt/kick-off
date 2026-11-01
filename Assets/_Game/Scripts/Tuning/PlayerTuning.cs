@@ -5,7 +5,7 @@ namespace DribbleToSchool.Tuning
     /// <summary>
     /// Movement feel for the kid. Edit the asset (or use the in-game Tuning panel).
     /// </summary>
-    [CreateAssetMenu(menuName = "Dribble To School/Player Tuning", fileName = "PlayerTuning")]
+    [CreateAssetMenu(menuName = "Kick Off/Player Tuning", fileName = "PlayerTuning")]
     public class PlayerTuning : ScriptableObject
     {
         [Header("Run")]

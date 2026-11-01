@@ -4,7 +4,7 @@ using UnityEngine;
 namespace DribbleToSchool.Cosmetics
 {
     /// <summary>Every cosmetic in the game, in shop order.</summary>
-    [CreateAssetMenu(menuName = "Dribble To School/Cosmetic Catalog", fileName = "CosmeticCatalog")]
+    [CreateAssetMenu(menuName = "Kick Off/Cosmetic Catalog", fileName = "CosmeticCatalog")]
     public class CosmeticCatalog : ScriptableObject
     {
         public List<CosmeticItem> items = new List<CosmeticItem>();

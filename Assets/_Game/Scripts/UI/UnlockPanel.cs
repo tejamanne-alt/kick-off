@@ -13,8 +13,7 @@ namespace DribbleToSchool.UI
         {
             GameObject root;
             var card = UIKit.Modal(canvas, "Unlock", new Vector2(1100f, 860f), out root);
-            var title = UIKit.Title(card.transform, "Title", Loc.T("unlock.title"), 64, Color.white);
-            UIKit.Place(title.rectTransform, new Vector2(0.5f, 1f), new Vector2(0f, -80f), new Vector2(1000f, 100f));
+            UIKit.Header(card.transform, Loc.T("unlock.title"), 760f);
             var body = UIKit.Label(card.transform, "Body", Loc.T("unlock.body"), 38, UITheme.Ink);
             UIKit.Place(body.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0f, 60f), new Vector2(950f, 380f));
             var status = UIKit.Label(card.transform, "Status", "", 32, UITheme.Red, TextAnchor.MiddleCenter, true);

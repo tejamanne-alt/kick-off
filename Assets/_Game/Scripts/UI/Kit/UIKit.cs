@@ -10,8 +10,11 @@ namespace DribbleToSchool.UI.Kit
 {
     /// <summary>
     /// Builds uGUI from code: canvases, panels, labels, buttons, icons and simple
-    /// layouts, all in the storybook theme. Reference resolution is 1920x1080
-    /// matched on height, so layouts hold on any landscape phone.
+    /// layouts, in the game's clean anime look: slightly see-through white panels and
+    /// bold buttons, each with a thin dark line round it like the characters' ink line,
+    /// and titles lettered like the logo. Reference resolution is 1920x1080 matched on
+    /// height, so layouts hold on any landscape phone (the canvas is 1440 wide at 4:3
+    /// and about 2520 at 21:9).
     /// </summary>
     public static class UIKit
     {
@@ -75,6 +78,32 @@ namespace DribbleToSchool.UI.Kit
             return rt;
         }
 
+        /// <summary>
+        /// A row across the top of the parent: <paramref name="top"/> pixels down from its top
+        /// edge, <paramref name="height"/> tall, inset <paramref name="left"/> and <paramref name="right"/>
+        /// from its sides. Rows built this way stretch with the parent, so columns can be any width.
+        /// </summary>
+        public static RectTransform Row(Transform parent, string name, float top, float height, float left = 0f, float right = 0f)
+        {
+            var rt = Rect(parent, name);
+            rt.anchorMin = new Vector2(0f, 1f);
+            rt.anchorMax = new Vector2(1f, 1f);
+            rt.pivot = new Vector2(0.5f, 1f);
+            rt.offsetMin = new Vector2(left, -top - height);
+            rt.offsetMax = new Vector2(-right, -top);
+            return rt;
+        }
+
+        /// <summary>Let a label shrink (down to <paramref name="minSize"/>) rather than overflow its rect, e.g. for longer translations.</summary>
+        public static Text Fit(Text text, int minSize)
+        {
+            text.resizeTextForBestFit = true;
+            text.resizeTextMaxSize = text.fontSize;
+            text.resizeTextMinSize = Mathf.Min(minSize, text.fontSize);
+            text.verticalOverflow = VerticalWrapMode.Truncate;
+            return text;
+        }
+
         // ---------- Visual elements ----------
 
         public static Image Panel(Transform parent, string name, Color color, Sprite sprite = null)
@@ -87,16 +116,19 @@ namespace DribbleToSchool.UI.Kit
             return img;
         }
 
-        /// <summary>A paper card with a soft drop shadow. Returns the face; put content on it.</summary>
+        /// <summary>
+        /// A clean card: a face with a thin dark line round it over a soft drop shadow.
+        /// Returns the face; put content on it.
+        /// </summary>
         public static Image Card(Transform parent, string name, Color color)
         {
             var root = Rect(parent, name);
             var shadow = Panel(root, "Shadow", UITheme.Shadow);
             Stretch(shadow.rectTransform);
-            shadow.rectTransform.offsetMin += new Vector2(0f, -10f);
-            shadow.rectTransform.offsetMax += new Vector2(0f, -10f);
+            shadow.rectTransform.offsetMin += new Vector2(6f, -10f);
+            shadow.rectTransform.offsetMax += new Vector2(6f, -10f);
             shadow.raycastTarget = false;
-            var face = Panel(root, "Face", color);
+            var face = Panel(root, "Face", color, ProceduralSprites.RoundedEdge);
             Stretch(face.rectTransform);
             return face;
         }
@@ -132,20 +164,80 @@ namespace DribbleToSchool.UI.Kit
             return t;
         }
 
-        /// <summary>Big title text with a soft ink outline so it reads on any background.</summary>
+        /// <summary>
+        /// Big title text lettered like the logo (upright): a white face shading to pale sky,
+        /// a navy extrusion and a dark outline, so it reads on any background. Tinting the
+        /// Text's colour tints the face.
+        /// </summary>
         public static Text Title(Transform parent, string name, string text, int size, Color color)
         {
             var t = Label(parent, name, text, size, color, TextAnchor.MiddleCenter, true);
-            var outline = t.gameObject.AddComponent<Outline>();
-            outline.effectColor = new Color(UITheme.Ink.r, UITheme.Ink.g, UITheme.Ink.b, 0.85f);
-            outline.effectDistance = new Vector2(3f, -3f);
-            var shadow = t.gameObject.AddComponent<Shadow>();
-            shadow.effectColor = UITheme.Shadow;
-            shadow.effectDistance = new Vector2(0f, -8f);
+            var fx = t.gameObject.AddComponent<UILogoText>();
+            fx.skew = 0f;
+            fx.faceTop = Color.white;
+            fx.faceBottom = new Color(0.86f, 0.92f, 1f);
+            float k = Mathf.Clamp(size / 64f, 0.6f, 2f);
+            fx.innerLine = 2.5f * k;
+            fx.extrude = 5f * k;
+            fx.outline = 2.5f * k;
+            fx.extrudeColor = UITheme.Navy;
+            fx.outlineColor = UITheme.Ink;
+            fx.shadowColor = new Color(0.03f, 0.06f, 0.2f, 0.25f);
+            fx.shadowOffset = new Vector2(0f, -6f * k);
             return t;
         }
 
-        /// <summary>A chunky rounded button with a shadow, label and squishy press.</summary>
+        /// <summary>
+        /// A modal's heading: white lettering on a slanted navy ribbon with an orange stripe
+        /// behind it, straddling the top edge of <paramref name="card"/>.
+        /// </summary>
+        public static Text Header(Transform card, string text, float width = 560f)
+        {
+            var ribbon = Rect(card, "Header");
+            Place(ribbon, new Vector2(0.5f, 1f), new Vector2(0f, 6f), new Vector2(width, 96f), new Vector2(0.5f, 0.5f));
+            var stripe = Panel(ribbon, "Stripe", UITheme.Accent, ProceduralSprites.RoundedEdgeSmall);
+            Stretch(stripe.rectTransform);
+            stripe.rectTransform.offsetMin += new Vector2(14f, -10f);
+            stripe.rectTransform.offsetMax += new Vector2(14f, -10f);
+            stripe.gameObject.AddComponent<UISkew>().skew = 0.32f;
+            stripe.raycastTarget = false;
+            var band = Panel(ribbon, "Band", UITheme.Navy, ProceduralSprites.RoundedEdgeSmall);
+            Stretch(band.rectTransform);
+            band.gameObject.AddComponent<UISkew>().skew = 0.32f;
+            band.raycastTarget = false;
+            var label = Label(band.transform, "Title", text, 58, Color.white, TextAnchor.MiddleCenter, true);
+            Stretch(label.rectTransform, 6f);
+            label.rectTransform.offsetMin = new Vector2(40f, 4f);
+            label.rectTransform.offsetMax = new Vector2(-40f, -4f);
+            Fit(label, 36);
+            var sh = label.gameObject.AddComponent<Shadow>();
+            sh.effectColor = new Color(0f, 0f, 0.1f, 0.45f);
+            sh.effectDistance = new Vector2(0f, -4f);
+            return label;
+        }
+
+        /// <summary>A small section heading: navy capitals after a short orange bar, left aligned in <paramref name="row"/>.</summary>
+        public static Text SectionLabel(Transform row, string text)
+        {
+            var bar = Panel(row, "Bar", UITheme.Accent, ProceduralSprites.RoundedSmall);
+            bar.rectTransform.anchorMin = new Vector2(0f, 0.2f);
+            bar.rectTransform.anchorMax = new Vector2(0f, 0.8f);
+            bar.rectTransform.pivot = new Vector2(0f, 0.5f);
+            bar.rectTransform.sizeDelta = new Vector2(10f, 0f);
+            bar.rectTransform.anchoredPosition = Vector2.zero;
+            bar.gameObject.AddComponent<UISkew>().skew = 0.3f;
+            bar.raycastTarget = false;
+            var label = Label(row, "Label", text.ToUpperInvariant(), 30, UITheme.Navy, TextAnchor.MiddleLeft, true);
+            Stretch(label.rectTransform);
+            label.rectTransform.offsetMin = new Vector2(26f, 0f);
+            Fit(label, 22);
+            return label;
+        }
+
+        /// <summary>
+        /// A bold rounded button with a thin dark line, standing on a darker lip like a key
+        /// (it pushes down onto it), with a shine, a label and a squishy press.
+        /// </summary>
         public static Button Button(Transform parent, string name, string label, Color color, UnityAction onClick,
             int fontSize = UITheme.SizeButton, Color? textColor = null)
         {
@@ -153,33 +245,39 @@ namespace DribbleToSchool.UI.Kit
 
             var shadow = Panel(root, "Shadow", UITheme.Shadow);
             Stretch(shadow.rectTransform);
-            shadow.rectTransform.offsetMin += new Vector2(0f, -15f);
-            shadow.rectTransform.offsetMax += new Vector2(0f, -15f);
+            shadow.rectTransform.offsetMin += new Vector2(4f, -UIButtonFx.Depth - 8f);
+            shadow.rectTransform.offsetMax += new Vector2(4f, -UIButtonFx.Depth - 8f);
             shadow.raycastTarget = false;
 
             // A darker base under the face: the button stands like a key and pushes down onto it.
-            var keyBase = Panel(root, "Base", UIButtonFx.BaseColor(color));
+            var keyBase = Panel(root, "Base", UIButtonFx.BaseColor(color), ProceduralSprites.RoundedEdge);
             Stretch(keyBase.rectTransform);
             keyBase.rectTransform.offsetMin += new Vector2(0f, -UIButtonFx.Depth);
             keyBase.rectTransform.offsetMax += new Vector2(0f, -UIButtonFx.Depth);
             keyBase.raycastTarget = false;
 
-            var face = Panel(root, "Face", color);
+            var face = Panel(root, "Face", color, ProceduralSprites.RoundedEdge);
             Stretch(face.rectTransform);
 
-            var shine = Panel(face.transform, "Shine", new Color(1f, 1f, 1f, 0.18f));
-            shine.rectTransform.anchorMin = new Vector2(0f, 0.55f);
+            // A soft band of light across the top half (a lit upper face, as in the cel shading).
+            var shine = Panel(face.transform, "Shine", new Color(1f, 1f, 1f, 0.2f), ProceduralSprites.RoundedSmall);
+            shine.rectTransform.anchorMin = new Vector2(0f, 0.52f);
             shine.rectTransform.anchorMax = new Vector2(1f, 1f);
-            shine.rectTransform.offsetMin = new Vector2(10f, 0f);
-            shine.rectTransform.offsetMax = new Vector2(-10f, -8f);
+            shine.rectTransform.offsetMin = new Vector2(9f, 0f);
+            shine.rectTransform.offsetMax = new Vector2(-9f, -7f);
             shine.raycastTarget = false;
 
             if (!string.IsNullOrEmpty(label))
             {
-                var text = Label(face.transform, "Label", label, fontSize, textColor ?? Color.white, TextAnchor.MiddleCenter, true);
+                Color ink = textColor ?? Color.white;
+                var text = Label(face.transform, "Label", label, fontSize, ink, TextAnchor.MiddleCenter, true);
                 Stretch(text.rectTransform, 8f);
+                text.rectTransform.offsetMin = new Vector2(14f, 6f);
+                text.rectTransform.offsetMax = new Vector2(-14f, -4f);
+                Fit(text, Mathf.RoundToInt(fontSize * 0.7f));
                 var sh = text.gameObject.AddComponent<Shadow>();
-                sh.effectColor = new Color(0f, 0f, 0f, 0.25f);
+                // White lettering gets a dark drop; dark lettering on white buttons a faint one.
+                sh.effectColor = ink.grayscale > 0.5f ? new Color(0f, 0.02f, 0.12f, 0.35f) : new Color(0f, 0f, 0f, 0.1f);
                 sh.effectDistance = new Vector2(0f, -3f);
             }
 
@@ -193,6 +291,17 @@ namespace DribbleToSchool.UI.Kit
             if (onClick != null) button.onClick.AddListener(onClick);
             root.gameObject.AddComponent<UIButtonFx>();
             return button;
+        }
+
+        /// <summary>Make a UIKit button round (circle faces with their dark line).</summary>
+        public static void MakeRound(UnityEngine.UI.Button button)
+        {
+            foreach (var img in button.GetComponentsInChildren<Image>(true))
+            {
+                if (img.name == "Face" || img.name == "Base") { img.sprite = ProceduralSprites.CircleEdge; img.type = Image.Type.Simple; }
+                else if (img.name == "Shadow") { img.sprite = ProceduralSprites.Circle; img.type = Image.Type.Simple; }
+                if (img.name == "Shine") img.gameObject.SetActive(false);
+            }
         }
 
         /// <summary>Coin icon followed by a number, e.g. for prices and the wallet.</summary>
@@ -225,12 +334,12 @@ namespace DribbleToSchool.UI.Kit
             row.sizeDelta = new Vector2(size * 3f + spacing * 2f, size);
             for (int i = 0; i < 3; i++)
             {
-                var star = Icon(row, "Star" + i, ProceduralSprites.Star, i < filled ? UITheme.Gold : new Color(0f, 0f, 0f, 0.18f), size);
+                var star = Icon(row, "Star" + i, ProceduralSprites.Star, i < filled ? UITheme.Gold : new Color(0.1f, 0.15f, 0.3f, 0.2f), size);
                 Place(star.rectTransform, new Vector2(0f, 0.5f), new Vector2(i * (size + spacing), 0f), new Vector2(size, size), new Vector2(0f, 0.5f));
                 if (i < filled)
                 {
                     var o = star.gameObject.AddComponent<Outline>();
-                    o.effectColor = new Color(0.6f, 0.4f, 0.05f, 0.8f);
+                    o.effectColor = new Color(0.45f, 0.28f, 0.02f, 0.9f);
                     o.effectDistance = new Vector2(2f, -2f);
                 }
             }
@@ -246,35 +355,35 @@ namespace DribbleToSchool.UI.Kit
             return pop;
         }
 
-        /// <summary>A chunky slider (0..1) in the storybook style.</summary>
+        /// <summary>A slider (0..1): a grey track filling with the sky's blue, and a white knob with a dark line.</summary>
         public static Slider Slider(Transform parent, string name, float value, UnityAction<float> onChanged)
         {
             var root = Rect(parent, name);
-            var track = Panel(root, "Track", UITheme.PaperDark, ProceduralSprites.RoundedSmall);
-            track.rectTransform.anchorMin = new Vector2(0f, 0.35f);
-            track.rectTransform.anchorMax = new Vector2(1f, 0.65f);
+            var track = Panel(root, "Track", UITheme.PaperDark, ProceduralSprites.RoundedEdgeSmall);
+            track.rectTransform.anchorMin = new Vector2(0f, 0.34f);
+            track.rectTransform.anchorMax = new Vector2(1f, 0.66f);
             track.rectTransform.offsetMin = track.rectTransform.offsetMax = Vector2.zero;
 
             var fillArea = Rect(root, "FillArea");
-            fillArea.anchorMin = new Vector2(0f, 0.35f);
-            fillArea.anchorMax = new Vector2(1f, 0.65f);
+            fillArea.anchorMin = new Vector2(0f, 0.34f);
+            fillArea.anchorMax = new Vector2(1f, 0.66f);
             fillArea.offsetMin = new Vector2(0f, 0f);
             fillArea.offsetMax = new Vector2(0f, 0f);
-            var fill = Panel(fillArea, "Fill", UITheme.Accent, ProceduralSprites.RoundedSmall);
+            var fill = Panel(fillArea, "Fill", UITheme.Blue, ProceduralSprites.RoundedEdgeSmall);
             fill.rectTransform.sizeDelta = Vector2.zero;
 
             var handleArea = Rect(root, "HandleArea");
             Stretch(handleArea);
-            handleArea.offsetMin = new Vector2(30f, 0f);
-            handleArea.offsetMax = new Vector2(-30f, 0f);
-            var handle = Icon(handleArea, "Handle", ProceduralSprites.Circle, Color.white, 70f);
+            handleArea.offsetMin = new Vector2(28f, 0f);
+            handleArea.offsetMax = new Vector2(-28f, 0f);
+            var handle = Icon(handleArea, "Handle", ProceduralSprites.CircleEdge, Color.white, 64f);
             handle.raycastTarget = true;
-            handle.rectTransform.sizeDelta = new Vector2(70f, 0f);
-            handle.rectTransform.anchorMin = new Vector2(0f, 0f);
-            handle.rectTransform.anchorMax = new Vector2(0f, 1f);
-            var outline = handle.gameObject.AddComponent<Outline>();
-            outline.effectColor = UITheme.Ink;
-            outline.effectDistance = new Vector2(3f, -3f);
+            handle.rectTransform.sizeDelta = new Vector2(64f, 0f);
+            handle.rectTransform.anchorMin = new Vector2(0f, 0.04f);
+            handle.rectTransform.anchorMax = new Vector2(0f, 0.96f);
+            var shadow = handle.gameObject.AddComponent<Shadow>();
+            shadow.effectColor = UITheme.Shadow;
+            shadow.effectDistance = new Vector2(0f, -4f);
 
             var slider = root.gameObject.AddComponent<UnityEngine.UI.Slider>();
             slider.fillRect = fill.rectTransform;
@@ -299,19 +408,23 @@ namespace DribbleToSchool.UI.Kit
                 button.targetGraphic.color = state ? UITheme.Green : UITheme.Locked;
                 button.GetComponentInChildren<Text>().text = label(state);
                 if (onChanged != null) onChanged(state);
-            }, 36);
+            }, 34);
             return button;
         }
 
-        /// <summary>Full-screen dimmer with a centred paper card. Returns the card face; destroy the root to close.</summary>
+        /// <summary>
+        /// Full-screen dimmer with a centred white card. Returns the card face; destroy the root
+        /// to close. The card is never taller than the screen or wider than a 4:3 one.
+        /// </summary>
         public static Image Modal(Transform parent, string name, Vector2 size, out GameObject root)
         {
             var dimRect = Stretch(Rect(parent, name));
             var dim = dimRect.gameObject.AddComponent<Image>();
             dim.color = UITheme.Dim;
             root = dimRect.gameObject;
-            var card = Card(dimRect, "Card", UITheme.Paper);
-            Place((RectTransform)card.transform.parent, new Vector2(0.5f, 0.5f), Vector2.zero, size);
+            var card = Card(dimRect, "Card", UITheme.Panel);
+            size = new Vector2(Mathf.Min(size.x, ReferenceResolution.y * 4f / 3f - 60f), Mathf.Min(size.y, ReferenceResolution.y - 80f));
+            Place((RectTransform)card.transform.parent, new Vector2(0.5f, 0.5f), new Vector2(0f, -14f), size);
             PopIn(card.transform.parent.gameObject);
             return card;
         }

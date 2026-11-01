@@ -20,6 +20,9 @@ blenv/bin/python review_teen.py -- $PWD/Girl.blend $PWD/girl_sheet.png [--bg sho
     # review sheet with the game's toon shading: faces, poses, side, back, and the teen at in-game
     # size (215 px tall, in-game outline) standing and running in front of game screenshots
 cp Boy.fbx Boy.json BoyAtlas.png Girl.fbx Girl.json GirlAtlas.png ../../Assets/_Game/Art/Models/
+blenv/bin/python portrait_teen.py -- $PWD/Boy.blend $PWD/PlayerBoy.png --yaw 28     # the menus' player cards
+blenv/bin/python portrait_teen.py -- $PWD/Girl.blend $PWD/PlayerGirl.png --yaw -28  # (they face each other)
+cp PlayerBoy.png PlayerGirl.png ../../Assets/_Game/Resources/UI/
 ```
 
 The teens are original characters in a flat-shaded anime style (two cel bands, a thin dark ink
