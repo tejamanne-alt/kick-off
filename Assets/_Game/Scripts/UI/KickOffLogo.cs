@@ -7,14 +7,15 @@ namespace DribbleToSchool.UI
 {
     /// <summary>
     /// The game's logo, built from code: "KICK OFF" in chunky Lilita One leaning forward, white
-    /// shading to pale sky with a navy extrusion and a thick ink outline (UILogoText), on a
-    /// badge of mown turf with the centre circle chalked on it (where a match kicks off), a
-    /// football flying in on chalk speed lines, and the tagline on a slanted navy ribbon.
+    /// shading to pale sky with a navy extrusion and a thick ink outline (UILogoText), and a
+    /// sunny "2" after it (read "to": kick off to school, not a sequel), on a badge of mown turf
+    /// with the centre circle chalked on it (where a match kicks off), a football flying in on
+    /// chalk speed lines, and the tagline on a slanted navy ribbon.
     /// </summary>
     public static class KickOffLogo
     {
         /// <summary>The game's name. A brand: never translated.</summary>
-        public const string GameName = "Kick Off";
+        public const string GameName = "Kick Off 2";
 
         /// <summary>The logo's size at scale 1, about its centre (badge, lettering, ball and ribbon).</summary>
         public static readonly Vector2 Size = new Vector2(680f, 560f);
@@ -38,7 +39,10 @@ namespace DribbleToSchool.UI
             UIKit.Place(badge.rectTransform, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(530f, 530f));
 
             Word(art, "Kick", "KICK", new Vector2(-40f, 92f));
-            Word(art, "Off", "OFF", new Vector2(-80f, -92f));
+            Word(art, "Off", "OFF", new Vector2(-105f, -92f));
+            // The "2" (as in "to"), a little bigger and tilted forward, in the sunny accent colours.
+            var two = Word(art, "Two", "2", new Vector2(165f, -100f), 220, Gold, UITheme.Accent);
+            two.rectTransform.localRotation = Quaternion.Euler(0f, 0f, -6f);
 
             // Chalk speed lines streaming back from the ball, up and to the left.
             var trail = UIKit.Rect(art, "SpeedLines");
@@ -81,22 +85,26 @@ namespace DribbleToSchool.UI
             return root;
         }
 
-        /// <summary>One word of the lettering, centred at <paramref name="centre"/>.</summary>
-        static void Word(RectTransform art, string name, string word, Vector2 centre)
+        /// <summary>The "2"'s face, top: a warm sunshine yellow.</summary>
+        static readonly Color Gold = new Color(1f, 0.86f, 0.3f);
+
+        /// <summary>One word of the lettering, centred at <paramref name="centre"/>: white shading to pale sky unless given colours.</summary>
+        static Text Word(RectTransform art, string name, string word, Vector2 centre, int size = 200, Color? top = null, Color? bottom = null)
         {
-            var text = UIKit.Label(art, name, word, 200, Color.white, TextAnchor.MiddleCenter, true);
-            UIKit.Place(text.rectTransform, new Vector2(0.5f, 0.5f), centre, new Vector2(760f, 240f));
+            var text = UIKit.Label(art, name, word, size, Color.white, TextAnchor.MiddleCenter, true);
+            UIKit.Place(text.rectTransform, new Vector2(0.5f, 0.5f), centre, new Vector2(760f, 240f * size / 200f));
             text.horizontalOverflow = HorizontalWrapMode.Overflow;
             var fx = text.gameObject.AddComponent<UILogoText>();
             fx.skew = 0.14f;
-            fx.faceTop = Color.white;
-            fx.faceBottom = new Color(0.8f, 0.9f, 1f);
+            fx.faceTop = top ?? Color.white;
+            fx.faceBottom = bottom ?? new Color(0.8f, 0.9f, 1f);
             fx.innerLine = 4f;
             fx.extrude = 13f;
             fx.outline = 7f;
             fx.extrudeColor = UITheme.Navy;
             fx.outlineColor = new Color(0.08f, 0.09f, 0.15f);
             fx.shadowOffset = new Vector2(6f, -18f);
+            return text;
         }
     }
 }

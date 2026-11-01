@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 namespace DribbleToSchool.FrontEnd
 {
-    /// <summary>First-launch splash: the Kick Off logo pops in over the deep blue sky, then it all fades to the menu.</summary>
+    /// <summary>First-launch splash: the Kick Off 2 logo pops in over the deep blue sky, then it all fades to the menu.</summary>
     public class Splash : MonoBehaviour
     {
         const float Hold = 1.5f;

@@ -1,8 +1,8 @@
-# Kick Off: Privacy Policy
+# Kick Off 2: Privacy Policy
 
 _Last updated: [date of publishing]_
 
-Kick Off ("the game") is made by Astradite. This policy explains what the game does with information about you. The short
+Kick Off 2 ("the game") is made by Astradite. This policy explains what the game does with information about you. The short
 version: **the game does not collect, store on a server, share or sell any personal information.**
 
 ## What the game keeps, and where

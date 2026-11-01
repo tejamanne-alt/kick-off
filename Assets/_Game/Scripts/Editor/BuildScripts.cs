@@ -23,9 +23,9 @@ namespace DribbleToSchool.EditorTools
     public static class BuildScripts
     {
         public const string CompanyName = "Astradite";
-        public const string ProductName = "Kick Off";
+        public const string ProductName = "Kick Off 2";
         /// <summary>The app's bundle identifier (iOS) and package name (Android). Fixed for good once the app is uploaded.</summary>
-        public const string ApplicationId = "com.astradite.kickoff";
+        public const string ApplicationId = "com.astradite.kickoff2";
         /// <summary>Google Play's target API level for new apps and updates (Android 16, from 31 August 2026).</summary>
         public const int AndroidTargetApi = 36;
         public const string DefaultVersion = "1.0.0";

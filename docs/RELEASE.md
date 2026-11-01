@@ -1,8 +1,8 @@
 # Release Guide
 
-Everything needed to take Kick Off from this repo to the App Store and Google Play.
+Everything needed to take Kick Off 2 from this repo to the App Store and Google Play.
 
-**The app's id is `com.astradite.kickoff`** (iOS bundle identifier and Android package name, set in
+**The app's id is `com.astradite.kickoff2`** (iOS bundle identifier and Android package name, set in
 `Assets/_Game/Scripts/Editor/BuildScripts.cs`). It can never change once the app is uploaded to either store.
 
 ## 0. What you need
@@ -24,7 +24,7 @@ SDK refuse to launch ("UIScene life cycle is required"). After changing Unity, d
    - **Free + Full Game unlock (recommended):** set `RequireUnlock = true` and enable IAP (section 2). Chapter 1 and its challenge are free; chapters 2–5 need a one-time purchase.
    - **Paid app:** leave `RequireUnlock = false` and set the price in the store consoles.
 3. Run **Kick Off > Build > Apply Store Player Settings** once to check everything is set:
-   - the app id, version and build number, company "Astradite", product "Kick Off";
+   - the app id, version and build number, company "Astradite", product "Kick Off 2";
    - landscape only;
    - Android: minimum API 26, target API 36, ARM64 + IL2CPP;
    - iOS: 15.0+, automatic signing with your team (see `Editor/AppleSigning.cs`);
@@ -54,14 +54,14 @@ SDK refuse to launch ("UIScene life cycle is required"). After changing Unity, d
 ### Once
 1. Make the upload key (keep it and its passwords safe, backed up, and out of git; `.gitignore` already ignores `*.jks`):
    ```
-   ./ci/android/make_upload_key.sh ~/keys/kickoff-upload.jks
+   ./ci/android/make_upload_key.sh ~/keys/kickoff2-upload.jks
    ```
-2. In Play Console: **Create app** → name "Kick Off", default language, Game, Free (or Paid), accept the declarations.
+2. In Play Console: **Create app** → name "Kick Off 2", default language, Game, Free (or Paid), accept the declarations.
    Leave **Play App Signing** on (the default): Google keeps the app-signing key, your key only signs uploads.
 
 ### Build the App Bundle
 ```
-DTS_KEYSTORE_PATH=~/keys/kickoff-upload.jks DTS_KEYSTORE_PASS='…' DTS_KEY_ALIAS=upload DTS_KEY_PASS='…' \
+DTS_KEYSTORE_PATH=~/keys/kickoff2-upload.jks DTS_KEYSTORE_PASS='…' DTS_KEY_ALIAS=upload DTS_KEY_PASS='…' \
 DTS_VERSION=1.0.0 DTS_BUILD_NUMBER=1 ./ci/android/build_android.sh release
 ```
 It writes `Builds/Android/KickOff.aab` and the Unity log to `Builds/unity-android.log`. (In the editor: **Kick Off > Build >
@@ -83,9 +83,9 @@ then `adb install -r Builds/Android/KickOff-dev.apk`.
 ### Once
 1. Sign in to Xcode with your Apple ID (Xcode > Settings > Accounts) and note your **Team ID** (10 characters, shown there and on
    developer.apple.com > Membership).
-2. In [App Store Connect](https://appstoreconnect.apple.com): **Apps > + > New App** → iOS, name "Kick Off", primary language,
-   bundle ID `com.astradite.kickoff` (if it isn't in the list yet, register it at developer.apple.com > Identifiers, or run one
-   build first: automatic signing registers it), SKU e.g. `kickoff-ios`.
+2. In [App Store Connect](https://appstoreconnect.apple.com): **Apps > + > New App** → iOS, name "Kick Off 2", primary language,
+   bundle ID `com.astradite.kickoff2` (if it isn't in the list yet, register it at developer.apple.com > Identifiers, or run one
+   build first: automatic signing registers it), SKU e.g. `kickoff2-ios`.
 
 ### Build and upload (on the Mac)
 ```
@@ -123,15 +123,18 @@ The game has no ads, no accounts, no network calls and no third-party SDKs (Unit
 
 ## 7. Store listing (draft)
 
-**Name:** Kick Off
+**Name:** Kick Off 2
+
+The "2" reads as "to" (kick off to school), not a sequel: the tagline and the first lines of the description say so.
+
 **Subtitle (iOS, 30 chars):** Dribble all the way to school
 **Short description (Play, 80 chars):** Dribble a football through town all the way to school. No rush (unless you like).
 
 **Description:**
 
-> Late for school? Grab your ball and go!
+> Late for school? Grab your ball and kick off to school!
 >
-> Kick Off is a football side-scroller in bright anime daylight. Keep the ball at your feet as you run through town: tap in rhythm for perfect touches, drag back to chip it over walls, juggle it past dogs, and wait for the green light before you cross.
+> Kick Off 2 is a football side-scroller in bright anime daylight. Keep the ball at your feet as you run through town: tap in rhythm for perfect touches, drag back to chip it over walls, juggle it past dogs, and wait for the green light before you cross.
 >
 > - Play as the boy or the girl
 > - 23 levels across 5 chapters: Home Street, the Market, the Beach, the Underpass and the Park
@@ -161,7 +164,7 @@ Record these on a device with the HUD visible. In the editor, the Tune button an
 
 ## 8. Pre-submission checklist
 
-- [ ] App id `com.astradite.kickoff`, version and a new build number; icon present at every size (Unity generates them from the 1024 px source)
+- [ ] App id `com.astradite.kickoff2`, version and a new build number; icon present at every size (Unity generates them from the 1024 px source)
 - [ ] `RequireUnlock` and IAP settings match the chosen model, sandbox purchase and restore tested
 - [ ] Played every level on a mid-range Android phone and an older iPhone at 60 fps (use the Profiler markers `DTS.FxPool.Update` and `DTS.Audio.MusicUpload`)
 - [ ] Settings persist across restarts; Reset progress works; both languages checked

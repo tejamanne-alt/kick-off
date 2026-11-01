@@ -21,7 +21,7 @@ namespace DribbleToSchool.Localization
             return new Dictionary<string, string>
             {
                 // Menus
-                { "menu.title", "Kick Off" },
+                { "menu.title", "Kick Off 2" },
                 { "menu.tagline", "Dribble all the way to school" },
                 { "menu.play", "PLAY" },
                 { "menu.player", "Player" },
@@ -208,7 +208,7 @@ namespace DribbleToSchool.Localization
         {
             return new Dictionary<string, string>
             {
-                { "menu.title", "Kick Off" },
+                { "menu.title", "Kick Off 2" },
                 { "menu.tagline", "Regatea hasta el cole" },
                 { "menu.play", "JUGAR" },
                 { "menu.player", "Personaje" },

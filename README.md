@@ -1,4 +1,4 @@
-# Kick Off
+# Kick Off 2
 
 A football side-scroller for iOS and Android, built in Unity 6: a teen dribbles a ball through clear-daylight anime streets all the way to school.
 The full game brief is in [`GAME_PROMPT.md`](GAME_PROMPT.md).
