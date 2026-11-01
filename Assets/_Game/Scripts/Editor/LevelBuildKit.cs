@@ -541,7 +541,7 @@ namespace DribbleToSchool.EditorTools
         // ---------- Asset kits (tools/blender/kit_*.py, docs/ART_DIRECTION.md) ----------
 
         /// <summary>The asset kits made in Blender, each in Art/Models/&lt;kit&gt;/ with its atlas and manifest.</summary>
-        public static readonly string[] Kits = { "Plants", "Buildings", "Street", "Terrain", "Leisure", "Works", "Animals" };
+        public static readonly string[] Kits = { "Plants", "Buildings", "Street", "Terrain", "Leisure", "Works", "Animals", "Barriers" };
 
         static readonly Dictionary<string, Dictionary<string, object>> kitManifests = new Dictionary<string, Dictionary<string, object>>();
 
@@ -2495,23 +2495,170 @@ namespace DribbleToSchool.EditorTools
             /// </summary>
             public const float SlideGap = 0.85f;
 
-            /// <summary>What a slide-under barrier is drawn as. Auto picks the chapter's own.</summary>
-            public enum SlideBarrier { Auto, Trestles, MarketStall, SurfRack, Scaffold, FallenTree }
+            /// <summary>
+            /// The things to slide under: the models of the Barriers kit (tools/blender/kit_barriers.py),
+            /// real things that span a footpath with a 0.85 m gap, four or so for each chapter.
+            /// </summary>
+            public enum SlideLook
+            {
+                // Home street
+                PlankTrestles, BoomBarrier, AccessPlatform, AppleBough,
+                // Market
+                StallAwning, RollShutter, DeliveryConveyor,
+                // Beach
+                SurfRack, BoatTrestles, Boardwalk, RescueBoardStand,
+                // Building site and city
+                ScaffoldGantry, BeamTrestles, PipeRack, SiteBarrier,
+                // Park
+                FallenTrunk, OakBough, NetTunnel, PlayTower,
+            }
 
             /// <summary>
-            /// Something to slide under: solid from <see cref="SlideGap"/> above the ground up, from
-            /// x - width/2 to x + width/2, drawn as what really spans a footpath at that height. The home
-            /// street: decorators' boards on trestles (hop on, or slide under). The market: a fruit
-            /// stall's table under its canopy. The beach: a surf school's board rack. The building site:
-            /// a sheeted scaffold. (Those three are too tall to jump: slide under.) The park: a fallen
-            /// tree across the path, slide under or double jump over; its width is the trunk's
-            /// thickness, 0.56 to 0.84. The ball rolls under all of them.
+            /// A look's solid (the Barriers manifest's slideHalf / slideTop, or slideRadius / slideCentre
+            /// for a round one, override these), whether a ball resting on top is out of reach, and the
+            /// procedural stand-in used if the kit's model is missing.
             /// </summary>
-            public void SlideUnder(float x, float width, float groundTop = 0f, SlideBarrier look = SlideBarrier.Auto)
+            struct SlideSpec
             {
-                if (look == SlideBarrier.Auto)
-                    look = Chapter == 2 ? SlideBarrier.MarketStall : Chapter == 3 ? SlideBarrier.SurfRack
-                        : Chapter == 4 ? SlideBarrier.Scaffold : Chapter == 5 ? SlideBarrier.FallenTree : SlideBarrier.Trestles;
+                public float half, top, radius, centre;
+                public bool trap;
+                public ProceduralSlide fallback;
+                public float fallbackWidth;
+            }
+
+            static SlideSpec Spec(SlideLook look)
+            {
+                System.Func<float, float, bool, ProceduralSlide, float, SlideSpec> box = (half, top, trap, fb, fw) =>
+                    new SlideSpec { half = half, top = top, trap = trap, fallback = fb, fallbackWidth = fw };
+                switch (look)
+                {
+                    case SlideLook.PlankTrestles: return box(1.3f, 0.953f, false, ProceduralSlide.Trestles, 2.6f);
+                    case SlideLook.BoomBarrier: return box(0.06f, 0.95f, false, ProceduralSlide.Trestles, 1.2f);
+                    case SlideLook.AccessPlatform: return box(0.93f, 2.0f, false, ProceduralSlide.Trestles, 1.9f);
+                    case SlideLook.AppleBough: return box(0.85f, 1.09f, false, ProceduralSlide.FallenTree, 0.6f);
+                    case SlideLook.StallAwning: return box(1.1f, 1.217f, true, ProceduralSlide.MarketStall, 2.2f);
+                    case SlideLook.RollShutter: return box(0.1f, 3.15f, true, ProceduralSlide.MarketStall, 1.4f);
+                    case SlideLook.DeliveryConveyor: return box(0.32f, 0.96f, false, ProceduralSlide.Trestles, 1.2f);
+                    case SlideLook.SurfRack: return box(1.3f, 2.37f, true, ProceduralSlide.SurfRack, 2.6f);
+                    case SlideLook.BoatTrestles: return box(1.72f, 1.53f, false, ProceduralSlide.Trestles, 3.4f);
+                    case SlideLook.Boardwalk: return box(0.8f, 1.94f, false, ProceduralSlide.SurfRack, 1.6f);
+                    case SlideLook.RescueBoardStand: return box(1.5f, 1.065f, false, ProceduralSlide.Trestles, 3.0f);
+                    case SlideLook.ScaffoldGantry: return box(1.32f, 4.25f, true, ProceduralSlide.Scaffold, 2.6f);
+                    case SlideLook.BeamTrestles: return box(2.18f, 1.3f, false, ProceduralSlide.Trestles, 4.2f);
+                    case SlideLook.PipeRack: return box(2.05f, 2.04f, false, ProceduralSlide.Scaffold, 4.0f);
+                    case SlideLook.SiteBarrier: return box(0.06f, 0.94f, false, ProceduralSlide.Trestles, 1.2f);
+                    case SlideLook.FallenTrunk: return new SlideSpec { radius = 0.35f, centre = 1.2f, fallback = ProceduralSlide.FallenTree, fallbackWidth = 0.7f };
+                    case SlideLook.OakBough: return box(1.05f, 1.19f, false, ProceduralSlide.FallenTree, 0.8f);
+                    case SlideLook.NetTunnel: return box(1.04f, 0.96f, false, ProceduralSlide.Trestles, 2.0f);
+                    default: return box(0.66f, 2.6f, true, ProceduralSlide.Scaffold, 1.3f);   // PlayTower
+                }
+            }
+
+            static float Extra(Dictionary<string, object> info, string key, float fallback)
+            {
+                object v;
+                return info != null && info.TryGetValue(key, out v) && v != null ? Convert.ToSingle(v) : fallback;
+            }
+
+            /// <summary>
+            /// Something to slide under at x, standing on <paramref name="groundTop"/>: a model of the
+            /// Barriers kit, solid from <see cref="SlideGap"/> above the ground up to its own top over
+            /// its own length (the kit's manifest says how long and how high), and the ball rolls
+            /// under. Low ones (painters' boards, a barrier arm, a conveyor, a boat, a rescue board,
+            /// beams, a bough, a net tunnel) can be hopped as well; tall ones (a fruit stall under its
+            /// awning, a roll shutter, a surf rack, a scaffold, a play tower) have to be slid under; the
+            /// fallen trunk is round, so slide under or double jump over. Where a ball would rest out of
+            /// reach on top, it counts as stranded. Without the kit, a procedural stand-in.
+            /// </summary>
+            public void SlideUnder(float x, SlideLook look, float groundTop = 0f)
+            {
+                string model = look.ToString();
+                var spec = Spec(look);
+                if (!HasKitModel("Barriers", model))
+                {
+                    ProceduralSlideUnder(x, spec.fallbackWidth, groundTop, spec.fallback);
+                    return;
+                }
+                var info = KitInfo("Barriers", model);
+                spec.half = Extra(info, "slideHalf", spec.half);
+                spec.top = Extra(info, "slideTop", spec.top);
+                spec.radius = Extra(info, "slideRadius", spec.radius);
+                spec.centre = Extra(info, "slideCentre", spec.centre);
+                var holder = new GameObject("SlideUnder_" + model).transform;
+                holder.SetParent(root, false);
+                holder.position = new Vector3(x, groundTop, 0f);
+                int seed = Mathf.Abs(Mathf.RoundToInt(x * 13f));
+                Color? tint1, tint2;
+                SlideTints(look, seed, out tint1, out tint2);
+                if (KitModel(holder, "Barriers", model, holder.position, 0f, 1f, tint1, tint2) == null)
+                {
+                    Object.DestroyImmediate(holder.gameObject);
+                    ProceduralSlideUnder(x, spec.fallbackWidth, groundTop, spec.fallback);
+                    return;
+                }
+                if (spec.radius > 0f)
+                {
+                    // Round (the fallen trunk): nothing rests on top.
+                    var solid = new GameObject("SlideBarrier");
+                    solid.transform.SetParent(holder, false);
+                    solid.transform.localPosition = new Vector3(0f, spec.centre, 0f);
+                    var circle = solid.AddComponent<CircleCollider2D>();
+                    circle.radius = spec.radius;
+                    circle.sharedMaterial = GroundMat;
+                }
+                else
+                {
+                    var solid = SlideSolid(holder, spec.half * 2f, spec.top);
+                    if (spec.trap) solid.AddComponent<BallTrap>();
+                }
+                if (look == SlideLook.StallAwning)
+                {
+                    // The stall's awning: bouncy canvas like the shop awnings, out of reach on top.
+                    float ch = Extra(info, "canopyHalf", 1.35f), c0 = Extra(info, "canopyBottom", 2.13f), c1 = Extra(info, "canopyTop", 2.5f);
+                    var canopy = Block("StallCanopy", new Vector2(x, groundTop + (c0 + c1) * 0.5f), new Vector2(ch * 2f, c1 - c0), BouncyColor, BouncyMat, false);
+                    canopy.transform.SetParent(holder, true);
+                    canopy.AddComponent<BallTrap>();
+                }
+            }
+
+            /// <summary>Paint for the looks that come in several colours (stall canvas, boats, barrier cabinets, play towers).</summary>
+            static void SlideTints(SlideLook look, int seed, out Color? tint1, out Color? tint2)
+            {
+                tint1 = tint2 = null;
+                switch (look)
+                {
+                    case SlideLook.StallAwning:
+                        tint1 = Pick(seed, new Color(0.85f, 0.3f, 0.28f), new Color(0.3f, 0.58f, 0.4f), new Color(0.32f, 0.5f, 0.78f), new Color(0.95f, 0.62f, 0.22f));
+                        tint2 = Pick(seed / 4, new Color(0.32f, 0.55f, 0.36f), new Color(0.3f, 0.45f, 0.72f), new Color(0.8f, 0.33f, 0.3f));
+                        break;
+                    case SlideLook.BoatTrestles:
+                        tint1 = Pick(seed, new Color(0.26f, 0.42f, 0.66f), new Color(0.3f, 0.55f, 0.42f), new Color(0.72f, 0.3f, 0.26f), new Color(0.24f, 0.56f, 0.6f));
+                        break;
+                    case SlideLook.BoomBarrier:
+                        tint1 = Pick(seed, new Color(0.98f, 0.78f, 0.22f), new Color(0.9f, 0.9f, 0.88f), new Color(0.95f, 0.55f, 0.2f));
+                        break;
+                    case SlideLook.PlayTower:
+                        tint1 = Pick(seed, new Color(0.36f, 0.62f, 0.86f), new Color(0.4f, 0.7f, 0.42f), new Color(0.98f, 0.78f, 0.3f));
+                        tint2 = Pick(seed / 3, new Color(0.86f, 0.32f, 0.28f), new Color(0.3f, 0.5f, 0.8f), new Color(0.35f, 0.6f, 0.38f));
+                        break;
+                }
+            }
+
+            static Color Pick(int seed, params Color[] colors)
+            {
+                return colors[Mathf.Abs(seed) % colors.Length];
+            }
+
+            /// <summary>The procedural stand-ins for the Barriers kit's models (used only if the kit is missing).</summary>
+            enum ProceduralSlide { Trestles, MarketStall, SurfRack, Scaffold, FallenTree }
+
+            /// <summary>
+            /// A procedural thing to slide under, solid from <see cref="SlideGap"/> up over x - width/2 to
+            /// x + width/2: decorators' boards on trestles, a fruit stall under its canopy, a surf rack, a
+            /// sheeted scaffold or a fallen tree (its width the trunk's thickness, 0.56 to 0.84).
+            /// </summary>
+            void ProceduralSlideUnder(float x, float width, float groundTop, ProceduralSlide look)
+            {
                 var holder = new GameObject("SlideUnder_" + look).transform;
                 holder.SetParent(root, false);
                 holder.position = new Vector3(x, groundTop, 0f);
@@ -2519,10 +2666,10 @@ namespace DribbleToSchool.EditorTools
                 int seed = Mathf.Abs(Mathf.RoundToInt(x * 13f));
                 switch (look)
                 {
-                    case SlideBarrier.MarketStall: MarketStall(holder, width, seed); break;
-                    case SlideBarrier.SurfRack: SurfRack(holder, width, seed); break;
-                    case SlideBarrier.Scaffold: Scaffold(holder, width); break;
-                    case SlideBarrier.FallenTree: FallenTree(holder, width, seed); break;
+                    case ProceduralSlide.MarketStall: MarketStall(holder, width, seed); break;
+                    case ProceduralSlide.SurfRack: SurfRack(holder, width, seed); break;
+                    case ProceduralSlide.Scaffold: Scaffold(holder, width); break;
+                    case ProceduralSlide.FallenTree: FallenTree(holder, width, seed); break;
                     default: Trestles(holder, width, seed); break;
                 }
                 holder.gameObject.AddComponent<StaticBatcher>();   // one draw call per material for all the parts
