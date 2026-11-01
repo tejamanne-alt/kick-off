@@ -46,3 +46,6 @@ __pycache__/
 *.p8
 *.p12
 *.mobileprovision
+
+# Store screenshots taken by Kick Off > Store Screenshots
+Screenshots/

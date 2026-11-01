@@ -5,10 +5,10 @@ Everything to type into App Store Connect for version 1.0, field by field. Chara
 ## Distribution > iOS App > 1.0 (version page)
 
 ### App Previews and Screenshots
-| Slot | Size (landscape) | Simulator to use |
+| Slot | Size (landscape) | Game view size / Simulator |
 |---|---|---|
-| iPhone with Dynamic Island (medium display) | **2622 × 1206** | iPhone 17 Pro |
-| iPad 13" display | **2752 × 2064** | iPad Pro 13-inch |
+| iPhone with Dynamic Island (medium display) | **2622 × 1206** | 2622 × 1206 / iPhone 17 Pro |
+| iPad 13" display | **2752 × 2064** | 2752 × 2064 / iPad Pro 13-inch |
 
 iPhone Duo and Apple Watch: leave empty (the game has no Watch app). The large iPhone display slot is optional.
 App previews (videos) are optional.
@@ -123,18 +123,17 @@ Stickers are found inside levels and unlock cosmetic items; they can't be bought
    Pages or your own domain. Open both pages in a browser to check they load before entering them in App Store Connect.
 
 ## Taking the screenshots
-The game takes them itself in a special Simulator build:
+The game takes them itself, in Unity's Play mode:
 
-1. Pull the branch, open the project, and run **Kick Off > Build > iOS Screenshot Project (Simulator)**. It writes
-   `Builds/iOS-Screenshots`. Never upload this build: the store build is still **iOS Xcode Project**.
-2. Open `Builds/iOS-Screenshots/Unity-iPhone.xcodeproj` in Xcode, pick the **iPhone 17 Pro** simulator and press ▶.
-   Don't touch anything: the game stages a well-played save, visits the title, a level in every chapter, the album, the
-   Locker Room and the map, and saves a picture of each (about two minutes). "Store screenshots: 9 saved" means it's done.
-3. Open the pictures (Terminal):
-   ```
-   open "$(xcrun simctl get_app_container booted com.astradite.kickoff2 data)/Documents/Screenshots"
-   ```
-   The folder is named after the size: check it says `2622x1206`.
-4. Quit the Simulator (or Device > Shut Down), pick the **iPad Pro 13-inch** simulator, press ▶ again, and repeat step 3
-   (folder `2752x2064`).
-5. Drag each folder's pictures into the matching slot on the version page.
+1. In the Game view, open the resolution menu ("Free Aspect") and add two Fixed Resolution sizes with **+**:
+   **2622 × 1206** (label it "App Store iPhone") and **2752 × 2064** ("App Store iPad"). Pick the iPhone one.
+2. Run **Kick Off > Store Screenshots (Play mode)** and press Start. Don't touch anything: the game stages a well-played
+   save, visits the title, a level in every chapter, the album, the Locker Room and the map, and saves a picture of each
+   (about two minutes). Finder then opens `Screenshots/2622x1206` (next to `Assets`), and Play mode stops by itself. Your own
+   progress and settings are put back.
+3. Pick the iPad size and run it again: `Screenshots/2752x2064`.
+4. Drag each folder's pictures into the matching slot on the version page.
+
+The same tour also runs in the Simulator (**Kick Off > Build > iOS Screenshot Project (Simulator)**, then run that Xcode
+project on the iPhone 17 Pro or iPad Pro 13-inch simulator); its pictures land in the app's `Documents/Screenshots`:
+`open "$(xcrun simctl get_app_container booted com.astradite.kickoff2 data)/Documents/Screenshots"`.

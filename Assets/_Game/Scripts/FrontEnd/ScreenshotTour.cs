@@ -1,4 +1,4 @@
-#if DTS_SCREENSHOTS
+#if UNITY_EDITOR || DTS_SCREENSHOTS
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -15,8 +15,9 @@ using UnityEngine.SceneManagement;
 namespace DribbleToSchool.FrontEnd
 {
     /// <summary>
-    /// The store screenshot tour. It exists only in builds made with the DTS_SCREENSHOTS define
-    /// (Kick Off > Build > iOS Screenshot Project), never in a store build.
+    /// The store screenshot tour. It runs in the Editor from Kick Off > Store Screenshots (Play
+    /// mode, at the Game view's resolution), or in a Simulator build made with the DTS_SCREENSHOTS
+    /// define (Kick Off > Build > iOS Screenshot Project). Store builds never contain it.
     ///
     /// On launch it stages a well-played save (most levels done, 16 of 23 stickers, their rewards,
     /// some coins), then takes, in English and with no tutorial hints:
@@ -24,15 +25,30 @@ namespace DribbleToSchool.FrontEnd
     ///   02-06 a level in each chapter: the kid running with the ball from a checkpoint partway
     ///         along (the boy and the girl in turn),
     ///   07 the sticker album, 08 the Locker Room, 09 the chapter map.
-    /// Each is saved at the screen's own resolution, without transparency, to
-    /// Documents/Screenshots/WIDTHxHEIGHT/ in the app's container. Run it in the Simulator of the
-    /// size the store asks for, so the pictures come out exactly that size.
+    /// Each is saved at the screen's own resolution, without transparency, to Screenshots/WIDTHxHEIGHT/
+    /// next to Assets (in the Editor) or in the app's Documents (in the Simulator). Afterwards the
+    /// player's own progress and settings are put back.
     /// </summary>
     public class ScreenshotTour : MonoBehaviour
     {
+        /// <summary>Set by the Editor menu for the next Play mode only.</summary>
+        public const string EditorFlag = "KickOff.StoreScreenshots";
+
+        /// <summary>Landscape sizes App Store Connect takes for iPhone and iPad screenshots.</summary>
+        static readonly Vector2Int[] StoreSizes =
+        {
+            new Vector2Int(2622, 1206), new Vector2Int(2556, 1179),                                // iPhone, medium display
+            new Vector2Int(2868, 1320), new Vector2Int(2796, 1290), new Vector2Int(2736, 1260),   // iPhone, large display
+            new Vector2Int(2752, 2064), new Vector2Int(2732, 2048),                                // iPad 13"
+        };
+
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void Begin()
         {
+#if UNITY_EDITOR && !DTS_SCREENSHOTS
+            if (!UnityEditor.SessionState.GetBool(EditorFlag, false)) return;
+            UnityEditor.SessionState.SetBool(EditorFlag, false);
+#endif
             var go = new GameObject("ScreenshotTour");
             DontDestroyOnLoad(go);
             go.AddComponent<ScreenshotTour>();
@@ -49,6 +65,11 @@ namespace DribbleToSchool.FrontEnd
         int saved;
         bool done;
         string error;
+        bool storeSize;
+
+        // The player's own state, put back after the tour.
+        string savedGame, savedCharacter, savedLanguage;
+        readonly List<string> unseenHints = new List<string>();
 
         IEnumerator Start()
         {
@@ -68,10 +89,19 @@ namespace DribbleToSchool.FrontEnd
             levels = menu.levels;
             cosmetics = menu.cosmetics;
 
-            folder = Path.Combine(Path.Combine(Application.persistentDataPath, "Screenshots"), Screen.width + "x" + Screen.height);
+#if UNITY_EDITOR
+            string root = Path.Combine(Directory.GetParent(Application.dataPath).FullName, "Screenshots");
+#else
+            string root = Path.Combine(Application.persistentDataPath, "Screenshots");
+#endif
+            folder = Path.Combine(root, Screen.width + "x" + Screen.height);
             Directory.CreateDirectory(folder);
+            storeSize = System.Array.IndexOf(StoreSizes, new Vector2Int(Screen.width, Screen.height)) >= 0;
             Debug.Log("[Screenshots] Saving to " + folder);
+            if (!storeSize)
+                Debug.LogWarning("[Screenshots] " + Screen.width + "x" + Screen.height + " isn't a size App Store Connect takes: set the Game view to 2622x1206 (iPhone) or 2752x2064 (iPad).");
 
+            Remember();
             Loc.SetLanguage("en");
             TutorialHint.MarkAllSeen();
             StageSave();
@@ -110,9 +140,42 @@ namespace DribbleToSchool.FrontEnd
             yield return Wait(3f);
             yield return Capture(shot.ToString("00") + "_map");
 
+            Restore();
             FrontEndController.Open(FrontEndScreenId.Title);
             done = true;
             Debug.Log("[Screenshots] Done: " + saved + " screenshots in " + folder);
+#if UNITY_EDITOR
+            yield return Wait(1.5f);
+            UnityEditor.EditorUtility.RevealInFinder(folder);
+            UnityEditor.EditorApplication.isPlaying = false;
+#endif
+        }
+
+        /// <summary>Note the player's progress and settings, to put back afterwards.</summary>
+        void Remember()
+        {
+            savedGame = JsonUtility.ToJson(SaveSystem.Data, true);
+            savedCharacter = GameSettings.Character;
+            savedLanguage = GameSettings.Language;
+            unseenHints.Clear();
+            foreach (var id in TutorialHint.AllIds)
+                if (!TutorialHint.Seen(id)) unseenHints.Add(id);
+        }
+
+        void Restore()
+        {
+            try
+            {
+                File.WriteAllText(SaveSystem.FilePath, savedGame);
+                SaveSystem.Load();
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogWarning("[Screenshots] Couldn't put the save back: " + e.Message);
+            }
+            GameSettings.Character = savedCharacter;
+            GameSettings.Language = savedLanguage;
+            TutorialHint.ResetAll(unseenHints);
         }
 
         /// <summary>A save that looks well played: chapters 1-4 done, chapter 5 under way, 16 stickers and their rewards.</summary>
@@ -203,14 +266,15 @@ namespace DribbleToSchool.FrontEnd
         IEnumerator Capture(string name)
         {
             yield return new WaitForEndOfFrame();
-            var frame = ScreenCapture.CaptureScreenshotAsTexture();
+            Texture2D frame = ScreenCapture.CaptureScreenshotAsTexture();
+            int width = frame.width, height = frame.height;
             // The stores refuse screenshots with an alpha channel: copy into RGB.
-            var rgb = new Texture2D(frame.width, frame.height, TextureFormat.RGB24, false);
+            Texture2D rgb = new Texture2D(width, height, TextureFormat.RGB24, false);
             rgb.SetPixels32(frame.GetPixels32());
             rgb.Apply(false);
             string path = Path.Combine(folder, name + ".png");
             File.WriteAllBytes(path, rgb.EncodeToPNG());
-            Debug.Log("[Screenshots] " + path + " (" + rgb.width + "x" + rgb.height + ")");
+            Debug.Log("[Screenshots] " + path + " (" + width + "x" + height + ")");
             Destroy(frame);
             Destroy(rgb);
             saved++;
@@ -243,7 +307,8 @@ namespace DribbleToSchool.FrontEnd
             if (!done && error == null) return;
             var style = new GUIStyle(GUI.skin.box) { fontSize = Mathf.RoundToInt(Screen.height * 0.035f), wordWrap = true };
             style.normal.textColor = Color.white;
-            string text = error ?? ("Store screenshots: " + saved + " saved in Documents/Screenshots/" + Screen.width + "x" + Screen.height);
+            string text = error ?? ("Store screenshots: " + saved + " saved in Screenshots/" + Screen.width + "x" + Screen.height +
+                (storeSize ? "" : "\nThis isn't a size App Store Connect takes: use 2622 x 1206 (iPhone) or 2752 x 2064 (iPad)."));
             GUI.Box(new Rect(Screen.width * 0.15f, Screen.height * 0.4f, Screen.width * 0.7f, Screen.height * 0.2f), text, style);
         }
     }
