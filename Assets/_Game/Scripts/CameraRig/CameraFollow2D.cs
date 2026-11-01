@@ -1,4 +1,5 @@
 using DribbleToSchool.Ball;
+using DribbleToSchool.Core;
 using DribbleToSchool.InputHandling;
 using DribbleToSchool.Player;
 using UnityEngine;
@@ -71,6 +72,7 @@ namespace DribbleToSchool.CameraRig
         float shakeAmount;
         float shakeUntil;
         Vector3 shakeOffset;
+        float punch, punchVelocity, punchTime = 0.2f;
 
         void Awake()
         {
@@ -88,7 +90,7 @@ namespace DribbleToSchool.CameraRig
         /// <summary>The unzoomed half-height: the close framing, or a little further out on a narrow screen.</summary>
         float FramedHalfHeight { get { return Mathf.Max(viewHalfHeight, minHalfWidth / Mathf.Max(cam.aspect, 0.1f)); } }
 
-        float HalfHeight { get { return cam.orthographic ? cam.orthographicSize : FramedHalfHeight * zoom; } }
+        float HalfHeight { get { return cam.orthographic ? cam.orthographicSize : FramedHalfHeight * zoom * (1f + punch); } }
 
         void Place(Vector2 c, Vector3 shake)
         {
@@ -108,6 +110,18 @@ namespace DribbleToSchool.CameraRig
             if (Time.unscaledTime >= shakeUntil) shakeAmount = 0f;
             shakeAmount = Mathf.Max(shakeAmount, amount);
             shakeUntil = Mathf.Max(shakeUntil, Time.unscaledTime + duration);
+        }
+
+        /// <summary>
+        /// A quick push of the view that eases back on its own: <paramref name="amount"/> above 0 pulls
+        /// the camera out (room for a somersault), below 0 pushes it in (the lunge of a slide), about
+        /// 0.03 being a clearly felt nudge. Works in slow motion; off with the screen-shake setting.
+        /// </summary>
+        public void Punch(float amount, float seconds)
+        {
+            if (!GameSettings.ScreenShakeEnabled) return;
+            punch = Mathf.Clamp(amount, -0.15f, 0.15f);
+            punchTime = Mathf.Max(0.05f, seconds);
         }
 
         void Start()
@@ -131,7 +145,8 @@ namespace DribbleToSchool.CameraRig
             bool aiming = GameInput.Instance != null && GameInput.Instance.KickAiming;
             float k = 1f - Mathf.Exp(-zoomSpeed * Time.unscaledDeltaTime);
             zoom = Mathf.Lerp(zoom, aiming ? aimZoom : 1f, k);
-            if (cam.orthographic) cam.orthographicSize = baseSize * zoom;
+            punch = Mathf.SmoothDamp(punch, 0f, ref punchVelocity, punchTime, Mathf.Infinity, Time.unscaledDeltaTime);
+            if (cam.orthographic) cam.orthographicSize = baseSize * zoom * (1f + punch);
 
             Vector2 target = ClampToBounds(new Vector2(focus.x + lookAhead, trackedY));
             center.x = Mathf.SmoothDamp(center.x, target.x, ref velocityX, smoothTimeX);
@@ -157,6 +172,7 @@ namespace DribbleToSchool.CameraRig
             trackedY = focus.y + offset.y;
             if (cam == null) cam = GetComponent<Camera>();
             zoom = 1f;
+            punch = punchVelocity = 0f;
             center = ClampToBounds(new Vector2(focus.x + lookAhead, trackedY));
             shakeOffset = Vector3.zero;
             Place(center, Vector3.zero);

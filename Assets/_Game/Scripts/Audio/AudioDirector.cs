@@ -206,6 +206,9 @@ namespace DribbleToSchool.Audio
                     PlayInternal(Sfx.Slide, 0.4f + k * 0.2f, Vary());
                     Haptics.Impact(Haptics.Strength.Soft);
                     break;
+                case GameEventType.SlideEnd:
+                    PlayInternal(Sfx.GetUp, 0.34f, Vary());
+                    break;
                 case GameEventType.Land:
                     PlayInternal(Sfx.Land, 0.3f + k * 0.5f, Vary());
                     if (k > 0.6f) Haptics.Impact(Haptics.Strength.Light);

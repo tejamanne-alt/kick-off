@@ -14,9 +14,9 @@ namespace DribbleToSchool.Presentation
 
         struct Particle
         {
-            public bool alive;
+            public bool alive, align;
             public Vector2 position, velocity;
-            public float gravity, drag, life, maxLife, size0, size1, rotation, spin;
+            public float gravity, drag, life, maxLife, size0, size1, rotation, spin, aspect, z;
             public Color color;
         }
 
@@ -44,13 +44,31 @@ namespace DribbleToSchool.Presentation
         public void Emit(Sprite sprite, Vector2 position, Vector2 velocity, Color color, float size0, float size1,
             float life, float gravity = 0f, float drag = 0f, float spin = 0f)
         {
+            Place(sprite, position, velocity, color, size0, size1, life, gravity, drag, spin, 1f, 0f, false, Random.Range(0f, 360f));
+        }
+
+        /// <summary>
+        /// A shaped particle: <paramref name="aspect"/> squashes it vertically (a flat ring, a thin streak),
+        /// <paramref name="z"/> moves it toward the camera (negative) so it draws in front of the character,
+        /// and <paramref name="rotation"/> (degrees) is where it starts; with <paramref name="alignToVelocity"/>
+        /// it points the way it is going instead (sparks, flecks).
+        /// </summary>
+        public void EmitShaped(Sprite sprite, Vector2 position, Vector2 velocity, Color color, float size0, float size1, float life,
+            float aspect = 1f, float z = 0f, float rotation = 0f, bool alignToVelocity = false, float gravity = 0f, float drag = 0f, float spin = 0f)
+        {
+            Place(sprite, position, velocity, color, size0, size1, life, gravity, drag, spin, aspect, z, alignToVelocity, rotation);
+        }
+
+        void Place(Sprite sprite, Vector2 position, Vector2 velocity, Color color, float size0, float size1, float life,
+            float gravity, float drag, float spin, float aspect, float z, bool align, float rotation)
+        {
             int i = next;
             next = (next + 1) % capacity;
             particles[i] = new Particle
             {
-                alive = true, position = position, velocity = velocity, gravity = gravity, drag = drag,
+                alive = true, align = align, position = position, velocity = velocity, gravity = gravity, drag = drag,
                 life = 0f, maxLife = Mathf.Max(0.01f, life), size0 = size0, size1 = size1,
-                rotation = Random.Range(0f, 360f), spin = spin, color = color,
+                rotation = rotation, spin = spin, color = color, aspect = aspect, z = z,
             };
             var sr = renderers[i];
             sr.sprite = sprite;
@@ -98,8 +116,10 @@ namespace DribbleToSchool.Presentation
 
                 float t = p.life / p.maxLife;
                 var sr = renderers[i];
-                sr.transform.SetPositionAndRotation(p.position, Quaternion.Euler(0f, 0f, p.rotation));
-                sr.transform.localScale = Vector3.one * Mathf.Lerp(p.size0, p.size1, t);
+                float angle = p.align && p.velocity.sqrMagnitude > 0.0001f ? Mathf.Atan2(p.velocity.y, p.velocity.x) * Mathf.Rad2Deg : p.rotation;
+                sr.transform.SetPositionAndRotation(new Vector3(p.position.x, p.position.y, p.z), Quaternion.Euler(0f, 0f, angle));
+                float size = Mathf.Lerp(p.size0, p.size1, t);
+                sr.transform.localScale = new Vector3(size, size * p.aspect, size);
                 Color c = p.color;
                 c.a *= 1f - t * t;
                 sr.color = c;

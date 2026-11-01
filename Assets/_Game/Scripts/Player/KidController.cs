@@ -44,6 +44,10 @@ namespace DribbleToSchool.Player
         public bool IsSliding { get; private set; }
         /// <summary>The collider is low: sliding, or still under something after the slide.</summary>
         public bool IsLow { get; private set; }
+        /// <summary>Current speed of the slide along the ground (0 when not sliding).</summary>
+        public float SlideSpeed { get { return IsSliding ? slideSpeed : 0f; } }
+        /// <summary>Seconds since the slide began (0 when not sliding).</summary>
+        public float SlideTime { get { return IsSliding ? Time.time - slideStartTime : 0f; } }
         /// <summary>Air jumps left before the kid lands again.</summary>
         public int AirJumpsLeft { get { return Mathf.Max(0, tuning.airJumps - airJumpsUsed); } }
         /// <summary>Raised when the kid lands, with the downward speed at impact.</summary>
@@ -72,6 +76,7 @@ namespace DribbleToSchool.Player
         float slideEndTime = -10f;
         float slideSpeed;
         int slideDirection = 1;
+        bool wasSliding, jumpingOut;
         CapsuleCollider2D capsule;
         Vector2 standSize, standOffset;
         CapsuleDirection2D standDirection;
@@ -301,6 +306,7 @@ namespace DribbleToSchool.Player
             slideSpeed = Mathf.Max(along, tuning.runSpeed * SpeedMultiplier) * tuning.slideSpeedBoost;
             slideStartTime = Time.time;
             IsSliding = true;
+            wasSliding = true;
             SetLow(true);
             if (Slid != null) Slid();
             GameEvents.Raise(GameEventType.Slide, FeetPosition, slideSpeed / 8f);
@@ -327,8 +333,11 @@ namespace DribbleToSchool.Player
         /// <summary>Out of the slide and up on the feet (the caller has checked there's room).</summary>
         void StandUp()
         {
+            // Jumping out of a slide isn't a get-up: no puff or sound of one on top of the jump's.
             EndSlide();
+            jumpingOut = true;
             SetLow(false);
+            jumpingOut = false;
         }
 
         /// <summary>
@@ -362,6 +371,9 @@ namespace DribbleToSchool.Player
         {
             if (IsLow == low) return;
             IsLow = low;
+            // Back on their feet after a slide: the presentation pops them up with a puff and a sound.
+            if (!low && wasSliding && !jumpingOut) GameEvents.Raise(GameEventType.SlideEnd, FeetPosition, 0.5f);
+            if (!low) wasSliding = false;
             if (capsule == null) return;
             if (low)
             {
@@ -436,6 +448,7 @@ namespace DribbleToSchool.Player
             lastJumpPressedTime = -10f;
             lastSlidePressedTime = -10f;
             IsSliding = false;
+            wasSliding = false;
             slideEndTime = -10f;
             SetLow(false);
             airJumpsUsed = 0;

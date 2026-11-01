@@ -6,7 +6,54 @@ namespace DribbleToSchool.UI.Kit
     public static class ProceduralSprites
     {
         static Sprite rounded, roundedSmall, circle, star, coin, lockIcon, gradient, arrow, pause, ring, softDisc, softEdgeDisc, ballIcon, slideIcon;
-        static Sprite roundedEdge, roundedEdgeSmall, circleEdge, check, pitchBadge, holoSheen, goldSheen, stickerIcon;
+        static Sprite roundedEdge, roundedEdgeSmall, circleEdge, check, pitchBadge, holoSheen, goldSheen, stickerIcon, streak, swoosh;
+
+        /// <summary>
+        /// A speed line pointing right: fat and bright at its head, tapering to nothing at its tail (so a
+        /// line that stays behind a runner reads as being left in their wake). 2.56 x 0.32 units at scale 1.
+        /// </summary>
+        public static Sprite Streak
+        {
+            get
+            {
+                return streak != null ? streak : (streak = MakeWide(256, 32, (u, v) =>
+                {
+                    float ramp = Mathf.Clamp01((u + 1f) / 1.55f);
+                    float lengthwise = ramp * ramp * (3f - 2f * ramp);
+                    float thick = Mathf.Lerp(0.12f, 1f, lengthwise);
+                    float edge = Mathf.Clamp01((thick - Mathf.Abs(v)) / 0.3f);
+                    float cap = Mathf.Clamp01((1f - u) / 0.1f);
+                    return lengthwise * edge * cap;
+                }));
+            }
+        }
+
+        /// <summary>
+        /// A crescent swept round a centre like a thrown arc of light: its bright, rounded head at the
+        /// right (angle 0) and a tail curling away counter-clockwise for about 220 degrees, thinning and
+        /// fading as it goes. Turn it clockwise to follow a forward somersault. 1.28 units across at scale 1.
+        /// </summary>
+        public static Sprite Swoosh
+        {
+            get
+            {
+                return swoosh != null ? swoosh : (swoosh = MakeShape(128, (u, v) =>
+                {
+                    float r = Mathf.Sqrt(u * u + v * v);
+                    float a = Mathf.Atan2(v, u);
+                    if (a < -0.3f) a += Mathf.PI * 2f;                      // the tail runs on past 180 degrees
+                    const float span = 3.84f;                               // 220 degrees
+                    if (a < -0.3f || a > span) return 0f;
+                    float t = Mathf.Clamp01(a / span);
+                    float centre = Mathf.Lerp(0.8f, 0.7f, t);
+                    float half = Mathf.Lerp(0.115f, 0.015f, t);
+                    float radial = Mathf.Clamp01((half - Mathf.Abs(r - centre)) / 0.05f);
+                    float along = Mathf.Pow(Mathf.Clamp01(1f - t), 1.3f);
+                    float head = Mathf.Clamp01((a + 0.3f) / 0.22f);         // a rounded leading end
+                    return radial * along * head;
+                }));
+            }
+        }
 
         /// <summary>A soft band of rainbow light (left to right), for the sheen sweeping over holo stickers.</summary>
         public static Sprite HoloSheen
@@ -403,6 +450,25 @@ namespace DribbleToSchool.UI.Kit
         }
 
         delegate float AlphaFn(float u, float v);
+
+        /// <summary>Like <see cref="MakeShape"/> for a sprite that isn't square (u runs across the width, v up the height).</summary>
+        static Sprite MakeWide(int width, int height, AlphaFn fn)
+        {
+            var tex = new Texture2D(width, height, TextureFormat.RGBA32, false);
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    float u = (x + 0.5f) / width * 2f - 1f, v = (y + 0.5f) / height * 2f - 1f;
+                    float du = 0.5f / width, dv = 0.5f / height;
+                    float a = (fn(u - du, v - dv) + fn(u + du, v - dv) + fn(u - du, v + dv) + fn(u + du, v + dv)) * 0.25f;
+                    tex.SetPixel(x, y, new Color(1f, 1f, 1f, a));
+                }
+            }
+            tex.wrapMode = TextureWrapMode.Clamp;
+            tex.Apply();
+            return Sprite.Create(tex, new Rect(0, 0, width, height), new Vector2(0.5f, 0.5f), 100f);
+        }
 
         static Sprite MakeShape(int size, AlphaFn fn)
         {

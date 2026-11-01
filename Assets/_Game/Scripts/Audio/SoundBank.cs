@@ -7,7 +7,7 @@ namespace DribbleToSchool.Audio
     {
         Kick, Touch, Perfect, Juggle, Trap, Jump, Land, Bounce, Coin, Sticker, Checkpoint, Bell, Goal, Lose,
         Splash, Woof, Squawk, Oof, Boing, Switch, Gate, Beep, Click, Purchase, Whistle, Respawn,
-        DoubleJump, Slide,
+        DoubleJump, Slide, GetUp,
     }
 
     /// <summary>Recipes for every sound effect, synthesized at startup (a few ms each).</summary>
@@ -196,20 +196,34 @@ namespace DribbleToSchool.Audio
                     Synth.Noise(b, 0, 0.3f, 0.05, 8, 0.15f, 0.2f, 13);
                     break;
                 case Sfx.DoubleJump:
-                    // A light, higher whoosh than the jump, with a little airy pop on top.
-                    b = Synth.Buffer(0.3f);
-                    Synth.Noise(b, 0, 0.26f, 0.02, 14, 0.3f, 0.35f, 14);
-                    Synth.Sweep(b, 0, 0.2f, 480, 1100, 0.005, 16, 0.2f);
-                    Synth.Sweep(b, 0, 0.08f, 1500, 2100, 0.002, 40, 0.08f, p => Synth.Triangle(p));
+                {
+                    // An airy whoosh that swoops up as the kid tucks, then a bright three-note glint (C, E, G)
+                    // like a spark flicking off the spin.
+                    b = Synth.Buffer(0.46f);
+                    Synth.Noise(b, 0, 0.34f, 0.03, 8, 0.3f, 0.5f, 14);
+                    Synth.Sweep(b, 0, 0.26f, 360, 1300, 0.006, 8, 0.22f);
+                    int step = (int)(0.055f * Synth.SampleRate);
+                    Synth.Sweep(b, step, 0.16f, 1046.5, 1046.5, 0.002, 15, 0.14f, p => Synth.Triangle(p));
+                    Synth.Sweep(b, step * 2, 0.16f, 1318.5, 1318.5, 0.002, 15, 0.14f, p => Synth.Triangle(p));
+                    Synth.Sweep(b, step * 3, 0.24f, 1568.0, 1568.0, 0.002, 11, 0.15f, p => Synth.Triangle(p));
                     break;
+                }
                 case Sfx.Slide:
-                    // Shoes and shorts skidding over the ground: a soft thump, then a scuffing hiss
-                    // that wavers as it fades.
-                    b = Synth.Buffer(0.6f);
-                    Synth.Sweep(b, 0, 0.12f, 120, 70, 0.002, 30, 0.35f);
-                    Synth.Noise(b, 0, 0.58f, 0.03, 4.5, 0.32f, 0.18f, 15);
+                    // Feet going out: a low thump and a bright rush of air, then shoes scuffing along the
+                    // ground, a soft hiss that wavers as it fades.
+                    b = Synth.Buffer(0.7f);
+                    Synth.Sweep(b, 0, 0.14f, 130, 62, 0.002, 26, 0.4f);
+                    Synth.Noise(b, 0, 0.18f, 0.01, 14, 0.28f, 0.55f, 15);
+                    Synth.Noise(b, (int)(0.04f * Synth.SampleRate), 0.64f, 0.05, 4.0, 0.3f, 0.16f, 16);
                     for (int i = 0; i < b.Length; i++)
                         b[i] *= 0.8f + 0.2f * (float)Math.Sin(i / (double)Synth.SampleRate * 2 * Math.PI * 23);
+                    break;
+                case Sfx.GetUp:
+                    // Springing up out of a slide: feet planted with a soft thump and a quick breath of air.
+                    b = Synth.Buffer(0.24f);
+                    Synth.Sweep(b, 0, 0.12f, 170, 95, 0.002, 28, 0.38f);
+                    Synth.Noise(b, 0, 0.16f, 0.02, 16, 0.2f, 0.35f, 17);
+                    Synth.Sweep(b, 0, 0.12f, 420, 760, 0.004, 22, 0.1f);
                     break;
                 default:
                     b = Synth.Buffer(0.05f);

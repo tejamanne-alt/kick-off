@@ -16,6 +16,11 @@ namespace DribbleToSchool.Presentation
         /// <summary>Swing of the shoulder bag (degrees, positive swings it forward).</summary>
         public float bag;
         public Vector2 squash;
+        /// <summary>
+        /// Moves the whole body (x forward, y up, in the character's own frame), added to <see cref="bob"/>:
+        /// what turns a spin about the body's pivot into a spin about its centre of mass.
+        /// </summary>
+        public Vector2 shift;
 
         public static RigPose Neutral
         {
@@ -80,7 +85,7 @@ namespace DribbleToSchool.Presentation
             Rotate(bag, p.bag);
             if (body != null)
             {
-                body.localPosition = bodyBasePosition + Vector3.up * p.bob;
+                body.localPosition = bodyBasePosition + new Vector3(p.shift.x, p.bob + p.shift.y, 0f);
                 body.localRotation = bodyBaseRotation * Quaternion.Euler(0f, 0f, -p.lean);
                 Vector2 squash = p.squash == Vector2.zero ? Vector2.one : p.squash;
                 // Squash keeps the volume: wider in both x and depth when shorter.

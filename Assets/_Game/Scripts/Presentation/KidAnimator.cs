@@ -7,9 +7,11 @@ namespace DribbleToSchool.Presentation
     /// <summary>
     /// Procedural animation for the kid with knees and elbows: a run cycle whose
     /// knees fold in the swing and straighten on the plant, bent-elbow arm drive,
-    /// idle breathing, jump tuck and reach, a tucked somersault on the double jump,
-    /// a feet-first slide, a cocked-knee kick that snaps through, a crouching landing,
-    /// a celebration at the gate and a stumble when the ball is lost.
+    /// idle breathing, jump tuck and reach, a double jump that stretches up, tucks and spins a
+    /// somersault about the body's centre inside a trailing crescent of light, then opens out to
+    /// land; a feet-first slide that lunges in with an overshoot, scuffs along and springs up;
+    /// a cocked-knee kick that snaps through, a crouching landing, a celebration at the gate and
+    /// a stumble when the ball is lost.
     /// </summary>
     [RequireComponent(typeof(CharacterRig))]
     public class KidAnimator : MonoBehaviour
@@ -20,10 +22,14 @@ namespace DribbleToSchool.Presentation
         public float maxArmSwing = 34f;
 
         [Header("Double jump")]
-        [Tooltip("How long the tuck and somersault of the double jump take.")]
-        public float flipDuration = 0.42f;
+        [Tooltip("How long the stretch, tuck and somersault of the double jump take.")]
+        public float flipDuration = 0.44f;
         [Tooltip("How far the body turns forward in the double jump (360 = a full somersault, 0 = just a tuck).")]
         public float flipDegrees = 360f;
+        [Tooltip("Height above the hips that the somersault spins about (metres): about the belly.")]
+        public float flipCentreLift = 0.1f;
+        [Tooltip("Size of the crescent of light that follows the somersault (0 = none).")]
+        public float swooshSize = 1.05f;
 
         [Header("Slide")]
         [Tooltip("How far the body leans back in the slide (degrees from upright).")]
@@ -44,6 +50,9 @@ namespace DribbleToSchool.Presentation
         float facing = 1f;
         float bagAngle, bagVelocity;
         float slideBlend;
+        bool wasLow;
+        float getUpTime = -10f, shiftBlend;
+        SpriteRenderer swoosh;
         // Rest-pose measurements (world units) the slide is built from: how high the body's pivot
         // and the hips sit above the feet. Every character (boy, girl, procedural kid) differs.
         float pivotHeight = 0.6f, hipHeight = 0.72f;
@@ -83,6 +92,11 @@ namespace DribbleToSchool.Presentation
                 kid.Jumped -= OnJumped;
                 kid.DoubleJumped -= OnDoubleJumped;
             }
+        }
+
+        void OnDestroy()
+        {
+            if (swoosh != null) Destroy(swoosh.gameObject);
         }
 
         void OnLanded(float fallSpeed)
@@ -143,7 +157,14 @@ namespace DribbleToSchool.Presentation
                 ft = (Time.time - doubleJumpTime) / Mathf.Max(0.05f, flipDuration);
             }
             bool flipping = ft >= 0f && ft <= 1f;
-            float flip = flipping ? flipDegrees * Mathf.SmoothStep(0f, 1f, ft) : 0f;
+            // A beat of launch (stretched tall, arms thrown up), a quick tuck, the turn, then the body opens
+            // out and the legs reach for the ground. The spin itself starts just after take-off and is done
+            // just before the end, fastest in the middle.
+            float spin = Mathf.Clamp01((ft - 0.06f) / 0.84f);
+            float flip = flipping ? flipDegrees * Mathf.SmoothStep(0f, 1f, spin) : 0f;
+            float launch = flipping ? 1f - Mathf.SmoothStep(0f, 1f, ft / 0.17f) : 0f;
+            float tuckAmount = flipping ? Mathf.SmoothStep(0f, 1f, (ft - 0.07f) / 0.23f) * (1f - Mathf.SmoothStep(0f, 1f, (ft - 0.7f) / 0.24f)) : 0f;
+            float open = flipping ? Mathf.SmoothStep(0f, 1f, (ft - 0.76f) / 0.24f) : 0f;
 
             if (celebrating)
             {
@@ -174,11 +195,17 @@ namespace DribbleToSchool.Presentation
                 float stretch = Mathf.Clamp01(1f - (Time.time - jumpTime) / 0.2f) * 0.12f;
                 p.squash = new Vector2(1f - stretch, 1f + stretch);
 
-                // Double jump: knees pulled up to the chest, hands to the shins, chin down, while
-                // the whole body turns a quick forward somersault, then opens out to land.
+                // Double jump. Launch: pushed off tall, arms thrown up, legs trailing. Then knees pulled up
+                // to the chest, hands to the shins, chin down, while the whole body turns a quick forward
+                // somersault; then it opens out, legs reaching down and arms wide, to land.
                 if (flipping)
                 {
-                    float tuck = Mathf.Clamp01(Mathf.Sin(ft * Mathf.PI) * 1.8f);
+                    p.armF = Mathf.Lerp(p.armF, 128f, launch); p.elbowF = Mathf.Lerp(p.elbowF, 12f, launch);
+                    p.armB = Mathf.Lerp(p.armB, 118f, launch); p.elbowB = Mathf.Lerp(p.elbowB, 12f, launch);
+                    p.legF = Mathf.Lerp(p.legF, 6f, launch); p.kneeF = Mathf.Lerp(p.kneeF, -12f, launch);
+                    p.legB = Mathf.Lerp(p.legB, -8f, launch); p.kneeB = Mathf.Lerp(p.kneeB, -28f, launch);
+
+                    float tuck = tuckAmount;
                     p.legF = Mathf.Lerp(p.legF, 108f, tuck);
                     p.legB = Mathf.Lerp(p.legB, 96f, tuck);
                     p.kneeF = Mathf.Lerp(p.kneeF, -138f, tuck);
@@ -187,8 +214,18 @@ namespace DribbleToSchool.Presentation
                     p.elbowF = Mathf.Lerp(p.elbowF, 95f, tuck);
                     p.armB = Mathf.Lerp(p.armB, 48f, tuck);
                     p.elbowB = Mathf.Lerp(p.elbowB, 100f, tuck);
-                    p.headTilt = Mathf.Lerp(p.headTilt, -24f, tuck);
-                    p.squash = Vector2.Lerp(p.squash, new Vector2(1.04f, 0.96f), tuck);
+                    p.headTilt = Mathf.Lerp(p.headTilt, -26f, tuck);
+
+                    p.legF = Mathf.Lerp(p.legF, 28f, open); p.kneeF = Mathf.Lerp(p.kneeF, -24f, open);
+                    p.legB = Mathf.Lerp(p.legB, -12f, open); p.kneeB = Mathf.Lerp(p.kneeB, -34f, open);
+                    p.armF = Mathf.Lerp(p.armF, 88f, open); p.elbowF = Mathf.Lerp(p.elbowF, 30f, open);
+                    p.armB = Mathf.Lerp(p.armB, -34f, open); p.elbowB = Mathf.Lerp(p.elbowB, 26f, open);
+                    p.headTilt = Mathf.Lerp(p.headTilt, 0f, open);
+
+                    // Squash and stretch: tall on the launch, round in the tuck, tall again as it opens.
+                    float sy = 1f + 0.13f * launch - 0.07f * tuck + 0.08f * open;
+                    float sx = 1f - 0.07f * launch + 0.06f * tuck - 0.03f * open;
+                    p.squash = new Vector2(sx, sy);
                 }
             }
             else
@@ -234,8 +271,21 @@ namespace DribbleToSchool.Presentation
             // Slide: drops in fast and gets up a little slower, and holds while the kid shuffles
             // low under something.
             bool low = kid.IsLow && !celebrating;
-            slideBlend = Mathf.MoveTowards(slideBlend, low ? 1f : 0f, Time.deltaTime / (low ? 0.08f : 0.16f));
+            if (wasLow && !low) getUpTime = Time.time;
+            wasLow = low;
+            slideBlend = Mathf.MoveTowards(slideBlend, low ? 1f : 0f, Time.deltaTime / (low ? 0.07f : 0.18f));
             if (slideBlend > 0f) p = Blend(p, SlidePose(speed), Mathf.SmoothStep(0f, 1f, slideBlend));
+
+            // Springing back up: a little hop, stretched tall, arms swinging into the stride.
+            float gu = (Time.time - getUpTime) / 0.26f;
+            if (!low && gu >= 0f && gu <= 1f && kid.IsGrounded)
+            {
+                float hop = Mathf.Sin(gu * Mathf.PI);
+                p.bob += 0.06f * hop;
+                p.squash = new Vector2(p.squash.x * (1f - 0.05f * hop), p.squash.y * (1f + 0.09f * hop));
+                p.armF += 34f * hop; p.armB -= 24f * hop;
+                p.kneeF -= 14f * hop; p.kneeB -= 10f * hop;
+            }
 
             // Kick: knee cocks back during the wind-up, then the thigh whips through while
             // the knee snaps straight just before the "contact", and follows through.
@@ -289,9 +339,22 @@ namespace DribbleToSchool.Presentation
             float bagTarget = -10f * runK - Mathf.Sin(phase * 2f) * 6f * runK;
             if (!kid.IsGrounded) bagTarget += Mathf.Clamp(-vy * 3f, -25f, 25f);
             bagTarget = Mathf.Lerp(bagTarget, -95f, slideBlend);
+            if (flipping) bagTarget -= 38f * Mathf.Sin(ft * Mathf.PI);   // flung out behind by the spin
             bagAngle = Mathf.SmoothDamp(bagAngle, bagTarget, ref bagVelocity, 0.09f);
             p.bag = bagAngle;
             p.lean += flip;
+
+            // Spin about the belly, not about the body's pivot (which is a hand's width below the hips):
+            // move the body by what turns one into the other, so the somersault stays a tidy turn on the spot.
+            // (It fades out if the kid lands mid-turn, so the body never pops.)
+            Vector2 flipCentre = new Vector2(0f, Mathf.Max(0.1f, hipHeight - pivotHeight) + flipCentreLift);
+            shiftBlend = Mathf.MoveTowards(shiftBlend, flipping && !kid.IsGrounded ? 1f : 0f, Time.deltaTime / 0.05f);
+            if (shiftBlend > 0f && Mathf.Abs(p.lean) > 0.5f)
+            {
+                float a = -p.lean * Mathf.Deg2Rad, cos = Mathf.Cos(a), sin = Mathf.Sin(a);
+                Vector2 turned = new Vector2(flipCentre.x * cos - flipCentre.y * sin, flipCentre.x * sin + flipCentre.y * cos);
+                p.shift = (flipCentre - turned) * shiftBlend;
+            }
 
             rig.Pose(p);
 
@@ -299,6 +362,41 @@ namespace DribbleToSchool.Presentation
             facing = Mathf.MoveTowards(facing, kid.Facing, Time.deltaTime * 7f);
             Transform visual = transform.parent;
             if (visual != null) visual.localRotation = Quaternion.Euler(0f, CharacterRig.FacingYaw(facing), 0f);
+
+            UpdateSwoosh(flipping, ft, flip, flipCentre);
+        }
+
+        /// <summary>
+        /// A crescent of light that circles the body through the somersault, bright at its head and
+        /// curling away behind it, drawn in front of the kid (not part of the turning model).
+        /// </summary>
+        void UpdateSwoosh(bool flipping, float ft, float flipAngle, Vector2 centre)
+        {
+            if (swooshSize <= 0f || !flipping)
+            {
+                if (swoosh != null && swoosh.enabled) swoosh.enabled = false;
+                return;
+            }
+            if (swoosh == null)
+            {
+                var go = new GameObject("FlipSwoosh");
+                swoosh = go.AddComponent<SpriteRenderer>();
+                swoosh.sprite = UI.Kit.ProceduralSprites.Swoosh;
+                swoosh.sortingOrder = 45;
+            }
+            float dir = kid.Facing >= 0 ? 1f : -1f;
+            // Alive from the start of the turn, brightest at the middle, gone as the body opens.
+            float alpha = Mathf.Clamp01(Mathf.Sin(Mathf.Clamp01((ft - 0.03f) / 0.9f) * Mathf.PI) * 2.4f);
+            swoosh.enabled = alpha > 0.01f;
+            swoosh.color = new Color(1f, 1f, 1f, 0.9f * alpha);
+            // The spin centre stays put as the body turns about it (see the shift in LateUpdate).
+            Vector3 world = rig.body.TransformPoint(new Vector3(centre.x, centre.y, 0f));
+            // The head's path starts at the top and runs forward: clockwise facing right, counter-clockwise facing left.
+            float angle = dir > 0f ? 90f - flipAngle : flipAngle - 90f;
+            var t = swoosh.transform;
+            t.position = new Vector3(world.x, world.y, -0.45f);
+            t.rotation = Quaternion.Euler(0f, 0f, angle);
+            t.localScale = new Vector3(swooshSize * dir, swooshSize, 1f);
         }
 
         /// <summary>
@@ -313,12 +411,18 @@ namespace DribbleToSchool.Presentation
         RigPose SlidePose(float speed)
         {
             var s = RigPose.Neutral;
-            float lean = slideLean;
+            // The lean dives in with a quick overshoot, then eases upright as the slide runs out of speed.
+            float t = kid.IsSliding ? kid.SlideTime : 1f;
+            float top = Mathf.Max(0.1f, kid.tuning.runSpeed * kid.tuning.slideSpeedBoost);
+            float spent = kid.IsSliding ? 1f - Mathf.Clamp01(kid.SlideSpeed / top) : 0.6f;
+            float lean = slideLean * (1f + 0.15f * Mathf.Exp(-t * 15f) * Mathf.Sin(t * 28f + 0.4f)) * (1f - 0.15f * spent);
             s.lean = -lean;
             s.legF = 82f - lean;    // nearly level, the heel skimming the ground
             s.kneeF = -6f;
-            s.legB = 96f - lean;    // thigh forward and a touch up...
-            s.kneeB = -148f;        // ...the shin folded back under it
+            // The trailing foot scuffs along the ground, quicker the faster the slide.
+            float scuff = Mathf.Sin(Time.time * (18f + 12f * (1f - spent))) * 5f * (1f - spent * 0.6f);
+            s.legB = 96f - lean + scuff;    // thigh forward and a touch up...
+            s.kneeB = -148f + scuff * 1.5f; // ...the shin folded back under it
             s.armB = 24f - lean;    // down along the side to the hand on the ground by the hip
             s.elbowB = 10f;
             s.armF = 95f - lean;    // reaching forward toward the feet for balance (the hand stays under the bar)
@@ -344,6 +448,7 @@ namespace DribbleToSchool.Presentation
                 bob = Mathf.Lerp(a.bob, b.bob, t), headTilt = Mathf.Lerp(a.headTilt, b.headTilt, t),
                 lean = Mathf.Lerp(a.lean, b.lean, t), bag = Mathf.Lerp(a.bag, b.bag, t),
                 squash = Vector2.Lerp(a.squash == Vector2.zero ? Vector2.one : a.squash, b.squash == Vector2.zero ? Vector2.one : b.squash, t),
+                shift = Vector2.Lerp(a.shift, b.shift, t),
             };
         }
     }
