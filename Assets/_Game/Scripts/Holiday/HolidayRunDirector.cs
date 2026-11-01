@@ -6,6 +6,7 @@ using DribbleToSchool.CameraRig;
 using DribbleToSchool.Analytics;
 using DribbleToSchool.Core;
 using DribbleToSchool.FrontEnd;
+using DribbleToSchool.InputHandling;
 using DribbleToSchool.Localization;
 using DribbleToSchool.Pickups;
 using DribbleToSchool.Player;
@@ -213,6 +214,8 @@ namespace DribbleToSchool.Holiday
                 return;
             }
             kidCollider = kid.GetComponent<CapsuleCollider2D>();
+            // The kid runs by themselves: the buttons are the runner's (SLIDE under the left thumb, no walk arrows or aiming).
+            if (GameInput.Instance != null) GameInput.Instance.runnerLayout = true;
             level.StateChanged += OnLevelState;
             level.Crashed += OnCrashed;
             level.IntroHold = () => Loading;
@@ -431,6 +434,8 @@ namespace DribbleToSchool.Holiday
                     {
                         stats.nearMisses++;
                         Award(nearMissPoints, "holiday.nearMiss", Gold);
+                        // A gold sparkle and a chime that climbs with the multiplier.
+                        GameEvents.Raise(GameEventType.PerfectTouch, kid.transform.position, Mathf.Clamp01(0.3f + 0.1f * Multiplier));
                     }
                 }
             }
@@ -453,7 +458,11 @@ namespace DribbleToSchool.Holiday
             Multiplier = Mathf.Clamp(1 + steps, 1, maxMultiplier);
             MultiplierProgress = Multiplier >= maxMultiplier ? 1f : (streak % Mathf.Max(1, streakPerStep)) / (float)Mathf.Max(1, streakPerStep);
             stats.maxMultiplier = Mathf.Max(stats.maxMultiplier, Multiplier);
-            if (Multiplier > lastMultiplier && Toast != null) Toast(Loc.F("holiday.multiplier", Multiplier), Gold);
+            if (Multiplier > lastMultiplier)
+            {
+                if (Toast != null) Toast(Loc.F("holiday.multiplier", Multiplier), Gold);
+                GameEvents.Raise(GameEventType.PerfectTouch, kid.transform.position + Vector3.up * 0.6f, Mathf.Clamp01(0.45f + 0.12f * Multiplier));
+            }
             lastMultiplier = Multiplier;
         }
 
