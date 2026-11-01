@@ -1,6 +1,7 @@
 using System.Collections;
 using DribbleToSchool.CameraRig;
 using DribbleToSchool.Core;
+using DribbleToSchool.Holiday;
 using DribbleToSchool.Player;
 using DribbleToSchool.UI.Kit;
 using UnityEngine;
@@ -34,6 +35,21 @@ namespace DribbleToSchool.Presentation
         Coroutine slideTrail, flipTrail;
         KidController kidRef;
         float lastDoubleJump = -10f;
+        float nextTurboFx;
+
+        /// <summary>A Holiday Run's turbo: speed streaks hung behind the kid and sparks flicked off the heels.</summary>
+        void Update()
+        {
+            var run = HolidayRunDirector.Current;
+            if (run == null || pool == null || run.Phase != RunPhase.Running || run.TurboLeft <= 0f || Time.time < nextTurboFx) return;
+            var kid = Kid();
+            if (kid == null) return;
+            nextTurboFx = Time.time + 0.035f;
+            Vector2 feet = kid.FeetPosition;
+            pool.EmitShaped(ProceduralSprites.Streak, feet + new Vector2(-0.3f, Random.Range(0.1f, 1.4f)), new Vector2(-5f, 0f),
+                new Color(1f, 0.78f, 0.35f, 0.7f), 0.9f, 1.7f, 0.3f, 0.22f, -0.12f, 0f);
+            pool.Burst(spark, feet + new Vector2(-0.15f, 0.08f), 1, new Vector2(-1f, 0.35f), 40f, 2.5f, 5f, new Color(1f, 0.62f, 0.22f), 0.2f, 0f, 0.3f);
+        }
 
         void OnEnable() { GameEvents.Raised += OnEvent; }
         void OnDisable() { GameEvents.Raised -= OnEvent; slideTrail = flipTrail = null; }
