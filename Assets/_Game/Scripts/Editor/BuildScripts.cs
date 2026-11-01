@@ -238,11 +238,21 @@ namespace DribbleToSchool.EditorTools
             });
             var summary = report.summary;
             if (summary.result == BuildResult.Succeeded)
-                Debug.Log("[Build] " + target + " succeeded: " + location + " (" + (summary.totalSize / (1024 * 1024)) + " MB)");
+            {
+                Debug.Log("[Build] " + target + " succeeded: " + Path.GetFullPath(location) + " (" + (summary.totalSize / (1024 * 1024)) + " MB)");
+                // From the menu, show the result in Finder: the Xcode project itself when there is one.
+                if (!Application.isBatchMode)
+                {
+                    string xcode = Path.Combine(location, "Unity-iPhone.xcodeproj");
+                    EditorUtility.RevealInFinder(Directory.Exists(xcode) ? xcode : location);
+                }
+            }
             else
             {
                 Debug.LogError("[Build] " + target + " failed: " + summary.result + " with " + summary.totalErrors + " errors");
                 if (Application.isBatchMode) EditorApplication.Exit(1);
+                else EditorUtility.DisplayDialog("Build failed", "The " + target + " build failed with " + summary.totalErrors +
+                    " error(s). The Console has the details (the first red line is usually the cause).", "OK");
             }
         }
 
