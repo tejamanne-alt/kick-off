@@ -60,6 +60,26 @@ namespace DribbleToSchool.Holiday
             Carry(true);
         }
 
+        void Start()
+        {
+            // The kid never physically shoves the ball (BallController sees to that in the levels; here it is off).
+            IgnoreKid();
+            if (kid != null) kid.ShapeChanged += IgnoreKid;
+        }
+
+        void OnDestroy()
+        {
+            if (kid != null) kid.ShapeChanged -= IgnoreKid;
+        }
+
+        /// <summary>Again whenever the kid's collider changes shape (sliding), to be sure it holds.</summary>
+        void IgnoreKid()
+        {
+            if (kid == null || circle == null) return;
+            foreach (var c in kid.GetComponentsInChildren<Collider2D>())
+                Physics2D.IgnoreCollision(circle, c, true);
+        }
+
         void Update()
         {
             if (kid == null || body == null) return;
