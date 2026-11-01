@@ -135,5 +135,9 @@ The game takes them itself, in Unity's Play mode:
 4. Drag each folder's pictures into the matching slot on the version page.
 
 The same tour also runs in the Simulator (**Kick Off > Build > iOS Screenshot Project (Simulator)**, then run that Xcode
-project on the iPhone 17 Pro or iPad Pro 13-inch simulator); its pictures land in the app's `Documents/Screenshots`:
-`open "$(xcrun simctl get_app_container booted com.astradite.kickoff2 data)/Documents/Screenshots"`.
+project on the iPhone 17 Pro or iPad Pro 13-inch simulator); its pictures land in the app's `Documents/Screenshots` inside
+the Simulator's files. To find them on any simulator, booted or not (the newest first):
+```
+find ~/Library/Developer/CoreSimulator/Devices -type d -path "*/Documents/Screenshots/*x*" -exec ls -dt {} + 2>/dev/null
+```
+Then `open` the folder it prints. Xcode's console also prints it on the line starting `[Screenshots] Saving to`.
