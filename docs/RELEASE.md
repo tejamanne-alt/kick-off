@@ -2,7 +2,7 @@
 
 Everything needed to take Kick Off from this repo to the App Store and Google Play.
 
-**The app's id is `com.astradite.kickoff.app`** (iOS bundle identifier and Android package name, set in
+**The app's id is `com.astradite.kickoff`** (iOS bundle identifier and Android package name, set in
 `Assets/_Game/Scripts/Editor/BuildScripts.cs`). It can never change once the app is uploaded to either store.
 
 ## 0. What you need
@@ -81,7 +81,7 @@ then `adb install -r Builds/Android/KickOff-dev.apk`.
 1. Sign in to Xcode with your Apple ID (Xcode > Settings > Accounts) and note your **Team ID** (10 characters, shown there and on
    developer.apple.com > Membership).
 2. In [App Store Connect](https://appstoreconnect.apple.com): **Apps > + > New App** → iOS, name "Kick Off", primary language,
-   bundle ID `com.astradite.kickoff.app` (if it isn't in the list yet, register it at developer.apple.com > Identifiers, or run one
+   bundle ID `com.astradite.kickoff` (if it isn't in the list yet, register it at developer.apple.com > Identifiers, or run one
    build first: automatic signing registers it), SKU e.g. `kickoff-ios`.
 
 ### Build and upload (on the Mac)
@@ -154,7 +154,7 @@ Record these on a device with the HUD visible. In the editor, the Tune button an
 
 ## 8. Pre-submission checklist
 
-- [ ] App id `com.astradite.kickoff.app`, version and a new build number; icon present at every size (Unity generates them from the 1024 px source)
+- [ ] App id `com.astradite.kickoff`, version and a new build number; icon present at every size (Unity generates them from the 1024 px source)
 - [ ] `RequireUnlock` and IAP settings match the chosen model, sandbox purchase and restore tested
 - [ ] Played every level on a mid-range Android phone and an older iPhone at 60 fps (use the Profiler markers `DTS.FxPool.Update` and `DTS.Audio.MusicUpload`)
 - [ ] Settings persist across restarts; Reset progress works; both languages checked
