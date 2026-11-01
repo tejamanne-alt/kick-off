@@ -44,6 +44,15 @@ namespace DribbleToSchool.Hazards
 
         public Light Current { get; private set; }
         public float CycleLength { get { return greenTime + amberTime + redTime; } }
+        /// <summary>Seconds until the red man shows (0 while it does): how long walkers have to get over.</summary>
+        public float WalkTimeLeft
+        {
+            get
+            {
+                float c = Mathf.Repeat(time, CycleLength);
+                return c < greenTime + amberTime ? greenTime + amberTime - c : 0f;
+            }
+        }
         public event System.Action<Light> LightChanged;
 
         float time;

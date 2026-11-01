@@ -1103,7 +1103,21 @@ namespace DribbleToSchool.EditorTools
                 Car(root, "Car", new Vector3(x, groundTop, 0.15f), 0f, Faded(color), "Hatch");
             }
 
-            /// <summary>Someone walking between minX and maxX. Solid to the ball and the kid.</summary>
+            /// <summary>Coats for the passers-by after the first (Pedestrian recolours them out of sight).</summary>
+            static readonly Color[] PasserbyCoats =
+            {
+                new Color(0.86f, 0.42f, 0.36f), new Color(0.38f, 0.55f, 0.78f), new Color(0.95f, 0.78f, 0.35f), new Color(0.45f, 0.68f, 0.5f),
+                new Color(0.66f, 0.48f, 0.72f), new Color(0.92f, 0.9f, 0.86f), new Color(0.3f, 0.32f, 0.38f), new Color(0.82f, 0.6f, 0.45f),
+                new Color(0.55f, 0.75f, 0.8f), new Color(0.75f, 0.3f, 0.42f),
+            };
+            static readonly Color[] PasserbyHair = { new Color(0.46f, 0.34f, 0.28f), new Color(1f, 0.95f, 0.6f), new Color(0.92f, 0.92f, 0.95f), new Color(0.85f, 0.46f, 0.3f), new Color(0.16f, 0.14f, 0.15f) };
+
+            /// <summary>
+            /// Passers-by on the footpath, on their way through the stretch minX..maxX (and on past it
+            /// where the footpath is clear; see Hazards.Pedestrian): one at a time, solid to the ball,
+            /// the kid slips past. Some walk with a friend, a child or a dog on a lead, a step behind
+            /// the ball's line (never solid).
+            /// </summary>
             public void Pedestrian(float minX, float maxX, Color coat, float groundTop = 0f, float speed = 1.1f)
             {
                 var go = new GameObject("Pedestrian");
@@ -1114,10 +1128,9 @@ namespace DribbleToSchool.EditorTools
                 var col = go.AddComponent<CapsuleCollider2D>();
                 col.size = new Vector2(0.5f, 1.85f);
 
-                Color[] hairs = { new Color(0.46f, 0.34f, 0.28f), new Color(1f, 0.95f, 0.6f), new Color(0.92f, 0.92f, 0.95f), new Color(0.85f, 0.46f, 0.3f) };
-                // Adults: the kid rig at 1.22x (about 1.9 units, 1.7 m), feet on the capsule bottom (-0.925).
+                int seed = Mathf.Abs(Mathf.RoundToInt(minX * 37f + maxX * 11f)) + Chapter * 101 + 1;
                 // Adults are about 1.7 m (1.22 x the kid), feet on the capsule bottom (-0.925), a step behind the kid's line.
-                Color hair = hairs[Mathf.Abs(Mathf.RoundToInt(minX)) % hairs.Length], trousers = Color.Lerp(coat, Color.black, 0.45f);
+                Color hair = PasserbyHair[Mathf.Abs(Mathf.RoundToInt(minX)) % 4], trousers = Color.Lerp(coat, Color.black, 0.45f);
                 var parts = BuildModelCharacter(go.transform, "Adult", Art.adult, 1.3f * 1.22f, new Vector3(0f, -0.193f, 0.75f), false);
                 if (parts.rig != null)
                 {
@@ -1138,8 +1151,85 @@ namespace DribbleToSchool.EditorTools
                 p.maxX = maxX;
                 p.walkSpeed = speed;
                 p.visual = parts.visual;
+                p.seed = seed;
+                p.outfit = parts.outfit;
+                p.rig = parts.rig;
+                p.coats = PasserbyCoats;
                 var walker = parts.rig.gameObject.AddComponent<WalkerAnimator>();
                 walker.pedestrian = p;
+                PedestrianCompany(go.transform, p, seed, coat);
+            }
+
+            /// <summary>
+            /// Now and then a passer-by has company, chosen by the seed: a friend (they stop to chat),
+            /// a child (a parent walking them to school, slower), or a dog on a lead.
+            /// </summary>
+            void PedestrianCompany(Transform walker, Hazards.Pedestrian p, int seed, Color coat)
+            {
+                int pick = (seed * 7919) % 100;
+                var company = pick < 22 ? Hazards.Pedestrian.Company.Friend : pick < 40 ? Hazards.Pedestrian.Company.Child
+                    : pick < 54 ? Hazards.Pedestrian.Company.Dog : Hazards.Pedestrian.Company.None;
+                const float feet = -0.925f;   // the capsule's bottom, relative to the walker
+                switch (company)
+                {
+                    case Hazards.Pedestrian.Company.Friend:
+                    case Hazards.Pedestrian.Company.Child:
+                    {
+                        bool child = company == Hazards.Pedestrian.Company.Child;
+                        // A child of about 1.2 m (the younger kid's model, smaller), or another adult.
+                        float neck = child ? 0.98f : 1.3f * 1.22f * (0.94f + (seed % 7) * 0.012f);
+                        string file = child ? "Kid" : "Adult";
+                        var mat = child ? Art.kid : Art.adult;
+                        var friend = BuildModelCharacter(walker, file, mat, neck, new Vector3(0f, feet + 0.6f * neck / 1.3f, 1.2f), false);
+                        if (friend.rig == null) return;
+                        friend.visual.name = child ? "Child" : "Friend";
+                        Color other = PasserbyCoats[(seed / 3) % PasserbyCoats.Length];
+                        var dress = (ModelOutfit)friend.outfit;
+                        dress.dressOnStart = true;
+                        dress.shirt = other;
+                        dress.legwear = Color.Lerp(other, Color.black, 0.5f);
+                        dress.hair = PasserbyHair[(seed / 5) % PasserbyHair.Length];
+                        var anim = friend.rig.gameObject.AddComponent<WalkerAnimator>();
+                        anim.pedestrian = p;
+                        anim.companion = true;
+                        anim.cadence = child ? 1.4f : 1f;
+                        p.company = company;
+                        p.companion = friend.visual;
+                        p.companionOutfit = friend.outfit;
+                        break;
+                    }
+                    case Hazards.Pedestrian.Company.Dog:
+                    {
+                        var holder = new GameObject("Dog").transform;
+                        holder.SetParent(walker, false);
+                        holder.localPosition = new Vector3(0.8f, feet, 1.15f);
+                        Color[] furs = { new Color(0.81f, 0.54f, 0.32f), new Color(0.95f, 0.93f, 0.88f), new Color(0.24f, 0.22f, 0.22f), new Color(0.6f, 0.45f, 0.32f) };
+                        var dog = KitModel(holder, "Animals", "Dog", holder.position, 0f, 0.85f, furs[seed % furs.Length]);
+                        if (dog == null) { Object.DestroyImmediate(holder.gameObject); return; }
+                        string[] legNames = { "LegFR", "LegFL", "LegBR", "LegBL" };
+                        var legs = new Transform[legNames.Length];
+                        for (int i = 0; i < legNames.Length; i++)
+                            if ((legs[i] = FindDeep(dog, legNames[i])) == null) { Object.DestroyImmediate(holder.gameObject); return; }
+                        // The lead: a thin strap, laid from the walker's hand to the collar each frame.
+                        var lead = new GameObject("Lead");
+                        lead.transform.SetParent(walker, false);
+                        var strap = lead.AddComponent<World.Box3D>();
+                        strap.size = new Vector3(0.016f, 0.016f, 1f);
+                        strap.color = new Color(0.62f, 0.2f, 0.22f);
+                        strap.faces = World.MeshBuilder.Faces.All;
+                        lead.GetComponent<MeshRenderer>().sharedMaterial = Art.solid;
+                        lead.GetComponent<MeshRenderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                        strap.Rebuild();
+                        p.company = company;
+                        p.companion = holder;
+                        p.companionLegs = legs;
+                        p.companionLegAxis = Vector3.up;
+                        p.companionTail = FindDeep(dog, "Tail");
+                        p.companionTailAxis = Vector3.forward;
+                        p.lead = lead.transform;
+                        break;
+                    }
+                }
             }
 
             /// <summary>A zebra crossing from fromX to toX with a pedestrian light and passing traffic.</summary>
@@ -1249,6 +1339,10 @@ namespace DribbleToSchool.EditorTools
                         hound.legAxis = Vector3.up;
                         hound.tail = FindDeep(kitDog, "Tail");
                         hound.tailAxis = Vector3.forward;
+                        // Its head nods (sniffing) about its up axis and turns (looking about) about its own z.
+                        hound.head = FindDeep(kitDog, "Head");
+                        hound.headNodAxis = Vector3.up;
+                        hound.headTurnAxis = Vector3.forward;
                         return;
                     }
                     Object.DestroyImmediate(kitDog.gameObject);
