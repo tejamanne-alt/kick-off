@@ -189,7 +189,7 @@ namespace DribbleToSchool.EditorTools
                 if (atlas == null) continue;
                 var m = ToonMaterial("Kit" + kit, toon, atlas, false);
                 m.SetFloat("_Wind", kit == "Plants" ? 0.1f : 0f);   // trees and grass sway; their alpha is a wind weight
-                LeafCards(m, kit == "Plants");
+                LeafCards(m, kit == "Plants" || kit == "Barriers");   // leaf-card foliage (the boughs over the path too)
                 m.enableInstancing = true;                          // repeats of a kit model draw together
                 set.kits[kit] = m;
             }
@@ -226,8 +226,9 @@ namespace DribbleToSchool.EditorTools
         }
 
         /// <summary>
-        /// The plants kit's trees and bushes wear their leaves as cut-out cards (clumps of leaves
-        /// painted in the atlas alpha): cut out at 0.5, both sides drawn, cards seen edge-on
+        /// The plants kit's trees and bushes (and the barriers kit's propped boughs) wear their
+        /// leaves as cut-out cards (clumps of leaves painted in the atlas alpha; alpha is 1 everywhere
+        /// else, so nothing else is cut): cut out at 0.5, both sides drawn, cards seen edge-on
         /// shrinking away, sun shadows on the leaves softened, drawn after the opaque world.
         /// Every other kit stays opaque.
         /// </summary>
