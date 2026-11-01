@@ -45,6 +45,9 @@ SDK refuse to launch ("UIScene life cycle is required"). After changing Unity, d
 - `DTS_VERSION` is the version people see (`1.0.0`, then `1.0.1`, `1.1.0`…).
 - `DTS_BUILD_NUMBER` must go **up by at least 1 for every upload** to either store (Android versionCode, iOS build number).
   Both stores reject a number they have already seen.
+- Building from the editor menus keeps whatever is in Player Settings (a fresh project starts at 1.0.0, build 1). Before each new
+  upload run **Kick Off > Build > Bump Build Number**; change the version in Player Settings > Version when you release a new one.
+  The environment variables, when set, override both (the command-line scripts use them).
 
 ## 4. Google Play
 

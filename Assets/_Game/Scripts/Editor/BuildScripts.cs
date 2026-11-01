@@ -36,8 +36,11 @@ namespace DribbleToSchool.EditorTools
         [MenuItem("Kick Off/Build/Apply Store Player Settings")]
         public static void ApplyPlayerSettings()
         {
-            string version = Env("DTS_VERSION", DefaultVersion);
-            int buildNumber = int.Parse(Env("DTS_BUILD_NUMBER", "1"));
+            // The version and build number stay as they are (Player Settings, or Bump Build Number
+            // below) unless DTS_VERSION / DTS_BUILD_NUMBER say otherwise; a fresh project starts at
+            // 1.0.0 (1). Both stores refuse a build number they have already seen.
+            string version = Env("DTS_VERSION", string.IsNullOrEmpty(PlayerSettings.bundleVersion) || PlayerSettings.bundleVersion == "0.1" ? DefaultVersion : PlayerSettings.bundleVersion);
+            int buildNumber = int.Parse(Env("DTS_BUILD_NUMBER", CurrentBuildNumber().ToString()));
 
             PlayerSettings.companyName = CompanyName;
             PlayerSettings.productName = ProductName;
@@ -74,6 +77,25 @@ namespace DribbleToSchool.EditorTools
             ApplyIcon();
             AssetDatabase.SaveAssets();
             Debug.Log("[Build] Player settings applied: " + ApplicationId + " " + version + " (" + buildNumber + ")");
+        }
+
+        /// <summary>The build number now in Player Settings (the higher of iOS's and Android's), at least 1.</summary>
+        static int CurrentBuildNumber()
+        {
+            int ios;
+            if (!int.TryParse(PlayerSettings.iOS.buildNumber, out ios)) ios = 0;
+            return Mathf.Max(1, Mathf.Max(ios, PlayerSettings.Android.bundleVersionCode));
+        }
+
+        /// <summary>Raise the build number by one for both stores (do this before every new upload).</summary>
+        [MenuItem("Kick Off/Build/Bump Build Number")]
+        public static void BumpBuildNumber()
+        {
+            int next = CurrentBuildNumber() + 1;
+            PlayerSettings.iOS.buildNumber = next.ToString();
+            PlayerSettings.Android.bundleVersionCode = next;
+            AssetDatabase.SaveAssets();
+            Debug.Log("[Build] Build number is now " + next + " (version " + PlayerSettings.bundleVersion + ").");
         }
 
         /// <summary>Bake the procedural icon and set it as the default icon for every platform.</summary>
