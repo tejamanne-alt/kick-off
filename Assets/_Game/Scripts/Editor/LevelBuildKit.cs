@@ -184,7 +184,7 @@ namespace DribbleToSchool.EditorTools
             MonoBehaviour kidOutfit = kidRig.outfit;
             var kidFlags = new List<SpriteRenderer> { kidRig.flag };
             if (boyRig.rig != null && girlRig.rig == null)
-                Debug.LogWarning("[Dribble To School] The girl model did not load: Settings > Player will always show the boy.");
+                Debug.LogWarning("[Kick Off] The girl model did not load: Settings > Player will always show the boy.");
             if (girlRig.rig != null)
             {
                 girlRig.rig.gameObject.AddComponent<KidAnimator>().kid = kid;
@@ -393,7 +393,7 @@ namespace DribbleToSchool.EditorTools
             var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(ModelsDir + "/" + file + ".fbx");
             if (prefab == null)
             {
-                Debug.LogWarning("[Dribble To School] Missing " + ModelsDir + "/" + file + ".fbx; using a fallback character.");
+                Debug.LogWarning("[Kick Off] Missing " + ModelsDir + "/" + file + ".fbx; using a fallback character.");
                 return parts;
             }
 
@@ -414,7 +414,7 @@ namespace DribbleToSchool.EditorTools
             if (hips == null || head == null || (kid && bag == null) || legL == null || legR == null || kneeL == null || kneeR == null ||
                 armL == null || armR == null || elbowL == null || elbowR == null || smr == null)
             {
-                Debug.LogWarning("[Dribble To School] " + file + ".fbx is missing bones; using the procedural character.");
+                Debug.LogWarning("[Kick Off] " + file + ".fbx is missing bones; using the procedural character.");
                 Object.DestroyImmediate(visual.gameObject);
                 return parts;
             }
@@ -712,11 +712,11 @@ namespace DribbleToSchool.EditorTools
                     spin.radius = info.wheelRadius;
                     return go.transform;
                 }
-                Debug.LogWarning("[Dribble To School] " + type + ".fbx has no body or wheels to face by; using the procedural car.");
+                Debug.LogWarning("[Kick Off] " + type + ".fbx has no body or wheels to face by; using the procedural car.");
                 Object.DestroyImmediate(model);
             }
 
-            if (prefab == null) Debug.LogWarning("[Dribble To School] Missing " + ModelsDir + "/Cars/" + type + ".fbx; using the procedural car.");
+            if (prefab == null) Debug.LogWarning("[Kick Off] Missing " + ModelsDir + "/Cars/" + type + ".fbx; using the procedural car.");
             var car = go.AddComponent<Car3D>();
             car.paint = paint ?? new Color(0.8f, 0.47f, 0.35f);
             go.GetComponent<MeshRenderer>().sharedMaterial = Art.solid;
