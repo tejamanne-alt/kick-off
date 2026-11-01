@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using DribbleToSchool.Ball;
 using DribbleToSchool.CameraRig;
+using DribbleToSchool.Analytics;
 using DribbleToSchool.Core;
 using DribbleToSchool.FrontEnd;
 using DribbleToSchool.Localization;
@@ -313,6 +314,7 @@ namespace DribbleToSchool.Holiday
                         SetPhase(RunPhase.Running);
                         // GO: the first stage's banner.
                         if (StageChanged != null) StageChanged(StageIndex, Day);
+                        AnalyticsService.Track("holiday_run_start", "character", GameSettings.Character);
                     }
                     else
                     {
@@ -620,6 +622,8 @@ namespace DribbleToSchool.Holiday
             r.newBestScore = r.score > r.bestScoreBefore;
             r.newBestDistance = r.distance > r.bestDistanceBefore;
             Result = r;
+            AnalyticsService.Track("holiday_run_end", "score", r.score, "distance", r.distance, "coins", r.coins, "stage", r.stage + 1,
+                "day", r.day, "reason", r.reason, "x", crashX.ToString("0"), "revives", revivesUsed, "near_misses", stats.nearMisses);
             SetPhase(RunPhase.Results);
             if (Ended != null) Ended(r);
         }
@@ -653,9 +657,11 @@ namespace DribbleToSchool.Holiday
         public void Revive()
         {
             if ((Phase != RunPhase.Results && Phase != RunPhase.Crashed) || !CanRevive) return;
-            if (!SaveSystem.TrySpend(ReviveCost)) return;
+            int cost = ReviveCost;
+            if (!SaveSystem.TrySpend(cost)) return;
             revivesUsed++;
             SaveSystem.Save();
+            AnalyticsService.Track("holiday_revive", "cost", cost, "stage", StageIndex + 1, "day", Day);
 
             float x = lastHit != null ? lastHit.RightX + 1.8f : crashX + 6f;
             x = Mathf.Min(x, HolidayStages.StartOf(HolidayStages.Count) - 6f);
