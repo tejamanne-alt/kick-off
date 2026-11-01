@@ -482,10 +482,10 @@ namespace DribbleToSchool.EditorTools
         }
 
         [Serializable]
-        class ModelColors { public float[] top; public float[] legwear; public float[] hair; }
+        class ModelColors { public float[] top; public float[] legwear; public float[] hair; public float[] accent; }
 
         /// <summary>
-        /// The colours a model was made with (its top, legwear and hair), from the JSON file the
+        /// The colours a model was made with (its top, legwear, hair and tie), from the JSON file the
         /// Blender script writes next to the FBX (tools/blender/teen.py), so the shop's outfits
         /// recolour from the right base. Models without one keep ModelOutfit's defaults.
         /// </summary>
@@ -498,6 +498,7 @@ namespace DribbleToSchool.EditorTools
             outfit.defaultShirt = rgb(colors.top, outfit.defaultShirt);
             outfit.defaultLegwear = rgb(colors.legwear, outfit.defaultLegwear);
             outfit.defaultHair = rgb(colors.hair, outfit.defaultHair);
+            outfit.defaultAccent = rgb(colors.accent, outfit.defaultAccent);
         }
 
         /// <summary>Lifts a model built with <paramref name="neckHeight"/> so its feet stay on the kid's (local y -0.6).</summary>

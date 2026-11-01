@@ -7,7 +7,7 @@ namespace DribbleToSchool.Presentation
     /// The kid can be the boy or the girl (Settings). Both are built into the level; this shows
     /// the one chosen, live, and passes the shop's outfits on to both so a switch keeps the look.
     /// </summary>
-    public class CharacterChoice : MonoBehaviour, IOutfit
+    public class CharacterChoice : MonoBehaviour, IOutfit, IAccentOutfit
     {
         public GameObject boy;
         public GameObject girl;
@@ -39,6 +39,14 @@ namespace DribbleToSchool.Presentation
             var b = girlOutfit as IOutfit;
             if (a != null) a.SetOutfit(shirt, legwear);
             if (b != null) b.SetOutfit(shirt, legwear);
+        }
+
+        public void SetAccent(Color accent)
+        {
+            var a = boyOutfit as IAccentOutfit;
+            var b = girlOutfit as IAccentOutfit;
+            if (a != null) a.SetAccent(accent);
+            if (b != null) b.SetAccent(accent);
         }
 
         public void ResetOutfit()

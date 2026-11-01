@@ -88,6 +88,9 @@ namespace DribbleToSchool.Cosmetics
                 // in casual colours that sat too close to the street's greens and sand.
                 dressedIn = outfit.id;
                 dressable.SetOutfit(outfit.primary, outfit.secondary);
+                // The third colour of an outfit is the tie's.
+                var accented = kidBody as Presentation.IAccentOutfit;
+                if (accented != null) accented.SetAccent(outfit.accent);
             }
         }
 

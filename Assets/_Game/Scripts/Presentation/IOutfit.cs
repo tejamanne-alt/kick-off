@@ -9,4 +9,10 @@ namespace DribbleToSchool.Presentation
         /// <summary>Back to the clothes the character was made with (the school uniform).</summary>
         void ResetOutfit();
     }
+
+    /// <summary>An outfit that also has an accent: the colour of the tie (the third colour of a shop outfit).</summary>
+    public interface IAccentOutfit
+    {
+        void SetAccent(Color accent);
+    }
 }

@@ -5,17 +5,19 @@ namespace DribbleToSchool.Presentation
     /// <summary>
     /// Recolours an imported character model for the shop's outfits. The model marks each
     /// vertex's part in its second UV channel (x: 0 skin and fixed parts, 1 shirt, 2 shorts or
-    /// trousers, 3 hair); its vertex colours are the default outfit, so shading baked into them
-    /// (hems, the hair's shine) carries over to the new colours. Works on a copy of the mesh.
-    /// Pedestrians are dressed when they load (dressOnStart).
+    /// trousers, 3 hair, 4 the tie); its vertex colours are the default outfit, so shading baked into
+    /// them (hems, the tie's stripes, the hair's shine) carries over to the new colours. Works on a
+    /// copy of the mesh. Pedestrians are dressed when they load (dressOnStart).
     /// </summary>
     [RequireComponent(typeof(SkinnedMeshRenderer))]
-    public class ModelOutfit : MonoBehaviour, IOutfit
+    public class ModelOutfit : MonoBehaviour, IOutfit, IAccentOutfit
     {
         [Tooltip("The shirt and shorts colours the model was made with.")]
         public Color defaultShirt = new Color(0.97f, 0.97f, 0.99f);
         public Color defaultLegwear = new Color(0.2f, 0.22f, 0.4f);
         public Color defaultHair = new Color(0.13f, 0.1f, 0.12f);
+        [Tooltip("The tie's colour (the school uniform's red); models without a tie have no part 4.")]
+        public Color defaultAccent = new Color(0.78f, 0.2f, 0.24f);
 
         [Header("Dress on start (pedestrians)")]
         public bool dressOnStart;
@@ -24,6 +26,8 @@ namespace DribbleToSchool.Presentation
         public Color hair = new Color(0.13f, 0.1f, 0.12f);
 
         Color currentHair;
+        Color currentShirt, currentLegwear, currentAccent;
+        bool dressed, accented;
 
         Mesh mesh;
         Color[] original;
@@ -38,6 +42,23 @@ namespace DribbleToSchool.Presentation
 
         public void SetOutfit(Color shirt, Color legwear)
         {
+            currentShirt = shirt;
+            currentLegwear = legwear;
+            dressed = true;
+            Dress();
+        }
+
+        /// <summary>The tie's colour (a shop outfit's third colour). Applies at once, over whatever outfit is on.</summary>
+        public void SetAccent(Color accent)
+        {
+            currentAccent = accent;
+            accented = true;
+            Dress();
+        }
+
+        void Dress()
+        {
+            Color shirt = dressed ? currentShirt : defaultShirt, legwear = dressed ? currentLegwear : defaultLegwear;
             var smr = GetComponent<SkinnedMeshRenderer>();
             if (smr.sharedMesh == null) return;
             if (mesh == null)
@@ -60,6 +81,7 @@ namespace DribbleToSchool.Presentation
                 if (part == 1) c = Recolor(c, defaultShirt, shirt);
                 else if (part == 2) c = Recolor(c, defaultLegwear, legwear);
                 else if (part == 3 && currentHair != default(Color)) c = Recolor(c, defaultHair, currentHair);
+                else if (part == 4 && accented) c = Recolor(c, defaultAccent, currentAccent);
                 colors[i] = c;
             }
             mesh.colors = colors;
@@ -67,6 +89,7 @@ namespace DribbleToSchool.Presentation
 
         public void ResetOutfit()
         {
+            dressed = accented = false;
             if (mesh != null && original != null) mesh.colors = original;
         }
 
