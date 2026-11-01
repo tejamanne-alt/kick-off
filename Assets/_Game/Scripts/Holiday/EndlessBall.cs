@@ -13,6 +13,9 @@ namespace DribbleToSchool.Holiday
         public BallController ball;
         public KidController kid;
 
+        /// <summary>The ball is at the kid's feet and can be kicked: the HUD's KICK button glows while this is true.</summary>
+        public bool Ready { get { return true; } }
+
         /// <summary>Back at the kid's feet (a restart, a revive, a new day).</summary>
         public void ResetAt(Vector3 kidPosition)
         {

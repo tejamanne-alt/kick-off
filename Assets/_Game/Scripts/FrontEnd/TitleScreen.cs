@@ -8,18 +8,22 @@ using UnityEngine.UI;
 namespace DribbleToSchool.FrontEnd
 {
     /// <summary>
-    /// The launch screen. The left column holds the logo, PLAY and the Locker Room, Stickers and
-    /// Settings buttons; the rest of the screen is the live street, where the menu's camera puts
-    /// the chosen teen juggling (tap them, or the player card in the corner, to switch between the
-    /// boy and the girl). Credits and the stars collected sit along the bottom left. Sizes are in
-    /// the 1080-tall canvas inside the safe area, so the column fits from 4:3 to 21:9.
+    /// The launch screen. The left column holds the logo, PLAY, HOLIDAY RUN (the endless mode) and the
+    /// Locker Room, Stickers and Settings buttons; the rest of the screen is the live street, where
+    /// the menu's camera puts the chosen teen juggling (tap them, or the player card in the corner,
+    /// to switch between the boy and the girl). Credits and the stars collected sit along the bottom
+    /// left. Sizes are in the 1080-tall canvas inside the safe area, so the column fits from 4:3 to 21:9.
     /// </summary>
     public class TitleScreen : FrontEndScreen
     {
         /// <summary>Width of the left column (canvas pixels): the logo and the buttons.</summary>
         const float Column = 740f;
 
+        /// <summary>HOLIDAY RUN's button: turquoise, a holiday sea beside PLAY's sunny orange.</summary>
+        static readonly Color HolidayColor = new Color(0.16f, 0.72f, 0.82f);
+
         Text starsLabel;
+        Text holidayLabel, holidayBest;
         RectTransform teenSpot;
         Image playerPortrait;
         Text playerName;
@@ -31,20 +35,29 @@ namespace DribbleToSchool.FrontEnd
             UIKit.PopIn(logo.gameObject);
 
             var play = UIKit.Button(root, "Play", Loc.T("menu.play"), UITheme.Accent, () => Controller.Show(FrontEndScreenId.Map), 68);
-            UIKit.Place((RectTransform)play.transform, new Vector2(0f, 1f), new Vector2(Column * 0.5f + 20f, -640f), new Vector2(450f, 136f), new Vector2(0.5f, 0.5f));
+            UIKit.Place((RectTransform)play.transform, new Vector2(0f, 1f), new Vector2(Column * 0.5f + 20f, -604f), new Vector2(450f, 136f), new Vector2(0.5f, 0.5f));
             UIKit.PopIn(play.gameObject, 0.15f);
             play.gameObject.AddComponent<UIPulse>().amount = 0.025f;
 
-            // Secondary row under PLAY.
+            // HOLIDAY RUN under PLAY. Its label is built by hand below, so that the best distance can sit on the button once there is one.
+            var holiday = UIKit.Button(root, "Holiday", "", HolidayColor, FrontEndController.OpenHolidayRun, 42);
+            UIKit.Place((RectTransform)holiday.transform, new Vector2(0f, 1f), new Vector2(Column * 0.5f + 20f, -744f), new Vector2(450f, 112f), new Vector2(0.5f, 0.5f));
+            UIKit.PopIn(holiday.gameObject, 0.19f);
+            var holidayPulse = holiday.gameObject.AddComponent<UIPulse>();
+            holidayPulse.amount = 0.018f;
+            holidayPulse.speed = 2.4f;   // not in step with PLAY's breathing
+            BuildHolidayText(holiday.transform.Find("Face"));
+
+            // Secondary row under HOLIDAY RUN.
             float w = 222f, gap = 16f, x0 = 20f + (Column - (w * 3f + gap * 2f)) * 0.5f;
             var shop = UIKit.Button(root, "Shop", Loc.T("menu.locker"), UITheme.Blue, () => Controller.Show(FrontEndScreenId.Shop), 34);
-            UIKit.Place((RectTransform)shop.transform, new Vector2(0f, 1f), new Vector2(x0, -790f), new Vector2(w, 96f), new Vector2(0f, 0.5f));
+            UIKit.Place((RectTransform)shop.transform, new Vector2(0f, 1f), new Vector2(x0, -880f), new Vector2(w, 88f), new Vector2(0f, 0.5f));
             UIKit.PopIn(shop.gameObject, 0.22f);
             var album = UIKit.Button(root, "Album", Loc.T("menu.album"), UITheme.Blue, () => Controller.Show(FrontEndScreenId.Album), 34);
-            UIKit.Place((RectTransform)album.transform, new Vector2(0f, 1f), new Vector2(x0 + w + gap, -790f), new Vector2(w, 96f), new Vector2(0f, 0.5f));
+            UIKit.Place((RectTransform)album.transform, new Vector2(0f, 1f), new Vector2(x0 + w + gap, -880f), new Vector2(w, 88f), new Vector2(0f, 0.5f));
             UIKit.PopIn(album.gameObject, 0.27f);
             var settings = UIKit.Button(root, "Settings", Loc.T("menu.settings"), UITheme.Blue, Controller.OpenSettings, 34);
-            UIKit.Place((RectTransform)settings.transform, new Vector2(0f, 1f), new Vector2(x0 + (w + gap) * 2f, -790f), new Vector2(w, 96f), new Vector2(0f, 0.5f));
+            UIKit.Place((RectTransform)settings.transform, new Vector2(0f, 1f), new Vector2(x0 + (w + gap) * 2f, -880f), new Vector2(w, 88f), new Vector2(0f, 0.5f));
             UIKit.PopIn(settings.gameObject, 0.32f);
 
             // Bottom left: credits, and the stars collected on a little card.
@@ -79,6 +92,49 @@ namespace DribbleToSchool.FrontEnd
             tap.gameObject.AddComponent<Button>().onClick.AddListener(OpenPicker);
             tap.gameObject.AddComponent<StageTapZone>();
             BuildPlayerCard(root);
+        }
+
+        /// <summary>
+        /// The two lines on HOLIDAY RUN: its name, and under it (once a run has been made) the best distance.
+        /// Built like UIKit.Button's own label, so it looks like the other buttons.
+        /// </summary>
+        void BuildHolidayText(Transform face)
+        {
+            holidayLabel = UIKit.Label(face, "Label", Loc.T("menu.holiday"), 42, Color.white, TextAnchor.MiddleCenter, true);
+            UIKit.Fit(holidayLabel, 28);
+            DropShadow(holidayLabel, 3f);
+            holidayBest = UIKit.Label(face, "Best", "", 26, new Color(1f, 1f, 1f, 0.92f), TextAnchor.MiddleCenter, true);
+            UIKit.Fit(holidayBest, 18);
+            DropShadow(holidayBest, 2f);
+            ShowHolidayBest();
+        }
+
+        /// <summary>The dark drop under white lettering that UIKit.Button gives its labels.</summary>
+        static void DropShadow(Text text, float depth)
+        {
+            var shadow = text.gameObject.AddComponent<Shadow>();
+            shadow.effectColor = new Color(0f, 0.02f, 0.12f, 0.35f);
+            shadow.effectDistance = new Vector2(0f, -depth);
+        }
+
+        /// <summary>The label fills the button until there is a best distance to show; then it takes the top and the distance the bottom.</summary>
+        void ShowHolidayBest()
+        {
+            if (holidayBest == null) return;   // the screen was rebuilt (language change)
+            int best = Progression.SaveSystem.Data.holidayBestDistance;
+            bool played = best > 0;
+            holidayBest.text = played ? Loc.F("menu.holiday.best", best.ToString("N0")) : "";
+            holidayBest.gameObject.SetActive(played);
+            var label = holidayLabel.rectTransform;
+            label.anchorMin = new Vector2(0f, played ? 0.36f : 0f);
+            label.anchorMax = Vector2.one;
+            label.offsetMin = new Vector2(14f, played ? 2f : 6f);
+            label.offsetMax = new Vector2(-14f, -4f);
+            var line = holidayBest.rectTransform;
+            line.anchorMin = Vector2.zero;
+            line.anchorMax = new Vector2(1f, 0.38f);
+            line.offsetMin = new Vector2(14f, 8f);
+            line.offsetMax = new Vector2(-14f, 0f);
         }
 
         /// <summary>A white card in the bottom right corner: the chosen teen's portrait and name, tap to change.</summary>
@@ -138,6 +194,7 @@ namespace DribbleToSchool.FrontEnd
             int got = catalog != null ? Progression.LevelUnlocks.TotalStars(catalog) : 0;
             starsLabel.text = Loc.F("menu.stars", got, total);
             RefreshPlayer();
+            ShowHolidayBest();
         }
 
         public override void FrameStage(MenuStage stage)
