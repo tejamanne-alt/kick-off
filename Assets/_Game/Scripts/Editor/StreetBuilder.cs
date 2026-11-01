@@ -726,7 +726,7 @@ namespace DribbleToSchool.EditorTools
                 foreach (var area in track.OpenAreas)
                     SideStreetEnd(track, root, new System.Random(ch * 53 + Mathf.RoundToInt(area.x * 3f)), area);
             SchoolSurroundings(track, root, new System.Random(ch * 97 + Mathf.RoundToInt(track.GoalX)));
-            Wildlife(track, new System.Random(ch * 389 + Mathf.RoundToInt(x0)), x0, x1);
+            Wildlife(track, root, new System.Random(ch * 389 + Mathf.RoundToInt(x0)), x0, x1);
         }
 
         // ---------------------------------------------------------------- side streets
@@ -1015,32 +1015,103 @@ namespace DribbleToSchool.EditorTools
         static readonly List<Vector3> wallTops = new List<Vector3>();
 
         /// <summary>
-        /// An animal from the Animals kit at (x, y, z) (head toward +x at yaw 0), on the critters root,
-        /// ready for idle motions. Null if the kit hasn't got it.
+        /// An empty holder for an animal at (x, y, z) turned by yaw (models head toward +x at yaw 0),
+        /// on the critters root, outside the street's static batches; its behaviour goes on the holder
+        /// and the kit model(s) under it.
         /// </summary>
-        static CritterIdle Critter(string model, float x, float y, float z, float yaw = 0f, float scale = 1f)
+        static Transform Holder(string name, float x, float y, float z, float yaw)
         {
-            var t = Model(critters, "Animals", model, x, y, z, yaw, scale);
-            return t != null ? t.gameObject.AddComponent<CritterIdle>() : null;
+            var t = new GameObject(name).transform;
+            t.SetParent(critters, false);
+            t.position = new Vector3(x, y, z);
+            t.rotation = Quaternion.Euler(0f, yaw, 0f);
+            return t;
         }
 
-        /// <summary>An idle swing of one of the animal's parts (axis in the part's own space, degrees, radians per second).</summary>
-        static CritterIdle.Motion Swing(CritterIdle c, string part, Vector3 axis, float amplitude, float speed, float offset = 0f, float phase = 0f)
+        /// <summary>A kit animal under the holder, at its origin and turned with it (null if the kit hasn't got it).</summary>
+        static Transform Animal(Transform holder, string model, float scale = 1f, Color? tint1 = null, Color? tint2 = null, Vector3 lift = default(Vector3))
         {
-            return new CritterIdle.Motion { part = LevelBuildKit.FindDeep(c.transform, part), axis = axis, amplitude = amplitude, speed = speed, offset = offset, phase = phase };
+            var t = LevelBuildKit.KitModel(holder, "Animals", model, holder.position, 0f, scale, tint1, tint2);
+            if (t == null) return null;
+            t.localPosition = lift;
+            t.localRotation = Quaternion.identity;
+            return t;
+        }
+
+        static AmbientAgent.Part PartOf(Transform model, string name, Vector3 axis)
+        {
+            return new AmbientAgent.Part(model != null ? LevelBuildKit.FindDeep(model, name) : null, axis);
+        }
+
+        /// <summary>The ground span holding x, highest first (false over a gap in the footpath).</summary>
+        static bool SpanAt(LevelBuildKit.TrackBuilder track, float x, out Vector3 span)
+        {
+            span = Vector3.zero;
+            bool found = false;
+            foreach (var s in track.GroundSpans)
+                if (x >= s.x && x <= s.y && (!found || s.z > span.z)) { span = s; found = true; }
+            return found;
+        }
+
+        /// <summary>Bakes the ground's height every step from a to b (at depth z) into the animal's strip.</summary>
+        static void BakeGround(AmbientAgent agent, LevelBuildKit.TrackBuilder track, float a, float b, float z, float step, float lift = 0f)
+        {
+            int n = Mathf.Max(2, Mathf.CeilToInt((b - a) / step) + 1);
+            var heights = new float[n];
+            for (int i = 0; i < n; i++)
+            {
+                float x = a + i * step;
+                heights[i] = (z > PathHalf && LevelBuildKit.Chapter != 3 ? BackTop(track, x) : GroundAt(track, x, z)) + lift;
+            }
+            agent.ground = heights;
+            agent.groundFrom = a;
+            agent.groundStep = step;
         }
 
         /// <summary>
-        /// The street's animals, by chapter: cats on garden walls and butterflies in the front gardens;
-        /// pigeons pecking on the market and city pavements; gulls on the sand and crabs at the water's
-        /// edge; butterflies and squirrels on the park lawn. Kept off the side streets and out of the
-        /// kid's lane.
+        /// A bird on the ground (a pigeon, a standing gull) with its flying self hidden beside it
+        /// (the flying gull model, in a pigeon's grey for a pigeon), ready to take off.
         /// </summary>
-        static void Wildlife(LevelBuildKit.TrackBuilder track, System.Random rng, float x0, float x1)
+        static GroundBird Bird(string standingModel, float scale, float flightScale, Color? wing, Color? beak, float x, float y, float z, float yaw, System.Random rng)
+        {
+            var holder = Holder(standingModel, x, y, z, yaw);
+            var standing = Animal(holder, standingModel, scale);
+            var flying = Animal(holder, "Seagull", flightScale, wing, beak, new Vector3(0f, 0.16f * flightScale, 0f));
+            if (standing == null || flying == null)
+            {
+                Object.DestroyImmediate(holder.gameObject);
+                return null;
+            }
+            flying.gameObject.SetActive(false);
+            var bird = holder.gameObject.AddComponent<GroundBird>();
+            bird.seed = rng.Next();
+            bird.standing = standing;
+            bird.flying = flying;
+            bird.head = PartOf(standing, "Head", Vector3.up);
+            // The gull's wings flap about the body's axis, the right one with a negative angle.
+            bird.wingA = PartOf(flying, "WingR", Vector3.right);
+            bird.wingB = PartOf(flying, "WingL", Vector3.right);
+            bird.baseY = y;
+            bird.homeX = x;
+            bird.homeZ = z;
+            return bird;
+        }
+
+        /// <summary>
+        /// The street's animals, by chapter, each going about its life (see the behaviours in
+        /// World): pigeons pecking about the market and city pavements in little groups, flying up
+        /// when the kid runs at them; cats on the garden walls and butterflies over the front
+        /// gardens; gulls on the sand that hop about and take off, crabs scuttling at the water's
+        /// edge; butterflies and squirrels on the park lawn (the squirrels make for the trees), and
+        /// ducks on the pond (see ParkFeatures). Birds cross the sky in loose flocks over every
+        /// chapter. Kept off the side streets and out of the kid's lane.
+        /// </summary>
+        static void Wildlife(LevelBuildKit.TrackBuilder track, Transform root, System.Random rng, float x0, float x1)
         {
             if (!LevelBuildKit.HasKitModel("Animals", "Pigeon")) return;
             int ch = LevelBuildKit.Chapter;
             float skip;
+            Color pigeonWing = new Color(0.55f, 0.58f, 0.66f), pigeonBeak = new Color(0.32f, 0.3f, 0.32f);
             switch (ch)
             {
                 case 2:
@@ -1051,9 +1122,27 @@ namespace DribbleToSchool.EditorTools
                         int n = rng.Next(2, 5);
                         for (int k = 0; k < n; k++)
                         {
-                            float px = x + Rand(rng, -1.2f, 1.2f);
-                            var pigeon = Critter("Pigeon", px, GroundAt(track, px), Rand(rng, 0.9f, 1.35f), rng.NextDouble() < 0.5 ? 0f : 180f + Rand(rng, -20f, 20f));
-                            if (pigeon != null) pigeon.motions = new[] { Swing(pigeon, "Head", Vector3.up, 22f, Rand(rng, 3f, 5f), 18f) };
+                            float px = x + Rand(rng, -1.2f, 1.2f), pz = Rand(rng, 0.9f, 1.35f);
+                            float yaw = rng.NextDouble() < 0.5 ? Rand(rng, -20f, 20f) : 180f + Rand(rng, -20f, 20f);
+                            // On the footpath: only where there is footpath (not over a hole in it).
+                            Vector3 span;
+                            if (!SpanAt(track, px, out span)) continue;
+                            var pigeon = Bird("Pigeon", 1f, 0.7f, pigeonWing, pigeonBeak, px, span.z, pz, yaw, rng);
+                            if (pigeon == null) continue;
+                            pigeon.roam = 0.7f;
+                            pigeon.zMin = 0.85f;
+                            pigeon.zMax = 1.4f;
+                            pigeon.walkSpeed = Rand(rng, 0.24f, 0.4f);
+                            pigeon.startle = Rand(rng, 2.2f, 3.2f);
+                            pigeon.flightSpeed = Rand(rng, 3f, 4.5f);
+                            // Up and out over the street, clear of the shop awnings and fronts behind.
+                            pigeon.flightZMin = -0.9f;
+                            pigeon.flightZMax = -0.3f;
+                            // A flat strip over its stretch of footpath, so it never walks off the edge of a hole or step.
+                            float a = Mathf.Max(px - 0.7f, span.x + 0.25f), b = Mathf.Min(px + 0.7f, span.y - 0.25f);
+                            pigeon.ground = new[] { span.z, span.z };
+                            pigeon.groundFrom = Mathf.Min(a, px);
+                            pigeon.groundStep = Mathf.Max(0.01f, Mathf.Max(b, px) - pigeon.groundFrom);
                         }
                     }
                     break;
@@ -1061,53 +1150,209 @@ namespace DribbleToSchool.EditorTools
                     for (float x = x0; x < x1; x += Rand(rng, 9f, 18f))
                     {
                         float gx = x + Rand(rng, -1f, 1f), gz = Rand(rng, 2.6f, 5.4f);
-                        Critter("SeagullStanding", gx, GroundAt(track, gx, gz), gz, rng.NextDouble() < 0.5 ? Rand(rng, -30f, 30f) : 180f + Rand(rng, -30f, 30f));
+                        float yaw = rng.NextDouble() < 0.5 ? Rand(rng, -30f, 30f) : 180f + Rand(rng, -30f, 30f);
+                        var gull = Bird("SeagullStanding", 1f, 1f, null, null, gx, GroundAt(track, gx, gz), gz, yaw, rng);
+                        if (gull == null) continue;
+                        gull.hopper = true;
+                        gull.roam = 1f;
+                        gull.zMin = gz - 0.35f;
+                        gull.zMax = gz + 0.35f;
+                        gull.walkSpeed = Rand(rng, 0.35f, 0.5f);
+                        gull.startle = Rand(rng, 3.2f, 4.2f);
+                        gull.flightSpeed = Rand(rng, 4f, 5.5f);
+                        BakeGround(gull, track, gx - 1.5f, gx + 1.5f, gz, 0.25f);
                     }
                     for (float x = x0 + 6f; x < x1; x += Rand(rng, 18f, 30f))
                     {
                         // A shore crab, a hand's width across.
                         float cz = Rand(rng, 6.2f, 8.2f);
-                        var crab = Critter("Crab", x, GroundAt(track, x, cz), cz, Rand(rng, -20f, 20f), 0.5f);
-                        if (crab == null) continue;
-                        crab.motions = new[] { Swing(crab, "ClawL", Vector3.up, 27f, 3f, 8f), Swing(crab, "ClawR", Vector3.up, 27f, 3f, 8f, Mathf.PI) };
-                        crab.drift = new Vector3(0.4f, 0f, 0.05f);
-                        crab.driftSpeed = 1.2f;
+                        var holder = Holder("Crab", x, GroundAt(track, x, cz), cz, Rand(rng, -20f, 20f));
+                        var model = Animal(holder, "Crab", 0.5f);
+                        if (model == null) { Object.DestroyImmediate(holder.gameObject); continue; }
+                        var crab = holder.gameObject.AddComponent<ShoreCrab>();
+                        crab.seed = rng.Next();
+                        crab.model = model;
+                        crab.clawL = PartOf(model, "ClawL", Vector3.up);
+                        crab.clawR = PartOf(model, "ClawR", Vector3.up);
+                        crab.homeX = x;
+                        crab.baseY = holder.position.y;
+                        crab.roam = 2.2f;
+                        BakeGround(crab, track, x - 2.5f, x + 2.5f, cz, 0.25f);
                     }
                     break;
                 case 5:
                     for (float x = x0; x < x1; x += Rand(rng, 8f, 16f))
-                        Butterfly(rng, x, GroundAt(track, x) + Rand(rng, 0.6f, 1.6f), Rand(rng, 2.5f, 6f));
+                        Butterfly(rng, x, GroundAt(track, x) + Rand(rng, 0.6f, 1.6f), Rand(rng, 2.9f, 6f), 2.8f, 6.5f, 0.45f);
+                    var trees = ParkTrees(root);
                     for (float x = x0 + 10f; x < x1; x += Rand(rng, 25f, 45f))
                     {
-                        var squirrel = Critter("Squirrel", x, GroundAt(track, x) + 0.04f, Rand(rng, 3.5f, 7f), rng.NextDouble() < 0.5 ? 10f : 170f);
-                        if (squirrel != null) squirrel.motions = new[] { Swing(squirrel, "Tail", Vector3.up, 20f, 2.2f, 5f) };
+                        float sz = Rand(rng, 3.5f, 7f);
+                        var holder = Holder("Squirrel", x, BackTop(track, x) + 0.04f, sz, rng.NextDouble() < 0.5 ? 10f : 170f);
+                        var model = Animal(holder, "Squirrel");
+                        if (model == null) { Object.DestroyImmediate(holder.gameObject); continue; }
+                        var squirrel = holder.gameObject.AddComponent<TreeSquirrel>();
+                        squirrel.seed = rng.Next();
+                        squirrel.model = model;
+                        squirrel.tail = PartOf(model, "Tail", Vector3.up);
+                        squirrel.baseY = holder.position.y;
+                        squirrel.homeX = x;
+                        squirrel.homeZ = sz;
+                        squirrel.roam = 2.5f;
+                        float sx = x;
+                        squirrel.trees = trees.Where(t => Mathf.Abs(t.x - sx) < 14f).ToArray();
+                        BakeGround(squirrel, track, x - 16f, x + 16f, sz, 0.5f, 0.04f);
                     }
                     break;
                 default:
+                {
                     // Cats sitting on garden walls, swishing their tails; butterflies over the front gardens.
-                    foreach (var top in wallTops)
+                    var walls = wallTops.Where(w => w.y - w.x >= 1f).Select(w => new Vector4(w.x, w.y, w.z, PropertyZ + 0.15f)).ToArray();
+                    for (int i = 0; i < walls.Length; i++)
                     {
-                        if (top.y - top.x < 1f || rng.NextDouble() > 0.12) continue;
-                        var cat = Critter("Cat", Rand(rng, top.x, top.y), top.z, PropertyZ + 0.15f, Rand(rng, -10f, 10f));
-                        if (cat != null) cat.motions = new[] { Swing(cat, "Tail", Vector3.up, 17f, 1.6f, 3f) };
+                        if (rng.NextDouble() > 0.12) continue;
+                        var w = walls[i];
+                        bool right = rng.NextDouble() < 0.6;
+                        var holder = Holder("Cat", Rand(rng, w.x, w.y), w.z, w.w, (right ? 0f : 180f) + Rand(rng, -10f, 10f));
+                        var model = Animal(holder, "Cat");
+                        if (model == null) { Object.DestroyImmediate(holder.gameObject); continue; }
+                        var cat = holder.gameObject.AddComponent<WallCat>();
+                        cat.seed = rng.Next();
+                        cat.model = model;
+                        cat.tail = PartOf(model, "Tail", Vector3.up);
+                        cat.walls = walls;
+                        cat.wall = i;
                     }
                     for (float x = x0; x < x1; x += Rand(rng, 14f, 26f))
                     {
                         if (Blocked(track, x - 1f, x + 1f, out skip)) continue;
-                        Butterfly(rng, x, GroundAt(track, x) + Rand(rng, 1.8f, 2.6f), PropertyZ + Rand(rng, 0.6f, 1.2f));
+                        // Over the garden walls (1.6 high at PropertyZ + 0.15), never down into the footpath.
+                        Butterfly(rng, x, GroundAt(track, x) + Rand(rng, 1.9f, 2.5f), PropertyZ + Rand(rng, 0.6f, 1.2f), PropertyZ + 0.45f, PropertyZ + 1.6f, 0.3f);
                     }
                     break;
+                }
             }
+            SkyFlocks(rng);
         }
 
-        /// <summary>A butterfly flitting about one spot, its wings beating fast.</summary>
-        static void Butterfly(System.Random rng, float x, float y, float z)
+        /// <summary>A butterfly flitting about a patch, kept between depths zMin and zMax.</summary>
+        static void Butterfly(System.Random rng, float x, float y, float z, float zMin, float zMax, float rise)
         {
-            var b = Critter("Butterfly", x, y, z, Rand(rng, 0f, 360f), Rand(rng, 0.45f, 0.6f));   // wings 6 to 8 cm across
-            if (b == null) return;
-            b.motions = new[] { Swing(b, "WingL", Vector3.right, 38f, 55f, 38f), Swing(b, "WingR", Vector3.right, -38f, 55f, -38f) };
-            b.drift = new Vector3(0.9f, 0.3f, 0.5f);
-            b.driftSpeed = 1.6f;
+            var holder = Holder("Butterfly", x, y, z, Rand(rng, 0f, 360f));
+            var model = Animal(holder, "Butterfly", Rand(rng, 0.45f, 0.6f));   // wings 6 to 8 cm across
+            if (model == null) { Object.DestroyImmediate(holder.gameObject); return; }
+            var b = holder.gameObject.AddComponent<FlitButterfly>();
+            b.seed = rng.Next();
+            b.wingL = PartOf(model, "WingL", Vector3.right);
+            b.wingR = PartOf(model, "WingR", Vector3.right);
+            b.homeX = x;
+            b.homeY = y;
+            b.homeZ = Mathf.Clamp(z, zMin, zMax);
+            b.zMin = zMin;
+            b.zMax = zMax;
+            b.rise = rise;
+            b.roam = Rand(rng, 2f, 3.2f);
+            b.speed = Rand(rng, 0.5f, 0.85f);
+        }
+
+        /// <summary>
+        /// A duck on the pond centred at (cx, cz), paddling a loop of its own (the index-th duck
+        /// keeps to a line nearer the middle), or null if the kit hasn't got one.
+        /// </summary>
+        static PondDuck Duck(float cx, float cz, float waterY, float pondYaw, float pondScale, int index, float dx, float dz, float yaw)
+        {
+            if (!LevelBuildKit.HasKitModel("Animals", "Duck")) return null;
+            var holder = Holder("Duck", cx + dx, waterY, cz + dz, yaw);
+            var model = Animal(holder, "Duck");
+            if (model == null) { Object.DestroyImmediate(holder.gameObject); return null; }
+            var duck = holder.gameObject.AddComponent<PondDuck>();
+            duck.seed = Mathf.Abs(Mathf.RoundToInt(cx * 31f)) + index * 7 + 1;
+            duck.head = PartOf(model, "Head", Vector3.up);
+            duck.centerX = cx;
+            duck.centerZ = cz;
+            duck.waterY = waterY;
+            duck.pondYaw = pondYaw;
+            // The pond's water is about 1.85 by 1.15 (times its scale) from the middle to the edge.
+            float band = Mathf.Max(0.3f, 0.62f - index * 0.13f);
+            duck.radiusX = 1.85f * pondScale * band;
+            duck.radiusZ = 1.15f * pondScale * band * 0.92f;
+            return duck;
+        }
+
+        static readonly string[] SquirrelTrees ={ "Broadleaf", "BroadleafLarge", "BroadleafWide", "BroadleafSmall", "Birch", "CherryBlossom" };
+
+        /// <summary>The park's trees a squirrel can run up: (x, ground, z, trunk radius), from the trees already planted.</summary>
+        static List<Vector4> ParkTrees(Transform root)
+        {
+            var list = new List<Vector4>();
+            for (int i = 0; i < root.childCount; i++)
+            {
+                var t = root.GetChild(i);
+                if (System.Array.IndexOf(SquirrelTrees, t.name) < 0) continue;
+                Vector3 p = t.position;
+                if (p.z < 5.5f || p.z > 17f) continue;
+                float radius = 0.2f;
+                var info = LevelBuildKit.KitInfo("Plants", t.name);
+                object r;
+                if (info != null && info.TryGetValue("trunkRadius", out r)) radius = System.Convert.ToSingle(r);
+                list.Add(new Vector4(p.x, p.y, p.z, radius * t.localScale.x));
+            }
+            return list;
+        }
+
+        /// <summary>
+        /// Birds crossing the sky now and then, in loose flocks, coming in from one side of the view
+        /// and leaving by the other: gulls over the beach, pigeons (and a few crows) over the town and
+        /// the park.
+        /// </summary>
+        static void SkyFlocks(System.Random rng)
+        {
+            int ch = LevelBuildKit.Chapter;
+            if (ch == 3)
+            {
+                Flock("GullFlock", rng, Rand(rng, 3f, 6f), 1f, null, null, 6f, 20f, 0.25f, 0.7f, 3f, 5f, 4f, 14f, 1.6f);
+                Flock("GullFlock", rng, Rand(rng, 2f, 4f), 1f, null, null, 12f, 28f, 0.45f, 0.85f, 2.5f, 4f, 8f, 20f, 1.8f);
+                return;
+            }
+            // Over the footpath and the road, in front of the shopfronts and houses (they start at
+            // PropertyZ), the poles' wires and the park's trees, high in the view.
+            Color pigeon = new Color(0.55f, 0.58f, 0.66f), crow = new Color(0.2f, 0.2f, 0.24f), beak = new Color(0.3f, 0.28f, 0.3f);
+            bool park = ch == 5;
+            Flock("PigeonFlock", rng, Rand(rng, 4f, 7f), 0.7f, pigeon, beak, park ? 1f : -1.2f, park ? 3f : 1.2f, 0.6f, 0.88f, 4f, 6.5f, 6f, 18f, 0.9f);
+            Flock("CrowFlock", rng, Rand(rng, 2f, 4f), 0.85f, crow, crow, park ? 1.5f : -0.8f, park ? 3.5f : 1.4f, 0.68f, 0.92f, 3f, 4.5f, 12f, 28f, 1.3f);
+        }
+
+        static void Flock(string name, System.Random rng, float birds, float scale, Color? wing, Color? beak, float zMin, float zMax,
+            float heightMin, float heightMax, float speedMin, float speedMax, float gapMin, float gapMax, float spacing)
+        {
+            if (!LevelBuildKit.HasKitModel("Animals", "Seagull")) return;
+            var root = new GameObject(name).transform;
+            root.SetParent(critters, false);
+            int n = Mathf.Max(1, Mathf.RoundToInt(birds));
+            var models = new List<Transform>();
+            var wings = new List<AmbientAgent.Part>();
+            for (int i = 0; i < n; i++)
+            {
+                var bird = LevelBuildKit.KitModel(root, "Animals", "Seagull", new Vector3(0f, -100f, 0f), 0f, scale * Rand(rng, 0.9f, 1.1f), wing, beak, null, false);
+                if (bird == null) continue;
+                bird.gameObject.SetActive(false);
+                models.Add(bird);
+                wings.Add(PartOf(bird, "WingR", Vector3.right));
+                wings.Add(PartOf(bird, "WingL", Vector3.right));
+            }
+            if (models.Count == 0) { Object.DestroyImmediate(root.gameObject); return; }
+            var flock = root.gameObject.AddComponent<SkyFlock>();
+            flock.seed = rng.Next();
+            flock.birds = models.ToArray();
+            flock.wings = wings.ToArray();
+            flock.zMin = zMin;
+            flock.zMax = zMax;
+            flock.heightMin = heightMin;
+            flock.heightMax = heightMax;
+            flock.speedMin = speedMin;
+            flock.speedMax = speedMax;
+            flock.gapMin = gapMin;
+            flock.gapMax = gapMax;
+            flock.spacing = spacing;
         }
 
         static void Poles(LevelBuildKit.TrackBuilder track, Transform root, float x0, float x1)
@@ -1970,17 +2215,18 @@ namespace DribbleToSchool.EditorTools
                         Model(root, "Leisure", "SeeSaw", x + 4.6f, gy, 7.4f, Rand(rng, -25f, 25f));
                         break;
                     case 1:
-                        float pond = Rand(rng, 1.3f, 1.6f);
-                        Model(root, "Leisure", "DuckPond", x, gy - 0.02f, 9f, Rand(rng, -10f, 10f), pond);
+                        float pond = Rand(rng, 1.3f, 1.6f), pondYaw = Rand(rng, -10f, 10f);
+                        Model(root, "Leisure", "DuckPond", x, gy - 0.02f, 9f, pondYaw, pond);
                         int ducks = rng.Next(2, 4);
                         for (int k = 0; k < ducks; k++)
                         {
-                            // Ducks on the water (its surface 4.5 cm up the pond model), dabbling as they drift.
-                            var duck = Critter("Duck", x + Rand(rng, -1.2f, 1.2f), gy - 0.02f + 0.045f * pond, 9f + Rand(rng, -0.5f, 0.5f), Rand(rng, 0f, 360f));
+                            // Ducks on the water (its surface 4.5 cm up the pond model), each paddling its own
+                            // loop round it. (The same draws from rng as ever, so the park around stays put.)
+                            float dx = Rand(rng, -1.2f, 1.2f), dz = Rand(rng, -0.5f, 0.5f), yaw = Rand(rng, 0f, 360f);
+                            var duck = Duck(x, 9f, gy - 0.02f + 0.045f * pond, pondYaw, pond, k, dx, dz, yaw);
                             if (duck == null) break;
-                            duck.motions = new[] { Swing(duck, "Head", Vector3.up, 12f, Rand(rng, 0.8f, 1.4f), 10f) };
-                            duck.drift = new Vector3(0.45f, 0.01f, 0.18f);
-                            duck.driftSpeed = 0.35f;
+                            float pace = Rand(rng, 0.8f, 1.4f);
+                            duck.paddle = (k % 2 == 0 ? 1f : -1f) * 0.12f * pace;
                         }
                         for (int k = 0; k < 4; k++)
                             Plant(root, "Reeds", null, x + Rand(rng, -3.2f, 3.2f), gy, 9f + (k % 2 == 0 ? -1f : 1f) * Rand(rng, 1.6f, 2.2f), Rand(rng, 0.9f, 1.3f), 1f, -58, rng);
