@@ -65,7 +65,7 @@ Bell times and streak targets are in the level table in `Editor/GeneratedContent
 | Rolling pipes | Roll down slopes at you; jump them. |
 | Swing | A pendulum seat that carries the kid over pits. |
 | Fountain | A plaza floor fountain: pulsing jets from a grate in the paving that lift the ball as high as the jet currently reaches. |
-| Slide-under barrier | Solid from 0.85 m up: slide under it (the ball rolls under too). Painters' boards on trestles in the home street (you can also hop on), a fruit stall under its canopy in the market, a surf school's board rack on the beach, a sheeted scaffold on the building site, a fallen tree in the park (or double jump over it). `TrackBuilder.SlideUnder`. |
+| Slide-under barrier | Solid from 0.85 m up: slide under it (the ball rolls under too). Every level has one or two, picked to suit it from the Barriers kit: painters' boards on trestles, a car-park barrier arm, a hedge trimmer's work platform or an apple tree's propped bough in the home street; a fruit stall under its awning, a half-raised roll shutter or a delivery conveyor at the market; a surf rack, a rowing boat upturned on trestles, a boardwalk crossing or a lifeguard's rescue board on the beach; a sheeted scaffold, steel beams on trestles, a pipe rack or a site barrier on the building site; a fallen trunk, an old oak's propped bough, a rope-net tunnel or a play tower in the park. Low ones can be hopped too; tall ones have to be slid under; the round trunk can be double jumped. `TrackBuilder.SlideUnder(x, SlideLook)`. |
 
 ## Level rules
 
