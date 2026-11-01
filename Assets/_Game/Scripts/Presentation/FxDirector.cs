@@ -51,6 +51,12 @@ namespace DribbleToSchool.Presentation
             pool.Burst(spark, feet + new Vector2(-0.15f, 0.08f), 1, new Vector2(-1f, 0.35f), 40f, 2.5f, 5f, new Color(1f, 0.62f, 0.22f), 0.2f, 0f, 0.3f);
         }
 
+        void Awake()
+        {
+            // The shock ring and the speed streak are drawn in code: make them now, not mid-slide.
+            if (ProceduralSprites.Ring == null || ProceduralSprites.Streak == null) Debug.LogWarning("[FX] Could not draw the effect sprites.");
+        }
+
         void OnEnable() { GameEvents.Raised += OnEvent; }
         void OnDisable() { GameEvents.Raised -= OnEvent; slideTrail = flipTrail = null; }
 

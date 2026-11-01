@@ -40,6 +40,7 @@ namespace DribbleToSchool.Analytics
 
         void OnSceneLoaded(Scene scene, LoadSceneMode mode)
         {
+            if (mode == LoadSceneMode.Additive) return;   // a Holiday Run's streamed stages are not new levels
             Unhook();
             var level = LevelManager.Current;
             if (level == null) return;

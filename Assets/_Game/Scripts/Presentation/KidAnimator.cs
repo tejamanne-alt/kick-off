@@ -61,6 +61,8 @@ namespace DribbleToSchool.Presentation
         {
             rig = GetComponent<CharacterRig>();
             MeasureRestPose();
+            // Drawn once, now, rather than in the middle of the first somersault.
+            if (swooshSize > 0f && UI.Kit.ProceduralSprites.Swoosh == null) swooshSize = 0f;
         }
 
         /// <summary>Runs while the rig still stands in its rest pose (nothing has posed it yet).</summary>
