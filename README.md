@@ -164,7 +164,8 @@ Assets/_Game/
     Holiday/    HolidayRunDirector.cs  the endless mode's rules: pace, score, combo, power-ups, revive, days
                 RunWorldStreamer.cs    loads and unloads the 23 stage scenes round the kid
                 HolidayStages.cs       the stage table (one per story level) and the world's geometry
-                EndlessBall.cs, HolidayAtmosphere.cs, HolidayRunHud.cs, HolidayMissions.cs, RunMarkers.cs
+                EndlessBall.cs, HolidayAtmosphere.cs, RunMarkers.cs
+                HolidayRunHud.cs, HolidayRunPanels.cs, HolidayMissions.cs   the run's screen, its pause and results menus, the missions
     Editor/     LevelBuildKit.cs       sprites, assets, gameplay rig, track pieces
                 GreyboxLevels.cs       the level layouts
                 GeneratedContent.cs    builds every scene + build settings
@@ -212,7 +213,9 @@ Edit-mode tests live in `Assets/_Game/Tests/Editor/GameLogicTests.cs`. Run them 
 - the shop table (unique ids, free defaults),
 - challenge star thresholds, and that Next level skips challenges,
 - generated sound effects and music (no invalid samples, no clipping),
-- generated art (solid blocks, seamless ground edges).
+- generated art (solid blocks, seamless ground edges),
+- the touch layout on six screen shapes from 4:3 to 21:9, both handednesses and both layouts (`ControlLayoutTests.cs`),
+- the Holiday Run: the stage table and its order, the three layouts of every stage against their fairness rules, the missions, and the stage logic (`HolidayStageTests.cs`, `HolidayPatternsTests.cs`, `GameLogicTests.cs`).
 
 The tests never touch the player's save file. The file is wrapped in `UNITY_INCLUDE_TESTS`, so it compiles to nothing unless the Test Framework is active.
 
