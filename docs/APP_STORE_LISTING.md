@@ -65,7 +65,7 @@ football,soccer,dribble,ball,runner,platformer,school,street,skills,kids,sticker
 (Words in the app name are searched already, so "kick" and "off" aren't repeated.)
 
 ### Support URL
-The support page (`site/index.html`, published), e.g. `https://kickoff2.vercel.app`
+The web address where you publish `site/index.html` (the support page).
 
 ### Marketing URL
 Leave empty (optional).
@@ -113,8 +113,14 @@ Stickers are found inside levels and unlock cosmetic items; they can't be bought
   "not a trader".
 
 ## App Privacy
-- **Privacy Policy URL:** the published privacy page (`site/privacy.html`), e.g. `https://kickoff2.vercel.app/privacy`
+- **Privacy Policy URL:** the web address where you publish `site/privacy.html`.
 - **Data collection:** "No, we do not collect data from this app" → Publish.
+
+## Publishing the support and privacy pages
+1. Replace `SUPPORT_EMAIL` in `site/index.html` and `site/privacy.html` with the address to show (on a Mac:
+   `sed -i '' 's/SUPPORT_EMAIL/you@example.com/g' site/*.html`).
+2. Upload the `site` folder (the two pages and `style.css`) to any public host: GitHub Pages, Netlify, Vercel, Cloudflare
+   Pages or your own domain. Open both pages in a browser to check they load before entering them in App Store Connect.
 
 ## Taking the screenshots
 The game takes them itself in a special Simulator build:
