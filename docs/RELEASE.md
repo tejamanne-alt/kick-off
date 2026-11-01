@@ -123,6 +123,9 @@ The game has no ads, no accounts, no network calls and no third-party SDKs (Unit
 
 ## 7. Store listing (draft)
 
+The App Store version, field by field (with the screenshot sizes and how to take them), is in
+[`APP_STORE_LISTING.md`](APP_STORE_LISTING.md). The support and privacy pages it links to are in `site/`.
+
 **Name:** Kick Off 2
 
 The "2" reads as "to" (kick off to school), not a sequel: the tagline and the first lines of the description say so.

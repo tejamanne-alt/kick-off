@@ -155,10 +155,26 @@ namespace DribbleToSchool.EditorTools
         [MenuItem("Kick Off/Build/iOS Simulator Project (testing only)")]
         public static void BuildIOSSimulator()
         {
+            BuildForSimulator("iOS-Simulator", null);
+        }
+
+        /// <summary>
+        /// A Simulator project that takes the store screenshots by itself when it launches (the
+        /// ScreenshotTour, compiled in only here through the DTS_SCREENSHOTS define): run it on the
+        /// Simulator of each size the store asks for. Never upload this one.
+        /// </summary>
+        [MenuItem("Kick Off/Build/iOS Screenshot Project (Simulator)")]
+        public static void BuildIOSScreenshots()
+        {
+            BuildForSimulator("iOS-Screenshots", new[] { "DTS_SCREENSHOTS" });
+        }
+
+        static void BuildForSimulator(string folder, string[] defines)
+        {
             ApplyPlayerSettings();
             PlayerSettings.iOS.sdkVersion = iOSSdkVersion.SimulatorSDK;
             SetSimulatorArchitecture();
-            try { Build(BuildTarget.iOS, Path.Combine(BuildRoot, "iOS-Simulator"), BuildOptions.None); }
+            try { Build(BuildTarget.iOS, Path.Combine(BuildRoot, folder), BuildOptions.None, defines); }
             finally
             {
                 PlayerSettings.iOS.sdkVersion = iOSSdkVersion.DeviceSDK;
@@ -202,7 +218,7 @@ namespace DribbleToSchool.EditorTools
             PlayerSettings.Android.keyaliasPass = Env("DTS_KEY_PASS", "");
         }
 
-        static void Build(BuildTarget target, string location, BuildOptions options)
+        static void Build(BuildTarget target, string location, BuildOptions options, string[] extraDefines = null)
         {
             string[] scenes = EditorBuildSettings.scenes.Where(s => s.enabled).Select(s => s.path).ToArray();
             if (scenes.Length == 0)
@@ -218,6 +234,7 @@ namespace DribbleToSchool.EditorTools
                 locationPathName = location,
                 target = target,
                 options = options,
+                extraScriptingDefines = extraDefines,
             });
             var summary = report.summary;
             if (summary.result == BuildResult.Succeeded)

@@ -351,6 +351,22 @@ namespace DribbleToSchool.Core
             FadeAmount = to;
         }
 
+        /// <summary>
+        /// Carry on from the checkpoint at <paramref name="index"/> (in order along the level), as
+        /// if the kid had just reached it. For tools such as the store screenshot tour.
+        /// </summary>
+        public void StartFromCheckpoint(int index)
+        {
+            if (checkpoints.Count == 0) return;
+            index = Mathf.Clamp(index, 0, checkpoints.Count - 1);
+            for (int i = 0; i < checkpoints.Count; i++) checkpoints[i].SetActive(i <= index);
+            ActiveCheckpoint = checkpoints[index];
+            PlaceAtCheckpoint();
+        }
+
+        /// <summary>How many checkpoints the level has, start included.</summary>
+        public int CheckpointCount { get { return checkpoints.Count; } }
+
         void PlaceAtCheckpoint()
         {
             if (ActiveCheckpoint == null) return;

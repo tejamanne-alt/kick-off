@@ -27,6 +27,13 @@ namespace DribbleToSchool.Tutorial
 
         public static bool Seen(string id) { return PlayerPrefs.GetInt(Key(id), 0) == 1; }
 
+        /// <summary>Mark every hint as seen (no hints will show), e.g. for the store screenshot tour.</summary>
+        public static void MarkAllSeen()
+        {
+            foreach (var id in AllIds) PlayerPrefs.SetInt(Key(id), 1);
+            PlayerPrefs.Save();
+        }
+
         /// <summary>Forget all hints (Settings > Reset progress).</summary>
         public static void ResetAll(System.Collections.Generic.IEnumerable<string> ids)
         {

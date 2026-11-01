@@ -112,6 +112,12 @@ namespace DribbleToSchool.InputHandling
         public Rect RightButtonNormalized { get { return GameSettings.LeftHanded ? MirrorPair(leftButtonRect, rightButtonRect) : rightButtonRect; } }
 
         /// <summary>True while the finger (or key) for that direction is down; used by the HUD.</summary>
+        /// <summary>
+        /// A move held by a script instead of a finger (the store screenshot tour): -1..1, 0 = none.
+        /// Applies only while gameplay input isn't blocked.
+        /// </summary>
+        public static float ScriptedMove;
+
         public bool LeftHeld { get; private set; }
         public bool RightHeld { get; private set; }
 
@@ -232,6 +238,11 @@ namespace DribbleToSchool.InputHandling
             }
 
             ReadGameplayKeys();
+            if (ScriptedMove != 0f)
+            {
+                RightHeld = ScriptedMove > 0f;
+                LeftHeld = ScriptedMove < 0f;
+            }
             MoveAxis = (RightHeld ? 1f : 0f) - (LeftHeld ? 1f : 0f);
         }
 
