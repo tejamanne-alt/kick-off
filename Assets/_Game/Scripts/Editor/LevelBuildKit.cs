@@ -27,7 +27,7 @@ namespace DribbleToSchool.EditorTools
     /// Shared pieces for generating grey-box level scenes: placeholder sprites,
     /// tuning assets, physics materials and the fully wired gameplay rig.
     /// </summary>
-    public static class LevelBuildKit
+    public static partial class LevelBuildKit
     {
         public const string Root = "Assets/_Game";
         const string ArtDir = Root + "/Art/Placeholder";

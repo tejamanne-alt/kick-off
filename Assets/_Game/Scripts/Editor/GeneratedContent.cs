@@ -122,39 +122,56 @@ namespace DribbleToSchool.EditorTools
             if (EditorApplication.isPlayingOrWillChangePlaymode) return;
             if (ReadVersion() >= Version && AllScenesExist()) return;
 
-            Debug.Log("[Dribble To School] Generated content is missing or out of date (v" + Version + "). Building levels...");
+            Debug.Log("[Kick Off] Generated content is missing or out of date (v" + Version + "). Building levels...");
             BuildAll();
         }
 
-        [MenuItem("Dribble To School/Rebuild All Levels")]
+        [MenuItem("Kick Off/Rebuild All Levels")]
         static void RebuildFromMenu()
         {
             if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
             BuildAll();
         }
 
-        [MenuItem("Dribble To School/Open Level 1")]
+        [MenuItem("Kick Off/Open Level 1")]
         static void OpenFirstLevel()
         {
             if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
             EditorSceneManager.OpenScene(Levels[0].ScenePath);
         }
 
-        [MenuItem("Dribble To School/Open Menu (FrontEnd)")]
+        [MenuItem("Kick Off/Open Menu (FrontEnd)")]
         static void OpenFrontEnd()
         {
             if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
             EditorSceneManager.OpenScene(FrontEndScene);
         }
 
-        [MenuItem("Dribble To School/Reset Save Data")]
+        /// <summary>Rebuild only the menu scene (its 3D stage), keeping the levels as they are.</summary>
+        [MenuItem("Kick Off/Rebuild Menu (FrontEnd)")]
+        static void RebuildFrontEnd()
+        {
+            if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
+            LevelBuildKit.LoadShared();
+            var catalog = AssetDatabase.LoadAssetAtPath<LevelCatalog>(LevelsDir + "/LevelCatalog.asset");
+            var cosmetics = AssetDatabase.LoadAssetAtPath<CosmeticCatalog>(CosmeticsDir + "/CosmeticCatalog.asset");
+            if (catalog == null || cosmetics == null)
+            {
+                BuildAll();
+                return;
+            }
+            LevelBuildKit.Cosmetics = cosmetics;
+            BuildFrontEndScene(catalog, cosmetics);
+        }
+
+        [MenuItem("Kick Off/Reset Save Data")]
         static void ResetSave()
         {
             Progression.SaveSystem.ResetProgress();
-            Debug.Log("[Dribble To School] Save data reset: " + Progression.SaveSystem.FilePath);
+            Debug.Log("[Kick Off] Save data reset: " + Progression.SaveSystem.FilePath);
         }
 
-        [MenuItem("Dribble To School/Give 1000 Coins (testing)")]
+        [MenuItem("Kick Off/Give 1000 Coins (testing)")]
         static void GiveCoins()
         {
             Progression.SaveSystem.AddCoins(1000);
@@ -208,7 +225,7 @@ namespace DribbleToSchool.EditorTools
             AssetDatabase.SaveAssets();
 
             EditorSceneManager.OpenScene(FrontEndScene);
-            Debug.Log("[Dribble To School] Built the menu, " + Levels.Length + " levels and the test track. The menu is open - press Play.");
+            Debug.Log("[Kick Off] Built the menu, " + Levels.Length + " levels and the test track. The menu is open - press Play.");
         }
 
         static CosmeticCatalog BuildCosmetics()
@@ -235,16 +252,30 @@ namespace DribbleToSchool.EditorTools
             return catalog;
         }
 
+        /// <summary>
+        /// The menu scene: the live 3D stage (LevelBuildKit.BuildMenuStage: the home street, the
+        /// teen juggling, real clouds) behind the menus the FrontEndController builds at runtime.
+        /// If the stage can't be built, a plain camera, and the menus draw a flat sky instead.
+        /// </summary>
         static void BuildFrontEndScene(LevelCatalog catalog, CosmeticCatalog cosmetics)
         {
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
-            var camGo = new GameObject("Main Camera");
-            camGo.tag = "MainCamera";
-            var cam = camGo.AddComponent<Camera>();
-            cam.orthographic = true;
-            cam.clearFlags = CameraClearFlags.SolidColor;
-            cam.backgroundColor = LevelBuildKit.SkyColor;
-            camGo.AddComponent<AudioListener>();
+            try
+            {
+                LevelBuildKit.BuildMenuStage(cosmetics);
+            }
+            catch (Exception e)
+            {
+                Debug.LogError("[Kick Off] Couldn't build the menu's 3D stage; the menu will use a flat backdrop. " + e);
+                scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+                var camGo = new GameObject("Main Camera");
+                camGo.tag = "MainCamera";
+                var cam = camGo.AddComponent<Camera>();
+                cam.orthographic = true;
+                cam.clearFlags = CameraClearFlags.SolidColor;
+                cam.backgroundColor = LevelBuildKit.SkyColor;
+                camGo.AddComponent<AudioListener>();
+            }
 
             var controller = new GameObject("FrontEnd").AddComponent<FrontEndController>();
             controller.levels = catalog;

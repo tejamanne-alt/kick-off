@@ -6,7 +6,7 @@ namespace DribbleToSchool.Tuning
     /// Every number that shapes how the ball feels. Edit the asset (or use the
     /// in-game Tuning panel) instead of touching code.
     /// </summary>
-    [CreateAssetMenu(menuName = "Dribble To School/Ball Tuning", fileName = "BallTuning")]
+    [CreateAssetMenu(menuName = "Kick Off/Ball Tuning", fileName = "BallTuning")]
     public class BallTuning : ScriptableObject
     {
         [Header("Body")]

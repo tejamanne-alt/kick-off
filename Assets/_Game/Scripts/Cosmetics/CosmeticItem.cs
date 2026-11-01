@@ -17,7 +17,7 @@ namespace DribbleToSchool.Cosmetics
     public enum Rarity { Common, Rare, Epic }
 
     /// <summary>One cosmetic: ball skin, backpack flag, outfit or trail. Visuals are drawn from these values.</summary>
-    [CreateAssetMenu(menuName = "Dribble To School/Cosmetic Item", fileName = "Cosmetic")]
+    [CreateAssetMenu(menuName = "Kick Off/Cosmetic Item", fileName = "Cosmetic")]
     public class CosmeticItem : ScriptableObject
     {
         public string id = "ball_classic";

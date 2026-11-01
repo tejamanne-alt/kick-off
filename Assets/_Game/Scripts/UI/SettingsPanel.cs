@@ -7,107 +7,174 @@ using UnityEngine.UI;
 
 namespace DribbleToSchool.UI
 {
-    /// <summary>Settings modal used by the menu and the pause screen.</summary>
+    /// <summary>
+    /// Settings modal used by the menu and the pause screen. Two columns of grouped rows, laid
+    /// out top-down from fixed row heights inside columns that stretch with the card, so
+    /// nothing overlaps at any aspect ratio (the card fits a 4:3 canvas, 1440 x 1080):
+    /// left, Audio (music, sound effects) and Gameplay (school bell, left-handed controls,
+    /// colour-blind aim, vibration, screen shake); right, Player (the boy and girl cards) and
+    /// Language; along the bottom, Reset progress, Restore purchases and Done. Labels shrink
+    /// to fit rather than run into their controls, for longer translations.
+    /// </summary>
     public static class SettingsPanel
     {
+        const float RowHeight = 70f;
+        const float RowGap = 8f;
+        const float SectionHeight = 46f;
+        const float ToggleWidth = 150f;
+
         public static GameObject Open(Transform canvas, System.Action onClose)
         {
             GameObject root;
-            var card = UIKit.Modal(canvas, "Settings", new Vector2(1250f, 900f), out root);
+            var card = UIKit.Modal(canvas, "Settings", new Vector2(1340f, 930f), out root);
+            UIKit.Header(card.transform, Loc.T("settings.title"), 520f);
 
-            var title = UIKit.Title(card.transform, "Title", Loc.T("settings.title"), 64, Color.white);
-            UIKit.Place(title.rectTransform, new Vector2(0.5f, 1f), new Vector2(0f, -70f), new Vector2(900f, 90f));
+            var left = Column(card.transform, "Left", 0f, 0.55f, 50f, 20f);
+            var right = Column(card.transform, "Right", 0.55f, 1f, 20f, 50f);
 
-            // Two columns: left = sound & feel, right = play & accessibility.
-            float y = -170f;
-            SliderRow(card.transform, new Vector2(0.27f, 1f), ref y, "settings.music", GameSettings.MusicVolume, v => GameSettings.MusicVolume = v);
-            SliderRow(card.transform, new Vector2(0.27f, 1f), ref y, "settings.sfx", GameSettings.SfxVolume, v => GameSettings.SfxVolume = v);
-            ToggleRow(card.transform, new Vector2(0.27f, 1f), ref y, "settings.haptics", GameSettings.HapticsEnabled, v => GameSettings.HapticsEnabled = v);
-            ToggleRow(card.transform, new Vector2(0.27f, 1f), ref y, "settings.shake", GameSettings.ScreenShakeEnabled, v => GameSettings.ScreenShakeEnabled = v);
+            // Audio
+            float y = 0f;
+            Section(left, ref y, "settings.audio");
+            SliderRow(left, ref y, "settings.music", GameSettings.MusicVolume, v => GameSettings.MusicVolume = v);
+            SliderRow(left, ref y, "settings.sfx", GameSettings.SfxVolume, v => GameSettings.SfxVolume = v);
+            y += 6f;
 
-            // Who walks to school: the boy or the girl.
-            var playerLabel = UIKit.Label(card.transform, "PlayerLabel", Loc.T("settings.player"), 34, UITheme.Ink, TextAnchor.MiddleLeft, true);
-            UIKit.Place(playerLabel.rectTransform, new Vector2(0.27f, 1f), new Vector2(-100f, y), new Vector2(400f, 70f));
-            Button player = null;
-            player = UIKit.Button(card.transform, "Player", Loc.T("settings." + GameSettings.Character), UITheme.Blue, () =>
+            // Gameplay
+            Section(left, ref y, "settings.gameplay");
+            ToggleRow(left, ref y, "settings.bell", GameSettings.BellTimerEnabled, v => GameSettings.BellTimerEnabled = v, "settings.bellHint");
+            ToggleRow(left, ref y, "settings.leftHanded", GameSettings.LeftHanded, v => GameSettings.LeftHanded = v);
+            ToggleRow(left, ref y, "settings.colorblind", GameSettings.ColorblindAim, v => GameSettings.ColorblindAim = v);
+            ToggleRow(left, ref y, "settings.haptics", GameSettings.HapticsEnabled, v => GameSettings.HapticsEnabled = v);
+            ToggleRow(left, ref y, "settings.shake", GameSettings.ScreenShakeEnabled, v => GameSettings.ScreenShakeEnabled = v);
+
+            // Player: who walks to school.
+            y = 0f;
+            Section(right, ref y, "settings.player");
+            var cards = UIKit.Row(right, "PlayerCards", y, 380f, 4f, 4f);
+            PlayerPicker.Cards(cards, 26f);
+            y += 380f + 22f;
+
+            // Language: one button per table; the current one is filled.
+            Section(right, ref y, "settings.language");
+            var languages = UIKit.Row(right, "Languages", y, 84f, 4f, 4f);
+            int count = Loc.Languages.Length;
+            for (int i = 0; i < count; i++)
             {
-                GameSettings.Character = GameSettings.Character == "girl" ? "boy" : "girl";
-                player.GetComponentInChildren<Text>().text = Loc.T("settings." + GameSettings.Character);
-            }, 34);
-            UIKit.Place((RectTransform)player.transform, new Vector2(0.27f, 1f), new Vector2(170f, y), new Vector2(220f, 80f));
+                string code = Loc.Languages[i];
+                bool current = code == Loc.Current;
+                var lang = UIKit.Button(languages, "Language_" + code, Loc.LanguageNames[i], current ? UITheme.Blue : UITheme.Paper, () =>
+                {
+                    if (code == Loc.Current) return;
+                    Loc.SetLanguage(code);
+                    Object.Destroy(root);
+                    Open(canvas, onClose);   // rebuild in the new language
+                }, 36, current ? Color.white : UITheme.Ink);
+                var rt = (RectTransform)lang.transform;
+                rt.anchorMin = new Vector2(i / (float)count, 0f);
+                rt.anchorMax = new Vector2((i + 1) / (float)count, 1f);
+                rt.offsetMin = new Vector2(i == 0 ? 0f : 10f, UIButtonFx.Depth);
+                rt.offsetMax = new Vector2(i == count - 1 ? 0f : -10f, 0f);
+            }
 
-            y = -170f;
-            ToggleRow(card.transform, new Vector2(0.73f, 1f), ref y, "settings.bell", GameSettings.BellTimerEnabled, v => GameSettings.BellTimerEnabled = v);
-            var hint = UIKit.Label(card.transform, "BellHint", Loc.T("settings.bellHint"), 28, UITheme.InkSoft);
-            UIKit.Place(hint.rectTransform, new Vector2(0.73f, 1f), new Vector2(0f, y + 30f), new Vector2(560f, 40f));
-            y -= 30f;
-            ToggleRow(card.transform, new Vector2(0.73f, 1f), ref y, "settings.leftHanded", GameSettings.LeftHanded, v => GameSettings.LeftHanded = v);
-            ToggleRow(card.transform, new Vector2(0.73f, 1f), ref y, "settings.colorblind", GameSettings.ColorblindAim, v => GameSettings.ColorblindAim = v);
-
-            // Language cycles through the available tables.
-            var langLabel = UIKit.Label(card.transform, "LanguageLabel", Loc.T("settings.language"), 36, UITheme.Ink, TextAnchor.MiddleLeft, true);
-            UIKit.Place(langLabel.rectTransform, new Vector2(0.73f, 1f), new Vector2(-150f, y), new Vector2(300f, 70f));
-            int langIndex = Mathf.Max(0, System.Array.IndexOf(Loc.Languages, Loc.Current));
-            Button lang = null;
-            lang = UIKit.Button(card.transform, "Language", Loc.LanguageNames[langIndex], UITheme.Blue, () =>
-            {
-                int i = (System.Array.IndexOf(Loc.Languages, Loc.Current) + 1) % Loc.Languages.Length;
-                Loc.SetLanguage(Loc.Languages[i]);
-                Object.Destroy(root);
-                Open(canvas, onClose);   // rebuild in the new language
-            }, 36);
-            UIKit.Place((RectTransform)lang.transform, new Vector2(0.73f, 1f), new Vector2(170f, y), new Vector2(240f, 80f));
-
-            // Bottom row: reset (with confirmation) and done.
+            // Bottom row: reset (with confirmation), restore purchases, done.
             var reset = UIKit.Button(card.transform, "Reset", Loc.T("settings.reset"), UITheme.Red, () => ConfirmReset(canvas), 34);
-            UIKit.Place((RectTransform)reset.transform, new Vector2(0.27f, 0f), new Vector2(-110f, 90f), new Vector2(330f, 100f));
+            UIKit.Place((RectTransform)reset.transform, Vector2.zero, new Vector2(50f, 44f), new Vector2(330f, 96f), Vector2.zero);
             if (Store.Monetization.RequireUnlock)
             {
                 var restore = UIKit.Button(card.transform, "Restore", Loc.T("unlock.restore"), UITheme.Paper, () => Store.StoreService.Restore(null), 30, UITheme.Ink);
-                UIKit.Place((RectTransform)restore.transform, new Vector2(0.27f, 0f), new Vector2(210f, 90f), new Vector2(280f, 100f));
+                UIKit.Place((RectTransform)restore.transform, new Vector2(0.5f, 0f), new Vector2(-10f, 44f), new Vector2(300f, 96f), new Vector2(0.5f, 0f));
             }
             var done = UIKit.Button(card.transform, "Done", Loc.T("settings.done"), UITheme.Green, () =>
             {
                 Object.Destroy(root);
                 if (onClose != null) onClose();
-            }, 44);
-            UIKit.Place((RectTransform)done.transform, new Vector2(0.73f, 0f), new Vector2(0f, 90f), new Vector2(380f, 110f));
+            }, 46);
+            UIKit.Place((RectTransform)done.transform, new Vector2(1f, 0f), new Vector2(-50f, 40f), new Vector2(340f, 106f), new Vector2(1f, 0f));
             return root;
         }
 
-        static void SliderRow(Transform parent, Vector2 anchor, ref float y, string key, float value, UnityEngine.Events.UnityAction<float> onChanged)
+        /// <summary>A column of the card between two horizontal anchors, below the header and above the bottom row.</summary>
+        static RectTransform Column(Transform card, string name, float from, float to, float padLeft, float padRight)
         {
-            var label = UIKit.Label(parent, key, Loc.T(key), 36, UITheme.Ink, TextAnchor.MiddleLeft, true);
-            UIKit.Place(label.rectTransform, anchor, new Vector2(-30f, y), new Vector2(500f, 60f));
-            var slider = UIKit.Slider(parent, key + ".slider", value, onChanged);
-            UIKit.Place((RectTransform)slider.transform, anchor, new Vector2(-10f, y - 60f), new Vector2(520f, 70f));
-            y -= 150f;
+            var col = UIKit.Rect(card, name);
+            col.anchorMin = new Vector2(from, 0f);
+            col.anchorMax = new Vector2(to, 1f);
+            col.offsetMin = new Vector2(padLeft, 160f);
+            col.offsetMax = new Vector2(-padRight, -76f);
+            return col;
         }
 
-        static void ToggleRow(Transform parent, Vector2 anchor, ref float y, string key, bool value, UnityEngine.Events.UnityAction<bool> onChanged)
+        static void Section(RectTransform column, ref float y, string key)
         {
-            var label = UIKit.Label(parent, key, Loc.T(key), 34, UITheme.Ink, TextAnchor.MiddleLeft, true);
-            UIKit.Place(label.rectTransform, anchor, new Vector2(-100f, y), new Vector2(400f, 70f));
-            var toggle = UIKit.Toggle(parent, key + ".toggle", value, v => Loc.T(v ? "settings.on" : "settings.off"), onChanged);
-            UIKit.Place((RectTransform)toggle.transform, anchor, new Vector2(190f, y), new Vector2(160f, 76f));
-            y -= 105f;
+            var row = UIKit.Row(column, key, y, SectionHeight);
+            UIKit.SectionLabel(row, Loc.T(key));
+            y += SectionHeight + RowGap;
+        }
+
+        static void SliderRow(RectTransform column, ref float y, string key, float value, UnityEngine.Events.UnityAction<float> onChanged)
+        {
+            var row = UIKit.Row(column, key, y, RowHeight, 12f, 0f);
+            var label = UIKit.Label(row, "Label", Loc.T(key), 34, UITheme.Ink, TextAnchor.MiddleLeft, true);
+            label.rectTransform.anchorMin = new Vector2(0f, 0f);
+            label.rectTransform.anchorMax = new Vector2(0f, 1f);
+            label.rectTransform.pivot = new Vector2(0f, 0.5f);
+            label.rectTransform.sizeDelta = new Vector2(240f, 0f);
+            label.rectTransform.anchoredPosition = Vector2.zero;
+            UIKit.Fit(label, 24);
+            var slider = UIKit.Slider(row, "Slider", value, onChanged);
+            var rt = (RectTransform)slider.transform;
+            rt.anchorMin = new Vector2(0f, 0.5f);
+            rt.anchorMax = new Vector2(1f, 0.5f);
+            rt.offsetMin = new Vector2(256f, -32f);
+            rt.offsetMax = new Vector2(-6f, 32f);
+            y += RowHeight + RowGap;
+        }
+
+        /// <summary>A label (and an optional hint under it) on the left, the On/Off pill on the right.</summary>
+        static void ToggleRow(RectTransform column, ref float y, string key, bool value, UnityEngine.Events.UnityAction<bool> onChanged, string hintKey = null)
+        {
+            float height = hintKey != null ? RowHeight + 22f : RowHeight;
+            var row = UIKit.Row(column, key, y, height, 12f, 0f);
+            var label = UIKit.Label(row, "Label", Loc.T(key), 34, UITheme.Ink, TextAnchor.MiddleLeft, true);
+            label.rectTransform.anchorMin = new Vector2(0f, hintKey != null ? 0.42f : 0f);
+            label.rectTransform.anchorMax = Vector2.one;
+            label.rectTransform.offsetMin = Vector2.zero;
+            label.rectTransform.offsetMax = new Vector2(-(ToggleWidth + 24f), 0f);
+            UIKit.Fit(label, 24);
+            if (hintKey != null)
+            {
+                var hint = UIKit.Label(row, "Hint", Loc.T(hintKey), 25, UITheme.InkSoft, TextAnchor.UpperLeft);
+                hint.rectTransform.anchorMin = Vector2.zero;
+                hint.rectTransform.anchorMax = new Vector2(1f, 0.42f);
+                hint.rectTransform.offsetMin = Vector2.zero;
+                hint.rectTransform.offsetMax = new Vector2(-(ToggleWidth + 24f), 0f);
+                UIKit.Fit(hint, 18);
+            }
+            var toggle = UIKit.Toggle(row, "Toggle", value, v => Loc.T(v ? "settings.on" : "settings.off"), onChanged);
+            UIKit.Place((RectTransform)toggle.transform, new Vector2(1f, 0.5f), new Vector2(-6f, UIButtonFx.Depth * 0.5f), new Vector2(ToggleWidth, 60f), new Vector2(1f, 0.5f));
+            y += height + RowGap;
         }
 
         static void ConfirmReset(Transform canvas)
         {
             GameObject root;
-            var card = UIKit.Modal(canvas, "ConfirmReset", new Vector2(900f, 480f), out root);
+            var card = UIKit.Modal(canvas, "ConfirmReset", new Vector2(900f, 500f), out root);
+            UIKit.Header(card.transform, Loc.T("settings.reset"), 520f);
             var text = UIKit.Label(card.transform, "Text", Loc.T("settings.resetConfirm"), 40, UITheme.Ink, TextAnchor.MiddleCenter, true);
-            UIKit.Place(text.rectTransform, new Vector2(0.5f, 1f), new Vector2(0f, -150f), new Vector2(800f, 200f));
+            text.rectTransform.anchorMin = Vector2.zero;
+            text.rectTransform.anchorMax = Vector2.one;
+            text.rectTransform.offsetMin = new Vector2(60f, 170f);
+            text.rectTransform.offsetMax = new Vector2(-60f, -70f);
+            UIKit.Fit(text, 28);
             var no = UIKit.Button(card.transform, "No", Loc.T("settings.no"), UITheme.Green, () => Object.Destroy(root), 40);
-            UIKit.Place((RectTransform)no.transform, new Vector2(0.3f, 0f), new Vector2(0f, 90f), new Vector2(300f, 100f));
+            UIKit.Place((RectTransform)no.transform, new Vector2(0.3f, 0f), new Vector2(0f, 95f), new Vector2(300f, 100f));
             var yes = UIKit.Button(card.transform, "Yes", Loc.T("settings.yes"), UITheme.Red, () =>
             {
                 SaveSystem.ResetProgress();
                 Tutorial.TutorialHint.ResetAll(Tutorial.TutorialHint.AllIds);
                 Object.Destroy(root);
             }, 40);
-            UIKit.Place((RectTransform)yes.transform, new Vector2(0.7f, 0f), new Vector2(0f, 90f), new Vector2(300f, 100f));
+            UIKit.Place((RectTransform)yes.transform, new Vector2(0.7f, 0f), new Vector2(0f, 95f), new Vector2(300f, 100f));
         }
     }
 }

@@ -6,6 +6,115 @@ namespace DribbleToSchool.UI.Kit
     public static class ProceduralSprites
     {
         static Sprite rounded, roundedSmall, circle, star, coin, lockIcon, gradient, arrow, pause, ring, softDisc, softEdgeDisc, ballIcon, slideIcon;
+        static Sprite roundedEdge, roundedEdgeSmall, circleEdge, check, pitchBadge;
+
+        /// <summary>
+        /// The logo's badge: a disc of mown turf (light and dark stripes) with a dark line round
+        /// it, the centre circle, halfway line and centre spot in chalk: where a game kicks off.
+        /// </summary>
+        public static Sprite PitchBadge
+        {
+            get
+            {
+                if (pitchBadge != null) return pitchBadge;
+                const int size = 512;
+                var px = new Color32[size * size];
+                float r = size * 0.5f, line = size * 0.017f, ring = size * 0.283f;
+                Color turf = new Color(0.25f, 0.6f, 0.3f), mown = new Color(0.31f, 0.65f, 0.35f), chalk = new Color(0.97f, 0.98f, 0.96f);
+                Color edge = new Color(turf.r * EdgeInk.r, turf.g * EdgeInk.g, turf.b * EdgeInk.b);
+                for (int y = 0; y < size; y++)
+                {
+                    for (int x = 0; x < size; x++)
+                    {
+                        float dx = x + 0.5f - r, dy = y + 0.5f - r;
+                        float d = Mathf.Sqrt(dx * dx + dy * dy);
+                        float a = Mathf.Clamp01(r - d + 0.5f);
+                        if (a <= 0f) { px[y * size + x] = new Color32(0, 0, 0, 0); continue; }
+                        Color c = Mathf.FloorToInt((x + size * 0.04f) / (size * 0.083f)) % 2 == 0 ? turf : mown;
+                        // Chalk: the centre circle, the halfway line across and the centre spot.
+                        float chalkA = Mathf.Max(Mathf.Clamp01(line * 0.5f + 0.5f - Mathf.Abs(d - ring)),
+                            Mathf.Max(Mathf.Clamp01(line * 0.5f + 0.5f - Mathf.Abs(dy)), Mathf.Clamp01(size * 0.024f + 0.5f - d)));
+                        c = Color.Lerp(c, chalk, chalkA * 0.92f);
+                        c = Color.Lerp(c, edge, Mathf.Clamp01(size * 0.0095f + 0.5f - (r - d)));
+                        c.a = a;
+                        px[y * size + x] = c;
+                    }
+                }
+                var tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
+                tex.SetPixels32(px);
+                tex.wrapMode = TextureWrapMode.Clamp;
+                tex.Apply();
+                pitchBadge = Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 100f);
+                return pitchBadge;
+            }
+        }
+
+        /// <summary>
+        /// The colour of the line drawn round <see cref="RoundedEdge"/> and <see cref="CircleEdge"/>.
+        /// The Image colour multiplies it, so every face gets a thin dark line in a deep shade of
+        /// its own colour, like the characters' ink line (near-black on white and grey faces).
+        /// </summary>
+        public static readonly Color EdgeInk = new Color(0.17f, 0.19f, 0.27f);
+
+        /// <summary>9-sliced rounded rectangle with a thin dark line round it (buttons, panels, cards).</summary>
+        public static Sprite RoundedEdge
+        {
+            get { return roundedEdge != null ? roundedEdge : (roundedEdge = MakeRounded(96, 26, 4f)); }
+        }
+
+        /// <summary>A smaller-cornered <see cref="RoundedEdge"/> for small chips, tabs and pills.</summary>
+        public static Sprite RoundedEdgeSmall
+        {
+            get { return roundedEdgeSmall != null ? roundedEdgeSmall : (roundedEdgeSmall = MakeRounded(48, 14, 3f)); }
+        }
+
+        /// <summary>A disc with a thin dark line round it (round buttons, badges).</summary>
+        public static Sprite CircleEdge
+        {
+            get
+            {
+                if (circleEdge != null) return circleEdge;
+                const int size = 160;
+                var tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
+                for (int y = 0; y < size; y++)
+                {
+                    for (int x = 0; x < size; x++)
+                    {
+                        float dx = x + 0.5f - size * 0.5f, dy = y + 0.5f - size * 0.5f;
+                        float d = Mathf.Sqrt(dx * dx + dy * dy);
+                        float a = Mathf.Clamp01(size * 0.5f - d + 0.5f);
+                        float line = Mathf.Clamp01(d - (size * 0.5f - 6.5f));
+                        tex.SetPixel(x, y, new Color(Mathf.Lerp(1f, EdgeInk.r, line), Mathf.Lerp(1f, EdgeInk.g, line), Mathf.Lerp(1f, EdgeInk.b, line), a));
+                    }
+                }
+                tex.wrapMode = TextureWrapMode.Clamp;
+                tex.Apply();
+                circleEdge = Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 100f);
+                return circleEdge;
+            }
+        }
+
+        /// <summary>A bold tick (selected cards).</summary>
+        public static Sprite Check
+        {
+            get
+            {
+                return check != null ? check : (check = MakeShape(96, (u, v) =>
+                {
+                    // Two thick strokes: short down-right, long up-right.
+                    float a = Segment(u, v, -0.55f, 0.02f, -0.15f, -0.42f);
+                    float b = Segment(u, v, -0.15f, -0.42f, 0.6f, 0.45f);
+                    return Mathf.Min(a, b) < 0.15f ? 1f : 0f;
+                }));
+            }
+        }
+
+        static float Segment(float u, float v, float ax, float ay, float bx, float by)
+        {
+            Vector2 p = new Vector2(u, v), a = new Vector2(ax, ay), ab = new Vector2(bx - ax, by - ay);
+            float t = Mathf.Clamp01(Vector2.Dot(p - a, ab) / ab.sqrMagnitude);
+            return Vector2.Distance(p, a + ab * t);
+        }
 
         /// <summary>Upward chevron (jump button).</summary>
         public static Sprite ArrowUp
@@ -246,7 +355,8 @@ namespace DribbleToSchool.UI.Kit
             return Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 100f);
         }
 
-        static Sprite MakeRounded(int size, int radius)
+        /// <summary>A rounded rectangle; with <paramref name="edge"/> &gt; 0, a line of <see cref="EdgeInk"/> that many pixels wide runs round it.</summary>
+        static Sprite MakeRounded(int size, int radius, float edge = 0f)
         {
             var tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
             for (int y = 0; y < size; y++)
@@ -257,7 +367,10 @@ namespace DribbleToSchool.UI.Kit
                     float cy = Mathf.Clamp(y + 0.5f, radius, size - radius);
                     float d = Vector2.Distance(new Vector2(x + 0.5f, y + 0.5f), new Vector2(cx, cy));
                     float a = Mathf.Clamp01(radius - d + 0.5f);
-                    tex.SetPixel(x, y, new Color(1f, 1f, 1f, a));
+                    // Distance in from the outline: corners measure from the arc, sides from the edge.
+                    float inside = Mathf.Min(radius - d, Mathf.Min(Mathf.Min(x + 0.5f, size - x - 0.5f), Mathf.Min(y + 0.5f, size - y - 0.5f)));
+                    float line = edge > 0f ? Mathf.Clamp01(edge + 0.5f - inside) : 0f;
+                    tex.SetPixel(x, y, new Color(Mathf.Lerp(1f, EdgeInk.r, line), Mathf.Lerp(1f, EdgeInk.g, line), Mathf.Lerp(1f, EdgeInk.b, line), a));
                 }
             }
             tex.wrapMode = TextureWrapMode.Clamp;

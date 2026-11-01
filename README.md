@@ -1,6 +1,6 @@
-# Dribble To School
+# Kick Off
 
-A cozy, hand-drawn soccer side-scroller for iOS and Android, built in Unity 6 (2D).
+A football side-scroller for iOS and Android, built in Unity 6: a teen dribbles a ball through clear-daylight anime streets all the way to school.
 The full game brief is in [`GAME_PROMPT.md`](GAME_PROMPT.md).
 
 ## Status
@@ -20,7 +20,7 @@ The next step is playtesting on real devices.
 1. Install **Unity 6** (6000.0 LTS or newer) with **iOS Build Support** and/or **Android Build Support** from Unity Hub.
 2. In Unity Hub choose **Add > Add project from disk** and select this folder. If Hub asks about the editor version, pick any Unity 6 version you have installed.
 3. On the first open, Unity imports packages. If it asks to **enable the new Input System backend**, click **Yes** (the editor restarts). The code works with either input backend.
-4. Once importing finishes, an editor script generates the menu, every level scene and the shop items, then opens the **FrontEnd** menu scene. It runs again automatically whenever the generated content is out of date. You can also run it from **Dribble To School > Rebuild All Levels**.
+4. Once importing finishes, an editor script generates the menu, every level scene and the shop items, then opens the **FrontEnd** menu scene. It runs again automatically whenever the generated content is out of date. You can also run it from **Kick Off > Rebuild All Levels** (or **Kick Off > Rebuild Menu (FrontEnd)** for just the menu scene).
 5. Press **Play**. Set the Game view to a landscape phone resolution (for example 1920x1080).
 
 Generated scenes are rebuilt from code, so edits made directly in those scenes get overwritten on the next rebuild. Change the layouts in `Editor/GreyboxLevels.cs` instead, or duplicate a scene before you edit it by hand. Tuning assets and level definitions are never overwritten.
@@ -45,7 +45,7 @@ Generated scenes are rebuilt from code, so edits made directly in those scenes g
 | C04 Site Targets | Accuracy (60 s) | 4 / 6 / 8 targets |
 | C05 Juggle Champion | Juggling (60 s) | 10 / 20 / 30 juggles |
 
-Bell times and streak targets are in the level table in `Editor/GeneratedContent.cs`. Change them there, then run **Dribble To School > Rebuild All Levels**.
+Bell times and streak targets are in the level table in `Editor/GeneratedContent.cs`. Change them there, then run **Kick Off > Rebuild All Levels**.
 
 ## Hazards
 
@@ -161,7 +161,7 @@ The original plan named Cinemachine for the camera. For now the project uses its
 - **Stickers:** one is hidden in each level, often high up, so a well-kicked ball can collect it.
 - **Stars:** 1 for finishing, 2 for beating the bell, 3 for also hitting the streak target and collecting every coin.
 - **Locker Room:** buy and equip ball skins, backpack flags, outfits and ball trails. All of them are drawn in code.
-- **Saving:** progress goes to `save.json` in the app's data folder. The **Dribble To School** menu has Reset Save Data and Give 1000 Coins for testing.
+- **Saving:** progress goes to `save.json` in the app's data folder. The **Kick Off** menu has Reset Save Data and Give 1000 Coins for testing.
 
 ## Look and sound
 
@@ -176,8 +176,9 @@ All art and audio are generated in code, so the repo has no art or audio files t
 
 ## Menus, settings and accessibility
 
-- **Menu:** Play (chapter map), Locker Room (shop), Stickers (album), Settings, Credits.
-- **Settings:** music and SFX volume, vibration, screen shake, school bell (off = cozy mode), left-handed controls, colour-blind aim colours, language (English / Español) and reset progress.
+- **Menu:** the launch screen is a live 3D scene (`FrontEnd/MenuStage`, built into the FrontEnd scene by `LevelBuildKit.BuildMenuStage` with the levels' own builders): a stretch of the home street in the game's daylight, real clouds, and the chosen teen doing keepy-uppy (`FrontEnd/MenuKid`) while the camera drifts. The KICK OFF logo is built in code (`UI/KickOffLogo`: Lilita One lettering with an extrusion and ink outline by `UI/Kit/UILogoText`, on a turf badge with the centre circle chalked on it). Play (chapter map), Locker Room (shop; the teen in the street tries items on), Stickers (album), Settings and Credits; the map and album tilt the camera up to the sky. Panels and buttons are clean, slightly see-through white with a thin dark line (`UI/Kit/UIKit`, `UITheme`).
+- **Player:** the boy or the girl, picked on two cards with portraits of the real models (`UI/PlayerPicker`; portraits rendered by `tools/blender/portrait_teen.py` into `Resources/UI`). In Settings, from the title screen (tap the teen or the player card) and in the Locker Room. It sets `GameSettings.Character`; the menu teen and every level's `CharacterChoice` follow it live.
+- **Settings:** grouped rows laid out to fit any aspect ratio from 4:3 to 21:9: Audio (music, sound effects), Gameplay (school bell (off = cozy mode), left-handed controls, colour-blind aim colours, vibration, screen shake), Player, Language (English / Español), and reset progress.
 - **Tutorial:** short hint cards appear the first time each new mechanic shows up.
 - **Developer tools:** the tuning sliders are only in the editor and development builds (Tab, or the Tune button in the HUD).
 

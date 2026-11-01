@@ -233,6 +233,18 @@ The look follows `docs/ART_DIRECTION.md`: clear anime daylight (generated conten
   `LevelBuildKit.KitModel` places a model facing the camera through its `Attach.Front` marker, and `ModelTint` recolours its parts. Every placement falls back to the old procedural look if a model is missing. Gameplay pieces keep their exact colliders, pivots and slides.
 - **Preview:** `tools/blender/preview_street.py` lays the kits out the way the street builder does and renders a stretch of each chapter through the game camera. Use it to judge layout and scale without Unity.
 
+## Kick Off: the front end in the game's look
+
+The game is now called **Kick Off** (product name, logo, credits, store text, en + es). Code namespaces, shader names, the save file and its keys, the IAP product id and the bundle id are unchanged.
+
+- **Launch screen:** a live 3D scene, not a flat backdrop. `LevelBuildKit.BuildMenuStage` (Editor/LevelBuildKit.Menu.cs, called by `GeneratedContent.BuildFrontEndScene`) builds chapter 1's camera look, the sky dome with cumulus round where the menu camera looks, the home street running away down the left (StreetBuilder), and the boy and girl under a `CharacterChoice` on the footpath with a ball. `FrontEnd/MenuStage` frames the teen in a screen rect each screen gives (title: right of the button column; Locker Room: the showcase; map and album: tilted up to the sky), eases between shots and drifts. `FrontEnd/MenuKid` does keepy-uppy (foot, foot, thigh) on the `CharacterRig`. If the stage can't be built, the menu paints a flat daylight sky (`MenuBackdrop`). **Kick Off > Rebuild Menu (FrontEnd)** rebuilds just this scene.
+- **Logo:** `UI/KickOffLogo`, built in code: Lilita One "KICK OFF" leaning forward with a gradient face, navy extrusion and thick ink outline (`UI/Kit/UILogoText`, one mesh), on a turf badge with the centre circle chalked on it (`ProceduralSprites.PitchBadge`), a ball flying in on chalk speed lines, and the tagline on a slanted ribbon.
+- **Kit:** `UITheme`/`UIKit` restyled: slightly see-through white panels and bold buttons with a thin dark line (`ProceduralSprites.RoundedEdge`, `CircleEdge`), logo-style titles, navy ribbon headers on modals (`UIKit.Header`), section labels, `UIKit.Row`/`Fit` for computed layouts, `UISafeArea` for notches. Pause, results, unlock and the HUD's cards use it too.
+- **Player:** `UI/PlayerPicker`: boy and girl cards with portraits of the real models (`tools/blender/portrait_teen.py` into `Resources/UI`, imported as sprites by `Editor/UiArtImportSettings`). In Settings, from the title screen (tap the teen or the player card) and in the Locker Room. `GameSettings.Character` drives the menu teen and every level's `CharacterChoice` live.
+- **Settings:** two columns of grouped rows (Audio; Gameplay; Player; Language) with fixed row heights in columns that stretch with the card, labels that shrink to fit; fits 4:3 to 21:9 in both languages.
+- **Locker Room:** the 3D teen stands in the showcase on the left trying on the selected outfit, flag or ball (`CosmeticApplier.Preview`), with the item card below and the tabs and grid on a white panel on the right.
+- **App icon:** redrawn in the daylight look (sky, cumulus, pitch with the centre circle, the ball on speed lines).
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

@@ -15,7 +15,7 @@ namespace DribbleToSchool.Levels
     }
 
     /// <summary>Ordered list of every level, used for "Next level" and the chapter map later.</summary>
-    [CreateAssetMenu(menuName = "Dribble To School/Level Catalog", fileName = "LevelCatalog")]
+    [CreateAssetMenu(menuName = "Kick Off/Level Catalog", fileName = "LevelCatalog")]
     public class LevelCatalog : ScriptableObject
     {
         public List<ChapterInfo> chapters = new List<ChapterInfo>();

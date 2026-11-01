@@ -21,8 +21,10 @@ namespace DribbleToSchool.Localization
             return new Dictionary<string, string>
             {
                 // Menus
-                { "menu.title", "Dribble\nto School" },
+                { "menu.title", "Kick Off" },
+                { "menu.tagline", "Dribble all the way to school" },
                 { "menu.play", "PLAY" },
+                { "menu.player", "Player" },
                 { "menu.locker", "Locker Room" },
                 { "menu.album", "Stickers" },
                 { "menu.settings", "Settings" },
@@ -47,16 +49,18 @@ namespace DribbleToSchool.Localization
                 { "album.missing", "???" },
                 { "album.hint", "Each level hides one sticker. Look high and low!" },
                 { "credits.title", "Credits" },
-                { "credits.body", "Dribble to School\n\nA cozy soccer side-scroller.\nEvery picture and every sound in this game is drawn and composed by code.\n\nMade with Unity.\nThanks for playing!" },
+                { "credits.body", "A football dash through town, all the way to school.\n\nEvery picture and every sound in this game is drawn and composed by code.\n\nMade with Unity.\nThanks for playing!" },
 
                 // Settings
                 { "settings.title", "Settings" },
+                { "settings.audio", "Audio" }, { "settings.gameplay", "Gameplay" },
                 { "settings.music", "Music" }, { "settings.sfx", "Sound effects" },
                 { "settings.haptics", "Vibration" }, { "settings.shake", "Screen shake" },
                 { "settings.bell", "School bell timer" }, { "settings.bellHint", "Off = cozy mode, no rush" },
                 { "settings.leftHanded", "Left-handed controls" }, { "settings.colorblind", "Colour-blind aim colours" },
                 { "settings.language", "Language" },
                 { "settings.player", "Player" }, { "settings.boy", "Boy" }, { "settings.girl", "Girl" },
+                { "player.title", "Choose your player" }, { "player.change", "Change player" },
                 { "settings.reset", "Reset progress" },
                 { "settings.resetConfirm", "Erase all progress, coins and stickers?\nThis can't be undone." },
                 { "settings.yes", "Erase" }, { "settings.no", "Keep" },
@@ -147,8 +151,10 @@ namespace DribbleToSchool.Localization
         {
             return new Dictionary<string, string>
             {
-                { "menu.title", "¡Al Cole\nRegateando!" },
+                { "menu.title", "Kick Off" },
+                { "menu.tagline", "Regatea hasta el cole" },
                 { "menu.play", "JUGAR" },
+                { "menu.player", "Personaje" },
                 { "menu.locker", "Vestuario" },
                 { "menu.album", "Pegatinas" },
                 { "menu.settings", "Ajustes" },
@@ -171,15 +177,17 @@ namespace DribbleToSchool.Localization
                 { "album.missing", "???" },
                 { "album.hint", "Cada nivel esconde una pegatina. ¡Busca arriba y abajo!" },
                 { "credits.title", "Créditos" },
-                { "credits.body", "Al Cole Regateando\n\nUn juego de fútbol tranquilo.\nCada dibujo y cada sonido está creado con código.\n\nHecho con Unity.\n¡Gracias por jugar!" },
+                { "credits.body", "Una carrera con balón por la ciudad, hasta el cole.\n\nCada dibujo y cada sonido de este juego está creado con código.\n\nHecho con Unity.\n¡Gracias por jugar!" },
 
                 { "settings.title", "Ajustes" },
+                { "settings.audio", "Sonido" }, { "settings.gameplay", "Juego" },
                 { "settings.music", "Música" }, { "settings.sfx", "Efectos" },
                 { "settings.haptics", "Vibración" }, { "settings.shake", "Temblor de cámara" },
                 { "settings.bell", "Campana del cole" }, { "settings.bellHint", "Desactivada = modo tranquilo" },
                 { "settings.leftHanded", "Controles para zurdos" }, { "settings.colorblind", "Colores para daltónicos" },
                 { "settings.language", "Idioma" },
                 { "settings.player", "Personaje" }, { "settings.boy", "Chico" }, { "settings.girl", "Chica" },
+                { "player.title", "Elige personaje" }, { "player.change", "Cambiar personaje" },
                 { "settings.reset", "Borrar progreso" },
                 { "settings.resetConfirm", "¿Borrar todo el progreso, monedas y pegatinas?\nNo se puede deshacer." },
                 { "settings.yes", "Borrar" }, { "settings.no", "Mantener" },

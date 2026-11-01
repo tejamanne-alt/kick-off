@@ -29,12 +29,36 @@ namespace DribbleToSchool.FrontEnd
 
         protected abstract void Build(RectTransform root);
         public virtual void OnShow() { }
+        public virtual void OnHide() { }
+        /// <summary>The screen is being thrown away (rebuilt in another language): unhook events.</summary>
+        public virtual void OnDestroyed() { }
         public virtual string Title { get { return ""; } }
+
+        /// <summary>
+        /// Where the menu's 3D camera should look while this screen shows (called every frame).
+        /// Busy screens look up at the sky, a calm backdrop.
+        /// </summary>
+        public virtual void FrameStage(MenuStage stage)
+        {
+            stage.Frame(MenuShot.Sky, new Rect());
+        }
+
+        static readonly Vector3[] corners = new Vector3[4];
+
+        /// <summary>A RectTransform of an overlay canvas as a viewport rect (0..1 from the bottom left).</summary>
+        protected static Rect ViewportRect(RectTransform rt)
+        {
+            rt.GetWorldCorners(corners);   // screen pixels on an overlay canvas
+            float w = Mathf.Max(1f, Screen.width), h = Mathf.Max(1f, Screen.height);
+            return Rect.MinMaxRect(corners[0].x / w, corners[0].y / h, corners[2].x / w, corners[2].y / h);
+        }
     }
 
     /// <summary>
-    /// Runs the menu scene: animated storybook backdrop, a shared header with
-    /// back button and wallet, and the Title / Map / Shop screens.
+    /// Runs the menu scene: the live 3D street behind everything (MenuStage, built into the
+    /// scene by the editor; a flat sky if it's missing), a shared header with back button and
+    /// wallet, and the Title / Map / Shop / Album screens. Buttons sit inside the screen's safe
+    /// area; each screen tells the stage where to point the camera.
     /// </summary>
     public class FrontEndController : MonoBehaviour
     {
@@ -67,6 +91,9 @@ namespace DribbleToSchool.FrontEnd
             SceneManager.LoadScene(SceneName);
         }
 
+        /// <summary>The live 3D backdrop, or null in a scene built without it.</summary>
+        public MenuStage Stage { get { return MenuStage.Current; } }
+
         void Start()
         {
             Application.targetFrameRate = 60;
@@ -76,16 +103,14 @@ namespace DribbleToSchool.FrontEnd
             var canvas = UIKit.CreateCanvas("FrontEndCanvas", 0);
             var root = (RectTransform)canvas.transform;
             canvasRoot = root;
-            MenuBackdrop.Build(root);
+            MenuBackdrop.Build(root, Stage != null);
 
-            screenLayer = UIKit.Stretch(UIKit.Rect(root, "Screens"));
-            BuildHeader(root);
+            var safe = UIKit.Stretch(UIKit.Rect(root, "SafeArea"));
+            safe.gameObject.AddComponent<UISafeArea>();
+            screenLayer = UIKit.Stretch(UIKit.Rect(safe, "Screens"));
+            BuildHeader(safe);
 
-            screens[FrontEndScreenId.Title] = new TitleScreen();
-            screens[FrontEndScreenId.Map] = new ChapterMapScreen();
-            screens[FrontEndScreenId.Shop] = new ShopScreen();
-            screens[FrontEndScreenId.Album] = new AlbumScreen();
-
+            CreateScreens();
             SaveSystem.Changed += RefreshWallet;
             Loc.Changed += OnLanguageChanged;
             Show(RequestedScreen);
@@ -98,10 +123,19 @@ namespace DribbleToSchool.FrontEnd
             }
         }
 
+        void CreateScreens()
+        {
+            screens[FrontEndScreenId.Title] = new TitleScreen();
+            screens[FrontEndScreenId.Map] = new ChapterMapScreen();
+            screens[FrontEndScreenId.Shop] = new ShopScreen();
+            screens[FrontEndScreenId.Album] = new AlbumScreen();
+        }
+
         void OnDestroy()
         {
             SaveSystem.Changed -= RefreshWallet;
             Loc.Changed -= OnLanguageChanged;
+            foreach (var kv in screens) kv.Value.OnDestroyed();
         }
 
         /// <summary>Rebuild every screen so text appears in the new language.</summary>
@@ -109,13 +143,18 @@ namespace DribbleToSchool.FrontEnd
         {
             foreach (var kv in screens)
             {
+                kv.Value.OnDestroyed();
                 if (kv.Value.Root != null) Destroy(kv.Value.Root.gameObject);
             }
-            screens[FrontEndScreenId.Title] = new TitleScreen();
-            screens[FrontEndScreenId.Map] = new ChapterMapScreen();
-            screens[FrontEndScreenId.Shop] = new ShopScreen();
-            screens[FrontEndScreenId.Album] = new AlbumScreen();
+            CreateScreens();
             Show(current);
+        }
+
+        void LateUpdate()
+        {
+            var stage = Stage;
+            if (stage != null && screens.ContainsKey(current) && screens[current].Root != null)
+                screens[current].FrameStage(stage);
         }
 
         public RectTransform CanvasRoot { get { return canvasRoot; } }
@@ -134,7 +173,11 @@ namespace DribbleToSchool.FrontEnd
         {
             foreach (var kv in screens)
             {
-                if (kv.Value.Root != null) kv.Value.Root.gameObject.SetActive(false);
+                if (kv.Value.Root != null && kv.Value.Root.gameObject.activeSelf)
+                {
+                    kv.Value.Root.gameObject.SetActive(false);
+                    kv.Value.OnHide();
+                }
             }
 
             var screen = screens[id];
@@ -168,15 +211,15 @@ namespace DribbleToSchool.FrontEnd
             header.sizeDelta = new Vector2(0f, 150f);
             header.anchoredPosition = Vector2.zero;
 
-            var back = UIKit.Button(header, "Back", "<", UITheme.Paper, Back, 64, UITheme.Ink);
-            UIKit.Place((RectTransform)back.transform, new Vector2(0f, 0.5f), new Vector2(50f, 0f), new Vector2(120f, 110f), new Vector2(0f, 0.5f));
+            var back = UIKit.Button(header, "Back", "<", UITheme.Paper, Back, 64, UITheme.Navy);
+            UIKit.Place((RectTransform)back.transform, new Vector2(0f, 0.5f), new Vector2(40f, 4f), new Vector2(116f, 104f), new Vector2(0f, 0.5f));
             backButton = back.gameObject;
 
-            headerTitle = UIKit.Title(header, "Title", "", 64, Color.white);
-            UIKit.Place(headerTitle.rectTransform, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(1000f, 120f));
+            headerTitle = UIKit.Title(header, "Title", "", 66, Color.white);
+            UIKit.Place(headerTitle.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0f, 4f), new Vector2(1000f, 120f));
 
             var walletCard = UIKit.Card(header, "Wallet", UITheme.Paper);
-            UIKit.Place((RectTransform)walletCard.transform.parent, new Vector2(1f, 0.5f), new Vector2(-50f, 0f), new Vector2(300f, 100f), new Vector2(1f, 0.5f));
+            UIKit.Place((RectTransform)walletCard.transform.parent, new Vector2(1f, 0.5f), new Vector2(-40f, 4f), new Vector2(290f, 96f), new Vector2(1f, 0.5f));
             wallet = UIKit.CoinAmount(walletCard.transform, "Coins", 0, 52, UITheme.Ink);
             UIKit.Stretch((RectTransform)wallet.transform.parent, 10f);
         }
