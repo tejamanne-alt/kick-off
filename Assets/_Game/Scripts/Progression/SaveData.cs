@@ -45,6 +45,8 @@ namespace DribbleToSchool.Progression
         public int holidayDays;
         public int holidayTotalDistance;
         public List<HolidayMissionRecord> holidayMissions = new List<HolidayMissionRecord>();
+        /// <summary>How many missions of each kind have been finished: the next one of that kind asks for more.</summary>
+        public List<HolidayMissionTally> holidayMissionTally = new List<HolidayMissionTally>();
     }
 
     /// <summary>One of the Holiday Run's active missions as saved: its id, how far it has got and what it needs.</summary>
@@ -54,5 +56,13 @@ namespace DribbleToSchool.Progression
         public string id;
         public int target;
         public int progress;
+    }
+
+    /// <summary>The number of finished Holiday Run missions of one kind. Old saves simply have none.</summary>
+    [Serializable]
+    public class HolidayMissionTally
+    {
+        public string id;
+        public int done;
     }
 }
