@@ -49,6 +49,9 @@ namespace DribbleToSchool.Holiday
         /// <summary>The director has counted this one as passed.</summary>
         public bool Cleared { get; set; }
 
+        /// <summary>The smallest gap between the kid and this obstacle so far (metres): what makes a near miss.</summary>
+        public float Closest { get; set; }
+
         Collider2D[] colliders;
 
         /// <summary>The solid colliders (triggers excluded) of this obstacle.</summary>
@@ -77,6 +80,19 @@ namespace DribbleToSchool.Holiday
             }
         }
 
+        /// <summary>World x of its left-hand edge.</summary>
+        public float LeftX
+        {
+            get
+            {
+                float left = transform.position.x;
+                var cs = Colliders;
+                if (cs.Length > 0) left = cs[0].bounds.min.x;
+                foreach (var c in cs) left = Mathf.Min(left, c.bounds.min.x);
+                return left;
+            }
+        }
+
         /// <summary>World x of its right-hand edge: the kid is past it once beyond this.</summary>
         public float RightX
         {
@@ -91,6 +107,7 @@ namespace DribbleToSchool.Holiday
         protected virtual void OnEnable()
         {
             Cleared = false;
+            Closest = float.MaxValue;
             var director = HolidayRunDirector.Current;
             if (director != null) director.Register(this);
         }

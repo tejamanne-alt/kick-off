@@ -12,5 +12,10 @@ namespace DribbleToSchool.Holiday
     {
         public BallController ball;
         public KidController kid;
+
+        /// <summary>Back at the kid's feet (a restart, a revive, a new day).</summary>
+        public void ResetAt(Vector3 kidPosition)
+        {
+        }
     }
 }

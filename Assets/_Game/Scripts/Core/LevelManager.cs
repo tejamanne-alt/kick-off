@@ -120,6 +120,8 @@ namespace DribbleToSchool.Core
         public bool endless;
         /// <summary>Endless mode only: the run is over; the reason is a localization key (lose.*).</summary>
         public event Action<string> Crashed;
+        /// <summary>The countdown waits (at Ready) while this returns true: the Holiday Run's first stages are still loading.</summary>
+        public Func<bool> IntroHold;
 
         void Awake()
         {
@@ -240,6 +242,7 @@ namespace DribbleToSchool.Core
             switch (State)
             {
                 case LevelState.Intro:
+                    if (IntroHold != null && IntroHold()) { IntroTimeLeft = introDuration; break; }
                     IntroTimeLeft -= Time.unscaledDeltaTime;
                     if (IntroTimeLeft <= 0f)
                     {
