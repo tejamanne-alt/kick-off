@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using DribbleToSchool.Cosmetics;
 using DribbleToSchool.FrontEnd;
+using DribbleToSchool.Holiday;
 using DribbleToSchool.Levels;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -21,7 +22,7 @@ namespace DribbleToSchool.EditorTools
     public static class GeneratedContent
     {
         /// <summary>Bump when layouts or the scene rig change so scenes regenerate.</summary>
-        public const int Version = 48;
+        public const int Version = 49;
 
         const string ScenesDir = LevelBuildKit.Root + "/Scenes";
         const string LevelsDir = LevelBuildKit.Root + "/Levels";
@@ -164,6 +165,35 @@ namespace DribbleToSchool.EditorTools
             BuildFrontEndScene(catalog, cosmetics);
         }
 
+        /// <summary>
+        /// Rebuild only the Holiday Run (its 23 stage scenes and the core scene), keeping the levels and the
+        /// menu as they are, and put its scenes in the build settings after the others.
+        /// </summary>
+        [MenuItem("Kick Off/Rebuild Holiday Run")]
+        static void RebuildHolidayRun()
+        {
+            if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
+            LevelBuildKit.LoadShared();
+            if (LoadCatalog() == null || LoadCosmetics() == null)
+            {
+                BuildAll();
+                return;
+            }
+            LevelBuildKit.Cosmetics = LoadCosmetics();
+            var holiday = HolidayRunBuilder.BuildAll(LoadCatalog, LoadCosmetics);
+            var scenes = new List<EditorBuildSettingsScene>();
+            foreach (var scene in EditorBuildSettings.scenes)
+                if (!scene.path.StartsWith(HolidayRunBuilder.Dir + "/")) scenes.Add(scene);
+            foreach (string path in holiday) scenes.Add(new EditorBuildSettingsScene(path, true));
+            EditorBuildSettings.scenes = scenes.ToArray();
+            AssetDatabase.SaveAssets();
+            if (AssetDatabase.LoadAssetAtPath<SceneAsset>(FrontEndScene) != null) EditorSceneManager.OpenScene(FrontEndScene);
+            Debug.Log("[Kick Off] Built the Holiday Run: its core scene and " + HolidayStages.Count + " stages.");
+        }
+
+        static LevelCatalog LoadCatalog() { return AssetDatabase.LoadAssetAtPath<LevelCatalog>(LevelsDir + "/LevelCatalog.asset"); }
+        static CosmeticCatalog LoadCosmetics() { return AssetDatabase.LoadAssetAtPath<CosmeticCatalog>(CosmeticsDir + "/CosmeticCatalog.asset"); }
+
         [MenuItem("Kick Off/Reset Save Data")]
         static void ResetSave()
         {
@@ -219,13 +249,17 @@ namespace DribbleToSchool.EditorTools
             LevelBuildKit.BuildScene(TestTrackScene, null, catalog, GreyboxLevels.TestTrack);
             buildScenes.Add(new EditorBuildSettingsScene(TestTrackScene, true));
 
+            // The Holiday Run: its core scene first, then its 23 stages (each loaded into the core as the kid runs).
+            foreach (string path in HolidayRunBuilder.BuildAll(LoadCatalog, LoadCosmetics))
+                buildScenes.Add(new EditorBuildSettingsScene(path, true));
+
             EditorBuildSettings.scenes = buildScenes.ToArray();
             BuildScripts.ApplyPlayerSettings();
             WriteVersion();
             AssetDatabase.SaveAssets();
 
             EditorSceneManager.OpenScene(FrontEndScene);
-            Debug.Log("[Kick Off] Built the menu, " + Levels.Length + " levels and the test track. The menu is open - press Play.");
+            Debug.Log("[Kick Off] Built the menu, " + Levels.Length + " levels, the test track and the Holiday Run (its core scene and " + HolidayStages.Count + " stages). The menu is open - press Play.");
         }
 
         static CosmeticCatalog BuildCosmetics()
@@ -326,7 +360,7 @@ namespace DribbleToSchool.EditorTools
             {
                 if (AssetDatabase.LoadAssetAtPath<SceneAsset>(spec.ScenePath) == null) return false;
             }
-            return true;
+            return HolidayRunBuilder.AllScenesExist();
         }
 
         static int ReadVersion()

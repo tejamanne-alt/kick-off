@@ -23,7 +23,7 @@ namespace DribbleToSchool.EditorTools
     /// The road and everything behind the footpath run unbroken; gaps in the gameplay
     /// ground only open holes in the footpath lane (drain works, flooded trenches).
     /// </summary>
-    public static class StreetBuilder
+    public static partial class StreetBuilder
     {
         public const float FrontZ = -16f;
         /// <summary>Half the width of the footpath lane the kid runs in.</summary>
@@ -121,7 +121,7 @@ namespace DribbleToSchool.EditorTools
         /// One slab of one part of the street (in front of the footpath, the footpath lane, or
         /// behind it) from fromX to toX with its gameplay surface at <paramref name="top"/>.
         /// </summary>
-        public static GameObject Slab(Transform parent, string name, float fromX, float toX, float top, bool closeLeft, bool closeRight, Part part)
+        public static GameObject Slab(Transform parent, string name, float fromX, float toX, float top, bool closeLeft, bool closeRight, Part part, float lineInset = 0.1f)
         {
             int ch = LevelBuildKit.Chapter;
             var specs = StripsFor(ch).FindAll(spec => PartOf(spec) == part);
@@ -158,7 +158,7 @@ namespace DribbleToSchool.EditorTools
                 float road = top - 0.14f;
                 Color paint = new Color(0.95f, 0.95f, 0.93f);
                 foreach (float z in new[] { RoadNear - 0.3f, RoadFar + 0.3f })
-                    Patch(go.transform, "EdgeLine", fromX + 0.1f, toX - 0.1f, road, z - 0.06f, z + 0.06f, paint);
+                    Patch(go.transform, "EdgeLine", fromX + lineInset, toX - lineInset, road, z - 0.06f, z + 0.06f, paint);
                 float mid = (RoadNear + RoadFar) * 0.5f;
                 for (float x = Mathf.Ceil(fromX / 6f) * 6f; x + 3f < toX; x += 6f)
                     Patch(go.transform, "CentreDash", x, x + 3f, road, mid - 0.06f, mid + 0.06f, paint);
@@ -217,7 +217,7 @@ namespace DribbleToSchool.EditorTools
         /// Where the footpath crosses a side street: a raised zebra crossing, and the side street
         /// running away from the camera with kerbs and a stop line. The main road in front runs on.
         /// </summary>
-        public static void CrossingStreet(Transform parent, float fromX, float toX, float top)
+        public static void CrossingStreet(Transform parent, float fromX, float toX, float top, bool zebra = true)
         {
             int ch = LevelBuildKit.Chapter;
             var asphalt = Art.surfaces[ch == 2 ? ProceduralArt.Surface.Cobbles : ProceduralArt.Surface.Asphalt];
@@ -244,7 +244,7 @@ namespace DribbleToSchool.EditorTools
                 Solid(root, "SideKerb", new Vector3(x, top + 0.08f, (PathHalf + 70f) * 0.5f), new Vector3(0.22f, 0.16f, 70f - PathHalf), Color.white, kerb);
 
             // Zebra stripes where the footpath crosses, a stop line and centre dashes up the side street.
-            for (float x = fromX + 0.45f; x < toX - 0.3f; x += 0.95f)
+            for (float x = fromX + 0.45f; zebra && x < toX - 0.3f; x += 0.95f)
                 Patch(root, "Zebra", x, x + 0.5f, top, -PathHalf + 0.1f, PathHalf - 0.1f, new Color(0.95f, 0.95f, 0.93f));
             Patch(root, "StopLine", fromX + 0.3f, (fromX + toX) * 0.5f, top, PathHalf + 1f, PathHalf + 1.25f, new Color(0.95f, 0.95f, 0.93f));
             for (float z = PathHalf + 3f; z < 70f; z += 4f)
@@ -751,16 +751,23 @@ namespace DribbleToSchool.EditorTools
             street.SetParent(root, false);
             const float lift = 0.012f;   // just over the ground behind the street, so the two never flicker
 
-            // Pavements along the side street, kerbed, from the main footpath to the back road.
+            // Pavements along the side street, kerbed, from the main footpath to the back road. (A Holiday
+            // Run stage keeps to its own stretch: ClipLo and ClipHi are the ends of the world in a level.)
             foreach (var side in new[] { new Vector2(area.x - 1.9f, area.x), new Vector2(area.y, area.y + 1.9f) })
+            {
+                if (side.x < ClipLo || side.y > ClipHi) continue;
                 Ground(street, "SidePavement", side.x, side.y, top + lift, PathHalf, BackRoadNear, paving, kerb);
+            }
             // The back road across the end, kerbs either side of the mouth and along its far side, and
             // the far pavement in front of the buildings.
-            float a = cx - 38f, b = cx + 38f;
+            float a = Mathf.Max(cx - 38f, ClipLo), b = Mathf.Min(cx + 38f, ClipHi);
             Ground(street, "BackRoad", a, b, top + lift, BackRoadNear, BackRoadFar, road, kerb);
             Ground(street, "BackPavement", a, b, top + lift, BackRoadFar + 0.25f, BackRoadFar + 3f, paving, kerb);
             foreach (var run in new[] { new Vector2(a, area.x - 1.9f), new Vector2(area.y + 1.9f, b) })
+            {
+                if (run.y - run.x < 0.05f) continue;
                 Solid(street, "BackKerb", new Vector3((run.x + run.y) * 0.5f, top + 0.08f, BackRoadNear - 0.11f), new Vector3(run.y - run.x, 0.16f, 0.22f), Color.white, kerb);
+            }
             Solid(street, "BackKerb", new Vector3(cx, top + 0.08f, BackRoadFar + 0.11f), new Vector3(b - a, 0.16f, 0.22f), Color.white, kerb);
             for (float x = a + 1f; x < b - 1f; x += 4f)
                 Patch(street, "CentreDash", x, x + 2f, top + lift, (BackRoadNear + BackRoadFar) * 0.5f - 0.06f, (BackRoadNear + BackRoadFar) * 0.5f + 0.06f, new Color(0.95f, 0.95f, 0.93f));
@@ -769,7 +776,12 @@ namespace DribbleToSchool.EditorTools
             if (LevelBuildKit.HasKitModel("Plants", "Broadleaf"))
                 foreach (float tx in new[] { area.x - 1.1f, area.y + 1.1f })
                     for (float z = Rand(rng, 14f, 18f); z < 34f; z += Rand(rng, 9f, 12f))   // clear of the far row behind
-                        Plant(street, rng.NextDouble() < 0.7 ? "Broadleaf" : "Birch", null, tx, top, z, Rand(rng, 0.75f, 0.95f), 1f, -65, rng);
+                    {
+                        // (The draws stay in their old order, so the levels' streets come out as before.)
+                        string tree = rng.NextDouble() < 0.7 ? "Broadleaf" : "Birch";
+                        float height = Rand(rng, 0.75f, 0.95f);
+                        if (tx >= a && tx <= b) Plant(street, tree, null, tx, top, z, height, 1f, -65, rng);
+                    }
 
             // Across the end: buildings facing the back road, the first one squarely in the view.
             ProceduralArt.FacadeKind[] kinds;
@@ -966,13 +978,13 @@ namespace DribbleToSchool.EditorTools
         /// <summary>A row of buildings of the given kinds between depths zMin and zMax, with gaps between them, along the whole level.</summary>
         static void FarRow(LevelBuildKit.TrackBuilder track, Transform root, System.Random rng, float x0, float x1, float zMin, float zMax, params ProceduralArt.FacadeKind[] kinds)
         {
-            for (float x = x0 - 40f; x < x1 + 40f;)
+            for (float x = Lo(x0, 40f); x < Hi(x1, 40f);)
             {
                 var kind = kinds[rng.Next(kinds.Length)];
                 float width = ProceduralArt.FacadeSize(kind).x;
                 float step = StepWithin(track, x, x + width);
                 if (!float.IsNaN(step)) { x = step + 0.5f; continue; }   // a building stands on one level
-                if (!OnSideStreetRange(track, x, x + width))
+                if (!OnSideStreetRange(track, x, x + width) && (chunk == null || x + width <= x1))
                 {
                     float cx = x + width * 0.5f;
                     KitBuilding(root, cx, GroundAt(track, cx), Rand(rng, zMin, zMax), kind, Mathf.Abs(Mathf.RoundToInt(cx * 7f + zMin * 13f)));
@@ -984,7 +996,7 @@ namespace DribbleToSchool.EditorTools
         /// <summary>A band of trees between depths zMin and zMax, every so often along the whole level.</summary>
         static void TreeBand(LevelBuildKit.TrackBuilder track, Transform root, System.Random rng, float x0, float x1, float zMin, float zMax, string[] models, float spacingMin, float spacingMax)
         {
-            for (float x = x0 - 40f; x < x1 + 40f; x += Rand(rng, spacingMin, spacingMax))
+            for (float x = Lo(x0, 40f); x < Hi(x1, 40f); x += Rand(rng, spacingMin, spacingMax))
             {
                 if (OnSideStreetRange(track, x - 2f, x + 2f)) continue;
                 Plant(root, models[rng.Next(models.Length)], null, x, GroundAt(track, x), Rand(rng, zMin, zMax), Rand(rng, 0.9f, 1.35f), 1f, -70, rng);
@@ -1001,10 +1013,10 @@ namespace DribbleToSchool.EditorTools
             float gy = GroundAt(track, goal);
             // Behind the school (it stands 10 to 22 units past the gate, 12 deep, its 32-unit front along
             // z from -12 to 20), where the back rows leave room for it.
-            for (float x = goal + 9f; x < goal + 24f; x += Rand(rng, 3.5f, 5.5f))
+            for (float x = goal + 9f; x < goal + 24f && (chunk == null || x < chunk.to); x += Rand(rng, 3.5f, 5.5f))
                 Plant(root, trees[rng.Next(trees.Length)], null, x, gy, Rand(rng, 22f, 27f), Rand(rng, 0.95f, 1.3f), 1f, -70, rng);
             // The school grounds beyond the building, behind the footpath.
-            for (float x = goal + 26f; x < goal + 75f; x += Rand(rng, 4f, 7f))
+            for (float x = goal + 26f; x < goal + 75f && (chunk == null || x < chunk.to); x += Rand(rng, 4f, 7f))
                 Plant(root, trees[rng.Next(trees.Length)], null, x, gy, Rand(rng, 3.5f, 15f), Rand(rng, 0.9f, 1.2f), 1f, -65, rng);
         }
 
@@ -1231,7 +1243,7 @@ namespace DribbleToSchool.EditorTools
                     break;
                 }
             }
-            SkyFlocks(rng);
+            if (chunk == null || chunk.flocks) SkyFlocks(rng);
         }
 
         /// <summary>A butterfly flitting about a patch, kept between depths zMin and zMax.</summary>
@@ -1359,6 +1371,7 @@ namespace DribbleToSchool.EditorTools
         {
             // No overhead lines in the park, or over the market's shopfronts (it has its own lamps).
             if (LevelBuildKit.Chapter == 5 || (LevelBuildKit.Chapter == 2 && LevelBuildKit.HasKitModel("Buildings", "ShopFruit"))) return;
+            if (chunk != null) { PolesForStage(track, root, x0, x1); return; }
             var go = new GameObject("PoleLine");
             go.transform.SetParent(root, false);
             var line = go.AddComponent<PoleLine3D>();
@@ -1406,8 +1419,12 @@ namespace DribbleToSchool.EditorTools
             var houses = new Deck(HomeHouses, rng);
             for (float x = x0; x < x1;)
             {
-                float lot = Rand(rng, 9f, 13f), skip;
+                float lot = NextLot(track, rng, x, x1, 9f, 13f), skip;
                 if (Blocked(track, x, x + lot, out skip)) { FillGap(track, root, rng, x, BlockStart(track, x, x + lot)); x = skip; continue; }
+                // The last scrap of a run (too small for a house) is closed off like any gap.
+                if (chunk != null && lot < 7.5f) { FillGap(track, root, rng, x, x + lot); x += lot; continue; }
+                int mix = TransitionStyle(x, lot);
+                if (mix != 0) { ThemeLot(track, root, rng, mix, x, x + lot); x += lot; continue; }
                 if (LotEndsAtStep(track, root, rng, ref x, ref lot, 7.5f)) continue;
                 float cx = x + lot * 0.5f, gy = GroundAt(track, cx);
 
@@ -1504,7 +1521,7 @@ namespace DribbleToSchool.EditorTools
             }
             // A second row of houses further back gives the street depth (never on a side street).
             var backRow = new Deck(new[] { "HouseGable", "HouseLong", "HouseLeanTo", "HouseFlat" }, rng);
-            for (float x = x0 - 20f; x < x1 + 20f; x += Rand(rng, 10f, 14f))
+            for (float x = Lo(x0, 20f); x < Hi(x1, 20f); x += Rand(rng, 10f, 14f))
             {
                 string house = backRow.Next(m => true);
                 var facade = rng.NextDouble() < 0.5 ? ProceduralArt.FacadeKind.HouseGable : ProceduralArt.FacadeKind.HouseLong;
@@ -1743,10 +1760,21 @@ namespace DribbleToSchool.EditorTools
             for (float x = x0; x < x1; i++)
             {
                 // The next front from the deck at its own width; the old pair of painted shops without the kit.
-                string front = deck.Next(m => true);
+                // (In a Holiday Run stage it has to fit what is left before the side street or the stage's end.)
+                float runEnd = chunk != null ? RunEnd(track, x, x1) : x1;
+                string front = deck.Next(m => chunk == null || LevelBuildKit.KitSize("Buildings", m).x <= runEnd - x + 0.01f);
                 float w = front != null ? LevelBuildKit.KitSize("Buildings", front).x : 0f, skip;
+                if (chunk != null && front == null && LevelBuildKit.HasKitModel("Buildings", "ShopFruit"))
+                {
+                    // Nothing fits the rest of the run: close it off and go on past the side street.
+                    FillGap(track, root, rng, x, runEnd);
+                    x = Mathf.Max(runEnd, x + 0.05f);
+                    continue;
+                }
                 if (w < 1f) { front = null; w = 8f; }
                 if (Blocked(track, x, x + w, out skip)) { FillGap(track, root, rng, x, BlockStart(track, x, x + w)); x = skip; continue; }
+                int mix = front != null ? TransitionStyle(x, w) : 0;
+                if (mix != 0) { ThemeLot(track, root, rng, mix, x, x + w); x += w; continue; }
                 // A shopfront stands on one level: where the ground steps inside it, the piece before
                 // the step gets a stall or pots on its own level and the next front starts at the step.
                 float step = StepWithin(track, x, x + w);
@@ -1786,7 +1814,7 @@ namespace DribbleToSchool.EditorTools
                         Model(root, "Street", "Sack", gx + 0.75f, gy, gz - 0.1f, Rand(rng, 0f, 360f));
                     }
                 }
-                bool vend = !vended && front != "ShopKonbini" && rng.NextDouble() < 0.28 && x + 2.4f < x1;
+                bool vend = !vended && front != "ShopKonbini" && rng.NextDouble() < 0.28 && x + (chunk != null ? 2.7f : 2.4f) < runEnd;
                 vended = vend;
                 if (vend)
                 {
@@ -1799,7 +1827,7 @@ namespace DribbleToSchool.EditorTools
                 }
             }
             // Flats behind the shops (never on a side street).
-            for (float x = x0 - 20f; x < x1 + 20f; x += Rand(rng, 13f, 16f))
+            for (float x = Lo(x0, 20f); x < Hi(x1, 20f); x += Rand(rng, 13f, 16f))
             {
                 float z = Rand(rng, 22f, 28f);
                 if (OnSideStreet(track, x, ProceduralArt.FacadeKind.Apartment)) continue;
@@ -1811,24 +1839,28 @@ namespace DribbleToSchool.EditorTools
         static void Beach(LevelBuildKit.TrackBuilder track, Transform root, System.Random rng, float x0, float x1)
         {
             float sea = track.LowestGroundTop - 0.3f;
-            var water = Solid(root, "Sea", new Vector3((x0 + x1) * 0.5f, sea - 0.05f, 480f), new Vector3(x1 - x0 + 1600f, 0.1f, 950f), Color.white, Art.surfaces[ProceduralArt.Surface.Sea]);
-            water.faces = MeshBuilder.Faces.Top;
-            water.Rebuild();
+            if (chunk == null)   // (a Holiday Run's sea is in the core scene, all along the beach)
+            {
+                var water = Solid(root, "Sea", new Vector3((x0 + x1) * 0.5f, sea - 0.05f, 480f), new Vector3(x1 - x0 + 1600f, 0.1f, 950f), Color.white, Art.surfaces[ProceduralArt.Surface.Sea]);
+                water.faces = MeshBuilder.Faces.Top;
+                water.Rebuild();
+            }
 
             // Foam lapping up the sand where the waves break, and lines of breaking crests rolling in
             // out at sea. They move, so they live outside the street's static batches.
             var waves = new GameObject("Waves").transform;
             // The foam lies just above the sea, so where it meets the sand is where the water does; each
             // surge carries it a little up the beach.
-            var shoreline = Foam(waves, x0 - 60f, x1 + 60f, 9.2f, 10f, sea + 0.02f, 0.3f);
+            var shoreline = Foam(waves, Lo(x0, 60f), Hi(x1, 60f), 9.2f, 10f, sea + 0.02f, 0.3f);
             var lap = shoreline.AddComponent<Lapping>();
             lap.reach = new Vector3(0f, 0.04f, -0.35f);
             lap.period = 5.5f;
             float[] crests = { 13f, 19f, 28f, 42f };
             for (int i = 0; i < crests.Length; i++)
-                for (float x = x0 - 60f + (float)rng.NextDouble() * 10f; x < x1 + 60f; x += Rand(rng, 14f, 30f))
+                for (float x = Lo(x0, 60f) + (float)rng.NextDouble() * 10f; x < Hi(x1, 60f); x += Rand(rng, 14f, 30f))
                 {
                     float len = Rand(rng, 5f, 14f), w = Mathf.Lerp(0.35f, 0.9f, i / (float)(crests.Length - 1));
+                    if (chunk != null && x + len > x1) continue;
                     var crest = Foam(waves, x, x + len, crests[i] + Rand(rng, -1f, 1f), crests[i] + w, sea - 0.04f, i * 1.7f + x);
                     var roll = crest.AddComponent<Lapping>();
                     roll.reach = new Vector3(Rand(rng, -0.5f, 0.5f), 0f, -Rand(rng, 1.8f, 3.2f));
@@ -1837,7 +1869,7 @@ namespace DribbleToSchool.EditorTools
                 }
 
             var towers = new List<float>();
-            for (float x = x0; x < x1; x += Rand(rng, 30f, 45f))
+            for (float x = x0 + Margin(4f); x < x1 - Margin(4f); x += Rand(rng, 30f, 45f))
             {
                 LifeguardTower(root, x, GroundAt(track, x, 7.4f), 7.4f);
                 towers.Add(x);
@@ -1845,7 +1877,7 @@ namespace DribbleToSchool.EditorTools
             Color[] canopy = { new Color(0.9f, 0.3f, 0.28f), new Color(0.25f, 0.5f, 0.85f), new Color(1f, 0.75f, 0.2f), new Color(0.3f, 0.66f, 0.62f) };
             Color[] towels = { new Color(0.95f, 0.55f, 0.6f), new Color(0.45f, 0.75f, 0.9f), new Color(1f, 0.85f, 0.35f), new Color(0.55f, 0.8f, 0.55f) };
             bool beachKit = LevelBuildKit.HasKitModel("Leisure", "Parasol");
-            for (float x = x0 + 8f; x < x1; x += beachKit ? Rand(rng, 5f, 11f) : Rand(rng, 10f, 18f))
+            for (float x = x0 + 8f; x < x1 - Margin(3f); x += beachKit ? Rand(rng, 5f, 11f) : Rand(rng, 10f, 18f))
             {
                 float z = Rand(rng, 3.4f, 5.2f), gy = GroundAt(track, x, z);
                 if (beachKit)
@@ -1881,7 +1913,7 @@ namespace DribbleToSchool.EditorTools
                     Solid(root, "CoolBox", new Vector3(x + 0.9f, gy + 0.18f, z + 0.3f), new Vector3(0.55f, 0.36f, 0.38f), new Color(0.3f, 0.55f, 0.85f));
             }
             bool rockModels = LevelBuildKit.HasKitModel("Terrain", "RockCluster");
-            for (float x = x0 + 15f; x < x1; x += rockModels ? Rand(rng, 12f, 24f) : Rand(rng, 22f, 38f))
+            for (float x = x0 + 15f; x < x1 - Margin(4f); x += rockModels ? Rand(rng, 12f, 24f) : Rand(rng, 22f, 38f))
             {
                 // Rocks at the water's edge, bedded in the sand, darker where the sea wets them.
                 float gy = track.LowestGroundTop - 0.12f, s = Rand(rng, 0.8f, 1.6f);
@@ -1906,7 +1938,7 @@ namespace DribbleToSchool.EditorTools
             }
             // Palms in ones, twos and threes behind the parasols, clear of the lifeguard towers.
             if (LevelBuildKit.HasKitModel("Plants", "Palm"))
-                for (float x = x0 + Rand(rng, 5f, 15f); x < x1; x += Rand(rng, 16f, 32f))
+                for (float x = x0 + Rand(rng, 5f, 15f); x < x1 - Margin(8f); x += Rand(rng, 16f, 32f))
                 {
                     int n = rng.Next(1, 4);
                     for (int k = 0; k < n; k++)
@@ -1954,6 +1986,7 @@ namespace DribbleToSchool.EditorTools
         /// <summary>Wooded headlands out on the horizon across the bay.</summary>
         static void Headlands(Transform root, System.Random rng, float x0, float x1, float sea)
         {
+            if (chunk != null) return;   // (a Holiday Run's are in the core scene)
             for (int i = 0; i < 3; i++)
             {
                 float x = x0 + (x1 - x0) * (0.15f + i * 0.4f) + Rand(rng, -40f, 40f), z = 650f + i * 60f;
@@ -2014,8 +2047,12 @@ namespace DribbleToSchool.EditorTools
             bool site = LevelBuildKit.HasKitModel("Works", "Skip");
             for (float x = x0; x < x1;)
             {
-                float w = Rand(rng, 11f, 14f), skip;
+                float w = NextLot(track, rng, x, x1, 11f, 14f), skip;
                 if (Blocked(track, x, x + w, out skip)) { FillGap(track, root, rng, x, BlockStart(track, x, x + w)); x = skip; continue; }
+                // The last scrap of a run (too small for a block) is closed off like any gap.
+                if (chunk != null && w < 11.5f) { FillGap(track, root, rng, x, x + w); x += w; continue; }
+                int mix = TransitionStyle(x, w);
+                if (mix != 0) { ThemeLot(track, root, rng, mix, x, x + w); x += w; continue; }
                 if (LotEndsAtStep(track, root, rng, ref x, ref w, 12.5f)) continue;
                 float cx = x + w * 0.5f, gy = GroundAt(track, cx);
                 bool flats = rng.NextDouble() >= 0.5, cabin = false;
@@ -2069,8 +2106,9 @@ namespace DribbleToSchool.EditorTools
                 x += w;
             }
             // Tower cranes over the site, far enough off to stand whole above the street in the haze.
+            // (A Holiday Run's are part of the far land in the core scene, so they never come and go with a stage.)
             bool cranes = LevelBuildKit.HasKitModel("Works", "TowerCrane");
-            for (float x = x0; x < x1; x += Rand(rng, 40f, 60f))
+            for (float x = x0; chunk == null && x < x1; x += Rand(rng, 40f, 60f))
             {
                 if (cranes)
                 {
@@ -2125,8 +2163,11 @@ namespace DribbleToSchool.EditorTools
             int segment = 0;
             for (float x = x0; x < x1;)
             {
-                float w = Rand(rng, 6f, 10f), skip;
+                float w = NextLot(track, rng, x, x1, 6f, 10f), skip;
                 if (Blocked(track, x, x + w, out skip)) { FillGap(track, root, rng, x, BlockStart(track, x, x + w)); x = skip; continue; }
+                if (chunk != null && w < 3f) { FillGap(track, root, rng, x, x + w); x += w; continue; }
+                int mix = TransitionStyle(x, w);
+                if (mix != 0) { ThemeLot(track, root, rng, mix, x, x + w); x += w; continue; }
                 float cx = x + w * 0.5f, gy = GroundAt(track, cx) + 0.04f;
                 // A lamp in every other gap between the hedges.
                 if (segment++ % 2 == 0) Model(root, "Leisure", "ParkLamp", x, GroundAt(track, x) + 0.04f, PropertyZ - 0.1f);
@@ -2168,7 +2209,7 @@ namespace DribbleToSchool.EditorTools
                     Plant(root, rng.NextDouble() < 0.6 ? "BushWide" : "BushRound", null, x, GroundAt(track, x) + 0.04f, Rand(rng, 3.5f, 6f), Rand(rng, 1f, 1.5f), 1f, -58, rng);
                 }
                 string[] wood = { "BroadleafLarge", "Broadleaf", "BroadleafWide", "ConiferTall", "BroadleafLarge", "ConiferMid", "Birch" };
-                for (float x = x0 - 20f; x < x1 + 20f; x += Rand(rng, 3f, 6f))
+                for (float x = Lo(x0, 20f); x < Hi(x1, 20f); x += Rand(rng, 3f, 6f))
                 {
                     if (OverlapsBackRow(track, x - 2f, x + 2f)) continue;
                     Plant(root, wood[rng.Next(wood.Length)], null, x, GroundAt(track, x) + 0.04f, Rand(rng, 22f, 40f), Rand(rng, 0.95f, 1.35f), 1f, -70, rng);
@@ -2201,10 +2242,12 @@ namespace DribbleToSchool.EditorTools
             var clearings = new List<Vector2>();
             if (!LevelBuildKit.HasKitModel("Leisure", "Slide")) return clearings;
             int kind = rng.Next(4);
+            if (chunk != null && chunk.clearing >= 0) kind = chunk.clearing;   // the stage's own: the playground, the pond
             for (float x = x0 + Rand(rng, 10f, 30f); x < x1; x += Rand(rng, 45f, 75f))
             {
                 float skip;
                 if (Blocked(track, x - 6f, x + 6f, out skip)) continue;
+                if (chunk != null && (x - 6f < x0 || x + 6f > x1)) continue;
                 float gy = GroundAt(track, x) + 0.04f;
                 switch (kind++ % 4)
                 {
@@ -2246,6 +2289,7 @@ namespace DribbleToSchool.EditorTools
 
         static void DistantHills(LevelBuildKit.TrackBuilder track, Transform root, float x0, float x1)
         {
+            if (chunk != null) return;   // (a Holiday Run's are in the core scene, all along the lap)
             int ch = LevelBuildKit.Chapter;
             if (LevelBuildKit.HasKitModel("Terrain", "HillsRolling"))
             {
