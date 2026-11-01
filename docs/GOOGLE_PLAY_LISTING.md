@@ -65,6 +65,20 @@ a Fixed Resolution of **1920 × 1080**, select it and run **Kick Off > Store Scr
 | News app | No |
 | Advertising ID | No, it doesn't use the advertising ID |
 
+## Release notes (version 1.0, 438 / 500 characters)
+Release name: `1.0 (1)`. Paste the whole block, tags included, into **Release notes**:
+```
+<en-US>
+Welcome to Kick Off 2, our first release!
+• Dribble all the way to school through 23 levels in 5 chapters: Home Street, the Market, the Beach, the Underpass and the Park
+• Play as the boy or the girl
+• Slide under barriers and double jump over gaps
+• Find the sticker hidden in every level to unlock exclusive balls, outfits, flags and trails
+• Ball-skill challenges: keepy-uppy, target practice and a beach slalom
+• No ads, plays offline
+</en-US>
+```
+
 ## Releases
 1. **Internal testing** (Test and release > Testing > Internal testing): create a release, upload `Builds/Android/KickOff.aab`,
    add your own Google account as a tester, roll out, open the opt-in link on your Android phone and play through. No review,
