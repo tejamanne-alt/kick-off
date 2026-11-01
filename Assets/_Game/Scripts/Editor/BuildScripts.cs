@@ -128,6 +128,23 @@ namespace DribbleToSchool.EditorTools
             Build(BuildTarget.Android, Path.Combine(BuildRoot, "Android", "KickOff.aab"), BuildOptions.None);
         }
 
+        /// <summary>
+        /// Build the game as a plain APK and install and launch it on the Android phone plugged in by USB
+        /// (USB debugging on). Signed with Unity's debug key, so it needs no upload key; uninstall it
+        /// before installing a Play Store version of the game, and the other way round (Android won't
+        /// replace an app signed with a different key).
+        /// </summary>
+        [MenuItem("Kick Off/Build/Android: Run on Connected Phone (USB)")]
+        public static void BuildAndroidRunOnPhone()
+        {
+            ApplyPlayerSettings();
+            EditorUserBuildSettings.buildAppBundle = false;
+            bool custom = PlayerSettings.Android.useCustomKeystore;
+            PlayerSettings.Android.useCustomKeystore = false;
+            try { Build(BuildTarget.Android, Path.Combine(BuildRoot, "Android", "KickOff-test.apk"), BuildOptions.AutoRunPlayer); }
+            finally { PlayerSettings.Android.useCustomKeystore = custom; }
+        }
+
         [MenuItem("Kick Off/Build/Android APK (development)")]
         public static void BuildAndroidDev()
         {
@@ -273,7 +290,7 @@ namespace DribbleToSchool.EditorTools
             {
                 Debug.Log("[Build] " + target + " succeeded: " + Path.GetFullPath(location) + " (" + (summary.totalSize / (1024 * 1024)) + " MB)");
                 // From the menu, show the result in Finder: the Xcode project itself when there is one.
-                if (!Application.isBatchMode)
+                if (!Application.isBatchMode && (options & BuildOptions.AutoRunPlayer) == 0)
                 {
                     string xcode = Path.Combine(location, "Unity-iPhone.xcodeproj");
                     EditorUtility.RevealInFinder(Directory.Exists(xcode) ? xcode : location);
