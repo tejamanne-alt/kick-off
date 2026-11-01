@@ -819,10 +819,14 @@ namespace DribbleToSchool.EditorTools
 
         // ---------- Track pieces ----------
 
-        /// <summary>Fluent helper used by level layouts. Ground tops are world y values.</summary>
-        public class TrackBuilder
+        /// <summary>
+        /// Fluent helper used by level layouts. Ground tops are world y values. (Partial: the Holiday Run's
+        /// stages add their runner obstacles and chunk-wise slabs in LevelBuildKit.Holiday.cs.)
+        /// </summary>
+        public partial class TrackBuilder
         {
-            readonly Transform root;
+            /// <summary>Where new objects go (the Holiday Run's wrappers point it at a holder for the duration of one call).</summary>
+            Transform root;
             readonly List<Checkpoint> checkpoints = new List<Checkpoint>();
 
             public IList<Checkpoint> Checkpoints { get { return checkpoints; } }
@@ -3369,6 +3373,12 @@ namespace DribbleToSchool.EditorTools
                 slabs.SetParent(root, false);
                 slabs.gameObject.AddComponent<StaticBatcher>();
                 if (groundSpans.Count == 0) return;
+                // A Holiday Run stage draws exactly its own stretch, so neighbouring stages never overlap.
+                if (IsChunk)
+                {
+                    BuildChunkSlabs(slabs);
+                    return;
+                }
 
                 var spans = new List<GroundSpan>(groundSpans);
                 spans.Sort((p, q) => p.from.CompareTo(q.from));
@@ -3411,15 +3421,18 @@ namespace DribbleToSchool.EditorTools
             void BeachGround(Transform slabs, float first, float last)
             {
                 var field = BeachSand;
-                float from = Mathf.Floor((first - 70f) / SandDunes.Step) * SandDunes.Step;
-                for (float a = from; a < last + 70f; a += 40f)
+                // A Holiday Run stage draws exactly its own stretch (SetChunk), on the same half-unit lattice
+                // as its neighbours, so the sand meets theirs without a seam.
+                float from = IsChunk ? ChunkFrom : Mathf.Floor((first - 70f) / SandDunes.Step) * SandDunes.Step;
+                float end = IsChunk ? ChunkTo : last + 70f;
+                for (float a = from; a < end; a += 40f)
                 {
                     var go = new GameObject("Sand");
                     go.transform.SetParent(slabs, false);
                     var dunes = go.AddComponent<SandDunes>();
                     dunes.field = field;
                     dunes.fromX = a;
-                    dunes.toX = a + 40f;
+                    dunes.toX = IsChunk ? Mathf.Min(a + 40f, end) : a + 40f;
                     go.GetComponent<MeshRenderer>().sharedMaterial = Art.surfaces[ProceduralArt.Surface.Sand];
                     dunes.Rebuild();
                 }
