@@ -4,6 +4,16 @@ Everything to type into App Store Connect for version 1.0, field by field. Chara
 
 ## Distribution > iOS App > 1.0 (version page)
 
+### Header and Search Results (creative assets, optional)
+Key art rendered from the game's own models (the home street, the boy juggling, the girl walking, the Kick Off 2 logo):
+
+| Slot | File | Size |
+|---|---|---|
+| Header | `marketing/appstore/header_3840x1646.jpg` | 3840 × 1646 |
+| Search Results | `marketing/appstore/search_results_3840x2560.jpg` | 3840 × 2560 |
+
+Both are optional: without a search results asset, App Store search shows the screenshots instead.
+
 ### App Previews and Screenshots
 | Slot | Size (landscape) | Game view size / Simulator |
 |---|---|---|
