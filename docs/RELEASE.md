@@ -51,31 +51,37 @@ SDK refuse to launch ("UIScene life cycle is required"). After changing Unity, d
 
 ## 4. Google Play
 
+Every Play Console field, the store graphics and the screenshot sizes are in [`GOOGLE_PLAY_LISTING.md`](GOOGLE_PLAY_LISTING.md).
+
 ### Once
-1. Make the upload key (keep it and its passwords safe, backed up, and out of git; `.gitignore` already ignores `*.jks`):
-   ```
-   ./ci/android/make_upload_key.sh ~/keys/kickoff2-upload.jks
-   ```
-2. In Play Console: **Create app** → name "Kick Off 2", default language, Game, Free (or Paid), accept the declarations.
+1. Unity Hub: add **Android Build Support** to your Unity version, with **OpenJDK** and **Android SDK & NDK Tools**.
+2. The upload key, made in Unity: **Edit > Project Settings > Player > Android > Publishing Settings > Keystore Manager >
+   Keystore... > Create New > Anywhere**, saved outside the project (e.g. `~/keys/kickoff2-upload.keystore`), then **Add Key**:
+   alias `upload`, a password, validity 50 years. Back the file and both passwords up: every future update must be signed
+   with this key. (Or from Terminal: `./ci/android/make_upload_key.sh ~/keys/kickoff2-upload.jks`.)
+3. In Play Console: **Create app** → name "Kick Off 2", default language, Game, Free, accept the declarations.
    Leave **Play App Signing** on (the default): Google keeps the app-signing key, your key only signs uploads.
 
 ### Build the App Bundle
+In Unity: **File > Build Profiles > Android > Switch Platform**, then in **Publishing Settings** tick **Custom Keystore**, pick the
+keystore and the `upload` key and type both passwords (Unity forgets them when it closes), then **Kick Off > Build > Android App
+Bundle (release)**. It writes `Builds/Android/KickOff.aab` and shows it in Finder. Without a key it stops and says what to set,
+rather than building a bundle Play would refuse. If Unity offers to update the Android SDK (target API 36), accept.
+
+From Terminal instead (Unity closed):
 ```
 DTS_KEYSTORE_PATH=~/keys/kickoff2-upload.jks DTS_KEYSTORE_PASS='…' DTS_KEY_ALIAS=upload DTS_KEY_PASS='…' \
-DTS_VERSION=1.0.0 DTS_BUILD_NUMBER=1 ./ci/android/build_android.sh release
+./ci/android/build_android.sh release
 ```
-It writes `Builds/Android/KickOff.aab` and the Unity log to `Builds/unity-android.log`. (In the editor: **Kick Off > Build >
-Android App Bundle (release)** with the same variables set.) For a quick test on your own phone: `./ci/android/build_android.sh dev`,
-then `adb install -r Builds/Android/KickOff-dev.apk`.
+For a quick test on your own phone: **Kick Off > Build > Android APK (development)**, then `adb install -r Builds/Android/KickOff-dev.apk`.
 
 ### Upload and release
 1. **Test and release > Testing > Internal testing** → create a release → upload `KickOff.aab` → add testers' emails → roll out.
    Install from the opt-in link and play through.
 2. **New personal developer accounts** (created after 13 November 2023) must run a **closed test with at least 12 testers who stay
    opted in for 14 days in a row** before they can apply for production access. Start this early. Organisation accounts are exempt.
-3. Fill in **App content**: privacy policy URL, ads (none), app access (no login), content rating questionnaire (IARC), target audience
-   (if you include under-13s, the Families policy applies: no ads, no external links, which the game already meets), data safety
-   (section 6), and the store listing (section 7) with screenshots and a 1024×500 feature graphic.
+3. Fill in **App content** (privacy policy, ads, app access, content rating, target audience, data safety) and the store listing,
+   as in `GOOGLE_PLAY_LISTING.md`.
 4. **Production** → create a release with the same (or a newer) bundle → send for review. First reviews often take a few days.
 
 ## 5. App Store

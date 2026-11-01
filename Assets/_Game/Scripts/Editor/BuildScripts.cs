@@ -123,7 +123,7 @@ namespace DribbleToSchool.EditorTools
         public static void BuildAndroidRelease()
         {
             ApplyPlayerSettings();
-            ConfigureAndroidSigning();
+            if (!ConfigureAndroidSigning()) return;
             EditorUserBuildSettings.buildAppBundle = true;
             Build(BuildTarget.Android, Path.Combine(BuildRoot, "Android", "KickOff.aab"), BuildOptions.None);
         }
@@ -202,20 +202,52 @@ namespace DribbleToSchool.EditorTools
                 }
         }
 
-        static void ConfigureAndroidSigning()
+        /// <summary>
+        /// Sign the bundle with the upload key: from DTS_KEYSTORE_PATH / DTS_KEYSTORE_PASS / DTS_KEY_ALIAS /
+        /// DTS_KEY_PASS when set (command-line builds), else the keystore chosen in Player Settings >
+        /// Android > Publishing Settings. Play refuses a bundle signed with the debug key, so with no key
+        /// (or its passwords not entered this session: Unity forgets them when it closes) this says what
+        /// to do and returns false instead of building one.
+        /// </summary>
+        static bool ConfigureAndroidSigning()
         {
             string keystore = Env("DTS_KEYSTORE_PATH", "");
-            if (keystore.Length == 0)
+            if (keystore.Length > 0)
             {
-                Debug.LogWarning("[Build] DTS_KEYSTORE_PATH not set: the bundle will use the debug key and can't be uploaded to Play.");
-                PlayerSettings.Android.useCustomKeystore = false;
-                return;
+                PlayerSettings.Android.useCustomKeystore = true;
+                PlayerSettings.Android.keystoreName = keystore;
+                PlayerSettings.Android.keystorePass = Env("DTS_KEYSTORE_PASS", "");
+                PlayerSettings.Android.keyaliasName = Env("DTS_KEY_ALIAS", "");
+                PlayerSettings.Android.keyaliasPass = Env("DTS_KEY_PASS", "");
+                return true;
             }
-            PlayerSettings.Android.useCustomKeystore = true;
-            PlayerSettings.Android.keystoreName = keystore;
-            PlayerSettings.Android.keystorePass = Env("DTS_KEYSTORE_PASS", "");
-            PlayerSettings.Android.keyaliasName = Env("DTS_KEY_ALIAS", "");
-            PlayerSettings.Android.keyaliasPass = Env("DTS_KEY_PASS", "");
+
+            string problem = null;
+            if (!PlayerSettings.Android.useCustomKeystore || string.IsNullOrEmpty(PlayerSettings.Android.keystoreName))
+                problem = "No upload key is set, and Google Play refuses bundles signed with Unity's debug key.\n\n" +
+                    "Edit > Project Settings > Player > Android > Publishing Settings: tick Custom Keystore, then Keystore Manager > " +
+                    "Keystore... > Create New (save it outside the project and back it up), add a key with the alias \"upload\", " +
+                    "and choose it.";
+            else if (!File.Exists(PlayerSettings.Android.keystoreName))
+                problem = "The keystore in Publishing Settings isn't there any more:\n" + PlayerSettings.Android.keystoreName;
+            else if (string.IsNullOrEmpty(PlayerSettings.Android.keyaliasName))
+                problem = "Choose the key (alias \"upload\") under Project Key in Player Settings > Android > Publishing Settings.";
+            else if (string.IsNullOrEmpty(PlayerSettings.Android.keystorePass) || string.IsNullOrEmpty(PlayerSettings.Android.keyaliasPass))
+                problem = "Enter the keystore password and the key password in Player Settings > Android > Publishing Settings " +
+                    "(Unity forgets them each time it closes), then build again.";
+            if (problem == null) return true;
+
+            if (Application.isBatchMode)
+            {
+                Debug.LogError("[Build] " + problem.Replace("\n", " "));
+                EditorApplication.Exit(1);
+            }
+            else
+            {
+                EditorUtility.DisplayDialog("Upload key needed", problem, "OK");
+                SettingsService.OpenProjectSettings("Project/Player");
+            }
+            return false;
         }
 
         static void Build(BuildTarget target, string location, BuildOptions options, string[] extraDefines = null)

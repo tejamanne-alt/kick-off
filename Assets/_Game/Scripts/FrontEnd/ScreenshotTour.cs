@@ -40,6 +40,7 @@ namespace DribbleToSchool.FrontEnd
             new Vector2Int(2622, 1206), new Vector2Int(2556, 1179),                                // iPhone, medium display
             new Vector2Int(2868, 1320), new Vector2Int(2796, 1290), new Vector2Int(2736, 1260),   // iPhone, large display
             new Vector2Int(2752, 2064), new Vector2Int(2732, 2048),                                // iPad 13"
+            new Vector2Int(1920, 1080), new Vector2Int(3840, 2160),                                // Google Play phone (16:9)
         };
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
@@ -99,7 +100,7 @@ namespace DribbleToSchool.FrontEnd
             storeSize = System.Array.IndexOf(StoreSizes, new Vector2Int(Screen.width, Screen.height)) >= 0;
             Debug.Log("[Screenshots] Saving to " + folder);
             if (!storeSize)
-                Debug.LogWarning("[Screenshots] " + Screen.width + "x" + Screen.height + " isn't a size App Store Connect takes: set the Game view to 2622x1206 (iPhone) or 2752x2064 (iPad).");
+                Debug.LogWarning("[Screenshots] " + Screen.width + "x" + Screen.height + " isn't a store size: set the Game view to 2622x1206 (iPhone), 2752x2064 (iPad) or 1920x1080 (Google Play).");
 
             Remember();
             Loc.SetLanguage("en");
@@ -308,7 +309,7 @@ namespace DribbleToSchool.FrontEnd
             var style = new GUIStyle(GUI.skin.box) { fontSize = Mathf.RoundToInt(Screen.height * 0.035f), wordWrap = true };
             style.normal.textColor = Color.white;
             string text = error ?? ("Store screenshots: " + saved + " saved in Screenshots/" + Screen.width + "x" + Screen.height +
-                (storeSize ? "" : "\nThis isn't a size App Store Connect takes: use 2622 x 1206 (iPhone) or 2752 x 2064 (iPad)."));
+                (storeSize ? "" : "\nThis isn't a store size: use 2622 x 1206 (iPhone), 2752 x 2064 (iPad) or 1920 x 1080 (Google Play)."));
             GUI.Box(new Rect(Screen.width * 0.15f, Screen.height * 0.4f, Screen.width * 0.7f, Screen.height * 0.2f), text, style);
         }
     }
