@@ -245,6 +245,8 @@ namespace DribbleToSchool.EditorTools
                 item.primary = row.primary;
                 item.secondary = row.secondary;
                 item.accent = row.accent;
+                item.unlock = row.unlock;
+                item.unlockValue = row.unlockValue;
                 EditorUtility.SetDirty(item);
                 catalog.items.Add(item);
             }

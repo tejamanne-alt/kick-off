@@ -6,7 +6,75 @@ namespace DribbleToSchool.UI.Kit
     public static class ProceduralSprites
     {
         static Sprite rounded, roundedSmall, circle, star, coin, lockIcon, gradient, arrow, pause, ring, softDisc, softEdgeDisc, ballIcon, slideIcon;
-        static Sprite roundedEdge, roundedEdgeSmall, circleEdge, check, pitchBadge;
+        static Sprite roundedEdge, roundedEdgeSmall, circleEdge, check, pitchBadge, holoSheen, goldSheen, stickerIcon;
+
+        /// <summary>A soft band of rainbow light (left to right), for the sheen sweeping over holo stickers.</summary>
+        public static Sprite HoloSheen
+        {
+            get { return holoSheen != null ? holoSheen : (holoSheen = MakeSheen(true)); }
+        }
+
+        /// <summary>A soft band of warm white light, for the glint sweeping over gold stickers.</summary>
+        public static Sprite GoldSheen
+        {
+            get { return goldSheen != null ? goldSheen : (goldSheen = MakeSheen(false)); }
+        }
+
+        static Sprite MakeSheen(bool rainbow)
+        {
+            const int w = 128, h = 8;
+            var tex = new Texture2D(w, h, TextureFormat.RGBA32, false);
+            for (int x = 0; x < w; x++)
+            {
+                float t = (x + 0.5f) / w;
+                float band = Mathf.Pow(Mathf.Sin(t * Mathf.PI), 2.2f);
+                Color c = rainbow ? Color.HSVToRGB(Mathf.Repeat(t * 1.2f + 0.45f, 1f), 0.45f, 1f) : new Color(1f, 0.97f, 0.82f);
+                c.a = band * (rainbow ? 0.5f : 0.6f);
+                for (int y = 0; y < h; y++) tex.SetPixel(x, y, c);
+            }
+            tex.wrapMode = TextureWrapMode.Clamp;
+            tex.Apply();
+            return Sprite.Create(tex, new Rect(0, 0, w, h), new Vector2(0.5f, 0.5f), 100f);
+        }
+
+        /// <summary>A little die-cut sticker: a gold star on a white-bordered disc with its corner peeling (prices of sticker rewards).</summary>
+        public static Sprite StickerIcon
+        {
+            get
+            {
+                if (stickerIcon != null) return stickerIcon;
+                const int size = 96;
+                var tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
+                Color gold = UITheme.Gold, ink = EdgeInk, peel = new Color(0.86f, 0.89f, 0.94f);
+                for (int y = 0; y < size; y++)
+                {
+                    for (int x = 0; x < size; x++)
+                    {
+                        float u = (x + 0.5f) / size * 2f - 1f, v = (y + 0.5f) / size * 2f - 1f;
+                        float r = Mathf.Sqrt(u * u + v * v);
+                        // The corner at the bottom right is peeled back: cut off by a diagonal.
+                        float cut = u - v - 1.05f;
+                        Color c = Color.clear;
+                        if (r < 0.96f && cut < 0f)
+                        {
+                            c = Color.white;
+                            if (r > 0.9f) c = ink;
+                            else if (r < 0.74f) c = new Color(0.36f, 0.6f, 0.9f);
+                            if (r < 0.74f && StarAlpha(u / 0.7f, v / 0.7f) > 0.5f) c = gold;
+                            c.a = Mathf.Clamp01((0.96f - r) * size * 0.5f) * Mathf.Clamp01(-cut * size * 0.5f);
+                        }
+                        // The peeled flap: a pale triangle folded over the cut.
+                        if (cut >= 0f && u - 0.1f < 0.96f && -v - 0.1f < 0.96f && (u + 0.02f) + (-v + 0.02f) < 1.78f && cut < 0.42f)
+                            c = cut > 0.38f ? ink : peel;
+                        tex.SetPixel(x, y, c);
+                    }
+                }
+                tex.wrapMode = TextureWrapMode.Clamp;
+                tex.Apply();
+                stickerIcon = Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 100f);
+                return stickerIcon;
+            }
+        }
 
         /// <summary>
         /// The logo's badge: a disc of mown turf (light and dark stripes) with a dark line round

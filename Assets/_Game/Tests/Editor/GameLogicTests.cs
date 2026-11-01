@@ -84,6 +84,32 @@ namespace DribbleToSchool.Tests
             }
         }
 
+        [Test]
+        public void EveryStoryLevelHasASticker()
+        {
+            List<bool> challenge;
+            List<string> scenes;
+            var levels = GeneratedContent.LevelTable(out challenge, out scenes);
+            for (int i = 0; i < levels.Count; i++)
+            {
+                if (challenge[i]) continue;
+                foreach (string code in Loc.Languages)
+                    foreach (string part in new[] { "", ".text", ".hint" })
+                        Assert.IsTrue(StringTables.For(code).ContainsKey("sticker." + levels[i].Key + part), code + ": sticker." + levels[i].Key + part);
+            }
+        }
+
+        [Test]
+        public void StickerRewardsAreEarnedNotSold()
+        {
+            var rewards = CosmeticsTable.Rows().Where(r => r.unlock != CosmeticUnlock.Coins).ToList();
+            Assert.IsNotEmpty(rewards);
+            foreach (var r in rewards) Assert.AreEqual(0, r.price, "a sticker reward has no price: " + r.id);
+            for (int chapter = 1; chapter <= 5; chapter++)
+                Assert.AreEqual(1, rewards.Count(r => r.unlock == CosmeticUnlock.StickerSet && r.unlockValue == chapter), "one set reward for chapter " + chapter);
+            Assert.IsTrue(rewards.Any(r => r.unlock == CosmeticUnlock.StickerCount && r.unlockValue == 23), "the full album earns something");
+        }
+
         // ---------- Rules ----------
 
         [Test]
