@@ -50,6 +50,8 @@ namespace DribbleToSchool.Cosmetics
         {
             if (item.pattern == CosmeticPattern.Rainbow)
                 return Color.HSVToRGB(Mathf.Repeat(t * 0.85f, 1f), 0.65f, 1f);
+            if (item.pattern == CosmeticPattern.Holo)
+                return Color.HSVToRGB(Mathf.Repeat(0.5f + t * 1.4f, 1f), 0.35f, 1f);   // pastel foil
             return Color.Lerp(item.primary, item.secondary, t);
         }
 
@@ -164,6 +166,26 @@ namespace DribbleToSchool.Cosmetics
                     Color c = Color.Lerp(p, s, glow);
                     return Color.Lerp(c, a, line);
                 }
+                case CosmeticPattern.Holo:
+                {
+                    // Iridescent: the hue drifts across the ball, pastel, over the classic panels.
+                    Color foil = Color.HSVToRGB(Mathf.Repeat(0.55f + u * 0.35f + v * 0.25f + r * 0.3f, 1f), 0.32f, 1f);
+                    if (Pentagon(u, v, 0f, 0f, 0.3f)) return Color.Lerp(foil, Color.white, 0.55f);
+                    for (int k = 0; k < 5; k++)
+                    {
+                        float ang = Mathf.Deg2Rad * (90f + 72f * k);
+                        if (Pentagon(u, v, Mathf.Cos(ang) * 0.78f, Mathf.Sin(ang) * 0.78f, 0.24f)) return Color.Lerp(foil, Color.white, 0.55f);
+                    }
+                    return foil;
+                }
+                case CosmeticPattern.Foil:
+                {
+                    // Polished metal: bands of light and shadow across the curve, a star in the middle.
+                    float sheen = Mathf.Sin((u * 0.8f + v) * 4.2f) * 0.5f + 0.5f;
+                    Color metal = Color.Lerp(s, p, 0.35f + sheen * 0.65f);
+                    if (InStar(u, v, 0.42f, 0.18f)) return Color.Lerp(metal, a, 0.75f);
+                    return metal;
+                }
                 default:
                     return p;
             }
@@ -237,6 +259,7 @@ namespace DribbleToSchool.Cosmetics
                 }
                 case CosmeticPattern.Stripes: return Mathf.Sin(v * Mathf.PI * 7f) > 0f ? p : s;
                 case CosmeticPattern.Star: return InStar((u - 0.5f) * 3f, (v - 0.5f) * 2f, 0.6f, 0.25f) ? s : p;
+                case CosmeticPattern.Holo: return Color.HSVToRGB(Mathf.Repeat(0.55f + u * 0.5f - v * 0.3f, 1f), 0.35f, 1f);
                 default: return p;
             }
         }

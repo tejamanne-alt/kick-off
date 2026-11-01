@@ -14,7 +14,9 @@ namespace DribbleToSchool.FrontEnd
     /// The Locker Room: on the left, the live teen in the street showcase wearing (or juggling)
     /// the selected item, a button to switch player, and a card with the item's name, rarity,
     /// price and Buy / Equip; on the right, tabs for balls, flags, outfits and trails over a
-    /// grid of items on a white panel.
+    /// grid of items on a white panel. Sticker rewards can't be bought: until the stickers earn
+    /// them they show a sticker and what's still needed ("Find 3 more stickers", "Complete the
+    /// Beach set"), and the button opens the sticker book.
     /// </summary>
     public class ShopScreen : FrontEndScreen
     {
@@ -40,6 +42,8 @@ namespace DribbleToSchool.FrontEnd
         Text actionLabel;
         RectTransform previewPrice;
         Text previewPriceText;
+        RectTransform previewNeeds;
+        Text previewNeedsText;
 
         public override string Title { get { return Loc.T("menu.locker"); } }
 
@@ -81,6 +85,16 @@ namespace DribbleToSchool.FrontEnd
             previewPrice = (RectTransform)previewPriceText.transform.parent;
             UIKit.Place(previewPrice, new Vector2(0f, 1f), new Vector2(210f, -148f), new Vector2(220f, 52f), new Vector2(0f, 0.5f));
             previewPrice.GetComponent<HorizontalLayoutGroup>().childAlignment = TextAnchor.MiddleLeft;
+
+            // In place of the price, for sticker rewards: what the stickers still have to do.
+            previewNeeds = UIKit.Rect(info.transform, "Needs");
+            UIKit.Place(previewNeeds, new Vector2(0f, 1f), new Vector2(210f, -148f), new Vector2(Column - 236f, 52f), new Vector2(0f, 0.5f));
+            var needsIcon = UIKit.Icon(previewNeeds, "Sticker", ProceduralSprites.StickerIcon, Color.white, 46f);
+            UIKit.Place(needsIcon.rectTransform, new Vector2(0f, 0.5f), Vector2.zero, new Vector2(46f, 46f), new Vector2(0f, 0.5f));
+            previewNeedsText = UIKit.Label(previewNeeds, "Text", "", 30, UITheme.Navy, TextAnchor.MiddleLeft, true);
+            UIKit.Stretch(previewNeedsText.rectTransform);
+            previewNeedsText.rectTransform.offsetMin = new Vector2(56f, 0f);
+            UIKit.Fit(previewNeedsText, 20);
 
             actionButton = UIKit.Button(info.transform, "Action", "Equip", UITheme.Green, OnAction, 44);
             UIKit.Place((RectTransform)actionButton.transform, new Vector2(0.5f, 0f), new Vector2(0f, 30f), new Vector2(Column - 60f, 90f), new Vector2(0.5f, 0f));
@@ -193,12 +207,42 @@ namespace DribbleToSchool.FrontEnd
                 UIKit.Place(status.rectTransform, new Vector2(0.5f, 0f), new Vector2(0f, 34f), new Vector2(214f, 40f), new Vector2(0.5f, 0.5f));
                 UIKit.Fit(status, 20);
             }
+            else if (item.IsStickerReward)
+            {
+                // Not for sale: a sticker and how far the stickers still have to go.
+                icon.color = new Color(1f, 1f, 1f, 0.75f);
+                var tag = UIKit.Icon(face, "Sticker", ProceduralSprites.StickerIcon, Color.white, 40f);
+                UIKit.Place(tag.rectTransform, new Vector2(0.5f, 0f), new Vector2(-62f, 34f), new Vector2(40f, 40f), new Vector2(0.5f, 0.5f));
+                var needs = UIKit.Label(face, "Needs", Needs(item, false), 26, UITheme.Navy, TextAnchor.MiddleLeft, true);
+                UIKit.Place(needs.rectTransform, new Vector2(0.5f, 0f), new Vector2(26f, 34f), new Vector2(136f, 40f), new Vector2(0.5f, 0.5f));
+                UIKit.Fit(needs, 18);
+                // An "exclusive" seal on the corner: a gold star on navy.
+                var seal = UIKit.Icon(face, "Exclusive", ProceduralSprites.CircleEdge, UITheme.Navy, 52f);
+                UIKit.Place(seal.rectTransform, new Vector2(1f, 1f), new Vector2(4f, 4f), new Vector2(52f, 52f), new Vector2(0.5f, 0.5f));
+                var star = UIKit.Icon(seal.transform, "Star", ProceduralSprites.Star, UITheme.Gold, 30f);
+                UIKit.Place(star.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0f, 1f), new Vector2(30f, 30f));
+            }
             else
             {
                 bool affordable = SaveSystem.Data.coins >= item.price;
                 var price = UIKit.CoinAmount(face, "Price", item.price, 30, affordable ? UITheme.Ink : UITheme.Red);
                 UIKit.Place((RectTransform)price.transform.parent, new Vector2(0.5f, 0f), new Vector2(0f, 34f), new Vector2(200f, 40f), new Vector2(0.5f, 0.5f));
             }
+        }
+
+        /// <summary>What a sticker reward still needs: "Find 3 more stickers" / "Complete the Beach set" (short: "3 more", "2 / 4 set").</summary>
+        string Needs(CosmeticItem item, bool full)
+        {
+            var levels = Controller.levels;
+            if (item.unlock == CosmeticUnlock.StickerSet)
+            {
+                int total;
+                int got = StickerRewards.FoundInChapter(levels, item.unlockValue, out total);
+                return full ? Loc.F("shop.completeSet", Loc.T("chapter." + item.unlockValue), got, total) : Loc.F("shop.setShort", got, total);
+            }
+            int left = StickerRewards.StillNeeded(item, levels);
+            if (full) return left == 1 ? Loc.T("shop.findOne") : Loc.F("shop.findMore", left);
+            return Loc.F("shop.moreShort", left);
         }
 
         void Select(CosmeticItem item)
@@ -223,22 +267,33 @@ namespace DribbleToSchool.FrontEnd
                 previewRarity.text = "";
                 actionButton.gameObject.SetActive(false);
                 previewPrice.gameObject.SetActive(false);
+                previewNeeds.gameObject.SetActive(false);
                 return;
             }
 
             previewIcon.enabled = true;
             previewIcon.sprite = CosmeticArt.Icon(selected);
             previewName.text = selected.displayName;
-            previewRarity.text = Loc.T("rarity." + selected.rarity);
+            previewRarity.text = Loc.T("rarity." + selected.rarity) + (selected.IsStickerReward ? "  ·  " + Loc.T("shop.exclusive") : "");
             previewRarity.color = UITheme.RarityColor(selected.rarity);
 
             bool owned = SaveSystem.Owns(selected.id);
             bool equipped = EquippedId(selected.category) == selected.id;
-            previewPrice.gameObject.SetActive(!owned);
+            bool locked = !owned && selected.IsStickerReward;
+            previewPrice.gameObject.SetActive(!owned && !locked);
             previewPriceText.text = selected.price.ToString();
+            previewNeeds.gameObject.SetActive(locked);
+            if (locked) previewNeedsText.text = Needs(selected, true);
             actionButton.gameObject.SetActive(true);
 
-            if (equipped)
+            if (locked)
+            {
+                // Earned, not bought: off to the sticker book.
+                actionLabel.text = Loc.T("shop.toAlbum");
+                actionButton.interactable = true;
+                actionButton.targetGraphic.color = UITheme.Blue;
+            }
+            else if (equipped)
             {
                 actionLabel.text = Loc.T("shop.equipped");
                 actionButton.interactable = false;
@@ -262,6 +317,11 @@ namespace DribbleToSchool.FrontEnd
         void OnAction()
         {
             if (selected == null) return;
+            if (!SaveSystem.Owns(selected.id) && selected.IsStickerReward)
+            {
+                Controller.Show(FrontEndScreenId.Album);
+                return;
+            }
             if (!SaveSystem.Owns(selected.id))
             {
                 if (!SaveSystem.TrySpend(selected.price)) return;

@@ -116,6 +116,11 @@ namespace DribbleToSchool.FrontEnd
             Show(RequestedScreen);
             RequestedScreen = FrontEndScreenId.Title;
 
+            // Stickers earn Locker Room items: hand out (and celebrate, once) whatever they've
+            // earned that the save doesn't own yet, which also brings an older save up to date.
+            var earned = StickerRewards.GrantEarned(levels, cosmetics);
+            if (earned.Count > 0) StickerRewardPanel.Open(root, earned, () => Show(FrontEndScreenId.Shop));
+
             if (!splashShown)
             {
                 splashShown = true;

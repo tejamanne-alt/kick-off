@@ -23,6 +23,9 @@ cp Boy.fbx Boy.json BoyAtlas.png Girl.fbx Girl.json GirlAtlas.png ../../Assets/_
 blenv/bin/python portrait_teen.py -- $PWD/Boy.blend $PWD/PlayerBoy.png --yaw 28     # the menus' player cards
 blenv/bin/python portrait_teen.py -- $PWD/Girl.blend $PWD/PlayerGirl.png --yaw -28  # (they face each other)
 cp PlayerBoy.png PlayerGirl.png ../../Assets/_Game/Resources/UI/
+blenv/bin/python sticker_art.py -- <kits dir> <cars dir> <teens dir> $PWD/stickers_raw   # the album's 23 sticker subjects
+python3 sticker_compose.py $PWD/stickers_raw $PWD/stickers                                # die-cut vinyl stickers (normal / holo / gold)
+cp stickers/L*.png ../../Assets/_Game/Resources/UI/Stickers/
 ```
 
 The teens are original characters in a flat-shaded anime style (two cel bands, a thin dark ink

@@ -160,7 +160,8 @@ The original plan named Cinemachine for the camera. For now the project uses its
 - **Coins:** collected by the kid or the ball. Bonuses come from perfect touches, new stars, new stickers, and collecting every coin in a level.
 - **Stickers:** one is hidden in each level, often high up, so a well-kicked ball can collect it.
 - **Stars:** 1 for finishing, 2 for beating the bell, 3 for also hitting the streak target and collecting every coin.
-- **Locker Room:** buy and equip ball skins, backpack flags, outfits and ball trails. All of them are drawn in code.
+- **Locker Room:** buy and equip ball skins, backpack flags, outfits and ball trails. All of them are drawn in code. Eleven items can't be bought: stickers earn them (below).
+- **Stickers:** each story level hides one, themed to the level (a cat on the garden gate, a vending machine, a crab, a tower crane, the school bell...): die-cut vinyl stickers drawn from the game's own models (`tools/blender/sticker_art.py` renders them in the toon look, `sticker_compose.py` cuts them out into `Resources/UI/Stickers`). Most are plain, six are holo (a rainbow sheen sweeps across them), the five chapter finales are gold. The album (`FrontEnd/AlbumScreen`) is a collector's book: the collector track (rewards at 5, 10, 15, 20 and all 23 stickers), and per chapter its progress, its set reward and its stickers; tap one to see it up close with a line about it, or, if it's still missing, a hint about where it hides and a button to play that level. Completing a chapter's set or reaching a count unlocks exclusive Locker Room items (`Cosmetics/StickerRewards`; a celebration the first time, and older saves get what their stickers already earned).
 - **Saving:** progress goes to `save.json` in the app's data folder. The **Kick Off** menu has Reset Save Data and Give 1000 Coins for testing.
 
 ## Look and sound

@@ -455,6 +455,13 @@ namespace DribbleToSchool.UI
 
         // ---------- Results ----------
 
+        /// <summary>Has this sticker earned a Locker Room reward? (The menu hands it out.)</summary>
+        bool StickerRewardWaiting()
+        {
+            var applier = Object.FindAnyObjectByType<Cosmetics.CosmeticApplier>();
+            return applier != null && level.catalog != null && Cosmetics.StickerRewards.Pending(level.catalog, applier.catalog).Count > 0;
+        }
+
         void ShowResults()
         {
             var r = level.Result;
@@ -515,7 +522,7 @@ namespace DribbleToSchool.UI
 
                 string extras = "";
                 if (r.newStars > 0) extras += Loc.F("results.newStars", r.newStars) + "    ";
-                if (r.stickerIsNew) extras += Loc.T("results.newSticker");
+                if (r.stickerIsNew) extras += Loc.T(StickerRewardWaiting() ? "results.stickerReward" : "results.newSticker");
                 else if (r.stickerFound) extras += Loc.T("results.oldSticker");
                 var ex = UIKit.Label(card.transform, "Extras", extras, 32, new Color(0.8f, 0.35f, 0.55f), TextAnchor.MiddleCenter, true);
                 UIKit.Place(ex.rectTransform, new Vector2(0.5f, 0f), new Vector2(0f, 190f), new Vector2(1050f, 44f));
