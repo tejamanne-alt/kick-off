@@ -24,6 +24,8 @@ import kit_works_geo as G
 import kit_works_atlas as ATL
 from kit_works_geo import *
 from kit_works_site import wood_box, section_beam, wheel_bm
+import kit_plants_geo as PG
+import kit_plants_leaves as LV
 
 GAP = 0.85          # clear height over the kid's line: TrackBuilder.SlideGap in the game
 LANE = 0.5          # under GAP nothing stands nearer the kid's line (|y|) than this
@@ -63,6 +65,12 @@ for _n, _s in {
     'ivy': (0, (0.24, 0.40, 0.24), 'white', 0.3), 'matg': (0, (0.38, 0.56, 0.42), 'grime', 0.0),
 }.items():
     _mat(_n, *_s)
+
+# Leaf-card foliage (kit_plants_leaves.py, as the Plants kit's trees): shading ramps (sRGB: deep
+# shade, base, sunlit) for the boughs' crowns, built into cut-out cards once the atlas is laid out.
+R_APPLE = PG.Ramp('#26452c', '#6b994d', '#cfe27a')
+R_OAK = PG.Ramp('#1c3929', '#577f42', '#b8d36c')
+R_IVY = PG.Ramp('#122a1e', '#3d6640', '#8fb062')
 
 
 def t_bark(w, h):
@@ -408,31 +416,39 @@ def _propped_bough(name, oak):
             rr = r0 + (r1 - r0) * t ** 0.8
             p.z = max(p.z, GAP + rr * 1.04 + 0.004)
     M.add(limb(path, r0, r1, bark, sides=10 if oak else 8, tile=('bark', 0.9)))
-    clumps = []
-    # side shoots off the bough with leaves, high enough to clear a standing kid, and the tip's spray
+    # the foliage: lobes of leaf-clump cards over dark cores (kit_barriers.py builds them once the
+    # atlas is laid out): the crown spreading toward the path over the bough, side shoots along the
+    # bough and a spray at its tip; nothing hangs into the clear gap over the kid's line
+    rng = np.random.default_rng(31 if oak else 17)
+    ramp = R_OAK if oak else R_APPLE
+
+    def clear(corners):
+        return any(abs(c[1]) < LANE + 0.1 and c[2] < GAP + 0.15 for c in corners)
     tip = path[-1]
-    clumps += leaves(M, tip + Vector((-0.2, -0.1, 0.3)), (0.6, 0.45, 0.4), lv, 16 if oak else 14, 3 if oak else 5,
-                     size=(0.2, 0.3) if oak else (0.16, 0.24))
+    shoots = [LV.Mass(np.array(tip) + (-0.2, -0.1, 0.3), (0.52, 0.42, 0.34) if oak else (0.46, 0.38, 0.3))]
     for k, i in enumerate((6, 10, 13)):
         p = path[i]
         q = p + Vector((0.15 * (k - 1), -0.3 + 0.2 * k, 0.6 + 0.1 * k))
         M.add(limb([p, (p + q) / 2 + Vector((0, 0, 0.1)), q], 0.04 if oak else 0.028, 0.012, bark, sides=5, tile=('bark', 0.5)))
-        clumps += leaves(M, q + Vector((0, 0, 0.15)), (0.4, 0.32, 0.25), lv, 7, 11 + k * 7 + (100 if oak else 0),
-                         size=(0.16, 0.24) if oak else (0.13, 0.2))
-    # the crown, spreading toward the path over the bough
+        r = 0.36 if oak else 0.32
+        shoots.append(LV.Mass(np.array(q) + (0, 0, 0.15), (r, r * 0.82, r * 0.66), bright=rng.uniform(-0.04, 0.04)))
     cz = h_trunk + (1.75 if oak else 1.15)
-    crown = leaves(M, (tx - 0.3, ty - 0.5, cz), (3.1, 2.1, 1.55) if oak else (1.6, 1.3, 1.0), lv, 42 if oak else 22, 21 if oak else 23,
-                   size=(0.55, 0.85) if oak else (0.36, 0.5), fine=True)
-    clumps += crown
+    if oak:
+        crown = LV.masses_from((tx - 0.3, ty - 0.5, cz), (2.9, 2.0, 1.5), 9, rng, rf=(0.36, 0.46), shell=0.62, zlo=-0.55)
+    else:
+        crown = LV.masses_from((tx - 0.3, ty - 0.5, cz), (1.5, 1.2, 0.95), 6, rng, rf=(0.4, 0.52), shell=0.6, zlo=-0.55)
+    M.leafcards = [dict(masses=crown, ramp=ramp, size=1.15 if oak else 0.85, keep_out=clear),
+                   dict(masses=shoots, ramp=ramp, size=0.62 if oak else 0.56, density=1.15, inner=0.2, core=0.5,
+                        keep_out=clear)]
     if not oak:
-        # apples hanging in the clumps (the lower side of each), a few windfalls on the ground
-        rng = np.random.default_rng(9)
-        for i, (q, sz) in enumerate(clumps):
-            for k in range(1 if sz < 0.4 else 2):
+        # apples hanging under the lobes (their lower, nearer side), a few windfalls on the ground
+        for i, m in enumerate(crown + shoots):
+            for k in range(3 if m in crown else 2):
                 a = rng.uniform(0, 2 * PI)
-                p = q + Vector((math.cos(a) * sz * 0.8, math.sin(a) * sz * 0.6 - sz * 0.3, -sz * 0.55))
+                d = Vector((math.cos(a), math.sin(a) * 0.8 - 0.35, -0.75)).normalized()
+                p = Vector(m.c) + Vector((d.x * m.r[0], d.y * m.r[1], d.z * m.r[2])) * 0.9
                 if p.z < GAP + 0.35 and abs(p.y) < LANE + 0.2: continue
-                M.add(blob(p, (0.045, 0.045, 0.048), 'apple', n=6, rings=2, seed=200 + i * 3 + k, jitter=0.05))
+                M.add(blob(p, (0.05, 0.05, 0.053), 'apple', n=6, rings=2, seed=200 + i * 3 + k, jitter=0.05))
         for i in range(5):
             M.add(blob((tx + rng.uniform(-1.0, 0.5), ty - rng.uniform(0.3, 0.9), 0.04), (0.045, 0.045, 0.04), 'apple', n=6, rings=2, seed=400 + i, jitter=0.05))
     # the prop: forked (apple) or a squared timber post with an iron band (oak), standing in front of
@@ -460,7 +476,8 @@ def _propped_bough(name, oak):
         d = Vector((math.cos(a), math.sin(a), 0))
         M.add(limb([Vector((tx, ty, 0.25)) + d * tr_ * 0.5, Vector((tx, ty, 0.02)) + d * tr_ * 2.0], tr_ * 0.45, tr_ * 0.12, bark, sides=6, tile=('bark', 0.6)))
     if oak:
-        leaves(M, (tx - 0.05, ty - 0.38, 1.3), (0.38, 0.15, 1.0), ('ivy', 'leafoak'), 12, 77, size=(0.1, 0.16))
+        M.leafcards.append(dict(masses=[LV.Mass((tx - 0.05, ty - 0.36, 1.3), (0.34, 0.14, 0.95))], ramp=R_IVY, size=0.4,
+                                density=1.3, inner=0.0, core=None))
     half = 1.05 if oak else 0.85
     _front(M)
     _slide(M, half, GAP + 2 * r_low + 0.04)

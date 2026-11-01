@@ -932,52 +932,6 @@ def build_flower_patch():
 
 
 # ---------------------------------------------------------------- assembly
-def cutout_material(mat):
-    """The kit material with the game's leaf-card cut-out: atlas alpha against 0.5, the threshold
-    raised to remove sprite texels (alpha < 0.97) on cards seen nearly edge-on (Toon.shader
-    _EdgeFade), drawn from both sides. 'AlphaMask' is the 0/1 mask (preview_street.py keeps its
-    haze off the holes)."""
-    nt = mat.node_tree
-    tex = next(n for n in nt.nodes if n.type == 'TEX_IMAGE')
-    tex.image.alpha_mode = 'STRAIGHT'
-    out = next(n for n in nt.nodes if n.type == 'OUTPUT_MATERIAL')
-    surf = out.inputs['Surface'].links[0].from_socket
-    geo = nt.nodes.new('ShaderNodeNewGeometry')
-    dot = nt.nodes.new('ShaderNodeVectorMath'); dot.operation = 'DOT_PRODUCT'
-    nt.links.new(geo.outputs['True Normal'], dot.inputs[0]); nt.links.new(geo.outputs['Incoming'], dot.inputs[1])
-    face = nt.nodes.new('ShaderNodeMath'); face.operation = 'ABSOLUTE'
-    nt.links.new(dot.outputs['Value'], face.inputs[0])
-    cut = nt.nodes.new('ShaderNodeMapRange'); cut.interpolation_type = 'SMOOTHSTEP'
-    cut.inputs['From Min'].default_value = 0.4; cut.inputs['From Max'].default_value = 0.62
-    cut.inputs['To Min'].default_value = 1.01; cut.inputs['To Max'].default_value = 0.5
-    nt.links.new(face.outputs[0], cut.inputs['Value'])
-    solid = nt.nodes.new('ShaderNodeMath'); solid.operation = 'GREATER_THAN'; solid.inputs[1].default_value = 0.97
-    nt.links.new(tex.outputs['Alpha'], solid.inputs[0])
-    thr = nt.nodes.new('ShaderNodeMix'); thr.data_type = 'FLOAT'          # solid texels: plain 0.5
-    nt.links.new(solid.outputs[0], thr.inputs['Factor'])
-    nt.links.new(cut.outputs['Result'], thr.inputs['A']); thr.inputs['B'].default_value = 0.5
-    mask = nt.nodes.new('ShaderNodeMath'); mask.operation = 'GREATER_THAN'; mask.name = mask.label = 'AlphaMask'
-    nt.links.new(tex.outputs['Alpha'], mask.inputs[0]); nt.links.new(thr.outputs['Result'], mask.inputs[1])
-    # Blender turns a face's shading normal toward the viewer when its back is seen; the game keeps
-    # the vertex normal on both sides (a card lights the same from either side), so undo the flip.
-    flip = nt.nodes.new('ShaderNodeMath'); flip.operation = 'MULTIPLY_ADD'
-    flip.inputs[1].default_value = -2.0; flip.inputs[2].default_value = 1.0
-    nt.links.new(geo.outputs['Backfacing'], flip.inputs[0])
-    nrm = nt.nodes.new('ShaderNodeVectorMath'); nrm.operation = 'SCALE'; nrm.name = nrm.label = 'UnflippedNormal'
-    nt.links.new(geo.outputs['Normal'], nrm.inputs[0]); nt.links.new(flip.outputs[0], nrm.inputs['Scale'])
-    if 'Normal' in surf.node.inputs:
-        nt.links.new(nrm.outputs['Vector'], surf.node.inputs['Normal'])
-    hole = nt.nodes.new('ShaderNodeBsdfTransparent')
-    mix = nt.nodes.new('ShaderNodeMixShader'); mix.name = mix.label = 'AlphaClip'
-    nt.links.new(mask.outputs[0], mix.inputs['Fac'])
-    nt.links.new(hole.outputs[0], mix.inputs[1]); nt.links.new(surf, mix.inputs[2])
-    nt.links.new(mix.outputs[0], out.inputs['Surface'])
-    for attr, val in (('surface_render_method', 'DITHERED'), ('use_transparent_shadow', True), ('use_backface_culling', False)):
-        if hasattr(mat, attr):
-            setattr(mat, attr, val)
-    return mat
-
-
 MODELS = [
     ('ConiferTall', build_conifer_tall), ('ConiferMid', build_conifer_mid), ('ConiferSmall', build_conifer_small),
     ('Broadleaf', build_broadleaf), ('BroadleafLarge', build_broadleaf_large), ('BroadleafWide', build_broadleaf_wide),
@@ -997,7 +951,7 @@ def main():
     os.makedirs(OUT, exist_ok=True)
     atlas = os.path.join(OUT, 'PlantsAtlas.png')
     AT.paint_atlas(atlas)
-    mat = cutout_material(K.material('Plants', atlas))
+    mat = LV.cutout_material(K.material('Plants', atlas))
     man = K.Manifest('Plants', 'PlantsAtlas.png')
     man.data['notes'] = {
         'front': '-Y (Attach.Front at (0, -1, 0)); origin at the base on the ground',

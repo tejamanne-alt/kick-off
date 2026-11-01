@@ -96,9 +96,11 @@ def _rand_unit(rng, n=None):
 def leaf_cards(masses, rng, ramp, part=1, sprite='leaf', size=1.1, density=1.0, inner=0.3,
                C0=None, Rc=None, nmix=(0.7, 0.22, 0.15), tilt=0.25, open_under=0.4, size_jit=0.16,
                rho=(0.78, 1.02), rho_in=(0.42, 0.74), shade=0.0, zmin=None, light_k=1.0, crease=0.45,
-               min_z=None):
+               min_z=None, uvfn=None, nsprites=None, keep_out=None):
     """The leaf cards of a crown (one Piece). ramp(s): s 0 deep shade .. 1 sunlit top.
-    size: card side (m); density: cover factor; inner: inner-layer cards per outer card."""
+    size: card side (m); density: cover factor; inner: inner-layer cards per outer card.
+    uvfn(sprite, k, s, t) -> atlas UVs and nsprites (variants of the sprite) for another kit's atlas
+    (default: PlantsAtlas.png's cells); keep_out(corners) -> True drops a card (a clearance box)."""
     if C0 is None:
         C0 = np.mean([m.c for m in masses], axis=0)
     C0 = np.asarray(C0, float)
@@ -108,7 +110,8 @@ def leaf_cards(masses, rng, ramp, part=1, sprite='leaf', size=1.1, density=1.0, 
     Rc = np.asarray(Rc, float)
     z0 = min(m.c[2] - m.r[2] for m in masses) if zmin is None else zmin
     z1 = max(m.c[2] + m.r[2] for m in masses)
-    nsp = len(AT.SPRITES[sprite])
+    nsp = nsprites or len(AT.SPRITES[sprite])
+    uvfn = uvfn or AT.sprite_uv
     V, N, C, U, F, WZ = [], [], [], [], [], []
     for mi, m in enumerate(masses):
         others = [o for j, o in enumerate(masses) if j != mi]
@@ -138,6 +141,7 @@ def leaf_cards(masses, rng, ramp, part=1, sprite='leaf', size=1.1, density=1.0, 
                 s = size * rng.uniform(1 - size_jit, 1 + size_jit) * (0.85 if layer else 1.0)
                 h = s / 2
                 corners = [p - Rv * h - Uv * h, p + Rv * h - Uv * h, p + Rv * h + Uv * h, p - Rv * h + Uv * h]
+                if keep_out is not None and keep_out(corners): continue
                 uvs = np.array(((0, 0), (1, 0), (1, 1), (0, 1)), float)
                 if rng.random() < 0.5: uvs[:, 0] = 1 - uvs[:, 0]
                 k = int(rng.integers(0, nsp))
@@ -157,7 +161,7 @@ def leaf_cards(masses, rng, ramp, part=1, sprite='leaf', size=1.1, density=1.0, 
                 V += corners
                 N += [n] * 4
                 C += [ramp(float(sv))] * 4
-                U += list(AT.sprite_uv(sprite, k, uvs[:, 0], uvs[:, 1]))
+                U += list(uvfn(sprite, k, uvs[:, 0], uvs[:, 1]))
                 WZ += [p[2]] * 4
                 F.append((base, base + 1, base + 2, base + 3))
     pc = G.Piece(np.array(V), F, N=np.array(N))
@@ -263,3 +267,50 @@ def branches(masses, rng, trunk_path, trunk_r, fork_z, wood_fn, uv_fn, limb_r=(0
                 sub = add(q0, target(m), r0 * 0.62, max(r0 * 0.22, 0.025), segs=4)
                 twig_set(sub, m, twigs)
     return pieces
+
+
+# ---------------------------------------------------------------- the material in Blender
+def cutout_material(mat):
+    """The kit material with the game's leaf-card cut-out: atlas alpha against 0.5, the threshold
+    raised to remove sprite texels (alpha < 0.97) on cards seen nearly edge-on (Toon.shader
+    _EdgeFade), drawn from both sides. 'AlphaMask' is the 0/1 mask (preview_street.py keeps its
+    haze off the holes)."""
+    nt = mat.node_tree
+    tex = next(n for n in nt.nodes if n.type == 'TEX_IMAGE')
+    tex.image.alpha_mode = 'STRAIGHT'
+    out = next(n for n in nt.nodes if n.type == 'OUTPUT_MATERIAL')
+    surf = out.inputs['Surface'].links[0].from_socket
+    geo = nt.nodes.new('ShaderNodeNewGeometry')
+    dot = nt.nodes.new('ShaderNodeVectorMath'); dot.operation = 'DOT_PRODUCT'
+    nt.links.new(geo.outputs['True Normal'], dot.inputs[0]); nt.links.new(geo.outputs['Incoming'], dot.inputs[1])
+    face = nt.nodes.new('ShaderNodeMath'); face.operation = 'ABSOLUTE'
+    nt.links.new(dot.outputs['Value'], face.inputs[0])
+    cut = nt.nodes.new('ShaderNodeMapRange'); cut.interpolation_type = 'SMOOTHSTEP'
+    cut.inputs['From Min'].default_value = 0.4; cut.inputs['From Max'].default_value = 0.62
+    cut.inputs['To Min'].default_value = 1.01; cut.inputs['To Max'].default_value = 0.5
+    nt.links.new(face.outputs[0], cut.inputs['Value'])
+    solid = nt.nodes.new('ShaderNodeMath'); solid.operation = 'GREATER_THAN'; solid.inputs[1].default_value = 0.97
+    nt.links.new(tex.outputs['Alpha'], solid.inputs[0])
+    thr = nt.nodes.new('ShaderNodeMix'); thr.data_type = 'FLOAT'          # solid texels: plain 0.5
+    nt.links.new(solid.outputs[0], thr.inputs['Factor'])
+    nt.links.new(cut.outputs['Result'], thr.inputs['A']); thr.inputs['B'].default_value = 0.5
+    mask = nt.nodes.new('ShaderNodeMath'); mask.operation = 'GREATER_THAN'; mask.name = mask.label = 'AlphaMask'
+    nt.links.new(tex.outputs['Alpha'], mask.inputs[0]); nt.links.new(thr.outputs['Result'], mask.inputs[1])
+    # Blender turns a face's shading normal toward the viewer when its back is seen; the game keeps
+    # the vertex normal on both sides (a card lights the same from either side), so undo the flip.
+    flip = nt.nodes.new('ShaderNodeMath'); flip.operation = 'MULTIPLY_ADD'
+    flip.inputs[1].default_value = -2.0; flip.inputs[2].default_value = 1.0
+    nt.links.new(geo.outputs['Backfacing'], flip.inputs[0])
+    nrm = nt.nodes.new('ShaderNodeVectorMath'); nrm.operation = 'SCALE'; nrm.name = nrm.label = 'UnflippedNormal'
+    nt.links.new(geo.outputs['Normal'], nrm.inputs[0]); nt.links.new(flip.outputs[0], nrm.inputs['Scale'])
+    if 'Normal' in surf.node.inputs:
+        nt.links.new(nrm.outputs['Vector'], surf.node.inputs['Normal'])
+    hole = nt.nodes.new('ShaderNodeBsdfTransparent')
+    mix = nt.nodes.new('ShaderNodeMixShader'); mix.name = mix.label = 'AlphaClip'
+    nt.links.new(mask.outputs[0], mix.inputs['Fac'])
+    nt.links.new(hole.outputs[0], mix.inputs[1]); nt.links.new(surf, mix.inputs[2])
+    nt.links.new(mix.outputs[0], out.inputs['Surface'])
+    for attr, val in (('surface_render_method', 'DITHERED'), ('use_transparent_shadow', True), ('use_backface_culling', False)):
+        if hasattr(mat, attr):
+            setattr(mat, attr, val)
+    return mat

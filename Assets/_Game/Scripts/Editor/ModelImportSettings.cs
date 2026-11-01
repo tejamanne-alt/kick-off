@@ -13,7 +13,7 @@ namespace DribbleToSchool.EditorTools
     public class ModelImportSettings : AssetPostprocessor
     {
         // Bump to re-import the models when these settings change.
-        public override uint GetVersion() { return 6; }
+        public override uint GetVersion() { return 7; }
 
         void OnPreprocessModel()
         {
@@ -50,9 +50,10 @@ namespace DribbleToSchool.EditorTools
             importer.filterMode = UnityEngine.FilterMode.Trilinear;
             importer.anisoLevel = 2;
             importer.maxTextureSize = 4096;
-            // The plants' leaf sprites are cut out at alpha 0.5: keep that coverage in every mip so
-            // far trees don't thin out, and keep colour under the transparent texels.
-            if (path.EndsWith("/PlantsAtlas.png"))
+            // The leaf sprites (the plants' trees and bushes, the barriers' propped boughs) are cut out
+            // at alpha 0.5: keep that coverage in every mip so far trees don't thin out, and keep
+            // colour under the transparent texels.
+            if (path.EndsWith("/PlantsAtlas.png") || path.EndsWith("/BarriersAtlas.png"))
             {
                 importer.alphaIsTransparency = true;
                 importer.mipMapsPreserveCoverage = true;
