@@ -126,7 +126,7 @@ namespace DribbleToSchool.Holiday
             new Stage("L18", 4, StageTraits.Tunnel | StageTraits.Pipes | StageTraits.Gaps, 0.86f),
             // Chapter 5: Park and school
             new Stage("L19", 5, StageTraits.Crates | StageTraits.Dogs | StageTraits.Awnings, 0.76f),
-            new Stage("L20", 5, StageTraits.Fountain | StageTraits.Pedestrians | StageTraits.Springboards, 0.8f),
+            new Stage("L20", 5, StageTraits.Fountain | StageTraits.Pedestrians | StageTraits.Springboards | StageTraits.Crates | StageTraits.Awnings, 0.8f),
             new Stage("L21", 5, StageTraits.Swings | StageTraits.Crates | StageTraits.Awnings, 0.86f),
             new Stage("L22", 5, StageTraits.Pond | StageTraits.Gaps | StageTraits.Dogs, 0.92f),
             new Stage("L23", 5, StageTraits.School | StageTraits.Crates | StageTraits.Awnings, 1f),

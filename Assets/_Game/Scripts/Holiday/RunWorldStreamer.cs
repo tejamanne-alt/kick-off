@@ -99,7 +99,7 @@ namespace DribbleToSchool.Holiday
             foreach (var slot in slots.Values)
             {
                 if (slot.unloading) continue;
-                if (slot.chunk == null && slot.load != null && slot.load.isDone) Adopt(slot);
+                if (!slot.active && slot.chunk == null && slot.load != null && slot.load.isDone) Adopt(slot);
                 if (!slot.active && slot.chunk != null && !woke)
                 {
                     Activate(slot);

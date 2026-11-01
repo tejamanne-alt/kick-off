@@ -146,6 +146,8 @@ namespace DribbleToSchool.Holiday
         RunStats stats;
         float scoreExact;
         int bonusScore, bonusCoins, lastLevelCoins;
+        // Coins of this run already in the wallet (they are banked when the run ends, so a revive can be paid with them).
+        int bankedCoins;
         int streak, revivesUsed, lastMultiplier;
         float lastX;
         float crashTime, crashX, invulnerableUntil;
@@ -199,7 +201,7 @@ namespace DribbleToSchool.Holiday
 
         void OnApplicationPause(bool paused)
         {
-            if (paused && Phase == RunPhase.Results) Commit();
+            if (paused && (Phase == RunPhase.Results || Phase == RunPhase.Crashed)) Bank();
         }
 
         void Start()
@@ -219,9 +221,6 @@ namespace DribbleToSchool.Holiday
             kid.DoubleJumped += OnDoubleJumped;
             kid.Slid += OnSlid;
 
-            var data = SaveSystem.Data;
-            BestScore = data.holidayBestScore;
-            BestDistance = data.holidayBestDistance;
             ResetRun();
             SetPhase(level.State == LevelState.Playing ? RunPhase.Running : RunPhase.Ready);
         }
@@ -235,9 +234,13 @@ namespace DribbleToSchool.Holiday
             dayChanging = false;
             Fade = 0f;
             stats = new RunStats();
+            // The bests to beat are the ones from before this run (banking at its end moves the saved ones).
+            BestScore = SaveSystem.Data.holidayBestScore;
+            BestDistance = SaveSystem.Data.holidayBestDistance;
             scoreExact = 0f;
             bonusScore = 0;
             bonusCoins = 0;
+            bankedCoins = 0;
             lastLevelCoins = 0;
             streak = 0;
             revivesUsed = 0;
@@ -606,7 +609,8 @@ namespace DribbleToSchool.Holiday
 
         void EnterResults()
         {
-            var data = SaveSystem.Data;
+            // The coins go into the wallet now, so a revive can be paid with what this run just collected.
+            Bank();
             var r = new RunResult
             {
                 score = Score,
@@ -614,8 +618,8 @@ namespace DribbleToSchool.Holiday
                 coins = Coins,
                 stage = StageIndex,
                 day = Day,
-                bestScoreBefore = data.holidayBestScore,
-                bestDistanceBefore = data.holidayBestDistance,
+                bestScoreBefore = BestScore,
+                bestDistanceBefore = BestDistance,
                 reason = crashReason,
                 stats = Stats,
             };
@@ -628,12 +632,44 @@ namespace DribbleToSchool.Holiday
             if (Ended != null) Ended(r);
         }
 
-        /// <summary>Saves the run once (bests, coins, missions); the results screen's every way out comes through here.</summary>
+        /// <summary>
+        /// Puts the coins picked up so far into the wallet and keeps the bests. Safe to repeat: only what is new is
+        /// added. The run ending does this (a revive is paid from the wallet) and so does the app going to the
+        /// background on the results screen.
+        /// </summary>
+        void Bank()
+        {
+            try
+            {
+                var data = SaveSystem.Data;
+                int unbanked = Coins - bankedCoins;
+                if (unbanked > 0)
+                {
+                    SaveSystem.AddCoins(unbanked);
+                    bankedCoins += unbanked;
+                }
+                data.holidayBestScore = Mathf.Max(data.holidayBestScore, Score);
+                data.holidayBestDistance = Mathf.Max(data.holidayBestDistance, (int)Distance);
+                SaveSystem.Save();
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning("[Holiday Run] Could not save the run: " + e.Message);
+            }
+        }
+
+        /// <summary>
+        /// Saves the finished run once (the wallet, bests, totals and missions). Every way out of a run comes
+        /// through here: the results screen's, and quitting or restarting from the pause menu, so coins picked
+        /// up are never lost.
+        /// </summary>
         void Commit()
         {
             if (committed) return;
-            if (Phase != RunPhase.Results && Phase != RunPhase.Crashed) return;
+            // Nothing to save before the run has begun.
+            if (Phase == RunPhase.Ready) return;
             committed = true;
+            Bank();
             try
             {
                 var data = SaveSystem.Data;
@@ -641,10 +677,8 @@ namespace DribbleToSchool.Holiday
                 data.holidayRuns++;
                 data.holidayDays += s.days;
                 data.holidayTotalDistance += s.distance;
-                data.holidayBestScore = Mathf.Max(data.holidayBestScore, s.score);
-                data.holidayBestDistance = Mathf.Max(data.holidayBestDistance, s.distance);
                 int missionCoins = HolidayMissions.Commit(s, new List<MissionView>());
-                SaveSystem.AddCoins(Coins + missionCoins);
+                if (missionCoins > 0) SaveSystem.AddCoins(missionCoins);
                 SaveSystem.Save();
             }
             catch (Exception e)
