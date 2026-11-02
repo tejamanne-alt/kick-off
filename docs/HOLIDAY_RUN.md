@@ -144,7 +144,8 @@ Scripts/Editor/
                           power-ups, and the rules that keep them fair (pure logic, checked at build time and in tests)
   LevelFeasibility.cs     the build-time check that a level or stage can be done: holes, steps, walls, platforms, barriers
                           and roofs against JumpReach (the track builder records, Finish() warns; also pure logic)
-  LevelBuildKit.Holiday.cs  the core scene's rig (camera, kid, ball, director, HUD) and the runner's obstacles
+  LevelBuildKit.Feasibility.cs  what the track builder records for the check (Audit), and the PlayerTuning check
+  LevelBuildKit.Holiday.cs  the core scene's rig (camera, kid, ball, director, HUD) and the runner's obstacles, targets and stars
   StreetBuilder.Holiday.cs  the street scenery of one stage's stretch (lots fitted between side streets,
                           chapter transitions, poles on one lattice)
 Tests/Editor/
