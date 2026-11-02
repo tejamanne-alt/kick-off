@@ -126,6 +126,8 @@ namespace DribbleToSchool.UI
             leftRect = (RectTransform)leftButton.transform;
             rightButton = TouchButton.Create(root, "RightButton", WalkColor, false);
             rightButton.AddIcon(ProceduralSprites.ArrowUp, 0.42f, -90f);
+            // A flick down on this arrow slides without letting go: a small slide glyph under the arrow says so.
+            rightButton.AddIcon(ProceduralSprites.SlideIcon, 0.2f, 0f, 0.2f, new Color(1f, 1f, 1f, 0.3f));
             rightRect = (RectTransform)rightButton.transform;
 
             // Kick button: a ball, and a knob that follows the aiming drag.

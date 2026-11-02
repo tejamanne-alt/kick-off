@@ -48,6 +48,16 @@ namespace DribbleToSchool.Core
             set { SetBool("settings.leftHanded", value); }
         }
 
+        /// <summary>
+        /// The slide button sits with the walking thumb (up and to the left of the forward arrow) instead of beside
+        /// jump and kick; flicking down on an arrow slides either way.
+        /// </summary>
+        public static bool SlideWithWalkThumb
+        {
+            get { return GetBool("settings.slideWithArrows", true); }
+            set { SetBool("settings.slideWithArrows", value); }
+        }
+
         /// <summary>High-contrast trajectory colours (blue/orange instead of white/red).</summary>
         public static bool ColorblindAim
         {

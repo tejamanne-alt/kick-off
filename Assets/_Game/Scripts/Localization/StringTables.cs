@@ -119,6 +119,7 @@ namespace DribbleToSchool.Localization
                 { "settings.haptics", "Vibration" }, { "settings.shake", "Screen shake" },
                 { "settings.bell", "School bell timer" }, { "settings.bellHint", "Off = cozy mode, no rush" },
                 { "settings.leftHanded", "Left-handed controls" }, { "settings.colorblind", "Colour-blind aim colours" },
+                { "settings.controls", "Controls" }, { "settings.slideArrows", "Slide button by the arrows" }, { "settings.slideArrowsHint", "Off = beside jump and kick" },
                 { "settings.language", "Language" },
                 { "settings.player", "Player" }, { "settings.boy", "Boy" }, { "settings.girl", "Girl" },
                 { "player.title", "Choose your player" }, { "player.change", "Change player" },
@@ -212,7 +213,7 @@ namespace DribbleToSchool.Localization
                 { "tut.dog", "Dogs chase low balls. Chip it over their heads!" },
                 { "tut.fountain", "The fountain jets lift the ball. Dribble into them!" },
                 { "tut.swing", "Chip the ball across, then ride the rope swing over." },
-                { "tut.slide", "Tap SLIDE (or swipe down) to slide under things feet first. The ball rolls under too!" },
+                { "tut.slide", "Tap SLIDE, or flick your thumb down on the forward arrow while you walk, to slide under things feet first. The ball rolls under too!" },
                 { "tut.doublejump", "Tap JUMP again in the air for a double jump. Hold it to go higher." },
 
                 // Levels
@@ -335,6 +336,7 @@ namespace DribbleToSchool.Localization
                 { "settings.haptics", "Vibración" }, { "settings.shake", "Temblor de cámara" },
                 { "settings.bell", "Campana del cole" }, { "settings.bellHint", "Desactivada = modo tranquilo" },
                 { "settings.leftHanded", "Controles para zurdos" }, { "settings.colorblind", "Colores para daltónicos" },
+                { "settings.controls", "Controles" }, { "settings.slideArrows", "Deslizar junto a las flechas" }, { "settings.slideArrowsHint", "No = junto a salto y chuta" },
                 { "settings.language", "Idioma" },
                 { "settings.player", "Personaje" }, { "settings.boy", "Chico" }, { "settings.girl", "Chica" },
                 { "player.title", "Elige personaje" }, { "player.change", "Cambiar personaje" },
@@ -420,7 +422,7 @@ namespace DribbleToSchool.Localization
                 { "tut.dog", "Los perros persiguen balones bajos. ¡Pásalo por encima!" },
                 { "tut.fountain", "El agua de la fuente levanta el balón. ¡Llévalo dentro!" },
                 { "tut.swing", "Pasa el balón al otro lado y cruza en el columpio de cuerda." },
-                { "tut.slide", "Toca DESLIZA (o desliza el dedo hacia abajo) para pasar por debajo con los pies por delante. ¡El balón también pasa!" },
+                { "tut.slide", "Toca DESLIZA, o desliza el pulgar hacia abajo sobre la flecha mientras caminas, para pasar por debajo con los pies por delante. ¡El balón también pasa!" },
                 { "tut.doublejump", "Toca SALTO otra vez en el aire para un doble salto. Mantén para subir más." },
 
                 { "level.L01", "Salir de casa" }, { "level.L02", "Coches aparcados" }, { "level.L03", "Cuesta arriba" },
