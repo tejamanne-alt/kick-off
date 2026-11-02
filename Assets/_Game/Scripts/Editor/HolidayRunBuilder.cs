@@ -277,6 +277,7 @@ namespace DribbleToSchool.EditorTools
                 case PatternKind.Tunnel: t.RunTunnel(f.x0, f.x1); break;
                 case PatternKind.Crossing: t.RunCrossing(f.x0, f.x1, f.a); break;
                 case PatternKind.Fountain: t.Fountain(f.x, 0f, f.h, f.a); break;
+                case PatternKind.Checkpoint: t.Checkpoint(f.x); break;
                 case PatternKind.TideArea: t.RunTide(f.x0, f.x1, f.a, f.b); break;
                 case PatternKind.Gull: t.Seagull(f.x0, f.x1, f.y, f.a); break;
                 case PatternKind.Cranes: t.RunCrane(f.x); break;

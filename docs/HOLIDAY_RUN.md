@@ -53,7 +53,7 @@ Ready (GET READY ... GO!) -> Running -> last ball lost -> Results -> Revive (coi
 ### Scoring
 
 - Points for **new ground** (one per metre, times the multiplier): walking back and forth earns nothing.
-- **Coins** are 10 points each (times the multiplier).
+- **Coins** are 10 points each (times the multiplier); a star coin is worth five.
 - **Multiplier**: it goes up by one for every 6 obstacles passed in a row (max x5) and drops to x1 when a ball
   is lost. Smashing a crate with a kick also counts.
 - **Close shaves**: passing an obstacle closer than 0.3 m without touching it (a jump that only just clears
@@ -81,7 +81,7 @@ shown on the results screen with bars, and the coins go to the wallet when the r
 | Mission | Counts | Targets (easy / mid / hard) | Coins |
 |---|---|---|---|
 | Run a distance | best single run | 600 / 1400 / 2800 m | 60 / 120 / 240 |
-| Collect coins | best single run | 30 / 80 / 160 | 50 / 110 / 220 |
+| Collect coins | best single run | 70 / 180 / 400 | 50 / 110 / 220 |
 | Reach a stage | best single run | 6 / 12 / 23 | 70 / 140 / 250 |
 | Reach a multiplier | best single run | x3 / x4 / x5 | 50 / 90 / 150 |
 | Clear obstacles | best single run | 25 / 60 / 120 | 60 / 130 / 240 |
@@ -105,6 +105,10 @@ The targets and rewards are first guesses: none are calibrated against real play
 | 4 Underpass | The Underpass, Building Site, Cranes, Tunnel Run | tunnel lamps, trenches, scaffolds, cranes with pallets, rolling pipes |
 | 5 Park & School | Park Gates, Fountain Square, Playground, Duck Pond, The Final Bell | hedges, dogs, fountain jets, swings over the stream, the school gate |
 
+Every stage also has, whatever its traits: something to smash (crates, a sandcastle on the beach, cones on the site, now and then
+a pile of crates), people strolling and dogs, floating targets (balloons, paper lanterns, beach balls) that burst into coins when
+the ball flies into them, a trail of coins, and a middle checkpoint. The beach has more gulls than the story's.
+
 The table with every stage's traits and difficulty (`density`, from 0.28 in the first stage to 1.0 at the
 school) is `Holiday/HolidayStages.cs`. The first 22 m of a day and the first 14 m of every stage are empty:
 time to get going, and to look around. Every stage carries **three layout variants** of its obstacles and
@@ -117,12 +121,15 @@ scenery stays put.
 Scripts/Holiday/
   HolidayStages.cs        the stage table (levels, chapters, traits, difficulty) and the world's geometry
   RunChunk.cs             a stage's root and its layout variants
-  RunSolid.cs, RunBreakable.cs   obstacles the director counts (passed, close shave; a smashable crate)
+  JumpReach.cs            what the kid can reach (single, double, trampoline, slide), replayed from KidController, and the
+                          limits for gaps and walls that follow from it; pure arithmetic, no Unity objects
+  RunSolid.cs, RunBreakable.cs   obstacles the director counts (passed, close shave); a smashable crate; or (floating)
+                          a balloon, lantern or beach ball that is no obstacle and bursts when the ball flies into it
   PowerUp.cs              the magnet, shield and turbo pickups
   RunWorldStreamer.cs     loads the stages near the kid as additive scenes, wakes them one a frame, unloads
                           what is behind
   HolidayRunDirector.cs   the rules: balls, score, combo, power-ups, revive, days, saving
-  BallSmasher.cs          on the ball: a hard kick into a crate smashes it
+  BallSmasher.cs          on the ball: a hard kick into a crate smashes it; a ball flying through a balloon bursts it
   HolidayAtmosphere.cs    carries the sun, sky and haze from one chapter's mood to the next
   HolidayRunHud.cs        the run's screen: score card, balls left, multiplier, stage ribbon and chapter banner, toasts,
                           power-up timers, the touch buttons (arrows, aim), the day splash
@@ -133,14 +140,16 @@ Scripts/FrontEnd/
   FrontEndController.cs   OpenHolidayRun()
 Scripts/Editor/
   HolidayRunBuilder.cs    builds the core scene and the 23 stage scenes
-  HolidayPatterns.cs      what goes where in each stage: three layouts of obstacles, coins and power-ups,
-                          and the rules that keep them fair (pure logic, checked at build time and in tests)
+  HolidayPatterns.cs      what goes where in each stage: three layouts of obstacles, street life, targets, coins and
+                          power-ups, and the rules that keep them fair (pure logic, checked at build time and in tests)
+  LevelFeasibility.cs     the build-time check that a level or stage can be done: holes, steps, walls, platforms, barriers
+                          and roofs against JumpReach (the track builder records, Finish() warns; also pure logic)
   LevelBuildKit.Holiday.cs  the core scene's rig (camera, kid, ball, director, HUD) and the runner's obstacles
   StreetBuilder.Holiday.cs  the street scenery of one stage's stretch (lots fitted between side streets,
                           chapter transitions, poles on one lattice)
 Tests/Editor/
-  HolidayStageTests.cs, HolidayPatternsTests.cs, GameLogicTests.cs (missions, stage logic),
-  ControlLayoutTests.cs
+  HolidayStageTests.cs, HolidayPatternsTests.cs, JumpReachTests.cs, LevelFeasibilityTests.cs,
+  GameLogicTests.cs (missions, stage logic), ControlLayoutTests.cs
 ```
 
 ### Streaming contract
@@ -175,8 +184,10 @@ All on `HolidayRunDirector` in the core scene: `ballsPerRun`, `walkBackLimit`, `
 `firstReviveCost`, `maxRevives`; power-up durations in `Duration(kind)`. The kid and the ball are tuned by the
 same two assets as the campaign (`PlayerTuning`, `BallTuning`); `LevelManager.maxBallBehindDistance` (16 m in
 the core scene) is how far behind the kid the ball may be left. Stage difficulty and traits are in
-`HolidayStages.All`; the streaming distances are on `RunWorldStreamer`; the ball smashes with
-`BallSmasher.minSpeed`.
+`HolidayStages.All`; the streaming distances are on `RunWorldStreamer`; the ball smashes a crate with
+`BallSmasher.minSpeed` (6 m/s) and bursts a balloon with that target's own `RunBreakable.minSpeed` (2.5 m/s, a ball flying at it).
+The reach of the jump, and so every limit on a gap or a wall, comes from `JumpReach.Defaults` (see below): retune `PlayerTuning` and
+that has to follow.
 
 ### Rebuilding
 
@@ -184,7 +195,7 @@ The editor generates every Holiday Run scene (like the story levels); edits made
 overwritten. Change the stage table, the patterns or the rig and rebuild:
 
 - **Kick Off > Rebuild All Levels** also rebuilds the Holiday Run (it is part of the generated content;
-  `GeneratedContent.Version` is 51 for it), and it runs by itself on the first open.
+  `GeneratedContent.Version` is 52 for it), and it runs by itself on the first open.
 - **Kick Off > Rebuild Holiday Run** rebuilds only the Holiday Run (its core scene and 23 stages) and swaps its
   entries in the build settings, leaving the levels and the menu alone.
 - The scenes are `Assets/_Game/Scenes/Holiday/HolidayRun.unity` (the core) and `HolidayRun_S01..S23.unity`, all in
@@ -195,27 +206,80 @@ overwritten. Change the stage table, the patterns or the rig and rebuild:
 ### How a stage is made
 
 A stage scene has one root, `Stage`, **inactive in the file**, with a `RunChunk` and, under it: the ground (split at
-the gaps), the 3D street, the scenery with its animals, the stage's furniture (tunnel, crossings, fountains, beats
-of pedestrians and dogs, gulls, the tide, cranes), and three inactive layouts `Layout_A` to `Layout_C` of obstacles,
-coins and power-ups. `HolidayPatterns` decides what goes where, once, the same every time it is asked.
+the gaps), the 3D street, the scenery with its animals, the stage's furniture (tunnel, crossings, fountains, gulls, the tide,
+cranes, a checkpoint in the middle), and three inactive layouts `Layout_A` to `Layout_C` of obstacles, things to smash, beats of
+walkers and dogs, floating targets, coins and power-ups. `HolidayPatterns` decides what goes where, once, the same every time
+it is asked.
 
-What the kid can do sets the sizes: a single jump clears about 1.3 m and spans about 5 m of ground at 9 m/s, a
-double jump clears about 2.1 m, a slide lasts 0.7 s and passes under 0.85 m.
+**What the kid can do sets the sizes, and it is worked out, not guessed.** The kid walks at 4.2 m/s (`PlayerTuning.runSpeed`;
+the turbo, x1.35, only adds reach, so everything is designed for walking). `Holiday/JumpReach.cs` replays
+`KidController`'s jump one physics step at a time (gravity 3 x 9.81, jump 9 m/s, air jump 7 m/s, fall gravity x1.4, the
+trampoline's throw 13 m/s, step 1/60 s) and the limits follow from the flights:
 
-- **Things in the way**: low (0.3 to 0.5 m: kerbs, steps, borders, sometimes a hurdle run of two or three), mid
-  (0.6 to 1.0 m), tall (1.5 to 1.9 m, a double jump: rare and always with a coin arc over it), parked cars,
-  barriers to slide under (chapter by chapter from the Barriers kit), gaps (plain 2.0 to 3.4 m, wide 4.0 to 5.2 m
-  where the density is over 0.5), puddles and soft sand that slow you down, trampolines, rolling pipes in the
-  tunnel, crates and sandcastles a kicked ball smashes.
-- **Spacing**: between two demands there are 28 m at density 0.3 down to 11 m at density 1, and at least 12 m
-  between two different kinds of demand (more after a slide, a wide gap or a trampoline); nothing within 6 m of a
-  power-up. Two stages could not fit all their mandatory traits at that spacing, so it is tightened by 40% toward
-  the minimums there.
-- **Three layouts per stage** hold the same kinds and counts of obstacles (so they are as hard as each other) in
-  different places, orders, sizes, looks, coins and power-ups. Power-ups appear in 29 of the 69 layouts.
-- **Scenery as scenery**: crossings stay on the green man (traffic waits at the line), gulls fly high, the tide
-  never reaches the footpath, cranes carry their load out of reach, swings and the pond are clearings. Moving or
-  swinging platforms and passing traffic were left out on purpose: they would need runtime fairness work.
+| What | Flight / limit at 4.2 m/s |
+|---|---|
+| single jump | flies 2.3 m, peaks 1.30 m (3.1 m at turbo speed) |
+| double jump, second press at the top | flies 3.6 m, peaks 2.07 m (4.9 m at turbo speed) |
+| longest flight (second press as late as the game allows) | 4.1 m, but only 1.3 m high |
+| **plain gap** (one jump) | made 1.4 to 1.9 m, never over **2.0** (the flight less 0.3 m: an early take-off, the feet box at the edge) |
+| **wide gap** (a double jump) | made 2.7 to 3.1 m, never over **3.2** (the flight less 0.42 m), never under 2.6 |
+| round every gap | 6 m of clear ground before it (run-up, room to kick the ball across), 4 m after (landing, room to fetch the ball), no wall, beat or power-up in either; the ball is chipped 3 to 6 m, so 3.2 m is fine for it |
+| low / mid / tall / highest wall | 0.5 / 1.0 (a single jump) / 1.7 (a double jump) / **1.8** m; a parked car (1.55 m) is climbed in two hops, a pile of crates is 1.42 m |
+| barrier to slide under | 0.85 m clear (the sliding kid is 0.5 m); up to 4.4 m long (the slide itself carries 2.9 m, the low shuffle under a longer barrier the rest) |
+| underpass deck | 3.8 m; the head of a double jump is at 3.27 m. Rolling pipes are 0.9 m across |
+| coins | up to 3.5 m (a double jump's head), up to 5 m on a trampoline's throw |
+| trampoline throw | peaks 2.76 m, flies 3.4 m (4.6 m with the air jump it gives back), so 4.8 m of the street after the pad are kept clear and under a ceiling of 4.7 m |
+
+`JumpReachTests` compares `JumpReach.Defaults` with `PlayerTuning`'s real defaults, the engine's gravity, the physics step and the
+trampoline, and pins the flights to the figures above: retune the jump and a test fails (and `LevelBuildKit.CheckJumpTuning`
+warns when the asset the scenes use differs), instead of every trench quietly becoming impossible. `Validate` fails any layout with
+a gap over its limit, a wall too high, too little run-up or landing, or street life, a power-up or a coin trail over a gap or in a solid.
+
+- **Things in the way**: low (0.3 to 0.5 m: kerbs, steps, borders, sometimes a hurdle run of two or three 8 to 9.5 m apart),
+  mid (0.6 to 1.0 m), tall (1.5 to 1.7 m, a double jump: rare and always with a coin arc over it), parked cars, barriers to slide
+  under (chapter by chapter from the Barriers kit), gaps, puddles and soft sand that slow you down, trampolines, rolling pipes in
+  the tunnel.
+- **Things to smash** (`RunBreakable`, a hard kick breaks them for coins): a crate, a sandcastle on the beach, a stack of cones on the
+  site (every other one) in every stage, and now and then a pile of two crates and one on top (a big sandcastle on the beach, 1.42 m:
+  too high for a single jump, so a double jump or a hard kick). No more than three single ones and one pile in a stage, and they are as fair as a wall of
+  their size: the kid goes over them, the ball is chipped over or kicked through.
+- **Floating targets** (`RunBreakable` with `floating`): 2 to 4 per stage, balloons at home and on the site, paper lanterns in the
+  market and the park, beach balls on the beach, hanging 2.3 to 3.4 m up in the open stretches (4 m from a gap, never in the tunnel or
+  over a crossing). They are triggers: the kid passes through them, the director does not count them as obstacles, and a ball flying
+  at 2.5 m/s or more through one (a chip, a kick at it, a trampoline throw) bursts it for 5 coins, "Smash!", and flies on.
+- **Street life**: beats of walkers (`Pedestrian`) and dogs (`Dog`) in the layouts, in different places in each: 1 to 2 at the lowest
+  density, 3 to 4 at the highest, people in every chapter, dogs where there are dog walkers (not on the site) and where the stage
+  has them (the park). A beat is 4.5 to 7 m long on open ground 1.5 m clear of every solid, 4.5 m or more from a gap's run-up and
+  landing, off a trampoline's throw. The walkers probe the footpath themselves and stop short of holes, walls and checkpoints.
+  Gulls on every beach stage (3, or 5 in Seagull Bay), swooping 3.0 to 3.6 m up, so they clip a high lob or a shot at a balloon and
+  never a ball rolling along the ground. Cats on the garden walls, pigeons, crabs, squirrels, ducks and the flocks crossing the sky
+  (now over every stage) are the street builder's scenery.
+- **Coins**: a trail every 1.6 to 2.4 m in gentle waves (0.5 to 1.1 m up) from the start of the stage to its end between everything
+  else; an arc of coins along the real flight over every wall and gap (a single jump's path, a double jump's for the tall things,
+  the stacks and the wide gaps), a row at 0.4 m under every barrier, on the slow ground and on top of the broad walls, coins on a
+  car's bonnet and roof, an arc up each trampoline's throw with a star at the top of it. None hangs in a solid, and none low over a
+  gap (the arc over it is 0.95 m and up there). A **star** is the Animals kit's star at 1.7 times the size, worth five coins,
+  where only a double jump or a throw gets to; one **bonus detour** in most layouts is a high arc along a double jump with a star
+  at the top (nothing else is in the way). A broken crate pays 3 coins, a pile 6, a balloon 5. About 70 coins a stage (the old
+  stages had 29), so the **Collect coins** mission was raised to 70 / 180 / 400.
+- **Power-ups**: every layout of every second stage (the first, the third...) has one, so there is one in any two consecutive
+  stages whichever layouts load; the others have one about one time in two. A shield when a gap is coming within 30 m, else a magnet
+  or a turbo, 1.0 to 1.6 m up, 3 m from any obstacle.
+- **A checkpoint in the middle**: besides the one 8 m in, a flag near the middle of the open ground (with 4 m clear before it
+  and 6 m after: the kid is put down there with the ball a metre ahead), so a lost ball costs half a stage of walking, not a whole
+  one. A stage too full to spare the ground goes without (Tunnel Run).
+- **Spacing for walking**: the player sets the pace, so spacing is about clutter and the ball, not reaction time. Between two demands
+  there are 20 m at density 0.3 down to 9 m at density 1, at least 10 m between two different kinds (and more after a slide or a
+  pipe lane), and a stage has 5 to 9 demands (gaps and obstacles; 4 in the underpass stages, which have the tunnel as well) with
+  something on every stretch: no 25 m of open ground is bare. Where a stage cannot fit all its traits at that spacing it is
+  tightened toward the minimums (one stage in the lap).
+- **Three layouts per stage** hold the same kinds and counts of obstacles, things to smash, beats and targets (so they are as hard
+  as each other) in different places, orders, sizes, looks, coins and power-ups. Power-ups are in 47 of the 69 layouts.
+- **Scenery as scenery**: crossings stay on the green man (traffic waits at the line), the tide never reaches the footpath, cranes
+  carry their load out of reach (5 m, above even a trampoline throw), swings and the pond are clearings. Left out on purpose:
+  moving or swinging platforms as bridges (no gap needs one), the crossing's red man and the tide as real hazards (they would be
+  fair in manual play, the kid waits for the green man or the low water, but a lost ball goes back to a checkpoint up to half a
+  stage away and none of it could be run), and a ledge of crates for a detour.
 - **Seams**: the ground colliders overlap their neighbours by a metre, the street slabs meet exactly at the stage
   ends (a cap is added only where the chapter changes), poles stand on one 21 m lattice, lots are fitted to the run
   between side streets, every urban stage but the last ends on a 7 m cross street, and at chapter changes the lots
@@ -241,14 +305,19 @@ The lap runs through every chapter, so where chapters are sold (`Monetization.Re
 
 Everything here was written and checked **without Unity or a device**: the C# compiles against the Unity
 reference DLLs in four configurations (legacy input, Input System, editor, tests); pure logic ran for real under
-Mono (the stage table, all 69 pattern layouts against their fairness rules, the missions, the HUD and menus against
-a fake Unity with a random-event fuzz, the layout arithmetic); the HUD's layout was rendered as mock-ups at 4:3,
-16:9 and 21:9 in both languages; and the character poses were rendered in Blender. No scene has been generated,
-opened or played, and no NUnit test has been run in the Test Runner. First thing in the editor:
+Mono (the stage table, all 69 pattern layouts against their fairness rules and the feasibility check, the pure edit-mode
+tests with a work-alike NUnit whose asserts really fail, the 29 story layouts through a recording stand-in for the track builder,
+the missions, the HUD and menus against a fake Unity with a random-event fuzz, the layout arithmetic); the HUD's layout was
+rendered as mock-ups at 4:3, 16:9 and 21:9 in both languages; and the character poses were rendered in Blender. No scene has been
+generated, opened or played, and no NUnit test has been run in the Test Runner (the two that need a running Unity, the
+`PlayerTuning` defaults and the trampoline's launch, could not run at all). The jump reach is a replay of `KidController`
+and the physics step, not a measurement: nothing says a thumb on a phone takes a 2.0 m trench as comfortably as the model does.
+First thing in the editor:
 
 1. Open the project and let the generated content rebuild (Kick Off > Rebuild All Levels); read the Console for
-   anything red or any "Holiday Run layout" warning. Shaders have never been compiled either (see PROGRESS.md
-   "After Phase 8").
+   anything red, any "Holiday Run layout" warning, and any "can't be done" warning (a pit, step, wall, barrier or roof
+   that the feasibility check says the kid cannot get past; there should be none) or "PlayerTuning asset differs" warning.
+   Shaders have never been compiled either (see PROGRESS.md "After Phase 8").
 2. Run the edit-mode tests (Window > General > Test Runner).
 3. Title screen > **Holiday Run**. Check: GET READY then GO once; the kid stays on the ground at the start; the
    first stage and the next two stream in without a hitch; the stage ribbon names each stage and the chapter banner
@@ -260,7 +329,10 @@ opened or played, and no NUnit test has been run in the Test Runner. First thing
    a football under the score card goes dim, and "Back to checkpoint" in the pause menu does the same. Lose
    the third: the results, revive (it is paid with the coins you just collected), run again, quit to the menu from
    the pause menu (the coins are kept). Walk back past the wall 40 m behind the furthest point: it stops you.
-6. Kick hard at a crate and a sandcastle (they smash for coins); collect each power-up; check the missions after a run.
+6. Kick hard at a crate and a sandcastle (they smash for coins); lob the ball at a balloon, a lantern and a beach ball (they
+   burst for 5 coins and the ball flies on; the kid walks through them); collect each power-up and a star; walk through the
+   trail of coins; check the missions after a run. Try the trenches at the walking pace: a 1.9 m one should take a single
+   jump with room to spare, a 3.1 m one a double jump; if they feel tight, `JumpReach.PlainSlack` and `WideSlack` are the knobs.
 7. On a phone: the arrows under the left thumb, JUMP at the bottom of the stack at the right edge with SLIDE straight
    above it and KICK beside them, all the same size and see-through, none hard to reach, and the aim drag from KICK
    working with the aim bar showing.
@@ -275,6 +347,14 @@ Assumptions in the code that only a run can confirm:
   anything from outside their stage.
 - The rolling pipes (made at run time by `PipeSpawner` from a template carrying a `RunSolid`) shove the kid and the
   ball as in the campaign and count as passed once the kid is beyond them; a rolling pipe is the only obstacle that moves.
+- A balloon is a trigger collider with a `RunBreakable` (`floating`): Unity delivers `OnTriggerEnter2D` to the ball's
+  `BallSmasher` when its collider enters it (the ball has a Rigidbody2D, the balloon none), and the kid's capsule, which
+  passes through, does nothing. Its bobbing (`RunBreakable.Update`) moves a plain transform.
+- The star coin is the Animals kit's `Star` model on a `Pickups.Coin` with `value` 5, spun like a coin; `LevelManager` counts
+  the value, and the magnet pulls it like any coin.
+- The second checkpoint registers with the level manager when its layout is switched on, like the first (`Checkpoint.OnEnable`).
+- Beats of walkers and dogs are built into the layouts, not the stage (so each layout has its own); `Pedestrian.ClaimLane`
+  (which the dogs use for their patch too) only runs while a layout is active.
 - The obstacles were laid out as things to get past (a wall to jump, a bar to slide under, a pit to cross); the ball
   has to get past them too, by a kick over or round them, as in a level. How that plays with the ball (walls the ball
   cannot be carried over, a ball that ends up stuck) is unseen: the pause menu's "Back to checkpoint" is the way out.

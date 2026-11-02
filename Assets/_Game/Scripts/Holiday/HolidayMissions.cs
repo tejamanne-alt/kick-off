@@ -82,7 +82,7 @@ namespace DribbleToSchool.Holiday
         {
             // ---- the best single run ("in one go") ----
             new MissionDefinition("distance", MissionMeasure.BestRun, s => s.distance, new[] { 600, 1400, 2800 }, new[] { 60, 120, 240 }),
-            new MissionDefinition("coins", MissionMeasure.BestRun, s => s.coins, new[] { 30, 80, 160 }, new[] { 50, 110, 220 }),
+            new MissionDefinition("coins", MissionMeasure.BestRun, s => s.coins, new[] { 70, 180, 400 }, new[] { 50, 110, 220 }),
             new MissionDefinition("stage", MissionMeasure.BestRun, s => s.stagesReached, new[] { 6, 12, 23 }, new[] { 70, 140, 250 }),
             new MissionDefinition("multiplier", MissionMeasure.BestRun, s => s.maxMultiplier, new[] { 3, 4, 5 }, new[] { 50, 90, 150 }),
             new MissionDefinition("obstacles", MissionMeasure.BestRun, s => s.obstacles, new[] { 25, 60, 120 }, new[] { 60, 130, 240 }),

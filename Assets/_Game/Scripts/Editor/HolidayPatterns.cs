@@ -8,7 +8,7 @@ namespace DribbleToSchool.EditorTools
     public enum PatternKind
     {
         // Furniture: part of the stage, whichever layout is on.
-        Gap, Tunnel, Crossing, Fountain, TideArea, Gull, Cranes,
+        Gap, Tunnel, Crossing, Fountain, TideArea, Gull, Cranes, Checkpoint,
         // Street life: in the layouts, so each of the three has its people and dogs in other places.
         Walkers, DogPatch,
         // Things in the kid's way.
@@ -125,6 +125,11 @@ namespace DribbleToSchool.EditorTools
         public const float CraneHang = 5f;
         /// <summary>The clear height under every barrier to slide under (TrackBuilder.SlideGap).</summary>
         public const float SlideClearance = 0.85f;
+        /// <summary>
+        /// The middle checkpoint of a stage keeps this much ground clear before it and after it (the kid is put down on it with the ball a metre
+        /// ahead, and needs a run-up of 6 m to whatever comes next).
+        /// </summary>
+        public const float CheckpointBefore = 4f, CheckpointAfter = 6f;
 
         // ----------------------------------------------------------------------------------------------- spacing
 
@@ -265,8 +270,9 @@ namespace DribbleToSchool.EditorTools
             {
                 plan.furniture.Clear();
                 var anchors = new List<Span>();
-                // If the furniture won't all fit, one gap fewer (then another).
-                if (!PlaceFurniture(plan, st, rng, a, b, anchors, outer / 30)) continue;
+                // If the furniture won't all fit: first without the middle checkpoint, then one gap fewer (then another).
+                int fewerGaps = outer < 60 ? 0 : (outer - 60) / 15 + 1;
+                if (!PlaceFurniture(plan, st, rng, a, b, anchors, fewerGaps, outer < 30)) continue;
                 if (Recipe(plan, st, anchors, a, b, rng)) return plan;
             }
             // Never expected (every stage fits, see the checks), but a stage must still get built: a stage with its
@@ -283,10 +289,19 @@ namespace DribbleToSchool.EditorTools
         /// Places the stage's gaps, tunnel, crossings and fountains at random along the free stretch, apart from each
         /// other, and its tide and gulls (scenery that takes no ground). False if they don't all fit (the caller tries again).
         /// </summary>
-        static bool PlaceFurniture(StagePlan plan, HolidayStages.Stage st, Random rng, float a, float b, List<Span> anchors, int fewerGaps)
+        static bool PlaceFurniture(StagePlan plan, HolidayStages.Stage st, Random rng, float a, float b, List<Span> anchors, int fewerGaps, bool checkpoint)
         {
             float d = st.density;
             bool poles = st.chapter == 1 || st.chapter == 4;
+
+            // A second checkpoint near the middle of the stage's open ground (the first stands 8 m in): a lost ball costs half a stage of
+            // walking back, not a whole one. Its ground is kept clear like a tunnel's mouth (a stage too full to spare it goes without).
+            if (checkpoint)
+            {
+                float cx = Lerp(a, b, Range(rng, 0.42f, 0.58f));
+                anchors.Add(Zone(cx - CheckpointBefore, cx + CheckpointAfter));
+                plan.furniture.Add(new PatternItem { kind = PatternKind.Checkpoint, x = cx, x0 = cx, x1 = cx });
+            }
 
             if (st.Has(StageTraits.Gaps))
             {
@@ -973,6 +988,7 @@ namespace DribbleToSchool.EditorTools
                     case PatternKind.Tunnel: list.Add(new[] { f.x0 - TunnelApproach, f.x1 + TunnelAfter }); break;
                     case PatternKind.Crossing: list.Add(new[] { f.x0 - CrossingMargin, f.x1 + CrossingMargin }); break;
                     case PatternKind.Fountain: list.Add(new[] { f.x - FountainBay, f.x + FountainBay }); break;
+                    case PatternKind.Checkpoint: list.Add(new[] { f.x - CheckpointBefore, f.x + CheckpointAfter }); break;
                 }
             }
             foreach (var i in items)
@@ -1428,6 +1444,19 @@ namespace DribbleToSchool.EditorTools
                     if (f.x1 <= t.x0 && t.x0 - f.x1 < JumpReach.Landing) problems.Add(tag + "the tunnel " + (t.x0 - f.x1).ToString("0.0") + " m after a gap (no landing)");
                     if (f.x1 > t.x0 && f.x0 < t.x1) problems.Add(tag + "a gap in the tunnel");
                 }
+            }
+
+            // The checkpoint: the kid is put down there with the ball a metre ahead, so nothing stands near it.
+            foreach (var c in plan.furniture)
+            {
+                if (c.kind != PatternKind.Checkpoint) continue;
+                if (c.x < plan.firstX || c.x > plan.lastX) problems.Add(tag + "the middle checkpoint is outside the open stretch");
+                if (InsideTunnel(plan, c.x)) problems.Add(tag + "the middle checkpoint in the tunnel");
+                foreach (var i in items)
+                    if ((IsSolidKind(i.kind) || IsLife(i.kind)) && i.x1 > c.x - CheckpointBefore + eps && i.x0 < c.x + CheckpointAfter - eps) problems.Add(tag + i.kind + " by the middle checkpoint");
+                foreach (var f in plan.furniture)
+                    if ((f.kind == PatternKind.Gap || f.kind == PatternKind.Tunnel || f.kind == PatternKind.Crossing || f.kind == PatternKind.Fountain)
+                        && f.x1 > c.x - CheckpointBefore + eps && f.x0 < c.x + CheckpointAfter - eps) problems.Add(tag + f.kind + " by the middle checkpoint");
             }
 
             // ------ the size of things

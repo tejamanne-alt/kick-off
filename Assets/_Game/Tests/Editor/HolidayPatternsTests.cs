@@ -239,6 +239,29 @@ namespace DribbleToSchool.Tests
         }
 
         [Test]
+        public void MostStagesHaveACheckpointInTheMiddleWithClearGroundAroundIt()
+        {
+            int with = 0;
+            for (int stage = 0; stage < HolidayStages.Count; stage++)
+            {
+                var plan = HolidayPatterns.Plan(stage);
+                var checkpoint = plan.furniture.FirstOrDefault(f => f.kind == PatternKind.Checkpoint);
+                if (checkpoint == null) continue;
+                with++;
+                Assert.Greater(checkpoint.x, plan.from + 8f + 20f, "stage " + (stage + 1) + ": far from the first checkpoint");
+                Assert.Less(checkpoint.x, plan.to - 8f - 10f, "stage " + (stage + 1) + ": well before the end");
+                for (int v = 0; v < HolidayPatterns.Variants; v++)
+                    foreach (var i in plan.layouts[v])
+                    {
+                        if (i.kind == PatternKind.Coin || i.kind == PatternKind.Star || i.kind == PatternKind.Balloon) continue;
+                        Assert.IsFalse(i.x1 > checkpoint.x - HolidayPatterns.CheckpointBefore && i.x0 < checkpoint.x + HolidayPatterns.CheckpointAfter,
+                            "stage " + (stage + 1) + " layout " + v + ": " + i.kind + " by the checkpoint");
+                    }
+            }
+            Assert.GreaterOrEqual(with, HolidayStages.Count - 3, "the stages with a middle checkpoint");
+        }
+
+        [Test]
         public void TheBigNumbersMatchTheKitsAndTheHazards()
         {
             // The stack is the crate pyramid of the story levels (two crates and one on top: 1.42 high and wide).

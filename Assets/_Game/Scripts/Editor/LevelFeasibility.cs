@@ -187,7 +187,15 @@ namespace DribbleToSchool.EditorTools
                 bool ok = false;
                 // A ramp whose top end meets the slab's left edge.
                 foreach (var r in ramps) if (Math.Abs(r.x1 - l.from) < 0.6f && Math.Abs(r.y1 - l.top) < 0.3f) ok = true;
-                foreach (var p in pads) if (p.x < l.from && l.from - p.x < 9f && ThrowLandsOn(p.x, l.from, l.to, height)) ok = true;
+                // A trampoline whose throw comes down on it: the throw alone, or with the air jump it gives back.
+                foreach (var p in pads) if (!ok && p.x < l.from && l.from - p.x < 9f && ThrowLandsOn(p.x, l.from, l.to, height, false)) ok = true;
+                if (!ok)
+                    foreach (var p in pads)
+                        if (p.x < l.from && l.from - p.x < 9f && ThrowLandsOn(p.x, l.from, l.to, height, true))
+                        {
+                            ok = true;
+                            if (doubleJumps != null) doubleJumps.Add(where + " is reached by the trampoline at " + p.x.ToString("0.0") + " and the air jump it gives back");
+                        }
                 if (!ok && height <= tall + Eps) { ok = true; if (doubleJumps != null) doubleJumps.Add(where + " wants a double jump"); }
                 if (!ok) problems.Add(where + " has no ramp up and no trampoline whose throw lands on it");
             }
@@ -206,23 +214,23 @@ namespace DribbleToSchool.EditorTools
             return problems;
         }
 
-        /// <summary>Does the throw of a trampoline at <paramref name="padX"/> (with or without the air jump) come down on top of a slab <paramref name="height"/> up from <paramref name="from"/> to <paramref name="to"/>?</summary>
-        public bool ThrowLandsOn(float padX, float from, float to, float height)
+        /// <summary>
+        /// Does the throw of a trampoline at <paramref name="padX"/> (the kid walking on over it, and pressing the air jump at the top of
+        /// the throw if <paramref name="airJump"/>) come down on top of a slab <paramref name="height"/> up from <paramref name="from"/> to <paramref name="to"/>?
+        /// </summary>
+        public bool ThrowLandsOn(float padX, float from, float to, float height, bool airJump)
         {
-            foreach (var kind in new[] { JumpReach.JumpKind.Spring, JumpReach.JumpKind.SpringDouble })
+            float[] xs, ys;
+            const int n = 200;
+            JumpReach.Path(reach, reach.runSpeed, airJump ? JumpReach.JumpKind.SpringDouble : JumpReach.JumpKind.Spring, n, out xs, out ys);
+            float launch = padX + JumpReach.SpringLaunchOffset;
+            for (int i = 1; i < n; i++)
             {
-                float[] xs, ys;
-                const int n = 200;
-                JumpReach.Path(reach, reach.runSpeed, kind, n, out xs, out ys);
-                float launch = padX + JumpReach.SpringLaunchOffset;
-                for (int i = 1; i < n; i++)
+                // Coming down through the slab's top, with the capsule's whole width on it.
+                if (ys[i - 1] > height + 0.05f && ys[i] <= height + 0.05f)
                 {
-                    // Coming down through the slab's top, with the capsule's whole width on it.
-                    if (ys[i - 1] > height + 0.05f && ys[i] <= height + 0.05f)
-                    {
-                        float x = launch + xs[i];
-                        if (x >= from + 0.25f && x <= to - 0.25f) return true;
-                    }
+                    float x = launch + xs[i];
+                    if (x >= from + 0.25f && x <= to - 0.25f) return true;
                 }
             }
             return false;
