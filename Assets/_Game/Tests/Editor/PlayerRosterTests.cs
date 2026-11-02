@@ -46,12 +46,45 @@ namespace DribbleToSchool.Tests
         }
 
         [Test]
+        public void ThereAreTwoTeensAndFourPrimarySchoolKids()
+        {
+            Assert.AreEqual(2, PlayerRoster.Of(SchoolLevel.High).Count);
+            Assert.AreEqual(4, PlayerRoster.Of(SchoolLevel.Primary).Count);
+            int boys = 0, girls = 0;
+            foreach (var info in PlayerRoster.Of(SchoolLevel.Primary))
+            {
+                if (info.id.Contains("Boy")) boys++;
+                if (info.id.Contains("Girl")) girls++;
+            }
+            Assert.AreEqual(2, boys, "two primary-school boys");
+            Assert.AreEqual(2, girls, "two primary-school girls");
+        }
+
+        [Test]
+        public void PrimarySchoolKidsAreShorterThanTheTeens()
+        {
+            float shortestTeen = float.MaxValue, tallestKid = 0f;
+            foreach (var info in PlayerRoster.Of(SchoolLevel.High)) shortestTeen = Mathf.Min(shortestTeen, info.height);
+            foreach (var info in PlayerRoster.Of(SchoolLevel.Primary)) tallestKid = Mathf.Max(tallestKid, info.height);
+            Assert.Less(tallestKid, shortestTeen - 0.2f);
+            foreach (var info in PlayerRoster.Of(SchoolLevel.Primary))
+            {
+                Assert.Greater(info.height, 1.2f, info.id);
+                Assert.Less(info.height, 1.4f, info.id);
+            }
+        }
+
+        [Test]
         public void EveryKidHasPlausibleSizes()
         {
             foreach (var info in PlayerRoster.All)
             {
                 Assert.Greater(info.neckHeight, 0.8f, info.id);
                 Assert.Less(info.neckHeight, info.height, info.id + ": the neck is below the top of the head");
+                // The Head bone sits at 80 to 88 % of a standing kid (a bigger head puts it lower); the game puts it at neckHeight.
+                float ratio = info.neckHeight / info.height;
+                Assert.Greater(ratio, 0.78f, info.id);
+                Assert.Less(ratio, 0.9f, info.id);
             }
         }
 

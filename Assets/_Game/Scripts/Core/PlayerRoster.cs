@@ -58,6 +58,12 @@ namespace DribbleToSchool.Core
             // The high-school teens (tools/blender, see its README): about 1.73 m and 1.65 m.
             new PlayerInfo("boy", "Boy", "settings.boy", SchoolLevel.High, 1.5f, 1.73f),
             new PlayerInfo("girl", "Girl", "settings.girl", SchoolLevel.High, 1.43f, 1.65f),
+            // The primary-school kids (tools/blender, see its README: primary.py prints each one's neck height): 1.27 to 1.34 m.
+            // Neck height = the Head bone's height x the standing height / the model's own height.
+            new PlayerInfo("primaryBoy", "PrimaryBoy", "player.primaryBoy", SchoolLevel.Primary, 1.065f, 1.30f),
+            new PlayerInfo("primaryGirl", "PrimaryGirl", "player.primaryGirl", SchoolLevel.Primary, 1.038f, 1.27f),
+            new PlayerInfo("primaryBoy2", "PrimaryBoy2", "player.primaryBoy2", SchoolLevel.Primary, 1.082f, 1.34f),
+            new PlayerInfo("primaryGirl2", "PrimaryGirl2", "player.primaryGirl2", SchoolLevel.Primary, 1.051f, 1.29f),
         };
 
         /// <summary>The position of <paramref name="id"/> in <see cref="All"/>, or -1.</summary>

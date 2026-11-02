@@ -102,10 +102,16 @@ namespace DribbleToSchool.Cosmetics
             var dressable = kidBody as Presentation.IOutfit;
             if (outfit != null && dressable != null && dressedIn != outfit.id)
             {
-                // Re-dressing is cheap but not free: only when the outfit changes. The school uniform
-                // is dressed like any other outfit (a white shirt, navy shorts): the teens were modelled
-                // in casual colours that sat too close to the street's greens and sand.
+                // Re-dressing is cheap but not free: only when the outfit changes.
                 dressedIn = outfit.id;
+                if (outfit.id == SchoolOutfitId)
+                {
+                    // The school uniform is what every kid was modelled in: the teens' white shirt, navy trousers and
+                    // red tie (the same colours as this outfit), and each primary-school kid's own uniform (a navy or
+                    // grey bottom, a neckerchief or bow of their own colour), so the four of them stay different.
+                    dressable.ResetOutfit();
+                    return;
+                }
                 dressable.SetOutfit(outfit.primary, outfit.secondary);
                 // The third colour of an outfit is the tie's (fully see-through: no tie).
                 var accented = kidBody as Presentation.IAccentOutfit;
