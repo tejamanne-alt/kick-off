@@ -28,7 +28,6 @@ namespace DribbleToSchool.Tests
         const float ChallengeNear = 130f, ChallengeFar = 260f;
         const float RouteEndReach = 25f, RouteMinLength = 1200f;
         const float RoutesApart = 90f, NearTheEnds = 320f;
-        const float LabelFromRoute = 30f, LabelOffOtherRoutes = 1f, LabelFromThings = 6f;
 
         static TownMapLayout Load()
         {
@@ -277,51 +276,48 @@ namespace DribbleToSchool.Tests
         // ------------------------------------------------------------------ names
 
         [Test]
-        public void LevelNamesHaveRoomBesideTheirNode()
+        public void EveryFocusedRoutesNamesFindRoomInEveryLanguage()
         {
             var layout = Load();
             if (layout.placeholder)
             {
-                // The stand-in layout is made from abstract diagonal streets: a 300 x 56 name beside a node on a road that runs at
-                // 21 to 34 degrees always touches its own route, so the rule needs the real picture's grid of roads.
-                Assert.Ignore("placeholder layout: the names' clearance is checked on the real one");
+                // The stand-in's routes are diagonals through one band, its nodes packed along them: Keepy-Uppy finds no clear spot.
+                Assert.Ignore("placeholder layout: the names' room is checked on the real one");
                 return;
             }
-            // Only the focused route's levels are named (ChapterMapScreen.BuildNode), over every route line, while every node is
-            // drawn. So a name keeps clear of its own route's line and names, stays off the other routes' centre lines, and keeps
-            // clear of every node.
+            // As the screen places them (ChapterMapScreen.BuildTexts): the focused route's names round their nodes, off the pins
+            // and the place names (the district and street names come after them and take what room is left).
             var problems = new List<string>();
-            var nodes = TownMap.Nodes;
-            var boxes = new Rect[nodes.Length];
-            var routeOf = new string[nodes.Length];
-            for (int i = 0; i < nodes.Length; i++)
+            int overOther = 0;
+            foreach (string code in Loc.Languages)
             {
-                boxes[i] = TownMap.LabelRect(nodes[i]);
-                var route = RouteTable.Of(nodes[i].levelId);
-                routeOf[i] = route != null ? route.id : null;
-            }
-            for (int i = 0; i < nodes.Length; i++)
-            {
-                Rect box = boxes[i];
-                string who = nodes[i].levelId + "'s name (" + nodes[i].side + ")";
-                if (box.xMin < TownMap.Core.xMin || box.xMax > TownMap.Core.xMax || box.yMin < TownMap.Core.yMin || box.yMax > TownMap.Core.yMax) problems.Add(who + " sticks out of the core");
-                foreach (var route in TownMap.Routes)
+                var table = StringTables.For(code);
+                var blocked = new List<Rect> { TownMapNames.PinBox(TownMap.Home), TownMapNames.PinBox(TownMap.School),
+                    TownMapNames.PlaceBox(TownMap.Home, table["place.home"], TownMapNames.FontSize), TownMapNames.PlaceBox(TownMap.School, table["place.school"], TownMapNames.FontSize) };
+                foreach (var route in RouteTable.All)
                 {
-                    float gap = TownMap.DistanceToLine(box, route.points);
-                    bool own = route.id == routeOf[i];
-                    float need = own ? LabelFromRoute : LabelOffOtherRoutes;
-                    if (gap < need)
-                        problems.Add(who + (own ? " is " + Mathf.RoundToInt(gap) + " px from its own route " + route.id + " (at least " + LabelFromRoute + ")" : " crosses the " + route.id + " route's line"));
-                }
-                for (int j = 0; j < nodes.Length; j++)
-                {
-                    if (j == i) continue;
-                    float disc = TownMap.DistanceToRect(box, nodes[j].pos) - TownMap.NodeRadius;
-                    if (disc < LabelFromThings) problems.Add(who + " runs into the node of " + nodes[j].levelId);
-                    if (j > i && routeOf[i] == routeOf[j] && TownMap.GapBetween(box, boxes[j]) < LabelFromThings) problems.Add(who + " runs into the name of " + nodes[j].levelId);
+                    var ids = new List<string>(route.levels);
+                    if (route.challenge != null) ids.Add(route.challenge);
+                    foreach (var pair in TownMapNames.Place(ids, id => table.ContainsKey("level." + id) ? table["level." + id] : id, blocked))
+                    {
+                        if (!pair.Value.clear) problems.Add(code + " " + route.id + ": " + pair.Key + " \"" + pair.Value.text.Replace('\n', ' ') + "\" has no clear spot");
+                        if (pair.Value.overOther) overOther++;
+                    }
                 }
             }
             NoProblems(problems, "level names");
+            Assert.LessOrEqual(overOther, 4, "names lying over another route's (smaller) node");
+        }
+
+        [Test]
+        public void NameWidthsAndLineBreaksFollowTheLabelFont()
+        {
+            // Measured from LilitaOne-Regular.ttf at 50 px: "Sandcastle Sprint" is 377.1 px, "El paso subterráneo" 420.2.
+            Assert.AreEqual(377.1f, TownMapNames.Width("Sandcastle Sprint", 50), 0.6f);
+            Assert.AreEqual(420.2f, TownMapNames.Width("El paso subterráneo", 50), 0.6f);
+            Assert.AreEqual(1, TownMapNames.Lines("Sandcastle Sprint", 50, TownMapNames.OneLineMax).Length);
+            Assert.AreEqual("El paso|subterráneo", string.Join("|", TownMapNames.Lines("El paso subterráneo", 50, TownMapNames.OneLineMax)));
+            Assert.AreEqual("Keepy-Uppy", string.Join("|", TownMapNames.Lines("Keepy-Uppy", 50, 100f)));   // no space: one line
         }
 
         /// <summary>The routes that follow a street of that name: every level on them has a route sign saying "via" it.</summary>

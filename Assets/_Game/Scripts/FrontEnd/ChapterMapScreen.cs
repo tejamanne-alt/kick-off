@@ -33,8 +33,8 @@ namespace DribbleToSchool.FrontEnd
 
         // ---- sizes in the picture's own pixels (the map block is scaled to the screen, about 0.5)
         const float RouteWidthOn = 54f, RouteWidthOff = 30f;
-        const int LabelFont = 50;             // 25 canvas units at the usual scale: never under 22
-        const float PinHead = 40f;
+        const int LabelFont = TownMapNames.FontSize;   // 50 px of the picture: 24 canvas units at the usual scale, never under 22
+        const float PinHead = TownMapNames.PinHead;
 
         static readonly Color Mat = new Color(0.1f, 0.15f, 0.31f);
         static readonly Color Plain = new Color(0.86f, 0.9f, 0.76f);
@@ -56,6 +56,8 @@ namespace DribbleToSchool.FrontEnd
         readonly Dictionary<string, Button> chips = new Dictionary<string, Button>();
         readonly Dictionary<string, Text> chipStars = new Dictionary<string, Text>();
         readonly List<Rect> taken = new List<Rect>();     // boxes of the texts already placed on the picture
+        readonly List<Rect> drawn = new List<Rect>();     // what is drawn on the picture besides the nodes (pins, names, the pill): the level names keep off it
+        readonly Dictionary<string, MapName> names = new Dictionary<string, MapName>();   // the focused route's level names, where they go
         string focus;
         bool firstShow, popIn;                // the nodes pop in when the map is opened, not each time the focus moves
 
@@ -132,8 +134,7 @@ namespace DribbleToSchool.FrontEnd
                 routeMeshes[route.id] = UIMapMesh.Create(routeLayer, "Route_" + route.id, painter, frame);
             }
             BuildMarkers(frame);
-            textLayer = UIKit.Stretch(UIKit.Rect(map, "Texts"));
-            BuildTexts();
+            textLayer = UIKit.Stretch(UIKit.Rect(map, "Texts"));     // filled for each focus (BuildTexts)
             nodeLayer = UIKit.Stretch(UIKit.Rect(map, "Nodes"));
         }
 
@@ -189,30 +190,49 @@ namespace DribbleToSchool.FrontEnd
             UIMapMesh.Create(map, "Markers", painter, frame);
         }
 
-        /// <summary>The names on the picture: home and school, the districts and the streets, kept clear of the nodes and of each other.</summary>
-        void BuildTexts()
+        /// <summary>
+        /// The names on the picture for the focused route: home and school, the focused route's level names (placed before the
+        /// district and street names, so they get the room they need), the districts and the streets, clear of the nodes and of
+        /// each other. Built again each time the focus moves.
+        /// </summary>
+        void BuildTexts(Route focusRoute, LevelCatalog catalog)
         {
+            for (int i = textLayer.childCount - 1; i >= 0; i--) Object.Destroy(textLayer.GetChild(i).gameObject);
             taken.Clear();
+            drawn.Clear();
+            names.Clear();
             if (!TownMap.Available) return;
-            // Boxes already spoken for: the nodes' discs (with room for their stars) and the two pins.
+            // Boxes already spoken for: the nodes' discs (the focused route's with room for their stars, the others' smaller) and the two pins.
             foreach (var node in TownMap.Nodes)
             {
-                taken.Add(new Rect(node.pos.x - TownMap.NodeRadius - 6f, node.pos.y - TownMap.NodeRadius - 6f, TownMap.NodeDiameter + 12f, TownMap.NodeDiameter + 40f));
-                // ...and where its name goes when its route is in focus.
-                Rect label = TownMap.LabelRect(node);
-                taken.Add(new Rect(label.x - 10f, label.y - 10f, label.width + 20f, label.height + 20f));
+                bool focused = RouteTable.Of(node.levelId) == focusRoute;
+                float r = TownMap.NodeRadius * (focused ? 1f : TownMapNames.OtherNodeScale);
+                taken.Add(new Rect(node.pos.x - r - 6f, node.pos.y - r - 6f, 2f * r + 12f, 2f * r + (focused ? 40f : 12f)));
             }
             foreach (string id in new[] { "home", "school" })
             {
-                Vector2 p = TownMap.Place(id);
-                taken.Add(new Rect(p.x - PinHead - 10f, p.y - PinHead * 3.2f, (PinHead + 10f) * 2f, PinHead * 3.2f + 12f));
+                Rect pin = TownMapNames.PinBox(TownMap.Place(id));
+                taken.Add(pin);
+                drawn.Add(pin);
             }
 
-            // Home (with "you are here") and School: the name beside the pin, on whichever side has room.
+            // Home and School: the name beside the pin, where there is room for it (TownMapNames.PlaceBox).
             PlaceName("home", Loc.T("place.home"), HomeRed);
             PlaceName("school", Loc.T("place.school"), SchoolBlue);
 
-            // "You are here" over the house, where there is room for it (above, else below, else beside).
+            // The focused route's level names, where they fit round their nodes (drawn with the nodes, see BuildName).
+            if (focusRoute != null)
+            {
+                var ids = new List<string>(focusRoute.levels);
+                if (focusRoute.challenge != null) ids.Add(focusRoute.challenge);
+                foreach (var pair in TownMapNames.Place(ids, levelId => NameOf(catalog, levelId), drawn))
+                {
+                    names[pair.Key] = pair.Value;
+                    taken.Add(pair.Value.box);
+                }
+            }
+
+            // "You are here" over the house, where there is room for it once the names are placed (above, else below, else beside).
             var pillSize = new Vector2(330f, 64f);
             float up = PinHead * 3.2f + 36f;
             Vector2? here = FreeSpotAmong(new[]
@@ -278,27 +298,15 @@ namespace DribbleToSchool.FrontEnd
             return false;
         }
 
-        /// <summary>A name beside a place's pin: on the right or the left, whichever has more room (clear of the routes and the nodes).</summary>
+        /// <summary>A name beside a place's pin, where <see cref="TownMapNames.PlaceBox"/> finds room for it.</summary>
         void PlaceName(string id, string text, Color colour)
         {
-            Vector2 p = TownMap.Place(id);
-            Vector2 size = new Vector2(text.Length * LabelFont * 0.6f + 30f, LabelFont * 1.3f);
-            Vector2 head = p + new Vector2(0f, -PinHead * 1.75f);
-            float best = -1f;
-            Vector2 centre = head + new Vector2(PinHead + 14f + size.x * 0.5f, 0f);
-            for (int side = -1; side <= 1; side += 2)
-            {
-                Vector2 c = head + new Vector2(side * (PinHead + 14f + size.x * 0.5f), 0f);
-                var box = new Rect(c.x - size.x * 0.5f, c.y - size.y * 0.5f, size.x, size.y);
-                float room = 1000f;
-                foreach (var route in TownMap.Routes) room = Mathf.Min(room, TownMap.DistanceToLine(box, route.points));
-                foreach (var node in TownMap.Nodes) room = Mathf.Min(room, TownMap.DistanceToRect(box, node.pos) - TownMap.NodeRadius);
-                if (room > best) { best = room; centre = c; }
-            }
+            Rect box = TownMapNames.PlaceBox(TownMap.Place(id), text, LabelFont);
             var t = UIKit.Label(textLayer, "Place_" + id, text, LabelFont, Color.white, TextAnchor.MiddleCenter, true);
-            UIKit.Place(t.rectTransform, new Vector2(0.5f, 0.5f), At(centre), size, new Vector2(0.5f, 0.5f));
+            UIKit.Place(t.rectTransform, new Vector2(0.5f, 0.5f), At(box.center), box.size, new Vector2(0.5f, 0.5f));
             Outlined(t);
-            taken.Add(new Rect(centre.x - size.x * 0.5f, centre.y - size.y * 0.5f, size.x, size.y));
+            taken.Add(box);
+            drawn.Add(box);
         }
 
         /// <summary>
@@ -328,6 +336,7 @@ namespace DribbleToSchool.FrontEnd
                     if (box.Overlaps(other)) { free = false; break; }
                 if (!free) continue;
                 taken.Add(box);
+                drawn.Add(box);
                 return c;
             }
             return null;
@@ -530,6 +539,7 @@ namespace DribbleToSchool.FrontEnd
             for (int i = stripRoot.childCount - 1; i >= 0; i--) Object.Destroy(stripRoot.GetChild(i).gameObject);
 
             DrawRoutes(catalog);
+            BuildTexts(focusRoute, catalog);       // the names for this focus (the level names among them)
 
             Color focusColour = ColourOf(catalog, focusRoute);
             focusSwatch.color = focusColour;
@@ -554,7 +564,7 @@ namespace DribbleToSchool.FrontEnd
             var next = LevelUnlocks.NextToPlay(catalog);
             BuildStrip(catalog, focusRoute, next);
 
-            // The nodes: the other routes' first, the focused route's last (on top), its levels named.
+            // The nodes: the other routes' first (smaller), the focused route's last (on top), its levels named.
             int index = 0;
             foreach (var route in RouteTable.All)
             {
@@ -624,14 +634,17 @@ namespace DribbleToSchool.FrontEnd
             bool unlocked = LevelUnlocks.IsUnlocked(catalog, def);
             int stars = SaveSystem.StarsFor(def.levelId);
 
+            // The other routes' nodes are smaller and show no stars while a route is in focus (their names are not shown either).
+            float scale = named ? 1f : TownMapNames.OtherNodeScale;
+            float diameter = TownMap.NodeDiameter * scale;
             var holder = UIKit.Rect(nodeLayer, "Node_" + def.levelId);
-            UIKit.Place(holder, new Vector2(0.5f, 0.5f), At(spot.pos), new Vector2(TownMap.NodeDiameter, TownMap.NodeDiameter), new Vector2(0.5f, 0.5f));
+            UIKit.Place(holder, new Vector2(0.5f, 0.5f), At(spot.pos), new Vector2(diameter, diameter), new Vector2(0.5f, 0.5f));
             // The nodes pop in one after another when the map is opened (not every time the focus moves).
             if (popIn) UIKit.PopIn(holder.gameObject, Mathf.Min(index, 14) * 0.03f);
 
             Color face = def.isChallenge ? UITheme.Gold : colour;
             var button = UIKit.Button(holder, "Button", "", unlocked ? face : UITheme.Locked, () => Controller.PlayLevel(def));
-            UIKit.Place((RectTransform)button.transform, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(TownMap.NodeDiameter, TownMap.NodeDiameter), new Vector2(0.5f, 0.5f));
+            UIKit.Place((RectTransform)button.transform, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(diameter, diameter), new Vector2(0.5f, 0.5f));
             button.interactable = unlocked;
             UIKit.MakeRound(button);
             // The next level's disc breathes (its stars and name stay still; UIPulse hands the scale to the button's press animation).
@@ -646,17 +659,17 @@ namespace DribbleToSchool.FrontEnd
             if (unlocked)
             {
                 string number = def.isChallenge ? "!" : def.levelId.TrimStart('L').TrimStart('0');
-                var label = UIKit.Title(button.transform.Find("Face"), "Number", number, 78, Color.white);
+                var label = UIKit.Title(button.transform.Find("Face"), "Number", number, Mathf.RoundToInt(78 * scale), Color.white);
                 UIKit.Stretch(label.rectTransform);
             }
             else
             {
-                var lockIcon = UIKit.Icon(button.transform.Find("Face"), "Lock", ProceduralSprites.Lock, new Color(1f, 1f, 1f, 0.9f), 78f);
-                UIKit.Place(lockIcon.rectTransform, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(78f, 78f));
+                var lockIcon = UIKit.Icon(button.transform.Find("Face"), "Lock", ProceduralSprites.Lock, new Color(1f, 1f, 1f, 0.9f), 78f * scale);
+                UIKit.Place(lockIcon.rectTransform, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(78f * scale, 78f * scale));
             }
 
             // Stars on the disc's lower rim, on a light pill so they read on the picture whether earned (gold) or not (grey); a locked level has none to show.
-            if (unlocked)
+            if (unlocked && named)
             {
                 float starSize = 40f, drop = TownMap.NodeRadius - 4f;
                 var starRow = UIKit.Stars(holder, "Stars", stars, starSize, 4f);
@@ -667,27 +680,32 @@ namespace DribbleToSchool.FrontEnd
                 UIKit.Place(starRow, new Vector2(0.5f, 0.5f), new Vector2(0f, -drop), starRow.sizeDelta, new Vector2(0.5f, 0.5f));
             }
 
-            if (named) BuildName(holder, def, spot.side);
+            MapName name;
+            if (named && names.TryGetValue(def.levelId, out name)) BuildName(holder, name, spot.pos);
         }
 
-        /// <summary>The level's name beside its node (on the side the layout gives): white with a dark outline, wrapping to two lines if it is long.</summary>
-        void BuildName(RectTransform holder, LevelDefinition def, LabelSide side)
+        /// <summary>
+        /// The level's name where <see cref="TownMapNames.Place"/> put it beside its node (at <paramref name="node"/>): white with
+        /// a dark outline, broken onto two lines there if it is long, its lines against the node's side of the box.
+        /// </summary>
+        void BuildName(RectTransform holder, MapName spot, Vector2 node)
         {
-            const float width = 360f, height = 128f;       // two lines of the label font, with a little air
-            float gap = TownMap.NodeRadius + TownMap.LabelGap;
-            Vector2 centre;       // from the node's centre, y up
-            TextAnchor anchor;
-            switch (side)
-            {
-                case LabelSide.Above: centre = new Vector2(0f, gap + height * 0.5f); anchor = TextAnchor.LowerCenter; break;
-                case LabelSide.Left: centre = new Vector2(-(gap + width * 0.5f), 0f); anchor = TextAnchor.MiddleRight; break;
-                case LabelSide.Right: centre = new Vector2(gap + width * 0.5f, 0f); anchor = TextAnchor.MiddleLeft; break;
-                default: centre = new Vector2(0f, -(gap + 8f + height * 0.5f)); anchor = TextAnchor.UpperCenter; break;
-            }
-            var name = UIKit.Label(holder, "Name", Loc.T("level." + def.levelId, def.displayName), LabelFont, Color.white, anchor, true);
-            UIKit.Place(name.rectTransform, new Vector2(0.5f, 0.5f), centre, new Vector2(width, height), new Vector2(0.5f, 0.5f));
+            Vector2 centre = spot.box.center - node;
+            centre.y = -centre.y;                 // the layout's y runs down, the UI's up
+            TextAnchor anchor = spot.align < 0 ? TextAnchor.MiddleLeft : (spot.align > 0 ? TextAnchor.MiddleRight : TextAnchor.MiddleCenter);
+            var name = UIKit.Label(holder, "Name", spot.text, spot.fontSize, Color.white, anchor, true);
+            name.horizontalOverflow = HorizontalWrapMode.Overflow;     // broken already, where the placing measured it
+            name.verticalOverflow = VerticalWrapMode.Overflow;
+            UIKit.Place(name.rectTransform, new Vector2(0.5f, 0.5f), centre, spot.box.size, new Vector2(0.5f, 0.5f));
             name.rectTransform.SetAsFirstSibling();
             Outlined(name);
+        }
+
+        /// <summary>A level's name in the current language (its catalog name if the string table has none).</summary>
+        static string NameOf(LevelCatalog catalog, string levelId)
+        {
+            var def = catalog != null ? catalog.FindById(levelId) : null;
+            return Loc.T("level." + levelId, def != null ? def.displayName : levelId);
         }
 
         /// <summary>
