@@ -127,8 +127,9 @@ scenery stays put.
 ```
 Scripts/Holiday/
   HolidayStages.cs        the stage table (levels, chapters, traits, difficulty) and the world's geometry
-  RunMarkers.cs           RunChunk (a stage's root and layout variants), RunSolid / RunBreakable (obstacles
-                          the director counts), PowerUp
+  RunChunk.cs             a stage's root and its layout variants
+  RunSolid.cs, RunBreakable.cs   obstacles the director counts (a crash, a pass, a near miss; a smashable crate)
+  PowerUp.cs              the magnet, shield and turbo pickups
   RunWorldStreamer.cs     loads the stages near the kid as additive scenes, wakes them one a frame, unloads
                           what is behind
   HolidayRunDirector.cs   the rules: pace, score, combo, power-ups, crash, revive, days, saving
@@ -190,7 +191,7 @@ The editor generates every Holiday Run scene (like the story levels); edits made
 overwritten. Change the stage table, the patterns or the rig and rebuild:
 
 - **Kick Off > Rebuild All Levels** also rebuilds the Holiday Run (it is part of the generated content;
-  `GeneratedContent.Version` is 49 for it), and it runs by itself on the first open.
+  `GeneratedContent.Version` is 50 for it), and it runs by itself on the first open.
 - **Kick Off > Rebuild Holiday Run** rebuilds only the Holiday Run (its core scene and 23 stages) and swaps its
   entries in the build settings, leaving the levels and the menu alone.
 - The scenes are `Assets/_Game/Scenes/Holiday/HolidayRun.unity` (the core) and `HolidayRun_S01..S23.unity`, all in

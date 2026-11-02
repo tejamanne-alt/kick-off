@@ -164,7 +164,7 @@ Assets/_Game/
     Holiday/    HolidayRunDirector.cs  the endless mode's rules: pace, score, combo, power-ups, revive, days
                 RunWorldStreamer.cs    loads and unloads the 23 stage scenes round the kid
                 HolidayStages.cs       the stage table (one per story level) and the world's geometry
-                EndlessBall.cs, HolidayAtmosphere.cs, RunMarkers.cs
+                EndlessBall.cs, HolidayAtmosphere.cs, RunChunk.cs, RunSolid.cs, RunBreakable.cs, PowerUp.cs
                 HolidayRunHud.cs, HolidayRunPanels.cs, HolidayMissions.cs   the run's screen, its pause and results menus, the missions
     Editor/     LevelBuildKit.cs       sprites, assets, gameplay rig, track pieces
                 GreyboxLevels.cs       the level layouts
