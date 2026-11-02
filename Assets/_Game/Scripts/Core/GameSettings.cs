@@ -48,6 +48,16 @@ namespace DribbleToSchool.Core
             set { SetBool("settings.leftHanded", value); }
         }
 
+        /// <summary>
+        /// The slide button sits with the walking thumb (up and to the left of the forward arrow) instead of beside
+        /// jump and kick; flicking down on an arrow slides either way.
+        /// </summary>
+        public static bool SlideWithWalkThumb
+        {
+            get { return GetBool("settings.slideWithArrows", true); }
+            set { SetBool("settings.slideWithArrows", value); }
+        }
+
         /// <summary>High-contrast trajectory colours (blue/orange instead of white/red).</summary>
         public static bool ColorblindAim
         {
@@ -55,11 +65,11 @@ namespace DribbleToSchool.Core
             set { SetBool("settings.colorblindAim", value); }
         }
 
-        /// <summary>Who walks to school: "boy" or "girl".</summary>
+        /// <summary>Who walks to school: the id of one of the <see cref="PlayerRoster"/>'s kids ("boy", "girl", "primaryBoy"...).</summary>
         public static string Character
         {
-            get { return PlayerPrefs.GetString("settings.character", "boy") == "girl" ? "girl" : "boy"; }
-            set { PlayerPrefs.SetString("settings.character", value == "girl" ? "girl" : "boy"); Save(); }
+            get { return PlayerRoster.Normalize(PlayerPrefs.GetString("settings.character", PlayerRoster.DefaultId)); }
+            set { PlayerPrefs.SetString("settings.character", PlayerRoster.Normalize(value)); Save(); }
         }
 
         public static string Language

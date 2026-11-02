@@ -13,7 +13,7 @@
 import bpy, math
 import numpy as np
 from mathutils import Vector, Matrix
-from teen_lib import C, Part, new_obj, bake, finish
+from teen_lib import C, Part, new_obj, bake, finish, Variant
 
 # The cranium the hair is fitted to (keep the top and back of the head inside this).
 CRANIUM_CENTER = (0, -0.005, 1.425)
@@ -90,6 +90,7 @@ def _shape(girl):
     """Per-character shape parameters. Both faces are an oblong-oval: fairly straight, nearly
     parallel sides from the cheekbones down to about the mouth, then a soft round into the chin.
     width: the front outline's half-width by height (base z)."""
+    if isinstance(girl, Variant): return girl.mod('head').shape(girl)
     if girl:   # the softer one: gentle cheeks, a rounded chin
         return dict(width=((1.46, 0.1463), (1.44, 0.1475), (1.42, 0.1425), (1.40, 0.1335), (1.38, 0.1285),
                            (1.36, 0.124), (1.34, 0.118), (1.32, 0.108), (1.30, 0.092), (1.28, 0.068), (1.26, 0.036)),
@@ -301,10 +302,10 @@ def ear_uv(co):
     return (cu + ly * k * sc, cv + lz * k * sc)
 
 
-def _ear(sx):
+def _ear(sx, seg=(20, 8)):
     """A tidy ear: a flattened egg with a rolled rim and a shallow bowl, tilted back and
     splayed a little from the head. Its fold lines are painted (face_teen)."""
-    bpy.ops.mesh.primitive_uv_sphere_add(segments=20, ring_count=8, radius=1, location=(0, 0, 0))
+    bpy.ops.mesh.primitive_uv_sphere_add(segments=seg[0], ring_count=seg[1], radius=1, location=(0, 0, 0))
     e = C.object; e.name = 'Ear'
     # local axes: X out of the head, Y front-back, Z up. Pole axis along X.
     e.rotation_euler = (0, math.radians(90), 0); bake(e)
@@ -358,5 +359,6 @@ def build_head(girl, skin):
     flat_face_normals(head)
     parts.append(Part(head, (1, 1, 1, 1), 0, 'Head', uv=head_uv))   # white x the painted atlas
     for s in (1, -1):
-        parts.append(Part(_ear(s), (1, 1, 1, 1), 0, 'Head', uv=ear_uv))   # white x the atlas' ear
+        parts.append(Part(_ear(s, girl.ear_seg if isinstance(girl, Variant) else (20, 8)), (1, 1, 1, 1), 0, 'Head', uv=ear_uv))   # white x the atlas' ear
+    if isinstance(girl, Variant): parts += girl.mod('head').extras(girl)      # (round glasses ...)
     return parts

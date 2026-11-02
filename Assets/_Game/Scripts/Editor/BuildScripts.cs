@@ -31,6 +31,10 @@ namespace DribbleToSchool.EditorTools
         public const string DefaultVersion = "1.0.0";
 
         const string IconPath = LevelBuildKit.Root + "/Art/Generated/AppIcon.png";
+        // The app icon's art (tools/blender/app_icon.py and app_icon_compose.py render it from the game's models; README there).
+        const string IconArt = LevelBuildKit.Root + "/Art/Icon/AppIcon.png";
+        const string IconBack = LevelBuildKit.Root + "/Art/Icon/AppIconBackground.png";
+        const string IconFront = LevelBuildKit.Root + "/Art/Icon/AppIconForeground.png";
         const string BuildRoot = "Builds";
 
         [MenuItem("Kick Off/Build/Apply Store Player Settings")]
@@ -98,24 +102,88 @@ namespace DribbleToSchool.EditorTools
             Debug.Log("[Build] Build number is now " + next + " (version " + PlayerSettings.bundleVersion + ").");
         }
 
-        /// <summary>Bake the procedural icon and set it as the default icon for every platform.</summary>
+        /// <summary>
+        /// The app icon: the rendered art (the kid running to school after the ball, Assets/_Game/Art/Icon) as the icon for every
+        /// platform, scaled by Unity to every size iOS and Android ask for; on Android also the adaptive icon's two layers (the sky
+        /// and the pitch behind, the kid, the ball and the "2" in front, inside the part every launcher's mask keeps) for launchers
+        /// from Android 8, which otherwise shrink a square icon onto a white disc. Without the art, the procedural icon as before.
+        /// </summary>
         static void ApplyIcon()
         {
-            LevelBuildKit.EnsureFolder(Path.GetDirectoryName(IconPath).Replace('\\', '/'));
-            string full = Path.Combine(Directory.GetParent(Application.dataPath).FullName, IconPath);
-            File.WriteAllBytes(full, ProceduralArt.AppIcon(1024).ToPng());
-            AssetDatabase.ImportAsset(IconPath, ImportAssetOptions.ForceSynchronousImport);
-            var importer = AssetImporter.GetAtPath(IconPath) as TextureImporter;
-            if (importer != null)
+            var icon = IconTexture(IconArt, false);
+            if (icon == null)
+            {
+                BakeProceduralIcon();
+                return;
+            }
+            PlayerSettings.SetIcons(NamedBuildTarget.Unknown, new[] { icon }, IconKind.Any);
+            var back = IconTexture(IconBack, false);
+            var front = IconTexture(IconFront, true);
+            // The Android icon kinds by name (Adaptive, Round, Legacy), so this compiles without Android Build Support installed.
+            foreach (var kind in AndroidIcons<PlatformIconKind[]>("GetSupportedIconKinds", "GetSupportedIconKindsForPlatform") ?? new PlatformIconKind[0])
+            {
+                bool adaptive = kind.ToString().IndexOf("Adaptive", StringComparison.OrdinalIgnoreCase) >= 0;
+                if (adaptive && (back == null || front == null)) continue;
+                var icons = AndroidIcons<PlatformIcon[]>("GetPlatformIcons", "GetPlatformIcons", kind);
+                if (icons == null) continue;
+                foreach (var platformIcon in icons)
+                {
+                    if (adaptive) platformIcon.SetTextures(back, front);
+                    else platformIcon.SetTexture(icon, 0);
+                }
+                AndroidIcons<object>("SetPlatformIcons", "SetPlatformIcons", kind, icons);
+            }
+        }
+
+        /// <summary>
+        /// Calls one of PlayerSettings' platform-icon methods for Android: its Unity 6 form (<paramref name="modern"/>, taking a
+        /// NamedBuildTarget) if this editor has it, else the older one (<paramref name="older"/>, taking a BuildTargetGroup). They
+        /// were renamed between versions, so they are found by name rather than compiled against.
+        /// </summary>
+        static T AndroidIcons<T>(string modern, string older, params object[] rest) where T : class
+        {
+            var forms = new[] { new { name = modern, target = (object)NamedBuildTarget.Android }, new { name = older, target = (object)BuildTargetGroup.Android } };
+            foreach (var form in forms)
+            {
+                var args = new object[rest.Length + 1];
+                args[0] = form.target;
+                Array.Copy(rest, 0, args, 1, rest.Length);
+                var types = args.Select(a => a.GetType()).ToArray();
+                var method = typeof(PlayerSettings).GetMethods(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static)
+                    .FirstOrDefault(m => m.Name == form.name && m.GetParameters().Length == types.Length
+                                         && m.GetParameters().Select((p, i) => p.ParameterType.IsAssignableFrom(types[i])).All(ok => ok));
+                if (method != null) return method.Invoke(null, args) as T;
+            }
+            Debug.LogWarning("[Build] PlayerSettings has no " + modern + " or " + older + ": the Android icons keep the default icon.");
+            return null;
+        }
+
+        /// <summary>An icon picture from the project, imported as the icon slots want it (full size, uncompressed, no mipmaps), or null if it is missing.</summary>
+        static Texture2D IconTexture(string path, bool transparent)
+        {
+            if (!File.Exists(Path.Combine(Directory.GetParent(Application.dataPath).FullName, path))) return null;
+            AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceSynchronousImport);
+            var importer = AssetImporter.GetAtPath(path) as TextureImporter;
+            if (importer != null && (importer.textureType != TextureImporterType.Default || importer.mipmapEnabled || importer.alphaIsTransparency != transparent
+                || importer.textureCompression != TextureImporterCompression.Uncompressed || importer.npotScale != TextureImporterNPOTScale.None))
             {
                 importer.textureType = TextureImporterType.Default;
                 importer.mipmapEnabled = false;
-                importer.alphaIsTransparency = false;
+                importer.alphaIsTransparency = transparent;
                 importer.textureCompression = TextureImporterCompression.Uncompressed;
                 importer.npotScale = TextureImporterNPOTScale.None;
                 importer.SaveAndReimport();
             }
-            var icon = AssetDatabase.LoadAssetAtPath<Texture2D>(IconPath);
+            return AssetDatabase.LoadAssetAtPath<Texture2D>(path);
+        }
+
+        /// <summary>Bake the procedural icon and set it as the default icon for every platform (when the rendered art is missing).</summary>
+        static void BakeProceduralIcon()
+        {
+            LevelBuildKit.EnsureFolder(Path.GetDirectoryName(IconPath).Replace('\\', '/'));
+            string full = Path.Combine(Directory.GetParent(Application.dataPath).FullName, IconPath);
+            File.WriteAllBytes(full, ProceduralArt.AppIcon(1024).ToPng());
+            var icon = IconTexture(IconPath, false);
             if (icon != null) PlayerSettings.SetIcons(NamedBuildTarget.Unknown, new[] { icon }, IconKind.Any);
         }
 

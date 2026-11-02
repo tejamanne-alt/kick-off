@@ -114,6 +114,18 @@ namespace DribbleToSchool.Core
         [Tooltip("How long the ball must stay out of the kid's reach before the run goes back to the checkpoint.")]
         public float strandedDelay = 1.2f;
 
+        [Header("Endless mode (Holiday Run)")]
+        [Tooltip("The campaign with no destination: the same rules (losing the ball sends you back to the last checkpoint), " +
+            "but no bell and no goal, and the checkpoints come and go with the stages that hold them. " +
+            "The run only ends when RunOver says so (the Holiday Run's last ball).")]
+        public bool endless;
+        /// <summary>Endless mode only: the run is over; the reason is a localization key (lose.*).</summary>
+        public event Action<string> Crashed;
+        /// <summary>Endless mode: asked after each lost ball: true ends the run (Crashed) instead of going back to the checkpoint.</summary>
+        public Func<bool> RunOver;
+        /// <summary>The countdown waits (at Ready) while this returns true: the Holiday Run's first stages are still loading.</summary>
+        public Func<bool> IntroHold;
+
         void Awake()
         {
             Current = this;
@@ -208,6 +220,15 @@ namespace DribbleToSchool.Core
             FadeAmount = 0f;
             foreach (var r in resettables) r.ResetState();
 
+            ResetCheckpoints();
+            PlaceAtCheckpoint();
+            IntroTimeLeft = introDuration;
+            SetState(LevelState.Intro);
+        }
+
+        /// <summary>Back to the start checkpoint alone: a new run, or (endless) a new day.</summary>
+        public void ResetCheckpoints()
+        {
             ActiveCheckpoint = null;
             foreach (var cp in checkpoints)
             {
@@ -215,10 +236,25 @@ namespace DribbleToSchool.Core
                 if (cp.isStart && ActiveCheckpoint == null) ActiveCheckpoint = cp;
             }
             if (ActiveCheckpoint == null && checkpoints.Count > 0) ActiveCheckpoint = checkpoints[0];
+        }
 
-            PlaceAtCheckpoint();
-            IntroTimeLeft = introDuration;
-            SetState(LevelState.Intro);
+        /// <summary>A checkpoint came into the world (a Holiday Run stage loaded): it joins the others, in order along the street.</summary>
+        public void RegisterCheckpoint(Checkpoint cp)
+        {
+            if (cp == null || checkpoints.Contains(cp)) return;
+            checkpoints.Add(cp);
+            checkpoints.Sort((a, b) => a.transform.position.x.CompareTo(b.transform.position.x));
+        }
+
+        /// <summary>A checkpoint went (its stage unloaded). If it was the one to go back to, the nearest reached one still standing takes over.</summary>
+        public void UnregisterCheckpoint(Checkpoint cp)
+        {
+            if (!checkpoints.Remove(cp) || ActiveCheckpoint != cp) return;
+            Checkpoint best = null;
+            foreach (var other in checkpoints)
+                if (other != null && other.IsActive && (best == null || other.transform.position.x > best.transform.position.x)) best = other;
+            if (best == null && checkpoints.Count > 0) best = checkpoints[0];
+            ActiveCheckpoint = best;
         }
 
         void Update()
@@ -233,6 +269,7 @@ namespace DribbleToSchool.Core
             switch (State)
             {
                 case LevelState.Intro:
+                    if (IntroHold != null && IntroHold()) { IntroTimeLeft = introDuration; break; }
                     IntroTimeLeft -= Time.unscaledDeltaTime;
                     if (IntroTimeLeft <= 0f)
                     {
@@ -318,7 +355,22 @@ namespace DribbleToSchool.Core
             BallsLost++;
             GameEvents.Raise(GameEventType.BallLost, ball.transform.position);
             if (BallLost != null) BallLost(reason);
+            if (endless && RunOver != null && RunOver())
+            {
+                // The last ball: the run is over where it stands (the Holiday Run shows its results).
+                SetState(LevelState.Complete);
+                if (Crashed != null) Crashed(reason);
+                return;
+            }
             respawnRoutine = StartCoroutine(RespawnRoutine());
+        }
+
+        /// <summary>Endless mode: carry on after the run ended (a revive): back at the last checkpoint with the ball, playing.</summary>
+        public void ResumeAfterCrash()
+        {
+            if (!endless || State != LevelState.Complete) return;
+            PlaceAtCheckpoint();
+            SetState(LevelState.Playing);
         }
 
         /// <summary>Manually go back to the last checkpoint (e.g. ball stuck). Counts as a lost ball.</summary>
@@ -366,6 +418,9 @@ namespace DribbleToSchool.Core
 
         /// <summary>How many checkpoints the level has, start included.</summary>
         public int CheckpointCount { get { return checkpoints.Count; } }
+
+        /// <summary>Kid and ball back at the checkpoint to go back to (without losing the ball: a new day, or the first moments of a run).</summary>
+        public void PlaceAtActiveCheckpoint() { PlaceAtCheckpoint(); }
 
         void PlaceAtCheckpoint()
         {

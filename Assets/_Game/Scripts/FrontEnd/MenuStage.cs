@@ -1,3 +1,4 @@
+using DribbleToSchool.Core;
 using DribbleToSchool.Cosmetics;
 using UnityEngine;
 
@@ -17,8 +18,8 @@ namespace DribbleToSchool.FrontEnd
     /// <summary>
     /// The menu's live 3D backdrop: a short stretch of the home street in the game's clear
     /// daylight (built by LevelBuildKit.BuildMenuStage with the levels' own builders), the
-    /// chosen teen juggling a ball on the footpath (MenuKid; CharacterChoice swaps the boy
-    /// and the girl live), real clouds, and a camera that frames the teen wherever a screen
+    /// chosen kid juggling a ball on the footpath (MenuKid; CharacterChoice swaps the playable
+    /// kids live), real clouds, and a camera that frames the teen wherever a screen
     /// wants it, eases between shots and drifts gently. The CosmeticApplier dresses the teen
     /// and the ball in what is equipped; the Locker Room tries things on with <see cref="TryOn"/>.
     /// </summary>
@@ -27,13 +28,11 @@ namespace DribbleToSchool.FrontEnd
         public static MenuStage Current { get; private set; }
 
         public Camera cam;
-        [Tooltip("The teen's root (CharacterChoice); its feet are at feet.")]
+        [Tooltip("The kid's root (CharacterChoice); its feet are at feet.")]
         public Transform teen;
         public Transform feet;
-        [Tooltip("Dresses the teen and the ball in the equipped cosmetics.")]
+        [Tooltip("Dresses the kid and the ball in the equipped cosmetics.")]
         public CosmeticApplier applier;
-        [Tooltip("How tall the teen stands, for framing (the boy is about 1.73 m, the girl 1.65).")]
-        public float teenHeight = 1.75f;
 
         [Header("Camera")]
         [Tooltip("Vertical field of view (the game's camera uses 34).")]
@@ -51,6 +50,9 @@ namespace DribbleToSchool.FrontEnd
         [Tooltip("How far the camera drifts (metres) and turns (degrees), very slowly.")]
         public float drift = 0.12f;
         public float driftTurn = 1.2f;
+
+        /// <summary>How tall the chosen kid stands (PlayerRoster), for framing: a primary-school kid fills the shot like a teen.</summary>
+        float KidHeight { get { return PlayerRoster.Get(GameSettings.Character).height; } }
 
         MenuShot shot = MenuShot.Title;
         Rect target = new Rect(0.4f, 0.16f, 0.6f, 0.62f);
@@ -103,7 +105,7 @@ namespace DribbleToSchool.FrontEnd
         {
             if (cam == null || feet == null) return new Rect();
             Vector3 a = cam.WorldToScreenPoint(feet.position);
-            Vector3 b = cam.WorldToScreenPoint(feet.position + Vector3.up * teenHeight);
+            Vector3 b = cam.WorldToScreenPoint(feet.position + Vector3.up * KidHeight);
             float h = Mathf.Abs(b.y - a.y);
             return new Rect(a.x - h * 0.24f, Mathf.Min(a.y, b.y), h * 0.48f, h);
         }
@@ -146,9 +148,10 @@ namespace DribbleToSchool.FrontEnd
             Rect r = target;
             if (shot == MenuShot.Sky) r = titleRect;   // the title framing, then tilt up
             float height = Mathf.Max(0.1f, r.height);
-            float distance = teenHeight / (height * 2f * tanHalf);
+            float kidHeight = KidHeight;
+            float distance = kidHeight / (height * 2f * tanHalf);
             rot = Quaternion.Euler(-(shot == MenuShot.Locker ? lockerPitch : pitch), yaw, 0f);
-            Vector3 mid = feet.position + Vector3.up * teenHeight * 0.5f;
+            Vector3 mid = feet.position + Vector3.up * kidHeight * 0.5f;
             Vector3 local = new Vector3((r.center.x - 0.5f) * 2f * distance * tanHalf * aspect,
                 (r.center.y - 0.5f) * 2f * distance * tanHalf, distance);
             pos = mid - rot * local;

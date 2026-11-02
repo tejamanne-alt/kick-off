@@ -37,5 +37,32 @@ namespace DribbleToSchool.Progression
         public int totalJuggles;
         public int totalCoinsEarned;
         public int levelsCompleted;
+
+        // Holiday Run (the endless mode). Missions are kept by HolidayMissions in holidayMissions.
+        public int holidayBestScore;
+        public int holidayBestDistance;
+        public int holidayRuns;
+        public int holidayDays;
+        public int holidayTotalDistance;
+        public List<HolidayMissionRecord> holidayMissions = new List<HolidayMissionRecord>();
+        /// <summary>How many missions of each kind have been finished: the next one of that kind asks for more.</summary>
+        public List<HolidayMissionTally> holidayMissionTally = new List<HolidayMissionTally>();
+    }
+
+    /// <summary>One of the Holiday Run's active missions as saved: its id, how far it has got and what it needs.</summary>
+    [Serializable]
+    public class HolidayMissionRecord
+    {
+        public string id;
+        public int target;
+        public int progress;
+    }
+
+    /// <summary>The number of finished Holiday Run missions of one kind. Old saves simply have none.</summary>
+    [Serializable]
+    public class HolidayMissionTally
+    {
+        public string id;
+        public int done;
     }
 }

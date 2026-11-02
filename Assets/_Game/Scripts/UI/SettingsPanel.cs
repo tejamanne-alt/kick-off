@@ -11,9 +11,9 @@ namespace DribbleToSchool.UI
     /// Settings modal used by the menu and the pause screen. Two columns of grouped rows, laid
     /// out top-down from fixed row heights inside columns that stretch with the card, so
     /// nothing overlaps at any aspect ratio (the card fits a 4:3 canvas, 1440 x 1080):
-    /// left, Audio (music, sound effects) and Gameplay (school bell, left-handed controls,
-    /// colour-blind aim, vibration, screen shake); right, Player (the boy and girl cards) and
-    /// Language; along the bottom, Reset progress, Restore purchases and Done. Labels shrink
+    /// left, Audio (music, sound effects) and Gameplay (school bell,
+    /// colour-blind aim, vibration, screen shake); right, Player (the chosen kid, which opens the
+    /// player picker), Language and Controls (left-handed, the slide button's side); along the bottom, Reset progress, Restore purchases and Done. Labels shrink
     /// to fit rather than run into their controls, for longer translations.
     /// </summary>
     public static class SettingsPanel
@@ -42,7 +42,6 @@ namespace DribbleToSchool.UI
             // Gameplay
             Section(left, ref y, "settings.gameplay");
             ToggleRow(left, ref y, "settings.bell", GameSettings.BellTimerEnabled, v => GameSettings.BellTimerEnabled = v, "settings.bellHint");
-            ToggleRow(left, ref y, "settings.leftHanded", GameSettings.LeftHanded, v => GameSettings.LeftHanded = v);
             ToggleRow(left, ref y, "settings.colorblind", GameSettings.ColorblindAim, v => GameSettings.ColorblindAim = v);
             ToggleRow(left, ref y, "settings.haptics", GameSettings.HapticsEnabled, v => GameSettings.HapticsEnabled = v);
             ToggleRow(left, ref y, "settings.shake", GameSettings.ScreenShakeEnabled, v => GameSettings.ScreenShakeEnabled = v);
@@ -50,9 +49,9 @@ namespace DribbleToSchool.UI
             // Player: who walks to school.
             y = 0f;
             Section(right, ref y, "settings.player");
-            var cards = UIKit.Row(right, "PlayerCards", y, 380f, 4f, 4f);
-            PlayerPicker.Cards(cards, 26f);
-            y += 380f + 22f;
+            var player = UIKit.Row(right, "PlayerSummary", y, 200f, 4f, 4f);
+            PlayerPicker.Summary(player, canvas);
+            y += 200f + 22f;
 
             // Language: one button per table; the current one is filled.
             Section(right, ref y, "settings.language");
@@ -75,6 +74,12 @@ namespace DribbleToSchool.UI
                 rt.offsetMin = new Vector2(i == 0 ? 0f : 10f, UIButtonFx.Depth);
                 rt.offsetMax = new Vector2(i == count - 1 ? 0f : -10f, 0f);
             }
+            y += 84f + 22f;
+
+            // Controls: which hand has which buttons.
+            Section(right, ref y, "settings.controls");
+            ToggleRow(right, ref y, "settings.leftHanded", GameSettings.LeftHanded, v => GameSettings.LeftHanded = v);
+            ToggleRow(right, ref y, "settings.slideArrows", GameSettings.SlideWithWalkThumb, v => GameSettings.SlideWithWalkThumb = v, "settings.slideArrowsHint");
 
             // Bottom row: reset (with confirmation), restore purchases, done.
             var reset = UIKit.Button(card.transform, "Reset", Loc.T("settings.reset"), UITheme.Red, () => ConfirmReset(canvas), 34);

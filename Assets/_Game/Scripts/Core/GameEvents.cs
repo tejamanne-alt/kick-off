@@ -11,7 +11,7 @@ namespace DribbleToSchool.Core
         Coin, Sticker,
         PedestrianBump, DogSteal, SeagullHit, Springboard, SwitchPressed, GateOpened, Splash, LightChange,
         UIClick, Purchase,
-        DoubleJump, Slide,
+        DoubleJump, Slide, SlideEnd,
     }
 
     /// <summary>

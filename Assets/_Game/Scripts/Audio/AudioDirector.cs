@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using DribbleToSchool.Core;
+using DribbleToSchool.Holiday;
 using Unity.Profiling;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -94,6 +95,8 @@ namespace DribbleToSchool.Audio
 
         void OnSceneLoaded(Scene scene, LoadSceneMode mode)
         {
+            // The Holiday Run streams its stages in additively: that is no new level, and no new music.
+            if (mode == LoadSceneMode.Additive) return;
             int chapter = 0;   // menu theme
             var level = LevelManager.Current;
             if (level != null) chapter = level.level != null ? Mathf.Clamp(level.level.chapter, 1, 5) : 1;
@@ -110,6 +113,18 @@ namespace DribbleToSchool.Audio
 
         void Update()
         {
+            // A Holiday Run changes world as it goes: the music follows the chapter the kid is in.
+            var level = LevelManager.Current;
+            if (level != null && level.endless)
+            {
+                var run = HolidayRunDirector.Current;
+                if (run != null)
+                {
+                    int chapter = HolidayStages.All[Mathf.Clamp(run.StageIndex, 0, HolidayStages.Count - 1)].chapter;
+                    if (chapter != wantedMusic) RequestMusic(chapter);
+                }
+            }
+
             // Finish any music jobs.
             List<int> done = null;
             foreach (var kv in musicJobs)
@@ -205,6 +220,9 @@ namespace DribbleToSchool.Audio
                 case GameEventType.Slide:
                     PlayInternal(Sfx.Slide, 0.4f + k * 0.2f, Vary());
                     Haptics.Impact(Haptics.Strength.Soft);
+                    break;
+                case GameEventType.SlideEnd:
+                    PlayInternal(Sfx.GetUp, 0.34f, Vary());
                     break;
                 case GameEventType.Land:
                     PlayInternal(Sfx.Land, 0.3f + k * 0.5f, Vary());

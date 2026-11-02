@@ -1,4 +1,5 @@
 using DribbleToSchool.Ball;
+using DribbleToSchool.Core;
 using DribbleToSchool.InputHandling;
 using DribbleToSchool.Player;
 using UnityEngine;
@@ -9,8 +10,10 @@ namespace DribbleToSchool.CameraRig
     /// Side-scroller camera for the 3D street: a perspective camera looking along +z from a
     /// little above the kid's eye height, tilted down a touch so the road and pavements read as
     /// ground. It frames the kid close (about a quarter of the screen tall) with the view ahead
-    /// of them, look-ahead that grows with run speed, a lean toward the ball, a vertical dead zone
-    /// for small hops, and never shows past the level edges. On narrower screens it pulls back
+    /// of them, a lean toward the ball, a vertical dead zone for small hops, and never shows past the
+    /// level edges. The kid stands where no thumb covers them: a set fraction of the way across the
+    /// screen, pushed further right as far as the control buttons on the left need (the arrows and,
+    /// by default, the slide button: GameInput.KidSafeScreenX), a little nearer the middle when still. On narrower screens it pulls back
     /// just enough to keep a minimum stretch of street in view. An orthographic camera still
     /// works (the old flat look).
     /// </summary>
@@ -23,11 +26,14 @@ namespace DribbleToSchool.CameraRig
         [Header("Framing")]
         [Tooltip("How much the camera leans toward the ball (0 = kid only).")]
         [Range(0f, 1f)] public float ballWeight = 0.3f;
-        [Tooltip("Offset from the focus point when standing still (ahead of the kid, and up so their feet sit low in the frame).")]
-        public Vector2 offset = new Vector2(2.2f, 1.4f);
-        [Tooltip("Extra look-ahead per unit of run speed (seconds).")]
-        public float lookAheadTime = 0.4f;
-        public float maxLookAhead = 2.5f;
+        [Tooltip("How far the focus point is above the kid, so their feet sit low in the frame.")]
+        public float verticalOffset = 1.4f;
+        [Tooltip("Where the kid stands across the screen while walking (0 = left edge, 0.5 = middle), when the buttons leave room for it.")]
+        [Range(0.25f, 0.5f)] public float kidScreenX = 0.38f;
+        [Tooltip("Keep the kid clear of the control buttons on the left of the screen (GameInput.KidSafeScreenX): further right on narrow screens.")]
+        public bool clearOfControls = true;
+        [Tooltip("A kid standing still is this much nearer the middle of the screen (fraction of its width) than a walking one: the view leans ahead of a walking kid.")]
+        public float walkLean = 0.045f;
         public float lookAheadSmoothing = 0.5f;
 
         [Header("Smoothing")]
@@ -71,6 +77,7 @@ namespace DribbleToSchool.CameraRig
         float shakeAmount;
         float shakeUntil;
         Vector3 shakeOffset;
+        float punch, punchVelocity, punchTime = 0.2f;
 
         void Awake()
         {
@@ -88,7 +95,7 @@ namespace DribbleToSchool.CameraRig
         /// <summary>The unzoomed half-height: the close framing, or a little further out on a narrow screen.</summary>
         float FramedHalfHeight { get { return Mathf.Max(viewHalfHeight, minHalfWidth / Mathf.Max(cam.aspect, 0.1f)); } }
 
-        float HalfHeight { get { return cam.orthographic ? cam.orthographicSize : FramedHalfHeight * zoom; } }
+        float HalfHeight { get { return cam.orthographic ? cam.orthographicSize : FramedHalfHeight * zoom * (1f + punch); } }
 
         void Place(Vector2 c, Vector3 shake)
         {
@@ -110,6 +117,18 @@ namespace DribbleToSchool.CameraRig
             shakeUntil = Mathf.Max(shakeUntil, Time.unscaledTime + duration);
         }
 
+        /// <summary>
+        /// A quick push of the view that eases back on its own: <paramref name="amount"/> above 0 pulls
+        /// the camera out (room for a somersault), below 0 pushes it in (the lunge of a slide), about
+        /// 0.03 being a clearly felt nudge. Works in slow motion; off with the screen-shake setting.
+        /// </summary>
+        public void Punch(float amount, float seconds)
+        {
+            if (!GameSettings.ScreenShakeEnabled) return;
+            punch = Mathf.Clamp(amount, -0.15f, 0.15f);
+            punchTime = Mathf.Max(0.05f, seconds);
+        }
+
         void Start()
         {
             SnapToTarget();
@@ -119,19 +138,22 @@ namespace DribbleToSchool.CameraRig
         {
             if (kid == null) return;
 
-            // Lean the view the way the kid faces, and further while walking.
-            float targetLook = offset.x * kid.Facing + Mathf.Clamp(kid.SpeedX * lookAheadTime, -maxLookAhead, maxLookAhead);
+            // Lean the view the way the kid faces, so they stand at their place across the screen: further
+            // over (clear of the thumb) while walking, a little nearer the middle when still.
+            float walking = Mathf.Clamp01(Mathf.Abs(kid.SpeedX) / Mathf.Max(0.1f, kid.RunSpeed));
+            float targetLook = LeadFor(KidScreenX + walkLean * (1f - walking), HalfWidth) * kid.Facing;
             lookAhead = Mathf.SmoothDamp(lookAhead, targetLook, ref lookAheadVelocity, lookAheadSmoothing);
 
             Vector2 focus = Focus();
-            float desiredY = focus.y + offset.y;
+            float desiredY = focus.y + verticalOffset;
             if (Mathf.Abs(desiredY - trackedY) > verticalDeadZone * 0.5f)
                 trackedY = desiredY - Mathf.Sign(desiredY - trackedY) * verticalDeadZone * 0.5f;
 
             bool aiming = GameInput.Instance != null && GameInput.Instance.KickAiming;
             float k = 1f - Mathf.Exp(-zoomSpeed * Time.unscaledDeltaTime);
             zoom = Mathf.Lerp(zoom, aiming ? aimZoom : 1f, k);
-            if (cam.orthographic) cam.orthographicSize = baseSize * zoom;
+            punch = Mathf.SmoothDamp(punch, 0f, ref punchVelocity, punchTime, Mathf.Infinity, Time.unscaledDeltaTime);
+            if (cam.orthographic) cam.orthographicSize = baseSize * zoom * (1f + punch);
 
             Vector2 target = ClampToBounds(new Vector2(focus.x + lookAhead, trackedY));
             center.x = Mathf.SmoothDamp(center.x, target.x, ref velocityX, smoothTimeX);
@@ -151,15 +173,43 @@ namespace DribbleToSchool.CameraRig
         public void SnapToTarget()
         {
             if (kid == null) return;
-            lookAhead = offset.x * kid.Facing;
-            lookAheadVelocity = velocityX = velocityY = 0f;
-            Vector2 focus = Focus();
-            trackedY = focus.y + offset.y;
             if (cam == null) cam = GetComponent<Camera>();
             zoom = 1f;
+            punch = punchVelocity = 0f;
+            lookAhead = LeadFor(KidScreenX + walkLean, HalfWidth) * kid.Facing;
+            lookAheadVelocity = velocityX = velocityY = 0f;
+            Vector2 focus = Focus();
+            trackedY = focus.y + verticalOffset;
             center = ClampToBounds(new Vector2(focus.x + lookAhead, trackedY));
             shakeOffset = Vector3.zero;
             Place(center, Vector3.zero);
+        }
+
+        /// <summary>Half the visible width at the gameplay plane (world units).</summary>
+        float HalfWidth { get { return HalfHeight * (cam != null ? Mathf.Max(0.1f, cam.aspect) : 16f / 9f); } }
+
+        /// <summary>
+        /// Where the kid stands across the screen while walking: <see cref="kidScreenX"/>, or further right as far
+        /// as the buttons on the left of the screen need (so a thumb on them never hides the kid), never past the middle.
+        /// </summary>
+        float KidScreenX
+        {
+            get
+            {
+                float x = kidScreenX;
+                var input = GameInput.Instance;
+                if (clearOfControls && input != null) x = Mathf.Max(x, input.KidSafeScreenX);
+                return Mathf.Clamp(x, 0.25f, 0.5f);
+            }
+        }
+
+        /// <summary>
+        /// How far (metres) the view's centre leads a kid facing +x for them to stand at <paramref name="screenX"/>
+        /// (0 = left edge, 1 = right edge) of a view <paramref name="halfWidth"/> metres either side of its centre.
+        /// </summary>
+        public static float LeadFor(float screenX, float halfWidth)
+        {
+            return (0.5f - screenX) * 2f * halfWidth;
         }
 
         Vector2 Focus()

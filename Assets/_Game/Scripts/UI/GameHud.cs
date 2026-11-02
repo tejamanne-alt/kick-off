@@ -28,7 +28,7 @@ namespace DribbleToSchool.UI
         static readonly Color Late = new Color(0.95f, 0.4f, 0.35f);
         static readonly Color WalkColor = Color.white;
         static readonly Color KickReady = new Color(0.3f, 0.82f, 0.42f);
-        static readonly Color SlideColor = new Color(0.62f, 0.5f, 0.92f);
+        static readonly Color SlideColor = new Color(0.58f, 0.4f, 0.92f);
 
         RectTransform root;
         Text titleText, timeText, bellText, coinText, streakText, statusText;
@@ -106,17 +106,18 @@ namespace DribbleToSchool.UI
                 UIKit.Place(tuneRect, new Vector2(1f, 1f), new Vector2(-190f, -60f), new Vector2(130f, 80f), new Vector2(1f, 1f));
             }
 
-            // Touch controls: see-through glass discs with soft white icons, so they never
-            // compete with the game (see TouchButton).
+            // Touch controls: tinted glass discs with a thin coloured rim and soft white icons, one
+            // colour per action (jump blue, slide violet, kick orange then green) so they read on sight.
+            // Where they sit is GameInput's: a fan round the right thumb's rest, never in a row.
             jumpButton = TouchButton.Create(root, "JumpButton", UITheme.Blue, true);
-            jumpButton.AddIcon(ProceduralSprites.ArrowUp, 0.4f, 0f, 0.58f);
+            jumpButton.AddIcon(ProceduralSprites.ArrowUp, 0.42f, 0f, 0.6f);
             jumpButton.AddLabel(Loc.T("hud.jump"), 28);
             jumpRect = (RectTransform)jumpButton.transform;
 
-            // Slide button, between kick and jump: the chevron turned down over a line of ground.
+            // Slide button, left of jump: the chevron turned down over a line of ground.
             slideButton = TouchButton.Create(root, "SlideButton", SlideColor, true);
-            slideButton.AddIcon(ProceduralSprites.SlideIcon, 0.42f, 0f, 0.58f);
-            slideButton.AddLabel(Loc.T("hud.slide"), 26);
+            slideButton.AddIcon(ProceduralSprites.SlideIcon, 0.44f, 0f, 0.6f);
+            slideButton.AddLabel(Loc.T("hud.slide"), 28);
             slideRect = (RectTransform)slideButton.transform;
 
             // Walk buttons: the chevron turned to point back / forward.
@@ -125,11 +126,13 @@ namespace DribbleToSchool.UI
             leftRect = (RectTransform)leftButton.transform;
             rightButton = TouchButton.Create(root, "RightButton", WalkColor, false);
             rightButton.AddIcon(ProceduralSprites.ArrowUp, 0.42f, -90f);
+            // A flick down on this arrow slides without letting go: a small slide glyph under the arrow says so.
+            rightButton.AddIcon(ProceduralSprites.SlideIcon, 0.2f, 0f, 0.2f, new Color(1f, 1f, 1f, 0.3f));
             rightRect = (RectTransform)rightButton.transform;
 
             // Kick button: a ball, and a knob that follows the aiming drag.
             kickButton = TouchButton.Create(root, "KickButton", UITheme.Accent, true);
-            kickButton.AddIcon(ProceduralSprites.BallIcon, 0.38f, 0f, 0.58f, new Color(1f, 1f, 1f, 0.7f));
+            kickButton.AddIcon(ProceduralSprites.BallIcon, 0.4f, 0f, 0.6f, new Color(1f, 1f, 1f, 0.45f));
             kickButton.AddLabel(Loc.T("hud.kick"), 28);
             kickRect = (RectTransform)kickButton.transform;
             aimKnob = UIKit.Icon(kickButton.Content, "AimKnob", ProceduralSprites.SoftEdgeDisc, new Color(1f, 1f, 1f, 0.55f), 70f).rectTransform;

@@ -1,11 +1,13 @@
 # Renders a teen's portrait for the menus (Settings > Player, the player picker) in the game's
 # look: ToonCharacter's two flat cel bands from the sun, cool sky-tinted shade, a rim of light
 # and a dark ink outline, on a transparent background.
-#   blenv/bin/python portrait_teen.py -- /abs/Boy.blend /abs/PlayerBoy.png [--yaw 28] [--size 512] [--full /abs/BoyFull.png]
+#   blenv/bin/python portrait_teen.py -- /abs/Boy.blend /abs/PlayerBoy.png [--yaw 28] [--size 512] [--full /abs/BoyFull.png] [--span-heads 2.3]
 # The portrait is head to waist, a little turned toward the camera (--yaw, degrees; the boy
 # and the girl turn toward each other on their side-by-side cards), square and power-of-two
 # sized so the game imports it as a sprite without rescaling. --full also renders the whole
-# figure in a keepy-uppy pose (knee up, arms out for balance) for key art and mock-ups.
+# figure in a keepy-uppy pose (knee up, arms out for balance) for key art and mock-ups. --span-heads N frames N times
+# the height from the Head bone's joint to the crown instead of the teens' head to waist (the primary-school kids' bigger
+# heads: --span-heads 2.3 gives the same framing, a head about half the card).
 # Copy the portraits to Assets/_Game/Resources/UI/ (UiArtImportSettings makes them sprites).
 import bpy, math, sys, os
 from mathutils import Vector
@@ -14,6 +16,7 @@ blend, out = args[0], args[1]
 yaw = float(args[args.index('--yaw') + 1]) if '--yaw' in args else 28.0
 size = int(args[args.index('--size') + 1]) if '--size' in args else 512
 full = args[args.index('--full') + 1] if '--full' in args else None
+span_heads = float(args[args.index('--span-heads') + 1]) if '--span-heads' in args else None
 bpy.ops.wm.open_mainfile(filepath=blend)
 C = bpy.context; S = C.scene
 kid = bpy.data.objects['Kid']; rig = bpy.data.objects['KidRig']
@@ -95,6 +98,7 @@ def shoot(path, scale, z, res, outline):
 # Head to waist: relaxed arms, a soft knee.
 pose({'LowerLeg.R': 5, 'LowerLeg.L': 5, 'UpperArm.R': 6, 'UpperArm.L': -6, 'LowerArm.R': -16, 'LowerArm.L': -16, 'Head': (-4, 0, 0)})
 span = (top - hips_z) * 0.66          # the top of the hair down to mid-chest
+if span_heads: span = span_heads * (top - rig.data.bones['Head'].head_local.z)
 shoot(out, span, top + span * 0.04 - span * 0.5, (size, size), 0.0036)
 
 if full:

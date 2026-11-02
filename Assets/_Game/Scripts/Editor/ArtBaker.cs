@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
 using DribbleToSchool.Art;
+using DribbleToSchool.Core;
 using UnityEditor;
 using UnityEngine;
 
@@ -49,9 +50,8 @@ namespace DribbleToSchool.EditorTools
             public Material kid;
             /// <summary>The Blender-made adult (pedestrians).</summary>
             public Material adult;
-            /// <summary>The Blender-made teen boy and girl (the playable characters).</summary>
-            public Material boy;
-            public Material girl;
+            /// <summary>The Blender-made playable kids (PlayerRoster), by model name: the character shader with each one's atlas.</summary>
+            public readonly Dictionary<string, Material> players = new Dictionary<string, Material>();
             /// <summary>Like <see cref="character"/>, textured with the equipped ball skin at runtime.</summary>
             public Material ball;
             /// <summary>The Blender-made cars (tools/blender/car.py), by type name: the character shader with each car's atlas.</summary>
@@ -204,8 +204,12 @@ namespace DribbleToSchool.EditorTools
             set.character = CharacterMaterial("Character", toonCharacter, null, false);
             set.kid = CharacterMaterial("Kid", toonCharacter, "KidAtlas", true);
             set.adult = CharacterMaterial("Adult", toonCharacter, "AdultAtlas", false);
-            set.boy = CharacterMaterial("Boy", toonCharacter, "BoyAtlas", true);
-            set.girl = CharacterMaterial("Girl", toonCharacter, "GirlAtlas", true);
+            foreach (var player in PlayerRoster.All)
+            {
+                // A kid whose model is not in the project yet is left out (LevelBuildKit.BuildCast says so).
+                if (AssetDatabase.LoadAssetAtPath<GameObject>(LevelBuildKit.ModelsDir + "/" + player.model + ".fbx") == null) continue;
+                set.players[player.model] = CharacterMaterial(player.model, toonCharacter, player.model + "Atlas", true);
+            }
             foreach (var type in LevelBuildKit.CarTypes)
             {
                 var carMat = LoadOrCreateMaterial("Car" + type, toonCharacter);

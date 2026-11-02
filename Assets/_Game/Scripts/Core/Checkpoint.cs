@@ -27,6 +27,18 @@ namespace DribbleToSchool.Core
             SetActive(isStart);
         }
 
+        // A Holiday Run's checkpoints come and go with the stages that hold them: each one tells the level
+        // manager when it is loaded and when it goes. (In a story level the manager already has them all.)
+        void OnEnable()
+        {
+            if (LevelManager.Current != null) LevelManager.Current.RegisterCheckpoint(this);
+        }
+
+        void OnDisable()
+        {
+            if (LevelManager.Current != null) LevelManager.Current.UnregisterCheckpoint(this);
+        }
+
         public void SetActive(bool active)
         {
             IsActive = active;

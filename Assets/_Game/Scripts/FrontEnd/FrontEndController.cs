@@ -91,6 +91,21 @@ namespace DribbleToSchool.FrontEnd
             SceneManager.LoadScene(SceneName);
         }
 
+        /// <summary>
+        /// Start the Holiday Run, the endless mode. It is a scene of its own; its pause and results menus
+        /// lead back here through <see cref="Open"/> (HolidayRunDirector.QuitToMenu).
+        /// </summary>
+        public static void OpenHolidayRun()
+        {
+            if (!Application.CanStreamedLevelBeLoaded(Holiday.HolidayStages.CoreSceneName))
+            {
+                Debug.LogError("[Holiday Run] The scene '" + Holiday.HolidayStages.CoreSceneName + "' is not in the build settings: rebuild the generated content from the Kick Off menu.");
+                return;
+            }
+            TimeControl.ResetTime();
+            SceneManager.LoadScene(Holiday.HolidayStages.CoreSceneName);
+        }
+
         /// <summary>The live 3D backdrop, or null in a scene built without it.</summary>
         public MenuStage Stage { get { return MenuStage.Current; } }
 

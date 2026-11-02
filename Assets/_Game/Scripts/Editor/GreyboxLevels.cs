@@ -13,6 +13,11 @@ namespace DribbleToSchool.EditorTools
     /// under barriers with a 0.85 m gap (SlideUnder: the Barriers kit's models, picked
     /// to suit each level, at least one per level and two in the longer ones).
     /// Each chapter introduces one idea, then mixes it with what came before.
+    ///
+    /// A story layout is written in its route's own coordinates: x = 0 (<c>Start</c>) is where the level's own street begins. The kid
+    /// really starts 12 m before it, on the doorstep of the house (the track builder shifts the start, the walls and the first ground
+    /// span back by <see cref="HomeLeadInRules.Length"/>; the challenges and the test track are not shifted). A layout that wants
+    /// something met in the first seconds puts it at x &lt; 0 (only L01's first lesson does).
     /// </summary>
     public static class GreyboxLevels
     {
@@ -78,12 +83,14 @@ namespace DribbleToSchool.EditorTools
         {
             t.Walls(-8f, 78f);
             t.Start(0f);
-            t.Hint(1.5f, "dribble");
+            // (Every story level starts at the front door, 12 m before the layout's x = 0, see HomeLeadInRules: the first lesson is
+            // moved back with it, to 1.5 m and 4 m from the doorstep as it was from the old start.)
+            t.Hint(-10.5f, "dribble");
             t.Hint(18f, "brake");
             t.Hint(24f, "jump");
             t.Hint(33f, "kick");
             t.Ground(-8f, 52f);
-            t.Sign("Hold the arrows to walk.\nKeep the ball close!", new Vector2(4f, 3.2f));
+            t.Sign("Hold the arrows to walk.\nKeep the ball close!", new Vector2(-8f, 3.2f));
             t.Sign("Tap the screen just as\nyou catch up with the ball:\nPerfect touch!", new Vector2(13f, 3.4f));
             t.Sign("Let go of the arrows to stop -\nthe ball stops at your feet", new Vector2(21f, 3f));
 
@@ -606,7 +613,7 @@ namespace DribbleToSchool.EditorTools
             t.Start(0f);
             t.Hint(10f, "tunnel");
             t.Ground(-8f, 105f);
-            t.Sign("Into the underpass -\nit's dark in there!", new Vector2(5f, 3.2f));
+            t.Sign("Under the railway -\nit's dark in there!", new Vector2(5f, 3.2f));
 
             t.Tunnel(14f, 34f);
             t.Puddle(20f, 23f);
@@ -686,7 +693,8 @@ namespace DribbleToSchool.EditorTools
             t.Ground(52f, 64f);
             t.Checkpoint(55f);
             t.Pit(64f, 70f);
-            t.MovingPlatform(new Vector2(66.5f, -0.175f), 2.6f, new Vector2(0f, 2.2f), 1f);
+            // The lift spans 65.7 to 68.3: 1.7 m from the pit's near edge and 1.7 m from the far bank (it was 1.2 m and 2.2 m: the step off the top was nearly the whole of a jump).
+            t.MovingPlatform(new Vector2(67f, -0.175f), 2.6f, new Vector2(0f, 2.2f), 1f);
             t.Sign("Builder's lift - going up!", new Vector2(66.5f, 4.6f));
             t.Ground(70f, 82f, 2f);
             t.Checkpoint(73f, 2f);
@@ -698,7 +706,7 @@ namespace DribbleToSchool.EditorTools
 
             t.CoinRow(22f, 28f, 1f, 4);
             t.CoinRow(46f, 50f, 1.8f, 3);
-            t.CoinRow(66.5f, 66.5f, 3f, 1);
+            t.CoinRow(67f, 67f, 3f, 1);
             t.CoinRow(74f, 80f, 2.5f, 3);
             t.CoinRow(85f, 88f, 2.8f, 3);
             t.Sticker(new Vector2(67f, 6f));
@@ -711,7 +719,7 @@ namespace DribbleToSchool.EditorTools
             t.Walls(-8f, 135f);
             t.Start(0f);
             t.Ground(-8f, 48f);
-            t.Sign("Tunnel Run!", new Vector2(5f, 3f));
+            t.Sign("Tunnel Run! Twice\nunder the railway", new Vector2(4.4f, 3.2f));   // its legs clear of the barrier at 6.5
             t.SlideUnder(6.5f, TrackBuilder.SlideLook.SiteBarrier);
             t.Tunnel(10f, 40f, 0f, 3.4f);
             t.Pipes(new Vector2(38f, 0.6f), 3.2f, 8f, 1f);
@@ -910,6 +918,7 @@ namespace DribbleToSchool.EditorTools
             t.Checkpoint(62f);
             t.Pedestrian(66f, 72f, CoatB);
             t.Puddle(74f, 77f);
+            t.Sign("Under the railway -\nnearly at school!", new Vector2(77.4f, 3.2f));
             t.Tunnel(80f, 96f, 0f, 3.4f);
             t.Ground(90f, 160f);
             t.Checkpoint(98f);

@@ -17,15 +17,22 @@ namespace DribbleToSchool.UI.Kit
     {
         [Tooltip("Main actions (kick, slide, jump) click harder than the walk buttons.")]
         public bool primary = true;
-        [Tooltip("Opacity of the glass at rest and while held.")]
-        public float restAlpha = 0.14f;
+        [Tooltip("Opacity of the glass at rest and while held: barely there until it is touched.")]
+        public float restAlpha = 0.06f;
         public float heldAlpha = 0.3f;
+        [Tooltip("How much of the button's own colour the glass takes (0 = plain white glass).")]
+        public float colorStrength = 0.5f;
+        [Tooltip("Opacity of the thin coloured rim at rest and while held (0 = borderless).")]
+        public float restRim = 0.2f;
+        public float heldRim = 0.85f;
+        [Tooltip("How much of the rim and glass shows while the button is highlighted (the kick button with the ball in reach).")]
+        public float highlightRim = 0.5f, highlightGlass = 0.12f;
 
         public RectTransform Content { get; private set; }
 
-        Image glass, ripple, halo;
+        Image glass, rim, ripple, halo;
         RectTransform discRect, rippleRect;
-        Color tint;
+        Color tint, rimTint;
         float press, pressVelocity;
         float rippleTime = -10f;
         bool held, highlighted;
@@ -35,7 +42,7 @@ namespace DribbleToSchool.UI.Kit
         /// <summary>
         /// Builds the button under <paramref name="parent"/>. Place the returned object's
         /// RectTransform with anchors; the button keeps itself round inside that area.
-        /// <paramref name="color"/> only tints the glass faintly.
+        /// <paramref name="color"/> tints the glass and its rim, so each action reads on sight.
         /// </summary>
         public static TouchButton Create(Transform parent, string name, Color color, bool primary)
         {
@@ -50,13 +57,14 @@ namespace DribbleToSchool.UI.Kit
             fitter.aspectMode = AspectRatioFitter.AspectMode.FitInParent;
             fitter.aspectRatio = 1f;
 
-            // Mostly white with a touch of the button's colour: reads on bright and dark scenes.
-            button.tint = Color.Lerp(Color.white, color, 0.25f);
+            // Mostly white with a good part of the button's colour: reads on bright and dark scenes.
+            button.SetColor(color);
 
             button.halo = Layer(square, "Halo", ProceduralSprites.SoftDisc, new Color(1f, 1f, 1f, 0f), -0.2f);
             button.discRect = UIKit.Rect(square, "Disc");
             UIKit.Stretch(button.discRect);
             button.glass = Layer(button.discRect, "Glass", ProceduralSprites.SoftEdgeDisc, new Color(button.tint.r, button.tint.g, button.tint.b, button.restAlpha), 0f);
+            button.rim = Layer(button.discRect, "Rim", ProceduralSprites.Ring, new Color(button.rimTint.r, button.rimTint.g, button.rimTint.b, button.restRim), 0f);
             button.ripple = Layer(square, "Ripple", ProceduralSprites.Ring, new Color(1f, 1f, 1f, 0f), 0f);
             button.rippleRect = button.ripple.rectTransform;
 
@@ -80,7 +88,7 @@ namespace DribbleToSchool.UI.Kit
         /// <summary>A soft white icon centred on the disc, sized as a fraction of the button, optionally turned.</summary>
         public Image AddIcon(Sprite sprite, float size, float angle = 0f, float y = 0.5f, Color? color = null)
         {
-            var icon = UIKit.Icon(Content, "Icon", sprite, color ?? new Color(1f, 1f, 1f, 0.8f), 10f);
+            var icon = UIKit.Icon(Content, "Icon", sprite, color ?? new Color(1f, 1f, 1f, 0.38f), 10f);
             var rt = icon.rectTransform;
             float h = size * 0.5f;
             rt.anchorMin = new Vector2(0.5f - h, y - h);
@@ -98,7 +106,7 @@ namespace DribbleToSchool.UI.Kit
         /// <summary>A small, quiet label across the lower part of the disc.</summary>
         public Text AddLabel(string text, int size)
         {
-            var label = UIKit.Label(Content, "Label", text, size, new Color(1f, 1f, 1f, 0.7f), TextAnchor.MiddleCenter, true);
+            var label = UIKit.Label(Content, "Label", text, size, new Color(1f, 1f, 1f, 0.34f), TextAnchor.MiddleCenter, true);
             var rt = label.rectTransform;
             rt.anchorMin = new Vector2(0f, 0.1f);
             rt.anchorMax = new Vector2(1f, 0.32f);
@@ -126,10 +134,11 @@ namespace DribbleToSchool.UI.Kit
             highlighted = isHighlighted;
         }
 
-        /// <summary>Faint tint for the glass and halo (e.g. green while the ball is in reach).</summary>
+        /// <summary>The colour of the glass, rim and halo (e.g. green while the ball is in reach).</summary>
         public void SetColor(Color color)
         {
-            tint = Color.Lerp(Color.white, color, 0.35f);
+            tint = Color.Lerp(Color.white, color, colorStrength);
+            rimTint = Color.Lerp(Color.white, color, 0.9f);
         }
 
         void OnDisable()
@@ -148,8 +157,18 @@ namespace DribbleToSchool.UI.Kit
             if (discRect != null)
             {
                 discRect.localScale = Vector3.one * (1f - 0.07f * press);
-                glass.color = new Color(tint.r, tint.g, tint.b, Mathf.Lerp(restAlpha, heldAlpha, press));
-                FadeContent(Mathf.Lerp(1f, 1.2f, press));
+                float glassAlpha = Mathf.Lerp(restAlpha, heldAlpha, press);
+                float rimAlpha = Mathf.Lerp(restRim, heldRim, press);
+                if (highlighted)
+                {
+                    // "Now": the ball is in reach. Quiet, but enough to see at a glance.
+                    glassAlpha = Mathf.Max(glassAlpha, highlightGlass);
+                    rimAlpha = Mathf.Max(rimAlpha, highlightRim);
+                }
+                glass.color = new Color(tint.r, tint.g, tint.b, glassAlpha);
+                if (rim != null) rim.color = new Color(rimTint.r, rimTint.g, rimTint.b, rimAlpha);
+                // The icon and the label come up to clear white while the button is held.
+                FadeContent(Mathf.Lerp(1f, 2.4f, press));
             }
 
             float rt = (Time.unscaledTime - rippleTime) / 0.4f;
@@ -165,7 +184,7 @@ namespace DribbleToSchool.UI.Kit
 
             if (halo != null)
             {
-                float pulse = highlighted ? 0.22f + 0.12f * Mathf.Sin(Time.unscaledTime * 6f) : 0f;
+                float pulse = highlighted ? 0.1f + 0.06f * Mathf.Sin(Time.unscaledTime * 6f) : 0f;
                 halo.color = new Color(tint.r, tint.g, tint.b, Mathf.MoveTowards(halo.color.a, pulse, dt * 3f));
             }
         }

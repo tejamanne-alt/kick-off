@@ -40,11 +40,12 @@ namespace DribbleToSchool.Analytics
 
         void OnSceneLoaded(Scene scene, LoadSceneMode mode)
         {
+            if (mode == LoadSceneMode.Additive) return;   // a Holiday Run's streamed stages are not new levels
             Unhook();
             var level = LevelManager.Current;
             if (level == null) return;
             hooked = level;
-            levelId = level.level != null ? level.level.levelId : "test";
+            levelId = level.endless ? "holiday_run" : level.level != null ? level.level.levelId : "test";
             level.BallLost += OnBallLost;
             level.Completed += OnCompleted;
         }
@@ -53,7 +54,8 @@ namespace DribbleToSchool.Analytics
         {
             // The old LevelManager is already destroyed when the next scene loads; its C# state is still readable.
             if (ReferenceEquals(hooked, null)) return;
-            if (hooked.State != LevelState.Complete)
+            // (A Holiday Run reports its own start and end: see HolidayRunDirector.)
+            if (hooked.State != LevelState.Complete && !hooked.endless)
                 AnalyticsService.Track("level_quit", "level", levelId, "time", hooked.ElapsedTime.ToString("0.0"), "lost", hooked.BallsLost);
             hooked.BallLost -= OnBallLost;
             hooked.Completed -= OnCompleted;

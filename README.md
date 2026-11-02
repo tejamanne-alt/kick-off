@@ -1,6 +1,6 @@
 # Kick Off 2
 
-A football side-scroller for iOS and Android, built in Unity 6: a teen dribbles a ball through clear-daylight anime streets all the way to school.
+A football side-scroller for iOS and Android, built in Unity 6: a schoolkid (one of six, from high school or primary school) dribbles a ball through clear-daylight anime streets all the way to school.
 The full game brief is in [`GAME_PROMPT.md`](GAME_PROMPT.md).
 
 ## Status
@@ -8,7 +8,8 @@ The full game brief is in [`GAME_PROMPT.md`](GAME_PROMPT.md).
 All eight phases of the build plan are done (see [`PROGRESS.md`](PROGRESS.md)):
 
 - **Gameplay:** core dribbling and kicking, level flow, 13 hazard types, and 23 story levels across 5 chapters plus 5 ball-skill challenges.
-- **Progression:** coins, stickers, saving, the Locker Room shop and the chapter map.
+- **Holiday Run:** the campaign with no destination: the same controls and ball along the whole story world, one 120 m stage for each of the 23 levels in story order, a lap a day. See [`docs/HOLIDAY_RUN.md`](docs/HOLIDAY_RUN.md).
+- **Progression:** coins, stickers, saving, the Locker Room shop and the town map (a picture of the town with six routes from the kid's house to the school; see [`docs/WORLD_MAP.md`](docs/WORLD_MAP.md)).
 - **Presentation:** procedural storybook art, animation, FX, music and sound effects, and haptics.
 - **Menus and options:** settings, localization (English and Spanish), tutorial hints and accessibility options.
 - **Release setup:** store and unlock, local analytics, and build scripts.
@@ -35,6 +36,8 @@ Generated scenes are rebuilt from code, so edits made directly in those scenes g
 | 4 Underpass | L15 The Underpass, L16 Building Site, L17 Cranes, L18 Tunnel Run | Dark tunnels, rolling pipes, moving platforms |
 | 5 Park & School | L19 Park Gates, L20 Fountain Square, L21 Playground, L22 Duck Pond, L23 The Final Bell | Dogs, fountains, swings, the finale |
 
+**Every story level is one trip from the front door to the school gate**, along one of six routes (Home Street, Market Street, Seaside Road, the Underpass, the building site's shortcut and the Park Path; see [`docs/WORLD_MAP.md`](docs/WORLD_MAP.md)). Each starts on the doorstep of the same house (a cream house with a red front door), walks 12 m of home street, in the first chapter's look whatever the level, to a sign with the route's name, and there the level's own street begins; the school arch at the end is the same in all of them. The 12 m are about 3 seconds, added to every bell. The challenges keep their own arenas and starts.
+
 **Ball-skill challenges** are optional. There's one per chapter, unlocked by finishing the chapter's first level:
 
 | Challenge | Type | Stars |
@@ -45,7 +48,7 @@ Generated scenes are rebuilt from code, so edits made directly in those scenes g
 | C04 Site Targets | Accuracy (60 s) | 4 / 6 / 8 targets |
 | C05 Juggle Champion | Juggling (60 s) | 10 / 20 / 30 juggles |
 
-Bell times and streak targets are in the level table in `Editor/GeneratedContent.cs`. Change them there, then run **Kick Off > Rebuild All Levels**.
+Bell times and streak targets are in the level table in `Editor/GeneratedContent.cs` (a story level's bell is its street's seconds, as written there, plus the walk from the front door: `Bell(...)`). Change them there, then run **Kick Off > Rebuild All Levels**.
 
 ## Hazards
 
@@ -69,9 +72,9 @@ Bell times and streak targets are in the level table in `Editor/GeneratedContent
 
 ## Level rules
 
-- **Start:** a short "Ready... GO!" countdown, then you're in control.
+- **Start:** you stand on the doorstep with the ball, a short "Ready... GO!" countdown, then you're in control. Restarting a level, or losing the ball before the first checkpoint, puts you back at the doorstep.
 - **Checkpoints** (grey flags) turn green when the kid passes them with the ball close by.
-- **Losing the ball** (falling into a gap or water, falling off the level, or kicking it back past the start of the level) fades the screen and sends you back to the last checkpoint. There's no game over, and the clock keeps running. If you walk off without the ball, just walk back for it.
+- **Losing the ball** (falling into a gap or water, falling off the level, or kicking it back past the start of the level: "the ball rolled back home") fades the screen and sends you back to the last checkpoint. There's no game over, and the clock keeps running. If you walk off without the ball, just walk back for it.
 - **School bell:** a countdown to the bell. When it rings you can still finish, you're just late. Turn it off in the pause menu (cozy mode).
 - **Stars:**
   - 1 star for reaching school with the ball.
@@ -84,26 +87,41 @@ Bell times and streak targets are in the level table in `Editor/GeneratedContent
 | Action | Phone | Keyboard / mouse |
 |---|---|---|
 | Walk back / forward (hold) | ◀ ▶ buttons (bottom-left); let go to stop | `A` / `←`, `D` / `→` |
-| Jump (hold = higher) | JUMP button (bottom-right) or swipe up | `Space` / `W` / `↑` |
+| Jump (hold = higher) | JUMP button (the big one in the bottom-right corner) or swipe up | `Space` / `W` / `↑` |
 | Double jump | JUMP again in the air | `Space` / `W` / `↑` again |
-| Slide | SLIDE button (between KICK and JUMP) or swipe down | `S` / `↓` |
+| Slide | SLIDE button (straight above JUMP) or swipe down | `S` / `↓` |
 | Touch / juggle | Quick tap anywhere else | `F` / `J` |
-| Kick (aimed) | Drag from the KICK button the way the ball should go, release | Mouse drag from KICK |
+| Kick (aimed) | Drag from the KICK button (left of JUMP) the way the ball should go, release | Mouse drag from KICK |
 | Kick (quick pass) | Tap KICK | `K` |
 | Pause | Pause button | `Esc` / `P` |
 | Restart level | Pause > Restart | `R` |
 | Tuning panel | Tuning button | `Tab` |
+
+Holiday Run uses exactly these controls.
 
 ## How it plays
 
 - **Walk** with the ◀ ▶ buttons. Whenever the kid walks into the ball, it gets a slightly random touch in the walking direction, so you can dribble forward or back.
 - **Perfect touch:** tap as the kid closes in and the ball sits in the sweet spot just ahead of the feet. Perfect touches have no randomness and they build a streak.
 - **Juggle:** tap while the ball is in the air near the kid.
-- **Kick:** drag from the KICK button (left of SLIDE and JUMP) in the direction you want the ball to go: up-right to chip forward, up-left to chip back. The length sets the power. Time slows while you aim, and only the first 0.5 s of the flight is previewed. A quick tap on KICK is a short pass the way the kid faces. Kicks only work when the ball is within reach: the KICK button glows green when it is, and the dots turn red when it isn't.
+- **Kick:** drag from the KICK button (left of JUMP) in the direction you want the ball to go: up-right to chip forward, up-left to chip back. The length sets the power. Time slows while you aim, and only the first 0.5 s of the flight is previewed. A quick tap on KICK is a short pass the way the kid faces. Kicks only work when the ball is within reach: the KICK button glows green when it is, and the dots turn red when it isn't.
 - **Stop** by letting go of the arrows. A stopping kid traps the ball under the foot.
 - **Double jump:** press JUMP again in the air for a second, slightly lower jump with a tucked somersault (hold for its full height, like the first). It reaches about 2.2 m: over 1.6 m walls and fallen trees and up to high coins, but not over the 2.4 m gates. A trampoline bounce gives it back.
-- **Slide:** tap SLIDE (or swipe down) for a feet-first slide along the ground, a little faster than running, for about 0.7 s. The kid is low enough to pass under anything with a 0.85 m gap, and won't stand up while something is overhead (they shuffle on until clear). A sliding kid nudges the ball on along the ground without breaking a perfect-touch streak. Jump out of a slide for a longer jump.
-- **Left-handed mode** swaps the two button clusters.
+- **Slide:** tap SLIDE, flick your left thumb down on the forward arrow (the kid keeps walking into the slide) or swipe down anywhere else, for a feet-first slide along the ground, a little faster than running, for about 0.7 s. The kid is low enough to pass under anything with a 0.85 m gap, and won't stand up while something is overhead (they shuffle on until clear). A sliding kid nudges the ball on along the ground without breaking a perfect-touch streak. Jump out of a slide for a longer jump.
+- **Left-handed mode** swaps the two button clusters. **Slide button by the arrows** (Settings > Controls, on by default) puts SLIDE with the walking thumb; off, it sits above JUMP.
+- **Touch layout:** each thumb has a job. The left thumb walks and slides: two arrows tucked into the bottom-left corner (back, then the bigger forward arrow) and the SLIDE button up and to the left of the forward arrow; a flick down on either arrow slides without letting go, and a small slide glyph on the forward arrow says so. The right thumb jumps and kicks: JUMP in the corner where the thumb rests and KICK a thumb's width to its left on the same baseline (with the whole screen above it to aim in). The three action buttons are one size. They are nearly see-through until touched (a faint rim, a faint icon; held, they light up; KICK glows green while the ball is in reach), and each is coloured differently (blue, violet, orange). A touch goes to whichever button's edge it is nearest, so there are no gaps or overlaps to hit by mistake. Sizes are in screen heights, so the buttons are the same size on every phone and shrink only on screens narrower than 4:3. **The kid is never under a thumb:** the camera stands the kid a set fraction of the way across the screen (38%), further right on narrow screens as far as the buttons on the left need (`GameInput.KidSafeScreenX`, `CameraFollow2D.kidScreenX`). Positions are on the `GameInput` object (`jumpButton`, `kickButton`, `slideByArrows`, `slideButton`, `walkBackButton`, `walkForwardButton`).
+
+## Holiday Run
+
+The campaign with no destination, from the title screen: the same controls, the same ball and the same hazards, along one long street made of all 23 story levels end to end (Home Street, the Market, the Beach, the Underpass and building site, then the Park and the school gate). Nothing runs by itself and there is no bell and no finish: you dribble, jump, slide and kick on. Reaching the school gate ends the day and the street starts again at home. Along the way:
+
+- Obstacles use the same kit models and hazards as the story levels, in three random layouts per stage, so no two days play the same. Light, haze and music change gradually from one chapter to the next.
+- You have three balls: losing one sends you back to the stage's checkpoint, as in a level, and the last one ends the run.
+- Score is new ground, coins and a multiplier that climbs with every obstacle passed in a row; close shaves score bonuses, and a hard kick smashes crates and sandcastles for coins.
+- Magnet, Shield and Turbo power-ups; three missions at a time that pay coins; spend coins to revive with one more ball (the coins of a run are banked when it ends).
+- Stages stream in as additive scenes, so only about three exist at a time however long the run.
+
+Design, scoring, tuning knobs, the streaming contract and a first-run checklist are in [`docs/HOLIDAY_RUN.md`](docs/HOLIDAY_RUN.md).
 
 ## Tuning the feel
 
@@ -140,20 +158,26 @@ Assets/_Game/
     Ball/       BallController.cs      physics ball, auto/perfect touches, juggle, kick
                 KickAimer.cs           kick-button aim (forward or back) + slow motion
                 TrajectoryPreview.cs   dotted arc for the first ~0.5 s
-    CameraRig/  CameraFollow2D.cs      look-ahead, vertical dead zone, level bounds
+    CameraRig/  CameraFollow2D.cs      the kid kept clear of the left thumb, vertical dead zone, level bounds
     Core/       LevelManager.cs        intro, bell, checkpoints, lose/respawn, pause, stars
                 Checkpoint.cs, LoseZone.cs, GoalZone.cs, TimeControl.cs, GameSettings.cs
     Levels/     LevelDefinition.cs, LevelCatalog.cs (ScriptableObjects)
     UI/         LevelHud.cs            grey-box HUD, pause, results, live tuning panel
     Tuning/     BallTuning.cs, PlayerTuning.cs (ScriptableObjects)
+    Holiday/    HolidayRunDirector.cs  the endless mode's rules: pace, score, combo, power-ups, revive, days
+                RunWorldStreamer.cs    loads and unloads the 23 stage scenes round the kid
+                HolidayStages.cs       the stage table (one per story level) and the world's geometry
+                BallSmasher.cs, HolidayAtmosphere.cs, RunChunk.cs, RunSolid.cs, RunBreakable.cs, PowerUp.cs
+                HolidayRunHud.cs, HolidayRunPanels.cs, HolidayMissions.cs   the run's screen, its pause and results menus, the missions
     Editor/     LevelBuildKit.cs       sprites, assets, gameplay rig, track pieces
                 GreyboxLevels.cs       the level layouts
                 GeneratedContent.cs    builds every scene + build settings
+                HolidayRunBuilder.cs   builds the Holiday Run core scene and its 23 stage scenes
 ```
 
 ## About the camera
 
-The original plan named Cinemachine for the camera. For now the project uses its own `CameraFollow2D`, which already has look-ahead, a vertical dead zone, level bounds and a snap on respawn. The reason is that I couldn't compile against Cinemachine's API while building this, and a single wrong API call would stop the project from entering Play mode. It's a self-contained swap once the levels are verified in the editor.
+The original plan named Cinemachine for the camera. For now the project uses its own `CameraFollow2D`, which already keeps the kid clear of the control buttons with the view ahead of them, a vertical dead zone, level bounds and a snap on respawn. The reason is that I couldn't compile against Cinemachine's API while building this, and a single wrong API call would stop the project from entering Play mode. It's a self-contained swap once the levels are verified in the editor.
 
 ## Progression
 
@@ -169,7 +193,7 @@ The original plan named Cinemachine for the camera. For now the project uses its
 All art and audio are generated in code, so the repo has no art or audio files to maintain:
 
 - **Art.** A bright anime look in a real 3D street. The camera is a low perspective camera looking along the street, and play stays on a 2D plane along the footpath, with the house walls behind and the road in front. The ground is 3D from front to back and never breaks: road, kerbs, footpath, cobbles, sand, gravel or grass strips, with side streets and raised zebra crossings running into the distance. Gaps are drain works or flooded trenches in the footpath, marked with cones. Block walls, houses, shops, apartments, warehouses, the school, hedges and utility poles with sagging wires are 3D meshes built in code (`Scripts/World`). They use a cel-shaded toon shader (`Shaders/Toon.shader`) with tileable baked textures and facades, and distance haze fades them into the sky. Trees, bushes, clouds and people are hazed cut-outs that stand in the 3D world. Each chapter has its own layout (suburb, market, beach with the sea to the horizon, city, park). The editor bakes everything to `Assets/_Game/Art/Generated` when levels are rebuilt.
-- **Animation.** The player is a Blender-made teen, a boy or a girl picked in Settings (`tools/blender/teen.py`, exported to `Art/Models/Boy.fbx` and `Girl.fbx`), posed by code. Other characters are 3D too: one smooth skinned mesh per character (`Presentation/CharacterBody3D`) on a code-animated rig with hips, knees, shoulders and elbows, so joints bend as skin with no seams. They are cel-shaded with an ink outline (`Shaders/ToonCharacter.shader`). The girl has a chestnut ponytail, a sky-blue blouse, a navy pleated skirt and a yellow backpack; the boy has short dark hair with a quiff, a green T-shirt, khaki shorts, red sneakers and a navy backpack; adults wear long sleeves and trousers. The kid runs, jumps, kicks, lands, celebrates and stumbles, and turns around by spinning through facing the camera. The ball, coins, cars, pipes, signs, posts, swings, the springboard, targets, the dog and the seagull are 3D too.
+- **Animation.** The player is one of six Blender-made kids picked in the player picker (`Core/PlayerRoster`): the high-school boy and girl (`tools/blender/teen.py`, exported to `Art/Models/Boy.fbx` and `Girl.fbx`) and four primary-school kids (`tools/blender/primary.py`, `PrimaryBoy`, `PrimaryGirl`, `PrimaryBoy2` and `PrimaryGirl2` in `Art/Models`), posed by code. Other characters are 3D too: one smooth skinned mesh per character (`Presentation/CharacterBody3D`) on a code-animated rig with hips, knees, shoulders and elbows, so joints bend as skin with no seams. They are cel-shaded with an ink outline (`Shaders/ToonCharacter.shader`). Both teens wear the school uniform: a white shirt tucked in under a red striped tie (the boy's with a belt and navy trousers, a red satchel across his chest; the girl's blouse has a navy collar and tucks under a navy pleated skirt, with knee socks and a yellow backpack). The primary-school kids are about five heads tall (1.27 to 1.34 m, against the teens' 1.65 and 1.73 m): the boys wear knee-length shorts (navy or grey) with bare knees and crew socks, the girls a pleated skirt or a pinafore, and each carries a hard school backpack in a colour of their own with a neckerchief or bow at the collar. The clothes follow the body in every pose (`tools/blender/review_poses.py` renders each pose the game uses to check that no bare skin or torn cloth shows). Adults wear long sleeves and trousers. The kid runs, jumps, kicks, lands, celebrates and stumbles, and turns around by spinning through facing the camera. The ball, coins, cars, pipes, signs, posts, swings, the springboard, targets, the dog and the seagull are 3D too.
 - **Feel.** Parallax backdrops, particles for every action, screen shake, a slow-motion finish, and the camera zooms out while aiming.
 - **Audio.** Synthesized sound effects for every action and a lo-fi music loop per chapter, plus a menu theme.
 - **Haptics.** Taptic feedback on iOS (prepared generators; a rigid click when a button goes down and a soft tap when it comes up) and the system click effects on Android 10+, short vibrations before that.
@@ -177,8 +201,9 @@ All art and audio are generated in code, so the repo has no art or audio files t
 
 ## Menus, settings and accessibility
 
-- **Menu:** the launch screen is a live 3D scene (`FrontEnd/MenuStage`, built into the FrontEnd scene by `LevelBuildKit.BuildMenuStage` with the levels' own builders): a stretch of the home street in the game's daylight, real clouds, and the chosen teen doing keepy-uppy (`FrontEnd/MenuKid`) while the camera drifts. The KICK OFF logo is built in code (`UI/KickOffLogo`: Lilita One lettering with an extrusion and ink outline by `UI/Kit/UILogoText`, on a turf badge with the centre circle chalked on it). Play (chapter map), Locker Room (shop; the teen in the street tries items on), Stickers (album), Settings and Credits; the map and album tilt the camera up to the sky. Panels and buttons are clean, slightly see-through white with a thin dark line (`UI/Kit/UIKit`, `UITheme`).
-- **Player:** the boy or the girl, picked on two cards with portraits of the real models (`UI/PlayerPicker`; portraits rendered by `tools/blender/portrait_teen.py` into `Resources/UI`). In Settings, from the title screen (tap the teen or the player card) and in the Locker Room. It sets `GameSettings.Character`; the menu teen and every level's `CharacterChoice` follow it live.
+- **Menu:** the launch screen is a live 3D scene (`FrontEnd/MenuStage`, built into the FrontEnd scene by `LevelBuildKit.BuildMenuStage` with the levels' own builders): a stretch of the home street in the game's daylight, real clouds, and the chosen kid doing keepy-uppy (`FrontEnd/MenuKid`) while the camera drifts. The KICK OFF logo is built in code (`UI/KickOffLogo`: Lilita One lettering with an extrusion and ink outline by `UI/Kit/UILogoText`, on a turf badge with the centre circle chalked on it). Play (the town map, below), Locker Room (shop; the kid in the street tries items on), Stickers (album), Settings and Credits; the map and album tilt the camera up to the sky. Panels and buttons are clean, slightly see-through white with a thin dark line (`UI/Kit/UIKit`, `UITheme`).
+- **Town map:** Play opens a rendered picture of the town (`Resources/UI/TownMap.jpg`, laid out by `Resources/TownMapLayout.json`, read by `Levels/TownMap`) with the six routes from the kid's house to the school drawn over it as coloured lines, every story level a numbered node on its route (stars, a lock, the next one pulsing) and each challenge a gold "!" node beside its route (`FrontEnd/ChapterMapScreen`). The route with the next level is in focus; along the bottom a strip of that route's levels, and a chip for each route to change it. The picture's core is scaled to fit between the title and the strip on any screen from 4:3 to 21:9, with the rest of the picture round it as far as it reaches. The picture, the layout format and the checks (`Tests/Editor/TownMapTests`): [`docs/WORLD_MAP.md`](docs/WORLD_MAP.md).
+- **Player:** one of six kids (`Core/PlayerRoster`): the high-school boy and girl and four primary-school kids (Kai, Mia, Leo and Zoe), picked on cards with portraits of the real models, a row for each school (`UI/PlayerPicker`; portraits rendered by `tools/blender/portrait_teen.py` into `Resources/UI`). From the title screen (tap the kid or the player card), in the Locker Room, and in Settings (which shows the chosen kid and opens the picker). It sets `GameSettings.Character`; the menu kid and every level's `CharacterChoice` follow it live, and the menu camera frames each kid by their height. To add a kid: build the model, add a row to `PlayerRoster` and a name to the string tables.
 - **Settings:** grouped rows laid out to fit any aspect ratio from 4:3 to 21:9: Audio (music, sound effects), Gameplay (school bell (off = cozy mode), left-handed controls, colour-blind aim colours, vibration, screen shake), Player, Language (English / Español), and reset progress.
 - **Tutorial:** short hint cards appear the first time each new mechanic shows up.
 - **Developer tools:** the tuning sliders are only in the editor and development builds (Tab, or the Tune button in the HUD).
@@ -192,7 +217,10 @@ Edit-mode tests live in `Assets/_Game/Tests/Editor/GameLogicTests.cs`. Run them 
 - the shop table (unique ids, free defaults),
 - challenge star thresholds, and that Next level skips challenges,
 - generated sound effects and music (no invalid samples, no clipping),
-- generated art (solid blocks, seamless ground edges).
+- generated art (solid blocks, seamless ground edges),
+- the touch layout on six screen shapes from 4:3 to 21:9, both handednesses and both layouts (`ControlLayoutTests.cs`),
+- the town map's picture and layout against the six routes and the level table (`TownMapTests.cs`, `RouteTableTests.cs`),
+- the Holiday Run: the stage table and its order, the three layouts of every stage against their fairness rules, the missions, and the stage logic (`HolidayStageTests.cs`, `HolidayPatternsTests.cs`, `GameLogicTests.cs`).
 
 The tests never touch the player's save file. The file is wrapped in `UNITY_INCLUDE_TESTS`, so it compiles to nothing unless the Test Framework is active.
 

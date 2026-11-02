@@ -78,6 +78,7 @@ namespace DribbleToSchool.EditorTools
             Circle = LoadOrCreateSprite(ArtDir + "/Circle.png", 128, true);
             ballTuning = LoadOrCreateAsset<BallTuning>(SettingsDir + "/BallTuning.asset");
             playerTuning = LoadOrCreateAsset<PlayerTuning>(SettingsDir + "/PlayerTuning.asset");
+            CheckJumpTuning();
             GroundMat = LoadOrCreateMaterial(PhysicsDir + "/Ground.physicsMaterial2D", 0.6f, 0f);
             BouncyMat = LoadOrCreateMaterial(PhysicsDir + "/Bouncy.physicsMaterial2D", 0.2f, 0.9f);
             kidMat = LoadOrCreateMaterial(PhysicsDir + "/Kid.physicsMaterial2D", 0f, 0f);
@@ -104,6 +105,10 @@ namespace DribbleToSchool.EditorTools
         /// </remarks>
         public static void BuildScene(string scenePath, LevelDefinition def, LevelCatalog catalog, Action<TrackBuilder> layout, int chapter = 1)
         {
+            // A story level starts at home (the challenges and the test track do not): read what that needs of the definition now,
+            // before the new scene can unload it.
+            bool atHome = StartsAtHome(def);
+            string routeName = atHome ? RouteNameOf(def) : null;
             EnsureFolder(Path.GetDirectoryName(scenePath).Replace('\\', '/'));
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             Chapter = Mathf.Clamp(chapter, 1, 5);
@@ -149,6 +154,12 @@ namespace DribbleToSchool.EditorTools
             input.worldCamera = cam;
 
             var track = new TrackBuilder(new GameObject("Level").transform);
+            track.AuditName = "Level " + Path.GetFileNameWithoutExtension(scenePath);
+            if (atHome)
+            {
+                track.LeadIn = HomeLeadIn;
+                track.RouteName = routeName;
+            }
             layout(track);
             track.Finish();
             if (track.StartCheckpoint == null) throw new InvalidOperationException("Layout must call Start().");
@@ -164,40 +175,19 @@ namespace DribbleToSchool.EditorTools
             var capsule = kidGo.AddComponent<CapsuleCollider2D>();
             capsule.size = new Vector2(0.5f, 1.2f);
             capsule.sharedMaterial = kidMat;
-            // The teen boy and girl made in Blender (tools/blender/teen.py); Settings picks one.
-            // Neck heights make them about 1.75 m (him) and 1.68 m (her) tall.
-            // Without them, the younger Blender kid, or the procedural one.
-            var boyRig = BuildModelCharacter(kidGo.transform, "Boy", Art.boy, 1.5f, TeenFeet(1.5f), true);
-            var girlRig = boyRig.rig != null ? BuildModelCharacter(kidGo.transform, "Girl", Art.girl, 1.43f, TeenFeet(1.43f), true) : new CharacterParts();
-            var kidRig = boyRig;
-            if (kidRig.rig == null) kidRig = BuildModelCharacter(kidGo.transform, "Kid", Art.kid, 1.3f, Vector3.zero, true);
-            if (kidRig.rig == null)
-                kidRig = BuildCharacter(kidGo.transform, "Visual", Vector2.zero, 1f, KidColor, new Color(0.22f, 0.23f, 0.42f),
-                    new Color(0.16f, 0.15f, 0.2f), true);   // glossy near-black hair
+            // The playable kids made in Blender (tools/blender; PlayerRoster): all built in, Settings
+            // picks the one shown (CharacterChoice). Without them, the younger Blender kid, or the
+            // procedural one.
+            var cast = BuildCast(kidGo.transform);
             var feet = new GameObject("Feet").transform;
             feet.SetParent(kidGo.transform, false);
             feet.localPosition = new Vector3(0f, -0.6f, 0f);
             var kid = kidGo.AddComponent<KidController>();
             kid.tuning = playerTuning;
             kid.feet = feet;
-            kidRig.rig.gameObject.AddComponent<KidAnimator>().kid = kid;
-            MonoBehaviour kidOutfit = kidRig.outfit;
-            var kidFlags = new List<SpriteRenderer> { kidRig.flag };
-            if (boyRig.rig != null && girlRig.rig == null)
-                Debug.LogWarning("[Kick Off] The girl model did not load: Settings > Player will always show the boy.");
-            if (girlRig.rig != null)
-            {
-                girlRig.rig.gameObject.AddComponent<KidAnimator>().kid = kid;
-                boyRig.visual.name = "Boy";
-                girlRig.visual.name = "Girl";
-                var choice = kidGo.AddComponent<CharacterChoice>();
-                choice.boy = boyRig.visual.gameObject;
-                choice.girl = girlRig.visual.gameObject;
-                choice.boyOutfit = boyRig.outfit;
-                choice.girlOutfit = girlRig.outfit;
-                kidOutfit = choice;
-                kidFlags.Add(girlRig.flag);
-            }
+            foreach (var parts in cast.all) parts.rig.gameObject.AddComponent<KidAnimator>().kid = kid;
+            MonoBehaviour kidOutfit = cast.outfit;
+            var kidFlags = cast.flags;
 
             // Ball (see BallRadius).
             var ballGo = new GameObject("Ball");
@@ -482,10 +472,10 @@ namespace DribbleToSchool.EditorTools
         }
 
         [Serializable]
-        class ModelColors { public float[] top; public float[] legwear; public float[] hair; }
+        class ModelColors { public float[] top; public float[] legwear; public float[] hair; public float[] accent; }
 
         /// <summary>
-        /// The colours a model was made with (its top, legwear and hair), from the JSON file the
+        /// The colours a model was made with (its top, legwear, hair and tie), from the JSON file the
         /// Blender script writes next to the FBX (tools/blender/teen.py), so the shop's outfits
         /// recolour from the right base. Models without one keep ModelOutfit's defaults.
         /// </summary>
@@ -498,6 +488,7 @@ namespace DribbleToSchool.EditorTools
             outfit.defaultShirt = rgb(colors.top, outfit.defaultShirt);
             outfit.defaultLegwear = rgb(colors.legwear, outfit.defaultLegwear);
             outfit.defaultHair = rgb(colors.hair, outfit.defaultHair);
+            outfit.defaultAccent = rgb(colors.accent, outfit.defaultAccent);
         }
 
         /// <summary>Lifts a model built with <paramref name="neckHeight"/> so its feet stay on the kid's (local y -0.6).</summary>
@@ -819,10 +810,14 @@ namespace DribbleToSchool.EditorTools
 
         // ---------- Track pieces ----------
 
-        /// <summary>Fluent helper used by level layouts. Ground tops are world y values.</summary>
-        public class TrackBuilder
+        /// <summary>
+        /// Fluent helper used by level layouts. Ground tops are world y values. (Partial: the Holiday Run's
+        /// stages add their runner obstacles and chunk-wise slabs in LevelBuildKit.Holiday.cs.)
+        /// </summary>
+        public partial class TrackBuilder
         {
-            readonly Transform root;
+            /// <summary>Where new objects go (the Holiday Run's wrappers point it at a holder for the duration of one call).</summary>
+            Transform root;
             readonly List<Checkpoint> checkpoints = new List<Checkpoint>();
 
             public IList<Checkpoint> Checkpoints { get { return checkpoints; } }
@@ -860,9 +855,14 @@ namespace DribbleToSchool.EditorTools
                 LowestGroundTop = float.MaxValue;
             }
 
-            /// <summary>Walls at both ends; also the camera's horizontal limits. The ball can pass the back wall (and is then lost).</summary>
+            /// <summary>
+            /// Walls at both ends; also the camera's horizontal limits. The ball can pass the back wall (and is then lost). A level that
+            /// starts at home (<see cref="LeadIn"/>) has its back wall that much further back, behind the front door.
+            /// </summary>
             public void Walls(float minX, float maxX)
             {
+                layoutMinX = minX;
+                minX -= LeadIn;
                 MinX = minX;
                 MaxX = maxX;
                 // Invisible: the 3D street carries on past both ends.
@@ -873,8 +873,10 @@ namespace DribbleToSchool.EditorTools
             /// <summary>Solid ground from fromX to toX with its top at <paramref name="top"/>. The 3D street over it is built in Finish.</summary>
             public void Ground(float fromX, float toX, float top = 0f)
             {
+                fromX = HomeLeadInRules.GroundFrom(fromX, groundSpans.Count == 0, layoutMinX, LeadIn);   // (the home lead-in goes on the first span)
                 float depth = FillDepth(top);
                 LowestGroundTop = Mathf.Min(LowestGroundTop, top);
+                Audit.AddSpan(fromX, toX, top);
                 groundSpans.Add(new GroundSpan { from = Mathf.Min(fromX, toX), to = Mathf.Max(fromX, toX), top = top });
                 sand = null;
                 Block("Ground", new Vector2((fromX + toX) * 0.5f, top - depth * 0.5f), new Vector2(toX - fromX, depth), GroundColor, GroundMat, false);
@@ -900,6 +902,7 @@ namespace DribbleToSchool.EditorTools
                 // pipe, or a rain-flooded trench) marked with cones and a barrier; on the beach it
                 // is a washed-out channel or a tidal stream across the sand.
                 bool beach = Chapter == 3;
+                Audit.AddHole(fromX, toX, top, name);
                 float cx = (fromX + toX) * 0.5f, w = toX - fromX, lane = StreetBuilder.PathHalf * 2f;
                 if (beach)
                 {
@@ -1098,6 +1101,7 @@ namespace DribbleToSchool.EditorTools
             {
                 // Colliders only; the 3D car covers them.
                 // A small city car about 3.4 units (3 m) long: bonnet at 0.95, roof at 1.55, both jumpable.
+                Audit.AddWall(x, 3.3f, 1.55f, "parked car");
                 Block("CarBody", new Vector2(x, groundTop + 0.575f), new Vector2(3.3f, 0.75f), color, GroundMat, false);
                 Block("CarCabin", new Vector2(x - 0.17f, groundTop + 1.25f), new Vector2(1.9f, 0.6f), color, GroundMat, false);
                 Car(root, "Car", new Vector3(x, groundTop, 0.15f), 0f, Faded(color), "Hatch");
@@ -1457,6 +1461,7 @@ namespace DribbleToSchool.EditorTools
             /// </summary>
             public void MovingPlatform(Vector2 center, float width, Vector2 travel, float speed = 1.5f)
             {
+                Audit.AddSliding(center.x, center.y, width, travel.x, travel.y);
                 var go = Block("MovingPlatform", center, new Vector2(width, 0.35f), PlatformColor, GroundMat, false);
                 var body = go.AddComponent<Rigidbody2D>();
                 body.bodyType = RigidbodyType2D.Kinematic;
@@ -1931,6 +1936,7 @@ namespace DribbleToSchool.EditorTools
             /// <summary>A dark tunnel with a ceiling: darkens the screen around the kid while inside.</summary>
             public void Tunnel(float fromX, float toX, float groundTop = 0f, float height = 3.3f)
             {
+                Audit.AddRoof(fromX, toX, height);
                 float center = (fromX + toX) * 0.5f;
                 float width = toX - fromX;
                 // An underpass: a back wall and a deep concrete deck over the street (the Works kit's
@@ -1944,6 +1950,7 @@ namespace DribbleToSchool.EditorTools
                 else StreetBuilder.Solid(root, "TunnelBack", new Vector3(center, groundTop + height * 0.5f, StreetBuilder.PropertyZ + 0.2f), new Vector3(width, height, 0.4f), new Color(0.36f, 0.34f, 0.38f));
                 Block("TunnelCeiling", new Vector2(center, groundTop + height + 0.6f), new Vector2(width + 1f, 1.2f), new Color(0.62f, 0.62f, 0.64f), GroundMat, !kit, 7.4f)
                     .AddComponent<BallTrap>();        // the deck over the underpass is out of reach
+                RailwayBridgeFace(fromX, toX, groundTop + height);
                 // Dim lamps under the deck, lighting the footpath below them.
                 for (float lx = fromX + 2.5f; lx < toX - 1f; lx += 5f)
                 {
@@ -1964,6 +1971,55 @@ namespace DribbleToSchool.EditorTools
                 trigger.isTrigger = true;
                 trigger.size = new Vector2(width, height);
                 go.AddComponent<DarkZone>();
+            }
+
+            /// <summary>The red of the town map's train (the one at the station), for the railway bridge's band and plates.</summary>
+            static readonly Color RailwayRed = new Color(0.80f, 0.18f, 0.16f);
+
+            /// <summary>
+            /// The deck over an underpass is the railway's bridge: on the town map the underpass route and the park route pass
+            /// under the line, and no other route crosses it (docs/WORLD_MAP.md, "Level and map"). Along the front of the deck runs
+            /// a band in the red of the map's train, and every 8 m or so a white plate shows that train on its rails. Both are on
+            /// the fascia's flat face (3.7 m in front of the track, 0.05 to 0.9 m up from the deck's underside at
+            /// <paramref name="underside"/>, between the kit deck's drip lip and its top band; the plain ceiling block's front is
+            /// there too), facing the camera. Looks only: no colliders.
+            /// </summary>
+            void RailwayBridgeFace(float fromX, float toX, float underside)
+            {
+                const float face = -3.7f;
+                float a = fromX - 0.5f, b = toX + 0.5f;     // the deck reaches half a metre past the tunnel's walls
+                float y = underside + 0.47f;
+                StreetBuilder.Solid(root, "RailwayBand", new Vector3((a + b) * 0.5f, y, face - 0.012f), new Vector3(b - a, 0.16f, 0.02f), RailwayRed);
+                int plates = Mathf.Max(1, Mathf.RoundToInt((b - a) / 8f));
+                float step = (b - a) / plates;
+                for (int i = 0; i < plates; i++)
+                {
+                    var plate = new GameObject("RailwayPlate").transform;
+                    plate.SetParent(root, false);
+                    plate.position = new Vector3(a + step * (i + 0.5f), y, face - 0.04f);
+                    TrainPlate(plate);
+                }
+            }
+
+            /// <summary>
+            /// A 1.2 x 0.6 m white plate (2 cm thick, centred on <paramref name="plate"/>) with a red train on a dark rail: the
+            /// carriage with four windows and a cab window at its front, three wheels under it.
+            /// </summary>
+            static void TrainPlate(Transform plate)
+            {
+                var white = new Color(0.97f, 0.97f, 0.95f);
+                var dark = new Color(0.17f, 0.18f, 0.22f);
+                Part(plate, "Plate", Vector3.zero, new Vector3(1.2f, 0.6f, 0.02f), white);
+                Part(plate, "Rim", new Vector3(0f, 0f, 0.008f), new Vector3(1.26f, 0.66f, 0.01f), dark);
+                const float front = -0.02f;                                  // in front of the plate's face (z -0.01)
+                Part(plate, "Rail", new Vector3(0f, -0.2f, front), new Vector3(1f, 0.03f, 0.01f), dark);
+                Part(plate, "Carriage", new Vector3(-0.03f, 0.02f, front), new Vector3(0.82f, 0.26f, 0.01f), RailwayRed);
+                Part(plate, "Nose", new Vector3(0.42f, -0.02f, front), new Vector3(0.08f, 0.18f, 0.01f), RailwayRed);
+                for (int i = 0; i < 4; i++)
+                    Part(plate, "Window", new Vector3(-0.33f + i * 0.17f, 0.06f, front - 0.01f), new Vector3(0.11f, 0.08f, 0.01f), white);
+                Part(plate, "CabWindow", new Vector3(0.33f, 0.06f, front - 0.01f), new Vector3(0.07f, 0.08f, 0.01f), white);
+                foreach (float wx in new[] { -0.3f, 0f, 0.26f })
+                    Part(plate, "Wheel", new Vector3(wx, -0.14f, front - 0.01f), new Vector3(0.09f, 0.09f, 0.01f), dark);
             }
 
             /// <summary>Works kit sections 2 m along x (stretched to fill a to b exactly), stretched in height by <paramref name="heightScale"/>.</summary>
@@ -2014,6 +2070,7 @@ namespace DribbleToSchool.EditorTools
             /// <summary>A swing seat hanging from <paramref name="pivot"/>.</summary>
             public void Swing(Vector2 pivot, float ropeLength, float amplitude = 35f, float period = 3f, float phaseOffset = 0f)
             {
+                Audit.AddSwing(pivot.x, pivot.y, ropeLength, amplitude);
                 Color wood = new Color(0.55f, 0.4f, 0.3f);
                 float ground = GroundTopUnder(pivot.x, pivot.y);
                 if (SwingModel(pivot, ground))
@@ -2310,6 +2367,7 @@ namespace DribbleToSchool.EditorTools
             /// <summary>A springy pad flush with the ground that launches the kid and the ball upward.</summary>
             public void Springboard(float x, float groundTop = 0f)
             {
+                Audit.AddPad(x, groundTop);
                 var go = new GameObject("Springboard");
                 go.transform.SetParent(root, false);
                 go.transform.position = new Vector2(x, groundTop + 0.2f);
@@ -2337,6 +2395,7 @@ namespace DribbleToSchool.EditorTools
             /// <summary>Three crates in a little pyramid standing on <paramref name="groundTop"/>.</summary>
             public void CrateStack(float x, float groundTop = 0f)
             {
+                Audit.AddWall(x + 0.36f, 1.42f, 1.42f, "crate stack");
                 Crate(x, groundTop + 0.35f);
                 Crate(x + 0.72f, groundTop + 0.35f);
                 Crate(x + 0.36f, groundTop + 1.07f);
@@ -2345,6 +2404,7 @@ namespace DribbleToSchool.EditorTools
             /// <summary>A sloped surface whose top runs from point a to point b.</summary>
             public void Ramp(Vector2 a, Vector2 b)
             {
+                Audit.AddRamp(a.x, a.y, b.x, b.y);
                 if (a.x > b.x) { Vector2 t = a; a = b; b = t; }
                 const float thickness = 0.4f;
                 Vector2 along = b - a;
@@ -2358,6 +2418,7 @@ namespace DribbleToSchool.EditorTools
             /// <summary>A short obstacle: jump it, chip the ball over. Drawn as something that really stands on a footpath.</summary>
             public void Wall(float x, float height, float groundTop = 0f, float width = 0.4f)
             {
+                Audit.AddWall(x, width, height, "wall");
                 Obstacle("Wall", new Vector2(x, groundTop + height * 0.5f), new Vector2(width, height));
             }
 
@@ -2573,6 +2634,7 @@ namespace DribbleToSchool.EditorTools
             public void SlideUnder(float x, SlideLook look, float groundTop = 0f)
             {
                 string model = look.ToString();
+                Audit.AddBarrier(x, HolidayPatterns.SlideLengthAny(model), SlideGap, model);
                 var spec = Spec(look);
                 if (!HasKitModel("Barriers", model))
                 {
@@ -3071,6 +3133,7 @@ namespace DribbleToSchool.EditorTools
             /// <summary>A raised slab standing on the ground.</summary>
             public void Platform(float fromX, float toX, float top, float groundTop = 0f)
             {
+                Audit.AddLedge(fromX, toX, top, groundTop);
                 bool beach = Chapter == 3;
                 Block("Platform", new Vector2((fromX + toX) * 0.5f, (top + groundTop) * 0.5f),
                     new Vector2(toX - fromX, top - groundTop), PlatformColor, GroundMat, !beach);
@@ -3102,6 +3165,8 @@ namespace DribbleToSchool.EditorTools
             /// <summary>Hop onto a step, stop, chip the ball over the high wall behind it.</summary>
             public void StepAndHighWall(float x, float groundTop = 0f)
             {
+                Audit.AddWall(x, 2f, 0.8f, "step");
+                Audit.AddWall(x + 1.25f, 0.5f, 1.0f, "high wall (1.8 m, seen from the 0.8 m step)");
                 Obstacle("Step", new Vector2(x, groundTop + 0.4f), new Vector2(2f, 0.8f));
                 Obstacle("HighWall", new Vector2(x + 1.25f, groundTop + 0.9f), new Vector2(0.5f, 1.8f));
             }
@@ -3113,8 +3178,18 @@ namespace DribbleToSchool.EditorTools
                 Decor("AwningPost", new Vector2(x + 1f, groundTop + height * 0.5f), new Vector2(0.12f, height), ObstacleColor, -1f, 0.7f);
             }
 
+            /// <summary>
+            /// The level's start. A level that starts at home (<see cref="LeadIn"/>) starts that far back, on the doorstep of the kid's
+            /// house (the kid and the ball are put down and brought back here): <paramref name="x"/> is where the route's own street begins.
+            /// </summary>
             public void Start(float x, float groundTop = 0f)
             {
+                if (LeadIn > 0f)
+                {
+                    StartCheckpoint = MakeCheckpoint(x - LeadIn, groundTop, true);
+                    BeginAtHome(x, x - LeadIn, groundTop);
+                    return;
+                }
                 StartCheckpoint = MakeCheckpoint(x, groundTop, true);
             }
 
@@ -3351,8 +3426,10 @@ namespace DribbleToSchool.EditorTools
             /// <summary>Plant every sign's posts in the ground under it. Called once the whole layout exists.</summary>
             public void Finish()
             {
+                AddLeadInGround();
                 foreach (var pending in pendingSigns) PlantSign(pending.sign, pending.boardSize);
                 pendingSigns.Clear();
+                ReportFeasibility();
                 BuildStreetSlabs();
             }
 
@@ -3369,6 +3446,12 @@ namespace DribbleToSchool.EditorTools
                 slabs.SetParent(root, false);
                 slabs.gameObject.AddComponent<StaticBatcher>();
                 if (groundSpans.Count == 0) return;
+                // A Holiday Run stage draws exactly its own stretch, so neighbouring stages never overlap.
+                if (IsChunk)
+                {
+                    BuildChunkSlabs(slabs);
+                    return;
+                }
 
                 var spans = new List<GroundSpan>(groundSpans);
                 spans.Sort((p, q) => p.from.CompareTo(q.from));
@@ -3376,22 +3459,34 @@ namespace DribbleToSchool.EditorTools
                 foreach (var span in spans) if (span.to > last) { last = span.to; lastTop = span.top; }
                 float baseTop = LowestGroundTop;
 
+                // A level that starts at home and goes on in another chapter's street: the home street (chapter 1, flat) is built to the
+                // seam and closed there, and everything below begins at the seam, closed on that side, so the two meet without a gap.
+                bool seamed = HasSeam;
+                if (seamed)
+                {
+                    float homeFrom = first - 70f, seam = SeamX, homeTop = spans[0].top;
+                    Attempt("the home street's slabs", () => AsChapter(HomeLeadInRules.HomeChapter, () => BuildHomeSlabs(slabs, homeFrom, seam, homeTop, baseTop)));
+                    spans = ClippedFrom(spans, seam);
+                    if (spans.Count == 0) return;
+                    first = seam;
+                }
+
                 if (Chapter == 3)
                 {
-                    BeachGround(slabs, first, last);
+                    BeachGround(slabs, first, last, seamed ? first : float.NaN);
                     return;
                 }
-                StreetBuilder.Slab(slabs, "Road", first - 70f, last + 70f, baseTop, false, false, StreetBuilder.Part.Front);
+                StreetBuilder.Slab(slabs, "Road", seamed ? first : first - 70f, last + 70f, baseTop, seamed, false, StreetBuilder.Part.Front);
 
                 // The lane: one slab per ground span, plus the run-in and run-out.
                 foreach (var span in spans)
                     SlabAvoidingSideStreets(slabs, "Footpath", span.from, span.to, span.top, true, true, StreetBuilder.Part.Lane);
-                SlabAvoidingSideStreets(slabs, "FootpathBefore", first - 70f, first, spans[0].top, false, true, StreetBuilder.Part.Lane);
+                if (!seamed) SlabAvoidingSideStreets(slabs, "FootpathBefore", first - 70f, first, spans[0].top, false, true, StreetBuilder.Part.Lane);
                 SlabAvoidingSideStreets(slabs, "FootpathAfter", last, last + 70f, lastTop, true, false, StreetBuilder.Part.Lane);
 
                 // Behind the lane: follow the spans and bridge every gap at the lower side's height.
                 float covered = first, coveredTop = spans[0].top;
-                SlabAvoidingSideStreets(slabs, "Verge", first - 70f, first, spans[0].top, false, true, StreetBuilder.Part.Back);
+                if (!seamed) SlabAvoidingSideStreets(slabs, "Verge", first - 70f, first, spans[0].top, false, true, StreetBuilder.Part.Back);
                 foreach (var span in spans)
                 {
                     if (span.from > covered + 0.01f)
@@ -3408,18 +3503,22 @@ namespace DribbleToSchool.EditorTools
             /// in any channel. Each step's slope gets a collider that follows the drawn curve, so the
             /// kid and the ball go up and down the slope that's drawn; gaps keep their lose zone.
             /// </summary>
-            void BeachGround(Transform slabs, float first, float last)
+            void BeachGround(Transform slabs, float first, float last, float exactFrom = float.NaN)
             {
                 var field = BeachSand;
-                float from = Mathf.Floor((first - 70f) / SandDunes.Step) * SandDunes.Step;
-                for (float a = from; a < last + 70f; a += 40f)
+                // A Holiday Run stage draws exactly its own stretch (SetChunk), on the same half-unit lattice
+                // as its neighbours, so the sand meets theirs without a seam. So does a level that starts at home:
+                // its sand begins at the seam (exactFrom, on the lattice), where the home street's slabs end.
+                float from = IsChunk ? ChunkFrom : !float.IsNaN(exactFrom) ? exactFrom : Mathf.Floor((first - 70f) / SandDunes.Step) * SandDunes.Step;
+                float end = IsChunk ? ChunkTo : last + 70f;
+                for (float a = from; a < end; a += 40f)
                 {
                     var go = new GameObject("Sand");
                     go.transform.SetParent(slabs, false);
                     var dunes = go.AddComponent<SandDunes>();
                     dunes.field = field;
                     dunes.fromX = a;
-                    dunes.toX = a + 40f;
+                    dunes.toX = IsChunk ? Mathf.Min(a + 40f, end) : a + 40f;
                     go.GetComponent<MeshRenderer>().sharedMaterial = Art.surfaces[ProceduralArt.Surface.Sand];
                     dunes.Rebuild();
                 }

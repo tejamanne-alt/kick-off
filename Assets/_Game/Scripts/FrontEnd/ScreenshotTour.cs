@@ -58,7 +58,7 @@ namespace DribbleToSchool.FrontEnd
         /// <summary>Stickers found per chapter in the staged save (16 of 23).</summary>
         static readonly int[] StickersPerChapter = { 5, 4, 3, 2, 2 };
         /// <summary>Who plays each chapter's shot, in turn.</summary>
-        static readonly string[] Players = { "boy", "girl", "boy", "girl", "girl" };
+        static readonly string[] Players = { "boy", "girl", "primaryBoy", "girl", "primaryGirl" };
 
         LevelCatalog levels;
         CosmeticCatalog cosmetics;
