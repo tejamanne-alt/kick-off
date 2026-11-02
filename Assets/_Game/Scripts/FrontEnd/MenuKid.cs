@@ -8,7 +8,7 @@ namespace DribbleToSchool.FrontEnd
     /// few touches off a raised thigh, while the standing knee gives a little, the arms keep
     /// balance and the head follows the ball. Between touches the ball flies a real parabola
     /// from one contact to the next, spinning. The teen turns three-quarters to the camera,
-    /// facing <see cref="facing"/> on screen. On the boy and on the girl (CharacterChoice shows
+    /// facing <see cref="facing"/> on screen. On every playable kid (CharacterChoice shows
     /// one; only the shown one runs and moves the ball). Poses a CharacterRig like KidAnimator.
     /// </summary>
     [RequireComponent(typeof(CharacterRig))]

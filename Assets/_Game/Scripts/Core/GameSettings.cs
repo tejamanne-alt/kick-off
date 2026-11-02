@@ -55,11 +55,11 @@ namespace DribbleToSchool.Core
             set { SetBool("settings.colorblindAim", value); }
         }
 
-        /// <summary>Who walks to school: "boy" or "girl".</summary>
+        /// <summary>Who walks to school: the id of one of the <see cref="PlayerRoster"/>'s kids ("boy", "girl", "primaryBoy"...).</summary>
         public static string Character
         {
-            get { return PlayerPrefs.GetString("settings.character", "boy") == "girl" ? "girl" : "boy"; }
-            set { PlayerPrefs.SetString("settings.character", value == "girl" ? "girl" : "boy"); Save(); }
+            get { return PlayerRoster.Normalize(PlayerPrefs.GetString("settings.character", PlayerRoster.DefaultId)); }
+            set { PlayerPrefs.SetString("settings.character", PlayerRoster.Normalize(value)); Save(); }
         }
 
         public static string Language

@@ -18,8 +18,8 @@ namespace DribbleToSchool.EditorTools
         /// The menu's live backdrop (see MenuStage), built into the open scene with the levels'
         /// own builders: chapter 1's camera look (WorldLook, PostFX), the sky dome and big cumulus
         /// round the way the menu camera looks, a stretch of the home street (StreetBuilder's
-        /// houses, walls, trees, poles and wires) running away to the left, and the teen (the boy
-        /// and the girl under a CharacterChoice, each with a MenuKid) on the footpath with a ball,
+        /// houses, walls, trees, poles and wires) running away to the left, and the kid (every
+        /// playable kid under a CharacterChoice, each with a MenuKid) on the footpath with a ball,
         /// dressed by a CosmeticApplier. Call after <see cref="LoadShared"/>.
         /// </summary>
         public static MenuStage BuildMenuStage(CosmeticCatalog cosmetics)
@@ -125,20 +125,15 @@ namespace DribbleToSchool.EditorTools
         }
 
         /// <summary>
-        /// The teen on the footpath at x = 0, feet on the ground: the boy and the girl (Settings
-        /// picks; CharacterChoice shows one), each juggling with MenuKid, the shared ball and
-        /// their shadows, dressed in the equipped cosmetics.
+        /// The kid on the footpath at x = 0, feet on the ground: every playable kid (Settings picks;
+        /// CharacterChoice shows one), each juggling with MenuKid, the shared ball and their
+        /// shadows, dressed in the equipped cosmetics.
         /// </summary>
         static void BuildMenuTeen(MenuStage stage, Camera cam, CosmeticCatalog cosmetics)
         {
             var teenGo = new GameObject("Teen");
             teenGo.transform.position = new Vector3(0f, 0.6f, 0f);   // feet at local y -0.6, on the footpath
-            var boy = BuildModelCharacter(teenGo.transform, "Boy", Art.boy, 1.5f, TeenFeet(1.5f), true);
-            var girl = boy.rig != null ? BuildModelCharacter(teenGo.transform, "Girl", Art.girl, 1.43f, TeenFeet(1.43f), true) : new CharacterParts();
-            var main = boy;
-            if (main.rig == null) main = BuildModelCharacter(teenGo.transform, "Kid", Art.kid, 1.3f, Vector3.zero, true);
-            if (main.rig == null)
-                main = BuildCharacter(teenGo.transform, "Visual", Vector2.zero, 1f, KidColor, new Color(0.22f, 0.23f, 0.42f), new Color(0.16f, 0.15f, 0.2f), true);
+            var cast = BuildCast(teenGo.transform);
             var feet = new GameObject("Feet").transform;
             feet.SetParent(teenGo.transform, false);
             feet.localPosition = new Vector3(0f, -0.6f, 0f);
@@ -150,8 +145,7 @@ namespace DribbleToSchool.EditorTools
             Vector2 shadowSprite = kidShadow.sprite != null ? (Vector2)kidShadow.sprite.bounds.size : Vector2.one;
             kidShadow.transform.localScale = new Vector3(0.8f / Mathf.Max(shadowSprite.x, 0.01f), 0.5f / Mathf.Max(shadowSprite.y, 0.01f), 1f);
 
-            // The ball (see BallRadius), posed by whichever teen is shown.
-            var ball = new GameObject("Ball");
+                var ball = new GameObject("Ball");
             ball.transform.position = new Vector3(0.3f, BallRadius, -0.2f);
             var sphere = ball.AddComponent<SphereShape>();
             sphere.radius = BallRadius;
@@ -159,10 +153,8 @@ namespace DribbleToSchool.EditorTools
             sphere.Rebuild();
             var ballShadow = ShadowSprite("BallShadow");
 
-            var kids = new[] { main, girl };
-            foreach (var parts in kids)
+            foreach (var parts in cast.all)
             {
-                if (parts.rig == null) continue;
                 var kid = parts.rig.gameObject.AddComponent<MenuKid>();
                 kid.cam = cam;
                 kid.ball = ball.transform;
@@ -171,31 +163,15 @@ namespace DribbleToSchool.EditorTools
                 kid.groundY = 0f;
             }
 
-            MonoBehaviour outfit = main.outfit;
-            var flags = new System.Collections.Generic.List<SpriteRenderer> { main.flag };
-            if (girl.rig != null)
-            {
-                main.visual.name = "Boy";
-                girl.visual.name = "Girl";
-                var choice = teenGo.AddComponent<CharacterChoice>();
-                choice.boy = main.visual.gameObject;
-                choice.girl = girl.visual.gameObject;
-                choice.boyOutfit = main.outfit;
-                choice.girlOutfit = girl.outfit;
-                outfit = choice;
-                flags.Add(girl.flag);
-            }
-
             var applier = new GameObject("CosmeticApplier").AddComponent<CosmeticApplier>();
             applier.catalog = cosmetics;
             applier.ballRenderer = ball.GetComponent<MeshRenderer>();
-            applier.kidBody = outfit;
-            applier.backpackFlags = flags.ToArray();
+            applier.kidBody = cast.outfit;
+            applier.backpackFlags = cast.flags.ToArray();
 
             stage.teen = teenGo.transform;
             stage.feet = feet;
             stage.applier = applier;
-            stage.teenHeight = 1.73f;
         }
     }
 }

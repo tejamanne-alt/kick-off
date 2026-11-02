@@ -467,7 +467,7 @@ namespace DribbleToSchool.EditorTools
             start.ballSpawn.SetParent(startGo.transform, false);
             start.ballSpawn.localPosition = new Vector3(1f, BallRadius + 0.05f, 0f);
 
-            // Kid: the boy and the girl, as in the levels, but running by itself.
+            // Kid: every playable kid, as in the levels (the chosen one shows).
             var kidGo = new GameObject("Kid");
             kidGo.transform.position = start.KidSpawnPosition;
             var kidBody = kidGo.AddComponent<Rigidbody2D>();
@@ -475,37 +475,16 @@ namespace DribbleToSchool.EditorTools
             var capsule = kidGo.AddComponent<CapsuleCollider2D>();
             capsule.size = new Vector2(0.5f, 1.2f);
             capsule.sharedMaterial = kidMat;
-            var boyRig = BuildModelCharacter(kidGo.transform, "Boy", Art.boy, 1.5f, TeenFeet(1.5f), true);
-            var girlRig = boyRig.rig != null ? BuildModelCharacter(kidGo.transform, "Girl", Art.girl, 1.43f, TeenFeet(1.43f), true) : new CharacterParts();
-            var kidRig = boyRig;
-            if (kidRig.rig == null) kidRig = BuildModelCharacter(kidGo.transform, "Kid", Art.kid, 1.3f, Vector3.zero, true);
-            if (kidRig.rig == null)
-                kidRig = BuildCharacter(kidGo.transform, "Visual", Vector2.zero, 1f, KidColor, new Color(0.22f, 0.23f, 0.42f),
-                    new Color(0.16f, 0.15f, 0.2f), true);
+            var cast = BuildCast(kidGo.transform);
             var feet = new GameObject("Feet").transform;
             feet.SetParent(kidGo.transform, false);
             feet.localPosition = new Vector3(0f, -0.6f, 0f);
             var kid = kidGo.AddComponent<KidController>();
             kid.tuning = playerTuning;
             kid.feet = feet;
-            kidRig.rig.gameObject.AddComponent<KidAnimator>().kid = kid;
-            MonoBehaviour kidOutfit = kidRig.outfit;
-            var kidFlags = new List<SpriteRenderer> { kidRig.flag };
-            if (boyRig.rig != null && girlRig.rig == null)
-                Debug.LogWarning("[Kick Off] The girl model did not load: Settings > Player will always show the boy.");
-            if (girlRig.rig != null)
-            {
-                girlRig.rig.gameObject.AddComponent<KidAnimator>().kid = kid;
-                boyRig.visual.name = "Boy";
-                girlRig.visual.name = "Girl";
-                var choice = kidGo.AddComponent<CharacterChoice>();
-                choice.boy = boyRig.visual.gameObject;
-                choice.girl = girlRig.visual.gameObject;
-                choice.boyOutfit = boyRig.outfit;
-                choice.girlOutfit = girlRig.outfit;
-                kidOutfit = choice;
-                kidFlags.Add(girlRig.flag);
-            }
+            foreach (var parts in cast.all) parts.rig.gameObject.AddComponent<KidAnimator>().kid = kid;
+            MonoBehaviour kidOutfit = cast.outfit;
+            var kidFlags = cast.flags;
 
             // Ball: built as in the levels (dribbled by the kid's touches, kicked by the aim drag); a kick
             // that hits a crate smashes it (BallSmasher).

@@ -209,7 +209,7 @@ namespace DribbleToSchool.FrontEnd
         {
             if (playerName == null) return;   // the screen was rebuilt (language change)
             string id = GameSettings.Character;
-            playerName.text = Loc.T("settings." + id);
+            playerName.text = Loc.T(PlayerRoster.Get(id).nameKey);
             var portrait = PlayerPicker.Portrait(id);
             playerPortrait.sprite = portrait != null ? portrait : ProceduralSprites.BallIcon;
             playerPortrait.preserveAspect = true;

@@ -12,8 +12,8 @@ namespace DribbleToSchool.UI
     /// out top-down from fixed row heights inside columns that stretch with the card, so
     /// nothing overlaps at any aspect ratio (the card fits a 4:3 canvas, 1440 x 1080):
     /// left, Audio (music, sound effects) and Gameplay (school bell, left-handed controls,
-    /// colour-blind aim, vibration, screen shake); right, Player (the boy and girl cards) and
-    /// Language; along the bottom, Reset progress, Restore purchases and Done. Labels shrink
+    /// colour-blind aim, vibration, screen shake); right, Player (the chosen kid, which opens the
+    /// player picker) and Language; along the bottom, Reset progress, Restore purchases and Done. Labels shrink
     /// to fit rather than run into their controls, for longer translations.
     /// </summary>
     public static class SettingsPanel
@@ -50,9 +50,9 @@ namespace DribbleToSchool.UI
             // Player: who walks to school.
             y = 0f;
             Section(right, ref y, "settings.player");
-            var cards = UIKit.Row(right, "PlayerCards", y, 380f, 4f, 4f);
-            PlayerPicker.Cards(cards, 26f);
-            y += 380f + 22f;
+            var player = UIKit.Row(right, "PlayerSummary", y, 230f, 4f, 4f);
+            PlayerPicker.Summary(player, canvas);
+            y += 230f + 22f;
 
             // Language: one button per table; the current one is filled.
             Section(right, ref y, "settings.language");

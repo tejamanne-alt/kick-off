@@ -164,40 +164,19 @@ namespace DribbleToSchool.EditorTools
             var capsule = kidGo.AddComponent<CapsuleCollider2D>();
             capsule.size = new Vector2(0.5f, 1.2f);
             capsule.sharedMaterial = kidMat;
-            // The teen boy and girl made in Blender (tools/blender/teen.py); Settings picks one.
-            // Neck heights make them about 1.75 m (him) and 1.68 m (her) tall.
-            // Without them, the younger Blender kid, or the procedural one.
-            var boyRig = BuildModelCharacter(kidGo.transform, "Boy", Art.boy, 1.5f, TeenFeet(1.5f), true);
-            var girlRig = boyRig.rig != null ? BuildModelCharacter(kidGo.transform, "Girl", Art.girl, 1.43f, TeenFeet(1.43f), true) : new CharacterParts();
-            var kidRig = boyRig;
-            if (kidRig.rig == null) kidRig = BuildModelCharacter(kidGo.transform, "Kid", Art.kid, 1.3f, Vector3.zero, true);
-            if (kidRig.rig == null)
-                kidRig = BuildCharacter(kidGo.transform, "Visual", Vector2.zero, 1f, KidColor, new Color(0.22f, 0.23f, 0.42f),
-                    new Color(0.16f, 0.15f, 0.2f), true);   // glossy near-black hair
+            // The playable kids made in Blender (tools/blender; PlayerRoster): all built in, Settings
+            // picks the one shown (CharacterChoice). Without them, the younger Blender kid, or the
+            // procedural one.
+            var cast = BuildCast(kidGo.transform);
             var feet = new GameObject("Feet").transform;
             feet.SetParent(kidGo.transform, false);
             feet.localPosition = new Vector3(0f, -0.6f, 0f);
             var kid = kidGo.AddComponent<KidController>();
             kid.tuning = playerTuning;
             kid.feet = feet;
-            kidRig.rig.gameObject.AddComponent<KidAnimator>().kid = kid;
-            MonoBehaviour kidOutfit = kidRig.outfit;
-            var kidFlags = new List<SpriteRenderer> { kidRig.flag };
-            if (boyRig.rig != null && girlRig.rig == null)
-                Debug.LogWarning("[Kick Off] The girl model did not load: Settings > Player will always show the boy.");
-            if (girlRig.rig != null)
-            {
-                girlRig.rig.gameObject.AddComponent<KidAnimator>().kid = kid;
-                boyRig.visual.name = "Boy";
-                girlRig.visual.name = "Girl";
-                var choice = kidGo.AddComponent<CharacterChoice>();
-                choice.boy = boyRig.visual.gameObject;
-                choice.girl = girlRig.visual.gameObject;
-                choice.boyOutfit = boyRig.outfit;
-                choice.girlOutfit = girlRig.outfit;
-                kidOutfit = choice;
-                kidFlags.Add(girlRig.flag);
-            }
+            foreach (var parts in cast.all) parts.rig.gameObject.AddComponent<KidAnimator>().kid = kid;
+            MonoBehaviour kidOutfit = cast.outfit;
+            var kidFlags = cast.flags;
 
             // Ball (see BallRadius).
             var ballGo = new GameObject("Ball");
