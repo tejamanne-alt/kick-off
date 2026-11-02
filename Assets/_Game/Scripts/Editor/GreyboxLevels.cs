@@ -13,6 +13,11 @@ namespace DribbleToSchool.EditorTools
     /// under barriers with a 0.85 m gap (SlideUnder: the Barriers kit's models, picked
     /// to suit each level, at least one per level and two in the longer ones).
     /// Each chapter introduces one idea, then mixes it with what came before.
+    ///
+    /// A story layout is written in its route's own coordinates: x = 0 (<c>Start</c>) is where the level's own street begins. The kid
+    /// really starts 12 m before it, on the doorstep of the house (the track builder shifts the start, the walls and the first ground
+    /// span back by <see cref="HomeLeadInRules.Length"/>; the challenges and the test track are not shifted). A layout that wants
+    /// something met in the first seconds puts it at x &lt; 0 (only L01's first lesson does).
     /// </summary>
     public static class GreyboxLevels
     {
@@ -78,12 +83,14 @@ namespace DribbleToSchool.EditorTools
         {
             t.Walls(-8f, 78f);
             t.Start(0f);
-            t.Hint(1.5f, "dribble");
+            // (Every story level starts at the front door, 12 m before the layout's x = 0, see HomeLeadInRules: the first lesson is
+            // moved back with it, to 1.5 m and 4 m from the doorstep as it was from the old start.)
+            t.Hint(-10.5f, "dribble");
             t.Hint(18f, "brake");
             t.Hint(24f, "jump");
             t.Hint(33f, "kick");
             t.Ground(-8f, 52f);
-            t.Sign("Hold the arrows to walk.\nKeep the ball close!", new Vector2(4f, 3.2f));
+            t.Sign("Hold the arrows to walk.\nKeep the ball close!", new Vector2(-8f, 3.2f));
             t.Sign("Tap the screen just as\nyou catch up with the ball:\nPerfect touch!", new Vector2(13f, 3.4f));
             t.Sign("Let go of the arrows to stop -\nthe ball stops at your feet", new Vector2(21f, 3f));
 

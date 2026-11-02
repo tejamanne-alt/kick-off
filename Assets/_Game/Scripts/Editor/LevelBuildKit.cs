@@ -105,6 +105,10 @@ namespace DribbleToSchool.EditorTools
         /// </remarks>
         public static void BuildScene(string scenePath, LevelDefinition def, LevelCatalog catalog, Action<TrackBuilder> layout, int chapter = 1)
         {
+            // A story level starts at home (the challenges and the test track do not): read what that needs of the definition now,
+            // before the new scene can unload it.
+            bool atHome = StartsAtHome(def);
+            string routeName = atHome ? RouteNameOf(def) : null;
             EnsureFolder(Path.GetDirectoryName(scenePath).Replace('\\', '/'));
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             Chapter = Mathf.Clamp(chapter, 1, 5);
@@ -151,6 +155,11 @@ namespace DribbleToSchool.EditorTools
 
             var track = new TrackBuilder(new GameObject("Level").transform);
             track.AuditName = "Level " + Path.GetFileNameWithoutExtension(scenePath);
+            if (atHome)
+            {
+                track.LeadIn = HomeLeadIn;
+                track.RouteName = routeName;
+            }
             layout(track);
             track.Finish();
             if (track.StartCheckpoint == null) throw new InvalidOperationException("Layout must call Start().");
@@ -846,9 +855,14 @@ namespace DribbleToSchool.EditorTools
                 LowestGroundTop = float.MaxValue;
             }
 
-            /// <summary>Walls at both ends; also the camera's horizontal limits. The ball can pass the back wall (and is then lost).</summary>
+            /// <summary>
+            /// Walls at both ends; also the camera's horizontal limits. The ball can pass the back wall (and is then lost). A level that
+            /// starts at home (<see cref="LeadIn"/>) has its back wall that much further back, behind the front door.
+            /// </summary>
             public void Walls(float minX, float maxX)
             {
+                layoutMinX = minX;
+                minX -= LeadIn;
                 MinX = minX;
                 MaxX = maxX;
                 // Invisible: the 3D street carries on past both ends.
@@ -859,6 +873,7 @@ namespace DribbleToSchool.EditorTools
             /// <summary>Solid ground from fromX to toX with its top at <paramref name="top"/>. The 3D street over it is built in Finish.</summary>
             public void Ground(float fromX, float toX, float top = 0f)
             {
+                fromX = HomeLeadInRules.GroundFrom(fromX, groundSpans.Count == 0, layoutMinX, LeadIn);   // (the home lead-in goes on the first span)
                 float depth = FillDepth(top);
                 LowestGroundTop = Mathf.Min(LowestGroundTop, top);
                 Audit.AddSpan(fromX, toX, top);
@@ -3113,8 +3128,18 @@ namespace DribbleToSchool.EditorTools
                 Decor("AwningPost", new Vector2(x + 1f, groundTop + height * 0.5f), new Vector2(0.12f, height), ObstacleColor, -1f, 0.7f);
             }
 
+            /// <summary>
+            /// The level's start. A level that starts at home (<see cref="LeadIn"/>) starts that far back, on the doorstep of the kid's
+            /// house (the kid and the ball are put down and brought back here): <paramref name="x"/> is where the route's own street begins.
+            /// </summary>
             public void Start(float x, float groundTop = 0f)
             {
+                if (LeadIn > 0f)
+                {
+                    StartCheckpoint = MakeCheckpoint(x - LeadIn, groundTop, true);
+                    BeginAtHome(x, x - LeadIn, groundTop);
+                    return;
+                }
                 StartCheckpoint = MakeCheckpoint(x, groundTop, true);
             }
 
@@ -3351,6 +3376,7 @@ namespace DribbleToSchool.EditorTools
             /// <summary>Plant every sign's posts in the ground under it. Called once the whole layout exists.</summary>
             public void Finish()
             {
+                AddLeadInGround();
                 foreach (var pending in pendingSigns) PlantSign(pending.sign, pending.boardSize);
                 pendingSigns.Clear();
                 ReportFeasibility();
@@ -3383,22 +3409,34 @@ namespace DribbleToSchool.EditorTools
                 foreach (var span in spans) if (span.to > last) { last = span.to; lastTop = span.top; }
                 float baseTop = LowestGroundTop;
 
+                // A level that starts at home and goes on in another chapter's street: the home street (chapter 1, flat) is built to the
+                // seam and closed there, and everything below begins at the seam, closed on that side, so the two meet without a gap.
+                bool seamed = HasSeam;
+                if (seamed)
+                {
+                    float homeFrom = first - 70f, seam = SeamX, homeTop = spans[0].top;
+                    Attempt("the home street's slabs", () => AsChapter(HomeLeadInRules.HomeChapter, () => BuildHomeSlabs(slabs, homeFrom, seam, homeTop, baseTop)));
+                    spans = ClippedFrom(spans, seam);
+                    if (spans.Count == 0) return;
+                    first = seam;
+                }
+
                 if (Chapter == 3)
                 {
-                    BeachGround(slabs, first, last);
+                    BeachGround(slabs, first, last, seamed ? first : float.NaN);
                     return;
                 }
-                StreetBuilder.Slab(slabs, "Road", first - 70f, last + 70f, baseTop, false, false, StreetBuilder.Part.Front);
+                StreetBuilder.Slab(slabs, "Road", seamed ? first : first - 70f, last + 70f, baseTop, seamed, false, StreetBuilder.Part.Front);
 
                 // The lane: one slab per ground span, plus the run-in and run-out.
                 foreach (var span in spans)
                     SlabAvoidingSideStreets(slabs, "Footpath", span.from, span.to, span.top, true, true, StreetBuilder.Part.Lane);
-                SlabAvoidingSideStreets(slabs, "FootpathBefore", first - 70f, first, spans[0].top, false, true, StreetBuilder.Part.Lane);
+                if (!seamed) SlabAvoidingSideStreets(slabs, "FootpathBefore", first - 70f, first, spans[0].top, false, true, StreetBuilder.Part.Lane);
                 SlabAvoidingSideStreets(slabs, "FootpathAfter", last, last + 70f, lastTop, true, false, StreetBuilder.Part.Lane);
 
                 // Behind the lane: follow the spans and bridge every gap at the lower side's height.
                 float covered = first, coveredTop = spans[0].top;
-                SlabAvoidingSideStreets(slabs, "Verge", first - 70f, first, spans[0].top, false, true, StreetBuilder.Part.Back);
+                if (!seamed) SlabAvoidingSideStreets(slabs, "Verge", first - 70f, first, spans[0].top, false, true, StreetBuilder.Part.Back);
                 foreach (var span in spans)
                 {
                     if (span.from > covered + 0.01f)
@@ -3415,12 +3453,13 @@ namespace DribbleToSchool.EditorTools
             /// in any channel. Each step's slope gets a collider that follows the drawn curve, so the
             /// kid and the ball go up and down the slope that's drawn; gaps keep their lose zone.
             /// </summary>
-            void BeachGround(Transform slabs, float first, float last)
+            void BeachGround(Transform slabs, float first, float last, float exactFrom = float.NaN)
             {
                 var field = BeachSand;
                 // A Holiday Run stage draws exactly its own stretch (SetChunk), on the same half-unit lattice
-                // as its neighbours, so the sand meets theirs without a seam.
-                float from = IsChunk ? ChunkFrom : Mathf.Floor((first - 70f) / SandDunes.Step) * SandDunes.Step;
+                // as its neighbours, so the sand meets theirs without a seam. So does a level that starts at home:
+                // its sand begins at the seam (exactFrom, on the lattice), where the home street's slabs end.
+                float from = IsChunk ? ChunkFrom : !float.IsNaN(exactFrom) ? exactFrom : Mathf.Floor((first - 70f) / SandDunes.Step) * SandDunes.Step;
                 float end = IsChunk ? ChunkTo : last + 70f;
                 for (float a = from; a < end; a += 40f)
                 {
