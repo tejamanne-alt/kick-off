@@ -40,6 +40,9 @@ namespace DribbleToSchool.Localization
                 { "route.street", "Home Street" }, { "route.market", "Market Street" }, { "route.beach", "Seaside Road" },
                 { "route.underpass", "The Underpass" }, { "route.site", "Building Site Shortcut" }, { "route.park", "Park Path" },
                 { "place.home", "Home" }, { "place.school", "School" },
+                { "map.choose", "Choose your way to school" }, { "map.levels", "LEVELS" }, { "map.here", "You are here" },
+                { "district.neighbourhood", "Neighbourhood" }, { "district.market", "Market" }, { "district.beach", "Beach" }, { "district.park", "Park" },
+                { "district.railway", "Railway" }, { "district.site", "Building Site" }, { "district.school", "School" }, { "district.sea", "Sea" },
 
                 // Shop
                 { "shop.balls", "Balls" }, { "shop.flags", "Flags" }, { "shop.outfits", "Outfits" }, { "shop.trails", "Trails" },
@@ -260,6 +263,9 @@ namespace DribbleToSchool.Localization
                 { "route.street", "Mi calle" }, { "route.market", "Calle del mercado" }, { "route.beach", "Paseo marítimo" },
                 { "route.underpass", "El paso subterráneo" }, { "route.site", "Atajo de las obras" }, { "route.park", "Camino del parque" },
                 { "place.home", "Casa" }, { "place.school", "Cole" },
+                { "map.choose", "Elige tu camino al cole" }, { "map.levels", "NIVELES" }, { "map.here", "Estás aquí" },
+                { "district.neighbourhood", "Barrio" }, { "district.market", "Mercado" }, { "district.beach", "Playa" }, { "district.park", "Parque" },
+                { "district.railway", "Vía del tren" }, { "district.site", "Las obras" }, { "district.school", "Colegio" }, { "district.sea", "Mar" },
 
                 { "shop.balls", "Balones" }, { "shop.flags", "Banderas" }, { "shop.outfits", "Ropa" }, { "shop.trails", "Estelas" },
                 { "shop.equip", "Equipar" }, { "shop.equipped", "Equipado" }, { "shop.owned", "Tuyo" },
