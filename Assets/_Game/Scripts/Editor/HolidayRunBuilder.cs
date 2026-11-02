@@ -186,6 +186,10 @@ namespace DribbleToSchool.EditorTools
             }
             if (st.Has(StageTraits.School)) Attempt(i, "the school gate", () => t.RunSchoolGate(HolidayStages.GateX));
 
+            // The lap starts at the kid's own front door: the house every story level starts in front of (its plot is in the
+            // first 14 m, where nothing else stands, and the street's own lots keep out of it).
+            if (first) Attempt(i, "the home front", () => t.HomeFront(HolidayStages.SpawnX));
+
             // A checkpoint in the clear ground at the start of the stage (nothing stands in the first 14 m): a lost ball
             // brings the kid back here, as in a level. It joins the level manager when the stage is switched on.
             Attempt(i, "the checkpoint", () => t.Checkpoint(from + 8f));

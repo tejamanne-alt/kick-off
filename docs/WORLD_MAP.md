@@ -51,4 +51,4 @@ Map space is 1600 x 900 units, origin top left, y down; the map is drawn in a fi
 - **Tutorial:** L01's first lesson moved with the start (the "dribble" hint to x = -10.5, the walk sign to x = -8: 1.5 m and 4 m from the doorstep as they were from the old start). In every other level the first sign was 5 to 10 m from the start and is now 17 to 22 m from the doorstep, and the first hint (7 to 24 m before) is now 19 to 36 m: all of them come right after the seam, where they introduce the route's own street.
 - The school end is the existing `TrackBuilder.Goal` arch in every level (all 23 story layouts call it exactly once; the audit checks it).
 - Challenges (C01 to C05) are ball-skill arenas and keep their own start.
-- The Holiday Run keeps its own world: all 23 stages in story order from the home street to the school gate.
+- The Holiday Run keeps its own world: all 23 stages in story order from the home street to the school gate. Its lap also starts at the kid's front door: stage 1 builds the same home front at the spawn point (`HolidayRunBuilder`, `TrackBuilder.HomeFront(HolidayStages.SpawnX)`).
