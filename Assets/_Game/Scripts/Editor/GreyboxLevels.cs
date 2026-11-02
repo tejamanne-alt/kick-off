@@ -613,7 +613,7 @@ namespace DribbleToSchool.EditorTools
             t.Start(0f);
             t.Hint(10f, "tunnel");
             t.Ground(-8f, 105f);
-            t.Sign("Into the underpass -\nit's dark in there!", new Vector2(5f, 3.2f));
+            t.Sign("Under the railway -\nit's dark in there!", new Vector2(5f, 3.2f));
 
             t.Tunnel(14f, 34f);
             t.Puddle(20f, 23f);
@@ -719,7 +719,7 @@ namespace DribbleToSchool.EditorTools
             t.Walls(-8f, 135f);
             t.Start(0f);
             t.Ground(-8f, 48f);
-            t.Sign("Tunnel Run!", new Vector2(5f, 3f));
+            t.Sign("Tunnel Run! Twice\nunder the railway", new Vector2(4.4f, 3.2f));   // its legs clear of the barrier at 6.5
             t.SlideUnder(6.5f, TrackBuilder.SlideLook.SiteBarrier);
             t.Tunnel(10f, 40f, 0f, 3.4f);
             t.Pipes(new Vector2(38f, 0.6f), 3.2f, 8f, 1f);
@@ -918,6 +918,7 @@ namespace DribbleToSchool.EditorTools
             t.Checkpoint(62f);
             t.Pedestrian(66f, 72f, CoatB);
             t.Puddle(74f, 77f);
+            t.Sign("Under the railway -\nnearly at school!", new Vector2(77.4f, 3.2f));
             t.Tunnel(80f, 96f, 0f, 3.4f);
             t.Ground(90f, 160f);
             t.Checkpoint(98f);

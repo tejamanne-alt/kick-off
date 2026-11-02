@@ -312,6 +312,36 @@ namespace DribbleToSchool.Tests
             NoProblems(problems, "level names");
         }
 
+        /// <summary>The routes that follow a street of that name: every level on them has a route sign saying "via" it.</summary>
+        static readonly string[] StreetRoutes = { "street", "market", "beach" };
+        const float StreetNameOnRoute = 60f;
+
+        [Test]
+        public void TheStreetsTheRoutesFollowAreNamedAsTheLevelsSignsNameThem()
+        {
+            var layout = Load();
+            if (layout.placeholder)
+            {
+                Assert.Ignore("placeholder layout: its street names are stand-ins");
+                return;
+            }
+            // The levels' signs are English in every language (the route sign reads "via " + the English name), and so are the
+            // map's street names.
+            var english = StringTables.For("en");
+            var problems = new List<string>();
+            foreach (string id in StreetRoutes)
+            {
+                string name = english[RouteTable.All[RouteTable.IndexOf(id)].NameKey];
+                var line = TownMap.Route(id).points;
+                float nearest = float.MaxValue;
+                foreach (var street in TownMap.Streets)
+                    if (street.name == name) nearest = Mathf.Min(nearest, TownMap.DistanceTo(line, street.pos));
+                if (nearest == float.MaxValue) problems.Add("no street is named \"" + name + "\", the road the " + id + " route's levels say they take");
+                else if (nearest > StreetNameOnRoute) problems.Add("\"" + name + "\" is written " + Mathf.RoundToInt(nearest) + " px from the " + id + " route (at most " + StreetNameOnRoute + ")");
+            }
+            NoProblems(problems, "street names");
+        }
+
         [Test]
         public void PlacesHaveRoomRoundThem()
         {

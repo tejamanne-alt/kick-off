@@ -1950,6 +1950,7 @@ namespace DribbleToSchool.EditorTools
                 else StreetBuilder.Solid(root, "TunnelBack", new Vector3(center, groundTop + height * 0.5f, StreetBuilder.PropertyZ + 0.2f), new Vector3(width, height, 0.4f), new Color(0.36f, 0.34f, 0.38f));
                 Block("TunnelCeiling", new Vector2(center, groundTop + height + 0.6f), new Vector2(width + 1f, 1.2f), new Color(0.62f, 0.62f, 0.64f), GroundMat, !kit, 7.4f)
                     .AddComponent<BallTrap>();        // the deck over the underpass is out of reach
+                RailwayBridgeFace(fromX, toX, groundTop + height);
                 // Dim lamps under the deck, lighting the footpath below them.
                 for (float lx = fromX + 2.5f; lx < toX - 1f; lx += 5f)
                 {
@@ -1970,6 +1971,55 @@ namespace DribbleToSchool.EditorTools
                 trigger.isTrigger = true;
                 trigger.size = new Vector2(width, height);
                 go.AddComponent<DarkZone>();
+            }
+
+            /// <summary>The red of the town map's train (the one at the station), for the railway bridge's band and plates.</summary>
+            static readonly Color RailwayRed = new Color(0.80f, 0.18f, 0.16f);
+
+            /// <summary>
+            /// The deck over an underpass is the railway's bridge: on the town map the underpass route and the park route pass
+            /// under the line, and no other route crosses it (docs/WORLD_MAP.md, "Level and map"). Along the front of the deck runs
+            /// a band in the red of the map's train, and every 8 m or so a white plate shows that train on its rails. Both are on
+            /// the fascia's flat face (3.7 m in front of the track, 0.05 to 0.9 m up from the deck's underside at
+            /// <paramref name="underside"/>, between the kit deck's drip lip and its top band; the plain ceiling block's front is
+            /// there too), facing the camera. Looks only: no colliders.
+            /// </summary>
+            void RailwayBridgeFace(float fromX, float toX, float underside)
+            {
+                const float face = -3.7f;
+                float a = fromX - 0.5f, b = toX + 0.5f;     // the deck reaches half a metre past the tunnel's walls
+                float y = underside + 0.47f;
+                StreetBuilder.Solid(root, "RailwayBand", new Vector3((a + b) * 0.5f, y, face - 0.012f), new Vector3(b - a, 0.16f, 0.02f), RailwayRed);
+                int plates = Mathf.Max(1, Mathf.RoundToInt((b - a) / 8f));
+                float step = (b - a) / plates;
+                for (int i = 0; i < plates; i++)
+                {
+                    var plate = new GameObject("RailwayPlate").transform;
+                    plate.SetParent(root, false);
+                    plate.position = new Vector3(a + step * (i + 0.5f), y, face - 0.04f);
+                    TrainPlate(plate);
+                }
+            }
+
+            /// <summary>
+            /// A 1.2 x 0.6 m white plate (2 cm thick, centred on <paramref name="plate"/>) with a red train on a dark rail: the
+            /// carriage with four windows and a cab window at its front, three wheels under it.
+            /// </summary>
+            static void TrainPlate(Transform plate)
+            {
+                var white = new Color(0.97f, 0.97f, 0.95f);
+                var dark = new Color(0.17f, 0.18f, 0.22f);
+                Part(plate, "Plate", Vector3.zero, new Vector3(1.2f, 0.6f, 0.02f), white);
+                Part(plate, "Rim", new Vector3(0f, 0f, 0.008f), new Vector3(1.26f, 0.66f, 0.01f), dark);
+                const float front = -0.02f;                                  // in front of the plate's face (z -0.01)
+                Part(plate, "Rail", new Vector3(0f, -0.2f, front), new Vector3(1f, 0.03f, 0.01f), dark);
+                Part(plate, "Carriage", new Vector3(-0.03f, 0.02f, front), new Vector3(0.82f, 0.26f, 0.01f), RailwayRed);
+                Part(plate, "Nose", new Vector3(0.42f, -0.02f, front), new Vector3(0.08f, 0.18f, 0.01f), RailwayRed);
+                for (int i = 0; i < 4; i++)
+                    Part(plate, "Window", new Vector3(-0.33f + i * 0.17f, 0.06f, front - 0.01f), new Vector3(0.11f, 0.08f, 0.01f), white);
+                Part(plate, "CabWindow", new Vector3(0.33f, 0.06f, front - 0.01f), new Vector3(0.07f, 0.08f, 0.01f), white);
+                foreach (float wx in new[] { -0.3f, 0f, 0.26f })
+                    Part(plate, "Wheel", new Vector3(wx, -0.14f, front - 0.01f), new Vector3(0.09f, 0.09f, 0.01f), dark);
             }
 
             /// <summary>Works kit sections 2 m along x (stretched to fill a to b exactly), stretched in height by <paramref name="heightScale"/>.</summary>
