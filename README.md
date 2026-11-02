@@ -36,6 +36,8 @@ Generated scenes are rebuilt from code, so edits made directly in those scenes g
 | 4 Underpass | L15 The Underpass, L16 Building Site, L17 Cranes, L18 Tunnel Run | Dark tunnels, rolling pipes, moving platforms |
 | 5 Park & School | L19 Park Gates, L20 Fountain Square, L21 Playground, L22 Duck Pond, L23 The Final Bell | Dogs, fountains, swings, the finale |
 
+**Every story level is one trip from the front door to the school gate**, along one of six routes (Home Street, Market Street, Seaside Road, the Underpass, the building site's shortcut and the Park Path; see [`docs/WORLD_MAP.md`](docs/WORLD_MAP.md)). Each starts on the doorstep of the same house (a cream house with a red front door), walks 12 m of home street, in the first chapter's look whatever the level, to a sign with the route's name, and there the level's own street begins; the school arch at the end is the same in all of them. The 12 m are about 3 seconds, added to every bell. The challenges keep their own arenas and starts.
+
 **Ball-skill challenges** are optional. There's one per chapter, unlocked by finishing the chapter's first level:
 
 | Challenge | Type | Stars |
@@ -46,7 +48,7 @@ Generated scenes are rebuilt from code, so edits made directly in those scenes g
 | C04 Site Targets | Accuracy (60 s) | 4 / 6 / 8 targets |
 | C05 Juggle Champion | Juggling (60 s) | 10 / 20 / 30 juggles |
 
-Bell times and streak targets are in the level table in `Editor/GeneratedContent.cs`. Change them there, then run **Kick Off > Rebuild All Levels**.
+Bell times and streak targets are in the level table in `Editor/GeneratedContent.cs` (a story level's bell is its street's seconds, as written there, plus the walk from the front door: `Bell(...)`). Change them there, then run **Kick Off > Rebuild All Levels**.
 
 ## Hazards
 
@@ -70,9 +72,9 @@ Bell times and streak targets are in the level table in `Editor/GeneratedContent
 
 ## Level rules
 
-- **Start:** a short "Ready... GO!" countdown, then you're in control.
+- **Start:** you stand on the doorstep with the ball, a short "Ready... GO!" countdown, then you're in control. Restarting a level, or losing the ball before the first checkpoint, puts you back at the doorstep.
 - **Checkpoints** (grey flags) turn green when the kid passes them with the ball close by.
-- **Losing the ball** (falling into a gap or water, falling off the level, or kicking it back past the start of the level) fades the screen and sends you back to the last checkpoint. There's no game over, and the clock keeps running. If you walk off without the ball, just walk back for it.
+- **Losing the ball** (falling into a gap or water, falling off the level, or kicking it back past the start of the level: "the ball rolled back home") fades the screen and sends you back to the last checkpoint. There's no game over, and the clock keeps running. If you walk off without the ball, just walk back for it.
 - **School bell:** a countdown to the bell. When it rings you can still finish, you're just late. Turn it off in the pause menu (cozy mode).
 - **Stars:**
   - 1 star for reaching school with the ball.

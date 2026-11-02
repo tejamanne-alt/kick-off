@@ -295,9 +295,13 @@ namespace DribbleToSchool.EditorTools
             return OverlapsBackRow(track, x - half, x + half);
         }
 
-        /// <summary>[a, b] overlaps a side street, or the school building (it stands 10 to 22 units past the gate).</summary>
+        /// <summary>
+        /// [a, b] overlaps a side street, the seam between the home street and the route's own (no building of the back rows
+        /// stands across it: each street's pass builds its own side), or the school building (it stands 10 to 22 units past the gate).
+        /// </summary>
         static bool OverlapsBackRow(LevelBuildKit.TrackBuilder track, float a, float b)
         {
+            if (AcrossSeam(track, a, b)) return true;
             foreach (var area in track.OpenAreas)
                 if (b > area.x - 0.6f && a < area.y + 0.6f) return true;
             float goal = track.GoalX;
@@ -705,6 +709,12 @@ namespace DribbleToSchool.EditorTools
         /// <summary>Everything beside the street for the current chapter, from well before the start to well past the end.</summary>
         public static void Scenery(LevelBuildKit.TrackBuilder track, Transform root)
         {
+            // A level that starts at home and goes on in another chapter's street: two streets, side by side (StreetBuilder.Home.cs).
+            if (track.HasSeam)
+            {
+                SceneryWithSeam(track, root);
+                return;
+            }
             int ch = LevelBuildKit.Chapter;
             var rng = new System.Random(ch * 131 + Mathf.RoundToInt(track.MaxX));
             float x0 = track.MinX - 50f, x1 = track.MaxX + 50f;
@@ -970,6 +980,7 @@ namespace DribbleToSchool.EditorTools
         /// <summary>Does [a, b] run into a side street (they run 70 units back from the footpath)?</summary>
         static bool OnSideStreetRange(LevelBuildKit.TrackBuilder track, float a, float b)
         {
+            if (AcrossSeam(track, a, b)) return true;
             foreach (var area in track.OpenAreas)
                 if (b > area.x - 0.6f && a < area.y + 0.6f) return true;
             return false;
@@ -1839,7 +1850,7 @@ namespace DribbleToSchool.EditorTools
         static void Beach(LevelBuildKit.TrackBuilder track, Transform root, System.Random rng, float x0, float x1)
         {
             float sea = track.LowestGroundTop - 0.3f;
-            if (chunk == null)   // (a Holiday Run's sea is in the core scene, all along the beach)
+            if (chunk == null || chunk.level)   // (a Holiday Run's sea is in the core scene, all along the beach)
             {
                 var water = Solid(root, "Sea", new Vector3((x0 + x1) * 0.5f, sea - 0.05f, 480f), new Vector3(x1 - x0 + 1600f, 0.1f, 950f), Color.white, Art.surfaces[ProceduralArt.Surface.Sea]);
                 water.faces = MeshBuilder.Faces.Top;
@@ -1986,7 +1997,7 @@ namespace DribbleToSchool.EditorTools
         /// <summary>Wooded headlands out on the horizon across the bay.</summary>
         static void Headlands(Transform root, System.Random rng, float x0, float x1, float sea)
         {
-            if (chunk != null) return;   // (a Holiday Run's are in the core scene)
+            if (chunk != null && !chunk.level) return;   // (a Holiday Run's are in the core scene)
             for (int i = 0; i < 3; i++)
             {
                 float x = x0 + (x1 - x0) * (0.15f + i * 0.4f) + Rand(rng, -40f, 40f), z = 650f + i * 60f;
@@ -2108,7 +2119,7 @@ namespace DribbleToSchool.EditorTools
             // Tower cranes over the site, far enough off to stand whole above the street in the haze.
             // (A Holiday Run's are part of the far land in the core scene, so they never come and go with a stage.)
             bool cranes = LevelBuildKit.HasKitModel("Works", "TowerCrane");
-            for (float x = x0; chunk == null && x < x1; x += Rand(rng, 40f, 60f))
+            for (float x = x0; (chunk == null || chunk.level) && x < x1; x += Rand(rng, 40f, 60f))
             {
                 if (cranes)
                 {
@@ -2289,7 +2300,7 @@ namespace DribbleToSchool.EditorTools
 
         static void DistantHills(LevelBuildKit.TrackBuilder track, Transform root, float x0, float x1)
         {
-            if (chunk != null) return;   // (a Holiday Run's are in the core scene, all along the lap)
+            if (chunk != null && !chunk.level) return;   // (a Holiday Run's are in the core scene, all along the lap)
             int ch = LevelBuildKit.Chapter;
             if (LevelBuildKit.HasKitModel("Terrain", "HillsRolling"))
             {

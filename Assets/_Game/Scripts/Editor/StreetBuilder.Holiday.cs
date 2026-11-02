@@ -42,6 +42,11 @@ namespace DribbleToSchool.EditorTools
             public int clearing = -1;
             /// <summary>Side streets' far ends are cut to this range (next to the beach, which has none).</summary>
             public float clipLo = float.NegativeInfinity, clipHi = float.PositiveInfinity;
+            /// <summary>
+            /// A story level's pass rather than a Holiday Run stage's: a level has no core scene, so this pass builds the distant land too
+            /// (fields and hills, the sea and its headlands, the site's cranes), across the whole level as a level does.
+            /// </summary>
+            public bool level;
         }
 
         /// <summary>Non-null while a stage's scenery is being built.</summary>

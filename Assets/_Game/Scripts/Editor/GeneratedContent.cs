@@ -22,7 +22,7 @@ namespace DribbleToSchool.EditorTools
     public static class GeneratedContent
     {
         /// <summary>Bump when layouts or the scene rig change so scenes regenerate.</summary>
-        public const int Version = 54;
+        public const int Version = 55;
 
         const string ScenesDir = LevelBuildKit.Root + "/Scenes";
         const string LevelsDir = LevelBuildKit.Root + "/Levels";
@@ -59,40 +59,49 @@ namespace DribbleToSchool.EditorTools
             public string ScenePath { get { return ScenesDir + "/Levels/" + scene + ".unity"; } }
         }
 
+        /// <summary>
+        /// A story level's bell: the seconds its street takes (as tuned in the table) and the walk from the front door that every story
+        /// level starts with now (<see cref="HomeLeadInRules.BellSeconds"/>), so the school bell and the stars mean what they did before.
+        /// </summary>
+        static float Bell(float streetSeconds)
+        {
+            return streetSeconds + HomeLeadInRules.BellSeconds;
+        }
+
         static readonly LevelSpec[] Levels =
         {
             // Chapter 1: Home Street
-            new LevelSpec(1, "L01", "Out the Door", "L01_OutTheDoor", 50f, 3, GreyboxLevels.OutTheDoor),
-            new LevelSpec(1, "L02", "Parked Cars", "L02_ParkedCars", 55f, 3, GreyboxLevels.ParkedCars),
-            new LevelSpec(1, "L03", "Up the Hill", "L03_UpTheHill", 80f, 4, GreyboxLevels.UpTheHill),
-            new LevelSpec(1, "L04", "Garden Gate", "L04_GardenGate", 60f, 3, GreyboxLevels.GardenGate),
-            new LevelSpec(1, "L05", "Puddle Lane", "L05_PuddleLane", 80f, 4, GreyboxLevels.PuddleLane),
+            new LevelSpec(1, "L01", "Out the Door", "L01_OutTheDoor", Bell(50f), 3, GreyboxLevels.OutTheDoor),
+            new LevelSpec(1, "L02", "Parked Cars", "L02_ParkedCars", Bell(55f), 3, GreyboxLevels.ParkedCars),
+            new LevelSpec(1, "L03", "Up the Hill", "L03_UpTheHill", Bell(80f), 4, GreyboxLevels.UpTheHill),
+            new LevelSpec(1, "L04", "Garden Gate", "L04_GardenGate", Bell(60f), 3, GreyboxLevels.GardenGate),
+            new LevelSpec(1, "L05", "Puddle Lane", "L05_PuddleLane", Bell(80f), 4, GreyboxLevels.PuddleLane),
             LevelSpec.Challenge(1, "C01", "Keepy-Uppy", "C01_KeepyUppy", GreyboxLevels.KeepyUppy),
             // Chapter 2: Market and Crossings
-            new LevelSpec(2, "L06", "Market Morning", "L06_MarketMorning", 60f, 4, GreyboxLevels.MarketMorning),
-            new LevelSpec(2, "L07", "First Crossing", "L07_FirstCrossing", 70f, 3, GreyboxLevels.FirstCrossing),
-            new LevelSpec(2, "L08", "Corner Shop", "L08_CornerShop", 70f, 4, GreyboxLevels.CornerShop),
-            new LevelSpec(2, "L09", "Fruit Stalls", "L09_FruitStalls", 75f, 5, GreyboxLevels.FruitStalls),
-            new LevelSpec(2, "L10", "Rush Hour", "L10_RushHour", 95f, 6, GreyboxLevels.RushHour),
+            new LevelSpec(2, "L06", "Market Morning", "L06_MarketMorning", Bell(60f), 4, GreyboxLevels.MarketMorning),
+            new LevelSpec(2, "L07", "First Crossing", "L07_FirstCrossing", Bell(70f), 3, GreyboxLevels.FirstCrossing),
+            new LevelSpec(2, "L08", "Corner Shop", "L08_CornerShop", Bell(70f), 4, GreyboxLevels.CornerShop),
+            new LevelSpec(2, "L09", "Fruit Stalls", "L09_FruitStalls", Bell(75f), 5, GreyboxLevels.FruitStalls),
+            new LevelSpec(2, "L10", "Rush Hour", "L10_RushHour", Bell(95f), 6, GreyboxLevels.RushHour),
             LevelSpec.Challenge(2, "C02", "Window Shopping", "C02_WindowShopping", GreyboxLevels.WindowShopping),
             // Chapter 3: The Beach
-            new LevelSpec(3, "L11", "Boardwalk", "L11_Boardwalk", 70f, 4, GreyboxLevels.Boardwalk),
-            new LevelSpec(3, "L12", "Low Tide", "L12_LowTide", 75f, 4, GreyboxLevels.LowTide),
-            new LevelSpec(3, "L13", "Seagull Bay", "L13_SeagullBay", 80f, 5, GreyboxLevels.SeagullBay),
-            new LevelSpec(3, "L14", "Sandcastle Sprint", "L14_SandcastleSprint", 95f, 6, GreyboxLevels.SandcastleSprint),
+            new LevelSpec(3, "L11", "Boardwalk", "L11_Boardwalk", Bell(70f), 4, GreyboxLevels.Boardwalk),
+            new LevelSpec(3, "L12", "Low Tide", "L12_LowTide", Bell(75f), 4, GreyboxLevels.LowTide),
+            new LevelSpec(3, "L13", "Seagull Bay", "L13_SeagullBay", Bell(80f), 5, GreyboxLevels.SeagullBay),
+            new LevelSpec(3, "L14", "Sandcastle Sprint", "L14_SandcastleSprint", Bell(95f), 6, GreyboxLevels.SandcastleSprint),
             LevelSpec.Challenge(3, "C03", "Beach Slalom", "C03_BeachSlalom", GreyboxLevels.BeachSlalom),
             // Chapter 4: Underpass & Construction
-            new LevelSpec(4, "L15", "The Underpass", "L15_TheUnderpass", 65f, 4, GreyboxLevels.TheUnderpass),
-            new LevelSpec(4, "L16", "Building Site", "L16_BuildingSite", 80f, 5, GreyboxLevels.BuildingSite),
-            new LevelSpec(4, "L17", "Cranes", "L17_Cranes", 85f, 4, GreyboxLevels.Cranes),
-            new LevelSpec(4, "L18", "Tunnel Run", "L18_TunnelRun", 105f, 6, GreyboxLevels.TunnelRun),
+            new LevelSpec(4, "L15", "The Underpass", "L15_TheUnderpass", Bell(65f), 4, GreyboxLevels.TheUnderpass),
+            new LevelSpec(4, "L16", "Building Site", "L16_BuildingSite", Bell(80f), 5, GreyboxLevels.BuildingSite),
+            new LevelSpec(4, "L17", "Cranes", "L17_Cranes", Bell(85f), 4, GreyboxLevels.Cranes),
+            new LevelSpec(4, "L18", "Tunnel Run", "L18_TunnelRun", Bell(105f), 6, GreyboxLevels.TunnelRun),
             LevelSpec.Challenge(4, "C04", "Site Targets", "C04_SiteTargets", GreyboxLevels.SiteTargets),
             // Chapter 5: Park & School
-            new LevelSpec(5, "L19", "Park Gates", "L19_ParkGates", 65f, 5, GreyboxLevels.ParkGates),
-            new LevelSpec(5, "L20", "Fountain Square", "L20_FountainSquare", 75f, 5, GreyboxLevels.FountainSquare),
-            new LevelSpec(5, "L21", "Playground", "L21_Playground", 80f, 5, GreyboxLevels.Playground),
-            new LevelSpec(5, "L22", "Duck Pond", "L22_DuckPond", 80f, 6, GreyboxLevels.DuckPond),
-            new LevelSpec(5, "L23", "The Final Bell", "L23_TheFinalBell", 120f, 7, GreyboxLevels.TheFinalBell),
+            new LevelSpec(5, "L19", "Park Gates", "L19_ParkGates", Bell(65f), 5, GreyboxLevels.ParkGates),
+            new LevelSpec(5, "L20", "Fountain Square", "L20_FountainSquare", Bell(75f), 5, GreyboxLevels.FountainSquare),
+            new LevelSpec(5, "L21", "Playground", "L21_Playground", Bell(80f), 5, GreyboxLevels.Playground),
+            new LevelSpec(5, "L22", "Duck Pond", "L22_DuckPond", Bell(80f), 6, GreyboxLevels.DuckPond),
+            new LevelSpec(5, "L23", "The Final Bell", "L23_TheFinalBell", Bell(120f), 7, GreyboxLevels.TheFinalBell),
             LevelSpec.Challenge(5, "C05", "Juggle Champion", "C05_JuggleChampion", GreyboxLevels.JuggleChampion),
         };
 
@@ -109,6 +118,22 @@ namespace DribbleToSchool.EditorTools
                 scenes.Add(spec.scene);
             }
             return list;
+        }
+
+        /// <summary>The school bell of a level in the table, in seconds (a challenge has none: 0), or -1 for an unknown id. Used by tests.</summary>
+        public static float BellTime(string id)
+        {
+            foreach (var spec in Levels)
+                if (spec.id == id) return spec.bell;
+            return -1f;
+        }
+
+        /// <summary>Does this level of the table start at home (the front door, then the home street)? Every story level does; a challenge does not. Used by tests.</summary>
+        public static bool StartsAtHome(string id)
+        {
+            foreach (var spec in Levels)
+                if (spec.id == id) return HomeLeadInRules.StartsAtHome(true, spec.challenge);
+            return false;
         }
 
         static GeneratedContent()
