@@ -566,7 +566,7 @@ namespace DribbleToSchool.EditorTools
             return false;
         }
 
-        /// <summary>The beats of street life a stage has, in order of importance: people mostly, dogs where the chapter has dog walkers, and the stage's own traits first.</summary>
+        /// <summary>The beats of street life a stage has, in order of importance: people first and a dog second (so every stage with two beats or more has both), and the stage's own traits first.</summary>
         static List<PatternKind> LifeKinds(HolidayStages.Stage st)
         {
             PatternKind w = PatternKind.Walkers, g = PatternKind.DogPatch;
@@ -574,9 +574,9 @@ namespace DribbleToSchool.EditorTools
             switch (st.chapter)
             {
                 case 1: mix = new[] { w, g, w, w }; break;
-                case 2: mix = new[] { w, w, g, w }; break;
+                case 2: mix = new[] { w, g, w, w }; break;
                 case 3: mix = new[] { w, g, w, g }; break;
-                case 4: mix = new[] { w, w, w, w }; break;
+                case 4: mix = new[] { w, g, w, w }; break;   // a watchdog on the site
                 default: mix = new[] { g, w, g, w }; break;
             }
             int n = LifeCount(st.density);

@@ -110,10 +110,10 @@ a pile of crates), people strolling and dogs, floating targets (balloons, paper 
 the ball flies into them, a trail of coins, and a middle checkpoint. The beach has more gulls than the story's.
 
 The table with every stage's traits and difficulty (`density`, from 0.28 in the first stage to 1.0 at the
-school) is `Holiday/HolidayStages.cs`. The first 22 m of a day and the first 14 m of every stage are empty:
-time to get going, and to look around. Every stage carries **three layout variants** of its obstacles and
-pick-ups, and one is chosen at random each time the stage loads, so no two days are the same while the
-scenery stays put.
+school) is `Holiday/HolidayStages.cs`. The first 22 m of a day, the first 14 m of every stage and the last 8 m have
+no obstacles, street life or targets in them (only the trail of coins, and the first checkpoint 8 m in): time to get going, and to
+look around. Every stage carries **three layout variants** of its obstacles and pick-ups, and one is chosen at random each time the
+stage loads, so no two days are the same while the scenery stays put.
 
 ## How it is built
 
@@ -248,9 +248,9 @@ a gap over its limit, a wall too high, too little run-up or landing, or street l
   over a crossing). They are triggers: the kid passes through them, the director does not count them as obstacles, and a ball flying
   at 2.5 m/s or more through one (a chip, a kick at it, a trampoline throw) bursts it for 5 coins, "Smash!", and flies on.
 - **Street life**: beats of walkers (`Pedestrian`) and dogs (`Dog`) in the layouts, in different places in each: 1 to 2 at the lowest
-  density, 3 to 4 at the highest, people in every chapter, dogs where there are dog walkers (not on the site) and where the stage
-  has them (the park). A beat is 4.5 to 7 m long on open ground 1.5 m clear of every solid, 4.5 m or more from a gap's run-up and
-  landing, off a trampoline's throw. The walkers probe the footpath themselves and stop short of holes, walls and checkpoints.
+  density, 3 to 4 at the highest; the first is a walker and the second a dog, so every stage with two beats or more has both (the
+  park's stages start with a dog; the stages that have Pedestrians or Dogs as a trait always have that kind). A beat is 4.5 to 7 m long on open ground 1.5 m clear of every solid, more than 6 m before a gap and 4 m after it, off a
+  trampoline's throw and away from the middle checkpoint. The walkers probe the footpath themselves and stop short of holes, walls and checkpoints.
   Gulls on every beach stage (3, or 5 in Seagull Bay), swooping 3.0 to 3.6 m up, so they clip a high lob or a shot at a balloon and
   never a ball rolling along the ground. Cats on the garden walls, pigeons, crabs, squirrels, ducks and the flocks crossing the sky
   (now over every stage) are the street builder's scenery.
