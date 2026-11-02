@@ -12,7 +12,7 @@
 import bpy, math
 import numpy as np
 from mathutils import Vector
-from teen_lib import C, new_obj, apply_mods, smooth
+from teen_lib import C, new_obj, apply_mods, smooth, Variant
 
 # ----------------------------------------------------------------------------------------------
 # Proportions. Base space below Z0 is stretched by a constant factor; above Z0 it is lifted and
@@ -26,12 +26,14 @@ PIVOT = (0.0, 0.01)        # x, y of the axis the head is scaled about (the neck
 
 
 def lift(girl):
+    if isinstance(girl, Variant): return girl.lift
     return 0.49 if girl else 0.57
 
 
 def head_scale(girl):
     """(x, y, z) scale of the head: a little narrower than it is tall, for a slimmer face.
     girl ~6.8 heads, boy ~7.1 heads (crown to chin)."""
+    if isinstance(girl, Variant): return girl.hscale
     return (0.85, 0.89, 0.89) if girl else (0.8, 0.85, 0.85)
 
 
@@ -96,6 +98,7 @@ def ungrow(co, girl):
 # ----------------------------------------------------------------------------------------------
 # Joints in teen space: name -> (x, y, z). L/R are mirrored (+X is the character's left).
 def tj(girl):
+    if isinstance(girl, Variant): return girl.mod('body').tj(girl)
     L = lift(girl)
     if girl:
         j = dict(pelvis=(0, 0.006, 1.10), spine=(0, 0.002, 1.27), chest=(0, 0.004, 1.47),
@@ -575,7 +578,7 @@ NECK_TRIS = {True: 520, False: 520}
 
 
 def field(girl):
-    if girl not in _FIELDS: _FIELDS[girl] = BodyField(girl)
+    if girl not in _FIELDS: _FIELDS[girl] = girl.mod('body').KidBodyField(girl) if isinstance(girl, Variant) else BodyField(girl)
     return _FIELDS[girl]
 
 
@@ -586,8 +589,9 @@ def build_body(girl):
     import teen_outfit
     f = field(girl)
     top = tj(girl)['neck1'][2] + 0.09
-    V, Q = surface_nets(f, (-0.30, -0.22, -0.01), (0.30, 0.17, top), 0.0062)
-    V = project(f, V, 4, 0.0062)
+    cell = girl.cell if isinstance(girl, Variant) else 0.0062
+    V, Q = surface_nets(f, (-0.30, -0.22, -0.01), (0.30, 0.17, top), cell)
+    V = project(f, V, 4, cell)
     V = relax(V, Q, f, 2)
     depth, semi, sockd = teen_outfit.cover(girl)(V)
     g = grad(f, V); g /= np.maximum(np.linalg.norm(g, axis=1), 1e-9)[:, None]
@@ -608,7 +612,8 @@ def build_body(girl):
     group('neck', neck); group('notneck', 1.0 - neck)
     # Triangle budget: a uniform pass, then the hidden skin and the covered-at-rest skin
     # (thighs in the skirt, legs in the socks) are thinned out to their own small budgets.
-    stage1, hid_budget, semi_budget = BODY_TRIS[girl]
+    stage1, hid_budget, semi_budget = girl.body_tris if isinstance(girl, Variant) else BODY_TRIS[girl]
+    neck_budget = girl.neck_tris if isinstance(girl, Variant) else NECK_TRIS[girl]
     def dec(ratio, vg=None):
         d = body.modifiers.new('dec', 'DECIMATE'); d.ratio = min(1.0, ratio); d.use_symmetry = True; d.symmetry_axis = 'X'
         if vg: d.vertex_group = vg; d.vertex_group_factor = 1.0
@@ -627,13 +632,14 @@ def build_body(girl):
     tot, inside = count('neck')
     dec((stage1 * (1 - inside / tot) + inside) / tot, 'notneck')     # everything but the neck
     tot, inside = count('neck')
-    dec((tot - inside + NECK_TRIS[girl]) / tot, 'neck')              # then the neck, to its budget
+    dec((tot - inside + neck_budget) / tot, 'neck')                  # then the neck, to its budget
     tot, inside = count('hidden'); dec((tot - inside + hid_budget) / tot, 'hidden')
     tot, inside = count('semi'); dec((tot - inside + semi_budget) / tot, 'semi')
     for g in ('semi', 'hidden', 'neck', 'notneck'): body.vertex_groups.remove(body.vertex_groups[g])
     # the thinned-out skin has no vertices near the knees and hips: put the rings back, so the skin
     # bends there as the clothes over it do
-    if girl: refine_edges(body, f, joint_zone(girl, hip_below=0.12, hip_above=0.05), 0.06)     # (her thighs show when she lifts a knee)
+    if isinstance(girl, Variant): refine_edges(body, f, joint_zone(girl, **girl.refine_zone), girl.refine_len)
+    elif girl: refine_edges(body, f, joint_zone(girl, hip_below=0.12, hip_above=0.05), 0.06)     # (her thighs show when she lifts a knee)
     else: refine_edges(body, f, joint_zone(girl), 0.045)
     make_outward(body)
     N = field_normals(body, f)

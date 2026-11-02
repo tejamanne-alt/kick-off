@@ -1,6 +1,8 @@
 # Renders a review sheet of a built teen with the game's look (ToonCharacter: two flat cel bands
 # from the sun, the shade tinted cool by the sky, a rim of light, an ink outline):
-#   blenv/bin/python review_teen.py -- /abs/Girl.blend /abs/girl_sheet.png [--bg a.png,b.png,...]
+#   blenv/bin/python review_teen.py -- /abs/Girl.blend /abs/girl_sheet.png [--bg a.png,b.png,...] [--face-dz 0.12] [--face-scale 0.44]
+# (--face-dz: how far above the Head bone's joint the face close-ups centre; --face-scale: the height they frame, in
+# metres. The primary-school kids' bigger heads sit lower: --face-dz 0.07 --face-scale 0.5.)
 # Top row: face close-ups (front, three-quarter, profile). Middle: full body standing
 # three-quarter, running, kicking, side, back. Bottom: the character at in-game size (about
 # 215 px tall, with the in-game outline width) standing and running in front of game
@@ -79,7 +81,8 @@ L.inputs[0].default_value, L.inputs[1].default_value, L.inputs[2].default_value 
 zs = [(kid.matrix_world @ v.co).z for v in kid.data.vertices]
 top = max(zs)
 head_z = rig.data.bones['Head'].head_local.z
-face_z = head_z + 0.12
+face_z = head_z + (float(args[args.index('--face-dz') + 1]) if '--face-dz' in args else 0.12)
+FACE_SCALE = float(args[args.index('--face-scale') + 1]) if '--face-scale' in args else 0.44
 
 poses = {'stand': {},
          'run': {'UpperLeg.R': -40, 'LowerLeg.R': 60, 'UpperLeg.L': 38, 'LowerLeg.L': 92, 'UpperArm.R': 34, 'LowerArm.R': -85, 'UpperArm.L': -30, 'LowerArm.L': -70, 'Bag': 10},
@@ -91,9 +94,9 @@ def pose(name):
     for b, a in poses[name].items(): rig.pose.bones[b].rotation_euler = (math.radians(a), 0, 0)
 
 shots = [  # (file, pose, yaw, ortho scale, camera z, resolution)
-    ('face_front', 'stand', 0, 0.44, face_z, (560, 560)),
-    ('face_34', 'stand', -35, 0.44, face_z, (560, 560)),
-    ('face_side', 'stand', -90, 0.44, face_z, (560, 560)),
+    ('face_front', 'stand', 0, FACE_SCALE, face_z, (560, 560)),
+    ('face_34', 'stand', -35, FACE_SCALE, face_z, (560, 560)),
+    ('face_side', 'stand', -90, FACE_SCALE, face_z, (560, 560)),
     ('stand', 'stand', -24, top * 1.08, top * 0.5, (420, 760)),
     ('run', 'run', -24, top * 1.08, top * 0.5, (420, 760)),
     ('kick', 'kick', -24, top * 1.08, top * 0.5, (420, 760)),

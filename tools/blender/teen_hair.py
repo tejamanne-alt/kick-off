@@ -20,7 +20,7 @@ import bpy, math
 import numpy as np
 from mathutils import Vector
 from mathutils.bvhtree import BVHTree
-from teen_lib import Part, new_obj, finish
+from teen_lib import Part, new_obj, finish, Variant
 import teen_head
 from teen_head import CRANIUM_CENTER
 
@@ -32,6 +32,7 @@ BASE, SHINE, GROOVE = 0, 1, 2          # face tags
 
 def hair_colors(girl):
     """Base colour and shine colour. The base colour is the game's default hair colour."""
+    if isinstance(girl, Variant): return girl.mod('hair').hair_colors(girl)
     if girl: return ((0.036, 0.022, 0.02, 1), (0.12, 0.08, 0.072, 1))     # near-black brown
     # near-black with a cool cast; the shine a muted blue-grey band (anime hair)
     return ((0.024, 0.02, 0.027, 1), (0.085, 0.08, 0.11, 1))
@@ -658,6 +659,7 @@ def _colour_fn(o, mesh, base, shine, groove):
 
 
 def build_hair(girl):
+    if isinstance(girl, Variant): return girl.mod('hair').build_hair(girl)
     base, shine = hair_colors(girl)
     fit = Fit()
     mesh = Mesh(); scr = Mesh()

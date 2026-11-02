@@ -31,6 +31,31 @@ class Part:
         self.obj, self.color, self.part, self.bind, self.uv = obj, color, part, bind, uv
 
 
+class Variant:
+    """A character that is neither of the two teens (the primary-school kids, primary_spec.py).
+
+    The teen modules key everything on `girl`, a bool: True for the girl, False for the boy. A Variant
+    stands in for that flag: it is truthy like it (`if girl:` still picks the girl's shape), hashes by
+    identity (the modules' per-character caches work), and carries what differs (proportions, palette,
+    clothes, face, hair). The few teen functions whose numbers are the teens' own hand a Variant on to
+    the primary_<what> module that knows it (`mod`)."""
+    def __init__(self, name, girl, **spec):
+        self.name, self.girl = name, bool(girl)
+        self.__dict__.update(spec)
+
+    def __bool__(self):
+        return self.girl
+
+    def mod(self, what):
+        """The primary_<what> module (imported on first use, so the teens never need it)."""
+        import importlib
+        return importlib.import_module('primary_' + what)
+
+
+def is_variant(girl):
+    return isinstance(girl, Variant)
+
+
 def new_obj(name, me):
     o = bpy.data.objects.new(name, me); C.scene.collection.objects.link(o); return o
 

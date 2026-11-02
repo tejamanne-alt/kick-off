@@ -59,6 +59,11 @@ def run_pose(phase):
 
 BALANCE = dict(legF=4, legB=-2, kneeF=-8, kneeB=-8, armF=22, elbowF=34, armB=-16, elbowB=28, headTilt=-13)
 KICK_ARMS = dict(armB=43, elbowB=29, armF=-28, elbowF=30)       # the kick's blend into the stand
+# the double jump (KidAnimator): launch (stretched tall, arms thrown up), the tuck (spun a quarter turn at a time, the bag
+# flung out behind), and the open-out (legs reaching for the ground, arms wide)
+LAUNCH = dict(legF=6, kneeF=-12, legB=-8, kneeB=-28, armF=128, elbowF=12, armB=118, elbowB=12, lean=8, bag=-10)
+TUCK = dict(legF=108, legB=96, kneeF=-138, kneeB=-132, armF=62, elbowF=95, armB=48, elbowB=100, headTilt=-26, bag=-36)
+OPEN = dict(legF=28, kneeF=-24, legB=-12, kneeB=-34, armF=88, elbowF=30, armB=-34, elbowB=26, lean=8, bag=-6)
 
 # name, pose, has an (L) variant, yaws
 POSES = [
@@ -67,14 +72,18 @@ POSES = [
     ('run_pass', run_pose(0.0), True, DEFAULT_YAWS),
     ('run_stride', run_pose(math.pi / 2), True, DEFAULT_YAWS),
     ('run_kneeup', run_pose(-0.9), True, DEFAULT_YAWS),
-    ('jump_rise', P(legF=48, kneeF=-95, legB=-22, kneeB=-70, armF=-35, elbowF=85, armB=55, elbowB=60, lean=8, bag=-28), True, DEFAULT_YAWS),
-    ('jump_fall', P(legF=18, kneeF=-25, legB=-12, kneeB=-35, armF=80, elbowF=30, armB=70, elbowB=25, lean=2, bag=14), True, DEFAULT_YAWS),
-    ('tuck_0', P(legF=108, legB=96, kneeF=-138, kneeB=-132, armF=62, elbowF=95, armB=48, elbowB=100, headTilt=-24, lean=6, bag=-10), True, DEFAULT_YAWS),
-    ('tuck_90', P(legF=108, legB=96, kneeF=-138, kneeB=-132, armF=62, elbowF=95, armB=48, elbowB=100, headTilt=-24, lean=96, bag=-10), False, DEFAULT_YAWS),
-    ('tuck_180', P(legF=108, legB=96, kneeF=-138, kneeB=-132, armF=62, elbowF=95, armB=48, elbowB=100, headTilt=-24, lean=186, bag=-10), False, DEFAULT_YAWS),
-    ('tuck_270', P(legF=108, legB=96, kneeF=-138, kneeB=-132, armF=62, elbowF=95, armB=48, elbowB=100, headTilt=-24, lean=276, bag=-10), False, DEFAULT_YAWS),
+    ('jump_rise', P(legF=48, kneeF=-95, legB=-22, kneeB=-70, armF=-35, elbowF=85, armB=55, elbowB=60, lean=8, bag=-25), True, DEFAULT_YAWS),
+    ('jump_fall', P(legF=18, kneeF=-25, legB=-12, kneeB=-35, armF=80, elbowF=30, armB=70, elbowB=25, lean=2, bag=24), True, DEFAULT_YAWS),
+    ('launch', P(**LAUNCH), False, DEFAULT_YAWS),
+    ('tuck_0', P(lean=6, **TUCK), True, DEFAULT_YAWS),
+    ('tuck_90', P(lean=96, **TUCK), False, DEFAULT_YAWS),
+    ('tuck_180', P(lean=186, **TUCK), False, DEFAULT_YAWS),
+    ('tuck_270', P(lean=276, **TUCK), False, DEFAULT_YAWS),
+    ('open', P(**OPEN), True, DEFAULT_YAWS),
     ('kick_windup', P(legF=-30, kneeF=-100, kneeB=-14, lean=-6.5, **KICK_ARMS), True, DEFAULT_YAWS),
-    ('kick_contact', P(legF=80, kneeF=0, kneeB=-14, lean=-8, **KICK_ARMS), True, DEFAULT_YAWS),
+    ('kick_contact', P(legF=80, kneeF=0, kneeB=-14, lean=-6.5, **KICK_ARMS), True, DEFAULT_YAWS),
+    # the slide dives in with an overshoot (the lean 10% over its 58, as limbs are written relative to the lean), then settles
+    ('slide_lunge', P(legF=19, kneeF=-6, legB=32, kneeB=-148, armB=-40, elbowB=10, armF=31, elbowF=30, headTilt=-44, lean=-64, bag=-95), True, DEFAULT_YAWS),
     ('slide', P(legF=24, kneeF=-6, legB=38, kneeB=-148, armB=-34, elbowB=10, armF=37, elbowF=30, headTilt=-44, lean=-58, bag=-95), True, DEFAULT_YAWS),
     ('landing', P(legF=30, legB=30, kneeF=-64, kneeB=-64, armF=-3, armB=3, elbowF=34, elbowB=34, lean=10), False, DEFAULT_YAWS),
     ('celebrate_air', P(legF=12, legB=-8, kneeF=-10, kneeB=-10, armF=172, armB=-172, elbowF=15, elbowB=15, headTilt=6), False, DEFAULT_YAWS),

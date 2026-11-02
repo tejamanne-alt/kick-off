@@ -8,7 +8,7 @@
 import bpy, bmesh, math
 import numpy as np
 from mathutils import Vector
-from teen_lib import Part, activate, apply_mods, smooth, shade
+from teen_lib import Part, activate, apply_mods, smooth, shade, Variant
 import teen_body as TB
 from teen_body import (smin, smax, round_cone, ellipsoid, rbox, frame, catmull, chain,
                        sdf_object, mesh_object, grad, field, tj, grow, ungrow)
@@ -28,7 +28,14 @@ def srgb(c):
     return tuple(12.92 * v if v <= 0.0031308 else 1.055 * v ** (1 / 2.4) - 0.055 for v in c[:3])
 
 
+def ksc(girl):
+    """How big this character's limbs are compared with a teen's (1 for the teens): the widths of the skin-weight
+    blends below (knees, hips, armpits) are the teens' own, scaled by this."""
+    return girl.k if isinstance(girl, Variant) else 1.0
+
+
 def palette(girl):
+    if isinstance(girl, Variant): return girl.mod('outfit').palette(girl)
     # The school uniform: a white shirt and navy legwear, modelled in the colours the shop's
     # School Uniform recolours to (sRGB (0.97, 0.97, 0.99) and (0.22, 0.23, 0.42)), so wearing it
     # is (nearly) the identity, and a red tie (the outfit's accent). The skin is a warm, sunny tone
@@ -63,6 +70,7 @@ def skin_part(girl, body):
     or a lifted thigh makes it poke through the cloth, it shows as more cloth, never as a sliver
     of bare skin (and its ink outline is the cloth's). The girl's bare thighs below her skirt are
     skin, not covered, and stay so."""
+    if isinstance(girl, Variant): return girl.mod('outfit').skin_part(girl, body)
     F = fields(girl); pal = palette(girl)
     me = body.data; mw = body.matrix_world
     C = [tuple(mw @ p.center) for p in me.polygons]
@@ -100,6 +108,7 @@ def _bag_dims(girl):
 
 def bag_bone(girl):
     """The Bag bone (base space): head at the top edge of the bag, tail toward its bottom."""
+    if isinstance(girl, Variant): return girl.mod('outfit').bag_bone(girl)
     c, h, r = _bag_dims(girl)
     top = c + (0, 0, h[2]); bot = c - (0, 0, h[2] * 0.6)
     return tuple(ungrow(Vector(top), girl)), tuple(ungrow(Vector(bot), girl))
@@ -317,7 +326,8 @@ def knee_t(girl, nm, P):
     ax = unit(unit(an - kn) - unit(hp - kn))             # through the knee, thigh -> shin
     rel = np.asarray(P) - kn
     sag = rel[:, 1]
-    w = KNEE_FRONT + (KNEE_BACK - KNEE_FRONT) * sstep(-0.02, 0.05, sag)
+    k = ksc(girl)
+    w = KNEE_FRONT * k + (KNEE_BACK - KNEE_FRONT) * k * sstep(-0.02 * k, 0.05 * k, sag)
     return sstep(-w, w, rel @ ax)
 
 
@@ -330,14 +340,15 @@ def leg_skin_weights(girl, P):
     cross-fade is the wide knee blend."""
     P = np.asarray(P, dtype=np.float64); j = tj(girl)
     z = P[:, 2]
-    zc = j['hipL'][2] - 0.17                              # about the crotch
-    sw = 0.012 + 0.09 * sstep(zc, zc + 0.16, z)
+    ks = ksc(girl)
+    zc = j['hipL'][2] - 0.17 * ks                         # about the crotch
+    sw = 0.012 * ks + 0.09 * ks * sstep(zc, zc + 0.16 * ks, z)
     side_l = sstep(-sw, sw, P[:, 0])
     out = np.zeros((len(P), 5))
     for k, nm in enumerate('LR'):
         hp, kn = j['hip' + nm], j['knee' + nm]
         d = (P - hp) @ unit(kn - hp)                      # how far down the thigh
-        h = sstep(-0.10, 0.06, d)
+        h = sstep(-0.10 * ks, 0.06 * ks, d)
         share = side_l if nm == 'L' else 1 - side_l
         t = knee_t(girl, nm, P)
         out[:, 1 + k] = h * share * (1 - t)
@@ -364,7 +375,7 @@ def smooth_knees(body, girl):
         axis = unit(unit(an - kn) - unit(hp - kn))
         s = rel @ axis
         radial = np.linalg.norm(rel - s[:, None] * axis, axis=1)
-        sel = np.nonzero((np.abs(s) < KNEE_BACK + 0.02) & (radial < 0.1))[0]
+        sel = np.nonzero((np.abs(s) < (KNEE_BACK + 0.02) * ksc(girl)) & (radial < 0.1 * ksc(girl)))[0]
         u, l = 'UpperLeg.' + n, 'LowerLeg.' + n
         T = knee_t(girl, n, V[sel])
         for i, t in zip(sel, T):
@@ -379,6 +390,7 @@ def refine_body_weights(body, girl):
     skin takes the trousers' own analytic weights, so the skin and the cloth over it move together
     (the heat weights of the thinned-out skin differ from the cloth's, which let skin show through).
     Her legs take them below the hips."""
+    if isinstance(girl, Variant): return girl.mod('outfit').refine_body_weights(body, girl)
     smooth_knees(body, girl)
     F = fields(girl)
     W = _weights(body)
@@ -426,16 +438,17 @@ def bind_skirt(girl, z_top, z_hem):
     legs' pull ramps in smoothly from the band down to the hem; round the skirt the two legs
     cross-fade over a wide band (no seam at the centre), and the centre front and back keep a
     share on the hips, so a lifted thigh pushes out a smooth bell instead of splitting it."""
+    k = ksc(girl)
     def bind(o, rig):
         W = []
         for v in o.data.vertices:
             x, y, z = v.co
-            front = float(sstep(0.03, -0.07, y))
+            front = float(sstep(0.03 * k, -0.07 * k, y))
             # the pull starts above the hip joints and is full a hand's width below them: a thigh
             # lifted to the front sweeps through the skirt's front at the joint's height, so the skirt
             # there has to ride up with it (past about half the thigh's turn), not stay behind it
             down = float(smoother(z_top, z_hem, z))
-            side = float(sstep(-0.06, 0.06, x))
+            side = float(sstep(-0.06 * k, 0.06 * k, x))
             centre = 1 - abs(2 * side - 1)
             fb = 0.8 + 0.16 * front                                 # the front follows the thighs more
             legs = down * fb * (1 - 0.2 * centre)
@@ -450,7 +463,7 @@ def bind_loose_shirt(body, girl, keep=0.5):
     arms' share goes to the Chest, or the Spine lower down), with a soft web beside each sleeve
     (the side follows the arm a little, fading out over a few cm, so a raised arm folds the armpit
     instead of tearing it); the thighs pull the hem `keep` of the way."""
-    j = tj(girl)
+    j = tj(girl); ks = ksc(girl)
     def bind(o, rig):
         smooth_knees(body, girl)
         _transfer(o, body)
@@ -459,12 +472,12 @@ def bind_loose_shirt(body, girl, keep=0.5):
         up = sstep(j['spine'][2] + 0.05, j['chest'][2], V[:, 2])
         # a vertex is on a sleeve where it lies nearer that sleeve's surface than the body's
         F = fields(girl); BF = F.BF
-        db = BF.torso(V) - 0.018
-        ka = {n: sstep(0.006, -0.006, f.raw(V) - db) for n, f in zip('LR', F.sleeves)}
+        db = BF.torso(V) - 0.018 * ks
+        ka = {n: sstep(0.006 * ks, -0.006 * ks, f.raw(V) - db) for n, f in zip('LR', F.sleeves)}
         # the web: beside each sleeve the shirt's side follows the arm a little (up to 60% at the
         # seam, fading over 4.5 cm), so an arm thrown up or forward stretches the armpit as one soft
         # fold instead of tearing the seam open
-        kw = {n: 0.6 * sstep(0.045, 0.0, f.raw(V) - db) * (1 - ka[n]) * sstep(0.0, 0.05, V[:, 2] - (j['spine'][2] + 0.1))
+        kw = {n: 0.6 * sstep(0.045 * ks, 0.0, f.raw(V) - db) * (1 - ka[n]) * sstep(0.0, 0.05 * ks, V[:, 2] - (j['spine'][2] + 0.1 * ks))
               for n, f in zip('LR', F.sleeves)}
         for i, w in enumerate(W):
             for n in 'LR':
@@ -518,6 +531,9 @@ _CACHE = {}
 
 def fields(girl):
     if girl in _CACHE: return _CACHE[girl]
+    if isinstance(girl, Variant):
+        _CACHE[girl] = girl.mod('outfit').fields(girl)
+        return _CACHE[girl]
     BF = field(girl); j = BF.j; F = Fields(); F.BF = BF
     n0 = j['neck0']
     zf, zb = n0[2] - 0.028, n0[2] + 0.012           # neckline height at the front (y -0.06) and back (y +0.07)
@@ -677,6 +693,7 @@ def cover(girl):
     """For teen-space points: how deep they lie inside clothes the player never sees through
     (> 0 inside), and whether they are covered only at rest (thighs in the skirt, legs in the
     socks), for thinning out the skin underneath."""
+    if isinstance(girl, Variant): return girl.mod('outfit').cover(girl)
     F = fields(girl); BF = F.BF
     def f(p):
         z = p[:, 2]
@@ -701,6 +718,7 @@ def cover(girl):
 
 # ----------------------------------------------------------------------------------------------
 def build_outfit(girl, body):
+    if isinstance(girl, Variant): return girl.mod('outfit').build_outfit(girl, body)
     F = fields(girl)
     parts = _girl_clothes(F, body) if girl else _boy_clothes(F, body)
     if girl: parts += _socks(F, girl)
@@ -772,13 +790,18 @@ def _peter_pan(F, girl):
     return o
 
 
-def _skirt(F, girl, leg_col):
+def _skirt(F, girl, leg_col, K=None):
     """A navy knife-pleated skirt: a crisp 4.5 cm waistband (a shade darker), then pleats that
     start right under it (stitched flat to the hip, opening below), the radius growing smoothly
-    from the waist over the hips into an A-line flare."""
+    from the waist over the hips into an A-line flare. K overrides the teen girl's measures (heights in
+    final space): NP pleats per side, zw_top / zw_bot the waistband's top and bottom, z_hem, zhip (the
+    flare starts below it), rings (heights of the rings between the band and the hem), open (the heights
+    between which the pleats open), loft_bottom, band_ease, ease, flare (degrees), open_amt, thick, bind (where the legs'
+    pull on it starts and is full: bind_skirt)."""
     BF = F.BF
+    K = K or {}
     lower = lambda p: smin(BF.torso(p), smin(BF.leg_full('L')(p), BF.leg_full('R')(p), 0.01), 0.06)
-    NP = 8                       # knife pleats per side, mirrored about the centre front
+    NP = K.get('NP', 8)          # knife pleats per side, mirrored about the centre front
     PH1 = 0.88                   # where a pleat's face ends and its fold begins
     ring = []
     for k in range(NP):      # (an extra column in the centre-front pleats: the legs' pull blends there)
@@ -788,9 +811,11 @@ def _skirt(F, girl, leg_col):
     A = np.array([a for a, _ in ring]); PH = np.array([ph for _, ph in ring])
     M = len(ring)
     D = np.stack([np.sin(A), -np.cos(A), np.zeros(M)], 1)
-    zw_top, zw_bot, z_hem = F.skirt_top, 1.29, 0.672
+    zw_top, zw_bot, z_hem = K.get('zw_top', F.skirt_top), K.get('zw_bot', 1.29), K.get('z_hem', 0.672)
+    zhip = K.get('zhip', 1.20); loft_bottom = K.get('loft_bottom', 1.03)
+    ease = K.get('ease', 0.0125); band_ease = K.get('band_ease', 0.026)
     F.skirt_band = (zw_top, zw_bot); F.skirt_hem = z_hem
-    def cy_of(z): return BF.torso_core.prof(np.array([z]))[2][0] if z > 1.03 else 0.008
+    def cy_of(z): return BF.torso_core.prof(np.array([z]))[2][0] if z > loft_bottom else 0.008
     def radial(z):
         cen = np.array([0, cy_of(z), z])
         rs = np.linspace(0.32, 0.0, 320)
@@ -799,22 +824,22 @@ def _skirt(F, girl, leg_col):
         hit = (Fv < 0).any(1)
         return np.where(hit, rs[np.argmax(Fv < 0, 1)], 0.0)
     # the waistband: a vertical band over the tucked-in blouse
-    band_r = np.max([radial(z) for z in np.linspace(zw_bot, zw_top, 4)], 0) + 0.026
+    band_r = np.max([radial(z) for z in np.linspace(zw_bot, zw_top, 4)], 0) + band_ease
     # the skirt's profile on a dense ladder of heights, per column: never closer to the body
     # than the ease, monotonic downward, an A-line flare below the hips, then smoothed in z
     zd = np.arange(zw_bot, z_hem - 0.03, -0.005)
-    prof = np.array([radial(z) + 0.0125 for z in zd])
+    prof = np.array([radial(z) + ease for z in zd])
     prof = np.maximum(prof, band_r - 0.0045)
     prof = np.maximum.accumulate(prof, 0)
-    flare = math.tan(math.radians(10.0))
-    x = 1.20 - zd; w = 0.05
+    flare = math.tan(math.radians(K.get('flare', 10.0)))
+    x = zhip - zd; w = 0.05
     side_k = 1 - 0.28 * np.sin(A) ** 2          # a little less flare at the sides (clear of the hands)
     prof = prof + (flare * np.where(x > w, x - w / 2, np.maximum(x, 0) ** 2 / (2 * w)))[:, None] * side_k[None, :]
     ker = np.exp(-0.5 * (np.arange(-8, 9) * 0.005 / 0.016) ** 2); ker /= ker.sum()
     padded = np.concatenate([np.repeat(prof[:1], 8, 0), prof, np.repeat(prof[-1:], 8, 0)])
     prof = np.stack([np.convolve(padded[:, m], ker, 'valid') for m in range(M)], 1)
     prof = np.maximum.accumulate(np.maximum(prof, band_r - 0.0045), 0)
-    zs = [zw_top + 0.0016, zw_top, zw_bot, zw_bot - 0.0012, 1.245, 1.195, 1.145, 1.08, 1.0, 0.915, 0.83, 0.75, z_hem]
+    zs = [zw_top + 0.0016, zw_top, zw_bot, zw_bot - 0.0012] + K.get('rings', [1.245, 1.195, 1.145, 1.08, 1.0, 0.915, 0.83, 0.75]) + [z_hem]
     rings = []
     for zi, z in enumerate(zs):
         cen = np.array([0, cy_of(z), z])
@@ -822,7 +847,7 @@ def _skirt(F, girl, leg_col):
         elif z >= zw_bot - 1e-6: r = band_r
         else:
             r = np.array([np.interp(-z, -zd, prof[:, m]) for m in range(M)])
-            r = r + 0.018 * float(sstep(1.275, 1.15, z)) * PH / PH1      # the pleats open below the hip
+            r = r + K.get('open_amt', 0.018) * float(sstep(*K.get('open', (1.275, 1.15)), z)) * PH / PH1      # the pleats open below the hip
         rings.append(cen + D * r[:, None])
     verts = np.concatenate(rings); faces = []
     for i in range(len(zs) - 1):
@@ -833,7 +858,7 @@ def _skirt(F, girl, leg_col):
     me = o.data; mid = me.polygons[len(faces) // 2]
     if np.array(mid.normal) @ (np.array(mid.center) - np.array([0, 0.008, mid.center[2]])) < 0:
         for poly in me.polygons: poly.flip()
-    so = o.modifiers.new('solid', 'SOLIDIFY'); so.thickness = 0.005; so.offset = -1; so.use_rim = True
+    so = o.modifiers.new('solid', 'SOLIDIFY'); so.thickness = K.get('thick', 0.005); so.offset = -1; so.use_rim = True
     so.use_even_offset = True
     apply_mods(o); TB.to_base(o, girl); smooth(o)
     band_c = shade(leg_col, 0.86); fold_c = shade(leg_col, 0.7)
@@ -842,7 +867,7 @@ def _skirt(F, girl, leg_col):
         if p.z > zw_bot - 0.0006: return band_c
         u = (abs(math.atan2(p.x, -(p.y - cy_of(p.z)))) / math.pi * NP) % 1.0
         return fold_c if u > PH1 + 0.01 else leg_col
-    return Part(o, col, 2, bind_skirt(girl, 1.20, 1.0))
+    return Part(o, col, 2, bind_skirt(girl, *K.get('bind', (1.20, 1.0))))
 
 
 def _boy_clothes(F, body):
@@ -1004,21 +1029,23 @@ def _two_tone(f, col, col_in, test, girl):
     return c
 
 
-def _shirt_collar(F, girl):
+def _shirt_collar(F, girl, sc=1.0, nth=38, style='point', lift=0.0):
     """A buttoned-up shirt collar: a band lying on the shirt round the neckline, standing up a little
     round the back of the neck, and two pointed flaps at the front that spread from the knot of the
     tie down over the chest. A (round the neck) x (across) grid placed on the shirt's surface, then
     given a thickness; each row across starts a little further round the neck, which cuts the
-    flaps' front edges on the diagonal and gives them their points."""
+    flaps' front edges on the diagonal and gives them their points. style 'round': an even band lying flat, its
+    fronts nearly meeting and rounded off (the primary-school girls' blouses); sc scales its width; lift stands it
+    off the shirt a little more (where the shirt's mesh is coarse, so its facets never show through the collar's edge)."""
     base = lambda p: F.top_raw(p, 0.0)
-    a0, a1 = 0.30, 0.60                                   # the flap's front edge at the neckline / at its point
-    nth, nv = 38, 4
+    a0, a1 = (0.30, 0.60) if style == 'point' else (0.11, 0.28)       # the flap's front edge at the neckline / at its point
+    nv = 4
     u = np.linspace(0, 1, nth)
     u = u + 0.05 * np.sin(2 * math.pi * u)                # a little denser toward the front ends
     ax = np.array([0, F.nax[1], 0.0])
     def neck_point(th):
         dh = np.array([math.sin(th), -math.cos(th), 0.0])
-        z = float(F.zn(F.nax[1] - math.cos(th) * 0.05))
+        z = float(F.zn(F.nax[1] - math.cos(th) * 0.05 * sc))
         rs = np.linspace(0.3, 0.0, 600)
         P = ax + np.array([0, 0, z]) + dh[None] * rs[:, None]
         k = int(np.argmax(base(P) < 0))
@@ -1031,7 +1058,7 @@ def _shirt_collar(F, girl):
     G = np.zeros((nth, nv, 3))
     for k in range(nv):
         fr = k / (nv - 1)
-        ae = a0 + (a1 - a0) * fr ** 1.2
+        ae = a0 + (a1 - a0) * (fr ** 1.2 if style == 'point' else fr ** 0.6)
         TH = ae + u * (2 * math.pi - 2 * ae)
         N = np.array([neck_point(th) for th in TH])
         T = np.gradient(N, axis=0); T /= np.linalg.norm(T, axis=1)[:, None]
@@ -1040,13 +1067,17 @@ def _shirt_collar(F, girl):
         away = np.stack([np.sin(TH), -np.cos(TH), np.full(len(TH), -1.2)], 1)
         D *= np.sign((D * away).sum(1))[:, None]
         a = np.abs(_wrap(TH))
-        wid = 0.031 + 0.004 * sstep(2.4, 1.4, a) + 0.022 * sstep(1.3, a1, a)     # the points at the front
-        stand = 0.013 * sstep(1.1, 2.2, a)                                       # stands up round the back
+        if style == 'point':
+            wid = (0.031 + 0.004 * sstep(2.4, 1.4, a) + 0.022 * sstep(1.3, a1, a)) * sc     # the points at the front
+            stand = 0.013 * sc * sstep(1.1, 2.2, a)                                  # stands up round the back
+        else:
+            wid = (0.032 + 0.003 * sstep(2.4, 1.4, a)) * sc
+            stand = 0.004 * sc * sstep(1.1, 2.2, a)
         G[:, k] = N + D * (-stand + (wid + stand) * fr)[:, None]
     G = G.reshape(-1, 3)
     # the collar stands 5 mm off the shirt, but its inner edge sinks into the neck: no gap, no bare
     # edge for the ink outline to flare out of
-    off = np.where(np.arange(len(G)) % nv == 0, -0.004, 0.0054)
+    off = np.where(np.arange(len(G)) % nv == 0, -0.004, 0.0054 + lift)
     for _ in range(6):
         gg = grad(base, G); gg /= np.linalg.norm(gg, axis=1)[:, None]
         G = G - gg * (base(G) - off)[:, None]

@@ -16,15 +16,26 @@ cp Adult.fbx ../../Assets/_Game/Art/Models/Adult.fbx
 cp face_adult.png ../../Assets/_Game/Art/Models/AdultAtlas.png
 blenv/bin/python teen.py -- $PWD/Boy.fbx --boy     # the playable teen boy (also paints BoyAtlas.png, writes Boy.json)
 blenv/bin/python teen.py -- $PWD/Girl.fbx --girl   # the playable teen girl
+blenv/bin/python primary.py -- $PWD/PrimaryBoy.fbx --boy      # the four primary-school kids (see below); also
+blenv/bin/python primary.py -- $PWD/PrimaryGirl.fbx --girl    # teen.py ... --primary-boy / --primary-girl /
+blenv/bin/python primary.py -- $PWD/PrimaryBoy2.fbx --boy2    # --primary-boy2 / --primary-girl2
+blenv/bin/python primary.py -- $PWD/PrimaryGirl2.fbx --girl2
 blenv/bin/python review_teen.py -- $PWD/Girl.blend $PWD/girl_sheet.png [--bg shot1.png,shot2.png,shot3.png]
     # review sheet with the game's toon shading: faces, poses, side, back, and the teen at in-game
     # size (215 px tall, in-game outline) standing and running in front of game screenshots
+    # (the primary kids' bigger heads: add --face-dz 0.07 --face-scale 0.5)
 blenv/bin/python review_poses.py -- $PWD/Boy.blend $PWD/boy_poses.png --jobs 3 --leaks
     # the pose audit (see below): the teen in every pose the game uses, from the game's camera yaws
 cp Boy.fbx Boy.json BoyAtlas.png Girl.fbx Girl.json GirlAtlas.png ../../Assets/_Game/Art/Models/
+cp Primary*.fbx Primary*.json Primary*Atlas.png ../../Assets/_Game/Art/Models/
 blenv/bin/python portrait_teen.py -- $PWD/Boy.blend $PWD/PlayerBoy.png --yaw 28     # the menus' player cards
 blenv/bin/python portrait_teen.py -- $PWD/Girl.blend $PWD/PlayerGirl.png --yaw -28  # (they face each other)
 cp PlayerBoy.png PlayerGirl.png ../../Assets/_Game/Resources/UI/
+blenv/bin/python portrait_teen.py -- $PWD/PrimaryBoy.blend $PWD/PlayerPrimaryBoy.png --yaw 28 --span-heads 2.3     # the primary kids' cards
+blenv/bin/python portrait_teen.py -- $PWD/PrimaryGirl.blend $PWD/PlayerPrimaryGirl.png --yaw -28 --span-heads 2.3  # (boys turn right,
+blenv/bin/python portrait_teen.py -- $PWD/PrimaryBoy2.blend $PWD/PlayerPrimaryBoy2.png --yaw 28 --span-heads 2.3   #  girls left)
+blenv/bin/python portrait_teen.py -- $PWD/PrimaryGirl2.blend $PWD/PlayerPrimaryGirl2.png --yaw -28 --span-heads 2.3
+cp PlayerPrimary*.png ../../Assets/_Game/Resources/UI/
 blenv/bin/python sticker_art.py -- <kits dir> <cars dir> <teens dir> $PWD/stickers_raw   # the album's 23 sticker subjects
 python3 sticker_compose.py $PWD/stickers_raw $PWD/stickers                                # die-cut vinyl stickers (normal / holo / gold)
 cp stickers/L*.png ../../Assets/_Game/Resources/UI/Stickers/
@@ -59,7 +70,8 @@ The teens are built from modules on a shared `Part` contract (`teen_lib.py`): `t
 (joints, a sculpted body, bones, teen proportions: `lift` stretches the body, `head_scale`
 shrinks the head about the neck), `teen_outfit.py` (clothes, shoes, bags, the outfit colours),
 `teen_head.py` (the head and ears), `face_teen.py` (the painted face atlas) and `teen_hair.py`.
-`teen.py` colours, rigs, joins and exports them; the `.json` it writes holds the top, legwear,
+`teen.py` colours, rigs, joins and exports them (the steps live in `teen_build.py`, which the primary-school kids
+share); the `.json` it writes holds the top, legwear,
 accent (the tie) and hair colours, which the level builder gives `ModelOutfit` as its defaults.
 (`teen.py ... --fast` skips the head, hair and face atlas: for iterating on the clothes.) At the game's neck
 heights (1.5 and 1.43) the boy stands about 1.73 m and the girl about 1.65 m (hair included).
@@ -91,7 +103,8 @@ How the clothes survive the poses (what the pose audit below checks):
 
 `review_poses.py` renders a built teen (`Boy.blend` / `Girl.blend`) in every pose the game uses
 (`KidAnimator`, `MenuKid`: idle, the menu's balance, run at three phases, jump rise and fall, the
-double jump's tuck at 0/90/180/270 degrees of somersault, kick wind-up and contact, slide, landing,
+double jump's launch, tuck at 0/90/180/270 degrees of somersault and open-out, kick wind-up and contact,
+the slide's lunge and its settled lean, landing,
 celebrate, the menu's keepy-uppy foot and thigh touches; each asymmetric pose again with the other
 leg raised, "(L)") from the game's camera yaws, into one contact sheet. It poses the bones exactly
 as `CharacterRig` does (the game's angles in degrees about the side axis; a positive `lean` tips
@@ -115,6 +128,100 @@ teen both ways), `--body-only` removes the clothes to see what the skin does und
 from `KidAnimator.cs` / `MenuKid.cs`: when the game's poses change, change it too.
 
 Rendering previews with Eevee needs EGL (on Debian/Ubuntu: `libegl1 libegl-mesa0 libgl1-mesa-dri`).
+
+## Primary-school kids
+
+Four more playable characters in the same flat-shaded anime style (two cel bands, a thin dark ink line, a clear
+silhouette), younger and cuter than the teens and built by the same pipeline: about five heads tall (the teens
+are six and a half to seven), a big round head that is not scaled down, big eyes set low in a round face, a short
+neck, a round tummy, short limbs and small hands. They wear a Japanese elementary-school uniform: a short-sleeved
+white polo (boys) or blouse (girls), shorts (boys) or a skirt / a pinafore (girls) that end above the knee, white
+socks (long crew socks for the boys), shoes, and a hard rectangular school backpack (a *randoseru*: a box with a flap
+and a lock, on two wide straps) on the Bag bone, a different colour on each. No tie: the accent (outfit part 4) is a
+small neckerchief or a bow at the collar, a few separate little shells that share no vertex with the clothes, so
+a game mode can make them vanish by collapsing their vertices.
+
+| File | Who | Look | Shirt / legwear / accent / bag / hair |
+|---|---|---|---|
+| `PrimaryBoy` | boy 1 | fair skin, round dark eyes, short black hair with a broad fringe and a small tuft; a polo with a flat collar, navy shorts, long white crew socks, white sneakers | white / navy / yellow neckerchief / blue / black |
+| `PrimaryGirl` | girl 1 | fair skin with freckles, big warm-brown eyes, a centre-parted fringe and two bunches at the sides with red ties; a blouse with a round navy collar, a navy pleated skirt, white knee socks, brown school shoes | white / navy / red bow / red / dark brown |
+| `PrimaryBoy2` | boy 2 | tanned skin, tousled chestnut spikes, round glasses, a wide grin; a polo, grey shorts, white crew socks, grey sneakers | white / grey / red neckerchief / green / chestnut |
+| `PrimaryGirl2` | girl 2 | medium-brown skin with a beauty mark, hazel eyes, a black bob with a straight fringe and a yellow hairband; a blouse with a round white collar under a grey pinafore (bib and straps), white socks, black school shoes | white / grey / yellow bow / purple / black |
+
+The game scales every model so that its Head bone sits at the neck height it is given (`LevelBuildKit.BuildModelCharacter`;
+the teen boy's 1.5 stands 1.73 m, the girl's 1.43 stands 1.65 m), so only proportions matter. They are 5.2, 5.2, 4.9 (his
+spikes add 6 cm) and 5.1 heads tall counting the hair, and `primary_spec.HEIGHT` says how tall each should stand; a build
+prints the neck height that gives it:
+
+| File | Standing height (hair included) | Neck height to give the game | Triangles |
+|---|---|---|---|
+| `PrimaryBoy` | 1.30 m | 1.065 | 17,173 |
+| `PrimaryGirl` | 1.27 m | 1.038 | 16,918 |
+| `PrimaryBoy2` | 1.34 m | 1.082 | 18,559 |
+| `PrimaryGirl2` | 1.29 m | 1.051 | 17,099 |
+
+(The models are 1.685, 1.646, 1.784 and 1.694 m tall as exported, their Head bones at 1.38, 1.345, 1.44 and 1.38 m; neck
+height = Head bone height x standing height / model height. A single neck height of 1.05 would put all four at 1.28 to
+1.30 m, indistinguishable by height.)
+
+```
+blenv/bin/python primary.py -- $PWD/PrimaryBoy.fbx --boy        # PrimaryBoy.fbx/.blend/.json and PrimaryBoyAtlas.png
+blenv/bin/python primary.py -- $PWD/PrimaryGirl.fbx --girl      # (--boy2, --girl2 for the others; --fast skips head and hair)
+blenv/bin/python review_teen.py -- $PWD/PrimaryBoy.blend $PWD/boy_sheet.png --face-dz 0.07 --face-scale 0.5
+blenv/bin/python review_poses.py -- $PWD/PrimaryBoy.blend $PWD/pboy_poses.png --jobs 3 --leaks
+blenv/bin/python portrait_teen.py -- $PWD/PrimaryBoy.blend $PWD/PlayerPrimaryBoy.png --yaw 28 --span-heads 2.3
+```
+
+How they reuse the teen pipeline instead of copying it:
+- `primary_spec.py` is the table of who they are (palette, proportions, garment, accent, hair style, face); `make(name)` returns
+  a `teen_lib.Variant`. A Variant stands in for the teens' `girl` flag (it is truthy for the girls, hashes by identity), so the
+  teen modules' signed-distance primitives, polygoniser, binders, collars and skirt run unchanged; the few teen functions
+  that hold the teens' own numbers (`lift`, `head_scale`, `tj`, `field`, `fields`, `cover`, `palette`, the face, hair and
+  head builders, `build_body`'s budgets) hand a Variant on to the matching `primary_<what>` module. The teens' output is
+  unchanged by it (checked by hashing the rebuilt meshes, weights and bones against the old ones).
+- `teen_build.py` holds the steps both entry points share (colour, grow, rig, weight, join, export); `teen.py` and `primary.py`
+  just say what to build.
+- `primary_body.py`: the body field (a rounder torso, small hands, short legs; everything above the hips hangs from the neck joint,
+  so a taller kid only has longer legs). `primary_head.py`: the head shape (full cheeks, short lower face, small round chin) and
+  the glasses. `primary_face.py`: the four faces (bigger, lower, rounder eyes; each with its own character) painted into each
+  kid's own 2048 atlas like the teens'. `primary_hair.py`: the four styles on the teens' cap-and-locks machinery, 2.5 to 4.2
+  thousand triangles each (a crop, twin bunches, radial spikes, a bob with a hairband). `primary_outfit.py`: the clothes,
+  shoes, randoseru and accents.
+- The primary kids' limbs are about three quarters of a teen's: `Variant.k` scales the widths of the teens' skin-weight blends
+  (knees, hips, armpits, skirt) by it (`teen_outfit.ksc`).
+
+What is specific to them:
+- Boys' shorts are a loose A-line tube round each thigh (the two hems never touch), cut above the knee: the hem sits where the thigh
+  still moves as one piece, so it follows the thigh with the teens' analytic leg weights (the cloth and the skin under it
+  take the same weights) and a bent knee below it is bare skin. The hands hang beside the hips, so the body field blends arms into
+  the torso only up to the armpit (a hand beside a hip is never webbed to it) and `cover` does not count them as covered.
+- Girl 1's skirt is the teens' pleated skirt (`teen_outfit._skirt`, which now takes its measures from a dict) with six pleats a
+  side; girl 2's pinafore is the same skirt with five, from a high waist, plus a bib and two ribbon straps that lie on the
+  body's surface (all in the legwear colour, part 2).
+- The neckline is a wide ellipse on the slope of the shoulders under a flat collar that lies round it (`teen_outfit._shirt_collar`
+  with a scale; 'point' for the boys' polo, 'round' for the girls' blouse); the neck is a short thick child's neck.
+- The backpack is a rounded box (the Bag bone's head is at its top edge, as on the teen girl) with a flap, a lock and
+  two straps that follow the ribcage (`primary_outfit.bind_torso`); girl 2's lie over the pinafore.
+
+What the game needs to use them (nothing of this is wired up yet: the picker, `CharacterChoice` and `ArtBaker` know only the
+teens): the same model contract as `Boy` / `Girl`, so `LevelBuildKit.BuildModelCharacter(parent, "PrimaryBoy", material,
+neckHeight, TeenFeet(neckHeight), true)` with the neck heights above, a `CharacterMaterial("PrimaryBoy", toonCharacter,
+"PrimaryBoyAtlas", true)` for each (every kid has its own atlas), `ReadOutfitColors` finds the `.json` by file name, and
+the cards are `UI/PlayerPrimaryBoy`, `PlayerPrimaryGirl`, `PlayerPrimaryBoy2`, `PlayerPrimaryGirl2` (512 px, drawn like
+`PlayerBoy`). The Bag bone's head is at the top edge of the randoseru, so the shop's pennant clips on as it does on the
+teen girl's backpack; `Chest` is not used (that is the teen boy's satchel).
+
+Pose audit (the table in `review_poses.py` is checked against `KidAnimator.cs` / `MenuKid.cs`, with the double jump's launch,
+tuck and open-out and the slide's lunge). All four kids were run through it in every pose from three yaws (105 cells each,
+`--leaks`) and no bare-skin sliver shows under any garment in any pose. The leak maps hold only what is there at rest: a thin ring of
+covered neck skin under the collar, the sock cuffs and the shoe collars (an idle cell has 80 to 160 px of magenta, the
+largest count in any cell of any kid is 168 px), and with a raised thigh a few pixels in the crease where a short leg meets
+the hip, which render in the cloth's colour. What it still shows:
+- The girls' skirts: with a thigh raised past about 60 degrees (run knee-up and stride, jump rise, the kicks, the keepy-uppy
+  thigh) the hem on that side rides up in a diagonal notch and the knee comes out through the front opening, covered skin
+  in the skirt's colour (as on the teen girl: it is the same skirt); the double jump's tuck bunches the skirt round the knees.
+- The boys' shorts: a few-pixel crease at the hip when a leg is lifted, and the hem's edge is a little uneven (its
+  rounded rim is shaded per face) when seen from very close.
 
 ## Cars
 
