@@ -1,0 +1,142 @@
+# Builds one character in Blender from the teen modules: the two playable teens (teen.py) and the
+# primary-school kids (primary.py) go through the same steps, only `girl` differs (a bool for the
+# teens, a teen_lib.Variant for the kids):
+#   body, clothes, head, hair  ->  vertex colours, atlas UVs, outfit part ids  ->  proportions
+#   ->  armature and weights  ->  one skinned mesh with one material  ->  <Name>.fbx, .blend, .json
+# Writes <Name>.fbx, <Name>.blend, <Name>Atlas.png (the painted face atlas) and <Name>.json (the
+# default outfit colours the game recolours from) next to the .fbx.
+import bpy, sys, os, json
+from mathutils import Vector, Matrix
+import numpy as np
+import teen_lib, teen_body, teen_outfit, teen_head, teen_hair, face_teen
+from teen_lib import C, activate, WHITE_UV
+
+
+def srgb(rgb):
+    return [round(12.92 * c if c <= 0.0031308 else 1.055 * c ** (1 / 2.4) - 0.055, 4) for c in rgb[:3]]
+
+
+def limit_influences(o, n=4):
+    """Keeps each vertex's n strongest bone weights (renormalised): Unity skins with four bones, and what it would cut
+    is then decided here, not by whatever order the importer happens to see them in."""
+    me = o.data; cut = 0
+    for v in me.vertices:
+        gs = [(g.weight, g.group) for g in v.groups]
+        if len(gs) <= n: continue
+        gs.sort(reverse=True)
+        keep = gs[:n]; tot = sum(w for w, _ in keep)
+        for w, gi in gs[n:]: o.vertex_groups[gi].remove([v.index])
+        for w, gi in keep: o.vertex_groups[gi].add([v.index], w / tot, 'REPLACE')
+        cut += 1
+    return cut
+
+
+def build(OUT, GIRL, NAME, FAST=False):
+    """OUT: the absolute .fbx path. GIRL: True / False for the teens, a Variant for the others.
+    NAME: the character's file stem. FAST skips the head, hair and face atlas (for iterating on
+    the clothes)."""
+    bpy.ops.wm.read_factory_settings(use_empty=True)
+    ATLAS = os.path.join(os.path.dirname(OUT), NAME + 'Atlas.png')
+    if not (FAST and os.path.exists(ATLAS)): face_teen.paint(ATLAS, GIRL)
+
+    # ---------------- build ----------------
+    body = teen_body.build_body(GIRL)
+    pal = teen_outfit.palette(GIRL)
+    parts = [teen_outfit.skin_part(GIRL, body)]
+    parts += teen_outfit.build_outfit(GIRL, body)
+    if not FAST:
+        parts += teen_head.build_head(GIRL, pal['skin'])
+        parts += teen_hair.build_hair(GIRL)
+
+    # ---------------- colours, UVs, part ids ----------------
+    def colorize(p):
+        o = p.obj; me = o.data
+        if not me.color_attributes: me.color_attributes.new('Col', 'BYTE_COLOR', 'CORNER')
+        col = me.color_attributes['Col']
+        while len(me.uv_layers) < 2: me.uv_layers.new()
+        uv0, uv1 = me.uv_layers[0], me.uv_layers[1]
+        mw = o.matrix_world
+        for poly in me.polygons:
+            cen = mw @ poly.center
+            for li in poly.loop_indices:
+                co = mw @ me.vertices[me.loops[li].vertex_index].co
+                c = p.color(co, cen) if callable(p.color) else p.color
+                col.data[li].color = c
+                uv0.data[li].uv = p.uv(co) if p.uv else WHITE_UV
+                uv1.data[li].uv = (p.part(co, cen) if callable(p.part) else p.part, 0)
+    for p in parts: colorize(p)
+    print('head/hair tris', ', '.join('%s %d' % (p.obj.name, sum(len(f.vertices) - 2 for f in p.obj.data.polygons)) for p in parts if p.bind == 'Head'))
+
+    # ---------------- proportions ----------------
+    for p in parts:
+        o = p.obj; me = o.data
+        V = np.empty(len(me.vertices) * 3); me.vertices.foreach_get('co', V); V = V.reshape(-1, 3)
+        M = np.array(o.matrix_world)
+        V = V @ M[:3, :3].T + M[:3, 3]
+        me.vertices.foreach_set('co', teen_body.grow_np(V, GIRL).ravel()); me.update()
+        o.matrix_world = Matrix()
+
+    # ---------------- armature ----------------
+    arm = bpy.data.armatures.new('Rig'); rig = teen_lib.new_obj('KidRig', arm); activate(rig); bpy.ops.object.mode_set(mode='EDIT')
+    eb = arm.edit_bones
+    def bone(n, h, t, parent=None):
+        b = eb.new(n); b.head = teen_body.grow(Vector(h), GIRL); b.tail = teen_body.grow(Vector(t), GIRL)
+        if parent: b.parent = eb[parent]
+        return b
+    for n, h, t, parent in teen_body.bones(GIRL): bone(n, h, t, parent)
+    bh, bt = teen_outfit.bag_bone(GIRL)
+    bone('Bag', bh, bt, 'Hips')
+    # A marker in front of the face (no weights) so the game can tell which way the model faces.
+    bone('Nose', (0, -0.2, 1.42), (0, -0.26, 1.42), 'Head')
+    for b in eb: b.roll = 0
+    bpy.ops.object.mode_set(mode='OBJECT')
+
+    # Body weights from bone heat; clothes copy the body's weights; the rest follows one bone.
+    activate(body); rig.select_set(True); C.view_layer.objects.active = rig
+    bpy.ops.object.parent_set(type='ARMATURE_AUTO')
+    teen_outfit.refine_body_weights(body, GIRL)    # the wide knee blend, and the trousers' own weights on the skin under them
+    def rigid(o, bname):
+        vg = o.vertex_groups.new(name=bname); vg.add(range(len(o.data.vertices)), 1.0, 'REPLACE')
+        o.parent = rig; m = o.modifiers.new('arm', 'ARMATURE'); m.object = rig
+    def transfer(o):
+        m = o.modifiers.new('dt', 'DATA_TRANSFER'); m.object = body; m.use_vert_data = True; m.data_types_verts = {'VGROUP_WEIGHTS'}
+        m.vert_mapping = 'POLYINTERP_NEAREST'; m.layers_vgroup_select_src = 'ALL'; m.layers_vgroup_select_dst = 'NAME'
+        activate(o); bpy.ops.object.datalayout_transfer(modifier=m.name); bpy.ops.object.modifier_apply(modifier=m.name)
+        o.parent = rig; a = o.modifiers.new('arm', 'ARMATURE'); a.object = rig
+    for p in parts[1:]:
+        if p.bind == 'transfer': transfer(p.obj)
+        elif callable(p.bind): p.bind(p.obj, rig)      # custom weights (e.g. a skirt that follows the legs)
+        else: rigid(p.obj, p.bind)
+
+    # Join everything into one skinned mesh with the atlas material.
+    mat = bpy.data.materials.new('Kid'); mat.use_nodes = True
+    nt = mat.node_tree; bsdf = nt.nodes['Principled BSDF']; tex = nt.nodes.new('ShaderNodeTexImage'); tex.image = bpy.data.images.load(ATLAS)
+    vc = nt.nodes.new('ShaderNodeVertexColor'); mul = nt.nodes.new('ShaderNodeMix'); mul.data_type = 'RGBA'; mul.blend_type = 'MULTIPLY'; mul.inputs['Factor'].default_value = 1
+    nt.links.new(tex.outputs['Color'], mul.inputs['A']); nt.links.new(vc.outputs['Color'], mul.inputs['B']); nt.links.new(mul.outputs['Result'], bsdf.inputs['Base Color'])
+    objs = [p.obj for p in parts]
+    for o in objs:
+        o.data.materials.clear(); o.data.materials.append(mat)
+    for x in C.scene.objects: x.select_set(False)
+    for o in objs: o.select_set(True)
+    C.view_layer.objects.active = body; bpy.ops.object.join(); kid = C.object; kid.name = 'Kid'
+    mods = [m for m in kid.modifiers if m.type == 'ARMATURE']
+    for m in mods[1:]: kid.modifiers.remove(m)
+    mods[0].object = rig
+    if teen_lib.is_variant(GIRL): print('vertices cut to four bone influences:', limit_influences(kid, 4))    # (the teens' files stay as they are)
+    tris = sum(len(p.vertices) - 2 for p in kid.data.polygons)
+    print('verts', len(kid.data.vertices), 'tris', tris)
+    bpy.ops.wm.save_as_mainfile(filepath=OUT.replace('.fbx', '.blend'))
+    for x in C.scene.objects: x.select_set(False)
+    kid.select_set(True); rig.select_set(True)
+    bpy.ops.export_scene.fbx(filepath=OUT, use_selection=True, apply_scale_options='FBX_SCALE_ALL', add_leaf_bones=False,
+        bake_anim=False, mesh_smooth_type='FACE', use_mesh_modifiers=True, axis_forward='-Z', axis_up='Y', primary_bone_axis='Y', secondary_bone_axis='X', path_mode='STRIP')
+    hair = teen_hair.hair_colors(GIRL)[0]
+    # The palette is in Blender's linear space, but the byte vertex colours (and so the FBX, and Unity's
+    # mesh.colors) hold it sRGB-encoded: write it that way so the game's recolour compares like with like.
+    with open(OUT.replace('.fbx', '.json'), 'w') as f:
+        json.dump({'top': srgb(pal['top']), 'legwear': srgb(pal['legwear']), 'accent': srgb(pal['accent']), 'hair': srgb(hair), 'tris': tris}, f)
+    V = np.empty(len(kid.data.vertices) * 3); kid.data.vertices.foreach_get('co', V); V = V.reshape(-1, 3)
+    height, head_z = float(V[:, 2].max() - V[:, 2].min()), float(rig.data.bones['Head'].head_local.z)
+    # (the game scales a model so that its Head bone sits at the neck height it is given: neck height = head_z * wanted height / height)
+    print('exported; standing height %.4f (hair included), Head bone at %.4f' % (height, head_z))
+    return {'tris': tris, 'height': height, 'head_z': head_z}

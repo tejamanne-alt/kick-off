@@ -397,6 +397,8 @@ def _ear_art(atlas, skin):
 
 
 def paint(path, girl):
+    from teen_lib import Variant
+    if isinstance(girl, Variant): return girl.mod('face').paint(path, girl)
     skin = skin_rgb(girl)
     sp = _spec(girl)
     pp = Painter(skin)
