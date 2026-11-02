@@ -78,6 +78,7 @@ namespace DribbleToSchool.EditorTools
             Circle = LoadOrCreateSprite(ArtDir + "/Circle.png", 128, true);
             ballTuning = LoadOrCreateAsset<BallTuning>(SettingsDir + "/BallTuning.asset");
             playerTuning = LoadOrCreateAsset<PlayerTuning>(SettingsDir + "/PlayerTuning.asset");
+            CheckJumpTuning();
             GroundMat = LoadOrCreateMaterial(PhysicsDir + "/Ground.physicsMaterial2D", 0.6f, 0f);
             BouncyMat = LoadOrCreateMaterial(PhysicsDir + "/Bouncy.physicsMaterial2D", 0.2f, 0.9f);
             kidMat = LoadOrCreateMaterial(PhysicsDir + "/Kid.physicsMaterial2D", 0f, 0f);
@@ -149,6 +150,7 @@ namespace DribbleToSchool.EditorTools
             input.worldCamera = cam;
 
             var track = new TrackBuilder(new GameObject("Level").transform);
+            track.AuditName = "Level " + Path.GetFileNameWithoutExtension(scenePath);
             layout(track);
             track.Finish();
             if (track.StartCheckpoint == null) throw new InvalidOperationException("Layout must call Start().");
@@ -880,6 +882,7 @@ namespace DribbleToSchool.EditorTools
             {
                 float depth = FillDepth(top);
                 LowestGroundTop = Mathf.Min(LowestGroundTop, top);
+                Audit.AddSpan(fromX, toX, top);
                 groundSpans.Add(new GroundSpan { from = Mathf.Min(fromX, toX), to = Mathf.Max(fromX, toX), top = top });
                 sand = null;
                 Block("Ground", new Vector2((fromX + toX) * 0.5f, top - depth * 0.5f), new Vector2(toX - fromX, depth), GroundColor, GroundMat, false);
@@ -905,6 +908,7 @@ namespace DribbleToSchool.EditorTools
                 // pipe, or a rain-flooded trench) marked with cones and a barrier; on the beach it
                 // is a washed-out channel or a tidal stream across the sand.
                 bool beach = Chapter == 3;
+                Audit.AddHole(fromX, toX, top, name);
                 float cx = (fromX + toX) * 0.5f, w = toX - fromX, lane = StreetBuilder.PathHalf * 2f;
                 if (beach)
                 {
@@ -1103,6 +1107,7 @@ namespace DribbleToSchool.EditorTools
             {
                 // Colliders only; the 3D car covers them.
                 // A small city car about 3.4 units (3 m) long: bonnet at 0.95, roof at 1.55, both jumpable.
+                Audit.AddWall(x, 3.3f, 1.55f, "parked car");
                 Block("CarBody", new Vector2(x, groundTop + 0.575f), new Vector2(3.3f, 0.75f), color, GroundMat, false);
                 Block("CarCabin", new Vector2(x - 0.17f, groundTop + 1.25f), new Vector2(1.9f, 0.6f), color, GroundMat, false);
                 Car(root, "Car", new Vector3(x, groundTop, 0.15f), 0f, Faded(color), "Hatch");
@@ -1462,6 +1467,7 @@ namespace DribbleToSchool.EditorTools
             /// </summary>
             public void MovingPlatform(Vector2 center, float width, Vector2 travel, float speed = 1.5f)
             {
+                Audit.AddSliding(center.x, center.y, width, travel.x, travel.y);
                 var go = Block("MovingPlatform", center, new Vector2(width, 0.35f), PlatformColor, GroundMat, false);
                 var body = go.AddComponent<Rigidbody2D>();
                 body.bodyType = RigidbodyType2D.Kinematic;
@@ -1936,6 +1942,7 @@ namespace DribbleToSchool.EditorTools
             /// <summary>A dark tunnel with a ceiling: darkens the screen around the kid while inside.</summary>
             public void Tunnel(float fromX, float toX, float groundTop = 0f, float height = 3.3f)
             {
+                Audit.AddRoof(fromX, toX, height);
                 float center = (fromX + toX) * 0.5f;
                 float width = toX - fromX;
                 // An underpass: a back wall and a deep concrete deck over the street (the Works kit's
@@ -2019,6 +2026,7 @@ namespace DribbleToSchool.EditorTools
             /// <summary>A swing seat hanging from <paramref name="pivot"/>.</summary>
             public void Swing(Vector2 pivot, float ropeLength, float amplitude = 35f, float period = 3f, float phaseOffset = 0f)
             {
+                Audit.AddSwing(pivot.x, pivot.y, ropeLength, amplitude);
                 Color wood = new Color(0.55f, 0.4f, 0.3f);
                 float ground = GroundTopUnder(pivot.x, pivot.y);
                 if (SwingModel(pivot, ground))
@@ -2315,6 +2323,7 @@ namespace DribbleToSchool.EditorTools
             /// <summary>A springy pad flush with the ground that launches the kid and the ball upward.</summary>
             public void Springboard(float x, float groundTop = 0f)
             {
+                Audit.AddPad(x, groundTop);
                 var go = new GameObject("Springboard");
                 go.transform.SetParent(root, false);
                 go.transform.position = new Vector2(x, groundTop + 0.2f);
@@ -2342,6 +2351,7 @@ namespace DribbleToSchool.EditorTools
             /// <summary>Three crates in a little pyramid standing on <paramref name="groundTop"/>.</summary>
             public void CrateStack(float x, float groundTop = 0f)
             {
+                Audit.AddWall(x + 0.36f, 1.42f, 1.42f, "crate stack");
                 Crate(x, groundTop + 0.35f);
                 Crate(x + 0.72f, groundTop + 0.35f);
                 Crate(x + 0.36f, groundTop + 1.07f);
@@ -2350,6 +2360,7 @@ namespace DribbleToSchool.EditorTools
             /// <summary>A sloped surface whose top runs from point a to point b.</summary>
             public void Ramp(Vector2 a, Vector2 b)
             {
+                Audit.AddRamp(a.x, a.y, b.x, b.y);
                 if (a.x > b.x) { Vector2 t = a; a = b; b = t; }
                 const float thickness = 0.4f;
                 Vector2 along = b - a;
@@ -2363,6 +2374,7 @@ namespace DribbleToSchool.EditorTools
             /// <summary>A short obstacle: jump it, chip the ball over. Drawn as something that really stands on a footpath.</summary>
             public void Wall(float x, float height, float groundTop = 0f, float width = 0.4f)
             {
+                Audit.AddWall(x, width, height, "wall");
                 Obstacle("Wall", new Vector2(x, groundTop + height * 0.5f), new Vector2(width, height));
             }
 
@@ -2578,6 +2590,7 @@ namespace DribbleToSchool.EditorTools
             public void SlideUnder(float x, SlideLook look, float groundTop = 0f)
             {
                 string model = look.ToString();
+                Audit.AddBarrier(x, HolidayPatterns.SlideLengthAny(model), SlideGap, model);
                 var spec = Spec(look);
                 if (!HasKitModel("Barriers", model))
                 {
@@ -3076,6 +3089,7 @@ namespace DribbleToSchool.EditorTools
             /// <summary>A raised slab standing on the ground.</summary>
             public void Platform(float fromX, float toX, float top, float groundTop = 0f)
             {
+                Audit.AddLedge(fromX, toX, top, groundTop);
                 bool beach = Chapter == 3;
                 Block("Platform", new Vector2((fromX + toX) * 0.5f, (top + groundTop) * 0.5f),
                     new Vector2(toX - fromX, top - groundTop), PlatformColor, GroundMat, !beach);
@@ -3107,6 +3121,8 @@ namespace DribbleToSchool.EditorTools
             /// <summary>Hop onto a step, stop, chip the ball over the high wall behind it.</summary>
             public void StepAndHighWall(float x, float groundTop = 0f)
             {
+                Audit.AddWall(x, 2f, 0.8f, "step");
+                Audit.AddWall(x + 1.25f, 0.5f, 1.0f, "high wall (1.8 m, seen from the 0.8 m step)");
                 Obstacle("Step", new Vector2(x, groundTop + 0.4f), new Vector2(2f, 0.8f));
                 Obstacle("HighWall", new Vector2(x + 1.25f, groundTop + 0.9f), new Vector2(0.5f, 1.8f));
             }
@@ -3358,6 +3374,7 @@ namespace DribbleToSchool.EditorTools
             {
                 foreach (var pending in pendingSigns) PlantSign(pending.sign, pending.boardSize);
                 pendingSigns.Clear();
+                ReportFeasibility();
                 BuildStreetSlabs();
             }
 
