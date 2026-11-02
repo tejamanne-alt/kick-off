@@ -230,7 +230,11 @@ namespace DribbleToSchool.EditorTools
             {
                 var layout = new GameObject("Layout_" + (char)('A' + v));
                 layout.transform.SetParent(stage.transform, false);
-                BuildLayout(new TrackBuilder(layout.transform), plan.layouts[v], i);
+                var layoutBuilder = new TrackBuilder(layout.transform);
+                layoutBuilder.AuditName = "Holiday Run stage " + (i + 1) + " (" + st.levelId + ") layout " + (char)('A' + v);
+                BuildLayout(layoutBuilder, plan.layouts[v], i);
+                // The layout's walls, barriers and trampolines against what the kid can do (the stage's own builder checked its ground and gaps).
+                layoutBuilder.ReportFeasibility();
                 layouts[v] = layout;
                 layout.SetActive(false);
             }

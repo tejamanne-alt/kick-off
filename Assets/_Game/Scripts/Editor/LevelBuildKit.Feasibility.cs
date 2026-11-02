@@ -54,7 +54,7 @@ namespace DribbleToSchool.EditorTools
             /// Logs a warning for every hole, step, wall, barrier or roof that the kid cannot get past (see JumpReach for what they can do):
             /// the build-time check that a level is still possible after its layout (or the kid's jump) has been changed.
             /// </summary>
-            void ReportFeasibility()
+            public void ReportFeasibility()
             {
                 var notes = new List<string>();
                 foreach (string problem in Audit.Check(notes))

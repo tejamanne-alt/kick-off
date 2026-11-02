@@ -1245,9 +1245,8 @@ namespace DribbleToSchool.EditorTools
                     case PatternKind.Crate:
                     {
                         float c = (i.x0 + i.x1) * 0.5f;
+                        // (A kid who climbs a broad one and stands on it still reaches the arc: its coins hang within the body.)
                         PathCoins(coins, c - singleApexX, JumpReach.JumpKind.Single, 5, 0.6f, 0, i.kind == PatternKind.Hop ? 0.8f : 1f);
-                        // On top of a broad one: a reward for climbing it.
-                        if (i.kind == PatternKind.Mid && i.w >= 1.2f) { coins.Add(MakeCoin(c - 0.3f, i.h + 0.7f, 0)); coins.Add(MakeCoin(c + 0.3f, i.h + 0.7f, 0)); }
                         arcZones.Add(new[] { i.x0 - 1.5f, i.x1 + 1.5f });
                         break;
                     }
