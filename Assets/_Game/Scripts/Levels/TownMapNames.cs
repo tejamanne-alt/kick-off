@@ -22,9 +22,10 @@ namespace DribbleToSchool.Levels
     /// <summary>
     /// The level names on the town map, placed where they fit (docs/WORLD_MAP.md, "The map screen"). Only the focused route's
     /// levels are named. Each name goes beside its node on the side the layout prefers, else on one of eight spots round it
-    /// (below, above, right, left, the sides also slid a little along, and the four corners), on two lines if that helps, and
-    /// one font size smaller as a last resort. It never covers its own route's nodes and stars, the pins, the names already
-    /// placed or the screen's other texts, and preferably not the other routes' nodes (drawn smaller then). Sizes come from the
+    /// (below, above, right, left, the sides also slid a little along, and the four corners), on two lines if that helps (broken
+    /// so that no line is wider than 380, 300 or 200 px), and one font size smaller as a last resort. It never covers its own
+    /// route's nodes and stars, the pins, the names already placed or the screen's other texts, keeps 30 px from other names
+    /// where it can, and preferably keeps off the other routes' nodes (drawn smaller then). Sizes come from the
     /// label font's own advances (Lilita One, the face UIKit draws bold labels in), so the screen and the tests agree.
     /// </summary>
     public static class TownMapNames
@@ -196,8 +197,9 @@ namespace DribbleToSchool.Levels
             var own = new HashSet<string>(ids);
             var placed = new List<Rect>();
             Rect core = TownMap.Core;
-            var variants = new[] { new KeyValuePair<int, float>(FontSize, OneLineMax), new KeyValuePair<int, float>(FontSize, 300f),
-                                   new KeyValuePair<int, float>(SmallFontSize, OneLineMax), new KeyValuePair<int, float>(SmallFontSize, 300f) };
+            // Wider first, then broken at narrower widths (two short lines fit between nodes where one long one does not), then smaller.
+            var variants = new[] { new KeyValuePair<int, float>(FontSize, OneLineMax), new KeyValuePair<int, float>(FontSize, 300f), new KeyValuePair<int, float>(FontSize, 200f),
+                                   new KeyValuePair<int, float>(SmallFontSize, OneLineMax), new KeyValuePair<int, float>(SmallFontSize, 300f), new KeyValuePair<int, float>(SmallFontSize, 200f) };
             foreach (string id in ids)
             {
                 var node = TownMap.Node(id);
