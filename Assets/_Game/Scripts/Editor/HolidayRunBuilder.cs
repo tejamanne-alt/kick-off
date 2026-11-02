@@ -75,6 +75,17 @@ namespace DribbleToSchool.EditorTools
             {
                 EditorUtility.ClearProgressBar();
             }
+            // Open what was saved again and make sure every component's script is found: a scene saved with one that is
+            // not cannot be loaded by a player (it stops with 'The file ... is corrupted!'). Reported here, in the editor.
+            try
+            {
+                int missing = SceneScriptCheck.Check(ScenePaths());
+                if (missing > 0) Debug.LogError("[Kick Off] The Holiday Run's scenes have " + missing + " components with a missing script: a build would not load them (see the errors above).");
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning("[Kick Off] Couldn't check the Holiday Run's scenes for missing scripts: " + e.Message);
+            }
             return ScenePaths();
         }
 
