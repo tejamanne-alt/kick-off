@@ -36,13 +36,14 @@ Ready (GET READY ... GO!) -> Running -> last ball lost -> Results -> Revive (coi
 ```
 
 - **Balls.** A run starts with 3 balls (`ballsPerRun`; 0 = unlimited). Losing the ball (into a pit or the
-  water, off the street, left too far behind, or "Stuck? Back to checkpoint" from the pause menu) costs one
+  water, off the street, left too far behind, or "Back to checkpoint" from the pause menu (for a stuck ball)) costs one
   and sends the kid back to the last checkpoint with the ball, as in a level; the last one ends the run. The
   balls left are the little footballs under the score card. A new day gives back at least two.
 - **Checkpoints.** Every stage has one, on the clear ground at its start; it is reached when the kid passes it
   with the ball close by. Stages load and unload as you go, so the checkpoints come and go with them.
 - **No walking back into the past.** Streets far behind are gone, so an invisible wall follows the furthest
-  point reached, 40 m behind (`walkBackLimit`). The ball passes through it.
+  point reached, 40 m behind (`walkBackLimit`), and never ahead of the checkpoint a lost ball goes back to, so the
+  kid can't be put down behind it. The ball passes through it.
 - **Revive.** Spend coins (40, then 80, then 120; at most three times a run) to carry on with one more ball
   from the last checkpoint, with a moment of shield. The coins you collected in the run count: they are banked
   as soon as the run ends.
@@ -256,7 +257,7 @@ opened or played, and no NUnit test has been run in the Test Runner. First thing
    drag the Kid object far along x in the Scene view while playing): the fade, the second day (the DAY 2 splash), no
    stage from day 1 left standing, the kid and the ball back at the front door.
 5. Lose the ball on purpose (walk into a pit, or leave it behind): you come back at the checkpoint with the ball,
-   a football under the score card goes dim, and "Stuck? Back to checkpoint" in the pause menu does the same. Lose
+   a football under the score card goes dim, and "Back to checkpoint" in the pause menu does the same. Lose
    the third: the results, revive (it is paid with the coins you just collected), run again, quit to the menu from
    the pause menu (the coins are kept). Walk back past the wall 40 m behind the furthest point: it stops you.
 6. Kick hard at a crate and a sandcastle (they smash for coins); collect each power-up; check the missions after a run.

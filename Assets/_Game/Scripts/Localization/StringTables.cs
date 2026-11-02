@@ -164,7 +164,7 @@ namespace DribbleToSchool.Localization
                 { "results.retry", "Retry" }, { "results.map", "Map" }, { "results.next", "Next" }, { "results.finish", "Finish" },
 
                 // Holiday Run (the endless mode): the screen, the messages the director sends, the pause and results menus
-                { "holiday.getReady", "Get ready" }, { "holiday.oops", "OOPS!" }, { "holiday.lose.balls", "That was your last ball!" }, { "holiday.pause.checkpoint", "Stuck? Back to checkpoint" },
+                { "holiday.getReady", "Get ready" }, { "holiday.oops", "OOPS!" }, { "holiday.lose.balls", "That was your last ball!" }, { "holiday.pause.checkpoint", "Back to checkpoint" },
                 { "holiday.ballsLeft", "{0} balls left" }, { "holiday.lastBall", "Last ball!" },
                 { "holiday.tip.walk", "Hold the arrows to dribble ahead" }, { "holiday.tip.jump", "JUMP and SLIDE to get past things" }, { "holiday.tip.kick", "Drag from KICK to aim a shot" },
                 { "holiday.stage", "STAGE {0}" }, { "holiday.day", "DAY {0}" }, { "holiday.chapterN", "CHAPTER {0}" },
@@ -368,7 +368,7 @@ namespace DribbleToSchool.Localization
                 { "results.newSticker", "¡Pegatina nueva para el álbum!" }, { "results.oldSticker", "Pegatina repetida" },
                 { "results.retry", "Repetir" }, { "results.map", "Mapa" }, { "results.next", "Siguiente" }, { "results.finish", "Fin" },
 
-                { "holiday.getReady", "Prepárate" }, { "holiday.oops", "¡UPS!" }, { "holiday.lose.balls", "¡Fue tu último balón!" }, { "holiday.pause.checkpoint", "¿Atascado? Volver al control" },
+                { "holiday.getReady", "Prepárate" }, { "holiday.oops", "¡UPS!" }, { "holiday.lose.balls", "¡Fue tu último balón!" }, { "holiday.pause.checkpoint", "Volver al control" },
                 { "holiday.ballsLeft", "Quedan {0} balones" }, { "holiday.lastBall", "¡Último balón!" },
                 { "holiday.tip.walk", "Mantén las flechas para regatear" }, { "holiday.tip.jump", "SALTA y DESLIZA para pasar" }, { "holiday.tip.kick", "Arrastra desde CHUTA para apuntar" },
                 { "holiday.stage", "ETAPA {0}" }, { "holiday.day", "DÍA {0}" }, { "holiday.chapterN", "CAPÍTULO {0}" },

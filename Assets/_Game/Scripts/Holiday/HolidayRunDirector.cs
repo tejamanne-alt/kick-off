@@ -146,6 +146,7 @@ namespace DribbleToSchool.Holiday
 
         static readonly Color Gold = new Color(1f, 0.82f, 0.2f);
         static readonly Color Mint = new Color(0.55f, 1f, 0.7f);
+        static readonly Color Late = new Color(0.95f, 0.4f, 0.35f);
 
         /// <summary>The tutorial-hint id that remembers the how-to-play tips were shown (cleared by Reset progress).</summary>
         public const string FirstRunTipId = "holiday";
@@ -409,7 +410,8 @@ namespace DribbleToSchool.Holiday
 
         /// <summary>
         /// A wall that stops the kid walking back into the street that has already gone: it follows
-        /// the furthest point reached, <see cref="walkBackLimit"/> metres behind (the ball passes through).
+        /// the furthest point reached, <see cref="walkBackLimit"/> metres behind, but never ahead of the checkpoint
+        /// a lost ball goes back to (the ball passes through).
         /// </summary>
         void BuildBackWall()
         {
@@ -432,7 +434,10 @@ namespace DribbleToSchool.Holiday
         void UpdateBackWall()
         {
             if (backWall == null || walkBackLimit <= 0f) return;
-            wallX = Mathf.Max(wallX, furthestX - walkBackLimit);
+            float limit = furthestX - walkBackLimit;
+            // Never ahead of the checkpoint a lost ball goes back to: the kid would be put down behind the wall.
+            if (level.ActiveCheckpoint != null) limit = Mathf.Min(limit, level.ActiveCheckpoint.transform.position.x - 2f);
+            wallX = Mathf.Max(wallX, limit);
             backWall.position = new Vector3(wallX - 0.5f, 0f, 0f);
         }
 
@@ -610,6 +615,8 @@ namespace DribbleToSchool.Holiday
         {
             if (Phase != RunPhase.Running) return;
             streak = 0;
+            // What happened, as in a level ("Into the hole!", "Splash!").
+            if (Toast != null) Toast(Loc.T(reason), Late);
             if (ShieldLeft > 0f)
             {
                 ShieldLeft = 0f;

@@ -147,6 +147,7 @@ namespace DribbleToSchool.Holiday
 
         int shownScore = -1, shownMetres = -1, shownCoins = -1, shownCombo, shownBest = -1, shownStage = -1, shownDay = -1, chipMask = -1, lastScore;
         float displayedScore, nextScoreText, lastFade = -1f, lastBarTop = -1f, lastMarker = -1f;
+        bool lastFadeDark;
         float stripWidth;
         int shownScreenWidth, shownScreenHeight;
         Rect shownSafeArea;
@@ -1157,12 +1158,17 @@ namespace DribbleToSchool.Holiday
             }
         }
 
+        /// <summary>White across the day change; dark for the moment a lost ball goes back to the checkpoint (as in a level).</summary>
         void UpdateFade()
         {
-            float amount = Mathf.Clamp01(director.Fade);
-            if (Mathf.Abs(amount - lastFade) < 0.002f) return;
+            float white = Mathf.Clamp01(director.Fade);
+            float dark = director.level != null ? Mathf.Clamp01(director.level.FadeAmount) : 0f;
+            float amount = Mathf.Max(white, dark);
+            bool isDark = dark > white;
+            if (Mathf.Abs(amount - lastFade) < 0.002f && isDark == lastFadeDark) return;
             lastFade = amount;
-            fade.color = new Color(1f, 1f, 1f, amount);
+            lastFadeDark = isDark;
+            fade.color = isDark ? new Color(0.05f, 0.04f, 0.08f, amount) : new Color(1f, 1f, 1f, amount);
             fade.enabled = amount > 0.002f;
         }
 
