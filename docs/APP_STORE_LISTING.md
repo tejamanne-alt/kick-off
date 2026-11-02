@@ -102,11 +102,29 @@ Off.
 ### App Review Information
 - **Sign-in required:** unticked (no account).
 - **Contact:** your first and last name, phone and email (Apple only, not shown on the store).
-- **Notes:**
+- **Notes** (answering App Review's Guideline 2.1 "Information Needed" questions; fill in the two [brackets]):
 ```
-Kick Off 2 needs no account and has no in-app purchases; every level can be played.
-Controls (landscape): the two arrow buttons at the bottom left run; KICK touches the ball (drag on it to aim a chip, release to kick); JUMP jumps (tap again in the air for a double jump); SLIDE slides under barriers.
-Stickers are found inside levels and unlock cosmetic items; they can't be bought.
+1. DEMO VIDEO
+Screen recording on an iPhone [model] running iOS [version], starting from the Home Screen with the app launch: [attached below / paste the link]
+It shows the title screen, choosing the player, the town map, playing a level (running, kicking, jumping, sliding), collecting a sticker, the results screen, the sticker album and the Locker Room.
+The app has no account registration, login or account deletion, no user-generated content, and no paid content or in-app purchases.
+
+2. PURPOSE AND AUDIENCE
+Kick Off 2 is a single-player football (soccer) side-scrolling game for players of all ages. The player dribbles a ball through town streets to reach school, across 23 short skill-based levels in 5 chapters plus ball-skill challenges. It is a light, ad-free game that plays offline and rewards timing and ball control; a sticker hidden in each level unlocks cosmetic items.
+
+3. HOW TO USE IT
+No setup, login or sample files are needed. Launch the app, tap PLAY and choose a level on the town map: six routes from the kid's house to the school, each level a numbered stop on its route (levels unlock in order as each is finished).
+Controls (landscape): the two arrow buttons at the bottom left run; KICK touches the ball (drag on it to aim a chip, release to kick); JUMP jumps (tap again in the air for a double jump); SLIDE slides under barriers. Bring the ball through the school gate to finish a level.
+Stickers shows the album (tap a sticker to view it). The Locker Room has cosmetic items unlocked with in-game coins earned by playing, or by stickers. Settings has the player choice (six kids: two teenagers and four primary-school children), sound, the school-bell timer, the controls (a left-handed layout, the slide button's place) and the language.
+
+4. EXTERNAL SERVICES
+None. The app works fully offline and makes no network requests. It uses no third-party services or SDKs: no analytics, advertising, authentication, payment or AI services. It is built with the Unity engine, and progress is stored only on the device.
+
+5. REGIONAL DIFFERENCES
+None. The app works the same in every region. Its text is in English and Spanish, following the device language.
+
+6. REGULATED INDUSTRIES AND THIRD-PARTY MATERIAL
+Not applicable: the app is not in a regulated industry and contains no protected third-party material. All characters, art, music and sound were made for this game; the fonts (Lilita One and Varela Round) are used under the SIL Open Font License.
 ```
 
 ### App Store Version Release
