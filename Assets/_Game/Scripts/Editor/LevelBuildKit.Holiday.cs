@@ -121,11 +121,11 @@ namespace DribbleToSchool.EditorTools
             /// smashes it). Crates are pushable in the story levels; here every obstacle is immovable, so their
             /// bodies go and the colliders stay as static ones.
             /// </summary>
-            static void Solidify(GameObject holder, bool breakable)
+            static void Solidify(GameObject holder, bool breakable, int coins = 3)
             {
                 foreach (var reset in holder.GetComponentsInChildren<ResettableBody>(true)) Object.DestroyImmediate(reset);
                 foreach (var body in holder.GetComponentsInChildren<Rigidbody2D>(true)) Object.DestroyImmediate(body);
-                if (breakable) holder.AddComponent<RunBreakable>().coins = 3;
+                if (breakable) holder.AddComponent<RunBreakable>().coins = coins;
                 else holder.AddComponent<RunSolid>();
             }
 
@@ -178,10 +178,10 @@ namespace DribbleToSchool.EditorTools
                 }
             }
 
-            /// <summary>A tunnel with a deck high enough for a double jump under it; the lots behind it stand aside.</summary>
+            /// <summary>A tunnel with a deck high enough for a double jump under it (HolidayPatterns.TunnelHeight: the head of a kid at the top of one is at 3.24 m); the lots behind it stand aside.</summary>
             public void RunTunnel(float fromX, float toX)
             {
-                Tunnel(fromX, toX, 0f, 3.8f);
+                Tunnel(fromX, toX, 0f, HolidayPatterns.TunnelHeight);
                 QuietAreas.Add(new Vector2(fromX, toX));
             }
 
@@ -248,7 +248,7 @@ namespace DribbleToSchool.EditorTools
             /// </summary>
             public void RunCrane(float x)
             {
-                const float hang = 5f;
+                const float hang = HolidayPatterns.CraneHang;
                 var go = new GameObject("CraneLoad");
                 go.transform.SetParent(root, false);
                 go.transform.position = new Vector3(x - 3f, hang, 0f);
@@ -300,10 +300,9 @@ namespace DribbleToSchool.EditorTools
                 return holder;
             }
 
-            /// <summary>A sandcastle about a metre across: the Leisure kit's, stretched to fill its collider.</summary>
-            void SandCastleBlock(float x)
+            /// <summary>A sandcastle about a metre across (or the size asked): the Leisure kit's, stretched to fill its collider.</summary>
+            void SandCastleBlock(float x, float w = 1f, float h = 0.75f)
             {
-                const float w = 1f, h = 0.75f;
                 var go = Block("Sandcastle", new Vector2(x, h * 0.5f), new Vector2(w, h), ObstacleColor, GroundMat, false);
                 Vector3 native = KitSize("Leisure", "SandCastle");
                 if (native.x > 0.05f && native.y > 0.05f && HasKitModel("Leisure", "SandCastle"))
@@ -316,6 +315,114 @@ namespace DribbleToSchool.EditorTools
                     }
                 }
                 Part(go.transform, "Mound", Vector3.zero, new Vector3(w, h, 0.9f), new Color(0.92f, 0.82f, 0.58f));
+            }
+
+            /// <summary>
+            /// A pile of crates two high, 1.42 m, that a hard kick smashes for coins (a big sandcastle on the beach). Too high for a
+            /// single jump: a double jump gets over it (HolidayPatterns.StackHeight).
+            /// </summary>
+            public GameObject RunStack(float x)
+            {
+                GameObject holder;
+                if (Chapter == 3) holder = Into("BigSandcastle", () => SandCastleBlock(x, HolidayPatterns.StackWidth + 0.1f, HolidayPatterns.StackHeight));
+                else holder = Into("CrateStack", () => CrateStack(x - 0.36f));
+                Solidify(holder, true, 6);
+                return holder;
+            }
+
+            // The colours balloons come in.
+            static readonly Color[] BalloonPaint =
+            {
+                new Color(0.92f, 0.28f, 0.3f), new Color(1f, 0.8f, 0.25f), new Color(0.3f, 0.6f, 0.95f),
+                new Color(0.35f, 0.78f, 0.5f), new Color(0.98f, 0.55f, 0.75f), new Color(1f, 0.58f, 0.2f),
+            };
+
+            /// <summary>
+            /// A floating target the ball bursts into coins: a balloon on a string (at home, on the site), a paper lantern on a cord
+            /// (the market, the park) or a beach ball hung from a line (the beach), <paramref name="y"/> up. It is a trigger with a
+            /// RunBreakable: the kid passes through it, nothing counts it as an obstacle, and a ball flying through it bursts it.
+            /// </summary>
+            public GameObject RunBalloon(float x, float y, int style, int color)
+            {
+                var go = new GameObject(style == 1 ? "Lantern" : style == 2 ? "BeachBall" : "Balloon");
+                go.transform.SetParent(root, false);
+                go.transform.position = new Vector3(x, y, 0f);
+                var circle = go.AddComponent<CircleCollider2D>();
+                circle.isTrigger = true;
+                circle.radius = 0.45f;
+                var target = go.AddComponent<RunBreakable>();
+                target.floating = true;
+                target.coins = 5;
+                target.minSpeed = 2.5f;
+                Color paint = BalloonPaint[Mathf.Abs(color) % BalloonPaint.Length];
+                Color dark = Color.Lerp(paint, Color.black, 0.35f), light = Color.Lerp(paint, Color.white, 0.55f);
+                Color cord = new Color(0.85f, 0.84f, 0.8f);
+                if (style == 1)
+                {
+                    // A paper lantern: a warm ball with gold caps, hung from a cord, a tassel below.
+                    Color lantern = Color.Lerp(paint, new Color(1f, 0.55f, 0.2f), 0.5f), gold = new Color(0.95f, 0.78f, 0.3f);
+                    Blobs(go.transform, "Paper", Vector3.zero,
+                        new BlobShape.Blob(Vector3.zero, new Vector3(0.3f, 0.34f, 0.3f), lantern),
+                        new BlobShape.Blob(new Vector3(0f, 0.34f, 0f), new Vector3(0.14f, 0.04f, 0.14f), gold),
+                        new BlobShape.Blob(new Vector3(0f, -0.34f, 0f), new Vector3(0.14f, 0.04f, 0.14f), gold),
+                        new BlobShape.Blob(new Vector3(0f, -0.52f, 0f), new Vector3(0.04f, 0.14f, 0.04f), gold),
+                        new BlobShape.Blob(new Vector3(-0.1f, 0.1f, -0.24f), new Vector3(0.06f, 0.14f, 0.04f), Color.Lerp(lantern, Color.white, 0.5f)));
+                    Part(go.transform, "Cord", new Vector3(0f, 1.1f, 0f), new Vector3(0.015f, 1.5f, 0.015f), cord);
+                }
+                else if (style == 2)
+                {
+                    // A beach ball: white with a coloured band either side of the middle, hung from a line.
+                    Blobs(go.transform, "Ball", Vector3.zero,
+                        new BlobShape.Blob(Vector3.zero, new Vector3(0.34f, 0.34f, 0.34f), Color.white),
+                        new BlobShape.Blob(Vector3.zero, new Vector3(0.345f, 0.09f, 0.345f), paint),
+                        new BlobShape.Blob(new Vector3(0f, 0.2f, 0f), new Vector3(0.275f, 0.075f, 0.275f), BalloonPaint[(color + 2) % BalloonPaint.Length]),
+                        new BlobShape.Blob(new Vector3(0f, -0.2f, 0f), new Vector3(0.275f, 0.075f, 0.275f), BalloonPaint[(color + 2) % BalloonPaint.Length]),
+                        new BlobShape.Blob(new Vector3(0f, 0.34f, 0f), new Vector3(0.05f, 0.03f, 0.05f), dark));
+                    Part(go.transform, "Line", new Vector3(0f, 1.2f, 0f), new Vector3(0.015f, 1.7f, 0.015f), cord);
+                }
+                else
+                {
+                    // A party balloon: a rounded ellipsoid with a knot, a shine, and a string trailing down.
+                    Blobs(go.transform, "Balloon", Vector3.zero,
+                        new BlobShape.Blob(new Vector3(0f, 0.05f, 0f), new Vector3(0.3f, 0.37f, 0.3f), paint),
+                        new BlobShape.Blob(new Vector3(0f, -0.34f, 0f), new Vector3(0.07f, 0.05f, 0.07f), dark),
+                        new BlobShape.Blob(new Vector3(-0.1f, 0.16f, -0.22f), new Vector3(0.07f, 0.11f, 0.04f), light));
+                    Part(go.transform, "String", new Vector3(0f, -0.95f, 0f), new Vector3(0.015f, 1.1f, 0.015f), cord);
+                }
+                return go;
+            }
+
+            /// <summary>
+            /// A big star coin worth <paramref name="value"/> coins: the Animals kit's star, half again as big as a coin, spinning like
+            /// one (a Coin with a bigger worth), where only a double jump or a trampoline's throw gets to.
+            /// </summary>
+            public GameObject RunStar(float x, float y, int value)
+            {
+                var go = new GameObject("StarCoin");
+                go.transform.SetParent(root, false);
+                go.transform.position = new Vector3(x, y, 0f);
+                var col = go.AddComponent<CircleCollider2D>();
+                col.isTrigger = true;
+                col.radius = 0.5f;
+                var visual = new GameObject("Visual");
+                visual.transform.SetParent(go.transform, false);
+                if (KitModel(visual.transform, "Animals", "Star", visual.transform.position, 0f, 1.7f) == null)
+                {
+                    // Without the kit: a fat golden disc.
+                    var disc = visual.AddComponent<CylinderShape>();
+                    disc.radius = 0.42f;
+                    disc.length = 0.1f;
+                    disc.sideColor = new Color(0.9f, 0.62f, 0.12f);
+                    disc.endColor = new Color(1f, 0.85f, 0.3f);
+                    disc.innerRadius = 0.26f;
+                    disc.innerColor = new Color(1f, 0.92f, 0.5f);
+                    visual.GetComponent<MeshRenderer>().sharedMaterial = Art.solid;
+                    disc.Rebuild();
+                }
+                var coin = go.AddComponent<Pickups.Coin>();
+                coin.visual = visual.transform;
+                coin.value = Mathf.Max(1, value);
+                return go;
             }
 
             /// <summary>Three traffic cones in a row on the path's line, with one box collider round them.</summary>

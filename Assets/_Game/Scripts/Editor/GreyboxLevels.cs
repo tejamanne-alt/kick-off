@@ -686,7 +686,8 @@ namespace DribbleToSchool.EditorTools
             t.Ground(52f, 64f);
             t.Checkpoint(55f);
             t.Pit(64f, 70f);
-            t.MovingPlatform(new Vector2(66.5f, -0.175f), 2.6f, new Vector2(0f, 2.2f), 1f);
+            // The lift spans 65.7 to 68.3: 1.7 m from the pit's near edge and 1.7 m from the far bank (it was 1.2 m and 2.2 m: the step off the top was nearly the whole of a jump).
+            t.MovingPlatform(new Vector2(67f, -0.175f), 2.6f, new Vector2(0f, 2.2f), 1f);
             t.Sign("Builder's lift - going up!", new Vector2(66.5f, 4.6f));
             t.Ground(70f, 82f, 2f);
             t.Checkpoint(73f, 2f);
@@ -698,7 +699,7 @@ namespace DribbleToSchool.EditorTools
 
             t.CoinRow(22f, 28f, 1f, 4);
             t.CoinRow(46f, 50f, 1.8f, 3);
-            t.CoinRow(66.5f, 66.5f, 3f, 1);
+            t.CoinRow(67f, 67f, 3f, 1);
             t.CoinRow(74f, 80f, 2.5f, 3);
             t.CoinRow(85f, 88f, 2.8f, 3);
             t.Sticker(new Vector2(67f, 6f));

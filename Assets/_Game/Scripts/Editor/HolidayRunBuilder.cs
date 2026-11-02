@@ -18,9 +18,9 @@ namespace DribbleToSchool.EditorTools
     ///
     /// A stage scene has exactly one root object, <c>Stage</c>, with a <see cref="RunChunk"/>, inactive in the
     /// file (the world streamer prepares it and switches it on). Under it: the ground and its gaps, the 3D
-    /// street, the scenery with its animals, the furniture of the stage (tunnel, crossings, fountains, beats of
-    /// walkers and dogs, gulls, tide, cranes), and three inactive layouts, <c>Layout_A</c> to <c>Layout_C</c>, of
-    /// obstacles, coins and power-ups (HolidayPatterns decides what goes where).
+    /// street, the scenery with its animals, the furniture of the stage (tunnel, crossings, fountains, gulls,
+    /// tide, cranes), and three inactive layouts, <c>Layout_A</c> to <c>Layout_C</c>, of obstacles, things to
+    /// smash, beats of walkers and dogs, floating targets, coins and power-ups (HolidayPatterns decides what goes where).
     /// </summary>
     public static class HolidayRunBuilder
     {
@@ -136,6 +136,7 @@ namespace DribbleToSchool.EditorTools
             chunk.endX = to;
 
             var t = new TrackBuilder(stage.transform);
+            t.AuditName = "Holiday Run stage " + (i + 1) + " (" + st.levelId + ")";
             // The slabs and sand cover exactly the stage's stretch, padded only at the ends of the world.
             t.SetChunk(first ? from - 70f : from, last ? to + 70f : to,
                 !first && prevChapter != st.chapter, !last && nextChapter != st.chapter);
@@ -206,7 +207,7 @@ namespace DribbleToSchool.EditorTools
                 endStreetFrom = endStreetFrom,
                 polesBefore = !first && prevChapter == st.chapter && (st.chapter == 1 || st.chapter == 4),
                 polesAfter = !last && nextChapter == st.chapter && (st.chapter == 1 || st.chapter == 4),
-                flocks = i % 3 == 0,
+                flocks = true,   // birds cross the sky of every stage
                 clearing = st.Has(StageTraits.Swings) ? 0 : st.Has(StageTraits.Pond) ? 1 : -1,
                 clipLo = prevChapter == 3 ? from : float.NegativeInfinity,
                 clipHi = nextChapter == 3 ? to : float.PositiveInfinity,
@@ -229,7 +230,11 @@ namespace DribbleToSchool.EditorTools
             {
                 var layout = new GameObject("Layout_" + (char)('A' + v));
                 layout.transform.SetParent(stage.transform, false);
-                BuildLayout(new TrackBuilder(layout.transform), plan.layouts[v], i);
+                var layoutBuilder = new TrackBuilder(layout.transform);
+                layoutBuilder.AuditName = "Holiday Run stage " + (i + 1) + " (" + st.levelId + ") layout " + (char)('A' + v);
+                BuildLayout(layoutBuilder, plan.layouts[v], i);
+                // The layout's walls, barriers and trampolines against what the kid can do (the stage's own builder checked its ground and gaps).
+                layoutBuilder.ReportFeasibility();
                 layouts[v] = layout;
                 layout.SetActive(false);
             }
@@ -276,8 +281,7 @@ namespace DribbleToSchool.EditorTools
                 case PatternKind.Tunnel: t.RunTunnel(f.x0, f.x1); break;
                 case PatternKind.Crossing: t.RunCrossing(f.x0, f.x1, f.a); break;
                 case PatternKind.Fountain: t.Fountain(f.x, 0f, f.h, f.a); break;
-                case PatternKind.Walkers: t.Pedestrian(f.x0, f.x1, Coats[f.style % Coats.Length], 0f, f.a); break;
-                case PatternKind.DogPatch: t.Dog(f.x0, f.x1, Furs[f.style % Furs.Length], 0f); break;
+                case PatternKind.Checkpoint: t.Checkpoint(f.x); break;
                 case PatternKind.TideArea: t.RunTide(f.x0, f.x1, f.a, f.b); break;
                 case PatternKind.Gull: t.Seagull(f.x0, f.x1, f.y, f.a); break;
                 case PatternKind.Cranes: t.RunCrane(f.x); break;
@@ -297,6 +301,11 @@ namespace DribbleToSchool.EditorTools
                         case PatternKind.Mid:
                         case PatternKind.Tall: t.RunWall(it.x, it.h, it.w); break;
                         case PatternKind.Crate: t.RunBreakable(it.x); break;
+                        case PatternKind.Stack: t.RunStack(it.x); break;
+                        case PatternKind.Walkers: t.Pedestrian(it.x0, it.x1, Coats[it.style % Coats.Length], 0f, it.a); break;
+                        case PatternKind.DogPatch: t.Dog(it.x0, it.x1, Furs[it.style % Furs.Length], 0f); break;
+                        case PatternKind.Balloon: t.RunBalloon(it.x, it.y, it.style, (int)it.a); break;
+                        case PatternKind.Star: t.RunStar(it.x, it.y, it.count); break;
                         case PatternKind.Car: t.RunCar(it.x, CarPaint[it.style % CarPaint.Length]); break;
                         case PatternKind.Slide:
                             t.RunSlide(it.x, (TrackBuilder.SlideLook)Enum.Parse(typeof(TrackBuilder.SlideLook), it.look));
