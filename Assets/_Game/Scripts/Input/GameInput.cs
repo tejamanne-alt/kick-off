@@ -79,12 +79,12 @@ namespace DribbleToSchool.InputHandling
         public static readonly List<Rect> UIBlockers = new List<Rect>();
 
         [Header("Layout (in screen heights, so the buttons are the same physical size on any phone)")]
-        [Tooltip("Bottom of the stack at the screen's edge, where the right thumb rests: the button pressed most.")]
-        public ControlSpec jumpButton = new ControlSpec(0.17f, 0.19f, 0.125f);
-        [Tooltip("Straight above Jump (the stack): the thumb lifts to it. Tap only.")]
-        public ControlSpec slideButton = new ControlSpec(0.17f, 0.56f, 0.125f);
-        [Tooltip("Left of the stack on Jump's baseline (where Slide used to be): a flick of the thumb. The aim drag has the whole screen above it.")]
-        public ControlSpec kickButton = new ControlSpec(0.665f, 0.195f, 0.125f);
+        [Tooltip("Bottom of the stack, close to the screen's corner where the right thumb rests: the button pressed most.")]
+        public ControlSpec jumpButton = new ControlSpec(0.16f, 0.17f, 0.125f);
+        [Tooltip("Straight above Jump (the stack), a thumb's width away. Tap only.")]
+        public ControlSpec slideButton = new ControlSpec(0.16f, 0.47f, 0.125f);
+        [Tooltip("Beside Jump on its baseline, a thumb's width to its left (where Slide used to be, but closer). The aim drag has the whole screen above it.")]
+        public ControlSpec kickButton = new ControlSpec(0.46f, 0.17f, 0.125f);
         [Tooltip("The left thumb's two arrows: back, then (a little bigger, it is held all the time) forward.")]
         public ControlSpec walkBackButton = new ControlSpec(0.17f, 0.2f, 0.12f);
         public ControlSpec walkForwardButton = new ControlSpec(0.475f, 0.21f, 0.15f);

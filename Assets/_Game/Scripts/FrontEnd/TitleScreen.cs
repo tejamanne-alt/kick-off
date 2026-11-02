@@ -19,6 +19,9 @@ namespace DribbleToSchool.FrontEnd
         /// <summary>Width of the left column (canvas pixels): the logo and the buttons.</summary>
         const float Column = 740f;
 
+        /// <summary>The height the left column is laid out for (the canvas is 1080 units tall).</summary>
+        const float DesignHeight = 1080f;
+
         /// <summary>HOLIDAY RUN's button: turquoise, a holiday sea beside PLAY's sunny orange.</summary>
         static readonly Color HolidayColor = new Color(0.16f, 0.72f, 0.82f);
 
@@ -30,17 +33,27 @@ namespace DribbleToSchool.FrontEnd
 
         protected override void Build(RectTransform root)
         {
-            var logo = KickOffLogo.Build(root, 0.86f);
+            // The left column is laid out for the full 1080-unit height (logo, PLAY, HOLIDAY RUN, the three buttons,
+            // credits and stars), and shrinks from its top left corner when the safe area is shorter (a phone's home bar),
+            // so its rows can never overlap or run off the bottom.
+            var column = UIKit.Rect(root, "Column");
+            column.anchorMin = column.anchorMax = new Vector2(0f, 1f);
+            column.pivot = new Vector2(0f, 1f);
+            column.anchoredPosition = Vector2.zero;
+            column.sizeDelta = new Vector2(Column + 40f, DesignHeight);
+            column.gameObject.AddComponent<UIFitHeight>().designHeight = DesignHeight;
+
+            var logo = KickOffLogo.Build(column, 0.86f);
             UIKit.Place(logo, new Vector2(0f, 1f), new Vector2(Column * 0.5f + 20f, -300f), logo.sizeDelta, new Vector2(0.5f, 0.5f));
             UIKit.PopIn(logo.gameObject);
 
-            var play = UIKit.Button(root, "Play", Loc.T("menu.play"), UITheme.Accent, () => Controller.Show(FrontEndScreenId.Map), 68);
+            var play = UIKit.Button(column, "Play", Loc.T("menu.play"), UITheme.Accent, () => Controller.Show(FrontEndScreenId.Map), 68);
             UIKit.Place((RectTransform)play.transform, new Vector2(0f, 1f), new Vector2(Column * 0.5f + 20f, -604f), new Vector2(450f, 136f), new Vector2(0.5f, 0.5f));
             UIKit.PopIn(play.gameObject, 0.15f);
             play.gameObject.AddComponent<UIPulse>().amount = 0.025f;
 
             // HOLIDAY RUN under PLAY. Its label is built by hand below, so that the best distance can sit on the button once there is one.
-            var holiday = UIKit.Button(root, "Holiday", "", HolidayColor, StartHolidayRun, 42);
+            var holiday = UIKit.Button(column, "Holiday", "", HolidayColor, StartHolidayRun, 42);
             UIKit.Place((RectTransform)holiday.transform, new Vector2(0f, 1f), new Vector2(Column * 0.5f + 20f, -744f), new Vector2(450f, 112f), new Vector2(0.5f, 0.5f));
             UIKit.PopIn(holiday.gameObject, 0.19f);
             var holidayPulse = holiday.gameObject.AddComponent<UIPulse>();
@@ -50,20 +63,20 @@ namespace DribbleToSchool.FrontEnd
 
             // Secondary row under HOLIDAY RUN.
             float w = 222f, gap = 16f, x0 = 20f + (Column - (w * 3f + gap * 2f)) * 0.5f;
-            var shop = UIKit.Button(root, "Shop", Loc.T("menu.locker"), UITheme.Blue, () => Controller.Show(FrontEndScreenId.Shop), 34);
+            var shop = UIKit.Button(column, "Shop", Loc.T("menu.locker"), UITheme.Blue, () => Controller.Show(FrontEndScreenId.Shop), 34);
             UIKit.Place((RectTransform)shop.transform, new Vector2(0f, 1f), new Vector2(x0, -880f), new Vector2(w, 88f), new Vector2(0f, 0.5f));
             UIKit.PopIn(shop.gameObject, 0.22f);
-            var album = UIKit.Button(root, "Album", Loc.T("menu.album"), UITheme.Blue, () => Controller.Show(FrontEndScreenId.Album), 34);
+            var album = UIKit.Button(column, "Album", Loc.T("menu.album"), UITheme.Blue, () => Controller.Show(FrontEndScreenId.Album), 34);
             UIKit.Place((RectTransform)album.transform, new Vector2(0f, 1f), new Vector2(x0 + w + gap, -880f), new Vector2(w, 88f), new Vector2(0f, 0.5f));
             UIKit.PopIn(album.gameObject, 0.27f);
-            var settings = UIKit.Button(root, "Settings", Loc.T("menu.settings"), UITheme.Blue, Controller.OpenSettings, 34);
+            var settings = UIKit.Button(column, "Settings", Loc.T("menu.settings"), UITheme.Blue, Controller.OpenSettings, 34);
             UIKit.Place((RectTransform)settings.transform, new Vector2(0f, 1f), new Vector2(x0 + (w + gap) * 2f, -880f), new Vector2(w, 88f), new Vector2(0f, 0.5f));
             UIKit.PopIn(settings.gameObject, 0.32f);
 
             // Bottom left: credits, and the stars collected on a little card.
-            var credits = UIKit.Button(root, "Credits", Loc.T("menu.credits"), UITheme.Paper, Controller.OpenCredits, 30, UITheme.Ink);
+            var credits = UIKit.Button(column, "Credits", Loc.T("menu.credits"), UITheme.Paper, Controller.OpenCredits, 30, UITheme.Ink);
             UIKit.Place((RectTransform)credits.transform, Vector2.zero, new Vector2(40f, 44f), new Vector2(200f, 74f), Vector2.zero);
-            var starsCard = UIKit.Card(root, "Stars", UITheme.Paper);
+            var starsCard = UIKit.Card(column, "Stars", UITheme.Paper);
             var starsRoot = (RectTransform)starsCard.transform.parent;
             UIKit.Place(starsRoot, Vector2.zero, new Vector2(262f, 44f), new Vector2(440f, 74f), Vector2.zero);
             var star = UIKit.Icon(starsCard.transform, "Star", ProceduralSprites.Star, UITheme.Gold, 50f);

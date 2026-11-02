@@ -96,6 +96,8 @@ namespace DribbleToSchool.EditorTools
 
                 // ---------- Outfits (shirt, shorts, collar/accent) ----------
                 R("outfit_school", "School Uniform", Outfit, Common, 0, CosmeticPattern.Solid, C(0.97f, 0.97f, 0.99f), C(0.22f, 0.23f, 0.42f), C(0.78f, 0.2f, 0.24f)),
+                // The Holiday Run's own look (see CosmeticApplier.holiday): casual, a bright top and khaki, and no tie (the accent's alpha is 0).
+                R("outfit_holiday", "Holiday", Outfit, Common, 0, CosmeticPattern.Solid, C(0.16f, 0.72f, 0.82f), C(0.82f, 0.72f, 0.5f), new Color(1f, 1f, 1f, 0f)),
                 R("outfit_red", "Red Kit", Outfit, Common, 120, CosmeticPattern.Solid, C(0.88f, 0.25f, 0.25f), white, white),
                 R("outfit_blue", "Blue Kit", Outfit, Common, 120, CosmeticPattern.Solid, C(0.2f, 0.4f, 0.85f), white, white),
                 R("outfit_hoops", "Green Hoops", Outfit, Common, 180, CosmeticPattern.Stripes, C(0.25f, 0.65f, 0.35f), ink, white),

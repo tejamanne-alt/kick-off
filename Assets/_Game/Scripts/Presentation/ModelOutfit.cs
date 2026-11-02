@@ -32,6 +32,11 @@ namespace DribbleToSchool.Presentation
         Mesh mesh;
         Color[] original;
         Vector2[] parts;
+        // The accent (the tie) can be taken off: its vertices all collapse to one point on the chest.
+        Vector3[] restVertices;
+        int[] accentVertices;
+        Vector3 accentAnchor;
+        bool accentHidden, wantAccentHidden;
 
         void Start()
         {
@@ -48,11 +53,15 @@ namespace DribbleToSchool.Presentation
             Dress();
         }
 
-        /// <summary>The tie's colour (a shop outfit's third colour). Applies at once, over whatever outfit is on.</summary>
+        /// <summary>
+        /// The tie's colour (a shop outfit's third colour). Applies at once, over whatever outfit is on.
+        /// A colour with no opacity at all takes the tie off (an outfit with no tie, such as the Holiday one).
+        /// </summary>
         public void SetAccent(Color accent)
         {
             currentAccent = accent;
             accented = true;
+            wantAccentHidden = accent.a < 0.01f;
             Dress();
         }
 
@@ -71,6 +80,7 @@ namespace DribbleToSchool.Presentation
                 mesh.GetUVs(1, uv2);
                 parts = uv2.ToArray();
                 smr.sharedMesh = mesh;
+                FindAccent();
             }
             if (original == null || parts == null || parts.Length != original.Length) return;
             var colors = new Color[original.Length];
@@ -85,12 +95,41 @@ namespace DribbleToSchool.Presentation
                 colors[i] = c;
             }
             mesh.colors = colors;
+            ShowAccent();
+        }
+
+        /// <summary>Remember where the accent's vertices are, and the one point they collapse to when it is taken off.</summary>
+        void FindAccent()
+        {
+            if (parts == null) return;
+            var found = new System.Collections.Generic.List<int>();
+            for (int i = 0; i < parts.Length; i++)
+                if (Mathf.RoundToInt(parts[i].x) == 4) found.Add(i);
+            if (found.Count == 0) return;
+            restVertices = mesh.vertices;
+            accentVertices = found.ToArray();
+            Vector3 sum = Vector3.zero;
+            foreach (int i in accentVertices) sum += restVertices[i];
+            accentAnchor = sum / accentVertices.Length;
+        }
+
+        /// <summary>Put the accent on or take it off, as the outfit wants (only when that changes).</summary>
+        void ShowAccent()
+        {
+            if (mesh == null || restVertices == null || accentVertices == null || wantAccentHidden == accentHidden) return;
+            var vertices = (Vector3[])restVertices.Clone();
+            if (wantAccentHidden)
+                foreach (int i in accentVertices) vertices[i] = accentAnchor;
+            mesh.vertices = vertices;
+            accentHidden = wantAccentHidden;
         }
 
         public void ResetOutfit()
         {
             dressed = accented = false;
+            wantAccentHidden = false;
             if (mesh != null && original != null) mesh.colors = original;
+            ShowAccent();
         }
 
         /// <summary>Keeps how much lighter or darker this vertex is than the default colour.</summary>

@@ -21,6 +21,12 @@ namespace DribbleToSchool.Cosmetics
         public MonoBehaviour kidBody;
         [Tooltip("The pennant on each playable character's bag.")]
         public SpriteRenderer[] backpackFlags;
+        [Tooltip("A Holiday Run: the kid is not in school uniform unless they chose to be. While the school uniform is the equipped outfit, " +
+            "the Holiday outfit is worn instead (casual, no tie); any other outfit the player equipped is kept.")]
+        public bool holiday;
+
+        public const string SchoolOutfitId = "outfit_school";
+        public const string HolidayOutfitId = "outfit_holiday";
 
         static readonly int MainTexId = Shader.PropertyToID("_MainTex");
         static readonly int MainTexStId = Shader.PropertyToID("_MainTex_ST");
@@ -43,9 +49,22 @@ namespace DribbleToSchool.Cosmetics
             if (catalog == null) return;
             var save = SaveSystem.Data;
             ApplyBall(catalog.Find(save.equippedBall));
-            ApplyOutfit(catalog.Find(save.equippedOutfit));
+            ApplyOutfit(OutfitFor(save.equippedOutfit));
             ApplyFlag(catalog.Find(save.equippedFlag));
             ApplyTrail(catalog.Find(save.equippedTrail));
+        }
+
+        /// <summary>The id of the outfit to wear: the Holiday one in a Holiday Run instead of the default school uniform; anything else the player equipped is kept.</summary>
+        public static string OutfitIdFor(bool holiday, string equippedId)
+        {
+            if (holiday && (string.IsNullOrEmpty(equippedId) || equippedId == SchoolOutfitId)) return HolidayOutfitId;
+            return equippedId;
+        }
+
+        CosmeticItem OutfitFor(string equippedId)
+        {
+            var item = catalog.Find(OutfitIdFor(holiday, equippedId));
+            return item != null ? item : catalog.Find(equippedId);
         }
 
         /// <summary>
@@ -88,7 +107,7 @@ namespace DribbleToSchool.Cosmetics
                 // in casual colours that sat too close to the street's greens and sand.
                 dressedIn = outfit.id;
                 dressable.SetOutfit(outfit.primary, outfit.secondary);
-                // The third colour of an outfit is the tie's.
+                // The third colour of an outfit is the tie's (fully see-through: no tie).
                 var accented = kidBody as Presentation.IAccentOutfit;
                 if (accented != null) accented.SetAccent(outfit.accent);
             }

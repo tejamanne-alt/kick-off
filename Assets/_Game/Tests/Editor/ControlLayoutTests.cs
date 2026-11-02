@@ -69,7 +69,8 @@ namespace DribbleToSchool.Tests
         {
             ForEveryLayout((l, w, h, left, where) =>
             {
-                float min = 0.1f * h;
+                // Close enough for one thumb (about 4 mm on a phone), never touching.
+                float min = 0.04f * h;
                 Assert.GreaterOrEqual(Gap(l.jump, l.kick), min, where + ": jump/kick");
                 Assert.GreaterOrEqual(Gap(l.jump, l.slide), min, where + ": jump/slide");
                 Assert.GreaterOrEqual(Gap(l.kick, l.slide), min, where + ": kick/slide");
@@ -120,6 +121,7 @@ namespace DribbleToSchool.Tests
                 Assert.AreEqual(l.jump.center.x, l.slide.center.x, 0.01f, where + ": one column");
                 Assert.Greater(l.slide.center.y, l.jump.center.y + l.jump.radius + l.slide.radius, where + ": slide is above jump, clear of it");
                 Assert.Less(FromEdge(l.jump, w, left), 0.3f * h, where + ": the stack is at the edge");
+                Assert.Less(l.slide.center.y - l.jump.center.y, 0.36f * h, where + ": slide is within a thumb's reach of jump");
             });
         }
 
@@ -130,6 +132,7 @@ namespace DribbleToSchool.Tests
             {
                 Assert.AreEqual(l.jump.center.y, l.kick.center.y, 0.03f * h, where + ": kick is on jump's baseline");
                 Assert.Greater(FromEdge(l.kick, w, left), FromEdge(l.jump, w, left) + l.jump.radius + l.kick.radius, where + ": kick is beside the stack, not under it");
+                Assert.Less(Vector2.Distance(l.kick.center, l.jump.center), 0.36f * h, where + ": kick is within a thumb's reach of jump");
             });
         }
 

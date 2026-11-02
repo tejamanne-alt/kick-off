@@ -602,6 +602,7 @@ namespace DribbleToSchool.EditorTools
 
             var applier = new GameObject("CosmeticApplier").AddComponent<CosmeticApplier>();
             applier.catalog = Cosmetics;
+            applier.holiday = true;   // casual clothes, not the school uniform, unless the player chose another outfit
             applier.ballRenderer = shell.GetComponent<MeshRenderer>();
             applier.ballTrail = trail;
             applier.kidBody = kidOutfit;
