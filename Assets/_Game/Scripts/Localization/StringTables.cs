@@ -37,6 +37,9 @@ namespace DribbleToSchool.Localization
                 { "menu.soon", "Coming soon!" },
                 { "chapter.1", "Home Street" }, { "chapter.2", "Market" }, { "chapter.3", "The Beach" },
                 { "chapter.4", "Underpass" }, { "chapter.5", "Park & School" },
+                { "route.street", "Home Street" }, { "route.market", "Market Street" }, { "route.beach", "Seaside Road" },
+                { "route.underpass", "The Underpass" }, { "route.site", "Building Site Shortcut" }, { "route.park", "Park Path" },
+                { "place.home", "Home" }, { "place.school", "School" },
 
                 // Shop
                 { "shop.balls", "Balls" }, { "shop.flags", "Flags" }, { "shop.outfits", "Outfits" }, { "shop.trails", "Trails" },
@@ -253,6 +256,9 @@ namespace DribbleToSchool.Localization
                 { "menu.soon", "¡Muy pronto!" },
                 { "chapter.1", "Mi calle" }, { "chapter.2", "Mercado" }, { "chapter.3", "La playa" },
                 { "chapter.4", "El paso subterráneo" }, { "chapter.5", "Parque y cole" },
+                { "route.street", "Mi calle" }, { "route.market", "Calle del mercado" }, { "route.beach", "Paseo marítimo" },
+                { "route.underpass", "El paso subterráneo" }, { "route.site", "Atajo de las obras" }, { "route.park", "Camino del parque" },
+                { "place.home", "Casa" }, { "place.school", "Cole" },
 
                 { "shop.balls", "Balones" }, { "shop.flags", "Banderas" }, { "shop.outfits", "Ropa" }, { "shop.trails", "Estelas" },
                 { "shop.equip", "Equipar" }, { "shop.equipped", "Equipado" }, { "shop.owned", "Tuyo" },
