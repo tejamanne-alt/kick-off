@@ -158,7 +158,7 @@ Assets/_Game/
     Ball/       BallController.cs      physics ball, auto/perfect touches, juggle, kick
                 KickAimer.cs           kick-button aim (forward or back) + slow motion
                 TrajectoryPreview.cs   dotted arc for the first ~0.5 s
-    CameraRig/  CameraFollow2D.cs      look-ahead, vertical dead zone, level bounds
+    CameraRig/  CameraFollow2D.cs      the kid kept clear of the left thumb, vertical dead zone, level bounds
     Core/       LevelManager.cs        intro, bell, checkpoints, lose/respawn, pause, stars
                 Checkpoint.cs, LoseZone.cs, GoalZone.cs, TimeControl.cs, GameSettings.cs
     Levels/     LevelDefinition.cs, LevelCatalog.cs (ScriptableObjects)
@@ -177,7 +177,7 @@ Assets/_Game/
 
 ## About the camera
 
-The original plan named Cinemachine for the camera. For now the project uses its own `CameraFollow2D`, which already has look-ahead, a vertical dead zone, level bounds and a snap on respawn. The reason is that I couldn't compile against Cinemachine's API while building this, and a single wrong API call would stop the project from entering Play mode. It's a self-contained swap once the levels are verified in the editor.
+The original plan named Cinemachine for the camera. For now the project uses its own `CameraFollow2D`, which already keeps the kid clear of the control buttons with the view ahead of them, a vertical dead zone, level bounds and a snap on respawn. The reason is that I couldn't compile against Cinemachine's API while building this, and a single wrong API call would stop the project from entering Play mode. It's a self-contained swap once the levels are verified in the editor.
 
 ## Progression
 
