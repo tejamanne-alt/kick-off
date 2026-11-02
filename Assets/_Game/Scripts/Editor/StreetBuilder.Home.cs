@@ -176,9 +176,11 @@ namespace DribbleToSchool.EditorTools
             }
         }
 
+        /// <summary>Names the animals' holder the pass just made (each pass makes its own, at the scene's root) and lets go of it, so a failed pass cannot rename the last one's.</summary>
         static void NameCritters(string name)
         {
             if (critters != null) critters.name = name;
+            critters = null;
         }
     }
 }

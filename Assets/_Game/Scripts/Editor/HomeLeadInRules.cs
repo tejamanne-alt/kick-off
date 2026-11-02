@@ -13,7 +13,11 @@ namespace DribbleToSchool.EditorTools
     /// </summary>
     public static class HomeLeadInRules
     {
-        /// <summary>Metres of home street before a story level's own start. Change it here (and rebuild): the bells follow.</summary>
+        /// <summary>
+        /// Metres of home street before a story level's own start. Change it here (and rebuild): the bells follow. L01's first hint and
+        /// walk sign (GreyboxLevels.OutTheDoor, at x = -10.5 and -8) stand in the lead-in 1.5 m and 4 m from the doorstep: move them if it
+        /// gets shorter than 11 m (a test and the offline audit say so).
+        /// </summary>
         public const float Length = 12f;
 
         /// <summary>The chapter the lead-in looks like, whatever the level's own chapter: lawns, houses, garden walls and poles.</summary>

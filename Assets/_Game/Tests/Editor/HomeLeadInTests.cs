@@ -34,6 +34,7 @@ namespace DribbleToSchool.Tests
             Assert.AreEqual(HomeLeadInRules.Length, LevelBuildKit.HomeLeadIn, "one number for the length");
             Assert.AreEqual(1, HomeLeadInRules.HomeChapter, "the lead-in is the home street");
             float seconds = HomeLeadInRules.Length / JumpReach.Defaults.runSpeed;
+            Assert.GreaterOrEqual(HomeLeadInRules.Length, 11f, "OutTheDoor's first hint (x = -10.5) and walk sign (x = -8) stand in the lead-in: move them if it gets shorter");
             Assert.GreaterOrEqual(seconds, 2f, "walking time of the lead-in");
             Assert.LessOrEqual(seconds, 4f, "walking time of the lead-in");
             Assert.AreEqual(Mathf.Ceil(seconds), HomeLeadInRules.BellSeconds, 1e-4f, "the bell grows by the walk, rounded up");
