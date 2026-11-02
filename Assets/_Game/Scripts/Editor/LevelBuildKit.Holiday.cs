@@ -401,8 +401,8 @@ namespace DribbleToSchool.EditorTools
 
         /// <summary>
         /// The Holiday Run's core scene, always loaded: the camera with the look of the first chapter, the
-        /// input in its runner layout, the kid (running by itself), the ball (a prop for EndlessBall), the
-        /// level manager in endless mode (it only hosts the hazards of the stages), the effects, the sky and
+        /// input, the kid and the ball (the campaign's, walking and dribbling and kicking), the level manager
+        /// in endless mode (the campaign with no goal: it hosts the hazards and checkpoints of the stages), the effects, the sky and
         /// the distant land all along the lap, and the director, the stage streamer, the atmosphere and the
         /// HUD, wired. The stages are separate scenes, loaded into this one while the kid runs.
         /// Call after <see cref="LoadShared"/>.
@@ -447,16 +447,13 @@ namespace DribbleToSchool.EditorTools
             post.gain = mood.gain;
             post.bloomTint = Color.Lerp(mood.glow, Color.white, 0.7f);
             var follow = camGo.AddComponent<CameraFollow2D>();
-            // Running, the view leans further ahead; it never stops at an edge (the stages come and go).
-            follow.offset = new Vector2(3.4f, follow.offset.y);
-            follow.maxLookAhead = 3.5f;
+            // The camera of a level, but it never stops at an edge (the stages come and go).
             follow.minX = -60f;
             follow.maxX = 1e7f;
             follow.minY = 1.8f;
 
             var input = new GameObject("GameInput").AddComponent<GameInput>();
             input.worldCamera = cam;
-            input.runnerLayout = true;
 
             // The level start: where the kid is put down (and where a day begins).
             var startGo = new GameObject("Start");
@@ -491,7 +488,6 @@ namespace DribbleToSchool.EditorTools
             var kid = kidGo.AddComponent<KidController>();
             kid.tuning = playerTuning;
             kid.feet = feet;
-            kid.autoRun = true;
             kidRig.rig.gameObject.AddComponent<KidAnimator>().kid = kid;
             MonoBehaviour kidOutfit = kidRig.outfit;
             var kidFlags = new List<SpriteRenderer> { kidRig.flag };
@@ -511,8 +507,8 @@ namespace DribbleToSchool.EditorTools
                 kidFlags.Add(girlRig.flag);
             }
 
-            // Ball: built as in the levels, but its BallController is off. EndlessBall drives the body: it
-            // dribbles along at the kid's feet by itself and is shot ahead on KICK.
+            // Ball: built as in the levels (dribbled by the kid's touches, kicked by the aim drag); a kick
+            // that hits a crate smashes it (BallSmasher).
             var ballGo = new GameObject("Ball");
             ballGo.transform.position = start.BallSpawnPosition;
             ballGo.AddComponent<Rigidbody2D>();
@@ -539,10 +535,7 @@ namespace DribbleToSchool.EditorTools
             var ball = ballGo.AddComponent<BallController>();
             ball.tuning = ballTuning;
             ball.kid = kid;
-            ball.enabled = false;
-            var endlessBall = ballGo.AddComponent<EndlessBall>();
-            endlessBall.ball = ball;
-            endlessBall.kid = kid;
+            ballGo.AddComponent<BallSmasher>();
             var ballVisual = ballGo.AddComponent<BallVisual>();
             ballVisual.ball = ball;
             ballVisual.squashRoot = squashRoot;
@@ -557,6 +550,16 @@ namespace DribbleToSchool.EditorTools
             kidShade.shadow = kidShadow;
             kidShade.size = new Vector2(0.7f, 0.36f);
             kidShade.maxDistance = 6f;
+
+            // Kick aiming, as in the levels.
+            var aimGo = new GameObject("KickAimer");
+            var preview = aimGo.AddComponent<TrajectoryPreview>();
+            preview.tuning = ballTuning;
+            preview.dotSprite = Circle;
+            var aimer = aimGo.AddComponent<KickAimer>();
+            aimer.ball = ball;
+            aimer.preview = preview;
+            aimer.worldCamera = cam;
 
             // Tunnels darken the view round the kid.
             var darkGo = new GameObject("Darkness");
@@ -594,6 +597,8 @@ namespace DribbleToSchool.EditorTools
             manager.cameraFollow = follow;
             manager.checkpoints = new List<Checkpoint> { start };
             manager.killY = -8f;
+            // As in a level, a ball left far behind is lost (so a kid can't wander off without it, or be stranded without it).
+            manager.maxBallBehindDistance = 16f;
 
             var applier = new GameObject("CosmeticApplier").AddComponent<CosmeticApplier>();
             applier.catalog = Cosmetics;
@@ -612,7 +617,7 @@ namespace DribbleToSchool.EditorTools
             director.level = manager;
             director.kid = kid;
             director.ball = ball;
-            director.endlessBall = endlessBall;
+            director.aimer = aimer;
             director.cameraFollow = follow;
             director.streamer = streamer;
             director.atmosphere = atmosphere;

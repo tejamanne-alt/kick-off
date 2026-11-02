@@ -1,68 +1,64 @@
 # Holiday Run
 
-The endless mode of Kick Off 2, in the spirit of Temple Run and Subway Surfers: the kid runs by
-themselves along one long street that is the whole story world laid end to end, and you only
-decide **when to jump, slide and kick**. Nothing is a level to beat; the run goes on until you
-hit something.
+The endless mode of Kick Off 2: **the campaign with no destination.** You play exactly as in the story
+levels (walk with the arrows, dribble, jump, slide, aim and kick) along one long street that is the whole
+story world laid end to end, and nothing ends the run until your balls do.
 
 ## The idea
 
+- **The same game as the campaign.** The kid is yours to steer: nothing runs by itself. The ball is the
+  real ball (perfect touches, juggles, aimed kicks), the hazards are the story's, a lost ball sends you
+  back to the last checkpoint, and there is no bell and no school to reach. What is new is only that the street
+  never stops, and a score to beat.
 - **One day = one lap of the story.** The street runs from the front door (Home Street) through the
   Market, the Beach, the Underpass and building site, and the Park, to the school gate: 23 stages, one for
-  each story level (L01 to L23), in story order, 120 m each. At the gate the day is done (a bonus, a
-  fade) and the next day begins again at home, **faster and busier**. Day after day, the loop is the game.
-- **Each stage is its level.** The stage for L11 (Beach Walk) is built from the same kit models, hazards,
+  each story level (L01 to L23), in story order, 120 m each. At the gate the day is done (a bonus, a fade)
+  and the street starts again at home. Day after day, the loop is the game.
+- **Each stage is its level.** The stage for L11 (Boardwalk) is built from the same kit models, hazards,
   street scenery and animals as the story level, with the traits that level introduced: gaps in the
   boardwalk, awnings to slide under, soft sand, gulls, the tide. Crossing from one chapter to the next the
   light, the haze and the music change gradually (the same moods the story chapters use).
-- **Simple controls, deep rhythm.** JUMP, double JUMP, SLIDE and KICK (see Controls). Running faster
-  means less time to read the street, and the obstacles come in combinations that are only fair when you
-  chain the right moves.
 
 ## Controls
 
-The runner layout puts the thumbs on different jobs, since the kid runs by themselves and there are no
-walking arrows to look after:
-
-| Action | Phone | Keyboard |
-|---|---|---|
-| Jump (hold = higher), again in the air = double jump | JUMP (right thumb, bottom-right corner) or swipe up | `Space` / `W` / `↑` |
-| Slide under things | SLIDE (left thumb, bottom-left corner) or swipe down | `S` / `↓` |
-| Kick: shoot the ball ahead to smash crates and targets | KICK (right thumb, above-left of JUMP), a press | `K` |
-| Pause | Pause button | `Esc` / `P` |
-
-Left-handed mode mirrors the layout. See `GameInput.LayoutOn` for the geometry and
-`Tests/Editor/ControlLayoutTests.cs` for the guarantees (round, large, well apart, on every landscape
-shape).
+The campaign's, unchanged: the left thumb walks (the arrows), the right thumb has JUMP and SLIDE stacked at
+the edge and KICK beside them (drag from it to aim, release to shoot; a tap is a short pass), and a quick
+tap anywhere else touches the ball. The keyboard is the story's too (`A D` or the arrows, `Space`, `S`, `K`,
+mouse drag from KICK). See the README for the table, and `GameInput.LayoutOn` and
+`Tests/Editor/ControlLayoutTests.cs` for the layout and its guarantees.
 
 ## The loop
 
 ```
-Ready (GET READY ... GO!) -> Running -> Crashed -> Results -> Revive (coins)  -> Running
-                              |                         \-> Run again / Home
-                              +-> Day done at the gate -> next day (faster)
+Ready (GET READY ... GO!) -> Running -> last ball lost -> Results -> Revive (coins) -> Running
+                              |                              \-> Run again / Home
+                              +-> Day done at the gate -> the street starts again
 ```
 
-- **Pace.** Day 1 starts at 6.5 m/s and ends at 11 m/s at the school gate; every further day starts and
-  ends 1 m/s faster, up to 10 and 14 m/s. The pace follows a smooth curve along the lap.
-- **Crash.** Hitting something head-on ends the run (landing on top of it, or sliding under it, is fine).
-  Falling in a pit or the sea is also a crash. A crash bonks the kid back and shakes the screen, then
-  the results show.
-- **Revive.** Spend coins (40, then 80, then 120; at most three times a run) to carry on from just past the
-  thing you hit, with a moment of shield. The coins you collected in the run count: they are banked as soon
-  as the run ends.
+- **Balls.** A run starts with 3 balls (`ballsPerRun`; 0 = unlimited). Losing the ball (into a pit or the
+  water, off the street, left too far behind, or "Stuck? Back to checkpoint" from the pause menu) costs one
+  and sends the kid back to the last checkpoint with the ball, as in a level; the last one ends the run. The
+  balls left are the little footballs under the score card. A new day gives back at least two.
+- **Checkpoints.** Every stage has one, on the clear ground at its start; it is reached when the kid passes it
+  with the ball close by. Stages load and unload as you go, so the checkpoints come and go with them.
+- **No walking back into the past.** Streets far behind are gone, so an invisible wall follows the furthest
+  point reached, 40 m behind (`walkBackLimit`). The ball passes through it.
+- **Revive.** Spend coins (40, then 80, then 120; at most three times a run) to carry on with one more ball
+  from the last checkpoint, with a moment of shield. The coins you collected in the run count: they are banked
+  as soon as the run ends.
 - **Day done.** Reaching the school gate pays 40 coins and 500 points times the day number, plays a fade,
-  and starts the next day at the front door at the new pace. The combo is kept half.
+  and the street starts again at the front door. The combo is kept half.
 
 ### Scoring
 
-- Points for **distance** (one per metre), times the multiplier.
+- Points for **new ground** (one per metre, times the multiplier): walking back and forth earns nothing.
 - **Coins** are 10 points each (times the multiplier).
-- **Multiplier**: it goes up by one for every 6 obstacles cleared in a row (max x5) and drops to x1 on a crash.
-  Smashing a crate with the ball also counts.
-- **Near misses**: passing an obstacle closer than 0.3 m without touching it is worth 40 points (times the
-  multiplier), with a small flourish.
-- **Smashes**: kicking a crate or a target breaks it, pays its coins and counts toward the combo.
+- **Multiplier**: it goes up by one for every 6 obstacles passed in a row (max x5) and drops to x1 when a ball
+  is lost. Smashing a crate with a kick also counts.
+- **Close shaves**: passing an obstacle closer than 0.3 m without touching it (a jump that only just clears
+  a wall, a slide that skims a bar) is worth 40 points (times the multiplier), with a chime and a sparkle.
+- **Smashes**: a hard kick into a crate, a sandcastle or a stack of cones breaks it, pays its coins and counts
+  toward the combo (`BallSmasher` on the ball).
 
 ### Power-ups
 
@@ -71,16 +67,8 @@ Found along the street in glowing bubbles. Each is a different colour and has a 
 | Power-up | Lasts | Does |
 |---|---|---|
 | Magnet (pink) | 9 s | Pulls every coin within 6 m to the kid |
-| Shield (blue) | 15 s | Takes one hit: the thing is knocked out of the way and you carry on with a moment of invulnerability |
-| Turbo (orange) | 5.5 s | 40% faster, smashes through everything in the way, doubles points |
-
-### The ball
-
-On the run the ball cannot be dribbled by hand: it is carried just ahead of the feet, hopping with the stride,
-and a **KICK** shoots it forward in an arc. It smashes crates and targets (and passes through the burst with
-most of its speed), bounces off anything else, and is called back to the feet after about a second, ready for
-the next kick. While carried it is a trigger, so it collects coins and pick-ups it touches and can never be
-knocked into a pit.
+| Shield (blue) | 15 s | The next ball you lose is free (it still goes back to the checkpoint) |
+| Turbo (orange) | 5.5 s | The kid walks 35% faster and the distance points count double |
 
 ### Missions
 
@@ -128,15 +116,15 @@ scenery stays put.
 Scripts/Holiday/
   HolidayStages.cs        the stage table (levels, chapters, traits, difficulty) and the world's geometry
   RunChunk.cs             a stage's root and its layout variants
-  RunSolid.cs, RunBreakable.cs   obstacles the director counts (a crash, a pass, a near miss; a smashable crate)
+  RunSolid.cs, RunBreakable.cs   obstacles the director counts (passed, close shave; a smashable crate)
   PowerUp.cs              the magnet, shield and turbo pickups
   RunWorldStreamer.cs     loads the stages near the kid as additive scenes, wakes them one a frame, unloads
                           what is behind
-  HolidayRunDirector.cs   the rules: pace, score, combo, power-ups, crash, revive, days, saving
-  EndlessBall.cs          the ball on the run (carried, shot, recalled)
+  HolidayRunDirector.cs   the rules: balls, score, combo, power-ups, revive, days, saving
+  BallSmasher.cs          on the ball: a hard kick into a crate smashes it
   HolidayAtmosphere.cs    carries the sun, sky and haze from one chapter's mood to the next
-  HolidayRunHud.cs        the run's screen: score card, multiplier, stage ribbon and chapter banner, toasts,
-                          power-up timers, the touch buttons, the day splash
+  HolidayRunHud.cs        the run's screen: score card, balls left, multiplier, stage ribbon and chapter banner, toasts,
+                          power-up timers, the touch buttons (arrows, aim), the day splash
   HolidayRunPanels.cs     the pause and results menus (revive, run again, home, mission bars)
   HolidayMissions.cs      the mission pool and its saved progress
 Scripts/FrontEnd/
@@ -160,7 +148,7 @@ Why streaming and not one huge scene: the 23 stages hold about 2.8 km of street 
 existing hazards, animals and tides keep their **absolute world coordinates**, so each stage is built where it
 finally stands in the world (stage *n* occupies x = 120n to 120n + 120) and never moved. The core scene
 `HolidayRun` holds only the kid, ball, camera, sky, director and HUD, with `LevelManager` kept as the host that
-the hazards and coins expect (with `endless` on: losing the ball is a crash, not a respawn). The stage
+the hazards, coins and checkpoints expect (with `endless` on: no goal, no bell, and the last ball ends the run). The stage
 scenes `HolidayRun_S01 ... HolidayRun_S23` are loaded additively:
 
 1. **Load** a stage when it begins within 190 m of the kid (`loadAhead`), one at a time.
@@ -172,18 +160,22 @@ scenes `HolidayRun_S01 ... HolidayRun_S23` are loaded additively:
 4. At the start of a run and a new day the kid is frozen (no physics) until the stages around them are on
    (`IsReady`), so they never fall through a world that has not arrived.
 
-The director adds itself to the obstacles through `RunSolid` (an obstacle's colliders count a head-on touch as
-a crash, a pass as cleared, a close pass as a near miss); anything without a `RunSolid` is not part of the
-scoring. Story-mode hazards (`Hazard*`) keep working as they are.
+The director follows the obstacles through `RunSolid` (the kid is simply blocked by them, as in a level; the
+director counts one as passed once the kid is past it, and a close pass as a close shave); anything without a
+`RunSolid` is not part of the scoring. Story-mode hazards (`Hazard*`) keep working as they are.
+Checkpoints register with the level manager when their stage is switched on and leave when it goes
+(`LevelManager.RegisterCheckpoint`), and if the one to go back to is unloaded, the nearest reached one still
+standing takes over.
 
 ### Tuning
 
-All on `HolidayRunDirector` in the core scene: `firstDaySpeed`, `firstDayTopSpeed`, `perDayGain`,
-`startSpeedCap`, `topSpeedCap`, `acceleration`, `turboFactor`; `pointsPerCoin`, `nearMissPoints`, `dayPoints`,
-`streakPerStep`, `maxMultiplier`, `nearMissGap`, `dayBonusCoins`; `magnetRadius`, `firstReviveCost`, `maxRevives`;
-power-up durations in `Duration(kind)`. Stage difficulty and traits are in `HolidayStages.All`; the streaming
-distances are on `RunWorldStreamer`; the ball is on `EndlessBall` (`kickSpeed`, `kickLift`, `flightTime`,
-`lead`, `hop`).
+All on `HolidayRunDirector` in the core scene: `ballsPerRun`, `walkBackLimit`, `turboFactor`; `pointsPerCoin`,
+`nearMissPoints`, `dayPoints`, `streakPerStep`, `maxMultiplier`, `nearMissGap`, `dayBonusCoins`; `magnetRadius`,
+`firstReviveCost`, `maxRevives`; power-up durations in `Duration(kind)`. The kid and the ball are tuned by the
+same two assets as the campaign (`PlayerTuning`, `BallTuning`); `LevelManager.maxBallBehindDistance` (16 m in
+the core scene) is how far behind the kid the ball may be left. Stage difficulty and traits are in
+`HolidayStages.All`; the streaming distances are on `RunWorldStreamer`; the ball smashes with
+`BallSmasher.minSpeed`.
 
 ### Rebuilding
 
@@ -191,7 +183,7 @@ The editor generates every Holiday Run scene (like the story levels); edits made
 overwritten. Change the stage table, the patterns or the rig and rebuild:
 
 - **Kick Off > Rebuild All Levels** also rebuilds the Holiday Run (it is part of the generated content;
-  `GeneratedContent.Version` is 50 for it), and it runs by itself on the first open.
+  `GeneratedContent.Version` is 51 for it), and it runs by itself on the first open.
 - **Kick Off > Rebuild Holiday Run** rebuilds only the Holiday Run (its core scene and 23 stages) and swaps its
   entries in the build settings, leaving the levels and the menu alone.
 - The scenes are `Assets/_Game/Scenes/Holiday/HolidayRun.unity` (the core) and `HolidayRun_S01..S23.unity`, all in
@@ -241,7 +233,7 @@ The lap runs through every chapter, so where chapters are sold (`Monetization.Re
 
 ## Analytics
 
-`holiday_run_start`, `holiday_run_end` (score, distance, coins, stage, day, reason, revives, near misses) and
+`holiday_run_start`, `holiday_run_end` (score, distance, coins, stage, day, reason, revives, close shaves) and
 `holiday_revive`. The streamed stage loads are not levels: they raise no `level_start` events.
 
 ## What has been checked, and what has not
@@ -260,12 +252,17 @@ opened or played, and no NUnit test has been run in the Test Runner. First thing
 3. Title screen > **Holiday Run**. Check: GET READY then GO once; the kid stays on the ground at the start; the
    first stage and the next two stream in without a hitch; the stage ribbon names each stage and the chapter banner
    each chapter.
-4. Run to the school gate (set `firstDaySpeed` high on the director to get there quickly): the fade, the second day
-   (faster, the DAY 2 splash), no stage from day 1 left standing.
-5. Crash on purpose: the results, revive (it is paid with the coins you just collected), run again, quit to the menu
-   from the pause menu (the coins are kept).
-6. Kick at a crate; collect each power-up; check the missions after a run.
-7. On a phone: JUMP under the right thumb, SLIDE under the left, KICK above-left of JUMP, none hard to reach.
+4. Get to the school gate (the street is 2.7 km: about 11 minutes at the campaign's pace, so for a quick check
+   drag the Kid object far along x in the Scene view while playing): the fade, the second day (the DAY 2 splash), no
+   stage from day 1 left standing, the kid and the ball back at the front door.
+5. Lose the ball on purpose (walk into a pit, or leave it behind): you come back at the checkpoint with the ball,
+   a football under the score card goes dim, and "Stuck? Back to checkpoint" in the pause menu does the same. Lose
+   the third: the results, revive (it is paid with the coins you just collected), run again, quit to the menu from
+   the pause menu (the coins are kept). Walk back past the wall 40 m behind the furthest point: it stops you.
+6. Kick hard at a crate and a sandcastle (they smash for coins); collect each power-up; check the missions after a run.
+7. On a phone: the arrows under the left thumb, JUMP at the bottom of the stack at the right edge with SLIDE straight
+   above it and KICK beside them, all the same size and see-through, none hard to reach, and the aim drag from KICK
+   working with the aim bar showing.
 8. Profile a long run: only about three stages in memory, and no frame spike when a stage wakes.
 
 Assumptions in the code that only a run can confirm:
@@ -275,8 +272,11 @@ Assumptions in the code that only a run can confirm:
 - The streamer calls `RunChunk.Prepare` while a stage is still inactive and then switches it on, and the hazards
   (pedestrians, dogs, gulls, fountains, springboards, the tide, slow zones, tunnel darkness) start fine without
   anything from outside their stage.
-- The rolling pipes (made at run time by `PipeSpawner` from a template carrying a `RunSolid`) crash the kid when
-  hit head-on and score when passed; a rolling pipe is the only obstacle that moves.
+- The rolling pipes (made at run time by `PipeSpawner` from a template carrying a `RunSolid`) shove the kid and the
+  ball as in the campaign and count as passed once the kid is beyond them; a rolling pipe is the only obstacle that moves.
+- The obstacles were laid out as things to get past (a wall to jump, a bar to slide under, a pit to cross); the ball
+  has to get past them too, by a kick over or round them, as in a level. How that plays with the ball (walls the ball
+  cannot be carried over, a ball that ends up stuck) is unseen: the pause menu's "Back to checkpoint" is the way out.
 - The crossing's "stopped on green" trick (`greenTime` 100000, `phaseOffset` 95000, trigger off) behaves as the
   fields' names say.
 - The first-stage banner (the HUD, a moment after GO), toasts above the kid (clear of the KICK button), the radial

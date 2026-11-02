@@ -4,7 +4,7 @@ using UnityEngine;
 namespace DribbleToSchool.Holiday
 {
     /// <summary>
-    /// A crate, cone stack or target that a kicked ball (or a turbo run) smashes: it bursts, shedding
+    /// A crate, sandcastle or cone stack that a kicked ball smashes (see BallSmasher): it bursts, shedding
     /// coins, and is no longer in the way.
     /// </summary>
     public class RunBreakable : RunSolid

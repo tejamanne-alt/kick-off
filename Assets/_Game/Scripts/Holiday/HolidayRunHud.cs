@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using DribbleToSchool.Core;
 using DribbleToSchool.InputHandling;
 using DribbleToSchool.Localization;
 using DribbleToSchool.Progression;
@@ -45,6 +46,8 @@ namespace DribbleToSchool.Holiday
         static readonly string[] StageNumbers = Numbers(HolidayStages.Count);
 
         static readonly Color SlideColor = new Color(0.58f, 0.4f, 0.92f);
+        static readonly Color WalkColor = Color.white;
+        static readonly Color KickReady = new Color(0.3f, 0.82f, 0.42f);
         static readonly Color BestGold = new Color(0.86f, 0.56f, 0.06f);
         static readonly Color ChipDisc = new Color(0.1f, 0.16f, 0.34f, 0.92f);
         static readonly Color OopsColor = new Color(1f, 0.5f, 0.45f);
@@ -101,6 +104,18 @@ namespace DribbleToSchool.Holiday
         TouchButton jumpButton, slideButton, kickButton;
         RectTransform jumpRect, slideRect, kickRect;
         Text jumpLabel, slideLabel, kickLabel;
+        // the left thumb's arrows, and the kick's aim (as in the levels)
+        TouchButton leftButton, rightButton;
+        RectTransform leftRect, rightRect, aimKnob, aimBar, aimFill;
+        Image aimFillImage;
+        Text tooFar;
+        float tooFarUntil;
+
+        // balls left
+        RectTransform ballsRow;
+        Image[] ballIcons;
+        int shownBalls = -1;
+        float ballsPop = -100f;
 
         // score card
         Text scoreText, distanceText, coinText, bestText, comboText;
@@ -206,12 +221,14 @@ namespace DribbleToSchool.Holiday
             safe = UIKit.Stretch(UIKit.Rect(root, "SafeArea"));
             safe.gameObject.AddComponent<UISafeArea>();
             BuildCard();
+            BuildBalls();
             BuildPowerUps();
             BuildTag();
             BuildDayBar();
             BuildRibbon();
             BuildBanner();
             BuildToasts();
+            BuildAim();
             BuildPauseButton();
 
             BuildCentreText();
@@ -239,21 +256,71 @@ namespace DribbleToSchool.Holiday
             // The same glass discs as the story levels, one colour per action; where they sit is GameInput's runner layout.
             jumpButton = TouchButton.Create(controls, "JumpButton", UITheme.Blue, true);
             jumpButton.AddIcon(ProceduralSprites.ArrowUp, 0.42f, 0f, 0.6f);
-            jumpLabel = jumpButton.AddLabel(Loc.T("hud.jump"), 40);
-            UIKit.Fit(jumpLabel, 20);
+            jumpLabel = jumpButton.AddLabel(Loc.T("hud.jump"), 28);
+            UIKit.Fit(jumpLabel, 14);
             jumpRect = (RectTransform)jumpButton.transform;
 
             slideButton = TouchButton.Create(controls, "SlideButton", SlideColor, true);
             slideButton.AddIcon(ProceduralSprites.SlideIcon, 0.44f, 0f, 0.6f);
-            slideLabel = slideButton.AddLabel(Loc.T("hud.slide"), 40);
-            UIKit.Fit(slideLabel, 20);
+            slideLabel = slideButton.AddLabel(Loc.T("hud.slide"), 28);
+            UIKit.Fit(slideLabel, 14);
             slideRect = (RectTransform)slideButton.transform;
 
             kickButton = TouchButton.Create(controls, "KickButton", UITheme.Accent, true);
-            kickButton.AddIcon(ProceduralSprites.BallIcon, 0.4f, 0f, 0.6f, new Color(1f, 1f, 1f, 0.85f));
-            kickLabel = kickButton.AddLabel(Loc.T("hud.kick"), 30);
-            UIKit.Fit(kickLabel, 16);
+            kickButton.AddIcon(ProceduralSprites.BallIcon, 0.4f, 0f, 0.6f, new Color(1f, 1f, 1f, 0.45f));
+            kickLabel = kickButton.AddLabel(Loc.T("hud.kick"), 28);
+            UIKit.Fit(kickLabel, 14);
             kickRect = (RectTransform)kickButton.transform;
+            // The knob that follows the aiming drag.
+            aimKnob = UIKit.Icon(kickButton.Content, "AimKnob", ProceduralSprites.SoftEdgeDisc, new Color(1f, 1f, 1f, 0.55f), 70f).rectTransform;
+            aimKnob.gameObject.SetActive(false);
+
+            // The left thumb's two arrows: walk back, walk forward.
+            leftButton = TouchButton.Create(controls, "LeftButton", WalkColor, false);
+            leftButton.AddIcon(ProceduralSprites.ArrowUp, 0.42f, 90f);
+            leftRect = (RectTransform)leftButton.transform;
+            rightButton = TouchButton.Create(controls, "RightButton", WalkColor, false);
+            rightButton.AddIcon(ProceduralSprites.ArrowUp, 0.42f, -90f);
+            rightRect = (RectTransform)rightButton.transform;
+        }
+
+        /// <summary>The aim meter and the "too far" line shown while a kick is aimed (as in the levels), just under the stage banner.</summary>
+        void BuildAim()
+        {
+            var bar = UIKit.Panel(safe, "AimMeter", new Color(0f, 0f, 0f, 0.3f), ProceduralSprites.RoundedSmall);
+            aimBar = bar.rectTransform;
+            UIKit.Place(aimBar, new Vector2(0.5f, 1f), new Vector2(0f, -318f), new Vector2(520f, 40f));
+            aimFillImage = UIKit.Panel(aimBar, "Fill", UITheme.Green, ProceduralSprites.RoundedSmall);
+            aimFill = aimFillImage.rectTransform;
+            aimFill.anchorMin = new Vector2(0f, 0f);
+            aimFill.anchorMax = new Vector2(0f, 1f);
+            aimFill.pivot = new Vector2(0f, 0.5f);
+            aimFill.offsetMin = new Vector2(6f, 6f);
+            aimFill.offsetMax = new Vector2(6f, -6f);
+            aimBar.gameObject.SetActive(false);
+            tooFar = UIKit.Title(safe, "TooFar", Loc.T("hud.tooFar"), 36, Color.white);
+            UIKit.Place(tooFar.rectTransform, new Vector2(0.5f, 1f), new Vector2(0f, -366f), new Vector2(1100f, 56f));
+            tooFar.gameObject.SetActive(false);
+        }
+
+        /// <summary>The balls left, as little footballs under the score card (the dimmed ones are gone).</summary>
+        void BuildBalls()
+        {
+            int count = Mathf.Clamp(director.MaxBalls, 0, 8);
+            ballsRow = UIKit.Rect(safe, "Balls");
+            UIKit.Place(ballsRow, new Vector2(0f, 1f), new Vector2(Margin + 8f, -(Margin + CardHeight + 12f)), new Vector2(Mathf.Max(60f, count * 56f), 50f), new Vector2(0f, 1f));
+            ballIcons = new Image[count];
+            for (int i = 0; i < count; i++)
+            {
+                var icon = UIKit.Icon(ballsRow, "Ball" + i, ProceduralSprites.BallIcon, Color.white, 46f);
+                var rt = icon.rectTransform;
+                rt.anchorMin = rt.anchorMax = new Vector2(0f, 0.5f);
+                rt.pivot = new Vector2(0f, 0.5f);
+                rt.sizeDelta = new Vector2(46f, 46f);
+                rt.anchoredPosition = new Vector2(i * 56f, 0f);
+                ballIcons[i] = icon;
+            }
+            ballsRow.gameObject.SetActive(count > 0);
         }
 
         /// <summary>The card at the top left: score, combo ring, distance, coins, and the best score to beat.</summary>
@@ -676,6 +743,7 @@ namespace DribbleToSchool.Holiday
             jumpLabel.text = Loc.T("hud.jump");
             slideLabel.text = Loc.T("hud.slide");
             kickLabel.text = Loc.T("hud.kick");
+            tooFar.text = Loc.T("hud.tooFar");
             newBestLabel.text = Loc.T("holiday.newBest");
             shownBest = shownStage = -1;   // the best line, the tag and the day bar are rebuilt next frame
             shownBig = shownQuiet = null;
@@ -740,6 +808,7 @@ namespace DribbleToSchool.Holiday
             UpdateCentreText(now);
             UpdateFade();
             UpdateControls(dt);
+            UpdateBalls(now);
             UpdateBlockers();
         }
 
@@ -1102,7 +1171,8 @@ namespace DribbleToSchool.Holiday
         void UpdateControls(float dt)
         {
             var input = GameInput.Instance;
-            bool show = director.Phase == RunPhase.Running && input != null;
+            var level = director.level;
+            bool show = director.Phase == RunPhase.Running && input != null && level != null && level.State == LevelState.Playing;
             controlsGroup.alpha = Mathf.MoveTowards(controlsGroup.alpha, show ? 1f : 0f, dt * 5f);
             bool visible = controlsGroup.alpha > 0.001f;
             if (controls.gameObject.activeSelf != visible) controls.gameObject.SetActive(visible);
@@ -1112,18 +1182,68 @@ namespace DribbleToSchool.Holiday
                 jumpButton.SetState(false, false);
                 slideButton.SetState(false, false);
                 kickButton.SetState(false, false);
+                leftButton.SetState(false, false);
+                rightButton.SetState(false, false);
+                aimKnob.gameObject.SetActive(false);
+                aimBar.gameObject.SetActive(false);
+                tooFar.gameObject.SetActive(false);
                 return;
             }
 
+            var kid = director.kid;
+            var ball = director.ball;
+            var aimer = director.aimer;
             PlaceButton(jumpRect, input.JumpButtonNormalized);
             jumpButton.SetState(input.JumpHeld, false);
             // Slide glows while the kid is low under something (tap it again to keep sliding on).
             PlaceButton(slideRect, input.SlideButtonNormalized);
-            var kid = director.kid;
             slideButton.SetState(input.SlideHeld, kid != null && kid.IsLow && !kid.IsSliding);
-            // Kick glows while there is a ball to kick.
+            PlaceButton(leftRect, input.LeftButtonNormalized);
+            leftButton.SetState(input.LeftHeld, false);
+            PlaceButton(rightRect, input.RightButtonNormalized);
+            rightButton.SetState(input.RightHeld, false);
+
+            // The kick button turns green and glows while the ball is close enough to kick.
+            bool aiming = aimer != null && aimer.IsAiming;
+            bool inReach = ball != null && ball.InKickReach;
             PlaceButton(kickRect, input.KickButtonNormalized);
-            kickButton.SetState(input.KickHeld, director.endlessBall != null && director.endlessBall.Ready);
+            kickButton.SetColor(inReach ? KickReady : UITheme.Accent);
+            kickButton.SetState(aiming || input.KickHeld, inReach && !aiming);
+
+            if (input.KickTapped && !inReach) tooFarUntil = Time.unscaledTime + 1.2f;
+            aimKnob.gameObject.SetActive(aiming);
+            if (aiming)
+            {
+                float scale = Mathf.Max(0.01f, root.lossyScale.x);
+                aimKnob.anchoredPosition = Vector2.ClampMagnitude(input.KickDrag / scale, 240f);
+            }
+            aimBar.gameObject.SetActive(aiming);
+            tooFar.gameObject.SetActive((aiming && !inReach) || Time.unscaledTime < tooFarUntil);
+            if (aiming)
+            {
+                float width = (aimBar.rect.width - 12f) * Mathf.Max(0.02f, aimer.AimPower);
+                aimFill.sizeDelta = new Vector2(width, aimFill.sizeDelta.y);
+                aimFillImage.color = aimer.AimIsValid ? Color.Lerp(UITheme.Green, UITheme.Red, aimer.AimPower) : UITheme.Locked;
+            }
+        }
+
+        /// <summary>The footballs under the card: the ones still to lose are solid, the lost ones faint; the one just lost pops.</summary>
+        void UpdateBalls(float now)
+        {
+            if (ballIcons == null || ballIcons.Length == 0) return;
+            int left = director.BallsLeft;
+            if (left != shownBalls)
+            {
+                if (shownBalls >= 0 && left < shownBalls) ballsPop = now;
+                shownBalls = left;
+            }
+            float pop = 1f - Ease(Since(ballsPop, 0.4f));
+            for (int i = 0; i < ballIcons.Length; i++)
+            {
+                bool have = i < left;
+                ballIcons[i].color = new Color(1f, 1f, 1f, have ? 1f : 0.25f);
+                SetScale(ballIcons[i].rectTransform, i == left && pop > 0f ? 1f + 0.5f * pop : 1f);
+            }
         }
 
         static void PlaceButton(RectTransform rect, Rect normalized)

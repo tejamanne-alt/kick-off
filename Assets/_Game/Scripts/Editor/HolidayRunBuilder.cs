@@ -185,6 +185,10 @@ namespace DribbleToSchool.EditorTools
             }
             if (st.Has(StageTraits.School)) Attempt(i, "the school gate", () => t.RunSchoolGate(HolidayStages.GateX));
 
+            // A checkpoint in the clear ground at the start of the stage (nothing stands in the first 14 m): a lost ball
+            // brings the kid back here, as in a level. It joins the level manager when the stage is switched on.
+            Attempt(i, "the checkpoint", () => t.Checkpoint(from + 8f));
+
             Attempt(i, "the street slabs", () => t.Finish());
 
             // The street's scenery and animals.

@@ -35,11 +35,12 @@ namespace DribbleToSchool.Holiday
         public static GameObject OpenPause(Transform canvas, HolidayRunDirector director)
         {
             GameObject root;
-            var card = UIKit.Modal(canvas, "Pause", new Vector2(720f, 700f), out root);
+            var card = UIKit.Modal(canvas, "Pause", new Vector2(720f, 820f), out root);
             UIKit.Header(card.transform, Loc.T("pause.title"), 460f);
 
             float y = -200f;
             PauseButton(card.transform, ref y, "pause.resume", UITheme.Green, director.TogglePause);
+            PauseButton(card.transform, ref y, "holiday.pause.checkpoint", UITheme.Blue, director.BackToCheckpoint);
             PauseButton(card.transform, ref y, "holiday.pause.restart", UITheme.Accent, director.Restart);
             PauseButton(card.transform, ref y, "pause.settings", new Color(0.6f, 0.5f, 0.8f), () => SettingsPanel.Open(canvas, null));
             PauseButton(card.transform, ref y, "holiday.pause.quit", UITheme.Red, director.QuitToMenu);

@@ -50,10 +50,12 @@ namespace DribbleToSchool.Holiday
     }
 
     /// <summary>
-    /// Runs a Holiday Run: the countdown, the pace that builds through each day, the score and its
-    /// multiplier, the power-ups, crashes and the revive, the day's end at the school gate and the
-    /// result. The HUD reads its properties and events; the world streamer and the atmosphere follow
-    /// it. Everything the story's hazards need (the hosting level) lives in the LevelManager beside it.
+    /// Runs a Holiday Run: the campaign with no destination. The kid walks, dribbles and kicks exactly
+    /// as in the story levels; this keeps the countdown, the score and its multiplier, the power-ups,
+    /// the balls (each lost ball sends the kid back to the last checkpoint, as in a level; the last one
+    /// ends the run), the revive, the day's end at the school gate and the result. The HUD reads its
+    /// properties and events; the world streamer and the atmosphere follow it. Everything the story's
+    /// hazards need (the hosting level) lives in the LevelManager beside it.
     /// </summary>
     [DefaultExecutionOrder(-40)]
     public class HolidayRunDirector : MonoBehaviour
@@ -64,22 +66,18 @@ namespace DribbleToSchool.Holiday
         public LevelManager level;
         public KidController kid;
         public BallController ball;
-        public EndlessBall endlessBall;
+        public KickAimer aimer;
         public CameraFollow2D cameraFollow;
         public RunWorldStreamer streamer;
         public HolidayAtmosphere atmosphere;
 
-        [Header("Pace (metres per second)")]
-        [Tooltip("Speed at the start of the first day, and at its school gate.")]
-        public float firstDaySpeed = 6.5f;
-        public float firstDayTopSpeed = 11f;
-        [Tooltip("Each further day starts and ends this much faster, up to the caps.")]
-        public float perDayGain = 1f;
-        public float startSpeedCap = 10f;
-        public float topSpeedCap = 14f;
-        [Tooltip("How quickly the pace follows its target (m/s per second).")]
-        public float acceleration = 4f;
-        public float turboFactor = 1.4f;
+        [Header("Balls")]
+        [Tooltip("Balls in a run: each one lost (the campaign's rule: back to the last checkpoint) costs one, and the run ends with the last. 0: it never ends.")]
+        public int ballsPerRun = 3;
+        [Tooltip("How far behind the furthest point reached the kid can walk back (metres): the street further back is gone.")]
+        public float walkBackLimit = 40f;
+        [Tooltip("How much faster the kid walks while the turbo lasts.")]
+        public float turboFactor = 1.35f;
 
         [Header("Score")]
         public int pointsPerCoin = 10;
@@ -106,7 +104,9 @@ namespace DribbleToSchool.Holiday
         public int Multiplier { get; private set; }
         /// <summary>0..1 toward the next multiplier step.</summary>
         public float MultiplierProgress { get; private set; }
-        public float Speed { get; private set; }
+        /// <summary>Balls left in this run (the one at the kid's feet counts); the run ends when the last is lost.</summary>
+        public int BallsLeft { get; private set; }
+        public int MaxBalls { get { return ballsPerRun; } }
         /// <summary>1-based: which day (lap) this is.</summary>
         public int Day { get; private set; }
         /// <summary>0-based stage the kid is in.</summary>
@@ -156,11 +156,12 @@ namespace DribbleToSchool.Holiday
         // Coins of this run already in the wallet (they are banked when the run ends, so a revive can be paid with them).
         int bankedCoins;
         int streak, revivesUsed, lastMultiplier;
-        float lastX;
-        float crashTime, crashX, invulnerableUntil;
+        float furthestX, wallX = float.NegativeInfinity;
+        int furthestStage;
+        float crashTime, crashX;
         string crashReason;
-        RunSolid lastHit;
         bool committed, dayChanging;
+        Transform backWall;
         CapsuleCollider2D kidCollider;
         readonly List<RunSolid> solids = new List<RunSolid>();
         readonly List<Coin> pulled = new List<Coin>();
@@ -194,11 +195,14 @@ namespace DribbleToSchool.Holiday
             {
                 level.StateChanged -= OnLevelState;
                 level.Crashed -= OnCrashed;
+                level.BallLost -= OnBallLost;
+                level.CheckpointReached -= OnCheckpointReached;
                 level.IntroHold = null;
+                level.RunOver = null;
             }
             if (kid != null)
             {
-                kid.Collided -= OnKidCollided;
+                kid.RemoveSpeedModifier(this);
                 kid.Jumped -= OnJumped;
                 kid.DoubleJumped -= OnDoubleJumped;
                 kid.Slid -= OnSlid;
@@ -220,12 +224,14 @@ namespace DribbleToSchool.Holiday
                 return;
             }
             kidCollider = kid.GetComponent<CapsuleCollider2D>();
-            // The kid runs by themselves: the buttons are the runner's (SLIDE under the left thumb, no walk arrows or aiming).
-            if (GameInput.Instance != null) GameInput.Instance.runnerLayout = true;
+            BuildBackWall();
             level.StateChanged += OnLevelState;
             level.Crashed += OnCrashed;
+            level.BallLost += OnBallLost;
+            level.CheckpointReached += OnCheckpointReached;
             level.IntroHold = () => Loading;
-            kid.Collided += OnKidCollided;
+            // The run is over when the last ball has gone (a lost ball is counted before this is asked).
+            level.RunOver = () => ballsPerRun > 0 && BallsLeft <= 0;
             kid.Jumped += OnJumped;
             kid.DoubleJumped += OnDoubleJumped;
             kid.Slid += OnSlid;
@@ -260,14 +266,14 @@ namespace DribbleToSchool.Holiday
             StageIndex = 0;
             StageProgress = 0f;
             MagnetLeft = ShieldLeft = TurboLeft = 0f;
-            invulnerableUntil = 0f;
+            kid.RemoveSpeedModifier(this);
+            BallsLeft = ballsPerRun;
             committed = false;
-            lastHit = null;
             pulled.Clear();
             solids.Clear();
-            Speed = DayStartSpeed(1);
-            kid.autoRunSpeed = Speed;
-            lastX = kid.transform.position.x;
+            furthestX = kid.transform.position.x;
+            wallX = float.NegativeInfinity;
+            furthestStage = 0;
             stats.maxMultiplier = 1;
             stats.stagesReached = 1;
             if (streamer != null)
@@ -283,18 +289,23 @@ namespace DribbleToSchool.Holiday
             if (kid == null || kid.Body == null) return;
             if (freeze) kid.Body.linearVelocity = Vector2.zero;
             kid.Body.simulated = !freeze;
+            if (ball != null && ball.Body != null)
+            {
+                if (freeze) ball.Body.linearVelocity = Vector2.zero;
+                ball.Body.simulated = !freeze;
+            }
         }
 
+        /// <summary>The kid and the ball on the home street's start (the first checkpoint), and nothing reached yet.</summary>
         void PlaceAtStart()
         {
+            level.ResetCheckpoints();
             kid.ResetTo(new Vector2(HolidayStages.SpawnX, 0.6f));
-            if (endlessBall != null) endlessBall.ResetAt(kid.transform.position);
-            lastX = kid.transform.position.x;
+            ball.ResetTo(new Vector2(HolidayStages.SpawnX + 1f, 0.25f));
+            furthestX = kid.transform.position.x;
+            wallX = float.NegativeInfinity;
             if (cameraFollow != null) cameraFollow.SnapToTarget();
         }
-
-        float DayStartSpeed(int day) { return Mathf.Min(startSpeedCap, firstDaySpeed + perDayGain * (day - 1)); }
-        float DayTopSpeed(int day) { return Mathf.Min(topSpeedCap, firstDayTopSpeed + perDayGain * (day - 1)); }
 
         void SetPhase(RunPhase phase)
         {
@@ -314,7 +325,6 @@ namespace DribbleToSchool.Holiday
                         Commit();
                         TimeControl.ResetTime();
                         ResetRun();
-                        if (endlessBall != null) endlessBall.ResetAt(kid.transform.position);
                         if (cameraFollow != null) cameraFollow.SnapToTarget();
                     }
                     SetPhase(RunPhase.Ready);
@@ -322,7 +332,7 @@ namespace DribbleToSchool.Holiday
                 case LevelState.Playing:
                     if (Phase == RunPhase.Ready)
                     {
-                        lastX = kid.transform.position.x;
+                        furthestX = kid.transform.position.x;
                         // (The HUD announces the first stage itself a moment after GO; later stages and days come as StageChanged.)
                         SetPhase(RunPhase.Running);
                         AnalyticsService.Track("holiday_run_start", "character", GameSettings.Character);
@@ -350,7 +360,6 @@ namespace DribbleToSchool.Holiday
             }
             if (Phase == RunPhase.Ready)
             {
-                kid.autoRunSpeed = Speed;
                 // The kid has nothing to stand on until the first stage has loaded: hold them still, and put
                 // them back on their feet at the start once it has.
                 if (Loading) FreezeKid(true);
@@ -362,18 +371,22 @@ namespace DribbleToSchool.Holiday
             float dt = Time.deltaTime;
             float x = kid.transform.position.x;
 
-            // Distance, and the points that come with it.
-            float dx = x - lastX;
-            lastX = x;
-            if (dx > 0f && dx < 4f)
+            // Distance, and the points that come with it: only new ground counts (walking back and forth earns nothing).
+            if (x > furthestX)
             {
-                Distance += dx;
-                scoreExact += dx * Multiplier * (TurboLeft > 0f ? 2f : 1f);
+                float gained = x - furthestX;
+                furthestX = x;
+                if (gained < 3f)   // (a respawn or a new day is a jump, not a step)
+                {
+                    Distance += gained;
+                    scoreExact += gained * Multiplier * (TurboLeft > 0f ? 2f : 1f);
+                }
             }
 
-            UpdateSpeed(dt, x);
             UpdateStage(x);
             UpdateTimers(dt);
+            UpdateTurbo();
+            UpdateBackWall();
             UpdateSolids(x);
             UpdateCoins();
             UpdateMultiplier();
@@ -387,13 +400,40 @@ namespace DribbleToSchool.Holiday
             UpdateAuras();
         }
 
-        void UpdateSpeed(float dt, float x)
+        /// <summary>The turbo makes the kid walk faster (and the points count double: see Update).</summary>
+        void UpdateTurbo()
         {
-            float t = Mathf.SmoothStep(0f, 1f, HolidayStages.LapProgress(x));
-            float target = Mathf.Lerp(DayStartSpeed(Day), DayTopSpeed(Day), t);
-            if (TurboLeft > 0f) target *= turboFactor;
-            Speed = Mathf.MoveTowards(Speed, target, acceleration * dt * (TurboLeft > 0f ? 3f : 1f));
-            kid.autoRunSpeed = Speed;
+            if (TurboLeft > 0f) kid.AddSpeedModifier(this, turboFactor);
+            else kid.RemoveSpeedModifier(this);
+        }
+
+        /// <summary>
+        /// A wall that stops the kid walking back into the street that has already gone: it follows
+        /// the furthest point reached, <see cref="walkBackLimit"/> metres behind (the ball passes through).
+        /// </summary>
+        void BuildBackWall()
+        {
+            var go = new GameObject("BackWall");
+            go.transform.SetParent(transform, false);
+            var body = go.AddComponent<Rigidbody2D>();
+            body.bodyType = RigidbodyType2D.Kinematic;
+            var box = go.AddComponent<BoxCollider2D>();
+            box.size = new Vector2(1f, 60f);
+            box.offset = new Vector2(0f, 10f);
+            backWall = go.transform;
+            backWall.position = new Vector3(-1000f, 0f, 0f);
+            if (ball != null)
+            {
+                var circle = ball.GetComponent<CircleCollider2D>();
+                if (circle != null) Physics2D.IgnoreCollision(circle, box, true);
+            }
+        }
+
+        void UpdateBackWall()
+        {
+            if (backWall == null || walkBackLimit <= 0f) return;
+            wallX = Mathf.Max(wallX, furthestX - walkBackLimit);
+            backWall.position = new Vector3(wallX - 0.5f, 0f, 0f);
         }
 
         void UpdateStage(float x)
@@ -403,6 +443,9 @@ namespace DribbleToSchool.Holiday
             if (stage == StageIndex) return;
             StageIndex = stage;
             stats.stagesReached = Mathf.Max(stats.stagesReached, (Day - 1) * HolidayStages.Count + stage + 1);
+            // A stage is announced the first time it is reached on a day (walking back and forth across its edge says nothing more).
+            if (stage <= furthestStage) return;
+            furthestStage = stage;
             if (StageChanged != null) StageChanged(stage, Day);
         }
 
@@ -500,7 +543,7 @@ namespace DribbleToSchool.Holiday
             {
                 var coin = pulled[i];
                 if (coin == null || coin.Collected) { pulled.RemoveAt(i); continue; }
-                coin.transform.position = Vector3.MoveTowards(coin.transform.position, target, (Speed + 9f) * dt);
+                coin.transform.position = Vector3.MoveTowards(coin.transform.position, target, (Mathf.Abs(kid.SpeedX) + 9f) * dt);
             }
         }
 
@@ -551,100 +594,53 @@ namespace DribbleToSchool.Holiday
             TutorialHint.MarkSeen(FirstRunTipId);
             // The newest is on top: the last one said is the first one read.
             Hint(Loc.T("holiday.tip.kick"));
-            Hint(Loc.T("holiday.tip.slide"));
             Hint(Loc.T("holiday.tip.jump"));
+            Hint(Loc.T("holiday.tip.walk"));
         }
 
         void OnJumped() { stats.jumps++; }
         void OnDoubleJumped() { stats.doubleJumps++; }
         void OnSlid() { stats.slides++; }
 
-        /// <summary>Hitting something solid head-on ends the run; a shield or the turbo breaks through instead.</summary>
-        void OnKidCollided(Collision2D collision)
+        /// <summary>
+        /// A ball was lost (the level manager is about to send the kid back to the last checkpoint, or end the run).
+        /// A shield pays for it; otherwise it is one ball fewer. The combo starts again.
+        /// </summary>
+        void OnBallLost(string reason)
         {
-            if (Phase != RunPhase.Running || dayChanging) return;
-            var solid = collision.collider != null ? collision.collider.GetComponentInParent<RunSolid>() : null;
-            if (solid == null || !solid.deadly) return;
-
-            bool headOn = false;
-            Vector2 point = kid.transform.position;
-            for (int i = 0; i < collision.contactCount; i++)
+            if (Phase != RunPhase.Running) return;
+            streak = 0;
+            if (ShieldLeft > 0f)
             {
-                var contact = collision.GetContact(i);
-                // The normal points from the obstacle toward the kid: back along the run when it is head-on.
-                if (contact.normal.x < -0.55f)
-                {
-                    headOn = true;
-                    point = contact.point;
-                    break;
-                }
-            }
-            if (!headOn) return;
-
-            if (Time.time < invulnerableUntil || TurboLeft > 0f || ShieldLeft > 0f)
-            {
-                BreakThrough(solid, point);
+                ShieldLeft = 0f;
+                if (Toast != null) Toast(Loc.T("holiday.shieldSaved"), PowerUp.ColorOf(PowerUpKind.Shield));
                 return;
             }
-            lastHit = solid;
-            level.LoseBall("lose.crash");
+            if (ballsPerRun <= 0) return;
+            BallsLeft = Mathf.Max(0, BallsLeft - 1);
+            if (Toast != null && BallsLeft > 0)
+                Toast(BallsLeft == 1 ? Loc.T("holiday.lastBall") : Loc.F("holiday.ballsLeft", BallsLeft), Color.white);
         }
 
-        /// <summary>The kid passes through <paramref name="solid"/>: it bursts, or just stops being in the way.</summary>
-        void BreakThrough(RunSolid solid, Vector2 point)
+        /// <summary>A checkpoint was reached with the ball: that is where a lost ball comes back to.</summary>
+        void OnCheckpointReached(Checkpoint cp)
         {
-            var crate = solid as RunBreakable;
-            if (crate != null)
-            {
-                crate.Smash(point);
-            }
-            else
-            {
-                if (kidCollider != null)
-                    foreach (var c in solid.Colliders) if (c != null) Physics2D.IgnoreCollision(kidCollider, c, true);
-                solid.Cleared = true;
-                streak++;
-                GameEvents.Raise(GameEventType.Kick, point, 0.9f);
-                if (cameraFollow != null) cameraFollow.Shake(0.12f, 0.2f);
-            }
-            if (TurboLeft <= 0f && Time.time >= invulnerableUntil && ShieldLeft > 0f)
-            {
-                // The shield takes the knock and is spent.
-                ShieldLeft = 0f;
-                invulnerableUntil = Time.time + 1.2f;
-                streak = Mathf.Max(0, streak - 2);
-                if (Toast != null) Toast(Loc.T("holiday.shieldSaved"), PowerUp.ColorOf(PowerUpKind.Shield));
-            }
+            if (Phase == RunPhase.Running && Toast != null) Toast(Loc.T("toast.checkpoint"), Mint);
         }
 
         // ================================================================ crash, results, revive
 
-        /// <summary>The story's reasons are about losing the ball; on a run what happened is the kid's (they fell).</summary>
-        static string RunnerReason(string reason)
-        {
-            switch (reason)
-            {
-                case "lose.crash":
-                case "lose.gap":
-                case "lose.splash":
-                    return reason;
-                default:
-                    return "holiday.lose.fell";
-            }
-        }
-
+        /// <summary>The run ended because the last ball went: the reason shown is that, whichever way it was lost.</summary>
         void OnCrashed(string reason)
         {
             if (Phase == RunPhase.Crashed || Phase == RunPhase.Results) return;
-            crashReason = RunnerReason(reason);
+            crashReason = "holiday.lose.balls";
             crashX = kid.transform.position.x;
             crashTime = Time.unscaledTime;
             streak = 0;
+            kid.RemoveSpeedModifier(this);
             SetPhase(RunPhase.Crashed);
-            // Bonked back off the obstacle, and a shake to go with it.
-            if (reason != "lose.fell" && reason != "lose.gap" && reason != "lose.splash")
-                kid.Body.linearVelocity = new Vector2(-3f, 5f);
-            if (cameraFollow != null) cameraFollow.Shake(0.22f, 0.35f);
+            if (cameraFollow != null) cameraFollow.Shake(0.18f, 0.3f);
         }
 
         void EnterResults()
@@ -727,7 +723,7 @@ namespace DribbleToSchool.Holiday
             }
         }
 
-        /// <summary>Spend coins to carry on from just past what was hit, with a moment of shield.</summary>
+        /// <summary>Spend coins to carry on: one more ball, back at the last checkpoint, with a moment of shield.</summary>
         public void Revive()
         {
             if ((Phase != RunPhase.Results && Phase != RunPhase.Crashed) || !CanRevive) return;
@@ -737,25 +733,26 @@ namespace DribbleToSchool.Holiday
             SaveSystem.Save();
             AnalyticsService.Track("holiday_revive", "cost", cost, "stage", StageIndex + 1, "day", Day);
 
-            float x = lastHit != null ? lastHit.RightX + 1.8f : crashX + 6f;
-            x = Mathf.Min(x, HolidayStages.StartOf(HolidayStages.Count) - 6f);
-            kid.ResetTo(new Vector2(x, 0.6f));
-            if (endlessBall != null) endlessBall.ResetAt(kid.transform.position);
-            Speed = Mathf.Max(DayStartSpeed(Day), Speed * 0.7f);
-            kid.autoRunSpeed = Speed;
+            BallsLeft = 1;
             streak = 0;
-            lastX = x;
-            lastHit = null;
             ShieldLeft = Mathf.Max(ShieldLeft, 3f);
-            invulnerableUntil = Time.time + 3f;
+            level.ResumeAfterCrash();   // back at the last checkpoint with the ball, and playing again
+            furthestX = Mathf.Max(furthestX, kid.transform.position.x);
             if (cameraFollow != null) cameraFollow.SnapToTarget();
-            level.ResumeAfterCrash();
             if (Toast != null) Toast(Loc.T("holiday.revived"), Mint);
         }
 
         public void TogglePause()
         {
             if (level != null) level.TogglePause();
+        }
+
+        /// <summary>The ball is stuck: carry on from the last checkpoint (it costs a ball, as any lost one does).</summary>
+        public void BackToCheckpoint()
+        {
+            if (level == null || Phase != RunPhase.Paused) return;
+            level.TogglePause();
+            level.RespawnAtCheckpoint();
         }
 
         /// <summary>A fresh run from the start of day 1 (saves the one that just ended).</summary>
@@ -786,8 +783,10 @@ namespace DribbleToSchool.Holiday
 
             Day++;
             StageIndex = 0;
+            furthestStage = 0;
             StageProgress = 0f;
             streak = Mathf.Max(0, streak / 2);
+            BallsLeft = Mathf.Max(BallsLeft, Mathf.Min(ballsPerRun, 2));   // a new day: at least two balls
             // Back to the start of the street while the screen is white: first the kid (so the world loads
             // round them, not round the school gate), then the stages, holding the kid still until they are in.
             FreezeKid(true);
@@ -798,8 +797,6 @@ namespace DribbleToSchool.Holiday
                 float waited = 0f;
                 while (!streamer.IsReady && waited < 10f) { waited += Time.unscaledDeltaTime; yield return null; }
             }
-            Speed = DayStartSpeed(Day);
-            kid.autoRunSpeed = Speed;
             FreezeKid(false);
             PlaceAtStart();
             if (DayStarted != null) DayStarted(Day);

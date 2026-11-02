@@ -111,7 +111,7 @@ namespace DribbleToSchool.UI
             // Where they sit is GameInput's: a fan round the right thumb's rest, never in a row.
             jumpButton = TouchButton.Create(root, "JumpButton", UITheme.Blue, true);
             jumpButton.AddIcon(ProceduralSprites.ArrowUp, 0.42f, 0f, 0.6f);
-            jumpButton.AddLabel(Loc.T("hud.jump"), 34);
+            jumpButton.AddLabel(Loc.T("hud.jump"), 28);
             jumpRect = (RectTransform)jumpButton.transform;
 
             // Slide button, left of jump: the chevron turned down over a line of ground.
@@ -130,8 +130,8 @@ namespace DribbleToSchool.UI
 
             // Kick button: a ball, and a knob that follows the aiming drag.
             kickButton = TouchButton.Create(root, "KickButton", UITheme.Accent, true);
-            kickButton.AddIcon(ProceduralSprites.BallIcon, 0.4f, 0f, 0.6f, new Color(1f, 1f, 1f, 0.85f));
-            kickButton.AddLabel(Loc.T("hud.kick"), 30);
+            kickButton.AddIcon(ProceduralSprites.BallIcon, 0.4f, 0f, 0.6f, new Color(1f, 1f, 1f, 0.45f));
+            kickButton.AddLabel(Loc.T("hud.kick"), 28);
             kickRect = (RectTransform)kickButton.transform;
             aimKnob = UIKit.Icon(kickButton.Content, "AimKnob", ProceduralSprites.SoftEdgeDisc, new Color(1f, 1f, 1f, 0.55f), 70f).rectTransform;
 
