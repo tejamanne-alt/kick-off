@@ -28,7 +28,8 @@ SDK refuse to launch ("UIScene life cycle is required"). After changing Unity, d
    - landscape only;
    - Android: minimum API 26, target API 36, ARM64 + IL2CPP;
    - iOS: 15.0+, automatic signing with your team (see `Editor/AppleSigning.cs`);
-   - the app icon (drawn by code at 1024 px; Unity makes every size) and the splash colour.
+   - the app icon (`Assets/_Game/Art/Icon/AppIcon.png`, 1024 px; Unity makes every size; on Android also the adaptive
+     icon's two layers) and the splash colour.
 4. Host the privacy policy (`docs/PRIVACY_POLICY.md`, fill in the contact email) at a public URL, e.g. GitHub Pages or your
    website. Both stores ask for that link.
 
@@ -173,7 +174,7 @@ Record these on a device with the HUD visible. In the editor, the Tune button an
 
 ## 8. Pre-submission checklist
 
-- [ ] App id `com.astradite.kickoff2`, version and a new build number; icon present at every size (Unity generates them from the 1024 px source)
+- [ ] App id `com.astradite.kickoff2`, version and a new build number; icon present at every size (Unity generates them from `Art/Icon/AppIcon.png`; the Android adaptive icon from its two layers)
 - [ ] `RequireUnlock` and IAP settings match the chosen model, sandbox purchase and restore tested
 - [ ] Played every level on a mid-range Android phone and an older iPhone at 60 fps (use the Profiler markers `DTS.FxPool.Update` and `DTS.Audio.MusicUpload`)
 - [ ] Settings persist across restarts; Reset progress works; both languages checked

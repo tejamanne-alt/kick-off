@@ -241,6 +241,30 @@ local X) and a "Front" marker at the front bumper. Vertex colours times the car'
 lines, grime, lights); body paint is part 1 in UV2 so `CarPaint` can repaint it. The `.json` holds
 the base paint (sRGB, as in the FBX) and the wheel radius for `WheelSpin`.
 
+## App icon
+
+The store icon: the teen boy running to school after a big football, in the game's toon look, under a morning sky with the
+sun rising behind him, on the logo's mown pitch with its chalk speed lines, and the logo's sunny "2" in the corner.
+
+```
+blenv/bin/python app_icon.py -- $PWD/Boy.blend $PWD/icon_layers      # kid.png (2048) and ball.png (1024), transparent
+python3 app_icon_compose.py $PWD/icon_layers ../.. --two --preview $PWD/icon_preview
+```
+
+`app_icon.py` poses the boy (a sprint: the near arm back, the far hand up, a stride, leaning in, his face turned a little
+toward us) and shoots him with a 46 mm lens, lit from behind his left shoulder with a warm rim; the ball is a truncated
+icosahedron (crisp pentagons and seams). `app_icon_compose.py` draws the rest at 2048 px and writes:
+
+| File | What |
+|---|---|
+| `marketing/appstore/icon_1024.png` | App Store icon, 1024 × 1024, opaque (iOS rounds the corners) |
+| `marketing/googleplay/icon_512.png` | Google Play listing icon, 512 × 512 |
+| `Assets/_Game/Art/Icon/AppIcon.png` | the icon in the app for every platform (`BuildScripts.ApplyIcon`; Unity scales it) |
+| `Assets/_Game/Art/Icon/AppIconBackground.png`, `AppIconForeground.png` | Android's adaptive icon: the sky and pitch; the kid and the ball with his face and the ball inside the 66 dp circle every launcher's mask keeps (no "2": a round mask would clip it) |
+
+Without `--two` the corner is plain sky. `--preview` writes the icon masked as iOS (rounded square) and Android (circle) show
+it, from 300 px down to 40 px: check the face, the ball and the "2" still read at the small sizes after any change.
+
 ## Asset kits
 
 Everything in the street is built from kits of original models in the look set out in
