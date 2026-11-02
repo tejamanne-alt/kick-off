@@ -25,7 +25,7 @@ namespace DribbleToSchool.EditorTools
         /// The kid's house and its front garden, built from the kits with <paramref name="gx"/> as the gate and the doorstep (the kid
         /// starts there): the Buildings kit's HouseGable in <see cref="HomeInfo"/>'s colours, its door right behind the gate; a picket
         /// fence along the street with a garden gate (open) between two pillars, one with the house number and a pot on each; hedges
-        /// at the ends; a path to the doorstep; flower beds, shrubs and pots; a bike on the lawn; the bins; a post box on the footpath;
+        /// at the ends; a path to the doorstep; flower beds, a bush and pots; a bike on the lawn; the bins; a post box on the footpath;
         /// a tree behind the roof. Without a kit model a piece is left out (the house falls back to the painted one).
         /// </summary>
         public static void HomeFront(Transform parent, float gx, float gy)
@@ -73,21 +73,18 @@ namespace DribbleToSchool.EditorTools
             float[] bedX = { -0.95f, -1.25f, 1.2f, 1.8f, 2.6f }, bedZ = { 2.9f, 3.25f, 3.0f, 3.1f, 2.95f };
             for (int i = 0; i < bedX.Length; i++)
                 Model(parent, "Plants", "FlowerPatch", gx + bedX[i], gy, bedZ[i], Rand(rng, 0f, 360f), Rand(rng, 1.1f, 1.5f));
-            Plant(parent, "BushRound", null, gx - 1.9f, gy, houseZ - 0.35f, 1.3f, 1f, -60, rng);
-            Plant(parent, "ShrubFlowering", null, gx + 6.4f, gy, houseZ - 0.9f, 1.4f, 1f, -60, rng);
+            Plant(parent, "BushRound", null, gx - 2.1f, gy, houseZ - 0.05f, 1f, 1f, -60, rng);
 
-            // By the door: a lemon tree in a pot on one side, a group of pots on the other.
-            Model(parent, "Street", "PotC", gx - 1.5f, gy, houseZ - 0.6f, 20f);
-            Model(parent, "Street", "PotGroup", gx + 1.45f, gy, houseZ - 0.55f, -12f, 1f, Petals[0]);
+            // By the door, besides the two pots the model brings: a group of pots on the right, clear of the window.
+            Model(parent, "Street", "PotGroup", gx + 2.2f, gy, houseZ - 0.6f, -12f, 1f, Petals[0]);
 
-            // Life in the garden: the bike on its stand, the bins by the house corner, a post box on the footpath by the gate.
-            Model(parent, "Street", "Bicycle", gx + 4.2f, gy, 3.2f, 0f, 1f, BikeColors[1]);
-            Model(parent, "Street", "BinPair", gx + 6.5f, gy, houseZ - 1.1f, -8f, 1f, BinColors[0], BinColors[1]);
+            // Life in the garden: the bike on its stand and the bins on the lawn to the right, a post box on the footpath by the gate.
+            Model(parent, "Street", "Bicycle", gx + 3.9f, gy, 3.1f, 0f, 1f, BikeColors[1]);
+            Model(parent, "Street", "BinPair", gx + 6.6f, gy, 3.5f, -8f, 1f, BinColors[0], BinColors[1]);
             Model(parent, "Street", "PostBox", gx - 1.55f, gy, PoleZ - 0.1f);
 
-            // Trees: one behind the roof, one slim one in the yard at the left.
+            // A tree behind the roof.
             Plant(parent, "Broadleaf", null, houseX + 1.2f, gy, houseZ + 8.5f, 1.15f, 1f, -70, rng);
-            Plant(parent, "ConiferSmall", null, gx - 2.6f, gy, wallZ + 1.8f, 1f, 1f, -60, rng);
         }
 
         /// <summary>A small enamel plate with a number (or a word) on it, facing the street, at (x, y, z).</summary>
