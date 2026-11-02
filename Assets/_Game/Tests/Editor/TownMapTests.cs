@@ -28,7 +28,7 @@ namespace DribbleToSchool.Tests
         const float ChallengeNear = 130f, ChallengeFar = 260f;
         const float RouteEndReach = 25f, RouteMinLength = 1200f;
         const float RoutesApart = 90f, NearTheEnds = 320f;
-        const float LabelFromRoute = 30f, LabelFromThings = 6f;
+        const float LabelFromRoute = 30f, LabelOffOtherRoutes = 1f, LabelFromThings = 6f;
 
         static TownMapLayout Load()
         {
@@ -287,10 +287,19 @@ namespace DribbleToSchool.Tests
                 Assert.Ignore("placeholder layout: the names' clearance is checked on the real one");
                 return;
             }
+            // Only the focused route's levels are named (ChapterMapScreen.BuildNode), over every route line, while every node is
+            // drawn. So a name keeps clear of its own route's line and names, stays off the other routes' centre lines, and keeps
+            // clear of every node.
             var problems = new List<string>();
             var nodes = TownMap.Nodes;
             var boxes = new Rect[nodes.Length];
-            for (int i = 0; i < nodes.Length; i++) boxes[i] = TownMap.LabelRect(nodes[i]);
+            var routeOf = new string[nodes.Length];
+            for (int i = 0; i < nodes.Length; i++)
+            {
+                boxes[i] = TownMap.LabelRect(nodes[i]);
+                var route = RouteTable.Of(nodes[i].levelId);
+                routeOf[i] = route != null ? route.id : null;
+            }
             for (int i = 0; i < nodes.Length; i++)
             {
                 Rect box = boxes[i];
@@ -299,14 +308,17 @@ namespace DribbleToSchool.Tests
                 foreach (var route in TownMap.Routes)
                 {
                     float gap = TownMap.DistanceToLine(box, route.points);
-                    if (gap < LabelFromRoute) problems.Add(who + " is " + Mathf.RoundToInt(gap) + " px from the " + route.id + " route (at least " + LabelFromRoute + ")");
+                    bool own = route.id == routeOf[i];
+                    float need = own ? LabelFromRoute : LabelOffOtherRoutes;
+                    if (gap < need)
+                        problems.Add(who + (own ? " is " + Mathf.RoundToInt(gap) + " px from its own route " + route.id + " (at least " + LabelFromRoute + ")" : " crosses the " + route.id + " route's line"));
                 }
                 for (int j = 0; j < nodes.Length; j++)
                 {
                     if (j == i) continue;
                     float disc = TownMap.DistanceToRect(box, nodes[j].pos) - TownMap.NodeRadius;
                     if (disc < LabelFromThings) problems.Add(who + " runs into the node of " + nodes[j].levelId);
-                    if (j > i && TownMap.GapBetween(box, boxes[j]) < LabelFromThings) problems.Add(who + " runs into the name of " + nodes[j].levelId);
+                    if (j > i && routeOf[i] == routeOf[j] && TownMap.GapBetween(box, boxes[j]) < LabelFromThings) problems.Add(who + " runs into the name of " + nodes[j].levelId);
                 }
             }
             NoProblems(problems, "level names");
