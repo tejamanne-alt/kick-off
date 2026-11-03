@@ -7,11 +7,11 @@ using UnityEngine;
 namespace DribbleToSchool.Tests
 {
     /// <summary>
-    /// The on-screen touch buttons: the left thumb walks (two arrows) and slides (a button up and to the left of
-    /// the forward arrow, or, by a setting, above jump), the right thumb jumps and kicks (two buttons on one
-    /// baseline); the three action buttons are one size. None crowds another, they stay on the screen, leave the
-    /// aim drag room and keep their order when mirrored for left-handed play, on every landscape shape from 4:3
-    /// tablets to 21:9 phones; and the kid is stood clear of the left-hand buttons so no thumb covers them.
+    /// The on-screen touch controls: the left thumb has one walk stick (push sideways to walk, pull down to slide, the
+    /// ring comes to the thumb anywhere in its area), the right thumb jumps and kicks (two buttons of one size on one
+    /// baseline). None crowds another, they stay on the screen, leave the aim drag room and swap sides for left-handed
+    /// play, on every landscape shape from 4:3 tablets to 21:9 phones; the kid is stood clear of the stick's area so no
+    /// thumb covers them; and the stick reads the way the tour says it does.
     /// </summary>
     public class ControlLayoutTests
     {
@@ -49,137 +49,88 @@ namespace DribbleToSchool.Tests
             return Vector2.Distance(a.center, b.center) - a.radius - b.radius;
         }
 
-        delegate void Check(GameInput.ControlLayout layout, int w, int h, bool leftHanded, bool slideWithArrows, string where);
+        /// <summary>How far a button's edge is from the rect (negative if it reaches inside).</summary>
+        static float Clear(GameInput.Round b, Rect r)
+        {
+            float dx = Mathf.Max(r.xMin - b.center.x, 0f, b.center.x - r.xMax);
+            float dy = Mathf.Max(r.yMin - b.center.y, 0f, b.center.y - r.yMax);
+            return Mathf.Sqrt(dx * dx + dy * dy) - b.radius;
+        }
 
-        /// <summary>Every screen shape, both hands, the slide button with the arrows and beside jump and kick.</summary>
+        delegate void Check(GameInput.ControlLayout layout, int w, int h, bool leftHanded, string where);
+
+        /// <summary>Every screen shape, both hands.</summary>
         void ForEveryLayout(Check check)
         {
             foreach (bool left in new[] { false, true })
-                foreach (bool arrows in new[] { true, false })
-                    foreach (var s in Screens)
-                    {
-                        var layout = input.LayoutOn(s[0], s[1], Full(s[0], s[1]), left, arrows);
-                        check(layout, s[0], s[1], left, arrows, (left ? "left-handed " : "") + (arrows ? "slide by arrows " : "slide by jump ") + s[0] + "x" + s[1]);
-                    }
-        }
-
-        /// <summary>How far in from the screen edge the cluster sits on: a right-handed player's action buttons are on the right.</summary>
-        static float FromEdge(GameInput.Round b, int w, bool onRight)
-        {
-            return onRight ? w - b.center.x : b.center.x;
-        }
-
-        static GameInput.Round[] All(GameInput.ControlLayout l)
-        {
-            return new[] { l.jump, l.kick, l.slide, l.walkBack, l.walkForward };
-        }
-
-        [Test]
-        public void NoTwoButtonsCrowdOrTouch()
-        {
-            ForEveryLayout((l, w, h, left, arrows, where) =>
-            {
-                var b = All(l);
-                for (int i = 0; i < b.Length; i++)
-                    for (int j = i + 1; j < b.Length; j++)
-                        Assert.GreaterOrEqual(Gap(b[i], b[j]), 0.035f * h, where + ": buttons " + i + " and " + j);
-            });
-        }
-
-        [Test]
-        public void KickAndSlideAreNeverNeighbours()
-        {
-            // Turning the kick into a slide (or back) in the heat of it was the old complaint: they stay at least
-            // a button's width apart.
-            ForEveryLayout((l, w, h, left, arrows, where) =>
-                Assert.GreaterOrEqual(Gap(l.kick, l.slide), 0.1f * h, where + ": kick/slide"));
-        }
-
-        [Test]
-        public void EveryButtonIsFullyOnScreen()
-        {
-            ForEveryLayout((l, w, h, left, arrows, where) =>
-            {
-                foreach (var b in All(l))
+                foreach (var s in Screens)
                 {
-                    Assert.GreaterOrEqual(b.center.x - b.radius, 0f, where + ": left edge");
-                    Assert.LessOrEqual(b.center.x + b.radius, w, where + ": right edge");
-                    Assert.GreaterOrEqual(b.center.y - b.radius, 0f, where + ": bottom edge");
-                    Assert.LessOrEqual(b.center.y + b.radius, h, where + ": top edge");
+                    var layout = input.LayoutOn(s[0], s[1], Full(s[0], s[1]), left);
+                    check(layout, s[0], s[1], left, (left ? "left-handed " : "") + s[0] + "x" + s[1]);
                 }
+        }
+
+        static bool OnScreen(GameInput.Round b, int w, int h)
+        {
+            return b.center.x - b.radius >= -0.5f && b.center.x + b.radius <= w + 0.5f && b.center.y - b.radius >= -0.5f && b.center.y + b.radius <= h + 0.5f;
+        }
+
+        [Test]
+        public void JumpAndKickDoNotCrowdOrTouch()
+        {
+            ForEveryLayout((l, w, h, left, where) => Assert.GreaterOrEqual(Gap(l.jump, l.kick), 0.02f * h, where));
+        }
+
+        [Test]
+        public void TheStickAreaKeepsClearOfJumpAndKick()
+        {
+            ForEveryLayout((l, w, h, left, where) =>
+            {
+                Assert.GreaterOrEqual(Clear(l.jump, l.stickArea), 0.05f * h, where + ": jump");
+                Assert.GreaterOrEqual(Clear(l.kick, l.stickArea), 0.05f * h, where + ": kick");
             });
         }
 
         [Test]
-        public void AllThreeActionButtonsAreTheSameSize()
+        public void EveryControlIsFullyOnScreen()
         {
-            ForEveryLayout((l, w, h, left, arrows, where) =>
+            ForEveryLayout((l, w, h, left, where) =>
             {
-                Assert.AreEqual(l.jump.radius, l.slide.radius, 0.01f, where + ": jump vs slide");
-                Assert.AreEqual(l.jump.radius, l.kick.radius, 0.01f, where + ": jump vs kick");
+                Assert.IsTrue(OnScreen(l.jump, w, h), where + ": jump");
+                Assert.IsTrue(OnScreen(l.kick, w, h), where + ": kick");
+                Assert.IsTrue(OnScreen(l.stick, w, h), where + ": the stick at rest");
+                Assert.IsTrue(l.stickArea.xMin >= -0.5f && l.stickArea.xMax <= w + 0.5f && l.stickArea.yMin >= -0.5f && l.stickArea.yMax <= h + 0.5f, where + ": the stick's area");
             });
         }
 
         [Test]
-        public void ButtonsAreBigEnoughForAThumb()
+        public void JumpAndKickAreOneSizeAndTheControlsAreBigEnoughForAThumb()
         {
-            // At least 9 mm across on a phone held at about 2.9 inches of screen height: 0.17 of the height.
-            ForEveryLayout((l, w, h, left, arrows, where) =>
+            ForEveryLayout((l, w, h, left, where) =>
             {
-                foreach (var b in All(l))
-                    Assert.GreaterOrEqual(b.radius * 2f, 0.17f * h, where + ": button diameter");
+                Assert.AreEqual(l.jump.radius, l.kick.radius, 0.5f, where + ": jump and kick");
+                // 0.1 of the screen's height across at least: about 9 mm on a phone.
+                Assert.GreaterOrEqual(l.jump.radius * 2f, 0.1f * h, where + ": jump");
+                Assert.GreaterOrEqual(l.stick.radius * 2f, 0.2f * h, where + ": the stick's ring");
             });
         }
 
         [Test]
         public void JumpIsInTheCornerAndKickBesideItOnTheSameBaseline()
         {
-            ForEveryLayout((l, w, h, left, arrows, where) =>
+            ForEveryLayout((l, w, h, left, where) =>
             {
-                Assert.AreEqual(l.jump.center.y, l.kick.center.y, 0.03f * h, where + ": kick is on jump's baseline");
-                Assert.Less(FromEdge(l.jump, w, !left), 0.3f * h, where + ": jump is at the edge");
-                Assert.Greater(FromEdge(l.kick, w, !left), FromEdge(l.jump, w, !left) + l.jump.radius + l.kick.radius, where + ": kick is beside jump, not under it");
-                Assert.Less(Vector2.Distance(l.kick.center, l.jump.center), 0.36f * h, where + ": kick is within a thumb's reach of jump");
+                float jumpIn = left ? l.jump.center.x : w - l.jump.center.x;
+                float kickIn = left ? l.kick.center.x : w - l.kick.center.x;
+                Assert.Less(jumpIn, kickIn, where + ": jump is nearer the edge");
+                Assert.AreEqual(l.jump.center.y, l.kick.center.y, 1f, where + ": one baseline");
             });
-        }
-
-        [Test]
-        public void TheSlideButtonIsWithTheWalkingThumbUpAndToTheLeftOfTheForwardArrow()
-        {
-            foreach (bool left in new[] { false, true })
-                foreach (var s in Screens)
-                {
-                    var l = input.LayoutOn(s[0], s[1], Full(s[0], s[1]), left, true);
-                    string where = (left ? "left-handed " : "") + s[0] + "x" + s[1];
-                    // On the walking side of the screen, like the arrows.
-                    bool arrowsOnRight = left;
-                    Assert.AreEqual(arrowsOnRight, l.slide.center.x > s[0] * 0.5f, where + ": slide is on the arrows' half");
-                    Assert.AreEqual(arrowsOnRight, l.walkForward.center.x > s[0] * 0.5f, where + ": arrows half");
-                    Assert.Less(l.slide.center.x, l.walkForward.center.x, where + ": to the left of the forward arrow");
-                    Assert.Greater(l.slide.center.y, l.walkForward.center.y + l.walkForward.radius, where + ": above the arrows");
-                    Assert.Less(Vector2.Distance(l.slide.center, l.walkForward.center), 0.34f * s[1], where + ": within a thumb's reach of the forward arrow");
-                    Assert.Less(Vector2.Distance(l.slide.center, l.walkBack.center), 0.36f * s[1], where + ": and of the back arrow");
-                }
-        }
-
-        [Test]
-        public void TheSlideButtonStacksAboveJumpWhenSettingsKeepItThere()
-        {
-            foreach (bool left in new[] { false, true })
-                foreach (var s in Screens)
-                {
-                    var l = input.LayoutOn(s[0], s[1], Full(s[0], s[1]), left, false);
-                    string where = (left ? "left-handed " : "") + s[0] + "x" + s[1];
-                    Assert.AreEqual(l.jump.center.x, l.slide.center.x, 0.01f, where + ": one column");
-                    Assert.Greater(l.slide.center.y, l.jump.center.y + l.jump.radius + l.slide.radius, where + ": slide is above jump, clear of it");
-                    Assert.Less(l.slide.center.y - l.jump.center.y, 0.36f * s[1], where + ": slide is within a thumb's reach of jump");
-                }
         }
 
         [Test]
         public void KickHasRoomToAimAboveAndToBothSides()
         {
-            ForEveryLayout((l, w, h, left, arrows, where) =>
+            ForEveryLayout((l, w, h, left, where) =>
             {
                 // A full-power drag is about a quarter of the screen's height.
                 float room = 0.22f * h;
@@ -190,55 +141,66 @@ namespace DribbleToSchool.Tests
         }
 
         [Test]
-        public void LeftHandedMirrorsTheActionCluster()
+        public void TheStickIsOnTheLeftAndTheButtonsOnTheRightUnlessLeftHanded()
         {
-            foreach (bool arrows in new[] { true, false })
-                foreach (var s in Screens)
-                {
-                    var right = input.LayoutOn(s[0], s[1], Full(s[0], s[1]), false, arrows);
-                    var left = input.LayoutOn(s[0], s[1], Full(s[0], s[1]), true, arrows);
-                    Assert.AreEqual(s[0] - right.jump.center.x, left.jump.center.x, 0.01f, "jump mirrors");
-                    Assert.AreEqual(s[0] - right.kick.center.x, left.kick.center.x, 0.01f, "kick mirrors");
-                    Assert.AreEqual(right.jump.center.y, left.jump.center.y, 0.01f, "same height");
-                    Assert.AreEqual(right.slide.center.y, left.slide.center.y, 0.01f, "same height");
-                    if (!arrows) Assert.AreEqual(s[0] - right.slide.center.x, left.slide.center.x, 0.01f, "slide mirrors");
-                }
-        }
-
-        [Test]
-        public void WalkArrowsKeepTheirOrderWhenMirrored()
-        {
-            ForEveryLayout((l, w, h, left, arrows, where) =>
+            ForEveryLayout((l, w, h, left, where) =>
             {
-                Assert.Less(l.walkBack.center.x, l.walkForward.center.x, where + ": back stays left of forward");
-                // And side by side, near enough to rock the thumb across without lifting it.
-                Assert.Less(Gap(l.walkBack, l.walkForward), 0.08f * h, where + ": arrows are neighbours");
-                Assert.GreaterOrEqual(Gap(l.walkBack, l.walkForward), 0f, where + ": arrows do not overlap");
+                bool stickLeft = l.stick.center.x < w * 0.5f;
+                Assert.AreEqual(!left, stickLeft, where + ": the stick's side");
+                Assert.AreEqual(left, l.jump.center.x < w * 0.5f, where + ": jump's side");
+                Assert.AreEqual(left, l.kick.center.x < w * 0.5f, where + ": kick's side");
+                // The area runs from the stick's own screen edge.
+                Assert.AreEqual(left ? w : 0f, left ? l.stickArea.xMax : l.stickArea.xMin, 0.5f, where + ": the area starts at the edge");
             });
         }
 
         [Test]
-        public void TheClustersDoNotCollide()
+        public void LeftHandedIsAMirrorImage()
         {
-            ForEveryLayout((l, w, h, left, arrows, where) =>
+            foreach (var s in Screens)
             {
-                // The two jump/kick buttons against the arrows (the slide button belongs to one cluster or the other).
-                foreach (var a in new[] { l.walkBack, l.walkForward })
-                    foreach (var b in new[] { l.jump, l.kick })
-                        Assert.GreaterOrEqual(Gap(a, b), 0.05f * h, where + ": a walk arrow and jump/kick");
-                if (!arrows)
-                    foreach (var a in new[] { l.walkBack, l.walkForward })
-                        Assert.GreaterOrEqual(Gap(a, l.slide), 0.05f * h, where + ": a walk arrow and the slide button");
-            });
+                var right = input.LayoutOn(s[0], s[1], Full(s[0], s[1]), false);
+                var left = input.LayoutOn(s[0], s[1], Full(s[0], s[1]), true);
+                string where = s[0] + "x" + s[1];
+                Assert.AreEqual(s[0] - right.jump.center.x, left.jump.center.x, 0.5f, where + ": jump");
+                Assert.AreEqual(s[0] - right.stick.center.x, left.stick.center.x, 0.5f, where + ": the stick");
+                Assert.AreEqual(right.stickArea.width, left.stickArea.width, 0.5f, where + ": the stick's area");
+            }
         }
 
         [Test]
-        public void TheKidIsStoodClearOfEveryButtonOnTheLeftOfTheScreen()
+        public void TheSticksAreaStaysOutOfTheTopOfTheScreen()
         {
-            ForEveryLayout((l, w, h, left, arrows, where) =>
+            // The level's card and the pause button live up there.
+            ForEveryLayout((l, w, h, left, where) => Assert.LessOrEqual(l.stickArea.yMax, 0.75f * h, where));
+        }
+
+        [Test]
+        public void TheStickComesToTheThumbAndStaysInsideItsArea()
+        {
+            var l = input.LayoutOn(2532, 1170, Full(2532, 1170), false);
+            float r = l.stick.radius;
+            // A thumb in the middle of the area: the ring is right under it.
+            Vector2 mid = new Vector2(l.stick.center.x + 20f, l.stick.center.y + 30f);
+            Assert.AreEqual(mid, GameInput.StickCenterFor(mid, l.stick, l.stickArea), "under the thumb");
+            // A thumb near the screen's edge or the bottom: the ring stays whole on the screen.
+            Vector2 corner = GameInput.StickCenterFor(new Vector2(5f, 5f), l.stick, l.stickArea);
+            Assert.GreaterOrEqual(corner.x - r, l.stickArea.xMin - 0.01f, "off the left edge");
+            Assert.Greater(corner.y - r, 0f, "off the bottom edge");
+            // A thumb past the area's inner edge or top: the ring stays inside the area.
+            Vector2 far = GameInput.StickCenterFor(new Vector2(l.stickArea.xMax + 400f, l.stickArea.yMax + 400f), l.stick, l.stickArea);
+            Assert.LessOrEqual(far.x + r, l.stickArea.xMax + 0.01f, "the inner edge");
+            Assert.LessOrEqual(far.y + r, l.stickArea.yMax + 0.01f, "the top");
+        }
+
+        [Test]
+        public void TheKidIsStoodClearOfTheStickAndEveryButtonOnTheLeft()
+        {
+            ForEveryLayout((l, w, h, left, where) =>
             {
                 float safe = GameInput.KidSafeScreenXOn(l, w, h, 0.14f);
-                foreach (var b in All(l))
+                if (!left) Assert.GreaterOrEqual(safe * w, l.stickArea.xMax + 0.139f * h, where + ": clear of anywhere the stick can be");
+                foreach (var b in new[] { l.jump, l.kick })
                 {
                     if (b.center.x >= w * 0.5f) continue;
                     Assert.GreaterOrEqual(safe * w, b.center.x + b.radius + 0.139f * h, where + ": clear of a button on the left");
@@ -252,12 +214,12 @@ namespace DribbleToSchool.Tests
         [Test]
         public void OnPhonesTheKidStandsAboutAThirdOfTheWayIn()
         {
-            // 16:9 and wider: the buttons take up little of the width, so the kid keeps a good view ahead.
+            // 16:9 and wider: the controls take up little of the width, so the kid keeps a good view ahead.
             foreach (bool left in new[] { false, true })
                 foreach (var s in Screens)
                 {
                     if (s[0] / (float)s[1] < 1.7f) continue;
-                    var l = input.LayoutOn(s[0], s[1], Full(s[0], s[1]), left, true);
+                    var l = input.LayoutOn(s[0], s[1], Full(s[0], s[1]), left);
                     float safe = GameInput.KidSafeScreenXOn(l, s[0], s[1], 0.14f);
                     Assert.LessOrEqual(safe, 0.42f, (left ? "left-handed " : "") + s[0] + "x" + s[1]);
                 }
@@ -274,41 +236,77 @@ namespace DribbleToSchool.Tests
             Assert.Less(CameraFollow2D.LeadFor(0.42f, 7.8f), CameraFollow2D.LeadFor(0.38f, 7.8f));
         }
 
-        [Test]
-        public void AFlickDownNeedsToBeFastAndFarEnoughAndComeBackUpToRepeat()
+        // ---------------------------------------------------------------- reading the stick
+
+        /// <summary>One reading on a ring of radius 100 with the game's thresholds.</summary>
+        void Read(float x, float y, ref bool down, out float move, out bool slide)
         {
-            float y = 400f, time = 0f;    // a resting finger
-            float drop = 48f;             // 0.3 inch at 160 dpi
-            Assert.IsFalse(GameInput.FlickDown(ref y, ref time, 400f, 0.1f, drop, 0.3f), "resting");
-            Assert.IsFalse(GameInput.FlickDown(ref y, ref time, 380f, 0.2f, drop, 0.3f), "a small drop");
-            Assert.IsTrue(GameInput.FlickDown(ref y, ref time, 340f, 0.3f, drop, 0.3f), "a quick, long drop (60 px in 0.2 s)");
-            Assert.IsFalse(GameInput.FlickDown(ref y, ref time, 300f, 0.35f, drop, 0.3f), "no second flick without coming back up");
-            Assert.IsFalse(GameInput.FlickDown(ref y, ref time, 360f, 0.4f, drop, 0.3f), "coming back up");
-            Assert.IsTrue(GameInput.FlickDown(ref y, ref time, 300f, 0.55f, drop, 0.3f), "and a flick again");
+            GameInput.ReadStick(new Vector2(x, y), 100f, input.stickDeadZone, input.stickSlideDown, input.stickSlideRelease, ref down, out move, out slide);
         }
 
         [Test]
-        public void ASlowDriftDownIsNotAFlick()
+        public void ASmallPushDoesNothingAndAPushPastTheDeadZoneWalks()
         {
-            float y = 400f, time = 0f;
-            bool flicked = false;
-            // 100 px down over two seconds, sampled every 1/30 s: always under a window's worth of the drop.
-            for (int i = 1; i <= 60; i++)
-                flicked |= GameInput.FlickDown(ref y, ref time, 400f - i * (100f / 60f), i / 30f, 48f, 0.3f);
-            Assert.IsFalse(flicked, "a thumb easing down is not a slide");
+            bool down = false; float move; bool slide;
+            Read(10f, 5f, ref down, out move, out slide);
+            Assert.AreEqual(0f, move, "a resting thumb");
+            Read(60f, 0f, ref down, out move, out slide);
+            Assert.AreEqual(1f, move, "pushed right: forward");
+            Read(-60f, 10f, ref down, out move, out slide);
+            Assert.AreEqual(-1f, move, "pushed left: back");
+            Assert.IsFalse(slide);
         }
 
         [Test]
-        public void ANotchPushesButtonsInward()
+        public void PullingDownSlidesOnceAndAgainOnlyAfterComingBackUp()
         {
-            var flat = input.LayoutOn(2532, 1170, Full(2532, 1170), false, false);
-            var notched = input.LayoutOn(2532, 1170, new Rect(141f, 0f, 2250f, 1170f), false, false);
+            bool down = false; float move; bool slide;
+            Read(0f, -70f, ref down, out move, out slide);
+            Assert.IsTrue(slide, "pulled down: slide");
+            Read(0f, -90f, ref down, out move, out slide);
+            Assert.IsFalse(slide, "held down: no second slide");
+            Assert.IsTrue(down, "still held down");
+            Read(0f, -40f, ref down, out move, out slide);
+            Assert.IsFalse(slide, "eased up a little, still below the release line");
+            Read(0f, -10f, ref down, out move, out slide);
+            Assert.IsFalse(down, "back up");
+            Read(0f, -70f, ref down, out move, out slide);
+            Assert.IsTrue(slide, "pulled down again: another slide");
+        }
+
+        [Test]
+        public void ThePullsSideSaysWhichWayTheKidSlides()
+        {
+            bool down = false; float move; bool slide;
+            Read(40f, -70f, ref down, out move, out slide);
+            Assert.IsTrue(slide);
+            Assert.AreEqual(1f, move, "down and right: slide forward");
+            down = false;
+            Read(-40f, -70f, ref down, out move, out slide);
+            Assert.IsTrue(slide);
+            Assert.AreEqual(-1f, move, "down and left: slide back");
+            down = false;
+            Read(5f, -80f, ref down, out move, out slide);
+            Assert.IsTrue(slide);
+            Assert.AreEqual(0f, move, "straight down: the way the kid is already going");
+        }
+
+        [Test]
+        public void ASidewaysPushThatDipsALittleIsNotASlide()
+        {
+            bool down = false; float move; bool slide;
+            Read(95f, -55f, ref down, out move, out slide);
+            Assert.IsFalse(slide, "mostly sideways: keep walking");
+            Assert.AreEqual(1f, move);
+        }
+
+        [Test]
+        public void ANotchPushesTheControlsInward()
+        {
+            var flat = input.LayoutOn(2532, 1170, Full(2532, 1170), false);
+            var notched = input.LayoutOn(2532, 1170, new Rect(141f, 0f, 2250f, 1170f), false);
             Assert.Less(notched.jump.center.x, flat.jump.center.x, "jump moves in from the right edge");
-            Assert.Less(notched.slide.center.x, flat.slide.center.x, "slide moves in from the right edge");
-            Assert.Greater(notched.walkBack.center.x, flat.walkBack.center.x, "the arrows move in from the left edge");
-            var flatArrows = input.LayoutOn(2532, 1170, Full(2532, 1170), false, true);
-            var notchedArrows = input.LayoutOn(2532, 1170, new Rect(141f, 0f, 2250f, 1170f), false, true);
-            Assert.Greater(notchedArrows.slide.center.x, flatArrows.slide.center.x, "the slide button moves in from the left edge with the arrows");
+            Assert.Greater(notched.stick.center.x, flat.stick.center.x, "the stick moves in from the left edge");
         }
     }
 }

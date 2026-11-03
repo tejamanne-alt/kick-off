@@ -45,8 +45,6 @@ namespace DribbleToSchool.Holiday
         static readonly string[] ComboLabels = { "x1", "x2", "x3", "x4", "x5" };
         static readonly string[] StageNumbers = Numbers(HolidayStages.Count);
 
-        static readonly Color SlideColor = new Color(0.58f, 0.4f, 0.92f);
-        static readonly Color WalkColor = Color.white;
         static readonly Color KickReady = new Color(0.3f, 0.82f, 0.42f);
         static readonly Color BestGold = new Color(0.86f, 0.56f, 0.06f);
         static readonly Color ChipDisc = new Color(0.1f, 0.16f, 0.34f, 0.92f);
@@ -101,12 +99,12 @@ namespace DribbleToSchool.Holiday
         // controls
         RectTransform controls;
         CanvasGroup controlsGroup;
-        TouchButton jumpButton, slideButton, kickButton;
-        RectTransform jumpRect, slideRect, kickRect;
-        Text jumpLabel, slideLabel, kickLabel;
-        // the left thumb's arrows, and the kick's aim (as in the levels)
-        TouchButton leftButton, rightButton;
-        RectTransform leftRect, rightRect, aimKnob, aimBar, aimFill;
+        TouchButton jumpButton, kickButton;
+        RectTransform jumpRect, kickRect;
+        Text jumpLabel, kickLabel;
+        // the left thumb's walk stick, and the kick's aim (as in the levels)
+        StickView stick;
+        RectTransform aimKnob, aimBar, aimFill;
         Image aimFillImage;
         Text tooFar;
         float tooFarUntil;
@@ -254,18 +252,14 @@ namespace DribbleToSchool.Holiday
             controlsGroup.blocksRaycasts = false;
             controls.gameObject.SetActive(false);
 
-            // The same glass discs as the story levels, one colour per action; where they sit is GameInput's runner layout.
+            // The same stick and glass discs as the story levels, one colour per action; where they sit is GameInput's.
+            stick = StickView.Create(controls, "WalkStick");
+
             jumpButton = TouchButton.Create(controls, "JumpButton", UITheme.Blue, true);
-            jumpButton.AddIcon(ProceduralSprites.ArrowUp, 0.42f, 0f, 0.6f);
+            jumpButton.AddIcon(ProceduralSprites.JumpIcon, 0.46f, 0f, 0.58f);
             jumpLabel = jumpButton.AddLabel(Loc.T("hud.jump"), 28);
             UIKit.Fit(jumpLabel, 14);
             jumpRect = (RectTransform)jumpButton.transform;
-
-            slideButton = TouchButton.Create(controls, "SlideButton", SlideColor, true);
-            slideButton.AddIcon(ProceduralSprites.SlideIcon, 0.44f, 0f, 0.6f);
-            slideLabel = slideButton.AddLabel(Loc.T("hud.slide"), 28);
-            UIKit.Fit(slideLabel, 14);
-            slideRect = (RectTransform)slideButton.transform;
 
             kickButton = TouchButton.Create(controls, "KickButton", UITheme.Accent, true);
             kickButton.AddIcon(ProceduralSprites.BallIcon, 0.4f, 0f, 0.6f, new Color(1f, 1f, 1f, 0.45f));
@@ -275,16 +269,6 @@ namespace DribbleToSchool.Holiday
             // The knob that follows the aiming drag.
             aimKnob = UIKit.Icon(kickButton.Content, "AimKnob", ProceduralSprites.SoftEdgeDisc, new Color(1f, 1f, 1f, 0.55f), 70f).rectTransform;
             aimKnob.gameObject.SetActive(false);
-
-            // The left thumb's two arrows: walk back, walk forward.
-            leftButton = TouchButton.Create(controls, "LeftButton", WalkColor, false);
-            leftButton.AddIcon(ProceduralSprites.ArrowUp, 0.42f, 90f);
-            leftRect = (RectTransform)leftButton.transform;
-            rightButton = TouchButton.Create(controls, "RightButton", WalkColor, false);
-            rightButton.AddIcon(ProceduralSprites.ArrowUp, 0.42f, -90f);
-            // A flick down on this arrow slides without letting go: a small slide glyph under the arrow says so.
-            rightButton.AddIcon(ProceduralSprites.SlideIcon, 0.2f, 0f, 0.2f, new Color(1f, 1f, 1f, 0.3f));
-            rightRect = (RectTransform)rightButton.transform;
         }
 
         /// <summary>The aim meter and the "too far" line shown while a kick is aimed (as in the levels), just under the stage banner.</summary>
@@ -744,7 +728,6 @@ namespace DribbleToSchool.Holiday
         {
             CacheTexts();
             jumpLabel.text = Loc.T("hud.jump");
-            slideLabel.text = Loc.T("hud.slide");
             kickLabel.text = Loc.T("hud.kick");
             tooFar.text = Loc.T("hud.tooFar");
             newBestLabel.text = Loc.T("holiday.newBest");
@@ -1188,10 +1171,8 @@ namespace DribbleToSchool.Holiday
             {
                 // A finger still down when the run ended must not leave a button looking pressed.
                 jumpButton.SetState(false, false);
-                slideButton.SetState(false, false);
                 kickButton.SetState(false, false);
-                leftButton.SetState(false, false);
-                rightButton.SetState(false, false);
+                stick.Release();
                 aimKnob.gameObject.SetActive(false);
                 aimBar.gameObject.SetActive(false);
                 tooFar.gameObject.SetActive(false);
@@ -1203,13 +1184,7 @@ namespace DribbleToSchool.Holiday
             var aimer = director.aimer;
             PlaceButton(jumpRect, input.JumpButtonNormalized);
             jumpButton.SetState(input.JumpHeld, false);
-            // Slide glows while the kid is low under something (tap it again to keep sliding on).
-            PlaceButton(slideRect, input.SlideButtonNormalized);
-            slideButton.SetState(input.SlideHeld, kid != null && kid.IsLow && !kid.IsSliding);
-            PlaceButton(leftRect, input.LeftButtonNormalized);
-            leftButton.SetState(input.LeftHeld, false);
-            PlaceButton(rightRect, input.RightButtonNormalized);
-            rightButton.SetState(input.RightHeld, false);
+            stick.Show(input.StickRingNormalized, input.StickKnob, input.StickKnobScale, input.StickActive, input.MoveAxis, input.SlideHeld);
 
             // The kick button turns green and glows while the ball is close enough to kick.
             bool aiming = aimer != null && aimer.IsAiming;

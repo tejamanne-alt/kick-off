@@ -337,7 +337,7 @@ namespace DribbleToSchool.Tests
             // The keys the director, the HUD and the title screen use. (The parity test checks the tables match each other.)
             var keys = new List<string>
             {
-                "menu.holiday", "menu.holiday.best", "lose.crash", "hud.ready", "hud.go", "hud.jump", "hud.slide", "hud.kick",
+                "menu.holiday", "menu.holiday.best", "lose.crash", "hud.ready", "hud.go", "hud.jump", "hud.kick",
                 "pause.title", "pause.resume", "pause.settings",
                 "holiday.nearMiss", "holiday.smash", "holiday.multiplier", "holiday.shieldSaved", "holiday.revived", "holiday.dayDone",
             };

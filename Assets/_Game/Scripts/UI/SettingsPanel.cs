@@ -76,10 +76,9 @@ namespace DribbleToSchool.UI
             }
             y += 84f + 22f;
 
-            // Controls: which hand has which buttons.
+            // Controls: which hand has the stick and which the buttons.
             Section(right, ref y, "settings.controls");
             ToggleRow(right, ref y, "settings.leftHanded", GameSettings.LeftHanded, v => GameSettings.LeftHanded = v);
-            ToggleRow(right, ref y, "settings.slideArrows", GameSettings.SlideWithWalkThumb, v => GameSettings.SlideWithWalkThumb = v, "settings.slideArrowsHint");
 
             // Bottom row: reset (with confirmation), restore purchases, done.
             var reset = UIKit.Button(card.transform, "Reset", Loc.T("settings.reset"), UITheme.Red, () => ConfirmReset(canvas), 34);

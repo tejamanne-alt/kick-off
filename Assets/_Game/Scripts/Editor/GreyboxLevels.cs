@@ -90,9 +90,9 @@ namespace DribbleToSchool.EditorTools
             t.Hint(24f, "jump");
             t.Hint(33f, "kick");
             t.Ground(-8f, 52f);
-            t.Sign("Hold the arrows to walk.\nKeep the ball close!", new Vector2(-8f, 3.2f));
+            t.Sign("Push the stick to walk.\nKeep the ball close!", new Vector2(-8f, 3.2f));
             t.Sign("Tap the screen just as\nyou catch up with the ball:\nPerfect touch!", new Vector2(13f, 3.4f));
-            t.Sign("Let go of the arrows to stop -\nthe ball stops at your feet", new Vector2(21f, 3f));
+            t.Sign("Let go of the stick to stop -\nthe ball stops at your feet", new Vector2(21f, 3f));
 
             t.Wall(27f, 0.3f, 0f, 0.6f);
             t.Sign("Kerb! Jump\n(button or swipe up)", new Vector2(27f, 2.6f));
@@ -317,7 +317,7 @@ namespace DribbleToSchool.EditorTools
             t.Start(0f);
             t.Hint(10f, "crossing");
             t.Ground(-8f, 90f);
-            t.Sign("Zebra crossing ahead.\nWait for the GREEN man -\nlet go of the arrows to stop", new Vector2(6f, 3.4f));
+            t.Sign("Zebra crossing ahead.\nWait for the GREEN man -\nlet go of the stick to stop", new Vector2(6f, 3.4f));
 
             t.Crossing(16f, 21f, 0f);
             t.Checkpoint(24f);

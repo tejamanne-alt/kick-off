@@ -1,7 +1,7 @@
 # Holiday Run
 
 The endless mode of Kick Off 2: **the campaign with no destination.** You play exactly as in the story
-levels (walk with the arrows, dribble, jump, slide, aim and kick) along one long street that is the whole
+levels (walk with the stick, dribble, jump, slide, aim and kick) along one long street that is the whole
 story world laid end to end, and nothing ends the run until your balls do.
 
 ## The idea
@@ -21,10 +21,10 @@ story world laid end to end, and nothing ends the run until your balls do.
 
 ## Controls
 
-The campaign's, unchanged: the left thumb walks (the arrows) and slides (the SLIDE button up and to the left of the
-forward arrow, or a flick down on an arrow while walking), the right thumb has JUMP and, beside it, KICK (drag from it
+The campaign's, unchanged: the left thumb walks and slides with one stick (push left or right to walk, pull down to
+slide, the way it leans picks the slide's way), the right thumb has JUMP and, beside it, KICK (drag from it
 to aim, release to shoot; a tap is a short pass), and a quick tap anywhere else touches the ball. The camera stands the
-kid clear of the buttons on the left, so the left thumb never covers them. The keyboard is the story's too (`A D` or the arrows, `Space`, `S`, `K`,
+kid clear of the stick's area on the left, so the left thumb never covers them. The keyboard is the story's too (`A D` or the arrows, `Space`, `S`, `K`,
 mouse drag from KICK). See the README for the table, and `GameInput.LayoutOn` and
 `Tests/Editor/ControlLayoutTests.cs` for the layout and its guarantees.
 
@@ -133,7 +133,7 @@ Scripts/Holiday/
   BallSmasher.cs          on the ball: a hard kick into a crate smashes it; a ball flying through a balloon bursts it
   HolidayAtmosphere.cs    carries the sun, sky and haze from one chapter's mood to the next
   HolidayRunHud.cs        the run's screen: score card, balls left, multiplier, stage ribbon and chapter banner, toasts,
-                          power-up timers, the touch buttons (arrows, aim), the day splash
+                          power-up timers, the touch controls (stick, JUMP, KICK, aim), the day splash
   HolidayRunPanels.cs     the pause and results menus (revive, run again, home, mission bars)
   HolidayMissions.cs      the mission pool and its saved progress
 Scripts/FrontEnd/
@@ -335,8 +335,8 @@ First thing in the editor:
    burst for 5 coins and the ball flies on; the kid walks through them); collect each power-up and a star; walk through the
    trail of coins; check the missions after a run. Try the trenches at the walking pace: a 1.9 m one should take a single
    jump with room to spare, a 3.1 m one a double jump; if they feel tight, `JumpReach.PlainSlack` and `WideSlack` are the knobs.
-7. On a phone: the arrows under the left thumb with SLIDE up and to their left (and a flick down on the forward arrow
-   sliding while walking), JUMP in the right corner with KICK beside it, all the same size and see-through, none hard
+7. On a phone: the stick under the left thumb (it comes to the thumb; a pull down slides, down-right forward and
+   down-left back), JUMP in the right corner with KICK beside it, the same size and see-through, none hard
    to reach, the kid never under the left thumb, and the aim drag from KICK working with the aim bar showing.
 8. Profile a long run: only about three stages in memory, and no frame spike when a stage wakes.
 

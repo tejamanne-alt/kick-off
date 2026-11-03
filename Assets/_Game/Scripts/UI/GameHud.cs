@@ -27,15 +27,14 @@ namespace DribbleToSchool.UI
         public DevTuningPanel tuning;
 
         static readonly Color Late = new Color(0.95f, 0.4f, 0.35f);
-        static readonly Color WalkColor = Color.white;
         static readonly Color KickReady = new Color(0.3f, 0.82f, 0.42f);
-        static readonly Color SlideColor = new Color(0.58f, 0.4f, 0.92f);
 
         RectTransform root;
         Text titleText, timeText, bellText, coinText, streakText, statusText;
         Image fade;
-        RectTransform jumpRect, slideRect, kickRect, leftRect, rightRect, aimKnob, aimBar, aimFill, hintCard;
-        TouchButton jumpButton, slideButton, kickButton, leftButton, rightButton;
+        RectTransform jumpRect, kickRect, aimKnob, aimBar, aimFill, hintCard;
+        TouchButton jumpButton, kickButton;
+        StickView stick;
         Image aimFillImage;
         float tooFarUntil;
         Text tooFar, toast, bigText, hintText;
@@ -117,29 +116,16 @@ namespace DribbleToSchool.UI
                 UIKit.Place(tuneRect, new Vector2(1f, 1f), new Vector2(-190f, -60f), new Vector2(130f, 80f), new Vector2(1f, 1f));
             }
 
-            // Touch controls: tinted glass discs with a thin coloured rim and soft white icons, one
-            // colour per action (jump blue, slide violet, kick orange then green) so they read on sight.
-            // Where they sit is GameInput's: a fan round the right thumb's rest, never in a row.
+            // Touch controls: one stick for the left thumb (walk back and forward, pull down to slide) and two tinted
+            // glass discs for the right (jump blue, kick orange then green), so each reads on sight. Where they sit is
+            // GameInput's.
+            stick = StickView.Create(root, "WalkStick");
+
+            // Jump: a child leaping over a line of ground.
             jumpButton = TouchButton.Create(root, "JumpButton", UITheme.Blue, true);
-            jumpButton.AddIcon(ProceduralSprites.ArrowUp, 0.42f, 0f, 0.6f);
+            jumpButton.AddIcon(ProceduralSprites.JumpIcon, 0.46f, 0f, 0.58f);
             jumpButton.AddLabel(Loc.T("hud.jump"), 28);
             jumpRect = (RectTransform)jumpButton.transform;
-
-            // Slide button, left of jump: the chevron turned down over a line of ground.
-            slideButton = TouchButton.Create(root, "SlideButton", SlideColor, true);
-            slideButton.AddIcon(ProceduralSprites.SlideIcon, 0.44f, 0f, 0.6f);
-            slideButton.AddLabel(Loc.T("hud.slide"), 28);
-            slideRect = (RectTransform)slideButton.transform;
-
-            // Walk buttons: the chevron turned to point back / forward.
-            leftButton = TouchButton.Create(root, "LeftButton", WalkColor, false);
-            leftButton.AddIcon(ProceduralSprites.ArrowUp, 0.42f, 90f);
-            leftRect = (RectTransform)leftButton.transform;
-            rightButton = TouchButton.Create(root, "RightButton", WalkColor, false);
-            rightButton.AddIcon(ProceduralSprites.ArrowUp, 0.42f, -90f);
-            // A flick down on this arrow slides without letting go: a small slide glyph under the arrow says so.
-            rightButton.AddIcon(ProceduralSprites.SlideIcon, 0.2f, 0f, 0.2f, new Color(1f, 1f, 1f, 0.3f));
-            rightRect = (RectTransform)rightButton.transform;
 
             // Kick button: a ball, and a knob that follows the aiming drag.
             kickButton = TouchButton.Create(root, "KickButton", UITheme.Accent, true);
@@ -367,22 +353,18 @@ namespace DribbleToSchool.UI
             bool playing = level.State == LevelState.Playing;
             bool show = playing && input != null;
             jumpRect.gameObject.SetActive(show);
-            slideRect.gameObject.SetActive(show);
             kickRect.gameObject.SetActive(show);
-            leftRect.gameObject.SetActive(show);
-            rightRect.gameObject.SetActive(show);
+            if (stick.gameObject.activeSelf != show)
+            {
+                stick.gameObject.SetActive(show);
+                if (!show) stick.Release();
+            }
             bool aiming = aimer != null && aimer.IsAiming;
             if (show)
             {
                 PlaceButton(jumpRect, input.JumpButtonNormalized);
                 jumpButton.SetState(input.JumpHeld, false);
-                // Slide glows while the kid is low under something (tap it again to keep sliding on).
-                PlaceButton(slideRect, input.SlideButtonNormalized);
-                slideButton.SetState(input.SlideHeld, kid != null && kid.IsLow && !kid.IsSliding);
-                PlaceButton(leftRect, input.LeftButtonNormalized);
-                leftButton.SetState(input.LeftHeld, false);
-                PlaceButton(rightRect, input.RightButtonNormalized);
-                rightButton.SetState(input.RightHeld, false);
+                stick.Show(input.StickRingNormalized, input.StickKnob, input.StickKnobScale, input.StickActive, input.MoveAxis, input.SlideHeld);
 
                 // The kick button turns green and glows while the ball is close enough to kick.
                 PlaceButton(kickRect, input.KickButtonNormalized);

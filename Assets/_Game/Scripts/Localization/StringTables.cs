@@ -135,7 +135,7 @@ namespace DribbleToSchool.Localization
                 { "settings.haptics", "Vibration" }, { "settings.shake", "Screen shake" },
                 { "settings.bell", "School bell timer" }, { "settings.bellHint", "Off = cozy mode, no rush" },
                 { "settings.leftHanded", "Left-handed controls" }, { "settings.colorblind", "Colour-blind aim colours" },
-                { "settings.controls", "Controls" }, { "settings.slideArrows", "Slide button by the arrows" }, { "settings.slideArrowsHint", "Off = beside jump and kick" },
+                { "settings.controls", "Controls" },
                 { "settings.language", "Language" },
                 { "settings.player", "Player" },
                 { "player.title", "Choose your player" }, { "player.change", "Change player" },
@@ -152,7 +152,7 @@ namespace DribbleToSchool.Localization
                 { "hud.ready", "Ready..." }, { "hud.go", "GO!" },
                 { "hud.bellIn", "Bell {0}" }, { "hud.late", "LATE!" },
                 { "hud.perfect", "Perfect x{0}" }, { "hud.juggles", "Juggles {0}" },
-                { "hud.jump", "JUMP" }, { "hud.kick", "KICK" }, { "hud.slide", "SLIDE" },
+                { "hud.jump", "JUMP" }, { "hud.kick", "KICK" },
                 { "hud.tooFar", "Too far - get closer to kick" },
 
                 // Toasts
@@ -191,7 +191,7 @@ namespace DribbleToSchool.Localization
                 // Holiday Run (the endless mode): the screen, the messages the director sends, the pause and results menus
                 { "holiday.getReady", "Get ready" }, { "holiday.oops", "OOPS!" }, { "holiday.lose.balls", "That was your last ball!" }, { "holiday.pause.checkpoint", "Back to checkpoint" },
                 { "holiday.ballsLeft", "{0} balls left" }, { "holiday.lastBall", "Last ball!" },
-                { "holiday.tip.walk", "Hold the arrows to dribble ahead" }, { "holiday.tip.jump", "JUMP and SLIDE to get past things" }, { "holiday.tip.kick", "Drag from KICK to aim a shot" },
+                { "holiday.tip.walk", "Push the stick right to dribble ahead" }, { "holiday.tip.jump", "JUMP over things, pull the stick down to slide under" }, { "holiday.tip.kick", "Drag from KICK to aim a shot" },
                 { "holiday.stage", "STAGE {0}" }, { "holiday.day", "DAY {0}" }, { "holiday.chapterN", "CHAPTER {0}" },
                 { "holiday.best", "BEST {0}" }, { "holiday.newBest", "NEW BEST!" }, { "holiday.dayFaster", "The street starts again!" },
                 { "holiday.nearMiss", "Close call! +{0}" }, { "holiday.smash", "Smash! +{0}" }, { "holiday.multiplier", "x{0} combo!" },
@@ -213,8 +213,8 @@ namespace DribbleToSchool.Localization
                 { "holiday.m.days", "Finish {0} days in total" }, { "holiday.m.days.one", "Finish a day" },
 
                 // Tutorial hints
-                { "tut.dribble", "Hold the arrow buttons to walk. Tap the screen just as you catch up with the ball for a Perfect touch!" },
-                { "tut.brake", "Let go of the arrows to stop. Stopping traps the ball under your foot." },
+                { "tut.dribble", "Push the stick on the left to walk: right to dribble forward, left to walk back. Tap the screen just as you catch up with the ball for a Perfect touch!" },
+                { "tut.brake", "Let go of the stick to stop. Stopping traps the ball under your foot." },
                 { "tut.jump", "Tap JUMP or swipe up. Hold for a higher jump." },
                 { "tut.kick", "Drag from KICK the way you want the ball to go, then let go. Longer drag = more power. Tap KICK for a quick pass." },
                 { "tut.juggle", "Kick the ball up, then tap each time it drops near you to juggle." },
@@ -231,7 +231,7 @@ namespace DribbleToSchool.Localization
                 { "tut.dog", "Dogs chase low balls. Chip it over their heads!" },
                 { "tut.fountain", "The fountain jets lift the ball. Dribble into them!" },
                 { "tut.swing", "Chip the ball across, then ride the rope swing over." },
-                { "tut.slide", "Tap SLIDE, or flick your thumb down on the forward arrow while you walk, to slide under things feet first. The ball rolls under too!" },
+                { "tut.slide", "Pull the stick down to slide under things feet first: down and right slides forward, down and left slides back. The ball rolls under too!" },
                 { "tut.doublejump", "Tap JUMP again in the air for a double jump. Hold it to go higher." },
 
                 // Levels
@@ -369,7 +369,7 @@ namespace DribbleToSchool.Localization
                 { "settings.haptics", "Vibración" }, { "settings.shake", "Temblor de cámara" },
                 { "settings.bell", "Campana del cole" }, { "settings.bellHint", "Desactivada = modo tranquilo" },
                 { "settings.leftHanded", "Controles para zurdos" }, { "settings.colorblind", "Colores para daltónicos" },
-                { "settings.controls", "Controles" }, { "settings.slideArrows", "Deslizar junto a las flechas" }, { "settings.slideArrowsHint", "No = junto a salto y chuta" },
+                { "settings.controls", "Controles" },
                 { "settings.language", "Idioma" },
                 { "settings.player", "Personaje" },
                 { "player.title", "Elige personaje" }, { "player.change", "Cambiar personaje" },
@@ -385,7 +385,7 @@ namespace DribbleToSchool.Localization
                 { "hud.ready", "¿Listos...?" }, { "hud.go", "¡YA!" },
                 { "hud.bellIn", "Campana {0}" }, { "hud.late", "¡TARDE!" },
                 { "hud.perfect", "Perfecto x{0}" }, { "hud.juggles", "Toques {0}" },
-                { "hud.jump", "SALTO" }, { "hud.kick", "CHUTA" }, { "hud.slide", "DESLIZA" },
+                { "hud.jump", "SALTO" }, { "hud.kick", "CHUTA" },
                 { "hud.tooFar", "Muy lejos: acércate para chutar" },
 
                 { "toast.perfect", "¡Toque perfecto!" }, { "toast.perfectN", "Toque perfecto x{0}" },
@@ -419,7 +419,7 @@ namespace DribbleToSchool.Localization
 
                 { "holiday.getReady", "Prepárate" }, { "holiday.oops", "¡UPS!" }, { "holiday.lose.balls", "¡Fue tu último balón!" }, { "holiday.pause.checkpoint", "Volver al control" },
                 { "holiday.ballsLeft", "Quedan {0} balones" }, { "holiday.lastBall", "¡Último balón!" },
-                { "holiday.tip.walk", "Mantén las flechas para regatear" }, { "holiday.tip.jump", "SALTA y DESLIZA para pasar" }, { "holiday.tip.kick", "Arrastra desde CHUTA para apuntar" },
+                { "holiday.tip.walk", "Empuja la palanca a la derecha para regatear" }, { "holiday.tip.jump", "SALTA por encima, baja la palanca para deslizarte" }, { "holiday.tip.kick", "Arrastra desde CHUTA para apuntar" },
                 { "holiday.stage", "ETAPA {0}" }, { "holiday.day", "DÍA {0}" }, { "holiday.chapterN", "CAPÍTULO {0}" },
                 { "holiday.best", "RÉCORD {0}" }, { "holiday.newBest", "¡NUEVO RÉCORD!" }, { "holiday.dayFaster", "¡La calle empieza de nuevo!" },
                 { "holiday.nearMiss", "¡Por poco! +{0}" }, { "holiday.smash", "¡Zas! +{0}" }, { "holiday.multiplier", "¡Combo x{0}!" },
@@ -439,8 +439,8 @@ namespace DribbleToSchool.Localization
                 { "holiday.m.powerUps", "Recoge {0} potenciadores en total" }, { "holiday.m.jumps", "Salta {0} veces en total" },
                 { "holiday.m.days", "Termina {0} días en total" }, { "holiday.m.days.one", "Termina un día" },
 
-                { "tut.dribble", "Mantén las flechas para caminar. ¡Toca la pantalla justo al alcanzar el balón para un toque perfecto!" },
-                { "tut.brake", "Suelta las flechas para pararte. Al pararte controlas el balón." },
+                { "tut.dribble", "Mueve la palanca de la izquierda para caminar: a la derecha para avanzar con el balón, a la izquierda para volver. ¡Toca la pantalla justo al alcanzar el balón para un toque perfecto!" },
+                { "tut.brake", "Suelta la palanca para pararte. Al pararte controlas el balón." },
                 { "tut.jump", "Toca SALTO o desliza hacia arriba. Mantén para saltar más." },
                 { "tut.kick", "Arrastra desde CHUTA hacia donde quieras mandar el balón y suelta. Toca CHUTA para un pase rápido." },
                 { "tut.juggle", "Levanta el balón y toca cada vez que baje para hacer toques." },
@@ -457,7 +457,7 @@ namespace DribbleToSchool.Localization
                 { "tut.dog", "Los perros persiguen balones bajos. ¡Pásalo por encima!" },
                 { "tut.fountain", "El agua de la fuente levanta el balón. ¡Llévalo dentro!" },
                 { "tut.swing", "Pasa el balón al otro lado y cruza en el columpio de cuerda." },
-                { "tut.slide", "Toca DESLIZA, o desliza el pulgar hacia abajo sobre la flecha mientras caminas, para pasar por debajo con los pies por delante. ¡El balón también pasa!" },
+                { "tut.slide", "Baja la palanca para deslizarte por debajo con los pies por delante: abajo y a la derecha hacia delante, abajo y a la izquierda hacia atrás. ¡El balón también pasa!" },
                 { "tut.doublejump", "Toca SALTO otra vez en el aire para un doble salto. Mantén para subir más." },
 
                 { "level.L01", "Salir de casa" }, { "level.L02", "Coches aparcados" }, { "level.L03", "Cuesta arriba" },

@@ -70,7 +70,7 @@ namespace DribbleToSchool.EditorTools
     /// (HolidayStages). Pure logic on world x, so it can be checked without the editor: the rules are in
     /// <see cref="Validate"/>.
     ///
-    /// The kid is steered with the walk arrows at 4.2 m/s, so what a stage may ask comes from what the kid can really
+    /// The kid is steered with the walk stick at 4.2 m/s, so what a stage may ask comes from what the kid can really
     /// do at that speed (JumpReach): a plain gap (one jump) is 1.4 to 1.9 m wide and never over 2.0, a wide gap (a double
     /// jump) 2.7 to 3.1 and never over 3.2; low things (steps, kerbs) are up to 0.5 m, mid things (planters, rocks) up to
     /// 1.0, tall things 1.7 at most and only a double jump gets over them, nothing is higher than 1.8 (a parked car is

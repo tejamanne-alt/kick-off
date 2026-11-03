@@ -12,8 +12,8 @@ namespace DribbleToSchool.CameraRig
     /// ground. It frames the kid close (about a quarter of the screen tall) with the view ahead
     /// of them, a lean toward the ball, a vertical dead zone for small hops, and never shows past the
     /// level edges. The kid stands where no thumb covers them: a set fraction of the way across the
-    /// screen, pushed further right as far as the control buttons on the left need (the arrows and,
-    /// by default, the slide button: GameInput.KidSafeScreenX), a little nearer the middle when still. On narrower screens it pulls back
+    /// screen, pushed further right as far as the walk stick's area on the left needs
+    /// (GameInput.KidSafeScreenX), a little nearer the middle when still. On narrower screens it pulls back
     /// just enough to keep a minimum stretch of street in view. An orthographic camera still
     /// works (the old flat look).
     /// </summary>

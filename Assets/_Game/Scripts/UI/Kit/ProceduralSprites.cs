@@ -7,6 +7,7 @@ namespace DribbleToSchool.UI.Kit
     {
         static Sprite rounded, roundedSmall, circle, star, coin, lockIcon, gradient, arrow, pause, ring, softDisc, softEdgeDisc, ballIcon, slideIcon;
         static Sprite roundedEdge, roundedEdgeSmall, circleEdge, check, pitchBadge, holoSheen, goldSheen, stickerIcon, streak, swoosh, bolt, shield, magnet;
+        static Sprite jumpIcon, chevron;
 
         /// <summary>A lightning bolt (the turbo power-up).</summary>
         public static Sprite Bolt
@@ -305,6 +306,40 @@ namespace DribbleToSchool.UI.Kit
                     bool inner = v > -0.6f && v < 0.15f - Mathf.Abs(u) * 1.35f;
                     return outer && !inner && Mathf.Abs(u) < 0.95f ? 1f : 0f;
                 }));
+            }
+        }
+
+        /// <summary>
+        /// The jump button: a child leaping, arms up and knees tucked, high over a line of ground. Reads as "jump" at a
+        /// glance, even at thumbnail size.
+        /// </summary>
+        public static Sprite JumpIcon
+        {
+            get
+            {
+                return jumpIcon != null ? jumpIcon : (jumpIcon = MakeShape(128, (u, v) =>
+                {
+                    const float w = 0.105f, lift = 0.05f;
+                    float y = v - lift;
+                    bool head = (u - 0.12f) * (u - 0.12f) + (y - 0.6f) * (y - 0.6f) < 0.155f * 0.155f;
+                    bool body = Segment(u, y, 0.05f, 0.36f, -0.06f, -0.02f) < w;
+                    bool arms = Mathf.Min(Mathf.Min(Segment(u, y, 0.03f, 0.3f, -0.22f, 0.44f), Segment(u, y, -0.22f, 0.44f, -0.36f, 0.64f)),
+                                          Mathf.Min(Segment(u, y, 0.04f, 0.3f, 0.3f, 0.3f), Segment(u, y, 0.3f, 0.3f, 0.5f, 0.48f))) < w * 0.85f;
+                    bool legs = Mathf.Min(Mathf.Min(Segment(u, y, -0.06f, -0.02f, 0.24f, -0.12f), Segment(u, y, 0.24f, -0.12f, 0.12f, -0.42f)),
+                                          Mathf.Min(Segment(u, y, -0.06f, -0.02f, -0.3f, -0.2f), Segment(u, y, -0.3f, -0.2f, -0.5f, -0.08f))) < w * 0.92f;
+                    bool ground = Segment(u, v, -0.62f, -0.84f, 0.62f, -0.84f) < 0.055f;
+                    return head || body || arms || legs || ground ? 1f : 0f;
+                }));
+            }
+        }
+
+        /// <summary>A small, rounded chevron pointing right (the walk stick's direction marks; turn it for the others).</summary>
+        public static Sprite Chevron
+        {
+            get
+            {
+                return chevron != null ? chevron : (chevron = MakeShape(64, (u, v) =>
+                    Mathf.Min(Segment(u, v, -0.3f, 0.55f, 0.3f, 0f), Segment(u, v, 0.3f, 0f, -0.3f, -0.55f)) < 0.17f ? 1f : 0f));
             }
         }
 
