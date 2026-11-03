@@ -310,25 +310,27 @@ namespace DribbleToSchool.UI.Kit
         }
 
         /// <summary>
-        /// The jump button: a child leaping, arms up and knees tucked, high over a line of ground. Reads as "jump" at a
-        /// glance, even at thumbnail size.
+        /// The jump button: a figure springing up and forward, in the bold rounded strokes of a pictogram: a round head,
+        /// the front arm thrown up, the back arm down, the front knee driven up and the back leg pushing off, with a thin
+        /// gap where that leg meets the body (after a reference picture the user sent).
         /// </summary>
         public static Sprite JumpIcon
         {
             get
             {
-                return jumpIcon != null ? jumpIcon : (jumpIcon = MakeShape(128, (u, v) =>
+                return jumpIcon != null ? jumpIcon : (jumpIcon = MakeShape(160, (u, v) =>
                 {
-                    const float w = 0.105f, lift = 0.05f;
-                    float y = v - lift;
-                    bool head = (u - 0.12f) * (u - 0.12f) + (y - 0.6f) * (y - 0.6f) < 0.155f * 0.155f;
-                    bool body = Segment(u, y, 0.05f, 0.36f, -0.06f, -0.02f) < w;
-                    bool arms = Mathf.Min(Mathf.Min(Segment(u, y, 0.03f, 0.3f, -0.22f, 0.44f), Segment(u, y, -0.22f, 0.44f, -0.36f, 0.64f)),
-                                          Mathf.Min(Segment(u, y, 0.04f, 0.3f, 0.3f, 0.3f), Segment(u, y, 0.3f, 0.3f, 0.5f, 0.48f))) < w * 0.85f;
-                    bool legs = Mathf.Min(Mathf.Min(Segment(u, y, -0.06f, -0.02f, 0.24f, -0.12f), Segment(u, y, 0.24f, -0.12f, 0.12f, -0.42f)),
-                                          Mathf.Min(Segment(u, y, -0.06f, -0.02f, -0.3f, -0.2f), Segment(u, y, -0.3f, -0.2f, -0.5f, -0.08f))) < w * 0.92f;
-                    bool ground = Segment(u, v, -0.62f, -0.84f, 0.62f, -0.84f) < 0.055f;
-                    return head || body || arms || legs || ground ? 1f : 0f;
+                    if ((u - 0.08f) * (u - 0.08f) + (v - 0.77f) * (v - 0.77f) < 0.18f * 0.18f) return 1f;   // head
+                    // The body and the front leg (knee up), as a distance from their edge: below zero is inside.
+                    float body = Mathf.Min(Segment(u, v, -0.03f, 0.36f, -0.13f, -0.12f) - 0.15f,
+                                  Mathf.Min(Segment(u, v, -0.07f, -0.12f, 0.3f, 0.03f) - 0.11f, Segment(u, v, 0.3f, 0.03f, 0.18f, -0.46f) - 0.11f));
+                    if (body < 0f) return 1f;
+                    const float arm = 0.095f;
+                    if (Mathf.Min(Segment(u, v, -0.07f, 0.42f, -0.33f, 0.31f), Segment(u, v, -0.33f, 0.31f, -0.45f, -0.1f)) < arm) return 1f;   // back arm, down
+                    if (Mathf.Min(Segment(u, v, 0.05f, 0.42f, 0.31f, 0.25f), Segment(u, v, 0.31f, 0.25f, 0.6f, 0.45f)) < arm) return 1f;       // front arm, up
+                    // The back leg pushing off, kept a thin gap clear of the body and the front leg.
+                    bool back = Mathf.Min(Segment(u, v, -0.15f, -0.22f, -0.17f, -0.54f), Segment(u, v, -0.17f, -0.54f, -0.58f, -0.82f)) < 0.11f;
+                    return back && body > 0.035f ? 1f : 0f;
                 }));
             }
         }

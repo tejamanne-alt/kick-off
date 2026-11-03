@@ -132,7 +132,7 @@ namespace DribbleToSchool.UI
                     break;
                 case Picture.Jump:
                     Disc(t, UITheme.Blue);
-                    Glyph(t, ProceduralSprites.JumpIcon, Vector2.zero, 56f, 0f, 1f);
+                    Glyph(t, ProceduralSprites.JumpIcon, Vector2.zero, 60f, 0f, 1f);
                     break;
                 case Picture.Kick:
                     Disc(t, UITheme.Accent);

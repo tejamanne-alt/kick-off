@@ -268,7 +268,7 @@ namespace DribbleToSchool.Holiday
             stick = StickView.Create(controls, "WalkStick");
 
             jumpButton = TouchButton.Create(controls, "JumpButton", UITheme.Blue, true);
-            jumpButton.AddIcon(ProceduralSprites.JumpIcon, 0.46f, 0f, 0.58f);
+            jumpButton.AddIcon(ProceduralSprites.JumpIcon, 0.5f, 0f, 0.58f);
             jumpLabel = jumpButton.AddLabel(Loc.T("hud.jump"), 28);
             UIKit.Fit(jumpLabel, 14);
             jumpRect = (RectTransform)jumpButton.transform;
