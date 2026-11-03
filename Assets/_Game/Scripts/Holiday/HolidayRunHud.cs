@@ -4,6 +4,7 @@ using DribbleToSchool.Core;
 using DribbleToSchool.InputHandling;
 using DribbleToSchool.Localization;
 using DribbleToSchool.Progression;
+using DribbleToSchool.UI;
 using DribbleToSchool.UI.Kit;
 using UnityEngine;
 using UnityEngine.UI;
@@ -181,8 +182,18 @@ namespace DribbleToSchool.Holiday
             director.Hint += OnHint;
             director.PowerUpCollected += OnPowerUp;
             Loc.Changed += OnLanguageChanged;
+            // The Controls page's tour button plays the tour here and now.
+            ControlsTour.Replay = ReplayTour;
             // The director's own Start has already chosen the first phase (it runs before this one).
             OnPhaseChanged(director.Phase);
+        }
+
+        void ReplayTour()
+        {
+            var level = director.level;
+            if (level == null) return;
+            if (level.State == LevelState.Paused) level.Resume();
+            ControlsTour.Begin(root, level, pauseRect);
         }
 
         void OnDestroy()
@@ -197,6 +208,7 @@ namespace DribbleToSchool.Holiday
                 director.PowerUpCollected -= OnPowerUp;
             }
             Loc.Changed -= OnLanguageChanged;
+            if (ControlsTour.Replay == (System.Action)ReplayTour) ControlsTour.Replay = null;
             GameInput.UIBlockers.Clear();
         }
 
@@ -748,7 +760,7 @@ namespace DribbleToSchool.Holiday
             if (pauseModal != null) Destroy(pauseModal);
             pauseModal = null;
             // The settings panel (and its erase-progress question) are opened on top of the pause menu.
-            foreach (string name in new[] { "Settings", "ConfirmReset" })
+            foreach (string name in new[] { "Settings", "ConfirmReset", "ControlsGuide" })
             {
                 var leftover = root.Find(name);
                 if (leftover != null) Destroy(leftover.gameObject);
@@ -786,6 +798,10 @@ namespace DribbleToSchool.Holiday
             if (root == null || director == null) return;
             float now = Time.unscaledTime, dt = Time.unscaledDeltaTime;
             if (Screen.width != shownScreenWidth || Screen.height != shownScreenHeight || Screen.safeArea != shownSafeArea) ResizeStrip();
+            // A first run (nothing played yet): the guided tour of the controls at the start line, once the street is in.
+            var held = director.level;
+            if (held != null && held.State == LevelState.Intro && !held.Held && !director.Loading && ControlsTour.ShouldStart)
+                ControlsTour.Begin(root, held, pauseRect);
             UpdateCard(now, dt);
             UpdateStage();
             UpdatePowerUps(now);
@@ -1107,6 +1123,7 @@ namespace DribbleToSchool.Holiday
             switch (director.Phase)
             {
                 case RunPhase.Ready:
+                    if (director.level != null && director.level.Held) break;   // the controls tour is on
                     if (director.Loading) quiet = textGetReady;
                     else big = director.IntroTimeLeft > 0.35f ? textReady : textGo;
                     break;
@@ -1163,7 +1180,8 @@ namespace DribbleToSchool.Holiday
         {
             var input = GameInput.Instance;
             var level = director.level;
-            bool show = director.Phase == RunPhase.Running && input != null && level != null && level.State == LevelState.Playing;
+            // Shown while running, and while the controls tour holds the run (the player tries them under its light).
+            bool show = input != null && level != null && (level.Held || (director.Phase == RunPhase.Running && level.State == LevelState.Playing));
             controlsGroup.alpha = Mathf.MoveTowards(controlsGroup.alpha, show ? 1f : 0f, dt * 5f);
             bool visible = controlsGroup.alpha > 0.001f;
             if (controls.gameObject.activeSelf != visible) controls.gameObject.SetActive(visible);

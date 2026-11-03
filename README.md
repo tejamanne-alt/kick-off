@@ -99,6 +99,8 @@ Bell times and streak targets are in the level table in `Editor/GeneratedContent
 
 Holiday Run uses exactly these controls.
 
+**The first time a level starts** (a story level or the Holiday Run), a guided tour lights each control in turn before the clock starts (`UI/ControlsTour`): the stick (walk, then pull down to slide), JUMP, KICK, a tap anywhere else, and the pause button. A ghost thumb acts out each move, and the controls stay live under the light, so trying the move ticks it off. The run is held meanwhile (`LevelManager.Hold`: the clock and the world stop and the kid takes no input). Next and Skip are always there; it is seen once (remembered with the tutorial hints, so Reset progress brings it back). **The Controls page** (`UI/ControlsGuide`), from **Pause > Controls** (story levels and the Holiday Run) and **Settings > Controls > How the controls work**, explains every move with a small picture of its control, and plays the tour again (there and then in a level; from the menus, at the start of the next level).
+
 ## How it plays
 
 - **Walk** with the stick: push it right to go forward, left to go back. Whenever the kid walks into the ball, it gets a slightly random touch in the walking direction, so you can dribble forward or back.

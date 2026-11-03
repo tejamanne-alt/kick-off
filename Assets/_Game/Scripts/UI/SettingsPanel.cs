@@ -13,7 +13,7 @@ namespace DribbleToSchool.UI
     /// nothing overlaps at any aspect ratio (the card fits a 4:3 canvas, 1440 x 1080):
     /// left, Audio (music, sound effects) and Gameplay (school bell,
     /// colour-blind aim, vibration, screen shake); right, Player (the chosen kid, which opens the
-    /// player picker), Language and Controls (left-handed, the slide button's side); along the bottom, Reset progress, Restore purchases and Done. Labels shrink
+    /// player picker), Language and Controls (left-handed, and the Controls page: UI/ControlsGuide); along the bottom, Reset progress, Restore purchases and Done. Labels shrink
     /// to fit rather than run into their controls, for longer translations.
     /// </summary>
     public static class SettingsPanel
@@ -76,9 +76,14 @@ namespace DribbleToSchool.UI
             }
             y += 84f + 22f;
 
-            // Controls: which hand has the stick and which the buttons.
+            // Controls: which hand has the stick and which the buttons, and the page that says what each one does.
             Section(right, ref y, "settings.controls");
             ToggleRow(right, ref y, "settings.leftHanded", GameSettings.LeftHanded, v => GameSettings.LeftHanded = v);
+            var guideRow = UIKit.Row(right, "ControlsGuide", y, RowHeight, 4f, 4f);
+            var guide = UIKit.Button(guideRow, "Open", Loc.T("settings.controlsGuide"), new Color(0.25f, 0.62f, 0.7f), () => ControlsGuide.Open(canvas, null), 32);
+            UIKit.Stretch((RectTransform)guide.transform);
+            ((RectTransform)guide.transform).offsetMin = new Vector2(0f, UIButtonFx.Depth);
+            y += RowHeight + RowGap;
 
             // Bottom row: reset (with confirmation), restore purchases, done.
             var reset = UIKit.Button(card.transform, "Reset", Loc.T("settings.reset"), UITheme.Red, () => ConfirmReset(canvas), 34);

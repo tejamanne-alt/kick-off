@@ -7,7 +7,7 @@ namespace DribbleToSchool.UI.Kit
     {
         static Sprite rounded, roundedSmall, circle, star, coin, lockIcon, gradient, arrow, pause, ring, softDisc, softEdgeDisc, ballIcon, slideIcon;
         static Sprite roundedEdge, roundedEdgeSmall, circleEdge, check, pitchBadge, holoSheen, goldSheen, stickerIcon, streak, swoosh, bolt, shield, magnet;
-        static Sprite jumpIcon, chevron;
+        static Sprite jumpIcon, chevron, spotHole;
 
         /// <summary>A lightning bolt (the turbo power-up).</summary>
         public static Sprite Bolt
@@ -340,6 +340,23 @@ namespace DribbleToSchool.UI.Kit
             {
                 return chevron != null ? chevron : (chevron = MakeShape(64, (u, v) =>
                     Mathf.Min(Segment(u, v, -0.3f, 0.55f, 0.3f, 0f), Segment(u, v, 0.3f, 0f, -0.3f, -0.55f)) < 0.17f ? 1f : 0f));
+            }
+        }
+
+        /// <summary>
+        /// The controls tour's spotlight: solid outside a circle, clear inside it, with a soft edge. Stretched over a
+        /// control's square (the circle fills 80% of it), with plain panels round it for the rest of the screen.
+        /// </summary>
+        public static Sprite SpotHole
+        {
+            get
+            {
+                return spotHole != null ? spotHole : (spotHole = MakeShape(128, (u, v) =>
+                {
+                    float r = Mathf.Sqrt(u * u + v * v);
+                    float t = Mathf.Clamp01((r - 0.8f) / 0.16f);
+                    return t * t * (3f - 2f * t);
+                }));
             }
         }
 

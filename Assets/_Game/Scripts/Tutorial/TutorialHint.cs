@@ -19,6 +19,7 @@ namespace DribbleToSchool.Tutorial
             "dribble", "brake", "jump", "kick", "juggle", "gate", "puddle", "pedestrian", "crossing", "springboard",
             "tide", "seagull", "tunnel", "pipes", "platform", "dog", "fountain", "swing", "slide", "doublejump",
             "holiday",   // the Holiday Run's first-run tips
+            "controls",  // the guided tour of the controls (UI/ControlsTour)
         };
 
         /// <summary>Raised with the hint id when a hint should be displayed.</summary>

@@ -126,6 +126,13 @@ namespace DribbleToSchool.Core
         /// <summary>The countdown waits (at Ready) while this returns true: the Holiday Run's first stages are still loading.</summary>
         public Func<bool> IntroHold;
 
+        /// <summary>
+        /// True while the controls tour holds the run where it is (<see cref="Hold"/>): the clock and the world stop, the
+        /// countdown waits, the kid takes no input and the run cannot be paused, but the touch controls stay live so the
+        /// player can try them.
+        /// </summary>
+        public bool Held { get; private set; }
+
         void Awake()
         {
             Current = this;
@@ -259,6 +266,7 @@ namespace DribbleToSchool.Core
 
         void Update()
         {
+            if (Held) return;
             var input = GameInput.Instance;
             if (input != null)
             {
@@ -526,6 +534,7 @@ namespace DribbleToSchool.Core
 
         public void TogglePause()
         {
+            if (Held) return;
             if (State == LevelState.Paused) Resume();
             else if (State != LevelState.Complete) Pause();
         }
@@ -566,13 +575,25 @@ namespace DribbleToSchool.Core
         void SetState(LevelState next)
         {
             State = next;
-            TimeControl.SetPaused(next == LevelState.Paused);
-
-            bool playing = next == LevelState.Playing;
-            kid.InputEnabled = playing;
-            if (GameInput.Instance != null) GameInput.Instance.Blocked = !playing;
-
+            ApplyHold();
             if (StateChanged != null) StateChanged(next);
+        }
+
+        /// <summary>Holds the run where it is, or lets it go on (the controls tour; see <see cref="Held"/>).</summary>
+        public void Hold(bool held)
+        {
+            if (Held == held) return;
+            Held = held;
+            ApplyHold();
+        }
+
+        /// <summary>Time, the kid's input and the touch controls for the state and the hold.</summary>
+        void ApplyHold()
+        {
+            TimeControl.SetPaused(State == LevelState.Paused || Held);
+            bool playing = State == LevelState.Playing && !Held;
+            kid.InputEnabled = playing;
+            if (GameInput.Instance != null) GameInput.Instance.Blocked = !(playing || Held);
         }
     }
 }

@@ -57,6 +57,14 @@ namespace DribbleToSchool.UI
             level.BellRang += OnBellRang;
             GameEvents.Raised += OnGameEvent;
             TutorialHint.Shown += OnHint;
+            // The Controls page's tour button plays the tour here and now.
+            ControlsTour.Replay = ReplayTour;
+        }
+
+        void ReplayTour()
+        {
+            if (level.State == LevelState.Paused) level.Resume();
+            ControlsTour.Begin(root, level, pauseRect);
         }
 
         void OnDestroy()
@@ -70,6 +78,7 @@ namespace DribbleToSchool.UI
             }
             GameEvents.Raised -= OnGameEvent;
             TutorialHint.Shown -= OnHint;
+            if (ControlsTour.Replay == (System.Action)ReplayTour) ControlsTour.Replay = null;
             GameInput.UIBlockers.Clear();
         }
 
@@ -268,6 +277,8 @@ namespace DribbleToSchool.UI
         void Update()
         {
             if (root == null) return;
+            // The first time a level starts: the guided tour of the controls, before the clock starts.
+            if (level.State == LevelState.Intro && !level.Held && ControlsTour.ShouldStart) ControlsTour.Begin(root, level, pauseRect);
             UpdateInfo();
             UpdateStateScreens();
             UpdateControls();
@@ -334,7 +345,7 @@ namespace DribbleToSchool.UI
             if (lastState == LevelState.Paused)
             {
                 if (pauseModal != null) Destroy(pauseModal);
-                foreach (var name in new[] { "Settings", "ConfirmReset" })
+                foreach (var name in new[] { "Settings", "ConfirmReset", "ControlsGuide" })
                 {
                     var leftover = root.Find(name);
                     if (leftover != null) Destroy(leftover.gameObject);
@@ -350,7 +361,8 @@ namespace DribbleToSchool.UI
         void UpdateControls()
         {
             var input = GameInput.Instance;
-            bool playing = level.State == LevelState.Playing;
+            // Shown while playing, and while the controls tour holds the run (the player tries them under its light).
+            bool playing = level.State == LevelState.Playing || level.Held;
             bool show = playing && input != null;
             jumpRect.gameObject.SetActive(show);
             kickRect.gameObject.SetActive(show);
@@ -405,7 +417,11 @@ namespace DribbleToSchool.UI
                 toast.transform.localScale = Vector3.Lerp(toast.transform.localScale, Vector3.one, 1f - Mathf.Exp(-14f * Time.unscaledDeltaTime));
             }
 
-            if (level.State == LevelState.Intro)
+            if (level.State == LevelState.Intro && level.Held)
+            {
+                bigText.gameObject.SetActive(false);
+            }
+            else if (level.State == LevelState.Intro)
             {
                 bigText.gameObject.SetActive(true);
                 bigText.text = level.Objective != null && level.IntroTimeLeft > 0.35f
@@ -448,24 +464,26 @@ namespace DribbleToSchool.UI
 
         void ShowPause()
         {
-            var card = UIKit.Modal(root, "Pause", new Vector2(720f, 900f), out pauseModal);
+            bool skip = DevTuningPanel.Available && level.NextLevel != null;
+            var card = UIKit.Modal(root, "Pause", new Vector2(720f, skip ? 1000f : 900f), out pauseModal);
             UIKit.Header(card.transform, Loc.T("pause.title"), 460f);
 
-            float y = -200f;
+            float y = skip ? -150f : -160f;
             PauseButton(card.transform, ref y, "pause.resume", UITheme.Green, () => level.Resume());
             PauseButton(card.transform, ref y, "pause.checkpoint", UITheme.Blue, () => { level.Resume(); level.RespawnAtCheckpoint(); });
             PauseButton(card.transform, ref y, "pause.restart", UITheme.Accent, () => level.BeginRun());
+            PauseButton(card.transform, ref y, "pause.controls", new Color(0.25f, 0.62f, 0.7f), () => ControlsGuide.Open(root, null));
             PauseButton(card.transform, ref y, "pause.settings", new Color(0.6f, 0.5f, 0.8f), () => SettingsPanel.Open(root, null));
             PauseButton(card.transform, ref y, "pause.quit", UITheme.Red, () => level.QuitToMap());
-            if (DevTuningPanel.Available && level.NextLevel != null)
+            if (skip)
                 PauseButton(card.transform, ref y, "pause.skip", UITheme.Locked, () => level.LoadNextLevel());
         }
 
         static void PauseButton(Transform parent, ref float y, string key, Color color, UnityEngine.Events.UnityAction action)
         {
             var b = UIKit.Button(parent, key, Loc.T(key), color, action, 40);
-            UIKit.Place((RectTransform)b.transform, new Vector2(0.5f, 1f), new Vector2(0f, y), new Vector2(520f, 100f));
-            y -= 120f;
+            UIKit.Place((RectTransform)b.transform, new Vector2(0.5f, 1f), new Vector2(0f, y), new Vector2(520f, 96f));
+            y -= 112f;
         }
 
         // ---------- Results ----------
