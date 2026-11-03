@@ -151,6 +151,39 @@ namespace DribbleToSchool.Tests
                 Assert.IsTrue(table.ContainsKey("place.school"), code + ": place.school");
             }
         }
+
+        [Test]
+        public void TheTripTestsWalkTheStoryInTheLevelTablesOrder()
+        {
+            // SchoolTripTests checks the unlock rule (chapter 4's two routes interleaved) on this order without the catalog.
+            var isChallenge = new List<bool>();
+            var scenes = new List<string>();
+            var table = GeneratedContent.LevelTable(out isChallenge, out scenes);
+            var story = new List<string>();
+            for (int i = 0; i < table.Count; i++)
+                if (!isChallenge[i]) story.Add(table[i].Key);
+            Assert.AreEqual(string.Join(",", SchoolTripTests.StoryOrder), string.Join(",", story.ToArray()));
+        }
+
+        [Test]
+        public void EveryRouteHasASchoolBellForTheWholeTrip()
+        {
+            // The trip's bell is the sum of its legs' own bells; a leg without one would leave the route with no bell at all.
+            foreach (var route in RouteTable.All)
+            {
+                float bell = Progression.SchoolTrips.TripBell(route, GeneratedContent.BellTime);
+                Assert.Greater(bell, 0f, route.id + " has a trip bell");
+                float sum = 0f;
+                foreach (string level in route.levels) sum += GeneratedContent.BellTime(level);
+                Assert.AreEqual(sum, bell, 0.001f, route.id);
+            }
+            foreach (string code in Loc.Languages)
+            {
+                var table = StringTables.For(code);
+                Assert.IsTrue(table["leg.trip"].Contains("{1}") && table["results.pace"].Contains("{1}") && table["results.tripBeforeBell"].Contains("{1}")
+                    && table["results.tripSoFar"].Contains("{1}") && table["hud.target"].Contains("{0}"), code + ": the trip strings show their times");
+            }
+        }
     }
 }
 #endif

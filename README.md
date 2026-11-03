@@ -75,11 +75,12 @@ Bell times and streak targets are in the level table in `Editor/GeneratedContent
 - **Start:** you stand on the doorstep with the ball, a short "Ready... GO!" countdown, then you're in control. Restarting a level, or losing the ball before the first checkpoint, puts you back at the doorstep.
 - **Checkpoints** (grey flags) turn green when the kid passes them with the ball close by.
 - **Losing the ball** (falling into a gap or water, falling off the level, or kicking it back past the start of the level: "the ball rolled back home") fades the screen and sends you back to the last checkpoint. There's no game over, and the clock keeps running. If you walk off without the ball, just walk back for it.
-- **School bell:** a countdown to the bell. When it rings you can still finish, you're just late. Turn it off in the pause menu (cozy mode).
+- **The way to school is one trip.** Each level is a leg of a route, with its own target time (the HUD's "Target 0:28": a pace, it never rings). The legs' times add up: a later leg shows the trip so far under the level's name ("Home » Bakery · Trip 2:15"), and the stop's results say "Trip so far 2:15 · school bell at 6:25".
+- **School bell:** only on a route's last leg, and only when the whole route was walked from home without a break. Its bell is the sum of the legs' targets, counted for the whole trip; when it rings you can still finish, you're just late. Late for school means walking the whole route again from home (the results' **From home** button) to unlock the next stage; retrying only the last leg doesn't count. The last leg played on its own is untimed. Turn the bell off in the pause menu (cozy mode: no bell, no targets, and stages open without an on-time trip). See [`docs/WORLD_MAP.md`](docs/WORLD_MAP.md), "School trips".
 - **Stars:**
-  - 1 star for reaching school with the ball.
-  - 2 stars for getting there before the bell.
-  - 3 stars for also hitting the level's perfect-touch streak target. Coins join this condition in Phase 4.
+  - 1 star for reaching the stop (or school) with the ball.
+  - 2 stars for keeping the leg's pace, or on a route's last leg walked from home, for getting the whole trip to school before the bell.
+  - 3 stars for also hitting the level's perfect-touch streak target and collecting every coin.
 - **Pause menu:** Resume, Back to checkpoint (if the ball gets stuck), Restart level, School bell on/off, and a dev "Skip to next level".
 
 ## Controls
@@ -183,7 +184,8 @@ The original plan named Cinemachine for the camera. For now the project uses its
 
 - **Coins:** collected by the kid or the ball. Bonuses come from perfect touches, new stars, new stickers, and collecting every coin in a level.
 - **Stickers:** one is hidden in each level, often high up, so a well-kicked ball can collect it.
-- **Stars:** 1 for finishing, 2 for beating the bell, 3 for also hitting the streak target and collecting every coin.
+- **Stars:** 1 for finishing, 2 for keeping the leg's pace (on a route's last leg walked from home: the whole trip before the bell), 3 for also hitting the streak target and collecting every coin.
+- **Stages:** the next route opens when the last one's whole trip from home has got to school before the bell once (cozy mode skips this; saves from before the trips count every finished route as on time).
 - **Locker Room:** buy and equip ball skins, backpack flags, outfits and ball trails. All of them are drawn in code. Eleven items can't be bought: stickers earn them (below).
 - **Stickers:** each story level hides one, themed to the level (a cat on the garden gate, a vending machine, a crab, a tower crane, the school bell...): die-cut vinyl stickers drawn from the game's own models (`tools/blender/sticker_art.py` renders them in the toon look, `sticker_compose.py` cuts them out into `Resources/UI/Stickers`). Most are plain, six are holo (a rainbow sheen sweeps across them), the five chapter finales are gold. The album (`FrontEnd/AlbumScreen`) is a collector's book: the collector track (rewards at 5, 10, 15, 20 and all 23 stickers), and per chapter its progress, its set reward and its stickers; tap one to see it up close with a line about it, or, if it's still missing, a hint about where it hides and a button to play that level. Completing a chapter's set or reaching a count unlocks exclusive Locker Room items (`Cosmetics/StickerRewards`; a celebration the first time, and older saves get what their stickers already earned).
 - **Saving:** progress goes to `save.json` in the app's data folder. The **Kick Off** menu has Reset Save Data and Give 1000 Coins for testing.

@@ -20,6 +20,7 @@ namespace DribbleToSchool.Core
     public struct LevelResult
     {
         public float time;
+        /// <summary>The second star's timing: the leg's pace kept, or on a timed last leg the whole trip at school before the bell.</summary>
         public bool beforeBell;
         public int bestPerfectStreak;
         public int ballsLost;
@@ -39,11 +40,39 @@ namespace DribbleToSchool.Core
         // Rewards (filled when the result is saved)
         public int newStars;
         public int coinsEarned;
+
+        // The way to school (a story level is one leg of a route; Progression/SchoolTrips)
+        /// <summary>A story level on one of the routes (not a challenge or the test track).</summary>
+        public bool onRoute;
+        /// <summary>The route's last leg: it ends at the school.</summary>
+        public bool lastLeg;
+        /// <summary>Cozy mode (the bell turned off): no pace, no bell, the trip not judged.</summary>
+        public bool cozy;
+        /// <summary>This leg's own target in seconds (its bell time), and whether it was kept.</summary>
+        public float paceTarget;
+        public bool paceMet;
+        /// <summary>Every leg before this one was walked in this trip, so <see cref="tripTime"/> counts from the front door.</summary>
+        public bool tripContinuous;
+        /// <summary>The trip from home so far, this leg included (-1 when it is not continuous).</summary>
+        public float tripTime;
+        /// <summary>The legs' targets added up from home to the end of this leg: a trip within it is on track for the bell.</summary>
+        public float tripTarget;
+        /// <summary>The school bell of the whole trip: the sum of the route's legs' targets.</summary>
+        public float tripBell;
+        /// <summary>The last leg of a continuous trip: the whole trip was judged against the bell.</summary>
+        public bool timedTrip;
+        /// <summary>A timed trip got to school before the bell.</summary>
+        public bool tripOnTime;
+        /// <summary>The next story level is still locked (a stage whose trip has never been on time).</summary>
+        public bool nextLocked;
     }
 
     /// <summary>
-    /// Runs one level: countdown, the bell timer, checkpoints, losing the ball
-    /// and respawning, pause, and the finish with a star rating.
+    /// Runs one level: countdown, the pace and the bell, checkpoints, losing the ball
+    /// and respawning, pause, and the finish with a star rating. A story level is one leg of a
+    /// route's trip from home to school (Progression/SchoolTrips): every leg has its own target (its
+    /// bell time), and only the last leg of a trip walked from home without a break has the school
+    /// bell, which rings when the whole trip's time reaches the sum of the legs' targets.
     /// </summary>
     [DefaultExecutionOrder(-50)]
     public class LevelManager : MonoBehaviour
@@ -77,8 +106,27 @@ namespace DribbleToSchool.Core
 
         public LevelState State { get; private set; }
         public float ElapsedTime { get; private set; }
+        /// <summary>The school bell is running: the last leg of a trip walked from home without a break, outside cozy mode.</summary>
         public bool BellEnabled { get; private set; }
         public bool BellRung { get; private set; }
+        /// <summary>This leg's own target is shown instead of the bell (every other leg, outside cozy mode). It never rings.</summary>
+        public bool PaceEnabled { get; private set; }
+        /// <summary>The school bell turned off in the settings (read at the start and after the pause menu).</summary>
+        public bool Cozy { get; private set; }
+        /// <summary>The route this story level is a leg of, or null (a challenge, the test track, the Holiday Run).</summary>
+        public Route TripRoute { get; private set; }
+        /// <summary>The leg's place on its route (0 = it starts at home), or -1.</summary>
+        public int LegIndex { get; private set; }
+        /// <summary>This leg ends at the school.</summary>
+        public bool IsLastLeg { get; private set; }
+        /// <summary>Every leg before this one was walked in the trip being walked (always true for a route's first leg).</summary>
+        public bool TripContinuous { get; private set; }
+        /// <summary>The time the legs before this one took in the trip (0 when it is not continuous).</summary>
+        public float TripBefore { get; private set; }
+        /// <summary>The school bell of the whole trip in seconds: the sum of the route's legs' targets (this level's own bell off a route).</summary>
+        public float TripBell { get; private set; }
+        /// <summary>The legs' targets added up from home to the end of this leg.</summary>
+        public float TripTarget { get; private set; }
         public int BallsLost { get; private set; }
         public int BestPerfectStreak { get; private set; }
         public int PerfectTouches { get; private set; }
@@ -95,9 +143,39 @@ namespace DribbleToSchool.Core
         public float FadeAmount { get; private set; }
         public float IntroTimeLeft { get; private set; }
 
-        public float BellTime { get { return level != null ? level.bellTime : 0f; } }
-        public float BellTimeLeft { get { return Mathf.Max(0f, BellTime - ElapsedTime); } }
-        public LevelDefinition NextLevel { get { return catalog != null ? catalog.NextAfter(level) : null; } }
+        /// <summary>When the school bell rings, in seconds of the whole trip (<see cref="TripBell"/>).</summary>
+        public float BellTime { get { return TripBell; } }
+        public float BellTimeLeft { get { return Mathf.Max(0f, TripBell - TripBefore - ElapsedTime); } }
+        /// <summary>This leg's own target: its bell time.</summary>
+        public float PaceTarget { get { return level != null ? level.bellTime : 0f; } }
+        public float PaceTimeLeft { get { return Mathf.Max(0f, PaceTarget - ElapsedTime); } }
+        /// <summary>Slower than this leg's target so far.</summary>
+        public bool PaceBehind { get { return PaceEnabled && ElapsedTime > PaceTarget; } }
+        /// <summary>The trip from home so far, this leg's time included (meaningful when <see cref="TripContinuous"/>).</summary>
+        public float TripTime { get { return TripBefore + ElapsedTime; } }
+        /// <summary>The HUD shows the trip so far: a later leg of a trip walked from home without a break, outside cozy mode.</summary>
+        public bool ShowsTrip { get { return TripRoute != null && LegIndex > 0 && TripContinuous && !Cozy && Objective == null; } }
+
+        /// <summary>
+        /// Where Next goes: the next leg of this route when it can be played (in chapter 4 the two routes' levels alternate in the
+        /// story, and a trip is walked along one route), else the next story level of the catalog.
+        /// </summary>
+        public LevelDefinition NextLevel
+        {
+            get
+            {
+                if (catalog == null) return null;
+                if (TripRoute != null && !IsLastLeg && LegIndex >= 0)
+                {
+                    var leg = catalog.FindById(TripRoute.levels[LegIndex + 1]);
+                    if (leg != null && LevelUnlocks.IsUnlocked(catalog, leg)) return leg;
+                }
+                return catalog.NextAfter(level);
+            }
+        }
+
+        /// <summary>The first leg of this level's route: where a trip to school starts again from home (null off a route).</summary>
+        public LevelDefinition TripStart { get { return TripRoute != null && catalog != null ? catalog.FindById(TripRoute.levels[0]) : null; } }
 
         public event Action<LevelState> StateChanged;
         public event Action<Checkpoint> CheckpointReached;
@@ -216,7 +294,8 @@ namespace DribbleToSchool.Core
             CoinsCollected = 0;
             StickerCollected = false;
             BellRung = false;
-            BellEnabled = GameSettings.BellTimerEnabled && BellTime > 0f && Objective == null;
+            SetUpTrip();
+            RefreshTimers();
             FadeAmount = 0f;
             foreach (var r in resettables) r.ResetState();
 
@@ -224,6 +303,61 @@ namespace DribbleToSchool.Core
             PlaceAtCheckpoint();
             IntroTimeLeft = introDuration;
             SetState(LevelState.Intro);
+        }
+
+        /// <summary>
+        /// Works out at the start of a run which leg of which route this is and what the trip so far is (from the save: a restart after
+        /// the bell rang finds the trip forgotten and is untimed). A level on no route keeps its own bell as a trip of one leg.
+        /// </summary>
+        void SetUpTrip()
+        {
+            TripRoute = null;
+            LegIndex = -1;
+            IsLastLeg = false;
+            TripContinuous = false;
+            TripBefore = 0f;
+            TripBell = 0f;
+            TripTarget = 0f;
+            if (level == null || endless || Objective != null || level.isChallenge) return;
+
+            Route route;
+            int leg = RouteTable.LegIndex(level.levelId, out route);
+            if (leg < 0)
+            {
+                IsLastLeg = true;
+                TripContinuous = true;
+                TripBell = TripTarget = level.bellTime;
+                return;
+            }
+            TripRoute = route;
+            LegIndex = leg;
+            IsLastLeg = leg == route.levels.Length - 1;
+            Func<string, float> bellOf = BellOf;
+            TripBell = SchoolTrips.TripBell(route, bellOf);
+            TripTarget = SchoolTrips.TargetUpTo(route, leg, bellOf);
+            float before;
+            TripContinuous = SchoolTrips.TimeBefore(SaveSystem.Data, route, leg, out before);
+            TripBefore = TripContinuous ? before : 0f;
+        }
+
+        /// <summary>A level's own bell time from the catalog (this level's from its definition), 0 if it is unknown.</summary>
+        float BellOf(string levelId)
+        {
+            if (level != null && level.levelId == levelId) return level.bellTime;
+            var def = catalog != null ? catalog.FindById(levelId) : null;
+            return def != null ? def.bellTime : 0f;
+        }
+
+        /// <summary>
+        /// The bell or the pace, from the settings as they are now (the start of a run, and back from the pause menu, where cozy
+        /// mode can be switched): the bell only on the last leg of a trip walked from home without a break, the pace on any other leg.
+        /// </summary>
+        void RefreshTimers()
+        {
+            Cozy = !GameSettings.BellTimerEnabled;
+            bool timing = !Cozy && Objective == null && !endless;
+            BellEnabled = timing && IsLastLeg && TripContinuous && TripBell > 0f;
+            PaceEnabled = timing && !BellEnabled && TripRoute != null && PaceTarget > 0f;
         }
 
         /// <summary>Back to the start checkpoint alone: a new run, or (endless) a new day.</summary>
@@ -293,9 +427,15 @@ namespace DribbleToSchool.Core
         void Tick(float dt)
         {
             ElapsedTime += dt;
-            if (BellEnabled && !BellRung && ElapsedTime >= BellTime)
+            if (BellEnabled && !BellRung && TripBefore + ElapsedTime >= TripBell)
             {
                 BellRung = true;
+                // Late for school: the trip is over, and starting this leg again cannot save it (it is walked again from home).
+                if (TripRoute != null)
+                {
+                    SchoolTrips.MissBell(SaveSystem.Data, TripRoute);
+                    SaveSystem.Save();
+                }
                 GameEvents.Raise(GameEventType.Bell, kid.transform.position);
                 if (BellRang != null) BellRang();
             }
@@ -449,7 +589,6 @@ namespace DribbleToSchool.Core
             var result = new LevelResult
             {
                 time = ElapsedTime,
-                beforeBell = !BellEnabled || BellTime <= 0f || ElapsedTime <= BellTime,
                 bestPerfectStreak = BestPerfectStreak,
                 ballsLost = BallsLost,
                 coins = CoinsCollected,
@@ -458,10 +597,16 @@ namespace DribbleToSchool.Core
                 perfectTouches = PerfectTouches,
                 stickerFound = StickerCollected,
             };
+            RecordTrip(ref result);
+            // The second star: the leg's pace, or on a timed last leg the whole trip before the bell. The third needs it too.
+            result.beforeBell = result.timedTrip ? result.tripOnTime : result.paceMet;
             int target = level != null ? level.perfectStreakTarget : 0;
             bool thirdStar = result.beforeBell && BestPerfectStreak >= target && result.allCoins;
             result.stars = 1 + (result.beforeBell ? 1 : 0) + (thirdStar ? 1 : 0);
             if (level != null) SaveResult(ref result);
+            // After a route's last leg, is the next stage still shut (a trip that has never got to school on time)?
+            var next = result.onRoute && result.lastLeg && catalog != null ? catalog.NextAfter(level) : null;
+            result.nextLocked = next != null && !LevelUnlocks.StoryOpen(next.levelId, level.levelId, SaveSystem.Data, Cozy);
             Result = result;
 
             SetState(LevelState.Complete);
@@ -505,6 +650,38 @@ namespace DribbleToSchool.Core
             if (Completed != null) Completed(result);
         }
 
+        /// <summary>
+        /// Fills in the way to school for a finished story level and records the leg in the save's trip (written with the rest of the
+        /// result): the pace, the trip so far and, on the last leg of a trip walked from home without a break, the verdict. Nothing
+        /// is recorded in cozy mode or off a route (a challenge, the test track).
+        /// </summary>
+        void RecordTrip(ref LevelResult r)
+        {
+            r.onRoute = TripRoute != null;
+            r.lastLeg = IsLastLeg;
+            r.cozy = Cozy;
+            r.paceTarget = PaceTarget;
+            r.paceMet = Cozy || PaceTarget <= 0f || ElapsedTime <= PaceTarget;
+            r.tripContinuous = TripContinuous && !Cozy;
+            r.tripTime = TripContinuous ? TripTime : -1f;
+            r.tripTarget = TripTarget;
+            r.tripBell = TripBell;
+            r.timedTrip = !Cozy && IsLastLeg && TripContinuous && TripBell > 0f;
+            r.tripOnTime = r.timedTrip && !BellRung && TripTime <= TripBell;
+            if (Cozy || TripRoute == null) return;
+
+            var data = SaveSystem.Data;
+            if (r.timedTrip && BellRung)
+            {
+                // The trip was forgotten when the bell rang.
+                SchoolTrips.MissBell(data, TripRoute);
+                return;
+            }
+            float tripTime;
+            var verdict = SchoolTrips.RecordLeg(data, TripRoute, LegIndex, ElapsedTime, TripBell, out tripTime);
+            if (r.timedTrip) r.tripOnTime = verdict == TripVerdict.OnTime;
+        }
+
         /// <summary>Persist the run and work out the coin rewards.</summary>
         void SaveResult(ref LevelResult result)
         {
@@ -540,7 +717,7 @@ namespace DribbleToSchool.Core
         public void Resume()
         {
             if (State != LevelState.Paused) return;
-            BellEnabled = GameSettings.BellTimerEnabled && BellTime > 0f;
+            RefreshTimers();
             SetState(stateBeforePause);
         }
 
@@ -549,6 +726,14 @@ namespace DribbleToSchool.Core
             LevelDefinition next = NextLevel;
             if (next == null) QuitToMap();
             else LoadLevel(next);
+        }
+
+        /// <summary>Walk the trip to school again from home: this route's first leg.</summary>
+        public void LoadTripStart()
+        {
+            LevelDefinition start = TripStart;
+            if (start == null) QuitToMap();
+            else LoadLevel(start);
         }
 
         /// <summary>Back to the chapter map, showing this level's chapter.</summary>
