@@ -28,7 +28,34 @@ Nothing here has been run in Unity or on a device (see PROGRESS.md for what was 
 
 Only the first level of a route starts at home, and only the last ends at the school. Chapter 4's levels alternate between its two routes (L15 underpass, L16 and L17 site, L18 underpass), so L18 picks up the underpass trip at the station where L15 left it. Each stop has its name in both languages (`stop.<id>`) and a phrase for "Made it to..." (`stop.<id>.to`: "the bakery", "a la panadería"); the levels' signs and boards use its English `signName`, as all the levels' signs are English. `RouteTableTests` checks the chain (home, the stops in order, the school; each stop on one route; names in both languages; a set piece for each).
 
-Chapters stay the unit of the paywall (`Store/Monetization.IsChapterUnlocked`), of the Holiday Run's stages and of the level catalog; routes are how the map and the levels present them. Chapter 4 has two routes, and its levels alternate between them (15 underpass, 16 and 17 site, 18 underpass). Progression is unchanged: a story level unlocks when the one before it in the catalog is done (`Progression/LevelUnlocks`); a challenge unlocks with its chapter's first level.
+Chapters stay the unit of the paywall (`Store/Monetization.IsChapterUnlocked`), of the Holiday Run's stages and of the level catalog; routes are how the map and the levels present them. Chapter 4 has two routes, and its levels alternate between them (15 underpass, 16 and 17 site, 18 underpass). A story level unlocks when the one before it in the catalog is done and, if that one ended a route at the school, when that route's trip has got to school on time once (`Progression/LevelUnlocks`, "School trips" below); a challenge unlocks with its chapter's first level.
+
+## School trips (`Progression/SchoolTrips.cs`, `Core/LevelManager.cs`, `UI/GameHud.cs`)
+
+A route is a stage, and the stage is one trip to school: the times of its legs add up, and the school bell is for the whole trip.
+
+- **Each leg has its own target**, its `LevelDefinition.bellTime` (the street's seconds plus the 3 s walk from the stop, as before). It is a pace, not a bell: the HUD shows "Target 0:28" counting down (orange under 10 s, "Behind" once past it, never "LATE!"), and keeping it earns the leg's second star.
+- **The school bell of a trip** is the sum of its legs' targets (`SchoolTrips.TripBell`, looked up in the catalog):
+
+  | Route | Legs | The bell |
+  |---|---|---|
+  | Home Street | L01 to L05: 53 + 58 + 83 + 63 + 83 s | 5:40 |
+  | Market Street | L06 to L10: 63 + 73 + 73 + 78 + 98 s | 6:25 |
+  | Seaside Road | L11 to L14: 73 + 78 + 83 + 98 s | 5:32 |
+  | The Underpass | L15, L18: 68 + 108 s | 2:56 |
+  | Building Site Shortcut | L16, L17: 83 + 88 s | 2:51 |
+  | Park Path | L19 to L23: 68 + 78 + 83 + 83 + 123 s | 7:15 |
+
+- **The trip is saved** per route (`SaveData.trips`, a `TripRecord`: `routeId`, `legTimes` with -1 for a leg not walked in this trip, `onTime`, `bestTripTime`). Finishing a route's first leg starts a new trip (every leg forgotten, leg 0 set). Finishing a later leg sets its time and forgets the legs after it: a trip is one walk, in order, though a leg can be walked again before going on. The HUD adds the trip so far to the leg line on a later leg ("Home » Bakery · Trip 2:15", live), and a stop's results say "Trip so far 2:15 · school bell at 6:25" (green while the trip is within the legs' targets so far).
+- **Only a route's last leg has the bell**, and only when every leg before it was walked in this trip: the HUD shows "Bell 0:28" for what is left of the whole trip, and it rings ("LATE!") when the trip so far plus this leg's time reaches the bell. When it rings, the trip is forgotten at once (`SchoolTrips.MissBell`), so restarting the last leg cannot save it.
+- **At school:** on time (at or before the bell) the results say "Made it to school on time!" and "Whole trip before the bell (4:58 of 5:40)", the route is marked `onTime` for good and its best trip kept. Late, they say "Late for school!", the whole trip is forgotten, a red note says to walk the whole way again from home to unlock the next level, the main button becomes **From home** (the route's first leg) and Next is hidden while the next level is locked.
+- **The last leg on its own** (played from the map, or after the trip was broken) is untimed: no bell, its own target instead, "Made it to school!" and a note to walk the whole way from home to time the trip. It never opens the next stage.
+- **Unlocking:** a story level needs the story level before it in the catalog done and, if that level is the last leg of its route, that route's trip `onTime` (`LevelUnlocks.StoryOpen`). In chapter 4, L18 needs the site's trip (L16, L17) on time and L19 the underpass's (L15, then L18; the site's legs walked in between do not touch it). A level already finished stays open. When the first level that cannot be played is held back by a late trip, `LevelUnlocks.NextToPlay` returns that route's first leg, so the map focuses the stage to walk again. Challenges keep their rule.
+- **Next** after a leg goes to the next leg of the same route when it can be played (after L15, L18 once it is open), else to the next story level of the catalog.
+- **Stars:** the second star is the pace on a stop's leg or an untimed last leg, and the whole trip before the bell on a timed last leg; the third still needs the second.
+- **Cozy mode** (the bell turned off in the settings): no bell, no target, the trip is not recorded or judged ("Cozy mode: no bell" in the results), and stages open without an on-time trip. Switching it in the pause menu takes effect on resuming.
+- **Old saves:** `SaveData.CurrentVersion` is 2. `SaveSystem.Migrate` calls `SchoolTrips.Upgrade`, which marks every route whose last level a version 1 save had finished as on time, so nobody finds a level locked that they could play before.
+- **Tests:** `SchoolTripTests` (the trip rules, the unlock rule with chapter 4's interleaving, `NextToPlay`, the upgrade; plain data, no Unity), `RouteTableTests.TheTripTestsWalkTheStoryInTheLevelTablesOrder` and `EveryRouteHasASchoolBellForTheWholeTrip`, `GameLogicTests.TripsSurviveTheSaveFile` (JsonUtility).
 
 ## The town (the map's geography)
 

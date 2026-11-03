@@ -608,6 +608,31 @@ namespace DribbleToSchool.Tests
             Assert.AreEqual(Loc.T("holiday.m.days.one"), days.text);
             Assert.IsFalse(days.text.Contains("{0}"));
         }
+
+        // ---------- The way to school ----------
+
+        [Test]
+        public void TripsSurviveTheSaveFile()
+        {
+            // The trips are written with JsonUtility like the rest of the save (Progression/SchoolTrips; never the player's file here).
+            var data = new SaveData();
+            data.trips.Add(new TripRecord { routeId = "market", legTimes = new List<float> { 61.5f, 70f, -1f, -1f, -1f }, onTime = true, bestTripTime = 351.25f });
+            var back = JsonUtility.FromJson<SaveData>(JsonUtility.ToJson(data));
+            Assert.AreEqual(1, back.trips.Count);
+            Assert.AreEqual("market", back.trips[0].routeId);
+            Assert.AreEqual(5, back.trips[0].legTimes.Count);
+            Assert.AreEqual(61.5f, back.trips[0].legTimes[0], 0.0001f);
+            Assert.AreEqual(-1f, back.trips[0].legTimes[4], 0.0001f);
+            Assert.IsTrue(back.trips[0].onTime);
+            Assert.AreEqual(351.25f, back.trips[0].bestTripTime, 0.0001f);
+
+            // A save written before the trips (version 1, no list at all) comes back with an empty one, ready for the upgrade.
+            var old = JsonUtility.FromJson<SaveData>("{\"version\":1,\"coins\":5,\"levels\":[{\"levelId\":\"L05\",\"completed\":true}]}");
+            Assert.AreEqual(1, old.version);
+            Assert.IsTrue(old.IsCompleted("L05"));
+            SchoolTrips.Upgrade(old);
+            Assert.IsTrue(SchoolTrips.OnTime(old, "street"));
+        }
     }
 }
 #endif
