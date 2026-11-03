@@ -334,53 +334,106 @@ namespace DribbleToSchool.UI.Kit
         }
 
         /// <summary>
-        /// Kick button: a football boot (studs under the sole, a sock above the collar) swinging toe-down into a football,
-        /// a white ball with its pentagons cut out.
+        /// Kick button: a leg in a football sock (a stripe near its top) coming down from the top left into a boot with laces
+        /// and studs, and the ball flying off up and away from it with three lines trailing it.
         /// </summary>
         public static Sprite KickIcon
         {
             get
             {
-                return kickIcon != null ? kickIcon : (kickIcon = MakeShape(128, (u, v) =>
+                return kickIcon != null ? kickIcon : (kickIcon = MakeShape(192, (u, v) =>
                 {
-                    // The boot and sock, drawn toe-forward in their own frame, then turned 28 degrees toe-down.
-                    const float cos = 0.88295f, sin = -0.46947f;
-                    float bu = u + 0.26f, bv = v + 0.03f;
-                    float x = bu * cos + bv * sin, y = -bu * sin + bv * cos;
-                    bool body = Segment(x, y, -0.36f, -0.06f, 0.36f, -0.1f) < 0.13f;
-                    bool upper = Segment(x, y, -0.3f, 0.12f, -0.02f, 0f) < 0.16f;
-                    bool studs = false;
-                    for (int i = 0; i < 3; i++)
+                    // The leg, narrower at the ankle; the gap across it near the top is the sock's stripe.
+                    float t;
+                    float d = SegmentT(u, v, -0.78f, 0.84f, -0.36f, -0.28f, out t);
+                    if (t >= 0f && t <= 1f && d < Mathf.Lerp(0.16f, 0.12f, t) && !(t > 0.1f && t < 0.135f)) return 1f;
+                    // The boot, toe 10 degrees down: from the icon into the boot's own frame.
+                    const float cos = 0.98481f, sin = -0.17365f;
+                    float bu = (u + 0.02f) / 1.05f, bv = (v + 0.66f) / 1.05f;
+                    if (Boot(bu * cos + bv * sin, -bu * sin + bv * cos)) return 1f;
+                    // The ball, and the lines trailing it back toward the boot, thinning away from it.
+                    const float bx = 0.5f, by = 0.44f, br = 0.38f;
+                    if (BallGlyph(u, v, bx, by, br)) return 1f;
+                    float du = u - bx, dv = v - by;
+                    float dist = Mathf.Sqrt(du * du + dv * dv);
+                    float ang = Mathf.Repeat(Mathf.Atan2(dv, du) * Mathf.Rad2Deg, 360f);
+                    for (int k = 0; k < 3; k++)
                     {
-                        float sx = i == 0 ? -0.27f : i == 1 ? 0.05f : 0.27f;
-                        float dx = x - sx, dy = y - (-0.225f - 0.0556f * sx);
-                        if (dx * dx + dy * dy < 0.05f * 0.05f) studs = true;
+                        float a0 = 198f + k * 8f, a1 = 252f - k * 6f;
+                        if (ang <= a0 || ang >= a1) continue;
+                        float w = 0.03f * (1f - (ang - a0) / (a1 - a0)) + 0.007f;
+                        if (Mathf.Abs(dist - (br + 0.09f + k * 0.085f)) < w) return 1f;
                     }
-                    bool sock = Segment(x, y, -0.3f, 0.36f, -0.36f, 0.74f) < 0.15f;
-                    bool collar = Mathf.Abs(y - 0.27f) < 0.028f && x < -0.1f;   // a thin gap between the sock and the boot
-                    if ((body || upper || studs || sock) && !collar) return 1f;
-                    return BallGlyph(u, v, 0.5f, -0.56f, 0.3f) ? 1f : 0f;
+                    return 0f;
                 }));
             }
         }
 
-        /// <summary>A football in one colour: a disc with a solid rim and its pentagons cut out (the ones at the rim squashed).</summary>
+        // The kick icon's boot in its own frame: toe to +x, the top of the sole at y = 0.
+        static readonly Vector2[] BootUpper =
+        {
+            new Vector2(-0.47f, 0f), new Vector2(-0.5f, 0.1f), new Vector2(-0.5f, 0.24f), new Vector2(-0.44f, 0.36f),
+            new Vector2(-0.38f, 0.42f), new Vector2(-0.17f, 0.41f), new Vector2(-0.08f, 0.31f), new Vector2(0.06f, 0.24f),
+            new Vector2(0.22f, 0.17f), new Vector2(0.36f, 0.12f), new Vector2(0.46f, 0.08f), new Vector2(0.5f, 0.03f),
+            new Vector2(0.49f, 0f),
+        };
+        static readonly Vector2[] BootSole =
+        {
+            new Vector2(-0.48f, 0f), new Vector2(0.49f, 0f), new Vector2(0.47f, -0.05f), new Vector2(0.4f, -0.075f),
+            new Vector2(-0.45f, -0.075f), new Vector2(-0.49f, -0.04f),
+        };
+        static readonly float[] BootStuds = { -0.4f, -0.25f, 0.1f, 0.24f, 0.37f };
+
+        /// <summary>The kick icon's boot: the upper with its laces and collar cut in, a thin gap, the sole, and the studs under it.</summary>
+        static bool Boot(float x, float y)
+        {
+            if (InPolygon(x, y, BootUpper))
+            {
+                // Three short cuts across the instep for the laces, and a thin line at the collar where the sock goes in.
+                if (Segment(x, y, -0.135f, 0.26f, -0.08f, 0.33f) < 0.016f) return false;
+                if (Segment(x, y, -0.015f, 0.2f, 0.04f, 0.27f) < 0.016f) return false;
+                if (Segment(x, y, 0.105f, 0.14f, 0.16f, 0.21f) < 0.016f) return false;
+                if (Segment(x, y, -0.44f, 0.33f, -0.15f, 0.36f) < 0.016f) return false;
+                return true;
+            }
+            if (y < -0.012f && InPolygon(x, y, BootSole)) return true;
+            if (y > -0.15f && y < -0.06f)
+            {
+                // Each stud a little narrower at its foot.
+                float half = 0.04f + (y + 0.06f) * 0.15f;
+                for (int i = 0; i < BootStuds.Length; i++)
+                    if (Mathf.Abs(x - BootStuds[i]) < half) return true;
+            }
+            return false;
+        }
+
+        /// <summary>Distance from (u, v) to the segment a-b, and how far along it the nearest point is (<paramref name="t"/>, not clamped).</summary>
+        static float SegmentT(float u, float v, float ax, float ay, float bx, float by, out float t)
+        {
+            float abx = bx - ax, aby = by - ay;
+            t = ((u - ax) * abx + (v - ay) * aby) / (abx * abx + aby * aby);
+            float c = Mathf.Clamp01(t);
+            float dx = u - (ax + abx * c), dy = v - (ay + aby * c);
+            return Mathf.Sqrt(dx * dx + dy * dy);
+        }
+
+        /// <summary>A football in one colour: a disc with a solid rim and its six pentagons cut out (the five at the rim squashed by it).</summary>
         static bool BallGlyph(float u, float v, float cx, float cy, float r)
         {
             float du = u - cx, dv = v - cy;
             float d = Mathf.Sqrt(du * du + dv * dv);
             if (d > r) return false;
-            if (d > r * 0.84f) return true;
+            if (d > r * 0.86f) return true;
             const float s = Mathf.PI * 0.4f;
             for (int i = 0; i < 6; i++)
             {
-                float px = 0.06f, py = 0.05f, size = 0.3f;
+                float px = 0f, py = 0f, size = 0.3f;
                 if (i > 0)
                 {
-                    float a = (i - 1) * s + 0.5f;
-                    px += 0.8f * Mathf.Cos(a);
-                    py += 0.8f * Mathf.Sin(a);
-                    size = 0.26f;
+                    float a = (i - 1) * s + 0.3f;
+                    px = 0.78f * Mathf.Cos(a);
+                    py = 0.78f * Mathf.Sin(a);
+                    size = 0.27f;
                 }
                 float dx = du / r - px, dy = dv / r - py;
                 float edge = Mathf.Cos(s * 0.5f) / Mathf.Cos(Mathf.Repeat(Mathf.Atan2(dy, dx) + 0.3f, s) - s * 0.5f);
