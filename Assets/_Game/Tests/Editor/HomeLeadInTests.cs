@@ -12,9 +12,11 @@ using UnityEngine;
 namespace DribbleToSchool.Tests
 {
     /// <summary>
-    /// Every story level starts on the doorstep of the kid's house and walks a stretch of home street before its own street begins
-    /// (docs/WORLD_MAP.md, "Every level starts at home"; Editor/HomeLeadInRules.cs, LevelBuildKit.Home.cs, StreetBuilder.Home.cs).
-    /// These are the rules that need no scene; what the layouts and the audit say with the lead-in on is checked by the offline harness.
+    /// Every story level starts at a stop and walks a stretch of street before its own street begins: the first level of a route on
+    /// the doorstep of the kid's house and the home street, every other level at the stop where the level before it ended
+    /// (docs/WORLD_MAP.md, "Every route is one trip, a level is a leg of it"; Editor/HomeLeadInRules.cs, LevelBuildKit.Home.cs,
+    /// LevelBuildKit.Stops.cs, StreetBuilder.Home.cs, StreetBuilder.Stops.cs). These are the rules that need no scene; what the
+    /// layouts and the audit say with the lead-in on is checked by the offline harness.
     /// </summary>
     public class HomeLeadInTests
     {
@@ -41,28 +43,38 @@ namespace DribbleToSchool.Tests
         }
 
         [Test]
-        public void OnlyStoryLevelsStartAtHome()
+        public void EveryStoryLevelHasALeadInAndOnlyTheFirstOfARouteStartsAtHome()
         {
             List<bool> challenge;
             List<string> scenes;
             var table = GeneratedContent.LevelTable(out challenge, out scenes);
             for (int i = 0; i < table.Count; i++)
-                Assert.AreEqual(!challenge[i], GeneratedContent.StartsAtHome(table[i].Key), table[i].Key + (challenge[i] ? " is a challenge: it keeps its own start" : " is a story level: it starts at home"));
-            Assert.IsFalse(GeneratedContent.StartsAtHome("T00"), "the test track (and any unknown level) keeps its own start");
-            Assert.IsFalse(HomeLeadInRules.StartsAtHome(false, false));
-            Assert.IsFalse(LevelBuildKit.StartsAtHome(null), "a scene with no level definition (the test track)");
+                Assert.AreEqual(!challenge[i], GeneratedContent.HasLeadIn(table[i].Key), table[i].Key + (challenge[i] ? " is a challenge: it keeps its own start" : " is a story level: it starts at a stop"));
+            Assert.IsFalse(GeneratedContent.HasLeadIn("T00"), "the test track (and any unknown level) keeps its own start");
+            Assert.IsFalse(HomeLeadInRules.HasLeadIn(false, false));
+            Assert.IsFalse(LevelBuildKit.HasLeadIn(null), "a scene with no level definition (the test track)");
+            Assert.IsFalse(LevelBuildKit.StartsAtHome(null));
 
-            var story = ScriptableObject.CreateInstance<LevelDefinition>();
+            var first = ScriptableObject.CreateInstance<LevelDefinition>();
+            first.levelId = "L06";
+            var later = ScriptableObject.CreateInstance<LevelDefinition>();
+            later.levelId = "L07";
             var arena = ScriptableObject.CreateInstance<LevelDefinition>();
+            arena.levelId = "C02";
             arena.isChallenge = true;
             try
             {
-                Assert.IsTrue(LevelBuildKit.StartsAtHome(story));
+                Assert.IsTrue(LevelBuildKit.HasLeadIn(first));
+                Assert.IsTrue(LevelBuildKit.StartsAtHome(first), "L06 is the market route's first level: it starts at home");
+                Assert.IsTrue(LevelBuildKit.HasLeadIn(later));
+                Assert.IsFalse(LevelBuildKit.StartsAtHome(later), "L07 starts at the bakery, where L06 ended");
+                Assert.IsFalse(LevelBuildKit.HasLeadIn(arena));
                 Assert.IsFalse(LevelBuildKit.StartsAtHome(arena));
             }
             finally
             {
-                UnityEngine.Object.DestroyImmediate(story);
+                UnityEngine.Object.DestroyImmediate(first);
+                UnityEngine.Object.DestroyImmediate(later);
                 UnityEngine.Object.DestroyImmediate(arena);
             }
         }
@@ -90,20 +102,23 @@ namespace DribbleToSchool.Tests
         }
 
         [Test]
-        public void TheRouteSignNamesTheRouteAndEndsBeforeTheSeam()
+        public void TheRouteSignNamesWhereTheLevelGoesAndTheRouteAndEndsBeforeTheSeam()
         {
             var english = StringTables.For("en");
             foreach (var route in RouteTable.All)
-            {
-                string name = english[route.NameKey];
-                string text = HomeLeadInRules.SignText(name);
-                Assert.IsTrue(text.Contains("School"), route.id + ": the sign points to the school");
-                Assert.IsTrue(text.Contains(name), route.id + ": the sign names the route");
-                // SignBoard sizes a board by its longest line: 0.135 m a character and 0.6 m of margin. The board, centred before the seam, stays on the home street's side.
-                float width = text.Split('\n').Max(line => line.Length) * 0.135f + 0.6f;
-                Assert.Less(width * 0.5f, HomeLeadInRules.SignBeforeSeam - 0.1f, route.id + "'s sign (" + width.ToString("0.0") + " m) reaches the seam");
-                Assert.Less(width, HomeLeadInRules.Length - 4f, route.id + "'s sign is too wide for the lead-in");
-            }
+                foreach (string level in route.levels)
+                {
+                    string name = english[route.NameKey];
+                    var to = RouteTable.To(level);
+                    string text = HomeLeadInRules.SignText(to.signName, name);
+                    Assert.IsTrue(text.StartsWith(to.signName + " ->"), level + ": the sign points to where the level ends (" + to.signName + ")");
+                    Assert.IsTrue(text.Contains(name), level + ": the sign names the route");
+                    // SignBoard sizes a board by its longest line: 0.135 m a character and 0.6 m of margin. The board, centred before the seam, stays on the lead-in's side.
+                    float width = text.Split('\n').Max(line => line.Length) * 0.135f + 0.6f;
+                    Assert.Less(width * 0.5f, HomeLeadInRules.SignBeforeSeam - 0.1f, level + "'s sign (" + width.ToString("0.0") + " m) reaches the seam");
+                    Assert.Less(width, HomeLeadInRules.Length - 4f, level + "'s sign is too wide for the lead-in");
+                }
+            Assert.IsTrue(HomeLeadInRules.SignText(null, "Park Path").StartsWith("School ->"), "no destination: the school");
         }
 
         [Test]

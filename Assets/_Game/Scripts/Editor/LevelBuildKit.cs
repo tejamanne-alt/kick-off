@@ -105,10 +105,12 @@ namespace DribbleToSchool.EditorTools
         /// </remarks>
         public static void BuildScene(string scenePath, LevelDefinition def, LevelCatalog catalog, Action<TrackBuilder> layout, int chapter = 1)
         {
-            // A story level starts at home (the challenges and the test track do not): read what that needs of the definition now,
-            // before the new scene can unload it.
-            bool atHome = StartsAtHome(def);
-            string routeName = atHome ? RouteNameOf(def) : null;
+            // A story level starts at a stop on its route and ends at the next one (the challenges and the test track do not): read
+            // what that needs of the definition now, before the new scene can unload it.
+            bool leadIn = HasLeadIn(def);
+            string routeName = leadIn ? RouteNameOf(def) : null;
+            Stop from = leadIn ? RouteTable.From(def.levelId) : null;
+            Stop to = leadIn ? RouteTable.To(def.levelId) : null;
             EnsureFolder(Path.GetDirectoryName(scenePath).Replace('\\', '/'));
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             Chapter = Mathf.Clamp(chapter, 1, 5);
@@ -155,10 +157,12 @@ namespace DribbleToSchool.EditorTools
 
             var track = new TrackBuilder(new GameObject("Level").transform);
             track.AuditName = "Level " + Path.GetFileNameWithoutExtension(scenePath);
-            if (atHome)
+            if (leadIn)
             {
                 track.LeadIn = HomeLeadIn;
                 track.RouteName = routeName;
+                track.From = from;
+                track.To = to;
             }
             layout(track);
             track.Finish();
@@ -1886,6 +1890,7 @@ namespace DribbleToSchool.EditorTools
             {
                 float width = toX - fromX;
                 calmSand.Add(new Vector2(fromX - 3f, toX + 3f));   // smooth sand under the wash
+                tideStretches.Add(new Vector2(fromX - 3f, toX + 3f));
                 sand = null;
                 var go = new GameObject("Tide");
                 go.transform.SetParent(root, false);
@@ -1916,6 +1921,8 @@ namespace DribbleToSchool.EditorTools
                 wash.fromX = fromX;
                 wash.toX = toX;
                 wash.groundY = groundTop;
+                wash.seaY = groundTop - 0.3f;   // the beach's sea (set again by Finish, once the lowest ground is known)
+                tideWashes.Add(wash);
 
                 var zoneGo = new GameObject("TideLoseZone");
                 zoneGo.transform.SetParent(go.transform, false);
@@ -3179,15 +3186,17 @@ namespace DribbleToSchool.EditorTools
             }
 
             /// <summary>
-            /// The level's start. A level that starts at home (<see cref="LeadIn"/>) starts that far back, on the doorstep of the kid's
-            /// house (the kid and the ball are put down and brought back here): <paramref name="x"/> is where the route's own street begins.
+            /// The level's start. A story level (<see cref="LeadIn"/>) starts that far back, at the stop it starts from (the kid and the
+            /// ball are put down and brought back here): on the doorstep of the kid's house for the first level of a route, else at the
+            /// stop where the level before it ended. <paramref name="x"/> is where the level's own street begins.
             /// </summary>
             public void Start(float x, float groundTop = 0f)
             {
                 if (LeadIn > 0f)
                 {
                     StartCheckpoint = MakeCheckpoint(x - LeadIn, groundTop, true);
-                    BeginAtHome(x, x - LeadIn, groundTop);
+                    if (StartsAtHome) BeginAtHome(x, x - LeadIn, groundTop);
+                    else BeginAtStop(x, x - LeadIn, groundTop);
                     return;
                 }
                 StartCheckpoint = MakeCheckpoint(x, groundTop, true);
@@ -3244,11 +3253,23 @@ namespace DribbleToSchool.EditorTools
             /// </summary>
             public void Goal(float x, float groundTop = 0f)
             {
+                // A level that ends at a stop on the way (granny's house, the station...) ends at that stop's front instead.
+                if (!EndsAtSchool)
+                {
+                    StopGoal(x, groundTop);
+                    return;
+                }
                 var school = new GameObject("School").transform;
                 school.SetParent(root, false);
                 GoalX = x;
                 // The street's own walls, houses and poles stop short of the school.
                 QuietAreas.Add(new Vector2(x - 1f, x + 200f));
+                // On the beach the school stands on its own land (StreetBuilder.SchoolHeadland): the sand under its paved yard lies flat.
+                if (Chapter == 3)
+                {
+                    calmSand.Add(new Vector2(x - 4f, x + 200f));
+                    sand = null;
+                }
 
                 Color stone = new Color(0.92f, 0.9f, 0.85f), trim = new Color(0.7f, 0.68f, 0.64f), roof = new Color(0.32f, 0.35f, 0.42f);
                 var concrete = Art.surfaces[ProceduralArt.Surface.Concrete];
@@ -3427,10 +3448,13 @@ namespace DribbleToSchool.EditorTools
             public void Finish()
             {
                 AddLeadInGround();
+                // The wash runs on under the sea's surface (StreetBuilder.Beach puts the sea 0.3 under the lowest ground).
+                foreach (var wash in tideWashes) wash.seaY = LowestGroundTop - 0.3f;
                 foreach (var pending in pendingSigns) PlantSign(pending.sign, pending.boardSize);
                 pendingSigns.Clear();
                 ReportFeasibility();
                 BuildStreetSlabs();
+                BuildPendingStops();
             }
 
             /// <summary>
@@ -3551,6 +3575,11 @@ namespace DribbleToSchool.EditorTools
             }
             SandField sand;
             readonly List<Vector2> calmSand = new List<Vector2>();
+            readonly List<TideWash> tideWashes = new List<TideWash>();
+            readonly List<Vector2> tideStretches = new List<Vector2>();
+
+            /// <summary>Where the tide washes over the sand (each with the 3 m its wash curls back to the sea at either end): the shore's foam line stops there.</summary>
+            public IList<Vector2> TideStretches { get { return tideStretches; } }
 
             /// <summary>The height of the sand at (x, z) on the beach.</summary>
             public float SandHeight(float x, float z) { return BeachSand.Height(x, z); }

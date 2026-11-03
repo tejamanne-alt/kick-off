@@ -22,7 +22,7 @@ namespace DribbleToSchool.EditorTools
     public static class GeneratedContent
     {
         /// <summary>Bump when layouts or the scene rig change so scenes regenerate.</summary>
-        public const int Version = 57;
+        public const int Version = 58;
 
         const string ScenesDir = LevelBuildKit.Root + "/Scenes";
         const string LevelsDir = LevelBuildKit.Root + "/Levels";
@@ -60,8 +60,8 @@ namespace DribbleToSchool.EditorTools
         }
 
         /// <summary>
-        /// A story level's bell: the seconds its street takes (as tuned in the table) and the walk from the front door that every story
-        /// level starts with now (<see cref="HomeLeadInRules.BellSeconds"/>), so the school bell and the stars mean what they did before.
+        /// A story level's bell: the seconds its street takes (as tuned in the table) and the walk from the stop it starts at that every
+        /// story level starts with (<see cref="HomeLeadInRules.BellSeconds"/>), so the bell and the stars mean what they did before.
         /// </summary>
         static float Bell(float streetSeconds)
         {
@@ -128,11 +128,11 @@ namespace DribbleToSchool.EditorTools
             return -1f;
         }
 
-        /// <summary>Does this level of the table start at home (the front door, then the home street)? Every story level does; a challenge does not. Used by tests.</summary>
-        public static bool StartsAtHome(string id)
+        /// <summary>Does this level of the table start at a stop with a lead-in (home or a stop on its route)? Every story level does; a challenge does not. Used by tests.</summary>
+        public static bool HasLeadIn(string id)
         {
             foreach (var spec in Levels)
-                if (spec.id == id) return HomeLeadInRules.StartsAtHome(true, spec.challenge);
+                if (spec.id == id) return HomeLeadInRules.HasLeadIn(true, spec.challenge);
             return false;
         }
 

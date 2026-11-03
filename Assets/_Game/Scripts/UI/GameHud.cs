@@ -3,6 +3,7 @@ using DribbleToSchool.Audio;
 using DribbleToSchool.Ball;
 using DribbleToSchool.Core;
 using DribbleToSchool.InputHandling;
+using DribbleToSchool.Levels;
 using DribbleToSchool.Localization;
 using DribbleToSchool.Player;
 using DribbleToSchool.Tutorial;
@@ -81,16 +82,26 @@ namespace DribbleToSchool.UI
             root = (RectTransform)canvas.transform;
 
             // Info card (top-left)
+            // A story level is one leg of a route: under its name, where it starts and where it ends (Granny's house » Church).
+            var leg = level.level != null && !level.level.isChallenge ? LegOf(level.level.levelId) : null;
+            float legRoom = leg != null ? 34f : 0f;
             var info = UIKit.Card(root, "Info", UITheme.Paper);
-            UIKit.Place((RectTransform)info.transform.parent, new Vector2(0f, 1f), new Vector2(30f, -30f), new Vector2(660f, 200f), new Vector2(0f, 1f));
+            UIKit.Place((RectTransform)info.transform.parent, new Vector2(0f, 1f), new Vector2(30f, -30f), new Vector2(660f, 200f + legRoom), new Vector2(0f, 1f));
             var t = info.transform;
             titleText = Text(t, "Title", 34, new Vector2(30f, -38f), new Vector2(600f, 50f), TextAnchor.MiddleLeft);
-            timeText = Text(t, "Time", 46, new Vector2(30f, -95f), new Vector2(220f, 60f), TextAnchor.MiddleLeft);
-            bellText = Text(t, "Bell", 34, new Vector2(250f, -95f), new Vector2(390f, 60f), TextAnchor.MiddleLeft);
-            statusText = Text(t, "Status", 32, new Vector2(250f, -95f), new Vector2(390f, 60f), TextAnchor.MiddleLeft);
+            if (leg != null)
+            {
+                var legText = Text(t, "Leg", 26, new Vector2(30f, -74f), new Vector2(600f, 34f), TextAnchor.MiddleLeft);
+                legText.color = UITheme.InkSoft;
+                legText.text = leg;
+                UIKit.Fit(legText, 20);
+            }
+            timeText = Text(t, "Time", 46, new Vector2(30f, -95f - legRoom), new Vector2(220f, 60f), TextAnchor.MiddleLeft);
+            bellText = Text(t, "Bell", 34, new Vector2(250f, -95f - legRoom), new Vector2(390f, 60f), TextAnchor.MiddleLeft);
+            statusText = Text(t, "Status", 32, new Vector2(250f, -95f - legRoom), new Vector2(390f, 60f), TextAnchor.MiddleLeft);
             coinText = UIKit.CoinAmount(t, "Coins", 0, 38, UITheme.Ink);
-            UIKit.Place((RectTransform)coinText.transform.parent, new Vector2(0f, 1f), new Vector2(30f, -158f), new Vector2(220f, 50f), new Vector2(0f, 0.5f));
-            streakText = Text(t, "Streak", 32, new Vector2(250f, -158f), new Vector2(390f, 50f), TextAnchor.MiddleLeft);
+            UIKit.Place((RectTransform)coinText.transform.parent, new Vector2(0f, 1f), new Vector2(30f, -158f - legRoom), new Vector2(220f, 50f), new Vector2(0f, 0.5f));
+            streakText = Text(t, "Streak", 32, new Vector2(250f, -158f - legRoom), new Vector2(390f, 50f), TextAnchor.MiddleLeft);
 
             // Pause button (top-right)
             var pause = UIKit.Button(root, "Pause", "", UITheme.Paper, () => level.TogglePause());
@@ -187,6 +198,25 @@ namespace DribbleToSchool.UI
             fade = UIKit.Icon(root, "Fade", null, new Color(0f, 0f, 0f, 0f), 10f);
             UIKit.Stretch(fade.rectTransform);
             fade.preserveAspect = false;
+        }
+
+        /// <summary>"Granny's house » Church": where a story level starts and where it ends (Levels/RouteTable), or null if it is on no route.</summary>
+        static string LegOf(string levelId)
+        {
+            var from = RouteTable.From(levelId);
+            var to = RouteTable.To(levelId);
+            if (from == null || to == null) return null;
+            return Loc.F("leg.fromTo", Loc.T(from.NameKey), Loc.T(to.NameKey));
+        }
+
+        /// <summary>Where this level ends, if that is a stop on the way rather than the school (the results then say so).</summary>
+        Stop Destination
+        {
+            get
+            {
+                var to = level.level != null && !level.level.isChallenge ? RouteTable.To(level.level.levelId) : null;
+                return to != null && !to.IsSchool ? to : null;
+            }
         }
 
         Text Text(Transform parent, string name, int size, Vector2 pos, Vector2 sizeDelta, TextAnchor align)
@@ -470,9 +500,11 @@ namespace DribbleToSchool.UI
             var r = level.Result;
             var card = UIKit.Modal(root, "Results", new Vector2(1150f, 920f), out resultsModal);
 
+            var stop = Destination;
             string heading = r.isChallenge
                 ? Loc.T(r.stars > 0 ? "results.challengeDone" : "results.challengeFail")
-                : Loc.T(r.beforeBell ? "results.made" : "results.late");
+                : !r.beforeBell ? Loc.T("results.late")
+                : stop != null ? Loc.F("results.madeTo", Loc.T(stop.ToKey)) : Loc.T("results.made");
             UIKit.Header(card.transform, heading, 760f);
 
             // Stars pop in one by one.
@@ -506,7 +538,7 @@ namespace DribbleToSchool.UI
             else
             {
                 int target = level.level != null ? level.level.perfectStreakTarget : 0;
-                Line(card.transform, ref y, true, Loc.T("results.reached"));
+                Line(card.transform, ref y, true, stop != null ? Loc.F("results.reachedTo", Loc.T(stop.ToKey)) : Loc.T("results.reached"));
                 Line(card.transform, ref y, r.beforeBell, Loc.F("results.beforeBell", FormatTime(level.BellTime, false)));
                 Line(card.transform, ref y, r.stars >= 3, Loc.F("results.streakCoins", target, r.coins, r.totalCoins));
             }

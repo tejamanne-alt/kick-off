@@ -1847,31 +1847,140 @@ namespace DribbleToSchool.EditorTools
             DistantHills(track, root, x0, x1);
         }
 
+        /// <summary>
+        /// The end of a beach level at the school (docs/WORLD_MAP.md: the school stands by the sea, at the top of the beach): the
+        /// school is on land, not in the water. <paramref name="coastX"/> is where the coast turns away from the beach: from the
+        /// water's edge there a low sea wall with rocks at its foot runs back diagonally to well behind the school
+        /// (<see cref="SchoolLandZ"/>) at the gate, and the sea lies beyond it. The land in the corner is grass behind the beach's dry
+        /// sand, and past the gate the school's yard is paved from the camera's side to behind the footpath, so the school, its wall
+        /// and its trees all stand on solid ground. The beach's sand runs on under the land and the yard (only the footpath is played).
+        /// </summary>
+        static void SchoolHeadland(LevelBuildKit.TrackBuilder track, Transform root, float x0, float x1, float sea, float coastX)
+        {
+            var rng = new System.Random(Mathf.RoundToInt(track.GoalX * 7f) + 131);
+            float goal = track.GoalX, gy = GroundAt(track, goal);
+            float coastEnd = goal - 4f, near = x0 - 800f, far = x1 + 800f;
+            float land = gy + 0.02f, front = SandField.WetFrom - 0.2f;           // the grass begins where the beach starts down to the sea
+
+            // The sea: up to the coast's turn, then back behind the land (the water shader is in world space: one sea).
+            var waterGo = new GameObject("Sea");
+            waterGo.transform.SetParent(root, false);
+            var water = waterGo.AddComponent<PatchShape>();
+            waterGo.GetComponent<MeshRenderer>().sharedMaterial = Art.surfaces[ProceduralArt.Surface.Sea];
+            water.AddQuad(new Vector3(near, sea, 5f), new Vector3(near, sea, 955f), new Vector3(coastX, sea, 955f), new Vector3(coastX, sea, 5f), Color.white);
+            water.AddQuad(new Vector3(coastX, sea, 5f), new Vector3(coastX, sea, 955f), new Vector3(coastEnd, sea, 955f), new Vector3(coastEnd, sea, SchoolLandZ - 2f), Color.white);
+            water.AddQuad(new Vector3(coastEnd, sea, SchoolLandZ - 2f), new Vector3(coastEnd, sea, 955f), new Vector3(far, sea, 955f), new Vector3(far, sea, SchoolLandZ - 2f), Color.white);
+            water.Rebuild();
+
+            // The land: grass from the coast's turn on, behind the dry sand, and back to the sea behind the school.
+            Color lawn = new Color(0.66f, 0.8f, 0.5f);
+            var landGo = new GameObject("SchoolLand");
+            landGo.transform.SetParent(root, false);
+            var ground = landGo.AddComponent<PatchShape>();
+            landGo.GetComponent<MeshRenderer>().sharedMaterial = Art.surfaces[ProceduralArt.Surface.Grass];
+            Vector3 shoreA = new Vector3(coastX - 3f, land, front), shoreB = new Vector3(coastX + 0.6f, land, 10.2f), headEnd = new Vector3(coastEnd, land, SchoolLandZ);
+            ground.AddQuad(shoreA, shoreB, headEnd, new Vector3(coastEnd, land, front), lawn);
+            ground.AddQuad(new Vector3(coastEnd, land, front), headEnd, new Vector3(far, land, SchoolLandZ), new Vector3(far, land, front), lawn);
+            ground.Rebuild();
+
+            // A low sea wall along the land's edge (the beach end and the coast), standing in the water, with rocks at its foot.
+            Color wall = new Color(0.8f, 0.78f, 0.72f);
+            var concrete = Art.surfaces[ProceduralArt.Surface.Concrete];
+            Vector3 backEnd = new Vector3(x1 + 60f, land, SchoolLandZ);
+            foreach (var edge in new[] { new[] { shoreA, shoreB }, new[] { shoreB, headEnd }, new[] { headEnd, backEnd } })
+            {
+                Vector3 a = edge[0], b = edge[1];
+                Vector3 mid = (a + b) * 0.5f, along = b - a;
+                float length = new Vector2(along.x, along.z).magnitude, top = land + 0.45f, bottom = sea - 0.6f;
+                var seawall = Solid(root, "SeaWall", new Vector3(mid.x, (top + bottom) * 0.5f, mid.z), new Vector3(0.6f, top - bottom, length + 0.6f), wall, concrete);
+                seawall.transform.rotation = Quaternion.Euler(0f, Mathf.Atan2(along.x, along.z) * Mathf.Rad2Deg, 0f);
+                // Rocks on the sea side, every few metres.
+                Vector3 outward = new Vector3(along.z, 0f, -along.x).normalized;
+                if (outward.x > 0.01f || (Mathf.Abs(outward.x) <= 0.01f && outward.z < 0f)) outward = -outward;   // toward the sea: the beach's side of the turn, and behind the school
+                for (float t = 0.08f; t < 1f; t += 3.2f / Mathf.Max(length, 1f))
+                {
+                    Vector3 p = a + along * t + outward * Rand(rng, 0.7f, 1.4f);
+                    Model(root, "Terrain", rng.NextDouble() < 0.5 ? "RockCluster" : "Boulder2", p.x, sea - 0.25f, p.z, Rand(rng, 0f, 360f), Rand(rng, 0.7f, 1.2f));
+                }
+            }
+
+            // The school's yard: paved from the gate past the building, from the camera's side to the lawn; the lawn beyond.
+            Patch(root, "SchoolYard", goal + 0.4f, goal + 30f, gy, FrontZ, front, new Color(0.9f, 0.88f, 0.84f), Art.surfaces[ProceduralArt.Surface.Paving], 0.02f);
+            Patch(root, "SchoolField", goal + 30f, x1 + 60f, gy, FrontZ, front, lawn, Art.surfaces[ProceduralArt.Surface.Grass], 0.02f);
+
+            // Pines and a few palms on the land between the beach and the school.
+            for (float x = coastX + 2f; x < goal - 2f; x += Rand(rng, 4f, 7f))
+            {
+                float z = Rand(rng, 12f, 30f);
+                // Behind the coast's line only.
+                float coastZ = Mathf.Lerp(10.2f, SchoolLandZ, Mathf.InverseLerp(coastX, coastEnd, x));
+                if (z < coastZ + 2f) z = coastZ + Rand(rng, 2f, 6f);
+                if (z > SchoolLandZ - 2f) continue;
+                Plant(root, rng.NextDouble() < 0.6 ? "ConiferMid" : "Palm", null, x, land, z, Rand(rng, 0.9f, 1.2f), 1f, -70, rng);
+            }
+        }
+
+        /// <summary>The stretches of [a, b] outside every tide's stretch (in order; the shoreline's foam runs along them).</summary>
+        public static List<Vector2> ShoreRuns(float a, float b, IList<Vector2> tides)
+        {
+            var cuts = new List<Vector2>(tides);
+            cuts.Sort((p, q) => p.x.CompareTo(q.x));
+            var runs = new List<Vector2>();
+            float from = a;
+            foreach (var cut in cuts)
+            {
+                if (cut.y <= from || cut.x >= b) continue;
+                if (cut.x - from > 0.5f) runs.Add(new Vector2(from, cut.x));
+                from = Mathf.Max(from, cut.y);
+            }
+            if (b - from > 0.5f) runs.Add(new Vector2(from, b));
+            return runs;
+        }
+
+        /// <summary>How far before the school's gate the coast starts to turn away from the beach (see <see cref="SchoolHeadland"/>).</summary>
+        public const float SchoolCoastBefore = 26f;
+        /// <summary>How far back (z) the sea lies behind the school: well behind the building, its wall and its trees.</summary>
+        public const float SchoolLandZ = 46f;
+
         static void Beach(LevelBuildKit.TrackBuilder track, Transform root, System.Random rng, float x0, float x1)
         {
             float sea = track.LowestGroundTop - 0.3f;
+            // A level that ends at the school: the school stands on its own land by the sea, not in it. The coast turns away
+            // before the gate (SchoolHeadland), and the beach's own things stop short of the school.
+            bool schoolEnd = track.GoalX > track.MinX && (chunk == null || chunk.level);
+            float coastX = schoolEnd ? track.GoalX - SchoolCoastBefore : float.PositiveInfinity;
+            float propsEnd = schoolEnd ? Mathf.Min(x1, track.GoalX - 2f) : x1;
             if (chunk == null || chunk.level)   // (a Holiday Run's sea is in the core scene, all along the beach)
             {
-                var water = Solid(root, "Sea", new Vector3((x0 + x1) * 0.5f, sea - 0.05f, 480f), new Vector3(x1 - x0 + 1600f, 0.1f, 950f), Color.white, Art.surfaces[ProceduralArt.Surface.Sea]);
-                water.faces = MeshBuilder.Faces.Top;
-                water.Rebuild();
+                if (schoolEnd) SchoolHeadland(track, root, x0, x1, sea, coastX);
+                else
+                {
+                    var water = Solid(root, "Sea", new Vector3((x0 + x1) * 0.5f, sea - 0.05f, 480f), new Vector3(x1 - x0 + 1600f, 0.1f, 950f), Color.white, Art.surfaces[ProceduralArt.Surface.Sea]);
+                    water.faces = MeshBuilder.Faces.Top;
+                    water.Rebuild();
+                }
             }
 
             // Foam lapping up the sand where the waves break, and lines of breaking crests rolling in
             // out at sea. They move, so they live outside the street's static batches.
             var waves = new GameObject("Waves").transform;
             // The foam lies just above the sea, so where it meets the sand is where the water does; each
-            // surge carries it a little up the beach.
-            var shoreline = Foam(waves, Lo(x0, 60f), Hi(x1, 60f), 9.2f, 10f, sea + 0.02f, 0.3f);
-            var lap = shoreline.AddComponent<Lapping>();
-            lap.reach = new Vector3(0f, 0.04f, -0.35f);
-            lap.period = 5.5f;
+            // surge carries it a little up the beach. It stops where a tide washes up the beach: there the
+            // wash is the sea running on up the sand, with its own foam at its front, and a line of foam
+            // across it would cut the water in two.
+            foreach (var run in ShoreRuns(Lo(x0, 60f), Mathf.Min(Hi(x1, 60f), coastX), track.TideStretches))
+            {
+                var shoreline = Foam(waves, run.x, run.y, 9.2f, 10f, sea + 0.02f, 0.3f);
+                var lap = shoreline.AddComponent<Lapping>();
+                lap.reach = new Vector3(0f, 0.04f, -0.35f);
+                lap.period = 5.5f;
+            }
             float[] crests = { 13f, 19f, 28f, 42f };
             for (int i = 0; i < crests.Length; i++)
                 for (float x = Lo(x0, 60f) + (float)rng.NextDouble() * 10f; x < Hi(x1, 60f); x += Rand(rng, 14f, 30f))
                 {
                     float len = Rand(rng, 5f, 14f), w = Mathf.Lerp(0.35f, 0.9f, i / (float)(crests.Length - 1));
-                    if (chunk != null && x + len > x1) continue;
+                    if ((chunk != null && x + len > x1) || x + len > coastX - 2f) continue;
                     var crest = Foam(waves, x, x + len, crests[i] + Rand(rng, -1f, 1f), crests[i] + w, sea - 0.04f, i * 1.7f + x);
                     var roll = crest.AddComponent<Lapping>();
                     roll.reach = new Vector3(Rand(rng, -0.5f, 0.5f), 0f, -Rand(rng, 1.8f, 3.2f));
@@ -1880,17 +1989,20 @@ namespace DribbleToSchool.EditorTools
                 }
 
             var towers = new List<float>();
-            for (float x = x0 + Margin(4f); x < x1 - Margin(4f); x += Rand(rng, 30f, 45f))
+            float skip;
+            for (float x = x0 + Margin(4f); x < Mathf.Min(x1 - Margin(4f), propsEnd - 4f); x += Rand(rng, 30f, 45f))
             {
+                if (Blocked(track, x - 2f, x + 2f, out skip)) continue;     // a stop's plot (StreetBuilder.Stops)
                 LifeguardTower(root, x, GroundAt(track, x, 7.4f), 7.4f);
                 towers.Add(x);
             }
             Color[] canopy = { new Color(0.9f, 0.3f, 0.28f), new Color(0.25f, 0.5f, 0.85f), new Color(1f, 0.75f, 0.2f), new Color(0.3f, 0.66f, 0.62f) };
             Color[] towels = { new Color(0.95f, 0.55f, 0.6f), new Color(0.45f, 0.75f, 0.9f), new Color(1f, 0.85f, 0.35f), new Color(0.55f, 0.8f, 0.55f) };
             bool beachKit = LevelBuildKit.HasKitModel("Leisure", "Parasol");
-            for (float x = x0 + 8f; x < x1 - Margin(3f); x += beachKit ? Rand(rng, 5f, 11f) : Rand(rng, 10f, 18f))
+            for (float x = x0 + 8f; x < Mathf.Min(x1 - Margin(3f), propsEnd - 3f); x += beachKit ? Rand(rng, 5f, 11f) : Rand(rng, 10f, 18f))
             {
                 float z = Rand(rng, 3.4f, 5.2f), gy = GroundAt(track, x, z);
+                if (Blocked(track, x - 1.5f, x + 2.6f, out skip)) continue;
                 if (beachKit)
                 {
                     if (towers.Any(t => Mathf.Abs(t - x) < 3f)) continue;
@@ -1924,7 +2036,7 @@ namespace DribbleToSchool.EditorTools
                     Solid(root, "CoolBox", new Vector3(x + 0.9f, gy + 0.18f, z + 0.3f), new Vector3(0.55f, 0.36f, 0.38f), new Color(0.3f, 0.55f, 0.85f));
             }
             bool rockModels = LevelBuildKit.HasKitModel("Terrain", "RockCluster");
-            for (float x = x0 + 15f; x < x1 - Margin(4f); x += rockModels ? Rand(rng, 12f, 24f) : Rand(rng, 22f, 38f))
+            for (float x = x0 + 15f; x < Mathf.Min(x1 - Margin(4f), coastX - 3f); x += rockModels ? Rand(rng, 12f, 24f) : Rand(rng, 22f, 38f))
             {
                 // Rocks at the water's edge, bedded in the sand, darker where the sea wets them.
                 float gy = track.LowestGroundTop - 0.12f, s = Rand(rng, 0.8f, 1.6f);
@@ -1949,13 +2061,13 @@ namespace DribbleToSchool.EditorTools
             }
             // Palms in ones, twos and threes behind the parasols, clear of the lifeguard towers.
             if (LevelBuildKit.HasKitModel("Plants", "Palm"))
-                for (float x = x0 + Rand(rng, 5f, 15f); x < x1 - Margin(8f); x += Rand(rng, 16f, 32f))
+                for (float x = x0 + Rand(rng, 5f, 15f); x < Mathf.Min(x1 - Margin(8f), propsEnd - 4f); x += Rand(rng, 16f, 32f))
                 {
                     int n = rng.Next(1, 4);
                     for (int k = 0; k < n; k++)
                     {
                         float px = x + k * Rand(rng, 2.2f, 3.4f), pz = Rand(rng, 5.6f, 7f);
-                        if (towers.Any(t => Mathf.Abs(t - px) < 4.5f)) continue;
+                        if (towers.Any(t => Mathf.Abs(t - px) < 4.5f) || px > propsEnd || Blocked(track, px - 1.5f, px + 1.5f, out skip)) continue;
                         Plant(root, rng.NextDouble() < 0.5 ? "Palm" : "PalmShort", null, px, GroundAt(track, px, pz) - 0.1f, pz, Rand(rng, 0.85f, 1.15f), 1f, -60, rng);
                     }
                 }
@@ -1963,7 +2075,7 @@ namespace DribbleToSchool.EditorTools
             // Tufts of beach grass in the soft sand nearer the camera.
             if (LevelBuildKit.HasKitModel("Plants", "DuneGrass"))
             {
-                for (float x = x0; x < x1; x += Rand(rng, 1.2f, 4f))
+                for (float x = x0; x < propsEnd; x += Rand(rng, 1.2f, 4f))
                 {
                     // Dune grass in little drifts, a clump or two at a time, far enough in front of the path
                     // not to hide the ball from the low camera.
@@ -1981,7 +2093,7 @@ namespace DribbleToSchool.EditorTools
             var grass = new GameObject("BeachGrass");
             grass.transform.SetParent(root, false);
             var tufts = grass.AddComponent<BlobShape>();
-            for (float x = x0; x < x1; x += Rand(rng, 1.5f, 5f))
+            for (float x = x0; x < propsEnd; x += Rand(rng, 1.5f, 5f))
             {
                 float z = Rand(rng, -9f, -2.4f), gy = GroundAt(track, x, z);
                 // A low, spreading clump of dune grass.

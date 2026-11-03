@@ -11,29 +11,37 @@ namespace DribbleToSchool.FrontEnd
     /// <summary>
     /// The way to school: a rendered picture of the town (Resources/UI/TownMap.jpg, laid out by Resources/TownMapLayout.json,
     /// see <see cref="TownMap"/>) with the six routes from the kid's house to the one school drawn over it as coloured lines,
-    /// each level a numbered node on its route (stars, a lock, the next one pulsing) and each challenge a gold "!" node beside
-    /// its route. The route with the next level to play is in focus: bright and wide, its levels named; the others are thin
-    /// and dimmed, their nodes still tappable. Along the bottom: the focused route's levels as a strip like a level
-    /// select (a house, the level chips with their stars or lock, the school) and a chip for each route to change the focus.
-    /// The picture's core (everything that matters) is scaled to fit the room between the title and the strip, whatever the
-    /// screen's shape, and the picture's ring shows round it as far as it reaches. Without the picture a plain background
-    /// takes its place (the routes and nodes still work); without the layout the strip and the chips still play the game.
+    /// each level a numbered node on its route (stars, a lock, the next one pulsing), the stops between the levels (the bus stop,
+    /// granny's house, the station... where one level ends and the next starts, Levels/RouteTable) as small markers on the line,
+    /// and each challenge a gold "!" node beside its route. The route with the next level to play is in focus: bright and wide,
+    /// its levels named; the others are thin and dimmed, their nodes still tappable. Along the bottom: the focused route's levels
+    /// as a strip like a level select (a house, the level chips with their stars or lock, the school) and a chip for each route
+    /// to change the focus.
+    /// The picture fills the screen behind the bars, fitted so that everything on it shows between the header and the strip, and
+    /// it pans and zooms (<see cref="UIMapView"/>: a drag, a pinch, the mouse wheel, or the + / - / fit buttons at the right).
+    /// The nodes, pins, names and route lines grow on screen more slowly than the town as it zooms in
+    /// (<see cref="MapViewMath.ItemScale"/>), so they stay the right size to read and tap and come further apart; the stops'
+    /// names show once there is room for them. Without the picture a plain background takes its place (the routes and nodes
+    /// still work); without the layout the strip and the chips still play the game.
     /// </summary>
     public class ChapterMapScreen : FrontEndScreen
     {
         // ---- the layout, in canvas units (the canvas is 1080 tall inside the safe area)
-        const float HeaderHeight = 150f;      // FrontEndController's shared header
-        const float TitleHeight = 62f;
+        const float HeaderHeight = 150f;      // FrontEndController's shared header (its title is this screen's "Choose your way to school")
         const float Gap = 6f;
         const float ChipHeight = 92f;         // the route chips, along the very bottom (a name may take two lines on a narrow screen)
         const float ChipBottom = 12f;
         const float StripHeight = 104f;       // the level strip, above them
         const float ChipY = 68f, StarsY = 18f; // inside the strip (from its bottom): the level chips' centres, and the stars or names under them
         const float SideMargin = 12f;
+        const float BottomBars = ChipBottom + ChipHeight + Gap + StripHeight + Gap;
+        const float ZoomButton = 88f;         // the + / - / fit buttons at the right
 
-        // ---- sizes in the picture's own pixels (the map block is scaled to the screen, about 0.5)
+        // ---- sizes in the picture's own pixels (the map block is scaled to the screen, about 0.58 when fitted)
         const float RouteWidthOn = 54f, RouteWidthOff = 30f;
-        const int LabelFont = TownMapNames.FontSize;   // 50 px of the picture: 24 canvas units at the usual scale, never under 22
+        const int LabelFont = TownMapNames.FontSize;   // 50 px of the picture: about 29 canvas units when fitted
+        const int StopFont = 40;              // a stop's name, smaller than a level's
+        const float StopRadius = TownMap.StopRadius;   // a stop's marker on its route
         const float PinHead = TownMapNames.PinHead;
 
         static readonly Color Mat = new Color(0.1f, 0.15f, 0.31f);
@@ -42,15 +50,15 @@ namespace DribbleToSchool.FrontEnd
         static readonly Color HomeRed = HomeInfo.DoorColor;   // the red of the house's front door, as in every level and the Holiday Run
         static readonly Color SchoolBlue = new Color(0.22f, 0.36f, 0.72f);
 
-        RectTransform body;                   // the room for the picture's core, between the title and the strip
-        RectTransform map;                    // the picture's block (3200 x 1800 pixels), scaled by UIFitRect
-        UIFitRect fit;
+        RectTransform viewRect;               // the whole screen: the picture is panned and zoomed in it
+        UIMapView view;
+        RectTransform map;                    // the picture's block (3200 x 1800 pixels), placed and scaled by the view
         RawImage picture;
         Image plain;
         Texture2D texture;
         RectTransform routeLayer, textLayer, nodeLayer, stripRoot;
-        Text focusName, focusStars;
-        Image focusSwatch;
+        MapPainter markerPainter;
+        UIMapMesh markerMesh;
         readonly Dictionary<string, MapPainter> routePainters = new Dictionary<string, MapPainter>();
         readonly Dictionary<string, UIMapMesh> routeMeshes = new Dictionary<string, UIMapMesh>();
         readonly Dictionary<string, Button> chips = new Dictionary<string, Button>();
@@ -58,10 +66,32 @@ namespace DribbleToSchool.FrontEnd
         readonly List<Rect> taken = new List<Rect>();     // boxes of the texts already placed on the picture
         readonly List<Rect> drawn = new List<Rect>();     // what is drawn on the picture besides the nodes (pins, names, the pill): the level names keep off it
         readonly Dictionary<string, MapName> names = new Dictionary<string, MapName>();   // the focused route's level names, where they go
+        readonly List<MapItem> items = new List<MapItem>();   // what keeps its size as the view zooms
+        readonly List<StopLabel> stopLabels = new List<StopLabel>();
         string focus;
         bool firstShow, popIn;                // the nodes pop in when the map is opened, not each time the focus moves
+        float itemScale = 1f;                 // the things drawn on the picture against the picture (1 when fitted, smaller zoomed in)
 
-        public override string Title { get { return Loc.T("menu.map"); } }
+        /// <summary>Something drawn on the picture that keeps its size as the view zooms: it is scaled by the item scale about its anchor.</summary>
+        struct MapItem
+        {
+            public RectTransform rect;        // null for a box that only keeps the stops' names off something drawn in a mesh (a pin)
+            public Vector2 anchor;            // the point of the picture it belongs to (pixels, y down)
+            public Vector2 offset;            // its middle from the anchor at item scale 1 (pixels, y down)
+            public Rect box;                  // what it covers at item scale 1 (pixels, y down)
+            public bool blocks;               // the stops' names keep off it
+        }
+
+        /// <summary>A stop's name beside its marker: shown only when the view is zoomed in far enough for it to touch nothing.</summary>
+        struct StopLabel
+        {
+            public RectTransform rect;
+            public Vector2 marker;            // the stop on its route (pixels)
+            public Vector2 offset;            // the name's middle from the marker at item scale 1
+            public Vector2 size;              // the name's box at item scale 1
+        }
+
+        public override string Title { get { return Loc.T("map.choose"); } }
 
         // ------------------------------------------------------------------ building
 
@@ -79,16 +109,26 @@ namespace DribbleToSchool.FrontEnd
 
             BuildMap(root);
 
-            // A dark wash at the top so the header and title read over the picture.
+            // A dark wash at the top so the header reads over the picture, and a lighter one under the bars at the bottom.
             var wash = UIKit.Icon(root, "TopWash", ProceduralSprites.VerticalGradient, new Color(Mat.r, Mat.g, Mat.b, 0.92f), 10f);
             wash.preserveAspect = false;
+            wash.raycastTarget = false;
             wash.rectTransform.anchorMin = new Vector2(0f, 1f);
             wash.rectTransform.anchorMax = new Vector2(1f, 1f);
             wash.rectTransform.pivot = new Vector2(0.5f, 1f);
-            wash.rectTransform.offsetMin = new Vector2(-900f, -(HeaderHeight + TitleHeight + 40f));
+            wash.rectTransform.offsetMin = new Vector2(-900f, -(HeaderHeight + 40f));
             wash.rectTransform.offsetMax = new Vector2(900f, 0f);
+            var under = UIKit.Icon(root, "BottomWash", ProceduralSprites.VerticalGradient, new Color(Mat.r, Mat.g, Mat.b, 0.7f), 10f);
+            under.preserveAspect = false;
+            under.raycastTarget = false;
+            under.rectTransform.anchorMin = new Vector2(0f, 0f);
+            under.rectTransform.anchorMax = new Vector2(1f, 0f);
+            under.rectTransform.pivot = new Vector2(0.5f, 0.5f);                  // turned about its middle, so it stays where it is
+            under.rectTransform.offsetMin = new Vector2(-900f, -450f);
+            under.rectTransform.offsetMax = new Vector2(900f, BottomBars * 0.75f);
+            under.rectTransform.localRotation = Quaternion.Euler(0f, 0f, 180f);   // opaque at the bottom, clear above
 
-            BuildTitle(root);
+            BuildZoomButtons(root);
             stripRoot = UIKit.Rect(root, "Strip");
             BuildChips(root);
         }
@@ -96,24 +136,25 @@ namespace DribbleToSchool.FrontEnd
         void BuildMap(RectTransform root)
         {
             Vector2 frame = TownMap.FrameSize;
-            Rect core = TownMap.Core;
-            if (core.width <= 0f) core = TownMap.ExpectedCore;
 
-            // The room for the core: between the title row and the strip, whatever the screen's shape.
-            body = UIKit.Rect(root, "Body");
-            body.anchorMin = Vector2.zero;
-            body.anchorMax = Vector2.one;
-            body.offsetMin = new Vector2(SideMargin, ChipBottom + ChipHeight + Gap + StripHeight + Gap);
-            body.offsetMax = new Vector2(-SideMargin, -(HeaderHeight + TitleHeight + Gap));
+            // The view: the whole screen. The picture fills it behind the header and the bars, and at zoom 1 everything drawn
+            // on it fits between them (the insets); it is panned and zoomed in it.
+            viewRect = UIKit.Stretch(UIKit.Rect(root, "MapView"));
+            var catcher = viewRect.gameObject.AddComponent<Image>();      // takes the drags and pinches on the picture
+            catcher.color = Color.clear;
+            catcher.raycastTarget = true;
+            view = viewRect.gameObject.AddComponent<UIMapView>();
 
-            map = UIKit.Rect(body, "Map");
+            map = UIKit.Rect(viewRect, "Map");
             UIKit.Place(map, new Vector2(0.5f, 0.5f), Vector2.zero, frame, new Vector2(0.5f, 0.5f));
-            fit = map.gameObject.AddComponent<UIFitRect>();
-            fit.designSize = frame;
-            fit.fitSize = new Vector2(core.width, core.height);
-            fit.fitCentre = core.center;
-            fit.minScale = 0.2f;
-            fit.maxScale = 1.2f;
+            view.content = map;
+            view.designSize = frame;
+            view.fitRect = ContentBounds(frame);
+            view.coverRect = new Rect(0f, 0f, frame.x, frame.y);
+            float side = SideMargin + ZoomButton + 16f;
+            view.insets = new Vector4(SideMargin, BottomBars, side, HeaderHeight);
+            view.maxZoom = 3f;
+            view.Changed += OnViewChanged;
 
             // The picture; a plain background stands in until (or unless) it loads.
             var plainRect = UIKit.Stretch(UIKit.Rect(map, "Plain"));
@@ -133,9 +174,68 @@ namespace DribbleToSchool.FrontEnd
                 routePainters[route.id] = painter;
                 routeMeshes[route.id] = UIMapMesh.Create(routeLayer, "Route_" + route.id, painter, frame);
             }
-            BuildMarkers(frame);
+            markerPainter = new MapPainter();
+            markerMesh = UIMapMesh.Create(map, "Markers", markerPainter, frame);
+            DrawMarkers();
             textLayer = UIKit.Stretch(UIKit.Rect(map, "Texts"));     // filled for each focus (BuildTexts)
             nodeLayer = UIKit.Stretch(UIKit.Rect(map, "Nodes"));
+        }
+
+        /// <summary>
+        /// The part of the picture the view fits at zoom 1: every node with its stars, the two pins and every route, with a margin
+        /// round them (the layout's core if it has none of these).
+        /// </summary>
+        static Rect ContentBounds(Vector2 frame)
+        {
+            Rect core = TownMap.Core.width > 0f ? TownMap.Core : TownMap.ExpectedCore;
+            if (!TownMap.Available || TownMap.Nodes.Length == 0) return core;
+            float x0 = float.MaxValue, y0 = float.MaxValue, x1 = float.MinValue, y1 = float.MinValue;
+            System.Action<Rect> add = r =>
+            {
+                x0 = Mathf.Min(x0, r.xMin); y0 = Mathf.Min(y0, r.yMin);
+                x1 = Mathf.Max(x1, r.xMax); y1 = Mathf.Max(y1, r.yMax);
+            };
+            float r0 = TownMap.NodeRadius + 10f;
+            foreach (var node in TownMap.Nodes) add(new Rect(node.pos.x - r0, node.pos.y - r0, 2f * r0, 2f * r0 + 40f));
+            foreach (string id in new[] { "home", "school" }) add(TownMapNames.PinBox(TownMap.Place(id)));
+            foreach (var route in TownMap.Routes)
+                foreach (var p in route.points) add(new Rect(p.x, p.y, 0f, 0f));
+            const float margin = 40f;
+            var bounds = Rect.MinMaxRect(x0 - margin, y0 - margin, x1 + margin, y1 + margin);
+            // Never more than the picture.
+            return Rect.MinMaxRect(Mathf.Max(0f, bounds.xMin), Mathf.Max(0f, bounds.yMin), Mathf.Min(frame.x, bounds.xMax), Mathf.Min(frame.y, bounds.yMax));
+        }
+
+        /// <summary>The + / - / fit buttons, one above the other at the right, in the middle of the room the bars leave.</summary>
+        void BuildZoomButtons(RectTransform root)
+        {
+            float x = -(SideMargin + 8f);
+            float middle = (BottomBars - HeaderHeight) * 0.5f;
+            ZoomButtonAt(root, "ZoomIn", "+", new Vector2(x, middle + ZoomButton + 18f), () => view.ZoomBy(1.6f));
+            ZoomButtonAt(root, "ZoomOut", "-", new Vector2(x, middle), () => view.ZoomBy(1f / 1.6f));
+            var fitButton = ZoomButtonAt(root, "ZoomFit", "", new Vector2(x, middle - ZoomButton - 18f), () => view.Fit());
+            // The fit button's picture: the four corners of a frame.
+            var painter = new MapPainter();
+            Color ink = UITheme.Navy;
+            foreach (var c in new[] { new Vector2(-1f, -1f), new Vector2(1f, -1f), new Vector2(1f, 1f), new Vector2(-1f, 1f) })
+            {
+                Vector2 corner = new Vector2(50f, 50f) + c * 22f;
+                painter.Stroke(new[] { corner - new Vector2(c.x * 13f, 0f), corner, corner - new Vector2(0f, c.y * 13f) }, 7f, ink, false, true);
+            }
+            var glyph = UIMapMesh.Create(fitButton.transform.Find("Face"), "Glyph", painter, new Vector2(100f, 100f));
+            UIKit.Place(glyph.rectTransform, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(ZoomButton * 0.8f, ZoomButton * 0.8f), new Vector2(0.5f, 0.5f));
+        }
+
+        Button ZoomButtonAt(RectTransform root, string name, string label, Vector2 at, UnityEngine.Events.UnityAction onClick)
+        {
+            var button = UIKit.Button(root, name, label, UITheme.Paper, onClick, 60, UITheme.Navy);
+            UIKit.Place((RectTransform)button.transform, new Vector2(1f, 0.5f), at, new Vector2(ZoomButton, ZoomButton), new Vector2(1f, 0.5f));
+            UIKit.MakeRound(button);
+            // A touch target a little bigger than the disc.
+            var hit = UIKit.Rect(button.transform, "Hit");
+            UIKit.Place(hit, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(ZoomButton + 20f, ZoomButton + 20f), new Vector2(0.5f, 0.5f));
+            ClearHit(hit);
+            return button;
         }
 
         /// <summary>
@@ -178,16 +278,56 @@ namespace DribbleToSchool.FrontEnd
             return new Vector2(p.x - frame.x * 0.5f, frame.y * 0.5f - p.y);
         }
 
-        /// <summary>The house and the school: a pin over each, drawn once.</summary>
-        void BuildMarkers(Vector2 frame)
+        /// <summary>Keeps something drawn on the picture at the item scale: scaled about <paramref name="anchor"/>, its middle <paramref name="offset"/> from it at scale 1.</summary>
+        void Track(RectTransform rect, Vector2 anchor, Vector2 offset, Rect box, bool blocks = true)
         {
-            if (!TownMap.Available) return;
-            var painter = new MapPainter();
-            Vector2 headHome = MapGlyphs.Pin(painter, TownMap.Home, PinHead, HomeRed);
-            MapGlyphs.House(painter, headHome + new Vector2(0f, 2f), PinHead * 1.15f, Color.white, HomeRed);
-            Vector2 headSchool = MapGlyphs.Pin(painter, TownMap.School, PinHead, SchoolBlue);
-            MapGlyphs.School(painter, headSchool + new Vector2(0f, 4f), PinHead * 1.25f, Color.white, SchoolBlue);
-            UIMapMesh.Create(map, "Markers", painter, frame);
+            var item = new MapItem { rect = rect, anchor = anchor, offset = offset, box = box, blocks = blocks };
+            items.Add(item);
+            Apply(item);
+        }
+
+        /// <summary>A box the stops' names keep off that is drawn in a mesh (scaled with the item scale about <paramref name="anchor"/>).</summary>
+        void Block(Vector2 anchor, Rect box)
+        {
+            items.Add(new MapItem { anchor = anchor, box = box, blocks = true });
+        }
+
+        void Apply(MapItem item)
+        {
+            if (item.rect == null) return;
+            item.rect.localScale = new Vector3(itemScale, itemScale, 1f);
+            item.rect.anchoredPosition = At(item.anchor + item.offset * itemScale);
+        }
+
+        /// <summary>
+        /// The view moved or zoomed. The things drawn on the picture take the item scale for the zoom (they grow on screen more
+        /// slowly than the town); when it has changed by more than a little they are scaled again, the route lines and pins drawn
+        /// again at the new widths, and the stops' names shown where they now fit.
+        /// </summary>
+        void OnViewChanged(float zoom, float scale)
+        {
+            float s = MapViewMath.ItemScale(zoom);
+            if (Mathf.Abs(s - itemScale) <= itemScale * 0.02f && !(s == 1f && itemScale != 1f)) return;
+            itemScale = s;
+            foreach (var item in items) Apply(item);
+            if (focus != null) DrawRoutes(Controller.levels);
+            DrawMarkers();
+            UpdateStopLabels();
+        }
+
+        /// <summary>The house and the school: a pin over each, at the item scale (drawn again when it changes).</summary>
+        void DrawMarkers()
+        {
+            markerPainter.Clear();
+            if (TownMap.Available)
+            {
+                float head = PinHead * itemScale;
+                Vector2 headHome = MapGlyphs.Pin(markerPainter, TownMap.Home, head, HomeRed);
+                MapGlyphs.House(markerPainter, headHome + new Vector2(0f, 2f * itemScale), head * 1.15f, Color.white, HomeRed);
+                Vector2 headSchool = MapGlyphs.Pin(markerPainter, TownMap.School, head, SchoolBlue);
+                MapGlyphs.School(markerPainter, headSchool + new Vector2(0f, 4f * itemScale), head * 1.25f, Color.white, SchoolBlue);
+            }
+            markerMesh.Show(markerPainter);
         }
 
         /// <summary>
@@ -201,6 +341,7 @@ namespace DribbleToSchool.FrontEnd
             taken.Clear();
             drawn.Clear();
             names.Clear();
+            stopLabels.Clear();
             if (!TownMap.Available) return;
             // Boxes already spoken for: the nodes' discs (the focused route's with room for their stars, the others' smaller) and the two pins.
             foreach (var node in TownMap.Nodes)
@@ -251,6 +392,7 @@ namespace DribbleToSchool.FrontEnd
                 UIKit.Stretch(hereText.rectTransform, 4f);
                 UIKit.Fit(hereText, LabelFont - 2);
                 Shadowed(hereText);
+                Track(pill.rectTransform, TownMap.Home, here.Value - TownMap.Home, new Rect(here.Value - pillSize * 0.5f, pillSize));
             }
 
             // Districts: small capitals, white with a dark outline (the school's is left out: its pin already says so).
@@ -264,6 +406,7 @@ namespace DribbleToSchool.FrontEnd
                 var t = UIKit.Label(textLayer, "District_" + district.id, text, LabelFont, Color.white, TextAnchor.MiddleCenter, true);
                 UIKit.Place(t.rectTransform, new Vector2(0.5f, 0.5f), At(at.Value), size, new Vector2(0.5f, 0.5f));
                 Outlined(t);
+                Track(t.rectTransform, at.Value, Vector2.zero, new Rect(at.Value - size * 0.5f, size));
             }
 
             // Streets: named along the road at the angle given (as the art gives the names, not translated), where they touch
@@ -282,6 +425,98 @@ namespace DribbleToSchool.FrontEnd
                 UIKit.Place(t.rectTransform, new Vector2(0.5f, 0.5f), At(at.Value), new Vector2(width, LabelFont * 1.2f), new Vector2(0.5f, 0.5f));
                 t.rectTransform.localRotation = Quaternion.Euler(0f, 0f, -street.angle);   // the layout's angle turns clockwise (y down)
                 Outlined(t, 2.5f);
+                Track(t.rectTransform, at.Value, Vector2.zero, new Rect(at.Value - size * 0.5f, size));
+            }
+        }
+
+        /// <summary>
+        /// The focused route's stops: each marker keeps the other stops' names off it, and a name beside each marker shows when the
+        /// view is zoomed in far enough for it to fit. Built after the nodes and their names, so it knows where they are.
+        /// </summary>
+        void BuildStopLabels(Route focusRoute)
+        {
+            if (!TownMap.Available || focusRoute == null || focusRoute.stops == null) return;
+            for (int i = 0; i < focusRoute.stops.Length; i++)
+            {
+                Vector2? marker = TownMap.StopPosition(focusRoute.id, i);
+                if (marker == null) continue;
+                float r = StopRadius + 6f;
+                Block(marker.Value, new Rect(marker.Value.x - r, marker.Value.y - r, 2f * r, 2f * r));
+            }
+            for (int i = 0; i < focusRoute.stops.Length; i++)
+            {
+                var stop = RouteTable.StopById(focusRoute.stops[i]);
+                Vector2? marker = TownMap.StopPosition(focusRoute.id, i);
+                if (stop != null && marker != null) BuildStopLabel(focusRoute, stop, marker.Value);
+            }
+        }
+
+        /// <summary>
+        /// A stop's name beside its marker, on the side of the route line where it would touch least at a zoom of about two; hidden
+        /// until it fits (<see cref="UpdateStopLabels"/>).
+        /// </summary>
+        void BuildStopLabel(Route route, Stop stop, Vector2 marker)
+        {
+            var line = TownMap.Route(route.id);
+            if (line == null) return;
+            string text = Loc.T(stop.NameKey);
+            var size = new Vector2(TownMapNames.Width(text, StopFont) + 24f, TownMapNames.Height(1, StopFont) + 6f);
+            Vector2 dir = TownMap.DirectionAt(line.points, TownMap.DistanceAlong(line.points, marker));
+            Vector2 normal = new Vector2(-dir.y, dir.x);
+            float reach = Mathf.Abs(normal.x) * size.x * 0.5f + Mathf.Abs(normal.y) * size.y * 0.5f;
+            Vector2 offset = normal * (StopRadius + 14f + reach);
+            // The side with less in the way at a zoom of about two.
+            float s = MapViewMath.ItemScale(2f);
+            if (Crowding(marker - offset, size, s) < Crowding(marker + offset, size, s)) offset = -offset;
+
+            var t = UIKit.Label(textLayer, "Stop_" + stop.id, text, StopFont, Color.white, TextAnchor.MiddleCenter, true);
+            t.horizontalOverflow = HorizontalWrapMode.Overflow;
+            UIKit.Place(t.rectTransform, new Vector2(0.5f, 0.5f), At(marker + offset), size, new Vector2(0.5f, 0.5f));
+            Outlined(t, 3f);
+            stopLabels.Add(new StopLabel { rect = t.rectTransform, marker = marker, offset = offset, size = size });
+            Track(t.rectTransform, marker, offset, new Rect(marker + offset - size * 0.5f, size), false);
+        }
+
+        /// <summary>How much of what is drawn on the picture a box of <paramref name="size"/> at <paramref name="centre"/> would touch at item scale <paramref name="s"/> (its centre and size scaled about the marker).</summary>
+        float Crowding(Vector2 centre, Vector2 size, float s)
+        {
+            var box = new Rect(centre - size * 0.5f * s, size * s);
+            float hit = 0f;
+            foreach (var item in items)
+            {
+                if (!item.blocks) continue;
+                Rect other = Scaled(item.box, item.anchor, s);
+                if (box.Overlaps(other))
+                    hit += Mathf.Max(0f, Mathf.Min(box.xMax, other.xMax) - Mathf.Max(box.xMin, other.xMin)) * Mathf.Max(0f, Mathf.Min(box.yMax, other.yMax) - Mathf.Max(box.yMin, other.yMin));
+            }
+            return hit;
+        }
+
+        /// <summary>A box drawn at item scale 1 as it is at item scale <paramref name="s"/>: shrunk toward the point it belongs to.</summary>
+        static Rect Scaled(Rect box, Vector2 anchor, float s)
+        {
+            Vector2 min = anchor + (box.min - anchor) * s;
+            return new Rect(min, box.size * s);
+        }
+
+        /// <summary>Shows each stop's name where it touches nothing at the current item scale (nor an earlier stop's name), and only zoomed in.</summary>
+        void UpdateStopLabels()
+        {
+            var shown = new List<Rect>();
+            bool zoomed = view != null && view.Zoom >= 1.3f;
+            foreach (var label in stopLabels)
+            {
+                if (label.rect == null) continue;
+                Rect box = Scaled(new Rect(label.marker + label.offset - label.size * 0.5f, label.size), label.marker, itemScale);
+                bool fits = zoomed;
+                if (fits)
+                    foreach (var item in items)
+                        if (item.blocks && Scaled(item.box, item.anchor, itemScale).Overlaps(box)) { fits = false; break; }
+                if (fits)
+                    foreach (var other in shown)
+                        if (other.Overlaps(box)) { fits = false; break; }
+                label.rect.gameObject.SetActive(fits);
+                if (fits) shown.Add(box);
             }
         }
 
@@ -307,6 +542,9 @@ namespace DribbleToSchool.FrontEnd
             Outlined(t);
             taken.Add(box);
             drawn.Add(box);
+            Vector2 place = TownMap.Place(id);
+            Track(t.rectTransform, place, box.center - place, box);
+            Block(place, TownMapNames.PinBox(place));
         }
 
         /// <summary>
@@ -359,34 +597,6 @@ namespace DribbleToSchool.FrontEnd
         }
 
         // ------------------------------------------------------------------ the title and the route chips
-
-        void BuildTitle(RectTransform root)
-        {
-            float margin = 24f + ExtraSide();
-            var row = UIKit.Row(root, "TitleRow", HeaderHeight, TitleHeight, margin, margin);
-            var choose = UIKit.Label(row, "Choose", Loc.T("map.choose"), 40, Color.white, TextAnchor.MiddleLeft, true);
-            UIKit.Place(choose.rectTransform, new Vector2(0f, 0.5f), new Vector2(8f, 0f), new Vector2(760f, 56f), new Vector2(0f, 0.5f));
-            var line = choose.gameObject.AddComponent<Outline>();
-            line.effectColor = UITheme.Ink;
-            line.effectDistance = new Vector2(2.5f, -2.5f);
-
-            // The focused route: its colour, name and stars on a little card at the right.
-            var card = UIKit.Card(row, "Focus", UITheme.Paper);
-            UIKit.Place((RectTransform)card.transform.parent, new Vector2(1f, 0.5f), Vector2.zero, new Vector2(580f, 54f), new Vector2(1f, 0.5f));
-            focusSwatch = UIKit.Icon(card.transform, "Swatch", ProceduralSprites.CircleEdge, Color.white, 34f);
-            UIKit.Place(focusSwatch.rectTransform, new Vector2(0f, 0.5f), new Vector2(18f, 0f), new Vector2(34f, 34f), new Vector2(0f, 0.5f));
-            focusName = UIKit.Label(card.transform, "Name", "", 32, UITheme.Ink, TextAnchor.MiddleLeft, true);
-            UIKit.Place(focusName.rectTransform, new Vector2(0f, 0.5f), new Vector2(62f, 0f), new Vector2(330f, 46f), new Vector2(0f, 0.5f));
-            UIKit.Fit(focusName, 22);
-            var star = UIKit.Icon(card.transform, "Star", ProceduralSprites.Star, UITheme.Gold, 34f);
-            UIKit.Place(star.rectTransform, new Vector2(1f, 0.5f), new Vector2(-160f, 0f), new Vector2(34f, 34f), new Vector2(1f, 0.5f));
-            var o = star.gameObject.AddComponent<Outline>();
-            o.effectColor = new Color(0.45f, 0.28f, 0.02f, 0.9f);
-            o.effectDistance = new Vector2(2f, -2f);
-            focusStars = UIKit.Label(card.transform, "Stars", "", 30, UITheme.Ink, TextAnchor.MiddleRight, true);
-            UIKit.Place(focusStars.rectTransform, new Vector2(1f, 0.5f), new Vector2(-14f, 0f), new Vector2(140f, 46f), new Vector2(1f, 0.5f));
-            UIKit.Fit(focusStars, 22);
-        }
 
         void BuildChips(RectTransform root)
         {
@@ -461,6 +671,7 @@ namespace DribbleToSchool.FrontEnd
         {
             EnsurePicture();
             firstShow = true;
+            if (view != null) view.Fit(true);
             int requested = FrontEndController.RequestedChapter;
             FrontEndController.RequestedChapter = 0;
             var catalog = Controller.levels;
@@ -537,14 +748,11 @@ namespace DribbleToSchool.FrontEnd
             var focusRoute = RouteTable.All[RouteTable.IndexOf(id)];
             for (int i = nodeLayer.childCount - 1; i >= 0; i--) Object.Destroy(nodeLayer.GetChild(i).gameObject);
             for (int i = stripRoot.childCount - 1; i >= 0; i--) Object.Destroy(stripRoot.GetChild(i).gameObject);
+            items.Clear();
 
             DrawRoutes(catalog);
             BuildTexts(focusRoute, catalog);       // the names for this focus (the level names among them)
 
-            Color focusColour = ColourOf(catalog, focusRoute);
-            focusSwatch.color = focusColour;
-            focusName.text = Loc.T(focusRoute.NameKey);
-            focusStars.text = StarsOf(focusRoute) + " / " + TotalOf(focusRoute);
             foreach (var route in RouteTable.All)
             {
                 bool on = route.id == id;
@@ -574,6 +782,25 @@ namespace DribbleToSchool.FrontEnd
             BuildNodes(catalog, focusRoute, next, true, ref index);
 
             if (!Store.Monetization.IsChapterUnlocked(focusRoute.chapter)) ShowRouteLock(focusRoute);
+            BuildStopLabels(focusRoute);
+            UpdateStopLabels();
+            // Zoomed in, the view glides to the newly focused route's levels.
+            if (view != null && view.Zoom > 1.05f) view.Show(MiddleOf(focusRoute), view.Zoom);
+        }
+
+        /// <summary>The middle of a route's level nodes (pixels).</summary>
+        static Vector2 MiddleOf(Route route)
+        {
+            Vector2 sum = Vector2.zero;
+            int n = 0;
+            foreach (string levelId in route.levels)
+            {
+                var node = TownMap.Node(levelId);
+                if (node == null) continue;
+                sum += node.pos;
+                n++;
+            }
+            return n > 0 ? sum / n : TownMap.Core.center;
         }
 
         // ------------------------------------------------------------------ the routes and their nodes
@@ -591,11 +818,12 @@ namespace DribbleToSchool.FrontEnd
                 painter.Clear();
                 Color core = ColourOf(catalog, route);
                 if (!on) core = Color.Lerp(core, new Color(0.9f, 0.92f, 0.95f), 0.4f);
-                float width = on ? RouteWidthOn : RouteWidthOff;
-                float casing = on ? 13f : 8f;
+                float k = itemScale;
+                float width = (on ? RouteWidthOn : RouteWidthOff) * k;
+                float casing = (on ? 13f : 8f) * k;
                 painter.Stroke(line.points, width + casing * 2f, Color.white, false, true);
                 painter.Stroke(line.points, width, core, false, true);
-                if (on) painter.Dashed(line.points, 7f, 24f, 34f, new Color(1f, 1f, 1f, 0.85f));
+                if (on) painter.Dashed(line.points, 7f * k, 24f * k, 34f * k, new Color(1f, 1f, 1f, 0.85f));
                 // The dotted branch from the route to its challenge's node.
                 if (route.challenge != null)
                 {
@@ -604,10 +832,21 @@ namespace DribbleToSchool.FrontEnd
                     {
                         Vector2 near;
                         TownMap.DistanceTo(line.points, node.pos, out near);
-                        painter.Dashed(new[] { near, node.pos }, on ? 20f : 14f, 26f, 20f, Color.white);
-                        painter.Dashed(new[] { near, node.pos }, on ? 12f : 8f, 26f, 20f, core);
+                        painter.Dashed(new[] { near, node.pos }, (on ? 20f : 14f) * k, 26f * k, 20f * k, Color.white);
+                        painter.Dashed(new[] { near, node.pos }, (on ? 12f : 8f) * k, 26f * k, 20f * k, core);
                     }
                 }
+                // The stops between the levels: a small white marker on the line with a dot of the route's colour (Levels/RouteTable).
+                if (route.stops != null)
+                    for (int i = 0; i < route.stops.Length; i++)
+                    {
+                        Vector2? at = TownMap.StopPosition(route.id, i);
+                        if (at == null) continue;
+                        float r = StopRadius * k * (on ? 1f : 0.8f);
+                        painter.Disc(at.Value, r + 3.5f * k, MapGlyphs.Ink);
+                        painter.Disc(at.Value, r, Color.white);
+                        painter.Disc(at.Value, r * 0.5f, core);
+                    }
                 routeMeshes[route.id].Show(painter);
                 if (!on) routeMeshes[route.id].transform.SetSiblingIndex(order++);
             }
@@ -639,6 +878,11 @@ namespace DribbleToSchool.FrontEnd
             float diameter = TownMap.NodeDiameter * scale;
             var holder = UIKit.Rect(nodeLayer, "Node_" + def.levelId);
             UIKit.Place(holder, new Vector2(0.5f, 0.5f), At(spot.pos), new Vector2(diameter, diameter), new Vector2(0.5f, 0.5f));
+            float r = diameter * 0.5f + 6f;
+            Track(holder, spot.pos, Vector2.zero, new Rect(spot.pos.x - r, spot.pos.y - r, 2f * r, 2f * r + (named ? 40f : 0f)));
+            // The holder takes the zoom's item scale; what is drawn goes on a child of the same size, which pops in.
+            var holderRect = holder;
+            holder = UIKit.Stretch(UIKit.Rect(holderRect, "Body"));
             // The nodes pop in one after another when the map is opened (not every time the focus moves).
             if (popIn) UIKit.PopIn(holder.gameObject, Mathf.Min(index, 14) * 0.03f);
 
@@ -651,7 +895,7 @@ namespace DribbleToSchool.FrontEnd
             if (isNext && unlocked) button.gameObject.AddComponent<UIPulse>();
 
             // The touch target: the disc, or about 118 canvas units across if that is more (a clear square: taps reach the button).
-            float hitSize = Mathf.Max(TownMap.NodeDiameter, 118f / Mathf.Max(0.3f, ScaleNow()));
+            float hitSize = Mathf.Max(TownMap.NodeDiameter, 118f / Mathf.Max(0.2f, ScaleNow()));
             var hit = UIKit.Rect(button.transform, "Hit");
             UIKit.Place(hit, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(hitSize, hitSize), new Vector2(0.5f, 0.5f));
             ClearHit(hit);
@@ -681,7 +925,11 @@ namespace DribbleToSchool.FrontEnd
             }
 
             MapName name;
-            if (named && names.TryGetValue(def.levelId, out name)) BuildName(holder, name, spot.pos);
+            if (named && names.TryGetValue(def.levelId, out name))
+            {
+                BuildName(holder, name, spot.pos);
+                Block(spot.pos, name.box);
+            }
         }
 
         /// <summary>
@@ -709,21 +957,15 @@ namespace DribbleToSchool.FrontEnd
         }
 
         /// <summary>
-        /// The scale the map block is (or is about to be) at, about 0.5: worked out from the room, since the canvas has no size yet
-        /// when the screens are built. A usual 16:9 screen is assumed until the body has one.
+        /// The scale the map block is at when fitted, about 0.58: the view's, or (before the canvas has a size, when the screens are
+        /// built) worked out for a usual 16:9 screen.
         /// </summary>
         float ScaleNow()
         {
-            Vector2 room = body != null ? body.rect.size : Vector2.zero;
-            if (room.x <= 1f || room.y <= 1f)
-            {
-                float height = UIKit.ReferenceResolution.y;
-                room = new Vector2(UIKit.ReferenceResolution.x - 2f * SideMargin,
-                    height - (HeaderHeight + TitleHeight + Gap) - (ChipBottom + ChipHeight + Gap + StripHeight + Gap));
-            }
-            Rect core = TownMap.Core.width > 0f ? TownMap.Core : TownMap.ExpectedCore;
-            float min = fit != null ? fit.minScale : 0.2f, max = fit != null ? fit.maxScale : 1.2f;
-            return UIFitRect.ScaleFor(room, core.size, min, max);
+            if (view != null && view.FitScale > 0f && viewRect != null && viewRect.rect.width > 1f) return view.FitScale;
+            Vector2 room = new Vector2(UIKit.ReferenceResolution.x - SideMargin * 2f - ZoomButton - 16f, UIKit.ReferenceResolution.y - HeaderHeight - BottomBars);
+            Rect fit = view != null ? view.fitRect : (TownMap.Core.width > 0f ? TownMap.Core : TownMap.ExpectedCore);
+            return MapViewMath.FitScale(room, fit);
         }
 
         void ShowRouteLock(Route route)
@@ -736,6 +978,7 @@ namespace DribbleToSchool.FrontEnd
                 UI.UnlockPanel.Open(Controller.CanvasRoot, () => ShowRoute(route.id)), 90);
             UIKit.Place((RectTransform)unlock.transform, new Vector2(0.5f, 0.5f), At(middle), new Vector2(1200f, 260f));
             unlock.transform.SetAsLastSibling();
+            Track((RectTransform)unlock.transform, middle, Vector2.zero, new Rect(middle.x - 600f, middle.y - 130f, 1200f, 260f));
             unlock.gameObject.AddComponent<UIPulse>().amount = 0.03f;
         }
 

@@ -4,12 +4,14 @@ using DribbleToSchool.Holiday;
 namespace DribbleToSchool.EditorTools
 {
     /// <summary>
-    /// The rules of the home lead-in: every story level starts on the doorstep of the kid's house and walks
-    /// <see cref="Length"/> metres of home street before the level's own street begins (docs/WORLD_MAP.md, "Every
-    /// level starts at home"). The track builder shifts the start, the walls and the ground back by that much, so a
-    /// layout keeps its own coordinates (its start is still x = 0, its hints, signs and obstacles are where they were)
-    /// and its feasibility audit is unchanged. Pure arithmetic and text, so the tests and the offline audit harness run
-    /// the same code as the builder.
+    /// The rules of the lead-in: every story level starts at a stop on its route and walks <see cref="Length"/> metres
+    /// before the level's own street begins (docs/WORLD_MAP.md, "Every route is one trip, a level is a leg of it"). The
+    /// first level of a route starts on the doorstep of the kid's house and its lead-in is the home street (a seam joins it
+    /// to the route's own street if that is another chapter's); every other level starts at the stop where the level before
+    /// it on the route ended (the bus stop, granny's house, the station...), and its lead-in is already the route's street.
+    /// The track builder shifts the start, the walls and the ground back by that much, so a layout keeps its own coordinates
+    /// (its start is still x = 0, its hints, signs and obstacles are where they were) and its feasibility audit is unchanged.
+    /// Pure arithmetic and text, so the tests and the offline audit harness run the same code as the builder.
     /// </summary>
     public static class HomeLeadInRules
     {
@@ -27,8 +29,8 @@ namespace DribbleToSchool.EditorTools
         public const float SignBeforeSeam = 2.3f;
 
         /// <summary>
-        /// Seconds the walk from the front door takes at the kid's walking speed (rounded up), added to every story level's
-        /// bell so the school bell and the stars mean what they did before the lead-in.
+        /// Seconds the walk from the stop the level starts at takes at the kid's walking speed (rounded up), added to every story
+        /// level's bell so the bell and the stars mean what they did before the lead-in.
         /// </summary>
         public static float BellSeconds
         {
@@ -65,18 +67,20 @@ namespace DribbleToSchool.EditorTools
         }
 
         /// <summary>
-        /// The text of the route sign where the lead-in ends: "School ->" and the route's name ("via Seaside Road"). Signs in the
-        /// levels are English in every language (see StringTables), so this is built from the English route name.
+        /// The text of the route sign where the lead-in ends: where this level goes ("School ->", "Granny's house ->") and the
+        /// route's name ("via Seaside Road"). Signs in the levels are English in every language (see StringTables), so this is
+        /// built from the English names (Levels/RouteTable's <c>Stop.signName</c>).
         /// </summary>
-        public static string SignText(string routeName)
+        public static string SignText(string destination, string routeName)
         {
-            return "School ->\nvia " + routeName;
+            return (string.IsNullOrEmpty(destination) ? "School" : destination) + " ->\nvia " + routeName;
         }
 
         /// <summary>
-        /// Story levels start at home. The ball-skill challenges (arenas of their own) and the test track keep their own starts.
+        /// Story levels start at a stop (home, or the stop the level before ended at) with a lead-in. The ball-skill challenges
+        /// (arenas of their own) and the test track keep their own starts.
         /// </summary>
-        public static bool StartsAtHome(bool isLevel, bool isChallenge)
+        public static bool HasLeadIn(bool isLevel, bool isChallenge)
         {
             return isLevel && !isChallenge;
         }

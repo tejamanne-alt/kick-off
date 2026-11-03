@@ -236,7 +236,12 @@ namespace DribbleToSchool.FrontEnd
             backButton = back.gameObject;
 
             headerTitle = UIKit.Title(header, "Title", "", 66, Color.white);
-            UIKit.Place(headerTitle.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0f, 4f), new Vector2(1000f, 120f));
+            // Between the back button and the wallet on any screen from 4:3 up (a long title, the map's, shrinks to fit).
+            float aspect = Screen.height > 0 ? (float)Screen.width / Screen.height : 16f / 9f;
+            float titleWidth = Mathf.Clamp(UIKit.ReferenceResolution.y * aspect - 2f * 360f, 680f, 1000f);
+            UIKit.Place(headerTitle.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0f, 4f), new Vector2(titleWidth, 120f));
+            UIKit.Fit(headerTitle, 40);
+            headerTitle.horizontalOverflow = HorizontalWrapMode.Wrap;
 
             var walletCard = UIKit.Card(header, "Wallet", UITheme.Paper);
             UIKit.Place((RectTransform)walletCard.transform.parent, new Vector2(1f, 0.5f), new Vector2(-40f, 4f), new Vector2(290f, 96f), new Vector2(1f, 0.5f));
