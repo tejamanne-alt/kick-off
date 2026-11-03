@@ -1,4 +1,5 @@
 using DribbleToSchool.Art;
+using DribbleToSchool.Core;
 using DribbleToSchool.Cosmetics;
 using DribbleToSchool.FrontEnd;
 using DribbleToSchool.Presentation;
@@ -129,6 +130,23 @@ namespace DribbleToSchool.EditorTools
         /// CharacterChoice shows one), each juggling with MenuKid, the shared ball and their
         /// shadows, dressed in the equipped cosmetics.
         /// </summary>
+        /// <summary>
+        /// The menu ball's radius for a teen (metres). The title screen shows the kid close up, so the ball is a real
+        /// football's size there (a size 5 is 0.11 m), not the levels' bigger, easier-to-read <see cref="BallRadius"/>.
+        /// </summary>
+        public const float MenuBallRadiusTeen = 0.115f;
+        /// <summary>The menu ball's radius for a primary-school kid: a size 4 ball, for smaller feet.</summary>
+        public const float MenuBallRadiusPrimary = 0.1f;
+
+        /// <summary>The ball a kid juggles on the title screen, by the kid's model name (<see cref="PlayerInfo.model"/>).</summary>
+        public static float MenuBallRadiusFor(string model)
+        {
+            foreach (var info in PlayerRoster.All)
+                if (info.model == model)
+                    return info.level == SchoolLevel.Primary ? MenuBallRadiusPrimary : MenuBallRadiusTeen;
+            return MenuBallRadiusTeen;
+        }
+
         static void BuildMenuTeen(MenuStage stage, Camera cam, CosmeticCatalog cosmetics)
         {
             var teenGo = new GameObject("Teen");
@@ -145,10 +163,10 @@ namespace DribbleToSchool.EditorTools
             Vector2 shadowSprite = kidShadow.sprite != null ? (Vector2)kidShadow.sprite.bounds.size : Vector2.one;
             kidShadow.transform.localScale = new Vector3(0.8f / Mathf.Max(shadowSprite.x, 0.01f), 0.5f / Mathf.Max(shadowSprite.y, 0.01f), 1f);
 
-                var ball = new GameObject("Ball");
-            ball.transform.position = new Vector3(0.3f, BallRadius, -0.2f);
+            var ball = new GameObject("Ball");
+            ball.transform.position = new Vector3(0.3f, MenuBallRadiusTeen, -0.2f);
             var sphere = ball.AddComponent<SphereShape>();
-            sphere.radius = BallRadius;
+            sphere.radius = MenuBallRadiusTeen;
             ball.GetComponent<MeshRenderer>().sharedMaterial = Art.ball;
             sphere.Rebuild();
             var ballShadow = ShadowSprite("BallShadow");
@@ -159,7 +177,8 @@ namespace DribbleToSchool.EditorTools
                 kid.cam = cam;
                 kid.ball = ball.transform;
                 kid.ballShadow = ballShadow;
-                kid.ballRadius = BallRadius;
+                kid.ballRadius = MenuBallRadiusFor(parts.visual != null ? parts.visual.name : null);
+                kid.ballMeshRadius = MenuBallRadiusTeen;
                 kid.groundY = 0f;
             }
 

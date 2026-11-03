@@ -23,12 +23,21 @@ namespace DribbleToSchool.EditorTools
         public const float HomeLeadIn = HomeLeadInRules.Length;
 
         /// <summary>
-        /// Does this level start at home? Every story level does; the ball-skill challenges and the test track (no definition)
-        /// keep their own starts. Read it before the new scene is made: creating a scene can unload a definition nothing references.
+        /// Does this level start at a stop with a lead-in? Every story level does (the first of each route at home, the others at
+        /// the stop where the level before them ended); the ball-skill challenges and the test track (no definition) keep their own
+        /// starts. Read it before the new scene is made: creating a scene can unload a definition nothing references.
         /// </summary>
+        public static bool HasLeadIn(LevelDefinition def)
+        {
+            return HomeLeadInRules.HasLeadIn(def != null, def != null && def.isChallenge);
+        }
+
+        /// <summary>Does this level start on the kid's doorstep (the first level of its route)?</summary>
         public static bool StartsAtHome(LevelDefinition def)
         {
-            return HomeLeadInRules.StartsAtHome(def != null, def != null && def.isChallenge);
+            if (!HasLeadIn(def)) return false;
+            var from = RouteTable.From(def.levelId);
+            return from == null || from.IsHome;
         }
 
         /// <summary>The English name of the route a level is on ("Seaside Road"), or null if it is on none.</summary>
@@ -71,6 +80,24 @@ namespace DribbleToSchool.EditorTools
             /// <summary>The English name of the route the level is on ("Seaside Road"), for the sign where the lead-in ends; null: no sign.</summary>
             public string RouteName { get; set; }
 
+            /// <summary>
+            /// The stop the level starts at (Levels/RouteTable.From): home for the first level of a route, else the stop the level
+            /// before it ended at. Null (as home) for a level on no route.
+            /// </summary>
+            public Stop From { get; set; }
+
+            /// <summary>
+            /// The stop the level ends at (Levels/RouteTable.To): the school for the last level of a route, else the stop the next
+            /// level starts at; <see cref="Goal"/> builds the one it is. Null (as the school) for a level on no route.
+            /// </summary>
+            public Stop To { get; set; }
+
+            /// <summary>Does the level start on the kid's doorstep (its lead-in is the home street)?</summary>
+            public bool StartsAtHome { get { return From == null || From.IsHome; } }
+
+            /// <summary>Does the level end at the school's arch (else at a stop on the way)?</summary>
+            public bool EndsAtSchool { get { return To == null || To.IsSchool; } }
+
             /// <summary>Where the home street ends and the route's own street begins: the layout's start (known once Start has been called).</summary>
             public float SeamX { get; private set; }
 
@@ -83,7 +110,7 @@ namespace DribbleToSchool.EditorTools
             /// True for a level that starts at home and whose own street is another chapter's: the home street (chapter 1) runs to the
             /// seam, with its own slabs and scenery, and the route's street begins there. A chapter-1 level is one street with no seam.
             /// </summary>
-            public bool HasSeam { get { return LeadIn > 0f && seamKnown && Chapter != HomeLeadInRules.HomeChapter; } }
+            public bool HasSeam { get { return LeadIn > 0f && seamKnown && StartsAtHome && Chapter != HomeLeadInRules.HomeChapter; } }
 
             /// <summary>
             /// Called by Start for a level that begins at home: the kid's house and garden at the doorstep, the route sign
@@ -94,9 +121,16 @@ namespace DribbleToSchool.EditorTools
                 SeamX = HomeLeadInRules.SeamX(layoutStart);
                 seamKnown = true;
                 Attempt("the home front", () => HomeFront(doorX, groundTop));
-                if (!string.IsNullOrEmpty(RouteName))
-                    Sign(HomeLeadInRules.SignText(RouteName), new Vector2(SeamX - HomeLeadInRules.SignBeforeSeam, groundTop + 2.9f));
+                RouteSign(groundTop);
                 if (HasSeam) Attempt("the seam's kerb and bollards", () => SeamDressing(SeamX, groundTop));
+            }
+
+            /// <summary>The route sign before the level's own street begins: where the level goes, and by which route.</summary>
+            void RouteSign(float groundTop)
+            {
+                if (string.IsNullOrEmpty(RouteName)) return;
+                string destination = To != null ? To.signName : null;
+                Sign(HomeLeadInRules.SignText(destination, RouteName), new Vector2(SeamX - HomeLeadInRules.SignBeforeSeam, groundTop + 2.9f));
             }
 
             /// <summary>Builds one piece of the lead-in; if it fails the level is still built without it and the problem is logged (as the Holiday Run's stages do).</summary>

@@ -95,6 +95,8 @@ namespace DribbleToSchool.Levels
         /// <summary>A node's disc is this wide across (picture pixels), and its name is set in a box of <see cref="LabelSize"/> beside it.</summary>
         public const float NodeDiameter = 150f;
         public const float NodeRadius = NodeDiameter * 0.5f;
+        /// <summary>The radius of a stop's marker on its route (picture pixels; the stops between the levels, Levels/RouteTable).</summary>
+        public const float StopRadius = 21f;
         public static readonly Vector2 LabelSize = new Vector2(300f, 56f);
         /// <summary>The gap between a node's disc and its name's box.</summary>
         public const float LabelGap = 12f;
@@ -112,7 +114,7 @@ namespace DribbleToSchool.Levels
         public static string Problem = "";
 
         /// <summary>The string keys the map screen uses on top of the districts', routes' and levels' names (checked by TownMapTests).</summary>
-        public static readonly string[] ScreenKeys = { "map.choose", "map.levels", "map.here", "menu.map", "unlock.cta", "menu.soon", "place.home", "place.school" };
+        public static readonly string[] ScreenKeys = { "map.choose", "map.levels", "map.here", "unlock.cta", "menu.soon", "place.home", "place.school" };
 
         // ------------------------------------------------------------------ loading
 
@@ -283,6 +285,23 @@ namespace DribbleToSchool.Levels
         public static TownStreet[] Streets { get { if (layout == null) Load(); return streets; } }
 
         /// <summary>
+        /// Where the <paramref name="index"/>-th stop of a route is drawn (Levels/RouteTable: the stop between its levels
+        /// <paramref name="index"/> and <paramref name="index"/> + 1): on the route line, halfway between those two levels' nodes
+        /// as measured along it. Null if the layout lacks the route or either node.
+        /// </summary>
+        public static Vector2? StopPosition(string routeId, int index)
+        {
+            var route = RouteTable.All[Mathf.Max(0, RouteTable.IndexOf(routeId))];
+            if (RouteTable.IndexOf(routeId) < 0 || index < 0 || index + 1 >= route.levels.Length) return null;
+            var line = Route(routeId);
+            var a = Node(route.levels[index]);
+            var b = Node(route.levels[index + 1]);
+            if (line == null || a == null || b == null || line.points.Length < 2) return null;
+            float mid = (DistanceAlong(line.points, a.pos) + DistanceAlong(line.points, b.pos)) * 0.5f;
+            return At(line.points, mid);
+        }
+
+        /// <summary>
         /// The box (picture pixels) a node's name is written in: <see cref="LabelSize"/>, beside the disc on the node's side with
         /// <see cref="LabelGap"/> between them.
         /// </summary>
@@ -319,6 +338,7 @@ namespace DribbleToSchool.Levels
             var keys = new List<string>(ScreenKeys);
             foreach (var d in Districts) keys.Add(d.NameKey);
             foreach (var r in RouteTable.All) keys.Add(r.NameKey);
+            foreach (var stop in RouteTable.Stops) keys.Add(stop.NameKey);
             foreach (var n in Nodes) keys.Add("level." + n.levelId);
             return keys;
         }

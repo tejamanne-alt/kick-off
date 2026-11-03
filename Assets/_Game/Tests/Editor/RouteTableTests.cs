@@ -7,7 +7,10 @@ using NUnit.Framework;
 
 namespace DribbleToSchool.Tests
 {
-    /// <summary>Every level is a trip home to school along exactly one of the six routes (docs/WORLD_MAP.md).</summary>
+    /// <summary>
+    /// Every story level is one leg of a trip from home to school along exactly one of the six routes: the route's first level
+    /// starts at home, its last ends at the school, and each level between runs from one stop to the next (docs/WORLD_MAP.md).
+    /// </summary>
     public class RouteTableTests
     {
         [Test]
@@ -72,6 +75,68 @@ namespace DribbleToSchool.Tests
             Assert.AreEqual("underpass", RouteTable.Of("L18").id);
             Assert.AreEqual("beach", RouteTable.Of("C03").id);
             Assert.IsNull(RouteTable.Of("L99"));
+        }
+
+        [Test]
+        public void EveryRouteRunsFromHomeThroughItsStopsToSchool()
+        {
+            var seen = new Dictionary<string, string>();
+            foreach (var route in RouteTable.All)
+            {
+                Assert.IsNotNull(route.stops, route.id + " has no stops");
+                Assert.AreEqual(route.levels.Length - 1, route.stops.Length, route.id + ": one stop between each two levels");
+                foreach (string id in route.stops)
+                {
+                    Assert.IsNotNull(RouteTable.StopById(id), route.id + ": unknown stop " + id);
+                    Assert.IsFalse(seen.ContainsKey(id), id + " is on two routes: " + (seen.ContainsKey(id) ? seen[id] : "") + " and " + route.id);
+                    seen[id] = route.id;
+                }
+                Assert.AreSame(RouteTable.Home, RouteTable.From(route.levels[0]), route.levels[0] + " is the first level of " + route.id + ": it starts at home");
+                Assert.AreSame(RouteTable.School, RouteTable.To(route.levels[route.levels.Length - 1]), route.id + "'s last level ends at the school");
+                for (int i = 0; i + 1 < route.levels.Length; i++)
+                {
+                    var end = RouteTable.To(route.levels[i]);
+                    Assert.IsFalse(end.IsHome || end.IsSchool, route.levels[i] + " is not the last level of " + route.id + ": it ends at a stop on the way");
+                    Assert.AreSame(end, RouteTable.From(route.levels[i + 1]), route.levels[i + 1] + " starts where " + route.levels[i] + " ended");
+                }
+                foreach (string level in route.levels)
+                    Assert.AreNotSame(RouteTable.From(level), RouteTable.To(level), level + " goes somewhere");
+            }
+            Assert.AreEqual(RouteTable.Stops.Length, seen.Count, "every stop is on a route");
+            Assert.IsNull(RouteTable.From("C01"), "a challenge is no leg");
+            Assert.IsNull(RouteTable.To("L99"));
+            Assert.AreEqual("bakery", RouteTable.To("L06").id);
+            Assert.AreEqual("station", RouteTable.From("L18").id);
+        }
+
+        [Test]
+        public void EveryStopHasAUniqueIdANameInEveryLanguageAndASetPiece()
+        {
+            var ids = new HashSet<string> { RouteTable.Home.id, RouteTable.School.id };
+            foreach (var stop in RouteTable.Stops)
+            {
+                Assert.IsTrue(ids.Add(stop.id), "stop id used twice: " + stop.id);
+                Assert.IsFalse(stop.IsHome || stop.IsSchool, stop.id + ": home and the school are the routes' ends, not stops between levels");
+                Assert.IsFalse(string.IsNullOrEmpty(stop.signName), stop.id + " has no English name for the levels' signs");
+                Assert.Less(stop.signName.Length, 20, stop.id + ": the name is too long for the route sign");
+                Assert.Contains(stop.id, StreetBuilder.SetPieces, stop.id + " has no set piece in StreetBuilder.StopFront");
+                foreach (string code in Loc.Languages)
+                {
+                    var table = StringTables.For(code);
+                    Assert.IsTrue(table.ContainsKey(stop.NameKey) && !string.IsNullOrEmpty(table[stop.NameKey]), code + ": " + stop.NameKey);
+                    Assert.IsTrue(table.ContainsKey(stop.ToKey) && !string.IsNullOrEmpty(table[stop.ToKey]), code + ": " + stop.ToKey);
+                }
+            }
+            Assert.AreEqual(RouteTable.Stops.Length, StreetBuilder.SetPieces.Length, "a set piece for a stop that is on no route");
+            Assert.AreEqual("place.home", RouteTable.Home.NameKey);
+            Assert.AreEqual("place.school", RouteTable.School.NameKey);
+            foreach (string code in Loc.Languages)
+            {
+                var table = StringTables.For(code);
+                foreach (string key in new[] { "leg.fromTo", "results.madeTo", "results.reachedTo" })
+                    Assert.IsTrue(table.ContainsKey(key), code + ": " + key);
+                Assert.IsTrue(table["results.madeTo"].Contains("{0}") && table["results.reachedTo"].Contains("{0}") && table["leg.fromTo"].Contains("{1}"), code + ": the leg strings name the places");
+            }
         }
 
         [Test]

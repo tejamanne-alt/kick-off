@@ -18,7 +18,10 @@ namespace DribbleToSchool.FrontEnd
         public Transform ball;
         [Tooltip("The ball's soft shadow on the ground (a sprite lying flat).")]
         public SpriteRenderer ballShadow;
-        public float ballRadius = 0.17f;
+        [Tooltip("The ball's radius while this kid juggles it (metres): a real ball's size for the kid, smaller than the levels' ball.")]
+        public float ballRadius = 0.115f;
+        [Tooltip("The radius the ball's mesh was built with: the ball is scaled to ballRadius while this kid is shown.")]
+        public float ballMeshRadius = 0.115f;
         [Tooltip("Height of the ground under the teen (world y).")]
         public float groundY;
         [Tooltip("Seconds between touches off the foot.")]
@@ -203,6 +206,7 @@ namespace DribbleToSchool.FrontEnd
             if (ball != null)
             {
                 ball.position = p;
+                ball.localScale = Vector3.one * (ballRadius / Mathf.Max(0.01f, ballMeshRadius));
                 // The ball's drawing faces the camera; it spins about the view axis.
                 Vector3 toCam = cam != null ? cam.transform.forward : Vector3.forward;
                 ball.rotation = Quaternion.LookRotation(toCam) * Quaternion.Euler(0f, 0f, -now * 260f);

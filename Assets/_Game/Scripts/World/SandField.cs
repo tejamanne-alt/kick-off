@@ -175,8 +175,11 @@ namespace DribbleToSchool.World
             return m * (0.18f * (Noise(x * 0.19f, z * 0.26f) - 0.5f) + 0.07f * (Noise(x * 0.55f + 11f, z * 0.6f + 5f) - 0.5f));
         }
 
-        /// <summary>The wet sand a little lower, then the beach running down under the sea.</summary>
-        static float Shore(float z)
+        /// <summary>
+        /// The wet sand a little lower, then the beach running down under the sea: the drop below the beach's height at depth z
+        /// (it passes the sea's surface, 0.3 down, at about z = 9.6). The tide's wash follows it (TideWash).
+        /// </summary>
+        public static float Shore(float z)
         {
             return -0.12f * Ease((z - WetFrom) / 1.4f) - 0.44f * Ease((z - ShoreFrom) / 2.4f);
         }

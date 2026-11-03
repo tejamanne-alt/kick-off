@@ -205,6 +205,7 @@ namespace DribbleToSchool.EditorTools
             public void RunTide(float fromX, float toX, float period, float phaseOffset)
             {
                 calmSand.Add(new Vector2(fromX - 3f, toX + 3f));   // smooth sand under the wash
+                tideStretches.Add(new Vector2(fromX - 3f, toX + 3f));
                 sand = null;
 
                 var wet = new GameObject("WetSand");
@@ -229,6 +230,7 @@ namespace DribbleToSchool.EditorTools
                 wash.fromX = fromX;
                 wash.toX = toX;
                 wash.groundY = 0f;
+                wash.seaY = -0.3f;   // the core scene's sea, all along the beach
                 wash.highZ = 3.6f;   // its front wanders +-0.65: never nearer than 2.9, past the footpath's edge at 1.5
 
                 var go = new GameObject("Tide");

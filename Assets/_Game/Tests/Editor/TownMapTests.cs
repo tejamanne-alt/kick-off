@@ -207,6 +207,34 @@ namespace DribbleToSchool.Tests
         }
 
         [Test]
+        public void StopMarkersSitOnTheirRouteBetweenTheirLevelsClearOfEveryNode()
+        {
+            Load();
+            var problems = new List<string>();
+            foreach (var route in RouteTable.All)
+            {
+                var line = TownMap.Route(route.id).points;
+                for (int i = 0; i < route.stops.Length; i++)
+                {
+                    Vector2? at = TownMap.StopPosition(route.id, i);
+                    if (at == null) { problems.Add(route.id + ": no place for its stop " + route.stops[i]); continue; }
+                    if (TownMap.DistanceTo(line, at.Value) > 1f) problems.Add(route.stops[i] + " is off its route " + route.id);
+                    float along = TownMap.DistanceAlong(line, at.Value);
+                    float a = TownMap.DistanceAlong(line, TownMap.Node(route.levels[i]).pos), b = TownMap.DistanceAlong(line, TownMap.Node(route.levels[i + 1]).pos);
+                    if (along <= a || along >= b) problems.Add(route.stops[i] + " is not between " + route.levels[i] + " and " + route.levels[i + 1] + " along " + route.id);
+                    // Clear of every node at full size (a route in focus draws its nodes whole and the others' stops a little smaller).
+                    foreach (var node in TownMap.Nodes)
+                    {
+                        float d = Vector2.Distance(node.pos, at.Value);
+                        if (d < TownMap.NodeRadius + TownMap.StopRadius + 1f)
+                            problems.Add(route.stops[i] + " (" + route.id + ") touches " + node.levelId + "'s node: " + Mathf.RoundToInt(d) + " px apart");
+                    }
+                }
+            }
+            NoProblems(problems, "stop markers");
+        }
+
+        [Test]
         public void ChallengeNodesSitBesideTheirRoute()
         {
             Load();
