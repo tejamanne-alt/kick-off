@@ -125,10 +125,10 @@ namespace DribbleToSchool.UI
             switch (picture)
             {
                 case Picture.Walk:
-                    Stick(t, new Vector2(24f, 0f), true, false);
+                    Stick(t, new Vector2(26f, 0f));
                     break;
                 case Picture.Slide:
-                    Stick(t, new Vector2(16f, -24f), false, true);
+                    Stick(t, new Vector2(14f, -27f));
                     break;
                 case Picture.Jump:
                     Disc(t, UITheme.Blue);
@@ -136,8 +136,7 @@ namespace DribbleToSchool.UI
                     break;
                 case Picture.Kick:
                     Disc(t, UITheme.Accent);
-                    Glyph(t, ProceduralSprites.BallIcon, Vector2.zero, 46f, 0f, 1f);
-                    Glyph(t, ProceduralSprites.Chevron, new Vector2(52f, 30f), 26f, 45f, 0.85f);
+                    Glyph(t, ProceduralSprites.KickIcon, Vector2.zero, 60f, 0f, 1f);
                     break;
                 case Picture.Touch:
                     Glyph(t, ProceduralSprites.Ring, Vector2.zero, 84f, 0f, 0.45f);
@@ -146,16 +145,15 @@ namespace DribbleToSchool.UI
             }
         }
 
-        /// <summary>The stick: its ring, its knob pushed by <paramref name="knob"/>, and its marks with the one it points to lit.</summary>
-        static void Stick(RectTransform tile, Vector2 knob, bool sideLit, bool downLit)
+        /// <summary>The stick as the HUD draws it: its ring, a faint knob where it rests and the knob pushed by <paramref name="knob"/>.</summary>
+        static void Stick(RectTransform tile, Vector2 knob)
         {
             const float size = 96f;
             Glyph(tile, ProceduralSprites.SoftEdgeDisc, Vector2.zero, size, 0f, 0.14f);
             Glyph(tile, ProceduralSprites.Ring, Vector2.zero, size, 0f, 0.6f);
-            Glyph(tile, ProceduralSprites.SoftEdgeDisc, knob, size * 0.44f, 0f, 0.5f);
-            Glyph(tile, ProceduralSprites.Chevron, new Vector2(-size * 0.35f, 0f), size * 0.13f, 180f, 0.3f);
-            Glyph(tile, ProceduralSprites.Chevron, new Vector2(size * 0.35f, 0f), size * 0.13f, 0f, sideLit ? 0.95f : 0.3f);
-            Glyph(tile, ProceduralSprites.SlideIcon, new Vector2(0f, -size * 0.35f), size * 0.17f, 0f, downLit ? 0.95f : 0.3f);
+            Glyph(tile, ProceduralSprites.SoftEdgeDisc, Vector2.zero, size * 0.44f, 0f, 0.15f);
+            Glyph(tile, ProceduralSprites.SoftEdgeDisc, knob, size * 0.44f, 0f, 0.6f);
+            Glyph(tile, ProceduralSprites.Ring, knob, size * 0.44f, 0f, 0.75f);
         }
 
         static void Disc(RectTransform tile, Color tint)

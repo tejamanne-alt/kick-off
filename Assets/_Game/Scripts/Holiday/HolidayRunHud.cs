@@ -274,7 +274,7 @@ namespace DribbleToSchool.Holiday
             jumpRect = (RectTransform)jumpButton.transform;
 
             kickButton = TouchButton.Create(controls, "KickButton", UITheme.Accent, true);
-            kickButton.AddIcon(ProceduralSprites.BallIcon, 0.4f, 0f, 0.6f, new Color(1f, 1f, 1f, 0.45f));
+            kickButton.AddIcon(ProceduralSprites.KickIcon, 0.5f, 0f, 0.58f);
             kickLabel = kickButton.AddLabel(Loc.T("hud.kick"), 28);
             UIKit.Fit(kickLabel, 14);
             kickRect = (RectTransform)kickButton.transform;
@@ -1202,7 +1202,7 @@ namespace DribbleToSchool.Holiday
             var aimer = director.aimer;
             PlaceButton(jumpRect, input.JumpButtonNormalized);
             jumpButton.SetState(input.JumpHeld, false);
-            stick.Show(input.StickRingNormalized, input.StickKnob, input.StickKnobScale, input.StickActive, input.MoveAxis, input.SlideHeld);
+            stick.Show(input.StickRingNormalized, input.StickKnob, input.StickKnobScale, input.StickActive, input.SlideHeld);
 
             // The kick button turns green and glows while the ball is close enough to kick.
             bool aiming = aimer != null && aimer.IsAiming;

@@ -5,9 +5,9 @@ namespace DribbleToSchool.UI.Kit
     /// <summary>UI sprites drawn in code: rounded panels, circles, stars, coins, a padlock.</summary>
     public static class ProceduralSprites
     {
-        static Sprite rounded, roundedSmall, circle, star, coin, lockIcon, gradient, arrow, pause, ring, softDisc, softEdgeDisc, ballIcon, slideIcon;
+        static Sprite rounded, roundedSmall, circle, star, coin, lockIcon, gradient, arrow, pause, ring, softDisc, softEdgeDisc, ballIcon;
         static Sprite roundedEdge, roundedEdgeSmall, circleEdge, check, pitchBadge, holoSheen, goldSheen, stickerIcon, streak, swoosh, bolt, shield, magnet;
-        static Sprite jumpIcon, chevron, spotHole;
+        static Sprite jumpIcon, kickIcon, spotHole;
 
         /// <summary>A lightning bolt (the turbo power-up).</summary>
         public static Sprite Bolt
@@ -333,14 +333,60 @@ namespace DribbleToSchool.UI.Kit
             }
         }
 
-        /// <summary>A small, rounded chevron pointing right (the walk stick's direction marks; turn it for the others).</summary>
-        public static Sprite Chevron
+        /// <summary>
+        /// Kick button: a football boot (studs under the sole, a sock above the collar) swinging toe-down into a football,
+        /// a white ball with its pentagons cut out.
+        /// </summary>
+        public static Sprite KickIcon
         {
             get
             {
-                return chevron != null ? chevron : (chevron = MakeShape(64, (u, v) =>
-                    Mathf.Min(Segment(u, v, -0.3f, 0.55f, 0.3f, 0f), Segment(u, v, 0.3f, 0f, -0.3f, -0.55f)) < 0.17f ? 1f : 0f));
+                return kickIcon != null ? kickIcon : (kickIcon = MakeShape(128, (u, v) =>
+                {
+                    // The boot and sock, drawn toe-forward in their own frame, then turned 28 degrees toe-down.
+                    const float cos = 0.88295f, sin = -0.46947f;
+                    float bu = u + 0.26f, bv = v + 0.03f;
+                    float x = bu * cos + bv * sin, y = -bu * sin + bv * cos;
+                    bool body = Segment(x, y, -0.36f, -0.06f, 0.36f, -0.1f) < 0.13f;
+                    bool upper = Segment(x, y, -0.3f, 0.12f, -0.02f, 0f) < 0.16f;
+                    bool studs = false;
+                    for (int i = 0; i < 3; i++)
+                    {
+                        float sx = i == 0 ? -0.27f : i == 1 ? 0.05f : 0.27f;
+                        float dx = x - sx, dy = y - (-0.225f - 0.0556f * sx);
+                        if (dx * dx + dy * dy < 0.05f * 0.05f) studs = true;
+                    }
+                    bool sock = Segment(x, y, -0.3f, 0.36f, -0.36f, 0.74f) < 0.15f;
+                    bool collar = Mathf.Abs(y - 0.27f) < 0.028f && x < -0.1f;   // a thin gap between the sock and the boot
+                    if ((body || upper || studs || sock) && !collar) return 1f;
+                    return BallGlyph(u, v, 0.5f, -0.56f, 0.3f) ? 1f : 0f;
+                }));
             }
+        }
+
+        /// <summary>A football in one colour: a disc with a solid rim and its pentagons cut out (the ones at the rim squashed).</summary>
+        static bool BallGlyph(float u, float v, float cx, float cy, float r)
+        {
+            float du = u - cx, dv = v - cy;
+            float d = Mathf.Sqrt(du * du + dv * dv);
+            if (d > r) return false;
+            if (d > r * 0.84f) return true;
+            const float s = Mathf.PI * 0.4f;
+            for (int i = 0; i < 6; i++)
+            {
+                float px = 0.06f, py = 0.05f, size = 0.3f;
+                if (i > 0)
+                {
+                    float a = (i - 1) * s + 0.5f;
+                    px += 0.8f * Mathf.Cos(a);
+                    py += 0.8f * Mathf.Sin(a);
+                    size = 0.26f;
+                }
+                float dx = du / r - px, dy = dv / r - py;
+                float edge = Mathf.Cos(s * 0.5f) / Mathf.Cos(Mathf.Repeat(Mathf.Atan2(dy, dx) + 0.3f, s) - s * 0.5f);
+                if (dx * dx + dy * dy < size * edge * size * edge) return false;
+            }
+            return true;
         }
 
         /// <summary>
@@ -356,30 +402,6 @@ namespace DribbleToSchool.UI.Kit
                     float r = Mathf.Sqrt(u * u + v * v);
                     float t = Mathf.Clamp01((r - 0.8f) / 0.16f);
                     return t * t * (3f - 2f * t);
-                }));
-            }
-        }
-
-        /// <summary>
-        /// Slide button: the jump chevron turned to point down, a little smaller, over a short
-        /// rounded bar for the ground: "get down low".
-        /// </summary>
-        public static Sprite SlideIcon
-        {
-            get
-            {
-                return slideIcon != null ? slideIcon : (slideIcon = MakeShape(96, (u, v) =>
-                {
-                    // The ArrowUp chevron flipped and scaled about a centre above the bar.
-                    const float scale = 0.72f;
-                    float cu = u / scale, cv = (0.2f - v) / scale;
-                    bool outer = cv > -0.6f && cv < 0.75f - Mathf.Abs(cu) * 1.35f;
-                    bool inner = cv > -0.6f && cv < 0.15f - Mathf.Abs(cu) * 1.35f;
-                    bool chevron = outer && !inner && Mathf.Abs(cu) < 0.95f;
-                    // The ground: a bar with round ends below the chevron's point.
-                    float bx = Mathf.Max(0f, Mathf.Abs(u) - 0.58f), by = v + 0.7f;
-                    bool bar = bx * bx + by * by < 0.1f * 0.1f;
-                    return chevron || bar ? 1f : 0f;
                 }));
             }
         }
