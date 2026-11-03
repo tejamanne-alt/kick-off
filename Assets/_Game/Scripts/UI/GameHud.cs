@@ -557,15 +557,15 @@ namespace DribbleToSchool.UI
             }
             else
             {
-                int target = level.level != null ? level.level.perfectStreakTarget : 0;
-                string streakCoins = Loc.F("results.streakCoins", target, r.coins, r.totalCoins);
+                // The third star: every coin, and the sticker if the level has one.
+                string collect = Loc.F(r.hasSticker ? "results.coinsSticker" : "results.allCoins", r.coins, r.totalCoins);
                 if (!r.onRoute)
                 {
                     // Off the routes (the test track): the level's own bell, as it always was.
                     heading = Loc.T(r.beforeBell ? "results.made" : "results.late");
                     texts[count] = Loc.T("results.reached"); dones[count++] = true;
                     texts[count] = Loc.F("results.beforeBell", FormatTime(r.tripBell, false)); dones[count++] = r.beforeBell;
-                    texts[count] = streakCoins; dones[count++] = r.stars >= 3;
+                    texts[count] = collect; dones[count++] = r.collectedAll;
                 }
                 else if (!r.lastLeg)
                 {
@@ -574,7 +574,7 @@ namespace DribbleToSchool.UI
                     heading = Loc.F("results.madeTo", to);
                     texts[count] = Loc.F("results.reachedTo", to); dones[count++] = true;
                     if (!r.cozy) { texts[count] = Loc.F("results.pace", to, FormatTime(r.paceTarget, false)); dones[count++] = r.paceMet; }
-                    texts[count] = streakCoins; dones[count++] = r.stars >= 3;
+                    texts[count] = collect; dones[count++] = r.collectedAll;
                     if (r.cozy) { texts[count] = Loc.T("results.cozy"); dones[count++] = true; }
                     else if (r.tripContinuous && r.tripBell > 0f)
                     {
@@ -599,7 +599,7 @@ namespace DribbleToSchool.UI
                         texts[count] = Loc.F("results.pace", Loc.T("place.school.to"), FormatTime(r.paceTarget, false));
                         dones[count++] = r.paceMet;
                     }
-                    texts[count] = streakCoins; dones[count++] = r.stars >= 3;
+                    texts[count] = collect; dones[count++] = r.collectedAll;
                     if (r.cozy) { texts[count] = Loc.T("results.cozy"); dones[count++] = true; }
                     if (late)
                     {

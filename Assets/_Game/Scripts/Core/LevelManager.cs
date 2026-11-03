@@ -31,6 +31,10 @@ namespace DribbleToSchool.Core
         public int perfectTouches;
         public bool stickerFound;
         public bool stickerIsNew;
+        /// <summary>The level has a sticker to find.</summary>
+        public bool hasSticker;
+        /// <summary>The third star's goal: every coin, and the sticker if there is one (Progression/StarRules).</summary>
+        public bool collectedAll;
 
         // Challenges
         public bool isChallenge;
@@ -606,11 +610,12 @@ namespace DribbleToSchool.Core
                 stickerFound = StickerCollected,
             };
             RecordTrip(ref result);
-            // The second star: the leg's pace, or on a timed last leg the whole trip before the bell. The third needs it too.
+            // The second star: the leg's pace, or on a timed last leg the whole trip before the bell. The third: every coin and
+            // the level's sticker. Each goal is a star of its own (Progression/StarRules).
             result.beforeBell = result.timedTrip ? result.tripOnTime : result.paceMet;
-            int target = level != null ? level.perfectStreakTarget : 0;
-            bool thirdStar = result.beforeBell && BestPerfectStreak >= target && result.allCoins;
-            result.stars = 1 + (result.beforeBell ? 1 : 0) + (thirdStar ? 1 : 0);
+            result.hasSticker = HasSticker;
+            result.collectedAll = StarRules.CollectedEverything(CoinsCollected, TotalCoins, HasSticker, StickerCollected);
+            result.stars = StarRules.Stars(result.beforeBell, result.collectedAll);
             if (level != null) SaveResult(ref result);
             // After a route's last leg, is the next stage still shut (a trip that has never got to school on time)?
             var next = result.onRoute && result.lastLeg && catalog != null ? catalog.NextAfter(level) : null;
