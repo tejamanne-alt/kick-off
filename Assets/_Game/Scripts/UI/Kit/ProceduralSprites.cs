@@ -336,25 +336,27 @@ namespace DribbleToSchool.UI.Kit
         }
 
         /// <summary>
-        /// Kick button: a leg in a football sock (a stripe near its top) coming down from the top left into a boot with laces
-        /// and studs, and the ball flying off up and away from it with three lines trailing it.
+        /// Kick button: a leg in a football sock (a stripe near its top) leaning forward, toward the ball, down into a boot
+        /// with laces and studs, and the ball flying off ahead of the toe with three lines trailing it.
         /// </summary>
         public static Sprite KickIcon
         {
             get
             {
-                return kickIcon != null ? kickIcon : (kickIcon = MakeShape(192, (u, v) =>
+                return kickIcon != null ? kickIcon : (kickIcon = MakeShape(192, (iu, iv) =>
                 {
-                    // The leg, narrower at the ankle; the gap across it near the top is the sock's stripe.
+                    // Drawn about the middle of the picture, then fitted to the square.
+                    float u = iu / 1.067f + 0.151f, v = iv / 1.067f + 0.005f;
+                    // The leg, narrower at the ankle and leaning forward from it; the gap across it near the top is the sock's stripe.
                     float t;
-                    float d = SegmentT(u, v, -0.78f, 0.84f, -0.36f, -0.28f, out t);
+                    float d = SegmentT(u, v, 0f, 0.86f, -0.26f, -0.26f, out t);
                     if (t >= 0f && t <= 1f && d < Mathf.Lerp(0.16f, 0.12f, t) && !(t > 0.1f && t < 0.135f)) return 1f;
                     // The boot, toe 10 degrees down: from the icon into the boot's own frame.
                     const float cos = 0.98481f, sin = -0.17365f;
-                    float bu = (u + 0.02f) / 1.05f, bv = (v + 0.66f) / 1.05f;
+                    float bu = (u + 0.12f) / 1.05f, bv = (v + 0.66f) / 1.05f;
                     if (Boot(bu * cos + bv * sin, -bu * sin + bv * cos)) return 1f;
-                    // The ball, and the lines trailing it back toward the boot, thinning away from it.
-                    const float bx = 0.5f, by = 0.44f, br = 0.38f;
+                    // The ball ahead of the toe, and the lines trailing it back toward the boot, thinning away from it.
+                    const float bx = 0.6f, by = 0.28f, br = 0.34f;
                     if (BallGlyph(u, v, bx, by, br)) return 1f;
                     float du = u - bx, dv = v - by;
                     float dist = Mathf.Sqrt(du * du + dv * dv);
