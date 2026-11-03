@@ -54,6 +54,7 @@ namespace DribbleToSchool.Localization
                 { "stop.boathouse.to", "the boathouse" }, { "stop.allotment.to", "Grandpa's garden" },
                 { "leg.fromTo", "{0} » {1}" }, { "leg.trip", "{0} · Trip {1}" }, { "place.school.to", "school" },
                 { "map.choose", "Choose your way to school" }, { "map.levels", "LEVELS" }, { "map.here", "You are here" },
+                { "map.lateNote", "The bell rang before you got to school. Walk {0} again from home and beat the bell to open the next level." }, { "map.notNow", "Not now" },
                 { "district.neighbourhood", "Neighbourhood" }, { "district.market", "Market" }, { "district.beach", "Beach" }, { "district.park", "Park" },
                 { "district.railway", "Railway" }, { "district.site", "Building Site" }, { "district.school", "School" }, { "district.sea", "Sea" },
 
@@ -325,6 +326,7 @@ namespace DribbleToSchool.Localization
                 { "stop.boathouse.to", "a la casa de las barcas" }, { "stop.allotment.to", "al huerto del abuelo" },
                 { "leg.fromTo", "{0} » {1}" }, { "leg.trip", "{0} · Trayecto {1}" }, { "place.school.to", "al cole" },
                 { "map.choose", "Elige tu camino al cole" }, { "map.levels", "NIVELES" }, { "map.here", "Estás aquí" },
+                { "map.lateNote", "La campana sonó antes de que llegaras al cole. Recorre {0} otra vez desde casa y llega antes de la campana para abrir el siguiente nivel." }, { "map.notNow", "Ahora no" },
                 { "district.neighbourhood", "Barrio" }, { "district.market", "Mercado" }, { "district.beach", "Playa" }, { "district.park", "Parque" },
                 { "district.railway", "Vía del tren" }, { "district.site", "Las obras" }, { "district.school", "Colegio" }, { "district.sea", "Mar" },
 

@@ -30,6 +30,17 @@ namespace DribbleToSchool.Progression
             return StoryOpen(level.levelId, previous != null ? previous.levelId : null, SaveSystem.Data, Cozy);
         }
 
+        /// <summary>
+        /// The route whose late trip to school holds <paramref name="level"/> back (the map says so when the level is tapped), or
+        /// null if it is open or locked for another reason (the level before not done yet, the chapter not unlocked).
+        /// </summary>
+        public static Route HeldBackBy(LevelCatalog catalog, LevelDefinition level)
+        {
+            if (level == null || level.isChallenge || !Store.Monetization.IsChapterUnlocked(level.chapter)) return null;
+            var previous = PreviousStory(catalog, level);
+            return HeldBackBy(level.levelId, previous != null ? previous.levelId : null, SaveSystem.Data, Cozy);
+        }
+
         /// <summary>The story level the player should play next: the first unlocked, uncompleted one, or the start of a stage to walk again.</summary>
         public static LevelDefinition NextToPlay(LevelCatalog catalog)
         {

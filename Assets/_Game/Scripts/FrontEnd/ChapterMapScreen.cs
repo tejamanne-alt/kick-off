@@ -887,9 +887,11 @@ namespace DribbleToSchool.FrontEnd
             if (popIn) UIKit.PopIn(holder.gameObject, Mathf.Min(index, 14) * 0.03f);
 
             Color face = def.isChallenge ? UITheme.Gold : colour;
-            var button = UIKit.Button(holder, "Button", "", unlocked ? face : UITheme.Locked, () => Controller.PlayLevel(def));
+            // Locked by a late trip to school: a tap says why, and offers the way back to it.
+            var late = unlocked ? null : LevelUnlocks.HeldBackBy(catalog, def);
+            var button = UIKit.Button(holder, "Button", "", unlocked ? face : UITheme.Locked, () => Tap(catalog, def, late));
             UIKit.Place((RectTransform)button.transform, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(diameter, diameter), new Vector2(0.5f, 0.5f));
-            button.interactable = unlocked;
+            button.interactable = unlocked || late != null;
             UIKit.MakeRound(button);
             // The next level's disc breathes (its stars and name stay still; UIPulse hands the scale to the button's press animation).
             if (isNext && unlocked) button.gameObject.AddComponent<UIPulse>();
@@ -968,6 +970,40 @@ namespace DribbleToSchool.FrontEnd
             return MapViewMath.FitScale(room, fit);
         }
 
+        /// <summary>A level's button: play it, or, if a late trip to school holds it back, say so (<see cref="ShowLate"/>).</summary>
+        void Tap(LevelCatalog catalog, LevelDefinition def, Route late)
+        {
+            if (late == null) Controller.PlayLevel(def);
+            else ShowLate(catalog, late);
+        }
+
+        /// <summary>
+        /// Why a level is still locked after its stage was finished: the trip got to school after the bell. The whole route is
+        /// walked again from home, before the bell, to open it; the main button starts that trip.
+        /// </summary>
+        void ShowLate(LevelCatalog catalog, Route route)
+        {
+            GameObject root;
+            var card = UIKit.Modal(Controller.CanvasRoot, "LateForSchool", new Vector2(980f, 560f), out root);
+            UIKit.Header(card.transform, Loc.T("results.lateSchool"), 620f);
+            var text = UIKit.Label(card.transform, "Text", Loc.F("map.lateNote", Loc.T(route.NameKey)), 38, UITheme.Ink, TextAnchor.MiddleCenter, true);
+            text.rectTransform.anchorMin = Vector2.zero;
+            text.rectTransform.anchorMax = Vector2.one;
+            text.rectTransform.offsetMin = new Vector2(60f, 170f);
+            text.rectTransform.offsetMax = new Vector2(-60f, -76f);
+            UIKit.Fit(text, 26);
+            var first = catalog.FindById(route.levels[0]);
+            var notNow = UIKit.Button(card.transform, "NotNow", Loc.T("map.notNow"), UITheme.Paper, () => Object.Destroy(root), 36, UITheme.Ink);
+            UIKit.Place((RectTransform)notNow.transform, new Vector2(0.27f, 0f), new Vector2(0f, 95f), new Vector2(340f, 100f));
+            var go = UIKit.Button(card.transform, "FromHome", Loc.T("results.fromHome"), UITheme.Green, () =>
+            {
+                Object.Destroy(root);
+                if (first != null) Controller.PlayLevel(first);
+            }, 40);
+            UIKit.Place((RectTransform)go.transform, new Vector2(0.73f, 0f), new Vector2(0f, 95f), new Vector2(380f, 100f));
+            go.interactable = first != null;
+        }
+
         void ShowRouteLock(Route route)
         {
             var line = TownMap.Route(route.id);
@@ -1027,10 +1063,11 @@ namespace DribbleToSchool.FrontEnd
                 int stars = SaveSystem.StarsFor(levelId);
                 Color face = def.isChallenge ? UITheme.Gold : colour;
                 string number = def.isChallenge ? "!" : def.levelId.TrimStart('L').TrimStart('0');
-                var button = UIKit.Button(stripRoot, "Level_" + levelId, unlocked ? number : "", unlocked ? face : UITheme.Locked, () => Controller.PlayLevel(def), 36);
+                var late = unlocked ? null : LevelUnlocks.HeldBackBy(catalog, def);
+                var button = UIKit.Button(stripRoot, "Level_" + levelId, unlocked ? number : "", unlocked ? face : UITheme.Locked, () => Tap(catalog, def, late), 36);
                 var rt = (RectTransform)button.transform;
                 UIKit.Place(rt, new Vector2(0f, 0f), new Vector2(x + chip * 0.5f, ChipY), new Vector2(chip, 54f), new Vector2(0.5f, 0.5f));
-                button.interactable = unlocked;
+                button.interactable = unlocked || late != null;
                 // The touch target: the whole slot, the chip and its stars, the full height of the bar.
                 var hit = UIKit.Rect(button.transform, "Hit");
                 UIKit.Place(hit, new Vector2(0.5f, 0.5f), new Vector2(0f, StripHeight * 0.5f - ChipY), new Vector2(chip + gap, StripHeight), new Vector2(0.5f, 0.5f));
