@@ -14,7 +14,7 @@ namespace DribbleToSchool.UI.Kit
     {
         [Tooltip("Opacity of the ring's glass and rim at rest and while held.")]
         public float restGlass = 0.06f, heldGlass = 0.16f;
-        public float restRim = 0.7f, heldRim = 1f;
+        public float restRim = 0.42f, heldRim = 0.85f;
         [Tooltip("Opacity of the knob at rest and while held.")]
         public float restKnob = 0.2f, heldKnob = 0.5f;
         [Tooltip("How far the knob's centre travels from the ring's, as a part of the ring's size.")]

@@ -23,10 +23,10 @@ namespace DribbleToSchool.UI.Kit
         [Tooltip("How much of the button's own colour the glass takes (0 = plain white glass).")]
         public float colorStrength = 0.5f;
         [Tooltip("Opacity of the thin, bright rim at rest and while held (0 = borderless).")]
-        public float restRim = 0.7f;
-        public float heldRim = 1f;
+        public float restRim = 0.42f;
+        public float heldRim = 0.85f;
         [Tooltip("How much of the rim and glass shows while the button is highlighted (the kick button with the ball in reach).")]
-        public float highlightRim = 0.95f, highlightGlass = 0.12f;
+        public float highlightRim = 0.75f, highlightGlass = 0.12f;
 
         public RectTransform Content { get; private set; }
 

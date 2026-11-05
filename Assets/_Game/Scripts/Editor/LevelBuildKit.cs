@@ -1017,6 +1017,8 @@ namespace DribbleToSchool.EditorTools
                 body.gravityScale = 1.5f;
                 body.interpolation = RigidbodyInterpolation2D.Interpolate;
                 go.AddComponent<ResettableBody>();
+                // Kicked or walked forward, never shoved back into the way behind it (by a rolling pipe, say).
+                go.AddComponent<OneWayBody>();
             }
 
             // ---------- Pickups ----------

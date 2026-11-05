@@ -194,6 +194,9 @@ namespace DribbleToSchool.UI
             dismiss.onClick.AddListener(DismissHint);
             hintCard.gameObject.SetActive(false);
 
+            // If the kid is ever wedged somewhere: "Stuck? Back to the checkpoint".
+            StuckHelper.Create(root, level, kid, () => level.RespawnAtCheckpoint());
+
             // Respawn fade on top of everything but the modals.
             fade = UIKit.Icon(root, "Fade", null, new Color(0f, 0f, 0f, 0f), 10f);
             UIKit.Stretch(fade.rectTransform);

@@ -612,6 +612,9 @@ namespace DribbleToSchool.Holiday
             UIKit.Place(pauseRect, new Vector2(1f, 1f), new Vector2(-Margin, -Margin), new Vector2(PauseSize, PauseSize), new Vector2(1f, 1f));
             UIKit.MakeRound(pause);
             UIKit.Icon(pause.transform.Find("Face"), "Icon", ProceduralSprites.Pause, UITheme.Navy, 60f);
+            // If the kid is ever wedged somewhere: "Stuck? Back to the checkpoint" (it costs a ball, like Pause > Back to checkpoint).
+            if (director.level != null && director.kid != null)
+                StuckHelper.Create(safe, director.level, director.kid, () => director.level.RespawnAtCheckpoint());
         }
 
         void BuildCentreText()

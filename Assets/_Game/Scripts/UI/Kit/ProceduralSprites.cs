@@ -521,7 +521,7 @@ namespace DribbleToSchool.UI.Kit
         }
 
         /// <summary>
-        /// A thin, crisp ring at the very edge of its square (about 3.5% of the radius): the bright border of the touch
+        /// A thin, crisp ring at the very edge of its square (about 2.6% of the radius): the light border of the touch
         /// controls (JUMP, KICK, the stick's ring and knob).
         /// </summary>
         public static Sprite ThinRing
@@ -531,7 +531,7 @@ namespace DribbleToSchool.UI.Kit
                 return thinRing != null ? thinRing : (thinRing = MakeShape(256, (u, v) =>
                 {
                     float r = Mathf.Sqrt(u * u + v * v);
-                    return Mathf.Clamp01((0.018f - Mathf.Abs(r - 0.965f)) * 160f);
+                    return Mathf.Clamp01((0.013f - Mathf.Abs(r - 0.97f)) * 200f);
                 }));
             }
         }

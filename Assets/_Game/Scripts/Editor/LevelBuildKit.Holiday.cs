@@ -124,6 +124,7 @@ namespace DribbleToSchool.EditorTools
             static void Solidify(GameObject holder, bool breakable, int coins = 3)
             {
                 foreach (var reset in holder.GetComponentsInChildren<ResettableBody>(true)) Object.DestroyImmediate(reset);
+                foreach (var oneWay in holder.GetComponentsInChildren<OneWayBody>(true)) Object.DestroyImmediate(oneWay);   // it needs the body
                 foreach (var body in holder.GetComponentsInChildren<Rigidbody2D>(true)) Object.DestroyImmediate(body);
                 if (breakable) holder.AddComponent<RunBreakable>().coins = coins;
                 else holder.AddComponent<RunSolid>();

@@ -5,9 +5,11 @@ namespace DribbleToSchool.Hazards
 {
     /// <summary>
     /// Building-site pipes rolling down toward the kid every few seconds.
-    /// They shove the ball and the kid; jump them or let them pass.
+    /// They shove the ball and the kid; jump them or let them pass. A pipe that has come to a stop against something (a crate
+    /// stack, a wall) is cleared away after a moment rather than piling up in the way, and going back to a checkpoint clears
+    /// them all.
     /// </summary>
-    public class PipeSpawner : HazardBase
+    public class PipeSpawner : HazardBase, Core.IResetAhead
     {
         /// <summary>
         /// A concrete-grey pipe lying across the street (along z) with a dark hollow and a
@@ -50,8 +52,13 @@ namespace DribbleToSchool.Hazards
         [Tooltip("Pipes are removed when they roll left of this x.")]
         public float despawnX = -20f;
 
+        [Tooltip("A pipe slower than this (m/s) for stallTime seconds has stopped against something and is cleared away.")]
+        public float stallSpeed = 0.35f;
+        public float stallTime = 1f;
+
         readonly List<GameObject> pipes = new List<GameObject>();
         readonly List<float> spawnTimes = new List<float>();
+        readonly List<float> stalled = new List<float>();
         float nextSpawn;
 
         void Start()
@@ -64,7 +71,14 @@ namespace DribbleToSchool.Hazards
             foreach (var p in pipes) if (p != null) Destroy(p);
             pipes.Clear();
             spawnTimes.Clear();
+            stalled.Clear();
             nextSpawn = Time.time + firstDelay;
+        }
+
+        /// <summary>Back at a checkpoint: no pipe is left lying about, and the next one comes after the usual first wait.</summary>
+        public void ResetAhead(float checkpointX)
+        {
+            ResetState();
         }
 
         void Update()
@@ -80,11 +94,19 @@ namespace DribbleToSchool.Hazards
             for (int i = pipes.Count - 1; i >= 0; i--)
             {
                 var p = pipes[i];
-                if (p == null || p.transform.position.x < despawnX || Time.time - spawnTimes[i] > lifeTime)
+                // Stopped against something: count how long, and clear it away (it is not rolling at anyone any more).
+                if (p != null)
+                {
+                    var body = p.GetComponent<Rigidbody2D>();
+                    bool still = body != null && body.linearVelocity.magnitude < stallSpeed && Time.time - spawnTimes[i] > 0.5f;
+                    stalled[i] = still ? stalled[i] + Time.deltaTime : 0f;
+                }
+                if (p == null || p.transform.position.x < despawnX || Time.time - spawnTimes[i] > lifeTime || stalled[i] > stallTime)
                 {
                     if (p != null) Destroy(p);
                     pipes.RemoveAt(i);
                     spawnTimes.RemoveAt(i);
+                    stalled.RemoveAt(i);
                 }
             }
         }
@@ -112,6 +134,7 @@ namespace DribbleToSchool.Hazards
             else BuildPipe(go, radius, color, material);
             pipes.Add(go);
             spawnTimes.Add(Time.time);
+            stalled.Add(0f);
         }
     }
 }

@@ -190,6 +190,7 @@ namespace DribbleToSchool.Core
         LevelState stateBeforePause;
         Coroutine respawnRoutine;
         readonly List<IResettable> resettables = new List<IResettable>();
+        readonly List<IResetAhead> resetAhead = new List<IResetAhead>();
         readonly List<IBallStrander> stranders = new List<IBallStrander>();
         float strandedFor;
 
@@ -233,6 +234,8 @@ namespace DribbleToSchool.Core
             {
                 var r = behaviour as IResettable;
                 if (r != null) resettables.Add(r);
+                var ahead = behaviour as IResetAhead;
+                if (ahead != null) resetAhead.Add(ahead);
                 var strander = behaviour as IBallStrander;
                 if (strander != null) stranders.Add(strander);
                 if (behaviour is Coin) TotalCoins += ((Coin)behaviour).value;
@@ -536,6 +539,7 @@ namespace DribbleToSchool.Core
             SetState(LevelState.Respawning);
             yield return Fade(0f, 1f);
             PlaceAtCheckpoint();
+            ResetAhead();
             GameEvents.Raise(GameEventType.Respawn, kid.transform.position);
             yield return Fade(1f, 0f);
             respawnRoutine = null;
@@ -580,6 +584,22 @@ namespace DribbleToSchool.Core
             kid.ResetTo(ActiveCheckpoint.KidSpawnPosition);
             ball.ResetTo(ActiveCheckpoint.BallSpawnPosition);
             if (cameraFollow != null) cameraFollow.SnapToTarget();
+        }
+
+        /// <summary>
+        /// Back at a checkpoint after losing the ball (or going back to it): what was moved ahead of it (a crate knocked into
+        /// the way) goes back to where the level put it, and rolling pipes are cleared, so the way on is never left blocked.
+        /// </summary>
+        void ResetAhead()
+        {
+            if (ActiveCheckpoint == null) return;
+            float x = ActiveCheckpoint.transform.position.x;
+            foreach (var item in resetAhead)
+            {
+                var behaviour = item as MonoBehaviour;
+                if (behaviour == null) continue;     // gone with an unloaded stage (the Holiday Run)
+                item.ResetAhead(x);
+            }
         }
 
         public void ReachGoal()

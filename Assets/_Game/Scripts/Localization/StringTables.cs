@@ -178,6 +178,7 @@ namespace DribbleToSchool.Localization
                 { "pause.title", "Paused" }, { "pause.resume", "Resume" }, { "pause.checkpoint", "Back to checkpoint" },
                 { "pause.restart", "Restart level" }, { "pause.settings", "Settings" }, { "pause.quit", "Quit to map" },
                 { "pause.controls", "Controls" }, { "settings.controlsGuide", "How the controls work" },
+                { "hud.stuck", "Stuck? Back to the checkpoint" },
                 // How to play a challenge (UI/ChallengeGuide).
                 { "pause.howToPlay", "How to play" }, { "challenge.howTo", "How to play" },
                 { "challenge.timeLimit", "You have {0} seconds." }, { "challenge.noLimit", "No time limit: the fastest run wins." },
@@ -463,6 +464,7 @@ namespace DribbleToSchool.Localization
                 { "pause.title", "Pausa" }, { "pause.resume", "Seguir" }, { "pause.checkpoint", "Volver al control" },
                 { "pause.restart", "Reiniciar nivel" }, { "pause.settings", "Ajustes" }, { "pause.quit", "Salir al mapa" },
                 { "pause.controls", "Controles" }, { "settings.controlsGuide", "Cómo funcionan los controles" },
+                { "hud.stuck", "¿Atascado? Vuelve al punto de control" },
                 // Cómo se juega un reto (UI/ChallengeGuide).
                 { "pause.howToPlay", "Cómo se juega" }, { "challenge.howTo", "Cómo se juega" },
                 { "challenge.timeLimit", "Tienes {0} segundos." }, { "challenge.noLimit", "Sin límite de tiempo: gana la carrera más rápida." },
