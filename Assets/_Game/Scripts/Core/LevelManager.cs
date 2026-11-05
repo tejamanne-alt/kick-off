@@ -769,13 +769,19 @@ namespace DribbleToSchool.Core
             if (StateChanged != null) StateChanged(next);
         }
 
-        /// <summary>Holds the run where it is, or lets it go on (the controls tour; see <see cref="Held"/>).</summary>
+        /// <summary>
+        /// Holds the run where it is, or lets it go on (the controls tour, a challenge's guide; see <see cref="Held"/>). Holds are
+        /// counted: the run goes on when every one that held it has let go.
+        /// </summary>
         public void Hold(bool held)
         {
-            if (Held == held) return;
-            Held = held;
+            holds = Mathf.Max(0, holds + (held ? 1 : -1));
+            if (Held == holds > 0) return;
+            Held = holds > 0;
             ApplyHold();
         }
+
+        int holds;
 
         /// <summary>Time, the kid's input and the touch controls for the state and the hold.</summary>
         void ApplyHold()

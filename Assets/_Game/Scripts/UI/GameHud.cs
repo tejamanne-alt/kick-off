@@ -61,6 +61,10 @@ namespace DribbleToSchool.UI
             ControlsTour.Replay = ReplayTour;
         }
 
+        bool challengeGuideShown;
+
+        string LevelId { get { return level.level != null ? level.level.levelId : "test"; } }
+
         void ReplayTour()
         {
             if (level.State == LevelState.Paused) level.Resume();
@@ -280,6 +284,12 @@ namespace DribbleToSchool.UI
             if (root == null) return;
             // The first time a level starts: the guided tour of the controls, before the clock starts.
             if (level.State == LevelState.Intro && !level.Held && ControlsTour.ShouldStart) ControlsTour.Begin(root, level, pauseRect);
+            // A challenge, when it is first started here (not on each retry): how to play it, before its clock starts.
+            if (level.Objective != null && !challengeGuideShown && level.State == LevelState.Intro && !ControlsTour.Running)
+            {
+                challengeGuideShown = true;
+                ChallengeGuide.Open(root, level.Objective, LevelId, level, null);
+            }
             UpdateInfo();
             UpdateStateScreens();
             UpdateControls();
@@ -377,7 +387,7 @@ namespace DribbleToSchool.UI
             if (lastState == LevelState.Paused)
             {
                 if (pauseModal != null) Destroy(pauseModal);
-                foreach (var name in new[] { "Settings", "ConfirmReset", "ControlsGuide" })
+                foreach (var name in new[] { "Settings", "ConfirmReset", "ControlsGuide", "ChallengeGuide" })
                 {
                     var leftover = root.Find(name);
                     if (leftover != null) Destroy(leftover.gameObject);
@@ -497,13 +507,16 @@ namespace DribbleToSchool.UI
         void ShowPause()
         {
             bool skip = DevTuningPanel.Available && level.NextLevel != null;
-            var card = UIKit.Modal(root, "Pause", new Vector2(720f, skip ? 1000f : 900f), out pauseModal);
+            bool howTo = level.Objective != null;
+            var card = UIKit.Modal(root, "Pause", new Vector2(720f, skip || howTo ? 1000f : 900f), out pauseModal);
             UIKit.Header(card.transform, Loc.T("pause.title"), 460f);
 
-            float y = skip ? -150f : -160f;
+            float y = skip || howTo ? -150f : -160f;
             PauseButton(card.transform, ref y, "pause.resume", UITheme.Green, () => level.Resume());
             PauseButton(card.transform, ref y, "pause.checkpoint", UITheme.Blue, () => { level.Resume(); level.RespawnAtCheckpoint(); });
             PauseButton(card.transform, ref y, "pause.restart", UITheme.Accent, () => level.BeginRun());
+            if (level.Objective != null)
+                PauseButton(card.transform, ref y, "pause.howToPlay", UITheme.Gold, () => ChallengeGuide.Open(root, level.Objective, LevelId, null, null));
             PauseButton(card.transform, ref y, "pause.controls", new Color(0.25f, 0.62f, 0.7f), () => ControlsGuide.Open(root, null));
             PauseButton(card.transform, ref y, "pause.settings", new Color(0.6f, 0.5f, 0.8f), () => SettingsPanel.Open(root, null));
             PauseButton(card.transform, ref y, "pause.quit", UITheme.Red, () => level.QuitToMap());

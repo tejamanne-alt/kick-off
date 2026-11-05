@@ -115,8 +115,8 @@ namespace DribbleToSchool.UI
 
         // ---------- The pictures ----------
 
-        /// <summary>A dark tile at the row's left with the control drawn on it in the HUD's white glass.</summary>
-        static void Draw(RectTransform row, Picture picture)
+        /// <summary>A dark tile at the row's left with the control drawn on it in the HUD's white glass (the challenge guide's rows too).</summary>
+        public static void Draw(RectTransform row, Picture picture)
         {
             var tile = UIKit.Panel(row, "Tile", Tile, ProceduralSprites.RoundedSmall);
             UIKit.Place(tile.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0f), new Vector2(176f, RowHeight - 6f), new Vector2(0f, 0.5f));

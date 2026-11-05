@@ -48,6 +48,8 @@ Generated scenes are rebuilt from code, so edits made directly in those scenes g
 | C04 Site Targets | Accuracy (60 s) | 4 / 6 / 8 targets |
 | C05 Juggle Champion | Juggling (60 s) | 10 / 20 / 30 juggles |
 
+**How to play** (`UI/ChallengeGuide`): when a challenge is started from the map, a card says what to do (`challenge.<id>.goal`), what each star needs (from the challenge's own thresholds), the time it has (and the slalom's penalty for a missed gate), and two or three tips on the controls for its kind (keepy-uppy, targets, the slalom), each with the Controls page's picture of the control. The run waits under it (`LevelManager.Hold`, now counted, so the controls tour and the guide never let each other's hold go). It is shown once per visit (not again on Retry) and again from **Pause > How to play**.
+
 Bell times (and the streak targets, no longer a star goal) are in the level table in `Editor/GeneratedContent.cs` (a story level's bell is its street's seconds, as written there, plus the walk from the front door: `Bell(...)`). Change them there, then run **Kick Off > Rebuild All Levels**.
 
 ## Hazards
