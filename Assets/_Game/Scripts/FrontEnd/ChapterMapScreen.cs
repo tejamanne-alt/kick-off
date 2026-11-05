@@ -68,6 +68,10 @@ namespace DribbleToSchool.FrontEnd
         readonly Dictionary<string, MapName> names = new Dictionary<string, MapName>();   // the focused route's level names, where they go
         readonly List<MapItem> items = new List<MapItem>();   // what keeps its size as the view zooms
         readonly List<StopLabel> stopLabels = new List<StopLabel>();
+        readonly List<GameObject> zoomDetail = new List<GameObject>();   // district and street names: shown only zoomed in
+        const float DetailZoom = 1.4f;
+        /// <summary>A light, even wash over the picture so the focused route, its levels and its names stand out crisply on it.</summary>
+        static readonly Color PictureWash = new Color(0.96f, 0.97f, 1f, 0.24f);
         readonly Dictionary<string, Image> chipBadges = new Dictionary<string, Image>();
         readonly Dictionary<string, Image> chipBadgeIcons = new Dictionary<string, Image>();
         string focus;
@@ -261,7 +265,7 @@ namespace DribbleToSchool.FrontEnd
         /// How far (picture pixels, + right) a tag over <paramref name="node"/> slides so that it covers as little as it can of the
         /// other nodes' discs (and stays over its own): straight above if that is clear, else the nearest clear step either side.
         /// </summary>
-        static float TagShift(TownNode node, Vector2 size, float lift, Route focusRoute)
+        static float TagShift(TownNode node, Vector2 size, float lift, Route focusRoute, System.Func<string, bool> drawn)
         {
             float best = 0f, bestCover = float.MaxValue;
             float limit = Mathf.Max(0f, size.x * 0.5f - 40f);
@@ -274,7 +278,7 @@ namespace DribbleToSchool.FrontEnd
                     float cover = 0f;
                     foreach (var other in TownMap.Nodes)
                     {
-                        if (other == node) continue;
+                        if (other == node || !drawn(other.levelId)) continue;
                         float r = TownMap.NodeRadius * (RouteTable.Of(other.levelId) == focusRoute ? 1f : TownMapNames.OtherNodeScale) + 8f;
                         float ox = Mathf.Max(0f, Mathf.Min(box.xMax, other.pos.x + r) - Mathf.Max(box.xMin, other.pos.x - r));
                         float oy = Mathf.Max(0f, Mathf.Min(box.yMax, other.pos.y + r) - Mathf.Max(box.yMin, other.pos.y - r));
@@ -322,6 +326,10 @@ namespace DribbleToSchool.FrontEnd
             picture.raycastTarget = false;
             picture.enabled = false;
             BuildFades(frame);
+            var washRect = UIKit.Stretch(UIKit.Rect(map, "Wash"));
+            var wash = washRect.gameObject.AddComponent<Image>();
+            wash.color = PictureWash;
+            wash.raycastTarget = false;
 
             routeLayer = UIKit.Stretch(UIKit.Rect(map, "Routes"));
             foreach (var route in TownMap.Routes)
@@ -469,6 +477,7 @@ namespace DribbleToSchool.FrontEnd
             if (focus != null) DrawRoutes(Controller.levels);
             DrawMarkers();
             UpdateStopLabels();
+            UpdateZoomDetail();
         }
 
         /// <summary>The house and the school: a pin over each, at the item scale (drawn again when it changes).</summary>
@@ -499,9 +508,12 @@ namespace DribbleToSchool.FrontEnd
             names.Clear();
             stopLabels.Clear();
             if (!TownMap.Available) return;
-            // Boxes already spoken for: the nodes' discs (the focused route's with room for their stars, the others' smaller) and the two pins.
+            zoomDetail.Clear();
+            // Boxes already spoken for: the discs of the nodes that are drawn (the focused route's with room for their stars, and the
+            // other routes' next or late level, smaller) and the two pins.
             foreach (var node in TownMap.Nodes)
             {
+                if (!Drawn(node.levelId, focusRoute)) continue;
                 bool focused = RouteTable.Of(node.levelId) == focusRoute;
                 float r = TownMap.NodeRadius * (focused ? 1f : TownMapNames.OtherNodeScale);
                 taken.Add(new Rect(node.pos.x - r - 6f, node.pos.y - r - 6f, 2f * r + 12f, 2f * r + (focused ? 40f : 12f)));
@@ -522,7 +534,7 @@ namespace DribbleToSchool.FrontEnd
                 if (node == null || beacon == Beacon.None) continue;
                 float scale = RouteTable.Of(def.levelId) == focusRoute ? 1f : TownMapNames.OtherNodeScale;
                 Vector2 size = TagSize(beacon, scale);
-                float shift = TagShift(node, size, TagLift(scale), focusRoute);
+                float shift = TagShift(node, size, TagLift(scale), focusRoute, id => Drawn(id, focusRoute));
                 tagShift[def.levelId] = shift;
                 Vector2 centre = node.pos + new Vector2(shift, -TagLift(scale));
                 var box = new Rect(centre.x - size.x * 0.5f, centre.y - size.y * 0.5f - 6f, size.x, size.y + 20f);
@@ -546,29 +558,10 @@ namespace DribbleToSchool.FrontEnd
                 }
             }
 
-            // "You are here" over the house, where there is room for it once the names are placed (above, else below, else beside).
-            var pillSize = new Vector2(330f, 64f);
-            float up = PinHead * 3.2f + 36f;
-            Vector2? here = FreeSpotAmong(new[]
-            {
-                TownMap.Home + new Vector2(0f, -up),
-                TownMap.Home + new Vector2(0f, 60f + pillSize.y * 0.5f),
-                TownMap.Home + new Vector2(-(PinHead + 20f + pillSize.x * 0.5f), -PinHead * 1.75f),
-                TownMap.Home + new Vector2(PinHead + 20f + pillSize.x * 0.5f, -PinHead * 1.75f)
-            }, pillSize);
-            if (here != null)
-            {
-                var pill = UIKit.Panel(textLayer, "HerePill", HomeRed, ProceduralSprites.RoundedEdgeSmall);
-                UIKit.Place(pill.rectTransform, new Vector2(0.5f, 0.5f), At(here.Value), pillSize, new Vector2(0.5f, 0.5f));
-                pill.raycastTarget = false;
-                var hereText = UIKit.Label(pill.transform, "Text", Loc.T("map.here"), LabelFont, Color.white, TextAnchor.MiddleCenter, true);
-                UIKit.Stretch(hereText.rectTransform, 4f);
-                UIKit.Fit(hereText, LabelFont - 2);
-                Shadowed(hereText);
-                Track(pill.rectTransform, TownMap.Home, here.Value - TownMap.Home, new Rect(here.Value - pillSize * 0.5f, pillSize));
-            }
+            // (No "You are here" pill: the next level's PLAY tag says where to go, and the house has its name.)
 
-            // Districts: small capitals, white with a dark outline (the school's is left out: its pin already says so).
+            // Districts: small capitals, white with a dark outline (the school's is left out: its pin already says so). They are
+            // detail: shown once the view is zoomed in, so the fitted map shows only the route, its levels and its names.
             foreach (var district in TownMap.Districts)
             {
                 if (district.id == "school") continue;
@@ -579,11 +572,19 @@ namespace DribbleToSchool.FrontEnd
                 var t = UIKit.Label(textLayer, "District_" + district.id, text, LabelFont, Color.white, TextAnchor.MiddleCenter, true);
                 UIKit.Place(t.rectTransform, new Vector2(0.5f, 0.5f), At(at.Value), size, new Vector2(0.5f, 0.5f));
                 Outlined(t);
-                Track(t.rectTransform, at.Value, Vector2.zero, new Rect(at.Value - size * 0.5f, size));
+                Track(t.rectTransform, at.Value, Vector2.zero, new Rect(at.Value - size * 0.5f, size), false);
+                zoomDetail.Add(t.gameObject);
             }
 
             // Streets: named along the road at the angle given (as the art gives the names, not translated), where they touch
-            // no node, name or route line.
+            // no node, name or route line. The focused route's own street (Home Street, Market Street, Seaside Road) is always
+            // named; the others are detail, shown zoomed in.
+            string ownStreet = null;
+            if (focusRoute != null)
+            {
+                var english = StringTables.For("en");
+                if (english != null && english.ContainsKey(focusRoute.NameKey)) ownStreet = english[focusRoute.NameKey];
+            }
             int count = 0;
             foreach (var street in TownMap.Streets)
             {
@@ -598,8 +599,11 @@ namespace DribbleToSchool.FrontEnd
                 UIKit.Place(t.rectTransform, new Vector2(0.5f, 0.5f), At(at.Value), new Vector2(width, LabelFont * 1.2f), new Vector2(0.5f, 0.5f));
                 t.rectTransform.localRotation = Quaternion.Euler(0f, 0f, -street.angle);   // the layout's angle turns clockwise (y down)
                 Outlined(t, 2.5f);
-                Track(t.rectTransform, at.Value, Vector2.zero, new Rect(at.Value - size * 0.5f, size));
+                bool own = street.name == ownStreet;
+                Track(t.rectTransform, at.Value, Vector2.zero, new Rect(at.Value - size * 0.5f, size), own);
+                if (!own) zoomDetail.Add(t.gameObject);
             }
+            UpdateZoomDetail();
         }
 
         /// <summary>
@@ -691,6 +695,26 @@ namespace DribbleToSchool.FrontEnd
                 label.rect.gameObject.SetActive(fits);
                 if (fits) shown.Add(box);
             }
+        }
+
+        /// <summary>The district and street names that are detail: shown only once the view is zoomed in.</summary>
+        void UpdateZoomDetail()
+        {
+            bool zoomed = view != null && view.Zoom >= DetailZoom;
+            foreach (var go in zoomDetail)
+                if (go != null && go.activeSelf != zoomed) go.SetActive(zoomed);
+        }
+
+        /// <summary>
+        /// Whether a level's node is drawn with <paramref name="focusRoute"/> in focus: the focused route's levels and challenge,
+        /// and of the other routes only the next level to play and the one a late trip holds back (what the map has to point out).
+        /// The other routes are otherwise just faint lines, so the map stays clean.
+        /// </summary>
+        bool Drawn(string levelId, Route focusRoute)
+        {
+            if (RouteTable.Of(levelId) == focusRoute) return true;
+            if (focusRoute != null && levelId == focusRoute.challenge) return true;
+            return (nextLevel != null && nextLevel.levelId == levelId) || (heldBack != null && heldBack.levelId == levelId);
         }
 
         /// <summary>True if a line of text <paramref name="length"/> long, centred on <paramref name="centre"/> at <paramref name="angle"/> degrees (y down), comes close to a route line.</summary>
@@ -1012,13 +1036,22 @@ namespace DribbleToSchool.FrontEnd
                 var painter = routePainters[route.id];
                 painter.Clear();
                 Color core = ColourOf(catalog, route);
-                if (!on) core = Color.Lerp(core, new Color(0.9f, 0.92f, 0.95f), 0.4f);
                 float k = itemScale;
-                float width = (on ? RouteWidthOn : RouteWidthOff) * k;
-                float casing = (on ? 13f : 8f) * k;
+                if (!on)
+                {
+                    // Another route: a thin, faint line in its colour, nothing on it (its chip at the bottom brings it into focus).
+                    Color faint = Color.Lerp(core, Color.white, 0.25f);
+                    faint.a = 0.5f;
+                    painter.Stroke(line.points, RouteWidthOff * 0.55f * k, faint, false, true);
+                    routeMeshes[route.id].Show(painter);
+                    routeMeshes[route.id].transform.SetSiblingIndex(order++);
+                    continue;
+                }
+                float width = RouteWidthOn * k;
+                float casing = 13f * k;
                 painter.Stroke(line.points, width + casing * 2f, Color.white, false, true);
                 painter.Stroke(line.points, width, core, false, true);
-                if (on) painter.Dashed(line.points, 7f * k, 24f * k, 34f * k, new Color(1f, 1f, 1f, 0.85f));
+                painter.Dashed(line.points, 7f * k, 24f * k, 34f * k, new Color(1f, 1f, 1f, 0.85f));
                 // The dotted branch from the route to its challenge's node.
                 if (route.challenge != null)
                 {
@@ -1059,6 +1092,8 @@ namespace DribbleToSchool.FrontEnd
                 var def = catalog.FindById(levelId);
                 var spot = TownMap.Node(levelId);
                 if (def == null || spot == null) continue;
+                // The other routes show only what the map has to point out (the next level, a late one): see Drawn.
+                if (!focused && !Drawn(levelId, null)) continue;
                 BuildNode(catalog, def, spot, colour, BeaconFor(def, LevelUnlocks.IsUnlocked(catalog, def)), focused, index++);
             }
         }
@@ -1080,13 +1115,12 @@ namespace DribbleToSchool.FrontEnd
             holder = UIKit.Stretch(UIKit.Rect(holderRect, "Body"));
             // The nodes pop in one after another when the map is opened (not every time the focus moves).
             if (popIn) UIKit.PopIn(holder.gameObject, Mathf.Min(index, 14) * 0.03f);
-            // The next level (or the late one) glows: a soft halo and a ring round the disc, breathing.
-            if (beacon != Beacon.None) Halo(holder, diameter, ColourOf(beacon));
 
             Color face = def.isChallenge ? UITheme.Gold : colour;
             // Locked by a late trip to school: red with an alarm clock; a tap says why, and offers the way back to it.
             var late = unlocked ? null : LevelUnlocks.HeldBackBy(catalog, def);
-            Color disc = unlocked ? face : late != null ? LateRed : UITheme.Locked;
+            // Locked: a pale shade of the route's colour with its lock (quieter than grey, so the levels to play stand out).
+            Color disc = unlocked ? face : late != null ? LateRed : Color.Lerp(Color.Lerp(face, UITheme.Locked, 0.35f), Color.white, 0.45f);
             var button = UIKit.Button(holder, "Button", "", disc, () => Tap(catalog, def, late));
             UIKit.Place((RectTransform)button.transform, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(diameter, diameter), new Vector2(0.5f, 0.5f));
             button.interactable = unlocked || late != null;
@@ -1131,6 +1165,9 @@ namespace DribbleToSchool.FrontEnd
                 BuildName(holder, name, spot.pos);
                 Block(spot.pos, name.box);
             }
+            // The next level (or the late one) glows: a soft halo and a ring round the disc, breathing (under its name, which
+            // stays crisp, and under everything else on the node).
+            if (beacon != Beacon.None) Halo(holder, diameter, ColourOf(beacon));
             float shift;
             if (beacon != Beacon.None) Tag(holder, beacon, scale, tagShift.TryGetValue(def.levelId, out shift) ? shift : 0f);
         }
@@ -1138,10 +1175,10 @@ namespace DribbleToSchool.FrontEnd
         /// <summary>A soft halo and a ring in <paramref name="colour"/> behind a node's disc, glowing on and off.</summary>
         static void Halo(RectTransform holder, float diameter, Color colour)
         {
-            var halo = UIKit.Icon(holder, "Halo", ProceduralSprites.SoftDisc, colour, diameter * 2.4f);
-            UIKit.Place(halo.rectTransform, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(diameter * 2.4f, diameter * 2.4f));
+            var halo = UIKit.Icon(holder, "Halo", ProceduralSprites.SoftDisc, colour, diameter * 1.9f);
+            UIKit.Place(halo.rectTransform, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(diameter * 1.9f, diameter * 1.9f));
             var glow = halo.gameObject.AddComponent<UIGlow>();
-            glow.minAlpha = 0.35f; glow.maxAlpha = 0.8f;
+            glow.minAlpha = 0.25f; glow.maxAlpha = 0.6f;
             var ring = UIKit.Icon(holder, "Ring", ProceduralSprites.Ring, colour, diameter * 1.32f);
             UIKit.Place(ring.rectTransform, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(diameter * 1.32f, diameter * 1.32f));
             var pulse = ring.gameObject.AddComponent<UIGlow>();

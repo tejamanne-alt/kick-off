@@ -119,7 +119,7 @@ namespace DribbleToSchool.Levels
         public static string Problem = "";
 
         /// <summary>The string keys the map screen uses on top of the districts', routes' and levels' names (checked by TownMapTests).</summary>
-        public static readonly string[] ScreenKeys = { "map.choose", "map.levels", "map.here", "unlock.cta", "menu.soon", "place.home", "place.school" };
+        public static readonly string[] ScreenKeys = { "map.choose", "map.levels", "unlock.cta", "menu.soon", "place.home", "place.school" };
 
         // ------------------------------------------------------------------ loading
 
