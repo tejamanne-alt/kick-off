@@ -17,7 +17,7 @@ namespace DribbleToSchool.Tutorial
         public static readonly string[] AllIds =
         {
             "dribble", "brake", "jump", "kick", "juggle", "gate", "puddle", "pedestrian", "crossing", "springboard",
-            "tide", "seagull", "tunnel", "pipes", "platform", "dog", "fountain", "swing", "slide", "doublejump",
+            "tide", "seagull", "tunnel", "siteexit", "platform", "dog", "fountain", "swing", "slide", "doublejump",
             "holiday",   // the Holiday Run's first-run tips
             "controls",  // the guided tour of the controls (UI/ControlsTour)
         };

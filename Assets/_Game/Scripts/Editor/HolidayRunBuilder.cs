@@ -317,7 +317,6 @@ namespace DribbleToSchool.EditorTools
                         case PatternKind.Puddle: t.Puddle(it.x0, it.x1); break;
                         case PatternKind.SandPatch: t.Sand(it.x0, it.x1); break;
                         case PatternKind.Spring: t.Springboard(it.x); break;
-                        case PatternKind.Pipes: t.RunPipes(it.x, it.a, it.b); break;
                         case PatternKind.Coin: t.Coin(new Vector2(it.x, it.y)); break;
                         case PatternKind.CoinRow: t.CoinRow(it.x0, it.x1, it.y, it.count); break;
                         case PatternKind.CoinArc: t.CoinArc(it.x0, it.x1, it.y, it.rise, it.count); break;

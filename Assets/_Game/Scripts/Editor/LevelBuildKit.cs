@@ -1130,6 +1130,12 @@ namespace DribbleToSchool.EditorTools
             /// </summary>
             public void Pedestrian(float minX, float maxX, Color coat, float groundTop = 0f, float speed = 1.1f)
             {
+                Walker(minX, maxX, coat, groundTop, speed, false);
+            }
+
+            /// <summary>The passer-by of <see cref="Pedestrian"/>; a <paramref name="builder"/> wears hi-vis and a hard hat, keeps them on, and walks alone.</summary>
+            Hazards.Pedestrian Walker(float minX, float maxX, Color coat, float groundTop, float speed, bool builder)
+            {
                 var go = new GameObject("Pedestrian");
                 go.transform.SetParent(root, false);
                 go.transform.position = new Vector2(minX, groundTop + 0.925f);
@@ -1141,6 +1147,11 @@ namespace DribbleToSchool.EditorTools
                 int seed = Mathf.Abs(Mathf.RoundToInt(minX * 37f + maxX * 11f)) + Chapter * 101 + 1;
                 // Adults are about 1.7 m (1.22 x the kid), feet on the capsule bottom (-0.925), a step behind the kid's line.
                 Color hair = PasserbyHair[Mathf.Abs(Mathf.RoundToInt(minX)) % 4], trousers = Color.Lerp(coat, Color.black, 0.45f);
+                if (builder)
+                {
+                    hair = HardHatYellow;                      // the hard hat stands in for the hair, as at the site office
+                    trousers = new Color(0.22f, 0.26f, 0.4f);
+                }
                 var parts = BuildModelCharacter(go.transform, "Adult", Art.adult, 1.3f * 1.22f, new Vector3(0f, -0.193f, 0.75f), false);
                 if (parts.rig != null)
                 {
@@ -1164,10 +1175,12 @@ namespace DribbleToSchool.EditorTools
                 p.seed = seed;
                 p.outfit = parts.outfit;
                 p.rig = parts.rig;
-                p.coats = PasserbyCoats;
+                // A builder keeps the hi-vis on every pass (no colours to change into) and has no company.
+                p.coats = builder ? new Color[0] : PasserbyCoats;
                 var walker = parts.rig.gameObject.AddComponent<WalkerAnimator>();
                 walker.pedestrian = p;
-                PedestrianCompany(go.transform, p, seed, coat);
+                if (!builder) PedestrianCompany(go.transform, p, seed, coat);
+                return p;
             }
 
             /// <summary>
@@ -2098,39 +2111,6 @@ namespace DribbleToSchool.EditorTools
                 {
                     var piece = KitModel(parent, "Works", model, new Vector3(a + step * (i + 0.5f), y, z));
                     if (piece != null) piece.localScale = new Vector3(step / 2f, heightScale, 1f);
-                }
-            }
-
-            /// <summary>Spawns pipes at <paramref name="position"/> that roll left until <paramref name="despawnX"/>.</summary>
-            public void Pipes(Vector2 position, float interval, float despawnX, float firstDelay = 1.5f)
-            {
-                var go = new GameObject("PipeSpawner");
-                go.transform.SetParent(root, false);
-                go.transform.position = position;
-                var spawner = go.AddComponent<PipeSpawner>();
-                spawner.interval = interval;
-                spawner.despawnX = despawnX;
-                spawner.firstDelay = firstDelay;
-                spawner.material = Art.solid;
-                var pipeModel = KitModel(go.transform, "Works", "ConcretePipe", go.transform.position);
-                if (pipeModel != null)
-                {
-                    pipeModel.gameObject.SetActive(false);   // copied for each rolling pipe
-                    spawner.template = pipeModel.gameObject;
-                }
-                // A stack of pipes beside the spawn point, lying across the street.
-                Vector2 stack = position + new Vector2(0.9f, -0.2f);
-                float r = spawner.radius;
-                Vector2[] at = { new Vector2(-r, -0.55f + r), new Vector2(r, -0.55f + r), new Vector2(0f, -0.55f + r * 2.7f) };
-                foreach (var o in at)
-                {
-                    var pipe = new GameObject("StackedPipe");
-                    pipe.transform.SetParent(root, false);
-                    pipe.transform.position = new Vector3(stack.x + o.x, stack.y + o.y, 1.3f);
-                    var stacked = KitModel(pipe.transform, "Works", "ConcretePipe", pipe.transform.position);
-                    if (stacked != null) { stacked.localScale = new Vector3(1f, 1f, 0.75f); continue; }
-                    PipeSpawner.BuildPipe(pipe, r, spawner.color, Art.solid);
-                    pipe.transform.Find("Visual").localScale = new Vector3(1f, 1f, 0.75f);
                 }
             }
 

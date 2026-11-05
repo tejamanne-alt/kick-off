@@ -465,9 +465,9 @@ The picture shows this at each node (80 to 200 px along its route from it) and a
 | L13 | beach | after the lifeguard tower: seagulls, a rescue-board stand, a breezy bay with rocks and flags, to the beach cafe's kiosk |
 | L14 | beach | after the beach cafe: sandcastles, surf racks, the boardwalk crossing the promenade, the school |
 | L15 | underpass | on the West Street just past the stem it shares with the site and park routes: up to Station Road and along it past the building site's covered walkways (boarded roofs over the south pavement, scaffolding), puddles, a ramp and a platform, crates, site barriers, to the station's ticket hall at the foot of the railway bridge (no railway crossing) |
-| L16 | site | on Yard Road just past the stem: the site's west gate, ramps and platforms, pipe racks, rolling pipes, scaffolding, crates, to the site office |
+| L16 | site | on Yard Road just past the stem: the site's west gate (a vehicle gate with its banksman), ramps and platforms, pipe racks, scaffolding, crates, builders, to the site office |
 | L17 | site | after the site office's security gate (boom barrier and cabin): tower cranes swinging pallets over open trenches, the builder's lift, a digger, skips, out at the east gate |
-| L18 | underpass | after the station: the cutting under the main line and the station's loop (two bridges), scaffolding, barriers, puddles, pipes, a ramp and a platform, a boom barrier at the East Street |
+| L18 | underpass | after the station: the cutting under the main line and the station's loop (two bridges), scaffolding, barriers, puddles, commuters walking through, a ramp and a platform, a boom barrier at the East Street |
 | L19 | park | just inside the park gate: dogs, a net tunnel, a fallen tree, to the bandstand |
 | L20 | park | after the bandstand: three fountains, trampolines, a play tower, to the park cafe |
 | L21 | park | after the park cafe: a playground with rope swings over a stream, trampolines, a climbing frame, a net tunnel, to the boathouse |

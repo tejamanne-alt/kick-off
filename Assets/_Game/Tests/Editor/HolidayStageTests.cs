@@ -105,7 +105,7 @@ namespace DribbleToSchool.Tests
             foreach (var stage in HolidayStages.All)
             {
                 var obstacles = StageTraits.Steps | StageTraits.Crates | StageTraits.Cars | StageTraits.Awnings | StageTraits.Gaps
-                    | StageTraits.Pipes | StageTraits.Cranes;
+                    | StageTraits.Cranes;
                 Assert.AreNotEqual(StageTraits.None, stage.traits & obstacles, stage.levelId + " has no obstacles to jump or slide");
             }
         }

@@ -53,9 +53,6 @@ namespace DribbleToSchool.Tests
             {
                 var board = go.AddComponent<Springboard>();
                 Assert.AreEqual(JumpReach.Defaults.springboardSpeed, board.kidLaunchSpeed, 1e-4f, "Springboard.kidLaunchSpeed");
-                var pipes = go.AddComponent<PipeSpawner>();
-                // A rolling pipe must be something a single jump gets over, in a tunnel too.
-                Assert.LessOrEqual(pipes.radius * 2f, JumpReach.SafeMidWall(JumpReach.Defaults), "the pipe's height");
             }
             finally
             {

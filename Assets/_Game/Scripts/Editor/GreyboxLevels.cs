@@ -642,28 +642,31 @@ namespace DribbleToSchool.EditorTools
             t.Goal(98f);
         }
 
-        /// <summary>L16: rolling pipes down the building-site slopes.</summary>
+        /// <summary>
+        /// L16: along the building site's hoarding. Its vehicle gates cross the footpath: wait while the banksman shows STOP
+        /// (the digger and the site pickup come out), cross on GO. A builder in hi-vis walks the footpath.
+        /// </summary>
         public static void BuildingSite(TrackBuilder t)
         {
             t.Walls(-8f, 115f);
             t.Start(0f);
-            t.Hint(12f, "pipes");
+            t.Hint(7f, "siteexit");
             t.Ground(-8f, 115f);
-            t.Sign("Building site! Pipes roll\ndown the slope - jump them", new Vector2(5f, 3.4f));
+            t.Sign("Building site! Wait for the\nbanksman's GO at the gates", new Vector2(4f, 3.4f));
+            t.SiteExit(9f, 14f, 0f);
 
             t.Ramp(new Vector2(18f, 0f), new Vector2(28f, 2.5f));
             t.Platform(28f, 34f, 2.5f);
-            t.Pipes(new Vector2(33f, 3.2f), 4f, 5f);
             t.Ramp(new Vector2(34f, 2.5f), new Vector2(40f, 0f));
             t.Checkpoint(42f);
             t.SlideUnder(45f, TrackBuilder.SlideLook.ScaffoldGantry);
             t.CrateStack(48f);
-            t.CrateStack(52f);
-            t.Ramp(new Vector2(58f, 0f), new Vector2(66f, 2f));
+            t.SiteExit(52.5f, 57.5f, 2.6f);
+            t.Ramp(new Vector2(59.5f, 0f), new Vector2(66f, 2f));
             t.Platform(66f, 72f, 2f);
-            t.Pipes(new Vector2(71f, 2.8f), 3.5f, 50f, 0.5f);
             t.Ramp(new Vector2(72f, 2f), new Vector2(78f, 0f));
             t.Checkpoint(80f);
+            t.Builder(81f, 86.5f);
             t.SwitchAndGate(new Vector2(88f, 2.6f), 92f);
             t.Puddle(95f, 98f);
             t.SlideUnder(101.8f, TrackBuilder.SlideLook.PipeRack);
@@ -671,7 +674,7 @@ namespace DribbleToSchool.EditorTools
             t.CoinArc(20f, 27f, 1.5f, 1.5f, 4);
             t.CoinRow(29f, 33f, 3.1f, 3);
             t.CoinRow(29.6f, 30.4f, 5.5f, 2);       // double jump, on the way to the sticker
-            t.CoinArc(47.5f, 53f, 1.8f, 1f, 4);
+            t.CoinArc(47.2f, 50f, 1.8f, 1f, 3);
             t.CoinRow(67f, 71f, 2.6f, 3);
             t.CoinRow(93f, 99f, 0.5f, 3);
             t.Sticker(new Vector2(31f, 6f));
@@ -718,8 +721,9 @@ namespace DribbleToSchool.EditorTools
         }
 
         /// <summary>
-        /// L18: chapter finale through tunnels, pipes and cranes: from the station's hall at the foot of the railway bridge, under the
-        /// railway twice (the main line and the station's loop), up to the East Street and the school.
+        /// L18: chapter finale through tunnels and cranes: from the station's hall at the foot of the railway bridge, under the
+        /// railway twice (the main line and the station's loop), up to the East Street and the school. Commuters from the station
+        /// walk through the dim road tunnels (the ball bounces off them; chip it over or wait for a gap).
         /// </summary>
         public static void TunnelRun(TrackBuilder t)
         {
@@ -729,7 +733,7 @@ namespace DribbleToSchool.EditorTools
             t.Sign("Tunnel Run! Twice\nunder the railway", new Vector2(4.4f, 3.2f));   // its legs clear of the barrier at 6.5
             t.SlideUnder(6.5f, TrackBuilder.SlideLook.SiteBarrier);
             t.Tunnel(10f, 40f, 0f, 3.4f);
-            t.Pipes(new Vector2(38f, 0.6f), 3.2f, 8f, 1f);
+            t.Pedestrian(24f, 34f, CoatB);         // commuters from the station, walking through the underpass
             t.Puddle(18f, 21f);
             t.Checkpoint(42f);
             t.Pit(48f, 56f);
@@ -742,7 +746,7 @@ namespace DribbleToSchool.EditorTools
             t.Tunnel(84f, 112f, 0f, 3.4f);
             t.CrateStack(92f);
             t.Puddle(98f, 101f);
-            t.Pipes(new Vector2(110f, 0.6f), 4f, 86f, 2f);
+            t.Pedestrian(102f, 108f, CoatC);
             t.SlideUnder(111.8f, TrackBuilder.SlideLook.BoomBarrier);
             t.Checkpoint(114f);
             t.SwitchAndGate(new Vector2(120f, 2.4f), 124f);
