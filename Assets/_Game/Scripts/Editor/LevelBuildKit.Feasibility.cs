@@ -47,6 +47,12 @@ namespace DribbleToSchool.EditorTools
             /// </summary>
             public readonly LevelFeasibility Audit = new LevelFeasibility();
 
+            /// <summary>
+            /// Where the level's how-tos go (CoachPlan): the hazards mark themselves as they are laid, and <see cref="Finish"/>
+            /// adds what the audit recorded and places an ActionSpot for each (BuildCoachSpots).
+            /// </summary>
+            public readonly CoachPlan Coaching = new CoachPlan();
+
             /// <summary>What the warnings call this level or stage ("L05 Puddle Lane", "Holiday Run stage 3").</summary>
             public string AuditName = "";
 
@@ -59,6 +65,26 @@ namespace DribbleToSchool.EditorTools
                 var notes = new List<string>();
                 foreach (string problem in Audit.Check(notes))
                     Debug.LogWarning("[Kick Off] " + (string.IsNullOrEmpty(AuditName) ? "A level" : AuditName) + " can't be done: " + problem);
+            }
+
+            /// <summary>An ActionSpot for each of the level's how-tos (UI/ActionCoach shows them as the kid comes up to each).</summary>
+            void BuildCoachSpots()
+            {
+                if (!Coaching.Enabled) return;
+                var spots = Coaching.Build(Audit, JumpReach.Defaults, Chapter == 3);   // the beach's sand slopes up its steps
+                if (spots.Count == 0) return;
+                var parent = new GameObject("CoachSpots").transform;
+                parent.SetParent(root, false);
+                foreach (var s in spots)
+                {
+                    var go = new GameObject("Coach_" + s.action);
+                    go.transform.SetParent(parent, false);
+                    go.transform.localPosition = new Vector3((s.from + s.to) * 0.5f, 0f, 0f);
+                    var spot = go.AddComponent<Tutorial.ActionSpot>();
+                    spot.action = s.action;
+                    spot.fromX = root.TransformPoint(new Vector3(s.from, 0f, 0f)).x;
+                    spot.toX = root.TransformPoint(new Vector3(s.to, 0f, 0f)).x;
+                }
             }
         }
     }

@@ -1,6 +1,7 @@
 using System.Collections;
 using DribbleToSchool.Audio;
 using DribbleToSchool.Ball;
+using DribbleToSchool.Challenges;
 using DribbleToSchool.Core;
 using DribbleToSchool.InputHandling;
 using DribbleToSchool.Levels;
@@ -16,7 +17,8 @@ namespace DribbleToSchool.UI
     /// <summary>
     /// The in-level HUD (uGUI, built from code): info card, pause button,
     /// touch-control visuals, aim meter, toasts, countdown, respawn fade,
-    /// tutorial hints (a dismissable banner at the top), the pause menu and the animated results screen.
+    /// the coach at the top (how to do what comes next, a challenge's steps and the first-time tips: ActionCoach),
+    /// the pause menu and the animated results screen.
     /// </summary>
     public class GameHud : MonoBehaviour
     {
@@ -32,15 +34,16 @@ namespace DribbleToSchool.UI
         RectTransform root;
         Text titleText, timeText, bellText, coinText, streakText, statusText;
         Image fade;
-        RectTransform jumpRect, kickRect, aimKnob, aimBar, aimFill, hintCard;
+        RectTransform jumpRect, kickRect, aimKnob, aimBar, aimFill;
         TouchButton jumpButton, kickButton;
         StickView stick;
         Image aimFillImage;
         float tooFarUntil;
-        Text tooFar, toast, bigText, hintText;
+        Text tooFar, toast, bigText;
+        ActionCoach coach;
         RectTransform pauseRect, tuneRect;
         GameObject pauseModal, resultsModal;
-        float toastUntil, hintUntil, goUntil;
+        float toastUntil, goUntil;
 
         // Text is only rebuilt when the value behind it changes (no per-frame garbage).
         int shownTenths = -1, shownBell = int.MinValue, shownCoins = -1, shownTotal = -1, shownStreak = -1, shownJuggles = -1;
@@ -168,34 +171,12 @@ namespace DribbleToSchool.UI
             bigText = UIKit.Title(root, "Big", "", 150, Color.white);
             UIKit.Place(bigText.rectTransform, new Vector2(0.5f, 0.55f), Vector2.zero, new Vector2(1600f, 220f));
 
-            // Tutorial hint: a slim banner across the top, between the info card and the pause
-            // button, clear of the play area. Tap it (or its ×) to dismiss; it also fades on its own.
-            var hint = UIKit.Card(root, "Hint", new Color(1f, 1f, 1f, 0.92f));
-            hintCard = (RectTransform)hint.transform.parent;
-            hintCard.anchorMin = new Vector2(0f, 1f);
-            hintCard.anchorMax = new Vector2(1f, 1f);
-            hintCard.pivot = new Vector2(0.5f, 1f);
-            hintCard.offsetMin = new Vector2(720f, -150f);
-            hintCard.offsetMax = new Vector2(-200f, -34f);
-            hintText = UIKit.Label(hint.transform, "Text", "", 30, UITheme.Ink, TextAnchor.MiddleLeft, true);
-            UIKit.Stretch(hintText.rectTransform, 18f);
-            hintText.rectTransform.offsetMin = new Vector2(28f, 10f);
-            hintText.rectTransform.offsetMax = new Vector2(-96f, -10f);
-            hintText.resizeTextForBestFit = true;
-            hintText.resizeTextMinSize = 20;
-            hintText.resizeTextMaxSize = 30;
-            hintText.verticalOverflow = VerticalWrapMode.Truncate;
-            foreach (var g in hintCard.GetComponentsInChildren<Graphic>()) g.raycastTarget = false;
-            hint.raycastTarget = true;
-            var close = UIKit.Label(hint.transform, "Close", "\u00D7", 52, UITheme.InkSoft, TextAnchor.MiddleCenter, true);
-            UIKit.Place(close.rectTransform, new Vector2(1f, 0.5f), new Vector2(-48f, 2f), new Vector2(80f, 80f));
-            var dismiss = hint.gameObject.AddComponent<Button>();
-            dismiss.transition = Selectable.Transition.None;
-            dismiss.onClick.AddListener(DismissHint);
-            hintCard.gameObject.SetActive(false);
-
             // If the kid is ever wedged somewhere: "Stuck? Back to the checkpoint".
-            StuckHelper.Create(root, level, kid, () => level.RespawnAtCheckpoint());
+            var stuck = StuckHelper.Create(root, level, kid, () => level.RespawnAtCheckpoint());
+
+            // The coach: a card across the top, between the info card and the pause button, saying how to do what comes
+            // next (slide under, chip it over, wait for the green man...), a challenge's steps, and the first-time tips.
+            coach = ActionCoach.Create(root, level, kid, ball, (RectTransform)info.transform.parent, tuneRect != null ? tuneRect : pauseRect, stuck);
 
             // Respawn fade on top of everything but the modals.
             fade = UIKit.Icon(root, "Fade", null, new Color(0f, 0f, 0f, 0f), 10f);
@@ -258,18 +239,7 @@ namespace DribbleToSchool.UI
 
         void OnHint(string id)
         {
-            hintText.text = Loc.T("tut." + id);
-            hintCard.gameObject.SetActive(true);
-            var pop = hintCard.GetComponent<UIPopIn>();
-            if (pop == null) pop = UIKit.PopIn(hintCard.gameObject);
-            pop.Play();
-            hintUntil = Time.unscaledTime + 8f;
-        }
-
-        void DismissHint()
-        {
-            hintCard.gameObject.SetActive(false);
-            GameEvents.Raise(GameEventType.UIClick, Vector2.zero, 0.3f);
+            if (coach != null) coach.Hint(id);
         }
 
         void Toast(string text, Color color)
@@ -377,8 +347,9 @@ namespace DribbleToSchool.UI
             {
                 shownStreak = ball.PerfectStreak;
                 shownJuggles = ball.JuggleCount;
+                // (Keepy-uppy counts the juggles beside the clock already.)
                 streakText.text = shownStreak > 0 ? Loc.F("hud.perfect", shownStreak)
-                    : shownJuggles > 0 ? Loc.F("hud.juggles", shownJuggles) : "";
+                    : shownJuggles > 0 && !(level.Objective is JuggleChallenge) ? Loc.F("hud.juggles", shownJuggles) : "";
             }
         }
 
@@ -484,8 +455,6 @@ namespace DribbleToSchool.UI
                 bigText.gameObject.SetActive(false);
                 bigText.transform.localScale = Vector3.one;
             }
-
-            if (hintCard.gameObject.activeSelf && Time.unscaledTime > hintUntil) hintCard.gameObject.SetActive(false);
         }
 
         void UpdateBlockers()
@@ -494,8 +463,6 @@ namespace DribbleToSchool.UI
             GameInput.UIBlockers.Add(ScreenRect(pauseRect));
             if (tuneRect != null) GameInput.UIBlockers.Add(ScreenRect(tuneRect));
             if (tuning != null && tuning.visible) GameInput.UIBlockers.Add(tuning.ScreenRect);
-            // A tap on the hint dismisses it rather than counting as a game touch.
-            if (hintCard.gameObject.activeSelf) GameInput.UIBlockers.Add(ScreenRect(hintCard));
         }
 
         static Rect ScreenRect(RectTransform rt)

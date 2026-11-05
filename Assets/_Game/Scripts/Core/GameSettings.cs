@@ -48,6 +48,13 @@ namespace DribbleToSchool.Core
             set { SetBool("settings.leftHanded", value); }
         }
 
+        /// <summary>The coach's how-tos at the top of the screen in a level (UI/ActionCoach); the first-time tips show either way.</summary>
+        public static bool CoachTips
+        {
+            get { return GetBool("settings.coachTips", true); }
+            set { SetBool("settings.coachTips", value); }
+        }
+
         /// <summary>High-contrast trajectory colours (blue/orange instead of white/red).</summary>
         public static bool ColorblindAim
         {

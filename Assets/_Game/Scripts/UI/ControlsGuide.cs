@@ -13,8 +13,10 @@ namespace DribbleToSchool.UI
     /// </summary>
     public static class ControlsGuide
     {
+        /// <summary>The pictures of the controls (Wait, a clock, is for the coach's "wait for it" how-tos: UI/CoachCatalog).</summary>
+        public enum Picture { Walk, Slide, Jump, Kick, Touch, Wait }
+
         /// <summary>A row of the page: its picture, its heading (the tour's step title) and its text.</summary>
-        public enum Picture { Walk, Slide, Jump, Kick, Touch }
 
         public struct Row
         {
@@ -116,10 +118,16 @@ namespace DribbleToSchool.UI
         // ---------- The pictures ----------
 
         /// <summary>A dark tile at the row's left with the control drawn on it in the HUD's white glass (the challenge guide's rows too).</summary>
-        public static void Draw(RectTransform row, Picture picture)
+        public static RectTransform Draw(RectTransform row, Picture picture)
+        {
+            return Draw(row, picture, new Vector2(176f, RowHeight - 6f));
+        }
+
+        /// <summary>The same tile at <paramref name="tileSize"/> (the pictures keep their size: at least about 100 x 100); the coach scales it.</summary>
+        public static RectTransform Draw(RectTransform row, Picture picture, Vector2 tileSize)
         {
             var tile = UIKit.Panel(row, "Tile", Tile, ProceduralSprites.RoundedSmall);
-            UIKit.Place(tile.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0f), new Vector2(176f, RowHeight - 6f), new Vector2(0f, 0.5f));
+            UIKit.Place(tile.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0f), tileSize, new Vector2(0f, 0.5f));
             tile.raycastTarget = false;
             var t = tile.rectTransform;
             switch (picture)
@@ -142,7 +150,12 @@ namespace DribbleToSchool.UI
                     Glyph(t, ProceduralSprites.Ring, Vector2.zero, 84f, 0f, 0.45f);
                     Glyph(t, ProceduralSprites.SoftEdgeDisc, Vector2.zero, 48f, 0f, 0.85f);
                     break;
+                case Picture.Wait:
+                    Disc(t, UITheme.Red);
+                    Glyph(t, ProceduralSprites.Clock, Vector2.zero, 60f, 0f, 1f);
+                    break;
             }
+            return t;
         }
 
         /// <summary>The stick as the HUD draws it: its ring, a faint knob where it rests and the knob pushed by <paramref name="knob"/>.</summary>

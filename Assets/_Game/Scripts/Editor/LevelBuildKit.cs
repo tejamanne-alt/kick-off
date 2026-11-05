@@ -1136,6 +1136,7 @@ namespace DribbleToSchool.EditorTools
             /// <summary>The passer-by of <see cref="Pedestrian"/>; a <paramref name="builder"/> wears hi-vis and a hard hat, keeps them on, and walks alone.</summary>
             Hazards.Pedestrian Walker(float minX, float maxX, Color coat, float groundTop, float speed, bool builder)
             {
+                Coaching.Mark("people", minX, maxX);
                 var go = new GameObject("Pedestrian");
                 go.transform.SetParent(root, false);
                 go.transform.position = new Vector2(minX, groundTop + 0.925f);
@@ -1258,6 +1259,7 @@ namespace DribbleToSchool.EditorTools
             /// <summary>A zebra crossing from fromX to toX with a pedestrian light and passing traffic.</summary>
             public void Crossing(float fromX, float toX, float phaseOffset = 0f, float groundTop = 0f)
             {
+                Coaching.Mark("crossing", fromX, toX);
                 float width = toX - fromX;
                 float center = (fromX + toX) * 0.5f;
 
@@ -1337,6 +1339,7 @@ namespace DribbleToSchool.EditorTools
             /// <summary>A playful dog that patrols minX..maxX and noses low balls back.</summary>
             public void Dog(float minX, float maxX, Color fur, float groundTop = 0f)
             {
+                Coaching.Mark("dog", minX, maxX);
                 var go = new GameObject("Dog");
                 go.transform.SetParent(root, false);
                 go.transform.position = new Vector2((minX + maxX) * 0.5f, groundTop + 0.3f);
@@ -1481,6 +1484,8 @@ namespace DribbleToSchool.EditorTools
             public void MovingPlatform(Vector2 center, float width, Vector2 travel, float speed = 1.5f)
             {
                 Audit.AddSliding(center.x, center.y, width, travel.x, travel.y);
+                Coaching.Mark(Mathf.Abs(travel.x) < 0.01f ? "lift" : "platform",
+                    center.x + Mathf.Min(0f, travel.x) - width * 0.5f, center.x + Mathf.Max(0f, travel.x) + width * 0.5f);
                 var go = Block("MovingPlatform", center, new Vector2(width, 0.35f), PlatformColor, GroundMat, false);
                 var body = go.AddComponent<Rigidbody2D>();
                 body.bodyType = RigidbodyType2D.Kinematic;
@@ -1718,6 +1723,7 @@ namespace DribbleToSchool.EditorTools
             /// </summary>
             public void SwitchAndGate(Vector2 switchPosition, float gateX, float gateHeight = 2.4f, float groundTop = 0f)
             {
+                Coaching.Mark("gate", Mathf.Min(switchPosition.x, gateX) - 1f, gateX + 0.3f);
                 var gateGo = Block("Gate", new Vector2(gateX, groundTop + gateHeight * 0.5f), new Vector2(0.35f, gateHeight), Color.white, GroundMat, false);
                 gateGo.AddComponent<Rigidbody2D>().bodyType = RigidbodyType2D.Kinematic;
                 var gate = gateGo.AddComponent<Gate>();
@@ -1852,6 +1858,7 @@ namespace DribbleToSchool.EditorTools
             /// <summary>A seagull that swoops from fromX to toX (right to left = toward the kid).</summary>
             public void Seagull(float fromX, float toX, float baseY, float phaseOffset = 0f)
             {
+                Coaching.Mark("seagull", fromX, toX);
                 var go = new GameObject("Seagull");
                 go.transform.SetParent(root, false);
                 go.transform.position = new Vector2(fromX, baseY);
@@ -1903,6 +1910,7 @@ namespace DribbleToSchool.EditorTools
             /// <summary>Sea water washing over the sand between fromX and toX. Cross at low tide.</summary>
             public void Tide(float fromX, float toX, float period = 6f, float phaseOffset = 0f, float groundTop = 0f)
             {
+                Coaching.Mark("tide", fromX, toX);
                 float width = toX - fromX;
                 calmSand.Add(new Vector2(fromX - 3f, toX + 3f));   // smooth sand under the wash
                 tideStretches.Add(new Vector2(fromX - 3f, toX + 3f));
@@ -2118,6 +2126,8 @@ namespace DribbleToSchool.EditorTools
             public void Swing(Vector2 pivot, float ropeLength, float amplitude = 35f, float period = 3f, float phaseOffset = 0f)
             {
                 Audit.AddSwing(pivot.x, pivot.y, ropeLength, amplitude);
+                float swingReach = ropeLength * Mathf.Sin(amplitude * Mathf.Deg2Rad) + 0.7f;
+                Coaching.Mark("swing", pivot.x - swingReach, pivot.x + swingReach);
                 Color wood = new Color(0.55f, 0.4f, 0.3f);
                 float ground = GroundTopUnder(pivot.x, pivot.y);
                 if (SwingModel(pivot, ground))
@@ -2200,6 +2210,7 @@ namespace DribbleToSchool.EditorTools
             /// <summary>A plaza floor fountain: pulsing jets from a grate flush with the paving, which lift the ball.</summary>
             public void Fountain(float x, float groundTop, float height, float strength)
             {
+                Coaching.Mark("fountain", x - 1f, x + 1f);
                 StreetBuilder.Patch(root, "WetPaving", x - 1.8f, x + 1.8f, groundTop, -StreetBuilder.PathHalf, StreetBuilder.PathHalf, new Color(0.55f, 0.6f, 0.62f));
                 if (KitModel(root, "Leisure", "Fountain", new Vector3(x, groundTop, 0f)) == null)   // a stone-kerbed grate, jets at x 0 and +-0.45
                 {
@@ -3493,6 +3504,7 @@ namespace DribbleToSchool.EditorTools
                 foreach (var pending in pendingSigns) PlantSign(pending.sign, pending.boardSize);
                 pendingSigns.Clear();
                 ReportFeasibility();
+                BuildCoachSpots();
                 BuildStreetSlabs();
                 BuildPendingStops();
             }

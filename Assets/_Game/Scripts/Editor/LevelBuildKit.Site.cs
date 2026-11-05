@@ -26,6 +26,7 @@ namespace DribbleToSchool.EditorTools
             {
                 float width = toX - fromX;
                 float center = (fromX + toX) * 0.5f;
+                Coaching.Mark("siteexit", fromX, toX);
 
                 // The access road: concrete, no zebra (StreetBuilder's side street without its stripes), with yellow and black
                 // hatching where it meets the footpath.

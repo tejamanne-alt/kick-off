@@ -29,6 +29,9 @@ namespace DribbleToSchool.UI
         float anchorX, stuckFor;
         readonly Vector3[] corners = new Vector3[4];
 
+        /// <summary>True while the button is up (the coach keeps out of its way on a narrow screen).</summary>
+        public bool Showing { get { return button != null && button.activeSelf; } }
+
         /// <summary>Builds the (hidden) button under <paramref name="root"/>; <paramref name="rescue"/> is what it does (back to the checkpoint).</summary>
         public static StuckHelper Create(RectTransform root, LevelManager level, KidController kid, System.Action rescue)
         {

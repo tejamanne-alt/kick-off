@@ -12,7 +12,7 @@ namespace DribbleToSchool.UI
     /// out top-down from fixed row heights inside columns that stretch with the card, so
     /// nothing overlaps at any aspect ratio (the card fits a 4:3 canvas, 1440 x 1080):
     /// left, Audio (music, sound effects) and Gameplay (school bell,
-    /// colour-blind aim, vibration, screen shake); right, Player (the chosen kid, which opens the
+    /// colour-blind aim, vibration, screen shake, the coach's how-to tips: UI/ActionCoach); right, Player (the chosen kid, which opens the
     /// player picker), Language and Controls (left-handed, and the Controls page: UI/ControlsGuide); along the bottom, Reset progress, Restore purchases and Done. Labels shrink
     /// to fit rather than run into their controls, for longer translations.
     /// </summary>
@@ -45,6 +45,7 @@ namespace DribbleToSchool.UI
             ToggleRow(left, ref y, "settings.colorblind", GameSettings.ColorblindAim, v => GameSettings.ColorblindAim = v);
             ToggleRow(left, ref y, "settings.haptics", GameSettings.HapticsEnabled, v => GameSettings.HapticsEnabled = v);
             ToggleRow(left, ref y, "settings.shake", GameSettings.ScreenShakeEnabled, v => GameSettings.ScreenShakeEnabled = v);
+            ToggleRow(left, ref y, "settings.coachTips", GameSettings.CoachTips, v => GameSettings.CoachTips = v);
 
             // Player: who walks to school.
             y = 0f;
@@ -181,6 +182,7 @@ namespace DribbleToSchool.UI
             {
                 SaveSystem.ResetProgress();
                 Tutorial.TutorialHint.ResetAll(Tutorial.TutorialHint.AllIds);
+                ActionCoach.ResetLearned();
                 Object.Destroy(root);
             }, 40);
             UIKit.Place((RectTransform)yes.transform, new Vector2(0.7f, 0f), new Vector2(0f, 95f), new Vector2(300f, 100f));
