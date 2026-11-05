@@ -7,7 +7,7 @@ namespace DribbleToSchool.UI.Kit
     {
         static Sprite rounded, roundedSmall, circle, star, coin, lockIcon, gradient, arrow, pause, ring, softDisc, softEdgeDisc, ballIcon;
         static Sprite roundedEdge, roundedEdgeSmall, circleEdge, check, pitchBadge, holoSheen, goldSheen, stickerIcon, streak, swoosh, bolt, shield, magnet;
-        static Sprite jumpIcon, spotHole, thinRing;
+        static Sprite jumpIcon, spotHole, thinRing, clock, play, retry;
 
         /// <summary>A lightning bolt (the turbo power-up).</summary>
         public static Sprite Bolt
@@ -331,6 +331,76 @@ namespace DribbleToSchool.UI.Kit
                     // The back leg pushing off, kept a thin gap clear of the body and the front leg.
                     bool back = Mathf.Min(Segment(u, v, -0.15f, -0.22f, -0.17f, -0.54f), Segment(u, v, -0.17f, -0.54f, -0.58f, -0.82f)) < 0.11f;
                     return back && body > 0.035f ? 1f : 0f;
+                }));
+            }
+        }
+
+        /// <summary>
+        /// An alarm clock: a round face with two hands (at twelve and three), two bells on
+        /// top and two short legs: "late for school" on the map's locked level and its banner.
+        /// </summary>
+        public static Sprite Clock
+        {
+            get
+            {
+                return clock != null ? clock : (clock = MakeShape(128, (u, v) =>
+                {
+                    float cx = u, cy = v + 0.06f;
+                    float r = Mathf.Sqrt(cx * cx + cy * cy);
+                    if (Mathf.Abs(r - 0.56f) < 0.1f) return 1f;                                            // the rim
+                    if (r < 0.08f) return 1f;                                                               // the middle
+                    if (Segment(u, v, 0f, -0.06f, 0f, 0.3f) < 0.06f || Segment(u, v, 0f, -0.06f, 0.24f, -0.06f) < 0.06f) return 1f;   // the hands
+                    // Two bells, each a half disc tilted out over the rim.
+                    for (int side = -1; side <= 1; side += 2)
+                    {
+                        float bx = u - side * 0.5f, by = v - 0.62f;
+                        float bd = Mathf.Sqrt(bx * bx + by * by);
+                        if (bd < 0.22f && (bx * side * 0.5f + by * 0.86f) > -0.02f) return 1f;
+                    }
+                    if (Segment(u, v, -0.34f, -0.52f, -0.5f, -0.82f) < 0.065f || Segment(u, v, 0.34f, -0.52f, 0.5f, -0.82f) < 0.065f) return 1f;   // legs
+                    return 0f;
+                }));
+            }
+        }
+
+        /// <summary>A "play" triangle pointing right, its corners rounded: the next level to play on the map.</summary>
+        public static Sprite PlayIcon
+        {
+            get
+            {
+                return play != null ? play : (play = MakeShape(96, (u, v) =>
+                {
+                    // Inside the triangle shrunk by the rounding, or within the rounding of its edges.
+                    Vector2 a = new Vector2(-0.4f, 0.52f), b = new Vector2(-0.4f, -0.52f), c = new Vector2(0.56f, 0f);
+                    const float round = 0.14f;
+                    bool inside = Cross(b - a, new Vector2(u, v) - a) <= 0f && Cross(c - b, new Vector2(u, v) - b) <= 0f && Cross(a - c, new Vector2(u, v) - c) <= 0f;
+                    float edge = Mathf.Min(Segment(u, v, a.x, a.y, b.x, b.y), Mathf.Min(Segment(u, v, b.x, b.y, c.x, c.y), Segment(u, v, c.x, c.y, a.x, a.y)));
+                    return inside || edge < round ? 1f : 0f;
+                }));
+            }
+        }
+
+        static float Cross(Vector2 p, Vector2 q) { return p.x * q.y - p.y * q.x; }
+
+        /// <summary>A round "again" arrow (most of a ring, an arrowhead at its end): a level to play again on the map.</summary>
+        public static Sprite RetryIcon
+        {
+            get
+            {
+                return retry != null ? retry : (retry = MakeShape(96, (u, v) =>
+                {
+                    float r = Mathf.Sqrt(u * u + v * v);
+                    float ang = Mathf.Repeat(Mathf.Atan2(v, u) * Mathf.Rad2Deg, 360f);
+                    // The ring from 60 degrees round (anticlockwise) to 330, open at the top right.
+                    if (Mathf.Abs(r - 0.55f) < 0.12f && ang > 60f && ang < 330f) return 1f;
+                    // The arrowhead at the 60 degree end, pointing on round the ring (anticlockwise: down and left at this end).
+                    Vector2 tip = new Vector2(Mathf.Cos(30f * Mathf.Deg2Rad), Mathf.Sin(30f * Mathf.Deg2Rad)) * 0.55f;
+                    Vector2 baseMid = new Vector2(Mathf.Cos(72f * Mathf.Deg2Rad), Mathf.Sin(72f * Mathf.Deg2Rad)) * 0.55f;
+                    Vector2 across = baseMid.normalized * 0.3f;
+                    Vector2 p = new Vector2(u, v), b1 = baseMid + across, b2 = baseMid - across;
+                    float s1 = Cross(b1 - tip, p - tip), s2 = Cross(b2 - b1, p - b1), s3 = Cross(tip - b2, p - b2);
+                    bool head = (s1 >= 0f && s2 >= 0f && s3 >= 0f) || (s1 <= 0f && s2 <= 0f && s3 <= 0f);
+                    return head ? 1f : 0f;
                 }));
             }
         }

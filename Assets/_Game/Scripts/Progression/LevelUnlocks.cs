@@ -41,6 +41,23 @@ namespace DribbleToSchool.Progression
             return HeldBackBy(level.levelId, previous != null ? previous.levelId : null, SaveSystem.Data, Cozy);
         }
 
+        /// <summary>
+        /// The first story level a late trip to school holds back (the map marks it and says why), with the route that was late;
+        /// null if no level is held back.
+        /// </summary>
+        public static LevelDefinition FirstHeldBack(LevelCatalog catalog, out Route late)
+        {
+            late = null;
+            if (catalog == null) return null;
+            foreach (var level in catalog.levels)
+            {
+                if (level == null || level.isChallenge || SaveSystem.IsCompleted(level.levelId)) continue;
+                late = HeldBackBy(catalog, level);
+                if (late != null) return level;
+            }
+            return null;
+        }
+
         /// <summary>The story level the player should play next: the first unlocked, uncompleted one, or the start of a stage to walk again.</summary>
         public static LevelDefinition NextToPlay(LevelCatalog catalog)
         {

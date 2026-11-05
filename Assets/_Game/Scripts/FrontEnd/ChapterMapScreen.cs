@@ -68,8 +68,27 @@ namespace DribbleToSchool.FrontEnd
         readonly Dictionary<string, MapName> names = new Dictionary<string, MapName>();   // the focused route's level names, where they go
         readonly List<MapItem> items = new List<MapItem>();   // what keeps its size as the view zooms
         readonly List<StopLabel> stopLabels = new List<StopLabel>();
+        readonly Dictionary<string, Image> chipBadges = new Dictionary<string, Image>();
+        readonly Dictionary<string, Image> chipBadgeIcons = new Dictionary<string, Image>();
         string focus;
         bool firstShow, popIn;                // the nodes pop in when the map is opened, not each time the focus moves
+
+        // What the map points out, worked out each time it is shown or the focus moves (Survey): the level to play next (a new
+        // one, or the first leg of a stage to walk again after a late trip) and the level a late trip holds back.
+        enum Beacon { None, Play, Replay, Late }
+        LevelDefinition nextLevel, heldBack;
+        Route lateRoute;
+        bool replay;
+        RectTransform banner;
+        readonly Dictionary<string, float> tagShift = new Dictionary<string, float>();   // how far a tag slides sideways off the nodes beside it
+        Text bannerText;
+        Button bannerButton;
+        const float BannerHeight = 96f;
+        const int TagFont = 58;               // the tags over the next and the late level (picture pixels: about 27 canvas units when fitted)
+        const float TagHeight = 96f;
+        static readonly Color PlayGold = new Color(1f, 0.74f, 0.16f);
+        static readonly Color ReplayOrange = new Color(1f, 0.52f, 0.14f);
+        static readonly Color LateRed = new Color(0.88f, 0.24f, 0.2f);
         float itemScale = 1f;                 // the things drawn on the picture against the picture (1 when fitted, smaller zoomed in)
 
         /// <summary>Something drawn on the picture that keeps its size as the view zooms: it is scaled by the item scale about its anchor.</summary>
@@ -131,6 +150,143 @@ namespace DribbleToSchool.FrontEnd
             BuildZoomButtons(root);
             stripRoot = UIKit.Rect(root, "Strip");
             BuildChips(root);
+            BuildBanner(root);
+        }
+
+        /// <summary>
+        /// The banner under the header while a late trip to school holds a level back: an alarm clock, what happened and what to do
+        /// ("Late for school on Seaside Road! Walk it again from home and beat the bell to open level 15."), and From home.
+        /// </summary>
+        void BuildBanner(RectTransform root)
+        {
+            var face = UIKit.Card(root, "LateBanner", new Color(1f, 0.96f, 0.93f));
+            banner = (RectTransform)face.transform.parent;
+            UIKit.Place(banner, new Vector2(0.5f, 1f), new Vector2(0f, -(HeaderHeight + 2f)), new Vector2(1180f, BannerHeight), new Vector2(0.5f, 1f));
+            var block = UIKit.Panel(face.transform, "Clock", LateRed, ProceduralSprites.RoundedEdge);
+            block.rectTransform.anchorMin = new Vector2(0f, 0f);
+            block.rectTransform.anchorMax = new Vector2(0f, 1f);
+            block.rectTransform.pivot = new Vector2(0f, 0.5f);
+            block.rectTransform.sizeDelta = new Vector2(BannerHeight, 0f);
+            block.rectTransform.anchoredPosition = Vector2.zero;
+            block.raycastTarget = false;
+            var clockIcon = UIKit.Icon(block.transform, "Icon", ProceduralSprites.Clock, Color.white, 60f);
+            UIKit.Place(clockIcon.rectTransform, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(60f, 60f));
+            clockIcon.gameObject.AddComponent<UIPulse>().amount = 0.08f;
+            bannerText = UIKit.Label(face.transform, "Text", "", 30, UITheme.Ink, TextAnchor.MiddleLeft, true);
+            bannerText.rectTransform.anchorMin = Vector2.zero;
+            bannerText.rectTransform.anchorMax = Vector2.one;
+            bannerText.rectTransform.offsetMin = new Vector2(BannerHeight + 20f, 8f);
+            bannerText.rectTransform.offsetMax = new Vector2(-300f, -8f);
+            bannerText.resizeTextForBestFit = true;
+            bannerText.resizeTextMinSize = 20;
+            bannerText.resizeTextMaxSize = 30;
+            bannerText.verticalOverflow = VerticalWrapMode.Truncate;
+            bannerButton = UIKit.Button(face.transform, "FromHome", Loc.T("results.fromHome"), UITheme.Green, PlayLateFromHome, 32);
+            UIKit.Place((RectTransform)bannerButton.transform, new Vector2(1f, 0.5f), new Vector2(-18f, UIButtonFx.Depth * 0.5f), new Vector2(260f, 68f), new Vector2(1f, 0.5f));
+            banner.gameObject.SetActive(false);
+        }
+
+        void PlayLateFromHome()
+        {
+            var catalog = Controller.levels;
+            var first = lateRoute != null && catalog != null ? catalog.FindById(lateRoute.levels[0]) : null;
+            if (first != null) Controller.PlayLevel(first);
+        }
+
+        /// <summary>Works out the level to play next and any level a late trip holds back, and shows or hides the banner (the map's room above it follows).</summary>
+        void Survey(LevelCatalog catalog)
+        {
+            bool any = catalog != null && catalog.levels.Count > 0;
+            nextLevel = any ? LevelUnlocks.NextToPlay(catalog) : null;
+            heldBack = any ? LevelUnlocks.FirstHeldBack(catalog, out lateRoute) : null;
+            if (heldBack == null) lateRoute = null;
+            replay = lateRoute != null && nextLevel != null && lateRoute.levels.Length > 0 && lateRoute.levels[0] == nextLevel.levelId;
+            if (banner == null) return;
+            bool show = heldBack != null;
+            banner.gameObject.SetActive(show);
+            if (show)
+            {
+                string number = heldBack.levelId.TrimStart('L').TrimStart('0');
+                bannerText.text = Loc.F("map.lateBanner", Loc.T(lateRoute.NameKey), number);
+                bannerButton.GetComponentInChildren<Text>().text = Loc.T("results.fromHome");
+            }
+            if (view != null)
+            {
+                var inset = view.insets;
+                inset.w = HeaderHeight + (show ? BannerHeight + 8f : 0f);
+                view.insets = inset;
+            }
+        }
+
+        /// <summary>What the map says about a level: the next to play (or to play again), held back by a late trip, or nothing.</summary>
+        Beacon BeaconFor(LevelDefinition def, bool unlocked)
+        {
+            if (def == null) return Beacon.None;
+            if (def == heldBack) return Beacon.Late;
+            if (def == nextLevel && unlocked && (replay || !SaveSystem.IsCompleted(def.levelId))) return replay ? Beacon.Replay : Beacon.Play;
+            return Beacon.None;
+        }
+
+        static Color ColourOf(Beacon beacon)
+        {
+            return beacon == Beacon.Late ? LateRed : beacon == Beacon.Replay ? ReplayOrange : PlayGold;
+        }
+
+        static string TagText(Beacon beacon)
+        {
+            return Loc.T(beacon == Beacon.Late ? "map.late" : beacon == Beacon.Replay ? "map.tryAgain" : "map.play");
+        }
+
+        static Sprite TagIcon(Beacon beacon)
+        {
+            return beacon == Beacon.Late ? ProceduralSprites.Clock : beacon == Beacon.Replay ? ProceduralSprites.RetryIcon : ProceduralSprites.PlayIcon;
+        }
+
+        /// <summary>The tag's size and its middle above its node (picture pixels, y down) for a node drawn at <paramref name="scale"/>.</summary>
+        static Vector2 TagSize(Beacon beacon, float scale)
+        {
+            float w = TownMapNames.Width(TagText(beacon), TagFont) + TagHeight * 1.05f + 30f;
+            return new Vector2(w, TagHeight) * TagScale(scale);
+        }
+
+        /// <summary>The tags are as big on the other routes as on the focused one: they are what the map has to say.</summary>
+        static float TagScale(float nodeScale) { return 1f; }
+
+        static float TagLift(float scale)
+        {
+            return TownMap.NodeRadius * scale + 26f * TagScale(scale) + TagHeight * 0.5f * TagScale(scale);
+        }
+
+        /// <summary>
+        /// How far (picture pixels, + right) a tag over <paramref name="node"/> slides so that it covers as little as it can of the
+        /// other nodes' discs (and stays over its own): straight above if that is clear, else the nearest clear step either side.
+        /// </summary>
+        static float TagShift(TownNode node, Vector2 size, float lift, Route focusRoute)
+        {
+            float best = 0f, bestCover = float.MaxValue;
+            float limit = Mathf.Max(0f, size.x * 0.5f - 40f);
+            for (int step = 0; step <= 8; step++)
+            {
+                for (int side = -1; side <= 1; side += 2)
+                {
+                    float dx = side * step * limit / 8f;
+                    var box = new Rect(node.pos.x + dx - size.x * 0.5f, node.pos.y - lift - size.y * 0.5f, size.x, size.y);
+                    float cover = 0f;
+                    foreach (var other in TownMap.Nodes)
+                    {
+                        if (other == node) continue;
+                        float r = TownMap.NodeRadius * (RouteTable.Of(other.levelId) == focusRoute ? 1f : TownMapNames.OtherNodeScale) + 8f;
+                        float ox = Mathf.Max(0f, Mathf.Min(box.xMax, other.pos.x + r) - Mathf.Max(box.xMin, other.pos.x - r));
+                        float oy = Mathf.Max(0f, Mathf.Min(box.yMax, other.pos.y + r) - Mathf.Max(box.yMin, other.pos.y - r));
+                        cover += ox * oy;
+                    }
+                    // A little bias toward the middle, so a tag only moves when that clears something.
+                    cover += Mathf.Abs(dx) * 0.5f;
+                    if (cover < bestCover) { bestCover = cover; best = dx; }
+                    if (step == 0) break;
+                }
+            }
+            return best;
         }
 
         void BuildMap(RectTransform root)
@@ -355,6 +511,23 @@ namespace DribbleToSchool.FrontEnd
                 Rect pin = TownMapNames.PinBox(TownMap.Place(id));
                 taken.Add(pin);
                 drawn.Add(pin);
+            }
+            // The tags over the next level and the late one: slid sideways off the nodes beside them, and the names keep off them.
+            tagShift.Clear();
+            foreach (var def in new[] { nextLevel, heldBack })
+            {
+                if (def == null || catalog == null) continue;
+                var node = TownMap.Node(def.levelId);
+                Beacon beacon = BeaconFor(def, LevelUnlocks.IsUnlocked(catalog, def));
+                if (node == null || beacon == Beacon.None) continue;
+                float scale = RouteTable.Of(def.levelId) == focusRoute ? 1f : TownMapNames.OtherNodeScale;
+                Vector2 size = TagSize(beacon, scale);
+                float shift = TagShift(node, size, TagLift(scale), focusRoute);
+                tagShift[def.levelId] = shift;
+                Vector2 centre = node.pos + new Vector2(shift, -TagLift(scale));
+                var box = new Rect(centre.x - size.x * 0.5f, centre.y - size.y * 0.5f - 6f, size.x, size.y + 20f);
+                taken.Add(box);
+                drawn.Add(box);
             }
 
             // Home and School: the name beside the pin, where there is room for it (TownMapNames.PlaceBox).
@@ -638,6 +811,16 @@ namespace DribbleToSchool.FrontEnd
                 var amount = UIKit.Label(face, "Stars", "", 24, UITheme.Ink, TextAnchor.MiddleLeft, true);
                 UIKit.Place(amount.rectTransform, new Vector2(0f, 0f), new Vector2(78f, 17f), new Vector2(120f, 30f), new Vector2(0f, 0.5f));
                 chipStars[id] = amount;
+                // The badge at the chip's top right corner (shown by ShowRoute): a clock for a late trip, play for the next level.
+                // In the chip's bottom right corner, beside the stars (the name is above them).
+                var badge = UIKit.Icon(face, "Badge", ProceduralSprites.CircleEdge, PlayGold, 42f);
+                UIKit.Place(badge.rectTransform, new Vector2(1f, 0f), new Vector2(-28f, 22f), new Vector2(42f, 42f), new Vector2(0.5f, 0.5f));
+                var badgeIcon = UIKit.Icon(badge.transform, "Icon", ProceduralSprites.PlayIcon, Color.white, 26f);
+                UIKit.Place(badgeIcon.rectTransform, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(26f, 26f));
+                badge.gameObject.AddComponent<UIPulse>().amount = 0.08f;
+                badge.gameObject.SetActive(false);
+                chipBadges[id] = badge;
+                chipBadgeIcons[id] = badgeIcon;
 
                 // The touch target: the chip, the gap beside it and down to the screen's edge, a little up.
                 var hit = UIKit.Rect(chip.transform, "Hit");
@@ -671,6 +854,7 @@ namespace DribbleToSchool.FrontEnd
         {
             EnsurePicture();
             firstShow = true;
+            Survey(Controller.levels);            // the banner (if a late trip holds a level back) takes room above the map
             if (view != null) view.Fit(true);
             int requested = FrontEndController.RequestedChapter;
             FrontEndController.RequestedChapter = 0;
@@ -746,6 +930,7 @@ namespace DribbleToSchool.FrontEnd
             popIn = firstShow;
             firstShow = false;
             var focusRoute = RouteTable.All[RouteTable.IndexOf(id)];
+            Survey(catalog);
             for (int i = nodeLayer.childCount - 1; i >= 0; i--) Object.Destroy(nodeLayer.GetChild(i).gameObject);
             for (int i = stripRoot.childCount - 1; i >= 0; i--) Object.Destroy(stripRoot.GetChild(i).gameObject);
             items.Clear();
@@ -760,6 +945,16 @@ namespace DribbleToSchool.FrontEnd
                 chips[route.id].targetGraphic.color = on ? Color.Lerp(c, Color.white, 0.5f) : Color.Lerp(c, Color.white, 0.84f);
                 chips[route.id].transform.Find("Face").Find("Swatch").GetComponent<Image>().color = c;
                 chipStars[route.id].text = StarsOf(route) + " / " + TotalOf(route);
+                // A badge on the chip of the route that was late (a clock) or that holds the next level (play).
+                var nextRoute = nextLevel != null ? RouteTable.Of(nextLevel.levelId) : null;
+                Beacon badge = route == lateRoute ? Beacon.Late
+                    : route == nextRoute && BeaconFor(nextLevel, catalog != null && LevelUnlocks.IsUnlocked(catalog, nextLevel)) == Beacon.Play ? Beacon.Play : Beacon.None;
+                chipBadges[route.id].gameObject.SetActive(badge != Beacon.None);
+                if (badge != Beacon.None)
+                {
+                    chipBadges[route.id].color = ColourOf(badge);
+                    chipBadgeIcons[route.id].sprite = TagIcon(badge);
+                }
             }
 
             if (catalog == null || catalog.levels.Count == 0)
@@ -769,7 +964,7 @@ namespace DribbleToSchool.FrontEnd
                 return;
             }
 
-            var next = LevelUnlocks.NextToPlay(catalog);
+            var next = nextLevel;
             BuildStrip(catalog, focusRoute, next);
 
             // The nodes: the other routes' first (smaller), the focused route's last (on top), its levels named.
@@ -864,11 +1059,11 @@ namespace DribbleToSchool.FrontEnd
                 var def = catalog.FindById(levelId);
                 var spot = TownMap.Node(levelId);
                 if (def == null || spot == null) continue;
-                BuildNode(catalog, def, spot, colour, def == next, focused, index++);
+                BuildNode(catalog, def, spot, colour, BeaconFor(def, LevelUnlocks.IsUnlocked(catalog, def)), focused, index++);
             }
         }
 
-        void BuildNode(LevelCatalog catalog, LevelDefinition def, TownNode spot, Color colour, bool isNext, bool named, int index)
+        void BuildNode(LevelCatalog catalog, LevelDefinition def, TownNode spot, Color colour, Beacon beacon, bool named, int index)
         {
             bool unlocked = LevelUnlocks.IsUnlocked(catalog, def);
             int stars = SaveSystem.StarsFor(def.levelId);
@@ -885,16 +1080,19 @@ namespace DribbleToSchool.FrontEnd
             holder = UIKit.Stretch(UIKit.Rect(holderRect, "Body"));
             // The nodes pop in one after another when the map is opened (not every time the focus moves).
             if (popIn) UIKit.PopIn(holder.gameObject, Mathf.Min(index, 14) * 0.03f);
+            // The next level (or the late one) glows: a soft halo and a ring round the disc, breathing.
+            if (beacon != Beacon.None) Halo(holder, diameter, ColourOf(beacon));
 
             Color face = def.isChallenge ? UITheme.Gold : colour;
-            // Locked by a late trip to school: a tap says why, and offers the way back to it.
+            // Locked by a late trip to school: red with an alarm clock; a tap says why, and offers the way back to it.
             var late = unlocked ? null : LevelUnlocks.HeldBackBy(catalog, def);
-            var button = UIKit.Button(holder, "Button", "", unlocked ? face : UITheme.Locked, () => Tap(catalog, def, late));
+            Color disc = unlocked ? face : late != null ? LateRed : UITheme.Locked;
+            var button = UIKit.Button(holder, "Button", "", disc, () => Tap(catalog, def, late));
             UIKit.Place((RectTransform)button.transform, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(diameter, diameter), new Vector2(0.5f, 0.5f));
             button.interactable = unlocked || late != null;
             UIKit.MakeRound(button);
             // The next level's disc breathes (its stars and name stay still; UIPulse hands the scale to the button's press animation).
-            if (isNext && unlocked) button.gameObject.AddComponent<UIPulse>();
+            if (beacon == Beacon.Play || beacon == Beacon.Replay) button.gameObject.AddComponent<UIPulse>();
 
             // The touch target: the disc, or about 118 canvas units across if that is more (a clear square: taps reach the button).
             float hitSize = Mathf.Max(TownMap.NodeDiameter, 118f / Mathf.Max(0.2f, ScaleNow()));
@@ -910,7 +1108,8 @@ namespace DribbleToSchool.FrontEnd
             }
             else
             {
-                var lockIcon = UIKit.Icon(button.transform.Find("Face"), "Lock", ProceduralSprites.Lock, new Color(1f, 1f, 1f, 0.9f), 78f * scale);
+                var lockIcon = UIKit.Icon(button.transform.Find("Face"), "Lock", late != null ? ProceduralSprites.Clock : ProceduralSprites.Lock,
+                    new Color(1f, 1f, 1f, 0.95f), 78f * scale);
                 UIKit.Place(lockIcon.rectTransform, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(78f * scale, 78f * scale));
             }
 
@@ -932,6 +1131,56 @@ namespace DribbleToSchool.FrontEnd
                 BuildName(holder, name, spot.pos);
                 Block(spot.pos, name.box);
             }
+            float shift;
+            if (beacon != Beacon.None) Tag(holder, beacon, scale, tagShift.TryGetValue(def.levelId, out shift) ? shift : 0f);
+        }
+
+        /// <summary>A soft halo and a ring in <paramref name="colour"/> behind a node's disc, glowing on and off.</summary>
+        static void Halo(RectTransform holder, float diameter, Color colour)
+        {
+            var halo = UIKit.Icon(holder, "Halo", ProceduralSprites.SoftDisc, colour, diameter * 2.4f);
+            UIKit.Place(halo.rectTransform, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(diameter * 2.4f, diameter * 2.4f));
+            var glow = halo.gameObject.AddComponent<UIGlow>();
+            glow.minAlpha = 0.35f; glow.maxAlpha = 0.8f;
+            var ring = UIKit.Icon(holder, "Ring", ProceduralSprites.Ring, colour, diameter * 1.32f);
+            UIKit.Place(ring.rectTransform, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(diameter * 1.32f, diameter * 1.32f));
+            var pulse = ring.gameObject.AddComponent<UIGlow>();
+            pulse.minAlpha = 0.6f; pulse.maxAlpha = 1f; pulse.minScale = 0.98f; pulse.maxScale = 1.08f;
+            halo.rectTransform.SetAsFirstSibling();
+            ring.rectTransform.SetSiblingIndex(1);
+        }
+
+        /// <summary>
+        /// The tag over a node: "PLAY" (gold, the next level), "TRY AGAIN" (orange, the first leg of a stage to walk again) or
+        /// "LATE!" (red, the level a late trip holds back), with its icon, on a pill pointing down at the disc, bobbing.
+        /// </summary>
+        static void Tag(RectTransform holder, Beacon beacon, float scale, float shift)
+        {
+            Color colour = ColourOf(beacon);
+            float k = TagScale(scale);
+            Vector2 size = TagSize(beacon, scale);
+            var tag = UIKit.Rect(holder, "Tag");
+            UIKit.Place(tag, new Vector2(0.5f, 0.5f), new Vector2(shift, TagLift(scale)), size, new Vector2(0.5f, 0.5f));
+            // The pointer: a small square turned on its corner under the pill, over the node however far the pill slid.
+            var pointer = UIKit.Panel(tag, "Pointer", colour, null);
+            pointer.type = Image.Type.Simple;
+            UIKit.Place(pointer.rectTransform, new Vector2(0.5f, 0f), new Vector2(-shift, 2f * k), new Vector2(40f * k, 40f * k), new Vector2(0.5f, 0.5f));
+            pointer.rectTransform.localRotation = Quaternion.Euler(0f, 0f, 45f);
+            pointer.raycastTarget = false;
+            var pill = UIKit.Panel(tag, "Pill", colour, ProceduralSprites.RoundedEdge);
+            UIKit.Stretch(pill.rectTransform);
+            pill.raycastTarget = false;
+            float iconSize = TagHeight * 0.62f * k;
+            var icon = UIKit.Icon(pill.transform, "Icon", TagIcon(beacon), Color.white, iconSize);
+            UIKit.Place(icon.rectTransform, new Vector2(0f, 0.5f), new Vector2(TagHeight * 0.55f * k, 0f), new Vector2(iconSize, iconSize), new Vector2(0.5f, 0.5f));
+            var text = UIKit.Label(pill.transform, "Text", TagText(beacon), Mathf.RoundToInt(TagFont * k), Color.white, TextAnchor.MiddleCenter, true);
+            text.horizontalOverflow = HorizontalWrapMode.Overflow;
+            text.rectTransform.anchorMin = Vector2.zero;
+            text.rectTransform.anchorMax = Vector2.one;
+            text.rectTransform.offsetMin = new Vector2(TagHeight * k, 0f);
+            text.rectTransform.offsetMax = new Vector2(-14f * k, 0f);
+            Outlined(text, 3f);
+            tag.gameObject.AddComponent<UIBob>().amount = 14f * k;
         }
 
         /// <summary>
@@ -1064,7 +1313,8 @@ namespace DribbleToSchool.FrontEnd
                 Color face = def.isChallenge ? UITheme.Gold : colour;
                 string number = def.isChallenge ? "!" : def.levelId.TrimStart('L').TrimStart('0');
                 var late = unlocked ? null : LevelUnlocks.HeldBackBy(catalog, def);
-                var button = UIKit.Button(stripRoot, "Level_" + levelId, unlocked ? number : "", unlocked ? face : UITheme.Locked, () => Tap(catalog, def, late), 36);
+                Beacon beacon = BeaconFor(def, unlocked);
+                var button = UIKit.Button(stripRoot, "Level_" + levelId, unlocked ? number : "", unlocked ? face : late != null ? LateRed : UITheme.Locked, () => Tap(catalog, def, late), 36);
                 var rt = (RectTransform)button.transform;
                 UIKit.Place(rt, new Vector2(0f, 0f), new Vector2(x + chip * 0.5f, ChipY), new Vector2(chip, 54f), new Vector2(0.5f, 0.5f));
                 button.interactable = unlocked || late != null;
@@ -1074,13 +1324,13 @@ namespace DribbleToSchool.FrontEnd
                 ClearHit(hit);
                 if (!unlocked)
                 {
-                    var lockIcon = UIKit.Icon(button.transform.Find("Face"), "Lock", ProceduralSprites.Lock, new Color(1f, 1f, 1f, 0.9f), 34f);
+                    var lockIcon = UIKit.Icon(button.transform.Find("Face"), "Lock", late != null ? ProceduralSprites.Clock : ProceduralSprites.Lock, new Color(1f, 1f, 1f, 0.95f), 34f);
                     UIKit.Place(lockIcon.rectTransform, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(34f, 34f));
                 }
-                if (def == next && unlocked)
+                if (beacon != Beacon.None)
                 {
-                    button.gameObject.AddComponent<UIPulse>().amount = 0.05f;
-                    var marker = UIKit.Icon(stripRoot, "Next", ProceduralSprites.ArrowUp, UITheme.Gold, 34f);
+                    if (beacon != Beacon.Late) button.gameObject.AddComponent<UIPulse>().amount = 0.05f;
+                    var marker = UIKit.Icon(stripRoot, "Next", ProceduralSprites.ArrowUp, ColourOf(beacon), 34f);
                     UIKit.Place(marker.rectTransform, new Vector2(0f, 0f), new Vector2(x + chip * 0.5f, StripHeight + 12f), new Vector2(34f, 34f), new Vector2(0.5f, 0.5f));
                     marker.rectTransform.localRotation = Quaternion.Euler(0f, 0f, 180f);
                     var o = marker.gameObject.AddComponent<Outline>();
