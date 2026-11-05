@@ -207,11 +207,13 @@ namespace DribbleToSchool.FrontEnd
                 UIKit.Place(status.rectTransform, new Vector2(0.5f, 0f), new Vector2(0f, 34f), new Vector2(214f, 40f), new Vector2(0.5f, 0.5f));
                 UIKit.Fit(status, 20);
             }
-            else if (item.IsStickerReward)
+            else if (item.IsReward)
             {
-                // Not for sale: a sticker and how far the stickers still have to go.
+                // Not for sale: a sticker (or a medal, for walking to school) and how far there is still to go.
                 icon.color = new Color(1f, 1f, 1f, 0.75f);
-                var tag = UIKit.Icon(face, "Sticker", ProceduralSprites.StickerIcon, Color.white, 40f);
+                var tag = item.IsRouteReward
+                    ? UIKit.Icon(face, "Medal", ProceduralSprites.Medal, UITheme.Gold, 40f)
+                    : UIKit.Icon(face, "Sticker", ProceduralSprites.StickerIcon, Color.white, 40f);
                 UIKit.Place(tag.rectTransform, new Vector2(0.5f, 0f), new Vector2(-62f, 34f), new Vector2(40f, 40f), new Vector2(0.5f, 0.5f));
                 var needs = UIKit.Label(face, "Needs", Needs(item, false), 26, UITheme.Navy, TextAnchor.MiddleLeft, true);
                 UIKit.Place(needs.rectTransform, new Vector2(0.5f, 0f), new Vector2(26f, 34f), new Vector2(136f, 40f), new Vector2(0.5f, 0.5f));
@@ -230,10 +232,19 @@ namespace DribbleToSchool.FrontEnd
             }
         }
 
-        /// <summary>What a sticker reward still needs: "Find 3 more stickers" / "Complete the Beach set" (short: "3 more", "2 / 4 set").</summary>
+        /// <summary>
+        /// What a reward still needs: "Find 3 more stickers" / "Complete the Beach set" / "Walk 2 more ways to school" (short: "3 more",
+        /// "2 / 4 set", "4 / 6").
+        /// </summary>
         string Needs(CosmeticItem item, bool full)
         {
             var levels = Controller.levels;
+            if (item.IsRouteReward)
+            {
+                int walk = RouteRewards.StillNeeded(item);
+                if (!full) return Loc.F("shop.routesShort", RouteRewards.Walked(), item.unlockValue);
+                return walk == 1 ? Loc.T("shop.walkOne") : Loc.F("shop.walkMore", walk);
+            }
             if (item.unlock == CosmeticUnlock.StickerSet)
             {
                 int total;
@@ -274,12 +285,12 @@ namespace DribbleToSchool.FrontEnd
             previewIcon.enabled = true;
             previewIcon.sprite = CosmeticArt.Icon(selected);
             previewName.text = selected.displayName;
-            previewRarity.text = Loc.T("rarity." + selected.rarity) + (selected.IsStickerReward ? "  ·  " + Loc.T("shop.exclusive") : "");
+            previewRarity.text = Loc.T("rarity." + selected.rarity) + (selected.IsReward ? "  ·  " + Loc.T("shop.exclusive") : "");
             previewRarity.color = UITheme.RarityColor(selected.rarity);
 
             bool owned = SaveSystem.Owns(selected.id);
             bool equipped = EquippedId(selected.category) == selected.id;
-            bool locked = !owned && selected.IsStickerReward;
+            bool locked = !owned && selected.IsReward;
             previewPrice.gameObject.SetActive(!owned && !locked);
             previewPriceText.text = selected.price.ToString();
             previewNeeds.gameObject.SetActive(locked);
@@ -288,8 +299,8 @@ namespace DribbleToSchool.FrontEnd
 
             if (locked)
             {
-                // Earned, not bought: off to the sticker book.
-                actionLabel.text = Loc.T("shop.toAlbum");
+                // Earned, not bought: off to the sticker book (or the map, to walk to school).
+                actionLabel.text = Loc.T(selected.IsRouteReward ? "shop.toMap" : "shop.toAlbum");
                 actionButton.interactable = true;
                 actionButton.targetGraphic.color = UITheme.Blue;
             }
@@ -317,9 +328,9 @@ namespace DribbleToSchool.FrontEnd
         void OnAction()
         {
             if (selected == null) return;
-            if (!SaveSystem.Owns(selected.id) && selected.IsStickerReward)
+            if (!SaveSystem.Owns(selected.id) && selected.IsReward)
             {
-                Controller.Show(FrontEndScreenId.Album);
+                Controller.Show(selected.IsRouteReward ? FrontEndScreenId.Map : FrontEndScreenId.Album);
                 return;
             }
             if (!SaveSystem.Owns(selected.id))

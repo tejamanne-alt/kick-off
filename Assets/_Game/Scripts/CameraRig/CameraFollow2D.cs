@@ -10,7 +10,9 @@ namespace DribbleToSchool.CameraRig
     /// Side-scroller camera for the 3D street: a perspective camera looking along +z from a
     /// little above the kid's eye height, tilted down a touch so the road and pavements read as
     /// ground. It frames the kid close (about a quarter of the screen tall) with the view ahead
-    /// of them, a lean toward the ball, a vertical dead zone for small hops, and never shows past the
+    /// of them, a small lean toward the ball while it is close (never far: the kid is the one played, and a ball
+    /// kicked away never drags the view off them; the HUD points at a ball off the screen, UI/BallMarker), a
+    /// vertical dead zone for small hops, and never shows past the
     /// level edges. The kid stands where no thumb covers them: a set fraction of the way across the
     /// screen, pushed further right as far as the walk stick's area on the left needs
     /// (GameInput.KidSafeScreenX), a little nearer the middle when still. On narrower screens it pulls back
@@ -24,8 +26,16 @@ namespace DribbleToSchool.CameraRig
         public BallController ball;
 
         [Header("Framing")]
-        [Tooltip("How much the camera leans toward the ball (0 = kid only).")]
+        [Tooltip("How much the camera leans toward the ball (0 = kid only), while the ball is close.")]
         [Range(0f, 1f)] public float ballWeight = 0.3f;
+        [Tooltip("The view leans toward the ball only while it is this close to the kid (world units): from half this far the lean fades, and past it the view is on the kid alone.")]
+        public float ballLeanRange = 6f;
+        [Tooltip("At most this far (world units) the view leans toward the ball across the screen.")]
+        public float maxBallLean = 1.2f;
+        [Tooltip("At most this far (world units) the view leans toward the ball up or down.")]
+        public float maxBallLeanUp = 0.5f;
+        [Tooltip("The kid is never nearer a side of the screen than this (fraction of its width), however the view leans or lags.")]
+        [Range(0.05f, 0.4f)] public float kidEdgeMargin = 0.15f;
         [Tooltip("How far the focus point is above the kid, so their feet sit low in the frame.")]
         public float verticalOffset = 1.4f;
         [Tooltip("Where the kid stands across the screen while walking (0 = left edge, 0.5 = middle), when the buttons leave room for it.")]
@@ -155,9 +165,12 @@ namespace DribbleToSchool.CameraRig
             punch = Mathf.SmoothDamp(punch, 0f, ref punchVelocity, punchTime, Mathf.Infinity, Time.unscaledDeltaTime);
             if (cam.orthographic) cam.orthographicSize = baseSize * zoom * (1f + punch);
 
-            Vector2 target = ClampToBounds(new Vector2(focus.x + lookAhead, trackedY));
+            float kidX = kid.transform.position.x;
+            Vector2 target = ClampToBounds(new Vector2(KeepInView(focus.x + lookAhead, kidX, HalfWidth, kidEdgeMargin), trackedY));
             center.x = Mathf.SmoothDamp(center.x, target.x, ref velocityX, smoothTimeX);
             center.y = Mathf.SmoothDamp(center.y, target.y, ref velocityY, smoothTimeY);
+            // However fast the kid goes (a trampoline's throw, a moving pallet), the smoothing never leaves them at the edge.
+            center.x = ClampToBounds(new Vector2(KeepInView(center.x, kidX, HalfWidth, kidEdgeMargin * 0.5f), center.y)).x;
 
             shakeOffset = Vector3.zero;
             if (Time.unscaledTime < shakeUntil)
@@ -180,7 +193,7 @@ namespace DribbleToSchool.CameraRig
             lookAheadVelocity = velocityX = velocityY = 0f;
             Vector2 focus = Focus();
             trackedY = focus.y + verticalOffset;
-            center = ClampToBounds(new Vector2(focus.x + lookAhead, trackedY));
+            center = ClampToBounds(new Vector2(KeepInView(focus.x + lookAhead, kid.transform.position.x, HalfWidth, kidEdgeMargin), trackedY));
             shakeOffset = Vector3.zero;
             Place(center, Vector3.zero);
         }
@@ -212,11 +225,35 @@ namespace DribbleToSchool.CameraRig
             return (0.5f - screenX) * 2f * halfWidth;
         }
 
+        /// <summary>The kid, leaned a little toward the ball while it is close (<see cref="BallLean"/>).</summary>
         Vector2 Focus()
         {
             Vector2 focus = kid.transform.position;
-            if (ball != null) focus = Vector2.Lerp(focus, ball.transform.position, ballWeight);
+            if (ball != null) focus += BallLean((Vector2)ball.transform.position - focus, ballWeight, ballLeanRange, maxBallLean, maxBallLeanUp);
             return focus;
+        }
+
+        /// <summary>
+        /// How far the view leans from the kid toward a ball <paramref name="offset"/> away: <paramref name="weight"/> of the way while
+        /// it is within half of <paramref name="range"/>, fading to nothing at <paramref name="range"/>, and never more than
+        /// <paramref name="maxAcross"/> across or <paramref name="maxUp"/> up or down. A ball kicked far away leaves the view on the kid.
+        /// </summary>
+        public static Vector2 BallLean(Vector2 offset, float weight, float range, float maxAcross, float maxUp)
+        {
+            float half = Mathf.Max(0.01f, range * 0.5f);
+            float fade = 1f - Mathf.Clamp01((offset.magnitude - half) / half);
+            Vector2 lean = offset * (weight * fade);
+            return new Vector2(Mathf.Clamp(lean.x, -maxAcross, maxAcross), Mathf.Clamp(lean.y, -maxUp, maxUp));
+        }
+
+        /// <summary>
+        /// The view's centre <paramref name="centerX"/> moved just enough that the kid at <paramref name="kidX"/> stands at least
+        /// <paramref name="margin"/> of the screen's width in from either side, for a view <paramref name="halfWidth"/> either side of its centre.
+        /// </summary>
+        public static float KeepInView(float centerX, float kidX, float halfWidth, float margin)
+        {
+            float reach = Mathf.Max(0f, 0.5f - margin) * 2f * halfWidth;
+            return Mathf.Clamp(centerX, kidX - reach, kidX + reach);
         }
 
         Vector2 ClampToBounds(Vector2 p)

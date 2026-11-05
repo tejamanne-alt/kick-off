@@ -88,6 +88,7 @@ namespace DribbleToSchool.Progression
             Own(d, d.equippedTrail);
             // Version 2: the trips to school. Routes already finished count as walked on time.
             SchoolTrips.Upgrade(d);
+            if (d.schoolMedals == null) d.schoolMedals = new System.Collections.Generic.List<string>();
             d.version = SaveData.CurrentVersion;
         }
 

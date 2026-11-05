@@ -174,6 +174,9 @@ namespace DribbleToSchool.UI
             // If the kid is ever wedged somewhere: "Stuck? Back to the checkpoint".
             var stuck = StuckHelper.Create(root, level, kid, () => level.RespawnAtCheckpoint());
 
+            // The camera stays on the kid: a ball kicked out of view is shown at the side of the screen, with how far it is.
+            BallMarker.Create(root, level, kid, ball);
+
             // The coach: a card across the top, between the info card and the pause button, saying how to do what comes
             // next (slide under, chip it over, wait for the green man...), a challenge's steps, and the first-time tips.
             coach = ActionCoach.Create(root, level, kid, ball, (RectTransform)info.transform.parent, tuneRect != null ? tuneRect : pauseRect, stuck);
@@ -503,6 +506,18 @@ namespace DribbleToSchool.UI
 
         // ---------- Results ----------
 
+        /// <summary>
+        /// "A medal is waiting" when this level has just walked its route all the way to school (or "your trophy is waiting" when that
+        /// was the last of the six), before the menu celebrates it (Cosmetics/RouteRewards, UI/SchoolRewardPanel); else null.
+        /// </summary>
+        string MedalWaiting()
+        {
+            var route = level.level != null ? RouteTable.Of(level.level.levelId) : null;
+            var data = Progression.SaveSystem.Data;
+            if (route == null || !Cosmetics.RouteRewards.IsWalked(route) || data.schoolMedals.Contains(route.id)) return null;
+            return Loc.T(Cosmetics.RouteRewards.AllWalked() && !data.schoolTrophy ? "results.allWalked" : "results.medal");
+        }
+
         /// <summary>Has this sticker earned a Locker Room reward? (The menu hands it out.)</summary>
         bool StickerRewardWaiting()
         {
@@ -640,8 +655,12 @@ namespace DribbleToSchool.UI
                 if (r.newStars > 0) extras += Loc.F("results.newStars", r.newStars) + "    ";
                 if (r.stickerIsNew) extras += Loc.T(StickerRewardWaiting() ? "results.stickerReward" : "results.newSticker");
                 else if (r.stickerFound) extras += Loc.T("results.oldSticker");
+                // This leg finished the whole route to school: its medal (or, the last of the six, the trophy) waits on the map.
+                string medal = MedalWaiting();
+                if (medal != null) extras = medal;
                 var ex = UIKit.Label(card.transform, "Extras", extras, 32, new Color(0.8f, 0.35f, 0.55f), TextAnchor.MiddleCenter, true);
                 UIKit.Place(ex.rectTransform, new Vector2(0.5f, 0f), new Vector2(0f, 190f), new Vector2(1050f, 44f));
+                UIKit.Fit(ex, 22);
             }
 
             // The buttons. When a route's last leg leaves the next stage shut (late, or untimed and never on time), the way on is to walk

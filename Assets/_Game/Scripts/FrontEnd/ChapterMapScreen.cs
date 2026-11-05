@@ -63,6 +63,7 @@ namespace DribbleToSchool.FrontEnd
         readonly Dictionary<string, UIMapMesh> routeMeshes = new Dictionary<string, UIMapMesh>();
         readonly Dictionary<string, Button> chips = new Dictionary<string, Button>();
         readonly Dictionary<string, Text> chipStars = new Dictionary<string, Text>();
+        readonly Dictionary<string, RectTransform> chipMedals = new Dictionary<string, RectTransform>();   // a route walked all the way to school
         readonly List<Rect> taken = new List<Rect>();     // boxes of the texts already placed on the picture
         readonly List<Rect> drawn = new List<Rect>();     // what is drawn on the picture besides the nodes (pins, names, the pill): the level names keep off it
         readonly Dictionary<string, MapName> names = new Dictionary<string, MapName>();   // the focused route's level names, where they go
@@ -845,6 +846,12 @@ namespace DribbleToSchool.FrontEnd
                 badge.gameObject.SetActive(false);
                 chipBadges[id] = badge;
                 chipBadgeIcons[id] = badgeIcon;
+                // The route's medal, hanging over the chip's top right corner once it has been walked all the way to school
+                // (Cosmetics/RouteRewards; shown by ShowRoute).
+                var medal = UI.SchoolRewardPanel.MedalIcon(face, "Medal", Color.white, 46f, true);
+                UIKit.Place(medal, new Vector2(1f, 1f), new Vector2(-30f, 4f), new Vector2(46f, 46f), new Vector2(0.5f, 0.5f));
+                medal.gameObject.SetActive(false);
+                chipMedals[id] = medal;
 
                 // The touch target: the chip, the gap beside it and down to the screen's edge, a little up.
                 var hit = UIKit.Rect(chip.transform, "Hit");
@@ -969,6 +976,9 @@ namespace DribbleToSchool.FrontEnd
                 chips[route.id].targetGraphic.color = on ? Color.Lerp(c, Color.white, 0.5f) : Color.Lerp(c, Color.white, 0.84f);
                 chips[route.id].transform.Find("Face").Find("Swatch").GetComponent<Image>().color = c;
                 chipStars[route.id].text = StarsOf(route) + " / " + TotalOf(route);
+                bool walked = Cosmetics.RouteRewards.IsWalked(route);
+                chipMedals[route.id].gameObject.SetActive(walked);
+                if (walked) UI.SchoolRewardPanel.TintMedal(chipMedals[route.id], c, true);
                 // A badge on the chip of the route that was late (a clock) or that holds the next level (play).
                 var nextRoute = nextLevel != null ? RouteTable.Of(nextLevel.levelId) : null;
                 Beacon badge = route == lateRoute ? Beacon.Late

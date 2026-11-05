@@ -206,8 +206,10 @@ namespace DribbleToSchool.FrontEnd
                 }
             }
 
-            // The rewards those stickers earn, granted now so no celebration covers the menu.
+            // The rewards those stickers (and the routes walked to school) earn, granted now so no celebration covers the menu.
             StickerRewards.GrantEarned(levels, cosmetics);
+            RouteRewards.GrantEarned(cosmetics);
+            RouteRewards.MarkCelebrated(RouteRewards.NewMedals(), RouteRewards.AllWalked());
             if (cosmetics != null)
             {
                 var ball = StickerRewards.ForChapter(cosmetics, 1);

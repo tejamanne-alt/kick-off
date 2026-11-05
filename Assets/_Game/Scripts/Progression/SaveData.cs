@@ -52,6 +52,11 @@ namespace DribbleToSchool.Progression
         /// <summary>The trip to school along each route that has been walked (Progression/SchoolTrips). Version 1 saves had none.</summary>
         public List<TripRecord> trips = new List<TripRecord>();
 
+        // Walking to school (Cosmetics/RouteRewards): the routes whose arrival has been celebrated with their medal, and
+        // whether the trophy for every way has (both are worked out from the levels; these only stop a second celebration).
+        public List<string> schoolMedals = new List<string>();
+        public bool schoolTrophy;
+
         /// <summary>The saved result of a level, or null if it has never been finished.</summary>
         public LevelRecord Level(string levelId)
         {

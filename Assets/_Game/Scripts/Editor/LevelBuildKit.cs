@@ -846,6 +846,17 @@ namespace DribbleToSchool.EditorTools
             struct GroundSpan { public float from, to, top; }
             struct PendingSign { public Transform sign; public Vector2 boardSize; }
             readonly List<GroundSpan> groundSpans = new List<GroundSpan>();
+            /// <summary>The town holes' cones and barriers, laid once the ground either side of each is known (<see cref="Finish"/>).</summary>
+            readonly List<Vector3> pendingRoadWorks = new List<Vector3>();
+
+            /// <summary>The top of the ground at <paramref name="x"/> (the highest span there), or false where there is none (a hole).</summary>
+            bool GroundTopAt(float x, out float top)
+            {
+                top = float.MinValue;
+                foreach (var span in groundSpans)
+                    if (x >= span.from - 0.01f && x <= span.to + 0.01f) top = Mathf.Max(top, span.top);
+                return top > float.MinValue;
+            }
             readonly List<PendingSign> pendingSigns = new List<PendingSign>();
 
             // Ground and pit fills reach well below the lowest camera view, so no sky shows under the level.
@@ -956,7 +967,7 @@ namespace DribbleToSchool.EditorTools
                 {
                     // A concrete lip round the dug edge.
                     StreetBuilder.Solid(root, name + "Lip", new Vector3(cx, top + 0.015f, StreetBuilder.PathHalf - 0.06f), new Vector3(w + 0.1f, 0.03f, 0.12f), new Color(0.6f, 0.6f, 0.6f));
-                    RoadWorks(fromX, toX, top);
+                    pendingRoadWorks.Add(new Vector3(fromX, toX, top));   // the cones go on the banks, so once the ground is all laid
                 }
 
                 LoseZone(name, fromX, toX, top, message);
@@ -974,23 +985,32 @@ namespace DribbleToSchool.EditorTools
                 go.AddComponent<LoseZone>().message = message;
             }
 
-            /// <summary>Safety cones before and after a hole (either side of the kid's line) and a striped barrier behind it.</summary>
+            /// <summary>
+            /// Safety cones on each bank of a hole (either side of the kid's line), standing on that bank's own ground (a trench
+            /// at the foot of a raised deck has them up on the deck's edge; none where there is no ground), and a striped barrier
+            /// behind the hole at its own top, over the banks only where they are level with it.
+            /// </summary>
             void RoadWorks(float fromX, float toX, float top)
             {
                 float zc = StreetBuilder.PathHalf - 0.35f;
                 foreach (float x in new[] { fromX - 0.45f, toX + 0.45f })
                     foreach (float z in new[] { -zc, zc })
                     {
-                        if (StreetBuilder.Model(root, "Street", "TrafficCone", x, top, z, (x * 53f + z * 31f) % 360f) != null) continue;
+                        float bank;
+                        if (!GroundTopAt(x, out bank)) continue;
+                        if (StreetBuilder.Model(root, "Street", "TrafficCone", x, bank, z, (x * 53f + z * 31f) % 360f) != null) continue;
                         var cone = new GameObject("Cone");
                         cone.transform.SetParent(root, false);
-                        cone.transform.position = new Vector3(x, top, z);
+                        cone.transform.position = new Vector3(x, bank, z);
                         cone.AddComponent<ConeShape>();
                         cone.GetComponent<MeshRenderer>().sharedMaterial = Art.solid;
                         cone.GetComponent<ConeShape>().Rebuild();
                     }
-                // Barrier along the back edge of the hole: a yellow-and-black rail on two legs.
-                float bz = StreetBuilder.PathHalf + 0.12f, a = fromX - 0.25f, b = toX + 0.25f;
+                // Barrier along the back edge of the hole: a yellow-and-black rail on two legs (reaching over a bank only where it is level).
+                float bz = StreetBuilder.PathHalf + 0.12f, leftTop, rightTop;
+                bool levelLeft = GroundTopAt(fromX - 0.25f, out leftTop) && Mathf.Abs(leftTop - top) < 0.05f;
+                bool levelRight = GroundTopAt(toX + 0.25f, out rightTop) && Mathf.Abs(rightTop - top) < 0.05f;
+                float a = levelLeft ? fromX - 0.25f : fromX + 0.05f, b = levelRight ? toX + 0.25f : toX - 0.05f;
                 if (StreetBuilder.Row(root, "Street", "RoadBarrier", a, b, top, bz)) return;
                 foreach (float x in new[] { a + 0.1f, b - 0.1f })
                     StreetBuilder.Solid(root, "BarrierLeg", new Vector3(x, top + 0.45f, bz), new Vector3(0.06f, 0.9f, 0.3f), new Color(0.3f, 0.3f, 0.32f));
@@ -3503,6 +3523,8 @@ namespace DribbleToSchool.EditorTools
                 foreach (var wash in tideWashes) wash.seaY = LowestGroundTop - 0.3f;
                 foreach (var pending in pendingSigns) PlantSign(pending.sign, pending.boardSize);
                 pendingSigns.Clear();
+                foreach (var works in pendingRoadWorks) RoadWorks(works.x, works.y, works.z);
+                pendingRoadWorks.Clear();
                 ReportFeasibility();
                 BuildCoachSpots();
                 BuildStreetSlabs();

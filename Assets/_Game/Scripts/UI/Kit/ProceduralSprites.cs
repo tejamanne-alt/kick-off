@@ -6,6 +6,7 @@ namespace DribbleToSchool.UI.Kit
     public static class ProceduralSprites
     {
         static Sprite rounded, roundedSmall, circle, star, coin, lockIcon, gradient, arrow, pause, ring, softDisc, softEdgeDisc, ballIcon;
+        static Sprite trophy, medal, medalRibbon;
         static Sprite roundedEdge, roundedEdgeSmall, circleEdge, check, pitchBadge, holoSheen, goldSheen, stickerIcon, streak, swoosh, bolt, shield, magnet;
         static Sprite jumpIcon, spotHole, thinRing, clock, play, retry;
 
@@ -451,6 +452,57 @@ namespace DribbleToSchool.UI.Kit
         public static Sprite Star
         {
             get { return star != null ? star : (star = MakeShape(128, StarAlpha)); }
+        }
+
+        /// <summary>
+        /// A trophy cup (the reward for walking every way to school): the bowl with a star cut in it, a handle each side, the
+        /// stem with its knot, and the base on its plinth. Tinted gold where it is used.
+        /// </summary>
+        public static Sprite Trophy
+        {
+            get
+            {
+                return trophy != null ? trophy : (trophy = MakeShape(192, (u, v) =>
+                {
+                    if (StarAlpha(u / 0.21f, (v - 0.47f) / 0.21f) > 0.5f) return 0f;   // the star on the bowl
+                    if (v >= 0.02f && v <= 0.84f && Mathf.Abs(u) <= 0.14f + 0.44f * Mathf.Sqrt((v - 0.02f) / 0.82f)) return 1f;   // the bowl
+                    if (v > 0.8f && v <= 0.9f && Mathf.Abs(u) <= 0.63f) return 1f;   // its rim
+                    float hx = Mathf.Abs(u), hd = Mathf.Sqrt((hx - 0.56f) * (hx - 0.56f) + (v - 0.5f) * (v - 0.5f));
+                    if (hx > 0.5f && Mathf.Abs(hd - 0.2f) < 0.06f) return 1f;   // the handles
+                    if (Mathf.Abs(u) < 0.08f && v < 0.05f && v > -0.5f) return 1f;   // the stem
+                    if (Mathf.Abs(u) < 0.18f && Mathf.Abs(v + 0.15f) < 0.06f) return 1f;   // its knot
+                    if (v <= -0.48f && v > -0.68f && Mathf.Abs(u) < 0.34f) return 1f;   // the base
+                    if (v <= -0.71f && v > -0.9f && Mathf.Abs(u) < 0.5f) return 1f;   // the plinth
+                    return 0f;
+                }));
+            }
+        }
+
+        /// <summary>A medal's disc (one for each way walked to school): a fine ring inside the rim and a star struck in the middle, cut out.</summary>
+        public static Sprite Medal
+        {
+            get
+            {
+                return medal != null ? medal : (medal = MakeShape(160, (u, v) =>
+                {
+                    float d = Mathf.Sqrt(u * u + v * v);
+                    if (d > 0.92f || Mathf.Abs(d - 0.74f) < 0.035f) return 0f;
+                    return StarAlpha(u / 0.5f, v / 0.5f) > 0.5f ? 0f : 1f;
+                }));
+            }
+        }
+
+        /// <summary>A medal's ribbon: two straps from a flat top down into a V, for behind the disc (tinted in the route's colour).</summary>
+        public static Sprite MedalRibbon
+        {
+            get
+            {
+                return medalRibbon != null ? medalRibbon : (medalRibbon = MakeShape(160, (u, v) =>
+                {
+                    if (v > 0.92f) return 0f;
+                    return Segment(u, v, -0.5f, 0.95f, -0.04f, -0.25f) < 0.17f || Segment(u, v, 0.5f, 0.95f, 0.04f, -0.25f) < 0.17f ? 1f : 0f;
+                }));
+            }
         }
 
         public static Sprite Lock

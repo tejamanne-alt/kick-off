@@ -684,7 +684,7 @@ namespace DribbleToSchool.EditorTools
         /// <summary>L17: a building site: ride crane-carried pallets over the trenches and the hoist up to the loading dock.</summary>
         public static void Cranes(TrackBuilder t)
         {
-            t.Walls(-8f, 110f);
+            t.Walls(-8f, 114f);
             t.Start(0f);
             t.Hint(15f, "platform");
             t.Ground(-8f, 20f);
@@ -705,11 +705,15 @@ namespace DribbleToSchool.EditorTools
             t.Sign("Builder's lift - going up!", new Vector2(66.5f, 4.6f));
             t.Ground(70f, 82f, 2f);
             t.Checkpoint(73f, 2f);
+            // The last trench is dug into the site's raised deck too: its far bank is the deck again (cones on both edges, a wall
+            // at each end), and a ramp takes the kid down to the street after it.
             t.Pit(82f, 90f, 2f);
             t.MovingPlatform(new Vector2(84f, 1.825f), 2.6f, new Vector2(4f, 0f));
-            t.Ground(90f, 110f);
-            t.Checkpoint(93f);
-            t.SlideUnder(97f, TrackBuilder.SlideLook.SiteBarrier);
+            t.Ground(90f, 92f, 2f);
+            t.Checkpoint(91f, 2f);
+            t.Ramp(new Vector2(92f, 2f), new Vector2(98f, 0f));
+            t.Ground(92f, 114f);
+            t.SlideUnder(101f, TrackBuilder.SlideLook.SiteBarrier);
 
             t.CoinRow(22f, 28f, 1f, 4);
             t.CoinRow(46f, 50f, 1.8f, 3);
@@ -717,7 +721,7 @@ namespace DribbleToSchool.EditorTools
             t.CoinRow(74f, 80f, 2.5f, 3);
             t.CoinRow(85f, 88f, 2.8f, 3);
             t.Sticker(new Vector2(67f, 6f));
-            t.Goal(102f);
+            t.Goal(106f);
         }
 
         /// <summary>
@@ -798,7 +802,7 @@ namespace DribbleToSchool.EditorTools
             t.Walls(-8f, 110f);
             t.Start(0f);
             t.Hint(8f, "fountain");
-            t.Ground(-8f, 110f);
+            t.Ground(-8f, 60f);
             t.Sign("Fountain jets push the ball up -\ndribble into them!", new Vector2(5f, 3.4f));
 
             t.Fountain(13f, 0f, 4f, 18f);
@@ -811,7 +815,8 @@ namespace DribbleToSchool.EditorTools
             t.Fountain(50f, 0f, 4f, 18f);
             t.Springboard(52f);
             t.Wall(54f, 1.6f);
-            t.Water(60f, 62f);
+            t.Water(60f, 62f);   // a real gap in the path (it was laid over unbroken ground)
+            t.Ground(62f, 110f);
             t.Checkpoint(65f);
             t.Fountain(72f, 0f, 6f, 14f);
             t.Dog(80f, 88f, DogWhite);

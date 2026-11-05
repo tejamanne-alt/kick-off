@@ -615,6 +615,8 @@ namespace DribbleToSchool.Holiday
             // If the kid is ever wedged somewhere: "Stuck? Back to the checkpoint" (it costs a ball, like Pause > Back to checkpoint).
             if (director.level != null && director.kid != null)
                 StuckHelper.Create(safe, director.level, director.kid, () => director.level.RespawnAtCheckpoint());
+            // The camera stays on the kid: a ball kicked out of view is shown at the side of the screen.
+            if (director.kid != null && director.ball != null) BallMarker.Create(safe, director.level, director.kid, director.ball);
         }
 
         void BuildCentreText()

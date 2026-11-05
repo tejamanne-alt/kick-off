@@ -167,7 +167,7 @@ Assets/_Game/
     Ball/       BallController.cs      physics ball, auto/perfect touches, juggle, kick
                 KickAimer.cs           kick-button aim (forward or back) + slow motion
                 TrajectoryPreview.cs   dotted arc for the first ~0.5 s
-    CameraRig/  CameraFollow2D.cs      the kid kept clear of the left thumb, vertical dead zone, level bounds
+    CameraRig/  CameraFollow2D.cs      on the kid (a small lean toward a close ball), clear of the left thumb, vertical dead zone, level bounds
     Core/       LevelManager.cs        intro, bell, checkpoints, lose/respawn, pause, stars
                 Checkpoint.cs, LoseZone.cs, GoalZone.cs, TimeControl.cs, GameSettings.cs
     Levels/     LevelDefinition.cs, LevelCatalog.cs (ScriptableObjects)
@@ -186,7 +186,7 @@ Assets/_Game/
 
 ## About the camera
 
-The original plan named Cinemachine for the camera. For now the project uses its own `CameraFollow2D`, which already keeps the kid clear of the control buttons with the view ahead of them, a vertical dead zone, level bounds and a snap on respawn. The reason is that I couldn't compile against Cinemachine's API while building this, and a single wrong API call would stop the project from entering Play mode. It's a self-contained swap once the levels are verified in the editor.
+The original plan named Cinemachine for the camera. For now the project uses its own `CameraFollow2D`, which already keeps the kid clear of the control buttons with the view ahead of them, a vertical dead zone, level bounds and a snap on respawn. The camera is on the kid, the one being played: it leans toward the ball only a little (at most 1.2 m across and 0.5 m up) and only while the ball is close (fading out between 3 and 6 m), and the kid always stays at least 15 % of the screen's width in from either side, however the view leans or lags (`BallLean`, `KeepInView`). A ball kicked out of view is shown at that side of the screen by a marker with its distance (`UI/BallMarker`, in the levels and the Holiday Run). The reason is that I couldn't compile against Cinemachine's API while building this, and a single wrong API call would stop the project from entering Play mode. It's a self-contained swap once the levels are verified in the editor.
 
 ## Progression
 
@@ -194,7 +194,8 @@ The original plan named Cinemachine for the camera. For now the project uses its
 - **Stickers:** one is hidden in each level, often high up, so a well-kicked ball can collect it.
 - **Stars:** one per goal, each on its own: finishing; keeping the leg's pace (on a route's last leg walked from home: the whole trip before the bell); collecting every coin and the level's sticker.
 - **Stages:** the next route opens when the last one's whole trip from home has got to school before the bell once (cozy mode skips this; saves from before the trips count every finished route as on time).
-- **Locker Room:** buy and equip ball skins, backpack flags, outfits and ball trails. All of them are drawn in code. Eleven items can't be bought: stickers earn them (below).
+- **Locker Room:** buy and equip ball skins, backpack flags, outfits and ball trails. All of them are drawn in code. Fourteen items can't be bought: stickers earn eleven (below), and walking to school earns three (next).
+- **Walking to school:** a route is walked once every story level on it is done, home all the way to the school's gate (`Cosmetics/RouteRewards`). Each route walked earns its medal: gold on a ribbon in the route's colour, hanging over its chip on the map. Three routes walked earn the Way Finder flag; all six earn the **Top of the Class** trophy with the Top of the Class ball (gold with navy stars) and the Victory Lap trail (`CosmeticUnlock.SchoolRoutes`, never sold). The results of the leg that finishes a route say a medal (or the trophy) is waiting, and the menu celebrates it once (`UI/SchoolRewardPanel`): the new medal with the route's name, how many of the six ways are walked and what the next one wins, or the trophy over a burst of light with all six medals, and the prizes on cards with a button to the Locker Room. An older save gets what its levels have earned the first time the menu checks.
 - **Stickers:** each story level hides one, themed to the level (a cat on the garden gate, a vending machine, a crab, a tower crane, the school bell...): die-cut vinyl stickers drawn from the game's own models (`tools/blender/sticker_art.py` renders them in the toon look, `sticker_compose.py` cuts them out into `Resources/UI/Stickers`). Most are plain, six are holo (a rainbow sheen sweeps across them), the five chapter finales are gold. The album (`FrontEnd/AlbumScreen`) is a collector's book: the collector track (rewards at 5, 10, 15, 20 and all 23 stickers), and per chapter its progress, its set reward and its stickers; tap one to see it up close with a line about it, or, if it's still missing, a hint about where it hides and a button to play that level. Completing a chapter's set or reaching a count unlocks exclusive Locker Room items (`Cosmetics/StickerRewards`; a celebration the first time, and older saves get what their stickers already earned).
 - **Saving:** progress goes to `save.json` in the app's data folder. The **Kick Off** menu has Reset Save Data and Give 1000 Coins for testing.
 
