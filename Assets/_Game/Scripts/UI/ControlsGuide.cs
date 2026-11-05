@@ -136,7 +136,7 @@ namespace DribbleToSchool.UI
                     break;
                 case Picture.Kick:
                     Disc(t, UITheme.Accent);
-                    Glyph(t, ProceduralSprites.KickIcon, Vector2.zero, 60f, 0f, 1f);
+                    Glyph(t, ProceduralSprites.BallIcon, Vector2.zero, 50f, 0f, 1f);
                     break;
                 case Picture.Touch:
                     Glyph(t, ProceduralSprites.Ring, Vector2.zero, 84f, 0f, 0.45f);
@@ -150,16 +150,16 @@ namespace DribbleToSchool.UI
         {
             const float size = 96f;
             Glyph(tile, ProceduralSprites.SoftEdgeDisc, Vector2.zero, size, 0f, 0.14f);
-            Glyph(tile, ProceduralSprites.Ring, Vector2.zero, size, 0f, 0.6f);
+            Glyph(tile, ProceduralSprites.ThinRing, Vector2.zero, size, 0f, 0.8f);
             Glyph(tile, ProceduralSprites.SoftEdgeDisc, Vector2.zero, size * 0.44f, 0f, 0.15f);
             Glyph(tile, ProceduralSprites.SoftEdgeDisc, knob, size * 0.44f, 0f, 0.6f);
-            Glyph(tile, ProceduralSprites.Ring, knob, size * 0.44f, 0f, 0.75f);
+            Glyph(tile, ProceduralSprites.ThinRing, knob, size * 0.44f, 0f, 0.9f);
         }
 
         static void Disc(RectTransform tile, Color tint)
         {
             Glyph(tile, ProceduralSprites.SoftEdgeDisc, Vector2.zero, 92f, 0f, 0.35f, tint);
-            Glyph(tile, ProceduralSprites.Ring, Vector2.zero, 92f, 0f, 0.7f);
+            Glyph(tile, ProceduralSprites.ThinRing, Vector2.zero, 92f, 0f, 0.85f);
         }
 
         static void Glyph(RectTransform tile, Sprite sprite, Vector2 at, float size, float angle, float alpha, Color? tint = null)

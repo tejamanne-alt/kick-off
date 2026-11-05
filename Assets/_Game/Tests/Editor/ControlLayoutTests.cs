@@ -205,23 +205,25 @@ namespace DribbleToSchool.Tests
                     if (b.center.x >= w * 0.5f) continue;
                     Assert.GreaterOrEqual(safe * w, b.center.x + b.radius + 0.139f * h, where + ": clear of a button on the left");
                 }
-                // Not so far over that the view ahead is lost: a quarter of the screen to just past the middle.
+                // Not so far over that the view ahead is lost: a quarter of the screen to about the middle. Left-handed, the two
+                // big buttons are on the left and a 4:3 screen asks for more; there the camera's own limit (the middle) wins.
                 Assert.GreaterOrEqual(safe, 0.25f, where + ": not hard against the left edge");
-                Assert.LessOrEqual(safe, 0.56f, where + ": not past the middle");
+                Assert.LessOrEqual(safe, left ? 0.62f : 0.56f, where + ": not past the middle");
             });
         }
 
         [Test]
         public void OnPhonesTheKidStandsAboutAThirdOfTheWayIn()
         {
-            // 16:9 and wider: the controls take up little of the width, so the kid keeps a good view ahead.
+            // 16:9 and wider: the controls take up little of the width, so the kid keeps a good view ahead (left-handed, with
+            // JUMP and KICK on the left, a little less).
             foreach (bool left in new[] { false, true })
                 foreach (var s in Screens)
                 {
                     if (s[0] / (float)s[1] < 1.7f) continue;
                     var l = input.LayoutOn(s[0], s[1], Full(s[0], s[1]), left);
                     float safe = GameInput.KidSafeScreenXOn(l, s[0], s[1], 0.14f);
-                    Assert.LessOrEqual(safe, 0.42f, (left ? "left-handed " : "") + s[0] + "x" + s[1]);
+                    Assert.LessOrEqual(safe, left ? 0.47f : 0.42f, (left ? "left-handed " : "") + s[0] + "x" + s[1]);
                 }
         }
 

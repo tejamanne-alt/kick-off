@@ -137,9 +137,9 @@ namespace DribbleToSchool.UI
             jumpButton.AddLabel(Loc.T("hud.jump"), 28);
             jumpRect = (RectTransform)jumpButton.transform;
 
-            // Kick button: a football boot striking a ball, and a knob that follows the aiming drag.
+            // Kick button: a football, and a knob that follows the aiming drag.
             kickButton = TouchButton.Create(root, "KickButton", UITheme.Accent, true);
-            kickButton.AddIcon(ProceduralSprites.KickIcon, 0.5f, 0f, 0.58f);
+            kickButton.AddIcon(ProceduralSprites.BallIcon, 0.42f, 0f, 0.6f, new Color(1f, 1f, 1f, 0.5f));
             kickButton.AddLabel(Loc.T("hud.kick"), 28);
             kickRect = (RectTransform)kickButton.transform;
             aimKnob = UIKit.Icon(kickButton.Content, "AimKnob", ProceduralSprites.SoftEdgeDisc, new Color(1f, 1f, 1f, 0.55f), 70f).rectTransform;

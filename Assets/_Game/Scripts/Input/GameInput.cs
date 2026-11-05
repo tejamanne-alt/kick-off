@@ -85,9 +85,9 @@ namespace DribbleToSchool.InputHandling
 
         [Header("Layout (in screen heights, so the buttons are the same physical size on any phone)")]
         [Tooltip("Where the right thumb rests, in the corner: the button pressed most.")]
-        public ControlSpec jumpButton = new ControlSpec(0.16f, 0.17f, 0.125f);
+        public ControlSpec jumpButton = new ControlSpec(0.18f, 0.185f, 0.145f);
         [Tooltip("Beside Jump on its baseline, a thumb's width to its left, close enough to flick across to. The aim drag has the whole screen above it.")]
-        public ControlSpec kickButton = new ControlSpec(0.45f, 0.17f, 0.125f);
+        public ControlSpec kickButton = new ControlSpec(0.515f, 0.185f, 0.145f);
         [Tooltip("The walk stick's ring where it rests: centre in from the screen edge on its side and up from the bottom, and its radius. The knob travels to the ring.")]
         public ControlSpec walkStick = new ControlSpec(0.28f, 0.3f, 0.17f);
         [Tooltip("How far (screen heights) the stick may follow the thumb in from its resting place toward the middle of the screen, and up.")]

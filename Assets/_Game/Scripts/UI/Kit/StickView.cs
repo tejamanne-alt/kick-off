@@ -14,7 +14,7 @@ namespace DribbleToSchool.UI.Kit
     {
         [Tooltip("Opacity of the ring's glass and rim at rest and while held.")]
         public float restGlass = 0.06f, heldGlass = 0.16f;
-        public float restRim = 0.28f, heldRim = 0.6f;
+        public float restRim = 0.7f, heldRim = 1f;
         [Tooltip("Opacity of the knob at rest and while held.")]
         public float restKnob = 0.2f, heldKnob = 0.5f;
         [Tooltip("How far the knob's centre travels from the ring's, as a part of the ring's size.")]
@@ -32,10 +32,10 @@ namespace DribbleToSchool.UI.Kit
             var view = rt.gameObject.AddComponent<StickView>();
             view.root = rt;
             view.glass = Layer(rt, "Glass", ProceduralSprites.SoftEdgeDisc, 0f);
-            view.rim = Layer(rt, "Rim", ProceduralSprites.Ring, 0f);
+            view.rim = Layer(rt, "Rim", ProceduralSprites.ThinRing, 0f);
             view.knobRect = UIKit.Rect(rt, "Knob");
             view.knob = Layer(view.knobRect, "Glass", ProceduralSprites.SoftEdgeDisc, 0f);
-            view.knobRim = Layer(view.knobRect, "Rim", ProceduralSprites.Ring, 0.04f);
+            view.knobRim = Layer(view.knobRect, "Rim", ProceduralSprites.ThinRing, 0.02f);
             return view;
         }
 

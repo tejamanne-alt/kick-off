@@ -274,7 +274,7 @@ namespace DribbleToSchool.Holiday
             jumpRect = (RectTransform)jumpButton.transform;
 
             kickButton = TouchButton.Create(controls, "KickButton", UITheme.Accent, true);
-            kickButton.AddIcon(ProceduralSprites.KickIcon, 0.5f, 0f, 0.58f);
+            kickButton.AddIcon(ProceduralSprites.BallIcon, 0.42f, 0f, 0.6f, new Color(1f, 1f, 1f, 0.5f));
             kickLabel = kickButton.AddLabel(Loc.T("hud.kick"), 28);
             UIKit.Fit(kickLabel, 14);
             kickRect = (RectTransform)kickButton.transform;
