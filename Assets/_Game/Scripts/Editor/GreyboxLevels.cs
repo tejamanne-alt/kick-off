@@ -606,16 +606,20 @@ namespace DribbleToSchool.EditorTools
 
         // ===================== Chapter 4: Underpass & Construction =====================
 
-        /// <summary>L15: dark tunnels and puddles.</summary>
+        /// <summary>
+        /// L15: dark stretches and puddles on the way to the station. From home up the West Street and along Station Road beside the
+        /// building site to the station's hall at the foot of the railway bridge (docs/WORLD_MAP.md): the dark stretches are the site's
+        /// covered walkways over the footpath, not the railway, which only L18 goes under.
+        /// </summary>
         public static void TheUnderpass(TrackBuilder t)
         {
             t.Walls(-8f, 105f);
             t.Start(0f);
             t.Hint(10f, "tunnel");
             t.Ground(-8f, 105f);
-            t.Sign("Under the railway -\nit's dark in there!", new Vector2(5f, 3.2f));
+            t.Sign("Covered walkway -\nit's dark in there!", new Vector2(5f, 3.2f));
 
-            t.Tunnel(14f, 34f);
+            t.CoveredWalkway(14f, 34f);
             t.Puddle(20f, 23f);
             t.Wall(28f, 0.3f, 0f, 0.6f);
             t.Checkpoint(37f);
@@ -624,7 +628,7 @@ namespace DribbleToSchool.EditorTools
             t.Ramp(new Vector2(42f, 0f), new Vector2(48f, 1.5f));
             t.Platform(48f, 56f, 1.5f);
             t.Ramp(new Vector2(56f, 1.5f), new Vector2(62f, 0f));
-            t.Tunnel(64f, 86f);
+            t.CoveredWalkway(64f, 86f);
             t.Puddle(70f, 74f);
             t.CrateStack(79f);
             t.Checkpoint(89f);
@@ -713,7 +717,10 @@ namespace DribbleToSchool.EditorTools
             t.Goal(102f);
         }
 
-        /// <summary>L18: chapter finale through tunnels, pipes and cranes.</summary>
+        /// <summary>
+        /// L18: chapter finale through tunnels, pipes and cranes: from the station's hall at the foot of the railway bridge, under the
+        /// railway twice (the main line and the station's loop), up to the East Street and the school.
+        /// </summary>
         public static void TunnelRun(TrackBuilder t)
         {
             t.Walls(-8f, 135f);

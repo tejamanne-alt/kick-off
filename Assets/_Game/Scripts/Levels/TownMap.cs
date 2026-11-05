@@ -13,6 +13,8 @@ namespace DribbleToSchool.Levels
     [Serializable] public class LayoutNode { public string id; public float x; public float y; public string label; }
     [Serializable] public class LayoutDistrict { public string id; public float x; public float y; }
     [Serializable] public class LayoutStreet { public string name; public float x; public float y; public float angle; }
+    /// <summary>Where a stop between two levels is on the picture (Levels/RouteTable's stop id and route): a point on its route.</summary>
+    [Serializable] public class LayoutStop { public string id; public string route; public float x; public float y; }
 
     /// <summary>Resources/TownMapLayout.json: where everything is in the town picture (Resources/UI/TownMap.jpg), in its pixels.</summary>
     [Serializable]
@@ -27,6 +29,8 @@ namespace DribbleToSchool.Levels
         public LayoutNode[] nodes;
         public LayoutDistrict[] districts;
         public LayoutStreet[] streets;
+        /// <summary>The stops between the levels where the picture shows them (the station by the railway bridge, the surf school on the boardwalk...).</summary>
+        public LayoutStop[] stops;
         /// <summary>True in a stand-in layout made from abstract geometry (not from the real picture): some checks that need real roads are skipped for it.</summary>
         public bool placeholder;
     }
@@ -107,6 +111,7 @@ namespace DribbleToSchool.Levels
         static TownDistrict[] districts;
         static TownStreet[] streets;
         static Dictionary<string, Vector2> places;
+        static Dictionary<string, Vector2> stopPoints;
         static Rect core;
 
         /// <summary>Where the layout came from ("Resources/TownMapLayout", a file path, or "(none)"), and why it could not be read.</summary>
@@ -227,6 +232,10 @@ namespace DribbleToSchool.Levels
             if (layout.streets != null)
                 foreach (var s in layout.streets) if (s != null && !string.IsNullOrEmpty(s.name)) streetList.Add(new TownStreet(s.name, new Vector2(s.x, s.y), s.angle));
             streets = streetList.ToArray();
+
+            stopPoints = new Dictionary<string, Vector2>();
+            if (layout.stops != null)
+                foreach (var s in layout.stops) if (s != null && !string.IsNullOrEmpty(s.id)) stopPoints[s.id] = new Vector2(s.x, s.y);
         }
 
         static LabelSide SideOf(string label)
@@ -285,18 +294,41 @@ namespace DribbleToSchool.Levels
         public static TownStreet[] Streets { get { if (layout == null) Load(); return streets; } }
 
         /// <summary>
+        /// The point the layout gives for a stop (by its RouteTable id): where the picture shows the place, on its route. False if
+        /// the layout does not place it.
+        /// </summary>
+        public static bool StopPoint(string stopId, out Vector2 point)
+        {
+            if (layout == null) Load();
+            point = Vector2.zero;
+            return stopId != null && stopPoints.TryGetValue(stopId, out point);
+        }
+
+        /// <summary>
         /// Where the <paramref name="index"/>-th stop of a route is drawn (Levels/RouteTable: the stop between its levels
-        /// <paramref name="index"/> and <paramref name="index"/> + 1): on the route line, halfway between those two levels' nodes
-        /// as measured along it. Null if the layout lacks the route or either node.
+        /// <paramref name="index"/> and <paramref name="index"/> + 1): at the place the layout gives for it (the station at the
+        /// foot of the railway bridge, the surf school on the boardwalk...), put exactly on the route line; if the layout has no
+        /// place for it, on the line halfway between the two levels' nodes as measured along it. Null if the layout lacks the
+        /// route (or, for the halfway point, either node).
         /// </summary>
         public static Vector2? StopPosition(string routeId, int index)
         {
-            var route = RouteTable.All[Mathf.Max(0, RouteTable.IndexOf(routeId))];
-            if (RouteTable.IndexOf(routeId) < 0 || index < 0 || index + 1 >= route.levels.Length) return null;
+            int routeIndex = RouteTable.IndexOf(routeId);
+            if (routeIndex < 0) return null;
+            var route = RouteTable.All[routeIndex];
+            if (index < 0 || route.stops == null || index >= route.stops.Length || index + 1 >= route.levels.Length) return null;
             var line = Route(routeId);
+            if (line == null || line.points.Length < 2) return null;
+            Vector2 place;
+            if (StopPoint(route.stops[index], out place))
+            {
+                Vector2 onLine;
+                DistanceTo(line.points, place, out onLine);
+                return onLine;
+            }
             var a = Node(route.levels[index]);
             var b = Node(route.levels[index + 1]);
-            if (line == null || a == null || b == null || line.points.Length < 2) return null;
+            if (a == null || b == null) return null;
             float mid = (DistanceAlong(line.points, a.pos) + DistanceAlong(line.points, b.pos)) * 0.5f;
             return At(line.points, mid);
         }

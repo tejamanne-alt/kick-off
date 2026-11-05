@@ -1960,7 +1960,65 @@ namespace DribbleToSchool.EditorTools
                 Block("TunnelCeiling", new Vector2(center, groundTop + height + 0.6f), new Vector2(width + 1f, 1.2f), new Color(0.62f, 0.62f, 0.64f), GroundMat, !kit, 7.4f)
                     .AddComponent<BallTrap>();        // the deck over the underpass is out of reach
                 RailwayBridgeFace(fromX, toX, groundTop + height);
-                // Dim lamps under the deck, lighting the footpath below them.
+                DimUnder(fromX, toX, groundTop, height);
+            }
+
+            /// <summary>
+            /// A covered walkway along a building site (L15 on Station Road, before the railway: docs/WORLD_MAP.md, "Level and map"): the
+            /// same dark stretch with a ceiling as <see cref="Tunnel"/> (the same roof for the feasibility audit, the same collider, lamps
+            /// and darkness), but no railway over it: the site's hoarding along the back, a boarded roof on scaffold tubes over the
+            /// footpath, the site's blue boards along its front with a band of hazard stripes, a lamp under it every 5 m.
+            /// </summary>
+            public void CoveredWalkway(float fromX, float toX, float groundTop = 0f, float height = 3.3f)
+            {
+                Audit.AddRoof(fromX, toX, height);
+                float center = (fromX + toX) * 0.5f;
+                float width = toX - fromX;
+                // The hoarding along the back (the chapter-4 streets' kit boards, stretched up to the roof), else plain boards.
+                float backZ = StreetBuilder.PropertyZ + 0.2f;
+                bool kit = HasKitModel("Street", "Hoarding3");
+                if (kit)
+                {
+                    Vector3 native = KitSize("Street", "Hoarding3");
+                    int n = Mathf.Max(1, Mathf.RoundToInt(width / Mathf.Max(0.5f, native.x)));
+                    float step = width / n;
+                    for (int i = 0; i < n; i++)
+                    {
+                        var piece = KitModel(root, "Street", "Hoarding3", new Vector3(fromX + step * (i + 0.5f), groundTop, backZ));
+                        if (piece != null) piece.localScale = new Vector3(step / native.x, height / Mathf.Max(0.5f, native.y), 1f);
+                    }
+                }
+                else StreetBuilder.Solid(root, "WalkwayHoarding", new Vector3(center, groundTop + height * 0.5f, backZ), new Vector3(width, height, 0.15f), WalkwayBlue);
+                // The roof: scaffold boards over the footpath, from its front edge to the hoarding (the collider is the usual ceiling block).
+                const float frontZ = -2.2f;
+                float roofDepth = backZ - frontZ;
+                StreetBuilder.Solid(root, "WalkwayRoof", new Vector3(center, groundTop + height + 0.15f, (frontZ + backZ) * 0.5f), new Vector3(width + 0.6f, 0.3f, roofDepth), WalkwayBoards);
+                Block("TunnelCeiling", new Vector2(center, groundTop + height + 0.6f), new Vector2(width + 1f, 1.2f), WalkwayBoards, GroundMat, false)
+                    .AddComponent<BallTrap>();        // the roof is out of reach, as a tunnel's deck is
+                // Its front: the site's blue boards (0.9 m) with hazard stripes along their foot, facing the camera.
+                StreetBuilder.Solid(root, "WalkwayFascia", new Vector3(center, groundTop + height + 0.45f, frontZ - 0.02f), new Vector3(width + 0.6f, 0.9f, 0.04f), WalkwayBlue);
+                int stripes = Mathf.Max(2, Mathf.RoundToInt((width + 0.6f) / 0.5f));
+                float stripe = (width + 0.6f) / stripes;
+                for (int i = 0; i < stripes; i++)
+                    StreetBuilder.Solid(root, "HazardStripe", new Vector3(fromX - 0.3f + stripe * (i + 0.5f), groundTop + height + 0.12f, frontZ - 0.05f), new Vector3(stripe, 0.16f, 0.02f),
+                        i % 2 == 0 ? new Color(0.98f, 0.80f, 0.16f) : new Color(0.15f, 0.15f, 0.17f));
+                // Scaffold tubes: along the back every 2.5 m, and one at each end of the front (not between the camera and the footpath).
+                var tube = new Color(0.62f, 0.64f, 0.66f);
+                for (float x = fromX; x <= toX + 0.01f; x += Mathf.Max(1f, width / Mathf.Max(1, Mathf.RoundToInt(width / 2.5f))))
+                    StreetBuilder.Solid(root, "ScaffoldTube", new Vector3(x, groundTop + height * 0.5f, backZ - 0.2f), new Vector3(0.07f, height, 0.07f), tube);
+                foreach (float x in new[] { fromX - 0.2f, toX + 0.2f })
+                    StreetBuilder.Solid(root, "ScaffoldTube", new Vector3(x, groundTop + height * 0.5f, frontZ + 0.05f), new Vector3(0.07f, height, 0.07f), tube);
+                DimUnder(fromX, toX, groundTop, height);
+            }
+
+            /// <summary>The building site's blue boards and the walkway's timber roof (L15's covered walkways).</summary>
+            static readonly Color WalkwayBlue = new Color(0.22f, 0.40f, 0.62f), WalkwayBoards = new Color(0.66f, 0.54f, 0.38f);
+
+            /// <summary>Dim lamps under a roof every 5 m, lighting the footpath below them, and the darkness inside (a tunnel's or a walkway's).</summary>
+            void DimUnder(float fromX, float toX, float groundTop, float height)
+            {
+                float center = (fromX + toX) * 0.5f;
+                float width = toX - fromX;
                 for (float lx = fromX + 2.5f; lx < toX - 1f; lx += 5f)
                 {
                     if (KitModel(root, "Works", "TunnelLamp", new Vector3(lx, groundTop + height, 0.2f)) == null)

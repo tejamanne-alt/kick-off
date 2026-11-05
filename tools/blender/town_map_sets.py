@@ -1,11 +1,14 @@
-# The set pieces of the town map: the home, what each level shows beside its node (the street, the market, the beach, the
-# underpass, the building site, the park), the school, the station. Each piece is a list of kit models to stand on the ground
-# (Items) and painting operations for the flat ground under and around them. They are placed from the SOLVED level nodes and
-# their routes (frame(): a point 80 to 200 px along the route from the node, on either side of it), so the picture shows the
-# level's content where its node is and TownMapLayout.json agrees with it.
+# The set pieces of the town map: the home, what each level shows beside its node and along its leg (the street, the market, the
+# beach, the underpass, the building site, the park), the stops between the levels, the school, the station. Each piece is a list of
+# kit models to stand on the ground (Items) and painting operations for the flat ground under and around them. They are placed from
+# the SOLVED level nodes, the stops and their routes (frame(): a point along the route from the node, on either side of it): a node
+# sits near the start of its level's leg (the stop or home the level starts at), so a level's scene lies from beside its node on
+# along its leg towards the stop it ends at, and TownMapLayout.json agrees with the picture.
 #   town_map_sets.py        the base (helpers, painting shapes), the home and the street, market and level scenes of the town
 #   town_map_sets_nature.py the park, the beach, the school's grounds and the country round the town
 #   town_map_sets_works.py  the building site, the railway with the station and the underpass bridges, the school building
+#   town_map_sets_stops.py  the stops: the bus stop, granny's, the church, the shops, the surf school, the station's hall, the site
+#                           office, the bandstand, the boathouse, the allotment...
 import math, random
 import town_map_raster as R
 import town_map_graph as G
@@ -270,30 +273,31 @@ class TownSets:
         for k in range(4):
             p, t = self.frame('L02', 98 + 37 * k, -21)
             self.car(p[0], p[1], t, kit=rng.choice(P.CARS))
-        for k, ds in enumerate((150, 186)):
+        for k, ds in enumerate((96, 126)):
             p, t = self.frame('L02', ds, 38)
             self.op(lambda cv, p=p, t=t: rect(cv, p, 30, 10, ang(t), (0.92, 0.91, 0.86), 0.9), post=True)
             self.add('Barriers', 'PlankTrestles', p[0], p[1], bearing(t), 1.2, None, tag='trestle')
             self.add('Street', 'PotA', p[0] - 14, p[1] + 5, 0, 1.2, [(0.30, 0.55, 0.75)], tag='paint')
             self.add('Street', 'PotA', p[0] + 13, p[1] - 4, 0, 1.2, [(0.88, 0.80, 0.30)], tag='paint')
-        # L03: Hill Road: terraces climbing the hill on the north side, steps, a stream under the road, garden apple trees
-        n3 = self.node('L03')
-        x0 = max(n3[0] + 70, 1340.0)
-        self.reserve((x0 + 80, 718), 170, 112)
+        # L03 (from granny's at the foot of the hill): Hill Road: terraces climbing the hill on the north side between the building site
+        # and the church at the top (the church is its stop), steps, a stream under the road, garden apple trees
+        x0, x1 = self.SITE_XS + 6.0, self.stop_at('church')[0] - 44.0
+        wt = x1 - x0
+        self.reserve(((x0 + x1) / 2, 718), wt, 112)
         for k, (yy, col) in enumerate(((764, C_GRASS), (730, C_GRASS_L), (696, C_GRASS), (662, C_GRASS_L))):
-            self.op(lambda cv, yy=yy, col=col, x0=x0: rect(cv, (x0 + 80, yy), 170, 30, 0, col, 1.0))
-            self.op(lambda cv, yy=yy, x0=x0: rect(cv, (x0 + 80, yy + 15), 170, 2.5, 0, (0.30, 0.34, 0.26), 0.55))
-            self.line_of([(x0 - 4, yy + 16), (x0 + 164, yy + 16)], 'Street', 'BlockWall2', 16, [(0.78, 0.74, 0.66)], skip=[(x0 + 92, yy + 16, 10)], tag='terrace')
+            self.op(lambda cv, yy=yy, col=col: rect(cv, ((x0 + x1) / 2, yy), wt, 30, 0, col, 1.0))
+            self.op(lambda cv, yy=yy: rect(cv, ((x0 + x1) / 2, yy + 15), wt, 2.5, 0, (0.30, 0.34, 0.26), 0.55))
+            self.line_of([(x0 - 4, yy + 16), (x1 - 6, yy + 16)], 'Street', 'BlockWall2', 16, [(0.78, 0.74, 0.66)], skip=[(x0 + 44, yy + 16, 10)], tag='terrace')
         # the steps up the hill (light treads), the handrail posts
         for k in range(8):
-            self.op(lambda cv, k=k, x0=x0: rect(cv, (x0 + 92, 772 - k * 14), 14, 6.5, 0, (0.84, 0.82, 0.77), 1.0), post=True)
-            self.op(lambda cv, k=k, x0=x0: rect(cv, (x0 + 92, 768.5 - k * 14), 14, 1.4, 0, (0.45, 0.43, 0.40), 0.7), post=True)
-        for (ax_, ay_) in ((x0 + 28, 742), (x0 + 142, 706), (x0 + 36, 676), (x0 + 150, 750)):
+            self.op(lambda cv, k=k: rect(cv, (x0 + 44, 772 - k * 14), 14, 6.5, 0, (0.84, 0.82, 0.77), 1.0), post=True)
+            self.op(lambda cv, k=k: rect(cv, (x0 + 44, 768.5 - k * 14), 14, 1.4, 0, (0.45, 0.43, 0.40), 0.7), post=True)
+        for (ax_, ay_) in ((x0 + 16, 742), (x0 + 80, 706), (x0 + 20, 676), (x0 + 84, 750)):
             self.add('Barriers', 'AppleBough', ax_, ay_ - 8, 180, 1.0, None, tag='apple')
-        for (cx_, cy_) in ((x0 + 128, 680), (x0 + 60, 664)):
+        for (cx_, cy_) in ((x0 + 72, 680), (x0 + 12, 712)):
             self.crown(cx_, cy_, 14)
-        # the small stream: out of the gardens, under a little bridge in the road, away to a grate south of it
-        sx = x0 + 176
+        # the small stream: out of the gardens, down the hill beside the steps, under a little bridge in the road, away to a grate south of it
+        sx = x0 + 104
         stream = self.smooth([(sx + 14, 648), (sx + 6, 690), (sx - 4, 735), (sx, 778), (sx + 2, 868), (sx + 10, 905)])
         self.op(lambda cv: stroke(cv, stream, 15, C_BANK, 0.9, cap=True))
         self.op(lambda cv: stroke(cv, stream, 10, C_WATER, 1.0, cap=True))
@@ -321,40 +325,44 @@ class TownSets:
             self.add('Barriers', 'AppleBough', ax_, 722 + rng.uniform(-6, 6), 180, 1.0, None, tag='apple')
         p, t = self.frame('L04', 118, 21)
         self.car(p[0], p[1], t)
-        # L05: Puddle Lane: a wet lane, four big puddles on the carriageway, cars parked along it
+        # L05 (from Sam's house, round the corner): Puddle Lane, the wet stretch of the East Street up to School Lane and the school's
+        # gate: four big puddles on the carriageway, cars parked along it, cones round the worst one
         n5 = self.node('L05')
-        for (px_, py_, rx_, ry_, a_) in ((n5[0] - 175, 838, 21, 10, 6), (n5[0] - 138, 806, 17, 9, -10), (n5[0] - 100, 836, 24, 11, 4), (n5[0] - 214, 812, 15, 8, 0)):
+        for (px_, py_, rx_, ry_, a_) in ((n5[0] - 16, n5[1] + 104, 17, 9, 84), (n5[0] + 18, n5[1] + 124, 15, 8, 96), (1912, 594, 19, 9, 4), (1950, 608, 14, 7, -8)):
             self.op(lambda cv, px_=px_, py_=py_, rx_=rx_, ry_=ry_, a_=a_: (ellipse(cv, (px_, py_), rx_ + 7, ry_ + 5, a_, C_WET, 0.55, blur=2.0),
                                                                           ellipse(cv, (px_, py_), rx_, ry_, a_, C_PUDDLE, 0.95, blur=0.6),
                                                                           ellipse(cv, (px_ - rx_ * 0.25, py_ - ry_ * 0.3), rx_ * 0.5, ry_ * 0.35, a_, (0.75, 0.82, 0.88), 0.7, blur=0.8)), post=True)
-        self.op(lambda cv: rect(cv, (n5[0] - 140, 820), 150, 56, 0, C_WET, 0.22), post=True)
-        for ds, off in ((-205, 22), (-246, 22), (150, -22)):
-            p, t = self.frame('L05', ds, off)
-            self.car(p[0], p[1], t)
-        for ds in (-150, -230):
-            p, t = self.frame('L05', ds, 40)
-            self.add('Street', 'TrafficCone', p[0], p[1], 0, 1.1)
+        self.op(lambda cv: (rect(cv, (n5[0], n5[1] + 112), 70, 60, 0, C_WET, 0.22), rect(cv, (1935, 600), 90, 50, 0, C_WET, 0.22)), post=True)
+        for (cx_, cy_, t_) in ((n5[0] - 34, n5[1] + 120, (0, -1)), (n5[0] + 34, n5[1] + 104, (0, 1)), (1926, 576, (1, 0))):
+            self.car(cx_, cy_, t_)
+        for (cx_, cy_) in ((n5[0] + 30, n5[1] + 90), (1894, 620)):
+            self.add('Street', 'TrafficCone', cx_, cy_, 0, 1.1)
 
     # ---------------------------------------------------------------- the market levels L06 to L10 (Market Street, y 958)
     def market_levels(self):
         rng = self.rng
-        # L06: the market square at the west end: a paved plaza across the street, stalls with awnings in two rows, crowds, crates
-        sq = (590.0, 958.0)
-        plaza = [(468, 902), (700, 902), (700, 1012), (468, 1012)]
+        # L06 (from home, round the corner from the West Street): the market square, a paved plaza across the street from the node to the
+        # bakery (its stop) with stalls under awnings in two rows, crowds, crates, benches
+        n6 = self.node('L06')
+        xa, xb = n6[0] - 30.0, self.stop_at('bakery')[0] - 38.0
+        self.square = (xa, xb)
+        plaza = [(xa, 902), (xb, 902), (xb, 1012), (xa, 1012)]
         self.op(lambda cv: textured(cv, plaza, (0.80, 0.77, 0.71), 41, amp=(0.03, 0.03, 0.02), cells=(40, 9, 3)))
         for k in range(-5, 6):
-            self.op(lambda cv, k=k: stroke(cv, [(468, 957 + k * 10), (700, 957 + k * 10)], 0.7, (0.62, 0.59, 0.54), 0.5))
-        for k in range(6):
-            self.awning_stall(486 + k * 37, 920, 180)
-            self.awning_stall(500 + k * 37, 996, 0)
-        for k in range(8):
-            self.add('Street', rng.choice(['ProduceCrate', 'Crate', 'CrateStack']), 482 + k * 28 + rng.uniform(-4, 4), rng.choice((934, 983)), rng.uniform(0, 360), 1.2)
-        self.crowd((590, 958), 112, 17, 22)
-        for k in range(3):
-            self.add('Street', 'Bench', 540 + k * 60, 958, 90 if k % 2 else 270, 1.0)
-        # L07: three zebra crossings in a row across Market Street, each with its traffic lights; a delivery van with a conveyor to a shop
+            self.op(lambda cv, k=k: stroke(cv, [(xa, 957 + k * 10), (xb, 957 + k * 10)], 0.7, (0.62, 0.59, 0.54), 0.5))
+        nst = int((xb - xa - 10) // 37)
+        for k in range(nst):
+            self.awning_stall(xa + 16 + k * 37, 920, 180)
+            self.awning_stall(xa + 24 + k * 37, 996, 0)
+        for k in range(nst + 2):
+            self.add('Street', rng.choice(['ProduceCrate', 'Crate', 'CrateStack']), xa + 12 + k * 28 + rng.uniform(-4, 4), rng.choice((934, 983)), rng.uniform(0, 360), 1.2)
+        self.crowd(((xa + xb) / 2, 958), (xb - xa) / 2 - 10, 17, 18)
+        for k in range(2):
+            self.add('Street', 'Bench', xa + 60 + k * 60, 958, 90 if k % 2 else 270, 1.0)
+        # L07 (from the bakery): three zebra crossings in a row across Market Street, each with its traffic lights; a delivery van with a
+        # conveyor unloading parcels at the post office (the stop it ends at)
         n7 = self.node('L07')
-        cross = [n7[0] + 100, n7[0] + 138, n7[0] + 176]
+        cross = [n7[0] + 62, n7[0] + 94, n7[0] + 126]
         for zx in cross:
             self.op(lambda cv, zx=zx: zebra(cv, (zx, 958), (1, 0), 56, 22.0, 4.2, 3.6), post=True)
             for sy, f in ((922, 180), (994, 0)):
@@ -362,13 +370,14 @@ class TownSets:
         for k in range(3):
             self.person(cross[k] + rng.uniform(-6, 6), 919 + rng.uniform(-3, 2))
             self.person(cross[k] + rng.uniform(-6, 6), 998)
-        self.car(n7[0] + 214, 975, (1, 0), kit=('Cars', 'Van'))
-        self.add('Barriers', 'DeliveryConveyor', n7[0] + 216, 997, 0, 1.0, None, tag='conveyor')
+        vx = self.stop_at('postOffice')[0] - 26
+        self.car(vx, 975, (1, 0), kit=('Cars', 'Van'))
+        self.add('Barriers', 'DeliveryConveyor', vx + 2, 997, 0, 1.0, None, tag='conveyor')
         for k in range(3):
-            self.add('Street', 'ProduceCrate', n7[0] + 216, 989 + k * 9, 0, 1.2)
-        # L08: the corner shop at Mill Lane: steps, an awning, a roll shutter, crates
+            self.add('Street', 'ProduceCrate', vx + 2, 989 + k * 9, 0, 1.2)
+        # L08 (from the post office): the corner shop: steps, an awning, a roll shutter, crates (before the flower shop, its stop)
         n8 = self.node('L08')
-        sh = (n8[0] - 122.0, 1003.0)
+        sh = (n8[0] + 82.0, 1003.0)
         O = P.origin_for('Buildings', 'ShopShutter', sh, 0.0, 1.0)
         self.add('Buildings', 'ShopShutter', O[0], O[1], 0.0, 1.0, [(0.93, 0.86, 0.68), (0.82, 0.30, 0.26), None], tag='shop')
         self.world.occupy(P.footprint('Buildings', 'ShopShutter', O[0], O[1], 0.0, 1.0, pad=0.4))
@@ -380,45 +389,44 @@ class TownSets:
         for (cx_, cy_) in ((sh[0] - 28, 1000), (sh[0] - 40, 1004), (sh[0] + 30, 1000)):
             self.add('Street', 'CrateStack', cx_, cy_, rng.uniform(-20, 20), 1.0)
         self.add('Street', 'VendingRed', sh[0] + 44, 1002, 0)
-        # L09: fruit stalls with awnings, the toy shop with trampolines out front, a zebra crossing
+        # L09 (from the flower shop): fruit stalls with awnings on the north pavement, the toy shop with trampolines out front, a zebra
+        # crossing before the library (its stop)
         n9 = self.node('L09')
-        for k in range(4):
-            self.awning_stall(n9[0] + 92 + k * 30, 998, 0, [(0.93, 0.70, 0.22), (0.82, 0.30, 0.26), (0.30, 0.58, 0.40), (0.93, 0.70, 0.22)][k])
-        for k in range(8):
-            self.add('Street', 'ProduceCrate', n9[0] + 86 + k * 15, 1010, rng.uniform(0, 360), 1.3)
-        toy = (n9[0] - 166.0, 1036.0)
+        for k in range(3):
+            self.awning_stall(n9[0] - 108 + k * 30, 905, 180, [(0.93, 0.70, 0.22), (0.82, 0.30, 0.26), (0.30, 0.58, 0.40)][k])
+        for k in range(6):
+            self.add('Street', 'ProduceCrate', n9[0] - 114 + k * 15, 918, rng.uniform(0, 360), 1.3)
+        toy = (n9[0] - 75.0, 1036.0)
         O = P.origin_for('Buildings', 'ShopBoutique', toy, 0.0, 1.0)
         self.add('Buildings', 'ShopBoutique', O[0], O[1], 0.0, 1.0, [(0.98, 0.84, 0.45), (0.90, 0.35, 0.55), (0.35, 0.60, 0.85)], tag='shop')
         self.world.occupy(P.footprint('Buildings', 'ShopBoutique', O[0], O[1], 0.0, 1.0, pad=0.4))
-        self.op(lambda cv: rect(cv, (toy[0], 1018), 70, 34, 0, (0.80, 0.77, 0.71), 1.0))
-        for tx_ in (toy[0] - 16, toy[0] + 16):
-            self.add('Leisure', 'Trampoline', tx_, 1018, 0, 2.0, None, tag='trampoline')
-        zx9 = n9[0] - 112
+        self.op(lambda cv: rect(cv, (toy[0], 1018), 50, 34, 0, (0.80, 0.77, 0.71), 1.0))
+        for tx_ in (toy[0] - 12, toy[0] + 12):
+            self.add('Leisure', 'Trampoline', tx_, 1018, 0, 1.8, None, tag='trampoline')
+        zx9 = n9[0] + 64
         cross.append(zx9)
         self.op(lambda cv: zebra(cv, (zx9, 958), (1, 0), 56, 22.0, 4.2, 3.6), post=True)
         self.add('Street', 'PedSignal', zx9 + 13, 922, 180)
-        self.add('Street', 'PedSignal', zx9 + 13, 994, 0)
-        # L10: the main road at rush hour: a queue of cars in both lanes, three crossings, crowds, stalls on the pavements
+        # L10 (from the library, round the corner onto the Main Road): rush hour at the junction: a queue of cars back along Market Street
+        # in both lanes, the crossing over Market Street's end, crowds at the corners and outside the library
         n10 = self.node('L10')
-        z10 = [n10[0] - 196, n10[0] - 154, n10[0] - 112]
+        z10 = [n10[0] - 50]
         cross += z10
         for zx in z10:
             self.op(lambda cv, zx=zx: zebra(cv, (zx, 958), (1, 0), 56, 22.0, 4.2, 3.6), post=True)
             for sy, f in ((922, 180), (994, 0)):
                 self.add('Street', 'PedSignal', zx + 13, sy, f)
-            self.crowd((zx + 4, 909), 16, 6, 4)
-            self.crowd((zx + 4, 1005), 16, 6, 4)
-        qx = [x for x in range(int(n10[0] - 290), int(n10[0] + 90), 40) if all(abs(x - z) > 24 for z in z10)]
+        for (cx_, cy_) in ((n10[0] - 50, 909), (n10[0] - 40, 1006), (n10[0] - 110, 1004)):
+            self.crowd((cx_, cy_), 14, 6, 4)
+        qx = [x for x in range(int(n10[0] - 280), int(n10[0] - 70), 40) if all(abs(x - z) > 24 for z in z10 + [zx9])]
         for x in qx:
-            if abs(x - n10[0]) > 75 or True:
-                self.car(x + rng.uniform(-3, 3), 973, (1, 0), kit=rng.choice(P.CARS))
-        for x in qx:
+            self.car(x + rng.uniform(-3, 3), 973, (1, 0), kit=rng.choice(P.CARS))
             self.car(x + 14 + rng.uniform(-3, 3), 943, (-1, 0), kit=rng.choice(P.CARS))
-        for k in range(4):
-            self.awning_stall(n10[0] - 205 + k * 52, 905, 180)
-        # the north strip of Market Street (between it and Elm Street): stalls along the pavement
+        # the north strip of Market Street (between it and Elm Street): stalls along the pavement, except on the square, in front of
+        # granny's bungalow and where L09's fruit stalls are
+        gx = self.stop_at('granny')[0]
         for x in range(740, 1500, 46):
-            if any(abs(x - z) < 30 for z in cross) or abs(x - self.stream_x) < 24 or x > n10[0] - 215:
+            if any(abs(x - z) < 30 for z in cross) or abs(x - self.stream_x) < 24 or self.square[0] - 20 < x < self.square[1] + 20 or abs(x - gx) < 52 or x > n9[0] - 130:
                 continue
             if rng.random() < 0.7:
                 self.awning_stall(x, 905, 180)
@@ -480,11 +488,13 @@ class TownSets:
 # ------------------------------------------------------------------ all the pieces together
 from town_map_sets_nature import NatureSets      # noqa: E402  (they import the helpers above)
 from town_map_sets_works import WorksSets        # noqa: E402
+from town_map_sets_stops import StopSets         # noqa: E402
 
 
-class Sets(Base, TownSets, NatureSets, WorksSets):
+class Sets(Base, TownSets, NatureSets, WorksSets, StopSets):
     def build(self):
         self.works()
+        self.stops()
         self.town()
         self.nature()
         return self.items

@@ -7,14 +7,23 @@ bpy, no numpy; it fails loudly (exit code 1, every broken rule printed).
 The picture is 3200 x 1800 px with its core (x 400, y 225, 2400 x 1350) where all the content lives; the data is in picture
 pixels, origin top-left, y down. A node disc is 150 px across; a label (a level's name) is a 300 x 56 px box 10 px off the disc
 on the node's side (below / above / left / right). The map screen draws the names of the focused route's levels only, over every
-route line, so: a name keeps 30 px from its OWN route's centre line and only must not cross the other routes' centre lines (more
-than 1 px off), it keeps 6 px from every node disc, and 6 px from the names of the levels of its own route (its story levels and
-its challenge); names of different routes may overlap. Nodes are 190 px apart and 120 px from the home and the school.
+route line, with the other routes' nodes at 70 % while a route is in focus, so: a name keeps 30 px from its OWN route's centre
+line and only must not cross the other routes' centre lines (more than 1 px off), it keeps 6 px from its own route's node discs
+and from the other routes' discs as drawn then (70 %), 6 px from its own route's stop markers and 6 px from the names of the
+levels of its own route (its story levels and its challenge); names of different routes may overlap. Nodes are 190 px apart and
+120 px from the home and the school.
+
+The trip (Levels/RouteTable.cs): each route's stops are in "stops", each on its route (within 2 px), between the nodes of the
+two levels it joins, 100 px from every node; every story node lies on its own leg (between the stop or home it starts at and the
+stop or school it ends at); a route's first node lies past the stem the route shares with other routes near home (where the route
+is 75 px from every other route) and at most FIRST_REACH px along the route beyond it; every later node at most AFTER_REACH px
+along its route after the stop it starts at.
 
 When town_map_layout.py and town_map_levels.py are next to this file the level / map rules are checked too: every story node in
-the zone of its route (street: the residential town, market, beach: the sand and boardwalk, underpass, site, park; L23 at the
-school gate), C03 on the sand, C04 in the building site's yard, C05 on the park's lawns, and only the underpass route (under one
-or two tracks) and the park route (once) crossing the railway.
+the zone of its level (LEVEL_ZONE: L15 on the way to the station, L18 under the railway, L11 on the way down to the sea, L16 on
+Yard Road, L17 in the site, L23 past the park's railway tunnel...), every stop in its zone (STOP_ZONE), C03 on the sand, C04 in
+the building site's yard, C05 on the park's lawns, and only the underpass route (under one or two tracks) and the park route
+(once) crossing the railway.
 """
 import json, math, os, re, sys
 
@@ -27,10 +36,17 @@ IMG_W, IMG_H = 3200, 1800
 CORE = dict(x=400, y=225, w=2400, h=1350)
 INNER = (120.0, 170.0, 2280.0, 1130.0)           # inside the core: x0, y0, x1, y1
 NODE_R = 75.0
+OTHER_NODE_SCALE = 0.7           # another route's node while a route is in focus (Levels/TownMapNames.OtherNodeScale)
+STOP_R = 21.0                    # a stop's marker (Levels/TownMap.StopRadius)
+STOP_CLEAR = 100.0               # a node's centre from every stop
+STOP_ON_ROUTE = 2.0
+STEM_CLEAR = 75.0                # a route leaves its stem where it is this far from every other route
+FIRST_REACH = 500.0              # a route's first node: at most this far along the route past its stem
+AFTER_REACH = 260.0              # a later node: at most this far along its route after the stop it starts at
 LABEL_W, LABEL_H, LABEL_GAP = 300.0, 56.0, 10.0
 ROUTE_CLEAR = 30.0               # a name from its own route's centre line
 OTHER_ROUTE_CROSS = 1.0          # a name must be more than this from every other route's centre line (not cross it)
-NAME_DISC_CLEAR = 6.0            # a name from every node disc
+NAME_DISC_CLEAR = 6.0            # a name from every node disc (another route's as drawn while a route is in focus) and its route's stops
 NAME_NAME_CLEAR = 6.0            # a name from the names of the levels of its own route
 PLACE_GAP = 120.0                # a node from home and from the school
 NODE_GAP = 190.0
@@ -116,13 +132,23 @@ def box_box_dist(a, b):
     return math.hypot(max(b[0] - a[2], a[0] - b[2], 0.0), max(b[1] - a[3], a[1] - b[3], 0.0))
 
 
+# new Route("street", 1, new[] { "L01", ... }, "C01", new[] { "busStop", ... }): the id, the levels, the challenge, the stops between the levels
+ROUTE_RE = r'new Route\("(\w+)",\s*\d+,\s*new\[\]\s*\{([^}]*)\}\s*,\s*(null|"\w+")\s*(?:,\s*new\[\]\s*\{([^}]*)\})?\s*\)'
+
+
 def parse_route_table(path):
     src = open(path, encoding='utf-8').read()
     out = []
-    for m in re.finditer(r'new Route\("(\w+)",\s*\d+,\s*new\[\]\s*\{([^}]*)\}\s*,\s*(null|"\w+")\)', src):
+    for m in re.finditer(ROUTE_RE, src):
         levels = re.findall(r'"(L\d+)"', m.group(2))
         out.append((m.group(1), levels, None if m.group(3) == 'null' else m.group(3).strip('"')))
     return out
+
+
+def parse_route_stops(path):
+    """{route id: [stop ids]}: the stops between a route's levels (levels[i] ends at stops[i], levels[i + 1] starts there)."""
+    src = open(path, encoding='utf-8').read()
+    return {m.group(1): re.findall(r'"(\w+)"', m.group(4) or '') for m in re.finditer(ROUTE_RE, src)}
 
 
 def parse_route_names(path):
@@ -172,7 +198,79 @@ def in_inner(p):
     return (CORE['x'] + INNER[0] <= p[0] <= CORE['x'] + INNER[2]) and (CORE['y'] + INNER[1] <= p[1] <= CORE['y'] + INNER[3])
 
 
-def check(data, table, rep, strings=None):
+def stem_end(rid, routes):
+    """How far along route rid it is to where it is STEM_CLEAR px from every other route (where it leaves the stem near home)."""
+    pts = routes[rid]
+    total = length(pts)
+    others = [p for r2, p in routes.items() if r2 != rid]
+    s = 0.0
+    while s < total:
+        p = point_at(pts, s)
+        if min(project(p, q)[0] for q in others) >= STEM_CLEAR:
+            return s
+        s += 2.0
+    return total
+
+
+def point_at(pts, s):
+    run = 0.0
+    for i in range(len(pts) - 1):
+        sl = dist(pts[i], pts[i + 1])
+        if run + sl >= s:
+            t = 0.0 if sl == 0 else (s - run) / sl
+            return (pts[i][0] + (pts[i + 1][0] - pts[i][0]) * t, pts[i][1] + (pts[i + 1][1] - pts[i][1]) * t)
+        run += sl
+    return pts[-1]
+
+
+def check_trip(rep, table, stop_ids, routes, pos, stop_pos, stop_route, home):
+    for rid, levels, _ in table:
+        pts = routes.get(rid)
+        if not pts:
+            continue
+        ids = stop_ids.get(rid, [])
+        if len(ids) != len(levels) - 1:
+            rep.fail(f'route {rid}: {len(ids)} stops in RouteTable for {len(levels)} levels (one fewer expected)')
+            continue
+        at = {}
+        for i, sid in enumerate(ids):
+            if sid not in stop_pos:
+                rep.fail(f'stop {sid} (route {rid}) is not in the layout\'s stops')
+                continue
+            if stop_route.get(sid) != rid:
+                rep.fail(f'stop {sid} is on route {stop_route.get(sid)} in the layout, {rid} in RouteTable')
+            d, s = project(stop_pos[sid], pts)
+            at[sid] = s
+            if d > STOP_ON_ROUTE:
+                rep.fail(f'stop {sid} is {d:.1f} px off its route {rid} (max {STOP_ON_ROUTE:.0f})')
+            a, b = levels[i], levels[i + 1]
+            if a in pos and b in pos and not (project(pos[a], pts)[1] < s < project(pos[b], pts)[1]):
+                rep.fail(f'stop {sid} is not between {a} and {b} along route {rid}')
+            for k, p in pos.items():
+                if dist(p, stop_pos[sid]) < STOP_CLEAR:
+                    rep.fail(f'stop {sid} (route {rid}) is {dist(p, stop_pos[sid]):.0f} px from node {k} (min {STOP_CLEAR:.0f})')
+        total = length(pts)
+        for i, lid in enumerate(levels):
+            if lid not in pos:
+                continue
+            s = project(pos[lid], pts)[1]
+            lo = at.get(ids[i - 1], 0.0) if i > 0 else 0.0
+            hi = at.get(ids[i], total) if i < len(ids) else total
+            if not (lo < s < hi):
+                rep.fail(f'{lid} (route {rid}) at arc {s:.0f} is not on its own leg ({lo:.0f} to {hi:.0f})')
+            if i == 0:
+                stem = stem_end(rid, routes)
+                if s < stem:
+                    rep.fail(f'{lid}, the first level of route {rid}, is on the stem it shares near home (arc {s:.0f}, the route leaves it at {stem:.0f})')
+                elif s > stem + FIRST_REACH:
+                    rep.fail(f'{lid}, the first level of route {rid}, is {s - stem:.0f} px along past the stem near home (max {FIRST_REACH:.0f})')
+            elif ids[i - 1] in at and s - at[ids[i - 1]] > AFTER_REACH:
+                rep.fail(f'{lid} is {s - at[ids[i - 1]]:.0f} px along route {rid} after the stop {ids[i - 1]} it starts at (max {AFTER_REACH:.0f})')
+        rep.ok(f'route {rid}: ' + ' '.join(f'{lid}@{project(pos[lid], pts)[1]:.0f}' + (f' |{ids[i]}@{at[ids[i]]:.0f}|' if i < len(ids) and ids[i] in at else '')
+                                           for i, lid in enumerate(levels) if lid in pos))
+
+
+def check(data, table, rep, strings=None, stop_ids=None):
     # ---- the picture and its core
     if data.get('image') != 'UI/TownMap':
         rep.fail(f"image is {data.get('image')!r}, expected 'UI/TownMap'")
@@ -307,6 +405,8 @@ def check(data, table, rep, strings=None):
         if ch:
             route_of[ch] = rid
     boxes = {k: label_box(pos[k], nodes[k]['label']) for k in keys if nodes[k].get('label') in SIDES}
+    stop_pos = {s.get('id'): (float(s['x']), float(s['y'])) for s in data.get('stops', [])}
+    stop_route = {s.get('id'): s.get('route') for s in data.get('stops', [])}
     for k, box in boxes.items():
         for rid, pts in routes.items():
             d = box_poly_dist(box, pts)
@@ -316,11 +416,18 @@ def check(data, table, rep, strings=None):
             elif d <= OTHER_ROUTE_CROSS:
                 rep.fail(f'label of {k} ({nodes[k]["label"]}) crosses the centre line of route {rid} (must stay more than {OTHER_ROUTE_CROSS:.0f} px off)')
         for k2 in keys:
-            if k2 != k and box_point_dist(box, pos[k2]) < NODE_R + NAME_DISC_CLEAR:
-                rep.fail(f'label of {k} ({nodes[k]["label"]}) is {box_point_dist(box, pos[k2]) - NODE_R:.0f} px from the disc of node {k2} (min {NAME_DISC_CLEAR:.0f})')
+            r = NODE_R if route_of.get(k2) == route_of.get(k) else NODE_R * OTHER_NODE_SCALE
+            if k2 != k and box_point_dist(box, pos[k2]) < r + NAME_DISC_CLEAR:
+                rep.fail(f'label of {k} ({nodes[k]["label"]}) is {box_point_dist(box, pos[k2]) - r:.0f} px from the disc of node {k2} as drawn with it (min {NAME_DISC_CLEAR:.0f})')
+        for sid, sp in stop_pos.items():
+            if stop_route.get(sid) == route_of.get(k) and box_point_dist(box, sp) < STOP_R + NAME_DISC_CLEAR:
+                rep.fail(f'label of {k} ({nodes[k]["label"]}) is {box_point_dist(box, sp) - STOP_R:.0f} px from the marker of its route\'s stop {sid} (min {NAME_DISC_CLEAR:.0f})')
         for k2, box2 in boxes.items():
             if k2 > k and route_of.get(k2) == route_of.get(k) and box_box_dist(box, box2) < NAME_NAME_CLEAR:
                 rep.fail(f'labels of {k} and {k2} (same route {route_of.get(k)}) are {box_box_dist(box, box2):.0f} px apart (min {NAME_NAME_CLEAR:.0f})')
+    # ---- the trip: the stops at their places, every level on its own leg, each route's first level just past its stem
+    if stop_ids is not None:
+        check_trip(rep, table, stop_ids, routes, pos, stop_pos, stop_route, home)
     # ---- districts and streets
     dist_ids = [d['id'] for d in data.get('districts', [])]
     if sorted(dist_ids) != sorted(DISTRICTS):
@@ -381,7 +488,7 @@ def main(argv):
     if len(table) != 6:
         print(f'cannot read the six routes from {table_path}')
         return 1
-    rep = check(data, table, Report(), strings_path)
+    rep = check(data, table, Report(), strings_path, parse_route_stops(table_path))
     # levels match the map: every level's node is in its zone and only the underpass and park routes cross the railway (this needs
     # the layout the picture is made from, town_map_layout.py, which lives next to this file)
     try:
@@ -398,8 +505,9 @@ def main(argv):
         if not probs:
             rail = LV.rail_polylines(TL)
             cross = {rid: LV.count_crossings([(p['x'] - data['core']['x'], p['y'] - data['core']['y']) for p in r['points']], rail) for r in data['routes'] for rid in [r['id']]}
-            rep.ok('level / map: every story node is in the zone of its route, L23 at the school gate, C03 on the sand, C04 in the site yard, C05 on the park '
-                   'lawns; railway crossings (under it) ' + ', '.join(f'{k} {v}' for k, v in cross.items()))
+            rep.ok('level / map: every story node is in the zone of its level, every stop at its place (the station at the foot of the railway '
+                   'bridge, the surf school at the start of the beach, the site office in the site, the allotment by the railway...), C03 on the '
+                   'sand, C04 in the site yard, C05 on the park lawns; railway crossings (under it) ' + ', '.join(f'{k} {v}' for k, v in cross.items()))
     for line in rep.notes:
         print('  ok  ', line)
     for line in rep.errors:

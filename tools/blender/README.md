@@ -316,7 +316,7 @@ blenv/bin/python preview_street.py -- $PWD/out $PWD/street_ch1.png --chapter 1 [
 through, rendered in Blender from the game's own kit models (houses, shops, trees, cars, park,
 beach, building site, railway); `Assets/_Game/Resources/TownMapLayout.json` is the data the map
 screen draws on it: the two places, the six routes as polylines, the 28 level nodes with the side
-their name goes on, and the anchors for the district and street names. Both come from one layout
+their name goes on, the 17 stops between the levels at their places, and the anchors for the district and street names. Both come from one layout
 (`town_map_layout.py`), so the picture and the data cannot disagree. The picture holds no text, UI,
 route lines or nodes; the game draws those.
 
@@ -354,15 +354,16 @@ school gate (on School Lane) are the two ends, and the six routes run between th
 
 | Route | Where it runs |
 |---|---|
-| park | up the West Street, west by Rose Street and Park Lane to the park gate, east through the park (a path with a short tunnel under the railway), down the East Street to the school |
-| underpass | up the West Street to Station Road, east through the road tunnels under the railway (two tracks), down the East Street |
-| site | up the West Street to Yard Road, east through the building site (a track between two fenced yards), the East Street |
+| park | up the West Street, west by Rose Street and Park Lane to the park gate, east through the park (a path past the bandstand, the cafe, the boathouse and grandpa's allotment, then a short tunnel under the railway), down the East Street to the school |
+| underpass | up the West Street to Station Road, east past the building site to the station's hall at the foot of the railway bridge, through the road tunnels under the railway (two tracks), down the East Street |
+| site | up the West Street to Yard Road, east through the building site (a track between two fenced yards, the site office at a security gate halfway), the East Street |
 | street | Elm Street straight east (Elm Street, Hill Road, Garden Lane), the East Street (Puddle Lane) |
 | market | down the West Street to Market Street, east through the market, up the East Street |
 | beach | Seaside Road along the south, then the boardwalk along the sand to the school's promenade and back west along School Lane |
 
-The railway comes down from the north and ends at a small station just south of Station Road. Only
-the park and underpass routes cross it, and they go under it; no route has a level crossing.
+The railway comes down from the north and ends at a small station just south of Station Road, its
+ticket hall on Station Road at the foot of the bridge. Only the park and underpass routes cross it, and
+they go under it; no route has a level crossing.
 
 ### TownMapLayout.json
 
@@ -374,18 +375,25 @@ UTF-8, plain objects (it reads with `JsonUtility`), image pixels with the origin
   "routes":    [ {id, points:[{x, y} ...]} ...  in RouteTable order: street, market, beach, underpass, site, park ],
   "nodes":     [ {id, x, y, label} ... 28: L01 to L23 then C01 to C05; label is "below", "above", "left" or "right" ],
   "districts": [ {id, x, y} ... neighbourhood, market, beach, park, railway, site, school, sea ],
-  "streets":   [ {name, x, y, angle} ... 12 names on straight stretches; angle in degrees, clockwise on screen positive (y down), as the game reads it ] }
+  "streets":   [ {name, x, y, angle} ... 12 names on straight stretches; angle in degrees, clockwise on screen positive (y down), as the game reads it ],
+  "stops":     [ {id, route, x, y} ... the 17 stops of RouteTable in its order, each where the picture shows the place, on its route ] }
 ```
 
 Each route starts at the home and ends at the school (within 25 px), is smooth (30 to 90 points,
 follows its roads), at least 1200 px long and keeps 90 px from the other routes except within 300
-px of the home and the school. A story node lies on its route (within 12 px), in play order; a
-challenge node is 130 to 260 px beside its route; nodes are 190 px apart and 120 px from the places.
+px of the home and the school. A story node lies on its route (within 12 px), in play order, on its
+own leg (between the stop or home it starts at and the stop or school it ends at), near the start of
+it: a route's first node past the stem it shares with other routes near home (where the route is 75 px
+from every other route) and at most 500 px along beyond it, every later node at most 260 px along after
+its stop (the layout's anchors put them 128 px after it). A stop lies on its route (within 2 px) between
+its two levels' nodes, 100 px from every node. A challenge node is 130 to 260 px beside its route; nodes
+are 190 px apart and 120 px from the places.
 A level's name is a 300 x 56 px box 10 px off the node's 150 px disc on the node's `label` side. The
-map screen draws the names of the focused route's levels only, over every route line, so a name
-keeps 30 px from its own route's centre line and only must not cross the other routes' lines, it
-keeps 6 px from every node disc, and 6 px from the names of the levels of its own route (names of
-different routes may overlap). The street whose name is a route's name (Home Street, Market Street,
+map screen draws the names of the focused route's levels only, over every route line, with the other
+routes' nodes at 70 % while a route is in focus, so a name keeps 30 px from its own route's centre line
+and only must not cross the other routes' lines, it keeps 6 px from its own route's node discs and from
+the other routes' discs as drawn then (70 %), 6 px from its own route's stop markers, and 6 px from the
+names of the levels of its own route (names of different routes may overlap). The street whose name is a route's name (Home Street, Market Street,
 Seaside Road) lies within 60 px of that route on a stretch the route uses; Elm Street, Hill Road,
 Garden Lane and Puddle Lane are beside L02 to L05; no street is called after a level except Puddle
 Lane (L05); the road through the railway tunnels is Station Road.
@@ -398,59 +406,73 @@ exits 1 with every broken rule printed.
 
 | Module | What it does |
 |---|---|
-| `town_map_layout.py` | the layout as data: junctions, roads (control points of smooth curves), the areas (sea, sand, park, school, market, site, station), where each level is, the district and street-name wishes |
+| `town_map_layout.py` | the layout as data: junctions, roads (control points of smooth curves), the areas (sea, sand, park, school, market, site, station), the stops (`STOPS`), where each level is (`STORY`: an anchor, or None for 128 px after its stop), the zones of the levels and stops, the district and street-name wishes |
 | `town_map_graph.py`, `town_map_build.py` | the road graph; each route is the shortest path through its waypoints, smoothed and resampled to 30 to 90 points; districts and street names are put on straight stretches clear of the nodes; writes the JSON |
-| `town_map_nodes.py` | places the 28 nodes and their name sides: an exact constraint search (arc consistency, challenge nodes first) near the anchors the layout gives |
+| `town_map_nodes.py` | places the 28 nodes and their name sides: an exact constraint search (arc consistency, challenge nodes first) near the anchors the layout gives, each story node inside its own leg and 100 px from every stop |
 | `town_map_levels.py` | the level / map checks: zones and railway crossings (below) |
 | `town_map_raster.py`, `town_map_ground.py` | the flat ground painted as a texture: land, sea with foam, sand, lawns, roads with kerbs, pavements and paint, boardwalks, railway bed, paths |
 | `town_map_place.py` | houses and shops along the roads' frontages, infill, garden fences and hedges, trees (round crowns and kit conifers), cars on the kerbs, lamps |
-| `town_map_sets.py`, `town_map_sets_nature.py`, `town_map_sets_works.py` | the set pieces placed from the solved nodes: the home and what each level shows beside its node |
+| `town_map_sets.py`, `town_map_sets_nature.py`, `town_map_sets_works.py` | the set pieces placed from the solved nodes: the home and what each level shows beside its node and along its leg |
+| `town_map_sets_stops.py` | the stops at their places: the bus stop, granny's, the church, Sam's, the four shops, the surf school, the lifeguard tower, the beach cafe, the station's hall, the site office, the bandstand, the park cafe, the boathouse, the allotment |
 | `town_map_kit.py`, `town_map_scene.py` | the Blender side: kit FBXs and characters as linked duplicates, a low sun with soft shadows, a camera looking down with a long lens |
-| `town_map_plan.py` | the debug overlay: routes, nodes and name boxes drawn over the picture |
+| `town_map_plan.py` | the debug overlay: routes, nodes, stops and name boxes drawn over the picture |
 | `town_map_check.py` | the validator |
 
 ## Level and map
 
-What the levels contain is what the map shows at their nodes, and what the levels forbid, the map
-does not show. The layout (`town_map_layout.py`: `LEVEL_ZONES`, `CHECK_ZONES`, `CHALLENGE_ZONES`) and
-`town_map_levels.py` check it on every build and in `town_map_check.py`.
+What the levels contain is what the map shows at their nodes and along their legs, and what the levels
+forbid, the map does not show. The layout (`town_map_layout.py`: `STOPS`, `LEVEL_ZONE`, `STOP_ZONE`,
+`CHECK_ZONES`, `CHALLENGE_ZONES`) and `town_map_levels.py` check it on every build and in `town_map_check.py`.
 
-Rules: (1) only the underpass route (under 1 to 2 tracks) and the park route (once, by a short
-tunnel) cross the railway, and they go under it; the street, market, beach and site routes never
-cross it, not even by a level crossing; (2) the school is by the sea and has a football pitch; (3)
-the site route has no tunnel; (4) the home, and the start of every route, is the residential
-street round the red-door house. Every story node lies in the zone of its route: street
-`residential`, market `market`, beach `sand` (the sand and the boardwalk), underpass `underpass`
-(Station Road at the railway), site `site_works` (Yard Road through the building site), park
-`park`; L23 at the school gate; C03 on the sand, C04 in the site yard, C05 on the park's lawns.
+Every route is one trip from home (Levels/RouteTable.cs): its first level starts at home, each later one
+at the stop the level before it ended at. So a level's node sits near the START of its leg: a route's
+first node on the first stretch the route has to itself, past the West Street or Elm Street it shares
+with other routes outside the house; every later node shortly after the stop it starts from. The stops
+are real places in the picture (`town_map_sets_stops.py`), and a level's scene lies from beside its node
+on along its leg to the stop it ends at.
 
-The picture shows this beside each node, 80 to 200 px along its route:
+Rules: (1) only the underpass route (under two tracks, both in L18) and the park route (once, by a short
+tunnel, in L23) cross the railway, and they go under it; the street, market, beach and site routes never
+cross it, not even by a level crossing; L15 reaches the station's hall at the foot of the railway bridge
+only at its end, so its dark stretches are the building site's covered walkways, not the railway; (2) the
+school is by the sea and has a football pitch; (3) the site route has no tunnel; (4) the home, and the
+start of every route, is the residential street round the red-door house. Every story node lies in the
+zone of its level: L01 to L05 `residential`, L06 to L10 `market`, L11 `to_the_sea` (the West Street down
+from the market corner and Seaside Road), L12 to L14 `sand`, L15 `station_road` (the West Street up from
+the stem and Station Road to the railway), L18 `underpass` (Station Road at the railway), L16 `yard_road`
+(Yard Road to the site's gate), L17 `site_works` (the site between its gates), L19 to L22 `park`, L23
+`school_garden` (past the park's tunnel); every stop in its zone: the station `station_front` (the foot of
+the bridge), the surf school `sand_start`, the site office `site_works`, the allotment `by_the_railway`, the
+shops `market`, the beach stops `sand`, the park stops `park`, Home Street's stops `residential`; C03 on the
+sand, C04 in the site yard, C05 on the park's lawns.
 
-| Level | Route | The map shows |
+The picture shows this at each node (80 to 200 px along its route from it) and along its leg:
+
+| Level | Route | Where its node is, and what the map shows along its leg |
 |---|---|---|
-| L01 | street | the home's front garden (fence with a gate, flower beds, post box) and the first kerb with red tactile paving |
-| L02 | street | four cars parked nose to tail on the kerb, painters' trestles with paint pots on the pavement |
-| L03 | street | Hill Road: terraces with retaining walls and steps climbing the hill, a small stream under the road, garden apple trees |
-| L04 | street | Garden Lane: a garden wall with three gates, apple trees behind it, a parked car |
-| L05 | street | Puddle Lane: a wet lane with four big puddles, cars parked along it |
-| L06 | market | the market square: a plaza with two rows of awning stalls, crowds, crates |
-| L07 | market | three zebra crossings in a row with traffic lights, a delivery van with a roller conveyor |
-| L08 | market | the corner shop: steps, awning, roll shutter, crates |
-| L09 | market | fruit stalls with awnings, a toy shop with trampolines out front, a zebra crossing |
-| L10 | market | the main road at rush hour: crowds, three crossings, a queue of cars, stalls |
-| L11 | beach | the boardwalk over the sand, a surf school's racks, sign and flags |
-| L12 | beach | wet sand with several tidal channels, boats on trestles |
-| L13 | beach | seagulls, a rescue-board stand, a breezy bay with rocks and flags |
-| L14 | beach | sandcastles, surf racks, the boardwalk crossing the promenade, the school |
-| L15 | underpass | the dark road in its cutting under the railway, site barriers, puddles, pipes, a builder's lift, ramps and platforms, scaffolding |
-| L16 | site | ramps, platforms, pipe racks, rolling pipes, a security gate on the track |
-| L17 | site | tower cranes swinging pallets over open trenches, the builder's lift |
-| L18 | underpass | the cutting between two bridges (under the main line and the station's loop), scaffolding, a lift, barriers, puddles |
-| L19 | park | the park gate, dogs, a net tunnel, a fallen tree |
-| L20 | park | three fountains, trampolines, a play tower |
-| L21 | park | a playground with rope swings over a stream, trampolines, a climbing frame, a net tunnel |
-| L22 | park | a duck pond with stepping stones, a rope ferry (a raft on a rope), a fountain |
-| L23 | park | the last stretch to the school gate: the short tunnel under the railway, a crossing, a fountain, a swing, seagulls, the school's steps |
+| L01 | street | just out of the house on Elm Street: the home's front garden (fence with a gate, flower beds, post box) and the first kerb with red tactile paving, to the bus stop's shelter |
+| L02 | street | after the bus stop: four cars parked nose to tail on the kerb, painters' trestles with paint pots on the pavement, to granny's pink bungalow |
+| L03 | street | after granny's: Hill Road, terraces with retaining walls and steps climbing the hill, a small stream under the road, garden apple trees, up to St Mary's (tower and spire) |
+| L04 | street | after the church: Garden Lane, a garden wall with three gates, apple trees behind it, a parked car, to Sam's yellow house |
+| L05 | street | round the corner on the East Street: Puddle Lane, four big puddles, parked cars and cones up to School Lane and the gate |
+| L06 | market | on Market Street just round the corner from the West Street: the market square, a plaza with two rows of awning stalls, crowds, crates, to the bakery on the square |
+| L07 | market | after the bakery: three zebra crossings in a row with traffic lights, a delivery van with a roller conveyor at the post office |
+| L08 | market | after the post office: the corner shop (steps, awning, roll shutter, crates), to the flower shop |
+| L09 | market | after the flower shop: fruit stalls with awnings, a toy shop with trampolines out front, a zebra crossing, to the library |
+| L10 | market | after the library, on the Main Road (the East Street): rush hour at the junction, a queue of cars back along Market Street, a crossing, crowds |
+| L11 | beach | on the West Street just past the market corner: down to Seaside Road (the beach shop on the corner with board racks, buckets and spades and beach balls, the sign to the beach, people heading down), along it and out on the boardwalk to the surf school's hut |
+| L12 | beach | after the surf school: wet sand with several tidal channels, boats on trestles, to the lifeguard tower |
+| L13 | beach | after the lifeguard tower: seagulls, a rescue-board stand, a breezy bay with rocks and flags, to the beach cafe's kiosk |
+| L14 | beach | after the beach cafe: sandcastles, surf racks, the boardwalk crossing the promenade, the school |
+| L15 | underpass | on the West Street just past the stem it shares with the site and park routes: up to Station Road and along it past the building site's covered walkways (boarded roofs over the south pavement, scaffolding), puddles, a ramp and a platform, crates, site barriers, to the station's ticket hall at the foot of the railway bridge (no railway crossing) |
+| L16 | site | on Yard Road just past the stem: the site's west gate, ramps and platforms, pipe racks, rolling pipes, scaffolding, crates, to the site office |
+| L17 | site | after the site office's security gate (boom barrier and cabin): tower cranes swinging pallets over open trenches, the builder's lift, a digger, skips, out at the east gate |
+| L18 | underpass | after the station: the cutting under the main line and the station's loop (two bridges), scaffolding, barriers, puddles, pipes, a ramp and a platform, a boom barrier at the East Street |
+| L19 | park | just inside the park gate: dogs, a net tunnel, a fallen tree, to the bandstand |
+| L20 | park | after the bandstand: three fountains, trampolines, a play tower, to the park cafe |
+| L21 | park | after the park cafe: a playground with rope swings over a stream, trampolines, a climbing frame, a net tunnel, to the boathouse |
+| L22 | park | after the boathouse at the pond's west end: a duck pond with stepping stones, a rope ferry (a raft on a rope), a fountain, then past the lawn arena to grandpa's allotment by the railway |
+| L23 | park | after the allotment: the short tunnel under the railway, the school garden (a fountain, a swing, seagulls), the crossing of the East Street, the school's steps |
 | C01 | street | an open spot by the house: a small court with goals |
 | C02 | market | shop windows: the shop parade with awnings |
 | C03 | beach | slalom flags on the sand east of the school |
