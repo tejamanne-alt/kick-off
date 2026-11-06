@@ -1,11 +1,15 @@
 # Paints the faces of the two playable teens into the atlas: layered almond eyes (sclera with
-# a soft lid shadow, a gradient iris, pupil, two highlights, a tapered lash line and a fine lid
-# crease), brows, a small nose shadow, the mouth, blush, her freckles and his sticking plaster.
+# a soft lid shadow, a gradient iris, pupil, highlights, a tapered lash line and a fine lid
+# crease), brows, a small nose shadow, the mouth, blush and her freckles. His face is in the
+# hand-drawn style of 1990s anime films: tall dark eyes that are nearly all iris with one bright
+# highlight under a heavy lid line, thin slanted brows, and blush drawn as a few short hatched
+# lines; and his hair's strand texture is painted in the hair tile (HAIR_TILE).
 #
 # Atlas layout (2048 square): the face is a straight front projection into the upper-left
 # quadrant, u = x/0.34 + 0.5, v = (z - 1.27)/0.34 in head (base) space, matching
 # teen_head.face_uv(); the rest of the left half is plain skin (the back of the head samples
-# it); the bottom-right corner is plain white for the vertex-coloured parts.
+# it); the bottom-right corner is plain white for the vertex-coloured parts; beside it, the
+# hair tile (HAIR_TILE) holds the boy's strand texture.
 #
 # Everything is drawn 4x oversize in face metres and downscaled with LANCZOS, so lines are
 # clean and anti-aliased. Colours are display (sRGB) values. The skin is the sRGB encoding of
@@ -19,7 +23,10 @@ S = 2048          # atlas size
 Q = S // 2        # the face quadrant
 SS = 4            # supersampling
 CROP = (130, 200, 900, 1000)   # the part of the quadrant that holds painted features (px)
-SKIN_LINEAR = {True: (0.89, 0.6, 0.42), False: (0.85, 0.53, 0.33)}
+SKIN_LINEAR = {True: (0.89, 0.6, 0.42), False: (0.88, 0.62, 0.47)}
+# The hair tile (u0, v0, u1, v1 in atlas UV): strand texture, multiplied over the hair's colours. u runs across a lock
+# (or round the crown), v from the root to the tip (or from the crown to the hairline): teen_hair lays it out.
+HAIR_TILE = (0.525, 0.03, 0.725, 0.47)
 # The ears' drawing in the upper-right quadrant: centre (u, v) and UV units per metre of the
 # ear's own side projection (teen_head.ear_uv): local y (front -, back +), local z (up).
 EAR_UV = (0.75, 0.75, 3.0)
@@ -153,24 +160,27 @@ def _spec(girl):
             blush=((-0.076, 1.382, 0.022, 0.011), (0.076, 1.382, 0.022, 0.011), (240, 128, 116), 0.36),
             mouth='smile', mouth_z=1.337, mouth_col=(146, 70, 62), mouth_k=1.2, mouth_w=1.0,
             nose_z=1.389, nose_len=0.0165, nose_bend=0.0012, nose_a=0.55)
-    # boy: eyes a little narrower and less tall, a flatter heavier lid without a flick;
-    # straighter, thicker brows a little closer to the eyes; the plaster on his left cheek
+    # boy: tall, dark eyes that are nearly all iris (near-black, a hint of warm brown low down) with one bright
+    # highlight, under a heavy dark lid line that reaches a little past the outer corner; a faint lower lid and no
+    # crease; thin, straight-ish brows slanting up and out; blush drawn as short hatched lines; a small nose and a
+    # small smile. (The look of hand-drawn 1990s anime films: simple, clean shapes that read at a small size.)
     return dict(
-        eye_x=0.057, eye_z=1.428, hw=0.0250,
-        upper=((-1.0, -0.05), (-0.6, 0.70), (0.52, 0.76), (1.0, 0.13)),
-        lower=((-1.0, -0.05), (-0.5, -0.6), (0.56, -0.54), (1.0, 0.13)),
-        iris=(0.03, 0.04, 0.66, 0.74),
-        # dark eyes and a heavy lash line, so they still read as two dark marks at game size
-        iris_top=(24, 16, 14), iris_mid=(48, 32, 26), iris_bot=(78, 52, 38), iris_glow=(92, 60, 42),
-        pupil=(14, 9, 8), hl=0.7,
-        lash=(26, 19, 19), lash_w=(0.0016, 0.0046, 0.0060, 0.0050), flick=False,
-        lower_lash=(112, 70, 56), lower_a=0.7, crease=(186, 124, 98),
-        brow=((-0.0245, 0.0352), (-0.009, 0.0398), (0.012, 0.0405), (0.0305, 0.0362)),
-        brow_w=((0.0, 0.0072), (0.4, 0.0068), (0.75, 0.0052), (1.0, 0.0024)),
-        brow_col=(32, 25, 26),
-        blush=((-0.076, 1.379, 0.021, 0.0105), (0.085, 1.370, 0.022, 0.011), (226, 120, 104), 0.18),
-        mouth='half', mouth_z=1.329, mouth_col=(122, 62, 52), mouth_k=1.2, mouth_w=1.3,
-        nose_z=1.386, nose_len=0.02, nose_bend=0.0005, nose_a=0.6)
+        eye_x=0.058, eye_z=1.43, hw=0.0268,
+        upper=((-1.0, -0.06), (-0.62, 0.98), (0.48, 1.06), (1.0, 0.22)),
+        lower=((-1.0, -0.06), (-0.52, -0.82), (0.56, -0.78), (1.0, 0.22)),
+        iris=(0.06, 0.04, 0.6, 0.98),
+        iris_top=(14, 11, 14), iris_mid=(22, 16, 18), iris_bot=(40, 27, 24), iris_glow=(50, 33, 28),
+        pupil=(6, 5, 7), hl=0.9, hl2=False, hl_same_side=True,
+        lash=(14, 13, 20), lash_w=(0.0013, 0.0042, 0.0052, 0.0046), flick=False,
+        lower_lash=(120, 82, 72), lower_a=0.45, crease=(186, 124, 98), crease_a=0.0,
+        brow=((-0.0235, 0.0452), (-0.008, 0.0498), (0.013, 0.0514), (0.0315, 0.048)),
+        brow_w=((0.0, 0.0033), (0.4, 0.0031), (0.75, 0.0023), (1.0, 0.0007)),
+        brow_col=(22, 22, 34),
+        blush=((-0.075, 1.385, 0.02, 0.0095), (0.075, 1.385, 0.02, 0.0095), (232, 140, 130), 0.22),
+        hatch=dict(x=0.075, z=1.386, n=3, gap=0.0052, length=0.0105, angle=62, width=0.0011, col=(212, 92, 92), a=0.8),
+        plaster=False,
+        mouth='smile', mouth_z=1.334, mouth_col=(138, 70, 64), mouth_k=0.92, mouth_w=1.0,
+        nose_z=1.388, nose_len=0.016, nose_bend=0.0004, nose_a=0.45)
 
 
 def _eye(pp, sp, sx):
@@ -212,10 +222,12 @@ def _eye(pp, sp, sx):
     pp.fill(pup, sp['pupil'])
     # highlights: a big one upper-outer, a small one lower-inner
     k = sp['hl']
-    hl = pp.ellipse(icx + sx * rx * 0.36, icz + rz * 0.36, rx * 0.33 * k, rz * 0.3 * k)
+    hx = -1.0 if sp.get('hl_same_side') else sx      # the highlight toward the light: the same side in both eyes, or outward
+    hl = pp.ellipse(icx + hx * rx * 0.36, icz + rz * 0.36, rx * 0.33 * k, rz * 0.3 * k)
     pp.fill(ImageChops.multiply(hl, opening), (255, 255, 255))
-    hs = pp.ellipse(icx - sx * rx * 0.4, icz - rz * 0.5, rx * 0.14, rz * 0.13)
-    pp.fill(ImageChops.multiply(hs, opening), (255, 253, 250), 0.95)
+    if sp.get('hl2', True):
+        hs = pp.ellipse(icx - sx * rx * 0.4, icz - rz * 0.5, rx * 0.14, rz * 0.13)
+        pp.fill(ImageChops.multiply(hs, opening), (255, 253, 250), 0.95)
 
     # upper lash line: thin at the inner corner, heavy toward the outer part
     t = np.linspace(0, 1, len(up))
@@ -244,7 +256,8 @@ def _eye(pp, sp, sx):
     # fine lid crease above the lash line
     cr = up[int(len(up) * 0.22):int(len(up) * 0.86)] + np.array([0, hw * 0.3])
     tt = np.linspace(0, 1, len(cr))
-    pp.fill(pp.stroke(cr, _prof(tt, [(0, 0.0), (0.3, 0.00075), (0.75, 0.0009), (1, 0.0)])), sp['crease'], 0.9)
+    if sp.get('crease_a', 0.9) > 0:
+        pp.fill(pp.stroke(cr, _prof(tt, [(0, 0.0), (0.3, 0.00075), (0.75, 0.0009), (1, 0.0)])), sp['crease'], sp.get('crease_a', 0.9))
 
 
 def _brow(pp, sp, sx):
@@ -301,6 +314,62 @@ def _blush(pp, sp):
     for (bx, bz, rx, rz) in (e1, e2):      # right (-X) and left (+X) cheek
         m = ImageChops.lighter(m, pp.ellipse(bx, bz, rx, rz))
     pp.fill(pp.blur(m, 0.0055), col, a)
+
+
+def _hatch(pp, sp):
+    """Blush drawn as a few short parallel lines on each cheek (///), all leaning the same way, over the soft blush."""
+    h = sp.get('hatch')
+    if not h: return
+    m = pp.blank()
+    ang = math.radians(h['angle'])
+    d = np.array([math.cos(ang), math.sin(ang)]); nrm = np.array([1.0, 0.0])
+    for sx in (1, -1):
+        c = np.array([sx * h['x'], h['z']])
+        for i in range(h['n']):
+            o = c + nrm * (i - (h['n'] - 1) / 2) * h['gap']
+            L = h['length'] * (0.85 if i == h['n'] - 1 else 1.0)
+            pts = np.stack([o + d * t for t in np.linspace(-L / 2, L / 2, 24)])
+            tt = np.linspace(0, 1, len(pts))
+            m = ImageChops.lighter(m, pp.stroke(pts, _prof(tt, [(0, h['width'] * 0.3), (0.3, h['width']), (0.7, h['width']), (1, h['width'] * 0.3)]), cap=(True, True)))
+    pp.fill(pp.blur(m, 0.0002), h['col'], h['a'])
+
+
+def _hair_tile(atlas):
+    """The boy's hair texture, multiplied over the hair's colours: near white, with the fine dark lines that part hair
+    into strands running along the locks (u across, v from the root up to the tip), a few longer and darker where the
+    clumps part, and a soft shade at the roots where locks overlap. Mirrored at u = 0 and 1 (the lock wraps it both ways)."""
+    u0, v0, u1, v1 = HAIR_TILE
+    x0, x1 = int(round(u0 * S)), int(round(u1 * S)); y0, y1 = int(round((1 - v1) * S)), int(round((1 - v0) * S))
+    W, H = (x1 - x0) * 2, (y1 - y0) * 2            # drawn at 2x
+    rng = np.random.RandomState(5)
+    v = np.linspace(1, 0, H)[:, None]              # 0 at the root (the tile's bottom), 1 at the tip
+    base = 0.96 - 0.16 * _ss01(0.22, 0.0, v)        # the roots a little darker
+    im = np.repeat(np.repeat(base, W, 1)[..., None], 3, 2) * 255.0
+    canvas = Image.fromarray(np.clip(im, 0, 255).astype(np.uint8), 'RGB')
+    d = ImageDraw.Draw(canvas)
+    def line(u, va, vb, width, val, wave):
+        ts = np.linspace(va, vb, 60)
+        xs = (u + wave * np.sin(ts * 7.0 + u * 11.0)) * W; ys = (1 - ts) * H
+        for i in range(len(ts) - 1):
+            f = min(1.0, (ts[i] - va) / 0.08, (vb - ts[i]) / 0.12)          # tapered ends
+            wdt = max(1, int(round(width * max(f, 0.15))))
+            g = int(round(255 * (1 - (1 - val) * max(f, 0.3))))
+            d.line([(xs[i], ys[i]), (xs[i + 1], ys[i + 1])], fill=(g, g, int(min(255, g * 1.04))), width=wdt)
+    # the clump partings: long, darker lines
+    for u in (0.13, 0.29, 0.44, 0.58, 0.73, 0.88):
+        u += rng.uniform(-0.02, 0.02)
+        line(u, rng.uniform(0.0, 0.18), rng.uniform(0.72, 0.97), W * 0.012, rng.uniform(0.46, 0.58), 0.008)
+    # finer strands between them
+    for u in np.linspace(0.06, 0.95, 13):
+        u += rng.uniform(-0.015, 0.015)
+        line(u, rng.uniform(0.05, 0.35), rng.uniform(0.55, 0.9), W * 0.005, rng.uniform(0.74, 0.84), 0.006)
+    canvas = canvas.resize((x1 - x0, y1 - y0), Image.LANCZOS)
+    atlas.paste(canvas, (x0, y0))
+
+
+def _ss01(a, b, x):
+    t = np.clip((x - a) / (b - a), 0, 1)
+    return t * t * (3 - 2 * t)
 
 
 def _freckles(pp):
@@ -403,8 +472,9 @@ def paint(path, girl):
     sp = _spec(girl)
     pp = Painter(skin)
     _blush(pp, sp)
+    _hatch(pp, sp)
     if girl: _freckles(pp)
-    else: _plaster(pp)
+    elif sp.get('plaster', True): _plaster(pp)
     _nose(pp, sp)
     _mouth(pp, sp)
     for sx in (1, -1):
@@ -415,6 +485,7 @@ def paint(path, girl):
     _ear_art(atlas, skin)
     d = ImageDraw.Draw(atlas)
     d.rectangle([S * 3 // 4, S * 3 // 4, S - 1, S - 1], fill=(255, 255, 255))   # WHITE_UV corner
+    if not girl: _hair_tile(atlas)
     atlas.save(path)
 
 

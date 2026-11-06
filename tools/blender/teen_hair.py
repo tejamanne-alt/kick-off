@@ -34,13 +34,13 @@ def hair_colors(girl):
     """Base colour and shine colour. The base colour is the game's default hair colour."""
     if isinstance(girl, Variant): return girl.mod('hair').hair_colors(girl)
     if girl: return ((0.036, 0.022, 0.02, 1), (0.12, 0.08, 0.072, 1))     # near-black brown
-    # near-black with a cool cast; the shine a muted blue-grey band (anime hair)
-    return ((0.024, 0.02, 0.027, 1), (0.085, 0.08, 0.11, 1))
+    # blue-black, the dark navy of hand-painted anime hair; the shine a soft slate blue
+    return ((0.016, 0.022, 0.06, 1), (0.046, 0.072, 0.165, 1))
 
 
 def _groove_color(girl):
     """The clump creases: the base colour darkened toward a warm brown (not toward blue)."""
-    return (0.018, 0.011, 0.01, 1) if girl else (0.012, 0.01, 0.014, 1)
+    return (0.018, 0.011, 0.01, 1) if girl else (0.005, 0.007, 0.018, 1)
 
 
 # ------------------------------------------------------------------------------- small maths
@@ -181,15 +181,18 @@ def _key(p): return (round(p[0] * 2e4), round(p[1] * 2e4), round(p[2] * 2e4))
 
 
 class Mesh:
-    """Vertices and faces of one object, with a tag per face (BASE / SHINE / GROOVE) and a shade
-    per vertex."""
+    """Vertices and faces of one object, with a tag per face (BASE / SHINE / GROOVE), a shade
+    per vertex and a strand-texture coordinate per vertex (u across the lock, or round the crown;
+    v from the root to the tip, or from the crown to the hairline), in 0..1: the hair tile of the
+    atlas (face_teen.HAIR_TILE) where a character's hair takes the texture."""
     def __init__(self):
-        self.V, self.F, self.T, self.S = [], [], [], []
+        self.V, self.F, self.T, self.S, self.UV = [], [], [], [], []
 
-    def add(self, V, F, T, S=None):
+    def add(self, V, F, T, S=None, UV=None):
         b = len(self.V); self.V += [tuple(map(float, v)) for v in V]
         self.F += [tuple(b + i for i in f) for f in F]; self.T += list(T)
         self.S += list(S) if S is not None else [1.0] * len(V)
+        self.UV += [tuple(map(float, uv)) for uv in UV] if UV is not None else [(0.5, 0.5)] * len(V)
 
     def build(self, name):
         me = bpy.data.meshes.new(name); me.from_pydata(self.V, [], self.F); me.update()
@@ -217,7 +220,8 @@ def _alloc(total, sizes):
 
 
 def sweep(mesh, path, width, thick, n=12, m=18, up=None, side=None, inner=0.4, curl=0.35,
-          shine=None, grooves=(), dents=(), tip=(0.6, 1.0), root=None, root_cap=True, tip_rows=1.2, shine_at=np.pi / 2):
+          shine=None, grooves=(), dents=(), tip=(0.6, 1.0), root=None, root_cap=True, tip_rows=1.2, shine_at=np.pi / 2,
+          tex=(0.0, 1.0)):
     """A tapered lock along a smooth curve through `path`.
     width / thick: [(t, half-width)], [(t, half-thickness)] keys along the lock (t in 0..1).
     up: the lock's outward direction (default: away from the cranium centre); side: a fixed
@@ -230,7 +234,9 @@ def sweep(mesh, path, width, thick, n=12, m=18, up=None, side=None, inner=0.4, c
     points at t0, t1.
     grooves: [(theta, t0, t1, psi)] thin painted creases along the lock (theta: place round the
     section, pi/2 = the top), closing to points at both ends.
-    dents: [(theta, depth, sigma)] shallow dents of the section along the lock."""
+    dents: [(theta, depth, sigma)] shallow dents of the section along the lock.
+    tex = (offset, scale): where the lock's root-to-tip runs along the strand texture (v = offset + t * scale),
+    so locks side by side show the strands at different places (u runs across the lock, 0.5 along its top)."""
     D = _catmull(path)
     if shine is not None and callable(shine[0]):
         tf = np.linspace(0, 1, 401); Pf, _ = _resample(D, tf); on = np.nonzero(np.asarray(shine[0](Pf), dtype=bool))[0]
@@ -267,7 +273,7 @@ def sweep(mesh, path, width, thick, n=12, m=18, up=None, side=None, inner=0.4, c
         gaps = [np.mod(cs[(i + 1) % len(cs)] - cs[i], 2 * np.pi) or 2 * np.pi for i in range(len(cs))]
         galloc = _alloc(n - nf, gaps)
     rows = m - 1                      # the last row is the tip point
-    V, F, TG = [], [], []
+    V, F, TG, UV = [], [], [], []
     act = np.zeros((len(feats), rows))
     for i in range(rows):
         t = ts[i]
@@ -293,8 +299,9 @@ def sweep(mesh, path, width, thick, n=12, m=18, up=None, side=None, inner=0.4, c
         k = np.ones_like(th)
         for dth, depth, sig in dents: k = k - depth * np.exp(-(_wrap(th - dth) / sig) ** 2)
         V += list(P[i] + np.outer(x * k, Bv[i]) + np.outer(y * k, U[i]))
+        UV += [(0.5 + 0.5 * c, tex[0] + ts[i] * tex[1]) for c in ca]
         if i == 0: ftag0 = ftag
-    tip_v = len(V); V.append(P[-1])
+    tip_v = len(V); V.append(P[-1]); UV.append((0.5, tex[0] + tex[1]))
     for i in range(rows - 1):
         for kk in range(n):
             a, b = i * n + kk, i * n + (kk + 1) % n
@@ -306,11 +313,11 @@ def sweep(mesh, path, width, thick, n=12, m=18, up=None, side=None, inner=0.4, c
         a, b = (rows - 1) * n + kk, (rows - 1) * n + (kk + 1) % n
         F.append((a, b, tip_v)); TG.append(BASE)
     if root_cap:
-        c = len(V); V.append(P[0] - T[0] * 0.3 * min(W[0], H[0] + 1e-4))
+        c = len(V); V.append(P[0] - T[0] * 0.3 * min(W[0], H[0] + 1e-4)); UV.append((0.5, tex[0]))
         for kk in range(n): F.append((c, (kk + 1) % n, kk)); TG.append(BASE)
     p0, p1, p2 = (np.array(V[j]) for j in F[0][:3])         # outward winding
     if np.dot(np.cross(p1 - p0, p2 - p0), 0.5 * (p0 + p2) - P[0]) < 0: F = [tuple(reversed(f)) for f in F]
-    mesh.add(V, F, TG)
+    mesh.add(V, F, TG, None, UV)
     return P
 
 
@@ -339,6 +346,7 @@ class Shell:
     columns from u0 to u1 (fractions of the way from the pole to the hairline).
     twist(u) -> radians added to every column's azimuth at u (a spiral from the pole)."""
     R = 0.155
+    STRANDS = 7          # how many times the strand texture repeats (mirrored) round the crown
 
     def __init__(self, mesh, fit, pole, e1, edge_pts, off_fn, band=None, grooves=(), na=96, dens=None,
                  rows=(7, 1, 12), s0=0.06, sigma=0.05, twist=None, ease=1.35):
@@ -401,6 +409,13 @@ class Shell:
         G[nr] = fit.place(self.dirs(st, A[-1]), np.full(nc, -0.0025))
         Vt = [fit.place(n[None, :], self.height(n[None, :], np.zeros(1), np.zeros(1)))[0]] + [tuple(p) for row in G for p in row]
         SH = [1.0] * (1 + nr * nc) + [0.85] * nc
+        # the strand texture runs down the columns from the crown (v) and back and forth round it (u: a mirrored repeat,
+        # so there is no seam): the strands fan out from the whorl like combed hair
+        UVt = [(0.5, 0.0)]
+        for j in range(nr + 1):
+            Aj = A[min(j, nr - 1)]
+            vj = np.ones(nc) if j == nr else S[j] / np.maximum(self.SE(A[j]), 1e-6)
+            UVt += [(0.5 + 0.5 * math.cos(self.STRANDS * a), float(min(vv, 1.0))) for a, vv in zip(Aj, vj)]
         F, TG = [], []
         def vid(j, i): return 1 + j * nc + (i % nc)
         for i in range(nc): F.append((0, vid(0, i + 1), vid(0, i))); TG.append(BASE)
@@ -415,7 +430,7 @@ class Shell:
                     tag = GROOVE
                 TG.append(tag)
         F = _orient(Vt, F, CC)
-        mesh.add(Vt, F, TG, SH)
+        mesh.add(Vt, F, TG, SH, UVt)
 
     def SE(self, a):
         return np.interp(np.mod(a, 2 * np.pi), np.append(self.ag, 2 * np.pi), np.append(self.seg, self.seg[0]))
@@ -557,10 +572,10 @@ def _girl(fit, mesh, scr):
 
 # ----------------------------------------------------------------------------------- boy
 def _boy(fit, mesh):
-    """His hair: a full, messy near-black mop of big chunky locks: a fringe of pointed locks
-    falling over the forehead to the brows (combed a little toward his right), locks over the
-    temples and the tops of the ears, the back falling to the nape in points that flick out, and
-    a few short locks sticking up at the crown."""
+    """His hair: a full blue-black mop of chunky pointed locks with a strand texture: a fringe
+    parted on his left and swept across the forehead toward his right, its points falling to the
+    brows (one between the eyes), locks over the temples and in front of the ears, the back falling
+    full to the nape in points that flick out, and a few spiky tufts at the back of the crown."""
     pole = _unit([0.03, 0.42, 0.9])                 # the crown whorl
     # hairline: the front (under the fringe), short sideburns, over the ears, down to the nape
     hl = [(0, -0.135, 1.538), (0, 0.077, 1.33)]
@@ -572,13 +587,12 @@ def _boy(fit, mesh):
                (sx * 0.149, 0.015, 1.474), (sx * 0.143, 0.04, 1.456), (sx * 0.13, 0.05, 1.408),
                (sx * 0.116, 0.058, 1.377), (sx * 0.085, 0.065, 1.35), (sx * 0.055, 0.07, 1.335),
                (sx * 0.026, 0.074, 1.316), (sx * 0.012, 0.076, 1.322)]
-    az = _azimuth_fn(pole)
 
     def off_fn(D, s, se, a):
         x, y, z = D[:, 0], D[:, 1], D[:, 2]
-        # a full mop: thick over the top and the back of the crown, closer at the sides
-        o = 0.006 + 0.012 * _ss(0.3, 0.92, z) + 0.006 * _ss(-0.2, 0.5, y) * _ss(-0.1, 0.6, z)
-        o = o - 0.002 * _ss(0.6, 0.9, np.abs(x)) * _ss(0.3, -0.2, z)
+        # a full, rounded mop: thick over the top and the back of the crown, closer at the sides
+        o = 0.008 + 0.017 * _ss(0.3, 0.92, z) + 0.009 * _ss(-0.2, 0.5, y) * _ss(-0.1, 0.6, z)
+        o = o - 0.0025 * _ss(0.6, 0.9, np.abs(x)) * _ss(0.3, -0.2, z)
         dist = (se - s) * Shell.R
         e = 0.0009
         return e + (o - e) * _ss(0.0, 0.022, dist)
@@ -591,57 +605,52 @@ def _boy(fit, mesh):
     twist = lambda u: 0.3 * _ss(0.0, 0.75, u)
     sh = Shell(mesh, fit, pole, [1, 0, 0], hl, off_fn, None, G, na=76, rows=(6, 1, 10), sigma=0.04, twist=twist)
     over = lambda pts, lifts: sh.on(np.array(pts, dtype=np.float64), np.asarray(lifts, dtype=np.float64))
+    count = [0]
 
     def lock(pts, w, h, n=10, m=13, shine=None, tip=(0.5, 0.95), clear=0.0, curl=0.45, inner=0.35):
         """A chunky pointed lock through (x, y or None for the front of the head, z, lift) points."""
         P = over([front_pt(x, z, y) for x, y, z, l in pts], [l for x, y, z, l in pts])
         if clear: P = fit.clear(P, clear)
+        k = count[0]; count[0] += 1
         sweep(mesh, P, [(0, w * 0.55), (0.2, w), (0.55, w * 0.85), (1, w * 0.5)],
               [(0, h * 0.5), (0.25, h), (0.7, h * 0.8), (1, h * 0.5)], n=n, m=m, inner=inner, curl=curl,
-              shine=shine, tip=tip, root=(0.14, 1.0))
+              shine=shine, tip=tip, root=(0.14, 1.0), tex=((k * 0.37) % 1.0 * 0.12, 0.88))
 
     fr_shine = (lambda Pm: (Pm[:, 2] > 1.548) & (Pm[:, 2] < 1.585), 0.3)
-    # --- the fringe, from the top of the head over the hairline, to points above the brows
-    lock([(0.012, -0.06, 1.6, -0.002), (0.008, None, 1.567, 0.011), (-0.002, None, 1.527, 0.009), (-0.014, None, 1.492, 0.006), (-0.022, None, 1.47, 0.004)], 0.026, 0.0075, shine=fr_shine)
-    lock([(0.046, -0.055, 1.6, -0.002), (0.05, None, 1.566, 0.012), (0.053, None, 1.53, 0.009), (0.05, None, 1.5, 0.006), (0.043, None, 1.479, 0.004)], 0.025, 0.0075, shine=fr_shine)
-    lock([(0.078, -0.045, 1.596, -0.002), (0.088, None, 1.556, 0.012), (0.095, None, 1.522, 0.008), (0.097, None, 1.493, 0.005)], 0.023, 0.007, shine=fr_shine)
-    lock([(-0.024, -0.06, 1.6, -0.002), (-0.034, None, 1.566, 0.012), (-0.046, None, 1.53, 0.009), (-0.058, None, 1.497, 0.006), (-0.066, None, 1.477, 0.004)], 0.026, 0.0075, shine=fr_shine)
-    lock([(-0.058, -0.05, 1.598, -0.002), (-0.074, None, 1.56, 0.012), (-0.09, None, 1.524, 0.008), (-0.103, None, 1.497, 0.005)], 0.024, 0.007, shine=fr_shine)
-    lock([(0.1, -0.03, 1.585, -0.002), (0.114, None, 1.548, 0.011), (0.124, None, 1.513, 0.007), (0.128, None, 1.488, 0.004)], 0.02, 0.0065)
-    lock([(-0.095, -0.035, 1.588, -0.002), (-0.112, None, 1.55, 0.011), (-0.123, None, 1.514, 0.007), (-0.129, None, 1.486, 0.004)], 0.021, 0.0065)
-    # --- in front of the ears, and over their tops
+    # --- the fringe: parted over his left eye (+X), swept across the forehead toward his right in long
+    # pointed locks (one falling between the eyes), with two shorter ones falling the other way from the parting
+    lock([(0.07, -0.05, 1.602, -0.002), (0.05, None, 1.566, 0.012), (0.022, None, 1.527, 0.009), (-0.006, None, 1.491, 0.006), (-0.022, None, 1.466, 0.004)], 0.028, 0.0078, shine=fr_shine)
+    lock([(0.034, -0.06, 1.605, -0.002), (0.012, None, 1.567, 0.012), (-0.016, None, 1.531, 0.009), (-0.044, None, 1.5, 0.006), (-0.062, None, 1.478, 0.004)], 0.027, 0.0077, shine=fr_shine)
+    lock([(-0.004, -0.06, 1.605, -0.002), (-0.03, None, 1.566, 0.012), (-0.06, None, 1.533, 0.009), (-0.085, None, 1.506, 0.006), (-0.099, None, 1.49, 0.004)], 0.026, 0.0075, shine=fr_shine)
+    lock([(-0.045, -0.055, 1.6, -0.002), (-0.074, None, 1.561, 0.012), (-0.1, None, 1.528, 0.008), (-0.117, None, 1.5, 0.005)], 0.024, 0.0072, shine=fr_shine)
+    lock([(0.092, -0.045, 1.598, -0.002), (0.094, None, 1.557, 0.012), (0.088, None, 1.52, 0.008), (0.076, None, 1.49, 0.005), (0.067, None, 1.476, 0.004)], 0.023, 0.007, shine=fr_shine)
+    lock([(0.118, -0.03, 1.586, -0.002), (0.124, None, 1.548, 0.011), (0.122, None, 1.512, 0.007), (0.116, None, 1.486, 0.004)], 0.02, 0.0065)
+    lock([(-0.09, -0.035, 1.589, -0.002), (-0.115, None, 1.55, 0.011), (-0.128, None, 1.514, 0.007), (-0.133, None, 1.486, 0.004)], 0.021, 0.0065)
+    # --- in front of the ears (down to the middle of the ear), and over their tops
     for sx in (1, -1):
-        lock([(sx * 0.118, -0.04, 1.572, -0.002), (sx * 0.138, -0.052, 1.522, 0.009), (sx * 0.145, -0.05, 1.475, 0.007),
-              (sx * 0.144, -0.046, 1.438, 0.004)], 0.016, 0.006, clear=0.004)
-        lock([(sx * 0.125, 0.0, 1.585, -0.002), (sx * 0.148, 0.006, 1.53, 0.012), (sx * 0.158, 0.014, 1.482, 0.013),
-              (sx * 0.162, 0.024, 1.448, 0.016)], 0.022, 0.0068, clear=0.005)
-    # --- the back: falling to the nape in points that flick out a little
+        lock([(sx * 0.118, -0.04, 1.572, -0.002), (sx * 0.138, -0.052, 1.522, 0.009), (sx * 0.145, -0.05, 1.47, 0.007),
+              (sx * 0.145, -0.044, 1.425, 0.004)], 0.017, 0.006, clear=0.004)
+        lock([(sx * 0.125, 0.0, 1.585, -0.002), (sx * 0.15, 0.006, 1.53, 0.013), (sx * 0.16, 0.014, 1.482, 0.014),
+              (sx * 0.164, 0.024, 1.452, 0.016)], 0.023, 0.007, clear=0.005)
+    # --- the back: full, falling to the nape in points that flick out a little
     for x0, x1, x2, ln, fl in [(0.0, 0.0, 0.004, 1.322, 0.02), (0.055, 0.068, 0.08, 1.335, 0.022),
                                (-0.055, -0.068, -0.082, 1.33, 0.021), (0.1, 0.12, 0.134, 1.36, 0.024),
                                (-0.1, -0.12, -0.136, 1.362, 0.024)]:
         yb = lambda x: 0.075 + 0.07 * (1 - (abs(x) / 0.16) ** 2)
-        lock([(x0, 0.09, 1.57, -0.002), (x1, yb(x1) + 0.03, 1.49, 0.014), (x2, yb(x2), 1.41, 0.013),
-              (x2 * 1.08, yb(x2) - 0.02, ln, fl)], 0.03, 0.008, n=10, m=13, clear=0.004, tip=(0.45, 1.1))
+        lock([(x0, 0.09, 1.57, -0.002), (x1, yb(x1) + 0.032, 1.49, 0.016), (x2, yb(x2), 1.41, 0.015),
+              (x2 * 1.08, yb(x2) - 0.02, ln, fl)], 0.031, 0.0085, n=10, m=13, clear=0.004, tip=(0.45, 1.1))
     # two locks over the nape's corners, flicking out behind the ears
     for sx in (1, -1):
-        lock([(sx * 0.12, 0.05, 1.56, -0.002), (sx * 0.142, 0.07, 1.49, 0.012), (sx * 0.15, 0.07, 1.43, 0.014),
+        lock([(sx * 0.12, 0.05, 1.56, -0.002), (sx * 0.142, 0.07, 1.49, 0.013), (sx * 0.15, 0.07, 1.43, 0.015),
               (sx * 0.16, 0.06, 1.385, 0.026)], 0.022, 0.007, n=10, m=12, clear=0.005, tip=(0.45, 1.1))
-    # --- a few locks over the top, from the crown forward, so the top breaks into clumps
-    for x0, x1, up in ((0.04, 0.06, 0.016), (-0.04, -0.055, 0.018), (0.0, 0.01, 0.022)):
-        lock([(x0 * 0.5, 0.06, 1.592, -0.002), (x0, 0.0, 1.605, up), (x1, -0.045, 1.6, up), (x1 * 1.1, -0.075, 1.59, 0.008)],
-             0.028, 0.008, n=10, m=11, tip=(0.55, 1.0))
-
-    # the cowlick at the crown: a few short rounded points leaning back and to one side
-    Wp = sh.on((pole * 0.1 + CC)[None], 0.0)[0]
-    fwd = _unit(np.cross(pole, [1, 0, 0])); side = _unit(np.cross(fwd, pole))
-    for (dx, dy, ln, lean, w) in [(0.0, 0.0, 0.034, 0.4, 0.0105), (0.012, 0.006, 0.028, 0.85, 0.009),
-                                  (-0.011, 0.007, 0.024, -0.2, 0.008)]:
-        b = Wp + side * dx - fwd * dy - pole * 0.005
-        back = _unit(-fwd * math.cos(lean) + side * math.sin(lean))
-        pts = [b, b + pole * ln * 0.5 + back * ln * 0.12, b + pole * ln * 0.85 + back * ln * 0.5,
-               b + pole * ln * 0.95 + back * ln * 1.0]
-        sweep(mesh, pts, [(0, w), (0.45, w * 0.85), (1, w * 0.7)], [(0, w * 0.8), (0.45, w * 0.66), (1, w * 0.5)],
-              n=8, m=10, up=back, inner=0.85, curl=0.12, tip=(0.5, 0.8))
+    # --- the top: locks lying back from the parting over the crown (so the top breaks into clumps), and at the back of the
+    # crown a few spiky tufts that lift up and back out of the mop
+    for x0, x1 in ((0.075, 0.08), (0.03, 0.025), (-0.02, -0.035), (-0.065, -0.085)):
+        lock([(x0, -0.07, 1.6, -0.002), (x0 * 0.95, -0.02, 1.617, 0.009), (x1, 0.035, 1.615, 0.011), (x1 * 1.05, 0.08, 1.592, 0.009)],
+             0.03, 0.008, n=10, m=12, tip=(0.6, 0.9))
+    for (x0, x1, lift, w) in ((0.03, 0.045, 0.034, 0.024), (-0.03, -0.05, 0.03, 0.022), (0.075, 0.1, 0.024, 0.02), (-0.075, -0.1, 0.022, 0.02)):
+        lock([(x0 * 0.6, 0.02, 1.618, -0.002), (x0, 0.07, 1.6, 0.012), (x1, 0.105, 1.565, lift * 0.7), (x1 * 1.15, 0.118, 1.535, lift)],
+             w, 0.0075, n=10, m=12, tip=(0.45, 1.15), curl=0.3)
 
 
 # ---------------------------------------------------------------------------------- build
@@ -666,7 +675,13 @@ def build_hair(girl):
     if girl: _girl(fit, mesh, scr)
     else: _boy(fit, mesh)
     hair = mesh.build('Hair')
-    parts = [Part(hair, _colour_fn(hair, mesh, base, shine, _groove_color(girl)), 3, 'Head')]
+    uv = None
+    if not girl and len(mesh.UV) == len(hair.data.vertices):
+        # his strand texture: the hair tile of the atlas (face_teen paints it), along each lock and down the cap
+        from face_teen import HAIR_TILE
+        u0, v0, u1, v1 = HAIR_TILE
+        uv = [(u0 + u * (u1 - u0), v0 + v * (v1 - v0)) for u, v in mesh.UV]
+    parts = [Part(hair, _colour_fn(hair, mesh, base, shine, _groove_color(girl)), 3, 'Head', uv=uv)]
     if scr.F:
         so = scr.build('Scrunchie')
         parts.append(Part(so, _colour_fn(so, scr, SCRUNCHIE, SCRUNCHIE, SCRUNCHIE), 0, 'Head'))

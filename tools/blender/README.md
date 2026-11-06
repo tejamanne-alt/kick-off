@@ -46,9 +46,14 @@ line, few details, a clear silhouette) with realistic, slim teen proportions: lo
 small head (about 7 heads tall). Settings → Player picks which one walks to school (both are
 built into each level, `CharacterChoice` shows one). Both wear a school uniform modelled in the
 shop's School Uniform colours (a white top and navy legwear), so that outfit recolours to itself.
-- Boy: a near-black messy mop of big chunky pointed locks (a fringe falling to the brows, locks
-  over the tops of the ears, the back flicking out at the nape, a cowlick at the crown), dark
-  eyes, a plaster on his cheek, warm tanned skin; a white short-sleeved school shirt, buttoned up
+- Boy: in the look of hand-drawn 1990s anime films. A full blue-black mop of chunky pointed locks
+  with a strand texture (a fringe parted over his left eye and swept across the forehead toward his
+  right, its points falling to the brows and one between the eyes; locks over the temples and in
+  front of the ears; the back full to the nape in points that flick out; a few spiky tufts lifting
+  up and back at the crown); a slim, longish oval face narrowing into a soft, slightly pointed chin;
+  tall dark eyes that are nearly all iris with one bright highlight under a heavy lid line, thin
+  slanted brows, blush drawn as short hatched lines, a small nose and a small smile; light peach
+  skin; a white short-sleeved school shirt, buttoned up
   to a pointed collar and tucked into straight navy trousers (the waistband is at the natural
   waist, with a little blousing over a thin dark-brown belt and its small brass buckle), a red
   striped tie, white canvas sneakers on a grey sole, and a red satchel on a cross-body strap (over
@@ -78,7 +83,10 @@ heights (1.5 and 1.43) the boy stands about 1.73 m and the girl about 1.65 m (ha
 
 What the model carries:
 - One skinned mesh, one material: vertex colours times the atlas (the face is painted in the
-  atlas' upper-left quadrant; everything else samples its white corner).
+  atlas' upper-left quadrant, the ears' folds in the upper-right; everything else samples its white
+  corner, except the boy's hair, which samples the hair tile beside it: `face_teen.HAIR_TILE`, fine
+  dark strand lines and a soft shade at the roots, laid across and along each lock and down the cap
+  from the crown by `teen_hair`, so the hair reads as strands while keeping its flat cel colours).
 - UV channel 2, x: the outfit part (0 skin and fixed parts, 1 shirt or blouse, 2 trousers or skirt (and her collar), 3 hair, 4 accent: the tie) for `ModelOutfit`.
   Skin that lies under clothes is not skin-coloured: it takes the colour and the part of the garment over it (1 or 2), so a
   bent knee or a lifted thigh that makes it poke through the cloth shows more cloth, never a sliver of bare skin (and its ink outline

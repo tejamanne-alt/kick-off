@@ -25,7 +25,8 @@ class Part:
            an int or fn(co, face_center) -> int
     bind   'transfer' to copy the body's bone weights (clothes that bend with the body), or a
            bone name to follow that bone rigidly ('Head', 'Hips', 'Foot.L', 'Bag', ...)
-    uv     None for the white swatch, or fn(co) -> (u, v) into the atlas (the face)
+    uv     None for the white swatch, or fn(co) -> (u, v) into the atlas (the face), or a list of (u, v) by vertex
+           index (the boy's hair: its strand texture, laid along each lock and down the cap from the crown)
     """
     def __init__(self, obj, color, part=0, bind='transfer', uv=None):
         self.obj, self.color, self.part, self.bind, self.uv = obj, color, part, bind, uv
