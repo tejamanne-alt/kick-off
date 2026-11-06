@@ -453,5 +453,207 @@ namespace DribbleToSchool.Audio
                 tr.buf[i] += v * vel;
             }
         }
+
+        // ---------- West Coast ----------
+
+        /// <summary>
+        /// A clean electric guitar: a plucked string with a bright pick, a little body resonance and a gentle
+        /// chorus (a second string a few cents off), the sound of a sunny Californian pop or surf guitar
+        /// through a clean amp. Muted (palm on the strings) it is short and dark.
+        /// </summary>
+        public static void CleanGuitar(Track tr, double time, double freq, double dur, float vel, int seed, bool muted = false)
+        {
+            float bright = muted ? 0.25f : 0.62f;
+            double d = muted ? Math.Min(dur, 0.16) : dur;
+            Pluck(tr, time, freq, d, vel * 0.75f, seed, bright, muted ? 0.985f : 0.9975f);
+            if (!muted) Pluck(tr, time + 0.004, freq * 1.0035, d, vel * 0.35f, seed + 101, bright * 0.8f, 0.997f);
+        }
+
+        /// <summary>A strummed chord on the clean guitar, down (low to high) or up, the strings 7 to 14 ms apart.</summary>
+        public static void Jangle(Track tr, double time, int[] midi, double dur, float vel, int seed, bool down, bool muted = false)
+        {
+            double spread = muted ? 0.006 : down ? 0.012 : 0.008;
+            for (int i = 0; i < midi.Length; i++)
+            {
+                int k = down ? i : midi.Length - 1 - i;
+                float v = vel / (float)Math.Sqrt(midi.Length) * (down ? 1f : 0.75f);
+                CleanGuitar(tr, time + i * spread, Synth.MidiToHz(midi[k]), dur, v, seed + i * 13, muted);
+            }
+        }
+
+        /// <summary>
+        /// The surf guitar's twang: a bright plucked note through a lot of spring reverb (the track's send), with
+        /// a slow whammy-bar vibrato; long notes are tremolo-picked (picked fast and evenly, the surf sound).
+        /// </summary>
+        public static void SurfLead(Track tr, double time, double freq, double dur, float vel, int seed)
+        {
+            if (dur > 0.35)
+            {
+                double rate = 14;
+                int count = (int)(dur * rate);
+                for (int i = 0; i < count; i++)
+                {
+                    double wobble = 1 + 0.004 * Math.Sin(i * 0.9);
+                    Pluck(tr, time + i / rate, freq * wobble, 1.0 / rate + 0.05, vel * (i % 2 == 0 ? 0.62f : 0.5f), seed + i, 0.55f, 0.995f);
+                }
+                return;
+            }
+            Pluck(tr, time, freq, dur + 0.15, vel * 0.8f, seed, 0.6f, 0.997f);
+            Pluck(tr, time + 0.003, freq * 1.004, dur + 0.1, vel * 0.3f, seed + 7, 0.5f, 0.996f);
+        }
+
+        /// <summary>A combo organ: soft drawbars (the fundamental, octave and twelfth) and a rotating speaker's slow swirl.</summary>
+        public static void Organ(Track tr, double time, int[] midi, double dur, float vel)
+        {
+            int start = Index(time);
+            double rel = 0.08;
+            int n = (int)((dur + rel) * Sr);
+            foreach (int m in midi)
+            {
+                double f = Synth.MidiToHz(m);
+                double ph = 0;
+                for (int i = 0; i < n; i++)
+                {
+                    double t = i / (double)Sr;
+                    double vib = 1 + 0.002 * Math.Sin(TwoPi * 5.8 * t);
+                    ph += f * vib / Sr;
+                    double v = Math.Sin(TwoPi * ph) + 0.5 * Math.Sin(TwoPi * ph * 2) + 0.25 * Math.Sin(TwoPi * ph * 3);
+                    double swirl = 1 - 0.15 * (0.5 + 0.5 * Math.Sin(TwoPi * 6.2 * t + m));
+                    float env = (float)(Math.Min(1, t / 0.01) * (t > dur ? Math.Max(0, 1 - (t - dur) / rel) : 1));
+                    tr.Add(start + i, (float)(v * swirl) * env * vel * 0.3f / midi.Length);
+                }
+            }
+        }
+
+        /// <summary>The West Coast synth whistle: a pure, high sine that glides into each note, with a lazy vibrato.</summary>
+        public static void Whistle(Track tr, double time, double freq, double fromFreq, double dur, float vel)
+        {
+            int start = Index(time);
+            double rel = 0.12;
+            int n = (int)((dur + rel) * Sr);
+            double ph = 0;
+            for (int i = 0; i < n; i++)
+            {
+                double t = i / (double)Sr;
+                double glide = Math.Min(1, t / 0.06);
+                double f = fromFreq + (freq - fromFreq) * glide;
+                f *= 1 + 0.008 * Math.Sin(TwoPi * 5.5 * t) * Math.Min(1, t / 0.25);
+                ph += f / Sr;
+                float env = (float)(Math.Min(1, t / 0.03) * (t > dur ? Math.Max(0, 1 - (t - dur) / rel) : 1));
+                tr.Add(start + i, (float)Math.Sin(TwoPi * ph) * env * vel * 0.45f);
+            }
+        }
+
+        /// <summary>Backing "ooh"s: a soft choir, a buzz through the formants of an "oo" with a slow swell, the beach-pop harmony.</summary>
+        public static void Oohs(Track tr, double time, int[] midi, double dur, float vel, int seed)
+        {
+            int start = Index(time);
+            double rel = 0.5;
+            int n = (int)((dur + rel) * Sr);
+            var rng = new Random(seed);
+            foreach (int m in midi)
+            {
+                double f = Synth.MidiToHz(m);
+                var f1 = new Svf();
+                var f2 = new Svf();
+                double[] ph = { rng.NextDouble(), rng.NextDouble() };
+                double[] det = { 1.0, 1.004 };
+                double vibRate = 4.6 + rng.NextDouble();
+                for (int i = 0; i < n; i++)
+                {
+                    double t = i / (double)Sr;
+                    double vib = 1 + 0.004 * Math.Sin(TwoPi * vibRate * t);
+                    double src = 0;
+                    for (int k = 0; k < 2; k++)
+                    {
+                        ph[k] += f * det[k] * vib / Sr;
+                        double p = ph[k] - Math.Floor(ph[k]);
+                        src += 2 * p - 1;
+                    }
+                    f1.Process((float)src, 330, 4);
+                    f2.Process((float)src, 800, 5);
+                    float env = (float)(Math.Min(1, t / 0.35) * (t > dur ? Math.Max(0, 1 - (t - dur) / rel) : 1));
+                    tr.Add(start + i, (f1.band + f2.band * 0.4f) * env * vel * 0.25f / midi.Length);
+                }
+            }
+        }
+
+        /// <summary>A glockenspiel played softly, for a sparkle on the top of a sunny tune.</summary>
+        public static void Glock(Track tr, double time, double freq, float vel)
+        {
+            int start = Index(time);
+            int n = (int)(1.2 * Sr);
+            double p1 = 0, p2 = 0;
+            for (int i = 0; i < n; i++)
+            {
+                double t = i / (double)Sr;
+                p1 += freq / Sr;
+                p2 += freq * 2.76 / Sr;
+                double v = Math.Sin(TwoPi * p1) * Math.Exp(-t * 3.5) + 0.15 * Math.Sin(TwoPi * p2) * Math.Exp(-t * 12);
+                tr.Add(start + i, (float)(v * Math.Min(1, t / 0.002)) * vel * 0.4f * Tail(i, n));
+            }
+        }
+
+        /// <summary>Hand claps, a few people at once, warm rather than snappy.</summary>
+        public static void Clap(Track tr, double time, float vel, int seed)
+        {
+            int start = Index(time);
+            int n = (int)(0.25 * Sr);
+            var noise = new NoiseSource(seed);
+            var bp = new Svf();
+            var lp = new Svf();
+            for (int i = 0; i < n; i++)
+            {
+                double t = i / (double)Sr;
+                bp.Process(noise.White(), 1400, 1.2);
+                double env = 0;
+                for (int k = 0; k < 3; k++)
+                {
+                    double tk = t - k * 0.009;
+                    if (tk >= 0) env = Math.Max(env, Math.Exp(-tk * (k == 2 ? 22 : 200)));
+                }
+                tr.Add(start + i, lp.Process(bp.band, 4500, 0.7) * (float)env * vel * 1.3f * Tail(i, n));
+            }
+        }
+
+        /// <summary>A tambourine shaken on the off-beat: its jingles, rounded off.</summary>
+        public static void Tambourine(Track tr, double time, float vel, int seed)
+        {
+            int start = Index(time);
+            int n = (int)(0.18 * Sr);
+            var noise = new NoiseSource(seed);
+            var bp = new Svf();
+            for (int i = 0; i < n; i++)
+            {
+                double t = i / (double)Sr;
+                bp.Process(noise.White(), 5800, 1.5);
+                double env = Math.Min(1, t / 0.004) * Math.Exp(-t * 20);
+                tr.Add(start + i, bp.band * (float)env * vel * 0.8f * Tail(i, n));
+            }
+        }
+
+        /// <summary>A soft crash cymbal to open a section: a long, dark wash.</summary>
+        public static void Crash(Track tr, double time, float vel, int seed)
+        {
+            int start = Index(time);
+            int n = (int)(1.8 * Sr);
+            var noise = new NoiseSource(seed);
+            var hp = new Svf();
+            var lp = new Svf();
+            for (int i = 0; i < n; i++)
+            {
+                double t = i / (double)Sr;
+                hp.Process(noise.White(), 3500, 0.7);
+                float v = lp.Process(hp.high, 7500, 0.7);
+                tr.Add(start + i, v * (float)(Math.Exp(-t * 2.2) * Math.Min(1, t / 0.003)) * vel * 0.4f * Tail(i, n));
+            }
+        }
+
+        /// <summary>A picked electric bass: a round string with a little pick at the front.</summary>
+        public static void PickBass(Track tr, double time, double freq, double dur, float vel, int seed)
+        {
+            Pluck(tr, time, freq, dur, vel * 0.8f, seed, 0.3f, 0.994f);
+            SubBass(tr, time, freq, dur * 0.95, vel * 0.75f);
+        }
     }
 }

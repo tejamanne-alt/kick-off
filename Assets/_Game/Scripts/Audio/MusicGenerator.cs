@@ -4,17 +4,16 @@ using System.Collections.Generic;
 namespace DribbleToSchool.Audio
 {
     /// <summary>
-    /// The music: upbeat chillhop, one 16-bar loop for each soundscape (92 to 104 bpm), every one original.
-    /// They share the genre's sound: jazzy seventh and ninth chords on a Rhodes-style piano or a mellow
-    /// guitar, a bouncing sub or upright bass, a punchy, lightly swung kit (sixteenth hats, ghost notes,
-    /// fills, an open hat lifting the second half), rhythmic chord stabs and chops breathing under the kick, a soft lead (vibraphone, flute, melodica, kalimba...), vinyl
-    /// crackle, and a tape-warm master (rolled-off highs, gentle saturation, a slight wow). Each place has
-    /// its own key, tempo, groove and band: a cosy menu, a sunny Home Street with guitar, a jazzy market
-    /// with melodica, a tropical beach with marimba and steel pan, a dark, echoing underpass, a head-nodding
-    /// building site with kalimba, and a dreamy park with harp, strings and flute. Each loop has two halves
-    /// (A and B) with their own chords and lead, a melody built from motifs that come back, and a snare fill
-    /// into each half. Deterministic, seamless when looped (notes, the reverb's tail and
-    /// the tape's wow all wrap round), pure C#: safe on a worker thread. Output: interleaved stereo at
+    /// The music: sunny, upbeat Californian West Coast styles, one 16-bar loop for each soundscape, every one
+    /// original. Jangly clean electric guitars and strummed acoustics, a twangy surf guitar through spring
+    /// reverb, a combo organ, Rhodes, the West Coast synth whistle, soft "ooh" harmonies, a picked bass, and
+    /// live-feeling drums with claps, tambourine and a crash to open each half. Per place: a laid-back
+    /// fingerpicked sunset for the menu, jangly beach pop on Home Street, West Coast funk in the market,
+    /// driving surf rock at the beach, a smooth West Coast groove in the underpass, garage surf on the
+    /// building site, and sunny folk-pop in the park. Each loop has two halves (A and B) with their own chords
+    /// and lead, a melody built from motifs that come back, and a fill into each half; the mix stays warm
+    /// (no distortion, the highs gently rolled off). Deterministic, seamless when looped (notes and the
+    /// reverb's tail wrap round), pure C#: safe on a worker thread. Output: interleaved stereo at
     /// <see cref="Synth.SampleRate"/>.
     /// </summary>
     public static class MusicGenerator
@@ -32,13 +31,15 @@ namespace DribbleToSchool.Audio
 
         public static float[] Generate(Soundscape scape)
         {
-            return Chill(StyleOf(scape));
+            return Arrange(StyleOf(scape));
         }
 
         // ================= Styles =================
 
-        enum Comp { None, Rhodes, Guitar, Marimba, Kalimba, Harp }
-        enum Lead { Vibes, Flute, Melodica, Kalimba, SteelPan, Rhodes, Guitar }
+        enum Comp { None, Jangle, Acoustic, Fingerpick, Palm, Funk, Rhodes, RhodesHeld, Organ }
+        enum Lead { Surf, Whistle, Glock, Guitar, Acoustic, Rhodes }
+        enum Kit { Pop, Surf, Funk, WestCoast, Folk }
+        enum Bass { Pick, Sub }
 
         sealed class Style
         {
@@ -49,11 +50,13 @@ namespace DribbleToSchool.Audio
             public Comp comp, comp2;
             public bool comp2OnlyInB;
             public Lead leadA, leadB;
-            public int leadLo = 67, leadHi = 81;
-            public bool upright, pad, strings, shaker, congas, rimInsteadOfSnare;
-            public int groove;
-            public float room = 0.6f, wet = 0.25f, vinyl = 1f;
-            public double tone = 5200;
+            public int leadLo = 69, leadHi = 83;
+            public float leadSend = 0.35f;
+            public Bass bass;
+            public Kit kit;
+            public bool oohs, claps, tambourine;
+            public float room = 0.55f, wet = 0.22f, vinyl;
+            public double tone = 7000;
         }
 
         static Style StyleOf(Soundscape scape)
@@ -61,301 +64,372 @@ namespace DribbleToSchool.Audio
             switch (scape)
             {
                 case Soundscape.Street:
-                    // A sunny morning walk: major ninths on a warm guitar and Rhodes, a whistled flute.
+                    // Jangly beach pop on a bright morning: strummed clean guitars, claps and tambourine, a clean
+                    // guitar tune, then a glockenspiel over "ooh"s and an organ.
                     return new Style
                     {
-                        bpm = 100, swing = 0.1, key = 62, mode = Mode.Major, seed = 11,
-                        chords = new[] { "Gmaj9", "F#m7", "Em9", "A13", "Gmaj9", "F#m7", "Bm9", "A7sus4",
-                                         "Gmaj9", "A13", "F#m7", "Bm9", "Em9", "A13", "Dmaj9", "Dmaj9" },
-                        comp = Comp.Guitar, comp2 = Comp.Rhodes, leadA = Lead.Flute, leadB = Lead.Vibes,
-                        leadLo = 69, leadHi = 83, upright = false, pad = true, shaker = true, groove = 0,
-                        room = 0.55f, wet = 0.22f, tone = 5600,
+                        bpm = 118, swing = 0, key = 62, mode = Mode.Major, seed = 11,
+                        chords = new[] { "D", "A", "Bm", "G", "D", "A", "G", "A",
+                                         "G", "A", "F#m", "Bm", "G", "A", "Em7", "A" },
+                        comp = Comp.Jangle, comp2 = Comp.Organ, comp2OnlyInB = true, leadA = Lead.Guitar, leadB = Lead.Glock,
+                        bass = Bass.Pick, kit = Kit.Pop, oohs = true, claps = true, tambourine = true,
                     };
                 case Soundscape.Market:
-                    // Jazzy and bouncy: a ii-V-I market cafe, upright bass, muted guitar, melodica.
+                    // West Coast funk: Rhodes stabs, sixteenth guitar chops, a picked bass, a tight kit.
                     return new Style
                     {
-                        bpm = 104, swing = 0.13, key = 65, mode = Mode.Major, seed = 22,
-                        chords = new[] { "Gm9", "C13", "Fmaj9", "Dm9", "Gm9", "C13", "Am7", "D7",
-                                         "Bbmaj9", "Am7", "Gm9", "C13", "Bbmaj9", "A7", "Dm9", "C13" },
-                        comp = Comp.Rhodes, comp2 = Comp.Guitar, comp2OnlyInB = true, leadA = Lead.Melodica, leadB = Lead.Vibes,
-                        leadLo = 67, leadHi = 81, upright = true, shaker = true, groove = 1,
-                        room = 0.5f, wet = 0.2f, tone = 5200,
+                        bpm = 106, swing = 0.06, key = 65, mode = Mode.Major, seed = 22,
+                        chords = new[] { "Gm7", "C7", "Fmaj7", "Dm7", "Gm7", "C7", "Am7", "D7",
+                                         "Bbmaj7", "Am7", "Gm7", "C7", "Bbmaj7", "A7", "Dm7", "C7" },
+                        comp = Comp.Rhodes, comp2 = Comp.Funk, leadA = Lead.Guitar, leadB = Lead.Whistle,
+                        leadLo = 67, leadHi = 81, bass = Bass.Pick, kit = Kit.Funk, claps = true, tambourine = true,
+                        room = 0.45f, wet = 0.18f,
                     };
                 case Soundscape.Beach:
-                    // Tropical chillhop: soft marimba off-beats, a gentle steel pan, congas and a shaker.
+                    // Surf rock: palm-muted rhythm guitar driving the eighths, a twangy tremolo-picked lead through
+                    // spring reverb, an organ in the second half, the kit pounding along.
                     return new Style
                     {
-                        bpm = 100, swing = 0.1, key = 67, mode = Mode.Major, seed = 33,
-                        chords = new[] { "Cmaj9", "Bm7", "Am9", "D13", "Cmaj9", "Bm7", "Em9", "D7sus4",
-                                         "Am9", "D13", "Gmaj9", "Em9", "Am9", "Bm7", "Cmaj9", "D13" },
-                        comp = Comp.Rhodes, comp2 = Comp.Marimba, leadA = Lead.SteelPan, leadB = Lead.Kalimba,
-                        leadLo = 69, leadHi = 83, pad = true, shaker = true, congas = true, rimInsteadOfSnare = true, groove = 0,
-                        room = 0.6f, wet = 0.24f, tone = 5600,
+                        bpm = 132, swing = 0, key = 64, mode = Mode.Major, seed = 33,
+                        chords = new[] { "E", "A", "B", "A", "E", "C#m", "A", "B",
+                                         "A", "B", "G#m", "C#m", "A", "B", "E", "B" },
+                        comp = Comp.Palm, comp2 = Comp.Organ, comp2OnlyInB = true, leadA = Lead.Surf, leadB = Lead.Surf,
+                        leadLo = 64, leadHi = 79, leadSend = 0.75f, bass = Bass.Pick, kit = Kit.Surf, tambourine = true,
+                        room = 0.75f, wet = 0.26f,
                     };
                 case Soundscape.Underpass:
-                    // Late-night and echoing: minor ninths, a dark pad, a slow, half-time beat, vibes in the reverb.
+                    // A smooth West Coast groove: held Rhodes chords, a gliding synth whistle, a deep sub, claps on
+                    // the snare and swung sixteenth hats, the tunnel's echo.
                     return new Style
                     {
                         bpm = 94, swing = 0.08, key = 57, mode = Mode.Minor, seed = 44,
                         chords = new[] { "Am9", "Am9", "Fmaj9", "E7", "Am9", "Dm9", "Bm7b5", "E7",
                                          "Fmaj9", "G13", "Em9", "Am9", "Dm9", "G13", "Cmaj9", "E7" },
-                        comp = Comp.Rhodes, leadA = Lead.Vibes, leadB = Lead.Rhodes,
-                        leadLo = 64, leadHi = 79, pad = true, groove = 1,
-                        room = 0.88f, wet = 0.36f, tone = 4300, vinyl = 1.3f,
+                        comp = Comp.RhodesHeld, comp2 = Comp.Funk, comp2OnlyInB = true, leadA = Lead.Whistle, leadB = Lead.Whistle,
+                        leadLo = 72, leadHi = 86, leadSend = 0.45f, bass = Bass.Sub, kit = Kit.WestCoast, claps = true,
+                        room = 0.85f, wet = 0.3f, tone = 6000, vinyl = 0.5f,
                     };
                 case Soundscape.Site:
-                    // A head-nodding boom-bap work-song: dorian minor, punchier drums, guitar and kalimba.
+                    // Garage surf for the building site: palm-muted eighths, jangly chords in the second half, an organ,
+                    // a twangy lead then a glockenspiel, the kit driving.
                     return new Style
                     {
-                        bpm = 102, swing = 0.12, key = 62, mode = Mode.Dorian, seed = 55,
-                        chords = new[] { "Dm9", "G13", "Dm9", "G13", "Fmaj9", "Em7", "Am9", "A7",
-                                         "Bbmaj9", "C13", "Am9", "Dm9", "Bbmaj9", "C13", "Em7b5", "A7" },
-                        comp = Comp.Guitar, comp2 = Comp.Kalimba, leadA = Lead.Kalimba, leadB = Lead.Vibes,
-                        leadLo = 67, leadHi = 81, upright = true, shaker = true, groove = 1,
-                        room = 0.45f, wet = 0.18f, tone = 5000,
+                        bpm = 126, swing = 0, key = 62, mode = Mode.Mixolydian, seed = 55,
+                        chords = new[] { "D", "C", "G", "D", "D", "C", "G", "A",
+                                         "Bm", "G", "D", "A", "Bm", "G", "Em7", "A" },
+                        comp = Comp.Palm, comp2 = Comp.Jangle, comp2OnlyInB = true, leadA = Lead.Surf, leadB = Lead.Guitar,
+                        leadLo = 66, leadHi = 81, leadSend = 0.6f, bass = Bass.Pick, kit = Kit.Surf, claps = true,
+                        room = 0.6f, wet = 0.22f,
                     };
                 case Soundscape.Park:
-                    // Dreamy, the last stretch to school: harp arpeggios, soft strings, a flute.
+                    // Sunny folk-pop: strummed acoustic, "ooh"s, a glockenspiel tune then a clean guitar, claps and a shaker.
                     return new Style
                     {
-                        bpm = 96, swing = 0.08, key = 63, mode = Mode.Major, seed = 66,
-                        chords = new[] { "Abmaj9", "Gm7", "Fm9", "Bb13", "Abmaj9", "Gm7", "Cm9", "Bb7sus4",
-                                         "Abmaj9", "Bb13", "Gm7", "Cm9", "Fm9", "Bb13", "Ebmaj9", "Ebmaj9" },
-                        comp = Comp.Harp, comp2 = Comp.Rhodes, leadA = Lead.Flute, leadB = Lead.Vibes,
-                        leadLo = 68, leadHi = 82, strings = true, groove = 1,
-                        room = 0.78f, wet = 0.3f, tone = 5800,
+                        bpm = 112, swing = 0, key = 67, mode = Mode.Major, seed = 66,
+                        chords = new[] { "G", "D/F#", "Em", "C", "G", "D", "C", "D",
+                                         "C", "D", "Bm", "Em", "C", "D", "G", "D" },
+                        comp = Comp.Acoustic, comp2 = Comp.Fingerpick, comp2OnlyInB = true, leadA = Lead.Glock, leadB = Lead.Guitar,
+                        leadLo = 71, leadHi = 86, bass = Bass.Pick, kit = Kit.Folk, oohs = true, claps = true, tambourine = true,
+                        room = 0.6f, wet = 0.24f,
                     };
                 default:
-                    // The menu: a cup of tea before school. Rhodes ninths, vinyl, a lazy beat, vibes.
+                    // The menu: a sunset on the pier. Fingerpicked acoustic, an organ underneath, a laid-back beat,
+                    // an acoustic tune then the whistle.
                     return new Style
                     {
-                        bpm = 92, swing = 0.12, key = 60, mode = Mode.Major, seed = 7,
-                        chords = new[] { "Fmaj9", "Em7", "Dm9", "G13", "Fmaj9", "Em7", "Am9", "G7sus4",
-                                         "Dm9", "G13", "Cmaj9", "Am9", "Dm9", "Em7", "Fmaj9", "G13" },
-                        comp = Comp.Rhodes, leadA = Lead.Vibes, leadB = Lead.Rhodes,
-                        leadLo = 67, leadHi = 81, pad = true, groove = 0,
-                        room = 0.7f, wet = 0.28f, tone = 4800, vinyl = 1.3f,
+                        bpm = 96, swing = 0.06, key = 57, mode = Mode.Major, seed = 7,
+                        chords = new[] { "A", "E/G#", "F#m", "D", "A", "E", "D", "E",
+                                         "D", "E", "C#m", "F#m", "D", "E", "Bm7", "E" },
+                        comp = Comp.Fingerpick, comp2 = Comp.Organ, leadA = Lead.Acoustic, leadB = Lead.Whistle,
+                        leadLo = 69, leadHi = 83, bass = Bass.Pick, kit = Kit.Folk, oohs = true,
+                        room = 0.65f, wet = 0.26f, tone = 6500,
                     };
             }
         }
 
         // ================= The arranger =================
 
-        static float[] Chill(Style st)
+        static float[] Arrange(Style st)
         {
             var s = new Song(st.bpm, st.swing, st.key, st.mode, st.seed, st.chords);
             var rng = new Random(st.seed * 31);
             var mix = new Mixdown(s.Length)
             {
-                roomSize = st.room, damping = 0.6f, wet = st.wet,
-                tone = st.tone + 1300, drive = 0.15f, wowCents = 4f, wowCycles = 8,
+                roomSize = st.room, damping = 0.55f, wet = st.wet, tone = st.tone, drive = 0.08f,
             };
-            var keys = mix.Add(-0.18f, 0.35f, 0.62f);
-            keys.duck = 0.3f;
-            var keys2 = mix.Add(0.32f, 0.3f, 0.5f);
-            keys2.duck = 0.25f;
-            var padL = mix.Add(-0.6f, 0.55f, 0.18f);
-            var padR = mix.Add(0.6f, 0.55f, 0.18f);
-            padL.duck = padR.duck = 0.55f;
+            var gtr = mix.Add(-0.4f, 0.3f, 0.7f);
+            var gtr2 = mix.Add(0.42f, 0.3f, 0.55f);
+            var organ = mix.Add(0.15f, 0.35f, 0.5f);
+            var oohs = mix.Add(0f, 0.55f, 0.4f);
             var bass = mix.Add(0f, 0.04f, 0.9f);
-            bass.duck = 0.2f;
-            var lead = mix.Add(0.2f, 0.45f, 0.42f);
+            var lead = mix.Add(0.12f, st.leadSend, 0.5f);
             var kick = mix.Add(0f, 0.04f, 1f);
-            var snare = mix.Add(0.04f, 0.16f, 0.68f);
-            var hats = mix.Add(0.28f, 0.06f, 0.3f);
-            var perc = mix.Add(-0.4f, 0.15f, 0.3f);
-            var vinyl = mix.Add(0f, 0f, 0.55f * st.vinyl);
+            var snare = mix.Add(0.04f, 0.18f, 0.7f);
+            var hats = mix.Add(0.3f, 0.06f, 0.3f);
+            var perc = mix.Add(-0.45f, 0.12f, 0.35f);
+            var vinyl = mix.Add(0f, 0f, 0.5f * st.vinyl);
+            gtr.duck = gtr2.duck = organ.duck = oohs.duck = 0.15f;
 
             for (int bar = 0; bar < Bars; bar++)
             {
-                bool breakBar = bar == Bars - 1;   // the last bar: a fill back to the top
                 bool inB = bar >= Bars / 2;
+                bool fill = bar == Bars / 2 - 1 || bar == Bars - 1;
                 foreach (var ch in s.ChordsIn(bar))
                 {
-                    var voicing = ch.chord.Voice(55, 74, 4, true);
-                    Play(st.comp, keys, s, bar, ch, voicing, rng, 1f);
+                    Play(st.comp, st.comp == Comp.Organ ? organ : gtr, s, bar, ch, rng, 1f);
                     if (st.comp2 != Comp.None && (!st.comp2OnlyInB || inB))
-                        Play(st.comp2, keys2, s, bar, ch, ch.chord.Voice(62, 79, 4, true), rng, 0.7f);
-                    if (st.pad) Instruments.Pad(padL, s.T(bar, ch.beat), ch.chord.Voice(48, 62, 3), s.Beats(ch.length), 0.5f, 700, bar * 3 + 1);
-                    if (st.pad) Instruments.Pad(padR, s.T(bar, ch.beat), ch.chord.Voice(55, 67, 3, true), s.Beats(ch.length), 0.5f, 750, bar * 3 + 2);
-                    if (st.strings) Instruments.Strings(padL, s.T(bar, ch.beat), ch.chord.Voice(53, 67, 3), s.Beats(ch.length), 0.55f, bar * 5 + 1);
-                    if (st.strings) Instruments.Strings(padR, s.T(bar, ch.beat), ch.chord.Voice(60, 74, 3, true), s.Beats(ch.length), 0.5f, bar * 5 + 2);
-
-                    // Bass: a bouncing line, root on the one, the octave popping up on the off-beats, a push
-                    // before the three, and a walk up into the next chord at the end of every other bar.
-                    int root = ch.chord.Bass(36);
-                    if (root > 43) root -= 12;
-                    int fifth = root + 7;
-                    double[] at = { 0, 0.75, 1.5, 2, 2.75, 3.25 };
-                    int[] line = { root, root + 12, root, fifth, root + 12, fifth };
-                    double[] len = { 0.65, 0.35, 0.4, 0.6, 0.35, 0.4 };
-                    for (int k = 0; k < at.Length; k++)
-                    {
-                        if (at[k] >= ch.length) break;
-                        if (breakBar && ch.beat + at[k] >= 3) break;
-                        BassNote(st, bass, s, bar, ch.beat + at[k], line[k], len[k], k == 0 ? 0.9f : 0.68f, bar * 8 + k);
-                    }
-                    if (ch.length >= 4 && bar % 2 == 1 && !breakBar)
-                    {
-                        int next = s.ChordsIn(bar + 1)[0].chord.Bass(36);
-                        if (next > 43) next -= 12;
-                        BassNote(st, bass, s, bar, ch.beat + 3.75, next + (next > root ? -1 : 1), 0.25, 0.55f, bar * 8 + 7);
-                    }
+                        Play(st.comp2, st.comp2 == Comp.Organ ? organ : gtr2, s, bar, ch, rng, 0.75f);
+                    if (st.oohs && (inB || st.comp2 == Comp.None || !st.comp2OnlyInB))
+                        Instruments.Oohs(oohs, s.T(bar, ch.beat), ch.chord.Voice(60, 72, 3), s.Beats(ch.length), 0.6f, bar * 7 + 1);
+                    BassLine(st, bass, s, bar, ch, fill);
                 }
-
-                Drums(st, s, mix, kick, snare, hats, perc, bar, breakBar, rng);
+                Drums(st, s, mix, kick, snare, hats, perc, bar, inB, fill, rng);
             }
-            Instruments.Vinyl(vinyl, 1f, st.seed);
+            if (st.vinyl > 0f) Instruments.Vinyl(vinyl, 1f, st.seed);
 
-            // The tunes: a soft lead in each half, the second a little higher.
+            double prev = Synth.MidiToHz(st.leadLo + 5);
             foreach (var n in s.Melody(0, st.leadLo, st.leadHi, new Random(st.seed * 10), Rhythms.Bouncy))
-                PlayLead(st.leadA, lead, s, n);
-            foreach (var n in s.Melody(8, st.leadLo + 2, st.leadHi + 2, new Random(st.seed * 10 + 1), Rhythms.Dance))
-                PlayLead(st.leadB, lead, s, n);
+                prev = PlayLead(st.leadA, lead, s, n, prev);
+            foreach (var n in s.Melody(8, st.leadLo + 2, st.leadHi + 2, new Random(st.seed * 10 + 1), Rhythms.Singing))
+                prev = PlayLead(st.leadB, lead, s, n, prev);
             return mix.Render(Loudness);
         }
 
         static void BassNote(Style st, Track bass, Song s, int bar, double beat, int midi, double beats, float vel, int seed)
         {
-            if (st.upright) Instruments.UprightBass(bass, s.T(bar, beat), Synth.MidiToHz(midi), s.Beats(beats), vel, seed);
-            else Instruments.SubBass(bass, s.T(bar, beat), Synth.MidiToHz(midi), s.Beats(beats), vel);
+            if (st.bass == Bass.Sub) Instruments.SubBass(bass, s.T(bar, beat), Synth.MidiToHz(midi), s.Beats(beats), vel);
+            else Instruments.PickBass(bass, s.T(bar, beat), Synth.MidiToHz(midi), s.Beats(beats), vel, seed);
         }
 
-        static void Play(Comp comp, Track tr, Song s, int bar, ChordAt ch, int[] v, Random rng, float level)
+        /// <summary>The bass line for one chord, in the kit's style: pop's root-and-fifth push, surf's driving
+        /// eighths, funk's syncopated octaves; and a step into the next chord at the end of every other bar.</summary>
+        static void BassLine(Style st, Track bass, Song s, int bar, ChordAt ch, bool fill)
         {
-            if (v.Length == 0) return;
-            double span = ch.length;
-            switch (comp)
+            int root = ch.chord.Bass(36);
+            if (root > 43) root -= 12;
+            double[] at;
+            int[] line;
+            double len;
+            switch (st.kit)
             {
-                case Comp.Rhodes:
-                {
-                    // Short, rhythmic stabs that push the groove along: the one, off-beats, a pickup into the next bar.
-                    double[] at = bar % 2 == 0 ? new[] { 0, 1.5, 2.75, 3.5 } : new[] { 0, 0.75, 2, 3.5 };
-                    for (int k = 0; k < at.Length; k++)
-                        if (at[k] < span)
-                            Instruments.RhodesChord(tr, s.T(bar, ch.beat + at[k]), v, s.Beats(k == 0 ? 0.9 : 0.45), (k == 0 ? 0.52f : 0.4f) * level, 0.008);
+                case Kit.Surf:
+                    at = new[] { 0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5 };
+                    line = new[] { root, root, root, root, root + 7, root + 7, root + 12, root + 7 };
+                    len = 0.45;
                     break;
-                }
-                case Comp.Guitar:
-                {
-                    // Picked through the chord, low to high and back, letting the notes ring into each other.
-                    // Funky muted chops on the sixteenths, the notes caught in turn.
-                    double[] at = { 0, 0.5, 0.75, 1.5, 2, 2.5, 2.75, 3.5 };
-                    int[] order = { 0, 2, 1, 3, 0, 2, 1, 3 };
-                    for (int i = 0; i < at.Length; i++)
-                    {
-                        if (at[i] >= span) break;
-                        if (i > 0 && rng.NextDouble() < 0.15) continue;
-                        Instruments.Pluck(tr, s.T(bar, ch.beat + at[i]), Synth.MidiToHz(v[order[i] % v.Length]), s.Beats(0.35), 0.55f * level, bar * 40 + i, 0.3f);
-                    }
+                case Kit.Funk:
+                case Kit.WestCoast:
+                    at = new[] { 0, 0.75, 1.5, 2.5, 2.75, 3.5 };
+                    line = new[] { root, root + 12, root, root, root + 12, root + 7 };
+                    len = 0.4;
                     break;
-                }
-                case Comp.Marimba:
-                    for (double b = 0.5; b < span; b += 1)
-                        for (int k = Math.Max(0, v.Length - 2); k < v.Length; k++)
-                            Instruments.Marimba(tr, s.T(bar, ch.beat + b), Synth.MidiToHz(v[k]), 0.32f * level);
+                default:
+                    at = new[] { 0, 1.5, 2, 3, 3.5 };
+                    line = new[] { root, root, root + 7, root, root + 7 };
+                    len = 0.7;
                     break;
-                case Comp.Kalimba:
-                {
-                    double[] at = { 0.5, 1.5, 1.75, 3, 3.5 };
-                    for (int i = 0; i < at.Length; i++)
-                        if (at[i] < span) Instruments.Kalimba(tr, s.T(bar, ch.beat + at[i]), Synth.MidiToHz(v[(i * 2 + bar) % v.Length] + 12), 0.36f * level);
-                    break;
-                }
-                case Comp.Harp:
-                {
-                    int steps = (int)(span * 2);
-                    int len = v.Length * 2 - 2;
-                    for (int e = 0; e < steps; e++)
-                    {
-                        int k = len > 0 ? e % len : 0;
-                        int idx = k < v.Length ? k : len - k;
-                        Instruments.Pluck(tr, s.T(bar, ch.beat + e * 0.5), Synth.MidiToHz(v[idx] + 12), s.Beats(2), 0.4f * level, bar * 50 + e, 0.35f, 0.997f);
-                    }
-                    break;
-                }
+            }
+            for (int k = 0; k < at.Length; k++)
+            {
+                if (at[k] >= ch.length) break;
+                BassNote(st, bass, s, bar, ch.beat + at[k], line[k], k == 0 ? len * 1.3 : len, k == 0 ? 0.9f : 0.7f, bar * 8 + k);
+            }
+            if (ch.length >= 4 && bar % 2 == 1 && !fill)
+            {
+                int next = s.ChordsIn(bar + 1)[0].chord.Bass(36);
+                if (next > 43) next -= 12;
+                BassNote(st, bass, s, bar, ch.beat + 3.75, next + (next > root ? -2 : 2), 0.25, 0.55f, bar * 8 + 7);
             }
         }
 
-        static void PlayLead(Lead lead, Track tr, Song s, Note n)
+        static void Play(Comp comp, Track tr, Song s, int bar, ChordAt ch, Random rng, float level)
+        {
+            double span = ch.length;
+            switch (comp)
+            {
+                case Comp.Jangle:
+                case Comp.Acoustic:
+                {
+                    // Down, down-up, up-down-up: the strum every sunny pop song is built on.
+                    var v = ch.chord.Voice(52, 69, 5);
+                    double[] at = { 0, 1, 1.5, 2.5, 3, 3.5 };
+                    bool[] down = { true, true, false, false, true, false };
+                    for (int i = 0; i < at.Length; i++)
+                    {
+                        if (at[i] >= span) break;
+                        double next = i + 1 < at.Length ? at[i + 1] : 4;
+                        var notes = down[i] ? v : Top(v, 3);
+                        if (comp == Comp.Jangle)
+                            Instruments.Jangle(tr, s.T(bar, ch.beat + at[i]), notes, s.Beats(next - at[i] + 0.1), (down[i] ? 0.6f : 0.42f) * level, bar * 40 + i * 5, down[i]);
+                        else
+                            Instruments.Strum(tr, s.T(bar, ch.beat + at[i]), down[i] ? notes : Reverse(notes), s.Beats(next - at[i] + 0.2), (down[i] ? 0.65f : 0.45f) * level, bar * 40 + i * 5, down[i] ? 0.013 : 0.009, 0.45f);
+                    }
+                    break;
+                }
+                case Comp.Fingerpick:
+                {
+                    // Travis picking: the thumb alternating bass notes on the beat, the fingers on the off-beats.
+                    var v = ch.chord.Voice(55, 74, 4);
+                    int low = ch.chord.Bass(45);
+                    for (int b = 0; b < span; b++)
+                    {
+                        int thumb = b % 2 == 0 ? low : low + 7;
+                        Instruments.Pluck(tr, s.T(bar, ch.beat + b), Synth.MidiToHz(thumb), s.Beats(1), 0.5f * level, bar * 30 + b, 0.35f);
+                        if (v.Length > 0)
+                            Instruments.Pluck(tr, s.T(bar, ch.beat + b + 0.5), Synth.MidiToHz(v[(b * 2 + 1) % v.Length]), s.Beats(1), 0.42f * level, bar * 30 + b + 9, 0.45f);
+                        if (b % 2 == 1 && v.Length > 1)
+                            Instruments.Pluck(tr, s.T(bar, ch.beat + b), Synth.MidiToHz(v[v.Length - 1]), s.Beats(1), 0.36f * level, bar * 30 + b + 17, 0.45f);
+                    }
+                    break;
+                }
+                case Comp.Palm:
+                {
+                    // Palm-muted power chords chugging on the eighths, an open accent on the one and the "and" of two.
+                    int root = ch.chord.Bass(40);
+                    var power = new[] { root, root + 7, root + 12 };
+                    for (int e = 0; e < span * 2; e++)
+                    {
+                        bool accent = e == 0 || e == 3;
+                        Instruments.Jangle(tr, s.T(bar, ch.beat + e * 0.5), power, s.Beats(accent ? 0.45 : 0.2), (accent ? 0.62f : 0.48f) * level, bar * 20 + e, true, !accent);
+                    }
+                    break;
+                }
+                case Comp.Funk:
+                {
+                    // Sixteenth-note chops high on the neck: short, muted, pushing the groove.
+                    var v = ch.chord.Voice(64, 79, 3, true);
+                    double[] at = { 0.5, 0.75, 1.5, 2.25, 2.5, 3.5, 3.75 };
+                    foreach (double b in at)
+                    {
+                        if (b >= span || rng.NextDouble() < 0.12) continue;
+                        Instruments.Jangle(tr, s.T(bar, ch.beat + b), v, s.Beats(0.15), 0.5f * level, bar * 50 + (int)(b * 4), true, true);
+                    }
+                    break;
+                }
+                case Comp.Rhodes:
+                {
+                    var v = ch.chord.Voice(55, 74, 4, true);
+                    double[] at = bar % 2 == 0 ? new[] { 0, 1.5, 2.75, 3.5 } : new[] { 0, 0.75, 2, 3.5 };
+                    for (int k = 0; k < at.Length; k++)
+                        if (at[k] < span)
+                            Instruments.RhodesChord(tr, s.T(bar, ch.beat + at[k]), v, s.Beats(k == 0 ? 0.9 : 0.45), (k == 0 ? 0.55f : 0.42f) * level, 0.008);
+                    break;
+                }
+                case Comp.RhodesHeld:
+                    Instruments.RhodesChord(tr, s.T(bar, ch.beat), ch.chord.Voice(55, 74, 4, true), s.Beats(span - 0.1), 0.55f * level, 0.018);
+                    break;
+                case Comp.Organ:
+                    Instruments.Organ(tr, s.T(bar, ch.beat), ch.chord.Voice(55, 70, 3), s.Beats(span - 0.05), 0.75f * level);
+                    break;
+            }
+        }
+
+        static double PlayLead(Lead lead, Track tr, Song s, Note n, double prevFreq)
         {
             double t = s.T(n), d = s.Beats(n.len);
             double f = Synth.MidiToHz(n.midi);
             float v = n.vel;
             switch (lead)
             {
-                case Lead.Vibes: Instruments.Vibes(tr, t, f, d, v * 0.9f); break;
-                case Lead.Flute: Instruments.Flute(tr, t, f, d * 0.95, v, n.midi * 13); break;
-                case Lead.Melodica: Instruments.Melodica(tr, t, f, d * 0.9, v, n.midi * 7); break;
-                case Lead.Kalimba: Instruments.Kalimba(tr, t, f, v); break;
-                case Lead.SteelPan: Instruments.SteelPan(tr, t, f, d, v * 0.9f); break;
-                case Lead.Rhodes: Instruments.Rhodes(tr, t, f, d, v * 0.65f); break;
-                default: Instruments.Pluck(tr, t, f, d, v * 0.7f, n.midi * 3, 0.3f); break;
+                case Lead.Surf: Instruments.SurfLead(tr, t, f, d, v, n.midi * 5 + (int)(n.beat * 4)); break;
+                case Lead.Whistle: Instruments.Whistle(tr, t, f, prevFreq, d * 0.95, v * 0.85f); break;
+                case Lead.Glock: Instruments.Glock(tr, t, f, v * 0.9f); break;
+                case Lead.Guitar: Instruments.CleanGuitar(tr, t, f, d + 0.1, v * 0.9f, n.midi * 3 + (int)(n.beat * 4)); break;
+                case Lead.Acoustic: Instruments.Pluck(tr, t, f, d + 0.2, v * 0.75f, n.midi * 3, 0.45f); break;
+                default: Instruments.Rhodes(tr, t, f, d, v * 0.65f); break;
             }
+            return f;
         }
 
         /// <summary>
-        /// An upbeat, head-nodding kit: the kick on the one with a syncopated second and third kick, a punchy
-        /// snare on two and four (a hair late, with ghost notes), sixteenth hats with their accents on the
-        /// beat and the off-beat, an open hat lifting the second half, a snare fill into each half. The chords
-        /// dip under each kick.
+        /// A live-feeling kit in the place's style. Pop: four-to-the-bar feel with claps on the backbeat and
+        /// tambourine on the off-beats. Surf: driving, the hats on every quaver, toms in the fill. Funk and West
+        /// Coast: syncopated kicks, sixteenth hats (swung for the West Coast), ghost notes, an open hat. Folk:
+        /// light in the first half (a side-stick and shaker), the full backbeat in the second. A crash opens
+        /// each half, and a fill leads into it.
         /// </summary>
-        static void Drums(Style st, Song s, Mixdown mix, Track kick, Track snare, Track hats, Track perc, int bar, bool breakBar, Random rng)
+        static void Drums(Style st, Song s, Mixdown mix, Track kick, Track snare, Track hats, Track perc, int bar, bool inB, bool fill, Random rng)
         {
-            double late = 0.02;   // beats: the snare sits just behind the beat
-            bool inB = bar >= Bars / 2;
-            bool fill = bar == Bars / 2 - 1 || breakBar;
-            double[] kicks = st.groove == 1
-                ? (bar % 2 == 0 ? new[] { 0, 0.75, 1.75, 2.5 } : new[] { 0, 1.5, 2.25, 2.75 })
-                : (bar % 2 == 0 ? new[] { 0, 1.75, 2.5 } : new[] { 0, 0.75, 2.5, 3.25 });
+            double[] kicks;
+            switch (st.kit)
+            {
+                case Kit.Surf: kicks = new[] { 0, 1.5, 2, 3.5 }; break;
+                case Kit.Funk: kicks = bar % 2 == 0 ? new[] { 0, 0.75, 2.5, 2.75 } : new[] { 0, 1.75, 2.5 }; break;
+                case Kit.WestCoast: kicks = bar % 2 == 0 ? new[] { 0, 0.75, 2.5 } : new[] { 0, 1.5, 2.75 }; break;
+                case Kit.Folk: kicks = new[] { 0, 2, 2.5 }; break;
+                default: kicks = bar % 2 == 0 ? new[] { 0, 1.5, 2 } : new[] { 0, 2, 2.5 }; break;
+            }
             foreach (double k in kicks)
             {
                 if (fill && k >= 3) continue;
                 double t = s.T(bar, k);
-                Instruments.Kick(kick, t, k == 0 ? 1f : 0.8f);
-                mix.Duck(t, k == 0 ? 0.9f : 0.65f, 0.12);
+                Instruments.Kick(kick, t, k == 0 ? 1f : 0.82f);
+                mix.Duck(t, 0.5f, 0.1);
             }
+
+            bool softFolk = st.kit == Kit.Folk && !inB;
             foreach (double b in new[] { 1.0, 3.0 })
             {
                 if (fill && b >= 3) continue;
-                double t = s.T(bar, b) + s.Beats(late);
-                if (st.rimInsteadOfSnare && !inB) Instruments.Rim(snare, t, 0.8f);
-                else Instruments.Snare(snare, t, 0.75f, bar * 4 + (int)b);
+                double t = s.T(bar, b);
+                if (softFolk) Instruments.Rim(snare, t, 0.75f);
+                else Instruments.Snare(snare, t, 0.78f, bar * 4 + (int)b);
+                if (st.claps && !softFolk) Instruments.Clap(perc, t + 0.004, 0.55f, bar * 4 + (int)b);
             }
-            // Ghost notes around the backbeat.
-            if (rng.NextDouble() < 0.6) Instruments.Snare(snare, s.T(bar, 1.75) + s.Beats(late), 0.14f, 700 + bar);
-            if (!fill && rng.NextDouble() < 0.7) Instruments.Snare(snare, s.T(bar, 3.75) + s.Beats(late), 0.18f, 900 + bar);
-            // The fill: a little roll on the last beat, rising.
-            if (fill)
-                for (int k = 0; k < 4; k++) Instruments.Snare(snare, s.T(bar, 3 + k * 0.25), 0.3f + k * 0.12f, 1100 + bar * 4 + k);
+            if ((st.kit == Kit.Funk || st.kit == Kit.WestCoast) && rng.NextDouble() < 0.7)
+                Instruments.Snare(snare, s.T(bar, 3.75), 0.16f, 900 + bar);
 
-            for (int e = 0; e < 16; e++)
+            if (fill)
             {
-                double b = e * 0.25;
+                if (st.kit == Kit.Surf)
+                    for (int k = 0; k < 4; k++) Instruments.Conga(perc, s.T(bar, 3 + k * 0.25), 0.7f, k < 2);   // toms rolling down
+                else
+                    for (int k = 0; k < 4; k++) Instruments.Snare(snare, s.T(bar, 3 + k * 0.25), 0.3f + k * 0.12f, 1100 + bar * 4 + k);
+            }
+            if (bar == 0 || bar == Bars / 2) Instruments.Crash(hats, s.T(bar, 0), 0.7f, bar);
+
+            bool sixteenths = st.kit == Kit.Funk || st.kit == Kit.WestCoast || st.kit == Kit.Folk;
+            int steps = sixteenths ? 16 : 8;
+            for (int e = 0; e < steps; e++)
+            {
+                double b = e * 4.0 / steps;
                 if (fill && b >= 3) break;
-                float vel = e % 4 == 0 ? 0.55f : e % 4 == 2 ? 0.45f : 0.2f;
+                bool onBeat = Math.Abs(b - Math.Round(b)) < 1e-6;
+                float vel = onBeat ? 0.5f : (sixteenths && e % 2 == 1 ? 0.2f : 0.36f);
                 vel *= (float)(0.85 + rng.NextDouble() * 0.3);
-                Instruments.Hat(hats, s.T(bar, b), vel, bar * 16 + e);
-                if (st.shaker && e % 2 == 1) Instruments.Shaker(perc, s.T(bar, b), e % 4 == 3 ? 0.4f : 0.25f, bar * 16 + e);
+                if (st.kit == Kit.Folk) Instruments.Shaker(perc, s.T(bar, b), vel * 0.9f, bar * 16 + e);
+                else Instruments.Hat(hats, s.T(bar, b), vel, bar * 16 + e);
+                if (st.tambourine && !onBeat && Math.Abs(b * 2 - Math.Round(b * 2)) < 1e-6 && (inB || st.kit != Kit.Folk))
+                    Instruments.Tambourine(perc, s.T(bar, b), 0.35f, bar * 16 + e);
             }
-            if (inB && !fill) Instruments.OpenHat(hats, s.T(bar, 3.5), 0.4f, bar);
-            if (st.congas && !fill)
-            {
-                Instruments.Conga(perc, s.T(bar, 0.75), 0.4f, true);
-                Instruments.Conga(perc, s.T(bar, 1.5), 0.5f, true);
-                Instruments.Conga(perc, s.T(bar, 2.75), 0.45f, false);
-                Instruments.Conga(perc, s.T(bar, 3.25), 0.4f, true);
-            }
+            if ((st.kit == Kit.Funk || st.kit == Kit.WestCoast || st.kit == Kit.Pop) && inB && !fill)
+                Instruments.OpenHat(hats, s.T(bar, 3.5), 0.4f, bar);
+        }
+
+        /// <summary>The highest <paramref name="count"/> notes of a voicing (an up-strum catches the top strings).</summary>
+        static int[] Top(int[] voicing, int count)
+        {
+            if (voicing.Length <= count) return voicing;
+            var top = new int[count];
+            Array.Copy(voicing, voicing.Length - count, top, 0, count);
+            return top;
+        }
+
+        static int[] Reverse(int[] notes)
+        {
+            var r = (int[])notes.Clone();
+            Array.Reverse(r);
+            return r;
         }
 
         // ================= Theory =================
 
-        enum Mode { Major, Minor, Dorian }
+        enum Mode { Major, Minor, Dorian, Mixolydian }
 
         static readonly int[] MajorScale = { 0, 2, 4, 5, 7, 9, 11 };
         static readonly int[] MinorScale = { 0, 2, 3, 5, 7, 8, 10 };
         static readonly int[] DorianScale = { 0, 2, 3, 5, 7, 9, 10 };
+        static readonly int[] MixolydianScale = { 0, 2, 4, 5, 7, 9, 10 };
 
         struct Note
         {
@@ -464,7 +538,7 @@ namespace DribbleToSchool.Audio
                 this.bpm = bpm;
                 this.swing = swing;
                 this.key = key;
-                scale = mode == Mode.Major ? MajorScale : mode == Mode.Minor ? MinorScale : DorianScale;
+                scale = mode == Mode.Major ? MajorScale : mode == Mode.Minor ? MinorScale : mode == Mode.Dorian ? DorianScale : MixolydianScale;
                 human = new Random(seed);
                 bars = new List<ChordAt>[chords.Length];
                 for (int b = 0; b < chords.Length; b++)
