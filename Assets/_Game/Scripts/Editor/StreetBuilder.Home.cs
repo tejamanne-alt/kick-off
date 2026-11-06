@@ -25,7 +25,7 @@ namespace DribbleToSchool.EditorTools
         /// The kid's house and its front garden, built from the kits with <paramref name="gx"/> as the gate and the doorstep (the kid
         /// starts there): the Buildings kit's HouseGable in <see cref="HomeInfo"/>'s colours, its door right behind the gate; a picket
         /// fence along the street with a garden gate (open) between two pillars, one with the house number and a pot on each; hedges
-        /// at the ends; a path to the doorstep; flower beds, a bush and pots; a bike on the lawn; the bins; a post box on the footpath;
+        /// at the ends; a path to the doorstep; flower beds, a bush and pots; the boy's bike on the lawn; the bins; a post box on the footpath;
         /// a tree behind the roof. Without a kit model a piece is left out (the house falls back to the painted one).
         /// </summary>
         public static void HomeFront(Transform parent, float gx, float gy)
@@ -78,8 +78,10 @@ namespace DribbleToSchool.EditorTools
             // By the door, besides the two pots the model brings: a group of pots on the right, clear of the window.
             Model(parent, "Street", "PotGroup", gx + 2.2f, gy, houseZ - 0.6f, -12f, 1f, Petals[0]);
 
-            // Life in the garden: the bike on its stand and the bins on the lawn to the right, a post box on the footpath by the gate.
-            Model(parent, "Street", "Bicycle", gx + 3.9f, gy, 3.1f, 0f, 1f, BikeColors[1]);
+            // Life in the garden: the boy's green bicycle on its stand (the kit's if his isn't there) and the bins on the lawn to the
+            // right, a post box on the footpath by the gate.
+            if (LevelBuildKit.OwnBicycle(parent, new Vector3(gx + 3.9f, gy, 3.1f)) == null)
+                Model(parent, "Street", "Bicycle", gx + 3.9f, gy, 3.1f, 0f, 1f, BikeColors[1]);
             Model(parent, "Street", "BinPair", gx + 6.6f, gy, 3.5f, -8f, 1f, BinColors[0], BinColors[1]);
             Model(parent, "Street", "PostBox", gx - 1.55f, gy, PoleZ - 0.1f);
 
