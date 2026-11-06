@@ -11,22 +11,22 @@ namespace DribbleToSchool.UI
     /// Settings modal used by the menu and the pause screen. Two columns of grouped rows, laid
     /// out top-down from fixed row heights inside columns that stretch with the card, so
     /// nothing overlaps at any aspect ratio (the card fits a 4:3 canvas, 1440 x 1080):
-    /// left, Audio (music, sound effects) and Gameplay (school bell,
+    /// left, Audio (music, ambience: the sounds of each place, sound effects) and Gameplay (school bell,
     /// colour-blind aim, vibration, screen shake, the coach's how-to tips: UI/ActionCoach); right, Player (the chosen kid, which opens the
     /// player picker), Language and Controls (left-handed, and the Controls page: UI/ControlsGuide); along the bottom, Reset progress, Restore purchases and Done. Labels shrink
     /// to fit rather than run into their controls, for longer translations.
     /// </summary>
     public static class SettingsPanel
     {
-        const float RowHeight = 70f;
-        const float RowGap = 8f;
+        const float RowHeight = 66f;
+        const float RowGap = 7f;
         const float SectionHeight = 46f;
         const float ToggleWidth = 150f;
 
         public static GameObject Open(Transform canvas, System.Action onClose)
         {
             GameObject root;
-            var card = UIKit.Modal(canvas, "Settings", new Vector2(1340f, 930f), out root);
+            var card = UIKit.Modal(canvas, "Settings", new Vector2(1340f, 960f), out root);
             UIKit.Header(card.transform, Loc.T("settings.title"), 520f);
 
             var left = Column(card.transform, "Left", 0f, 0.55f, 50f, 20f);
@@ -36,6 +36,7 @@ namespace DribbleToSchool.UI
             float y = 0f;
             Section(left, ref y, "settings.audio");
             SliderRow(left, ref y, "settings.music", GameSettings.MusicVolume, v => GameSettings.MusicVolume = v);
+            SliderRow(left, ref y, "settings.ambience", GameSettings.AmbienceVolume, v => GameSettings.AmbienceVolume = v);
             SliderRow(left, ref y, "settings.sfx", GameSettings.SfxVolume, v => GameSettings.SfxVolume = v);
             y += 6f;
 

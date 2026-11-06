@@ -188,13 +188,49 @@ namespace DribbleToSchool.Tests
         }
 
         [Test]
-        public void MusicLoopsForEveryChapter()
+        public void MusicLoopsForEverySoundscape()
         {
-            for (int chapter = 0; chapter <= 5; chapter++)
+            foreach (var scape in Soundscapes.All)
             {
-                float[] music = MusicGenerator.Generate(chapter);
-                Assert.Greater(music.Length, Synth.SampleRate * 10, "chapter " + chapter + " too short");
-                Assert.IsFalse(music.Any(v => float.IsNaN(v) || Mathf.Abs(v) > 1f), "chapter " + chapter + " invalid samples");
+                float[] music = MusicGenerator.Generate(scape);
+                Assert.AreEqual(0, music.Length % MusicGenerator.Channels, scape + " is not whole stereo frames");
+                Assert.Greater(music.Length / MusicGenerator.Channels, Synth.SampleRate * 20, scape + " too short");
+                Assert.IsFalse(music.Any(v => float.IsNaN(v) || Mathf.Abs(v) > 1f), scape + " invalid samples");
+            }
+        }
+
+        [Test]
+        public void EveryRouteHasItsOwnMusicAndAmbience()
+        {
+            var seen = new HashSet<Soundscape>();
+            foreach (var route in RouteTable.All)
+            {
+                var scape = Soundscapes.For(route.id, route.chapter);
+                Assert.AreNotEqual(Soundscape.Menu, scape, route.id);
+                Assert.IsTrue(seen.Add(scape), route.id + " shares its soundscape with another route");
+            }
+        }
+
+        [Test]
+        public void AmbienceSitsUnderTheMusicAndNeverClips()
+        {
+            foreach (var scape in Soundscapes.All)
+            {
+                var pack = AmbienceGenerator.Generate(scape);
+                Assert.AreEqual(0, pack.bed.Length % AmbienceGenerator.Channels, scape + " bed is not whole stereo frames");
+                Assert.Greater(pack.bed.Length / AmbienceGenerator.Channels, Synth.SampleRate * 10, scape + " bed too short");
+                Assert.IsFalse(pack.bed.Any(v => float.IsNaN(v) || Mathf.Abs(v) > 1f), scape + " bed invalid samples");
+                double sum = 0;
+                foreach (float v in pack.bed) sum += v * v;
+                Assert.Less(System.Math.Sqrt(sum / pack.bed.Length), MusicGenerator.Loudness, scape + " bed is as loud as the music");
+                Assert.Greater(pack.cues.Length, 0, scape + " has no cues");
+                foreach (var cue in pack.cues)
+                {
+                    Assert.AreEqual(0, cue.clip.Length % 2, scape + "/" + cue.name);
+                    Assert.IsFalse(cue.clip.Any(v => float.IsNaN(v) || Mathf.Abs(v) > 1f), scape + "/" + cue.name + " invalid samples");
+                    Assert.LessOrEqual(cue.minGap, cue.maxGap, scape + "/" + cue.name);
+                    Assert.Less(cue.volume, 1f, scape + "/" + cue.name + " should sit under the music");
+                }
             }
         }
 

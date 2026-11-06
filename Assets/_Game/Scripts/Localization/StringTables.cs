@@ -148,7 +148,7 @@ namespace DribbleToSchool.Localization
                 // Settings
                 { "settings.title", "Settings" },
                 { "settings.audio", "Audio" }, { "settings.gameplay", "Gameplay" },
-                { "settings.music", "Music" }, { "settings.sfx", "Sound effects" },
+                { "settings.music", "Music" }, { "settings.ambience", "Ambience" }, { "settings.sfx", "Sound effects" },
                 { "settings.haptics", "Vibration" }, { "settings.shake", "Screen shake" },
                 { "settings.bell", "School bell timer" }, { "settings.bellHint", "Off = cozy mode, no rush" },
                 { "settings.leftHanded", "Left-handed controls" }, { "settings.colorblind", "Colour-blind aim colours" },
@@ -521,7 +521,7 @@ namespace DribbleToSchool.Localization
 
                 { "settings.title", "Ajustes" },
                 { "settings.audio", "Sonido" }, { "settings.gameplay", "Juego" },
-                { "settings.music", "Música" }, { "settings.sfx", "Efectos" },
+                { "settings.music", "Música" }, { "settings.ambience", "Ambiente" }, { "settings.sfx", "Efectos" },
                 { "settings.haptics", "Vibración" }, { "settings.shake", "Temblor de cámara" },
                 { "settings.bell", "Campana del cole" }, { "settings.bellHint", "Desactivada = modo tranquilo" },
                 { "settings.leftHanded", "Controles para zurdos" }, { "settings.colorblind", "Colores para daltónicos" },

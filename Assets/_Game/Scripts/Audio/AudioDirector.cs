@@ -2,35 +2,66 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using DribbleToSchool.Core;
 using DribbleToSchool.Holiday;
+using DribbleToSchool.Levels;
 using Unity.Profiling;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 namespace DribbleToSchool.Audio
 {
     /// <summary>
-    /// Plays the synthesized sound effects for gameplay events (with a little
-    /// pitch variety), crossfades chapter music between scenes, ducks music in
-    /// the pause menu, and fires haptics. Lives across scenes.
+    /// Plays the synthesized sound effects for gameplay events (with a little pitch variety), the
+    /// music and the ambience of the place the kid is in (Soundscape: each route to school has its own
+    /// music and its own sounds, crossfaded as the scene or the Holiday Run's stage changes), and fires
+    /// haptics. The ambience is a looping bed (traffic, a crowd, waves, a generator...) with cues played
+    /// over it at random times, places and pitches (a car going by, a gull, a reversing truck...), mixed
+    /// well under the music. Music, ambience and sound effects each have a volume in Settings; all are
+    /// turned down in the pause menu. Lives across scenes.
     /// </summary>
     public class AudioDirector : MonoBehaviour
     {
         const int VoiceCount = 12;
+        const int CueVoiceCount = 4;
         const float CrossfadeTime = 1.2f;
+        const float AmbienceFadeTime = 2f;
+        /// <summary>Overall levels at full volume: the music on top, the place's sounds under it.</summary>
+        const float MusicGain = 0.6f, AmbienceGain = 0.45f;
+        /// <summary>How many soundscapes' music and ambience to keep ready (the rest are let go).</summary>
+        const int Keep = 3;
 
         static AudioDirector instance;
         static readonly ProfilerMarker MusicUploadMarker = new ProfilerMarker("DTS.Audio.MusicUpload");
 
+        sealed class Ambience
+        {
+            public AudioClip bed;
+            public AmbientCue[] cues;
+            public AudioClip[] cueClips;
+            public float[] next;
+        }
+
+        sealed class CueVoice
+        {
+            public AudioSource source;
+            public bool sweep;
+            public float from, to, start, length, loudness;
+        }
+
         readonly Dictionary<Sfx, AudioClip> clips = new Dictionary<Sfx, AudioClip>();
-        readonly Dictionary<int, AudioClip> musicClips = new Dictionary<int, AudioClip>();
-        readonly Dictionary<int, Task<float[]>> musicJobs = new Dictionary<int, Task<float[]>>();
+        readonly Dictionary<Soundscape, AudioClip> musicClips = new Dictionary<Soundscape, AudioClip>();
+        readonly Dictionary<Soundscape, Task<float[]>> musicJobs = new Dictionary<Soundscape, Task<float[]>>();
+        readonly Dictionary<Soundscape, Ambience> ambiences = new Dictionary<Soundscape, Ambience>();
+        readonly Dictionary<Soundscape, Task<AmbiencePack>> ambienceJobs = new Dictionary<Soundscape, Task<AmbiencePack>>();
+        readonly List<Soundscape> recent = new List<Soundscape>();
         readonly Dictionary<Sfx, float> lastPlayed = new Dictionary<Sfx, float>();
         AudioSource[] voices;
         int nextVoice;
-        AudioSource musicA, musicB;
-        bool aIsCurrent = true;
-        float fade = 1f;
-        int wantedMusic = -1;
+        AudioSource musicA, musicB, bedA, bedB;
+        CueVoice[] cueVoices;
+        int nextCueVoice;
+        bool aIsCurrent = true, bedAIsCurrent = true;
+        float fade = 1f, bedFade = 1f;
+        Soundscape wanted = Soundscape.Menu;
+        Ambience playingAmbience;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void Boot()
@@ -68,21 +99,28 @@ namespace DribbleToSchool.Audio
                 voices[i] = gameObject.AddComponent<AudioSource>();
                 voices[i].playOnAwake = false;
             }
-            musicA = MakeMusicSource();
-            musicB = MakeMusicSource();
+            musicA = MakeLoopSource();
+            musicB = MakeLoopSource();
+            bedA = MakeLoopSource();
+            bedB = MakeLoopSource();
+            cueVoices = new CueVoice[CueVoiceCount];
+            for (int i = 0; i < CueVoiceCount; i++)
+            {
+                var s = gameObject.AddComponent<AudioSource>();
+                s.playOnAwake = false;
+                cueVoices[i] = new CueVoice { source = s };
+            }
 
             GameEvents.Raised += OnEvent;
-            SceneManager.sceneLoaded += OnSceneLoaded;
-            OnSceneLoaded(SceneManager.GetActiveScene(), LoadSceneMode.Single);
+            Want(WantedSoundscape());
         }
 
         void OnDestroy()
         {
             GameEvents.Raised -= OnEvent;
-            SceneManager.sceneLoaded -= OnSceneLoaded;
         }
 
-        AudioSource MakeMusicSource()
+        AudioSource MakeLoopSource()
         {
             var s = gameObject.AddComponent<AudioSource>();
             s.loop = true;
@@ -91,81 +129,219 @@ namespace DribbleToSchool.Audio
             return s;
         }
 
-        // ---------- Music ----------
+        // ---------- Where are we ----------
 
-        void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+        /// <summary>
+        /// The soundscape of the level being played (its route's), of the Holiday Run's current stage, or the
+        /// menu's outside a level. (Read every frame: the Holiday Run streams its stages in additively, so the
+        /// place changes without a new scene.)
+        /// </summary>
+        static Soundscape WantedSoundscape()
         {
-            // The Holiday Run streams its stages in additively: that is no new level, and no new music.
-            if (mode == LoadSceneMode.Additive) return;
-            int chapter = 0;   // menu theme
             var level = LevelManager.Current;
-            if (level != null) chapter = level.level != null ? Mathf.Clamp(level.level.chapter, 1, 5) : 1;
-            RequestMusic(chapter);
-        }
-
-        void RequestMusic(int chapter)
-        {
-            wantedMusic = chapter;
-            if (musicClips.ContainsKey(chapter) || musicJobs.ContainsKey(chapter)) return;
-            // Synthesizing a loop takes a fraction of a second: do it off the main thread.
-            musicJobs[chapter] = Task.Run(() => MusicGenerator.Generate(chapter));
-        }
-
-        void Update()
-        {
-            // A Holiday Run changes world as it goes: the music follows the chapter the kid is in.
-            var level = LevelManager.Current;
-            if (level != null && level.endless)
+            if (level == null) return Soundscape.Menu;
+            if (level.endless)
             {
                 var run = HolidayRunDirector.Current;
                 if (run != null)
                 {
-                    int chapter = HolidayStages.All[Mathf.Clamp(run.StageIndex, 0, HolidayStages.Count - 1)].chapter;
-                    if (chapter != wantedMusic) RequestMusic(chapter);
+                    var stage = HolidayStages.All[Mathf.Clamp(run.StageIndex, 0, HolidayStages.Count - 1)];
+                    var stageRoute = RouteTable.Of(stage.levelId);
+                    return Soundscapes.For(stageRoute != null ? stageRoute.id : null, stage.chapter);
                 }
             }
+            if (level.level == null) return Soundscape.Street;
+            var route = RouteTable.Of(level.level.levelId);
+            return Soundscapes.For(route != null ? route.id : null, Mathf.Clamp(level.level.chapter, 1, 5));
+        }
 
-            // Finish any music jobs.
-            List<int> done = null;
-            foreach (var kv in musicJobs)
-            {
-                if (!kv.Value.IsCompleted) continue;
-                if (done == null) done = new List<int>();
-                done.Add(kv.Key);
-                if (kv.Value.Status == TaskStatus.RanToCompletion)
-                {
-                    using (MusicUploadMarker.Auto())
-                    {
-                        float[] data = kv.Value.Result;
-                        var clip = AudioClip.Create("music_" + kv.Key, data.Length, 1, Synth.SampleRate, false);
-                        clip.SetData(data, 0);
-                        musicClips[kv.Key] = clip;
-                    }
-                }
-            }
-            if (done != null) foreach (int k in done) musicJobs.Remove(k);
+        void Want(Soundscape scape)
+        {
+            wanted = scape;
+            recent.Remove(scape);
+            recent.Insert(0, scape);
+            // Synthesizing takes a second or so: do it off the main thread.
+            if (!musicClips.ContainsKey(scape) && !musicJobs.ContainsKey(scape))
+                musicJobs[scape] = Task.Run(() => MusicGenerator.Generate(scape));
+            if (!ambiences.ContainsKey(scape) && !ambienceJobs.ContainsKey(scape))
+                ambienceJobs[scape] = Task.Run(() => AmbienceGenerator.Generate(scape));
+        }
 
-            // Start the wanted track when ready.
-            AudioClip wanted;
+        // ---------- Music and ambience ----------
+
+        void Update()
+        {
+            var scape = WantedSoundscape();
+            if (scape != wanted) Want(scape);
+
+            FinishJobs();
+            bool paused = LevelManager.Current != null && LevelManager.Current.State == LevelState.Paused;
+            float duck = paused ? 0.35f : 1f;
+
+            // Music: start the wanted track when it's ready, crossfading from the last.
+            AudioClip music;
             AudioSource current = aIsCurrent ? musicA : musicB;
-            if (wantedMusic >= 0 && musicClips.TryGetValue(wantedMusic, out wanted) && current.clip != wanted)
+            if (musicClips.TryGetValue(wanted, out music) && current.clip != music)
             {
                 aIsCurrent = !aIsCurrent;
                 var next = aIsCurrent ? musicA : musicB;
-                next.clip = wanted;
+                next.clip = music;
                 next.time = 0f;
                 next.Play();
-                fade = 0f;
+                fade = 1f - fade;
             }
-
             fade = Mathf.MoveTowards(fade, 1f, Time.unscaledDeltaTime / CrossfadeTime);
-            bool paused = LevelManager.Current != null && LevelManager.Current.State == LevelState.Paused;
-            float master = GameSettings.MusicVolume * (paused ? 0.35f : 1f) * 0.6f;
+            float musicLevel = GameSettings.MusicVolume * duck * MusicGain;
             var cur = aIsCurrent ? musicA : musicB;
             var old = aIsCurrent ? musicB : musicA;
-            cur.volume = master * fade;
-            old.volume = master * (1f - fade);
-            if (fade >= 1f && old.isPlaying) old.Stop();
+            cur.volume = musicLevel * fade;
+            old.volume = musicLevel * (1f - fade);
+            if (fade >= 1f && old.isPlaying) { old.Stop(); old.clip = null; }
+
+            // Ambience: the bed the same way, a slower fade; the new place's cues start once it's in.
+            Ambience amb;
+            AudioSource bed = bedAIsCurrent ? bedA : bedB;
+            if (ambiences.TryGetValue(wanted, out amb) && bed.clip != amb.bed)
+            {
+                bedAIsCurrent = !bedAIsCurrent;
+                var next = bedAIsCurrent ? bedA : bedB;
+                next.clip = amb.bed;
+                next.time = Random.Range(0f, amb.bed.length * 0.9f);
+                next.Play();
+                bedFade = 1f - bedFade;
+                StartCues(amb);
+            }
+            bedFade = Mathf.MoveTowards(bedFade, 1f, Time.unscaledDeltaTime / AmbienceFadeTime);
+            float ambienceLevel = GameSettings.AmbienceVolume * duck * AmbienceGain;
+            var curBed = bedAIsCurrent ? bedA : bedB;
+            var oldBed = bedAIsCurrent ? bedB : bedA;
+            curBed.volume = ambienceLevel * bedFade;
+            oldBed.volume = ambienceLevel * (1f - bedFade);
+            if (bedFade >= 1f && oldBed.isPlaying) { oldBed.Stop(); oldBed.clip = null; }
+
+            UpdateCues(ambienceLevel, paused);
+            ForgetOld();
+        }
+
+        void FinishJobs()
+        {
+            List<Soundscape> done = null;
+            foreach (var kv in musicJobs)
+            {
+                if (!kv.Value.IsCompleted) continue;
+                if (done == null) done = new List<Soundscape>();
+                done.Add(kv.Key);
+                if (kv.Value.Status != TaskStatus.RanToCompletion) continue;
+                using (MusicUploadMarker.Auto())
+                    musicClips[kv.Key] = Stereo("music_" + kv.Key, kv.Value.Result);
+            }
+            if (done != null) foreach (var k in done) musicJobs.Remove(k);
+
+            done = null;
+            foreach (var kv in ambienceJobs)
+            {
+                if (!kv.Value.IsCompleted) continue;
+                if (done == null) done = new List<Soundscape>();
+                done.Add(kv.Key);
+                if (kv.Value.Status != TaskStatus.RanToCompletion) continue;
+                using (MusicUploadMarker.Auto())
+                {
+                    var pack = kv.Value.Result;
+                    var a = new Ambience
+                    {
+                        bed = Stereo("ambience_" + kv.Key, pack.bed),
+                        cues = pack.cues,
+                        cueClips = new AudioClip[pack.cues.Length],
+                        next = new float[pack.cues.Length],
+                    };
+                    for (int i = 0; i < pack.cues.Length; i++) a.cueClips[i] = Stereo("cue_" + pack.cues[i].name, pack.cues[i].clip);
+                    ambiences[kv.Key] = a;
+                }
+            }
+            if (done != null) foreach (var k in done) ambienceJobs.Remove(k);
+        }
+
+        static AudioClip Stereo(string name, float[] interleaved)
+        {
+            var clip = AudioClip.Create(name, interleaved.Length / 2, 2, Synth.SampleRate, false);
+            clip.SetData(interleaved, 0);
+            return clip;
+        }
+
+        /// <summary>Let go of the clips of places left behind, keeping the few most recent (a Holiday Run goes back and forth).</summary>
+        void ForgetOld()
+        {
+            if (recent.Count <= Keep) return;
+            var scape = recent[recent.Count - 1];
+            AudioClip clip;
+            if (musicClips.TryGetValue(scape, out clip) && musicA.clip != clip && musicB.clip != clip)
+            {
+                musicClips.Remove(scape);
+                Destroy(clip);
+            }
+            Ambience amb;
+            if (ambiences.TryGetValue(scape, out amb) && bedA.clip != amb.bed && bedB.clip != amb.bed && playingAmbience != amb)
+            {
+                ambiences.Remove(scape);
+                Destroy(amb.bed);
+                foreach (var c in amb.cueClips) Destroy(c);
+            }
+            if (!musicClips.ContainsKey(scape) && !ambiences.ContainsKey(scape)) recent.RemoveAt(recent.Count - 1);
+        }
+
+        // ---------- Ambient cues ----------
+
+        void StartCues(Ambience amb)
+        {
+            playingAmbience = amb;
+            float now = Time.unscaledTime;
+            // Staggered, so the first few seconds of a place aren't all its cues at once.
+            for (int i = 0; i < amb.cues.Length; i++)
+                amb.next[i] = now + 1.5f + Random.Range(0.1f, 0.8f) * Random.Range(amb.cues[i].minGap, amb.cues[i].maxGap);
+        }
+
+        void UpdateCues(float level, bool paused)
+        {
+            float now = Time.unscaledTime;
+            foreach (var v in cueVoices)
+            {
+                if (!v.source.isPlaying) continue;
+                if (v.sweep)
+                {
+                    float u = Mathf.Clamp01((now - v.start) / Mathf.Max(0.1f, v.length));
+                    v.source.panStereo = Mathf.Lerp(v.from, v.to, Mathf.SmoothStep(0f, 1f, u));
+                }
+                v.source.volume = v.loudness * level;   // follows the Ambience slider and the pause menu
+            }
+
+            var amb = playingAmbience;
+            if (amb == null || paused || level <= 0.001f || bedFade < 0.5f) return;
+            for (int i = 0; i < amb.cues.Length; i++)
+            {
+                if (now < amb.next[i]) continue;
+                var cue = amb.cues[i];
+                amb.next[i] = now + Random.Range(cue.minGap, cue.maxGap);
+                var v = cueVoices[nextCueVoice];
+                nextCueVoice = (nextCueVoice + 1) % cueVoices.Length;
+                float pitch = 1f + Random.Range(-cue.pitchVariance, cue.pitchVariance);
+                v.source.clip = amb.cueClips[i];
+                v.source.pitch = pitch;
+                v.loudness = cue.volume * Random.Range(0.75f, 1.1f);
+                v.source.volume = v.loudness * level;
+                v.sweep = cue.sweep;
+                if (cue.sweep)
+                {
+                    float dir = Random.value < 0.5f ? -1f : 1f;
+                    v.from = -0.85f * dir;
+                    v.to = 0.85f * dir;
+                    v.start = now;
+                    v.length = amb.cueClips[i].length / pitch;
+                    v.source.panStereo = v.from;
+                }
+                else v.source.panStereo = Mathf.Clamp(cue.pan + Random.Range(-cue.panSpread, cue.panSpread), -1f, 1f);
+                v.source.Play();
+                break;   // one new cue a frame at most
+            }
         }
 
         // ---------- Sound effects ----------

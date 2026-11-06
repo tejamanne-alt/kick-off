@@ -10,11 +10,11 @@ namespace DribbleToSchool.Presentation
 {
     /// <summary>
     /// Turns gameplay events into visual feedback: dust, sparkles, splashes,
-    /// feathers, confetti, camera shake and the slow-motion goal moment, and the two big moves:
-    /// the double jump (shock rings and a blast of air at the take-off, glitter shed all through the
-    /// somersault, a ring when it lands, the camera easing back) and the slide (a wave of dust and grit
-    /// thrown up as the feet kick out, speed streaks left hanging in the air, dust along the whole
-    /// slide, the camera lunging in, then a puff as the kid springs up).
+    /// feathers, confetti, camera shake and the slow-motion goal moment, and the slide (a wave of dust
+    /// and grit thrown up as the feet kick out, speed streaks left hanging in the air, dust along the
+    /// whole slide, the camera lunging in, then a puff as the kid springs up). The double jump has no
+    /// effect of its own: it is a second push of the body in the air (KidAnimator), and lands with the
+    /// ordinary landing's dust.
     /// </summary>
     public class FxDirector : MonoBehaviour
     {
@@ -32,9 +32,8 @@ namespace DribbleToSchool.Presentation
 
         static readonly Color Pebble = new Color(0.62f, 0.55f, 0.46f, 1f);
 
-        Coroutine slideTrail, flipTrail;
+        Coroutine slideTrail;
         KidController kidRef;
-        float lastDoubleJump = -10f;
         float nextTurboFx;
 
         /// <summary>A Holiday Run's turbo: speed streaks hung behind the kid and sparks flicked off the heels.</summary>
@@ -58,7 +57,7 @@ namespace DribbleToSchool.Presentation
         }
 
         void OnEnable() { GameEvents.Raised += OnEvent; }
-        void OnDisable() { GameEvents.Raised -= OnEvent; slideTrail = flipTrail = null; }
+        void OnDisable() { GameEvents.Raised -= OnEvent; slideTrail = null; }
 
         KidController Kid()
         {
@@ -91,16 +90,9 @@ namespace DribbleToSchool.Presentation
                 case GameEventType.Land:
                     Dust(p, 3 + Mathf.RoundToInt(k * 5f), 1.2f + k * 1.5f);
                     if (k > 0.6f) Shake(k * 0.08f, 0.12f);
-                    if (Time.time - lastDoubleJump < 1.6f) LandingRing(p, k);   // the somersault's landing
                     break;
                 case GameEventType.Jump:
                     Dust(p, 3, 1.2f);
-                    break;
-                case GameEventType.DoubleJump:
-                    lastDoubleJump = Time.time;
-                    AirBurst(p);
-                    if (flipTrail == null) flipTrail = StartCoroutine(FlipTrail());
-                    Punch(0.03f, 0.4f);   // pull back to give the somersault room
                     break;
                 case GameEventType.Slide:
                     SlideStart(p, k);
@@ -154,64 +146,6 @@ namespace DribbleToSchool.Presentation
                     StartCoroutine(GoalSlowMo());
                     break;
             }
-        }
-
-        // ---------- Double jump ----------
-
-        /// <summary>
-        /// The air jump's take-off, under the feet: two flat shock rings thrown out, a blast of air
-        /// each way along the ground of the sky, a puff straight down, and a ring of little stars.
-        /// </summary>
-        void AirBurst(Vector2 p)
-        {
-            Sprite ring = ProceduralSprites.Ring;
-            Vector2 at = p + Vector2.up * 0.08f;
-            pool.EmitShaped(ring, at, Vector2.zero, new Color(1f, 1f, 1f, 0.95f), 0.16f, 1.2f, 0.34f, 0.26f, -0.1f);
-            pool.EmitShaped(ring, at, Vector2.zero, new Color(0.78f, 0.93f, 1f, 0.65f), 0.08f, 0.85f, 0.5f, 0.26f, -0.1f);
-            Color air = new Color(1f, 1f, 1f, 0.8f);
-            pool.Burst(puff, at, 5, Vector2.right, 40f, 1.8f, 4.4f, air, 0.2f, 0.55f, 0.4f, -0.5f, 3f, 120f, 0.1f);
-            pool.Burst(puff, at, 5, Vector2.left, 40f, 1.8f, 4.4f, air, 0.2f, 0.55f, 0.4f, -0.5f, 3f, 120f, 0.1f);
-            pool.Burst(puff, at, 4, Vector2.down, 150f, 1f, 2.6f, air, 0.2f, 0.5f, 0.35f, -0.5f, 4f, 120f, 0.12f);
-            for (int i = 0; i < 8; i++)
-            {
-                float a = (i + Random.value * 0.5f) / 8f * Mathf.PI * 2f;
-                Vector2 v = new Vector2(Mathf.Cos(a), Mathf.Sin(a) * 0.65f) * Random.Range(2.4f, 3.8f);
-                pool.EmitShaped(spark, at + Vector2.up * 0.1f, v, i % 2 == 0 ? Gold : Color.white, 0.22f, 0.03f, 0.55f, 1f, -0.12f,
-                    Random.Range(0f, 360f), false, 3.5f, 2.6f, Random.Range(-260f, 260f));
-            }
-        }
-
-        /// <summary>A thinner ring and a bigger kick of dust where the somersault lands.</summary>
-        void LandingRing(Vector2 p, float k)
-        {
-            Vector2 at = p + Vector2.up * 0.1f;
-            pool.EmitShaped(ProceduralSprites.Ring, at, Vector2.zero, new Color(1f, 1f, 1f, 0.8f), 0.2f, 1.1f + k * 0.6f, 0.4f, 0.24f, -0.1f);
-            Color c = dustColor;
-            pool.Burst(puff, at, 4, Vector2.right, 30f, 2f, 4.5f, c, 0.3f, 0.7f, 0.45f, -0.4f, 3f, 80f, 0.08f);
-            pool.Burst(puff, at, 4, Vector2.left, 30f, 2f, 4.5f, c, 0.3f, 0.7f, 0.45f, -0.4f, 3f, 80f, 0.08f);
-        }
-
-        /// <summary>Glitter shed by the spinning body for as long as the somersault lasts.</summary>
-        IEnumerator FlipTrail()
-        {
-            var kid = Kid();
-            float end = Time.time + 0.5f, next = 0f;
-            while (kid != null && Time.time < end)
-            {
-                if (Time.time >= next && !kid.IsGrounded)
-                {
-                    next = Time.time + 0.03f;
-                    Vector2 centre = (Vector2)kid.transform.position + new Vector2(0f, 0.1f);
-                    for (int i = 0; i < 2; i++)
-                    {
-                        Vector2 v = Random.insideUnitCircle * 1.4f + Vector2.down * 0.4f;
-                        pool.EmitShaped(spark, centre + Random.insideUnitCircle * 0.5f, v, i == 0 ? Gold : Color.white, 0.2f, 0.02f, 0.4f,
-                            1f, -0.05f, Random.Range(0f, 360f), false, 2.5f, 3f, Random.Range(-300f, 300f));
-                    }
-                }
-                yield return null;
-            }
-            flipTrail = null;
         }
 
         // ---------- Slide ----------
