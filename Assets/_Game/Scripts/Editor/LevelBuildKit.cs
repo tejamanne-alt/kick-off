@@ -846,6 +846,17 @@ namespace DribbleToSchool.EditorTools
             struct GroundSpan { public float from, to, top; }
             struct PendingSign { public Transform sign; public Vector2 boardSize; }
             readonly List<GroundSpan> groundSpans = new List<GroundSpan>();
+            /// <summary>The town holes' cones and barriers, laid once the ground either side of each is known (<see cref="Finish"/>).</summary>
+            readonly List<Vector3> pendingRoadWorks = new List<Vector3>();
+
+            /// <summary>The top of the ground at <paramref name="x"/> (the highest span there), or false where there is none (a hole).</summary>
+            bool GroundTopAt(float x, out float top)
+            {
+                top = float.MinValue;
+                foreach (var span in groundSpans)
+                    if (x >= span.from - 0.01f && x <= span.to + 0.01f) top = Mathf.Max(top, span.top);
+                return top > float.MinValue;
+            }
             readonly List<PendingSign> pendingSigns = new List<PendingSign>();
 
             // Ground and pit fills reach well below the lowest camera view, so no sky shows under the level.
@@ -956,7 +967,7 @@ namespace DribbleToSchool.EditorTools
                 {
                     // A concrete lip round the dug edge.
                     StreetBuilder.Solid(root, name + "Lip", new Vector3(cx, top + 0.015f, StreetBuilder.PathHalf - 0.06f), new Vector3(w + 0.1f, 0.03f, 0.12f), new Color(0.6f, 0.6f, 0.6f));
-                    RoadWorks(fromX, toX, top);
+                    pendingRoadWorks.Add(new Vector3(fromX, toX, top));   // the cones go on the banks, so once the ground is all laid
                 }
 
                 LoseZone(name, fromX, toX, top, message);
@@ -974,23 +985,32 @@ namespace DribbleToSchool.EditorTools
                 go.AddComponent<LoseZone>().message = message;
             }
 
-            /// <summary>Safety cones before and after a hole (either side of the kid's line) and a striped barrier behind it.</summary>
+            /// <summary>
+            /// Safety cones on each bank of a hole (either side of the kid's line), standing on that bank's own ground (a trench
+            /// at the foot of a raised deck has them up on the deck's edge; none where there is no ground), and a striped barrier
+            /// behind the hole at its own top, over the banks only where they are level with it.
+            /// </summary>
             void RoadWorks(float fromX, float toX, float top)
             {
                 float zc = StreetBuilder.PathHalf - 0.35f;
                 foreach (float x in new[] { fromX - 0.45f, toX + 0.45f })
                     foreach (float z in new[] { -zc, zc })
                     {
-                        if (StreetBuilder.Model(root, "Street", "TrafficCone", x, top, z, (x * 53f + z * 31f) % 360f) != null) continue;
+                        float bank;
+                        if (!GroundTopAt(x, out bank)) continue;
+                        if (StreetBuilder.Model(root, "Street", "TrafficCone", x, bank, z, (x * 53f + z * 31f) % 360f) != null) continue;
                         var cone = new GameObject("Cone");
                         cone.transform.SetParent(root, false);
-                        cone.transform.position = new Vector3(x, top, z);
+                        cone.transform.position = new Vector3(x, bank, z);
                         cone.AddComponent<ConeShape>();
                         cone.GetComponent<MeshRenderer>().sharedMaterial = Art.solid;
                         cone.GetComponent<ConeShape>().Rebuild();
                     }
-                // Barrier along the back edge of the hole: a yellow-and-black rail on two legs.
-                float bz = StreetBuilder.PathHalf + 0.12f, a = fromX - 0.25f, b = toX + 0.25f;
+                // Barrier along the back edge of the hole: a yellow-and-black rail on two legs (reaching over a bank only where it is level).
+                float bz = StreetBuilder.PathHalf + 0.12f, leftTop, rightTop;
+                bool levelLeft = GroundTopAt(fromX - 0.25f, out leftTop) && Mathf.Abs(leftTop - top) < 0.05f;
+                bool levelRight = GroundTopAt(toX + 0.25f, out rightTop) && Mathf.Abs(rightTop - top) < 0.05f;
+                float a = levelLeft ? fromX - 0.25f : fromX + 0.05f, b = levelRight ? toX + 0.25f : toX - 0.05f;
                 if (StreetBuilder.Row(root, "Street", "RoadBarrier", a, b, top, bz)) return;
                 foreach (float x in new[] { a + 0.1f, b - 0.1f })
                     StreetBuilder.Solid(root, "BarrierLeg", new Vector3(x, top + 0.45f, bz), new Vector3(0.06f, 0.9f, 0.3f), new Color(0.3f, 0.3f, 0.32f));
@@ -1017,6 +1037,8 @@ namespace DribbleToSchool.EditorTools
                 body.gravityScale = 1.5f;
                 body.interpolation = RigidbodyInterpolation2D.Interpolate;
                 go.AddComponent<ResettableBody>();
+                // Kicked or walked forward, never shoved back into the way behind it (by a rolling pipe, say).
+                go.AddComponent<OneWayBody>();
             }
 
             // ---------- Pickups ----------
@@ -1128,6 +1150,13 @@ namespace DribbleToSchool.EditorTools
             /// </summary>
             public void Pedestrian(float minX, float maxX, Color coat, float groundTop = 0f, float speed = 1.1f)
             {
+                Walker(minX, maxX, coat, groundTop, speed, false);
+            }
+
+            /// <summary>The passer-by of <see cref="Pedestrian"/>; a <paramref name="builder"/> wears hi-vis and a hard hat, keeps them on, and walks alone.</summary>
+            Hazards.Pedestrian Walker(float minX, float maxX, Color coat, float groundTop, float speed, bool builder)
+            {
+                Coaching.Mark("people", minX, maxX);
                 var go = new GameObject("Pedestrian");
                 go.transform.SetParent(root, false);
                 go.transform.position = new Vector2(minX, groundTop + 0.925f);
@@ -1139,6 +1168,11 @@ namespace DribbleToSchool.EditorTools
                 int seed = Mathf.Abs(Mathf.RoundToInt(minX * 37f + maxX * 11f)) + Chapter * 101 + 1;
                 // Adults are about 1.7 m (1.22 x the kid), feet on the capsule bottom (-0.925), a step behind the kid's line.
                 Color hair = PasserbyHair[Mathf.Abs(Mathf.RoundToInt(minX)) % 4], trousers = Color.Lerp(coat, Color.black, 0.45f);
+                if (builder)
+                {
+                    hair = HardHatYellow;                      // the hard hat stands in for the hair, as at the site office
+                    trousers = new Color(0.22f, 0.26f, 0.4f);
+                }
                 var parts = BuildModelCharacter(go.transform, "Adult", Art.adult, 1.3f * 1.22f, new Vector3(0f, -0.193f, 0.75f), false);
                 if (parts.rig != null)
                 {
@@ -1162,10 +1196,12 @@ namespace DribbleToSchool.EditorTools
                 p.seed = seed;
                 p.outfit = parts.outfit;
                 p.rig = parts.rig;
-                p.coats = PasserbyCoats;
+                // A builder keeps the hi-vis on every pass (no colours to change into) and has no company.
+                p.coats = builder ? new Color[0] : PasserbyCoats;
                 var walker = parts.rig.gameObject.AddComponent<WalkerAnimator>();
                 walker.pedestrian = p;
-                PedestrianCompany(go.transform, p, seed, coat);
+                if (!builder) PedestrianCompany(go.transform, p, seed, coat);
+                return p;
             }
 
             /// <summary>
@@ -1243,6 +1279,7 @@ namespace DribbleToSchool.EditorTools
             /// <summary>A zebra crossing from fromX to toX with a pedestrian light and passing traffic.</summary>
             public void Crossing(float fromX, float toX, float phaseOffset = 0f, float groundTop = 0f)
             {
+                Coaching.Mark("crossing", fromX, toX);
                 float width = toX - fromX;
                 float center = (fromX + toX) * 0.5f;
 
@@ -1322,6 +1359,7 @@ namespace DribbleToSchool.EditorTools
             /// <summary>A playful dog that patrols minX..maxX and noses low balls back.</summary>
             public void Dog(float minX, float maxX, Color fur, float groundTop = 0f)
             {
+                Coaching.Mark("dog", minX, maxX);
                 var go = new GameObject("Dog");
                 go.transform.SetParent(root, false);
                 go.transform.position = new Vector2((minX + maxX) * 0.5f, groundTop + 0.3f);
@@ -1466,6 +1504,8 @@ namespace DribbleToSchool.EditorTools
             public void MovingPlatform(Vector2 center, float width, Vector2 travel, float speed = 1.5f)
             {
                 Audit.AddSliding(center.x, center.y, width, travel.x, travel.y);
+                Coaching.Mark(Mathf.Abs(travel.x) < 0.01f ? "lift" : "platform",
+                    center.x + Mathf.Min(0f, travel.x) - width * 0.5f, center.x + Mathf.Max(0f, travel.x) + width * 0.5f);
                 var go = Block("MovingPlatform", center, new Vector2(width, 0.35f), PlatformColor, GroundMat, false);
                 var body = go.AddComponent<Rigidbody2D>();
                 body.bodyType = RigidbodyType2D.Kinematic;
@@ -1703,6 +1743,7 @@ namespace DribbleToSchool.EditorTools
             /// </summary>
             public void SwitchAndGate(Vector2 switchPosition, float gateX, float gateHeight = 2.4f, float groundTop = 0f)
             {
+                Coaching.Mark("gate", Mathf.Min(switchPosition.x, gateX) - 1f, gateX + 0.3f);
                 var gateGo = Block("Gate", new Vector2(gateX, groundTop + gateHeight * 0.5f), new Vector2(0.35f, gateHeight), Color.white, GroundMat, false);
                 gateGo.AddComponent<Rigidbody2D>().bodyType = RigidbodyType2D.Kinematic;
                 var gate = gateGo.AddComponent<Gate>();
@@ -1837,6 +1878,7 @@ namespace DribbleToSchool.EditorTools
             /// <summary>A seagull that swoops from fromX to toX (right to left = toward the kid).</summary>
             public void Seagull(float fromX, float toX, float baseY, float phaseOffset = 0f)
             {
+                Coaching.Mark("seagull", fromX, toX);
                 var go = new GameObject("Seagull");
                 go.transform.SetParent(root, false);
                 go.transform.position = new Vector2(fromX, baseY);
@@ -1888,6 +1930,7 @@ namespace DribbleToSchool.EditorTools
             /// <summary>Sea water washing over the sand between fromX and toX. Cross at low tide.</summary>
             public void Tide(float fromX, float toX, float period = 6f, float phaseOffset = 0f, float groundTop = 0f)
             {
+                Coaching.Mark("tide", fromX, toX);
                 float width = toX - fromX;
                 calmSand.Add(new Vector2(fromX - 3f, toX + 3f));   // smooth sand under the wash
                 tideStretches.Add(new Vector2(fromX - 3f, toX + 3f));
@@ -1958,7 +2001,65 @@ namespace DribbleToSchool.EditorTools
                 Block("TunnelCeiling", new Vector2(center, groundTop + height + 0.6f), new Vector2(width + 1f, 1.2f), new Color(0.62f, 0.62f, 0.64f), GroundMat, !kit, 7.4f)
                     .AddComponent<BallTrap>();        // the deck over the underpass is out of reach
                 RailwayBridgeFace(fromX, toX, groundTop + height);
-                // Dim lamps under the deck, lighting the footpath below them.
+                DimUnder(fromX, toX, groundTop, height);
+            }
+
+            /// <summary>
+            /// A covered walkway along a building site (L15 on Station Road, before the railway: docs/WORLD_MAP.md, "Level and map"): the
+            /// same dark stretch with a ceiling as <see cref="Tunnel"/> (the same roof for the feasibility audit, the same collider, lamps
+            /// and darkness), but no railway over it: the site's hoarding along the back, a boarded roof on scaffold tubes over the
+            /// footpath, the site's blue boards along its front with a band of hazard stripes, a lamp under it every 5 m.
+            /// </summary>
+            public void CoveredWalkway(float fromX, float toX, float groundTop = 0f, float height = 3.3f)
+            {
+                Audit.AddRoof(fromX, toX, height);
+                float center = (fromX + toX) * 0.5f;
+                float width = toX - fromX;
+                // The hoarding along the back (the chapter-4 streets' kit boards, stretched up to the roof), else plain boards.
+                float backZ = StreetBuilder.PropertyZ + 0.2f;
+                bool kit = HasKitModel("Street", "Hoarding3");
+                if (kit)
+                {
+                    Vector3 native = KitSize("Street", "Hoarding3");
+                    int n = Mathf.Max(1, Mathf.RoundToInt(width / Mathf.Max(0.5f, native.x)));
+                    float step = width / n;
+                    for (int i = 0; i < n; i++)
+                    {
+                        var piece = KitModel(root, "Street", "Hoarding3", new Vector3(fromX + step * (i + 0.5f), groundTop, backZ));
+                        if (piece != null) piece.localScale = new Vector3(step / native.x, height / Mathf.Max(0.5f, native.y), 1f);
+                    }
+                }
+                else StreetBuilder.Solid(root, "WalkwayHoarding", new Vector3(center, groundTop + height * 0.5f, backZ), new Vector3(width, height, 0.15f), WalkwayBlue);
+                // The roof: scaffold boards over the footpath, from its front edge to the hoarding (the collider is the usual ceiling block).
+                const float frontZ = -2.2f;
+                float roofDepth = backZ - frontZ;
+                StreetBuilder.Solid(root, "WalkwayRoof", new Vector3(center, groundTop + height + 0.15f, (frontZ + backZ) * 0.5f), new Vector3(width + 0.6f, 0.3f, roofDepth), WalkwayBoards);
+                Block("TunnelCeiling", new Vector2(center, groundTop + height + 0.6f), new Vector2(width + 1f, 1.2f), WalkwayBoards, GroundMat, false)
+                    .AddComponent<BallTrap>();        // the roof is out of reach, as a tunnel's deck is
+                // Its front: the site's blue boards (0.9 m) with hazard stripes along their foot, facing the camera.
+                StreetBuilder.Solid(root, "WalkwayFascia", new Vector3(center, groundTop + height + 0.45f, frontZ - 0.02f), new Vector3(width + 0.6f, 0.9f, 0.04f), WalkwayBlue);
+                int stripes = Mathf.Max(2, Mathf.RoundToInt((width + 0.6f) / 0.5f));
+                float stripe = (width + 0.6f) / stripes;
+                for (int i = 0; i < stripes; i++)
+                    StreetBuilder.Solid(root, "HazardStripe", new Vector3(fromX - 0.3f + stripe * (i + 0.5f), groundTop + height + 0.12f, frontZ - 0.05f), new Vector3(stripe, 0.16f, 0.02f),
+                        i % 2 == 0 ? new Color(0.98f, 0.80f, 0.16f) : new Color(0.15f, 0.15f, 0.17f));
+                // Scaffold tubes: along the back every 2.5 m, and one at each end of the front (not between the camera and the footpath).
+                var tube = new Color(0.62f, 0.64f, 0.66f);
+                for (float x = fromX; x <= toX + 0.01f; x += Mathf.Max(1f, width / Mathf.Max(1, Mathf.RoundToInt(width / 2.5f))))
+                    StreetBuilder.Solid(root, "ScaffoldTube", new Vector3(x, groundTop + height * 0.5f, backZ - 0.2f), new Vector3(0.07f, height, 0.07f), tube);
+                foreach (float x in new[] { fromX - 0.2f, toX + 0.2f })
+                    StreetBuilder.Solid(root, "ScaffoldTube", new Vector3(x, groundTop + height * 0.5f, frontZ + 0.05f), new Vector3(0.07f, height, 0.07f), tube);
+                DimUnder(fromX, toX, groundTop, height);
+            }
+
+            /// <summary>The building site's blue boards and the walkway's timber roof (L15's covered walkways).</summary>
+            static readonly Color WalkwayBlue = new Color(0.22f, 0.40f, 0.62f), WalkwayBoards = new Color(0.66f, 0.54f, 0.38f);
+
+            /// <summary>Dim lamps under a roof every 5 m, lighting the footpath below them, and the darkness inside (a tunnel's or a walkway's).</summary>
+            void DimUnder(float fromX, float toX, float groundTop, float height)
+            {
+                float center = (fromX + toX) * 0.5f;
+                float width = toX - fromX;
                 for (float lx = fromX + 2.5f; lx < toX - 1f; lx += 5f)
                 {
                     if (KitModel(root, "Works", "TunnelLamp", new Vector3(lx, groundTop + height, 0.2f)) == null)
@@ -2041,43 +2142,12 @@ namespace DribbleToSchool.EditorTools
                 }
             }
 
-            /// <summary>Spawns pipes at <paramref name="position"/> that roll left until <paramref name="despawnX"/>.</summary>
-            public void Pipes(Vector2 position, float interval, float despawnX, float firstDelay = 1.5f)
-            {
-                var go = new GameObject("PipeSpawner");
-                go.transform.SetParent(root, false);
-                go.transform.position = position;
-                var spawner = go.AddComponent<PipeSpawner>();
-                spawner.interval = interval;
-                spawner.despawnX = despawnX;
-                spawner.firstDelay = firstDelay;
-                spawner.material = Art.solid;
-                var pipeModel = KitModel(go.transform, "Works", "ConcretePipe", go.transform.position);
-                if (pipeModel != null)
-                {
-                    pipeModel.gameObject.SetActive(false);   // copied for each rolling pipe
-                    spawner.template = pipeModel.gameObject;
-                }
-                // A stack of pipes beside the spawn point, lying across the street.
-                Vector2 stack = position + new Vector2(0.9f, -0.2f);
-                float r = spawner.radius;
-                Vector2[] at = { new Vector2(-r, -0.55f + r), new Vector2(r, -0.55f + r), new Vector2(0f, -0.55f + r * 2.7f) };
-                foreach (var o in at)
-                {
-                    var pipe = new GameObject("StackedPipe");
-                    pipe.transform.SetParent(root, false);
-                    pipe.transform.position = new Vector3(stack.x + o.x, stack.y + o.y, 1.3f);
-                    var stacked = KitModel(pipe.transform, "Works", "ConcretePipe", pipe.transform.position);
-                    if (stacked != null) { stacked.localScale = new Vector3(1f, 1f, 0.75f); continue; }
-                    PipeSpawner.BuildPipe(pipe, r, spawner.color, Art.solid);
-                    pipe.transform.Find("Visual").localScale = new Vector3(1f, 1f, 0.75f);
-                }
-            }
-
             /// <summary>A swing seat hanging from <paramref name="pivot"/>.</summary>
             public void Swing(Vector2 pivot, float ropeLength, float amplitude = 35f, float period = 3f, float phaseOffset = 0f)
             {
                 Audit.AddSwing(pivot.x, pivot.y, ropeLength, amplitude);
+                float swingReach = ropeLength * Mathf.Sin(amplitude * Mathf.Deg2Rad) + 0.7f;
+                Coaching.Mark("swing", pivot.x - swingReach, pivot.x + swingReach);
                 Color wood = new Color(0.55f, 0.4f, 0.3f);
                 float ground = GroundTopUnder(pivot.x, pivot.y);
                 if (SwingModel(pivot, ground))
@@ -2160,6 +2230,7 @@ namespace DribbleToSchool.EditorTools
             /// <summary>A plaza floor fountain: pulsing jets from a grate flush with the paving, which lift the ball.</summary>
             public void Fountain(float x, float groundTop, float height, float strength)
             {
+                Coaching.Mark("fountain", x - 1f, x + 1f);
                 StreetBuilder.Patch(root, "WetPaving", x - 1.8f, x + 1.8f, groundTop, -StreetBuilder.PathHalf, StreetBuilder.PathHalf, new Color(0.55f, 0.6f, 0.62f));
                 if (KitModel(root, "Leisure", "Fountain", new Vector3(x, groundTop, 0f)) == null)   // a stone-kerbed grate, jets at x 0 and +-0.45
                 {
@@ -3452,7 +3523,10 @@ namespace DribbleToSchool.EditorTools
                 foreach (var wash in tideWashes) wash.seaY = LowestGroundTop - 0.3f;
                 foreach (var pending in pendingSigns) PlantSign(pending.sign, pending.boardSize);
                 pendingSigns.Clear();
+                foreach (var works in pendingRoadWorks) RoadWorks(works.x, works.y, works.z);
+                pendingRoadWorks.Clear();
                 ReportFeasibility();
+                BuildCoachSpots();
                 BuildStreetSlabs();
                 BuildPendingStops();
             }

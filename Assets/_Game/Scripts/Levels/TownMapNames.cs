@@ -24,7 +24,7 @@ namespace DribbleToSchool.Levels
     /// levels are named. Each name goes beside its node on the side the layout prefers, else on one of eight spots round it
     /// (below, above, right, left, the sides also slid a little along, and the four corners), on two lines if that helps (broken
     /// so that no line is wider than 380, 300 or 200 px), and one font size smaller as a last resort. It never covers its own
-    /// route's nodes and stars, the pins, the names already placed or the screen's other texts, keeps 30 px from other names
+    /// route's nodes, stars and stop markers, the pins, the names already placed or the screen's other texts, keeps 30 px from other names
     /// where it can, and preferably keeps off the other routes' nodes (drawn smaller then). Sizes come from the
     /// label font's own advances (Lilita One, the face UIKit draws bold labels in), so the screen and the tests agree.
     /// </summary>
@@ -197,6 +197,15 @@ namespace DribbleToSchool.Levels
             var own = new HashSet<string>(ids);
             var placed = new List<Rect>();
             Rect core = TownMap.Core;
+            // The route's stop markers, on its line between its nodes: a name keeps off them as it keeps off its nodes.
+            var stops = new List<Vector2>();
+            var route = ids.Count > 0 ? RouteTable.Of(ids[0]) : null;
+            if (route != null && route.stops != null)
+                for (int i = 0; i < route.stops.Length; i++)
+                {
+                    Vector2? marker = TownMap.StopPosition(route.id, i);
+                    if (marker != null) stops.Add(marker.Value);
+                }
             // Wider first, then broken at narrower widths (two short lines fit between nodes where one long one does not), then smaller.
             var variants = new[] { new KeyValuePair<int, float>(FontSize, OneLineMax), new KeyValuePair<int, float>(FontSize, 300f), new KeyValuePair<int, float>(FontSize, 200f),
                                    new KeyValuePair<int, float>(SmallFontSize, OneLineMax), new KeyValuePair<int, float>(SmallFontSize, 300f), new KeyValuePair<int, float>(SmallFontSize, 200f) };
@@ -240,6 +249,7 @@ namespace DribbleToSchool.Levels
                                 }
                                 else if (DistanceTo(box, other.pos) < TownMap.NodeRadius * OtherNodeScale + Pad) soft++;
                             }
+                            foreach (var marker in stops) if (DistanceTo(box, marker) < TownMap.StopRadius + Pad) hard++;
                             if (blocked != null) foreach (var b in blocked) if (Overlap(box, b, Pad)) hard++;
                             foreach (var b in placed)
                             {

@@ -9,15 +9,25 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROUTE_TABLE = os.path.normpath(os.path.join(HERE, '..', '..', 'Assets', '_Game', 'Scripts', 'Levels', 'RouteTable.cs'))
 
 
+# new Route("street", 1, new[] { "L01", ... }, "C01", new[] { "busStop", ... }): the id, the levels, the challenge, the stops between the levels
+ROUTE_RE = r'new Route\("(\w+)",\s*\d+,\s*new\[\]\s*\{([^}]*)\}\s*,\s*(null|"\w+")\s*(?:,\s*new\[\]\s*\{([^}]*)\})?\s*\)'
+
+
 def parse_route_table(path=ROUTE_TABLE):
     """[(route id, [level ids], challenge id or None)] in the order of RouteTable.All."""
     src = open(path, encoding='utf-8').read()
     out = []
-    for m in re.finditer(r'new Route\("(\w+)",\s*\d+,\s*new\[\]\s*\{([^}]*)\}\s*,\s*(null|"\w+")\)', src):
+    for m in re.finditer(ROUTE_RE, src):
         levels = re.findall(r'"(L\d+)"', m.group(2))
         ch = None if m.group(3) == 'null' else m.group(3).strip('"')
         out.append((m.group(1), levels, ch))
     return out
+
+
+def parse_route_stops(path=ROUTE_TABLE):
+    """{route id: [stop ids]}: the stops between a route's levels (levels[i] ends at stops[i], levels[i + 1] starts there)."""
+    src = open(path, encoding='utf-8').read()
+    return {m.group(1): re.findall(r'"(\w+)"', m.group(4) or '') for m in re.finditer(ROUTE_RE, src)}
 
 
 def point_in_poly(p, poly):
@@ -43,11 +53,65 @@ def poly_centroid(poly):
     return (cx / (3 * a), cy / (3 * a))
 
 
+def stem_end(rid, routes, clear):
+    """How far along route rid it is to the point where it leaves the stem it shares with other routes near home: the first arc
+    length at which the route is `clear` px from every other route."""
+    pts = routes[rid]
+    total = G.poly_length(pts)
+    others = [p for r2, p in routes.items() if r2 != rid]
+    s = 0.0
+    while s < total:
+        p, _ = G.point_at(pts, s)
+        if min(G.dist_to_poly(p, q) for q in others) >= clear:
+            return s
+        s += 2.0
+    return total
+
+
+def place_stops(L, routes, stop_ids):
+    """{stop id: dict(route, s, x, y)}: each stop of the layout (STOPS) snapped onto its route. stop_ids is RouteTable's
+    {route id: [stop ids]}; a stop the layout does not place is left out (the game then draws it halfway between its levels)."""
+    out = {}
+    for rid, ids in stop_ids.items():
+        for sid in ids:
+            spec = getattr(L, 'STOPS', {}).get(sid)
+            if spec is None:
+                continue
+            if spec[0] != rid:
+                raise ValueError(f'the stop {sid} is on route {rid} in RouteTable but on {spec[0]} in the layout')
+            q, s, d = G.project(spec[1], routes[rid])
+            out[sid] = dict(route=rid, s=s, x=q[0], y=q[1], off=d)
+    return out
+
+
+def leg_bounds(L, routes, table, stop_ids, stops):
+    """{level id: (s from, s to, anchor s)}: the arc lengths between which a story node must lie (the stop or home it starts at and
+    the stop or school it ends at, each with STOP_NODE_CLEAR to spare; the first level of a route past its stem), and the arc length
+    AFTER_STOP past the stop it starts at (its anchor when the layout gives none)."""
+    clear = getattr(L, 'STOP_NODE_CLEAR', 0.0)
+    after = getattr(L, 'AFTER_STOP', 120.0)
+    out = {}
+    for rid, levels, _ in table:
+        total = G.poly_length(routes[rid])
+        ids = stop_ids.get(rid, [])
+        at = [stops[sid]['s'] if sid in stops else None for sid in ids]
+        for i, lid in enumerate(levels):
+            if i == 0:
+                lo, anchor = stem_end(rid, routes, getattr(L, 'STEM_CLEAR', 0.0)), None
+            else:
+                lo = at[i - 1] + clear if i - 1 < len(at) and at[i - 1] is not None else 0.0
+                anchor = at[i - 1] + after if i - 1 < len(at) and at[i - 1] is not None else None
+            hi = at[i] - clear if i < len(at) and at[i] is not None else total
+            out[lid] = (lo, hi, anchor)
+    return out
+
+
 def build(L, solve=True):
     nodes = dict(L.NODES)
     roads = [G.Road(r[0], r[1], r[2], r[3], nodes) for r in L.ROADS]
     graph = G.Graph(nodes, roads)
     table = parse_route_table()
+    stop_ids = parse_route_stops()
     routes, used = {}, {}
     for rid, levels, challenge in table:
         wp = L.ROUTES[rid]
@@ -57,18 +121,20 @@ def build(L, solve=True):
     home = nodes[L.PLACES['home']]
     school = nodes[L.PLACES['school']]
     places = {'home': home, 'school': school}
-    out = dict(graph=graph, routes=routes, used=used, nodes={}, places=places, table=table, label_error=None)
+    stops = place_stops(L, routes, stop_ids)
+    legs = leg_bounds(L, routes, table, stop_ids, stops)
+    out = dict(graph=graph, routes=routes, used=used, nodes={}, places=places, table=table, label_error=None, stops=stops, stop_ids=stop_ids, legs=legs)
     if not solve:
         return out
     # the nodes and their labels: an exact constraint search (arc consistency) near the anchors the layout gives; if the layout
     # leaves no room it says which node it could not place, and a local search puts the nodes where the fewest rules break
     try:
-        placed = N.solve_joint(L, routes, table)
+        placed = N.solve_joint(L, routes, table, stops=stops, legs=legs)
         warn = None
     except ValueError as e:
         warn = str(e)
         print('warning:', warn)
-        placed = N.solve_ls(L, routes, table, seed=1, iters=40000, restarts=8, strict=False)
+        placed = N.solve_ls(L, routes, table, seed=1, iters=40000, restarts=8, strict=False, stops=stops, legs=legs)
     built_nodes = {k: dict(x=v['x'], y=v['y'], route=v['route'], s=v['s'], anchor_dist=G.dist((v['x'], v['y']), v['anchor']),
                            anchor=v['anchor'], label=v['label']) for k, v in placed.items()}
     out['nodes'] = built_nodes
@@ -84,6 +150,7 @@ def pick_districts(L, b):
     routes = list(b['routes'].values())
     boxes = [G.label_box((n['x'], n['y']), n['label']) for n in b['nodes'].values()]
     npos = [(n['x'], n['y']) for n in b['nodes'].values()]
+    spos = [(s['x'], s['y']) for s in b.get('stops', {}).values()]
     ii = G.INNER
     for did, spec in L.DISTRICTS.items():
         if 'at' in spec:
@@ -103,7 +170,8 @@ def pick_districts(L, b):
                     dr = min(min(G.dist_to_poly(p, r) for r in routes), 400)
                     dn = min(min(G.dist(p, q) for q in npos) - G.NODE_R, 400)
                     db = min(min(G.box_dist_to_point(bx, p) for bx in boxes), 400)
-                    clear = min(dr, dn, db)
+                    ds = min([G.dist(p, q) - N.STOP_R for q in spos] + [400])
+                    clear = min(dr, dn, db, ds)
                     score = min(clear, spec.get('clear', 130)) * 3 - G.dist(p, cen) * 0.15
                     if score > bs:
                         best, bs = p, score
@@ -148,6 +216,7 @@ def pick_streets(L, b):
     routes = list(b['routes'].values())
     roads = {r.id: r for r in b['graph'].roads}
     junctions = list(b['graph'].nodes.values())
+    spos = [(s['x'], s['y']) for s in b.get('stops', {}).values()]
     taken = []
     for spec in L.STREETS:
         name, rid = spec['name'], spec['road']
@@ -172,6 +241,9 @@ def pick_streets(L, b):
                     continue                      # the route must really run along this stretch
                 dn = min(G.dist(m, q) for q in npos) if npos else 999
                 if dn < G.NODE_R + nclear:
+                    continue
+                # a stop's marker on the route: the name keeps off it (half its length and a little more)
+                if any(G.dist(m, q) < length * 0.5 + N.STOP_R + 6 for q in spos):
                     continue
                 if bclear >= 0 and any(G.box_dist_to_point(bx, m) < bclear for bx in boxes):
                     continue
@@ -219,6 +291,9 @@ def to_json(L, b):
         'districts': [dict(id=k, **P(v)) for k, v in b['districts'].items()],
         # The game's street-name angle turns clockwise on screen (y down; docs/WORLD_MAP.md): the anchors' angles turn the other way.
         'streets': [dict(name=s['name'], x=int(round(s['x'] + ox)), y=int(round(s['y'] + oy)), angle=round(-s['angle'], 1) + 0.0) for s in b['streets']],
+        # the stops between the levels (RouteTable's order), each a point on its route where the picture shows the place
+        'stops': [dict(id=sid, route=rid, **P((b['stops'][sid]['x'], b['stops'][sid]['y'])))
+                  for rid, _, _ in b['table'] for sid in b['stop_ids'].get(rid, []) if sid in b['stops']],
     }
     for nid in sorted(b['nodes'], key=lambda k: (k[0] == 'C', int(k[1:]))):
         n = b['nodes'][nid]

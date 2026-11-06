@@ -1,3 +1,4 @@
+using DribbleToSchool.Localization;
 using UnityEngine;
 
 namespace DribbleToSchool.Challenges
@@ -13,7 +14,7 @@ namespace DribbleToSchool.Challenges
 
         public override string StatusText
         {
-            get { return "Targets " + hits + " / " + (targets != null ? targets.Length : 0) + "   " + Mathf.CeilToInt(TimeLeft) + "s"; }
+            get { return Loc.F("challenge.status.targets", hits, targets != null ? targets.Length : 0, Mathf.CeilToInt(TimeLeft)); }
         }
 
         void Awake()

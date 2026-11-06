@@ -65,6 +65,7 @@ namespace DribbleToSchool.EditorTools
 
             // The home street, running away down the left of the view.
             var track = new TrackBuilder(new GameObject("Street").transform);
+            track.Coaching.Enabled = false;
             track.Walls(MenuStreetFrom, MenuStreetTo);
             track.Ground(MenuStreetFrom, MenuStreetTo, 0f);
             track.Finish();

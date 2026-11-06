@@ -1,6 +1,7 @@
 using System.Collections;
 using DribbleToSchool.Audio;
 using DribbleToSchool.Ball;
+using DribbleToSchool.Challenges;
 using DribbleToSchool.Core;
 using DribbleToSchool.InputHandling;
 using DribbleToSchool.Levels;
@@ -16,7 +17,8 @@ namespace DribbleToSchool.UI
     /// <summary>
     /// The in-level HUD (uGUI, built from code): info card, pause button,
     /// touch-control visuals, aim meter, toasts, countdown, respawn fade,
-    /// tutorial hints (a dismissable banner at the top), the pause menu and the animated results screen.
+    /// the coach at the top (how to do what comes next, a challenge's steps and the first-time tips: ActionCoach),
+    /// the pause menu and the animated results screen.
     /// </summary>
     public class GameHud : MonoBehaviour
     {
@@ -27,21 +29,21 @@ namespace DribbleToSchool.UI
         public DevTuningPanel tuning;
 
         static readonly Color Late = new Color(0.95f, 0.4f, 0.35f);
-        static readonly Color WalkColor = Color.white;
         static readonly Color KickReady = new Color(0.3f, 0.82f, 0.42f);
-        static readonly Color SlideColor = new Color(0.58f, 0.4f, 0.92f);
 
         RectTransform root;
         Text titleText, timeText, bellText, coinText, streakText, statusText;
         Image fade;
-        RectTransform jumpRect, slideRect, kickRect, leftRect, rightRect, aimKnob, aimBar, aimFill, hintCard;
-        TouchButton jumpButton, slideButton, kickButton, leftButton, rightButton;
+        RectTransform jumpRect, kickRect, aimKnob, aimBar, aimFill;
+        TouchButton jumpButton, kickButton;
+        StickView stick;
         Image aimFillImage;
         float tooFarUntil;
-        Text tooFar, toast, bigText, hintText;
+        Text tooFar, toast, bigText;
+        ActionCoach coach;
         RectTransform pauseRect, tuneRect;
         GameObject pauseModal, resultsModal;
-        float toastUntil, hintUntil, goUntil;
+        float toastUntil, goUntil;
 
         // Text is only rebuilt when the value behind it changes (no per-frame garbage).
         int shownTenths = -1, shownBell = int.MinValue, shownCoins = -1, shownTotal = -1, shownStreak = -1, shownJuggles = -1;
@@ -58,6 +60,18 @@ namespace DribbleToSchool.UI
             level.BellRang += OnBellRang;
             GameEvents.Raised += OnGameEvent;
             TutorialHint.Shown += OnHint;
+            // The Controls page's tour button plays the tour here and now.
+            ControlsTour.Replay = ReplayTour;
+        }
+
+        bool challengeGuideShown;
+
+        string LevelId { get { return level.level != null ? level.level.levelId : "test"; } }
+
+        void ReplayTour()
+        {
+            if (level.State == LevelState.Paused) level.Resume();
+            ControlsTour.Begin(root, level, pauseRect);
         }
 
         void OnDestroy()
@@ -71,6 +85,7 @@ namespace DribbleToSchool.UI
             }
             GameEvents.Raised -= OnGameEvent;
             TutorialHint.Shown -= OnHint;
+            if (ControlsTour.Replay == (System.Action)ReplayTour) ControlsTour.Replay = null;
             GameInput.UIBlockers.Clear();
         }
 
@@ -91,9 +106,10 @@ namespace DribbleToSchool.UI
             titleText = Text(t, "Title", 34, new Vector2(30f, -38f), new Vector2(600f, 50f), TextAnchor.MiddleLeft);
             if (leg != null)
             {
-                var legText = Text(t, "Leg", 26, new Vector2(30f, -74f), new Vector2(600f, 34f), TextAnchor.MiddleLeft);
+                // The trip from home so far joins it on a later leg ("Home » Bakery · Trip 2:15"; UpdateInfo).
+                legText = Text(t, "Leg", 26, new Vector2(30f, -74f), new Vector2(600f, 34f), TextAnchor.MiddleLeft);
                 legText.color = UITheme.InkSoft;
-                legText.text = leg;
+                legText.text = legBase = leg;
                 UIKit.Fit(legText, 20);
             }
             timeText = Text(t, "Time", 46, new Vector2(30f, -95f - legRoom), new Vector2(220f, 60f), TextAnchor.MiddleLeft);
@@ -117,33 +133,20 @@ namespace DribbleToSchool.UI
                 UIKit.Place(tuneRect, new Vector2(1f, 1f), new Vector2(-190f, -60f), new Vector2(130f, 80f), new Vector2(1f, 1f));
             }
 
-            // Touch controls: tinted glass discs with a thin coloured rim and soft white icons, one
-            // colour per action (jump blue, slide violet, kick orange then green) so they read on sight.
-            // Where they sit is GameInput's: a fan round the right thumb's rest, never in a row.
+            // Touch controls: one stick for the left thumb (walk back and forward, pull down to slide) and two tinted
+            // glass discs for the right (jump blue, kick orange then green), so each reads on sight. Where they sit is
+            // GameInput's.
+            stick = StickView.Create(root, "WalkStick");
+
+            // Jump: a figure springing up and forward.
             jumpButton = TouchButton.Create(root, "JumpButton", UITheme.Blue, true);
-            jumpButton.AddIcon(ProceduralSprites.ArrowUp, 0.42f, 0f, 0.6f);
+            jumpButton.AddIcon(ProceduralSprites.JumpIcon, 0.5f, 0f, 0.58f);
             jumpButton.AddLabel(Loc.T("hud.jump"), 28);
             jumpRect = (RectTransform)jumpButton.transform;
 
-            // Slide button, left of jump: the chevron turned down over a line of ground.
-            slideButton = TouchButton.Create(root, "SlideButton", SlideColor, true);
-            slideButton.AddIcon(ProceduralSprites.SlideIcon, 0.44f, 0f, 0.6f);
-            slideButton.AddLabel(Loc.T("hud.slide"), 28);
-            slideRect = (RectTransform)slideButton.transform;
-
-            // Walk buttons: the chevron turned to point back / forward.
-            leftButton = TouchButton.Create(root, "LeftButton", WalkColor, false);
-            leftButton.AddIcon(ProceduralSprites.ArrowUp, 0.42f, 90f);
-            leftRect = (RectTransform)leftButton.transform;
-            rightButton = TouchButton.Create(root, "RightButton", WalkColor, false);
-            rightButton.AddIcon(ProceduralSprites.ArrowUp, 0.42f, -90f);
-            // A flick down on this arrow slides without letting go: a small slide glyph under the arrow says so.
-            rightButton.AddIcon(ProceduralSprites.SlideIcon, 0.2f, 0f, 0.2f, new Color(1f, 1f, 1f, 0.3f));
-            rightRect = (RectTransform)rightButton.transform;
-
-            // Kick button: a ball, and a knob that follows the aiming drag.
+            // Kick button: a football, and a knob that follows the aiming drag.
             kickButton = TouchButton.Create(root, "KickButton", UITheme.Accent, true);
-            kickButton.AddIcon(ProceduralSprites.BallIcon, 0.4f, 0f, 0.6f, new Color(1f, 1f, 1f, 0.45f));
+            kickButton.AddIcon(ProceduralSprites.BallIcon, 0.42f, 0f, 0.6f, new Color(1f, 1f, 1f, 0.5f));
             kickButton.AddLabel(Loc.T("hud.kick"), 28);
             kickRect = (RectTransform)kickButton.transform;
             aimKnob = UIKit.Icon(kickButton.Content, "AimKnob", ProceduralSprites.SoftEdgeDisc, new Color(1f, 1f, 1f, 0.55f), 70f).rectTransform;
@@ -168,31 +171,15 @@ namespace DribbleToSchool.UI
             bigText = UIKit.Title(root, "Big", "", 150, Color.white);
             UIKit.Place(bigText.rectTransform, new Vector2(0.5f, 0.55f), Vector2.zero, new Vector2(1600f, 220f));
 
-            // Tutorial hint: a slim banner across the top, between the info card and the pause
-            // button, clear of the play area. Tap it (or its ×) to dismiss; it also fades on its own.
-            var hint = UIKit.Card(root, "Hint", new Color(1f, 1f, 1f, 0.92f));
-            hintCard = (RectTransform)hint.transform.parent;
-            hintCard.anchorMin = new Vector2(0f, 1f);
-            hintCard.anchorMax = new Vector2(1f, 1f);
-            hintCard.pivot = new Vector2(0.5f, 1f);
-            hintCard.offsetMin = new Vector2(720f, -150f);
-            hintCard.offsetMax = new Vector2(-200f, -34f);
-            hintText = UIKit.Label(hint.transform, "Text", "", 30, UITheme.Ink, TextAnchor.MiddleLeft, true);
-            UIKit.Stretch(hintText.rectTransform, 18f);
-            hintText.rectTransform.offsetMin = new Vector2(28f, 10f);
-            hintText.rectTransform.offsetMax = new Vector2(-96f, -10f);
-            hintText.resizeTextForBestFit = true;
-            hintText.resizeTextMinSize = 20;
-            hintText.resizeTextMaxSize = 30;
-            hintText.verticalOverflow = VerticalWrapMode.Truncate;
-            foreach (var g in hintCard.GetComponentsInChildren<Graphic>()) g.raycastTarget = false;
-            hint.raycastTarget = true;
-            var close = UIKit.Label(hint.transform, "Close", "\u00D7", 52, UITheme.InkSoft, TextAnchor.MiddleCenter, true);
-            UIKit.Place(close.rectTransform, new Vector2(1f, 0.5f), new Vector2(-48f, 2f), new Vector2(80f, 80f));
-            var dismiss = hint.gameObject.AddComponent<Button>();
-            dismiss.transition = Selectable.Transition.None;
-            dismiss.onClick.AddListener(DismissHint);
-            hintCard.gameObject.SetActive(false);
+            // If the kid is ever wedged somewhere: "Stuck? Back to the checkpoint".
+            var stuck = StuckHelper.Create(root, level, kid, () => level.RespawnAtCheckpoint());
+
+            // The camera stays on the kid: a ball kicked out of view is shown at the side of the screen, with how far it is.
+            BallMarker.Create(root, level, kid, ball);
+
+            // The coach: a card across the top, between the info card and the pause button, saying how to do what comes
+            // next (slide under, chip it over, wait for the green man...), a challenge's steps, and the first-time tips.
+            coach = ActionCoach.Create(root, level, kid, ball, (RectTransform)info.transform.parent, tuneRect != null ? tuneRect : pauseRect, stuck);
 
             // Respawn fade on top of everything but the modals.
             fade = UIKit.Icon(root, "Fade", null, new Color(0f, 0f, 0f, 0f), 10f);
@@ -255,18 +242,7 @@ namespace DribbleToSchool.UI
 
         void OnHint(string id)
         {
-            hintText.text = Loc.T("tut." + id);
-            hintCard.gameObject.SetActive(true);
-            var pop = hintCard.GetComponent<UIPopIn>();
-            if (pop == null) pop = UIKit.PopIn(hintCard.gameObject);
-            pop.Play();
-            hintUntil = Time.unscaledTime + 8f;
-        }
-
-        void DismissHint()
-        {
-            hintCard.gameObject.SetActive(false);
-            GameEvents.Raise(GameEventType.UIClick, Vector2.zero, 0.3f);
+            if (coach != null) coach.Hint(id);
         }
 
         void Toast(string text, Color color)
@@ -282,12 +258,26 @@ namespace DribbleToSchool.UI
         void Update()
         {
             if (root == null) return;
+            // The first time a level starts: the guided tour of the controls, before the clock starts.
+            if (level.State == LevelState.Intro && !level.Held && ControlsTour.ShouldStart) ControlsTour.Begin(root, level, pauseRect);
+            // A challenge, when it is first started here (not on each retry): how to play it, before its clock starts.
+            if (level.Objective != null && !challengeGuideShown && level.State == LevelState.Intro && !ControlsTour.Running)
+            {
+                challengeGuideShown = true;
+                ChallengeGuide.Open(root, level.Objective, LevelId, level, null);
+            }
             UpdateInfo();
             UpdateStateScreens();
             UpdateControls();
             UpdateMessages();
             UpdateBlockers();
         }
+
+        // The leg line with the trip so far (rebuilt once a second while it shows), and the pace's colour once it gets close.
+        Text legText;
+        string legBase;
+        int shownTrip = -1;
+        static readonly Color Hurry = new Color(0.85f, 0.55f, 0.1f);
 
         void UpdateInfo()
         {
@@ -301,9 +291,22 @@ namespace DribbleToSchool.UI
                 timeText.text = FormatTime(tenths / 10f, true);
             }
 
+            if (legText != null)
+            {
+                int trip = level.ShowsTrip ? Mathf.FloorToInt(level.TripTime) : -1;
+                if (trip != shownTrip)
+                {
+                    shownTrip = trip;
+                    legText.text = trip < 0 ? legBase : Loc.F("leg.trip", legBase, FormatTime(trip, false));
+                }
+            }
+
+            // The slot beside the clock: the school bell for the whole trip on a timed last leg, else this leg's own target.
             bool challenge = level.Objective != null;
+            bool bell = !challenge && level.BellEnabled;
+            bool pace = !challenge && !bell && level.PaceEnabled;
             statusText.gameObject.SetActive(challenge);
-            bellText.gameObject.SetActive(!challenge && level.BellEnabled);
+            bellText.gameObject.SetActive(bell || pace);
             if (challenge)
             {
                 if (Time.unscaledTime >= nextStatusRefresh)
@@ -312,7 +315,7 @@ namespace DribbleToSchool.UI
                     statusText.text = level.Objective.StatusText;
                 }
             }
-            else if (level.BellEnabled)
+            else if (bell)
             {
                 bool late = level.BellRung;
                 int bellKey = late ? -1 : Mathf.CeilToInt(level.BellTimeLeft);
@@ -320,7 +323,19 @@ namespace DribbleToSchool.UI
                 {
                     shownBell = bellKey;
                     bellText.text = late ? Loc.T("hud.late") : Loc.F("hud.bellIn", FormatTime(level.BellTimeLeft, false));
-                    bellText.color = late ? Late : level.BellTimeLeft <= 10f ? new Color(0.85f, 0.55f, 0.1f) : UITheme.Ink;
+                    bellText.color = late ? Late : level.BellTimeLeft <= 10f ? Hurry : UITheme.Ink;
+                }
+            }
+            else if (pace)
+            {
+                // A target, not a bell: it never rings and never says late, only "Behind" once the leg takes longer.
+                bool behind = level.PaceBehind;
+                int paceKey = behind ? -2 : 1000000 + Mathf.CeilToInt(level.PaceTimeLeft);
+                if (paceKey != shownBell)
+                {
+                    shownBell = paceKey;
+                    bellText.text = behind ? Loc.T("hud.behind") : Loc.F("hud.target", FormatTime(level.PaceTimeLeft, false));
+                    bellText.color = behind || level.PaceTimeLeft <= 10f ? Hurry : UITheme.Ink;
                 }
             }
 
@@ -335,8 +350,9 @@ namespace DribbleToSchool.UI
             {
                 shownStreak = ball.PerfectStreak;
                 shownJuggles = ball.JuggleCount;
+                // (Keepy-uppy counts the juggles beside the clock already.)
                 streakText.text = shownStreak > 0 ? Loc.F("hud.perfect", shownStreak)
-                    : shownJuggles > 0 ? Loc.F("hud.juggles", shownJuggles) : "";
+                    : shownJuggles > 0 && !(level.Objective is JuggleChallenge) ? Loc.F("hud.juggles", shownJuggles) : "";
             }
         }
 
@@ -348,7 +364,7 @@ namespace DribbleToSchool.UI
             if (lastState == LevelState.Paused)
             {
                 if (pauseModal != null) Destroy(pauseModal);
-                foreach (var name in new[] { "Settings", "ConfirmReset" })
+                foreach (var name in new[] { "Settings", "ConfirmReset", "ControlsGuide", "ChallengeGuide" })
                 {
                     var leftover = root.Find(name);
                     if (leftover != null) Destroy(leftover.gameObject);
@@ -364,25 +380,22 @@ namespace DribbleToSchool.UI
         void UpdateControls()
         {
             var input = GameInput.Instance;
-            bool playing = level.State == LevelState.Playing;
+            // Shown while playing, and while the controls tour holds the run (the player tries them under its light).
+            bool playing = level.State == LevelState.Playing || level.Held;
             bool show = playing && input != null;
             jumpRect.gameObject.SetActive(show);
-            slideRect.gameObject.SetActive(show);
             kickRect.gameObject.SetActive(show);
-            leftRect.gameObject.SetActive(show);
-            rightRect.gameObject.SetActive(show);
+            if (stick.gameObject.activeSelf != show)
+            {
+                stick.gameObject.SetActive(show);
+                if (!show) stick.Release();
+            }
             bool aiming = aimer != null && aimer.IsAiming;
             if (show)
             {
                 PlaceButton(jumpRect, input.JumpButtonNormalized);
                 jumpButton.SetState(input.JumpHeld, false);
-                // Slide glows while the kid is low under something (tap it again to keep sliding on).
-                PlaceButton(slideRect, input.SlideButtonNormalized);
-                slideButton.SetState(input.SlideHeld, kid != null && kid.IsLow && !kid.IsSliding);
-                PlaceButton(leftRect, input.LeftButtonNormalized);
-                leftButton.SetState(input.LeftHeld, false);
-                PlaceButton(rightRect, input.RightButtonNormalized);
-                rightButton.SetState(input.RightHeld, false);
+                stick.Show(input.StickRingNormalized, input.StickKnob, input.StickKnobScale, input.StickActive, input.SlideHeld);
 
                 // The kick button turns green and glows while the ball is close enough to kick.
                 PlaceButton(kickRect, input.KickButtonNormalized);
@@ -423,7 +436,11 @@ namespace DribbleToSchool.UI
                 toast.transform.localScale = Vector3.Lerp(toast.transform.localScale, Vector3.one, 1f - Mathf.Exp(-14f * Time.unscaledDeltaTime));
             }
 
-            if (level.State == LevelState.Intro)
+            if (level.State == LevelState.Intro && level.Held)
+            {
+                bigText.gameObject.SetActive(false);
+            }
+            else if (level.State == LevelState.Intro)
             {
                 bigText.gameObject.SetActive(true);
                 bigText.text = level.Objective != null && level.IntroTimeLeft > 0.35f
@@ -441,8 +458,6 @@ namespace DribbleToSchool.UI
                 bigText.gameObject.SetActive(false);
                 bigText.transform.localScale = Vector3.one;
             }
-
-            if (hintCard.gameObject.activeSelf && Time.unscaledTime > hintUntil) hintCard.gameObject.SetActive(false);
         }
 
         void UpdateBlockers()
@@ -451,8 +466,6 @@ namespace DribbleToSchool.UI
             GameInput.UIBlockers.Add(ScreenRect(pauseRect));
             if (tuneRect != null) GameInput.UIBlockers.Add(ScreenRect(tuneRect));
             if (tuning != null && tuning.visible) GameInput.UIBlockers.Add(tuning.ScreenRect);
-            // A tap on the hint dismisses it rather than counting as a game touch.
-            if (hintCard.gameObject.activeSelf) GameInput.UIBlockers.Add(ScreenRect(hintCard));
         }
 
         static Rect ScreenRect(RectTransform rt)
@@ -466,27 +479,44 @@ namespace DribbleToSchool.UI
 
         void ShowPause()
         {
-            var card = UIKit.Modal(root, "Pause", new Vector2(720f, 900f), out pauseModal);
+            bool skip = DevTuningPanel.Available && level.NextLevel != null;
+            bool howTo = level.Objective != null;
+            var card = UIKit.Modal(root, "Pause", new Vector2(720f, skip || howTo ? 1000f : 900f), out pauseModal);
             UIKit.Header(card.transform, Loc.T("pause.title"), 460f);
 
-            float y = -200f;
+            float y = skip || howTo ? -150f : -160f;
             PauseButton(card.transform, ref y, "pause.resume", UITheme.Green, () => level.Resume());
             PauseButton(card.transform, ref y, "pause.checkpoint", UITheme.Blue, () => { level.Resume(); level.RespawnAtCheckpoint(); });
             PauseButton(card.transform, ref y, "pause.restart", UITheme.Accent, () => level.BeginRun());
+            if (level.Objective != null)
+                PauseButton(card.transform, ref y, "pause.howToPlay", UITheme.Gold, () => ChallengeGuide.Open(root, level.Objective, LevelId, null, null));
+            PauseButton(card.transform, ref y, "pause.controls", new Color(0.25f, 0.62f, 0.7f), () => ControlsGuide.Open(root, null));
             PauseButton(card.transform, ref y, "pause.settings", new Color(0.6f, 0.5f, 0.8f), () => SettingsPanel.Open(root, null));
             PauseButton(card.transform, ref y, "pause.quit", UITheme.Red, () => level.QuitToMap());
-            if (DevTuningPanel.Available && level.NextLevel != null)
+            if (skip)
                 PauseButton(card.transform, ref y, "pause.skip", UITheme.Locked, () => level.LoadNextLevel());
         }
 
         static void PauseButton(Transform parent, ref float y, string key, Color color, UnityEngine.Events.UnityAction action)
         {
             var b = UIKit.Button(parent, key, Loc.T(key), color, action, 40);
-            UIKit.Place((RectTransform)b.transform, new Vector2(0.5f, 1f), new Vector2(0f, y), new Vector2(520f, 100f));
-            y -= 120f;
+            UIKit.Place((RectTransform)b.transform, new Vector2(0.5f, 1f), new Vector2(0f, y), new Vector2(520f, 96f));
+            y -= 112f;
         }
 
         // ---------- Results ----------
+
+        /// <summary>
+        /// "A medal is waiting" when this level has just walked its route all the way to school (or "your trophy is waiting" when that
+        /// was the last of the six), before the menu celebrates it (Cosmetics/RouteRewards, UI/SchoolRewardPanel); else null.
+        /// </summary>
+        string MedalWaiting()
+        {
+            var route = level.level != null ? RouteTable.Of(level.level.levelId) : null;
+            var data = Progression.SaveSystem.Data;
+            if (route == null || !Cosmetics.RouteRewards.IsWalked(route) || data.schoolMedals.Contains(route.id)) return null;
+            return Loc.T(Cosmetics.RouteRewards.AllWalked() && !data.schoolTrophy ? "results.allWalked" : "results.medal");
+        }
 
         /// <summary>Has this sticker earned a Locker Room reward? (The menu hands it out.)</summary>
         bool StickerRewardWaiting()
@@ -495,24 +525,99 @@ namespace DribbleToSchool.UI
             return applier != null && level.catalog != null && Cosmetics.StickerRewards.Pending(level.catalog, applier.catalog).Count > 0;
         }
 
+        // The results card's rows, top to bottom: the stars hang from the header, the lines start clear of them.
+        const float StarsY = -210f, LinesTop = -350f, LineStep = 52f, NoteHeight = 76f, NoteStep = 84f, BottomBlock = 345f;
+        static readonly Color NoteLate = new Color(0.82f, 0.25f, 0.2f);
+
         void ShowResults()
         {
             var r = level.Result;
-            var card = UIKit.Modal(root, "Results", new Vector2(1150f, 920f), out resultsModal);
-
             var stop = Destination;
-            string heading = r.isChallenge
-                ? Loc.T(r.stars > 0 ? "results.challengeDone" : "results.challengeFail")
-                : !r.beforeBell ? Loc.T("results.late")
-                : stop != null ? Loc.F("results.madeTo", Loc.T(stop.ToKey)) : Loc.T("results.made");
+
+            // What the card says, worked out first so it can be as tall as it needs (never taller than the screen).
+            var texts = new string[6];
+            var dones = new bool[6];
+            int count = 0;
+            string note = null;
+            Color noteColor = UITheme.InkSoft;
+            string heading;
+            bool late = !r.isChallenge && r.onRoute && r.timedTrip && !r.tripOnTime;
+            if (r.isChallenge)
+            {
+                heading = Loc.T(r.stars > 0 ? "results.challengeDone" : "results.challengeFail");
+                var o = level.Objective;
+                texts[count] = Loc.F("results.score", r.scoreText); dones[count++] = true;
+                for (int i = 0; o != null && i < o.starThresholds.Length && i < 3; i++)
+                {
+                    string need = Loc.F(o.lowerIsBetter ? "results.under" : "results.reach", o.FormatScore(o.starThresholds[i]));
+                    texts[count] = new string('*', i + 1) + "  " + need; dones[count++] = r.stars > i;
+                }
+            }
+            else
+            {
+                // The third star: every coin, and the sticker if the level has one.
+                string collect = Loc.F(r.hasSticker ? "results.coinsSticker" : "results.allCoins", r.coins, r.totalCoins);
+                if (!r.onRoute)
+                {
+                    // Off the routes (the test track): the level's own bell, as it always was.
+                    heading = Loc.T(r.beforeBell ? "results.made" : "results.late");
+                    texts[count] = Loc.T("results.reached"); dones[count++] = true;
+                    texts[count] = Loc.F("results.beforeBell", FormatTime(r.tripBell, false)); dones[count++] = r.beforeBell;
+                    texts[count] = collect; dones[count++] = r.collectedAll;
+                }
+                else if (!r.lastLeg)
+                {
+                    // A stop on the way: this leg's pace, and the trip so far against the school bell (no bell rings here).
+                    string to = stop != null ? Loc.T(stop.ToKey) : Loc.T("place.school.to");
+                    heading = Loc.F("results.madeTo", to);
+                    texts[count] = Loc.F("results.reachedTo", to); dones[count++] = true;
+                    if (!r.cozy) { texts[count] = Loc.F("results.pace", to, FormatTime(r.paceTarget, false)); dones[count++] = r.paceMet; }
+                    texts[count] = collect; dones[count++] = r.collectedAll;
+                    if (r.cozy) { texts[count] = Loc.T("results.cozy"); dones[count++] = true; }
+                    else if (r.tripContinuous && r.tripBell > 0f)
+                    {
+                        // Green while the trip is within the legs' targets so far: on track for the bell.
+                        texts[count] = Loc.F("results.tripSoFar", FormatTime(Mathf.Ceil(r.tripTime), false), FormatTime(r.tripBell, false));
+                        dones[count++] = r.tripTime <= r.tripTarget;
+                    }
+                    else note = Loc.T("results.untimedNote");
+                }
+                else
+                {
+                    // At school: the whole trip against the bell, or (played on its own) this leg's pace.
+                    heading = Loc.T(r.timedTrip ? r.tripOnTime ? "results.madeOnTime" : "results.lateSchool" : "results.made");
+                    texts[count] = Loc.T("results.reached"); dones[count++] = true;
+                    if (r.timedTrip)
+                    {
+                        texts[count] = Loc.F("results.tripBeforeBell", FormatTime(Mathf.Ceil(r.tripTime), false), FormatTime(r.tripBell, false));
+                        dones[count++] = r.tripOnTime;
+                    }
+                    else if (!r.cozy)
+                    {
+                        texts[count] = Loc.F("results.pace", Loc.T("place.school.to"), FormatTime(r.paceTarget, false));
+                        dones[count++] = r.paceMet;
+                    }
+                    texts[count] = collect; dones[count++] = r.collectedAll;
+                    if (r.cozy) { texts[count] = Loc.T("results.cozy"); dones[count++] = true; }
+                    if (late)
+                    {
+                        note = Loc.T(r.nextLocked ? "results.lateNote" : "results.lateAgain");
+                        noteColor = NoteLate;
+                    }
+                    else if (!r.cozy && !r.timedTrip) note = Loc.T(r.nextLocked ? "results.untimedLocked" : "results.untimedNote");
+                }
+            }
+
+            float contentBottom = -LinesTop + count * LineStep + (note != null ? NoteStep : 0f) + 54f;
+            var card = UIKit.Modal(root, "Results", new Vector2(1150f, Mathf.Clamp(contentBottom + BottomBlock, 920f, 1000f)), out resultsModal);
             UIKit.Header(card.transform, heading, 760f);
 
-            // Stars pop in one by one.
+            // Stars pop in one by one, each about its centre, the middle one a little lower.
             for (int i = 0; i < 3; i++)
             {
                 bool got = i < r.stars;
                 var star = UIKit.Icon(card.transform, "Star" + i, ProceduralSprites.Star, got ? UITheme.Gold : new Color(0f, 0f, 0f, 0.12f), 150f);
-                UIKit.Place(star.rectTransform, new Vector2(0.5f, 1f), new Vector2((i - 1) * 175f, -225f - (i == 1 ? 20f : 0f)), new Vector2(150f, 150f));
+                UIKit.Place(star.rectTransform, new Vector2(0.5f, 1f), new Vector2((i - 1) * 175f, StarsY - (i == 1 ? 18f : 0f)), new Vector2(150f, 150f), new Vector2(0.5f, 0.5f));
                 if (got)
                 {
                     var o = star.gameObject.AddComponent<Outline>();
@@ -524,23 +629,14 @@ namespace DribbleToSchool.UI
             }
             StartCoroutine(StarChimes(r.stars));
 
-            float y = -360f;
-            if (r.isChallenge && level.Objective != null)
+            float y = LinesTop;
+            for (int i = 0; i < count; i++) Line(card.transform, ref y, dones[i], texts[i]);
+            if (note != null)
             {
-                var o = level.Objective;
-                Line(card.transform, ref y, true, Loc.F("results.score", r.scoreText));
-                for (int i = 0; i < o.starThresholds.Length && i < 3; i++)
-                {
-                    string need = Loc.F(o.lowerIsBetter ? "results.under" : "results.reach", o.FormatScore(o.starThresholds[i]));
-                    Line(card.transform, ref y, r.stars > i, new string('*', i + 1) + "  " + need);
-                }
-            }
-            else
-            {
-                int target = level.level != null ? level.level.perfectStreakTarget : 0;
-                Line(card.transform, ref y, true, stop != null ? Loc.F("results.reachedTo", Loc.T(stop.ToKey)) : Loc.T("results.reached"));
-                Line(card.transform, ref y, r.beforeBell, Loc.F("results.beforeBell", FormatTime(level.BellTime, false)));
-                Line(card.transform, ref y, r.stars >= 3, Loc.F("results.streakCoins", target, r.coins, r.totalCoins));
+                var noteText = UIKit.Label(card.transform, "Note", note, 28, noteColor, TextAnchor.MiddleCenter, true);
+                UIKit.Place(noteText.rectTransform, new Vector2(0.5f, 1f), new Vector2(0f, y - 4f), new Vector2(960f, NoteHeight));
+                UIKit.Fit(noteText, 22);
+                y -= NoteStep;
             }
 
             var stats = UIKit.Label(card.transform, "Stats", Loc.F("results.time", FormatTime(r.time, true)) + "     " + Loc.F("results.lost", r.ballsLost),
@@ -551,36 +647,65 @@ namespace DribbleToSchool.UI
             {
                 var coins = UIKit.CoinAmount(card.transform, "Earned", 0, 64, new Color(0.85f, 0.55f, 0.1f));
                 UIKit.Place((RectTransform)coins.transform.parent, new Vector2(0.5f, 0f), new Vector2(0f, 250f), new Vector2(400f, 80f));
-                var count = coins.gameObject.AddComponent<UICountUp>();
-                count.target = r.coinsEarned;
-                count.delay = 0.6f + r.stars * 0.3f;
+                var countUp = coins.gameObject.AddComponent<UICountUp>();
+                countUp.target = r.coinsEarned;
+                countUp.delay = 0.6f + r.stars * 0.3f;
 
                 string extras = "";
                 if (r.newStars > 0) extras += Loc.F("results.newStars", r.newStars) + "    ";
                 if (r.stickerIsNew) extras += Loc.T(StickerRewardWaiting() ? "results.stickerReward" : "results.newSticker");
                 else if (r.stickerFound) extras += Loc.T("results.oldSticker");
+                // This leg finished the whole route to school: its medal (or, the last of the six, the trophy) waits on the map.
+                string medal = MedalWaiting();
+                if (medal != null) extras = medal;
                 var ex = UIKit.Label(card.transform, "Extras", extras, 32, new Color(0.8f, 0.35f, 0.55f), TextAnchor.MiddleCenter, true);
                 UIKit.Place(ex.rectTransform, new Vector2(0.5f, 0f), new Vector2(0f, 190f), new Vector2(1050f, 44f));
+                UIKit.Fit(ex, 22);
             }
 
-            float bx = 0f;
+            // The buttons. When a route's last leg leaves the next stage shut (late, or untimed and never on time), the way on is to walk
+            // the whole trip again from home: that is the main button, and Next only stays if the next level can be played anyway.
+            bool fromHome = !r.isChallenge && r.onRoute && r.lastLeg && !r.cozy && (late || r.nextLocked) && level.TripStart != null;
+            var nextLevel = level.NextLevel;
+            bool showNext = !fromHome || (!r.nextLocked && nextLevel != null);
+            int buttons = 2 + (fromHome ? 1 : 0) + (showNext ? 1 : 0);
+            float width = buttons > 3 ? 250f : 300f, step = buttons > 3 ? 270f : 340f;
+            int slot = 0;
             var retry = UIKit.Button(card.transform, "Retry", Loc.T("results.retry"), UITheme.Blue, () => level.BeginRun(), 40);
-            UIKit.Place((RectTransform)retry.transform, new Vector2(0.5f, 0f), new Vector2(bx - 340f, 85f), new Vector2(300f, 110f));
+            PlaceResultButton(retry, slot++, buttons, width, step);
             var map = UIKit.Button(card.transform, "Map", Loc.T("results.map"), UITheme.Paper, () => level.QuitToMap(), 40, UITheme.Ink);
-            UIKit.Place((RectTransform)map.transform, new Vector2(0.5f, 0f), new Vector2(bx, 85f), new Vector2(300f, 110f));
-            var next = UIKit.Button(card.transform, "Next", Loc.T(level.NextLevel != null ? "results.next" : "results.finish"), UITheme.Accent,
-                () => level.LoadNextLevel(), 44);
-            UIKit.Place((RectTransform)next.transform, new Vector2(0.5f, 0f), new Vector2(bx + 340f, 85f), new Vector2(300f, 110f));
-            if (r.stars > 0) next.gameObject.AddComponent<UIPulse>().amount = 0.04f;
+            PlaceResultButton(map, slot++, buttons, width, step);
+            if (showNext)
+            {
+                var next = UIKit.Button(card.transform, "Next", Loc.T(nextLevel != null ? "results.next" : "results.finish"), fromHome ? UITheme.Green : UITheme.Accent,
+                    () => level.LoadNextLevel(), 44);
+                PlaceResultButton(next, slot++, buttons, width, step);
+                if (r.stars > 0 && !fromHome) next.gameObject.AddComponent<UIPulse>().amount = 0.04f;
+            }
+            if (fromHome)
+            {
+                var home = UIKit.Button(card.transform, "FromHome", Loc.T("results.fromHome"), UITheme.Accent, () => level.LoadTripStart(), 44);
+                PlaceResultButton(home, slot++, buttons, width, step);
+                home.gameObject.AddComponent<UIPulse>().amount = 0.04f;
+            }
+        }
+
+        /// <summary>The results' buttons in a row along the bottom of the card, centred, <paramref name="step"/> apart.</summary>
+        static void PlaceResultButton(Button button, int slot, int count, float width, float step)
+        {
+            float x = (slot - (count - 1) * 0.5f) * step;
+            UIKit.Place((RectTransform)button.transform, new Vector2(0.5f, 0f), new Vector2(x, 85f), new Vector2(width, 110f));
         }
 
         void Line(Transform parent, ref float y, bool done, string text)
         {
+            // The dot is centred on its line; a long line (a translation) shrinks to fit rather than run into the next.
             var dot = UIKit.Icon(parent, "Tick", ProceduralSprites.Circle, done ? UITheme.Green : new Color(0f, 0f, 0f, 0.15f), 26f);
-            UIKit.Place(dot.rectTransform, new Vector2(0.5f, 1f), new Vector2(-440f, y), new Vector2(26f, 26f));
+            UIKit.Place(dot.rectTransform, new Vector2(0.5f, 1f), new Vector2(-440f, y - 9f), new Vector2(26f, 26f));
             var label = UIKit.Label(parent, "Line", text, 32, done ? UITheme.Ink : UITheme.InkSoft, TextAnchor.MiddleLeft, true);
             UIKit.Place(label.rectTransform, new Vector2(0.5f, 1f), new Vector2(40f, y), new Vector2(880f, 44f));
-            y -= 52f;
+            UIKit.Fit(label, 22);
+            y -= LineStep;
         }
 
         IEnumerator StarChimes(int stars)

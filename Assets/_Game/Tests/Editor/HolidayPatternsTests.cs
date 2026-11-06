@@ -146,7 +146,7 @@ namespace DribbleToSchool.Tests
                     var items = plan.layouts[v];
                     string where = "stage " + (stage + 1) + " layout " + v;
                     int demands = items.Count(i => i.kind == PatternKind.Hop || i.kind == PatternKind.Mid || i.kind == PatternKind.Tall || i.kind == PatternKind.Crate || i.kind == PatternKind.Stack ||
-                        i.kind == PatternKind.Car || i.kind == PatternKind.Slide || i.kind == PatternKind.Puddle || i.kind == PatternKind.SandPatch || i.kind == PatternKind.Spring || i.kind == PatternKind.Pipes)
+                        i.kind == PatternKind.Car || i.kind == PatternKind.Slide || i.kind == PatternKind.Puddle || i.kind == PatternKind.SandPatch || i.kind == PatternKind.Spring)
                         + plan.furniture.Count(f => f.kind == PatternKind.Gap);
                     Assert.GreaterOrEqual(demands, 4, "obstacles in " + where);
                     Assert.LessOrEqual(demands, 10, "obstacles in " + where);

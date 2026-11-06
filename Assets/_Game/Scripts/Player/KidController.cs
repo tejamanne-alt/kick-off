@@ -185,7 +185,7 @@ namespace DribbleToSchool.Player
             }
             else if (IsLow && IsGrounded)
             {
-                // Something overhead: shuffle on low, the way the arrows say (or on along the slide).
+                // Something overhead: shuffle on low, the way the stick says (or on along the slide).
                 float dir = Mathf.Abs(MoveAxis) > 0.1f ? Mathf.Sign(MoveAxis) : slideDirection;
                 if (!InputEnabled) dir = 0f;
                 if (dir != 0f) Facing = dir > 0f ? 1 : -1;
@@ -312,7 +312,7 @@ namespace DribbleToSchool.Player
         {
             lastSlidePressedTime = -10f;
             float relative = v.x - GroundVelocity.x;
-            // The way the arrows point, else the way the kid is already going, else the way they face.
+            // The way the stick points, else the way the kid is already going, else the way they face.
             if (Mathf.Abs(MoveAxis) > 0.1f) slideDirection = MoveAxis > 0f ? 1 : -1;
             else if (Mathf.Abs(relative) > 0.5f) slideDirection = relative > 0f ? 1 : -1;
             else slideDirection = Facing;

@@ -124,6 +124,7 @@ namespace DribbleToSchool.EditorTools
             static void Solidify(GameObject holder, bool breakable, int coins = 3)
             {
                 foreach (var reset in holder.GetComponentsInChildren<ResettableBody>(true)) Object.DestroyImmediate(reset);
+                foreach (var oneWay in holder.GetComponentsInChildren<OneWayBody>(true)) Object.DestroyImmediate(oneWay);   // it needs the body
                 foreach (var body in holder.GetComponentsInChildren<Rigidbody2D>(true)) Object.DestroyImmediate(body);
                 if (breakable) holder.AddComponent<RunBreakable>().coins = coins;
                 else holder.AddComponent<RunSolid>();
@@ -442,54 +443,6 @@ namespace DribbleToSchool.EditorTools
                     cone.GetComponent<MeshRenderer>().sharedMaterial = Art.solid;
                     cone.GetComponent<ConeShape>().Rebuild();
                 }
-            }
-
-            /// <summary>
-            /// A stretch where pipes roll down at the kid from <paramref name="spawnX"/> every few seconds,
-            /// removed at <paramref name="despawnX"/>. PipeSpawner makes its pipes while the game runs, so the
-            /// editor can't mark them; the template each one is copied from carries the RunSolid (and a circle
-            /// as big as the pipe, on the pipe's own body), which is how a pipe is something to crash into.
-            /// </summary>
-            public GameObject RunPipes(float spawnX, float interval, float despawnX)
-            {
-                var holder = Into("Pipes", () =>
-                {
-                    var go = new GameObject("PipeSpawner");
-                    go.transform.SetParent(root, false);
-                    go.transform.position = new Vector3(spawnX, 0.6f, 0f);
-                    var spawner = go.AddComponent<PipeSpawner>();
-                    spawner.interval = interval;
-                    spawner.despawnX = despawnX;
-                    spawner.firstDelay = 1.5f;
-                    spawner.material = Art.solid;
-
-                    var template = new GameObject("PipeTemplate");
-                    template.transform.SetParent(go.transform, false);
-                    template.transform.position = go.transform.position;
-                    if (KitModel(template.transform, "Works", "ConcretePipe", template.transform.position) == null)
-                        PipeSpawner.BuildPipe(template, spawner.radius, spawner.color, Art.solid);
-                    var circle = template.AddComponent<CircleCollider2D>();
-                    circle.radius = spawner.radius;
-                    template.AddComponent<RunSolid>();
-                    template.SetActive(false);   // copied for each rolling pipe
-                    spawner.template = template;
-
-                    // A stack of pipes beside the spawn point, lying across the street.
-                    Vector2 stack = new Vector2(spawnX, 0.6f) + new Vector2(0.9f, -0.2f);
-                    float r = spawner.radius;
-                    Vector2[] at = { new Vector2(-r, -0.55f + r), new Vector2(r, -0.55f + r), new Vector2(0f, -0.55f + r * 2.7f) };
-                    foreach (var o in at)
-                    {
-                        var pipe = new GameObject("StackedPipe");
-                        pipe.transform.SetParent(root, false);
-                        pipe.transform.position = new Vector3(stack.x + o.x, stack.y + o.y, 1.3f);
-                        var stacked = KitModel(pipe.transform, "Works", "ConcretePipe", pipe.transform.position);
-                        if (stacked != null) { stacked.localScale = new Vector3(1f, 1f, 0.75f); continue; }
-                        PipeSpawner.BuildPipe(pipe, r, spawner.color, Art.solid);
-                        pipe.transform.Find("Visual").localScale = new Vector3(1f, 1f, 0.75f);
-                    }
-                });
-                return holder;
             }
 
             /// <summary>A magnet, shield or turbo floating in the path (a glass orb that builds its own look when the stage loads).</summary>

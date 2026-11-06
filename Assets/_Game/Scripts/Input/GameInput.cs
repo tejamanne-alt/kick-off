@@ -29,26 +29,23 @@ namespace DribbleToSchool.InputHandling
     /// Turns raw touches, mouse and keyboard into game intents, once per frame.
     ///
     /// Touch layout (landscape, mirrored for left-handed play). Each thumb has a job:
-    ///  - The LEFT thumb walks and slides. Left / right arrow buttons (bottom-left): walk backward /
-    ///    forward; let go to stop, rock the thumb across to turn round. The slide button sits up and to
-    ///    the left of the forward arrow, and a quick flick DOWN on either arrow slides without letting
-    ///    go: the kid keeps walking into the slide. (Settings can move the slide button back beside
-    ///    jump and kick; the flick works either way.)
+    ///  - The LEFT thumb has one control, the walk stick: a ring with a knob. Touch anywhere in the
+    ///    bottom-left area and the stick comes to the thumb. Push the knob right to dribble forward,
+    ///    left to walk back, let go to stop. Pull it DOWN to slide: down and right slides forward,
+    ///    down and left slides back, straight down slides the way the kid is going.
     ///  - The RIGHT thumb jumps and kicks, two round buttons of one size on one baseline, JUMP at the
     ///    corner where the thumb rests and KICK a thumb's width to its left, so kicking is a flick
     ///    sideways and jumping a press, never a neighbour to mistake:
     ///    - Jump button: jump (hold for higher); press again in the air for a double jump. Swipe up
     ///      anywhere else does the same.
-    ///    - Slide (button or flick): a feet-first slide along the ground, low enough to pass under
-    ///      barriers. Swipe down anywhere else does the same.
     ///    - Kick button: drag from it in the direction you want the ball to go (the whole screen above
     ///      it is room to aim), then release. Longer drag = more power. A quick tap is a short pass the
     ///      way the kid is facing.
-    ///  - Quick tap anywhere else: touch the ball (perfect touch / juggle).
-    /// The kid is never under a thumb: the camera stands them clear of the buttons on the left of the
-    /// screen (<see cref="KidSafeScreenX"/>, used by CameraFollow2D).
-    /// A touch belongs to the button whose edge it is nearest (within a small slop), so there
-    /// are no gaps between buttons and no overlaps to guess at.
+    ///  - Quick tap anywhere else: touch the ball (perfect touch / juggle). A swipe down there slides.
+    /// The kid is never under a thumb: the camera stands them clear of the stick's area
+    /// (<see cref="KidSafeScreenX"/>, used by CameraFollow2D).
+    /// A touch on the right belongs to the button whose edge it is nearest (within a small slop),
+    /// so there are no gaps between buttons and no overlaps to guess at.
     ///
     /// Keyboard + mouse (editor testing):
     ///  - A / Left: walk back. D / Right: walk forward. Space / W / Up: jump (again in the air: double jump).
@@ -58,7 +55,7 @@ namespace DribbleToSchool.InputHandling
     [DefaultExecutionOrder(-100)]
     public class GameInput : MonoBehaviour
     {
-        enum Role { MoveLeft, MoveRight, Kick, Slide, Jump, TapOrSwipe }
+        enum Role { Stick, Kick, Slide, Jump, TapOrSwipe }
 
         class Pointer
         {
@@ -67,9 +64,9 @@ namespace DribbleToSchool.InputHandling
             public Vector2 start;
             public Vector2 current;
             public float startTime;
-            // For the flick down on an arrow: the highest recent point and when it was.
-            public float flickY;
-            public float flickTime;
+            // The walk stick: where its ring sits now and the point the knob is measured from (both move when the thumb runs off the ring).
+            public Vector2 stickCenter;
+            public Vector2 stickOrigin;
         }
 
         struct Sample
@@ -88,25 +85,27 @@ namespace DribbleToSchool.InputHandling
 
         [Header("Layout (in screen heights, so the buttons are the same physical size on any phone)")]
         [Tooltip("Where the right thumb rests, in the corner: the button pressed most.")]
-        public ControlSpec jumpButton = new ControlSpec(0.16f, 0.17f, 0.125f);
+        public ControlSpec jumpButton = new ControlSpec(0.18f, 0.185f, 0.145f);
         [Tooltip("Beside Jump on its baseline, a thumb's width to its left, close enough to flick across to. The aim drag has the whole screen above it.")]
-        public ControlSpec kickButton = new ControlSpec(0.45f, 0.17f, 0.125f);
-        [Tooltip("The slide button when Settings keeps it beside jump and kick: straight above Jump, a thumb's width away. Tap only.")]
-        public ControlSpec slideButton = new ControlSpec(0.16f, 0.46f, 0.125f);
-        [Tooltip("The slide button when it sits with the walking thumb (the default): x is how far to the left of the forward arrow's centre, y up from the bottom. A flick down on an arrow slides too.")]
-        public ControlSpec slideByArrows = new ControlSpec(0.15f, 0.46f, 0.125f);
-        [Tooltip("The left thumb's two arrows: back, then (bigger, it is held all the time) forward. Tucked into the corner so the thumb stays clear of the kid.")]
-        public ControlSpec walkBackButton = new ControlSpec(0.135f, 0.17f, 0.105f);
-        public ControlSpec walkForwardButton = new ControlSpec(0.42f, 0.19f, 0.14f);
+        public ControlSpec kickButton = new ControlSpec(0.515f, 0.185f, 0.145f);
+        [Tooltip("The walk stick's ring where it rests: centre in from the screen edge on its side and up from the bottom, and its radius. The knob travels to the ring.")]
+        public ControlSpec walkStick = new ControlSpec(0.28f, 0.3f, 0.17f);
+        [Tooltip("How far (screen heights) the stick may follow the thumb in from its resting place toward the middle of the screen, and up.")]
+        public float stickRoamIn = 0.12f;
+        public float stickRoamUp = 0.24f;
+        [Tooltip("The knob's size as a part of the ring's.")]
+        public float stickKnob = 0.44f;
+        [Tooltip("Push the knob sideways past this part of the ring to walk.")]
+        public float stickDeadZone = 0.22f;
+        [Tooltip("Pull the knob down past this part of the ring (more down than sideways) to slide; it slides again once it has come back above the release.")]
+        public float stickSlideDown = 0.5f;
+        public float stickSlideRelease = 0.3f;
         [Tooltip("Extra touch area around each button, in inches, so near misses still count.")]
         public float buttonSlopInches = 0.12f;
         [Tooltip("Keep the two clusters at least this far apart (screen heights) on narrow screens, by shrinking the layout.")]
         public float clusterGap = 0.1f;
-        [Tooltip("The kid stands at least this far (screen heights) to the right of the buttons on the left of the screen, so a thumb on them never covers the kid.")]
+        [Tooltip("The kid stands at least this far (screen heights) to the right of the controls on the left of the screen, so a thumb on them never covers the kid.")]
         public float kidClearance = 0.14f;
-
-        /// <summary>The gap (screen heights) between the two walk arrows.</summary>
-        const float ArrowGap = 0.04f;
 
         [Header("Gestures")]
         public float tapMaxDuration = 0.25f;
@@ -114,9 +113,6 @@ namespace DribbleToSchool.InputHandling
         public float swipeUpMinInches = 0.35f;
         public float swipeDownMinInches = 0.35f;
         public float swipeMaxDuration = 0.35f;
-        [Tooltip("A flick down on a walk arrow: this far (inches) within the window (seconds) slides, without letting go.")]
-        public float flickDownInches = 0.3f;
-        public float flickWindow = 0.3f;
 
         [Header("References")]
         public Camera worldCamera;
@@ -125,9 +121,9 @@ namespace DribbleToSchool.InputHandling
         public float MoveAxis { get; private set; }
         public bool JumpPressed { get; private set; }
         public bool JumpHeld { get; private set; }
-        /// <summary>Slide button tapped, swiped down or S / Down pressed this frame.</summary>
+        /// <summary>The stick was pulled down, a swipe down or S / Down this frame: slide.</summary>
         public bool SlidePressed { get; private set; }
-        /// <summary>True while the finger (or key) for the slide is down; used by the HUD.</summary>
+        /// <summary>True while the stick is held down (or the key): used by the HUD.</summary>
         public bool SlideHeld { get; private set; }
         public bool TouchPressed { get; private set; }
         /// <summary>True while a finger drags from the kick button.</summary>
@@ -150,14 +146,22 @@ namespace DribbleToSchool.InputHandling
         /// </summary>
         public bool Blocked { get; set; }
 
-        // The buttons as the HUD draws them: normalized screen rects (origin bottom-left), square on
-        // screen. Left-handed play swaps the two clusters but keeps "back" on the left of "forward"
-        // so the arrows still point the right way.
-        public Rect JumpButtonNormalized { get { return Normalized(JumpDisc()); } }
-        public Rect KickButtonNormalized { get { return Normalized(KickDisc()); } }
-        public Rect SlideButtonNormalized { get { return Normalized(SlideDisc()); } }
-        public Rect LeftButtonNormalized { get { return Normalized(WalkDisc(false)); } }
-        public Rect RightButtonNormalized { get { return Normalized(WalkDisc(true)); } }
+        // The controls as the HUD draws them: normalized screen rects (origin bottom-left), square on
+        // screen. Left-handed play swaps the stick and the two buttons.
+        public Rect JumpButtonNormalized { get { return Normalized(Current.jump); } }
+        public Rect KickButtonNormalized { get { return Normalized(Current.kick); } }
+        /// <summary>The walk stick's ring: where the thumb has brought it, or where it rests.</summary>
+        public Rect StickRingNormalized { get { return Normalized(StickActive ? new Round { center = StickCenter, radius = StickRadius } : Current.stick); } }
+        /// <summary>The stick's ring where it rests (the tour points at it).</summary>
+        public Rect StickHomeNormalized { get { return Normalized(Current.stick); } }
+        /// <summary>True while a thumb holds the stick.</summary>
+        public bool StickActive { get; private set; }
+        /// <summary>Where the knob is, as a part of the ring's radius (each axis -1..1, up and right positive).</summary>
+        public Vector2 StickKnob { get; private set; }
+        /// <summary>The knob's size as a part of the ring's.</summary>
+        public float StickKnobScale { get { return stickKnob; } }
+        Vector2 StickCenter;
+        float StickRadius;
 
         /// <summary>
         /// A move held by a script instead of a finger (the store screenshot tour): -1..1, 0 = none.
@@ -165,7 +169,7 @@ namespace DribbleToSchool.InputHandling
         /// </summary>
         public static float ScriptedMove;
 
-        /// <summary>True while the finger (or key) for that direction is down; used by the HUD.</summary>
+        /// <summary>True while the stick (or key) points that way.</summary>
         public bool LeftHeld { get; private set; }
         public bool RightHeld { get; private set; }
 
@@ -179,60 +183,46 @@ namespace DribbleToSchool.InputHandling
             public float EdgeDistance(Vector2 p) { return (p - center).magnitude - radius; }
         }
 
-        /// <summary>Where every touch button sits on one screen (in pixels, origin bottom-left).</summary>
+        /// <summary>Where every touch control sits on one screen (in pixels, origin bottom-left).</summary>
         public struct ControlLayout
         {
-            public Round jump, kick, slide, walkBack, walkForward;
+            public Round jump, kick;
+            /// <summary>The walk stick's ring where it rests.</summary>
+            public Round stick;
+            /// <summary>The area a touch takes the stick in, and that its ring stays inside.</summary>
+            public Rect stickArea;
         }
 
         /// <summary>
         /// The whole layout for a screen of the given size, safe area and handedness. Pure (it reads no
         /// screen state), so it can be checked on any aspect ratio: see Tests/Editor/ControlLayoutTests.
-        /// <paramref name="slideWithArrows"/> puts the slide button up and to the left of the forward arrow
-        /// (the walking thumb's), else straight above jump.
         /// </summary>
-        public ControlLayout LayoutOn(float width, float height, Rect safeArea, bool leftHanded, bool slideWithArrows = true)
+        public ControlLayout LayoutOn(float width, float height, Rect safeArea, bool leftHanded)
         {
-            float scale = LayoutScale(width / Mathf.Max(1f, height), slideWithArrows);
+            float scale = LayoutScale(width / Mathf.Max(1f, height));
             var layout = new ControlLayout();
             layout.jump = Place(jumpButton, true, leftHanded, width, height, safeArea, scale);
             layout.kick = Place(kickButton, true, leftHanded, width, height, safeArea, scale);
-            // Left-handed, the arrows move to the right-hand side and swap places, so "back" is still the one on the left:
-            // the big forward arrow takes the corner (its rim just inside the edge), back sits inside it, a gap apart.
-            ControlSpec back = walkBackButton, forward = walkForwardButton;
-            if (leftHanded)
-            {
-                forward.x = forward.radius + 0.02f;
-                back.x = forward.x + forward.radius + ArrowGap + back.radius;
-            }
-            layout.walkBack = Place(back, false, leftHanded, width, height, safeArea, scale);
-            layout.walkForward = Place(forward, false, leftHanded, width, height, safeArea, scale);
-            if (slideWithArrows)
-            {
-                // Above the gap, on the screen's left of the forward arrow (x counts from the cluster's own edge).
-                ControlSpec slide = slideByArrows;
-                slide.x = forward.x + (leftHanded ? slideByArrows.x : -slideByArrows.x);
-                layout.slide = Place(slide, false, leftHanded, width, height, safeArea, scale);
-            }
-            else
-            {
-                layout.slide = Place(slideButton, true, leftHanded, width, height, safeArea, scale);
-            }
+            layout.stick = Place(walkStick, false, leftHanded, width, height, safeArea, scale);
+            // The stick's area: from the screen's edge on its side in to its resting ring plus the roam, from the bottom up to
+            // the ring's top plus the roam.
+            float reach = Mathf.Abs(layout.stick.center.x - (leftHanded ? width : 0f)) + layout.stick.radius + stickRoamIn * scale * height;
+            float top = layout.stick.center.y + layout.stick.radius + stickRoamUp * scale * height;
+            layout.stickArea = leftHanded ? Rect.MinMaxRect(width - reach, 0f, width, top) : Rect.MinMaxRect(0f, 0f, reach, top);
             return layout;
         }
 
         /// <summary>
-        /// How far across the screen (0..1) the kid must stand to be clear of every button on the left half
-        /// of it: the right edge of the farthest one, plus <paramref name="clearance"/> screen heights.
+        /// How far across the screen (0..1) the kid must stand to be clear of every control on the left half of it: the
+        /// inner edge of the stick's area (where the ring can go) or of the farthest button there, plus
+        /// <paramref name="clearance"/> screen heights.
         /// </summary>
         public static float KidSafeScreenXOn(ControlLayout layout, float width, float height, float clearance)
         {
             float edge = 0f, half = width * 0.5f;
             if (layout.jump.center.x < half) edge = Mathf.Max(edge, layout.jump.center.x + layout.jump.radius);
             if (layout.kick.center.x < half) edge = Mathf.Max(edge, layout.kick.center.x + layout.kick.radius);
-            if (layout.slide.center.x < half) edge = Mathf.Max(edge, layout.slide.center.x + layout.slide.radius);
-            if (layout.walkBack.center.x < half) edge = Mathf.Max(edge, layout.walkBack.center.x + layout.walkBack.radius);
-            if (layout.walkForward.center.x < half) edge = Mathf.Max(edge, layout.walkForward.center.x + layout.walkForward.radius);
+            if (layout.stick.center.x < half) edge = Mathf.Max(edge, layout.stickArea.xMax);
             return Mathf.Clamp01((edge + clearance * height) / Mathf.Max(1f, width));
         }
 
@@ -259,24 +249,47 @@ namespace DribbleToSchool.InputHandling
             };
         }
 
-        ControlLayout Current { get { return LayoutOn(Screen.width, Screen.height, Screen.safeArea, GameSettings.LeftHanded, GameSettings.SlideWithWalkThumb); } }
+        ControlLayout Current { get { return LayoutOn(Screen.width, Screen.height, Screen.safeArea, GameSettings.LeftHanded); } }
 
         /// <summary>
-        /// How much the layout shrinks so both clusters fit side by side: 1 on phones and tablets (4:3 and
-        /// wider), less on anything narrower.
+        /// How much the layout shrinks so the stick's area and the buttons fit side by side: 1 on phones and tablets
+        /// (4:3 and wider), less on anything narrower.
         /// </summary>
-        float LayoutScale(float aspect, bool slideWithArrows)
+        float LayoutScale(float aspect)
         {
-            float left = Mathf.Max(walkBackButton.x + walkBackButton.radius, walkForwardButton.x + walkForwardButton.radius);
+            float left = walkStick.x + walkStick.radius + stickRoamIn;
             float right = Mathf.Max(jumpButton.x + jumpButton.radius, kickButton.x + kickButton.radius);
-            if (!slideWithArrows) right = Mathf.Max(right, slideButton.x + slideButton.radius);
             return Mathf.Clamp((aspect - clusterGap) / (left + right), 0.6f, 1f);
         }
 
-        Round JumpDisc() { return Current.jump; }
-        Round KickDisc() { return Current.kick; }
-        Round SlideDisc() { return Current.slide; }
-        Round WalkDisc(bool forward) { return forward ? Current.walkForward : Current.walkBack; }
+        /// <summary>
+        /// Where the stick's ring goes when a thumb lands at <paramref name="touch"/>: under the thumb, kept whole inside the
+        /// stick's area (and off the very bottom edge).
+        /// </summary>
+        public static Vector2 StickCenterFor(Vector2 touch, Round home, Rect area)
+        {
+            float r = home.radius;
+            float minY = Mathf.Min(home.center.y, r * 1.15f);
+            return new Vector2(Mathf.Clamp(touch.x, area.xMin + r, area.xMax - r), Mathf.Clamp(touch.y, minY, Mathf.Max(minY, area.yMax - r)));
+        }
+
+        /// <summary>
+        /// What the stick says, from where the knob is (<paramref name="offset"/>, from the point the thumb went down, in
+        /// pixels) on a ring of <paramref name="radius"/>: <paramref name="move"/> -1, 0 or 1, and whether it is pulled down
+        /// to slide. <paramref name="down"/> carries between frames: <paramref name="slideNow"/> is true on the frame it goes
+        /// down, and it must come back above the release line before it slides again. Pulled down, a smaller push sideways
+        /// still says which way, so down-left slides back and down-right forward. Pure, for the tests.
+        /// </summary>
+        public static void ReadStick(Vector2 offset, float radius, float deadZone, float slideDown, float slideRelease, ref bool down, out float move, out bool slideNow)
+        {
+            float r = Mathf.Max(1f, radius);
+            float x = offset.x / r, y = offset.y / r;
+            bool was = down;
+            down = was ? y < -slideRelease : y < -slideDown && -y > Mathf.Abs(x) * 0.7f;
+            slideNow = down && !was;
+            float dead = down ? deadZone * 0.6f : deadZone;
+            move = Mathf.Abs(x) > dead ? Mathf.Sign(x) : 0f;
+        }
 
         static Rect Normalized(Round r)
         {
@@ -308,6 +321,8 @@ namespace DribbleToSchool.InputHandling
             MoveAxis = 0f;
             LeftHeld = RightHeld = JumpPressed = JumpHeld = SlidePressed = SlideHeld = KickHeld = TouchPressed = false;
             KickAiming = KickReleased = KickTapped = ResetPressed = PausePressed = DebugTogglePressed = false;
+            StickActive = false;
+            StickKnob = Vector2.zero;
 
             samples.Clear();
             GatherPointers(samples);
@@ -316,10 +331,12 @@ namespace DribbleToSchool.InputHandling
             if (Blocked)
             {
                 pointers.Clear();
+                stickDown = false;
                 foreach (var s in samples) ignored.Add(s.id);
                 return;
             }
 
+            var layout = Current;
             ended.Clear();
             foreach (var kv in pointers)
             {
@@ -338,7 +355,7 @@ namespace DribbleToSchool.InputHandling
                 if (pointers.TryGetValue(s.id, out p))
                 {
                     p.current = s.position;
-                    OnPointerMove(p);
+                    OnPointerMove(p, layout);
                 }
                 else if (ignored.Contains(s.id))
                 {
@@ -351,20 +368,39 @@ namespace DribbleToSchool.InputHandling
                 }
                 else
                 {
-                    p = new Pointer { id = s.id, start = s.position, current = s.position, startTime = Time.unscaledTime, flickY = s.position.y, flickTime = Time.unscaledTime };
-                    p.role = ClassifyDown(s.position);
+                    p = new Pointer { id = s.id, start = s.position, current = s.position, startTime = Time.unscaledTime };
+                    p.role = ClassifyDown(s.position, layout);
+                    if (p.role == Role.Stick)
+                    {
+                        // The stick comes to the thumb; the knob is measured from where the thumb went down.
+                        p.stickCenter = StickCenterFor(s.position, layout.stick, layout.stickArea);
+                        p.stickOrigin = s.position;
+                        stickDown = false;
+                    }
                     pointers[s.id] = p;
                     if (p.role == Role.Jump) JumpPressed = true;
                     if (p.role == Role.Slide) SlidePressed = true;
                 }
             }
 
+            float stickMove = 0f;
             foreach (var p in pointers.Values)
             {
                 switch (p.role)
                 {
-                    case Role.MoveLeft: LeftHeld = true; break;
-                    case Role.MoveRight: RightHeld = true; break;
+                    case Role.Stick:
+                    {
+                        StickActive = true;
+                        StickCenter = p.stickCenter;
+                        StickRadius = layout.stick.radius;
+                        Vector2 offset = p.current - p.stickOrigin;
+                        bool slideNow;
+                        ReadStick(offset, StickRadius, stickDeadZone, stickSlideDown, stickSlideRelease, ref stickDown, out stickMove, out slideNow);
+                        if (slideNow) SlidePressed = true;
+                        if (stickDown) SlideHeld = true;
+                        StickKnob = Vector2.ClampMagnitude(offset / Mathf.Max(1f, StickRadius), 1f);
+                        break;
+                    }
                     case Role.Jump: JumpHeld = true; break;
                     case Role.Slide: SlideHeld = true; break;
                     case Role.Kick:
@@ -378,6 +414,9 @@ namespace DribbleToSchool.InputHandling
                         break;
                 }
             }
+            if (!StickActive) stickDown = false;
+            if (stickMove > 0f) RightHeld = true;
+            else if (stickMove < 0f) LeftHeld = true;
 
             ReadGameplayKeys();
             if (ScriptedMove != 0f)
@@ -388,25 +427,27 @@ namespace DribbleToSchool.InputHandling
             MoveAxis = (RightHeld ? 1f : 0f) - (LeftHeld ? 1f : 0f);
         }
 
+        bool stickDown;
+
         bool IsDrag(Pointer p)
         {
             return (p.current - p.start).magnitude > tapMaxMoveInches * Dpi;
         }
 
         /// <summary>
-        /// The button a new touch belongs to: the one whose edge it is nearest, counting a touch
-        /// inside a button as nearer than one in another button's slop. Anywhere else is a tap or swipe.
+        /// What a new touch is for: the jump or kick button whose edge it is nearest (counting a touch inside a button
+        /// as nearer than one in another button's slop), else the walk stick if it lands in the stick's area and no other
+        /// thumb holds it, else a tap or swipe.
         /// </summary>
-        Role ClassifyDown(Vector2 pos)
+        Role ClassifyDown(Vector2 pos, ControlLayout layout)
         {
             float slop = buttonSlopInches * Dpi;
             Role best = Role.TapOrSwipe;
             float bestEdge = slop;
-            Consider(Role.Jump, JumpDisc(), pos, ref best, ref bestEdge);
-            if (!AnyPointerWithRole(Role.Kick)) Consider(Role.Kick, KickDisc(), pos, ref best, ref bestEdge);
-            Consider(Role.Slide, SlideDisc(), pos, ref best, ref bestEdge);
-            Consider(Role.MoveLeft, WalkDisc(false), pos, ref best, ref bestEdge);
-            Consider(Role.MoveRight, WalkDisc(true), pos, ref best, ref bestEdge);
+            Consider(Role.Jump, layout.jump, pos, ref best, ref bestEdge);
+            if (!AnyPointerWithRole(Role.Kick)) Consider(Role.Kick, layout.kick, pos, ref best, ref bestEdge);
+            if (best != Role.TapOrSwipe) return best;
+            if (layout.stickArea.Contains(pos) && !AnyPointerWithRole(Role.Stick)) return Role.Stick;
             return best;
         }
 
@@ -418,15 +459,21 @@ namespace DribbleToSchool.InputHandling
             bestEdge = edge;
         }
 
-        void OnPointerMove(Pointer p)
+        void OnPointerMove(Pointer p, ControlLayout layout)
         {
-            if (p.role == Role.MoveLeft || p.role == Role.MoveRight)
+            if (p.role == Role.Stick)
             {
-                // Rocking the thumb across to the other arrow switches direction without lifting.
-                if (p.role == Role.MoveLeft && WalkDisc(true).EdgeDistance(p.current) <= 0f) p.role = Role.MoveRight;
-                else if (p.role == Role.MoveRight && WalkDisc(false).EdgeDistance(p.current) <= 0f) p.role = Role.MoveLeft;
-                // A flick down on an arrow slides without letting go of it: the kid keeps walking into the slide.
-                if (FlickedDown(p)) SlidePressed = true;
+                // A thumb that runs off the ring drags the stick after it (inside its area), so the push keeps reading
+                // the way the thumb is going.
+                Vector2 offset = p.current - p.stickOrigin;
+                float reach = layout.stick.radius * 1.15f;
+                if (offset.magnitude > reach)
+                {
+                    Vector2 shift = offset - offset.normalized * reach;
+                    Vector2 moved = StickCenterFor(p.stickCenter + shift, layout.stick, layout.stickArea);
+                    p.stickOrigin += moved - p.stickCenter;
+                    p.stickCenter = moved;
+                }
                 return;
             }
             if (p.role != Role.TapOrSwipe) return;
@@ -443,36 +490,6 @@ namespace DribbleToSchool.InputHandling
                 p.role = Role.Slide;
                 SlidePressed = true;
             }
-        }
-
-        /// <summary>
-        /// Did the finger just flick down? It must drop <see cref="flickDownInches"/> within <see cref="flickWindow"/>
-        /// seconds of its highest recent point (a thumb resting on an arrow, or drifting slowly, never counts), and
-        /// it needs to come up again before it can flick again.
-        /// </summary>
-        bool FlickedDown(Pointer p)
-        {
-            return FlickDown(ref p.flickY, ref p.flickTime, p.current.y, Time.unscaledTime, flickDownInches * Dpi, flickWindow);
-        }
-
-        /// <summary>
-        /// The flick test itself, on its own so it can be checked: <paramref name="refY"/> and <paramref name="refTime"/>
-        /// are the finger's highest recent height and when it was there (the caller keeps them between calls), the
-        /// finger is now at <paramref name="y"/> at time <paramref name="now"/>. True when it has dropped at least
-        /// <paramref name="minDrop"/> within <paramref name="window"/> seconds of that point.
-        /// </summary>
-        public static bool FlickDown(ref float refY, ref float refTime, float y, float now, float minDrop, float window)
-        {
-            if (y >= refY || now - refTime > window)
-            {
-                refY = y;
-                refTime = now;
-                return false;
-            }
-            if (refY - y < minDrop) return false;
-            refY = y;
-            refTime = now;
-            return true;
         }
 
         void OnPointerUp(Pointer p)

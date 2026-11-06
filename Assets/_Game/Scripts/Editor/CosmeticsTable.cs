@@ -7,7 +7,8 @@ namespace DribbleToSchool.EditorTools
     /// The shop's contents. Edit here and rebuild; assets are regenerated from
     /// this table. Ids must stay stable once players own them. Sticker rewards are
     /// never sold: completing a chapter's sticker set or reaching a sticker count
-    /// unlocks them (see Cosmetics/StickerRewards).
+    /// unlocks them (see Cosmetics/StickerRewards); nor are the rewards for walking
+    /// routes all the way to school (see Cosmetics/RouteRewards).
     /// </summary>
     public static class CosmeticsTable
     {
@@ -37,6 +38,15 @@ namespace DribbleToSchool.EditorTools
             var row = R(id, name, cat, rarity, 0, pattern, primary, secondary, accent);
             row.unlock = unlock;
             row.unlockValue = value;
+            return row;
+        }
+
+        /// <summary>A reward for walking routes all the way to school (Cosmetics/RouteRewards): unlocked by how many, not by coins.</summary>
+        static Row School(string id, string name, CosmeticCategory cat, Rarity rarity, int routes, CosmeticPattern pattern, Color primary, Color secondary, Color accent)
+        {
+            var row = R(id, name, cat, rarity, 0, pattern, primary, secondary, accent);
+            row.unlock = CosmeticUnlock.SchoolRoutes;
+            row.unlockValue = routes;
             return row;
         }
 
@@ -76,6 +86,8 @@ namespace DribbleToSchool.EditorTools
                 Sticker("ball_set_beach", "Surf's Up", Ball, Rare, Set, 3, CosmeticPattern.Diagonal, C(0.2f, 0.75f, 0.8f), C(0.98f, 0.88f, 0.6f), white),
                 Sticker("ball_ms_15", "Holo Foil", Ball, Epic, Count, 15, CosmeticPattern.Holo, C(0.85f, 0.95f, 1f), C(1f, 0.85f, 0.95f), white),
                 Sticker("ball_ms_23", "Golden Album", Ball, Epic, Count, 23, CosmeticPattern.Foil, C(1f, 0.8f, 0.28f), C(0.75f, 0.48f, 0.08f), white),
+                // Every way to school walked: the trophy's ball, gold with the school's navy stars.
+                School("ball_top_class", "Top of the Class", Ball, Epic, 6, CosmeticPattern.Star, C(1f, 0.8f, 0.26f), C(0.16f, 0.2f, 0.42f), white),
 
                 // ---------- Backpack flags ----------
                 R("flag_none", "No Flag", Flag, Common, 0, CosmeticPattern.None, white, white, white),
@@ -93,6 +105,8 @@ namespace DribbleToSchool.EditorTools
                 R("flag_stars", "Star Banner", Flag, Rare, 150, CosmeticPattern.Star, C(0.15f, 0.2f, 0.45f), C(1f, 0.82f, 0.25f), white),
                 Sticker("flag_ms_10", "Gold Seal", Flag, Rare, Count, 10, CosmeticPattern.CenterDot, C(0.1f, 0.55f, 0.6f), C(1f, 0.8f, 0.25f), white),
                 Sticker("flag_set_site", "Site Safety", Flag, Rare, Set, 4, CosmeticPattern.Stripes, C(1f, 0.8f, 0.1f), ink, white),
+                // Three ways to school walked: a gold star on the park's green.
+                School("flag_way_finder", "Way Finder", Flag, Rare, 3, CosmeticPattern.Star, C(0.2f, 0.56f, 0.36f), C(1f, 0.82f, 0.25f), white),
 
                 // ---------- Outfits (shirt, shorts, collar/accent) ----------
                 R("outfit_school", "School Uniform", Outfit, Common, 0, CosmeticPattern.Solid, C(0.97f, 0.97f, 0.99f), C(0.22f, 0.23f, 0.42f), C(0.78f, 0.2f, 0.24f)),
@@ -120,6 +134,8 @@ namespace DribbleToSchool.EditorTools
                 R("trail_rainbow", "Rainbow", Trail, Epic, 650, CosmeticPattern.Rainbow, white, white, white),
                 Sticker("trail_ms_5", "Confetti", Trail, Common, Count, 5, CosmeticPattern.Gradient, C(1f, 0.55f, 0.75f), C(1f, 0.85f, 0.3f), white),
                 Sticker("trail_ms_20", "Holo Streak", Trail, Epic, Count, 20, CosmeticPattern.Holo, white, white, white),
+                // Every way to school walked: gold fading into the school's navy.
+                School("trail_victory_lap", "Victory Lap", Trail, Epic, 6, CosmeticPattern.Gradient, C(1f, 0.82f, 0.26f), C(0.2f, 0.3f, 0.72f), white),
             };
         }
     }

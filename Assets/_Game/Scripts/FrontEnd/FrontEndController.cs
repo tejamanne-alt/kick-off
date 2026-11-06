@@ -134,7 +134,21 @@ namespace DribbleToSchool.FrontEnd
             // Stickers earn Locker Room items: hand out (and celebrate, once) whatever they've
             // earned that the save doesn't own yet, which also brings an older save up to date.
             var earned = StickerRewards.GrantEarned(levels, cosmetics);
-            if (earned.Count > 0) StickerRewardPanel.Open(root, earned, () => Show(FrontEndScreenId.Shop));
+            System.Action stickers = () => { if (earned.Count > 0) StickerRewardPanel.Open(root, earned, () => Show(FrontEndScreenId.Shop)); };
+
+            // Walking to school earns a medal for each route walked all the way, the trophy for every way, and Locker Room
+            // prizes (Cosmetics/RouteRewards): celebrated once, first, then the stickers' rewards.
+            var medals = RouteRewards.NewMedals();
+            bool trophy = RouteRewards.TrophyIsNew();
+            var prizes = RouteRewards.GrantEarned(cosmetics);
+            if (medals.Count > 0 || trophy || prizes.Count > 0)
+            {
+                RouteRewards.MarkCelebrated(medals, trophy);
+                if (medals.Count == 0 && !trophy)
+                    foreach (var route in RouteTable.All) if (RouteRewards.IsWalked(route)) medals.Add(route);   // (a new prize alone: the medals so far)
+                SchoolRewardPanel.Open(root, levels, cosmetics, medals, trophy, prizes, () => { Show(FrontEndScreenId.Shop); stickers(); }, stickers);
+            }
+            else stickers();
 
             if (!splashShown)
             {

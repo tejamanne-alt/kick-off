@@ -19,7 +19,7 @@ namespace DribbleToSchool.Levels
         public float bellTime = 45f;
 
         [Header("Stars")]
-        [Tooltip("Third star: best perfect-touch streak needed (coins join this in Phase 4).")]
+        [Tooltip("A perfect-touch streak to aim for. Not a star goal any more: the third star is every coin and the sticker (Progression/StarRules).")]
         public int perfectStreakTarget = 3;
     }
 }

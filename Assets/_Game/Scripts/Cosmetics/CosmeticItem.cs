@@ -21,7 +21,7 @@ namespace DribbleToSchool.Cosmetics
 
     public enum Rarity { Common, Rare, Epic }
 
-    /// <summary>How an item is unlocked: bought with coins, or earned with stickers (never sold).</summary>
+    /// <summary>How an item is unlocked: bought with coins, or earned with stickers or by walking to school (never sold).</summary>
     public enum CosmeticUnlock
     {
         Coins,
@@ -29,6 +29,8 @@ namespace DribbleToSchool.Cosmetics
         StickerSet,
         /// <summary>Finding a number of stickers in all (unlockValue = how many).</summary>
         StickerCount,
+        /// <summary>Walking a number of the routes all the way to school (unlockValue = how many; 6 is every way: Cosmetics/RouteRewards).</summary>
+        SchoolRoutes,
     }
 
     /// <summary>One cosmetic: ball skin, backpack flag, outfit or trail. Visuals are drawn from these values.</summary>
@@ -41,16 +43,22 @@ namespace DribbleToSchool.Cosmetics
         public Rarity rarity;
         [Tooltip("Coin price. 0 = free / owned from the start.")]
         public int price;
-        [Tooltip("Coins, or a sticker reward the Locker Room never sells (see StickerRewards).")]
+        [Tooltip("Coins, or a reward the Locker Room never sells (stickers: StickerRewards; routes walked to school: RouteRewards).")]
         public CosmeticUnlock unlock = CosmeticUnlock.Coins;
-        [Tooltip("StickerSet: the chapter whose stickers must all be found. StickerCount: how many stickers.")]
+        [Tooltip("StickerSet: the chapter whose stickers must all be found. StickerCount: how many stickers. SchoolRoutes: how many routes walked to school.")]
         public int unlockValue;
         public CosmeticPattern pattern;
         public Color primary = Color.white;
         public Color secondary = Color.black;
         public Color accent = Color.gray;
 
-        /// <summary>Earned with stickers rather than bought.</summary>
-        public bool IsStickerReward { get { return unlock != CosmeticUnlock.Coins; } }
+        /// <summary>Earned rather than bought (with stickers or by walking to school): the Locker Room never sells it.</summary>
+        public bool IsReward { get { return unlock != CosmeticUnlock.Coins; } }
+
+        /// <summary>Earned with stickers.</summary>
+        public bool IsStickerReward { get { return unlock == CosmeticUnlock.StickerSet || unlock == CosmeticUnlock.StickerCount; } }
+
+        /// <summary>Earned by walking routes all the way to school.</summary>
+        public bool IsRouteReward { get { return unlock == CosmeticUnlock.SchoolRoutes; } }
     }
 }

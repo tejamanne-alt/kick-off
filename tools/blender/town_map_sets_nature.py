@@ -24,16 +24,16 @@ class NatureSets:
         self.line_of([(-260, 77), (1488, 77)], 'Street', 'PicketFence2', 16, [(0.34, 0.47, 0.38)], tag='parkfence')
         for sx in (-1, 1):
             self.add('Works', 'GatePillar', gate[0] + sx * 18, 342, 0, 0.7, [(0.92, 0.88, 0.80)], tag='gate')
-        # L19: the park gate: dogs, a net tunnel, a fallen tree, a bench
+        # L19 (from home, in at the gate): dogs, a net tunnel, a bench, and the fallen tree before the bandstand (its stop)
         n = self.node('L19')
         for dx, dy in ((-96, -14), (-112, 8), (-80, 24), (-86, -34), (-128, -22)):
             self.add('Animals', 'Dog', n[0] + dx, n[1] + dy, rng.uniform(0, 360), 3.2, None, tag='dog')
-        self.add('Barriers', 'NetTunnel', n[0] + 96, n[1] - 58, 20, 1.7, None, tag='nettunnel')
-        self.add('Barriers', 'FallenTrunk', n[0] + 30, n[1] - 104, 250, 1.6, None, tag='trunk')
+        self.add('Barriers', 'NetTunnel', n[0] + 36, n[1] - 62, 20, 1.7, None, tag='nettunnel')
+        self.add('Barriers', 'FallenTrunk', n[0] + 58, n[1] - 114, 250, 1.6, None, tag='trunk')
         self.add('Street', 'Bench', n[0] - 40, n[1] + 40, 0)
         self.add('Street', 'Bin', n[0] - 56, n[1] + 40, 0)
         self.op(lambda cv: ellipse(cv, (n[0] - 100, n[1] + 4), 48, 30, 0, C_GRASS_L, 0.55, blur=3.0))
-        # L20: three fountains on paved plazas, trampolines, a play tower
+        # L20 (from the bandstand): three fountains on paved plazas, trampolines, a play tower (before the park cafe, its stop)
         n = self.node('L20')
         for k, (dx, dy) in enumerate(((-92, 50), (0, 80), (92, 50))):
             c = (n[0] + dx, n[1] + dy)
@@ -42,35 +42,41 @@ class NatureSets:
             for j in range(6):
                 a = j * math.pi / 3 + 0.4
                 self.op(lambda cv, c=c, a=a, j=j: disc(cv, (c[0] + math.cos(a) * 41, c[1] + math.sin(a) * 41), 3.2, C_FLOWERS[j % 5], 0.95))
-        for dx, dy in ((-84, -76), (-12, -100), (62, -78)):
+        for dx, dy in ((-84, -76), (-12, -100), (50, -88)):
             self.add('Leisure', 'Trampoline', n[0] + dx, n[1] + dy, 0, 2.4, None, tag='trampoline')
             self.op(lambda cv, c=(n[0] + dx, n[1] + dy): disc(cv, c, 19, (0.62, 0.52, 0.40), 0.6))
-        self.add('Barriers', 'PlayTower', n[0] + 150, n[1] - 92, 180, 2.0, None, tag='playtower')
-        # L21: the playground: a stream with rope swings over it, trampolines, a climbing frame, a net tunnel
+        self.add('Barriers', 'PlayTower', n[0] - 36, n[1] - 50, 180, 2.0, None, tag='playtower')
+        # L21 (from the park cafe): the playground: a stream with rope swings over it, trampolines, a climbing frame, a net tunnel (before
+        # the boathouse, its stop)
         n = self.node('L21')
-        sx = n[0] + 112
+        sx = n[0] + 40
         stream = self.smooth([(sx + 10, 78), (sx - 6, 130), (sx + 6, 178), (sx + 18, 232), (sx + 2, 290), (sx + 8, 340)])
         self.op(lambda cv: stroke(cv, stream, 20, C_BANK, 0.9, cap=True))
         self.op(lambda cv: stroke(cv, stream, 14, C_WATER, 1.0, cap=True))
         self.op(lambda cv: stroke(cv, [(a + 2, b) for a, b in stream], 4, C_WATER_D, 0.6))
-        yb = 178
+        yb = G.project((sx + 6, 200), self.roads['park_path'].curve)[0][1]       # the little bridge where the path crosses it
         self.op(lambda cv: rect(cv, (sx + 6, yb), 30, 22, 0, (0.62, 0.46, 0.30), 1.0), post=True)
         for k in range(-4, 5):
             self.op(lambda cv, k=k: stroke(cv, [(sx - 9, yb + k * 2.4), (sx + 21, yb + k * 2.4)], 0.5, (0.40, 0.28, 0.18), 0.7), post=True)
-        self.add('Leisure', 'SwingTree', sx + 40, 108, 180, 1.0, None, tag='swingtree')
+        self.add('Leisure', 'SwingTree', sx + 38, 108, 180, 1.0, None, tag='swingtree')
         self.add('Leisure', 'SwingTree', sx - 38, 122, 180, 0.9, None, tag='swingtree')
-        for dx, dy in ((60, 30), (96, 36)):
-            self.add('Leisure', 'Trampoline', sx + dx, 150 + dy - 30, 0, 2.3, None, tag='trampoline')
-        self.add('Leisure', 'SwingFrame', sx + 118, 112, 180, 1.5, None, tag='frame')
-        self.add('Barriers', 'NetTunnel', sx + 92, 214, 90, 1.7, None, tag='nettunnel')
-        self.op(lambda cv: rect(cv, (sx + 90, 134), 150, 84, 0, (0.68, 0.52, 0.40), 0.85))
+        for dx, dy in ((30, 260), (62, 268)):
+            self.add('Leisure', 'Trampoline', sx + dx, dy, 0, 2.3, None, tag='trampoline')
+        self.add('Leisure', 'SwingFrame', sx - 84, 116, 180, 1.5, None, tag='frame')
+        self.add('Barriers', 'NetTunnel', sx + 20, 296, 90, 1.7, None, tag='nettunnel')
+        self.op(lambda cv: rect(cv, (sx - 4, 128), 118, 80, 0, (0.68, 0.52, 0.40), 0.85))
+        self.op(lambda cv: rect(cv, (sx + 44, 278), 70, 50, 0, (0.68, 0.52, 0.40), 0.85))
         for r_ in ((sx + 14, 100), (sx - 14, 150), (sx + 20, 255), (sx - 6, 318)):
             self.add('Plants', 'Reeds', r_[0], r_[1], rng.uniform(0, 360), 2.0, None, tag='reeds')
-        # L22: the duck pond north of the path: stepping stones across it, a rope ferry (a raft on a rope), a fountain, ducks
+        self.playground = (sx - 4, 128)
+        # L22 (from the boathouse at the pond's west end): the duck pond north of the path: stepping stones across it, a rope ferry (a raft
+        # on a rope), a fountain, ducks (before the long walk past the lawn arena to grandpa's allotment, its stop)
         n = self.node('L22')
-        pc = (n[0] + 68, 118)
+        pc = (n[0] + 42, 116)
+        lake = (pc[0] - 24, 116)
+        self.op(lambda cv: (ellipse(cv, lake, 106, 42, 0, (0.70, 0.66, 0.52), 0.5, blur=4.0), ellipse(cv, lake, 100, 36, 0, C_BANK, 0.9, blur=2.0),
+                            ellipse(cv, lake, 94, 31, 0, C_WATER, 1.0, blur=0.8)))
         self.add('Leisure', 'DuckPond', pc[0], pc[1], 0, 3.2, None, tag='pond')
-        self.op(lambda cv: ellipse(cv, pc, 62, 40, 0, (0.70, 0.66, 0.52), 0.5, blur=4.0))
         for k in range(7):
             self.add('Terrain', 'SteppingStone', pc[0] - 40 + k * 13, pc[1] + 14 - (k % 2) * 4, rng.uniform(0, 360), 1.6, None, tag='stone')
         self.op(lambda cv: stroke(cv, [(pc[0] - 56, pc[1] - 16), (pc[0] + 56, pc[1] - 16)], 0.9, (0.25, 0.22, 0.18), 0.9), post=True)
@@ -97,17 +103,18 @@ class NatureSets:
         self.op(lambda cv: (disc(cv, (c5[0], (y0 + y1) / 2), 15, C_WHITE, 0.9), disc(cv, (c5[0], (y0 + y1) / 2), 13.8, (0.55, 0.70, 0.42), 1.0)), post=True)
         for sx_ in (-1, 1):
             self.box(c5[0] + sx_ * 70, (y0 + y1) / 2, 0.15, 5.4, 2.2, 0, (0.95, 0.95, 0.95), tag='goal', roof='frame')
-        # L23: the garden east of the railway: a fountain, a swing, seagulls, a crossing of the East Street, the school's side steps
+        # L23 (from grandpa's allotment, under the railway by the park's tunnel): the school garden east of the line: a fountain, a swing,
+        # seagulls, a crossing of the East Street, the school's side steps
         n = self.node('L23')
-        fc = (n[0] - 62, n[1] + 76)
+        fc = (n[0] + 70, n[1] + 78)
         self.op(lambda cv: (disc(cv, fc, 32, (0.74, 0.72, 0.67), 1.0), disc(cv, fc, 28, (0.84, 0.82, 0.77), 1.0)))
         self.add('Leisure', 'Fountain', fc[0], fc[1], 0, 3.6, None, tag='fountain')
-        self.add('Leisure', 'SwingSet', n[0] + 52, n[1] + 70, 180, 1.6, None, tag='swing')
-        self.op(lambda cv: rect(cv, (n[0] + 52, n[1] + 74), 60, 34, 0, (0.68, 0.52, 0.40), 0.85))
+        self.add('Leisure', 'SwingSet', n[0] + 150, n[1] + 72, 180, 1.6, None, tag='swing')
+        self.op(lambda cv: rect(cv, (n[0] + 150, n[1] + 76), 60, 34, 0, (0.68, 0.52, 0.40), 0.85))
         for k in range(8):
-            self.add('Animals', 'SeagullStanding', n[0] - 100 + rng.uniform(0, 190), n[1] + 40 + rng.uniform(0, 100), rng.uniform(0, 360), 3.0, None, tag='bird')
+            self.add('Animals', 'SeagullStanding', n[0] + rng.uniform(0, 190), n[1] + 40 + rng.uniform(0, 100), rng.uniform(0, 360), 3.0, None, tag='bird')
         for k in range(3):
-            self.add('Animals', 'Seagull', n[0] - 60 + k * 50, n[1] + 112 + rng.uniform(-10, 10), rng.uniform(0, 360), 3.0, None, z=4.0, tag='bird')
+            self.add('Animals', 'Seagull', n[0] + 20 + k * 50, n[1] + 112 + rng.uniform(-10, 10), rng.uniform(0, 360), 3.0, None, z=4.0, tag='bird')
         self.op(lambda cv: zebra(cv, (1855, 300), (0, 1), 100, 22.0, 4.6, 4.2), post=True)
         self.add('Street', 'PedSignal', 1815, 288, 90)
         self.add('Street', 'PedSignal', 1895, 312, 270)
@@ -132,8 +139,8 @@ class NatureSets:
                 fx, fy = bx + rng.uniform(-18, 18), by + rng.uniform(-7, 7)
                 self.op(lambda cv, fx=fx, fy=fy, c=rng.choice(C_FLOWERS): disc(cv, (fx, fy), 2.6, c, 0.95))
         avoid = [(n_['x'], n_['y'], 38) for n_ in self.nodes.values() if True]
-        avoid += [(fc[0], fc[1], 44), (pc[0], pc[1], 84), (c5[0], 283, 96), (sx + 90, 150, 90)]
-        avoid += [(self.node('L20')[0] + dx, self.node('L20')[1] + dy, 52) for dx, dy in ((-92, 50), (0, 80), (92, 50), (-84, -76), (-12, -100), (62, -78), (150, -92))]
+        avoid += [(fc[0], fc[1], 44), (pc[0] - 24, pc[1], 104), (c5[0], 283, 96), (self.playground[0], self.playground[1], 70), (sx + 44, 278, 44)]
+        avoid += [(self.node('L20')[0] + dx, self.node('L20')[1] + dy, 52) for dx, dy in ((-92, 50), (0, 80), (92, 50), (-84, -76), (-12, -100), (50, -88), (-36, -50))]
         self.trees_in(poly, 78, 5, 13, 23, avoid=avoid, kinds=('park',), kit_share=0.14, blossom=0.06)
         self.trees_in(L.AREAS['garden']['poly'], 14, 6, 12, 19, avoid=avoid, kinds=('park',), kit_share=0.1, blossom=0.08)
 
@@ -149,21 +156,33 @@ class NatureSets:
             for sg in (-1, 1):
                 self.add('Street', 'Bollard', p[0] - t[1] * 9.5 * sg, p[1] + t[0] * 9.5 * sg, 0, 1.0, tag='post')
             s += 36.0
-        # L11: boardwalk over the sand, a surf school's racks, a sign and flags
-        for k, ds in enumerate((96, 126, 156)):
-            p, t = self.frame('L11', ds, 42)
-            self.add('Barriers', 'SurfRack', p[0], p[1], bearing(t) + 180, 1.25, None, tag='surfrack')
-        p, t = self.frame('L11', 188, 36)
-        self.add('Leisure', 'SignBoard', p[0], p[1], bearing(t) + 180, 1.3, [(0.30, 0.62, 0.74)], tag='sign')
-        for ds in (84, 200):
-            p, t = self.frame('L11', ds, -32)
-            self.add('Street', 'BannerFlag', p[0], p[1], 0, 1.4, [(0.30, 0.62, 0.74)], tag='flag')
+        # L11 (from home down the West Street, along Seaside Road and out on the boardwalk to the surf school, its stop): at the corner
+        # of Seaside Road the beach shop with its racks of boards, buckets and spades and beach balls out front, the sign to the beach,
+        # people with boards and towels on their way down; then the boardwalk's flags where it leaves the road for the sand
+        n = self.node('L11')
+        shop = (n[0] + 120, 1096.0)
+        tints = [(0.55, 0.82, 0.88), (0.95, 0.55, 0.30), (0.95, 0.93, 0.86)]
+        O = P.origin_for('Buildings', 'ShopFruit', shop, 180.0, 1.0)
+        self.add('Buildings', 'ShopFruit', O[0], O[1], 180.0, 1.0, tints, tag='shop')
+        self.world.occupy(P.footprint('Buildings', 'ShopFruit', O[0], O[1], 180.0, 1.0, pad=0.4))
+        P.shop_awnings(self.items, shop, 180.0, 8.8 * PPM, tints[1])
+        for dx in (-30, 30):
+            self.add('Barriers', 'SurfRack', shop[0] + dx, shop[1] + 6, 0, 1.0, None, tag='surfrack')
+        for k in range(4):
+            self.add('Leisure', 'BucketSpade', shop[0] - 12 + k * 8, shop[1] + 5, rng.uniform(0, 360), 2.2, None, tag='bucket')
+        for k, col in enumerate(((0.95, 0.30, 0.25), (0.98, 0.85, 0.25), (0.25, 0.55, 0.90))):
+            self.box(shop[0] + 42 + k * 6, shop[1] + 6, 0.5, 0.5, 0.5, 0, col, tag='beachball', roof='round')
+        self.add('Leisure', 'SignBoard', n[0] + 46, 1110, 135, 1.3, [(0.30, 0.62, 0.74)], tag='sign')
+        for k in range(5):
+            self.person(n[0] + 200 + k * 46 + rng.uniform(-8, 8), 1103 + rng.uniform(-2, 2), 90)
+        for x in (1430, 1520):
+            self.add('Street', 'BannerFlag', x, 1112, 0, 1.4, [(0.30, 0.62, 0.74)], tag='flag')
         # L12: wet sand with several tidal channels running to the sea, and boat trestles
         n = self.node('L12')
+        # (the surf school's hut stands just west of them, on the sand by the boardwalk)
         chans = [[(n[0] - 82, 1132), (n[0] - 70, 1190), (n[0] - 96, 1250), (n[0] - 86, 1320), (n[0] - 118, 1392)],
                  [(n[0] - 2, 1136), (n[0] + 16, 1198), (n[0] - 4, 1262), (n[0] + 22, 1318)],
-                 [(n[0] + 76, 1132), (n[0] + 60, 1180), (n[0] + 84, 1232)],
-                 [(n[0] - 160, 1130), (n[0] - 150, 1184), (n[0] - 176, 1230)]]
+                 [(n[0] + 76, 1132), (n[0] + 60, 1180), (n[0] + 84, 1232)]]
         self.op(lambda cv: ellipse(cv, (n[0] + 4, 1236), 150, 90, 8, (0.70, 0.60, 0.44), 0.55, blur=10.0))
         for ch in chans:
             ch = self.smooth(ch)
@@ -185,13 +204,14 @@ class NatureSets:
         for k in range(6):
             a = rng.uniform(0, 6.28)
             self.add('Terrain', rng.choice(['Boulder3', 'Boulder4', 'BoulderLarge1', 'RockCluster']), n[0] + 160 + math.cos(a) * 34, n[1] + 70 + math.sin(a) * 40, rng.uniform(0, 360), rng.uniform(1.0, 1.5), None, tag='rock')
-        # L14: sandcastles, surf racks, the boardwalk crossing the promenade, near the school
+        # L14 (from the beach cafe, up the boardwalk to the promenade and the school): sandcastles on the sand beside it, surf racks, the
+        # boardwalk crossing the promenade
         n = self.node('L14')
         for k in range(6):
-            self.add('Leisure', 'SandCastle', n[0] - 56 + k * 20, n[1] + 98 + (k % 2) * 14, rng.uniform(0, 360), 3.4, None, tag='castle')
-            self.add('Leisure', 'BucketSpade', n[0] - 50 + k * 20, n[1] + 114 - (k % 2) * 8, rng.uniform(0, 360), 2.4, None, tag='bucket')
-        for dx in (96, 124):
-            self.add('Barriers', 'SurfRack', n[0] + dx, n[1] + 96, 180, 1.25, None, tag='surfrack')
+            self.add('Leisure', 'SandCastle', n[0] - 150 + (k % 3) * 22, n[1] - 30 + (k // 3) * 44 + (k % 2) * 8, rng.uniform(0, 360), 3.4, None, tag='castle')
+            self.add('Leisure', 'BucketSpade', n[0] - 142 + (k % 3) * 22, n[1] - 14 + (k // 3) * 44, rng.uniform(0, 360), 2.4, None, tag='bucket')
+        for dx in (-40, -12):
+            self.add('Barriers', 'SurfRack', n[0] + dx, n[1] - 108, 180, 1.25, None, tag='surfrack')
         ce = self.B['graph'].nodes['ce']
         self.op(lambda cv: rect(cv, (ce[0], ce[1]), 62, 62, 0, (0.66, 0.50, 0.34), 1.0), post=True)
         for k in range(-7, 8):
@@ -203,9 +223,10 @@ class NatureSets:
         for dy in (-170, 160):
             self.add('Leisure', 'CheckpointFlag', n[0] + 14, n[1] + dy, 0, 2.2, None, tag='gate')
             self.add('Leisure', 'CheckpointFlag', n[0] + 56, n[1] + dy, 180, 2.2, None, tag='gate')
-        # parasols, towels, palms, dune grass, a lifeguard tower: scattered over the rest of the sand
+        # parasols, towels, palms, dune grass: scattered over the rest of the sand (the lifeguard tower is a stop: town_map_sets_stops)
         placed = []
-        keep = [(self.node(k)[0], self.node(k)[1], 60) for k in ('L11', 'L12', 'L13', 'L14', 'C03')]
+        keep = [(self.node(k)[0], self.node(k)[1], 60) for k in ('L12', 'L13', 'L14', 'C03')]
+        keep += [(s['x'], s['y'], 40) for s in self.B.get('stops', {}).values() if s['route'] == 'beach']
         n_ok, tries = 0, 0
         while n_ok < 34 and tries < 6000:
             tries += 1
@@ -222,7 +243,6 @@ class NatureSets:
             self.add('Leisure', 'Parasol', x, y, rng.uniform(0, 360), 1.2, [rng.choice([(0.88, 0.42, 0.36), (0.30, 0.62, 0.74), (0.94, 0.78, 0.30), (0.40, 0.68, 0.46)]), (0.97, 0.93, 0.84)], tag='parasol')
             for k in range(rng.randint(1, 2)):
                 self.add('Leisure', 'BeachTowel', x + rng.uniform(-18, 18), y + rng.uniform(8, 22), rng.uniform(0, 360), 1.2, [rng.choice([(0.34, 0.66, 0.78), (0.9, 0.5, 0.5), (0.95, 0.85, 0.35)]), (0.97, 0.93, 0.84)], tag='towel')
-        self.add('Leisure', 'LifeguardTower', 2210, 800, 90, 1.2, None, tag='lifeguard')
         for k in range(14):
             x, y = rng.uniform(1520, 2440), rng.uniform(600, 1350)
             if self.world.kind_at((x, y)) == 'sand' and self.sand_dist((x, y)) > 150:

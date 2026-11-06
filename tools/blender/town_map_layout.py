@@ -10,8 +10,10 @@
 # for its nodes. From the north:
 #   park       up the West Street, west by Rose Street and Park Lane to the park gate, east through the long park that fills the
 #              north of the town (a path), under the railway by a short tunnel, past the school garden, down the East Street
-#   underpass  Station Road (y 380): up the West Street, east through the road tunnels under the railway's two tracks
-#   site       Yard Road (y 600): up the West Street, then east through the building site (a track between two fenced yards)
+#   underpass  Station Road (y 380): up the West Street, east past the building site to the station's hall at the foot of the railway
+#              bridge, then through the road tunnels under the railway's two tracks
+#   site       Yard Road (y 600): up the West Street, then east through the building site (a track between two fenced yards, the site
+#              office at a security gate halfway)
 #   street     Elm Street (y 820): out of the house and straight east (Elm Street, Hill Road, Garden Lane), then the East Street
 #   market     down the West Street, east along Market Street (y 958), up the East Street (Main Road)
 #   beach      Seaside Road (y 1136) along the south, then the boardwalk along the sand to the school's promenade
@@ -20,7 +22,8 @@
 # The school is by the sea, in the north-east; its football pitch is in its grounds.
 #
 # The label rules the solver (town_map_nodes.py) and the validator (town_map_check.py) use: the map screen draws the names of the
-# focused route's levels only, so a name keeps 30 px from its own route, off the other routes' lines, 6 px from every node disc and
+# focused route's levels only (the other routes' nodes at 70 % then), so a name keeps 30 px from its own route, off the other routes'
+# lines, 6 px from its own route's node discs and the other routes' discs as drawn (70 %), 6 px from its own route's stop markers and
 # 6 px from the names of its own route's levels.
 import math
 
@@ -147,9 +150,9 @@ AREAS = {
     'school': dict(kind='school', poly=[(1890, 70), (2240, 70), (2240, 552), (1890, 552)]),
     'market': dict(kind='market', poly=[(380, 850), (470, 850), (470, 884), (1860, 884), (1860, 1100), (380, 1100)]),     # the West Street's lower half and Market Street
     'market_w': dict(kind='market', poly=[(-60, 1000), (380, 1000), (380, 1094), (-60, 1094)]),   # the shop parade west of the West Street (C02's shop windows)
-    'site': dict(kind='site', poly=[(800, 428), (1462, 428), (1462, 578), (800, 578)]),            # the building site's yard, north of the track
-    'site_s': dict(kind='site', poly=[(800, 622), (1462, 622), (1462, 772), (800, 772)]),          # and south of it
-    'station': dict(kind='station', poly=[(1472, 430), (1812, 430), (1812, 556), (1472, 556)]),
+    'site': dict(kind='site', poly=[(800, 428), (1400, 428), (1400, 578), (800, 578)]),            # the building site's yard, north of the track
+    'site_s': dict(kind='site', poly=[(800, 622), (1230, 622), (1230, 772), (800, 772)]),          # and south of it (Hill Road's terraces east of it)
+    'station': dict(kind='station', poly=[(1404, 422), (1812, 422), (1812, 556), (1404, 556)]),    # the ticket hall's forecourt at the foot of the bridge, the platforms
     'home_plot': dict(kind='reserve', poly=[(296, 740), (380, 740), (380, 815), (296, 815)]),
     'court': dict(kind='reserve', poly=[(60, 780), (210, 780), (210, 930), (60, 930)]),
     'fields': dict(kind='field', poly=[(-400, -225), (2800, -225), (2800, 70), (-400, 78)]),
@@ -160,34 +163,92 @@ AREAS = {
 }
 PLACES = {'home': 'H', 'school': 'S'}
 
-# What each route's levels are on (the "Level and map" table of the README, checked by town_map_levels.py): every story node of a
-# route lies in the zone named here. 'residential' is the town's default ground (no special area), the rest are the AREAS above or
-# the CHECK_ZONES below.
-LEVEL_ZONES = {'street': 'residential', 'market': 'market', 'beach': 'sand', 'underpass': 'underpass', 'site': 'site_works', 'park': 'park'}
-LAST_ZONE = ('L23', 'school_gate')
+# ------------------------------------------------------------------ the trip: every route is one walk from home to school, each level one leg of it
+# (Levels/RouteTable.cs). A route's first level starts at home, each later one at the stop the level before it ended at, and the last
+# ends at the school. The stops are real places on the picture (STOPS: a point on the route, snapped to it; town_map_sets_stops.py builds
+# what stands there), and each level's node lies on its own leg, near its START, so that it reads as "this level starts here":
+#   * the first level of a route on the first stretch the route has to itself, past the stem it shares with other routes near home
+#     (West Street and Elm Street: the solver keeps it past the point where its route is 75 px from every other route);
+#   * every later level shortly after the stop it starts from (AFTER_STOP px along the route, when its anchor is None).
+# The solver keeps every node 100 px from every stop (a stop's marker is 21 px across the line, a node 75) and inside its own leg.
+STOPS = {
+    # Home Street: the bus stop on Elm Street, granny's bungalow at the foot of Hill Road, St Mary's at the top of it, Sam's house in Garden Lane
+    'busStop': ('street', (800, 820)), 'granny': ('street', (1100, 820)), 'church': ('street', (1405, 820)), 'samsHouse': ('street', (1745, 820)),
+    # Market Street: the bakery on the market square, the post office, the flower shop, the library by the Main Road
+    'bakery': ('market', (935, 958)), 'postOffice': ('market', (1240, 958)), 'florist': ('market', (1530, 958)), 'library': ('market', (1768, 958)),
+    # Seaside Road: the surf school at the start of the beach (on the boardwalk past the end of Seaside Road), the lifeguard tower on the
+    # beach, the beach cafe on the boardwalk below the school
+    'surfSchool': ('beach', (1757, 1123)), 'lifeguard': ('beach', (2000, 1117)), 'beachCafe': ('beach', (2275, 880)),
+    # The Underpass: the station's ticket hall on Station Road, at the foot of the railway bridge (the road then goes under both tracks)
+    'station': ('underpass', (1452, 380)),
+    # The building site: the site office at the security gate halfway through the site (L16's yard before it, L17's cranes after it)
+    'siteOffice': ('site', (1130, 600)),
+    # Park Path: the bandstand inside the gate, the park cafe, the boathouse on the duck pond, grandpa's allotment by the railway
+    'bandstand': ('park', (480, 255)), 'parkCafe': ('park', (712, 226)), 'boathouse': ('park', (943, 185)), 'allotment': ('park', (1474, 184)),
+}
+AFTER_STOP = 128.0                 # a later level's node: this far along its route from the stop it starts at (its anchor when STORY gives None)
+STOP_NODE_CLEAR = 100.0            # a node's centre from every stop (21 px marker + 75 px disc + a margin)
+STEM_CLEAR = 75.0                  # a route's first node lies where the route is this far from every other route (past the shared stem)
+
+# What each level is on (the "Level and map" table of the README, checked by town_map_levels.py): every story node lies in the zone
+# named here. 'residential' is the town's default ground (no special area), the rest are the AREAS above or the CHECK_ZONES below.
+LEVEL_ZONE = {
+    'L01': 'residential', 'L02': 'residential', 'L03': 'residential', 'L04': 'residential', 'L05': 'residential',
+    'L06': 'market', 'L07': 'market', 'L08': 'market', 'L09': 'market', 'L10': 'market',
+    'L11': 'to_the_sea', 'L12': 'sand', 'L13': 'sand', 'L14': 'sand',
+    'L15': 'station_road', 'L18': 'underpass',
+    'L16': 'yard_road', 'L17': 'site_works',
+    'L19': 'park', 'L20': 'park', 'L21': 'park', 'L22': 'park', 'L23': 'school_garden',
+}
+# Where each stop stands (checked the same way): the station at the foot of the railway bridge, the surf school where the sand begins,
+# the site office inside the building site, grandpa's allotment at the park's railway end.
+STOP_ZONE = {
+    'busStop': 'residential', 'granny': 'residential', 'church': 'residential', 'samsHouse': 'residential',
+    'bakery': 'market', 'postOffice': 'market', 'florist': 'market', 'library': 'market',
+    'surfSchool': 'sand_start', 'lifeguard': 'sand', 'beachCafe': 'sand',
+    'station': 'station_front', 'siteOffice': 'site_works',
+    'bandstand': 'park', 'parkCafe': 'park', 'boathouse': 'park', 'allotment': 'by_the_railway',
+}
 CHECK_ZONES = {
-    'underpass': [(1290, 320), (1760, 320), (1760, 432), (1290, 432)],
-    'school_gate': [(1560, 150), (2020, 150), (2020, 700), (1560, 700)],
-    'site_works': [(470, 545), (1800, 545), (1800, 655), (470, 655)],        # Yard Road: the building site stands round wherever its two levels are
+    # the West Street up from home and Station Road along to the railway: the walk to the station (L15)
+    'station_road': [(380, 350), (1500, 350), (1500, 420), (470, 420), (470, 560), (380, 560)],
+    # Station Road at the railway: the road in its cutting under the main line and the station's loop (L18)
+    'underpass': [(1500, 320), (1760, 320), (1760, 432), (1500, 432)],
+    # the foot of the railway bridge on Station Road, where the station's ticket hall is
+    'station_front': [(1380, 340), (1500, 340), (1500, 420), (1380, 420)],
+    # the West Street down from the market corner and Seaside Road: the walk down to the sea (L11)
+    'to_the_sea': [(380, 990), (470, 990), (470, 1100), (1500, 1100), (1500, 1170), (380, 1170)],
+    # the start of the beach, where Seaside Road's boardwalk runs out over the sand: the surf school
+    'sand_start': [(1480, 1060), (1800, 1060), (1800, 1180), (1480, 1180)],
+    # Yard Road from the West Street to the building site's gate (L16)
+    'yard_road': [(470, 560), (900, 560), (900, 640), (470, 640)],
+    # the building site between its two gates (L17, the site office)
+    'site_works': [(800, 545), (1462, 545), (1462, 655), (800, 655)],
     'site_area': [(470, 420), (1800, 420), (1800, 655), (470, 655)],         # the yard and the works round it: where C04's targets are
+    # the park's railway end, where grandpa's allotment is
+    'by_the_railway': [(1380, 90), (1500, 90), (1500, 330), (1380, 330)],
+    # past the park's tunnel under the railway: the school garden (L23)
+    'school_garden': [(1560, 150), (2020, 150), (2020, 700), (1560, 700)],
 }
 # the challenges that must stand on a particular ground (C05 on the park's lawns, as its level is a park lawn arena)
 CHALLENGE_ZONES = {'C03': 'sand', 'C04': 'site_area', 'C05': 'park'}
 
 # ------------------------------------------------------------------ the levels: where each one is (a story node is the point of its route
-# nearest to the anchor, free to slide `slack` px along the route to find room for its label; a challenge node is where it says, 130 to 260 px beside its route)
+# nearest to the anchor, free to slide `slack` px along the route to find room for its label; an anchor of None is AFTER_STOP px past the
+# stop the level starts at; a challenge node is where it says, 130 to 260 px beside its route)
 STORY = {
-    # street: out of the door, Elm Street's parked cars, Hill Road, Garden Lane, Puddle Lane by the school
-    'L01': ('street', (620, 820), 200), 'L02': ('street', (926, 820), 200), 'L03': ('street', (1232, 820), 200), 'L04': ('street', (1538, 820), 200), 'L05': ('street', (1855, 700), 120),
-    # market: the market square, the zebra crossing, the corner shop, the fruit stalls, the main road
-    'L06': ('market', (420, 890), 60), 'L07': ('market', (741, 958), 250), 'L08': ('market', (1047, 958), 250), 'L09': ('market', (1353, 958), 250), 'L10': ('market', (1659, 958), 300),
-    # beach: the boardwalk, the tidal channel, the bay with rocks, the sandcastles
-    'L11': ('beach', (1740, 1124), 300), 'L12': ('beach', (2046, 1116), 300), 'L13': ('beach', (2275, 1040), 120), 'L14': ('beach', (2130, 600), 150),
-    # underpass and site (chapter 4)
-    'L15': ('underpass', (1385, 380), 45), 'L18': ('underpass', (1666, 380), 12),
-    'L16': ('site', (1060, 600), 120), 'L17': ('site', (1360, 600), 100),
-    # park: the gates, the fountain, the playground, the duck pond, the last stretch to the school gate
-    'L19': ('park', (340, 300), 300), 'L20': ('park', (640, 236), 300), 'L21': ('park', (900, 188), 120), 'L22': ('park', (1090, 178), 120), 'L23': ('park', (1690, 196), 300),
+    # street: out of the door; from the bus stop, Elm Street's parked cars; from granny's, Hill Road; from the church, Garden Lane; from Sam's, Puddle Lane
+    'L01': ('street', (600, 820), 60), 'L02': ('street', (920, 820), 60), 'L03': ('street', (1225, 820), 70), 'L04': ('street', (1530, 820), 70), 'L05': ('street', (1855, 690), 90),
+    # market: from home, the market square; from the bakery, the zebra crossings; the corner shop; the fruit stalls; from the library, the Main Road at rush hour
+    'L06': ('market', (735, 958), 70), 'L07': ('market', (1050, 958), 60), 'L08': ('market', (1355, 958), 60), 'L09': ('market', (1650, 958), 50), 'L10': ('market', (1855, 895), 50),
+    # beach: from home down the West Street to Seaside Road; from the surf school, the wet sand; from the lifeguard tower, the bay; from the cafe, the sandcastles
+    'L11': ('beach', (420, 1050), 60), 'L12': ('beach', None, 90), 'L13': ('beach', None, 90), 'L14': ('beach', None, 120),
+    # underpass and site (chapter 4): from home up the West Street to Station Road; from the station, under the railway
+    'L15': ('underpass', (420, 480), 60), 'L18': ('underpass', None, 60),
+    # from home along Yard Road to the building site; from the site office, the cranes
+    'L16': ('site', (640, 600), 80), 'L17': ('site', None, 90),
+    # park: from home to the gates; from the bandstand, the fountains; from the cafe, the playground; from the boathouse, the duck pond; from the allotment, under the railway to school
+    'L19': ('park', (340, 300), 120), 'L20': ('park', None, 50), 'L21': ('park', None, 50), 'L22': ('park', None, 60), 'L23': ('park', None, 60),
 }
 CHALLENGE = {
     'C01': ('street', (170, 785), 250), 'C02': ('market', (170, 1100), 250), 'C03': ('beach', (2340, 450), 130), 'C04': ('site', (1100, 470), 250), 'C05': ('park', (1250, 318), 55),
@@ -211,7 +272,7 @@ STREETS = [
     dict(name='Home Street', road='row_d', route='street', at=(472, 820), reach=50),
     dict(name='Elm Street', road='row_d', route='street', at=(774, 820), reach=90),
     dict(name='Hill Road', road='row_d', route='street', at=(1104, 820), reach=90),
-    dict(name='Garden Lane', road='row_d', route='street', at=(1452, 820), reach=90),
+    dict(name='Garden Lane', road='row_d', route='street', at=(1670, 820), reach=90),
     dict(name='Puddle Lane', road='east_street', route=None, at=(1855, 880)),
     dict(name='Market Street', road='row_e', route='market', at=(1000, 958)),
     dict(name='Seaside Road', road='row_f', route='beach', at=(1000, 1136)),

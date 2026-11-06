@@ -39,8 +39,6 @@ namespace DribbleToSchool.Holiday
         Tide = 1 << 12,
         /// <summary>A dim tunnel with lamps.</summary>
         Tunnel = 1 << 13,
-        /// <summary>Rolling pipes to jump.</summary>
-        Pipes = 1 << 14,
         /// <summary>Pallets carried by cranes over trenches.</summary>
         Cranes = 1 << 15,
         /// <summary>Fountain jets that lift you: coins in them.</summary>
@@ -123,7 +121,7 @@ namespace DribbleToSchool.Holiday
             new Stage("L15", 4, StageTraits.Tunnel | StageTraits.Crates | StageTraits.Awnings, 0.7f),
             new Stage("L16", 4, StageTraits.Gaps | StageTraits.Crates | StageTraits.Awnings, 0.76f),
             new Stage("L17", 4, StageTraits.Cranes | StageTraits.Gaps | StageTraits.Awnings, 0.8f),
-            new Stage("L18", 4, StageTraits.Tunnel | StageTraits.Pipes | StageTraits.Gaps, 0.86f),
+            new Stage("L18", 4, StageTraits.Tunnel | StageTraits.Pedestrians | StageTraits.Gaps, 0.86f),
             // Chapter 5: Park and school
             new Stage("L19", 5, StageTraits.Crates | StageTraits.Dogs | StageTraits.Awnings, 0.76f),
             new Stage("L20", 5, StageTraits.Fountain | StageTraits.Pedestrians | StageTraits.Springboards | StageTraits.Crates | StageTraits.Awnings, 0.8f),

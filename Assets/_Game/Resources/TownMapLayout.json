@@ -1395,109 +1395,109 @@
  "nodes": [
   {
    "id": "L01",
-   "x": 1006,
+   "x": 1000,
    "y": 1045,
    "label": "above"
   },
   {
    "id": "L02",
-   "x": 1318,
+   "x": 1307,
    "y": 1045,
    "label": "above"
   },
   {
    "id": "L03",
-   "x": 1666,
+   "x": 1619,
    "y": 1045,
    "label": "above"
   },
   {
    "id": "L04",
-   "x": 2014,
+   "x": 1930,
    "y": 1045,
    "label": "above"
   },
   {
    "id": "L05",
    "x": 2255,
-   "y": 937,
+   "y": 915,
    "label": "right"
   },
   {
    "id": "L06",
-   "x": 824,
-   "y": 1168,
-   "label": "left"
+   "x": 1137,
+   "y": 1183,
+   "label": "below"
   },
   {
    "id": "L07",
-   "x": 1143,
+   "x": 1448,
    "y": 1183,
    "label": "below"
   },
   {
    "id": "L08",
-   "x": 1455,
+   "x": 1759,
    "y": 1183,
    "label": "below"
   },
   {
    "id": "L09",
-   "x": 1803,
+   "x": 2067,
    "y": 1183,
    "label": "below"
   },
   {
    "id": "L10",
-   "x": 2149,
-   "y": 1183,
-   "label": "below"
+   "x": 2255,
+   "y": 1118,
+   "label": "right"
   },
   {
    "id": "L11",
-   "x": 2380,
-   "y": 1343,
-   "label": "above"
+   "x": 820,
+   "y": 1276,
+   "label": "right"
   },
   {
    "id": "L12",
-   "x": 2577,
-   "y": 1326,
+   "x": 2282,
+   "y": 1346,
    "label": "below"
   },
   {
    "id": "L13",
-   "x": 2677,
-   "y": 1161,
-   "label": "left"
+   "x": 2590,
+   "y": 1323,
+   "label": "below"
   },
   {
    "id": "L14",
-   "x": 2530,
-   "y": 825,
-   "label": "above"
+   "x": 2675,
+   "y": 992,
+   "label": "left"
   },
   {
    "id": "L15",
-   "x": 1830,
-   "y": 605,
-   "label": "above"
+   "x": 820,
+   "y": 708,
+   "label": "right"
   },
   {
    "id": "L16",
-   "x": 1490,
+   "x": 1038,
    "y": 825,
    "label": "below"
   },
   {
    "id": "L17",
-   "x": 1840,
+   "x": 1655,
    "y": 825,
    "label": "below"
   },
   {
    "id": "L18",
-   "x": 2066,
+   "x": 1977,
    "y": 605,
    "label": "below"
   },
@@ -1509,26 +1509,26 @@
   },
   {
    "id": "L20",
-   "x": 1040,
-   "y": 459,
+   "x": 1004,
+   "y": 463,
    "label": "above"
   },
   {
    "id": "L21",
-   "x": 1259,
-   "y": 424,
+   "x": 1235,
+   "y": 430,
    "label": "below"
   },
   {
    "id": "L22",
-   "x": 1454,
+   "x": 1468,
    "y": 402,
    "label": "above"
   },
   {
    "id": "L23",
-   "x": 2120,
-   "y": 421,
+   "x": 1999,
+   "y": 412,
    "label": "above"
   },
   {
@@ -1546,18 +1546,18 @@
   {
    "id": "C03",
    "x": 2670,
-   "y": 593,
+   "y": 677,
    "label": "left"
   },
   {
    "id": "C04",
-   "x": 1358,
+   "x": 1442,
    "y": 685,
    "label": "above"
   },
   {
    "id": "C05",
-   "x": 1595,
+   "x": 1655,
    "y": 536,
    "label": "below"
   }
@@ -1575,8 +1575,8 @@
   },
   {
    "id": "beach",
-   "x": 2568,
-   "y": 1045
+   "x": 2460,
+   "y": 1237
   },
   {
    "id": "sea",
@@ -1590,13 +1590,13 @@
   },
   {
    "id": "railway",
-   "x": 1936,
+   "x": 1900,
    "y": 361
   },
   {
    "id": "site",
-   "x": 1666,
-   "y": 737
+   "x": 1714,
+   "y": 725
   },
   {
    "id": "school",
@@ -1613,31 +1613,31 @@
   },
   {
    "name": "Elm Street",
-   "x": 1177,
+   "x": 1131,
    "y": 1030,
    "angle": 0.0
   },
   {
    "name": "Hill Road",
-   "x": 1511,
+   "x": 1438,
    "y": 1030,
    "angle": 0.0
   },
   {
    "name": "Garden Lane",
-   "x": 1859,
+   "x": 2067,
    "y": 1030,
    "angle": 0.0
   },
   {
    "name": "Puddle Lane",
-   "x": 2276,
-   "y": 1086,
+   "x": 2234,
+   "y": 776,
    "angle": -90.0
   },
   {
    "name": "Market Street",
-   "x": 1607,
+   "x": 1270,
    "y": 1198,
    "angle": 0.0
   },
@@ -1649,14 +1649,14 @@
   },
   {
    "name": "Station Road",
-   "x": 929,
-   "y": 590,
+   "x": 1043,
+   "y": 620,
    "angle": 0.0
   },
   {
    "name": "Yard Road",
-   "x": 1097,
-   "y": 840,
+   "x": 901,
+   "y": 810,
    "angle": 0.0
   },
   {
@@ -1667,15 +1667,119 @@
   },
   {
    "name": "School Lane",
-   "x": 2348,
-   "y": 810,
+   "x": 2517,
+   "y": 840,
    "angle": 0.0
   },
   {
    "name": "Main Road",
    "x": 2276,
-   "y": 652,
+   "y": 570,
    "angle": -90.0
+  }
+ ],
+ "stops": [
+  {
+   "id": "busStop",
+   "route": "street",
+   "x": 1200,
+   "y": 1045
+  },
+  {
+   "id": "granny",
+   "route": "street",
+   "x": 1500,
+   "y": 1045
+  },
+  {
+   "id": "church",
+   "route": "street",
+   "x": 1805,
+   "y": 1045
+  },
+  {
+   "id": "samsHouse",
+   "route": "street",
+   "x": 2145,
+   "y": 1045
+  },
+  {
+   "id": "bakery",
+   "route": "market",
+   "x": 1335,
+   "y": 1183
+  },
+  {
+   "id": "postOffice",
+   "route": "market",
+   "x": 1640,
+   "y": 1183
+  },
+  {
+   "id": "florist",
+   "route": "market",
+   "x": 1930,
+   "y": 1183
+  },
+  {
+   "id": "library",
+   "route": "market",
+   "x": 2168,
+   "y": 1183
+  },
+  {
+   "id": "surfSchool",
+   "route": "beach",
+   "x": 2157,
+   "y": 1349
+  },
+  {
+   "id": "lifeguard",
+   "route": "beach",
+   "x": 2400,
+   "y": 1342
+  },
+  {
+   "id": "beachCafe",
+   "route": "beach",
+   "x": 2675,
+   "y": 1105
+  },
+  {
+   "id": "station",
+   "route": "underpass",
+   "x": 1852,
+   "y": 605
+  },
+  {
+   "id": "siteOffice",
+   "route": "site",
+   "x": 1530,
+   "y": 825
+  },
+  {
+   "id": "bandstand",
+   "route": "park",
+   "x": 880,
+   "y": 477
+  },
+  {
+   "id": "parkCafe",
+   "route": "park",
+   "x": 1112,
+   "y": 450
+  },
+  {
+   "id": "boathouse",
+   "route": "park",
+   "x": 1343,
+   "y": 409
+  },
+  {
+   "id": "allotment",
+   "route": "park",
+   "x": 1874,
+   "y": 409
   }
  ]
 }

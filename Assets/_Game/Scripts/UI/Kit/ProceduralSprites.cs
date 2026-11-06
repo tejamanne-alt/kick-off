@@ -5,8 +5,10 @@ namespace DribbleToSchool.UI.Kit
     /// <summary>UI sprites drawn in code: rounded panels, circles, stars, coins, a padlock.</summary>
     public static class ProceduralSprites
     {
-        static Sprite rounded, roundedSmall, circle, star, coin, lockIcon, gradient, arrow, pause, ring, softDisc, softEdgeDisc, ballIcon, slideIcon;
+        static Sprite rounded, roundedSmall, circle, star, coin, lockIcon, gradient, arrow, pause, ring, softDisc, softEdgeDisc, ballIcon;
+        static Sprite trophy, medal, medalRibbon;
         static Sprite roundedEdge, roundedEdgeSmall, circleEdge, check, pitchBadge, holoSheen, goldSheen, stickerIcon, streak, swoosh, bolt, shield, magnet;
+        static Sprite jumpIcon, spotHole, thinRing, clock, play, retry;
 
         /// <summary>A lightning bolt (the turbo power-up).</summary>
         public static Sprite Bolt
@@ -309,25 +311,114 @@ namespace DribbleToSchool.UI.Kit
         }
 
         /// <summary>
-        /// Slide button: the jump chevron turned to point down, a little smaller, over a short
-        /// rounded bar for the ground: "get down low".
+        /// The jump button: a figure springing up and forward, in the bold rounded strokes of a pictogram: a round head,
+        /// the front arm thrown up, the back arm down, the front knee driven up and the back leg pushing off, with a thin
+        /// gap where that leg meets the body (after a reference picture the user sent).
         /// </summary>
-        public static Sprite SlideIcon
+        public static Sprite JumpIcon
         {
             get
             {
-                return slideIcon != null ? slideIcon : (slideIcon = MakeShape(96, (u, v) =>
+                return jumpIcon != null ? jumpIcon : (jumpIcon = MakeShape(160, (u, v) =>
                 {
-                    // The ArrowUp chevron flipped and scaled about a centre above the bar.
-                    const float scale = 0.72f;
-                    float cu = u / scale, cv = (0.2f - v) / scale;
-                    bool outer = cv > -0.6f && cv < 0.75f - Mathf.Abs(cu) * 1.35f;
-                    bool inner = cv > -0.6f && cv < 0.15f - Mathf.Abs(cu) * 1.35f;
-                    bool chevron = outer && !inner && Mathf.Abs(cu) < 0.95f;
-                    // The ground: a bar with round ends below the chevron's point.
-                    float bx = Mathf.Max(0f, Mathf.Abs(u) - 0.58f), by = v + 0.7f;
-                    bool bar = bx * bx + by * by < 0.1f * 0.1f;
-                    return chevron || bar ? 1f : 0f;
+                    if ((u - 0.08f) * (u - 0.08f) + (v - 0.77f) * (v - 0.77f) < 0.18f * 0.18f) return 1f;   // head
+                    // The body and the front leg (knee up), as a distance from their edge: below zero is inside.
+                    float body = Mathf.Min(Segment(u, v, -0.03f, 0.36f, -0.13f, -0.12f) - 0.15f,
+                                  Mathf.Min(Segment(u, v, -0.07f, -0.12f, 0.3f, 0.03f) - 0.11f, Segment(u, v, 0.3f, 0.03f, 0.18f, -0.46f) - 0.11f));
+                    if (body < 0f) return 1f;
+                    const float arm = 0.095f;
+                    if (Mathf.Min(Segment(u, v, -0.07f, 0.42f, -0.33f, 0.31f), Segment(u, v, -0.33f, 0.31f, -0.45f, -0.1f)) < arm) return 1f;   // back arm, down
+                    if (Mathf.Min(Segment(u, v, 0.05f, 0.42f, 0.31f, 0.25f), Segment(u, v, 0.31f, 0.25f, 0.6f, 0.45f)) < arm) return 1f;       // front arm, up
+                    // The back leg pushing off, kept a thin gap clear of the body and the front leg.
+                    bool back = Mathf.Min(Segment(u, v, -0.15f, -0.22f, -0.17f, -0.54f), Segment(u, v, -0.17f, -0.54f, -0.58f, -0.82f)) < 0.11f;
+                    return back && body > 0.035f ? 1f : 0f;
+                }));
+            }
+        }
+
+        /// <summary>
+        /// An alarm clock: a round face with two hands (at twelve and three), two bells on
+        /// top and two short legs: "late for school" on the map's locked level and its banner.
+        /// </summary>
+        public static Sprite Clock
+        {
+            get
+            {
+                return clock != null ? clock : (clock = MakeShape(128, (u, v) =>
+                {
+                    float cx = u, cy = v + 0.06f;
+                    float r = Mathf.Sqrt(cx * cx + cy * cy);
+                    if (Mathf.Abs(r - 0.56f) < 0.1f) return 1f;                                            // the rim
+                    if (r < 0.08f) return 1f;                                                               // the middle
+                    if (Segment(u, v, 0f, -0.06f, 0f, 0.3f) < 0.06f || Segment(u, v, 0f, -0.06f, 0.24f, -0.06f) < 0.06f) return 1f;   // the hands
+                    // Two bells, each a half disc tilted out over the rim.
+                    for (int side = -1; side <= 1; side += 2)
+                    {
+                        float bx = u - side * 0.5f, by = v - 0.62f;
+                        float bd = Mathf.Sqrt(bx * bx + by * by);
+                        if (bd < 0.22f && (bx * side * 0.5f + by * 0.86f) > -0.02f) return 1f;
+                    }
+                    if (Segment(u, v, -0.34f, -0.52f, -0.5f, -0.82f) < 0.065f || Segment(u, v, 0.34f, -0.52f, 0.5f, -0.82f) < 0.065f) return 1f;   // legs
+                    return 0f;
+                }));
+            }
+        }
+
+        /// <summary>A "play" triangle pointing right, its corners rounded: the next level to play on the map.</summary>
+        public static Sprite PlayIcon
+        {
+            get
+            {
+                return play != null ? play : (play = MakeShape(96, (u, v) =>
+                {
+                    // Inside the triangle shrunk by the rounding, or within the rounding of its edges.
+                    Vector2 a = new Vector2(-0.4f, 0.52f), b = new Vector2(-0.4f, -0.52f), c = new Vector2(0.56f, 0f);
+                    const float round = 0.14f;
+                    bool inside = Cross(b - a, new Vector2(u, v) - a) <= 0f && Cross(c - b, new Vector2(u, v) - b) <= 0f && Cross(a - c, new Vector2(u, v) - c) <= 0f;
+                    float edge = Mathf.Min(Segment(u, v, a.x, a.y, b.x, b.y), Mathf.Min(Segment(u, v, b.x, b.y, c.x, c.y), Segment(u, v, c.x, c.y, a.x, a.y)));
+                    return inside || edge < round ? 1f : 0f;
+                }));
+            }
+        }
+
+        static float Cross(Vector2 p, Vector2 q) { return p.x * q.y - p.y * q.x; }
+
+        /// <summary>A round "again" arrow (most of a ring, an arrowhead at its end): a level to play again on the map.</summary>
+        public static Sprite RetryIcon
+        {
+            get
+            {
+                return retry != null ? retry : (retry = MakeShape(96, (u, v) =>
+                {
+                    float r = Mathf.Sqrt(u * u + v * v);
+                    float ang = Mathf.Repeat(Mathf.Atan2(v, u) * Mathf.Rad2Deg, 360f);
+                    // The ring from 60 degrees round (anticlockwise) to 330, open at the top right.
+                    if (Mathf.Abs(r - 0.55f) < 0.12f && ang > 60f && ang < 330f) return 1f;
+                    // The arrowhead at the 60 degree end, pointing on round the ring (anticlockwise: down and left at this end).
+                    Vector2 tip = new Vector2(Mathf.Cos(30f * Mathf.Deg2Rad), Mathf.Sin(30f * Mathf.Deg2Rad)) * 0.55f;
+                    Vector2 baseMid = new Vector2(Mathf.Cos(72f * Mathf.Deg2Rad), Mathf.Sin(72f * Mathf.Deg2Rad)) * 0.55f;
+                    Vector2 across = baseMid.normalized * 0.3f;
+                    Vector2 p = new Vector2(u, v), b1 = baseMid + across, b2 = baseMid - across;
+                    float s1 = Cross(b1 - tip, p - tip), s2 = Cross(b2 - b1, p - b1), s3 = Cross(tip - b2, p - b2);
+                    bool head = (s1 >= 0f && s2 >= 0f && s3 >= 0f) || (s1 <= 0f && s2 <= 0f && s3 <= 0f);
+                    return head ? 1f : 0f;
+                }));
+            }
+        }
+
+        /// <summary>
+        /// The controls tour's spotlight: solid outside a circle, clear inside it, with a soft edge. Stretched over a
+        /// control's square (the circle fills 80% of it), with plain panels round it for the rest of the screen.
+        /// </summary>
+        public static Sprite SpotHole
+        {
+            get
+            {
+                return spotHole != null ? spotHole : (spotHole = MakeShape(128, (u, v) =>
+                {
+                    float r = Mathf.Sqrt(u * u + v * v);
+                    float t = Mathf.Clamp01((r - 0.8f) / 0.16f);
+                    return t * t * (3f - 2f * t);
                 }));
             }
         }
@@ -361,6 +452,57 @@ namespace DribbleToSchool.UI.Kit
         public static Sprite Star
         {
             get { return star != null ? star : (star = MakeShape(128, StarAlpha)); }
+        }
+
+        /// <summary>
+        /// A trophy cup (the reward for walking every way to school): the bowl with a star cut in it, a handle each side, the
+        /// stem with its knot, and the base on its plinth. Tinted gold where it is used.
+        /// </summary>
+        public static Sprite Trophy
+        {
+            get
+            {
+                return trophy != null ? trophy : (trophy = MakeShape(192, (u, v) =>
+                {
+                    if (StarAlpha(u / 0.21f, (v - 0.47f) / 0.21f) > 0.5f) return 0f;   // the star on the bowl
+                    if (v >= 0.02f && v <= 0.84f && Mathf.Abs(u) <= 0.14f + 0.44f * Mathf.Sqrt((v - 0.02f) / 0.82f)) return 1f;   // the bowl
+                    if (v > 0.8f && v <= 0.9f && Mathf.Abs(u) <= 0.63f) return 1f;   // its rim
+                    float hx = Mathf.Abs(u), hd = Mathf.Sqrt((hx - 0.56f) * (hx - 0.56f) + (v - 0.5f) * (v - 0.5f));
+                    if (hx > 0.5f && Mathf.Abs(hd - 0.2f) < 0.06f) return 1f;   // the handles
+                    if (Mathf.Abs(u) < 0.08f && v < 0.05f && v > -0.5f) return 1f;   // the stem
+                    if (Mathf.Abs(u) < 0.18f && Mathf.Abs(v + 0.15f) < 0.06f) return 1f;   // its knot
+                    if (v <= -0.48f && v > -0.68f && Mathf.Abs(u) < 0.34f) return 1f;   // the base
+                    if (v <= -0.71f && v > -0.9f && Mathf.Abs(u) < 0.5f) return 1f;   // the plinth
+                    return 0f;
+                }));
+            }
+        }
+
+        /// <summary>A medal's disc (one for each way walked to school): a fine ring inside the rim and a star struck in the middle, cut out.</summary>
+        public static Sprite Medal
+        {
+            get
+            {
+                return medal != null ? medal : (medal = MakeShape(160, (u, v) =>
+                {
+                    float d = Mathf.Sqrt(u * u + v * v);
+                    if (d > 0.92f || Mathf.Abs(d - 0.74f) < 0.035f) return 0f;
+                    return StarAlpha(u / 0.5f, v / 0.5f) > 0.5f ? 0f : 1f;
+                }));
+            }
+        }
+
+        /// <summary>A medal's ribbon: two straps from a flat top down into a V, for behind the disc (tinted in the route's colour).</summary>
+        public static Sprite MedalRibbon
+        {
+            get
+            {
+                return medalRibbon != null ? medalRibbon : (medalRibbon = MakeShape(160, (u, v) =>
+                {
+                    if (v > 0.92f) return 0f;
+                    return Segment(u, v, -0.5f, 0.95f, -0.04f, -0.25f) < 0.17f || Segment(u, v, 0.5f, 0.95f, 0.04f, -0.25f) < 0.17f ? 1f : 0f;
+                }));
+            }
         }
 
         public static Sprite Lock
@@ -426,6 +568,22 @@ namespace DribbleToSchool.UI.Kit
                 {
                     float r = Mathf.Sqrt(u * u + v * v);
                     return Mathf.Clamp01((0.06f - Mathf.Abs(r - 0.92f)) * 80f);
+                }));
+            }
+        }
+
+        /// <summary>
+        /// A thin, crisp ring at the very edge of its square (about 2.6% of the radius): the light border of the touch
+        /// controls (JUMP, KICK, the stick's ring and knob).
+        /// </summary>
+        public static Sprite ThinRing
+        {
+            get
+            {
+                return thinRing != null ? thinRing : (thinRing = MakeShape(256, (u, v) =>
+                {
+                    float r = Mathf.Sqrt(u * u + v * v);
+                    return Mathf.Clamp01((0.013f - Mathf.Abs(r - 0.97f)) * 200f);
                 }));
             }
         }

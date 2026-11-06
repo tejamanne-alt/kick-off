@@ -126,6 +126,13 @@ def draw_overlay(img, built, font_size=22):
         x, y = P(p)
         d.ellipse([x - 12, y - 12, x + 12, y + 12], fill=(0, 0, 0, 255))
         d.text((x + 16, y - 10), pid, fill=(0, 0, 0, 255), font=font)
+    # the stops between the levels, as the screen draws them: a white marker with a dot of the route's colour, and the stop's id
+    for sid, s in built.get('stops', {}).items():
+        x, y = P((s['x'], s['y']))
+        d.ellipse([x - 24, y - 24, x + 24, y + 24], fill=(20, 20, 40, 255))
+        d.ellipse([x - 21, y - 21, x + 21, y + 21], fill=(255, 255, 255, 255))
+        d.ellipse([x - 10, y - 10, x + 10, y + 10], fill=ROUTE_COLOURS.get(s['route'], (0, 0, 0)) + (255,))
+        d.text((x + 28, y - 30), sid, fill=(20, 20, 40, 255), font=font)
     for did, p in built['districts'].items():
         x, y = P(p)
         d.text((x, y), did.upper(), fill=(150, 20, 20, 255), font=font, anchor='mm')

@@ -1,7 +1,9 @@
 # Places the 28 level nodes and their labels. The layout names a place for each level (an anchor and how far the node may
 # slide along its route, or around the anchor for a challenge); this searches for positions near the anchors such that every
-# node lies on its route, the nodes keep 190 px apart and in play order, and every label (300 x 56 px, on the node's below /
-# above / left / right side) keeps clear of every route, every other node and every other label.
+# node lies on its route inside its own leg (between the stop or home it starts at and the stop or school it ends at, the first
+# level of a route past the stem it shares with other routes), the nodes keep 190 px apart, in play order and 100 px from every
+# stop, and every label (300 x 56 px, on the node's below / above / left / right side) keeps clear of the routes, the nodes, its
+# own route's stops and its own route's other labels.
 # A small constraint search (numpy): forward checking, the most constrained node first, the nearest-to-the-anchor option first.
 import math
 import numpy as np
@@ -10,13 +12,19 @@ import town_map_graph as G
 SIDES = ('below', 'above', 'right', 'left')
 SIDE_COST = {'below': 0.0, 'above': 4.0, 'right': 8.0, 'left': 9.0}
 MIN_NODE_GAP = 190.8
-# The label rules of the map screen (it draws the names of the focused route's levels only, over every route line): a name keeps
-# 30 px from its OWN route's centre line and only must not cross the other routes' lines; it keeps 6 px from every node disc;
-# it keeps 6 px from the names of the levels of its own route (story levels and challenge); names of different routes may overlap.
+# The label rules of the map screen (it draws the names of the focused route's levels only, over every route line, and the other
+# routes' nodes at 70 % while a route is in focus): a name keeps 30 px from its OWN route's centre line and only must not cross the
+# other routes' lines; it keeps 6 px from its own route's node discs and from the other routes' discs as they are drawn then (70 %);
+# it keeps 6 px from its own route's stop markers and from the names of the levels of its own route (story levels and challenge);
+# names of different routes may overlap.
 OWN_ROUTE_CLEAR = 30.6
 OTHER_ROUTE_CLEAR = 2.0
-LABEL_DISC_CLEAR = G.NODE_R + 6.6                # from a node's centre to a name box
+OTHER_NODE_SCALE = 0.7                           # Levels/TownMapNames.OtherNodeScale
+LABEL_DISC_CLEAR = G.NODE_R + 6.6                # from a node's centre to a name box of its own route
+OTHER_LABEL_DISC_CLEAR = G.NODE_R * OTHER_NODE_SCALE + 6.6   # from a node's centre to a name box of another route
 LABEL_LABEL_CLEAR = 6.6
+STOP_R = 21.0                                    # a stop's marker (Levels/TownMap.StopRadius)
+LABEL_STOP_CLEAR = STOP_R + 6.6                  # from a stop's centre to a name box of its route
 PLACE_CLEAR = 120.6                              # a node keeps this far from home and the school
 CORE_W, CORE_H = float(G.CORE['w']), float(G.CORE['h'])
 
@@ -91,11 +99,17 @@ def box_min_dist(box, P, Q):
     return best
 
 
-def candidates(L, routes, table, challenge_range=(132.0, 256.0), step=6.0, grid=12.0):
-    """{node id: Var}"""
+def candidates(L, routes, table, challenge_range=(132.0, 256.0), step=6.0, grid=12.0, stops=None, legs=None):
+    """{node id: Var}. stops: {stop id: dict(route, s, x, y)} (town_map_build.place_stops); legs: {level id: (s from, s to, anchor s)}
+    (town_map_build.leg_bounds): a story node's arc length lies strictly inside its leg, and every node keeps STOP_NODE_CLEAR from
+    every stop."""
     own_seg = {rid: _segments([pts]) for rid, pts in routes.items()}
     other_seg = {rid: _segments([p for r2, p in routes.items() if r2 != rid]) for rid in routes}
     places = [L.NODES[L.PLACES['home']], L.NODES[L.PLACES['school']]]
+    stops = stops or {}
+    legs = legs or {}
+    stop_clear = getattr(L, 'STOP_NODE_CLEAR', 0.0)
+    own_stops = {rid: [(s['x'], s['y']) for s in stops.values() if s['route'] == rid] for rid in routes}
     out = {}
     cache = {}
 
@@ -112,12 +126,17 @@ def candidates(L, routes, table, challenge_range=(132.0, 256.0), step=6.0, grid=
                 continue
             if box_min_dist(box, *other_seg[rid]) < OTHER_ROUTE_CLEAR:
                 continue
+            if any(G.box_dist_to_point(box, q) < LABEL_STOP_CLEAR for q in own_stops[rid]):
+                continue
             res.append(side)
         cache[key] = res
         return res
 
     def near_place(p):
         return any(math.hypot(p[0] - q[0], p[1] - q[1]) < PLACE_CLEAR for q in places)
+
+    def near_stop(p):
+        return any(math.hypot(p[0] - s['x'], p[1] - s['y']) < stop_clear for s in stops.values())
 
     import town_map_levels as LV
     zone_cache = {}
@@ -136,15 +155,19 @@ def candidates(L, routes, table, challenge_range=(132.0, 256.0), step=6.0, grid=
         total = G.poly_length(pts)
         for order, lid in enumerate(levels):
             spec = L.STORY[lid]
-            anchor = spec[1]
             slack = spec[2] if len(spec) > 2 else 600.0
-            zone = L.LAST_ZONE[1] if lid == L.LAST_ZONE[0] else L.LEVEL_ZONES.get(rid)
-            q0, s0, d0 = G.project(anchor, pts)
+            zone = L.LEVEL_ZONE.get(lid)
+            lo, hi, s_after = legs.get(lid, (0.0, total, None))
+            if spec[1] is not None:
+                q0, s0, d0 = G.project(spec[1], pts)
+            else:
+                s0 = s_after                       # AFTER_STOP past the stop the level starts at
+            anchor = G.point_at(pts, s0)[0]
             opts = []
-            s = max(6.0, s0 - slack)
-            while s <= min(total - 6.0, s0 + slack):
+            s = max(6.0, s0 - slack, lo + 1.0)
+            while s <= min(total - 6.0, s0 + slack, hi - 1.0):
                 p, _ = G.point_at(pts, s)
-                if _inner(p) and in_zone(p, zone) and not near_place(p):
+                if _inner(p) and in_zone(p, zone) and not near_place(p) and not near_stop(p):
                     for side in sides_for(rid, *p):
                         opts.append((p[0], p[1], s, side, abs(s - s0) + SIDE_COST[side]))
                 s += step
@@ -160,7 +183,7 @@ def candidates(L, routes, table, challenge_range=(132.0, 256.0), step=6.0, grid=
                 dy = -slack
                 while dy <= slack:
                     p = (anchor[0] + dx, anchor[1] + dy)
-                    if _inner(p) and in_zone(p, czone) and not near_place(p):
+                    if _inner(p) and in_zone(p, czone) and not near_place(p) and not near_stop(p):
                         d = G.dist_to_poly(p, pts)
                         if challenge_range[0] <= d <= challenge_range[1]:
                             # a disc that covers another route's line is allowed but costly (the pockets between the routes are tight)
@@ -190,14 +213,21 @@ def _box_box_dist(a, boxes):
     return np.hypot(dx, dy)
 
 
+def disc_clear(a, b):
+    """How far a name of one of the two nodes must keep from the other's centre: a full disc on the same route, else the smaller
+    disc the screen draws for another route's node while a route is in focus."""
+    return LABEL_DISC_CLEAR if a.route == b.route else OTHER_LABEL_DISC_CLEAR
+
+
 def compat(a, i, b):
     """Boolean mask over b's options: compatible with option i of a."""
     ax, ay, abox = a.x[i], a.y[i], a.box[i]
+    clear = disc_clear(a, b)
     ok = np.hypot(b.x - ax, b.y - ay) >= MIN_NODE_GAP
-    ok &= _box_point_dist(abox, b.x, b.y) >= LABEL_DISC_CLEAR
+    ok &= _box_point_dist(abox, b.x, b.y) >= clear
     dx = np.maximum(np.maximum(b.box[:, 0] - ax, ax - b.box[:, 2]), 0.0)
     dy = np.maximum(np.maximum(b.box[:, 1] - ay, ay - b.box[:, 3]), 0.0)
-    ok &= np.hypot(dx, dy) >= LABEL_DISC_CLEAR
+    ok &= np.hypot(dx, dy) >= clear
     if a.route == b.route:
         ok &= _box_box_dist(abox, b.box) >= LABEL_LABEL_CLEAR
         if a.kind == 'story' and b.kind == 'story':
@@ -210,17 +240,18 @@ def _pair_matrix(a, b):
     na, nb = len(a.opts), len(b.opts)
     ax, ay = a.x[:, None], a.y[:, None]
     bx, by = b.x[None, :], b.y[None, :]
+    clear = disc_clear(a, b)
     ok = np.hypot(bx - ax, by - ay) >= MIN_NODE_GAP
     # a's label against b's node disc
     abx0, aby0, abx2, aby2 = (a.box[:, k][:, None] for k in range(4))
     dx = np.maximum(np.maximum(abx0 - bx, bx - abx2), 0.0)
     dy = np.maximum(np.maximum(aby0 - by, by - aby2), 0.0)
-    ok &= np.hypot(dx, dy) >= LABEL_DISC_CLEAR
+    ok &= np.hypot(dx, dy) >= clear
     # b's label against a's node disc
     bbx0, bby0, bbx2, bby2 = (b.box[:, k][None, :] for k in range(4))
     dx = np.maximum(np.maximum(bbx0 - ax, ax - bbx2), 0.0)
     dy = np.maximum(np.maximum(bby0 - ay, ay - bby2), 0.0)
-    ok &= np.hypot(dx, dy) >= LABEL_DISC_CLEAR
+    ok &= np.hypot(dx, dy) >= clear
     if a.route == b.route:
         # label against label (only the names shown together: those of one route)
         dx = np.maximum(np.maximum(bbx0 - abx2, abx0 - bbx2), 0.0)
@@ -262,23 +293,23 @@ def _ac(D, C, n, queue=None):
     return -1
 
 
-def solve_joint(L, routes, table, grids=(12.0, 8.0, 6.0)):
+def solve_joint(L, routes, table, grids=(12.0, 8.0, 6.0), **where):
     """Every node by the exact search (challenge nodes first), the challenge pockets sampled on a coarse grid first and a finer one
     if that fails. Same result as solve_mac()."""
     last = None
     for g in grids:
         try:
-            return solve_challenge_first(L, routes, table, grid=g)
+            return solve_challenge_first(L, routes, table, grid=g, **where)
         except ValueError as e:
             last = e
     raise last
 
 
-def solve_phased(L, routes, table, budget=40000, vars_=None):
+def solve_phased(L, routes, table, budget=40000, vars_=None, **where):
     """The story nodes by the exact search (they are what the routes and the levels depend on), then each challenge node, the most
     constrained first, at the cheapest option that lives with everything already placed. Returns the same dict as solve_mac;
     raises ValueError if the story nodes cannot all be placed or a challenge node finds no room."""
-    V = dict(vars_) if vars_ is not None else candidates(L, routes, table)
+    V = dict(vars_) if vars_ is not None else candidates(L, routes, table, **where)
     story = {k: v for k, v in V.items() if v.kind == 'story'}
     chal = {k: v for k, v in V.items() if v.kind == 'challenge'}
     idx = _solve_mac_idx(story, budget)
@@ -301,10 +332,10 @@ def solve_phased(L, routes, table, budget=40000, vars_=None):
     return out
 
 
-def solve_mac(L, routes, table, budget=60000, vars_=None, seed=1):
+def solve_mac(L, routes, table, budget=60000, vars_=None, seed=1, **where):
     """Exact search: maintaining arc consistency, smallest domain first, the option nearest its anchor first. Raises ValueError
     if there is no placement (naming the variable whose domain emptied first) or the budget runs out."""
-    vars_ = dict(vars_) if vars_ is not None else candidates(L, routes, table)
+    vars_ = dict(vars_) if vars_ is not None else candidates(L, routes, table, **where)
     idx = _solve_mac_idx(vars_, budget)
     out = {}
     for k, a in idx.items():
@@ -314,11 +345,11 @@ def solve_mac(L, routes, table, budget=60000, vars_=None, seed=1):
     return out
 
 
-def solve_challenge_first(L, routes, table, grid=24.0, tries=200, per_budget=400, vars_=None):
+def solve_challenge_first(L, routes, table, grid=24.0, tries=200, per_budget=400, vars_=None, **where):
     """The picky nodes first: the challenge nodes (their pockets are small) are fixed one by one at one of their cheapest options
     that arc consistency still allows, depth first, and the story nodes are then solved by the exact search around them. Far
     faster than the plain exact search when the pockets are tight. Same result as solve_mac()."""
-    V = dict(vars_) if vars_ is not None else candidates(L, routes, table, grid=grid)
+    V = dict(vars_) if vars_ is not None else candidates(L, routes, table, grid=grid, **where)
     keys = sorted(V)
     empty = [k for k in keys if len(V[k].opts) == 0]
     if empty:
@@ -421,8 +452,8 @@ def _mac_search(vars_, keys, C, D, budget):
     return res
 
 
-def solve(L, routes, table, budget=150000, skip=(), vars_=None):
-    vars_ = dict(vars_) if vars_ is not None else candidates(L, routes, table)
+def solve(L, routes, table, budget=150000, skip=(), vars_=None, **where):
+    vars_ = dict(vars_) if vars_ is not None else candidates(L, routes, table, **where)
     for k in skip:
         vars_.pop(k, None)
     empty = [k for k, v in vars_.items() if len(v.opts) == 0]
@@ -475,12 +506,12 @@ def solve(L, routes, table, budget=150000, skip=(), vars_=None):
     return out
 
 
-def solve_ls(L, routes, table, seed=1, iters=60000, skip=(), vars_=None, restarts=8, strict=True):
+def solve_ls(L, routes, table, seed=1, iters=60000, skip=(), vars_=None, restarts=8, strict=True, **where):
     """The same search by local search (min-conflicts with noise and restarts, then a greedy pass towards the anchors):
     much faster than the exhaustive search when there is room, and it finds placements the exhaustive one runs out of
     budget on. Returns the same dict as solve(), or raises ValueError."""
     import random
-    vars_ = dict(vars_) if vars_ is not None else candidates(L, routes, table)
+    vars_ = dict(vars_) if vars_ is not None else candidates(L, routes, table, **where)
     for k in skip:
         vars_.pop(k, None)
     keys = sorted(vars_)

@@ -5,8 +5,8 @@ using UnityEngine.UI;
 namespace DribbleToSchool.UI.Kit
 {
     /// <summary>
-    /// The look of an on-screen game control (walk, kick, slide, jump): a see-through disc of
-    /// frosted glass with a soft white icon, no border and only a hint of colour, so the
+    /// The look of an on-screen game control (kick, jump): a see-through disc of frosted glass
+    /// with a soft white icon, a thin bright rim and only a hint of colour, so the
     /// game shows through and the controls stay out of the way. Holding it brightens the
     /// glass a little, shrinks it slightly and fires a crisp haptic click; letting go eases
     /// it back with a soft tap. A faint ripple spreads on each press, and a soft halo can
@@ -22,11 +22,11 @@ namespace DribbleToSchool.UI.Kit
         public float heldAlpha = 0.3f;
         [Tooltip("How much of the button's own colour the glass takes (0 = plain white glass).")]
         public float colorStrength = 0.5f;
-        [Tooltip("Opacity of the thin coloured rim at rest and while held (0 = borderless).")]
-        public float restRim = 0.2f;
+        [Tooltip("Opacity of the thin, bright rim at rest and while held (0 = borderless).")]
+        public float restRim = 0.42f;
         public float heldRim = 0.85f;
         [Tooltip("How much of the rim and glass shows while the button is highlighted (the kick button with the ball in reach).")]
-        public float highlightRim = 0.5f, highlightGlass = 0.12f;
+        public float highlightRim = 0.75f, highlightGlass = 0.12f;
 
         public RectTransform Content { get; private set; }
 
@@ -64,7 +64,7 @@ namespace DribbleToSchool.UI.Kit
             button.discRect = UIKit.Rect(square, "Disc");
             UIKit.Stretch(button.discRect);
             button.glass = Layer(button.discRect, "Glass", ProceduralSprites.SoftEdgeDisc, new Color(button.tint.r, button.tint.g, button.tint.b, button.restAlpha), 0f);
-            button.rim = Layer(button.discRect, "Rim", ProceduralSprites.Ring, new Color(button.rimTint.r, button.rimTint.g, button.rimTint.b, button.restRim), 0f);
+            button.rim = Layer(button.discRect, "Rim", ProceduralSprites.ThinRing, new Color(button.rimTint.r, button.rimTint.g, button.rimTint.b, button.restRim), 0f);
             button.ripple = Layer(square, "Ripple", ProceduralSprites.Ring, new Color(1f, 1f, 1f, 0f), 0f);
             button.rippleRect = button.ripple.rectTransform;
 
@@ -138,7 +138,8 @@ namespace DribbleToSchool.UI.Kit
         public void SetColor(Color color)
         {
             tint = Color.Lerp(Color.white, color, colorStrength);
-            rimTint = Color.Lerp(Color.white, color, 0.9f);
+            // The rim: thin and bright, nearly white with a touch of the button's colour.
+            rimTint = Color.Lerp(Color.white, color, 0.25f);
         }
 
         void OnDisable()

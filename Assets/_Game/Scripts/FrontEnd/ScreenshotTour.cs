@@ -20,7 +20,7 @@ namespace DribbleToSchool.FrontEnd
     /// define (Kick Off > Build > iOS Screenshot Project). Store builds never contain it.
     ///
     /// On launch it stages a well-played save (most levels done, 16 of 23 stickers, their rewards,
-    /// some coins), then takes, in English and with no tutorial hints:
+    /// some coins), then takes, in English and with no tutorial hints or how-tos:
     ///   01 the title screen,
     ///   02-06 a level in each chapter: the kid running with the ball from a checkpoint partway
     ///         along (the boy and the girl in turn),
@@ -105,6 +105,7 @@ namespace DribbleToSchool.FrontEnd
             Remember();
             Loc.SetLanguage("en");
             TutorialHint.MarkAllSeen();
+            UI.ActionCoach.Suppressed = true;   // and no how-tos at the top
             StageSave();
             yield return Wait(3f);   // the launch splash
 
@@ -177,6 +178,7 @@ namespace DribbleToSchool.FrontEnd
             GameSettings.Character = savedCharacter;
             GameSettings.Language = savedLanguage;
             TutorialHint.ResetAll(unseenHints);
+            UI.ActionCoach.Suppressed = false;
         }
 
         /// <summary>A save that looks well played: chapters 1-4 done, chapter 5 under way, 16 stickers and their rewards.</summary>
@@ -204,8 +206,10 @@ namespace DribbleToSchool.FrontEnd
                 }
             }
 
-            // The rewards those stickers earn, granted now so no celebration covers the menu.
+            // The rewards those stickers (and the routes walked to school) earn, granted now so no celebration covers the menu.
             StickerRewards.GrantEarned(levels, cosmetics);
+            RouteRewards.GrantEarned(cosmetics);
+            RouteRewards.MarkCelebrated(RouteRewards.NewMedals(), RouteRewards.AllWalked());
             if (cosmetics != null)
             {
                 var ball = StickerRewards.ForChapter(cosmetics, 1);

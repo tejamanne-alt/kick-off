@@ -15,8 +15,10 @@ namespace DribbleToSchool.Tests
     /// The town map's data (docs/WORLD_MAP.md): Resources/TownMapLayout.json, as written for the rendered picture
     /// Resources/UI/TownMap.jpg, must follow the agreed contract: the frame and its core, every story level and challenge
     /// with a node, nodes and places in the core's inner area and apart from each other, story nodes on their own route in
-    /// play order and challenges beside theirs, six routes from the house to the school that keep apart, names that do not
-    /// run into routes, nodes or each other, route colours that tell apart, and every string in both languages. Each test
+    /// play order and challenges beside theirs, every stop at the place the layout gives it, every level's node on its own
+    /// leg near where the level starts (a route's first one just past the streets it shares outside the house), six routes
+    /// from the house to the school that keep apart, names that do not run into routes, nodes or each other, route colours
+    /// that tell apart, and every string in both languages. Each test
     /// lists every offender, not just the first, so that a new picture's layout can be fixed in one go.
     /// </summary>
     public class TownMapTests
@@ -232,6 +234,111 @@ namespace DribbleToSchool.Tests
                 }
             }
             NoProblems(problems, "stop markers");
+        }
+
+        const float StopOnRoute = 2f;
+
+        [Test]
+        public void EveryStopIsDrawnWhereTheLayoutPlacesIt()
+        {
+            var layout = Load();
+            if (layout.placeholder)
+            {
+                Assert.Ignore("placeholder layout: its stops are drawn halfway between their levels");
+                return;
+            }
+            // The picture shows each stop at a place of its own (the station by the railway bridge, the surf school on the
+            // boardwalk, the site office in the building site...): the layout names that place, on the stop's route, and the screen
+            // draws the stop's marker there.
+            var problems = new List<string>();
+            var listed = new HashSet<string>();
+            if (layout.stops != null)
+                foreach (var s in layout.stops)
+                {
+                    if (s == null) continue;
+                    if (!listed.Add(s.id)) problems.Add("the layout places " + s.id + " twice");
+                    Route of = null;
+                    foreach (var route in RouteTable.All) if (route.stops != null && System.Array.IndexOf(route.stops, s.id) >= 0) of = route;
+                    if (of == null) problems.Add("the layout places " + s.id + ", which is no route's stop");
+                    else if (of.id != s.route) problems.Add(s.id + " is on " + of.id + " in RouteTable but on " + s.route + " in the layout");
+                }
+            foreach (var route in RouteTable.All)
+            {
+                var line = TownMap.Route(route.id).points;
+                for (int i = 0; i < route.stops.Length; i++)
+                {
+                    Vector2 place;
+                    if (!TownMap.StopPoint(route.stops[i], out place)) { problems.Add(route.stops[i] + " (" + route.id + ") has no place in the layout"); continue; }
+                    float off = TownMap.DistanceTo(line, place);
+                    if (off > StopOnRoute) problems.Add(route.stops[i] + " is " + Mathf.RoundToInt(off) + " px off its route " + route.id + " (at most " + StopOnRoute + ")");
+                    Vector2? drawn = TownMap.StopPosition(route.id, i);
+                    if (drawn == null || Vector2.Distance(drawn.Value, place) > StopOnRoute)
+                        problems.Add(route.stops[i] + " is drawn at " + drawn + ", not at its place " + place);
+                }
+            }
+            NoProblems(problems, "stops");
+        }
+
+        /// <summary>A route's first node lies past the stem it shares with other routes near home: where it is this far from every other route.</summary>
+        const float StemClear = 75f;
+        /// <summary>... and at most this far along the route beyond it; a later node at most this far along its route after its stop.</summary>
+        const float FirstNodeReach = 500f, AfterStopReach = 260f;
+
+        /// <summary>How far along a route it is to where it leaves the stem it shares with the other routes near home.</summary>
+        static float StemEnd(TownRoute route)
+        {
+            for (float d = 0f; d < route.length; d += 2f)
+            {
+                Vector2 p = TownMap.At(route.points, d);
+                float nearest = float.MaxValue;
+                foreach (var other in TownMap.Routes) if (other != route) nearest = Mathf.Min(nearest, TownMap.DistanceTo(other.points, p));
+                if (nearest >= StemClear) return d;
+            }
+            return route.length;
+        }
+
+        [Test]
+        public void EveryLevelsNodeIsOnItsOwnLegNearWhereItStarts()
+        {
+            var layout = Load();
+            if (layout.placeholder)
+            {
+                Assert.Ignore("placeholder layout: its nodes are spread evenly along abstract routes");
+                return;
+            }
+            // Every route is one trip from home: its first level starts at home, each later one at the stop the level before ended
+            // at. A node lies on its level's own leg, between the stop (or home) it starts at and the stop (or school) it ends at,
+            // near the start of that leg: the first one on the first stretch its route has to itself (past West Street and Elm
+            // Street, which several routes share near home), each later one shortly after its stop.
+            var problems = new List<string>();
+            foreach (var route in RouteTable.All)
+            {
+                var line = TownMap.Route(route.id);
+                float[] stopAt = new float[route.stops.Length];
+                for (int i = 0; i < route.stops.Length; i++)
+                {
+                    Vector2? at = TownMap.StopPosition(route.id, i);
+                    stopAt[i] = at == null ? -1f : TownMap.DistanceAlong(line.points, at.Value);
+                }
+                for (int i = 0; i < route.levels.Length; i++)
+                {
+                    var node = TownMap.Node(route.levels[i]);
+                    if (node == null) continue;
+                    float along = TownMap.DistanceAlong(line.points, node.pos);
+                    float from = i == 0 ? 0f : stopAt[i - 1], to = i == route.levels.Length - 1 ? line.length : stopAt[i];
+                    if (along <= from || along >= to)
+                        problems.Add(route.levels[i] + " (" + route.id + ") is at " + Mathf.RoundToInt(along) + " px along its route, not on its own leg (" + Mathf.RoundToInt(from) + " to " + Mathf.RoundToInt(to) + ")");
+                    if (i == 0)
+                    {
+                        float stem = StemEnd(line);
+                        if (along < stem) problems.Add(route.levels[i] + ", the first level of " + route.id + ", is on the stem it shares with other routes near home (" + Mathf.RoundToInt(along) + " px along, the route leaves it at " + Mathf.RoundToInt(stem) + ")");
+                        else if (along > stem + FirstNodeReach) problems.Add(route.levels[i] + ", the first level of " + route.id + ", is " + Mathf.RoundToInt(along - stem) + " px along past the stem near home (at most " + FirstNodeReach + "): it would read as starting halfway");
+                    }
+                    else if (along - from > AfterStopReach)
+                        problems.Add(route.levels[i] + " is " + Mathf.RoundToInt(along - from) + " px along " + route.id + " after " + route.stops[i - 1] + ", where it starts (at most " + AfterStopReach + ")");
+                }
+            }
+            NoProblems(problems, "legs");
         }
 
         [Test]

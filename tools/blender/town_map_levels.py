@@ -78,13 +78,10 @@ def check_levels(L, built):
     problems = []
     nodes = built['nodes']
     for rid, levels, challenge in built['table']:
-        zone = L.LEVEL_ZONES.get(rid)
         for lid in levels:
             n = nodes[lid]
             z = zones_at(L, (n['x'], n['y']))
-            want = zone
-            if (lid, ) == (L.LAST_ZONE[0],):
-                want = L.LAST_ZONE[1]
+            want = L.LEVEL_ZONE.get(lid)
             if want not in z:
                 problems.append(f'{lid} (route {rid}) at ({n["x"]:.0f}, {n["y"]:.0f}) is in {sorted(z)}, not in the {want} zone')
         if challenge and challenge in getattr(L, 'CHALLENGE_ZONES', {}):
@@ -93,6 +90,13 @@ def check_levels(L, built):
             want = L.CHALLENGE_ZONES[challenge]
             if want not in z:
                 problems.append(f'{challenge} (route {rid}) at ({n["x"]:.0f}, {n["y"]:.0f}) is in {sorted(z)}, not in the {want} zone')
+    # the stops stand where they are in the levels: the station at the foot of the railway bridge, the surf school where the sand
+    # begins, the site office in the building site, the allotment by the railway...
+    for sid, s in built.get('stops', {}).items():
+        want = getattr(L, 'STOP_ZONE', {}).get(sid)
+        z = zones_at(L, (s['x'], s['y']))
+        if want is not None and want not in z:
+            problems.append(f'the stop {sid} (route {s["route"]}) at ({s["x"]:.0f}, {s["y"]:.0f}) is in {sorted(z)}, not in the {want} zone')
     rail = rail_polylines(L)
     want = {'street': (0, 0), 'market': (0, 0), 'beach': (0, 0), 'site': (0, 0), 'underpass': (1, 2), 'park': (1, 1)}
     for rid, pts in built['routes'].items():
@@ -108,7 +112,8 @@ def check_json(L, data, table):
     ox, oy = data['core']['x'], data['core']['y']
     routes = {r['id']: [(p['x'] - ox, p['y'] - oy) for p in r['points']] for r in data['routes']}
     nodes = {n['id']: dict(x=n['x'] - ox, y=n['y'] - oy) for n in data['nodes']}
-    return check_levels(L, dict(nodes=nodes, routes=routes, table=table))
+    stops = {s['id']: dict(x=s['x'] - ox, y=s['y'] - oy, route=s.get('route')) for s in data.get('stops', [])}
+    return check_levels(L, dict(nodes=nodes, routes=routes, table=table, stops=stops))
 
 
 def report(L, built):

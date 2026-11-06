@@ -137,6 +137,7 @@ namespace DribbleToSchool.EditorTools
 
             var t = new TrackBuilder(stage.transform);
             t.AuditName = "Holiday Run stage " + (i + 1) + " (" + st.levelId + ")";
+            t.Coaching.Enabled = false;   // the run has its own first-run tips, not the levels' coach
             // The slabs and sand cover exactly the stage's stretch, padded only at the ends of the world.
             t.SetChunk(first ? from - 70f : from, last ? to + 70f : to,
                 !first && prevChapter != st.chapter, !last && nextChapter != st.chapter);
@@ -235,6 +236,7 @@ namespace DribbleToSchool.EditorTools
                 var layout = new GameObject("Layout_" + (char)('A' + v));
                 layout.transform.SetParent(stage.transform, false);
                 var layoutBuilder = new TrackBuilder(layout.transform);
+                layoutBuilder.Coaching.Enabled = false;
                 layoutBuilder.AuditName = "Holiday Run stage " + (i + 1) + " (" + st.levelId + ") layout " + (char)('A' + v);
                 BuildLayout(layoutBuilder, plan.layouts[v], i);
                 // The layout's walls, barriers and trampolines against what the kid can do (the stage's own builder checked its ground and gaps).
@@ -317,7 +319,6 @@ namespace DribbleToSchool.EditorTools
                         case PatternKind.Puddle: t.Puddle(it.x0, it.x1); break;
                         case PatternKind.SandPatch: t.Sand(it.x0, it.x1); break;
                         case PatternKind.Spring: t.Springboard(it.x); break;
-                        case PatternKind.Pipes: t.RunPipes(it.x, it.a, it.b); break;
                         case PatternKind.Coin: t.Coin(new Vector2(it.x, it.y)); break;
                         case PatternKind.CoinRow: t.CoinRow(it.x0, it.x1, it.y, it.count); break;
                         case PatternKind.CoinArc: t.CoinArc(it.x0, it.x1, it.y, it.rise, it.count); break;

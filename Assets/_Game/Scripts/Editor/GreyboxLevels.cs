@@ -90,9 +90,9 @@ namespace DribbleToSchool.EditorTools
             t.Hint(24f, "jump");
             t.Hint(33f, "kick");
             t.Ground(-8f, 52f);
-            t.Sign("Hold the arrows to walk.\nKeep the ball close!", new Vector2(-8f, 3.2f));
+            t.Sign("Push the stick to walk.\nKeep the ball close!", new Vector2(-8f, 3.2f));
             t.Sign("Tap the screen just as\nyou catch up with the ball:\nPerfect touch!", new Vector2(13f, 3.4f));
-            t.Sign("Let go of the arrows to stop -\nthe ball stops at your feet", new Vector2(21f, 3f));
+            t.Sign("Let go of the stick to stop -\nthe ball stops at your feet", new Vector2(21f, 3f));
 
             t.Wall(27f, 0.3f, 0f, 0.6f);
             t.Sign("Kerb! Jump\n(button or swipe up)", new Vector2(27f, 2.6f));
@@ -317,7 +317,7 @@ namespace DribbleToSchool.EditorTools
             t.Start(0f);
             t.Hint(10f, "crossing");
             t.Ground(-8f, 90f);
-            t.Sign("Zebra crossing ahead.\nWait for the GREEN man -\nlet go of the arrows to stop", new Vector2(6f, 3.4f));
+            t.Sign("Zebra crossing ahead.\nWait for the GREEN man -\nlet go of the stick to stop", new Vector2(6f, 3.4f));
 
             t.Crossing(16f, 21f, 0f);
             t.Checkpoint(24f);
@@ -606,16 +606,20 @@ namespace DribbleToSchool.EditorTools
 
         // ===================== Chapter 4: Underpass & Construction =====================
 
-        /// <summary>L15: dark tunnels and puddles.</summary>
+        /// <summary>
+        /// L15: dark stretches and puddles on the way to the station. From home up the West Street and along Station Road beside the
+        /// building site to the station's hall at the foot of the railway bridge (docs/WORLD_MAP.md): the dark stretches are the site's
+        /// covered walkways over the footpath, not the railway, which only L18 goes under.
+        /// </summary>
         public static void TheUnderpass(TrackBuilder t)
         {
             t.Walls(-8f, 105f);
             t.Start(0f);
             t.Hint(10f, "tunnel");
             t.Ground(-8f, 105f);
-            t.Sign("Under the railway -\nit's dark in there!", new Vector2(5f, 3.2f));
+            t.Sign("Covered walkway -\nit's dark in there!", new Vector2(5f, 3.2f));
 
-            t.Tunnel(14f, 34f);
+            t.CoveredWalkway(14f, 34f);
             t.Puddle(20f, 23f);
             t.Wall(28f, 0.3f, 0f, 0.6f);
             t.Checkpoint(37f);
@@ -624,7 +628,7 @@ namespace DribbleToSchool.EditorTools
             t.Ramp(new Vector2(42f, 0f), new Vector2(48f, 1.5f));
             t.Platform(48f, 56f, 1.5f);
             t.Ramp(new Vector2(56f, 1.5f), new Vector2(62f, 0f));
-            t.Tunnel(64f, 86f);
+            t.CoveredWalkway(64f, 86f);
             t.Puddle(70f, 74f);
             t.CrateStack(79f);
             t.Checkpoint(89f);
@@ -638,28 +642,31 @@ namespace DribbleToSchool.EditorTools
             t.Goal(98f);
         }
 
-        /// <summary>L16: rolling pipes down the building-site slopes.</summary>
+        /// <summary>
+        /// L16: along the building site's hoarding. Its vehicle gates cross the footpath: wait while the banksman shows STOP
+        /// (the digger and the site pickup come out), cross on GO. A builder in hi-vis walks the footpath.
+        /// </summary>
         public static void BuildingSite(TrackBuilder t)
         {
             t.Walls(-8f, 115f);
             t.Start(0f);
-            t.Hint(12f, "pipes");
+            t.Hint(7f, "siteexit");
             t.Ground(-8f, 115f);
-            t.Sign("Building site! Pipes roll\ndown the slope - jump them", new Vector2(5f, 3.4f));
+            t.Sign("Building site! Wait for the\nbanksman's GO at the gates", new Vector2(4f, 3.4f));
+            t.SiteExit(9f, 14f, 0f);
 
             t.Ramp(new Vector2(18f, 0f), new Vector2(28f, 2.5f));
             t.Platform(28f, 34f, 2.5f);
-            t.Pipes(new Vector2(33f, 3.2f), 4f, 5f);
             t.Ramp(new Vector2(34f, 2.5f), new Vector2(40f, 0f));
             t.Checkpoint(42f);
             t.SlideUnder(45f, TrackBuilder.SlideLook.ScaffoldGantry);
             t.CrateStack(48f);
-            t.CrateStack(52f);
-            t.Ramp(new Vector2(58f, 0f), new Vector2(66f, 2f));
+            t.SiteExit(52.5f, 57.5f, 2.6f);
+            t.Ramp(new Vector2(59.5f, 0f), new Vector2(66f, 2f));
             t.Platform(66f, 72f, 2f);
-            t.Pipes(new Vector2(71f, 2.8f), 3.5f, 50f, 0.5f);
             t.Ramp(new Vector2(72f, 2f), new Vector2(78f, 0f));
             t.Checkpoint(80f);
+            t.Builder(81f, 86.5f);
             t.SwitchAndGate(new Vector2(88f, 2.6f), 92f);
             t.Puddle(95f, 98f);
             t.SlideUnder(101.8f, TrackBuilder.SlideLook.PipeRack);
@@ -667,7 +674,7 @@ namespace DribbleToSchool.EditorTools
             t.CoinArc(20f, 27f, 1.5f, 1.5f, 4);
             t.CoinRow(29f, 33f, 3.1f, 3);
             t.CoinRow(29.6f, 30.4f, 5.5f, 2);       // double jump, on the way to the sticker
-            t.CoinArc(47.5f, 53f, 1.8f, 1f, 4);
+            t.CoinArc(47.2f, 50f, 1.8f, 1f, 3);
             t.CoinRow(67f, 71f, 2.6f, 3);
             t.CoinRow(93f, 99f, 0.5f, 3);
             t.Sticker(new Vector2(31f, 6f));
@@ -677,7 +684,7 @@ namespace DribbleToSchool.EditorTools
         /// <summary>L17: a building site: ride crane-carried pallets over the trenches and the hoist up to the loading dock.</summary>
         public static void Cranes(TrackBuilder t)
         {
-            t.Walls(-8f, 110f);
+            t.Walls(-8f, 114f);
             t.Start(0f);
             t.Hint(15f, "platform");
             t.Ground(-8f, 20f);
@@ -698,11 +705,15 @@ namespace DribbleToSchool.EditorTools
             t.Sign("Builder's lift - going up!", new Vector2(66.5f, 4.6f));
             t.Ground(70f, 82f, 2f);
             t.Checkpoint(73f, 2f);
+            // The last trench is dug into the site's raised deck too: its far bank is the deck again (cones on both edges, a wall
+            // at each end), and a ramp takes the kid down to the street after it.
             t.Pit(82f, 90f, 2f);
             t.MovingPlatform(new Vector2(84f, 1.825f), 2.6f, new Vector2(4f, 0f));
-            t.Ground(90f, 110f);
-            t.Checkpoint(93f);
-            t.SlideUnder(97f, TrackBuilder.SlideLook.SiteBarrier);
+            t.Ground(90f, 92f, 2f);
+            t.Checkpoint(91f, 2f);
+            t.Ramp(new Vector2(92f, 2f), new Vector2(98f, 0f));
+            t.Ground(92f, 114f);
+            t.SlideUnder(101f, TrackBuilder.SlideLook.SiteBarrier);
 
             t.CoinRow(22f, 28f, 1f, 4);
             t.CoinRow(46f, 50f, 1.8f, 3);
@@ -710,10 +721,14 @@ namespace DribbleToSchool.EditorTools
             t.CoinRow(74f, 80f, 2.5f, 3);
             t.CoinRow(85f, 88f, 2.8f, 3);
             t.Sticker(new Vector2(67f, 6f));
-            t.Goal(102f);
+            t.Goal(106f);
         }
 
-        /// <summary>L18: chapter finale through tunnels, pipes and cranes.</summary>
+        /// <summary>
+        /// L18: chapter finale through tunnels and cranes: from the station's hall at the foot of the railway bridge, under the
+        /// railway twice (the main line and the station's loop), up to the East Street and the school. Commuters from the station
+        /// walk through the dim road tunnels (the ball bounces off them; chip it over or wait for a gap).
+        /// </summary>
         public static void TunnelRun(TrackBuilder t)
         {
             t.Walls(-8f, 135f);
@@ -722,7 +737,7 @@ namespace DribbleToSchool.EditorTools
             t.Sign("Tunnel Run! Twice\nunder the railway", new Vector2(4.4f, 3.2f));   // its legs clear of the barrier at 6.5
             t.SlideUnder(6.5f, TrackBuilder.SlideLook.SiteBarrier);
             t.Tunnel(10f, 40f, 0f, 3.4f);
-            t.Pipes(new Vector2(38f, 0.6f), 3.2f, 8f, 1f);
+            t.Pedestrian(24f, 34f, CoatB);         // commuters from the station, walking through the underpass
             t.Puddle(18f, 21f);
             t.Checkpoint(42f);
             t.Pit(48f, 56f);
@@ -735,7 +750,7 @@ namespace DribbleToSchool.EditorTools
             t.Tunnel(84f, 112f, 0f, 3.4f);
             t.CrateStack(92f);
             t.Puddle(98f, 101f);
-            t.Pipes(new Vector2(110f, 0.6f), 4f, 86f, 2f);
+            t.Pedestrian(102f, 108f, CoatC);
             t.SlideUnder(111.8f, TrackBuilder.SlideLook.BoomBarrier);
             t.Checkpoint(114f);
             t.SwitchAndGate(new Vector2(120f, 2.4f), 124f);
@@ -787,7 +802,7 @@ namespace DribbleToSchool.EditorTools
             t.Walls(-8f, 110f);
             t.Start(0f);
             t.Hint(8f, "fountain");
-            t.Ground(-8f, 110f);
+            t.Ground(-8f, 60f);
             t.Sign("Fountain jets push the ball up -\ndribble into them!", new Vector2(5f, 3.4f));
 
             t.Fountain(13f, 0f, 4f, 18f);
@@ -800,7 +815,8 @@ namespace DribbleToSchool.EditorTools
             t.Fountain(50f, 0f, 4f, 18f);
             t.Springboard(52f);
             t.Wall(54f, 1.6f);
-            t.Water(60f, 62f);
+            t.Water(60f, 62f);   // a real gap in the path (it was laid over unbroken ground)
+            t.Ground(62f, 110f);
             t.Checkpoint(65f);
             t.Fountain(72f, 0f, 6f, 14f);
             t.Dog(80f, 88f, DogWhite);

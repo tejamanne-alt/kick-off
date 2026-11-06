@@ -11,6 +11,9 @@ namespace DribbleToSchool.Hazards
     /// While the man is green, cars queue at the stop line up the side street. The 3D cars
     /// drive along the side street in real depth (z): far up the street, through the
     /// crossing at z = 0, and past the camera.
+    ///
+    /// A building site's vehicle gate works the same way (TrackBuilder.SiteExit): its banksman's STOP / GO board
+    /// (BanksmanBoard) stands for the signal, and the site's digger and pickup come out of the gate across the footpath.
     /// </summary>
     [RequireComponent(typeof(BoxCollider2D))]
     public class Crossing : HazardBase
@@ -23,6 +26,9 @@ namespace DribbleToSchool.Hazards
         public float redTime = 3f;
         [Tooltip("Seconds into the cycle at level start, to vary crossings.")]
         public float phaseOffset;
+
+        [Tooltip("What the screen says when the kid or the ball is caught on the crossing while the traffic goes (a Loc key).")]
+        public string loseKey = "lose.honk";
 
         [Header("Signal")]
         public SpriteRenderer greenFigure;
@@ -136,8 +142,8 @@ namespace DribbleToSchool.Hazards
             if (Current != Light.Red || !IsLive) return;
             Ball.BallController ball;
             Player.KidController kid;
-            if (TryGetBall(other, out ball)) Lose("lose.honk");
-            else if (TryGetKid(other, out kid)) Lose("lose.honk");
+            if (TryGetBall(other, out ball)) Lose(loseKey);
+            else if (TryGetKid(other, out kid)) Lose(loseKey);
         }
     }
 }

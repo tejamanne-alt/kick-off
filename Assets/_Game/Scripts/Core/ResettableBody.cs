@@ -2,9 +2,12 @@ using UnityEngine;
 
 namespace DribbleToSchool.Core
 {
-    /// <summary>Puts a pushable physics object (crate, barrel) back where it started on restart.</summary>
+    /// <summary>
+    /// Puts a pushable physics object (crate, barrel) back where it started on restart, and when the kid goes back to a
+    /// checkpoint behind where it started (so a crate knocked into the way is out of it again).
+    /// </summary>
     [RequireComponent(typeof(Rigidbody2D))]
-    public class ResettableBody : MonoBehaviour, IResettable
+    public class ResettableBody : MonoBehaviour, IResettable, IResetAhead
     {
         Rigidbody2D body;
         Vector2 startPosition;
@@ -15,6 +18,11 @@ namespace DribbleToSchool.Core
             body = GetComponent<Rigidbody2D>();
             startPosition = body.position;
             startRotation = body.rotation;
+        }
+
+        public void ResetAhead(float checkpointX)
+        {
+            if (startPosition.x >= checkpointX - 1f) ResetState();
         }
 
         public void ResetState()

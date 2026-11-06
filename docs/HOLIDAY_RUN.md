@@ -1,7 +1,7 @@
 # Holiday Run
 
 The endless mode of Kick Off 2: **the campaign with no destination.** You play exactly as in the story
-levels (walk with the arrows, dribble, jump, slide, aim and kick) along one long street that is the whole
+levels (walk with the stick, dribble, jump, slide, aim and kick) along one long street that is the whole
 story world laid end to end, and nothing ends the run until your balls do.
 
 ## The idea
@@ -21,10 +21,10 @@ story world laid end to end, and nothing ends the run until your balls do.
 
 ## Controls
 
-The campaign's, unchanged: the left thumb walks (the arrows) and slides (the SLIDE button up and to the left of the
-forward arrow, or a flick down on an arrow while walking), the right thumb has JUMP and, beside it, KICK (drag from it
+The campaign's, unchanged: the left thumb walks and slides with one stick (push left or right to walk, pull down to
+slide, the way it leans picks the slide's way), the right thumb has JUMP and, beside it, KICK (drag from it
 to aim, release to shoot; a tap is a short pass), and a quick tap anywhere else touches the ball. The camera stands the
-kid clear of the buttons on the left, so the left thumb never covers them. The keyboard is the story's too (`A D` or the arrows, `Space`, `S`, `K`,
+kid clear of the stick's area on the left, so the left thumb never covers them. The keyboard is the story's too (`A D` or the arrows, `Space`, `S`, `K`,
 mouse drag from KICK). See the README for the table, and `GameInput.LayoutOn` and
 `Tests/Editor/ControlLayoutTests.cs` for the layout and its guarantees.
 
@@ -103,7 +103,7 @@ The targets and rewards are first guesses: none are calibrated against real play
 | 1 Home Street | Out the Door, Parked Cars, Up the Hill, Garden Gate, Puddle Lane | kerbs, garden steps, planters, parked cars, awnings, drain works, puddles, a stroller or two |
 | 2 Market | Market Morning, First Crossing, Corner Shop, Fruit Stalls, Rush Hour | crates, stall awnings, zebra crossings with traffic, pedestrians, springboards |
 | 3 The Beach | Boardwalk, Low Tide, Seagull Bay, Sandcastle Sprint | boardwalk gaps, sandcastles, soft sand, gulls, the tide, springboards |
-| 4 Underpass | The Underpass, Building Site, Cranes, Tunnel Run | tunnel lamps, trenches, scaffolds, cranes with pallets, rolling pipes |
+| 4 Underpass | The Underpass, Building Site, Cranes, Tunnel Run | tunnel lamps, trenches, scaffolds, cranes with pallets, commuters in the underpass |
 | 5 Park & School | Park Gates, Fountain Square, Playground, Duck Pond, The Final Bell | hedges, dogs, fountain jets, swings over the stream, the school gate |
 
 Every stage also has, whatever its traits: something to smash (crates, a sandcastle on the beach, cones on the site, now and then
@@ -133,7 +133,7 @@ Scripts/Holiday/
   BallSmasher.cs          on the ball: a hard kick into a crate smashes it; a ball flying through a balloon bursts it
   HolidayAtmosphere.cs    carries the sun, sky and haze from one chapter's mood to the next
   HolidayRunHud.cs        the run's screen: score card, balls left, multiplier, stage ribbon and chapter banner, toasts,
-                          power-up timers, the touch buttons (arrows, aim), the day splash
+                          power-up timers, the touch controls (stick, JUMP, KICK, aim), the day splash
   HolidayRunPanels.cs     the pause and results menus (revive, run again, home, mission bars)
   HolidayMissions.cs      the mission pool and its saved progress
 Scripts/FrontEnd/
@@ -228,7 +228,7 @@ trampoline's throw 13 m/s, step 1/60 s) and the limits follow from the flights:
 | round every gap | 6 m of clear ground before it (run-up, room to kick the ball across), 4 m after (landing, room to fetch the ball), no wall, beat or power-up in either; the ball is chipped 3 to 6 m, so 3.2 m is fine for it |
 | low / mid / tall / highest wall | 0.5 / 1.0 (a single jump) / 1.7 (a double jump) / **1.8** m; a parked car (1.55 m) is climbed in two hops, a pile of crates is 1.42 m |
 | barrier to slide under | 0.85 m clear (the sliding kid is 0.5 m); up to 4.4 m long (the slide itself carries 2.9 m, the low shuffle under a longer barrier the rest) |
-| underpass deck | 3.8 m; the head of a double jump is at 3.27 m. Rolling pipes are 0.9 m across |
+| underpass deck | 3.8 m; the head of a double jump is at 3.27 m |
 | coins | up to 3.5 m (a double jump's head), up to 5 m on a trampoline's throw |
 | trampoline throw | peaks 2.76 m, flies 3.4 m (4.6 m with the air jump it gives back), so 4.8 m of the street after the pad are kept clear and under a ceiling of 4.7 m |
 
@@ -239,8 +239,8 @@ a gap over its limit, a wall too high, too little run-up or landing, or street l
 
 - **Things in the way**: low (0.3 to 0.5 m: kerbs, steps, borders, sometimes a hurdle run of two or three 8 to 9.5 m apart),
   mid (0.6 to 1.0 m), tall (1.5 to 1.7 m, a double jump: rare and always with a coin arc over it), parked cars, barriers to slide
-  under (chapter by chapter from the Barriers kit), gaps, puddles and soft sand that slow you down, trampolines, rolling pipes in
-  the tunnel.
+  under (chapter by chapter from the Barriers kit), gaps, puddles and soft sand that slow you down, trampolines, commuters walking
+  through the underpass (the Tunnel Run stage; there were rolling pipes, taken out of the game as unrealistic).
 - **Things to smash** (`RunBreakable`, a hard kick breaks them for coins): a crate, a sandcastle on the beach, a stack of cones on the
   site (every other one) in every stage, and now and then a pile of two crates and one on top (a big sandcastle on the beach, 1.42 m:
   too high for a single jump, so a double jump or a hard kick). No more than three single ones and one pile in a stage, and they are as fair as a wall of
@@ -335,8 +335,8 @@ First thing in the editor:
    burst for 5 coins and the ball flies on; the kid walks through them); collect each power-up and a star; walk through the
    trail of coins; check the missions after a run. Try the trenches at the walking pace: a 1.9 m one should take a single
    jump with room to spare, a 3.1 m one a double jump; if they feel tight, `JumpReach.PlainSlack` and `WideSlack` are the knobs.
-7. On a phone: the arrows under the left thumb with SLIDE up and to their left (and a flick down on the forward arrow
-   sliding while walking), JUMP in the right corner with KICK beside it, all the same size and see-through, none hard
+7. On a phone: the stick under the left thumb (it comes to the thumb; a pull down slides, down-right forward and
+   down-left back), JUMP in the right corner with KICK beside it, the same size and see-through, none hard
    to reach, the kid never under the left thumb, and the aim drag from KICK working with the aim bar showing.
 8. Profile a long run: only about three stages in memory, and no frame spike when a stage wakes.
 
@@ -347,8 +347,6 @@ Assumptions in the code that only a run can confirm:
 - The streamer calls `RunChunk.Prepare` while a stage is still inactive and then switches it on, and the hazards
   (pedestrians, dogs, gulls, fountains, springboards, the tide, slow zones, tunnel darkness) start fine without
   anything from outside their stage.
-- The rolling pipes (made at run time by `PipeSpawner` from a template carrying a `RunSolid`) shove the kid and the
-  ball as in the campaign and count as passed once the kid is beyond them; a rolling pipe is the only obstacle that moves.
 - A balloon is a trigger collider with a `RunBreakable` (`floating`): Unity delivers `OnTriggerEnter2D` to the ball's
   `BallSmasher` when its collider enters it (the ball has a Rigidbody2D, the balloon none), and the kid's capsule, which
   passes through, does nothing. Its bobbing (`RunBreakable.Update`) moves a plain transform.

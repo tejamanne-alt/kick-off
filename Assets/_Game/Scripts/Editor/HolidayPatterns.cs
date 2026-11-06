@@ -12,7 +12,7 @@ namespace DribbleToSchool.EditorTools
         // Street life: in the layouts, so each of the three has its people and dogs in other places.
         Walkers, DogPatch,
         // Things in the kid's way.
-        Hop, Mid, Tall, Crate, Stack, Car, Slide, Puddle, SandPatch, Spring, Pipes,
+        Hop, Mid, Tall, Crate, Stack, Car, Slide, Puddle, SandPatch, Spring,
         // Pickups and targets.
         Coin, CoinRow, CoinArc, Star, PowerUp, Balloon,
     }
@@ -70,7 +70,7 @@ namespace DribbleToSchool.EditorTools
     /// (HolidayStages). Pure logic on world x, so it can be checked without the editor: the rules are in
     /// <see cref="Validate"/>.
     ///
-    /// The kid is steered with the walk arrows at 4.2 m/s, so what a stage may ask comes from what the kid can really
+    /// The kid is steered with the walk stick at 4.2 m/s, so what a stage may ask comes from what the kid can really
     /// do at that speed (JumpReach): a plain gap (one jump) is 1.4 to 1.9 m wide and never over 2.0, a wide gap (a double
     /// jump) 2.7 to 3.1 and never over 3.2; low things (steps, kerbs) are up to 0.5 m, mid things (planters, rocks) up to
     /// 1.0, tall things 1.7 at most and only a double jump gets over them, nothing is higher than 1.8 (a parked car is
@@ -93,7 +93,7 @@ namespace DribbleToSchool.EditorTools
         public const int Variants = 3;
 
         /// <summary>What a thing asks of the kid; two different demands are never closer than <see cref="MinDifferent"/>.</summary>
-        enum Demand { Jump, Double, Slide, Gap, Slow, Launch, Dodge }
+        enum Demand { Jump, Double, Slide, Gap, Slow, Launch }
 
         // ----------------------------------------------------------------------------------------------- what the kid can do
 
@@ -334,8 +334,7 @@ namespace DribbleToSchool.EditorTools
 
             if (st.Has(StageTraits.Tunnel))
             {
-                // With rolling pipes in it the tunnel is longer: the pipes run along its inside.
-                float len = st.Has(StageTraits.Pipes) ? Range(rng, 38f, 42f) : Range(rng, 26f, 32f);
+                float len = Range(rng, 26f, 32f);
                 float whole = len + TunnelApproach + TunnelAfter;
                 float x;
                 // A tunnel is placed as one block, with its keep-out ends in.
@@ -487,7 +486,6 @@ namespace DribbleToSchool.EditorTools
             if (st.Has(StageTraits.Puddles)) required.Add(new Template(PatternKind.Puddle, 1));
             if (st.Has(StageTraits.SoftSand)) required.Add(new Template(PatternKind.SandPatch, 1));
             if (st.Has(StageTraits.Springboards)) required.Add(new Template(PatternKind.Spring, 1));
-            if (st.Has(StageTraits.Pipes)) required.Add(new Template(PatternKind.Pipes, 1));
 
             // The density's share of further groups, drawn up front so the choice doesn't depend on what fits. Gaps count as demands.
             float free = b - a;
@@ -788,7 +786,6 @@ namespace DribbleToSchool.EditorTools
                 c.x += lead;
                 c.x0 += lead;
                 c.x1 += lead;
-                if (c.kind == PatternKind.Pipes) c.b += lead;
                 items.Add(c);
             }
         }
@@ -814,7 +811,6 @@ namespace DribbleToSchool.EditorTools
                 case PatternKind.Tall: case PatternKind.Car: case PatternKind.Stack: return 1f;
                 case PatternKind.Slide: return 2f;
                 case PatternKind.Puddle: case PatternKind.SandPatch: return 1f;
-                case PatternKind.Pipes: return 3f;
                 default: return 0f;
             }
         }
@@ -833,7 +829,7 @@ namespace DribbleToSchool.EditorTools
                 case PatternKind.Puddle: return MakeSlow(PatternKind.Puddle, rng, 3.5f, 5f);
                 case PatternKind.SandPatch: return MakeSlow(PatternKind.SandPatch, rng, 6f, 9f);
                 case PatternKind.Spring: return MakeSpring();
-                default: return MakePipes(st);
+                default: throw new ArgumentOutOfRangeException("t", "no group is made for " + t.kind);
             }
         }
 
@@ -941,27 +937,12 @@ namespace DribbleToSchool.EditorTools
             return g;
         }
 
-        /// <summary>
-        /// A stretch where pipes roll down at the kid from its far end every few seconds, kept clear of
-        /// everything else (they would pile up against it); inside the tunnel in a stage that has one.
-        /// </summary>
-        static Group MakePipes(HolidayStages.Stage st)
-        {
-            var g = new Group { kind = PatternKind.Pipes, demand = Demand.Dodge, extra = ExtraFor(PatternKind.Pipes), tunnelOk = st.Has(StageTraits.Tunnel) };
-            float lane = st.Has(StageTraits.Tunnel) ? 22f : 30f;
-            float interval = Lerp(6f, 4.6f, Clamp01((st.density - 0.5f) / 0.5f));
-            // x is the spawner's place; b is where the pipes are removed (the lane's start, once the group is placed).
-            g.items.Add(new PatternItem { kind = PatternKind.Pipes, x = lane, x0 = 0f, x1 = lane + 2f, w = 1f, a = interval, b = 0f });
-            g.length = lane + 2f;
-            return g;
-        }
-
         // ----------------------------------------------------------------------------------------------- what the ground holds
 
         static bool IsSolidKind(PatternKind k)
         {
             return k == PatternKind.Hop || k == PatternKind.Mid || k == PatternKind.Tall || k == PatternKind.Crate || k == PatternKind.Stack || k == PatternKind.Car ||
-                k == PatternKind.Slide || k == PatternKind.Puddle || k == PatternKind.SandPatch || k == PatternKind.Spring || k == PatternKind.Pipes;
+                k == PatternKind.Slide || k == PatternKind.Puddle || k == PatternKind.SandPatch || k == PatternKind.Spring;
         }
 
         /// <summary>Things that stand in the kid's way as walls to get over (a coin must not hang inside these).</summary>
@@ -1342,7 +1323,7 @@ namespace DribbleToSchool.EditorTools
             {
                 if (!IsSolidKind(o.kind) || c.x <= o.x0 - 0.1f || c.x >= o.x1 + 0.1f) continue;
                 if (o.kind == PatternKind.Slide) { if (c.y + 0.28f > SlideClearance) return true; }
-                else if (o.kind == PatternKind.Puddle || o.kind == PatternKind.SandPatch || o.kind == PatternKind.Pipes) continue;
+                else if (o.kind == PatternKind.Puddle || o.kind == PatternKind.SandPatch) continue;
                 else if (c.y < TopAt(o, c.x) + 0.25f) return true;
             }
             return false;
@@ -1603,7 +1584,6 @@ namespace DribbleToSchool.EditorTools
             Need(problems, tag, st, StageTraits.Puddles, items, PatternKind.Puddle);
             Need(problems, tag, st, StageTraits.SoftSand, items, PatternKind.SandPatch);
             Need(problems, tag, st, StageTraits.Springboards, items, PatternKind.Spring);
-            Need(problems, tag, st, StageTraits.Pipes, items, PatternKind.Pipes);
             if (plan.life > 0)
             {
                 Need(problems, tag, st, StageTraits.Pedestrians, items, PatternKind.Walkers);
@@ -1641,7 +1621,6 @@ namespace DribbleToSchool.EditorTools
                 case PatternKind.Slide: return Demand.Slide;
                 case PatternKind.Puddle: case PatternKind.SandPatch: return Demand.Slow;
                 case PatternKind.Spring: return Demand.Launch;
-                case PatternKind.Pipes: return Demand.Dodge;
                 default: return Demand.Jump;
             }
         }
