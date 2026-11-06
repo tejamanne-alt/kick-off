@@ -509,6 +509,14 @@ Every level's street is now a sunny California coast town, after the user's refe
 - `preview_street.py` mirrors the new layout (it rendered chapters 1 to 3 for review). The Buildings, Street and Plants kits still rebuild identically apart from the intended changes (the pole, the signs' pixels, the two palms).
 - Not checked in Unity: the new FBXs' import, the levels with the new houses (lot fits, porches clear of the fences, the pier at every beach level and the Holiday Run's), and performance with the extra palms and the pier.
 
+## High-detail textures for the California town and the plants
+
+- **Coast kit**: its own 4096 x 4096 atlas (`KIT_ATLAS`, set by `kit_buildings.py --kit Coast`) painted at 96 px/m on the fronts, 48 on the sides and 56 on the roofs (it was 34, 23 and 25 on a 2048 x 4096 sheet): a villa's front is about 1290 px across (was about 410), a shop's about 900. Glass, wood and the Coast signs are tiles at twice the size; the Buildings kit's other signs and shop interiors are left out of the Coast atlas. The piers keep half that density (they are seen from far off).
+- **Hipped roofs in geometry**: each hip is now stepped courses of tiles (inset rings with a proud, shadowed lip at each row's lower edge), under the painted barrel tiles, so the courses catch the light.
+- Fixes found at the new detail: the fanlights over arched windows show clear glass (they showed a curtain), the Mission shop's arched windows no longer leave holes beside the arch, and the bracket in front of its sign is gone.
+- **Plants atlas** 2048 x 2048 (was 1024): every leaf sprite, bark, birch, cherry, palm trunk, frond and hedge tile at twice the resolution. The UV insets keep their 1024 values and the painters' pixel sizes scale with the atlas, so the models are unchanged (identical manifest; the FBXs differ only in their timestamps) and every mark stays where it was, sharper.
+- The Buildings kit (the town's older houses and shops) stays at its 2048 x 4096 atlas, which is full; doubling it would need an 8192-tall sheet.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

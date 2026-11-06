@@ -7,13 +7,15 @@
 #   mat    index into MATS        sm     0 sharp above 50 degrees, 1 always smooth, 2 always sharp
 #   shade  baked brightness       bx0..bz1  the piece's bounds (gradients, 'piece' UVs)
 # and a loop UV layer 'UVMap' that 'keep' materials fill themselves.
-import bpy, bmesh, math
+import bpy, bmesh, math, os
 import numpy as np
 from mathutils import Vector, Matrix
 import kit_lib as K
 
 PI = math.pi
-ATW, ATH = 2048, 4096           # atlas size (pixels): 2048 across, 4096 down
+# Atlas size (pixels): 2048 across, 4096 down; KIT_ATLAS (e.g. '4096x4096') overrides it for a kit
+# painted at a higher texel density (kit_buildings.py --kit Coast).
+ATW, ATH = (int(v) for v in os.environ.get('KIT_ATLAS', '2048x4096').split('x'))
 AT = ATW
 WHITE_UV = K.WHITE_UV
 

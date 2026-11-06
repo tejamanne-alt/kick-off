@@ -35,8 +35,27 @@ def hip(B, x0, x1, y0, y1, ze, rise, over=0.45, t=0.14, mat='roof', edge='roofw'
         tris = [([(X0, Y0, zt), (X1, Y0, zt), R0], (0, -1, 1)), ([(X1, Y1, zt), (X0, Y1, zt), R1], (0, 1, 1))]
         hips = [((X0, Y0, zt), R0), ((X1, Y0, zt), R0), ((X0, Y1, zt), R1), ((X1, Y1, zt), R1)]
     mb = MB()
-    for pts, e in quads + tris:
-        mb.face(pts, mat, e, 1.0)
+    # The slopes in rows of tiles, eaves to ridge: each row an inset ring of four slopes whose lower
+    # edge stands proud of the row below it by a lip (the tiles' overlap), so the courses catch the
+    # light and throw a thin shadow, as real tile courses do. The rings close to the ridge line.
+    k = rise / h
+    rows = max(3, int(round(h / 0.34)))
+    lip = 0.045
+    def ring(d):
+        dd = min(d, h)
+        return (X0 + dd, X1 - dd, Y0 + dd, Y1 - dd), zt + dd * k
+    for i in range(rows):
+        (ax0, ax1, ay0, ay1), za = ring(h * i / rows)
+        (bx0, bx1, by0, by1), zb = ring(h * (i + 1) / rows)
+        zl = za + (lip if i > 0 else 0.0)
+        sides = [([(ax0, ay0), (ax1, ay0)], [(bx0, by0), (bx1, by0)], (0, -1)),
+                 ([(ax1, ay0), (ax1, ay1)], [(bx1, by0), (bx1, by1)], (1, 0)),
+                 ([(ax1, ay1), (ax0, ay1)], [(bx1, by1), (bx0, by1)], (0, 1)),
+                 ([(ax0, ay1), (ax0, ay0)], [(bx0, by1), (bx0, by0)], (-1, 0))]
+        for (pa, pb), (qa, qb), (ex, ey) in sides:
+            mb.face([(pa[0], pa[1], zl), (pb[0], pb[1], zl), (qb[0], qb[1], zb), (qa[0], qa[1], zb)], mat, (ex, ey, 1), 1.0)
+            if i > 0:
+                mb.face([(pa[0], pa[1], za), (pb[0], pb[1], za), (pb[0], pb[1], zl), (pa[0], pa[1], zl)], edge, (ex, ey, 0), 0.5)
     # the tile ends round the eaves, and the soffit under them
     rim = [(X0, Y0), (X1, Y0), (X1, Y1), (X0, Y1)]
     outs = [(0, -1, 0), (1, 0, 0), (0, 1, 0), (-1, 0, 0)]
@@ -55,7 +74,7 @@ def hip(B, x0, x1, y0, y1, ze, rise, over=0.45, t=0.14, mat='roof', edge='roofw'
     return zr
 
 
-def arch_head(B, wf, u0, u1, v, out=0.05, band=0.13, glass='glass1', mat='trim', n=12):
+def arch_head(B, wf, u0, u1, v, out=0.05, band=0.13, glass='glass0', mat='trim', n=12):
     """A round arch over an opening: a glazed half-round fanlight from u0 to u1 springing at v, in
     a moulded band (Spanish Revival)."""
     r = (u1 - u0) / 2; c = (u0 + u1) / 2
@@ -161,7 +180,7 @@ def villa_stucco(B):
     lantern(B, F, door_o[0] - 0.27, 2.2, out=0.2, name='Lamp')
     # the picture window under its own arch, the upstairs windows, a balconette on one
     cal_window(B, F, *pic, cols=3, seed=611, glass='glass1')
-    arch_head(B, F, pic[0], pic[1], pic[3] + 0.0, band=0.12, glass='glass2')
+    arch_head(B, F, pic[0], pic[1], pic[3] + 0.0, band=0.12, glass='glass0')
     for k, wo in enumerate(up):
         cal_window(B, F, *wo, cols=2, seed=612 + k, glass=('glass0', 'glass3')[k])
     iron_rail(B, F, up[1][0] - 0.1, up[1][1] + 0.1, up[1][2] - 0.05, h=0.75, out=0.3)
@@ -406,7 +425,7 @@ def shop_mission(B):
     door_o = (W / 2 - 1.7, W / 2 - 0.7, 0.0, 2.55)
     up = [(-W / 2 + 1.0, -W / 2 + 2.2, 4.0, 5.4), (-0.6, 0.6, 4.0, 5.4), (W / 2 - 2.2, W / 2 - 1.0, 4.0, 5.4)]
     F, Rt, Bk, Lf = frames(B)
-    wall(B, F, -W / 2, W / 2, curve, [sf, door_o] + up, 0.0)
+    wall(B, F, -W / 2, W / 2, curve, [sf, door_o] + [(a, b_, c, d - 0.55) for a, b_, c, d in up], 0.0)
     wall(B, Rt, 0, D, H + pp, [(3.0, 4.2, 4.0, 5.3)], 0.0)
     wall(B, Lf, -D, 0, H + pp, [], 0.0)
     wall(B, Bk, -W / 2, W / 2, H + pp, [], 0.0)
@@ -415,11 +434,11 @@ def shop_mission(B):
     door(B, F, *door_o, mat='woodd', glass=0.55, panels=((1, 2),), name='Door')
     for k, wo in enumerate(up):
         window(B, F, wo[0], wo[1], wo[2], wo[3] - 0.55, cols=2, frame='frame', glass=('glass0', 'glass1', 'glass3')[k], sill=None, head=None, seed=662 + k)
-        arch_head(B, F, wo[0], wo[1], wo[3] - 0.55, band=0.1, glass='glass2')
+        arch_head(B, F, wo[0], wo[1], wo[3] - 0.55, band=0.1, glass='glass0')
         iron_rail(B, F, wo[0] - 0.1, wo[1] + 0.1, wo[2] - 0.05, h=0.7, out=0.28)
     window(B, Rt, 3.0, 4.2, 4.0, 5.3, cols=2, frame='frame', glass='glass0', seed=665, cheap=True)
     # the tiled pent roof over the shopfront, on timber brackets
-    knee_brackets(B, F, [sf[0] + 0.2, (sf[0] + sf[1]) / 2, sf[1] - 0.2, door_o[1] + 0.2], 3.55, 0.8, drop=0.6)
+    knee_brackets(B, F, [sf[0] + 0.2, sf[1] - 0.2, door_o[1] + 0.2], 3.55, 0.8, drop=0.6)
     shed(B, -W / 2 - 0.1, W / 2 + 0.1, -0.95, 0.05, 3.55, 3.95, t=0.12, pitch=0.3, depth=0.03, mat='roof', edge_mat='roofw',
          fascia_mat='woodd', feat=False)
     B.feat('roof', 'hip', x0=-W / 2 - 0.1, x1=W / 2 + 0.1, y0=-1.05, y1=0.05, row=0.3, pitch=0.22)

@@ -22,6 +22,10 @@
 # details), kit_buildings_town.py (the town's shops and houses), kit_buildings_cal.py (California
 # villas, a Craftsman house, a beach condo and beach-town shops), kit_buildings_atlas.py (painting).
 import sys, os, math
+# The Coast kit is painted at about 2.8 x the Buildings kit's texel density (a building's front some
+# 1100 to 1300 pixels across, glass, wood and signs at twice the size) on a 4096 x 4096 atlas.
+if '--kit' in sys.argv and sys.argv[sys.argv.index('--kit') + 1] == 'Coast':
+    os.environ['KIT_ATLAS'] = '4096x4096'
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import bpy
 import numpy as np
@@ -899,18 +903,28 @@ def main():
     bottom = [('wood', 256, 128), ('crate', 128, 128), ('p_orange', 128, 128), ('p_apple', 128, 128), ('p_lemon', 128, 128),
               ('p_green', 128, 128), ('p_tomato', 128, 128), ('p_plum', 128, 128), ('melon', 128, 128), ('ac', 192, 128),
               ('white', 128, 128)]
+    hi = KIT == 'Coast'
+    if hi:
+        # Only the tiles the Coast models use, at twice the size (the town's other signs and
+        # interiors are left out: their painters skip a tile that has no region).
+        keep = {'glass0', 'glass1', 'glass2', 'glass3', 'louvre', 'wear', 'solar', 'vent'} | {n for n, _, _ in SG.COAST_TILES}
+        maps = [(n, w * 2, h * 2) if n in keep else (n, w, h) for n, w, h in maps
+                if n in keep or n in ('brick', 'banner', 'clock')]
+        bottom = [(n, w * 2, h * 2) if n in ('wood', 'ac') else (n, w, h) for n, w, h in bottom]
     exts = {}
     for name, W, H, D, RH, fn, p, mtop, st, extra in specs:
         fr = st.get('ppm') or (44 if W <= 11 else (34 if W <= 14 else 29))
+        if hi: fr = 48 if name.startswith('Pier') else 96
         e = {'front': (-W / 2 - 0.7, W / 2 + 0.7, 0.0, mtop), 'right': (-0.7, D + 0.7, 0.0, mtop),
              'left': (-0.7, D + 0.7, 0.0, mtop), 'roof': (-W / 2 - 0.8, W / 2 + 0.8, -1.0, D + 0.8)}
         e.update(extra)
         exts[name] = e
         for mp, (a0, a1, b0, b1) in e.items():
             ppm = {'front': fr, 'roofb': 44, 'right': 23, 'left': 15, 'roof': 25 if RH > 0 else 8}[mp]
+            if hi: ppm = {'front': fr, 'roofb': 96, 'right': 48, 'left': 40, 'roof': 56 if RH > 0 else 16}[mp] // (2 if name.startswith('Pier') else 1)
             maps.append((name + '.' + mp, int(math.ceil((a1 - a0) * ppm)), int(math.ceil((b1 - b0) * ppm))))
     used = allocate(bottom, maps)
-    print('atlas rows used', used, 'of', ATH - 128 - 12)
+    print('atlas rows used', used, 'of', ATH - max(h for _, _, h in bottom) - 12)
     buildings = []
     for name, W, H, D, RH, fn, p, mtop, st, extra in specs:
         B = Bld(name, W, H, D, RH, p)
