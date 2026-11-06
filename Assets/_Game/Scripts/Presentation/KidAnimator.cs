@@ -7,9 +7,9 @@ namespace DribbleToSchool.Presentation
     /// <summary>
     /// Procedural animation for the kid with knees and elbows: a run cycle whose
     /// knees fold in the swing and straighten on the plant, bent-elbow arm drive,
-    /// idle breathing, jump tuck and reach, a double jump that stretches up, tucks and spins a
-    /// somersault about the body's centre inside a trailing crescent of light, then opens out to
-    /// land; a feet-first slide that lunges in with an overshoot, scuffs along and springs up;
+    /// idle breathing, a jump that drives one knee up off the other foot, a double jump that is a
+    /// second, harder push in the air (the knee driven up again, the other leg kicking down, both arms
+    /// swung up hard, then the legs gathered under to land: a real body's move, no spin); a feet-first slide that lunges in with an overshoot, scuffs along and springs up;
     /// a cocked-knee kick that snaps through, a crouching landing, a celebration at the gate and
     /// a stumble when the ball is lost.
     /// </summary>
@@ -22,14 +22,8 @@ namespace DribbleToSchool.Presentation
         public float maxArmSwing = 34f;
 
         [Header("Double jump")]
-        [Tooltip("How long the stretch, tuck and somersault of the double jump take.")]
-        public float flipDuration = 0.44f;
-        [Tooltip("How far the body turns forward in the double jump (360 = a full somersault, 0 = just a tuck).")]
-        public float flipDegrees = 360f;
-        [Tooltip("Height above the hips that the somersault spins about (metres): about the belly.")]
-        public float flipCentreLift = 0.1f;
-        [Tooltip("Size of the crescent of light that follows the somersault (0 = none).")]
-        public float swooshSize = 1.05f;
+        [Tooltip("How long the double jump's push, gather and reach for the ground take.")]
+        public float airJumpDuration = 0.46f;
 
         [Header("Slide")]
         [Tooltip("How far the body leans back in the slide (degrees from upright).")]
@@ -51,8 +45,7 @@ namespace DribbleToSchool.Presentation
         float bagAngle, bagVelocity;
         float slideBlend;
         bool wasLow;
-        float getUpTime = -10f, shiftBlend;
-        SpriteRenderer swoosh;
+        float getUpTime = -10f;
         // Rest-pose measurements (world units) the slide is built from: how high the body's pivot
         // and the hips sit above the feet. Every character (boy, girl, procedural kid) differs.
         float pivotHeight = 0.6f, hipHeight = 0.72f;
@@ -61,8 +54,6 @@ namespace DribbleToSchool.Presentation
         {
             rig = GetComponent<CharacterRig>();
             MeasureRestPose();
-            // Drawn once, now, rather than in the middle of the first somersault.
-            if (swooshSize > 0f && UI.Kit.ProceduralSprites.Swoosh == null) swooshSize = 0f;
         }
 
         /// <summary>Runs while the rig still stands in its rest pose (nothing has posed it yet).</summary>
@@ -94,11 +85,6 @@ namespace DribbleToSchool.Presentation
                 kid.Jumped -= OnJumped;
                 kid.DoubleJumped -= OnDoubleJumped;
             }
-        }
-
-        void OnDestroy()
-        {
-            if (swoosh != null) Destroy(swoosh.gameObject);
         }
 
         void OnLanded(float fallSpeed)
@@ -150,23 +136,18 @@ namespace DribbleToSchool.Presentation
 
             var p = RigPose.Neutral;
 
-            // The double jump's somersault, added last so other moves lean around it. Landing
-            // before it's done finishes it off in a blink rather than snapping upright.
-            float ft = (Time.time - doubleJumpTime) / Mathf.Max(0.05f, flipDuration);
+            // The double jump: a second push in the air. Landing before it's done hurries it to its end.
+            float ft = (Time.time - doubleJumpTime) / Mathf.Max(0.05f, airJumpDuration);
             if (ft >= 0f && ft < 1f && kid.IsGrounded)
             {
                 doubleJumpTime -= Time.deltaTime * 3f;   // four times as fast
-                ft = (Time.time - doubleJumpTime) / Mathf.Max(0.05f, flipDuration);
+                ft = (Time.time - doubleJumpTime) / Mathf.Max(0.05f, airJumpDuration);
             }
-            bool flipping = ft >= 0f && ft <= 1f;
-            // A beat of launch (stretched tall, arms thrown up), a quick tuck, the turn, then the body opens
-            // out and the legs reach for the ground. The spin itself starts just after take-off and is done
-            // just before the end, fastest in the middle.
-            float spin = Mathf.Clamp01((ft - 0.06f) / 0.84f);
-            float flip = flipping ? flipDegrees * Mathf.SmoothStep(0f, 1f, spin) : 0f;
-            float launch = flipping ? 1f - Mathf.SmoothStep(0f, 1f, ft / 0.17f) : 0f;
-            float tuckAmount = flipping ? Mathf.SmoothStep(0f, 1f, (ft - 0.07f) / 0.23f) * (1f - Mathf.SmoothStep(0f, 1f, (ft - 0.7f) / 0.24f)) : 0f;
-            float open = flipping ? Mathf.SmoothStep(0f, 1f, (ft - 0.76f) / 0.24f) : 0f;
+            bool airJumping = ft >= 0f && ft <= 1f;
+            // The push (knee up, the other leg driving down, arms thrown up), then the legs gathered up under
+            // the body, then reaching down for the ground.
+            float push = airJumping ? Mathf.SmoothStep(0f, 1f, ft / 0.12f) * (1f - Mathf.SmoothStep(0f, 1f, (ft - 0.3f) / 0.2f)) : 0f;
+            float gather = airJumping ? Mathf.SmoothStep(0f, 1f, (ft - 0.3f) / 0.22f) * (1f - Mathf.SmoothStep(0f, 1f, (ft - 0.72f) / 0.28f)) : 0f;
 
             if (celebrating)
             {
@@ -185,49 +166,40 @@ namespace DribbleToSchool.Presentation
                 // Rising: front knee tucked high, arms driving; falling: legs reach down, arms out for balance.
                 float rising = Mathf.Clamp01(vy / 6f);
                 float falling = Mathf.Clamp01(-vy / 8f);
-                p.legF = Mathf.Lerp(18f, 48f, rising);
-                p.kneeF = Mathf.Lerp(-25f, -95f, rising);
-                p.legB = Mathf.Lerp(-12f, -22f, rising);
-                p.kneeB = Mathf.Lerp(-35f, -70f, rising);
+                // (the lead knee up, the take-off leg left long behind)
+                p.legF = Mathf.Lerp(18f, 52f, rising);
+                p.kneeF = Mathf.Lerp(-25f, -82f, rising);
+                p.legB = Mathf.Lerp(-12f, -30f, rising);
+                p.kneeB = Mathf.Lerp(-35f, -42f, rising);
                 p.armF = Mathf.Lerp(Mathf.Lerp(60f, 80f, falling), -35f, rising);
                 p.elbowF = Mathf.Lerp(30f, 85f, rising);
                 p.armB = Mathf.Lerp(Mathf.Lerp(-40f, 70f, falling), 55f, rising);
                 p.elbowB = Mathf.Lerp(25f, 60f, rising);
                 p.lean = Mathf.Lerp(2f, 8f, rising);
-                float stretch = Mathf.Clamp01(1f - (Time.time - jumpTime) / 0.2f) * 0.12f;
+                float stretch = Mathf.Clamp01(1f - (Time.time - jumpTime) / 0.2f) * 0.035f;
                 p.squash = new Vector2(1f - stretch, 1f + stretch);
 
-                // Double jump. Launch: pushed off tall, arms thrown up, legs trailing. Then knees pulled up
-                // to the chest, hands to the shins, chin down, while the whole body turns a quick forward
-                // somersault; then it opens out, legs reaching down and arms wide, to land.
-                if (flipping)
+                // Double jump: one more push, as if off an invisible step. The lead knee drives up to the
+                // chest while the other leg stamps down straight behind, both arms swing up hard past the
+                // face, the chest lifts; then both knees come up together, arms dropping out for balance,
+                // and the legs open down toward the ground. No spin: the body stays upright.
+                if (airJumping)
                 {
-                    p.armF = Mathf.Lerp(p.armF, 128f, launch); p.elbowF = Mathf.Lerp(p.elbowF, 12f, launch);
-                    p.armB = Mathf.Lerp(p.armB, 118f, launch); p.elbowB = Mathf.Lerp(p.elbowB, 12f, launch);
-                    p.legF = Mathf.Lerp(p.legF, 6f, launch); p.kneeF = Mathf.Lerp(p.kneeF, -12f, launch);
-                    p.legB = Mathf.Lerp(p.legB, -8f, launch); p.kneeB = Mathf.Lerp(p.kneeB, -28f, launch);
+                    p.legF = Mathf.Lerp(p.legF, 82f, push); p.kneeF = Mathf.Lerp(p.kneeF, -108f, push);
+                    p.legB = Mathf.Lerp(p.legB, -24f, push); p.kneeB = Mathf.Lerp(p.kneeB, -8f, push);
+                    p.armF = Mathf.Lerp(p.armF, 150f, push); p.elbowF = Mathf.Lerp(p.elbowF, 28f, push);
+                    p.armB = Mathf.Lerp(p.armB, 120f, push); p.elbowB = Mathf.Lerp(p.elbowB, 40f, push);
+                    p.lean = Mathf.Lerp(p.lean, -4f, push);
+                    p.headTilt = Mathf.Lerp(p.headTilt, 8f, push);
 
-                    float tuck = tuckAmount;
-                    p.legF = Mathf.Lerp(p.legF, 108f, tuck);
-                    p.legB = Mathf.Lerp(p.legB, 96f, tuck);
-                    p.kneeF = Mathf.Lerp(p.kneeF, -138f, tuck);
-                    p.kneeB = Mathf.Lerp(p.kneeB, -132f, tuck);
-                    p.armF = Mathf.Lerp(p.armF, 62f, tuck);
-                    p.elbowF = Mathf.Lerp(p.elbowF, 95f, tuck);
-                    p.armB = Mathf.Lerp(p.armB, 48f, tuck);
-                    p.elbowB = Mathf.Lerp(p.elbowB, 100f, tuck);
-                    p.headTilt = Mathf.Lerp(p.headTilt, -26f, tuck);
+                    p.legF = Mathf.Lerp(p.legF, 70f, gather); p.kneeF = Mathf.Lerp(p.kneeF, -100f, gather);
+                    p.legB = Mathf.Lerp(p.legB, 58f, gather); p.kneeB = Mathf.Lerp(p.kneeB, -96f, gather);
+                    p.armF = Mathf.Lerp(p.armF, 70f, gather); p.elbowF = Mathf.Lerp(p.elbowF, 35f, gather);
+                    p.armB = Mathf.Lerp(p.armB, -30f, gather); p.elbowB = Mathf.Lerp(p.elbowB, 30f, gather);
+                    p.lean = Mathf.Lerp(p.lean, 12f, gather);
+                    p.headTilt = Mathf.Lerp(p.headTilt, -6f, gather);
 
-                    p.legF = Mathf.Lerp(p.legF, 28f, open); p.kneeF = Mathf.Lerp(p.kneeF, -24f, open);
-                    p.legB = Mathf.Lerp(p.legB, -12f, open); p.kneeB = Mathf.Lerp(p.kneeB, -34f, open);
-                    p.armF = Mathf.Lerp(p.armF, 88f, open); p.elbowF = Mathf.Lerp(p.elbowF, 30f, open);
-                    p.armB = Mathf.Lerp(p.armB, -34f, open); p.elbowB = Mathf.Lerp(p.elbowB, 26f, open);
-                    p.headTilt = Mathf.Lerp(p.headTilt, 0f, open);
-
-                    // Squash and stretch: tall on the launch, round in the tuck, tall again as it opens.
-                    float sy = 1f + 0.13f * launch - 0.07f * tuck + 0.08f * open;
-                    float sx = 1f - 0.07f * launch + 0.06f * tuck - 0.03f * open;
-                    p.squash = new Vector2(sx, sy);
+                    p.squash = new Vector2(1f - 0.02f * push, 1f + 0.03f * push);
                 }
             }
             else
@@ -267,7 +239,7 @@ namespace DribbleToSchool.Presentation
                 p.elbowF += 20f * land; p.elbowB += 20f * land;
                 p.lean += 10f * land;
                 p.bob -= 0.07f * land;   // bent knees already lift the feet; keep them on the ground
-                p.squash = new Vector2(p.squash.x + land * 0.12f, p.squash.y - land * 0.12f);
+                p.squash = new Vector2(p.squash.x + land * 0.04f, p.squash.y - land * 0.04f);   // a body, not a rubber ball
             }
 
             // Slide: drops in fast and gets up a little slower, and holds while the kid shuffles
@@ -341,22 +313,9 @@ namespace DribbleToSchool.Presentation
             float bagTarget = -10f * runK - Mathf.Sin(phase * 2f) * 6f * runK;
             if (!kid.IsGrounded) bagTarget += Mathf.Clamp(-vy * 3f, -25f, 25f);
             bagTarget = Mathf.Lerp(bagTarget, -95f, slideBlend);
-            if (flipping) bagTarget -= 38f * Mathf.Sin(ft * Mathf.PI);   // flung out behind by the spin
+            if (airJumping) bagTarget += 22f * push - 12f * gather;   // jerked by the push, then swinging back
             bagAngle = Mathf.SmoothDamp(bagAngle, bagTarget, ref bagVelocity, 0.09f);
             p.bag = bagAngle;
-            p.lean += flip;
-
-            // Spin about the belly, not about the body's pivot (which is a hand's width below the hips):
-            // move the body by what turns one into the other, so the somersault stays a tidy turn on the spot.
-            // (It fades out if the kid lands mid-turn, so the body never pops.)
-            Vector2 flipCentre = new Vector2(0f, Mathf.Max(0.1f, hipHeight - pivotHeight) + flipCentreLift);
-            shiftBlend = Mathf.MoveTowards(shiftBlend, flipping && !kid.IsGrounded ? 1f : 0f, Time.deltaTime / 0.05f);
-            if (shiftBlend > 0f && Mathf.Abs(p.lean) > 0.5f)
-            {
-                float a = -p.lean * Mathf.Deg2Rad, cos = Mathf.Cos(a), sin = Mathf.Sin(a);
-                Vector2 turned = new Vector2(flipCentre.x * cos - flipCentre.y * sin, flipCentre.x * sin + flipCentre.y * cos);
-                p.shift = (flipCentre - turned) * shiftBlend;
-            }
 
             rig.Pose(p);
 
@@ -364,41 +323,6 @@ namespace DribbleToSchool.Presentation
             facing = Mathf.MoveTowards(facing, kid.Facing, Time.deltaTime * 7f);
             Transform visual = transform.parent;
             if (visual != null) visual.localRotation = Quaternion.Euler(0f, CharacterRig.FacingYaw(facing), 0f);
-
-            UpdateSwoosh(flipping, ft, flip, flipCentre);
-        }
-
-        /// <summary>
-        /// A crescent of light that circles the body through the somersault, bright at its head and
-        /// curling away behind it, drawn in front of the kid (not part of the turning model).
-        /// </summary>
-        void UpdateSwoosh(bool flipping, float ft, float flipAngle, Vector2 centre)
-        {
-            if (swooshSize <= 0f || !flipping)
-            {
-                if (swoosh != null && swoosh.enabled) swoosh.enabled = false;
-                return;
-            }
-            if (swoosh == null)
-            {
-                var go = new GameObject("FlipSwoosh");
-                swoosh = go.AddComponent<SpriteRenderer>();
-                swoosh.sprite = UI.Kit.ProceduralSprites.Swoosh;
-                swoosh.sortingOrder = 45;
-            }
-            float dir = kid.Facing >= 0 ? 1f : -1f;
-            // Alive from the start of the turn, brightest at the middle, gone as the body opens.
-            float alpha = Mathf.Clamp01(Mathf.Sin(Mathf.Clamp01((ft - 0.03f) / 0.9f) * Mathf.PI) * 2.4f);
-            swoosh.enabled = alpha > 0.01f;
-            swoosh.color = new Color(1f, 1f, 1f, 0.9f * alpha);
-            // The spin centre stays put as the body turns about it (see the shift in LateUpdate).
-            Vector3 world = rig.body.TransformPoint(new Vector3(centre.x, centre.y, 0f));
-            // The head's path starts at the top and runs forward: clockwise facing right, counter-clockwise facing left.
-            float angle = dir > 0f ? 90f - flipAngle : flipAngle - 90f;
-            var t = swoosh.transform;
-            t.position = new Vector3(world.x, world.y, -0.45f);
-            t.rotation = Quaternion.Euler(0f, 0f, angle);
-            t.localScale = new Vector3(swooshSize * dir, swooshSize, 1f);
         }
 
         /// <summary>

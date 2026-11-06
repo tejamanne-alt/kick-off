@@ -7,7 +7,7 @@ namespace DribbleToSchool.UI.Kit
     {
         static Sprite rounded, roundedSmall, circle, star, coin, lockIcon, gradient, arrow, pause, ring, softDisc, softEdgeDisc, ballIcon;
         static Sprite trophy, medal, medalRibbon;
-        static Sprite roundedEdge, roundedEdgeSmall, circleEdge, check, pitchBadge, holoSheen, goldSheen, stickerIcon, streak, swoosh, bolt, shield, magnet;
+        static Sprite roundedEdge, roundedEdgeSmall, circleEdge, check, pitchBadge, holoSheen, goldSheen, stickerIcon, streak, bolt, shield, magnet;
         static Sprite jumpIcon, spotHole, thinRing, clock, play, retry;
 
         /// <summary>A lightning bolt (the turbo power-up).</summary>
@@ -88,33 +88,6 @@ namespace DribbleToSchool.UI.Kit
                     float edge = Mathf.Clamp01((thick - Mathf.Abs(v)) / 0.3f);
                     float cap = Mathf.Clamp01((1f - u) / 0.1f);
                     return lengthwise * edge * cap;
-                }));
-            }
-        }
-
-        /// <summary>
-        /// A crescent swept round a centre like a thrown arc of light: its bright, rounded head at the
-        /// right (angle 0) and a tail curling away counter-clockwise for about 220 degrees, thinning and
-        /// fading as it goes. Turn it clockwise to follow a forward somersault. 1.28 units across at scale 1.
-        /// </summary>
-        public static Sprite Swoosh
-        {
-            get
-            {
-                return swoosh != null ? swoosh : (swoosh = MakeShape(128, (u, v) =>
-                {
-                    float r = Mathf.Sqrt(u * u + v * v);
-                    float a = Mathf.Atan2(v, u);
-                    if (a < -0.3f) a += Mathf.PI * 2f;                      // the tail runs on past 180 degrees
-                    const float span = 3.84f;                               // 220 degrees
-                    if (a < -0.3f || a > span) return 0f;
-                    float t = Mathf.Clamp01(a / span);
-                    float centre = Mathf.Lerp(0.8f, 0.7f, t);
-                    float half = Mathf.Lerp(0.115f, 0.015f, t);
-                    float radial = Mathf.Clamp01((half - Mathf.Abs(r - centre)) / 0.05f);
-                    float along = Mathf.Pow(Mathf.Clamp01(1f - t), 1.3f);
-                    float head = Mathf.Clamp01((a + 0.3f) / 0.22f);         // a rounded leading end
-                    return radial * along * head;
                 }));
             }
         }

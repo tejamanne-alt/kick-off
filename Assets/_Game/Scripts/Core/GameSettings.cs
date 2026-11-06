@@ -23,6 +23,13 @@ namespace DribbleToSchool.Core
             set { PlayerPrefs.SetFloat("settings.music", Mathf.Clamp01(value)); Save(); }
         }
 
+        /// <summary>The sounds of the place (traffic, waves, gulls, diggers...), under the music.</summary>
+        public static float AmbienceVolume
+        {
+            get { return PlayerPrefs.GetFloat("settings.ambience", 0.8f); }
+            set { PlayerPrefs.SetFloat("settings.ambience", Mathf.Clamp01(value)); Save(); }
+        }
+
         public static float SfxVolume
         {
             get { return PlayerPrefs.GetFloat("settings.sfx", 0.9f); }

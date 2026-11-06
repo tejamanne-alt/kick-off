@@ -51,24 +51,42 @@ namespace DribbleToSchool.Audio
                     Synth.Sweep(b, 0, 0.1f, 160, 100, 0.002, 35, 0.5f);
                     break;
                 case Sfx.Jump:
-                    b = Synth.Buffer(0.25f);
-                    Synth.Noise(b, 0, 0.22f, 0.04, 12, 0.35f, 0.15f, 3);
-                    Synth.Sweep(b, 0, 0.18f, 300, 520, 0.01, 14, 0.18f);
+                    // A trainer pushing off: a soft thud through the sole, a scuff of grit and a swish of clothes.
+                    b = Synth.Buffer(0.3f);
+                    Thud(b, 0, 0.09f, 105, 62, 0.4f);
+                    Band(b, 0, 0.06f, 2600, 1.2, 0.0008, 70, 0.22f, 3);
+                    Swish(b, 0.015f, 0.2f, 700, 1600, 0.16f, 31);
                     break;
                 case Sfx.Land:
-                    b = Synth.Buffer(0.2f);
-                    Synth.Sweep(b, 0, 0.18f, 95, 50, 0.002, 18, 0.7f);
-                    Synth.Noise(b, 0, 0.08f, 0.001, 35, 0.3f, 0.2f, 4);
+                    // Both feet coming down, a hair apart: heel thuds, grit under the soles, clothes settling.
+                    b = Synth.Buffer(0.3f);
+                    Thud(b, 0, 0.12f, 120, 52, 0.75f);
+                    Thud(b, (int)(0.022f * Synth.SampleRate), 0.1f, 105, 50, 0.42f);
+                    Band(b, 0, 0.1f, 2100, 1.0, 0.001, 38, 0.24f, 4);
+                    Swish(b, 0.02f, 0.14f, 1200, 800, 0.06f, 41);
                     break;
                 case Sfx.Bounce:
-                    b = Synth.Buffer(0.14f);
-                    Synth.Sweep(b, 0, 0.12f, 190, 95, 0.002, 28, 0.55f);
+                    // A football on the pavement: a hollow thump with the ball's own ring and the slap of its panel.
+                    b = Synth.Buffer(0.2f);
+                    Thud(b, 0, 0.14f, 240, 135, 0.55f);
+                    Synth.Sweep(b, 0, 0.12f, 410, 380, 0.001, 32, 0.1f);
+                    Band(b, 0, 0.03f, 1700, 1.0, 0.0005, 120, 0.25f, 18);
                     break;
                 case Sfx.Coin:
-                    b = Synth.Buffer(0.32f);
-                    Synth.Sweep(b, 0, 0.07f, 987.8, 987.8, 0.002, 10, 0.3f, p => Synth.Square(p, 0.3) * 0.5f + Synth.Sine(p));
-                    Synth.Sweep(b, (int)(0.07f * Synth.SampleRate), 0.24f, 1318.5, 1318.5, 0.002, 9, 0.3f, p => Synth.Square(p, 0.3) * 0.5f + Synth.Sine(p));
+                {
+                    // Two bright bell notes, a little chorus on each, and a shimmer over the second.
+                    b = Synth.Buffer(0.55f);
+                    double[] ratio = { 1.0, 2.0, 3.01, 4.2 };
+                    float[] amp = { 1f, 0.35f, 0.18f, 0.08f };
+                    int second = (int)(0.075f * Synth.SampleRate);
+                    for (int p = 0; p < ratio.Length; p++)
+                    {
+                        Synth.Sweep(b, 0, 0.12f, 1318.5 * ratio[p], 1318.5 * ratio[p], 0.001, 22 * (1 + p * 0.5), 0.28f * amp[p]);
+                        Synth.Sweep(b, second, 0.45f, 1975.5 * ratio[p], 1975.5 * ratio[p], 0.001, 7 * (1 + p * 0.6), 0.3f * amp[p]);
+                        Synth.Sweep(b, second, 0.45f, 1975.5 * ratio[p] * 1.004, 1975.5 * ratio[p] * 1.004, 0.001, 7 * (1 + p * 0.6), 0.16f * amp[p]);
+                    }
                     break;
+                }
                 case Sfx.Sticker:
                     b = Synth.Buffer(0.9f);
                     double[] arp = { 1046.5, 1318.5, 1568, 2093 };
@@ -98,7 +116,16 @@ namespace DribbleToSchool.Audio
                         Synth.Sweep(b, at, len, notes[i], notes[i], 0.01, i == notes.Length - 1 ? 2.5 : 8, 0.38f, p => Synth.Saw(p) * 0.4f + Synth.Sine(p));
                         Synth.Bell(b, at, notes[i] * 2, len, 0.08f, 4);
                     }
-                    Synth.Noise(b, (int)(0.36f * Synth.SampleRate), 1f, 0.15, 3, 0.15f, 0.25f, 5);   // crowd "yay"
+                    // The crowd: a cheer swelling under the fanfare and a patter of applause.
+                    var crowd = new Random(5);
+                    for (int i = 0; i < 6; i++)
+                        Voice(b, 0.3f + (float)crowd.NextDouble() * 0.15f, 1.1f, 260 + crowd.Next(200), 300 + crowd.Next(220), 700 + crowd.Next(300), 1300 + crowd.Next(500), 0.07f, 0.45f, 50 + i, 0.1f);
+                    for (int i = 0; i < 70; i++)
+                    {
+                        float t = 0.3f + (float)crowd.NextDouble() * 1.15f;
+                        float fade = 1f - (t - 0.3f) / 1.25f;
+                        Band(b, (int)(t * Synth.SampleRate), 0.03f, 1100 + crowd.Next(900), 1.2, 0.0005, 140, 0.1f * fade, 100 + i);
+                    }
                     break;
                 }
                 case Sfx.Lose:
@@ -106,35 +133,37 @@ namespace DribbleToSchool.Audio
                     Synth.Sweep(b, 0, 0.55f, 420, 160, 0.01, 4, 0.5f, p => Synth.Triangle(p));
                     break;
                 case Sfx.Splash:
-                    b = Synth.Buffer(0.6f);
-                    Synth.Noise(b, 0, 0.55f, 0.005, 7, 0.6f, 0.25f, 6);
-                    for (int i = 0; i < 4; i++) Synth.Sweep(b, (int)((0.08 + i * 0.07) * Synth.SampleRate), 0.06f, 600 + i * 120, 1200 + i * 150, 0.002, 30, 0.12f);
-                    break;
-                case Sfx.Woof:
-                    b = Synth.Buffer(0.45f);
-                    for (int i = 0; i < 2; i++)
-                    {
-                        int at = (int)(i * 0.2f * Synth.SampleRate);
-                        Synth.Sweep(b, at, 0.13f, 320, 210, 0.005, 16, 0.5f, p => Synth.Saw(p) * 0.6f + Synth.Sine(p));
-                        Synth.Noise(b, at, 0.1f, 0.003, 25, 0.25f, 0.3f, 7 + i);
-                    }
-                    break;
-                case Sfx.Squawk:
                 {
-                    b = Synth.Buffer(0.4f);
-                    double phase = 0;
-                    for (int i = 0; i < b.Length; i++)
+                    // Into a puddle: a slap, a spray that falls away, and a few bubbles popping.
+                    b = Synth.Buffer(0.7f);
+                    Thud(b, 0, 0.1f, 160, 70, 0.4f);
+                    Band(b, 0, 0.6f, 1800, 0.6, 0.003, 7, 0.55f, 6);
+                    Band(b, 0, 0.2f, 4200, 0.8, 0.001, 18, 0.25f, 61);
+                    var rng = new Random(62);
+                    for (int i = 0; i < 6; i++)
                     {
-                        double t = i / (double)Synth.SampleRate;
-                        double f = 1300 - t * 1500 + Math.Sin(t * 2 * Math.PI * 35) * 260;
-                        phase += f / Synth.SampleRate;
-                        b[i] += Synth.Saw(phase) * Synth.Env(t, 0.01, 6) * 0.3f;
+                        int at = (int)((0.06 + i * 0.06 + rng.NextDouble() * 0.04) * Synth.SampleRate);
+                        double f = 700 + rng.NextDouble() * 800;
+                        Synth.Sweep(b, at, 0.05f, f, f * 1.8, 0.002, 40, 0.1f);
                     }
                     break;
                 }
+                case Sfx.Woof:
+                    // A dog's bark, twice: a voiced yelp shaped by its mouth, rough at the start.
+                    b = Synth.Buffer(0.5f);
+                    for (int i = 0; i < 2; i++)
+                        Voice(b, i * 0.21f, 0.16f, 470 - i * 30, 330 - i * 20, 820, 1650, 0.3f, 0.25f, 7 + i, 0.25f);
+                    break;
+                case Sfx.Squawk:
+                    // A gull, cross: a harsh rising-then-falling "kyaa".
+                    b = Synth.Buffer(0.45f);
+                    Voice(b, 0f, 0.4f, 1350, 900, 1900, 3200, 0.24f, 0.2f, 21, 0.4f, 1700);
+                    break;
                 case Sfx.Oof:
-                    b = Synth.Buffer(0.2f);
-                    Synth.Sweep(b, 0, 0.18f, 210, 140, 0.01, 14, 0.45f, p => Synth.Triangle(p));
+                    // Someone bumped: a short, low "oof".
+                    b = Synth.Buffer(0.26f);
+                    Voice(b, 0f, 0.22f, 175, 125, 450, 850, 0.36f, 0.35f, 22, 0.1f);
+                    Thud(b, 0, 0.08f, 140, 70, 0.25f);
                     break;
                 case Sfx.Boing:
                 {
@@ -196,18 +225,13 @@ namespace DribbleToSchool.Audio
                     Synth.Noise(b, 0, 0.3f, 0.05, 8, 0.15f, 0.2f, 13);
                     break;
                 case Sfx.DoubleJump:
-                {
-                    // An airy whoosh that swoops up as the kid tucks, then a bright three-note glint (C, E, G)
-                    // like a spark flicking off the spin.
-                    b = Synth.Buffer(0.46f);
-                    Synth.Noise(b, 0, 0.34f, 0.03, 8, 0.3f, 0.5f, 14);
-                    Synth.Sweep(b, 0, 0.26f, 360, 1300, 0.006, 8, 0.22f);
-                    int step = (int)(0.055f * Synth.SampleRate);
-                    Synth.Sweep(b, step, 0.16f, 1046.5, 1046.5, 0.002, 15, 0.14f, p => Synth.Triangle(p));
-                    Synth.Sweep(b, step * 2, 0.16f, 1318.5, 1318.5, 0.002, 15, 0.14f, p => Synth.Triangle(p));
-                    Synth.Sweep(b, step * 3, 0.24f, 1568.0, 1568.0, 0.002, 11, 0.15f, p => Synth.Triangle(p));
+                    // A second, harder push in the air: no sparkle, just the body. Arms and jacket whipping
+                    // up in a quick rush of air, and a short breath of effort.
+                    b = Synth.Buffer(0.42f);
+                    Swish(b, 0f, 0.3f, 500, 2100, 0.62f, 14);
+                    Swish(b, 0.06f, 0.22f, 900, 1500, 0.26f, 15);
+                    Breath(b, 0.01f, 0.13f, 750, 1250, 0.16f, 16);
                     break;
-                }
                 case Sfx.Slide:
                     // Feet going out: a low thump and a bright rush of air, then shoes scuffing along the
                     // ground, a soft hiss that wavers as it fades.
@@ -232,6 +256,88 @@ namespace DribbleToSchool.Audio
             Synth.Limit(b, 0.9f);
             Synth.FadeTail(b);
             return b;
+        }
+
+        // ---------- Building blocks ----------
+
+        /// <summary>A thud: a sine dropping in pitch with a fast decay (a foot, a ball, a body).</summary>
+        static void Thud(float[] b, int start, float seconds, double f0, double f1, float gain)
+        {
+            Synth.Sweep(b, start, seconds, f0, f1, 0.0015, 4.5 / seconds, gain);
+        }
+
+        /// <summary>A burst of band-passed noise (grit, slaps, claps, spray).</summary>
+        static void Band(float[] b, int start, float seconds, double centre, double q, double attack, double decay, float gain, int seed)
+        {
+            var f = new Svf();
+            var n = new NoiseSource(seed);
+            int len = (int)(seconds * Synth.SampleRate);
+            for (int i = 0; i < len && start + i < b.Length; i++)
+            {
+                double t = i / (double)Synth.SampleRate;
+                f.Process(n.White(), centre, q);
+                float tail = Math.Min(1f, (len - i) / (0.005f * Synth.SampleRate));
+                b[start + i] += f.band * Synth.Env(t, attack, decay) * tail * gain;
+            }
+        }
+
+        /// <summary>A swish of air or cloth: noise whose band sweeps from one pitch to another, swelling and fading.</summary>
+        static void Swish(float[] b, float at, float seconds, double f0, double f1, float gain, int seed)
+        {
+            var f = new Svf();
+            var n = new NoiseSource(seed);
+            int start = (int)(at * Synth.SampleRate), len = (int)(seconds * Synth.SampleRate);
+            for (int i = 0; i < len && start + i < b.Length; i++)
+            {
+                double u = i / (double)len;
+                f.Process(n.White(), f0 * Math.Pow(f1 / f0, u), 0.9);
+                double env = Math.Sin(Math.PI * Math.Pow(u, 0.6));
+                b[start + i] += f.band * (float)(env * env) * gain;
+            }
+        }
+
+        /// <summary>A breath: noise through two vowel formants, quick in and out.</summary>
+        static void Breath(float[] b, float at, float seconds, double f1, double f2, float gain, int seed)
+        {
+            var a = new Svf();
+            var c = new Svf();
+            var n = new NoiseSource(seed);
+            int start = (int)(at * Synth.SampleRate), len = (int)(seconds * Synth.SampleRate);
+            for (int i = 0; i < len && start + i < b.Length; i++)
+            {
+                double u = i / (double)len;
+                float x = n.White();
+                a.Process(x, f1, 3);
+                c.Process(x, f2, 4);
+                double env = Math.Min(1, u * 8) * Math.Pow(1 - u, 1.5);
+                b[start + i] += (a.band + c.band * 0.6f) * (float)env * gain;
+            }
+        }
+
+        /// <summary>A voiced call (a bark, a gull, a grunt, a cheer): a buzz gliding in pitch through two formants.</summary>
+        static void Voice(float[] b, float at, float seconds, double pitch0, double pitch1, double f1, double f2, float gain, float noise, int seed,
+            float rough = 0f, double peakPitch = 0)
+        {
+            var fa = new Svf();
+            var fb = new Svf();
+            var n = new NoiseSource(seed);
+            int start = (int)(at * Synth.SampleRate), len = (int)(seconds * Synth.SampleRate);
+            double ph = 0;
+            for (int i = 0; i < len && start + i < b.Length; i++)
+            {
+                double u = i / (double)len, t = i / (double)Synth.SampleRate;
+                double pitch = peakPitch > 0
+                    ? (u < 0.3 ? pitch0 + (peakPitch - pitch0) * (u / 0.3) : peakPitch + (pitch1 - peakPitch) * ((u - 0.3) / 0.7))
+                    : pitch0 + (pitch1 - pitch0) * u;
+                ph += pitch / Synth.SampleRate;
+                double p = ph - Math.Floor(ph);
+                double src = (2 * p - 1) * (1 - noise) + n.White() * noise;
+                if (rough > 0f) src *= 1 - rough * (0.5 + 0.5 * Math.Sin(2 * Math.PI * 70 * t));
+                fa.Process((float)src, f1, 4);
+                fb.Process((float)src, f2, 5);
+                double env = Math.Min(1, t / 0.01) * Math.Pow(1 - u, 1.3);
+                b[start + i] += (float)((fa.band + fb.band * 0.7) * env) * gain;
+            }
         }
     }
 }
