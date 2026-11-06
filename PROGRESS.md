@@ -487,6 +487,17 @@ The user's reference shots and our own screenshots were measured side by side (v
 - **Menus**: `UITheme.SkyTop` is the on-screen cobalt; `SkyBottom` stays a lighter blue so panels and text on it read; the splash background matches.
 - Checked: the runtime and editor scripts compile (Mono against the reference DLLs, as above); `GroundArt` was run under Mono with small Unity stubs to render the new textures, and a numpy ray-traced street through the game camera (old vs new light, textures and grade) was compared with the references. Not checked: the shaders in Unity, and the look on a device. On the first open, look at L01 and L13 against the reference shots, check that the canopy shade lands on the near road and not the footpath in every chapter (and in the Holiday Run), and that no acne is left on the house fronts.
 
+## The look, exactly on the reference numbers (generated content v68)
+
+Following up v67, the light, grade and materials were solved again so the predicted on-screen colour of every surface on the comparison card equals the reference value (sky top and low, a white wall in sun, paving and asphalt in sun and in tree shade, sand, sea, lawn, a tree's sunlit clumps and the inside of its crown). The model is the same Python copy of the shader and grade, calibrated on today's screenshots.
+
+- Grade shoulder 0.84 easing to 0.972 (was 0.8 to 0.96), and a sun of (1, 0.979, 0.962): white walls (paint 0.95, 0.95, 0.93) come out at (227, 223, 217).
+- Sky zenith (0.234, 0.421, 0.67), horizon (0.306, 0.537, 0.733) before the grade (beach and city keep their small offsets).
+- Per-surface shadow tints (`ArtBaker.SurfaceShadowTint`): paving, kerb and concrete (1.137, 1.057, 1.132), shade about (70, 68, 88); asphalt (0.203, 0.234, 0.081), shade about (26, 25, 34). One global cast colour can't give both: the references darken the road far more than the paving.
+- Materials: paving slab (0.667, 0.678, 0.685); asphalt base (0.536, 0.516, 0.526); sand (0.801, 0.677, 0.597); sea mid (0.373, 0.657, 0.752); lawn lush (0.637, 0.734, 0.379); each texture's other colours scaled with its base.
+- Leaves: summer tints about (0.24, 0.33, 0.21), the Plants kit's shade tint (0.728, 0.006, 2: the top of the shader's low-precision range) so crowns go a cool, nearly neutral dark inside, leaf shadows 0.685.
+- Not checked in Unity or on a device; the same first-open checks as v67 apply, and look at whether the plants' cooler shade suits grass and flowers as well as trees.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

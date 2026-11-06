@@ -179,6 +179,7 @@ namespace DribbleToSchool.EditorTools
                 var m = ToonMaterial("Surface_" + surface, shader, LoadTexture("Surface_" + surface), true);
                 if (surface == ProceduralArt.Surface.Sea) m.SetVector("_Scroll", new Vector4(0.01f, 0.005f, 0f, 0f));   // a slow drift (UV per second; a tile is 8 units)
                 m.SetFloat("_Macro", MacroVariation(surface));
+                m.SetColor("_ShadowColor", SurfaceShadowTint(surface));
                 set.surfaces[surface] = m;
             }
             foreach (ProceduralArt.FacadeKind kind in System.Enum.GetValues(typeof(ProceduralArt.FacadeKind)))
@@ -192,6 +193,8 @@ namespace DribbleToSchool.EditorTools
                 var m = ToonMaterial("Kit" + kit, toon, atlas, false);
                 m.SetFloat("_Wind", kit == "Plants" ? 0.1f : 0f);   // trees and grass sway; their alpha is a wind weight
                 LeafCards(m, kit == "Plants" || kit == "Barriers");   // leaf-card foliage (the boughs over the path too)
+                // The shade inside a crown is a cool, nearly neutral dark, as in the reference shots (docs/ART_DIRECTION.md).
+                m.SetColor("_ShadowColor", kit == "Plants" ? new Color(0.728f, 0.006f, 2f) : DefaultShadowTint);
                 m.enableInstancing = true;                          // repeats of a kit model draw together
                 set.kits[kit] = m;
             }
@@ -251,7 +254,7 @@ namespace DribbleToSchool.EditorTools
             m.SetFloat("_AlphaClip", on ? 1f : 0f);
             m.SetFloat("_Cutoff", 0.5f);
             m.SetFloat("_EdgeFade", on ? 1f : 0f);
-            m.SetFloat("_LeafShadow", on ? 0.7f : 1f);   // deep shade inside the crowns, as in the references
+            m.SetFloat("_LeafShadow", on ? 0.685f : 1f);   // deep shade inside the crowns, as in the references
             m.SetFloat("_Cull", (float)(on ? UnityEngine.Rendering.CullMode.Off : UnityEngine.Rendering.CullMode.Back));
             if (on) m.EnableKeyword("_ALPHATEST_ON");
             else m.DisableKeyword("_ALPHATEST_ON");
@@ -283,6 +286,26 @@ namespace DribbleToSchool.EditorTools
             m.SetFloat("_Lighting", 1f);
             EditorUtility.SetDirty(m);
             return m;
+        }
+
+        /// <summary>The Toon shader's own default shadow tint.</summary>
+        static readonly Color DefaultShadowTint = new Color(0.72f, 0.76f, 0.9f);
+
+        /// <summary>
+        /// Each ground surface's own share of the shade colour (a quarter of it; the sky and the bounce
+        /// give the rest), solved against the reference shots: shade on light paving stays a cool
+        /// slate, about (70, 68, 88), while shade on the road goes near black, about (26, 25, 34).
+        /// </summary>
+        static Color SurfaceShadowTint(ProceduralArt.Surface surface)
+        {
+            switch (surface)
+            {
+                case ProceduralArt.Surface.Paving:
+                case ProceduralArt.Surface.Kerb:
+                case ProceduralArt.Surface.Concrete: return new Color(1.137f, 1.057f, 1.132f);
+                case ProceduralArt.Surface.Asphalt: return new Color(0.203f, 0.234f, 0.081f);
+                default: return DefaultShadowTint;
+            }
         }
 
         /// <summary>How strongly the shader's world-scale patches break up each surface's repeat.</summary>

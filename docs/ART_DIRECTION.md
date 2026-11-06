@@ -47,8 +47,10 @@ ourselves. We don't reproduce any other game's assets, characters or vehicles.
 The numbers above are on-screen sRGB, measured from the reference shots (median of verified
 swatches). The light that produces them is in `Art/ChapterTheme.cs` (per chapter) and
 `World/WorldLook.cs`; the grade is `World/PostFX.cs`: a neutral balance, a toe for the deep
-shadows, contrast 1.1, a shoulder from 0.8 easing to 0.96, vibrance 1.12 on quiet colours, and
-faint cool shadows and mauve mid-greys. When the look is tuned again, measure the game's
+shadows, contrast 1.1, a shoulder from 0.84 easing to 0.972, vibrance 1.12 on quiet colours, and
+faint cool shadows and mauve mid-greys. Each ground surface also has its own shadow tint
+(`ArtBaker.SurfaceShadowTint`): shade on paving stays a cool slate while shade on the road goes
+near black, as in the references. When the look is tuned again, measure the game's
 screenshots against these numbers rather than by eye: the eye adapts, and an earlier "calmer"
 pass (paler sky, olive greens, less saturation, a warm gain) drifted away from the references.
 
