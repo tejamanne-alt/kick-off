@@ -18,7 +18,7 @@
     0.296,
     9.174
    ],
-   "tris": 2182,
+   "tris": 2042,
    "parts": {},
    "mount": "ground",
    "attach": {
@@ -43,7 +43,7 @@
      0
     ]
    },
-   "note": "Concrete pole; wires go from Attach.WireL/R/M to the next pole."
+   "note": "Wooden pole (a California street); wires go from Attach.WireL/R/M to the next pole."
   },
   "StreetLamp": {
    "size": [

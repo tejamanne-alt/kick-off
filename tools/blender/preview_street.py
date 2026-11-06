@@ -474,9 +474,57 @@ SHOP = [((.94, .94, .92), (.2, .42, .74), (.56, .57, .6)), ((.88, .86, .82), (.8
 WORK = [((.82, .82, .81), (.9, .56, .14), (.5, .53, .57)), ((.8, .81, .82), (.8, .26, .22), (.46, .5, .55)),
         ((.86, .84, .8), (.24, .44, .64), (.52, .52, .54))]
 WIDTH = {'HouseGable': 7, 'HouseLong': 10, 'Bungalow': 7, 'ShopFruit': 8, 'ShopShutter': 8, 'Apartment': 12, 'Warehouse': 11, 'School': 32}
-SUMMER = [(.38, .5, .25), (.34, .46, .25), (.42, .52, .27), (.3, .43, .25), (.4, .48, .23)]
-MEADOW = [(.48, .58, .3), (.52, .6, .32), (.42, .54, .28)]
-PALM, HEDGE = (.36, .48, .24), (.27, .4, .22)
+SUMMER = [(.243, .327, .207), (.218, .302, .207), (.268, .352, .207), (.201, .293, .217), (.26, .335, .186)]
+MEADOW = [(.46, .57, .26), (.5, .6, .28), (.4, .53, .25)]
+PALM, HEDGE = (.3, .42, .2), (.21, .33, .17)
+
+# The Coast kit's California houses and shops (StreetBuilder.Coast.cs).
+COAST = {'VillaStucco', 'VillaRanch', 'CraftsmanPorch', 'BeachCondo', 'ShopBeach', 'ShopMission', 'PierSpan', 'PierEnd'}
+SETBACK = {'CraftsmanPorch': 2.2, 'VillaRanch': 1.0, 'VillaStucco': .4, 'BeachCondo': .6}
+TERRA = (.76, .4, .27)
+VILLA = [((.95, .9, .8), (.42, .3, .22), TERRA), ((.93, .84, .72), (.3, .4, .46), (.7, .36, .25)), ((.96, .93, .86), (.24, .36, .3), (.8, .46, .32)),
+         ((.91, .8, .7), (.45, .3, .25), (.72, .4, .3)), ((.95, .95, .93), (.22, .28, .36), (.74, .42, .3)), ((.88, .82, .72), (.36, .26, .2), (.66, .38, .28))]
+CRAFT = [((.95, .95, .93), (.3, .38, .46), (.34, .36, .4)), ((.8, .86, .88), (.62, .22, .2), (.36, .37, .4)), ((.9, .86, .78), (.24, .36, .3), (.4, .36, .33)),
+         ((.84, .8, .7), (.3, .3, .32), (.33, .33, .36))]
+CONDO = [((.96, .96, .94), (.4, .56, .66), (.56, .55, .54)), ((.93, .91, .86), (.3, .34, .38), (.56, .55, .54)), ((.9, .93, .94), (.24, .46, .56), (.56, .55, .54))]
+BSHOP = [((.97, .92, .82), (.2, .58, .66), (.56, .55, .54)), ((.96, .95, .92), (.88, .42, .3), (.56, .55, .54)), ((.94, .86, .7), (.24, .36, .6), (.56, .55, .54)),
+         ((.92, .94, .92), (.96, .72, .2), (.56, .55, .54))]
+MISSION = [((.95, .89, .78), (.3, .22, .17), TERRA), ((.92, .84, .74), (.24, .3, .26), (.72, .38, .26)), ((.97, .95, .9), (.36, .2, .16), (.78, .44, .3))]
+
+
+def kit_of(model):
+    return 'Coast' if model in COAST else 'Buildings'
+
+
+def coast_house(model, x, y, z):
+    if not has('Coast', model):
+        return False
+    schemes = {'CraftsmanPorch': CRAFT, 'BeachCondo': CONDO, 'ShopBeach': BSHOP, 'ShopMission': MISSION}.get(model, VILLA)
+    place('Coast', model, x, y, z, 0, 1, list(schemes[scramble(abs(int(round(x * 7 + z * 13)))) % len(schemes)]))
+    return True
+
+
+def palm_skyline(z0, z1, s0, s1):
+    if not has('Plants', 'PalmFan'):
+        return
+    x = X0 - 40
+    while x < X1 + 40:
+        n = 1 if rng.random() < .45 else rng.randrange(2, 4)
+        z = rng.uniform(z0, z1)
+        for k in range(n):
+            plant('PalmFan', x + k * rng.uniform(2.2, 4.5), 0, z + rng.uniform(-3, 3), rng.uniform(.85, 1.25))
+        x += rng.uniform(s0, s1)
+
+
+def street_palms(z, s0, s1, ground=lambda x, z: 0.0):
+    if not has('Plants', 'PalmDate'):
+        return
+    x = X0 + rng.uniform(2, s1)
+    while x < X1 - 1:
+        fan = rng.random() < .35
+        pz = z + rng.uniform(-.3, .3)
+        plant('PalmFan' if fan else 'PalmDate', x, ground(x, pz), pz, rng.uniform(.42, .5) if fan else rng.uniform(.62, .8))
+        x += rng.uniform(s0, s1)
 
 
 def scramble(seed):
@@ -557,8 +605,8 @@ def distant(fields, grass):
 
 
 # The town's fronts and houses (StreetBuilder.MarketFronts / HomeHouses / FrontPaints / Deck).
-MARKET = ['ShopFruit', 'ShopShutter', 'ShopMart', 'ShopCafe', 'ShopBooks', 'ShopFlorist', 'ShopNoodle', 'ShopTall', 'ShopBoutique', 'ShopKonbini']
-HOMES = ['HouseGable', 'HouseLong', 'Bungalow', 'HouseLeanTo', 'HouseFlat', 'HouseCarport']
+MARKET = ['ShopFruit', 'ShopBeach', 'ShopShutter', 'ShopMission', 'ShopMart', 'ShopCafe', 'ShopBeach', 'ShopBooks', 'ShopFlorist', 'ShopMission', 'ShopTall', 'ShopBoutique']
+HOMES = ['VillaStucco', 'CraftsmanPorch', 'VillaRanch', 'HouseGable', 'VillaStucco', 'CraftsmanPorch', 'VillaRanch']
 SR = (.56, .57, .6)
 FRONT = {
     'ShopMart': [((.95, .95, .93), (.84, .26, .2), SR), ((.93, .91, .86), (.93, .55, .18), SR), ((.86, .87, .87), (.2, .42, .72), SR), ((.94, .92, .87), (.96, .76, .2), SR)],
@@ -587,7 +635,7 @@ class Deck:
     def next(self, fits=lambda m: True):
         for p in range(2):
             if p == 1 or not self.left:
-                self.left = [m for m in self.models if has('Buildings', m)]
+                self.left = [m for m in self.models if has(kit_of(m), m)]
                 rng.shuffle(self.left)
             for i, m in enumerate(self.left):
                 if m != self.last and fits(m):
@@ -606,6 +654,8 @@ def banner(x):
 
 
 def shop_front(model, cx, w):
+    if model in COAST:
+        coast_house(model, cx, 0, PROP + .6); return
     z = PROP + (2.6 if model == 'ShopKonbini' else .6)
     p = paint_for(model, SHOP, cx, z)
     place('Buildings', model, cx, 0, z, 0, 1, list(p))
@@ -636,6 +686,8 @@ def shop_front(model, cx, w):
 
 
 def town_house(model, x, z):
+    if model in COAST:
+        return coast_house(model, x, 0, z)
     if model in ('HouseGable', 'HouseLong', 'Bungalow') or not has('Buildings', model):
         return False
     place('Buildings', model, x, 0, z, 0, 1, list(paint_for(model, HOUSE, x, z)))
@@ -646,29 +698,34 @@ def suburb():
     houses = Deck(HOMES)
     x = X0
     while x < X1:
-        lot = rng.uniform(9, 13); cx = x + lot / 2
+        lot = rng.uniform(10.5, 14.5); cx = x + lot / 2
         gate = rng.uniform(x + 2, x + lot - 4)
-        picket = rng.random() < .3 and has('Street', 'PicketFence2')
+        front = rng.random()
+        picket = front < .35 and has('Street', 'PicketFence2')
+        hedge = not picket and front < .65 and has('Plants', 'HedgeBlock2')
         if picket:
             row('Street', 'PicketFence2', x + .1, gate, 0, PROP + .15); row('Street', 'PicketFence2', gate + 1.4, x + lot - .1, 0, PROP + .15)
-        else:
+        elif hedge:
+            if gate - x > 1.6: row('Plants', 'HedgeBlock2', x + .3, gate - .2, 0, PROP + .4, [HEDGE, None, None])
+            if x + lot - gate > 3.6: row('Plants', 'HedgeBlock2', gate + 1.6, x + lot - .3, 0, PROP + .4, [HEDGE, None, None])
+        elif not has('Coast', 'VillaStucco'):
             for a, b, pa, pb in ((x + .1, gate, True, True), (gate + 2.2, x + lot - .1, True, False)):
                 if b - a >= .4 and row('Street', 'BlockWall2', a, b, 0, PROP + .15):
                     if pa: place('Street', 'WallPillar', a, 0, PROP + .15)
                     if pb: place('Street', 'WallPillar', b, 0, PROP + .15)
         life = rng.random()
         if life < .12: place('Street', 'PostBox', x + rng.uniform(1, lot - 1), 0, POLE_Z - .1)
-        elif life < .3 and not picket and gate - x > 3.4:
+        elif life < .3 and not picket and not hedge and gate - x > 3.4:
             place('Street', 'Bicycle', rng.uniform(x + 1.2, gate - 1), 0, PROP - .32, 180 + rng.uniform(-6, 6), 1, [rng.choice(BIKES), None, None])
-        house = houses.next(lambda m: size('Buildings', m).x <= lot - .8)
+        house = houses.next(lambda m: size(kit_of(m), m).x <= lot - .8)
         kind = rng.randrange(3)
-        z = PROP + 1.6 + rng.uniform(0, 1.4) + (.3 if house == 'HouseLeanTo' else 0)
+        z = PROP + 1.6 + rng.uniform(0, 1.4) + (.3 if house == 'HouseLeanTo' else 0) + SETBACK.get(house, 0)
         model = 'HouseGable' if kind == 0 else 'HouseLong' if kind == 1 and lot >= 11 else 'Bungalow'
         if house in ('HouseGable', 'HouseLong', 'Bungalow'): model = house
         town = house is not None and town_house(house, cx, z)
         if town: model = house
         else: building(model, cx, z, HOUSE)
-        half = (size('Buildings', model).x if town else WIDTH[model]) / 2
+        half = (size(kit_of(model), model).x if town else WIDTH[model]) / 2
         if has('Street', 'BinPair'):
             d = rng.random()
             if d < .3 and not picket:
@@ -681,16 +738,18 @@ def suburb():
         if house == 'HouseCarport' and town and rng.random() < .8:
             place('Street', 'Bicycle', cx + 3.4, 0, z + 1.3, 180 + rng.uniform(-5, 5), 1, [rng.choice(BIKES), None, None])
         if rng.random() < .7:
-            plant(rng.choice(['Broadleaf', 'BroadleafLarge', 'BroadleafWide', 'ConiferTall', 'Broadleaf', 'Birch', 'BroadleafSmall']), cx + rng.uniform(-half, half), 0, z + 8 + rng.uniform(0, 3), rng.uniform(.9, 1.25))
+            t = rng.choice(['Broadleaf', 'PalmDate', 'BroadleafLarge', 'PalmFan', 'BroadleafWide', 'Broadleaf', 'PalmDate', 'BroadleafSmall'])
+            plant(t, cx + rng.uniform(-half, half), 0, z + 8 + rng.uniform(0, 3), rng.uniform(.45, .55) if t == 'PalmFan' else rng.uniform(.9, 1.25))
         gap = (cx - half) - x
-        if gap > 4 and house != 'HouseCarport' and rng.random() < .4 and has('Buildings', 'Garage'):
+        if gap > 4 and house != 'HouseCarport' and house not in COAST and rng.random() < .4 and has('Buildings', 'Garage'):
             p = HOUSE[scramble(abs(int(round(cx * 7 + z * 13))) + 1) % len(HOUSE)]
             place('Buildings', 'Garage', x + gap / 2, 0, z + .8, 0, 1, list(p))
         elif gap > 1.8 and rng.random() < .6:
-            m = rng.choice(['Birch', 'ConiferSmall', 'GardenPine', 'ConiferMid', 'ShrubFlowering', 'BroadleafYoung'])
-            plant(m, x + gap / 2, 0, PROP + 1.4 + rng.uniform(0, 1.2), rng.uniform(1.3, 1.6) if m == 'ShrubFlowering' else rng.uniform(.7, .95))
+            m = rng.choice(['PalmDate', 'ShrubFlowering', 'BroadleafYoung', 'PalmDate', 'ConiferSmall', 'BushWide'])
+            plant(m, x + gap / 2, 0, PROP + 1.4 + rng.uniform(0, 1.2), rng.uniform(1.3, 1.6) if m in ('ShrubFlowering', 'BushWide') else rng.uniform(.55, .72) if m == 'PalmDate' else rng.uniform(.7, .95))
         x += lot
-    back = Deck(['HouseGable', 'HouseLong', 'HouseLeanTo', 'HouseFlat'])
+    street_palms(PROP + .95, 12, 26)
+    back = Deck(['VillaStucco', 'HouseGable', 'VillaRanch', 'CraftsmanPorch', 'HouseLong', 'VillaStucco'])
     x = X0 - 20
     while x < X1 + 20:
         house = back.next()
@@ -698,6 +757,13 @@ def suburb():
         if not town_house(house, x, bz):
             building(house if house in ('HouseGable', 'HouseLong') else rng.choice(['HouseGable', 'HouseLong']), x, bz, HOUSE)
         x += rng.uniform(10, 14)
+    # (StreetBuilder.Depth: the next street over and the palm skyline.)
+    deck = Deck(['VillaStucco', 'VillaRanch', 'CraftsmanPorch', 'VillaStucco'])
+    x = X0 - 40
+    while x < X1 + 40:
+        m = deck.next(); w = size(kit_of(m), m).x
+        coast_house(m, x + w / 2, 0, rng.uniform(40, 46)); x += w + rng.uniform(1.5, 5)
+    palm_skyline(64, 105, 10, 26)
     distant((.44, .54, .32), None)
 
 
@@ -707,7 +773,7 @@ def market():
     x, i = X0, 0
     while x < X1:
         front = deck.next()
-        w = size('Buildings', front).x if front else 8
+        w = size(kit_of(front), front).x if front else 8
         if front: shop_front(front, x + w / 2, w)
         else: building('ShopFruit' if i % 2 == 0 else 'ShopShutter', x + 4, PROP + .6, SHOP)
         x += w
@@ -725,13 +791,15 @@ def market():
         vend = not vended and front != 'ShopKonbini' and rng.random() < .28
         vended = vend
         if vend:
-            place('Street', 'VendingRed', x + .7, 0, PROP + .2); place('Street', 'VendingBlue', x + 1.75, 0, PROP + .2)
+            plant('PalmDate', x + 1.3, 0, PROP + .5, rng.uniform(.6, .75))
             x += 2.6
         i += 1
     x = X0 - 20
     while x < X1 + 20:
-        building('Apartment', x, rng.uniform(22, 28), HOUSE)
+        z = rng.uniform(22, 28)
+        if not (rng.random() < .5 and coast_house('BeachCondo', x, 0, z)): building('Apartment', x, z, HOUSE)
         x += rng.uniform(13, 16)
+    palm_skyline(64, 100, 12, 28)
 
 
 def beach():
@@ -741,12 +809,19 @@ def beach():
     while x < X1:
         place('Leisure', 'LifeguardTower', x, g(x, 7.4), 7.4); towers.append(x)
         x += rng.uniform(30, 45)
+    # (StreetBuilder.Beach: the pier, and date palms along the back of the beach.)
+    pier_x = X0 + (X1 - X0) * .55
+    while any(abs(t - pier_x) < 9 for t in towers): pier_x += 7
+    if has('Coast', 'PierSpan'):
+        for i in range(13): coast_house('PierSpan', pier_x, SAND.base - .3, 6.2 + 12 * i)
+        coast_house('PierEnd', pier_x, SAND.base - .3, 6.2 + 12 * 13)
+    street_palms(2.8, 14, 30, lambda x, z: g(x, z) - .1)
     canopy = [(.9, .3, .28), (.25, .5, .85), (1, .75, .2), (.3, .66, .62)]
     towels = [(.95, .55, .6), (.45, .75, .9), (1, .85, .35), (.55, .8, .55)]
     x = X0 + 8
     while x < X1:
         z = rng.uniform(3.4, 5.2)
-        if any(abs(t - x) < 3 for t in towers):
+        if any(abs(t - x) < 3 for t in towers) or abs(x - pier_x) < 5:
             x += rng.uniform(5, 11); continue
         p = place('Leisure', 'Parasol', x, g(x, z) - .05, z, rng.uniform(0, 360), 1, [rng.choice(canopy), None, None])
         if p: p.rotation_euler = (math.radians(rng.uniform(-7, 7)), math.radians(rng.uniform(-7, 7)), p.rotation_euler.z)
@@ -837,6 +912,7 @@ def city():
     while x < X1:
         place('Works', 'TowerCrane', x + rng.uniform(-20, 20), 0, rng.uniform(170, 230), rng.uniform(-40, 40) + (180 if rng.random() < .5 else 0), rng.uniform(.85, 1.05))
         x += rng.uniform(70, 120)
+    palm_skyline(66, 110, 15, 35)
     distant((.54, .58, .46), None)
 
 
@@ -897,6 +973,7 @@ def park():
     while x < X1:
         plant(rng.choice(['TallGrass', 'GrassTuft', 'FlowerPatch', 'GrassTuft', 'TallGrass']), x, .08, rng.uniform(-6.5, -2.4), rng.uniform(1.1, 1.8))
         x += rng.uniform(.8, 2.6)
+    palm_skyline(66, 100, 14, 30)
     distant((.44, .54, .32), None)
 
 

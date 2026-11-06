@@ -413,6 +413,26 @@ def roof_map(B, mp='roof'):
                 moss = (n2 > 0.74) * (n1 > 0.45)
                 sub = _mul(sub, moss.astype(np.float32), (0.86, 0.92, 0.62), 0.5)
                 sub = _mul(sub, (n2 < 0.12).astype(np.float32), (0.8, 0.78, 0.76), 0.4)
+            elif kind == 'hip':
+                # Spanish barrel tiles on a hipped roof seen from above: rounded tiles running down
+                # each slope (across X on the front and back slopes, across Y on the hips' ends),
+                # rows stepping up from the eaves, each row's lower edge shadowed, every tile its own tone.
+                x0, x1, y0, y1 = kw['x0'], kw['x1'], kw['y0'], kw['y1']
+                inside = (X >= x0) & (X <= x1) & (Y >= y0) & (Y <= y1)
+                if not inside.any(): continue
+                dl, dr, df, db = X - x0, x1 - X, Y - y0, y1 - Y
+                d = np.minimum(np.minimum(dl, dr), np.minimum(df, db))
+                endwise = np.minimum(dl, dr) < np.minimum(df, db)
+                s_ = np.where(endwise, Y, X)
+                pq = s_ / kw['pitch']; pc = np.floor(pq); pf = pq - pc
+                rq = d / kw['row']; rc = np.floor(rq); rf = rq - rc
+                barrel = 0.74 + 0.34 * np.sin(np.pi * pf) ** 0.7               # crest light, channel dark
+                tone = np.sin(pc * 12.9898 + rc * 78.233 + endwise * 3.1) * 43758.5453; tone = tone - np.floor(tone)
+                warm = np.stack([1.0 + 0.06 * (tone - 0.5), 1.0 - 0.04 * (tone - 0.5), 1.0 - 0.1 * (tone - 0.5)], -1)
+                shade = barrel * (0.9 + 0.16 * tone) * (1 - 0.26 * _ss(0.7, 1.0, rf)) * (1 + 0.05 * _ss(0.25, 0.0, rf))
+                val = sub * shade[..., None] * warm
+                sub = np.where(inside[..., None], val, sub)
+                sub = _mul(sub, (inside & (n2 > 0.8)).astype(np.float32), (0.86, 0.84, 0.8), 0.45)
             elif kind == 'ribs':
                 x0, x1, y0, y1, p = kw['x0'], kw['x1'], kw['y0'], kw['y1'], kw['pitch']
                 n3 = _noise(H_, W_, ((a1 - a0) / 0.15, (b1 - b0) / 1.2), seed + 4)

@@ -1,6 +1,7 @@
 # The BUILDINGS kit for Dribble To School: original, cozy, stylized buildings for the streets,
 # modelled by script in Blender (read docs/ART_DIRECTION.md first).
 #   blenv/bin/python kit_buildings.py -- /abs/outdir [--only HouseGable,School]
+#   blenv/bin/python kit_buildings.py -- /abs/outdir --kit Coast     (the California models: Coast.json, CoastAtlas.png)
 # Writes into outdir: <Model>.fbx per model, BuildingsAtlas.png, Buildings.json, Buildings.blend.
 # Review: blenv/bin/python review_kit.py -- /abs/outdir/Buildings.blend /abs/outdir/sheet.png
 #
@@ -18,7 +19,8 @@
 #
 # Modules: kit_buildings_geo.py (pieces, primitives, atlas layout, mesh conversion),
 # kit_buildings_parts.py (walls, windows, doors, roofs, details), kit_buildings_bits.py (small shared
-# details), kit_buildings_town.py (the town's shops and houses), kit_buildings_atlas.py (painting).
+# details), kit_buildings_town.py (the town's shops and houses), kit_buildings_cal.py (California
+# villas, a Craftsman house, a beach condo and beach-town shops), kit_buildings_atlas.py (painting).
 import sys, os, math
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import bpy
@@ -31,10 +33,14 @@ from kit_buildings_bits import *
 import kit_buildings_atlas as ATL
 import kit_buildings_signs as SG
 import kit_buildings_town as TOWN
+import kit_buildings_cal as CAL
 
 ARGS = sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else []
 OUT = os.path.abspath(ARGS[0]) if ARGS else '/tmp/buildings'
 ONLY = ARGS[ARGS.index('--only') + 1].split(',') if '--only' in ARGS else None
+# --kit Coast builds the California models (kit_buildings_cal.py) as their own kit, with its own atlas:
+# the Buildings atlas is full.
+KIT = ARGS[ARGS.index('--kit') + 1] if '--kit' in ARGS else 'Buildings'
 
 
 def pal(wall, accent, roof, **kw):
@@ -879,6 +885,8 @@ SPECS = [
     ('Garage', 3.2, 2.6, 5.0, 0.0, garage,
      pal((0.86, 0.84, 0.78), (0.53, 0.64, 0.72), (0.40, 0.40, 0.42)), 3.4, {}, {}),
 ] + TOWN.pal_town(pal)
+if KIT == 'Coast':
+    SPECS = CAL.pal_cal(pal)
 
 
 def main():
@@ -887,7 +895,7 @@ def main():
     specs = [s for s in SPECS if not ONLY or s[0] in ONLY]
     maps = [('glass0', 128, 192), ('glass1', 128, 192), ('glass2', 128, 192), ('glass3', 128, 192),
             ('louvre', 64, 256), ('brick', 128, 384), ('banner', 256, 128), ('clock', 256, 256), ('wear', 128, 128),
-            ('solar', 128, 128), ('vent', 64, 64)] + list(SG.TILES)
+            ('solar', 128, 128), ('vent', 64, 64)] + list(SG.TILES) + (list(SG.COAST_TILES) if KIT == 'Coast' else [])
     bottom = [('wood', 256, 128), ('crate', 128, 128), ('p_orange', 128, 128), ('p_apple', 128, 128), ('p_lemon', 128, 128),
               ('p_green', 128, 128), ('p_tomato', 128, 128), ('p_plum', 128, 128), ('melon', 128, 128), ('ac', 192, 128),
               ('white', 128, 128)]
@@ -909,10 +917,10 @@ def main():
         B.maps = exts[name]; B.style = dict(st)
         B.total = fn(B)
         buildings.append(B)
-    atlas = os.path.join(OUT, 'BuildingsAtlas.png')
+    atlas = os.path.join(OUT, KIT + 'Atlas.png')
     ATL.paint(atlas, buildings)
-    mat = K.material('Buildings', atlas)
-    man = K.Manifest('Buildings', 'BuildingsAtlas.png')
+    mat = K.material(KIT, atlas)
+    man = K.Manifest(KIT, KIT + 'Atlas.png')
     for B in buildings:
         ob = to_object(B)
         K.assign(ob, mat)
@@ -936,8 +944,8 @@ def main():
         # free the Attach.* names for the next model (one scene holds the whole kit; the FBX
         # above carries the exact names the game looks up)
         for c in ob.children: c.name = B.name + ':' + c.name
-    man.save(os.path.join(OUT, 'Buildings.json'))
-    bpy.ops.wm.save_as_mainfile(filepath=os.path.join(OUT, 'Buildings.blend'))
+    man.save(os.path.join(OUT, KIT + '.json'))
+    bpy.ops.wm.save_as_mainfile(filepath=os.path.join(OUT, KIT + '.blend'))
     print('done', OUT)
 
 

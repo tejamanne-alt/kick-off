@@ -61,13 +61,24 @@ mostly from the front and a three-quarter angle. The camera sits close and low (
 under 3 m up, a 34 degree lens), so the kid is about a quarter of the screen tall and the street
 around them has real depth.
 
+The town is a sunny California coast town (the Coast kit, `tools/blender/kit_buildings_cal.py`):
+stucco villas and single-storey ranch houses under hipped terracotta barrel-tile roofs, white
+two-storey Craftsman houses with deep front porches, white beach condos with glass balconies,
+beach-town shops (a stepped-parapet surf shop, a Spanish Revival shop with arched windows and a tiled
+pent roof), front gardens open to the street behind picket fences or low hedges, wooden utility
+poles, date palms along the streets and very tall, slim fan palms on the skyline, and a timber pier
+on concrete piles running out from the beach. Shop signs are English, Californian names. A fan palm
+is 16.5 m tall, and the camera's top edge sits at about 2.4 m + 0.23 x the distance, so grown fan
+palms stand 60 m or more back (StreetBuilder.PalmSkyline), where their crowns show over the roofs;
+near the street they are young ones or date palms.
+
 | Chapter | Mood | Light | Signature assets |
 |---|---|---|---|
-| 1 Home street | Fresh, clear morning | High white sun, cool shade | Gabled houses, block walls, gardens, poles and wires, trees behind |
-| 2 Market | Busy, bright late morning | High sun | Shop fronts with coloured awnings, market stalls, crates of produce, flats behind |
-| 3 Beach | Brilliant midday | Deepest sky, soft turquoise sea | Dunes, beach grass, palms, lifeguard tower, parasols, headlands |
-| 4 Underpass and building site | Clear city day | Slightly paler sky | Tower crane, hoarding, scaffold, concrete pipes, warehouses |
-| 5 Park and school | Summer afternoon | Clear, a touch warmer | Green trees, a few blossoms, birches, hedges, pond, school |
+| 1 Home street | Fresh, clear morning | High white sun, cool shade | Stucco villas, ranch houses and Craftsman porches, picket fences and hedges, date palms, wooden poles and wires, fan palms on the skyline |
+| 2 Market | Busy, bright late morning | High sun | Beach-town shop fronts with coloured awnings, a Spanish Revival shop, date palms between them, beach condos and flats behind |
+| 3 Beach | Brilliant midday | Deepest sky, soft turquoise sea | A pier running out to sea, date palms, dunes, beach grass, lifeguard tower, parasols, headlands |
+| 4 Underpass and building site | Clear city day | Slightly paler sky | Tower crane, hoarding, scaffold, concrete pipes, warehouses, fan palms on the skyline |
+| 5 Park and school | Summer afternoon | Clear, a touch warmer | Green trees, a few blossoms, birches, hedges, pond, school, fan palms on the skyline |
 
 ## Production rules (Blender kits)
 
