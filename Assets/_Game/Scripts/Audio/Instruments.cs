@@ -329,10 +329,10 @@ namespace DribbleToSchool.Audio
             for (int i = 0; i < n; i++)
             {
                 double t = i / (double)Sr;
-                double f = 50 + 75 * Math.Exp(-t * 28);
+                double f = 52 + 95 * Math.Exp(-t * 34);
                 ph += f / Sr;
                 click.Process(noise.White(), 1200, 0.7);
-                double v = Math.Sin(TwoPi * ph) * Math.Exp(-t * 7.5) * Math.Min(1, t / 0.002) + click.low * 0.25 * Math.Exp(-t * 180);
+                double v = Math.Sin(TwoPi * ph) * Math.Exp(-t * 9) * Math.Min(1, t / 0.002) + click.low * 0.45 * Math.Exp(-t * 160);
                 tr.Add(start + i, (float)v * vel * Tail(i, n));
             }
         }
@@ -352,7 +352,7 @@ namespace DribbleToSchool.Audio
                 p1 += (190 + 30 * Math.Exp(-t * 40)) / Sr;
                 double body = Math.Sin(TwoPi * p1) * Math.Exp(-t * 22) * 0.55;
                 wires.Process(noise.White(), 1900, 0.8);
-                double w = dull.Process(wires.band + wires.high * 0.3f, 3800, 0.6) * Math.Exp(-t * 14);
+                double w = dull.Process(wires.band + wires.high * 0.5f, 5500, 0.6) * Math.Exp(-t * 15);
                 tr.Add(start + i, (float)((body + w * 1.2) * Math.Min(1, t / 0.0015)) * vel * Tail(i, n));
             }
         }
@@ -387,6 +387,23 @@ namespace DribbleToSchool.Audio
                 hp.Process(noise.White(), 5000, 0.7);
                 float v = lp.Process(hp.high, 8000, 0.7);
                 tr.Add(start + i, v * (float)(Math.Exp(-t * 60) * Math.Min(1, t / 0.001)) * vel * 0.6f * Tail(i, n));
+            }
+        }
+
+        /// <summary>An open hi-hat: a longer, softer wash, the lift on the off-beat.</summary>
+        public static void OpenHat(Track tr, double time, float vel, int seed)
+        {
+            int start = Index(time);
+            int n = (int)(0.32 * Sr);
+            var noise = new NoiseSource(seed + 77);
+            var hp = new Svf();
+            var lp = new Svf();
+            for (int i = 0; i < n; i++)
+            {
+                double t = i / (double)Sr;
+                hp.Process(noise.White(), 5200, 0.7);
+                float v = lp.Process(hp.high, 8500, 0.7);
+                tr.Add(start + i, v * (float)(Math.Exp(-t * 9) * Math.Min(1, t / 0.002)) * vel * 0.5f * Tail(i, n));
             }
         }
 
