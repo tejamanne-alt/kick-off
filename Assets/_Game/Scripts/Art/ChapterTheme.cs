@@ -62,7 +62,7 @@ namespace DribbleToSchool.Art
                     t.obstacle = C(0.8f, 0.68f, 0.6f); t.platform = C(0.72f, 0.6f, 0.52f);
                     t.edge = EdgeStyle.Cobbles; t.scenery = SceneryStyle.Market;
                     // Market: a bright late morning, the sun high.
-                    t.mood = MakeMood(C(1f, 0.985f, 0.96f), C(0.249f, 0.449f, 0.719f), C(0.301f, 0.53f, 0.718f), C(1f, 0.97f, 0.92f),
+                    t.mood = MakeMood(C(1f, 0.979f, 0.962f), C(0.234f, 0.421f, 0.67f), C(0.306f, 0.537f, 0.733f), C(1f, 0.97f, 0.92f),
                         C(0.56f, 0.565f, 0.64f), C(0.52f, 0.49f, 0.5f), C(0.34f, 0.54f, 0.75f),
                         new Vector3(0.4f, 0.85f, -0.35f), new Vector3(0.35f, 0.9f, 1f), 50f, 700f, 0.45f);
                     break;
@@ -73,7 +73,7 @@ namespace DribbleToSchool.Art
                     t.obstacle = C(0.86f, 0.72f, 0.52f); t.platform = C(0.72f, 0.56f, 0.4f);
                     t.edge = EdgeStyle.Sand; t.scenery = SceneryStyle.Beach;
                     // Beach: a brilliant midday, the deepest sky over a soft turquoise sea, warm bounce off the sand.
-                    t.mood = MakeMood(C(1f, 0.985f, 0.965f), C(0.235f, 0.44f, 0.725f), C(0.29f, 0.53f, 0.73f), C(1f, 0.97f, 0.92f),
+                    t.mood = MakeMood(C(1f, 0.979f, 0.967f), C(0.22f, 0.412f, 0.676f), C(0.295f, 0.537f, 0.745f), C(1f, 0.97f, 0.92f),
                         C(0.57f, 0.57f, 0.64f), C(0.6f, 0.55f, 0.52f), C(0.34f, 0.55f, 0.76f),
                         new Vector3(0.5f, 0.75f, -0.45f), new Vector3(-0.3f, 0.95f, 1f), 55f, 760f, 0.42f);
                     break;
@@ -84,7 +84,7 @@ namespace DribbleToSchool.Art
                     t.obstacle = C(0.7f, 0.66f, 0.62f); t.platform = C(0.95f, 0.72f, 0.3f);
                     t.edge = EdgeStyle.Concrete; t.scenery = SceneryStyle.City;
                     // Underpass and building site: a clear day, the sky a little paler over the city.
-                    t.mood = MakeMood(C(1f, 0.985f, 0.96f), C(0.265f, 0.46f, 0.715f), C(0.325f, 0.545f, 0.715f), C(1f, 0.97f, 0.92f),
+                    t.mood = MakeMood(C(1f, 0.979f, 0.962f), C(0.25f, 0.432f, 0.666f), C(0.33f, 0.552f, 0.73f), C(1f, 0.97f, 0.92f),
                         C(0.56f, 0.565f, 0.64f), C(0.5f, 0.49f, 0.5f), C(0.36f, 0.54f, 0.72f),
                         new Vector3(0.5f, 0.75f, -0.4f), new Vector3(0.4f, 0.9f, 1f), 45f, 640f, 0.5f);
                     break;
@@ -95,7 +95,7 @@ namespace DribbleToSchool.Art
                     t.obstacle = C(0.78f, 0.66f, 0.55f); t.platform = C(0.72f, 0.5f, 0.38f);
                     t.edge = EdgeStyle.ParkPath; t.scenery = SceneryStyle.Park;
                     // Park and school: a clear summer afternoon, the sun a touch warmer, green bounce off the lawns.
-                    t.mood = MakeMood(C(1f, 0.975f, 0.94f), C(0.249f, 0.449f, 0.719f), C(0.301f, 0.53f, 0.718f), C(1f, 0.96f, 0.9f),
+                    t.mood = MakeMood(C(1f, 0.969f, 0.942f), C(0.234f, 0.421f, 0.67f), C(0.306f, 0.537f, 0.733f), C(1f, 0.96f, 0.9f),
                         C(0.55f, 0.57f, 0.62f), C(0.46f, 0.5f, 0.44f), C(0.34f, 0.54f, 0.74f),
                         new Vector3(0.55f, 0.7f, -0.45f), new Vector3(-0.4f, 0.9f, 1f), 50f, 700f, 0.45f);
                     break;
@@ -106,7 +106,7 @@ namespace DribbleToSchool.Art
                     t.obstacle = C(0.8f, 0.7f, 0.62f); t.platform = C(0.68f, 0.56f, 0.46f);
                     t.edge = EdgeStyle.Road; t.scenery = SceneryStyle.Houses;
                     // Home street: a fresh, clear morning.
-                    t.mood = MakeMood(C(1f, 0.985f, 0.96f), C(0.249f, 0.449f, 0.719f), C(0.301f, 0.53f, 0.718f), C(1f, 0.97f, 0.92f),
+                    t.mood = MakeMood(C(1f, 0.979f, 0.962f), C(0.234f, 0.421f, 0.67f), C(0.306f, 0.537f, 0.733f), C(1f, 0.97f, 0.92f),
                         C(0.56f, 0.565f, 0.64f), C(0.5f, 0.48f, 0.5f), C(0.34f, 0.54f, 0.75f),
                         new Vector3(0.45f, 0.78f, -0.45f), new Vector3(-0.4f, 0.9f, 1f), 50f, 700f, 0.45f);
                     break;

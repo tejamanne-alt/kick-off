@@ -182,7 +182,7 @@ namespace DribbleToSchool.Art
             switch (surface)
             {
                 case Surface.Asphalt: return Asphalt(rng, seed);
-                case Surface.Paving: return Slabbed(rng, seed, 64, 64, 2.2f, new Color(0.69f, 0.68f, 0.68f), new Color(0.5f, 0.49f, 0.5f), 0.07f, true);
+                case Surface.Paving: return Slabbed(rng, seed, 64, 64, 2.2f, new Color(0.667f, 0.678f, 0.685f), new Color(0.48f, 0.49f, 0.5f), 0.07f, true);
                 case Surface.Kerb: return Slabbed(rng, seed, 64, 512, 2.5f, new Color(0.8f, 0.79f, 0.79f), new Color(0.52f, 0.51f, 0.52f), 0.05f, false);
                 case Surface.Concrete: return Concrete(rng, seed);
                 case Surface.Cobbles: return Cobbles(rng, seed);
@@ -197,8 +197,8 @@ namespace DribbleToSchool.Art
         static PixelCanvas Asphalt(System.Random rng, int seed)
         {
             int n = GroundSize;
-            var t = new GroundTile(n, new Color(0.51f, 0.48f, 0.495f));
-            t.Mottle(4, 4, seed, new Color(0.43f, 0.415f, 0.445f), new Color(0.58f, 0.545f, 0.555f), 0.6f);
+            var t = new GroundTile(n, new Color(0.536f, 0.516f, 0.526f));
+            t.Mottle(4, 4, seed, new Color(0.452f, 0.446f, 0.473f), new Color(0.61f, 0.586f, 0.59f), 0.6f);
             // Patched repairs: darker, fresher tarmac with ragged edges and a lighter worn seam.
             for (int i = 0; i < 2; i++)
             {
@@ -209,8 +209,8 @@ namespace DribbleToSchool.Art
                         float edge = Mathf.Min(Mathf.Min(xx, w - xx), Mathf.Min(yy, h - yy));
                         edge += (t.Noise(x0 + xx, y0 + yy, 32, seed + 11 + i) - 0.5f) * 9f;
                         if (edge < -1f) continue;
-                        if (edge < 1.2f) t.Mix((int)x0 + xx, (int)y0 + yy, new Color(0.58f, 0.55f, 0.57f), 0.3f);
-                        else t.Mix((int)x0 + xx, (int)y0 + yy, new Color(0.44f, 0.42f, 0.46f), 0.3f);
+                        if (edge < 1.2f) t.Mix((int)x0 + xx, (int)y0 + yy, new Color(0.61f, 0.591f, 0.606f), 0.3f);
+                        else t.Mix((int)x0 + xx, (int)y0 + yy, new Color(0.462f, 0.452f, 0.489f), 0.3f);
                     }
             }
             // Fine sealed cracks.
@@ -224,7 +224,7 @@ namespace DribbleToSchool.Art
             {
                 int x = rng.Next(n), y = rng.Next(n);
                 bool light = rng.NextDouble() < 0.45;
-                t.Mix(x, y, light ? new Color(0.68f, 0.64f, 0.66f) : new Color(0.36f, 0.35f, 0.38f), GRand(rng, 0.2f, 0.5f));
+                t.Mix(x, y, light ? new Color(0.715f, 0.688f, 0.702f) : new Color(0.378f, 0.376f, 0.404f), GRand(rng, 0.2f, 0.5f));
             }
             return t.ToCanvas();
         }
@@ -363,8 +363,8 @@ namespace DribbleToSchool.Art
         static PixelCanvas Sand(System.Random rng, int seed)
         {
             int n = GroundSize;
-            var t = new GroundTile(n, new Color(0.82f, 0.68f, 0.6f));
-            t.Mottle(4, 4, seed, new Color(0.76f, 0.61f, 0.53f), new Color(0.86f, 0.75f, 0.7f), 0.6f);
+            var t = new GroundTile(n, new Color(0.801f, 0.677f, 0.597f));
+            t.Mottle(4, 4, seed, new Color(0.743f, 0.608f, 0.527f), new Color(0.84f, 0.747f, 0.697f), 0.6f);
             // Soft wind ripples: crests running across, each lit on one side and shaded on the other.
             for (int y = 0; y < n; y++)
                 for (int x = 0; x < n; x++)
@@ -377,18 +377,18 @@ namespace DribbleToSchool.Art
                 }
             // Damp, darker patches, pebbles and bits of shell.
             for (int i = 0; i < 4; i++)
-                t.Blob(GRand(rng, 0, n), GRand(rng, 0, n), GRand(rng, 30, 70), GRand(rng, 20, 40), new Color(0.72f, 0.58f, 0.51f), 0.25f, 20f, GRand(rng, 0f, 3f));
+                t.Blob(GRand(rng, 0, n), GRand(rng, 0, n), GRand(rng, 30, 70), GRand(rng, 20, 40), new Color(0.703f, 0.578f, 0.507f), 0.25f, 20f, GRand(rng, 0f, 3f));
             for (int i = 0; i < 70; i++)
             {
                 float x = GRand(rng, 0, n), y = GRand(rng, 0, n);
                 bool shell = rng.NextDouble() < 0.5;
                 Color c = shell ? (rng.NextDouble() < 0.5 ? new Color(0.99f, 0.92f, 0.88f) : new Color(0.98f, 0.8f, 0.76f)) : new Color(0.62f, 0.58f, 0.54f);
                 float r = shell ? GRand(rng, 1.6f, 3f) : GRand(rng, 1.2f, 2.4f);
-                t.Blob(x + 0.8f, y - 0.8f, r, r * 0.7f, new Color(0.64f, 0.52f, 0.43f), 0.5f, 1f);
+                t.Blob(x + 0.8f, y - 0.8f, r, r * 0.7f, new Color(0.625f, 0.518f, 0.428f), 0.5f, 1f);
                 t.Blob(x, y, r, r * 0.7f, c, 0.95f, 0.8f, GRand(rng, 0f, 3f));
             }
             for (int i = 0; i < 9000; i++)
-                t.Mix(rng.Next(n), rng.Next(n), rng.NextDouble() < 0.5 ? new Color(0.71f, 0.57f, 0.49f) : new Color(0.87f, 0.78f, 0.75f), GRand(rng, 0.25f, 0.55f));
+                t.Mix(rng.Next(n), rng.Next(n), rng.NextDouble() < 0.5 ? new Color(0.694f, 0.568f, 0.488f) : new Color(0.85f, 0.777f, 0.746f), GRand(rng, 0.25f, 0.55f));
             return t.ToCanvas();
         }
 
@@ -422,7 +422,7 @@ namespace DribbleToSchool.Art
         static PixelCanvas Grass(System.Random rng, int seed)
         {
             int n = GroundSize;
-            Color lush = new Color(0.52f, 0.63f, 0.3f), dry = new Color(0.68f, 0.7f, 0.37f), deep = new Color(0.3f, 0.45f, 0.2f);
+            Color lush = new Color(0.637f, 0.734f, 0.379f), dry = new Color(0.833f, 0.816f, 0.468f), deep = new Color(0.368f, 0.525f, 0.253f);
             var t = new GroundTile(n, Color.Lerp(lush, dry, 0.3f));
             // Big soft patches of lusher and drier grass.
             for (int y = 0; y < n; y++)
@@ -445,12 +445,12 @@ namespace DribbleToSchool.Art
                     var p0 = new Vector2(x + GRand(rng, -3f, 3f), y + GRand(rng, -2f, 2f));
                     var p1 = p0 + new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * len;
                     t.Stroke(p0, p1, GRand(rng, 1.1f, 1.8f), Shift(baseCol, GRand(rng, 0.78f, 0.9f)), 0.7f);
-                    t.Stroke(Vector2.Lerp(p0, p1, 0.45f), p1, GRand(rng, 0.9f, 1.3f), Color.Lerp(Shift(baseCol, 1.16f), new Color(0.78f, 0.84f, 0.46f), 0.3f), 0.75f);
+                    t.Stroke(Vector2.Lerp(p0, p1, 0.45f), p1, GRand(rng, 0.9f, 1.3f), Color.Lerp(Shift(baseCol, 1.16f), new Color(0.955f, 0.979f, 0.581f), 0.3f), 0.75f);
                 }
             }
             // Clover and a scatter of tiny white and yellow flowers, in little drifts.
             for (int i = 0; i < 26; i++)
-                t.Blob(GRand(rng, 0, n), GRand(rng, 0, n), GRand(rng, 12f, 26f), GRand(rng, 8f, 16f), new Color(0.32f, 0.5f, 0.22f), 0.3f, 6f, GRand(rng, 0f, 3f));
+                t.Blob(GRand(rng, 0, n), GRand(rng, 0, n), GRand(rng, 12f, 26f), GRand(rng, 8f, 16f), new Color(0.392f, 0.583f, 0.278f), 0.3f, 6f, GRand(rng, 0f, 3f));
             for (int d = 0; d < 9; d++)
             {
                 float cx = GRand(rng, 0, n), cy = GRand(rng, 0, n);
@@ -468,7 +468,7 @@ namespace DribbleToSchool.Art
         static PixelCanvas Water(System.Random rng, int seed)
         {
             int n = GroundSize;
-            Color deep = new Color(0.3f, 0.58f, 0.74f), mid = new Color(0.42f, 0.68f, 0.77f), shallow = new Color(0.58f, 0.8f, 0.82f);
+            Color deep = new Color(0.267f, 0.56f, 0.723f), mid = new Color(0.373f, 0.657f, 0.752f), shallow = new Color(0.516f, 0.773f, 0.801f);
             var t = new GroundTile(n, mid);
             for (int y = 0; y < n; y++)
                 for (int x = 0; x < n; x++)

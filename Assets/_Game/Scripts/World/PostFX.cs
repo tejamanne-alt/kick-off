@@ -26,8 +26,8 @@ namespace DribbleToSchool.World
         [Range(0f, 1f)] public float toeFloor = 0.7f;
         [Range(0.5f, 1.5f)] public float contrast = 1.1f;
         [Tooltip("Above this the highlights ease toward the white point instead of clipping.")]
-        [Range(0.5f, 1f)] public float shoulder = 0.8f;
-        [Range(0.6f, 1f)] public float whitePoint = 0.96f;
+        [Range(0.5f, 1f)] public float shoulder = 0.84f;
+        [Range(0.6f, 1f)] public float whitePoint = 0.972f;
         [Tooltip("Saturation of strong colours.")]
         [Range(0f, 2f)] public float saturation = 1f;
         [Tooltip("Saturation of greys and soft colours (vibrance).")]

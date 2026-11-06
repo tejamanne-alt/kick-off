@@ -484,8 +484,8 @@ namespace DribbleToSchool.EditorTools
         // and the shade inside the crown going deep (not olive, and not lime either).
         static readonly Color[] SummerLeaves =
         {
-            new Color(0.29f, 0.39f, 0.2f), new Color(0.26f, 0.36f, 0.2f), new Color(0.32f, 0.42f, 0.2f),
-            new Color(0.24f, 0.35f, 0.21f), new Color(0.31f, 0.4f, 0.18f),
+            new Color(0.243f, 0.327f, 0.207f), new Color(0.218f, 0.302f, 0.207f), new Color(0.268f, 0.352f, 0.207f),
+            new Color(0.201f, 0.293f, 0.217f), new Color(0.26f, 0.335f, 0.186f),
         };
         // Meadow grass in leaf (the kit's tall grass and tufts are made seeding, golden).
         static readonly Color[] MeadowGreens = { new Color(0.46f, 0.57f, 0.26f), new Color(0.5f, 0.6f, 0.28f), new Color(0.4f, 0.53f, 0.25f) };

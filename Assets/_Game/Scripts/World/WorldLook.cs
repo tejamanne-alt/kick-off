@@ -17,7 +17,7 @@ namespace DribbleToSchool.World
         [Tooltip("Direction toward the sun (up, to the right and toward the camera).")]
         public Vector3 sunDirection = new Vector3(0.45f, 0.8f, -0.4f);
         [Tooltip("Sunlight tint on lit faces: near-white daylight, only a hair warm, so whites stay white.")]
-        public Color sunColor = new Color(1f, 0.985f, 0.96f);
+        public Color sunColor = new Color(1f, 0.979f, 0.962f);
         [Tooltip("Where the sun sits in the sky, seen from the camera: high, so only its glow shows at the top of the view.")]
         public Vector3 skySunDirection = new Vector3(-0.4f, 0.9f, 1f);
         public Color sunDisc = new Color(1f, 0.99f, 0.95f);
@@ -35,8 +35,8 @@ namespace DribbleToSchool.World
 
         [Header("Sky")]
         [Tooltip("Before the grade: on screen the top of the view is a deep cobalt, about (57, 109, 175).")]
-        public Color skyZenith = new Color(0.249f, 0.449f, 0.719f);
-        public Color skyHorizon = new Color(0.301f, 0.53f, 0.718f);
+        public Color skyZenith = new Color(0.234f, 0.421f, 0.67f);
+        public Color skyHorizon = new Color(0.306f, 0.537f, 0.733f);
 
         [Header("Haze")]
         [Tooltip("Far things turn this blue: a mid sky blue, so distant hills go deeper blue, not pale.")]
