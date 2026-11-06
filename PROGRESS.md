@@ -517,6 +517,19 @@ Every level's street is now a sunny California coast town, after the user's refe
 - **Plants atlas** 2048 x 2048 (was 1024): every leaf sprite, bark, birch, cherry, palm trunk, frond and hedge tile at twice the resolution. The UV insets keep their 1024 values and the painters' pixel sizes scale with the atlas, so the models are unchanged (identical manifest; the FBXs differ only in their timestamps) and every mark stays where it was, sharper.
 - The Buildings kit (the town's older houses and shops) stays at its 2048 x 4096 atlas, which is full; doubling it would need an 8192-tall sheet.
 
+## The California town remodelled for quality (generated content v70)
+
+The user found the first Coast models plain next to their reference shots (weathered, lived-in anime streets) and real California photos. The models were remodelled for that look:
+
+- **Weathered stucco** (`kit_buildings_atlas.py`, the `stucco` wall style, Coast kit only): broad soft blotches of the mix and the sun, a sand finish, faint trowel arcs, patches of newer paint, dust settled under eaves and ledges, longer rain streaks under sills and fixtures, soil and splash up the base, an occasional hairline crack from an opening's corner.
+- **Glass that reads as glass** (`glass_hi`): dark, deep panes with the sky caught only along the top, reflected tree crowns, the room behind just visible (ceiling, back wall, furniture), the frame's shadow; sheer curtains, a blind, a lit lamp as variants; no painted glare stripe. Shopfronts show a lit interior; the condo's balconies are glass sheets, not solid panels.
+- **Clay tiles**: burnt and sun-bleached tiles among the terracotta, deep channels, rain-darkened lower courses, lichen freckles. **Garage doors**: dust at the base, drips, a glazed top section.
+- **Lived-in detail** (`kit_buildings_cal.py`): white aluminium gutters and downpipes, ground-standing AC condensers on pads with the line set up the wall and a disconnect box (no wall-hung split units), meters, foundation and garage vents, clay roof vents, hose taps, house numbers, a mailbox, window surrounds and grid muntins, rooftop condensers and rainwater heads on the flat roofs, surfboards at the surf shop, hanging baskets at the Mission shop; solar panels seated on the ranch's front hip.
+- **Palms**: the fan palm's crown denser with a skirt of dry fronds (24 fronds, 11 dry), the date palm fuller (30 fronds).
+- **Colour**: muted, sun-softened stucco and clay schemes (`StreetBuilder.Coast.cs`, the kit's base colours).
+- **The home street** now deals only the Coast houses (the European gabled house is out of its decks), on 12.9 to 15 lots so every house fits.
+- Checked: close-up and street renders in Blender (Eevee), the C# compile. Not checked in Unity.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

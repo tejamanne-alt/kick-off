@@ -39,44 +39,45 @@ namespace DribbleToSchool.EditorTools
             }
         }
 
-        static readonly Color Terracotta = new Color(0.76f, 0.4f, 0.27f);
+        static readonly Color Terracotta = new Color(0.72f, 0.4f, 0.28f);
 
-        // Paint schemes (wall, accent, roof), sRGB: warm stucco under terracotta for the villas; white,
-        // pale blue or putty siding over charcoal shingles for the Craftsman houses.
+        // Paint schemes (wall, accent, roof), sRGB: the muted, sun-softened tones of real California
+        // stucco under weathered clay; white, pale blue or putty siding over charcoal shingles for the
+        // Craftsman houses. (The kit paints the weathering; these only set the colour.)
         static readonly Paint[] VillaPaints =
         {
-            new Paint(new Color(0.95f, 0.9f, 0.8f), new Color(0.42f, 0.3f, 0.22f), Terracotta),                           // cream, walnut
-            new Paint(new Color(0.93f, 0.84f, 0.72f), new Color(0.3f, 0.4f, 0.46f), new Color(0.7f, 0.36f, 0.25f)),        // sand, slate blue
-            new Paint(new Color(0.96f, 0.93f, 0.86f), new Color(0.24f, 0.36f, 0.3f), new Color(0.8f, 0.46f, 0.32f)),       // ivory, green
-            new Paint(new Color(0.91f, 0.8f, 0.7f), new Color(0.45f, 0.3f, 0.25f), new Color(0.72f, 0.4f, 0.3f)),          // peach
-            new Paint(new Color(0.95f, 0.95f, 0.93f), new Color(0.22f, 0.28f, 0.36f), new Color(0.74f, 0.42f, 0.3f)),      // white, navy
-            new Paint(new Color(0.88f, 0.82f, 0.72f), new Color(0.36f, 0.26f, 0.2f), new Color(0.66f, 0.38f, 0.28f)),      // putty
+            new Paint(new Color(0.87f, 0.81f, 0.7f), new Color(0.36f, 0.27f, 0.2f), Terracotta),                          // beige, walnut
+            new Paint(new Color(0.84f, 0.77f, 0.66f), new Color(0.3f, 0.38f, 0.42f), new Color(0.66f, 0.36f, 0.26f)),      // tan, slate blue
+            new Paint(new Color(0.9f, 0.87f, 0.8f), new Color(0.24f, 0.33f, 0.28f), new Color(0.74f, 0.44f, 0.31f)),       // warm white, green
+            new Paint(new Color(0.86f, 0.76f, 0.66f), new Color(0.4f, 0.28f, 0.22f), new Color(0.68f, 0.38f, 0.28f)),      // sand peach
+            new Paint(new Color(0.91f, 0.9f, 0.87f), new Color(0.2f, 0.25f, 0.32f), new Color(0.7f, 0.4f, 0.29f)),         // white, navy
+            new Paint(new Color(0.8f, 0.76f, 0.68f), new Color(0.32f, 0.24f, 0.19f), new Color(0.62f, 0.36f, 0.27f)),      // greige
         };
         static readonly Paint[] CraftsmanPaints =
         {
-            new Paint(new Color(0.95f, 0.95f, 0.93f), new Color(0.3f, 0.38f, 0.46f), new Color(0.34f, 0.36f, 0.4f)),       // white, slate
-            new Paint(new Color(0.8f, 0.86f, 0.88f), new Color(0.62f, 0.22f, 0.2f), new Color(0.36f, 0.37f, 0.4f)),        // pale blue, red door
-            new Paint(new Color(0.9f, 0.86f, 0.78f), new Color(0.24f, 0.36f, 0.3f), new Color(0.4f, 0.36f, 0.33f)),        // putty, green
-            new Paint(new Color(0.84f, 0.8f, 0.7f), new Color(0.3f, 0.3f, 0.32f), new Color(0.33f, 0.33f, 0.36f)),         // sage grey
+            new Paint(new Color(0.92f, 0.92f, 0.9f), new Color(0.28f, 0.35f, 0.42f), new Color(0.32f, 0.33f, 0.36f)),      // white, slate
+            new Paint(new Color(0.76f, 0.82f, 0.84f), new Color(0.56f, 0.2f, 0.18f), new Color(0.34f, 0.35f, 0.38f)),      // pale blue, red door
+            new Paint(new Color(0.86f, 0.82f, 0.74f), new Color(0.22f, 0.33f, 0.28f), new Color(0.38f, 0.34f, 0.31f)),     // putty, green
+            new Paint(new Color(0.78f, 0.76f, 0.68f), new Color(0.28f, 0.28f, 0.3f), new Color(0.31f, 0.31f, 0.34f)),      // sage grey
         };
         static readonly Paint[] CondoPaints =
         {
-            new Paint(new Color(0.96f, 0.96f, 0.94f), new Color(0.4f, 0.56f, 0.66f), new Color(0.56f, 0.55f, 0.54f)),
-            new Paint(new Color(0.93f, 0.91f, 0.86f), new Color(0.3f, 0.34f, 0.38f), new Color(0.56f, 0.55f, 0.54f)),
-            new Paint(new Color(0.9f, 0.93f, 0.94f), new Color(0.24f, 0.46f, 0.56f), new Color(0.56f, 0.55f, 0.54f)),
+            new Paint(new Color(0.92f, 0.92f, 0.9f), new Color(0.36f, 0.5f, 0.58f), new Color(0.56f, 0.55f, 0.54f)),
+            new Paint(new Color(0.88f, 0.86f, 0.81f), new Color(0.28f, 0.31f, 0.35f), new Color(0.56f, 0.55f, 0.54f)),
+            new Paint(new Color(0.86f, 0.88f, 0.89f), new Color(0.22f, 0.42f, 0.5f), new Color(0.56f, 0.55f, 0.54f)),
         };
         static readonly Paint[] BeachShopPaints =
         {
-            new Paint(new Color(0.97f, 0.92f, 0.82f), new Color(0.2f, 0.58f, 0.66f), new Color(0.56f, 0.55f, 0.54f)),      // teal awning
-            new Paint(new Color(0.96f, 0.95f, 0.92f), new Color(0.88f, 0.42f, 0.3f), new Color(0.56f, 0.55f, 0.54f)),      // coral awning
-            new Paint(new Color(0.94f, 0.86f, 0.7f), new Color(0.24f, 0.36f, 0.6f), new Color(0.56f, 0.55f, 0.54f)),       // navy awning
-            new Paint(new Color(0.92f, 0.94f, 0.92f), new Color(0.96f, 0.72f, 0.2f), new Color(0.56f, 0.55f, 0.54f)),      // sunflower awning
+            new Paint(new Color(0.9f, 0.85f, 0.75f), new Color(0.2f, 0.5f, 0.56f), new Color(0.56f, 0.55f, 0.54f)),       // teal awning
+            new Paint(new Color(0.9f, 0.89f, 0.86f), new Color(0.8f, 0.38f, 0.28f), new Color(0.56f, 0.55f, 0.54f)),       // coral awning
+            new Paint(new Color(0.87f, 0.8f, 0.66f), new Color(0.22f, 0.32f, 0.54f), new Color(0.56f, 0.55f, 0.54f)),      // navy awning
+            new Paint(new Color(0.86f, 0.88f, 0.86f), new Color(0.88f, 0.66f, 0.2f), new Color(0.56f, 0.55f, 0.54f)),      // sunflower awning
         };
         static readonly Paint[] MissionPaints =
         {
-            new Paint(new Color(0.95f, 0.89f, 0.78f), new Color(0.3f, 0.22f, 0.17f), Terracotta),
-            new Paint(new Color(0.92f, 0.84f, 0.74f), new Color(0.24f, 0.3f, 0.26f), new Color(0.72f, 0.38f, 0.26f)),
-            new Paint(new Color(0.97f, 0.95f, 0.9f), new Color(0.36f, 0.2f, 0.16f), new Color(0.78f, 0.44f, 0.3f)),
+            new Paint(new Color(0.88f, 0.82f, 0.72f), new Color(0.3f, 0.22f, 0.17f), Terracotta),
+            new Paint(new Color(0.85f, 0.78f, 0.69f), new Color(0.22f, 0.28f, 0.24f), new Color(0.68f, 0.36f, 0.25f)),
+            new Paint(new Color(0.9f, 0.88f, 0.83f), new Color(0.34f, 0.19f, 0.15f), new Color(0.74f, 0.42f, 0.29f)),
         };
 
         static Paint[] CoastPaints(string model)

@@ -5,6 +5,7 @@
 #  - per-building projected maps (front, left, right: (x or y, z); roof: (x, y)), multipliers over
 #    the vertex colours, so the game's recolour keeps them: soft mottling, darker bases, grime
 #    streaks under sills, contact shadows under canopies and balconies, tile joints, moss, rust.
+import math
 import numpy as np
 from PIL import Image
 from kit_buildings_geo import REG, ATW, ATH, reg_px
@@ -36,6 +37,51 @@ def _noise(h, w, cells, seed):
     return np.asarray(im, np.float32) / 255.0
 
 
+# True while painting the Coast kit (kit_buildings.py --kit Coast): its weathered stucco, realistic
+# glass, clay tiles and garage doors. The Buildings kit paints exactly as before.
+HI = False
+
+
+def _seg(A, Z, p0, p1):
+    """Distance from every (A, Z) to the segment p0-p1."""
+    ax, az = p0; bx, bz = p1
+    dx, dz = bx - ax, bz - az
+    L2 = max(dx * dx + dz * dz, 1e-9)
+    t = np.clip(((A - ax) * dx + (Z - az) * dz) / L2, 0, 1)
+    return np.hypot(A - (ax + t * dx), Z - (az + t * dz))
+
+
+def _crack(sub, A, Z, x, z, ang, length, ppm, rng, dark=(0.62, 0.58, 0.55)):
+    """A hairline crack wandering from (x, z) at angle ang (radians) for about length metres:
+    a dark line one or two pixels wide with a paler lip above it, fading out at its end."""
+    pts = [(x, z)]
+    n = max(3, int(length / 0.08))
+    for i in range(n):
+        ang += rng.normal(0, 0.35)
+        x += math.cos(ang) * length / n; z += math.sin(ang) * length / n
+        pts.append((x, z))
+    lo_a, hi_a = min(p[0] for p in pts) - 0.05, max(p[0] for p in pts) + 0.05
+    lo_z, hi_z = min(p[1] for p in pts) - 0.05, max(p[1] for p in pts) + 0.05
+    cols = np.nonzero((A[0] >= lo_a) & (A[0] <= hi_a))[0]
+    rows = np.nonzero((Z[:, 0] >= lo_z) & (Z[:, 0] <= hi_z))[0]
+    if len(cols) == 0 or len(rows) == 0: return sub
+    sl = (slice(rows[0], rows[-1] + 1), slice(cols[0], cols[-1] + 1))
+    a, zz = A[sl], Z[sl]
+    d = np.full(a.shape, 9.0); fade = np.zeros(a.shape)
+    for i, (p0, p1) in enumerate(zip(pts[:-1], pts[1:])):
+        di = _seg(a, zz, p0, p1)
+        closer = di < d
+        fade = np.where(closer, 1.0 - 0.7 * i / len(pts), fade); d = np.minimum(d, di)
+    w = (0.6 + 0.5 * fade) / ppm
+    line = _ss(w * 1.6, w * 0.4, d) * fade
+    lip = _ss(w * 3.5, w * 1.5, d) * (1 - line) * fade
+    s2 = sub[sl]
+    s2 = _mul(s2, line.astype(np.float32), dark, 0.85)
+    s2 = _blend(s2, lip.astype(np.float32), (1.0, 1.0, 1.0), 0.12)
+    sub[sl] = s2
+    return sub
+
+
 def grid(name, pad=PAD):
     """Pixel slice of a region including its bleed, and U, V (0..1 inside the region, beyond it
     in the bleed), V up."""
@@ -54,7 +100,62 @@ def put(img, name, fn, pad=PAD):
 
 
 # ---------------------------------------------------------------- shared tiles
+def glass_hi(variant):
+    """The Coast kit's glass: dark, deep panes that read as glass rather than paint: the sky's pale
+    reflection only along the top, soft dark shapes of trees reflected in it, the room behind just
+    visible (a lit ceiling, a back wall, the dim shapes of furniture), the frame's shadow round the
+    edge, and no painted glare stripe. Variants: 0 plain, 1 sheer curtains, 2 a blind part-way down,
+    3 a lamp lit inside."""
+    def f(U, V, w, h):
+        H_, W_ = U.shape
+        n1 = _noise(H_, W_, (3, 4), 31 + variant); n2 = _noise(H_, W_, (9, 12), 47 + variant)
+        deep = np.array((0.085, 0.115, 0.165)); low = np.array((0.12, 0.15, 0.2)); sky = np.array((0.42, 0.52, 0.64))
+        t = np.clip(V, 0, 1)[..., None]
+        sub = low + (deep - low) * _ss(0.0, 0.55, t)
+        # the sky, reflected along the top of the pane, broken by the dark crowns of trees
+        refl = _ss(0.62, 0.98, t[..., 0]) * (0.75 + 0.25 * n1)
+        trees = _ss(0.55, 0.62, n1 + 0.25 * n2) * _ss(0.6, 0.85, t[..., 0])
+        sub = _blend(sub, refl * (1 - 0.85 * trees), sky, 0.55)
+        # the room: a pale ceiling band, a back wall a little lighter than the floor, furniture shapes
+        room = np.array((0.30, 0.27, 0.25))
+        ceil = _ss(0.52, 0.6, t[..., 0]) * _ss(0.72, 0.64, t[..., 0])
+        sub = _blend(sub, ceil, room * 1.25, 0.35)
+        wall_ = _ss(0.18, 0.3, t[..., 0]) * _ss(0.56, 0.48, t[..., 0])
+        sub = _blend(sub, wall_ * (0.6 + 0.4 * n2), room, 0.22)
+        for k in range(3):
+            cx = 0.2 + 0.3 * k + 0.08 * math.sin(variant * 3.1 + k)
+            hw = 0.08 + 0.04 * ((k + variant) % 2); top = 0.22 + 0.12 * ((k * 2 + variant) % 3)
+            m = _ss(0.012, 0.0, np.abs(U - cx) - hw) * _ss(top + 0.01, top - 0.01, V) * (V > 0.04)
+            sub = _blend(sub, m, (0.06, 0.06, 0.07), 0.45)
+        if variant == 3:     # a lamp lit inside: warm light on the ceiling and back wall
+            g = np.exp(-(((U - 0.62) / 0.3) ** 2 + ((V - 0.4) / 0.28) ** 2))
+            sub = _blend(sub, g, (0.86, 0.64, 0.4), 0.45)
+        if variant == 1:     # sheer curtains drawn to the sides: soft vertical folds, a little light through
+            cur = np.array((0.80, 0.77, 0.72))
+            for side in (U, 1 - U):
+                wc = 0.2 + 0.05 * (1 - V)
+                m = _ss(wc + 0.02, wc - 0.02, side)
+                fold = 0.82 + 0.18 * np.cos(side / np.maximum(wc, 0.05) * np.pi * 4.0) ** 2
+                sub = _blend(sub, m * fold, cur, 0.7)
+        if variant == 2:     # a white blind part-way down, slats catching the light
+            edge_ = 0.6 + 0.04 * math.sin(variant)
+            m = (V > edge_).astype(np.float32)
+            slat = 0.86 + 0.14 * (np.cos((V - edge_) * 2 * np.pi * 18) * 0.5 + 0.5)
+            blind = np.array((0.84, 0.81, 0.75))[None, None] * slat[..., None]
+            sub = np.where(m[..., None] > 0, sub * 0.25 + blind * 0.75, sub)
+            sub = _blend(sub, _ss(0.015, 0.0, np.abs(V - edge_)), (0.4, 0.38, 0.36), 0.8)
+        # a soft, wide reflection band (not a stripe) and the frame's shadow round the edge
+        d = U * 0.6 + V
+        sub = _blend(sub, _ss(0.28, 0.0, np.abs(d - 1.05)), (0.62, 0.7, 0.78), 0.1)
+        edge = np.minimum(np.minimum(U, 1 - U) * 1.3, np.minimum(1 - V, V * 2))
+        sub = sub * (1 - 0.5 * _ss(0.06, 0.0, edge))[..., None]
+        sub = _blend(sub, _ss(0.012, 0.0, np.abs(V - 0.985)) * _ss(0.0, 0.3, U), (0.8, 0.86, 0.9), 0.35)
+        return sub
+    return f
+
+
 def glass(variant):
+    if HI: return glass_hi(variant)
     def f(U, V, w, h):
         top = np.array((0.50, 0.56, 0.68)); mid = np.array((0.16, 0.22, 0.29)); bot = np.array((0.22, 0.29, 0.35))
         t = np.clip(V, 0, 1)[..., None]
@@ -244,7 +345,27 @@ def banner(U, V, w, h):
     return sub
 
 
+def wear_hi(U, V, w, h):
+    """The Coast kit's painted-metal weathering (garage doors, trim pieces): faint mottling, road
+    dust rising from the bottom, drips from the top edge and the panels' joints, darker corners."""
+    H_, W_ = U.shape
+    sub = np.ones(U.shape + (3,), np.float32)
+    n = _noise(H_, W_, (8, 8), 23); n2 = _noise(H_, W_, (40, 40), 29)
+    sub *= (0.95 + 0.04 * n + 0.02 * (n2 - 0.5))[..., None]
+    sub = _mul(sub, _ss(0.3, 0.0, V) * (0.5 + 0.5 * n), (0.74, 0.70, 0.64), 0.7)
+    sub = _mul(sub, _ss(0.08, 0.0, V) * (0.6 + 0.4 * n2), (0.6, 0.55, 0.5), 0.6)
+    rng = np.random.default_rng(37)
+    for k in range(18):
+        cx = rng.uniform(0.02, 0.98); L = rng.uniform(0.1, 0.55); wd = rng.uniform(0.004, 0.012)
+        m = _ss(wd, 0.0, np.abs(U - cx)) * _ss(1 - L, 1.0, V) ** 1.5
+        sub = _mul(sub, m, (0.78, 0.76, 0.72), 0.5)
+    edge = np.minimum(np.minimum(U, 1 - U), np.minimum(V, 1 - V))
+    sub = _mul(sub, _ss(0.06, 0.0, edge), (0.8, 0.78, 0.74), 0.6)
+    return sub
+
+
 def wear(U, V, w, h):
+    if HI: return wear_hi(U, V, w, h)
     sub = np.ones(U.shape + (3,), np.float32)
     n = _noise(U.shape[0], U.shape[1], (10, 10), 21)
     sub *= (0.97 + 0.03 * n)[..., None]
@@ -308,6 +429,30 @@ def wall_map(B, mp):
                     m = _ss(0.035, 0.0, np.abs(A - ax)) * _ss(zr - L, zr, Z) * (Z < zr + 0.02)
                     sub = _mul(sub, m * (0.6 + 0.4 * n3), (0.78, 0.55, 0.40), 0.55 if style == 'metal' else 0.35)
             sub = _mul(sub, _ss(1.2, 0.0, Z) * (0.4 + 0.6 * n2), (0.72, 0.64, 0.56), 0.4)
+        stucco = style == 'stucco'
+        if stucco:
+            # Weathered stucco, as it looks after a few summers: broad soft blotches where the mix and
+            # the sun have left it a shade lighter or darker, a fine sand finish, faint trowel arcs,
+            # patches of newer paint, dust settled along every ledge, dirt and splash at the base,
+            # hairline cracks from the corners of the openings.
+            nB = _noise(H_, W_, ((a1 - a0) / 3.2, (b1 - b0) / 3.2), seed + 11)
+            nC = _noise(H_, W_, ((a1 - a0) / 0.9, (b1 - b0) / 0.9), seed + 12)
+            sub *= (0.92 + 0.09 * nB + 0.035 * (nC - 0.5))[..., None]
+            sub *= np.stack([1 + 0.025 * (nB - 0.5), np.ones_like(nB), 1 - 0.04 * (nB - 0.5)], -1)
+            grain = np.random.default_rng(seed + 13).normal(0, 1, (H_, W_)).astype(np.float32)
+            sub *= (1 + 0.022 * grain)[..., None]
+            arcs = np.sin((np.hypot((A % 1.3) - 0.65, (Z % 0.9) + 0.4) * 9.0 + nC * 2.5)) * 0.5 + 0.5
+            sub *= (1 - 0.018 * _ss(0.7, 1.0, arcs))[..., None]
+            for k in range(4):
+                cx, cz = r.uniform(a0, a1), r.uniform(b0 + 0.5, b1 - 0.5)
+                rw, rh = r.uniform(0.5, 1.6), r.uniform(0.4, 1.1)
+                e = np.maximum(np.abs(A - cx) / rw, np.abs(Z - cz) / rh) + (n2 - 0.5) * 0.25
+                sub = _mul(sub, _ss(1.02, 0.96, e), (1.03, 1.02, 1.0), 0.9)
+            # soil and splash up the base, a darker damp line at the foot
+            sub = _mul(sub, _ss(0.4, 0.0, Z) * (0.5 + 0.5 * nC), (0.7, 0.64, 0.57), 0.45)
+            sub = _mul(sub, _ss(0.08, 0.0, Z), (0.6, 0.56, 0.52), 0.45)
+            sp = _ss(0.6, 0.75, n2 * 0.6 + nC * 0.4) * _ss(0.5, 0.05, Z)
+            sub = _mul(sub, sp.astype(np.float32), (0.74, 0.69, 0.63), 0.4)
         # base grime and splash
         g = _ss(0.75, 0.0, Z) * (0.55 + 0.45 * n2)
         sub = _mul(sub, g, (0.66, 0.61, 0.56), 0.55)
@@ -326,6 +471,13 @@ def wall_map(B, mp):
         for kind, kw in feats:
             if kind == 'streak':
                 s0, s1, zb, L, k = kw['a0'], kw['a1'], kw['b'], kw['length'], kw.get('k', 1.0)
+                if stucco:
+                    L *= 1.35; k *= 0.9
+                    # now and then a hairline crack from a lower corner of the opening
+                    for cx, ang in ((s0, math.pi + 0.7), (s1, -0.7)):
+                        if r.random() < 0.22:
+                            sub = _crack(sub, A, Z, cx, zb - 0.02, ang + r.normal(0, 0.3), r.uniform(0.15, 0.4), ppm, r,
+                                         dark=(0.74, 0.7, 0.66))
                 xs = [s0 + 0.06, s1 - 0.06] + list(r.uniform(s0 + 0.1, s1 - 0.1, max(1, int((s1 - s0) / 0.35))))
                 for ax in xs:
                     LL = L * r.uniform(0.45, 1.0); wd = r.uniform(0.025, 0.07)
@@ -337,6 +489,10 @@ def wall_map(B, mp):
                 s0, s1, zb, L, k = kw['a0'], kw['a1'], kw['b'], kw['length'], kw.get('k', 0.5)
                 m = _ss(0.08, -0.02, np.maximum(s0 - A, A - s1)) * _ss(zb - L, zb, Z) * (Z <= zb + 0.01)
                 sub = _mul(sub, m, (0.62, 0.60, 0.66), k)
+                if stucco and L >= 0.3:
+                    # dust settled under the eaves and ledges, longer and browner than the shade
+                    m2 = _ss(0.1, -0.02, np.maximum(s0 - A, A - s1)) * _ss(zb - L * 2.2, zb, Z) ** 1.3 * (Z <= zb + 0.01)
+                    sub = _mul(sub, m2 * (0.6 + 0.4 * n2), (0.74, 0.69, 0.63), 0.55)
             elif kind == 'ao_rect':
                 s0, s1, z0, z1, k = kw['a0'], kw['a1'], kw['b0'], kw['b1'], kw.get('k', 0.3)
                 dx = np.maximum(np.maximum(s0 - A, A - s1), 0); dz = np.maximum(np.maximum(z0 - Z, Z - z1), 0)
@@ -430,6 +586,17 @@ def roof_map(B, mp='roof'):
                 tone = np.sin(pc * 12.9898 + rc * 78.233 + endwise * 3.1) * 43758.5453; tone = tone - np.floor(tone)
                 warm = np.stack([1.0 + 0.06 * (tone - 0.5), 1.0 - 0.04 * (tone - 0.5), 1.0 - 0.1 * (tone - 0.5)], -1)
                 shade = barrel * (0.9 + 0.16 * tone) * (1 - 0.26 * _ss(0.7, 1.0, rf)) * (1 + 0.05 * _ss(0.25, 0.0, rf))
+                if HI:
+                    # a blend of clay: most tiles terracotta, some burnt darker and browner, a few pale
+                    # and sun-bleached; the channels between the barrels deep; the lowest courses streaked
+                    # dark where rain runs off; a few freckles of lichen
+                    burnt = (tone < 0.22).astype(np.float32); pale = (tone > 0.86).astype(np.float32)
+                    warm = warm * (1 - burnt[..., None] * (1 - np.array((0.78, 0.68, 0.62)))) \
+                        * (1 + pale[..., None] * (np.array((1.08, 1.04, 1.0)) - 1))
+                    shade = shade * (1 - 0.22 * _ss(0.2, 0.0, np.minimum(pf, 1 - pf)))
+                    shade = shade * (1 - 0.25 * _ss(1.2, 0.0, d) * (0.5 + 0.5 * n2))
+                    lich = ((n2 > 0.82) & (n1 > 0.55)).astype(np.float32) * (np.sin(pq * 31.7 + rq * 17.3) > 0.2)
+                    warm = warm * (1 - lich[..., None] * (1 - np.array((0.92, 0.94, 0.8))) * 0.8)
                 val = sub * shade[..., None] * warm
                 sub = np.where(inside[..., None], val, sub)
                 sub = _mul(sub, (inside & (n2 > 0.8)).astype(np.float32), (0.86, 0.84, 0.8), 0.45)

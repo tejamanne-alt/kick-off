@@ -1491,7 +1491,7 @@ namespace DribbleToSchool.EditorTools
             var houses = new Deck(HomeHouses, rng);
             for (float x = x0; x < x1;)
             {
-                float lot = NextLot(track, rng, x, x1, 10.5f, 14.5f), skip;
+                float lot = NextLot(track, rng, x, x1, 12.9f, 15f), skip;   // every Coast house fits (the villas are 12 wide)
                 if (Blocked(track, x, x + lot, out skip)) { FillGap(track, root, rng, x, BlockStart(track, x, x + lot)); x = skip; continue; }
                 // The last scrap of a run (too small for a house) is closed off like any gap.
                 if (chunk != null && lot < 7.5f) { FillGap(track, root, rng, x, x + lot); x += lot; continue; }
@@ -1605,7 +1605,7 @@ namespace DribbleToSchool.EditorTools
             // Palms in the front gardens, every couple of lots.
             StreetPalms(track, root, rng, x0, x1, PropertyZ + 0.95f, 12f, 26f);
             // A second row of houses further back gives the street depth (never on a side street).
-            var backRow = new Deck(new[] { "VillaStucco", "HouseGable", "VillaRanch", "CraftsmanPorch", "HouseLong", "VillaStucco" }, rng);
+            var backRow = new Deck(new[] { "VillaStucco", "VillaRanch", "CraftsmanPorch", "VillaStucco", "VillaRanch" }, rng);
             for (float x = Lo(x0, 20f); x < Hi(x1, 20f); x += Rand(rng, 10f, 14f))
             {
                 string house = backRow.Next(m => true);
@@ -1650,7 +1650,7 @@ namespace DribbleToSchool.EditorTools
         /// <summary>The shopping street's fronts (Buildings kit), dealt from a shuffled deck.</summary>
         static readonly string[] MarketFronts = { "ShopFruit", "ShopBeach", "ShopShutter", "ShopMission", "ShopMart", "ShopCafe", "ShopBeach", "ShopBooks", "ShopFlorist", "ShopMission", "ShopTall", "ShopBoutique" };
         /// <summary>The home street's houses: a California street of stucco villas, ranch houses and Craftsman porches (the villas want the wider lots).</summary>
-        static readonly string[] HomeHouses = { "VillaStucco", "CraftsmanPorch", "VillaRanch", "HouseGable", "VillaStucco", "CraftsmanPorch", "VillaRanch" };
+        static readonly string[] HomeHouses = { "VillaStucco", "CraftsmanPorch", "VillaRanch", "VillaStucco", "CraftsmanPorch", "VillaRanch" };
 
         /// <summary>
         /// Deals kit models from a shuffled deck: each turns up once before any comes round again, the

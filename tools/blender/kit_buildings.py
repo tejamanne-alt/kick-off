@@ -932,6 +932,7 @@ def main():
         B.total = fn(B)
         buildings.append(B)
     atlas = os.path.join(OUT, KIT + 'Atlas.png')
+    ATL.HI = KIT == 'Coast'
     ATL.paint(atlas, buildings)
     mat = K.material(KIT, atlas)
     man = K.Manifest(KIT, KIT + 'Atlas.png')

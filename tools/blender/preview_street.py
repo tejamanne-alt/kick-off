@@ -481,15 +481,15 @@ PALM, HEDGE = (.3, .42, .2), (.21, .33, .17)
 # The Coast kit's California houses and shops (StreetBuilder.Coast.cs).
 COAST = {'VillaStucco', 'VillaRanch', 'CraftsmanPorch', 'BeachCondo', 'ShopBeach', 'ShopMission', 'PierSpan', 'PierEnd'}
 SETBACK = {'CraftsmanPorch': 2.2, 'VillaRanch': 1.0, 'VillaStucco': .4, 'BeachCondo': .6}
-TERRA = (.76, .4, .27)
-VILLA = [((.95, .9, .8), (.42, .3, .22), TERRA), ((.93, .84, .72), (.3, .4, .46), (.7, .36, .25)), ((.96, .93, .86), (.24, .36, .3), (.8, .46, .32)),
-         ((.91, .8, .7), (.45, .3, .25), (.72, .4, .3)), ((.95, .95, .93), (.22, .28, .36), (.74, .42, .3)), ((.88, .82, .72), (.36, .26, .2), (.66, .38, .28))]
-CRAFT = [((.95, .95, .93), (.3, .38, .46), (.34, .36, .4)), ((.8, .86, .88), (.62, .22, .2), (.36, .37, .4)), ((.9, .86, .78), (.24, .36, .3), (.4, .36, .33)),
-         ((.84, .8, .7), (.3, .3, .32), (.33, .33, .36))]
-CONDO = [((.96, .96, .94), (.4, .56, .66), (.56, .55, .54)), ((.93, .91, .86), (.3, .34, .38), (.56, .55, .54)), ((.9, .93, .94), (.24, .46, .56), (.56, .55, .54))]
-BSHOP = [((.97, .92, .82), (.2, .58, .66), (.56, .55, .54)), ((.96, .95, .92), (.88, .42, .3), (.56, .55, .54)), ((.94, .86, .7), (.24, .36, .6), (.56, .55, .54)),
-         ((.92, .94, .92), (.96, .72, .2), (.56, .55, .54))]
-MISSION = [((.95, .89, .78), (.3, .22, .17), TERRA), ((.92, .84, .74), (.24, .3, .26), (.72, .38, .26)), ((.97, .95, .9), (.36, .2, .16), (.78, .44, .3))]
+TERRA = (.72, .4, .28)
+VILLA = [((.87, .81, .7), (.36, .27, .2), TERRA), ((.84, .77, .66), (.3, .38, .42), (.66, .36, .26)), ((.9, .87, .8), (.24, .33, .28), (.74, .44, .31)),
+         ((.86, .76, .66), (.4, .28, .22), (.68, .38, .28)), ((.91, .9, .87), (.2, .25, .32), (.7, .4, .29)), ((.8, .76, .68), (.32, .24, .19), (.62, .36, .27))]
+CRAFT = [((.92, .92, .9), (.28, .35, .42), (.32, .33, .36)), ((.76, .82, .84), (.56, .2, .18), (.34, .35, .38)), ((.86, .82, .74), (.22, .33, .28), (.38, .34, .31)),
+         ((.78, .76, .68), (.28, .28, .3), (.31, .31, .34))]
+CONDO = [((.92, .92, .9), (.36, .5, .58), (.56, .55, .54)), ((.88, .86, .81), (.28, .31, .35), (.56, .55, .54)), ((.86, .88, .89), (.22, .42, .5), (.56, .55, .54))]
+BSHOP = [((.9, .85, .75), (.2, .5, .56), (.56, .55, .54)), ((.9, .89, .86), (.8, .38, .28), (.56, .55, .54)), ((.87, .8, .66), (.22, .32, .54), (.56, .55, .54)),
+         ((.86, .88, .86), (.88, .66, .2), (.56, .55, .54))]
+MISSION = [((.88, .82, .72), (.3, .22, .17), TERRA), ((.85, .78, .69), (.22, .28, .24), (.68, .36, .25)), ((.9, .88, .83), (.34, .19, .15), (.74, .42, .29))]
 
 
 def kit_of(model):
@@ -606,7 +606,7 @@ def distant(fields, grass):
 
 # The town's fronts and houses (StreetBuilder.MarketFronts / HomeHouses / FrontPaints / Deck).
 MARKET = ['ShopFruit', 'ShopBeach', 'ShopShutter', 'ShopMission', 'ShopMart', 'ShopCafe', 'ShopBeach', 'ShopBooks', 'ShopFlorist', 'ShopMission', 'ShopTall', 'ShopBoutique']
-HOMES = ['VillaStucco', 'CraftsmanPorch', 'VillaRanch', 'HouseGable', 'VillaStucco', 'CraftsmanPorch', 'VillaRanch']
+HOMES = ['VillaStucco', 'CraftsmanPorch', 'VillaRanch', 'VillaStucco', 'CraftsmanPorch', 'VillaRanch']
 SR = (.56, .57, .6)
 FRONT = {
     'ShopMart': [((.95, .95, .93), (.84, .26, .2), SR), ((.93, .91, .86), (.93, .55, .18), SR), ((.86, .87, .87), (.2, .42, .72), SR), ((.94, .92, .87), (.96, .76, .2), SR)],
@@ -698,7 +698,7 @@ def suburb():
     houses = Deck(HOMES)
     x = X0
     while x < X1:
-        lot = rng.uniform(10.5, 14.5); cx = x + lot / 2
+        lot = rng.uniform(12.9, 15); cx = x + lot / 2
         gate = rng.uniform(x + 2, x + lot - 4)
         front = rng.random()
         picket = front < .35 and has('Street', 'PicketFence2')
@@ -749,7 +749,7 @@ def suburb():
             plant(m, x + gap / 2, 0, PROP + 1.4 + rng.uniform(0, 1.2), rng.uniform(1.3, 1.6) if m in ('ShrubFlowering', 'BushWide') else rng.uniform(.55, .72) if m == 'PalmDate' else rng.uniform(.7, .95))
         x += lot
     street_palms(PROP + .95, 12, 26)
-    back = Deck(['VillaStucco', 'HouseGable', 'VillaRanch', 'CraftsmanPorch', 'HouseLong', 'VillaStucco'])
+    back = Deck(['VillaStucco', 'VillaRanch', 'CraftsmanPorch', 'VillaStucco', 'VillaRanch'])
     x = X0 - 20
     while x < X1 + 20:
         house = back.next()

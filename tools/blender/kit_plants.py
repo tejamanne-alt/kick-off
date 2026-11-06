@@ -608,7 +608,7 @@ def build_palm_fan():
     # The California street palm (Mexican fan palm): a very tall, slim, slightly leaning trunk, a
     # small round crown of short, wide fronds and a skirt of dry ones hanging under it.
     pieces = palm(173, [(0, 0, -0.12), (0.15, 0.0, 4.0), (0.55, 0.05, 9.0), (1.1, 0.1, 13.5), (1.35, 0.12, 15.6)],
-                  0.3, 0.19, 0.3, 18, 2.1, 0.62, 0, elev=(0.0, 1.0), droop=0.3, n_dead=7)
+                  0.3, 0.19, 0.3, 24, 2.3, 0.7, 0, elev=(-0.05, 1.05), droop=0.28, n_dead=11)
     return pieces, {0: G.hexc(WOOD_PALM), 1: R_PALM.base}, {'kind': 'tree', 'trunkRadius': 0.3}
 
 
@@ -616,7 +616,7 @@ def build_palm_date():
     # A Canary Island date palm, the beachfront and boulevard palm: a thick, straight, scaly trunk
     # and a big, full crown of long arching fronds.
     pieces = palm(211, [(0, 0, -0.12), (0.05, 0.0, 2.5), (0.12, 0.02, 5.0), (0.18, 0.03, 6.8)],
-                  0.55, 0.42, 0.45, 22, 4.4, 0.5, 0, elev=(0.05, 0.95), droop=0.55, n_dead=2)
+                  0.55, 0.42, 0.45, 30, 4.6, 0.52, 0, elev=(0.0, 1.0), droop=0.6, n_dead=4)
     return pieces, {0: G.hexc(WOOD_PALM), 1: R_PALM.base}, {'kind': 'tree', 'trunkRadius': 0.55}
 
 
