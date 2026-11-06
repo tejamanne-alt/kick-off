@@ -14,7 +14,9 @@ cp Kid.fbx ../../Assets/_Game/Art/Models/Kid.fbx
 cp face.png ../../Assets/_Game/Art/Models/KidAtlas.png
 cp Adult.fbx ../../Assets/_Game/Art/Models/Adult.fbx
 cp face_adult.png ../../Assets/_Game/Art/Models/AdultAtlas.png
-blenv/bin/python teen.py -- $PWD/Boy.fbx --boy     # the playable teen boy (also paints BoyAtlas.png, writes Boy.json)
+blenv/bin/python meshy_boy.py -- /abs/boy_with_bicycle.fbx $PWD   # the playable teen boy, from a supplied textured model
+    # (Boy.fbx/.blend/.json, BoyAtlas.png, and his bicycle: Bicycle.fbx, BicycleAtlas.png; see "The boy" below)
+blenv/bin/python teen.py -- $PWD/Boy.fbx --boy     # (the earlier, scripted boy; it would overwrite the files above)
 blenv/bin/python teen.py -- $PWD/Girl.fbx --girl   # the playable teen girl
 blenv/bin/python primary.py -- $PWD/PrimaryBoy.fbx --boy      # the four primary-school kids (see below); also
 blenv/bin/python primary.py -- $PWD/PrimaryGirl.fbx --girl    # teen.py ... --primary-boy / --primary-girl /
@@ -26,7 +28,7 @@ blenv/bin/python review_teen.py -- $PWD/Girl.blend $PWD/girl_sheet.png [--bg sho
     # (the primary kids' bigger heads: add --face-dz 0.07 --face-scale 0.5)
 blenv/bin/python review_poses.py -- $PWD/Boy.blend $PWD/boy_poses.png --jobs 3 --leaks
     # the pose audit (see below): the teen in every pose the game uses, from the game's camera yaws
-cp Boy.fbx Boy.json BoyAtlas.png Girl.fbx Girl.json GirlAtlas.png ../../Assets/_Game/Art/Models/
+cp Boy.fbx Boy.json BoyAtlas.png Bicycle.fbx BicycleAtlas.png Girl.fbx Girl.json GirlAtlas.png ../../Assets/_Game/Art/Models/
 cp Primary*.fbx Primary*.json Primary*Atlas.png ../../Assets/_Game/Art/Models/
 blenv/bin/python portrait_teen.py -- $PWD/Boy.blend $PWD/PlayerBoy.png --yaw 28     # the menus' player cards
 blenv/bin/python portrait_teen.py -- $PWD/Girl.blend $PWD/PlayerGirl.png --yaw -28  # (they face each other)
@@ -46,13 +48,11 @@ line, few details, a clear silhouette) with realistic, slim teen proportions: lo
 small head (about 7 heads tall). Settings → Player picks which one walks to school (both are
 built into each level, `CharacterChoice` shows one). Both wear a school uniform modelled in the
 shop's School Uniform colours (a white top and navy legwear), so that outfit recolours to itself.
-- Boy: a near-black messy mop of big chunky pointed locks (a fringe falling to the brows, locks
-  over the tops of the ears, the back flicking out at the nape, a cowlick at the crown), dark
-  eyes, a plaster on his cheek, warm tanned skin; a white short-sleeved school shirt, buttoned up
-  to a pointed collar and tucked into straight navy trousers (the waistband is at the natural
-  waist, with a little blousing over a thin dark-brown belt and its small brass buckle), a red
-  striped tie, white canvas sneakers on a grey sole, and a red satchel on a cross-body strap (over
-  his left shoulder, across the tie, hanging at the back of his right hip).
+- Boy: made from a textured model the user supplied (a boy walking his bicycle, hand-painted in the look of 1990s anime
+  films; see "The boy" below), not by the teen scripts: black hair in a full, rounded cut with a ragged fringe, a long
+  oval face, big dark eyes, light skin; a cream short-sleeved school shirt with a breast pocket, buttoned to its collar
+  and tucked into charcoal trousers with a black belt, black canvas shoes on white soles. No tie and no bag (the shop's
+  accent has nothing to recolour on him; the pennant rides on his Chest bone as before).
 - Girl: a near-black high ponytail with a yellow scrunchie and a side-swept fringe, freckles,
   warm skin; a white blouse with a rounded navy collar (it takes the skirt's colour) tucked under
   the waistband of a navy pleated skirt, a red striped tie, knee socks, loafers and a yellow
@@ -74,11 +74,14 @@ shrinks the head about the neck), `teen_outfit.py` (clothes, shoes, bags, the ou
 share); the `.json` it writes holds the top, legwear,
 accent (the tie) and hair colours, which the level builder gives `ModelOutfit` as its defaults.
 (`teen.py ... --fast` skips the head, hair and face atlas: for iterating on the clothes.) At the game's neck
-heights (1.5 and 1.43) the boy stands about 1.73 m and the girl about 1.65 m (hair included).
+heights (1.5 and 1.43) the boy stands about 1.77 m and the girl about 1.65 m (hair included).
 
 What the model carries:
 - One skinned mesh, one material: vertex colours times the atlas (the face is painted in the
-  atlas' upper-left quadrant; everything else samples its white corner).
+  atlas' upper-left quadrant, the ears' folds in the upper-right; everything else samples its white
+  corner, except the boy's hair, which samples the hair tile beside it: `face_teen.HAIR_TILE`, fine
+  dark strand lines and a soft shade at the roots, laid across and along each lock and down the cap
+  from the crown by `teen_hair`, so the hair reads as strands while keeping its flat cel colours).
 - UV channel 2, x: the outfit part (0 skin and fixed parts, 1 shirt or blouse, 2 trousers or skirt (and her collar), 3 hair, 4 accent: the tie) for `ModelOutfit`.
   Skin that lies under clothes is not skin-coloured: it takes the colour and the part of the garment over it (1 or 2), so a
   bent knee or a lifted thigh that makes it poke through the cloth shows more cloth, never a sliver of bare skin (and its ink outline
@@ -98,6 +101,47 @@ How the clothes survive the poses (what the pose audit below checks):
   (`bind_follow`); the satchel's strap rides over the tie (`F.tie_top`).
 - Her skirt's pull on the thighs starts above the hip joints (`bind_skirt`), so a lifted thigh rides up inside it rather
   than through it; her thighs and knees take the analytic weights below the hips.
+
+### The boy (`meshy_boy.py`)
+
+The playable boy comes from a textured, single-mesh model the user supplied: a boy walking his green bicycle, both in one
+fused scan-like surface (about 270,000 triangles), with one 2048 base-colour texture and no rig. `meshy_boy.py` turns it
+into the same contract as the teens (one skinned mesh `Kid` under `KidRig`, one material of vertex colours times the
+atlas, the outfit part in UV 2, the game's bones, a Nose marker, `Boy.json`), and the bicycle into a prop:
+- split: each vertex is his or the bicycle's by its texture colour and side: the bicycle stands in its own plane at his
+  right, green, grey and black; he is skin, his cream shirt (his right sleeve crosses that plane) and anything else off
+  it; the handlebar's grips in his hands are dropped; he is the largest connected piece of that. Face normals are made
+  consistent.
+- tidy: scaled to 2.14 tall with his feet on z = 0, his hips over the origin, facing -y.
+- joints, from the mesh itself: the crotch is the highest cross-section of two outlines, each leg's centreline the
+  centres of its outlines below; the knee half way down, the ankle above each heel (his right heel is lifted, mid-stride);
+  each arm's skin below the sleeve is a piece of its own, its far end the fingertips, the elbow the corner of the arm's
+  centreline (the centres of rings of equal distance from the fingertips); shoulders inside the sleeves' outline, the
+  neck at the collar, the Head joint at 0.85 of his height.
+- separate: what touches in the scan but must move apart is cut: his thighs and shoes (each vertex below the crotch goes
+  with the nearer leg's bones), his left fist from the belt (only below the elbow, where the arm's surface is skin or
+  faces away from its bones), and the black scraps of the grips in his fists; each side's holes are closed with a fan of
+  triangles in one colour, never across two sides.
+- rig and re-pose: the game's bones on the joints as they stand, bone-heat weights (a vertex the heat misses takes its
+  nearest bone; below the crotch a leg takes nothing from the other leg's bones; smoothed; four bones a vertex); then
+  arms hanging (both were holding the handlebar), forearms a touch forward, legs straight under the hips with both
+  ankles at the flat foot's height (the bent back leg, which measures short, stretches 0 to 7 %), feet flat and ahead,
+  the head lifted 16 degrees (he looked down at the bicycle). That is baked into the mesh and made the rest pose
+  (`CharacterRig` swings every joint from its rest), and the weights are made again on it.
+- paint: the part of each face by its texture colour, its bones and its height: the hair (the biggest dark piece of the
+  head) 3, the shirt 1 above the belt, the trousers 2 below it, the face, skin, forearms, hands, belt and shoes 0. In
+  the atlas (the source texture) the shirt's, trousers' and hair's texels are divided by their part's colour (a band of
+  its brighter texels, so the atlas there is about white with the shading below it; the trousers' white flecks are
+  clamped away), which their vertex colours carry instead and `Boy.json` names, so the shop's outfits recolour them
+  (`ModelOutfit`) and the default looks as the model did.
+- the bicycle: 20,000 triangles (its frame and spokes are thin shells that fall apart below that), along x and leaning
+  4 degrees away from the camera as if on its stand, in the game's metres (the scale the game gives him, from his neck
+  height of 1.5), its texture at 1024. The level builder parks it on the lawn of the home front
+  (`LevelBuildKit.OwnBicycle`, in place of the Street kit's bicycle; that one stays the fallback).
+
+It writes `debug_joints.png` (the joints over his vertices) next to its outputs. Check the result with `review_teen.py`
+and `review_poses.py` as for the teens. 30,000 triangles; the Head joint at 0.846 of his height, so at the game's neck
+height of 1.5 he stands 1.77 m (`PlayerRoster`).
 
 ### Pose audit
 

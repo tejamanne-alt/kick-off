@@ -9,7 +9,7 @@
 # cranium centre on a latitude/longitude grid that is finer over the face, then the rings over
 # the jaw are evened out along the surface. Above the brows and at the back the surface is the
 # cranium the hair is fitted to (never outside it).
-#   girl: soft oval, gently rounded chin.   boy: a little longer, a softly defined squarer jaw.
+#   girl: soft oval, gently rounded chin.   boy: a slim, longish oval narrowing into a soft, slightly pointed chin.
 import bpy, math
 import numpy as np
 from mathutils import Vector, Matrix
@@ -99,14 +99,15 @@ def _shape(girl):
                     fwd=(0.012, 1.38, 1.27), down=0.024,
                     floor=(1.265, 0.85, 2.0, -0.05), back=(20.0, 0.07), fk=0.025,
                     nose=((0, -0.160, 1.389), (0.010, 0.013, 0.013)), nk=0.008)
-    # boy: a little longer and straighter-sided, a softly squared chin
-    return dict(width=((1.46, 0.1463), (1.44, 0.1475), (1.42, 0.1435), (1.40, 0.1355), (1.38, 0.1315),
-                       (1.36, 0.1255), (1.34, 0.119), (1.32, 0.1105), (1.30, 0.097), (1.28, 0.0755), (1.26, 0.048), (1.24, 0.02)),
-                taper_front=0.03,
+    # boy: a slim, longish oval: the cheeks narrowing steadily from the cheekbones into a soft, slightly pointed chin
+    # (the clean jaw of hand-drawn 1990s anime boys)
+    return dict(width=((1.46, 0.1463), (1.44, 0.1465), (1.42, 0.1405), (1.40, 0.1315), (1.38, 0.1255),
+                       (1.36, 0.118), (1.34, 0.1095), (1.32, 0.099), (1.30, 0.0845), (1.28, 0.0635), (1.26, 0.036), (1.24, 0.012)),
+                taper_front=0.045,
                 nape=(0.40, 1.41, 1.335), funnel=0.48,
-                fwd=(0.014, 1.38, 1.25), down=0.038,
+                fwd=(0.014, 1.38, 1.25), down=0.036,
                 floor=(1.252, 0.85, 2.4, -0.05), back=(20.0, 0.078), fk=0.022,
-                chin_flat=0.017,
+                chin_flat=0.004,
                 nose=((0, -0.161, 1.386), (0.011, 0.014, 0.015)), nk=0.008)
 
 

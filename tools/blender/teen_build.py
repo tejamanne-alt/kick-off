@@ -59,10 +59,12 @@ def build(OUT, GIRL, NAME, FAST=False):
         for poly in me.polygons:
             cen = mw @ poly.center
             for li in poly.loop_indices:
-                co = mw @ me.vertices[me.loops[li].vertex_index].co
+                vi = me.loops[li].vertex_index
+                co = mw @ me.vertices[vi].co
                 c = p.color(co, cen) if callable(p.color) else p.color
                 col.data[li].color = c
-                uv0.data[li].uv = p.uv(co) if p.uv else WHITE_UV
+                # (a part's own UVs come as a function of the point, or as a list by vertex: the hair's strand texture)
+                uv0.data[li].uv = (p.uv[vi] if isinstance(p.uv, (list, tuple)) else p.uv(co)) if p.uv else WHITE_UV
                 uv1.data[li].uv = (p.part(co, cen) if callable(p.part) else p.part, 0)
     for p in parts: colorize(p)
     print('head/hair tris', ', '.join('%s %d' % (p.obj.name, sum(len(f.vertices) - 2 for f in p.obj.data.polygons)) for p in parts if p.bind == 'Head'))

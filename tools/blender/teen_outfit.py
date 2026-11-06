@@ -43,7 +43,7 @@ def palette(girl):
     acc = lin(ACCENT_SRGB) + (1,)
     if girl:
         return {'skin': (0.89, 0.6, 0.42, 1), 'top': (0.932, 0.932, 0.977, 1), 'legwear': (0.0395, 0.0437, 0.147, 1), 'accent': acc}
-    return {'skin': (0.85, 0.53, 0.33, 1), 'top': (0.932, 0.932, 0.977, 1), 'legwear': (0.0395, 0.0437, 0.147, 1), 'accent': acc}
+    return {'skin': (0.88, 0.62, 0.47, 1), 'top': (0.932, 0.932, 0.977, 1), 'legwear': (0.0395, 0.0437, 0.147, 1), 'accent': acc}
 
 
 def tinted(rgb_srgb, k):

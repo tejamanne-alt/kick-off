@@ -636,6 +636,37 @@ namespace DribbleToSchool.EditorTools
             return colors;
         }
 
+        /// <summary>
+        /// The boy's own green bicycle (Art/Models/Bicycle.fbx: it came with the model he is made from, tools/blender/meshy_boy.py),
+        /// standing on <paramref name="position"/> lengthwise along x, turned <paramref name="yaw"/> degrees, in metres as made.
+        /// Null if the model or its material isn't there, so the caller can put the kit's bicycle instead.
+        /// </summary>
+        public static Transform OwnBicycle(Transform parent, Vector3 position, float yaw = 0f)
+        {
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(ModelsDir + "/Bicycle.fbx");
+            if (prefab == null || Art == null || Art.bicycle == null) return null;
+            var go = new GameObject("OwnBicycle");
+            go.transform.SetParent(parent, false);
+            go.transform.position = position;
+            go.transform.rotation = Quaternion.Euler(0f, yaw, 0f);
+            var model = (GameObject)Object.Instantiate(prefab);
+            model.name = "BicycleModel";
+            model.transform.SetParent(go.transform, false);
+            var renderers = model.GetComponentsInChildren<MeshRenderer>();
+            // Lengthwise along x, whichever way the importer turned it.
+            var bounds = new Bounds(go.transform.position, Vector3.zero);
+            foreach (var r in renderers) bounds.Encapsulate(r.bounds);
+            Vector3 size = Quaternion.Inverse(go.transform.rotation) * bounds.size;
+            if (Mathf.Abs(size.z) > Mathf.Abs(size.x)) model.transform.localRotation = Quaternion.Euler(0f, 90f, 0f) * model.transform.localRotation;
+            foreach (var r in renderers)
+            {
+                r.sharedMaterial = Art.bicycle;
+                r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
+                r.receiveShadows = true;
+            }
+            return go.transform;
+        }
+
         /// <summary>The cars made in Blender (Art/Models/Cars/&lt;type&gt;.fbx).</summary>
         public static readonly string[] CarTypes = { "Hatch", "Wagon", "Van", "Pickup", "Fourby" };
 

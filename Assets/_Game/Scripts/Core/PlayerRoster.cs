@@ -55,8 +55,8 @@ namespace DribbleToSchool.Core
 
         public static readonly PlayerInfo[] All =
         {
-            // The high-school teens, Ren and Hana (tools/blender, see its README): about 1.73 m and 1.65 m.
-            new PlayerInfo("boy", "Boy", "player.boy", SchoolLevel.High, 1.5f, 1.73f),
+            // The high-school teens, Ren and Hana (tools/blender, see its README): about 1.77 m and 1.65 m.
+            new PlayerInfo("boy", "Boy", "player.boy", SchoolLevel.High, 1.5f, 1.77f),
             new PlayerInfo("girl", "Girl", "player.girl", SchoolLevel.High, 1.43f, 1.65f),
             // The primary-school kids (tools/blender, see its README: primary.py prints each one's neck height): 1.27 to 1.34 m.
             // Neck height = the Head bone's height x the standing height / the model's own height.
