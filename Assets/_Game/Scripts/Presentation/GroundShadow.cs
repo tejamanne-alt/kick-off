@@ -14,7 +14,8 @@ namespace DribbleToSchool.Presentation
         public SpriteRenderer shadow;
         public float maxDistance = 5f;
         public Vector2 size = new Vector2(0.55f, 0.25f);
-        [Range(0f, 1f)] public float maxAlpha = 0.4f;
+        [Tooltip("Strength on the ground: a dark, cool contact shadow, like the reference shots' (see docs/ART_DIRECTION.md).")]
+        [Range(0f, 1f)] public float maxAlpha = 0.62f;
 
         readonly RaycastHit2D[] hits = new RaycastHit2D[6];
         ContactFilter2D filter;

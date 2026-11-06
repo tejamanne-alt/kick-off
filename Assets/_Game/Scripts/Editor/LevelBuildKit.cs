@@ -138,6 +138,7 @@ namespace DribbleToSchool.EditorTools
             look.sunGlow = mood.glow;
             look.ambientSky = mood.ambientSky;
             look.ambientGround = mood.ambientGround;
+            look.castShadow = mood.castShadow;
             look.skyZenith = mood.zenith;
             look.skyHorizon = mood.horizon;
             look.hazeColor = mood.haze;
@@ -147,8 +148,8 @@ namespace DribbleToSchool.EditorTools
             look.Apply();
             var post = camGo.AddComponent<PostFX>();
             post.shader = Shader.Find("Hidden/DribbleToSchool/PostFX");   // referenced, so builds include it
-            post.lift = mood.lift;
-            post.gain = mood.gain;
+            post.shadowTint = mood.shadowTint;
+            post.balance = mood.balance;
             post.bloomTint = Color.Lerp(mood.glow, Color.white, 0.7f);
             var follow = camGo.AddComponent<CameraFollow2D>();
 
@@ -775,7 +776,7 @@ namespace DribbleToSchool.EditorTools
             var sr = new GameObject(name).AddComponent<SpriteRenderer>();
             sr.sprite = Art.shadow;
             sr.sortingOrder = 3;
-            sr.color = new Color(0.1f, 0.1f, 0.2f, 0.35f);
+            sr.color = new Color(0.05f, 0.05f, 0.13f, 0.6f);   // a dark, cool contact shadow, as in the references
             return sr;
         }
 

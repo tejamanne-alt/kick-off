@@ -7,34 +7,50 @@ ourselves. We don't reproduce any other game's assets, characters or vehicles.
 
 ## What makes the look
 
-1. **Clear sky, little haze.** The sky is a rich cobalt overhead, paling quickly to a light blue
-   at the horizon. Big white cumulus with soft blue undersides sit far off. Distance takes on only
-   a little sky blue: far hills are softened, not dissolved, and nothing is tinted warm.
-2. **Neutral daylight.** A high, near-white sun. Lit faces show their true colour; shade is a cool
-   blue-grey, clearly darker, with a crisp but soft edge between the two (anime, not a long ramp).
-   Sun shadows are cool and readable. Only the faintest bloom on the brightest highlights; the
-   grade takes a little saturation out and adds a little contrast, so colours sit like a painted
-   background rather than a toy box. No golden cast anywhere; greys lean very slightly warm.
-3. **True, quiet materials.** Paving and concrete are neutral greys, asphalt a cool dark grey,
-   walls white, pale grey or light stucco under dark slate, charcoal, blue-grey or terracotta
-   roofs. Colour comes in small, deliberate doses: a shop awning, a vending machine, a door, a
-   sign, a bicycle.
-4. **Chunky, simple forms with crafted detail.** Shapes are bold and softly bevelled. Detail comes
+1. **A deep cobalt sky.** On screen the sky is a rich, fairly dark cobalt, about (57, 109, 175) at the
+   top of the view, and it stays deep almost to the horizon, only a little lighter there, about
+   (70, 127, 190). Big white cumulus with cool cyan-grey undersides sit far off. Distance takes on a
+   mid sky blue: far hills and headlands go a deeper blue (about (50, 87, 134)), they never pale
+   toward white.
+2. **Near-white sun, crisp shade, dark ground shadows.** A high sun, only a hair warm, so lit faces
+   show their true colour and whites stay white. Shade sides are a cool blue-grey at about 0.6 of
+   the lit value, with a crisp but soft edge between the two (anime, not a long ramp). Sun shadows
+   cast on the ground are much deeper: a dark, cool navy at roughly a quarter to a third of the lit
+   ground (road (119, 110, 114) in sun, (26, 25, 34) in a tree's shade). Contact shadows under
+   people and the ball are near black. The dappled shade of trees out of the frame often lies in
+   a dark band across the near road, framing the shot (StreetBuilder.CanopyShadows).
+3. **Whites are paper, not light.** Nothing clips to pure white: lit white walls are about
+   (227, 223, 217), the brightest highlights roll off just below white. No yellow or cream cast
+   anywhere; neutral greys lean faintly mauve (asphalt about (133, 122, 126), light paving about
+   (196, 190, 187)).
+4. **True, quiet materials.** Paving and concrete are mid greys, asphalt a mid mauve-grey, walls
+   white, pale grey or light stucco under dark slate, charcoal, blue-grey or terracotta roofs. Colour
+   comes in small, deliberate, saturated doses: a shop awning, a red or blue vending machine, a door,
+   a sign, a bicycle, a traffic cone.
+5. **Chunky, simple forms with crafted detail.** Shapes are bold and softly bevelled. Detail comes
    from a few well-chosen parts (AC units, gutters, poles and wires, letterboxes, planters, bikes)
    rather than surface noise.
-5. **Natural vegetation.** Broadleaf trees are broad, irregular crowns of many small clover-like
-   leaf clumps gathered into a few lobes: bright yellow-green where the sun catches the outer
-   clumps, deep cool green in the shade inside, a ragged scalloped outline with little sky holes,
-   and dark branches showing through the gaps. Summer greens vary a little from tree to tree,
-   slightly olive, never lime; conifers and pruned garden pines dark green; bushes the same leaf
-   clumps, low; lawns a calm green with a few flowers. Cherry blossom is an occasional accent,
-   never the main colour.
-6. **Water.** A clear turquoise to deep blue sea with white foam where it meets the sand; peachy
-   sand that darkens a little where it is wet.
-7. **Characters pop.** The kid is the clearest thing on screen: flat cel shading in two bands, a
+6. **Natural vegetation, with deep shade.** Broadleaf trees are broad, irregular crowns of many
+   small clover-like leaf clumps gathered into a few lobes: a fresh yellow-green where the sun
+   catches the outer clumps (about (103-138, 143-187, 79-89)), going very dark, nearly black-green,
+   in the shade inside the crown, a ragged scalloped outline with little sky holes, and dark
+   branches showing through the gaps. True leaf greens, neither olive nor lime; conifers and pruned
+   garden pines a dark blue-green; hedges a deep clipped green; lawns a fresh, sunny yellow-green
+   (about (150-185, 165-195, 85-115)). Cherry blossom is an occasional accent, never the main colour.
+7. **Water and sand.** A soft, clear turquoise sea (about (105, 175, 201)) with crisp white foam
+   lines; rosy peach sand (about (222, 187, 161)), never yellow, darker where it is wet.
+8. **Characters pop.** The kid is the clearest thing on screen: flat cel shading in two bands, a
    dark ink outline thicker than anyone else's, a bright rim round the silhouette, and a
    high-contrast uniform (white shirt, navy shorts) against the mid-tone street. Pedestrians use
    the same style with a lighter line.
+
+The numbers above are on-screen sRGB, measured from the reference shots (median of verified
+swatches). The light that produces them is in `Art/ChapterTheme.cs` (per chapter) and
+`World/WorldLook.cs`; the grade is `World/PostFX.cs`: a neutral balance, a toe for the deep
+shadows, contrast 1.1, a shoulder from 0.8 easing to 0.96, vibrance 1.12 on quiet colours, and
+faint cool shadows and mauve mid-greys. When the look is tuned again, measure the game's
+screenshots against these numbers rather than by eye: the eye adapts, and an earlier "calmer"
+pass (paler sky, olive greens, less saturation, a warm gain) drifted away from the references.
 
 ## How it applies to our game
 
@@ -47,7 +63,7 @@ around them has real depth.
 |---|---|---|---|
 | 1 Home street | Fresh, clear morning | High white sun, cool shade | Gabled houses, block walls, gardens, poles and wires, trees behind |
 | 2 Market | Busy, bright late morning | High sun | Shop fronts with coloured awnings, market stalls, crates of produce, flats behind |
-| 3 Beach | Brilliant midday | Deepest sky, clear sea | Dunes, beach grass, palms, lifeguard tower, parasols, headlands |
+| 3 Beach | Brilliant midday | Deepest sky, soft turquoise sea | Dunes, beach grass, palms, lifeguard tower, parasols, headlands |
 | 4 Underpass and building site | Clear city day | Slightly paler sky | Tower crane, hoarding, scaffold, concrete pipes, warehouses |
 | 5 Park and school | Summer afternoon | Clear, a touch warmer | Green trees, a few blossoms, birches, hedges, pond, school |
 

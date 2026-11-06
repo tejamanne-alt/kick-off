@@ -4,9 +4,12 @@ namespace DribbleToSchool.World
 {
     /// <summary>
     /// The camera's finishing pass (Shaders/PostFX.shader): a faint bloom on the brightest
-    /// highlights, a natural grade (a little less saturation and a little more contrast, so colours
-    /// sit like a painted background rather than a toy box) and a light vignette. The bloom runs on a quarter-size chain so it stays cheap on phones; turn it
-    /// off with <see cref="bloom"/>.
+    /// highlights, then the grade of the anime look (docs/ART_DIRECTION.md), measured against the
+    /// reference shots: a neutral white balance (no yellow cast), a toe that sinks the darkest tones
+    /// into deep, cool shadow, a little contrast, a shoulder that keeps whites just below pure white,
+    /// vibrance (quiet colours lifted a touch, strong ones left alone), a split tone (cool shadows,
+    /// faintly mauve mid-greys) and a light vignette. The bloom runs on a quarter-size chain so it
+    /// stays cheap on phones; turn it off with <see cref="bloom"/>.
     /// </summary>
     [RequireComponent(typeof(Camera))]
     public class PostFX : MonoBehaviour
@@ -14,15 +17,28 @@ namespace DribbleToSchool.World
         public Shader shader;
         public bool bloom = true;
         [Range(0f, 1f)] public float threshold = 0.9f;
-        [Range(0f, 2f)] public float bloomIntensity = 0.16f;
+        [Range(0f, 2f)] public float bloomIntensity = 0.12f;
         public Color bloomTint = Color.white;
-        [Tooltip("Added to the shadows (a touch of cool).")]
-        public Color lift = new Color(0f, 0f, 0.008f);
-        [Tooltip("Multiplies the highlights (a touch warm).")]
-        public Color gain = new Color(1f, 0.99f, 0.97f);
-        [Range(0.5f, 1.5f)] public float contrast = 1.12f;
-        [Range(0f, 2f)] public float saturation = 0.88f;
-        [Range(0f, 1f)] public float vignette = 0.1f;
+        [Tooltip("White balance: multiplies the image first (a hair of blue keeps whites from going cream).")]
+        public Color balance = new Color(1f, 1f, 1.01f);
+        [Tooltip("Tones below this sink toward toeFloor of themselves: deep shadows, untouched mid-tones.")]
+        [Range(0.05f, 0.6f)] public float toeEnd = 0.28f;
+        [Range(0f, 1f)] public float toeFloor = 0.7f;
+        [Range(0.5f, 1.5f)] public float contrast = 1.1f;
+        [Tooltip("Above this the highlights ease toward the white point instead of clipping.")]
+        [Range(0.5f, 1f)] public float shoulder = 0.8f;
+        [Range(0.6f, 1f)] public float whitePoint = 0.96f;
+        [Tooltip("Saturation of strong colours.")]
+        [Range(0f, 2f)] public float saturation = 1f;
+        [Tooltip("Saturation of greys and soft colours (vibrance).")]
+        [Range(0f, 2f)] public float vibrance = 1.12f;
+        [Tooltip("Added to the shadows (cool).")]
+        public Color shadowTint = new Color(0f, 0f, 0.006f);
+        [Tooltip("Added to the mid-tones (faintly mauve greys).")]
+        public Color midTint = new Color(0.006f, -0.004f, 0.002f);
+        [Tooltip("Added to the highlights.")]
+        public Color highlightTint = new Color(0f, 0f, 0f);
+        [Range(0f, 1f)] public float vignette = 0.12f;
 
         Material material;
         const int Levels = 4;
@@ -33,10 +49,17 @@ namespace DribbleToSchool.World
         static readonly int BloomTexId = Shader.PropertyToID("_BloomTex");
         static readonly int BloomIntensityId = Shader.PropertyToID("_BloomIntensity");
         static readonly int BloomTintId = Shader.PropertyToID("_BloomTint");
-        static readonly int LiftId = Shader.PropertyToID("_Lift");
-        static readonly int GainId = Shader.PropertyToID("_Gain");
+        static readonly int BalanceId = Shader.PropertyToID("_Balance");
+        static readonly int ToeEndId = Shader.PropertyToID("_ToeEnd");
+        static readonly int ToeFloorId = Shader.PropertyToID("_ToeFloor");
         static readonly int ContrastId = Shader.PropertyToID("_Contrast");
+        static readonly int ShoulderId = Shader.PropertyToID("_Shoulder");
+        static readonly int WhitePointId = Shader.PropertyToID("_WhitePoint");
         static readonly int SaturationId = Shader.PropertyToID("_Saturation");
+        static readonly int VibranceId = Shader.PropertyToID("_Vibrance");
+        static readonly int ShadowTintId = Shader.PropertyToID("_ShadowTint");
+        static readonly int MidTintId = Shader.PropertyToID("_MidTint");
+        static readonly int HighlightTintId = Shader.PropertyToID("_HighlightTint");
         static readonly int VignetteId = Shader.PropertyToID("_Vignette");
 
         void OnDisable()
@@ -55,10 +78,18 @@ namespace DribbleToSchool.World
             material.SetFloat(KneeId, 0.2f);
             material.SetFloat(BloomIntensityId, bloom ? bloomIntensity : 0f);
             material.SetColor(BloomTintId, bloomTint);
-            material.SetColor(LiftId, lift);
-            material.SetColor(GainId, gain);
+            // The grade's colours go in as plain vectors: never colour-space converted, and a tint may be negative.
+            material.SetVector(BalanceId, balance);
+            material.SetFloat(ToeEndId, toeEnd);
+            material.SetFloat(ToeFloorId, toeFloor);
             material.SetFloat(ContrastId, contrast);
+            material.SetFloat(ShoulderId, shoulder);
+            material.SetFloat(WhitePointId, Mathf.Max(whitePoint, shoulder + 0.01f));
             material.SetFloat(SaturationId, saturation);
+            material.SetFloat(VibranceId, vibrance);
+            material.SetVector(ShadowTintId, shadowTint);
+            material.SetVector(MidTintId, midTint);
+            material.SetVector(HighlightTintId, highlightTint);
             material.SetFloat(VignetteId, vignette);
 
             RenderTexture bloomTex = null;

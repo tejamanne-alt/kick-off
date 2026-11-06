@@ -69,7 +69,7 @@ namespace DribbleToSchool.EditorTools
 
         /// <summary>
         /// Everything beside the street for one Holiday Run stage: the chapter's lots, walls, shops or
-        /// hedges along exactly [from, to], the pole line, the rows behind, the cross streets' far ends,
+        /// hedges along exactly [from, to], the pole line, the near trees' shade, the rows behind, the cross streets' far ends,
         /// the school and the wildlife, and the dressing of the seams. Call after the track's ground and
         /// side streets (OpenAreas, QuietAreas) are in.
         /// </summary>
@@ -92,6 +92,7 @@ namespace DribbleToSchool.EditorTools
                     default: Suburb(track, root, rng, x0, x1); break;
                 }
                 if (ch != 3) Poles(track, root, x0, x1);
+                if (ch != 3) CanopyShadows(track, root, new System.Random(spec.seed + 173), x0, x1);
                 Depth(track, root, new System.Random(spec.seed + 211), x0, x1);
                 if (ch != 3)
                     foreach (var area in track.OpenAreas.ToArray())

@@ -496,6 +496,7 @@ namespace DribbleToSchool.EditorTools
             look.sunGlow = mood.glow;
             look.ambientSky = mood.ambientSky;
             look.ambientGround = mood.ambientGround;
+            look.castShadow = mood.castShadow;
             look.skyZenith = mood.zenith;
             look.skyHorizon = mood.horizon;
             look.hazeColor = mood.haze;
@@ -505,8 +506,8 @@ namespace DribbleToSchool.EditorTools
             look.Apply();
             var post = camGo.AddComponent<PostFX>();
             post.shader = Shader.Find("Hidden/DribbleToSchool/PostFX");   // referenced, so builds include it
-            post.lift = mood.lift;
-            post.gain = mood.gain;
+            post.shadowTint = mood.shadowTint;
+            post.balance = mood.balance;
             post.bloomTint = Color.Lerp(mood.glow, Color.white, 0.7f);
             var follow = camGo.AddComponent<CameraFollow2D>();
             // The camera of a level, but it never stops at an edge (the stages come and go).
