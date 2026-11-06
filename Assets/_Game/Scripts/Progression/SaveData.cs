@@ -57,6 +57,9 @@ namespace DribbleToSchool.Progression
         public List<string> schoolMedals = new List<string>();
         public bool schoolTrophy;
 
+        /// <summary>The California skin switched on in Settings (Progression/CaliforniaSkin: it shows once every level is finished).</summary>
+        public bool californiaSkin;
+
         /// <summary>The saved result of a level, or null if it has never been finished.</summary>
         public LevelRecord Level(string levelId)
         {

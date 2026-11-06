@@ -18,6 +18,10 @@ TILES = [
     ('gl_boutique', 192, 256), ('sg_boutique', 384, 96),
 ]
 
+# KIT_SIGNS=CA letters the shops for the California skin (BuildingsCAAtlas.png: English names);
+# without it they keep the original street's names (BuildingsAtlas.png).
+CA = os.environ.get('KIT_SIGNS') == 'CA'
+
 # The Coast kit's own signs (kit_buildings.py --kit Coast allocates these as well): dark lettering on
 # cream, so they suit every awning colour the street paints the shops in.
 COAST_TILES = [('sg_surf', 576, 84), ('sg_cantina', 448, 72)]
@@ -131,15 +135,21 @@ def sg_mart(dr, w, h, k):
     cx = h * 0.62
     dr.ellipse([cx - r, h * 0.42 - r, cx + r, h * 0.42 + r], fill=_c(cream))
     bird(dr, cx, h * 0.45, r * 0.95, yel, (0.92, 0.45, 0.2))
-    s = fit(dr, 'SUNSET MARKET', LATIN, int(h * 0.56), w - h * 1.8)
-    text(dr, (w * 0.5 + h * 0.45, h * 0.42), 'SUNSET MARKET', LATIN, s, cream, spacing=int(h * 0.04))
+    if CA:
+        s = fit(dr, 'SUNSET MARKET', LATIN, int(h * 0.56), w - h * 1.8)
+        text(dr, (w * 0.5 + h * 0.45, h * 0.42), 'SUNSET MARKET', LATIN, s, cream, spacing=int(h * 0.04))
+    else:
+        s = fit(dr, 'KOTORI MART', LATIN, int(h * 0.56), w - h * 2.6)
+        text(dr, (w * 0.5 + h * 0.3, h * 0.42), 'KOTORI MART', LATIN, s, cream, spacing=int(h * 0.04))
+        text(dr, (w - h * 0.75, h * 0.42), 'ことり', KANA, int(h * 0.3), yel)
 
 
 def sg_cafe(dr, w, h, k):
     cream = (0.97, 0.92, 0.80)
     cloud(dr, h * 0.62, h * 0.52, h * 0.36, cream)
-    s = fit(dr, 'café marina', LATIN_SOFT, int(h * 0.62), w - h * 1.6)
-    text(dr, (w * 0.5 + h * 0.35, h * 0.5), 'café marina', LATIN_SOFT, s, cream)
+    name = 'café marina' if CA else 'café kumo'
+    s = fit(dr, name, LATIN_SOFT, int(h * 0.62), w - h * 1.6)
+    text(dr, (w * 0.5 + h * 0.35, h * 0.5), name, LATIN_SOFT, s, cream)
 
 
 def sg_disc(dr, w, h, k):
@@ -152,8 +162,9 @@ def sg_disc(dr, w, h, k):
 def sg_books(dr, w, h, k):
     gold, page = (0.93, 0.79, 0.44), (0.97, 0.94, 0.86)
     book(dr, h * 0.75, h * 0.5, h * 0.42, gold, page)
-    s = fit(dr, 'SEASIDE BOOKS', LATIN, int(h * 0.55), w - h * 2.2)
-    text(dr, (w * 0.5 + h * 0.4, h * 0.52), 'SEASIDE BOOKS', LATIN, s, gold, spacing=int(h * 0.05))
+    name = 'SEASIDE BOOKS' if CA else 'SHIORI BOOKS'
+    s = fit(dr, name, LATIN, int(h * 0.55), w - h * 2.2)
+    text(dr, (w * 0.5 + h * 0.4, h * 0.52), name, LATIN, s, gold, spacing=int(h * 0.05))
     dr.rectangle([0, 0, w, int(h * 0.08)], fill=_c(gold)); dr.rectangle([0, h - int(h * 0.08), w, h], fill=_c(gold))
 
 
@@ -178,12 +189,12 @@ def sg_tall(dr, w, h, k):
     red, ink = (0.80, 0.24, 0.20), (0.18, 0.20, 0.30)
     dr.rectangle([0, 0, w, int(w * 0.5)], fill=_c(red))
     dr.ellipse([w * 0.3, w * 0.1, w * 0.7, w * 0.4], fill=_c((0.98, 0.97, 0.94)))
-    chars = 'DENTAL'
-    f = int(w * 0.62)
+    chars = 'DENTAL' if CA else 'ひかり歯科'
+    f = int(w * (0.62 if CA else 0.68))
     y = w * 0.5 + (h - w * 0.5) / (len(chars) + 0.4) * 0.7
     step = (h - w * 0.5) / (len(chars) + 0.4)
     for ch in chars:
-        text(dr, (w * 0.5, y), ch, LATIN, f, ink)
+        text(dr, (w * 0.5, y), ch, LATIN if CA else KANA, f, ink)
         y += step
 
 
@@ -205,10 +216,14 @@ def sg_konbini(dr, w, h, k):
 def sg_boutique(dr, w, h, k):
     # brass letters on a dark board: the boutique's name, a thin rule, kana under it
     gold = (0.90, 0.76, 0.46)
-    sz = fit(dr, 'MALIBU', LATIN_SOFT, int(h * 0.5), w * 0.8)
-    text(dr, (w * 0.5, h * 0.36), 'MALIBU', LATIN_SOFT, sz, gold, spacing=int(h * 0.12))
+    name = 'MALIBU' if CA else 'MINAMO'
+    sz = fit(dr, name, LATIN_SOFT, int(h * 0.5), w * 0.8)
+    text(dr, (w * 0.5, h * 0.36), name, LATIN_SOFT, sz, gold, spacing=int(h * 0.12))
     dr.rectangle([w * 0.3, h * 0.64, w * 0.7, h * 0.66], fill=_c(gold))
-    text(dr, (w * 0.5, h * 0.81), 'BOUTIQUE', LATIN_SOFT, int(h * 0.2), gold, spacing=int(h * 0.06))
+    if CA:
+        text(dr, (w * 0.5, h * 0.81), 'BOUTIQUE', LATIN_SOFT, int(h * 0.2), gold, spacing=int(h * 0.06))
+    else:
+        text(dr, (w * 0.5, h * 0.81), 'みなも', KANA, int(h * 0.22), gold)
 
 
 def recycle(dr, w, h, k):

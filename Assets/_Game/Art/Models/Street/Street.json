@@ -18,7 +18,7 @@
     0.296,
     9.174
    ],
-   "tris": 2042,
+   "tris": 2182,
    "parts": {},
    "mount": "ground",
    "attach": {
@@ -43,7 +43,7 @@
      0
     ]
    },
-   "note": "Wooden pole (a California street); wires go from Attach.WireL/R/M to the next pole."
+   "note": "Concrete pole; wires go from Attach.WireL/R/M to the next pole."
   },
   "StreetLamp": {
    "size": [
@@ -1439,6 +1439,49 @@
     ]
    },
    "note": "A doorstep group: a small tree in a glazed pot, a pot of flowers, herbs in plastic pots and a trough; part 1 = the flowers, part 2 = the glaze."
+  },
+  "UtilityPoleWood": {
+   "size": [
+    2.1,
+    0.592,
+    9.174
+   ],
+   "min": [
+    -1.05,
+    -0.296,
+    0.0
+   ],
+   "max": [
+    1.05,
+    0.296,
+    9.174
+   ],
+   "tris": 2042,
+   "parts": {},
+   "mount": "ground",
+   "attach": {
+    "WireL": [
+     -0.86,
+     -0.175,
+     8.545
+    ],
+    "WireR": [
+     0.86,
+     -0.175,
+     8.545
+    ],
+    "WireM": [
+     0.0,
+     0.0,
+     9.145
+    ],
+    "Front": [
+     0,
+     -1,
+     0
+    ]
+   },
+   "note": "Wooden pole (a California street); wires go from Attach.WireL/R/M to the next pole."
   }
  }
 }

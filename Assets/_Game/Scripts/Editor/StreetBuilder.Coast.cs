@@ -4,13 +4,23 @@ using UnityEngine;
 namespace DribbleToSchool.EditorTools
 {
     /// <summary>
-    /// The California look of the streets (the Coast kit, tools/blender/kit_buildings_cal.py): stucco
+    /// The California skin of the streets (the Coast kit, tools/blender/kit_buildings_cal.py), built
+    /// into each level's California scene (LevelBuildKit.California) and only there: stucco
     /// villas under hipped terracotta roofs, single-storey ranch houses, Craftsman houses with deep
     /// front porches, white beach condos, beach-town shops, tall fan palms on the skyline and date
     /// palms along the streets, and a seaside pier on piles running out from the beach.
     /// </summary>
     public static partial class StreetBuilder
     {
+        /// <summary>
+        /// True while a level's California scene is being built: the streets take the Coast kit's
+        /// houses, palms, hedges and pier. Otherwise every street is built exactly as before.
+        /// </summary>
+        static bool CA { get { return LevelBuildKit.California && LevelBuildKit.HasKitModel("Coast", "VillaStucco"); } }
+
+        /// <summary>The street's utility pole: wooden on a California street, the original concrete one otherwise.</summary>
+        static string PoleModel { get { return CA && LevelBuildKit.HasKitModel("Street", "UtilityPoleWood") ? "UtilityPoleWood" : "UtilityPole"; } }
+
         /// <summary>The Coast kit's houses and shops.</summary>
         static readonly HashSet<string> CoastModels = new HashSet<string>
         {

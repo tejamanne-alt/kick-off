@@ -28,6 +28,16 @@ namespace DribbleToSchool.UI.Kit
         public static readonly Color Locked = new Color(0.68f, 0.71f, 0.77f);
         public static readonly Color Shadow = new Color(0.05f, 0.09f, 0.24f, 0.26f);
         public static readonly Color Dim = new Color(0.04f, 0.07f, 0.18f, 0.5f);
+
+        // Glass: the in-play HUD (the level card, the pause button, the coach's tips, the tour's caption) is
+        // frosted glass like the touch controls, so the street shows through it: a faint smoky pane under a
+        // thin bright rim, with white lettering on a soft drop.
+        public static readonly Color Glass = new Color(0.05f, 0.08f, 0.18f, 0.2f);
+        public static readonly Color GlassRim = new Color(1f, 1f, 1f, 0.42f);
+        public static readonly Color GlassInk = new Color(1f, 1f, 1f, 0.96f);
+        public static readonly Color GlassInkSoft = new Color(1f, 1f, 1f, 0.74f);
+        public static readonly Color GlassTitle = new Color(0.86f, 0.94f, 1f);
+        public static readonly Color GlassAccent = new Color(1f, 0.74f, 0.4f);
         /// <summary>The game's sky as it shows on screen: the deep cobalt overhead, and a lighter blue
         /// for the bottom of the menus' sky (paler than the in-game horizon, so panels and text on it read).</summary>
         public static readonly Color SkyTop = new Color(0.22f, 0.43f, 0.69f);

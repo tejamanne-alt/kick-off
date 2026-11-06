@@ -500,7 +500,7 @@ Following up v67, the light, grade and materials were solved again so the predic
 
 ## A California coast town (generated content v69)
 
-Every level's street is now a sunny California coast town, after the user's reference photos (suburban streets of stucco villas, Craftsman porches, palms, a beach pier, beach-town main streets).
+(Since v71 this is the California skin, not the levels' own look: see below.) A sunny California coast town, after the user's reference photos (suburban streets of stucco villas, Craftsman porches, palms, a beach pier, beach-town main streets).
 
 - **The Coast kit** (`Art/Models/Coast`, `tools/blender/kit_buildings_cal.py`, built by `kit_buildings.py --kit Coast` with its own atlas because the Buildings atlas is full): `VillaStucco` (two storeys of stucco, hipped terracotta roof, arched entry and picture window, iron balconette, a garage under its own hip), `VillaRanch` (single storey, a garage forward of it, solar panels, a porch column), `CraftsmanPorch` (white lap siding, a deep front porch with columns and a rail), `BeachCondo` (white, glass balconies, a roof deck), `ShopBeach` ("SURF & SUN": stepped parapet, awning, sign), `ShopMission` ("Casa Del Mar": a curved Mission parapet, arched windows, a tiled pent roof on brackets), `PierSpan` (12 m of timber deck on concrete pile bents, white rails, a lamp) and `PierEnd` (a wider platform with an octagonal roundhouse). The new `hip` roof and the atlas' `hip` feature paint Spanish barrel tiles.
 - **Plants**: `PalmFan` (a 16.5 m California fan palm with a skirt of dry fronds) and `PalmDate` (a thick-trunked date palm). The other plants are unchanged.
@@ -529,6 +529,15 @@ The user found the first Coast models plain next to their reference shots (weath
 - **Colour**: muted, sun-softened stucco and clay schemes (`StreetBuilder.Coast.cs`, the kit's base colours).
 - **The home street** now deals only the Coast houses (the European gabled house is out of its decks), on 12.9 to 15 lots so every house fits.
 - Checked: close-up and street renders in Blender (Eevee), the C# compile. Not checked in Unity.
+
+## The California skin, the boy's satchel, quieter park, glass HUD (generated content v71)
+
+- **California is now a skin, the original streets are back.** Each level has two scenes: its original (built exactly as before v69: the concrete utility pole, the Japanese shop names, the gabled houses and block walls) and `<scene>_CA`, built with `LevelBuildKit.California` set, which gives the Coast kit's streets (`StreetBuilder.Coast.cs`: `CA` gates every change, and the original path keeps its random draws in their old order so it comes out as it was). The skin's assets are separate files: `Street/UtilityPoleWood.fbx` (`kit_street_m1.utility_pole(wood=True)`) and `Buildings/BuildingsCAAtlas.png` (`KIT_SIGNS=CA kit_buildings.py`; ArtBaker makes `KitBuildingsCA` from it and `KitModel` draws the Buildings kit with it in the California scenes). `BuildingsAtlas.png` and `UtilityPole.fbx` are main's again.
+- **Unlock and switch**: `Progression/CaliforniaSkin` is unlocked when every story level (every leg of every route) is finished; Settings has a "California skin" toggle under Controls (locked, with "Finish every level to unlock", until then), saved in `SaveData.californiaSkin`. `LevelManager.LoadLevel` loads the `_CA` scene while it is on (and the build has it). The results card's "every way walked" line points to it. The Holiday Run keeps the original look.
+- **The teen boy's satchel**: the supplied boy model has no bag, so `LevelBuildKit.Satchel` hangs a leather satchel (`Presentation/SatchelShape`: flap, welt, strap and brass buckle) on his Bag bone at the hip, its strap over his chest on the Chest bone, in every scene he is built in.
+- **Park audio**: the leaves in the park's ambience bed were a bright 2.6 to 2.9 kHz fluttering hiss at 80 % that drowned the music, the fountain and the birds. They are now a soft 1.3 to 1.5 kHz rustle at 30 % with a slower flutter, the birds are louder in the bed, and the whole bed sits at RMS 0.045 (`AmbienceGenerator.ParkBedLoudness`; the other places stay at 0.075), so the park's music and sounds carry. (Checked by generating every place's music and ambience in a harness: all render; the park bed measures RMS 0.045.)
+- **Glass HUD**: the level card (top left), the pause button, the coach's tips, the controls tour's caption with its Next and Skip, and "Stuck?" are frosted glass like the touch controls (`UIKit.Glass`, `UIKit.GlassButton`, `UIKit.GlassText`, `ProceduralSprites.RoundedRim`, `UITheme.Glass*`): a faint smoky pane under a thin bright rim, white lettering on a soft drop. The Holiday Run's score card and pause button too.
+- Checked: the C# compile (runtime and editor). Not checked in Unity: the `_CA` scenes' build (it doubles the level build time), the satchel's fit on the boy's rig, the glass HUD's legibility over bright scenes.
 
 ## After Phase 8 (next steps)
 

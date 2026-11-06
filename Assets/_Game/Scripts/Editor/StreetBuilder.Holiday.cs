@@ -172,7 +172,7 @@ namespace DribbleToSchool.EditorTools
                 if (!models) continue;
                 // The kit's concrete pole, turned side-on so its crossarm runs across the street like a
                 // real line's; the wires hang from its insulators.
-                var model = Model(go.transform, "Street", "UtilityPole", pole.x, pole.y, pole.z, PoleYaw);
+                var model = Model(go.transform, "Street", PoleModel, pole.x, pole.y, pole.z, PoleYaw);
                 if (model == null || line.anchorOffsets.Count > 0) continue;
                 foreach (var t in model.GetComponentsInChildren<Transform>())
                     if (t.name.StartsWith("Attach.Wire") || t.name.StartsWith("Attach_Wire"))

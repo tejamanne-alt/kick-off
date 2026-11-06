@@ -100,7 +100,8 @@ namespace DribbleToSchool.UI
             // A story level is one leg of a route: under its name, where it starts and where it ends (Granny's house » Church).
             var leg = level.level != null && !level.level.isChallenge ? LegOf(level.level.levelId) : null;
             float legRoom = leg != null ? 34f : 0f;
-            var info = UIKit.Card(root, "Info", UITheme.Paper);
+            // Frosted glass like the touch controls, so the street shows through it.
+            var info = UIKit.Glass(root, "Info");
             UIKit.Place((RectTransform)info.transform.parent, new Vector2(0f, 1f), new Vector2(30f, -30f), new Vector2(660f, 200f + legRoom), new Vector2(0f, 1f));
             var t = info.transform;
             titleText = Text(t, "Title", 34, new Vector2(30f, -38f), new Vector2(600f, 50f), TextAnchor.MiddleLeft);
@@ -108,23 +109,23 @@ namespace DribbleToSchool.UI
             {
                 // The trip from home so far joins it on a later leg ("Home » Bakery · Trip 2:15"; UpdateInfo).
                 legText = Text(t, "Leg", 26, new Vector2(30f, -74f), new Vector2(600f, 34f), TextAnchor.MiddleLeft);
-                legText.color = UITheme.InkSoft;
+                legText.color = UITheme.GlassInkSoft;
                 legText.text = legBase = leg;
                 UIKit.Fit(legText, 20);
             }
             timeText = Text(t, "Time", 46, new Vector2(30f, -95f - legRoom), new Vector2(220f, 60f), TextAnchor.MiddleLeft);
             bellText = Text(t, "Bell", 34, new Vector2(250f, -95f - legRoom), new Vector2(390f, 60f), TextAnchor.MiddleLeft);
             statusText = Text(t, "Status", 32, new Vector2(250f, -95f - legRoom), new Vector2(390f, 60f), TextAnchor.MiddleLeft);
-            coinText = UIKit.CoinAmount(t, "Coins", 0, 38, UITheme.Ink);
+            coinText = UIKit.GlassText(UIKit.CoinAmount(t, "Coins", 0, 38, UITheme.GlassInk));
             UIKit.Place((RectTransform)coinText.transform.parent, new Vector2(0f, 1f), new Vector2(30f, -158f - legRoom), new Vector2(220f, 50f), new Vector2(0f, 0.5f));
             streakText = Text(t, "Streak", 32, new Vector2(250f, -158f - legRoom), new Vector2(390f, 50f), TextAnchor.MiddleLeft);
 
-            // Pause button (top-right)
-            var pause = UIKit.Button(root, "Pause", "", UITheme.Paper, () => level.TogglePause());
+            // Pause button (top-right): a round pane of glass, like the touch controls.
+            var pause = UIKit.GlassButton(root, "Pause", "", Color.white, () => level.TogglePause(), UITheme.SizeButton, true);
             pauseRect = (RectTransform)pause.transform;
             UIKit.Place(pauseRect, new Vector2(1f, 1f), new Vector2(-40f, -40f), new Vector2(130f, 130f), new Vector2(1f, 1f));
-            UIKit.MakeRound(pause);
-            UIKit.Icon(pause.transform.Find("Face"), "Icon", ProceduralSprites.Pause, UITheme.Navy, 64f);
+            pause.targetGraphic.color = UITheme.Glass;
+            UIKit.Icon(pause.transform.Find("Face"), "Icon", ProceduralSprites.Pause, UITheme.GlassInk, 60f);
 
             if (tuning != null && DevTuningPanel.Available)
             {
@@ -208,7 +209,7 @@ namespace DribbleToSchool.UI
 
         Text Text(Transform parent, string name, int size, Vector2 pos, Vector2 sizeDelta, TextAnchor align)
         {
-            var t = UIKit.Label(parent, name, "", size, UITheme.Ink, align, true);
+            var t = UIKit.GlassText(UIKit.Label(parent, name, "", size, UITheme.GlassInk, align, true));
             UIKit.Place(t.rectTransform, new Vector2(0f, 1f), pos, sizeDelta, new Vector2(0f, 0.5f));
             return t;
         }
@@ -277,7 +278,7 @@ namespace DribbleToSchool.UI
         Text legText;
         string legBase;
         int shownTrip = -1;
-        static readonly Color Hurry = new Color(0.85f, 0.55f, 0.1f);
+        static readonly Color Hurry = new Color(1f, 0.72f, 0.3f);
 
         void UpdateInfo()
         {
@@ -323,7 +324,7 @@ namespace DribbleToSchool.UI
                 {
                     shownBell = bellKey;
                     bellText.text = late ? Loc.T("hud.late") : Loc.F("hud.bellIn", FormatTime(level.BellTimeLeft, false));
-                    bellText.color = late ? Late : level.BellTimeLeft <= 10f ? Hurry : UITheme.Ink;
+                    bellText.color = late ? Late : level.BellTimeLeft <= 10f ? Hurry : UITheme.GlassInk;
                 }
             }
             else if (pace)
@@ -335,7 +336,7 @@ namespace DribbleToSchool.UI
                 {
                     shownBell = paceKey;
                     bellText.text = behind ? Loc.T("hud.behind") : Loc.F("hud.target", FormatTime(level.PaceTimeLeft, false));
-                    bellText.color = behind || level.PaceTimeLeft <= 10f ? Hurry : UITheme.Ink;
+                    bellText.color = behind || level.PaceTimeLeft <= 10f ? Hurry : UITheme.GlassInk;
                 }
             }
 

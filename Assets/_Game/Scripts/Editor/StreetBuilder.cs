@@ -949,26 +949,26 @@ namespace DribbleToSchool.EditorTools
                     // (The distant wood begins about 62 units back.)
                     FarRow(track, root, rng, x0, x1, 40f, 46f, flats, ProceduralArt.FacadeKind.Shop0, ProceduralArt.FacadeKind.Shop1, longHouse, gable);
                     TreeBand(track, root, rng, x0, x1, 57f, 61f, green, 5f, 10f);
-                    PalmSkyline(track, root, rng, x0, x1, 64f, 100f, 12f, 28f);
+                    if (CA) PalmSkyline(track, root, rng, x0, x1, 64f, 100f, 12f, 28f);
                     break;
                 case 3:
                     break;   // the sea
                 case 4:
                     FarRow(track, root, rng, x0, x1, 32f, 40f, ProceduralArt.FacadeKind.Warehouse, flats, ProceduralArt.FacadeKind.Warehouse);
                     TreeBand(track, root, rng, x0, x1, 54f, 64f, green, 4f, 9f);
-                    PalmSkyline(track, root, rng, x0, x1, 66f, 110f, 15f, 35f);
+                    if (CA) PalmSkyline(track, root, rng, x0, x1, 66f, 110f, 15f, 35f);
                     break;
                 case 5:
                     TreeBand(track, root, rng, x0, x1, 44f, 62f, green, 3f, 6f);
-                    PalmSkyline(track, root, rng, x0, x1, 66f, 100f, 14f, 30f);
+                    if (CA) PalmSkyline(track, root, rng, x0, x1, 66f, 100f, 14f, 30f);
                     break;
                 default:
                     TreeBand(track, root, rng, x0, x1, 34f, 37f, green, 5f, 10f);
                     // The next street over: stucco villas under tile roofs (the kit's gabled houses without the Coast kit).
-                    if (LevelBuildKit.HasKitModel("Coast", "VillaStucco")) CoastFarRow(track, root, rng, x0, x1, 40f, 46f, "VillaStucco", "VillaRanch", "CraftsmanPorch", "VillaStucco");
+                    if (CA) CoastFarRow(track, root, rng, x0, x1, 40f, 46f, "VillaStucco", "VillaRanch", "CraftsmanPorch", "VillaStucco");
                     else FarRow(track, root, rng, x0, x1, 40f, 46f, gable, longHouse, ProceduralArt.FacadeKind.Bungalow, gable);
                     TreeBand(track, root, rng, x0, x1, 56f, 66f, green, 4f, 8f);
-                    PalmSkyline(track, root, rng, x0, x1, 64f, 105f, 10f, 26f);
+                    if (CA) PalmSkyline(track, root, rng, x0, x1, 64f, 105f, 10f, 26f);
                     break;
             }
         }
@@ -1011,7 +1011,7 @@ namespace DribbleToSchool.EditorTools
                     if (w > 1.2f) Row(root, "Plants", "HedgeBlock2", a + 0.3f, b - 0.3f, gy + 0.04f, PropertyZ + 0.4f, HedgeGreen);
                     break;
                 default:
-                    if (!(w > 1.2f && LevelBuildKit.HasKitModel("Coast", "VillaStucco") && Row(root, "Plants", "HedgeBlock2", a + 0.3f, b - 0.3f, gy, PropertyZ + 0.4f, HedgeGreen)))
+                    if (!(w > 1.2f && CA && Row(root, "Plants", "HedgeBlock2", a + 0.3f, b - 0.3f, gy, PropertyZ + 0.4f, HedgeGreen)))
                         BlockWall(root, a + 0.1f, b - 0.1f, gy, Art.surfaces[ProceduralArt.Surface.BlockWall], true, true);
                     if (w > 3f) Plant(root, rng.NextDouble() < 0.5 ? "Broadleaf" : "ConiferMid", null, (a + b) * 0.5f, gy, PropertyZ + 2.5f, Rand(rng, 0.8f, 1.05f), 1f, -60, rng);
                     break;
@@ -1081,7 +1081,7 @@ namespace DribbleToSchool.EditorTools
             float goal = track.GoalX;
             if (goal <= track.MinX || !LevelBuildKit.HasKitModel("Plants", "Broadleaf")) return;
             int ch = LevelBuildKit.Chapter;
-            string[] trees = ch == 3 ? new[] { "Palm", "PalmDate", "PalmShort", "Palm" } : new[] { "Broadleaf", "BroadleafLarge", "BroadleafWide", "ConiferMid", "Birch", "Broadleaf", "BroadleafSmall" };
+            string[] trees = ch == 3 ? (CA ? new[] { "Palm", "PalmDate", "PalmShort", "Palm" } : new[] { "Palm", "PalmShort", "Palm" }) : new[] { "Broadleaf", "BroadleafLarge", "BroadleafWide", "ConiferMid", "Birch", "Broadleaf", "BroadleafSmall" };
             float gy = GroundAt(track, goal);
             // Behind the school (it stands 10 to 22 units past the gate, 12 deep, its 32-unit front along
             // z from -12 to 20), where the back rows leave room for it.
@@ -1458,7 +1458,7 @@ namespace DribbleToSchool.EditorTools
                 if (!models) continue;
                 // The kit's concrete pole, turned side-on so its crossarm runs across the street like a
                 // real line's; the wires hang from its insulators.
-                var model = Model(go.transform, "Street", "UtilityPole", pole.x, pole.y, pole.z, PoleYaw);
+                var model = Model(go.transform, "Street", PoleModel, pole.x, pole.y, pole.z, PoleYaw);
                 if (model == null || line.anchorOffsets.Count > 0) continue;
                 foreach (var t in model.GetComponentsInChildren<Transform>())
                     if (t.name.StartsWith("Attach.Wire") || t.name.StartsWith("Attach_Wire"))
@@ -1491,7 +1491,7 @@ namespace DribbleToSchool.EditorTools
             var houses = new Deck(HomeHouses, rng);
             for (float x = x0; x < x1;)
             {
-                float lot = NextLot(track, rng, x, x1, 12.9f, 15f), skip;   // every Coast house fits (the villas are 12 wide)
+                float lot = CA ? NextLot(track, rng, x, x1, 12.9f, 15f) : NextLot(track, rng, x, x1, 9f, 13f), skip;   // (every Coast house fits: the villas are 12 wide)
                 if (Blocked(track, x, x + lot, out skip)) { FillGap(track, root, rng, x, BlockStart(track, x, x + lot)); x = skip; continue; }
                 // The last scrap of a run (too small for a house) is closed off like any gap.
                 if (chunk != null && lot < 7.5f) { FillGap(track, root, rng, x, x + lot); x += lot; continue; }
@@ -1500,12 +1500,13 @@ namespace DribbleToSchool.EditorTools
                 if (LotEndsAtStep(track, root, rng, ref x, ref lot, 7.5f)) continue;
                 float cx = x + lot * 0.5f, gy = GroundAt(track, cx);
 
-                // A California front garden: a white picket fence with a gate, a low clipped hedge, or
-                // an open lawn running down to the pavement.
+                // Block wall along the front of the lot with a gap for the gate; a white picket fence
+                // round some front gardens instead. (California: a picket fence with a gate, a low
+                // clipped hedge, or an open lawn running down to the pavement.)
                 float gate = Rand(rng, x + 2f, x + lot - 4f);
                 double front = rng.NextDouble();
-                bool picket = front < 0.35 && LevelBuildKit.HasKitModel("Street", "PicketFence2");
-                bool hedge = !picket && front < 0.65 && LevelBuildKit.HasKitModel("Plants", "HedgeBlock2");
+                bool picket = front < (CA ? 0.35 : 0.3) && LevelBuildKit.HasKitModel("Street", "PicketFence2");
+                bool hedge = CA && !picket && front < 0.65 && LevelBuildKit.HasKitModel("Plants", "HedgeBlock2");
                 if (picket)
                 {
                     ContactShadow(root, x + 0.1f, x + lot - 0.1f, gy, PropertyZ - 0.25f, PropertyZ + 0.02f);
@@ -1517,7 +1518,7 @@ namespace DribbleToSchool.EditorTools
                     if (gate - x > 1.6f) Row(root, "Plants", "HedgeBlock2", x + 0.3f, gate - 0.2f, gy, PropertyZ + 0.4f, HedgeGreen);
                     if (x + lot - gate > 3.6f) Row(root, "Plants", "HedgeBlock2", gate + 1.6f, x + lot - 0.3f, gy, PropertyZ + 0.4f, HedgeGreen);
                 }
-                else if (!LevelBuildKit.HasKitModel("Coast", "VillaStucco"))
+                else if (!CA)
                 {
                     BlockWall(root, x + 0.1f, gate, gy, wallMat, true, true);
                     BlockWall(root, gate + 2.2f, x + lot - 0.1f, gy, wallMat, true, false);
@@ -1568,11 +1569,14 @@ namespace DribbleToSchool.EditorTools
                     // when the gap beside the house is wide enough for it.
                     if (rng.NextDouble() < 0.7)
                     {
-                        string[] back = { "Broadleaf", "PalmDate", "BroadleafLarge", "PalmFan", "BroadleafWide", "Broadleaf", "PalmDate", "BroadleafSmall" };
+                        string[] back = CA ? new[] { "Broadleaf", "PalmDate", "BroadleafLarge", "PalmFan", "BroadleafWide", "Broadleaf", "PalmDate", "BroadleafSmall" }
+                            : new[] { "Broadleaf", "BroadleafLarge", "BroadleafWide", "ConiferTall", "Broadleaf", "Birch", "BroadleafSmall" };
                         string tree = back[rng.Next(back.Length)];
                         // (A fan palm this close is a young one: a grown one's crown would stand out of the view.)
+                        // (The draws in the original order, so the original street comes out as it was.)
+                        float tx = cx + Rand(rng, -houseHalf, houseHalf), tz = z + 8f + Rand(rng, 0f, 3f);
                         float ts = tree == "PalmFan" ? Rand(rng, 0.45f, 0.55f) : Rand(rng, 0.9f, 1.25f);
-                        Plant(root, tree, null, cx + Rand(rng, -houseHalf, houseHalf), gy, z + 8f + Rand(rng, 0f, 3f), ts, 1f, -70, rng);
+                        Plant(root, tree, null, tx, gy, tz, ts, 1f, -70, rng);
                     }
                     float gap = (cx - houseHalf) - x;
                     if (gap > 4f && house != "HouseCarport" && !CoastModels.Contains(house ?? "") && rng.NextDouble() < 0.4 && LevelBuildKit.HasKitModel("Buildings", "Garage"))
@@ -1583,10 +1587,12 @@ namespace DribbleToSchool.EditorTools
                     }
                     else if (gap > 1.8f && rng.NextDouble() < 0.6)
                     {
-                        string[] side = { "PalmDate", "ShrubFlowering", "BroadleafYoung", "PalmDate", "ConiferSmall", "BushWide" };
+                        string[] side = CA ? new[] { "PalmDate", "ShrubFlowering", "BroadleafYoung", "PalmDate", "ConiferSmall", "BushWide" }
+                            : new[] { "Birch", "ConiferSmall", "GardenPine", "ConiferMid", "ShrubFlowering", "BroadleafYoung" };
                         string model = side[rng.Next(side.Length)];
+                        float sz = PropertyZ + 1.4f + Rand(rng, 0f, 1.2f);
                         float ss = model == "ShrubFlowering" || model == "BushWide" ? Rand(rng, 1.3f, 1.6f) : model == "PalmDate" ? Rand(rng, 0.55f, 0.72f) : Rand(rng, 0.7f, 0.95f);
-                        Plant(root, model, null, x + gap * 0.5f, gy, PropertyZ + 1.4f + Rand(rng, 0f, 1.2f), ss, 1f, -60, rng);
+                        Plant(root, model, null, x + gap * 0.5f, gy, sz, ss, 1f, -60, rng);
                     }
                 }
                 else
@@ -1603,9 +1609,10 @@ namespace DribbleToSchool.EditorTools
                 x += lot;
             }
             // Palms in the front gardens, every couple of lots.
-            StreetPalms(track, root, rng, x0, x1, PropertyZ + 0.95f, 12f, 26f);
+            if (CA) StreetPalms(track, root, rng, x0, x1, PropertyZ + 0.95f, 12f, 26f);
             // A second row of houses further back gives the street depth (never on a side street).
-            var backRow = new Deck(new[] { "VillaStucco", "VillaRanch", "CraftsmanPorch", "VillaStucco", "VillaRanch" }, rng);
+            var backRow = new Deck(CA ? new[] { "VillaStucco", "VillaRanch", "CraftsmanPorch", "VillaStucco", "VillaRanch" }
+                : new[] { "HouseGable", "HouseLong", "HouseLeanTo", "HouseFlat" }, rng);
             for (float x = Lo(x0, 20f); x < Hi(x1, 20f); x += Rand(rng, 10f, 14f))
             {
                 string house = backRow.Next(m => true);
@@ -1648,9 +1655,15 @@ namespace DribbleToSchool.EditorTools
         // ---------------------------------------------------------------- the town's shops and houses
 
         /// <summary>The shopping street's fronts (Buildings kit), dealt from a shuffled deck.</summary>
-        static readonly string[] MarketFronts = { "ShopFruit", "ShopBeach", "ShopShutter", "ShopMission", "ShopMart", "ShopCafe", "ShopBeach", "ShopBooks", "ShopFlorist", "ShopMission", "ShopTall", "ShopBoutique" };
-        /// <summary>The home street's houses: a California street of stucco villas, ranch houses and Craftsman porches (the villas want the wider lots).</summary>
-        static readonly string[] HomeHouses = { "VillaStucco", "CraftsmanPorch", "VillaRanch", "VillaStucco", "CraftsmanPorch", "VillaRanch" };
+        static string[] MarketFronts { get { return CA ? MarketFrontsCA : MarketFrontsTown; } }
+        static readonly string[] MarketFrontsTown = { "ShopFruit", "ShopShutter", "ShopMart", "ShopCafe", "ShopBooks", "ShopFlorist", "ShopNoodle", "ShopTall", "ShopBoutique", "ShopKonbini" };
+        /// <summary>The California skin's: beach-town and Mission shops among the kit's.</summary>
+        static readonly string[] MarketFrontsCA = { "ShopFruit", "ShopBeach", "ShopShutter", "ShopMission", "ShopMart", "ShopCafe", "ShopBeach", "ShopBooks", "ShopFlorist", "ShopMission", "ShopTall", "ShopBoutique" };
+        /// <summary>The home street's houses (HouseLong and HouseCarport want the wider lots).</summary>
+        static string[] HomeHouses { get { return CA ? HomeHousesCA : HomeHousesTown; } }
+        static readonly string[] HomeHousesTown = { "HouseGable", "HouseLong", "Bungalow", "HouseLeanTo", "HouseFlat", "HouseCarport" };
+        /// <summary>The California skin's: stucco villas, ranch houses and Craftsman porches (the villas want the wider lots).</summary>
+        static readonly string[] HomeHousesCA = { "VillaStucco", "CraftsmanPorch", "VillaRanch", "VillaStucco", "CraftsmanPorch", "VillaRanch" };
 
         /// <summary>
         /// Deals kit models from a shuffled deck: each turns up once before any comes round again, the
@@ -1903,7 +1916,7 @@ namespace DribbleToSchool.EditorTools
                 }
                 bool vend = !vended && front != "ShopKonbini" && rng.NextDouble() < 0.28 && x + (chunk != null ? 2.7f : 2.4f) < runEnd;
                 vended = vend;
-                if (vend && LevelBuildKit.HasKitModel("Plants", "PalmDate"))
+                if (vend && CA && LevelBuildKit.HasKitModel("Plants", "PalmDate"))
                 {
                     // A date palm in the gap between shops (never two gaps running), its crown over the awnings.
                     Plant(root, "PalmDate", null, x + 1.3f, gy, PropertyZ + 0.5f, Rand(rng, 0.6f, 0.75f), 1f, -60, rng);
@@ -1925,7 +1938,7 @@ namespace DribbleToSchool.EditorTools
                 float z = Rand(rng, 22f, 28f);
                 if (OnSideStreet(track, x, ProceduralArt.FacadeKind.Apartment)) continue;
                 // Every other block a white beach condo, the rest the kit's flats.
-                if (rng.NextDouble() < 0.5 && CoastHouse(root, "BeachCondo", x, GroundAt(track, x), z)) continue;
+                if (CA && rng.NextDouble() < 0.5 && CoastHouse(root, "BeachCondo", x, GroundAt(track, x), z)) continue;
                 Building(root, x, GroundAt(track, x), z, ProceduralArt.FacadeKind.Apartment, House3D.RoofStyle.Flat, 10f, 0f, new Color(0.92f, 0.88f, 0.82f), new Color(0.6f, 0.6f, 0.62f));
             }
             DistantHills(track, root, x0, x1);
@@ -2083,7 +2096,7 @@ namespace DribbleToSchool.EditorTools
             // The pier: once along a level's beach, running straight out to sea, clear of the towers
             // and of the stops' plots.
             float pierX = float.NaN;
-            if ((chunk == null || chunk.level) && LevelBuildKit.HasKitModel("Coast", "PierSpan") && propsEnd - x0 > 60f)
+            if (CA && (chunk == null || chunk.level) && LevelBuildKit.HasKitModel("Coast", "PierSpan") && propsEnd - x0 > 60f)
             {
                 for (float tryX = x0 + (propsEnd - x0) * 0.55f; tryX < propsEnd - 20f; tryX += 7f)
                 {
@@ -2094,7 +2107,7 @@ namespace DribbleToSchool.EditorTools
                 if (!float.IsNaN(pierX)) Pier(root, pierX, sea, 6.2f, 13);
             }
             // Date palms and the odd young fan palm along the back of the beach.
-            StreetPalms(track, root, rng, x0 + Margin(3f), propsEnd - 3f, 2.8f, 14f, 30f);
+            if (CA) StreetPalms(track, root, rng, x0 + Margin(3f), propsEnd - 3f, 2.8f, 14f, 30f);
             Color[] canopy = { new Color(0.9f, 0.3f, 0.28f), new Color(0.25f, 0.5f, 0.85f), new Color(1f, 0.75f, 0.2f), new Color(0.3f, 0.66f, 0.62f) };
             Color[] towels = { new Color(0.95f, 0.55f, 0.6f), new Color(0.45f, 0.75f, 0.9f), new Color(1f, 0.85f, 0.35f), new Color(0.55f, 0.8f, 0.55f) };
             bool beachKit = LevelBuildKit.HasKitModel("Leisure", "Parasol");

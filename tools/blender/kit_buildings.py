@@ -2,6 +2,7 @@
 # modelled by script in Blender (read docs/ART_DIRECTION.md first).
 #   blenv/bin/python kit_buildings.py -- /abs/outdir [--only HouseGable,School]
 #   blenv/bin/python kit_buildings.py -- /abs/outdir --kit Coast     (the California models: Coast.json, CoastAtlas.png)
+#   KIT_SIGNS=CA blenv/bin/python kit_buildings.py -- /abs/outdir    (only BuildingsCAAtlas.png: the California skin's English signs)
 # Writes into outdir: <Model>.fbx per model, BuildingsAtlas.png, Buildings.json, Buildings.blend.
 # Review: blenv/bin/python review_kit.py -- /abs/outdir/Buildings.blend /abs/outdir/sheet.png
 #
@@ -934,6 +935,11 @@ def main():
     atlas = os.path.join(OUT, KIT + 'Atlas.png')
     ATL.HI = KIT == 'Coast'
     ATL.paint(atlas, buildings)
+    if KIT == 'Buildings' and os.environ.get('KIT_SIGNS') == 'CA':
+        # The California skin's atlas: the same layout with English shop names (kit_buildings_signs.CA).
+        # Only the atlas is wanted from this run; the models and manifest are the original street's.
+        os.replace(atlas, os.path.join(OUT, 'BuildingsCAAtlas.png'))
+        print('wrote BuildingsCAAtlas.png'); sys.exit(0)
     mat = K.material(KIT, atlas)
     man = K.Manifest(KIT, KIT + 'Atlas.png')
     for B in buildings:

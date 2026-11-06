@@ -38,6 +38,12 @@ namespace DribbleToSchool.EditorTools
         /// <summary>Theme of the chapter currently being built (colours, ground edge, scenery).</summary>
         public static ChapterTheme Theme = ChapterTheme.For(1);
         public static int Chapter = 1;
+        /// <summary>
+        /// True while a level's California scene is built (GeneratedContent: the skin the player unlocks by
+        /// finishing every level): the streets take the Coast kit (StreetBuilder.Coast) and the shops their
+        /// English signs (BuildingsCAAtlas.png). False builds the original street, as it always was.
+        /// </summary>
+        public static bool California;
         public static ArtBaker.ArtSet Art { get; private set; }
         public static Color GroundColor { get { return Theme.groundFill; } }
         public static Color ObstacleColor { get { return Theme.obstacle; } }
@@ -448,6 +454,10 @@ namespace DribbleToSchool.EditorTools
             parts.outfit = outfit;
             if (!kid) return parts;
 
+            // The supplied boy model has no bag of its own: his school satchel hangs at his hip on
+            // the Bag bone, its strap over his chest (on the Chest bone).
+            if (file == "Boy") Satchel(body, bag, bone("Chest") ?? bone("Spine"), head);
+
             // The shop's pennant, clipped to the top of the bag on the camera side: the kid's
             // backpack, or the teens' bags (the bone sits at the bag's top edge). The boy's satchel
             // hangs at his hip, so his rides on its strap behind the shoulder instead.
@@ -474,6 +484,50 @@ namespace DribbleToSchool.EditorTools
 
             parts.flag = flag.GetComponent<SpriteRenderer>();
             return parts;
+        }
+
+        /// <summary>
+        /// The teen boy's satchel (Presentation/SatchelShape) on the Bag bone, a hand's width behind
+        /// his hip on the camera side, and its strap from the bag up across his chest to the shoulder,
+        /// riding the Chest bone. Both are placed in the body's space (it faces +x, the camera is on
+        /// its -z side), so the bones' own axes don't matter; their scale is undone so the bag keeps
+        /// its size in metres.
+        /// </summary>
+        static void Satchel(Transform body, Transform bag, Transform chest, Transform head)
+        {
+            if (bag == null) return;
+            var go = new GameObject("Satchel");
+            go.transform.SetParent(bag, false);
+            Vector3 top = bag.position;
+            go.transform.position = top + body.rotation * new Vector3(-0.02f, -0.12f, -0.075f);
+            go.transform.rotation = body.rotation;
+            UndoScale(go.transform);
+            go.AddComponent<SatchelShape>();
+            var r = go.GetComponent<MeshRenderer>();
+            r.sharedMaterial = Art.character;
+            r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            if (chest == null || head == null) return;
+            Vector3 a = top + body.rotation * new Vector3(0.05f, -0.02f, -0.115f);
+            Vector3 shoulder = Vector3.Lerp(chest.position, head.position, 0.55f) + body.rotation * new Vector3(0.03f, 0f, -0.115f);
+            var strap = new GameObject("SatchelStrap");
+            strap.transform.SetParent(chest, false);
+            strap.transform.position = (a + shoulder) * 0.5f;
+            strap.transform.rotation = Quaternion.LookRotation(body.rotation * Vector3.back, (shoulder - a).normalized);
+            UndoScale(strap.transform);
+            var box = strap.AddComponent<Box3D>();
+            box.size = new Vector3(0.045f, Vector3.Distance(a, shoulder) + 0.04f, 0.014f);
+            box.color = new Color(0.36f, 0.15f, 0.11f);
+            box.faces = MeshBuilder.Faces.All;
+            var sr = strap.GetComponent<MeshRenderer>();
+            sr.sharedMaterial = Art.character;
+            sr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+        }
+
+        /// <summary>Scale an object so its world scale is 1 whatever its parent bones' scale.</summary>
+        static void UndoScale(Transform t)
+        {
+            Vector3 l = t.parent != null ? t.parent.lossyScale : Vector3.one;
+            t.localScale = new Vector3(1f / Mathf.Max(l.x, 1e-4f), 1f / Mathf.Max(l.y, 1e-4f), 1f / Mathf.Max(l.z, 1e-4f));
         }
 
         [Serializable]
@@ -587,6 +641,9 @@ namespace DribbleToSchool.EditorTools
             var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(ModelsDir + "/" + kit + "/" + model + ".fbx");
             Material material;
             if (prefab == null || Art == null || !Art.kits.TryGetValue(kit, out material) || material == null) return null;
+            // The California skin's shops have English signs: the same atlas layout, its own texture.
+            Material skin;
+            if (California && Art.kits.TryGetValue(kit + "CA", out skin) && skin != null) material = skin;
             var go = new GameObject(model);
             go.transform.SetParent(parent, false);
             go.transform.position = position;

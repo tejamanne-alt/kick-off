@@ -95,7 +95,7 @@ namespace DribbleToSchool.Localization
                 { "school.trophyBody", "You've walked every way to school. The trophy is yours!" },
                 { "school.prizes", "Your prizes" },
                 { "results.medal", "You walked this way to school! A medal waits on the map." },
-                { "results.allWalked", "Every way to school walked! Your trophy waits on the map." },
+                { "results.allWalked", "Every way to school walked! Your trophy waits on the map, and the California skin in Settings." },
                 { "sticker.L01", "First Touch" }, { "sticker.L01.text", "Bag on, laces tied, ball at your feet. The best walk to school starts here." },
                 { "sticker.L01.hint", "Floating over the path just past the low wall where you learn to chip the ball." },
                 { "sticker.L02", "Little Hatch" }, { "sticker.L02.text", "Mind the paint! A tidy little hatchback that's seen a few bonnet hops." },
@@ -214,6 +214,9 @@ namespace DribbleToSchool.Localization
                 // The coach at the top of a level (UI/ActionCoach, UI/CoachCatalog): how to do each special action, and the
                 // challenges' steps. The titles name the control: once a move is learned they are all the coach shows.
                 { "settings.coachTips", "How-to tips" },
+                { "settings.california", "California skin" },
+                { "settings.californiaOn", "The town by the sea: villas, palms and a pier" },
+                { "settings.californiaLocked", "Finish every level to unlock" },
                 { "challenge.status.juggle", "Juggles {0}   Best {1}   {2}s" },
                 { "challenge.status.targets", "Targets {0} / {1}   {2}s" },
                 { "challenge.status.slalom", "Gates {0} / {1}   Missed {2}   {3}" },
@@ -469,7 +472,7 @@ namespace DribbleToSchool.Localization
                 { "school.trophyBody", "Has llegado al cole por todos los caminos. ¡El trofeo es tuyo!" },
                 { "school.prizes", "Tus premios" },
                 { "results.medal", "¡Has llegado al cole por este camino! Tu medalla te espera en el mapa." },
-                { "results.allWalked", "¡Todos los caminos al cole completados! Tu trofeo te espera en el mapa." },
+                { "results.allWalked", "¡Todos los caminos al cole completados! Tu trofeo te espera en el mapa, y el aspecto California en Ajustes." },
                 { "sticker.L01", "Primer toque" }, { "sticker.L01.text", "Mochila puesta, cordones atados y el balón en los pies. El mejor camino al cole empieza aquí." },
                 { "sticker.L01.hint", "Flota sobre la acera justo después del muro bajo donde aprendes a picar el balón." },
                 { "sticker.L02", "Cochecito" }, { "sticker.L02.text", "¡Cuidado con la pintura! Un cochecito que ya ha aguantado algún salto en el capó." },
@@ -582,6 +585,9 @@ namespace DribbleToSchool.Localization
                 { "guide.slalom.kick", "Arrastra hacia arriba desde CHUTA para levantar el balón por dentro de cada aro." },
                 // El entrenador de arriba (UI/ActionCoach): cómo hacer cada acción especial y los pasos de los retos.
                 { "settings.coachTips", "Consejos en pantalla" },
+                { "settings.california", "Aspecto California" },
+                { "settings.californiaOn", "El pueblo junto al mar: villas, palmeras y un muelle" },
+                { "settings.californiaLocked", "Termina todos los niveles para desbloquearlo" },
                 { "challenge.status.juggle", "Toques {0}   Mejor {1}   {2} s" },
                 { "challenge.status.targets", "Dianas {0} / {1}   {2} s" },
                 { "challenge.status.slalom", "Puertas {0} / {1}   Fallos {2}   {3}" },

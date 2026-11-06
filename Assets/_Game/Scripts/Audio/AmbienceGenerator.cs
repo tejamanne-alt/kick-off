@@ -44,6 +44,8 @@ namespace DribbleToSchool.Audio
         public const int Channels = 2;
         /// <summary>The bed's loudness (RMS): well under the music's <see cref="MusicGenerator.Loudness"/>.</summary>
         public const float BedLoudness = 0.075f;
+        /// <summary>The park is a quiet place: its bed sits lower still, so the music carries it.</summary>
+        public const float ParkBedLoudness = 0.045f;
         const double BedSeconds = 30.0;
         const double Fold = 2.0;
         const double TwoPi = Math.PI * 2.0;
@@ -246,8 +248,10 @@ namespace DribbleToSchool.Audio
         static float[] ParkBed()
         {
             var mix = new Mixdown(BedLength) { roomSize = 0.65f, damping = 0.5f, wet = 0.2f };
-            Airy(mix.Add(-0.65f, 0f, 0.8f), 71, 2600, 0.5, 0.12, 0.5f, 9);
-            Airy(mix.Add(0.65f, 0f, 0.8f), 72, 2900, 0.5, 0.11, 0.5f, 9);
+            // Leaves: a soft, low rustle that comes and goes with the breeze, well behind the music, the
+            // fountain and the birds (a bright, fluttering hiss here drowned everything else out).
+            Airy(mix.Add(-0.65f, 0f, 0.3f), 71, 1300, 0.7, 0.08, 0.2f, 3.5);
+            Airy(mix.Add(0.65f, 0f, 0.3f), 72, 1500, 0.7, 0.07, 0.2f, 3.5);
             // The fountain by the pond: a steady splash with a trickle in it.
             var fountain = mix.Add(0.55f, 0.3f, 0.35f);
             var n = new NoiseSource(73);
@@ -255,10 +259,10 @@ namespace DribbleToSchool.Audio
             var trickle = new Drift(74, 14);
             Layer(fountain, i => { f.Process(n.White(), 1700, 0.7); return f.band * (0.6f + 0.4f * trickle.Next()); });
             Rumble(mix.Add(0f, 0.1f, 0.3f), 75, 180, 0.05, 0.4f);
-            var birds = mix.Add(-0.3f, 0.35f, 0.3f);
+            var birds = mix.Add(-0.3f, 0.35f, 0.5f);
             var rng = new Random(76);
             for (double t = 1; t < BedSeconds - 2; t += 2.5 + rng.NextDouble() * 3) Birds.Sparrow(birds, t, rng);
-            return Finish(mix);
+            return mix.Render(ParkBedLoudness);
         }
 
         // ================= Cues =================
