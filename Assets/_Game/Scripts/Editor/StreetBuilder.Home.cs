@@ -140,17 +140,23 @@ namespace DribbleToSchool.EditorTools
             });
             NameCritters("Critters");
 
-            LevelBuildKit.AsChapter(HomeChapter, () => Pass(track, root, "the home street", new StageSpec
+            // The home street is built as chapter 1 but lit by the level's own sun: its near trees' shade follows that.
+            lightSun = ChapterTheme.For(own).mood.sunDirection;
+            try
             {
-                stage = -1,
-                from = track.MinX - 50f,
-                to = seam,
-                seed = seed + 0x1F3,
-                nextChapter = own,
-                firstLotX = float.NegativeInfinity,
-                endStreetFrom = float.PositiveInfinity,
-                flocks = false,
-            }));
+                LevelBuildKit.AsChapter(HomeChapter, () => Pass(track, root, "the home street", new StageSpec
+                {
+                    stage = -1,
+                    from = track.MinX - 50f,
+                    to = seam,
+                    seed = seed + 0x1F3,
+                    nextChapter = own,
+                    firstLotX = float.NegativeInfinity,
+                    endStreetFrom = float.PositiveInfinity,
+                    flocks = false,
+                }));
+            }
+            finally { lightSun = null; }
             NameCritters("Critters (home street)");
         }
 

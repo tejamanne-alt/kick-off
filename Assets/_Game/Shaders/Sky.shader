@@ -1,6 +1,6 @@
 // The sky dome: an inverted sphere centred on the camera, drawn behind everything. A clear
-// anime sky: pale blue at the horizon deepening quickly to the chapter's rich zenith blue, a
-// faint bright band right at the horizon, and a soft glow and disc where the sun sits (high, so
+// anime sky: a deep cobalt that stays rich almost down to the horizon, only a little lighter
+// there, a faint bright band right at the horizon, and a soft glow and disc where the sun sits (high, so
 // usually only the glow shows). Colours come from the WorldLook globals, so the sky, the haze and
 // the light always agree.
 Shader "DribbleToSchool/Sky"
@@ -42,8 +42,8 @@ Shader "DribbleToSchool/Sky"
                 // most of the sky in view is a rich blue.
                 float h = saturate(y * 2.2 + 0.03);
                 fixed3 col = lerp(_DtsSkyHorizon.rgb, _DtsSkyZenith.rgb, pow(h, 0.5));
-                // A thin brighter band right at the horizon.
-                col = lerp(col, lerp(_DtsSkyHorizon.rgb, fixed3(1, 1, 1), 0.35), saturate(1.0 - abs(y) * 16.0) * 0.45);
+                // A thin, faint brighter band right at the horizon.
+                col = lerp(col, lerp(_DtsSkyHorizon.rgb, fixed3(1, 1, 1), 0.35), saturate(1.0 - abs(y) * 16.0) * 0.2);
                 // The sun: a soft glow and a tighter one round a small disc.
                 float c = saturate(dot(d, s));
                 col += _DtsSunGlow.rgb * (pow(c, 8.0) * 0.18 + pow(c, 64.0) * 0.4);

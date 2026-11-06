@@ -79,6 +79,7 @@ namespace DribbleToSchool.Holiday
             look.sunGlow = Color.Lerp(a.glow, b.glow, t);
             look.ambientSky = Color.Lerp(a.ambientSky, b.ambientSky, t);
             look.ambientGround = Color.Lerp(a.ambientGround, b.ambientGround, t);
+            look.castShadow = Color.Lerp(a.castShadow, b.castShadow, t);
             look.skyZenith = Color.Lerp(a.zenith, b.zenith, t);
             look.skyHorizon = Color.Lerp(a.horizon, b.horizon, t);
             look.hazeColor = Color.Lerp(a.haze, b.haze, t);

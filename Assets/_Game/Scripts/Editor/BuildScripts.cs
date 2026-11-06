@@ -59,7 +59,7 @@ namespace DribbleToSchool.EditorTools
             PlayerSettings.runInBackground = false;
 
             // Splash: the game's deep blue sky behind the (required) Unity logo, as the menu's splash.
-            PlayerSettings.SplashScreen.backgroundColor = new Color(0.16f, 0.39f, 0.75f);
+            PlayerSettings.SplashScreen.backgroundColor = new Color(0.22f, 0.43f, 0.69f);
 
             // Android
             PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.Android, ApplicationId);

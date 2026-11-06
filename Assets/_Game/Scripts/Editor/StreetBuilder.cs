@@ -68,9 +68,9 @@ namespace DribbleToSchool.EditorTools
             {
                 case 2:   // market: a cobbled lane in front of the paved shop fronts
                     s.Add(new StripSpec(FrontZ, -PathHalf, -0.06f, ProceduralArt.Surface.Cobbles, white));
-                    s.Add(new StripSpec(-PathHalf, PathHalf, 0f, ProceduralArt.Surface.Paving, new Color(1f, 0.97f, 0.92f)));
-                    s.Add(new StripSpec(PathHalf, PropertyZ + 0.6f, 0f, ProceduralArt.Surface.Paving, new Color(1f, 0.97f, 0.92f)));
-                    s.Add(new StripSpec(PropertyZ + 0.6f, BackZ, 0f, ProceduralArt.Surface.Paving, new Color(0.92f, 0.9f, 0.86f)));
+                    s.Add(new StripSpec(-PathHalf, PathHalf, 0f, ProceduralArt.Surface.Paving, new Color(1f, 0.985f, 0.975f)));
+                    s.Add(new StripSpec(PathHalf, PropertyZ + 0.6f, 0f, ProceduralArt.Surface.Paving, new Color(1f, 0.985f, 0.975f)));
+                    s.Add(new StripSpec(PropertyZ + 0.6f, BackZ, 0f, ProceduralArt.Surface.Paving, new Color(0.92f, 0.91f, 0.9f)));
                     break;
                 case 3:   // beach: sand, a firmer trodden track, then wet sand at the water's edge
                     s.Add(new StripSpec(FrontZ, -PathHalf, 0f, ProceduralArt.Surface.Sand, white));
@@ -344,7 +344,7 @@ namespace DribbleToSchool.EditorTools
         static void ContactShadow(Transform parent, float a, float b, float groundY, float zFrom, float zTo)
         {
             if (b - a < 0.1f) return;
-            Patch(parent, "ContactShadow", a, b, groundY, zFrom, zTo, new Color(0.62f, 0.64f, 0.72f), SurfaceUnder((zFrom + zTo) * 0.5f), 0.004f);
+            Patch(parent, "ContactShadow", a, b, groundY, zFrom, zTo, new Color(0.48f, 0.49f, 0.58f), SurfaceUnder((zFrom + zTo) * 0.5f), 0.004f);
         }
 
         /// <summary>The ground material at depth z behind the footpath, for shadows that keep its texture.</summary>
@@ -480,16 +480,17 @@ namespace DribbleToSchool.EditorTools
         }
 
         // Summer greens for broadleaf trees and bushes (Plants kit part 1), so neighbours differ a
-        // little: natural, slightly olive greens, never lime (the kit's own are brighter).
+        // little: true leaf greens as in the reference shots, the sunlit clumps a fresh yellow-green
+        // and the shade inside the crown going deep (not olive, and not lime either).
         static readonly Color[] SummerLeaves =
         {
-            new Color(0.38f, 0.5f, 0.25f), new Color(0.34f, 0.46f, 0.25f), new Color(0.42f, 0.52f, 0.27f),
-            new Color(0.3f, 0.43f, 0.25f), new Color(0.4f, 0.48f, 0.23f),
+            new Color(0.29f, 0.39f, 0.2f), new Color(0.26f, 0.36f, 0.2f), new Color(0.32f, 0.42f, 0.2f),
+            new Color(0.24f, 0.35f, 0.21f), new Color(0.31f, 0.4f, 0.18f),
         };
         // Meadow grass in leaf (the kit's tall grass and tufts are made seeding, golden).
-        static readonly Color[] MeadowGreens = { new Color(0.48f, 0.58f, 0.3f), new Color(0.52f, 0.6f, 0.32f), new Color(0.42f, 0.54f, 0.28f) };
-        /// <summary>Palm fronds and clipped hedges, in the same calm greens.</summary>
-        public static readonly Color PalmGreen = new Color(0.36f, 0.48f, 0.24f), HedgeGreen = new Color(0.27f, 0.4f, 0.22f);
+        static readonly Color[] MeadowGreens = { new Color(0.46f, 0.57f, 0.26f), new Color(0.5f, 0.6f, 0.28f), new Color(0.4f, 0.53f, 0.25f) };
+        /// <summary>Palm fronds and clipped hedges: the same leaf greens, hedges a deep clipped green.</summary>
+        public static readonly Color PalmGreen = new Color(0.3f, 0.42f, 0.2f), HedgeGreen = new Color(0.21f, 0.33f, 0.17f);
 
         /// <summary>
         /// A tree (or bush) from the Plants kit standing at (x, groundY, z), turned at random, its
@@ -731,12 +732,65 @@ namespace DribbleToSchool.EditorTools
                 default: Suburb(track, root, rng, x0, x1); break;
             }
             if (ch != 3) Poles(track, root, x0, x1);
+            if (ch != 3) CanopyShadows(track, root, new System.Random(ch * 173 + Mathf.RoundToInt(x0)), x0, x1);
             Depth(track, root, new System.Random(ch * 211 + Mathf.RoundToInt(x0)), x0, x1);
             if (ch != 3)
                 foreach (var area in track.OpenAreas)
                     SideStreetEnd(track, root, new System.Random(ch * 53 + Mathf.RoundToInt(area.x * 3f)), area);
             SchoolSurroundings(track, root, new System.Random(ch * 97 + Mathf.RoundToInt(track.GoalX)));
             Wildlife(track, root, new System.Random(ch * 389 + Mathf.RoundToInt(x0)), x0, x1);
+        }
+
+        // ---------------------------------------------------------------- shade across the near road
+
+        /// <summary>Where the dappled shade of the near trees falls: the middle of the foreground band of ground (depth z).</summary>
+        const float CanopyShadeZ = -5f;
+
+        /// <summary>The sun the scene is lit by, when it isn't the chapter being built's (a level's home street).</summary>
+        static Vector3? lightSun;
+
+        /// <summary>
+        /// Street trees on our side of the road, between the camera and the street, seen only by
+        /// their shade: they cast shadows but are not drawn. Their dappled shade lies in patches
+        /// across the near road (or cobbles, or lawn), the dark foreground band that frames the
+        /// reference shots (docs/ART_DIRECTION.md), and sways a little with the breeze. Each is placed
+        /// from the chapter's sun so the shade lands on the foreground and stops short of the
+        /// footpath the kid plays on: crowns squashed front to back, centred so their shade sits at
+        /// <see cref="CanopyShadeZ"/>.
+        /// </summary>
+        static void CanopyShadows(LevelBuildKit.TrackBuilder track, Transform root, System.Random rng, float x0, float x1)
+        {
+            string[] models = { "BroadleafWide", "BroadleafLarge", "Broadleaf" };
+            if (!LevelBuildKit.HasKitModel("Plants", models[0]) && !LevelBuildKit.HasKitModel("Plants", models[2])) return;
+            Vector3 sun = (lightSun ?? LevelBuildKit.Theme.mood.sunDirection).normalized;
+            if (sun.y < 0.2f || sun.z > -0.05f) return;   // the shade would not fall toward the camera
+            // How far a point's shadow moves along the ground per metre of its height.
+            float perX = -sun.x / sun.y, perZ = -sun.z / sun.y;
+            var group = new GameObject("CanopyShade").transform;
+            group.SetParent(root, false);
+            for (float x = x0 + Rand(rng, 0f, 12f); x < x1; x += Rand(rng, 11f, 26f))
+            {
+                if (x < ClipLo || x > ClipHi) continue;
+                int trees = rng.NextDouble() < 0.35 ? 2 : 1;
+                for (int k = 0; k < trees; k++)
+                {
+                    string model = models[rng.Next(models.Length)];
+                    if (!LevelBuildKit.HasKitModel("Plants", model)) model = models[2];
+                    if (!LevelBuildKit.HasKitModel("Plants", model)) return;
+                    float scale = Rand(rng, 0.95f, 1.2f);
+                    // The crown's middle is about two thirds of the way up the tree.
+                    float crown = LevelBuildKit.KitSize("Plants", model).y * scale * 0.66f;
+                    float shadeX = x + k * Rand(rng, 4f, 7f);
+                    float gy = GroundAt(track, shadeX);
+                    // Turned only a little from square on, so squashing its local depth squashes it front to back.
+                    float yaw = (rng.NextDouble() < 0.5 ? 0f : 180f) + Rand(rng, -15f, 15f);
+                    var tree = Model(group, "Plants", model, shadeX - perX * crown, gy, CanopyShadeZ - perZ * crown, yaw, scale);
+                    if (tree == null) continue;
+                    tree.localScale = new Vector3(scale, scale, scale * 0.5f);
+                    foreach (var r in tree.GetComponentsInChildren<MeshRenderer>())
+                        r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.ShadowsOnly;
+                }
+            }
         }
 
         // ---------------------------------------------------------------- side streets

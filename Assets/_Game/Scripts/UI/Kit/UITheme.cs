@@ -28,9 +28,10 @@ namespace DribbleToSchool.UI.Kit
         public static readonly Color Locked = new Color(0.68f, 0.71f, 0.77f);
         public static readonly Color Shadow = new Color(0.05f, 0.09f, 0.24f, 0.26f);
         public static readonly Color Dim = new Color(0.04f, 0.07f, 0.18f, 0.5f);
-        /// <summary>The game's sky (WorldLook's zenith and horizon in chapter 1).</summary>
-        public static readonly Color SkyTop = new Color(0.16f, 0.39f, 0.75f);
-        public static readonly Color SkyBottom = new Color(0.52f, 0.73f, 0.92f);
+        /// <summary>The game's sky as it shows on screen: the deep cobalt overhead, and a lighter blue
+        /// for the bottom of the menus' sky (paler than the in-game horizon, so panels and text on it read).</summary>
+        public static readonly Color SkyTop = new Color(0.22f, 0.43f, 0.69f);
+        public static readonly Color SkyBottom = new Color(0.47f, 0.67f, 0.88f);
         /// <summary>Chalk white of the pitch lines and the logo's face.</summary>
         public static readonly Color Chalk = new Color(1f, 1f, 0.98f);
 

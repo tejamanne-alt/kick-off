@@ -243,7 +243,7 @@ namespace DribbleToSchool.EditorTools
         /// The plants kit's trees and bushes (and the barriers kit's propped boughs) wear their
         /// leaves as cut-out cards (clumps of leaves painted in the atlas alpha; alpha is 1 everywhere
         /// else, so nothing else is cut): cut out at 0.5, both sides drawn, cards seen edge-on
-        /// shrinking away, sun shadows on the leaves softened, drawn after the opaque world.
+        /// shrinking away, sun shadows on the leaves a little softened, drawn after the opaque world.
         /// Every other kit stays opaque.
         /// </summary>
         static void LeafCards(Material m, bool on)
@@ -251,7 +251,7 @@ namespace DribbleToSchool.EditorTools
             m.SetFloat("_AlphaClip", on ? 1f : 0f);
             m.SetFloat("_Cutoff", 0.5f);
             m.SetFloat("_EdgeFade", on ? 1f : 0f);
-            m.SetFloat("_LeafShadow", on ? 0.4f : 1f);
+            m.SetFloat("_LeafShadow", on ? 0.7f : 1f);   // deep shade inside the crowns, as in the references
             m.SetFloat("_Cull", (float)(on ? UnityEngine.Rendering.CullMode.Off : UnityEngine.Rendering.CullMode.Back));
             if (on) m.EnableKeyword("_ALPHATEST_ON");
             else m.DisableKeyword("_ALPHATEST_ON");

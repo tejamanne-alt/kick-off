@@ -7,6 +7,7 @@ float4 _DtsLightDir;        // xyz: direction toward the sun (the light)
 fixed4 _DtsSunColor;        // rgb: sunlight tint; a > 0.5 when set
 fixed4 _DtsAmbientSky;      // rgb: colour of shade lit by the sky; a > 0.5 when set
 fixed4 _DtsAmbientGround;   // rgb: warm bounce on downward-facing shade
+fixed4 _DtsCastShadow;      // rgb: a sun shadow on upward-facing ground, as a fraction of the shade colour; a > 0.5 when set
 fixed4 _DtsFogColor;        // rgb: haze colour; a: how much haze far away
 float4 _DtsFogRange;        // x: haze starts, y: haze is full (distance from the camera)
 fixed4 _DtsSunGlow;         // rgb: the glow around the sun in the sky; a: its strength in the haze
@@ -33,16 +34,21 @@ fixed3 DtsShadeTint(fixed3 shadowTint, float3 n)
 }
 
 // Clean anime daylight: a crisp step from cool shade to sun (a narrow soft edge, not a long
-// ramp), a gentle falloff across the lit side so forms still read, sun shadows tinted like the
-// shade, and a light rim on silhouettes that face away toward the sun.
+// ramp), a gentle falloff across the lit side so forms still read, and a light rim on silhouettes
+// that face away toward the sun. A sun shadow falling across a lit face takes the shade colour,
+// and on ground that faces up it goes deeper still (_DtsCastShadow): the dark, cool, crisp
+// shadows of trees, poles and people on the road and paving that give the anime look its punch.
 fixed3 DtsShade(fixed3 albedo, float3 n, float3 worldPos, fixed3 shadowTint, float shadow, float rimAmount)
 {
     float3 l = DtsLightDir();
     float wrap = saturate((dot(n, l) + 0.3) / 1.3);
-    float lit = smoothstep(0.36, 0.46, wrap) * shadow;
+    float form = smoothstep(0.36, 0.46, wrap);
     float full = smoothstep(0.5, 0.86, wrap);
     fixed3 sun = DtsSun();
-    fixed3 col = albedo * lerp(DtsShadeTint(shadowTint, n), sun * lerp(0.93, 1.0, full), lit);
+    fixed3 shade = DtsShadeTint(shadowTint, n);
+    fixed3 cast = _DtsCastShadow.a > 0.5 ? lerp(fixed3(1, 1, 1), _DtsCastShadow.rgb, saturate(n.y)) : fixed3(1, 1, 1);
+    fixed3 light = shade * (1.0 - form) + sun * lerp(0.93, 1.0, full) * (form * shadow) + shade * cast * (form * (1.0 - shadow));
+    fixed3 col = albedo * light;
     col *= lerp(0.9, 1.04, saturate(n.y * 0.5 + 0.5));
     float3 v = normalize(_WorldSpaceCameraPos - worldPos);
     float rim = pow(1.0 - saturate(dot(n, v)), 3.0) * saturate(0.3 + 0.7 * dot(-v, l)) * rimAmount;
@@ -67,12 +73,13 @@ float DtsValueNoise(float2 p)
 }
 
 // Large soft patches of lighter, darker, warmer and cooler ground over a tiling texture, so its
-// repeat doesn't show across a long street. w: world position on the surface's plane.
+// repeat doesn't show across a long street. The warm patches lean rosy rather than yellow, so
+// greys stay the faintly mauve greys of a painted street. w: world position on the surface's plane.
 fixed3 DtsMacro(fixed3 albedo, float2 w, float amount)
 {
     float m = DtsValueNoise(w * 0.11) * 0.55 + DtsValueNoise(w * 0.031 + 17.3) * 0.45;
     float h = DtsValueNoise(w * 0.05 + 41.7);
-    fixed3 tint = lerp(fixed3(1.03, 1.0, 0.95), fixed3(0.97, 1.0, 1.04), h);
+    fixed3 tint = lerp(fixed3(1.025, 0.99, 0.985), fixed3(0.975, 0.99, 1.025), h);
     return albedo * lerp(fixed3(1, 1, 1), tint * (1.0 + (m - 0.5) * 0.3), amount);
 }
 
