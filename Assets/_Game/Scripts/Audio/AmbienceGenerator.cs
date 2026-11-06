@@ -42,10 +42,25 @@ namespace DribbleToSchool.Audio
     public static class AmbienceGenerator
     {
         public const int Channels = 2;
-        /// <summary>The bed's loudness (RMS): well under the music's <see cref="MusicGenerator.Loudness"/>.</summary>
-        public const float BedLoudness = 0.075f;
-        /// <summary>The park is a quiet place: its bed sits lower still, so the music carries it.</summary>
-        public const float ParkBedLoudness = 0.045f;
+        /// <summary>
+        /// Each place's bed loudness (RMS), well under the music's <see cref="MusicGenerator.Loudness"/> and in
+        /// proportion to how loud the place really is: the surf and the building site's generators the
+        /// loudest, a road of passing cars and the echoing underpass next, then a quiet residential street,
+        /// a small market square with a few people about, and the park and the menu quietest.
+        /// </summary>
+        public static float BedLoudness(Soundscape scape)
+        {
+            switch (scape)
+            {
+                case Soundscape.Beach: return 0.06f;
+                case Soundscape.Site: return 0.055f;
+                case Soundscape.Underpass: return 0.048f;
+                case Soundscape.Street: return 0.045f;
+                case Soundscape.Market: return 0.035f;
+                case Soundscape.Park: return 0.035f;
+                default: return 0.03f;
+            }
+        }
         const double BedSeconds = 30.0;
         const double Fold = 2.0;
         const double TwoPi = Math.PI * 2.0;
@@ -65,6 +80,10 @@ namespace DribbleToSchool.Audio
                 case Soundscape.Park: pack.bed = ParkBed(); ParkCues(cues); break;
                 default: pack.bed = MenuBed(); MenuCues(cues); break;
             }
+            // The cues follow their place's loudness (a little less steeply, so a quiet place's birdsong
+            // or shop bell still carries): against the old common bed level, 0.075.
+            float cueScale = (float)Math.Sqrt(BedLoudness(scape) / 0.075);
+            foreach (var cue in cues) cue.volume *= cueScale;
             pack.cues = cues.ToArray();
             return pack;
         }
@@ -115,7 +134,7 @@ namespace DribbleToSchool.Audio
             });
         }
 
-        static float[] Finish(Mixdown mix) { return mix.Render(BedLoudness); }
+        static float[] Finish(Mixdown mix, Soundscape scape) { return mix.Render(BedLoudness(scape)); }
 
         static float[] MenuBed()
         {
@@ -127,7 +146,7 @@ namespace DribbleToSchool.Audio
             var rng = new Random(14);
             for (double t = 1; t < BedSeconds - 2; t += 3 + rng.NextDouble() * 4)
                 Birds.Sparrow(birds, t, rng);
-            return Finish(mix);
+            return Finish(mix, Soundscape.Menu);
         }
 
         static float[] StreetBed()
@@ -144,26 +163,28 @@ namespace DribbleToSchool.Audio
             var birds = mix.Add(-0.4f, 0.3f, 0.2f);
             var rng = new Random(25);
             for (double t = 3; t < BedSeconds - 2; t += 4 + rng.NextDouble() * 5) Birds.Sparrow(birds, t, rng);
-            return Finish(mix);
+            return Finish(mix, Soundscape.Street);
         }
 
         static float[] MarketBed()
         {
             var mix = new Mixdown(BedLength) { roomSize = 0.6f, damping = 0.5f, wet = 0.28f };
-            // A crowd: people talking all over the square, too many and too far to make out a word.
+            // A few people about the square (the street has only a handful): two or three
+            // conversations across it, soft and off in the reverb, too far to make out a word, with
+            // the town's hum and the breeze between them, not a crowd's wall of chatter.
             var rng = new Random(31);
-            for (int v = 0; v < 12; v++)
+            for (int v = 0; v < 4; v++)
             {
                 float pan = (float)(rng.NextDouble() * 1.6 - 0.8);
-                var voice = mix.Add(pan, 0.5f, (float)(0.5 + rng.NextDouble() * 0.5));
+                var voice = mix.Add(pan, 0.65f, (float)(0.14 + rng.NextDouble() * 0.12));
                 Voices.Chatter(voice, 100 + v * 7, 95 + rng.NextDouble() * 140);
             }
-            Airy(mix.Add(0f, 0.4f, 0.5f), 32, 700, 0.5, 0.15, 0.5f, 6);
-            Rumble(mix.Add(0f, 0.1f, 0.4f), 33, 190, 0.06, 0.4f);
+            Airy(mix.Add(0f, 0.3f, 0.5f), 32, 700, 0.5, 0.15, 0.4f, 6);
+            Rumble(mix.Add(0f, 0.1f, 0.5f), 33, 190, 0.06, 0.4f);
             // Spoons and cups at the cafe tables, now and then.
-            var cafe = mix.Add(0.5f, 0.3f, 0.35f);
+            var cafe = mix.Add(0.5f, 0.3f, 0.22f);
             for (double t = 1.3; t < BedSeconds - 1; t += 2.5 + rng.NextDouble() * 4) Things.Clink(cafe, t, rng);
-            return Finish(mix);
+            return Finish(mix, Soundscape.Market);
         }
 
         static float[] BeachBed()
@@ -175,7 +196,7 @@ namespace DribbleToSchool.Audio
             Waves(mix.Add(-0.35f, 0.15f), 43, 0.0);
             Waves(mix.Add(0.35f, 0.15f), 44, 0.35);
             Airy(mix.Add(0f, 0f, 0.4f), 45, 600, 0.5, 0.1, 0.35f, 5);
-            return Finish(mix);
+            return Finish(mix, Soundscape.Beach);
         }
 
         /// <summary>Waves breaking and running up the sand, then drawing back with a hiss, every seven to ten seconds.</summary>
@@ -231,7 +252,7 @@ namespace DribbleToSchool.Audio
             // Cars on the road above, muffled through the deck.
             var above = mix.Add(0f, 0.6f, 0.4f);
             for (int i = 0; i < 3; i++) Vehicle.Pass(above, 3 + i * 9.5, 6, 0.3f, 55 + i, 0.25);
-            return Finish(mix);
+            return Finish(mix, Soundscape.Underpass);
         }
 
         static float[] SiteBed()
@@ -242,7 +263,7 @@ namespace DribbleToSchool.Audio
             Airy(mix.Add(-0.3f, 0f, 0.5f), 63, 700, 0.5, 0.09, 0.3f, 4);
             Airy(mix.Add(0.3f, 0f, 0.45f), 64, 950, 0.5, 0.08, 0.3f, 4);
             Rumble(mix.Add(0f, 0.1f, 0.4f), 65, 200, 0.05, 0.4f);
-            return Finish(mix);
+            return Finish(mix, Soundscape.Site);
         }
 
         static float[] ParkBed()
@@ -262,7 +283,7 @@ namespace DribbleToSchool.Audio
             var birds = mix.Add(-0.3f, 0.35f, 0.5f);
             var rng = new Random(76);
             for (double t = 1; t < BedSeconds - 2; t += 2.5 + rng.NextDouble() * 3) Birds.Sparrow(birds, t, rng);
-            return mix.Render(ParkBedLoudness);
+            return Finish(mix, Soundscape.Park);
         }
 
         // ================= Cues =================
@@ -320,7 +341,7 @@ namespace DribbleToSchool.Audio
             c.Add(Cue("pigeons", 3, 0.2f, 0.5f, (t, r) => { Birds.Pigeon(t, 0.1); Animals.Wings(t, 1.6, r); }, 303, 14, 28, 0.3f, 0f, 0.7f));
             c.Add(Cue("clock", 6, 0.45f, 0.8f, (t, r) => Things.ClockChime(t, 0.05), 304, 55, 95, 0.18f, 0.4f, 0.3f, 0f));
             c.Add(Cue("bicycle", 1.4, 0.2f, 0.5f, (t, r) => Things.BicycleBell(t, 0.05), 305, 26, 50, 0.22f, 0f, 0.7f));
-            c.Add(Cue("laugh", 1.2, 0.3f, 0.5f, (t, r) => Voices.Laugh(t, 0.05, r), 306, 16, 30, 0.16f, 0f, 0.8f, 0.12f));
+            c.Add(Cue("laugh", 1.2, 0.35f, 0.6f, (t, r) => Voices.Laugh(t, 0.05, r), 306, 35, 70, 0.08f, 0f, 0.8f, 0.12f));
             c.Add(Cue("van", 6, 0.2f, 0.5f, (t, r) => Vehicle.Pass(t, 0, 5.5, 1f, r.Next(), 0.6), 307, 28, 50, 0.35f, 0f, 0f, 0.06f, true));
         }
 

@@ -24,9 +24,12 @@ namespace DribbleToSchool.Core
         }
 
         /// <summary>The sounds of the place (traffic, waves, gulls, diggers...), under the music.</summary>
+        /// <summary>The Ambience slider's default: halfway, the place's sounds a backdrop under the music.</summary>
+        public const float DefaultAmbienceVolume = 0.5f;
+
         public static float AmbienceVolume
         {
-            get { return PlayerPrefs.GetFloat("settings.ambience", 0.8f); }
+            get { return PlayerPrefs.GetFloat("settings.ambience", DefaultAmbienceVolume); }
             set { PlayerPrefs.SetFloat("settings.ambience", Mathf.Clamp01(value)); Save(); }
         }
 

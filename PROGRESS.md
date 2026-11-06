@@ -539,6 +539,13 @@ The user found the first Coast models plain next to their reference shots (weath
 - **Glass HUD**: the level card (top left), the pause button, the coach's tips, the controls tour's caption with its Next and Skip, and "Stuck?" are frosted glass like the touch controls (`UIKit.Glass`, `UIKit.GlassButton`, `UIKit.GlassText`, `ProceduralSprites.RoundedRim`, `UITheme.Glass*`): a faint smoky pane under a thin bright rim, white lettering on a soft drop. The Holiday Run's score card and pause button too.
 - Checked: the C# compile (runtime and editor). Not checked in Unity: the `_CA` scenes' build (it doubles the level build time), the satchel's fit on the boy's rig, the glass HUD's legibility over bright scenes.
 
+## Ambience at realistic levels
+
+- **Each place has its own bed loudness** (`AmbienceGenerator.BedLoudness`, RMS; every bed was 0.075): beach surf 0.06, building site 0.055, underpass 0.048, home street 0.045, market 0.035, park 0.035, menu 0.03. The cues (cars, gulls, the shop bell...) scale with the square root of their place's ratio to the old 0.075.
+- **The market**: its bed was twelve chattering voices, a crowd's wall of talk on a street with a handful of people. Now four soft, distant conversations (more reverb, at about a quarter of the gain) under the town's hum and the breeze; the cafe's clinks softer; the laugh cue half as loud and half as often.
+- **The Ambience slider defaults to 0.5** (was 0.8; `GameSettings.DefaultAmbienceVolume`). A slider already moved keeps its value.
+- At the default, against before: the market about 11 dB quieter, the street 8, the beach 6. Checked by rendering every place's bed in a harness (the RMS above); not listened to in Unity.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.
