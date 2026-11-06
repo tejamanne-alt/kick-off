@@ -15,6 +15,8 @@ namespace DribbleToSchool.Audio
         /// <summary>How much goes to the shared reverb (0 dry, 1 very wet).</summary>
         public float send;
         public float gain = 1f;
+        /// <summary>How far it dips under each kick drum (0 none, 1 to silence): the breathing "pump" of lo-fi beats.</summary>
+        public float duck;
 
         public Track(int length, float pan, float send, float gain)
         {
@@ -52,8 +54,35 @@ namespace DribbleToSchool.Audio
         public float wet = 0.3f;
         /// <summary>Extra width of the reverb (0 mono, 1 wide).</summary>
         public float width = 1f;
+        /// <summary>The master's warmth: a gentle two-pole low-pass at this frequency (0 = off).</summary>
+        public double tone;
+        /// <summary>Tape saturation (0 = clean): rounds off peaks and thickens the low end.</summary>
+        public float drive;
+        /// <summary>Tape wow: a slow wobble of pitch, in cents, cycling <see cref="wowCycles"/> times round the loop.</summary>
+        public float wowCents;
+        public int wowCycles = 8;
+        readonly float[] duckEnv;
 
-        public Mixdown(int length) { this.length = length; }
+        /// <summary>Note a kick drum at a time (seconds): tracks with <see cref="Track.duck"/> dip under it.</summary>
+        public void Duck(double seconds, float depth = 1f, double recover = 0.16)
+        {
+            int start = (int)(seconds * Synth.SampleRate);
+            int n = (int)(recover * 3 * Synth.SampleRate);
+            for (int i = 0; i < n; i++)
+            {
+                double t = i / (double)Synth.SampleRate;
+                float a = (float)(depth * Math.Min(1.0, t / 0.008) * Math.Exp(-t / recover));
+                if (t < 0.008) a = (float)(depth * (t / 0.008));
+                int j = ((start + i) % length + length) % length;
+                duckEnv[j] = Math.Max(duckEnv[j], a);
+            }
+        }
+
+        public Mixdown(int length)
+        {
+            this.length = length;
+            duckEnv = new float[length];
+        }
 
         public int Length { get { return length; } }
 
@@ -83,6 +112,7 @@ namespace DribbleToSchool.Audio
                 {
                     float v = b[i];
                     if (v == 0f) continue;
+                    if (t.duck > 0f) v *= 1f - t.duck * duckEnv[i];
                     left[i] += v * gl;
                     right[i] += v * gr;
                     send[i] += v * gs;
@@ -93,6 +123,21 @@ namespace DribbleToSchool.Audio
 
             HighPass(left, 28f);
             HighPass(right, 28f);
+            if (tone > 0)
+            {
+                LowPass(left, tone);
+                LowPass(right, tone);
+            }
+            if (drive > 0f)
+            {
+                Saturate(left, drive);
+                Saturate(right, drive);
+            }
+            if (wowCents > 0f)
+            {
+                left = Wow(left, wowCents, wowCycles, 0.0);
+                right = Wow(right, wowCents, wowCycles, 0.25);
+            }
             return Finish(left, right, targetRms, ceiling);
         }
 
@@ -151,6 +196,53 @@ namespace DribbleToSchool.Audio
                     prevOut = y;
                     if (pass == 1) buf[i] = y;
                 }
+        }
+
+        /// <summary>A gentle two-pole low-pass (Butterworth), run twice round the loop so it starts settled.</summary>
+        public static void LowPass(float[] buf, double hz)
+        {
+            var f = new Svf();
+            for (int pass = 0; pass < 2; pass++)
+                for (int i = 0; i < buf.Length; i++)
+                {
+                    float y = f.Process(buf[i], hz, 0.707);
+                    if (pass == 1) buf[i] = y;
+                }
+        }
+
+        /// <summary>Tape-like saturation: a soft, slightly uneven curve, level-matched so it warms without getting louder.</summary>
+        static void Saturate(float[] buf, float drive)
+        {
+            double peak = 1e-6;
+            for (int i = 0; i < buf.Length; i++) peak = Math.Max(peak, Math.Abs(buf[i]));
+            double k = (1.0 + drive * 3.0) / peak;
+            double norm = 1.0 / Math.Tanh(k * peak);
+            for (int i = 0; i < buf.Length; i++)
+            {
+                double x = buf[i] * k;
+                buf[i] = (float)(Math.Tanh(x + 0.08 * drive * x * x / (1 + x * x)) * norm * peak);
+            }
+        }
+
+        /// <summary>Tape wow: read the loop back with a slowly wavering delay (a whole number of cycles, so it stays seamless).</summary>
+        static float[] Wow(float[] buf, float cents, int cycles, double phase)
+        {
+            int n = buf.Length;
+            var outBuf = new float[n];
+            // A sine delay of depth D samples at f Hz bends pitch by 2*pi*f*D/sr; solve D for the cents asked.
+            double hz = cycles * Synth.SampleRate / (double)n;
+            double ratio = Math.Pow(2, cents / 1200.0) - 1;
+            double depth = ratio * Synth.SampleRate / (2 * Math.PI * hz);
+            for (int i = 0; i < n; i++)
+            {
+                double d = depth * (1 + Math.Sin(2 * Math.PI * (cycles * i / (double)n + phase))) + 1;
+                double pos = i - d;
+                int a = (int)Math.Floor(pos);
+                double frac = pos - a;
+                int ia = ((a % n) + n) % n, ib = (ia + 1) % n;
+                outBuf[i] = (float)(buf[ia] * (1 - frac) + buf[ib] * frac);
+            }
+            return outBuf;
         }
 
         // ---------- Reverb ----------

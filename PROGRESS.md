@@ -457,6 +457,14 @@ The game is now called **Kick Off** (product name, logo, credits, store text, en
 - **Tests:** `MusicLoopsForEverySoundscape`, `EveryRouteHasItsOwnMusicAndAmbience`, `AmbienceSitsUnderTheMusicAndNeverClips`.
 - **Listen and look in Unity:** the balance of music, ambience and effects on a phone's speaker and on headphones (`MusicGain`, `AmbienceGain`, `MusicGenerator.Loudness`, `AmbienceGenerator.BedLoudness`, each cue's `volume`); how long the first synthesis takes on a slow phone (about a second per loop on a desktop; the music starts when ready); the crossfades between stages in the Holiday Run; the new double jump's pose at play speed.
 
+## The music, chilled out
+
+**Not run in Unity.** Checked offline as before (the audio code under .NET 8, every loop rendered and measured; `AudioDirector` against stand-in Unity types).
+
+- The user found the loops harsh and asked for cool, chill music in the style of lo-fi / chillhop beats. `Audio/MusicGenerator` is now one chillhop arranger (`Chill`) with a `Style` per soundscape; all the music is original. Shared sound: rootless jazz voicings of seventh, ninth and thirteenth chords (the chord parser gained `maj9`, `m9`, `9`, `13`, `m7b5`); a Rhodes-style piano or a mellow picked guitar; a round sub or upright bass with walk-ups; a swung boom-bap kit (snare a hair late, ghost notes, dark hats); the chords ducking under each kick; a soft lead; vinyl; the drums dropping out for the last half bar.
+- Per place: menu (Rhodes, vibes, 80 bpm), Home Street (guitar and Rhodes, flute then vibes, 86), market (ii-V-I, upright bass, melodica, 90), beach (marimba off-beats, steel pan, kalimba, congas, side-stick, 84), underpass (minor ninths, half-time, big reverb, 76), building site (dorian, guitar and kalimba, busier kick, 88), park (harp, strings, flute, half-time, 78).
+- `Audio/Mixdown` gained a tape master: a two-pole low-pass (`tone`), saturation (`drive`), a seamless wow (`wowCents`, `wowCycles`), and side-chain ducking (`Duck`, `Track.duck`). `Audio/Instruments` is now the soft band only (Rhodes, pad, strings, vibes, kalimba, flute, melodica, a soft-picked string, marimba, steel pan, sub and upright bass, the dusty kit, vinyl); the square lead, accordion, mandolin, clap, tambourine, anvil and bright hats are gone. Energy above 3 kHz is 15 to 20 dB lower than before. `Loudness` is 0.14 (was 0.16).
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.
