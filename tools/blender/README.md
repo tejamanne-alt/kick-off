@@ -16,13 +16,15 @@ cp Adult.fbx ../../Assets/_Game/Art/Models/Adult.fbx
 cp face_adult.png ../../Assets/_Game/Art/Models/AdultAtlas.png
 blenv/bin/python meshy_boy.py -- /abs/boy_with_bicycle.fbx $PWD   # the playable teen boy, from a supplied textured model
     # (Boy.fbx/.blend/.json, BoyAtlas.png, and his bicycle: Bicycle.fbx, BicycleAtlas.png; see "The boy" below)
-blenv/bin/python meshy_teen.py -- /abs/backpack_boy.fbx $PWD   # Max, the backpack boy, from a supplied A-posed model
+blenv/bin/python meshy_teen.py -- /abs/backpack_boy.fbx $PWD --profile backpack_boy   # Max, from a supplied A-posed model
     # (BackpackBoy.fbx/.blend/.json, BackpackBoyAtlas.png, BackpackBoy_joints.png; see "The backpack boy" below)
+blenv/bin/python meshy_teen.py -- /abs/first_day.fbx $PWD --profile first_day   # Leo, from a supplied barefoot kid
+    # (PrimaryBoy2.fbx/.blend/.json, PrimaryBoy2Atlas.png; see "Leo" below; primary.py --boy2 would overwrite it)
 blenv/bin/python teen.py -- $PWD/Boy.fbx --boy     # (the earlier, scripted boy; it would overwrite the files above)
 blenv/bin/python teen.py -- $PWD/Girl.fbx --girl   # the playable teen girl
 blenv/bin/python primary.py -- $PWD/PrimaryBoy.fbx --boy      # the four primary-school kids (see below); also
 blenv/bin/python primary.py -- $PWD/PrimaryGirl.fbx --girl    # teen.py ... --primary-boy / --primary-girl /
-blenv/bin/python primary.py -- $PWD/PrimaryBoy2.fbx --boy2    # --primary-boy2 / --primary-girl2
+blenv/bin/python primary.py -- $PWD/PrimaryBoy2.fbx --boy2    # --primary-boy2 / --primary-girl2 (the earlier, scripted Leo)
 blenv/bin/python primary.py -- $PWD/PrimaryGirl2.fbx --girl2
 blenv/bin/python review_teen.py -- $PWD/Girl.blend $PWD/girl_sheet.png [--bg shot1.png,shot2.png,shot3.png]
     # review sheet with the game's toon shading: faces, poses, side, back, and the teen at in-game
@@ -32,6 +34,7 @@ blenv/bin/python review_poses.py -- $PWD/Boy.blend $PWD/boy_poses.png --jobs 3 -
     # the pose audit (see below): the teen in every pose the game uses, from the game's camera yaws
 cp Boy.fbx Boy.json BoyAtlas.png Bicycle.fbx BicycleAtlas.png Girl.fbx Girl.json GirlAtlas.png ../../Assets/_Game/Art/Models/
 cp BackpackBoy.fbx BackpackBoy.json BackpackBoyAtlas.png ../../Assets/_Game/Art/Models/
+cp PrimaryBoy2.fbx PrimaryBoy2.json PrimaryBoy2Atlas.png ../../Assets/_Game/Art/Models/   # (Leo, from meshy_teen.py)
 cp Primary*.fbx Primary*.json Primary*Atlas.png ../../Assets/_Game/Art/Models/
 blenv/bin/python portrait_teen.py -- $PWD/Boy.blend $PWD/PlayerBoy.png --yaw 28     # the menus' player cards
 blenv/bin/python portrait_teen.py -- $PWD/Girl.blend $PWD/PlayerGirl.png --yaw -28  # (they face each other)
@@ -147,40 +150,74 @@ It writes `debug_joints.png` (the joints over his vertices) next to its outputs.
 and `review_poses.py` as for the teens. 30,000 triangles; the Head joint at 0.846 of his height, so at the game's neck
 height of 1.5 he stands 1.77 m (`PlayerRoster`).
 
-### The backpack boy (`meshy_teen.py`)
+### The backpack boy and Leo (`meshy_teen.py`)
 
-Max, the third teen, comes from another textured, single-mesh model the user supplied (Meshy, about 300,000 triangles,
-one 2048 base-colour texture plus normal, roughness and metallic maps that are not used, no rig), this time standing
-alone in an A-pose: ginger hair, a light denim jacket open over a grey hoodie and a white T-shirt, dark navy jeans, white
-sneakers with black stripes, and a brown backpack on both shoulders. `meshy_teen.py` makes `BackpackBoy.fbx` in the
-teens' contract, reusing `meshy_boy.py`'s helpers (mesh queries, cross-sections, the painting of the atlas):
-- tidy: decimated to 30,000 triangles first, scaled to the teen boy's 2.14 with his feet on z = 0, his hips over the
-  origin. The model already faces -y.
-- joints, from the mesh: the crotch is the highest cross-section (the arms left out) of two outlines of a size side by
-  side (the jacket's hem and the backpack's bottom are one in front of the other, so they don't count); each leg's
-  centreline below it, the knee half way to the ankle; each arm is a straight line in the A-pose, fitted through the
-  arm's cross-sections below the armpit, the shoulder where it meets 0.81 of his height (kept inside the torso), the
-  wrist a hand's length (0.2) up from the fingertips, the elbow half way; the trunk 12 cm behind his front (the backpack
-  makes his back no guide); the Head joint 2 cm over the neck's narrowest cross-section (0.878 of his height: his head
-  is small for his height, so at 1.75 m the game puts it 1.536 m up).
+Two more kids come from textured, single-mesh models the user supplied (Meshy, about 300,000 triangles, one 2048
+base-colour texture plus normal, roughness and metallic maps that are not used, no rig). `meshy_teen.py` makes each in
+the game's contract (one skinned mesh `Kid` under `KidRig`, one material of vertex colours times the atlas, the outfit part
+in UV 2, the game's bones, Nose and Bag markers, `<Name>.json`), reusing `meshy_boy.py`'s helpers (mesh queries,
+cross-sections, the painting of the atlas). What differs between the models is a profile (`PROFILES`): the backpack's
+colour, the outfit parts' colour rules, whether he needs shoes, how tall he stands, how much the backpack swings and the
+colours that are never an arm's.
+- **Max** (`--profile backpack_boy`, `BackpackBoy`): a teen in an A-pose; ginger hair, a light denim jacket open over a
+  grey hoodie and a white T-shirt, dark navy jeans, white sneakers with black stripes, a brown backpack on both shoulders.
+  Parts: the jacket 1, the jeans (and their waistband where the jacket hangs open) 2, the hair 3. 1.75 m, Head bone at
+  0.878 of it (neck height 1.537).
+- **Leo** (`--profile first_day`, `PrimaryBoy2`, in place of the scripted boy 2): a primary-school boy standing with his
+  arms down, his forearms and hands resting on his trouser pockets, and barefoot; short black hair, a white sweatshirt
+  with purple raglan sleeves and a "0" on the front, khaki cargo joggers with a red drawstring, a purple backpack. Parts:
+  the sweatshirt's white 1 (its purple stays), the joggers 2, the hair 3. 1.32 m, Head bone at 0.836 of it (neck height
+  1.104). His sneakers are made by the script (below). The backpack takes half the game's swing (it is fused to much of
+  his back).
+
+The steps:
+- tidy: decimated to 30,000 triangles first, scaled to the teen boy's 2.14 (the game scales by the neck anyway) with the
+  feet on z = 0, the head centred over the origin (Leo stands unevenly). The models already face -y.
+- joints, from the mesh: each arm from its own cross-sections, going down from the shoulders: the outermost small outline
+  on that side, beside the body (not behind it: the backpack), from where it parts from the torso down to the hand,
+  passing over short gaps where it touches the body; a straight line is fitted through them, the fingertips just below
+  the lowest. The crotch is the highest cross-section (the arms left out) of two outlines of a size side by side (a
+  jacket's hem and a backpack's bottom are one in front of the other, so they don't count); each leg's centreline below
+  it, the knee half way to the ankle. The neck is the narrowest cross-section of the middle (the Head joint 2 cm over
+  it), the shoulders 0.065 of the height below it on the arm's line (kept inside the torso), the wrist 0.2 up from the
+  fingertips and the elbow half way down, both on the arm's line; the spine and the chest at 0.41 and 0.68 of the way
+  from the crotch to the shoulders, 12 cm behind the front (a backpack makes the back no guide).
+- separate: legs joined below the crotch would be cut apart (neither model's are). Arms touching the body (Leo's) are
+  cut free: below the armpit a point is the arm's if it is nearer the arm's line than the body's axis (the spine, or a
+  leg), each distance in that part's own thickness (the arm's from its cross-sections, the torso's from the shoulders'
+  width, a leg's from its cross-sections), leaving out the colours that are never an arm's (his joggers); the arm is
+  what of that joins the fingertips. The faces between go and each hole is closed (`holes_fill`, then a fan for what
+  is left), in the texture's colour at its rim.
 - weights by nearness to the bones (an exponential falloff of 2.2 cm past the nearest bone, smoothed, four bones a
-  vertex), made in the A-pose where the arms hang clear of the body: bone heat finds no solution on this scan (its
-  jacket, hood and backpack are layered, open shells; about 570 non-manifold edges). Below the crotch each leg takes only
-  its own bones and the hips'; nothing else takes a leg's bones; only the head above the jaw takes the Head bone.
-- re-pose: the arms hang as the teen boy's do, the legs are turned in 3 to 4 degrees so the ankles stand 3 cm outside the
-  hips (the feet turned back flat); baked in and made the rest pose, keeping the A-pose weights.
-- the backpack: the biggest brown piece more than a few centimetres behind his back follows a Bag bone (on the Chest,
-  its head at the pack's top, so the shop's pennant clips there), fading into his back over 6 cm and a little
-  smoothing, so the game's swing bends the pack rather than tearing it off; the straps over his front stay on the chest.
-- paint: the jacket (light denim, above the hips) is part 1, the jeans (the dark navy below them, and the waistband
-  where the jacket hangs open) 2, the hair (the biggest orange piece of the head) 3; the face, hands, hoodie, T-shirt,
-  backpack and shoes 0. No accent part (the shop's tie colour has nothing to recolour on him). As for the boy, those
-  parts' texels in the atlas are divided by their colour, which their vertex colours and `BackpackBoy.json` carry.
+  vertex): bone heat finds no solution on these scans (layered, open shells; hundreds of non-manifold edges). Below the
+  crotch each leg takes only its own bones and the hips'; nothing else takes a leg's bones; only the head above the jaw
+  takes the Head bone; below the armpits each arm (a piece of its own once cut free) alone takes its arm's bones, and
+  only those and the chest's.
+- re-pose: the arms hang as the teen boy's do, the legs are turned in under the hips so the ankles stand 3 cm outside
+  them (the feet turned back flat); baked in and made the rest pose, keeping the weights.
+- the backpack: the biggest piece of the profile's colour more than a few centimetres behind the back (the arms' sleeves
+  left out) follows a Bag bone (on the Chest, its head at the pack's top, so the shop's pennant clips there), fading
+  into the back over 6 cm and a little smoothing, so the game's swing bends the pack rather than tearing it off; the
+  straps over the front stay on the chest.
+- paint: by the profile's colour rules (above); no accent part. As for the boy, those parts' texels in the atlas are
+  divided by their colour, which their vertex colours and the json carry.
+- shoes (Leo): each foot's vertices below the collar (3.5 cm over the ankle joint) give a sneaker: a loft from heel to toe
+  of rounded-box cross-sections as wide as the foot there below the ankle joint (a trouser cuff hanging lower would
+  make it bulge) and 1.6 cm out from it, its top the foot's height smoothed along the foot (never below the foot) and
+  rising in a tongue from the toe box to the collar, each section grown till every point of the foot near it is inside
+  (spread along the shoe, so neighbours never fold), then each side and the top filled so they have no dip along the
+  shoe (the foot's triangles would cut through one: a slit of skin showed in the kick); the ends rounded and closed, a
+  flat sole 3 cm thick a little wider than the upper (everything is raised by it). Coloured by vertex colour over a
+  white patch painted in the atlas's largest unused area: a white upper, a purple band above the sole and a purple heel
+  tab (his sleeves' and backpack's purple), an off-white sole with a grey tread; outfit part 0. The shoe and the leg in
+  it are skinned alike (`shin_share`): the foot bone up to 1.5 cm over the ankle joint, the shin's share rising to half
+  at the collar and to all of it 5 cm above (the game swings the shin, not the foot, so the shoe moves with the leg).
 
-It writes `BackpackBoy_joints.png` (the joints over his vertices, before the re-pose). Checked with `review_poses.py`
-(every game pose from the game's yaws: the backpack stays on his back on the run, the tuck and the slide) and his card
-with `portrait_teen.py --yaw 28`. Other A-posed Meshy teens should go through with `--name`, though the colour rules in
-`face_parts` and `backpack` are his.
+It writes `<Name>_joints.png` (the joints over the vertices, before the re-pose). Both were checked with
+`review_poses.py` (every game pose from the game's yaws; Leo's feet close up with `--focus 0,0.3`) and their cards with
+`portrait_teen.py --yaw 28` (Leo's `--span-heads 2.3` like the other primary kids). Known limits: with his arms raised
+high (the celebration) Leo's sweatshirt creases sharply at the shoulders; the hole fills where his arms were cut free
+can show as a small pale patch on the trousers close up.
 
 ### Pose audit
 
@@ -228,7 +265,7 @@ a game mode can make them vanish by collapsing their vertices.
 |---|---|---|---|
 | `PrimaryBoy` | boy 1 | fair skin, round dark eyes, short black hair with a broad fringe and a small tuft; a polo with a flat collar, navy shorts, long white crew socks, white sneakers | white / navy / yellow neckerchief / blue / black |
 | `PrimaryGirl` | girl 1 | fair skin with freckles, big warm-brown eyes, a centre-parted fringe and two bunches at the sides with red ties; a blouse with a round navy collar, a navy pleated skirt, white knee socks, brown school shoes | white / navy / red bow / red / dark brown |
-| `PrimaryBoy2` | boy 2 | tanned skin, tousled chestnut spikes, round glasses, a wide grin; a polo, grey shorts, white crew socks, grey sneakers | white / grey / red neckerchief / green / chestnut |
+| `PrimaryBoy2` | boy 2 (Leo) | now made from a supplied model by `meshy_teen.py` (see "Leo" above): short black hair, brown skin; a white sweatshirt with purple raglan sleeves and a "0" on the front, khaki cargo joggers with a red drawstring, white sneakers with purple trim. The scripted boy 2 below (tanned, chestnut spikes, round glasses; a polo and grey shorts) is what `primary.py --boy2` still builds | white sweatshirt / khaki / none / purple / black |
 | `PrimaryGirl2` | girl 2 | medium-brown skin with a beauty mark, hazel eyes, a black bob with a straight fringe and a yellow hairband; a blouse with a round white collar under a grey pinafore (bib and straps), white socks, black school shoes | white / grey / yellow bow / purple / black |
 
 The game scales every model so that its Head bone sits at the neck height it is given (`LevelBuildKit.BuildModelCharacter`;
@@ -240,10 +277,10 @@ prints the neck height that gives it:
 |---|---|---|---|
 | `PrimaryBoy` | 1.30 m | 1.065 | 17,173 |
 | `PrimaryGirl` | 1.27 m | 1.038 | 16,918 |
-| `PrimaryBoy2` | 1.34 m | 1.082 | 18,559 |
+| `PrimaryBoy2` (Leo, `meshy_teen.py`) | 1.32 m | 1.104 | 33,699 |
 | `PrimaryGirl2` | 1.29 m | 1.051 | 17,099 |
 
-(The models are 1.685, 1.646, 1.784 and 1.694 m tall as exported, their Head bones at 1.38, 1.345, 1.44 and 1.38 m; neck
+(The scripted models are 1.685, 1.646, 1.784 and 1.694 m tall as exported, their Head bones at 1.38, 1.345, 1.44 and 1.38 m; neck
 height = Head bone height x standing height / model height. A single neck height of 1.05 would put all four at 1.28 to
 1.30 m, indistinguishable by height.)
 
