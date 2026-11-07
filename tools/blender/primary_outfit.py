@@ -165,7 +165,7 @@ def fields(V):
             F.lower = skirt_zone
 
     # --- socks
-    F.sock_top = 0.085 + (kn_z - 0.085) * (0.90 if V.sock_high else 0.66)
+    F.sock_top = 0.085 + (kn_z - 0.085) * (0.90 if V.sock_high else 0.30 if getattr(V, 'ankle_socks', False) else 0.66)
     def sock(n):
         sn = BF.shin[n]; t = F.sock_top
         cuff = 0.024
@@ -335,7 +335,9 @@ def _clothes(F, body, V):
     def inside(p, n):
         return any(n @ f.dir > 0.6 and (p - f.end) @ f.dir > -0.006 for f in F.sleeves)
     parts.append(Part(sh, TO._two_tone(F.top, top, shade(top, 0.72), inside, V), 1, TO.bind_loose_shirt(body, V, keep=0.0 if girl else 0.5)))
-    if girl:
+    if getattr(V, 'tee', False):
+        pass                                        # (a plain T-shirt: a round neck, no collar)
+    elif girl:
         # a rounded collar: the skirt's colour (navy), or white over a pinafore
         pina = V.garment == 'pinafore'
         parts.append(Part(TO._shirt_collar(F, V, 0.95, 26, 'round', 0.0016), shade(top, 0.97) if pina else leg, 1 if pina else 2, TO.bind_loose_shirt(body, V, keep=0.0)))
@@ -524,6 +526,7 @@ def _bow(F, V, shirt):
 
 
 def _accent(F, V, shirt):
+    if V.accessory == 'none': return []
     return _neckerchief(F, V, shirt) if V.accessory == 'neckerchief' else _bow(F, V, shirt)
 
 

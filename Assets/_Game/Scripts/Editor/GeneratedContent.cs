@@ -22,7 +22,7 @@ namespace DribbleToSchool.EditorTools
     public static class GeneratedContent
     {
         /// <summary>Bump when layouts or the scene rig change so scenes regenerate.</summary>
-        public const int Version = 83;   // 83: Mia's straps stay on her shoulders; smoother shoulders
+        public const int Version = 84;   // 84: Mia rebuilt in the game's anime style (primary.py), dressed as in her photos
 
         const string ScenesDir = LevelBuildKit.Root + "/Scenes";
         const string LevelsDir = LevelBuildKit.Root + "/Levels";

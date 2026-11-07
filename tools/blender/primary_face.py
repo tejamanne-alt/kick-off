@@ -49,6 +49,14 @@ def _spec(face):
                     blush=((-0.080, 1.351, 0.0230, 0.0120), (0.080, 1.351, 0.0230, 0.0120), (214, 112, 100), 0.34),
                     mouth='smile', mouth_z=1.339, mouth_col=(138, 66, 58), mouth_k=1.15, mouth_w=1.0,
                     nose_z=1.369, nose_len=0.012, nose_bend=0.0006, nose_a=0.42)
+    if face == 'mia':                               # dark brown eyes, a small smile; no freckles, no mark
+        return dict(girl_eye, eye_x=0.063, eye_z=1.396, hw=0.0345,
+                    iris_top=(30, 18, 12), iris_mid=(70, 42, 26), iris_bot=(112, 72, 44), iris_glow=(132, 86, 52),
+                    brow=((-0.0235, 0.0445), (-0.008, 0.0510), (0.014, 0.0535), (0.0315, 0.0440)),
+                    brow_w=((0.0, 0.0046), (0.33, 0.0042), (0.66, 0.0027), (1.0, 0.0003)), brow_col=(30, 20, 18),
+                    blush=((-0.080, 1.350, 0.0230, 0.0120), (0.080, 1.350, 0.0230, 0.0120), (200, 104, 92), 0.30),
+                    mouth='smile', mouth_z=1.339, mouth_col=(132, 62, 56), mouth_k=1.15, mouth_w=1.0,
+                    nose_z=1.368, nose_len=0.012, nose_bend=0.0006, nose_a=0.42)
     if face == 'boy2':
         return dict(boy_eye, eye_x=0.062, eye_z=1.397, hw=0.0300,
                     iris_top=(20, 14, 12), iris_mid=(46, 30, 22), iris_bot=(80, 54, 36), iris_glow=(96, 64, 40),
