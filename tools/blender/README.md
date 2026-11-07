@@ -161,7 +161,10 @@ height of 1.5 he stands 1.77 m (`PlayerRoster`).
 
 ### The backpack boy and the primary-school kids (`meshy_teen.py`)
 
-Five kids come from textured, single-mesh models the user supplied (Meshy, about 300,000 triangles, one 2048
+**In the game now: Max only.** The four supplied primary-school kids below are set aside: the game uses the scripted
+primary kids (`primary.py`) again, because these scans' arms, fused to their bodies, smear as they swing. Rebuilding
+one with its command below and copying its files over the scripted kid's (and its neck height into `PlayerRoster`) puts
+it back. Five kids come from textured, single-mesh models the user supplied (Meshy, about 300,000 triangles, one 2048
 base-colour texture plus normal, roughness and metallic maps that are not used, no rig). `meshy_teen.py` makes each in
 the game's contract (one skinned mesh `Kid` under `KidRig`, one material of vertex colours times the atlas, the outfit part
 in UV 2, the game's bones, Nose and Bag markers, `<Name>.json`), reusing `meshy_boy.py`'s helpers (mesh queries,
@@ -202,7 +205,16 @@ colours that are never an arm's.
   runs straight from it to the hand (`hand_only`); the sleeve is split from the shirt up to the armpit along the seam
   (faces kept, the edges between the two sides split, `bmesh.ops.split_edges`, so nothing is missing at rest; each
   side's opening closed in its rim's colour), the fingertips fused to the pockets go with the hands, loose crumbs are
-  dropped, and only each arm's own piece takes its bones (the chest's pull ends at the elbow).
+  dropped, and only each arm's own piece takes its bones (the chest's pull ends at the elbow). Leo and Zoe, whose
+  forearms rest against their pockets, get the same split (`'split': True`): cutting a strip out between arm and body
+  left holes that showed dark shards of the inside as the arms swung.
+
+Why the scanned kids are not as clean in motion as Max: Max was generated in an A-pose, his arms clear of his body, so
+nothing has to be cut apart. Leo, Zoe and Kai stand with their arms against their bodies, and Meshy fuses them: the
+underside of the sleeve and the side of the shirt under it were never made, so the split closes them with flat
+patches, and loose jackets and shirts smear as the arms lift. Mia, generated in an A-pose, is the cleanest of the four.
+The way to make a kid as clean as Max is to generate the model in an A-pose (Meshy's pose option), arms a hand's width
+from the body.
 
 The steps:
 - tidy: decimated to 30,000 triangles first, scaled to the teen boy's 2.14 (the game scales by the neck anyway) with the
@@ -230,7 +242,9 @@ The steps:
 - weights by nearness to the bones (an exponential falloff of 2.2 cm past the nearest bone, smoothed, four bones a
   vertex): bone heat finds no solution on these scans (layered, open shells; hundreds of non-manifold edges). Below the
   crotch each leg takes only its own bones and the hips'; nothing else takes a leg's bones; only the head above the jaw
-  takes the Head bone; below the armpits each arm (a piece of its own once cut free) alone takes its arm's bones, and
+  takes the Head bone, and everything within the head's radius above 2 cm under the Head joint takes it alone (rigid),
+  fading to the neck over 6 cm below (`HEAD_BLEND`): by nearness the jaw and cheeks took half their weight from the
+  Neck bone and the face folded when the menu kid's head turned to follow the ball; below the armpits each arm (a piece of its own once cut free) alone takes its arm's bones, and
   only those and the chest's.
 - re-pose: the arms hang as the teen boy's do, the legs are turned in under the hips so the ankles stand 3 cm outside
   them (the feet turned back flat); baked in and made the rest pose, keeping the weights.
@@ -324,8 +338,8 @@ prints the neck height that gives it:
 |---|---|---|---|
 | `PrimaryBoy` (Kai, `meshy_teen.py`) | 1.30 m | 1.092 | 30,249 |
 | `PrimaryGirl` (Mia, `meshy_teen.py`) | 1.27 m | 1.028 | 29,925 |
-| `PrimaryBoy2` (Leo, `meshy_teen.py`) | 1.32 m | 1.104 | 33,580 |
-| `PrimaryGirl2` (Zoe, `meshy_teen.py`) | 1.29 m | 1.070 | 29,823 |
+| `PrimaryBoy2` (Leo, `meshy_teen.py`) | 1.32 m | 1.104 | 34,191 |
+| `PrimaryGirl2` (Zoe, `meshy_teen.py`) | 1.29 m | 1.070 | 30,168 |
 
 (The scripted models are 1.685, 1.646, 1.784 and 1.694 m tall as exported, their Head bones at 1.38, 1.345, 1.44 and 1.38 m; neck
 height = Head bone height x standing height / model height. A single neck height of 1.05 would put all four at 1.28 to

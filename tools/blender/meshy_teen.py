@@ -354,9 +354,9 @@ def arms_apart(o, px, J, info):
         if info.get('hand_only' + n): lab[tips & (lab == 0)] = k
         log('arms: the %s arm, %d vertices below the armpit' % (n, (lab == k).sum()))
     bm = bmesh.new(); bm.from_mesh(me); bm.verts.ensure_lookup_table(); bm.faces.ensure_lookup_table()
-    if info.get('hand_onlyL') or info.get('hand_onlyR'):
-        # A sleeve fused to the shirt all the way down: cutting a strip out between them would leave holes the length of
-        # the arm. The mesh is split along the seam instead: each face goes with the side most of its corners are on,
+    if info.get('hand_onlyL') or info.get('hand_onlyR') or PROFILE.get('split'):
+        # An arm fused to the body (all the way down, or at the pockets, 'split'): cutting a strip out between them
+        # leaves holes that show dark shards of the inside as the arm swings. The mesh is split along the seam instead: each face goes with the side most of its corners are on,
         # and the edges between an arm's faces and the body's are split, so nothing is missing while he stands.
         fs = {}
         for f in bm.faces:
@@ -396,6 +396,7 @@ def arms_apart(o, px, J, info):
 
 
 # ------------------------------------------------------------------------------------------------ weights
+HEAD_BLEND = 0.06         # metres of neck below the jaw over which the head's weight fades to the neck's
 FALLOFF = 0.022          # metres: how fast a bone's pull fades past the nearest bone's distance
 
 
@@ -472,8 +473,21 @@ def weigh_near(o, rig, info):
     for _ in range(3):
         acc = np.zeros_like(W); np.add.at(acc, E[:, 0], W[E[:, 1]]); np.add.at(acc, E[:, 1], W[E[:, 0]])
         W = np.where(allow, 0.5 * W + 0.5 * acc / np.maximum(deg, 1)[:, None], 0)
+    # The head is rigid: the face, the jaw and the hair above the jaw follow the Head bone alone, and the blend to the
+    # neck happens below the jaw (HEAD_BLEND), on the neck itself. By nearness the jaw and the cheeks, as close to the
+    # Neck bone's top as to the Head bone, took half their weight from the neck: when the menu kid's head turns to watch
+    # the ball, the lower face stayed behind and the face folded.
+    hj = np.array(B['Head'].head_local)
+    ring = V[np.abs(V[:, 2] - (hj[2] + 0.08)) < 0.01]
+    rh = np.percentile(np.hypot(ring[:, 0] - hj[0], ring[:, 1] - hj[1]), 95) + 0.03     # the head's radius, and a bit
+    inhead = np.hypot(V[:, 0] - hj[0], V[:, 1] - hj[1]) < rh
+    t = np.clip((V[:, 2] - (hj[2] - HEAD_BLEND - 0.02)) / HEAD_BLEND, 0, 1) * inhead
+    t = t * t * (3 - 2 * t)
+    ih = ix['Head']; W = W * (1 - t)[:, None]; W[:, ih] += t
     W[W < np.sort(W, 1)[:, -4][:, None]] = 0
     W /= np.maximum(W.sum(1, keepdims=True), 1e-9)
+    log('weights: the head rigid above %.3f (%d vertices wholly the head\'s), blending over %.2f below' % (
+        hj[2] - 0.02, (t > 0.999).sum(), HEAD_BLEND))
     bind(o, rig); mb.set_weights(o, W, names)
     log('weights: by nearness, %d vertices, %d bones; legs %d vertices' % (len(V), len(names), legs.sum()))
 
@@ -957,15 +971,17 @@ def finish(o, rig, img, px):
 # 'shape': no colour of its own, found by its shape), its outfit parts, whether it needs shoes, how tall the kid stands
 # in the game (metres: PlayerRoster); optionally how much
 # of the game's swing the backpack takes ('bag'), the colours that are never an arm's ('not_arm', for arms_apart) and
-# whether the pack's colour is judged per face ('face_colours': a texture cut into many small islands).
+# whether the pack's colour is judged per face ('face_colours': a texture cut into many small islands); 'split' parts an
+# arm from the body along the seam (arms_apart) instead of cutting a strip out between them.
 PROFILES = {
     'backpack_boy': {'pack': (15, 45, 0.35, 0.18, 0.75), 'parts': parts_backpack_boy, 'shoes': False, 'stands': 1.75},
     'first_day': {'pack': (245, 300, 0.25, 0.12, 0.9), 'parts': parts_first_day, 'shoes': True, 'stands': 1.32,
-                  'bag': 0.5, 'not_arm': khaki},
+                  'bag': 0.5, 'not_arm': khaki, 'split': True},
     'plaid': {'pack': (0, 360, -1, 0.28, 0.72, 0.13), 'parts': parts_plaid, 'shoes': False, 'stands': 1.30, 'bag': 0.5,
               'not_arm': light_jeans, 'face_colours': True},
     'explorer': {'pack': 'shape', 'parts': parts_explorer, 'shoes': False, 'stands': 1.27, 'bag': 0.5, 'not_arm': red_shorts},
-    'unicorn': {'pack': 'shape', 'parts': parts_unicorn, 'shoes': False, 'stands': 1.29, 'bag': 0.5, 'not_arm': terracotta},
+    'unicorn': {'pack': 'shape', 'parts': parts_unicorn, 'shoes': False, 'stands': 1.29, 'bag': 0.5, 'not_arm': terracotta,
+                'split': True},
 }
 PROFILE = PROFILES[PROFILE_NAME]
 

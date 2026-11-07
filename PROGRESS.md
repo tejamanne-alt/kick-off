@@ -623,6 +623,21 @@ The user found the first Coast models plain next to their reference shots (weath
 - **Shared changes** that all five supplied models now get: the hole filling after an arm cut never bridges an arm to the body (it did on Kai), and an arm's own piece takes the chest's pull only above the elbow. Leo, Zoe, Mia and Max were rebuilt with it (Max unchanged in triangles; the others a few dozen fewer) and spot-checked in the run, kick, slide and celebration; their cards are unchanged.
 - **Checked**: every Kai pose (`review/kai/poses.jpg`), his outfit parts tinted (`outfit_parts.jpg`), close-ups and in-game size (`sheet.jpg`) and his card. Known limits: flat single-colour patches on his shirt's sides where the sleeves were split, and his plaid stretches at the shoulders as his arms swing. Generated content v77. Not run in Unity.
 
+## Leo and Zoe: arms split from the body instead of cut (generated content v78)
+
+- Compared side by side with Max in the same poses (`review/primary_vs_max.jpg`), the primary kids broke up where their arms had been cut free of their bodies: dark shards of the inside showed through the cut's holes as the arms swung (Leo's shirt and sleeve, Zoe's wrist). Leo and Zoe now get Kai's seam split (`'split': True` in `meshy_teen.py`): no faces are cut out, and each side's opening is closed. The dark shards are gone; Zoe's near sleeve stays whole.
+- Tried and dropped: bone-heat weights on a watertight voxel copy (Blender's solver fails on it too) and a much wider weight blend at the shoulders (no visible change).
+- What remains: the scans fuse arms that hang against the body, so the hidden sleeve undersides are flat patches, and loose jackets and shirts smear as the arms lift. Generating the models in an A-pose (as Max and Mia were) is what makes them clean. Generated content v78. Not run in Unity.
+
+## Rigid heads: the scanned kids' faces no longer fold (generated content v79)
+
+- On the launch screen the kid's head tilts to follow the ball; on all five supplied kids (Max too) about a quarter of the face was weighted partly to the Neck bone (by nearness the jaw and cheeks were as close to it as to the Head bone), so the lower face lagged and folded. `meshy_teen.py` now makes the head rigid: everything within the head's radius above the jaw follows the Head bone alone, fading to the neck over 6 cm below it. Measured: front-of-head vertices with less than 0.95 Head weight went from 18-29 % to 0 on every kid. Before and after in the menu's balance pose and the tuck: `review/faces_head_tilt_before_after.png`. Generated content v79. Not run in Unity.
+
+## The original primary-school kids are back (generated content v80)
+
+- The four primary-school kids made from supplied models (Kai, Mia, Leo, Zoe) are set aside: in the game their sleeves and jackets smeared as their arms swung (Meshy fuses arms that hang against the body), short of Max's quality. The scripted anime kids (`primary.py`) are back in `Art/Models` and `Resources/UI`, with their old neck heights in `PlayerRoster`. The supplied versions can be rebuilt any time with `meshy_teen.py --profile plaid / explorer / first_day / unicorn`; the way to make them as clean as Max is to generate them in an A-pose.
+- Max keeps the rigid-head fix (his face no longer folds on the menu). Generated content v80. Not run in Unity.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.
