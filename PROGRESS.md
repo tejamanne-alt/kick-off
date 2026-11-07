@@ -646,6 +646,10 @@ The user found the first Coast models plain next to their reference shots (weath
 
 - The user's reference photos of Mia show a light denim backpack with a bow on beige straps; the model had made it all beige. `meshy_teen.py` (`'pack_tint'`, `tint_pack`) recolours the pack's beige in the atlas on the faces that follow the Bag bone, keeping the shading; the straps stay beige. The rest already matched the photos (white T-shirt with a red line, red shorts with white piping, white socks, pink shoes, leopard headband). The seam split was tried on her and dropped: it tore her short sleeves; the cut she had stays. Checked in the run, kick and celebration (`review/mia/denim_backpack.jpg`) and her card. Not run in Unity.
 
+## Mia: straps stay on the shoulders, smoother shoulders (generated content v83)
+
+- The backpack's straps slid off Mia's shoulders as her arms swung (the shoulders' skin went with the arm by nearness). `meshy_teen.py`'s `'shoulders'` blend now moves the short sleeve with the arm over a smooth, wide shoulder blend; the straps stay on (`review/mia/straps.jpg`). Every action audited (`review/mia/all_actions.jpg`): idle, balance, run, jump rise, tucks, kicks, slides, landing and keepy-ups are clean; poses with the arms high (jump fall, launch, open, celebration) still crease the T-shirt at the shoulders and show small dark patches under the arms where the arm cut's holes are closed. Several other settings were tried (sleeve radius, blend length, no arm cut, a cut kept below the hem) and were worse. Generated content v83. Not run in Unity.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

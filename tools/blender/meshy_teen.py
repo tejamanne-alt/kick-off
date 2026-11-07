@@ -314,6 +314,36 @@ def cut_apart(o, bm, lab, band, px):
             except ValueError: continue
             for fl in f.loops: fl[uv].uv = src
             made += 1
+    # what is still open (loops the bridges' removal left): each loop closed on its own if all of it is one side's
+    for _ in range(3):
+        loose = [e for e in bm.edges if e.is_boundary and e.verts[0] in rim and e.verts[1] in rim]
+        if not loose: break
+        up2 = {e: e for e in loose}
+        def f2(e):
+            while up2[e] is not e: up2[e] = up2[up2[e]]; e = up2[e]
+            return e
+        at2 = {}
+        for e in loose:
+            for x in e.verts:
+                if x in at2: up2[f2(e)] = f2(at2[x])
+                else: at2[x] = e
+        loops = {}
+        for e in loose: loops.setdefault(f2(e), []).append(e)
+        for g in loops.values():
+            for sd in {side.get(x, -1) for e in g for x in e.verts} - {-1}:
+                ge = [e for e in g if side.get(e.verts[0], -1) == sd and side.get(e.verts[1], -1) == sd]
+                if len(ge) < 2: continue
+                ring = list({x for e in ge for x in e.verts})
+                c = bm.verts.new(sum((x.co for x in ring), Vector()) / len(ring)); side[c] = sd
+                cand = [l[uv].uv.copy() for x in ring for l in x.link_loops]   # (the rim's most typical colour)
+                cc = mb.sample(px, np.array([tuple(u) for u in cand]))
+                src = cand[int(np.argmin(np.abs(cc - np.median(cc, 0)).sum(1)))]
+                for e in ge:
+                    l = e.link_loops[0]; a2, b2 = l.vert, l.link_loop_next.vert
+                    try: f = bm.faces.new((c, b2, a2))
+                    except ValueError: continue
+                    for fl in f.loops: fl[uv].uv = src
+                    made += 1
     bad = [x for x in bm.verts if not x.link_faces]; bmesh.ops.delete(bm, geom=bad, context='VERTS')
     left = sum(1 for e in bm.edges if e.is_boundary) - open0
     bm.to_mesh(me); bm.free(); me.update()
@@ -338,7 +368,7 @@ def arms_apart(o, px, J, info):
     not_arm = PROFILE['not_arm'](vertex_colours(o, px)) if PROFILE.get('not_arm') else np.zeros(len(V), bool)
     for n, k in (('L', 1), ('R', 2)):
         d = np.min([seg_dist(V, J[a + n], J[b + n])[0] for a, b in (('shoulder', 'elbow'), ('elbow', 'wrist'), ('wrist', 'tip'))], 0)
-        arm = (d / info['armr' + n] < body) & (V[:, 2] < info['armtop' + n] - 0.02) & ~not_arm
+        arm = (d / info['armr' + n] < body) & (V[:, 2] < info['armtop' + n] - PROFILE.get('hem', 0.02)) & ~not_arm
         if info.get('hand_only' + n):
             # (a hand in a pocket: its fingers go on below its last outline, into the pocket; they go with the hand)
             u = (J['tip' + n] - J['wrist' + n]) / np.linalg.norm(J['tip' + n] - J['wrist' + n])
@@ -396,6 +426,8 @@ def arms_apart(o, px, J, info):
 
 
 # ------------------------------------------------------------------------------------------------ weights
+SH_R = 2.0
+SH_IN, SH_OUT = 0.35, 0.25  # the shoulder's blend, along the upper arm's bone (fractions of its length)
 HEAD_BLEND = 0.06         # metres of neck below the jaw over which the head's weight fades to the neck's
 FALLOFF = 0.022          # metres: how fast a bone's pull fades past the nearest bone's distance
 
@@ -473,6 +505,28 @@ def weigh_near(o, rig, info):
     for _ in range(3):
         acc = np.zeros_like(W); np.add.at(acc, E[:, 0], W[E[:, 1]]); np.add.at(acc, E[:, 1], W[E[:, 0]])
         W = np.where(allow, 0.5 * W + 0.5 * acc / np.maximum(deg, 1)[:, None], 0)
+    if PROFILE.get('shoulders'):
+        # The sleeve follows the arm, and the shoulder bends over a wide, smooth blend: by nearness the top of a short
+        # sleeve stayed with the chest while its underside lifted with the arm, so every pose with the arms raised
+        # (the jump's fall, the launch, the open, the celebration) sheared the shirt into shards. Round each upper arm,
+        # within the sleeve's reach of its bone, the upper arm's share rises smoothly along the bone from well inside
+        # the shoulder joint (SH_IN of the bone's length) to just past it (SH_OUT); the chest takes the rest.
+        for n in 'LR':
+            S = np.array(B['UpperArm.' + n].head_local); Ee = np.array(B['UpperArm.' + n].tail_local)
+            L = np.linalg.norm(Ee - S); u = (Ee - S) / L
+            t = (V - S) @ u / L; d = np.linalg.norm((V - S) - np.outer(t * L, u), axis=1)
+            R = SH_R * info['armr' + n]
+            a = np.clip((t + SH_IN) / (SH_IN + SH_OUT), 0, 1); a = a * a * (3 - 2 * a)
+            rad = np.clip((R + 0.03 - d) / 0.03, 0, 1) * (t < 1.0)
+            target = a * rad
+            iu, ic = ix['UpperArm.' + n], ix['Chest']
+            rest = W.sum(1) - W[:, iu]
+            raise_ = target > W[:, iu]
+            k = np.where(raise_, target, W[:, iu])
+            # (the others shrink to make room; what they lose the chest gives up first)
+            scale = np.where(rest > 1e-9, (1 - k) / np.maximum(rest, 1e-9), 0)
+            W[raise_] = W[raise_] * scale[raise_][:, None]; W[raise_, iu] = k[raise_]
+        log('weights: the sleeves follow the arms, the shoulders blend from %.2f inside the joint' % SH_IN)
     # The head is rigid: the face, the jaw and the hair above the jaw follow the Head bone alone, and the blend to the
     # neck happens below the jaw (HEAD_BLEND), on the neck itself. By nearness the jaw and the cheeks, as close to the
     # Neck bone's top as to the Head bone, took half their weight from the neck: when the menu kid's head turns to watch
@@ -1004,7 +1058,7 @@ PROFILES = {
     'plaid': {'pack': (0, 360, -1, 0.28, 0.72, 0.13), 'parts': parts_plaid, 'shoes': False, 'stands': 1.30, 'bag': 0.5,
               'not_arm': light_jeans, 'face_colours': True},
     'explorer': {'pack': 'shape', 'parts': parts_explorer, 'shoes': False, 'stands': 1.27, 'bag': 0.5, 'not_arm': red_shorts,
-                 'pack_tint': (0.56, 0.69, 0.84)},                         # (light denim, as in the reference photos)
+                 'pack_tint': (0.56, 0.69, 0.84), 'shoulders': True},                         # (light denim, as in the reference photos)
     'unicorn': {'pack': 'shape', 'parts': parts_unicorn, 'shoes': False, 'stands': 1.29, 'bag': 0.5, 'not_arm': terracotta,
                 'split': True},
 }
