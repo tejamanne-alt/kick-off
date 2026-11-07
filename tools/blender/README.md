@@ -20,6 +20,8 @@ blenv/bin/python meshy_teen.py -- /abs/backpack_boy.fbx $PWD --profile backpack_
     # (BackpackBoy.fbx/.blend/.json, BackpackBoyAtlas.png, BackpackBoy_joints.png; see "The backpack boy" below)
 blenv/bin/python meshy_teen.py -- /abs/first_day.fbx $PWD --profile first_day   # Leo, from a supplied barefoot kid
     # (PrimaryBoy2.fbx/.blend/.json, PrimaryBoy2Atlas.png; see "Leo" below; primary.py --boy2 would overwrite it)
+blenv/bin/python meshy_teen.py -- /abs/little_explorer.fbx $PWD --profile explorer   # Mia, from a supplied model
+    # (PrimaryGirl.fbx/.blend/.json, PrimaryGirlAtlas.png; primary.py --girl would overwrite it)
 blenv/bin/python meshy_teen.py -- /abs/rainbow_unicorn.fbx $PWD --profile unicorn   # Zoe, from a supplied model
     # (PrimaryGirl2.fbx/.blend/.json, PrimaryGirl2Atlas.png; primary.py --girl2 would overwrite it)
 blenv/bin/python teen.py -- $PWD/Boy.fbx --boy     # (the earlier, scripted boy; it would overwrite the files above)
@@ -38,6 +40,7 @@ cp Boy.fbx Boy.json BoyAtlas.png Bicycle.fbx BicycleAtlas.png Girl.fbx Girl.json
 cp BackpackBoy.fbx BackpackBoy.json BackpackBoyAtlas.png ../../Assets/_Game/Art/Models/
 cp PrimaryBoy2.fbx PrimaryBoy2.json PrimaryBoy2Atlas.png ../../Assets/_Game/Art/Models/   # (Leo, from meshy_teen.py)
 cp PrimaryGirl2.fbx PrimaryGirl2.json PrimaryGirl2Atlas.png ../../Assets/_Game/Art/Models/   # (Zoe, from meshy_teen.py)
+cp PrimaryGirl.fbx PrimaryGirl.json PrimaryGirlAtlas.png ../../Assets/_Game/Art/Models/   # (Mia, from meshy_teen.py)
 cp Primary*.fbx Primary*.json Primary*Atlas.png ../../Assets/_Game/Art/Models/
 blenv/bin/python portrait_teen.py -- $PWD/Boy.blend $PWD/PlayerBoy.png --yaw 28     # the menus' player cards
 blenv/bin/python portrait_teen.py -- $PWD/Girl.blend $PWD/PlayerGirl.png --yaw -28  # (they face each other)
@@ -153,9 +156,9 @@ It writes `debug_joints.png` (the joints over his vertices) next to its outputs.
 and `review_poses.py` as for the teens. 30,000 triangles; the Head joint at 0.846 of his height, so at the game's neck
 height of 1.5 he stands 1.77 m (`PlayerRoster`).
 
-### The backpack boy, Leo and Zoe (`meshy_teen.py`)
+### The backpack boy, Leo, Zoe and Mia (`meshy_teen.py`)
 
-Three more kids come from textured, single-mesh models the user supplied (Meshy, about 300,000 triangles, one 2048
+Four more kids come from textured, single-mesh models the user supplied (Meshy, about 300,000 triangles, one 2048
 base-colour texture plus normal, roughness and metallic maps that are not used, no rig). `meshy_teen.py` makes each in
 the game's contract (one skinned mesh `Kid` under `KidRig`, one material of vertex colours times the atlas, the outfit part
 in UV 2, the game's bones, Nose and Bag markers, `<Name>.json`), reusing `meshy_boy.py`'s helpers (mesh queries,
@@ -179,15 +182,25 @@ colours that are never an arm's.
   colour), the trousers 2, the hair with the braid 3. 1.29 m, Head bone at 0.830 of it (neck height 1.070). Her pack has
   no colour of its own (`'pack': 'shape'`): it is whatever, bar the dark hair, stands 3 cm or more behind her back line
   (the back's furthest point where it is least, between the crotch and the chest), and it takes half the game's swing.
+- **Mia** (`--profile explorer`, `PrimaryGirl`, in place of the scripted girl 1): a primary-school girl in an A-pose;
+  shoulder-length black hair with a sparkly headband, a white T-shirt, wide red shorts, bare legs, white socks, pink
+  sneakers and a beige backpack with a bow (found by its shape: its beige is close to her skin). Parts: the T-shirt 1,
+  the shorts with their waistband 2, the hair 3, each judged by the texture at the face's own centre (`face_colours`:
+  her texture is cut into many small islands, so a vertex's averaged corners mix neighbouring islands). 1.27 m, Head
+  bone at 0.809 of it (neck height 1.028). Her wide shorts hide where her legs meet: the legs show only below their
+  hems, so the crotch is put 0.10 of her height above where they part, and the cut between the legs (`legs_apart`)
+  parts the shorts down the middle.
 
 The steps:
 - tidy: decimated to 30,000 triangles first, scaled to the teen boy's 2.14 (the game scales by the neck anyway) with the
   feet on z = 0, the head centred over the origin (Leo stands unevenly). The models already face -y.
 - joints, from the mesh: each arm from its own cross-sections, going down from the shoulders: the outermost small outline
   on that side, beside the body (not behind it: the backpack), from where it parts from the torso down to the hand,
-  passing over short gaps where it touches the body (a scrap of fewer than four outlines by the shoulder, Zoe's hood
-  edge, is dropped and the search goes on); a straight line is fitted through them, the fingertips just below
-  the lowest. The crotch is the highest cross-section (the arms left out), with the one 1 cm below it, of two outlines of a size side by side (a
+  passing over short gaps where it touches the body; of the runs of outlines that follow on from one another the
+  longest is the arm (a sleeve's edge by the shoulder, Zoe's hood and Mia's sleeve, are short runs of their own); a
+  straight line is fitted through them, the fingertips just below
+  the lowest. The crotch is the highest cross-section (the arms left out), with the one 1 cm below it, of two outlines of a size
+  side by side (none above 0.30 of the height, under wide shorts: see Mia) (a
   jacket's hem and a backpack's bottom are one in front of the other, so they don't count); each leg's centreline below
   it, the knee half way to the ankle. The neck is the narrowest cross-section of the middle (the Head joint 2 cm over
   it), but no lower than 3 % of the height under the chin (where the front steps back 4 cm going down the face: Zoe's
@@ -230,7 +243,10 @@ It writes `<Name>_joints.png` (the joints over the vertices, before the re-pose)
 `review_poses.py` (every game pose from the game's yaws; Leo's feet close up with `--focus 0,0.3`) and their cards with
 `portrait_teen.py --yaw 28` (Leo's `--span-heads 2.3` like the other primary kids). Known limits: with his arms raised
 high (the celebration) Leo's sweatshirt creases sharply at the shoulders; the hole fills where his arms were cut free
-can show as a small pale patch on the trousers close up.
+can show as a small pale patch on the trousers close up. The scanned faces (Leo, Zoe, Mia) show soft-edged patches of
+tone up close on the cards: that is lighting Meshy baked into small texture islands, not the geometry (smoothing the
+face's shape, clearing the import's sharp edges and sparing the face in the decimation were all tried on Mia and
+changed nothing visible).
 
 ### Pose audit
 
@@ -277,7 +293,8 @@ a game mode can make them vanish by collapsing their vertices.
 | File | Who | Look | Shirt / legwear / accent / bag / hair |
 |---|---|---|---|
 | `PrimaryBoy` | boy 1 | fair skin, round dark eyes, short black hair with a broad fringe and a small tuft; a polo with a flat collar, navy shorts, long white crew socks, white sneakers | white / navy / yellow neckerchief / blue / black |
-| `PrimaryGirl` | girl 1 | fair skin with freckles, big warm-brown eyes, a centre-parted fringe and two bunches at the sides with red ties; a blouse with a round navy collar, a navy pleated skirt, white knee socks, brown school shoes | white / navy / red bow / red / dark brown |
+| `PrimaryGirl` | girl 1 (Mia) | now made from a supplied model by `meshy_teen.py` (see "Mia" above): shoulder-length black hair with a headband, a white T-shirt, red shorts, white socks, pink sneakers, a beige backpack with a bow. The scripted girl 1 below is what `primary.py --girl` still builds | white T-shirt / red / none / beige / black |
+| (scripted girl 1) | | fair skin with freckles, big warm-brown eyes, a centre-parted fringe and two bunches at the sides with red ties; a blouse with a round navy collar, a navy pleated skirt, white knee socks, brown school shoes | white / navy / red bow / red / dark brown |
 | `PrimaryBoy2` | boy 2 (Leo) | now made from a supplied model by `meshy_teen.py` (see "Leo" above): short black hair, brown skin; a white sweatshirt with purple raglan sleeves and a "0" on the front, khaki cargo joggers with a red drawstring, white sneakers with purple trim. The scripted boy 2 below (tanned, chestnut spikes, round glasses; a polo and grey shorts) is what `primary.py --boy2` still builds | white sweatshirt / khaki / none / purple / black |
 | `PrimaryGirl2` | girl 2 (Zoe) | now made from a supplied model by `meshy_teen.py` (see "Zoe" above): black hair in a long braid, a pink rainbow-unicorn jacket over a white T-shirt, terracotta trousers, black shoes, a backpack in the jacket's print. The scripted girl 2 below is what `primary.py --girl2` still builds | unicorn jacket / terracotta / none / the jacket's print / black |
 | (scripted girl 2) | | medium-brown skin with a beauty mark, hazel eyes, a black bob with a straight fringe and a yellow hairband; a blouse with a round white collar under a grey pinafore (bib and straps), white socks, black school shoes | white / grey / yellow bow / purple / black |
@@ -290,7 +307,7 @@ prints the neck height that gives it:
 | File | Standing height (hair included) | Neck height to give the game | Triangles |
 |---|---|---|---|
 | `PrimaryBoy` | 1.30 m | 1.065 | 17,173 |
-| `PrimaryGirl` | 1.27 m | 1.038 | 16,918 |
+| `PrimaryGirl` (Mia, `meshy_teen.py`) | 1.27 m | 1.028 | 29,983 |
 | `PrimaryBoy2` (Leo, `meshy_teen.py`) | 1.32 m | 1.104 | 33,699 |
 | `PrimaryGirl2` (Zoe, `meshy_teen.py`) | 1.29 m | 1.070 | 29,905 |
 

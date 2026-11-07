@@ -63,7 +63,8 @@ namespace DribbleToSchool.Core
             // The primary-school kids (tools/blender, see its README: primary.py prints each one's neck height): 1.27 to 1.34 m.
             // Neck height = the Head bone's height x the standing height / the model's own height.
             new PlayerInfo("primaryBoy", "PrimaryBoy", "player.primaryBoy", SchoolLevel.Primary, 1.065f, 1.30f),
-            new PlayerInfo("primaryGirl", "PrimaryGirl", "player.primaryGirl", SchoolLevel.Primary, 1.038f, 1.27f),
+            // Mia (primaryGirl) is made from a supplied model by tools/blender/meshy_teen.py --profile explorer: 1.27 m, her Head bone at 0.809 of it.
+            new PlayerInfo("primaryGirl", "PrimaryGirl", "player.primaryGirl", SchoolLevel.Primary, 1.028f, 1.27f),
             // Leo (primaryBoy2) is made from a supplied model by tools/blender/meshy_teen.py --profile first_day: 1.32 m, his Head bone at 0.836 of it.
             new PlayerInfo("primaryBoy2", "PrimaryBoy2", "player.primaryBoy2", SchoolLevel.Primary, 1.104f, 1.32f),
             // Zoe (primaryGirl2) is made from a supplied model by tools/blender/meshy_teen.py --profile unicorn: 1.29 m, her Head bone at 0.830 of it.

@@ -10,9 +10,11 @@
 #                 feet: he is given sneakers of his own (shoes()).
 #   unicorn       Zoe (PrimaryGirl2): a primary-school girl; black hair in a long braid, a pink rainbow-unicorn jacket over
 #                 a white T-shirt, terracotta trousers, black shoes, a backpack in the jacket's print (found by its shape).
+#   explorer      Mia (PrimaryGirl): an A-posed primary-school girl; shoulder-length black hair with a headband, a white
+#                 T-shirt, red shorts, bare legs, white socks, pink sneakers, a beige backpack (found by its shape).
 # tools/blender/README.md ("The backpack boy, Leo and Zoe") says more. It reuses meshy_boy.py's helpers.
 #
-#   blenv/bin/python meshy_teen.py -- /abs/source.fbx /abs/outdir [--profile backpack_boy|first_day|unicorn] [--name <Name>]
+#   blenv/bin/python meshy_teen.py -- /abs/source.fbx /abs/outdir [--profile backpack_boy|first_day|unicorn|explorer] [--name <Name>]
 #       [--tris 30000] [--joints-only]
 #     -> outdir/<Name>.fbx, <Name>.blend, <Name>.json, <Name>Atlas.png, <Name>_joints.png
 #
@@ -46,7 +48,7 @@ SRC, OUT = argv[0], argv[1]
 PROFILE_NAME = argv[argv.index('--profile') + 1] if '--profile' in argv else 'backpack_boy'
 TRIS = int(argv[argv.index('--tris') + 1]) if '--tris' in argv else 30000
 os.makedirs(OUT, exist_ok=True)
-DEFAULT_NAMES = {'backpack_boy': 'BackpackBoy', 'first_day': 'PrimaryBoy2', 'unicorn': 'PrimaryGirl2'}
+DEFAULT_NAMES = {'backpack_boy': 'BackpackBoy', 'first_day': 'PrimaryBoy2', 'unicorn': 'PrimaryGirl2', 'explorer': 'PrimaryGirl'}
 NAME = argv[argv.index('--name') + 1] if '--name' in argv else DEFAULT_NAMES[PROFILE_NAME]
 C = bpy.context
 HEIGHT = 2.14            # the teen boy's standing height in Blender units (the game scales by the neck anyway)
@@ -91,28 +93,27 @@ HAND = 0.20              # fingertips to wrist along the arm (the hands hang ope
 
 def arm_rings(V, T, sg, H):
     """One arm's cross-sections, from the armpit down to the fingertips: going down from the shoulders, the outermost
-    small outline on that side at each height, from where it parts from the torso while it follows on from the one
-    above (below the hand the next outline is a leg, or none). Returned from the fingertips up."""
-    rings = []
+    small outline on that side at each height, beside the body (not behind it: a backpack, the hair); a run of them
+    follows on from one to the next (where the arm touches the body its outline is the body's, so a short gap is passed
+    over), and the longest run is the arm (a sleeve's edge by the shoulder, or a leg below the hand, are short runs of
+    their own). Returned from the fingertips up."""
+    runs, rings = [], []
     for z in np.arange(0.70 * H, 0.25 * H, -0.008 * H):
         best = None
-        front = V[np.abs(V[:, 2] - z) < 0.005 * H][:, 1].min()       # (an arm hangs beside the body, not behind it)
+        front = V[np.abs(V[:, 2] - z) < 0.005 * H][:, 1].min()
         for P in slice_loops(V, T, z, 8):
             c = P.mean(0)
             if sg * c[0] < 0.06 * H or np.ptp(P[:, 0]) > 0.09 * H or np.ptp(P[:, 1]) > 0.09 * H: continue
             if c[1] > front + 0.13 * H: continue
             if best is None or sg * c[0] > sg * best[0]: best = np.append(c, max(np.ptp(P[:, 0]), np.ptp(P[:, 1])) / 2)
         if best is None:
-            # (where the arm touches the body its outline is the body's: a short gap is passed over)
-            if rings and rings[-1][2] - z > 0.07 * H:
-                if len(rings) < 4: rings = []; continue           # (only a scrap by the shoulder: look on)
-                break
+            if rings and rings[-1][2] - z > 0.07 * H: runs.append(rings); rings = []
             continue
         if rings and np.linalg.norm(best[:2] - rings[-1][:2]) > 0.03 * H + 0.5 * (rings[-1][2] - z - 0.008 * H):
-            if len(rings) < 4: rings = [best]; continue          # (a scrap by the shoulder: start again)
-            break
+            runs.append(rings); rings = []
         rings.append(best)
-    return np.array(rings[::-1])                                 # (x, y, z, the outline's half size)
+    runs.append(rings)
+    return np.array(max(runs, key=len)[::-1])                    # (x, y, z, the outline's half size)
 
 
 def find_joints(o):
@@ -140,11 +141,18 @@ def find_joints(o):
         if len(L) < 2 or len(L[1]) < 0.6 * len(L[0]): return None
         a, b = L[0].mean(0), L[1].mean(0)
         return L[:2] if abs(a[0] - b[0]) > 0.1 and abs(a[1] - b[1]) < 0.05 else None
-    crotch = next(z for z in np.arange(0.53 * H, 0.30 * H, -0.005) if two(z) and two(z - 0.01))   # (two levels running)
+    crotch = next((z for z in np.arange(0.53 * H, 0.30 * H, -0.005) if two(z) and two(z - 0.01)), None)   # (two levels running)
+    top = crotch
+    if crotch is None:
+        # wide shorts or a skirt hide it: the legs show below the hems, and the crotch is put 0.10 of the height above
+        # them (the cut between the legs, legs_apart, then parts the shorts down the middle)
+        top = next(z for z in np.arange(0.30 * H, 0.12 * H, -0.005) if two(z) and two(z - 0.01))
+        crotch = top + 0.10 * H
+        log('legs: no crotch shows above %.3f; the legs part at %.3f under the clothes, the crotch put at %.3f' % (0.30 * H, top, crotch))
     info['crotch'] = crotch
-    a, b = sorted(two(crotch - 0.01), key=lambda P: P[:, 0].mean())
+    a, b = sorted(two(top - 0.01), key=lambda P: P[:, 0].mean())
     lines = {'R': [a.mean(0)], 'L': [b.mean(0)]}
-    for z in np.arange(crotch - 0.03, 0.06 * H, -0.02):
+    for z in np.arange(top - 0.03, 0.06 * H, -0.02):
         L = two(z)
         if not L: continue
         c0, c1 = sorted([P.mean(0) for P in L], key=lambda c: c[0])
@@ -507,6 +515,43 @@ def khaki(Cc):
     return (h > 15) & (h < 55) & (s > 0.08) & (s < 0.45) & (v > 0.3)
 
 
+def red_shorts(Cc):
+    """Mia's shorts' red."""
+    h, s, v = hsv(Cc)
+    return ((h < 15) | (h > 335)) & (s > 0.45) & (v > 0.12)              # (its folds shade to a deep maroon)
+
+
+def face_colours(o, px):
+    """Each face's texture colour at its own centre (a vertex's colour averages its corners, which on a texture cut
+    into many small islands mixes the neighbouring islands)."""
+    me = o.data; nl = len(me.loops)
+    UV = np.empty(nl * 2); me.uv_layers[0].data.foreach_get('uv', UV); UV = UV.reshape(-1, 3, 2).mean(1)
+    return mb.sample(px, UV)
+
+
+def parts_explorer(o, px):
+    """Mia's parts, by each face's own texture colour: 1 the white T-shirt, 2 the red shorts, 3 the hair (the biggest
+    dark piece above the shorts); 0 the skin, the headband, the backpack, the socks and the pink sneakers."""
+    me = o.data; V = verts_np(o); bw = bone_weights(o)
+    tri = np.empty(len(me.loops), dtype=np.int64); me.loops.foreach_get('vertex_index', tri); tri = tri.reshape(-1, 3)
+    assert len(tri) == len(me.polygons), 'expected triangles'
+    fw = lambda w: w[tri].mean(1)
+    foot = fw(bw('Foot.L', 'Foot.R')); hand = fw(bw('Hand.L', 'Hand.R')); bag = fw(bw('Bag')); head = fw(bw('Head'))
+    Cf = face_colours(o, px); h, s, v = hsv(Cf); z = V[tri][:, :, 2].mean(1)
+    hip = rig_z('UpperLeg.L'); shorts = red_shorts(Cf)
+    white = (s < 0.25) & (v > 0.45)
+    FP = np.zeros(len(tri), dtype=np.int64)
+    FP[white & (z > hip + 0.05) & (head < 0.5)] = 1
+    FP[shorts & (z < hip + 0.3)] = 2                                      # (and the waistband)
+    # the hair: dark faces above the shorts, the biggest piece of them (by the vertices they share)
+    dark = (v < 0.2) & (z > hip + 0.3)
+    vm = np.zeros(len(V), bool); vm[tri[dark].ravel()] = True
+    hair_v = biggest_piece(o, vm)
+    FP[dark & hair_v[tri].all(1)] = 3
+    FP[(foot > 0.6) | (hand > 0.5) | (bag > 0.5)] = 0
+    return FP, tri
+
+
 def terracotta(Cc):
     """Zoe's trousers' colour (her brown skin is darker and yellower)."""
     h, s, v = hsv(Cc)
@@ -776,6 +821,7 @@ PROFILES = {
     'backpack_boy': {'pack': (15, 45, 0.35, 0.18, 0.75), 'parts': parts_backpack_boy, 'shoes': False, 'stands': 1.75},
     'first_day': {'pack': (245, 300, 0.25, 0.12, 0.9), 'parts': parts_first_day, 'shoes': True, 'stands': 1.32,
                   'bag': 0.5, 'not_arm': khaki},
+    'explorer': {'pack': 'shape', 'parts': parts_explorer, 'shoes': False, 'stands': 1.27, 'bag': 0.5, 'not_arm': red_shorts},
     'unicorn': {'pack': 'shape', 'parts': parts_unicorn, 'shoes': False, 'stands': 1.29, 'bag': 0.5, 'not_arm': terracotta},
 }
 PROFILE = PROFILES[PROFILE_NAME]
