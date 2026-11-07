@@ -396,6 +396,7 @@ def arms_apart(o, px, J, info):
 
 
 # ------------------------------------------------------------------------------------------------ weights
+HEAD_BLEND = 0.06         # metres of neck below the jaw over which the head's weight fades to the neck's
 FALLOFF = 0.022          # metres: how fast a bone's pull fades past the nearest bone's distance
 
 
@@ -472,8 +473,21 @@ def weigh_near(o, rig, info):
     for _ in range(3):
         acc = np.zeros_like(W); np.add.at(acc, E[:, 0], W[E[:, 1]]); np.add.at(acc, E[:, 1], W[E[:, 0]])
         W = np.where(allow, 0.5 * W + 0.5 * acc / np.maximum(deg, 1)[:, None], 0)
+    # The head is rigid: the face, the jaw and the hair above the jaw follow the Head bone alone, and the blend to the
+    # neck happens below the jaw (HEAD_BLEND), on the neck itself. By nearness the jaw and the cheeks, as close to the
+    # Neck bone's top as to the Head bone, took half their weight from the neck: when the menu kid's head turns to watch
+    # the ball, the lower face stayed behind and the face folded.
+    hj = np.array(B['Head'].head_local)
+    ring = V[np.abs(V[:, 2] - (hj[2] + 0.08)) < 0.01]
+    rh = np.percentile(np.hypot(ring[:, 0] - hj[0], ring[:, 1] - hj[1]), 95) + 0.03     # the head's radius, and a bit
+    inhead = np.hypot(V[:, 0] - hj[0], V[:, 1] - hj[1]) < rh
+    t = np.clip((V[:, 2] - (hj[2] - HEAD_BLEND - 0.02)) / HEAD_BLEND, 0, 1) * inhead
+    t = t * t * (3 - 2 * t)
+    ih = ix['Head']; W = W * (1 - t)[:, None]; W[:, ih] += t
     W[W < np.sort(W, 1)[:, -4][:, None]] = 0
     W /= np.maximum(W.sum(1, keepdims=True), 1e-9)
+    log('weights: the head rigid above %.3f (%d vertices wholly the head\'s), blending over %.2f below' % (
+        hj[2] - 0.02, (t > 0.999).sum(), HEAD_BLEND))
     bind(o, rig); mb.set_weights(o, W, names)
     log('weights: by nearness, %d vertices, %d bones; legs %d vertices' % (len(V), len(names), legs.sum()))
 

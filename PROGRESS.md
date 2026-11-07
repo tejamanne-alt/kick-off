@@ -629,6 +629,10 @@ The user found the first Coast models plain next to their reference shots (weath
 - Tried and dropped: bone-heat weights on a watertight voxel copy (Blender's solver fails on it too) and a much wider weight blend at the shoulders (no visible change).
 - What remains: the scans fuse arms that hang against the body, so the hidden sleeve undersides are flat patches, and loose jackets and shirts smear as the arms lift. Generating the models in an A-pose (as Max and Mia were) is what makes them clean. Generated content v78. Not run in Unity.
 
+## Rigid heads: the scanned kids' faces no longer fold (generated content v79)
+
+- On the launch screen the kid's head tilts to follow the ball; on all five supplied kids (Max too) about a quarter of the face was weighted partly to the Neck bone (by nearness the jaw and cheeks were as close to it as to the Head bone), so the lower face lagged and folded. `meshy_teen.py` now makes the head rigid: everything within the head's radius above the jaw follows the Head bone alone, fading to the neck over 6 cm below it. Measured: front-of-head vertices with less than 0.95 Head weight went from 18-29 % to 0 on every kid. Before and after in the menu's balance pose and the tuck: `review/faces_head_tilt_before_after.png`. Generated content v79. Not run in Unity.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

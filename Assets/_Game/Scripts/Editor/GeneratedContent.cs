@@ -22,7 +22,7 @@ namespace DribbleToSchool.EditorTools
     public static class GeneratedContent
     {
         /// <summary>Bump when layouts or the scene rig change so scenes regenerate.</summary>
-        public const int Version = 78;   // 78: Leo and Zoe rebuilt with their arms split from the body along the seam
+        public const int Version = 79;   // 79: the five supplied kids rebuilt with rigid heads (the face no longer folds as the head turns)
 
         const string ScenesDir = LevelBuildKit.Root + "/Scenes";
         const string LevelsDir = LevelBuildKit.Root + "/Levels";

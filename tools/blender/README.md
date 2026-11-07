@@ -239,7 +239,9 @@ The steps:
 - weights by nearness to the bones (an exponential falloff of 2.2 cm past the nearest bone, smoothed, four bones a
   vertex): bone heat finds no solution on these scans (layered, open shells; hundreds of non-manifold edges). Below the
   crotch each leg takes only its own bones and the hips'; nothing else takes a leg's bones; only the head above the jaw
-  takes the Head bone; below the armpits each arm (a piece of its own once cut free) alone takes its arm's bones, and
+  takes the Head bone, and everything within the head's radius above 2 cm under the Head joint takes it alone (rigid),
+  fading to the neck over 6 cm below (`HEAD_BLEND`): by nearness the jaw and cheeks took half their weight from the
+  Neck bone and the face folded when the menu kid's head turned to follow the ball; below the armpits each arm (a piece of its own once cut free) alone takes its arm's bones, and
   only those and the chest's.
 - re-pose: the arms hang as the teen boy's do, the legs are turned in under the hips so the ankles stand 3 cm outside
   them (the feet turned back flat); baked in and made the rest pose, keeping the weights.
