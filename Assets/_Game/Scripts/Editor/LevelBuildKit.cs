@@ -128,7 +128,7 @@ namespace DribbleToSchool.EditorTools
             // gameplay stays on the z = 0 plane, the street and scenery are real 3D around it.
             var cam = camGo.AddComponent<Camera>();
             cam.orthographic = false;
-            cam.fieldOfView = 34f;     // with CameraFollow2D's close framing: about 12 m back, under 3 m up
+            cam.fieldOfView = 34f;     // with CameraFollow2D's close framing: about 9 m back, under 3 m up
             cam.nearClipPlane = 0.3f;
             cam.farClipPlane = 2500f;
             var mood = Theme.mood;
