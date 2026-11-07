@@ -13,7 +13,7 @@ namespace DribbleToSchool.UI
     /// nothing overlaps at any aspect ratio (the card fits a 4:3 canvas, 1440 x 1080):
     /// left, Audio (music, ambience: the sounds of each place, sound effects) and Gameplay (school bell,
     /// colour-blind aim, vibration, screen shake, the coach's how-to tips: UI/ActionCoach); right, Player (the chosen kid, which opens the
-    /// player picker), Language and Controls (left-handed, the Controls page: UI/ControlsGuide, and the California skin once every level is finished: Progression/CaliforniaSkin); along the bottom, Reset progress, Restore purchases and Done. Labels shrink
+    /// player picker), Language and Controls (left-handed, the Controls page: UI/ControlsGuide, and the Add-ons and Filters page: UI/AddOnsPanel); along the bottom, Reset progress, Restore purchases and Done. Labels shrink
     /// to fit rather than run into their controls, for longer translations.
     /// </summary>
     public static class SettingsPanel
@@ -87,15 +87,12 @@ namespace DribbleToSchool.UI
             ((RectTransform)guide.transform).offsetMin = new Vector2(0f, UIButtonFx.Depth);
             y += RowHeight + RowGap;
 
-            // The California skin: an add-on look for the levels, unlocked by finishing all of them (Progression/CaliforniaSkin).
-            bool caUnlocked = Progression.CaliforniaSkin.Unlocked;
-            var caToggle = ToggleRow(right, ref y, "settings.california", Progression.CaliforniaSkin.Enabled, v => Progression.CaliforniaSkin.Enabled = v,
-                caUnlocked ? "settings.californiaOn" : "settings.californiaLocked");
-            if (!caUnlocked)
-            {
-                caToggle.interactable = false;
-                caToggle.targetGraphic.color = UITheme.Locked;
-            }
+            // Add-ons (the levels in another country's streets: California...) and filters, on their own page (UI/AddOnsPanel).
+            var addOnsRow = UIKit.Row(right, "AddOns", y, RowHeight, 4f, 4f);
+            var addOns = UIKit.Button(addOnsRow, "Open", Loc.T("addons.title"), new Color(0.95f, 0.55f, 0.25f), () => AddOnsPanel.Open(canvas, null), 32);
+            UIKit.Stretch((RectTransform)addOns.transform);
+            ((RectTransform)addOns.transform).offsetMin = new Vector2(0f, UIButtonFx.Depth);
+            y += RowHeight + RowGap;
 
             // Bottom row: reset (with confirmation), restore purchases, done.
             var reset = UIKit.Button(card.transform, "Reset", Loc.T("settings.reset"), UITheme.Red, () => ConfirmReset(canvas), 34);

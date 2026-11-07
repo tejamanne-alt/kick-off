@@ -546,6 +546,13 @@ The user found the first Coast models plain next to their reference shots (weath
 - **The Ambience slider defaults to 0.5** (was 0.8; `GameSettings.DefaultAmbienceVolume`). A slider already moved keeps its value.
 - At the default, against before: the market about 11 dB quieter, the street 8, the beach 6. Checked by rendering every place's bed in a harness (the RMS above); not listened to in Unity.
 
+## Add-ons and Filters; music by country; a runner's coin
+
+- **Settings, Add-ons & Filters** (`UI/AddOnsPanel`, opened from a button under Controls; `Progression/AddOns` replaces `CaliforniaSkin`). Add-ons are cards to choose from: **Original, Kamakura, Japan** (the original streets: Japanese shop names, concrete poles, block walls, the railway), **California, Santa Monica, USA** (unlocked by finishing every story level: the `_CA` scenes), and **India, Mumbai** and **Tokyo, Japan** shown as coming soon. Filters list **Original** (the only one so far) with "comic-book, sketch and more coming soon". Saved as `SaveData.addOn` and `SaveData.filter`; an older save's California switch carries over. A choice applies from the next level loaded.
+- **Music by country** (`MusicCountry`, `MusicGenerator.Generate(scape, country)`): the original town now has Japanese city pop and J-pop, one loop per place, mostly on the "royal road" chords (IVmaj7, V7, iiim7, vim7), with pentatonic yonanuki tunes (new `Mode.Yona`, `Mode.YonaMinor`) on a koto-like pluck (`Lead.Koto`) or a breathy bamboo flute (`Lead.Flute`), Rhodes, guitars and a glockenspiel. The West Coast music (surf, beach pop, funk, folk-pop) is now California's. `AudioDirector` keys the music by place and country and takes the country from the loaded scene's add-on (the menu: the chosen add-on; the Holiday Run: the original).
+- **Coin**: an endless runner's crisp arcade "bling" (a short triangle blip up into a bright, fast-ringing bell with a little shimmer; 0.32 s, was 0.55), played at 0.26 (was 0.5). **Whistle** (level start): softer, lower (2.25 kHz, was 2.6), shorter (0.38 s), less breath, at 0.28 (was 0.6).
+- Checked: the C# compile; every place's loop renders in both countries' styles (RMS 0.14 each), the coin and whistle render. Not listened to in Unity.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

@@ -779,8 +779,8 @@ namespace DribbleToSchool.Core
         public static void LoadLevel(LevelDefinition def)
         {
             TimeControl.ResetTime();
-            // The California skin's scene of the level when it is switched on (Progression/CaliforniaSkin).
-            SceneManager.LoadScene(Progression.CaliforniaSkin.SceneFor(def.sceneName));
+            // The level's scene for the add-on chosen in Settings (Progression/AddOns: California...).
+            SceneManager.LoadScene(Progression.AddOns.SceneFor(def.sceneName));
         }
 
         void SetState(LevelState next)

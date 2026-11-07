@@ -69,10 +69,12 @@ around them has real depth.
 | 4 Underpass and building site | Clear city day | Slightly paler sky | Tower crane, hoarding, scaffold, concrete pipes, warehouses |
 | 5 Park and school | Summer afternoon | Clear, a touch warmer | Green trees, a few blossoms, birches, hedges, pond, school |
 
-**The California skin.** Finishing every story level unlocks a second look for the levels, switched
-on in Settings (Progression/CaliforniaSkin; each level has a `<scene>_CA` scene built beside the
-original, with `LevelBuildKit.California` set). The original streets above are unchanged. The skin
-is a sunny California coast town (the Coast kit, `tools/blender/kit_buildings_cal.py`): stucco
+**The original town and the add-ons.** The original streets above are Kamakura, Japan: a seaside
+town south of Tokyo (Japanese shop names, concrete poles, block walls, the railway). Add-ons put the
+same levels in another country's streets, with that country's music, chosen in Settings, Add-ons and
+Filters (Progression/AddOns, UI/AddOnsPanel); India and a Tokyo city add-on are listed as coming soon.
+**California** (Santa Monica), unlocked by finishing every story level, has a `<scene>_CA` scene for
+each level, built beside the original with `LevelBuildKit.California` set. It is a sunny California coast town (the Coast kit, `tools/blender/kit_buildings_cal.py`): stucco
 villas and single-storey ranch houses under hipped terracotta barrel-tile roofs, white two-storey
 Craftsman houses with deep front porches, white beach condos with glass balconies, beach-town shops
 (a stepped-parapet surf shop, a Spanish Revival shop with arched windows and a tiled pent roof),

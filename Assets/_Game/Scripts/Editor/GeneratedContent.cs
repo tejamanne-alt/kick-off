@@ -57,8 +57,8 @@ namespace DribbleToSchool.EditorTools
             }
 
             public string ScenePath { get { return ScenesDir + "/Levels/" + scene + ".unity"; } }
-            /// <summary>The level's California scene (the skin unlocked by finishing every level: Progression/CaliforniaSkin).</summary>
-            public string CaliforniaPath { get { return ScenesDir + "/Levels/" + scene + Progression.CaliforniaSkin.SceneSuffix + ".unity"; } }
+            /// <summary>The level's California scene (the California add-on, unlocked by finishing every level: Progression/AddOns).</summary>
+            public string CaliforniaPath { get { return ScenesDir + "/Levels/" + scene + Progression.AddOns.CaliforniaSuffix + ".unity"; } }
         }
 
         /// <summary>
