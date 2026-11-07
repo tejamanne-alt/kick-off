@@ -22,7 +22,7 @@ namespace DribbleToSchool.EditorTools
     public static class GeneratedContent
     {
         /// <summary>Bump when layouts or the scene rig change so scenes regenerate.</summary>
-        public const int Version = 88;   // 88: Zoe is the supplied rainbow-friends model, with her own glitter unicorn backpack
+        public const int Version = 89;   // 89: the five supplied kids rebuilt at 100k triangles, relaxed rest pose, 4-bone skinning
 
         const string ScenesDir = LevelBuildKit.Root + "/Scenes";
         const string LevelsDir = LevelBuildKit.Root + "/Levels";

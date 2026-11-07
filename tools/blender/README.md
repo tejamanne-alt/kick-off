@@ -227,7 +227,7 @@ The way to make a kid as clean as Max is to generate the model in an A-pose (Mes
 from the body.
 
 The steps:
-- tidy: decimated to 30,000 triangles first, scaled to the teen boy's 2.14 (the game scales by the neck anyway) with the
+- tidy: decimated to 100,000 triangles first (30,000 before: it squashed the hands into mittens and the faces' features), scaled to the teen boy's 2.14 (the game scales by the neck anyway) with the
   feet on z = 0, the head centred over the origin (Leo stands unevenly). The models already face -y.
 - joints, from the mesh: each arm from its own cross-sections, going down from the shoulders: the outermost small outline
   on that side, beside the body (not behind it: the backpack), from where it parts from the torso down to the hand,
@@ -256,7 +256,7 @@ The steps:
   fading to the neck over 6 cm below (`HEAD_BLEND`): by nearness the jaw and cheeks took half their weight from the
   Neck bone and the face folded when the menu kid's head turned to follow the ball; below the armpits each arm (a piece of its own once cut free) alone takes its arm's bones, and
   only those and the chest's.
-- re-pose: the arms hang as the teen boy's do, the legs are turned in under the hips so the ankles stand 3 cm outside
+- re-pose: the arms hang relaxed, about 15 degrees from the sides with the forearms bent about 17 degrees forward (they hung straight down against the body before), the legs are turned in under the hips so the ankles stand 3 cm outside
   them (the feet turned back flat); baked in and made the rest pose, keeping the weights.
 - the backpack: the biggest piece of the profile's colour more than a few centimetres behind the back (the arms' sleeves
   left out) follows a Bag bone (on the Chest, its head at the pack's top, so the shop's pennant clips there), fading
