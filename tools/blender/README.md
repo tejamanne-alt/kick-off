@@ -161,10 +161,7 @@ height of 1.5 he stands 1.77 m (`PlayerRoster`).
 
 ### The backpack boy and the primary-school kids (`meshy_teen.py`)
 
-**In the game now: Max only.** The four supplied primary-school kids below are set aside: the game uses the scripted
-primary kids (`primary.py`) again, because these scans' arms, fused to their bodies, smear as they swing. Rebuilding
-one with its command below and copying its files over the scripted kid's (and its neck height into `PlayerRoster`) puts
-it back. Five kids come from textured, single-mesh models the user supplied (Meshy, about 300,000 triangles, one 2048
+Five kids come from textured, single-mesh models the user supplied (Meshy, about 300,000 triangles, one 2048
 base-colour texture plus normal, roughness and metallic maps that are not used, no rig). `meshy_teen.py` makes each in
 the game's contract (one skinned mesh `Kid` under `KidRig`, one material of vertex colours times the atlas, the outfit part
 in UV 2, the game's bones, Nose and Bag markers, `<Name>.json`), reusing `meshy_boy.py`'s helpers (mesh queries,

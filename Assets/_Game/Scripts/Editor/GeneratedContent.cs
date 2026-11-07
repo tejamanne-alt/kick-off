@@ -22,7 +22,7 @@ namespace DribbleToSchool.EditorTools
     public static class GeneratedContent
     {
         /// <summary>Bump when layouts or the scene rig change so scenes regenerate.</summary>
-        public const int Version = 80;   // 80: the original primary-school kids are back (the supplied ones set aside); Max with a rigid head
+        public const int Version = 81;   // 81: the supplied primary-school kids are back, with rigid heads
 
         const string ScenesDir = LevelBuildKit.Root + "/Scenes";
         const string LevelsDir = LevelBuildKit.Root + "/Levels";

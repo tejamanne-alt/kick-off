@@ -62,12 +62,14 @@ namespace DribbleToSchool.Core
             new PlayerInfo("backpackBoy", "BackpackBoy", "player.backpackBoy", SchoolLevel.High, 1.537f, 1.75f),
             // The primary-school kids (tools/blender, see its README: primary.py prints each one's neck height): 1.27 to 1.34 m.
             // Neck height = the Head bone's height x the standing height / the model's own height.
-            // (The supplied-model versions, tools/blender/meshy_teen.py --profile plaid / explorer / first_day / unicorn, are
-            // set aside until the models come in an A-pose: their arms, fused to the body, smear as they swing.)
-            new PlayerInfo("primaryBoy", "PrimaryBoy", "player.primaryBoy", SchoolLevel.Primary, 1.065f, 1.30f),
-            new PlayerInfo("primaryGirl", "PrimaryGirl", "player.primaryGirl", SchoolLevel.Primary, 1.038f, 1.27f),
-            new PlayerInfo("primaryBoy2", "PrimaryBoy2", "player.primaryBoy2", SchoolLevel.Primary, 1.082f, 1.34f),
-            new PlayerInfo("primaryGirl2", "PrimaryGirl2", "player.primaryGirl2", SchoolLevel.Primary, 1.051f, 1.29f),
+            // Kai (primaryBoy) is made from a supplied model by tools/blender/meshy_teen.py --profile plaid: 1.30 m, his Head bone at 0.840 of it.
+            new PlayerInfo("primaryBoy", "PrimaryBoy", "player.primaryBoy", SchoolLevel.Primary, 1.092f, 1.30f),
+            // Mia (primaryGirl) is made from a supplied model by tools/blender/meshy_teen.py --profile explorer: 1.27 m, her Head bone at 0.809 of it.
+            new PlayerInfo("primaryGirl", "PrimaryGirl", "player.primaryGirl", SchoolLevel.Primary, 1.028f, 1.27f),
+            // Leo (primaryBoy2) is made from a supplied model by tools/blender/meshy_teen.py --profile first_day: 1.32 m, his Head bone at 0.836 of it.
+            new PlayerInfo("primaryBoy2", "PrimaryBoy2", "player.primaryBoy2", SchoolLevel.Primary, 1.104f, 1.32f),
+            // Zoe (primaryGirl2) is made from a supplied model by tools/blender/meshy_teen.py --profile unicorn: 1.29 m, her Head bone at 0.830 of it.
+            new PlayerInfo("primaryGirl2", "PrimaryGirl2", "player.primaryGirl2", SchoolLevel.Primary, 1.070f, 1.29f),
         };
 
         /// <summary>The position of <paramref name="id"/> in <see cref="All"/>, or -1.</summary>
