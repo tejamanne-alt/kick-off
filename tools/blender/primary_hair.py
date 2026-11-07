@@ -235,9 +235,8 @@ def _bob(V, fit, mesh, extra):
     over, lock = _lock_fn(mesh, fit, sh)
     fr_shine = None
     # --- a straight fringe of broad, softly rounded locks
-    for x0, z1, w in ([] if getattr(V, 'no_fringe', False) else       # (Mia: pulled back under the headband)
-                      [(0.0, 1.478, 0.034), (0.042, 1.482, 0.032), (0.082, 1.474, 0.030), (0.116, 1.466, 0.026),
-                       (-0.042, 1.480, 0.032), (-0.082, 1.476, 0.030), (-0.116, 1.468, 0.026)]):
+    for x0, z1, w in [(0.0, 1.478, 0.034), (0.042, 1.482, 0.032), (0.082, 1.474, 0.030), (0.116, 1.466, 0.026),
+                      (-0.042, 1.480, 0.032), (-0.082, 1.476, 0.030), (-0.116, 1.468, 0.026)]:
         lock([(x0, -0.062, 1.60, -0.002), (x0 * 1.02, None, 1.554, 0.011), (x0 * 1.06, None, 1.512, 0.009), (x0 * 1.10, None, z1, 0.005)],
              w, 0.0075, shine=fr_shine, tip=(0.7, 0.35), n=8, m=9)
     # --- locks framing the face, down in front of the ears to the chin

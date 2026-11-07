@@ -5,8 +5,8 @@
 #
 #   PrimaryBoy   boy 1: fair, short black hair with a straight fringe; navy shorts, a yellow
 #                neckerchief, a blue randoseru
-#   PrimaryGirl  girl 1 (Mia, from the user's photos): brown skin, black hair pulled back under a leopard
-#                headband; a white T-shirt, red shorts, ankle socks, pink shoes, a light denim backpack
+#   PrimaryGirl  girl 1: fair, dark-brown twin tails with red ties and a fringe; navy pleated skirt,
+#                a red bow, a red randoseru
 #   PrimaryBoy2  boy 2: tanned, chestnut tousled spiky hair, round glasses; grey shorts, a red
 #                neckerchief, a green randoseru
 #   PrimaryGirl2 girl 2: medium-brown skin, a black bob with a yellow hairband; a grey pinafore
@@ -39,13 +39,11 @@ SPECS = {
         skin=(0.953, 0.776, 0.639), top=SHIRT_WHITE, legwear=NAVY, accent=(0.98, 0.78, 0.18), hair=(0.075, 0.07, 0.085), hair_shine=(0.30, 0.30, 0.38),
         garment='shorts', accessory='neckerchief', bag_colour=(0.16, 0.34, 0.74), hair_style='crop', face='boy1',
         shoe=(0.93, 0.94, 0.96), sole=(0.55, 0.58, 0.66), sock_high=False),
-    # Mia, as in the user's reference photos: brown skin, black hair pulled back under a leopard-print headband, a white
-    # T-shirt, red shorts, white ankle socks, pink shoes on white soles and a light denim backpack.
     'PrimaryGirl': dict(
         girl=True, lift=0.045, build='girl',
-        skin=(0.690, 0.490, 0.360), top=SHIRT_WHITE, legwear=(0.84, 0.13, 0.13), accent=(0.80, 0.64, 0.44), hair=(0.06, 0.05, 0.06), hair_shine=(0.30, 0.28, 0.34),
-        garment='shorts', accessory='none', bag_colour=(0.56, 0.69, 0.84), hair_style='bob', no_fringe=True, face='mia',
-        shoe=(0.97, 0.70, 0.80), sole=(0.95, 0.94, 0.93), sock_high=False, tee=True, ankle_socks=True),
+        skin=(0.976, 0.800, 0.690), top=SHIRT_WHITE, legwear=NAVY, accent=(0.86, 0.17, 0.22), hair=(0.20, 0.115, 0.09), hair_shine=(0.46, 0.31, 0.25),
+        garment='skirt', accessory='bow', bag_colour=(0.80, 0.10, 0.14), hair_style='twin', face='girl1',
+        shoe=(0.40, 0.24, 0.16), sole=(0.22, 0.15, 0.12), sock_high=True),
     'PrimaryBoy2': dict(
         girl=False, lift=0.14, build='boy',
         skin=(0.722, 0.502, 0.357), top=SHIRT_WHITE, legwear=GREY, accent=(0.86, 0.17, 0.22), hair=(0.40, 0.235, 0.12), hair_shine=(0.66, 0.46, 0.26),

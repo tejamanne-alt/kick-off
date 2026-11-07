@@ -325,7 +325,7 @@ a game mode can make them vanish by collapsing their vertices.
 |---|---|---|---|
 | `PrimaryBoy` | boy 1 (Kai) | now made from a supplied model by `meshy_teen.py` (see "Kai" above): short black hair, a red plaid flannel shirt over a white hood, light-blue cargo jeans, chunky black-and-white sneakers, a grey backpack. The scripted boy 1 below is what `primary.py --boy` still builds | plaid shirt / light-blue jeans / none / grey / black |
 | (scripted boy 1) | | fair skin, round dark eyes, short black hair with a broad fringe and a small tuft; a polo with a flat collar, navy shorts, long white crew socks, white sneakers | white / navy / yellow neckerchief / blue / black |
-| `PrimaryGirl` | girl 1 (Mia) | built by `primary.py --girl` from her reference photos (brown skin, black hair pulled back under a beige headband, `no_fringe`; a white T-shirt with a round neck, `tee`; red shorts; ankle socks, `ankle_socks`; pink shoes on white soles; a light denim backpack; `face='mia'`). Before that, a supplied model by `meshy_teen.py` (see "Mia" above): shoulder-length black hair with a headband, a white T-shirt, red shorts, white socks, pink sneakers, a beige backpack with a bow. The scripted girl 1 below is what `primary.py --girl` still builds | white T-shirt / red / none / beige / black |
+| `PrimaryGirl` | girl 1 (Mia) | now made from a supplied model by `meshy_teen.py` (see "Mia" above): shoulder-length black hair with a headband, a white T-shirt, red shorts, white socks, pink sneakers, a beige backpack with a bow. The scripted girl 1 below is what `primary.py --girl` still builds | white T-shirt / red / none / beige / black |
 | (scripted girl 1) | | fair skin with freckles, big warm-brown eyes, a centre-parted fringe and two bunches at the sides with red ties; a blouse with a round navy collar, a navy pleated skirt, white knee socks, brown school shoes | white / navy / red bow / red / dark brown |
 | `PrimaryBoy2` | boy 2 (Leo) | now made from a supplied model by `meshy_teen.py` (see "Leo" above): short black hair, brown skin; a white sweatshirt with purple raglan sleeves and a "0" on the front, khaki cargo joggers with a red drawstring, white sneakers with purple trim. The scripted boy 2 below (tanned, chestnut spikes, round glasses; a polo and grey shorts) is what `primary.py --boy2` still builds | white sweatshirt / khaki / none / purple / black |
 | `PrimaryGirl2` | girl 2 (Zoe) | now made from a supplied model by `meshy_teen.py` (see "Zoe" above): black hair in a long braid, a pink rainbow-unicorn jacket over a white T-shirt, terracotta trousers, black shoes, a backpack in the jacket's print. The scripted girl 2 below is what `primary.py --girl2` still builds | unicorn jacket / terracotta / none / the jacket's print / black |
@@ -339,7 +339,7 @@ prints the neck height that gives it:
 | File | Standing height (hair included) | Neck height to give the game | Triangles |
 |---|---|---|---|
 | `PrimaryBoy` (Kai, `meshy_teen.py`) | 1.30 m | 1.092 | 30,249 |
-| `PrimaryGirl` (Mia, `primary.py`) | 1.27 m | 1.030 | |
+| `PrimaryGirl` (Mia, `meshy_teen.py`) | 1.27 m | 1.028 | 29,925 |
 | `PrimaryBoy2` (Leo, `meshy_teen.py`) | 1.32 m | 1.104 | 34,191 |
 | `PrimaryGirl2` (Zoe, `meshy_teen.py`) | 1.29 m | 1.070 | 30,168 |
 

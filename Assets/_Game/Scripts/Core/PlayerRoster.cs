@@ -64,8 +64,8 @@ namespace DribbleToSchool.Core
             // Neck height = the Head bone's height x the standing height / the model's own height.
             // Kai (primaryBoy) is made from a supplied model by tools/blender/meshy_teen.py --profile plaid: 1.30 m, his Head bone at 0.840 of it.
             new PlayerInfo("primaryBoy", "PrimaryBoy", "player.primaryBoy", SchoolLevel.Primary, 1.092f, 1.30f),
-            // Mia (primaryGirl) is built by tools/blender/primary.py --girl in the game's anime style, dressed as in her reference photos.
-            new PlayerInfo("primaryGirl", "PrimaryGirl", "player.primaryGirl", SchoolLevel.Primary, 1.030f, 1.27f),
+            // Mia (primaryGirl) is made from a supplied model by tools/blender/meshy_teen.py --profile explorer: 1.27 m, her Head bone at 0.809 of it.
+            new PlayerInfo("primaryGirl", "PrimaryGirl", "player.primaryGirl", SchoolLevel.Primary, 1.028f, 1.27f),
             // Leo (primaryBoy2) is made from a supplied model by tools/blender/meshy_teen.py --profile first_day: 1.32 m, his Head bone at 0.836 of it.
             new PlayerInfo("primaryBoy2", "PrimaryBoy2", "player.primaryBoy2", SchoolLevel.Primary, 1.104f, 1.32f),
             // Zoe (primaryGirl2) is made from a supplied model by tools/blender/meshy_teen.py --profile unicorn: 1.29 m, her Head bone at 0.830 of it.
