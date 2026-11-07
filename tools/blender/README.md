@@ -187,7 +187,9 @@ colours that are never an arm's.
   (the back's furthest point where it is least, between the crotch and the chest), and it takes half the game's swing.
 - **Mia** (`--profile explorer`, `PrimaryGirl`, in place of the scripted girl 1): a primary-school girl in an A-pose;
   shoulder-length black hair with a sparkly headband, a white T-shirt, wide red shorts, bare legs, white socks, pink
-  sneakers and a beige backpack with a bow (found by its shape: its beige is close to her skin). Parts: the T-shirt 1,
+  sneakers and a backpack with a bow (found by its shape: its beige is close to her skin). The model made the pack
+  beige; in the reference photos it is light denim on beige straps, so `'pack_tint'` recolours the pack's beige texels
+  on the faces that follow the Bag bone (`tint_pack`), keeping their shading; the straps over her shoulders stay beige. Parts: the T-shirt 1,
   the shorts with their waistband 2, the hair 3, each judged by the texture at the face's own centre (`face_colours`:
   her texture is cut into many small islands, so a vertex's averaged corners mix neighbouring islands). 1.27 m, Head
   bone at 0.809 of it (neck height 1.028). Her wide shorts hide where her legs meet: the legs show only below their

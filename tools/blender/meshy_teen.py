@@ -948,10 +948,34 @@ def shoes(o, rig, uv):
     log('shoes: %d vertices, %d faces; raised by the sole, %.3f' % (len(shoe_w), len(sm.polygons) if sm.polygons else 0, SOLE))
 
 
+def tint_pack(o, png, rgb):
+    """Recolour the backpack's own colour in the atlas, on the faces that follow the Bag bone, to rgb (sRGB), keeping
+    each texel's shading: Mia's pack was made beige, and in the reference photos it is light denim with beige straps
+    (the straps over her shoulders follow the chest, so they keep their beige)."""
+    from PIL import Image, ImageDraw
+    me = o.data; bw = bone_weights(o)
+    tri = np.empty(len(me.loops), dtype=np.int64); me.loops.foreach_get('vertex_index', tri); tri = tri.reshape(-1, 3)
+    bag = bw('Bag')[tri].min(1) > 0.4 * PROFILE.get('bag', 1.0)
+    UV = np.empty(len(me.loops) * 2); me.uv_layers[0].data.foreach_get('uv', UV); UV = UV.reshape(-1, 3, 2)
+    im = Image.open(png).convert('RGB'); Wd, Hd = im.size
+    mask = Image.new('L', (Wd, Hd), 0); dr = ImageDraw.Draw(mask)
+    for f in np.where(bag)[0]: dr.polygon([(u * Wd, (1 - v) * Hd) for u, v in UV[f]], fill=255)
+    A = np.asarray(im).astype(np.float64) / 255; M = np.asarray(mask) > 0
+    h, s, v = hsv(A.reshape(-1, 3)); h, s, v = h.reshape(M.shape), s.reshape(M.shape), v.reshape(M.shape)
+    lo, hi = PROFILE['pack'][:2] if not isinstance(PROFILE['pack'], str) else (15, 60)
+    sel = M & (h >= lo) & (h <= hi) & (s > 0.08) & (s < 0.6) & (v > 0.25)
+    ref = np.percentile(v[sel], 80) if sel.any() else 1.0
+    target = np.array(rgb)
+    A[sel] = np.clip(target[None, :] * (v[sel] / ref)[:, None], 0, 1)
+    Image.fromarray((A * 255 + 0.5).astype(np.uint8)).save(png)
+    log('pack: %d texels of %d faces recoloured to %s' % (sel.sum(), bag.sum(), rgb))
+
+
 def finish(o, rig, img, px):
     png = os.path.join(OUT, NAME + 'Atlas.png')
     mb.face_parts = PROFILE['parts']                            # (meshy_boy.paint does the rest as for the boy)
     refs = mb.paint(o, img, px, png)
+    if PROFILE.get('pack_tint'): tint_pack(o, png, PROFILE['pack_tint'])
     if PROFILE['shoes']: shoes(o, rig, white_patch(o, png))
     o.data.materials.clear(); o.data.materials.append(atlas_material('Kid', png))
     o.name = 'Kid'; o.data.name = 'Kid'
@@ -979,7 +1003,8 @@ PROFILES = {
                   'bag': 0.5, 'not_arm': khaki, 'split': True},
     'plaid': {'pack': (0, 360, -1, 0.28, 0.72, 0.13), 'parts': parts_plaid, 'shoes': False, 'stands': 1.30, 'bag': 0.5,
               'not_arm': light_jeans, 'face_colours': True},
-    'explorer': {'pack': 'shape', 'parts': parts_explorer, 'shoes': False, 'stands': 1.27, 'bag': 0.5, 'not_arm': red_shorts},
+    'explorer': {'pack': 'shape', 'parts': parts_explorer, 'shoes': False, 'stands': 1.27, 'bag': 0.5, 'not_arm': red_shorts,
+                 'pack_tint': (0.56, 0.69, 0.84)},                         # (light denim, as in the reference photos)
     'unicorn': {'pack': 'shape', 'parts': parts_unicorn, 'shoes': False, 'stands': 1.29, 'bag': 0.5, 'not_arm': terracotta,
                 'split': True},
 }

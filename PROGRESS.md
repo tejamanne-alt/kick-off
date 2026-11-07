@@ -642,6 +642,10 @@ The user found the first Coast models plain next to their reference shots (weath
 
 - At the user's request the supplied Kai, Mia, Leo and Zoe are in the game again (v80 had put the scripted kids back), now with the rigid-head fix: their faces no longer fold as the head follows the ball. The known limit stays: sleeves and loose jackets smear on Kai, Leo and Zoe as their arms swing (the scans fuse arms that hang against the body). Generated content v81. Not run in Unity.
 
+## Mia's backpack matches her reference photos (generated content v82)
+
+- The user's reference photos of Mia show a light denim backpack with a bow on beige straps; the model had made it all beige. `meshy_teen.py` (`'pack_tint'`, `tint_pack`) recolours the pack's beige in the atlas on the faces that follow the Bag bone, keeping the shading; the straps stay beige. The rest already matched the photos (white T-shirt with a red line, red shorts with white piping, white socks, pink shoes, leopard headband). The seam split was tried on her and dropped: it tore her short sleeves; the cut she had stays. Checked in the run, kick and celebration (`review/mia/denim_backpack.jpg`) and her card. Not run in Unity.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.
