@@ -654,10 +654,6 @@ The user found the first Coast models plain next to their reference shots (weath
 
 - On a phone the kid stood about a quarter of the screen tall and looked small. `CameraFollow2D` now frames 5.4 m of height at the gameplay plane instead of 7.2 m (`viewHalfHeight` 2.7, `BaseViewHalfHeight` 2.7), so the kid is about a third of the screen tall (the camera about 9 m back with the same 34 degree lens). Narrow screens still pull back to keep at least 5.5 m of street either side (`minHalfWidth`, was 7), and the focus sits 1.15 m above the kid (was 1.4) so the feet keep their place low in the frame. Aiming a kick still zooms out by 1.2. The trade-off: about a quarter less street ahead is in view. Generated content v85, so every level and the Holiday Run rebuild their cameras. Not run in Unity.
 
-## The level camera closer still (generated content v86)
-
-- At the user's request the level camera comes in further: 4.4 m of height at the gameplay plane (`viewHalfHeight` 2.2, was 2.7), so the kid is about 40 % of the screen tall (about 7 m back, same lens). Narrow screens keep at least 4.5 m of street either side (`minHalfWidth`, was 5.5). The camera's lowest centre is 1.55 m over the lowest ground (was 1.8; the Holiday Run's too) and the focus 1.0 m over the kid, so on the ground the feet stay about 15 % up the screen, clear of the bottom edge. About 40 % less street ahead is in view than before v85. Generated content v86. Not run in Unity.
-
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

@@ -37,7 +37,7 @@ namespace DribbleToSchool.CameraRig
         [Tooltip("The kid is never nearer a side of the screen than this (fraction of its width), however the view leans or lags.")]
         [Range(0.05f, 0.4f)] public float kidEdgeMargin = 0.15f;
         [Tooltip("How far the focus point is above the kid, so their feet sit low in the frame.")]
-        public float verticalOffset = 1.0f;
+        public float verticalOffset = 1.15f;
         [Tooltip("Where the kid stands across the screen while walking (0 = left edge, 0.5 = middle), when the buttons leave room for it.")]
         [Range(0.25f, 0.5f)] public float kidScreenX = 0.38f;
         [Tooltip("Keep the kid clear of the control buttons on the left of the screen (GameInput.KidSafeScreenX): further right on narrow screens.")]
@@ -60,15 +60,15 @@ namespace DribbleToSchool.CameraRig
         public float minY = 2f;
 
         [Header("Perspective")]
-        [Tooltip("Half the visible height at the gameplay plane (world units): 2.2 shows 4.4 m, so the kid is about 40 % of the screen tall.")]
-        public float viewHalfHeight = 2.2f;
+        [Tooltip("Half the visible height at the gameplay plane (world units): 2.7 shows 5.4 m, so the kid is about a third of the screen tall.")]
+        public float viewHalfHeight = 2.7f;
         [Tooltip("At least this much of the street either side of the view's centre (world units); narrower screens pull back to keep it.")]
-        public float minHalfWidth = 4.5f;
+        public float minHalfWidth = 5.5f;
         [Tooltip("Downward tilt in degrees, so the street surface shows.")]
         public float pitch = 4f;
 
         /// <summary>Unzoomed half-height of the view at the gameplay plane, for screen-to-world drag scaling.</summary>
-        public static float BaseViewHalfHeight = 2.2f;
+        public static float BaseViewHalfHeight = 2.7f;
 
         [Header("Feel")]
         [Tooltip("Zoom out by this factor while aiming a kick, to see where it lands.")]
