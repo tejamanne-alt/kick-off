@@ -16,7 +16,7 @@
 #                 light-blue cargo jeans, black-and-white sneakers, a grey backpack.
 # tools/blender/README.md ("The backpack boy, Leo and Zoe") says more. It reuses meshy_boy.py's helpers.
 #
-#   blenv/bin/python meshy_teen.py -- /abs/source.fbx /abs/outdir [--profile backpack_boy|first_day|unicorn|explorer|plaid] [--name <Name>]
+#   blenv/bin/python meshy_teen.py -- /abs/source.fbx /abs/outdir [--profile backpack_boy|first_day|unicorn|explorer|plaid|rainbow] [--name <Name>]
 #       [--tris 30000] [--joints-only]
 #     -> outdir/<Name>.fbx, <Name>.blend, <Name>.json, <Name>Atlas.png, <Name>_joints.png
 #
@@ -50,7 +50,7 @@ SRC, OUT = argv[0], argv[1]
 PROFILE_NAME = argv[argv.index('--profile') + 1] if '--profile' in argv else 'backpack_boy'
 TRIS = int(argv[argv.index('--tris') + 1]) if '--tris' in argv else 30000
 os.makedirs(OUT, exist_ok=True)
-DEFAULT_NAMES = {'backpack_boy': 'BackpackBoy', 'first_day': 'PrimaryBoy2', 'unicorn': 'PrimaryGirl2', 'explorer': 'PrimaryGirl', 'plaid': 'PrimaryBoy'}
+DEFAULT_NAMES = {'backpack_boy': 'BackpackBoy', 'first_day': 'PrimaryBoy2', 'unicorn': 'PrimaryGirl2', 'explorer': 'PrimaryGirl', 'plaid': 'PrimaryBoy', 'rainbow': 'PrimaryGirl2'}
 NAME = argv[argv.index('--name') + 1] if '--name' in argv else DEFAULT_NAMES[PROFILE_NAME]
 C = bpy.context
 HEIGHT = 2.14            # the teen boy's standing height in Blender units (the game scales by the neck anyway)
@@ -759,6 +759,125 @@ def parts_plaid(o, px):
     return FP, tri
 
 
+def coral(Cc):
+    """The rainbow-friends Zoe's coral cargo joggers."""
+    h, s, v = hsv(Cc)
+    return ((h < 12) | (h > 348)) & (s > 0.3) & (s < 0.66) & (v > 0.5)
+
+
+def parts_rainbow(o, px):
+    """Zoe (rainbow friends) by each face's own colour: 1 the hot-pink animal-print jacket, 2 the coral joggers, 3 the
+    hair with its braid (the biggest dark piece above the hips); 0 the skin, the hood, the T-shirt, the backpack and the
+    clogs."""
+    me = o.data; V = verts_np(o); bw = bone_weights(o)
+    tri = np.empty(len(me.loops), dtype=np.int64); me.loops.foreach_get('vertex_index', tri); tri = tri.reshape(-1, 3)
+    fw = lambda w: w[tri].mean(1)
+    foot = fw(bw('Foot.L', 'Foot.R')); hand = fw(bw('Hand.L', 'Hand.R')); bag = fw(bw('Bag')); head = fw(bw('Head'))
+    Cf = face_colours(o, px); h, s, v = hsv(Cf); z = V[tri][:, :, 2].mean(1)
+    hip = rig_z('UpperLeg.L')
+    hot = (h > 300) & (h < 346) & (s > 0.6) & (v > 0.4)                     # (the print's other colours come along by the votes)
+    FP = np.zeros(len(tri), dtype=np.int64)
+    FP[hot & (z > hip - 0.05) & (head < 0.5)] = 1
+    FP[coral(Cf) & (z < hip + 0.1) & ~hot] = 2
+    dark = (v < 0.2) & (z > hip + 0.1) & (foot < 0.3)
+    vm = np.zeros(len(V), bool); vm[tri[dark].ravel()] = True
+    FP[dark & biggest_piece(o, vm)[tri].all(1)] = 3
+    FP[(foot > 0.6) | (hand > 0.5) | (bag > 0.5) | pack_faces(o)] = 0
+    return FP, tri
+
+
+def pack_faces(o):
+    """The backpack's faces by its shape: behind the body's back, which at each height is the front plus the body's
+    least depth at the seat (below the pack); between the hips and the neck; not the braid (the head's) nor the arms."""
+    me = o.data; bw = bone_weights(o); V = verts_np(o)
+    tri = np.empty(len(me.loops), dtype=np.int64); me.loops.foreach_get('vertex_index', tri); tri = tri.reshape(-1, 3)
+    # the pack by its shape: behind the body's back, which at each height is the front plus the body's depth (measured
+    # at the hips, below the pack); between the hips and the neck; not the dark braid that hangs over it
+    C = V[tri].mean(1); H = V[:, 2].max()
+    def front(z):
+        m = (np.abs(V[:, 2] - z) < 0.015) & (np.abs(V[:, 0]) < 0.1)
+        return np.percentile(V[m, 1], 3) if m.sum() > 5 else np.nan
+    zh = RIG.data.bones['Hips'].head_local.z; zn = RIG.data.bones['Neck'].head_local.z
+    def dep(z):
+        m = (np.abs(V[:, 2] - z) < 0.015) & (np.abs(V[:, 0]) < 0.1)
+        return np.percentile(V[m, 1], 97) - front(z) if m.sum() > 5 else np.inf
+    depth = min(dep(z) for z in np.arange(zh - 0.16, zh + 0.01, 0.02))   # (the seat, below the pack: its least depth)
+    zs = np.arange(zh, zn + 0.05, 0.02); fr = np.array([front(z) for z in zs]); ok = np.isfinite(fr)
+    yback = np.interp(C[:, 2], zs[ok], fr[ok]) + depth + 0.015
+    bag = (C[:, 1] > yback) & (C[:, 2] > zh - 0.02) & (C[:, 2] < zn + 0.04) & (np.abs(C[:, 0]) < 0.3)
+    bag &= bw('Head')[tri].max(1) < 0.3                           # (the braid is the head's)
+    bag &= sum(bw(b + n) for b in ('LowerArm.', 'Hand.') for n in 'LR')[tri].max(1) < 0.4
+    bag &= sum(bw('UpperArm.' + n) for n in 'LR')[tri].max(1) < 0.8
+    bag &= hsv(face_colours(o, PX))[2] > 0.22                    # (the braid's tip, dark, hangs over the pack)
+    return bag
+
+
+def pack_rigid(o, rig):
+    """The whole backpack moves as one with the Bag and the Chest bones: its faces (pack_faces) take nothing from the
+    arms, the spine or the hips (by nearness its sides, beside the arms, swung with them and sheared the pack apart),
+    the Bag's share kept and the chest taking the rest; a ring of neighbours blends into the body's weights."""
+    me = o.data; V = verts_np(o); E = edges_np(o); W, names = weights(o)
+    tri = np.empty(len(me.loops), dtype=np.int64); me.loops.foreach_get('vertex_index', tri); tri = tri.reshape(-1, 3)
+    t = np.zeros(len(V)); t[tri[pack_faces(o)].ravel()] = 1
+    deg = np.zeros(len(V)); np.add.at(deg, E[:, 0], 1); np.add.at(deg, E[:, 1], 1)
+    for _ in range(2):
+        acc = np.zeros(len(V)); np.add.at(acc, E[:, 0], t[E[:, 1]]); np.add.at(acc, E[:, 1], t[E[:, 0]])
+        t = np.maximum(t, 0.5 * acc / np.maximum(deg, 1))
+    ib, ic = names.index('Bag'), names.index('Chest')
+    R = np.zeros_like(W); R[:, ib] = W[:, ib]; R[:, ic] = 1 - W[:, ib]
+    W = W * (1 - t)[:, None] + R * t[:, None]
+    W[W < np.sort(W, 1)[:, -4][:, None]] = 0; W /= np.maximum(W.sum(1, keepdims=True), 1e-9)
+    mb.set_weights(o, W, names)
+    log('pack: %d vertices ride the Bag and the Chest alone' % (t > 0.99).sum())
+
+
+def paint_pack(o, png):
+    """The backpack in its own look (the model printed the jacket's pattern on it): every texel of the faces that follow
+    the Bag bone repainted pale glitter pink, keeping the shading; on its back, facing out, a unicorn panel: chevrons in
+    pink, purple and yellow with a teal tip, under a purple horn between two blue ears; gold zip pulls are left out."""
+    from PIL import Image, ImageDraw
+    me = o.data; bw = bone_weights(o); V = verts_np(o)
+    tri = np.empty(len(me.loops), dtype=np.int64); me.loops.foreach_get('vertex_index', tri); tri = tri.reshape(-1, 3)
+    bag = pack_faces(o); C = V[tri].mean(1)
+    UV = np.empty(len(me.loops) * 2); me.uv_layers[0].data.foreach_get('uv', UV); UV = UV.reshape(-1, 3, 2)
+    im = Image.open(png).convert('RGB'); Wd, Hd = im.size
+    A = np.asarray(im).astype(np.float64) / 255
+    # the pack's back panel in its own frame: x across, z up, from the bag faces' extent
+    P = C[bag]
+    x0, x1 = np.percentile(P[:, 0], [3, 97]); z0, z1 = np.percentile(P[:, 2], [3, 97]); yb = np.percentile(P[:, 1], 70)
+    rng = np.random.default_rng(7)
+    def colour_at(c):
+        u = (c[0] - x0) / max(x1 - x0, 1e-6); w = (c[2] - z0) / max(z1 - z0, 1e-6)
+        base = np.array([0.97, 0.76, 0.88])
+        if c[1] > yb and 0.12 < u < 0.88 and 0.08 < w < 0.62:            # the front pocket's chevrons
+            k = (w - 0.08) + abs(u - 0.5) * 0.9
+            band = int(k / 0.12) % 4
+            return [np.array([1.0, 0.42, 0.72]), np.array([0.62, 0.42, 0.90]), np.array([1.0, 0.86, 0.25]), np.array([0.30, 0.78, 0.82])][band]
+        if c[1] > yb and abs(u - 0.5) < 0.06 and 0.62 < w < 0.86:        # the horn
+            return np.array([0.66, 0.50, 0.92])
+        if c[1] > yb and 0.62 < w < 0.76 and 0.16 < abs(u - 0.5) < 0.26:   # the ears
+            return np.array([0.55, 0.78, 0.96])
+        return base
+    mask = Image.new('L', (Wd, Hd), 0); dr = ImageDraw.Draw(mask)
+    lum = A.mean(2); ref = np.percentile(lum, 60)
+    out = A.copy()
+    for f in np.where(bag)[0]:
+        poly = [(u * Wd, (1 - v) * Hd) for u, v in UV[f]]
+        xs = [p[0] for p in poly]; ys = [p[1] for p in poly]
+        bx0, bx1 = int(max(min(xs) - 1, 0)), int(min(max(xs) + 2, Wd)); by0, by1 = int(max(min(ys) - 1, 0)), int(min(max(ys) + 2, Hd))
+        if bx1 <= bx0 or by1 <= by0: continue
+        m = Image.new('L', (bx1 - bx0, by1 - by0), 0)
+        ImageDraw.Draw(m).polygon([(x - bx0, y - by0) for x, y in poly], fill=255)
+        M = np.asarray(m) > 0
+        if not M.any(): continue
+        col = colour_at(C[f])
+        shade = np.clip(0.75 + 0.25 * lum[by0:by1, bx0:bx1][M] / max(ref, 1e-3), 0.7, 1.1)
+        sparkle = 1 + 0.10 * (rng.random(M.sum()) - 0.5)
+        out[by0:by1, bx0:bx1][M] = np.clip(col[None, :] * (shade * sparkle)[:, None], 0, 1)
+    Image.fromarray((out * 255 + 0.5).astype(np.uint8)).save(png)
+    log('pack: %d faces repainted as the glitter unicorn backpack' % bag.sum())
+
+
 def terracotta(Cc):
     """Zoe's trousers' colour (her brown skin is darker and yellower)."""
     h, s, v = hsv(Cc)
@@ -1030,6 +1149,7 @@ def finish(o, rig, img, px):
     mb.face_parts = PROFILE['parts']                            # (meshy_boy.paint does the rest as for the boy)
     refs = mb.paint(o, img, px, png)
     if PROFILE.get('pack_tint'): tint_pack(o, png, PROFILE['pack_tint'])
+    if PROFILE.get('pack_paint'): paint_pack(o, png)
     if PROFILE['shoes']: shoes(o, rig, white_patch(o, png))
     o.data.materials.clear(); o.data.materials.append(atlas_material('Kid', png))
     o.name = 'Kid'; o.data.name = 'Kid'
@@ -1059,6 +1179,8 @@ PROFILES = {
               'not_arm': light_jeans, 'face_colours': True},
     'explorer': {'pack': 'shape', 'parts': parts_explorer, 'shoes': False, 'stands': 1.27, 'bag': 0.5, 'not_arm': red_shorts,
                  'pack_tint': (0.56, 0.69, 0.84), 'shoulders': True},                         # (light denim, as in the reference photos)
+    'rainbow': {'pack': 'shape', 'parts': parts_rainbow, 'shoes': False, 'stands': 1.29, 'bag': 0.5, 'not_arm': coral,
+                'shoulders': True, 'pack_paint': True, 'pack_rigid': True},
     'unicorn': {'pack': 'shape', 'parts': parts_unicorn, 'shoes': False, 'stands': 1.29, 'bag': 0.5, 'not_arm': terracotta,
                 'split': True},
 }
@@ -1080,5 +1202,6 @@ if __name__ == '__main__':
     weigh_near(obj, rig, info)
     J = repose(obj, rig, J)
     backpack(obj, rig, px)
+    if PROFILE.get('pack_rigid'): pack_rigid(obj, rig)
     nose(obj, rig)
     finish(obj, rig, img, px)

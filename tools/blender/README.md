@@ -185,6 +185,14 @@ colours that are never an arm's.
   colour), the trousers 2, the hair with the braid 3. 1.29 m, Head bone at 0.830 of it (neck height 1.070). Her pack has
   no colour of its own (`'pack': 'shape'`): it is whatever, bar the dark hair, stands 3 cm or more behind her back line
   (the back's furthest point where it is least, between the crotch and the chest), and it takes half the game's swing.
+- **Zoe, rainbow friends** (`--profile rainbow`, `PrimaryGirl2`, in place of the earlier unicorn Zoe): from the user's
+  four-view drawings via Meshy; black hair in a long braid, a hot-pink animal-print bomber over a grey hood and a pink
+  T-shirt, coral cargo joggers, dark clogs, a pink backpack. Meshy printed the jacket's pattern on the backpack, so
+  `paint_pack` repaints it from the drawings: glitter pink, with a unicorn panel facing out (chevrons in pink, purple,
+  yellow and teal under a purple horn and blue ears). The pack is found by its shape (`pack_faces`: behind the back
+  line, from the body's least depth at the seat; not the braid, nor the arms) and rides the Bag and Chest bones alone
+  (`pack_rigid`), so it no longer swings with the arms. Parts: the jacket 1, the joggers 2, the hair 3. 1.29 m, Head
+  bone at 0.825 of it (neck height 1.064).
 - **Mia** (`--profile explorer`, `PrimaryGirl`, in place of the scripted girl 1): a primary-school girl in an A-pose;
   shoulder-length black hair with a sparkly headband, a white T-shirt, wide red shorts, bare legs, white socks, pink
   sneakers and a backpack with a bow (found by its shape: its beige is close to her skin). The model made the pack
@@ -341,7 +349,7 @@ prints the neck height that gives it:
 | `PrimaryBoy` (Kai, `meshy_teen.py`) | 1.30 m | 1.092 | 30,249 |
 | `PrimaryGirl` (Mia, `meshy_teen.py`) | 1.27 m | 1.028 | 29,925 |
 | `PrimaryBoy2` (Leo, `meshy_teen.py`) | 1.32 m | 1.104 | 34,191 |
-| `PrimaryGirl2` (Zoe, `meshy_teen.py`) | 1.29 m | 1.070 | 30,168 |
+| `PrimaryGirl2` (Zoe, `meshy_teen.py --profile rainbow`) | 1.29 m | 1.064 | 29,898 |
 
 (The scripted models are 1.685, 1.646, 1.784 and 1.694 m tall as exported, their Head bones at 1.38, 1.345, 1.44 and 1.38 m; neck
 height = Head bone height x standing height / model height. A single neck height of 1.05 would put all four at 1.28 to
