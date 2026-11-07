@@ -223,8 +223,10 @@ namespace DribbleToSchool.UI
 
         // ---------- Events ----------
 
-        void OnPerfectTouch(int streak) { Toast(streak > 1 ? Loc.F("toast.perfectN", streak) : Loc.T("toast.perfect"), UITheme.Gold); }
-        void OnJuggled(int count) { Toast(Loc.F("toast.juggle", count), UITheme.Gold); }
+        // With the comic filter on, the exclamations (perfect touch, juggles, a gull, a bump) pop up as comic
+        // words instead (UI/ComicPops); the toasts that tell you something stay.
+        void OnPerfectTouch(int streak) { if (!ComicPops.On) Toast(streak > 1 ? Loc.F("toast.perfectN", streak) : Loc.T("toast.perfect"), UITheme.Gold); }
+        void OnJuggled(int count) { if (!ComicPops.On) Toast(Loc.F("toast.juggle", count), UITheme.Gold); }
         void OnCheckpoint(Checkpoint cp) { Toast(Loc.T("toast.checkpoint"), new Color(0.55f, 1f, 0.6f)); }
         void OnBallLost(string reason) { Toast(Loc.T(reason), Late); }
         void OnBellRang() { Toast(Loc.T("toast.bell"), Late); }
@@ -234,8 +236,8 @@ namespace DribbleToSchool.UI
             switch (type)
             {
                 case GameEventType.DogSteal: Toast(Loc.T("toast.dog"), UITheme.Gold); break;
-                case GameEventType.SeagullHit: Toast(Loc.T("toast.squawk"), Color.white); break;
-                case GameEventType.PedestrianBump: Toast(Loc.T("toast.oops"), Color.white); break;
+                case GameEventType.SeagullHit: if (!ComicPops.On) Toast(Loc.T("toast.squawk"), Color.white); break;
+                case GameEventType.PedestrianBump: if (!ComicPops.On) Toast(Loc.T("toast.oops"), Color.white); break;
                 case GameEventType.GateOpened: Toast(Loc.T("toast.gate"), new Color(0.55f, 1f, 0.6f)); break;
                 case GameEventType.Sticker: Toast(Loc.T("toast.sticker"), new Color(1f, 0.6f, 0.8f)); break;
             }

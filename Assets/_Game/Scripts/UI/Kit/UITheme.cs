@@ -55,7 +55,7 @@ namespace DribbleToSchool.UI.Kit
         public const int SizeTitle = 72;
         public const int SizeHero = 120;
 
-        static Font font, display;
+        static Font font, display, comic;
 
         /// <summary>Body text: Varela Round, a soft rounded sans (SIL OFL, Resources/Fonts).</summary>
         public static Font Font
@@ -74,6 +74,16 @@ namespace DribbleToSchool.UI.Kit
             {
                 if (display == null) display = Load("Fonts/LilitaOne-Regular");
                 return display;
+            }
+        }
+
+        /// <summary>The comic filter's sound-effect words (UI/ComicPops): Bangers, a hand-lettered comic face (SIL OFL).</summary>
+        public static Font Comic
+        {
+            get
+            {
+                if (comic == null) comic = Load("Fonts/Bangers-Regular");
+                return comic;
             }
         }
 

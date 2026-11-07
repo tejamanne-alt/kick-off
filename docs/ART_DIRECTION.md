@@ -75,6 +75,10 @@ every scene:
 the kids, the passers-by and the ball (the cars and the bicycle are 1, drawn like the street). A
 figure takes no bands, no creases and almost no plate slip, and lighter dots (45 percent), so its
 painted eyes, brows and highlights stay exactly as drawn, and its own ink outline does the rest.
+**Sound-effect words** (`UI/ComicPops`): the big moments pop up as hand-lettered words (Bangers)
+with a thick ink stroke, a hard drop shadow, a gradient fill with halftone dots in its lower part,
+and an ink starburst behind the loudest. They sit above the action, clear of the kid's face.
+
 Previews of the real models through a numpy port of the shader are in `review/filter/`.
 
 ## How it applies to our game
