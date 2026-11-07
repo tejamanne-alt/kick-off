@@ -22,7 +22,7 @@ namespace DribbleToSchool.EditorTools
     public static class GeneratedContent
     {
         /// <summary>Bump when layouts or the scene rig change so scenes regenerate.</summary>
-        public const int Version = 68;
+        public const int Version = 71;
 
         const string ScenesDir = LevelBuildKit.Root + "/Scenes";
         const string LevelsDir = LevelBuildKit.Root + "/Levels";
@@ -57,6 +57,8 @@ namespace DribbleToSchool.EditorTools
             }
 
             public string ScenePath { get { return ScenesDir + "/Levels/" + scene + ".unity"; } }
+            /// <summary>The level's California scene (the California add-on, unlocked by finishing every level: Progression/AddOns).</summary>
+            public string CaliforniaPath { get { return ScenesDir + "/Levels/" + scene + Progression.AddOns.CaliforniaSuffix + ".unity"; } }
         }
 
         /// <summary>
@@ -270,6 +272,9 @@ namespace DribbleToSchool.EditorTools
                 LevelBuildKit.Cosmetics = AssetDatabase.LoadAssetAtPath<CosmeticCatalog>(CosmeticsDir + "/CosmeticCatalog.asset");
                 LevelBuildKit.BuildScene(Levels[i].ScenePath, def, catalog, Levels[i].layout, Levels[i].chapter);
                 buildScenes.Add(new EditorBuildSettingsScene(Levels[i].ScenePath, true));
+                // And its California scene: the same level on the Coast kit's streets (the original is untouched).
+                BuildCalifornia(Levels[i], catalog);
+                buildScenes.Add(new EditorBuildSettingsScene(Levels[i].CaliforniaPath, true));
             }
             LevelBuildKit.BuildScene(TestTrackScene, null, catalog, GreyboxLevels.TestTrack);
             buildScenes.Add(new EditorBuildSettingsScene(TestTrackScene, true));
@@ -284,7 +289,7 @@ namespace DribbleToSchool.EditorTools
             AssetDatabase.SaveAssets();
 
             EditorSceneManager.OpenScene(FrontEndScene);
-            Debug.Log("[Kick Off] Built the menu, " + Levels.Length + " levels, the test track and the Holiday Run (its core scene and " + HolidayStages.Count + " stages). The menu is open - press Play.");
+            Debug.Log("[Kick Off] Built the menu, " + Levels.Length + " levels (each with its California scene), the test track and the Holiday Run (its core scene and " + HolidayStages.Count + " stages). The menu is open - press Play.");
         }
 
         static CosmeticCatalog BuildCosmetics()
@@ -365,11 +370,22 @@ namespace DribbleToSchool.EditorTools
             return def;
         }
 
+        /// <summary>A level's California scene (LevelBuildKit.California set only while it is built).</summary>
+        static void BuildCalifornia(LevelSpec spec, LevelCatalog catalog)
+        {
+            var def = AssetDatabase.LoadAssetAtPath<LevelDefinition>(LevelsDir + "/" + spec.id + ".asset");
+            catalog = AssetDatabase.LoadAssetAtPath<LevelCatalog>(LevelsDir + "/LevelCatalog.asset");
+            LevelBuildKit.Cosmetics = AssetDatabase.LoadAssetAtPath<CosmeticCatalog>(CosmeticsDir + "/CosmeticCatalog.asset");
+            LevelBuildKit.California = true;
+            try { LevelBuildKit.BuildScene(spec.CaliforniaPath, def, catalog, spec.layout, spec.chapter); }
+            finally { LevelBuildKit.California = false; }
+        }
+
         /// <summary>Remove generated level scenes that are no longer in the Levels table.</summary>
         static void DeleteStaleScenes()
         {
             var keep = new HashSet<string>();
-            foreach (var spec in Levels) keep.Add(spec.ScenePath);
+            foreach (var spec in Levels) { keep.Add(spec.ScenePath); keep.Add(spec.CaliforniaPath); }
             foreach (string guid in AssetDatabase.FindAssets("t:Scene", new[] { ScenesDir + "/Levels" }))
             {
                 string path = AssetDatabase.GUIDToAssetPath(guid);
@@ -384,6 +400,7 @@ namespace DribbleToSchool.EditorTools
             foreach (var spec in Levels)
             {
                 if (AssetDatabase.LoadAssetAtPath<SceneAsset>(spec.ScenePath) == null) return false;
+                if (AssetDatabase.LoadAssetAtPath<SceneAsset>(spec.CaliforniaPath) == null) return false;
             }
             return HolidayRunBuilder.AllScenesExist();
         }

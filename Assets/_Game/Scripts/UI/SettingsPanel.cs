@@ -13,7 +13,7 @@ namespace DribbleToSchool.UI
     /// nothing overlaps at any aspect ratio (the card fits a 4:3 canvas, 1440 x 1080):
     /// left, Audio (music, ambience: the sounds of each place, sound effects) and Gameplay (school bell,
     /// colour-blind aim, vibration, screen shake, the coach's how-to tips: UI/ActionCoach); right, Player (the chosen kid, which opens the
-    /// player picker), Language and Controls (left-handed, and the Controls page: UI/ControlsGuide); along the bottom, Reset progress, Restore purchases and Done. Labels shrink
+    /// player picker), Language and Controls (left-handed, the Controls page: UI/ControlsGuide, and the Add-ons and Filters page: UI/AddOnsPanel); along the bottom, Reset progress, Restore purchases and Done. Labels shrink
     /// to fit rather than run into their controls, for longer translations.
     /// </summary>
     public static class SettingsPanel
@@ -87,6 +87,13 @@ namespace DribbleToSchool.UI
             ((RectTransform)guide.transform).offsetMin = new Vector2(0f, UIButtonFx.Depth);
             y += RowHeight + RowGap;
 
+            // Add-ons (the levels in another country's streets: California...) and filters, on their own page (UI/AddOnsPanel).
+            var addOnsRow = UIKit.Row(right, "AddOns", y, RowHeight, 4f, 4f);
+            var addOns = UIKit.Button(addOnsRow, "Open", Loc.T("addons.title"), new Color(0.95f, 0.55f, 0.25f), () => AddOnsPanel.Open(canvas, null), 32);
+            UIKit.Stretch((RectTransform)addOns.transform);
+            ((RectTransform)addOns.transform).offsetMin = new Vector2(0f, UIButtonFx.Depth);
+            y += RowHeight + RowGap;
+
             // Bottom row: reset (with confirmation), restore purchases, done.
             var reset = UIKit.Button(card.transform, "Reset", Loc.T("settings.reset"), UITheme.Red, () => ConfirmReset(canvas), 34);
             UIKit.Place((RectTransform)reset.transform, Vector2.zero, new Vector2(50f, 44f), new Vector2(330f, 96f), Vector2.zero);
@@ -142,7 +149,7 @@ namespace DribbleToSchool.UI
         }
 
         /// <summary>A label (and an optional hint under it) on the left, the On/Off pill on the right.</summary>
-        static void ToggleRow(RectTransform column, ref float y, string key, bool value, UnityEngine.Events.UnityAction<bool> onChanged, string hintKey = null)
+        static Button ToggleRow(RectTransform column, ref float y, string key, bool value, UnityEngine.Events.UnityAction<bool> onChanged, string hintKey = null)
         {
             float height = hintKey != null ? RowHeight + 22f : RowHeight;
             var row = UIKit.Row(column, key, y, height, 12f, 0f);
@@ -164,6 +171,7 @@ namespace DribbleToSchool.UI
             var toggle = UIKit.Toggle(row, "Toggle", value, v => Loc.T(v ? "settings.on" : "settings.off"), onChanged);
             UIKit.Place((RectTransform)toggle.transform, new Vector2(1f, 0.5f), new Vector2(-6f, UIButtonFx.Depth * 0.5f), new Vector2(ToggleWidth, 60f), new Vector2(1f, 0.5f));
             y += height + RowGap;
+            return toggle;
         }
 
         static void ConfirmReset(Transform canvas)

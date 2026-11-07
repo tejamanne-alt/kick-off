@@ -76,16 +76,21 @@ def sign_post(m, h=2.45, r=0.032):
 
 
 # ---------------------------------------------------------------- utility pole (9 m)
-def utility_pole():
-    m = Model('UtilityPole', note='Concrete pole; wires go from Attach.WireL/R/M to the next pole.')
+def utility_pole(wood=False):
+    """The concrete pole of the original streets; wood=True is the California skin's wooden one (UtilityPoleWood)."""
+    if wood:
+        m = Model('UtilityPoleWood', note='Wooden pole (the California skin); wires go from Attach.WireL/R/M to the next pole.')
+    else:
+        m = Model('UtilityPole', note='Concrete pole; wires go from Attach.WireL/R/M to the next pole.')
     prof = [(0.176, 0.0), (0.173, 0.6), (0.166, 2.0), (0.153, 4.0), (0.140, 6.0), (0.129, 7.8),
             (0.122, 8.86), (0.112, 8.96), (0.075, 9.0), (0.0, 9.012)]
-    m.add(pole_lathe(prof, 14, 'pole'))
-    # yellow-black guard sleeve
-    sp = [(0.174, 0.13), (0.191, 0.15), (0.193, 0.19), (0.193, 1.93), (0.191, 1.97), (0.17, 1.99)]
-    bm, tags = lathe(sp, 14, ['black', 'black', 'decal', 'black', 'black'])
-    uv_cyl(bm, [f for f, s, i in tags if s == 2], 'hazard', tfn=lambda co: (co.z - 0.19) / 1.74)
-    m.add(bm)
+    m.add(pole_lathe(prof, 14, 'polewood' if wood else 'pole'))
+    if not wood:
+        # yellow-black guard sleeve
+        sp = [(0.174, 0.13), (0.191, 0.15), (0.193, 0.19), (0.193, 1.93), (0.191, 1.97), (0.17, 1.99)]
+        bm, tags = lathe(sp, 14, ['black', 'black', 'decal', 'black', 'black'])
+        uv_cyl(bm, [f for f, s, i in tags if s == 2], 'hazard', tfn=lambda co: (co.z - 0.19) / 1.74)
+        m.add(bm)
     # step bolts, alternating left and right
     for i, z in enumerate(np.arange(2.45, 7.7, 0.42)):
         sx = 1 if i % 2 == 0 else -1
@@ -93,7 +98,7 @@ def utility_pole():
         m.add(tube([(sx * (r - 0.02), 0, z), (sx * (r + 0.17), 0, z), (sx * (r + 0.21), 0, z + 0.05)], 0.017, 'steel_d', sides=4))
     # crossarm with braces and clamps
     za = 8.35; ya = -0.175
-    m.add(cbox((2.1, 0.11, 0.11), 0.018, 'steel', at=(0, ya, za)))
+    m.add(cbox((2.1, 0.11, 0.11), 0.018, 'darkwood' if wood else 'steel', at=(0, ya, za)))
     for sx in (-1, 1):
         m.add(tube([(0, ya + 0.04, 7.86), (sx * 0.62, ya, za - 0.04)], 0.016, 'steel', sides=4))
     m.add(clamp_ring(radius_at(prof, za), za - 0.06, za + 0.06))
@@ -453,5 +458,5 @@ def drain_grate():
     return m
 
 
-MODELS = [utility_pole, street_lamp, ped_signal, block_wall, wall_pillar, picket_fence, hoarding,
+MODELS = [utility_pole, lambda: utility_pole(wood=True), street_lamp, ped_signal, block_wall, wall_pillar, picket_fence, hoarding,
           sign_no_entry, sign_crossing, bollard, traffic_cone, road_barrier, manhole, drain_grate]

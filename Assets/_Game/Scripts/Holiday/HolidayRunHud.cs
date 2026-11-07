@@ -47,7 +47,7 @@ namespace DribbleToSchool.Holiday
         static readonly string[] StageNumbers = Numbers(HolidayStages.Count);
 
         static readonly Color KickReady = new Color(0.3f, 0.82f, 0.42f);
-        static readonly Color BestGold = new Color(0.86f, 0.56f, 0.06f);
+        static readonly Color BestGold = new Color(1f, 0.78f, 0.3f);
         static readonly Color ChipDisc = new Color(0.1f, 0.16f, 0.34f, 0.92f);
         static readonly Color OopsColor = new Color(1f, 0.5f, 0.45f);
 
@@ -325,12 +325,13 @@ namespace DribbleToSchool.Holiday
         /// <summary>The card at the top left: score, combo ring, distance, coins, and the best score to beat.</summary>
         void BuildCard()
         {
-            var face = UIKit.Card(safe, "Card", UITheme.Paper);
+            // Frosted glass like the touch controls, so the run shows through it.
+            var face = UIKit.Glass(safe, "Card");
             var card = (RectTransform)face.transform.parent;
             UIKit.Place(card, new Vector2(0f, 1f), new Vector2(Margin, -Margin), new Vector2(CardWidth, CardHeight), new Vector2(0f, 1f));
             var t = face.transform;
 
-            scoreText = UIKit.Label(t, "Score", "0", 78, UITheme.Ink, TextAnchor.MiddleLeft, true);
+            scoreText = UIKit.GlassText(UIKit.Label(t, "Score", "0", 78, UITheme.GlassInk, TextAnchor.MiddleLeft, true));
             UIKit.Place(scoreText.rectTransform, new Vector2(0f, 1f), new Vector2(24f, -8f), new Vector2(340f, 104f), new Vector2(0f, 1f));
             UIKit.Fit(scoreText, 44);
 
@@ -346,16 +347,16 @@ namespace DribbleToSchool.Holiday
             UIKit.Stretch(comboText.rectTransform, 14f);
             UIKit.Fit(comboText, 26);
 
-            distanceText = UIKit.Label(t, "Distance", "0 m", 38, UITheme.Ink, TextAnchor.MiddleLeft, true);
+            distanceText = UIKit.GlassText(UIKit.Label(t, "Distance", "0 m", 38, UITheme.GlassInk, TextAnchor.MiddleLeft, true));
             UIKit.Place(distanceText.rectTransform, new Vector2(0f, 1f), new Vector2(24f, -110f), new Vector2(210f, 48f), new Vector2(0f, 1f));
             UIKit.Fit(distanceText, 24);
 
-            coinText = UIKit.CoinAmount(t, "Coins", 0, 38, UITheme.Ink);
+            coinText = UIKit.GlassText(UIKit.CoinAmount(t, "Coins", 0, 38, UITheme.GlassInk));
             coinRow = (RectTransform)coinText.transform.parent;
             UIKit.Place(coinRow, new Vector2(0f, 1f), new Vector2(250f, -110f), new Vector2(220f, 48f), new Vector2(0f, 1f));
             coinRow.GetComponent<HorizontalLayoutGroup>().childAlignment = TextAnchor.MiddleLeft;
 
-            bestText = UIKit.Label(t, "Best", "", 28, UITheme.InkSoft, TextAnchor.MiddleLeft, true);
+            bestText = UIKit.GlassText(UIKit.Label(t, "Best", "", 28, UITheme.GlassInkSoft, TextAnchor.MiddleLeft, true));
             UIKit.Place(bestText.rectTransform, new Vector2(0f, 1f), new Vector2(24f, -164f), new Vector2(290f, 40f), new Vector2(0f, 1f));
             UIKit.Fit(bestText, 18);
 
@@ -607,11 +608,12 @@ namespace DribbleToSchool.Holiday
 
         void BuildPauseButton()
         {
-            var pause = UIKit.Button(safe, "Pause", "", UITheme.Paper, director.TogglePause);
+            // A round pane of glass, like the touch controls.
+            var pause = UIKit.GlassButton(safe, "Pause", "", Color.white, director.TogglePause, UITheme.SizeButton, true);
             pauseRect = (RectTransform)pause.transform;
             UIKit.Place(pauseRect, new Vector2(1f, 1f), new Vector2(-Margin, -Margin), new Vector2(PauseSize, PauseSize), new Vector2(1f, 1f));
-            UIKit.MakeRound(pause);
-            UIKit.Icon(pause.transform.Find("Face"), "Icon", ProceduralSprites.Pause, UITheme.Navy, 60f);
+            pause.targetGraphic.color = UITheme.Glass;
+            UIKit.Icon(pause.transform.Find("Face"), "Icon", ProceduralSprites.Pause, UITheme.GlassInk, 56f);
             // If the kid is ever wedged somewhere: "Stuck? Back to the checkpoint" (it costs a ball, like Pause > Back to checkpoint).
             if (director.level != null && director.kid != null)
                 StuckHelper.Create(safe, director.level, director.kid, () => director.level.RespawnAtCheckpoint());
@@ -881,7 +883,7 @@ namespace DribbleToSchool.Holiday
             if (beating != shownBeating)
             {
                 shownBeating = beating;
-                bestText.color = beating ? BestGold : UITheme.InkSoft;
+                bestText.color = beating ? BestGold : UITheme.GlassInkSoft;
                 newBestChip.gameObject.SetActive(beating);
             }
         }

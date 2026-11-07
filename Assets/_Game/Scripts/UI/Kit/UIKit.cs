@@ -133,6 +133,65 @@ namespace DribbleToSchool.UI.Kit
             return face;
         }
 
+        /// <summary>
+        /// A pane of frosted glass like the touch controls (UITheme.Glass under a thin bright rim, no
+        /// shadow), for the in-play HUD: the street shows through it. Returns the face; put content on it,
+        /// lettered with <see cref="GlassText"/>.
+        /// </summary>
+        public static Image Glass(Transform parent, string name, bool round = false, Color? tint = null)
+        {
+            var root = Rect(parent, name);
+            var face = Panel(root, "Face", tint ?? UITheme.Glass, round ? ProceduralSprites.SoftEdgeDisc : ProceduralSprites.Rounded);
+            if (round) face.type = Image.Type.Simple;
+            Stretch(face.rectTransform);
+            var rim = Panel(face.transform, "Rim", UITheme.GlassRim, round ? ProceduralSprites.ThinRing : ProceduralSprites.RoundedRim);
+            if (round) rim.type = Image.Type.Simple;
+            Stretch(rim.rectTransform);
+            rim.raycastTarget = false;
+            return face;
+        }
+
+        /// <summary>White lettering for glass: a soft dark drop so it reads over a bright sky or a white wall.</summary>
+        public static Text GlassText(Text t)
+        {
+            if (t.GetComponent<Shadow>() == null)
+            {
+                var sh = t.gameObject.AddComponent<Shadow>();
+                sh.effectColor = new Color(0f, 0.02f, 0.1f, 0.55f);
+                sh.effectDistance = new Vector2(0f, -2.5f);
+            }
+            return t;
+        }
+
+        /// <summary>
+        /// A glass button (a <see cref="Glass"/> pane tinted with <paramref name="color"/>, white lettering)
+        /// that squishes when pressed, for buttons over the game: the tour's Next and Skip, "Stuck?", pause.
+        /// </summary>
+        public static Button GlassButton(Transform parent, string name, string label, Color color, UnityAction onClick,
+            int fontSize = UITheme.SizeButton, bool round = false)
+        {
+            var face = Glass(parent, name, round, new Color(color.r, color.g, color.b, 0.42f));
+            var root = face.transform.parent;
+            if (!string.IsNullOrEmpty(label))
+            {
+                var text = GlassText(Label(face.transform, "Label", label, fontSize, UITheme.GlassInk, TextAnchor.MiddleCenter, true));
+                Stretch(text.rectTransform, 8f);
+                text.rectTransform.offsetMin = new Vector2(14f, 6f);
+                text.rectTransform.offsetMax = new Vector2(-14f, -4f);
+                Fit(text, Mathf.RoundToInt(fontSize * 0.7f));
+            }
+            var button = root.gameObject.AddComponent<UnityEngine.UI.Button>();
+            button.targetGraphic = face;
+            var colors = button.colors;
+            colors.highlightedColor = new Color(1.1f, 1.1f, 1.1f);
+            colors.pressedColor = new Color(1.3f, 1.3f, 1.3f);
+            colors.disabledColor = new Color(0.7f, 0.7f, 0.7f, 0.5f);
+            button.colors = colors;
+            if (onClick != null) button.onClick.AddListener(onClick);
+            root.gameObject.AddComponent<UIButtonFx>();
+            return button;
+        }
+
         public static Image Icon(Transform parent, string name, Sprite sprite, Color color, float size)
         {
             var rt = Rect(parent, name);

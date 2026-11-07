@@ -197,6 +197,16 @@ namespace DribbleToSchool.EditorTools
                 m.SetColor("_ShadowColor", kit == "Plants" ? new Color(0.728f, 0.006f, 2f) : DefaultShadowTint);
                 m.enableInstancing = true;                          // repeats of a kit model draw together
                 set.kits[kit] = m;
+                // A kit's California skin atlas (the same layout repainted: BuildingsCAAtlas.png, the shops'
+                // English signs), drawn instead of the kit's own in the levels' California scenes.
+                var skinAtlas = AssetDatabase.LoadAssetAtPath<Texture2D>(LevelBuildKit.ModelsDir + "/" + kit + "/" + kit + "CAAtlas.png");
+                if (skinAtlas == null) continue;
+                var ca = ToonMaterial("Kit" + kit + "CA", toon, skinAtlas, false);
+                ca.CopyPropertiesFromMaterial(m);
+                ca.mainTexture = skinAtlas;
+                ca.enableInstancing = true;
+                EditorUtility.SetDirty(ca);
+                set.kits[kit + "CA"] = ca;
             }
             set.cloud = ToonMaterial("Cloud", toon, null, false);
             set.cloud.SetFloat("_Haze", 0.15f);

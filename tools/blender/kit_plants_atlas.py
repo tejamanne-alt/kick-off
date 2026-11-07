@@ -16,7 +16,10 @@ import math
 import numpy as np
 from PIL import Image
 
-AT = 1024
+# 2048 x 2048 (it was 1024): twice the detail in every leaf sprite, bark and frond tile. The UV insets
+# below stay what they were at 1024, so the models' UVs are unchanged.
+AT = 2048
+PXS = AT / 1024.0    # the painters' pixel sizes were drawn for 1024: scale them with the atlas
 # (u0, v0, u1, v1) in UV space (v up)
 REG = {
     'bark':   (0.000, 0.0, 0.125, 1.0),    # around x up, about 1.2 m x 8 m, tiles around
@@ -28,7 +31,7 @@ REG = {
     'frond':  (0.750, 0.5, 1.000, 1.0),    # palm frond: left edge (u 0), midrib (0.5), right edge (1); base (v 0) to tip (1)
     'white':  (0.9375, 0.0, 1.0, 0.0625),
 }
-MARGIN = 3.0 / AT
+MARGIN = 3.0 / 1024
 
 # Leaf-card sprite cells (u0, v0), 0.125 x 0.125 each: seven beside the needles (the white corner
 # keeps its own cell) and six above the palm ring.
@@ -39,7 +42,7 @@ SPRITES = {'leaf': _CELLS[0:7], 'birch': _CELLS[7:9], 'blossom': _CELLS[9:11], '
 LEAF_ALPHA = 0.9          # the most opaque a sprite texel gets (solid regions are 1.0)
 
 
-def sprite_uv(kind, index, s, t, inset=2.0 / AT):
+def sprite_uv(kind, index, s, t, inset=2.0 / 1024):
     """(s, t) in [0, 1] across a leaf sprite cell -> atlas UV."""
     u0, v0 = SPRITES[kind][index % len(SPRITES[kind])]
     return np.stack([u0 + inset + np.asarray(s) * (CELL - 2 * inset), v0 + inset + np.asarray(t) * (CELL - 2 * inset)], axis=-1)
@@ -111,14 +114,14 @@ def paint_birch(rng, h, w, U, V):
     # dark lenticel dashes, wider than tall, wrapping around
     for _ in range(170):
         y = rng.uniform(0.07, 1.0) * h
-        _ellipse(img, rng.uniform(0, w), y, rng.uniform(5, 22), rng.uniform(1.2, 2.6), rng.uniform(0.18, 0.45), mode='min')
+        _ellipse(img, rng.uniform(0, w), y, rng.uniform(5, 22) * PXS, rng.uniform(1.2, 2.6) * PXS, rng.uniform(0.18, 0.45), mode='min')
     # a few bold black "eyes" where old branches fell: a wide band, pinched at the ends
     for _ in range(11):
         cx, cy = rng.uniform(0, w), rng.uniform(0.12, 0.97) * h
-        L = rng.uniform(20, 34)
+        L = rng.uniform(20, 34) * PXS
         for k in range(9):
             t = (k - 4) / 4.0
-            _ellipse(img, cx + t * L, cy - abs(t) * 3.0, 6.5 * (1 - 0.55 * abs(t)), 4.2 * (1 - 0.6 * abs(t)),
+            _ellipse(img, cx + t * L, cy - abs(t) * 3.0 * PXS, 6.5 * PXS * (1 - 0.55 * abs(t)), 4.2 * PXS * (1 - 0.6 * abs(t)),
                      0.12, mode='min')
     # rough, dark base (birches blacken and crack near the ground)
     base = 0.055 + 0.03 * pnoise(h, w, 9, 3, rng)
@@ -134,10 +137,10 @@ def paint_cherry(rng, h, w, U, V):
     img = 0.86 - 0.08 * pnoise(h, w, 5, 20, rng)
     for _ in range(260):
         y = rng.uniform(0, h)
-        _ellipse(img, rng.uniform(0, w), y, rng.uniform(6, 18), rng.uniform(0.8, 1.6), 1.0, mode='set', alpha=0.75)
+        _ellipse(img, rng.uniform(0, w), y, rng.uniform(6, 18) * PXS, rng.uniform(0.8, 1.6) * PXS, 1.0, mode='set', alpha=0.75)
     for _ in range(120):
         y = rng.uniform(0, h)
-        _ellipse(img, rng.uniform(0, w), y, rng.uniform(8, 26), rng.uniform(0.8, 1.5), 0.58, mode='min')
+        _ellipse(img, rng.uniform(0, w), y, rng.uniform(8, 26) * PXS, rng.uniform(0.8, 1.5) * PXS, 0.58, mode='min')
     return np.clip(img, 0, 1)
 
 
@@ -183,8 +186,8 @@ def paint_hedge(rng, h, w, U, V):
     img = 0.80 + 0.05 * pnoise(h, w, 8, 14, rng)
     for _ in range(2600):
         cx, cy = rng.uniform(0, w), rng.uniform(0, h)
-        rx = rng.uniform(3.5, 6.5); ry = rx * rng.uniform(0.55, 0.8)
-        _ellipse(img, cx, cy + 1.2, rx, ry, 0.74, mode='set', alpha=0.8)
+        rx = rng.uniform(3.5, 6.5) * PXS; ry = rx * rng.uniform(0.55, 0.8)
+        _ellipse(img, cx, cy + 1.2 * PXS, rx, ry, 0.74, mode='set', alpha=0.8)
         _ellipse(img, cx, cy, rx * 0.92, ry * 0.9, rng.uniform(0.86, 0.98), mode='set')
         _ellipse(img, cx - rx * 0.2, cy - ry * 0.35, rx * 0.45, ry * 0.35, 1.0, mode='set', alpha=0.35)
     return np.clip(img, 0, 1)
@@ -268,7 +271,7 @@ def _scatter(rng, n, radius, rmin, rmax, sep=1.0, squash=1.0, tries=600):
     return out
 
 
-def paint_sprite(rng, kind, px=128, ss=4, ramp_px=7.0):
+def paint_sprite(rng, kind, px=128, ss=4, ramp_px=7.0 * PXS):
     """One leaf-card sprite: grey value and alpha (px x px, row 0 at the top)."""
     if kind == 'leaf':
         n = int(rng.integers(10, 14))

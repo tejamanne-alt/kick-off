@@ -74,17 +74,21 @@ namespace DribbleToSchool.Audio
                     break;
                 case Sfx.Coin:
                 {
-                    // Two bright bell notes, a little chorus on each, and a shimmer over the second.
-                    b = Synth.Buffer(0.55f);
-                    double[] ratio = { 1.0, 2.0, 3.01, 4.2 };
-                    float[] amp = { 1f, 0.35f, 0.18f, 0.08f };
-                    int second = (int)(0.075f * Synth.SampleRate);
+                    // An endless runner's coin: a crisp, bright arcade "bling", short so a string of coins
+                    // reads as a quick run of pings. A tiny blip up to the note (a triangle, the "game"
+                    // edge), then a clean high bell an octave and a fifth up that rings out fast, with a
+                    // faint sparkle of shimmer on top.
+                    b = Synth.Buffer(0.32f);
+                    Synth.Sweep(b, 0, 0.045f, 1760, 2349, 0.0008, 60, 0.2f, Synth.Triangle);
+                    int ring = (int)(0.035f * Synth.SampleRate);
+                    double[] ratio = { 1.0, 2.0, 2.76 };   // (all under the 11 kHz the 22 kHz synth can make)
+                    float[] amp = { 1f, 0.32f, 0.14f };
                     for (int p = 0; p < ratio.Length; p++)
                     {
-                        Synth.Sweep(b, 0, 0.12f, 1318.5 * ratio[p], 1318.5 * ratio[p], 0.001, 22 * (1 + p * 0.5), 0.28f * amp[p]);
-                        Synth.Sweep(b, second, 0.45f, 1975.5 * ratio[p], 1975.5 * ratio[p], 0.001, 7 * (1 + p * 0.6), 0.3f * amp[p]);
-                        Synth.Sweep(b, second, 0.45f, 1975.5 * ratio[p] * 1.004, 1975.5 * ratio[p] * 1.004, 0.001, 7 * (1 + p * 0.6), 0.16f * amp[p]);
+                        Synth.Sweep(b, ring, 0.28f, 2637 * ratio[p], 2637 * ratio[p], 0.0008, 16 * (1 + p * 0.7), 0.3f * amp[p]);
+                        Synth.Sweep(b, ring, 0.28f, 2637 * ratio[p] * 1.003, 2637 * ratio[p] * 1.003, 0.0008, 16 * (1 + p * 0.7), 0.12f * amp[p]);
                     }
+                    Band(b, ring, 0.06f, 8500, 1.2, 0.0005, 60, 0.05f, 21);
                     break;
                 }
                 case Sfx.Sticker:
@@ -205,18 +209,19 @@ namespace DribbleToSchool.Audio
                     break;
                 case Sfx.Whistle:
                 {
-                    // Referee whistle: bright tone with a pea-trill.
-                    b = Synth.Buffer(0.5f);
+                    // Referee whistle, blown short and from across the pitch: a softer, lower tone with its
+                    // pea-trill, and less breath (it was a long, piercing 2.6 kHz blast).
+                    b = Synth.Buffer(0.38f);
                     double phase = 0;
                     for (int i = 0; i < b.Length; i++)
                     {
                         double t = i / (double)Synth.SampleRate;
-                        double f = 2600 + Math.Sin(t * 2 * Math.PI * 32) * 120;
+                        double f = 2250 + Math.Sin(t * 2 * Math.PI * 30) * 90;
                         phase += f / Synth.SampleRate;
-                        float env = (float)(Math.Min(1, t / 0.02) * Math.Min(1, (0.5 - t) / 0.08));
+                        float env = (float)(Math.Min(1, t / 0.025) * Math.Min(1, (0.38 - t) / 0.1));
                         b[i] += Synth.Sine(phase) * env * 0.25f;
                     }
-                    Synth.Noise(b, 0, 0.5f, 0.02, 3, 0.05f, 0.9f, 12);
+                    Synth.Noise(b, 0, 0.38f, 0.02, 4, 0.03f, 0.6f, 12);
                     break;
                 }
                 case Sfx.Respawn:

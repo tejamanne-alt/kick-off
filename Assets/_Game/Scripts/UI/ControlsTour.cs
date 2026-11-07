@@ -159,16 +159,17 @@ namespace DribbleToSchool.UI
             sh.effectDistance = new Vector2(0f, -4f);
 
             // The caption: across the top, clear of the controls along the bottom.
-            var face = UIKit.Card(root, "Caption", UITheme.Paper);
+            // Frosted glass like the touch controls it points at.
+            var face = UIKit.Glass(root, "Caption", false, new Color(UITheme.Glass.r, UITheme.Glass.g, UITheme.Glass.b, 0.3f));
             card = (RectTransform)face.transform.parent;
             UIKit.Place(card, new Vector2(0.5f, 1f), new Vector2(0f, -30f), new Vector2(1060f, 330f), new Vector2(0.5f, 1f));
             var t = face.transform;
-            counter = UIKit.Label(t, "Counter", "", 24, UITheme.InkSoft, TextAnchor.MiddleLeft);
+            counter = UIKit.GlassText(UIKit.Label(t, "Counter", "", 24, UITheme.GlassInkSoft, TextAnchor.MiddleLeft));
             UIKit.Place(counter.rectTransform, new Vector2(0f, 1f), new Vector2(40f, -34f), new Vector2(400f, 36f), new Vector2(0f, 0.5f));
-            title = UIKit.Label(t, "Title", "", 46, UITheme.Navy, TextAnchor.MiddleLeft, true);
+            title = UIKit.GlassText(UIKit.Label(t, "Title", "", 46, UITheme.GlassTitle, TextAnchor.MiddleLeft, true));
             UIKit.Place(title.rectTransform, new Vector2(0f, 1f), new Vector2(40f, -80f), new Vector2(980f, 58f), new Vector2(0f, 0.5f));
             UIKit.Fit(title, 30);
-            body = UIKit.Label(t, "Body", "", 31, UITheme.Ink, TextAnchor.UpperLeft);
+            body = UIKit.GlassText(UIKit.Label(t, "Body", "", 31, UITheme.GlassInk, TextAnchor.UpperLeft));
             var b = body.rectTransform;
             b.anchorMin = Vector2.zero;
             b.anchorMax = Vector2.one;
@@ -178,14 +179,15 @@ namespace DribbleToSchool.UI
             body.resizeTextMinSize = 22;
             body.resizeTextMaxSize = 31;
             body.verticalOverflow = VerticalWrapMode.Truncate;
-            tryIt = UIKit.Label(t, "TryIt", "", 30, UITheme.Accent, TextAnchor.MiddleLeft, true);
+            tryIt = UIKit.GlassText(UIKit.Label(t, "TryIt", "", 30, UITheme.GlassAccent, TextAnchor.MiddleLeft, true));
             UIKit.Place(tryIt.rectTransform, new Vector2(0f, 0f), new Vector2(40f, 58f), new Vector2(440f, 60f), new Vector2(0f, 0.5f));
             UIKit.Fit(tryIt, 22);
 
-            next = UIKit.Button(t, "Next", Loc.T("tour.next"), UITheme.Green, OnNext, 36);
+            next = UIKit.GlassButton(t, "Next", Loc.T("tour.next"), UITheme.Green, OnNext, 36);
             UIKit.Place((RectTransform)next.transform, new Vector2(1f, 0f), new Vector2(-34f, 28f), new Vector2(260f, 84f), new Vector2(1f, 0f));
             nextLabel = next.GetComponentInChildren<Text>();
-            skip = UIKit.Button(t, "Skip", Loc.T("tour.skip"), UITheme.Paper, Finish, 30, UITheme.InkSoft);
+            skip = UIKit.GlassButton(t, "Skip", Loc.T("tour.skip"), Color.white, Finish, 30);
+            skip.targetGraphic.color = UITheme.Glass;
             UIKit.Place((RectTransform)skip.transform, new Vector2(1f, 0f), new Vector2(-314f, 28f), new Vector2(200f, 84f), new Vector2(1f, 0f));
         }
 
@@ -211,7 +213,7 @@ namespace DribbleToSchool.UI
             bool last = step == Steps.Length - 1;
             counter.text = Loc.F("tour.step", step + 1, Steps.Length);
             title.text = Loc.T(s.TitleKey);
-            title.color = UITheme.Navy;
+            title.color = UITheme.GlassTitle;
             body.text = Loc.T(s.BodyKey);
             tryIt.text = s.CanTry ? Loc.T("tour.tryIt") : "";
             nextLabel.text = Loc.T(last ? "tour.go" : "tour.next");
@@ -267,7 +269,7 @@ namespace DribbleToSchool.UI
             {
                 doneAt = stepTime;
                 title.text = Loc.T("tour.nice");
-                title.color = UITheme.Green;
+                title.color = new Color(0.55f, 1f, 0.65f);
                 tryIt.text = "";
                 GameEvents.Raise(GameEventType.UIClick, Vector2.zero, 0.8f);
             }

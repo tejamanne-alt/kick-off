@@ -34,11 +34,12 @@ PAL = {
     'cap': (0.88, 0.84, 0.76), 'ac': (0.90, 0.89, 0.85), 'insul': (0.86, 0.84, 0.78),
     'meter': (0.80, 0.80, 0.77), 'gaspipe': (0.90, 0.74, 0.30), 'dish': (0.90, 0.89, 0.86),
     'chalkframe': (0.62, 0.46, 0.32), 'darkwood': (0.46, 0.34, 0.25), 'amberlens': (0.98, 0.68, 0.26), 'flowerc': (0.86, 0.58, 0.26),
+    'polewood': (0.47, 0.37, 0.28),
 }
 # The grime map each material samples when its piece doesn't set UVs (None: the white corner).
 MODE = {
     'concrete': 'conc', 'concrete_l': 'conc', 'concrete_d': 'conc', 'pole': 'conc', 'stone': 'conc',
-    'terracotta': 'conc', 'paintc': 'conc',
+    'terracotta': 'conc', 'paintc': 'conc', 'polewood': 'conc',
     'steel': 'paint', 'steel_d': 'paint', 'galv': 'paint', 'iron': 'paint', 'trans': 'paint',
     'lampgreen': 'paint', 'housing': 'paint', 'signalgrey': 'paint', 'yellow': 'paint', 'red': 'paint',
     'white': 'paint', 'cream': 'paint', 'paint': 'paint', 'ac': 'paint', 'meter': 'paint',

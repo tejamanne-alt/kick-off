@@ -7,6 +7,7 @@ namespace DribbleToSchool.UI.Kit
     {
         static Sprite rounded, roundedSmall, circle, star, coin, lockIcon, gradient, arrow, pause, ring, softDisc, softEdgeDisc, ballIcon;
         static Sprite trophy, medal, medalRibbon;
+        static Sprite roundedRim;
         static Sprite roundedEdge, roundedEdgeSmall, circleEdge, check, pitchBadge, holoSheen, goldSheen, stickerIcon, streak, bolt, shield, magnet;
         static Sprite jumpIcon, spotHole, thinRing, clock, play, retry;
 
@@ -212,6 +213,38 @@ namespace DribbleToSchool.UI.Kit
         public static Sprite RoundedEdge
         {
             get { return roundedEdge != null ? roundedEdge : (roundedEdge = MakeRounded(96, 26, 4f)); }
+        }
+
+        /// <summary>
+        /// Only the thin, bright line round a 9-sliced rounded rectangle (the rim of the HUD's glass panes,
+        /// like <see cref="ThinRing"/> round the touch controls).
+        /// </summary>
+        public static Sprite RoundedRim
+        {
+            get
+            {
+                if (roundedRim != null) return roundedRim;
+                const int size = 96, radius = 34;
+                const float width = 2.2f;
+                var tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
+                for (int y = 0; y < size; y++)
+                {
+                    for (int x = 0; x < size; x++)
+                    {
+                        float cx = Mathf.Clamp(x + 0.5f, radius, size - radius);
+                        float cy = Mathf.Clamp(y + 0.5f, radius, size - radius);
+                        float d = Vector2.Distance(new Vector2(x + 0.5f, y + 0.5f), new Vector2(cx, cy));
+                        float inside = Mathf.Min(radius - d, Mathf.Min(Mathf.Min(x + 0.5f, size - x - 0.5f), Mathf.Min(y + 0.5f, size - y - 0.5f)));
+                        float a = Mathf.Clamp01(inside + 0.5f) * Mathf.Clamp01(width + 0.5f - inside);
+                        tex.SetPixel(x, y, new Color(1f, 1f, 1f, a));
+                    }
+                }
+                tex.wrapMode = TextureWrapMode.Clamp;
+                tex.Apply();
+                float b = radius + 2;
+                roundedRim = Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 100f, 0, SpriteMeshType.FullRect, new Vector4(b, b, b, b));
+                return roundedRim;
+            }
         }
 
         /// <summary>A smaller-cornered <see cref="RoundedEdge"/> for small chips, tabs and pills.</summary>

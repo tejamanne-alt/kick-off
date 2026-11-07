@@ -41,7 +41,7 @@ namespace DribbleToSchool.UI
             helper.level = level;
             helper.kid = kid;
             helper.rescue = rescue;
-            var b = UIKit.Button(holder, "Button", Loc.T("hud.stuck"), UITheme.Accent, helper.Rescue, 34);
+            var b = UIKit.GlassButton(holder, "Button", Loc.T("hud.stuck"), UITheme.Accent, helper.Rescue, 34);
             UIKit.Stretch((RectTransform)b.transform);
             b.gameObject.AddComponent<UIPulse>().amount = 0.04f;
             helper.button = b.gameObject;

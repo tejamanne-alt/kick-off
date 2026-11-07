@@ -57,6 +57,13 @@ namespace DribbleToSchool.Progression
         public List<string> schoolMedals = new List<string>();
         public bool schoolTrophy;
 
+        /// <summary>The add-on chosen in Settings (Progression/AddOns: "original", "california"...); empty in older saves.</summary>
+        public string addOn = "";
+        /// <summary>The filter chosen in Settings (Progression/AddOns.Filters).</summary>
+        public string filter = "original";
+        /// <summary>Older saves' California switch (before the add-ons): read once by AddOns.Selected.</summary>
+        public bool californiaSkin;
+
         /// <summary>The saved result of a level, or null if it has never been finished.</summary>
         public LevelRecord Level(string levelId)
         {

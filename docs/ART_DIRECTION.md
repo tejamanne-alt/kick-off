@@ -69,6 +69,22 @@ around them has real depth.
 | 4 Underpass and building site | Clear city day | Slightly paler sky | Tower crane, hoarding, scaffold, concrete pipes, warehouses |
 | 5 Park and school | Summer afternoon | Clear, a touch warmer | Green trees, a few blossoms, birches, hedges, pond, school |
 
+**The original town and the add-ons.** The original streets above are Kamakura, Japan: a seaside
+town south of Tokyo (Japanese shop names, concrete poles, block walls, the railway). Add-ons put the
+same levels in another country's streets, with that country's music, chosen in Settings, Add-ons and
+Filters (Progression/AddOns, UI/AddOnsPanel); India and a Tokyo city add-on are listed as coming soon.
+**California** (Santa Monica), unlocked by finishing every story level, has a `<scene>_CA` scene for
+each level, built beside the original with `LevelBuildKit.California` set. It is a sunny California coast town (the Coast kit, `tools/blender/kit_buildings_cal.py`): stucco
+villas and single-storey ranch houses under hipped terracotta barrel-tile roofs, white two-storey
+Craftsman houses with deep front porches, white beach condos with glass balconies, beach-town shops
+(a stepped-parapet surf shop, a Spanish Revival shop with arched windows and a tiled pent roof),
+front gardens behind picket fences or low hedges or open to the street, wooden utility poles
+(`UtilityPoleWood`), date palms along the streets and very tall, slim fan palms on the skyline, a
+timber pier on concrete piles running out from the beach, and English shop signs
+(`BuildingsCAAtlas.png`). A fan palm is 16.5 m tall, and the camera's top edge sits at about
+2.4 m + 0.23 x the distance, so grown fan palms stand 60 m or more back (StreetBuilder.PalmSkyline),
+where their crowns show over the roofs; near the street they are young ones or date palms.
+
 ## Production rules (Blender kits)
 
 - **Space:** metres, Z up, the model's front (the side the game camera sees) faces **-Y**. The origin

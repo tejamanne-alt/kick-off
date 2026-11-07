@@ -107,13 +107,14 @@ namespace DribbleToSchool.UI
 
         void Build(RectTransform holder)
         {
-            var face = UIKit.Card(holder, "Card", UITheme.Paper);
+            // Frosted glass like the touch controls, so the street shows through the tip.
+            var face = UIKit.Glass(holder, "Card");
             card = (RectTransform)face.transform.parent;
             card.anchorMin = card.anchorMax = new Vector2(0f, 1f);
             card.pivot = new Vector2(0f, 1f);
             picture = UIKit.Rect(face.transform, "Picture");
-            title = UIKit.Label(face.transform, "Title", "", 30, UITheme.Navy, TextAnchor.MiddleLeft, true);
-            body = UIKit.Label(face.transform, "Text", "", 24, UITheme.Ink, TextAnchor.UpperLeft);
+            title = UIKit.GlassText(UIKit.Label(face.transform, "Title", "", 30, UITheme.GlassTitle, TextAnchor.MiddleLeft, true));
+            body = UIKit.GlassText(UIKit.Label(face.transform, "Text", "", 24, UITheme.GlassInk, TextAnchor.UpperLeft));
             body.resizeTextForBestFit = true;
             body.resizeTextMinSize = 17;
             body.resizeTextMaxSize = 24;

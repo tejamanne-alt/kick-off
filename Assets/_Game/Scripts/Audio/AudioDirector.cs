@@ -47,8 +47,9 @@ namespace DribbleToSchool.Audio
         }
 
         readonly Dictionary<Sfx, AudioClip> clips = new Dictionary<Sfx, AudioClip>();
-        readonly Dictionary<Soundscape, AudioClip> musicClips = new Dictionary<Soundscape, AudioClip>();
-        readonly Dictionary<Soundscape, Task<float[]>> musicJobs = new Dictionary<Soundscape, Task<float[]>>();
+        // The music by place and country (MusicKey): each add-on's streets have their own country's music.
+        readonly Dictionary<int, AudioClip> musicClips = new Dictionary<int, AudioClip>();
+        readonly Dictionary<int, Task<float[]>> musicJobs = new Dictionary<int, Task<float[]>>();
         readonly Dictionary<Soundscape, Ambience> ambiences = new Dictionary<Soundscape, Ambience>();
         readonly Dictionary<Soundscape, Task<AmbiencePack>> ambienceJobs = new Dictionary<Soundscape, Task<AmbiencePack>>();
         readonly List<Soundscape> recent = new List<Soundscape>();
@@ -61,6 +62,21 @@ namespace DribbleToSchool.Audio
         bool aIsCurrent = true, bedAIsCurrent = true;
         float fade = 1f, bedFade = 1f;
         Soundscape wanted = Soundscape.Menu;
+        MusicCountry wantedCountry = MusicCountry.Japan;
+
+        static int MusicKey(Soundscape scape, MusicCountry country) { return (int)country * 32 + (int)scape; }
+
+        /// <summary>
+        /// Whose music: in a level, the country of the streets on screen (the loaded scene's add-on); in the
+        /// menu, the add-on chosen in Settings. The Holiday Run is the original town.
+        /// </summary>
+        static MusicCountry WantedCountry()
+        {
+            var level = LevelManager.Current;
+            if (level == null) return Progression.AddOns.Active.music;
+            if (level.endless) return MusicCountry.Japan;
+            return Progression.AddOns.OfScene(level.gameObject.scene.name).music;
+        }
         Ambience playingAmbience;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
@@ -112,7 +128,7 @@ namespace DribbleToSchool.Audio
             }
 
             GameEvents.Raised += OnEvent;
-            Want(WantedSoundscape());
+            Want(WantedSoundscape(), WantedCountry());
         }
 
         void OnDestroy()
@@ -155,14 +171,16 @@ namespace DribbleToSchool.Audio
             return Soundscapes.For(route != null ? route.id : null, Mathf.Clamp(level.level.chapter, 1, 5));
         }
 
-        void Want(Soundscape scape)
+        void Want(Soundscape scape, MusicCountry country)
         {
             wanted = scape;
+            wantedCountry = country;
+            int key = MusicKey(scape, country);
             recent.Remove(scape);
             recent.Insert(0, scape);
             // Synthesizing takes a second or so: do it off the main thread.
-            if (!musicClips.ContainsKey(scape) && !musicJobs.ContainsKey(scape))
-                musicJobs[scape] = Task.Run(() => MusicGenerator.Generate(scape));
+            if (!musicClips.ContainsKey(key) && !musicJobs.ContainsKey(key))
+                musicJobs[key] = Task.Run(() => MusicGenerator.Generate(scape, country));
             if (!ambiences.ContainsKey(scape) && !ambienceJobs.ContainsKey(scape))
                 ambienceJobs[scape] = Task.Run(() => AmbienceGenerator.Generate(scape));
         }
@@ -172,7 +190,8 @@ namespace DribbleToSchool.Audio
         void Update()
         {
             var scape = WantedSoundscape();
-            if (scape != wanted) Want(scape);
+            var country = WantedCountry();
+            if (scape != wanted || country != wantedCountry) Want(scape, country);
 
             FinishJobs();
             bool paused = LevelManager.Current != null && LevelManager.Current.State == LevelState.Paused;
@@ -181,7 +200,7 @@ namespace DribbleToSchool.Audio
             // Music: start the wanted track when it's ready, crossfading from the last.
             AudioClip music;
             AudioSource current = aIsCurrent ? musicA : musicB;
-            if (musicClips.TryGetValue(wanted, out music) && current.clip != music)
+            if (musicClips.TryGetValue(MusicKey(wanted, wantedCountry), out music) && current.clip != music)
             {
                 aIsCurrent = !aIsCurrent;
                 var next = aIsCurrent ? musicA : musicB;
@@ -225,19 +244,19 @@ namespace DribbleToSchool.Audio
 
         void FinishJobs()
         {
-            List<Soundscape> done = null;
+            List<int> doneMusic = null;
             foreach (var kv in musicJobs)
             {
                 if (!kv.Value.IsCompleted) continue;
-                if (done == null) done = new List<Soundscape>();
-                done.Add(kv.Key);
+                if (doneMusic == null) doneMusic = new List<int>();
+                doneMusic.Add(kv.Key);
                 if (kv.Value.Status != TaskStatus.RanToCompletion) continue;
                 using (MusicUploadMarker.Auto())
                     musicClips[kv.Key] = Stereo("music_" + kv.Key, kv.Value.Result);
             }
-            if (done != null) foreach (var k in done) musicJobs.Remove(k);
+            if (doneMusic != null) foreach (var k in doneMusic) musicJobs.Remove(k);
 
-            done = null;
+            List<Soundscape> done = null;
             foreach (var kv in ambienceJobs)
             {
                 if (!kv.Value.IsCompleted) continue;
@@ -273,11 +292,18 @@ namespace DribbleToSchool.Audio
         {
             if (recent.Count <= Keep) return;
             var scape = recent[recent.Count - 1];
-            AudioClip clip;
-            if (musicClips.TryGetValue(scape, out clip) && musicA.clip != clip && musicB.clip != clip)
+            bool musicLeft = false;
+            foreach (MusicCountry c in System.Enum.GetValues(typeof(MusicCountry)))
             {
-                musicClips.Remove(scape);
-                Destroy(clip);
+                AudioClip clip;
+                int key = MusicKey(scape, c);
+                if (!musicClips.TryGetValue(key, out clip)) continue;
+                if (musicA.clip != clip && musicB.clip != clip)
+                {
+                    musicClips.Remove(key);
+                    Destroy(clip);
+                }
+                else musicLeft = true;
             }
             Ambience amb;
             if (ambiences.TryGetValue(scape, out amb) && bedA.clip != amb.bed && bedB.clip != amb.bed && playingAmbience != amb)
@@ -286,7 +312,7 @@ namespace DribbleToSchool.Audio
                 Destroy(amb.bed);
                 foreach (var c in amb.cueClips) Destroy(c);
             }
-            if (!musicClips.ContainsKey(scape) && !ambiences.ContainsKey(scape)) recent.RemoveAt(recent.Count - 1);
+            if (!musicLeft && !ambiences.ContainsKey(scape)) recent.RemoveAt(recent.Count - 1);
         }
 
         // ---------- Ambient cues ----------
@@ -407,14 +433,14 @@ namespace DribbleToSchool.Audio
                 case GameEventType.BallBounce:
                     if (k > 0.15f) PlayInternal(Sfx.Bounce, 0.2f + k * 0.6f, Vary(0.1f) * (1.2f - k * 0.3f));
                     break;
-                case GameEventType.Coin: PlayInternal(Sfx.Coin, 0.5f, Vary(0.03f)); break;
+                case GameEventType.Coin: PlayInternal(Sfx.Coin, 0.26f, Vary(0.02f)); break;
                 case GameEventType.Sticker: PlayInternal(Sfx.Sticker, 0.8f, 1f); Haptics.Success(); break;
                 case GameEventType.Checkpoint: PlayInternal(Sfx.Checkpoint, 0.6f, 1f); break;
                 case GameEventType.Bell: PlayInternal(Sfx.Bell, 0.8f, 1f); Haptics.Impact(Haptics.Strength.Heavy); break;
                 case GameEventType.Goal: PlayInternal(Sfx.Goal, 0.9f, 1f); Haptics.Success(); break;
                 case GameEventType.BallLost: PlayInternal(Sfx.Lose, 0.6f, 1f); Haptics.Impact(Haptics.Strength.Heavy); break;
                 case GameEventType.Respawn: PlayInternal(Sfx.Respawn, 0.5f, 1f); break;
-                case GameEventType.LevelStart: PlayInternal(Sfx.Whistle, 0.6f, 1f); break;
+                case GameEventType.LevelStart: PlayInternal(Sfx.Whistle, 0.28f, 1f); break;
                 case GameEventType.Splash: PlayInternal(Sfx.Splash, 0.7f, Vary()); break;
                 case GameEventType.DogSteal: PlayInternal(Sfx.Woof, 0.7f, Vary(0.1f)); break;
                 case GameEventType.SeagullHit: PlayInternal(Sfx.Squawk, 0.7f, Vary(0.1f)); break;

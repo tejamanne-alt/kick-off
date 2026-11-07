@@ -4,8 +4,11 @@ using System.Collections.Generic;
 namespace DribbleToSchool.Audio
 {
     /// <summary>
-    /// The music: sunny, upbeat Californian West Coast styles, one 16-bar loop for each soundscape, every one
-    /// original. Jangly clean electric guitars and strummed acoustics, a twangy surf guitar through spring
+    /// The music, in the style of the country the streets are in (<see cref="MusicCountry"/>): for the original
+    /// town (Kamakura, Japan) bright Japanese city pop and J-pop on the "royal road" chords, with pentatonic
+    /// (yonanuki) tunes on a koto-like pluck, a breathy bamboo flute, Rhodes and a glockenspiel (see
+    /// <see cref="JapanStyleOf"/>); for the California add-on the sunny, upbeat Californian West Coast styles
+    /// below. One 16-bar loop for each soundscape, every one original. Jangly clean electric guitars and strummed acoustics, a twangy surf guitar through spring
     /// reverb, a combo organ, Rhodes, the West Coast synth whistle, soft "ooh" harmonies, a picked bass, and
     /// live-feeling drums with claps, tambourine and a crash to open each half. Per place: a laid-back
     /// fingerpicked sunset for the menu, jangly beach pop on Home Street, West Coast funk in the market,
@@ -31,13 +34,19 @@ namespace DribbleToSchool.Audio
 
         public static float[] Generate(Soundscape scape)
         {
-            return Arrange(StyleOf(scape));
+            return Generate(scape, MusicCountry.Japan);
+        }
+
+        /// <summary>The loop for a place, in the style of the country its streets are in.</summary>
+        public static float[] Generate(Soundscape scape, MusicCountry country)
+        {
+            return Arrange(country == MusicCountry.California ? StyleOf(scape) : JapanStyleOf(scape));
         }
 
         // ================= Styles =================
 
         enum Comp { None, Jangle, Acoustic, Fingerpick, Palm, Funk, Rhodes, RhodesHeld, Organ }
-        enum Lead { Surf, Whistle, Glock, Guitar, Acoustic, Rhodes }
+        enum Lead { Surf, Whistle, Glock, Guitar, Acoustic, Rhodes, Koto, Flute }
         enum Kit { Pop, Surf, Funk, WestCoast, Folk }
         enum Bass { Pick, Sub }
 
@@ -59,6 +68,95 @@ namespace DribbleToSchool.Audio
             public double tone = 7000;
         }
 
+        /// <summary>
+        /// The original town's music (Kamakura, a seaside town south of Tokyo): Japanese city pop and J-pop.
+        /// Most of it turns on the "royal road" (IVmaj7 - V7 - iiim7 - vim7) and its relatives, with
+        /// pentatonic yonanuki tunes (no fourth, no seventh) on a koto-like pluck or a breathy bamboo flute.
+        /// </summary>
+        static Style JapanStyleOf(Soundscape scape)
+        {
+            switch (scape)
+            {
+                case Soundscape.Street:
+                    // A bright J-pop morning: jangly guitars on the royal road, a koto tune, then a glockenspiel over "ooh"s.
+                    return new Style
+                    {
+                        bpm = 122, swing = 0, key = 62, mode = Mode.Yona, seed = 111,
+                        chords = new[] { "Gmaj7", "A7", "F#m7", "Bm7", "Gmaj7", "A7", "D", "D",
+                                         "Gmaj7", "A7", "F#m7", "Bm7", "Em7", "F#m7", "Gmaj7", "A7sus4" },
+                        comp = Comp.Jangle, comp2 = Comp.Rhodes, comp2OnlyInB = true, leadA = Lead.Koto, leadB = Lead.Glock,
+                        leadLo = 69, leadHi = 86, bass = Bass.Pick, kit = Kit.Pop, oohs = true, claps = true, tambourine = true,
+                    };
+                case Soundscape.Market:
+                    // Shopping-street city pop: Rhodes and sixteenth guitar chops, a slinky bass, a synth lead.
+                    return new Style
+                    {
+                        bpm = 112, swing = 0.04, key = 65, mode = Mode.Yona, seed = 122,
+                        chords = new[] { "Bbmaj7", "A7", "Dm7", "Dm7", "Bbmaj7", "C7", "Am7", "Dm7",
+                                         "Gm7", "C7", "Fmaj7", "Dm7", "Bbmaj7", "C7", "Am7", "A7" },
+                        comp = Comp.Rhodes, comp2 = Comp.Funk, leadA = Lead.Koto, leadB = Lead.Whistle,
+                        leadLo = 67, leadHi = 84, bass = Bass.Pick, kit = Kit.Funk, claps = true,
+                        room = 0.45f, wet = 0.18f,
+                    };
+                case Soundscape.Beach:
+                    // Shonan summer: a driving beach pop on the royal road, an organ in the second half, guitar then flute.
+                    return new Style
+                    {
+                        bpm = 130, swing = 0, key = 64, mode = Mode.Yona, seed = 133,
+                        chords = new[] { "Amaj7", "B7", "G#m7", "C#m7", "Amaj7", "B7", "E", "E",
+                                         "Amaj7", "B7", "G#m7", "C#m7", "F#m7", "B7", "E", "B7" },
+                        comp = Comp.Jangle, comp2 = Comp.Organ, comp2OnlyInB = true, leadA = Lead.Guitar, leadB = Lead.Flute,
+                        leadLo = 66, leadHi = 83, leadSend = 0.5f, bass = Bass.Pick, kit = Kit.Pop, tambourine = true, claps = true,
+                        room = 0.7f, wet = 0.24f,
+                    };
+                case Soundscape.Underpass:
+                    // Night city pop under the railway: held Rhodes, a deep sub, a gliding synth then the flute, the tunnel's echo.
+                    return new Style
+                    {
+                        bpm = 96, swing = 0.06, key = 57, mode = Mode.YonaMinor, seed = 144,
+                        chords = new[] { "Fmaj9", "E7", "Am9", "Am9", "Dm9", "G13", "Cmaj9", "E7",
+                                         "Fmaj9", "E7", "Am9", "Gm7", "Fmaj9", "Em9", "Dm9", "E7" },
+                        comp = Comp.RhodesHeld, comp2 = Comp.Funk, comp2OnlyInB = true, leadA = Lead.Whistle, leadB = Lead.Flute,
+                        leadLo = 69, leadHi = 84, leadSend = 0.45f, bass = Bass.Sub, kit = Kit.WestCoast, claps = true,
+                        room = 0.85f, wet = 0.3f, tone = 6000, vinyl = 0.4f,
+                    };
+                case Soundscape.Site:
+                    // Busy and upbeat: palm-muted eighths, an organ, a twangy guitar tune then the koto.
+                    return new Style
+                    {
+                        bpm = 126, swing = 0, key = 62, mode = Mode.Yona, seed = 155,
+                        chords = new[] { "Bm7", "Gmaj7", "A7", "D", "Bm7", "Gmaj7", "Em7", "A7",
+                                         "Gmaj7", "A7", "F#m7", "Bm7", "Gmaj7", "A7", "D", "A7" },
+                        comp = Comp.Palm, comp2 = Comp.Organ, comp2OnlyInB = true, leadA = Lead.Guitar, leadB = Lead.Koto,
+                        leadLo = 66, leadHi = 83, leadSend = 0.5f, bass = Bass.Pick, kit = Kit.Surf, claps = true,
+                        room = 0.6f, wet = 0.22f,
+                    };
+                case Soundscape.Park:
+                    // A gentle J-pop afternoon: strummed acoustic, the flute's tune then the koto, "ooh"s, claps and a shaker.
+                    return new Style
+                    {
+                        bpm = 104, swing = 0, key = 67, mode = Mode.Yona, seed = 166,
+                        chords = new[] { "Cmaj7", "D7", "Bm7", "Em7", "Cmaj7", "D7", "G", "G",
+                                         "Am7", "Bm7", "Cmaj7", "D7", "Cmaj7", "D7", "G", "D7sus4" },
+                        comp = Comp.Acoustic, comp2 = Comp.Fingerpick, comp2OnlyInB = true, leadA = Lead.Flute, leadB = Lead.Koto,
+                        leadLo = 69, leadHi = 86, bass = Bass.Pick, kit = Kit.Folk, oohs = true, claps = true, tambourine = true,
+                        room = 0.6f, wet = 0.24f,
+                    };
+                default:
+                    // The menu: evening by the sea in Kamakura. Fingerpicked guitar and Rhodes, a laid-back beat, the koto then the flute.
+                    return new Style
+                    {
+                        bpm = 92, swing = 0.06, key = 57, mode = Mode.Yona, seed = 107,
+                        chords = new[] { "Dmaj7", "E7", "C#m7", "F#m7", "Dmaj7", "E7", "A", "A",
+                                         "Bm7", "C#m7", "Dmaj7", "E7", "Dmaj7", "C#m7", "Bm7", "E7sus4" },
+                        comp = Comp.Fingerpick, comp2 = Comp.RhodesHeld, leadA = Lead.Koto, leadB = Lead.Flute,
+                        leadLo = 69, leadHi = 84, bass = Bass.Pick, kit = Kit.Folk, oohs = true,
+                        room = 0.65f, wet = 0.26f, tone = 6500,
+                    };
+            }
+        }
+
+        /// <summary>The California add-on's music: West Coast styles.</summary>
         static Style StyleOf(Soundscape scape)
         {
             switch (scape)
@@ -336,6 +434,10 @@ namespace DribbleToSchool.Audio
                 case Lead.Glock: Instruments.Glock(tr, t, f, v * 0.9f); break;
                 case Lead.Guitar: Instruments.CleanGuitar(tr, t, f, d + 0.1, v * 0.9f, n.midi * 3 + (int)(n.beat * 4)); break;
                 case Lead.Acoustic: Instruments.Pluck(tr, t, f, d + 0.2, v * 0.75f, n.midi * 3, 0.45f); break;
+                // A koto-like pluck: bright and quick to fade, like a plucked silk string.
+                case Lead.Koto: Instruments.Pluck(tr, t, f, d + 0.35, v * 0.8f, n.midi * 7 + (int)(n.beat * 4), 0.72f, 0.993f); break;
+                // A breathy bamboo flute (shakuhachi-like).
+                case Lead.Flute: Instruments.Flute(tr, t, f, d * 0.95, v * 0.8f, n.midi * 5 + (int)(n.beat * 4)); break;
                 default: Instruments.Rhodes(tr, t, f, d, v * 0.65f); break;
             }
             return f;
@@ -424,7 +526,11 @@ namespace DribbleToSchool.Audio
 
         // ================= Theory =================
 
-        enum Mode { Major, Minor, Dorian, Mixolydian }
+        /// <summary>Yona and YonaMinor: the Japanese pentatonic "yonanuki" scales (no fourth, no seventh), for the tunes.</summary>
+        enum Mode { Major, Minor, Dorian, Mixolydian, Yona, YonaMinor }
+
+        static readonly int[] YonaScale = { 0, 2, 4, 7, 9 };
+        static readonly int[] YonaMinorScale = { 0, 2, 3, 7, 8 };
 
         static readonly int[] MajorScale = { 0, 2, 4, 5, 7, 9, 11 };
         static readonly int[] MinorScale = { 0, 2, 3, 5, 7, 8, 10 };
@@ -538,7 +644,8 @@ namespace DribbleToSchool.Audio
                 this.bpm = bpm;
                 this.swing = swing;
                 this.key = key;
-                scale = mode == Mode.Major ? MajorScale : mode == Mode.Minor ? MinorScale : mode == Mode.Dorian ? DorianScale : MixolydianScale;
+                scale = mode == Mode.Major ? MajorScale : mode == Mode.Minor ? MinorScale : mode == Mode.Dorian ? DorianScale
+                    : mode == Mode.Yona ? YonaScale : mode == Mode.YonaMinor ? YonaMinorScale : MixolydianScale;
                 human = new Random(seed);
                 bars = new List<ChordAt>[chords.Length];
                 for (int b = 0; b < chords.Length; b++)
