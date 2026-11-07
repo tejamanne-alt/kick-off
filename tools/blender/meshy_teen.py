@@ -12,9 +12,11 @@
 #                 a white T-shirt, terracotta trousers, black shoes, a backpack in the jacket's print (found by its shape).
 #   explorer      Mia (PrimaryGirl): an A-posed primary-school girl; shoulder-length black hair with a headband, a white
 #                 T-shirt, red shorts, bare legs, white socks, pink sneakers, a beige backpack (found by its shape).
+#   plaid         Kai (PrimaryBoy): a primary-school boy; short black hair, a red plaid flannel shirt with a white hood,
+#                 light-blue cargo jeans, black-and-white sneakers, a grey backpack.
 # tools/blender/README.md ("The backpack boy, Leo and Zoe") says more. It reuses meshy_boy.py's helpers.
 #
-#   blenv/bin/python meshy_teen.py -- /abs/source.fbx /abs/outdir [--profile backpack_boy|first_day|unicorn|explorer] [--name <Name>]
+#   blenv/bin/python meshy_teen.py -- /abs/source.fbx /abs/outdir [--profile backpack_boy|first_day|unicorn|explorer|plaid] [--name <Name>]
 #       [--tris 30000] [--joints-only]
 #     -> outdir/<Name>.fbx, <Name>.blend, <Name>.json, <Name>Atlas.png, <Name>_joints.png
 #
@@ -48,7 +50,7 @@ SRC, OUT = argv[0], argv[1]
 PROFILE_NAME = argv[argv.index('--profile') + 1] if '--profile' in argv else 'backpack_boy'
 TRIS = int(argv[argv.index('--tris') + 1]) if '--tris' in argv else 30000
 os.makedirs(OUT, exist_ok=True)
-DEFAULT_NAMES = {'backpack_boy': 'BackpackBoy', 'first_day': 'PrimaryBoy2', 'unicorn': 'PrimaryGirl2', 'explorer': 'PrimaryGirl'}
+DEFAULT_NAMES = {'backpack_boy': 'BackpackBoy', 'first_day': 'PrimaryBoy2', 'unicorn': 'PrimaryGirl2', 'explorer': 'PrimaryGirl', 'plaid': 'PrimaryBoy'}
 NAME = argv[argv.index('--name') + 1] if '--name' in argv else DEFAULT_NAMES[PROFILE_NAME]
 C = bpy.context
 HEIGHT = 2.14            # the teen boy's standing height in Blender units (the game scales by the neck anyway)
@@ -197,9 +199,21 @@ def find_joints(o):
     # wrist a hand's length up from the tips, the elbow half way
     for n, sg in (('L', 1), ('R', -1)):
         c, d, R = lines_arm[n]
-        S = c + d * (shoulder_z - c[2]) / d[2]
         top = V[(np.abs(V[:, 2] - shoulder_z) < 0.02 * H) & (V[:, 1] < J['chest'][1] + 0.05)]
-        S[0] = x0 + sg * min(abs(S[0] - x0), (sg * (top[:, 0] - x0)).max() - 0.08)
+        edge = (sg * (top[:, 0] - x0)).max() - 0.08                      # (the shoulder inside the torso's outline)
+        if R[-1][2] - R[0][2] < 0.15 * H:
+            # only the hand shows apart from the body (baggy sleeves hang against a loose shirt): its outlines say
+            # little of the arm's direction, so the shoulder is taken from the torso's outline and the arm runs
+            # straight from it to the hand
+            S = np.array([x0 + sg * edge, J['chest'][1], shoulder_z])
+            hand = R.mean(0); d = (S - hand) / np.linalg.norm(S - hand); c = hand
+            J['tip' + n] = hand + d * (R[0][2] - 0.012 * H - hand[2]) / d[2]
+            log('arms: only the %s hand shows apart from the body; the shoulder is taken from the torso' % n)
+            info['hand_only' + n] = True
+            info['armtop' + n] = shoulder_z - 0.07 * H                 # (the sleeve is split from the shirt up to the armpit)
+        else:
+            S = c + d * (shoulder_z - c[2]) / d[2]
+            S[0] = x0 + sg * min(abs(S[0] - x0), edge)
         S[1] = J['chest'][1]
         tipc = J['tip' + n]
         W = tipc + (S - tipc) / np.linalg.norm(S - tipc) * HAND
@@ -247,6 +261,66 @@ def legs_apart(o, info):
     mb.separate(o, PX, J, dict(info, hemL=-10.0, hemR=-10.0))
 
 
+def cut_apart(o, bm, lab, band, px):
+    """Cut out the faces between an arm and the body (lab: 0 body, 1/2 the arms) and close each side's holes."""
+    me = o.data
+    cut = [f for f in bm.faces if any(band[x.index] for x in f.verts) and len({int(lab[x.index]) for x in f.verts}) > 1]
+    rim = {x for f in cut for x in f.verts}
+    open0 = sum(1 for e in bm.edges if e.is_boundary)
+    bmesh.ops.delete(bm, geom=cut, context='FACES')
+    side = {x: int(lab[x.index]) for x in bm.verts}                      # (whose each old vertex is: 0 body, 1/2 arms)
+    # each hole the cut left closed (its rim is all on one side: the cut parted the two), in the texture's colour at
+    # the rim's most typical corner
+    edges = [e for e in bm.edges if e.is_boundary and e.verts[0] in rim and e.verts[1] in rim]
+    new = bmesh.ops.holes_fill(bm, edges=edges, sides=0)['faces']
+    new = bmesh.ops.triangulate(bm, faces=new)['faces']
+    # (a fill that bridges the cut, an arm's rim and the body's in one loop, would join them again: it goes)
+    bridge = [f for f in new if len({side.get(x, -1) for x in f.verts} - {-1}) > 1]
+    bmesh.ops.delete(bm, geom=bridge, context='FACES_ONLY'); new = [f for f in new if f.is_valid]
+    bmesh.ops.delete(bm, geom=[e for e in bm.edges if not e.link_faces], context='EDGES')   # (their loose edges too)
+    uv = bm.loops.layers.uv.active
+    for f in new:
+        cand = [l[uv].uv.copy() for x in f.verts for l in x.link_loops if l.face not in new]
+        if not cand: continue
+        cc = mb.sample(px, np.array([tuple(u) for u in cand]))
+        src = cand[int(np.argmin(np.abs(cc - np.median(cc, 0)).sum(1)))]
+        for l in f.loops: l[uv].uv = src
+    made = len(new)
+    # what holes_fill left (a rim that is no clean loop): each connected run closed by a fan to its middle
+    edges = [e for e in bm.edges if e.is_boundary and e.verts[0] in rim and e.verts[1] in rim]
+    up = {e: e for e in edges}
+    def find(e):
+        while up[e] is not e: up[e] = up[up[e]]; e = up[e]
+        return e
+    at = {}
+    edges = [e for e in edges if side.get(e.verts[0], -1) == side.get(e.verts[1], -2)]   # (each side on its own)
+    up = {e: e for e in edges}
+    for e in edges:
+        for x in e.verts:
+            if x in at: up[find(e)] = find(at[x])
+            else: at[x] = e
+    runs = {}
+    for e in edges: runs.setdefault(find(e), []).append(e)
+    for g in runs.values():
+        if len(g) < 2: continue
+        ring = {x for e in g for x in e.verts}
+        c = bm.verts.new(sum((x.co for x in ring), Vector()) / len(ring))
+        cand = [l[uv].uv.copy() for x in ring for l in x.link_loops]   # (the rim's most typical colour)
+        cc = mb.sample(px, np.array([tuple(u) for u in cand]))
+        src = cand[int(np.argmin(np.abs(cc - np.median(cc, 0)).sum(1)))]
+        for e in g:
+            l = e.link_loops[0]; a, b = l.vert, l.link_loop_next.vert
+            try: f = bm.faces.new((c, b, a))
+            except ValueError: continue
+            for fl in f.loops: fl[uv].uv = src
+            made += 1
+    bad = [x for x in bm.verts if not x.link_faces]; bmesh.ops.delete(bm, geom=bad, context='VERTS')
+    left = sum(1 for e in bm.edges if e.is_boundary) - open0
+    bm.to_mesh(me); bm.free(); me.update()
+    log('arms: %d faces cut where they touch the body; the holes closed with %d faces (%d open edges more than before; '
+        '%d fill faces across the cut dropped)' % (len(cut), made, left, len(bridge)))
+
+
 def arms_apart(o, px, J, info):
     """Where a forearm or a hand touches the body in the scan (Leo's rest on his trouser pockets), the surfaces are
     one: cut them apart. Below the armpit (and leaving out the profile's colours that are never an arm's: his trousers) each point is the arm's if it is nearer the arm's line than the body's axis,
@@ -265,57 +339,60 @@ def arms_apart(o, px, J, info):
     for n, k in (('L', 1), ('R', 2)):
         d = np.min([seg_dist(V, J[a + n], J[b + n])[0] for a, b in (('shoulder', 'elbow'), ('elbow', 'wrist'), ('wrist', 'tip'))], 0)
         arm = (d / info['armr' + n] < body) & (V[:, 2] < info['armtop' + n] - 0.02) & ~not_arm
+        if info.get('hand_only' + n):
+            # (a hand in a pocket: its fingers go on below its last outline, into the pocket; they go with the hand)
+            u = (J['tip' + n] - J['wrist' + n]) / np.linalg.norm(J['tip' + n] - J['wrist' + n])
+            fingers = seg_dist(V, J['tip' + n], J['tip' + n] + u * 0.12)[0] < info['armr' + n] + 0.03
+            arm |= fingers & ~not_arm
+            # (fingertips fused to the pocket's surface are not joined to the hand in the mesh: their skin colour says
+            #  whose they are)
+            hh, ss, vv = hsv(vertex_colours(o, PX))
+            tips = fingers & (hh > 8) & (hh < 40) & (ss > 0.2) & (ss < 0.7) & (vv > 0.2) & (vv < 0.85)
         Ea = E[arm[E[:, 0]] & arm[E[:, 1]]]; cl = components(len(V), Ea)
         tipv = np.argmin(np.where(arm, np.linalg.norm(V - J['tip' + n], axis=1), np.inf))
         lab[arm & (cl == cl[tipv])] = k
+        if info.get('hand_only' + n): lab[tips & (lab == 0)] = k
         log('arms: the %s arm, %d vertices below the armpit' % (n, (lab == k).sum()))
     bm = bmesh.new(); bm.from_mesh(me); bm.verts.ensure_lookup_table(); bm.faces.ensure_lookup_table()
-    cut = [f for f in bm.faces if any(band[x.index] for x in f.verts) and len({int(lab[x.index]) for x in f.verts}) > 1]
-    rim = {x for f in cut for x in f.verts}
-    open0 = sum(1 for e in bm.edges if e.is_boundary)
-    bmesh.ops.delete(bm, geom=cut, context='FACES')
-    # each hole the cut left closed (its rim is all on one side: the cut parted the two), in the texture's colour at
-    # the rim's most typical corner
-    edges = [e for e in bm.edges if e.is_boundary and e.verts[0] in rim and e.verts[1] in rim]
-    new = bmesh.ops.holes_fill(bm, edges=edges, sides=0)['faces']
-    new = bmesh.ops.triangulate(bm, faces=new)['faces']
-    uv = bm.loops.layers.uv.active
-    for f in new:
-        cand = [l[uv].uv.copy() for x in f.verts for l in x.link_loops if l.face not in new]
-        if not cand: continue
-        cc = mb.sample(px, np.array([tuple(u) for u in cand]))
-        src = cand[int(np.argmin(np.abs(cc - np.median(cc, 0)).sum(1)))]
-        for l in f.loops: l[uv].uv = src
-    made = len(new)
-    # what holes_fill left (a rim that is no clean loop): each connected run closed by a fan to its middle
-    edges = [e for e in bm.edges if e.is_boundary and e.verts[0] in rim and e.verts[1] in rim]
-    up = {e: e for e in edges}
-    def find(e):
-        while up[e] is not e: up[e] = up[up[e]]; e = up[e]
-        return e
-    at = {}
-    for e in edges:
-        for x in e.verts:
-            if x in at: up[find(e)] = find(at[x])
-            else: at[x] = e
-    runs = {}
-    for e in edges: runs.setdefault(find(e), []).append(e)
-    for g in runs.values():
-        if len(g) < 2: continue
-        ring = {x for e in g for x in e.verts}
-        c = bm.verts.new(sum((x.co for x in ring), Vector()) / len(ring))
-        l0 = g[0].link_loops[0]; src = l0[uv].uv.copy()
-        for e in g:
-            l = e.link_loops[0]; a, b = l.vert, l.link_loop_next.vert
-            try: f = bm.faces.new((c, b, a))
-            except ValueError: continue
-            for fl in f.loops: fl[uv].uv = src
-            made += 1
-    bad = [x for x in bm.verts if not x.link_faces]; bmesh.ops.delete(bm, geom=bad, context='VERTS')
-    left = sum(1 for e in bm.edges if e.is_boundary) - open0
-    bm.to_mesh(me); bm.free(); me.update()
-    log('arms: %d faces cut where they touch the body; the holes closed with %d faces (%d open edges more than before)' % (
-        len(cut), made, left))
+    if info.get('hand_onlyL') or info.get('hand_onlyR'):
+        # A sleeve fused to the shirt all the way down: cutting a strip out between them would leave holes the length of
+        # the arm. The mesh is split along the seam instead: each face goes with the side most of its corners are on,
+        # and the edges between an arm's faces and the body's are split, so nothing is missing while he stands.
+        fs = {}
+        for f in bm.faces:
+            ls = [int(lab[x.index]) for x in f.verts]; fs[f] = max(set(ls), key=lambda k: (ls.count(k), k))
+        seam = [e for e in bm.edges if len(e.link_faces) == 2 and fs[e.link_faces[0]] != fs[e.link_faces[1]]]
+        bmesh.ops.split_edges(bm, edges=seam)
+        # (where the two sides touch only at a corner, the vertex is ripped into one for each fan of faces round it)
+        torn = 0
+        for x in list(bm.verts):
+            if x.is_valid and len({fs.get(f, -1) for f in x.link_faces}) > 1:
+                bmesh.utils.vert_separate(x, [e for e in x.link_edges]); torn += 1
+        # each side's new opening (the shirt under the sleeve was never scanned: it would show the inside, dark, as
+        # the arm swings away) closed on its own, in the rim's most typical colour; after the split no loop has both
+        # sides on it
+        edges = [e for e in bm.edges if e.is_boundary and len({fs.get(f, -1) for f in e.link_faces}) == 1]
+        new = bmesh.ops.holes_fill(bm, edges=edges, sides=0)['faces']
+        new = bmesh.ops.triangulate(bm, faces=new)['faces']
+        uv = bm.loops.layers.uv.active
+        for f in new:
+            cand = [l[uv].uv.copy() for x in f.verts for l in x.link_loops if l.face not in new]
+            if not cand: continue
+            cc = mb.sample(px, np.array([tuple(u) for u in cand]))
+            src = cand[int(np.argmin(np.abs(cc - np.median(cc, 0)).sum(1)))]
+            for l in f.loops: l[uv].uv = src
+        bm.verts.ensure_lookup_table()
+        bm.to_mesh(me); bm.free(); me.update()
+        log('arms: %d corner vertices ripped; the openings closed with %d faces' % (torn, len(new)))
+        log('arms: the sleeves split from the body along %d edges (no faces cut)' % len(seam))
+    else:
+        cut_apart(o, bm, lab, band, px)
+    if info.get('hand_onlyL') or info.get('hand_onlyR'):
+        # (with only the hands apart from the body, the cut leaves small scraps of cuff and fingers by them: dropped)
+        V = verts_np(o); lab = components(len(V), edges_np(o)); ids, cnt = np.unique(lab, return_counts=True)
+        dh = np.min([seg_dist(V, J['wrist' + n], J['tip' + n])[0] for n in 'LR'], 0)
+        scrap = (np.isin(lab, ids[cnt < 100]) & (dh < 0.12)) | np.isin(lab, ids[cnt < 40])   # (and any loose crumb)
+        if scrap.any(): delete_verts(o, ~scrap); log('arms: %d scrap vertices by the hands dropped' % scrap.sum())
 
 
 # ------------------------------------------------------------------------------------------------ weights
@@ -348,11 +425,31 @@ def weigh_near(o, rig, info):
     for bn in names:
         if bn.split('.')[0] in ('UpperLeg', 'LowerLeg', 'Foot'): allow[~legs & (V[:, 2] < zc), ix[bn]] = False
     allow[V[:, 2] < B['Head'].head_local.z - 0.03, ix['Head']] = False
+    # where a baggy sleeve is fused to a loose shirt all the way down (only the hand shows apart: find_joints), a
+    # point follows the arm only if it is relatively nearer the arm than the body's axis (each in its own thickness:
+    # the sleeve's about 0.045 of the height, the trunk's half the shoulders' width), or near the shoulder joint; else
+    # the shirt's side and the backpack would stretch out with the arm
+    Hh = V[:, 2].max(); rt = (abs(B['UpperArm.L'].head_local.x - B['UpperArm.R'].head_local.x)) / 2 + 0.03
+    dbody = seg_dist(V, np.array(B['Hips'].head_local), np.array(B['Neck'].head_local))[0] / rt
+    for n in 'LR':
+        if not info.get('hand_only' + n): continue
+        segs = [(np.array(B[b + n].head_local), np.array(B[b + n].tail_local)) for b in ('UpperArm.', 'LowerArm.', 'Hand.')]
+        darm = np.min([seg_dist(V, a, b)[0] for a, b in segs], 0) / (0.045 * Hh)
+        near_sh = np.linalg.norm(V - segs[0][0], axis=1) < 0.08
+        off = (darm >= dbody) & ~near_sh
+        for b in ('UpperArm.', 'LowerArm.', 'Hand.'): allow[off, ix[b + n]] = False
+        log('weights: the %s arm keeps to its sleeve (%d vertices nearer the body left off it)' % (n, off.sum()))
     # below the armpits each arm is a piece of its own (arms_apart): only it takes that arm's bones, and it takes
     # nothing but them and the chest's
     za = min(info['armtopL'], info['armtopR']) - 0.02
     low = V[:, 2] < za; Ea = E[low[E[:, 0]] & low[E[:, 1]]]; lab = components(len(V), Ea)
+    low0, lab0 = low, lab
     for n in 'LR':
+        low, lab = low0, lab0
+        if info.get('hand_only' + n):
+            # (only the hand shows apart: it is the arm's own piece from just under its own outlines' top, which the
+            # two hands, hanging at different heights, need each for itself)
+            low = V[:, 2] < info['armtop' + n] - 0.02; Ea = E[low[E[:, 0]] & low[E[:, 1]]]; lab = components(len(V), Ea)
         seed = np.argmin(np.where(low, np.linalg.norm(V - np.array(B['Hand.' + n].tail_local), axis=1), np.inf))
         piece = low & (lab == lab[seed])
         log('weights: the %s arm below the armpit is %d of %d vertices' % (n, piece.sum(), low.sum()))
@@ -364,9 +461,11 @@ def weigh_near(o, rig, info):
             m = low & (lab == i)
             if c < 0.05 * low.sum() and not (m & piece).any() and np.median(fa[m]) < 0.08: piece |= m
         armb = [ix[b + n] for b in ('UpperArm.', 'LowerArm.', 'Hand.')]
+        above_elbow = V[:, 2] > B['LowerArm.' + n].head_local.z
         for j in range(len(names)):
-            if j in armb: allow[low & ~piece, j] = False
-            elif names[j] != 'Chest': allow[piece, j] = False
+            if j in armb: allow[low & ~piece, j] = False; allow[piece, j] = True
+            elif names[j] == 'Chest': allow[piece & ~above_elbow, j] = False     # (the chest's pull ends at the elbow)
+            else: allow[piece, j] = False
     D = np.where(allow, D, np.inf)
     W = np.exp(-(D - D.min(1, keepdims=True)) / FALLOFF); W[~np.isfinite(D)] = 0
     deg = np.zeros(len(V)); np.add.at(deg, E[:, 0], 1); np.add.at(deg, E[:, 1], 1)
@@ -419,8 +518,9 @@ def repose(o, rig, J):
 # ------------------------------------------------------------------------------------------------ backpack and markers
 def is_pack(Cc):
     """The backpack's texels, by the profile's colour (h0..h1 degrees of hue, the least saturation, a band of value)."""
-    h, s, v = hsv(Cc); h0, h1, s0, v0, v1 = PROFILE['pack']
-    return (h > h0) & (h < h1) & (s > s0) & (v > v0) & (v < v1)
+    h, s, v = hsv(Cc); h0, h1, s0, v0, v1 = PROFILE['pack'][:5]
+    s1 = PROFILE['pack'][5] if len(PROFILE['pack']) > 5 else 1.01           # (an optional most saturation: a grey pack)
+    return (h >= h0) & (h <= h1) & (s > s0) & (s < s1) & (v > v0) & (v < v1)
 
 
 def backpack(o, rig, px):
@@ -441,12 +541,21 @@ def backpack(o, rig, px):
         prof = []
         for z in np.arange(z0, chest[2], 0.02):
             m = (np.abs(V[:, 2] - z) < 0.01) & (np.abs(V[:, 0]) < 0.12)
-            if m.sum() > 5: prof.append(np.percentile(V[m, 1], 95))
+            # (only slices through the whole trunk, front to back: between the legs a few stray vertices of the front)
+            if m.sum() > 40 and np.ptp(V[m, 1]) > 0.15: prof.append(np.percentile(V[m, 1], 95))
         yb = np.full(len(V), min(prof) + 0.03)
         log('backpack: by its shape, behind y = %.3f' % yb[0])
     else:
         # his back at each height: the furthest-back point of what is not the pack, near the middle
-        pack = is_pack(vertex_colours(o, px)) & band
+        if PROFILE.get('face_colours'):
+            # (a texture in many small islands: a vertex is the pack's if most of its faces are, each by its own colour)
+            me = o.data; tri = np.empty(len(me.loops), dtype=np.int64); me.loops.foreach_get('vertex_index', tri)
+            tri = tri.reshape(-1, 3); fp = is_pack(face_colours(o, px)).astype(float)
+            acc = np.zeros(len(V)); cnt = np.zeros(len(V))
+            np.add.at(acc, tri.ravel(), np.repeat(fp, 3)); np.add.at(cnt, tri.ravel(), 1)
+            pack = (acc > 0.5 * np.maximum(cnt, 1)) & band
+        else:
+            pack = is_pack(vertex_colours(o, px)) & band
         back = {}
         for z in np.arange(hips[2], B['Head'].head_local.z, 0.02):
             m = band & ~pack & (np.abs(V[:, 2] - z) < 0.02) & (np.abs(V[:, 0]) < 0.12) & (V[:, 1] < 0.2)
@@ -548,6 +657,36 @@ def parts_explorer(o, px):
     vm = np.zeros(len(V), bool); vm[tri[dark].ravel()] = True
     hair_v = biggest_piece(o, vm)
     FP[dark & hair_v[tri].all(1)] = 3
+    FP[(foot > 0.6) | (hand > 0.5) | (bag > 0.5)] = 0
+    return FP, tri
+
+
+def light_jeans(Cc):
+    """Kai's light-blue jeans."""
+    h, s, v = hsv(Cc)
+    return (h > 190) & (h < 230) & (s > 0.15) & (s < 0.6) & (v > 0.35)
+
+
+def parts_plaid(o, px):
+    """Kai's parts, by each face's own texture colour: 1 the red plaid shirt (its reds and pinks, its white and dark
+    lines; the white hood with it), 2 the light-blue cargo jeans, 3 the hair (the biggest dark piece of the head);
+    0 the skin, the grey backpack and the sneakers."""
+    me = o.data; V = verts_np(o); bw = bone_weights(o)
+    tri = np.empty(len(me.loops), dtype=np.int64); me.loops.foreach_get('vertex_index', tri); tri = tri.reshape(-1, 3)
+    assert len(tri) == len(me.polygons), 'expected triangles'
+    fw = lambda w: w[tri].mean(1)
+    foot = fw(bw('Foot.L', 'Foot.R')); hand = fw(bw('Hand.L', 'Hand.R')); bag = fw(bw('Bag')); head = fw(bw('Head'))
+    Cf = face_colours(o, px); h, s, v = hsv(Cf); z = V[tri][:, :, 2].mean(1)
+    hip = rig_z('UpperLeg.L')
+    red = ((h < 20) | (h > 320)) & (s > 0.2) & (v > 0.25)
+    white = (s < 0.2) & (v > 0.6)
+    skin = (h > 10) & (h < 40) & (s > 0.25) & (s < 0.65) & (v > 0.3) & (v < 0.8)
+    FP = np.zeros(len(tri), dtype=np.int64)
+    FP[(red | white) & (z > hip - 0.05) & (head < 0.5) & ~skin] = 1
+    FP[light_jeans(Cf) & (z < hip + 0.15)] = 2
+    dark = (v < 0.2) & (head > 0.5)
+    vm = np.zeros(len(V), bool); vm[tri[dark].ravel()] = True
+    FP[dark & biggest_piece(o, vm)[tri].all(1)] = 3
     FP[(foot > 0.6) | (hand > 0.5) | (bag > 0.5)] = 0
     return FP, tri
 
@@ -813,14 +952,18 @@ def finish(o, rig, img, px):
         NAME, tris, neck, top, neck / top, PROFILE['stands'], PROFILE['stands'] * neck / top))
 
 
-# Each supplied model's rules: the backpack's colour (hue from, hue to, least saturation, value from, value to; or
+# Each supplied model's rules: the backpack's colour (hue from, hue to, least saturation, value from, value to, and
+# optionally the most saturation, for a grey pack; or
 # 'shape': no colour of its own, found by its shape), its outfit parts, whether it needs shoes, how tall the kid stands
 # in the game (metres: PlayerRoster); optionally how much
-# of the game's swing the backpack takes ('bag') and the colours that are never an arm's ('not_arm', for arms_apart).
+# of the game's swing the backpack takes ('bag'), the colours that are never an arm's ('not_arm', for arms_apart) and
+# whether the pack's colour is judged per face ('face_colours': a texture cut into many small islands).
 PROFILES = {
     'backpack_boy': {'pack': (15, 45, 0.35, 0.18, 0.75), 'parts': parts_backpack_boy, 'shoes': False, 'stands': 1.75},
     'first_day': {'pack': (245, 300, 0.25, 0.12, 0.9), 'parts': parts_first_day, 'shoes': True, 'stands': 1.32,
                   'bag': 0.5, 'not_arm': khaki},
+    'plaid': {'pack': (0, 360, -1, 0.28, 0.72, 0.13), 'parts': parts_plaid, 'shoes': False, 'stands': 1.30, 'bag': 0.5,
+              'not_arm': light_jeans, 'face_colours': True},
     'explorer': {'pack': 'shape', 'parts': parts_explorer, 'shoes': False, 'stands': 1.27, 'bag': 0.5, 'not_arm': red_shorts},
     'unicorn': {'pack': 'shape', 'parts': parts_unicorn, 'shoes': False, 'stands': 1.29, 'bag': 0.5, 'not_arm': terracotta},
 }
