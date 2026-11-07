@@ -354,9 +354,9 @@ def arms_apart(o, px, J, info):
         if info.get('hand_only' + n): lab[tips & (lab == 0)] = k
         log('arms: the %s arm, %d vertices below the armpit' % (n, (lab == k).sum()))
     bm = bmesh.new(); bm.from_mesh(me); bm.verts.ensure_lookup_table(); bm.faces.ensure_lookup_table()
-    if info.get('hand_onlyL') or info.get('hand_onlyR'):
-        # A sleeve fused to the shirt all the way down: cutting a strip out between them would leave holes the length of
-        # the arm. The mesh is split along the seam instead: each face goes with the side most of its corners are on,
+    if info.get('hand_onlyL') or info.get('hand_onlyR') or PROFILE.get('split'):
+        # An arm fused to the body (all the way down, or at the pockets, 'split'): cutting a strip out between them
+        # leaves holes that show dark shards of the inside as the arm swings. The mesh is split along the seam instead: each face goes with the side most of its corners are on,
         # and the edges between an arm's faces and the body's are split, so nothing is missing while he stands.
         fs = {}
         for f in bm.faces:
@@ -957,15 +957,17 @@ def finish(o, rig, img, px):
 # 'shape': no colour of its own, found by its shape), its outfit parts, whether it needs shoes, how tall the kid stands
 # in the game (metres: PlayerRoster); optionally how much
 # of the game's swing the backpack takes ('bag'), the colours that are never an arm's ('not_arm', for arms_apart) and
-# whether the pack's colour is judged per face ('face_colours': a texture cut into many small islands).
+# whether the pack's colour is judged per face ('face_colours': a texture cut into many small islands); 'split' parts an
+# arm from the body along the seam (arms_apart) instead of cutting a strip out between them.
 PROFILES = {
     'backpack_boy': {'pack': (15, 45, 0.35, 0.18, 0.75), 'parts': parts_backpack_boy, 'shoes': False, 'stands': 1.75},
     'first_day': {'pack': (245, 300, 0.25, 0.12, 0.9), 'parts': parts_first_day, 'shoes': True, 'stands': 1.32,
-                  'bag': 0.5, 'not_arm': khaki},
+                  'bag': 0.5, 'not_arm': khaki, 'split': True},
     'plaid': {'pack': (0, 360, -1, 0.28, 0.72, 0.13), 'parts': parts_plaid, 'shoes': False, 'stands': 1.30, 'bag': 0.5,
               'not_arm': light_jeans, 'face_colours': True},
     'explorer': {'pack': 'shape', 'parts': parts_explorer, 'shoes': False, 'stands': 1.27, 'bag': 0.5, 'not_arm': red_shorts},
-    'unicorn': {'pack': 'shape', 'parts': parts_unicorn, 'shoes': False, 'stands': 1.29, 'bag': 0.5, 'not_arm': terracotta},
+    'unicorn': {'pack': 'shape', 'parts': parts_unicorn, 'shoes': False, 'stands': 1.29, 'bag': 0.5, 'not_arm': terracotta,
+                'split': True},
 }
 PROFILE = PROFILES[PROFILE_NAME]
 

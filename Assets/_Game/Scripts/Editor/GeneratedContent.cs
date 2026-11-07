@@ -22,7 +22,7 @@ namespace DribbleToSchool.EditorTools
     public static class GeneratedContent
     {
         /// <summary>Bump when layouts or the scene rig change so scenes regenerate.</summary>
-        public const int Version = 77;   // 77: Kai is the supplied "little star in plaid" model; all four primary kids rebuilt (PlayerRoster)
+        public const int Version = 78;   // 78: Leo and Zoe rebuilt with their arms split from the body along the seam
 
         const string ScenesDir = LevelBuildKit.Root + "/Scenes";
         const string LevelsDir = LevelBuildKit.Root + "/Levels";
