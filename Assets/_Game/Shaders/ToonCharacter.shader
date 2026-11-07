@@ -4,6 +4,9 @@
 // outline of constant on-screen width (an inverted hull pushed out along the smooth normals),
 // and the same distance haze as the street. Colours come from the vertex colours times the
 // texture and tint. Lighting and haze are set by WorldLook.
+// Alpha carries _ComicWorld for the comic halftone filter (Shaders/PostFX): 0 (people and the ball)
+// takes the whole filter except creases across it (its painted face and eyes stay clear) and slips
+// half as far; 1 (the cars, the bicycle) is drawn like the street, creases and all.
 Shader "DribbleToSchool/ToonCharacter"
 {
     Properties
@@ -14,6 +17,7 @@ Shader "DribbleToSchool/ToonCharacter"
         _RimStrength ("Rim light", Range(0,1)) = 0.3
         _OutlineColor ("Outline colour", Color) = (0.08,0.07,0.1,1)
         _OutlineWidth ("Outline width (fraction of screen height)", Float) = 0.0022
+        _ComicWorld ("Comic filter: drawn like the street (1) or kept as a figure (0)", Range(0,1)) = 0
     }
     SubShader
     {
@@ -32,6 +36,7 @@ Shader "DribbleToSchool/ToonCharacter"
         float _RimStrength;
         fixed4 _OutlineColor;
         float _OutlineWidth;
+        float _ComicWorld;
         ENDCG
 
         // Ink outline: back faces pushed out in clip space, so the line stays the same
@@ -69,7 +74,7 @@ Shader "DribbleToSchool/ToonCharacter"
             {
                 fixed3 col = lerp(_OutlineColor.rgb, i.color.rgb * _Color.rgb * 0.3, 0.2);
                 col = DtsHaze(col, i.worldPos, 1.0);
-                return fixed4(col, 1);
+                return fixed4(col, _ComicWorld);
             }
             ENDCG
         }
@@ -125,7 +130,7 @@ Shader "DribbleToSchool/ToonCharacter"
                 col += rim * _RimStrength * DtsSun();
 
                 col = DtsHaze(col, i.worldPos, 1.0);
-                return fixed4(col, 1);
+                return fixed4(col, _ComicWorld);
             }
             ENDCG
         }

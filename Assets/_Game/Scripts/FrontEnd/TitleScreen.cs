@@ -61,17 +61,21 @@ namespace DribbleToSchool.FrontEnd
             holidayPulse.speed = 2.4f;   // not in step with PLAY's breathing
             BuildHolidayText(holiday.transform.Find("Face"));
 
-            // Secondary row under HOLIDAY RUN.
-            float w = 222f, gap = 16f, x0 = 20f + (Column - (w * 3f + gap * 2f)) * 0.5f;
-            var shop = UIKit.Button(column, "Shop", Loc.T("menu.locker"), UITheme.Blue, () => Controller.Show(FrontEndScreenId.Shop), 34);
+            // Secondary row under HOLIDAY RUN: Locker Room, Stickers, Add-ons & Filters (UI/AddOnsPanel), Settings.
+            float w = 176f, gap = 12f, x0 = 20f + (Column - (w * 4f + gap * 3f)) * 0.5f;
+            var shop = UIKit.Button(column, "Shop", Loc.T("menu.locker"), UITheme.Blue, () => Controller.Show(FrontEndScreenId.Shop), 32);
             UIKit.Place((RectTransform)shop.transform, new Vector2(0f, 1f), new Vector2(x0, -880f), new Vector2(w, 88f), new Vector2(0f, 0.5f));
             UIKit.PopIn(shop.gameObject, 0.22f);
-            var album = UIKit.Button(column, "Album", Loc.T("menu.album"), UITheme.Blue, () => Controller.Show(FrontEndScreenId.Album), 34);
+            var album = UIKit.Button(column, "Album", Loc.T("menu.album"), UITheme.Blue, () => Controller.Show(FrontEndScreenId.Album), 32);
             UIKit.Place((RectTransform)album.transform, new Vector2(0f, 1f), new Vector2(x0 + w + gap, -880f), new Vector2(w, 88f), new Vector2(0f, 0.5f));
             UIKit.PopIn(album.gameObject, 0.27f);
-            var settings = UIKit.Button(column, "Settings", Loc.T("menu.settings"), UITheme.Blue, Controller.OpenSettings, 34);
-            UIKit.Place((RectTransform)settings.transform, new Vector2(0f, 1f), new Vector2(x0 + (w + gap) * 2f, -880f), new Vector2(w, 88f), new Vector2(0f, 0.5f));
-            UIKit.PopIn(settings.gameObject, 0.32f);
+            // Orange like its old row in Settings: the streets of another country, and the filters over the picture.
+            var addOns = UIKit.Button(column, "AddOns", Loc.T("menu.addons"), new Color(0.95f, 0.55f, 0.25f), () => AddOnsPanel.Open(Controller.CanvasRoot, null), 28);
+            UIKit.Place((RectTransform)addOns.transform, new Vector2(0f, 1f), new Vector2(x0 + (w + gap) * 2f, -880f), new Vector2(w, 88f), new Vector2(0f, 0.5f));
+            UIKit.PopIn(addOns.gameObject, 0.3f);
+            var settings = UIKit.Button(column, "Settings", Loc.T("menu.settings"), UITheme.Blue, Controller.OpenSettings, 32);
+            UIKit.Place((RectTransform)settings.transform, new Vector2(0f, 1f), new Vector2(x0 + (w + gap) * 3f, -880f), new Vector2(w, 88f), new Vector2(0f, 0.5f));
+            UIKit.PopIn(settings.gameObject, 0.34f);
 
             // Bottom left: credits, and the stars collected on a little card.
             var credits = UIKit.Button(column, "Credits", Loc.T("menu.credits"), UITheme.Paper, Controller.OpenCredits, 30, UITheme.Ink);

@@ -35,12 +35,13 @@ namespace DribbleToSchool.Progression
 
     /// <summary>
     /// The add-ons: the same levels in another country's streets, with that country's music, chosen in
-    /// Settings, Add-ons and Filters (UI/AddOnsPanel). The original is Kamakura, Japan (a seaside town south
+    /// Add-ons and Filters (UI/AddOnsPanel, from the title screen). The original is Kamakura, Japan (a seaside town south
     /// of Tokyo: its shop signs, concrete poles, block walls and the railway). California (Santa Monica)
     /// is unlocked by finishing every story level; each level has a California scene built beside the
     /// original (&lt;scene&gt;_CA, Editor/StreetBuilder.Coast). India and a Tokyo city add-on are still to come.
-    /// The filters (a look over the picture, e.g. comic-book or sketch) are listed beside them; only the
-    /// original look is there so far.
+    /// The filters (a look over the whole picture, drawn by World/PostFX) are listed beside them: the
+    /// original look and the comic halftone (a printed comic: cel bands, halftone dots, an ink line,
+    /// colour plates out of register, paper). A filter applies at once, in every scene.
     /// </summary>
     public static class AddOns
     {
@@ -60,8 +61,11 @@ namespace DribbleToSchool.Progression
             new AddOn("japan", "addon.japan", "addon.japan.place", "_JP", false, Audio.MusicCountry.Japan, true),
         };
 
-        /// <summary>The filters: only the original look so far.</summary>
-        public static readonly string[] Filters = { "original" };
+        public const string OriginalFilter = "original";
+        public const string ComicFilter = "comic";
+
+        /// <summary>The filters: the original look and the comic halftone.</summary>
+        public static readonly string[] Filters = { OriginalFilter, ComicFilter };
 
         /// <summary>Every story level finished at least once (every leg of every route to school).</summary>
         public static bool EveryLevelFinished
@@ -113,7 +117,7 @@ namespace DribbleToSchool.Progression
             SaveSystem.Save();
         }
 
-        /// <summary>The chosen filter ("original" until there are others).</summary>
+        /// <summary>The chosen filter (the original when none, or an unknown one, is saved).</summary>
         public static string Filter
         {
             get
