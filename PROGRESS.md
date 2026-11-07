@@ -633,6 +633,11 @@ The user found the first Coast models plain next to their reference shots (weath
 
 - On the launch screen the kid's head tilts to follow the ball; on all five supplied kids (Max too) about a quarter of the face was weighted partly to the Neck bone (by nearness the jaw and cheeks were as close to it as to the Head bone), so the lower face lagged and folded. `meshy_teen.py` now makes the head rigid: everything within the head's radius above the jaw follows the Head bone alone, fading to the neck over 6 cm below it. Measured: front-of-head vertices with less than 0.95 Head weight went from 18-29 % to 0 on every kid. Before and after in the menu's balance pose and the tuck: `review/faces_head_tilt_before_after.png`. Generated content v79. Not run in Unity.
 
+## The original primary-school kids are back (generated content v80)
+
+- The four primary-school kids made from supplied models (Kai, Mia, Leo, Zoe) are set aside: in the game their sleeves and jackets smeared as their arms swung (Meshy fuses arms that hang against the body), short of Max's quality. The scripted anime kids (`primary.py`) are back in `Art/Models` and `Resources/UI`, with their old neck heights in `PlayerRoster`. The supplied versions can be rebuilt any time with `meshy_teen.py --profile plaid / explorer / first_day / unicorn`; the way to make them as clean as Max is to generate them in an A-pose.
+- Max keeps the rigid-head fix (his face no longer folds on the menu). Generated content v80. Not run in Unity.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.
