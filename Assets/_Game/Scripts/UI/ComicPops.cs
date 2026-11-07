@@ -11,8 +11,8 @@ using UnityEngine.UI;
 namespace DribbleToSchool.UI
 {
     /// <summary>
-    /// The comic filter's sound-effect words: while the comic halftone filter is on (Add-ons &amp; Filters on the
-    /// title screen), the big moments pop up as comic lettering by where they happen: THWACK! on a hard kick,
+    /// The comic filter's sound-effect words: while the comic halftone or the pencil sketch filter is on
+    /// (Add-ons &amp; Filters on the title screen), the big moments pop up as comic lettering by where they happen: THWACK! on a hard kick,
     /// NICE TOUCH! on a perfect touch, BOINK! on a juggle (and "10 IN A ROW!" every fifth), WHOOSH! on a
     /// double jump, SKRRT! on a slide, BOING! on a springboard, SPLASH!, SQUAWK! (a gull), WOOF! (a dog),
     /// OOF! (a passer-by), CLICK! (a gate's button), WHOOPS! when the ball is lost, and MADE IT! (GOAL! in
@@ -51,8 +51,8 @@ namespace DribbleToSchool.UI
 
         const int MaxLive = 3;
 
-        /// <summary>The words show: the comic filter is chosen.</summary>
-        public static bool On { get { return AddOns.Filter == AddOns.ComicFilter; } }
+        /// <summary>The words show: the comic filter or the pencil sketch is chosen.</summary>
+        public static bool On { get { string f = AddOns.Filter; return f == AddOns.ComicFilter || f == AddOns.SketchFilter; } }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void Boot()

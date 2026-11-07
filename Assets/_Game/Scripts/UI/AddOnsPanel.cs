@@ -10,13 +10,13 @@ namespace DribbleToSchool.UI
     /// Add-ons and Filters (a button on the title screen, after Stickers): the add-ons (the same levels in another country's streets with that
     /// country's music: the original Kamakura, Japan; California, unlocked by finishing every level; India and
     /// a Tokyo city still to come) as cards to choose from, and the filters (a look over the whole picture:
-    /// the original and the comic halftone). A choice is saved at once; an add-on applies from the next
+    /// the original, the comic halftone and the pencil sketch). A choice is saved at once; an add-on applies from the next
     /// level loaded, a filter at once.
     /// Progression/AddOns has the list and the rules.
     /// </summary>
     public static class AddOnsPanel
     {
-        const float CardHeight = 150f, Gap = 20f, SectionHeight = 46f;
+        const float CardHeight = 132f, Gap = 16f, SectionHeight = 46f;   // two rows of add-ons and two of filters fit the modal
 
         public static GameObject Open(Transform canvas, System.Action onClose)
         {
@@ -111,10 +111,10 @@ namespace DribbleToSchool.UI
             UIKit.Place(name.rectTransform, new Vector2(0f, 1f), new Vector2(28f, -14f), new Vector2(560f, 50f), new Vector2(0f, 1f));
             UIKit.Fit(name, 26);
             var place = UIKit.Label(t, "Line", line, 27, new Color(ink.r, ink.g, ink.b, ink.a * 0.8f), TextAnchor.MiddleLeft);
-            UIKit.Place(place.rectTransform, new Vector2(0f, 1f), new Vector2(28f, -64f), new Vector2(560f, 36f), new Vector2(0f, 1f));
+            UIKit.Place(place.rectTransform, new Vector2(0f, 1f), new Vector2(28f, -60f), new Vector2(560f, 36f), new Vector2(0f, 1f));
             UIKit.Fit(place, 20);
             var state = UIKit.Label(t, "Status", status, 25, chosen ? Color.white : open ? UITheme.Navy : UITheme.InkSoft, TextAnchor.MiddleLeft, true);
-            UIKit.Place(state.rectTransform, new Vector2(0f, 1f), new Vector2(28f, -100f), new Vector2(560f, 32f), new Vector2(0f, 1f));
+            UIKit.Place(state.rectTransform, new Vector2(0f, 1f), new Vector2(28f, -94f), new Vector2(560f, 32f), new Vector2(0f, 1f));
             UIKit.Fit(state, 18);
         }
     }

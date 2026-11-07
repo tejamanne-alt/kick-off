@@ -40,8 +40,9 @@ namespace DribbleToSchool.Progression
     /// is unlocked by finishing every story level; each level has a California scene built beside the
     /// original (&lt;scene&gt;_CA, Editor/StreetBuilder.Coast). India and a Tokyo city add-on are still to come.
     /// The filters (a look over the whole picture, drawn by World/PostFX) are listed beside them: the
-    /// original look and the comic halftone (a printed comic: cel bands, halftone dots, an ink line,
-    /// colour plates out of register, paper). A filter applies at once, in every scene.
+    /// original look, the comic halftone (a printed comic: cel bands, halftone dots, an ink line,
+    /// colour plates out of register, paper) and the pencil sketch (pencil lines and hatching on paper,
+    /// the kids kept in colour). A filter applies at once, in every scene.
     /// </summary>
     public static class AddOns
     {
@@ -63,9 +64,10 @@ namespace DribbleToSchool.Progression
 
         public const string OriginalFilter = "original";
         public const string ComicFilter = "comic";
+        public const string SketchFilter = "sketch";
 
-        /// <summary>The filters: the original look and the comic halftone.</summary>
-        public static readonly string[] Filters = { OriginalFilter, ComicFilter };
+        /// <summary>The filters: the original look, the comic halftone and the pencil sketch.</summary>
+        public static readonly string[] Filters = { OriginalFilter, ComicFilter, SketchFilter };
 
         /// <summary>Every story level finished at least once (every leg of every route to school).</summary>
         public static bool EveryLevelFinished

@@ -81,6 +81,15 @@ and an ink starburst behind the loudest. They sit above the action, clear of the
 
 Previews of the real models through a numpy port of the shader are in `review/filter/`.
 
+## The pencil sketch filter
+
+An optional look (Add-ons & Filters, pass 6 of `Shaders/PostFX.shader`): warm drawing paper, a faint
+wash of the colour, pencil hatching for the tone in up to three directions as it darkens, the sky left
+open, and the outline drawn twice with a wandering offset from the depth and normals. The figures
+keep their colour (75 percent) and get no creases, so the kid stands out on the page and the painted
+eyes stay clean. Raising `sketchWash` from 0.12 to about 0.6 turns it into coloured pencil. Previews
+are in `review/sketch/`.
+
 ## How it applies to our game
 
 The game is a side view of a street, so the camera sees the front of everything. Assets are judged
