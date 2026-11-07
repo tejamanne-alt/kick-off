@@ -93,8 +93,8 @@ are in `review/sketch/`.
 ## How it applies to our game
 
 The game is a side view of a street, so the camera sees the front of everything. Assets are judged
-mostly from the front and a three-quarter angle. The camera sits close and low (about 9 m back,
-under 3 m up, a 34 degree lens), so the kid is about a third of the screen tall and the street
+mostly from the front and a three-quarter angle. The camera sits close and low (about 7 m back,
+under 3 m up, a 34 degree lens), so the kid is about 40 % of the screen tall and the street
 around them has real depth.
 
 | Chapter | Mood | Light | Signature assets |

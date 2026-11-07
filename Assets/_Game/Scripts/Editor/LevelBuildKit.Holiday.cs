@@ -513,7 +513,7 @@ namespace DribbleToSchool.EditorTools
             // The camera of a level, but it never stops at an edge (the stages come and go).
             follow.minX = -60f;
             follow.maxX = 1e7f;
-            follow.minY = 1.8f;
+            follow.minY = 1.55f;
 
             var input = new GameObject("GameInput").AddComponent<GameInput>();
             input.worldCamera = cam;
