@@ -13,6 +13,10 @@
 // ball too. They mark themselves in the picture's alpha (ToonCharacter's _ComicWorld = 0) only so the
 // ink line draws no creases across them (a nose, a cheek, the edge of an eye would cross the painted
 // face) and the plates slip half as far: their outlines come from the depth jump and their own ink hull.
+//
+// The pencil sketch filter (pass 6) draws it on warm paper instead: a faint wash of the colour (the
+// figures keep theirs, so the kid is easy to find), pencil hatching for the tone, the sky left open, and
+// the outline drawn twice with a wandering offset, from the same depth and normals and figure mask.
 Shader "Hidden/DribbleToSchool/PostFX"
 {
     Properties { _MainTex ("Source", 2D) = "white" {} }
@@ -124,6 +128,38 @@ Shader "Hidden/DribbleToSchool/PostFX"
         p = frac(p * float2(123.34, 456.21));
         p += dot(p, p + 45.32);
         return frac(p.x * p.y);
+    }
+
+    // ---- The pencil sketch filter ----------------------------------------------------------
+    sampler2D _NoiseTex;      // 256 x 256 random values, bilinear, repeating: value noise (PostFX.cs)
+    float _SketchWash, _FigureWash, _HatchSpacing, _SketchHatch, _LineJitter, _SketchLine;
+    float4 _Graphite, _Paper;
+
+    // Smooth noise 0..1 with cells of `cell` pixels (a different `seed` reads another part of the texture).
+    float Noise(float2 px, float cell, float seed)
+    {
+        return tex2D(_NoiseTex, px / (cell * 256.0) + float2(seed * 0.371, seed * 0.613)).r;
+    }
+
+    float LaneHash(float lane, float seed)
+    {
+        return frac(sin(lane * 12.9898 + seed * 78.233) * 43758.5453);
+    }
+
+    // One set of pencil strokes across `angle` degrees, `spacing` px apart, pressed harder the darker the tone:
+    // strokes of finite length with gaps, offset lane by lane, wobbling, with pencil grain on them.
+    float Hatch(float2 px, float angle, float spacing, float tone, float threshold, float grain, float wob, float seed)
+    {
+        float a = radians(angle);
+        float across = (px.x * cos(a) + px.y * sin(a)) / spacing + (wob - 0.5) * 0.5;
+        float along = (-px.x * sin(a) + px.y * cos(a)) / spacing;
+        float lane = floor(across + 0.5);
+        float d = abs(across - lane) * spacing;
+        float stroke = saturate(1 - (d - 0.45) / 0.9);
+        float seg = frac(along / (5.5 + 3 * LaneHash(lane, seed)) + LaneHash(lane, seed + 7));
+        stroke *= step(0.12, seg) * smoothstep(0.12, 0.2, seg) * (1 - smoothstep(0.92, 1.0, seg));
+        float pressure = smoothstep(threshold, threshold - 0.22, tone);
+        return stroke * pressure * (0.55 + 0.45 * grain);
     }
     ENDCG
 
@@ -253,6 +289,66 @@ Shader "Hidden/DribbleToSchool/PostFX"
                 float2 px = floor(i.uv * _MainTex_TexelSize.zw);
                 c += (Hash(px) - 0.5) * _Grain;
                 return half4(saturate(c), 1);
+            }
+            ENDCG
+        }
+        // 6: pencil sketch: the grade, then paper, a wash of the colour (the figures keep theirs), pencil
+        //    hatching by tone (one way, crossed, then a dense third set), the sky left open, and the outline
+        //    drawn twice with a wandering offset from the depth and normals (no creases across a figure).
+        Pass
+        {
+            CGPROGRAM
+            #pragma vertex vert
+            #pragma fragment frag
+            #pragma target 3.0
+            half4 frag (v2f i) : SV_Target
+            {
+                half4 src = tex2D(_MainTex, i.uv);
+                half world = lerp(1, saturate(src.a), _MaskOn);
+                half3 c = saturate(GradeColour(src.rgb, i.uv));
+                half tone = dot(c, lum);
+                float2 px = i.uv * _MainTex_TexelSize.zw;
+                float scale = _MainTex_TexelSize.w / 1080.0;
+
+                float fibre = Noise(px, max(2.0, 3.0 * scale), 1);
+                float grain = Noise(px, 1.0, 2);
+                float wob = Noise(px, 60.0 * scale, 3);
+                float blot = Noise(px, 90.0 * scale, 4);
+
+                // Paper, and the wash on it.
+                half3 paper = _Paper.rgb * (1 - 0.05 * fibre);
+                half3 soft = 0.32 + 0.68 * (tone + (c - tone) * 0.85);
+                half amount = lerp(max(_SketchWash, _FigureWash), _SketchWash, world) * (0.75 + 0.5 * blot);
+                half3 col = paper * (1 + (soft - 1) * amount);
+
+                float2 uvDN = i.uv;
+                #if UNITY_UV_STARTS_AT_TOP
+                if (_MainTex_TexelSize.y < 0) uvDN.y = 1 - uvDN.y;
+                #endif
+                float d0; float3 n0;
+                DepthNormal(uvDN, d0, n0);
+
+                // Hatching, lighter on the figures, none in the sky.
+                float sp = _HatchSpacing * scale;
+                float hat = Hatch(px, 45, sp, tone, 0.78, grain, wob, 11);
+                hat = max(hat, Hatch(px, -45, sp, tone, 0.52, grain, wob, 23));
+                hat = max(hat, Hatch(px, 12, sp * 0.7, tone, 0.3, grain, wob, 37));
+                hat *= (0.55 + 0.45 * world) * step(d0, 0.999);
+                col = lerp(col, _Graphite.rgb, hat * _SketchHatch);
+
+                // The doubled, wandering outline.
+                float j1 = (Noise(px, 40.0 * scale, 5) - 0.5) * _LineJitter * scale;
+                float j2 = (Noise(px, 40.0 * scale, 6) - 0.5) * _LineJitter * scale;
+                float2 t = _MainTex_TexelSize.xy;
+                half e1 = InkLine(uvDN + float2(-j2, -j1) * t, world);
+                half e2 = InkLine(uvDN + float2(j1, j2) * 0.8 * t, world);
+                half outline = saturate(max(e1 * 0.9, e2 * 0.55)) * (0.7 + 0.3 * grain);
+                col = lerp(col, _Graphite.rgb, outline * _SketchLine);
+
+                // The paper's edge.
+                float2 p = i.uv - 0.5;
+                col *= 1 - 0.1 * smoothstep(0.3, 0.9, dot(p, p) * 2.2);
+                return half4(saturate(col), 1);
             }
             ENDCG
         }
