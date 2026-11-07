@@ -68,8 +68,8 @@ namespace DribbleToSchool.Core
             new PlayerInfo("primaryGirl", "PrimaryGirl", "player.primaryGirl", SchoolLevel.Primary, 1.028f, 1.27f),
             // Leo (primaryBoy2) is made from a supplied model by tools/blender/meshy_teen.py --profile first_day: 1.32 m, his Head bone at 0.836 of it.
             new PlayerInfo("primaryBoy2", "PrimaryBoy2", "player.primaryBoy2", SchoolLevel.Primary, 1.104f, 1.32f),
-            // Zoe (primaryGirl2) is made from a supplied model by tools/blender/meshy_teen.py --profile unicorn: 1.29 m, her Head bone at 0.830 of it.
-            new PlayerInfo("primaryGirl2", "PrimaryGirl2", "player.primaryGirl2", SchoolLevel.Primary, 1.070f, 1.29f),
+            // Zoe (primaryGirl2) is made from a supplied model by tools/blender/meshy_teen.py --profile rainbow: 1.29 m, her Head bone at 0.825 of it.
+            new PlayerInfo("primaryGirl2", "PrimaryGirl2", "player.primaryGirl2", SchoolLevel.Primary, 1.064f, 1.29f),
         };
 
         /// <summary>The position of <paramref name="id"/> in <see cref="All"/>, or -1.</summary>
