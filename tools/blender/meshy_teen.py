@@ -1,24 +1,34 @@
-# A playable teen from a textured, single-mesh model standing in an A-pose (an AI-generated model the user supplied,
-# exported as FBX: one fused mesh, one 2048 base-colour texture, no rig), in the same contract as the other teens (one
-# skinned mesh 'Kid' under 'KidRig', one material: vertex colours times the atlas; UV2.x the outfit part; the bones the
-# game poses; Nose and Bag markers; <Name>.json with the default outfit colours). Made for the backpack boy (Max):
-# ginger hair, a denim jacket over a grey hoodie, dark jeans, white sneakers and a brown backpack on both shoulders.
-# tools/blender/README.md ("The backpack boy") says more. It reuses meshy_boy.py's helpers.
+# A playable kid from a textured, single-mesh model standing alone (an AI-generated model the user supplied, exported as
+# FBX: one fused mesh, one 2048 base-colour texture, no rig), in the same contract as the game's other kids (one skinned
+# mesh 'Kid' under 'KidRig', one material: vertex colours times the atlas; UV2.x the outfit part; the bones the game
+# poses; Nose and Bag markers; <Name>.json with the default outfit colours). Each supplied model has a profile (PROFILES)
+# with its own colour rules:
+#   backpack_boy  Max (BackpackBoy): an A-posed teen; ginger hair, a denim jacket over a grey hoodie, dark jeans, white
+#                 sneakers and a brown backpack.
+#   first_day     Leo (PrimaryBoy2): a primary-school boy standing with his arms down; short black hair, a white
+#                 sweatshirt with purple sleeves, khaki cargo joggers with a red drawstring, a purple backpack, and bare
+#                 feet: he is given sneakers of his own (shoes()).
+# tools/blender/README.md ("The backpack boy", "Leo") says more. It reuses meshy_boy.py's helpers.
 #
-#   blenv/bin/python meshy_teen.py -- /abs/source.fbx /abs/outdir [--name BackpackBoy] [--tris 30000]
+#   blenv/bin/python meshy_teen.py -- /abs/source.fbx /abs/outdir [--profile backpack_boy|first_day] [--name <Name>]
+#       [--tris 30000] [--joints-only]
 #     -> outdir/<Name>.fbx, <Name>.blend, <Name>.json, <Name>Atlas.png, <Name>_joints.png
 #
 # The steps:
-#   tidy      decimated to the budget, scaled to the teen boy's height, feet at z = 0, hips over the origin, facing -Y.
-#   joints    from the mesh as it stands: the legs' cross-sections (the arms left out) and the crotch, the soles; each
-#             arm's straight A-pose line from its fingertips; the shoulders inside the torso, the neck at its narrowest.
+#   tidy      decimated to the budget, scaled to the teen boy's height (2.14; the game scales by the neck anyway), feet
+#             at z = 0, the head centred over the origin, facing -Y.
+#   joints    from the mesh as it stands: each arm from its own cross-sections below the armpit (an A-pose or hanging
+#             down), a straight line from the fingertips; the legs' cross-sections (the arms left out) and the crotch, the
+#             soles; the neck at its narrowest, the shoulders below it inside the torso.
 #   separate  the legs, if the scan joins them below the crotch, are cut apart and each side's holes closed.
-#   rig       the game's armature on those joints, bone-heat weights; the arms brought down from the A-pose to hanging
-#             (the game swings every bone from its rest pose), baked in and made the rest pose, weighed again; the
-#             backpack follows the Bag bone (the game swings it as he runs), fading into the straps on his back.
-#   paint     outfit parts by texture colour: the jacket 1, the jeans 2, the hair 3, the rest 0 (skin, hoodie, T-shirt,
-#             backpack, shoes); the atlas has those parts' texels divided by their colour, which the vertex colours carry
-#             instead, so the shop's outfits recolour them (ModelOutfit) and the default looks as the model did.
+#   rig       the game's armature on those joints, weights by nearness to the bones; the arms hanging as the teen boy's,
+#             the legs in under the hips, baked in and made the rest pose; the backpack follows the Bag bone (the game
+#             swings it as he runs), fading where it meets his back.
+#   paint     outfit parts by texture colour (the profile's rules): the top 1, the legwear 2, the hair 3, the rest 0; the
+#             atlas has those parts' texels divided by their colour, which the vertex colours carry instead, so the shop's
+#             outfits recolour them (ModelOutfit) and the default looks as the model did.
+#   shoes     (a barefoot model) sneakers grown from each foot's own surface, smoothed, set out a little and given a
+#             flat sole, skinned as the foot is; coloured by vertex colour over a white patch made in the atlas.
 import bpy, bmesh, sys, os, json, math
 import numpy as np
 from mathutils import Vector, Matrix
@@ -31,9 +41,11 @@ from meshy_boy import (log, activate, verts_np, edges_np, components, texture_pi
 
 argv = sys.argv[sys.argv.index('--') + 1:]
 SRC, OUT = argv[0], argv[1]
-NAME = argv[argv.index('--name') + 1] if '--name' in argv else 'BackpackBoy'
+PROFILE_NAME = argv[argv.index('--profile') + 1] if '--profile' in argv else 'backpack_boy'
 TRIS = int(argv[argv.index('--tris') + 1]) if '--tris' in argv else 30000
 os.makedirs(OUT, exist_ok=True)
+DEFAULT_NAMES = {'backpack_boy': 'BackpackBoy', 'first_day': 'PrimaryBoy2'}
+NAME = argv[argv.index('--name') + 1] if '--name' in argv else DEFAULT_NAMES[PROFILE_NAME]
 C = bpy.context
 HEIGHT = 2.14            # the teen boy's standing height in Blender units (the game scales by the neck anyway)
 mb.log = lambda *a: print('[meshy_teen]', *a, flush=True)
@@ -55,13 +67,18 @@ def load():
 
 
 def tidy(o):
-    """Weld the scan's seams (Meshy exports face -y, as the game's models do), scale it to the teen boy's height with the feet on z = 0, hips over the origin."""
+    """Weld the scan's seams (Meshy exports face -y, as the game's models do), scale it to the teen boy's height with the
+    feet on z = 0, centred on the head."""
     bm = bmesh.new(); bm.from_mesh(o.data); bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=1e-5)
     bmesh.ops.recalc_face_normals(bm, faces=bm.faces); bm.to_mesh(o.data); bm.free(); o.data.update()
     V = verts_np(o); zmin, zmax = V[:, 2].min(), V[:, 2].max(); H = zmax - zmin
     k = HEIGHT / H
-    hips = V[(V[:, 2] > zmin + 0.45 * H) & (V[:, 2] < zmin + 0.55 * H) & (np.abs(V[:, 0]) < 0.1 * H)]
-    cx, cy = np.median(hips[:, 0]), np.percentile(hips[:, 1], 30)
+    # the head's middle is the middle across (a stance may be uneven); the hips' front part (a backpack makes the back
+    # no guide) the middle front to back
+    head = V[V[:, 2] > zmin + 0.9 * H]
+    cx = (head[:, 0].min() + head[:, 0].max()) / 2
+    hips = V[(V[:, 2] > zmin + 0.45 * H) & (V[:, 2] < zmin + 0.55 * H) & (np.abs(V[:, 0] - cx) < 0.1 * H)]
+    cy = np.percentile(hips[:, 1], 30)
     o.data.transform(Matrix.Diagonal((k, k, k, 1.0)) @ Matrix.Translation((-cx, -cy, -zmin))); o.data.update()
     log('scaled by %.4f' % k)
 
@@ -70,19 +87,56 @@ def tidy(o):
 HAND = 0.20              # fingertips to wrist along the arm (the hands hang open)
 
 
+def arm_rings(V, T, sg, H):
+    """One arm's cross-sections, from the armpit down to the fingertips: going down from the shoulders, the outermost
+    small outline on that side at each height, from where it parts from the torso while it follows on from the one
+    above (below the hand the next outline is a leg, or none). Returned from the fingertips up."""
+    rings = []
+    for z in np.arange(0.70 * H, 0.25 * H, -0.008 * H):
+        best = None
+        front = V[np.abs(V[:, 2] - z) < 0.005 * H][:, 1].min()       # (an arm hangs beside the body, not behind it)
+        for P in slice_loops(V, T, z, 8):
+            c = P.mean(0)
+            if sg * c[0] < 0.06 * H or np.ptp(P[:, 0]) > 0.09 * H or np.ptp(P[:, 1]) > 0.09 * H: continue
+            if c[1] > front + 0.13 * H: continue
+            if best is None or sg * c[0] > sg * best[0]: best = np.append(c, max(np.ptp(P[:, 0]), np.ptp(P[:, 1])) / 2)
+        if best is None:
+            # (where the arm touches the body its outline is the body's: a short gap is passed over)
+            if rings and rings[-1][2] - z > 0.07 * H: break
+            continue
+        if rings and np.linalg.norm(best[:2] - rings[-1][:2]) > 0.03 * H + 0.5 * (rings[-1][2] - z - 0.008 * H):
+            if len(rings) < 4: rings = [best]; continue          # (a scrap by the shoulder: start again)
+            break
+        rings.append(best)
+    return np.array(rings[::-1])                                 # (x, y, z, the outline's half size)
+
+
 def find_joints(o):
     V = verts_np(o); T = mesh_tris(o); H = V[:, 2].max()
     J, info = {}, {}
-    # the legs, with the arms (hanging out to the sides in the A-pose) left out of the cross-sections
-    mid = np.abs(V[:, 0]) < 0.095 * H
-    Tm = T[mid[T].all(1)]
+    # the arms: a straight line through each one's cross-sections; the fingertips the lowest point near it
+    lines_arm, near_arm = {}, np.zeros(len(V), bool)
+    for n, sg in (('L', 1), ('R', -1)):
+        R = arm_rings(V, T, sg, H)
+        assert len(R) >= 6, 'no %s arm found apart from the body' % n
+        info['armr' + n] = np.percentile(R[:, 3], 90); info['rings' + n] = R.copy(); R = R[:, :3]
+        c = R.mean(0); d = np.linalg.svd(R - c)[2][0]; d = d if d[2] > 0 else -d
+        lines_arm[n] = (c, d, R)
+        dl, F = seg_dist(V, R[0] - d * 0.1 * H, R[-1])
+        arm = (dl < 0.06 * H) & (V[:, 2] < R[-1][2]) & (V[:, 2] > R[0][2] - 0.05 * H) & (V[:, 0] * sg > 0.04 * H)
+        near_arm |= arm
+        tz = R[0][2] - 0.012 * H                                # (the fingertips: just below the lowest outline)
+        J['tip' + n] = c + d * (tz - c[2]) / d[2]               # (on the line: the hand's own centre)
+        info['armtop' + n] = R[-1][2]
+    # the legs, with the arms left out of the cross-sections
+    Tm = T[~near_arm[T].any(1)]
     def two(z):
-        # two outlines of a size side by side (the jacket's hem and the backpack's bottom are one in front of the other)
+        # two outlines of a size side by side (a jacket's hem and a backpack's bottom are one in front of the other)
         L = slice_loops(V, Tm, z, 20)
         if len(L) < 2 or len(L[1]) < 0.6 * len(L[0]): return None
         a, b = L[0].mean(0), L[1].mean(0)
         return L[:2] if abs(a[0] - b[0]) > 0.1 and abs(a[1] - b[1]) < 0.05 else None
-    crotch = next(z for z in np.arange(0.53 * H, 0.35 * H, -0.005) if two(z))
+    crotch = next(z for z in np.arange(0.53 * H, 0.30 * H, -0.005) if two(z))
     info['crotch'] = crotch
     a, b = sorted(two(crotch - 0.01), key=lambda P: P[:, 0].mean())
     lines = {'R': [a.mean(0)], 'L': [b.mean(0)]}
@@ -100,40 +154,37 @@ def find_joints(o):
         J['knee' + n] = line_at(lines[n], ankle[2] + 0.5 * (hip[2] - ankle[2])); J['knee' + n][1] -= 0.01
         J['toe' + n] = np.array([sole[:, 0].mean(), sole[:, 1].min() + 0.04, 0.03])
 
-    # the trunk: its centre across, and a little behind its front (the backpack makes the back no guide)
+    # the trunk: its centre across, and a little behind its front (a backpack makes the back no guide)
     x0 = (J['hipL'][0] + J['hipR'][0]) / 2
     def trunk(z):
-        B = V[(np.abs(V[:, 2] - z) < 0.01) & (np.abs(V[:, 0] - x0) < 0.08)]
-        return np.array([x0, np.percentile(B[:, 1], 2) + 0.12, z])
+        P = np.concatenate(slice_loops(V, T, z, 8)); P = P[np.abs(P[:, 0] - x0) < 0.08]
+        return np.array([x0, P[:, 1].min() + 0.12, z])
     J['pelvis'] = np.array([x0, (J['hipL'][1] + J['hipR'][1]) / 2, crotch + 0.09])
-    J['spine'] = trunk(0.61 * H); J['chest'] = trunk(0.70 * H)
 
-    # the arms: hanging out to the side, a straight line from the fingertips up; the shoulder where it meets the top of
-    # the torso, the wrist a hand's length up from the tips, the elbow half way
-    shoulder_z = 0.81 * H
-    for n, sg in (('L', 1), ('R', -1)):
-        arm = (V[:, 0] * sg > 0.115 * H) & (V[:, 2] > 0.4 * H) & (V[:, 2] < 0.7 * H)
-        P = V[arm]; tip = P[np.argmin(P[:, 2])]
-        cs = []
-        for z in np.arange(tip[2] + 0.03, 0.66 * H, 0.02):
-            R = P[np.abs(P[:, 2] - z) < 0.01]
-            if len(R) > 8: cs.append((R.min(0) + R.max(0)) / 2)
-        cs = np.array(cs); c = cs.mean(0); d = np.linalg.svd(cs - c)[2][0]; d = d if d[2] > 0 else -d
-        S = c + d * (shoulder_z - c[2]) / d[2]
-        top = V[(V[:, 2] > 0.76 * H) & (V[:, 2] < 0.80 * H) & (V[:, 1] < J['chest'][1] + 0.05)]
-        S[0] = sg * min(abs(S[0]), (top[:, 0] * sg).max() - 0.08)
-        S[1] = J['chest'][1]
-        tipc = c + d * (tip[2] - c[2]) / d[2]                  # (the tip on the line: the hand's own centre)
-        W = tipc + (S - tipc) / np.linalg.norm(S - tipc) * HAND
-        J['shoulder' + n], J['wrist' + n], J['tip' + n] = S, W, tipc
-        J['elbow' + n] = (S + W) / 2 + np.array([0, 0.02, 0])
-    sz = (J['shoulderL'][2] + J['shoulderR'][2]) / 2
-    # the neck: the narrowest cross-section between the shoulders and the head's middle; the Head joint just above it
+    # the neck: the narrowest cross-section of the middle between the chest and the head's middle; the Head joint just
+    # above it, the shoulders 0.065 of the height below it
+    mid = np.abs(V[:, 0] - x0) < 0.095 * H; Tn = T[mid[T].all(1)]
     widths = []
-    for z in np.arange(sz + 0.04, 0.93 * H, 0.005):
-        L = slice_loops(V, Tm, z, 12)
+    for z in np.arange(0.70 * H, 0.93 * H, 0.005):
+        L = slice_loops(V, Tn, z, 12)
         if L: widths.append((np.ptp(L[0][:, 0]), z))
     nz = min(widths)[1]
+    shoulder_z = nz - 0.065 * H
+    # the spine and the chest at 0.41 and 0.68 of the way from the crotch up to the shoulders
+    J['spine'] = trunk(crotch + 0.41 * (shoulder_z - crotch)); J['chest'] = trunk(crotch + 0.68 * (shoulder_z - crotch))
+    # the arms' joints: the shoulder on the arm's line at the shoulders' height, kept inside the torso's outline; the
+    # wrist a hand's length up from the tips, the elbow half way
+    for n, sg in (('L', 1), ('R', -1)):
+        c, d, R = lines_arm[n]
+        S = c + d * (shoulder_z - c[2]) / d[2]
+        top = V[(np.abs(V[:, 2] - shoulder_z) < 0.02 * H) & (V[:, 1] < J['chest'][1] + 0.05)]
+        S[0] = x0 + sg * min(abs(S[0] - x0), (sg * (top[:, 0] - x0)).max() - 0.08)
+        S[1] = J['chest'][1]
+        tipc = J['tip' + n]
+        W = tipc + (S - tipc) / np.linalg.norm(S - tipc) * HAND
+        J['shoulder' + n], J['wrist' + n] = S, W
+        ez = (S[2] + W[2]) / 2; J['elbow' + n] = c + d * (ez - c[2]) / d[2] + np.array([0, 0.02, 0])   # (on the arm)
+    sz = (J['shoulderL'][2] + J['shoulderR'][2]) / 2
     head = V[V[:, 2] > 0.93 * H]; hc = (head.min(0) + head.max(0)) / 2
     J['neck0'] = np.array([x0, J['chest'][1] + 0.01, sz + 0.06])
     J['neck1'] = np.array([hc[0], hc[1] - 0.01, nz + 0.02])
@@ -175,6 +226,77 @@ def legs_apart(o, info):
     mb.separate(o, PX, J, dict(info, hemL=-10.0, hemR=-10.0))
 
 
+def arms_apart(o, px, J, info):
+    """Where a forearm or a hand touches the body in the scan (Leo's rest on his trouser pockets), the surfaces are
+    one: cut them apart. Below the armpit (and leaving out the profile's colours that are never an arm's: his trousers) each point is the arm's if it is nearer the arm's line than the body's axis,
+    each distance measured in that part's own thickness (the arm's from its cross-sections, the torso's from the
+    shoulders' width, a leg's from its cross-sections); the arm is the part of that joined to the fingertips. The faces
+    between an arm and the rest go, and the holes are closed."""
+    V = verts_np(o); me = o.data; E = edges_np(o)
+    x0 = J['pelvis'][0]; rt = (abs(J['shoulderL'][0] - x0) + abs(J['shoulderR'][0] - x0)) / 2 + 0.03
+    legs = [P for P in slice_loops(V, mesh_tris(o), info['crotch'] - 0.1, 20)[:2]]
+    rl = np.mean([max(np.ptp(P[:, 0]), np.ptp(P[:, 1])) / 2 for P in legs])
+    body = (seg_dist(V, J['pelvis'], J['neck0'])[0]) / rt
+    for n in 'LR':
+        body = np.minimum(body, np.min([seg_dist(V, J[a + n], J[b + n])[0] for a, b in (('hip', 'knee'), ('knee', 'ankle'))], 0) / rl)
+    lab = np.zeros(len(V), dtype=np.int64); band = np.ones(len(V), bool)
+    not_arm = PROFILE['not_arm'](vertex_colours(o, px)) if PROFILE.get('not_arm') else np.zeros(len(V), bool)
+    for n, k in (('L', 1), ('R', 2)):
+        d = np.min([seg_dist(V, J[a + n], J[b + n])[0] for a, b in (('shoulder', 'elbow'), ('elbow', 'wrist'), ('wrist', 'tip'))], 0)
+        arm = (d / info['armr' + n] < body) & (V[:, 2] < info['armtop' + n] - 0.02) & ~not_arm
+        Ea = E[arm[E[:, 0]] & arm[E[:, 1]]]; cl = components(len(V), Ea)
+        tipv = np.argmin(np.where(arm, np.linalg.norm(V - J['tip' + n], axis=1), np.inf))
+        lab[arm & (cl == cl[tipv])] = k
+        log('arms: the %s arm, %d vertices below the armpit' % (n, (lab == k).sum()))
+    bm = bmesh.new(); bm.from_mesh(me); bm.verts.ensure_lookup_table(); bm.faces.ensure_lookup_table()
+    cut = [f for f in bm.faces if any(band[x.index] for x in f.verts) and len({int(lab[x.index]) for x in f.verts}) > 1]
+    rim = {x for f in cut for x in f.verts}
+    open0 = sum(1 for e in bm.edges if e.is_boundary)
+    bmesh.ops.delete(bm, geom=cut, context='FACES')
+    # each hole the cut left closed (its rim is all on one side: the cut parted the two), in the texture's colour at
+    # the rim's most typical corner
+    edges = [e for e in bm.edges if e.is_boundary and e.verts[0] in rim and e.verts[1] in rim]
+    new = bmesh.ops.holes_fill(bm, edges=edges, sides=0)['faces']
+    new = bmesh.ops.triangulate(bm, faces=new)['faces']
+    uv = bm.loops.layers.uv.active
+    for f in new:
+        cand = [l[uv].uv.copy() for x in f.verts for l in x.link_loops if l.face not in new]
+        if not cand: continue
+        cc = mb.sample(px, np.array([tuple(u) for u in cand]))
+        src = cand[int(np.argmin(np.abs(cc - np.median(cc, 0)).sum(1)))]
+        for l in f.loops: l[uv].uv = src
+    made = len(new)
+    # what holes_fill left (a rim that is no clean loop): each connected run closed by a fan to its middle
+    edges = [e for e in bm.edges if e.is_boundary and e.verts[0] in rim and e.verts[1] in rim]
+    up = {e: e for e in edges}
+    def find(e):
+        while up[e] is not e: up[e] = up[up[e]]; e = up[e]
+        return e
+    at = {}
+    for e in edges:
+        for x in e.verts:
+            if x in at: up[find(e)] = find(at[x])
+            else: at[x] = e
+    runs = {}
+    for e in edges: runs.setdefault(find(e), []).append(e)
+    for g in runs.values():
+        if len(g) < 2: continue
+        ring = {x for e in g for x in e.verts}
+        c = bm.verts.new(sum((x.co for x in ring), Vector()) / len(ring))
+        l0 = g[0].link_loops[0]; src = l0[uv].uv.copy()
+        for e in g:
+            l = e.link_loops[0]; a, b = l.vert, l.link_loop_next.vert
+            try: f = bm.faces.new((c, b, a))
+            except ValueError: continue
+            for fl in f.loops: fl[uv].uv = src
+            made += 1
+    bad = [x for x in bm.verts if not x.link_faces]; bmesh.ops.delete(bm, geom=bad, context='VERTS')
+    left = sum(1 for e in bm.edges if e.is_boundary) - open0
+    bm.to_mesh(me); bm.free(); me.update()
+    log('arms: %d faces cut where they touch the body; the holes closed with %d faces (%d open edges more than before)' % (
+        len(cut), made, left))
+
+
 # ------------------------------------------------------------------------------------------------ weights
 FALLOFF = 0.022          # metres: how fast a bone's pull fades past the nearest bone's distance
 
@@ -205,6 +327,19 @@ def weigh_near(o, rig, info):
     for bn in names:
         if bn.split('.')[0] in ('UpperLeg', 'LowerLeg', 'Foot'): allow[~legs & (V[:, 2] < zc), ix[bn]] = False
     allow[V[:, 2] < B['Head'].head_local.z - 0.03, ix['Head']] = False
+    # below the armpits each arm is a piece of its own (arms_apart): only it takes that arm's bones, and it takes
+    # nothing but them and the chest's
+    za = min(info['armtopL'], info['armtopR']) - 0.02
+    low = V[:, 2] < za; Ea = E[low[E[:, 0]] & low[E[:, 1]]]; lab = components(len(V), Ea)
+    for n in 'LR':
+        seed = np.argmin(np.where(low, np.linalg.norm(V - np.array(B['Hand.' + n].tail_local), axis=1), np.inf))
+        piece = low & (lab == lab[seed])
+        log('weights: the %s arm below the armpit is %d of %d vertices' % (n, piece.sum(), low.sum()))
+        if piece.sum() > 0.25 * low.sum(): continue                      # (still joined to the body: leave it)
+        armb = [ix[b + n] for b in ('UpperArm.', 'LowerArm.', 'Hand.')]
+        for j in range(len(names)):
+            if j in armb: allow[low & ~piece, j] = False
+            elif names[j] != 'Chest': allow[piece, j] = False
     D = np.where(allow, D, np.inf)
     W = np.exp(-(D - D.min(1, keepdims=True)) / FALLOFF); W[~np.isfinite(D)] = 0
     deg = np.zeros(len(V)); np.add.at(deg, E[:, 0], 1); np.add.at(deg, E[:, 1], 1)
@@ -256,16 +391,21 @@ def repose(o, rig, J):
 
 # ------------------------------------------------------------------------------------------------ backpack and markers
 def is_pack(Cc):
-    h, s, v = hsv(Cc)
-    return (h > 15) & (h < 45) & (s > 0.35) & (v > 0.18) & (v < 0.75)
+    """The backpack's texels, by the profile's colour (h0..h1 degrees of hue, the least saturation, a band of value)."""
+    h, s, v = hsv(Cc); h0, h1, s0, v0, v1 = PROFILE['pack']
+    return (h > h0) & (h < h1) & (s > s0) & (v > v0) & (v < v1)
 
 
 def backpack(o, rig, px):
-    """The backpack: brown and behind his back. It follows the Bag bone (head at its top, tail toward its bottom, on
+    """The backpack: the profile's colour and behind his back. It follows the Bag bone (head at its top, tail toward its bottom, on
     the Chest), fading over the few centimetres where it meets his back so the swing bends rather than tears."""
     V = verts_np(o); E = edges_np(o); B = rig.data.bones
     chest = np.array(B['Chest'].head_local); hips = np.array(B['Hips'].head_local)
     band = (V[:, 2] > hips[2]) & (V[:, 2] < np.array(B['Head'].head_local)[2]) & (np.abs(V[:, 0]) < 0.3)
+    # (sleeves the pack's colour, hanging by its sides, are the arms')
+    for n in 'LR':
+        for bn in ('UpperArm.', 'LowerArm.', 'Hand.'):
+            band &= seg_dist(V, np.array(B[bn + n].head_local), np.array(B[bn + n].tail_local))[0] > 0.09
     # his back at each height: the furthest-back point of what is not the pack, near the middle
     pack = is_pack(vertex_colours(o, px)) & band
     back = {}
@@ -279,7 +419,8 @@ def backpack(o, rig, px):
     core = pack & (w > 0.5); Ec = E[core[E[:, 0]] & core[E[:, 1]]]; lab = components(len(V), Ec)
     ids, cnt = np.unique(lab[core], return_counts=True); core = core & (lab == ids[np.argmax(cnt)])
     P = V[core]; lo, hi = P.min(0) - 0.03, P.max(0) + 0.03
-    w = w * np.all((V > lo) & (V < hi), 1)
+    w = w * np.all((V > lo) & (V < hi), 1) * pack            # (only the pack's own colour: the seat of the trousers
+                                                             #  behind the back line is not the pack's)
     deg = np.zeros(len(V)); np.add.at(deg, E[:, 0], 1); np.add.at(deg, E[:, 1], 1)
     for _ in range(4):
         acc = np.zeros(len(V)); np.add.at(acc, E[:, 0], w[E[:, 1]]); np.add.at(acc, E[:, 1], w[E[:, 0]])
@@ -289,6 +430,7 @@ def backpack(o, rig, px):
     activate(rig); bpy.ops.object.mode_set(mode='EDIT'); eb = rig.data.edit_bones
     b = eb.new('Bag'); b.head = Vector(top); b.tail = Vector(top * 0.4 + bot * 0.6); b.roll = 0; b.parent = eb['Chest']
     bpy.ops.object.mode_set(mode='OBJECT')
+    w = w * PROFILE.get('bag', 1.0)                           # (a pack fused to much of the back swings less)
     W, names = weights(o); names = names + ['Bag']; W = np.concatenate([W * (1 - w)[:, None], w[:, None]], 1)
     W[W < np.sort(W, 1)[:, -4][:, None]] = 0; W /= np.maximum(W.sum(1, keepdims=True), 1e-9)
     mb.set_weights(o, W, names)
@@ -307,9 +449,53 @@ def nose(o, rig):
 
 
 # ------------------------------------------------------------------------------------------------ paint
-def face_parts(o, px):
-    """The outfit part of each face (0 fixed: skin, hoodie, T-shirt, backpack, shoes; 1 the denim jacket; 2 the jeans;
-    3 the hair), by its texture colour, the bones that carry it and its height."""
+def bone_weights(o):
+    W, names = weights(o)
+    return lambda *ns: sum(W[:, names.index(n)] for n in ns if n in names)
+
+
+def biggest_piece(o, mask):
+    """The largest connected piece of the vertices in mask."""
+    E = edges_np(o); Eh = E[mask[E[:, 0]] & mask[E[:, 1]]]; lab = components(len(mask), Eh)
+    ids, cnt = np.unique(lab[mask], return_counts=True)
+    return mask & (lab == ids[np.argmax(cnt)])
+
+
+def by_vertex_votes(o, P):
+    """Each face takes the part most of its corners have."""
+    me = o.data
+    tri = np.empty(len(me.loops), dtype=np.int64); me.loops.foreach_get('vertex_index', tri); tri = tri.reshape(-1, 3)
+    assert len(tri) == len(me.polygons), 'expected triangles'
+    votes = np.stack([(P[tri] == p).sum(1) for p in range(4)], 1)
+    return np.argmax(votes, 1), tri
+
+
+def khaki(Cc):
+    """Leo's cargo joggers' colour."""
+    h, s, v = hsv(Cc)
+    return (h > 15) & (h < 55) & (s > 0.08) & (s < 0.45) & (v > 0.3)
+
+
+def parts_first_day(o, px):
+    """Leo's parts: 1 the sweatshirt's white (its purple sleeves, shoulders and cuffs stay as they are), 2 the khaki
+    cargo joggers, 3 the black hair (the biggest dark piece of the head); 0 the skin, the red drawstring, the backpack."""
+    V = verts_np(o); bw = bone_weights(o)
+    head = bw('Head'); foot = bw('Foot.L', 'Foot.R'); hand = bw('Hand.L', 'Hand.R'); bag = bw('Bag')
+    h, s, v = hsv(vertex_colours(o, px))
+    hip = rig_z('UpperLeg.L')
+    white = (s < 0.2) & (v > 0.55)
+    trousers = khaki(vertex_colours(o, px))
+    P = np.zeros(len(V), dtype=np.int64)
+    P[white & (V[:, 2] > hip - 0.06)] = 1
+    P[trousers & (V[:, 2] < hip + 0.12) & ~white] = 2
+    P[biggest_piece(o, (v < 0.2) & (head > 0.5))] = 3
+    P[(foot > 0.6) | (hand > 0.5) | (bag > 0.5)] = 0
+    return by_vertex_votes(o, P)
+
+
+def parts_backpack_boy(o, px):
+    """Max's parts (0 fixed: skin, hoodie, T-shirt, backpack, shoes; 1 the denim jacket; 2 the jeans; 3 the hair), by
+    the texture colour, the bones that carry it and the height."""
     me = o.data; V = verts_np(o); E = edges_np(o); W, names = weights(o)
     bw = lambda *ns: sum(W[:, names.index(n)] for n in ns if n in names)
     head = bw('Head'); foot = bw('Foot.L', 'Foot.R'); legs = bw('UpperLeg.L', 'UpperLeg.R', 'LowerLeg.L', 'LowerLeg.R')
@@ -326,19 +512,194 @@ def face_parts(o, px):
     hd = orange & (head > 0.5); Eh = E[hd[E[:, 0]] & hd[E[:, 1]]]; lab = components(len(V), Eh)
     ids, cnt = np.unique(lab[hd], return_counts=True); P[hd & (lab == ids[np.argmax(cnt)])] = 3
     P[(foot > 0.6) | (hand > 0.5) | (bag > 0.5)] = 0
-    tri = np.empty(len(me.loops), dtype=np.int64); me.loops.foreach_get('vertex_index', tri); tri = tri.reshape(-1, 3)
-    assert len(tri) == len(me.polygons), 'expected triangles'
-    votes = np.stack([(P[tri] == p).sum(1) for p in range(4)], 1)
-    return np.argmax(votes, 1), tri
+    return by_vertex_votes(o, P)
 
 
 def rig_z(bone): return RIG.data.bones[bone].head_local.z
 
 
+# ------------------------------------------------------------------------------------------------ shoes
+SOLE = 0.03              # the sole's thickness (the kid stands on it: everything is raised by it)
+SHOE_OFF = 0.016         # how far the shoe stands off the foot
+SHOE_TOP = 0.035         # the shoe's collar, above the ankle joint
+# the sneakers' colours (sRGB): a white upper, a purple band above the sole and a purple heel tab (his sleeves' and his
+# backpack's purple), an off-white sole with a grey tread
+SHOE_UPPER, SHOE_ACCENT = (0.96, 0.96, 0.97), (0.40, 0.22, 0.66)
+SHOE_SOLE, SHOE_TREAD = (0.90, 0.89, 0.86), (0.45, 0.45, 0.48)
+
+
+def white_patch(o, png):
+    """Paint the middle of the atlas's largest unused area white (the shoes map onto it and take their colours from
+    their vertex colours). Returns its UV centre."""
+    from PIL import Image, ImageDraw
+    me = o.data; im = Image.open(png).convert('RGB'); Wd, Hd = im.size
+    UV = np.empty(len(me.loops) * 2); me.uv_layers[0].data.foreach_get('uv', UV); UV = UV.reshape(-1, 3, 2)
+    used = Image.new('L', (Wd, Hd), 0); dr = ImageDraw.Draw(used)
+    for f in UV: dr.polygon([(u * Wd, (1 - v) * Hd) for u, v in f], fill=255)
+    free = np.array(used) == 0; depth = 0
+    while True:                                                     # erode until one more step would leave nothing
+        e = free.copy()
+        for sh in ((0, 1), (0, -1), (1, 0), (-1, 0)): e &= np.roll(free, sh, axis=(0, 1))
+        e[0, :] = e[-1, :] = e[:, 0] = e[:, -1] = False
+        if not e.any(): break
+        free = e; depth += 1
+    yy, xx = np.argwhere(free)[0]; r = max(depth - 6, 2)
+    A = np.array(im); A[yy - r:yy + r + 1, xx - r:xx + r + 1] = 255; Image.fromarray(A).save(png)
+    log('shoes: a white patch %d texels across at (%d, %d) of the atlas' % (2 * r + 1, xx, yy))
+    return ((xx + 0.5) / Wd, 1 - (yy + 0.5) / Hd)
+
+
+SHOE_ST, SHOE_RING = 30, 32   # stations along a shoe, points round each
+
+
+def sneaker(Vf, ankle, toe):
+    """A sneaker round one foot's vertices Vf: a loft along the foot (heel to toe) of rounded-box cross-sections, each
+    as wide as the foot there and as high as its top, set out by SHOE_OFF, with a flat bottom SOLE below the ground; the
+    ends rounded off and closed. Returns its vertices, faces (quads and the end fans) and each vertex's place along the
+    foot (0 heel, 1 toe) and height above the sole's bottom."""
+    f = toe - ankle; f[2] = 0; f /= np.linalg.norm(f); sv = np.array([-f[1], f[0], 0.0])
+    P = Vf - ankle; u = P @ f; v = P @ sv; z = Vf[:, 2]
+    u0, u1 = u.min() - SHOE_OFF, u.max() + SHOE_OFF + 0.012
+    us = np.linspace(u0, u1, SHOE_ST); step = us[1] - us[0]
+    lo, hi, tp = np.zeros(SHOE_ST), np.zeros(SHOE_ST), np.zeros(SHOE_ST)
+    for i, ui in enumerate(us):
+        uc = np.clip(ui, u.min(), u.max()); m = np.abs(u - uc) < 0.6 * step + 0.008
+        if not m.any(): m = np.abs(u - uc) <= np.sort(np.abs(u - uc))[min(5, len(u) - 1)]   # (the nearest few)
+        # (the width from the foot below the ankle joint: a trouser cuff hanging round the ankle would make the shoe
+        #  bulge and fold there)
+        mw = m & (z < ankle[2] + 0.005)
+        if not mw.any(): mw = m
+        lo[i], hi[i], tp[i] = v[mw].min() - SHOE_OFF, v[mw].max() + SHOE_OFF, z[m].max() + SHOE_OFF
+    for arr, keep in ((lo, np.minimum), (hi, np.maximum), (tp, np.maximum)):   # (smoothed along the foot, no toes,
+        raw = arr.copy()                                                         #  but never inside the foot)
+        for _ in range(3): arr[1:-1] = (arr[:-2] + 2 * arr[1:-1] + arr[2:]) / 4
+        arr[:] = keep(arr, raw)
+    # the top: the collar's height behind the ankle, then a tongue down to the toe box in a gentle curve (the front of
+    # the ankle stands above the foot's cut and would show in a step)
+    collar = tp[us <= 0].max() if (us <= 0).any() else tp.max(); toe_top = tp[-4:].max()
+    a = np.clip(us / max(u1, 1e-6), 0, 1)
+    tp[:] = np.maximum(tp, np.where(us <= 0, collar, toe_top + (collar - toe_top) * (1 - a ** 1.6)))
+    zb = -SOLE; R = 0.045; verts, place = [], []
+    t = np.linspace(0, 2 * np.pi, SHOE_RING, endpoint=False); cx, cz = np.cos(t), np.sin(t)
+    ex, ez = np.sign(cx) * np.abs(cx) ** 0.6, np.sign(cz) * np.abs(cz) ** 0.6   # (a rounded box)
+    secs, grow = [], np.ones(SHOE_ST)
+    for i, ui in enumerate(us):
+        d = min(ui - u0, u1 - ui); k = max(0.3, math.sqrt(max(0.0, 1 - ((R - min(d, R)) / R) ** 2)))
+        cv, hw = (lo[i] + hi[i]) / 2, (hi[i] - lo[i]) / 2 * k
+        zt = zb + (tp[i] - zb) * max(k, 0.55); zc, hz = (zb + zt) / 2, (zt - zb) / 2
+        # how much it must grow for every point of the foot near it to be inside (the rounded corners would cut
+        # into a big toe)
+        m = np.abs(u - ui) < 0.6 * step + 0.008
+        if m.any() and k > 0.99:
+            g = ((np.abs(v[m] - cv) / hw) ** 3.33 + (np.abs(z[m] - zc) / hz) ** 3.33).max()
+            grow[i] = max(1.0, g ** 0.3)
+        secs.append((ui, cv, hw, zc, hz))
+    # (the growth spread along the shoe, so neighbouring sections never fold over each other)
+    grow = np.array([grow[max(0, i - 3):i + 4].max() for i in range(SHOE_ST)])
+    for _ in range(3): grow[1:-1] = (grow[:-2] + 2 * grow[1:-1] + grow[2:]) / 4
+    # no dips along the shoe (a foot's triangles would cut through one): the half-width and the top fill every valley,
+    # rising to their highest and falling after it
+    # no dips along the shoe (a foot's triangles would cut through one): each side and the top fill every valley,
+    # rising to their furthest and falling back after it
+    def unimodal(a):
+        return np.maximum(a, np.minimum(np.maximum.accumulate(a), np.maximum.accumulate(a[::-1])[::-1]))
+    right = unimodal(np.array([sc[1] + sc[2] * gi for sc, gi in zip(secs, grow)]))
+    left = -unimodal(-np.array([sc[1] - sc[2] * gi for sc, gi in zip(secs, grow)]))
+    tops = unimodal(np.array([sc[3] + sc[4] * gi for sc, gi in zip(secs, grow)]))
+    for (ui, _, _, _, _), a, b, zt in zip(secs, left, right, tops):
+        cv, hw = (a + b) / 2, (b - a) / 2; zc, hz = (zb + zt) / 2, (zt - zb) / 2
+        for j in range(SHOE_RING):
+            w = hw * (1.05 if ez[j] < -0.6 else 1.0)                  # (a lip: the sole a little wider)
+            q = ankle + f * ui + sv * (cv + w * ex[j]); q[2] = max(zc + hz * ez[j], zb)
+            verts.append(q); place.append(((ui - u0) / (u1 - u0), q[2] - zb))
+    faces = []
+    for i in range(SHOE_ST - 1):
+        for j in range(SHOE_RING):
+            a, b = i * SHOE_RING + j, i * SHOE_RING + (j + 1) % SHOE_RING
+            faces.append((a, b, b + SHOE_RING, a + SHOE_RING))
+    for i, sgn in ((0, -1), (SHOE_ST - 1, 1)):                      # the ends closed by a fan
+        ring = np.array(verts[i * SHOE_RING:(i + 1) * SHOE_RING]); c = ring.mean(0) + f * sgn * 0.004
+        verts.append(c); place.append((0.0 if i == 0 else 1.0, c[2] - zb)); ci = len(verts) - 1
+        for j in range(SHOE_RING):
+            a, b = i * SHOE_RING + j, i * SHOE_RING + (j + 1) % SHOE_RING
+            faces.append((a, b, ci) if sgn > 0 else (b, a, ci))
+    return np.array(verts), faces, place
+
+
+ANKLE_BLEND = 0.05       # above the collar, the leg's skin goes over to the shin within this
+
+
+def shin_share(dz):
+    """How much of a point of a shoe (or the leg in it) dz above the ankle joint follows the shin: none below 1.5 cm
+    over the joint, rising to half at the collar (more shears the shoe off the foot as the ankle bends), then to all of
+    it ANKLE_BLEND above the collar (the bare ankle there would otherwise push through the tongue as the ankle bends)."""
+    if dz <= SHOE_TOP: return 0.5 * float(np.clip((dz - 0.015) / (SHOE_TOP - 0.015), 0, 1))
+    return 0.5 + 0.5 * float(np.clip((dz - SHOE_TOP) / ANKLE_BLEND, 0, 1))
+
+
+def shoes(o, rig, uv):
+    """Sneakers for bare feet: a sneaker shape round each foot (sneaker()), skinned to the foot (the shin's share
+    rising up the collar: shin_share);
+    coloured by vertex colour (the atlas under them is a white patch): a white upper, a purple band above the sole and a
+    purple heel tab, an off-white sole, a grey tread; outfit part 0. Everything is then raised by the sole."""
+    me = o.data; V = verts_np(o); W, names = weights(o); B = rig.data.bones
+    sm = bpy.data.meshes.new('Shoes'); out = bmesh.new()
+    uvl = out.loops.layers.uv.new(me.uv_layers[0].name); pl = out.loops.layers.uv.new(me.uv_layers[1].name)
+    col = out.loops.layers.float_color.new('Col')
+    shoe_w = []
+    def rgba(c): return Vector(tuple(float(x) for x in lin(c)) + (1.0,))
+    for n in 'LR':
+        ankle = np.array(B['Foot.' + n].head_local); toe = np.array(B['Foot.' + n].tail_local)
+        leg = (W[:, names.index('Foot.' + n)] + W[:, names.index('LowerLeg.' + n)] > 0.5)
+        idx = np.where(leg & (V[:, 2] < ankle[2] + SHOE_TOP))[0]
+        SV, faces, place = sneaker(V[idx], ankle, toe)
+        # the foot inside bends as its shoe does (or a toe weighted to the shin would poke through), and so, less and
+        # less, does the ankle above the collar
+        for k in np.where(leg & (V[:, 2] < ankle[2] + SHOE_TOP + ANKLE_BLEND))[0]:
+            t = shin_share(V[k, 2] - ankle[2]); W[k] = 0
+            W[k, names.index('Foot.' + n)] = 1 - t; W[k, names.index('LowerLeg.' + n)] = t
+        bv = []
+        # skinned whole to the foot, blending to the shin only up the collar (so the shoe bends as one piece)
+        for q in SV:
+            bv.append(out.verts.new(q)); t = shin_share(q[2] - ankle[2])
+            shoe_w.append({'Foot.' + n: 1 - t, 'LowerLeg.' + n: t})
+        top = max(h for _, h in place)
+        def colour(i):
+            a, h = place[i]
+            if h < 0.005: return SHOE_TREAD
+            if h < SOLE + 0.004: return SHOE_SOLE
+            if h < SOLE + 0.02: return SHOE_ACCENT
+            if a < 0.14 and h > top - 0.06: return SHOE_ACCENT                      # the heel tab
+            return SHOE_UPPER
+        for fc in faces:
+            nf = out.faces.new([bv[i] for i in fc])
+            for l, i in zip(nf.loops, fc): l[uvl].uv = uv; l[pl].uv = (0.0, 0.0); l[col] = rgba(colour(i))
+    bmesh.ops.recalc_face_normals(out, faces=out.faces)
+    mb.set_weights(o, W, names)
+    out.to_mesh(sm); out.free()
+    so = bpy.data.objects.new('Shoes', sm); C.scene.collection.objects.link(so)
+    for g in o.vertex_groups: so.vertex_groups.new(name=g.name)
+    for i, wd in enumerate(shoe_w):
+        for nm, wv in wd.items():
+            if wv > 1e-4: so.vertex_groups[nm].add([i], float(wv), 'REPLACE')
+    # the body's colour layer is bytes at the corners: the shoes' match it
+    ca = sm.color_attributes['Col']
+    if ca.data_type != 'BYTE_COLOR':
+        vals = np.empty(len(sm.loops) * 4); ca.data.foreach_get('color', vals); sm.color_attributes.remove(ca)
+        nb = sm.color_attributes.new('Col', 'BYTE_COLOR', 'CORNER'); nb.data.foreach_set('color', vals)
+    for x in C.scene.objects: x.select_set(False)
+    so.select_set(True); o.select_set(True); C.view_layer.objects.active = o
+    bpy.ops.object.join()
+    T = Matrix.Translation((0, 0, SOLE))
+    o.data.transform(T); o.data.update(); rig.data.transform(T)
+    log('shoes: %d vertices, %d faces; raised by the sole, %.3f' % (len(shoe_w), len(sm.polygons) if sm.polygons else 0, SOLE))
+
+
 def finish(o, rig, img, px):
     png = os.path.join(OUT, NAME + 'Atlas.png')
-    mb.face_parts = face_parts                                  # (meshy_boy.paint does the rest as for the boy)
+    mb.face_parts = PROFILE['parts']                            # (meshy_boy.paint does the rest as for the boy)
     refs = mb.paint(o, img, px, png)
+    if PROFILE['shoes']: shoes(o, rig, white_patch(o, png))
     o.data.materials.clear(); o.data.materials.append(atlas_material('Kid', png))
     o.name = 'Kid'; o.data.name = 'Kid'
     tris = sum(len(p.vertices) - 2 for p in o.data.polygons)
@@ -348,8 +709,19 @@ def finish(o, rig, img, px):
     with open(os.path.join(OUT, NAME + '.json'), 'w') as f:
         json.dump(dict({k: [round(float(c), 4) for c in srgb(v)] for k, v in cols.items()}, tris=tris), f)
     neck = rig.data.bones['Head'].head_local.z; top = max(v.co.z for v in o.data.vertices)
-    log('%s: %d tris; the Head joint at %.3f of %.3f (%.3f of his height): at 1.77 m tall, a neck height of %.3f' % (
-        NAME, tris, neck, top, neck / top, 1.77 * neck / top))
+    log('%s: %d tris; the Head joint at %.3f of %.3f (%.3f of his height): at %.2f m tall, a neck height of %.3f' % (
+        NAME, tris, neck, top, neck / top, PROFILE['stands'], PROFILE['stands'] * neck / top))
+
+
+# Each supplied model's rules: the backpack's colour (hue from, hue to, least saturation, value from, value to), its
+# outfit parts, whether it needs shoes, how tall the kid stands in the game (metres: PlayerRoster); optionally how much
+# of the game's swing the backpack takes ('bag') and the colours that are never an arm's ('not_arm', for arms_apart).
+PROFILES = {
+    'backpack_boy': {'pack': (15, 45, 0.35, 0.18, 0.75), 'parts': parts_backpack_boy, 'shoes': False, 'stands': 1.75},
+    'first_day': {'pack': (245, 300, 0.25, 0.12, 0.9), 'parts': parts_first_day, 'shoes': True, 'stands': 1.32,
+                  'bag': 0.5, 'not_arm': khaki},
+}
+PROFILE = PROFILES[PROFILE_NAME]
 
 
 if __name__ == '__main__':
@@ -362,6 +734,7 @@ if __name__ == '__main__':
     debug_points(obj, px, J, os.path.join(OUT, NAME + '_joints.png'))
     if '--joints-only' in argv: sys.exit(0)
     legs_apart(obj, info)
+    arms_apart(obj, px, J, info)
     RIG = rig = make_rig(J)
     weigh_near(obj, rig, info)
     J = repose(obj, rig, J)
