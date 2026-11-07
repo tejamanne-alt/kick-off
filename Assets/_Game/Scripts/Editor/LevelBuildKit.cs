@@ -444,6 +444,9 @@ namespace DribbleToSchool.EditorTools
             rig.bag = bag;
 
             smr.sharedMaterial = material;
+            // Four bones a vertex, whatever the device's quality level: the models are weighted with smooth four-bone
+            // blends (shoulders, hips, the backpack), and the mobile default of two would tear them at the joints.
+            smr.quality = SkinQuality.Bone4;
             smr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             smr.receiveShadows = false;
             smr.updateWhenOffscreen = false;

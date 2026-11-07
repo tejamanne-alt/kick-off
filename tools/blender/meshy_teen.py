@@ -48,7 +48,7 @@ from meshy_boy import (log, activate, verts_np, edges_np, components, texture_pi
 argv = sys.argv[sys.argv.index('--') + 1:]
 SRC, OUT = argv[0], argv[1]
 PROFILE_NAME = argv[argv.index('--profile') + 1] if '--profile' in argv else 'backpack_boy'
-TRIS = int(argv[argv.index('--tris') + 1]) if '--tris' in argv else 30000
+TRIS = int(argv[argv.index('--tris') + 1]) if '--tris' in argv else 100000
 os.makedirs(OUT, exist_ok=True)
 DEFAULT_NAMES = {'backpack_boy': 'BackpackBoy', 'first_day': 'PrimaryBoy2', 'unicorn': 'PrimaryGirl2', 'explorer': 'PrimaryGirl', 'plaid': 'PrimaryBoy', 'rainbow': 'PrimaryGirl2'}
 NAME = argv[argv.index('--name') + 1] if '--name' in argv else DEFAULT_NAMES[PROFILE_NAME]
@@ -554,8 +554,9 @@ def bind(o, rig):
 
 
 # ------------------------------------------------------------------------------------------------ re-pose
-ARM_DOWN = (0.17, 0.03, -1.0)        # as the teen boy: the upper arm hanging, a little away from the side
-FOREARM_DOWN = (0.06, -0.12, -1.0)   # the forearm, a touch forward of straight
+ARM_DOWN = (0.27, 0.04, -1.0)        # the upper arm hanging relaxed, about 15 degrees away from the side (clear of the
+                                     # jacket and the hips, not stiffly straight down)
+FOREARM_DOWN = (0.10, -0.30, -1.0)   # the forearm softly bent forward, about 17 degrees, as a relaxed arm hangs
 LEG_IN = 0.03                        # the ankles are put this far outside the hip joints (he stands with his feet apart)
 
 
@@ -807,8 +808,25 @@ def pack_faces(o):
     bag = (C[:, 1] > yback) & (C[:, 2] > zh - 0.02) & (C[:, 2] < zn + 0.04) & (np.abs(C[:, 0]) < 0.3)
     bag &= bw('Head')[tri].max(1) < 0.3                           # (the braid is the head's)
     bag &= sum(bw(b + n) for b in ('LowerArm.', 'Hand.') for n in 'LR')[tri].max(1) < 0.4
-    bag &= sum(bw('UpperArm.' + n) for n in 'LR')[tri].max(1) < 0.8
-    bag &= hsv(face_colours(o, PX))[2] > 0.22                    # (the braid's tip, dark, hangs over the pack)
+    if not PROFILE.get('pack_wide'): bag &= sum(bw('UpperArm.' + n) for n in 'LR')[tri].max(1) < 0.8
+    dark = hsv(face_colours(o, PX))[2] <= 0.22                   # (the braid's tip, dark, hangs over the pack)
+    bag &= ~dark
+    if PROFILE.get('pack_wide') and bag.sum() > 50:
+        # Where the pack lies flat on the back, it is no further back than the body's own depth allows, so the rule
+        # above finds only its most protruding part (the front pocket, a strip down the middle). The whole pack is
+        # every face, within the outline of that part (across and up and down), behind the middle of the body and
+        # facing back or to the side; the arms, the head and the braid stay out.
+        P = C[bag]; x0, x1 = np.percentile(P[:, 0], [1, 99]); z0, z1 = np.percentile(P[:, 2], [1, 99.5])
+        Nf = np.empty(len(me.polygons) * 3); me.polygons.foreach_get('normal', Nf); Nf = Nf.reshape(-1, 3)
+        mid = np.interp(C[:, 2], zs[ok], fr[ok]) + 0.55 * depth
+        wide = ((C[:, 0] > x0 - 0.01) & (C[:, 0] < x1 + 0.01) & (C[:, 2] > z0 - 0.01) & (C[:, 2] < z1 + 0.02) &
+                (C[:, 1] > mid) & (Nf[:, 1] > 0.1) & ~dark)
+        wide &= bw('Head')[tri].max(1) < 0.3
+        B = RIG.data.bones                                        # (the arm itself, by its distance from its bones)
+        da = np.min([seg_dist(C, np.array(B[b + n].head_local), np.array(B[b + n].tail_local))[0]
+                     for b in ('UpperArm.', 'LowerArm.', 'Hand.') for n in 'LR'], 0)
+        wide &= da > PROFILE.get("pack_arm_gap", 0.075)
+        bag |= wide
     return bag
 
 
@@ -1180,7 +1198,8 @@ PROFILES = {
     'explorer': {'pack': 'shape', 'parts': parts_explorer, 'shoes': False, 'stands': 1.27, 'bag': 0.5, 'not_arm': red_shorts,
                  'pack_tint': (0.56, 0.69, 0.84), 'shoulders': True},                         # (light denim, as in the reference photos)
     'rainbow': {'pack': 'shape', 'parts': parts_rainbow, 'shoes': False, 'stands': 1.29, 'bag': 0.5, 'not_arm': coral,
-                'shoulders': True, 'pack_paint': True, 'pack_rigid': True},
+                'shoulders': True, 'pack_paint': True, 'pack_rigid': True, 'pack_wide': True,
+                'pack_arm_gap': 0.11},
     'unicorn': {'pack': 'shape', 'parts': parts_unicorn, 'shoes': False, 'stands': 1.29, 'bag': 0.5, 'not_arm': terracotta,
                 'split': True},
 }
