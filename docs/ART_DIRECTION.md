@@ -54,6 +54,29 @@ near black, as in the references. When the look is tuned again, measure the game
 screenshots against these numbers rather than by eye: the eye adapts, and an earlier "calmer"
 pass (paler sky, olive greens, less saturation, a warm gain) drifted away from the references.
 
+## The comic halftone filter
+
+An optional look (Settings > Add-ons & Filters, `World/PostFX.cs`, passes 4 and 5 of
+`Shaders/PostFX.shader`) that redraws the graded picture as a printed comic, over every model in
+every scene:
+
+1. **Colour:** saturation 1.4 and contrast 1.15 on the street; the street's mid and dark tones
+   stepped into cel bands (4 steps, 70 percent), the light tones left smooth so lit white walls and
+   paving never break into blotches.
+2. **Halftone:** a 45-degree dot screen (8.5 px a cell at 1080 lines, scaled with the screen) in
+   tones below 0.66, the dots a darker, bluer ink of the colour under them; hatching in the deepest
+   shade.
+3. **Ink line:** from the camera's depth and normals: outlines where the depth jumps, creases where
+   the surface turns. Never from the picture, so textures never draw lines. It thins away by 90 m.
+4. **Print:** the red and blue plates slip up to 4 px toward the frame's edges (none at the centre),
+   on warm paper with a faint grain; the vignette comes last.
+
+**Figures keep their faces.** `ToonCharacter` writes `_ComicWorld` into the picture's alpha: 0 for
+the kids, the passers-by and the ball (the cars and the bicycle are 1, drawn like the street). A
+figure takes no bands, no creases and almost no plate slip, and lighter dots (45 percent), so its
+painted eyes, brows and highlights stay exactly as drawn, and its own ink outline does the rest.
+Previews of the real models through a numpy port of the shader are in `review/filter/`.
+
 ## How it applies to our game
 
 The game is a side view of a street, so the camera sees the front of everything. Assets are judged

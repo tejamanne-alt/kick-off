@@ -10,6 +10,15 @@ namespace DribbleToSchool.World
     /// vibrance (quiet colours lifted a touch, strong ones left alone), a split tone (cool shadows,
     /// faintly mauve mid-greys) and a light vignette. The bloom runs on a quarter-size chain so it
     /// stays cheap on phones; turn it off with <see cref="bloom"/>.
+    ///
+    /// With the comic halftone filter chosen in Settings (Progression/AddOns.Filter, live: read every
+    /// frame) the grade feeds two more passes instead: the comic look (punchier colour in cel bands, the
+    /// shade as halftone dots, hatching in the deepest shade, an ink line from the camera's depth and
+    /// normals) and the print (the colour plates slipping out of register toward the edges, warm paper,
+    /// a faint grain). Every model in the scene goes through it. People and the ball keep their painted
+    /// faces and eyes: ToonCharacter marks them in the picture's alpha, and the filter gives them no
+    /// creases or bands, only lighter dots. The depth and normals texture is asked for only while the
+    /// filter is on (an extra pass over the opaque scene).
     /// </summary>
     [RequireComponent(typeof(Camera))]
     public class PostFX : MonoBehaviour
@@ -40,8 +49,43 @@ namespace DribbleToSchool.World
         public Color highlightTint = new Color(0f, 0f, 0f);
         [Range(0f, 1f)] public float vignette = 0.12f;
 
+        [Header("Comic halftone filter (sizes in pixels at 1080 lines; they scale with the screen)")]
+        [Tooltip("Force the filter on here whatever Settings say (for looking at it in the editor).")]
+        public bool forceComic;
+        [Range(0.5f, 2.5f)] public float comicSaturation = 1.4f;
+        [Range(0.8f, 1.5f)] public float comicContrast = 1.15f;
+        [Tooltip("Brightness steps of the street's cel bands.")]
+        [Range(2f, 8f)] public float bands = 4f;
+        [Tooltip("0 smooth, 1 hard steps.")]
+        [Range(0f, 1f)] public float bandMix = 0.7f;
+        [Range(4f, 16f)] public float dotPeriod = 8.5f;
+        [Tooltip("Dots start below this brightness.")]
+        [Range(0.3f, 1f)] public float dotReach = 0.66f;
+        [Range(0.2f, 0.75f)] public float dotSize = 0.6f;
+        [Range(0f, 1f)] public float dotStrength = 1f;
+        [Tooltip("How much of the dots the people and the ball take (their faces stay clear).")]
+        [Range(0f, 1f)] public float characterDots = 0.45f;
+        [Range(0f, 1f)] public float hatchStrength = 0.55f;
+        [Range(0.5f, 3f)] public float inkWidth = 1.3f;
+        [Range(0f, 1f)] public float inkStrength = 0.9f;
+        [Tooltip("The ink line has thinned away by this distance (m).")]
+        public float inkFar = 90f;
+        [Tooltip("A depth jump of this fraction of the distance starts a line.")]
+        [Range(0.005f, 0.3f)] public float depthEdge = 0.05f;
+        [Tooltip("A turn of the surface of this much (1 - cos) starts a crease.")]
+        [Range(0.05f, 1f)] public float normalEdge = 0.3f;
+        public Color inkColor = new Color(0.06f, 0.05f, 0.12f);
+        [Tooltip("How far the red and blue plates slip at the frame's corners.")]
+        [Range(0f, 10f)] public float slip = 4f;
+        [Tooltip("The paper (rgb) and how much of it shows through (a).")]
+        public Color paper = new Color(0.88f, 0.75f, 0.5f, 0.04f);
+        [Range(0f, 0.1f)] public float grain = 0.04f;
+
         Material material;
+        Camera cam;
+        bool askedForNormals;
         const int Levels = 4;
+        const int GradePass = 3, ComicPass = 4, PrintPass = 5;
         readonly RenderTexture[] chain = new RenderTexture[Levels];
 
         static readonly int ThresholdId = Shader.PropertyToID("_Threshold");
@@ -61,9 +105,52 @@ namespace DribbleToSchool.World
         static readonly int MidTintId = Shader.PropertyToID("_MidTint");
         static readonly int HighlightTintId = Shader.PropertyToID("_HighlightTint");
         static readonly int VignetteId = Shader.PropertyToID("_Vignette");
+        static readonly int MaskOnId = Shader.PropertyToID("_MaskOn");
+        static readonly int ComicSatId = Shader.PropertyToID("_ComicSat");
+        static readonly int ComicContrastId = Shader.PropertyToID("_ComicContrast");
+        static readonly int BandsId = Shader.PropertyToID("_Bands");
+        static readonly int BandMixId = Shader.PropertyToID("_BandMix");
+        static readonly int DotPeriodId = Shader.PropertyToID("_DotPeriod");
+        static readonly int DotReachId = Shader.PropertyToID("_DotReach");
+        static readonly int DotSizeId = Shader.PropertyToID("_DotSize");
+        static readonly int DotStrengthId = Shader.PropertyToID("_DotStrength");
+        static readonly int CharacterDotsId = Shader.PropertyToID("_CharacterDots");
+        static readonly int HatchStrengthId = Shader.PropertyToID("_HatchStrength");
+        static readonly int InkWidthId = Shader.PropertyToID("_InkWidth");
+        static readonly int InkStrengthId = Shader.PropertyToID("_InkStrength");
+        static readonly int InkFarId = Shader.PropertyToID("_InkFar");
+        static readonly int DepthEdgeId = Shader.PropertyToID("_DepthEdge");
+        static readonly int NormalEdgeId = Shader.PropertyToID("_NormalEdge");
+        static readonly int InkColorId = Shader.PropertyToID("_InkColor");
+        static readonly int SlipEdgeId = Shader.PropertyToID("_SlipEdge");
+        static readonly int PaperColorId = Shader.PropertyToID("_PaperColor");
+        static readonly int GrainId = Shader.PropertyToID("_Grain");
+
+        /// <summary>The comic halftone filter is on: chosen in Settings, or forced here.</summary>
+        public bool ComicOn { get { return forceComic || Progression.AddOns.Filter == Progression.AddOns.ComicFilter; } }
+
+        // The comic filter's line needs the camera's depth and normals; asked for only while it is on,
+        // and only the flag this script added is taken back.
+        void LateUpdate()
+        {
+            if (cam == null) cam = GetComponent<Camera>();
+            bool want = ComicOn;
+            if (want && (cam.depthTextureMode & DepthTextureMode.DepthNormals) == 0)
+            {
+                cam.depthTextureMode |= DepthTextureMode.DepthNormals;
+                askedForNormals = true;
+            }
+            else if (!want && askedForNormals)
+            {
+                cam.depthTextureMode &= ~DepthTextureMode.DepthNormals;
+                askedForNormals = false;
+            }
+        }
 
         void OnDisable()
         {
+            if (askedForNormals && cam != null) cam.depthTextureMode &= ~DepthTextureMode.DepthNormals;
+            askedForNormals = false;
             if (material != null) Destroy(material);
             material = null;
         }
@@ -108,12 +195,59 @@ namespace DribbleToSchool.World
                 bloomTex = chain[0];
             }
             material.SetTexture(BloomTexId, bloomTex != null ? bloomTex : (Texture)Texture2D.blackTexture);
-            Graphics.Blit(source, destination, material, 3);
+            if (ComicOn && HasNormals())
+            {
+                SetComic(source);
+                var comic = RenderTexture.GetTemporary(source.width, source.height, 0, source.format);
+                comic.filterMode = FilterMode.Bilinear;
+                Graphics.Blit(source, comic, material, ComicPass);
+                Graphics.Blit(comic, destination, material, PrintPass);
+                RenderTexture.ReleaseTemporary(comic);
+            }
+            else
+            {
+                Graphics.Blit(source, destination, material, GradePass);
+            }
             for (int i = 0; i < Levels; i++)
             {
                 if (chain[i] != null) RenderTexture.ReleaseTemporary(chain[i]);
                 chain[i] = null;
             }
+        }
+
+        // The depth and normals are drawn from the frame after the flag is set: until then, the plain grade.
+        bool HasNormals()
+        {
+            return cam != null && (cam.depthTextureMode & DepthTextureMode.DepthNormals) != 0;
+        }
+
+        void SetComic(RenderTexture source)
+        {
+            // Sizes are tuned at 1080 lines and scale with the picture, so the dots look the same on every phone.
+            float scale = source.height / 1080f;
+            // The character mask rides in alpha; a picture without alpha (an RGB HDR buffer) has none, so
+            // everything is drawn like the street there.
+            bool alpha = source.format != RenderTextureFormat.RGB111110Float && source.format != RenderTextureFormat.RGB565;
+            material.SetFloat(MaskOnId, alpha ? 1f : 0f);
+            material.SetFloat(ComicSatId, comicSaturation);
+            material.SetFloat(ComicContrastId, comicContrast);
+            material.SetFloat(BandsId, bands);
+            material.SetFloat(BandMixId, bandMix);
+            material.SetFloat(DotPeriodId, Mathf.Max(3f, dotPeriod * scale));
+            material.SetFloat(DotReachId, dotReach);
+            material.SetFloat(DotSizeId, dotSize);
+            material.SetFloat(DotStrengthId, dotStrength);
+            material.SetFloat(CharacterDotsId, characterDots);
+            material.SetFloat(HatchStrengthId, hatchStrength);
+            material.SetFloat(InkWidthId, Mathf.Max(0.75f, inkWidth * scale));
+            material.SetFloat(InkStrengthId, inkStrength);
+            material.SetFloat(InkFarId, Mathf.Max(1f, inkFar));
+            material.SetFloat(DepthEdgeId, depthEdge);
+            material.SetFloat(NormalEdgeId, normalEdge);
+            material.SetVector(InkColorId, inkColor);
+            material.SetFloat(SlipEdgeId, slip * scale);
+            material.SetVector(PaperColorId, paper);
+            material.SetFloat(GrainId, grain);
         }
     }
 }

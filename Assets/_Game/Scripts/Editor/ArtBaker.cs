@@ -230,6 +230,7 @@ namespace DribbleToSchool.EditorTools
                 var carMat = LoadOrCreateMaterial("Car" + type, toonCharacter);
                 carMat.mainTexture = AssetDatabase.LoadAssetAtPath<Texture2D>(LevelBuildKit.ModelsDir + "/Cars/" + type + "Atlas.png");
                 carMat.SetFloat("_OutlineWidth", 0.0018f);
+                carMat.SetFloat("_ComicWorld", 1f);   // the comic filter draws a car like the street (creases, bands)
                 EditorUtility.SetDirty(carMat);
                 set.cars[type] = carMat;
             }
@@ -239,10 +240,12 @@ namespace DribbleToSchool.EditorTools
                 set.bicycle = LoadOrCreateMaterial("Bicycle", toonCharacter);
                 set.bicycle.mainTexture = bikeAtlas;
                 set.bicycle.SetFloat("_OutlineWidth", 0.0018f);
+                set.bicycle.SetFloat("_ComicWorld", 1f);
                 EditorUtility.SetDirty(set.bicycle);
             }
             set.ball = LoadOrCreateMaterial("Ball", toonCharacter);
             set.ball.SetFloat("_OutlineWidth", 0.0018f);
+            set.ball.SetFloat("_ComicWorld", 0f);   // the comic filter keeps the ball as drawn (its own outline, light dots)
             EditorUtility.SetDirty(set.ball);
 
             set.hazeSprite = LoadOrCreateMaterial("HazeSprite", Shader.Find("DribbleToSchool/SpriteHaze"));
@@ -277,6 +280,8 @@ namespace DribbleToSchool.EditorTools
             var m = LoadOrCreateMaterial(name, shader);
             if (atlas != null) m.mainTexture = AssetDatabase.LoadAssetAtPath<Texture2D>(LevelBuildKit.ModelsDir + "/" + atlas + ".png");
             m.SetColor("_OutlineColor", new Color(0.08f, 0.07f, 0.1f));
+            // The comic filter keeps people as drawn: painted faces and eyes, no creases across them.
+            m.SetFloat("_ComicWorld", 0f);
             // The player: a thin, crisp ink line and a faint rim (flat anime cel look); the teens
             // read against the street by their colours (white shirt, navy legwear, dark hair).
             m.SetFloat("_OutlineWidth", player ? 0.0018f : 0.0022f);

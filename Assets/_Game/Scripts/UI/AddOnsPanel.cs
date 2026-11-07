@@ -9,8 +9,9 @@ namespace DribbleToSchool.UI
     /// <summary>
     /// Settings, Add-ons and Filters: the add-ons (the same levels in another country's streets with that
     /// country's music: the original Kamakura, Japan; California, unlocked by finishing every level; India and
-    /// a Tokyo city still to come) as cards to choose from, and the filters (a look over the picture; only
-    /// the original so far). A choice is saved at once and applies from the next level loaded.
+    /// a Tokyo city still to come) as cards to choose from, and the filters (a look over the whole picture:
+    /// the original and the comic halftone). A choice is saved at once; an add-on applies from the next
+    /// level loaded, a filter at once.
     /// Progression/AddOns has the list and the rules.
     /// </summary>
     public static class AddOnsPanel
@@ -50,14 +51,17 @@ namespace DribbleToSchool.UI
             }
             y += ((AddOns.All.Length + 1) / 2) * (CardHeight + Gap) + 6f;
 
-            // Filters: only the original look so far.
+            // Filters: two cards a row; what is still to come on the right of the section's label.
             UIKit.SectionLabel(UIKit.Row(body, "FiltersLabel", y, SectionHeight), Loc.T("addons.filters"));
+            var more = UIKit.Label(UIKit.Row(body, "MoreFilters", y, SectionHeight, 420f, 0f), "Text", Loc.T("addons.moreFilters"), 26, UITheme.InkSoft, TextAnchor.MiddleRight);
+            UIKit.Stretch(more.rectTransform);
+            UIKit.Fit(more, 18);
             y += SectionHeight + 10f;
             for (int i = 0; i < AddOns.Filters.Length; i++)
             {
                 string filter = AddOns.Filters[i];
                 bool on = filter == AddOns.Filter;
-                var cell = Cell(body, "Filter_" + filter, y, i % 2);
+                var cell = Cell(body, "Filter_" + filter, y + (i / 2) * (CardHeight + Gap), i % 2);
                 Choice(cell, Loc.T("filter." + filter), Loc.T("filter." + filter + ".about"), on ? Loc.T("addons.selected") : Loc.T("addons.choose"), on, true, () =>
                 {
                     AddOns.Filter = filter;
@@ -65,9 +69,6 @@ namespace DribbleToSchool.UI
                     Open(canvas, onClose);
                 });
             }
-            var more = UIKit.Label(Cell(body, "MoreFilters", y, 1), "Text", Loc.T("addons.moreFilters"), 28, UITheme.InkSoft, TextAnchor.MiddleLeft, true);
-            UIKit.Stretch(more.rectTransform, 16f);
-            UIKit.Fit(more, 20);
 
             // Along the bottom: when a choice applies, and Done.
             var note = UIKit.Label(card.transform, "Note", Loc.T("addons.note"), 28, UITheme.InkSoft, TextAnchor.MiddleLeft);
