@@ -638,6 +638,10 @@ The user found the first Coast models plain next to their reference shots (weath
 - The four primary-school kids made from supplied models (Kai, Mia, Leo, Zoe) are set aside: in the game their sleeves and jackets smeared as their arms swung (Meshy fuses arms that hang against the body), short of Max's quality. The scripted anime kids (`primary.py`) are back in `Art/Models` and `Resources/UI`, with their old neck heights in `PlayerRoster`. The supplied versions can be rebuilt any time with `meshy_teen.py --profile plaid / explorer / first_day / unicorn`; the way to make them as clean as Max is to generate them in an A-pose.
 - Max keeps the rigid-head fix (his face no longer folds on the menu). Generated content v80. Not run in Unity.
 
+## The supplied primary-school kids are back (generated content v81)
+
+- At the user's request the supplied Kai, Mia, Leo and Zoe are in the game again (v80 had put the scripted kids back), now with the rigid-head fix: their faces no longer fold as the head follows the ball. The known limit stays: sleeves and loose jackets smear on Kai, Leo and Zoe as their arms swing (the scans fuse arms that hang against the body). Generated content v81. Not run in Unity.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.
