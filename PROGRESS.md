@@ -598,6 +598,24 @@ The user found the first Coast models plain next to their reference shots (weath
 - **`meshy_teen.py` now takes profiles** (`--profile backpack_boy` for Max, `first_day` for Leo): the backpack's colour, the outfit parts' colour rules, shoes, height, how much the pack swings, colours that are never an arm's. For Leo it also had to learn arms that hang by the body rather than in an A-pose (each arm found from its own cross-sections, the elbow on the arm's line) and arms that touch it (his forearms rest on his pockets: cut free where a point is relatively nearer the arm than the body, the holes closed, and only each arm's own piece takes its bones). Max was rebuilt with the same script (his joints and parts unchanged within a few mm; the pose sheet looks the same).
 - **Checked**: every game pose with `review_poses.py` (`review/leo/poses.jpg`, the feet close up in `review/leo/shoes.jpg`), Max's main poses again, and both cards. Known limits: with his arms raised high (the celebration) Leo's sweatshirt creases sharply at the shoulders, and the hole fills where his arms were cut free can show as a small pale patch on the trousers close up. Generated content v74. Not run in Unity.
 
+## Zoe from a supplied model (generated content v75)
+
+- **Zoe is new** (`PlayerRoster` id `primaryGirl2`, model `PrimaryGirl2`, kept so saved choices stay valid): made from the "rainbow unicorn" Meshy model the user supplied, a primary-school girl with black hair in a long braid, a pink rainbow-unicorn jacket over a white T-shirt, terracotta trousers, black shoes and a backpack in the jacket's print. She stands 1.29 m (her Head bone 1.070 m up). The scripted girl 2 (`primary.py --girl2`) is no longer used.
+- **`meshy_teen.py --profile unicorn`**: her pack has no colour of its own, so it is found by its shape (what stands behind her back line, bar the hair), and takes half the game's swing. The jacket is outfit part 1, the trousers 2, the hair with the braid 3. Changes to the script that all three models now share:
+  - the arm search drops a scrap by the shoulder (her hood's edge);
+  - the crotch must hold for two heights;
+  - the neck may not fall below the chin (her hood and braid made the narrowest section fall on her shoulders);
+  - a loose bit of a hand left by the arm cut goes with the arm.
+
+  Max's and Leo's joints come out the same with it.
+- **Checked**: every game pose with `review_poses.py` (`review/zoe/poses.jpg`, the joints in `review/zoe/joints.jpg`) and her card (`portrait_teen.py --yaw -28 --span-heads 2.3`, the girls turn left). Known limits: the jacket's loose hem folds sharply when she tucks and slides, and a recoloured jacket loses its rainbow (the shop tints it in shades of one colour). Generated content v75. Not run in Unity.
+
+## Mia from a supplied model (generated content v76)
+
+- **Mia is new** (`PlayerRoster` id `primaryGirl`, model `PrimaryGirl`, kept so saved choices stay valid): made from the "little explorer in red" Meshy model the user supplied, an A-posed primary-school girl with shoulder-length black hair and a headband, a white T-shirt, wide red shorts, white socks, pink sneakers and a beige backpack with a bow. She stands 1.27 m (Head bone 1.028 m up). The scripted girl 1 (`primary.py --girl`) is no longer used; Kai is now the only scripted primary kid.
+- **`meshy_teen.py --profile explorer`**: her backpack is found by its shape (its beige is close to her skin), and her parts by each face's own texture colour (her texture is cut into many small islands). Two changes to the script shared by all four models: the arm is now the longest run of following outlines (her sleeve's edge was a short run of its own), and when wide shorts hide the crotch the legs are found below the hems and the shorts parted down the middle. Max's, Leo's and Zoe's joints come out the same.
+- **Checked**: every game pose including the menu's balance and keepy-ups (`review/mia/poses.jpg`), her outfit parts tinted (`outfit_parts.jpg`), the close-up face, side, back and in-game-size sheet against the street (`sheet.jpg`), and her card. The scanned faces show soft-edged patches of tone up close; that is lighting baked into the scan's texture (smoothing the face, clearing sharp edges and sparing the face in the decimation were tried and changed nothing visible). Generated content v76. Not run in Unity.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.
