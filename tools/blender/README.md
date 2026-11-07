@@ -16,6 +16,8 @@ cp Adult.fbx ../../Assets/_Game/Art/Models/Adult.fbx
 cp face_adult.png ../../Assets/_Game/Art/Models/AdultAtlas.png
 blenv/bin/python meshy_boy.py -- /abs/boy_with_bicycle.fbx $PWD   # the playable teen boy, from a supplied textured model
     # (Boy.fbx/.blend/.json, BoyAtlas.png, and his bicycle: Bicycle.fbx, BicycleAtlas.png; see "The boy" below)
+blenv/bin/python meshy_teen.py -- /abs/backpack_boy.fbx $PWD   # Max, the backpack boy, from a supplied A-posed model
+    # (BackpackBoy.fbx/.blend/.json, BackpackBoyAtlas.png, BackpackBoy_joints.png; see "The backpack boy" below)
 blenv/bin/python teen.py -- $PWD/Boy.fbx --boy     # (the earlier, scripted boy; it would overwrite the files above)
 blenv/bin/python teen.py -- $PWD/Girl.fbx --girl   # the playable teen girl
 blenv/bin/python primary.py -- $PWD/PrimaryBoy.fbx --boy      # the four primary-school kids (see below); also
@@ -29,10 +31,12 @@ blenv/bin/python review_teen.py -- $PWD/Girl.blend $PWD/girl_sheet.png [--bg sho
 blenv/bin/python review_poses.py -- $PWD/Boy.blend $PWD/boy_poses.png --jobs 3 --leaks
     # the pose audit (see below): the teen in every pose the game uses, from the game's camera yaws
 cp Boy.fbx Boy.json BoyAtlas.png Bicycle.fbx BicycleAtlas.png Girl.fbx Girl.json GirlAtlas.png ../../Assets/_Game/Art/Models/
+cp BackpackBoy.fbx BackpackBoy.json BackpackBoyAtlas.png ../../Assets/_Game/Art/Models/
 cp Primary*.fbx Primary*.json Primary*Atlas.png ../../Assets/_Game/Art/Models/
 blenv/bin/python portrait_teen.py -- $PWD/Boy.blend $PWD/PlayerBoy.png --yaw 28     # the menus' player cards
 blenv/bin/python portrait_teen.py -- $PWD/Girl.blend $PWD/PlayerGirl.png --yaw -28  # (they face each other)
-cp PlayerBoy.png PlayerGirl.png ../../Assets/_Game/Resources/UI/
+blenv/bin/python portrait_teen.py -- $PWD/BackpackBoy.blend $PWD/PlayerBackpackBoy.png --yaw 28
+cp PlayerBoy.png PlayerGirl.png PlayerBackpackBoy.png ../../Assets/_Game/Resources/UI/
 blenv/bin/python portrait_teen.py -- $PWD/PrimaryBoy.blend $PWD/PlayerPrimaryBoy.png --yaw 28 --span-heads 2.3     # the primary kids' cards
 blenv/bin/python portrait_teen.py -- $PWD/PrimaryGirl.blend $PWD/PlayerPrimaryGirl.png --yaw -28 --span-heads 2.3  # (boys turn right,
 blenv/bin/python portrait_teen.py -- $PWD/PrimaryBoy2.blend $PWD/PlayerPrimaryBoy2.png --yaw 28 --span-heads 2.3   #  girls left)
@@ -142,6 +146,41 @@ atlas, the outfit part in UV 2, the game's bones, a Nose marker, `Boy.json`), an
 It writes `debug_joints.png` (the joints over his vertices) next to its outputs. Check the result with `review_teen.py`
 and `review_poses.py` as for the teens. 30,000 triangles; the Head joint at 0.846 of his height, so at the game's neck
 height of 1.5 he stands 1.77 m (`PlayerRoster`).
+
+### The backpack boy (`meshy_teen.py`)
+
+Max, the third teen, comes from another textured, single-mesh model the user supplied (Meshy, about 300,000 triangles,
+one 2048 base-colour texture plus normal, roughness and metallic maps that are not used, no rig), this time standing
+alone in an A-pose: ginger hair, a light denim jacket open over a grey hoodie and a white T-shirt, dark navy jeans, white
+sneakers with black stripes, and a brown backpack on both shoulders. `meshy_teen.py` makes `BackpackBoy.fbx` in the
+teens' contract, reusing `meshy_boy.py`'s helpers (mesh queries, cross-sections, the painting of the atlas):
+- tidy: decimated to 30,000 triangles first, scaled to the teen boy's 2.14 with his feet on z = 0, his hips over the
+  origin. The model already faces -y.
+- joints, from the mesh: the crotch is the highest cross-section (the arms left out) of two outlines of a size side by
+  side (the jacket's hem and the backpack's bottom are one in front of the other, so they don't count); each leg's
+  centreline below it, the knee half way to the ankle; each arm is a straight line in the A-pose, fitted through the
+  arm's cross-sections below the armpit, the shoulder where it meets 0.81 of his height (kept inside the torso), the
+  wrist a hand's length (0.2) up from the fingertips, the elbow half way; the trunk 12 cm behind his front (the backpack
+  makes his back no guide); the Head joint 2 cm over the neck's narrowest cross-section (0.878 of his height: his head
+  is small for his height, so at 1.75 m the game puts it 1.536 m up).
+- weights by nearness to the bones (an exponential falloff of 2.2 cm past the nearest bone, smoothed, four bones a
+  vertex), made in the A-pose where the arms hang clear of the body: bone heat finds no solution on this scan (its
+  jacket, hood and backpack are layered, open shells; about 570 non-manifold edges). Below the crotch each leg takes only
+  its own bones and the hips'; nothing else takes a leg's bones; only the head above the jaw takes the Head bone.
+- re-pose: the arms hang as the teen boy's do, the legs are turned in 3 to 4 degrees so the ankles stand 3 cm outside the
+  hips (the feet turned back flat); baked in and made the rest pose, keeping the A-pose weights.
+- the backpack: the biggest brown piece more than a few centimetres behind his back follows a Bag bone (on the Chest,
+  its head at the pack's top, so the shop's pennant clips there), fading into his back over 6 cm and a little
+  smoothing, so the game's swing bends the pack rather than tearing it off; the straps over his front stay on the chest.
+- paint: the jacket (light denim, above the hips) is part 1, the jeans (the dark navy below them, and the waistband
+  where the jacket hangs open) 2, the hair (the biggest orange piece of the head) 3; the face, hands, hoodie, T-shirt,
+  backpack and shoes 0. No accent part (the shop's tie colour has nothing to recolour on him). As for the boy, those
+  parts' texels in the atlas are divided by their colour, which their vertex colours and `BackpackBoy.json` carry.
+
+It writes `BackpackBoy_joints.png` (the joints over his vertices, before the re-pose). Checked with `review_poses.py`
+(every game pose from the game's yaws: the backpack stays on his back on the run, the tuck and the slide) and his card
+with `portrait_teen.py --yaw 28`. Other A-posed Meshy teens should go through with `--name`, though the colour rules in
+`face_parts` and `backpack` are his.
 
 ### Pose audit
 

@@ -46,9 +46,9 @@ namespace DribbleToSchool.Tests
         }
 
         [Test]
-        public void ThereAreTwoTeensAndFourPrimarySchoolKids()
+        public void ThereAreThreeTeensAndFourPrimarySchoolKids()
         {
-            Assert.AreEqual(2, PlayerRoster.Of(SchoolLevel.High).Count);
+            Assert.AreEqual(3, PlayerRoster.Of(SchoolLevel.High).Count);
             Assert.AreEqual(4, PlayerRoster.Of(SchoolLevel.Primary).Count);
             int boys = 0, girls = 0;
             foreach (var info in PlayerRoster.Of(SchoolLevel.Primary))

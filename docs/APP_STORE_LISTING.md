@@ -54,7 +54,7 @@ Kick Off 2 is a football side-scroller in bright anime daylight. Keep the ball a
 
 THE WAY TO SCHOOL
 • 23 levels across 5 chapters: Home Street, the Market, the Beach, the Underpass and the Park
-• Play as one of six schoolkids: two high-schoolers and four primary-school kids
+• Play as one of seven schoolkids: three high-schoolers and four primary-school kids
 • Real ball physics: every touch and every kick is about angle and timing
 • Beat the school bell, or switch the timer off and take it easy
 • Ball-skill challenges: keepy-uppy, target practice and a beach slalom
@@ -115,7 +115,7 @@ Kick Off 2 is a single-player football (soccer) side-scrolling game for players 
 3. HOW TO USE IT
 No setup, login or sample files are needed. Launch the app, tap PLAY and choose a level on the town map: six routes from the kid's house to the school, each level a numbered stop on its route (levels unlock in order as each is finished).
 Controls (landscape): the two arrow buttons at the bottom left run; KICK touches the ball (drag on it to aim a chip, release to kick); JUMP jumps (tap again in the air for a double jump); SLIDE slides under barriers. Bring the ball through the school gate to finish a level.
-Stickers shows the album (tap a sticker to view it). The Locker Room has cosmetic items unlocked with in-game coins earned by playing, or by stickers. Settings has the player choice (six kids: two teenagers and four primary-school children), sound, the school-bell timer, the controls (a left-handed layout, the slide button's place) and the language.
+Stickers shows the album (tap a sticker to view it). The Locker Room has cosmetic items unlocked with in-game coins earned by playing, or by stickers. Settings has the player choice (seven kids: three teenagers and four primary-school children), sound, the school-bell timer, the controls (a left-handed layout, the slide button's place) and the language.
 
 4. EXTERNAL SERVICES
 None. The app works fully offline and makes no network requests. It uses no third-party services or SDKs: no analytics, advertising, authentication, payment or AI services. It is built with the Unity engine, and progress is stored only on the device.
