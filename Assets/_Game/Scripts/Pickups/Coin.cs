@@ -8,6 +8,12 @@ namespace DribbleToSchool.Pickups
     /// <summary>
     /// A coin collected by the kid or the ball. Spins, bobs, and pops when taken.
     /// Restored when the level restarts.
+    ///
+    /// The kid's physics capsule is 1.2 m tall, shorter than the kid on screen (the teens stand about 1.6 m):
+    /// a coin at head height (the underpass's rows at 1.6 m) went straight through the drawn head untouched.
+    /// So a coin is also taken when it overlaps the kid as drawn: the column from the feet up to the model's
+    /// height, scaled down with the capsule while the kid slides (<see cref="KidReach"/>, measured once a frame
+    /// for every coin).
     /// </summary>
     [RequireComponent(typeof(Collider2D))]
     public class Coin : MonoBehaviour, IResettable
@@ -23,7 +29,10 @@ namespace DribbleToSchool.Pickups
 
         void Awake()
         {
-            GetComponent<Collider2D>().isTrigger = true;
+            var col = GetComponent<Collider2D>();
+            col.isTrigger = true;
+            var circle = col as CircleCollider2D;
+            if (circle != null) radius = circle.radius * Mathf.Abs(transform.lossyScale.x);
             basePosition = visual != null ? visual.localPosition : Vector3.zero;
             phase = transform.position.x * 0.7f;
         }
@@ -34,7 +43,58 @@ namespace DribbleToSchool.Pickups
             var rb = other.attachedRigidbody;
             if (rb == null) return;
             if (rb.GetComponent<KidController>() == null && rb.GetComponent<BallController>() == null) return;
+            TryCollect();
+        }
 
+        float radius = 0.28f;   // the trigger's (0.28 a coin, 0.5 a Holiday Run star coin)
+
+        // ---- The kid as drawn, once a frame for all the coins ----
+        static KidController reachKid;
+        static CapsuleCollider2D reachCapsule;
+        static float reachModelHeight, reachStandHeight;
+        static int reachFrame = -1;
+        static bool reachValid;
+        static Vector2 reachFeet;
+        static float reachTop, reachHalfWidth;
+
+        /// <summary>The column the kid fills on screen this frame: feet, top and half width (false without a kid).</summary>
+        static bool KidReach()
+        {
+            if (reachFrame == Time.frameCount) return reachValid;
+            reachFrame = Time.frameCount;
+            reachValid = false;
+            var level = LevelManager.Current;
+            var kid = level != null ? level.kid : null;
+            if (kid == null || !kid.isActiveAndEnabled) return false;
+            if (kid != reachKid)
+            {
+                reachKid = kid;
+                reachCapsule = kid.GetComponent<CapsuleCollider2D>();
+                reachModelHeight = 0f;
+                reachStandHeight = reachCapsule != null ? reachCapsule.size.y : 1.2f;
+            }
+            if (reachCapsule == null) return false;
+            reachFeet = kid.FeetPosition;
+            if (reachModelHeight <= 0f)
+            {
+                // The drawn kid's height over the feet, from the visible model (the cast's chosen kid).
+                float top = float.MinValue;
+                foreach (var r in kid.GetComponentsInChildren<SkinnedMeshRenderer>())
+                    if (r.enabled && r.gameObject.activeInHierarchy) top = Mathf.Max(top, r.bounds.max.y);
+                reachModelHeight = top > float.MinValue ? Mathf.Clamp(top - reachFeet.y, reachStandHeight, 1.9f) : reachStandHeight;
+            }
+            reachStandHeight = Mathf.Max(reachStandHeight, reachCapsule.size.y);
+            // Sliding, the capsule is low and so is the kid on screen.
+            float h = reachCapsule.size.y;
+            reachTop = reachFeet.y + reachModelHeight * Mathf.Clamp01(h / Mathf.Max(reachStandHeight, 0.01f));
+            reachHalfWidth = Mathf.Max(reachCapsule.size.x, 0.4f) * 0.5f;
+            reachValid = true;
+            return true;
+        }
+
+        void TryCollect()
+        {
+            if (Collected) return;
             var level = LevelManager.Current;
             if (level == null || (level.State != LevelState.Playing && level.State != LevelState.Respawning)) return;
 
@@ -47,6 +107,12 @@ namespace DribbleToSchool.Pickups
 
         void Update()
         {
+            if (!Collected && KidReach())
+            {
+                Vector2 p = transform.position;
+                if (Mathf.Abs(p.x - reachFeet.x) <= reachHalfWidth + radius && p.y >= reachFeet.y - radius && p.y <= reachTop + radius * 0.5f)
+                    TryCollect();
+            }
             if (visual == null) return;
             if (Collected)
             {

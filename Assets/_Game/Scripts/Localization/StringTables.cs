@@ -28,6 +28,7 @@ namespace DribbleToSchool.Localization
                 { "menu.player", "Player" },
                 { "menu.locker", "Locker Room" },
                 { "menu.album", "Stickers" },
+                { "menu.addons", "Add-ons\n& Filters" },
                 { "menu.settings", "Settings" },
                 { "menu.credits", "Credits" },
                 { "menu.stars", "Stars collected: {0} / {1}" },
@@ -95,7 +96,7 @@ namespace DribbleToSchool.Localization
                 { "school.trophyBody", "You've walked every way to school. The trophy is yours!" },
                 { "school.prizes", "Your prizes" },
                 { "results.medal", "You walked this way to school! A medal waits on the map." },
-                { "results.allWalked", "Every way to school walked! Your trophy waits on the map, and the California add-on in Settings, Add-ons & Filters." },
+                { "results.allWalked", "Every way to school walked! Your trophy waits on the map, and the California add-on in Add-ons & Filters on the title screen." },
                 { "sticker.L01", "First Touch" }, { "sticker.L01.text", "Bag on, laces tied, ball at your feet. The best walk to school starts here." },
                 { "sticker.L01.hint", "Floating over the path just past the low wall where you learn to chip the ball." },
                 { "sticker.L02", "Little Hatch" }, { "sticker.L02.text", "Mind the paint! A tidy little hatchback that's seen a few bonnet hops." },
@@ -214,7 +215,7 @@ namespace DribbleToSchool.Localization
                 // The coach at the top of a level (UI/ActionCoach, UI/CoachCatalog): how to do each special action, and the
                 // challenges' steps. The titles name the control: once a move is learned they are all the coach shows.
                 { "settings.coachTips", "How-to tips" },
-                // Settings, Add-ons and Filters (UI/AddOnsPanel, Progression/AddOns).
+                // Add-ons and Filters, from the title screen (UI/AddOnsPanel, Progression/AddOns).
                 { "addons.title", "Add-ons & Filters" }, { "addons.addons", "Add-ons" }, { "addons.filters", "Filters" },
                 { "addons.selected", "Selected" }, { "addons.choose", "Tap to choose" },
                 { "addons.locked", "Finish every level to unlock" }, { "addons.soon", "Coming soon" },
@@ -423,6 +424,7 @@ namespace DribbleToSchool.Localization
                 { "menu.player", "Personaje" },
                 { "menu.locker", "Vestuario" },
                 { "menu.album", "Pegatinas" },
+                { "menu.addons", "Extras\ny filtros" },
                 { "menu.settings", "Ajustes" },
                 { "menu.credits", "Créditos" },
                 { "menu.stars", "Estrellas: {0} / {1}" },
@@ -486,7 +488,7 @@ namespace DribbleToSchool.Localization
                 { "school.trophyBody", "Has llegado al cole por todos los caminos. ¡El trofeo es tuyo!" },
                 { "school.prizes", "Tus premios" },
                 { "results.medal", "¡Has llegado al cole por este camino! Tu medalla te espera en el mapa." },
-                { "results.allWalked", "¡Todos los caminos al cole completados! Tu trofeo te espera en el mapa, y el extra California en Ajustes, Extras y filtros." },
+                { "results.allWalked", "¡Todos los caminos al cole completados! Tu trofeo te espera en el mapa, y el extra California en Extras y filtros, en la pantalla de inicio." },
                 { "sticker.L01", "Primer toque" }, { "sticker.L01.text", "Mochila puesta, cordones atados y el balón en los pies. El mejor camino al cole empieza aquí." },
                 { "sticker.L01.hint", "Flota sobre la acera justo después del muro bajo donde aprendes a picar el balón." },
                 { "sticker.L02", "Cochecito" }, { "sticker.L02.text", "¡Cuidado con la pintura! Un cochecito que ya ha aguantado algún salto en el capó." },

@@ -35,7 +35,7 @@ namespace DribbleToSchool.Progression
 
     /// <summary>
     /// The add-ons: the same levels in another country's streets, with that country's music, chosen in
-    /// Settings, Add-ons and Filters (UI/AddOnsPanel). The original is Kamakura, Japan (a seaside town south
+    /// Add-ons and Filters (UI/AddOnsPanel, from the title screen). The original is Kamakura, Japan (a seaside town south
     /// of Tokyo: its shop signs, concrete poles, block walls and the railway). California (Santa Monica)
     /// is unlocked by finishing every story level; each level has a California scene built beside the
     /// original (&lt;scene&gt;_CA, Editor/StreetBuilder.Coast). India and a Tokyo city add-on are still to come.

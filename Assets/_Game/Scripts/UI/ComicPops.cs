@@ -11,8 +11,8 @@ using UnityEngine.UI;
 namespace DribbleToSchool.UI
 {
     /// <summary>
-    /// The comic filter's sound-effect words: while the comic halftone filter is on (Settings, Add-ons &amp;
-    /// Filters), the big moments pop up as comic lettering by where they happen: THWACK! on a hard kick,
+    /// The comic filter's sound-effect words: while the comic halftone filter is on (Add-ons &amp; Filters on the
+    /// title screen), the big moments pop up as comic lettering by where they happen: THWACK! on a hard kick,
     /// NICE TOUCH! on a perfect touch, BOINK! on a juggle (and "10 IN A ROW!" every fifth), WHOOSH! on a
     /// double jump, SKRRT! on a slide, BOING! on a springboard, SPLASH!, SQUAWK! (a gull), WOOF! (a dog),
     /// OOF! (a passer-by), CLICK! (a gate's button), WHOOPS! when the ball is lost, and MADE IT! (GOAL! in
@@ -62,6 +62,9 @@ namespace DribbleToSchool.UI
             DontDestroyOnLoad(go);
             instance = go.AddComponent<ComicPops>();
         }
+
+        // The starburst is drawn now, at boot, not on the first THWACK! (a frame's work on a phone).
+        void Start() { BurstSprite(); }
 
         void OnEnable()
         {
@@ -279,40 +282,57 @@ namespace DribbleToSchool.UI
             return materials[(int)style];
         }
 
-        /// <summary>An ink starburst: jagged yellow spikes with an ink edge and a pale heart, drawn once.</summary>
+        /// <summary>
+        /// An ink starburst: a star polygon of 14 straight spikes of uneven length (straight edges from tip to
+        /// notch, sharp points), a yellow fill with a thin ink edge, and the same star at half size as a pale heart.
+        /// Drawn once.
+        /// </summary>
         Sprite BurstSprite()
         {
             if (burstSprite != null) return burstSprite;
-            const int N = 256, Spikes = 13;
-            var tex = new Texture2D(N, N, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp, hideFlags = HideFlags.HideAndDontSave };
-            var radius = new float[Spikes * 2];
-            var rng = new System.Random(7);
-            for (int i = 0; i < radius.Length; i++)
-                radius[i] = i % 2 == 0 ? (float)(0.84 + rng.NextDouble() * 0.16) : (float)(0.42 + rng.NextDouble() * 0.12);
+            const int N = 256, Spikes = 14;
+            var rng = new System.Random(11);
+            var pts = new Vector2[Spikes * 2];
+            for (int i = 0; i < pts.Length; i++)
+            {
+                float a = (i + (float)(rng.NextDouble() - 0.5) * 0.35f) * Mathf.PI * 2f / pts.Length + 0.13f;
+                float r = i % 2 == 0 ? (float)(0.8 + rng.NextDouble() * 0.2) : (float)(0.46 + rng.NextDouble() * 0.08);
+                pts[i] = new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * r;
+            }
             var px = new Color32[N * N];
             Color32 ink = new Color32(23, 13, 41, 255), gold = new Color32(255, 214, 58, 255), heart = new Color32(255, 248, 214, 255);
-            float half = N * 0.5f, edge = 7f / half;
+            float half = N * 0.5f, edge = 4f / half, aa = 1.2f / half;
             for (int y = 0; y < N; y++)
                 for (int x = 0; x < N; x++)
                 {
-                    float dx = (x + 0.5f - half) / half, dy = (y + 0.5f - half) / half;
-                    float d = Mathf.Sqrt(dx * dx + dy * dy);
-                    float a = (Mathf.Atan2(dy, dx) / (Mathf.PI * 2f) + 1f) % 1f * radius.Length;
-                    int i0 = Mathf.FloorToInt(a) % radius.Length, i1 = (i0 + 1) % radius.Length;
-                    float r = Mathf.Lerp(radius[i0], radius[i1], a - Mathf.Floor(a)) * 0.98f;
-                    Color32 c;
-                    if (d > r) c = new Color32(0, 0, 0, 0);
-                    else if (d > r - edge) c = ink;
-                    else if (d < r * 0.5f) c = heart;
-                    else c = gold;
-                    // a soft edge on the outside, so it stays smooth when scaled
-                    if (d > r - 1.5f / half && d <= r) c.a = (byte)(255 * Mathf.Clamp01((r - d) * half / 1.5f));
+                    var p = new Vector2((x + 0.5f - half) / half, (y + 0.5f - half) / half);
+                    float d = Distance(pts, p, 1f);                // signed: > 0 inside the star
+                    if (d <= -aa) { px[y * N + x] = new Color32(0, 0, 0, 0); continue; }
+                    Color32 c = d < edge ? ink : (Distance(pts, p, 0.5f) > 0f ? heart : gold);
+                    c.a = (byte)(255 * Mathf.Clamp01((d + aa) / aa));
                     px[y * N + x] = c;
                 }
+            var tex = new Texture2D(N, N, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp, hideFlags = HideFlags.HideAndDontSave };
             tex.SetPixels32(px);
             tex.Apply(false, true);
             burstSprite = Sprite.Create(tex, new Rect(0, 0, N, N), new Vector2(0.5f, 0.5f), 100f);
             return burstSprite;
+        }
+
+        /// <summary>Signed distance from p to the star polygon scaled by s: positive inside, negative outside.</summary>
+        static float Distance(Vector2[] pts, Vector2 p, float s)
+        {
+            float best = float.MaxValue;
+            bool inside = false;
+            for (int i = 0, j = pts.Length - 1; i < pts.Length; j = i++)
+            {
+                Vector2 a = pts[j] * s, b = pts[i] * s;
+                Vector2 ab = b - a;
+                float t = Mathf.Clamp01(Vector2.Dot(p - a, ab) / Mathf.Max(ab.sqrMagnitude, 1e-8f));
+                best = Mathf.Min(best, (a + ab * t - p).magnitude);
+                if ((a.y > p.y) != (b.y > p.y) && p.x < (b.x - a.x) * (p.y - a.y) / (b.y - a.y) + a.x) inside = !inside;
+            }
+            return inside ? best : -best;
         }
     }
 }

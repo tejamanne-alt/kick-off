@@ -12,7 +12,7 @@ GRADE = dict(balance=np.array([1, 1, 1.01]), toeEnd=0.28, toeFloor=0.7, contrast
              whitePoint=0.972, saturation=1.0, vibrance=1.12, shadowTint=np.array([0, 0, 0.006]),
              midTint=np.array([0.006, -0.004, 0.002]), highlightTint=np.zeros(3), vignette=0.12)
 COMIC = dict(comicSaturation=1.4, comicContrast=1.15, bands=4.0, bandMix=0.7, dotPeriod=8.5, dotReach=0.66,
-             dotSize=0.6, dotStrength=1.0, characterDots=0.45, hatchStrength=0.55, inkWidth=1.3,
+             dotSize=0.6, dotStrength=1.0, characterDots=1.0, hatchStrength=0.55, inkWidth=1.3,
              inkStrength=0.9, inkFar=90.0, depthEdge=0.05, normalEdge=0.3,
              inkColor=np.array([0.06, 0.05, 0.12]), slip=4.0, paper=np.array([0.88, 0.75, 0.5, 0.04]), grain=0.04)
 
@@ -78,12 +78,12 @@ def comic_pass(colour, alpha, depth01, normal, far, k=COMIC, mask_on=1.0):
     l = dot3(c, LUM)[..., None]
     vivid = saturate(l + (c - l) * k['comicSaturation'])
     vivid = saturate((vivid - 0.5) * k['comicContrast'] + 0.5)
-    c = c + (vivid - c) * (0.5 + 0.5 * world)
+    c = vivid
 
     l = dot3(c, LUM)[..., None]
     stepped = np.floor(l * k['bands'] + 0.5) / k['bands']
     banded = l + (stepped - l) * k['bandMix'] * (1 - smoothstep(0.62, 0.74, l))
-    c = c + (saturate(c * (banded / np.maximum(l, 1e-3))) - c) * world
+    c = saturate(c * (banded / np.maximum(l, 1e-3)))
 
     px = np.stack([xx, (h - 1 - yy)], -1) + 0.5
     l = dot3(c, LUM)[..., None]
@@ -95,7 +95,7 @@ def comic_pass(colour, alpha, depth01, normal, far, k=COMIC, mask_on=1.0):
     c = c + (ink_dot - c) * dotm * k['dotStrength']
 
     hatch = (np.sin((px[..., 0] - px[..., 1]) * 3.14159 / (period * 0.48)) >= 0.35)[..., None]
-    deep = saturate((0.28 - l) / 0.15) * hatch * world
+    deep = saturate((0.28 - l) / 0.15) * hatch
     c = c * (1 - deep * k['hatchStrength'])
 
     # ink line
@@ -120,7 +120,7 @@ def print_pass(c, alpha=None, k=COMIC, mask_on=1.0):
     p = np.stack([(u - 0.5) / 0.5, (v - 0.55) / 0.55], -1)
     r = saturate(np.linalg.norm(p, axis=-1) - 0.35)
     world = np.ones_like(r) if alpha is None else 1 + (np.clip(alpha, 0, 1) - 1) * mask_on
-    off = np.rint(k['slip'] * scale * r * (0.15 + 0.85 * world)).astype(int)
+    off = np.rint(k['slip'] * scale * r * (0.5 + 0.5 * world)).astype(int)
     out = c.copy()
     out[..., 0] = c[yy.astype(int), np.clip(xx.astype(int) + off, 0, w - 1), 0]
     out[..., 2] = c[yy.astype(int), np.clip(xx.astype(int) - off, 0, w - 1), 2]

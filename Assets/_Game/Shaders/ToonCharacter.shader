@@ -4,6 +4,9 @@
 // outline of constant on-screen width (an inverted hull pushed out along the smooth normals),
 // and the same distance haze as the street. Colours come from the vertex colours times the
 // texture and tint. Lighting and haze are set by WorldLook.
+// Alpha carries _ComicWorld for the comic halftone filter (Shaders/PostFX): 0 (people and the ball)
+// takes the whole filter except creases across it (its painted face and eyes stay clear) and slips
+// half as far; 1 (the cars, the bicycle) is drawn like the street, creases and all.
 Shader "DribbleToSchool/ToonCharacter"
 {
     Properties

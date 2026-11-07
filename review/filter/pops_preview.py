@@ -17,20 +17,36 @@ INK = (23, 13, 41)
 
 
 def burst(size):
-    N = 256
-    rng = random.Random(7)
-    radius = [(0.84 + rng.random() * 0.16) if i % 2 == 0 else (0.42 + rng.random() * 0.12) for i in range(26)]
+    """ComicPops.BurstSprite: a star polygon of 14 straight spikes (tips 0.8-1, notches 0.46-0.54), a
+    yellow fill with a thin ink edge and the same star at half size as a pale heart."""
+    N, n = 256, 28
+    rng = random.Random(11)
+    pts = []
+    for i in range(n):
+        a = (i + (rng.random() - 0.5) * 0.35) * 2 * math.pi / n + 0.13
+        r = (0.8 + rng.random() * 0.2) if i % 2 == 0 else (0.46 + rng.random() * 0.08)
+        pts.append((math.cos(a) * r, math.sin(a) * r))
+    P = np.array(pts)
     yy, xx = np.mgrid[0:N, 0:N]
-    dx, dy = (xx + 0.5 - N / 2) / (N / 2), (N / 2 - (yy + 0.5)) / (N / 2)
-    d = np.hypot(dx, dy)
-    a = (np.arctan2(dy, dx) / (2 * np.pi) + 1) % 1 * 26
-    i0 = np.floor(a).astype(int) % 26
-    r = (np.array(radius)[i0] + (np.array(radius)[(i0 + 1) % 26] - np.array(radius)[i0]) * (a - np.floor(a))) * 0.98
+    px, py = (xx + 0.5 - N / 2) / (N / 2), (N / 2 - (yy + 0.5)) / (N / 2)
+
+    def sdist(s):
+        A, B = P * s, np.roll(P * s, -1, axis=0)
+        best = np.full(px.shape, 1e9); inside = np.zeros(px.shape, bool)
+        for (ax, ay), (bx, by) in zip(A, B):
+            dx, dy = bx - ax, by - ay
+            t = np.clip(((px - ax) * dx + (py - ay) * dy) / max(dx * dx + dy * dy, 1e-12), 0, 1)
+            best = np.minimum(best, np.hypot(ax + dx * t - px, ay + dy * t - py))
+            cross = ((ay > py) != (by > py)) & (px < (bx - ax) * (py - ay) / np.where(by - ay == 0, 1e-12, by - ay) + ax)
+            inside ^= cross
+        return np.where(inside, best, -best)
+
+    d = sdist(1.0); heart = sdist(0.5) > 0
+    edge, aa = 4 / (N / 2), 1.2 / (N / 2)
     out = np.zeros((N, N, 4), np.uint8)
-    edge = 7 / (N / 2)
-    out[d <= r] = (255, 214, 58, 255)
-    out[(d <= r) & (d > r - edge)] = INK + (255,)
-    out[d < r * 0.5] = (255, 248, 214, 255)
+    col = np.where((d < edge)[..., None], np.array(INK + (255,)), np.where(heart[..., None], np.array((255, 248, 214, 255)), np.array((255, 214, 58, 255))))
+    out[...] = col
+    out[..., 3] = (255 * np.clip((d + aa) / aa, 0, 1)).astype(np.uint8)
     return Image.fromarray(out).resize((size, size), Image.LANCZOS)
 
 

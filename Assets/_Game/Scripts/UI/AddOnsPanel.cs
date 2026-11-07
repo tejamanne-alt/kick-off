@@ -7,7 +7,7 @@ using UnityEngine.UI;
 namespace DribbleToSchool.UI
 {
     /// <summary>
-    /// Settings, Add-ons and Filters: the add-ons (the same levels in another country's streets with that
+    /// Add-ons and Filters (a button on the title screen, after Stickers): the add-ons (the same levels in another country's streets with that
     /// country's music: the original Kamakura, Japan; California, unlocked by finishing every level; India and
     /// a Tokyo city still to come) as cards to choose from, and the filters (a look over the whole picture:
     /// the original and the comic halftone). A choice is saved at once; an add-on applies from the next

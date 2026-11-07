@@ -56,7 +56,7 @@ pass (paler sky, olive greens, less saturation, a warm gain) drifted away from t
 
 ## The comic halftone filter
 
-An optional look (Settings > Add-ons & Filters, `World/PostFX.cs`, passes 4 and 5 of
+An optional look (Add-ons & Filters on the title screen, `World/PostFX.cs`, passes 4 and 5 of
 `Shaders/PostFX.shader`) that redraws the graded picture as a printed comic, over every model in
 every scene:
 
@@ -98,7 +98,7 @@ around them has real depth.
 
 **The original town and the add-ons.** The original streets above are Kamakura, Japan: a seaside
 town south of Tokyo (Japanese shop names, concrete poles, block walls, the railway). Add-ons put the
-same levels in another country's streets, with that country's music, chosen in Settings, Add-ons and
+same levels in another country's streets, with that country's music, chosen in Add-ons and
 Filters (Progression/AddOns, UI/AddOnsPanel); India and a Tokyo city add-on are listed as coming soon.
 **California** (Santa Monica), unlocked by finishing every story level, has a `<scene>_CA` scene for
 each level, built beside the original with `LevelBuildKit.California` set. It is a sunny California coast town (the Coast kit, `tools/blender/kit_buildings_cal.py`): stucco

@@ -15,10 +15,10 @@ namespace DribbleToSchool.World
     /// frame) the grade feeds two more passes instead: the comic look (punchier colour in cel bands, the
     /// shade as halftone dots, hatching in the deepest shade, an ink line from the camera's depth and
     /// normals) and the print (the colour plates slipping out of register toward the edges, warm paper,
-    /// a faint grain). Every model in the scene goes through it. People and the ball keep their painted
-    /// faces and eyes: ToonCharacter marks them in the picture's alpha, and the filter gives them no
-    /// creases or bands, only lighter dots. The depth and normals texture is asked for only while the
-    /// filter is on (an extra pass over the opaque scene).
+    /// a faint grain). Every model in the scene goes through it, the people and the ball included. Their
+    /// painted eyes stay clear: ToonCharacter marks them in the picture's alpha, and the ink line draws no
+    /// creases across them (only their outline), and their plates slip half as far. The depth and normals
+    /// texture is asked for only while the filter is on (an extra pass over the opaque scene).
     /// </summary>
     [RequireComponent(typeof(Camera))]
     public class PostFX : MonoBehaviour
@@ -63,8 +63,8 @@ namespace DribbleToSchool.World
         [Range(0.3f, 1f)] public float dotReach = 0.66f;
         [Range(0.2f, 0.75f)] public float dotSize = 0.6f;
         [Range(0f, 1f)] public float dotStrength = 1f;
-        [Tooltip("How much of the dots the people and the ball take (their faces stay clear).")]
-        [Range(0f, 1f)] public float characterDots = 0.45f;
+        [Tooltip("How much of the dots the people and the ball take.")]
+        [Range(0f, 1f)] public float characterDots = 1f;
         [Range(0f, 1f)] public float hatchStrength = 0.55f;
         [Range(0.5f, 3f)] public float inkWidth = 1.3f;
         [Range(0f, 1f)] public float inkStrength = 0.9f;

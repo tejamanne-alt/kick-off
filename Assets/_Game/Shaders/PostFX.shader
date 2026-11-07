@@ -9,9 +9,10 @@
 // as a printed comic: punchier colour stepped into cel bands, the shade as a 45-degree halftone dot
 // screen, hatching in the deepest shade, an ink line from the camera's depth and normals (the
 // shapes, never the textures), then the colour plates printed a little out of register toward the
-// edges of the frame, on warm paper with a faint grain. The characters and the ball mark themselves
-// in the picture's alpha (ToonCharacter's _ComicWorld = 0): they keep their own outline, painted
-// faces and eyes, take no cel bands and no creases from the filter, only lighter dots in their shade.
+// edges of the frame, on warm paper with a faint grain. Everything takes it, the characters and the
+// ball too. They mark themselves in the picture's alpha (ToonCharacter's _ComicWorld = 0) only so the
+// ink line draws no creases across them (a nose, a cheek, the edge of an eye would cross the painted
+// face) and the plates slip half as far: their outlines come from the depth jump and their own ink hull.
 Shader "Hidden/DribbleToSchool/PostFX"
 {
     Properties { _MainTex ("Source", 2D) = "white" {} }
@@ -190,19 +191,19 @@ Shader "Hidden/DribbleToSchool/PostFX"
                 // The vignette comes last: its soft fall-off would otherwise be stepped into an arc by the bands.
                 half3 c = saturate(GradeColour(src.rgb, i.uv));
 
-                // Punchier colour: the street takes it all, the characters half (their colours are already set).
+                // Punchier colour, on everything: the street and the figures alike.
                 half l = dot(c, lum);
                 half3 vivid = saturate(l + (c - l) * _ComicSat);
                 vivid = saturate((vivid - 0.5) * _ComicContrast + 0.5);
-                c = lerp(c, vivid, lerp(0.5, 1, world));
+                c = vivid;
 
-                // Cel bands on the street: brightness stepped, hue kept. The characters are cel-shaded already.
-                // The light tones stay smooth: lit white walls and paving sit near a step, and a step through
-                // them would break their faint texture into blotches.
+                // Cel bands: brightness stepped, hue kept. The light tones stay smooth: lit white walls, paving,
+                // shirts and the whites of the eyes sit near a step, and a step through them would break them
+                // into blotches.
                 l = dot(c, lum);
                 half stepped = floor(l * _Bands + 0.5) / _Bands;
                 half banded = lerp(l, stepped, _BandMix * (1 - smoothstep(0.62, 0.74, l)));
-                c = lerp(c, saturate(c * (banded / max(l, 1e-3))), world);
+                c = saturate(c * (banded / max(l, 1e-3)));
 
                 // Halftone: the shade drawn as dots in a darker, bluer ink of the colour under them.
                 float2 px = i.uv * _MainTex_TexelSize.zw;
@@ -213,9 +214,9 @@ Shader "Hidden/DribbleToSchool/PostFX"
                 half3 dotInk = c * 0.55 * half3(0.85, 0.8, 1.0);
                 c = lerp(c, dotInk, dotMask * _DotStrength);
 
-                // Hatching in the deepest shade of the street.
+                // Hatching in the deepest shade.
                 half hatch = step(0.35, sin((px.x - px.y) * 3.14159 / (_DotPeriod * 0.48)));
-                half deep = saturate((0.28 - l) / 0.15) * hatch * world;
+                half deep = saturate((0.28 - l) / 0.15) * hatch;
                 c *= 1 - deep * _HatchStrength;
 
                 // The ink line. The depth and normals texture is never flipped; the picture can be
@@ -231,7 +232,7 @@ Shader "Hidden/DribbleToSchool/PostFX"
             ENDCG
         }
         // 5: comic: the red and blue plates slip out of register toward the frame's edges (none at
-        //    the centre, where the kid plays; hardly any on a figure), then warm paper and a faint grain.
+        //    the centre, where the kid plays; half as far on a figure), then warm paper and a faint grain.
         Pass
         {
             CGPROGRAM
@@ -242,9 +243,9 @@ Shader "Hidden/DribbleToSchool/PostFX"
                 half4 s = tex2D(_MainTex, i.uv);
                 float2 p = (i.uv - float2(0.5, 0.55)) / float2(0.5, 0.55);
                 float r = saturate(length(p) - 0.35);
-                // The people and the ball barely slip, so their faces stay sharp anywhere on screen.
+                // The people and the ball slip half as far, so their eyes stay crisp anywhere on screen.
                 half world = lerp(1, saturate(s.a), _MaskOn);
-                float2 off = float2(_MainTex_TexelSize.x * _SlipEdge * r * lerp(0.15, 1, world), 0);
+                float2 off = float2(_MainTex_TexelSize.x * _SlipEdge * r * lerp(0.5, 1, world), 0);
                 half3 c = s.rgb;
                 c.r = tex2D(_MainTex, i.uv + off).r;
                 c.b = tex2D(_MainTex, i.uv - off).b;
