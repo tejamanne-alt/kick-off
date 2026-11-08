@@ -80,9 +80,14 @@ def prep(src, out, bag_id, tris, size):
     zlo, zhi = V[:, 2].min(), V[:, 2].max()
     band = (V[:, 2] > zlo + 0.45 * (zhi - zlo)) & (V[:, 2] < zlo + 0.75 * (zhi - zlo)) & (np.abs(V[:, 0]) < 0.08 * np.ptp(V[:, 0]))
     yb = np.percentile(V[band, 1], 1)
-    # the body's top: the highest point of the back panel's middle (the carry handle above it is left out)
+    # the body's top: the highest point of the back panel's middle, but never above the highest level where the bag is
+    # still at least half its full width (a carry handle standing right over the panel, as the Unicorn's does, is a
+    # narrow loop: it is left out)
     panel = (np.abs(V[:, 1] - yb) < 0.06 * np.ptp(V[:, 1])) & (np.abs(V[:, 0]) < 0.08 * np.ptp(V[:, 0]))
-    top = np.percentile(V[panel, 2], 99.5)
+    zs = np.linspace(zlo, zhi, 200); step = zs[1] - zs[0]; wide = np.ptp(V[:, 0])
+    xs_at = lambda z: V[np.abs(V[:, 2] - z) < step, 0]
+    rows = [z for z in zs if len(xs_at(z)) and np.ptp(xs_at(z)) >= 0.5 * wide]
+    top = min(np.percentile(V[panel, 2], 99.5), max(rows))
     body_h = top - zlo
     k = 1.0 / body_h
     o.data.transform(Matrix.Diagonal((k, k, k, 1)) @ Matrix.Translation((0, -yb, -top))); o.data.update()
