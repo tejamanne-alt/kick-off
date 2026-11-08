@@ -71,8 +71,9 @@ namespace DribbleToSchool.Core
             // Kai (primaryBoy) is made from a supplied rigged model by tools/blender/meshy_rigged.py --profile plaid: 1.30 m, his Head bone at 0.847 of it.
             // He has no bag of his own: he wears the Locker Room's (wearsBags).
             new PlayerInfo("primaryBoy", "PrimaryBoy", "player.primaryBoy", SchoolLevel.Primary, 1.101f, 1.30f, true),
-            // Mia (primaryGirl) is made from a supplied model by tools/blender/meshy_teen.py --profile explorer: 1.27 m, her Head bone at 0.809 of it.
-            new PlayerInfo("primaryGirl", "PrimaryGirl", "player.primaryGirl", SchoolLevel.Primary, 1.028f, 1.27f),
+            // Mia (primaryGirl) is made from a supplied rigged model by tools/blender/meshy_rigged.py --profile explorer: 1.27 m, her Head bone at 0.827 of it.
+            // She has no bag of her own: she wears the Locker Room's (wearsBags).
+            new PlayerInfo("primaryGirl", "PrimaryGirl", "player.primaryGirl", SchoolLevel.Primary, 1.050f, 1.27f, true),
             // Leo (primaryBoy2) is made from a supplied rigged model by tools/blender/meshy_rigged.py: 1.32 m, his Head bone at 0.844 of it.
             // He has no bag of his own: he wears the Locker Room's (wearsBags).
             new PlayerInfo("primaryBoy2", "PrimaryBoy2", "player.primaryBoy2", SchoolLevel.Primary, 1.114f, 1.32f, true),

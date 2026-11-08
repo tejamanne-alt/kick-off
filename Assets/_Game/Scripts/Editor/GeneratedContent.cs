@@ -22,7 +22,7 @@ namespace DribbleToSchool.EditorTools
     public static class GeneratedContent
     {
         /// <summary>Bump when layouts or the scene rig change so scenes regenerate.</summary>
-        public const int Version = 94;   // 94: the Sparkle Unicorn Backpack (BagUnicorn fitted to Leo, Kai and Zoe)
+        public const int Version = 96;   // 96: the Denim Bow Backpack (BagDenimBow fitted to the four primary kids)
 
         const string ScenesDir = LevelBuildKit.Root + "/Scenes";
         const string LevelsDir = LevelBuildKit.Root + "/Levels";

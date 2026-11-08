@@ -87,7 +87,11 @@ def prep(src, out, bag_id, tris, size):
     zs = np.linspace(zlo, zhi, 200); step = zs[1] - zs[0]; wide = np.ptp(V[:, 0])
     xs_at = lambda z: V[np.abs(V[:, 2] - z) < step, 0]
     rows = [z for z in zs if len(xs_at(z)) and np.ptp(xs_at(z)) >= 0.5 * wide]
-    top = min(np.percentile(V[panel, 2], 99.5), max(rows))
+    # (and deep: a body level reaches at least a third of the way to the bag's front; the straps looping up above it, as the
+    # Denim Bow's do, stay back by the wearer however wide they spread)
+    ymax = V[:, 1].max()
+    deep = V[V[:, 1] > yb + 0.35 * (ymax - yb), 2]
+    top = min(np.percentile(V[panel, 2], 99.5), max(rows), np.percentile(deep, 99.5))
     body_h = top - zlo
     k = 1.0 / body_h
     o.data.transform(Matrix.Diagonal((k, k, k, 1)) @ Matrix.Translation((0, -yb, -top))); o.data.update()
