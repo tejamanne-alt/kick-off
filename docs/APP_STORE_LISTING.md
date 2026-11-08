@@ -5,7 +5,7 @@ Everything to type into App Store Connect for version 1.0, field by field. Chara
 ## Distribution > iOS App > 1.0 (version page)
 
 ### App icon
-`marketing/appstore/icon_1024.png` (1024 × 1024, opaque PNG; iOS rounds the corners itself). The build puts the same picture
+`marketing/appstore/icon_1024.png` (1024 × 1024, opaque PNG; iOS rounds the corners itself): the game's logo artwork (`marketing/source/icon_artwork.png`: a boy kicking a ball along the footpath on the way to school, under the "Kick OFF 2" logo), made into every size by `tools/app_icon_from_image.py`. The build puts the same picture
 in the app (`Assets/_Game/Art/Icon/AppIcon.png`, applied by **Kick Off > Build > Apply Store Player Settings**), and App Store
 Connect takes the 1024 px icon from the uploaded build: there is nothing to upload by hand.
 

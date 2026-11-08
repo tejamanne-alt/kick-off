@@ -501,27 +501,36 @@ the base paint (sRGB, as in the FBX) and the wheel radius for `WheelSpin`.
 
 ## App icon
 
-The store icon: the teen boy running to school after a big football, in the game's toon look, under a morning sky with the
-sun rising behind him, on the logo's mown pitch with its chalk speed lines, and the logo's sunny "2" in the corner.
+The icon now in use is the game's logo artwork, supplied as a picture (`marketing/source/icon_artwork.png`) and made
+into every size by `tools/app_icon_from_image.py` (`python3 tools/app_icon_from_image.py marketing/source/icon_artwork.png
+--inset 0.006 --preview <dir>`: the inset trims its thin black border). The rendered icons below are not used; they are
+kept to make one from the game's own models.
+
+The store icon is the walk to school, the memory every kid has of kicking a ball (or a stone, a bottle) along the way:
+Max, his Kick Off backpack on, kicks a football up the footpath with the school ahead of him, a picket fence and a few
+pebbles along the way, the sun rising behind the clock tower, a golden kick trail from his toe to the ball with a comic
+burst where they met, sparkles, and the logo's sunny "2" in the sky, in the game's toon look.
 
 ```
-blenv/bin/python app_icon.py -- $PWD/Boy.blend $PWD/icon_layers      # kid.png (2048) and ball.png (1024), transparent
+blenv/bin/python app_icon_scene.py -- $PWD/BackpackBoy.blend $PWD/icon_layers   # Max's fitted .blend (meshy_bag.py fit)
 python3 app_icon_compose.py $PWD/icon_layers ../.. --two --preview $PWD/icon_preview
 ```
 
-`app_icon.py` poses the boy (a sprint: the near arm back, the far hand up, a stride, leaning in, his face turned a little
-toward us) and shoots him with a 46 mm lens, lit from behind his left shoulder with a warm rim; the ball is a truncated
-icosahedron (crisp pentagons and seams). `app_icon_compose.py` draws the rest at 2048 px and writes:
+`app_icon_scene.py` builds the street from the game's own kits (the school, the picket fence, a tree, a street lamp),
+poses Max mid-kick (the kicking leg swung through, the far arm up for balance, eyes on the ball) and renders it from low
+down with a 27 mm lens, the sky left clear (`scene.png`), the ball again alone (`ball_front.png`) and where the ball and
+his toe land in the picture (`scene.json`). `app_icon.py` holds the football (a truncated icosahedron) and the toon
+shading it shares. `app_icon_compose.py` paints the sky and the rest at 2048 px and writes:
 
 | File | What |
 |---|---|
 | `marketing/appstore/icon_1024.png` | App Store icon, 1024 × 1024, opaque (iOS rounds the corners) |
 | `marketing/googleplay/icon_512.png` | Google Play listing icon, 512 × 512 |
 | `Assets/_Game/Art/Icon/AppIcon.png` | the icon in the app for every platform (`BuildScripts.ApplyIcon`; Unity scales it) |
-| `Assets/_Game/Art/Icon/AppIconBackground.png`, `AppIconForeground.png` | Android's adaptive icon: the sky and pitch; the kid and the ball with his face and the ball inside the 66 dp circle every launcher's mask keeps (no "2": a round mask would clip it) |
+| `Assets/_Game/Art/Icon/AppIconBackground.png`, `AppIconForeground.png` | Android's adaptive icon: the whole picture (without the "2", which a round mask would clip) in the back layer's middle 72 of 108 dp over a blurred copy of itself, the front layer clear |
 
 Without `--two` the corner is plain sky. `--preview` writes the icon masked as iOS (rounded square) and Android (circle) show
-it, from 300 px down to 40 px: check the face, the ball and the "2" still read at the small sizes after any change.
+it, from 300 px down to 40 px: check Max, the ball and the "2" still read at the small sizes after any change.
 
 ## Asset kits
 

@@ -1,19 +1,15 @@
-# Renders the app icon's two picture layers from the game's own models, in the game's toon look (ToonCharacter's two
-# flat cel bands from the sun, cool shade, a rim of light and a dark ink outline), on transparent backgrounds:
-#   kid.png   the teen boy running to the right (to school, as in the levels), head to thighs, 2048 x 2048
-#   ball.png  the football alone, 1024 x 1024 (app_icon_compose.py draws its ink ring as a true circle)
-#   blenv/bin/python app_icon.py -- $PWD/Boy.blend $PWD/icon_layers
-# Then app_icon_compose.py lays them over the sky, the sun and the pitch and writes every size the stores need.
+# Renders the app icon's picture layer, in the game's toon look (ToonCharacter's two flat cel bands from the sun, cool
+# shade, a rim of light), on a transparent background. The icon has no characters: the hero is the ball.
+#   ball.png  the football alone, 2048 x 2048 (app_icon_compose.py draws its ink ring as a true circle)
+#   blenv/bin/python app_icon.py -- $PWD/icon_layers
+# Then app_icon_compose.py lays it over the sky, the sunburst and the pitch and writes every size the stores need.
 import bpy, bmesh, math, sys, os
 from mathutils import Vector
 
-args = sys.argv[sys.argv.index('--') + 1:]
-blend, out_dir = args[0], args[1]
-os.makedirs(out_dir, exist_ok=True)
 
 SUN = (1.0, 0.97, 0.92)
 SHADE = tuple(0.25 * a + 0.75 * b for a, b in zip((0.68, 0.7, 0.88), (0.52, 0.56, 0.66)))
-SUNDIR = Vector((-0.55, -0.45, 0.7)).normalized()      # from behind his left shoulder: the morning sun is behind him
+SUNDIR = Vector((-0.5, -0.75, 0.55)).normalized()      # the morning sun high on the left, in front: the ball lit, a crescent of shade
 
 
 def lin(c):
@@ -85,19 +81,6 @@ def toon(mat, rim_strength=0.22):
     mat.use_backface_culling = True
 
 
-def ink(obj, thickness):
-    """The dark ink outline: an inverted hull (flipped, front faces culled) in the outline material."""
-    ol = bpy.data.materials.get('Outline')
-    if ol is None:
-        ol = bpy.data.materials.new('Outline'); ol.use_nodes = True; ol.use_backface_culling = True
-        on = ol.node_tree; e = on.nodes.new('ShaderNodeEmission'); e.inputs['Color'].default_value = (0.012, 0.009, 0.014, 1)
-        on.links.new(e.outputs[0], on.nodes['Material Output'].inputs['Surface'])
-    n = len(obj.material_slots)
-    obj.data.materials.append(ol)
-    sol = obj.modifiers.new('outline', 'SOLIDIFY'); sol.thickness = thickness; sol.offset = 1
-    sol.use_flip_normals = True; sol.material_offset = n
-
-
 def camera(S, loc, target, lens):
     cam = bpy.data.objects.new('cam', bpy.data.cameras.new('cam')); S.collection.objects.link(cam); S.camera = cam
     cam.data.lens = lens
@@ -106,36 +89,7 @@ def camera(S, loc, target, lens):
     return cam
 
 
-# ---------------------------------------------------------------- the kid
-S = fresh(2048)
-with bpy.data.libraries.load(blend, link=False) as (src, dst):
-    dst.objects = [n for n in src.objects]
-for o in dst.objects:
-    if o is not None and o.name not in S.collection.objects:
-        S.collection.objects.link(o)
-rig = bpy.data.objects['KidRig']; kid = bpy.data.objects['Kid']
-# Sprinting to the right: the far fist pumped up by his chin, the near arm swinging back, the near leg striding forward,
-# leaning into it, his face turned a little toward us. (Bone angles as the game's CharacterRig: X about the side axis,
-# a negative upper limb swings forward; the head turns about its own Y.)
-POSE = {'Spine': (10, 0, 0), 'Chest': (4, 0, 0),
-        'UpperArm.R': (38, 0, -8), 'LowerArm.R': (-45, 0, 0), 'UpperArm.L': (-50, 0, 14), 'LowerArm.L': (-118, 0, 0),
-        'Neck': (-2, -6, 0), 'Head': (-6, -14, 0),
-        'UpperLeg.R': (-48, 0, 0), 'LowerLeg.R': (58, 0, 0), 'UpperLeg.L': (26, 0, 0), 'LowerLeg.L': (48, 0, 0)}
-for pb in rig.pose.bones:
-    pb.rotation_mode = 'XYZ'; pb.rotation_euler = (0, 0, 0)
-for b, a in POSE.items():
-    rig.pose.bones[b].rotation_euler = tuple(math.radians(v) for v in a)
-rig.rotation_euler = (0, 0, math.radians(35))
-bpy.context.view_layer.update()
-toon(kid.data.materials[0])
-ink(kid, 0.0085)
-camera(S, (0.3, -2.25, 1.42), (0.02, 0, 1.53), 46)
-S.render.filepath = os.path.join(out_dir, 'kid.png')
-bpy.ops.render.render(write_still=True)
-print('rendered kid')
-
 # ---------------------------------------------------------------- the ball
-S = fresh(1024)
 
 
 def football(radius):
@@ -167,9 +121,14 @@ def football(radius):
     return o
 
 
-ball = football(1.0)
-ball.rotation_euler = (math.radians(30), math.radians(-12), math.radians(16))   # a pentagon facing us, a little up and left
-camera(S, (0, -9.0, 0), (0, 0, 0), 100)                                          # long lens: the ball nearly fills the frame
-S.render.filepath = os.path.join(out_dir, 'ball.png')
-bpy.ops.render.render(write_still=True)
-print('rendered ball')
+if __name__ == '__main__':
+    args = sys.argv[sys.argv.index('--') + 1:]
+    out_dir = args[-1]
+    os.makedirs(out_dir, exist_ok=True)
+    S = fresh(2048)
+    ball = football(1.0)
+    ball.rotation_euler = (math.radians(24), math.radians(-18), math.radians(22))   # a pentagon facing us, a little up and left: it spins
+    camera(S, (0, -9.0, 0), (0, 0, 0), 100)                                          # long lens: the ball nearly fills the frame
+    S.render.filepath = os.path.join(out_dir, 'ball.png')
+    bpy.ops.render.render(write_still=True)
+    print('rendered ball')

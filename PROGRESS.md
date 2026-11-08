@@ -732,6 +732,10 @@ The user found the first Coast models plain next to their reference shots (weath
 - **Hana is now the default player.** Saved choices keep working: a save that picked Ren now plays Hana (`PlayerRoster.Normalize`), and his bag choice is ignored. Six kids remain (Hana and Max; Kai, Mia, Leo and Zoe), and all of them wear the Locker Room's bags.
 - Tests: `PlayerRosterTests` (two teens, Hana the default, "boy" falls back to her), `BagsTests` (every kid wears bags). Not run in Unity.
 
+## The game's logo as the app icon
+
+- The app icon is now the logo artwork the user supplied (`marketing/source/icon_artwork.png`, 1254 px): a boy with a backpack kicking a ball along the footpath on the way to school, past stones, a bottle and a can, the school ahead, under the "Kick OFF 2" logo. `tools/app_icon_from_image.py` (new) trims its 3-4 px black border and writes the App Store icon (`marketing/appstore/icon_1024.png`), the Google Play icon (`marketing/googleplay/icon_512.png`), the in-game icon every build applies (`Assets/_Game/Art/Icon/AppIcon.png`, `BuildScripts.ApplyIcon`) and Android's adaptive layers (the whole picture inside the launcher's safe area). Checked in iOS's and Android's masks from 300 to 40 px (`review/app_icon/sizes.png`): the logo and the kick read down to 80 px. Earlier icon renders (`tools/blender/app_icon*.py`) are kept but not used.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.
