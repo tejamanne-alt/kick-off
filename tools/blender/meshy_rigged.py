@@ -15,10 +15,12 @@
 #             joggers, dark trainers (meshy_teen's colour rules for her, without its backpack: she has none).
 #   explorer  Mia (PrimaryGirl): a primary-school girl in an A-pose; shoulder-length black hair with a headband, a white
 #             "Kick Off" T-shirt, red shorts, white socks, pink sneakers (meshy_teen's colour rules for her).
+#   varsity   Hana (Girl): a high-school girl in an A-pose; long wavy dark-brown hair, a maroon varsity jacket with cream
+#             sleeves and striped cuffs over a cream hoodie, charcoal cargo jeans, cream platform sneakers.
 #   plaid     Kai (PrimaryBoy): a primary-school boy in an A-pose; short black hair, a red plaid flannel shirt over a
 #             white hood, light-blue cargo jeans, chunky black-and-white sneakers (meshy_teen's colour rules for him).
 #
-#   blenv/bin/python meshy_rigged.py -- /abs/rigged.fbx /abs/outdir [--profile awesome|plaid|rainbow|explorer] [--name <Name>] [--tris 100000]
+#   blenv/bin/python meshy_rigged.py -- /abs/rigged.fbx /abs/outdir [--profile awesome|plaid|rainbow|explorer|varsity] [--name <Name>] [--tris 100000]
 #     -> outdir/<Name>.fbx, <Name>.blend, <Name>.json, <Name>Atlas.png
 import bpy, sys, os, json
 import numpy as np
@@ -27,8 +29,11 @@ from mathutils import Vector, Matrix
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 _argv = sys.argv[sys.argv.index('--') + 1:]
 PROFILE_NAME = _argv[_argv.index('--profile') + 1] if '--profile' in _argv else 'awesome'
-if '--profile' not in sys.argv: sys.argv += ['--profile', 'first_day']     # (meshy_teen reads its own profile on import)
+_args = list(sys.argv)
+# (meshy_teen reads a profile of its own on import: give it one it knows, whatever this script's)
+sys.argv = [a for i, a in enumerate(_args) if a != '--profile' and (i == 0 or _args[i - 1] != '--profile')] + ['--profile', 'first_day']
 import meshy_teen as mt
+sys.argv = _args
 import meshy_boy as mb
 from meshy_boy import (log, activate, verts_np, edges_np, texture_pixels, vertex_colours, hsv, decimate, make_rig,
                        weights, srgb, atlas_material, export_fbx, components)
@@ -36,7 +41,7 @@ from meshy_boy import (log, activate, verts_np, edges_np, texture_pixels, vertex
 argv = _argv
 SRC, OUT = argv[0], argv[1]
 TRIS = int(argv[argv.index('--tris') + 1]) if '--tris' in argv else 100000
-NAME = argv[argv.index('--name') + 1] if '--name' in argv else {'awesome': 'PrimaryBoy2', 'plaid': 'PrimaryBoy', 'rainbow': 'PrimaryGirl2', 'explorer': 'PrimaryGirl'}[PROFILE_NAME]
+NAME = argv[argv.index('--name') + 1] if '--name' in argv else {'awesome': 'PrimaryBoy2', 'plaid': 'PrimaryBoy', 'rainbow': 'PrimaryGirl2', 'explorer': 'PrimaryGirl', 'varsity': 'Girl'}[PROFILE_NAME]
 os.makedirs(OUT, exist_ok=True)
 C = bpy.context
 mb.log = lambda *a: print('[meshy_rigged]', *a, flush=True)
@@ -190,10 +195,34 @@ def parts_awesome(o, px):
     return mt.by_vertex_votes(o, P)
 
 
+def parts_varsity(o, px):
+    """Hana's parts, by each face's own colour: 1 the varsity jacket's maroon body (its cream sleeves, the hoodie and the
+    striped cuffs stay as they are), 2 the charcoal cargo jeans, 3 the long dark-brown hair (the biggest dark piece of the
+    head and what hangs from it); 0 the skin, the hoodie, the sleeves and the sneakers."""
+    me = o.data; V = verts_np(o); bw = mt.bone_weights(o)
+    tri = np.empty(len(me.loops), dtype=np.int64); me.loops.foreach_get('vertex_index', tri); tri = tri.reshape(-1, 3)
+    fw = lambda w: w[tri].mean(1)
+    foot = fw(bw('Foot.L', 'Foot.R')); hand = fw(bw('Hand.L', 'Hand.R')); head = fw(bw('Head', 'Neck'))
+    legs = fw(bw('UpperLeg.L', 'UpperLeg.R', 'LowerLeg.L', 'LowerLeg.R'))
+    Cf = mt.face_colours(o, px); h, s, v = hsv(Cf); z = V[tri][:, :, 2].mean(1)
+    hip = mt.rig_z('UpperLeg.L')
+    maroon = ((h < 15) | (h > 330)) & (s > 0.35) & (v > 0.12) & (v < 0.6)
+    denim = (s < 0.35) & (v > 0.08) & (v < 0.45) & ((h > 180) | (s < 0.15))
+    FP = np.zeros(len(tri), dtype=np.int64)
+    FP[maroon & (z > hip - 0.05) & (head < 0.5)] = 1
+    FP[denim & (z < hip + 0.05) & (legs + fw(bw('Hips')) > 0.5) & (foot < 0.3)] = 2
+    dark = (v < 0.25) & (s > 0.15) & ((h < 45) | (h > 330)) & (z > hip + 0.4) & ~(maroon & (head < 0.5))
+    vm = np.zeros(len(V), bool); vm[tri[dark].ravel()] = True
+    FP[dark & mt.biggest_piece(o, vm)[tri].all(1)] = 3
+    FP[(foot > 0.6) | (hand > 0.5)] = 0
+    return FP, tri
+
+
 PROFILES = {'awesome': {'parts': parts_awesome, 'stands': 1.32},
             'plaid': {'parts': lambda o, px: mt.parts_plaid(o, px), 'stands': 1.30},
             'rainbow': {'parts': lambda o, px: parts_without_pack(mt.parts_rainbow, o, px), 'stands': 1.29},
-            'explorer': {'parts': lambda o, px: mt.parts_explorer(o, px), 'stands': 1.27}}
+            'explorer': {'parts': lambda o, px: mt.parts_explorer(o, px), 'stands': 1.27},
+            'varsity': {'parts': parts_varsity, 'stands': 1.65}}
 PROFILE = PROFILES[PROFILE_NAME]
 
 

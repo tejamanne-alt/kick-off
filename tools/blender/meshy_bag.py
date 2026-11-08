@@ -178,7 +178,8 @@ def fit(kid_blend, bag_blend, out):
     V = verts_np(bag)
     strap = V[:, 1] < -0.02 * s
     # behind the back wherever the bag's body reaches it
-    zr = (K[:, 2] < mark[2] + 0.02) & (K[:, 2] > mark[2] - s) & (np.abs(K[:, 0] - mark[0]) < 0.5 * bag['width'] * s) & torso
+    # (the arms left out, but not the head's: long hair hanging down the back is under the bag, which rests on it)
+    zr = (K[:, 2] < mark[2] + 0.02) & (K[:, 2] > mark[2] - s) & (np.abs(K[:, 0] - mark[0]) < 0.5 * bag['width'] * s) & (arms < 0.3)
     yback = K[zr, 1].max() + BAG_GAP
     bag.data.transform(Matrix.Translation((mark[0], yback, mark[2]))); bag.data.update()
     log('fit: shoulder joints %.3f apart, back %.3f wide, scale %.3f (width %.3f, height %.3f), panel at y %.3f' % (span, back_w, s, s_w, s_h, yback))
