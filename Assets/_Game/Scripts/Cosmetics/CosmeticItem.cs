@@ -2,7 +2,8 @@ using UnityEngine;
 
 namespace DribbleToSchool.Cosmetics
 {
-    public enum CosmeticCategory { Ball, Flag, Outfit, Trail }
+    /// <summary>(Added last: saved items store the category as a number.) Bag: a Locker Room bag, worn by each kid of their own choice (Cosmetics/Bags).</summary>
+    public enum CosmeticCategory { Ball, Flag, Outfit, Trail, Bag }
 
     public enum CosmeticPattern
     {
@@ -33,7 +34,7 @@ namespace DribbleToSchool.Cosmetics
         SchoolRoutes,
     }
 
-    /// <summary>One cosmetic: ball skin, backpack flag, outfit or trail. Visuals are drawn from these values.</summary>
+    /// <summary>One cosmetic: ball skin, backpack flag, outfit, trail or bag. Visuals are drawn from these values.</summary>
     [CreateAssetMenu(menuName = "Kick Off/Cosmetic Item", fileName = "Cosmetic")]
     public class CosmeticItem : ScriptableObject
     {

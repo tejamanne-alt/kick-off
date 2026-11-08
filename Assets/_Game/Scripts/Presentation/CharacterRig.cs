@@ -48,6 +48,9 @@ namespace DribbleToSchool.Presentation
         public Transform elbowBack;
         public Transform head;
         public Transform bag;
+        [Tooltip("How much of the pose's bag swing the bag takes: 1 for a bag modelled with the kid; less for the Locker Room's " +
+            "backpacks (Presentation/BagWear), strapped on over both shoulders.")]
+        public float bagSwing = 1f;
 
         Vector3 bodyBasePosition;
         Vector3 bodyBaseScale = Vector3.one;
@@ -82,7 +85,7 @@ namespace DribbleToSchool.Presentation
             Rotate(armBack, p.armB);
             Rotate(elbowFront, Mathf.Max(p.elbowF, 0f));
             Rotate(elbowBack, Mathf.Max(p.elbowB, 0f));
-            Rotate(bag, p.bag);
+            Rotate(bag, p.bag * bagSwing);
             if (body != null)
             {
                 body.localPosition = bodyBasePosition + new Vector3(p.shift.x, p.bob + p.shift.y, 0f);

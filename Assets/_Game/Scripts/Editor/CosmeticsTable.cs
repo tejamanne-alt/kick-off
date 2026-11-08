@@ -59,6 +59,7 @@ namespace DribbleToSchool.EditorTools
         const CosmeticCategory Flag = CosmeticCategory.Flag;
         const CosmeticCategory Outfit = CosmeticCategory.Outfit;
         const CosmeticCategory Trail = CosmeticCategory.Trail;
+        const CosmeticCategory Bag = CosmeticCategory.Bag;
         const Rarity Common = Rarity.Common;
         const Rarity Rare = Rarity.Rare;
         const Rarity Epic = Rarity.Epic;
@@ -136,6 +137,13 @@ namespace DribbleToSchool.EditorTools
                 Sticker("trail_ms_20", "Holo Streak", Trail, Epic, Count, 20, CosmeticPattern.Holo, white, white, white),
                 // Every way to school walked: gold fading into the school's navy.
                 School("trail_victory_lap", "Victory Lap", Trail, Epic, 6, CosmeticPattern.Gradient, C(1f, 0.82f, 0.26f), C(0.2f, 0.3f, 0.72f), white),
+
+                // ---------- Bags (Cosmetics/Bags) ----------
+                // Worn by each kid modelled without a bag of their own, as they choose; owned from the start. Each id is
+                // "bag_" + the name of the bag's mesh in the kids' models (Bag_KickOff: tools/blender/meshy_bag.py); the
+                // colour is chosen in Settings. The icon is the bag's own picture, Resources/UI/Bag<Id>.png.
+                R(Cosmetics.Bags.NoneId, "No Bag", Bag, Common, 0, CosmeticPattern.None, white, white, white),
+                R(Cosmetics.Bags.DefaultId, "Kick Off Backpack", Bag, Common, 0, CosmeticPattern.Solid, C(0.53f, 0.08f, 0.73f), ink, white),
             };
         }
     }

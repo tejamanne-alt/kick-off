@@ -649,6 +649,7 @@ namespace DribbleToSchool.EditorTools
             applier.ballTrail = trail;
             applier.kidBody = kidOutfit;
             applier.backpackFlags = kidFlags.ToArray();
+            applier.bags = cast.bags.ToArray();
 
             // The Holiday Run itself.
             var streamer = new GameObject("RunWorldStreamer").AddComponent<RunWorldStreamer>();

@@ -79,6 +79,13 @@ namespace DribbleToSchool.Core
             set { PlayerPrefs.SetString("settings.character", PlayerRoster.Normalize(value)); Save(); }
         }
 
+        /// <summary>The colour the kids' bags are worn in: an index into Cosmetics/Bags.Colours (0, the bag's own colours).</summary>
+        public static int BagColour
+        {
+            get { return PlayerPrefs.GetInt("settings.bagColour", 0); }
+            set { PlayerPrefs.SetInt("settings.bagColour", Mathf.Max(0, value)); Save(); }
+        }
+
         public static string Language
         {
             get { return PlayerPrefs.GetString("settings.language", ""); }

@@ -86,6 +86,10 @@ namespace DribbleToSchool.Progression
             Own(d, d.equippedFlag);
             Own(d, d.equippedOutfit);
             Own(d, d.equippedTrail);
+            // The bags every kid can wear from the start (Cosmetics/Bags): none, and the Kick Off backpack.
+            Own(d, Cosmetics.Bags.NoneId);
+            Own(d, Cosmetics.Bags.DefaultId);
+            if (d.bags == null) d.bags = new System.Collections.Generic.List<BagChoice>();
             // Version 2: the trips to school. Routes already finished count as walked on time.
             SchoolTrips.Upgrade(d);
             if (d.schoolMedals == null) d.schoolMedals = new System.Collections.Generic.List<string>();

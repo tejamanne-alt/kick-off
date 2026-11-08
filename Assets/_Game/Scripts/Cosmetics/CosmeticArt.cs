@@ -20,6 +20,7 @@ namespace DribbleToSchool.Cosmetics
                 case CosmeticCategory.Ball: return BallSprite(item);
                 case CosmeticCategory.Flag: return FlagSprite(item);
                 case CosmeticCategory.Outfit: return OutfitSprite(item);
+                case CosmeticCategory.Bag: return BagSprite(item);
                 default: return TrailSprite(item);
             }
         }
@@ -43,6 +44,16 @@ namespace DribbleToSchool.Cosmetics
         public static Sprite TrailSprite(CosmeticItem item)
         {
             return Cached("trail:" + item.id, () => DrawTrail(item, 128, 64));
+        }
+
+        /// <summary>
+        /// A bag's picture: rendered from its model (Resources/UI/&lt;id&gt;.png, tools/blender/meshy_bag.py icon); "No Bag"
+        /// (and a bag whose picture is missing) a dashed outline of a backpack.
+        /// </summary>
+        public static Sprite BagSprite(CosmeticItem item)
+        {
+            var picture = item.pattern != CosmeticPattern.None ? Resources.Load<Sprite>("UI/" + item.id) : null;
+            return picture != null ? picture : Cached("bag:none", () => DrawNoBag(128));
         }
 
         /// <summary>Colour along a trail (0 = at the ball, 1 = tail end).</summary>
@@ -295,6 +306,42 @@ namespace DribbleToSchool.Cosmetics
         }
 
         // ---------- Trail swatch ----------
+
+        // ---------- Bag ----------
+
+        /// <summary>A backpack's outline in dashes, crossed out: no bag.</summary>
+        static Sprite DrawNoBag(int size)
+        {
+            var tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
+            var pixels = new Color[size * size];
+            Color line = new Color(0.55f, 0.56f, 0.62f);
+            for (int py = 0; py < size; py++)
+            {
+                for (int px = 0; px < size; px++)
+                {
+                    float u = (px + 0.5f) / size * 2f - 1f, v = (py + 0.5f) / size * 2f - 1f;
+                    // the bag: a rounded box, its top arched
+                    float dx = Mathf.Abs(u) - 0.42f, dy = Mathf.Abs(v + 0.08f) - 0.55f;
+                    float box = Mathf.Sqrt(Mathf.Max(dx, 0f) * Mathf.Max(dx, 0f) + Mathf.Max(dy, 0f) * Mathf.Max(dy, 0f)) + Mathf.Min(Mathf.Max(dx, dy), 0f) - 0.12f;
+                    float ring = Mathf.Abs(box) - 0.035f;
+                    // the handle
+                    float handle = Mathf.Abs(Mathf.Sqrt(u * u + (v - 0.62f) * (v - 0.62f)) - 0.17f) - 0.03f;
+                    if (v < 0.62f) handle = 1f;
+                    // dashes round the outline
+                    float angle = Mathf.Atan2(v + 0.08f, u);
+                    bool dash = Mathf.Repeat(angle * 4.5f, 1f) < 0.62f;
+                    float a = Mathf.Clamp01(-Mathf.Min(dash ? ring : 1f, handle) * size * 0.5f);
+                    // the slash across, from top right to bottom left
+                    float slash = Mathf.Abs(u + v) / 1.4142f - 0.05f;
+                    float b = Mathf.Abs(u) < 0.8f && Mathf.Abs(v) < 0.8f ? Mathf.Clamp01(-slash * size * 0.5f) : 0f;
+                    Color c = Color.Lerp(line, new Color(0.86f, 0.25f, 0.25f), b);
+                    c.a = Mathf.Max(a, b);
+                    pixels[py * size + px] = c;
+                }
+            }
+            tex.SetPixels(pixels);
+            return ToSprite(tex, size);
+        }
 
         static Sprite DrawTrail(CosmeticItem item, int w, int h)
         {

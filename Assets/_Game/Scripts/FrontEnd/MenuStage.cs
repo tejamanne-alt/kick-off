@@ -89,6 +89,9 @@ namespace DribbleToSchool.FrontEnd
         }
 
         /// <summary>Show a Locker Room item on the teen or the ball without equipping it.</summary>
+        /// <summary>The kid turns to show their back (the Locker Room's Bags tab), still juggling.</summary>
+        public bool ShowBack { get; set; }
+
         public void TryOn(CosmeticItem item)
         {
             if (applier != null) applier.Preview(item);

@@ -19,6 +19,8 @@ namespace DribbleToSchool.EditorTools
             public MonoBehaviour outfit;
             /// <summary>The backpack pennants of all the kids (the shop's backpack flags).</summary>
             public List<SpriteRenderer> flags;
+            /// <summary>The Locker Room's bags on the kids who wear them (one BagWear a kid).</summary>
+            public List<BagWear> bags;
         }
 
         /// <summary>
@@ -31,7 +33,7 @@ namespace DribbleToSchool.EditorTools
         /// </summary>
         static Cast BuildCast(Transform parent)
         {
-            var cast = new Cast { all = new List<CharacterParts>(), flags = new List<SpriteRenderer>() };
+            var cast = new Cast { all = new List<CharacterParts>(), flags = new List<SpriteRenderer>(), bags = new List<BagWear>() };
             var ids = new List<string>();
             foreach (var info in PlayerRoster.All)
             {
@@ -44,6 +46,21 @@ namespace DribbleToSchool.EditorTools
                 var parts = BuildModelCharacter(parent, info.model, material, info.neckHeight, TeenFeet(info.neckHeight), true);
                 if (parts.rig == null) continue;   // BuildModelCharacter has said why
                 parts.visual.name = info.model;
+                if (parts.bags != null && info.wearsBags)
+                {
+                    var wear = parts.visual.gameObject.AddComponent<BagWear>();
+                    wear.playerId = info.id;
+                    wear.bags = parts.bags.ToArray();
+                    wear.bagIds = new string[parts.bags.Count];
+                    for (int b = 0; b < parts.bags.Count; b++) wear.bagIds[b] = Cosmetics.Bags.IdOfMesh(parts.bags[b].name);
+                    wear.onBag = parts.onBag != null ? parts.onBag.ToArray() : new GameObject[0];
+                    cast.bags.Add(wear);
+                }
+                else if (parts.bags != null)
+                {
+                    // (a kid with a bag of their own whose model has bags fitted all the same: never worn)
+                    foreach (var r in parts.bags) Object.DestroyImmediate(r.gameObject);
+                }
                 cast.all.Add(parts);
                 ids.Add(info.id);
             }

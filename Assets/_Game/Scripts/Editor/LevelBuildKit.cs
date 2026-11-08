@@ -296,6 +296,7 @@ namespace DribbleToSchool.EditorTools
             applier.ballTrail = trail;
             applier.kidBody = kidOutfit;
             applier.backpackFlags = kidFlags.ToArray();
+            applier.bags = cast.bags.ToArray();
 
             var tuningPanel = new GameObject("DevTuning").AddComponent<DevTuningPanel>();
             tuningPanel.kid = kid;
@@ -320,6 +321,10 @@ namespace DribbleToSchool.EditorTools
             public MonoBehaviour outfit;
             public SpriteRenderer flag;
             public Transform visual;
+            /// <summary>The Locker Room's bags fitted to this kid (meshes "Bag_&lt;Id&gt;" in the model), or null: a kid with a bag of their own.</summary>
+            public List<Renderer> bags;
+            /// <summary>What is shown only while one of <see cref="bags"/> is worn (the pennant's pole and flag).</summary>
+            public List<GameObject> onBag;
         }
 
         /// <summary>
@@ -411,7 +416,14 @@ namespace DribbleToSchool.EditorTools
             Transform hips = bone("Hips"), head = bone("Head"), bag = bone("Bag");
             Transform legL = bone("UpperLeg.L"), legR = bone("UpperLeg.R"), kneeL = bone("LowerLeg.L"), kneeR = bone("LowerLeg.R");
             Transform armL = bone("UpperArm.L"), armR = bone("UpperArm.R"), elbowL = bone("LowerArm.L"), elbowR = bone("LowerArm.R");
-            var smr = model.GetComponentInChildren<SkinnedMeshRenderer>();
+            // The kid's own mesh ("Kid"), and the Locker Room's bags fitted to the kid ("Bag_<Id>": tools/blender/meshy_bag.py).
+            SkinnedMeshRenderer smr = null;
+            var bagRenderers = new List<Renderer>();
+            foreach (var r in model.GetComponentsInChildren<SkinnedMeshRenderer>(true))
+            {
+                if (r.name.StartsWith("Bag_")) bagRenderers.Add(r);
+                else if (smr == null || r.name == "Kid") smr = r;
+            }
             if (hips == null || head == null || (kid && bag == null) || legL == null || legR == null || kneeL == null || kneeR == null ||
                 armL == null || armR == null || elbowL == null || elbowR == null || smr == null)
             {
@@ -455,6 +467,25 @@ namespace DribbleToSchool.EditorTools
             parts.rig = rig;
             parts.visual = visual;
             parts.outfit = outfit;
+            foreach (SkinnedMeshRenderer bagRenderer in bagRenderers)
+            {
+                Material bagMaterial;
+                if (!Art.bags.TryGetValue(bagRenderer.name, out bagMaterial) || bagMaterial == null)
+                {
+                    Debug.LogWarning("[Kick Off] " + file + ".fbx has " + bagRenderer.name + " but its atlas is missing from " + ModelsDir + "; it is left out.");
+                    Object.DestroyImmediate(bagRenderer.gameObject);
+                    continue;
+                }
+                bagRenderer.sharedMaterial = bagMaterial;
+                bagRenderer.quality = SkinQuality.Bone4;
+                bagRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                bagRenderer.receiveShadows = false;
+                bagRenderer.updateWhenOffscreen = false;
+                if (parts.bags == null) parts.bags = new List<Renderer>();
+                parts.bags.Add(bagRenderer);
+            }
+            // A backpack strapped over both shoulders swings much less than a bag modelled hanging with the kid.
+            if (parts.bags != null) rig.bagSwing = 0.3f;
             if (!kid) return parts;
 
             // The supplied boy model has no bag of its own: his school satchel hangs at his hip on
@@ -477,6 +508,8 @@ namespace DribbleToSchool.EditorTools
             {
                 Vector3 top = body.InverseTransformPoint(bag.position);
                 polePos = new Vector3(top.x - 0.02f, top.y + 0.08f, -0.15f);
+                // (a fitted Locker Room bag: the bone is on the kid's back, the bag stands behind it: the pole on its middle)
+                if (parts.bags != null) polePos.x -= 0.07f * neckHeight / 1.3f;
             }
             var pole = Visual(holder, "FlagPole", Square, Vector2.zero, new Vector2(0.015f, 0.2f), new Color(0.3f, 0.25f, 0.2f), 7);
             pole.transform.position = body.TransformPoint(polePos);
@@ -486,6 +519,8 @@ namespace DribbleToSchool.EditorTools
             flag.transform.rotation = body.rotation;
 
             parts.flag = flag.GetComponent<SpriteRenderer>();
+            // On a kid who wears the Locker Room's bags, the pennant comes and goes with the bag (Presentation/BagWear).
+            if (parts.bags != null) parts.onBag = new List<GameObject> { pole.gameObject, flag.gameObject };
             return parts;
         }
 

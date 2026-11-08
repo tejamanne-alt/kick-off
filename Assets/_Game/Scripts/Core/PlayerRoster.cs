@@ -27,9 +27,15 @@ namespace DribbleToSchool.Core
         public readonly float neckHeight;
         /// <summary>How tall the kid stands (metres): the menu's camera frames the whole kid from it.</summary>
         public readonly float height;
+        /// <summary>
+        /// Modelled without a bag of their own, so they wear the Locker Room's bags (Cosmetics/Bags; each bag is fitted
+        /// to them in their model file by tools/blender/meshy_bag.py). The others carry the bag they were modelled with.
+        /// </summary>
+        public readonly bool wearsBags;
 
-        public PlayerInfo(string id, string model, string nameKey, SchoolLevel level, float neckHeight, float height)
+        public PlayerInfo(string id, string model, string nameKey, SchoolLevel level, float neckHeight, float height, bool wearsBags = false)
         {
+            this.wearsBags = wearsBags;
             this.id = id;
             this.model = model;
             this.nameKey = nameKey;
@@ -66,8 +72,9 @@ namespace DribbleToSchool.Core
             new PlayerInfo("primaryBoy", "PrimaryBoy", "player.primaryBoy", SchoolLevel.Primary, 1.092f, 1.30f),
             // Mia (primaryGirl) is made from a supplied model by tools/blender/meshy_teen.py --profile explorer: 1.27 m, her Head bone at 0.809 of it.
             new PlayerInfo("primaryGirl", "PrimaryGirl", "player.primaryGirl", SchoolLevel.Primary, 1.028f, 1.27f),
-            // Leo (primaryBoy2) is made from a supplied model by tools/blender/meshy_teen.py --profile first_day: 1.32 m, his Head bone at 0.836 of it.
-            new PlayerInfo("primaryBoy2", "PrimaryBoy2", "player.primaryBoy2", SchoolLevel.Primary, 1.104f, 1.32f),
+            // Leo (primaryBoy2) is made from a supplied rigged model by tools/blender/meshy_rigged.py: 1.32 m, his Head bone at 0.844 of it.
+            // He has no bag of his own: he wears the Locker Room's (wearsBags).
+            new PlayerInfo("primaryBoy2", "PrimaryBoy2", "player.primaryBoy2", SchoolLevel.Primary, 1.114f, 1.32f, true),
             // Zoe (primaryGirl2) is made from a supplied model by tools/blender/meshy_teen.py --profile rainbow: 1.29 m, her Head bone at 0.825 of it.
             new PlayerInfo("primaryGirl2", "PrimaryGirl2", "player.primaryGirl2", SchoolLevel.Primary, 1.064f, 1.29f),
         };

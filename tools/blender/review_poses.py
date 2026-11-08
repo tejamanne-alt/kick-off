@@ -17,6 +17,8 @@
 #                              at rest, in magenta wherever it is visible in the pose, and print the
 #                              pixel counts per cell (a cue to look at the cell, not a verdict)
 #       [--body-only]          render only the body's skin (the clothes removed), to see what moves under them
+#       [--tint 0.8,0.05,0.05,0.278]   the bags' cloth recoloured (linear r,g,b, then the cloth's own luminance:
+#                              Bag<Id>.json) as the game's Settings colour does
 #       [--list]               list the poses and exit
 #
 # Every pose is the game's own joint angles (KidAnimator.cs, MenuKid.cs), in degrees about the
@@ -226,50 +228,81 @@ if LEAKS:
 # ---- the game's toon shading (as in review_teen.py) ----
 SUN = (1.0, 0.97, 0.92)
 SHADE = tuple(0.25 * a + 0.75 * b for a, b in zip((0.68, 0.7, 0.88), (0.52, 0.56, 0.66)))
-mat = kid.data.materials[0]; nt = mat.node_tree
-mix = [n for n in nt.nodes if n.type == 'MIX'][0]
-L = nt.nodes.new('ShaderNodeCombineXYZ')
-geo = nt.nodes.new('ShaderNodeNewGeometry')
-dot = nt.nodes.new('ShaderNodeVectorMath'); dot.operation = 'DOT_PRODUCT'
-nt.links.new(geo.outputs['Normal'], dot.inputs[0]); nt.links.new(L.outputs[0], dot.inputs[1])
-lit = nt.nodes.new('ShaderNodeMapRange'); lit.interpolation_type = 'SMOOTHSTEP'
-lit.inputs['From Min'].default_value = -0.02; lit.inputs['From Max'].default_value = 0.06
-nt.links.new(dot.outputs['Value'], lit.inputs['Value'])
-band = nt.nodes.new('ShaderNodeMix'); band.data_type = 'RGBA'
-band.inputs['A'].default_value = SHADE + (1,); band.inputs['B'].default_value = SUN + (1,)
-nt.links.new(lit.outputs['Result'], band.inputs['Factor'])
-m2 = nt.nodes.new('ShaderNodeMix'); m2.data_type = 'RGBA'; m2.blend_type = 'MULTIPLY'; m2.inputs['Factor'].default_value = 1
-nt.links.new(mix.outputs['Result'], m2.inputs['A']); nt.links.new(band.outputs['Result'], m2.inputs['B'])
-ndv = nt.nodes.new('ShaderNodeVectorMath'); ndv.operation = 'DOT_PRODUCT'
-nt.links.new(geo.outputs['Normal'], ndv.inputs[0]); nt.links.new(geo.outputs['Incoming'], ndv.inputs[1])
-rim = nt.nodes.new('ShaderNodeMapRange'); rim.interpolation_type = 'SMOOTHSTEP'
-rim.inputs['From Min'].default_value = 0.4; rim.inputs['From Max'].default_value = 0.24
-rim.inputs['To Min'].default_value = 0.0; rim.inputs['To Max'].default_value = 1.0
-nt.links.new(ndv.outputs['Value'], rim.inputs['Value'])
-side = nt.nodes.new('ShaderNodeMapRange'); side.inputs['From Min'].default_value = -0.35; side.inputs['From Max'].default_value = 0.65
-side.inputs['To Min'].default_value = 0.4; side.inputs['To Max'].default_value = 1.0
-nt.links.new(dot.outputs['Value'], side.inputs['Value'])
-rk = nt.nodes.new('ShaderNodeMath'); rk.operation = 'MULTIPLY'
-nt.links.new(rim.outputs['Result'], rk.inputs[0]); nt.links.new(side.outputs['Result'], rk.inputs[1])
-rk2 = nt.nodes.new('ShaderNodeMath'); rk2.operation = 'MULTIPLY'; rk2.inputs[1].default_value = 0.22
-nt.links.new(rk.outputs[0], rk2.inputs[0])
-add = nt.nodes.new('ShaderNodeMix'); add.data_type = 'RGBA'; add.blend_type = 'ADD'
-add.inputs['B'].default_value = SUN + (1,)
-nt.links.new(rk2.outputs[0], add.inputs['Factor']); nt.links.new(m2.outputs['Result'], add.inputs['A'])
-em = nt.nodes.new('ShaderNodeEmission'); nt.links.new(add.outputs['Result'], em.inputs['Color'])
-nt.links.new(em.outputs[0], nt.nodes['Material Output'].inputs['Surface'])
+def toon(mat, tint=None):
+    """The toon look on a material made by meshy_boy.atlas_material (its atlas times its vertex colours); with tint, the
+    atlas's cloth (alpha 0, meshy_bag.py) recoloured as ToonCharacter's _MaskTint does."""
+    nt = mat.node_tree
+    mix = [n for n in nt.nodes if n.type == 'MIX'][0]
+    tex = [n for n in nt.nodes if n.type == 'TEX_IMAGE'][0]
+    tex.image.alpha_mode = 'CHANNEL_PACKED'                    # (a bag's alpha is its cloth mask, not coverage)
+    if tint is not None:
+        lum = nt.nodes.new('ShaderNodeRGBToBW'); nt.links.new(tex.outputs['Color'], lum.inputs[0])
+        k = nt.nodes.new('ShaderNodeMath'); k.operation = 'DIVIDE'; k.inputs[1].default_value = tint[3]
+        nt.links.new(lum.outputs[0], k.inputs[0])
+        inv = nt.nodes.new('ShaderNodeMath'); inv.operation = 'SUBTRACT'; inv.inputs[0].default_value = 1
+        nt.links.new(tex.outputs['Alpha'], inv.inputs[1])
+        pick = nt.nodes.new('ShaderNodeMix'); pick.data_type = 'RGBA'
+        nt.links.new(inv.outputs[0], pick.inputs['Factor']); nt.links.new(tex.outputs['Color'], pick.inputs['A'])
+        # (tint times the texel's luminance over the cloth's own)
+        sc = nt.nodes.new('ShaderNodeVectorMath'); sc.operation = 'SCALE'
+        sc.inputs[0].default_value = tuple(tint[:3]); nt.links.new(k.outputs[0], sc.inputs['Scale'])
+        nt.links.new(sc.outputs[0], pick.inputs['B'])
+        nt.links.new(pick.outputs['Result'], mix.inputs['A'])
+    _l = nt.nodes.new('ShaderNodeCombineXYZ'); LS.append(_l); L = _l
+    geo = nt.nodes.new('ShaderNodeNewGeometry')
+    dot = nt.nodes.new('ShaderNodeVectorMath'); dot.operation = 'DOT_PRODUCT'
+    nt.links.new(geo.outputs['Normal'], dot.inputs[0]); nt.links.new(L.outputs[0], dot.inputs[1])
+    lit = nt.nodes.new('ShaderNodeMapRange'); lit.interpolation_type = 'SMOOTHSTEP'
+    lit.inputs['From Min'].default_value = -0.02; lit.inputs['From Max'].default_value = 0.06
+    nt.links.new(dot.outputs['Value'], lit.inputs['Value'])
+    band = nt.nodes.new('ShaderNodeMix'); band.data_type = 'RGBA'
+    band.inputs['A'].default_value = SHADE + (1,); band.inputs['B'].default_value = SUN + (1,)
+    nt.links.new(lit.outputs['Result'], band.inputs['Factor'])
+    m2 = nt.nodes.new('ShaderNodeMix'); m2.data_type = 'RGBA'; m2.blend_type = 'MULTIPLY'; m2.inputs['Factor'].default_value = 1
+    nt.links.new(mix.outputs['Result'], m2.inputs['A']); nt.links.new(band.outputs['Result'], m2.inputs['B'])
+    ndv = nt.nodes.new('ShaderNodeVectorMath'); ndv.operation = 'DOT_PRODUCT'
+    nt.links.new(geo.outputs['Normal'], ndv.inputs[0]); nt.links.new(geo.outputs['Incoming'], ndv.inputs[1])
+    rim = nt.nodes.new('ShaderNodeMapRange'); rim.interpolation_type = 'SMOOTHSTEP'
+    rim.inputs['From Min'].default_value = 0.4; rim.inputs['From Max'].default_value = 0.24
+    rim.inputs['To Min'].default_value = 0.0; rim.inputs['To Max'].default_value = 1.0
+    nt.links.new(ndv.outputs['Value'], rim.inputs['Value'])
+    side = nt.nodes.new('ShaderNodeMapRange'); side.inputs['From Min'].default_value = -0.35; side.inputs['From Max'].default_value = 0.65
+    side.inputs['To Min'].default_value = 0.4; side.inputs['To Max'].default_value = 1.0
+    nt.links.new(dot.outputs['Value'], side.inputs['Value'])
+    rk = nt.nodes.new('ShaderNodeMath'); rk.operation = 'MULTIPLY'
+    nt.links.new(rim.outputs['Result'], rk.inputs[0]); nt.links.new(side.outputs['Result'], rk.inputs[1])
+    rk2 = nt.nodes.new('ShaderNodeMath'); rk2.operation = 'MULTIPLY'; rk2.inputs[1].default_value = 0.22
+    nt.links.new(rk.outputs[0], rk2.inputs[0])
+    add = nt.nodes.new('ShaderNodeMix'); add.data_type = 'RGBA'; add.blend_type = 'ADD'
+    add.inputs['B'].default_value = SUN + (1,)
+    nt.links.new(rk2.outputs[0], add.inputs['Factor']); nt.links.new(m2.outputs['Result'], add.inputs['A'])
+    em = nt.nodes.new('ShaderNodeEmission'); nt.links.new(add.outputs['Result'], em.inputs['Color'])
+    nt.links.new(em.outputs[0], nt.nodes['Material Output'].inputs['Surface'])
+    mat.use_backface_culling = True
+
+
+LS = []
+TINT = None
+if '--tint' in args:
+    TINT = [float(x) for x in args[args.index('--tint') + 1].split(',')]   # r,g,b (linear),cloth luminance
+mat = kid.data.materials[0]
+toon(mat)
+BAGS = [o for o in bpy.data.objects if o.type == 'MESH' and o.name.startswith('Bag_')]
+for b in BAGS: toon(b.data.materials[0], TINT)
 ol = bpy.data.materials.new('Outline'); ol.use_nodes = True; ol.use_backface_culling = True
 on = ol.node_tree; e = on.nodes.new('ShaderNodeEmission'); e.inputs['Color'].default_value = (0.012, 0.009, 0.014, 1)
 on.links.new(e.outputs[0], on.nodes['Material Output'].inputs['Surface'])
 kid.data.materials.append(ol)
 sol = kid.modifiers.new('outline', 'SOLIDIFY'); sol.thickness = 0.005; sol.offset = 1; sol.use_flip_normals = True; sol.material_offset = 1
-mat.use_backface_culling = True
+for b in BAGS:
+    b.data.materials.append(ol)
+    bs = b.modifiers.new('outline', 'SOLIDIFY'); bs.thickness = 0.005; bs.offset = 1; bs.use_flip_normals = True; bs.material_offset = 1
 S.world = bpy.data.worlds.new('w'); S.world.color = (0.62, 0.78, 0.95)
 S.render.engine = 'BLENDER_EEVEE'; S.view_settings.view_transform = 'Standard'
 try: S.eevee.taa_render_samples = 8
 except Exception: pass
 SUNDIR = Vector((0.45, -0.4, 0.8)).normalized()      # the game's sun in the review camera's world (see review_teen.py)
-L.inputs[0].default_value, L.inputs[1].default_value, L.inputs[2].default_value = SUNDIR
+for _l in LS: _l.inputs[0].default_value, _l.inputs[1].default_value, _l.inputs[2].default_value = SUNDIR
 
 # the leak pass: flat colour, the covered skin in magenta
 leak_mat = None
@@ -307,7 +340,8 @@ def pose(p):
     for n, f in (('R', 'F'), ('L', 'B')):
         swing('UpperLeg.' + n, p['leg' + f]); swing('LowerLeg.' + n, min(p['knee' + f], 0))
         swing('UpperArm.' + n, p['arm' + f]); swing('LowerArm.' + n, max(p['elbow' + f], 0))
-    if 'Bag' in rig.pose.bones: swing('Bag', p['bag'])
+    # (a bag of the Locker Room's swings less than one sewn on: LevelBuildKit sets CharacterRig.bagSwing so)
+    if 'Bag' in rig.pose.bones: swing('Bag', p['bag'] * (0.3 if BAGS else 1.0))
     swing('Head', p['headTilt'])
     swing('Hips', p['lean'], sign=+1)      # a forward lean tips the top toward -Y (forward): +X
 

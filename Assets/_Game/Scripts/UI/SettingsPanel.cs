@@ -13,7 +13,7 @@ namespace DribbleToSchool.UI
     /// nothing overlaps at any aspect ratio (the card fits a 4:3 canvas, 1440 x 1080):
     /// left, Audio (music, ambience: the sounds of each place, sound effects) and Gameplay (school bell,
     /// colour-blind aim, vibration, screen shake, the coach's how-to tips: UI/ActionCoach); right, Player (the chosen kid, which opens the
-    /// player picker), Language and Controls (left-handed and the Controls page: UI/ControlsGuide; the Add-ons and Filters page, UI/AddOnsPanel, is on the title screen); along the bottom, Reset progress, Restore purchases and Done. Labels shrink
+    /// player picker, and the colour of the bags: Cosmetics/Bags), Language and Controls (left-handed and the Controls page: UI/ControlsGuide; the Add-ons and Filters page, UI/AddOnsPanel, is on the title screen); along the bottom, Reset progress, Restore purchases and Done. Labels shrink
     /// to fit rather than run into their controls, for longer translations.
     /// </summary>
     public static class SettingsPanel
@@ -53,7 +53,10 @@ namespace DribbleToSchool.UI
             Section(right, ref y, "settings.player");
             var player = UIKit.Row(right, "PlayerSummary", y, 200f, 4f, 4f);
             PlayerPicker.Summary(player, canvas);
-            y += 200f + 22f;
+            y += 200f + 6f;
+            // The colour the kids' bags are worn in (Cosmetics/Bags; the Locker Room's Bags tab chooses each kid's bag).
+            BagColourRow(right, ref y);
+            y += 10f;
 
             // Language: one button per table; the current one is filled.
             Section(right, ref y, "settings.language");
@@ -165,6 +168,55 @@ namespace DribbleToSchool.UI
             UIKit.Place((RectTransform)toggle.transform, new Vector2(1f, 0.5f), new Vector2(-6f, UIButtonFx.Depth * 0.5f), new Vector2(ToggleWidth, 60f), new Vector2(1f, 0.5f));
             y += height + RowGap;
             return toggle;
+        }
+
+        /// <summary>"Bag colour" and a swatch for each colour (the first, the bags' own): the chosen one ringed in navy.</summary>
+        static void BagColourRow(RectTransform column, ref float y)
+        {
+            var row = UIKit.Row(column, "settings.bagColour", y, RowHeight, 12f, 0f);
+            var label = UIKit.Label(row, "Label", Loc.T("settings.bagColour"), 34, UITheme.Ink, TextAnchor.MiddleLeft, true);
+            label.rectTransform.anchorMin = Vector2.zero;
+            label.rectTransform.anchorMax = new Vector2(0.34f, 1f);
+            label.rectTransform.offsetMin = label.rectTransform.offsetMax = Vector2.zero;
+            UIKit.Fit(label, 22);
+            var swatches = UIKit.Rect(row, "Swatches");
+            swatches.anchorMin = new Vector2(0.34f, 0f);
+            swatches.anchorMax = Vector2.one;
+            swatches.offsetMin = new Vector2(6f, 0f);
+            swatches.offsetMax = new Vector2(-4f, 0f);
+            int count = Cosmetics.Bags.Colours.Length;
+            var rings = new Image[count];
+            var bagIcon = Resources.Load<Sprite>("UI/" + Cosmetics.Bags.DefaultId);
+            for (int i = 0; i < count; i++)
+            {
+                int index = i;
+                var swatch = Cosmetics.Bags.Colours[i];
+                var cell = UIKit.Rect(swatches, "Swatch_" + swatch.name);
+                cell.anchorMin = new Vector2(i / (float)count, 0f);
+                cell.anchorMax = new Vector2((i + 1) / (float)count, 1f);
+                cell.offsetMin = cell.offsetMax = Vector2.zero;
+                rings[i] = UIKit.Icon(cell, "Ring", ProceduralSprites.CircleEdge, UITheme.Navy, 58f);
+                UIKit.Place(rings[i].rectTransform, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(58f, 58f));
+                var disc = UIKit.Icon(cell, "Colour", ProceduralSprites.CircleEdge, swatch.tints ? swatch.color : UITheme.Paper, 46f);
+                UIKit.Place(disc.rectTransform, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(46f, 46f));
+                if (!swatch.tints && bagIcon != null)
+                {
+                    // the bags' own colours: the bag itself
+                    var pic = UIKit.Icon(disc.transform, "Bag", bagIcon, Color.white, 40f);
+                    UIKit.Place(pic.rectTransform, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(40f, 40f));
+                    pic.raycastTarget = false;
+                }
+                var button = disc.gameObject.AddComponent<Button>();
+                button.targetGraphic = disc;
+                button.onClick.AddListener(() =>
+                {
+                    GameSettings.BagColour = index;
+                    for (int k = 0; k < rings.Length; k++) rings[k].enabled = k == index;
+                });
+                rings[i].enabled = i == Mathf.Clamp(GameSettings.BagColour, 0, count - 1);
+                rings[i].raycastTarget = false;
+            }
+            y += RowHeight + RowGap;
         }
 
         static void ConfirmReset(Transform canvas)

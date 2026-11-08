@@ -21,6 +21,8 @@ namespace DribbleToSchool.Cosmetics
         public MonoBehaviour kidBody;
         [Tooltip("The pennant on each playable character's bag.")]
         public SpriteRenderer[] backpackFlags;
+        [Tooltip("The Locker Room's bags on the kids who wear them (each shows its kid's own choice).")]
+        public Presentation.BagWear[] bags;
         [Tooltip("A Holiday Run: the kid is not in school uniform unless they chose to be. While the school uniform is the equipped outfit, " +
             "the Holiday outfit is worn instead (casual, no tie); any other outfit the player equipped is kept.")]
         public bool holiday;
@@ -52,6 +54,9 @@ namespace DribbleToSchool.Cosmetics
             ApplyOutfit(OutfitFor(save.equippedOutfit));
             ApplyFlag(catalog.Find(save.equippedFlag));
             ApplyTrail(catalog.Find(save.equippedTrail));
+            if (bags != null)
+                foreach (var bag in bags)
+                    if (bag != null) bag.Apply();
         }
 
         /// <summary>The id of the outfit to wear: the Holiday one in a Holiday Run instead of the default school uniform; anything else the player equipped is kept.</summary>
@@ -80,6 +85,11 @@ namespace DribbleToSchool.Cosmetics
                 case CosmeticCategory.Outfit: ApplyOutfit(item); break;
                 case CosmeticCategory.Flag: ApplyFlag(item); break;
                 case CosmeticCategory.Trail: ApplyTrail(item); break;
+                case CosmeticCategory.Bag:
+                    if (bags != null)
+                        foreach (var bag in bags)
+                            if (bag != null) bag.Preview(item.id);
+                    break;
             }
         }
 

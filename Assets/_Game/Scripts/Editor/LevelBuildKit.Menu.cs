@@ -189,6 +189,7 @@ namespace DribbleToSchool.EditorTools
             applier.ballRenderer = ball.GetComponent<MeshRenderer>();
             applier.kidBody = cast.outfit;
             applier.backpackFlags = cast.flags.ToArray();
+            applier.bags = cast.bags.ToArray();
 
             stage.teen = teenGo.transform;
             stage.feet = feet;
