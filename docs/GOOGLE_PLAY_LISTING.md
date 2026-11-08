@@ -9,7 +9,7 @@ Everything to enter in Play Console, field by field. App id (package name): **`c
 | App name (10 / 30) | `Kick Off 2` |
 | Short description (79 / 80) | `Dribble a football through town all the way to school. Collect all 23 stickers!` |
 | App icon (512 × 512) | `marketing/googleplay/icon_512.png` |
-| Feature graphic (1024 × 500) | `marketing/googleplay/feature_graphic_1024x500.png` |
+| Feature graphic (1024 × 500) | `marketing/googleplay/feature_graphic_1024x500.png` (from the banner artwork, `marketing/source/banner_artwork.png`, by `tools/feature_graphic_from_image.py`) |
 | Phone screenshots (2–8, 16:9) | the screenshot tour at **1920 × 1080** (see below) |
 | 7" and 10" tablet screenshots | the same 1920 × 1080 pictures (optional, but needed to be featured on tablets) |
 | Video | leave empty |
