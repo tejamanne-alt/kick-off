@@ -488,6 +488,8 @@ namespace DribbleToSchool.UI
             UIKit.Header(card.transform, Loc.T("pause.title"), 460f);
 
             float y = skip || howTo ? -150f : -160f;
+            // (eight buttons, in a development build with the how-to as well: a little closer together, to stay on the card)
+            pauseStep = skip && howTo ? 102f : 112f;
             PauseButton(card.transform, ref y, "pause.resume", UITheme.Green, () => level.Resume());
             PauseButton(card.transform, ref y, "pause.checkpoint", UITheme.Blue, () => { level.Resume(); level.RespawnAtCheckpoint(); });
             PauseButton(card.transform, ref y, "pause.restart", UITheme.Accent, () => level.BeginRun());
@@ -500,11 +502,14 @@ namespace DribbleToSchool.UI
                 PauseButton(card.transform, ref y, "pause.skip", UITheme.Locked, () => level.LoadNextLevel());
         }
 
+        /// <summary>The pause menu's buttons' spacing (ShowPause sets it).</summary>
+        static float pauseStep = 112f;
+
         static void PauseButton(Transform parent, ref float y, string key, Color color, UnityEngine.Events.UnityAction action)
         {
             var b = UIKit.Button(parent, key, Loc.T(key), color, action, 40);
-            UIKit.Place((RectTransform)b.transform, new Vector2(0.5f, 1f), new Vector2(0f, y), new Vector2(520f, 96f));
-            y -= 112f;
+            UIKit.Place((RectTransform)b.transform, new Vector2(0.5f, 1f), new Vector2(0f, y), new Vector2(520f, pauseStep - 16f));
+            y -= pauseStep;
         }
 
         // ---------- Results ----------
@@ -649,7 +654,7 @@ namespace DribbleToSchool.UI
             if (level.level != null && r.stars > 0)
             {
                 var coins = UIKit.CoinAmount(card.transform, "Earned", 0, 64, new Color(0.85f, 0.55f, 0.1f));
-                UIKit.Place((RectTransform)coins.transform.parent, new Vector2(0.5f, 0f), new Vector2(0f, 250f), new Vector2(400f, 80f));
+                UIKit.Place((RectTransform)coins.transform.parent, new Vector2(0.5f, 0f), new Vector2(0f, 262f), new Vector2(400f, 80f));
                 var countUp = coins.gameObject.AddComponent<UICountUp>();
                 countUp.target = r.coinsEarned;
                 countUp.delay = 0.6f + r.stars * 0.3f;
@@ -662,7 +667,7 @@ namespace DribbleToSchool.UI
                 string medal = MedalWaiting();
                 if (medal != null) extras = medal;
                 var ex = UIKit.Label(card.transform, "Extras", extras, 32, new Color(0.8f, 0.35f, 0.55f), TextAnchor.MiddleCenter, true);
-                UIKit.Place(ex.rectTransform, new Vector2(0.5f, 0f), new Vector2(0f, 190f), new Vector2(1050f, 44f));
+                UIKit.Place(ex.rectTransform, new Vector2(0.5f, 0f), new Vector2(0f, 210f), new Vector2(1050f, 44f));   // (clear of the buttons' tops at 195)
                 UIKit.Fit(ex, 22);
             }
 
