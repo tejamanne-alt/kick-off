@@ -76,8 +76,9 @@ namespace DribbleToSchool.Core
             // Leo (primaryBoy2) is made from a supplied rigged model by tools/blender/meshy_rigged.py: 1.32 m, his Head bone at 0.844 of it.
             // He has no bag of his own: he wears the Locker Room's (wearsBags).
             new PlayerInfo("primaryBoy2", "PrimaryBoy2", "player.primaryBoy2", SchoolLevel.Primary, 1.114f, 1.32f, true),
-            // Zoe (primaryGirl2) is made from a supplied model by tools/blender/meshy_teen.py --profile rainbow: 1.29 m, her Head bone at 0.825 of it.
-            new PlayerInfo("primaryGirl2", "PrimaryGirl2", "player.primaryGirl2", SchoolLevel.Primary, 1.064f, 1.29f),
+            // Zoe (primaryGirl2) is made from a supplied rigged model by tools/blender/meshy_rigged.py --profile rainbow: 1.29 m, her Head bone at 0.852 of it.
+            // She has no bag of her own: she wears the Locker Room's (wearsBags).
+            new PlayerInfo("primaryGirl2", "PrimaryGirl2", "player.primaryGirl2", SchoolLevel.Primary, 1.099f, 1.29f, true),
         };
 
         /// <summary>The position of <paramref name="id"/> in <see cref="All"/>, or -1.</summary>
