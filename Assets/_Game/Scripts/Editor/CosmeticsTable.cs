@@ -142,8 +142,8 @@ namespace DribbleToSchool.EditorTools
                 // Worn by each kid modelled without a bag of their own, as they choose; owned from the start. Each id is
                 // "bag_" + the name of the bag's mesh in the kids' models (Bag_KickOff: tools/blender/meshy_bag.py); the
                 // colour is chosen in Settings. The icon is the bag's own picture, Resources/UI/Bag<Id>.png.
-                R(Cosmetics.Bags.NoneId, "No Bag", Bag, Common, 0, CosmeticPattern.None, white, white, white),
-                R(Cosmetics.Bags.DefaultId, "Kick Off Backpack", Bag, Common, 0, CosmeticPattern.Solid, C(0.53f, 0.08f, 0.73f), ink, white),
+                R(DribbleToSchool.Cosmetics.Bags.NoneId, "No Bag", Bag, Common, 0, CosmeticPattern.None, white, white, white),
+                R(DribbleToSchool.Cosmetics.Bags.DefaultId, "Kick Off Backpack", Bag, Common, 0, CosmeticPattern.Solid, C(0.53f, 0.08f, 0.73f), ink, white),
             };
         }
     }
