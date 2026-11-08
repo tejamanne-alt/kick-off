@@ -22,8 +22,11 @@ namespace DribbleToSchool.Cosmetics
         /// <summary>The pink glitter unicorn backpack (a unicorn's horn and ears, rainbow chevrons; meshy_bag.py --id Unicorn).</summary>
         public const string UnicornId = "bag_unicorn";
 
+        /// <summary>The light denim backpack with a big denim bow and tan straps (meshy_bag.py --id DenimBow).</summary>
+        public const string DenimBowId = "bag_denimbow";
+
         /// <summary>The bags every kid has from the start (SaveSystem owns them in every save).</summary>
-        public static readonly string[] Starter = { NoneId, DefaultId, RaceCarId, UnicornId };
+        public static readonly string[] Starter = { NoneId, DefaultId, RaceCarId, UnicornId, DenimBowId };
 
         /// <summary>
         /// The colours bags can be worn in (Settings): the first, the bag's own colours; the rest recolour its cloth
