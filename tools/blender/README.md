@@ -23,6 +23,7 @@ blenv/bin/python meshy_rigged.py -- /abs/little_explorer_running.fbx $PWD/rigged
 blenv/bin/python meshy_rigged.py -- /abs/rainbow_playtime_girl_running.fbx $PWD/rigged --profile rainbow   # Zoe, likewise
 blenv/bin/python meshy_rigged.py -- /abs/little_kickoff_champion_running.fbx $PWD/rigged --profile explorer   # Mia, likewise
 blenv/bin/python meshy_rigged.py -- /abs/varsity_glow_running.fbx $PWD/rigged --profile varsity   # Hana, likewise
+blenv/bin/python meshy_rigged.py -- /abs/denim_dawn_running.fbx $PWD/rigged --profile denim   # Max, likewise
 blenv/bin/python meshy_bag.py -- fit $PWD/rigged/PrimaryBoy.blend $PWD/BagKickOff.blend $PWD   # ...the bag fitted to Kai
 blenv/bin/python meshy_bag.py -- prep /abs/purple_kick_off_backpack.fbx $PWD --id KickOff   # the Locker Room's bag
 blenv/bin/python meshy_bag.py -- fit $PWD/rigged/PrimaryBoy2.blend $PWD/BagKickOff.blend $PWD   # ...fitted to Leo
@@ -61,6 +62,7 @@ cp PrimaryBoy.fbx rigged/PrimaryBoy.json rigged/PrimaryBoyAtlas.png ../../Assets
 cp PrimaryGirl2.fbx rigged/PrimaryGirl2.json rigged/PrimaryGirl2Atlas.png ../../Assets/_Game/Art/Models/   # (Zoe, with her bags)
 cp PrimaryGirl.fbx rigged/PrimaryGirl.json rigged/PrimaryGirlAtlas.png ../../Assets/_Game/Art/Models/   # (Mia, with her bags)
 cp Girl.fbx rigged/Girl.json rigged/GirlAtlas.png ../../Assets/_Game/Art/Models/   # (Hana, with her bags)
+cp BackpackBoy.fbx rigged/BackpackBoy.json rigged/BackpackBoyAtlas.png ../../Assets/_Game/Art/Models/   # (Max, with his bags)
 cp Primary*.fbx Primary*.json Primary*Atlas.png ../../Assets/_Game/Art/Models/
 blenv/bin/python portrait_teen.py -- $PWD/Boy.blend $PWD/PlayerBoy.png --yaw 28     # the menus' player cards
 blenv/bin/python portrait_teen.py -- $PWD/Girl.blend $PWD/PlayerGirl.png --yaw -28  # (they face each other)
@@ -306,7 +308,8 @@ changed nothing visible).
 
 ### The primary-school kids and the bags (`meshy_rigged.py`, `meshy_bag.py`)
 
-Hana, the high-school girl, came the same way (`--profile varsity`: parts by colour, 1 the varsity jacket's maroon
+Max came the same way (`--profile denim`: meshy_teen's colour rules for him; his rig has no finger bones, only a few
+extra ones in each forearm and hand, which go with their parents). Hana, the high-school girl, came the same way (`--profile varsity`: parts by colour, 1 the varsity jacket's maroon
 body, 2 the charcoal cargo jeans, 3 her long dark-brown hair; its skeleton's four extra bones are the hair's, with the
 Head). Her hair hangs down her back, so `fit` rests the bag on it: the back it measures leaves out only the arms. She
 has no tie, so the outfits' third colour does nothing on her. Mia's came the same way (`--profile explorer`); her hair is dense in the model (over half its triangles), which is

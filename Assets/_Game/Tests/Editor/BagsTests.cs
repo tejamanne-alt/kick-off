@@ -58,7 +58,8 @@ namespace DribbleToSchool.Tests
             Assert.IsTrue(Bags.CanWear("primaryGirl2"), "and Zoe");
             Assert.IsTrue(Bags.CanWear("primaryGirl"), "and Mia");
             Assert.IsTrue(Bags.CanWear("girl"), "and Hana");
-            Assert.IsFalse(Bags.CanWear("backpackBoy"), "Max carries the bag he was modelled with");
+            Assert.IsTrue(Bags.CanWear("backpackBoy"), "and Max");
+            Assert.IsFalse(Bags.CanWear("boy"), "Ren carries the satchel he was modelled with");
         }
 
         [Test]
