@@ -119,16 +119,15 @@ namespace DribbleToSchool.Pickups
                     Vector2 q = p + Vector2.up * (dir * k * 0.1f);
                     if (!Free(q) || !Reachable(q)) continue;
                     transform.position = new Vector3(q.x, q.y, transform.position.z);
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
-                    Debug.Log("[Coin] " + name + " at (" + p.x.ToString("0.0") + ", " + p.y.ToString("0.00") + ") in " + gameObject.scene.name
-                        + (tooHigh ? " was out of reach" : " was inside a solid") + "; moved to y " + q.y.ToString("0.00") + ". Fix its place in the layout.");
-#endif
+                    // (only in the editor and development builds: Debug.isDebugBuild)
+                    if (Debug.isDebugBuild)
+                        Debug.Log("[Coin] " + name + " at (" + p.x.ToString("0.0") + ", " + p.y.ToString("0.00") + ") in " + gameObject.scene.name
+                            + (tooHigh ? " was out of reach" : " was inside a solid") + "; moved to y " + q.y.ToString("0.00") + ". Fix its place in the layout.");
                     return;
                 }
             }
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
-            Debug.LogWarning("[Coin] " + name + " at (" + p.x.ToString("0.0") + ", " + p.y.ToString("0.00") + ") in " + gameObject.scene.name + " can't be reached and has no clear spot within 3 m.");
-#endif
+            if (Debug.isDebugBuild)
+                Debug.LogWarning("[Coin] " + name + " at (" + p.x.ToString("0.0") + ", " + p.y.ToString("0.00") + ") in " + gameObject.scene.name + " can't be reached and has no clear spot within 3 m.");
         }
 
         void OnTriggerEnter2D(Collider2D other)
