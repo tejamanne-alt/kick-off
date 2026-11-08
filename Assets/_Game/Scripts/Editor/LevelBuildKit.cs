@@ -488,23 +488,11 @@ namespace DribbleToSchool.EditorTools
             if (parts.bags != null) rig.bagSwing = 0.3f;
             if (!kid) return parts;
 
-            // The supplied boy model has no bag of its own: his school satchel hangs at his hip on
-            // the Bag bone, its strap over his chest (on the Chest bone).
-            if (file == "Boy") Satchel(body, bag, bone("Chest") ?? bone("Spine"), head);
-
             // The shop's pennant, clipped to the top of the bag on the camera side: the kid's
-            // backpack, or the teens' bags (the bone sits at the bag's top edge). The boy's satchel
-            // hangs at his hip, so his rides on its strap behind the shoulder instead.
+            // backpack, or the playable kids' bags (the bone sits at the bag's top edge).
             Transform holder = bag;
             Vector3 polePos = new Vector3(-0.18f, 0.6f, -0.16f);
-            Transform chest = file == "Boy" ? bone("Chest") : null;
-            if (chest != null)
-            {
-                holder = chest;
-                Vector3 c = body.InverseTransformPoint(chest.position);
-                polePos = new Vector3(c.x - 0.15f, c.y + 0.12f, -0.15f);
-            }
-            else if (file != "Kid")
+            if (file != "Kid")
             {
                 Vector3 top = body.InverseTransformPoint(bag.position);
                 polePos = new Vector3(top.x - 0.02f, top.y + 0.08f, -0.15f);
@@ -522,50 +510,6 @@ namespace DribbleToSchool.EditorTools
             // On a kid who wears the Locker Room's bags, the pennant comes and goes with the bag (Presentation/BagWear).
             if (parts.bags != null) parts.onBag = new List<GameObject> { pole.gameObject, flag.gameObject };
             return parts;
-        }
-
-        /// <summary>
-        /// The teen boy's satchel (Presentation/SatchelShape) on the Bag bone, a hand's width behind
-        /// his hip on the camera side, and its strap from the bag up across his chest to the shoulder,
-        /// riding the Chest bone. Both are placed in the body's space (it faces +x, the camera is on
-        /// its -z side), so the bones' own axes don't matter; their scale is undone so the bag keeps
-        /// its size in metres.
-        /// </summary>
-        static void Satchel(Transform body, Transform bag, Transform chest, Transform head)
-        {
-            if (bag == null) return;
-            var go = new GameObject("Satchel");
-            go.transform.SetParent(bag, false);
-            Vector3 top = bag.position;
-            go.transform.position = top + body.rotation * new Vector3(-0.02f, -0.12f, -0.075f);
-            go.transform.rotation = body.rotation;
-            UndoScale(go.transform);
-            go.AddComponent<SatchelShape>();
-            var r = go.GetComponent<MeshRenderer>();
-            r.sharedMaterial = Art.character;
-            r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-            if (chest == null || head == null) return;
-            Vector3 a = top + body.rotation * new Vector3(0.05f, -0.02f, -0.115f);
-            Vector3 shoulder = Vector3.Lerp(chest.position, head.position, 0.55f) + body.rotation * new Vector3(0.03f, 0f, -0.115f);
-            var strap = new GameObject("SatchelStrap");
-            strap.transform.SetParent(chest, false);
-            strap.transform.position = (a + shoulder) * 0.5f;
-            strap.transform.rotation = Quaternion.LookRotation(body.rotation * Vector3.back, (shoulder - a).normalized);
-            UndoScale(strap.transform);
-            var box = strap.AddComponent<Box3D>();
-            box.size = new Vector3(0.045f, Vector3.Distance(a, shoulder) + 0.04f, 0.014f);
-            box.color = new Color(0.36f, 0.15f, 0.11f);
-            box.faces = MeshBuilder.Faces.All;
-            var sr = strap.GetComponent<MeshRenderer>();
-            sr.sharedMaterial = Art.character;
-            sr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-        }
-
-        /// <summary>Scale an object so its world scale is 1 whatever its parent bones' scale.</summary>
-        static void UndoScale(Transform t)
-        {
-            Vector3 l = t.parent != null ? t.parent.lossyScale : Vector3.one;
-            t.localScale = new Vector3(1f / Mathf.Max(l.x, 1e-4f), 1f / Mathf.Max(l.y, 1e-4f), 1f / Mathf.Max(l.z, 1e-4f));
         }
 
         [Serializable]
@@ -730,37 +674,6 @@ namespace DribbleToSchool.EditorTools
                 colors[p] = rgb != null && rgb.Count >= 3 ? new Color(Convert.ToSingle(rgb[0]), Convert.ToSingle(rgb[1]), Convert.ToSingle(rgb[2])) : Color.white;
             }
             return colors;
-        }
-
-        /// <summary>
-        /// The boy's own green bicycle (Art/Models/Bicycle.fbx: it came with the model he is made from, tools/blender/meshy_boy.py),
-        /// standing on <paramref name="position"/> lengthwise along x, turned <paramref name="yaw"/> degrees, in metres as made.
-        /// Null if the model or its material isn't there, so the caller can put the kit's bicycle instead.
-        /// </summary>
-        public static Transform OwnBicycle(Transform parent, Vector3 position, float yaw = 0f)
-        {
-            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(ModelsDir + "/Bicycle.fbx");
-            if (prefab == null || Art == null || Art.bicycle == null) return null;
-            var go = new GameObject("OwnBicycle");
-            go.transform.SetParent(parent, false);
-            go.transform.position = position;
-            go.transform.rotation = Quaternion.Euler(0f, yaw, 0f);
-            var model = (GameObject)Object.Instantiate(prefab);
-            model.name = "BicycleModel";
-            model.transform.SetParent(go.transform, false);
-            var renderers = model.GetComponentsInChildren<MeshRenderer>();
-            // Lengthwise along x, whichever way the importer turned it.
-            var bounds = new Bounds(go.transform.position, Vector3.zero);
-            foreach (var r in renderers) bounds.Encapsulate(r.bounds);
-            Vector3 size = Quaternion.Inverse(go.transform.rotation) * bounds.size;
-            if (Mathf.Abs(size.z) > Mathf.Abs(size.x)) model.transform.localRotation = Quaternion.Euler(0f, 90f, 0f) * model.transform.localRotation;
-            foreach (var r in renderers)
-            {
-                r.sharedMaterial = Art.bicycle;
-                r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
-                r.receiveShadows = true;
-            }
-            return go.transform;
         }
 
         /// <summary>The cars made in Blender (Art/Models/Cars/&lt;type&gt;.fbx).</summary>

@@ -78,10 +78,9 @@ namespace DribbleToSchool.EditorTools
             // By the door, besides the two pots the model brings: a group of pots on the right, clear of the window.
             Model(parent, "Street", "PotGroup", gx + 2.2f, gy, houseZ - 0.6f, -12f, 1f, Petals[0]);
 
-            // Life in the garden: the boy's green bicycle on its stand (the kit's if his isn't there) and the bins on the lawn to the
-            // right, a post box on the footpath by the gate.
-            if (LevelBuildKit.OwnBicycle(parent, new Vector3(gx + 3.9f, gy, 3.1f)) == null)
-                Model(parent, "Street", "Bicycle", gx + 3.9f, gy, 3.1f, 0f, 1f, BikeColors[1]);
+            // Life in the garden: a green bicycle on its stand and the bins on the lawn to the right, a post box on the footpath
+            // by the gate.
+            Model(parent, "Street", "Bicycle", gx + 3.9f, gy, 3.1f, 0f, 1f, BikeColors[1]);
             Model(parent, "Street", "BinPair", gx + 6.6f, gy, 3.5f, -8f, 1f, BinColors[0], BinColors[1]);
             Model(parent, "Street", "PostBox", gx - 1.55f, gy, PoleZ - 0.1f);
 

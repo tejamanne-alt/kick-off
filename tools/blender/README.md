@@ -14,8 +14,9 @@ cp Kid.fbx ../../Assets/_Game/Art/Models/Kid.fbx
 cp face.png ../../Assets/_Game/Art/Models/KidAtlas.png
 cp Adult.fbx ../../Assets/_Game/Art/Models/Adult.fbx
 cp face_adult.png ../../Assets/_Game/Art/Models/AdultAtlas.png
-blenv/bin/python meshy_boy.py -- /abs/boy_with_bicycle.fbx $PWD   # the playable teen boy, from a supplied textured model
-    # (Boy.fbx/.blend/.json, BoyAtlas.png, and his bicycle: Bicycle.fbx, BicycleAtlas.png; see "The boy" below)
+# (Ren, the teen boy, was removed from the game, with his satchel and his bicycle: meshy_boy.py and teen.py --boy still
+#  build him, but nothing uses Boy.fbx or Bicycle.fbx any more; meshy_boy.py's helpers are what meshy_teen.py, meshy_rigged.py
+#  and meshy_bag.py share)
 blenv/bin/python meshy_teen.py -- /abs/backpack_boy.fbx $PWD --profile backpack_boy   # Max, from a supplied A-posed model
     # (BackpackBoy.fbx/.blend/.json, BackpackBoyAtlas.png, BackpackBoy_joints.png; see "The backpack boy" below)
 blenv/bin/python meshy_rigged.py -- /abs/awesome_little_explorer_running.fbx $PWD/rigged   # Leo, from his rigged model
@@ -41,7 +42,7 @@ blenv/bin/python meshy_teen.py -- /abs/little_explorer.fbx $PWD --profile explor
 blenv/bin/python meshy_teen.py -- /abs/rainbow_unicorn.fbx $PWD --profile unicorn   # Zoe, from a supplied model
     # (PrimaryGirl2.fbx/.blend/.json, PrimaryGirl2Atlas.png; primary.py --girl2 would overwrite it)
 blenv/bin/python teen.py -- $PWD/Boy.fbx --boy     # (the earlier, scripted boy; it would overwrite the files above)
-blenv/bin/python teen.py -- $PWD/Girl.fbx --girl   # the playable teen girl
+blenv/bin/python teen.py -- $PWD/Girl.fbx --girl   # (the earlier, scripted Hana; meshy_rigged.py --profile varsity makes her now)
 blenv/bin/python primary.py -- $PWD/PrimaryBoy.fbx --boy      # the four primary-school kids (see below); also
 blenv/bin/python primary.py -- $PWD/PrimaryGirl.fbx --girl    # teen.py ... --primary-boy / --primary-girl /
 blenv/bin/python primary.py -- $PWD/PrimaryBoy2.fbx --boy2    # --primary-boy2 / --primary-girl2 (the earlier, scripted Leo)
@@ -52,7 +53,6 @@ blenv/bin/python review_teen.py -- $PWD/Girl.blend $PWD/girl_sheet.png [--bg sho
     # (the primary kids' bigger heads: add --face-dz 0.07 --face-scale 0.5)
 blenv/bin/python review_poses.py -- $PWD/Boy.blend $PWD/boy_poses.png --jobs 3 --leaks
     # the pose audit (see below): the teen in every pose the game uses, from the game's camera yaws
-cp Boy.fbx Boy.json BoyAtlas.png Bicycle.fbx BicycleAtlas.png Girl.fbx Girl.json GirlAtlas.png ../../Assets/_Game/Art/Models/
 cp BackpackBoy.fbx BackpackBoy.json BackpackBoyAtlas.png ../../Assets/_Game/Art/Models/
 cp PrimaryBoy2.fbx rigged/PrimaryBoy2.json rigged/PrimaryBoy2Atlas.png ../../Assets/_Game/Art/Models/   # (Leo, with his bags)
 cp BagKickOff.json BagKickOffAtlas.png BagRaceCar.json BagRaceCarAtlas.png BagUnicorn.json BagUnicornAtlas.png BagDenimBow.json BagDenimBowAtlas.png BagGoldenTrail.json BagGoldenTrailAtlas.png ../../Assets/_Game/Art/Models/
@@ -65,8 +65,7 @@ cp PrimaryGirl.fbx rigged/PrimaryGirl.json rigged/PrimaryGirlAtlas.png ../../Ass
 cp Girl.fbx rigged/Girl.json rigged/GirlAtlas.png ../../Assets/_Game/Art/Models/   # (Hana, with her bags)
 cp BackpackBoy.fbx rigged/BackpackBoy.json rigged/BackpackBoyAtlas.png ../../Assets/_Game/Art/Models/   # (Max, with his bags)
 cp Primary*.fbx Primary*.json Primary*Atlas.png ../../Assets/_Game/Art/Models/
-blenv/bin/python portrait_teen.py -- $PWD/Boy.blend $PWD/PlayerBoy.png --yaw 28     # the menus' player cards
-blenv/bin/python portrait_teen.py -- $PWD/Girl.blend $PWD/PlayerGirl.png --yaw -28  # (they face each other)
+blenv/bin/python portrait_teen.py -- $PWD/rigged/Girl.blend $PWD/PlayerGirl.png --yaw -28  # the menus' player cards
 blenv/bin/python portrait_teen.py -- $PWD/BackpackBoy.blend $PWD/PlayerBackpackBoy.png --yaw 28
 cp PlayerBoy.png PlayerGirl.png PlayerBackpackBoy.png ../../Assets/_Game/Resources/UI/
 blenv/bin/python portrait_teen.py -- $PWD/PrimaryBoy.blend $PWD/PlayerPrimaryBoy.png --yaw 28 --span-heads 2.3     # the primary kids' cards

@@ -72,7 +72,7 @@ namespace DribbleToSchool.Core
             set { SetBool("settings.colorblindAim", value); }
         }
 
-        /// <summary>Who walks to school: the id of one of the <see cref="PlayerRoster"/>'s kids ("boy", "girl", "primaryBoy"...).</summary>
+        /// <summary>Who walks to school: the id of one of the <see cref="PlayerRoster"/>'s kids ("girl", "backpackBoy", "primaryBoy"...).</summary>
         public static string Character
         {
             get { return PlayerRoster.Normalize(PlayerPrefs.GetString("settings.character", PlayerRoster.DefaultId)); }

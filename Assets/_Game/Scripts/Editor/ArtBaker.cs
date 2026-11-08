@@ -61,8 +61,6 @@ namespace DribbleToSchool.EditorTools
             public Material ball;
             /// <summary>The Blender-made cars (tools/blender/car.py), by type name: the character shader with each car's atlas.</summary>
             public readonly Dictionary<string, Material> cars = new Dictionary<string, Material>();
-            /// <summary>The boy's own bicycle (tools/blender/meshy_boy.py): the character shader with its atlas, as the cars; null without it.</summary>
-            public Material bicycle;
             /// <summary>The Blender asset kits (tools/blender/kit_*.py), by kit name: the street's toon shader with each kit's atlas.</summary>
             public readonly Dictionary<string, Material> kits = new Dictionary<string, Material>();
 
@@ -249,15 +247,6 @@ namespace DribbleToSchool.EditorTools
                 carMat.SetFloat("_ComicWorld", 1f);   // the comic filter draws a car like the street (creases, bands)
                 EditorUtility.SetDirty(carMat);
                 set.cars[type] = carMat;
-            }
-            var bikeAtlas = AssetDatabase.LoadAssetAtPath<Texture2D>(LevelBuildKit.ModelsDir + "/BicycleAtlas.png");
-            if (bikeAtlas != null)
-            {
-                set.bicycle = LoadOrCreateMaterial("Bicycle", toonCharacter);
-                set.bicycle.mainTexture = bikeAtlas;
-                set.bicycle.SetFloat("_OutlineWidth", 0.0018f);
-                set.bicycle.SetFloat("_ComicWorld", 1f);
-                EditorUtility.SetDirty(set.bicycle);
             }
             set.ball = LoadOrCreateMaterial("Ball", toonCharacter);
             set.ball.SetFloat("_OutlineWidth", 0.0018f);

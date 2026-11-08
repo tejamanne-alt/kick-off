@@ -11,12 +11,12 @@ namespace DribbleToSchool.Core
 
     /// <summary>
     /// One playable kid. The files are all named from <see cref="model"/> (tools/blender): the
-    /// model, its colours and atlas in Art/Models (Boy.fbx, Boy.json, BoyAtlas.png) and the
-    /// portrait the picker shows in Resources/UI (PlayerBoy.png).
+    /// model, its colours and atlas in Art/Models (Girl.fbx, Girl.json, GirlAtlas.png) and the
+    /// portrait the picker shows in Resources/UI (PlayerGirl.png).
     /// </summary>
     public sealed class PlayerInfo
     {
-        /// <summary>What GameSettings.Character stores. The first two are the original boy and girl: saved choices stay valid.</summary>
+        /// <summary>What GameSettings.Character stores: never renamed, so saved choices stay valid ("girl" is still Hana).</summary>
         public readonly string id;
         /// <summary>The model's name: Art/Models/&lt;model&gt;.fbx, &lt;model&gt;.json, &lt;model&gt;Atlas.png and Resources/UI/Player&lt;model&gt;.png.</summary>
         public readonly string model;
@@ -56,13 +56,15 @@ namespace DribbleToSchool.Core
     /// </summary>
     public static class PlayerRoster
     {
-        /// <summary>Who plays until another is picked.</summary>
-        public const string DefaultId = "boy";
+        /// <summary>
+        /// Who plays until another is picked: Hana. (Ren, "boy", was removed: a save that chose him plays her, through
+        /// <see cref="Normalize"/>.)
+        /// </summary>
+        public const string DefaultId = "girl";
 
         public static readonly PlayerInfo[] All =
         {
-            // The high-school teens, Ren and Hana (tools/blender, see its README): about 1.77 m and 1.65 m.
-            new PlayerInfo("boy", "Boy", "player.boy", SchoolLevel.High, 1.5f, 1.77f),
+            // The high-school teens, Hana and Max (tools/blender, see its README): about 1.65 m and 1.75 m.
             // Hana (girl) is made from a supplied rigged model by tools/blender/meshy_rigged.py --profile varsity: 1.65 m, her Head bone at
             // 0.877 of it. She has no bag of her own: she wears the Locker Room's (wearsBags).
             new PlayerInfo("girl", "Girl", "player.girl", SchoolLevel.High, 1.446f, 1.65f, true),

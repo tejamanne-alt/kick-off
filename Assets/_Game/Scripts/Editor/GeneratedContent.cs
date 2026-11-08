@@ -22,7 +22,7 @@ namespace DribbleToSchool.EditorTools
     public static class GeneratedContent
     {
         /// <summary>Bump when layouts or the scene rig change so scenes regenerate.</summary>
-        public const int Version = 100;   // 100: the Golden Trail Backpack (BagGoldenTrail fitted to the six kids who wear bags)
+        public const int Version = 101;   // 101: Ren removed (Hana is the default player); his satchel and bicycle with him
 
         const string ScenesDir = LevelBuildKit.Root + "/Scenes";
         const string LevelsDir = LevelBuildKit.Root + "/Levels";
