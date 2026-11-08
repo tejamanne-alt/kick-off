@@ -24,11 +24,15 @@ namespace DribbleToSchool.UI
             var card = UIKit.Modal(canvas, "AddOns", new Vector2(1340f, 960f), out root);
             UIKit.Header(card.transform, Loc.T("addons.title"), 640f);
 
-            var body = UIKit.Rect(card.transform, "Body");
-            body.anchorMin = Vector2.zero;
-            body.anchorMax = Vector2.one;
-            body.offsetMin = new Vector2(50f, 160f);
-            body.offsetMax = new Vector2(-50f, -76f);
+            // The add-ons and filters in a scroll area: today they fill it exactly, so it stays still; the lists are made to
+            // grow (an add-on or a filter still to come), and then the rest scrolls into view instead of running off the card.
+            ScrollRect scroll;
+            var body = UIKit.ScrollArea(card.transform, "Body", true, out scroll);
+            var area = (RectTransform)scroll.transform;
+            area.anchorMin = Vector2.zero;
+            area.anchorMax = Vector2.one;
+            area.offsetMin = new Vector2(50f, 160f);
+            area.offsetMax = new Vector2(-50f, -76f);
 
             // Add-ons: two cards a row.
             float y = 0f;
@@ -69,6 +73,14 @@ namespace DribbleToSchool.UI
                     Open(canvas, onClose);
                 });
             }
+
+            y += ((AddOns.Filters.Length + 1) / 2) * (CardHeight + Gap);
+            body.sizeDelta = new Vector2(0f, y);
+            // Scrolls only when there is more than fits (the area is the card's height less the header and the bottom row),
+            // and stops at the ends rather than springing past them.
+            float viewHeight = Mathf.Min(960f, UIKit.ReferenceResolution.y - 80f) - 160f - 76f;
+            scroll.vertical = y > viewHeight + 1f;
+            scroll.movementType = ScrollRect.MovementType.Clamped;
 
             // Along the bottom: when a choice applies, and Done.
             var note = UIKit.Label(card.transform, "Note", Loc.T("addons.note"), 28, UITheme.InkSoft, TextAnchor.MiddleLeft);

@@ -49,15 +49,15 @@ namespace DribbleToSchool.UI
                 UIKit.PopIn(holder.gameObject, 0.2f + i * 0.12f).fromScale = 0.3f;
 
                 var burst = UIKit.Icon(face.transform, "Glow", ProceduralSprites.SoftDisc, new Color(1f, 0.85f, 0.35f, 0.6f), 230f);
-                UIKit.Place(burst.rectTransform, new Vector2(0.5f, 1f), new Vector2(0f, -100f), new Vector2(230f, 230f));
+                UIKit.Place(burst.rectTransform, new Vector2(0.5f, 1f), new Vector2(0f, -100f), new Vector2(230f, 230f), new Vector2(0.5f, 0.5f));
                 burst.gameObject.AddComponent<UIPulse>().amount = 0.08f;
                 var icon = UIKit.Icon(face.transform, "Icon", CosmeticArt.Icon(item), Color.white, 140f);
-                UIKit.Place(icon.rectTransform, new Vector2(0.5f, 1f), new Vector2(0f, -100f), new Vector2(140f, 140f));
+                UIKit.Place(icon.rectTransform, new Vector2(0.5f, 1f), new Vector2(0f, -100f), new Vector2(140f, 140f), new Vector2(0.5f, 0.5f));   // (centred 100 down)
                 var name = UIKit.Label(face.transform, "Name", item.displayName, 32, UITheme.Ink, TextAnchor.MiddleCenter, true);
-                UIKit.Place(name.rectTransform, new Vector2(0.5f, 0f), new Vector2(0f, 92f), new Vector2(cardW - 24f, 44f));
+                UIKit.Place(name.rectTransform, new Vector2(0.5f, 0f), new Vector2(0f, 96f), new Vector2(cardW - 24f, 44f), new Vector2(0.5f, 0.5f));
                 UIKit.Fit(name, 22);
                 var why = UIKit.Label(face.transform, "Why", Reason(item), 24, UITheme.InkSoft, TextAnchor.MiddleCenter, true);
-                UIKit.Place(why.rectTransform, new Vector2(0.5f, 0f), new Vector2(0f, 44f), new Vector2(cardW - 24f, 56f));
+                UIKit.Place(why.rectTransform, new Vector2(0.5f, 0f), new Vector2(0f, 42f), new Vector2(cardW - 24f, 52f), new Vector2(0.5f, 0.5f));
                 UIKit.Fit(why, 16);
             }
 

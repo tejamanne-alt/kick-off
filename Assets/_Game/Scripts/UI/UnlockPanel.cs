@@ -17,7 +17,7 @@ namespace DribbleToSchool.UI
             var body = UIKit.Label(card.transform, "Body", Loc.T("unlock.body"), 38, UITheme.Ink);
             UIKit.Place(body.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0f, 60f), new Vector2(950f, 380f));
             var status = UIKit.Label(card.transform, "Status", "", 32, UITheme.Red, TextAnchor.MiddleCenter, true);
-            UIKit.Place(status.rectTransform, new Vector2(0.5f, 0f), new Vector2(0f, 250f), new Vector2(950f, 50f));
+            UIKit.Place(status.rectTransform, new Vector2(0.5f, 0f), new Vector2(0f, 282f), new Vector2(950f, 46f), new Vector2(0.5f, 0f));   // (above Buy, 150 to 270)
 
             var buy = UIKit.Button(card.transform, "Buy", Loc.F("unlock.buy", StoreService.FullGamePrice), UITheme.Accent, () =>
             {

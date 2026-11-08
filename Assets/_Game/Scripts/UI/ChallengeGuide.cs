@@ -88,7 +88,7 @@ namespace DribbleToSchool.UI
             var sub = UIKit.Label(t, "HowTo", Loc.T("challenge.howTo").ToUpperInvariant(), 28, UITheme.Accent, TextAnchor.MiddleCenter, true);
             UIKit.Place(sub.rectTransform, new Vector2(0.5f, 1f), new Vector2(0f, -86f), new Vector2(1100f, 40f));
             var goal = UIKit.Label(t, "Goal", Loc.T("challenge." + levelId + ".goal", objective != null ? objective.instructions : ""), 34, UITheme.Ink, TextAnchor.UpperCenter, true);
-            UIKit.Place(goal.rectTransform, new Vector2(0.5f, 1f), new Vector2(0f, -160f), new Vector2(1120f, 100f));
+            UIKit.Place(goal.rectTransform, new Vector2(0.5f, 1f), new Vector2(0f, -150f), new Vector2(1120f, 96f));
             goal.resizeTextForBestFit = true;
             goal.resizeTextMinSize = 24;
             goal.resizeTextMaxSize = 34;
@@ -98,7 +98,7 @@ namespace DribbleToSchool.UI
             if (objective != null)
             {
                 var starsRow = UIKit.Rect(t, "Stars");
-                UIKit.Place(starsRow, new Vector2(0.5f, 1f), new Vector2(0f, -250f), new Vector2(1120f, 60f));
+                UIKit.Place(starsRow, new Vector2(0.5f, 1f), new Vector2(0f, -254f), new Vector2(1120f, 60f));
                 for (int i = 0; i < 3 && i < objective.starThresholds.Length; i++)
                 {
                     var cell = UIKit.Rect(starsRow, "Star" + (i + 1));
@@ -116,7 +116,7 @@ namespace DribbleToSchool.UI
                 string clock = objective.timeLimit > 0f ? Loc.F("challenge.timeLimit", Mathf.RoundToInt(objective.timeLimit)) : Loc.T("challenge.noLimit");
                 if (slalom != null) clock += "  " + Loc.F("challenge.missed", Mathf.RoundToInt(slalom.missPenalty));
                 var time = UIKit.Label(t, "Clock", clock, 27, UITheme.InkSoft, TextAnchor.MiddleCenter);
-                UIKit.Place(time.rectTransform, new Vector2(0.5f, 1f), new Vector2(0f, -305f), new Vector2(1120f, 40f));
+                UIKit.Place(time.rectTransform, new Vector2(0.5f, 1f), new Vector2(0f, -318f), new Vector2(1120f, 40f));
                 UIKit.Fit(time, 20);
             }
 
@@ -124,8 +124,8 @@ namespace DribbleToSchool.UI
             var list = UIKit.Rect(t, "Tips");
             list.anchorMin = Vector2.zero;
             list.anchorMax = Vector2.one;
-            list.offsetMin = new Vector2(60f, 170f);
-            list.offsetMax = new Vector2(-60f, -362f);
+            list.offsetMin = new Vector2(60f, 156f);                // (above GO, whose top is at 144)
+            list.offsetMax = new Vector2(-60f, -370f);              // (below the clock line)
             float y = 0f;
             foreach (var tip in TipsFor(KindOf(objective)))
             {
@@ -154,7 +154,7 @@ namespace DribbleToSchool.UI
                 if (onClose != null) onClose();
             };
             var go = UIKit.Button(t, "Go", Loc.T("tour.go"), UITheme.Green, () => close(), 44);
-            UIKit.Place((RectTransform)go.transform, new Vector2(0.5f, 0f), new Vector2(0f, 90f), new Vector2(420f, 108f));
+            UIKit.Place((RectTransform)go.transform, new Vector2(0.5f, 0f), new Vector2(0f, 36f), new Vector2(420f, 108f), new Vector2(0.5f, 0f));
             return root;
         }
     }

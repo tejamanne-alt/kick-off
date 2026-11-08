@@ -17,8 +17,20 @@ namespace DribbleToSchool.UI
         /// <summary>The game's name. A brand: never translated.</summary>
         public const string GameName = "Kick Off 2";
 
-        /// <summary>The logo's size at scale 1, about its centre (badge, lettering, ball and ribbon).</summary>
+        /// <summary>The studio, as players see it ("A game by Astradite"). A brand: never translated.</summary>
+        public const string Studio = "Astradite";
+
+        /// <summary>The company that publishes the game: the copyright holder, the seller in the stores, the privacy policy's "we".</summary>
+        public const string Company = "Astradite Private Limited";
+
+        /// <summary>The copyright line ("© 2026 Astradite Private Limited"): the year of first publication.</summary>
+        public const string Copyright = "\u00A9 2026 " + Company;
+
+        /// <summary>The logo drawn in code: its size at scale 1, about its centre (badge, lettering, ball and ribbon).</summary>
         public static readonly Vector2 Size = new Vector2(680f, 560f);
+
+        /// <summary>The picture of the lettering's width at scale 1, and the room under it for the ribbon (gap and ribbon).</summary>
+        const float PictureWidth = 740f, RibbonBlock = 22f + 58f;
 
         /// <summary>
         /// Builds the logo centred on its returned root (sized <see cref="Size"/> times
@@ -28,23 +40,29 @@ namespace DribbleToSchool.UI
         public static RectTransform Build(Transform parent, float scale = 1f, bool tagline = true, bool animate = true)
         {
             var root = UIKit.Rect(parent, "KickOffLogo");
+            var picture = Resources.Load<Sprite>(PicturePath);
+            if (picture != null)
+            {
+                // The lettering as on the icon and the banner, with the ribbon under it; the logo's box is exactly that, so
+                // whatever is laid out round it (the title screen's buttons, the credits' text) sits where it looks.
+                float height = PictureWidth * picture.rect.height / picture.rect.width;
+                var box = new Vector2(PictureWidth, height + (tagline ? RibbonBlock : 0f));
+                root.sizeDelta = box * scale;
+                var content = UIKit.Rect(root, "Art");
+                UIKit.Place(content, new Vector2(0.5f, 0.5f), Vector2.zero, box, new Vector2(0.5f, 0.5f));
+                content.localScale = Vector3.one * scale;
+                var lettering = UIKit.Icon(content, "Lettering", picture, Color.white, PictureWidth);
+                lettering.preserveAspect = true;
+                UIKit.Place(lettering.rectTransform, new Vector2(0.5f, 1f), Vector2.zero, new Vector2(PictureWidth, height), new Vector2(0.5f, 1f));
+                if (animate) lettering.gameObject.AddComponent<UIPulse>().amount = 0.012f;
+                if (tagline) Tagline(content, -box.y * 0.5f + 29f);
+                return root;
+            }
+
             root.sizeDelta = Size * scale;
             var art = UIKit.Rect(root, "Art");
             UIKit.Place(art, new Vector2(0.5f, 0.5f), new Vector2(0f, 8f), Size, new Vector2(0.5f, 0.5f));
             art.localScale = Vector3.one * scale;
-
-            var picture = Resources.Load<Sprite>(PicturePath);
-            if (picture != null)
-            {
-                // The lettering as on the icon and the banner, a little wider than the old badge, above the ribbon.
-                float width = 740f, height = width * picture.rect.height / picture.rect.width;
-                var lettering = UIKit.Icon(art, "Lettering", picture, Color.white, width);
-                lettering.preserveAspect = true;
-                UIKit.Place(lettering.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0f, tagline ? 40f : 0f), new Vector2(width, height));
-                if (animate) lettering.gameObject.AddComponent<UIPulse>().amount = 0.012f;
-                if (tagline) Tagline(art, -height * 0.5f + 40f - 52f);
-                return root;
-            }
 
             // Drawn in code (without the picture): the badge and its shadow.
             var badgeShadow = UIKit.Icon(art, "BadgeShadow", ProceduralSprites.Circle, UITheme.Shadow, 530f);

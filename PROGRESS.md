@@ -744,6 +744,23 @@ The user found the first Coast models plain next to their reference shots (weath
 
 - The "Kick OFF 2" logo on the title screen, the launch splash and the credits was drawn in code (Lilita One lettering on a turf badge). It is now the lettering of the app icon and the store banner, cut out of the banner artwork (`marketing/source/banner_artwork.png`) by `tools/logo_from_banner.py` (new: everything the logo's navy outline closes in, plus the swoosh's yellow tail; the one connected piece kept) into `Resources/UI/KickOffLogo.png` (814 x 304, transparent). `UI/KickOffLogo` shows it at the same size and place, breathing gently, over the tagline ribbon (none in the credits); it falls back to the drawn logo if the picture is missing. Not run in Unity.
 
+## Spacing and overlaps in the menus
+
+- `UIKit.Place` pins a rect by its anchor unless given a pivot, so a button anchored to a card's bottom edge at y 90 spans 90 up to 196, not 37 to 143. Credits put the version line at 180 to 220 and Done at 90 to 196: the version hid behind Done. And the new logo picture still took the old round badge's 680 x 560 box, leaving a wide gap under it.
+- Fixed: `UI/KickOffLogo`'s box is now exactly the lettering and the ribbon (title screen, splash, credits sit where they look). Credits are laid out top down by explicit edges: the logo under the header, the text, the version, Done. Looked for the same trap across the menus: the level results (the coins and sticker line overlapped the buttons' tops; moved up), the challenge guide (the goal, stars and time rows overlapped by 5 to 10 px; respaced), the unlock panel (the status line was under Buy; moved above it), the sticker reward cards (the picture sat low, over the name; centred as meant), the pause menu (eight buttons in a development build ran off the card; closer together). The rest (the HUD's aim bar, the pause stacks, the player picker, the school reward cards) were checked and are fine. Not run in Unity (`review/logo/credits_mock.png` is the credits laid out from the new numbers).
+
+## Astradite in the app and the stores
+
+- The credits now say "A game by Astradite" under the logo (`credits.by`, en and es) and end with "© 2026 Astradite Private Limited" under the version (`KickOffLogo.Studio`, `Company`, `Copyright`); laid out like the rest of the credits, top down by explicit edges.
+- The legal entity, Astradite Private Limited, is named where it counts: the App Store copyright, the privacy policy (`docs/PRIVACY_POLICY.md`, `site/privacy.html`) and the website's footers. `docs/RELEASE.md` says to open both developer accounts as organisations in the company's name (the stores then show it as the seller; Play's 12-tester closed test is waived; both want a D-U-N-S number). Unity's company name stays "Astradite": on desktop it is part of the save folder.
+
+## Long content on small screens
+
+- The canvas is matched on height (1920x1080 reference), so every phone gets the same 1080 units of height; a small phone loses only its safe area, and labels shrink by best fit. Scrolling is only needed where a list can grow.
+- **Add-Ons** (`UI/AddOnsPanel.cs`): the list is a clamped vertical scroll area that only scrolls when its content is taller than the card (710 of 724 units today, so it stays still; new add-ons or filters will scroll).
+- **Level results** (`UI/GameHud.cs`): the most lines plus the note (1041 units) could pass the 1000-unit card, so the line spacing squeezes down to 80% when it has to (`resultsSqueeze`) instead of scrolling a results card.
+- Unchanged, because they already scroll (Album, Shop) or hold a fixed amount that fits (Settings, the kid picker, the challenge guide's three tips, the Holiday Run's three missions).
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.
