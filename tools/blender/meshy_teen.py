@@ -668,7 +668,7 @@ def nose(o, rig):
 # ------------------------------------------------------------------------------------------------ paint
 def bone_weights(o):
     W, names = weights(o)
-    return lambda *ns: sum(W[:, names.index(n)] for n in ns if n in names)
+    return lambda *ns: sum((W[:, names.index(n)] for n in ns if n in names), np.zeros(len(W)))   # (zeros: no such bone)
 
 
 def biggest_piece(o, mask):

@@ -121,6 +121,10 @@ CLEAR = 0.012            # how far the straps stand off the kid's clothes (Blend
 BAG_GAP = 0.008          # between the back and the bag's back panel
 WIDTH = 0.92             # the bag's body this much of the kid's back's width
 HEIGHT = 1.0             # the bag's body this much of the way from the Bag marker down to the hip joints
+BACK_SPAN = 1.24         # the back's width over the span between the shoulder joints
+STRAP_W = 0.7            # the straps narrowed to this much of their width where they leave the bag (a padded strap
+                         # sized for the bag is wide on a child)
+SIDE = 0.74              # where the lower straps go round the torso's side: this much of a shoulder joint's reach out
 
 
 def fit(kid_blend, bag_blend, out):
@@ -139,9 +143,10 @@ def fit(kid_blend, bag_blend, out):
     arms = sum(W[:, names.index(n)] for n in names if 'Arm' in n or 'Hand' in n)
     head = sum(W[:, names.index(n)] for n in ('Head', 'Neck') if n in names)
     torso = (arms < 0.3) & (head < 0.3)
-    # the back's width at the marker, the arms left out
-    sl = torso & (np.abs(K[:, 2] - mark[2]) < 0.02)
-    back_w = np.ptp(K[sl, 0])
+    # the back's width and the torso's sides from the shoulder joints (the skin weights can't say where a loose shirt
+    # stops being the arm's): the back is BACK_SPAN times the span between them, a side SIDE of a joint's reach out
+    span = abs(B['UpperArm.L'].head_local.x - B['UpperArm.R'].head_local.x)
+    back_w = BACK_SPAN * span
     s_w = WIDTH * back_w / bag['width']
     s_h = HEIGHT * (mark[2] - hips[2])
     s = min(s_w, s_h)
@@ -152,7 +157,7 @@ def fit(kid_blend, bag_blend, out):
     zr = (K[:, 2] < mark[2] + 0.02) & (K[:, 2] > mark[2] - s) & (np.abs(K[:, 0] - mark[0]) < 0.5 * bag['width'] * s) & torso
     yback = K[zr, 1].max() + BAG_GAP
     bag.data.transform(Matrix.Translation((mark[0], yback, mark[2]))); bag.data.update()
-    log('fit: back %.3f wide, scale %.3f (width %.3f, height %.3f), panel at y %.3f' % (back_w, s, s_w, s_h, yback))
+    log('fit: shoulder joints %.3f apart, back %.3f wide, scale %.3f (width %.3f, height %.3f), panel at y %.3f' % (span, back_w, s, s_w, s_h, yback))
 
     # The straps: the "D" made as deep as the kid's chest (front to back at each height, where the strap is), their
     # top run raised over the shoulder, their lower front run drawn out to the side (under the arm), then anything
@@ -160,6 +165,13 @@ def fit(kid_blend, bag_blend, out):
     V = verts_np(bag); E = edges_np(bag)
     d = yback - V[:, 1]                                          # depth in front of the back panel
     dmax = d[strap].max()
+    # narrower straps: each about its own middle line, fading in over the first third of the "D" from the bag
+    for sgn in (-1, 1):
+        m = strap & (np.sign(V[:, 0] - mark[0]) == sgn)
+        xc = np.median(V[m, 0])
+        k = 1 - (1 - STRAP_W) * np.clip(d[m] / dmax * 3, 0, 1)
+        V[m, 0] = xc + (V[m, 0] - xc) * k
+    bag.data.vertices.foreach_set('co', V.ravel()); bag.data.update()
     ztop = mark[2]
     chest_front = {}
     for side in (-1, 1):
@@ -168,7 +180,7 @@ def fit(kid_blend, bag_blend, out):
         m = torso & (np.abs(K[:, 0] - xc) < 0.03) & (K[:, 2] < ztop + 0.05) & (K[:, 2] > ztop - 0.75 * s)
         front = K[m, 1].min()
         shoulder = K[torso & (np.abs(K[:, 0] - xc) < 0.03) & (K[:, 1] > front) & (K[:, 1] < yback)][:, 2].max()
-        edge = np.percentile(np.abs(K[torso & (np.abs(K[:, 2] - (ztop - 0.45 * s)) < 0.03), 0] - mark[0]), 97)
+        edge = SIDE * span / 2
         chest_front[side] = (xc, front, shoulder, edge)
         log('fit: %s strap at x %.3f: the chest\'s front at y %.3f, the shoulder\'s top at z %.3f, the side at |x| %.3f' % (
             'left' if side > 0 else 'right', xc, front, shoulder, edge))
