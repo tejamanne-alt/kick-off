@@ -22,7 +22,7 @@ namespace DribbleToSchool.EditorTools
     public static class GeneratedContent
     {
         /// <summary>Bump when layouts or the scene rig change so scenes regenerate.</summary>
-        public const int Version = 97;   // 97: the Race Car Backpack sized by its back panel (a third bigger)
+        public const int Version = 98;   // 98: Hana from her rigged model (varsity jacket), wearing the Locker Room's bags
 
         const string ScenesDir = LevelBuildKit.Root + "/Scenes";
         const string LevelsDir = LevelBuildKit.Root + "/Levels";

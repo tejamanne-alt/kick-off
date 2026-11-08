@@ -22,6 +22,7 @@ blenv/bin/python meshy_rigged.py -- /abs/awesome_little_explorer_running.fbx $PW
 blenv/bin/python meshy_rigged.py -- /abs/little_explorer_running.fbx $PWD/rigged --profile plaid   # Kai, likewise
 blenv/bin/python meshy_rigged.py -- /abs/rainbow_playtime_girl_running.fbx $PWD/rigged --profile rainbow   # Zoe, likewise
 blenv/bin/python meshy_rigged.py -- /abs/little_kickoff_champion_running.fbx $PWD/rigged --profile explorer   # Mia, likewise
+blenv/bin/python meshy_rigged.py -- /abs/varsity_glow_running.fbx $PWD/rigged --profile varsity   # Hana, likewise
 blenv/bin/python meshy_bag.py -- fit $PWD/rigged/PrimaryBoy.blend $PWD/BagKickOff.blend $PWD   # ...the bag fitted to Kai
 blenv/bin/python meshy_bag.py -- prep /abs/purple_kick_off_backpack.fbx $PWD --id KickOff   # the Locker Room's bag
 blenv/bin/python meshy_bag.py -- fit $PWD/rigged/PrimaryBoy2.blend $PWD/BagKickOff.blend $PWD   # ...fitted to Leo
@@ -59,6 +60,7 @@ cp PrimaryGirl.fbx PrimaryGirl.json PrimaryGirlAtlas.png ../../Assets/_Game/Art/
 cp PrimaryBoy.fbx rigged/PrimaryBoy.json rigged/PrimaryBoyAtlas.png ../../Assets/_Game/Art/Models/   # (Kai, with his bags)
 cp PrimaryGirl2.fbx rigged/PrimaryGirl2.json rigged/PrimaryGirl2Atlas.png ../../Assets/_Game/Art/Models/   # (Zoe, with her bags)
 cp PrimaryGirl.fbx rigged/PrimaryGirl.json rigged/PrimaryGirlAtlas.png ../../Assets/_Game/Art/Models/   # (Mia, with her bags)
+cp Girl.fbx rigged/Girl.json rigged/GirlAtlas.png ../../Assets/_Game/Art/Models/   # (Hana, with her bags)
 cp Primary*.fbx Primary*.json Primary*Atlas.png ../../Assets/_Game/Art/Models/
 blenv/bin/python portrait_teen.py -- $PWD/Boy.blend $PWD/PlayerBoy.png --yaw 28     # the menus' player cards
 blenv/bin/python portrait_teen.py -- $PWD/Girl.blend $PWD/PlayerGirl.png --yaw -28  # (they face each other)
@@ -304,7 +306,10 @@ changed nothing visible).
 
 ### The primary-school kids and the bags (`meshy_rigged.py`, `meshy_bag.py`)
 
-Mia's came the same way (`--profile explorer`); her hair is dense in the model (over half its triangles), which is
+Hana, the high-school girl, came the same way (`--profile varsity`: parts by colour, 1 the varsity jacket's maroon
+body, 2 the charcoal cargo jeans, 3 her long dark-brown hair; its skeleton's four extra bones are the hair's, with the
+Head). Her hair hangs down her back, so `fit` rests the bag on it: the back it measures leaves out only the arms. She
+has no tie, so the outfits' third colour does nothing on her. Mia's came the same way (`--profile explorer`); her hair is dense in the model (over half its triangles), which is
 right: it is all above the neck. Zoe's came the same way too (`--profile rainbow`: meshy_teen's rules for her, its search for a backpack by shape
 left out, as she has none). Kai's second supplied model came the same way and goes through the same steps (`--profile plaid`, meshy_teen's colour
 rules for him); its skeleton has two extra bones on the shins (the jeans' cuffs), which go with their parent's game bone,

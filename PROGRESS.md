@@ -712,6 +712,11 @@ The user found the first Coast models plain next to their reference shots (weath
 
 - It looked small on the kids: it was sized by its widest point, and its wheels and side mirrors stand out a quarter beyond its body. `meshy_bag.py prep --size-by panel` sizes it by its back panel's width instead (0.895 against 1.186 at its widest), so on the kids it is now about the Kick Off backpack's size (`review/race_car_bag/bigger.jpg`). Refitted to all four primary kids; the other bags are unchanged. Not run in Unity.
 
+## Hana from her rigged model, wearing the Locker Room's bags (generated content v98)
+
+- **Hana**, the high-school girl, is rebuilt from the clean, bagless rigged model the user supplied (`meshy_rigged.py --profile varsity`), checked against the reference drawings: long wavy dark-brown hair, freckles and hoop earrings, a maroon varsity jacket with an "H", cream sleeves and striped cuffs over a cream hoodie, charcoal cargo jeans, cream platform sneakers. 100k triangles; every action clean (`review/hana_bags/hana_all_actions.jpg`); neck height 1.446 (was 1.43); a new card. She replaces the earlier scripted Hana (white blouse, navy skirt, tie, yellow backpack).
+- She wears the Locker Room's bags; all four are fitted to her, resting on her long hair (`meshy_bag.py fit` now measures the back with only the arms left out; the other kids' fits are unchanged) (`review/hana_bags/bags.jpg`). Not run in Unity.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.
