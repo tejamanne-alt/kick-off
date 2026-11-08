@@ -732,9 +732,9 @@ The user found the first Coast models plain next to their reference shots (weath
 - **Hana is now the default player.** Saved choices keep working: a save that picked Ren now plays Hana (`PlayerRoster.Normalize`), and his bag choice is ignored. Six kids remain (Hana and Max; Kai, Mia, Leo and Zoe), and all of them wear the Locker Room's bags.
 - Tests: `PlayerRosterTests` (two teens, Hana the default, "boy" falls back to her), `BagsTests` (every kid wears bags). Not run in Unity.
 
-## A new app icon: kicking a ball on the way to school
+## The game's logo as the app icon
 
-- The icon showed Ren (now removed). It is now the walk to school, the memory of kicking a ball (or stones, bottles) along the way: Max with his Kick Off backpack kicks a football up the footpath, the school ahead with the sun rising behind its clock tower, a picket fence and pebbles, a golden kick trail with a comic burst at his toe, sparkles and the logo's "2". Rendered from the game's own models (`tools/blender/app_icon_scene.py`, new) and laid out by `app_icon_compose.py`. Written to `marketing/appstore/icon_1024.png`, `marketing/googleplay/icon_512.png`, `Assets/_Game/Art/Icon/AppIcon.png` and the Android adaptive layers; checked at 300 down to 40 px in iOS's and Android's masks (`review/app_icon/sizes.png`). The build applies it (`BuildScripts.ApplyIcon`).
+- The app icon is now the logo artwork the user supplied (`marketing/source/icon_artwork.png`, 1254 px): a boy with a backpack kicking a ball along the footpath on the way to school, past stones, a bottle and a can, the school ahead, under the "Kick OFF 2" logo. `tools/app_icon_from_image.py` (new) trims its 3-4 px black border and writes the App Store icon (`marketing/appstore/icon_1024.png`), the Google Play icon (`marketing/googleplay/icon_512.png`), the in-game icon every build applies (`Assets/_Game/Art/Icon/AppIcon.png`, `BuildScripts.ApplyIcon`) and Android's adaptive layers (the whole picture inside the launcher's safe area). Checked in iOS's and Android's masks from 300 to 40 px (`review/app_icon/sizes.png`): the logo and the kick read down to 80 px. Earlier icon renders (`tools/blender/app_icon*.py`) are kept but not used.
 
 ## After Phase 8 (next steps)
 

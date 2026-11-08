@@ -501,6 +501,11 @@ the base paint (sRGB, as in the FBX) and the wheel radius for `WheelSpin`.
 
 ## App icon
 
+The icon now in use is the game's logo artwork, supplied as a picture (`marketing/source/icon_artwork.png`) and made
+into every size by `tools/app_icon_from_image.py` (`python3 tools/app_icon_from_image.py marketing/source/icon_artwork.png
+--inset 0.006 --preview <dir>`: the inset trims its thin black border). The rendered icons below are not used; they are
+kept to make one from the game's own models.
+
 The store icon is the walk to school, the memory every kid has of kicking a ball (or a stone, a bottle) along the way:
 Max, his Kick Off backpack on, kicks a football up the footpath with the school ahead of him, a picket fence and a few
 pebbles along the way, the sun rising behind the clock tower, a golden kick trail from his toe to the ball with a comic

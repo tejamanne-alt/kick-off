@@ -1,5 +1,5 @@
 # Makes every app icon the stores and the game need from one supplied square picture (the game's logo artwork):
-#   python3 tools/app_icon_from_image.py /abs/logo.png [--inset 0.035] [--preview /abs/dir]
+#   python3 tools/app_icon_from_image.py marketing/source/icon_artwork.png [--inset 0.006] [--preview /abs/dir]
 #     marketing/appstore/icon_1024.png               App Store icon: 1024 x 1024, opaque, square corners (iOS rounds them)
 #     marketing/googleplay/icon_512.png              Google Play listing icon: 512 x 512, opaque (Play adds its own mask)
 #     Assets/_Game/Art/Icon/AppIcon.png              the game's icon for every platform (BuildScripts.ApplyIcon), 1024
