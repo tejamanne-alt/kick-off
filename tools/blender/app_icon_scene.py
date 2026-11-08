@@ -3,7 +3,7 @@
 # way, in the game's toon look (ToonCharacter's two flat cel bands, cool shade, a warm rim, a dark ink outline). The sky
 # is left transparent: app_icon_compose.py paints the morning sky, the sun and the speed lines behind and over it.
 #   blenv/bin/python app_icon_scene.py -- /abs/rigged/BackpackBoy.blend /abs/icon_layers
-#     -> icon_layers/scene.png (2048 x 2048, the sky transparent), ball_front.png (the ball alone), scene.json (where the ball, his foot and
+#     -> icon_layers/scene.png (2048 x 2048, the sky transparent), hero.png (Max and the ball alone), ball_front.png (the ball alone), scene.json (where the ball, his foot and
 #        the horizon land in the picture, as fractions, for the composer)
 import bpy, bmesh, math, sys, os, json
 from mathutils import Vector
@@ -14,7 +14,7 @@ args = sys.argv[sys.argv.index('--') + 1:]
 KID_BLEND, OUT = args[0], args[1]
 os.makedirs(OUT, exist_ok=True)
 MODELS = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'Assets', '_Game', 'Art', 'Models')
-SIZE = 2048
+SIZE = 4096                     # rendered at twice the composer's size, so its downscale is crisp
 
 SUN = (1.0, 0.97, 0.92)
 SHADE = tuple(0.25 * a + 0.75 * b for a, b in zip((0.68, 0.7, 0.88), (0.52, 0.56, 0.66)))
@@ -96,7 +96,7 @@ S.render.engine = 'BLENDER_EEVEE'
 S.view_settings.view_transform = 'Standard'
 S.render.film_transparent = True
 try:
-    S.eevee.taa_render_samples = 32
+    S.eevee.taa_render_samples = 64
 except Exception:
     pass
 S.world = bpy.data.worlds.new('w')
@@ -188,14 +188,45 @@ for b, a in POSE.items():
     if b in rig.pose.bones:
         rig.pose.bones[b].rotation_euler = tuple(math.radians(v) for v in a)
 bpy.context.view_layer.update()
+def clean(img, obj):
+    """Max's scan texture made icon-crisp. Meshy cuts it into hundreds of small islands with dark gutters between them; at
+    icon size the texture filter samples the gutters and draws a pale or dark line along every seam. So the islands'
+    edge colours are grown out into the gutters (padding, as a game bakes it), then a light edge-keeping median, inside
+    the padded islands, takes out the scan's fine scratches. The alpha (a bag's cloth mask) is kept as it is."""
+    from PIL import Image, ImageDraw, ImageFilter
+    import numpy as np
+    w, h = img.size
+    px = np.empty(w * h * 4, np.float32); img.pixels.foreach_get(px); px = px.reshape(h, w, 4)
+    me = obj.data
+    uv = np.empty(len(me.loops) * 2, np.float32); me.uv_layers[0].data.foreach_get('uv', uv); uv = uv.reshape(-1, 2)
+    mask = Image.new('L', (w, h), 0); d = ImageDraw.Draw(mask)
+    for poly in me.polygons:
+        pts = [(uv[li][0] * w, (1 - uv[li][1]) * h) for li in poly.loop_indices]
+        d.polygon(pts, fill=255)
+    used = np.asarray(mask)[::-1] > 0                            # (Blender's rows are bottom up)
+    rgb = px[:, :, :3].copy()
+    filled = used.copy()
+    for _ in range(24):                                          # grow every island's colour out into the gutters
+        acc = np.zeros_like(rgb); cnt = np.zeros(used.shape, np.float32)
+        for dy, dx in ((0, 1), (0, -1), (1, 0), (-1, 0)):
+            f = np.roll(filled, (dy, dx), (0, 1)); acc += np.roll(rgb, (dy, dx), (0, 1)) * f[..., None]; cnt += f
+        grow = ~filled & (cnt > 0)
+        rgb[grow] = acc[grow] / cnt[grow][:, None]; filled |= grow
+    im = Image.fromarray((np.clip(rgb, 0, 1) * 255).astype(np.uint8)).filter(ImageFilter.MedianFilter(3))
+    px[:, :, :3] = np.asarray(im, np.float32) / 255
+    img.pixels.foreach_set(px.ravel()); img.update()
+    print('cleaned', img.name, '%.0f%% of the texture in islands' % (100 * used.mean()))
+
+
 for o in (kid, bag):
     m = o.data.materials[0]
     mix = next(n for n in m.node_tree.nodes if n.type == 'MIX')
     for n in m.node_tree.nodes:
         if n.type == 'TEX_IMAGE':
             n.image.alpha_mode = 'CHANNEL_PACKED'
+            clean(n.image, o)
     toon(m, mix.outputs['Result'], rim=0.22)
-    ink(o, 0.006 / H)
+    ink(o, 0.0085 / H)                                           # a firm line (thicker catches every crease of the scan)
 
 # ------------------------------------------------------------------------------------------------ the ball
 import app_icon as ai                                            # (its football: a truncated icosahedron, toon shaded)
@@ -204,7 +235,7 @@ ball = ai.football(0.11)
 toe = rig.matrix_world @ rig.pose.bones['Foot.R'].tail
 ball.location = toe + Vector((0.02, -0.4, 0.82))                # off his toe, rising up the street toward us
 ball.rotation_euler = (math.radians(24), math.radians(-18), math.radians(22))
-ink(ball, 0.006)
+ink(ball, 0.010)
 
 # ------------------------------------------------------------------------------------------------ camera
 cam = bpy.data.objects.new('cam', bpy.data.cameras.new('cam')); S.collection.objects.link(cam); S.camera = cam
@@ -215,10 +246,15 @@ cam.rotation_euler = (target - cam.location).to_track_quat('-Z', 'Y').to_euler()
 bpy.context.view_layer.update()
 S.render.filepath = os.path.join(OUT, 'scene.png')
 bpy.ops.render.render(write_still=True)
-# The ball alone, for the composer to lay over its kick trail.
+# Max and the ball alone (the composer quietens the street round them and rims them), then the ball alone (it goes over
+# its kick trail).
 for o in S.objects:
-    if o.type == 'MESH' and o is not ball:
+    if o.type == 'MESH' and o not in (ball, kid, bag):
         o.hide_render = True
+S.render.filepath = os.path.join(OUT, 'hero.png')
+bpy.ops.render.render(write_still=True)
+for o in (kid, bag):
+    o.hide_render = True
 S.render.filepath = os.path.join(OUT, 'ball_front.png')
 bpy.ops.render.render(write_still=True)
 

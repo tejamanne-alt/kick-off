@@ -163,7 +163,9 @@ def vignette(size, img, strength=0.16):
 
 def save_rgb(img, path, px):
     os.makedirs(os.path.dirname(path), exist_ok=True)
-    img.convert('RGB').resize((px, px), Image.LANCZOS).save(path, optimize=True)
+    out = img.convert('RGB').resize((px, px), Image.LANCZOS)
+    out = out.filter(ImageFilter.UnsharpMask(radius=1.2, percent=70, threshold=2))   # crisp after the downscale
+    out.save(path, optimize=True)
     print('wrote', path, px)
 
 
@@ -173,9 +175,19 @@ scene = json.load(open(os.path.join(layers, 'scene.json')))
 
 
 def street(size):
-    """The morning sky (the sun rising behind the school's clock tower) with the scene over it."""
+    """The morning sky (the sun rising behind the school's clock tower) with the street over it, quietened (a pale
+    morning haze, a little less contrast) so Max and the ball stand out, and Max over that with a soft white rim."""
     img = sky(size, (size * 0.52, size * 0.24))
-    img.alpha_composite(Image.open(os.path.join(layers, 'scene.png')).convert('RGBA').resize((size, size), Image.LANCZOS))
+    scene_img = Image.open(os.path.join(layers, 'scene.png')).convert('RGBA').resize((size, size), Image.LANCZOS)
+    hero = Image.open(os.path.join(layers, 'hero.png')).convert('RGBA').resize((size, size), Image.LANCZOS)
+    a = np.asarray(scene_img, np.float32)
+    haze = np.array((214, 230, 246), np.float32)
+    lum = a[..., :3].mean(-1, keepdims=True)
+    rgb = a[..., :3] * 0.85 + lum * 0.15                      # a little less saturated
+    rgb = rgb * 0.88 + haze * 0.12                             # and hazed toward the morning sky
+    a[..., :3] = rgb
+    img.alpha_composite(Image.fromarray(np.clip(a, 0, 255).astype(np.uint8), 'RGBA'))
+    img.alpha_composite(halo(hero, size * 0.006, alpha=230))
     return img
 
 
@@ -246,7 +258,7 @@ print('wrote', p)
 
 if preview:
     os.makedirs(preview, exist_ok=True)
-    icon = full.convert('RGB').resize((1024, 1024), Image.LANCZOS)
+    icon = full.convert('RGB').resize((1024, 1024), Image.LANCZOS).filter(ImageFilter.UnsharpMask(radius=1.2, percent=70, threshold=2))
     icon.save(os.path.join(preview, 'icon_1024.png'))
 
     def squircle(px, radius=0.2237):
