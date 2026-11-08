@@ -6,11 +6,11 @@ using UnityEngine.UI;
 namespace DribbleToSchool.UI
 {
     /// <summary>
-    /// The game's logo, built from code: "KICK OFF" in chunky Lilita One leaning forward, white
-    /// shading to pale sky with a navy extrusion and a thick ink outline (UILogoText), and a
-    /// sunny "2" after it (read "to": kick off to school, not a sequel), on a badge of mown turf
-    /// with the centre circle chalked on it (where a match kicks off), a football flying in on
-    /// chalk speed lines, and the tagline on a slanted navy ribbon.
+    /// The game's logo: the "Kick OFF 2" lettering of the app icon and the store banner (white "Kick", red "OFF", a golden
+    /// "2", a navy outline and a yellow swoosh), cut out of the banner artwork into Resources/UI/KickOffLogo.png by
+    /// tools/logo_from_banner.py, over the tagline on a slanted navy ribbon. If that picture is missing, the logo drawn in
+    /// code instead: "KICK OFF" in chunky Lilita One leaning forward (UILogoText) and a sunny "2" on a badge of mown turf
+    /// with the centre circle chalked on it, a football flying in on chalk speed lines.
     /// </summary>
     public static class KickOffLogo
     {
@@ -22,7 +22,8 @@ namespace DribbleToSchool.UI
 
         /// <summary>
         /// Builds the logo centred on its returned root (sized <see cref="Size"/> times
-        /// <paramref name="scale"/>; place it like any rect). The ball spins when <paramref name="animate"/>.
+        /// <paramref name="scale"/>; place it like any rect). With <paramref name="animate"/> the lettering breathes gently
+        /// (or, drawn in code, the ball spins).
         /// </summary>
         public static RectTransform Build(Transform parent, float scale = 1f, bool tagline = true, bool animate = true)
         {
@@ -32,7 +33,20 @@ namespace DribbleToSchool.UI
             UIKit.Place(art, new Vector2(0.5f, 0.5f), new Vector2(0f, 8f), Size, new Vector2(0.5f, 0.5f));
             art.localScale = Vector3.one * scale;
 
-            // The badge and its shadow.
+            var picture = Resources.Load<Sprite>(PicturePath);
+            if (picture != null)
+            {
+                // The lettering as on the icon and the banner, a little wider than the old badge, above the ribbon.
+                float width = 740f, height = width * picture.rect.height / picture.rect.width;
+                var lettering = UIKit.Icon(art, "Lettering", picture, Color.white, width);
+                lettering.preserveAspect = true;
+                UIKit.Place(lettering.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0f, tagline ? 40f : 0f), new Vector2(width, height));
+                if (animate) lettering.gameObject.AddComponent<UIPulse>().amount = 0.012f;
+                if (tagline) Tagline(art, -height * 0.5f + 40f - 52f);
+                return root;
+            }
+
+            // Drawn in code (without the picture): the badge and its shadow.
             var badgeShadow = UIKit.Icon(art, "BadgeShadow", ProceduralSprites.Circle, UITheme.Shadow, 530f);
             UIKit.Place(badgeShadow.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(6f, -10f), new Vector2(530f, 530f));
             var badge = UIKit.Icon(art, "Badge", ProceduralSprites.PitchBadge, Color.white, 530f);
@@ -62,27 +76,33 @@ namespace DribbleToSchool.UI
             ball.rectTransform.localRotation = Quaternion.Euler(0f, 0f, -20f);
             if (animate) ball.gameObject.AddComponent<UISpin>();
 
-            if (tagline)
-            {
-                var ribbon = UIKit.Rect(art, "Tagline");
-                UIKit.Place(ribbon, new Vector2(0.5f, 0.5f), new Vector2(0f, -225f), new Vector2(600f, 58f));
-                var stripe = UIKit.Panel(ribbon, "Stripe", UITheme.Accent, ProceduralSprites.RoundedEdgeSmall);
-                UIKit.Stretch(stripe.rectTransform);
-                stripe.rectTransform.offsetMin += new Vector2(10f, -8f);
-                stripe.rectTransform.offsetMax += new Vector2(10f, -8f);
-                stripe.gameObject.AddComponent<UISkew>().skew = 0.3f;
-                stripe.raycastTarget = false;
-                var band = UIKit.Panel(ribbon, "Band", UITheme.Navy, ProceduralSprites.RoundedEdgeSmall);
-                UIKit.Stretch(band.rectTransform);
-                band.gameObject.AddComponent<UISkew>().skew = 0.3f;
-                band.raycastTarget = false;
-                var text = UIKit.Label(band.transform, "Text", Loc.T("menu.tagline").ToUpperInvariant(), 30, Color.white, TextAnchor.MiddleCenter, true);
-                UIKit.Stretch(text.rectTransform);
-                text.rectTransform.offsetMin = new Vector2(30f, 2f);
-                text.rectTransform.offsetMax = new Vector2(-30f, -2f);
-                UIKit.Fit(text, 20);
-            }
+            if (tagline) Tagline(art, -225f);
             return root;
+        }
+
+        /// <summary>The picture of the lettering (Resources/UI/KickOffLogo.png).</summary>
+        const string PicturePath = "UI/KickOffLogo";
+
+        /// <summary>The tagline on a slanted navy ribbon over an accent stripe, centred <paramref name="y"/> from the logo's middle.</summary>
+        static void Tagline(RectTransform art, float y)
+        {
+            var ribbon = UIKit.Rect(art, "Tagline");
+            UIKit.Place(ribbon, new Vector2(0.5f, 0.5f), new Vector2(0f, y), new Vector2(600f, 58f));
+            var stripe = UIKit.Panel(ribbon, "Stripe", UITheme.Accent, ProceduralSprites.RoundedEdgeSmall);
+            UIKit.Stretch(stripe.rectTransform);
+            stripe.rectTransform.offsetMin += new Vector2(10f, -8f);
+            stripe.rectTransform.offsetMax += new Vector2(10f, -8f);
+            stripe.gameObject.AddComponent<UISkew>().skew = 0.3f;
+            stripe.raycastTarget = false;
+            var band = UIKit.Panel(ribbon, "Band", UITheme.Navy, ProceduralSprites.RoundedEdgeSmall);
+            UIKit.Stretch(band.rectTransform);
+            band.gameObject.AddComponent<UISkew>().skew = 0.3f;
+            band.raycastTarget = false;
+            var text = UIKit.Label(band.transform, "Text", Loc.T("menu.tagline").ToUpperInvariant(), 30, Color.white, TextAnchor.MiddleCenter, true);
+            UIKit.Stretch(text.rectTransform);
+            text.rectTransform.offsetMin = new Vector2(30f, 2f);
+            text.rectTransform.offsetMax = new Vector2(-30f, -2f);
+            UIKit.Fit(text, 20);
         }
 
         /// <summary>The "2"'s face, top: a warm sunshine yellow.</summary>
