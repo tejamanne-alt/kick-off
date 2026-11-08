@@ -736,6 +736,10 @@ The user found the first Coast models plain next to their reference shots (weath
 
 - The app icon is now the logo artwork the user supplied (`marketing/source/icon_artwork.png`, 1254 px): a boy with a backpack kicking a ball along the footpath on the way to school, past stones, a bottle and a can, the school ahead, under the "Kick OFF 2" logo. `tools/app_icon_from_image.py` (new) trims its 3-4 px black border and writes the App Store icon (`marketing/appstore/icon_1024.png`), the Google Play icon (`marketing/googleplay/icon_512.png`), the in-game icon every build applies (`Assets/_Game/Art/Icon/AppIcon.png`, `BuildScripts.ApplyIcon`) and Android's adaptive layers (the whole picture inside the launcher's safe area). Checked in iOS's and Android's masks from 300 to 40 px (`review/app_icon/sizes.png`): the logo and the kick read down to 80 px. Earlier icon renders (`tools/blender/app_icon*.py`) are kept but not used.
 
+## The banner as Google Play's feature graphic
+
+- Google Play's feature graphic (`marketing/googleplay/feature_graphic_1024x500.png`, required to publish) showed Ren and the old Hana. It is now the banner artwork the user supplied (`marketing/source/banner_artwork.png`: the boy kicking the ball on the way to school and the "Kick OFF 2" logo). The art is 3 : 1 and Play's graphic about 2 : 1, so `tools/feature_graphic_from_image.py` (new) keeps all of it: a little of the empty tree is trimmed off the left, and the art lies over an out-of-focus enlargement of itself that fills the room above and below. The App Store has no banner, so nothing changes there.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.
