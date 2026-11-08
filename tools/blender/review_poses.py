@@ -56,7 +56,7 @@ def run_pose(phase):
     s = math.sin(phase)
     return P(legF=s * 42, legB=-s * 42, kneeF=-fold(phase), kneeB=-fold(phase + math.pi),
              armF=-s * 34 - 6, armB=s * 34 - 6, elbowF=70 + 25 * max(0, -s), elbowB=70 + 25 * max(0, s),
-             lean=7, headTilt=-4, bag=-10 - math.sin(phase * 2) * 6)
+             lean=7, headTilt=0.75 * 7 - 2 - 2.5 * math.cos(2 * (phase - 0.35)), bag=-10 - math.sin(phase * 2) * 6)   # (KidAnimator.RunHeadTilt)
 
 
 BALANCE = dict(legF=4, legB=-2, kneeF=-8, kneeB=-8, armF=22, elbowF=34, armB=-16, elbowB=28, headTilt=-13)

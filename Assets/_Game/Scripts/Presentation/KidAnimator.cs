@@ -97,6 +97,20 @@ namespace DribbleToSchool.Presentation
 
         void OnDoubleJumped() { doubleJumpTime = jumpTime = Time.time; }
 
+
+        /// <summary>
+        /// The head on the run (degrees, positive tips it back). A runner keeps the eyes level: the head turns back
+        /// against most of the body's forward lean (it's on the neck, which bends), with the chin a little down to look
+        /// ahead. With each foot strike (the legs passing, twice a stride) the head dips a touch under the landing and
+        /// comes back up through the flight, a beat after the body (the neck's give).
+        /// </summary>
+        public static float RunHeadTilt(float phase, float lean, float runK)
+        {
+            float steady = 0.75f * lean - 2f * runK;
+            float nod = -2.5f * Mathf.Cos(2f * (phase - 0.35f)) * runK;
+            return steady + nod;
+        }
+
         /// <summary>How far a running knee folds (degrees) at a given leg phase: most early in the swing.</summary>
         static float KneeFold(float legPhase)
         {
@@ -219,7 +233,7 @@ namespace DribbleToSchool.Presentation
                 p.elbowB = Mathf.Lerp(12f, 70f + 25f * Mathf.Max(0f, s), runK);
                 p.bob = Mathf.Abs(s) * 0.05f * runK - 0.02f * runK;
                 p.lean = 7f * runK;
-                p.headTilt = -4f * runK;
+                p.headTilt = RunHeadTilt(phase, p.lean, runK);
 
                 if (runK < 0.1f)
                 {
