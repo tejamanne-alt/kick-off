@@ -160,6 +160,9 @@ namespace DribbleToSchool.FrontEnd
             float side = facing >= 0f ? viewYaw + 90f : viewYaw - 90f;
             float toCamera = viewYaw + 180f;
             float dir = Mathf.LerpAngle(side, toCamera, turnToCamera / 90f);
+            // (showing the bag: three-quarters away from the camera instead)
+            var stage = MenuStage.Current;
+            if (stage != null && stage.ShowBack) dir = Mathf.LerpAngle(side, viewYaw, 0.62f);
             return dir - 90f;   // Unity yaw of a +x-facing model turned to face compass direction dir
         }
 

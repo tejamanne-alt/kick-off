@@ -64,6 +64,9 @@ namespace DribbleToSchool.Progression
         /// <summary>Older saves' California switch (before the add-ons): read once by AddOns.Selected.</summary>
         public bool californiaSkin;
 
+        /// <summary>The bag each kid wears (Cosmetics/Bags; a kid with no entry wears the default one). Older saves have none.</summary>
+        public List<BagChoice> bags = new List<BagChoice>();
+
         /// <summary>The saved result of a level, or null if it has never been finished.</summary>
         public LevelRecord Level(string levelId)
         {
@@ -104,6 +107,14 @@ namespace DribbleToSchool.Progression
         public bool onTime;
         /// <summary>The quickest whole trip from home to school that was timed, in seconds (0 = none yet).</summary>
         public float bestTripTime;
+    }
+
+    /// <summary>One kid's bag (Cosmetics/Bags): a bag's id, or "bag_none". JsonUtility-friendly.</summary>
+    [Serializable]
+    public class BagChoice
+    {
+        public string player;
+        public string bag;
     }
 
     /// <summary>The number of finished Holiday Run missions of one kind. Old saves simply have none.</summary>

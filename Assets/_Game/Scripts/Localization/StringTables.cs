@@ -62,7 +62,8 @@ namespace DribbleToSchool.Localization
                 { "district.railway", "Railway" }, { "district.site", "Building Site" }, { "district.school", "School" }, { "district.sea", "Sea" },
 
                 // Shop
-                { "shop.balls", "Balls" }, { "shop.flags", "Flags" }, { "shop.outfits", "Outfits" }, { "shop.trails", "Trails" },
+                { "shop.balls", "Balls" }, { "shop.flags", "Flags" }, { "shop.outfits", "Outfits" }, { "shop.trails", "Trails" }, { "shop.bags", "Bags" },
+                { "shop.ownBag", "Has their own bag" },
                 { "shop.equip", "Equip" }, { "shop.equipped", "Equipped" }, { "shop.owned", "Owned" },
                 { "shop.buy", "Buy" }, { "shop.needCoins", "Need more coins" },
                 { "rarity.Common", "Common" }, { "rarity.Rare", "Rare" }, { "rarity.Epic", "Epic" },
@@ -156,6 +157,7 @@ namespace DribbleToSchool.Localization
                 { "settings.controls", "Controls" },
                 { "settings.language", "Language" },
                 { "settings.player", "Player" },
+                { "settings.bagColour", "Bag colour" },
                 { "player.title", "Choose your player" }, { "player.change", "Change player" },
                 { "player.high", "High school" }, { "player.primary", "Primary school" },
                 { "player.boy", "Ren" }, { "player.girl", "Hana" }, { "player.backpackBoy", "Max" },
@@ -457,7 +459,8 @@ namespace DribbleToSchool.Localization
                 { "district.neighbourhood", "Barrio" }, { "district.market", "Mercado" }, { "district.beach", "Playa" }, { "district.park", "Parque" },
                 { "district.railway", "Vía del tren" }, { "district.site", "Las obras" }, { "district.school", "Colegio" }, { "district.sea", "Mar" },
 
-                { "shop.balls", "Balones" }, { "shop.flags", "Banderas" }, { "shop.outfits", "Ropa" }, { "shop.trails", "Estelas" },
+                { "shop.balls", "Balones" }, { "shop.flags", "Banderas" }, { "shop.outfits", "Ropa" }, { "shop.trails", "Estelas" }, { "shop.bags", "Mochilas" },
+                { "shop.ownBag", "Ya tiene su mochila" },
                 { "shop.equip", "Equipar" }, { "shop.equipped", "Equipado" }, { "shop.owned", "Tuyo" },
                 { "shop.buy", "Comprar" }, { "shop.needCoins", "Faltan monedas" },
                 { "rarity.Common", "Común" }, { "rarity.Rare", "Raro" }, { "rarity.Epic", "Épico" },
@@ -548,6 +551,7 @@ namespace DribbleToSchool.Localization
                 { "settings.controls", "Controles" },
                 { "settings.language", "Idioma" },
                 { "settings.player", "Personaje" },
+                { "settings.bagColour", "Color de mochila" },
                 { "player.title", "Elige personaje" }, { "player.change", "Cambiar personaje" },
                 { "player.high", "Instituto" }, { "player.primary", "Primaria" },
                 { "player.boy", "Ren" }, { "player.girl", "Hana" }, { "player.backpackBoy", "Max" },

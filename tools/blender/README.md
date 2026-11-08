@@ -18,8 +18,11 @@ blenv/bin/python meshy_boy.py -- /abs/boy_with_bicycle.fbx $PWD   # the playable
     # (Boy.fbx/.blend/.json, BoyAtlas.png, and his bicycle: Bicycle.fbx, BicycleAtlas.png; see "The boy" below)
 blenv/bin/python meshy_teen.py -- /abs/backpack_boy.fbx $PWD --profile backpack_boy   # Max, from a supplied A-posed model
     # (BackpackBoy.fbx/.blend/.json, BackpackBoyAtlas.png, BackpackBoy_joints.png; see "The backpack boy" below)
-blenv/bin/python meshy_teen.py -- /abs/first_day.fbx $PWD --profile first_day   # Leo, from a supplied barefoot kid
-    # (PrimaryBoy2.fbx/.blend/.json, PrimaryBoy2Atlas.png; see "Leo" below; primary.py --boy2 would overwrite it)
+blenv/bin/python meshy_rigged.py -- /abs/awesome_little_explorer_running.fbx $PWD/rigged   # Leo, from his rigged model
+blenv/bin/python meshy_bag.py -- prep /abs/purple_kick_off_backpack.fbx $PWD --id KickOff   # the Locker Room's bag
+blenv/bin/python meshy_bag.py -- fit $PWD/rigged/PrimaryBoy2.blend $PWD/BagKickOff.blend $PWD   # ...fitted to Leo
+blenv/bin/python meshy_bag.py -- icon $PWD/BagKickOff.blend $PWD/bag_kickoff.png   # its Locker Room picture
+    # (PrimaryBoy2.fbx/.blend/.json, PrimaryBoy2Atlas.png; see "Leo and the bags" below; primary.py --boy2 would overwrite it)
 blenv/bin/python meshy_teen.py -- /abs/little_star_in_plaid.fbx $PWD --profile plaid   # Kai, from a supplied model
     # (PrimaryBoy.fbx/.blend/.json, PrimaryBoyAtlas.png; primary.py --boy would overwrite it)
 blenv/bin/python meshy_teen.py -- /abs/little_explorer.fbx $PWD --profile explorer   # Mia, from a supplied model
@@ -40,7 +43,8 @@ blenv/bin/python review_poses.py -- $PWD/Boy.blend $PWD/boy_poses.png --jobs 3 -
     # the pose audit (see below): the teen in every pose the game uses, from the game's camera yaws
 cp Boy.fbx Boy.json BoyAtlas.png Bicycle.fbx BicycleAtlas.png Girl.fbx Girl.json GirlAtlas.png ../../Assets/_Game/Art/Models/
 cp BackpackBoy.fbx BackpackBoy.json BackpackBoyAtlas.png ../../Assets/_Game/Art/Models/
-cp PrimaryBoy2.fbx PrimaryBoy2.json PrimaryBoy2Atlas.png ../../Assets/_Game/Art/Models/   # (Leo, from meshy_teen.py)
+cp PrimaryBoy2.fbx rigged/PrimaryBoy2.json rigged/PrimaryBoy2Atlas.png ../../Assets/_Game/Art/Models/   # (Leo, with his bags)
+cp BagKickOff.json BagKickOffAtlas.png ../../Assets/_Game/Art/Models/ && cp bag_kickoff.png ../../Assets/_Game/Resources/UI/
 cp PrimaryGirl2.fbx PrimaryGirl2.json PrimaryGirl2Atlas.png ../../Assets/_Game/Art/Models/   # (Zoe, from meshy_teen.py)
 cp PrimaryGirl.fbx PrimaryGirl.json PrimaryGirlAtlas.png ../../Assets/_Game/Art/Models/   # (Mia, from meshy_teen.py)
 cp PrimaryBoy.fbx PrimaryBoy.json PrimaryBoyAtlas.png ../../Assets/_Game/Art/Models/   # (Kai, from meshy_teen.py)
@@ -51,7 +55,7 @@ blenv/bin/python portrait_teen.py -- $PWD/BackpackBoy.blend $PWD/PlayerBackpackB
 cp PlayerBoy.png PlayerGirl.png PlayerBackpackBoy.png ../../Assets/_Game/Resources/UI/
 blenv/bin/python portrait_teen.py -- $PWD/PrimaryBoy.blend $PWD/PlayerPrimaryBoy.png --yaw 28 --span-heads 2.3     # the primary kids' cards
 blenv/bin/python portrait_teen.py -- $PWD/PrimaryGirl.blend $PWD/PlayerPrimaryGirl.png --yaw -28 --span-heads 2.3  # (boys turn right,
-blenv/bin/python portrait_teen.py -- $PWD/PrimaryBoy2.blend $PWD/PlayerPrimaryBoy2.png --yaw 28 --span-heads 2.3   #  girls left)
+blenv/bin/python portrait_teen.py -- $PWD/rigged/PrimaryBoy2.blend $PWD/PlayerPrimaryBoy2.png --yaw 28 --span-heads 2.3   #  girls left)
 blenv/bin/python portrait_teen.py -- $PWD/PrimaryGirl2.blend $PWD/PlayerPrimaryGirl2.png --yaw -28 --span-heads 2.3
 cp PlayerPrimary*.png ../../Assets/_Game/Resources/UI/
 blenv/bin/python sticker_art.py -- <kits dir> <cars dir> <teens dir> $PWD/stickers_raw   # the album's 23 sticker subjects
@@ -287,6 +291,33 @@ tone up close on the cards: that is lighting Meshy baked into small texture isla
 face's shape, clearing the import's sharp edges and sparing the face in the decimation were all tried on Mia and
 changed nothing visible).
 
+### Leo and the bags (`meshy_rigged.py`, `meshy_bag.py`)
+
+Leo's second supplied model came rigged: Meshy's own Mixamo-style skeleton (66 `mixamorig:` bones, fingers included)
+and skin weights, in an A-pose, with no bag, exported with a running animation. `meshy_rigged.py` keeps all of that
+instead of guessing from the mesh as `meshy_teen.py` must: the animation is dropped for the rest pose, the mesh is
+decimated to 100k triangles (its weights carried along), scaled like the others, and the game's joints are the
+skeleton's own (the spine's three bones become Hips, Spine and Chest; the collar bones go into the Chest, the fingers
+into the Hand, the toes into the Foot), each vertex keeping its four strongest bones. The arms then hang relaxed and the
+legs come in under the hips (`meshy_teen.repose`), the Nose marker goes on the face and the Bag marker on the middle of
+his upper back, where the bags hang. Parts: 1 the sweatshirt's white (its navy panel and print stay), 2 the khaki
+joggers, 3 the hair. Every pose is clean, the arms-up ones included (the scans with arms fused to the body could not be).
+
+The bags are optional, chosen per kid in the Locker Room (`Cosmetics/Bags`). `meshy_bag.py prep` turns a supplied
+backpack (one textured mesh, its padded straps hanging in a "D" as if worn) into `Bag<Id>.blend`: 30k triangles, the
+straps toward the wearer (-y), the back panel's top middle at the origin, the body one unit tall; and `Bag<Id>Atlas.png`
+(1024), the texture with the cloth marked in its alpha (0: the purple cloth; 1: the zips, the logo, the mascot, the black
+mesh pockets), which the game's character shader recolours to the Settings colour, keeping the cloth's light and shade
+(`_MaskTint`, against `_MaskBase`: the cloth's colour in `Bag<Id>.json`). `fit` hangs it on a kid: sized to 92 % of the
+back's width (or the marker-to-hips height), its panel just behind the back, then the straps' "D" made as deep as the
+chest, its top run lifted over the shoulder, its lower front run drawn out toward the side (under the arm), anything
+left under the clothes pushed out 1.2 cm and smoothed; the body is skinned to the Bag bone (the game swings it at 0.3 of
+a sewn-on bag's swing: `CharacterRig.bagSwing`), the straps to the Chest, blending where they meet the bag. The kid is
+exported again with the bag as a second mesh, `Bag_<Id>`, which `LevelBuildKit` gives the bag's material and
+`Presentation/BagWear` shows when that kid wears it. A new bag: `prep` it, `fit` it to each kid who wears bags (re-export
+them), `icon` it into `Resources/UI/bag_<id>.png`, and add a row to `CosmeticsTable` (id `bag_<id>`). `review_poses.py`
+renders the bags with the kid (`--tint r,g,b,lum` previews a Settings colour).
+
 ### Pose audit
 
 `review_poses.py` renders a built teen (`Boy.blend` / `Girl.blend`) in every pose the game uses
@@ -335,7 +366,7 @@ a game mode can make them vanish by collapsing their vertices.
 | (scripted boy 1) | | fair skin, round dark eyes, short black hair with a broad fringe and a small tuft; a polo with a flat collar, navy shorts, long white crew socks, white sneakers | white / navy / yellow neckerchief / blue / black |
 | `PrimaryGirl` | girl 1 (Mia) | now made from a supplied model by `meshy_teen.py` (see "Mia" above): shoulder-length black hair with a headband, a white T-shirt, red shorts, white socks, pink sneakers, a beige backpack with a bow. The scripted girl 1 below is what `primary.py --girl` still builds | white T-shirt / red / none / beige / black |
 | (scripted girl 1) | | fair skin with freckles, big warm-brown eyes, a centre-parted fringe and two bunches at the sides with red ties; a blouse with a round navy collar, a navy pleated skirt, white knee socks, brown school shoes | white / navy / red bow / red / dark brown |
-| `PrimaryBoy2` | boy 2 (Leo) | now made from a supplied model by `meshy_teen.py` (see "Leo" above): short black hair, brown skin; a white sweatshirt with purple raglan sleeves and a "0" on the front, khaki cargo joggers with a red drawstring, white sneakers with purple trim. The scripted boy 2 below (tanned, chestnut spikes, round glasses; a polo and grey shorts) is what `primary.py --boy2` still builds | white sweatshirt / khaki / none / purple / black |
+| `PrimaryBoy2` | boy 2 (Leo) | now made from a supplied rigged model by `meshy_rigged.py` (see "Leo and the bags" above): short curly black hair; a white long-sleeved "AWESOME 01" sweatshirt with a navy chest panel, khaki cargo joggers, white-and-navy sneakers; no bag of his own (he wears the Locker Room's). The scripted boy 2 below (tanned, chestnut spikes, round glasses; a polo and grey shorts) is what `primary.py --boy2` still builds | white sweatshirt / khaki / none / the Locker Room's / black |
 | `PrimaryGirl2` | girl 2 (Zoe) | now made from a supplied model by `meshy_teen.py` (see "Zoe" above): black hair in a long braid, a pink rainbow-unicorn jacket over a white T-shirt, terracotta trousers, black shoes, a backpack in the jacket's print. The scripted girl 2 below is what `primary.py --girl2` still builds | unicorn jacket / terracotta / none / the jacket's print / black |
 | (scripted girl 2) | | medium-brown skin with a beauty mark, hazel eyes, a black bob with a straight fringe and a yellow hairband; a blouse with a round white collar under a grey pinafore (bib and straps), white socks, black school shoes | white / grey / yellow bow / purple / black |
 
@@ -348,7 +379,7 @@ prints the neck height that gives it:
 |---|---|---|---|
 | `PrimaryBoy` (Kai, `meshy_teen.py`) | 1.30 m | 1.092 | 30,249 |
 | `PrimaryGirl` (Mia, `meshy_teen.py`) | 1.27 m | 1.028 | 29,925 |
-| `PrimaryBoy2` (Leo, `meshy_teen.py`) | 1.32 m | 1.104 | 34,191 |
+| `PrimaryBoy2` (Leo, `meshy_rigged.py`) | 1.32 m | 1.114 | 99,999 (+ the Kick Off backpack, 30,000) |
 | `PrimaryGirl2` (Zoe, `meshy_teen.py --profile rainbow`) | 1.29 m | 1.064 | 29,898 |
 
 (The scripted models are 1.685, 1.646, 1.784 and 1.694 m tall as exported, their Head bones at 1.38, 1.345, 1.44 and 1.38 m; neck

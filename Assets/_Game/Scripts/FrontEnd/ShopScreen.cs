@@ -13,16 +13,18 @@ namespace DribbleToSchool.FrontEnd
     /// <summary>
     /// The Locker Room: on the left, the live teen in the street showcase wearing (or juggling)
     /// the selected item, a button to switch player, and a card with the item's name, rarity,
-    /// price and Buy / Equip; on the right, tabs for balls, flags, outfits and trails over a
+    /// price and Buy / Equip; on the right, tabs for balls, flags, outfits, trails and bags over a
     /// grid of items on a white panel. Sticker rewards can't be bought: until the stickers earn
     /// them they show a sticker and what's still needed ("Find 3 more stickers", "Complete the
-    /// Beach set"), and the button opens the sticker book.
+    /// Beach set"), and the button opens the sticker book. Bags are each kid's own choice (Cosmetics/Bags): the one
+    /// shown in the showcase wears what is equipped here, turned to show their back, and a kid modelled with a bag of
+    /// their own keeps it (the button says so). Their colour is chosen in Settings.
     /// </summary>
     public class ShopScreen : FrontEndScreen
     {
         static readonly CosmeticCategory[] Categories =
-            { CosmeticCategory.Ball, CosmeticCategory.Flag, CosmeticCategory.Outfit, CosmeticCategory.Trail };
-        static readonly string[] CategoryKeys = { "shop.balls", "shop.flags", "shop.outfits", "shop.trails" };
+            { CosmeticCategory.Ball, CosmeticCategory.Flag, CosmeticCategory.Outfit, CosmeticCategory.Trail, CosmeticCategory.Bag };
+        static readonly string[] CategoryKeys = { "shop.balls", "shop.flags", "shop.outfits", "shop.trails", "shop.bags" };
 
         /// <summary>Width of the left column (showcase and item card), canvas pixels.</summary>
         const float Column = 600f;
@@ -112,7 +114,8 @@ namespace DribbleToSchool.FrontEnd
             for (int i = 0; i < Categories.Length; i++)
             {
                 var cat = Categories[i];
-                var tab = UIKit.Button(tabRow, "Tab" + cat, Loc.T(CategoryKeys[i]), UITheme.Paper, () => SelectCategory(cat), 32, UITheme.Navy);
+                var tab = UIKit.Button(tabRow, "Tab" + cat, Loc.T(CategoryKeys[i]), UITheme.Paper, () => SelectCategory(cat), 30, UITheme.Navy);
+                UIKit.Fit(tab.GetComponentInChildren<Text>(), 20);
                 var rt = (RectTransform)tab.transform;
                 rt.anchorMin = new Vector2(i / (float)Categories.Length, 0f);
                 rt.anchorMax = new Vector2((i + 1) / (float)Categories.Length, 1f);
@@ -139,12 +142,24 @@ namespace DribbleToSchool.FrontEnd
 
         public override void OnShow()
         {
+            GameSettings.Changed += OnSettingsChanged;
             SelectCategory(category);
         }
 
         public override void OnHide()
         {
-            if (Controller.Stage != null) Controller.Stage.ResetLook();
+            GameSettings.Changed -= OnSettingsChanged;
+            if (Controller.Stage != null)
+            {
+                Controller.Stage.ShowBack = false;
+                Controller.Stage.ResetLook();
+            }
+        }
+
+        /// <summary>Another kid picked (the Player button): the bags are theirs, so the grid and card follow.</summary>
+        void OnSettingsChanged()
+        {
+            if (category == CosmeticCategory.Bag) SelectCategory(category);
         }
 
         public override void FrameStage(MenuStage stage)
@@ -170,7 +185,11 @@ namespace DribbleToSchool.FrontEnd
                 if (item.id == equippedId) selected = item;
             }
             if (selected == null && items.Count > 0) selected = items[0];
-            if (Controller.Stage != null) Controller.Stage.ResetLook();
+            if (Controller.Stage != null)
+            {
+                Controller.Stage.ResetLook();
+                Controller.Stage.ShowBack = cat == CosmeticCategory.Bag;
+            }
             RebuildGrid(items);
             RefreshPreview();
         }
@@ -297,7 +316,15 @@ namespace DribbleToSchool.FrontEnd
             if (locked) previewNeedsText.text = Needs(selected, true);
             actionButton.gameObject.SetActive(true);
 
-            if (locked)
+            if (selected.category == CosmeticCategory.Bag && !Bags.CanWear(GameSettings.Character))
+            {
+                // This kid was modelled with their own bag: theirs stays on.
+                actionLabel.text = Loc.T("shop.ownBag");
+                actionButton.interactable = false;
+                actionButton.targetGraphic.color = UITheme.Locked;
+                previewPrice.gameObject.SetActive(false);
+            }
+            else if (locked)
             {
                 // Earned, not bought: off to the sticker book (or the map, to walk to school).
                 actionLabel.text = Loc.T(selected.IsRouteReward ? "shop.toMap" : "shop.toAlbum");
@@ -349,6 +376,7 @@ namespace DribbleToSchool.FrontEnd
             var d = SaveSystem.Data;
             switch (item.category)
             {
+                case CosmeticCategory.Bag: Bags.Set(GameSettings.Character, item.id); break;
                 case CosmeticCategory.Ball: d.equippedBall = item.id; break;
                 case CosmeticCategory.Flag: d.equippedFlag = item.id; break;
                 case CosmeticCategory.Outfit: d.equippedOutfit = item.id; break;
@@ -364,6 +392,8 @@ namespace DribbleToSchool.FrontEnd
                 case CosmeticCategory.Ball: return d.equippedBall;
                 case CosmeticCategory.Flag: return d.equippedFlag;
                 case CosmeticCategory.Outfit: return d.equippedOutfit;
+                // (the kid on show's own bag; a kid with a bag of their own wears none of these)
+                case CosmeticCategory.Bag: return Bags.CanWear(GameSettings.Character) ? Bags.For(GameSettings.Character) : null;
                 default: return d.equippedTrail;
             }
         }

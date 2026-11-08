@@ -7,6 +7,9 @@
 // Alpha carries _ComicWorld for the comic halftone filter (Shaders/PostFX): 0 (people and the ball)
 // takes the whole filter except creases across it (its painted face and eyes stay clear) and slips
 // half as far; 1 (the cars, the bicycle) is drawn like the street, creases and all.
+// A texture whose alpha is below 1 marks a part that can be recoloured (a Locker Room bag's cloth: tools/blender/
+// meshy_bag.py): with _MaskTint's alpha up, those texels take _MaskTint's colour, as light or dark as they were
+// against _MaskBase (the part's own colour). Opaque textures (every other model) are drawn as they are.
 Shader "DribbleToSchool/ToonCharacter"
 {
     Properties
@@ -18,6 +21,8 @@ Shader "DribbleToSchool/ToonCharacter"
         _OutlineColor ("Outline colour", Color) = (0.08,0.07,0.1,1)
         _OutlineWidth ("Outline width (fraction of screen height)", Float) = 0.0022
         _ComicWorld ("Comic filter: drawn like the street (1) or kept as a figure (0)", Range(0,1)) = 0
+        _MaskTint ("Recolour of the texture's marked part (alpha 0: none)", Color) = (1,1,1,0)
+        _MaskBase ("The marked part's own colour", Color) = (0.5,0.5,0.5,1)
     }
     SubShader
     {
@@ -37,6 +42,20 @@ Shader "DribbleToSchool/ToonCharacter"
         fixed4 _OutlineColor;
         float _OutlineWidth;
         float _ComicWorld;
+        fixed4 _MaskTint;
+        fixed4 _MaskBase;
+
+        // The texture with its marked part (alpha below 1) recoloured to _MaskTint, keeping its light and shade.
+        fixed4 MaskedTexture(float2 uv)
+        {
+            fixed4 tex = tex2D(_MainTex, uv);
+            float m = (1.0 - tex.a) * _MaskTint.a;
+            const float3 lumW = float3(0.299, 0.587, 0.114);
+            float k = dot(tex.rgb, lumW) / max(dot(_MaskBase.rgb, lumW), 0.001);
+            tex.rgb = lerp(tex.rgb, saturate(_MaskTint.rgb * k), m);
+            tex.a = 1.0;
+            return tex;
+        }
         ENDCG
 
         // Ink outline: back faces pushed out in clip space, so the line stays the same
@@ -115,7 +134,7 @@ Shader "DribbleToSchool/ToonCharacter"
             fixed4 frag (v2f i) : SV_Target
             {
                 float3 n = normalize(i.normal);
-                fixed4 tex = tex2D(_MainTex, i.uv) * _Color * i.color;
+                fixed4 tex = MaskedTexture(i.uv) * _Color * i.color;
                 float3 l = DtsLightDir();
                 float d = dot(n, l);
                 // Two cel bands with a narrow soft edge (the anime look), the shade tinted by the

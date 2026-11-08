@@ -52,6 +52,11 @@ namespace DribbleToSchool.EditorTools
             public Material adult;
             /// <summary>The Blender-made playable kids (PlayerRoster), by model name: the character shader with each one's atlas.</summary>
             public readonly Dictionary<string, Material> players = new Dictionary<string, Material>();
+            /// <summary>
+            /// The Locker Room's bags (tools/blender/meshy_bag.py), by mesh name ("Bag_KickOff"): the character shader with each
+            /// bag's atlas, whose alpha marks the cloth the Settings colour recolours (_MaskBase: the cloth's own colour).
+            /// </summary>
+            public readonly Dictionary<string, Material> bags = new Dictionary<string, Material>();
             /// <summary>Like <see cref="character"/>, textured with the equipped ball skin at runtime.</summary>
             public Material ball;
             /// <summary>The Blender-made cars (tools/blender/car.py), by type name: the character shader with each car's atlas.</summary>
@@ -225,6 +230,17 @@ namespace DribbleToSchool.EditorTools
                 if (AssetDatabase.LoadAssetAtPath<GameObject>(LevelBuildKit.ModelsDir + "/" + player.model + ".fbx") == null) continue;
                 set.players[player.model] = CharacterMaterial(player.model, toonCharacter, player.model + "Atlas", true);
             }
+            foreach (var json in Directory.GetFiles(LevelBuildKit.ModelsDir, "Bag*.json"))
+            {
+                string bagName = Path.GetFileNameWithoutExtension(json);           // "BagKickOff"
+                if (AssetDatabase.LoadAssetAtPath<Texture2D>(LevelBuildKit.ModelsDir + "/" + bagName + "Atlas.png") == null) continue;
+                var bagMat = CharacterMaterial(bagName, toonCharacter, bagName + "Atlas", true);
+                var info = JsonUtility.FromJson<BagInfo>(File.ReadAllText(json));
+                if (info != null && info.cloth != null && info.cloth.Length >= 3)
+                    bagMat.SetColor("_MaskBase", new Color(info.cloth[0], info.cloth[1], info.cloth[2]));
+                EditorUtility.SetDirty(bagMat);
+                set.bags["Bag_" + bagName.Substring(3)] = bagMat;
+            }
             foreach (var type in LevelBuildKit.CarTypes)
             {
                 var carMat = LoadOrCreateMaterial("Car" + type, toonCharacter);
@@ -274,6 +290,10 @@ namespace DribbleToSchool.EditorTools
             m.SetOverrideTag("RenderType", on ? "TransparentCutout" : "");
             m.renderQueue = on ? (int)UnityEngine.Rendering.RenderQueue.AlphaTest : -1;
         }
+
+        /// <summary>A bag's Bag&lt;Id&gt;.json (tools/blender/meshy_bag.py): its cloth's colour, sRGB.</summary>
+        [System.Serializable]
+        class BagInfo { public string id; public float[] cloth; }
 
         static Material CharacterMaterial(string name, Shader shader, string atlas, bool player)
         {
