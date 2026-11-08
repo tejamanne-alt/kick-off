@@ -1,5 +1,5 @@
-# Makes Google Play's feature graphic (1024 x 500, the banner at the top of the store listing) from the game's wide banner
-# artwork, keeping all of it: the art is 3 : 1 and the graphic about 2 : 1, so rather than crop off the kid or the logo, a
+# Makes Google Play's feature graphic (1024 x 500, the banner at the top of the store listing) from the game's banner
+# artwork. Art already about 2 : 1 is scaled to fill and the sliver left over trimmed. Wider art is kept whole: the art is 3 : 1 and the graphic about 2 : 1, so rather than crop off the kid or the logo, a
 # little is trimmed from the sides and the art is laid over an out-of-focus enlargement of itself, which fills the room
 # above and below; the art fades into it over its top and bottom edges, so there is no seam.
 #   python3 tools/feature_graphic_from_image.py marketing/source/banner_artwork.png [--trim 0.08] [--preview /abs/out.png]
@@ -17,6 +17,18 @@ W, H = 1024, 500
 
 art = Image.open(src).convert('RGB')
 w, h = art.size
+if abs((w / h) / (W / H) - 1) < 0.08:
+    # Art already about 2 : 1 (as drawn for this slot): scaled to fill and the sliver left over trimmed off its middle.
+    k = max(W / w, H / h)
+    art = art.resize((round(w * k), round(h * k)), Image.LANCZOS)
+    x, y = (art.width - W) // 2, (art.height - H) // 2
+    out = art.crop((x, y, x + W, y + H)).filter(ImageFilter.UnsharpMask(radius=1.0, percent=40, threshold=2))
+    path = os.path.join(root, 'marketing/googleplay/feature_graphic_1024x500.png')
+    out.save(path, optimize=True)
+    print('wrote', os.path.relpath(path, root), out.size, '(scaled to fill, %d px trimmed off each side, %d off top and bottom)' % (x, y))
+    if preview:
+        out.save(preview)
+    sys.exit(0)
 cut = int(w * trim)
 art = art.crop((cut, 0, w - int(w * 0.005), h))            # (the tree at the left edge: nothing there to lose)
 w = art.width

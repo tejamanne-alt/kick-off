@@ -738,7 +738,7 @@ The user found the first Coast models plain next to their reference shots (weath
 
 ## The banner as Google Play's feature graphic
 
-- Google Play's feature graphic (`marketing/googleplay/feature_graphic_1024x500.png`, required to publish) showed Ren and the old Hana. It is now the banner artwork the user supplied (`marketing/source/banner_artwork.png`: the boy kicking the ball on the way to school and the "Kick OFF 2" logo). The art is 3 : 1 and Play's graphic about 2 : 1, so `tools/feature_graphic_from_image.py` (new) keeps all of it: a little of the empty tree is trimmed off the left, and the art lies over an out-of-focus enlargement of itself that fills the room above and below. The App Store has no banner, so nothing changes there.
+- Google Play's feature graphic (`marketing/googleplay/feature_graphic_1024x500.png`, required to publish) showed Ren and the old Hana. It is now the banner artwork the user supplied (`marketing/source/banner_artwork.png`, 1774 x 887: the boy kicking the ball along the footpath on the way to school, the school ahead, the "Kick OFF 2" logo). It is drawn 2 : 1, so `tools/feature_graphic_from_image.py` (new) scales it to 1024 x 512 and trims 6 px off the top and bottom. (Wider art would be kept whole over an out-of-focus enlargement of itself.) The App Store has no banner, so nothing changes there.
 
 ## After Phase 8 (next steps)
 
