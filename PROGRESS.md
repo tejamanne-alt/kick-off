@@ -726,6 +726,12 @@ The user found the first Coast models plain next to their reference shots (weath
 
 - A fifth Locker Room bag from the supplied model: a classic tan canvas backpack with silver zips and dark mesh side pockets (`Bag_GoldenTrail`, `bag_goldentrail`), free and owned from the start, fitted to all six kids who wear bags (Hana, Max, Kai, Mia, Leo, Zoe). Settings' colour recolours the canvas and keeps the zips and mesh (`review/golden_trail_bag/`). Not run in Unity.
 
+## Ren removed (generated content v101)
+
+- Ren, the high-school boy (`boy`, `Art/Models/Boy.fbx`), is gone from the game: out of `PlayerRoster`, the player picker, the string tables and the screenshot tour, with his card (`Resources/UI/PlayerBoy.png`), his model and atlas, his satchel (`Presentation/SatchelShape`, `LevelBuildKit.Satchel`) and his own bicycle (`Bicycle.fbx`, `LevelBuildKit.OwnBicycle`, `ArtBaker` bicycle material; the home garden has the street kit's bicycle instead).
+- **Hana is now the default player.** Saved choices keep working: a save that picked Ren now plays Hana (`PlayerRoster.Normalize`), and his bag choice is ignored. Six kids remain (Hana and Max; Kai, Mia, Leo and Zoe), and all of them wear the Locker Room's bags.
+- Tests: `PlayerRosterTests` (two teens, Hana the default, "boy" falls back to her), `BagsTests` (every kid wears bags). Not run in Unity.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

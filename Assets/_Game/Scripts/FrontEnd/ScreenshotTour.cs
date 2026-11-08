@@ -58,7 +58,7 @@ namespace DribbleToSchool.FrontEnd
         /// <summary>Stickers found per chapter in the staged save (16 of 23).</summary>
         static readonly int[] StickersPerChapter = { 5, 4, 3, 2, 2 };
         /// <summary>Who plays each chapter's shot, in turn.</summary>
-        static readonly string[] Players = { "boy", "girl", "primaryBoy", "girl", "primaryGirl" };
+        static readonly string[] Players = { "girl", "backpackBoy", "primaryBoy", "primaryGirl2", "primaryGirl" };
 
         LevelCatalog levels;
         CosmeticCatalog cosmetics;
@@ -110,7 +110,7 @@ namespace DribbleToSchool.FrontEnd
             yield return Wait(3f);   // the launch splash
 
             // 01: the title screen.
-            GameSettings.Character = "boy";
+            GameSettings.Character = "girl";
             FrontEndController.Open(FrontEndScreenId.Title);
             yield return Wait(3.5f);
             yield return Capture("01_title");
@@ -127,7 +127,7 @@ namespace DribbleToSchool.FrontEnd
             }
 
             // The menus.
-            GameSettings.Character = "boy";
+            GameSettings.Character = "girl";
             FrontEndController.Open(FrontEndScreenId.Album);
             yield return Wait(3f);
             yield return Capture(shot.ToString("00") + "_album");

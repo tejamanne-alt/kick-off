@@ -26,13 +26,14 @@ namespace DribbleToSchool.Tests
         }
 
         [Test]
-        public void TheOriginalBoyAndGirlKeepTheirIdsSoSavedChoicesStayValid()
+        public void HanaKeepsHerIdAndIsTheDefaultNowRenIsGone()
         {
-            Assert.AreEqual("boy", PlayerRoster.All[0].id);
-            Assert.AreEqual("Boy", PlayerRoster.All[0].model);
-            Assert.AreEqual("girl", PlayerRoster.All[1].id);
-            Assert.AreEqual("Girl", PlayerRoster.All[1].model);
-            Assert.AreEqual("boy", PlayerRoster.DefaultId);
+            Assert.AreEqual("girl", PlayerRoster.All[0].id);
+            Assert.AreEqual("Girl", PlayerRoster.All[0].model);
+            Assert.AreEqual("girl", PlayerRoster.DefaultId);
+            // Ren ("boy") was removed: a save that picked him plays Hana.
+            Assert.AreEqual(-1, PlayerRoster.IndexOf("boy"));
+            Assert.AreEqual("girl", PlayerRoster.Normalize("boy"));
         }
 
         [Test]
@@ -46,9 +47,9 @@ namespace DribbleToSchool.Tests
         }
 
         [Test]
-        public void ThereAreThreeTeensAndFourPrimarySchoolKids()
+        public void ThereAreTwoTeensAndFourPrimarySchoolKids()
         {
-            Assert.AreEqual(3, PlayerRoster.Of(SchoolLevel.High).Count);
+            Assert.AreEqual(2, PlayerRoster.Of(SchoolLevel.High).Count);
             Assert.AreEqual(4, PlayerRoster.Of(SchoolLevel.Primary).Count);
             int boys = 0, girls = 0;
             foreach (var info in PlayerRoster.Of(SchoolLevel.Primary))

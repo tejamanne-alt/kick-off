@@ -22,7 +22,7 @@ Kick Off 2 is a football side-scroller in bright anime daylight. Keep the ball a
 
 THE WAY TO SCHOOL
 • 23 levels across 5 chapters: Home Street, the Market, the Beach, the Underpass and the Park
-• Play as one of seven schoolkids: three high-schoolers and four primary-school kids
+• Play as one of six schoolkids: two high-schoolers and four primary-school kids
 • Real ball physics: every touch and every kick is about angle and timing
 • Beat the school bell, or switch the timer off and take it easy
 • Ball-skill challenges: keepy-uppy, target practice and a beach slalom
@@ -71,7 +71,7 @@ Release name: `1.0 (1)`. Paste the whole block, tags included, into **Release no
 <en-US>
 Welcome to Kick Off 2, our first release!
 • Dribble all the way to school through 23 levels in 5 chapters: Home Street, the Market, the Beach, the Underpass and the Park
-• Play as one of seven schoolkids: three high-schoolers and four primary-school kids
+• Play as one of six schoolkids: two high-schoolers and four primary-school kids
 • Slide under barriers and double jump over gaps
 • Find the sticker hidden in every level to unlock exclusive balls, outfits, flags and trails
 • Ball-skill challenges: keepy-uppy, target practice and a beach slalom
