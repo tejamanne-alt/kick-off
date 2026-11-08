@@ -144,6 +144,7 @@ namespace DribbleToSchool.EditorTools
                 // colour is chosen in Settings. The icon is the bag's own picture, Resources/UI/Bag<Id>.png.
                 R(DribbleToSchool.Cosmetics.Bags.NoneId, "No Bag", Bag, Common, 0, CosmeticPattern.None, white, white, white),
                 R(DribbleToSchool.Cosmetics.Bags.DefaultId, "Kick Off Backpack", Bag, Common, 0, CosmeticPattern.Solid, C(0.53f, 0.08f, 0.73f), ink, white),
+                R(DribbleToSchool.Cosmetics.Bags.RaceCarId, "Race Car Backpack", Bag, Common, 0, CosmeticPattern.Solid, C(0.86f, 0.04f, 0.06f), C(0.6f, 0.6f, 0.62f), C(1f, 0.85f, 0.25f)),
             };
         }
     }

@@ -674,6 +674,18 @@ The user found the first Coast models plain next to their reference shots (weath
 - The supplied backpack is made ready by `tools/blender/meshy_bag.py prep` (30k triangles, its cloth marked in the atlas's alpha) and fitted to Leo by `fit`: sized to his back, the straps over his shoulders, down his chest and under his arms, skinned to the Bag bone (swinging 0.3 as much as a sewn-on bag: `CharacterRig.bagSwing`) and the Chest. It is a second mesh in his FBX, shown by `Presentation/BagWear` (with the pennant, which only shows with a bag on). `ToonCharacter` recolours the marked cloth to the Settings colour (`_MaskTint`, `_MaskBase`), keeping its shading; the logo, the mascot and the zips keep their colours (`review/leo_bags/bag_colours.jpg`).
 - Only Leo wears the Locker Room's bags for now: Max, Kai, Mia and Zoe were modelled with their backpacks fused on. Supplied again without bags, they would go through the same `fit`. Tests: `BagsTests`. Not run in Unity.
 
+## Kai from his rigged model, wearing the Locker Room's bags (generated content v91)
+
+- **Kai** is rebuilt from the clean, bagless model the user supplied, which came rigged like Leo's: `meshy_rigged.py --profile plaid` (meshy_teen's plaid colour rules). Two extra bones on its shins (the jeans' cuffs) go with their parent's game bone. 100k triangles; every action clean (`review/kai_bags/kai_all_actions.jpg`); neck height 1.101 (was 1.092); a new card. He now wears the Locker Room's bags (`PlayerInfo.wearsBags`), the Kick Off Backpack by default, chosen in the Bags tab and coloured in Settings like Leo's.
+- **Bag fit** (`meshy_bag.py fit`): the back's width and the torso's sides now come from the shoulder joints (1.24 and 0.74 of their span), since Kai's loose shirt is partly skinned to the arms and measured far too narrow (a small bag, straps pulled into the chest). The padded straps are narrowed to 70 % where they leave the bag, for both kids: at their modelled width they read as a vest on a child (`review/kai_bags/straps.jpg`). Leo is refitted.
+- Not run in Unity.
+
+## The Race Car Backpack (generated content v92)
+
+- A second Locker Room bag from the supplied model: a red race-car backpack with a car's face, headlights, a grille and wheels (`Bag_RaceCar`, `bag_racecar`), free and owned from the start like the Kick Off one (`Bags.Starter`). Leo and Kai can each wear it, the Kick Off one, or none; Settings' colour recolours its red body and keeps the face, windows, lights, wheels and brown back panel (`review/race_car_bag/`).
+- `meshy_bag.py prep --hue lo,hi --sat s`: each bag's cloth colour (red wraps through 0); the straps' side is found by the gap between the straps (the car's lights stand out further at the front); `fit` keeps a kid's other bags. `review_poses.py --bag` shows one. The Settings swatch for the bags' own colours shows the bag the chosen kid wears.
+- Not run in Unity.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

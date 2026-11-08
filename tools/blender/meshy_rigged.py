@@ -11,8 +11,10 @@
 #
 #   awesome   Leo (PrimaryBoy2): a primary-school boy in an A-pose; short curly black hair, a white long-sleeved
 #             "AWESOME" sweatshirt with a navy chest panel, khaki cargo joggers, white and navy sneakers.
+#   plaid     Kai (PrimaryBoy): a primary-school boy in an A-pose; short black hair, a red plaid flannel shirt over a
+#             white hood, light-blue cargo jeans, chunky black-and-white sneakers (meshy_teen's colour rules for him).
 #
-#   blenv/bin/python meshy_rigged.py -- /abs/rigged.fbx /abs/outdir [--profile awesome] [--name PrimaryBoy2] [--tris 100000]
+#   blenv/bin/python meshy_rigged.py -- /abs/rigged.fbx /abs/outdir [--profile awesome|plaid] [--name <Name>] [--tris 100000]
 #     -> outdir/<Name>.fbx, <Name>.blend, <Name>.json, <Name>Atlas.png
 import bpy, sys, os, json
 import numpy as np
@@ -30,7 +32,7 @@ from meshy_boy import (log, activate, verts_np, edges_np, texture_pixels, vertex
 argv = _argv
 SRC, OUT = argv[0], argv[1]
 TRIS = int(argv[argv.index('--tris') + 1]) if '--tris' in argv else 100000
-NAME = argv[argv.index('--name') + 1] if '--name' in argv else 'PrimaryBoy2'
+NAME = argv[argv.index('--name') + 1] if '--name' in argv else {'awesome': 'PrimaryBoy2', 'plaid': 'PrimaryBoy'}[PROFILE_NAME]
 os.makedirs(OUT, exist_ok=True)
 C = bpy.context
 mb.log = lambda *a: print('[meshy_rigged]', *a, flush=True)
@@ -49,11 +51,16 @@ GAME_BONE = {'Hips': 'Hips', 'Spine': 'Hips', 'Spine1': 'Spine', 'Spine2': 'Ches
 def short(name): return name.split(':')[-1]
 
 
+PARENT = {}               # each of the model's bones' parent (load): an extra bone goes with its nearest named ancestor
+
+
 def game_bone(name):
     s = short(name)
-    if s in GAME_BONE: return GAME_BONE[s]
-    for side, n in (('Left', 'L'), ('Right', 'R')):            # the fingers
-        if s.startswith(side + 'Hand'): return 'Hand.' + n
+    while s is not None:
+        if s in GAME_BONE: return GAME_BONE[s]
+        for side, n in (('Left', 'L'), ('Right', 'R')):        # the fingers
+            if s.startswith(side + 'Hand'): return 'Hand.' + n
+        s = PARENT.get(s)
     return None
 
 
@@ -69,6 +76,10 @@ def load():
     C.view_layer.update()
     M = src.matrix_world
     bones = {short(b.name): (np.array(M @ b.head_local), np.array(M @ b.tail_local)) for b in src.data.bones}
+    for b in src.data.bones:
+        PARENT[short(b.name)] = short(b.parent.name) if b.parent else None
+        if short(b.name) not in GAME_BONE and not short(b.name).startswith(('Left', 'Right', 'HeadTop')):
+            log('bone %s (parent %s) goes with %s' % (b.name, b.parent.name if b.parent else None, game_bone(b.name)))
     img = [n.image for n in o.data.materials[0].node_tree.nodes if n.type == 'TEX_IMAGE' and n.image and
            any(l.to_socket.name == 'Base Color' for l in n.outputs[0].links)][0]
     img.pack() if not img.packed_file else None
@@ -122,7 +133,7 @@ def merge_weights(o):
     lost = 0
     for j, n in enumerate(n0):
         g = game_bone(n)
-        if g is None: lost += 1; continue
+        if g is None: lost += 1; log('weights: %s has no game bone; dropped' % n); continue
         W[:, names.index(g)] += W0[:, j]
     none = W.sum(1) < 1e-6
     if none.any():                                             # (a stray vertex the skin missed: its neighbours' bones)
@@ -175,7 +186,8 @@ def parts_awesome(o, px):
     return mt.by_vertex_votes(o, P)
 
 
-PROFILES = {'awesome': {'parts': parts_awesome, 'stands': 1.32}}
+PROFILES = {'awesome': {'parts': parts_awesome, 'stands': 1.32},
+            'plaid': {'parts': lambda o, px: mt.parts_plaid(o, px), 'stands': 1.30}}
 PROFILE = PROFILES[PROFILE_NAME]
 
 

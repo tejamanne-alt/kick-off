@@ -3,6 +3,7 @@
 # own FBX ('Bag_<Id>', beside 'Kid', under 'KidRig'), so any bag can be worn by any kid who has no bag of their own.
 #
 #   prep  blenv/bin/python meshy_bag.py -- prep /abs/bag.fbx /abs/outdir --id KickOff [--tris 30000] [--size 1024]
+#           [--hue 255,320] [--sat 0.3]   the cloth's hue band (degrees; lo > hi wraps through red's 0) and least saturation
 #           -> outdir/Bag<Id>.blend (the bag facing the wearer on -y, its back panel's top middle at the origin, its body
 #              one unit tall), outdir/Bag<Id>Atlas.png, outdir/Bag<Id>.json
 #   icon  blenv/bin/python meshy_bag.py -- icon /abs/Bag<Id>.blend /abs/bag_<id>.png [--size 256]
@@ -29,8 +30,10 @@ C = bpy.context
 mb.log = lambda *a: print('[meshy_bag]', *a, flush=True)
 log = mb.log
 
-# The cloth's colour, for the recolouring mask: purple hues, saturated enough (the navy zips and the black mesh are
-# not cloth; nor the white or the orange of the logo).
+# The cloth's colour, for the recolouring mask (each bag's own: --hue, --sat): by default the Kick Off backpack's
+# purple, saturated enough (the navy zips and the black mesh are not cloth; nor the white or the orange of the logo).
+# The Race Car backpack's is red, wrapping through 0 (--hue 340,18), and strongly saturated (--sat 0.62), which
+# leaves its brown mesh back panel, grey and black trim, yellow lights and blue windows as they are.
 CLOTH_HUE = (255.0, 320.0)
 CLOTH_SAT = 0.3
 
@@ -40,6 +43,7 @@ def cloth_mask(rgb):
     shape = rgb.shape[:-1]
     h, s, v = (x.reshape(shape) for x in hsv(rgb.reshape(-1, 3)))
     lo, hi = CLOTH_HUE
+    if lo > hi: h = np.where(h < lo, h + 360.0, h); hi += 360.0          # (a band through 0: red)
     hw = np.clip(np.minimum(h - lo, hi - h) / 12.0 + 0.5, 0, 1)
     sw = np.clip((s - CLOTH_SAT) / 0.12 + 0.5, 0, 1)
     vw = np.clip((v - 0.06) / 0.05, 0, 1)
@@ -60,13 +64,15 @@ def prep(src, out, bag_id, tris, size):
     bm = bmesh.new(); bm.from_mesh(o.data); bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=1e-6)
     bm.to_mesh(o.data); bm.free(); o.data.update()
 
-    # Which side the straps are on: the side that reaches furthest from the middle column (the straps' "D" stands
-    # further off the back panel than the front pocket does from the front).
+    # Which side the straps are on: the side where the whole bag reaches furthest beyond its middle column (the
+    # straps' "D" stands off the back panel with nothing between the two straps; a pocket, lights or a number plate on
+    # the front sit in the middle).
     V = verts_np(o)
     mid = (V[:, 2] > np.percentile(V[:, 2], 40)) & (V[:, 2] < np.percentile(V[:, 2], 75))
     centre = mid & (np.abs(V[:, 0]) < 0.1 * np.ptp(V[:, 0]))
-    ys = V[mid, 1]; reach_plus = ys.max() - np.median(V[centre, 1]); reach_minus = np.median(V[centre, 1]) - ys.min()
-    plus = reach_plus > reach_minus
+    ys, yc = V[mid, 1], V[centre, 1]
+    gap_plus, gap_minus = ys.max() - yc.max(), yc.min() - ys.min()
+    plus = gap_plus > gap_minus
     if plus:                                                    # the straps toward -y: the wearer's side
         o.data.transform(Matrix.Rotation(math.pi, 4, 'Z')); o.data.update()
     V = verts_np(o)
@@ -121,6 +127,10 @@ CLEAR = 0.012            # how far the straps stand off the kid's clothes (Blend
 BAG_GAP = 0.008          # between the back and the bag's back panel
 WIDTH = 0.92             # the bag's body this much of the kid's back's width
 HEIGHT = 1.0             # the bag's body this much of the way from the Bag marker down to the hip joints
+BACK_SPAN = 1.24         # the back's width over the span between the shoulder joints
+STRAP_W = 0.7            # the straps narrowed to this much of their width where they leave the bag (a padded strap
+                         # sized for the bag is wide on a child)
+SIDE = 0.74              # where the lower straps go round the torso's side: this much of a shoulder joint's reach out
 
 
 def fit(kid_blend, bag_blend, out):
@@ -129,8 +139,9 @@ def fit(kid_blend, bag_blend, out):
     with bpy.data.libraries.load(bag_blend) as (src, dst):
         dst.objects = [n for n in src.objects if n.startswith('Bag_')]
     bag = dst.objects[0]; C.scene.collection.objects.link(bag)
-    name = bag.name
-    for x in [x for x in bpy.data.objects if x.name.startswith('Bag_') and x is not bag]: bpy.data.objects.remove(x)
+    name = bag.name.split('.')[0]           # ('Bag_KickOff.001' when the kid's file already has one)
+    # (an earlier fit of this same bag goes; the kid's other bags stay)
+    for x in [x for x in bpy.data.objects if x is not bag and (x.name == name or x.name.startswith(name + '.'))]: bpy.data.objects.remove(x)
     bag.name = name
 
     B = rig.data.bones
@@ -139,9 +150,10 @@ def fit(kid_blend, bag_blend, out):
     arms = sum(W[:, names.index(n)] for n in names if 'Arm' in n or 'Hand' in n)
     head = sum(W[:, names.index(n)] for n in ('Head', 'Neck') if n in names)
     torso = (arms < 0.3) & (head < 0.3)
-    # the back's width at the marker, the arms left out
-    sl = torso & (np.abs(K[:, 2] - mark[2]) < 0.02)
-    back_w = np.ptp(K[sl, 0])
+    # the back's width and the torso's sides from the shoulder joints (the skin weights can't say where a loose shirt
+    # stops being the arm's): the back is BACK_SPAN times the span between them, a side SIDE of a joint's reach out
+    span = abs(B['UpperArm.L'].head_local.x - B['UpperArm.R'].head_local.x)
+    back_w = BACK_SPAN * span
     s_w = WIDTH * back_w / bag['width']
     s_h = HEIGHT * (mark[2] - hips[2])
     s = min(s_w, s_h)
@@ -152,7 +164,7 @@ def fit(kid_blend, bag_blend, out):
     zr = (K[:, 2] < mark[2] + 0.02) & (K[:, 2] > mark[2] - s) & (np.abs(K[:, 0] - mark[0]) < 0.5 * bag['width'] * s) & torso
     yback = K[zr, 1].max() + BAG_GAP
     bag.data.transform(Matrix.Translation((mark[0], yback, mark[2]))); bag.data.update()
-    log('fit: back %.3f wide, scale %.3f (width %.3f, height %.3f), panel at y %.3f' % (back_w, s, s_w, s_h, yback))
+    log('fit: shoulder joints %.3f apart, back %.3f wide, scale %.3f (width %.3f, height %.3f), panel at y %.3f' % (span, back_w, s, s_w, s_h, yback))
 
     # The straps: the "D" made as deep as the kid's chest (front to back at each height, where the strap is), their
     # top run raised over the shoulder, their lower front run drawn out to the side (under the arm), then anything
@@ -160,6 +172,13 @@ def fit(kid_blend, bag_blend, out):
     V = verts_np(bag); E = edges_np(bag)
     d = yback - V[:, 1]                                          # depth in front of the back panel
     dmax = d[strap].max()
+    # narrower straps: each about its own middle line, fading in over the first third of the "D" from the bag
+    for sgn in (-1, 1):
+        m = strap & (np.sign(V[:, 0] - mark[0]) == sgn)
+        xc = np.median(V[m, 0])
+        k = 1 - (1 - STRAP_W) * np.clip(d[m] / dmax * 3, 0, 1)
+        V[m, 0] = xc + (V[m, 0] - xc) * k
+    bag.data.vertices.foreach_set('co', V.ravel()); bag.data.update()
     ztop = mark[2]
     chest_front = {}
     for side in (-1, 1):
@@ -168,7 +187,7 @@ def fit(kid_blend, bag_blend, out):
         m = torso & (np.abs(K[:, 0] - xc) < 0.03) & (K[:, 2] < ztop + 0.05) & (K[:, 2] > ztop - 0.75 * s)
         front = K[m, 1].min()
         shoulder = K[torso & (np.abs(K[:, 0] - xc) < 0.03) & (K[:, 1] > front) & (K[:, 1] < yback)][:, 2].max()
-        edge = np.percentile(np.abs(K[torso & (np.abs(K[:, 2] - (ztop - 0.45 * s)) < 0.03), 0] - mark[0]), 97)
+        edge = SIDE * span / 2
         chest_front[side] = (xc, front, shoulder, edge)
         log('fit: %s strap at x %.3f: the chest\'s front at y %.3f, the shoulder\'s top at z %.3f, the side at |x| %.3f' % (
             'left' if side > 0 else 'right', xc, front, shoulder, edge))
@@ -281,6 +300,8 @@ if __name__ == '__main__':
         bag_id = argv[argv.index('--id') + 1]
         tris = int(argv[argv.index('--tris') + 1]) if '--tris' in argv else 30000
         size = int(argv[argv.index('--size') + 1]) if '--size' in argv else 1024
+        if '--hue' in argv: CLOTH_HUE = tuple(float(x) for x in argv[argv.index('--hue') + 1].split(','))
+        if '--sat' in argv: CLOTH_SAT = float(argv[argv.index('--sat') + 1])
         prep(argv[1], argv[2], bag_id, tris, size)
     elif argv[0] == 'icon':
         icon(argv[1], argv[2], int(argv[argv.index('--size') + 1]) if '--size' in argv else 256)
