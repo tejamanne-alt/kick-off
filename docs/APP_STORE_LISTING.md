@@ -90,7 +90,7 @@ Leave empty (optional).
 
 ### Copyright
 ```
-2026 Astradite
+2026 Astradite Private Limited
 ```
 
 ### Build

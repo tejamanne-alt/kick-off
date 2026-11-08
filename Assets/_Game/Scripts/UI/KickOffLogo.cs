@@ -17,6 +17,15 @@ namespace DribbleToSchool.UI
         /// <summary>The game's name. A brand: never translated.</summary>
         public const string GameName = "Kick Off 2";
 
+        /// <summary>The studio, as players see it ("A game by Astradite"). A brand: never translated.</summary>
+        public const string Studio = "Astradite";
+
+        /// <summary>The company that publishes the game: the copyright holder, the seller in the stores, the privacy policy's "we".</summary>
+        public const string Company = "Astradite Private Limited";
+
+        /// <summary>The copyright line ("© 2026 Astradite Private Limited"): the year of first publication.</summary>
+        public const string Copyright = "\u00A9 2026 " + Company;
+
         /// <summary>The logo drawn in code: its size at scale 1, about its centre (badge, lettering, ball and ribbon).</summary>
         public static readonly Vector2 Size = new Vector2(680f, 560f);
 

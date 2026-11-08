@@ -9,8 +9,9 @@ Everything needed to take Kick Off 2 from this repo to the App Store and Google 
 
 | | Google Play | App Store |
 |---|---|---|
-| Account | [Play Console](https://play.google.com/console) developer account (one-off fee) | [Apple Developer Program](https://developer.apple.com/programs/) membership (yearly) |
+| Account | [Play Console](https://play.google.com/console) developer account (one-off fee), as an **organisation**: Astradite Private Limited | [Apple Developer Program](https://developer.apple.com/programs/) membership (yearly), enrolled as an **organisation**: Astradite Private Limited, so the App Store shows it as the seller (a personal membership shows your own name) |
 | Machine | Mac, Windows or Linux with Unity 6 + **Android Build Support** (incl. Android SDK & NDK, OpenJDK) from Unity Hub | A Mac with Unity 6 + **iOS Build Support** and **Xcode 26 or later** |
+| Company | Both stores verify an organisation by its **D-U-N-S number** (free from Dun & Bradstreet; it can take a couple of weeks) and want its website | the same |
 | Store rule | New apps and updates must target **Android 16 (API 36)**: the build sets it (`BuildScripts.AndroidTargetApi`) | Uploads must be built with **Xcode 26 / the iOS 26 SDK** or later |
 
 Unity version for iOS: use **6000.0.68f1 or newer** (6.0 LTS), **6000.3.8f1 or newer** (6.3 LTS), or any **6000.4+**. Older
@@ -24,7 +25,8 @@ SDK refuse to launch ("UIScene life cycle is required"). After changing Unity, d
    - **Free + Full Game unlock (recommended):** set `RequireUnlock = true` and enable IAP (section 2). Chapter 1 and its challenge are free; chapters 2–5 need a one-time purchase, and so does the Holiday Run (its lap runs through every chapter: its title button opens the unlock panel first).
    - **Paid app:** leave `RequireUnlock = false` and set the price in the store consoles.
 3. Run **Kick Off > Build > Apply Store Player Settings** once to check everything is set:
-   - the app id, version and build number, company "Astradite", product "Kick Off 2";
+   - the app id, version and build number, company "Astradite" (Unity's company name: also part of the save folder on desktop, so
+     it stays as it is), product "Kick Off 2";
    - landscape only;
    - Android: minimum API 26, target API 36, ARM64 + IL2CPP;
    - iOS: 15.0+, automatic signing with your team (see `Editor/AppleSigning.cs`);
@@ -80,7 +82,9 @@ For a quick test on your own phone: **Kick Off > Build > Android APK (developmen
 1. **Test and release > Testing > Internal testing** → create a release → upload `KickOff.aab` → add testers' emails → roll out.
    Install from the opt-in link and play through.
 2. **New personal developer accounts** (created after 13 November 2023) must run a **closed test with at least 12 testers who stay
-   opted in for 14 days in a row** before they can apply for production access. Start this early. Organisation accounts are exempt.
+   opted in for 14 days in a row** before they can apply for production access. Start this early. Organisation accounts are exempt:
+   the game is published by **Astradite Private Limited**, so open the Play Console account as an **organisation** in its name (it
+   asks for the company's D-U-N-S number and website). The listing then shows "Astradite Private Limited" as the developer.
 3. Fill in **App content** (privacy policy, ads, app access, content rating, target audience, data safety) and the store listing,
    as in `GOOGLE_PLAY_LISTING.md`.
 4. **Production** → create a release with the same (or a newer) bundle → send for review. First reviews often take a few days.

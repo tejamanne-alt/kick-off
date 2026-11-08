@@ -145,6 +145,7 @@ namespace DribbleToSchool.Localization
                 { "sticker.L23", "The School Bell" }, { "sticker.L23.text", "Ding-dong! You made it. Every street, every sticker, all the way to school." },
                 { "sticker.L23.hint", "Above the tall wall after the fountain and the trampoline." },
                 { "credits.title", "Credits" },
+                { "credits.by", "A game by {0}" },
                 { "credits.body", "A football dash through town, all the way to school.\n\nEvery picture and every sound in this game is drawn and composed by code.\n\nMade with Unity.\nThanks for playing!" },
 
                 // Settings
@@ -540,6 +541,7 @@ namespace DribbleToSchool.Localization
                 { "sticker.L23", "La campana del cole" }, { "sticker.L23.text", "¡Din don! Lo lograste. Cada calle, cada pegatina, hasta el cole." },
                 { "sticker.L23.hint", "Encima del muro alto después de la fuente y el trampolín." },
                 { "credits.title", "Créditos" },
+                { "credits.by", "Un juego de {0}" },
                 { "credits.body", "Una carrera con balón por la ciudad, hasta el cole.\n\nCada dibujo y cada sonido de este juego está creado con código.\n\nHecho con Unity.\n¡Gracias por jugar!" },
 
                 { "settings.title", "Ajustes" },
