@@ -83,6 +83,12 @@ namespace DribbleToSchool.Core
     {
         public static LevelManager Current { get; private set; }
 
+        /// <summary>
+        /// The co-op race this level is a leg of (Coop/CoopRaceMode), or null. In a race there is no bell or pace and nothing is
+        /// saved as story progress; the first leg waits for the shared GO, and the goal hands over to the race (Core/ILevelRace).
+        /// </summary>
+        public static ILevelRace Race;
+
         [Header("Level")]
         public LevelDefinition level;
         public LevelCatalog catalog;
@@ -369,7 +375,7 @@ namespace DribbleToSchool.Core
         void RefreshTimers()
         {
             Cozy = !GameSettings.BellTimerEnabled;
-            bool timing = !Cozy && Objective == null && !endless;
+            bool timing = !Cozy && Objective == null && !endless && Race == null;
             BellEnabled = timing && IsLastLeg && TripContinuous && TripBell > 0f;
             PaceEnabled = timing && !BellEnabled && TripRoute != null && PaceTarget > 0f;
         }
@@ -418,7 +424,7 @@ namespace DribbleToSchool.Core
             switch (State)
             {
                 case LevelState.Intro:
-                    if (IntroHold != null && IntroHold()) { IntroTimeLeft = introDuration; break; }
+                    if ((IntroHold != null && IntroHold()) || (Race != null && Race.HoldsIntro)) { IntroTimeLeft = introDuration; break; }
                     IntroTimeLeft -= Time.unscaledDeltaTime;
                     if (IntroTimeLeft <= 0f)
                     {
@@ -615,6 +621,14 @@ namespace DribbleToSchool.Core
             {
                 // A slalom finishes at the gate; the objective decides the result.
                 Objective.OnGoalReached();
+                return;
+            }
+            if (Race != null)
+            {
+                // A leg of a co-op race: the race decides what comes next (the next leg, or the finish). Nothing is saved here.
+                SetState(LevelState.Complete);
+                GameEvents.Raise(GameEventType.Goal, ball.transform.position, 1f);
+                Race.LegFinished(this);
                 return;
             }
 

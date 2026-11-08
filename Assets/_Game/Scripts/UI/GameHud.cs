@@ -262,7 +262,8 @@ namespace DribbleToSchool.UI
         {
             if (root == null) return;
             // The first time a level starts: the guided tour of the controls, before the clock starts.
-            if (level.State == LevelState.Intro && !level.Held && ControlsTour.ShouldStart) ControlsTour.Begin(root, level, pauseRect);
+            // (not in a co-op race: the others' clock doesn't wait; the co-op screen points to the Controls page instead)
+            if (level.State == LevelState.Intro && !level.Held && ControlsTour.ShouldStart && LevelManager.Race == null) ControlsTour.Begin(root, level, pauseRect);
             // A challenge, when it is first started here (not on each retry): how to play it, before its clock starts.
             if (level.Objective != null && !challengeGuideShown && level.State == LevelState.Intro && !ControlsTour.Running)
             {
@@ -287,7 +288,8 @@ namespace DribbleToSchool.UI
             if (titleText.text.Length == 0)
                 titleText.text = level.level != null ? Loc.T("level." + level.level.levelId, level.level.displayName) : Loc.T("level.test");
 
-            int tenths = Mathf.FloorToInt(level.ElapsedTime * 10f);
+            // In a co-op race the clock is the race's (since the shared GO, across the legs), the same on every phone.
+            int tenths = Mathf.FloorToInt((LevelManager.Race != null ? LevelManager.Race.RaceSeconds : level.ElapsedTime) * 10f);
             if (tenths != shownTenths)
             {
                 shownTenths = tenths;
@@ -374,7 +376,7 @@ namespace DribbleToSchool.UI
                 }
             }
             if (state == LevelState.Paused) ShowPause();
-            if (state == LevelState.Complete) ShowResults();
+            if (state == LevelState.Complete && LevelManager.Race == null) ShowResults();   // (a race's leg goes on to the next, or to the race's standings)
             if (state == LevelState.Intro && resultsModal != null) Destroy(resultsModal);
             if (lastState == LevelState.Intro && state == LevelState.Playing) goUntil = Time.unscaledTime + 0.6f;
             lastState = state;
@@ -443,6 +445,15 @@ namespace DribbleToSchool.UI
             {
                 bigText.gameObject.SetActive(false);
             }
+            else if (level.State == LevelState.Intro && LevelManager.Race != null && LevelManager.Race.IntroText != null)
+            {
+                // The co-op countdown to the shared GO (or "waiting for everyone").
+                bigText.gameObject.SetActive(true);
+                string said = LevelManager.Race.IntroText;
+                if (bigText.text != said) bigText.transform.localScale = Vector3.one * 1.25f;
+                bigText.text = said;
+                bigText.transform.localScale = Vector3.Lerp(bigText.transform.localScale, Vector3.one, 1f - Mathf.Exp(-10f * Time.unscaledDeltaTime));
+            }
             else if (level.State == LevelState.Intro)
             {
                 bigText.gameObject.SetActive(true);
@@ -482,6 +493,7 @@ namespace DribbleToSchool.UI
 
         void ShowPause()
         {
+            if (LevelManager.Race != null) { ShowRacePause(); return; }
             bool skip = DevTuningPanel.Available && level.NextLevel != null;
             bool howTo = level.Objective != null;
             var card = UIKit.Modal(root, "Pause", new Vector2(720f, skip || howTo ? 1000f : 900f), out pauseModal);
@@ -500,6 +512,27 @@ namespace DribbleToSchool.UI
             PauseButton(card.transform, ref y, "pause.quit", UITheme.Red, () => level.QuitToMap());
             if (skip)
                 PauseButton(card.transform, ref y, "pause.skip", UITheme.Locked, () => level.LoadNextLevel());
+        }
+
+        /// <summary>
+        /// The pause menu in a co-op race: the race's clock keeps running (the others don't wait), so it says so, and there is
+        /// no restart or quit to the map, only leaving the race (after asking).
+        /// </summary>
+        void ShowRacePause()
+        {
+            var card = UIKit.Modal(root, "Pause", new Vector2(720f, 860f), out pauseModal);
+            UIKit.Header(card.transform, Loc.T("pause.title"), 460f);
+            var note = UIKit.Label(card.transform, "Note", Loc.T("coop.pause.clock"), 28, UITheme.InkSoft, TextAnchor.MiddleCenter);
+            UIKit.Place(note.rectTransform, new Vector2(0.5f, 1f), new Vector2(0f, -96f), new Vector2(620f, 60f));
+            UIKit.Fit(note, 18);
+            float y = -200f;
+            pauseStep = 112f;
+            PauseButton(card.transform, ref y, "pause.resume", UITheme.Green, () => level.Resume());
+            PauseButton(card.transform, ref y, "pause.checkpoint", UITheme.Blue, () => { level.Resume(); level.RespawnAtCheckpoint(); });
+            PauseButton(card.transform, ref y, "pause.controls", new Color(0.25f, 0.62f, 0.7f), () => ControlsGuide.Open(root, null));
+            PauseButton(card.transform, ref y, "pause.settings", new Color(0.6f, 0.5f, 0.8f), () => SettingsPanel.Open(root, null));
+            PauseButton(card.transform, ref y, "coop.pause.leave", UITheme.Red, () =>
+                CoopStagePicker.Confirm(root, Loc.T("coop.confirmLeave.race"), () => { if (LevelManager.Race != null) LevelManager.Race.Leave(); }));
         }
 
         /// <summary>The pause menu's buttons' spacing (ShowPause sets it).</summary>

@@ -12,7 +12,7 @@ using UnityEngine.UI;
 
 namespace DribbleToSchool.FrontEnd
 {
-    public enum FrontEndScreenId { Title, Map, Shop, Album }
+    public enum FrontEndScreenId { Title, Map, Shop, Album, Coop }
 
     /// <summary>Base for a front-end screen built from code on first show.</summary>
     public abstract class FrontEndScreen
@@ -33,6 +33,10 @@ namespace DribbleToSchool.FrontEnd
         /// <summary>The screen is being thrown away (rebuilt in another language): unhook events.</summary>
         public virtual void OnDestroyed() { }
         public virtual string Title { get { return ""; } }
+        /// <summary>Called every frame while the screen shows (after the stage is framed).</summary>
+        public virtual void Tick() { }
+        /// <summary>The header's back button: true when the screen dealt with it (asked first, say), else back to the title.</summary>
+        public virtual bool HandleBack() { return false; }
 
         /// <summary>
         /// Where the menu's 3D camera should look while this screen shows (called every frame).
@@ -163,6 +167,7 @@ namespace DribbleToSchool.FrontEnd
             screens[FrontEndScreenId.Map] = new ChapterMapScreen();
             screens[FrontEndScreenId.Shop] = new ShopScreen();
             screens[FrontEndScreenId.Album] = new AlbumScreen();
+            screens[FrontEndScreenId.Coop] = new CoopScreen();
         }
 
         void OnDestroy()
@@ -189,6 +194,8 @@ namespace DribbleToSchool.FrontEnd
             var stage = Stage;
             if (stage != null && screens.ContainsKey(current) && screens[current].Root != null)
                 screens[current].FrameStage(stage);
+            if (screens.ContainsKey(current) && screens[current].Root != null && screens[current].Root.gameObject.activeSelf)
+                screens[current].Tick();
         }
 
         public RectTransform CanvasRoot { get { return canvasRoot; } }
@@ -227,6 +234,7 @@ namespace DribbleToSchool.FrontEnd
 
         public void Back()
         {
+            if (screens.ContainsKey(current) && screens[current].HandleBack()) return;
             Show(FrontEndScreenId.Title);
         }
 

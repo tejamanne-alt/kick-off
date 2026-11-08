@@ -110,7 +110,7 @@ It shows the title screen, choosing the player, the town map, playing a level (r
 The app has no account registration, login or account deletion, no user-generated content, and no paid content or in-app purchases.
 
 2. PURPOSE AND AUDIENCE
-Kick Off 2 is a single-player football (soccer) side-scrolling game for players of all ages. The player dribbles a ball through town streets to reach school, across 23 short skill-based levels in 5 chapters plus ball-skill challenges. It is a light, ad-free game that plays offline and rewards timing and ball control; a sticker hidden in each level unlocks cosmetic items.
+Kick Off 2 is a football (soccer) side-scrolling game for players of all ages, played alone or in local Co-op (up to four phones in the same room race each other to school over Bluetooth, iPhone and Android together, no internet). The player dribbles a ball through town streets to reach school, across 23 short skill-based levels in 5 chapters plus ball-skill challenges. It is a light, ad-free game that plays offline and rewards timing and ball control; a sticker hidden in each level unlocks cosmetic items.
 
 3. HOW TO USE IT
 No setup, login or sample files are needed. Launch the app, tap PLAY and choose a level on the town map: six routes from the kid's house to the school, each level a numbered stop on its route (levels unlock in order as each is finished).
@@ -118,7 +118,7 @@ Controls (landscape): the two arrow buttons at the bottom left run; KICK touches
 Stickers shows the album (tap a sticker to view it). The Locker Room has cosmetic items unlocked with in-game coins earned by playing, or by stickers. Settings has the player choice (six kids: two teenagers and four primary-school children), sound, the school-bell timer, the controls (a left-handed layout, the slide button's place) and the language.
 
 4. EXTERNAL SERVICES
-None. The app works fully offline and makes no network requests. It uses no third-party services or SDKs: no analytics, advertising, authentication, payment or AI services. It is built with the Unity engine, and progress is stored only on the device.
+None. The app works fully offline and makes no network requests. Co-op uses Bluetooth LE directly between nearby phones (NSBluetoothAlwaysUsageDescription explains it when the player first opens Co-op); nothing is sent to a server. It uses no third-party services or SDKs: no analytics, advertising, authentication, payment or AI services. It is built with the Unity engine, and progress is stored only on the device.
 
 5. REGIONAL DIFFERENCES
 None. The app works the same in every region. Its text is in English and Spanish, following the device language.

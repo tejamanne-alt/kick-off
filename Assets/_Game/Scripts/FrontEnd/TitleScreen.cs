@@ -8,7 +8,8 @@ using UnityEngine.UI;
 namespace DribbleToSchool.FrontEnd
 {
     /// <summary>
-    /// The launch screen. The left column holds the logo, PLAY, HOLIDAY RUN (the endless mode) and the
+    /// The launch screen. The left column holds the logo, PLAY, HOLIDAY RUN (the endless mode) beside CO-OP (racing friends
+    /// nearby over Bluetooth, FrontEnd/CoopScreen) and the
     /// Locker Room, Stickers and Settings buttons; the rest of the screen is the live street, where
     /// the menu's camera puts the chosen teen juggling (tap them, or the player card in the corner,
     /// to switch between the boy and the girl). Credits and the stars collected sit along the bottom
@@ -22,8 +23,13 @@ namespace DribbleToSchool.FrontEnd
         /// <summary>The height the left column is laid out for (the canvas is 1080 units tall).</summary>
         const float DesignHeight = 1080f;
 
+        /// <summary>HOLIDAY RUN and CO-OP share PLAY's row below it: each this wide, their centres this far either side of the column's.</summary>
+        const float ModeWidth = 330f, ModeHalfStep = 172f;
+
         /// <summary>HOLIDAY RUN's button: turquoise, a holiday sea beside PLAY's sunny orange.</summary>
         static readonly Color HolidayColor = new Color(0.16f, 0.72f, 0.82f);
+        /// <summary>CO-OP's button: a friendly violet beside HOLIDAY RUN.</summary>
+        static readonly Color CoopColor = new Color(0.55f, 0.38f, 0.88f);
 
         Text starsLabel;
         Text holidayLabel, holidayBest;
@@ -52,14 +58,23 @@ namespace DribbleToSchool.FrontEnd
             UIKit.PopIn(play.gameObject, 0.15f);
             play.gameObject.AddComponent<UIPulse>().amount = 0.025f;
 
-            // HOLIDAY RUN under PLAY. Its label is built by hand below, so that the best distance can sit on the button once there is one.
+            // HOLIDAY RUN and CO-OP side by side under PLAY. HOLIDAY RUN's label is built by hand below, so that the best distance
+            // can sit on the button once there is one.
             var holiday = UIKit.Button(column, "Holiday", "", HolidayColor, StartHolidayRun, 42);
-            UIKit.Place((RectTransform)holiday.transform, new Vector2(0f, 1f), new Vector2(Column * 0.5f + 20f, -744f), new Vector2(450f, 112f), new Vector2(0.5f, 0.5f));
+            UIKit.Place((RectTransform)holiday.transform, new Vector2(0f, 1f), new Vector2(Column * 0.5f + 20f - ModeHalfStep, -744f), new Vector2(ModeWidth, 112f), new Vector2(0.5f, 0.5f));
             UIKit.PopIn(holiday.gameObject, 0.19f);
             var holidayPulse = holiday.gameObject.AddComponent<UIPulse>();
             holidayPulse.amount = 0.018f;
             holidayPulse.speed = 2.4f;   // not in step with PLAY's breathing
             BuildHolidayText(holiday.transform.Find("Face"));
+
+            // CO-OP: up to four friends nearby over Bluetooth, racing to school (FrontEnd/CoopScreen).
+            var coop = UIKit.Button(column, "Coop", Loc.T("menu.coop"), CoopColor, () => Controller.Show(FrontEndScreenId.Coop), 42);
+            UIKit.Place((RectTransform)coop.transform, new Vector2(0f, 1f), new Vector2(Column * 0.5f + 20f + ModeHalfStep, -744f), new Vector2(ModeWidth, 112f), new Vector2(0.5f, 0.5f));
+            UIKit.PopIn(coop.gameObject, 0.21f);
+            var coopPulse = coop.gameObject.AddComponent<UIPulse>();
+            coopPulse.amount = 0.018f;
+            coopPulse.speed = 2.1f;
 
             // Secondary row under HOLIDAY RUN: Locker Room, Stickers, Add-ons & Filters (UI/AddOnsPanel), Settings.
             float w = 176f, gap = 12f, x0 = 20f + (Column - (w * 4f + gap * 3f)) * 0.5f;

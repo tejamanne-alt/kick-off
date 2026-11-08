@@ -56,9 +56,9 @@ a Fixed Resolution of **1920 × 1080**, select it and run **Kick Off > Store Scr
 | Privacy policy | the published `site/privacy.html` address |
 | App access | All functionality is available without special access |
 | Ads | No, my app does not contain ads |
-| Content rating | IARC questionnaire: category **Game**; answer No to violence, fear, sexuality, language, drugs, gambling, user interaction, sharing location, purchases of digital goods. Expect PEGI 3 / ESRB Everyone. |
+| Content rating | IARC questionnaire: category **Game**; answer No to violence, fear, sexuality, language, drugs, gambling, sharing location, purchases of digital goods. **User interaction:** Co-op shows each player's typed name to the others in the room (local Bluetooth only, no chat): answer the "users can interact" question with that in mind. Expect PEGI 3 / ESRB Everyone. |
 | Target audience | Pick the age groups. Including under-13s puts the app under the Families policy, which it already meets (no ads, no data collected, no external links); 13 and over keeps the review simplest. |
-| Data safety | Does your app collect or share any of the required user data types? **No.** (Nothing leaves the device.) |
+| Data safety | Does your app collect or share any of the required user data types? **No.** Nothing reaches the developer or any server. Co-op (docs/COOP.md) sends a typed name, a random tag and race positions straight to the other phones in the same lobby over Bluetooth, which Google's form does not count as collection; mention it in the privacy policy (done) and review the answer if the form's definitions change. |
 | Government apps | No |
 | Financial features | None |
 | Health | None |
