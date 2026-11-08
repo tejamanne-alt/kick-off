@@ -66,8 +66,9 @@ namespace DribbleToSchool.Core
             // Hana (girl) is made from a supplied rigged model by tools/blender/meshy_rigged.py --profile varsity: 1.65 m, her Head bone at
             // 0.877 of it. She has no bag of her own: she wears the Locker Room's (wearsBags).
             new PlayerInfo("girl", "Girl", "player.girl", SchoolLevel.High, 1.446f, 1.65f, true),
-            // Max, the backpack boy (tools/blender/meshy_teen.py, from a supplied model): about 1.75 m, his Head bone at 0.878 of it.
-            new PlayerInfo("backpackBoy", "BackpackBoy", "player.backpackBoy", SchoolLevel.High, 1.533f, 1.75f),
+            // Max (backpackBoy) is made from a supplied rigged model by tools/blender/meshy_rigged.py --profile denim: about 1.75 m, his
+            // Head bone at 0.884 of it. He has no bag of his own: he wears the Locker Room's (wearsBags).
+            new PlayerInfo("backpackBoy", "BackpackBoy", "player.backpackBoy", SchoolLevel.High, 1.547f, 1.75f, true),
             // The primary-school kids (tools/blender, see its README: primary.py prints each one's neck height): 1.27 to 1.34 m.
             // Neck height = the Head bone's height x the standing height / the model's own height.
             // Kai (primaryBoy) is made from a supplied rigged model by tools/blender/meshy_rigged.py --profile plaid: 1.30 m, his Head bone at 0.847 of it.

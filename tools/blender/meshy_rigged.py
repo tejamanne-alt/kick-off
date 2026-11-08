@@ -17,10 +17,12 @@
 #             "Kick Off" T-shirt, red shorts, white socks, pink sneakers (meshy_teen's colour rules for her).
 #   varsity   Hana (Girl): a high-school girl in an A-pose; long wavy dark-brown hair, a maroon varsity jacket with cream
 #             sleeves and striped cuffs over a cream hoodie, charcoal cargo jeans, cream platform sneakers.
+#   denim     Max (BackpackBoy): a teen in an A-pose; ginger hair, a light denim jacket over a dark grey hoodie, dark
+#             jeans, white high-top sneakers (meshy_teen's colour rules for him; his old backpack is gone).
 #   plaid     Kai (PrimaryBoy): a primary-school boy in an A-pose; short black hair, a red plaid flannel shirt over a
 #             white hood, light-blue cargo jeans, chunky black-and-white sneakers (meshy_teen's colour rules for him).
 #
-#   blenv/bin/python meshy_rigged.py -- /abs/rigged.fbx /abs/outdir [--profile awesome|plaid|rainbow|explorer|varsity] [--name <Name>] [--tris 100000]
+#   blenv/bin/python meshy_rigged.py -- /abs/rigged.fbx /abs/outdir [--profile awesome|plaid|rainbow|explorer|varsity|denim] [--name <Name>] [--tris 100000]
 #     -> outdir/<Name>.fbx, <Name>.blend, <Name>.json, <Name>Atlas.png
 import bpy, sys, os, json
 import numpy as np
@@ -41,7 +43,7 @@ from meshy_boy import (log, activate, verts_np, edges_np, texture_pixels, vertex
 argv = _argv
 SRC, OUT = argv[0], argv[1]
 TRIS = int(argv[argv.index('--tris') + 1]) if '--tris' in argv else 100000
-NAME = argv[argv.index('--name') + 1] if '--name' in argv else {'awesome': 'PrimaryBoy2', 'plaid': 'PrimaryBoy', 'rainbow': 'PrimaryGirl2', 'explorer': 'PrimaryGirl', 'varsity': 'Girl'}[PROFILE_NAME]
+NAME = argv[argv.index('--name') + 1] if '--name' in argv else {'awesome': 'PrimaryBoy2', 'plaid': 'PrimaryBoy', 'rainbow': 'PrimaryGirl2', 'explorer': 'PrimaryGirl', 'varsity': 'Girl', 'denim': 'BackpackBoy'}[PROFILE_NAME]
 os.makedirs(OUT, exist_ok=True)
 C = bpy.context
 mb.log = lambda *a: print('[meshy_rigged]', *a, flush=True)
@@ -222,7 +224,8 @@ PROFILES = {'awesome': {'parts': parts_awesome, 'stands': 1.32},
             'plaid': {'parts': lambda o, px: mt.parts_plaid(o, px), 'stands': 1.30},
             'rainbow': {'parts': lambda o, px: parts_without_pack(mt.parts_rainbow, o, px), 'stands': 1.29},
             'explorer': {'parts': lambda o, px: mt.parts_explorer(o, px), 'stands': 1.27},
-            'varsity': {'parts': parts_varsity, 'stands': 1.65}}
+            'varsity': {'parts': parts_varsity, 'stands': 1.65},
+            'denim': {'parts': lambda o, px: mt.parts_backpack_boy(o, px), 'stands': 1.75}}
 PROFILE = PROFILES[PROFILE_NAME]
 
 
