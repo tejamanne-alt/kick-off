@@ -740,6 +740,10 @@ The user found the first Coast models plain next to their reference shots (weath
 
 - Google Play's feature graphic (`marketing/googleplay/feature_graphic_1024x500.png`, required to publish) showed Ren and the old Hana. It is now the banner artwork the user supplied (`marketing/source/banner_artwork.png`, 1774 x 887: the boy kicking the ball along the footpath on the way to school, the school ahead, the "Kick OFF 2" logo). It is drawn 2 : 1, so `tools/feature_graphic_from_image.py` (new) scales it to 1024 x 512 and trims 6 px off the top and bottom. (Wider art would be kept whole over an out-of-focus enlargement of itself.) The App Store has no banner, so nothing changes there.
 
+## The title screen's logo matches the icon and the banner
+
+- The "Kick OFF 2" logo on the title screen, the launch splash and the credits was drawn in code (Lilita One lettering on a turf badge). It is now the lettering of the app icon and the store banner, cut out of the banner artwork (`marketing/source/banner_artwork.png`) by `tools/logo_from_banner.py` (new: everything the logo's navy outline closes in, plus the swoosh's yellow tail; the one connected piece kept) into `Resources/UI/KickOffLogo.png` (814 x 304, transparent). `UI/KickOffLogo` shows it at the same size and place, breathing gently, over the tagline ribbon (none in the credits); it falls back to the drawn logo if the picture is missing. Not run in Unity.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.
