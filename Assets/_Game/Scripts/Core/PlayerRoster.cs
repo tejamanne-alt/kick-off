@@ -59,7 +59,7 @@ namespace DribbleToSchool.Core
             new PlayerInfo("boy", "Boy", "player.boy", SchoolLevel.High, 1.5f, 1.77f),
             new PlayerInfo("girl", "Girl", "player.girl", SchoolLevel.High, 1.43f, 1.65f),
             // Max, the backpack boy (tools/blender/meshy_teen.py, from a supplied model): about 1.75 m, his Head bone at 0.878 of it.
-            new PlayerInfo("backpackBoy", "BackpackBoy", "player.backpackBoy", SchoolLevel.High, 1.537f, 1.75f),
+            new PlayerInfo("backpackBoy", "BackpackBoy", "player.backpackBoy", SchoolLevel.High, 1.533f, 1.75f),
             // The primary-school kids (tools/blender, see its README: primary.py prints each one's neck height): 1.27 to 1.34 m.
             // Neck height = the Head bone's height x the standing height / the model's own height.
             // Kai (primaryBoy) is made from a supplied model by tools/blender/meshy_teen.py --profile plaid: 1.30 m, his Head bone at 0.840 of it.

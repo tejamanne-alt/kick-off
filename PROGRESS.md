@@ -658,6 +658,15 @@ The user found the first Coast models plain next to their reference shots (weath
 
 - Zoe (`primaryGirl2`, id and name kept) is the Meshy model the user made from four drawings of her: black hair in a long braid, a hot-pink animal-print bomber over a grey hood and pink T-shirt, coral cargo joggers, dark clogs. The model had printed the jacket's pattern on her backpack; `meshy_teen.py --profile rainbow` repaints the backpack as in the drawings (glitter pink, a unicorn panel with chevrons, a horn and ears) and makes it ride the Bag and Chest bones only, so it no longer swings with the arms. Every action audited (`review/zoe/all_actions.jpg`, the backpack from round the back in `review/zoe/backpack.jpg`): runs, kicks, slides, tucks, landing and keepy-ups hold together; with the arms raised high (jump fall, launch, open, celebration) the jacket creases at the shoulders, as on Mia. 1.29 m, neck height 1.064. Not modelled: the rainbow straps, the gold zips. Generated content v88. Not run in Unity.
 
+## Higher-quality kids: detail, rest pose, skinning, backpack (generated content v89)
+
+- In the game the supplied kids' hands looked like mittens, their arms hung stiffly straight and Zoe's backpack showed as a lump at the waist. All five (Max, Kai, Leo, Mia, Zoe) are rebuilt by `meshy_teen.py`:
+  - **Detail:** 100,000 triangles each instead of 30,000; fingers, faces, hair and shoe details keep their shape.
+  - **Rest pose:** the arms hang relaxed about 15 degrees from the sides, forearms softly bent (`ARM_DOWN`, `FOREARM_DOWN`).
+  - **Skinning:** `BuildModelCharacter` sets `SkinQuality.Bone4` on the kids' renderers. With no QualitySettings in the project, phones default to 2 bones a vertex, which would cut the models' 4-bone blends at shoulders, hips and backpacks.
+  - **Zoe's backpack:** found whole now (`pack_wide`: every back-facing face inside the pack's outline, behind the body's middle, clear of the arms by `pack_arm_gap`), so all of it is repainted and rides the Bag and Chest bones; before, only its pocket and a strip were, and its sides moved with the arms.
+- Checked: every action of all five at the game's camera angle (`review/hq/*_all_actions.jpg`), Zoe close up and her backpack from round the back. Max is clean in every action and Mia nearly so. Kai, Leo and Zoe are clean in runs, kicks, slides, landing and keepy-ups; with the arms raised high (jump fall, launch, open, celebration, the tucks) their sleeves still smear at the shoulders: their scans fuse the arms to the body. Max's neck height 1.533 (was 1.537). Generated content v89. Not run in Unity.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.
