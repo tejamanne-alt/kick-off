@@ -722,6 +722,10 @@ The user found the first Coast models plain next to their reference shots (weath
 - **Max** is rebuilt from the clean, bagless rigged model the user supplied (`meshy_rigged.py --profile denim`), checked against the reference drawings: spiky ginger hair and freckles, a light denim jacket over a grey hoodie and a white T-shirt, charcoal jeans, white sneakers with black stripes. 100k triangles; every action clean (`review/max_bags/max_all_actions.jpg`); neck height 1.547 (was 1.533); a new card. All four bags are fitted to him (`review/max_bags/bags.jpg`).
 - Every kid but Ren now wears the Locker Room's bags; Ren keeps the satchel he was modelled with. Not run in Unity.
 
+## The Golden Trail Backpack (generated content v100)
+
+- A fifth Locker Room bag from the supplied model: a classic tan canvas backpack with silver zips and dark mesh side pockets (`Bag_GoldenTrail`, `bag_goldentrail`), free and owned from the start, fitted to all six kids who wear bags (Hana, Max, Kai, Mia, Leo, Zoe). Settings' colour recolours the canvas and keeps the zips and mesh (`review/golden_trail_bag/`). Not run in Unity.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

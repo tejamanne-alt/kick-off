@@ -25,8 +25,11 @@ namespace DribbleToSchool.Cosmetics
         /// <summary>The light denim backpack with a big denim bow and tan straps (meshy_bag.py --id DenimBow).</summary>
         public const string DenimBowId = "bag_denimbow";
 
+        /// <summary>The classic tan canvas backpack with silver zips and dark mesh side pockets (meshy_bag.py --id GoldenTrail).</summary>
+        public const string GoldenTrailId = "bag_goldentrail";
+
         /// <summary>The bags every kid has from the start (SaveSystem owns them in every save).</summary>
-        public static readonly string[] Starter = { NoneId, DefaultId, RaceCarId, UnicornId, DenimBowId };
+        public static readonly string[] Starter = { NoneId, DefaultId, RaceCarId, UnicornId, DenimBowId, GoldenTrailId };
 
         /// <summary>
         /// The colours bags can be worn in (Settings): the first, the bag's own colours; the rest recolour its cloth
