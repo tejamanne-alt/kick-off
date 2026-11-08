@@ -26,7 +26,7 @@ blenv/bin/python meshy_bag.py -- fit $PWD/rigged/PrimaryBoy.blend $PWD/BagKickOf
 blenv/bin/python meshy_bag.py -- prep /abs/purple_kick_off_backpack.fbx $PWD --id KickOff   # the Locker Room's bag
 blenv/bin/python meshy_bag.py -- fit $PWD/rigged/PrimaryBoy2.blend $PWD/BagKickOff.blend $PWD   # ...fitted to Leo
 blenv/bin/python meshy_bag.py -- icon $PWD/BagKickOff.blend $PWD/bag_kickoff.png   # its Locker Room picture
-blenv/bin/python meshy_bag.py -- prep /abs/red_robot_backpack.fbx $PWD --id RaceCar --hue 340,18 --sat 0.62   # the Race Car one
+blenv/bin/python meshy_bag.py -- prep /abs/red_robot_backpack.fbx $PWD --id RaceCar --hue 340,18 --sat 0.62 --size-by panel   # the Race Car one
 blenv/bin/python meshy_bag.py -- prep /abs/sparkle_unicorn_backpack.fbx $PWD --id Unicorn --hue 310,355 --sat 0.25   # the Unicorn one
 blenv/bin/python meshy_bag.py -- prep /abs/denim_bow_backpack.fbx $PWD --id DenimBow --hue 195,232 --sat 0.18   # the Denim Bow one
     # (then fit it to each kid's fitted .blend in turn, and icon it, as above: a kid's file carries all their bags)
@@ -332,7 +332,7 @@ left under the clothes pushed out 1.2 cm and smoothed; the body is skinned to th
 a sewn-on bag's swing: `CharacterRig.bagSwing`), the straps to the Chest, blending where they meet the bag. The kid is
 exported again with the bag as a second mesh, `Bag_<Id>`, which `LevelBuildKit` gives the bag's material and
 `Presentation/BagWear` shows when that kid wears it. The Race Car Backpack is the second: a red car with a face, headlights, a grille and wheels, its cloth red
-(`--hue 340,18 --sat 0.62`: the band wraps through 0, and only strong reds, so the brown mesh back panel stays brown).
+(`--hue 340,18 --sat 0.62`: the band wraps through 0, and only strong reds, so the brown mesh back panel stays brown). It is sized on the kid by its back panel's width (`--size-by panel`), not its widest point: its wheels and mirrors stand a quarter beyond its body, and sized by them it came out a third too small beside the other bags.
 `prep` finds the straps' side as the one where the bag reaches furthest beyond its middle column (the gap between the
 straps), not the furthest reach: the car's lights and plate stand out further at the front than the straps do at the
 back. The Sparkle Unicorn Backpack is the third: pink glitter cloth (`--hue 310,355 --sat 0.25`) with a unicorn's horn and

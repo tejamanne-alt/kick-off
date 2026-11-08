@@ -708,6 +708,10 @@ The user found the first Coast models plain next to their reference shots (weath
 - `meshy_bag.py prep`: straps looping up above a bag no longer count as its body (the top is capped at the last level reaching a third of the way to its front); the other three bags measure exactly as before.
 - Not run in Unity.
 
+## The Race Car Backpack a third bigger (generated content v97)
+
+- It looked small on the kids: it was sized by its widest point, and its wheels and side mirrors stand out a quarter beyond its body. `meshy_bag.py prep --size-by panel` sizes it by its back panel's width instead (0.895 against 1.186 at its widest), so on the kids it is now about the Kick Off backpack's size (`review/race_car_bag/bigger.jpg`). Refitted to all four primary kids; the other bags are unchanged. Not run in Unity.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

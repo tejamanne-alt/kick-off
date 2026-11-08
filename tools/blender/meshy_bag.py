@@ -4,6 +4,8 @@
 #
 #   prep  blenv/bin/python meshy_bag.py -- prep /abs/bag.fbx /abs/outdir --id KickOff [--tris 30000] [--size 1024]
 #           [--hue 255,320] [--sat 0.3]   the cloth's hue band (degrees; lo > hi wraps through red's 0) and least saturation
+#           [--size-by panel]   size it on the kid by its back panel's width, not its widest point (the Race Car's
+#                               wheels and mirrors stand out beyond its body)
 #           -> outdir/Bag<Id>.blend (the bag facing the wearer on -y, its back panel's top middle at the origin, its body
 #              one unit tall), outdir/Bag<Id>Atlas.png, outdir/Bag<Id>.json
 #   icon  blenv/bin/python meshy_bag.py -- icon /abs/Bag<Id>.blend /abs/bag_<id>.png [--size 256]
@@ -36,6 +38,7 @@ log = mb.log
 # leaves its brown mesh back panel, grey and black trim, yellow lights and blue windows as they are.
 CLOTH_HUE = (255.0, 320.0)
 CLOTH_SAT = 0.3
+SIZE_BY = 'widest'          # (--size-by panel: by the back panel's width)
 
 
 def cloth_mask(rgb):
@@ -124,6 +127,11 @@ def prep(src, out, bag_id, tris, size):
         if n.type == 'TEX_IMAGE': n.image.alpha_mode = 'CHANNEL_PACKED'   # (the alpha is the cloth mask)
     col = me.color_attributes.new('Col', 'BYTE_COLOR', 'CORNER'); col.data.foreach_set('color', np.ones(len(me.loops) * 4))
     o.name = me.name = 'Bag_' + bag_id
+    if SIZE_BY == 'panel':
+        # (the width across the back panel, the part that lies on the kid's back, at its middle heights)
+        p = (V[:, 1] >= -0.02) & (V[:, 1] < 0.10) & (V[:, 2] > -0.6) & (V[:, 2] < -0.3)
+        log('prep: sized by its back panel, %.3f wide (at its widest, %.3f)' % (np.ptp(V[p, 0]), width))
+        width = np.ptp(V[p, 0])
     o['width'] = float(width)
     bpy.ops.wm.save_as_mainfile(filepath=os.path.join(out, 'Bag%s.blend' % bag_id))
     with open(os.path.join(out, 'Bag%s.json' % bag_id), 'w') as f:
@@ -311,6 +319,7 @@ if __name__ == '__main__':
         size = int(argv[argv.index('--size') + 1]) if '--size' in argv else 1024
         if '--hue' in argv: CLOTH_HUE = tuple(float(x) for x in argv[argv.index('--hue') + 1].split(','))
         if '--sat' in argv: CLOTH_SAT = float(argv[argv.index('--sat') + 1])
+        if '--size-by' in argv: SIZE_BY = argv[argv.index('--size-by') + 1]
         prep(argv[1], argv[2], bag_id, tris, size)
     elif argv[0] == 'icon':
         icon(argv[1], argv[2], int(argv[argv.index('--size') + 1]) if '--size' in argv else 256)
