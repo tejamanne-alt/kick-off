@@ -6,9 +6,6 @@
 import bpy, bmesh, math, sys, os
 from mathutils import Vector
 
-args = sys.argv[sys.argv.index('--') + 1:]
-out_dir = args[-1]
-os.makedirs(out_dir, exist_ok=True)
 
 SUN = (1.0, 0.97, 0.92)
 SHADE = tuple(0.25 * a + 0.75 * b for a, b in zip((0.68, 0.7, 0.88), (0.52, 0.56, 0.66)))
@@ -93,7 +90,6 @@ def camera(S, loc, target, lens):
 
 
 # ---------------------------------------------------------------- the ball
-S = fresh(2048)
 
 
 def football(radius):
@@ -125,9 +121,14 @@ def football(radius):
     return o
 
 
-ball = football(1.0)
-ball.rotation_euler = (math.radians(24), math.radians(-18), math.radians(22))   # a pentagon facing us, a little up and left: it spins
-camera(S, (0, -9.0, 0), (0, 0, 0), 100)                                          # long lens: the ball nearly fills the frame
-S.render.filepath = os.path.join(out_dir, 'ball.png')
-bpy.ops.render.render(write_still=True)
-print('rendered ball')
+if __name__ == '__main__':
+    args = sys.argv[sys.argv.index('--') + 1:]
+    out_dir = args[-1]
+    os.makedirs(out_dir, exist_ok=True)
+    S = fresh(2048)
+    ball = football(1.0)
+    ball.rotation_euler = (math.radians(24), math.radians(-18), math.radians(22))   # a pentagon facing us, a little up and left: it spins
+    camera(S, (0, -9.0, 0), (0, 0, 0), 100)                                          # long lens: the ball nearly fills the frame
+    S.render.filepath = os.path.join(out_dir, 'ball.png')
+    bpy.ops.render.render(write_still=True)
+    print('rendered ball')

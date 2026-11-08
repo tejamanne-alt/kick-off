@@ -732,9 +732,9 @@ The user found the first Coast models plain next to their reference shots (weath
 - **Hana is now the default player.** Saved choices keep working: a save that picked Ren now plays Hana (`PlayerRoster.Normalize`), and his bag choice is ignored. Six kids remain (Hana and Max; Kai, Mia, Leo and Zoe), and all of them wear the Locker Room's bags.
 - Tests: `PlayerRosterTests` (two teens, Hana the default, "boy" falls back to her), `BagsTests` (every kid wears bags). Not run in Unity.
 
-## A new app icon, with no characters
+## A new app icon: kicking a ball on the way to school
 
-- The icon showed Ren (now removed). It is now a big toon football flying at us out of a morning sunburst, a curving gold-to-orange kick trail sweeping up behind it, sparkles, the logo's mown pitch with its chalk line and the sunny "2" (`tools/blender/app_icon.py`, now ball only, and `app_icon_compose.py`). Written to `marketing/appstore/icon_1024.png`, `marketing/googleplay/icon_512.png`, `Assets/_Game/Art/Icon/AppIcon.png` and the Android adaptive layers; checked at 300 down to 40 px in iOS's and Android's masks (`review/app_icon/sizes.png`). The build applies it (`BuildScripts.ApplyIcon`).
+- The icon showed Ren (now removed). It is now the walk to school, the memory of kicking a ball (or stones, bottles) along the way: Max with his Kick Off backpack kicks a football up the footpath, the school ahead with the sun rising behind its clock tower, a picket fence and pebbles, a golden kick trail with a comic burst at his toe, sparkles and the logo's "2". Rendered from the game's own models (`tools/blender/app_icon_scene.py`, new) and laid out by `app_icon_compose.py`. Written to `marketing/appstore/icon_1024.png`, `marketing/googleplay/icon_512.png`, `Assets/_Game/Art/Icon/AppIcon.png` and the Android adaptive layers; checked at 300 down to 40 px in iOS's and Android's masks (`review/app_icon/sizes.png`). The build applies it (`BuildScripts.ApplyIcon`).
 
 ## After Phase 8 (next steps)
 
