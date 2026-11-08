@@ -186,7 +186,10 @@ namespace DribbleToSchool.UI
             swatches.offsetMax = new Vector2(-4f, 0f);
             int count = DribbleToSchool.Cosmetics.Bags.Colours.Length;
             var rings = new Image[count];
-            var bagIcon = Resources.Load<Sprite>("UI/" + DribbleToSchool.Cosmetics.Bags.DefaultId);
+            // (the bags' own colours are shown by the bag the chosen kid wears: Kick Off's when they wear none of their choosing)
+            string shownBag = DribbleToSchool.Cosmetics.Bags.CanWear(GameSettings.Character) ? DribbleToSchool.Cosmetics.Bags.For(GameSettings.Character) : DribbleToSchool.Cosmetics.Bags.NoneId;
+            if (shownBag == DribbleToSchool.Cosmetics.Bags.NoneId) shownBag = DribbleToSchool.Cosmetics.Bags.DefaultId;
+            var bagIcon = Resources.Load<Sprite>("UI/" + shownBag);
             for (int i = 0; i < count; i++)
             {
                 int index = i;

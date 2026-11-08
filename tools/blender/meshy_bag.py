@@ -3,6 +3,7 @@
 # own FBX ('Bag_<Id>', beside 'Kid', under 'KidRig'), so any bag can be worn by any kid who has no bag of their own.
 #
 #   prep  blenv/bin/python meshy_bag.py -- prep /abs/bag.fbx /abs/outdir --id KickOff [--tris 30000] [--size 1024]
+#           [--hue 255,320] [--sat 0.3]   the cloth's hue band (degrees; lo > hi wraps through red's 0) and least saturation
 #           -> outdir/Bag<Id>.blend (the bag facing the wearer on -y, its back panel's top middle at the origin, its body
 #              one unit tall), outdir/Bag<Id>Atlas.png, outdir/Bag<Id>.json
 #   icon  blenv/bin/python meshy_bag.py -- icon /abs/Bag<Id>.blend /abs/bag_<id>.png [--size 256]
@@ -29,8 +30,10 @@ C = bpy.context
 mb.log = lambda *a: print('[meshy_bag]', *a, flush=True)
 log = mb.log
 
-# The cloth's colour, for the recolouring mask: purple hues, saturated enough (the navy zips and the black mesh are
-# not cloth; nor the white or the orange of the logo).
+# The cloth's colour, for the recolouring mask (each bag's own: --hue, --sat): by default the Kick Off backpack's
+# purple, saturated enough (the navy zips and the black mesh are not cloth; nor the white or the orange of the logo).
+# The Race Car backpack's is red, wrapping through 0 (--hue 340,18), and strongly saturated (--sat 0.62), which
+# leaves its brown mesh back panel, grey and black trim, yellow lights and blue windows as they are.
 CLOTH_HUE = (255.0, 320.0)
 CLOTH_SAT = 0.3
 
@@ -40,6 +43,7 @@ def cloth_mask(rgb):
     shape = rgb.shape[:-1]
     h, s, v = (x.reshape(shape) for x in hsv(rgb.reshape(-1, 3)))
     lo, hi = CLOTH_HUE
+    if lo > hi: h = np.where(h < lo, h + 360.0, h); hi += 360.0          # (a band through 0: red)
     hw = np.clip(np.minimum(h - lo, hi - h) / 12.0 + 0.5, 0, 1)
     sw = np.clip((s - CLOTH_SAT) / 0.12 + 0.5, 0, 1)
     vw = np.clip((v - 0.06) / 0.05, 0, 1)
@@ -60,13 +64,15 @@ def prep(src, out, bag_id, tris, size):
     bm = bmesh.new(); bm.from_mesh(o.data); bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=1e-6)
     bm.to_mesh(o.data); bm.free(); o.data.update()
 
-    # Which side the straps are on: the side that reaches furthest from the middle column (the straps' "D" stands
-    # further off the back panel than the front pocket does from the front).
+    # Which side the straps are on: the side where the whole bag reaches furthest beyond its middle column (the
+    # straps' "D" stands off the back panel with nothing between the two straps; a pocket, lights or a number plate on
+    # the front sit in the middle).
     V = verts_np(o)
     mid = (V[:, 2] > np.percentile(V[:, 2], 40)) & (V[:, 2] < np.percentile(V[:, 2], 75))
     centre = mid & (np.abs(V[:, 0]) < 0.1 * np.ptp(V[:, 0]))
-    ys = V[mid, 1]; reach_plus = ys.max() - np.median(V[centre, 1]); reach_minus = np.median(V[centre, 1]) - ys.min()
-    plus = reach_plus > reach_minus
+    ys, yc = V[mid, 1], V[centre, 1]
+    gap_plus, gap_minus = ys.max() - yc.max(), yc.min() - ys.min()
+    plus = gap_plus > gap_minus
     if plus:                                                    # the straps toward -y: the wearer's side
         o.data.transform(Matrix.Rotation(math.pi, 4, 'Z')); o.data.update()
     V = verts_np(o)
@@ -133,8 +139,9 @@ def fit(kid_blend, bag_blend, out):
     with bpy.data.libraries.load(bag_blend) as (src, dst):
         dst.objects = [n for n in src.objects if n.startswith('Bag_')]
     bag = dst.objects[0]; C.scene.collection.objects.link(bag)
-    name = bag.name
-    for x in [x for x in bpy.data.objects if x.name.startswith('Bag_') and x is not bag]: bpy.data.objects.remove(x)
+    name = bag.name.split('.')[0]           # ('Bag_KickOff.001' when the kid's file already has one)
+    # (an earlier fit of this same bag goes; the kid's other bags stay)
+    for x in [x for x in bpy.data.objects if x is not bag and (x.name == name or x.name.startswith(name + '.'))]: bpy.data.objects.remove(x)
     bag.name = name
 
     B = rig.data.bones
@@ -293,6 +300,8 @@ if __name__ == '__main__':
         bag_id = argv[argv.index('--id') + 1]
         tris = int(argv[argv.index('--tris') + 1]) if '--tris' in argv else 30000
         size = int(argv[argv.index('--size') + 1]) if '--size' in argv else 1024
+        if '--hue' in argv: CLOTH_HUE = tuple(float(x) for x in argv[argv.index('--hue') + 1].split(','))
+        if '--sat' in argv: CLOTH_SAT = float(argv[argv.index('--sat') + 1])
         prep(argv[1], argv[2], bag_id, tris, size)
     elif argv[0] == 'icon':
         icon(argv[1], argv[2], int(argv[argv.index('--size') + 1]) if '--size' in argv else 256)

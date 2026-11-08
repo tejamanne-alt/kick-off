@@ -24,6 +24,8 @@ blenv/bin/python meshy_bag.py -- fit $PWD/rigged/PrimaryBoy.blend $PWD/BagKickOf
 blenv/bin/python meshy_bag.py -- prep /abs/purple_kick_off_backpack.fbx $PWD --id KickOff   # the Locker Room's bag
 blenv/bin/python meshy_bag.py -- fit $PWD/rigged/PrimaryBoy2.blend $PWD/BagKickOff.blend $PWD   # ...fitted to Leo
 blenv/bin/python meshy_bag.py -- icon $PWD/BagKickOff.blend $PWD/bag_kickoff.png   # its Locker Room picture
+blenv/bin/python meshy_bag.py -- prep /abs/red_robot_backpack.fbx $PWD --id RaceCar --hue 340,18 --sat 0.62   # the Race Car one
+    # (then fit it to each kid's fitted .blend in turn, and icon it, as above: a kid's file carries all their bags)
     # (PrimaryBoy2.fbx/.blend/.json, PrimaryBoy2Atlas.png; see "Leo and the bags" below; primary.py --boy2 would overwrite it)
 blenv/bin/python meshy_teen.py -- /abs/little_star_in_plaid.fbx $PWD --profile plaid   # Kai, from a supplied model
     # (PrimaryBoy.fbx/.blend/.json, PrimaryBoyAtlas.png; primary.py --boy would overwrite it)
@@ -46,7 +48,8 @@ blenv/bin/python review_poses.py -- $PWD/Boy.blend $PWD/boy_poses.png --jobs 3 -
 cp Boy.fbx Boy.json BoyAtlas.png Bicycle.fbx BicycleAtlas.png Girl.fbx Girl.json GirlAtlas.png ../../Assets/_Game/Art/Models/
 cp BackpackBoy.fbx BackpackBoy.json BackpackBoyAtlas.png ../../Assets/_Game/Art/Models/
 cp PrimaryBoy2.fbx rigged/PrimaryBoy2.json rigged/PrimaryBoy2Atlas.png ../../Assets/_Game/Art/Models/   # (Leo, with his bags)
-cp BagKickOff.json BagKickOffAtlas.png ../../Assets/_Game/Art/Models/ && cp bag_kickoff.png ../../Assets/_Game/Resources/UI/
+cp BagKickOff.json BagKickOffAtlas.png BagRaceCar.json BagRaceCarAtlas.png ../../Assets/_Game/Art/Models/
+cp bag_kickoff.png bag_racecar.png ../../Assets/_Game/Resources/UI/
 cp PrimaryGirl2.fbx PrimaryGirl2.json PrimaryGirl2Atlas.png ../../Assets/_Game/Art/Models/   # (Zoe, from meshy_teen.py)
 cp PrimaryGirl.fbx PrimaryGirl.json PrimaryGirlAtlas.png ../../Assets/_Game/Art/Models/   # (Mia, from meshy_teen.py)
 cp PrimaryBoy.fbx rigged/PrimaryBoy.json rigged/PrimaryBoyAtlas.png ../../Assets/_Game/Art/Models/   # (Kai, with his bags)
@@ -320,9 +323,13 @@ chest, its top run lifted over the shoulder, its lower front run drawn out towar
 left under the clothes pushed out 1.2 cm and smoothed; the body is skinned to the Bag bone (the game swings it at 0.3 of
 a sewn-on bag's swing: `CharacterRig.bagSwing`), the straps to the Chest, blending where they meet the bag. The kid is
 exported again with the bag as a second mesh, `Bag_<Id>`, which `LevelBuildKit` gives the bag's material and
-`Presentation/BagWear` shows when that kid wears it. A new bag: `prep` it, `fit` it to each kid who wears bags (re-export
-them), `icon` it into `Resources/UI/bag_<id>.png`, and add a row to `CosmeticsTable` (id `bag_<id>`). `review_poses.py`
-renders the bags with the kid (`--tint r,g,b,lum` previews a Settings colour).
+`Presentation/BagWear` shows when that kid wears it. The Race Car Backpack is the second: a red car with a face, headlights, a grille and wheels, its cloth red
+(`--hue 340,18 --sat 0.62`: the band wraps through 0, and only strong reds, so the brown mesh back panel stays brown).
+`prep` finds the straps' side as the one where the bag reaches furthest beyond its middle column (the gap between the
+straps), not the furthest reach: the car's lights and plate stand out further at the front than the straps do at the
+back. A kid's file carries every bag fitted to them; `fit` replaces only an earlier fit of the same bag. A new bag:
+`prep` it, `fit` it to each kid who wears bags (re-export them), `icon` it into `Resources/UI/bag_<id>.png`, and add a row to `CosmeticsTable` (id `bag_<id>`). `review_poses.py`
+renders a bag with the kid (`--bag Bag_RaceCar` picks which; `--tint r,g,b,lum` previews a Settings colour).
 
 ### Pose audit
 

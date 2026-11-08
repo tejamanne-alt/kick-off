@@ -19,6 +19,7 @@
 #       [--body-only]          render only the body's skin (the clothes removed), to see what moves under them
 #       [--tint 0.8,0.05,0.05,0.278]   the bags' cloth recoloured (linear r,g,b, then the cloth's own luminance:
 #                              Bag<Id>.json) as the game's Settings colour does
+#       [--bag Bag_RaceCar]    which of the kid's bags to show (the first by default; none: no bag)
 #       [--list]               list the poses and exit
 #
 # Every pose is the game's own joint angles (KidAnimator.cs, MenuKid.cs), in degrees about the
@@ -288,6 +289,12 @@ if '--tint' in args:
 mat = kid.data.materials[0]
 toon(mat)
 BAGS = [o for o in bpy.data.objects if o.type == 'MESH' and o.name.startswith('Bag_')]
+if BAGS:
+    # one bag on at a time, as in the game (BagWear): --bag Bag_RaceCar, else the first; --bag none for no bag
+    wear = args[args.index('--bag') + 1] if '--bag' in args else BAGS[0].name
+    off = [b for b in BAGS if b.name != wear]
+    BAGS = [b for b in BAGS if b.name == wear]
+    for b in off: bpy.data.objects.remove(b)
 for b in BAGS: toon(b.data.materials[0], TINT)
 ol = bpy.data.materials.new('Outline'); ol.use_nodes = True; ol.use_backface_culling = True
 on = ol.node_tree; e = on.nodes.new('ShaderNodeEmission'); e.inputs['Color'].default_value = (0.012, 0.009, 0.014, 1)

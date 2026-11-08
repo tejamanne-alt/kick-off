@@ -14,10 +14,10 @@ namespace DribbleToSchool.Tests
     public class BagsTests
     {
         [Test]
-        public void NoBagAndTheDefaultBagAreFreeShopItems()
+        public void TheStarterBagsAreFreeShopItems()
         {
             var rows = CosmeticsTable.Rows();
-            foreach (string id in new[] { Bags.NoneId, Bags.DefaultId })
+            foreach (string id in Bags.Starter)
             {
                 var row = rows.FirstOrDefault(r => r.id == id);
                 Assert.AreEqual(id, row.id, "missing bag item: " + id);
