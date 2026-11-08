@@ -501,27 +501,27 @@ the base paint (sRGB, as in the FBX) and the wheel radius for `WheelSpin`.
 
 ## App icon
 
-The store icon: the teen boy running to school after a big football, in the game's toon look, under a morning sky with the
-sun rising behind him, on the logo's mown pitch with its chalk speed lines, and the logo's sunny "2" in the corner.
+The store icon, with no characters: a big football flying at us out of a morning sunburst, a curving gold-to-orange kick
+trail sweeping up behind it from where it was struck, sparkles round it, over the logo's mown pitch and its chalk line,
+and the logo's sunny "2" in the corner, in the game's toon look.
 
 ```
-blenv/bin/python app_icon.py -- $PWD/Boy.blend $PWD/icon_layers      # kid.png (2048) and ball.png (1024), transparent
+blenv/bin/python app_icon.py -- $PWD/icon_layers      # ball.png (2048), transparent
 python3 app_icon_compose.py $PWD/icon_layers ../.. --two --preview $PWD/icon_preview
 ```
 
-`app_icon.py` poses the boy (a sprint: the near arm back, the far hand up, a stride, leaning in, his face turned a little
-toward us) and shoots him with a 46 mm lens, lit from behind his left shoulder with a warm rim; the ball is a truncated
-icosahedron (crisp pentagons and seams). `app_icon_compose.py` draws the rest at 2048 px and writes:
+`app_icon.py` renders the ball, a truncated icosahedron (crisp pentagons and seams), in the toon shading, lit by the morning
+sun high on the left. `app_icon_compose.py` draws the rest at 2048 px and writes:
 
 | File | What |
 |---|---|
 | `marketing/appstore/icon_1024.png` | App Store icon, 1024 × 1024, opaque (iOS rounds the corners) |
 | `marketing/googleplay/icon_512.png` | Google Play listing icon, 512 × 512 |
 | `Assets/_Game/Art/Icon/AppIcon.png` | the icon in the app for every platform (`BuildScripts.ApplyIcon`; Unity scales it) |
-| `Assets/_Game/Art/Icon/AppIconBackground.png`, `AppIconForeground.png` | Android's adaptive icon: the sky and pitch; the kid and the ball with his face and the ball inside the 66 dp circle every launcher's mask keeps (no "2": a round mask would clip it) |
+| `Assets/_Game/Art/Icon/AppIconBackground.png`, `AppIconForeground.png` | Android's adaptive icon: the sky, the sunburst and the pitch; the ball and its trail, the ball centred in the 66 dp circle every launcher's mask keeps (no "2": a round mask would clip it) |
 
 Without `--two` the corner is plain sky. `--preview` writes the icon masked as iOS (rounded square) and Android (circle) show
-it, from 300 px down to 40 px: check the face, the ball and the "2" still read at the small sizes after any change.
+it, from 300 px down to 40 px: check the ball, its trail and the "2" still read at the small sizes after any change.
 
 ## Asset kits
 

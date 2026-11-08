@@ -732,6 +732,10 @@ The user found the first Coast models plain next to their reference shots (weath
 - **Hana is now the default player.** Saved choices keep working: a save that picked Ren now plays Hana (`PlayerRoster.Normalize`), and his bag choice is ignored. Six kids remain (Hana and Max; Kai, Mia, Leo and Zoe), and all of them wear the Locker Room's bags.
 - Tests: `PlayerRosterTests` (two teens, Hana the default, "boy" falls back to her), `BagsTests` (every kid wears bags). Not run in Unity.
 
+## A new app icon, with no characters
+
+- The icon showed Ren (now removed). It is now a big toon football flying at us out of a morning sunburst, a curving gold-to-orange kick trail sweeping up behind it, sparkles, the logo's mown pitch with its chalk line and the sunny "2" (`tools/blender/app_icon.py`, now ball only, and `app_icon_compose.py`). Written to `marketing/appstore/icon_1024.png`, `marketing/googleplay/icon_512.png`, `Assets/_Game/Art/Icon/AppIcon.png` and the Android adaptive layers; checked at 300 down to 40 px in iOS's and Android's masks (`review/app_icon/sizes.png`). The build applies it (`BuildScripts.ApplyIcon`).
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

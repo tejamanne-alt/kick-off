@@ -1,13 +1,13 @@
-# Lays out the app icon from app_icon.py's layers (kid.png, ball.png) in the Kick Off 2 logo's language: a morning sky with
-# the sun rising behind the kid, the logo's mown green pitch with a chalk line, chalk speed lines with a navy edge, the
-# kid running to the right (to school, as in every level) after a big football. Writes every size the stores need:
+# Lays out the app icon from app_icon.py's layer (ball.png) in the Kick Off 2 logo's language, with no characters: a big
+# football flying at us out of a morning sunburst, a curving golden kick trail sweeping up behind it with sparkles, over
+# the logo's mown green pitch and its chalk lines. Writes every size the stores need:
 #   python3 app_icon_compose.py <layers dir> <repo root> [--preview <dir>]
 #     marketing/appstore/icon_1024.png               App Store icon: 1024 x 1024, opaque (iOS adds its own corners)
 #     marketing/googleplay/icon_512.png              Google Play listing icon: 512 x 512, opaque (Play adds its own mask)
 #     Assets/_Game/Art/Icon/AppIcon.png              the game's icon for every platform (BuildScripts), 1024, opaque
 #     Assets/_Game/Art/Icon/AppIconBackground.png    Android adaptive icon, back layer: the sky, the sun and the pitch, 1024
-#     Assets/_Game/Art/Icon/AppIconForeground.png    Android adaptive icon, front layer: the kid and the ball, his face and
-#                                                    the ball inside the middle 66 dp circle every launcher's mask keeps, 1024
+#     Assets/_Game/Art/Icon/AppIconForeground.png    Android adaptive icon, front layer: the ball and its trail, the ball
+#                                                    inside the middle 66 dp circle every launcher's mask keeps, 1024
 # --preview also writes a sheet of the icon masked the way iOS and Android show it, at home-screen and settings sizes;
 # --two adds the logo's sunny "2" (read "to": kick off to school) in the top right corner.
 import math, os, sys
@@ -119,32 +119,6 @@ def ball_layer(size, cx, cy, diameter):
     return layer
 
 
-def kid_layer(size, head_x, top_y, height, lean=0.0):
-    """The kid render scaled so the frame is <height> tall, its hair's top at top_y and his head centred on head_x, leaning
-    forward (to the right) by <lean> degrees about his hips."""
-    k = Image.open(os.path.join(layers, 'kid.png')).convert('RGBA')
-    a = np.array(k.split()[3])
-    rows = np.where(a.max(axis=1) > 40)[0]
-    top = rows[0]
-    band = a[top:top + int(k.height * 0.12)]                 # the head: the top 12 % of the frame below the hair's top
-    cols = np.where(band.max(axis=0) > 40)[0]
-    hx = (cols[0] + cols[-1]) / 2
-    s = height / k.height
-    k = k.resize((int(k.width * s), int(k.height * s)), Image.LANCZOS)
-    if lean:
-        # Turn about his hips (60 % down the frame), then put his head back where it was asked for.
-        piv = (hx * s, k.height * 0.6)
-        r = math.radians(lean)
-        hx0, hy0 = hx * s - piv[0], top * s - piv[1]
-        hx1 = piv[0] + hx0 * math.cos(r) - hy0 * math.sin(r)
-        hy1 = piv[1] + hx0 * math.sin(r) + hy0 * math.cos(r)
-        k = k.rotate(-lean, resample=Image.BICUBIC, center=piv)
-        hx, top = hx1 / s, hy1 / s
-    layer = Image.new('RGBA', (size, size), (0, 0, 0, 0))
-    layer.alpha_composite(k, (int(head_x - hx * s), int(top_y - top * s)))
-    return layer
-
-
 def halo(layer, width, alpha=210):
     """A soft white rim round everything drawn on <layer> (outside its ink line), so it stands off the rays."""
     a = layer.split()[3]
@@ -155,29 +129,92 @@ def halo(layer, width, alpha=210):
     return rim
 
 
+BALL = (0.53, 0.53, 0.56)                   # the ball's centre (x, y) and diameter, as fractions of the square
+
+
+def bezier(p0, p1, p2, p3, n):
+    t = np.linspace(0, 1, n)[:, None]
+    return ((1 - t) ** 3) * p0 + 3 * ((1 - t) ** 2) * t * p1 + 3 * (1 - t) * t * t * p2 + (t ** 3) * p3
+
+
+def ribbon(path, w0, w1):
+    """A polygon round a path, tapering from w0 at its start to w1 at its end (a comet's tail)."""
+    d = np.gradient(path, axis=0)
+    d /= np.maximum(np.linalg.norm(d, axis=1, keepdims=True), 1e-6)
+    nrm = np.stack([-d[:, 1], d[:, 0]], 1)
+    w = np.linspace(w0, w1, len(path))[:, None] * (np.sin(np.linspace(0, np.pi / 2, len(path))) ** 0.6)[:, None]
+    left, right = path + nrm * w / 2, path - nrm * w / 2
+    return [tuple(p) for p in np.concatenate([left, right[::-1]])]
+
+
+def gradient_fill(size, poly, path, colours):
+    """The polygon filled with colours running along the path (from its start to its end)."""
+    mask = Image.new('L', (size, size), 0)
+    ImageDraw.Draw(mask).polygon(poly, fill=255)
+    y, x = np.mgrid[0:size, 0:size].astype(np.float32)
+    a, b = path[0], path[-1]
+    v = b - a
+    t = np.clip(((x - a[0]) * v[0] + (y - a[1]) * v[1]) / float(v @ v), 0, 1)
+    out = np.zeros((size, size, 4), np.float32)
+    stops = np.linspace(0, 1, len(colours))
+    for c in range(3):
+        out[..., c] = np.interp(t, stops, [col[c] for col in colours])
+    alpha = np.interp(t, stops, [col[3] if len(col) > 3 else 255 for col in colours])
+    out[..., 3] = np.array(mask, np.float32) * alpha / 255
+    return Image.fromarray(out.astype(np.uint8), 'RGBA')
+
+
+def sparkle(d, cx, cy, r, fill, ink=None, iw=0):
+    """A four-pointed star."""
+    k = 0.28
+    pts = []
+    for i in range(8):
+        ang = math.pi / 4 * i - math.pi / 2
+        rr = r if i % 2 == 0 else r * k
+        pts.append((cx + rr * math.cos(ang), cy + rr * math.sin(ang)))
+    if ink:
+        d.polygon(pts, fill=ink, outline=ink, width=iw)
+    d.polygon(pts, fill=fill)
+
+
 def subject(size, scale=1.0, dx=0.0, dy=0.0):
-    """The kid, the ball, the speed lines and the ball's shadow, laid out for a full square (scale 1) or smaller and
-    moved (the adaptive icon's front layer)."""
+    """The ball, its kick trail, the sparkles and its shadow, laid out for a full square (scale 1) or smaller and moved
+    (the adaptive icon's front layer)."""
     S = size * scale
     ox, oy = size * (1 - scale) / 2 + dx * size, size * (1 - scale) / 2 + dy * size
-    P = lambda fx, fy: (ox + fx * S, oy + fy * S)
+    P = lambda fx, fy: np.array((ox + fx * S, oy + fy * S), np.float32)
+    bx, by, bd = BALL
     layer = Image.new('RGBA', (size, size), (0, 0, 0, 0))
-    # The ball at his feet, ahead of him, close to us: he is dribbling it to school. Its shadow on the grass under it.
-    bx, by, bd = 0.735, 0.745, 0.37        # at his feet, clear of his hands; its far edge inside the corner iOS rounds off
+    # Its shadow far below on the grass: the ball is high in the air.
     sh = Image.new('RGBA', (size, size), (0, 0, 0, 0))
-    cx, cy = P(bx + 0.01, 0.945)
-    ImageDraw.Draw(sh).ellipse([cx - S * 0.15, cy - S * 0.03, cx + S * 0.15, cy + S * 0.03], fill=(16, 52, 22, 120))
-    layer.alpha_composite(sh.filter(ImageFilter.GaussianBlur(S * 0.012)))
+    c = P(bx - 0.05, 0.93)
+    ImageDraw.Draw(sh).ellipse([c[0] - S * 0.17, c[1] - S * 0.028, c[0] + S * 0.17, c[1] + S * 0.028], fill=(14, 48, 20, 110))
+    layer.alpha_composite(sh.filter(ImageFilter.GaussianBlur(S * 0.014)))
+    # The kick trail: from low on the left (where it was struck) curving up into the ball, in the logo's gold to orange
+    # with a white-hot core near the ball and a navy ink edge.
+    path = bezier(P(-0.10, 1.02), P(0.06, 1.0), P(0.16, 0.66), P(bx - 0.03, by + 0.03), 220)
+    outer = ribbon(path, S * 0.05, S * 0.44)
+    inner = ribbon(path, S * 0.015, S * 0.31)
+    core = ribbon(path[60:], S * 0.005, S * 0.16)
+    ink = Image.new('L', (size, size), 0)
+    ImageDraw.Draw(ink).polygon(outer, fill=255)
+    ink = ink.filter(ImageFilter.MaxFilter(int(S * 0.012) * 2 + 1))
+    edge = Image.new('RGBA', (size, size), NAVY + (0,)); edge.putalpha(ink.point(lambda v: v * 0.92))
+    layer.alpha_composite(edge)
+    layer.alpha_composite(gradient_fill(size, outer, path, [(250, 120, 40, 0), (250, 120, 40, 255), (255, 165, 50, 255), (255, 200, 70, 255)]))
+    layer.alpha_composite(gradient_fill(size, inner, path, [(255, 205, 80, 0), (255, 214, 90, 255), (255, 236, 140, 255)]))
+    layer.alpha_composite(gradient_fill(size, core, path[60:], [(255, 250, 225, 0), (255, 252, 236, 255)]))
+    # Speed streaks along the trail.
     d = ImageDraw.Draw(layer)
-    # Speed lines streaming back from behind him, clear of his arm.
-    w = int(S * 0.024)
-    for (fx0, fy, ln) in ((0.025, 0.23, 0.12), (0.0, 0.32, 0.16), (0.03, 0.41, 0.10)):
-        speed_line(d, P(fx0, fy), P(fx0 + ln, fy - ln * 0.06), w, scale)
-    # The kid.
-    hx, hy = P(0.40, 0.06)
-    layer.alpha_composite(halo(kid_layer(size, hx, hy, S * 1.48, lean=5.0), S * 0.009))
-    # The ball, in front of everything.
-    layer.alpha_composite(halo(ball_layer(size, *P(bx, by), S * bd), S * 0.008))
+    for (a, b, w) in (((0.04, 0.42), (0.16, 0.33), 0.022), ((0.07, 0.53), (0.15, 0.47), 0.018)):
+        speed_line(d, tuple(P(*a)), tuple(P(*b)), int(S * w), scale)
+    # Sparkles round the ball.
+    for (fx, fy, r) in ((0.27, 0.17, 0.05), (0.88, 0.80, 0.045), (0.92, 0.46, 0.03), (0.47, 0.11, 0.025)):
+        cx, cy = P(fx, fy)
+        sparkle(d, cx, cy, S * r * 1.25, NAVY + (255,))
+        sparkle(d, cx, cy, S * r, (255, 246, 196, 255))
+    # The ball, in front of everything, with a white rim to stand it off the rays.
+    layer.alpha_composite(halo(ball_layer(size, *P(bx, by), S * bd), S * 0.010))
     return layer
 
 
@@ -212,9 +249,9 @@ def two(size, cx, cy, height):
 
 
 def background(size):
-    sun = (size * 0.37, size * 0.30)
+    sun = (size * BALL[0], size * BALL[1])             # the sunburst behind the ball
     bg = sky(size, sun)
-    bg.alpha_composite(pitch(size, size * 0.79))
+    bg.alpha_composite(pitch(size, size * 0.80))
     return bg
 
 
@@ -244,9 +281,9 @@ save_rgb(full, os.path.join(root, 'Assets/_Game/Art/Icon/AppIcon.png'), 1024)
 # may crop the 108 dp layer to its middle 72 dp and mask it to a circle as small as 66 dp across).
 back = vignette(N, background(N), 0.10)
 save_rgb(back, os.path.join(root, 'Assets/_Game/Art/Icon/AppIconBackground.png'), 1024)
-# The face and the ball fit the 66 dp safe circle (no "2" here: a round mask would clip it, and the launcher writes the
+# The ball (centred) and most of its trail fit the 66 dp safe circle (no "2" here: a round mask would clip it, and the launcher writes the
 # app's name under its icon anyway).
-front = subject(N, 0.60)
+front = subject(N, 0.62, dx=-(BALL[0] - 0.5) * 0.62, dy=-(BALL[1] - 0.5) * 0.62)
 p = os.path.join(root, 'Assets/_Game/Art/Icon/AppIconForeground.png')
 front.resize((1024, 1024), Image.LANCZOS).save(p, optimize=True)
 print('wrote', p)
