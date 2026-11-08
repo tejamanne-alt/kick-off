@@ -41,23 +41,28 @@ first three show in search results:
 8. `01_title`
 9. `09_map`
 
-### Promotional Text (152 / 170)
+### Promotional Text (149 / 170)
 ```
-Kick off to school! Dribble through town, chip the ball over walls and slide under barriers. Find all 23 stickers to unlock exclusive balls and outfits.
+Kick off to school! Pick one of six kids, dribble through town, chip the ball over walls and slide under barriers, then race the endless Holiday Run.
 ```
 
 ### Description
 ```
 Late for school? Grab your ball and kick off to school!
 
-Kick Off 2 is a football side-scroller in bright anime daylight. Keep the ball at your feet as you run through town: tap in rhythm for perfect touches, drag back to chip it over walls, slide under barriers, double jump over gaps, juggle it past dogs and wait for the green light before you cross.
+Kick Off 2 is a football side-scroller in bright anime daylight. Keep the ball at your feet as you run through town: tap in rhythm for perfect touches, drag to chip it over walls, slide under barriers, double jump over gaps, juggle it past dogs and wait for the green light before you cross.
 
 THE WAY TO SCHOOL
-• 23 levels across 5 chapters: Home Street, the Market, the Beach, the Underpass and the Park
-• Play as one of six schoolkids: two high-schoolers and four primary-school kids
+• 23 levels on six routes across town: Home Street, Market Street, Seaside Road, the Underpass, the Building Site shortcut and the Park Path
+• Play as one of six schoolkids: Hana, Max, Kai, Mia, Leo and Zoe
 • Real ball physics: every touch and every kick is about angle and timing
 • Beat the school bell, or switch the timer off and take it easy
-• Ball-skill challenges: keepy-uppy, target practice and a beach slalom
+• Five ball-skill challenges: keepy-uppy, window shopping, a beach slalom, target practice on the building site and the juggle champion
+
+THE HOLIDAY RUN
+• An endless run through every part of town, stage after stage and day after day
+• Grab magnets, shields and turbo boosts, smash crates and dodge close calls for big combos
+• Complete missions and chase your best distance
 
 COLLECT STICKERS
 • Every level hides a sticker, from the cat on the gate to the school bell
@@ -66,24 +71,35 @@ COLLECT STICKERS
 
 THE LOCKER ROOM
 • Earn coins on the way and spend them on ball skins, backpack flags, outfits and trails
+• Choose a backpack for each kid, or none: the Kick Off, Race Car, Sparkle Unicorn, Denim Bow or Golden Trail backpack
+• Pick the colour your bags are worn in
+
+ADD-ONS AND FILTERS
+• Finish every level to play the whole walk again in California, with its own music
+• See the town as a comic book with halftone dots, or as a pencil sketch
 
 FOR EVERYONE
-• Simple touch controls, a left-handed layout and a colour-blind friendly aim
+• Simple touch controls with a walk stick, a left-handed layout and a colour-blind friendly aim
 • Plays offline
-• No ads, no accounts and no data collected
+• No ads, no in-app purchases, no accounts and no data collected
 ```
 
-### Keywords (98 / 100)
+### Keywords (100 / 100)
 ```
-football,soccer,dribble,ball,runner,platformer,school,street,skills,kids,stickers,keepy uppy,anime
+football,soccer,dribble,ball,runner,endless,platformer,school,street,skills,kids,stickers,keepy uppy
 ```
 (Words in the app name are searched already, so "kick" and "off" aren't repeated.)
 
 ### Support URL
-The web address where you publish `site/index.html` (the support page).
+```
+https://www.astradite.com/games/kick-off-2/support
+```
+(where `site/index.html`, the support page, is published).
 
 ### Marketing URL
-Leave empty (optional).
+```
+https://www.astradite.com/games/kick-off-2
+```
 
 ### Version
 `1.0`
@@ -106,16 +122,16 @@ Off.
 ```
 1. DEMO VIDEO
 Screen recording on an iPhone [model] running iOS [version], starting from the Home Screen with the app launch: [attached below / paste the link]
-It shows the title screen, choosing the player, the town map, playing a level (running, kicking, jumping, sliding), collecting a sticker, the results screen, the sticker album and the Locker Room.
+It shows the title screen, choosing the player, the town map, playing a level (walking, kicking, jumping, sliding), collecting a sticker, the results screen, the sticker album, the Locker Room (including the bags), the Holiday Run, and Add-ons & Filters.
 The app has no account registration, login or account deletion, no user-generated content, and no paid content or in-app purchases.
 
 2. PURPOSE AND AUDIENCE
-Kick Off 2 is a single-player football (soccer) side-scrolling game for players of all ages. The player dribbles a ball through town streets to reach school, across 23 short skill-based levels in 5 chapters plus ball-skill challenges. It is a light, ad-free game that plays offline and rewards timing and ball control; a sticker hidden in each level unlocks cosmetic items.
+Kick Off 2 is a single-player football (soccer) side-scrolling game for players of all ages. The player dribbles a ball through town to reach school, across 23 short skill-based levels on six routes plus five ball-skill challenges, and can also play the Holiday Run, an endless mode. It is a light, ad-free game that plays offline and rewards timing and ball control; a sticker hidden in each level unlocks cosmetic items.
 
 3. HOW TO USE IT
-No setup, login or sample files are needed. Launch the app, tap PLAY and choose a level on the town map: six routes from the kid's house to the school, each level a numbered stop on its route (levels unlock in order as each is finished).
-Controls (landscape): the two arrow buttons at the bottom left run; KICK touches the ball (drag on it to aim a chip, release to kick); JUMP jumps (tap again in the air for a double jump); SLIDE slides under barriers. Bring the ball through the school gate to finish a level.
-Stickers shows the album (tap a sticker to view it). The Locker Room has cosmetic items unlocked with in-game coins earned by playing, or by stickers. Settings has the player choice (six kids: two teenagers and four primary-school children), sound, the school-bell timer, the controls (a left-handed layout, the slide button's place) and the language.
+No setup, login or sample files are needed. Launch the app, tap PLAY and choose a level on the town map: six routes from the kid's house to the school, each level a numbered stop on its route (levels unlock in order as each is finished). HOLIDAY RUN on the title screen starts the endless mode.
+Controls (landscape): touch the bottom left and a walk stick comes to the thumb: push it left or right to walk, pull it down to slide under barriers. JUMP jumps (tap again in the air for a double jump). Drag from KICK the way the ball should go and let go to kick; tap it for a quick pass. Bring the ball through the school gate to finish a level. Settings > Controls explains them again.
+Player chooses one of six kids (two high-school and four primary-school children). Stickers shows the album (tap a sticker to view it). The Locker Room has cosmetic items (balls, flags, outfits, trails and a backpack for each kid, or none) unlocked with in-game coins earned by playing, or by stickers. Add-ons & Filters changes the look: a comic or pencil-sketch filter, and a California version of the levels that opens once every level is finished. Settings has sound, the bag colour, the school-bell timer, the controls (a left-handed layout, the slide button's place) and the language.
 
 4. EXTERNAL SERVICES
 None. The app works fully offline and makes no network requests. It uses no third-party services or SDKs: no analytics, advertising, authentication, payment or AI services. It is built with the Unity engine, and progress is stored only on the device.
