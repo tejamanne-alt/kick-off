@@ -686,6 +686,17 @@ The user found the first Coast models plain next to their reference shots (weath
 - `meshy_bag.py prep --hue lo,hi --sat s`: each bag's cloth colour (red wraps through 0); the straps' side is found by the gap between the straps (the car's lights stand out further at the front); `fit` keeps a kid's other bags. `review_poses.py --bag` shows one. The Settings swatch for the bags' own colours shows the bag the chosen kid wears.
 - Not run in Unity.
 
+## Zoe from her rigged model, wearing the Locker Room's bags (generated content v93)
+
+- **Zoe** is rebuilt from the clean, bagless rigged model the user supplied (`meshy_rigged.py --profile rainbow`: meshy_teen's colour rules for her, without its search for a backpack by shape). 100k triangles; every action clean (`review/zoe_bags/zoe_all_actions.jpg`); neck height 1.099 (was 1.064); a new card. She now wears the Locker Room's bags like Leo and Kai: the Kick Off and the Race Car backpacks are both fitted to her (`review/zoe_bags/race_car.jpg`).
+- The re-uploaded rigged model was identical to the first; the still and untextured ones were not needed. Not run in Unity.
+
+## The Sparkle Unicorn Backpack (generated content v94)
+
+- A third Locker Room bag from the supplied model: pink glitter with a unicorn's horn and ears, rainbow chevrons and gold zips (`Bag_Unicorn`, `bag_unicorn`), free and owned from the start. Fitted to Leo, Kai and Zoe; Settings' colour recolours its pink cloth and keeps the horn, ears, chevrons and zips (`review/unicorn_bag/`).
+- `meshy_bag.py prep`: a carry handle standing over the back panel no longer counts as the bag's top (the top is capped at the last level where the bag is half its width); the Kick Off and Race Car bags measure as before.
+- Not run in Unity.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.
