@@ -31,6 +31,7 @@ blenv/bin/python meshy_bag.py -- icon $PWD/BagKickOff.blend $PWD/bag_kickoff.png
 blenv/bin/python meshy_bag.py -- prep /abs/red_robot_backpack.fbx $PWD --id RaceCar --hue 340,18 --sat 0.62 --size-by panel   # the Race Car one
 blenv/bin/python meshy_bag.py -- prep /abs/sparkle_unicorn_backpack.fbx $PWD --id Unicorn --hue 310,355 --sat 0.25   # the Unicorn one
 blenv/bin/python meshy_bag.py -- prep /abs/denim_bow_backpack.fbx $PWD --id DenimBow --hue 195,232 --sat 0.18   # the Denim Bow one
+blenv/bin/python meshy_bag.py -- prep /abs/golden_trail_backpack.fbx $PWD --id GoldenTrail --hue 20,48 --sat 0.3   # the Golden Trail one
     # (then fit it to each kid's fitted .blend in turn, and icon it, as above: a kid's file carries all their bags)
     # (PrimaryBoy2.fbx/.blend/.json, PrimaryBoy2Atlas.png; see "Leo and the bags" below; primary.py --boy2 would overwrite it)
 blenv/bin/python meshy_teen.py -- /abs/little_star_in_plaid.fbx $PWD --profile plaid   # Kai, from a supplied model
@@ -54,8 +55,8 @@ blenv/bin/python review_poses.py -- $PWD/Boy.blend $PWD/boy_poses.png --jobs 3 -
 cp Boy.fbx Boy.json BoyAtlas.png Bicycle.fbx BicycleAtlas.png Girl.fbx Girl.json GirlAtlas.png ../../Assets/_Game/Art/Models/
 cp BackpackBoy.fbx BackpackBoy.json BackpackBoyAtlas.png ../../Assets/_Game/Art/Models/
 cp PrimaryBoy2.fbx rigged/PrimaryBoy2.json rigged/PrimaryBoy2Atlas.png ../../Assets/_Game/Art/Models/   # (Leo, with his bags)
-cp BagKickOff.json BagKickOffAtlas.png BagRaceCar.json BagRaceCarAtlas.png BagUnicorn.json BagUnicornAtlas.png BagDenimBow.json BagDenimBowAtlas.png ../../Assets/_Game/Art/Models/
-cp bag_kickoff.png bag_racecar.png bag_unicorn.png bag_denimbow.png ../../Assets/_Game/Resources/UI/
+cp BagKickOff.json BagKickOffAtlas.png BagRaceCar.json BagRaceCarAtlas.png BagUnicorn.json BagUnicornAtlas.png BagDenimBow.json BagDenimBowAtlas.png BagGoldenTrail.json BagGoldenTrailAtlas.png ../../Assets/_Game/Art/Models/
+cp bag_kickoff.png bag_racecar.png bag_unicorn.png bag_denimbow.png bag_goldentrail.png ../../Assets/_Game/Resources/UI/
 cp PrimaryGirl2.fbx PrimaryGirl2.json PrimaryGirl2Atlas.png ../../Assets/_Game/Art/Models/   # (Zoe, from meshy_teen.py)
 cp PrimaryGirl.fbx PrimaryGirl.json PrimaryGirlAtlas.png ../../Assets/_Game/Art/Models/   # (Mia, from meshy_teen.py)
 cp PrimaryBoy.fbx rigged/PrimaryBoy.json rigged/PrimaryBoyAtlas.png ../../Assets/_Game/Art/Models/   # (Kai, with his bags)
@@ -348,7 +349,9 @@ ears, rainbow chevrons and gold zips, which keep their colours. Its carry handle
 the body's top is taken no higher than the last level where the bag is still half its full width. The Denim Bow
 Backpack is the fourth: light denim (`--hue 195,232 --sat 0.18`) with a big denim bow, its tan straps keeping their
 colour. Its straps loop up well above the bag, spanning most of its width, so the top is also taken no higher than the
-last level that reaches a third of the way to the bag's front (the straps stay back by the wearer). A kid's file carries every bag fitted to them; `fit` replaces only an earlier fit of the same bag. A new bag:
+last level that reaches a third of the way to the bag's front (the straps stay back by the wearer). The Golden Trail
+Backpack is the fifth: a classic tan canvas pack (`--hue 20,48 --sat 0.3`) whose silver zips, dark mesh side pockets
+and white patches keep their colours. A kid's file carries every bag fitted to them; `fit` replaces only an earlier fit of the same bag. A new bag:
 `prep` it, `fit` it to each kid who wears bags (re-export them), `icon` it into `Resources/UI/bag_<id>.png`, and add a row to `CosmeticsTable` (id `bag_<id>`). `review_poses.py`
 renders a bag with the kid (`--bag Bag_RaceCar` picks which; `--tint r,g,b,lum` previews a Settings colour).
 

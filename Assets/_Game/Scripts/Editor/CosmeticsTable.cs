@@ -146,6 +146,7 @@ namespace DribbleToSchool.EditorTools
                 R(DribbleToSchool.Cosmetics.Bags.DefaultId, "Kick Off Backpack", Bag, Common, 0, CosmeticPattern.Solid, C(0.53f, 0.08f, 0.73f), ink, white),
                 R(DribbleToSchool.Cosmetics.Bags.UnicornId, "Sparkle Unicorn Backpack", Bag, Common, 0, CosmeticPattern.Solid, C(0.96f, 0.58f, 0.75f), C(0.62f, 0.4f, 0.9f), C(1f, 0.85f, 0.25f)),
                 R(DribbleToSchool.Cosmetics.Bags.DenimBowId, "Denim Bow Backpack", Bag, Common, 0, CosmeticPattern.Solid, C(0.42f, 0.57f, 0.72f), C(0.88f, 0.62f, 0.32f), white),
+                R(DribbleToSchool.Cosmetics.Bags.GoldenTrailId, "Golden Trail Backpack", Bag, Common, 0, CosmeticPattern.Solid, C(0.72f, 0.5f, 0.27f), C(0.2f, 0.2f, 0.22f), C(0.85f, 0.85f, 0.87f)),
                 R(DribbleToSchool.Cosmetics.Bags.RaceCarId, "Race Car Backpack", Bag, Common, 0, CosmeticPattern.Solid, C(0.86f, 0.04f, 0.06f), C(0.6f, 0.6f, 0.62f), C(1f, 0.85f, 0.25f)),
             };
         }
