@@ -754,6 +754,13 @@ The user found the first Coast models plain next to their reference shots (weath
 - The credits now say "A game by Astradite" under the logo (`credits.by`, en and es) and end with "© 2026 Astradite Private Limited" under the version (`KickOffLogo.Studio`, `Company`, `Copyright`); laid out like the rest of the credits, top down by explicit edges.
 - The legal entity, Astradite Private Limited, is named where it counts: the App Store copyright, the privacy policy (`docs/PRIVACY_POLICY.md`, `site/privacy.html`) and the website's footers. `docs/RELEASE.md` says to open both developer accounts as organisations in the company's name (the stores then show it as the seller; Play's 12-tester closed test is waived; both want a D-U-N-S number). Unity's company name stays "Astradite": on desktop it is part of the save folder.
 
+## Long content on small screens
+
+- The canvas is matched on height (1920x1080 reference), so every phone gets the same 1080 units of height; a small phone loses only its safe area, and labels shrink by best fit. Scrolling is only needed where a list can grow.
+- **Add-Ons** (`UI/AddOnsPanel.cs`): the list is a clamped vertical scroll area that only scrolls when its content is taller than the card (710 of 724 units today, so it stays still; new add-ons or filters will scroll).
+- **Level results** (`UI/GameHud.cs`): the most lines plus the note (1041 units) could pass the 1000-unit card, so the line spacing squeezes down to 80% when it has to (`resultsSqueeze`) instead of scrolling a results card.
+- Unchanged, because they already scroll (Album, Shop) or hold a fixed amount that fits (Settings, the kid picker, the challenge guide's three tips, the Holiday Run's three missions).
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

@@ -535,6 +535,9 @@ namespace DribbleToSchool.UI
 
         // The results card's rows, top to bottom: the stars hang from the header, the lines start clear of them.
         const float StarsY = -210f, LinesTop = -350f, LineStep = 52f, NoteHeight = 76f, NoteStep = 84f, BottomBlock = 345f;
+
+        /// <summary>How close the results' lines and note sit (1, or a little less when the most of them would not fit the card).</summary>
+        float resultsSqueeze = 1f;
         static readonly Color NoteLate = new Color(0.82f, 0.25f, 0.2f);
 
         void ShowResults()
@@ -617,6 +620,12 @@ namespace DribbleToSchool.UI
             }
 
             float contentBottom = -LinesTop + count * LineStep + (note != null ? NoteStep : 0f) + 54f;
+            // The card can't be taller than the screen (1000): with the most lines and a note, the lines and the note close up a
+            // little rather than run into the coins and the buttons under them.
+            float room = 1000f - BottomBlock + LinesTop - 54f;
+            float linesHeight = count * LineStep + (note != null ? NoteStep : 0f);
+            resultsSqueeze = linesHeight > room ? Mathf.Max(0.8f, room / linesHeight) : 1f;
+            contentBottom = -LinesTop + linesHeight * resultsSqueeze + 54f;
             var card = UIKit.Modal(root, "Results", new Vector2(1150f, Mathf.Clamp(contentBottom + BottomBlock, 920f, 1000f)), out resultsModal);
             UIKit.Header(card.transform, heading, 760f);
 
@@ -644,7 +653,7 @@ namespace DribbleToSchool.UI
                 var noteText = UIKit.Label(card.transform, "Note", note, 28, noteColor, TextAnchor.MiddleCenter, true);
                 UIKit.Place(noteText.rectTransform, new Vector2(0.5f, 1f), new Vector2(0f, y - 4f), new Vector2(960f, NoteHeight));
                 UIKit.Fit(noteText, 22);
-                y -= NoteStep;
+                y -= NoteStep * resultsSqueeze;
             }
 
             var stats = UIKit.Label(card.transform, "Stats", Loc.F("results.time", FormatTime(r.time, true)) + "     " + Loc.F("results.lost", r.ballsLost),
@@ -713,7 +722,7 @@ namespace DribbleToSchool.UI
             var label = UIKit.Label(parent, "Line", text, 32, done ? UITheme.Ink : UITheme.InkSoft, TextAnchor.MiddleLeft, true);
             UIKit.Place(label.rectTransform, new Vector2(0.5f, 1f), new Vector2(40f, y), new Vector2(880f, 44f));
             UIKit.Fit(label, 22);
-            y -= LineStep;
+            y -= LineStep * resultsSqueeze;
         }
 
         IEnumerator StarChimes(int stars)
