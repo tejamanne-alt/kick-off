@@ -21,6 +21,7 @@ blenv/bin/python meshy_teen.py -- /abs/backpack_boy.fbx $PWD --profile backpack_
 blenv/bin/python meshy_rigged.py -- /abs/awesome_little_explorer_running.fbx $PWD/rigged   # Leo, from his rigged model
 blenv/bin/python meshy_rigged.py -- /abs/little_explorer_running.fbx $PWD/rigged --profile plaid   # Kai, likewise
 blenv/bin/python meshy_rigged.py -- /abs/rainbow_playtime_girl_running.fbx $PWD/rigged --profile rainbow   # Zoe, likewise
+blenv/bin/python meshy_rigged.py -- /abs/little_kickoff_champion_running.fbx $PWD/rigged --profile explorer   # Mia, likewise
 blenv/bin/python meshy_bag.py -- fit $PWD/rigged/PrimaryBoy.blend $PWD/BagKickOff.blend $PWD   # ...the bag fitted to Kai
 blenv/bin/python meshy_bag.py -- prep /abs/purple_kick_off_backpack.fbx $PWD --id KickOff   # the Locker Room's bag
 blenv/bin/python meshy_bag.py -- fit $PWD/rigged/PrimaryBoy2.blend $PWD/BagKickOff.blend $PWD   # ...fitted to Leo
@@ -56,6 +57,7 @@ cp PrimaryGirl2.fbx PrimaryGirl2.json PrimaryGirl2Atlas.png ../../Assets/_Game/A
 cp PrimaryGirl.fbx PrimaryGirl.json PrimaryGirlAtlas.png ../../Assets/_Game/Art/Models/   # (Mia, from meshy_teen.py)
 cp PrimaryBoy.fbx rigged/PrimaryBoy.json rigged/PrimaryBoyAtlas.png ../../Assets/_Game/Art/Models/   # (Kai, with his bags)
 cp PrimaryGirl2.fbx rigged/PrimaryGirl2.json rigged/PrimaryGirl2Atlas.png ../../Assets/_Game/Art/Models/   # (Zoe, with her bags)
+cp PrimaryGirl.fbx rigged/PrimaryGirl.json rigged/PrimaryGirlAtlas.png ../../Assets/_Game/Art/Models/   # (Mia, with her bags)
 cp Primary*.fbx Primary*.json Primary*Atlas.png ../../Assets/_Game/Art/Models/
 blenv/bin/python portrait_teen.py -- $PWD/Boy.blend $PWD/PlayerBoy.png --yaw 28     # the menus' player cards
 blenv/bin/python portrait_teen.py -- $PWD/Girl.blend $PWD/PlayerGirl.png --yaw -28  # (they face each other)
@@ -299,9 +301,10 @@ tone up close on the cards: that is lighting Meshy baked into small texture isla
 face's shape, clearing the import's sharp edges and sparing the face in the decimation were all tried on Mia and
 changed nothing visible).
 
-### Leo, Kai, Zoe and the bags (`meshy_rigged.py`, `meshy_bag.py`)
+### The primary-school kids and the bags (`meshy_rigged.py`, `meshy_bag.py`)
 
-Zoe's came the same way too (`--profile rainbow`: meshy_teen's rules for her, its search for a backpack by shape
+Mia's came the same way (`--profile explorer`); her hair is dense in the model (over half its triangles), which is
+right: it is all above the neck. Zoe's came the same way too (`--profile rainbow`: meshy_teen's rules for her, its search for a backpack by shape
 left out, as she has none). Kai's second supplied model came the same way and goes through the same steps (`--profile plaid`, meshy_teen's colour
 rules for him); its skeleton has two extra bones on the shins (the jeans' cuffs), which go with their parent's game bone,
 as any extra bone does. Leo's second supplied model came rigged: Meshy's own Mixamo-style skeleton (66 `mixamorig:` bones, fingers included)
@@ -381,12 +384,12 @@ a game mode can make them vanish by collapsing their vertices.
 
 | File | Who | Look | Shirt / legwear / accent / bag / hair |
 |---|---|---|---|
-| `PrimaryBoy` | boy 1 (Kai) | now made from a supplied rigged model by `meshy_rigged.py --profile plaid` (see "Leo, Kai, Zoe and the bags" above): short black hair, a red plaid flannel shirt over a white hood, light-blue cargo jeans, chunky black-and-white sneakers; no bag of his own (he wears the Locker Room's). The scripted boy 1 below is what `primary.py --boy` still builds | plaid shirt / light-blue jeans / none / grey / black |
+| `PrimaryBoy` | boy 1 (Kai) | now made from a supplied rigged model by `meshy_rigged.py --profile plaid` (see "The primary-school kids and the bags" above): short black hair, a red plaid flannel shirt over a white hood, light-blue cargo jeans, chunky black-and-white sneakers; no bag of his own (he wears the Locker Room's). The scripted boy 1 below is what `primary.py --boy` still builds | plaid shirt / light-blue jeans / none / grey / black |
 | (scripted boy 1) | | fair skin, round dark eyes, short black hair with a broad fringe and a small tuft; a polo with a flat collar, navy shorts, long white crew socks, white sneakers | white / navy / yellow neckerchief / blue / black |
-| `PrimaryGirl` | girl 1 (Mia) | now made from a supplied model by `meshy_teen.py` (see "Mia" above): shoulder-length black hair with a headband, a white T-shirt, red shorts, white socks, pink sneakers, a beige backpack with a bow. The scripted girl 1 below is what `primary.py --girl` still builds | white T-shirt / red / none / beige / black |
+| `PrimaryGirl` | girl 1 (Mia) | now made from a supplied rigged model by `meshy_rigged.py --profile explorer` (see "The primary-school kids and the bags" above): shoulder-length black hair with a leopard-print headband, a white "Kick Off" T-shirt with a red stripe, red shorts, white "Kick Off" socks, pink sneakers; no bag of her own (she wears the Locker Room's). The scripted girl 1 below is what `primary.py --girl` still builds | white T-shirt / red / none / the Locker Room's / black |
 | (scripted girl 1) | | fair skin with freckles, big warm-brown eyes, a centre-parted fringe and two bunches at the sides with red ties; a blouse with a round navy collar, a navy pleated skirt, white knee socks, brown school shoes | white / navy / red bow / red / dark brown |
-| `PrimaryBoy2` | boy 2 (Leo) | now made from a supplied rigged model by `meshy_rigged.py` (see "Leo, Kai, Zoe and the bags" above): short curly black hair; a white long-sleeved "AWESOME 01" sweatshirt with a navy chest panel, khaki cargo joggers, white-and-navy sneakers; no bag of his own (he wears the Locker Room's). The scripted boy 2 below (tanned, chestnut spikes, round glasses; a polo and grey shorts) is what `primary.py --boy2` still builds | white sweatshirt / khaki / none / the Locker Room's / black |
-| `PrimaryGirl2` | girl 2 (Zoe) | now made from a supplied rigged model by `meshy_rigged.py --profile rainbow` (see "Leo, Kai, Zoe and the bags" above): black hair in two braids, a hot-pink rainbow-print jacket with a white hood over a pale pink T-shirt, coral cargo joggers, dark trainers; no bag of her own (she wears the Locker Room's). The scripted girl 2 below is what `primary.py --girl2` still builds | rainbow-print jacket / coral / none / the Locker Room's / black |
+| `PrimaryBoy2` | boy 2 (Leo) | now made from a supplied rigged model by `meshy_rigged.py` (see "The primary-school kids and the bags" above): short curly black hair; a white long-sleeved "AWESOME 01" sweatshirt with a navy chest panel, khaki cargo joggers, white-and-navy sneakers; no bag of his own (he wears the Locker Room's). The scripted boy 2 below (tanned, chestnut spikes, round glasses; a polo and grey shorts) is what `primary.py --boy2` still builds | white sweatshirt / khaki / none / the Locker Room's / black |
+| `PrimaryGirl2` | girl 2 (Zoe) | now made from a supplied rigged model by `meshy_rigged.py --profile rainbow` (see "The primary-school kids and the bags" above): black hair in two braids, a hot-pink rainbow-print jacket with a white hood over a pale pink T-shirt, coral cargo joggers, dark trainers; no bag of her own (she wears the Locker Room's). The scripted girl 2 below is what `primary.py --girl2` still builds | rainbow-print jacket / coral / none / the Locker Room's / black |
 | (scripted girl 2) | | medium-brown skin with a beauty mark, hazel eyes, a black bob with a straight fringe and a yellow hairband; a blouse with a round white collar under a grey pinafore (bib and straps), white socks, black school shoes | white / grey / yellow bow / purple / black |
 
 The game scales every model so that its Head bone sits at the neck height it is given (`LevelBuildKit.BuildModelCharacter`;
@@ -397,7 +400,7 @@ prints the neck height that gives it:
 | File | Standing height (hair included) | Neck height to give the game | Triangles |
 |---|---|---|---|
 | `PrimaryBoy` (Kai, `meshy_rigged.py`) | 1.30 m | 1.101 | 100,000 (+ the Kick Off backpack, 30,000) |
-| `PrimaryGirl` (Mia, `meshy_teen.py`) | 1.27 m | 1.028 | 29,925 |
+| `PrimaryGirl` (Mia, `meshy_rigged.py`) | 1.27 m | 1.050 | 99,996 (+ the three bags) |
 | `PrimaryBoy2` (Leo, `meshy_rigged.py`) | 1.32 m | 1.114 | 99,999 (+ the Kick Off backpack, 30,000) |
 | `PrimaryGirl2` (Zoe, `meshy_rigged.py --profile rainbow`) | 1.29 m | 1.099 | 99,999 (+ both bags) |
 

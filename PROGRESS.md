@@ -697,6 +697,11 @@ The user found the first Coast models plain next to their reference shots (weath
 - `meshy_bag.py prep`: a carry handle standing over the back panel no longer counts as the bag's top (the top is capped at the last level where the bag is half its width); the Kick Off and Race Car bags measure as before.
 - Not run in Unity.
 
+## Mia from her rigged model; every primary kid wears the Locker Room's bags (generated content v95)
+
+- **Mia** is rebuilt from the clean, bagless rigged model the user supplied (`meshy_rigged.py --profile explorer`), checked against the user's four reference drawings: leopard-print headband, white "Kick Off" T-shirt with a red stripe, red shorts with white piping, white "Kick Off" socks, pink sneakers. 100k triangles (over half of them her hair, all above the neck); every action clean (`review/mia_bags/mia_all_actions.jpg`); neck height 1.050 (was 1.028); a new card. All three bags are fitted to her (`review/mia_bags/bags.jpg`).
+- Kai, Mia, Leo and Zoe now all wear the Locker Room's bags; the three teens keep the bags they were modelled with. Not run in Unity.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.
