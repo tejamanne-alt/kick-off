@@ -150,6 +150,16 @@ def build(mb, width=6.0, depth=1.9, drop_left=4.55, drop_right=4.55, landing_dro
             mb.box((min(a, c), 0.48, 0.03), (max(a, c), 0.56, 0.13), WHITE, bottom=True)
             for x in (a + s * 0.09, c - s * 0.09):
                 mb.box((x - 0.09, 0.0, 0.0), (x + 0.09, 1.0, 0.18), WHITE)
+    if on_course:
+        # a fence across the top: the flights' rail goes on along the back of the landing, unbroken from foot to foot
+        zc = -0.08
+        lw = 2 * hw
+        mb.box((-hw, RAIL - 0.11, zc - 0.07), (hw, RAIL, zc + 0.07), WHITE, bottom=True)
+        mb.box((-hw, 0.48, zc - 0.04), (hw, 0.55, zc + 0.04), WHITE, bottom=True)
+        bays = max(1, int(math.ceil(lw / 1.4)))
+        for k in range(1, bays):
+            x = -hw + lw * k / bays
+            mb.box((x - 0.06, 0.0, zc - 0.06), (x + 0.06, RAIL - 0.05, zc + 0.06), WHITE)
     # the bent under it: a cross beam on four piles (two under a short landing)
     zb = -depth / 2
     mb.box((-hw + 0.1, -1.05, zb - 0.28), (hw - 0.1, -0.45, zb + 0.28), CONCRETE, bottom=True)

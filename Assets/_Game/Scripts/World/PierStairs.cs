@@ -111,6 +111,20 @@ namespace DribbleToSchool.World
                     foreach (float x in new[] { a + s * 0.09f, c - s * 0.09f })
                         Box(b, x - 0.09f, 0f, 0f, x + 0.09f, 1f, 0.18f, White, false);
                 }
+            if (onCourse)
+            {
+                // A fence across the top: the flights' rail goes on along the back of the landing, at the same height and
+                // depth, so it runs unbroken from the left foot, up, over and down to the right foot.
+                float zc = -0.08f;
+                Box(b, -hw, Rail - 0.11f, zc - 0.07f, hw, Rail, zc + 0.07f, White, true);
+                Box(b, -hw, 0.48f, zc - 0.04f, hw, 0.55f, zc + 0.04f, White, true);
+                int bays = Mathf.Max(1, Mathf.CeilToInt(landingWidth / 1.4f));
+                for (int k = 1; k < bays; k++)
+                {
+                    float x = -hw + landingWidth * k / bays;
+                    Box(b, x - 0.06f, 0f, zc - 0.06f, x + 0.06f, Rail - 0.05f, zc + 0.06f, White, false);
+                }
+            }
             // The bent under it: a cross beam on four piles (two under a short landing).
             float zb = -depth * 0.5f;
             Box(b, -hw + 0.1f, -1.05f, zb - 0.28f, hw - 0.1f, -0.45f, zb + 0.28f, Concrete, true);

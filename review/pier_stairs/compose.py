@@ -40,7 +40,7 @@ def label(im, text):
 COURSE = [('course_up', 'Up the steps with the ball: the camera rises with the kid'),
           ('course_top', 'Over the landing in front of the pier, at the top'),
           ('course_down', 'Down the other side to the sand (the camera follows them down)'),
-          ('course_whole', 'The climb across the lane: no rail on the camera side, so the kid is never behind bars')]
+          ('course_whole', 'One rail from foot to foot, fenced across the top; none on the camera side')]
 
 
 def course_board(src, out):

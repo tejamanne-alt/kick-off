@@ -824,7 +824,8 @@ The user found the first Coast models plain next to their reference shots (weath
   as two ramps and a ledge. The deck stands 2.3 m over the lane (the pier's piles go deeper into the sand there), and
   the flights are gentler than the pier's other stairs: risers of 13.5 cm on 35 cm treads, about 21 degrees, no steeper
   than the dunes. `StreetBuilder.Coast` `PierOnCourse` builds the pier with its near end just behind the lane and the
-  stairs across it (`World/PierStairs`, `onCourse`: a 2 m landing, the deck's edge railed either side of it, and nothing
+  stairs across it (`World/PierStairs`, `onCourse`: a 2 m landing, the deck's edge railed either side of it, a fence
+  across the back of the landing so the far rail runs unbroken from one foot, up, over and down to the other, and nothing
   on the camera's side, no rail and no lamps, so the kid and the ball are never behind bars).
 - **The kid keeps to slopes** (`Player/KidController`: `GroundNormal`, `IsWalkableSlope`, `AlongSlope`, `SlopeRise`):
   on the ground, on a slope up to about 45 degrees, not jumping, and not on something moving, the kid goes along the
