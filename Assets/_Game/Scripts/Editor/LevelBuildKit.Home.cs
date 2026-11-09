@@ -167,17 +167,21 @@ namespace DribbleToSchool.EditorTools
             }
 
             /// <summary>
-            /// A parent standing on the top step at the front door, turned a little toward the street. The Pedestrians' adult model in its
-            /// rest pose (arms down), dressed in the quiet colours of the house; skipped if the model or its bones are missing.
+            /// A parent standing on the top step at the front door, turned a little toward the street: Mom (LevelBuildKit.Passersby)
+            /// in her rest pose (arms down), dressed in the quiet colours of the house; skipped if the model or its bones are missing.
             /// </summary>
             void HomeParent(Transform parent, float gateX, float groundTop)
             {
-                const float neck = 1.3f * 1.22f;                        // the pedestrians' adult, 1.7 m tall
+                Passerby mom = PasserbyNamed("Mom");
+                string model;
+                Material look;
+                float neck;
+                GrownUpLook(ref mom, out model, out look, out neck);
                 const float topStep = 0.30f;                            // the HouseGable's door sill and top step
                 var holder = new GameObject("Parent").transform;
                 holder.SetParent(parent, false);
                 holder.position = new Vector3(gateX, groundTop + topStep + 0.6f * neck / 1.3f, StreetBuilder.HomeHouseZ - 0.16f);
-                var parts = BuildModelCharacter(holder, "Adult", Art.adult, neck, Vector3.zero, false);
+                var parts = BuildModelCharacter(holder, model, look, neck, Vector3.zero, false);
                 if (parts.rig == null)
                 {
                     Object.DestroyImmediate(holder.gameObject);
@@ -190,7 +194,7 @@ namespace DribbleToSchool.EditorTools
                 dress.dressOnStart = true;
                 dress.shirt = new Color(0.92f, 0.66f, 0.34f);
                 dress.legwear = new Color(0.27f, 0.32f, 0.46f);
-                dress.hair = new Color(0.46f, 0.34f, 0.28f);
+                dress.hair = new Color(0.2f, 0.13f, 0.09f);
             }
 
             /// <summary>

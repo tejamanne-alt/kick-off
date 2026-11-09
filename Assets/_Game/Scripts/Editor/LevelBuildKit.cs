@@ -607,32 +607,39 @@ namespace DribbleToSchool.EditorTools
         }
 
         /// <summary>
-        /// A passer-by made from a rigged model (tools/blender/meshy_rigged.py): the model's file, how tall it stands, where
-        /// its neck joint sits (a share of its height, from the script's log), and its wardrobe. Each walker picks its top,
-        /// legwear and third part (the hair, or a cap or a hijab where the model wears one) from these by the walker and the
-        /// level, so it is dressed differently from level to level, and changes top and legwear from them each time round.
+        /// A passer-by made from a rigged model (tools/blender/meshy_rigged.py): the model's file, its neck joint's height
+        /// (game units: what BuildModelCharacter scales the model by), and its wardrobe. Each walker picks its top, legwear and
+        /// third part (the hair, or a cap or a hijab where the model wears one) from these by the walker and the level, so it is
+        /// dressed differently from level to level, and changes top and legwear from them each time round.
         /// </summary>
         public sealed class Passerby
         {
             public readonly string model;
-            public readonly float height, neckShare;
+            public readonly float neck;
             public readonly Color[] tops, legwears, thirds;
 
-            public Passerby(string model, float height, float neckShare, Color[] tops, Color[] legwears, Color[] thirds)
+            public Passerby(string model, float neck, Color[] tops, Color[] legwears, Color[] thirds)
             {
-                this.model = model; this.height = height; this.neckShare = neckShare;
+                this.model = model; this.neck = neck;
                 this.tops = tops; this.legwears = legwears; this.thirds = thirds;
             }
 
-            /// <summary>The neck joint's height above the feet, in metres (what BuildModelCharacter scales the model by).</summary>
-            public float NeckHeight { get { return height * neckShare; } }
+            /// <summary>The neck joint's height above the feet, in game units (the kid's is 1.3).</summary>
+            public float NeckHeight { get { return neck; } }
         }
 
-        /// <summary>The rigged passers-by, who take turns along the footpath with the procedural adult (TrackBuilder.Walker).</summary>
+        /// <summary>A grown-up's neck height (game units): 1.22 times the kid's 1.3, about 1.7 m to the kid's 1.4.</summary>
+        public const float AdultNeck = 1.3f * 1.22f;
+
+        /// <summary>
+        /// The grown-ups: the rigged passers-by, who take turns along the footpath (TrackBuilder.Walker), walk with each other,
+        /// and stand at the stops and the kid's front door. The jogger, the office worker, the courier and Grandad stand a
+        /// grown-up's full height (<see cref="AdultNeck"/>); Mom and the shopkeeper a little shorter.
+        /// </summary>
         public static readonly Passerby[] Passersby =
         {
             // The jogger: running jackets in sporty colours, dark leggings, natural dark hair.
-            new Passerby("Jogger", 1.66f, 0.853f,
+            new Passerby("Jogger", AdultNeck,
                 new[] { new Color(0.1f, 0.52f, 0.51f), new Color(0.96f, 0.45f, 0.42f), new Color(0.55f, 0.4f, 0.82f), new Color(0.32f, 0.62f, 0.92f),
                         new Color(0.62f, 0.82f, 0.3f), new Color(0.92f, 0.36f, 0.62f), new Color(0.98f, 0.76f, 0.24f), new Color(0.86f, 0.24f, 0.24f),
                         new Color(0.2f, 0.28f, 0.5f), new Color(0.96f, 0.6f, 0.26f) },
@@ -640,7 +647,7 @@ namespace DribbleToSchool.EditorTools
                         new Color(0.16f, 0.26f, 0.22f) },
                 new[] { new Color(0.13f, 0.1f, 0.09f), new Color(0.24f, 0.15f, 0.1f), new Color(0.36f, 0.22f, 0.14f), new Color(0.42f, 0.18f, 0.12f) }),
             // Mom: knitted jumpers, wide-leg trousers, her hair in a bun.
-            new Passerby("Mom", 1.63f, 0.854f,
+            new Passerby("Mom", 1.393f,
                 new[] { new Color(0.98f, 0.38f, 0.32f), new Color(0.86f, 0.66f, 0.22f), new Color(0.93f, 0.88f, 0.76f), new Color(0.56f, 0.68f, 0.52f),
                         new Color(0.86f, 0.58f, 0.62f), new Color(0.22f, 0.38f, 0.78f), new Color(0.52f, 0.14f, 0.22f), new Color(0.68f, 0.58f, 0.82f),
                         new Color(0.16f, 0.5f, 0.52f), new Color(0.76f, 0.58f, 0.38f) },
@@ -648,7 +655,7 @@ namespace DribbleToSchool.EditorTools
                         new Color(0.08f, 0.08f, 0.09f), new Color(0.24f, 0.34f, 0.5f), new Color(0.3f, 0.32f, 0.18f) },
                 new[] { new Color(0.065f, 0.06f, 0.055f), new Color(0.2f, 0.13f, 0.09f), new Color(0.34f, 0.22f, 0.14f), new Color(0.42f, 0.18f, 0.12f) }),
             // The office worker: blazers, suit trousers; his hair, beard and brows (one part: any colour, dark to grey).
-            new Passerby("OfficeWorker", 1.8f, 0.852f,
+            new Passerby("OfficeWorker", AdultNeck,
                 new[] { new Color(0.074f, 0.126f, 0.254f), new Color(0.22f, 0.23f, 0.26f), new Color(0.45f, 0.46f, 0.48f), new Color(0.66f, 0.5f, 0.34f),
                         new Color(0.32f, 0.36f, 0.24f), new Color(0.42f, 0.12f, 0.16f), new Color(0.18f, 0.3f, 0.62f), new Color(0.09f, 0.09f, 0.1f),
                         new Color(0.72f, 0.6f, 0.44f), new Color(0.32f, 0.4f, 0.52f) },
@@ -658,7 +665,7 @@ namespace DribbleToSchool.EditorTools
                         new Color(0.5f, 0.22f, 0.12f), new Color(0.62f, 0.48f, 0.3f), new Color(0.82f, 0.68f, 0.42f), new Color(0.5f, 0.5f, 0.5f),
                         new Color(0.78f, 0.78f, 0.8f) }),
             // The courier: polo shirts, cargo shorts, a cap worn backwards.
-            new Passerby("Courier", 1.72f, 0.858f,
+            new Passerby("Courier", AdultNeck,
                 new[] { new Color(0.75f, 0.066f, 0.089f), new Color(0.16f, 0.32f, 0.75f), new Color(0.12f, 0.52f, 0.3f), new Color(0.98f, 0.8f, 0.18f),
                         new Color(0.96f, 0.5f, 0.14f), new Color(0.92f, 0.92f, 0.9f), new Color(0.1f, 0.1f, 0.11f), new Color(0.1f, 0.55f, 0.58f),
                         new Color(0.45f, 0.24f, 0.62f), new Color(0.45f, 0.7f, 0.9f) },
@@ -667,7 +674,7 @@ namespace DribbleToSchool.EditorTools
                 new[] { new Color(0.115f, 0.175f, 0.325f), new Color(0.75f, 0.1f, 0.12f), new Color(0.08f, 0.08f, 0.09f), new Color(0.9f, 0.9f, 0.88f),
                         new Color(0.16f, 0.32f, 0.75f), new Color(0.14f, 0.45f, 0.26f), new Color(0.95f, 0.5f, 0.15f), new Color(0.5f, 0.5f, 0.52f) }),
             // The shopkeeper: long tunics, trousers, a hijab.
-            new Passerby("Shopkeeper", 1.6f, 0.856f,
+            new Passerby("Shopkeeper", 1.37f,
                 new[] { new Color(0.68f, 0.52f, 0.7f), new Color(0.56f, 0.68f, 0.54f), new Color(0.84f, 0.56f, 0.6f), new Color(0.86f, 0.76f, 0.6f),
                         new Color(0.18f, 0.52f, 0.54f), new Color(0.86f, 0.66f, 0.24f), new Color(0.46f, 0.2f, 0.4f), new Color(0.56f, 0.72f, 0.88f),
                         new Color(0.94f, 0.48f, 0.4f), new Color(0.93f, 0.89f, 0.8f), new Color(0.18f, 0.38f, 0.28f), new Color(0.74f, 0.38f, 0.26f) },
@@ -677,7 +684,7 @@ namespace DribbleToSchool.EditorTools
                         new Color(0.1f, 0.45f, 0.32f), new Color(0.55f, 0.55f, 0.58f), new Color(0.9f, 0.6f, 0.68f), new Color(0.1f, 0.14f, 0.3f),
                         new Color(0.82f, 0.62f, 0.2f), new Color(0.42f, 0.2f, 0.42f), new Color(0.12f, 0.48f, 0.52f), new Color(0.8f, 0.7f, 0.54f) }),
             // Grandad: cardigans, cords or slacks, a flat cap.
-            new Passerby("Grandad", 1.7f, 0.85f,
+            new Passerby("Grandad", AdultNeck,
                 new[] { new Color(0.91f, 0.66f, 0.19f), new Color(0.2f, 0.38f, 0.26f), new Color(0.12f, 0.16f, 0.3f), new Color(0.5f, 0.14f, 0.18f),
                         new Color(0.8f, 0.74f, 0.62f), new Color(0.5f, 0.5f, 0.52f), new Color(0.72f, 0.36f, 0.18f), new Color(0.74f, 0.56f, 0.36f),
                         new Color(0.44f, 0.46f, 0.24f), new Color(0.42f, 0.54f, 0.78f) },
@@ -689,6 +696,12 @@ namespace DribbleToSchool.EditorTools
 
         /// <summary>The rigged passers-by's model files (ArtBaker makes each its material).</summary>
         public static readonly string[] PasserbyModels = Array.ConvertAll(Passersby, p => p.model);
+
+        /// <summary>The rigged passer-by of that model file (null if there is none).</summary>
+        public static Passerby PasserbyNamed(string model)
+        {
+            return Array.Find(Passersby, p => p.model == model);
+        }
 
         /// <summary>
         /// Kit models the classic cartoon filter draws as cels (inked, as the people are) rather than as painted
@@ -1298,13 +1311,35 @@ namespace DribbleToSchool.EditorTools
             int walkersSoFar;
 
             /// <summary>
-            /// The next passer-by's body: the rigged passers-by and the procedural adult (null) take turns, in an order and
-            /// from a start of the level's own, so each comes along once before any comes round again.
+            /// The next passer-by: the rigged passers-by take turns, in an order and from a start of the level's own, so each
+            /// comes along once before any comes round again.
             /// </summary>
             Passerby NextPasserby()
             {
-                int slot = PasserbyTurn(StreetBuilder.LevelSalt(AuditName), walkersSoFar++, Passersby.Length + 1);
-                return slot < Passersby.Length ? Passersby[slot] : null;
+                return Passersby[PasserbyTurn(StreetBuilder.LevelSalt(AuditName), walkersSoFar++, Passersby.Length)];
+            }
+
+            /// <summary>
+            /// The rigged model for a grown-up, with its material: <paramref name="who"/>'s, or (should its model be missing from
+            /// this build) the procedural adult's, which <paramref name="who"/> is then null for.
+            /// </summary>
+            void GrownUpLook(ref Passerby who, out string model, out Material look, out float neck)
+            {
+                Material m;
+                if (who != null && Art.passersby.TryGetValue(who.model, out m) && m != null)
+                {
+                    model = who.model; look = m; neck = who.NeckHeight;
+                    return;
+                }
+                who = null; model = "Adult"; look = Art.adult; neck = AdultNeck;
+            }
+
+            /// <summary>Another of the rigged passers-by than <paramref name="who"/>, chosen by the seed.</summary>
+            static Passerby OtherPasserby(Passerby who, int seed)
+            {
+                int n = Passersby.Length, at = Array.IndexOf(Passersby, who);
+                if (at < 0) return Passersby[Mathf.Abs(seed) % n];
+                return Passersby[(at + 1 + Mathf.Abs(seed) % (n - 1)) % n];
             }
 
             /// <summary>
@@ -1350,26 +1385,23 @@ namespace DribbleToSchool.EditorTools
                 Color hair = PasserbyHair[Mathf.Abs(Mathf.RoundToInt(minX)) % 4], trousers = Color.Lerp(coat, Color.black, 0.45f);
                 if (builder)
                 {
-                    hair = HardHatYellow;                      // the hard hat stands in for the hair, as at the site office
+                    hair = HardHatYellow;                      // the cap in a hard hat's yellow, as at the site office
                     trousers = new Color(0.22f, 0.26f, 0.4f);
                 }
-                // Who walks by: the jogger, Mom, the office worker, the courier, the shopkeeper, Grandad and the procedural
-                // adult take turns (NextPasserby; a builder is always the adult in hi-vis). A rigged passer-by wears its own
-                // wardrobe (LevelBuildKit.Passersby), its top, legwear and hair, cap or hijab chosen by the walker and the
-                // level, so it is dressed differently from level to level, and changes top and legwear from it each time
-                // it comes round again.
-                string bodyModel = "Adult";
-                Material look = Art.adult;
-                float neck = 1.3f * 1.22f;
+                // Who walks by: the jogger, Mom, the office worker, the courier, the shopkeeper and Grandad take turns
+                // (NextPasserby), each in its own wardrobe (LevelBuildKit.Passersby): its top, legwear and hair, cap or hijab
+                // chosen by the walker and the level, so it is dressed differently from level to level, and it changes top and
+                // legwear from it each time it comes round again. A builder is the courier in hi-vis: the polo hi-vis, dark work
+                // shorts, and the cap in a hard hat's yellow.
+                Passerby who = builder ? PasserbyNamed("Courier") : NextPasserby();
+                string bodyModel;
+                Material look;
+                float neck;
+                GrownUpLook(ref who, out bodyModel, out look, out neck);
                 Color[] coats = PasserbyCoats, legwears = new Color[0];
-                Passerby who = builder ? null : NextPasserby();
-                Material modelLook;
-                if (who != null && Art.passersby.TryGetValue(who.model, out modelLook) && modelLook != null)
+                if (who != null && !builder)
                 {
                     int mix = Mathf.Abs(seed * 7 + StreetBuilder.LevelSalt(AuditName));
-                    bodyModel = who.model;
-                    look = modelLook;
-                    neck = who.NeckHeight;
                     coats = who.tops;
                     legwears = who.legwears;
                     coat = who.tops[(mix / 3) % who.tops.Length];
@@ -1404,15 +1436,15 @@ namespace DribbleToSchool.EditorTools
                 p.legwears = builder ? new Color[0] : legwears;
                 var walker = parts.rig.gameObject.AddComponent<WalkerAnimator>();
                 walker.pedestrian = p;
-                if (!builder) PedestrianCompany(go.transform, p, seed, coat);
+                if (!builder) PedestrianCompany(go.transform, p, seed, who);
                 return p;
             }
 
             /// <summary>
-            /// Now and then a passer-by has company, chosen by the seed: a friend (they stop to chat),
-            /// a child (a parent walking them to school, slower), or a dog on a lead.
+            /// Now and then a passer-by has company, chosen by the seed: a friend (another of the rigged passers-by, in their
+            /// own wardrobe; they stop to chat), a child (a parent walking them to school, slower), or a dog on a lead.
             /// </summary>
-            void PedestrianCompany(Transform walker, Hazards.Pedestrian p, int seed, Color coat)
+            void PedestrianCompany(Transform walker, Hazards.Pedestrian p, int seed, Passerby who)
             {
                 int pick = (seed * 7919) % 100;
                 var company = pick < 22 ? Hazards.Pedestrian.Company.Friend : pick < 40 ? Hazards.Pedestrian.Company.Child
@@ -1424,19 +1456,26 @@ namespace DribbleToSchool.EditorTools
                     case Hazards.Pedestrian.Company.Child:
                     {
                         bool child = company == Hazards.Pedestrian.Company.Child;
-                        // A child of about 1.2 m (the younger kid's model, smaller), or another adult.
-                        float neck = child ? 0.98f : 1.3f * 1.22f * (0.94f + (seed % 7) * 0.012f);
-                        string file = child ? "Kid" : "Adult";
-                        var mat = child ? Art.kid : Art.adult;
+                        // A child of about 1.2 m (the younger kid's model, smaller), or a friend: another of the rigged
+                        // passers-by than the walker, in their own wardrobe.
+                        Passerby pal = child ? null : OtherPasserby(who, seed);
+                        string file = "Kid";
+                        Material mat = Art.kid;
+                        float neck = 0.98f;
+                        if (!child) GrownUpLook(ref pal, out file, out mat, out neck);
                         var friend = BuildModelCharacter(walker, file, mat, neck, new Vector3(0f, feet + 0.6f * neck / 1.3f, 1.2f), false);
                         if (friend.rig == null) return;
                         friend.visual.name = child ? "Child" : "Friend";
-                        Color other = PasserbyCoats[(seed / 3) % PasserbyCoats.Length];
+                        Color[] palTops = pal != null ? pal.tops : PasserbyCoats;
+                        Color other = palTops[(seed / 3) % palTops.Length];
                         var dress = (ModelOutfit)friend.outfit;
                         dress.dressOnStart = true;
                         dress.shirt = other;
-                        dress.legwear = Color.Lerp(other, Color.black, 0.5f);
-                        dress.hair = PasserbyHair[(seed / 5) % PasserbyHair.Length];
+                        dress.legwear = pal != null ? pal.legwears[(seed / 7) % pal.legwears.Length] : Color.Lerp(other, Color.black, 0.5f);
+                        dress.hair = pal != null ? pal.thirds[(seed / 5) % pal.thirds.Length] : PasserbyHair[(seed / 5) % PasserbyHair.Length];
+                        // (and they change from their own wardrobe each time round: a child from the kids' colours)
+                        p.companionCoats = palTops;
+                        p.companionLegwears = pal != null ? pal.legwears : new Color[0];
                         var anim = friend.rig.gameObject.AddComponent<WalkerAnimator>();
                         anim.pedestrian = p;
                         anim.companion = true;

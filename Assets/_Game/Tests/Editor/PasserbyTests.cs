@@ -8,9 +8,10 @@ using Track = DribbleToSchool.EditorTools.LevelBuildKit.TrackBuilder;
 namespace DribbleToSchool.Tests
 {
     /// <summary>
-    /// The rigged passers-by (LevelBuildKit.Passersby): each has a wardrobe to be dressed from, level by level, and the
-    /// footpath's turn order brings each of them (and the procedural adult) along once before any comes again, in an order
-    /// of each level's own. Pure rules (no scene).
+    /// The rigged passers-by (LevelBuildKit.Passersby): each has a wardrobe to be dressed from, level by level, and stands a
+    /// grown-up's height (the jogger, the office worker, the courier and Grandad as tall as the old procedural adult; Mom and
+    /// the shopkeeper a little shorter, still taller than the kid); the footpath's turn order brings each of them along once
+    /// before any comes again, in an order of each level's own. Pure rules (no scene).
     /// </summary>
     public class PasserbyTests
     {
@@ -24,9 +25,12 @@ namespace DribbleToSchool.Tests
                 Assert.Greater(p.tops.Length, 1, p.model + ": tops to change into");
                 Assert.Greater(p.legwears.Length, 1, p.model + ": legwear to change into");
                 Assert.Greater(p.thirds.Length, 0, p.model + ": hair, cap or hijab");
-                Assert.IsTrue(p.height >= 1.5f && p.height <= 1.95f, p.model + ": a grown-up's height");
-                Assert.IsTrue(p.neckShare >= 0.8f && p.neckShare <= 0.9f, p.model + ": the neck joint near the top");
+                Assert.IsTrue(p.NeckHeight > 1.3f * 1.05f && p.NeckHeight <= LevelBuildKit.AdultNeck + 0.0001f, p.model + ": taller than the kid, no taller than a grown-up");
             }
+            foreach (string tall in new[] { "Jogger", "OfficeWorker", "Courier", "Grandad" })
+                Assert.AreEqual(LevelBuildKit.AdultNeck, LevelBuildKit.PasserbyNamed(tall).NeckHeight, 0.0001f, tall + ": as tall as the old adult");
+            foreach (string shorter in new[] { "Mom", "Shopkeeper" })
+                Assert.IsTrue(LevelBuildKit.PasserbyNamed(shorter).NeckHeight < LevelBuildKit.AdultNeck - 0.1f, shorter + ": a little shorter");
             Assert.AreEqual(names.Count, LevelBuildKit.PasserbyModels.Length, "ArtBaker makes a material for each");
             foreach (string model in LevelBuildKit.PasserbyModels) Assert.IsTrue(names.Contains(model), model);
         }
@@ -34,7 +38,7 @@ namespace DribbleToSchool.Tests
         [Test]
         public void EachComesAlongOnceBeforeAnyComesAgain()
         {
-            int n = LevelBuildKit.Passersby.Length + 1;
+            int n = LevelBuildKit.Passersby.Length;
             var firsts = new HashSet<int>();
             foreach (int salt in new[] { 0, 1, 6, 7, 52411, 81277, 23069, 100002 })
             {
@@ -48,9 +52,9 @@ namespace DribbleToSchool.Tests
                         Assert.IsTrue(seen.Add(who), "salt " + salt + ": " + who + " came round again at turn " + turn);
                     }
                 }
-                firsts.Add(Track.PasserbyTurn(salt, 0, n));
             }
-            Assert.Greater(firsts.Count, 3, "levels start with different people");
+            for (int salt = 0; salt < 3 * n; salt++) firsts.Add(Track.PasserbyTurn(salt, 0, n));
+            Assert.AreEqual(n, firsts.Count, "levels start with different people: each of them first somewhere");
             // (with more passers-by, or fewer, it holds as well: the step is kept prime to the number of bodies)
             for (int m = 1; m <= 12; m++)
                 foreach (int salt in new[] { 12345, 9, 100002 })

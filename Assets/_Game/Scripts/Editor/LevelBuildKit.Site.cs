@@ -62,7 +62,7 @@ namespace DribbleToSchool.EditorTools
 
                 // The banksman at the far gatepost, facing the kid, with the board on its pole held up beside him.
                 float bx = toX + 1.1f, bz = StreetBuilder.PathHalf + 0.2f;
-                Person(root, "Banksman", false, bx, groundTop, bz, -20f, HiVis, new Color(0.22f, 0.26f, 0.4f), HardHatYellow, 1.02f);
+                Person(root, "Banksman", "Courier", bx, groundTop, bz, -20f, HiVis, new Color(0.22f, 0.26f, 0.4f), HardHatYellow, 1.02f);   // (the courier in hi-vis, his cap a hard hat's yellow)
                 var board = new GameObject("BanksmanBoard");
                 board.transform.SetParent(go.transform, false);
                 board.transform.position = new Vector3(bx - 0.45f, groundTop, bz - 0.25f);

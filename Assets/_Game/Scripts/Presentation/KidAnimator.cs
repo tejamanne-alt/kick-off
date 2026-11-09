@@ -5,8 +5,10 @@ using UnityEngine;
 namespace DribbleToSchool.Presentation
 {
     /// <summary>
-    /// Procedural animation for the kid with knees and elbows: a run cycle whose
-    /// knees fold in the swing and straighten on the plant, bent-elbow arm drive,
+    /// Procedural animation for the kid with knees and elbows: a gait from a walk to a run whose steps quicken with the
+    /// pace and are as long as the ground covered (so a planted foot stays put), whose knees fold in the swing and
+    /// straighten on the plant, bent-elbow arm drive, a dribbling touch that is the swinging foot reaching through the
+    /// ball within the stride,
     /// idle breathing, a jump that drives one knee up off the other foot, a double jump that is a
     /// second, harder push in the air (the knee driven up again, the other leg kicking down, both arms
     /// swung up hard, then the legs gathered under to land: a real body's move, no spin); a feet-first slide that lunges in with an overshoot, scuffs along and springs up;
@@ -17,6 +19,7 @@ namespace DribbleToSchool.Presentation
     public class KidAnimator : MonoBehaviour
     {
         public KidController kid;
+        [Tooltip("Flat out, strides (two steps) per second are this times the run speed / 4; slower, they slow with the square root of the pace.")]
         public float strideFrequency = 1.9f;   // long teen legs: fewer, longer strides
         public float maxLegSwing = 42f;
         public float maxArmSwing = 34f;
@@ -35,6 +38,9 @@ namespace DribbleToSchool.Presentation
         float phase;
         float kickTime = -10f;
         float kickStrength;
+        float touchTime = -10f;
+        float touchStrength;
+        bool touchWithFront;
         float landTime = -10f;
         float landStrength;
         float jumpTime = -10f;
@@ -112,6 +118,30 @@ namespace DribbleToSchool.Presentation
             return steady + nod;
         }
 
+        /// <summary>
+        /// Strides per second (a stride is two steps) at <paramref name="pace"/> (a part of a full run): a full run's
+        /// <paramref name="runRate"/> times the square root of the pace, as people's steps quicken with their speed but less
+        /// than in step with it (a walk keeps most of a run's cadence, its steps shorter).
+        /// </summary>
+        public static float StrideRate(float pace, float runRate)
+        {
+            return runRate * Mathf.Sqrt(Mathf.Clamp01(pace));
+        }
+
+        /// <summary>
+        /// How far the legs swing (degrees either side of straight down) at <paramref name="speed"/>: at a walk or a jog as far
+        /// as keeps the planted foot still under the passing body (the foot sweeps back at leg length x swing x the stride's
+        /// angular rate, which is the body's speed), opening out toward the run's long, bounding <paramref name="runSwing"/>
+        /// flat out. (A swing fixed to the pace was too short at a walk: the feet skated and the kid looked stuck.)
+        /// </summary>
+        public static float StrideSwing(float speed, float rate, float legLength, float pace, float runSwing)
+        {
+            if (rate <= 0.0001f || legLength <= 0.0001f) return 0f;
+            float planted = Mathf.Rad2Deg * Mathf.Abs(speed) / (legLength * 2f * Mathf.PI * rate);
+            float p = Mathf.Clamp01(pace);
+            return Mathf.Min(Mathf.Lerp(planted, runSwing, p * p * p), runSwing);
+        }
+
         /// <summary>How far a running knee folds (degrees) at a given leg phase: most early in the swing.</summary>
         static float KneeFold(float legPhase)
         {
@@ -124,15 +154,24 @@ namespace DribbleToSchool.Presentation
             switch (type)
             {
                 case GameEventType.Kick:
-                case GameEventType.Touch:
-                case GameEventType.PerfectTouch:
                 case GameEventType.Juggle:
-                case GameEventType.Trap:
-                    // Only swing the leg if this touch came from our kid (close to the feet).
+                    // Only swing the leg if this kick came from our kid (close to the feet).
                     if (kid != null && Vector2.Distance(position, kid.FeetPosition) < 1.6f)
                     {
                         kickTime = Time.time;
-                        kickStrength = type == GameEventType.Kick ? 1f : type == GameEventType.Juggle ? 0.7f : 0.45f;
+                        kickStrength = type == GameEventType.Kick ? 1f : 0.7f;
+                    }
+                    break;
+                case GameEventType.Touch:
+                case GameEventType.PerfectTouch:
+                case GameEventType.Trap:
+                    // A dribbling touch is no kick: the foot swinging forward just then reaches through the ball, and the
+                    // stride goes on (a kick's wind-up on every touch held the legs and fought the step).
+                    if (kid != null && Vector2.Distance(position, kid.FeetPosition) < 1.6f)
+                    {
+                        touchTime = Time.time;
+                        touchStrength = type == GameEventType.PerfectTouch ? 1f : type == GameEventType.Trap ? 0.6f : 0.8f;
+                        touchWithFront = Mathf.Cos(phase) >= 0f;     // (the front leg swings forward while sin(phase) rises)
                     }
                     break;
                 case GameEventType.Goal: celebrating = true; break;
@@ -219,32 +258,42 @@ namespace DribbleToSchool.Presentation
             }
             else
             {
-                // Run cycle. Each knee folds most early in its swing (the foot flicks up behind),
-                // and is nearly straight while the foot is planted. Arms swing against the legs
-                // with bent elbows, bending more on the forward swing.
-                phase += Time.deltaTime * strideFrequency * Mathf.Max(speed, 0f) * Mathf.PI * 0.5f;
+                // The gait, from a walk to a run. The steps quicken with the pace (StrideRate) and each is as long as the
+                // ground the body covers while that foot is down (StrideSwing), so a planted foot stays put at a jog as at a
+                // run. Each knee folds most early in its swing (the foot flicks up behind; less high at a walk), and is
+                // nearly straight while the foot is planted. Arms swing against the legs, as far as the legs swing, with bent
+                // elbows, bending more on the forward swing.
+                float rate = StrideRate(runK, strideFrequency * Mathf.Max(kid.RunSpeed, 0.1f) * 0.25f);
+                phase += Time.deltaTime * rate * 2f * Mathf.PI;
+                float swing = StrideSwing(speed, rate, hipHeight, runK, maxLegSwing);
+                float moving = Mathf.SmoothStep(0f, 1f, runK / 0.12f);
                 float s = Mathf.Sin(phase);
-                p.legF = s * maxLegSwing * runK;
-                p.legB = -s * maxLegSwing * runK;
-                p.kneeF = -Mathf.Lerp(3f, KneeFold(phase), runK);
-                p.kneeB = -Mathf.Lerp(3f, KneeFold(phase + Mathf.PI), runK);
-                p.armF = -s * maxArmSwing * runK - 6f * runK;
-                p.armB = s * maxArmSwing * runK - 6f * runK;
+                p.legF = s * swing;
+                p.legB = -s * swing;
+                float fold = Mathf.Lerp(0.55f, 1f, runK) * moving;
+                p.kneeF = -Mathf.Lerp(3f, KneeFold(phase), fold);
+                p.kneeB = -Mathf.Lerp(3f, KneeFold(phase + Mathf.PI), fold);
+                float armSwing = maxArmSwing * swing / Mathf.Max(maxLegSwing, 1f);
+                p.armF = -s * armSwing - 6f * runK;
+                p.armB = s * armSwing - 6f * runK;
                 p.elbowF = Mathf.Lerp(12f, 70f + 25f * Mathf.Max(0f, -s), runK);
                 p.elbowB = Mathf.Lerp(12f, 70f + 25f * Mathf.Max(0f, s), runK);
                 p.bob = Mathf.Abs(s) * 0.05f * runK - 0.02f * runK;
                 p.lean = 7f * runK;
                 p.headTilt = RunHeadTilt(phase, p.lean, runK);
 
-                if (runK < 0.1f)
+                // Standing: breathing, a soft knee and loose arms, blended in as the steps die away (not switched).
+                float still = 1f - moving;
+                if (still > 0f)
                 {
-                    // Idle: breathing, a soft knee and loose arms.
                     float breathe = Mathf.Sin(Time.time * 2.2f);
-                    p.squash = new Vector2(1f - breathe * 0.015f, 1f + breathe * 0.015f);
-                    p.armF = -3f + breathe * 2f;
-                    p.armB = 3f - breathe * 2f;
-                    p.elbowF = p.elbowB = 14f + breathe * 3f;
-                    p.kneeF = p.kneeB = -5f;
+                    p.squash = Vector2.Lerp(Vector2.one, new Vector2(1f - breathe * 0.015f, 1f + breathe * 0.015f), still);
+                    p.armF = Mathf.Lerp(p.armF, -3f + breathe * 2f, still);
+                    p.armB = Mathf.Lerp(p.armB, 3f - breathe * 2f, still);
+                    p.elbowF = Mathf.Lerp(p.elbowF, 14f + breathe * 3f, still);
+                    p.elbowB = Mathf.Lerp(p.elbowB, 14f + breathe * 3f, still);
+                    p.kneeF = Mathf.Lerp(p.kneeF, -5f, still);
+                    p.kneeB = Mathf.Lerp(p.kneeB, -5f, still);
                 }
 
                 // A foot on the ball (KidController.FootOnBall): the near foot lifted onto it, the weight back a little,
@@ -323,6 +372,18 @@ namespace DribbleToSchool.Presentation
                 p.armF = Mathf.Lerp(p.armF, -45f, k * 0.6f);
                 p.elbowF = Mathf.Lerp(p.elbowF, 40f, k * 0.6f);
                 p.lean = Mathf.Lerp(p.lean, -8f, k * Mathf.Sin(kt * Mathf.PI));
+            }
+
+            // A dribbling touch: the foot swinging forward reaches a little further and straightens through the ball, on top
+            // of the stride (no wind-up: the step goes on, as a real dribble's touches are part of the run).
+            float tt = (Time.time - touchTime) / 0.24f;
+            if (tt >= 0f && tt <= 1f && slideBlend < 1f && kid.IsGrounded)
+            {
+                float reach = Mathf.Sin(tt * Mathf.PI);
+                float k = touchStrength * reach * reach * (1f - slideBlend);
+                if (touchWithFront) { p.legF += 14f * k; p.kneeF = Mathf.Lerp(p.kneeF, -10f, 0.6f * k); }
+                else { p.legB += 14f * k; p.kneeB = Mathf.Lerp(p.kneeB, -10f, 0.6f * k); }
+                p.lean -= 2f * k;
             }
 
             // Stumble: quick wobble.

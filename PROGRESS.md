@@ -937,6 +937,30 @@ An audit of what comes round again and again (`review/repetition/README.md`), an
   auburn, grey, silver). All six passers-by rebuilt, the jogger with them (her rules on the shared setup).
   `review/passersby/faces.jpg`: the faces before and after, and the office worker in four hair colours.
 
+## Every grown-up a rigged passer-by, at a grown-up's height; a smoother dribble (generated content v110)
+
+- **No more procedural adult** (the white-headed mannequin): the six rigged passers-by take turns on the footpath on
+  their own (`NextPasserby`, a full cycle of the six); a walker's friend is another of them in their own wardrobe (and
+  changes from it: `Pedestrian.companionCoats`, `companionLegwears`); the builders on the footpath and the banksman are
+  the courier in hi-vis with his cap in a hard hat's yellow; the parent at the kid's front door is Mom; at the stops,
+  Granny is the shopkeeper's model, the lifeguard the courier, Grandpa at the allotment Grandad, the one waiting at
+  the bus stop the office worker, the traveller at the station Mom (`Person` takes the model's name). The procedural
+  adult is left only as the fallback should a model be missing from a build (`GrownUpLook`).
+- **Heights** (`Passerby.neck`, game units): the jogger, the office worker, the courier and Grandad stand as tall as
+  the old adult (`AdultNeck`, 1.22 times the kid's 1.3); Mom and the shopkeeper stay as they were (1.393, 1.37).
+- **The dribble** (`KidAnimator`): the recording showed the kid at a gentle push (about a fifth of a run, KICK held)
+  with her legs barely cycling and her planted foot skating, and every dribbling touch (a close-control touch each
+  0.41 s) playing the whole kick: the thigh wound back and whipped through, fighting the stride and holding a wide
+  pose. Now the steps quicken with the pace (`StrideRate`: a run's cadence times the square root of the pace) and each
+  is as long as the ground covered while the foot is down (`StrideSwing`), so the planted foot stays put (at a fifth of
+  a run it slid 0.79 units/s, 1.48 with the touches; now about 0.3); standing blends in as the steps die away; and a
+  dribbling touch is the swinging foot reaching through the ball within the stride (kicks and keepy-ups keep the kick).
+  The close-control pace eases in and out (`BallController`) instead of jolting the speed as the ball comes in and out
+  of reach. `review/dribble/`: the old and new gait on the kid, side by side (`render_gait.py`, `gait.py`).
+- **Checked:** the runtime scripts compile; the editor scripts bind with no new errors; `PasserbyTests` (heights, the
+  six-way turn order) and `GaitTests` (the steps quicken; the planted foot sweeps back at the body's speed at a walk and
+  a jog; the run's stride flat out) pass, and fail on the old stride or a short Grandad. **Not run in Unity.**
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.
