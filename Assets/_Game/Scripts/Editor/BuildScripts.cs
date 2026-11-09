@@ -200,7 +200,8 @@ namespace DribbleToSchool.EditorTools
         /// Build the game as a plain APK and install and launch it on the Android phone plugged in by USB
         /// (USB debugging on). Signed with Unity's debug key, so it needs no upload key; uninstall it
         /// before installing a Play Store version of the game, and the other way round (Android won't
-        /// replace an app signed with a different key).
+        /// replace an app signed with a different key). Its version code always goes up (<see cref="TestVersionCode"/>),
+        /// so it installs over any test build before it, keeping the game's progress.
         /// </summary>
         [MenuItem("Kick Off/Build/Android: Run on Connected Phone (USB)")]
         public static void BuildAndroidRunOnPhone()
@@ -209,7 +210,7 @@ namespace DribbleToSchool.EditorTools
             EditorUserBuildSettings.buildAppBundle = false;
             bool custom = PlayerSettings.Android.useCustomKeystore;
             PlayerSettings.Android.useCustomKeystore = false;
-            try { Build(BuildTarget.Android, Path.Combine(BuildRoot, "Android", "KickOff-test.apk"), BuildOptions.AutoRunPlayer); }
+            try { WithTestVersionCode(() => Build(BuildTarget.Android, Path.Combine(BuildRoot, "Android", "KickOff-test.apk"), BuildOptions.AutoRunPlayer)); }
             finally { PlayerSettings.Android.useCustomKeystore = custom; }
         }
 
@@ -218,8 +219,35 @@ namespace DribbleToSchool.EditorTools
         {
             ApplyPlayerSettings();
             EditorUserBuildSettings.buildAppBundle = false;
-            Build(BuildTarget.Android, Path.Combine(BuildRoot, "Android", "KickOff-dev.apk"),
-                BuildOptions.Development | BuildOptions.AllowDebugging);
+            WithTestVersionCode(() => Build(BuildTarget.Android, Path.Combine(BuildRoot, "Android", "KickOff-dev.apk"),
+                BuildOptions.Development | BuildOptions.AllowDebugging));
+        }
+
+        /// <summary>
+        /// The version code of a test APK: the minutes since 2025 (plus 100000), so every test build is newer than the one
+        /// before it and installs over it. Android refuses an APK whose version code is lower than the installed one's
+        /// (INSTALL_FAILED_VERSION_DOWNGRADE), and the store build number alone can go back (it lives in this checkout's
+        /// Player Settings, which aren't in the repository). Never below the store build number.
+        /// </summary>
+        public static int TestVersionCode()
+        {
+            var since = DateTime.UtcNow - new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+            return Math.Max(CurrentBuildNumber(), 100000 + (int)Math.Max(0, since.TotalMinutes));
+        }
+
+        /// <summary>Runs a test build with <see cref="TestVersionCode"/>, then puts the store build number back.</summary>
+        static void WithTestVersionCode(Action build)
+        {
+            int storeCode = PlayerSettings.Android.bundleVersionCode;
+            int testCode = TestVersionCode();
+            PlayerSettings.Android.bundleVersionCode = testCode;
+            Debug.Log("[Build] Test APK version code " + testCode + " (the store build number stays " + storeCode + ").");
+            try { build(); }
+            finally
+            {
+                PlayerSettings.Android.bundleVersionCode = storeCode;
+                AssetDatabase.SaveAssets();
+            }
         }
 
         /// <summary>The Xcode project for real iPhones and iPads: the one to archive and upload.</summary>
@@ -357,6 +385,8 @@ namespace DribbleToSchool.EditorTools
             if (summary.result == BuildResult.Succeeded)
             {
                 Debug.Log("[Build] " + target + " succeeded: " + Path.GetFullPath(location) + " (" + (summary.totalSize / (1024 * 1024)) + " MB)");
+                try { WriteSizeReport(report, location); }
+                catch (Exception e) { Debug.LogWarning("[Build] No size report: " + e.Message); }
                 // From the menu, show the result in Finder: the Xcode project itself when there is one.
                 if (!Application.isBatchMode && (options & BuildOptions.AutoRunPlayer) == 0)
                 {
@@ -372,6 +402,52 @@ namespace DribbleToSchool.EditorTools
                     " error(s). The Console has the details (the first red line is usually the cause).", "OK");
             }
         }
+
+        /// <summary>
+        /// What the build is made of, biggest first: the packed size of every kind of asset (textures, meshes, audio...) and
+        /// of the 60 biggest source assets, written beside the build (BuildSize.txt) and summarised in the Console. What isn't
+        /// an asset (the compiled code and Unity's own libraries) is the rest of the total.
+        /// </summary>
+        static void WriteSizeReport(BuildReport report, string location)
+        {
+            var bySource = new System.Collections.Generic.Dictionary<string, ulong>();
+            var byType = new System.Collections.Generic.Dictionary<string, ulong>();
+            ulong assets = 0;
+            foreach (var packed in report.packedAssets)
+            {
+                foreach (var info in packed.contents)
+                {
+                    string source = string.IsNullOrEmpty(info.sourceAssetPath) ? "(made by Unity or by code: " + packed.shortPath + ")" : info.sourceAssetPath;
+                    string type = info.type != null ? info.type.Name : "Other";
+                    ulong size;
+                    bySource.TryGetValue(source, out size);
+                    bySource[source] = size + info.packedSize;
+                    byType.TryGetValue(type, out size);
+                    byType[type] = size + info.packedSize;
+                    assets += info.packedSize;
+                }
+            }
+            ulong total = report.summary.totalSize;
+            long file = File.Exists(location) ? new FileInfo(location).Length : -1;
+            var text = new System.Text.StringBuilder();
+            text.AppendLine("Build size report: " + report.summary.platform + ", " + DateTime.Now.ToString("yyyy-MM-dd HH:mm"));
+            text.AppendLine("Build output: " + Mb(total) + (file >= 0 ? "; the file itself (compressed): " + Mb((ulong)file) : ""));
+            text.AppendLine("Assets, packed (before the APK's compression): " + Mb(assets) + "; the rest (code, Unity's libraries): " + Mb(total > assets ? total - assets : 0));
+            text.AppendLine();
+            text.AppendLine("By kind:");
+            foreach (var kv in byType.OrderByDescending(k => k.Value))
+                text.AppendLine("  " + Mb(kv.Value).PadLeft(10) + "  " + kv.Key);
+            text.AppendLine();
+            text.AppendLine("Biggest assets:");
+            foreach (var kv in bySource.OrderByDescending(k => k.Value).Take(60))
+                text.AppendLine("  " + Mb(kv.Value).PadLeft(10) + "  " + kv.Key);
+            string reportPath = Path.Combine(Path.GetDirectoryName(Path.GetFullPath(location)) ?? BuildRoot, "BuildSize.txt");
+            File.WriteAllText(reportPath, text.ToString());
+            string top = string.Join(", ", byType.OrderByDescending(k => k.Value).Take(4).Select(k => k.Key + " " + Mb(k.Value)).ToArray());
+            Debug.Log("[Build] Size: " + top + ". The full list: " + reportPath);
+        }
+
+        static string Mb(ulong bytes) { return (bytes / (1024.0 * 1024.0)).ToString("0.0") + " MB"; }
 
         static string Env(string name, string fallback)
         {

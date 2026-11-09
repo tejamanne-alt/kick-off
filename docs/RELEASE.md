@@ -76,7 +76,7 @@ From Terminal instead (Unity closed):
 DTS_KEYSTORE_PATH=~/keys/kickoff2-upload.jks DTS_KEYSTORE_PASS='…' DTS_KEY_ALIAS=upload DTS_KEY_PASS='…' \
 ./ci/android/build_android.sh release
 ```
-For a quick test on your own phone: **Kick Off > Build > Android APK (development)**, then `adb install -r Builds/Android/KickOff-dev.apk`.
+For a quick test on your own phone: **Kick Off > Build > Android: Run on Connected Phone (USB)**, or **Kick Off > Build > Android APK (development)** and then `adb install -r Builds/Android/KickOff-dev.apk`. Test APKs carry a version code that always goes up (minutes since 2025), so they install over each other; the store build number stays as it is. If the phone has a copy with a higher version code or another signing key, uninstall it once (`adb uninstall com.astradite.kickoff2`). `Builds/Android/BuildSize.txt` lists what the build is made of: the App Bundle's base must stay under Play's 200 MB.
 
 ### Upload and release
 1. **Test and release > Testing > Internal testing** → create a release → upload `KickOff.aab` → add testers' emails → roll out.
