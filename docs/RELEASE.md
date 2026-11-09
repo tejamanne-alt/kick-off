@@ -129,6 +129,7 @@ The game has no ads, no accounts, no network calls and no third-party SDKs (Unit
 
 - **Apple App Privacy:** "Data Not Collected". Tracking: No. The privacy manifest is at `Assets/Plugins/iOS/PrivacyInfo.xcprivacy`.
 - **Google Play Data safety:** no data collected or shared. Purchase history is handled by Google Play itself.
+- **Co-op over Bluetooth** (docs/COOP.md): phones in the same lobby exchange a typed name, a random tag, the kid played and race positions directly over Bluetooth LE; nothing goes to a server, so the answers above stand. The build adds the Bluetooth permissions (Editor/AndroidBluetoothPermissions: nearby devices on Android 12+, location before) and the iOS Bluetooth usage text in English and Spanish (Editor/IosPostBuild). Store forms: a mixed audience on Google Play (docs/GOOGLE_PLAY_LISTING.md) and "user-generated content: Yes" on the App Store (docs/APP_STORE_LISTING.md). Google Play's Data safety form asks about "nearby devices" permissions under app functionality; describe it as local multiplayer.
 - **Analytics:** events are written only to `analytics.jsonl` on the device (useful for playtests: collect it from test devices). If you add a backend later via `AnalyticsService.AddSink`, update both forms and your privacy policy.
 - **Families:** the game suits kids. If you opt into Google Play's Families programme or Apple's Kids category, keep it ad-free with no external links, which is already the case.
 

@@ -138,7 +138,16 @@ namespace DribbleToSchool.Progression
         /// <summary>The scene to load for a level's scene: its scene for the active add-on, when the build has one.</summary>
         public static string SceneFor(string scene)
         {
-            var a = Active;
+            return SceneFor(scene, Active);
+        }
+
+        /// <summary>
+        /// The scene to load for a level's scene in <paramref name="a"/>'s streets (a co-op race runs in the location one player
+        /// chose for everyone, whatever each phone has chosen or unlocked for itself), when the build has one.
+        /// </summary>
+        public static string SceneFor(string scene, AddOn a)
+        {
+            if (a == null) a = Original;
             if (string.IsNullOrEmpty(scene) || string.IsNullOrEmpty(a.sceneSuffix)) return scene;
             string skin = scene + a.sceneSuffix;
             return Application.CanStreamedLevelBeLoaded(skin) ? skin : scene;

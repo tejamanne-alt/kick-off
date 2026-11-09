@@ -64,6 +64,10 @@ namespace DribbleToSchool.Progression
         /// <summary>Older saves' California switch (before the add-ons): read once by AddOns.Selected.</summary>
         public bool californiaSkin;
 
+        // Co-op (Coop/): races finished at the school gate on this phone, and how many of them it won. Older saves have 0.
+        public int coopRaces;
+        public int coopWins;
+
         /// <summary>The bag each kid wears (Cosmetics/Bags; a kid with no entry wears the default one). Older saves have none.</summary>
         public List<BagChoice> bags = new List<BagChoice>();
 

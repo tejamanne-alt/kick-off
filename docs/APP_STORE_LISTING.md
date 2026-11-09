@@ -107,10 +107,10 @@ Off.
 1. DEMO VIDEO
 Screen recording on an iPhone [model] running iOS [version], starting from the Home Screen with the app launch: [attached below / paste the link]
 It shows the title screen, choosing the player, the town map, playing a level (running, kicking, jumping, sliding), collecting a sticker, the results screen, the sticker album and the Locker Room.
-The app has no account registration, login or account deletion, no user-generated content, and no paid content or in-app purchases.
+The app has no account registration, login or account deletion, and no paid content or in-app purchases. The only thing a player can type is an optional name for local Co-op: it is shown only to the other phones in the same Co-op lobby, directly over Bluetooth (never online, never stored anywhere else), it is filtered (a word list; no special characters), there is no chat, and the lobby's host can remove a player (who then can't rejoin that lobby).
 
 2. PURPOSE AND AUDIENCE
-Kick Off 2 is a single-player football (soccer) side-scrolling game for players of all ages. The player dribbles a ball through town streets to reach school, across 23 short skill-based levels in 5 chapters plus ball-skill challenges. It is a light, ad-free game that plays offline and rewards timing and ball control; a sticker hidden in each level unlocks cosmetic items.
+Kick Off 2 is a football (soccer) side-scrolling game for players of all ages, played alone or in local Co-op (up to four phones in the same room race each other to school over Bluetooth, iPhone and Android together, no internet). The player dribbles a ball through town streets to reach school, across 23 short skill-based levels in 5 chapters plus ball-skill challenges. It is a light, ad-free game that plays offline and rewards timing and ball control; a sticker hidden in each level unlocks cosmetic items.
 
 3. HOW TO USE IT
 No setup, login or sample files are needed. Launch the app, tap PLAY and choose a level on the town map: six routes from the kid's house to the school, each level a numbered stop on its route (levels unlock in order as each is finished).
@@ -118,7 +118,7 @@ Controls (landscape): the two arrow buttons at the bottom left run; KICK touches
 Stickers shows the album (tap a sticker to view it). The Locker Room has cosmetic items unlocked with in-game coins earned by playing, or by stickers. Settings has the player choice (six kids: two teenagers and four primary-school children), sound, the school-bell timer, the controls (a left-handed layout, the slide button's place) and the language.
 
 4. EXTERNAL SERVICES
-None. The app works fully offline and makes no network requests. It uses no third-party services or SDKs: no analytics, advertising, authentication, payment or AI services. It is built with the Unity engine, and progress is stored only on the device.
+None. The app works fully offline and makes no network requests. Co-op uses Bluetooth LE directly between nearby phones (NSBluetoothAlwaysUsageDescription explains it when the player first opens Co-op); nothing is sent to a server. It uses no third-party services or SDKs: no analytics, advertising, authentication, payment or AI services. It is built with the Unity engine, and progress is stored only on the device.
 
 5. REGIONAL DIFFERENCES
 None. The app works the same in every region. Its text is in English and Spanish, following the device language.
@@ -135,8 +135,12 @@ Not applicable: the app is not in a regulated industry and contains no protected
 - **Subtitle (29 / 30):** `Dribble all the way to school`
 - **Category:** Primary **Games**, subcategories **Sports** and **Casual**. Secondary category: optional, e.g. Entertainment.
 - **Content Rights:** "No, it does not contain, show, or access third-party content".
-- **Age Rating:** answer every question "None" / "No" (no violence, no gambling or loot boxes, no user-generated content,
-  no chat, no ads, no web access, no medical content). Expect the lowest rating (4+).
+- **Age Rating:** answer "None" / "No" to violence, gambling and loot boxes, chat or messaging, ads, web access and
+  medical content. **User-generated content: answer Yes.** Co-op shows a name a player typed to the others in the same
+  room, and declaring it is the answer App Review can't dispute. Guideline 1.2's requirements for it are met: names are
+  filtered (a word list), the host can remove a player (who can't rejoin that lobby), and the support page gives a
+  contact. The review notes above describe it the same way. Expect the lowest rating (4+); if the questionnaire suggests
+  another, accept it.
 - **License agreement:** Apple's standard EULA.
 
 ## Pricing and Availability

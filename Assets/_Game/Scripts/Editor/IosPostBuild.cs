@@ -14,14 +14,34 @@ namespace DribbleToSchool.EditorTools
     ///   app; otherwise App Store validation asks for every orientation).
     /// - UnityFramework: Unity's own trampoline code (UnityAppController, UnityRendering) uses properties that Unity
     ///   itself marks deprecated; those warnings are Unity's, not the game's, so the target doesn't report deprecations.
+    /// - Co-op over Bluetooth (Coop/, Plugins/iOS/DTSCoopBLE.mm): NSBluetoothAlwaysUsageDescription (iOS asks the player
+    ///   with it the first time the co-op screen opens; without it the app is killed when Bluetooth starts), CoreBluetooth
+    ///   linked into UnityFramework, and the plugin compiled with ARC (it is written for it).
     /// - The project is marked as checked against this Xcode ("Update to recommended settings": Unity writes an old
     ///   LastUpgradeCheck), and every Run Script phase that names no inputs or outputs (GameAssembly's IL2CPP step) is
     ///   marked to run on every build, which it must: Xcode would otherwise warn that it "will be run during every build".
     /// </summary>
     public static class IosPostBuild
     {
+        /// <summary>A language's InfoPlist.strings, holding the Bluetooth question (a strings file: "key" = "value";).</summary>
+        static void WriteInfoPlistStrings(string pathToBuiltProject, string language, string bluetoothUsage)
+        {
+            string folder = Path.Combine(pathToBuiltProject, language + ".lproj");
+            Directory.CreateDirectory(folder);
+            string value = bluetoothUsage.Replace("\\", "\\\\").Replace("\"", "\\\"");
+            string text = "/* Written by Editor/IosPostBuild.cs */\n\"NSBluetoothAlwaysUsageDescription\" = \"" + value + "\";\n";
+            File.WriteAllText(Path.Combine(folder, "InfoPlist.strings"), text, new System.Text.UTF8Encoding(false));
+        }
+
         /// <summary>The Xcode version the project counts as upgraded for (26.0 as Xcode writes it; any later Xcode asks again).</summary>
         const string XcodeVersion = "2600";
+
+        /// <summary>What iOS shows when it asks the player to allow Bluetooth (the co-op mode's first use).</summary>
+        const string BluetoothUsage = "Kick Off 2 uses Bluetooth to find friends' phones nearby and race them to school in Co-op.";
+        /// <summary>The same in Spanish, the game's other language (es.lproj/InfoPlist.strings).</summary>
+        const string BluetoothUsageEs = "Kick Off 2 usa el Bluetooth para encontrar los móviles de tus amigos cerca y echar carreras hasta el cole en Cooperativo.";
+        /// <summary>The languages the game speaks (Localization/StringTables), declared so iOS uses them for its own text too.</summary>
+        static readonly string[] Languages = { "en", "es" };
 
         [PostProcessBuild(100)]
         public static void OnPostprocessBuild(BuildTarget target, string pathToBuiltProject)
@@ -32,7 +52,13 @@ namespace DribbleToSchool.EditorTools
             plist.ReadFromFile(plistPath);
             plist.root.SetBoolean("ITSAppUsesNonExemptEncryption", false);
             plist.root.SetBoolean("UIRequiresFullScreen", true);
+            plist.root.SetString("NSBluetoothAlwaysUsageDescription", BluetoothUsage);
+            var languages = plist.root.CreateArray("CFBundleLocalizations");
+            foreach (string language in Languages) languages.AddString(language);
             plist.WriteToFile(plistPath);
+            // The Bluetooth question in each language: iOS reads a language's InfoPlist.strings over Info.plist's text.
+            WriteInfoPlistStrings(pathToBuiltProject, "en", BluetoothUsage);
+            WriteInfoPlistStrings(pathToBuiltProject, "es", BluetoothUsageEs);
 
             string projectPath = PBXProject.GetPBXProjectPath(pathToBuiltProject);
             var project = new PBXProject();
@@ -41,6 +67,22 @@ namespace DribbleToSchool.EditorTools
             project.SetBuildProperty(framework, "GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS", "NO");
             project.SetBuildProperty(framework, "CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS", "NO");
             project.AddBuildProperty(framework, "WARNING_CFLAGS", "-Wno-deprecated-declarations");
+            project.AddFrameworkToProject(framework, "CoreBluetooth.framework", false);
+            // (each .lproj as a folder reference: copied into the app as it is, so iOS finds es.lproj/InfoPlist.strings)
+            string app = project.GetUnityMainTargetGuid();
+            foreach (string language in Languages)
+            {
+                string folder = language + ".lproj";
+                if (string.IsNullOrEmpty(project.FindFileGuidByProjectPath(folder)))
+                    project.AddFileToBuild(app, project.AddFolderReference(folder, folder, PBXSourceTree.Source));   // (relative to the Xcode project)
+            }
+            string plugin = project.FindFileGuidByProjectPath("Libraries/Plugins/iOS/DTSCoopBLE.mm");
+            if (!string.IsNullOrEmpty(plugin))
+                project.SetCompileFlagsForFile(framework, plugin, new System.Collections.Generic.List<string> { "-fobjc-arc" });
+            else
+                // (the plugin refuses to compile without ARC, so the build fails loudly rather than leaking: but say why here)
+                UnityEngine.Debug.LogWarning("[IosPostBuild] Libraries/Plugins/iOS/DTSCoopBLE.mm not found in the Xcode project: "
+                    + "co-op Bluetooth needs it compiled with -fobjc-arc (set it on the file's build phase by hand).");
             project.WriteToFile(projectPath);
 
             // What the PBXProject API can't set, in the project file's text.

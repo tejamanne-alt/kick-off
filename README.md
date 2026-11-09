@@ -9,6 +9,7 @@ All eight phases of the build plan are done (see [`PROGRESS.md`](PROGRESS.md)):
 
 - **Gameplay:** core dribbling and kicking, level flow, 13 hazard types, and 23 story levels across 5 chapters plus 5 ball-skill challenges.
 - **Holiday Run:** the campaign with no destination: the same controls and ball along the whole story world, one 120 m stage for each of the 23 levels in story order, a lap a day. See [`docs/HOLIDAY_RUN.md`](docs/HOLIDAY_RUN.md).
+- **Co-op:** up to four phones in the same room (iPhone and Android together) race from home to school over Bluetooth LE, on the stage and in the location any one of them picks. Names with tags, ghosts of the others, live standings, and a race that survives Bluetooth going off, players walking out of range and the host leaving. See [`docs/COOP.md`](docs/COOP.md).
 - **Progression:** coins, stickers, saving, the Locker Room shop and the town map (a picture of the town with six routes from the kid's house to the school and the stops between their levels, which pans and zooms; see [`docs/WORLD_MAP.md`](docs/WORLD_MAP.md)).
 - **Presentation:** procedural storybook art, animation, FX, music and sound effects, and haptics.
 - **Menus and options:** settings, localization (English and Spanish), tutorial hints and accessibility options.
@@ -134,6 +135,16 @@ The campaign with no destination, from the title screen: the same controls, the 
 
 Design, scoring, tuning knobs, the streaming contract and a first-run checklist are in [`docs/HOLIDAY_RUN.md`](docs/HOLIDAY_RUN.md).
 
+## Co-op
+
+The third mode, from the title screen's **CO-OP** button: up to four phones in the same room race each other to school over Bluetooth LE, iPhones and Android phones together, with no internet. The full design (rules, resilience, protocol, native plugins, the device checklist) is in [`docs/COOP.md`](docs/COOP.md).
+
+- **Who's who:** each player types the name the others see (empty: Player 1, 2, 3... by seat), followed everywhere by a four-character tag from a random id kept on that install (`Sam #K7QX`, `Sam #M2PZ`), so the same name typed twice is still told apart. The kid from the player picker is the kid the others see.
+- **Lobby:** one phone hosts; the others join from a list of lobbies nearby. Any player chooses the stage (one of the six routes from home to school, or Random) and the location (an add-on, or Random), like a fighting game's stage select: the last choice wins, everyone sees who chose and readies again. Filters stay each player's own (Add-ons & Filters).
+- **Race:** when everyone is ready, every phone loads the first leg and counts 3, 2, 1, GO to the same moment. Each phone runs its own kid; the others are ghosts in the lanes behind, with name tags. Each leg loads straight after the last. The first through the school gate wins, the others carry on, and a finish is kept even if that player leaves.
+- **When phones lose each other:** a racer out of touch for more than 20 seconds is listed last while the race goes on for the rest (with two players, the one left can still finish and win); their own run carries on, and counts again the moment they are back in touch, before the next race. Leaving is final. If the host goes, the next player takes over and the race carries on; a finish, once any phone has seen it, is never lost. The host can remove a player from the lobby.
+- **In the editor** there is no Bluetooth: practice bots join or host and race, and editor-only buttons in the race send a bot out of range, bring it back, make the bot host leave or switch your own pretend Bluetooth off.
+
 ## Tuning the feel
 
 Every feel value lives in two assets:
@@ -180,6 +191,10 @@ Assets/_Game/
                 HolidayStages.cs       the stage table (one per story level) and the world's geometry
                 BallSmasher.cs, HolidayAtmosphere.cs, RunChunk.cs, RunSolid.cs, RunBreakable.cs, PowerUp.cs
                 HolidayRunHud.cs, HolidayRunPanels.cs, HolidayMissions.cs   the run's screen, its pause and results menus, the missions
+    Coop/       CoopService.cs         Co-op's radio and session across scenes; CoopRaceMode.cs: the route's legs as one race
+                Net/, Session/         pure C#: wire format, framing, clock sync, the lobby and race state machine (tested offline)
+                Transport/             the Bluetooth LE links (Plugins/iOS/DTSCoopBLE.mm, Plugins/Android/DtsCoopBle.java)
+                CoopLevelLink.cs, CoopGhost.cs, CoopHud.cs   a leg's ghosts, the race HUD and standings
     Editor/     LevelBuildKit.cs       sprites, assets, gameplay rig, track pieces
                 GreyboxLevels.cs       the level layouts
                 GeneratedContent.cs    builds every scene + build settings
