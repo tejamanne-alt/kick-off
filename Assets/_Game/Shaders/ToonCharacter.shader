@@ -4,9 +4,10 @@
 // outline of constant on-screen width (an inverted hull pushed out along the smooth normals),
 // and the same distance haze as the street. Colours come from the vertex colours times the
 // texture and tint. Lighting and haze are set by WorldLook.
-// Alpha carries _ComicWorld for the comic halftone filter (Shaders/PostFX): 0 (people and the ball)
-// takes the whole filter except creases across it (its painted face and eyes stay clear) and slips
-// half as far; 1 (the cars, the bicycle) is drawn like the street, creases and all.
+// Alpha carries _ComicWorld for the filters (Shaders/PostFX): 0 (people and the ball) takes the comic filter
+// except creases across it (its painted face and eyes stay clear) and slips half as far; 0.125 (the cars: a cel) is
+// drawn like the street by the comic and sketch filters (creases and all) and as an inked cel by the classic cartoon,
+// as the people are; 1 is drawn like the street by every filter.
 // A texture whose alpha is below 1 marks a part that can be recoloured (a Locker Room bag's cloth: tools/blender/
 // meshy_bag.py): with _MaskTint's alpha up, those texels take _MaskTint's colour, as light or dark as they were
 // against _MaskBase (the part's own colour). Opaque textures (every other model) are drawn as they are.
@@ -20,7 +21,7 @@ Shader "DribbleToSchool/ToonCharacter"
         _RimStrength ("Rim light", Range(0,1)) = 0.3
         _OutlineColor ("Outline colour", Color) = (0.08,0.07,0.1,1)
         _OutlineWidth ("Outline width (fraction of screen height)", Float) = 0.0022
-        _ComicWorld ("Comic filter: drawn like the street (1) or kept as a figure (0)", Range(0,1)) = 0
+        _ComicWorld ("Filters: a figure (0), a cel (0.125: the cars) or the street (1)", Range(0,1)) = 0
         _MaskTint ("Recolour of the texture's marked part (alpha 0: none)", Color) = (1,1,1,0)
         _MaskBase ("The marked part's own colour", Color) = (0.5,0.5,0.5,1)
     }

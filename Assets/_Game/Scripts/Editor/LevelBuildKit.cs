@@ -606,6 +606,24 @@ namespace DribbleToSchool.EditorTools
             return v != null && v.Count >= 3 ? new Vector3(Convert.ToSingle(v[0]), Convert.ToSingle(v[2]), Convert.ToSingle(v[1])) : Vector3.zero;
         }
 
+        /// <summary>
+        /// Kit models the classic cartoon filter draws as cels (inked, as the people are) rather than as painted
+        /// scenery: the things the kid plays with or that move. The whole Animals kit is cels (its material is marked so:
+        /// ArtBaker), the animals and the coins, stars and stickers; these are the rest, each wearing its kit's "Cel" copy.
+        /// </summary>
+        static readonly HashSet<string> celModels = new HashSet<string>
+        {
+            "Leisure/SwingSeat", "Leisure/Target", "Leisure/SlalomFlag", "Leisure/CheckpointFlag", "Leisure/Trampoline",
+        };
+
+        /// <summary>Does <paramref name="kit"/> have models drawn as cels (it then gets a "Cel" copy of its material)?</summary>
+        public static bool HasCelModels(string kit)
+        {
+            foreach (var key in celModels)
+                if (key.StartsWith(kit + "/")) return true;
+            return false;
+        }
+
         public static bool HasKitModel(string kit, string model)
         {
             return AssetDatabase.LoadAssetAtPath<GameObject>(ModelsDir + "/" + kit + "/" + model + ".fbx") != null;
@@ -626,6 +644,9 @@ namespace DribbleToSchool.EditorTools
             // The California skin's shops have English signs: the same atlas layout, its own texture.
             Material skin;
             if (California && Art.kits.TryGetValue(kit + "CA", out skin) && skin != null) material = skin;
+            // A model the kid plays with is a cel for the classic cartoon filter (its kit's "Cel" copy).
+            Material cel;
+            if (celModels.Contains(kit + "/" + model) && Art.kits.TryGetValue(kit + "Cel", out cel) && cel != null) material = cel;
             var go = new GameObject(model);
             go.transform.SetParent(parent, false);
             go.transform.position = position;

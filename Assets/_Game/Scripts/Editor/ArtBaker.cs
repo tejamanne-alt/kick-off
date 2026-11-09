@@ -189,6 +189,7 @@ namespace DribbleToSchool.EditorTools
                 set.facades[kind] = ToonMaterial("Facade_" + kind, toon, LoadTexture("Facade_" + kind), false);
             set.solid = ToonMaterial("Solid", toon, null, false);
             set.crateMaterial = ToonMaterial("Crate", toon, LoadTexture("CrateFace"), false);
+            set.crateMaterial.SetFloat("_FilterMask", 0.125f);   // a crate is pushed about: a cel for the classic cartoon filter
             foreach (var kit in LevelBuildKit.Kits)
             {
                 var atlas = AssetDatabase.LoadAssetAtPath<Texture2D>(LevelBuildKit.ModelsDir + "/" + kit + "/" + kit + "Atlas.png");
@@ -198,8 +199,22 @@ namespace DribbleToSchool.EditorTools
                 LeafCards(m, kit == "Plants" || kit == "Barriers");   // leaf-card foliage (the boughs over the path too)
                 // The shade inside a crown is a cool, nearly neutral dark, as in the reference shots (docs/ART_DIRECTION.md).
                 m.SetColor("_ShadowColor", kit == "Plants" ? new Color(0.728f, 0.006f, 2f) : DefaultShadowTint);
+                // What the filters take it for (Shaders/PostFX): the plants are foliage, the animals kit (the animals,
+                // and the coins, stars and stickers the kid collects) cels, every other kit scenery.
+                m.SetFloat("_FilterMask", kit == "Plants" ? 0.5f : kit == "Animals" ? 0.125f : 1f);
                 m.enableInstancing = true;                          // repeats of a kit model draw together
                 set.kits[kit] = m;
+                // The kit's models the kid plays with (LevelBuildKit.HasCelModels: swing seats, targets, flags...) wear a
+                // copy marked as a cel, so the classic cartoon filter inks them as it does the people.
+                if (LevelBuildKit.HasCelModels(kit))
+                {
+                    var cel = ToonMaterial("Kit" + kit + "Cel", toon, atlas, false);
+                    cel.CopyPropertiesFromMaterial(m);
+                    cel.SetFloat("_FilterMask", 0.125f);
+                    cel.enableInstancing = true;
+                    EditorUtility.SetDirty(cel);
+                    set.kits[kit + "Cel"] = cel;
+                }
                 // A kit's California skin atlas (the same layout repainted: BuildingsCAAtlas.png, the shops'
                 // English signs), drawn instead of the kit's own in the levels' California scenes.
                 var skinAtlas = AssetDatabase.LoadAssetAtPath<Texture2D>(LevelBuildKit.ModelsDir + "/" + kit + "/" + kit + "CAAtlas.png");
@@ -215,6 +230,7 @@ namespace DribbleToSchool.EditorTools
             set.cloud.SetFloat("_Haze", 0.15f);
             set.cloud.SetColor("_ShadowColor", new Color(0.86f, 0.9f, 0.97f));
             set.cloud.SetFloat("_Lighting", 0.25f);   // the clouds paint their own white and cyan shade (CloudShape); the sun only adds a little
+            set.cloud.SetFloat("_FilterMask", 0.75f);  // the classic cartoon filter keeps the clouds white
 
             var toonCharacter = Shader.Find("DribbleToSchool/ToonCharacter");
             // The playable characters get the boldest line and rim, so they read clearly against the
@@ -244,7 +260,7 @@ namespace DribbleToSchool.EditorTools
                 var carMat = LoadOrCreateMaterial("Car" + type, toonCharacter);
                 carMat.mainTexture = AssetDatabase.LoadAssetAtPath<Texture2D>(LevelBuildKit.ModelsDir + "/Cars/" + type + "Atlas.png");
                 carMat.SetFloat("_OutlineWidth", 0.0018f);
-                carMat.SetFloat("_ComicWorld", 1f);   // the comic filter draws a car like the street (creases, bands)
+                carMat.SetFloat("_ComicWorld", 0.125f);   // a cel: the comic filter draws it like the street (creases, bands), the classic cartoon inks it
                 EditorUtility.SetDirty(carMat);
                 set.cars[type] = carMat;
             }

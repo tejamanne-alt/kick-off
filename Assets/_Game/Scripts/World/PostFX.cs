@@ -23,6 +23,13 @@ namespace DribbleToSchool.World
     /// The pencil sketch filter (pass 6, one full-screen pass) draws the picture on warm paper instead: a faint
     /// wash of its colour (the people and the ball keep theirs), pencil hatching by tone, the sky left open, and
     /// the outline drawn twice with a wandering offset, from the same depth, normals and figure mask.
+    ///
+    /// The classic cartoon filter (passes 7, 8 and 9: three full-screen passes; the look in <see cref="ClassicLook"/>)
+    /// draws the people, the ball and the things the kid plays with as inked cels and the scenery as a painted
+    /// background: the grade, then a cored smoothing and the cartoon colour, then the strokes, the cels' outline
+    /// (outside them only), the turquoise sky and a faint grain. It reads what each pixel is from the picture's alpha
+    /// (0 a person or the ball, 0.125 a cel, 0.5 foliage, 0.75 a cloud, 1 the scenery: ToonCharacter's _ComicWorld and
+    /// Toon's _FilterMask).
     /// </summary>
     [RequireComponent(typeof(Camera))]
     public class PostFX : MonoBehaviour
@@ -85,6 +92,10 @@ namespace DribbleToSchool.World
         public Color paper = new Color(0.88f, 0.75f, 0.5f, 0.04f);
         [Range(0f, 0.1f)] public float grain = 0.04f;
 
+        [Header("Classic cartoon filter (its look: World/ClassicLook)")]
+        [Tooltip("Force the classic cartoon on here whatever Settings say (for looking at it in the editor).")]
+        public bool forceClassic;
+
         [Header("Pencil sketch filter (sizes in pixels at 1080 lines)")]
         [Tooltip("Force the sketch on here whatever Settings say (for looking at it in the editor).")]
         public bool forceSketch;
@@ -105,6 +116,7 @@ namespace DribbleToSchool.World
         bool askedForNormals;
         const int Levels = 4;
         const int GradePass = 3, ComicPass = 4, PrintPass = 5, SketchPass = 6;
+        const int ClassicGradePass = 7, ClassicFlatPass = 8, ClassicInkPass = 9;
         static Texture2D noise;
         readonly RenderTexture[] chain = new RenderTexture[Levels];
 
@@ -154,19 +166,23 @@ namespace DribbleToSchool.World
         static readonly int SketchLineId = Shader.PropertyToID("_SketchLine");
         static readonly int GraphiteId = Shader.PropertyToID("_Graphite");
         static readonly int SketchPaperId = Shader.PropertyToID("_Paper");
+        static readonly int ClassicScaleId = Shader.PropertyToID("_ClassicScale");
 
         /// <summary>The comic halftone filter is on: chosen in Add-ons &amp; Filters, or forced here.</summary>
-        public bool ComicOn { get { return !forceSketch && (forceComic || Progression.AddOns.Filter == Progression.AddOns.ComicFilter); } }
+        public bool ComicOn { get { return !forceSketch && !forceClassic && (forceComic || Progression.AddOns.Filter == Progression.AddOns.ComicFilter); } }
 
         /// <summary>The pencil sketch filter is on: chosen in Add-ons &amp; Filters, or forced here.</summary>
-        public bool SketchOn { get { return forceSketch || (!forceComic && Progression.AddOns.Filter == Progression.AddOns.SketchFilter); } }
+        public bool SketchOn { get { return !forceClassic && (forceSketch || (!forceComic && Progression.AddOns.Filter == Progression.AddOns.SketchFilter)); } }
+
+        /// <summary>The classic cartoon filter is on: chosen in Add-ons &amp; Filters, or forced here.</summary>
+        public bool ClassicOn { get { return forceClassic || (!forceComic && !forceSketch && Progression.AddOns.Filter == Progression.AddOns.ClassicFilter); } }
 
         // The filters' lines need the camera's depth and normals; asked for only while one is on,
         // and only the flag this script added is taken back.
         void LateUpdate()
         {
             if (cam == null) cam = GetComponent<Camera>();
-            bool want = ComicOn || SketchOn;
+            bool want = ComicOn || SketchOn || ClassicOn;
             if (want && (cam.depthTextureMode & DepthTextureMode.DepthNormals) == 0)
             {
                 cam.depthTextureMode |= DepthTextureMode.DepthNormals;
@@ -242,6 +258,22 @@ namespace DribbleToSchool.World
                 SetSketch(source);
                 Graphics.Blit(source, destination, material, SketchPass);
             }
+            else if (ClassicOn && HasNormals())
+            {
+                SetComic(source);    // the mask
+                SetClassic(source);
+                // Two pictures between the passes, with alpha (the code of what each pixel is), never colour-converted.
+                var format = HasAlpha(source.format) ? source.format : RenderTextureFormat.ARGB32;
+                var graded = RenderTexture.GetTemporary(source.width, source.height, 0, format, RenderTextureReadWrite.Linear);
+                var flat = RenderTexture.GetTemporary(source.width, source.height, 0, format, RenderTextureReadWrite.Linear);
+                graded.filterMode = FilterMode.Bilinear;
+                flat.filterMode = FilterMode.Bilinear;
+                Graphics.Blit(source, graded, material, ClassicGradePass);
+                Graphics.Blit(graded, flat, material, ClassicFlatPass);
+                Graphics.Blit(flat, destination, material, ClassicInkPass);
+                RenderTexture.ReleaseTemporary(graded);
+                RenderTexture.ReleaseTemporary(flat);
+            }
             else
             {
                 Graphics.Blit(source, destination, material, GradePass);
@@ -289,6 +321,20 @@ namespace DribbleToSchool.World
             return noise;
         }
 
+        /// <summary>The classic cartoon's look (the classic or the calmer setting), its noise, and its sizes for this picture.</summary>
+        void SetClassic(RenderTexture source)
+        {
+            ClassicLook.Active.Apply(material);
+            material.SetTexture(NoiseTexId, Noise());
+            // Sizes are tuned at 1080 lines; a smaller picture keeps them at least three quarters as big.
+            material.SetFloat(ClassicScaleId, Mathf.Max(0.75f, source.height / 1080f));
+        }
+
+        static bool HasAlpha(RenderTextureFormat format)
+        {
+            return format != RenderTextureFormat.RGB111110Float && format != RenderTextureFormat.RGB565;
+        }
+
         bool HasNormals()
         {
             return cam != null && (cam.depthTextureMode & DepthTextureMode.DepthNormals) != 0;
@@ -300,7 +346,7 @@ namespace DribbleToSchool.World
             float scale = source.height / 1080f;
             // The character mask rides in alpha; a picture without alpha (an RGB HDR buffer) has none, so
             // everything is drawn like the street there.
-            bool alpha = source.format != RenderTextureFormat.RGB111110Float && source.format != RenderTextureFormat.RGB565;
+            bool alpha = HasAlpha(source.format);
             material.SetFloat(MaskOnId, alpha ? 1f : 0f);
             material.SetFloat(ComicSatId, comicSaturation);
             material.SetFloat(ComicContrastId, comicContrast);

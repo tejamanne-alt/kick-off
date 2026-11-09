@@ -41,8 +41,9 @@ namespace DribbleToSchool.Progression
     /// original (&lt;scene&gt;_CA, Editor/StreetBuilder.Coast). India and a Tokyo city add-on are still to come.
     /// The filters (a look over the whole picture, drawn by World/PostFX) are listed beside them: the
     /// original look, the comic halftone (a printed comic: cel bands, halftone dots, an ink line,
-    /// colour plates out of register, paper) and the pencil sketch (pencil lines and hatching on paper,
-    /// the kids kept in colour). A filter applies at once, in every scene.
+    /// colour plates out of register, paper), the pencil sketch (pencil lines and hatching on paper,
+    /// the kids kept in colour) and the classic cartoon (inked cels over a painted background: World/ClassicLook).
+    /// A filter applies at once, in every scene, and to the menus' pictures and buttons (FilterChanged).
     /// </summary>
     public static class AddOns
     {
@@ -65,9 +66,16 @@ namespace DribbleToSchool.Progression
         public const string OriginalFilter = "original";
         public const string ComicFilter = "comic";
         public const string SketchFilter = "sketch";
+        public const string ClassicFilter = "classic";
 
-        /// <summary>The filters: the original look, the comic halftone and the pencil sketch.</summary>
-        public static readonly string[] Filters = { OriginalFilter, ComicFilter, SketchFilter };
+        /// <summary>The filters: the original look, the comic halftone, the pencil sketch and the classic cartoon.</summary>
+        public static readonly string[] Filters = { OriginalFilter, ComicFilter, SketchFilter, ClassicFilter };
+
+        /// <summary>Raised when the filter is changed (the menus' pictures and buttons follow it at once).</summary>
+        public static event System.Action FilterChanged;
+
+        /// <summary>The classic cartoon filter is chosen.</summary>
+        public static bool ClassicOn { get { return Filter == ClassicFilter; } }
 
         /// <summary>Every story level finished at least once (every leg of every route to school).</summary>
         public static bool EveryLevelFinished
@@ -130,8 +138,10 @@ namespace DribbleToSchool.Progression
             set
             {
                 if (System.Array.IndexOf(Filters, value) < 0) return;
+                bool changed = SaveSystem.Data.filter != value;
                 SaveSystem.Data.filter = value;
                 SaveSystem.Save();
+                if (changed && FilterChanged != null) FilterChanged();
             }
         }
 

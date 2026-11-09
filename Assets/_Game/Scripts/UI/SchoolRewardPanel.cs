@@ -113,7 +113,7 @@ namespace DribbleToSchool.UI
                     var holder = (RectTransform)face.transform.parent;
                     UIKit.Place(holder, top, new Vector2(-rowW * 0.5f + i * (cardW + gap) + cardW * 0.5f, -(prizesTop + 44f)), new Vector2(cardW, PrizeCardHeight));
                     UIKit.PopIn(holder.gameObject, 0.4f + i * 0.12f).fromScale = 0.3f;
-                    var icon = UIKit.Icon(face.transform, "Icon", CosmeticArt.Icon(item), Color.white, 100f);
+                    var icon = CartoonPicture.On(UIKit.Icon(face.transform, "Icon", CosmeticArt.Icon(item), Color.white, 100f));
                     UIKit.Place(icon.rectTransform, top, new Vector2(0f, -16f), new Vector2(100f, 100f));
                     var name = UIKit.Label(face.transform, "Name", item.displayName, 28, UITheme.Ink, TextAnchor.MiddleCenter, true);
                     UIKit.Place(name.rectTransform, new Vector2(0.5f, 0f), new Vector2(0f, 14f), new Vector2(cardW - 20f, 40f));

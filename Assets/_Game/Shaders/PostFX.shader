@@ -17,12 +17,23 @@
 // The pencil sketch filter (pass 6) draws it on warm paper instead: a faint wash of the colour (the
 // figures keep theirs, so the kid is easy to find), pencil hatching for the tone, the sky left open, and
 // the outline drawn twice with a wandering offset, from the same depth and normals and figure mask.
+//
+// The classic cartoon filter (passes 7 to 9; the look of the classic theatrical cartoons: inked cels over a painted
+// background) grades the picture (7), smooths and colours it (8: Shaders/DtsCartoon.cginc) and inks it (9): the
+// people, the ball and the things the kid plays with become cels (flat tones, a bold warm-black outline drawn only
+// outside them, so it never covers a face); the scenery is painted (no black lines: warm, saturated colour, faint brush
+// streaks, darker strokes of its own colour between forms); the sky is a flat turquoise; a faint grain and vignette.
+//
+// The picture's alpha says what each pixel is (ToonCharacter's _ComicWorld, Toon's _FilterMask): 0 a person or the
+// ball, 0.125 a cel (a car, a coin, an animal, a crate, a cone...), 0.5 foliage, 0.75 a cloud, 1 the scenery. The comic
+// and sketch filters read it as alpha x 8 (0 a figure, anything else the street), as they always have.
 Shader "Hidden/DribbleToSchool/PostFX"
 {
     Properties { _MainTex ("Source", 2D) = "white" {} }
 
     CGINCLUDE
     #include "UnityCG.cginc"
+    #include "DtsCartoon.cginc"
     sampler2D _MainTex;
     float4 _MainTex_TexelSize;
     sampler2D _BloomTex;
@@ -161,6 +172,31 @@ Shader "Hidden/DribbleToSchool/PostFX"
         float pressure = smoothstep(threshold, threshold - 0.22, tone);
         return stroke * pressure * (0.55 + 0.45 * grain);
     }
+
+    // ---- The classic cartoon filter (the colour itself is in DtsCartoon.cginc) ----------------
+    float _ClassicScale;      // sizes in pixels at 1080 lines -> this picture
+    float _Finish, _FormEdge, _FormDark, _FormStrength;
+    float _Brush, _BrushLength, _CelLine, _CelLineFar, _ClassicGrain, _ClassicVignette;
+    float4 _SkyTop, _SkyLow, _CloudShade;
+
+    // What a pixel is, from the exact code in alpha (read at the pixel's centre).
+    half CodeCel(half a) { return step(a, 0.3); }
+    half CodeLeaf(half a) { return 1 - smoothstep(0.08, 0.16, abs(a - 0.5)); }
+    half CodeCloud(half a) { return 1 - smoothstep(0.08, 0.16, abs(a - 0.75)); }
+    // How much of a cel a bilinear read between codes covers (soft across an edge: the outline's anti-aliasing).
+    half CelCover(half a) { return saturate((0.3 - a) / 0.18); }
+
+    float Depth01(float2 uvDN) { return DecodeFloatRG(tex2D(_CameraDepthNormalsTexture, uvDN).zw); }
+
+    // The depth and normals texture is never flipped; the picture can be (Direct3D-style platforms with
+    // anti-aliasing): a screen-space offset in the picture's uv, and the matching uv in the depth texture.
+    float FlipY()
+    {
+        #if UNITY_UV_STARTS_AT_TOP
+        if (_MainTex_TexelSize.y < 0) return -1;
+        #endif
+        return 1;
+    }
     ENDCG
 
     SubShader
@@ -223,7 +259,7 @@ Shader "Hidden/DribbleToSchool/PostFX"
             half4 frag (v2f i) : SV_Target
             {
                 half4 src = tex2D(_MainTex, i.uv);
-                half world = lerp(1, saturate(src.a), _MaskOn);    // 1 the street, 0 a character or the ball
+                half world = lerp(1, saturate(src.a * 8), _MaskOn);    // 1 the street, 0 a character or the ball
                 // The vignette comes last: its soft fall-off would otherwise be stepped into an arc by the bands.
                 half3 c = saturate(GradeColour(src.rgb, i.uv));
 
@@ -280,7 +316,7 @@ Shader "Hidden/DribbleToSchool/PostFX"
                 float2 p = (i.uv - float2(0.5, 0.55)) / float2(0.5, 0.55);
                 float r = saturate(length(p) - 0.35);
                 // The people and the ball slip half as far, so their eyes stay crisp anywhere on screen.
-                half world = lerp(1, saturate(s.a), _MaskOn);
+                half world = lerp(1, saturate(s.a * 8), _MaskOn);
                 float2 off = float2(_MainTex_TexelSize.x * _SlipEdge * r * lerp(0.5, 1, world), 0);
                 half3 c = s.rgb;
                 c.r = tex2D(_MainTex, i.uv + off).r;
@@ -304,7 +340,7 @@ Shader "Hidden/DribbleToSchool/PostFX"
             half4 frag (v2f i) : SV_Target
             {
                 half4 src = tex2D(_MainTex, i.uv);
-                half world = lerp(1, saturate(src.a), _MaskOn);
+                half world = lerp(1, saturate(src.a * 8), _MaskOn);
                 half3 c = saturate(GradeColour(src.rgb, i.uv));
                 half tone = dot(c, lum);
                 float2 px = i.uv * _MainTex_TexelSize.zw;
@@ -349,6 +385,147 @@ Shader "Hidden/DribbleToSchool/PostFX"
                 float2 p = i.uv - 0.5;
                 col *= 1 - 0.1 * smoothstep(0.3, 0.9, dot(p, p) * 2.2);
                 return half4(saturate(col), 1);
+            }
+            ENDCG
+        }
+        // 7: classic cartoon: the grade (no vignette), in display values, the code in alpha kept for passes 8 and 9.
+        Pass
+        {
+            CGPROGRAM
+            #pragma vertex vert
+            #pragma fragment frag
+            half4 frag (v2f i) : SV_Target
+            {
+                half4 s = tex2D(_MainTex, i.uv);
+                return half4(CartoonToDisplay(saturate(GradeColour(s.rgb, i.uv))), lerp(1, s.a, _MaskOn));
+            }
+            ENDCG
+        }
+        // 8: classic cartoon: the cored smoothing (25 reads), then the cels' colour or the painted scenery's, the clouds
+        //    white, the sky a flat turquoise. Reads pass 7's picture; keeps the code in alpha for pass 9.
+        Pass
+        {
+            CGPROGRAM
+            #pragma vertex vert
+            #pragma fragment frag
+            #pragma target 3.0
+            half4 frag (v2f i) : SV_Target
+            {
+                float2 t = abs(_MainTex_TexelSize.xy) * _ClassicScale;
+                half4 s = tex2D(_MainTex, i.uv);
+                half cel = CodeCel(s.a), leaf = CodeLeaf(s.a), cloud = CodeCloud(s.a);
+                float2 uvDN = i.uv;
+                #if UNITY_UV_STARTS_AT_TOP
+                if (_MainTex_TexelSize.y < 0) uvDN.y = 1 - uvDN.y;
+                #endif
+                half sky = step(0.999, Depth01(uvDN));
+
+                float3 m0, m1, m2, m3, cross;
+                float v0, v1, v2, v3;
+                CARTOON_SECTORS(_MainTex, i.uv, t, m0, m1, m2, m3, v0, v1, v2, v3, cross)
+                // The cels' smoothing lets the calmest side win harder (q 6) than the scenery's (q 4).
+                half3 flat = lerp(CartoonBlend(m0, m1, m2, m3, v0, v1, v2, v3, 4), CartoonBlend(m0, m1, m2, m3, v0, v1, v2, v3, 6), cel);
+
+                // The scenery is sharpened a little first; the cels (faces) and the foliage (it would speckle) are not.
+                half3 c = s.rgb;
+                half3 c0 = lerp(c, saturate(c + (c - (half3)cross) * _Sharpen), (1 - cel) * (1 - leaf));
+                // The cels and the foliage keep only strong detail (eyes, brows, seams; a crown in painted clumps).
+                half strong = max(cel, leaf);
+                half3 p = CartoonCore(c0, flat, lerp(_CoreFrom, _CelCoreFrom, strong), lerp(_CoreTo, _CelCoreTo, strong));
+                half3 o = lerp(CartoonPainted(p, 1), CartoonCel(p), cel);
+
+                // The clouds white, with a soft blue-grey shade.
+                half l = dot(c, cartoonLum);
+                half3 white = (1 - (1 - l) * 0.9) * pow(_CloudShade.rgb, 1 - smoothstep(0.75, 0.95, l));
+                o = lerp(o, saturate(white), cloud);
+                // The sky: a flat turquoise, pale toward the horizon (uvDN.y is up the screen).
+                half3 skyColour = lerp(_SkyTop.rgb, _SkyLow.rgb, pow(saturate(1 - uvDN.y), 1.4));
+                o = lerp(o, skyColour, sky);
+                return half4(o, s.a);
+            }
+            ENDCG
+        }
+        // 9: classic cartoon: a light finishing sharpen on the scenery, faint brush streaks, darker strokes of the
+        //    scenery's own colour where colours meet and where a nearer form overlaps a farther one, the cels' warm-black
+        //    outline drawn only on the far side of their edges (it never covers a face), then a faint grain and vignette.
+        Pass
+        {
+            CGPROGRAM
+            #pragma vertex vert
+            #pragma fragment frag
+            #pragma target 3.0
+            half4 frag (v2f i) : SV_Target
+            {
+                float2 px = abs(_MainTex_TexelSize.xy);
+                float flip = FlipY();
+                float sc = _ClassicScale;
+                half4 s = tex2D(_MainTex, i.uv);
+                half cel = CodeCel(s.a), leaf = CodeLeaf(s.a), cloud = CodeCloud(s.a);
+                float2 uvDN = i.uv;
+                if (flip < 0) uvDN.y = 1 - uvDN.y;
+                float d0; float3 n0;
+                DepthNormal(uvDN, d0, n0);
+                half sky = step(0.999, d0);
+                half scenery = (1 - cel) * (1 - sky) * (1 - cloud);
+                float eye = d0 * _ProjectionParams.z;
+                half fade = 1 - smoothstep(40, 120, eye);
+                half3 c = s.rgb;
+
+                // The eight neighbours, one step out (the finishing sharpen and the strokes).
+                float2 o1 = px * sc;
+                half3 cR = tex2D(_MainTex, i.uv + float2(o1.x, 0)).rgb, cL = tex2D(_MainTex, i.uv - float2(o1.x, 0)).rgb;
+                half3 cU = tex2D(_MainTex, i.uv + float2(0, o1.y)).rgb, cD = tex2D(_MainTex, i.uv - float2(0, o1.y)).rgb;
+                half3 cRU = tex2D(_MainTex, i.uv + o1).rgb, cLD = tex2D(_MainTex, i.uv - o1).rgb;
+                half3 cRD = tex2D(_MainTex, i.uv + float2(o1.x, -o1.y)).rgb, cLU = tex2D(_MainTex, i.uv + float2(-o1.x, o1.y)).rgb;
+                c = lerp(c, saturate(c + (c - (cR + cL + cU + cD) * 0.25) * _Finish), scenery * (1 - leaf));
+
+                // Brush streaks: across the ground (normals facing up), down the walls; a tiling noise, stretched.
+                float2 pxc = i.uv * abs(_MainTex_TexelSize.zw);
+                float len = _BrushLength * sc;
+                half across = tex2D(_NoiseTex, float2(pxc.x / (len * 256.0), pxc.y / 512.0)).r - 0.5;
+                half down = tex2D(_NoiseTex, float2(pxc.x / 512.0, pxc.y / (len * 256.0)) + float2(0.37, 0.61)).r - 0.5;
+                half up = smoothstep(0.45, 0.75, n0.y);
+                half streak = across * up + down * (1 - up) * 0.45;
+                c = saturate(c * (1 + streak * _Brush * 2 * (1 - smoothstep(25, 90, eye)) * scenery));
+
+                // Darker strokes of the scenery's own colour where its flat colours meet...
+                half stepAcross = max(max(CartoonStepAcross(cR, cL), CartoonStepAcross(cU, cD)), max(CartoonStepAcross(cRU, cLD), CartoonStepAcross(cRD, cLU)));
+                half stroke = smoothstep(_StrokeEdge, _StrokeEdge * 1.8, stepAcross);
+                c = lerp(c, c * _StrokeDark, stroke * _StrokeStrength * (1 - leaf * 0.7) * fade * scenery);
+                // ...and where a nearer form overlaps a farther one (foliage needs a bigger jump: a crown, not its clumps).
+                float d1 = Depth01(uvDN + float2(o1.x, 0)), d2 = Depth01(uvDN - float2(o1.x, 0));
+                float d3 = Depth01(uvDN + float2(0, o1.y)), d4 = Depth01(uvDN - float2(0, o1.y));
+                float nearD = min(d0, min(min(d1, d2), min(d3, d4)));
+                float jump = max(max(abs(d1 - d0), abs(d2 - d0)), max(abs(d3 - d0), abs(d4 - d0))) / max(nearD, 1e-4);
+                half formEdge = _FormEdge * (1 + 3 * leaf);
+                half form = smoothstep(formEdge, formEdge * 1.6, jump);
+                c = lerp(c, c * _FormDark, form * _FormStrength * fade * scenery);
+
+                // The cels' outline: a pixel is inked when a cel lies in front of it within the line's width, so the line
+                // falls on the far side of every edge (outside a figure, or on a farther part behind a nearer one) and never
+                // over a face. Its width follows the nearer side's distance; read at two radii so thin limbs keep it.
+                float R = 4 * sc;
+                float dNear = min(d0, min(min(Depth01(uvDN + float2(R * px.x, 0)), Depth01(uvDN - float2(R * px.x, 0))),
+                                          min(Depth01(uvDN + float2(0, R * px.y)), Depth01(uvDN - float2(0, R * px.y)))));
+                float width = lerp(_CelLine, _CelLineFar, smoothstep(4, 60, dNear * _ProjectionParams.z)) * sc + 0.5;
+                static const float2 dirs[8] = { float2(1, 0), float2(-1, 0), float2(0, 1), float2(0, -1),
+                                                float2(0.7071, 0.7071), float2(-0.7071, 0.7071), float2(0.7071, -0.7071), float2(-0.7071, -0.7071) };
+                half ink = 0;
+                [unroll] for (int k = 0; k < 12; k++)
+                {
+                    float2 o = dirs[k % 8] * width * (k < 8 ? 1.0 : 0.5) * px;
+                    half a = tex2D(_MainTex, i.uv + o).a;                    // bilinear: soft across an edge
+                    float dk = Depth01(uvDN + float2(o.x, o.y * flip));
+                    half nearer = smoothstep(0.03, 0.07, (d0 - dk) / max(dk, 1e-4));
+                    ink = max(ink, CelCover(a) * nearer);
+                }
+                c = lerp(c, _CelInk.rgb, ink);
+
+                // The print: a soft vignette and a faint grain.
+                float2 v = i.uv - 0.5;
+                c *= 1 - _ClassicVignette * smoothstep(0.3, 0.9, dot(v, v) * 2.2);
+                c += (Hash(floor(pxc)) - 0.5) * _ClassicGrain;
+                return half4(CartoonFromDisplay(saturate(c)), 1);
             }
             ENDCG
         }

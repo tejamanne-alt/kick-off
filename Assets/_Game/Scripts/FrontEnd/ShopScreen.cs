@@ -73,7 +73,7 @@ namespace DribbleToSchool.FrontEnd
             // Top: the icon on a disc of sky, name, rarity and price beside it; bottom: Buy / Equip.
             var iconBack = UIKit.Icon(info.transform, "IconBack", ProceduralSprites.CircleEdge, UITheme.SkyBottom, 160f);
             UIKit.Place(iconBack.rectTransform, new Vector2(0f, 1f), new Vector2(26f, -22f), new Vector2(160f, 160f), new Vector2(0f, 1f));
-            previewIcon = UIKit.Icon(iconBack.transform, "Icon", null, Color.white, 124f);
+            previewIcon = CartoonPicture.On(UIKit.Icon(iconBack.transform, "Icon", null, Color.white, 124f));
             UIKit.Place(previewIcon.rectTransform, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(124f, 124f));
             previewIcon.gameObject.AddComponent<UIPulse>().amount = 0.03f;
 
@@ -213,7 +213,7 @@ namespace DribbleToSchool.FrontEnd
             UIKit.Place(strip.rectTransform, new Vector2(0.5f, 1f), new Vector2(0f, -12f), new Vector2(180f, 14f), new Vector2(0.5f, 1f));
             strip.raycastTarget = false;
 
-            var icon = UIKit.Icon(face, "Icon", CosmeticArt.Icon(item), Color.white, 140f);
+            var icon = CartoonPicture.On(UIKit.Icon(face, "Icon", CosmeticArt.Icon(item), Color.white, 140f));
             UIKit.Place(icon.rectTransform, new Vector2(0.5f, 1f), new Vector2(0f, -36f), new Vector2(140f, 140f), new Vector2(0.5f, 1f));
 
             var name = UIKit.Label(face, "Name", item.displayName, 28, UITheme.Ink, TextAnchor.MiddleCenter, true);

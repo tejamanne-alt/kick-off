@@ -28,6 +28,7 @@ namespace DribbleToSchool.UI
 
             var face = UIKit.Icon(root, "Face", sprite, found ? Color.white : Silhouette, size);
             UIKit.Stretch(face.rectTransform);
+            if (found) CartoonPicture.On(face);   // (an unfound sticker's silhouette stays plain)
 
             if (!found)
             {

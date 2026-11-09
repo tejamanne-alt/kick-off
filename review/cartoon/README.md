@@ -2,7 +2,7 @@
 
 A fourth filter for **Add-ons & Filters**, beside Original, Comic halftone and Pencil sketch, in the look of the
 classic Road Runner shorts the review sent as reference: **inked cels over painted backgrounds**. This folder is the
-artwork to approve **before** it is built. Nothing in the game has changed yet. Only the rendering style is borrowed:
+artwork it was approved from (it is now built: see "Built" below). Only the rendering style is borrowed:
 the game keeps its own name for the filter ("Classic cartoon"), its own kids, streets and art, and no Looney Tunes
 names, characters or pictures.
 
@@ -72,24 +72,20 @@ python3 -I compose_boards.py /abs/renders .
 (`cartoon_port.py` run on its own is the first take from before the Road Runner reference came in: bold black
 outlines on everything and bright flat colour.)
 
-## If approved: what gets built
+## Built (generated content v102)
 
-- `Shaders/PostFX.shader`: a classic cartoon pass (the cels, the painted background, the sky, the print), with its
-  settings on `World/PostFX` (and a **Force** toggle for the editor), the calmer setting as a preset of the same
-  settings. The camera's depth and normals are already asked for by the other filters.
-- The mask in the picture's alpha gains values: 0 the cels (`ToonCharacter` already writes 0 for the people and the
-  ball; coins, animals, cars and the hazards' materials get the same), 0.5 foliage (the plants kit, `Toon.shader`),
-  1 the scenery.
-- `Progression/AddOns`: a fourth filter, strings `filter.classic` ("Classic cartoon", "Inked characters, painted
-  scenery") in English and Spanish. It fills the fourth card slot, so the panel keeps its size.
-- One camera filter covers every level, the challenges, the Holiday Run, co-op races, the menu's live street and the
-  Locker Room. A UI material does the 2D version for the player cards, bags, stickers and logo (cels) and the town map
-  (painted). The menu buttons take an ink edge and a hard shadow while the filter is on. Text is never filtered, and
-  the comic words do not pop with this filter.
-- Cost: two smoothings (the cels' and the scenery's), the strokes, the outline and a light sharpen. The final
-  sharpen needs a second, cheap pass; if the whole is heavy on older phones, the scenery's smoothing can run at half
-  resolution.
+The approved look (Classic cartoon) is in the game; see `PROGRESS.md`, "The classic cartoon filter":
 
-## Open question
+- `Shaders/PostFX.shader` passes 7 to 9 and `Shaders/DtsCartoon.cginc` (shared with the menus' pictures); the values
+  in `Scripts/World/ClassicLook.cs`. `ClassicLook.Calmer = true` switches the camera and the menus to the calmer
+  setting shown on the boards.
+- What each pixel is rides in the picture's alpha: 0 people and the ball, 0.125 cels (cars, the Animals kit with the
+  coins, stars and stickers, crates, swing seats, targets, flags), 0.5 foliage, 0.75 clouds, 1 the scenery.
+- The menus' pictures (`UI/CartoonPicture`, `Resources/Shaders/CartoonPicture`) and the buttons' ink rim and hard
+  shadow (`UI/Kit/CartoonButton`). Text is never filtered; the comic words do not pop with this filter.
+- `shader_mirror.py` is a numpy mirror of passes 8 and 9 in the shader's own order, checked against the boards (mean
+  difference 0.004 to 0.007).
 
-Which one ships, Classic cartoon or Calmer? (Or both, with Calmer as a "Cartoon strength" setting.)
+## Decided
+
+Classic cartoon ships; Calmer is one switch away (`ClassicLook.Calmer`).

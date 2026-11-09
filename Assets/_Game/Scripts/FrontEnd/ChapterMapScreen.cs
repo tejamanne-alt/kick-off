@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using DribbleToSchool.Levels;
 using DribbleToSchool.Localization;
 using DribbleToSchool.Progression;
+using DribbleToSchool.UI;
 using DribbleToSchool.UI.Kit;
 using UnityEngine;
 using UnityEngine.UI;
@@ -325,6 +326,7 @@ namespace DribbleToSchool.FrontEnd
             var pictureRect = UIKit.Stretch(UIKit.Rect(map, "Picture"));
             picture = pictureRect.gameObject.AddComponent<RawImage>();
             picture.raycastTarget = false;
+            CartoonPicture.On(picture, CartoonPicture.Kind.Painted);   // the town, painted like the streets with the classic cartoon filter
             picture.enabled = false;
             BuildFades(frame);
             var washRect = UIKit.Stretch(UIKit.Rect(map, "Wash"));

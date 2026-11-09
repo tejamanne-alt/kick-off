@@ -48,7 +48,7 @@ namespace DribbleToSchool.Coop
                     var mask = UIKit.Rect(frame.transform, "Mask");
                     UIKit.Stretch(mask, 4f);
                     mask.gameObject.AddComponent<RectMask2D>();
-                    var img = UIKit.Icon(mask, "Portrait", portrait, Color.white, rowHeight);
+                    var img = CartoonPicture.On(UIKit.Icon(mask, "Portrait", portrait, Color.white, rowHeight));
                     img.rectTransform.anchorMin = Vector2.zero;
                     img.rectTransform.anchorMax = Vector2.one;
                     img.rectTransform.offsetMin = new Vector2(-4f, -8f);

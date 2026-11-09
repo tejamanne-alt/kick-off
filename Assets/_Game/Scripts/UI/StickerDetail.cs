@@ -92,7 +92,7 @@ namespace DribbleToSchool.UI
             UIKit.Fit(countsText, 18);
             if (setItem != null)
             {
-                var icon = UIKit.Icon(countsCard.transform, "Reward", CosmeticArt.Icon(setItem), Color.white, 70f);
+                var icon = CartoonPicture.On(UIKit.Icon(countsCard.transform, "Reward", CosmeticArt.Icon(setItem), Color.white, 70f));
                 UIKit.Place(icon.rectTransform, new Vector2(0f, 0.5f), new Vector2(14f, 0f), new Vector2(70f, 70f), new Vector2(0f, 0.5f));
             }
 
