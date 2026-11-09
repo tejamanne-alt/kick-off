@@ -200,14 +200,23 @@ send, poll, shutdown, open settings) and pack their events the same way, read by
   longer listened to and times out. Scanning and advertising are renewed when the app is active again. The Bluetooth
   prompt's text is `NSBluetoothAlwaysUsageDescription`; Bluetooth starts (and iOS asks, and offers to switch Bluetooth
   on when it is off) only when the co-op screen opens.
-- **Android** (`Plugins/Android/DtsCoopBle.java`, compiled by Gradle with the build): `BluetoothGattServer` +
-  `BluetoothLeAdvertiser` host, `BluetoothLeScanner` + `BluetoothGatt` join; one handler thread; one notification in flight
-  per player and one write in flight to the host (Android's rule), the rest queued; MTU 247 requested; connection
-  priority HIGH. Permissions (added to the manifest by `Editor/AndroidBluetoothPermissions`): `BLUETOOTH_SCAN`
+- **Android** (`Plugins/Android/DtsCoopBle.java`, compiled by Gradle with the build; kept from R8 by a keep rule that
+  `Editor/AndroidBluetoothPermissions` adds to `proguard-unity.txt`, since C# reaches it only by name): `BluetoothGattServer`
+  and an advertising set (legacy, connectable, scannable; the beacon's scan response is updated in place, so the address
+  doesn't change with every update) host, `BluetoothLeScanner` + `BluetoothGatt` join; one handler thread, every task and
+  public call guarded (a revoked permission or a dead binder is logged, never a crash). One notification in flight across
+  the whole server, players served in turn (a phone that leaves two unanswered is skipped until heard from); one write in
+  flight to the host; 1 s watchdogs on both and a 50 ms retry when the stack is busy; service discovery asked twice; MTU
+  247 requested; connection priority HIGH. At most 4 scan starts in any 30 s (Android silently blocks a fifth), and a
+  stop is delayed a second so a stop and start cost nothing. Hosting failures before the lobby is announced are
+  HostFailed ("noAdvertise" on a phone that can't advertise, "timeout" after 6 s); after it, advertising is retried at 1,
+  2, 4, then 8 s. Late callbacks of a closed server, connection or advertising start are ignored. A phone that subscribes
+  again without having gone is a new connection. Permissions (added to the manifest by the same hook): `BLUETOOTH_SCAN`
   (`neverForLocation`), `BLUETOOTH_CONNECT`, `BLUETOOTH_ADVERTISE` on Android 12+; `BLUETOOTH`, `BLUETOOTH_ADMIN` and
-  `ACCESS_FINE_LOCATION` up to Android 11 (where scanning also needs Location switched on: the Join screen says so).
-  `android.hardware.bluetooth_le` is declared not required. Some Android phones can't advertise: they can't host, but
-  can join ("This phone can't host over Bluetooth. You can still join a race.").
+  `ACCESS_FINE_LOCATION` up to Android 11 (where scanning also needs Location switched on: the Join screen says so; see
+  the Families note in `docs/GOOGLE_PLAY_LISTING.md`). `android.hardware.bluetooth_le` is declared not required. Some
+  Android phones can't advertise: they can't host, but can join ("This phone can't host over Bluetooth. You can still
+  join a race.").
 
 ## Trying it in the editor
 
@@ -258,7 +267,9 @@ and **My Bluetooth** (switch your own pretend Bluetooth off and on).
   broken) make the tests that cover them fail;
 - the iOS plugin syntax- and ARC-checked with clang (`-fobjc-arc -Wall -Wextra`, no warnings) against stand-in headers
   that declare the Foundation, CoreBluetooth and UIKit calls it uses (not Apple's SDK: compile it in Xcode first);
-- the Android plugin compiled with `javac --release 11` against the Android 14 framework classes;
+- the Android plugin compiled with `javac --release 11 -Xlint:all` against the Android 14 framework classes (no
+  warnings in it; nothing above API 26 is reached unguarded), and its outbound queue (whole-message drops, turns)
+  exercised on a desktop JVM;
 - string parity: 718 keys in each language.
 
 First-run checklist on devices:

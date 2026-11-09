@@ -9,13 +9,17 @@ namespace DribbleToSchool.Coop.Transport
     /// The co-op link on Android: android.bluetooth.le through Plugins/Android/DtsCoopBle.java (one handler thread; the game
     /// polls its events once a frame). Bluetooth needs runtime permissions (nearby devices on Android 12 and up, location
     /// before): <see cref="RequestPermissions"/> asks for them; until they are given the radio reads Unauthorized. The host
-    /// puts its lobby's beacon in its scan response as service data (Android can't advertise a custom name).
+    /// puts its lobby's beacon in its scan response as service data (Android can't advertise a custom name). Each hosting
+    /// run and connection attempt gets a number the plugin writes into its events, and late events are dropped here
+    /// (<see cref="LinkEventFilter"/>, as on iOS). The plugin class is kept from R8 by Editor/AndroidBluetoothPermissions:
+    /// it is reached only by name.
     /// </summary>
     public sealed class AndroidBleLink : ICoopLink
     {
         const string PluginClass = "com.dribbletoschool.coop.DtsCoopBle";
 
         readonly List<LinkEvent> pending = new List<LinkEvent>();
+        readonly LinkEventFilter filter = new LinkEventFilter();
         int next;
         RadioState state = RadioState.Unknown;
         int maxPacket = CoopFraming.MinPacket;
@@ -31,6 +35,7 @@ namespace DribbleToSchool.Coop.Transport
                 using (var activity = player.GetStatic<AndroidJavaObject>("currentActivity"))
                 using (var cls = new AndroidJavaClass(PluginClass))
                     plugin = cls.CallStatic<AndroidJavaObject>("init", activity);
+                if (plugin == null) state = RadioState.Unsupported;   // (the plugin couldn't start: it logged why)
             }
             catch (Exception e)
             {
@@ -59,14 +64,16 @@ namespace DribbleToSchool.Coop.Transport
             return s;
         }
 
-        public void StartHost(RoomBeacon beacon) { Call("startHost", Signed(beacon.ToBytes())); }
+        // (each hosting run and connection attempt gets a number its events carry: see LinkEventFilter. It goes as an int:
+        // AndroidJavaObject finds the Java method by the types of the arguments, and a byte would look for startHost(byte[], byte).)
+        public void StartHost(RoomBeacon beacon) { Call("startHost", Signed(beacon.ToBytes()), (int)filter.StartHost()); }
         public void UpdateBeacon(RoomBeacon beacon) { Call("updateBeacon", Signed(beacon.ToBytes())); }
-        public void StopHost() { Call("stopHost"); }
-        public void Kick(int peer) { Call("kick", peer); }
+        public void StopHost() { filter.StopHost(); Call("stopHost"); }
+        public void Kick(int peer) { filter.Kick(peer); Call("kick", peer); }
         public void StartScan() { Call("startScan"); }
         public void StopScan() { Call("stopScan"); }
-        public void Connect(string address) { Call("connect", address ?? ""); }
-        public void Disconnect() { Call("disconnect"); }
+        public void Connect(string address) { Call("connect", address ?? "", (int)filter.Connect()); }
+        public void Disconnect() { filter.Disconnect(); Call("disconnect"); }
 
         public void Send(int peer, byte[] packet)
         {
@@ -75,35 +82,44 @@ namespace DribbleToSchool.Coop.Transport
 
         public bool Poll(out LinkEvent e)
         {
-            if (next >= pending.Count)
+            while (true)
             {
-                pending.Clear();
-                next = 0;
-                if (plugin != null)
+                if (next >= pending.Count)
                 {
-                    sbyte[] packed = null;
-                    try { packed = plugin.Call<sbyte[]>("poll"); }
-                    catch (Exception ex) { Debug.LogWarning("[Co-op] poll: " + ex.Message); }
-                    if (packed != null && packed.Length > 0)
+                    pending.Clear();
+                    next = 0;
+                    if (plugin != null)
                     {
-                        if (unpacked.Length < packed.Length) unpacked = new byte[packed.Length * 2];
-                        Buffer.BlockCopy(packed, 0, unpacked, 0, packed.Length);
-                        NativeEvents.Decode(unpacked, packed.Length, pending);
+                        sbyte[] packed = null;
+                        try { packed = plugin.Call<sbyte[]>("poll"); }
+                        catch (Exception ex) { Debug.LogWarning("[Co-op] poll: " + ex.Message); }
+                        if (packed != null && packed.Length > 0)
+                        {
+                            if (unpacked.Length < packed.Length) unpacked = new byte[packed.Length * 2];
+                            Buffer.BlockCopy(packed, 0, unpacked, 0, packed.Length);
+                            NativeEvents.Decode(unpacked, packed.Length, pending);
+                        }
                     }
                 }
+                if (next >= pending.Count)
+                {
+                    e = new LinkEvent();
+                    return false;
+                }
+                e = pending[next++];
+                if (!filter.Pass(ref e)) continue;
+                if (e.type == LinkEventType.Radio) state = e.state;
+                else if (e.type == LinkEventType.PacketSize) maxPacket = Math.Max(CoopFraming.MinPacket, e.rssi);
+                return true;
             }
-            if (next >= pending.Count)
-            {
-                e = new LinkEvent();
-                return false;
-            }
-            e = pending[next++];
-            if (e.type == LinkEventType.Radio) state = e.state;
-            else if (e.type == LinkEventType.PacketSize) maxPacket = Math.Max(CoopFraming.MinPacket, e.rssi);
-            return true;
         }
 
-        public void Shutdown() { Call("shutdown"); }
+        public void Shutdown()
+        {
+            filter.StopHost();
+            filter.Disconnect();
+            Call("shutdown");
+        }
 
         /// <summary>Below Android 12, scanning finds nothing while Location is off (the Join screen says so).</summary>
         public bool LocationNeededAndOff
