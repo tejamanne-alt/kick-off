@@ -16,7 +16,8 @@
 # rowing boat upturned on trestles for painting, a boardwalk crossing, a lifeguard's rescue-board
 # stand), the building site (a sheeted scaffold, steel beams on trestles, a pipe rack, a manual
 # site barrier) and the park (a fallen trunk, an old oak's propped bough, a rope-net tunnel, a play
-# tower).
+# tower). Added so no look repeats much along a chapter: a washing line (the home street), a market
+# trader's barrow (the market) and a playground wobble bridge (the park).
 import math
 import numpy as np
 from mathutils import Vector, Matrix
@@ -1245,8 +1246,184 @@ def play_tower():
     return M
 
 
+# ================================================================ more of each (the seaside walk's review: fewer repeats)
+def _sag(x, hx, zt, sag):
+    """The height of a line strung from -hx to hx at zt, sagging by `sag` in the middle."""
+    return zt - sag * (1.0 - (x / hx) ** 2)
+
+
+def _cloth(M, x0, x1, line, hem, y, mat, kind='sheet', seed=0):
+    """A piece of washing pegged on a line along x at depth y: its top follows the line, its hem hangs at `hem`
+    (never under the gap), with a soft wave; shirts and dresses get shoulders and sleeves. Two pegs on top."""
+    rng = np.random.default_rng(seed)
+    n = 6
+    top = [(x0 + (x1 - x0) * i / n, line(x0 + (x1 - x0) * i / n) - 0.01) for i in range(n + 1)]
+    if kind == 'shirt':
+        w = x1 - x0; cx = (x0 + x1) / 2; t = line(cx) - 0.01
+        pts = [(cx - w * 0.22, t), (cx + w * 0.22, t), (x1 + 0.08, t - 0.06), (x1 + 0.02, t - 0.24), (x1 - 0.06, t - 0.2),
+               (x1 - 0.07, hem), (x0 + 0.07, hem), (x0 + 0.06, t - 0.2), (x0 - 0.02, t - 0.24), (x0 - 0.08, t - 0.06)]
+    elif kind == 'dress':
+        cx = (x0 + x1) / 2; t = line(cx) - 0.01
+        pts = [(cx - 0.12, t), (cx + 0.12, t), (cx + 0.16, t - 0.28), (x1 + 0.06, hem), (x0 - 0.06, hem), (cx - 0.16, t - 0.28)]
+    else:
+        bottom = [(x1 - (x1 - x0) * i / n, hem + 0.025 * math.sin(i * 1.3 + seed) + rng.uniform(0.0, 0.015)) for i in range(n + 1)]
+        pts = top + bottom
+    pts = [(px, max(GAP + 0.03, pz)) for px, pz in pts]
+    c = extrude_poly(pts, 0.012, mat)
+    xform(c, T(0.0, y + 0.006, 0.0) @ R(PI / 2, 'X'))
+    M.add(fix_normals(c))
+    pegs = ('sun', 'limeg', 'coral', 'sky')
+    for k, px in enumerate((x0 + 0.04, x1 - 0.04) if kind == 'sheet' else ((x0 + x1) / 2 - 0.1, (x0 + x1) / 2 + 0.1)):
+        z = line(px)
+        M.add(cbox((px - 0.008, y - 0.014, z - 0.06), (px + 0.008, y + 0.014, z + 0.02), 0.003, pegs[(k + seed) % 4]))
+
+
+def washing_line():
+    """Washing day in the back lane: two galvanised H-frame clothes posts set in concrete either side of the
+    kid's line, two lines strung along the path between their cross bars, and the wash pegged out on them:
+    sheets, a towel, shirts, a dress and socks, their hems just over the gap; a basket of pegs and folded
+    washing by the far post. Too tall to hop: slide under. Solid: the wash, from the gap to the lines."""
+    M = Model('WashingLine', p1=(0.55, 0.72, 0.94), p2=(0.98, 0.55, 0.48), ppm=100, grime=dict(rust=0.15, chips=0.15, streaks=0.3, dirt_h=0.3))
+    hx, py, zt = 1.35, 0.64, 2.0
+    for x in (-hx, hx):
+        for y in (-py, py):
+            M.add(tube([(x, y, 0.0), (x, y, zt)], 0.028, 'galv', sides=8))
+            M.add(xform(cyl(0.085, -0.02, 0.035, 10, 'conc'), T(x, y, 0.0)))
+            M.add(xform(cyl(0.032, zt, zt + 0.02, 8, 'dark'), T(x, y, 0.0)))
+        M.add(tube([(x, -py - 0.06, zt - 0.05), (x, py + 0.06, zt - 0.05)], 0.022, 'galv', sides=8))
+    lines = (-0.15, 0.15)
+    for y in lines:
+        pts = [(x, y, _sag(x, hx, zt - 0.07, 0.1)) for x in np.linspace(-hx, hx, 9)]
+        M.add(tube(pts, 0.005, 'white', sides=4))
+    front = lambda x: _sag(x, hx, zt - 0.07, 0.1)
+    back = front
+    # the front line: a big sheet, a striped towel, a shirt and a dress
+    _cloth(M, -1.26, -0.32, front, GAP + 0.05, lines[0] - 0.012, 'p1', 'sheet', seed=1)
+    _cloth(M, -0.26, 0.24, front, GAP + 0.2, lines[0] - 0.012, 'coral', 'sheet', seed=2)
+    for z0 in (GAP + 0.32, GAP + 0.52, GAP + 0.72):
+        M.add(box((-0.25, lines[0] - 0.02, z0), (0.23, lines[0] - 0.018, z0 + 0.05), 'white'))
+    _cloth(M, 0.34, 0.74, front, GAP + 0.38, lines[0] - 0.012, 'sky', 'shirt', seed=3)
+    _cloth(M, 0.9, 1.22, front, GAP + 0.08, lines[0] - 0.012, 'sun', 'dress', seed=4)
+    # the back line: shirts, a second sheet, a row of socks
+    _cloth(M, -1.2, -0.78, back, GAP + 0.36, lines[1] - 0.012, 'white', 'shirt', seed=5)
+    _cloth(M, -0.66, 0.5, back, GAP + 0.06, lines[1] - 0.012, 'p2', 'sheet', seed=6)
+    for i, x in enumerate(np.linspace(0.62, 1.2, 4)):
+        z = back(x)
+        M.add(box((x - 0.04, lines[1] - 0.006, z - 0.26), (x + 0.04, lines[1] + 0.006, z - 0.01), ('limeg', 'navy', 'white', 'coral')[i]))
+        M.add(box((x - 0.04, lines[1] - 0.006, z - 0.3), (x + 0.07, lines[1] + 0.006, z - 0.24), ('limeg', 'navy', 'white', 'coral')[i]))
+        M.add(cbox((x - 0.006, lines[1] - 0.012, z - 0.04), (x + 0.006, lines[1] + 0.012, z + 0.02), 0.002, 'sun'))
+    # a peg bag on the line and a washing basket by the far post
+    M.add(cbox((-0.05, lines[1] - 0.06, back(0.0) - 0.26), (0.13, lines[1] + 0.06, back(0.0) - 0.04), 0.03, 'navy'))
+    bk = tray((0.26, 0.18, 0.0), (0.3, 0.21, 0.0), 0.0, 0.22, 0.012, 'sky', inner_mat='sky', nc=2)
+    xform(bk, T(hx - 0.35, py + 0.36, 0.0)); M.add(bk)
+    for k, (mat, h) in enumerate((('white', 0.14), ('p1', 0.18), ('coral', 0.2))):
+        M.add(cbox((hx - 0.55 + k * 0.01, py + 0.22, h - 0.04), (hx - 0.15, py + 0.5, h), 0.02, mat))
+    M.feat('front', 'spatter', a0=-hx, a1=hx, b0=0.0, b1=0.25, n=60, r=(0.004, 0.012), col=(0.45, 0.42, 0.36), alpha=0.4)
+    _front(M)
+    _slide(M, hx, zt)
+    return M
+
+
+def barrow_cart():
+    """A market trader's barrow parked across the footpath: a painted timber flatbed on two big spoked wheels
+    that stand either side of the kid's line (on brackets from the bed: no axle across it), its handles resting
+    on a stand at the back end, and the bed heaped with watermelons, a sack of potatoes, a crate of apples and a
+    basket of loaves, a chalk price board stuck in the melons. Low enough to hop on, or slide under. Solid: the
+    bed and its load."""
+    M = Model('BarrowCart', p1=(0.36, 0.56, 0.42), p2=(0.86, 0.30, 0.26), ppm=95, grime=dict(rust=0.15, chips=0.3, streaks=0.3, dirt_h=0.3))
+    hx, hy = 1.3, 0.5
+    zb = GAP + 0.03
+    # the bed: a frame painted p1, planks on top, low side boards painted p2
+    M.add(cbox((-hx, -hy, zb), (hx, hy, zb + 0.06), 0.01, 'p1'))
+    for k, y in enumerate(np.linspace(-hy + 0.08, hy - 0.08, 6)):
+        M.add(wood_box((-hx + 0.03, y - 0.08, zb + 0.06), (hx - 0.03, y + 0.08, zb + 0.09), band=k % 4, along=0))
+    deck = zb + 0.09
+    for y in (-hy, hy):
+        M.add(cbox((-hx, y - 0.02, deck), (hx, y + 0.02, deck + 0.14), 0.008, 'p2'))
+    for x in (-hx, hx):
+        M.add(cbox((x - 0.02, -hy, deck), (x + 0.02, hy, deck + 0.14), 0.008, 'p2'))
+    # the wheels: outside the bed, on iron brackets down from its sides
+    R0 = 0.44
+    for y in (-hy - 0.17, hy + 0.17):
+        # a cartwheel: an iron-shod timber rim, ten painted spokes, a hub (open between the spokes)
+        ring, _ = lathe([(R0 - 0.06, -0.035), (R0, -0.035), (R0, 0.035), (R0 - 0.06, 0.035), (R0 - 0.06, -0.035)], 20,
+                        ['iron', 'iron', 'timber', 'timber'], phase=0.0)
+        xform(ring, T(0.25, y, R0) @ R(PI / 2, 'X')); M.add(ring)
+        for a in range(10):
+            ang = a * PI / 5
+            M.add(bar((0.25 + 0.05 * math.cos(ang), y, R0 + 0.05 * math.sin(ang)),
+                      (0.25 + (R0 - 0.05) * math.cos(ang), y, R0 + (R0 - 0.05) * math.sin(ang)), 0.026, 'p2'))
+        M.add(xform(cyl(0.07, -0.06, 0.06, 12, 'iron'), T(0.25, y, R0) @ R(PI / 2, 'X')))
+        sy = -1 if y < 0 else 1
+        M.add(bar((0.25, y - sy * 0.06, R0), (0.25, sy * (hy + 0.02), zb), 0.04, 'iron'))
+        M.add(bar((-0.05, sy * (hy + 0.02), zb), (0.25, y - sy * 0.06, R0), 0.03, 'iron'))
+    # handles out past the back end, resting on a folding stand (legs either side of the kid's line)
+    for y in (-0.52, 0.52):
+        M.add(bar((-hx + 0.1, y, zb + 0.03), (-hx - 0.55, y, zb - 0.12), 0.045, 'timber'))
+        M.add(bar((-hx - 0.4, y, zb - 0.1), (-hx - 0.48, y, 0.0), 0.04, 'p1'))
+        M.add(cbox((-hx - 0.53, y - 0.04, 0.0), (-hx - 0.43, y + 0.04, 0.02), 0.004, 'rubber'))
+    # the load: melons, a sack, a crate of apples, a basket of bread
+    rng = np.random.default_rng(7)
+    for i in range(7):
+        x = -1.05 + (i % 4) * 0.26 + rng.uniform(-0.03, 0.03); y = -0.18 + (i // 4) * 0.3 + rng.uniform(-0.04, 0.04)
+        z = deck + 0.15 + (0.12 if i in (5,) else 0.0)
+        M.add(blob((x, y, z), (0.16, 0.13, 0.13), 'leafd' if i % 2 else 'limef', n=9, rings=4, seed=30 + i, jitter=0.04))
+    M.add(blob((-0.15, 0.2, deck + 0.22), (0.2, 0.17, 0.22), 'card', n=9, rings=4, seed=41, jitter=0.12, flat_bottom=0.0))
+    M.add(cbox((-0.33, 0.07, deck + 0.36), (0.03, 0.33, deck + 0.38), 0.01, 'tape'))
+    M.add(wood_box((0.1, -0.4, deck), (0.62, 0.0, deck + 0.18), band=1, along=0))
+    for a in range(5):
+        for b in range(3):
+            M.add(blob((0.15 + a * 0.1, -0.33 + b * 0.12, deck + 0.21), (0.045, 0.045, 0.042), 'apple', n=6, rings=2, seed=60 + a * 3 + b, jitter=0.05))
+    bk = tray((0.24, 0.18, 0.0), (0.28, 0.21, 0.0), 0.0, 0.14, 0.012, 'timber', inner_mat='timberw', nc=2)
+    xform(bk, T(0.85, 0.15, deck)); M.add(bk)
+    for k in range(3):
+        M.add(blob((0.72 + k * 0.13, 0.15, deck + 0.16), (0.1, 0.05, 0.045), 'timberw', n=7, rings=2, seed=70 + k, jitter=0.05))
+    # the price board stuck in the melons
+    M.add(bar((-0.75, -0.2, deck + 0.2), (-0.75, -0.2, deck + 0.62), 0.02, 'timber'))
+    M.add(cbox((-0.95, -0.23, deck + 0.42), (-0.55, -0.21, deck + 0.66), 0.01, 'dark'))
+    M.add(cbox((-0.92, -0.235, deck + 0.45), (-0.58, -0.23, deck + 0.47), 0.002, 'white'))
+    M.add(cbox((-0.88, -0.235, deck + 0.52), (-0.66, -0.23, deck + 0.54), 0.002, 'white'))
+    M.add(cbox((-0.9, -0.235, deck + 0.59), (-0.7, -0.23, deck + 0.61), 0.002, 'white'))
+    _front(M)
+    _slide(M, hx, deck + 0.44)
+    return M
+
+
+def wobble_bridge():
+    """A playground wobble bridge strung across the path: two pairs of painted posts either side of the kid's
+    line at each end, timber slats hung on chains between them just over the gap, sagging a little, rope
+    handrails above, and bark chips under it. Low enough to hop on, or slide under. Solid: the slats."""
+    M = Model('WobbleBridge', p1=(0.30, 0.56, 0.80), p2=(0.98, 0.78, 0.30), ppm=95, grime=dict(rust=0.1, chips=0.2, streaks=0.3, dirt_h=0.3))
+    hx, py, zt = 1.25, 0.6, 1.75
+    end = GAP + 0.11
+    for x in (-hx, hx):
+        for y in (-py, py):
+            M.add(cbox((x - 0.06, y - 0.06, 0.0), (x + 0.06, y + 0.06, zt), 0.012, 'p1'))
+            M.add(xform(cyl(0.075, zt, zt + 0.06, 10, 'p2'), T(x, y, 0.0)))
+        M.add(cbox((x - 0.05, -py, end - 0.06), (x + 0.05, py, end), 0.01, 'p1'))
+        M.add(cbox((x - 0.05, -py, zt - 0.12), (x + 0.05, py, zt - 0.04), 0.01, 'p1'))
+    n = 11
+    xs = np.linspace(-hx + 0.13, hx - 0.13, n)
+    deck = lambda x: _sag(x, hx, end, 0.07)
+    for k, x in enumerate(xs):
+        z = deck(x)
+        M.add(wood_box((x - 0.085, -0.42, z - 0.04), (x + 0.085, 0.42, z), band=k % 4, along=1))
+    for y in (-0.45, 0.45):
+        M.add(tube([(x, y, deck(x) - 0.02) for x in np.linspace(-hx, hx, 9)], 0.01, 'galv', sides=4))
+        for x in xs[::2]:
+            M.add(tube([(x, y, deck(x) - 0.02), (x, y + (0.1 if y > 0 else -0.1), _sag(x, hx, zt - 0.12, 0.12))], 0.008, 'galv', sides=4))
+        M.add(tube([(x, y + (0.1 if y > 0 else -0.1), _sag(x, hx, zt - 0.12, 0.12)) for x in np.linspace(-hx, hx, 9)], 0.018, 'tex', sides=6, uvtile=('rope', 0.4)))
+    for x in np.linspace(-hx - 0.2, hx + 0.2, 7):
+        for y in (-0.75, -0.25, 0.25, 0.75):
+            M.add(blob((x + 0.1 * math.sin(x * 7 + y), y, 0.0), (0.22, 0.2, 0.03), 'barkchip', n=7, rings=2, seed=int(x * 20 + y * 13) + 300, jitter=0.3, flat_bottom=0.0))
+    _front(M)
+    _slide(M, hx - 0.05, end + 0.01)
+    return M
+
+
 BARRIER_MODELS = [plank_trestles, boom_barrier, access_platform, apple_bough,
                   stall_awning, roll_shutter, delivery_conveyor,
                   surf_rack, boat_trestles, boardwalk, rescue_board_stand,
                   scaffold_gantry, beam_trestles, pipe_rack, site_barrier,
-                  fallen_trunk, oak_bough, net_tunnel, play_tower]
+                  fallen_trunk, oak_bough, net_tunnel, play_tower,
+                  washing_line, barrow_cart, wobble_bridge]

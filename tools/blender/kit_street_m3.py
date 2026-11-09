@@ -435,5 +435,44 @@ def awning():
     return m
 
 
+# ---------------------------------------------------------------- knock-over boxes for the other chapters
+def box_cardboard():
+    """The home street's knock-over box (the crates' size, 0.6 m): a moving box, taped shut, with this-way-up
+    arrows and an address label on the front."""
+    m = Model('BoxCardboard', note='A taped cardboard moving box, 0.6 m cube (the home street: someone moving in).')
+    s, h = 0.6, 0.3
+    m.add(cbox((s, s, s), 0.012, 'cardboard', at=(0, 0, h)))
+    m.add(cbox((s - 0.03, 0.006, 0.004), 0.0, 'wood_d', at=(0, 0, s + 0.001)))          # where the flaps meet
+    m.add(cbox((0.1, s + 0.006, 0.004), 0.0, 'tape', at=(0, 0, s + 0.003)))              # tape over the top...
+    for sy in (-1, 1):
+        m.add(cbox((0.1, 0.004, 0.17), 0.0, 'tape', at=(0, sy * (h + 0.002), s - 0.085)))  # ...and down the sides
+    for x in (-0.2, -0.12):                                                               # this way up
+        m.add(cbox((0.014, 0.004, 0.08), 0.0, 'black', at=(x, -h - 0.002, 0.43)))
+        m.add(cbox((0.05, 0.004, 0.012), 0.0, 'black', at=(x, -h - 0.002, 0.47)))
+    m.add(cbox((0.2, 0.004, 0.12), 0.0, 'white', at=(0.12, -h - 0.002, 0.36)))           # the label
+    for k, w in enumerate((0.15, 0.12, 0.09)):
+        m.add(cbox((w, 0.003, 0.01), 0.0, 'black', at=(0.1 - (0.15 - w) / 2, -h - 0.004, 0.395 - 0.03 * k)))
+    return m
+
+
+def crate_plastic():
+    """The building site's knock-over box (the crates' size, 0.6 m): a ribbed plastic stacking crate with hand
+    holds; part 1 its colour."""
+    m = Model('CratePlastic', paint=(0.30, 0.49, 0.73), note='A plastic stacking crate with hand holds, 0.6 m cube; part 1 = its colour.')
+    s, h = 0.6, 0.3
+    m.add(cbox((s, s, s), 0.03, 'paintp', at=(0, 0, h)))
+    m.add(cbox((s - 0.06, s - 0.06, 0.01), 0.0, 'black', at=(0, 0, s - 0.004)))           # open top, dark inside
+    for z in (0.08, 0.27, 0.46):
+        m.add(cbox((s + 0.014, s + 0.014, 0.035), 0.01, 'paintp', at=(0, 0, z)))           # moulded ribs round it
+    for x in (-0.2, 0.0, 0.2):
+        for sy in (-1, 1):
+            m.add(cbox((0.03, 0.014, s - 0.1), 0.008, 'paintp', at=(x, sy * (h + 0.004), h)))
+    for sy in (-1, 1):
+        m.add(cbox((0.22, 0.012, 0.06), 0.012, 'black', at=(0, sy * (h + 0.009), 0.535)))  # hand holds
+    for sx in (-1, 1):
+        m.add(cbox((0.012, 0.22, 0.06), 0.012, 'black', at=(sx * (h + 0.009), 0, 0.535)))
+    return m
+
+
 MODELS = [crate, crate_stack, drinks_crates, pallet, produce_crate, sack, pot_a, pot_b, pot_c,
-          ac_unit, satellite_dish, gas_meter, market_stall, awning]
+          ac_unit, satellite_dish, gas_meter, market_stall, awning, box_cardboard, crate_plastic]

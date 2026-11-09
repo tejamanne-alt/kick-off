@@ -121,7 +121,8 @@ namespace DribbleToSchool.EditorTools
         {
             int own = LevelBuildKit.Chapter;
             float seam = track.SeamX;
-            int seed = own * 131 + Mathf.RoundToInt(track.MaxX);
+            levelSalt = LevelSalt(track);
+            int seed = own * 131 + Mathf.RoundToInt(track.MaxX) + levelSalt;
 
             Pass(track, root, "the route's street", new StageSpec
             {

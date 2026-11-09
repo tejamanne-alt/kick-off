@@ -22,7 +22,7 @@ namespace DribbleToSchool.EditorTools
     public static class GeneratedContent
     {
         /// <summary>Bump when layouts or the scene rig change so scenes regenerate.</summary>
-        public const int Version = 105;   // 105: two piers along the seaside walk (Low Tide's and Sandcastle Sprint's), not one per level
+        public const int Version = 106;   // 106: fewer repeats: each level its own scenery seeds, new slide-unders, obstacles and boxes by chapter
 
         const string ScenesDir = LevelBuildKit.Root + "/Scenes";
         const string LevelsDir = LevelBuildKit.Root + "/Levels";

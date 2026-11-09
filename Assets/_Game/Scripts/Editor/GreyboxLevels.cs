@@ -250,7 +250,7 @@ namespace DribbleToSchool.EditorTools
             t.Puddle(22f, 26f);
             t.Checkpoint(29f);
             t.ParkedCar(36f, CarPurple);
-            t.SlideUnder(42.5f, TrackBuilder.SlideLook.PlankTrestles);
+            t.SlideUnder(42.5f, TrackBuilder.SlideLook.WashingLine);
 
             t.Pit(48f, 49.8f);
             t.Ground(49.8f, 78f);
@@ -362,7 +362,7 @@ namespace DribbleToSchool.EditorTools
             t.Wall(58f, 0.9f);
             t.Water(64f, 66f);
             t.Ground(66f, 108f);
-            t.SlideUnder(70f, TrackBuilder.SlideLook.DeliveryConveyor);
+            t.SlideUnder(70f, TrackBuilder.SlideLook.BarrowCart);
 
             t.CrateStack(74f);
             t.Checkpoint(78f);
@@ -407,7 +407,7 @@ namespace DribbleToSchool.EditorTools
             t.SlideUnder(76.6f, TrackBuilder.SlideLook.DeliveryConveyor);
             t.Checkpoint(78f);
             t.Crossing(84f, 89f, 1f);
-            t.SlideUnder(94f, TrackBuilder.SlideLook.StallAwning);
+            t.SlideUnder(94f, TrackBuilder.SlideLook.BarrowCart);
             t.CoinRow(14f, 17f, 2.4f, 3);
             t.CoinRow(27f, 34f, 3.8f, 4);
             t.CoinArc(44.5f, 46.5f, 1.6f, 1f, 3);
@@ -523,7 +523,7 @@ namespace DribbleToSchool.EditorTools
             t.Checkpoint(75f);
             t.Sand(78f, 84f);
             t.Tide(88f, 93f, 6f, 0f);
-            t.SlideUnder(96.5f, TrackBuilder.SlideLook.SurfRack);
+            t.SlideUnder(96.5f, TrackBuilder.SlideLook.RescueBoardStand);
 
             t.CoinRow(19f, 23f, 0.6f, 3);
             t.CoinRow(39f, 44f, 0.6f, 3);
@@ -594,7 +594,7 @@ namespace DribbleToSchool.EditorTools
             t.Sand(6f, 12f);
             t.Wall(16f, 0.6f, 0f, 0.9f);
             t.Wall(16f, 1f, 0f, 0.35f);
-            t.SlideUnder(22.5f, TrackBuilder.SlideLook.Boardwalk);
+            t.SlideUnder(22.5f, TrackBuilder.SlideLook.BoatTrestles);
 
             t.Ground(28f, 44f, 0.6f);
             t.Wall(31f, 0.5f, 0.6f, 0.8f);
@@ -910,7 +910,7 @@ namespace DribbleToSchool.EditorTools
             t.Springboard(56f);
             t.Wall(58f, 1.6f);
             t.Checkpoint(61f);
-            t.SlideUnder(65.5f, TrackBuilder.SlideLook.FallenTrunk);
+            t.SlideUnder(65.5f, TrackBuilder.SlideLook.WobbleBridge);
             t.Water(70f, 72f);
             t.Ground(72f, 73.5f);
             t.Water(73.5f, 75.5f);
@@ -939,7 +939,7 @@ namespace DribbleToSchool.EditorTools
             t.Start(0f);
             t.Ground(-8f, 40f);
             t.Sign("The final run!\nDon't be late for school!", new Vector2(5f, 3.2f));
-            t.SlideUnder(7.6f, TrackBuilder.SlideLook.OakBough);
+            t.SlideUnder(7.6f, TrackBuilder.SlideLook.WobbleBridge);
 
             t.Dog(10f, 18f, DogBrown);
             t.Crossing(24f, 29f, 0f);

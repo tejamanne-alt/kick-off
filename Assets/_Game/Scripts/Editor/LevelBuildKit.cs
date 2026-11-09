@@ -614,6 +614,7 @@ namespace DribbleToSchool.EditorTools
         static readonly HashSet<string> celModels = new HashSet<string>
         {
             "Leisure/SwingSeat", "Leisure/Target", "Leisure/SlalomFlag", "Leisure/CheckpointFlag", "Leisure/Trampoline",
+            "Street/Crate", "Street/BoxCardboard", "Street/CratePlastic",     // the boxes the kid knocks about
         };
 
         /// <summary>Does <paramref name="kit"/> have models drawn as cels (it then gets a "Cel" copy of its material)?</summary>
@@ -1084,13 +1085,18 @@ namespace DribbleToSchool.EditorTools
 
             public void Crate(float x, float y)
             {
-                // The Street kit's wooden crate when there is one, else a box with the painted crate.
-                Vector3 native = KitSize("Street", "Crate");
-                bool model = native.y > 0.05f && HasKitModel("Street", "Crate");
+                // The chapter's box (the same size and weight everywhere, so it plays the same): a moving box on the home
+                // street, a plastic crate on the building site, the Street kit's wooden crate elsewhere; else a box with the
+                // painted crate.
+                string look = Chapter == 1 ? "BoxCardboard" : Chapter == 4 ? "CratePlastic" : "Crate";
+                if (!HasKitModel("Street", look)) look = "Crate";
+                Vector3 native = KitSize("Street", look);
+                bool model = native.y > 0.05f && HasKitModel("Street", look);
                 var go = Block("Crate", new Vector2(x, y), new Vector2(0.7f, 0.7f), Color.white, CrateMat, !model, 0.7f, Art.crateMaterial);
                 if (model)
                 {
-                    var t = KitModel(go.transform, "Street", "Crate", new Vector3(x, y - 0.35f, 0f));
+                    Color? tint = look == "CratePlastic" ? PlasticCrates[Mathf.Abs(Mathf.RoundToInt(x * 3f + y * 7f)) % PlasticCrates.Length] : (Color?)null;
+                    var t = KitModel(go.transform, "Street", look, new Vector3(x, y - 0.35f, 0f), 0f, 1f, tint);
                     if (t != null) t.localScale = new Vector3(0.7f / native.x, 0.7f / native.y, 0.7f / Mathf.Max(0.05f, native.z));
                 }
                 var body = go.AddComponent<Rigidbody2D>();
@@ -1101,6 +1107,8 @@ namespace DribbleToSchool.EditorTools
                 // Kicked or walked forward, never shoved back into the way behind it (by a rolling pipe, say).
                 go.AddComponent<OneWayBody>();
             }
+
+            static readonly Color[] PlasticCrates = { new Color(0.3f, 0.49f, 0.73f), new Color(0.93f, 0.48f, 0.24f), new Color(0.38f, 0.6f, 0.42f) };
 
             // ---------- Pickups ----------
 
@@ -2642,35 +2650,93 @@ namespace DribbleToSchool.EditorTools
             }
 
             /// <summary>
-            /// Fills an obstacle's box with the asset kits' version of its look: a boulder on the beach,
-            /// a clipped hedge in the park, a planter of flowers when knee to waist high, a stack of
-            /// drinks crates when taller. Stretched so the solid part fills the collider. False if the
-            /// kit hasn't got the model (or the obstacle is a low step, which stays procedural).
+            /// Fills an obstacle's box with the asset kits' version of its look, so the solid part fills the collider. Each
+            /// chapter has a few looks, picked by the obstacle's place and the level (so the same spot in two levels differs):
+            /// a boulder or two on the beach; on the home street a planter, the wheelie bins out for collection or (low) a
+            /// flower bed's edging; at the market a planter, a stack of fruit crates or drinks crates, or (low) two pallets;
+            /// in the park a clipped hedge or an old block wall; on the building site pallets or the stone step. False if the
+            /// kit hasn't got the model, or for the looks drawn procedurally (the low stone step).
             /// </summary>
             bool ObstacleModel(Transform parent, Vector2 center, Vector2 size, int seed)
             {
-                float h = size.y, w = size.x, depth;
-                string kit, model;
-                if (Chapter == 3) { kit = "Terrain"; model = h > 1.3f ? "Boulder4" : h > 0.8f ? "Boulder3" : (seed % 2 == 0 ? "Boulder2" : "Boulder1"); depth = 1.3f; }
-                else if (h <= 0.45f) return false;
-                else if (Chapter == 5) { kit = "Plants"; model = w > 1.4f ? "HedgeBlock2" : "HedgeBlock1"; depth = 1.2f; }
-                else if (h <= 1.05f) { kit = "Street"; model = w > 1.4f ? "Planter2" : "Planter1"; depth = 1.1f; }
-                else { kit = "Street"; model = "DrinksCrates"; depth = 0.9f; }
+                float h = size.y, w = size.x;
+                int pick = Mathf.Abs(seed + StreetBuilder.LevelSalt(AuditName));
+                if (Chapter == 3)
+                {
+                    string rock = h > 1.3f ? "Boulder4" : h > 0.8f ? "Boulder3" : (pick % 2 == 0 ? "Boulder2" : "Boulder1");
+                    return Stretch(parent, "Terrain", rock, center, size, 1.3f, 1.08f, (seed * 37 % 50) - 25f, null, 1);
+                }
+                if (h <= 0.45f)
+                {
+                    // A low step: the stone border (procedural), or the chapter's own low thing.
+                    switch (Chapter)
+                    {
+                        case 1: return pick % 3 == 1 && FillWith(parent, "Plants", "FlowerPatch", center, size, 1.4f, 3, 1, 0f, null);
+                        case 2:
+                        case 4: return pick % 2 == 1 && FillWith(parent, "Street", "Pallet", center, size, 1.2f, 1, 2, 90f, null);
+                        default: return false;
+                    }
+                }
+                if (Chapter == 5)
+                {
+                    if (h > 1.2f && pick % 5 >= 3 && FillWith(parent, "Street", "BlockWall2", center, size, 1.3f, 1, 1, 90f, null)) return true;
+                    return Stretch(parent, "Plants", w > 1.4f ? "HedgeBlock2" : "HedgeBlock1", center, size, 1.2f, 1f, 0f, StreetBuilder.HedgeGreen, 1);
+                }
+                if (h <= 1.05f)
+                {
+                    if (Chapter == 1 && h >= 0.75f && pick % 2 == 1)
+                        return FillWith(parent, "Street", "Bin", center, size, 1.1f, 2, 1, 0f, BinTints[pick % BinTints.Length]);
+                    if (Chapter == 2 && pick % 2 == 1)
+                        return FillWith(parent, "Street", "ProduceCrate", center, size, 1.05f, 3, Mathf.Max(1, Mathf.RoundToInt(h / 0.32f)), 0f, CrateTints[pick % CrateTints.Length]);
+                    return Stretch(parent, "Street", w > 1.4f ? "Planter2" : "Planter1", center, size, 1.1f, 1f, 0f, null, 1);
+                }
+                if (Chapter == 2 && pick % 2 == 1)
+                    return FillWith(parent, "Street", "ProduceCrate", center, size, 1.05f, 3, Mathf.Max(1, Mathf.RoundToInt(h / 0.32f)), 0f, CrateTints[pick % CrateTints.Length]);
+                // Drinks crates stack whole crates rather than stretching one stack tall.
+                Vector3 crates = KitSize("Street", "DrinksCrates");
+                return Stretch(parent, "Street", "DrinksCrates", center, size, 0.9f, 1f, 0f, null, crates.y > 0.05f ? Mathf.Max(1, Mathf.RoundToInt(h / crates.y)) : 1);
+            }
+
+            static readonly Color[] BinTints =
+            {
+                new Color(0.32f, 0.5f, 0.4f), new Color(0.36f, 0.46f, 0.6f), new Color(0.46f, 0.48f, 0.5f), new Color(0.26f, 0.38f, 0.3f),
+            };
+            static readonly Color[] CrateTints = { new Color(0.95f, 0.59f, 0.22f), new Color(0.84f, 0.3f, 0.26f), new Color(0.45f, 0.66f, 0.3f), new Color(0.96f, 0.82f, 0.3f) };
+
+            /// <summary>One model (or a stack of `copies` along y) stretched to fill the obstacle's box, `fill` times as wide (a rock overfills a little).</summary>
+            bool Stretch(Transform parent, string kit, string model, Vector2 center, Vector2 size, float depth, float fill, float yaw, Color? tint, int copies)
+            {
                 Vector3 native = KitSize(kit, model);
                 if (native.x < 0.05f || native.y < 0.05f || native.z < 0.05f || !HasKitModel(kit, model)) return false;
-                // Rocks overfill their box a little so its corners don't poke out of the stone; crates
-                // stack whole crates rather than stretching one stack tall.
-                float fill = Chapter == 3 ? 1.08f : 1f;
-                int copies = model == "DrinksCrates" ? Mathf.Max(1, Mathf.RoundToInt(h / native.y)) : 1;
-                float each = h / copies;
+                float each = size.y / copies;
                 for (int i = 0; i < copies; i++)
                 {
-                    float yaw = Chapter == 3 ? (seed * 37 % 50) - 25f : 0f;
-                    var t = KitModel(parent, kit, model, new Vector3(center.x, center.y - h * 0.5f + i * each, 0f), yaw, 1f,
-                        model.StartsWith("Hedge") ? StreetBuilder.HedgeGreen : (Color?)null);
+                    var t = KitModel(parent, kit, model, new Vector3(center.x, center.y - size.y * 0.5f + i * each, 0f), yaw, 1f, tint);
                     if (t == null) return false;
-                    t.localScale = new Vector3(w * fill / native.x, each / native.y, depth / native.z);
+                    t.localScale = new Vector3(size.x * fill / native.x, each / native.y, depth / native.z);
                 }
+                return true;
+            }
+
+            /// <summary>
+            /// The obstacle's box filled with copies of a kit model: `cols` side by side in depth and `rows` stacked, turned by
+            /// `yaw` (0, or 90 for one whose length should run in depth), each scaled to its share of the box.
+            /// </summary>
+            bool FillWith(Transform parent, string kit, string model, Vector2 center, Vector2 size, float depth, int cols, int rows, float yaw, Color? tint)
+            {
+                Vector3 native = KitSize(kit, model);
+                if (native.x < 0.05f || native.y < 0.05f || native.z < 0.05f || !HasKitModel(kit, model)) return false;
+                bool turned = Mathf.Abs(Mathf.DeltaAngle(yaw, 90f)) < 1f;
+                float eachH = size.y / rows, eachD = depth / cols;
+                for (int r = 0; r < rows; r++)
+                    for (int c = 0; c < cols; c++)
+                    {
+                        float z = -depth * 0.5f + eachD * (c + 0.5f);
+                        var t = KitModel(parent, kit, model, new Vector3(center.x, center.y - size.y * 0.5f + r * eachH, z), yaw, 1f, tint);
+                        if (t == null) return false;
+                        t.localScale = turned ? new Vector3(eachD / native.x, eachH / native.y, size.x / native.z)
+                                              : new Vector3(size.x / native.x, eachH / native.y, eachD / native.z);
+                    }
                 return true;
             }
 
@@ -2711,6 +2777,9 @@ namespace DribbleToSchool.EditorTools
                 ScaffoldGantry, BeamTrestles, PipeRack, SiteBarrier,
                 // Park
                 FallenTrunk, OakBough, NetTunnel, PlayTower,
+                // Added so no look comes round too often along a chapter: the home street's washing line, the market's
+                // barrow, the park's wobble bridge.
+                WashingLine, BarrowCart, WobbleBridge,
             }
 
             /// <summary>
@@ -2750,6 +2819,9 @@ namespace DribbleToSchool.EditorTools
                     case SlideLook.FallenTrunk: return new SlideSpec { radius = 0.35f, centre = 1.2f, fallback = ProceduralSlide.FallenTree, fallbackWidth = 0.7f };
                     case SlideLook.OakBough: return box(1.05f, 1.19f, false, ProceduralSlide.FallenTree, 0.8f);
                     case SlideLook.NetTunnel: return box(1.04f, 0.96f, false, ProceduralSlide.Trestles, 2.0f);
+                    case SlideLook.WashingLine: return box(1.35f, 2.0f, true, ProceduralSlide.Trestles, 2.7f);
+                    case SlideLook.BarrowCart: return box(1.3f, 1.4f, false, ProceduralSlide.MarketStall, 2.6f);
+                    case SlideLook.WobbleBridge: return box(1.2f, 0.97f, false, ProceduralSlide.Trestles, 2.4f);
                     default: return box(0.66f, 2.6f, true, ProceduralSlide.Scaffold, 1.3f);   // PlayTower
                 }
             }
@@ -2841,6 +2913,18 @@ namespace DribbleToSchool.EditorTools
                     case SlideLook.PlayTower:
                         tint1 = Pick(seed, new Color(0.36f, 0.62f, 0.86f), new Color(0.4f, 0.7f, 0.42f), new Color(0.98f, 0.78f, 0.3f));
                         tint2 = Pick(seed / 3, new Color(0.86f, 0.32f, 0.28f), new Color(0.3f, 0.5f, 0.8f), new Color(0.35f, 0.6f, 0.38f));
+                        break;
+                    case SlideLook.WashingLine:     // the sheets
+                        tint1 = Pick(seed, new Color(0.55f, 0.72f, 0.94f), new Color(0.96f, 0.95f, 0.92f), new Color(0.98f, 0.8f, 0.82f), new Color(0.74f, 0.88f, 0.7f));
+                        tint2 = Pick(seed / 4, new Color(0.98f, 0.55f, 0.48f), new Color(0.96f, 0.84f, 0.42f), new Color(0.62f, 0.56f, 0.86f));
+                        break;
+                    case SlideLook.BarrowCart:      // the barrow's paint, its side boards'
+                        tint1 = Pick(seed, new Color(0.36f, 0.56f, 0.42f), new Color(0.3f, 0.45f, 0.72f), new Color(0.8f, 0.3f, 0.26f));
+                        tint2 = Pick(seed / 3, new Color(0.86f, 0.3f, 0.26f), new Color(0.95f, 0.75f, 0.25f), new Color(0.96f, 0.95f, 0.9f));
+                        break;
+                    case SlideLook.WobbleBridge:    // its posts, their caps
+                        tint1 = Pick(seed, new Color(0.3f, 0.56f, 0.8f), new Color(0.38f, 0.66f, 0.4f), new Color(0.84f, 0.36f, 0.3f));
+                        tint2 = Pick(seed / 3, new Color(0.98f, 0.78f, 0.3f), new Color(0.96f, 0.95f, 0.9f), new Color(0.86f, 0.32f, 0.28f));
                         break;
                 }
             }
