@@ -94,6 +94,23 @@ namespace DribbleToSchool.UI
             b.juggleUpSpeed = Slider("Juggle pop", b.juggleUpSpeed, 2f, 10f);
 
             GUILayout.Space(8f);
+            GUILayout.Label("CLOSE CONTROL", label);
+            var stick = GameInput.Instance;
+            if (stick != null)
+            {
+                stick.stickMinPace = Slider("Stick: gentlest pace", stick.stickMinPace, 0.1f, 1f);
+                stick.stickFullSpeedAt = Slider("Stick: full speed at", stick.stickFullSpeedAt, stick.stickDeadZone + 0.05f, 1f);
+                stick.kickHoldTime = Slider("KICK hold time", stick.kickHoldTime, 0.1f, 0.6f);
+            }
+            b.walkLeadFraction = Slider("Walk touch (x lead)", b.walkLeadFraction, 0f, 1f);
+            b.walkTouchLift = Slider("Walk touch lift", b.walkTouchLift, 0f, 2f);
+            b.dragBackSpeed = Slider("Drag-back speed", b.dragBackSpeed, 0.5f, 5f);
+            b.controlSpeedFraction = Slider("Hold: speed x", b.controlSpeedFraction, 0.3f, 1f);
+            b.controlLead.x = Slider("Hold: lead at a walk", b.controlLead.x, 0.1f, 0.8f);
+            b.controlLead.y = Slider("Hold: lead flat out", b.controlLead.y, b.controlLead.x, 1f);
+            b.holdGrip = Slider("Hold: grip", b.holdGrip, 2f, 60f);
+
+            GUILayout.Space(8f);
             GUILayout.Label("KICK", label);
             b.minKickSpeed = Slider("Min kick speed", b.minKickSpeed, 0f, 10f);
             b.maxKickSpeed = Slider("Max kick speed", b.maxKickSpeed, b.minKickSpeed, 25f);

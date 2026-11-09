@@ -67,6 +67,8 @@ namespace DribbleToSchool.InputHandling
             // The walk stick: where its ring sits now and the point the knob is measured from (both move when the thumb runs off the ring).
             public Vector2 stickCenter;
             public Vector2 stickOrigin;
+            // The kick button: what this finger turned out to be (a tap, an aimed drag, or a hold that keeps the ball close).
+            public KickGesture kick;
         }
 
         struct Sample
@@ -97,6 +99,10 @@ namespace DribbleToSchool.InputHandling
         public float stickKnob = 0.44f;
         [Tooltip("Push the knob sideways past this part of the ring to walk.")]
         public float stickDeadZone = 0.22f;
+        [Tooltip("The knob reaches full speed this far across the ring (a part of its radius); a smaller push jogs, with the ball close.")]
+        public float stickFullSpeedAt = 0.7f;
+        [Tooltip("The kid's pace (a part of a full run) just past the dead zone: the gentlest push is a jog.")]
+        [Range(0.1f, 1f)] public float stickMinPace = 0.3f;
         [Tooltip("Pull the knob down past this part of the ring (more down than sideways) to slide; it slides again once it has come back above the release.")]
         public float stickSlideDown = 0.5f;
         public float stickSlideRelease = 0.3f;
@@ -108,6 +114,8 @@ namespace DribbleToSchool.InputHandling
         public float kidClearance = 0.14f;
 
         [Header("Gestures")]
+        [Tooltip("Hold KICK still this long (seconds) and it keeps the ball at the feet instead of kicking; a quicker tap kicks.")]
+        public float kickHoldTime = 0.22f;
         public float tapMaxDuration = 0.25f;
         public float tapMaxMoveInches = 0.15f;
         public float swipeUpMinInches = 0.35f;
@@ -117,7 +125,10 @@ namespace DribbleToSchool.InputHandling
         [Header("References")]
         public Camera worldCamera;
 
-        /// <summary>-1 = walk back, +1 = walk forward, 0 = stand still.</summary>
+        /// <summary>
+        /// -1 (back) .. +1 (forward), 0 = stand still. On the stick, how far the knob is pushed sets the pace (a small push
+        /// jogs, a bigger one runs: <see cref="StickPace"/>); the keys always run.
+        /// </summary>
         public float MoveAxis { get; private set; }
         public bool JumpPressed { get; private set; }
         public bool JumpHeld { get; private set; }
@@ -132,8 +143,13 @@ namespace DribbleToSchool.InputHandling
         public bool KickHeld { get; private set; }
         /// <summary>The aimed kick was let go this frame (see KickDrag).</summary>
         public bool KickReleased { get; private set; }
-        /// <summary>The kick button was tapped without dragging: a quick pass.</summary>
+        /// <summary>The kick button was tapped (let go before <see cref="kickHoldTime"/>, without dragging): a quick pass.</summary>
         public bool KickTapped { get; private set; }
+        /// <summary>
+        /// True while the kick button is held still past <see cref="kickHoldTime"/> (or L / Left Shift is held): the kid
+        /// keeps the ball at the feet. Letting go after a hold kicks nothing.
+        /// </summary>
+        public bool BallControlHeld { get; private set; }
         /// <summary>Drag from the kick button, in screen pixels (the direction the ball should go).</summary>
         public Vector2 KickDrag { get; private set; }
         public bool ResetPressed { get; private set; }
@@ -319,7 +335,7 @@ namespace DribbleToSchool.InputHandling
         void Update()
         {
             MoveAxis = 0f;
-            LeftHeld = RightHeld = JumpPressed = JumpHeld = SlidePressed = SlideHeld = KickHeld = TouchPressed = false;
+            LeftHeld = RightHeld = JumpPressed = JumpHeld = SlidePressed = SlideHeld = KickHeld = TouchPressed = BallControlHeld = false;
             KickAiming = KickReleased = KickTapped = ResetPressed = PausePressed = DebugTogglePressed = false;
             StickActive = false;
             StickKnob = Vector2.zero;
@@ -383,7 +399,7 @@ namespace DribbleToSchool.InputHandling
                 }
             }
 
-            float stickMove = 0f;
+            float stickMove = 0f, stickPace = 1f;
             foreach (var p in pointers.Values)
             {
                 switch (p.role)
@@ -396,6 +412,7 @@ namespace DribbleToSchool.InputHandling
                         Vector2 offset = p.current - p.stickOrigin;
                         bool slideNow;
                         ReadStick(offset, StickRadius, stickDeadZone, stickSlideDown, stickSlideRelease, ref stickDown, out stickMove, out slideNow);
+                        stickPace = StickPace(Mathf.Abs(offset.x) / Mathf.Max(1f, StickRadius), stickDown ? stickDeadZone * 0.6f : stickDeadZone, stickFullSpeedAt, stickMinPace);
                         if (slideNow) SlidePressed = true;
                         if (stickDown) SlideHeld = true;
                         StickKnob = Vector2.ClampMagnitude(offset / Mathf.Max(1f, StickRadius), 1f);
@@ -405,26 +422,72 @@ namespace DribbleToSchool.InputHandling
                     case Role.Slide: SlideHeld = true; break;
                     case Role.Kick:
                         KickHeld = true;
-                        // Only a real drag aims (and slows time); a tap is a quick pass on release.
-                        if (IsDrag(p))
+                        // A real drag aims (and slows time); held still long enough, it keeps the ball at the feet (and a thumb
+                        // that wanders then never starts an aim); a tap is a quick pass on release.
+                        p.kick = ReadKick(p.kick, Time.unscaledTime - p.startTime, IsDrag(p), kickHoldTime);
+                        if (p.kick == KickGesture.Aim && IsDrag(p))
                         {
                             KickAiming = true;
                             KickDrag = p.current - p.start;
                         }
+                        if (p.kick == KickGesture.Hold) BallControlHeld = true;
                         break;
                 }
             }
             if (!StickActive) stickDown = false;
             if (stickMove > 0f) RightHeld = true;
             else if (stickMove < 0f) LeftHeld = true;
+            bool stickRight = RightHeld, stickLeft = LeftHeld;
 
             ReadGameplayKeys();
+            // The keys and a scripted walk (the tour) always go at full pace; the stick at the pace of its push.
+            bool keys = (RightHeld && !stickRight) || (LeftHeld && !stickLeft);
+            if (keys) stickPace = 1f;
             if (ScriptedMove != 0f)
             {
                 RightHeld = ScriptedMove > 0f;
                 LeftHeld = ScriptedMove < 0f;
+                stickPace = 1f;
             }
-            MoveAxis = (RightHeld ? 1f : 0f) - (LeftHeld ? 1f : 0f);
+            MoveAxis = ((RightHeld ? 1f : 0f) - (LeftHeld ? 1f : 0f)) * stickPace;
+        }
+
+        /// <summary>
+        /// The pace of a stick pushed <paramref name="across"/> (a part of the ring's radius, 0..1 and more): 0 inside the
+        /// dead zone, <paramref name="minPace"/> just past it, rising evenly to a full run at <paramref name="fullAt"/>.
+        /// </summary>
+        public static float StickPace(float across, float deadZone, float fullAt, float minPace)
+        {
+            if (across <= deadZone) return 0f;
+            float t = Mathf.Clamp01((across - deadZone) / Mathf.Max(fullAt - deadZone, 0.01f));
+            return Mathf.Lerp(Mathf.Clamp01(minPace), 1f, t);
+        }
+
+        /// <summary>What a finger on the kick button is: not yet known, an aimed drag, or a hold that keeps the ball close.</summary>
+        public enum KickGesture { Pending, Aim, Hold }
+
+        /// <summary>
+        /// The kick button's gesture after <paramref name="held"/> seconds: a drag before the hold time aims (and stays an aim);
+        /// held still to the hold time it is a hold (and stays a hold, wherever the thumb wanders); until then, pending.
+        /// </summary>
+        public static KickGesture ReadKick(KickGesture current, float held, bool dragged, float holdTime)
+        {
+            if (current != KickGesture.Pending) return current;
+            if (dragged) return KickGesture.Aim;
+            return held >= holdTime ? KickGesture.Hold : KickGesture.Pending;
+        }
+
+        /// <summary>What letting go of the kick button does.</summary>
+        public enum KickLetGo { Nothing, Tap, AimedKick }
+
+        /// <summary>
+        /// Letting go: after a hold, nothing (the ball stays at the feet); after an aim, the aimed kick (or a tap if the thumb came
+        /// back to where it started, as before); a quick, still press, a tap.
+        /// </summary>
+        public static KickLetGo ReleaseKick(KickGesture gesture, bool dragged)
+        {
+            if (gesture == KickGesture.Hold) return KickLetGo.Nothing;
+            return dragged ? KickLetGo.AimedKick : KickLetGo.Tap;
         }
 
         bool stickDown;
@@ -496,14 +559,15 @@ namespace DribbleToSchool.InputHandling
         {
             if (p.role == Role.Kick)
             {
-                if (IsDrag(p))
+                switch (ReleaseKick(p.kick, IsDrag(p)))
                 {
-                    KickReleased = true;
-                    KickDrag = p.current - p.start;
-                }
-                else
-                {
-                    KickTapped = true;
+                    case KickLetGo.AimedKick:
+                        KickReleased = true;
+                        KickDrag = p.current - p.start;
+                        break;
+                    case KickLetGo.Tap:
+                        KickTapped = true;
+                        break;
                 }
             }
             else if (p.role == Role.TapOrSwipe)
@@ -565,6 +629,7 @@ namespace DribbleToSchool.InputHandling
             if (kb.aKey.isPressed || kb.leftArrowKey.isPressed) LeftHeld = true;
             if (kb.dKey.isPressed || kb.rightArrowKey.isPressed) RightHeld = true;
             if (kb.kKey.wasPressedThisFrame) KickTapped = true;
+            if (kb.lKey.isPressed || kb.leftShiftKey.isPressed) BallControlHeld = true;
             if (kb.spaceKey.wasPressedThisFrame || kb.wKey.wasPressedThisFrame || kb.upArrowKey.wasPressedThisFrame) JumpPressed = true;
             if (kb.spaceKey.isPressed || kb.wKey.isPressed || kb.upArrowKey.isPressed) JumpHeld = true;
             if (kb.sKey.wasPressedThisFrame || kb.downArrowKey.wasPressedThisFrame) SlidePressed = true;
@@ -598,6 +663,7 @@ namespace DribbleToSchool.InputHandling
             if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow)) LeftHeld = true;
             if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow)) RightHeld = true;
             if (Input.GetKeyDown(KeyCode.K)) KickTapped = true;
+            if (Input.GetKey(KeyCode.L) || Input.GetKey(KeyCode.LeftShift)) BallControlHeld = true;
             if (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow)) JumpPressed = true;
             if (Input.GetKey(KeyCode.Space) || Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow)) JumpHeld = true;
             if (Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.DownArrow)) SlidePressed = true;

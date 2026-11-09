@@ -43,6 +43,13 @@ namespace DribbleToSchool.Player
         public Vector2 FeetPosition { get { return feet != null ? (Vector2)feet.position : Body.position; } }
         /// <summary>Product of all active speed modifiers (puddles, sand...).</summary>
         public float SpeedMultiplier { get; private set; }
+        /// <summary>
+        /// A part of full pace the kid keeps to while holding the ball at the feet (KICK held: BallController sets it; 1 the
+        /// rest of the time). The auto-run of the Holiday Run ignores it: its stages are laid out for its pace.
+        /// </summary>
+        public float ControlPace { get; set; } = 1f;
+        /// <summary>True while the kid stands with a foot on the ball in front of them (BallController sets it; KidAnimator poses it).</summary>
+        public bool FootOnBall { get; set; }
         /// <summary>Velocity of the moving surface under the kid, if any.</summary>
         public Vector2 GroundVelocity { get; private set; }
         /// <summary>In the slide itself: fast and low, feet first.</summary>
@@ -196,7 +203,7 @@ namespace DribbleToSchool.Player
             }
             else
             {
-                float target = InputEnabled ? MoveAxis * RunSpeed * SpeedMultiplier : 0f;
+                float target = InputEnabled ? MoveAxis * RunSpeed * SpeedMultiplier * (autoRun ? 1f : ControlPace) : 0f;
                 target += GroundVelocity.x;
                 float rate = Mathf.Abs(target) > Mathf.Abs(v.x) ? tuning.acceleration : tuning.deceleration;
                 if (!IsGrounded) rate *= tuning.airControl;
