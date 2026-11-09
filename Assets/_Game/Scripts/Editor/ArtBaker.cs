@@ -52,6 +52,8 @@ namespace DribbleToSchool.EditorTools
             public Material adult;
             /// <summary>The Blender-made playable kids (PlayerRoster), by model name: the character shader with each one's atlas.</summary>
             public readonly Dictionary<string, Material> players = new Dictionary<string, Material>();
+            /// <summary>The passers-by made from rigged models (LevelBuildKit.PasserbyModels: the jogger...), by model name.</summary>
+            public readonly Dictionary<string, Material> passersby = new Dictionary<string, Material>();
             /// <summary>
             /// The Locker Room's bags (tools/blender/meshy_bag.py), by mesh name ("Bag_KickOff"): the character shader with each
             /// bag's atlas, whose alpha marks the cloth the Settings colour recolours (_MaskBase: the cloth's own colour).
@@ -238,6 +240,9 @@ namespace DribbleToSchool.EditorTools
             set.character = CharacterMaterial("Character", toonCharacter, null, false);
             set.kid = CharacterMaterial("Kid", toonCharacter, "KidAtlas", true);
             set.adult = CharacterMaterial("Adult", toonCharacter, "AdultAtlas", false);
+            foreach (string passerby in LevelBuildKit.PasserbyModels)
+                if (AssetDatabase.LoadAssetAtPath<GameObject>(LevelBuildKit.ModelsDir + "/" + passerby + ".fbx") != null)
+                    set.passersby[passerby] = CharacterMaterial(passerby, toonCharacter, passerby + "Atlas", false);
             foreach (var player in PlayerRoster.All)
             {
                 // A kid whose model is not in the project yet is left out (LevelBuildKit.BuildCast says so).

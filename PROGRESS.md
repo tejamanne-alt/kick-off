@@ -887,6 +887,21 @@ An audit of what comes round again and again (`review/repetition/README.md`), an
   Barriers and Street kits rebuild from their scripts (the Street atlas is unchanged, so its other models are untouched).
   **Not run in Unity:** the rebuilt levels (v106).
 
+## The jogger: the first of the new passers-by (generated content v107)
+
+- **A second body for the grown-ups:** the jogger (a woman in a running jacket, leggings and trainers), made by the
+  user with an image-to-3D tool, rigged on its Mixamo skeleton, brought in with `tools/blender/meshy_rigged.py
+  --profile jogger --tris 30000` (`Art/Models/Jogger.fbx`, `.json`, `JoggerAtlas.png`; 30k triangles, as several walk
+  by at once). Her parts: 1 the jacket (its collar too), 2 the leggings (and the waistband under the hem), 3 the
+  ponytail and the hair at the front (two pieces of the scan); the skin, the trainers and the watch stay as made.
+- **Who walks by** (`TrackBuilder.Walker`): about one passer-by in three is the jogger, chosen by the walker and the
+  level (`LevelBuildKit.PasserbyModels`; `ArtBaker` makes a material for each). Her clothes are chosen the same way,
+  so she is dressed differently from level to level: one of ten sporty jackets (`JoggerTops`), dark leggings
+  (`JoggerLeggings`) and natural dark hair (`JoggerHair`); and as every passer-by changes coat each time they come
+  round again (`Pedestrian.Redress`), she changes into another of her jackets. Builders stay in hi-vis on the adult.
+- **Checked:** the runtime scripts compile; the editor scripts bind with no new errors; the parts and four of her
+  outfits rendered in the game's look (`review/passersby/walkers.jpg`, `render_walkers.py`). **Not run in Unity.**
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

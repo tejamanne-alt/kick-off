@@ -17,12 +17,14 @@
 #             "Kick Off" T-shirt, red shorts, white socks, pink sneakers (meshy_teen's colour rules for her).
 #   varsity   Hana (Girl): a high-school girl in an A-pose; long wavy dark-brown hair, a maroon varsity jacket with cream
 #             sleeves and striped cuffs over a cream hoodie, charcoal cargo jeans, cream platform sneakers.
+#   jogger    Jogger (a passer-by, not a playable kid): a woman in her thirties in an A-pose; a black ponytail, a teal
+#             zip-up running jacket, black leggings, white running shoes (--tris 30000: several walk by at once).
 #   denim     Max (BackpackBoy): a teen in an A-pose; ginger hair, a light denim jacket over a dark grey hoodie, dark
 #             jeans, white high-top sneakers (meshy_teen's colour rules for him; his old backpack is gone).
 #   plaid     Kai (PrimaryBoy): a primary-school boy in an A-pose; short black hair, a red plaid flannel shirt over a
 #             white hood, light-blue cargo jeans, chunky black-and-white sneakers (meshy_teen's colour rules for him).
 #
-#   blenv/bin/python meshy_rigged.py -- /abs/rigged.fbx /abs/outdir [--profile awesome|plaid|rainbow|explorer|varsity|denim] [--name <Name>] [--tris 100000]
+#   blenv/bin/python meshy_rigged.py -- /abs/rigged.fbx /abs/outdir [--profile awesome|plaid|rainbow|explorer|varsity|denim|jogger] [--name <Name>] [--tris 100000]
 #     -> outdir/<Name>.fbx, <Name>.blend, <Name>.json, <Name>Atlas.png
 import bpy, sys, os, json
 import numpy as np
@@ -43,7 +45,7 @@ from meshy_boy import (log, activate, verts_np, edges_np, texture_pixels, vertex
 argv = _argv
 SRC, OUT = argv[0], argv[1]
 TRIS = int(argv[argv.index('--tris') + 1]) if '--tris' in argv else 100000
-NAME = argv[argv.index('--name') + 1] if '--name' in argv else {'awesome': 'PrimaryBoy2', 'plaid': 'PrimaryBoy', 'rainbow': 'PrimaryGirl2', 'explorer': 'PrimaryGirl', 'varsity': 'Girl', 'denim': 'BackpackBoy'}[PROFILE_NAME]
+NAME = argv[argv.index('--name') + 1] if '--name' in argv else {'awesome': 'PrimaryBoy2', 'plaid': 'PrimaryBoy', 'rainbow': 'PrimaryGirl2', 'explorer': 'PrimaryGirl', 'varsity': 'Girl', 'denim': 'BackpackBoy', 'jogger': 'Jogger'}[PROFILE_NAME]
 os.makedirs(OUT, exist_ok=True)
 C = bpy.context
 mb.log = lambda *a: print('[meshy_rigged]', *a, flush=True)
@@ -220,12 +222,47 @@ def parts_varsity(o, px):
     return FP, tri
 
 
+def big_pieces(o, mask, share):
+    """The connected pieces of the vertices in mask holding at least `share` of them (the hair's, not the brows')."""
+    E = edges_np(o); Eh = E[mask[E[:, 0]] & mask[E[:, 1]]]; lab = components(len(mask), Eh)
+    ids, cnt = np.unique(lab[mask], return_counts=True)
+    keep = ids[cnt >= share * mask.sum()]
+    return mask & np.isin(lab, keep)
+
+
+def parts_jogger(o, px):
+    """The jogger's parts (a passer-by), by each face's own colour: 1 the teal running jacket (its zip and trims stay as
+    they are), 2 the black leggings, 3 the black ponytail (the biggest dark piece of the head); 0 the skin, the white
+    running shoes and the watch."""
+    me = o.data; V = verts_np(o); bw = mt.bone_weights(o)
+    tri = np.empty(len(me.loops), dtype=np.int64); me.loops.foreach_get('vertex_index', tri); tri = tri.reshape(-1, 3)
+    fw = lambda w: w[tri].mean(1)
+    foot = fw(bw('Foot.L', 'Foot.R')); hand = fw(bw('Hand.L', 'Hand.R')); head = fw(bw('Head', 'Neck'))
+    legs = fw(bw('UpperLeg.L', 'UpperLeg.R', 'LowerLeg.L', 'LowerLeg.R'))
+    Cf = mt.face_colours(o, px); h, s, v = hsv(Cf); z = V[tri][:, :, 2].mean(1)
+    hip = mt.rig_z('UpperLeg.L')
+    skull = fw(bw('Head'))
+    teal = (h > 155) & (h < 205) & (s > 0.3) & (v > 0.2)
+    black = (v < 0.24) & (s < 0.45)
+    FP = np.zeros(len(tri), dtype=np.int64)
+    FP[teal & (skull < 0.9) & (foot < 0.3) & (hand < 0.6)] = 1                  # (the collar too, on the neck and head bones)
+    FP[black & (z < hip + 0.08) & (legs + fw(bw('Hips')) > 0.5) & (foot < 0.3)] = 2
+    FP[black & (z < hip + 0.25) & (head < 0.5) & (foot < 0.3) & (hand < 0.5)] = 2  # the waistband showing under the hem
+    dark = (v < 0.36) & (s < 0.5) & (head > 0.5) & (FP != 1)                      # (the hair's sheen as well)
+    vm = np.zeros(len(V), bool); vm[tri[dark].ravel()] = True
+    FP[dark & big_pieces(o, vm, 0.04)[tri].all(1)] = 3                          # (the ponytail and the front: two pieces)
+    FP[(foot > 0.6) | (hand > 0.5)] = 0
+    log('jogger parts: jacket %d, leggings %d, hair %d faces of %d' % ((FP == 1).sum(), (FP == 2).sum(), (FP == 3).sum(), len(FP)))
+    return FP, tri
+
+
 PROFILES = {'awesome': {'parts': parts_awesome, 'stands': 1.32},
             'plaid': {'parts': lambda o, px: mt.parts_plaid(o, px), 'stands': 1.30},
             'rainbow': {'parts': lambda o, px: parts_without_pack(mt.parts_rainbow, o, px), 'stands': 1.29},
             'explorer': {'parts': lambda o, px: mt.parts_explorer(o, px), 'stands': 1.27},
             'varsity': {'parts': parts_varsity, 'stands': 1.65},
-            'denim': {'parts': lambda o, px: mt.parts_backpack_boy(o, px), 'stands': 1.75}}
+            'denim': {'parts': lambda o, px: mt.parts_backpack_boy(o, px), 'stands': 1.75},
+            'jogger': {'parts': parts_jogger, 'stands': 1.66}}
 PROFILE = PROFILES[PROFILE_NAME]
 
 

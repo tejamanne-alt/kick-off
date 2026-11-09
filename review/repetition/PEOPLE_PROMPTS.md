@@ -30,7 +30,7 @@ recolourable, so each can still change coat colour as passers-by do).
 
 ## Character lines
 
-1. **Morning jogger:** a woman in her early thirties, East Asian, slim and athletic, black hair in a high ponytail,
+1. **Morning jogger** (done: `Art/Models/Jogger.fbx`, `meshy_rigged.py --profile jogger`): a woman in her early thirties, East Asian, slim and athletic, black hair in a high ponytail,
    a teal zip-up running jacket, black leggings, white running shoes, a small black sports watch.
 2. **Grandad:** a man of about seventy, white, a little stout, short grey hair and a grey moustache, a brown flat cap,
    a mustard-yellow cardigan over a blue-and-white checked shirt, brown corduroy trousers, brown lace-up shoes.

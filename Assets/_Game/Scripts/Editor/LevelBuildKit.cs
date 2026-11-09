@@ -611,6 +611,9 @@ namespace DribbleToSchool.EditorTools
         /// scenery: the things the kid plays with or that move. The whole Animals kit is cels (its material is marked so:
         /// ArtBaker), the animals and the coins, stars and stickers; these are the rest, each wearing its kit's "Cel" copy.
         /// </summary>
+        /// <summary>Passers-by made from rigged models (tools/blender/meshy_rigged.py), beside the procedural adult, so not every grown-up is the same body.</summary>
+        public static readonly string[] PasserbyModels = { "Jogger" };
+
         static readonly HashSet<string> celModels = new HashSet<string>
         {
             "Leisure/SwingSeat", "Leisure/Target", "Leisure/SlalomFlag", "Leisure/CheckpointFlag", "Leisure/Trampoline",
@@ -1211,6 +1214,21 @@ namespace DribbleToSchool.EditorTools
             };
             static readonly Color[] PasserbyHair = { new Color(0.46f, 0.34f, 0.28f), new Color(1f, 0.95f, 0.6f), new Color(0.92f, 0.92f, 0.95f), new Color(0.85f, 0.46f, 0.3f), new Color(0.16f, 0.14f, 0.15f) };
 
+            /// <summary>The jogger's running jackets: sporty colours (her leggings go darker with each, as Pedestrian.Redress makes them).</summary>
+            static readonly Color[] JoggerTops =
+            {
+                new Color(0.1f, 0.52f, 0.51f), new Color(0.96f, 0.45f, 0.42f), new Color(0.55f, 0.4f, 0.82f), new Color(0.32f, 0.62f, 0.92f),
+                new Color(0.62f, 0.82f, 0.3f), new Color(0.92f, 0.36f, 0.62f), new Color(0.98f, 0.76f, 0.24f), new Color(0.86f, 0.24f, 0.24f),
+                new Color(0.2f, 0.28f, 0.5f), new Color(0.96f, 0.6f, 0.26f),
+            };
+            /// <summary>Her leggings at first, before the first change of clothes: dark and sporty.</summary>
+            static readonly Color[] JoggerLeggings =
+            {
+                new Color(0.12f, 0.12f, 0.14f), new Color(0.14f, 0.16f, 0.3f), new Color(0.3f, 0.32f, 0.36f), new Color(0.32f, 0.16f, 0.3f), new Color(0.16f, 0.26f, 0.22f),
+            };
+            /// <summary>Her hair: natural and dark (the scan's shine stays dark in it).</summary>
+            static readonly Color[] JoggerHair = { new Color(0.13f, 0.1f, 0.09f), new Color(0.24f, 0.15f, 0.1f), new Color(0.36f, 0.22f, 0.14f), new Color(0.42f, 0.18f, 0.12f) };
+
             /// <summary>
             /// Passers-by on the footpath, on their way through the stretch minX..maxX (and on past it
             /// where the footpath is clear; see Hazards.Pedestrian): one at a time, solid to the ball,
@@ -1242,7 +1260,26 @@ namespace DribbleToSchool.EditorTools
                     hair = HardHatYellow;                      // the hard hat stands in for the hair, as at the site office
                     trousers = new Color(0.22f, 0.26f, 0.4f);
                 }
-                var parts = BuildModelCharacter(go.transform, "Adult", Art.adult, 1.3f * 1.22f, new Vector3(0f, -0.193f, 0.75f), false);
+                // Who walks by: about one in three is the jogger (when her model is in), her jacket, leggings and hair
+                // chosen by the walker and the level, so she is dressed differently from level to level (and changes
+                // jacket, as every passer-by changes coat, each time she comes round again).
+                string bodyModel = "Adult";
+                Material look = Art.adult;
+                float neck = 1.3f * 1.22f;
+                Color[] coats = PasserbyCoats;
+                int mix = Mathf.Abs(seed * 7 + StreetBuilder.LevelSalt(AuditName));
+                Material joggerLook;
+                if (!builder && mix % 3 == 0 && Art.passersby.TryGetValue("Jogger", out joggerLook) && joggerLook != null)
+                {
+                    bodyModel = "Jogger";
+                    look = joggerLook;
+                    neck = 1.66f * 0.853f;                      // 1.66 m tall, her neck joint at 0.853 of her height
+                    coats = JoggerTops;
+                    coat = JoggerTops[(mix / 3) % JoggerTops.Length];
+                    trousers = JoggerLeggings[(mix / 7) % JoggerLeggings.Length];
+                    hair = JoggerHair[(mix / 11) % JoggerHair.Length];
+                }
+                var parts = BuildModelCharacter(go.transform, bodyModel, look, neck, new Vector3(0f, -0.925f + 0.6f * neck / 1.3f, 0.75f), false);
                 if (parts.rig != null)
                 {
                     var dress = (ModelOutfit)parts.outfit;
@@ -1266,7 +1303,7 @@ namespace DribbleToSchool.EditorTools
                 p.outfit = parts.outfit;
                 p.rig = parts.rig;
                 // A builder keeps the hi-vis on every pass (no colours to change into) and has no company.
-                p.coats = builder ? new Color[0] : PasserbyCoats;
+                p.coats = builder ? new Color[0] : coats;
                 var walker = parts.rig.gameObject.AddComponent<WalkerAnimator>();
                 walker.pedestrian = p;
                 if (!builder) PedestrianCompany(go.transform, p, seed, coat);

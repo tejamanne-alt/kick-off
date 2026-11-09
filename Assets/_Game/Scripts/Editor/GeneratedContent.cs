@@ -22,7 +22,7 @@ namespace DribbleToSchool.EditorTools
     public static class GeneratedContent
     {
         /// <summary>Bump when layouts or the scene rig change so scenes regenerate.</summary>
-        public const int Version = 106;   // 106: fewer repeats: each level its own scenery seeds, new slide-unders, obstacles and boxes by chapter
+        public const int Version = 107;   // 107: the jogger walks by (a rigged passer-by), dressed by walker and level
 
         const string ScenesDir = LevelBuildKit.Root + "/Scenes";
         const string LevelsDir = LevelBuildKit.Root + "/Levels";
