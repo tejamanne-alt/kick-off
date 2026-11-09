@@ -94,13 +94,15 @@ Bell times (and the streak targets, no longer a star goal) are in the level tabl
 
 | Action | Phone | Keyboard / mouse |
 |---|---|---|
-| Walk back / forward (hold) | The stick (bottom-left): push left or right; let go to stop | `A` / `←`, `D` / `→` |
+| Walk back / forward (hold) | The stick (bottom-left): push left or right (a little push jogs with the ball close, a full push runs); let go to stop with a foot on the ball | `A` / `←`, `D` / `→` (always a run) |
+| Drag-back turn | With a foot on the ball, push the stick the other way | `A` / `D` the other way |
 | Jump (hold = higher) | JUMP button (the leaping kid in the bottom-right corner) or swipe up | `Space` / `W` / `↑` |
 | Double jump | JUMP again in the air | `Space` / `W` / `↑` again |
 | Slide | Pull the stick down (down-right slides forward, down-left back), or swipe down | `S` / `↓` |
 | Touch / juggle | Quick tap anywhere else | `F` / `J` |
 | Kick (aimed) | Drag from the KICK button (left of JUMP) the way the ball should go, release | Mouse drag from KICK |
 | Kick (quick pass) | Tap KICK | `K` |
+| Keep the ball at the feet | Hold KICK (still) while you run; letting go doesn't kick | Hold `L` / `Left Shift` |
 | Pause | Pause button | `Esc` / `P` |
 | Restart level | Pause > Restart | `R` |
 | Tuning panel | Tuning button | `Tab` |
@@ -111,11 +113,12 @@ Holiday Run uses exactly these controls.
 
 ## How it plays
 
-- **Walk** with the stick: push it right to go forward, left to go back. Whenever the kid walks into the ball, it gets a slightly random touch in the walking direction, so you can dribble forward or back.
+- **Walk** with the stick: push it right to go forward, left to go back. How far you push sets the pace: a little push jogs, a full push runs (`GameInput.StickPace`: a third of a run just past the dead zone, full speed at 70% of the ring). Whenever the kid walks into the ball, it gets a slightly random touch in the walking direction, so you can dribble forward or back. The touch follows the pace, as a real dribbler's does: at a jog a small one that keeps the ball within about half a metre, flat out the long knock-on you chase (`BallTuning.walkLeadFraction`).
 - **Perfect touch:** tap as the kid closes in and the ball sits in the sweet spot just ahead of the feet. Perfect touches have no randomness and they build a streak.
 - **Juggle:** tap while the ball is in the air near the kid.
 - **Kick:** drag from the KICK button (left of JUMP) in the direction you want the ball to go: up-right to chip forward, up-left to chip back. The length sets the power. Time slows while you aim, and only the first 0.5 s of the flight is previewed. A quick tap on KICK is a short pass the way the kid faces. Kicks only work when the ball is within reach: the KICK button glows green when it is, and the dots turn red when it isn't.
-- **Stop** by letting go of the stick. A stopping kid traps the ball under the foot.
+- **Stop** by letting go of the stick. With the ball at the feet, the kid puts a foot on it and it stays there (riding along on moving ground), for waiting at a crossing, on a slope or a platform. Push on to carry on dribbling; push the other way for a **drag-back**: the sole rolls the ball back under the kid as they turn, and it comes out in front the new way.
+- **Close control:** hold KICK (a still press, longer than a tap) and the kid keeps the ball a step ahead of the feet, a little touch every stride, running a little slower (70%); turning, the ball comes round the feet with them, and standing still a foot goes on it. Letting go after a hold kicks nothing; a quick tap still kicks, and a drag still aims. A hard knock (a dog, a gull, a bump) still takes the ball away. The Holiday Run's auto-run keeps its pace.
 - **Double jump:** press JUMP again in the air for a second, slightly lower jump with a tucked somersault (hold for its full height, like the first). It reaches about 2.2 m: over 1.6 m walls and fallen trees and up to high coins, but not over the 2.4 m gates. A trampoline bounce gives it back.
 - **Slide:** pull the stick down (or swipe down anywhere else) for a feet-first slide along the ground, a little faster than running, for about 0.7 s. The kid is low enough to pass under anything with a 0.85 m gap, and won't stand up while something is overhead (they shuffle on until clear). A sliding kid nudges the ball on along the ground without breaking a perfect-touch streak. Jump out of a slide for a longer jump. The way the stick leans as it goes down picks the way: down and right slides forward, down and left slides back, straight down slides the way the kid is going (or facing). It slides once per pull: bring the stick back up past the middle to slide again.
 - **Left-handed mode** (Settings > Controls) puts the stick on the right and JUMP and KICK on the left.

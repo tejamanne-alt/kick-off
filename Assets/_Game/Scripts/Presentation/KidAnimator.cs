@@ -44,6 +44,7 @@ namespace DribbleToSchool.Presentation
         float facing = 1f;
         float bagAngle, bagVelocity;
         float slideBlend;
+        float footOnBallBlend;
         bool wasLow;
         float getUpTime = -10f;
         // Rest-pose measurements (world units) the slide is built from: how high the body's pivot
@@ -244,6 +245,19 @@ namespace DribbleToSchool.Presentation
                     p.armB = 3f - breathe * 2f;
                     p.elbowF = p.elbowB = 14f + breathe * 3f;
                     p.kneeF = p.kneeB = -5f;
+                }
+
+                // A foot on the ball (KidController.FootOnBall): the near foot lifted onto it, the weight back a little,
+                // the far arm out for balance.
+                footOnBallBlend = Mathf.MoveTowards(footOnBallBlend, kid.FootOnBall && runK < 0.1f ? 1f : 0f, Time.deltaTime / 0.15f);
+                if (footOnBallBlend > 0f)
+                {
+                    float f = Mathf.SmoothStep(0f, 1f, footOnBallBlend);
+                    p.legF = Mathf.Lerp(p.legF, 30f, f);
+                    p.kneeF = Mathf.Lerp(p.kneeF, -48f, f);
+                    p.lean = Mathf.Lerp(p.lean, -3f, f);
+                    p.armB = Mathf.Lerp(p.armB, -14f, f);
+                    p.elbowB = Mathf.Lerp(p.elbowB, 24f, f);
                 }
 
                 // Landing: a quick crouch through the knees.
