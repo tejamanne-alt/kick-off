@@ -164,7 +164,7 @@ namespace DribbleToSchool.Core
         /// <summary>The trip from home so far, this leg's time included (meaningful when <see cref="TripContinuous"/>).</summary>
         public float TripTime { get { return TripBefore + ElapsedTime; } }
         /// <summary>The HUD shows the trip so far: a later leg of a trip walked from home without a break, outside cozy mode.</summary>
-        public bool ShowsTrip { get { return TripRoute != null && LegIndex > 0 && TripContinuous && !Cozy && Objective == null; } }
+        public bool ShowsTrip { get { return TripRoute != null && LegIndex > 0 && TripContinuous && !Cozy && Objective == null && Race == null; } }
 
         /// <summary>
         /// Where Next goes: the next leg of this route when it can be played (in chapter 4 the two routes' levels alternate in the
@@ -625,7 +625,9 @@ namespace DribbleToSchool.Core
             }
             if (Race != null)
             {
-                // A leg of a co-op race: the race decides what comes next (the next leg, or the finish). Nothing is saved here.
+                // A leg of a co-op race: the race decides what comes next (the next leg, or the finish). Nothing is saved here
+                // as story progress, but a sticker found on the way is the player's to keep (the race banks its coins).
+                if (StickerCollected && level != null && SaveSystem.AddSticker(level.levelId)) SaveSystem.Save();
                 SetState(LevelState.Complete);
                 GameEvents.Raise(GameEventType.Goal, ball.transform.position, 1f);
                 Race.LegFinished(this);

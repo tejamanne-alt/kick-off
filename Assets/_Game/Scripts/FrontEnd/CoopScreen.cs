@@ -35,7 +35,8 @@ namespace DribbleToSchool.FrontEnd
         Image kidPortrait;
         View view = (View)(-1);
         string signature = "";
-        float toastUntil, nextRefresh;
+        float toastUntil, nextRefresh, nextSignature;
+        string shownTag;
         bool picking;
 
         public override string Title { get { return Loc.T("coop.title"); } }
@@ -158,6 +159,7 @@ namespace DribbleToSchool.FrontEnd
             nameField.text = CoopProfile.Name;
             nameField.onEndEdit.AddListener(v =>
             {
+                if (CoopRules.IsRefused(v)) Toast(Loc.T("coop.toast.nameRefused"));
                 CoopProfile.Name = v;
                 nameField.text = CoopProfile.Name;
                 Session.SetName(CoopProfile.Name);
@@ -198,14 +200,22 @@ namespace DribbleToSchool.FrontEnd
         {
             if (service == null) return;
             var next = CurrentView();
-            string sig = Signature(next);
-            if (next != view || sig != signature)
+            // (what the view shows is looked at a few times a second, not every frame: building it allocates)
+            if (next != view || Time.unscaledTime >= nextSignature)
             {
-                view = next;
-                signature = sig;
-                Rebuild();
+                nextSignature = Time.unscaledTime + 0.2f;
+                string sig = Signature(next);
+                if (next != view || sig != signature)
+                {
+                    view = next;
+                    signature = sig;
+                    Rebuild();
+                }
             }
-            tagLabel.text = "#" + MyTag();
+            // The Join list needs a scan running (one that ended with a failed join, or a lobby that closed, starts again).
+            if (view == View.Join && !Session.InSession && !Session.Browsing && Session.Radio == RadioState.On) service.Browse();
+            string tag = MyTag();
+            if (tag != shownTag) { shownTag = tag; tagLabel.text = "#" + tag; }
             nameRow.gameObject.SetActive(view == View.Start || view == View.Lobby);
 
             float left = toastUntil - Time.unscaledTime;
@@ -248,7 +258,7 @@ namespace DribbleToSchool.FrontEnd
                 sb.Append((int)s.Phase).Append(s.Selection.route).Append(s.Selection.addOn).Append(s.Selection.chosenBy).Append(s.IsHost ? 'H' : 'C').Append((int)s.Connection);
                 foreach (var p in s.Players)
                     sb.Append(p.slot).Append(p.name).Append(p.tag).Append(p.character).Append(p.ready ? 'r' : '-').Append(p.connected ? 'c' : 'x')
-                      .Append(p.isHost ? 'h' : '-').Append((int)p.status).Append(p.place).Append(v == View.Race ? Mathf.RoundToInt(p.progress * 50f) : 0).Append(';');
+                      .Append(p.isHost ? 'h' : '-').Append((int)p.status).Append(p.place).Append(v == View.Race ? Mathf.FloorToInt(p.progress * 10f) : 0).Append(';');
                 sb.Append(s.MyReady);
             }
             return sb.ToString();
@@ -257,7 +267,7 @@ namespace DribbleToSchool.FrontEnd
         string MyTag()
         {
             var me = Session.Me;
-            return me != null && !string.IsNullOrEmpty(me.tag) ? me.tag : CoopRules.TagFor(CoopProfile.Uid, 0);
+            return me != null && !string.IsNullOrEmpty(me.tag) ? me.tag : CoopRules.TagFor(CoopProfile.TagSeed, 0);
         }
 
         void Rebuild()
@@ -287,9 +297,14 @@ namespace DribbleToSchool.FrontEnd
                     line = service.LocationOff ? Loc.T("coop.radio.location") : service.Simulated ? Loc.T("coop.radio.editor") : Loc.T("coop.radio.on");
                     break;
                 case RadioState.Off:
+#if UNITY_IOS
+                    // (no app can open Bluetooth's switch on iOS: it is in Control Center, or Settings > Bluetooth)
+                    line = Loc.T("coop.radio.offIos");
+#else
                     line = Loc.T("coop.radio.off");
                     action = Loc.T("coop.radio.openBluetooth");
                     fix = () => service.OpenSettings(true);
+#endif
                     break;
                 case RadioState.Unauthorized:
                     line = Loc.T("coop.radio.unauthorized");
@@ -403,9 +418,9 @@ namespace DribbleToSchool.FrontEnd
                 UIKit.Place(name.rectTransform, new Vector2(0f, 1f), new Vector2(28f, -12f), new Vector2(640f, 50f), new Vector2(0f, 1f));
                 UIKit.Fit(name, 22);
                 bool sameVersion = b.protocol == CoopMessages.Protocol;
-                bool open = sameVersion && b.phase == RoomPhase.Lobby && b.players < Mathf.Max(1, (int)b.maxPlayers);
+                bool open = sameVersion && b.phase == RoomPhase.Lobby && b.players < CoopRules.MaxPlayers;
                 string state = !sameVersion ? Loc.T("coop.join.version") : b.phase != RoomPhase.Lobby ? Loc.T("coop.join.racing")
-                    : b.players >= b.maxPlayers ? Loc.T("coop.join.full") : Loc.F("coop.join.players", b.players, b.maxPlayers);
+                    : b.players >= CoopRules.MaxPlayers ? Loc.T("coop.join.full") : Loc.F("coop.join.players", b.players, CoopRules.MaxPlayers);
                 var line = UIKit.Label(card.transform, "State", state + "  ·  " + Signal(room.rssi), 26, UITheme.InkSoft, TextAnchor.MiddleLeft);
                 UIKit.Place(line.rectTransform, new Vector2(0f, 1f), new Vector2(28f, -64f), new Vector2(640f, 38f), new Vector2(0f, 1f));
                 UIKit.Fit(line, 18);
@@ -461,20 +476,31 @@ namespace DribbleToSchool.FrontEnd
                 img.rectTransform.offsetMax = new Vector2(6f, 6f);
 
                 bool me = p.uid == s.Uid;
+                // The host can send a player away (someone who joined uninvited, a name that shouldn't be shown).
+                bool removable = s.IsHost && !me && s.Phase != SessionPhase.Starting;
                 string name = CoopProfile.DisplayName(p) + " <color=#1c213380><size=26>#" + p.tag + "</size></color>";
                 if (p.isHost) name += "  <color=#2a4fa0><size=24>" + Loc.T("coop.host") + "</size></color>";
                 if (me) name += "  <color=#e0731c><size=24>" + Loc.T("coop.you") + "</size></color>";
                 var label = UIKit.Label(seat.transform, "Name", name, 36, UITheme.Ink, TextAnchor.MiddleLeft, true);
                 label.supportRichText = true;
-                UIKit.Place(label.rectTransform, new Vector2(0f, 1f), new Vector2(124f, -12f), new Vector2(LeftWidth - 200f, 54f), new Vector2(0f, 1f));
+                UIKit.Place(label.rectTransform, new Vector2(0f, 1f), new Vector2(124f, -12f), new Vector2(LeftWidth - (removable ? 300f : 200f), 54f), new Vector2(0f, 1f));
                 UIKit.Fit(label, 22);
+                if (removable)
+                {
+                    uint uid = p.uid;
+                    string who = CoopProfile.FullName(p);
+                    var remove = UIKit.Button(seat.transform, "Remove", Loc.T("coop.remove"), UITheme.Locked, () =>
+                        CoopStagePicker.Confirm(Controller.CanvasRoot, Loc.F("coop.confirmRemove", who), () => Session.RemovePlayer(uid), "coop.yesRemove"), 24);
+                    UIKit.Place((RectTransform)remove.transform, new Vector2(1f, 1f), new Vector2(-16f, -10f), new Vector2(150f, 50f), new Vector2(1f, 1f));
+                }
                 string state = !p.connected ? Loc.T("coop.standing.lost") : p.ready ? Loc.T("coop.ready") : Loc.T("coop.notReady");
                 var st = UIKit.Label(seat.transform, "State", state, 28, !p.connected ? UITheme.Red : p.ready ? UITheme.Green : UITheme.InkSoft, TextAnchor.MiddleLeft, true);
                 UIKit.Place(st.rectTransform, new Vector2(0f, 0f), new Vector2(124f, 12f), new Vector2(600f, 40f), new Vector2(0f, 0f));
                 if (p.ready && p.connected)
                 {
                     var check = UIKit.Icon(seat.transform, "Check", ProceduralSprites.Check, UITheme.Green, 56f);
-                    UIKit.Place(check.rectTransform, new Vector2(1f, 0.5f), new Vector2(-24f, 0f), new Vector2(56f, 56f), new Vector2(1f, 0.5f));
+                    if (removable) UIKit.Place(check.rectTransform, new Vector2(1f, 0f), new Vector2(-40f, 8f), new Vector2(46f, 46f), new Vector2(1f, 0f));
+                    else UIKit.Place(check.rectTransform, new Vector2(1f, 0.5f), new Vector2(-24f, 0f), new Vector2(56f, 56f), new Vector2(1f, 0.5f));
                 }
             }
 
@@ -583,7 +609,9 @@ namespace DribbleToSchool.FrontEnd
 
         void ConfirmLeave(System.Action leave)
         {
-            CoopStagePicker.Confirm(Controller.CanvasRoot, Loc.T(Session.InSession && Session.MyStatus == PlayerStatus.Racing ? "coop.confirmLeave.race" : "coop.confirmLeave"), leave);
+            string key = Session.FinishUnconfirmed ? "coop.confirmLeave.unseen"
+                : Session.InSession && Session.MyStatus == PlayerStatus.Racing ? "coop.confirmLeave.race" : "coop.confirmLeave";
+            CoopStagePicker.Confirm(Controller.CanvasRoot, Loc.T(key), leave);
         }
 
         void OnNotice(CoopNotice n)
@@ -602,9 +630,15 @@ namespace DribbleToSchool.FrontEnd
                 case NoticeType.HostFailed: text = Loc.T("coop.toast.hostFailed"); break;
                 case NoticeType.RadioOff: text = Loc.T("coop.radio.off"); break;
                 case NoticeType.Rejected:
-                    text = Loc.T(n.code == (int)RejectReason.Full ? "coop.toast.full" : n.code == (int)RejectReason.Version ? "coop.join.version" : "coop.toast.inProgress");
+                    text = Loc.T(n.code == (int)RejectReason.Full ? "coop.toast.full" : n.code == (int)RejectReason.Version ? "coop.join.version"
+                        : n.code == (int)RejectReason.Removed ? "coop.toast.removed" : "coop.toast.inProgress");
                     break;
             }
+            Toast(text);
+        }
+
+        void Toast(string text)
+        {
             if (text == null || toast == null) return;
             toast.text = text;
             toastUntil = Time.unscaledTime + 3f;

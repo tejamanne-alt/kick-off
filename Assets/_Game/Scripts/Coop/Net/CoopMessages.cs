@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace DribbleToSchool.Coop.Net
@@ -33,6 +34,13 @@ namespace DribbleToSchool.Coop.Net
         Closing = 13,
         /// <summary>Host to everyone: the host is leaving a race in progress: elect the next host now.</summary>
         HostLeaving = 14,
+        /// <summary>Either way: I am about to go quiet for a moment (loading the next scene): don't count it as a lost connection.</summary>
+        Busy = 15,
+        /// <summary>
+        /// Player to host, on (re)joining: every result this phone knows (who finished, when; who is out), so a host that took
+        /// over without hearing of them learns them. The host merges them (CoopRules' sticky results).
+        /// </summary>
+        Known = 16,
     }
 
     public enum RejectReason : byte
@@ -42,6 +50,8 @@ namespace DribbleToSchool.Coop.Net
         InProgress = 2,
         /// <summary>The two phones run different versions of the co-op protocol: update the game.</summary>
         Version = 3,
+        /// <summary>The host removed this player from the lobby (they can't join it again).</summary>
+        Removed = 4,
     }
 
     public struct HelloMsg
@@ -51,6 +61,11 @@ namespace DribbleToSchool.Coop.Net
         public uint sessionId;
         public string name;
         public byte character;
+        /// <summary>A fingerprint of the content the race refers to by index (the kids, the routes, the locations): two builds
+        /// that list them differently can't race each other (0: not checked).</summary>
+        public uint contentHash;
+        /// <summary>What this phone's tag is made from (kept on the phone, so friends see the same tag every time).</summary>
+        public uint tagSeed;
     }
 
     public struct WelcomeMsg
@@ -78,6 +93,8 @@ namespace DribbleToSchool.Coop.Net
         public byte leg;
         public float progress;
         public uint finishMs;
+        /// <summary>When this player dropped out or left (Disconnected, Left), as a host told it or as it left.</summary>
+        public uint outMs;
     }
 
     public struct SelectMsg
@@ -122,6 +139,8 @@ namespace DribbleToSchool.Coop.Net
             w.U32(m.sessionId);
             w.Str(m.name, 42);
             w.U8(m.character);
+            w.U32(m.contentHash);
+            w.U32(m.tagSeed);
         }
 
         public static bool Read(ByteReader r, out HelloMsg m)
@@ -133,6 +152,8 @@ namespace DribbleToSchool.Coop.Net
             m.sessionId = r.U32();
             m.name = r.Str();
             m.character = (byte)r.U8();
+            m.contentHash = r.U32();
+            m.tagSeed = r.U32();
             return !r.Failed;
         }
 
@@ -195,6 +216,7 @@ namespace DribbleToSchool.Coop.Net
             w.U8(m.leg);
             w.U16(Fraction(m.progress));
             w.U32(m.finishMs);
+            w.U32(m.outMs);
         }
 
         public static bool Read(ByteReader r, out ProgressMsg m)
@@ -203,10 +225,12 @@ namespace DribbleToSchool.Coop.Net
             r.U8();
             m.seq = (ushort)r.U16();
             m.raceId = (byte)r.U8();
-            m.status = (PlayerStatus)r.U8();
+            int status = r.U8();
+            m.status = status <= (int)PlayerStatus.Left ? (PlayerStatus)status : PlayerStatus.Racing;
             m.leg = (byte)r.U8();
             m.progress = r.U16() / 65535f;
             m.finishMs = r.U32();
+            m.outMs = r.U32();
             return !r.Failed;
         }
 
@@ -257,6 +281,38 @@ namespace DribbleToSchool.Coop.Net
             w.U8((byte)type);
         }
 
+        /// <summary>Busy: how long the sender expects to be quiet, in milliseconds (at most 65 s).</summary>
+        public static void WriteBusy(ByteWriter w, double ms)
+        {
+            w.U8((byte)MsgType.Busy);
+            w.U16((int)Math.Max(0, Math.Min(65535, ms)));
+        }
+
+        public static double ReadBusy(ByteReader r)
+        {
+            r.U8();
+            int ms = r.U16();
+            return r.Failed ? 0 : ms;
+        }
+
+        /// <summary>Known: [count] then a player record each (as in the snapshot).</summary>
+        public static void WriteKnown(ByteWriter w, IList<CoopPlayer> players)
+        {
+            w.U8((byte)MsgType.Known);
+            w.U8(players.Count);
+            foreach (var p in players) Player(w, p);
+        }
+
+        public static bool ReadKnown(ByteReader r, List<CoopPlayer> into)
+        {
+            into.Clear();
+            r.U8();
+            int count = r.U8();
+            if (count > CoopRules.MaxPlayers * 2) return false;
+            for (int i = 0; i < count; i++) into.Add(Player(r));
+            return !r.Failed;
+        }
+
         // ---------- Host to everyone ----------
 
         public static void Write(ByteWriter w, SnapshotMsg s)
@@ -271,22 +327,7 @@ namespace DribbleToSchool.Coop.Net
             Selection(w, s.raceSelection);
             w.U32(s.phaseAtHostMs);
             w.U8(s.players.Count);
-            foreach (var p in s.players)
-            {
-                w.U8(p.slot);
-                w.U32(p.uid);
-                w.Str(p.tag, 8);
-                w.Str(p.name, 42);
-                w.U8(p.character);
-                w.U8((p.isHost ? 1 : 0) | (p.ready ? 2 : 0) | (p.connected ? 4 : 0));
-                w.U8(p.loadedRace);
-                w.U8((byte)p.status);
-                w.U8(p.leg);
-                w.U16(Fraction(p.progress));
-                w.U32(p.finishMs);
-                w.U32(p.outMs);
-                w.U8(p.place);
-            }
+            foreach (var p in s.players) Player(w, p);
         }
 
         public static bool Read(ByteReader r, out SnapshotMsg s)
@@ -303,28 +344,49 @@ namespace DribbleToSchool.Coop.Net
             s.phaseAtHostMs = r.U32();
             int count = r.U8();
             if (count > CoopRules.MaxPlayers) return false;
-            for (int i = 0; i < count; i++)
-            {
-                var p = new CoopPlayer();
-                p.slot = (byte)r.U8();
-                p.uid = r.U32();
-                p.tag = r.Str();
-                p.name = r.Str();
-                p.character = (byte)r.U8();
-                int flags = r.U8();
-                p.isHost = (flags & 1) != 0;
-                p.ready = (flags & 2) != 0;
-                p.connected = (flags & 4) != 0;
-                p.loadedRace = (byte)r.U8();
-                p.status = (PlayerStatus)r.U8();
-                p.leg = (byte)r.U8();
-                p.progress = r.U16() / 65535f;
-                p.finishMs = r.U32();
-                p.outMs = r.U32();
-                p.place = (byte)r.U8();
-                s.players.Add(p);
-            }
+            for (int i = 0; i < count; i++) s.players.Add(Player(r));
             return !r.Failed && (int)s.phase <= (int)SessionPhase.Over;
+        }
+
+        /// <summary>One player as the snapshot (and Known) carries them.</summary>
+        static void Player(ByteWriter w, CoopPlayer p)
+        {
+            w.U8(p.slot);
+            w.U32(p.uid);
+            w.Str(p.tag, 8);
+            w.Str(p.name, 42);
+            w.U8(p.character);
+            w.U8((p.isHost ? 1 : 0) | (p.ready ? 2 : 0) | (p.connected ? 4 : 0));
+            w.U8(p.loadedRace);
+            w.U8((byte)p.status);
+            w.U8(p.leg);
+            w.U16(Fraction(p.progress));
+            w.U32(p.finishMs);
+            w.U32(p.outMs);
+            w.U8(p.place);
+        }
+
+        static CoopPlayer Player(ByteReader r)
+        {
+            var p = new CoopPlayer();
+            p.slot = (byte)Math.Min(CoopRules.MaxPlayers - 1, r.U8());
+            p.uid = r.U32();
+            p.tag = r.Str();
+            p.name = r.Str();
+            p.character = (byte)r.U8();
+            int flags = r.U8();
+            p.isHost = (flags & 1) != 0;
+            p.ready = (flags & 2) != 0;
+            p.connected = (flags & 4) != 0;
+            p.loadedRace = (byte)r.U8();
+            int status = r.U8();
+            p.status = status <= (int)PlayerStatus.Left ? (PlayerStatus)status : PlayerStatus.Lobby;
+            p.leg = (byte)r.U8();
+            p.progress = r.U16() / 65535f;
+            p.finishMs = r.U32();
+            p.outMs = r.U32();
+            p.place = (byte)r.U8();
+            return p;
         }
 
         /// <summary>Every racing player's latest motion: [count] then [slot, motion] each.</summary>

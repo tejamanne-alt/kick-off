@@ -9,7 +9,7 @@ namespace DribbleToSchool.Coop
     /// no collider, no physics, nothing in the level reacts to it, as racing ghosts are. It runs in its own lane just behind
     /// the kid's (further along the footpath), with a ring of the player's colour at its feet and their name over its head
     /// (Coop/CoopHud). The kid model is a copy of the level's own model of that kid, posed by a simple version of the
-    /// kid's animation (run, jump, slide, celebrate).
+    /// kid's animation (run, jump, slide).
     /// </summary>
     public class CoopGhost : MonoBehaviour
     {
@@ -83,8 +83,11 @@ namespace DribbleToSchool.Coop
         {
             foreach (var c in go.GetComponentsInChildren<Component>(true))
             {
-                if (c == null || c is Transform || c is Renderer || c is MeshFilter || c is CharacterRig || c is BagWear) continue;
-                if (c is Collider2D || c is Collider || c is Rigidbody2D || c is Rigidbody || c is MonoBehaviour || c is TrailRenderer)
+                if (c == null) continue;
+                // (a trail is a Renderer too: it goes before the renderers are kept, or every ghost's ball smears the street)
+                if (c is TrailRenderer) { DestroyImmediate(c); continue; }
+                if (c is Transform || c is Renderer || c is MeshFilter || c is CharacterRig || c is BagWear) continue;
+                if (c is Collider2D || c is Collider || c is Rigidbody2D || c is Rigidbody || c is MonoBehaviour)
                     DestroyImmediate(c);
             }
         }
@@ -123,17 +126,8 @@ namespace DribbleToSchool.Coop
             float runK = Mathf.Clamp01(speed / runSpeed);
             var p = RigPose.Neutral;
             bool low = m.Has(CoopMotion.Low);
-            if (m.Has(CoopMotion.Celebrating))
-            {
-                float t = Time.time * 6f;
-                float air = Mathf.Abs(Mathf.Sin(t));
-                p.bob = air * 0.12f;
-                p.legF = 12f + 10f * (1f - air); p.legB = -8f + 10f * (1f - air);
-                p.kneeF = p.kneeB = -10f - 45f * (1f - air);
-                p.armF = 160f + Mathf.Sin(t) * 12f; p.elbowF = 15f;
-                p.armB = -160f - Mathf.Sin(t) * 12f; p.elbowB = 15f;
-            }
-            else if (!m.Has(CoopMotion.Grounded))
+            // (a finished player's ghost is gone: it is at school. So there is no celebration to draw.)
+            if (!m.Has(CoopMotion.Grounded))
             {
                 float rising = Mathf.Clamp01(m.vy / 6f), falling = Mathf.Clamp01(-m.vy / 8f);
                 p.legF = Mathf.Lerp(18f, 52f, rising); p.kneeF = Mathf.Lerp(-25f, -82f, rising);

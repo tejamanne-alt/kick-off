@@ -59,9 +59,11 @@ namespace DribbleToSchool.Coop
             if (Instance != null && Instance != this) { Destroy(gameObject); return; }
             Instance = this;
             link = CreateLink();
-            Session = new CoopSession(link, clock, CoopProfile.Uid, CoopProfile.Name, CoopProfile.Character);
+            Session = new CoopSession(link, clock, CoopProfile.Uid, CoopProfile.Name, CoopProfile.Character, 0, CoopProfile.TagSeed);
             Session.RouteCount = RouteTable.All.Length;
             Session.AddOnCount = CoopLocations.Count;
+            Session.ContentHash = ContentHash();
+            Session.KeepHostingWhilePaused = Application.platform == RuntimePlatform.IPhonePlayer;
             Session.Noticed += OnNotice;
             Session.PhaseChanged += OnPhase;
             race = new CoopRaceMode(this);
@@ -104,21 +106,63 @@ namespace DribbleToSchool.Coop
             if (link != null) link.Shutdown();
         }
 
+        void OnApplicationPause(bool paused)
+        {
+            // A host sent to the background stops hosting at once (CoopSession.SetAppPaused); a player needs nothing.
+            if (Session != null) Session.SetAppPaused(paused);
+        }
+
         bool keptAwake;
+        float nextIdleTick;
 
         void Update()
         {
-            // A phone that dims and locks in the lobby drops off the radio: keep the screen on while in a session.
+            // A phone that dims and locks drops off the radio: keep the screen on while in a session. (Every frame: a level
+            // or a menu may set the system's setting back meanwhile.)
             bool awake = Session.InSession;
-            if (awake != keptAwake)
+            if (awake)
             {
-                keptAwake = awake;
-                if (awake) Screen.sleepTimeout = SleepTimeout.NeverSleep;
-                else if (LevelManager.Current == null) Screen.sleepTimeout = SleepTimeout.SystemSetting;
+                if (Screen.sleepTimeout != SleepTimeout.NeverSleep) Screen.sleepTimeout = SleepTimeout.NeverSleep;
             }
+            else if (keptAwake && LevelManager.Current == null) Screen.sleepTimeout = SleepTimeout.SystemSetting;
+            keptAwake = awake;
+
+            // Out of any session and not looking for one, there is only the radio's state to follow: a few times a second.
+            bool idle = !Session.InSession && !Session.Browsing && bots == null;
+            if (idle && Time.unscaledTime < nextIdleTick) return;
+            nextIdleTick = Time.unscaledTime + 0.25f;
             Session.Tick();
             if (bots != null) bots.Tick(race);
             race.Tick();
+        }
+
+        /// <summary>
+        /// A fingerprint of what the session refers to by index: the kids, the routes and their legs, the locations. Two
+        /// phones with different versions of the game would otherwise read the same numbers as different things (another
+        /// kid, another route); the host turns away a phone whose fingerprint differs (FNV-1a, 32 bits).
+        /// </summary>
+        static uint ContentHash()
+        {
+            uint h = 2166136261u;
+            foreach (var kid in PlayerRoster.All) h = Fnv(h, kid.id);
+            foreach (var route in RouteTable.All)
+            {
+                h = Fnv(h, route.id);
+                foreach (string level in route.levels) h = Fnv(h, level);
+            }
+            for (int i = 0; i < CoopLocations.Count; i++) h = Fnv(h, CoopLocations.At(i).id);
+            return h != 0 ? h : 1u;
+        }
+
+        static uint Fnv(uint h, string s)
+        {
+            if (s != null)
+                foreach (char c in s)
+                {
+                    h = (h ^ (byte)c) * 16777619u;
+                    h = (h ^ (byte)(c >> 8)) * 16777619u;
+                }
+            return (h ^ 0xFF) * 16777619u;   // (a separator: "ab"+"c" is not "a"+"bc")
         }
 
         void OnSettingsChanged()
@@ -138,12 +182,20 @@ namespace DribbleToSchool.Coop
 
         void OnPhase(SessionPhase phase)
         {
+            if (Session.Leaving) return;   // (on the way out: the next race is not this phone's)
             if (phase == SessionPhase.Loading) race.Begin(Session.RaceId, Session.RaceSelection);
             else if (phase == SessionPhase.Lobby) race.BackInLobby();
         }
 
         void OnSceneLoaded(Scene scene, LoadSceneMode mode)
         {
+            // A leg that finished loading after its race was over (back to the lobby, or left, meanwhile): not a level to
+            // play on its own.
+            if (!race.SceneLoaded(scene))
+            {
+                FrontEnd.FrontEndController.Open(FrontEnd.FrontEndScreenId.Coop);
+                return;
+            }
             if (!Racing) return;
             var level = LevelManager.Current;
             if (level == null || level.gameObject.scene != scene) return;

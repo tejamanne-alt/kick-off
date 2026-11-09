@@ -22,6 +22,8 @@ namespace DribbleToSchool.Coop.Net
         public double SupervisionTimeoutMs = 2000;
         /// <summary>The packet size every link reports.</summary>
         public int PacketSize = 20;
+        /// <summary>This many connection attempts fail outright before one gets through (as Android's status 133 often does).</summary>
+        public int FailConnects;
 
         public InMemoryRadio(ICoopClock clock)
         {
@@ -175,8 +177,9 @@ namespace DribbleToSchool.Coop.Net
         {
             if (Host != null) Disconnect();
             var host = radio.ByAddress(address);
-            if (host == null || !host.Hosting || !radio.CanHear(this, host))
+            if (radio.FailConnects > 0 || host == null || !host.Hosting || !radio.CanHear(this, host))
             {
+                if (radio.FailConnects > 0) radio.FailConnects--;
                 Enqueue(new LinkEvent { type = LinkEventType.ConnectFailed, error = "unreachable" }, radio.LatencyMs * 4);
                 return;
             }

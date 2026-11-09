@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using DribbleToSchool.Core;
 using DribbleToSchool.Localization;
+using DribbleToSchool.UI;
 using DribbleToSchool.UI.Kit;
 using UnityEngine;
 using UnityEngine.UI;
@@ -10,8 +11,8 @@ namespace DribbleToSchool.Coop
     /// <summary>
     /// The race's screen over the level's own HUD (Coop/CoopLevelLink makes it each leg): the standings under the pause button
     /// (each player's colour, place or position, "Name #TAG", how far along the route on a thin bar, and their time or what
-    /// they are doing), a banner while this phone is out of touch (Bluetooth off, out of range: how long it has to come back
-    /// before its run stops counting), a short feed of what happens to the others (got to school, lost the connection, back,
+    /// they are doing), a banner while this phone is out of touch (Bluetooth off, out of range: how long before the others
+    /// list it last, and once they do, that its run counts again as soon as it is back), a short feed of what happens to the others (got to school, lost the connection, back,
     /// out, a new host), name tags over the ghosts (at the screen's edge with their distance when they are out of view), the
     /// stop's message between two legs, and the standings card at the school gate. In the editor a row of buttons tries the
     /// resilience: a bot walks out of range, comes back, the bot host leaves, this phone's Bluetooth goes off.
@@ -23,7 +24,7 @@ namespace DribbleToSchool.Coop
         CoopService service;
         CoopRaceMode race;
         CoopLevelLink link;
-        RectTransform root, card, feed;
+        RectTransform root, card, feed, tagLayer;
         Text banner, bigStop, smallStop;
         Image bannerGlass, fade;
         readonly List<Row> rows = new List<Row>();
@@ -33,20 +34,27 @@ namespace DribbleToSchool.Coop
         Text resultsHeading, resultsSub;
         RectTransform resultsBody;
         float nextRefresh, nextResultsRefresh;
-        bool resultsShownForFinish, resultsShownForOut;
+        bool resultsShownForFinish;
+        int resultsSignature;
         Camera cam;
 
         sealed class Row
         {
             public RectTransform rt;
             public Image dot, barFill;
-            public Text number, name, state;
+            public Text number, name, tag, state;
+            // What the name label was last made from (a new string only when it changes).
+            public uint uid;
+            public string shownName;
+            public bool shownBold;
         }
 
         sealed class Tag
         {
             public RectTransform rt;
             public Text text;
+            public uint uid;
+            public string fullName;
         }
 
         sealed class FeedLine
@@ -112,9 +120,14 @@ namespace DribbleToSchool.Coop
             bigStop.gameObject.SetActive(false);
             smallStop.gameObject.SetActive(false);
 
+            // The name tags move every frame: a canvas of their own, so moving them doesn't rebuild the rest of the HUD.
+            tagLayer = UIKit.Rect(root, "Tags");
+            UIKit.Stretch(tagLayer);
+            tagLayer.gameObject.AddComponent<Canvas>();
+            tagLayer.SetSiblingIndex(0);
             for (int i = 0; i < CoopRules.MaxPlayers - 1; i++)
             {
-                var label = UIKit.Label(root, "Tag" + i, "", 28, Color.white, TextAnchor.MiddleCenter, true);
+                var label = UIKit.Label(tagLayer, "Tag" + i, "", 28, Color.white, TextAnchor.MiddleCenter, true);
                 label.rectTransform.sizeDelta = new Vector2(420f, 44f);
                 var outline = label.gameObject.AddComponent<Outline>();
                 outline.effectColor = new Color(0f, 0.02f, 0.12f, 0.75f);
@@ -134,10 +147,13 @@ namespace DribbleToSchool.Coop
             UIKit.Place(row.dot.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 2f), new Vector2(40f, 40f), new Vector2(0f, 0.5f));
             row.number = UIKit.Label(row.dot.transform, "N", "", 24, Color.white, TextAnchor.MiddleCenter, true);
             UIKit.Stretch(row.number.rectTransform);
+            // The name, and its tag in a label of its own (so a long name shrinks to fit without the tag going with it).
             row.name = UIKit.GlassText(UIKit.Label(row.rt, "Name", "", 26, UITheme.GlassInk, TextAnchor.MiddleLeft, true));
-            UIKit.Place(row.name.rectTransform, new Vector2(0f, 1f), new Vector2(52f, -4f), new Vector2(width - 230f, 32f), new Vector2(0f, 1f));
-            UIKit.Fit(row.name, 18);
+            UIKit.Place(row.name.rectTransform, new Vector2(0f, 1f), new Vector2(52f, -4f), new Vector2(width - 310f, 32f), new Vector2(0f, 1f));
+            UIKit.Fit(row.name, 16);
             row.name.supportRichText = true;
+            row.tag = UIKit.GlassText(UIKit.Label(row.rt, "Tag", "", 20, new Color(1f, 1f, 1f, 0.67f), TextAnchor.MiddleLeft, true));
+            UIKit.Place(row.tag.rectTransform, new Vector2(0f, 1f), new Vector2(width - 252f, -6f), new Vector2(84f, 30f), new Vector2(0f, 1f));
             row.state = UIKit.GlassText(UIKit.Label(row.rt, "State", "", 24, UITheme.GlassInk, TextAnchor.MiddleRight, true));
             UIKit.Place(row.state.rectTransform, new Vector2(1f, 1f), new Vector2(0f, -4f), new Vector2(160f, 32f), new Vector2(1f, 1f));
             UIKit.Fit(row.state, 16);
@@ -175,14 +191,24 @@ namespace DribbleToSchool.Coop
 
         // ---------- Per frame ----------
 
+        bool Paused { get { return link != null && link.Level != null && link.Level.State == LevelState.Paused; } }
+
         void Update()
         {
-            if (Time.unscaledTime >= nextRefresh)
+            // Under the pause menu the live HUD steps aside (the race goes on: it is back as the menu closes).
+            bool live = !Paused;
+            if (card.gameObject.activeSelf != live)
+            {
+                card.gameObject.SetActive(live);
+                feed.gameObject.SetActive(live);
+                tagLayer.gameObject.SetActive(live);
+            }
+            if (live && Time.unscaledTime >= nextRefresh)
             {
                 nextRefresh = Time.unscaledTime + 0.25f;
                 RefreshStandings();
             }
-            RefreshBanner();
+            RefreshBanner(live);
             RefreshFeed();
             RefreshStop();
             RefreshResults();
@@ -190,7 +216,7 @@ namespace DribbleToSchool.Coop
 
         void LateUpdate()
         {
-            RefreshTags();
+            if (!Paused) RefreshTags();
         }
 
         /// <summary>Everyone in the order they stand, with the bar of how far along the route they are.</summary>
@@ -210,8 +236,16 @@ namespace DribbleToSchool.Coop
                 if (!p.IsOut) position++;
                 row.number.text = p.IsOut ? "-" : (p.status == PlayerStatus.Finished ? p.place : position).ToString();
                 string name = CoopProfile.DisplayName(p);
-                row.name.text = (me ? "<b>" + name + "</b>" : name) + " <color=#ffffffaa><size=20>#" + p.tag + "</size></color>";
-                float progress = p.status == PlayerStatus.Finished ? 1f : me ? race.Progress(LocalFraction()) : p.progress;
+                if (row.uid != p.uid || row.shownName != name || row.shownBold != me)
+                {
+                    row.uid = p.uid;
+                    row.shownName = name;
+                    row.shownBold = me;
+                    row.name.text = me ? "<b>" + name + "</b>" : name;
+                    row.tag.text = "#" + p.tag;
+                }
+                float progress = p.status == PlayerStatus.Finished ? 1f
+                    : me ? (race.LoadingLeg ? race.Progress(0f) : race.Progress(LocalFraction())) : p.progress;
                 row.barFill.rectTransform.anchorMax = new Vector2(Mathf.Clamp01(progress), 1f);
                 row.barFill.color = p.IsOut ? new Color(1f, 1f, 1f, 0.3f) : c;
                 row.state.text = StateOf(p, me);
@@ -241,13 +275,16 @@ namespace DribbleToSchool.Coop
             return Loc.F("coop.state.leg", leg + 1, race.LegCount);
         }
 
-        /// <summary>While this phone is out of touch: why, and how long it has before its run stops counting.</summary>
-        void RefreshBanner()
+        /// <summary>
+        /// While this phone is out of touch: why, and how long before the others list it last. Once they do: that it is
+        /// listed last for now, and its run counts again the moment it is back in touch (so keep going).
+        /// </summary>
+        void RefreshBanner(bool live)
         {
             string text = null;
             var s = Session;
             bool racing = s.MyStatus == PlayerStatus.Racing;
-            if (s.MyStatus == PlayerStatus.Disconnected) text = Loc.T("coop.banner.out");
+            if (s.ListedOut) text = Loc.T(s.Radio == Net.RadioState.On ? "coop.banner.listedOut" : "coop.banner.listedOutRadio");
             else if (s.Connection == ConnectionState.Reconnecting)
             {
                 int left = Mathf.Max(0, Mathf.CeilToInt((float)((CoopTiming.RaceGrace - s.LostForMs) / 1000.0)));
@@ -256,14 +293,15 @@ namespace DribbleToSchool.Coop
             }
             else if (s.Alone && OthersStillRacing()) text = Loc.T("coop.banner.alone");
             var holder = bannerGlass.transform.parent.gameObject;
-            holder.SetActive(text != null && !race.BetweenLegs);
+            holder.SetActive(live && text != null && !race.BetweenLegs);
             if (text != null) banner.text = text;
         }
 
         bool OthersStillRacing()
         {
-            foreach (var p in Session.Players)
-                if (p.uid != Session.Uid && p.status == PlayerStatus.Racing) return true;
+            var players = Session.Players;
+            for (int i = 0; i < players.Count; i++)
+                if (players[i].uid != Session.Uid && players[i].status == PlayerStatus.Racing) return true;
             return false;
         }
 
@@ -329,7 +367,12 @@ namespace DribbleToSchool.Coop
                     bool behind = screen.z < 0f;
                     float margin = 120f;
                     bool off = behind || screen.x < margin || screen.x > Screen.width - margin;
-                    string name = CoopProfile.FullName(p);
+                    if (tag.uid != p.uid || tag.fullName == null || Time.frameCount % 30 == 0)
+                    {
+                        tag.uid = p.uid;
+                        tag.fullName = CoopProfile.FullName(p);
+                    }
+                    string name = tag.fullName;
                     if (off)
                     {
                         // Out of view: at the side it is on, with how far away it is.
@@ -339,7 +382,7 @@ namespace DribbleToSchool.Coop
                         screen.x = right ? Screen.width - margin * 1.9f : margin * 1.9f;
                         screen.y = Mathf.Clamp(screen.y, Screen.height * 0.3f, Screen.height * 0.7f);
                     }
-                    else tag.text.text = name;
+                    else if (!ReferenceEquals(tag.text.text, name)) tag.text.text = name;
                     tag.text.color = Color.Lerp(Color.white, CoopPalette.Of(p.slot), 0.45f);
                     tag.rt.position = new Vector3(screen.x, screen.y, 0f);
                     tag.rt.gameObject.SetActive(true);
@@ -369,12 +412,30 @@ namespace DribbleToSchool.Coop
 
         void RefreshResults()
         {
-            var s = Session;
             if (race.Finished && !resultsShownForFinish) { resultsShownForFinish = true; OpenResults(); }
-            if (s.MyStatus == PlayerStatus.Disconnected && !resultsShownForOut && !race.Finished) { resultsShownForOut = true; OpenResults(); }
             if (results == null || Time.unscaledTime < nextResultsRefresh) return;
             nextResultsRefresh = Time.unscaledTime + 0.5f;
             FillResults();
+        }
+
+        /// <summary>What the standings card shows, in one number: it is rebuilt only when this changes.</summary>
+        int ResultsSignature()
+        {
+            var s = Session;
+            int h = (int)s.Phase * 31 + race.CoinsEarned;
+            var players = s.Players;
+            for (int i = 0; i < players.Count; i++)
+            {
+                var p = players[i];
+                h = h * 31 + (int)p.uid;
+                h = h * 31 + (int)p.status;
+                h = h * 31 + p.place;
+                h = h * 31 + (int)p.finishMs;
+                h = h * 31 + (p.connected ? 1 : 0);
+                h = h * 31 + (p.name != null ? p.name.GetHashCode() : 0);
+                h = h * 31 + (int)(p.progress * 20f);
+            }
+            return h;
         }
 
         void OpenResults()
@@ -391,17 +452,16 @@ namespace DribbleToSchool.Coop
             resultsBody = UIKit.Rect(face.transform, "Standings");
             UIKit.Place(resultsBody, new Vector2(0.5f, 1f), new Vector2(0f, -230f), new Vector2(960f, 420f), new Vector2(0.5f, 1f));
 
-            bool counting = Session.MyStatus == PlayerStatus.Disconnected && !race.Finished;
             var lobby = UIKit.Button(face.transform, "Lobby", Loc.T("coop.results.lobby"), UITheme.Green, () => race.ToLobby(), 40);
-            UIKit.Place((RectTransform)lobby.transform, new Vector2(0.5f, 0f), new Vector2(counting ? -340f : -190f, 50f), new Vector2(320f, 100f), new Vector2(0.5f, 0f));
-            var leave = UIKit.Button(face.transform, "Leave", Loc.T("coop.results.leave"), UITheme.Red, () => race.Leave(), 40);
-            UIKit.Place((RectTransform)leave.transform, new Vector2(0.5f, 0f), new Vector2(counting ? 0f : 190f, 50f), new Vector2(320f, 100f), new Vector2(0.5f, 0f));
-            if (counting)
+            UIKit.Place((RectTransform)lobby.transform, new Vector2(0.5f, 0f), new Vector2(-190f, 50f), new Vector2(320f, 100f), new Vector2(0.5f, 0f));
+            var leave = UIKit.Button(face.transform, "Leave", Loc.T("coop.results.leave"), UITheme.Red, () =>
             {
-                // Out of the race but still in the level: carry on for fun.
-                var keep = UIKit.Button(face.transform, "Keep", Loc.T("coop.results.keepPlaying"), UITheme.Blue, () => { Destroy(results); results = null; }, 36);
-                UIKit.Place((RectTransform)keep.transform, new Vector2(0.5f, 0f), new Vector2(340f, 50f), new Vector2(320f, 100f), new Vector2(0.5f, 0f));
-            }
+                // A finish no other phone has heard of yet would go with this phone: say so before leaving.
+                if (Session.FinishUnconfirmed) CoopStagePicker.Confirm(root, Loc.T("coop.confirmLeave.unseen"), () => race.Leave());
+                else race.Leave();
+            }, 40);
+            UIKit.Place((RectTransform)leave.transform, new Vector2(0.5f, 0f), new Vector2(190f, 50f), new Vector2(320f, 100f), new Vector2(0.5f, 0f));
+            resultsSignature = 0;
             FillResults();
         }
 
@@ -413,12 +473,15 @@ namespace DribbleToSchool.Coop
             bool over = s.Phase == SessionPhase.Over || !OthersStillRacing();
             if (race.Finished && me != null && me.status == PlayerStatus.Finished)
                 resultsHeading.text = me.place == 1 ? Loc.T("coop.results.won") : Loc.F("coop.results.place", CoopPalette.Place(me.place));
-            else if (s.MyStatus == PlayerStatus.Disconnected) resultsHeading.text = Loc.T("coop.results.out");
+            else if (s.ListedOut) resultsHeading.text = Loc.T("coop.results.unseen");
             else resultsHeading.text = Loc.T("coop.results.atSchool");
             string coins = race.CoinsEarned > 0 ? Loc.F("coop.results.coins", race.CoinsEarned) : "";
             resultsSub.text = over ? Loc.T("coop.results.final") + (coins.Length > 0 ? "  ·  " + coins : "")
                 : Loc.T("coop.results.live") + (coins.Length > 0 ? "  ·  " + coins : "");
 
+            int signature = ResultsSignature();
+            if (signature == resultsSignature && resultsBody.childCount > 0) return;
+            resultsSignature = signature;
             for (int i = resultsBody.childCount - 1; i >= 0; i--) Destroy(resultsBody.GetChild(i).gameObject);
             CoopStandingsView.Build(resultsBody, s, 96f);
         }

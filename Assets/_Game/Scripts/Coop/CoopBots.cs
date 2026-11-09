@@ -122,7 +122,7 @@ namespace DribbleToSchool.Coop
                 if (b.joining && !s.InSession)
                 {
                     foreach (var room in s.Rooms)
-                        if (room.beacon.phase == RoomPhase.Lobby && room.beacon.players < room.beacon.maxPlayers && now >= b.readyAt - 1000)
+                        if (room.beacon.phase == RoomPhase.Lobby && room.beacon.players < CoopRules.MaxPlayers && now >= b.readyAt - 1000)
                         {
                             s.Join(room.address);
                             break;

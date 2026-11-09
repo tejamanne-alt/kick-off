@@ -87,11 +87,36 @@ namespace DribbleToSchool.Coop
         public const double LoadTimeout = 15000;
         /// <summary>From everyone loaded to GO (shown as 3, 2, 1).</summary>
         public const double RaceCountdown = 3500;
+        /// <summary>A race start that was guessed, or fixed before a clock jumped, is checked against this many fresh samples...</summary>
+        public const int ReanchorSamples = 3;
+        /// <summary>...and moved when it is out by more than this (less is a few milliseconds of estimate: left alone).</summary>
+        public const double ReanchorBeyond = 1000;
         public const double RoomExpiry = 4000;
         public const double ConnectRetry = 1500;
         public const double LeaveFlush = 400;
         /// <summary>After a change of host, players losing and finding the connection again are not announced one by one.</summary>
         public const double QuietAfterMigration = 6000;
+        /// <summary>
+        /// A host whose own Bluetooth is off (or whose app is in the background) this long during a race stops being the host:
+        /// the others take over, and it joins them when it is back (it never judges the others for its own absence).
+        /// </summary>
+        public const double HostDeafGrace = 3000;
+        /// <summary>A frame longer than this (a scene loading, the app frozen) is this phone's own stall, not the others' silence.</summary>
+        public const double StallThreshold = 400;
+        /// <summary>At most this much of one stall is forgiven (longer is the app in the background: really away).</summary>
+        public const double StallForgiveMax = 10000;
+        /// <summary>The longest quiet a Busy message may announce.</summary>
+        public const double MaxBusy = 15000;
+        /// <summary>A host that keeps advertising but doesn't answer this many attempts in a row is given up on.</summary>
+        public const int ZombieAttempts = 2;
+        /// <summary>... for this long at most (or until its advertisement changes: it is running again).</summary>
+        public const double GiveUpFor = 30000;
+        /// <summary>A first join is tried this many times (Android's first connection often fails with status 133).</summary>
+        public const int JoinAttempts = 3;
+        public const double JoinRetryDelay = 600;
+        /// <summary>During a race the host listens for another host of its session (after a split) this long, this often.</summary>
+        public const double SplitScanFor = 4000;
+        public const double SplitScanEvery = 12000;
     }
 
     /// <summary>
@@ -102,12 +127,16 @@ namespace DribbleToSchool.Coop
     /// is the same instant on every phone and every finish time is measured from it.
     ///
     /// Resilience (docs/COOP.md): a racing player out of touch for <see cref="CoopTiming.RaceGrace"/> is disqualified and
-    /// listed last; the race goes on for everyone else. A player who got to school keeps their time and place even after
-    /// leaving. When the host goes (switched off, out of range, left), the others first look for it, then the next player by
-    /// slot takes over as host with the same session (a higher epoch) and everyone joins them; finished times live on every
-    /// phone, so nothing is lost. Pure C# (no Unity): Tests/Editor/CoopSessionTests run whole races on an in-memory radio.
+    /// listed last; the race goes on for everyone else. Results are sticky and merged from every phone (CoopRules.MergeResult):
+    /// a finish survives the finisher leaving and the host changing. When the host goes (switched off, out of range, left,
+    /// in the background), the others first look for it, then the next player by slot takes over as host with the same session
+    /// (a higher epoch) and everyone joins them. A phone's own stalls (a scene loading) never count against the others.
+    /// Pure C# (no Unity): Tests/Editor/CoopSessionTests run whole races, and storms of failures, on an in-memory radio.
+    ///
+    /// The class is split by role: this file (the shared state, what the game calls, the radio's events, notices),
+    /// CoopSession.Host.cs and CoopSession.Client.cs.
     /// </summary>
-    public sealed class CoopSession
+    public sealed partial class CoopSession
     {
         sealed class Peer
         {
@@ -116,8 +145,24 @@ namespace DribbleToSchool.Coop
             public int txNumber;
             public double connectedAt;
             public double lastHeard;
+            /// <summary>The other end said it would be quiet until then (Busy: loading a scene).</summary>
+            public double quietUntil = double.NegativeInfinity;
             public uint uid;   // 0 until Hello
+            public uint tagSeed;   // (from Hello: what a removed player's install is known by)
             public double rejectedAt = double.PositiveInfinity;
+
+            public bool TimedOut(double now)
+            {
+                return now - lastHeard > CoopTiming.HeartbeatTimeout && now > quietUntil;
+            }
+        }
+
+        /// <summary>What a player looked like when last announced (to tell what changed; no allocation per frame).</summary>
+        struct Announced
+        {
+            public uint uid;
+            public PlayerStatus status;
+            public bool connected, isHost;
         }
 
         readonly ICoopLink link;
@@ -126,40 +171,10 @@ namespace DribbleToSchool.Coop
         readonly List<CoopPlayer> players = new List<CoopPlayer>();
         readonly Dictionary<string, CoopRoom> rooms = new Dictionary<string, CoopRoom>();
         readonly Random random;
-
-        // Host role
-        readonly Dictionary<int, Peer> peers = new Dictionary<int, Peer>();
-        readonly Dictionary<byte, CoopMotion> latestMotions = new Dictionary<byte, CoopMotion>();
-        readonly List<KeyValuePair<byte, CoopMotion>> motionsOut = new List<KeyValuePair<byte, CoopMotion>>();
-        uint version;
-        bool dirty;
-        double lastSnapshotAt = double.NegativeInfinity, nextMotionsAt;
-        bool motionsFresh;
-        double phaseAtLocal;   // Starting: countdown end; Racing: start (both in local ms)
-        double loadDeadline;
-        bool hostingStarted;
-        RoomBeacon advertised;
-
-        // Client role
-        readonly Peer host = new Peer();
-        readonly ClockSync sync = new ClockSync();
-        readonly List<KeyValuePair<byte, CoopMotion>> motionsIn = new List<KeyValuePair<byte, CoopMotion>>();
-        bool welcomed, connectPending;
-        double connectStartedAt, nextPingAt, nextProfileAt, nextProgressAt, nextMotionAt, lastConnectAttempt = double.NegativeInfinity;
-        ushort profileSeq, progressSeq;
-        bool profileDirty, progressDirty;
-        uint lastVersion;
-        bool hasSnapshot;
-        uint snapshotPhaseAtHost;
-        bool freshJoin;
-
-        // Lost host (client) / migration
-        double lostAt, migrateAt = double.PositiveInfinity, scanningSince = double.PositiveInfinity;
-        byte lostEpoch;
-        int candidateIndex;
-        readonly List<uint> candidates = new List<uint>();
-        string yieldTarget;
-        double quietUntil = double.NegativeInfinity;
+        double lastTickAt = double.NaN;
+        bool browsing;
+        bool leaving;
+        double shutdownAt = double.PositiveInfinity;
 
         // The local player's own intentions, kept across hosts.
         string myName;
@@ -169,25 +184,34 @@ namespace DribbleToSchool.Coop
         PlayerStatus myStatus = PlayerStatus.Lobby;
         byte myLeg;
         float myProgress;
-        uint myFinishMs;
+        uint myFinishMs, myOutMs;
         CoopMotion myMotion;
         bool myMotionFresh;
         double raceStartLocal;
         bool raceStartKnown, raceStartLocked;
+        /// <summary>
+        /// The race start agrees with the host's clock: it came from it, and nothing since (a start guessed while taking over,
+        /// a reconnection, a clock seen to jump) has put it in doubt. <see cref="jumpsAtLock"/>: the sync's jumps when it was checked.
+        /// </summary>
+        bool raceStartTrusted = true;
+        int jumpsAtLock;
 
-        // Leaving
-        double shutdownAt = double.PositiveInfinity;
-
-        // Notices: players as they were when last announced.
-        readonly List<CoopPlayer> announced = new List<CoopPlayer>();
+        // Notices.
+        readonly List<Announced> announced = new List<Announced>(CoopRules.MaxPlayers * 2);
+        bool announcedAny;
         CoopSelection announcedSelection;
         SessionPhase announcedPhase;
+        double quietUntil = double.NegativeInfinity;
 
-        public CoopSession(ICoopLink link, ICoopClock clock, uint uid, string name, byte character, int seed = 0)
+        /// <param name="uid">This phone's player id for this run of the app (fresh each launch: a backed-up copy of the game
+        /// on a second phone must never share it).</param>
+        /// <param name="tagSeed">What its tag is made from, kept on the phone (0: from <paramref name="uid"/>).</param>
+        public CoopSession(ICoopLink link, ICoopClock clock, uint uid, string name, byte character, int seed = 0, uint tagSeed = 0)
         {
             this.link = link;
             this.clock = clock;
             Uid = uid == 0 ? 1u : uid;
+            TagSeed = tagSeed != 0 ? tagSeed : Uid;
             myName = CoopRules.CleanName(name);
             myCharacter = character;
             random = new Random(seed != 0 ? seed : (int)(Uid ^ (uint)Environment.TickCount));
@@ -197,6 +221,7 @@ namespace DribbleToSchool.Coop
         // ---------- What the game reads ----------
 
         public uint Uid { get; private set; }
+        public uint TagSeed { get; private set; }
         public SessionRole Role { get; private set; }
         public ConnectionState Connection { get; private set; }
         public SessionPhase Phase { get; private set; }
@@ -211,10 +236,17 @@ namespace DribbleToSchool.Coop
         public CoopSelection RaceSelection { get; private set; }
         /// <summary>How many routes and locations there are to choose from (set by the game; random picks among them).</summary>
         public int RouteCount = 6, AddOnCount = 2;
+        /// <summary>
+        /// A fingerprint of what the race refers to by index (the kids, routes and locations; set by the game). A phone whose
+        /// fingerprint differs is turned away as another version (0 on either side: not checked).
+        /// </summary>
+        public uint ContentHash;
         public IList<CoopPlayer> Players { get { return players; } }
         public ICollection<CoopRoom> Rooms { get { return rooms.Values; } }
         public bool InSession { get { return Role != SessionRole.None; } }
         public bool IsHost { get { return Role == SessionRole.Host; } }
+        /// <summary>Scanning for the Join list.</summary>
+        public bool Browsing { get { return browsing && Role == SessionRole.None; } }
         public double RoundTripMs { get { return IsHost ? 0 : sync.RoundTrip; } }
         public double NowMs { get { return clock.NowMs; } }
 
@@ -243,8 +275,23 @@ namespace DribbleToSchool.Coop
         /// <summary>This phone's own race status (what it believes; the host's snapshot confirms it).</summary>
         public PlayerStatus MyStatus { get { return myStatus; } }
         public uint MyFinishMs { get { return myFinishMs; } }
-        /// <summary>When the connection was lost (Reconnecting), for the HUD's countdown to disqualification.</summary>
+        public bool MyReady { get { return myReady; } }
+        /// <summary>When the connection was lost (Reconnecting), for the HUD's countdown to being listed out.</summary>
         public double LostForMs { get { return Connection == ConnectionState.Reconnecting ? clock.NowMs - lostAt : 0; } }
+        /// <summary>
+        /// The others list this phone last: it has been out of touch longer than the grace period (or the lobby says so). Its
+        /// run carries on, and counts again as soon as it is back in touch (before the next race).
+        /// </summary>
+        public bool ListedOut
+        {
+            get
+            {
+                if (myStatus != PlayerStatus.Racing || !InRace) return false;
+                if (Connection == ConnectionState.Reconnecting && clock.NowMs - lostAt > CoopTiming.RaceGrace) return true;
+                var me = Me;
+                return me != null && me.status == PlayerStatus.Disconnected && Connection != ConnectionState.Joined;
+            }
+        }
         /// <summary>Hosting alone after the others were lost (the race goes on; they may come back).</summary>
         public bool Alone
         {
@@ -255,45 +302,35 @@ namespace DribbleToSchool.Coop
                 return players.Count > 1;
             }
         }
+        /// <summary>Leaving has finished (or there was nothing to leave).</summary>
+        public bool Left { get { return Role == SessionRole.None; } }
+        /// <summary>Leave was called and the goodbye is on its way (the session ends in a moment).</summary>
+        public bool Leaving { get { return leaving; } }
+        /// <summary>
+        /// This phone's kid is at school, but no snapshot from the host has listed the finish yet: leaving now (or the app
+        /// closing) could lose it, as no other phone knows of it. (A host's own finish is in what it sends.)
+        /// </summary>
+        public bool FinishUnconfirmed { get { return myStatus == PlayerStatus.Finished && Role == SessionRole.Client && !hostHasMyFinish; } }
+        bool hostHasMyFinish;
 
         public event Action<CoopNotice> Noticed;
         public event Action<SessionPhase> PhaseChanged;
 
-        double StartingEndsLocal { get { return IsHost ? phaseAtLocal : (sync.HasSync ? sync.ToLocal(snapshotPhaseAtHost) : clock.NowMs + CoopTiming.StartCountdown); } }
-
         public CoopPlayer Find(uint uid)
         {
-            foreach (var p in players) if (p.uid == uid) return p;
+            for (int i = 0; i < players.Count; i++) if (players[i].uid == uid) return players[i];
             return null;
         }
 
         public CoopPlayer InSlot(int slot)
         {
-            foreach (var p in players) if (p.slot == slot) return p;
+            for (int i = 0; i < players.Count; i++) if (players[i].slot == slot) return players[i];
             return null;
         }
 
-        // ---------- What the game does ----------
+        bool InRace { get { return Phase == SessionPhase.Loading || Phase == SessionPhase.Racing || Phase == SessionPhase.Over; } }
 
-        /// <summary>Open a new lobby with this phone as its host (slot 1).</summary>
-        public void Host()
-        {
-            Reset();
-            browsing = false;
-            link.StopScan();
-            Role = SessionRole.Host;
-            Phase = SessionPhase.Lobby;
-            SessionId = NewSessionId();
-            Epoch = 0;
-            Selection = new CoopSelection { route = 0, addOn = 0, chosenBy = CoopSelection.Nobody };
-            var me = new CoopPlayer { slot = 0, uid = Uid, name = myName, character = myCharacter, isHost = true, connected = true, lastHeardMs = clock.NowMs };
-            me.tag = CoopRules.UniqueTag(Uid, players);
-            players.Add(me);
-            Connection = ConnectionState.Hosting;
-            StartHosting();
-            dirty = true;
-            Announce();
-        }
+        // ---------- What the game does ----------
 
         /// <summary>Look for lobbies nearby (the Join list) without joining one.</summary>
         public void Browse()
@@ -308,30 +345,17 @@ namespace DribbleToSchool.Coop
             if (Role == SessionRole.None) link.StopScan();
         }
 
-        bool browsing;
-
-        /// <summary>Join the lobby at <paramref name="address"/> (from <see cref="Rooms"/>).</summary>
-        public void Join(string address)
-        {
-            Reset();
-            browsing = false;
-            link.StopScan();
-            Role = SessionRole.Client;
-            Connection = ConnectionState.Connecting;
-            freshJoin = true;
-            ConnectTo(address);
-        }
-
         /// <summary>Leave the lobby or the race: the others are told (a finished time is kept), then the radio lets go.</summary>
         public void Leave()
         {
-            if (Role == SessionRole.None) return;
-            bool race = Phase != SessionPhase.Lobby && Phase != SessionPhase.Starting;
+            if (Role == SessionRole.None || leaving) return;
+            bool race = InRace;
             if (myStatus == PlayerStatus.Racing && race)
             {
                 myStatus = PlayerStatus.Left;
+                myOutMs = (uint)Math.Max(0, RaceTimeMs);
                 var me = Me;
-                if (me != null) { me.status = PlayerStatus.Left; me.outMs = (uint)Math.Max(0, RaceTimeMs); me.connected = false; }
+                if (me != null) { me.status = PlayerStatus.Left; me.outMs = myOutMs; }
             }
             if (Role == SessionRole.Host)
             {
@@ -356,11 +380,6 @@ namespace DribbleToSchool.Coop
             leaving = true;
         }
 
-        bool leaving;
-
-        /// <summary>Leaving has finished (or there was nothing to leave).</summary>
-        public bool Left { get { return Role == SessionRole.None; } }
-
         public void SetName(string name)
         {
             myName = CoopRules.CleanName(name);
@@ -369,6 +388,7 @@ namespace DribbleToSchool.Coop
 
         public void SetCharacter(byte character)
         {
+            if (character == myCharacter) return;
             myCharacter = character;
             ApplyProfile();
         }
@@ -378,8 +398,6 @@ namespace DribbleToSchool.Coop
             myReady = ready;
             ApplyProfile();
         }
-
-        public bool MyReady { get { return myReady; } }
 
         /// <summary>Choose the next race's stage and location (any player may; the last choice the host gets wins). Readies are reset.</summary>
         public void Select(byte route, byte addOn)
@@ -407,24 +425,25 @@ namespace DribbleToSchool.Coop
             byte l = (byte)Math.Max(0, Math.Min(255, leg));
             bool changed = l != myLeg;
             myLeg = l;
-            myProgress = Clamp01(progress);
+            if (myStatus == PlayerStatus.Racing) myProgress = Clamp01(progress);
             if (changed) { progressDirty = true; ApplyProgressToMe(); }
         }
 
         /// <summary>Where this phone's kid and ball are now (sent ten times a second while racing).</summary>
         public void ReportMotion(CoopMotion m)
         {
-            if (!raceStartKnown) return;
+            if (!raceStartKnown || myStatus != PlayerStatus.Racing) return;
             m.raceMs = (uint)Math.Max(0, RaceTimeMs);
             m.leg = myLeg;
             m.progress = myProgress = Clamp01(m.progress);
             myMotion = m;
             myMotionFresh = true;
-            if (IsHost && Me != null)
+            var me = IsHost ? Me : null;
+            if (me != null)
             {
-                latestMotions[Me.slot] = m;
+                latestMotions[me.slot] = m;
                 motionsFresh = true;
-                Me.progress = myProgress;
+                me.progress = myProgress;
             }
         }
 
@@ -440,34 +459,77 @@ namespace DribbleToSchool.Coop
             return myFinishMs;
         }
 
-        /// <summary>Host, after a race: back to the lobby for another one with the same players.</summary>
-        public void NewRace()
+        /// <summary>
+        /// This phone is about to go quiet for up to <paramref name="ms"/> (loading the next scene): the other end is told, so
+        /// it doesn't take the silence for a lost connection. This phone forgives its own stall in any case (Tick).
+        /// </summary>
+        public void ExpectSilence(double ms)
         {
-            if (!IsHost || Phase != SessionPhase.Over) return;
-            players.RemoveAll(p => !p.connected && p.uid != Uid);
-            foreach (var p in players)
-            {
-                p.ready = false;
-                p.status = PlayerStatus.Lobby;
-                p.leg = 0; p.progress = 0; p.finishMs = 0; p.outMs = 0; p.place = 0;
-                p.track.Clear();
-            }
-            myReady = false;
-            myStatus = PlayerStatus.Lobby;
-            raceStartKnown = raceStartLocked = false;
-            latestMotions.Clear();
-            if (InRaceScanning) { link.StopScan(); InRaceScanning = false; }
-            SetPhase(SessionPhase.Lobby);
-            dirty = true;
+            ms = Math.Max(0, Math.Min(CoopTiming.MaxBusy, ms));
+            writer.Reset();
+            CoopMessages.WriteBusy(writer, ms);
+            if (IsHost) Broadcast();
+            else if (welcomed) SendToHost();
         }
+
+        /// <summary>
+        /// The app went to the background (or came back). A host in the background is no host (iOS stops its radio, Android
+        /// keeps advertising a lobby nobody answers), so it stops hosting at once; back within <see cref="CoopTiming.HostDeafGrace"/>
+        /// it carries on, later it hands the race over and joins whoever took it. A player's phone needs nothing: its silence
+        /// is handled like any other.
+        /// </summary>
+        public void SetAppPaused(bool paused)
+        {
+            if (appPaused == paused) return;
+            appPaused = paused;
+            double now = clock.NowMs;
+            if (paused) pausedAt = now;
+            if (Role != SessionRole.Host) return;
+            if (KeepHostingWhilePaused)
+            {
+                // Back from a short pause (Control Center pulled down, a notification): nothing changed. Back from a long one:
+                // the others have taken the race over meanwhile, or will: hand it over.
+                if (!paused && InRace && now - pausedAt > CoopTiming.HostDeafGrace)
+                {
+                    deafSince = pausedAt;
+                    StepDown(now);
+                }
+                return;
+            }
+            if (paused)
+            {
+                link.StopHost();
+                GoDeaf(now);
+            }
+            else RecoverHearing(now);
+        }
+
+        /// <summary>
+        /// iOS: a pause doesn't stop hosting at once. iOS pauses the game for Control Center or a notification too, while
+        /// the radio carries on; stopping would drop every player for a glance. (An app that really goes to the background
+        /// is suspended, its radio with it: the others take over as for any lost host.) Android: the plugin would keep
+        /// advertising a lobby nobody answers, so a paused host stops at once (the default).
+        /// </summary>
+        public bool KeepHostingWhilePaused;
+
+        bool appPaused;
+        double pausedAt;
 
         /// <summary>Call once a frame: handles the radio, the timers and the sending.</summary>
         public void Tick()
         {
             double now = clock.NowMs;
+            // A long frame is this phone's own stall (a scene loading): the others' silence during it doesn't count.
+            if (!double.IsNaN(lastTickAt))
+            {
+                double gap = now - lastTickAt;
+                if (gap > CoopTiming.StallThreshold) Forgive(Math.Min(gap, CoopTiming.StallForgiveMax));
+            }
+            lastTickAt = now;
+
             LinkEvent e;
             int guard = 0;
-            while (guard++ < 512 && link.Poll(out e)) Handle(e, now);
+            while (guard++ < 1024 && link.Poll(out e)) Handle(e, now);
 
             if (leaving && now >= shutdownAt) { Shutdown(); return; }
 
@@ -475,6 +537,22 @@ namespace DribbleToSchool.Coop
             if (Role == SessionRole.Host) TickHost(now);
             else if (Role == SessionRole.Client) TickClient(now);
             Announce();
+        }
+
+        /// <summary>Shifts every "last heard" and "lost since" by the length of this phone's own stall.</summary>
+        void Forgive(double stall)
+        {
+            foreach (var peer in peers.Values) { peer.lastHeard += stall; peer.connectedAt += stall; }
+            foreach (var p in players) if (!p.connected) p.lostSinceMs += stall;
+            host.lastHeard += stall;
+            connectStartedAt += stall;
+            if (Connection == ConnectionState.Reconnecting)
+            {
+                lostAt += stall;
+                migrateAt += stall;
+                scanningSince += stall;
+            }
+            foreach (var room in rooms.Values) room.lastSeenMs += stall;
         }
 
         // ---------- Radio events ----------
@@ -491,22 +569,19 @@ namespace DribbleToSchool.Coop
                     break;
                 case LinkEventType.Disconnected:
                     if (Role == SessionRole.Host) DropPeer(e.peer, now, false);
-                    else if (Role == SessionRole.Client && e.peer == 0) OnHostLost(now, false);
+                    else if (Role == SessionRole.Client && e.peer == 0) { if (welcomed) OnHostLost(now, false); else ConnectAttemptFailed(now); }
                     break;
                 case LinkEventType.Data: OnData(e, now); break;
                 case LinkEventType.HostStarted: hostingStarted = true; break;
                 case LinkEventType.HostFailed:
                     hostingStarted = false;
                     Notice(NoticeType.HostFailed, null, 0);
+                    // A lobby nobody could find, with nobody in it: there is no lobby. (A race carries on: the others
+                    // still have it, and this phone's run counts.)
+                    if (Role == SessionRole.Host && Phase == SessionPhase.Lobby && peers.Count == 0) Reset();
                     break;
                 case LinkEventType.ConnectFailed:
-                    if (Role != SessionRole.Client) break;
-                    connectPending = false;
-                    if (freshJoin && !welcomed)
-                    {
-                        Notice(NoticeType.ConnectFailed, null, 0);
-                        Shutdown();
-                    }
+                    if (Role == SessionRole.Client) ConnectAttemptFailed(now);
                     break;
             }
         }
@@ -520,11 +595,8 @@ namespace DribbleToSchool.Coop
             {
                 if (before == RadioState.On) Notice(NoticeType.RadioOff, null, (int)state);
                 scanningSince = double.PositiveInfinity;
-                if (Role == SessionRole.Host)
-                {
-                    hostingStarted = false;
-                    foreach (var id in new List<int>(peers.Keys)) DropPeer(id, now, false);
-                }
+                splitScanning = false;
+                if (Role == SessionRole.Host) GoDeaf(now);
                 else if (Role == SessionRole.Client && Connection != ConnectionState.Reconnecting)
                 {
                     if (freshJoin && !welcomed) { Notice(NoticeType.ConnectFailed, null, 0); Shutdown(); }
@@ -532,11 +604,8 @@ namespace DribbleToSchool.Coop
                 }
                 return;
             }
-            Notice(NoticeType.RadioOn, null, 0);
-            if (Role == SessionRole.Host)
-            {
-                StartHosting();
-            }
+            if (before != RadioState.Unknown) Notice(NoticeType.RadioOn, null, 0);
+            if (Role == SessionRole.Host) RecoverHearing(now);
             else if (Role == SessionRole.Client && Connection == ConnectionState.Reconnecting)
             {
                 link.StartScan();
@@ -557,18 +626,32 @@ namespace DribbleToSchool.Coop
             room.beacon = e.beacon;
             room.rssi = e.rssi;
             room.lastSeenMs = now;
+            // An Android host's address can change while it advertises (privacy rotation): the same host heard under an
+            // older address is one room, not two.
+            expired.Clear();
+            foreach (var kv in rooms)
+            {
+                var b = kv.Value.beacon;
+                if (kv.Value != room && b.sessionId == e.beacon.sessionId && b.epoch == e.beacon.epoch && b.hostSlot == e.beacon.hostSlot
+                    && kv.Key != joinAddress && kv.Key != attemptAddress)
+                    expired.Add(kv.Key);
+            }
+            foreach (var key in expired) rooms.Remove(key);
 
-            // A host racing beside another host of the same session (after a split): the one with fewer players steps down.
-            if (Role == SessionRole.Host && InRace && e.beacon.sessionId == SessionId && CoopRules.ShouldYieldTo(advertised, e.beacon))
+            // A host racing beside another host of the same session (after a split): one of the two steps down.
+            if (Role == SessionRole.Host && InRace && e.beacon.sessionId == SessionId && CoopRules.ShouldYieldTo(advertised, e.beacon)
+                && !GivenUpOn(e.address))
                 YieldTo(e.address, now);
         }
 
+        readonly List<string> expired = new List<string>();
+
         void ExpireRooms(double now)
         {
-            List<string> gone = null;
+            expired.Clear();
             foreach (var kv in rooms)
-                if (now - kv.Value.lastSeenMs > CoopTiming.RoomExpiry) (gone ?? (gone = new List<string>())).Add(kv.Key);
-            if (gone != null) foreach (var key in gone) rooms.Remove(key);
+                if (now - kv.Value.lastSeenMs > CoopTiming.RoomExpiry) expired.Add(kv.Key);
+            foreach (var key in expired) rooms.Remove(key);
         }
 
         void OnData(LinkEvent e, double now)
@@ -590,782 +673,12 @@ namespace DribbleToSchool.Coop
             }
         }
 
-        bool InRace { get { return Phase == SessionPhase.Loading || Phase == SessionPhase.Racing || Phase == SessionPhase.Over; } }
-
-        // ---------- Host ----------
-
-        void StartHosting()
-        {
-            advertised = MakeBeacon();
-            link.StartHost(advertised);
-            // During a race the host listens too, to notice another host of the same session after a split.
-            if (InRace) link.StartScan();
-        }
-
-        RoomBeacon MakeBeacon()
-        {
-            int connected = 0;
-            foreach (var p in players) if (p.connected) connected++;
-            var me = Me;
-            return new RoomBeacon
-            {
-                protocol = CoopMessages.Protocol,
-                sessionId = SessionId,
-                epoch = Epoch,
-                players = (byte)connected,
-                maxPlayers = CoopRules.MaxPlayers,
-                phase = Phase == SessionPhase.Over ? RoomPhase.Over : InRace ? RoomPhase.Racing : RoomPhase.Lobby,
-                hostName = me != null ? me.name : "",
-            };
-        }
-
-        void TickHost(double now)
-        {
-            var me = Me;
-            if (me != null) me.lastHeardMs = now;
-
-            // Players who have not said hello, or have gone quiet.
-            foreach (var peer in new List<Peer>(peers.Values))
-            {
-                if (peer.uid == 0 && (now - peer.connectedAt > CoopTiming.HelloTimeout || now - peer.rejectedAt > 1500)) { link.Kick(peer.id); peers.Remove(peer.id); continue; }
-                if (now - peer.lastHeard > CoopTiming.HeartbeatTimeout) { link.Kick(peer.id); DropPeer(peer.id, now, true); }
-            }
-
-            // Seats held for players who dropped out, and disqualification after the grace period.
-            for (int i = players.Count - 1; i >= 0; i--)
-            {
-                var p = players[i];
-                if (p.connected || p.uid == Uid) continue;
-                double away = now - p.lostSinceMs;
-                if (!InRace)
-                {
-                    if (away > CoopTiming.LobbyGrace) { players.RemoveAt(i); dirty = true; }
-                }
-                else if (p.status == PlayerStatus.Racing && away > CoopTiming.RaceGrace)
-                {
-                    p.status = PlayerStatus.Disconnected;
-                    p.outMs = (uint)Math.Max(0, p.lostSinceMs - raceStartLocal);
-                    dirty = true;
-                }
-            }
-
-            StepPhase(now);
-
-            var beacon = MakeBeacon();
-            if (beacon.players != advertised.players || beacon.phase != advertised.phase || beacon.epoch != advertised.epoch || beacon.hostName != advertised.hostName)
-            {
-                advertised = beacon;
-                link.UpdateBeacon(beacon);
-            }
-
-            if ((dirty && now - lastSnapshotAt >= CoopTiming.SnapshotMinGap) || now - lastSnapshotAt >= CoopTiming.SnapshotInterval)
-                SendSnapshot(-1);
-
-            if (Phase == SessionPhase.Racing && motionsFresh && now >= nextMotionsAt)
-            {
-                nextMotionsAt = now + CoopTiming.MotionInterval;
-                motionsFresh = false;
-                motionsOut.Clear();
-                foreach (var kv in latestMotions)
-                {
-                    var p = InSlot(kv.Key);
-                    if (p != null && p.status == PlayerStatus.Racing) motionsOut.Add(kv);
-                }
-                if (motionsOut.Count > 0)
-                {
-                    writer.Reset();
-                    CoopMessages.WriteMotions(writer, motionsOut);
-                    Broadcast();
-                }
-            }
-        }
-
-        void StepPhase(double now)
-        {
-            int connected = 0, ready = 0;
-            foreach (var p in players)
-            {
-                if (!p.connected) continue;
-                connected++;
-                if (p.ready) ready++;
-            }
-            switch (Phase)
-            {
-                case SessionPhase.Lobby:
-                    if (connected >= CoopRules.MinPlayers && ready == connected && connected == players.Count)
-                    {
-                        phaseAtLocal = now + CoopTiming.StartCountdown;
-                        SetPhase(SessionPhase.Starting);
-                    }
-                    break;
-                case SessionPhase.Starting:
-                    if (connected < CoopRules.MinPlayers || ready != connected || connected != players.Count) SetPhase(SessionPhase.Lobby);
-                    else if (now >= phaseAtLocal) BeginLoading(now);
-                    break;
-                case SessionPhase.Loading:
-                    bool all = true;
-                    foreach (var p in players)
-                        if (p.connected && p.status == PlayerStatus.Racing && p.loadedRace != RaceId) all = false;
-                    if (all || now >= loadDeadline)
-                    {
-                        raceStartLocal = now + CoopTiming.RaceCountdown;
-                        raceStartKnown = true;
-                        phaseAtLocal = raceStartLocal;
-                        SetPhase(SessionPhase.Racing);
-                    }
-                    break;
-                case SessionPhase.Racing:
-                    if (!raceStartLocked && now >= raceStartLocal) raceStartLocked = true;
-                    if (CoopRules.RaceOver(players)) SetPhase(SessionPhase.Over);
-                    break;
-                case SessionPhase.Over:
-                    // A player disqualified by mistake can't come back, and a new race starts from the lobby (NewRace).
-                    break;
-            }
-        }
-
-        void BeginLoading(double now)
-        {
-            var s = Selection;
-            if (s.route == CoopSelection.Random || s.route >= RouteCount) s.route = (byte)random.Next(Math.Max(1, RouteCount));
-            if (s.addOn == CoopSelection.Random || s.addOn >= AddOnCount) s.addOn = (byte)random.Next(Math.Max(1, AddOnCount));
-            RaceSelection = s;
-            RaceId = (byte)(RaceId == 255 ? 1 : RaceId + 1);
-            foreach (var p in players)
-            {
-                p.status = PlayerStatus.Racing;
-                p.leg = 0; p.progress = 0; p.finishMs = 0; p.outMs = 0; p.place = 0;
-                p.track.Clear();
-            }
-            myStatus = PlayerStatus.Racing;
-            myLeg = 0; myProgress = 0; myFinishMs = 0;
-            raceStartKnown = raceStartLocked = false;
-            latestMotions.Clear();
-            loadDeadline = now + CoopTiming.LoadTimeout;
-            SetPhase(SessionPhase.Loading);
-            if (!InRaceScanning) { link.StartScan(); InRaceScanning = true; }
-        }
-
-        bool InRaceScanning;
-
         void SetPhase(SessionPhase phase)
         {
             if (Phase == phase) return;
             Phase = phase;
             dirty = true;
             if (PhaseChanged != null) PhaseChanged(phase);
-        }
-
-        void OnHostMessage(Peer peer, byte[] message, double now)
-        {
-            var r = new ByteReader(message);
-            var type = CoopMessages.TypeOf(message);
-            if (type == MsgType.Hello)
-            {
-                HelloMsg hello;
-                if (CoopMessages.Read(r, out hello)) OnHello(peer, hello, now);
-                return;
-            }
-            var p = peer.uid != 0 ? Find(peer.uid) : null;
-            if (p == null) return;   // nothing but Hello before a seat
-            p.lastHeardMs = now;
-            switch (type)
-            {
-                case MsgType.Ping:
-                    r.U8();
-                    uint sent = r.U32();
-                    writer.Reset();
-                    CoopMessages.WritePong(writer, sent, HostNow);
-                    SendTo(peer);
-                    break;
-                case MsgType.Profile:
-                    ProfileMsg profile;
-                    if (!CoopMessages.Read(r, out profile)) break;
-                    string name = CoopRules.CleanName(profile.name);
-                    bool lobby = Phase == SessionPhase.Lobby || Phase == SessionPhase.Starting;
-                    bool ready = lobby ? profile.ready : p.ready;
-                    if (name != p.name || profile.character != p.character || ready != p.ready || profile.loadedRace != p.loadedRace)
-                    {
-                        p.name = name;
-                        p.character = profile.character;
-                        p.ready = ready;
-                        p.loadedRace = profile.loadedRace;
-                        dirty = true;
-                    }
-                    break;
-                case MsgType.Progress:
-                    ProgressMsg progress;
-                    if (CoopMessages.Read(r, out progress)) ApplyProgress(p, progress);
-                    break;
-                case MsgType.Motion:
-                    CoopMotion motion;
-                    if (!CoopMessages.ReadMotion(r, out motion) || p.status != PlayerStatus.Racing) break;
-                    latestMotions[p.slot] = motion;
-                    p.progress = motion.progress;
-                    p.track.Add(motion);
-                    motionsFresh = true;
-                    break;
-                case MsgType.Select:
-                    SelectMsg select;
-                    if (CoopMessages.Read(r, out select)) ApplySelect(p, select.route, select.addOn);
-                    break;
-                case MsgType.Leave:
-                    p.connected = false;
-                    p.lostSinceMs = now;
-                    p.peer = -1;
-                    if (p.status == PlayerStatus.Racing && InRace) { p.status = PlayerStatus.Left; p.outMs = (uint)Math.Max(0, now - raceStartLocal); }
-                    if (!InRace) players.Remove(p);
-                    peers.Remove(peer.id);
-                    link.Kick(peer.id);
-                    dirty = true;
-                    break;
-            }
-        }
-
-        uint HostNow { get { return (uint)Math.Max(0, clock.NowMs); } }
-
-        void OnHello(Peer peer, HelloMsg hello, double now)
-        {
-            if (hello.protocol != CoopMessages.Protocol) { Reject(peer, RejectReason.Version); return; }
-            var known = Find(hello.uid);
-            if (known == null)
-            {
-                // A race under way takes nobody new, except a player of this very session this host's copy of the lobby
-                // missed (it took over before hearing of them): they were racing, so they race on.
-                bool racer = InRace && hello.sessionId == SessionId && SessionId != 0;
-                if (Phase != SessionPhase.Lobby && Phase != SessionPhase.Starting && !racer) { Reject(peer, RejectReason.InProgress); return; }
-                int slot = CoopRules.FreeSlot(players);
-                if (slot < 0) { Reject(peer, RejectReason.Full); return; }
-                known = new CoopPlayer { slot = (byte)slot, uid = hello.uid, status = racer ? PlayerStatus.Racing : PlayerStatus.Lobby, loadedRace = racer ? RaceId : (byte)0 };
-                known.tag = CoopRules.UniqueTag(hello.uid, players);
-                players.Add(known);
-                if (Phase == SessionPhase.Starting) SetPhase(SessionPhase.Lobby);
-            }
-            else if (known.uid == Uid)
-            {
-                Reject(peer, RejectReason.InProgress);   // (our own id from another phone: a copied install)
-                return;
-            }
-            // A player who was here before gets their seat (and their race) back.
-            foreach (var other in peers.Values)
-                if (other != peer && other.uid == hello.uid) { link.Kick(other.id); other.uid = 0; }
-            peer.uid = hello.uid;
-            known.peer = peer.id;
-            known.connected = true;
-            known.lastHeardMs = now;
-            known.name = CoopRules.CleanName(hello.name);
-            known.character = hello.character;
-            dirty = true;
-
-            writer.Reset();
-            CoopMessages.Write(writer, new WelcomeMsg { sessionId = SessionId, epoch = Epoch, slot = known.slot, tag = known.tag });
-            SendTo(peer);
-            SendSnapshot(peer.id);
-        }
-
-        void Reject(Peer peer, RejectReason reason)
-        {
-            writer.Reset();
-            CoopMessages.WriteReject(writer, reason);
-            SendTo(peer);
-            peer.uid = 0;
-            peer.rejectedAt = clock.NowMs;   // the player's phone hangs up once it reads the reason; else it is dropped in a moment
-        }
-
-        void ApplySelect(CoopPlayer by, byte route, byte addOn)
-        {
-            if (by == null || (Phase != SessionPhase.Lobby && Phase != SessionPhase.Starting)) return;
-            var s = new CoopSelection { route = route, addOn = addOn, chosenBy = by.slot };
-            if (s.Equals(Selection)) return;
-            Selection = s;
-            // A new stage: everyone looks again before the race starts.
-            foreach (var p in players) p.ready = false;
-            myReady = false;
-            if (Phase == SessionPhase.Starting) SetPhase(SessionPhase.Lobby);
-            dirty = true;
-        }
-
-        void ApplyProgress(CoopPlayer p, ProgressMsg m)
-        {
-            if (!InRace || m.raceId != RaceId) return;
-            if (m.leg != p.leg) { p.leg = m.leg; dirty = true; }
-            if (p.status == PlayerStatus.Racing)
-            {
-                p.progress = Math.Max(p.progress, m.progress);
-                if (m.status == PlayerStatus.Finished)
-                {
-                    p.status = PlayerStatus.Finished;
-                    p.finishMs = m.finishMs;
-                    p.progress = 1f;
-                    CoopRules.AssignPlaces(players);
-                    dirty = true;
-                }
-                else if (m.status == PlayerStatus.Left)
-                {
-                    p.status = PlayerStatus.Left;
-                    p.outMs = (uint)Math.Max(0, RaceTimeMs);
-                    dirty = true;
-                }
-            }
-        }
-
-        /// <summary>Host: a player's connection went (or went quiet). Their seat and race wait for them (the grace period).</summary>
-        void DropPeer(int id, double now, bool timedOut)
-        {
-            Peer peer;
-            if (!peers.TryGetValue(id, out peer)) return;
-            peers.Remove(id);
-            var p = peer.uid != 0 ? Find(peer.uid) : null;
-            if (p == null || p.peer != id) return;
-            p.connected = false;
-            p.peer = -1;
-            p.lostSinceMs = now - (timedOut ? CoopTiming.HeartbeatTimeout : 0);
-            if (Phase == SessionPhase.Starting) SetPhase(SessionPhase.Lobby);
-            dirty = true;
-        }
-
-        void SendSnapshot(int onlyPeer)
-        {
-            var s = new SnapshotMsg
-            {
-                version = ++version,
-                sessionId = SessionId,
-                epoch = Epoch,
-                phase = Phase,
-                raceId = RaceId,
-                selection = Selection,
-                raceSelection = RaceSelection,
-                phaseAtHostMs = (uint)Math.Max(0, Phase == SessionPhase.Starting || Phase == SessionPhase.Racing || Phase == SessionPhase.Over ? phaseAtLocal : 0),
-            };
-            s.players.AddRange(players);
-            writer.Reset();
-            CoopMessages.Write(writer, s);
-            if (onlyPeer >= 0)
-            {
-                Peer peer;
-                if (peers.TryGetValue(onlyPeer, out peer)) SendTo(peer);
-                return;
-            }
-            dirty = false;
-            lastSnapshotAt = clock.NowMs;
-            Broadcast();
-        }
-
-        void Broadcast()
-        {
-            foreach (var peer in peers.Values)
-                if (peer.uid != 0) SendTo(peer);
-        }
-
-        void SendTo(Peer peer)
-        {
-            foreach (var packet in CoopFraming.Split(writer.Buffer, writer.Length, link.MaxPacket, peer.txNumber++))
-                link.Send(peer.id, packet);
-        }
-
-        /// <summary>Another host of this session has more players (after a split): hand over and join it.</summary>
-        void YieldTo(string address, double now)
-        {
-            link.StopHost();
-            peers.Clear();
-            hostingStarted = false;
-            Role = SessionRole.Client;
-            foreach (var p in players) { p.isHost = false; if (p.uid != Uid) { p.connected = false; } }
-            BeginLost(now, true);
-            migrateAt = now + CoopTiming.RaceGrace;   // it was told to join the other host: no quick take-over
-            yieldTarget = address;
-            ConnectTo(address);
-        }
-
-        // ---------- Client ----------
-
-        void ConnectTo(string address)
-        {
-            lastConnectAttempt = clock.NowMs;
-            connectStartedAt = clock.NowMs;
-            connectPending = true;
-            welcomed = false;
-            host.rx.Reset();
-            host.txNumber = 0;
-            host.lastHeard = clock.NowMs;
-            link.Connect(address);
-        }
-
-        void OnConnectedToHost(double now)
-        {
-            host.lastHeard = now;
-            writer.Reset();
-            CoopMessages.Write(writer, new HelloMsg { protocol = CoopMessages.Protocol, uid = Uid, sessionId = SessionId, name = myName, character = myCharacter });
-            SendToHost();
-        }
-
-        void SendToHost()
-        {
-            foreach (var packet in CoopFraming.Split(writer.Buffer, writer.Length, link.MaxPacket, host.txNumber++))
-                link.Send(0, packet);
-        }
-
-        void TickClient(double now)
-        {
-            // A connection that was never welcomed in time is given up (a fresh join fails; a reconnection tries again).
-            if (connectPending && !welcomed && now - connectStartedAt > CoopTiming.HelloTimeout)
-            {
-                connectPending = false;
-                link.Disconnect();
-                if (freshJoin) { Notice(NoticeType.ConnectFailed, null, 0); Shutdown(); return; }
-            }
-
-            if (Connection == ConnectionState.Joined)
-            {
-                if (now - host.lastHeard > CoopTiming.HeartbeatTimeout)
-                {
-                    link.Disconnect();
-                    OnHostLost(now, false);
-                    return;
-                }
-                if (now >= nextPingAt)
-                {
-                    nextPingAt = now + (sync.HasSync && sync.RoundTrip > 0 && SamplesEnough ? CoopTiming.PingInterval : CoopTiming.FastPingInterval);
-                    pingsSent++;
-                    writer.Reset();
-                    CoopMessages.WritePing(writer, (uint)Math.Max(0, now));
-                    SendToHost();
-                }
-                if (profileDirty || now >= nextProfileAt) SendProfile();
-                if (InRace && (progressDirty || now >= nextProgressAt)) SendProgress();
-                if (Phase == SessionPhase.Racing && myMotionFresh && now >= nextMotionAt && myStatus == PlayerStatus.Racing)
-                {
-                    nextMotionAt = now + CoopTiming.MotionInterval;
-                    myMotionFresh = false;
-                    writer.Reset();
-                    CoopMessages.WriteMotion(writer, myMotion);
-                    SendToHost();
-                }
-                RefreshRaceStart(now);
-            }
-            else if (Connection == ConnectionState.Reconnecting) TickLost(now);
-        }
-
-        int pingsSent;
-        bool SamplesEnough { get { return pingsSent >= 6; } }
-
-        void SendProfile()
-        {
-            profileDirty = false;
-            nextProfileAt = clock.NowMs + CoopTiming.ProfileInterval;
-            writer.Reset();
-            CoopMessages.Write(writer, new ProfileMsg { seq = ++profileSeq, name = myName, character = myCharacter, ready = myReady, loadedRace = myLoadedRace });
-            SendToHost();
-        }
-
-        void SendProgress()
-        {
-            progressDirty = false;
-            nextProgressAt = clock.NowMs + CoopTiming.ProgressInterval;
-            writer.Reset();
-            CoopMessages.Write(writer, new ProgressMsg { seq = ++progressSeq, raceId = RaceId, status = myStatus, leg = myLeg, progress = myProgress, finishMs = myFinishMs });
-            SendToHost();
-        }
-
-        void OnClientMessage(byte[] message, double now)
-        {
-            var r = new ByteReader(message);
-            switch (CoopMessages.TypeOf(message))
-            {
-                case MsgType.Welcome:
-                    WelcomeMsg welcome;
-                    if (!CoopMessages.Read(r, out welcome)) break;
-                    bool wasLost = Connection == ConnectionState.Reconnecting;
-                    welcomed = true;
-                    connectPending = false;
-                    freshJoin = false;
-                    yieldTarget = null;
-                    SessionId = welcome.sessionId;
-                    Epoch = welcome.epoch;
-                    Connection = ConnectionState.Joined;
-                    migrateAt = double.PositiveInfinity;
-                    link.StopScan();
-                    sync.Reset();
-                    pingsSent = 0;
-                    nextPingAt = now;
-                    lastVersion = 0;
-                    hasSnapshot = false;
-                    profileDirty = true;
-                    progressDirty = true;
-                    if (wasLost) Notice(NoticeType.Reconnected, null, 0);
-                    break;
-                case MsgType.Reject:
-                    r.U8();
-                    int reason = r.U8();
-                    link.Disconnect();
-                    if (freshJoin || !InRace)
-                    {
-                        Notice(NoticeType.Rejected, null, reason);
-                        Shutdown();
-                    }
-                    else
-                    {
-                        // Turned away by a host that doesn't know us (a split): keep looking, or take over in turn.
-                        welcomed = false;
-                        connectPending = false;
-                    }
-                    break;
-                case MsgType.Snapshot:
-                    SnapshotMsg snapshot;
-                    if (CoopMessages.Read(r, out snapshot)) ApplySnapshot(snapshot, now);
-                    break;
-                case MsgType.Motions:
-                    if (!CoopMessages.ReadMotions(r, motionsIn)) break;
-                    foreach (var kv in motionsIn)
-                    {
-                        var p = InSlot(kv.Key);
-                        if (p != null && p.uid != Uid) { p.track.Add(kv.Value); p.progress = kv.Value.progress; }
-                    }
-                    break;
-                case MsgType.Pong:
-                    r.U8();
-                    uint sent = r.U32();
-                    uint hostMs = r.U32();
-                    if (!r.Failed) sync.AddSample(sent, hostMs, now);
-                    break;
-                case MsgType.Closing:
-                    Notice(NoticeType.LobbyClosed, null, 0);
-                    Shutdown();
-                    break;
-                case MsgType.HostLeaving:
-                    link.Disconnect();
-                    OnHostLost(now, true);
-                    break;
-            }
-        }
-
-        void ApplySnapshot(SnapshotMsg s, double now)
-        {
-            if (hasSnapshot && s.version <= lastVersion && s.epoch == Epoch) return;
-            hasSnapshot = true;
-            lastVersion = s.version;
-            SessionId = s.sessionId;
-            Epoch = s.epoch;
-            bool newRace = s.raceId != RaceId && (s.phase == SessionPhase.Loading || s.phase == SessionPhase.Racing);
-            RaceId = s.raceId;
-            // A new stage resets everyone's ready (the host does the same to its copy).
-            if (announced.Count > 0 && !s.selection.Equals(Selection) && (s.phase == SessionPhase.Lobby || s.phase == SessionPhase.Starting)) myReady = false;
-            Selection = s.selection;
-            RaceSelection = s.raceSelection;
-            snapshotPhaseAtHost = s.phaseAtHostMs;
-
-            // Keep each player's object (their ghost's samples live on it).
-            var keep = new List<CoopPlayer>(s.players.Count);
-            foreach (var incoming in s.players)
-            {
-                var p = Find(incoming.uid) ?? new CoopPlayer { uid = incoming.uid };
-                p.slot = incoming.slot;
-                p.tag = incoming.tag;
-                p.name = incoming.name;
-                p.character = incoming.character;
-                p.isHost = incoming.isHost;
-                p.ready = incoming.ready;
-                bool wasConnected = p.connected || p.lostSinceMs <= 0;
-                p.connected = incoming.connected;
-                if (p.connected) p.lastHeardMs = now;
-                else if (wasConnected) p.lostSinceMs = now;
-                p.loadedRace = incoming.loadedRace;
-                p.status = incoming.status;
-                p.leg = incoming.leg;
-                if (p.uid != Uid || incoming.progress > p.progress) p.progress = incoming.progress;
-                p.finishMs = incoming.finishMs;
-                p.outMs = incoming.outMs;
-                p.place = incoming.place;
-                keep.Add(p);
-            }
-            players.Clear();
-            players.AddRange(keep);
-
-            // Who would take over if the host went: every other player still connected, by slot.
-            candidates.Clear();
-            var order = new List<CoopPlayer>(players);
-            order.Sort((a, b) => a.slot.CompareTo(b.slot));
-            foreach (var p in order)
-                if (!p.isHost && p.connected && p.status != PlayerStatus.Left) candidates.Add(p.uid);
-
-            if (newRace)
-            {
-                myStatus = PlayerStatus.Racing;
-                myLeg = 0; myProgress = 0; myFinishMs = 0;
-                raceStartKnown = raceStartLocked = false;
-                foreach (var p in players) p.track.Clear();
-            }
-            var me = Me;
-            if (me != null)
-            {
-                // The host has the last word on whether this phone's run still counts.
-                if (me.status == PlayerStatus.Disconnected && myStatus == PlayerStatus.Racing) myStatus = PlayerStatus.Disconnected;
-                if (me.status == PlayerStatus.Lobby && s.phase == SessionPhase.Lobby) myStatus = PlayerStatus.Lobby;
-            }
-            if (s.phase == SessionPhase.Lobby && (Phase == SessionPhase.Over || Phase == SessionPhase.Racing))
-            {
-                myStatus = PlayerStatus.Lobby;
-                myReady = false;
-                raceStartKnown = raceStartLocked = false;
-            }
-            if (s.phase != Phase)
-            {
-                Phase = s.phase;
-                if (PhaseChanged != null) PhaseChanged(Phase);
-            }
-            if (me != null && me.status == PlayerStatus.Racing && myStatus == PlayerStatus.Finished) progressDirty = true;   // make sure the host has our time
-            RefreshRaceStart(now);
-        }
-
-        /// <summary>The start time from the host's clock, until the race is under way; then it never moves again.</summary>
-        void RefreshRaceStart(double now)
-        {
-            if (raceStartLocked || (Phase != SessionPhase.Racing && Phase != SessionPhase.Over) || !sync.HasSync || snapshotPhaseAtHost == 0) return;
-            raceStartLocal = sync.ToLocal(snapshotPhaseAtHost);
-            raceStartKnown = true;
-            if (now >= raceStartLocal) raceStartLocked = true;
-        }
-
-        // ---------- Losing the host, and taking over ----------
-
-        void OnHostLost(double now, bool graceful)
-        {
-            if (Role != SessionRole.Client || Connection == ConnectionState.Reconnecting) return;
-            BeginLost(now, graceful);
-            Notice(NoticeType.ConnectionLost, null, graceful ? 1 : 0);
-        }
-
-        void BeginLost(double now, bool graceful)
-        {
-            Connection = ConnectionState.Reconnecting;
-            welcomed = false;
-            lostAt = now;
-            lostEpoch = Epoch;
-            var oldHost = players.Find(p => p.isHost);
-            if (oldHost != null && oldHost.uid != Uid)
-            {
-                oldHost.connected = false;
-                oldHost.lostSinceMs = now;
-            }
-            candidateIndex = candidates.IndexOf(Uid);
-            if (candidateIndex < 0) candidateIndex = candidates.Count;
-            migrateAt = InRace ? now + (graceful ? 500 : CoopTiming.ReconnectWindow) + candidateIndex * CoopTiming.MigrationStep : double.PositiveInfinity;
-            scanningSince = Radio == RadioState.On ? now : double.PositiveInfinity;
-            if (Radio == RadioState.On) link.StartScan();
-        }
-
-        void TickLost(double now)
-        {
-            if (Radio == RadioState.On && double.IsPositiveInfinity(scanningSince)) { link.StartScan(); scanningSince = now; }
-
-            // Waiting on a connection attempt?
-            bool attempting = connectPending && !welcomed;
-            if (!attempting)
-            {
-                var best = BestRoomForSession(now);
-                if (best != null && now - lastConnectAttempt >= CoopTiming.ConnectRetry) { ConnectTo(best.address); return; }
-            }
-
-            if (!InRace)
-            {
-                if (now - lostAt > CoopTiming.LobbyReconnect)
-                {
-                    Notice(NoticeType.LobbyClosed, null, 0);
-                    Shutdown();
-                }
-                return;
-            }
-
-            if (!attempting && now >= migrateAt && Radio == RadioState.On && now - scanningSince >= CoopTiming.ScanBeforeHost)
-                TakeOver(now);
-        }
-
-        /// <summary>The lobby of this session the scan hears that the others would join: the most players, then the oldest host.</summary>
-        CoopRoom BestRoomForSession(double now)
-        {
-            CoopRoom best = null;
-            foreach (var room in rooms.Values)
-            {
-                if (room.beacon.sessionId != SessionId || now - room.lastSeenMs > CoopTiming.RoomExpiry * 0.6) continue;
-                if (room.beacon.epoch < lostEpoch && yieldTarget == null) continue;   // an older host than the one we lost
-                if (best == null || CoopRules.ShouldYieldTo(best.beacon, room.beacon)) best = room;
-            }
-            return best;
-        }
-
-        void TakeOver(double now)
-        {
-            link.Disconnect();
-            Role = SessionRole.Host;
-            Connection = ConnectionState.Hosting;
-            Epoch = (byte)(lostEpoch + 1 + candidateIndex);
-            migrateAt = double.PositiveInfinity;
-            peers.Clear();
-            foreach (var p in players)
-            {
-                p.isHost = p.uid == Uid;
-                p.peer = -1;
-                if (p.uid == Uid) { p.connected = true; continue; }
-                if (p.connected) { p.connected = false; p.lostSinceMs = lostAt; }
-            }
-            var me = Me;
-            if (me != null)
-            {
-                me.status = myStatus == PlayerStatus.Lobby ? me.status : myStatus;
-                if (myStatus == PlayerStatus.Finished) { me.finishMs = myFinishMs; me.progress = 1f; }
-                me.leg = myLeg;
-                me.ready = myReady;
-                me.loadedRace = myLoadedRace;
-            }
-            CoopRules.AssignPlaces(players);
-            // The race clock: this phone's own start, now in its own clock (the host's clock is the host's local one).
-            if (Phase == SessionPhase.Loading) loadDeadline = now + CoopTiming.LoadTimeout;
-            if (Phase == SessionPhase.Racing && !raceStartKnown)
-            {
-                raceStartLocal = now + CoopTiming.RaceCountdown;   // (never synced: start counting from here)
-                raceStartKnown = true;
-            }
-            if (raceStartKnown) phaseAtLocal = raceStartLocal;
-            version += 1000;
-            quietUntil = now + CoopTiming.QuietAfterMigration;
-            InRaceScanning = true;
-            StartHosting();
-            dirty = true;
-            Notice(NoticeType.YouAreHost, null, 0);
-        }
-
-        // ---------- Local player ----------
-
-        void ApplyProfile()
-        {
-            if (IsHost)
-            {
-                var me = Me;
-                if (me == null) return;
-                bool lobby = Phase == SessionPhase.Lobby || Phase == SessionPhase.Starting;
-                me.name = myName;
-                me.character = myCharacter;
-                if (lobby) me.ready = myReady;
-                me.loadedRace = myLoadedRace;
-                dirty = true;
-            }
-            else profileDirty = true;
-        }
-
-        void ApplyProgressToMe()
-        {
-            if (!IsHost) return;
-            var me = Me;
-            if (me == null) return;
-            me.leg = myLeg;
-            if (me.status == PlayerStatus.Racing && myStatus == PlayerStatus.Finished)
-            {
-                me.status = PlayerStatus.Finished;
-                me.finishMs = myFinishMs;
-                me.progress = 1f;
-                CoopRules.AssignPlaces(players);
-            }
-            dirty = true;
         }
 
         // ---------- Notices ----------
@@ -1375,40 +688,52 @@ namespace DribbleToSchool.Coop
             if (Noticed != null) Noticed(new CoopNotice { type = type, player = player != null ? player.Clone() : null, code = code });
         }
 
+        int AnnouncedIndex(uint uid)
+        {
+            for (int i = 0; i < announced.Count; i++) if (announced[i].uid == uid) return i;
+            return -1;
+        }
+
         /// <summary>What changed since the last frame, as notices (the same on the host and on the players' phones).</summary>
         void Announce()
         {
             bool quiet = clock.NowMs < quietUntil;
-            foreach (var p in players)
+            bool hadHost = false;
+            for (int i = 0; i < announced.Count; i++) if (announced[i].isHost) hadHost = true;
+            for (int i = 0; i < players.Count; i++)
             {
-                CoopPlayer was = null;
-                foreach (var a in announced) if (a.uid == p.uid) { was = a; break; }
+                var p = players[i];
+                int w = AnnouncedIndex(p.uid);
                 if (p.uid == Uid) continue;
-                if (was == null) { if (announced.Count > 0) Notice(NoticeType.PlayerJoined, p, 0); continue; }
+                if (w < 0) { if (announcedAny) Notice(NoticeType.PlayerJoined, p, 0); continue; }
+                var was = announced[w];
                 if (was.status != p.status)
                 {
                     if (p.status == PlayerStatus.Finished) Notice(NoticeType.PlayerFinished, p, p.place);
                     else if (p.status == PlayerStatus.Disconnected) Notice(NoticeType.PlayerOut, p, 0);
                     else if (p.status == PlayerStatus.Left) Notice(NoticeType.PlayerLeft, p, 0);
+                    else if (p.status == PlayerStatus.Racing && was.status == PlayerStatus.Disconnected) Notice(NoticeType.PlayerBack, p, 1);
                 }
                 if (was.connected && !p.connected && !quiet && p.status != PlayerStatus.Left) Notice(NoticeType.PlayerLost, p, 0);
                 if (!was.connected && p.connected && !quiet) Notice(NoticeType.PlayerBack, p, 0);
-                if (!was.isHost && p.isHost && announced.Exists(a => a.isHost)) Notice(NoticeType.NewHost, p, 0);
+                if (!was.isHost && p.isHost && hadHost) Notice(NoticeType.NewHost, p, 0);
             }
-            foreach (var a in announced)
-                if (Find(a.uid) == null && a.uid != Uid && a.status != PlayerStatus.Left) Notice(NoticeType.PlayerLeft, a, 0);
-
-            var meNow = Me;
-            if (meNow != null)
+            for (int i = 0; i < announced.Count; i++)
             {
-                CoopPlayer meWas = announced.Find(a => a.uid == Uid);
-                if (meWas != null && meWas.status == PlayerStatus.Racing && meNow.status == PlayerStatus.Disconnected) Notice(NoticeType.YouAreOut, meNow, 0);
+                var a = announced[i];
+                if (a.uid != Uid && Find(a.uid) == null && a.status != PlayerStatus.Left)
+                    Notice(NoticeType.PlayerLeft, new CoopPlayer { uid = a.uid, status = PlayerStatus.Left }, 0);
             }
-            if (!announcedSelection.Equals(Selection) && players.Count > 0 && announced.Count > 0) Notice(NoticeType.SelectionChanged, InSlot(Selection.chosenBy), 0);
+            if (!announcedSelection.Equals(Selection) && announcedAny) Notice(NoticeType.SelectionChanged, InSlot(Selection.chosenBy), 0);
             if (announcedPhase != Phase && Phase == SessionPhase.Over) Notice(NoticeType.RaceOver, null, 0);
 
             announced.Clear();
-            foreach (var p in players) announced.Add(p.Clone());
+            for (int i = 0; i < players.Count; i++)
+            {
+                var p = players[i];
+                announced.Add(new Announced { uid = p.uid, status = p.status, connected = p.connected, isHost = p.isHost });
+            }
+            announcedAny = players.Count > 0;
             announcedSelection = Selection;
             announcedPhase = Phase;
         }
@@ -1421,8 +746,10 @@ namespace DribbleToSchool.Coop
             players.Clear();
             peers.Clear();
             announced.Clear();
+            announcedAny = false;
             latestMotions.Clear();
             sync.Reset();
+            jumpsAtLock = 0;
             welcomed = false;
             hasSnapshot = false;
             lastVersion = 0;
@@ -1433,13 +760,20 @@ namespace DribbleToSchool.Coop
             myStatus = PlayerStatus.Lobby;
             myReady = false;
             myLoadedRace = 0;
+            myFinishMs = myOutMs = 0;
             raceStartKnown = raceStartLocked = false;
+            raceStartTrusted = true;
             migrateAt = double.PositiveInfinity;
+            deafSince = double.PositiveInfinity;
             yieldTarget = null;
             leaving = false;
             shutdownAt = double.PositiveInfinity;
-            InRaceScanning = false;
+            splitScanning = false;
             freshJoin = false;
+            joinAttempts = 0;
+            failedAttempts.Clear();
+            removedUids.Clear();
+            removedSeeds.Clear();
             SessionId = 0;
             Epoch = 0;
         }
@@ -1457,12 +791,16 @@ namespace DribbleToSchool.Coop
             hostingStarted = false;
             peers.Clear();
             welcomed = false;
+            connectPending = false;
+            retryJoinAt = double.PositiveInfinity;
+            if (browsing) link.StartScan();   // (back to the Join list)
         }
 
         uint NewSessionId()
         {
+            // (24 bits: the iOS beacon carries no more)
             uint id = 0;
-            while (id == 0) id = (uint)random.Next() ^ ((uint)random.Next() << 16) ^ Uid;
+            while (id == 0) id = ((uint)random.Next() ^ ((uint)random.Next() << 16) ^ Uid) & RoomBeacon.SessionMask;
             return id;
         }
 

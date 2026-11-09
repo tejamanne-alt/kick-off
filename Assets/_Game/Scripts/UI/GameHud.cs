@@ -60,8 +60,9 @@ namespace DribbleToSchool.UI
             level.BellRang += OnBellRang;
             GameEvents.Raised += OnGameEvent;
             TutorialHint.Shown += OnHint;
-            // The Controls page's tour button plays the tour here and now.
-            ControlsTour.Replay = ReplayTour;
+            // The Controls page's tour button plays the tour here and now (not in a co-op race: the tour holds the run, and
+            // the race doesn't wait).
+            if (LevelManager.Race == null) ControlsTour.Replay = ReplayTour;
         }
 
         bool challengeGuideShown;
@@ -369,7 +370,7 @@ namespace DribbleToSchool.UI
             if (lastState == LevelState.Paused)
             {
                 if (pauseModal != null) Destroy(pauseModal);
-                foreach (var name in new[] { "Settings", "ConfirmReset", "ControlsGuide", "ChallengeGuide" })
+                foreach (var name in new[] { "Settings", "ConfirmReset", "ControlsGuide", "ChallengeGuide", "CoopConfirm" })
                 {
                     var leftover = root.Find(name);
                     if (leftover != null) Destroy(leftover.gameObject);

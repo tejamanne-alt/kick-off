@@ -17,7 +17,7 @@ namespace DribbleToSchool.Coop
         public static CoopLevelLink Current { get; private set; }
 
         /// <summary>How far behind the kid's lane each ghost runs (a lane each, toward the houses, inside the footpath).</summary>
-        static readonly float[] Lanes = { 0.45f, 0.8f, 1.15f };
+        static readonly float[] Lanes = { 0.12f, 0.22f, 0.32f };
         /// <summary>Ghosts are drawn this far in the past, so there is always a sample after the moment drawn.</summary>
         public const double InterpolationDelayMs = 160;
 
@@ -38,7 +38,8 @@ namespace DribbleToSchool.Coop
         public float GoalX { get; private set; }
         public float LegLength { get { return Mathf.Max(10f, GoalX - StartX); } }
         public LevelManager Level { get { return level; } }
-        public IEnumerable<CoopGhost> Ghosts { get { return ghosts.Values; } }
+        /// <summary>(the collection itself, not an IEnumerable: walked every frame by the HUD without allocating)</summary>
+        public Dictionary<uint, CoopGhost>.ValueCollection Ghosts { get { return ghosts.Values; } }
 
         public void Attach(CoopService service, CoopRaceMode race, LevelManager level)
         {
@@ -48,7 +49,7 @@ namespace DribbleToSchool.Coop
             Current = this;
 
             // The first leg waits for GO (the race's hold) and then goes at once; later legs flash GO.
-            level.introDuration = race.Leg == 0 ? 0.05f : 0.5f;
+            level.introDuration = race.Leg == 0 ? 0.05f : 0.3f;
 
             Checkpoint start = null;
             foreach (var cp in level.checkpoints) if (cp != null && cp.isStart) { start = cp; break; }
@@ -63,7 +64,8 @@ namespace DribbleToSchool.Coop
             ghostRoot = new GameObject("CoopGhosts").transform;
             ghostRoot.SetParent(transform, false);
             PrepareTemplates();
-            foreach (var p in service.Session.Players) if (p.uid != service.Session.Uid) Ghost(p);
+            var players = service.Session.Players;
+            for (int i = 0; i < players.Count; i++) if (players[i].uid != service.Session.Uid) Ghost(players[i]);
 
             var hudObject = new GameObject("CoopHud");
             hudObject.transform.SetParent(transform, false);
@@ -77,14 +79,20 @@ namespace DribbleToSchool.Coop
         }
 
         /// <summary>
-        /// A copy of every kid's model (and of the ball's mesh), kept out of sight, taken before the level's animation first
-        /// poses its kid: each ghost is copied from these, whenever it is made.
+        /// A copy of the model of every kid the others play (and of the ball's mesh), kept out of sight, taken before the
+        /// level's animation first poses its kid: each ghost is copied from these, whenever it is made. (Only the kids in
+        /// the race: copying the whole roster at every leg would cost a hitch and memory for nothing. A kid nobody had when
+        /// the leg loaded, a latecomer's, borrows one of these.)
         /// </summary>
         void PrepareTemplates()
         {
             var store = new GameObject("GhostTemplates");
             store.SetActive(false);
             store.transform.SetParent(ghostRoot, false);
+            var wanted = new HashSet<string>();
+            var players = service.Session.Players;
+            for (int i = 0; i < players.Count; i++)
+                if (players[i].uid != service.Session.Uid) wanted.Add(CoopProfile.CharacterId(players[i].character));
             var choice = level.kid.GetComponent<CharacterChoice>();
             if (choice != null && choice.characters != null && choice.ids != null)
             {
@@ -92,6 +100,8 @@ namespace DribbleToSchool.Coop
                 {
                     var source = choice.characters[i];
                     if (source == null) continue;
+                    // (the first kid is always kept, so a latecomer has someone to borrow)
+                    if (!wanted.Contains(choice.ids[i]) && templates.Count > 0) continue;
                     placements[choice.ids[i]] = new Pose(source.transform.localPosition, source.transform.localRotation);
                     var copy = Instantiate(source, store.transform);
                     copy.SetActive(true);
@@ -183,17 +193,14 @@ namespace DribbleToSchool.Coop
                     progress = race.Progress((k.x - StartX) / LegLength),
                 });
             }
-            else if (level.State == LevelState.Complete && race.Finished)
-            {
-                Vector2 k = kid.transform.position;
-                session.ReportMotion(new CoopMotion { x = k.x, y = k.y, flags = CoopMotion.Grounded | CoopMotion.Celebrating | CoopMotion.FacingRight, progress = 1f });
-            }
 
-            // The others, a moment in the past.
+            // The others, a moment in the past. (Real time: the race doesn't stop for this phone's pause menu.)
             double t = session.RaceTimeMs - InterpolationDelayMs;
-            float dt = Time.deltaTime;
-            foreach (var p in session.Players)
+            float dt = Time.unscaledDeltaTime;
+            var players = session.Players;
+            for (int i = 0; i < players.Count; i++)
             {
+                var p = players[i];
                 if (p.uid == session.Uid) continue;
                 var ghost = Ghost(p);
                 var m = new CoopMotion();

@@ -7,9 +7,11 @@ namespace DribbleToSchool.Coop.Net
     /// Splits a message into radio packets and puts them back together. A Bluetooth LE write or notification carries at most
     /// the link's MTU less 3 bytes (20 on the oldest phones, 180 to 500 once the MTU is raised), and a message (the lobby's
     /// snapshot with four names) can be longer. Each packet starts with one byte: bit 7 set on the message's last packet,
-    /// bits 0-6 the message's number (mod 128). The native layers deliver a connection's packets in order and queue rather
-    /// than drop them, so a gap only happens across a reconnection; a packet of another number than the one being put
-    /// together starts over, and the half message is dropped (every message the session sends is repeated or superseded).
+    /// bit 6 on its first, bits 0-5 the message's number (mod 64). The native layers deliver a connection's packets in order,
+    /// but a queue that overflows (a phone that stopped listening) drops its oldest messages, and a reconnection cuts one
+    /// short: a message is only ever put together from its first packet to its last, all of one number, and anything else
+    /// (a tail whose start was dropped) is thrown away, never read as a message of its own. Every message the session sends
+    /// is repeated or superseded, so nothing is lost for good.
     /// </summary>
     public static class CoopFraming
     {
@@ -18,7 +20,7 @@ namespace DribbleToSchool.Coop.Net
         public const int MinPacket = 20;
         /// <summary>A message longer than this is refused (nothing the session sends comes near it).</summary>
         public const int MaxMessage = 2048;
-        const int LastFlag = 0x80;
+        public const int LastFlag = 0x80, FirstFlag = 0x40, NumberMask = 0x3F;
 
         /// <summary>
         /// The packets of one message, each at most <paramref name="maxPacket"/> bytes (header included).
@@ -29,13 +31,13 @@ namespace DribbleToSchool.Coop.Net
             var packets = new List<byte[]>();
             if (message == null || length <= 0 || length > MaxMessage) return packets;
             int chunk = Math.Max(MinPacket, maxPacket) - HeaderBytes;
-            int tag = number & 0x7F;
+            int tag = number & NumberMask;
             for (int offset = 0; offset < length; offset += chunk)
             {
                 int n = Math.Min(chunk, length - offset);
                 var packet = new byte[n + HeaderBytes];
                 bool last = offset + n >= length;
-                packet[0] = (byte)(tag | (last ? LastFlag : 0));
+                packet[0] = (byte)(tag | (last ? LastFlag : 0) | (offset == 0 ? FirstFlag : 0));
                 Array.Copy(message, offset, packet, HeaderBytes, n);
                 packets.Add(packet);
             }
@@ -63,13 +65,20 @@ namespace DribbleToSchool.Coop.Net
         public byte[] Add(byte[] packet, int count)
         {
             if (packet == null || count < CoopFraming.HeaderBytes) return null;
-            int tag = packet[0] & 0x7F;
-            bool last = (packet[0] & 0x80) != 0;
-            if (number != tag)
+            int tag = packet[0] & CoopFraming.NumberMask;
+            bool last = (packet[0] & CoopFraming.LastFlag) != 0;
+            bool first = (packet[0] & CoopFraming.FirstFlag) != 0;
+            if (first)
             {
-                // A new message (or a gap after a reconnection): start it.
+                // A message starts (whatever was being put together is dropped: its end never came).
                 length = 0;
                 number = tag;
+            }
+            else if (number != tag)
+            {
+                // A piece of a message whose start never came (dropped, or cut by a reconnection): throw it away.
+                Reset();
+                return null;
             }
             int n = count - CoopFraming.HeaderBytes;
             if (length + n > buffer.Length)

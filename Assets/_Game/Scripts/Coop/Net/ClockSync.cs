@@ -19,6 +19,13 @@ namespace DribbleToSchool.Coop.Net
 
         /// <summary>At least one sample has come back.</summary>
         public bool HasSync { get { return count > 0; } }
+        /// <summary>Samples in the window (since the last reset or clock jump).</summary>
+        public int Samples { get { return count; } }
+        /// <summary>
+        /// How many times one of the two clocks was seen to jump (a sample no honest round trip explains): the window is
+        /// started again from that sample, and anything anchored to the old offset should be checked.
+        /// </summary>
+        public int Jumps { get; private set; }
         /// <summary>Host time minus local time, in milliseconds (0 before the first sample).</summary>
         public double Offset { get; private set; }
         /// <summary>The best round trip in the window, in milliseconds.</summary>
@@ -29,6 +36,7 @@ namespace DribbleToSchool.Coop.Net
         public void Reset()
         {
             count = next = 0;
+            Jumps = 0;
             Offset = 0;
             RoundTrip = LastRoundTrip = 0;
         }
@@ -39,7 +47,15 @@ namespace DribbleToSchool.Coop.Net
             double trip = nowLocal - sentLocal;
             if (trip < 0 || trip > 10000) return;   // a stale or impossible reply
             LastRoundTrip = trip;
-            offsets[next] = hostTime - (sentLocal + nowLocal) * 0.5;
+            double offset = hostTime - (sentLocal + nowLocal) * 0.5;
+            // An honest sample's offset is out by at most half its round trip, and so is the best one's: further apart than
+            // that, a clock jumped (a phone slept, say), and the old samples describe a clock that is gone.
+            if (count > 0 && Math.Abs(offset - Offset) > (trip + RoundTrip) * 0.5 + 50)
+            {
+                count = next = 0;
+                Jumps++;
+            }
+            offsets[next] = offset;
             trips[next] = trip;
             next = (next + 1) % Window;
             if (count < Window) count++;
@@ -61,11 +77,36 @@ namespace DribbleToSchool.Coop.Net
         double NowMs { get; }
     }
 
-    /// <summary>The real clock: a Stopwatch, monotonic and unaffected by the time of day being changed.</summary>
+    /// <summary>
+    /// The real clock: a Stopwatch, monotonic and unaffected by the time of day being changed, that also counts the time the
+    /// phone slept. (A Stopwatch stands still while the phone sleeps, on iOS and on Android: a racer who pressed the power
+    /// button would otherwise have that time left off their race.) Sleep shows as the time of day moving on further than
+    /// the Stopwatch between two reads; that gap, beyond a second, is added. A time of day set back is ignored, and one set
+    /// forward only makes this phone's own clock run late, never early.
+    /// </summary>
     public sealed class StopwatchClock : ICoopClock
     {
+        const double SleepThreshold = 1000;
+        const double MaxSleep = 6 * 3600 * 1000.0;
+
         readonly System.Diagnostics.Stopwatch watch = System.Diagnostics.Stopwatch.StartNew();
-        public double NowMs { get { return watch.Elapsed.TotalMilliseconds; } }
+        double lastWatch;
+        DateTime lastWall = DateTime.UtcNow;
+        double slept;
+
+        public double NowMs
+        {
+            get
+            {
+                double w = watch.Elapsed.TotalMilliseconds;
+                var wall = DateTime.UtcNow;
+                double hidden = (wall - lastWall).TotalMilliseconds - (w - lastWatch);
+                if (hidden > SleepThreshold && hidden < MaxSleep) slept += hidden;
+                lastWatch = w;
+                lastWall = wall;
+                return w + slept;
+            }
+        }
     }
 
     /// <summary>A clock tests move by hand.</summary>

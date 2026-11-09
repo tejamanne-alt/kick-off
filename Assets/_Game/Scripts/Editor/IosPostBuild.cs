@@ -52,6 +52,10 @@ namespace DribbleToSchool.EditorTools
             string plugin = project.FindFileGuidByProjectPath("Libraries/Plugins/iOS/DTSCoopBLE.mm");
             if (!string.IsNullOrEmpty(plugin))
                 project.SetCompileFlagsForFile(framework, plugin, new System.Collections.Generic.List<string> { "-fobjc-arc" });
+            else
+                // (the plugin refuses to compile without ARC, so the build fails loudly rather than leaking: but say why here)
+                UnityEngine.Debug.LogWarning("[IosPostBuild] Libraries/Plugins/iOS/DTSCoopBLE.mm not found in the Xcode project: "
+                    + "co-op Bluetooth needs it compiled with -fobjc-arc (set it on the file's build phase by hand).");
             project.WriteToFile(projectPath);
 
             // What the PBXProject API can't set, in the project file's text.

@@ -131,13 +131,19 @@ namespace DribbleToSchool.UI
         /// <summary>A yes/no card over everything: <paramref name="yes"/> runs on Yes.</summary>
         public static GameObject Confirm(Transform canvas, string question, System.Action yes)
         {
+            return Confirm(canvas, question, yes, "coop.yesLeave");
+        }
+
+        /// <summary>A yes/no question; <paramref name="yesKey"/> labels the yes (red) button.</summary>
+        public static GameObject Confirm(Transform canvas, string question, System.Action yes, string yesKey)
+        {
             GameObject root;
             var face = UIKit.Modal(canvas, "CoopConfirm", new Vector2(900f, 460f), out root);
             var text = UIKit.Label(face.transform, "Question", question, 38, UITheme.Ink, TextAnchor.MiddleCenter, true);
             UIKit.Place(text.rectTransform, new Vector2(0.5f, 1f), new Vector2(0f, -60f), new Vector2(800f, 200f), new Vector2(0.5f, 1f));
             UIKit.Fit(text, 24);
             var go = root;
-            var ok = UIKit.Button(face.transform, "Yes", Loc.T("coop.yesLeave"), UITheme.Red, () => { Object.Destroy(go); if (yes != null) yes(); }, 38);
+            var ok = UIKit.Button(face.transform, "Yes", Loc.T(yesKey), UITheme.Red, () => { Object.Destroy(go); if (yes != null) yes(); }, 38);
             UIKit.Place((RectTransform)ok.transform, new Vector2(0.5f, 0f), new Vector2(-180f, 44f), new Vector2(320f, 100f), new Vector2(0.5f, 0f));
             var no = UIKit.Button(face.transform, "No", Loc.T("coop.stay"), UITheme.Green, () => Object.Destroy(go), 38);
             UIKit.Place((RectTransform)no.transform, new Vector2(0.5f, 0f), new Vector2(180f, 44f), new Vector2(320f, 100f), new Vector2(0.5f, 0f));
