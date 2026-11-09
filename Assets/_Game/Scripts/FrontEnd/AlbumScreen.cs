@@ -126,7 +126,7 @@ namespace DribbleToSchool.FrontEnd
                 else UIKit.Place(rr, new Vector2(0f, 1f), new Vector2(Mathf.Max(x, pad + w * 0.5f), -10f), new Vector2(w, 96f), new Vector2(0.5f, 1f));
                 for (int i = 0; i < items.Count; i++)
                 {
-                    var icon = UIKit.Icon(reward.transform, "Icon", CosmeticArt.Icon(items[i]), reached ? Color.white : new Color(1f, 1f, 1f, 0.55f), 72f);
+                    var icon = CartoonPicture.On(UIKit.Icon(reward.transform, "Icon", CosmeticArt.Icon(items[i]), reached ? Color.white : new Color(1f, 1f, 1f, 0.55f), 72f));
                     UIKit.Place(icon.rectTransform, new Vector2(0f, 0.5f), new Vector2(10f + i * 84f, 0f), new Vector2(72f, 72f), new Vector2(0f, 0.5f));
                 }
                 if (reached) Badge(reward.transform, true);
@@ -174,7 +174,7 @@ namespace DribbleToSchool.FrontEnd
                 rr.anchorMin = new Vector2(0.58f, 0f);
                 rr.anchorMax = new Vector2(1f, 1f);
                 rr.offsetMin = rr.offsetMax = Vector2.zero;
-                var icon = UIKit.Icon(reward.transform, "Icon", CosmeticArt.Icon(setItem), complete ? Color.white : new Color(1f, 1f, 1f, 0.6f), 60f);
+                var icon = CartoonPicture.On(UIKit.Icon(reward.transform, "Icon", CosmeticArt.Icon(setItem), complete ? Color.white : new Color(1f, 1f, 1f, 0.6f), 60f));
                 UIKit.Place(icon.rectTransform, new Vector2(0f, 0.5f), new Vector2(12f, 0f), new Vector2(60f, 60f), new Vector2(0f, 0.5f));
                 var label = UIKit.Label(reward.transform, "Label", (complete ? Loc.T("album.setDone") : Loc.T("album.setReward")) + "\n" + setItem.displayName,
                     26, UITheme.Ink, TextAnchor.MiddleLeft, true);

@@ -13,7 +13,9 @@
 //   0.97: the leaf sprites) can shrink away on cards seen edge-on (_EdgeFade) and take sun
 //   shadows more softly (_LeafShadow); fully opaque texels (bark, needles) are never cut.
 // Colours and directions come from globals set by WorldLook; the directional light only casts
-// the shadows.
+// the shadows. Alpha carries _FilterMask, what the filters (Shaders/PostFX) take this surface for: 1 the scenery,
+// 0.75 a cloud, 0.5 foliage (the plants kit), 0.125 a cel (a coin, an animal, a crate: drawn as the people are by the
+// classic cartoon filter).
 Shader "DribbleToSchool/Toon"
 {
     Properties
@@ -34,6 +36,7 @@ Shader "DribbleToSchool/Toon"
         _LeafShadow ("Sun shadow strength on cut-out texels", Range(0,1)) = 1
         [Enum(UnityEngine.Rendering.CullMode)] _Cull ("Cull", Float) = 2
         _Lighting ("Lighting (0 = the painted colours as they are)", Range(0,1)) = 1
+        _FilterMask ("Filters: 1 scenery, 0.75 cloud, 0.5 foliage, 0.125 a cel", Range(0,1)) = 1
     }
     SubShader
     {
@@ -95,6 +98,7 @@ Shader "DribbleToSchool/Toon"
             float _Haze;
             float _Rim;
             float _Lighting;
+            float _FilterMask;
 
             struct appdata
             {
@@ -164,7 +168,7 @@ Shader "DribbleToSchool/Toon"
                 // Things that paint their own light and shade (the clouds) take only a little of the sun's.
                 col = lerp(albedo * DtsSun(), col, _Lighting);
                 col = DtsHaze(col, i.worldPos, _Haze);
-                return fixed4(col, 1);
+                return fixed4(col, _FilterMask);
             }
             ENDCG
         }

@@ -231,6 +231,7 @@ namespace DribbleToSchool.Localization
                 { "filter.original", "Original" }, { "filter.original.about", "The game's own look" },
                 { "filter.comic", "Comic halftone" }, { "filter.comic.about", "Ink lines, halftone dots, printed paper" },
                 { "filter.sketch", "Pencil sketch" }, { "filter.sketch.about", "Pencil lines and hatching on paper" },
+                { "filter.classic", "Classic cartoon" }, { "filter.classic.about", "Inked characters, painted scenery" },
                 // The comic filter's sound-effect words (UI/ComicPops).
                 { "pop.thwack", "THWACK!" }, { "pop.thump", "THUMP!" }, { "pop.nice", "NICE TOUCH!" }, { "pop.niceN", "NICE x{0}!" },
                 { "pop.boink", "BOINK!" }, { "pop.boinkN", "{0} IN A ROW!" }, { "pop.whoosh", "WHOOSH!" }, { "pop.skrrt", "SKRRT!" },
@@ -713,6 +714,7 @@ namespace DribbleToSchool.Localization
                 { "filter.original", "Original" }, { "filter.original.about", "El aspecto propio del juego" },
                 { "filter.comic", "Cómic de trama" }, { "filter.comic.about", "Tinta, puntos de trama, papel impreso" },
                 { "filter.sketch", "Boceto a lápiz" }, { "filter.sketch.about", "Líneas y sombreado a lápiz sobre papel" },
+                { "filter.classic", "Dibujos clásicos" }, { "filter.classic.about", "Personajes entintados, fondos pintados" },
                 { "pop.thwack", "¡ZAS!" }, { "pop.thump", "¡PUM!" }, { "pop.nice", "¡QUÉ TOQUE!" }, { "pop.niceN", "¡TOQUE x{0}!" },
                 { "pop.boink", "¡BOP!" }, { "pop.boinkN", "¡{0} SEGUIDOS!" }, { "pop.whoosh", "¡FIUUU!" }, { "pop.skrrt", "¡ZIIIP!" },
                 { "pop.boing", "¡BOING!" }, { "pop.splash", "¡CHOF!" }, { "pop.squawk", "¡CUAC!" }, { "pop.woof", "¡GUAU!" },

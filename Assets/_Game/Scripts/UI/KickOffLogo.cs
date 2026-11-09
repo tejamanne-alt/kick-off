@@ -51,7 +51,7 @@ namespace DribbleToSchool.UI
                 var content = UIKit.Rect(root, "Art");
                 UIKit.Place(content, new Vector2(0.5f, 0.5f), Vector2.zero, box, new Vector2(0.5f, 0.5f));
                 content.localScale = Vector3.one * scale;
-                var lettering = UIKit.Icon(content, "Lettering", picture, Color.white, PictureWidth);
+                var lettering = CartoonPicture.On(UIKit.Icon(content, "Lettering", picture, Color.white, PictureWidth), CartoonPicture.Kind.CelNoOutline);
                 lettering.preserveAspect = true;
                 UIKit.Place(lettering.rectTransform, new Vector2(0.5f, 1f), Vector2.zero, new Vector2(PictureWidth, height), new Vector2(0.5f, 1f));
                 if (animate) lettering.gameObject.AddComponent<UIPulse>().amount = 0.012f;

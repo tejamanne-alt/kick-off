@@ -205,7 +205,7 @@ namespace DribbleToSchool.UI
                 if (!swatch.tints && bagIcon != null)
                 {
                     // the bags' own colours: the bag itself
-                    var pic = UIKit.Icon(disc.transform, "Bag", bagIcon, Color.white, 40f);
+                    var pic = CartoonPicture.On(UIKit.Icon(disc.transform, "Bag", bagIcon, Color.white, 40f));
                     UIKit.Place(pic.rectTransform, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(40f, 40f));
                     pic.raycastTarget = false;
                 }

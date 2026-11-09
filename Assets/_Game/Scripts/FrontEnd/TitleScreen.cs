@@ -195,7 +195,7 @@ namespace DribbleToSchool.FrontEnd
             var mask = UIKit.Rect(disc.transform, "Mask");
             UIKit.Stretch(mask, 5f);
             mask.gameObject.AddComponent<RectMask2D>();
-            playerPortrait = UIKit.Icon(mask, "Portrait", null, Color.white, 80f);
+            playerPortrait = CartoonPicture.On(UIKit.Icon(mask, "Portrait", null, Color.white, 80f));
             playerPortrait.rectTransform.anchorMin = new Vector2(0f, 0f);
             playerPortrait.rectTransform.anchorMax = new Vector2(1f, 1f);
             playerPortrait.rectTransform.offsetMin = new Vector2(-6f, -10f);

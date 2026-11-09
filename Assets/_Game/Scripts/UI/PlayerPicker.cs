@@ -60,7 +60,7 @@ namespace DribbleToSchool.UI
             cloud.rectTransform.offsetMin = cloud.rectTransform.offsetMax = Vector2.zero;
 
             var portrait = Portrait(info.id);
-            var image = UIKit.Icon(window.transform, "Portrait", portrait != null ? portrait : ProceduralSprites.BallIcon, Color.white, 10f);
+            var image = CartoonPicture.On(UIKit.Icon(window.transform, "Portrait", portrait != null ? portrait : ProceduralSprites.BallIcon, Color.white, 10f));
             image.rectTransform.anchorMin = new Vector2(0f, 0f);
             image.rectTransform.anchorMax = new Vector2(1f, portrait != null ? 1f : 0.7f);
             image.rectTransform.offsetMin = new Vector2(0f, 0f);

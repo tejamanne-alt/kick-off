@@ -308,6 +308,14 @@ namespace DribbleToSchool.UI.Kit
             shadow.rectTransform.offsetMax += new Vector2(4f, -UIButtonFx.Depth - 8f);
             shadow.raycastTarget = false;
 
+            // The classic cartoon filter's ink rim round the whole key (hidden until CartoonButton turns it on).
+            var inkRim = Panel(root, "Ink", CartoonButton.InkColor);
+            Stretch(inkRim.rectTransform);
+            inkRim.rectTransform.offsetMin += new Vector2(-4f, -UIButtonFx.Depth - 4f);
+            inkRim.rectTransform.offsetMax += new Vector2(4f, 4f);
+            inkRim.raycastTarget = false;
+            inkRim.enabled = false;
+
             // A darker base under the face: the button stands like a key and pushes down onto it.
             var keyBase = Panel(root, "Base", UIButtonFx.BaseColor(color), ProceduralSprites.RoundedEdge);
             Stretch(keyBase.rectTransform);
@@ -349,6 +357,7 @@ namespace DribbleToSchool.UI.Kit
             button.colors = colors;
             if (onClick != null) button.onClick.AddListener(onClick);
             root.gameObject.AddComponent<UIButtonFx>();
+            root.gameObject.AddComponent<CartoonButton>().Set(shadow, inkRim);
             return button;
         }
 
@@ -358,7 +367,7 @@ namespace DribbleToSchool.UI.Kit
             foreach (var img in button.GetComponentsInChildren<Image>(true))
             {
                 if (img.name == "Face" || img.name == "Base") { img.sprite = ProceduralSprites.CircleEdge; img.type = Image.Type.Simple; }
-                else if (img.name == "Shadow") { img.sprite = ProceduralSprites.Circle; img.type = Image.Type.Simple; }
+                else if (img.name == "Shadow" || img.name == "Ink") { img.sprite = ProceduralSprites.Circle; img.type = Image.Type.Simple; }
                 if (img.name == "Shine") img.gameObject.SetActive(false);
             }
         }
