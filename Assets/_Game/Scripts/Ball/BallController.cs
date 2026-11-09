@@ -166,7 +166,8 @@ namespace DribbleToSchool.Ball
             if (!HoldBall()) TryAutoTouch();
             if (kid != null)
             {
-                kid.ControlPace = InCloseControl ? tuning.controlSpeedFraction : 1f;
+                // (eased, not switched: the ball coming in and out of reach must not jolt the kid's speed)
+                kid.ControlPace = Mathf.MoveTowards(kid.ControlPace, InCloseControl ? tuning.controlSpeedFraction : 1f, Time.fixedDeltaTime * 2f);
                 kid.FootOnBall = IsHeldUnderFoot && holdDirection == kid.Facing;
             }
         }

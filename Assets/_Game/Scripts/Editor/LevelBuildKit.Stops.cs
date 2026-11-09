@@ -109,42 +109,55 @@ namespace DribbleToSchool.EditorTools
                 switch (stop.id)
                 {
                     case "granny":
-                        Person(parent, "Granny", false, gx + 0.2f, groundTop, 2.75f, 60f, new Color(0.72f, 0.58f, 0.82f), new Color(0.36f, 0.32f, 0.46f), new Color(0.88f, 0.88f, 0.9f), 0.96f);
+                        // (the shopkeeper's model: a woman of about sixty, in a soft grey headscarf)
+                        Person(parent, "Granny", "Shopkeeper", gx + 0.2f, groundTop, 2.75f, 60f, new Color(0.72f, 0.58f, 0.82f), new Color(0.36f, 0.32f, 0.46f), new Color(0.78f, 0.78f, 0.82f), 1f);
                         break;
                     case "samsHouse":
-                        Person(parent, "Sam", true, gx - 0.15f, groundTop, 2.7f, 40f, new Color(0.3f, 0.66f, 0.42f), new Color(0.22f, 0.24f, 0.4f), new Color(0.32f, 0.2f, 0.12f), 1f);
+                        Person(parent, "Sam", null, gx - 0.15f, groundTop, 2.7f, 40f, new Color(0.3f, 0.66f, 0.42f), new Color(0.22f, 0.24f, 0.4f), new Color(0.32f, 0.2f, 0.12f), 1f);
                         break;
                     case "lifeguard":
-                        Person(parent, "Lifeguard", false, gx + 0.4f, groundTop, 3.2f, 70f, new Color(0.9f, 0.2f, 0.18f), new Color(1f, 0.82f, 0.2f), new Color(0.2f, 0.14f, 0.1f), 1f);
+                        // (the courier's model: a red polo, yellow shorts, a red cap)
+                        Person(parent, "Lifeguard", "Courier", gx + 0.4f, groundTop, 3.2f, 70f, new Color(0.9f, 0.2f, 0.18f), new Color(1f, 0.82f, 0.2f), new Color(0.86f, 0.18f, 0.16f), 1f);
                         break;
                     case "siteOffice":
-                        // The builder's hard hat stands in for hair: bright yellow.
-                        Person(parent, "Builder", false, gx + 0.3f, groundTop, 2.8f, 55f, new Color(1f, 0.55f, 0.12f), new Color(0.22f, 0.26f, 0.4f), new Color(1f, 0.85f, 0.15f), 1.02f);
+                        // The courier's model in hi-vis, as the builders on the footpath: the cap in a hard hat's yellow.
+                        Person(parent, "Builder", "Courier", gx + 0.3f, groundTop, 2.8f, 55f, new Color(1f, 0.55f, 0.12f), new Color(0.22f, 0.26f, 0.4f), new Color(1f, 0.85f, 0.15f), 1.02f);
                         break;
                     case "allotment":
-                        Person(parent, "Grandpa", false, gx + 0.9f, groundTop, 2.8f, 50f, new Color(0.45f, 0.58f, 0.38f), new Color(0.45f, 0.36f, 0.28f), new Color(0.92f, 0.92f, 0.92f), 0.98f);
+                        // (Grandad's model: a green cardigan, brown cords, a tweed cap)
+                        Person(parent, "Grandpa", "Grandad", gx + 0.9f, groundTop, 2.8f, 50f, new Color(0.45f, 0.58f, 0.38f), new Color(0.45f, 0.36f, 0.28f), new Color(0.46f, 0.42f, 0.32f), 0.98f);
                         break;
                     case "busStop":
-                        Person(parent, "Waiting", false, gx + 2.4f, groundTop, 2.45f, 35f, new Color(0.3f, 0.45f, 0.7f), new Color(0.25f, 0.25f, 0.3f), new Color(0.35f, 0.22f, 0.15f), 1f);
+                        // (the office worker's model, on his way in: a blue blazer, dark trousers)
+                        Person(parent, "Waiting", "OfficeWorker", gx + 2.4f, groundTop, 2.45f, 35f, new Color(0.3f, 0.45f, 0.7f), new Color(0.25f, 0.25f, 0.3f), new Color(0.2f, 0.13f, 0.09f), 1f);
                         break;
                     case "station":
-                        Person(parent, "Traveller", false, gx - 2.2f, groundTop, 2.4f, 25f, new Color(0.85f, 0.75f, 0.55f), new Color(0.3f, 0.3f, 0.36f), new Color(0.15f, 0.1f, 0.08f), 1f);
+                        // (Mom's model, off on a trip: a sand-coloured jumper, grey trousers)
+                        Person(parent, "Traveller", "Mom", gx - 2.2f, groundTop, 2.4f, 25f, new Color(0.85f, 0.75f, 0.55f), new Color(0.3f, 0.3f, 0.36f), new Color(0.15f, 0.1f, 0.08f), 1f);
                         break;
                 }
             }
 
             /// <summary>
             /// A person standing at (x, z), turned <paramref name="yaw"/> degrees from facing along the street toward the camera:
-            /// the younger kid's model if <paramref name="child"/>, else the adult's (about 1.7 m, scaled by <paramref name="scale"/>).
+            /// one of the rigged passers-by (<paramref name="grownUp"/>, its model: LevelBuildKit.Passersby, its own height scaled
+            /// by <paramref name="scale"/>), or the younger kid's model if that is null. <paramref name="hair"/> is the passer-by's
+            /// third part: its hair, cap or headscarf.
             /// </summary>
-            void Person(Transform parent, string name, bool child, float x, float groundTop, float z, float yaw, Color shirt, Color legwear, Color hair, float scale)
+            void Person(Transform parent, string name, string grownUp, float x, float groundTop, float z, float yaw, Color shirt, Color legwear, Color hair, float scale)
             {
-                float neck = (child ? 0.98f : 1.3f * 1.22f) * scale;
+                bool child = grownUp == null;
+                Passerby who = child ? null : PasserbyNamed(grownUp);
+                string model = "Kid";
+                Material look = Art.kid;
+                float neck = 0.98f;
+                if (!child) GrownUpLook(ref who, out model, out look, out neck);
+                neck *= scale;
                 float y = Chapter == 3 ? SandHeight(x, z) : groundTop;
                 var holder = new GameObject(name).transform;
                 holder.SetParent(parent, false);
                 holder.position = new Vector3(x, y + 0.6f * neck / 1.3f, z);
-                var parts = BuildModelCharacter(holder, child ? "Kid" : "Adult", child ? Art.kid : Art.adult, neck, Vector3.zero, false);
+                var parts = BuildModelCharacter(holder, model, look, neck, Vector3.zero, false);
                 if (parts.rig == null)
                 {
                     Object.DestroyImmediate(holder.gameObject);

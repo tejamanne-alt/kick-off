@@ -57,6 +57,9 @@ namespace DribbleToSchool.Hazards
         [Tooltip("The friend's, child's or dog's visual root, a child of this object.")]
         public Transform companion;
         public MonoBehaviour companionOutfit;
+        [Tooltip("The companion's own tops and legwear to change into (empty: the walker's coats, the legwear darker).")]
+        public Color[] companionCoats = new Color[0];
+        public Color[] companionLegwears = new Color[0];
         [Tooltip("The dog's leg pivots (diagonal pairs swing together) and its tail.")]
         public Transform[] companionLegs = new Transform[0];
         public Vector3 companionLegAxis = Vector3.up;
@@ -492,19 +495,22 @@ namespace DribbleToSchool.Hazards
         void Redress()
         {
             if (coats == null || coats.Length == 0) return;
-            Color coat = coats[(int)(Rand01() * coats.Length) % coats.Length];
             var dress = outfit as Presentation.IOutfit;
-            // (one draw for the legwear either way, so the walk that follows is the same whichever the walker wears)
-            float pick = Rand01();
-            Color legwear = legwears != null && legwears.Length > 0 ? legwears[(int)(pick * legwears.Length) % legwears.Length]
-                : Color.Lerp(coat, Color.black, 0.35f + 0.25f * pick);
-            if (dress != null) dress.SetOutfit(coat, legwear);
+            if (dress != null) Dress(dress, coats, legwears, Rand01(), Rand01());
             var other = companionOutfit as Presentation.IOutfit;
             if (other != null)
-            {
-                Color c2 = coats[(int)(Rand01() * coats.Length) % coats.Length];
-                other.SetOutfit(c2, Color.Lerp(c2, Color.black, Range(0.35f, 0.6f)));
-            }
+                Dress(other, companionCoats != null && companionCoats.Length > 0 ? companionCoats : coats, companionLegwears, Rand01(), Rand01());
+        }
+
+        /// <summary>
+        /// A change of clothes from a wardrobe, by two draws (the same two whatever it holds, so the walk that follows is the
+        /// same): a top, and legwear from <paramref name="legwear"/>s, or with none the top's own colour, darker.
+        /// </summary>
+        static void Dress(Presentation.IOutfit dress, Color[] tops, Color[] legwear, float topPick, float legPick)
+        {
+            Color top = tops[(int)(topPick * tops.Length) % tops.Length];
+            dress.SetOutfit(top, legwear != null && legwear.Length > 0 ? legwear[(int)(legPick * legwear.Length) % legwear.Length]
+                : Color.Lerp(top, Color.black, 0.35f + 0.25f * legPick));
         }
 
         /// <summary>Gone out of sight: hidden until the next passer-by comes along.</summary>
