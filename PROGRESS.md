@@ -902,6 +902,32 @@ An audit of what comes round again and again (`review/repetition/README.md`), an
 - **Checked:** the runtime scripts compile; the editor scripts bind with no new errors; the parts and four of her
   outfits rendered in the game's look (`review/passersby/walkers.jpg`, `render_walkers.py`). **Not run in Unity.**
 
+## Five more passers-by: Mom, the office worker, the courier, the shopkeeper, Grandad (generated content v108)
+
+- **The rest of the cast:** the user's five rigged models for the prompts in `review/repetition/PEOPLE_PROMPTS.md`,
+  each brought in with `tools/blender/meshy_rigged.py --profile <mom|office|courier|shopkeeper|grandad> --tris 30000`
+  (`Art/Models/Mom`, `OfficeWorker`, `Courier`, `Shopkeeper`, `Grandad`: `.fbx`, `.json`, `Atlas.png`). Their profiles
+  share one setup (`Faces`) and say only which colours are which part: 1 the top (Mom's coral jumper, the navy blazer,
+  the red polo, the lilac tunic, the mustard cardigan), 2 the legwear (wide-leg trousers, suit trousers, cargo shorts,
+  trousers, cords; the long trousers' hems too, which sit on the feet's bones), 3 the hair, or what is worn on the
+  head instead (Mom's bun, the office worker's hair and beard, the courier's cap, the hijab, Grandad's flat cap). The
+  skin, the shirts under the tops, the shoes, belts and socks stay as made.
+- **Who walks by** (`TrackBuilder.Walker`, `NextPasserby`): the six rigged passers-by and the procedural adult take
+  turns, in an order and from a start of the level's own, so each comes along once before any comes again (builders
+  stay the adult in hi-vis). Each has its own wardrobe (`LevelBuildKit.Passersby`, which the jogger's colours moved
+  into): its top, legwear and hair, cap or hijab are chosen by the walker and the level, so the same people are
+  dressed differently from level to level.
+- **Changes of clothes** (`Pedestrian.Redress`): a passer-by coming round again changes into another top from its
+  wardrobe and, now, legwear from it too (`Pedestrian.legwears`), not the top's colour darkened (the courier was due
+  dark-red shorts); with the same one random draw as before, so a walk goes on the same. The adult darkens as before.
+- **Checked:** the runtime scripts compile; the editor scripts bind with no new errors; `PasserbyTests` (every
+  wardrobe whole; the turn order brings each along once before any again, for any number of bodies) pass, and fail
+  without the step kept prime; each model's parts rendered front and back (flat colours, recoloured); all six in four
+  levels' outfits in the game's look
+  (`review/passersby/walkers.jpg`, `render_walkers.py`, which reads the wardrobes from the code). **Not run in Unity.**
+- **Seen at close range:** cutting the scans to 30k triangles leaves faint scratch lines on the faces where a triangle
+  now spans two pieces of the texture (the jogger has them too); at a passer-by's size in the game they are slight.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

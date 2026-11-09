@@ -32,15 +32,15 @@ recolourable, so each can still change coat colour as passers-by do).
 
 1. **Morning jogger** (done: `Art/Models/Jogger.fbx`, `meshy_rigged.py --profile jogger`): a woman in her early thirties, East Asian, slim and athletic, black hair in a high ponytail,
    a teal zip-up running jacket, black leggings, white running shoes, a small black sports watch.
-2. **Grandad:** a man of about seventy, white, a little stout, short grey hair and a grey moustache, a brown flat cap,
+2. **Grandad** (done: `Art/Models/Grandad.fbx`, `--profile grandad`): a man of about seventy, white, a little stout, short grey hair and a grey moustache, a brown flat cap,
    a mustard-yellow cardigan over a blue-and-white checked shirt, brown corduroy trousers, brown lace-up shoes.
-3. **Office worker:** a man of about forty, Black, medium build, short cropped hair and a trimmed beard, a navy blazer
+3. **Office worker** (done: `Art/Models/OfficeWorker.fbx`, `--profile office`): a man of about forty, Black, medium build, short cropped hair and a trimmed beard, a navy blazer
    over a pale-blue shirt with an open collar (no tie), mid-grey trousers, brown leather shoes.
-4. **Parent on the school run:** a woman of about forty, South Asian, curvy, dark hair in a low bun, a coral knitted
+4. **Parent on the school run** (done: `Art/Models/Mom.fbx`, `--profile mom`): a woman of about forty, South Asian, curvy, dark hair in a low bun, a coral knitted
    jumper, dark-green wide-leg trousers, white trainers.
-5. **Delivery courier:** a young man of about twenty-five, Latino, lean, short curly black hair under a navy cap worn
+5. **Delivery courier** (done: `Art/Models/Courier.fbx`, `--profile courier`): a young man of about twenty-five, Latino, lean, short curly black hair under a navy cap worn
    backwards, a plain red polo shirt (no logo), khaki knee-length cargo shorts, grey trainers with white socks.
-6. **The shopkeeper:** a woman of about sixty, Middle Eastern, medium build, a plain blue headscarf, a long-sleeved
+6. **The shopkeeper** (done: `Art/Models/Shopkeeper.fbx`, `--profile shopkeeper`): a woman of about sixty, Middle Eastern, medium build, a plain blue headscarf, a long-sleeved
    lilac tunic to mid-thigh over dark-grey trousers, flat comfortable black shoes.
 
 Optional, for the building site: **Builder:** a man of about fifty, broad, a yellow hard hat, an orange hi-vis vest

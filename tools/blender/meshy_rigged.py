@@ -19,12 +19,22 @@
 #             sleeves and striped cuffs over a cream hoodie, charcoal cargo jeans, cream platform sneakers.
 #   jogger    Jogger (a passer-by, not a playable kid): a woman in her thirties in an A-pose; a black ponytail, a teal
 #             zip-up running jacket, black leggings, white running shoes (--tris 30000: several walk by at once).
+#   mom       Mom (a passer-by): a mother in an A-pose; black hair in a bun, a coral knitted jumper, dark-green wide-leg
+#             trousers, white trainers (--tris 30000).
+#   office    OfficeWorker (a passer-by): a bearded man in an A-pose; a navy blazer over a pale-blue shirt, grey suit
+#             trousers, a brown belt and brown shoes (--tris 30000).
+#   courier   Courier (a passer-by): a young man in an A-pose; a navy cap worn backwards over black curls, a red polo
+#             shirt, khaki cargo shorts, white socks, grey trainers (--tris 30000).
+#   shopkeeper  Shopkeeper (a passer-by): a woman in an A-pose; a blue hijab over a white underscarf, a long lilac tunic,
+#             charcoal trousers, black flats (--tris 30000).
+#   grandad   Grandad (a passer-by): an old man in an A-pose; a brown flat cap, grey hair and moustache, a mustard
+#             cardigan over a gingham shirt, brown corduroy trousers, brown shoes (--tris 30000).
 #   denim     Max (BackpackBoy): a teen in an A-pose; ginger hair, a light denim jacket over a dark grey hoodie, dark
 #             jeans, white high-top sneakers (meshy_teen's colour rules for him; his old backpack is gone).
 #   plaid     Kai (PrimaryBoy): a primary-school boy in an A-pose; short black hair, a red plaid flannel shirt over a
 #             white hood, light-blue cargo jeans, chunky black-and-white sneakers (meshy_teen's colour rules for him).
 #
-#   blenv/bin/python meshy_rigged.py -- /abs/rigged.fbx /abs/outdir [--profile awesome|plaid|rainbow|explorer|varsity|denim|jogger] [--name <Name>] [--tris 100000]
+#   blenv/bin/python meshy_rigged.py -- /abs/rigged.fbx /abs/outdir [--profile awesome|plaid|rainbow|explorer|varsity|denim|jogger|mom|office|courier|shopkeeper|grandad] [--name <Name>] [--tris 100000]
 #     -> outdir/<Name>.fbx, <Name>.blend, <Name>.json, <Name>Atlas.png
 import bpy, sys, os, json
 import numpy as np
@@ -45,7 +55,8 @@ from meshy_boy import (log, activate, verts_np, edges_np, texture_pixels, vertex
 argv = _argv
 SRC, OUT = argv[0], argv[1]
 TRIS = int(argv[argv.index('--tris') + 1]) if '--tris' in argv else 100000
-NAME = argv[argv.index('--name') + 1] if '--name' in argv else {'awesome': 'PrimaryBoy2', 'plaid': 'PrimaryBoy', 'rainbow': 'PrimaryGirl2', 'explorer': 'PrimaryGirl', 'varsity': 'Girl', 'denim': 'BackpackBoy', 'jogger': 'Jogger'}[PROFILE_NAME]
+NAME = argv[argv.index('--name') + 1] if '--name' in argv else {'awesome': 'PrimaryBoy2', 'plaid': 'PrimaryBoy', 'rainbow': 'PrimaryGirl2', 'explorer': 'PrimaryGirl', 'varsity': 'Girl', 'denim': 'BackpackBoy', 'jogger': 'Jogger', 'mom': 'Mom',
+        'office': 'OfficeWorker', 'courier': 'Courier', 'shopkeeper': 'Shopkeeper', 'grandad': 'Grandad'}[PROFILE_NAME]
 os.makedirs(OUT, exist_ok=True)
 C = bpy.context
 mb.log = lambda *a: print('[meshy_rigged]', *a, flush=True)
@@ -256,13 +267,109 @@ def parts_jogger(o, px):
     return FP, tri
 
 
+class Faces:
+    """What a passer-by's colour rules read, face by face: the triangles, each face's colour (h in degrees, s, v), its
+    height, and its weights on the game's bones (feet, hands, head and neck, the skull alone, the legs and hips)."""
+    def __init__(self, o, px):
+        me = o.data; V = verts_np(o); bw = mt.bone_weights(o)
+        tri = np.empty(len(me.loops), dtype=np.int64); me.loops.foreach_get('vertex_index', tri); self.tri = tri = tri.reshape(-1, 3)
+        fw = lambda w: w[tri].mean(1)
+        self.o, self.nv = o, len(V)
+        self.foot = fw(bw('Foot.L', 'Foot.R')); self.hand = fw(bw('Hand.L', 'Hand.R')); self.head = fw(bw('Head', 'Neck'))
+        self.skull = fw(bw('Head'))
+        self.legs = fw(bw('UpperLeg.L', 'UpperLeg.R', 'LowerLeg.L', 'LowerLeg.R', 'Hips'))
+        self.h, self.s, self.v = hsv(mt.face_colours(o, px)); self.z = V[tri][:, :, 2].mean(1)
+        self.hip = mt.rig_z('UpperLeg.L')
+        self.FP = np.zeros(len(tri), dtype=np.int64)
+
+    def top(self, m):
+        """The top: not on the head or the feet, nor the hands (the cuffs on the wrists are)."""
+        self.FP[m & (self.skull < 0.9) & (self.foot < 0.3) & (self.hand < 0.6)] = 1
+
+    def legwear(self, m, above=0.12, feet=0.3):
+        """The legwear: on the legs and hips, below the hip joint (or a little above it), not on the feet (long trousers'
+        hems reach onto the feet' bones: a higher `feet`, with a colour the shoes don't share)."""
+        self.FP[m & (self.z < self.hip + above) & (self.legs + self.foot > 0.5) & (self.foot < feet) & (self.head < 0.3)
+                & (self.hand < 0.5)] = 2
+
+    def third(self, m, share=0.04):
+        """The third part (hair, a cap or a scarf): the big pieces of it, not the brows or the eyes."""
+        m = m & (self.FP == 0)
+        vm = np.zeros(self.nv, bool); vm[self.tri[m].ravel()] = True
+        self.FP[m & big_pieces(self.o, vm, share)[self.tri].all(1)] = 3
+
+    def done(self, who, names):
+        FP = self.FP; FP[(self.foot > 0.6) | (self.hand > 0.5)] = 0
+        log('%s parts: %s %d, %s %d, %s %d faces of %d' % (who, names[0], (FP == 1).sum(), names[1], (FP == 2).sum(),
+                                                          names[2], (FP == 3).sum(), len(FP)))
+        return FP, self.tri
+
+
+def parts_mom(o, px):
+    """Mom's parts (a passer-by), by each face's own colour: 1 the coral knitted jumper, 2 the dark-green wide-leg
+    trousers, 3 the black hair in its bun (the big dark pieces of the head); 0 the skin, the lips and the white
+    trainers."""
+    f = Faces(o, px); h, s, v = f.h, f.s, f.v
+    f.top(((h < 22) | (h > 340)) & (s > 0.45) & (v > 0.45))                      # (the lips stay: they are the skull's)
+    f.legwear((h > 125) & (h < 195) & (s > 0.3) & (v < 0.4), 0.15, 0.62)       # (the wide hems, down to the trainers)
+    f.third((v < 0.16) & (f.head > 0.5))                                         # (the bun and the hair: not the brows)
+    return f.done('mom', ('jumper', 'trousers', 'hair'))
+
+
+def parts_office(o, px):
+    """The office worker's parts (a passer-by): 1 the navy blazer, 2 the grey suit trousers, 3 the dark-brown hair and
+    beard; 0 the skin, the pale-blue shirt, the brown belt and the brown shoes."""
+    f = Faces(o, px); h, s, v = f.h, f.s, f.v
+    f.top((h > 200) & (h < 250) & (s > 0.35) & (v < 0.42))
+    f.legwear((s < 0.16) & (v > 0.22) & (v < 0.6), feet=0.62)
+    f.third((v < 0.3) & ((h < 45) | (s < 0.3)) & (f.head > 0.5))                 # (the beard grows with the hair)
+    return f.done('office', ('blazer', 'trousers', 'hair'))
+
+
+def parts_courier(o, px):
+    """The courier's parts (a passer-by): 1 the red polo shirt, 2 the khaki cargo shorts, 3 the navy cap worn backwards;
+    0 the skin, the black curls under the cap, the white socks and the grey trainers."""
+    f = Faces(o, px); h, s, v = f.h, f.s, f.v
+    f.top(((h > 340) | (h < 15)) & (s > 0.6) & (v > 0.3))
+    f.legwear((h > 27) & (h < 50) & (s > 0.18) & (s < 0.5) & (v > 0.35) & (v < 0.82), 0.1)   # (not the skin: redder)
+    f.third((h > 200) & (h < 250) & (s > 0.4) & (v < 0.45) & (f.head > 0.5), 0.1)
+    return f.done('courier', ('polo', 'shorts', 'cap'))
+
+
+def parts_shopkeeper(o, px):
+    """The shopkeeper's parts (a passer-by): 1 the long lilac tunic, 2 the charcoal trousers, 3 the blue hijab (over the
+    head, the shoulders and the chest); 0 the skin, the white underscarf and the black flats."""
+    f = Faces(o, px); h, s, v = f.h, f.s, f.v
+    f.top((h > 265) & (h < 330) & (s > 0.12) & (s < 0.45) & (v > 0.35))
+    f.legwear((s < 0.15) & (v > 0.15) & (v < 0.38), 0.0, 0.62)                  # (not the black flats)
+    blue = (h > 200) & (h < 235) & (s > 0.5) & (v > 0.25) & (f.foot < 0.3) & (f.hand < 0.5)
+    f.third(blue, 0.1)
+    return f.done('shopkeeper', ('tunic', 'trousers', 'hijab'))
+
+
+def parts_grandad(o, px):
+    """Grandad's parts (a passer-by): 1 the mustard cardigan, 2 the brown corduroy trousers, 3 the brown flat cap; 0 the
+    skin, the grey hair and moustache, the blue gingham shirt and the brown shoes."""
+    f = Faces(o, px); h, s, v = f.h, f.s, f.v
+    f.top((h > 30) & (h < 56) & (s > 0.55) & (v > 0.5))
+    brown = (h > 8) & (h < 42) & (s > 0.3) & (v > 0.1) & (v < 0.55)
+    f.legwear(brown, 0.1)                                                        # (the cardigan's last button too)
+    f.third(brown & (f.skull > 0.9), 0.1)
+    return f.done('grandad', ('cardigan', 'trousers', 'cap'))
+
+
 PROFILES = {'awesome': {'parts': parts_awesome, 'stands': 1.32},
             'plaid': {'parts': lambda o, px: mt.parts_plaid(o, px), 'stands': 1.30},
             'rainbow': {'parts': lambda o, px: parts_without_pack(mt.parts_rainbow, o, px), 'stands': 1.29},
             'explorer': {'parts': lambda o, px: mt.parts_explorer(o, px), 'stands': 1.27},
             'varsity': {'parts': parts_varsity, 'stands': 1.65},
             'denim': {'parts': lambda o, px: mt.parts_backpack_boy(o, px), 'stands': 1.75},
-            'jogger': {'parts': parts_jogger, 'stands': 1.66}}
+            'jogger': {'parts': parts_jogger, 'stands': 1.66},
+            'mom': {'parts': parts_mom, 'stands': 1.63},
+            'office': {'parts': parts_office, 'stands': 1.80},
+            'courier': {'parts': parts_courier, 'stands': 1.72},
+            'shopkeeper': {'parts': parts_shopkeeper, 'stands': 1.60},
+            'grandad': {'parts': parts_grandad, 'stands': 1.70}}
 PROFILE = PROFILES[PROFILE_NAME]
 
 
