@@ -2085,29 +2085,31 @@ namespace DribbleToSchool.EditorTools
                     roll.phase = (float)rng.NextDouble();
                 }
 
-            var towers = new List<float>();
+            // The pier: once along a level's beach, running straight out to sea, its stairs and their paths clear of
+            // the stops' plots. The lifeguard towers, palms and parasols keep clear of it (pierReach either side).
             float skip;
-            for (float x = x0 + Margin(4f); x < Mathf.Min(x1 - Margin(4f), propsEnd - 4f); x += Rand(rng, 30f, 45f))
-            {
-                if (Blocked(track, x - 2f, x + 2f, out skip)) continue;     // a stop's plot (StreetBuilder.Stops)
-                LifeguardTower(root, x, GroundAt(track, x, 7.4f), 7.4f);
-                towers.Add(x);
-            }
-            // The pier: once along a level's beach, running straight out to sea, clear of the towers
-            // and of the stops' plots.
-            float pierX = float.NaN;
+            float pierX = float.NaN, pierReach = 0f;
             if (CA && (chunk == null || chunk.level) && LevelBuildKit.HasKitModel("Coast", "PierSpan") && propsEnd - x0 > 60f)
             {
-                for (float tryX = x0 + (propsEnd - x0) * 0.55f; tryX < propsEnd - 20f; tryX += 7f)
+                pierReach = PierReach;
+                for (float tryX = x0 + (propsEnd - x0) * 0.55f; tryX < propsEnd - pierReach - 8f; tryX += 7f)
                 {
-                    if (Blocked(track, tryX - 5f, tryX + 5f, out skip) || towers.Any(t => Mathf.Abs(t - tryX) < 9f)) continue;
+                    if (Blocked(track, tryX - pierReach, tryX + pierReach, out skip)) continue;
                     pierX = tryX;
                     break;
                 }
-                if (!float.IsNaN(pierX)) Pier(root, pierX, sea, 6.2f, 13);
+                if (!float.IsNaN(pierX)) Pier(track, root, pierX, sea, 6.2f, 13);
+            }
+            var towers = new List<float>();
+            for (float x = x0 + Margin(4f); x < Mathf.Min(x1 - Margin(4f), propsEnd - 4f); x += Rand(rng, 30f, 45f))
+            {
+                if (Blocked(track, x - 2f, x + 2f, out skip)) continue;     // a stop's plot (StreetBuilder.Stops)
+                if (Mathf.Abs(x - pierX) < pierReach + 2f) continue;        // (the pier's stairs)
+                LifeguardTower(root, x, GroundAt(track, x, 7.4f), 7.4f);
+                towers.Add(x);
             }
             // Date palms and the odd young fan palm along the back of the beach.
-            if (CA) StreetPalms(track, root, rng, x0 + Margin(3f), propsEnd - 3f, 2.8f, 14f, 30f);
+            if (CA) StreetPalms(track, root, rng, x0 + Margin(3f), propsEnd - 3f, 2.8f, 14f, 30f, pierX - pierReach, pierX + pierReach);
             Color[] canopy = { new Color(0.9f, 0.3f, 0.28f), new Color(0.25f, 0.5f, 0.85f), new Color(1f, 0.75f, 0.2f), new Color(0.3f, 0.66f, 0.62f) };
             Color[] towels = { new Color(0.95f, 0.55f, 0.6f), new Color(0.45f, 0.75f, 0.9f), new Color(1f, 0.85f, 0.35f), new Color(0.55f, 0.8f, 0.55f) };
             bool beachKit = LevelBuildKit.HasKitModel("Leisure", "Parasol");
@@ -2115,9 +2117,10 @@ namespace DribbleToSchool.EditorTools
             {
                 float z = Rand(rng, 3.4f, 5.2f), gy = GroundAt(track, x, z);
                 if (Blocked(track, x - 1.5f, x + 2.6f, out skip)) continue;
+                if (x > pierX - pierReach - 2.6f && x < pierX + pierReach + 1.5f) continue;     // (the pier's stairs and paths)
                 if (beachKit)
                 {
-                    if (towers.Any(t => Mathf.Abs(t - x) < 3f) || Mathf.Abs(x - pierX) < 5f) continue;
+                    if (towers.Any(t => Mathf.Abs(t - x) < 3f)) continue;
                     // A parasol leaning a little over a towel; now and then a cool box, or a sandcastle
                     // with a bucket and spade. Each sits on the sand where it is.
                     var parasolModel = Model(root, "Leisure", "Parasol", x, gy - 0.05f, z, Rand(rng, 0f, 360f), 1f, canopy[rng.Next(canopy.Length)]);
@@ -2180,6 +2183,7 @@ namespace DribbleToSchool.EditorTools
                     {
                         float px = x + k * Rand(rng, 2.2f, 3.4f), pz = Rand(rng, 5.6f, 7f);
                         if (towers.Any(t => Mathf.Abs(t - px) < 4.5f) || px > propsEnd || Blocked(track, px - 1.5f, px + 1.5f, out skip)) continue;
+                        if (Mathf.Abs(px - pierX) < pierReach + 1.5f) continue;     // (the pier and its stairs)
                         Plant(root, rng.NextDouble() < 0.5 ? "Palm" : "PalmShort", null, px, GroundAt(track, px, pz) - 0.1f, pz, Rand(rng, 0.85f, 1.15f), 1f, -60, rng);
                     }
                 }

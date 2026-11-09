@@ -793,6 +793,24 @@ The user found the first Coast models plain next to their reference shots (weath
 - **Help text** (`tour.walk`, `tour.kick`, `controls.walk`, `controls.kick`, en and es) and the README's controls. The Tune panel has a CLOSE CONTROL section (the stick's pace, the hold time, the walk touch, the drag-back, the hold's speed, lead and grip) for tuning on a phone. `trapDamping` is gone (the foot hold replaces the old one-off trap).
 - **Checked:** the runtime scripts compile (Roslyn, Unity 2021.3 modules, uGUI 6000.0); `Tests/Editor/DribbleControlTests` (7 tests: the stick's pace, the kick button's tap, hold and aim, the touch's lead) all pass against the functions' own source with a work-alike `Mathf` (Unity's needs the engine), and fail when those rules are deliberately broken; the 1D simulation above. **Not run in Unity or on a phone:** how the pace feels under the thumb, the hold time against real taps, the foot-on-ball stance, and the close-control touches' rhythm.
 
+## Stairs up to the pier (generated content v103)
+
+- The California beach's pier had no way up: its deck stands 4.5 m over the sand. It now has a landing at deck height
+  in front of its first span and a flight of stairs down to the sand on the left and the right, each with a
+  mid-landing halfway (`World/PierStairs.cs`, one mesh): timber treads on white cut stringers with white risers, the
+  pier's white rails on both sides, concrete piles under the landings, a pad at each foot, a globe lamp on each of the
+  landing's front corners, and a boardwalk path on the sand from each foot toward the lane.
+- `StreetBuilder.Coast` `Pier` measures the sand at each flight's foot and sizes the flight to it (risers of about 0.19 m,
+  treads 0.27 m; a mid-landing when the drop is more than about 2.7 m). The pier is now placed before the lifeguard
+  towers, and the towers, palms and parasols keep clear of the stairs and their paths.
+- The pictures it was designed from: `review/pier_stairs/` (`render_pier.py`, with the stairs ported to
+  `pier_stairs.py`). Tests: `Tests/Editor/PierStairsTests.cs`.
+- **Checked:** the runtime scripts compile (Roslyn, Unity 2021.3 modules, uGUI 6000.0); the editor scripts bind with
+  UnityEditor's declarations stubbed, with no errors in the edited files; `PierStairsTests` (4 tests: comfortable,
+  even risers that add up to the drop, a mid-landing halfway on a long flight, the reach the builder keeps clear) pass
+  against the plan's own source and fail when its rules are broken. **Not run in Unity:** the stairs in the rebuilt
+  California beach levels (v103), and how they sit on the sand where it is not flat.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.
