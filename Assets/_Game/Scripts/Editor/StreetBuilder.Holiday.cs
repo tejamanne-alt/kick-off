@@ -75,6 +75,7 @@ namespace DribbleToSchool.EditorTools
         /// </summary>
         public static void StageScenery(LevelBuildKit.TrackBuilder track, Transform root, StageSpec spec)
         {
+            if (!spec.level && spec.stage >= 0) levelSalt = 0;     // (a Holiday Run stage: its seeds are its own)
             int ch = LevelBuildKit.Chapter;
             chunk = spec;
             try

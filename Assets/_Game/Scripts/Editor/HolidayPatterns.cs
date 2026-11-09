@@ -152,11 +152,14 @@ namespace DribbleToSchool.EditorTools
 
         static readonly SlideSpec[][] Slides =
         {
-            new[] { new SlideSpec("PlankTrestles", 2.6f, 0.95f, false), new SlideSpec("BoomBarrier", 1.2f, 0.95f, false), new SlideSpec("AccessPlatform", 1.9f, 2.0f, false), new SlideSpec("AppleBough", 1.7f, 1.09f, false) },
-            new[] { new SlideSpec("StallAwning", 2.2f, 2.5f, false), new SlideSpec("RollShutter", 1.4f, 3.15f, false), new SlideSpec("DeliveryConveyor", 1.2f, 0.96f, false) },
+            new[] { new SlideSpec("PlankTrestles", 2.6f, 0.95f, false), new SlideSpec("BoomBarrier", 1.2f, 0.95f, false), new SlideSpec("AccessPlatform", 1.9f, 2.0f, false), new SlideSpec("AppleBough", 1.7f, 1.09f, false),
+                    new SlideSpec("WashingLine", 2.7f, 2.0f, false) },
+            new[] { new SlideSpec("StallAwning", 2.2f, 2.5f, false), new SlideSpec("RollShutter", 1.4f, 3.15f, false), new SlideSpec("DeliveryConveyor", 1.2f, 0.96f, false),
+                    new SlideSpec("BarrowCart", 2.6f, 1.4f, false) },
             new[] { new SlideSpec("SurfRack", 2.6f, 2.37f, false), new SlideSpec("BoatTrestles", 3.4f, 1.53f, false), new SlideSpec("Boardwalk", 1.6f, 1.94f, false), new SlideSpec("RescueBoardStand", 3.0f, 1.07f, false) },
             new[] { new SlideSpec("ScaffoldGantry", 2.7f, 4.25f, false), new SlideSpec("BeamTrestles", 4.4f, 1.3f, true), new SlideSpec("PipeRack", 4.1f, 2.04f, true), new SlideSpec("SiteBarrier", 1.2f, 0.94f, true) },
-            new[] { new SlideSpec("FallenTrunk", 0.8f, 1.55f, false), new SlideSpec("OakBough", 2.1f, 1.19f, false), new SlideSpec("NetTunnel", 2.1f, 0.96f, false), new SlideSpec("PlayTower", 1.4f, 2.6f, false) },
+            new[] { new SlideSpec("FallenTrunk", 0.8f, 1.55f, false), new SlideSpec("OakBough", 2.1f, 1.19f, false), new SlideSpec("NetTunnel", 2.1f, 0.96f, false), new SlideSpec("PlayTower", 1.4f, 2.6f, false),
+                    new SlideSpec("WobbleBridge", 2.4f, 0.97f, false) },
         };
 
         /// <summary>The slide looks of a chapter (1 to 5), as TrackBuilder.SlideLook names.</summary>

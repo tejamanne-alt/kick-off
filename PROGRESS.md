@@ -855,6 +855,38 @@ The user found the first Coast models plain next to their reference shots (weath
   Sprint's, behind the lane near the walk's end. Boardwalk, Seagull Bay and the Beach Slalom have none. The original
   (non-California) levels never had piers and are unchanged.
 
+## Fewer repeats across the levels (generated content v106)
+
+An audit of what comes round again and again (`review/repetition/README.md`), and the fixes:
+
+- **Each level its own scenery.** Every story level starts its street at the same x and many end at the same x, and the
+  scenery's seeds were made of the chapter and those ends only: the background (tree bands, back rows), the near trees'
+  shade, the birds, the poles and lamps were the same in every level of a chapter, and Fountain Square and Playground
+  (both 110 m) had the same street. Each level now salts its seeds with its own name (`StreetBuilder.LevelSalt`, FNV-1a,
+  the same on every machine), starts its pole line at its own place, and sees its own stretch of the distant hills.
+  Holiday Run stages keep their own seeds (their seams still meet).
+- **Things to slide under:** three new models in the Barriers kit (`tools/blender/kit_barriers_models.py`): a
+  **washing line** (the home street), a **market barrow** on cartwheels (the market) and a **wobble bridge** (the park),
+  and seven slide-unders re-chosen so no look comes round more than three times in a chapter (most twice): Puddle Lane,
+  Corner Shop, Fruit Stalls, Low Tide, Sandcastle Sprint, Duck Pond and The Final Bell. The Holiday Run's chapters get
+  the new looks too. Each comes in a few colours.
+- **Obstacles to jump:** every knee-high wall on the home street and in the market was the same planter, every tall one
+  drinks crates or (in the park) a hedge, every low step a grey stone. Now each chapter has a few looks, picked by the
+  obstacle's place and the level (`TrackBuilder.ObstacleModel`): the wheelie bins out on bin day, a flower bed or the
+  stone step (home street); fruit crates stacked three or five high, pallets (market); an old block wall among the
+  hedges (park); pallets or the stone step (building site). The colliders are exactly as they were.
+- **Boxes to knock over:** a taped **moving box** on the home street and a **plastic crate** on the building site (new in
+  the Street kit), the wooden crate elsewhere; all three are cels for the classic cartoon filter.
+- **The beach:** a lifeguard tower every 55 to 80 m (was 30 to 45), each painted its own way (four roof colours, three
+  bodies) and set a little back or forward; rocks at the water's edge are a cluster, a big lone rock or a pair of
+  boulders (the large boulders were unused); palms in four greens.
+- **The market's back row** was blocks of flats only: now and then a tall shop with rooms over it, or a long terrace.
+- **Not changed (needs art):** every adult in the game is the same body, recoloured. `review/repetition/PEOPLE_PROMPTS.md`
+  has image prompts for six new passers-by (for an image-to-3D tool, then `tools/blender/meshy_rigged.py`).
+- **Checked:** the runtime scripts compile; the editor scripts bind with UnityEditor stubbed, with no new errors; the
+  Barriers and Street kits rebuild from their scripts (the Street atlas is unchanged, so its other models are untouched).
+  **Not run in Unity:** the rebuilt levels (v106).
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

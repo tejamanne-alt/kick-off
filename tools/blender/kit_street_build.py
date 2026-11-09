@@ -35,6 +35,7 @@ PAL = {
     'meter': (0.80, 0.80, 0.77), 'gaspipe': (0.90, 0.74, 0.30), 'dish': (0.90, 0.89, 0.86),
     'chalkframe': (0.62, 0.46, 0.32), 'darkwood': (0.46, 0.34, 0.25), 'amberlens': (0.98, 0.68, 0.26), 'flowerc': (0.86, 0.58, 0.26),
     'polewood': (0.47, 0.37, 0.28),
+    'cardboard': (0.80, 0.64, 0.44), 'tape': (0.89, 0.80, 0.58),
 }
 # The grime map each material samples when its piece doesn't set UVs (None: the white corner).
 MODE = {

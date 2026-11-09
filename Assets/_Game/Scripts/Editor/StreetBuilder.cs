@@ -491,6 +491,8 @@ namespace DribbleToSchool.EditorTools
         static readonly Color[] MeadowGreens = { new Color(0.46f, 0.57f, 0.26f), new Color(0.5f, 0.6f, 0.28f), new Color(0.4f, 0.53f, 0.25f) };
         /// <summary>Palm fronds and clipped hedges: the same leaf greens, hedges a deep clipped green.</summary>
         public static readonly Color PalmGreen = new Color(0.3f, 0.42f, 0.2f), HedgeGreen = new Color(0.21f, 0.33f, 0.17f);
+        /// <summary>Palms side by side differ a little: the palm green, one a touch fresher, one older and drier.</summary>
+        static readonly Color[] PalmGreens = { PalmGreen, new Color(0.33f, 0.46f, 0.21f), new Color(0.32f, 0.4f, 0.2f), new Color(0.27f, 0.4f, 0.21f) };
 
         /// <summary>
         /// A tree (or bush) from the Plants kit standing at (x, groundY, z), turned at random, its
@@ -501,7 +503,7 @@ namespace DribbleToSchool.EditorTools
             Color? leaves = null;
             bool leafy = model.StartsWith("Broadleaf") || model == "Birch" || model.StartsWith("Bush");
             if (leafy) leaves = SummerLeaves[rng.Next(SummerLeaves.Length)];
-            else if (model.StartsWith("Palm")) leaves = PalmGreen;
+            else if (model.StartsWith("Palm")) leaves = PalmGreens[rng.Next(PalmGreens.Length)];
             else if ((model == "TallGrass" || model == "GrassTuft") && rng.NextDouble() < 0.8) leaves = MeadowGreens[rng.Next(MeadowGreens.Length)];
             if (Model(parent, "Plants", model, x, groundY, z, Rand(rng, 0f, 360f), scale, leaves) != null) return;
             if (fallback != null) CutOut(parent, model, fallback, x, groundY, z, spriteScale, order, rng.NextDouble() < 0.5);
@@ -717,7 +719,11 @@ namespace DribbleToSchool.EditorTools
                 return;
             }
             int ch = LevelBuildKit.Chapter;
-            var rng = new System.Random(ch * 131 + Mathf.RoundToInt(track.MaxX));
+            // Every story level starts its street at the same x and many end at the same x, so seeds made only of the chapter
+            // and those ends built the same background (tree bands, back rows, birds, poles and lamps) in every level of a
+            // chapter, and the same street in two levels of one length. Each level's own salt (its name) makes it its own.
+            levelSalt = LevelSalt(track);
+            var rng = new System.Random(ch * 131 + Mathf.RoundToInt(track.MaxX) + levelSalt);
             float x0 = track.MinX - 50f, x1 = track.MaxX + 50f;
             // The animals live outside the street root: its static batching would freeze their moving parts.
             critters = new GameObject("Critters").transform;
@@ -732,13 +738,32 @@ namespace DribbleToSchool.EditorTools
                 default: Suburb(track, root, rng, x0, x1); break;
             }
             if (ch != 3) Poles(track, root, x0, x1);
-            if (ch != 3) CanopyShadows(track, root, new System.Random(ch * 173 + Mathf.RoundToInt(x0)), x0, x1);
-            Depth(track, root, new System.Random(ch * 211 + Mathf.RoundToInt(x0)), x0, x1);
+            if (ch != 3) CanopyShadows(track, root, new System.Random(ch * 173 + Mathf.RoundToInt(x0) + levelSalt), x0, x1);
+            Depth(track, root, new System.Random(ch * 211 + Mathf.RoundToInt(x0) + levelSalt), x0, x1);
             if (ch != 3)
                 foreach (var area in track.OpenAreas)
-                    SideStreetEnd(track, root, new System.Random(ch * 53 + Mathf.RoundToInt(area.x * 3f)), area);
-            SchoolSurroundings(track, root, new System.Random(ch * 97 + Mathf.RoundToInt(track.GoalX)));
-            Wildlife(track, root, new System.Random(ch * 389 + Mathf.RoundToInt(x0)), x0, x1);
+                    SideStreetEnd(track, root, new System.Random(ch * 53 + Mathf.RoundToInt(area.x * 3f) + levelSalt), area);
+            SchoolSurroundings(track, root, new System.Random(ch * 97 + Mathf.RoundToInt(track.GoalX) + levelSalt));
+            Wildlife(track, root, new System.Random(ch * 389 + Mathf.RoundToInt(x0) + levelSalt), x0, x1);
+        }
+
+        /// <summary>The level being built's own salt for its scenery's seeds (0 for a Holiday Run stage, whose seeds are its own).</summary>
+        static int levelSalt;
+
+        /// <summary>A level's salt: its name hashed (FNV-1a, so the same on every machine and every build), kept small and positive.</summary>
+        public static int LevelSalt(string name)
+        {
+            unchecked
+            {
+                uint h = 2166136261;
+                foreach (char c in name ?? "") { h ^= c; h *= 16777619; }
+                return (int)(h % 100003);
+            }
+        }
+
+        static int LevelSalt(LevelBuildKit.TrackBuilder track)
+        {
+            return LevelSalt(track.AuditName);
         }
 
         // ---------------------------------------------------------------- shade across the near road
@@ -1449,7 +1474,9 @@ namespace DribbleToSchool.EditorTools
             var line = go.AddComponent<PoleLine3D>();
             line.wireMaterial = Art.wire;
             bool models = LevelBuildKit.HasKitModel("Street", "UtilityPole");
-            for (float x = x0; x < x1; x += 21f)
+            // The line's 21 m spacing starts at a place of the level's own, so its poles and lamps aren't at the same x in every level.
+            float start = x0 + (levelSalt % 2100) / 100f;
+            for (float x = start; x < x1; x += 21f)
             {
                 float skip;
                 if (Blocked(track, x - 0.5f, x + 0.5f, out skip)) continue;
@@ -1470,8 +1497,8 @@ namespace DribbleToSchool.EditorTools
 
             // Street lamps halfway between the poles (the swan neck reads from the side), a bin by some.
             if (!LevelBuildKit.HasKitModel("Street", "StreetLamp")) return;
-            var rng = new System.Random(LevelBuildKit.Chapter * 53 + Mathf.RoundToInt(x0));
-            for (float x = x0 + 10.5f; x < x1; x += 21f)
+            var rng = new System.Random(LevelBuildKit.Chapter * 53 + Mathf.RoundToInt(x0) + levelSalt);
+            for (float x = start + 10.5f; x < x1; x += 21f)
             {
                 float skip;
                 if (Blocked(track, x - 1.5f, x + 1.5f, out skip)) continue;
@@ -1939,6 +1966,16 @@ namespace DribbleToSchool.EditorTools
                 if (OnSideStreet(track, x, ProceduralArt.FacadeKind.Apartment)) continue;
                 // Every other block a white beach condo, the rest the kit's flats.
                 if (CA && rng.NextDouble() < 0.5 && CoastHouse(root, "BeachCondo", x, GroundAt(track, x), z)) continue;
+                // Not one block of flats after another: now and then a tall shop with rooms over it, or a long terrace.
+                double back = rng.NextDouble();
+                if (back < 0.2 && LevelBuildKit.HasKitModel("Buildings", "ShopTall"))
+                {
+                    var p = ShopPaints[rng.Next(ShopPaints.Length)];
+                    if (Model(root, "Buildings", "ShopTall", x, GroundAt(track, x), z, 0f, 1f, p.wall, p.trim, p.roof) != null) continue;
+                }
+                else if (back < 0.42 && Building(root, x, GroundAt(track, x), z, ProceduralArt.FacadeKind.HouseLong, House3D.RoofStyle.GableSideways, 7f, 2.4f,
+                    new Color(0.86f, 0.8f, 0.72f), new Color(0.45f, 0.36f, 0.32f)))
+                    continue;
                 Building(root, x, GroundAt(track, x), z, ProceduralArt.FacadeKind.Apartment, House3D.RoofStyle.Flat, 10f, 0f, new Color(0.92f, 0.88f, 0.82f), new Color(0.6f, 0.6f, 0.62f));
             }
             DistantHills(track, root, x0, x1);
@@ -2109,12 +2146,15 @@ namespace DribbleToSchool.EditorTools
                 }
                 if (!float.IsNaN(pierX)) Pier(track, root, pierX, sea, 6.2f, 13);
             }
+            // Lifeguard towers: one every 55 to 80 m (every 30 to 45 lined the beach with the same tower), each painted its own
+            // way (the beach patrol's huts come in a few colours) and set a little back or forward.
             var towers = new List<float>();
-            for (float x = x0 + Margin(4f); x < Mathf.Min(x1 - Margin(4f), propsEnd - 4f); x += Rand(rng, 30f, 45f))
+            for (float x = x0 + Margin(4f) + Rand(rng, 0f, 25f); x < Mathf.Min(x1 - Margin(4f), propsEnd - 4f); x += Rand(rng, 55f, 80f))
             {
                 if (Blocked(track, x - 2f, x + 2f, out skip)) continue;     // a stop's plot (StreetBuilder.Stops)
                 if (Mathf.Abs(x - pierX) < pierReach + 2f) continue;        // (the pier's stairs)
-                LifeguardTower(root, x, GroundAt(track, x, 7.4f), 7.4f);
+                float tz = 7.4f + Rand(rng, -0.5f, 0.6f);
+                LifeguardTower(root, x, GroundAt(track, x, tz), tz, TowerBodies[rng.Next(TowerBodies.Length)], TowerRoofs[rng.Next(TowerRoofs.Length)]);
                 towers.Add(x);
             }
             // Date palms and the odd young fan palm along the back of the beach.
@@ -2166,8 +2206,18 @@ namespace DribbleToSchool.EditorTools
                 float gy = track.LowestGroundTop - 0.12f, s = Rand(rng, 0.8f, 1.6f);
                 if (rockModels)
                 {
+                    // Not the same cluster every time: a cluster, a big lone rock half in the water, or a pair of boulders.
                     float rz = Rand(rng, 8.6f, 11f), bx = x + Rand(rng, 2f, 3.5f), bz = rz - Rand(rng, 0.5f, 1.2f);
-                    Model(root, "Terrain", "RockCluster", x, GroundAt(track, x, rz) - 0.15f, rz, Rand(rng, -30f, 30f), s * 0.8f);
+                    double kind = rng.NextDouble();
+                    if (kind < 0.45 || !LevelBuildKit.HasKitModel("Terrain", "BoulderLarge1"))
+                        Model(root, "Terrain", "RockCluster", x, GroundAt(track, x, rz) - 0.15f, rz, Rand(rng, -30f, 30f), s * 0.8f);
+                    else if (kind < 0.7)
+                        Model(root, "Terrain", rng.NextDouble() < 0.5 ? "BoulderLarge1" : "BoulderLarge2", x, GroundAt(track, x, rz + 0.6f) - 0.35f, rz + 0.6f, Rand(rng, 0f, 360f), s * 0.4f);
+                    else
+                    {
+                        Model(root, "Terrain", rng.NextDouble() < 0.5 ? "Boulder3" : "Boulder4", x, GroundAt(track, x, rz) - 0.15f, rz, Rand(rng, 0f, 360f), Rand(rng, 0.7f, 1.05f));
+                        Model(root, "Terrain", "Boulder2", x + Rand(rng, 0.9f, 1.4f), GroundAt(track, x + 1.1f, rz + 0.3f) - 0.1f, rz + 0.3f, Rand(rng, 0f, 360f), Rand(rng, 0.6f, 0.9f));
+                    }
                     if (rng.NextDouble() < 0.5)
                         Model(root, "Terrain", rng.NextDouble() < 0.5 ? "Boulder2" : "Boulder1", bx, GroundAt(track, bx, bz) - 0.1f, bz, Rand(rng, 0f, 360f), Rand(rng, 0.7f, 1.1f));
                     continue;
@@ -2262,9 +2312,13 @@ namespace DribbleToSchool.EditorTools
         }
 
         /// <summary>A white wooden lifeguard tower: legs and braces, a platform, a hut with a red roof, a ladder and a flag.</summary>
-        static void LifeguardTower(Transform root, float x, float gy, float z)
+        /// <summary>The lifeguard huts' paint: the white or cream body, and the roof and trim (red, sea blue, sun yellow, teal).</summary>
+        static readonly Color[] TowerBodies = { new Color(0.95f, 0.94f, 0.9f), new Color(0.96f, 0.91f, 0.8f), new Color(0.86f, 0.92f, 0.95f) };
+        static readonly Color[] TowerRoofs = { new Color(0.83f, 0.34f, 0.28f), new Color(0.3f, 0.52f, 0.78f), new Color(0.96f, 0.76f, 0.26f), new Color(0.26f, 0.62f, 0.6f) };
+
+        static void LifeguardTower(Transform root, float x, float gy, float z, Color? body = null, Color? roof = null)
         {
-            if (Model(root, "Leisure", "LifeguardTower", x, gy, z) != null) return;
+            if (Model(root, "Leisure", "LifeguardTower", x, gy, z, 0f, 1f, body, roof) != null) return;
             Color white = new Color(0.96f, 0.96f, 0.94f), red = new Color(0.85f, 0.25f, 0.22f), dark = new Color(0.3f, 0.35f, 0.42f);
             const float deck = 2.6f;
             foreach (float dx in new[] { -0.75f, 0.75f })
@@ -2553,10 +2607,12 @@ namespace DribbleToSchool.EditorTools
                 // peaks show between the near one's. The camera sits about 4 m up and sees about 10
                 // degrees above the horizon: the near range peaks at about 8 degrees, over the back
                 // row's roofs, leaving sky for the clouds.
-                Layer(root, "ForestStrip", x0 - 250f, x1 + 250f, y - 0.3f, 70f, 1f, 0f, null);
-                Layer(root, "HillsRolling", x0 - 450f, x1 + 450f, y - 0.4f, 230f, 1f, 0f, grass);
-                Layer(root, "MountainRange1", x0 - 700f, x1 + 700f, y - 0.8f, 440f, 0.75f, 0f, grass);
-                Layer(root, "MountainRange2", x0 - 900f, x1 + 900f, y - 0.8f, 640f, 1f, 0.5f, grass);
+                // Each level sees its own stretch of them (the rows are world-anchored: without this, the same skyline everywhere).
+                float shift = (levelSalt % 997) / 997f;
+                Layer(root, "ForestStrip", x0 - 250f, x1 + 250f, y - 0.3f, 70f, 1f, shift, null);
+                Layer(root, "HillsRolling", x0 - 450f, x1 + 450f, y - 0.4f, 230f, 1f, (shift * 3.7f) % 1f, grass);
+                Layer(root, "MountainRange1", x0 - 700f, x1 + 700f, y - 0.8f, 440f, 0.75f, (shift * 7.3f) % 1f, grass);
+                Layer(root, "MountainRange2", x0 - 900f, x1 + 900f, y - 0.8f, 640f, 1f, (0.5f + shift * 5.1f) % 1f, grass);
                 return;
             }
             var far = CutOut(root, "DistantHills", Art.far[ch], (x0 + x1) * 0.5f, track.LowestGroundTop - 6f, 260f, 6f, -85);
