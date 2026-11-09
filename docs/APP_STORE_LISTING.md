@@ -154,8 +154,8 @@ Not applicable: the app is not in a regulated industry and contains no protected
 - **Data collection:** "No, we do not collect data from this app" → Publish.
 
 ## Publishing the support and privacy pages
-1. Replace `SUPPORT_EMAIL` in `site/index.html` and `site/privacy.html` with the address to show (on a Mac:
-   `sed -i '' 's/SUPPORT_EMAIL/you@example.com/g' site/*.html`).
+1. The support address, **contact@astradite.com**, is already in `site/index.html` and `site/privacy.html` (and
+   `docs/PRIVACY_POLICY.md`); change it there if it ever changes.
 2. Upload the `site` folder (the two pages and `style.css`) to any public host: GitHub Pages, Netlify, Vercel, Cloudflare
    Pages or your own domain. Open both pages in a browser to check they load before entering them in App Store Connect.
 

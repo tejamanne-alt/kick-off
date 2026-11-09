@@ -51,4 +51,4 @@ If the game ever starts handling information differently, this policy will be up
 
 ## Contact
 
-Questions about privacy: [your support email address]
+Questions about privacy: contact@astradite.com

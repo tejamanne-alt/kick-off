@@ -48,7 +48,7 @@ a Fixed Resolution of **1920 × 1080**, select it and run **Kick Off > Store Scr
 
 ## Store settings
 - **App category:** Game > **Sports** (or Casual). Tags: Soccer, Platformer, Casual, Offline.
-- **Contact details:** an email (shown publicly on the listing), and the support page as the website.
+- **Contact details:** email **contact@astradite.com** (shown publicly on the listing), and the support page as the website.
 
 ## Policy and programs > App content
 | Declaration | Answer |
