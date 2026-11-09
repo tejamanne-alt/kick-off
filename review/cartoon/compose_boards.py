@@ -7,6 +7,7 @@ Every board shows three versions side by side: the game today, Classic cartoon, 
   3_ui_art.jpg        the pictures the menus draw: player cards, bags, all 23 stickers, the logo, the town map
   4_screens.jpg       the title screen and the Add-ons & Filters panel with the filter on (mock-ups)
   5_details.jpg       100% crops: the first version beside the crisper one (detail kept)
+  6_outline.jpg       every kid's face at 3x: the outline drawn outside the silhouette, so it never covers a face
   frames/<scene>.jpg  each scene at full size: today, Classic cartoon, calmer"""
 import os, sys, subprocess, importlib.util
 import numpy as np
@@ -28,6 +29,7 @@ YELLOW = (255, 214, 80)
 CALMC = (150, 220, 255)
 SOFT = (196, 202, 222)
 FIRST = 'ab5be92'   # the commit with the first version of the look (for 5_details.jpg)
+INSIDE = 'dd738b6'  # the commit whose outline lay inside the silhouette (for 6_outline.jpg)
 LOOKS = [('TODAY', SOFT), ('CLASSIC CARTOON', YELLOW), ('CALMER', CALMC)]
 
 
@@ -376,20 +378,20 @@ print('4_screens')
 
 
 # ------------------------------------------------------------------ 5. detail at 100%: the first version beside the crisper one
-def first_version():
-    """classic_port.py as first shown (commit FIRST), to show what the crisper version keeps."""
+def version_at(commit):
+    """classic_port.py as it was at a commit, to compare with now."""
     try:
-        src = subprocess.run(['git', '-C', HERE, 'show', FIRST + ':review/cartoon/classic_port.py'], capture_output=True, text=True, check=True).stdout
+        src = subprocess.run(['git', '-C', HERE, 'show', commit + ':review/cartoon/classic_port.py'], capture_output=True, text=True, check=True).stdout
     except Exception:
         return None
-    spec = importlib.util.spec_from_loader('classic_first', loader=None)
+    spec = importlib.util.spec_from_loader('classic_' + commit, loader=None)
     mod = importlib.util.module_from_spec(spec)
     mod.__dict__['__file__'] = os.path.join(HERE, 'classic_port.py')
-    exec(compile(src, 'classic_first', 'exec'), mod.__dict__)
+    exec(compile(src, 'classic_' + commit, 'exec'), mod.__dict__)
     return mod
 
 
-first = first_version()
+first = version_at(FIRST)
 DETAILS = [('market', (380, 280, 980, 620), 'Shop sign, awning, window'), ('home', (1150, 560, 1750, 900), 'Bicycle, coins, post box, block wall'),
            ('cast_a', (760, 230, 1180, 520), 'Max’s face and jacket'), ('cast_a', (1330, 400, 1680, 640), 'Kai’s face, the ball'),
            ('park', (1180, 180, 1780, 520), 'School, arch, lamps'), ('site', (60, 300, 660, 640), 'Digger, scaffold, site fence')]
@@ -411,3 +413,34 @@ for scene, box, title in DETAILS:
     p.append(row)
 stack(p, W5).save(os.path.join(OUT, '5_details.jpg'), quality=90)
 print('5_details')
+
+
+# ------------------------------------------------------------------ 6. the outline: outside the silhouette, never over a face
+inside = version_at(INSIDE)
+cols6 = [('TODAY', SOFT), ('BEFORE: LINE INSIDE', (255, 150, 120)), ('NOW: LINE OUTSIDE', YELLOW)]
+FS6 = 330
+blocks = []
+for scene in ('cast_a', 'cast_b'):
+    colour, alpha, depth01, nrm = cp.load_scene(SRC, scene)
+    o, c, _, _, _ = frames(scene)
+    b = cp.to_img(inside.classic_pass(colour, alpha, depth01, nrm)) if inside else None
+    for (cx, top, hgt), name in zip(heads(alpha, depth01), names[scene]):
+        if name == 'Passer-by':
+            continue
+        sz = int(hgt * 0.3)
+        y0 = max(0, top - sz // 10)
+        box = (cx - sz // 2, y0, cx + sz // 2, y0 + sz)
+        blocks.append((name, [o.crop(box), b.crop(box) if b else None, c.crop(box)]))
+W6 = 2 * (3 * FS6 + 2 * 8) + GAP * 3 + 40
+p = [header(W6, 'CLASSIC CARTOON \u00b7 the kids\u2019 outline', 'The outline is now drawn only outside the silhouette (on the far side of an edge), so it wraps a face and never covers it.')]
+for i in range(0, len(blocks), 2):
+    row = Image.new('RGB', (W6, 64 + FS6 + GAP), BG); d = ImageDraw.Draw(row)
+    for j, (name, ims) in enumerate(blocks[i:i + 2]):
+        x = GAP + j * (3 * FS6 + 16 + GAP + 40)
+        d.text((x, 10), name, font=TITLE(38), fill=(255, 255, 255))
+        for q, (im, (label, colour_)) in enumerate(zip(ims, cols6)):
+            if im is not None:
+                row.paste(tag(im.resize((FS6, FS6), Image.LANCZOS), label, colour_, 20), (x + q * (FS6 + 8), 60))
+    p.append(row)
+stack(p, W6).save(os.path.join(OUT, '6_outline.jpg'), quality=90)
+print('6_outline')

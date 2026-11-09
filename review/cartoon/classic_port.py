@@ -39,7 +39,7 @@ CLASSIC = dict(
     # the cels
     # (the cels keep only strong detail: eyes, brows, mouths, seams; the painted shading's patches are smoothed away)
     celFlatten=1.5, celCoreFrom=0.08, celCoreTo=0.16, celBands=3.0, celBandSoft=0.22, celBandMix=0.6, celSat=1.3,
-    celLine=4.0, celLineFar=1.6, inkWarm=np.array([0.11, 0.06, 0.045]),
+    celLine=3.4, celLineFar=1.5, inkWarm=np.array([0.11, 0.06, 0.045]),   # (drawn outside the silhouette)
     # the painted background
     bgFlatten=2.5, bgSat=1.35, bgVibrance=1.8, bgBands=4.0, bgBandSoft=0.32, bgBandMix=0.6,
     warm=np.array([1.1, 0.97, 0.8]),                  # warm colours pushed toward orange (blues and greens stay)
@@ -184,26 +184,28 @@ def classic_pass(colour, alpha, depth01, normal, far=FAR, k=CLASSIC):
     cl = np.clip(1 - (1 - lb) * 0.9, 0, 1) * np.array([1.0, 1.0, 1.0]) * k['cloudShade'] ** (1 - sp.smoothstep(0.75, 0.95, lb))
     out = out * (1 - cloud) + cl * cloud
 
-    # ---- the cels' ink: a bold warm-black outline all round each figure (from the depth and the mask)
-    wpx = (k['celLine'] + (k['celLineFar'] - k['celLine']) * sp.smoothstep(4.0, 60.0, dist)) * scale
-    ink = np.zeros((h, w))
+    # ---- the cels' ink: a bold warm-black outline round each figure, drawn only on the FAR side of its edges (the
+    # background just outside the silhouette, or a farther part of a figure behind a nearer one), never on the near
+    # side, so it wraps a face without covering any of it. Sized by the nearer side's distance.
     figm = fig[..., 0]
-    for ring in (1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5):
+    R = 4.0 * scale
+    dnear = np.minimum.reduce([depth01] + [cp.shift(depth01, dy, dx) for dy, dx in ((0, R), (0, -R), (R, 0), (-R, 0))])
+    wpx = (k['celLine'] + (k['celLineFar'] - k['celLine']) * sp.smoothstep(4.0, 60.0, dnear * far)) * scale
+    ink = np.zeros((h, w))
+    for ring in (1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0):
         r = ring * scale
-        use = np.clip(1 - np.abs(wpx - r) / (0.5 * scale), 0, 1)
+        use = np.clip((wpx - r) / (0.5 * scale) + 1, 0, 1)    # solid ink up to the width, fading over the last half pixel
         if use.max() <= 0:
             continue
-        # the mask read at half-pixel offsets (bilinear), so the line's edge is anti-aliased, not stair-stepped
+        # the mask read half a pixel further out (bilinear), so the line's outer edge is anti-aliased
         rh = r + 0.5
         offs = [(0, rh), (0, -rh), (rh, 0), (-rh, 0), (0.7 * rh, 0.7 * rh), (-0.7 * rh, 0.7 * rh), (0.7 * rh, -0.7 * rh), (-0.7 * rh, -0.7 * rh)]
-        # a figure pixel next to anything that is not the figure, or nearer than it
-        other = np.maximum.reduce([1 - shift_lin(figm, dy, dx) for dy, dx in offs])
-        ds = [cp.shift(depth01, dy, dx) for dy, dx in offs]
-        jumpf = np.maximum.reduce([np.abs(x - depth01) for x in ds]) / np.maximum(np.minimum.reduce([depth01] + ds), 1e-4)
-        edge = np.maximum(other, sp.smoothstep(0.04, 0.09, jumpf)) * figm
-        # and the background pixel just outside a figure (the line straddles the silhouette)
-        outside = np.maximum.reduce([shift_lin(figm, dy, dx) for dy, dx in offs[:4]]) * (1 - figm) * (ring <= 2.5)
-        ink = np.maximum(ink, np.maximum(edge, outside) * use)
+        here = np.zeros((h, w))
+        for dy, dx in offs:
+            dn = cp.shift(depth01, dy, dx)
+            nearer = sp.smoothstep(0.03, 0.07, (depth01 - dn) / np.maximum(dn, 1e-4))   # that neighbour is in front of me
+            here = np.maximum(here, shift_lin(figm, dy, dx) * nearer)
+        ink = np.maximum(ink, here * use)
     out = out + (k['inkWarm'] - out) * ink[..., None]
 
     # ---- the print
@@ -244,9 +246,8 @@ def classic_2d(rgba, painted=False, k=CLASSIC, flatten=None, outline_px=None):
     if outline_px:
         o = outline_px
         offs = [(0, o), (0, -o), (o, 0), (-o, 0), (0.7 * o, 0.7 * o), (-0.7 * o, 0.7 * o), (0.7 * o, -0.7 * o), (-0.7 * o, -0.7 * o)]
-        near = np.maximum.reduce([cp.shift(a, dy, dx) for dy, dx in offs])
-        inner = np.minimum.reduce([cp.shift(a, dy, dx) for dy, dx in offs[:4]])
-        edge = np.clip((np.clip(near - a, 0, 1) + np.clip(a - inner, 0, 1)) * 1.5, 0, 1)
+        near = np.maximum.reduce([shift_lin(a, dy, dx) for dy, dx in offs])
+        edge = np.clip((near - a) * 1.5, 0, 1)          # outside the shape only: nothing of the picture is covered
         out = out * (1 - edge[..., None]) + k['inkWarm'] * edge[..., None]
         a = np.maximum(a, np.clip(near - a, 0, 1))
     return np.dstack([np.clip(out, 0, 1), a])

@@ -15,6 +15,7 @@ Every board shows three versions side by side: **Today | Classic cartoon | Calme
 | `3_ui_art.jpg` | The menus' pictures: the six player cards, the five Locker Room bags, the logo, all 23 stickers, the town map |
 | `4_screens.jpg` | Mock-ups: the title screen, and the Add-ons & Filters panel with a fourth card, Classic cartoon |
 | `5_details.jpg` | Detail at 100%: today, the first version, the crisper version now, and calmer |
+| `6_outline.jpg` | Every kid's face at 3x: today, the outline before (inside the silhouette, over the cheek) and now (outside) |
 | `frames/*.jpg` | Each scene at full size (1920 x 1080): today, classic cartoon, calmer, to zoom into |
 
 ## Review so far
@@ -30,6 +31,12 @@ Every board shows three versions side by side: **Today | Classic cartoon | Calme
   - The strokes between colours are 1 px (were 1.4) and steeper, so they read as lines, not halos.
   - A light sharpen on the scenery, before and after; none on the faces or the foliage.
   - The kids' outline is anti-aliased (read half a pixel off with bilinear filtering), not stair-stepped.
+- **Faces cut off by the outline (fixed):** the kids' outline was drawn inside their silhouette, so where a face
+  met the background (the right cheek in the three-quarter view) the line lay over it. It is now drawn only on the
+  far side of an edge: outside the silhouette, or on a farther part behind a nearer one, never on the near side. It
+  wraps a face without covering any of it (`6_outline.jpg`), is solid up to its width (3.4 px near the camera, 1.5 px
+  far) with an anti-aliased outer edge, and is sized by the nearer side's distance. The menus' pictures (player
+  cards, bags, stickers) get their outline outside their shape too.
   - Faces: only strong detail is kept (eyes, brows, mouths), the painted shading's patches are smoothed, and the
     tone steps are softer, so skin is clean rather than blotchy.
   - Much fainter brush streaks (0.025, were 0.07) and film grain (0.012, were 0.035).
@@ -38,7 +45,7 @@ Every board shows three versions side by side: **Today | Classic cartoon | Calme
 
 | In the Road Runner frames | In the filter (`classic_port.py`) |
 |---|---|
-| Characters are cels: flat colour in one or two tones, a bold dark-brown ink line all round | The kids, passers-by and ball, and the things the kid plays with (coins, animals, cars, crates, cones, the pipe), are cels: flat tones and a smooth 4 px warm-black outline near the camera |
+| Characters are cels: flat colour in one or two tones, a bold dark-brown ink line all round | The kids, passers-by and ball, and the things the kid plays with (coins, animals, cars, crates, cones, the pipe), are cels: flat tones and a smooth warm-black outline round the outside (3.4 px near the camera) |
 | Backgrounds are painted, not inked: soft airbrushed tone, brush texture | The scenery has no black lines: smoothed texture, soft tone steps, faint brush streaks |
 | Forms in the background are separated by darker strokes of their own colour | Where colours meet, and where a nearer form overlaps a farther one, a darker stroke of the same colour |
 | Hot, warm, saturated colour; shadows rich and warm, never grey | Reds, oranges, yellows and beiges pushed to orange and gold; quiet colours lifted; shadows pushed to warm browns. Blues and greens keep their hue |
