@@ -647,14 +647,16 @@ namespace DribbleToSchool.EditorTools
                 new[] { new Color(0.07f, 0.19f, 0.15f), new Color(0.1f, 0.14f, 0.28f), new Color(0.2f, 0.2f, 0.22f), new Color(0.6f, 0.46f, 0.32f),
                         new Color(0.08f, 0.08f, 0.09f), new Color(0.24f, 0.34f, 0.5f), new Color(0.3f, 0.32f, 0.18f) },
                 new[] { new Color(0.065f, 0.06f, 0.055f), new Color(0.2f, 0.13f, 0.09f), new Color(0.34f, 0.22f, 0.14f), new Color(0.42f, 0.18f, 0.12f) }),
-            // The office worker: blazers, suit trousers; his hair and beard stay dark (the beard is only partly hair's).
+            // The office worker: blazers, suit trousers; his hair, beard and brows (one part: any colour, dark to grey).
             new Passerby("OfficeWorker", 1.8f, 0.852f,
                 new[] { new Color(0.074f, 0.126f, 0.254f), new Color(0.22f, 0.23f, 0.26f), new Color(0.45f, 0.46f, 0.48f), new Color(0.66f, 0.5f, 0.34f),
                         new Color(0.32f, 0.36f, 0.24f), new Color(0.42f, 0.12f, 0.16f), new Color(0.18f, 0.3f, 0.62f), new Color(0.09f, 0.09f, 0.1f),
                         new Color(0.72f, 0.6f, 0.44f), new Color(0.32f, 0.4f, 0.52f) },
                 new[] { new Color(0.43f, 0.41f, 0.4f), new Color(0.2f, 0.2f, 0.22f), new Color(0.1f, 0.13f, 0.24f), new Color(0.7f, 0.64f, 0.52f),
                         new Color(0.08f, 0.08f, 0.09f), new Color(0.36f, 0.26f, 0.18f) },
-                new[] { new Color(0.128f, 0.091f, 0.082f), new Color(0.06f, 0.055f, 0.05f), new Color(0.2f, 0.13f, 0.09f) }),
+                new[] { new Color(0.128f, 0.091f, 0.082f), new Color(0.06f, 0.055f, 0.05f), new Color(0.3f, 0.2f, 0.13f), new Color(0.42f, 0.24f, 0.14f),
+                        new Color(0.5f, 0.22f, 0.12f), new Color(0.62f, 0.48f, 0.3f), new Color(0.82f, 0.68f, 0.42f), new Color(0.5f, 0.5f, 0.5f),
+                        new Color(0.78f, 0.78f, 0.8f) }),
             // The courier: polo shirts, cargo shorts, a cap worn backwards.
             new Passerby("Courier", 1.72f, 0.858f,
                 new[] { new Color(0.75f, 0.066f, 0.089f), new Color(0.16f, 0.32f, 0.75f), new Color(0.12f, 0.52f, 0.3f), new Color(0.98f, 0.8f, 0.18f),
@@ -675,7 +677,7 @@ namespace DribbleToSchool.EditorTools
                         new Color(0.1f, 0.45f, 0.32f), new Color(0.55f, 0.55f, 0.58f), new Color(0.9f, 0.6f, 0.68f), new Color(0.1f, 0.14f, 0.3f),
                         new Color(0.82f, 0.62f, 0.2f), new Color(0.42f, 0.2f, 0.42f), new Color(0.12f, 0.48f, 0.52f), new Color(0.8f, 0.7f, 0.54f) }),
             // Grandad: cardigans, cords or slacks, a flat cap.
-            new Passerby("Grandad", 1.7f, 0.851f,
+            new Passerby("Grandad", 1.7f, 0.85f,
                 new[] { new Color(0.91f, 0.66f, 0.19f), new Color(0.2f, 0.38f, 0.26f), new Color(0.12f, 0.16f, 0.3f), new Color(0.5f, 0.14f, 0.18f),
                         new Color(0.8f, 0.74f, 0.62f), new Color(0.5f, 0.5f, 0.52f), new Color(0.72f, 0.36f, 0.18f), new Color(0.74f, 0.56f, 0.36f),
                         new Color(0.44f, 0.46f, 0.24f), new Color(0.42f, 0.54f, 0.78f) },

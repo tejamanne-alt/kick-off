@@ -117,6 +117,60 @@ def load():
     return o, img, bones
 
 
+def weld(o):
+    """Joins the scan's texture islands back into one surface. Its vertices come split wherever the texture is cut
+    (every island a loose patch), so cutting its triangles down moved each patch's border on its own and left hairline
+    cracks between them (the scratches across the passers-by's faces); welded, the cut keeps the surface closed and the
+    texture's seams stay where they were, in the corners' own UVs."""
+    import bmesh
+    bm = bmesh.new(); bm.from_mesh(o.data)
+    n = len(bm.verts); bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=1e-5)
+    open_edges = sum(1 for e in bm.edges if e.is_boundary)
+    log('welded the texture islands: %d -> %d vertices, %d open edges left' % (n, len(bm.verts), open_edges))
+    bm.to_mesh(o.data); bm.free(); o.data.update()
+
+
+# The cut's hold on the colour lines (decimate_keeping_edges): the decimate's vertex-group factor, and the weight of the
+# vertices on a colour line in the group that is cut (the rest 1): low enough that a beard's edge keeps its small faces,
+# above 0 so a patterned shirt (all colour lines) can still be cut down to the count.
+KEEP_FACTOR, KEEP_HELD = 5.0, 0.3
+
+
+def colour_edge_vertices(o, px, step=0.2):
+    """The vertices on a line where the texture's colour changes (a beard against the cheek, a collar against the
+    neck): between two faces whose own colours differ by more than `step` in any channel."""
+    me = o.data; nl = len(me.loops); nf = len(me.polygons)
+    UV = np.empty(nl * 2); me.uv_layers[0].data.foreach_get('uv', UV); UV = UV.reshape(-1, 2)
+    starts = np.empty(nf, dtype=np.int64); me.polygons.foreach_get('loop_start', starts)
+    sizes = np.empty(nf, dtype=np.int64); me.polygons.foreach_get('loop_total', sizes)
+    Cf = mb.sample(px, np.add.reduceat(UV, starts) / sizes[:, None])[:, :3]
+    EK = np.empty(nl, dtype=np.int64); me.loops.foreach_get('edge_index', EK)
+    FL = np.repeat(np.arange(nf), sizes)
+    order = np.argsort(EK, kind='stable'); ek, fl = EK[order], FL[order]
+    pair = np.flatnonzero(ek[1:] == ek[:-1])
+    differ = np.abs(Cf[fl[pair]] - Cf[fl[pair + 1]]).max(1) > step
+    EV = np.empty(len(me.edges) * 2, dtype=np.int64); me.edges.foreach_get('vertices', EV); EV = EV.reshape(-1, 2)
+    keep = np.zeros(len(me.vertices), bool); keep[EV[ek[pair][differ]].ravel()] = True
+    return keep
+
+
+def decimate_keeping_edges(o, tris, px):
+    """Cuts the triangles down to `tris` as decimate does, the vertices on the texture's colour lines held back, so a
+    part's edge (a beard's against the cheek, a moustache's, a hem) keeps small faces along it and a face rarely
+    straddles it: the game recolours whole faces, so a straddling face put a jagged tooth of hair colour into the skin."""
+    keep = colour_edge_vertices(o, px)
+    g = o.vertex_groups.new(name='_KeepEdges')
+    g.add(np.flatnonzero(~keep).tolist(), 1.0, 'REPLACE')                      # (the group is what is cut: all of it,
+    g.add(np.flatnonzero(keep).tolist(), KEEP_HELD, 'REPLACE')                 #  the colour lines less)
+    n = sum(len(p.vertices) - 2 for p in o.data.polygons)
+    activate(o); m = o.modifiers.new('dec', 'DECIMATE'); m.ratio = tris / n; m.use_collapse_triangulate = True
+    m.vertex_group = '_KeepEdges'; m.vertex_group_factor = KEEP_FACTOR
+    bpy.ops.object.modifier_apply(modifier=m.name)
+    o.vertex_groups.remove(o.vertex_groups['_KeepEdges'])
+    log('decimated %s: %d -> %d tris, %d vertices on colour lines held back' % (
+        o.name, n, sum(len(p.vertices) - 2 for p in o.data.polygons), keep.sum()))
+
+
 def joints(bones):
     """The game's joints (meshy_boy.bone_list) from the skeleton's."""
     h = lambda n: bones[n][0].copy()
@@ -243,28 +297,15 @@ def big_pieces(o, mask, share):
 
 def parts_jogger(o, px):
     """The jogger's parts (a passer-by), by each face's own colour: 1 the teal running jacket (its zip and trims stay as
-    they are), 2 the black leggings, 3 the black ponytail (the biggest dark piece of the head); 0 the skin, the white
-    running shoes and the watch."""
-    me = o.data; V = verts_np(o); bw = mt.bone_weights(o)
-    tri = np.empty(len(me.loops), dtype=np.int64); me.loops.foreach_get('vertex_index', tri); tri = tri.reshape(-1, 3)
-    fw = lambda w: w[tri].mean(1)
-    foot = fw(bw('Foot.L', 'Foot.R')); hand = fw(bw('Hand.L', 'Hand.R')); head = fw(bw('Head', 'Neck'))
-    legs = fw(bw('UpperLeg.L', 'UpperLeg.R', 'LowerLeg.L', 'LowerLeg.R'))
-    Cf = mt.face_colours(o, px); h, s, v = hsv(Cf); z = V[tri][:, :, 2].mean(1)
-    hip = mt.rig_z('UpperLeg.L')
-    skull = fw(bw('Head'))
-    teal = (h > 155) & (h < 205) & (s > 0.3) & (v > 0.2)
+    they are), 2 the black leggings, 3 the black ponytail and her hair (and brows); 0 the skin, the white running shoes
+    and the watch."""
+    f = Faces(o, px); h, s, v = f.h, f.s, f.v
+    f.top((h > 155) & (h < 205) & (s > 0.3) & (v > 0.2))                        # (the collar too, on the neck and head bones)
     black = (v < 0.24) & (s < 0.45)
-    FP = np.zeros(len(tri), dtype=np.int64)
-    FP[teal & (skull < 0.9) & (foot < 0.3) & (hand < 0.6)] = 1                  # (the collar too, on the neck and head bones)
-    FP[black & (z < hip + 0.08) & (legs + fw(bw('Hips')) > 0.5) & (foot < 0.3)] = 2
-    FP[black & (z < hip + 0.25) & (head < 0.5) & (foot < 0.3) & (hand < 0.5)] = 2  # the waistband showing under the hem
-    dark = (v < 0.36) & (s < 0.5) & (head > 0.5) & (FP != 1)                      # (the hair's sheen as well)
-    vm = np.zeros(len(V), bool); vm[tri[dark].ravel()] = True
-    FP[dark & big_pieces(o, vm, 0.04)[tri].all(1)] = 3                          # (the ponytail and the front: two pieces)
-    FP[(foot > 0.6) | (hand > 0.5)] = 0
-    log('jogger parts: jacket %d, leggings %d, hair %d faces of %d' % ((FP == 1).sum(), (FP == 2).sum(), (FP == 3).sum(), len(FP)))
-    return FP, tri
+    f.legwear(black, 0.08)
+    f.FP[black & (f.z < f.hip + 0.25) & (f.head < 0.5) & (f.foot < 0.3) & (f.hand < 0.5) & (f.FP == 0)] = 2   # (the waistband)
+    f.third((v < 0.36) & (s < 0.5) & (f.head > 0.5), 0.01, eyes_out=True)       # (the hair's sheen as well)
+    return f.done('jogger', ('jacket', 'leggings', 'hair'))
 
 
 class Faces:
@@ -282,9 +323,10 @@ class Faces:
         self.hip = mt.rig_z('UpperLeg.L')
         self.FP = np.zeros(len(tri), dtype=np.int64)
 
-    def top(self, m):
-        """The top: not on the head or the feet, nor the hands (the cuffs on the wrists are)."""
-        self.FP[m & (self.skull < 0.9) & (self.foot < 0.3) & (self.hand < 0.6)] = 1
+    def top(self, m, skull=0.9):
+        """The top: not on the head (a high collar is partly the skull's: `skull`, the most of it), the feet, nor the
+        hands (the cuffs on the wrists are)."""
+        self.FP[m & (self.skull < skull) & (self.foot < 0.3) & (self.hand < 0.6)] = 1
 
     def legwear(self, m, above=0.12, feet=0.3):
         """The legwear: on the legs and hips, below the hip joint (or a little above it), not on the feet (long trousers'
@@ -292,11 +334,22 @@ class Faces:
         self.FP[m & (self.z < self.hip + above) & (self.legs + self.foot > 0.5) & (self.foot < feet) & (self.head < 0.3)
                 & (self.hand < 0.5)] = 2
 
-    def third(self, m, share=0.04):
-        """The third part (hair, a cap or a scarf): the big pieces of it, not the brows or the eyes."""
+    def third(self, m, share=0.04, eyes_out=False):
+        """The third part (hair, a cap or a scarf): the big pieces of it. eyes_out: hair, so its dark pieces ringed by
+        the whites of the eyes (the irises and lashes) are left out, however big the cut keeps them."""
         m = m & (self.FP == 0)
         vm = np.zeros(self.nv, bool); vm[self.tri[m].ravel()] = True
-        self.FP[m & big_pieces(self.o, vm, share)[self.tri].all(1)] = 3
+        keep = big_pieces(self.o, vm, share)
+        if eyes_out:
+            whites = (self.s < 0.22) & (self.v > 0.78) & (self.skull > 0.9)
+            wv = np.zeros(self.nv, bool); wv[self.tri[whites].ravel()] = True
+            E = edges_np(self.o); lab = components(self.nv, E[keep[E[:, 0]] & keep[E[:, 1]]])
+            for i in np.unique(lab[keep]):
+                piece = keep & (lab == i)
+                if (piece & wv).sum() > 0.12 * piece.sum():
+                    keep &= ~piece
+                    log('an eye left out of the hair: %d vertices, %d by the whites' % (piece.sum(), (piece & wv).sum()))
+        self.FP[m & keep[self.tri].all(1)] = 3
 
     def done(self, who, names):
         FP = self.FP; FP[(self.foot > 0.6) | (self.hand > 0.5)] = 0
@@ -310,9 +363,9 @@ def parts_mom(o, px):
     trousers, 3 the black hair in its bun (the big dark pieces of the head); 0 the skin, the lips and the white
     trainers."""
     f = Faces(o, px); h, s, v = f.h, f.s, f.v
-    f.top(((h < 22) | (h > 340)) & (s > 0.45) & (v > 0.45))                      # (the lips stay: they are the skull's)
+    f.top(((h < 22) | (h > 340)) & (s > 0.45) & (v > 0.45), 0.5)                 # (her lips are coral too: the skull's)
     f.legwear((h > 125) & (h < 195) & (s > 0.3) & (v < 0.4), 0.15, 0.62)       # (the wide hems, down to the trainers)
-    f.third((v < 0.16) & (f.head > 0.5))                                         # (the bun and the hair: not the brows)
+    f.third((v < 0.16) & (f.head > 0.5), 0.01, eyes_out=True)                    # (the bun, the hair and the brows)
     return f.done('mom', ('jumper', 'trousers', 'hair'))
 
 
@@ -322,7 +375,7 @@ def parts_office(o, px):
     f = Faces(o, px); h, s, v = f.h, f.s, f.v
     f.top((h > 200) & (h < 250) & (s > 0.35) & (v < 0.42))
     f.legwear((s < 0.16) & (v > 0.22) & (v < 0.6), feet=0.62)
-    f.third((v < 0.3) & ((h < 45) | (s < 0.3)) & (f.head > 0.5))                 # (the beard grows with the hair)
+    f.third((v < 0.3) & ((h < 45) | (s < 0.3)) & (f.head > 0.5), 0.01, eyes_out=True)   # (the beard, moustache, brows)
     return f.done('office', ('blazer', 'trousers', 'hair'))
 
 
@@ -386,7 +439,7 @@ def parts_without_pack(parts, o, px):
 def finish(o, rig, img, px):
     png = os.path.join(OUT, NAME + 'Atlas.png')
     mb.face_parts = PROFILE['parts']
-    refs = mb.paint(o, img, px, png)
+    refs = mb.paint(o, img, px, png, plain_last=True)
     o.data.materials.clear(); o.data.materials.append(atlas_material('Kid', png))
     o.name = 'Kid'; o.data.name = 'Kid'
     tris = sum(len(p.vertices) - 2 for p in o.data.polygons)
@@ -405,7 +458,8 @@ if __name__ == '__main__':
     obj, img, bones = load()
     px = texture_pixels(img)
     J0 = joints(bones)
-    decimate(obj, TRIS)
+    weld(obj)
+    decimate_keeping_edges(obj, TRIS, px)
     tidy(obj, J0)
     rig = make_rig(J0)
     mt.RIG = rig

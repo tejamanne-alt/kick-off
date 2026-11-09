@@ -925,8 +925,17 @@ An audit of what comes round again and again (`review/repetition/README.md`), an
   without the step kept prime; each model's parts rendered front and back (flat colours, recoloured); all six in four
   levels' outfits in the game's look
   (`review/passersby/walkers.jpg`, `render_walkers.py`, which reads the wardrobes from the code). **Not run in Unity.**
-- **Seen at close range:** cutting the scans to 30k triangles leaves faint scratch lines on the faces where a triangle
-  now spans two pieces of the texture (the jogger has them too); at a passer-by's size in the game they are slight.
+- **Whole faces, and the office worker's beard (generated content v109):** the scratch lines across the passers-by's
+  faces were cracks: the scans come with their vertices split wherever the texture is cut (every texture piece a
+  loose patch), and cutting them to 30k triangles moved each patch's border on its own (the office worker went from 44
+  open edges to 30,262). `meshy_rigged.py` now welds the patches first (`weld`: closed again, the texture's seams kept in
+  the corners' UVs), cuts the triangles holding back the vertices on the texture's colour lines
+  (`decimate_keeping_edges`, so a beard's or a hem's edge keeps small faces and a face rarely straddles it), and paints
+  the part map with the uncoloured faces last (`meshy_boy.paint(plain_last=True)`: no white flecks beside a dark
+  part). The hair part leaves out the eyes (dark pieces ringed by their whites) and now takes the brows; the office
+  worker's hair, beard, moustache and brows are one part, so his wardrobe has light hair too (dark blond, blond,
+  auburn, grey, silver). All six passers-by rebuilt, the jogger with them (her rules on the shared setup).
+  `review/passersby/faces.jpg`: the faces before and after, and the office worker in four hair colours.
 
 ## After Phase 8 (next steps)
 
