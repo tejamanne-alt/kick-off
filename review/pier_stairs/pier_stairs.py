@@ -132,7 +132,17 @@ def build(mb, width=6.0, depth=1.9, drop_left=4.55, drop_right=4.55, landing_dro
     mb.box((-hw, -0.08, -depth), (hw, 0.0, 0.0), TIMBER)
     mb.box((-hw, -0.45, -depth), (hw, -0.08, 0.0), CONCRETE, bottom=True)
     zr = -depth + 0.08
-    if not on_course:
+    if on_course:
+        # the camera side's rail goes on across the landing's front, as the flights' rails are made, unbroken from foot
+        # to foot; the back stays open, the way onto the pier
+        lw = 2 * hw
+        mb.box((-hw, RAIL - 0.11, zr - 0.07), (hw, RAIL, zr + 0.07), WHITE, bottom=True)
+        mb.box((-hw, 0.48, zr - 0.04), (hw, 0.55, zr + 0.04), WHITE, bottom=True)
+        bays = max(1, int(math.ceil(lw / 1.4)))
+        for k in range(1, bays):
+            x = -hw + lw * k / bays
+            mb.box((x - 0.06, 0.0, zr - 0.06), (x + 0.06, RAIL - 0.05, zr + 0.06), WHITE)
+    else:
         # its front rail, and a lamp on each front corner
         mb.box((-hw, 0.95, zr - 0.08), (hw, 1.08, zr + 0.08), WHITE, bottom=True)
         mb.box((-hw, 0.48, zr - 0.05), (hw, 0.56, zr + 0.05), WHITE, bottom=True)
@@ -150,16 +160,6 @@ def build(mb, width=6.0, depth=1.9, drop_left=4.55, drop_right=4.55, landing_dro
             mb.box((min(a, c), 0.48, 0.03), (max(a, c), 0.56, 0.13), WHITE, bottom=True)
             for x in (a + s * 0.09, c - s * 0.09):
                 mb.box((x - 0.09, 0.0, 0.0), (x + 0.09, 1.0, 0.18), WHITE)
-    if on_course:
-        # a fence across the top: the flights' rail goes on along the back of the landing, unbroken from foot to foot
-        zc = -0.08
-        lw = 2 * hw
-        mb.box((-hw, RAIL - 0.11, zc - 0.07), (hw, RAIL, zc + 0.07), WHITE, bottom=True)
-        mb.box((-hw, 0.48, zc - 0.04), (hw, 0.55, zc + 0.04), WHITE, bottom=True)
-        bays = max(1, int(math.ceil(lw / 1.4)))
-        for k in range(1, bays):
-            x = -hw + lw * k / bays
-            mb.box((x - 0.06, 0.0, zc - 0.06), (x + 0.06, RAIL - 0.05, zc + 0.06), WHITE)
     # the bent under it: a cross beam on four piles (two under a short landing)
     zb = -depth / 2
     mb.box((-hw + 0.1, -1.05, zb - 0.28), (hw - 0.1, -0.45, zb + 0.28), CONCRETE, bottom=True)
@@ -173,7 +173,7 @@ def build(mb, width=6.0, depth=1.9, drop_left=4.55, drop_right=4.55, landing_dro
 
 def flight(mb, s, hw, depth, drop, landing_drop, G=GOING, riser=RISER, split_over=SPLIT_OVER, on_course=False):
     n, r, k1, k2, run = plan(drop, G, riser, split_over)
-    rail_sides = (-0.08,) if on_course else (-depth + 0.08, -0.08)
+    rail_sides = (-depth + 0.08, -0.08)
     def X(u): return s * (hw + u)
     def ground(u): return -(landing_drop + (drop - landing_drop) * min(1.0, u / max(run, 1e-3)))
     near, far = (-depth, -depth + 0.1), (-0.1, 0.0)
@@ -195,7 +195,7 @@ def flight(mb, s, hw, depth, drop, landing_drop, G=GOING, riser=RISER, split_ove
             for i in range(1, k):
                 y = y0 - i * r - TREAD
                 mb.prism([(X(u0 + (i - 1) * G), y), (X(u0 + i * G), y), (X(u0 + i * G), y - r)], za, zb, WHITE)
-        # rails: a sloping handrail and mid rail, posts on the treads (the far side only on the course)
+        # rails either side: a sloping handrail and mid rail, posts on the treads
         def yn(u): return y0 - r * (u - u0) / G
         for zc in rail_sides:
             mb.prism([(X(u0), yn(u0) + RAIL - 0.11), (X(u_end), yn(u_end) + RAIL - 0.11), (X(u_end), yn(u_end) + RAIL), (X(u0), yn(u0) + RAIL)],

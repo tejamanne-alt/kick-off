@@ -12,7 +12,7 @@ left and on the right (a mid-landing halfway on each), and a boardwalk path on t
 | `close.jpg` | The left flight close up: timber treads, white risers and cut stringers, rails, the path at the foot |
 | `course_board.jpg` | Low Tide in California, where the course climbs the pier: the four views below on one board |
 | `course_up.jpg`, `course_top.jpg`, `course_down.jpg` | The game's camera following the kid up the steps with the ball, over the landing and down |
-| `course_whole.jpg` | The climb across the lane: a 2 m landing fenced at the back (one rail from foot to foot), gentler flights, no rail on the camera's side |
+| `course_whole.jpg` | The climb across the lane: a 2 m landing, gentler flights, the camera's side railed from foot to foot, the back open onto the pier |
 
 ## On the course (Low Tide, California)
 

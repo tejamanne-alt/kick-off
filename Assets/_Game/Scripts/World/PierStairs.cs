@@ -13,8 +13,9 @@ namespace DribbleToSchool.World
     /// landing and the flights lie in front of the pier (z from -depth to 0). review/pier_stairs/pier_stairs.py is a
     /// step-for-step copy for the review pictures.
     /// On the course (<see cref="onCourse"/>: TrackBuilder.PierClimb) the stairs stand across the kid's lane and carry the
-    /// kid and the ball up one flight, over the landing and down the other: gentler steps, a shorter landing, and nothing
-    /// on the camera's side (no rail, no lamps) between the camera and the kid.
+    /// kid and the ball up one flight, over the landing and down the other: gentler steps and a shorter landing. The rail on
+    /// the camera's side runs unbroken from one foot, up, across the landing's front and down to the other; the far side's
+    /// rails run up each flight and leave the back of the landing open, the way onto the pier. No lamps.
     /// </summary>
     public class PierStairs : ProceduralShape
     {
@@ -46,7 +47,7 @@ namespace DribbleToSchool.World
         [Tooltip("A tread's depth, the riser aimed for, and how many risers a flight takes before it needs a mid-landing.")]
         public float going = Going, riser = Riser;
         public int splitOver = SplitOver;
-        [Tooltip("The stairs carry the kid's lane: nothing on the camera's side (no rail, no lamps).")]
+        [Tooltip("The stairs carry the kid's lane: the camera's side railed from foot to foot, the landing open at the back onto the pier, no lamps.")]
         public bool onCourse;
 
         /// <summary>How one flight goes down: its risers (all the same height), how many before the mid-landing and after it, and how far it runs.</summary>
@@ -87,7 +88,20 @@ namespace DribbleToSchool.World
             Box(b, -hw, -0.08f, -depth, hw, 0f, 0f, Timber, false);
             Box(b, -hw, -0.45f, -depth, hw, -0.08f, 0f, Concrete, true);
             float zr = -depth + 0.08f;
-            if (!onCourse)
+            if (onCourse)
+            {
+                // The rail on the camera's side goes on across the landing's front, as the flights' rails are made (the
+                // same height and depth), so it runs unbroken from foot to foot. The back stays open: the way onto the pier.
+                Box(b, -hw, Rail - 0.11f, zr - 0.07f, hw, Rail, zr + 0.07f, White, true);
+                Box(b, -hw, 0.48f, zr - 0.04f, hw, 0.55f, zr + 0.04f, White, true);
+                int bays = Mathf.Max(1, Mathf.CeilToInt(landingWidth / 1.4f));
+                for (int k = 1; k < bays; k++)
+                {
+                    float x = -hw + landingWidth * k / bays;
+                    Box(b, x - 0.06f, 0f, zr - 0.06f, x + 0.06f, Rail - 0.05f, zr + 0.06f, White, false);
+                }
+            }
+            else
             {
                 // Its front rail, and a lamp on each front corner.
                 Box(b, -hw, 0.95f, zr - 0.08f, hw, 1.08f, zr + 0.08f, White, true);
@@ -111,20 +125,6 @@ namespace DribbleToSchool.World
                     foreach (float x in new[] { a + s * 0.09f, c - s * 0.09f })
                         Box(b, x - 0.09f, 0f, 0f, x + 0.09f, 1f, 0.18f, White, false);
                 }
-            if (onCourse)
-            {
-                // A fence across the top: the flights' rail goes on along the back of the landing, at the same height and
-                // depth, so it runs unbroken from the left foot, up, over and down to the right foot.
-                float zc = -0.08f;
-                Box(b, -hw, Rail - 0.11f, zc - 0.07f, hw, Rail, zc + 0.07f, White, true);
-                Box(b, -hw, 0.48f, zc - 0.04f, hw, 0.55f, zc + 0.04f, White, true);
-                int bays = Mathf.Max(1, Mathf.CeilToInt(landingWidth / 1.4f));
-                for (int k = 1; k < bays; k++)
-                {
-                    float x = -hw + landingWidth * k / bays;
-                    Box(b, x - 0.06f, 0f, zc - 0.06f, x + 0.06f, Rail - 0.05f, zc + 0.06f, White, false);
-                }
-            }
             // The bent under it: a cross beam on four piles (two under a short landing).
             float zb = -depth * 0.5f;
             Box(b, -hw + 0.1f, -1.05f, zb - 0.28f, hw - 0.1f, -0.45f, zb + 0.28f, Concrete, true);
@@ -140,7 +140,7 @@ namespace DribbleToSchool.World
         {
             var plan = PlanFor(drop, going, riser, splitOver);
             float r = plan.riser, run = plan.run, G = going;
-            var railSides = onCourse ? new[] { -0.08f } : new[] { -depth + 0.08f, -0.08f };
+            var railSides = new[] { -depth + 0.08f, -0.08f };
             int k1 = plan.toMid, k2 = plan.afterMid;
             for (int part = 0; part < (k2 > 0 ? 2 : 1); part++)
             {
