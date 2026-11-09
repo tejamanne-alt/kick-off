@@ -34,6 +34,20 @@ namespace DribbleToSchool.EditorTools
             /// <summary>The piers the course climbs (StreetBuilder.Coast builds them).</summary>
             public IList<PierClimbSpec> PierClimbs { get { return pierClimbs; } }
 
+            /// <summary>True when the level has a pier behind its lane (<see cref="SeasidePier"/>).</summary>
+            public bool HasSeasidePier { get; private set; }
+
+            /// <summary>
+            /// A pier out to sea behind the lane, somewhere along this level's beach (California only; StreetBuilder.Coast puts it
+            /// clear of the stops, with its stairs down to the sand on either side). Only a few levels have one, so the seaside
+            /// walk passes two piers, not one on every leg: this one and Low Tide's, which the course climbs (<see cref="PierClimb"/>).
+            /// The original levels have none, so it changes nothing there.
+            /// </summary>
+            public void SeasidePier()
+            {
+                HasSeasidePier = true;
+            }
+
             /// <summary>True where a level can put a pier on its course: the California beach, with the Coast kit's pier.</summary>
             public bool CanClimbPier { get { return California && Chapter == 3 && HasKitModel("Coast", "PierSpan"); } }
 

@@ -2085,8 +2085,9 @@ namespace DribbleToSchool.EditorTools
                     roll.phase = (float)rng.NextDouble();
                 }
 
-            // The pier: once along a level's beach, running straight out to sea, its stairs and their paths clear of
-            // the stops' plots. The lifeguard towers, palms and parasols keep clear of it (pierReach either side).
+            // The pier: on the levels that have one (two along the whole seaside walk: Low Tide's across the lane, which the
+            // course climbs, and Sandcastle Sprint's behind it), running straight out to sea, its stairs and their paths clear
+            // of the stops' plots. The lifeguard towers, palms and parasols keep clear of it (pierReach either side).
             float skip;
             float pierX = float.NaN, pierReach = 0f;
             if (track.PierClimbs.Count > 0)
@@ -2097,7 +2098,7 @@ namespace DribbleToSchool.EditorTools
                 pierReach = Mathf.Max(PierWidth * 0.5f, (climb.end - climb.foot) * 0.5f + 0.8f);
                 PierOnCourse(track, root, climb, 13);
             }
-            else if (CA && (chunk == null || chunk.level) && LevelBuildKit.HasKitModel("Coast", "PierSpan") && propsEnd - x0 > 60f)
+            else if (track.HasSeasidePier && CA && (chunk == null || chunk.level) && LevelBuildKit.HasKitModel("Coast", "PierSpan") && propsEnd - x0 > 60f)
             {
                 pierReach = PierReach;
                 for (float tryX = x0 + (propsEnd - x0) * 0.55f; tryX < propsEnd - pierReach - 8f; tryX += 7f)

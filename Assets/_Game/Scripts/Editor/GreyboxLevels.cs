@@ -589,6 +589,7 @@ namespace DribbleToSchool.EditorTools
             t.Walls(-8f, 130f);
             t.Start(0f);
             t.Ground(-8f, 28f);
+            t.SeasidePier();     // (California: the seaside walk's second pier, behind the lane; Low Tide's is the first)
             t.Sign("Sandcastle Sprint!\nEverything the beach can throw at you", new Vector2(5f, 3.4f));
             t.Sand(6f, 12f);
             t.Wall(16f, 0.6f, 0f, 0.9f);

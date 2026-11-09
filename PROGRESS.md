@@ -846,6 +846,15 @@ The user found the first Coast models plain next to their reference shots (weath
   feel with the ball (a ball let go on the steps rolls back down them, and one knocked on at the top runs away down the
   far flight, as on real steps), the kid's feet on the steps, and the slope rule on the other levels' ramps and dunes.
 
+## Two piers along the seaside walk (generated content v105)
+
+- The California beach had a pier on every leg (Boardwalk, Low Tide, Seagull Bay, Sandcastle Sprint and the Beach
+  Slalom challenge), which felt repetitive. A pier is now something a level asks for: `TrackBuilder.SeasidePier()` (a
+  pier behind the lane, placed by `StreetBuilder.Beach` clear of the stops, with its stairs down to the sand) or
+  `PierClimb` (a pier the course climbs). Two along the whole walk: Low Tide's, which the course climbs, and Sandcastle
+  Sprint's, behind the lane near the walk's end. Boardwalk, Seagull Bay and the Beach Slalom have none. The original
+  (non-California) levels never had piers and are unchanged.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.
