@@ -198,7 +198,8 @@ send, poll, shutdown, open settings) and pack their events the same way, read by
   connection's end, so that end isn't read as the new attempt failing. A host that takes the game's service down
   (`didModifyServices`) ends the connection. A peripheral can't hang up on a central, so a kicked player is simply no
   longer listened to and times out. Scanning and advertising are renewed when the app is active again. The Bluetooth
-  prompt's text is `NSBluetoothAlwaysUsageDescription`; Bluetooth starts (and iOS asks, and offers to switch Bluetooth
+  prompt's text is `NSBluetoothAlwaysUsageDescription`, in English and Spanish (`en.lproj` and `es.lproj`
+  `InfoPlist.strings`, written by `Editor/IosPostBuild`); Bluetooth starts (and iOS asks, and offers to switch Bluetooth
   on when it is off) only when the co-op screen opens.
 - **Android** (`Plugins/Android/DtsCoopBle.java`, compiled by Gradle with the build; kept from R8 by a keep rule that
   `Editor/AndroidBluetoothPermissions` adds to `proguard-unity.txt`, since C# reaches it only by name): `BluetoothGattServer`
@@ -214,7 +215,7 @@ send, poll, shutdown, open settings) and pack their events the same way, read by
   again without having gone is a new connection. Permissions (added to the manifest by the same hook): `BLUETOOTH_SCAN`
   (`neverForLocation`), `BLUETOOTH_CONNECT`, `BLUETOOTH_ADVERTISE` on Android 12+; `BLUETOOTH`, `BLUETOOTH_ADMIN` and
   `ACCESS_FINE_LOCATION` up to Android 11 (where scanning also needs Location switched on: the Join screen says so; see
-  the Families note in `docs/GOOGLE_PLAY_LISTING.md`). `android.hardware.bluetooth_le` is declared not required. Some
+  the target-audience note in `docs/GOOGLE_PLAY_LISTING.md`). `android.hardware.bluetooth_le` is declared not required. Some
   Android phones can't advertise: they can't host, but can join ("This phone can't host over Bluetooth. You can still
   join a race.").
 

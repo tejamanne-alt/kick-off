@@ -136,10 +136,11 @@ Not applicable: the app is not in a regulated industry and contains no protected
 - **Category:** Primary **Games**, subcategories **Sports** and **Casual**. Secondary category: optional, e.g. Entertainment.
 - **Content Rights:** "No, it does not contain, show, or access third-party content".
 - **Age Rating:** answer "None" / "No" to violence, gambling and loot boxes, chat or messaging, ads, web access and
-  medical content. **User-generated content:** Co-op shows a name a player typed to the others in the same room. It is
-  local only, filtered, and the host can remove a player; whether that counts is App Review's reading, so answer it the
-  way the review notes above describe it (if you answer Yes, Guideline 1.2's filter, removal and contact-details points
-  are covered: the word filter, the host's Remove, and the support page). Expect the lowest rating (4+).
+  medical content. **User-generated content: answer Yes.** Co-op shows a name a player typed to the others in the same
+  room, and declaring it is the answer App Review can't dispute. Guideline 1.2's requirements for it are met: names are
+  filtered (a word list), the host can remove a player (who can't rejoin that lobby), and the support page gives a
+  contact. The review notes above describe it the same way. Expect the lowest rating (4+); if the questionnaire suggests
+  another, accept it.
 - **License agreement:** Apple's standard EULA.
 
 ## Pricing and Availability
