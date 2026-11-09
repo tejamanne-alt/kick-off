@@ -15,7 +15,7 @@ All eight phases of the build plan are done (see [`PROGRESS.md`](PROGRESS.md)):
 - **Menus and options:** settings, localization (English and Spanish), tutorial hints and accessibility options.
 - **Release setup:** store and unlock, local analytics, and build scripts.
 
-The next step is playtesting on real devices.
+The next step is playtesting on real devices: the frame rate and pacing check in [`docs/PERFORMANCE.md`](docs/PERFORMANCE.md) first. Before changing anything, read [`docs/LEARNINGS.md`](docs/LEARNINGS.md): every past mistake, its cause, and the rule it set.
 
 ## Open the project
 

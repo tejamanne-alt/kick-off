@@ -17,6 +17,7 @@ This file is the resume point. A new session should read it first. All eight pha
 
 ## Conventions (keep these)
 
+- **Read `docs/LEARNINGS.md` first** (every past mistake, its cause and its rule) and `docs/PERFORMANCE.md` (device tiers and budgets). Add a learning whenever something has to be fixed, reverted or redone.
 - **Scenes are generated.** `Editor/GeneratedContent.cs` holds the level table (chapter, id, name, scene, bell, streak target, layout). `Editor/GreyboxLevels.cs` holds the layouts, and `Editor/LevelBuildKit.cs` holds the track pieces and the gameplay rig. Bump `GeneratedContent.Version` whenever layouts or the rig change.
 - **Compile check without Unity.** Scripts are compiled with Mono `mcs` against the UnityEngine 2021.3 module DLLs (NuGet `UnityEngine.Modules`) and `UnityEditor.dll` (NuGet `Unity3D.SDK` 2021.1). The Unity 6 renames (`linearVelocity`, `linearDamping`, `angularDamping`) are mapped back by sed, and the Input System is stubbed. Four configs: legacy input, Input System, editor and tests (with an NUnit stub). Stay at C# 7.3 (no target-typed `new`, no switch expressions).
 - **Presentation listens to `Core/GameEvents`.** Gameplay raises typed events; audio, FX, haptics and analytics subscribe to them.
@@ -960,6 +961,95 @@ An audit of what comes round again and again (`review/repetition/README.md`), an
 - **Checked:** the runtime scripts compile; the editor scripts bind with no new errors; `PasserbyTests` (heights, the
   six-way turn order) and `GaitTests` (the steps quicken; the planted foot sweeps back at the body's speed at a walk and
   a jog; the run's stride flat out) pass, and fail on the old stride or a short Grandad. **Not run in Unity.**
+
+## Smooth frames on mid-range phones; polished characters; illustrated kids (generated content v111)
+
+**Why.** The user's OnePlus Nord CE5 recordings showed about 28 fps in Up the Hill (comic filter) and 21 to 23 fps on
+the title screen, with frames from 17 to 79 ms. The user also said every character looked low quality in every mode,
+the primary-school kids like photographs of real children, and even Hana and Max like low-quality assets. Six read-only
+audits (GPU, CPU, assets and memory, character rendering, the Blender pipeline, the project history) found the causes,
+listed in `docs/LEARNINGS.md` B1 to B6 and C1 to C12.
+
+**Performance** (`docs/PERFORMANCE.md`):
+- **`Core/GraphicsQuality` + `FramePacer`.** A tier per device: Low / Medium / High, with the Nord CE5 on Medium. The 3D
+  picture is drawn at 720 / 864 / 1080 lines on Android (`Screen.SetResolution`, only on whole scene loads), and the
+  touch thresholds follow it (`TouchDpi`). Sun shadows are none / hard, 1 cascade, 25 m / soft, 2 cascades, 35 m (from
+  `WorldLook`); bloom is on High only. vSync is off, physics catches up at most 0.1 s, collision callbacks are reused
+  and uploads time-sliced. The governor steps the tier down, then 60 fps to 40 or 30, when frames come late for 6 s,
+  and remembers it, trying one step up again after 5 sessions.
+- **Cameras** render without HDR or MSAA (runtime in `PostFX.OnEnable`, and in the scene builders).
+- **`PostFX`** draws every pass once into a tiny target on its first frame, so shaders are built before play.
+- **Android build settings** (`BuildScripts.ApplyAndroidPerformanceSettings`, by reflection where the API moved):
+  Optimized Frame Pacing, Blit Type Auto, frame timing stats, batched GPU skinning, incremental GC, and every graphics
+  tier without HDR or screen-space (cascaded) shadows, so no depth pre-pass and no shadow-collect pass.
+- **Models** import without tangents; no shader reads them (`ModelImportSettings` v8).
+- **Per-frame CPU and GC work**, each change reviewed by a second reader:
+  - buttons, the touch buttons, the stick, the HUD's buttons and the menu's tap zone write their rects only on
+    change and snap to rest;
+  - `ProceduralShape.Update` is editor-only;
+  - coins far off screen rest;
+  - the developer panel is disabled in release;
+  - `GameSettings` caches its values (PlayerPrefs is a JNI call on Android);
+  - music and ambience upload one clip per frame, and the wanted soundscape is cached;
+  - haptics cache their Java objects and drop pulses closer than 35 ms;
+  - the comic words' glyphs are drawn ahead at each scene load;
+  - outfit recolouring reuses a `Color32` buffer and skips identical requests.
+
+**Characters** (`tools/blender/README.md`, "Polishing the characters"; `review/characters_v2/`):
+- **The cause.** All six playable kids were torn into thousands of pieces. The fix `weld()` was made for the
+  passers-by (`318993d`) after the kids had been built, and was never applied to them. Their scanned normals were
+  shattered, and their atlases had thousands of islands with unpadded gaps. The kids' faces were photographs.
+- **`polish_character.py`** (through `polish_all.py`, from the pre-polish originals at `f1b17b1`):
+  - welds open edges within 2 mm;
+  - turns back-to-front triangles round;
+  - rebuilds the normals from the surface around each vertex (hair as one volume, the inner face leaned forward);
+  - cuts each kid to 32k triangles, each bag to 8k and each passer-by to 14k, holding the head, hands and texture
+    seams;
+  - fills every atlas gap for the whole mip chain.
+  Bones, rest pose, weights, outfit parts, vertex colours, bags and neck heights are unchanged. The FBXs went from
+  90 MB to 28 MB.
+- **`face_paint.py`** gives Kai, Leo, Mia and Zoe illustrated faces in their own skin tones: drawn eyes with highlights,
+  brows, a nose stroke, each kid's own expression (Kai's grin, the others' smiles) and a little blush, placed where the
+  scan's features were. Their outfits, hair and the user's designs stay as they were.
+- **`ToonCharacter`:**
+  - the outline is measured in pixels, never under 1.25 px, and set back 1.2 cm so inner folds draw no ink;
+  - the light/shade step is anti-aliased;
+  - the rim is narrower and takes the albedo's colour, so dark hair has no white flecks;
+  - the player's outline is 0.0024, the thickest on screen as the art direction says (it was thinner than the
+    passers-by's).
+- **New player cards** (`Resources/UI/Player*.png`), rendered with `portrait_teen.py`, whose rim now matches the
+  shader.
+- **Reviewed** in Blender with the game's toon look: characters cast no shadows, as in the game, and the filters
+  come from the numpy ports of `PostFX.shader`. The boards in `review/characters_v2/` show all six faces before and
+  after, every look (Original, Comic halftone, Pencil sketch, Classic cartoon), and the player cards.
+
+**Reverts recorded late** (`docs/LEARNINGS.md` A7):
+- v84: Mia rebuilt in the scripted anime style, reverted at the user's request (the user's own design is kept; this
+  restyle keeps it);
+- v86: the camera closer still, reverted as v87 because collectibles fell out of view.
+
+**Checked:**
+- every script compiles against the Unity 2021 reference assemblies with empty uGUI/Input System stubs, with no
+  error the clean tree doesn't have (a planted error is caught);
+- `ToonCharacter`'s passes compile with glslang (a planted error is caught);
+- the FBX round trip keeps every bone (max difference 5e-6) and every outfit part (no face across two parts, at most
+  four bones a vertex).
+
+**Not run in Unity or on a device.** Check on the Nord CE5, as in `docs/PERFORMANCE.md`:
+- the frame rate and pacing in every look;
+- the tier picked (the `[Graphics]` log line);
+- touch at 864 lines;
+- the new characters in every pose (`review_poses.py --leaks` was run on Mia: every pose clean,
+  `review/characters_v2/mia_poses.jpg`; the other five were not rerun);
+- the generated content v111 rebuild.
+
+**Still to do:**
+- build only the chosen kid and their bag in each scene;
+- bake the audio;
+- fewer draws on the title screen;
+- cheaper filter normals;
+- recolour outfits in the shader;
+- regenerate the store art and stickers that show the kids.
 
 ## After Phase 8 (next steps)
 
