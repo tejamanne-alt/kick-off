@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using DribbleToSchool.World;
 using UnityEngine;
 
 namespace DribbleToSchool.EditorTools
@@ -163,13 +164,15 @@ namespace DribbleToSchool.EditorTools
         /// Palms along the street at depth z, every so often between spacingMin and spacingMax: date palms
         /// (or young fan palms) whose crowns sit in the view over the gardens and shopfronts.
         /// </summary>
-        static void StreetPalms(LevelBuildKit.TrackBuilder track, Transform root, System.Random rng, float x0, float x1, float z, float spacingMin, float spacingMax)
+        static void StreetPalms(LevelBuildKit.TrackBuilder track, Transform root, System.Random rng, float x0, float x1, float z, float spacingMin, float spacingMax,
+            float clearFrom = float.NaN, float clearTo = float.NaN)
         {
             if (!LevelBuildKit.HasKitModel("Plants", "PalmDate")) return;
             float skip;
             for (float x = x0 + Rand(rng, 2f, spacingMax); x < x1 - 1f; x += Rand(rng, spacingMin, spacingMax))
             {
                 if (Blocked(track, x - 1.2f, x + 1.2f, out skip) || OnSideStreetRange(track, x - 1.5f, x + 1.5f)) continue;
+                if (x > clearFrom - 1.2f && x < clearTo + 1.2f) continue;     // (the pier's stairs and their paths)
                 bool fan = rng.NextDouble() < 0.35;
                 float pz = z + Rand(rng, -0.3f, 0.3f);
                 Plant(root, fan ? "PalmFan" : "PalmDate", null, x, GroundAt(track, x, pz), pz,
@@ -177,12 +180,32 @@ namespace DribbleToSchool.EditorTools
             }
         }
 
+        /// <summary>The pier's deck over the sea (Coast/PierSpan), and how far its landing reaches in front of it.</summary>
+        const float PierDeck = 4.8f, PierLandingDepth = 1.9f;
+
+        /// <summary>How far a pier's stairs and their paths reach either side of its centre line (at the longest drop: sand at sea level).</summary>
+        static float PierReach
+        {
+            get { return PierStairs.Reach(PierWidth, PierDeck); }
+        }
+
+        static float PierWidth
+        {
+            get
+            {
+                float w = LevelBuildKit.KitSize("Coast", "PierSpan").x;
+                return w < 1f ? 6f : w;
+            }
+        }
+
         /// <summary>
         /// A seaside pier running straight out from the beach at x: twelve-metre spans on concrete piles
         /// from depth zStart out to sea, and the end platform with its roundhouse. Its deck stands 4.8
-        /// over the water (sea level gy).
+        /// over the water (sea level gy). The way up is at the beach end: a landing at deck height in front of
+        /// the first span and a flight of stairs down to the sand on each side (World/PierStairs), with a
+        /// boardwalk path from each foot toward the lane.
         /// </summary>
-        static void Pier(Transform root, float x, float seaY, float zStart, int spans)
+        static void Pier(LevelBuildKit.TrackBuilder track, Transform root, float x, float seaY, float zStart, int spans)
         {
             if (!LevelBuildKit.HasKitModel("Coast", "PierSpan")) return;
             float length = LevelBuildKit.KitSize("Coast", "PierSpan").z;
@@ -193,6 +216,89 @@ namespace DribbleToSchool.EditorTools
             for (int i = 0; i < spans; i++)
                 Model(pier, "Coast", "PierSpan", x, seaY, zStart + i * length, 0f, 1f, p.wall, p.trim, p.roof);
             Model(pier, "Coast", "PierEnd", x, seaY, zStart + spans * length, 0f, 1f, p.wall, p.trim, p.roof);
+            PierStairsUp(track, pier, x, seaY + PierDeck, zStart);
+        }
+
+        /// <summary>
+        /// The pier the course climbs (TrackBuilder.PierClimb): its deck at the climb's height over the lane (the piles go
+        /// deeper into the sand: the deck stands lower over the water than the pier behind a beach), its near end just behind
+        /// the lane, and its stairs across the lane carrying the kid up one flight, over the landing and down the other
+        /// (World/PierStairs on the course: the flights' nosings lie on the climb's slopes, so what is drawn is what the kid
+        /// and the ball move on).
+        /// </summary>
+        static void PierOnCourse(LevelBuildKit.TrackBuilder track, Transform root, LevelBuildKit.TrackBuilder.PierClimbSpec climb, int spans)
+        {
+            if (!LevelBuildKit.HasKitModel("Coast", "PierSpan")) return;
+            float length = LevelBuildKit.KitSize("Coast", "PierSpan").z;
+            if (length < 1f) length = 12f;
+            float x = climb.Centre, deck = climb.groundTop + climb.rise, depth = PierLandingDepth, zStart = depth * 0.5f;
+            var pier = new GameObject("Pier").transform;
+            pier.SetParent(root, false);
+            var p = new Paint(new Color(0.95f, 0.95f, 0.93f), new Color(0.3f, 0.48f, 0.62f), new Color(0.3f, 0.5f, 0.66f));
+            for (int i = 0; i < spans; i++)
+                Model(pier, "Coast", "PierSpan", x, deck - PierDeck, zStart + i * length, 0f, 1f, p.wall, p.trim, p.roof);
+            Model(pier, "Coast", "PierEnd", x, deck - PierDeck, zStart + spans * length, 0f, 1f, p.wall, p.trim, p.roof);
+
+            var go = new GameObject("PierStairs");
+            go.transform.SetParent(pier, false);
+            go.transform.position = new Vector3(x, deck, zStart);
+            var stairs = go.AddComponent<PierStairs>();
+            stairs.onCourse = true;
+            stairs.width = PierWidth;
+            stairs.landingWidth = climb.Landing;
+            stairs.depth = depth;
+            stairs.going = climb.going;
+            stairs.riser = climb.riserAim;
+            stairs.splitOver = LevelBuildKit.TrackBuilder.ClimbSplitOver;
+            stairs.dropLeft = stairs.dropRight = climb.rise;
+            stairs.landingDrop = deck - GroundAt(track, x, 0f);
+            go.GetComponent<MeshRenderer>().sharedMaterial = Art.solid;
+            stairs.Rebuild();
+        }
+
+        /// <summary>
+        /// The pier's stairs: measured against the sand where each flight lands (a flight's length depends on its drop,
+        /// so the foot is found in a few passes), and a path of boards on the sand from each foot toward the lane.
+        /// review/pier_stairs/ renders the same from pier_stairs.py.
+        /// </summary>
+        static void PierStairsUp(LevelBuildKit.TrackBuilder track, Transform pier, float x, float deck, float zStart)
+        {
+            float width = PierWidth, depth = PierLandingDepth, hw = width * 0.5f, zMid = zStart - depth * 0.5f;
+            var go = new GameObject("PierStairs");
+            go.transform.SetParent(pier, false);
+            go.transform.position = new Vector3(x, deck, zStart);
+            var stairs = go.AddComponent<PierStairs>();
+            stairs.width = width;
+            stairs.depth = depth;
+            stairs.landingDrop = deck - GroundAt(track, x, zMid);
+            var runs = new float[2];
+            for (int k = 0; k < 2; k++)
+            {
+                float s = k == 0 ? -1f : 1f;
+                float run = PierStairs.PlanFor(deck - GroundAt(track, x + s * (hw + 7f), zMid)).run, drop = 0f;
+                for (int pass = 0; pass < 2; pass++)
+                {
+                    drop = deck - GroundAt(track, x + s * (hw + run), zMid);
+                    run = PierStairs.PlanFor(drop).run;
+                }
+                if (k == 0) stairs.dropLeft = drop;
+                else stairs.dropRight = drop;
+                runs[k] = run;
+            }
+            go.GetComponent<MeshRenderer>().sharedMaterial = Art.solid;
+            stairs.Rebuild();
+
+            // The paths: boards across, a little apart, from each foot's pad to the back of the lane.
+            const float laneBack = 2.2f;
+            for (int k = 0; k < 2; k++)
+            {
+                float cx = x + (k == 0 ? -1f : 1f) * (hw + runs[k] + 0.5f);
+                for (float z = zStart - depth - 0.2f; z - 0.18f > laneBack; z -= 0.28f)
+                {
+                    float g = Mathf.Max(GroundAt(track, cx - 0.65f, z - 0.09f), GroundAt(track, cx + 0.65f, z - 0.09f));
+                    Solid(pier, "PathBoard", new Vector3(cx, g + 0.01f, z - 0.09f), new Vector3(1.3f, 0.05f, 0.18f), PierStairs.Boards);
+                }
+            }
         }
     }
 }

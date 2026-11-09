@@ -793,6 +793,68 @@ The user found the first Coast models plain next to their reference shots (weath
 - **Help text** (`tour.walk`, `tour.kick`, `controls.walk`, `controls.kick`, en and es) and the README's controls. The Tune panel has a CLOSE CONTROL section (the stick's pace, the hold time, the walk touch, the drag-back, the hold's speed, lead and grip) for tuning on a phone. `trapDamping` is gone (the foot hold replaces the old one-off trap).
 - **Checked:** the runtime scripts compile (Roslyn, Unity 2021.3 modules, uGUI 6000.0); `Tests/Editor/DribbleControlTests` (7 tests: the stick's pace, the kick button's tap, hold and aim, the touch's lead) all pass against the functions' own source with a work-alike `Mathf` (Unity's needs the engine), and fail when those rules are deliberately broken; the 1D simulation above. **Not run in Unity or on a phone:** how the pace feels under the thumb, the hold time against real taps, the foot-on-ball stance, and the close-control touches' rhythm.
 
+## Stairs up to the pier (generated content v103)
+
+- The California beach's pier had no way up: its deck stands 4.5 m over the sand. It now has a landing at deck height
+  in front of its first span and a flight of stairs down to the sand on the left and the right, each with a
+  mid-landing halfway (`World/PierStairs.cs`, one mesh): timber treads on white cut stringers with white risers, the
+  pier's white rails on both sides, concrete piles under the landings, a pad at each foot, a globe lamp on each of the
+  landing's front corners, and a boardwalk path on the sand from each foot toward the lane.
+- `StreetBuilder.Coast` `Pier` measures the sand at each flight's foot and sizes the flight to it (risers of about 0.19 m,
+  treads 0.27 m; a mid-landing when the drop is more than about 2.7 m). The pier is now placed before the lifeguard
+  towers, and the towers, palms and parasols keep clear of the stairs and their paths.
+- The pictures it was designed from: `review/pier_stairs/` (`render_pier.py`, with the stairs ported to
+  `pier_stairs.py`). Tests: `Tests/Editor/PierStairsTests.cs`.
+- **Checked:** the runtime scripts compile (Roslyn, Unity 2021.3 modules, uGUI 6000.0); the editor scripts bind with
+  UnityEditor's declarations stubbed, with no errors in the edited files; `PierStairsTests` (4 tests: comfortable,
+  even risers that add up to the drop, a mid-landing halfway on a long flight, the reach the builder keeps clear) pass
+  against the plan's own source and fail when its rules are broken. **Not run in Unity:** the stairs in the rebuilt
+  California beach levels (v103), and how they sit on the sand where it is not flat.
+
+## Up and over the pier in Low Tide (generated content v104)
+
+- **In California, Low Tide's course now climbs the pier** (`GreyboxLevels.LowTide`, `TrackBuilder.CanClimbPier`): its
+  stairs stand across the lane at 48.6 to 62.5, where the original level has the sandcastle wall and a short tide. The
+  kid dribbles the ball up one flight onto the landing in front of the pier's deck, over it, and down the other flight;
+  the camera follows them up and back down (CameraFollow2D already tracks height past its dead zone). The same five
+  coins (two on the way up, one on top, two on the way down) and the sticker, now high over the landing (a double jump
+  from the top). The original Low Tide, and the other beach levels' piers (stairs behind the lane), are as they were.
+- **The climb** (`Editor/LevelBuildKit.Pier.cs`, `TrackBuilder.PierClimb`): one collider up the steps' nosings, across
+  the landing and down (what a foot or a ball rides over, with no seams to catch on), recorded for the feasibility check
+  as two ramps and a ledge. The deck stands 2.3 m over the lane (the pier's piles go deeper into the sand there), and
+  the flights are gentler than the pier's other stairs: risers of 13.5 cm on 35 cm treads, about 21 degrees, no steeper
+  than the dunes. `StreetBuilder.Coast` `PierOnCourse` builds the pier with its near end just behind the lane and the
+  stairs across it (`World/PierStairs`, `onCourse`: a 2 m landing, the deck's edge railed either side of it, rails on
+  both sides of each flight, the camera's side running unbroken from one foot, up, across the landing's front and down
+  to the other, and the back of the landing left open onto the pier; no lamps).
+- **The kid keeps to slopes** (`Player/KidController`: `GroundNormal`, `IsWalkableSlope`, `AlongSlope`, `SlopeRise`):
+  on the ground, on a slope up to about 45 degrees, not jumping, and not on something moving, the kid goes along the
+  slope at the stick's pace and gravity no longer pulls them down it. The body is frictionless (so it never sticks to a
+  wall), and on anything steeper than about 18 degrees gravity used to win: a kid who stopped on a steep ramp slid back
+  down and could not start up again until the bottom. This applies to every ramp and dune in the game, not only the
+  pier: standing on a slope the kid now stays put, and runs up and down slopes at an even pace. A Box2D simulation of the
+  game's run and dribble (the kid's tuning, frictionless capsule, gravity x3 and x1.4 falling; the ball's touches) over
+  the climb: before, running straight through worked (3.97 of 4.2 m/s on the way up at 21 degrees) but a kid stopped
+  halfway up slid back down to the foot of the steps; after, the stick's full pace up and down, and a standing start on the steps
+  goes up.
+- **Checked:** the runtime scripts compile (Roslyn, Unity 2021.3 modules, uGUI 6000.0); the editor scripts bind with
+  UnityEditor's declarations stubbed, with no errors in the edited files; `Tests/Editor/PierClimbTests` (3 tests: the
+  flights are 18 to 22 degrees with no mid-landing and add up to the climb, the climb passes the feasibility check and
+  the deck alone does not, the kid's slope rules) and `PierStairsTests` pass against the rules' own source and the real
+  `LevelFeasibility`, and fail when the steps are made steeper or the kid's slope rule is taken out. The pictures:
+  `review/pier_stairs/course_board.jpg` (`render_pier.py ... course`). **Not run in Unity or on a phone:** the climb's
+  feel with the ball (a ball let go on the steps rolls back down them, and one knocked on at the top runs away down the
+  far flight, as on real steps), the kid's feet on the steps, and the slope rule on the other levels' ramps and dunes.
+
+## Two piers along the seaside walk (generated content v105)
+
+- The California beach had a pier on every leg (Boardwalk, Low Tide, Seagull Bay, Sandcastle Sprint and the Beach
+  Slalom challenge), which felt repetitive. A pier is now something a level asks for: `TrackBuilder.SeasidePier()` (a
+  pier behind the lane, placed by `StreetBuilder.Beach` clear of the stops, with its stairs down to the sand) or
+  `PierClimb` (a pier the course climbs). Two along the whole walk: Low Tide's, which the course climbs, and Sandcastle
+  Sprint's, behind the lane near the walk's end. Boardwalk, Seagull Bay and the Beach Slalom have none. The original
+  (non-California) levels never had piers and are unchanged.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.
