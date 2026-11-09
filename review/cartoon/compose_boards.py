@@ -1,14 +1,16 @@
 """Composes the classic cartoon filter's review boards (classic_port.py: inked cels over painted backgrounds, the look
-of the classic Road Runner shorts the review asked for) from render_scenes.py's renders and the game's own UI pictures:
+of the classic Road Runner shorts the review asked for) from render_scenes.py's renders and the game's own UI pictures.
+Every board shows three versions side by side: the game today, Classic cartoon, and its calmer setting.
   python3 -I compose_boards.py <render dir> <out dir>
-  1_levels.jpg        every chapter and the California add-on, the game today beside the filter
-  2_characters.jpg    the six kids, a passer-by and the animals close up, and every kid's face at 2x
+  1_levels.jpg        every chapter and the California add-on
+  2_characters.jpg    the six kids, a passer-by and the animals close up, and every face at 2x
   3_ui_art.jpg        the pictures the menus draw: player cards, bags, all 23 stickers, the logo, the town map
   4_screens.jpg       the title screen and the Add-ons & Filters panel with the filter on (mock-ups)
-  frames/<scene>.jpg  each scene at full size, the game today above the filter"""
-import os, sys
+  5_details.jpg       100% crops: the first version beside the crisper one (detail kept)
+  frames/<scene>.jpg  each scene at full size: today, Classic cartoon, calmer"""
+import os, sys, subprocess, importlib.util
 import numpy as np
-from PIL import Image, ImageDraw, ImageFont, ImageFilter
+from PIL import Image, ImageDraw, ImageFont
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
@@ -23,7 +25,10 @@ UI = os.path.join(GAME, 'Resources', 'UI')
 FONTS = os.path.join(GAME, 'Resources', 'Fonts')
 BG = (22, 24, 38)
 YELLOW = (255, 214, 80)
+CALMC = (150, 220, 255)
 SOFT = (196, 202, 222)
+FIRST = 'ab5be92'   # the commit with the first version of the look (for 5_details.jpg)
+LOOKS = [('TODAY', SOFT), ('CLASSIC CARTOON', YELLOW), ('CALMER', CALMC)]
 
 
 def font(name, size):
@@ -37,17 +42,19 @@ FRAMES = {}
 
 
 def frames(scene):
+    """today, classic, calmer (PIL), and the mask and depth."""
     if scene not in FRAMES:
         colour, alpha, depth01, nrm = cp.load_scene(SRC, scene)
-        FRAMES[scene] = (cp.to_img(sp.plain(colour)), cp.to_img(cl.classic_pass(colour, alpha, depth01, nrm)), alpha, depth01)
+        FRAMES[scene] = (cp.to_img(sp.plain(colour)), cp.to_img(cl.classic_pass(colour, alpha, depth01, nrm)),
+                         cp.to_img(cl.classic_pass(colour, alpha, depth01, nrm, k=cl.CALM)), alpha, depth01)
     return FRAMES[scene]
 
 
 def tag(im, text, colour=YELLOW, size=34):
     im = im.copy(); d = ImageDraw.Draw(im); f = TITLE(size)
     w = d.textlength(text, font=f)
-    d.rounded_rectangle([14, 14, 14 + w + 28, 14 + size + 20], radius=10, fill=(20, 18, 36))
-    d.text((28, 22), text, font=f, fill=colour)
+    d.rounded_rectangle([12, 12, 12 + w + 26, 12 + size + 18], radius=10, fill=(20, 18, 36))
+    d.text((25, 19), text, font=f, fill=colour)
     return im
 
 
@@ -66,6 +73,19 @@ def stack(parts, width, gap=0):
     return out
 
 
+def titled(width, title, line, body_h):
+    row = Image.new('RGB', (width, 80 + body_h), BG); d = ImageDraw.Draw(row)
+    d.text((GAP, 12), title, font=TITLE(44), fill=(255, 255, 255))
+    if line:
+        d.text((GAP + d.textlength(title, font=TITLE(44)) + 24, 28), line, font=BODY(26), fill=SOFT)
+    return row, d
+
+
+def three(row, ims, y, tw, th):
+    for i, (im, (label, colour)) in enumerate(zip(ims, LOOKS)):
+        row.paste(tag(im.resize((tw, th), Image.LANCZOS), label, colour, 26), (GAP + i * (tw + GAP), y))
+
+
 # ------------------------------------------------------------------ 1. the levels
 LEVELS = [
     ('home', 'Chapter 1 · Home Street', 'Leo, the block walls and houses, a utility pole, a bicycle, the post box, a cat, coins'),
@@ -75,19 +95,17 @@ LEVELS = [
     ('park', 'Chapter 5 · Park & School', 'Hana, the dog, swings, the duck pond, trees, the school and its arch'),
     ('california', 'Add-on · California, Santa Monica', 'Max, stucco villas, palms, a picket fence, a 4x4'),
 ]
-TW, TH, GAP = 1200, 675, 24
-W = TW * 2 + GAP * 3
-rows = [header(W, 'CLASSIC CARTOON · every level', 'Left: the game today.  Right: inked cels on painted backgrounds, as in the Road Runner samples.  The game’s own models and camera.')]
+TW, TH, GAP = 1040, 585, 24
+W = TW * 3 + GAP * 4
+rows = [header(W, 'CLASSIC CARTOON · every level', 'Today  |  Classic cartoon (inked cels on painted scenery, as the Road Runner samples)  |  Calmer.  The game’s own models and camera.')]
 for scene, title, line in LEVELS:
-    o, c, _, _ = frames(scene)
-    row = Image.new('RGB', (W, 92 + TH + GAP), BG); d = ImageDraw.Draw(row)
-    d.text((GAP, 14), title, font=TITLE(44), fill=(255, 255, 255))
-    d.text((GAP + d.textlength(title, font=TITLE(44)) + 24, 30), line, font=BODY(26), fill=SOFT)
-    row.paste(tag(o.resize((TW, TH), Image.LANCZOS), 'TODAY', SOFT, 28), (GAP, 80))
-    row.paste(tag(c.resize((TW, TH), Image.LANCZOS), 'CLASSIC CARTOON', YELLOW, 28), (GAP * 2 + TW, 80))
+    o, c, m, _, _ = frames(scene)
+    row, d = titled(W, title, line, TH + GAP)
+    three(row, (o, c, m), 76, TW, TH)
     rows.append(row)
-    full = Image.new('RGB', (o.width, o.height * 2 + 16), BG)
-    full.paste(tag(o, 'TODAY', SOFT), (0, 0)); full.paste(tag(c, 'CLASSIC CARTOON', YELLOW), (0, o.height + 16))
+    full = Image.new('RGB', (o.width, o.height * 3 + 32), BG)
+    for i, (im, (label, colour)) in enumerate(zip((o, c, m), LOOKS)):
+        full.paste(tag(im, label, colour), (0, i * (o.height + 16)))
     full.save(os.path.join(OUT, 'frames', '%s.jpg' % scene), quality=88)
 stack(rows, W).save(os.path.join(OUT, '1_levels.jpg'), quality=88)
 print('1_levels')
@@ -96,9 +114,8 @@ print('1_levels')
 # ------------------------------------------------------------------ 2. the characters
 def heads(alpha, depth01, min_height=300):
     """The figures' heads (the figure mask's tall blobs): their crowns' x and y."""
-    fig = (alpha < 0.5) & (depth01 < 0.999)
-    cols = fig.any(0)
-    xs = np.nonzero(cols)[0]
+    fig = (alpha < 0.25) & (depth01 < 0.999)
+    xs = np.nonzero(fig.any(0))[0]
     groups, start = [], None
     for i, x in enumerate(xs):
         if start is None:
@@ -112,38 +129,35 @@ def heads(alpha, depth01, min_height=300):
         if ys[-1] - ys[0] < min_height:
             continue
         top = ys[0]
-        band = sub[top:top + 60]
-        cx = a + int(np.nonzero(band.any(0))[0].mean())
+        cx = a + int(np.nonzero(sub[top:top + 60].any(0))[0].mean())
         out.append((cx, top, ys[-1] - ys[0]))
     return out
 
 
-W2 = TW * 2 + GAP * 3
-rows = [header(W2, 'CLASSIC CARTOON · the characters', 'The six kids, a passer-by, the dog, the cat, a gull and the ball as cels: flat tones and a bold warm-black outline; painted eyes kept as drawn.')]
+rows = [header(W, 'CLASSIC CARTOON · the characters', 'Cels: flat tones and a bold, smooth warm-black outline. Faces kept clean: eyes, brows and mouths sharp, skin smooth.')]
 names = {'cast_a': ['Hana', 'Max', 'Kai'], 'cast_b': ['Mia', 'Leo', 'Zoe', 'Passer-by']}
 crops = []
 for scene in ('cast_a', 'cast_b'):
-    o, c, alpha, depth01 = frames(scene)
-    row = Image.new('RGB', (W2, TH + GAP), BG)
-    row.paste(tag(o.resize((TW, TH), Image.LANCZOS), 'TODAY', SOFT, 28), (GAP, 0))
-    row.paste(tag(c.resize((TW, TH), Image.LANCZOS), 'CLASSIC CARTOON', YELLOW, 28), (GAP * 2 + TW, 0))
+    o, c, m, alpha, depth01 = frames(scene)
+    row = Image.new('RGB', (W, TH + GAP), BG)
+    three(row, (o, c, m), 0, TW, TH)
     rows.append(row)
     for (cx, top, hgt), name in zip(heads(alpha, depth01), names[scene]):
-        s = int(hgt * 0.36)
-        box = (cx - s // 2, max(0, top - s // 8), cx + s // 2, max(0, top - s // 8) + s)
-        crops.append((name, o.crop(box), c.crop(box)))
-FS = 268
-face_rows = []
-for i in range(0, len(crops), 4):
-    row = Image.new('RGB', (W2, 60 + FS + GAP), BG); d = ImageDraw.Draw(row)
-    for j, (name, a, b) in enumerate(crops[i:i + 4]):
-        x = GAP + j * (FS * 2 + 12 + GAP + 22)
+        s = int(hgt * 0.34)
+        y0 = max(0, top - s // 8)
+        box = (cx - s // 2, y0, cx + s // 2, y0 + s)
+        crops.append((name, o.crop(box), c.crop(box), m.crop(box)))
+FS = 300
+for i in range(0, len(crops), 3):
+    row = Image.new('RGB', (W, 60 + FS + GAP), BG); d = ImageDraw.Draw(row)
+    for j, (name, a, b, cm) in enumerate(crops[i:i + 3]):
+        x = GAP + j * (FS * 3 + 16 + 60)
         d.text((x, 10), name, font=TITLE(36), fill=(255, 255, 255))
-        d.text((x + d.textlength(name, font=TITLE(36)) + 14, 22), 'today  |  classic cartoon', font=BODY(22), fill=SOFT)
-        row.paste(a.resize((FS, FS), Image.LANCZOS), (x, 60)); row.paste(b.resize((FS, FS), Image.LANCZOS), (x + FS + 12, 60))
-    face_rows.append(row)
-rows += face_rows
-stack(rows, W2).save(os.path.join(OUT, '2_characters.jpg'), quality=88)
+        d.text((x + d.textlength(name, font=TITLE(36)) + 14, 22), 'today  |  classic  |  calmer', font=BODY(22), fill=SOFT)
+        for q, im in enumerate((a, b, cm)):
+            row.paste(im.resize((FS, FS), Image.LANCZOS), (x + q * (FS + 8), 60))
+    rows.append(row)
+stack(rows, W).save(os.path.join(OUT, '2_characters.jpg'), quality=88)
 print('2_characters')
 
 
@@ -160,68 +174,68 @@ def on(bg, a, size):
     return t.convert('RGB')
 
 
+def looks2d(a, **kw):
+    return [a, cl.classic_2d(a, **kw), cl.classic_2d(a, k=cl.CALM, **kw)]
+
+
 CARD_BG = (236, 240, 248)
-W3 = 2460
-parts = [header(W3, 'CLASSIC CARTOON · the menus’ pictures', 'Kids, bags, stickers and the logo as inked cels; the town map painted like the scenery. Text stays crisp.')]
+parts = [header(W, 'CLASSIC CARTOON · the menus’ pictures', 'Kids, bags, stickers and the logo as inked cels; the town map painted like the scenery. Text stays crisp.')]
 
 
 def section(title, line):
-    s = Image.new('RGB', (W3, 80), BG); d = ImageDraw.Draw(s)
+    s = Image.new('RGB', (W, 80), BG); d = ImageDraw.Draw(s)
     d.text((GAP, 14), title, font=TITLE(44), fill=(255, 255, 255))
     d.text((GAP + d.textlength(title, font=TITLE(44)) + 24, 30), line, font=BODY(26), fill=SOFT)
     return s
 
 
-# player cards
 cards = ['PlayerGirl', 'PlayerBackpackBoy', 'PlayerPrimaryBoy', 'PlayerPrimaryGirl', 'PlayerPrimaryBoy2', 'PlayerPrimaryGirl2']
-parts.append(section('Player cards', 'the picker and the title screen’s player button  (top: today, bottom: classic cartoon)'))
-CS = 380
-for k, label in ((0, 'TODAY'), (1, 'CLASSIC CARTOON')):
-    row = Image.new('RGB', (W3, CS + GAP), BG)
-    for i, n in enumerate(cards):
-        a = rgba(os.path.join(UI, n + '.png'))
-        if k:
-            a = cl.classic_2d(a, outline_px=3)
-        row.paste(on(CARD_BG, a, CS), (GAP + i * (CS + 26), 0))
+parts.append(section('Player cards', 'rows: today, classic cartoon, calmer'))
+CS = 300
+cardlooks = [looks2d(rgba(os.path.join(UI, n + '.png')), outline_px=3) for n in cards]
+for k in range(3):
+    row = Image.new('RGB', (W, CS + 14), BG); d = ImageDraw.Draw(row)
+    d.text((GAP, CS // 2 - 20), LOOKS[k][0].title(), font=TITLE(34), fill=LOOKS[k][1])
+    for i in range(len(cards)):
+        row.paste(on(CARD_BG, cardlooks[i][k], CS), (GAP + 230 + i * (CS + 14), 0))
     parts.append(row)
-# bags and logo
-parts.append(section('Locker Room bags  ·  the logo', 'today, then classic cartoon'))
+parts.append(section('Locker Room bags  ·  the logo', 'rows: today, classic cartoon, calmer'))
 bags = ['bag_kickoff', 'bag_racecar', 'bag_unicorn', 'bag_denimbow', 'bag_goldentrail']
 BS = 220
-row = Image.new('RGB', (W3, BS * 2 + GAP * 2), BG)
-for i, n in enumerate(bags):
-    a = rgba(os.path.join(UI, n + '.png'))
-    row.paste(on(CARD_BG, a, BS), (GAP + i * (BS + 14), 0))
-    row.paste(on(CARD_BG, cl.classic_2d(a, outline_px=3), BS), (GAP + i * (BS + 14), BS + 14))
 logo = rgba(os.path.join(UI, 'KickOffLogo.png'))
-LW = 2460 - (GAP + 5 * (BS + 14) + 40) - GAP
-for k in (0, 1):
-    a = cl.classic_2d(logo) if k else logo
-    im = Image.fromarray((a * 255 + 0.5).astype(np.uint8), 'RGBA'); im.thumbnail((LW, BS), Image.LANCZOS)
+baglooks = [looks2d(rgba(os.path.join(UI, n + '.png')), outline_px=3) for n in bags]
+logolooks = looks2d(logo)
+LX = GAP + 230 + 5 * (BS + 14) + 30
+LW = W - LX - GAP
+for k in range(3):
+    row = Image.new('RGB', (W, BS + 14), BG); d = ImageDraw.Draw(row)
+    d.text((GAP, BS // 2 - 20), LOOKS[k][0].title(), font=TITLE(34), fill=LOOKS[k][1])
+    for i in range(len(bags)):
+        row.paste(on(CARD_BG, baglooks[i][k], BS), (GAP + 230 + i * (BS + 14), 0))
+    im = Image.fromarray((logolooks[k] * 255 + 0.5).astype(np.uint8), 'RGBA'); im.thumbnail((LW, BS), Image.LANCZOS)
     t = Image.new('RGBA', (LW, BS), (52, 104, 182, 255)); t.alpha_composite(im, ((LW - im.width) // 2, (BS - im.height) // 2))
-    row.paste(t.convert('RGB'), (GAP + 5 * (BS + 14) + 40, k * (BS + 14)))
-parts.append(row)
-# stickers: all 23
-parts.append(section('Sticker album', 'all 23 stickers  (left: today, right: classic cartoon)'))
-SS = 186
-grid = Image.new('RGB', (W3, 4 * (SS + 10) + GAP), BG)
+    row.paste(t.convert('RGB'), (LX, 0))
+    parts.append(row)
+parts.append(section('Sticker album', 'all 23 stickers: today  |  classic cartoon  |  calmer'))
+SS = 152
+GW = 6 * (SS + 8)
+grid = Image.new('RGB', (W, 4 * (SS + 8) + GAP), BG)
 for i in range(23):
-    a = rgba(os.path.join(UI, 'Stickers', 'L%02d.png' % (i + 1)))
-    r, ccol = divmod(i, 6)
-    grid.paste(on(CARD_BG, a, SS), (GAP + ccol * (SS + 10), r * (SS + 10)))
-    grid.paste(on(CARD_BG, cl.classic_2d(a, outline_px=3), SS), (W3 // 2 + GAP // 2 + ccol * (SS + 10), r * (SS + 10)))
+    lk = looks2d(rgba(os.path.join(UI, 'Stickers', 'L%02d.png' % (i + 1))), outline_px=3)
+    r, col = divmod(i, 6)
+    for k in range(3):
+        grid.paste(on(CARD_BG, lk[k], SS), (GAP + k * (GW + 50) + col * (SS + 8), r * (SS + 8)))
 parts.append(grid)
-# the town map
-parts.append(section('Town map', 'a stretch of the map screen at its full size  (left: today, right: classic cartoon)'))
-m = rgba(os.path.join(UI, 'TownMap.jpg'))[560:1160, 900:2000]
-mm = np.dstack([m[..., :3], np.ones(m.shape[:2])])
-mc = cl.classic_2d(mm, painted=True, flatten=1.5)
-MW = (W3 - GAP * 3) // 2
-row = Image.new('RGB', (W3, int(MW * 600 / 1100) + GAP), BG)
-row.paste(cp.to_img(m[..., :3]).resize((MW, int(MW * 600 / 1100)), Image.LANCZOS), (GAP, 0))
-row.paste(cp.to_img(mc[..., :3]).resize((MW, int(MW * 600 / 1100)), Image.LANCZOS), (GAP * 2 + MW, 0))
+parts.append(section('Town map', 'a stretch of the map screen at its full size: today  |  classic cartoon  |  calmer'))
+mp = rgba(os.path.join(UI, 'TownMap.jpg'))[560:1160, 900:1900]
+mm = np.dstack([mp[..., :3], np.ones(mp.shape[:2])])
+maps = [mp[..., :3], cl.classic_2d(mm, painted=True, flatten=1.5)[..., :3], cl.classic_2d(mm, painted=True, flatten=1.5, k=cl.CALM)[..., :3]]
+MH = int(TW * 600 / 1000)
+row = Image.new('RGB', (W, MH + GAP), BG)
+for k in range(3):
+    row.paste(cp.to_img(maps[k]).resize((TW, MH), Image.LANCZOS), (GAP + k * (TW + GAP), 0))
 parts.append(row)
-stack(parts, W3).save(os.path.join(OUT, '3_ui_art.jpg'), quality=88)
+stack(parts, W).save(os.path.join(OUT, '3_ui_art.jpg'), quality=88)
 print('3_ui_art')
 
 
@@ -259,12 +273,15 @@ HOLIDAY, COOP, ADDON = rgb255((0.16, 0.72, 0.82)), rgb255((0.55, 0.38, 0.88)), r
 PAPER, INK, NAVY = (251, 252, 255), rgb255((0.11, 0.13, 0.2)), rgb255((0.14, 0.2, 0.4))
 
 
-def title_screen(cartoon):
-    o, c, _, _ = frames('menu')
-    im = (c if cartoon else o).convert('RGBA')
+def title_screen(look):
+    """look: 0 today, 1 classic cartoon, 2 calmer."""
+    fr = frames('menu')
+    im = fr[look].convert('RGBA')
+    cartoon = look > 0
+    k = cl.CALM if look == 2 else cl.CLASSIC
     ov = Image.new('RGBA', im.size, (0, 0, 0, 0)); d = ImageDraw.Draw(ov)
     col = 740
-    lg = cl.classic_2d(logo) if cartoon else logo
+    lg = cl.classic_2d(logo, k=k) if cartoon else logo
     li = Image.fromarray((lg * 255 + 0.5).astype(np.uint8), 'RGBA'); li = li.resize((640, int(640 * li.height / li.width)), Image.LANCZOS)
     ov.alpha_composite(li, (col // 2 + 20 - li.width // 2, 300 - li.height // 2))
     button(d, (col // 2 + 20 - 225, 604 - 68, col // 2 + 20 + 225, 604 + 68), ACCENT, 'PLAY', 68, cartoon)
@@ -275,12 +292,11 @@ def title_screen(cartoon):
     for i, (lab, colr, sz) in enumerate([('Locker Room', BLUE, 30), ('Stickers', BLUE, 32), ('Add-ons\n& Filters', ADDON, 28), ('Settings', BLUE, 32)]):
         button(d, (x0 + i * (w + gap), 880 - 44, x0 + i * (w + gap) + w, 880 + 44), colr, lab, sz, cartoon, radius=20)
     button(d, (40, 1080 - 44 - 74, 240, 1080 - 44), PAPER, 'Credits', 30, cartoon, ink=INK, radius=20)
-    # the player button (bottom right) with the kid's card
     bx1, by1 = 1920 - 40, 1080 - 44
     button(d, (bx1 - 330, by1 - 104, bx1, by1), PAPER, '', 30, cartoon, radius=24)
     card = rgba(os.path.join(UI, 'PlayerPrimaryBoy2.png'))
     if cartoon:
-        card = cl.classic_2d(card, outline_px=3)
+        card = cl.classic_2d(card, k=k, outline_px=3)
     ci = Image.fromarray((card * 255 + 0.5).astype(np.uint8), 'RGBA').resize((84, 84), Image.LANCZOS)
     d.ellipse([bx1 - 330 + 12, by1 - 52 - 42, bx1 - 330 + 96, by1 - 52 + 42], fill=(214, 226, 246))
     ov.alpha_composite(ci, (bx1 - 330 + 12, by1 - 52 - 42 - 4))
@@ -291,15 +307,13 @@ def title_screen(cartoon):
 
 
 def addons_panel():
-    _, c, _, _ = frames('menu')
-    im = c.convert('RGBA')
+    im = frames('menu')[1].convert('RGBA')
     im.alpha_composite(Image.new('RGBA', im.size, (10, 18, 46, 128)))
     d = ImageDraw.Draw(im)
     cw, ch = 1340, 960
     x0, y0 = (1920 - cw) // 2, (1080 - ch) // 2
     d.rounded_rectangle([x0 + 6, y0 + 12, x0 + cw + 6, y0 + ch + 12], radius=40, fill=(18, 14, 34))
     d.rounded_rectangle([x0, y0, x0 + cw, y0 + ch], radius=40, fill=PAPER, outline=(18, 14, 34), width=4)
-    # the header ribbon
     d.rounded_rectangle([x0 + cw // 2 - 320, y0 - 34, x0 + cw // 2 + 320, y0 + 50], radius=24, fill=NAVY, outline=(18, 14, 34), width=4)
     t = 'Add-ons & Filters'; f = TITLE(52)
     d.text((x0 + cw / 2 - d.textlength(t, font=f) / 2, y0 - 28), t, font=f, fill=(255, 255, 255))
@@ -336,26 +350,64 @@ def addons_panel():
     return im.convert('RGB')
 
 
-W4 = TW * 2 + GAP * 3
-p = [header(W4, 'CLASSIC CARTOON · menus (mock-ups)', 'The menu’s live street goes through the filter like a level; buttons take an ink edge and a hard shadow; the logo and player card are inked cels.')]
-row = Image.new('RGB', (W4, 70 + TH + GAP), BG); d = ImageDraw.Draw(row)
-d.text((GAP, 10), 'Title screen', font=TITLE(44), fill=(255, 255, 255))
-row.paste(tag(title_screen(False).resize((TW, TH), Image.LANCZOS), 'TODAY', SOFT, 28), (GAP, 70))
-row.paste(tag(title_screen(True).resize((TW, TH), Image.LANCZOS), 'CLASSIC CARTOON', YELLOW, 28), (GAP * 2 + TW, 70))
+p = [header(W, 'CLASSIC CARTOON · menus (mock-ups)', 'The menu’s live street goes through the filter like a level; the buttons take an ink edge and a hard shadow; the logo and player card are inked cels.')]
+row, d = titled(W, 'Title screen', 'today  |  classic cartoon  |  calmer', TH + GAP)
+three(row, [title_screen(i) for i in range(3)], 76, TW, TH)
 p.append(row)
-row = Image.new('RGB', (W4, 70 + TH + GAP), BG); d = ImageDraw.Draw(row)
-d.text((GAP, 10), 'Add-ons & Filters: a fourth filter card, Classic cartoon (selected)', font=TITLE(44), fill=(255, 255, 255))
-row.paste(addons_panel().resize((TW, TH), Image.LANCZOS), (GAP, 70))
-d.text((GAP * 2 + TW + 10, 90), 'Where it lives', font=TITLE(40), fill=YELLOW)
-notes = ['• A fourth card under Filters, beside Original,', '   Comic halftone and Pencil sketch.', '• Like the others it applies at once, in every', '   scene, and is saved with the game.',
-         '• It fills the empty fourth slot, so the panel', '   keeps its size (two rows of two).', '', 'What it touches', '• Every level, the challenges, the Holiday Run', '   and co-op races (one camera filter).',
-         '• The menu’s live street and the Locker Room.', '• The pictures the menus draw: player cards,', '   bags, stickers, the logo, the town map.', '• Not the text: words and numbers stay crisp.']
+row, d = titled(W, 'Add-ons & Filters: a fourth filter card, Classic cartoon (selected)', '', TH + GAP)
+row.paste(addons_panel().resize((TW, TH), Image.LANCZOS), (GAP, 76))
+nx = GAP * 2 + TW + 10
+d.text((nx, 90), 'Where it lives', font=TITLE(40), fill=YELLOW)
+notes = ['• A fourth card under Filters, beside Original, Comic halftone and Pencil sketch.', '• Applies at once, in every scene, and is saved with the game.',
+         '• It fills the empty fourth slot, so the panel keeps its size (two rows of two).', '', 'What it touches',
+         '• Every level, the challenges, the Holiday Run and co-op races (one camera filter).', '• The menu’s live street and the Locker Room.',
+         '• The pictures the menus draw: player cards, bags, stickers, the logo, the town map.', '• The menu buttons: an ink edge and a hard shadow (agreed).',
+         '• Not the text: words and numbers stay crisp.', '• No pop-up sound-effect words with this filter (agreed).']
 y = 150
 for n in notes:
-    is_head = n in ('What it touches',)
-    d.text((GAP * 2 + TW + 10, y), n, font=TITLE(40) if is_head else BODY(30), fill=YELLOW if is_head else (230, 233, 245))
-    y += 52 if is_head else 40
+    is_head = n == 'What it touches'
+    d.text((nx, y), n, font=TITLE(40) if is_head else BODY(30), fill=YELLOW if is_head else (230, 233, 245))
+    y += 54 if is_head else 42
 p.append(row)
-stack(p, W4).save(os.path.join(OUT, '4_screens.jpg'), quality=88)
-title_screen(True).save(os.path.join(OUT, 'frames', 'title_screen.jpg'), quality=88)
+stack(p, W).save(os.path.join(OUT, '4_screens.jpg'), quality=88)
+for i, n in ((1, 'title_screen'), (2, 'title_screen_calmer')):
+    title_screen(i).save(os.path.join(OUT, 'frames', '%s.jpg' % n), quality=88)
 print('4_screens')
+
+
+# ------------------------------------------------------------------ 5. detail at 100%: the first version beside the crisper one
+def first_version():
+    """classic_port.py as first shown (commit FIRST), to show what the crisper version keeps."""
+    try:
+        src = subprocess.run(['git', '-C', HERE, 'show', FIRST + ':review/cartoon/classic_port.py'], capture_output=True, text=True, check=True).stdout
+    except Exception:
+        return None
+    spec = importlib.util.spec_from_loader('classic_first', loader=None)
+    mod = importlib.util.module_from_spec(spec)
+    mod.__dict__['__file__'] = os.path.join(HERE, 'classic_port.py')
+    exec(compile(src, 'classic_first', 'exec'), mod.__dict__)
+    return mod
+
+
+first = first_version()
+DETAILS = [('market', (380, 280, 980, 620), 'Shop sign, awning, window'), ('home', (1150, 560, 1750, 900), 'Bicycle, coins, post box, block wall'),
+           ('cast_a', (760, 230, 1180, 520), 'Max’s face and jacket'), ('cast_a', (1330, 400, 1680, 640), 'Kai’s face, the ball'),
+           ('park', (1180, 180, 1780, 520), 'School, arch, lamps'), ('site', (60, 300, 660, 640), 'Digger, scaffold, site fence')]
+cols = [('TODAY', SOFT), ('FIRST VERSION', (255, 150, 120)), ('NOW: CRISPER', YELLOW), ('NOW: CALMER', CALMC)]
+DW = 720
+W5 = DW * 4 + GAP * 5
+p = [header(W5, 'CLASSIC CARTOON · detail at 100%', 'The first version smoothed with a big brush. Now only weak texture is smoothed: frames, lettering, spokes and seams stay sharp; faces stay clean.')]
+for scene, box, title in DETAILS:
+    colour, alpha, depth01, nrm = cp.load_scene(SRC, scene)
+    x0, y0, x1, y1 = box
+    dh = int(DW * (y1 - y0) / (x1 - x0))
+    ims = [frames(scene)[0].crop(box),
+           cp.to_img(first.classic_pass(colour, alpha, depth01, nrm)).crop(box) if first else None,
+           frames(scene)[1].crop(box), frames(scene)[2].crop(box)]
+    row, d = titled(W5, title, '', dh + GAP)
+    for i, (im, (label, colour_)) in enumerate(zip(ims, cols)):
+        if im is not None:
+            row.paste(tag(im.resize((DW, dh), Image.NEAREST if (x1 - x0) * 2 <= DW else Image.LANCZOS), label, colour_, 24), (GAP + i * (DW + GAP), 76))
+    p.append(row)
+stack(p, W5).save(os.path.join(OUT, '5_details.jpg'), quality=90)
+print('5_details')
