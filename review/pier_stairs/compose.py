@@ -1,5 +1,6 @@
 """Lays the game's sky behind render_pier.py's pictures and puts them on one board:
-    python3 -I compose.py <render dir> <out dir> [today screenshot]"""
+    python3 -I compose.py <render dir> <out dir> [today screenshot]
+    python3 -I compose.py <render dir> <out dir> --course        (the climb: course_board.jpg)"""
 import os, sys
 from PIL import Image, ImageDraw, ImageFont
 
@@ -36,8 +37,35 @@ def label(im, text):
     return im
 
 
+COURSE = [('course_up', 'Up the steps with the ball: the camera rises with the kid'),
+          ('course_top', 'Over the landing in front of the pier, at the top'),
+          ('course_down', 'Down the other side to the sand (the camera follows them down)'),
+          ('course_whole', 'The climb across the lane: no rail on the camera side, so the kid is never behind bars')]
+
+
+def course_board(src, out):
+    W, gap, rows = 2400, 16, []
+    for name, title in COURSE:
+        p = os.path.join(src, name + '.png')
+        if not os.path.exists(p):
+            continue
+        im = with_sky(p)
+        im.save(os.path.join(out, name + '.jpg'), quality=92)
+        rows.append(label(im.resize((W, int(im.size[1] * W / im.size[0])), Image.LANCZOS), title))
+    board = Image.new('RGB', (W, sum(r.size[1] for r in rows) + gap * (len(rows) - 1)), (245, 245, 245))
+    y = 0
+    for r in rows:
+        board.paste(r, (0, y)); y += r.size[1] + gap
+    board.save(os.path.join(out, 'course_board.jpg'), quality=88)
+    print('course board', board.size)
+
+
 if __name__ == '__main__':
     src, out = sys.argv[1], sys.argv[2]
+    if '--course' in sys.argv:
+        os.makedirs(out, exist_ok=True)
+        course_board(src, out)
+        sys.exit(0)
     os.makedirs(out, exist_ok=True)
     shots = {}
     for name in ('game', 'whole', 'close'):

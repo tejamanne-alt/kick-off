@@ -220,6 +220,43 @@ namespace DribbleToSchool.EditorTools
         }
 
         /// <summary>
+        /// The pier the course climbs (TrackBuilder.PierClimb): its deck at the climb's height over the lane (the piles go
+        /// deeper into the sand: the deck stands lower over the water than the pier behind a beach), its near end just behind
+        /// the lane, and its stairs across the lane carrying the kid up one flight, over the landing and down the other
+        /// (World/PierStairs on the course: the flights' nosings lie on the climb's slopes, so what is drawn is what the kid
+        /// and the ball move on).
+        /// </summary>
+        static void PierOnCourse(LevelBuildKit.TrackBuilder track, Transform root, LevelBuildKit.TrackBuilder.PierClimbSpec climb, int spans)
+        {
+            if (!LevelBuildKit.HasKitModel("Coast", "PierSpan")) return;
+            float length = LevelBuildKit.KitSize("Coast", "PierSpan").z;
+            if (length < 1f) length = 12f;
+            float x = climb.Centre, deck = climb.groundTop + climb.rise, depth = PierLandingDepth, zStart = depth * 0.5f;
+            var pier = new GameObject("Pier").transform;
+            pier.SetParent(root, false);
+            var p = new Paint(new Color(0.95f, 0.95f, 0.93f), new Color(0.3f, 0.48f, 0.62f), new Color(0.3f, 0.5f, 0.66f));
+            for (int i = 0; i < spans; i++)
+                Model(pier, "Coast", "PierSpan", x, deck - PierDeck, zStart + i * length, 0f, 1f, p.wall, p.trim, p.roof);
+            Model(pier, "Coast", "PierEnd", x, deck - PierDeck, zStart + spans * length, 0f, 1f, p.wall, p.trim, p.roof);
+
+            var go = new GameObject("PierStairs");
+            go.transform.SetParent(pier, false);
+            go.transform.position = new Vector3(x, deck, zStart);
+            var stairs = go.AddComponent<PierStairs>();
+            stairs.onCourse = true;
+            stairs.width = PierWidth;
+            stairs.landingWidth = climb.Landing;
+            stairs.depth = depth;
+            stairs.going = climb.going;
+            stairs.riser = climb.riserAim;
+            stairs.splitOver = LevelBuildKit.TrackBuilder.ClimbSplitOver;
+            stairs.dropLeft = stairs.dropRight = climb.rise;
+            stairs.landingDrop = deck - GroundAt(track, x, 0f);
+            go.GetComponent<MeshRenderer>().sharedMaterial = Art.solid;
+            stairs.Rebuild();
+        }
+
+        /// <summary>
         /// The pier's stairs: measured against the sand where each flight lands (a flight's length depends on its drop,
         /// so the foot is found in a few passes), and a path of boards on the sand from each foot toward the lane.
         /// review/pier_stairs/ renders the same from pier_stairs.py.

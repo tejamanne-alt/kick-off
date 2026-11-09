@@ -509,9 +509,16 @@ namespace DribbleToSchool.EditorTools
             t.SlideUnder(31.8f, TrackBuilder.SlideLook.BoatTrestles);
             t.Tide(38f, 45f, 7f, 2f);
             t.Checkpoint(48f);
-            t.Wall(52f, 0.6f, 0f, 0.8f);
-            t.Sign("Sandcastle!", new Vector2(52f, 2.4f));
-            t.Tide(58f, 62f, 5f, 1f);
+            // California: the pier stands across the beach here, where the original level has the sandcastle and a short
+            // tide. Up its steps with the ball, over the landing and down (48.6 to 62.5).
+            bool pier = t.CanClimbPier;
+            if (pier) t.PierClimb(48.6f);
+            else
+            {
+                t.Wall(52f, 0.6f, 0f, 0.8f);
+                t.Sign("Sandcastle!", new Vector2(52f, 2.4f));
+                t.Tide(58f, 62f, 5f, 1f);
+            }
             t.Tide(66f, 72f, 6f, 3f);
             t.Checkpoint(75f);
             t.Sand(78f, 84f);
@@ -520,12 +527,24 @@ namespace DribbleToSchool.EditorTools
 
             t.CoinRow(19f, 23f, 0.6f, 3);
             t.CoinRow(39f, 44f, 0.6f, 3);
-            t.CoinArc(51f, 53f, 1.4f, 1f, 3);
-            t.CoinRow(59.6f, 60.4f, 3.2f, 2);       // double jump
+            if (pier)
+            {
+                // The same five coins: two on the way up, one on top, two on the way down.
+                var climb = t.PierClimbs[t.PierClimbs.Count - 1];
+                foreach (float x in new[] { 50.6f, 52.6f, climb.Centre, 58.5f, 60.5f })
+                    t.CoinRow(x, x, TrackBuilder.ClimbLine(climb, x) + 0.6f, 1);
+            }
+            else
+            {
+                t.CoinArc(51f, 53f, 1.4f, 1f, 3);
+                t.CoinRow(59.6f, 60.4f, 3.2f, 2);       // double jump
+            }
             t.CoinRow(67f, 71f, 0.6f, 3);
             t.CoinRow(89f, 92f, 0.6f, 3);
             t.CoinRow(95.8f, 97.2f, 0.32f, 2);
-            t.Sticker(new Vector2(62f, 4.2f));
+            // The sticker: over the tide, or high over the pier's landing (a double jump from the top).
+            if (pier) t.Sticker(new Vector2(t.PierClimbs[0].Centre, t.PierClimbs[0].groundTop + TrackBuilder.ClimbRise + 3.5f));
+            else t.Sticker(new Vector2(62f, 4.2f));
             t.Goal(102f);
         }
 

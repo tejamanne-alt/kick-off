@@ -31,14 +31,22 @@ GLOBE = (1.0, 0.93, 0.72)
 BOARDS = (0.5, 0.35, 0.24)
 
 
-def plan(drop):
+def plan(drop, going=GOING, riser=RISER, split_over=SPLIT_OVER):
     """(risers, riser height, risers to the mid-landing, risers after it, horizontal run) for a flight dropping `drop`."""
-    n = max(2, int(round(drop / RISER)))
+    n = max(2, int(round(drop / riser)))
     r = drop / n
-    k1 = (n + 1) // 2 if n > SPLIT_OVER else n
+    k1 = (n + 1) // 2 if n > split_over else n
     k2 = n - k1
-    run = (k1 - 1) * GOING + ((MID + (k2 - 1) * GOING) if k2 > 0 else 0.0)
+    run = (k1 - 1) * going + ((MID + (k2 - 1) * going) if k2 > 0 else 0.0)
     return n, r, k1, k2, run
+
+
+# the course's flights (LevelBuildKit.Pier: TrackBuilder.PierClimb)
+CLIMB_RISE, CLIMB_GOING, CLIMB_RISER, CLIMB_LANDING, CLIMB_SPLIT = 2.3, 0.35, 0.135, 2.0, 99
+
+
+def climb_run():
+    return plan(CLIMB_RISE, CLIMB_GOING, CLIMB_RISER, CLIMB_SPLIT)[0] * CLIMB_GOING
 
 
 # ---------------------------------------------------------------- a MeshBuilder work-alike (World/MeshBuilder.cs)
@@ -116,65 +124,78 @@ def span(a, b):
     return (min(a, b), max(a, b))
 
 
-def build(mb, width=6.0, depth=1.9, drop_left=4.55, drop_right=4.55, landing_drop=4.55):
-    hw = width / 2
+def build(mb, width=6.0, depth=1.9, drop_left=4.55, drop_right=4.55, landing_drop=4.55, landing_width=None,
+          going=GOING, riser=RISER, split_over=SPLIT_OVER, on_course=False):
+    hw = (landing_width if landing_width is not None else width) / 2
+    deck = width / 2
     # the landing: timber on a concrete beam, as the pier's deck
     mb.box((-hw, -0.08, -depth), (hw, 0.0, 0.0), TIMBER)
     mb.box((-hw, -0.45, -depth), (hw, -0.08, 0.0), CONCRETE, bottom=True)
-    # its front rail, and a lamp on each front corner
     zr = -depth + 0.08
-    mb.box((-hw, 0.95, zr - 0.08), (hw, 1.08, zr + 0.08), WHITE, bottom=True)
-    mb.box((-hw, 0.48, zr - 0.05), (hw, 0.56, zr + 0.05), WHITE, bottom=True)
-    for x in (-hw + 0.09, -1.0, 1.0, hw - 0.09):
-        mb.box((x - 0.09, 0.0, zr - 0.09), (x + 0.09, 1.0, zr + 0.09), WHITE)
-    for x in (-hw + 0.09, hw - 0.09):
-        mb.box((x - 0.13, 1.08, zr - 0.13), (x + 0.13, 1.4, zr + 0.13), METAL)
-        mb.cylinder((x, 2.65, zr), 0.07, 2.5, METAL, 6)
-        mb.sphere((x, 4.12, zr), 0.22, GLOBE)
-    # the bent under it: a cross beam on four piles
+    if not on_course:
+        # its front rail, and a lamp on each front corner
+        mb.box((-hw, 0.95, zr - 0.08), (hw, 1.08, zr + 0.08), WHITE, bottom=True)
+        mb.box((-hw, 0.48, zr - 0.05), (hw, 0.56, zr + 0.05), WHITE, bottom=True)
+        for x in (-hw + 0.09, -1.0, 1.0, hw - 0.09):
+            mb.box((x - 0.09, 0.0, zr - 0.09), (x + 0.09, 1.0, zr + 0.09), WHITE)
+        for x in (-hw + 0.09, hw - 0.09):
+            mb.box((x - 0.13, 1.08, zr - 0.13), (x + 0.13, 1.4, zr + 0.13), METAL)
+            mb.cylinder((x, 2.65, zr), 0.07, 2.5, METAL, 6)
+            mb.sphere((x, 4.12, zr), 0.22, GLOBE)
+    # a landing shorter than the deck: the deck's edge either side of it is railed
+    if deck > hw + 0.2:
+        for s in (-1, 1):
+            a, c = s * hw, s * deck
+            mb.box((min(a, c), 0.95, 0.0), (max(a, c), 1.08, 0.16), WHITE, bottom=True)
+            mb.box((min(a, c), 0.48, 0.03), (max(a, c), 0.56, 0.13), WHITE, bottom=True)
+            for x in (a + s * 0.09, c - s * 0.09):
+                mb.box((x - 0.09, 0.0, 0.0), (x + 0.09, 1.0, 0.18), WHITE)
+    # the bent under it: a cross beam on four piles (two under a short landing)
     zb = -depth / 2
     mb.box((-hw + 0.1, -1.05, zb - 0.28), (hw - 0.1, -0.45, zb + 0.28), CONCRETE, bottom=True)
-    for x in (-hw + 0.35, -0.9, 0.9, hw - 0.35):
+    piles = (-hw + 0.35, -0.9, 0.9, hw - 0.35) if hw >= 2 else (-hw + 0.3, hw - 0.3)
+    for x in piles:
         bottom = -landing_drop - 0.6
         mb.cylinder((x, (bottom - 1.05) / 2, zb), 0.24, -1.05 - bottom, CONCRETE, 10)
     for side, drop in ((-1, drop_left), (1, drop_right)):
-        flight(mb, side, hw, depth, drop, landing_drop)
+        flight(mb, side, hw, depth, drop, landing_drop, going, riser, split_over, on_course)
 
 
-def flight(mb, s, hw, depth, drop, landing_drop):
-    n, r, k1, k2, run = plan(drop)
+def flight(mb, s, hw, depth, drop, landing_drop, G=GOING, riser=RISER, split_over=SPLIT_OVER, on_course=False):
+    n, r, k1, k2, run = plan(drop, G, riser, split_over)
+    rail_sides = (-0.08,) if on_course else (-depth + 0.08, -0.08)
     def X(u): return s * (hw + u)
     def ground(u): return -(landing_drop + (drop - landing_drop) * min(1.0, u / max(run, 1e-3)))
     near, far = (-depth, -depth + 0.1), (-0.1, 0.0)
     parts = [(0.0, 0.0, k1)]
     if k2 > 0:
-        parts.append(((k1 - 1) * GOING + MID, -k1 * r, k2))
+        parts.append(((k1 - 1) * G + MID, -k1 * r, k2))
     for u0, y0, k in parts:
-        u_end = u0 + (k - 1) * GOING
+        u_end = u0 + (k - 1) * G
         for i in range(1, k):
             y = y0 - i * r
-            a, b = span(X(u0 + (i - 1) * GOING), X(u0 + i * GOING + NOSING))
+            a, b = span(X(u0 + (i - 1) * G), X(u0 + i * G + NOSING))
             mb.box((a, y - TREAD, -depth + 0.1), (b, y, -0.1), TIMBER, bottom=True)                      # the tread
-            a, b = span(X(u0 + i * GOING - 0.025), X(u0 + i * GOING))
+            a, b = span(X(u0 + i * G - 0.025), X(u0 + i * G))
             mb.box((a, y - r, -depth + 0.1), (b, y - TREAD, -0.1), WHITE)                                # the riser under its nosing
         # the cut stringers either side: a band under the steps and a tooth under each tread
-        def yb(u): return y0 - r - TREAD - r * (u - u0) / GOING
+        def yb(u): return y0 - r - TREAD - r * (u - u0) / G
         for za, zb in (near, far):
-            mb.prism([(X(u0), yb(u0)), (X(u_end), yb(u_end)), (X(u_end), yb(u_end) - BAND), (X(u0), yb(u0) - BAND)][::s], za, zb, WHITE)
+            mb.prism([(X(u0), yb(u0)), (X(u_end), yb(u_end)), (X(u_end), yb(u_end) - BAND), (X(u0), yb(u0) - BAND)], za, zb, WHITE)
             for i in range(1, k):
                 y = y0 - i * r - TREAD
-                mb.prism([(X(u0 + (i - 1) * GOING), y), (X(u0 + i * GOING), y), (X(u0 + i * GOING), y - r)][::s], za, zb, WHITE)
-        # rails either side: a sloping handrail and mid rail, posts on the treads
-        def yn(u): return y0 - r * (u - u0) / GOING
-        for zc in (-depth + 0.08, -0.08):
-            mb.prism([(X(u0), yn(u0) + RAIL - 0.11), (X(u_end), yn(u_end) + RAIL - 0.11), (X(u_end), yn(u_end) + RAIL), (X(u0), yn(u0) + RAIL)][::s],
+                mb.prism([(X(u0 + (i - 1) * G), y), (X(u0 + i * G), y), (X(u0 + i * G), y - r)], za, zb, WHITE)
+        # rails: a sloping handrail and mid rail, posts on the treads (the far side only on the course)
+        def yn(u): return y0 - r * (u - u0) / G
+        for zc in rail_sides:
+            mb.prism([(X(u0), yn(u0) + RAIL - 0.11), (X(u_end), yn(u_end) + RAIL - 0.11), (X(u_end), yn(u_end) + RAIL), (X(u0), yn(u0) + RAIL)],
                      zc - 0.07, zc + 0.07, WHITE)
-            mb.prism([(X(u0), yn(u0) + 0.48), (X(u_end), yn(u_end) + 0.48), (X(u_end), yn(u_end) + 0.55), (X(u0), yn(u0) + 0.55)][::s],
+            mb.prism([(X(u0), yn(u0) + 0.48), (X(u_end), yn(u_end) + 0.48), (X(u_end), yn(u_end) + 0.55), (X(u0), yn(u0) + 0.55)],
                      zc - 0.04, zc + 0.04, WHITE)
             posts = max(1, int(math.ceil((u_end - u0) / 1.4)))
             for p in range(posts + 1):
                 u = u0 + 0.06 + (u_end - u0 - 0.12) * p / posts
-                i = min(k - 1, max(1, int((u - u0) / GOING) + 1))
+                i = min(k - 1, max(1, int((u - u0) / G) + 1))
                 a, b = span(X(u - 0.06), X(u + 0.06))
                 mb.box((a, y0 - i * r, zc - 0.06), (b, yn(u) + RAIL - 0.05, zc + 0.06), WHITE)
         if u0 == 0.0 and k2 > 0:
@@ -183,7 +204,7 @@ def flight(mb, s, hw, depth, drop, landing_drop):
             a, b = span(X(u_end), X(u_end + MID))
             mb.box((a, ym - 0.08, -depth), (b, ym, 0.0), TIMBER)
             mb.box((a, ym - 0.4, -depth), (b, ym - 0.08, 0.0), CONCRETE, bottom=True)
-            for zc in (-depth + 0.08, -0.08):
+            for zc in rail_sides:
                 mb.box((a, ym + RAIL - 0.11, zc - 0.07), (b, ym + RAIL, zc + 0.07), WHITE, bottom=True)
                 mb.box((a, ym + 0.48, zc - 0.04), (b, ym + 0.55, zc + 0.04), WHITE, bottom=True)
                 for u, top in ((u_end, yn(u_end) + RAIL + 0.04), (u_end + MID, ym + RAIL + 0.04)):
@@ -193,10 +214,14 @@ def flight(mb, s, hw, depth, drop, landing_drop):
             for z in (-depth + 0.4, -0.4):
                 bottom = ground(um) - 0.6
                 mb.cylinder((X(um), (bottom + ym - 0.4) / 2, z), 0.18, ym - 0.4 - bottom, CONCRETE, 8)
-    # the foot: a concrete pad, and a newel post either side
-    a, b = span(X(run - 0.2), X(run + 1.2))
-    mb.box((a, -drop - 0.12, -depth - 0.1), (b, -drop + 0.04, 0.1), CONCRETE)
-    for zc in (-depth + 0.08, -0.08):
+    # the foot: a concrete pad (flush with the sand on the course), and a newel post either side
+    if on_course:
+        a, b = span(X(run - 0.2), X(run + G + 0.4))
+        mb.box((a, -drop - 0.12, -depth - 0.1), (b, -drop + 0.012, 0.1), CONCRETE)
+    else:
+        a, b = span(X(run - 0.2), X(run + 1.2))
+        mb.box((a, -drop - 0.12, -depth - 0.1), (b, -drop + 0.04, 0.1), CONCRETE)
+    for zc in rail_sides:
         a, b = span(X(run - 0.08), X(run + 0.08))
         mb.box((a, -drop + 0.04, zc - 0.08), (b, -drop + r + RAIL + 0.06, zc + 0.08), WHITE)
 

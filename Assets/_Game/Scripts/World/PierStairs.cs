@@ -12,6 +12,9 @@ namespace DribbleToSchool.World
     /// The origin is the pier's near end at deck height, on its centre line: x along the beach, z toward the sea; the
     /// landing and the flights lie in front of the pier (z from -depth to 0). review/pier_stairs/pier_stairs.py is a
     /// step-for-step copy for the review pictures.
+    /// On the course (<see cref="onCourse"/>: TrackBuilder.PierClimb) the stairs stand across the kid's lane and carry the
+    /// kid and the ball up one flight, over the landing and down the other: gentler steps, a shorter landing, and nothing
+    /// on the camera's side (no rail, no lamps) between the camera and the kid.
     /// </summary>
     public class PierStairs : ProceduralShape
     {
@@ -32,12 +35,19 @@ namespace DribbleToSchool.World
         /// <summary>The boards of the paths on the sand to each foot (laid by the level builder).</summary>
         public static readonly Color Boards = new Color(0.5f, 0.35f, 0.24f);
 
-        [Tooltip("The deck's width: the landing is as wide.")]
+        [Tooltip("The deck's width.")]
         public float width = 6f;
+        [Tooltip("The landing's length along the beach: the deck's width, or shorter on the course.")]
+        public float landingWidth = 6f;
         [Tooltip("How far the landing (and so each flight's width) reaches in front of the pier.")]
         public float depth = 1.9f;
         [Tooltip("From the deck down to the sand at each flight's foot, and under the landing.")]
         public float dropLeft = 4.5f, dropRight = 4.5f, landingDrop = 4.5f;
+        [Tooltip("A tread's depth, the riser aimed for, and how many risers a flight takes before it needs a mid-landing.")]
+        public float going = Going, riser = Riser;
+        public int splitOver = SplitOver;
+        [Tooltip("The stairs carry the kid's lane: nothing on the camera's side (no rail, no lamps).")]
+        public bool onCourse;
 
         /// <summary>How one flight goes down: its risers (all the same height), how many before the mid-landing and after it, and how far it runs.</summary>
         public struct Plan
@@ -49,12 +59,18 @@ namespace DribbleToSchool.World
         /// <summary>The flight for a drop of <paramref name="drop"/>: risers near <see cref="Riser"/>, a mid-landing halfway when it is long.</summary>
         public static Plan PlanFor(float drop)
         {
+            return PlanFor(drop, Going, Riser, SplitOver);
+        }
+
+        /// <summary>The flight for a drop, with treads <paramref name="going"/> deep and risers near <paramref name="riserAim"/>.</summary>
+        public static Plan PlanFor(float drop, float going, float riserAim, int splitOver)
+        {
             var p = new Plan();
-            p.risers = Mathf.Max(2, Mathf.RoundToInt(drop / Riser));
+            p.risers = Mathf.Max(2, Mathf.RoundToInt(drop / riserAim));
             p.riser = drop / p.risers;
-            p.toMid = p.risers > SplitOver ? (p.risers + 1) / 2 : p.risers;
+            p.toMid = p.risers > splitOver ? (p.risers + 1) / 2 : p.risers;
             p.afterMid = p.risers - p.toMid;
-            p.run = (p.toMid - 1) * Going + (p.afterMid > 0 ? MidLength + (p.afterMid - 1) * Going : 0f);
+            p.run = (p.toMid - 1) * going + (p.afterMid > 0 ? MidLength + (p.afterMid - 1) * going : 0f);
             return p;
         }
 
@@ -66,26 +82,40 @@ namespace DribbleToSchool.World
 
         protected override void Build(MeshBuilder b)
         {
-            float hw = width * 0.5f;
+            float hw = landingWidth * 0.5f, deck = width * 0.5f;
             // The landing: timber on a concrete beam, like the pier's deck.
             Box(b, -hw, -0.08f, -depth, hw, 0f, 0f, Timber, false);
             Box(b, -hw, -0.45f, -depth, hw, -0.08f, 0f, Concrete, true);
-            // Its front rail, and a lamp on each front corner.
             float zr = -depth + 0.08f;
-            Box(b, -hw, 0.95f, zr - 0.08f, hw, 1.08f, zr + 0.08f, White, true);
-            Box(b, -hw, 0.48f, zr - 0.05f, hw, 0.56f, zr + 0.05f, White, true);
-            foreach (float x in new[] { -hw + 0.09f, -1f, 1f, hw - 0.09f })
-                Box(b, x - 0.09f, 0f, zr - 0.09f, x + 0.09f, 1f, zr + 0.09f, White, false);
-            foreach (float x in new[] { -hw + 0.09f, hw - 0.09f })
+            if (!onCourse)
             {
-                Box(b, x - 0.13f, 1.08f, zr - 0.13f, x + 0.13f, 1.4f, zr + 0.13f, Metal, false);
-                b.Cylinder(0, new Vector3(x, 2.65f, zr), Vector3.up, 0.07f, 2.5f, Metal, Metal, 0f, Metal, 6);
-                b.Sphere(0, new Vector3(x, 4.12f, zr), 0.22f, Globe, 10, 6);
+                // Its front rail, and a lamp on each front corner.
+                Box(b, -hw, 0.95f, zr - 0.08f, hw, 1.08f, zr + 0.08f, White, true);
+                Box(b, -hw, 0.48f, zr - 0.05f, hw, 0.56f, zr + 0.05f, White, true);
+                foreach (float x in new[] { -hw + 0.09f, -1f, 1f, hw - 0.09f })
+                    Box(b, x - 0.09f, 0f, zr - 0.09f, x + 0.09f, 1f, zr + 0.09f, White, false);
+                foreach (float x in new[] { -hw + 0.09f, hw - 0.09f })
+                {
+                    Box(b, x - 0.13f, 1.08f, zr - 0.13f, x + 0.13f, 1.4f, zr + 0.13f, Metal, false);
+                    b.Cylinder(0, new Vector3(x, 2.65f, zr), Vector3.up, 0.07f, 2.5f, Metal, Metal, 0f, Metal, 6);
+                    b.Sphere(0, new Vector3(x, 4.12f, zr), 0.22f, Globe, 10, 6);
+                }
             }
-            // The bent under it: a cross beam on four piles.
+            // A landing shorter than the deck: the deck's edge either side of it is railed.
+            if (deck > hw + 0.2f)
+                foreach (float s in new[] { -1f, 1f })
+                {
+                    float a = s * hw, c = s * deck;
+                    Box(b, Mathf.Min(a, c), 0.95f, 0f, Mathf.Max(a, c), 1.08f, 0.16f, White, true);
+                    Box(b, Mathf.Min(a, c), 0.48f, 0.03f, Mathf.Max(a, c), 0.56f, 0.13f, White, true);
+                    foreach (float x in new[] { a + s * 0.09f, c - s * 0.09f })
+                        Box(b, x - 0.09f, 0f, 0f, x + 0.09f, 1f, 0.18f, White, false);
+                }
+            // The bent under it: a cross beam on four piles (two under a short landing).
             float zb = -depth * 0.5f;
             Box(b, -hw + 0.1f, -1.05f, zb - 0.28f, hw - 0.1f, -0.45f, zb + 0.28f, Concrete, true);
-            foreach (float x in new[] { -hw + 0.35f, -0.9f, 0.9f, hw - 0.35f })
+            var piles = hw >= 2f ? new[] { -hw + 0.35f, -0.9f, 0.9f, hw - 0.35f } : new[] { -hw + 0.3f, hw - 0.3f };
+            foreach (float x in piles)
                 Pile(b, x, zb, -landingDrop - 0.6f, -1.05f, 0.24f, 10);
             Flight(b, -1f, hw, dropLeft);
             Flight(b, 1f, hw, dropRight);
@@ -94,24 +124,25 @@ namespace DribbleToSchool.World
         /// <summary>One flight, from the landing's end on side <paramref name="s"/> (-1 left, 1 right) down to the sand.</summary>
         void Flight(MeshBuilder b, float s, float hw, float drop)
         {
-            var plan = PlanFor(drop);
-            float r = plan.riser, run = plan.run;
+            var plan = PlanFor(drop, going, riser, splitOver);
+            float r = plan.riser, run = plan.run, G = going;
+            var railSides = onCourse ? new[] { -0.08f } : new[] { -depth + 0.08f, -0.08f };
             int k1 = plan.toMid, k2 = plan.afterMid;
             for (int part = 0; part < (k2 > 0 ? 2 : 1); part++)
             {
-                float u0 = part == 0 ? 0f : (k1 - 1) * Going + MidLength;
+                float u0 = part == 0 ? 0f : (k1 - 1) * G + MidLength;
                 float y0 = part == 0 ? 0f : -k1 * r;
                 int k = part == 0 ? k1 : k2;
-                float uEnd = u0 + (k - 1) * Going;
+                float uEnd = u0 + (k - 1) * G;
                 // The treads, each with a riser under its nosing.
                 for (int i = 1; i < k; i++)
                 {
                     float y = y0 - i * r;
-                    BoxAlong(b, s, hw, u0 + (i - 1) * Going, u0 + i * Going + Nosing, y - Tread, y, -depth + 0.1f, -0.1f, Timber, true);
-                    BoxAlong(b, s, hw, u0 + i * Going - 0.025f, u0 + i * Going, y - r, y - Tread, -depth + 0.1f, -0.1f, White, false);
+                    BoxAlong(b, s, hw, u0 + (i - 1) * G, u0 + i * G + Nosing, y - Tread, y, -depth + 0.1f, -0.1f, Timber, true);
+                    BoxAlong(b, s, hw, u0 + i * G - 0.025f, u0 + i * G, y - r, y - Tread, -depth + 0.1f, -0.1f, White, false);
                 }
                 // The cut stringers either side: a band under the steps and a tooth under each tread.
-                float top0 = y0 - r - Tread, top1 = top0 - r * (uEnd - u0) / Going;
+                float top0 = y0 - r - Tread, top1 = top0 - r * (uEnd - u0) / G;
                 for (int side = 0; side < 2; side++)
                 {
                     float za = side == 0 ? -depth : -0.1f, zb = side == 0 ? -depth + 0.1f : 0f;
@@ -119,12 +150,12 @@ namespace DribbleToSchool.World
                     for (int i = 1; i < k; i++)
                     {
                         float y = y0 - i * r - Tread;
-                        Prism(b, new[] { At(s, hw, u0 + (i - 1) * Going, y), At(s, hw, u0 + i * Going, y), At(s, hw, u0 + i * Going, y - r) }, za, zb, White);
+                        Prism(b, new[] { At(s, hw, u0 + (i - 1) * G, y), At(s, hw, u0 + i * G, y), At(s, hw, u0 + i * G, y - r) }, za, zb, White);
                     }
                 }
                 // Rails either side: a sloping handrail and mid rail over the nosings, posts standing on the treads.
-                float n0 = y0, n1 = y0 - r * (uEnd - u0) / Going;
-                foreach (float zc in new[] { -depth + 0.08f, -0.08f })
+                float n0 = y0, n1 = y0 - r * (uEnd - u0) / G;
+                foreach (float zc in railSides)
                 {
                     Prism(b, new[] { At(s, hw, u0, n0 + Rail - 0.11f), At(s, hw, uEnd, n1 + Rail - 0.11f), At(s, hw, uEnd, n1 + Rail), At(s, hw, u0, n0 + Rail) },
                         zc - 0.07f, zc + 0.07f, White);
@@ -134,8 +165,8 @@ namespace DribbleToSchool.World
                     for (int p = 0; p <= posts; p++)
                     {
                         float u = u0 + 0.06f + (uEnd - u0 - 0.12f) * p / posts;
-                        int i = Mathf.Min(k - 1, Mathf.Max(1, (int)((u - u0) / Going) + 1));
-                        float over = y0 - r * (u - u0) / Going;
+                        int i = Mathf.Min(k - 1, Mathf.Max(1, (int)((u - u0) / G) + 1));
+                        float over = y0 - r * (u - u0) / G;
                         BoxAlong(b, s, hw, u - 0.06f, u + 0.06f, y0 - i * r, over + Rail - 0.05f, zc - 0.06f, zc + 0.06f, White, false);
                     }
                 }
@@ -145,7 +176,7 @@ namespace DribbleToSchool.World
                     float ym = -k1 * r;
                     BoxAlong(b, s, hw, uEnd, uEnd + MidLength, ym - 0.08f, ym, -depth, 0f, Timber, false);
                     BoxAlong(b, s, hw, uEnd, uEnd + MidLength, ym - 0.4f, ym - 0.08f, -depth, 0f, Concrete, true);
-                    foreach (float zc in new[] { -depth + 0.08f, -0.08f })
+                    foreach (float zc in railSides)
                     {
                         BoxAlong(b, s, hw, uEnd, uEnd + MidLength, ym + Rail - 0.11f, ym + Rail, zc - 0.07f, zc + 0.07f, White, true);
                         BoxAlong(b, s, hw, uEnd, uEnd + MidLength, ym + 0.48f, ym + 0.55f, zc - 0.04f, zc + 0.04f, White, true);
@@ -158,9 +189,10 @@ namespace DribbleToSchool.World
                         Pile(b, s * (hw + um), z, ground - 0.6f, ym - 0.4f, 0.18f, 8);
                 }
             }
-            // The foot: a concrete pad, and a newel post either side.
-            BoxAlong(b, s, hw, run - 0.2f, run + FootPad, -drop - 0.12f, -drop + 0.04f, -depth - 0.1f, 0.1f, Concrete, false);
-            foreach (float zc in new[] { -depth + 0.08f, -0.08f })
+            // The foot: a concrete pad (flush with the sand on the course), and a newel post either side.
+            if (onCourse) BoxAlong(b, s, hw, run - 0.2f, run + G + 0.4f, -drop - 0.12f, -drop + 0.012f, -depth - 0.1f, 0.1f, Concrete, false);
+            else BoxAlong(b, s, hw, run - 0.2f, run + FootPad, -drop - 0.12f, -drop + 0.04f, -depth - 0.1f, 0.1f, Concrete, false);
+            foreach (float zc in railSides)
                 BoxAlong(b, s, hw, run - 0.08f, run + 0.08f, -drop + 0.04f, -drop + r + Rail + 0.06f, zc - 0.08f, zc + 0.08f, White, false);
         }
 

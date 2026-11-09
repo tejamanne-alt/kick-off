@@ -2089,7 +2089,15 @@ namespace DribbleToSchool.EditorTools
             // the stops' plots. The lifeguard towers, palms and parasols keep clear of it (pierReach either side).
             float skip;
             float pierX = float.NaN, pierReach = 0f;
-            if (CA && (chunk == null || chunk.level) && LevelBuildKit.HasKitModel("Coast", "PierSpan") && propsEnd - x0 > 60f)
+            if (track.PierClimbs.Count > 0)
+            {
+                // The course climbs the pier (TrackBuilder.PierClimb): it stands across the lane there.
+                var climb = track.PierClimbs[0];
+                pierX = climb.Centre;
+                pierReach = Mathf.Max(PierWidth * 0.5f, (climb.end - climb.foot) * 0.5f + 0.8f);
+                PierOnCourse(track, root, climb, 13);
+            }
+            else if (CA && (chunk == null || chunk.level) && LevelBuildKit.HasKitModel("Coast", "PierSpan") && propsEnd - x0 > 60f)
             {
                 pierReach = PierReach;
                 for (float tryX = x0 + (propsEnd - x0) * 0.55f; tryX < propsEnd - pierReach - 8f; tryX += 7f)

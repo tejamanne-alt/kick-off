@@ -80,7 +80,10 @@ namespace DribbleToSchool.Player
         readonly Collider2D[] groundHits = new Collider2D[8];
         readonly Collider2D[] roomHits = new Collider2D[8];
         readonly RaycastHit2D[] landingHits = new RaycastHit2D[8];
+        readonly RaycastHit2D[] normalHits = new RaycastHit2D[4];
         ContactFilter2D groundFilter;
+        /// <summary>The ground's normal under the feet (straight up on the flat, or in the air).</summary>
+        Vector2 groundNormal = Vector2.up;
         float lastGroundedTime = -10f;
         float lastJumpPressedTime = -10f;
         float lastSlidePressedTime = -10f;
@@ -160,6 +163,7 @@ namespace DribbleToSchool.Player
         void FixedUpdate()
         {
             CheckGround();
+            groundNormal = IsGrounded ? GroundNormal() : Vector2.up;
             if (IsGrounded) lastGroundedTime = Time.time;
             if (IsGrounded && !wasGrounded)
             {
@@ -171,7 +175,7 @@ namespace DribbleToSchool.Player
             Vector2 v = Body.linearVelocity;
             if (!IsGrounded) lastFallSpeed = Mathf.Max(0f, -v.y);
             // Back on the ground (not just leaving it, nor riding a lift up): the air jump is back.
-            if (IsGrounded && v.y <= Mathf.Max(0f, GroundVelocity.y) + 0.01f) airJumpsUsed = 0;
+            if (IsGrounded && v.y <= Mathf.Max(0f, GroundVelocity.y) + SlopeRise(v.x, groundNormal) + 0.01f) airJumpsUsed = 0;
 
             bool canJump = Time.time - lastGroundedTime <= tuning.coyoteTime;
             bool wantsJump = Time.time - lastJumpPressedTime <= tuning.jumpBufferTime;
@@ -232,12 +236,21 @@ namespace DribbleToSchool.Player
                 if (DoubleJumped != null) DoubleJumped();
                 GameEvents.Raise(GameEventType.DoubleJump, FeetPosition, 0.6f);
             }
-            else if (IsGrounded && v.y <= 0.01f)
+            else if (IsGrounded && v.y <= SlopeRise(v.x, groundNormal) + 0.01f)
             {
                 jumping = false;
             }
 
             Body.gravityScale = v.y < 0f ? tuning.gravityScale * tuning.fallGravityMultiplier : tuning.gravityScale;
+            // On a slope (a ramp, a dune, the pier's steps) the kid keeps to it: along it at the stick's pace, up or down, and
+            // standing on it without sliding. The body is frictionless (so it never sticks to a wall), and gravity would
+            // otherwise pull it back down anything steeper than about 18 degrees faster than the run can climb.
+            if (IsGrounded && !jumping && GroundVelocity == Vector2.zero && IsWalkableSlope(groundNormal)
+                && v.y <= SlopeRise(v.x, groundNormal) + 0.05f)
+            {
+                v.y = AlongSlope(v.x, groundNormal);
+                Body.gravityScale = 0f;
+            }
             if (v.y < -tuning.maxFallSpeed) v.y = -tuning.maxFallSpeed;
 
             Body.linearVelocity = v;
@@ -262,6 +275,33 @@ namespace DribbleToSchool.Player
                 if (surface != null) GroundVelocity = surface.SurfaceVelocity;
                 return;
             }
+        }
+
+        /// <summary>The normal of the ground right under the feet (straight up if nothing solid is found).</summary>
+        Vector2 GroundNormal()
+        {
+            int count = Physics2D.Raycast(FeetPosition + Vector2.up * 0.1f, Vector2.down, groundFilter, normalHits, 0.35f);
+            for (int i = 0; i < count; i++)
+                if (normalHits[i].distance > 0f && IsSolidToKid(normalHits[i].collider)) return normalHits[i].normal;
+            return Vector2.up;
+        }
+
+        /// <summary>A slope the kid keeps to: tilted, but no steeper than about 45 degrees (steeper is a wall).</summary>
+        public static bool IsWalkableSlope(Vector2 normal)
+        {
+            return normal.y >= 0.7f && normal.y < 0.999f;
+        }
+
+        /// <summary>The upward speed that keeps a kid moving across at <paramref name="speedX"/> on the ground with this normal.</summary>
+        public static float AlongSlope(float speedX, Vector2 normal)
+        {
+            return normal.y > 0.01f ? -speedX * normal.x / normal.y : 0f;
+        }
+
+        /// <summary>How fast a kid moving across at <paramref name="speedX"/> rises on this slope (0 on the flat or a wall).</summary>
+        public static float SlopeRise(float speedX, Vector2 normal)
+        {
+            return IsWalkableSlope(normal) ? Mathf.Abs(AlongSlope(speedX, normal)) : 0f;
         }
 
         /// <summary>

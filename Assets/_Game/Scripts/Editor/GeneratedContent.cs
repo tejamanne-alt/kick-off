@@ -22,7 +22,7 @@ namespace DribbleToSchool.EditorTools
     public static class GeneratedContent
     {
         /// <summary>Bump when layouts or the scene rig change so scenes regenerate.</summary>
-        public const int Version = 103;   // 103: stairs up to the beach pier (World/PierStairs)
+        public const int Version = 104;   // 104: Low Tide (California) climbs the pier; the kid keeps to slopes
 
         const string ScenesDir = LevelBuildKit.Root + "/Scenes";
         const string LevelsDir = LevelBuildKit.Root + "/Levels";

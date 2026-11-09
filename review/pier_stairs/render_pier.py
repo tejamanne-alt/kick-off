@@ -1,13 +1,17 @@
 # The pier on a California beach with its new stairs, in the game's toon look, from three cameras:
-#   blenv/bin/python render_pier.py -- <models dir> <out dir> [before]
+#   blenv/bin/python render_pier.py -- <models dir> <out dir> [before | course]
 # Writes game.png (the game's camera, a phone's width), whole.png (the whole front) and close.png (the left flight close up),
 # each RGBA with the sky left transparent (compose.py lays in the sky). "before" leaves the stairs out.
+# "course": the pier the course climbs (Low Tide in California: TrackBuilder.PierClimb), its stairs across the lane, and
+# the game's camera following the kid up (course_up.png), over the landing (course_top.png) and down (course_down.png),
+# plus course_whole.png.
 # Uses review/cartoon/render_scenes.py for the toon materials and the kit models, and pier_stairs.py for the stairs.
 import os, sys, math
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 argv = sys.argv[sys.argv.index('--') + 1:]
 BEFORE = 'before' in argv
+COURSE = 'course' in argv
 sys.argv = sys.argv[:sys.argv.index('--') + 1] + [argv[0], argv[1], 'pier']
 src = open(os.path.join(HERE, '..', 'cartoon', 'render_scenes.py')).read()
 exec(src[:src.index('SCENES = dict(')])
@@ -79,16 +83,25 @@ for x0, x1 in ((-70, 70),):
 
 # the pier: spans from the beach out to sea, the end platform
 SPAN = 12.0
+if COURSE:
+    PIER_Z = DEPTH / 2                      # just behind the lane
+    DECK = ps.CLIMB_RISE                    # the climb's deck over the sand (0 here)
 for i in range(7):
     objs = import_fbx(os.path.join(MODELS, 'Coast', 'PierSpan.fbx'))
     for o in meshes(objs):
         o.data.materials.clear(); o.data.materials.append(kit_material('Coast'))
     for r in [o for o in objs if o.parent is None]:
-        r.location = (PIER_X, PIER_Z + i * SPAN, SEA_Y)
+        r.location = (PIER_X, PIER_Z + i * SPAN, DECK - 4.8)
 bpy.context.view_layer.update()
 
+if COURSE:
+    mb = ps.MB()
+    ps.build(mb, WIDTH, DEPTH, ps.CLIMB_RISE, ps.CLIMB_RISE, ps.CLIMB_RISE, ps.CLIMB_LANDING, ps.CLIMB_GOING, ps.CLIMB_RISER,
+             ps.CLIMB_SPLIT, True)
+    mb.v = [(x + PIER_X, y + DECK, z + PIER_Z) for (x, y, z) in mb.v]
+    unity_mesh('PierStairs', mb, SOLID)
 # the stairs, and the paths on the sand
-if not BEFORE:
+elif not BEFORE:
     def drop_at(x):
         return DECK - sand_y(x, PIER_Z - DEPTH / 2)
     runs = []
@@ -122,8 +135,9 @@ kit('Plants', 'DuneGrass', (-8.0, -4.4, 0.0)); kit('Plants', 'DuneGrass', (3.5, 
 for c in [(-40, 260, 40, 12), (25, 250, 52, 13), (80, 270, 36, 10)]:
     cloud(c[:3], c[3])
 hills(420, 'Headland', x=60, scale=2.6)
-person('BackpackBoy', (-6.2, -0.2, 0.0), 66, 'run_stride', 1.75, bag='KickOff')
-ball((-5.2, -0.35, 0.15))
+if not COURSE:
+    person('BackpackBoy', (-6.2, -0.2, 0.0), 66, 'run_stride', 1.75, bag='KickOff')
+    ball((-5.2, -0.35, 0.15))
 
 # ---- the sun, the engine (as render_scenes.py) ----
 sun = bpy.data.objects.new('sun', bpy.data.lights.new('sun', 'SUN')); S.collection.objects.link(sun)
@@ -158,9 +172,48 @@ def shoot(name, loc, target, fov, w, h):
 # the game's camera (CameraFollow2D: 2.7 m half-height at the kid, 4 degrees down, the kid 38% across a phone's width)
 half = 2.7; fov = 34.0
 back = half / math.tan(math.radians(fov / 2))
-cx = -6.2 + 1.41
-shoot('game', (cx, -back, 1.95), (cx, 0.0, 1.95 - back * math.tan(math.radians(4))), fov, 2168, 1000)
-if '--game-only' not in argv:
+
+
+def game_camera(name, kid_x, centre_y):
+    """CameraFollow2D.Place: the centre (kid_x + the lean, centre_y) on the lane's plane, seen from `back` away, 4 degrees down."""
+    cx = kid_x + 1.41
+    p = math.radians(4.0)
+    shoot(name, (cx, -back * math.cos(p), centre_y + back * math.sin(p)), (cx, 0.0, centre_y), fov, 2168, 1000)
+
+
+if not COURSE:
+    game_camera('game', -6.2, 1.8)
     shoot('whole', (0.0, -17.0, 3.2), (0.0, 5.0, 2.4), 36.0, 1920, 1000)
     shoot('close', (-15.5, -4.0, 1.7), (-6.5, 5.3, 2.0), 40.0, 1600, 1000)
-print('rendered pier', 'before' if BEFORE else 'after')
+else:
+    run = ps.climb_run(); top = PIER_X - ps.CLIMB_LANDING / 2; foot = top - run
+    top_end = PIER_X + ps.CLIMB_LANDING / 2; end = top_end + run
+
+    def line(x):
+        """TrackBuilder.ClimbLine: the nosings' line the kid's feet and the ball ride on."""
+        if x <= foot or x >= end: return 0.0
+        if x < top: return DECK * (x - foot) / run
+        if x <= top_end: return DECK
+        return DECK * (end - x) / run
+
+    def on_line(x, r=0.17):
+        """The ball's centre resting on the line at x (it touches the line along the slope's normal)."""
+        slope = (line(x + 0.01) - line(x - 0.01)) / 0.02
+        n = Vector((-slope, 1.0)).normalized()
+        return (x + n.x * r, -0.05, line(x) + n.y * r)
+
+    def frame(name, kid_x, ball_x, centre_y, pose='run_stride'):
+        objs = person('BackpackBoy', (kid_x, -0.05, line(kid_x)), 66, pose, 1.75, bag='KickOff')
+        b = ball(on_line(ball_x), r=0.17)
+        game_camera(name, kid_x, centre_y)
+        for o in objs + [b]:
+            bpy.data.objects.remove(o)
+
+    # the camera's height: the kid's centre + 1.15, followed past a 1.1 m dead zone (CameraFollow2D), never under 1.8
+    frame('course_up', foot + 2.8, foot + 3.35, max(1.8, line(foot + 2.8) + 0.6 + 1.15 - 0.55))
+    frame('course_top', PIER_X - 0.3, PIER_X + 0.35, DECK + 0.6 + 1.15 - 0.55)
+    frame('course_down', end - 2.35, end - 1.7, line(end - 2.35) + 0.6 + 1.15 + 0.55)
+    objs = person('BackpackBoy', (top_end - 0.4, -0.05, DECK), 66, 'run_stride', 1.75, bag='KickOff')
+    ball(on_line(top_end + 0.2), r=0.17)
+    shoot('course_whole', (0.0, -17.0, 3.0), (0.0, 3.0, 1.8), 36.0, 1920, 1000)
+print('rendered pier', 'before' if BEFORE else 'course' if COURSE else 'after')
