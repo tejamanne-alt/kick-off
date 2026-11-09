@@ -114,6 +114,7 @@ namespace DribbleToSchool.World
         Material material;
         Camera cam;
         bool askedForNormals;
+        bool warmed;
         const int Levels = 4;
         const int GradePass = 3, ComicPass = 4, PrintPass = 5, SketchPass = 6;
         const int ClassicGradePass = 7, ClassicFlatPass = 8, ClassicInkPass = 9;
@@ -177,6 +178,15 @@ namespace DribbleToSchool.World
         /// <summary>The classic cartoon filter is on: chosen in Add-ons &amp; Filters, or forced here.</summary>
         public bool ClassicOn { get { return forceClassic || (!forceComic && !forceSketch && Progression.AddOns.Filter == Progression.AddOns.ClassicFilter); } }
 
+        void OnEnable()
+        {
+            cam = GetComponent<Camera>();
+            // No HDR target and no MSAA (Core/GraphicsQuality): the grade works in 0..1, and an FP16 picture doubles the
+            // memory traffic of every pass below on a phone. Applied here so every scene's camera gets it as it starts.
+            if (Application.isPlaying) Core.GraphicsQuality.ConfigureCamera(cam);
+            warmed = false;
+        }
+
         // The filters' lines need the camera's depth and normals; asked for only while one is on,
         // and only the flag this script added is taken back.
         void LateUpdate()
@@ -227,8 +237,13 @@ namespace DribbleToSchool.World
             material.SetVector(HighlightTintId, highlightTint);
             material.SetFloat(VignetteId, vignette);
 
+            if (!warmed) WarmUp(source);
             RenderTexture bloomTex = null;
-            if (bloom && bloomIntensity > 0f)
+            // The bloom only on the High graphics tier (Core/GraphicsQuality): at 0.12 over the brightest highlights it is
+            // barely seen, and its chain reads the whole picture.
+            bool doBloom = bloom && bloomIntensity > 0f && (!Application.isPlaying || Core.GraphicsQuality.Bloom);
+            material.SetFloat(BloomIntensityId, doBloom ? bloomIntensity : 0f);
+            if (doBloom)
             {
                 int w = source.width / 4, h = source.height / 4;
                 var format = source.format;
@@ -283,6 +298,21 @@ namespace DribbleToSchool.World
                 if (chain[i] != null) RenderTexture.ReleaseTemporary(chain[i]);
                 chain[i] = null;
             }
+        }
+
+        /// <summary>
+        /// Every pass of the shader drawn once into a tiny target the first frame the camera renders, so the GPU driver
+        /// builds all of them while the scene is still appearing, not in the middle of play the first time a filter or the
+        /// bloom is used (a build costs 5 to 100 ms on a phone: the isolated long frames in the device recordings).
+        /// </summary>
+        void WarmUp(RenderTexture source)
+        {
+            warmed = true;
+            var a = RenderTexture.GetTemporary(16, 16, 0, source.format);
+            var b = RenderTexture.GetTemporary(16, 16, 0, source.format);
+            for (int p = 0; p < material.passCount; p++) Graphics.Blit(a, b, material, p);
+            RenderTexture.ReleaseTemporary(a);
+            RenderTexture.ReleaseTemporary(b);
         }
 
         // The depth and normals are drawn from the frame after the flag is set: until then, the plain grade.

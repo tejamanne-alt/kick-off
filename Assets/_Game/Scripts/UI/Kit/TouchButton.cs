@@ -38,6 +38,7 @@ namespace DribbleToSchool.UI.Kit
         bool held, highlighted;
         Graphic[] contentGraphics;
         float[] contentAlpha;
+        bool[] contentSkip;
 
         /// <summary>
         /// Builds the button under <paramref name="parent"/>. Place the returned object's
@@ -153,11 +154,21 @@ namespace DribbleToSchool.UI.Kit
             float dt = Time.unscaledDeltaTime;
             // Down fast, back up softly.
             if (held) press = Mathf.MoveTowards(press, 1f, dt * 22f);
-            else press = Mathf.SmoothDamp(press, 0f, ref pressVelocity, 0.07f, Mathf.Infinity, dt);
+            else
+            {
+                press = Mathf.SmoothDamp(press, 0f, ref pressVelocity, 0.07f, Mathf.Infinity, dt);
+                // The ease only approaches zero; land on it once what is left is invisible (a few ten-thousandths of
+                // opacity), so a button at rest stops recolouring its glass, rim and label by tiny fractions, each of
+                // which rebuilds them and re-batches the HUD.
+                if (press < 1e-3f) { press = 0f; pressVelocity = 0f; }
+            }
 
             if (discRect != null)
             {
-                discRect.localScale = Vector3.one * (1f - 0.07f * press);
+                // Only rescale when the press really changes it: a write dirties the disc (and can re-batch the HUD)
+                // even when nothing moved.
+                Vector3 discScale = Vector3.one * (1f - 0.07f * press);
+                if (discRect.localScale != discScale) discRect.localScale = discScale;
                 float glassAlpha = Mathf.Lerp(restAlpha, heldAlpha, press);
                 float rimAlpha = Mathf.Lerp(restRim, heldRim, press);
                 if (highlighted)
@@ -197,12 +208,19 @@ namespace DribbleToSchool.UI.Kit
             {
                 contentGraphics = Content.GetComponentsInChildren<Graphic>();
                 contentAlpha = new float[contentGraphics.Length];
-                for (int i = 0; i < contentGraphics.Length; i++) contentAlpha[i] = contentGraphics[i].color.a;
+                contentSkip = new bool[contentGraphics.Length];
+                for (int i = 0; i < contentGraphics.Length; i++)
+                {
+                    contentAlpha[i] = contentGraphics[i].color.a;
+                    // Checked once here: Object.name makes a new string on every read, which per graphic per frame
+                    // is steady garbage for the GC. (Nothing renames these graphics.)
+                    contentSkip[i] = contentGraphics[i].name == "AimKnob";
+                }
             }
             for (int i = 0; i < contentGraphics.Length; i++)
             {
                 var g = contentGraphics[i];
-                if (g == null || g.name == "AimKnob") continue;
+                if (g == null || contentSkip[i]) continue;
                 Color c = g.color;
                 c.a = Mathf.Min(1f, contentAlpha[i] * k);
                 g.color = c;

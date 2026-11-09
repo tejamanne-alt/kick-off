@@ -217,9 +217,13 @@ namespace DribbleToSchool.UI
 
         static void PlaceButton(RectTransform rect, Rect normalized)
         {
-            rect.anchorMin = new Vector2(normalized.x, normalized.y);
-            rect.anchorMax = new Vector2(normalized.xMax, normalized.yMax);
-            rect.offsetMin = rect.offsetMax = Vector2.zero;
+            // Called every frame for each button, which mostly stands still: write only what changed, since a
+            // RectTransform write can dirty the HUD canvas (a rebuild and re-batch) even when the value is the same.
+            Vector2 min = new Vector2(normalized.x, normalized.y), max = new Vector2(normalized.xMax, normalized.yMax);
+            if (rect.anchorMin != min) rect.anchorMin = min;
+            if (rect.anchorMax != max) rect.anchorMax = max;
+            if (rect.offsetMin != Vector2.zero) rect.offsetMin = Vector2.zero;
+            if (rect.offsetMax != Vector2.zero) rect.offsetMax = Vector2.zero;
         }
 
         // ---------- Events ----------
@@ -483,11 +487,13 @@ namespace DribbleToSchool.UI
             if (tuning != null && tuning.visible) GameInput.UIBlockers.Add(tuning.ScreenRect);
         }
 
+        // One corner buffer, reused: this runs once or twice a frame, and a new array each time is garbage for the GC.
+        static readonly Vector3[] Corners = new Vector3[4];
+
         static Rect ScreenRect(RectTransform rt)
         {
-            var corners = new Vector3[4];
-            rt.GetWorldCorners(corners);   // overlay canvas: world space == screen pixels
-            return Rect.MinMaxRect(corners[0].x, corners[0].y, corners[2].x, corners[2].y);
+            rt.GetWorldCorners(Corners);   // overlay canvas: world space == screen pixels
+            return Rect.MinMaxRect(Corners[0].x, Corners[0].y, Corners[2].x, Corners[2].y);
         }
 
         // ---------- Pause ----------

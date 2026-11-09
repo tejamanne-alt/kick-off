@@ -484,6 +484,8 @@ namespace DribbleToSchool.EditorTools
             cam.fieldOfView = 34f;
             cam.nearClipPlane = 0.3f;
             cam.farClipPlane = 2500f;
+            cam.allowHDR = false;    // an 8-bit picture, no MSAA (Core/GraphicsQuality.ConfigureCamera does the same at runtime)
+            cam.allowMSAA = false;
             var mood = Theme.mood;
             cam.clearFlags = CameraClearFlags.SolidColor;
             cam.backgroundColor = mood.horizon;

@@ -1,9 +1,18 @@
 // Anime-style shading for characters, the ball and other smooth, rounded things, drawn to
 // stand apart from the painterly street: two flat cel bands (lit and a cool shadow) from the
-// global sun, a bright rim round the whole silhouette (strongest on the sunny side), a dark ink
+// global sun, a rim of light round the silhouette (strongest on the sunny side), a dark ink
 // outline of constant on-screen width (an inverted hull pushed out along the smooth normals),
 // and the same distance haze as the street. Colours come from the vertex colours times the
 // texture and tint. Lighting and haze are set by WorldLook.
+// For a clean figure at any size (docs/LEARNINGS.md, "The characters looked low quality"):
+// - the outline is pushed out by the same number of pixels whichever way the edge runs (the push
+//   is measured in pixels, not in clip space, which squashed it on wide screens), never thinner
+//   than _OutlineMinPx (a 720-line picture would make it a hairline), and set a little behind
+//   the figure (_OutlinePush), so the small folds inside the silhouette draw no specks of ink;
+// - the step from shade to light is as narrow as before but anti-aliased: it widens to a pixel
+//   where the surface turns faster than a pixel can show, instead of shimmering;
+// - the rim is a narrower band and takes the colour under it (hair stays dark hair with a soft
+//   sheen, not white flecks).
 // Alpha carries _ComicWorld for the filters (Shaders/PostFX): 0 (people and the ball) takes the comic filter
 // except creases across it (its painted face and eyes stay clear) and slips half as far; 0.125 (the cars: a cel) is
 // drawn like the street by the comic and sketch filters (creases and all) and as an inked cel by the classic cartoon,
@@ -21,6 +30,8 @@ Shader "DribbleToSchool/ToonCharacter"
         _RimStrength ("Rim light", Range(0,1)) = 0.3
         _OutlineColor ("Outline colour", Color) = (0.08,0.07,0.1,1)
         _OutlineWidth ("Outline width (fraction of screen height)", Float) = 0.0022
+        _OutlineMinPx ("Outline: never thinner than (pixels)", Float) = 1.25
+        _OutlinePush ("Outline: set back from the camera (m)", Float) = 0.012
         _ComicWorld ("Filters: a figure (0), a cel (0.125: the cars) or the street (1)", Range(0,1)) = 0
         _MaskTint ("Recolour of the texture's marked part (alpha 0: none)", Color) = (1,1,1,0)
         _MaskBase ("The marked part's own colour", Color) = (0.5,0.5,0.5,1)
@@ -42,6 +53,8 @@ Shader "DribbleToSchool/ToonCharacter"
         float _RimStrength;
         fixed4 _OutlineColor;
         float _OutlineWidth;
+        float _OutlineMinPx;
+        float _OutlinePush;
         float _ComicWorld;
         fixed4 _MaskTint;
         fixed4 _MaskBase;
@@ -75,15 +88,18 @@ Shader "DribbleToSchool/ToonCharacter"
             v2f vert (appdata v)
             {
                 v2f o;
-                o.pos = UnityObjectToClipPos(v.vertex);
+                // set back a little from the camera, so only the true silhouette shows round the figure
+                float3 viewPos = UnityObjectToViewPos(v.vertex);
+                viewPos.z -= _OutlinePush;
+                o.pos = mul(UNITY_MATRIX_P, float4(viewPos, 1.0));
                 float3 worldNormal = UnityObjectToWorldNormal(v.normal);
-                float2 clipNormal = mul((float3x3)UNITY_MATRIX_VP, worldNormal).xy;
-                float len = length(clipNormal);
+                // the normal's direction on screen, in pixels (so a slanted edge is as thick as an upright one)
+                float2 dir = mul((float3x3)UNITY_MATRIX_VP, worldNormal).xy * _ScreenParams.xy;
+                float len = length(dir);
                 if (len > 0.0001)
                 {
-                    clipNormal /= len;
-                    clipNormal.x *= _ScreenParams.y / _ScreenParams.x;
-                    o.pos.xy += clipNormal * _OutlineWidth * 2.0 * o.pos.w;
+                    float px = max(_OutlineWidth * _ScreenParams.y, _OutlineMinPx);
+                    o.pos.xy += (dir / len) * px * 2.0 / _ScreenParams.xy * o.pos.w;
                 }
                 o.color = v.color;
                 o.worldPos = mul(unity_ObjectToWorld, v.vertex).xyz;
@@ -108,6 +124,7 @@ Shader "DribbleToSchool/ToonCharacter"
             #pragma vertex vert
             #pragma fragment frag
             #pragma multi_compile_fwdbase nolightmap nodirlightmap nodynlightmap novertexlight
+            #pragma target 3.0
 
             struct appdata { float4 vertex : POSITION; float3 normal : NORMAL; float2 uv : TEXCOORD0; fixed4 color : COLOR; };
             struct v2f
@@ -140,14 +157,17 @@ Shader "DribbleToSchool/ToonCharacter"
                 float d = dot(n, l);
                 // Two cel bands with a narrow soft edge (the anime look), the shade tinted by the
                 // sky and the warm bounce like the street around it; sun shadows fall into the shade.
-                float lit = smoothstep(-0.02, 0.06, d) * lerp(0.15, 1.0, SHADOW_ATTENUATION(i));
+                // (the step's width: as before, or one pixel's worth of turn where the surface turns faster)
+                float aa = max(fwidth(d), 0.04);
+                float lit = smoothstep(0.02 - aa, 0.02 + aa, d) * lerp(0.15, 1.0, SHADOW_ATTENUATION(i));
                 fixed3 col = lerp(tex.rgb * DtsShadeTint(_ShadowColor.rgb, n), tex.rgb * DtsSun(), lit);
 
                 // A rim of light round the silhouette, brightest on the sunny side, so the figure
-                // lifts off whatever is behind it.
+                // lifts off whatever is behind it; tinted by the colour under it, so dark hair keeps
+                // a soft sheen rather than white flecks.
                 float3 v = normalize(_WorldSpaceCameraPos - i.worldPos);
-                float rim = smoothstep(0.6, 0.76, 1.0 - saturate(dot(n, v))) * lerp(0.4, 1.0, saturate(d + 0.35));
-                col += rim * _RimStrength * DtsSun();
+                float rim = smoothstep(0.66, 0.8, 1.0 - saturate(dot(n, v))) * lerp(0.4, 1.0, saturate(d + 0.35));
+                col += rim * _RimStrength * DtsSun() * lerp(tex.rgb, fixed3(1, 1, 1), 0.45);
 
                 col = DtsHaze(col, i.worldPos, 1.0);
                 return fixed4(col, _ComicWorld);

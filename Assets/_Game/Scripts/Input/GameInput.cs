@@ -318,7 +318,8 @@ namespace DribbleToSchool.InputHandling
         readonly List<int> ended = new List<int>();
         readonly HashSet<int> ignored = new HashSet<int>();
 
-        float Dpi { get { return Screen.dpi > 0f ? Screen.dpi : 160f; } }
+        // (in the picture's pixels: the panel's dots per inch, scaled with the 3D picture's resolution; Core/GraphicsQuality)
+        float Dpi { get { return DribbleToSchool.Core.GraphicsQuality.TouchDpi; } }
 
         void Awake()
         {

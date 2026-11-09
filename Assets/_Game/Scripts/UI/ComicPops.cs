@@ -44,12 +44,14 @@ namespace DribbleToSchool.UI
 
         static ComicPops instance;
         RectTransform root;
+        Canvas rootCanvas;
         readonly List<Pop> live = new List<Pop>();
         Material[] materials;
         Sprite burstSprite, sketchBurstSprite;
         BallController ball;
         string lastWord;
         float lastWordAt = -10f;
+        int prewarmAt = -1;   // the frame the words' letters are drawn into the font on (Prewarm), or -1 for none
 
         const int MaxLive = 3;
 
@@ -65,25 +67,29 @@ namespace DribbleToSchool.UI
             instance = go.AddComponent<ComicPops>();
         }
 
-        // The starburst is drawn now, at boot, not on the first THWACK! (a frame's work on a phone).
-        void Start() { BurstSprite(false); BurstSprite(true); }
+        // The starburst is drawn now, at boot, not on the first THWACK! (a frame's work on a phone). The words'
+        // letters too (the first scene loaded before ComicPops was listening for scene loads).
+        void Start() { BurstSprite(false); BurstSprite(true); QueuePrewarm(); }
 
         void OnEnable()
         {
             GameEvents.Raised += OnEvent;
             SceneManager.sceneLoaded += OnSceneLoaded;
+            Loc.Changed += QueuePrewarm;
         }
 
         void OnDisable()
         {
             GameEvents.Raised -= OnEvent;
             SceneManager.sceneLoaded -= OnSceneLoaded;
+            Loc.Changed -= QueuePrewarm;
         }
 
         void OnSceneLoaded(Scene scene, LoadSceneMode mode)
         {
             ball = null;
             for (int i = live.Count - 1; i >= 0; i--) Remove(i);
+            QueuePrewarm();
         }
 
         BallController Ball()
@@ -149,7 +155,7 @@ namespace DribbleToSchool.UI
             while (live.Count >= MaxLive) Remove(0);
 
             bool pencil = AddOns.Filter == AddOns.SketchFilter;   // pencil lettering on the sketch filter
-            float fontSize = size == Size.Huge ? 190f : size == Size.Big ? 140f : size == Size.Medium ? 104f : 78f;
+            float fontSize = FontSize(size);
             var go = new GameObject("Pop", typeof(RectTransform));
             var rect = (RectTransform)go.transform;
             rect.SetParent(root, false);
@@ -222,6 +228,77 @@ namespace DribbleToSchool.UI
             });
         }
 
+        static float FontSize(Size size)
+        {
+            return size == Size.Huge ? 190f : size == Size.Big ? 140f : size == Size.Medium ? 104f : 78f;
+        }
+
+        // ---------- The letters, drawn ahead ----------
+
+        // The words' letters are drawn into the font's texture when a scene loads, not by a word's first pop in the
+        // middle of a run: the comic font is a dynamic one, which rasterizes each new letter at each new size on the
+        // main thread when it is first asked for (several to tens of milliseconds at these sizes on a phone). Only
+        // while the words show at all (the comic or sketch filter on); two frames later, so it is not in the load itself
+        // and the overlay's scale is the new one when the resolution was set as the scene loaded (Screen.SetResolution
+        // lands at the end of that frame, and the scaler picks it up as the next frame's canvases render).
+        void QueuePrewarm()
+        {
+            if (On) prewarmAt = Time.frameCount + 2;
+        }
+
+        void StepPrewarm()
+        {
+            if (root == null)
+            {
+                // The overlay is made first and the letters drawn two frames later, once its scaler has worked out the
+                // screen's scale (it starts at 1): a pop's letters are drawn at its size times that scale.
+                EnsureCanvas();
+                prewarmAt = Time.frameCount + 2;
+                return;
+            }
+            prewarmAt = -1;
+            var font = UITheme.Comic;
+            if (font == null || !font.dynamic || rootCanvas == null) return;
+            // Each word at the size it pops at (as in OnEvent: keep the two in step); the counts can be any digits.
+            const string Digits = "0123456789";
+            using (var generator = new TextGenerator())
+            {
+                Prewarm(generator, font, Size.Small, Loc.T("pop.boink") + Loc.T("pop.whoosh") + Loc.T("pop.click"));
+                Prewarm(generator, font, Size.Medium, Loc.T("pop.thump") + Loc.T("pop.nice") + Loc.F("pop.niceN", Digits)
+                    + Loc.T("pop.skrrt") + Loc.T("pop.boing") + Loc.T("pop.splash") + Loc.T("pop.squawk") + Loc.T("pop.woof")
+                    + Loc.T("pop.oof"));
+                Prewarm(generator, font, Size.Big, Loc.T("pop.thwack") + Loc.F("pop.boinkN", Digits) + Loc.T("pop.whoops"));
+                Prewarm(generator, font, Size.Huge, Loc.T("pop.goal") + Loc.T("pop.madeIt"));
+            }
+        }
+
+        /// <summary>
+        /// Lays out <paramref name="letters"/> with the same text generator and settings a pop's UI Text uses (its
+        /// font size, the overlay's scale, normal style), which asks the font for those letters at exactly the pixel
+        /// size the pop will: they are in the texture before the word first shows.
+        /// </summary>
+        void Prewarm(TextGenerator generator, Font font, Size size, string letters)
+        {
+            float fontSize = FontSize(size);
+            var settings = new TextGenerationSettings
+            {
+                font = font,
+                fontSize = Mathf.RoundToInt(fontSize),
+                fontStyle = FontStyle.Normal,
+                scaleFactor = rootCanvas.scaleFactor,   // UI Text's pixelsPerUnit for a dynamic font
+                color = Color.white,
+                lineSpacing = 1f,
+                richText = true,
+                textAnchor = TextAnchor.MiddleCenter,
+                horizontalOverflow = HorizontalWrapMode.Overflow,
+                verticalOverflow = VerticalWrapMode.Overflow,
+                generationExtents = new Vector2(1600f, fontSize * 1.6f),
+                pivot = new Vector2(0.5f, 0.5f),
+                updateBounds = false,
+            };
+            generator.Populate(letters, settings);
+        }
+
         // Where a world spot is on the overlay, high enough above it that a word clears the kid's head (the
         // faces stay in view), kept clear of the info card and the controls.
         Vector2 ScreenSpot(Vector2 world, float fontSize)
@@ -242,6 +319,7 @@ namespace DribbleToSchool.UI
 
         void Update()
         {
+            if (prewarmAt >= 0 && Time.frameCount >= prewarmAt) StepPrewarm();
             float now = Time.unscaledTime;
             for (int i = live.Count - 1; i >= 0; i--)
             {
@@ -279,6 +357,7 @@ namespace DribbleToSchool.UI
             if (raycaster != null) Destroy(raycaster);   // takes no touches
             canvas.transform.SetParent(transform, false);
             root = (RectTransform)canvas.transform;
+            rootCanvas = canvas;
             return true;
         }
 

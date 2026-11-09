@@ -118,14 +118,25 @@ namespace DribbleToSchool.World
             sunLight.shadowBias = 0.1f;
             sunLight.shadowNormalBias = 0.9f;
             sunLight.shadowResolution = UnityEngine.Rendering.LightShadowResolution.High;
-            if (Application.isPlaying)
-            {
-                QualitySettings.shadows = ShadowQuality.All;
-                QualitySettings.shadowResolution = ShadowResolution.High;
-                QualitySettings.shadowDistance = shadowDistance;
-                QualitySettings.shadowCascades = 2;
-                QualitySettings.shadowProjection = ShadowProjection.StableFit;
-            }
+            // In play the device's graphics tier decides (Core/GraphicsQuality): soft, two cascades and this distance on
+            // High; hard, one cascade, 25 m on Medium; none on Low, where the contact shadows still ground everyone.
+            if (Application.isPlaying && castShadows)
+                Core.GraphicsQuality.ApplyShadows(sunLight, shadowDistance);
+        }
+
+        void Start()
+        {
+            if (Application.isPlaying) Core.GraphicsQuality.Changed += OnQualityChanged;
+        }
+
+        void OnDestroy()
+        {
+            Core.GraphicsQuality.Changed -= OnQualityChanged;
+        }
+
+        void OnQualityChanged()
+        {
+            if (this != null) ApplyShadows();
         }
     }
 }

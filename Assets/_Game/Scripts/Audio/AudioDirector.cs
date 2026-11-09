@@ -30,6 +30,8 @@ namespace DribbleToSchool.Audio
 
         static AudioDirector instance;
         static readonly ProfilerMarker MusicUploadMarker = new ProfilerMarker("DTS.Audio.MusicUpload");
+        /// <summary>Every country's music, read once: Enum.GetValues allocates a new array on every call.</summary>
+        static readonly MusicCountry[] Countries = (MusicCountry[])System.Enum.GetValues(typeof(MusicCountry));
 
         sealed class Ambience
         {
@@ -63,6 +65,24 @@ namespace DribbleToSchool.Audio
         float fade = 1f, bedFade = 1f;
         Soundscape wanted = Soundscape.Menu;
         MusicCountry wantedCountry = MusicCountry.Japan;
+
+        // What the wanted soundscape and country were last worked out from. Working them out scans every route,
+        // allocates the scene's name and compares strings, too much for every frame on a low-end phone, so they
+        // are worked out again only when one of these changes (a scene loads or unloads, the Holiday Run moves to
+        // another stage) or the save does (the add-on chosen in Settings decides the menu's music).
+        LevelManager whereLevel;
+        LevelDefinition whereLevelDef;
+        bool whereEndless;
+        HolidayRunDirector whereRun;
+        int whereStage = -1;
+        Progression.SaveData whereSave;
+        bool whereDirty = true;
+
+        // The finished ambience job whose clips are going up, one a frame (its bed, then each cue). It stays in
+        // ambienceJobs until its last clip is in, so Want doesn't synthesize the same place again meanwhile.
+        Ambience uploading;
+        Soundscape uploadingScape;
+        int uploadingCue;
 
         static int MusicKey(Soundscape scape, MusicCountry country) { return (int)country * 32 + (int)scape; }
 
@@ -128,13 +148,18 @@ namespace DribbleToSchool.Audio
             }
 
             GameEvents.Raised += OnEvent;
+            Progression.SaveSystem.Changed += OnSaveChanged;
             Want(WantedSoundscape(), WantedCountry());
         }
 
         void OnDestroy()
         {
             GameEvents.Raised -= OnEvent;
+            Progression.SaveSystem.Changed -= OnSaveChanged;
         }
+
+        // A save can choose another add-on or unlock one, which changes the menu's music.
+        void OnSaveChanged() { whereDirty = true; }
 
         AudioSource MakeLoopSource()
         {
@@ -149,8 +174,8 @@ namespace DribbleToSchool.Audio
 
         /// <summary>
         /// The soundscape of the level being played (its route's), of the Holiday Run's current stage, or the
-        /// menu's outside a level. (Read every frame: the Holiday Run streams its stages in additively, so the
-        /// place changes without a new scene.)
+        /// menu's outside a level. (Read again whenever the Holiday Run's stage changes, see WhereChanged: the
+        /// run streams its stages in additively, so the place changes without a new scene.)
         /// </summary>
         static Soundscape WantedSoundscape()
         {
@@ -185,13 +210,46 @@ namespace DribbleToSchool.Audio
                 ambienceJobs[scape] = Task.Run(() => AmbienceGenerator.Generate(scape));
         }
 
+        /// <summary>
+        /// True when something the wanted soundscape or country depends on has changed since they were last
+        /// worked out: the level (a scene loaded or unloaded), its definition, the Holiday Run or its stage (polled,
+        /// a cheap property read: the run's StageChanged event only fires the first time a stage is reached in a
+        /// day, not when the kid walks back across its edge), or the save. Reference comparisons only, so it costs
+        /// next to nothing a frame.
+        /// </summary>
+        bool WhereChanged()
+        {
+            var level = LevelManager.Current;
+            bool hasLevel = !ReferenceEquals(level, null);
+            var levelDef = hasLevel ? level.level : null;
+            bool endless = hasLevel && level.endless;
+            var run = HolidayRunDirector.Current;
+            int stage = ReferenceEquals(run, null) ? -1 : run.StageIndex;
+            var save = Progression.SaveSystem.Data;
+            if (!whereDirty && ReferenceEquals(level, whereLevel) && ReferenceEquals(levelDef, whereLevelDef)
+                && endless == whereEndless && ReferenceEquals(run, whereRun) && stage == whereStage
+                && ReferenceEquals(save, whereSave))
+                return false;
+            whereLevel = level;
+            whereLevelDef = levelDef;
+            whereEndless = endless;
+            whereRun = run;
+            whereStage = stage;
+            whereSave = save;
+            whereDirty = false;
+            return true;
+        }
+
         // ---------- Music and ambience ----------
 
         void Update()
         {
-            var scape = WantedSoundscape();
-            var country = WantedCountry();
-            if (scape != wanted || country != wantedCountry) Want(scape, country);
+            if (WhereChanged())
+            {
+                var scape = WantedSoundscape();
+                var country = WantedCountry();
+                if (scape != wanted || country != wantedCountry) Want(scape, country);
+            }
 
             FinishJobs();
             bool paused = LevelManager.Current != null && LevelManager.Current.State == LevelState.Paused;
@@ -242,42 +300,100 @@ namespace DribbleToSchool.Audio
             ForgetOld();
         }
 
+        /// <summary>
+        /// Turns finished synthesis into clips, one clip a frame at most. AudioClip.Create and SetData copy the
+        /// samples on the main thread (megabytes for a track or a bed), and a place's music, bed and every cue in
+        /// one frame was a 10-25 ms hitch on a low-end phone. The music goes first, the wanted track before any
+        /// other, so it still starts the frame its synthesis is done; a place's ambience is ready (and its bed
+        /// starts) once its bed and every cue are in, a few frames later.
+        /// </summary>
         void FinishJobs()
         {
-            List<int> doneMusic = null;
-            foreach (var kv in musicJobs)
-            {
-                if (!kv.Value.IsCompleted) continue;
-                if (doneMusic == null) doneMusic = new List<int>();
-                doneMusic.Add(kv.Key);
-                if (kv.Value.Status != TaskStatus.RanToCompletion) continue;
-                using (MusicUploadMarker.Auto())
-                    musicClips[kv.Key] = Stereo("music_" + kv.Key, kv.Value.Result);
-            }
-            if (doneMusic != null) foreach (var k in doneMusic) musicJobs.Remove(k);
+            if (FinishMusicJob()) return;
+            FinishAmbienceClip();
+        }
 
-            List<Soundscape> done = null;
-            foreach (var kv in ambienceJobs)
+        /// <summary>Uploads one finished music track, the wanted one first; true if it did (the frame's upload is spent).</summary>
+        bool FinishMusicJob()
+        {
+            if (musicJobs.Count == 0) return false;
+            int key = MusicKey(wanted, wantedCountry);
+            Task<float[]> job;
+            if (!musicJobs.TryGetValue(key, out job) || !job.IsCompleted)
             {
-                if (!kv.Value.IsCompleted) continue;
-                if (done == null) done = new List<Soundscape>();
-                done.Add(kv.Key);
-                if (kv.Value.Status != TaskStatus.RanToCompletion) continue;
+                job = null;
+                foreach (var kv in musicJobs)
+                {
+                    if (!kv.Value.IsCompleted) continue;
+                    key = kv.Key;
+                    job = kv.Value;
+                    break;
+                }
+                if (job == null) return false;
+            }
+            musicJobs.Remove(key);
+            // A failed synthesis is dropped, as before; that costs nothing, so the frame's upload is still free.
+            if (job.Status != TaskStatus.RanToCompletion) return false;
+            using (MusicUploadMarker.Auto())
+                musicClips[key] = Stereo("music_" + key, job.Result);
+            return true;
+        }
+
+        /// <summary>
+        /// Uploads the next clip of a finished ambience job (the wanted place first): its bed, then one cue a frame.
+        /// The place goes into <see cref="ambiences"/> only once every clip is in, so its cues never play a clip
+        /// that isn't there yet.
+        /// </summary>
+        void FinishAmbienceClip()
+        {
+            if (uploading == null)
+            {
+                Soundscape scape = wanted;
+                Task<AmbiencePack> job;
+                if (!ambienceJobs.TryGetValue(scape, out job) || !job.IsCompleted)
+                {
+                    job = null;
+                    foreach (var kv in ambienceJobs)
+                    {
+                        if (!kv.Value.IsCompleted) continue;
+                        scape = kv.Key;
+                        job = kv.Value;
+                        break;
+                    }
+                    if (job == null) return;
+                }
+                if (job.Status != TaskStatus.RanToCompletion)
+                {
+                    ambienceJobs.Remove(scape);
+                    return;
+                }
+                var pack = job.Result;
                 using (MusicUploadMarker.Auto())
                 {
-                    var pack = kv.Value.Result;
-                    var a = new Ambience
+                    uploading = new Ambience
                     {
-                        bed = Stereo("ambience_" + kv.Key, pack.bed),
+                        bed = Stereo("ambience_" + scape, pack.bed),
                         cues = pack.cues,
                         cueClips = new AudioClip[pack.cues.Length],
                         next = new float[pack.cues.Length],
                     };
-                    for (int i = 0; i < pack.cues.Length; i++) a.cueClips[i] = Stereo("cue_" + pack.cues[i].name, pack.cues[i].clip);
-                    ambiences[kv.Key] = a;
                 }
+                uploadingScape = scape;
+                uploadingCue = 0;
             }
-            if (done != null) foreach (var k in done) ambienceJobs.Remove(k);
+            else
+            {
+                var cue = uploading.cues[uploadingCue];
+                using (MusicUploadMarker.Auto())
+                    uploading.cueClips[uploadingCue] = Stereo("cue_" + cue.name, cue.clip);
+                uploadingCue++;
+            }
+            if (uploadingCue < uploading.cues.Length) return;
+
+            // Every clip is in: the place is ready to play.
+            ambiences[uploadingScape] = uploading;
+            ambienceJobs.Remove(uploadingScape);
+            uploading = null;
         }
 
         static AudioClip Stereo(string name, float[] interleaved)
@@ -293,7 +409,7 @@ namespace DribbleToSchool.Audio
             if (recent.Count <= Keep) return;
             var scape = recent[recent.Count - 1];
             bool musicLeft = false;
-            foreach (MusicCountry c in System.Enum.GetValues(typeof(MusicCountry)))
+            foreach (var c in Countries)
             {
                 AudioClip clip;
                 int key = MusicKey(scape, c);

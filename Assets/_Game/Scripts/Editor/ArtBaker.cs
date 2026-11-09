@@ -312,9 +312,9 @@ namespace DribbleToSchool.EditorTools
             m.SetColor("_OutlineColor", new Color(0.08f, 0.07f, 0.1f));
             // The comic filter keeps people as drawn: painted faces and eyes, no creases across them.
             m.SetFloat("_ComicWorld", 0f);
-            // The player: a thin, crisp ink line and a faint rim (flat anime cel look); the teens
-            // read against the street by their colours (white shirt, navy legwear, dark hair).
-            m.SetFloat("_OutlineWidth", player ? 0.0018f : 0.0022f);
+            // The player: a crisp ink line, the thickest on screen (docs/ART_DIRECTION.md: "a dark ink
+            // outline thicker than anyone else's"; it was thinner than the passers-by's), and a faint rim.
+            m.SetFloat("_OutlineWidth", player ? 0.0024f : 0.0022f);
             m.SetFloat("_RimStrength", player ? 0.2f : 0.22f);
             m.SetColor("_ShadowColor", new Color(0.68f, 0.7f, 0.88f));
             EditorUtility.SetDirty(m);

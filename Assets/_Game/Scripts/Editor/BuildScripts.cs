@@ -70,6 +70,7 @@ namespace DribbleToSchool.EditorTools
             PlayerSettings.Android.targetSdkVersion = (AndroidSdkVersions)AndroidTargetApi;
             PlayerSettings.SetScriptingBackend(NamedBuildTarget.Android, ScriptingImplementation.IL2CPP);
             PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;
+            ApplyAndroidPerformanceSettings();
 
             // iOS
             PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.iOS, ApplicationId);
@@ -81,6 +82,80 @@ namespace DribbleToSchool.EditorTools
             ApplyIcon();
             AssetDatabase.SaveAssets();
             Debug.Log("[Build] Player settings applied: " + ApplicationId + " " + version + " (" + buildNumber + ")");
+        }
+
+        /// <summary>
+        /// The Android settings that decide how smoothly the game runs on a mid-range phone (docs/PERFORMANCE.md). They live
+        /// in ProjectSettings, which is not in git, so they are set here on every build rather than left to whatever a
+        /// machine's fresh project generated:
+        /// - Optimized Frame Pacing (Swappy): each frame is shown for an even number of the panel's refreshes, instead of an
+        ///   irregular mix of 25, 33 and 42 ms on a 120 Hz panel when 60 is missed;
+        /// - Blit Type Auto: no extra full-screen copy at the end of every frame;
+        /// - frame timing stats (the governor and an on-device overlay can read the GPU's time);
+        /// - GPU skinning, batched, for the 60k-triangle kids and the passers-by;
+        /// - incremental garbage collection (no long stop-the-world pauses);
+        /// - every graphics tier without HDR and without screen-space cascaded shadows: the camera renders to an 8-bit target,
+        ///   and the sun's shadows are read straight from the shadow map, so no depth pre-pass of the whole scene and no
+        ///   full-screen shadow-collect pass each frame.
+        /// Settings whose API names moved between Unity versions are set by reflection and logged if they are not found.
+        /// </summary>
+        static void ApplyAndroidPerformanceSettings()
+        {
+            SetStaticBool(typeof(PlayerSettings.Android), "optimizedFramePacing", true);
+            PlayerSettings.Android.blitType = AndroidBlitType.Auto;
+            PlayerSettings.enableFrameTimingStats = true;
+            PlayerSettings.gcIncremental = true;
+            SetStaticEnum(typeof(PlayerSettings), "meshDeformation", "GPUBatched");
+            ApplyTierSettings(BuildTargetGroup.Android);
+        }
+
+        /// <summary>HDR and screen-space (cascaded) shadows off in every graphics tier of the platform (Built-in pipeline).</summary>
+        static void ApplyTierSettings(BuildTargetGroup group)
+        {
+            try
+            {
+                var editorGraphics = typeof(UnityEditor.Rendering.EditorGraphicsSettings);
+                var flags = System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static;
+                var get = editorGraphics.GetMethod("GetTierSettings", flags, null, new[] { typeof(BuildTargetGroup), typeof(UnityEngine.Rendering.GraphicsTier) }, null);
+                if (get == null) { Debug.LogWarning("[Build] EditorGraphicsSettings.GetTierSettings not found: set HDR and Cascaded Shadows off in Graphics > Tier Settings by hand."); return; }
+                var set = editorGraphics.GetMethod("SetTierSettings", flags, null, new[] { typeof(BuildTargetGroup), typeof(UnityEngine.Rendering.GraphicsTier), get.ReturnType }, null);
+                if (set == null) { Debug.LogWarning("[Build] EditorGraphicsSettings.SetTierSettings not found."); return; }
+                foreach (UnityEngine.Rendering.GraphicsTier tier in Enum.GetValues(typeof(UnityEngine.Rendering.GraphicsTier)))
+                {
+                    object settings = get.Invoke(null, new object[] { group, tier });
+                    SetField(settings, "hdr", false);
+                    SetField(settings, "cascadedShadowMaps", false);
+                    set.Invoke(null, new object[] { group, tier, settings });
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning("[Build] Tier settings not applied: " + e.Message);
+            }
+        }
+
+        static void SetField(object boxed, string name, object value)
+        {
+            var field = boxed.GetType().GetField(name);
+            if (field != null) { field.SetValue(boxed, value); return; }
+            var property = boxed.GetType().GetProperty(name);
+            if (property != null && property.CanWrite) property.SetValue(boxed, value);
+            else Debug.LogWarning("[Build] " + boxed.GetType().Name + "." + name + " not found.");
+        }
+
+        static void SetStaticBool(Type type, string property, bool value)
+        {
+            var p = type.GetProperty(property, System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+            if (p == null || p.PropertyType != typeof(bool) || !p.CanWrite) { Debug.LogWarning("[Build] " + type.Name + "." + property + " not found."); return; }
+            p.SetValue(null, value);
+        }
+
+        static void SetStaticEnum(Type type, string property, string value)
+        {
+            var p = type.GetProperty(property, System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+            if (p == null || !p.PropertyType.IsEnum || !p.CanWrite) { Debug.LogWarning("[Build] " + type.Name + "." + property + " not found."); return; }
+            try { p.SetValue(null, Enum.Parse(p.PropertyType, value)); }
+            catch (Exception e) { Debug.LogWarning("[Build] " + type.Name + "." + property + " = " + value + ": " + e.Message); }
         }
 
         /// <summary>The build number now in Player Settings (the higher of iOS's and Android's), at least 1.</summary>
