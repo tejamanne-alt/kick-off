@@ -639,10 +639,12 @@ def face_parts(o, px):
 BAND = {1: (80, 92), 2: (55, 75), 3: (80, 92)}   # (the trousers' white flecks are the scan's, not the cloth's)
 
 
-def paint(o, img, px, out_png):
+def paint(o, img, px, out_png, plain_last=False):
     """Outfit parts, vertex colours and the atlas: the shirt's, the trousers' and the hair's texels are divided by their
     colour, which their vertices carry instead (the game recolours vertex colours: ModelOutfit), so the default looks
-    as the scan did. Returns the default colours (linear)."""
+    as the scan did. Returns the default colours (linear). plain_last: the faces of no part (skin, shoes) are drawn
+    into the part map after the others, so a texel on the line between two faces stays as it was rather than being
+    divided by its neighbour's colour (which showed white flecks along a dark part's edge, as a beard's)."""
     me = o.data
     bm = bmesh.new(); bm.from_mesh(me); bmesh.ops.triangulate(bm, faces=bm.faces); bm.to_mesh(me); bm.free(); me.update()
     FP, tri = face_parts(o, px)
@@ -650,7 +652,7 @@ def paint(o, img, px, out_png):
     Hh, Ww = px.shape[:2]
     from PIL import Image, ImageDraw
     mask = Image.new('L', (Ww, Hh), 255); dr = ImageDraw.Draw(mask)
-    for f in range(len(FP)):
+    for f in (np.argsort(FP == 0, kind='stable') if plain_last else range(len(FP))):
         dr.polygon([(u * Ww, (1 - v) * Hh) for u, v in UV[f]], fill=int(FP[f]))
     M = np.array(mask)[::-1].astype(np.int64)                     # (image rows from the bottom, as Blender's pixels)
     M0 = M.copy()                                                 # (the colours come from his own texels only)

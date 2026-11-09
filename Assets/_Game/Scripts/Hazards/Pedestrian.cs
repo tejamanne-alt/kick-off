@@ -47,6 +47,8 @@ namespace DribbleToSchool.Hazards
         public int seed = 1;
         [Tooltip("Coats the next passers-by wear.")]
         public Color[] coats = new Color[0];
+        [Tooltip("Their trousers, skirts or shorts (empty: each coat's own colour, darker).")]
+        public Color[] legwears = new Color[0];
         [Tooltip("What recolours their clothes (IOutfit).")]
         public MonoBehaviour outfit;
 
@@ -492,7 +494,11 @@ namespace DribbleToSchool.Hazards
             if (coats == null || coats.Length == 0) return;
             Color coat = coats[(int)(Rand01() * coats.Length) % coats.Length];
             var dress = outfit as Presentation.IOutfit;
-            if (dress != null) dress.SetOutfit(coat, Color.Lerp(coat, Color.black, Range(0.35f, 0.6f)));
+            // (one draw for the legwear either way, so the walk that follows is the same whichever the walker wears)
+            float pick = Rand01();
+            Color legwear = legwears != null && legwears.Length > 0 ? legwears[(int)(pick * legwears.Length) % legwears.Length]
+                : Color.Lerp(coat, Color.black, 0.35f + 0.25f * pick);
+            if (dress != null) dress.SetOutfit(coat, legwear);
             var other = companionOutfit as Presentation.IOutfit;
             if (other != null)
             {

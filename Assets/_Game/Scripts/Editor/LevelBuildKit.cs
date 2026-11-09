@@ -607,6 +607,90 @@ namespace DribbleToSchool.EditorTools
         }
 
         /// <summary>
+        /// A passer-by made from a rigged model (tools/blender/meshy_rigged.py): the model's file, how tall it stands, where
+        /// its neck joint sits (a share of its height, from the script's log), and its wardrobe. Each walker picks its top,
+        /// legwear and third part (the hair, or a cap or a hijab where the model wears one) from these by the walker and the
+        /// level, so it is dressed differently from level to level, and changes top and legwear from them each time round.
+        /// </summary>
+        public sealed class Passerby
+        {
+            public readonly string model;
+            public readonly float height, neckShare;
+            public readonly Color[] tops, legwears, thirds;
+
+            public Passerby(string model, float height, float neckShare, Color[] tops, Color[] legwears, Color[] thirds)
+            {
+                this.model = model; this.height = height; this.neckShare = neckShare;
+                this.tops = tops; this.legwears = legwears; this.thirds = thirds;
+            }
+
+            /// <summary>The neck joint's height above the feet, in metres (what BuildModelCharacter scales the model by).</summary>
+            public float NeckHeight { get { return height * neckShare; } }
+        }
+
+        /// <summary>The rigged passers-by, who take turns along the footpath with the procedural adult (TrackBuilder.Walker).</summary>
+        public static readonly Passerby[] Passersby =
+        {
+            // The jogger: running jackets in sporty colours, dark leggings, natural dark hair.
+            new Passerby("Jogger", 1.66f, 0.853f,
+                new[] { new Color(0.1f, 0.52f, 0.51f), new Color(0.96f, 0.45f, 0.42f), new Color(0.55f, 0.4f, 0.82f), new Color(0.32f, 0.62f, 0.92f),
+                        new Color(0.62f, 0.82f, 0.3f), new Color(0.92f, 0.36f, 0.62f), new Color(0.98f, 0.76f, 0.24f), new Color(0.86f, 0.24f, 0.24f),
+                        new Color(0.2f, 0.28f, 0.5f), new Color(0.96f, 0.6f, 0.26f) },
+                new[] { new Color(0.12f, 0.12f, 0.14f), new Color(0.14f, 0.16f, 0.3f), new Color(0.3f, 0.32f, 0.36f), new Color(0.32f, 0.16f, 0.3f),
+                        new Color(0.16f, 0.26f, 0.22f) },
+                new[] { new Color(0.13f, 0.1f, 0.09f), new Color(0.24f, 0.15f, 0.1f), new Color(0.36f, 0.22f, 0.14f), new Color(0.42f, 0.18f, 0.12f) }),
+            // Mom: knitted jumpers, wide-leg trousers, her hair in a bun.
+            new Passerby("Mom", 1.63f, 0.854f,
+                new[] { new Color(0.98f, 0.38f, 0.32f), new Color(0.86f, 0.66f, 0.22f), new Color(0.93f, 0.88f, 0.76f), new Color(0.56f, 0.68f, 0.52f),
+                        new Color(0.86f, 0.58f, 0.62f), new Color(0.22f, 0.38f, 0.78f), new Color(0.52f, 0.14f, 0.22f), new Color(0.68f, 0.58f, 0.82f),
+                        new Color(0.16f, 0.5f, 0.52f), new Color(0.76f, 0.58f, 0.38f) },
+                new[] { new Color(0.07f, 0.19f, 0.15f), new Color(0.1f, 0.14f, 0.28f), new Color(0.2f, 0.2f, 0.22f), new Color(0.6f, 0.46f, 0.32f),
+                        new Color(0.08f, 0.08f, 0.09f), new Color(0.24f, 0.34f, 0.5f), new Color(0.3f, 0.32f, 0.18f) },
+                new[] { new Color(0.065f, 0.06f, 0.055f), new Color(0.2f, 0.13f, 0.09f), new Color(0.34f, 0.22f, 0.14f), new Color(0.42f, 0.18f, 0.12f) }),
+            // The office worker: blazers, suit trousers; his hair, beard and brows (one part: any colour, dark to grey).
+            new Passerby("OfficeWorker", 1.8f, 0.852f,
+                new[] { new Color(0.074f, 0.126f, 0.254f), new Color(0.22f, 0.23f, 0.26f), new Color(0.45f, 0.46f, 0.48f), new Color(0.66f, 0.5f, 0.34f),
+                        new Color(0.32f, 0.36f, 0.24f), new Color(0.42f, 0.12f, 0.16f), new Color(0.18f, 0.3f, 0.62f), new Color(0.09f, 0.09f, 0.1f),
+                        new Color(0.72f, 0.6f, 0.44f), new Color(0.32f, 0.4f, 0.52f) },
+                new[] { new Color(0.43f, 0.41f, 0.4f), new Color(0.2f, 0.2f, 0.22f), new Color(0.1f, 0.13f, 0.24f), new Color(0.7f, 0.64f, 0.52f),
+                        new Color(0.08f, 0.08f, 0.09f), new Color(0.36f, 0.26f, 0.18f) },
+                new[] { new Color(0.128f, 0.091f, 0.082f), new Color(0.06f, 0.055f, 0.05f), new Color(0.3f, 0.2f, 0.13f), new Color(0.42f, 0.24f, 0.14f),
+                        new Color(0.5f, 0.22f, 0.12f), new Color(0.62f, 0.48f, 0.3f), new Color(0.82f, 0.68f, 0.42f), new Color(0.5f, 0.5f, 0.5f),
+                        new Color(0.78f, 0.78f, 0.8f) }),
+            // The courier: polo shirts, cargo shorts, a cap worn backwards.
+            new Passerby("Courier", 1.72f, 0.858f,
+                new[] { new Color(0.75f, 0.066f, 0.089f), new Color(0.16f, 0.32f, 0.75f), new Color(0.12f, 0.52f, 0.3f), new Color(0.98f, 0.8f, 0.18f),
+                        new Color(0.96f, 0.5f, 0.14f), new Color(0.92f, 0.92f, 0.9f), new Color(0.1f, 0.1f, 0.11f), new Color(0.1f, 0.55f, 0.58f),
+                        new Color(0.45f, 0.24f, 0.62f), new Color(0.45f, 0.7f, 0.9f) },
+                new[] { new Color(0.73f, 0.62f, 0.47f), new Color(0.13f, 0.17f, 0.3f), new Color(0.4f, 0.42f, 0.26f), new Color(0.45f, 0.46f, 0.48f),
+                        new Color(0.1f, 0.1f, 0.11f), new Color(0.82f, 0.76f, 0.62f), new Color(0.3f, 0.42f, 0.6f) },
+                new[] { new Color(0.115f, 0.175f, 0.325f), new Color(0.75f, 0.1f, 0.12f), new Color(0.08f, 0.08f, 0.09f), new Color(0.9f, 0.9f, 0.88f),
+                        new Color(0.16f, 0.32f, 0.75f), new Color(0.14f, 0.45f, 0.26f), new Color(0.95f, 0.5f, 0.15f), new Color(0.5f, 0.5f, 0.52f) }),
+            // The shopkeeper: long tunics, trousers, a hijab.
+            new Passerby("Shopkeeper", 1.6f, 0.856f,
+                new[] { new Color(0.68f, 0.52f, 0.7f), new Color(0.56f, 0.68f, 0.54f), new Color(0.84f, 0.56f, 0.6f), new Color(0.86f, 0.76f, 0.6f),
+                        new Color(0.18f, 0.52f, 0.54f), new Color(0.86f, 0.66f, 0.24f), new Color(0.46f, 0.2f, 0.4f), new Color(0.56f, 0.72f, 0.88f),
+                        new Color(0.94f, 0.48f, 0.4f), new Color(0.93f, 0.89f, 0.8f), new Color(0.18f, 0.38f, 0.28f), new Color(0.74f, 0.38f, 0.26f) },
+                new[] { new Color(0.25f, 0.25f, 0.25f), new Color(0.09f, 0.09f, 0.1f), new Color(0.12f, 0.15f, 0.28f), new Color(0.32f, 0.24f, 0.18f),
+                        new Color(0.72f, 0.64f, 0.52f), new Color(0.48f, 0.48f, 0.5f) },
+                new[] { new Color(0.122f, 0.279f, 0.55f), new Color(0.09f, 0.09f, 0.1f), new Color(0.92f, 0.88f, 0.78f), new Color(0.48f, 0.12f, 0.18f),
+                        new Color(0.1f, 0.45f, 0.32f), new Color(0.55f, 0.55f, 0.58f), new Color(0.9f, 0.6f, 0.68f), new Color(0.1f, 0.14f, 0.3f),
+                        new Color(0.82f, 0.62f, 0.2f), new Color(0.42f, 0.2f, 0.42f), new Color(0.12f, 0.48f, 0.52f), new Color(0.8f, 0.7f, 0.54f) }),
+            // Grandad: cardigans, cords or slacks, a flat cap.
+            new Passerby("Grandad", 1.7f, 0.85f,
+                new[] { new Color(0.91f, 0.66f, 0.19f), new Color(0.2f, 0.38f, 0.26f), new Color(0.12f, 0.16f, 0.3f), new Color(0.5f, 0.14f, 0.18f),
+                        new Color(0.8f, 0.74f, 0.62f), new Color(0.5f, 0.5f, 0.52f), new Color(0.72f, 0.36f, 0.18f), new Color(0.74f, 0.56f, 0.36f),
+                        new Color(0.44f, 0.46f, 0.24f), new Color(0.42f, 0.54f, 0.78f) },
+                new[] { new Color(0.39f, 0.23f, 0.125f), new Color(0.42f, 0.42f, 0.44f), new Color(0.12f, 0.15f, 0.26f), new Color(0.7f, 0.62f, 0.48f),
+                        new Color(0.32f, 0.32f, 0.2f), new Color(0.2f, 0.2f, 0.22f) },
+                new[] { new Color(0.45f, 0.3f, 0.2f), new Color(0.45f, 0.45f, 0.47f), new Color(0.34f, 0.38f, 0.26f), new Color(0.14f, 0.17f, 0.28f),
+                        new Color(0.55f, 0.4f, 0.28f), new Color(0.12f, 0.12f, 0.13f), new Color(0.7f, 0.55f, 0.38f) }),
+        };
+
+        /// <summary>The rigged passers-by's model files (ArtBaker makes each its material).</summary>
+        public static readonly string[] PasserbyModels = Array.ConvertAll(Passersby, p => p.model);
+
+        /// <summary>
         /// Kit models the classic cartoon filter draws as cels (inked, as the people are) rather than as painted
         /// scenery: the things the kid plays with or that move. The whole Animals kit is cels (its material is marked so:
         /// ArtBaker), the animals and the coins, stars and stickers; these are the rest, each wearing its kit's "Cel" copy.
@@ -1211,6 +1295,33 @@ namespace DribbleToSchool.EditorTools
             };
             static readonly Color[] PasserbyHair = { new Color(0.46f, 0.34f, 0.28f), new Color(1f, 0.95f, 0.6f), new Color(0.92f, 0.92f, 0.95f), new Color(0.85f, 0.46f, 0.3f), new Color(0.16f, 0.14f, 0.15f) };
 
+            int walkersSoFar;
+
+            /// <summary>
+            /// The next passer-by's body: the rigged passers-by and the procedural adult (null) take turns, in an order and
+            /// from a start of the level's own, so each comes along once before any comes round again.
+            /// </summary>
+            Passerby NextPasserby()
+            {
+                int slot = PasserbyTurn(StreetBuilder.LevelSalt(AuditName), walkersSoFar++, Passersby.Length + 1);
+                return slot < Passersby.Length ? Passersby[slot] : null;
+            }
+
+            /// <summary>
+            /// Whose turn it is (0..n-1) at a level's <paramref name="turn"/>th walker: a step through the n bodies prime to
+            /// n, from a start, both of the level's <paramref name="salt"/> (not negative), so any n turns in a row are
+            /// each body once.
+            /// </summary>
+            public static int PasserbyTurn(int salt, int turn, int n)
+            {
+                if (n <= 1) return 0;
+                int step = 1 + (salt / n) % (n - 1);
+                while (Gcd(step, n) != 1) step++;
+                return (int)((salt + (long)step * turn) % n);
+            }
+
+            static int Gcd(int a, int b) { while (b != 0) { int r = a % b; a = b; b = r; } return a; }
+
             /// <summary>
             /// Passers-by on the footpath, on their way through the stretch minX..maxX (and on past it
             /// where the footpath is clear; see Hazards.Pedestrian): one at a time, solid to the ball,
@@ -1242,7 +1353,30 @@ namespace DribbleToSchool.EditorTools
                     hair = HardHatYellow;                      // the hard hat stands in for the hair, as at the site office
                     trousers = new Color(0.22f, 0.26f, 0.4f);
                 }
-                var parts = BuildModelCharacter(go.transform, "Adult", Art.adult, 1.3f * 1.22f, new Vector3(0f, -0.193f, 0.75f), false);
+                // Who walks by: the jogger, Mom, the office worker, the courier, the shopkeeper, Grandad and the procedural
+                // adult take turns (NextPasserby; a builder is always the adult in hi-vis). A rigged passer-by wears its own
+                // wardrobe (LevelBuildKit.Passersby), its top, legwear and hair, cap or hijab chosen by the walker and the
+                // level, so it is dressed differently from level to level, and changes top and legwear from it each time
+                // it comes round again.
+                string bodyModel = "Adult";
+                Material look = Art.adult;
+                float neck = 1.3f * 1.22f;
+                Color[] coats = PasserbyCoats, legwears = new Color[0];
+                Passerby who = builder ? null : NextPasserby();
+                Material modelLook;
+                if (who != null && Art.passersby.TryGetValue(who.model, out modelLook) && modelLook != null)
+                {
+                    int mix = Mathf.Abs(seed * 7 + StreetBuilder.LevelSalt(AuditName));
+                    bodyModel = who.model;
+                    look = modelLook;
+                    neck = who.NeckHeight;
+                    coats = who.tops;
+                    legwears = who.legwears;
+                    coat = who.tops[(mix / 3) % who.tops.Length];
+                    trousers = who.legwears[(mix / 7) % who.legwears.Length];
+                    hair = who.thirds[(mix / 11) % who.thirds.Length];
+                }
+                var parts = BuildModelCharacter(go.transform, bodyModel, look, neck, new Vector3(0f, -0.925f + 0.6f * neck / 1.3f, 0.75f), false);
                 if (parts.rig != null)
                 {
                     var dress = (ModelOutfit)parts.outfit;
@@ -1266,7 +1400,8 @@ namespace DribbleToSchool.EditorTools
                 p.outfit = parts.outfit;
                 p.rig = parts.rig;
                 // A builder keeps the hi-vis on every pass (no colours to change into) and has no company.
-                p.coats = builder ? new Color[0] : PasserbyCoats;
+                p.coats = builder ? new Color[0] : coats;
+                p.legwears = builder ? new Color[0] : legwears;
                 var walker = parts.rig.gameObject.AddComponent<WalkerAnimator>();
                 walker.pedestrian = p;
                 if (!builder) PedestrianCompany(go.transform, p, seed, coat);

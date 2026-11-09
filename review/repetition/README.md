@@ -15,7 +15,7 @@ What came round again and again, how often, and what was done (generated content
 | Rocks at the water's edge | The same rock cluster at every spot | A cluster, a big lone rock (unused models) or a pair of boulders |
 | Palms on the beach | One green | Four greens |
 | Behind the market | Blocks of flats only, about 14 per level | Flats, now and then a tall shop or a long terrace |
-| Every adult (passers-by, their friends, builders, people at the stops) | One body, recoloured | Not yet: needs new character art (`PEOPLE_PROMPTS.md`) |
+| Every adult (passers-by, their friends, builders, people at the stops) | One body, recoloured | Six rigged passers-by (the jogger, Mom, the office worker, the courier, the shopkeeper, Grandad) take turns with the adult, each dressed from its own wardrobe by walker and level (`review/passersby/`); the builder still to come (`PEOPLE_PROMPTS.md`) |
 
 Left as they are, on purpose: the game's hazards and helpers (dogs, gulls, springboards, puddles, tides, swings, the
 checkpoint flag) look the same everywhere so a player knows them at a glance; the home street at the start of a route
