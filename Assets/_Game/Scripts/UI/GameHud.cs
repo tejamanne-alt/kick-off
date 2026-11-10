@@ -149,7 +149,9 @@ namespace DribbleToSchool.UI
             // Kick button: a football, and a knob that follows the aiming drag.
             kickButton = TouchButton.Create(root, "KickButton", UITheme.Accent, true);
             kickButton.AddIcon(ProceduralSprites.BallIcon, 0.42f, 0f, 0.6f, new Color(1f, 1f, 1f, 0.5f));
-            kickButton.AddLabel(Loc.T("hud.kick"), 28);
+            var kickLabel = kickButton.AddLabel(Loc.T("hud.kick"), 28);
+            // Holding KICK keeps the ball at the kid's feet: say so on the button.
+            kickButton.AddHint(kickLabel, Loc.T("hud.kickHold"), 17);
             kickRect = (RectTransform)kickButton.transform;
             aimKnob = UIKit.Icon(kickButton.Content, "AimKnob", ProceduralSprites.SoftEdgeDisc, new Color(1f, 1f, 1f, 0.55f), 70f).rectTransform;
 
