@@ -1524,6 +1524,16 @@ ground measured on all six kids, every character rendered before and after. **No
 on the phone: a slide (the trailing foot on the pavement, the slide still clears the bars), kicks, a landing, the run
 (no visible change in its bounce), the flower bed in L01, and Mia, Max and Kai in the Holiday kit.
 
+## Unity pinned to 6000.6.7f1
+
+- `ProjectSettings/ProjectVersion.txt` pins **6000.6.7f1** (was 6000.0.68f1), at the user's request. Unity Hub opens
+  the project in it, and `ci/android/build_android.sh` and `ci/ios/build_ios.sh` pick it first when Hub has it. It
+  generates the iOS UIScene life cycle (any 6000.4+ does).
+- Packages (`Packages/manifest.json`) are unchanged: Unity raises any below its minimums when it opens the project.
+- README, `docs/RELEASE.md` and `tools/unity_api_check/README.md` name the version.
+- Checked: `tools/unity_api_check/run.sh 6000.6` (the pinned branch) and `6000.7` (the newest): clean. Not opened in
+  6000.6.7f1 here: check the console after the first open.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.
