@@ -1468,6 +1468,10 @@ The user asked for a check on every character, playable and not.
   the language changes).
 - Checked: no new compile errors in any `#if` set, `unity_api_check` 6000.7 clean, a mock-up on the user's screenshot at
   the button's real size (both languages fit inside the disc). Not run in Unity.
+- **Inside the circle:** the first version's hint box reached 0.51 of the disc from its centre at its lower corners, just
+  outside the circle (the mock-up's flat patch also crossed the rim, though the game draws no background there). The label
+  and the hint now take `TouchButton.HintLabelArea` and `HintArea`, whose corners lie at most `TextReach` (0.45) from the
+  centre, clear of the rim; `TouchButtonTests` checks it.
 
 ## After Phase 8 (next steps)
 
