@@ -1459,6 +1459,16 @@ The user asked for a check on every character, playable and not.
   - Open the map in each look: it should look the same, and the GPU should go nearly idle.
   - Check the sky and the far hills look the same.
 
+## KICK says "hold to control"
+
+- The KICK button carries a small second line under its name, **HOLD TO CONTROL** (`hud.kickHold`; Spanish *MANTÉN PARA
+  CONTROLAR*): holding KICK keeps the ball at the kid's feet, which only the controls tour and the guide said before.
+  `TouchButton.AddHint` puts it along the bottom of the disc, moves the name up a little and shrinks the line to fit the
+  disc's narrower bottom. It is on the levels' HUD (`GameHud`) and the Holiday Run's (`HolidayRunHud`, which redoes it when
+  the language changes).
+- Checked: no new compile errors in any `#if` set, `unity_api_check` 6000.7 clean, a mock-up on the user's screenshot at
+  the button's real size (both languages fit inside the disc). Not run in Unity.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

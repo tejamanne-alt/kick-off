@@ -119,6 +119,30 @@ namespace DribbleToSchool.UI.Kit
             return label;
         }
 
+        /// <summary>
+        /// A small second line of text along the bottom of the disc (KICK's "hold to control"), under the label, which moves up a
+        /// little to make room. It shrinks to fit the disc's narrower bottom.
+        /// </summary>
+        public Text AddHint(Text label, string text, int size)
+        {
+            if (label != null)
+            {
+                label.rectTransform.anchorMin = new Vector2(0f, 0.2f);
+                label.rectTransform.anchorMax = new Vector2(1f, 0.37f);
+            }
+            var hint = UIKit.Label(Content, "Hint", text, size, new Color(1f, 1f, 1f, 0.55f), TextAnchor.MiddleCenter, true);
+            var rt = hint.rectTransform;
+            rt.anchorMin = new Vector2(0.21f, 0.08f);       // (clear of the rim where the disc narrows)
+            rt.anchorMax = new Vector2(0.79f, 0.2f);
+            rt.offsetMin = rt.offsetMax = Vector2.zero;
+            UIKit.Fit(hint, 11);
+            var sh = hint.gameObject.AddComponent<Shadow>();
+            sh.effectColor = new Color(0f, 0f, 0f, 0.25f);
+            sh.effectDistance = new Vector2(0f, -1.5f);
+            contentGraphics = null;
+            return hint;
+        }
+
         /// <summary>Called every frame by the HUD with the button's input state.</summary>
         public void SetState(bool isHeld, bool isHighlighted)
         {

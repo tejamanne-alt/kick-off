@@ -102,7 +102,7 @@ namespace DribbleToSchool.Holiday
         CanvasGroup controlsGroup;
         TouchButton jumpButton, kickButton;
         RectTransform jumpRect, kickRect;
-        Text jumpLabel, kickLabel;
+        Text jumpLabel, kickLabel, kickHint;
         // the left thumb's walk stick, and the kick's aim (as in the levels)
         StickView stick;
         RectTransform aimKnob, aimBar, aimFill;
@@ -277,6 +277,8 @@ namespace DribbleToSchool.Holiday
             kickButton.AddIcon(ProceduralSprites.BallIcon, 0.42f, 0f, 0.6f, new Color(1f, 1f, 1f, 0.5f));
             kickLabel = kickButton.AddLabel(Loc.T("hud.kick"), 28);
             UIKit.Fit(kickLabel, 14);
+            // Holding KICK keeps the ball at the kid's feet: say so on the button.
+            kickHint = kickButton.AddHint(kickLabel, Loc.T("hud.kickHold"), 17);
             kickRect = (RectTransform)kickButton.transform;
             // The knob that follows the aiming drag.
             aimKnob = UIKit.Icon(kickButton.Content, "AimKnob", ProceduralSprites.SoftEdgeDisc, new Color(1f, 1f, 1f, 0.55f), 70f).rectTransform;
@@ -748,6 +750,7 @@ namespace DribbleToSchool.Holiday
             CacheTexts();
             jumpLabel.text = Loc.T("hud.jump");
             kickLabel.text = Loc.T("hud.kick");
+            kickHint.text = Loc.T("hud.kickHold");
             tooFar.text = Loc.T("hud.tooFar");
             newBestLabel.text = Loc.T("holiday.newBest");
             shownBest = shownStage = -1;   // the best line, the tag and the day bar are rebuilt next frame

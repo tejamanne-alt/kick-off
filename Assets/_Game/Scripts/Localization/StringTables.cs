@@ -175,7 +175,7 @@ namespace DribbleToSchool.Localization
                 { "hud.bellIn", "Bell {0}" }, { "hud.late", "LATE!" },
                 { "hud.target", "Target {0}" }, { "hud.behind", "Behind" },
                 { "hud.perfect", "Perfect x{0}" }, { "hud.juggles", "Juggles {0}" },
-                { "hud.jump", "JUMP" }, { "hud.kick", "KICK" },
+                { "hud.jump", "JUMP" }, { "hud.kick", "KICK" }, { "hud.kickHold", "HOLD TO CONTROL" },
                 { "hud.tooFar", "Too far - get closer to kick" },
 
                 // Toasts
@@ -664,7 +664,7 @@ namespace DribbleToSchool.Localization
                 { "hud.bellIn", "Campana {0}" }, { "hud.late", "¡TARDE!" },
                 { "hud.target", "Objetivo {0}" }, { "hud.behind", "Por detrás" },
                 { "hud.perfect", "Perfecto x{0}" }, { "hud.juggles", "Toques {0}" },
-                { "hud.jump", "SALTO" }, { "hud.kick", "CHUTA" },
+                { "hud.jump", "SALTO" }, { "hud.kick", "CHUTA" }, { "hud.kickHold", "MANTÉN PARA CONTROLAR" },
                 { "hud.tooFar", "Muy lejos: acércate para chutar" },
 
                 { "toast.perfect", "¡Toque perfecto!" }, { "toast.perfectN", "Toque perfecto x{0}" },
