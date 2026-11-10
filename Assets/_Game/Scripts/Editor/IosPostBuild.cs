@@ -20,6 +20,10 @@ namespace DribbleToSchool.EditorTools
     /// - The project is marked as checked against this Xcode ("Update to recommended settings": Unity writes an old
     ///   LastUpgradeCheck), and every Run Script phase that names no inputs or outputs (GameAssembly's IL2CPP step) is
     ///   marked to run on every build, which it must: Xcode would otherwise warn that it "will be run during every build".
+    /// - GameAssembly (the IL2CPP code, a static library): every target and configuration builds for at least
+    ///   BuildScripts.IosMinimumVersion (below it, Xcode's libc++ warns "The selected platform is no longer supported" on
+    ///   every file), and libtool doesn't warn about the IL2CPP files that hold no code ("'x.o' has no symbols": an empty
+    ///   assembly's file, which is expected), with -no_warning_for_no_symbols (docs/LEARNINGS.md A13).
     /// </summary>
     public static class IosPostBuild
     {
@@ -83,6 +87,12 @@ namespace DribbleToSchool.EditorTools
                 // (the plugin refuses to compile without ARC, so the build fails loudly rather than leaking: but say why here)
                 UnityEngine.Debug.LogWarning("[IosPostBuild] Libraries/Plugins/iOS/DTSCoopBLE.mm not found in the Xcode project: "
                     + "co-op Bluetooth needs it compiled with -fobjc-arc (set it on the file's build phase by hand).");
+            // GameAssembly's libtool: no warning for the IL2CPP files with no code (on the project too, which every static
+            // library target inherits, in case a Unity version names the target otherwise)
+            const string NoSymbolsFlag = "-no_warning_for_no_symbols";
+            project.AddBuildProperty(project.ProjectGuid(), "OTHER_LIBTOOLFLAGS", NoSymbolsFlag);
+            string gameAssembly = TargetByName(project, "GameAssembly");
+            if (!string.IsNullOrEmpty(gameAssembly)) project.AddBuildProperty(gameAssembly, "OTHER_LIBTOOLFLAGS", NoSymbolsFlag);
             project.WriteToFile(projectPath);
 
             // What the PBXProject API can't set, in the project file's text.
@@ -90,7 +100,22 @@ namespace DribbleToSchool.EditorTools
             text = Regex.Replace(text, @"LastUpgradeCheck = \d+;", "LastUpgradeCheck = " + XcodeVersion + ";");
             text = Regex.Replace(text, @"LastSwiftUpdateCheck = \d+;", "LastSwiftUpdateCheck = " + XcodeVersion + ";");
             text = Regex.Replace(text, @"(isa = PBXShellScriptBuildPhase;)(?!\s*alwaysOutOfDate)", "$1\n\t\t\talwaysOutOfDate = 1;");
+            // every target's and configuration's deployment target at least the minimum (GameAssembly's included)
+            text = Regex.Replace(text, @"IPHONEOS_DEPLOYMENT_TARGET = ""?([0-9.]+)""?;", m =>
+                BuildScripts.OlderThan(m.Groups[1].Value, BuildScripts.IosMinimumVersion)
+                    ? "IPHONEOS_DEPLOYMENT_TARGET = " + BuildScripts.IosMinimumVersion + ";" : m.Value);
             File.WriteAllText(projectPath, text);
+        }
+
+        /// <summary>
+        /// A native target's GUID by its name (null if none). Called by reflection: PBXProject.TargetGuidByName is the API's
+        /// only lookup by name, and some Unity versions mark it deprecated (for Unity's own two targets), which would put a
+        /// warning in every compile.
+        /// </summary>
+        static string TargetByName(PBXProject project, string name)
+        {
+            var lookup = typeof(PBXProject).GetMethod("TargetGuidByName", new[] { typeof(string) });
+            return lookup == null ? null : lookup.Invoke(project, new object[] { name }) as string;
         }
     }
 }

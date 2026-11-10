@@ -1277,6 +1277,37 @@ The user asked for a check on every character, playable and not.
   - confirm the console is clean;
   - run the edit-mode tests.
 
+## No warnings in Xcode's GameAssembly; a quiet Holiday Run build
+
+- **Why.** With the project compiling in Unity 6.5, the user built to an iPhone. Xcode showed 13 issues in GameAssembly:
+  - one "The selected platform is no longer supported by libc++";
+  - twelve libtool "'x.o' has no symbols".
+  The Unity console had the Input Manager warning, and four "Holiday Run stage 11 to 14: 'Waves' was left outside the
+  Stage object" warnings from the level build (`docs/LEARNINGS.md` A13).
+- **Fixed:**
+  - **iOS minimum:** `BuildScripts.IosMinimumVersion` (15.0) is applied when the editor loads, with the signing
+    (`AppleSigning.Apply`), so a build from Unity's own Build button has it too. It is never lowered.
+  - **Every Xcode target:** `IosPostBuild` raises every `IPHONEOS_DEPLOYMENT_TARGET` in the exported project to at least
+    15.0, GameAssembly's included.
+  - **libtool:** `IosPostBuild` adds `-no_warning_for_no_symbols` to GameAssembly's libtool flags (and the
+    project's). IL2CPP files of assemblies with no code are expected.
+  - **Waves:** the beach's waves are built under the animals' root, with the other moving things outside the static batch,
+    which the Holiday Run builder already files under each Stage. Today's levels already have them moved, so the
+    generated content isn't rebuilt for this; the next rebuild is quiet.
+  - **Input Manager:** nothing to change. The warning is Unity's, printed at start-up. It stops once the editor is
+    restarted from the "Restart Unity" prompt that `InputHandling` shows (A11).
+- **Checked:**
+  - No syntax or new compile errors in any `#if` combination. The post-build code was checked against stand-ins for
+    the Xcode API.
+  - No compiler warnings.
+  - `unity_api_check` 6000.5: clean.
+  - The deployment-target rewrite was tested on sample project lines (13.0 and "12.4" raised, 16.0 and 15.0 kept).
+- **Not run in Unity or Xcode.**
+  - Restart Unity from the prompt.
+  - Export the iOS project again. Choose Replace, or delete `Builds/iOS` first, as `docs/RELEASE.md` says to after a
+    Unity change.
+  - Confirm Xcode's issue navigator is empty.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

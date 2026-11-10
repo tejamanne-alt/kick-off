@@ -29,6 +29,33 @@ namespace DribbleToSchool.EditorTools
         /// <summary>Google Play's target API level for new apps and updates (Android 16, from 31 August 2026).</summary>
         public const int AndroidTargetApi = 36;
         public const string DefaultVersion = "1.0.0";
+        /// <summary>
+        /// The oldest iOS the game runs on. Xcode's C++ library no longer supports anything older: a target below it compiles
+        /// with "The selected platform is no longer supported by libc++" on every IL2CPP file (docs/LEARNINGS.md A13).
+        /// </summary>
+        public const string IosMinimumVersion = "15.0";
+
+        /// <summary>Is version a (as "15.0" or "16") older than b? Unparseable counts as older, so it gets raised.</summary>
+        public static bool OlderThan(string a, string b)
+        {
+            System.Version va, vb;
+            if (!System.Version.TryParse(WithMinor(a), out va)) return true;
+            if (!System.Version.TryParse(WithMinor(b), out vb)) return false;
+            return va < vb;
+        }
+
+        static string WithMinor(string v)
+        {
+            v = (v ?? "").Trim();
+            return v.Length > 0 && v.IndexOf('.') < 0 ? v + ".0" : v;
+        }
+
+        /// <summary>Raises Player Settings' iOS target to <see cref="IosMinimumVersion"/> (never lowers it).</summary>
+        public static void ApplyIosMinimum()
+        {
+            if (OlderThan(PlayerSettings.iOS.targetOSVersionString, IosMinimumVersion))
+                PlayerSettings.iOS.targetOSVersionString = IosMinimumVersion;
+        }
 
         const string IconPath = LevelBuildKit.Root + "/Art/Generated/AppIcon.png";
         // The app icon's art (tools/blender/app_icon.py and app_icon_compose.py render it from the game's models; README there).
@@ -75,7 +102,7 @@ namespace DribbleToSchool.EditorTools
             // iOS
             PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.iOS, ApplicationId);
             PlayerSettings.iOS.buildNumber = buildNumber.ToString();
-            PlayerSettings.iOS.targetOSVersionString = "15.0";
+            ApplyIosMinimum();
             PlayerSettings.SetScriptingBackend(NamedBuildTarget.iOS, ScriptingImplementation.IL2CPP);
             AppleSigning.Apply();   // automatic signing with the team, as in Xcode
 

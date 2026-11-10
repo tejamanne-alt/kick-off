@@ -2096,8 +2096,11 @@ namespace DribbleToSchool.EditorTools
             }
 
             // Foam lapping up the sand where the waves break, and lines of breaking crests rolling in
-            // out at sea. They move, so they live outside the street's static batches.
+            // out at sea. They move, so they live outside the street's static batches: under the animals' root, with the
+            // other moving things, which a Holiday Run stage keeps under its Stage object (left at the scene's root, the
+            // stage builder had to move them and warned about it).
             var waves = new GameObject("Waves").transform;
+            if (critters != null) waves.SetParent(critters, false);
             // The foam lies just above the sea, so where it meets the sand is where the water does; each
             // surge carries it a little up the beach. It stops where a tide washes up the beach: there the
             // wash is the sea running on up the sand, with its own foam at its front, and a line of foam

@@ -29,7 +29,7 @@ SDK refuse to launch ("UIScene life cycle is required"). After changing Unity, d
      it stays as it is), product "Kick Off 2";
    - landscape only;
    - Android: minimum API 26, target API 36, ARM64 + IL2CPP;
-   - iOS: 15.0+, automatic signing with your team (see `Editor/AppleSigning.cs`);
+   - iOS: 15.0+ (`BuildScripts.IosMinimumVersion`, applied when the editor loads and to every target of the exported Xcode project), automatic signing with your team (see `Editor/AppleSigning.cs`);
    - the app icon (`Assets/_Game/Art/Icon/AppIcon.png`, 1024 px; Unity makes every size; on Android also the adaptive
      icon's two layers) and the splash colour.
 4. Host the privacy policy (`docs/PRIVACY_POLICY.md`, fill in the contact email) at a public URL, e.g. GitHub Pages or your
