@@ -86,8 +86,8 @@ POSES = [
     ('kick_windup', P(legF=-30, kneeF=-100, kneeB=-14, lean=-6.5, **KICK_ARMS), True, DEFAULT_YAWS),
     ('kick_contact', P(legF=80, kneeF=0, kneeB=-14, lean=-6.5, **KICK_ARMS), True, DEFAULT_YAWS),
     # the slide dives in with an overshoot (the lean 10% over its 58, as limbs are written relative to the lean), then settles
-    ('slide_lunge', P(legF=19, kneeF=-6, legB=32, kneeB=-148, armB=-40, elbowB=10, armF=31, elbowF=30, headTilt=-44, lean=-64, bag=-95), True, DEFAULT_YAWS),
-    ('slide', P(legF=24, kneeF=-6, legB=38, kneeB=-148, armB=-34, elbowB=10, armF=37, elbowF=30, headTilt=-44, lean=-58, bag=-95), True, DEFAULT_YAWS),
+    ('slide_lunge', P(legF=19, kneeF=-6, legB=71, kneeB=-80, armB=-40, elbowB=10, armF=31, elbowF=30, headTilt=-44, lean=-64, bag=-95), True, DEFAULT_YAWS),
+    ('slide', P(legF=24, kneeF=-6, legB=77, kneeB=-80, armB=-34, elbowB=10, armF=37, elbowF=30, headTilt=-44, lean=-58, bag=-95), True, DEFAULT_YAWS),
     ('landing', P(legF=30, legB=30, kneeF=-64, kneeB=-64, armF=-3, armB=3, elbowF=34, elbowB=34, lean=10), False, DEFAULT_YAWS),
     ('celebrate_air', P(legF=12, legB=-8, kneeF=-10, kneeB=-10, armF=172, armB=-172, elbowF=15, elbowB=15, headTilt=6), False, DEFAULT_YAWS),
     ('celebrate_crouch', P(legF=22, legB=2, kneeF=-55, kneeB=-55, armF=160, armB=-160, elbowF=15, elbowB=15), False, DEFAULT_YAWS),

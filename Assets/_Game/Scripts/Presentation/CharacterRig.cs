@@ -70,6 +70,15 @@ namespace DribbleToSchool.Presentation
         [Tooltip("How much of the pose's bag swing the bag takes: 1 for a bag modelled with the kid; less for the Locker Room's " +
             "backpacks (Presentation/BagWear), strapped on over both shoulders.")]
         public float bagSwing = 1f;
+        [Header("Ground contact (measured from the model's own surface by LevelBuildKit)")]
+        [Tooltip("The bones the ground points ride on (the hips, legs, feet, forearms and hands).")]
+        public Transform[] groundBones;
+        [Tooltip("Points on the model's surface, each in its bone's own frame: the extremes of the soles, shins, knees, seat " +
+            "and hands. Pose lifts the body so that none goes lower than the lowest of them stands at rest, so a slide, a kick " +
+            "or a crouch never puts a foot or a leg through the ground (docs/LEARNINGS.md C21).")]
+        public Vector3[] groundPoints;
+        [Tooltip("Each ground point's bone (an index into groundBones); the points are grouped by bone.")]
+        public int[] groundPointBone;
 
         Vector3 bodyBasePosition;
         Vector3 bodyBaseScale = Vector3.one;
@@ -100,6 +109,54 @@ namespace DribbleToSchool.Presentation
             // rigs' moments evenly over the 2.9 s breath, however many there are. Not GetInstanceID, an error from Unity
             // 6.5: docs/LEARNINGS.md A11.)
             breathPhase = (rigsMade++ * 0.618034f) % 1f * BreathPeriod;
+            // The rest pose stands on the ground: its lowest ground point, measured from the body's parent (which the
+            // pose never moves), is where no point may go below.
+            hasGround = body != null && groundBones != null && groundPoints != null && groundPointBone != null &&
+                groundPoints.Length > 0 && groundPointBone.Length == groundPoints.Length;
+            if (hasGround) restLowest = LowestGroundPoint() - FrameY();
+        }
+
+        bool hasGround;
+        float restLowest;
+
+        float FrameY() { return body.parent != null ? body.parent.position.y : 0f; }
+
+        /// <summary>The lowest of the ground points as the bones stand now (world y). One matrix per bone.</summary>
+        float LowestGroundPoint()
+        {
+            float lowest = float.MaxValue;
+            int bone = -1;
+            Matrix4x4 m = Matrix4x4.identity;
+            bool valid = false;
+            for (int i = 0; i < groundPoints.Length; i++)
+            {
+                int b = groundPointBone[i];
+                if (b != bone)
+                {
+                    bone = b;
+                    valid = b >= 0 && b < groundBones.Length && groundBones[b] != null;
+                    if (valid) m = groundBones[b].localToWorldMatrix;
+                }
+                if (!valid) continue;
+                Vector3 q = groundPoints[i];
+                float y = m.m10 * q.x + m.m11 * q.y + m.m12 * q.z + m.m13;
+                if (y < lowest) lowest = y;
+            }
+            return lowest;
+        }
+
+        /// <summary>
+        /// Lifts the body so that no ground point is lower than the lowest one stands at rest: the poses are joint angles,
+        /// and a slide's tucked leg, a kick's standing foot, a landing's crouch or a stride's planted foot went through the
+        /// pavement by up to a fifth of a metre (docs/LEARNINGS.md C21). Only ever lifts; returns the lift (world units).
+        /// </summary>
+        float KeepOnGround()
+        {
+            if (!hasGround) return 0f;
+            float lift = restLowest - (LowestGroundPoint() - FrameY());
+            if (lift <= 0.0005f) return 0f;
+            body.position += Vector3.up * lift;
+            return lift;
         }
 
         static int rigsMade;
@@ -132,6 +189,7 @@ namespace DribbleToSchool.Presentation
                 Turn(head, p.headTilt + headDip, headTurn, headSway);
                 head.localPosition = headBasePosition;
             }
+            KeepOnGround();
         }
 
         /// <summary>

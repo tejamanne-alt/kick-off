@@ -86,6 +86,7 @@ None of these changes what is drawn, played or how the game plays (`docs/LEARNIN
 | Kid picker frees the old kid a second after the last tap | each tap | most of a 60–200 ms hitch |
 | Async upload buffer 32 → 16 MB | always | 16 MB of RAM |
 | Per-frame garbage: the input delegate, challenge strings, coach signature | levels | about 4 KB/s and 2 KB/s fewer allocations |
+| *(cost, v119)* `CharacterRig` ground contact: ~140 surface points a posed model character | every scene with characters | +0.01 to 0.03 ms a character a frame (est.); no garbage |
 
 **Still to do.** Each of these is a known cost, ranked by expected gain. The audit reports behind them (with file and line,
 the fix and the risk of each) are summarised in PROGRESS "The audit: work nobody sees".
