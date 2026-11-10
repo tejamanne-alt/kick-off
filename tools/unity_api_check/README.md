@@ -16,7 +16,8 @@ tools/unity_api_check/run.sh 6000.5          # ERROR lines: what Unity 6.5 refus
 tools/unity_api_check/run.sh 6000.7 --all    # the newest 6000 branch, with its deprecation warnings too
 ```
 
-Run it against the newest Unity 6 branch before pushing, not only the version in `ProjectSettings/ProjectVersion.txt`.
+Run it against the pinned version's branch (`ProjectSettings/ProjectVersion.txt`: 6000.6.7f1, so `run.sh 6000.6`) and the
+newest Unity 6 branch before pushing.
 A user can open the project in anything newer.
 
 How it works:

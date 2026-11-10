@@ -19,8 +19,8 @@ The next step is playtesting on real devices: the frame rate and pacing check in
 
 ## Open the project
 
-1. Install **Unity 6** (6000.0 LTS or newer) with **iOS Build Support** and/or **Android Build Support** from Unity Hub.
-2. In Unity Hub choose **Add > Add project from disk** and select this folder. If Hub asks about the editor version, pick any Unity 6 version you have installed.
+1. Install **Unity 6000.6.7f1** (the version `ProjectSettings/ProjectVersion.txt` pins) with **iOS Build Support** and/or **Android Build Support** from Unity Hub.
+2. In Unity Hub choose **Add > Add project from disk** and select this folder. Hub opens it in 6000.6.7f1.
 3. On the first open, Unity imports packages. If it asks to **enable the new Input System backend**, click **Yes** (the editor restarts). The code works with either input backend.
 4. Once importing finishes, an editor script generates the menu, every level scene and the shop items, then opens the **FrontEnd** menu scene. It runs again automatically whenever the generated content is out of date. You can also run it from **Kick Off > Rebuild All Levels** (or **Kick Off > Rebuild Menu (FrontEnd)** for just the menu scene).
 5. Press **Play**. Set the Game view to a landscape phone resolution (for example 1920x1080).

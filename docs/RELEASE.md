@@ -14,7 +14,9 @@ Everything needed to take Kick Off 2 from this repo to the App Store and Google 
 | Company | Both stores verify an organisation by its **D-U-N-S number** (free from Dun & Bradstreet; it can take a couple of weeks) and want its website | the same |
 | Store rule | New apps and updates must target **Android 16 (API 36)**: the build sets it (`BuildScripts.AndroidTargetApi`) | Uploads must be built with **Xcode 26 / the iOS 26 SDK** or later |
 
-Unity version for iOS: use **6000.0.68f1 or newer** (6.0 LTS), **6000.3.8f1 or newer** (6.3 LTS), or any **6000.4+**. Older
+Unity version: the project pins **6000.6.7f1** (`ProjectSettings/ProjectVersion.txt`), and the build scripts in `ci/` use it
+when Unity Hub has it. For iOS, any other Unity must be **6000.0.68f1 or newer** (6.0 LTS), **6000.3.8f1 or newer** (6.3 LTS),
+or any **6000.4+**. Older
 Unity 6 versions export an Xcode project without the UIKit scene life cycle, and apps built that way with the current
 SDK refuse to launch ("UIScene life cycle is required"). After changing Unity, delete `Builds/iOS` before exporting again.
 
