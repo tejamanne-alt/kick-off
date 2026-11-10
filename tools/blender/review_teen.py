@@ -70,8 +70,10 @@ nt.links.new(em.outputs[0], nt.nodes['Material Output'].inputs['Surface'])
 ol = bpy.data.materials.new('Outline'); ol.use_nodes = True; ol.use_backface_culling = True
 on = ol.node_tree; e = on.nodes.new('ShaderNodeEmission'); e.inputs['Color'].default_value = (0.012, 0.009, 0.014, 1)
 on.links.new(e.outputs[0], on.nodes['Material Output'].inputs['Surface'])
-kid.data.materials.append(ol)
-sol = kid.modifiers.new('outline', 'SOLIDIFY'); sol.thickness = 0.005; sol.offset = 1; sol.use_flip_normals = True; sol.material_offset = 1
+# the outline: a hull copy of the figure set back from the camera (ink_hull.py; docs/LEARNINGS.md C20)
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import ink_hull
+hull, sol = ink_hull.make(kid, ol, 0.005)
 mat.use_backface_culling = True
 S.world = bpy.data.worlds.new('w'); S.world.color = (0.62, 0.78, 0.95)
 S.render.engine = 'BLENDER_EEVEE'; S.view_settings.view_transform = 'Standard'
@@ -129,6 +131,7 @@ for name, p, yaw, scale, z, (rx, ry) in shots:
     S.render.film_transparent = game
     # in-game: the outline is a constant fraction of the screen height
     sol.thickness = OUTLINE * 920 / KID_PX * top if game else (0.0022 if name.startswith('face') else 0.0045)
+    ink_hull.set_back(hull, kid, (0, 1, 0), ink_hull.PUSH * top / 1.6)
     S.render.filepath = os.path.join(tmp, name + '.png'); bpy.ops.render.render(write_still=True)
     files.append(S.render.filepath)
 

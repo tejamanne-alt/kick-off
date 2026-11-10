@@ -198,6 +198,14 @@ def rigid_head(o, rig):
 TEAR_RADIUS = 0.012       # the neighbourhood that decides a face's garment, as a share of the figure's height (2 cm at 1.65 m)
 TEAR_SHARE = 0.65         # a garment must cover this much of it (the face itself not counted)
 TEAR_SATURATION = 0.3     # and the face's own texel must be greyish (a light streak or a dark crease, never skin)
+# The second test, for a streak beside something big of no part (a trouser hem over a white shoe, a belt under a hoodie's
+# hem, a fringe over the face): the garment against only the neighbours that look like the face (texels within TEAR_KIND).
+TEAR_KIND = 0.2           # how near two texels' colours are to count as the same kind (sRGB distance)
+TEAR_KIND_SHARE = 0.55    # the garment's share of itself and the face's own kind
+TEAR_OWN_MAX = 0.35       # the face's own kind may cover at most this much round it (a streak; a printed letter has more)
+TEAR_GARMENT_MIN = 0.12   # and the garment at least this much
+TEAR_NEUTRAL = 0.21       # and the face's texel nearly grey, white or cream (a streak or stripe, saturation about 0.16 to 0.19 on
+                          # Hana's cuffs; Mia's beige headband, 0.25 and up, is not one)
 
 
 def absorb_tears(o, atlas):
@@ -210,7 +218,10 @@ def absorb_tears(o, atlas):
     part-0 face joins garment p when p covers TEAR_SHARE of the surface within TEAR_RADIUS of it (the face itself not
     counted: at 32k triangles a face is about that size; on the same side: faces turned the same way) and its own texel is
     greyish (under TEAR_SATURATION, or dark), never skin. Wide features (a printed letter, the hoodie under a jacket, the
-    face, the hands) keep their middles. Three rounds, so a streak a few faces wide goes too. The face's part and its corners' colour become the garment's; its light texel then shades the garment's
+    face, the hands) keep their middles. A second test catches a streak beside something big of no part (a trouser
+    hem over a white shoe, a belt under a hoodie's hem, a fringe's tips over the face), which outvoted the garment: the
+    garment against only the neighbours that look like the face, while the face's own kind is sparse round it (a streak,
+    not a printed letter) and the face is nearly grey or white (not a tinted feature: a beige headband's print). Four rounds, so a band a few faces wide goes too (docs/LEARNINGS.md C16, C20). The face's part and its corners' colour become the garment's; its light texel then shades the garment's
     colour a little. Returns the faces moved."""
     me = o.data
     if len(me.uv_layers) < 2 or 'Col' not in me.color_attributes: return 0
@@ -242,6 +253,7 @@ def absorb_tears(o, atlas):
     tex = (tsum + texel(ucen)) / (lt + 1)[:, None]
     mx, mn = tex.max(1), tex.min(1)
     pale = ((mx - mn) / np.maximum(mx, 1e-4) < TEAR_SATURATION) | (mx < 0.2)
+    neutral = ((mx - mn) / np.maximum(mx, 1e-4) < TEAR_NEUTRAL) | (mx < 0.2)
     # each garment's own vertex colour (one per part)
     colour = {}
     for q in (1, 2, 3, 4):
@@ -251,7 +263,7 @@ def absorb_tears(o, atlas):
     if not colour: return 0
     tree = cKDTree(cen)
     new_part = part.copy()
-    for _ in range(3):
+    for _ in range(4):
         cand = np.flatnonzero((new_part == 0) & pale)
         changed = False
         for i, ids in zip(cand, tree.query_ball_point(cen[cand], TEAR_RADIUS * H)):
@@ -260,11 +272,17 @@ def absorb_tears(o, atlas):
             w = area[ids] * (nrm[ids] @ nrm[i] > 0.3)
             tot = w.sum()
             if tot <= 0: continue
-            best, bw = 0, 0.0
+            best, bw, garments = 0, 0.0, 0.0
             for q in colour:
-                s = w[new_part[ids] == q].sum()
+                s = w[new_part[ids] == q].sum(); garments += s
                 if s > bw: best, bw = q, s
-            if best and bw >= TEAR_SHARE * tot:
+            if not best: continue
+            if bw >= TEAR_SHARE * tot:
+                new_part[i] = best; changed = True; continue
+            # the second test: against only the face's own kind (the shoe, the hoodie, the skin beside it left out)
+            if not neutral[i]: continue      # (a tinted feature, a beige headband's print, is never a streak)
+            own = w[(new_part[ids] == 0) & (np.linalg.norm(tex[ids] - tex[i], axis=1) < TEAR_KIND)].sum()
+            if bw >= TEAR_KIND_SHARE * (garments + own) and own <= TEAR_OWN_MAX * tot and bw >= TEAR_GARMENT_MIN * tot:
                 new_part[i] = best; changed = True
         if not changed: break
     moved = new_part != part

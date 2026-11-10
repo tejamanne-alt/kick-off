@@ -525,8 +525,10 @@ Why each step exists is in `docs/LEARNINGS.md`, C1 to C8 and C14. In short:
     the Head alone, blending back to the neck below it. Otherwise the face folds as the head nods (LEARNINGS C15);
   - keeps one outfit part per face, and at most four normalised bone weights;
   - absorbs white tears (`absorb_tears`): a greyish face of no outfit part joins the garment around it when that
-    garment covers 65% of the surface within 2 cm of it (LEARNINGS C16). `<Name>_polish.json`'s `tear_faces_absorbed`
-    says how many moved;
+    garment covers 65% of the surface within 2 cm of it. It also joins when the garment wins against only the neighbours
+    that look like the face, while that kind stays sparse round it: hems over white shoes, belts under a hoodie's hem,
+    a fringe's tips over the face (LEARNINGS C16, C20). `<Name>_polish.json`'s `tear_faces_absorbed` says how many
+    moved;
   - rebuilds the normals:
     - from the surface around each vertex: 12 mm on skin, 20 mm on clothes, 35 mm on hair;
     - hair points away from the centre of its mass (the rim light then shows only at the hair's outline);
@@ -546,7 +548,8 @@ Why each step exists is in `docs/LEARNINGS.md`, C1 to C8 and C14. In short:
   Its `gait` scene shows a figure at four moments of a run or walk (`GAIT_OFFSET` for the other half of the cycle), with
   `CharacterRig`'s torso motion mirrored (`TORSO=0` for the rigid torso of before v115);
 - `fbx_to_blend.py` rebuilds a `.blend` from a shipped FBX for `review_teen.py`, `review_poses.py` and
-  `portrait_teen.py`;
+  `portrait_teen.py`. These three draw the outline with `ink_hull.py`: a copy of the figure set back from the camera,
+  as the game's, so the figure keeps its own normals;
 - the boards in `review/characters_v2/`.
 
 Three rules for reviews:

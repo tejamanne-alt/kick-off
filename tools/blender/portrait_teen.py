@@ -68,8 +68,11 @@ nt.links.new(em.outputs[0], nt.nodes['Material Output'].inputs['Surface'])
 ol = bpy.data.materials.new('Outline'); ol.use_nodes = True; ol.use_backface_culling = True
 on = ol.node_tree; e = on.nodes.new('ShaderNodeEmission'); e.inputs['Color'].default_value = (0.012, 0.009, 0.014, 1)
 on.links.new(e.outputs[0], on.nodes['Material Output'].inputs['Surface'])
-kid.data.materials.append(ol)
-sol = kid.modifiers.new('outline', 'SOLIDIFY'); sol.offset = 1; sol.use_flip_normals = True; sol.material_offset = 1
+# the outline: a hull copy of the figure set back from the camera, so the figure keeps its own (smoothed) normals
+# (ink_hull.py; docs/LEARNINGS.md C20)
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import ink_hull
+hull, sol = ink_hull.make(kid, ol, 0.0036)
 mat.use_backface_culling = True
 S.world = bpy.data.worlds.new('w'); S.world.color = (0.62, 0.78, 0.95)
 S.render.engine = 'BLENDER_EEVEE'; S.view_settings.view_transform = 'Standard'
@@ -100,6 +103,8 @@ def shoot(path, scale, z, res, outline):
     cam.location = (0, -5, z); cam.rotation_euler = (math.radians(90), 0, 0)
     S.render.resolution_x, S.render.resolution_y = res
     sol.thickness = outline
+    # (set back about 1.2 cm: the models are about 0.8 of a unit per metre of a figure's height)
+    ink_hull.set_back(hull, kid, (0, 1, 0), ink_hull.PUSH * top / 1.6)
     S.render.filepath = path
     bpy.ops.render.render(write_still=True)
     print('rendered', path)

@@ -1187,6 +1187,39 @@ The user asked for a check on every character, playable and not.
   with the near arm. If it is mirrored, flip the sign in `Torso`. Then look at a run, a walk, the menu's juggling and a
   kick.
 
+## The last white tears, and review boards that match the game (generated content v116)
+
+- **Why.** On the v114 boards the user found:
+  - black spots on Kai's face;
+  - white tears still at Hana's and Max's trouser hems above the shoe;
+  - white streaks on Max's jeans below the jacket (his belt);
+  - white tears along Mia's hairline.
+  The user asked for similar faults to be fixed on every character.
+- **Kai's spots were the review renderer's** (`docs/LEARNINGS.md` C20). Its ink hull was a Solidify on the figure
+  itself, which threw away the smoothed normals the game shades with, and it was never set back from the camera as
+  `ToonCharacter`'s is. In a render with the ink coloured magenta, the spots turned magenta. The hull is now a copy of
+  the figure set back 1.2 cm, and the figure keeps its normals. Kai's face (and every chin's "brown patch") renders
+  clean, as the game draws it.
+- **The tears were real.** `polish_lib.absorb_tears` gets a second test. A pale face of no outfit part joins the
+  garment when the garment wins against only the neighbours that look like the face, while that kind stays sparse
+  round it. This catches a hem against a white shoe, a belt's streaks against a hoodie's hem, and a fringe's tips
+  against the face. A printed letter has many of its own kind round it and stays: Leo's "AWESOME 01" and Hana's "H"
+  are checked.
+  - Rebuilt: all twelve characters (`polish_all.py`).
+  - Absorbed faces: Max about 1,680 (was 570), Hana 1,600 (was 970), Mia 1,190 (was 1,060).
+  - Hana's striped cuffs, cut into jagged white triangles at 32k, are now plain maroon.
+- **The face must be nearly grey, white or cream** for the second test (saturation under 0.21). On the first try it
+  took Mia's beige patterned headband (0.25 and up) for streaks. Hana's cream cuff stripes (about 0.17), cut into jagged
+  triangles at 32k, still go.
+- **The player cards** (Blender renders shipped in the game) had the review renderer's fault: `portrait_teen.py` put
+  the hull on the figure, so the cards' faces had black specks round the nose. The cards, `review_teen.py` and
+  `review_poses.py` now share `tools/blender/ink_hull.py` (the figure keeps its normals; the hull is set back), and all
+  six cards are rendered again.
+- **Boards:** `review/characters_v2/tears_v116.jpg` (every character, v115 and v116, both with the corrected renderer),
+  `kai_face_v116.jpg` and `player_cards_v116.jpg`.
+- **Cost:** none (same meshes and atlases).
+- **Not run in Unity or on a device.**
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.
