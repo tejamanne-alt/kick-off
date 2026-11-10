@@ -1208,8 +1208,9 @@ The user asked for a check on every character, playable and not.
   - Rebuilt: all twelve characters (`polish_all.py`).
   - Absorbed faces: Max about 1,680 (was 570), Hana 1,600 (was 970), Mia 1,190 (was 1,060).
   - Hana's striped cuffs, cut into jagged white triangles at 32k, are now plain maroon.
-- **The face must be nearly grey or white** for the second test. On the first try it took Mia's beige patterned
-  headband for streaks.
+- **The face must be nearly grey, white or cream** for the second test (saturation under 0.21). On the first try it
+  took Mia's beige patterned headband (0.25 and up) for streaks. Hana's cream cuff stripes (about 0.17), cut into jagged
+  triangles at 32k, still go.
 - **The player cards** (Blender renders shipped in the game) had the review renderer's fault: `portrait_teen.py` put
   the hull on the figure, so the cards' faces had black specks round the nose. The cards, `review_teen.py` and
   `review_poses.py` now share `tools/blender/ink_hull.py` (the figure keeps its normals; the hull is set back), and all

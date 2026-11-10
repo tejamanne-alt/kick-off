@@ -204,7 +204,8 @@ TEAR_KIND = 0.2           # how near two texels' colours are to count as the sam
 TEAR_KIND_SHARE = 0.55    # the garment's share of itself and the face's own kind
 TEAR_OWN_MAX = 0.35       # the face's own kind may cover at most this much round it (a streak; a printed letter has more)
 TEAR_GARMENT_MIN = 0.12   # and the garment at least this much
-TEAR_NEUTRAL = 0.15       # and the face's texel nearly grey or white (a streak: Mia's beige headband is not one)
+TEAR_NEUTRAL = 0.21       # and the face's texel nearly grey, white or cream (a streak or stripe, saturation about 0.16 to 0.19 on
+                          # Hana's cuffs; Mia's beige headband, 0.25 and up, is not one)
 
 
 def absorb_tears(o, atlas):
