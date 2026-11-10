@@ -143,10 +143,150 @@ def fix_weights(o):
             for w, gi in keep: o.vertex_groups[gi].add([v.index], w / s, 'REPLACE')
 
 
+def _vertex_weights(o, names):
+    """The weights of the named bones per vertex (columns in the order given), and every group's index by name."""
+    me = o.data; nv = len(me.vertices)
+    gi = {g.name: g.index for g in o.vertex_groups}
+    W = np.zeros((nv, len(names)))
+    col = {gi[n]: k for k, n in enumerate(names) if n in gi}
+    for v in me.vertices:
+        for g in v.groups:
+            k = col.get(g.group)
+            if k is not None: W[v.index, k] = g.weight
+    return W, gi
+
+
+FACE_ROUND = 1.6         # the face's sphere: its centre this many face half-widths behind the face
+HEAD_CUT_SLOPE = 0.9      # the cut under which the head blends into the neck dips this much per unit forward (under the chin)
+HEAD_BLEND = 0.12         # the blend below the cut, as a share of the head's height above the Head joint
+
+
+def rigid_head(o, rig):
+    """The whole head moves with the Head bone. The scans' automatic rigs gave the face part Head, part Neck: 38% of
+    Hana's face and three quarters of her jaw were mostly on the Neck, so as the head turned the face creased and folded
+    (docs/LEARNINGS.md C6, C15). Every vertex of the head and neck (Head + Neck at least half its weight) above a cut
+    through the Head joint, dipping forward under the chin, follows the Head alone; below the cut it blends back to its own
+    weights over HEAD_BLEND of the head's height (the throat and the nape bend with the neck). Returns the vertices made
+    rigid."""
+    if 'Head' not in o.vertex_groups or 'Head' not in rig.data.bones or 'Nose' not in rig.data.bones: return 0
+    me = o.data; nv = len(me.vertices)
+    co = np.zeros(nv * 3); me.vertices.foreach_get('co', co); co = co.reshape(-1, 3)
+    B = rig.data.bones
+    J = np.array(B['Head'].head_local); nose = np.array(B['Nose'].head_local)
+    fwd = nose - J; fwd[2] = 0; fwd /= np.linalg.norm(fwd)
+    hh = co[:, 2].max() - J[2]
+    W, gi = _vertex_weights(o, ['Head', 'Neck'])
+    rel = co - J
+    cut = rel[:, 2] + np.maximum(rel @ fwd, 0) * HEAD_CUT_SLOPE
+    t = np.clip((cut + HEAD_BLEND * hh) / (HEAD_BLEND * hh), 0, 1)
+    sel = np.flatnonzero((W.sum(1) > 0.5) & (t > 0) & (W[:, 0] < 0.999))
+    head = o.vertex_groups['Head']
+    for i in sel:
+        v = me.vertices[int(i)]
+        h0 = W[i, 0]; h1 = h0 + (1 - h0) * t[i]
+        rest = 1 - h0
+        pairs = [(g.group, g.weight) for g in v.groups]          # (read first: removing invalidates the elements)
+        for gidx, w in pairs:
+            if gidx == head.index: continue
+            nw = w * (1 - h1) / rest if rest > 1e-9 else 0.0
+            if nw < 1e-4: o.vertex_groups[gidx].remove([int(i)])
+            else: o.vertex_groups[gidx].add([int(i)], float(nw), 'REPLACE')
+        head.add([int(i)], float(h1), 'REPLACE')
+    return int((t[sel] >= 1).sum())
+
+
+TEAR_RADIUS = 0.012       # the neighbourhood that decides a face's garment, as a share of the figure's height (2 cm at 1.65 m)
+TEAR_SHARE = 0.65         # a garment must cover this much of it (the face itself not counted)
+TEAR_SATURATION = 0.3     # and the face's own texel must be greyish (a light streak or a dark crease, never skin)
+
+
+def absorb_tears(o, atlas):
+    """White tears: specks and streaks of no outfit part (UV2.x 0) inside a garment. The scans painted their clothes and
+    hair with light streaks (folds, highlights, unpainted seams, thin stripes cut into jagged triangles by decimation);
+    paint() made each dark garment a vertex colour times a near-white atlas and left the light streaks out of it (part 0:
+    a white vertex colour times the texel's own light colour), so they drew as white tears in the dark jackets, trousers
+    and hair, and stayed white when the shop recoloured the garment (docs/LEARNINGS.md C16). Most of them do not even share
+    an edge with their garment (the scans are cut along every colour line), so the test is by surface, not by topology: a
+    part-0 face joins garment p when p covers TEAR_SHARE of the surface within TEAR_RADIUS of it (the face itself not
+    counted: at 32k triangles a face is about that size; on the same side: faces turned the same way) and its own texel is
+    greyish (under TEAR_SATURATION, or dark), never skin. Wide features (a printed letter, the hoodie under a jacket, the
+    face, the hands) keep their middles. Three rounds, so a streak a few faces wide goes too. The face's part and its corners' colour become the garment's; its light texel then shades the garment's
+    colour a little. Returns the faces moved."""
+    me = o.data
+    if len(me.uv_layers) < 2 or 'Col' not in me.color_attributes: return 0
+    col = me.color_attributes['Col']
+    if col.domain != 'CORNER': return 0
+    me.calc_loop_triangles()
+    nv = len(me.vertices); P = len(me.polygons)
+    co = np.zeros(nv * 3); me.vertices.foreach_get('co', co); co = co.reshape(-1, 3)
+    ls = np.zeros(P, int); me.polygons.foreach_get('loop_start', ls)
+    lt = np.zeros(P, int); me.polygons.foreach_get('loop_total', lt)
+    lv = np.zeros(len(me.loops), int); me.loops.foreach_get('vertex_index', lv)
+    u0 = np.zeros(len(me.loops) * 2); me.uv_layers[0].data.foreach_get('uv', u0); u0 = u0.reshape(-1, 2)
+    u1 = np.zeros(len(me.loops) * 2); me.uv_layers[1].data.foreach_get('uv', u1); u1 = u1.reshape(-1, 2)
+    cd = np.zeros(len(me.loops) * 4); col.data.foreach_get('color', cd); cd = cd.reshape(-1, 4)
+    part = np.round(u1[ls, 0]).astype(int)
+    # each face's centre, normal and area (polygon normals and areas from Blender)
+    cen = np.zeros(P * 3); me.polygons.foreach_get('center', cen); cen = cen.reshape(-1, 3)
+    nrm = np.zeros(P * 3); me.polygons.foreach_get('normal', nrm); nrm = nrm.reshape(-1, 3)
+    area = np.zeros(P); me.polygons.foreach_get('area', area)
+    H = co[:, 2].max() - co[:, 2].min()
+    # each face's own texel colour: the mean of its corners' and its centre's texels
+    Hh, Ww = atlas.shape[:2]
+    def texel(uv):
+        x = np.clip((uv[:, 0] % 1.0) * Ww, 0, Ww - 1).astype(int); y = np.clip((1 - uv[:, 1] % 1.0) * Hh, 0, Hh - 1).astype(int)
+        return atlas[y, x, :3]
+    fid = np.repeat(np.arange(P), lt)
+    tsum = np.zeros((P, 3)); np.add.at(tsum, fid, texel(u0))
+    ucen = np.zeros((P, 2)); np.add.at(ucen, fid, u0); ucen /= lt[:, None]
+    tex = (tsum + texel(ucen)) / (lt + 1)[:, None]
+    mx, mn = tex.max(1), tex.min(1)
+    pale = ((mx - mn) / np.maximum(mx, 1e-4) < TEAR_SATURATION) | (mx < 0.2)
+    # each garment's own vertex colour (one per part)
+    colour = {}
+    for q in (1, 2, 3, 4):
+        m = np.repeat(part == q, lt)
+        if m.any():
+            vals, cnt = np.unique(np.round(cd[m], 4), axis=0, return_counts=True); colour[q] = vals[np.argmax(cnt)]
+    if not colour: return 0
+    tree = cKDTree(cen)
+    new_part = part.copy()
+    for _ in range(3):
+        cand = np.flatnonzero((new_part == 0) & pale)
+        changed = False
+        for i, ids in zip(cand, tree.query_ball_point(cen[cand], TEAR_RADIUS * H)):
+            ids = np.asarray([j for j in ids if j != i], int)
+            if len(ids) == 0: continue
+            w = area[ids] * (nrm[ids] @ nrm[i] > 0.3)
+            tot = w.sum()
+            if tot <= 0: continue
+            best, bw = 0, 0.0
+            for q in colour:
+                s = w[new_part[ids] == q].sum()
+                if s > bw: best, bw = q, s
+            if best and bw >= TEAR_SHARE * tot:
+                new_part[i] = best; changed = True
+        if not changed: break
+    moved = new_part != part
+    if not moved.any(): return 0
+    lm = np.repeat(moved, lt)
+    lp = np.repeat(new_part, lt)
+    u1[lm, 0] = lp[lm]
+    cd[lm] = np.array([colour[q] for q in lp[lm]])
+    me.uv_layers[1].data.foreach_set('uv', u1.ravel())
+    col.data.foreach_set('color', cd.ravel())
+    me.update()
+    return int(moved.sum())
+
+
 def face_lean(o, rig, strength):
-    """The inner face's lean toward the head's forward direction: per vertex, how much (0..strength), and the direction.
-    The face is the skin (part 0) of the head (on the Head bone) facing forward; its middle leans fully, fading out
-    toward the jaw, the cheeks' edge and the hairline."""
+    """The face's lean toward a smooth rounded shape: per vertex, how much (0..strength), and the direction it leans to.
+    The face is the skin (part 0) of the head (on the Head bone, made rigid by rigid_head) facing forward; its middle,
+    down over the mouth and the chin, leans fully, fading out toward the cheeks' edge, the hairline and under the chin.
+    The direction is the normal of a sphere centred FACE_ROUND face half-widths behind the face (docs/LEARNINGS.md C15): a
+    constant forward lean lit the middle as one flat plane while the jaw kept the scan's noisy normals, and the light/shade
+    step ran across the mouth and chin as a jagged crease that crawled as the head turned. Leaning to a sphere, the face
+    shades as one rounded shape: lit as a whole in front light, with a clean curved edge when the sun is to one side."""
     me = o.data
     nv = len(me.vertices)
     co = np.zeros(nv * 3); me.vertices.foreach_get('co', co); co = co.reshape(-1, 3)
@@ -168,7 +308,7 @@ def face_lean(o, rig, strength):
     for k in range(3): np.add.at(vn, T[:, k], fn)
     vn /= np.maximum(np.linalg.norm(vn, axis=1, keepdims=True), 1e-20)
     rel = co - head
-    skin = (part == 0) & (hw > 0.9)
+    skin = (part == 0) & (hw > 0.5)
     w = skin * np.clip((vn @ fwd + 0.1) / 0.4, 0, 1) * np.clip((rel @ fwd) / 0.04, 0, 1)
     if (w > 0.3).sum() < 20: return None
     x = rel @ side; z = rel[:, 2]
@@ -183,7 +323,11 @@ def face_lean(o, rig, strength):
     for _ in range(8):
         s = np.zeros(nv); np.add.at(s, E[:, 0], m[E[:, 1]]); np.add.at(s, E[:, 1], m[E[:, 0]])
         m = np.where(skin, 0.5 * m + 0.5 * s / np.maximum(deg, 1), 0.0)
-    return np.clip(m * 1.15, 0, 1) * strength, fwd
+    # the sphere: centred behind the middle of the face, FACE_ROUND face half-widths back
+    fc = head + side * cx + np.array([0, 0, 1.0]) * cz + fwd * np.average(rel @ fwd, weights=w + 1e-9)
+    centre = fc - fwd * FACE_ROUND * hx          # (hx: about the face's half-width)
+    d = co - centre; d /= np.maximum(np.linalg.norm(d, axis=1, keepdims=True), 1e-9)
+    return np.clip(m * 1.15, 0, 1) * strength, d
 
 
 def smooth_normals(o, face=None):
@@ -228,8 +372,8 @@ def smooth_normals(o, face=None):
             n = vol * HAIR_VOLUME_MIX + out[i] * (1 - HAIR_VOLUME_MIX)
             out[i] = n / max(np.linalg.norm(n), 1e-9)
     if face is not None:
-        m, fwd = face
-        lean = fwd[None, :] * 0.85 + out * 0.15
+        m, to = face                      # how much, and the direction (one, or one per vertex)
+        lean = np.broadcast_to(to, out.shape) * 0.85 + out * 0.15
         lean /= np.linalg.norm(lean, axis=1, keepdims=True)
         out = out * (1 - m[:, None]) + lean * m[:, None]
         out /= np.linalg.norm(out, axis=1, keepdims=True)

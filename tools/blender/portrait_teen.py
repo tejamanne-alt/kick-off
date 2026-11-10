@@ -41,7 +41,8 @@ nt.links.new(mix.outputs['Result'], m2.inputs['A']); nt.links.new(band.outputs['
 ndv = nt.nodes.new('ShaderNodeVectorMath'); ndv.operation = 'DOT_PRODUCT'
 nt.links.new(geo.outputs['Normal'], ndv.inputs[0]); nt.links.new(geo.outputs['Incoming'], ndv.inputs[1])
 rim = nt.nodes.new('ShaderNodeMapRange'); rim.interpolation_type = 'SMOOTHSTEP'
-# ToonCharacter's rim: smoothstep(0.66, 0.8, 1 - N.V), tinted by the colour under it (lerp(albedo, 1, 0.45))
+# ToonCharacter's rim: smoothstep(0.66, 0.8, 1 - N.V), tinted by the colour under it, whitened by 45% of its lightness
+# (lerp(albedo, 1, 0.45 * max(albedo)))
 rim.inputs['From Min'].default_value = 0.34; rim.inputs['From Max'].default_value = 0.2
 nt.links.new(ndv.outputs['Value'], rim.inputs['Value'])
 side = nt.nodes.new('ShaderNodeMapRange'); side.inputs['From Min'].default_value = -0.35; side.inputs['From Max'].default_value = 0.65
@@ -51,7 +52,11 @@ rk = nt.nodes.new('ShaderNodeMath'); rk.operation = 'MULTIPLY'
 nt.links.new(rim.outputs['Result'], rk.inputs[0]); nt.links.new(side.outputs['Result'], rk.inputs[1])
 rk2 = nt.nodes.new('ShaderNodeMath'); rk2.operation = 'MULTIPLY'; rk2.inputs[1].default_value = 0.22
 nt.links.new(rk.outputs[0], rk2.inputs[0])
-tint = nt.nodes.new('ShaderNodeMix'); tint.data_type = 'RGBA'; tint.inputs['Factor'].default_value = 0.45
+_sep = nt.nodes.new('ShaderNodeSeparateColor'); nt.links.new(mix.outputs['Result'], _sep.inputs['Color'])
+_m1 = nt.nodes.new('ShaderNodeMath'); _m1.operation = 'MAXIMUM'; nt.links.new(_sep.outputs[0], _m1.inputs[0]); nt.links.new(_sep.outputs[1], _m1.inputs[1])
+_m2 = nt.nodes.new('ShaderNodeMath'); _m2.operation = 'MAXIMUM'; nt.links.new(_m1.outputs[0], _m2.inputs[0]); nt.links.new(_sep.outputs[2], _m2.inputs[1])
+_fk = nt.nodes.new('ShaderNodeMath'); _fk.operation = 'MULTIPLY'; _fk.inputs[1].default_value = 0.45; nt.links.new(_m2.outputs[0], _fk.inputs[0])
+tint = nt.nodes.new('ShaderNodeMix'); tint.data_type = 'RGBA'; nt.links.new(_fk.outputs[0], tint.inputs['Factor'])
 nt.links.new(mix.outputs['Result'], tint.inputs['A']); tint.inputs['B'].default_value = (1, 1, 1, 1)
 tsun = nt.nodes.new('ShaderNodeMix'); tsun.data_type = 'RGBA'; tsun.blend_type = 'MULTIPLY'; tsun.inputs['Factor'].default_value = 1
 nt.links.new(tint.outputs['Result'], tsun.inputs['A']); tsun.inputs['B'].default_value = SUN + (1,)

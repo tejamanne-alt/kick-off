@@ -488,7 +488,7 @@ rebuilt from its pre-polish original. That is the FBX and atlas at commit `f1b17
 never polishes a polished model twice:
 
 ```
-blenv/bin/python -m pip install numpy scipy pillow          # (bpy==5.2.3 needs Python 3.13)
+blenv/bin/python -m pip install numpy scipy pillow opencv-python-headless   # (bpy==5.2.3 needs Python 3.13)
 python3 polish_all.py --blender $PWD/blenv/bin/python --out /tmp/polished              # about 4 minutes
 python3 polish_all.py --blender $PWD/blenv/bin/python --out /tmp/polished --install    # and copy into Art/Models
 python3 polish_all.py ... --only PrimaryGirl                                           # one character
@@ -497,39 +497,54 @@ python3 polish_all.py ... --only PrimaryGirl                                    
 Then render the player cards again: `fbx_to_blend.py`, then `portrait_teen.py` (above). Bump
 `GeneratedContent.Version`.
 
-Why each step exists is in `docs/LEARNINGS.md`, C1 to C8. In short:
+Why each step exists is in `docs/LEARNINGS.md`, C1 to C8 and C14. In short:
 
-- **`face_paint.py`** (Kai, Leo, Mia, Zoe) paints an illustrated face over the scan's photographic one:
-  - **How it places the paint:** every atlas texel is placed in 3D by a UV rasteriser and seen in a front view of the
-    head (640 px for 32 cm).
-  - **The skin:** replaced by a smooth field of its own colour.
-  - **The features**, drawn as supersampled vector shapes and projected back into the atlas: eyes (white, a warm
-    iris, pupil, two highlights, a dark lash line, a flick for the girls), brows, a nose stroke, the kid's mouth (Kai's
-    grin, the others' smiles), a little blush.
-  - **Where they go:** where the scan's features were (the darkest blobs for the irises, the reddest for the mouth),
-    unless `STYLES` places them. Mia's hair and cheeks mislead the search, so hers are placed.
-  - **The extent:** only the face oval changes, fading back to the scan at the sides, the ears and the hairline.
-  - **Review:** `--review face.png` writes the scan's face, the painted canvas and the result side by side.
+- **`face_ink.py`** (Kai, Leo, Mia, Zoe) gives each kid's own scanned face the finish of Max's painted one. Nothing is
+  redrawn or moved: the eyes, brows, nose and mouth keep the scan's shapes, sizes and places.
+  - **How it works:** every atlas texel is placed in 3D by a UV rasteriser and seen in a front view of the head (640 px
+    for 32 cm; `face_paint.Head`). Only the change made there goes back to the atlas, so untouched texels keep their
+    own sharpness.
+  - **The eyes:** each eye's opening (its white and iris) is found, and a dark lash line is drawn along its own top
+    edge. The line is thin at the inner corner and fuller at the outer one; the boys' lines end at the corner and the
+    girls' turn into a small flick. A faint line goes under the eye. The white is cleaned and the iris given a little
+    more contrast; the scan's highlights stay.
+  - **The brows** keep their own outline, filled with one dark brown.
+  - **The mouth:** the lips' parting is darkened along its own curve, and the lips keep their colour. The nose is left
+    as scanned.
+  - **The skin** is flattened: an edge-preserving filter, then halfway toward its own smooth tone.
+  - **Review:** `--review face.png` writes the scan's face, the finished canvas and the result side by side.
+  - `polish_all.py --no-ink` ships the scanned faces exactly as they are.
+  - `face_paint.py`, which drew new faces, was rejected (`docs/LEARNINGS.md` C14). `face_ink.py` uses only its head
+    canvas, feature search and drawing helpers.
 - **`polish_character.py`** (every character; the steps are in `polish_lib.py`):
   - drops loose vertices and welds open-edge vertices within `--merge` (2 mm);
   - decimates to `--tris` (32k kids, 14k passers-by) and `--bag-tris` (8k), holding back the head and hands (0.3) and
     texture-island borders (0.15), so faces, fingers and printed numbers keep their shape;
   - turns round triangles whose surroundings clearly face the other way;
+  - makes the head rigid (`rigid_head`): everything above a cut through the Head joint, dipping under the chin, follows
+    the Head alone, blending back to the neck below it. Otherwise the face folds as the head nods (LEARNINGS C15);
   - keeps one outfit part per face, and at most four normalised bone weights;
+  - absorbs white tears (`absorb_tears`): a greyish face of no outfit part joins the garment around it when that
+    garment covers 65% of the surface within 2 cm of it (LEARNINGS C16). `<Name>_polish.json`'s `tear_faces_absorbed`
+    says how many moved;
   - rebuilds the normals:
     - from the surface around each vertex: 12 mm on skin, 20 mm on clothes, 35 mm on hair;
     - hair points away from the centre of its mass (the rim light then shows only at the hair's outline);
-    - the inner face leans toward the head's forward direction (`--face-lean`), so it is lit as one shape;
+    - the face, jaw and chin included, leans toward a sphere behind it (`--face-lean`), so it is lit as one rounded
+      shape;
   - push-pull fills every atlas gap from its island, so no mip level mixes in a foreign colour.
 
-  No vertex moves except where open edges are welded. The bones, rest pose, weights, outfit parts, vertex colours,
-  bags and neck heights stay as they were. The export settings are `meshy_rigged.py`'s. `<Name>_polish.json` records
-  what was done.
+  No vertex moves except where open edges are welded. The bones, rest pose, bags and neck heights stay as they were;
+  so do the weights, outfit parts and vertex colours, except the head's weights and the tears' parts and colours. The
+  export settings are `meshy_rigged.py`'s. `<Name>_polish.json` records what was done.
 - **`polish_bags.py`** fills the five shared bag atlases (RGBA: the alpha is the recolour mask) the same way.
 
 **Reviewing.** Three tools are available:
 - `review/cartoon/render_scenes.py`, with the cast scenes and the filter ports in `review/{filter,sketch,cartoon}`,
-  renders the game's look in every filter;
+  renders the game's look in every filter. Its `solo`, `kids` and `teens` scenes, `HEAD_TILT` and `DIAG` modes (vertex
+  colours only, atlas only, rim off, ink hull coloured, outfit parts) are for finding a character fault (its header).
+  Its `gait` scene shows a figure at four moments of a run or walk (`GAIT_OFFSET` for the other half of the cycle), with
+  `CharacterRig`'s torso motion mirrored (`TORSO=0` for the rigid torso of before v115);
 - `fbx_to_blend.py` rebuilds a `.blend` from a shipped FBX for `review_teen.py`, `review_poses.py` and
   `portrait_teen.py`;
 - the boards in `review/characters_v2/`.

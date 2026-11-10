@@ -18,7 +18,8 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
    - at the current camera's play size, close up, and on the title screen;
    - from the game's camera angles;
    - in all four looks (Original, Comic halftone, Pencil sketch, Classic cartoon);
-   - with characters casting no shadows, as in the game.
+   - with characters casting no shadows, as in the game;
+   - with the head nodded and turned as the menu and the run move it, not only in the idle pose (C15).
 6. **A fix for one asset is a fix for all of them.** When a pipeline bug is found and fixed, rebuild every asset made by the old pipeline in the same change.
 7. **Record every revert,** with who decided, why, and "don't retry X".
 
@@ -180,7 +181,7 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
   Then the user said the kids "look a bit real life" and that even Hana and Max "look like low-quality assets".
 - *Why:* there was never a written target for style, fidelity or budget, and the photographic texture (baked lighting, a real child's face) was never addressed.
 - *Fix (November 2026):* the user's own designs are kept, but restyled:
-  - an illustrated face replaces the photographic one (`tools/blender/face_paint.py`): drawn eyes with highlights, simple brows, a nose stroke, the kid's own mouth, a little blush, in their own skin tone;
+  - an illustrated face replaced the photographic one (`tools/blender/face_paint.py`): drawn eyes with highlights, simple brows, a nose stroke, the kid's own mouth, a little blush, in their own skin tone. The user rejected it as alien (C14). Since v113 each kid keeps their own face with Max's finish (`face_ink.py`);
   - the mesh is repaired (C1, C2).
   Reviewed before and after in `review/characters_v2/`.
 - *Rule:* rule 4. "Make it a game character" means the user's design with a game finish. It does not mean a generic replacement: that is exactly what was reverted in v84.
@@ -194,6 +195,7 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
 - *What:* weights by nearness put 18 to 29% of the front of the head partly on the Neck bone, so faces folded as the head turned.
 - *Fix:* a rigid head above the jaw (v79).
 - *Rule:* use the source's own skin weights where they exist, and check weight distributions with numbers.
+- *Later:* the source's own weights were no better. The rigged scans folded the same way until v114 (C15).
 
 **C7. Decimation removed joints, and later dragged prints.**
 - *What:*
@@ -230,6 +232,95 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
 **C13. Rigs and heights.**
 - *What:* `CharacterRig` once reset adults to kid size. One shared neck height would have made all four kids the same height.
 - *Rule:* rig code never writes absolute scale. Heights live in the roster table. Check feet on the ground.
+
+**C14. The drawn kid faces looked alien (v111, reverted in v113).**
+- *What:* `face_paint.py` replaced Kai's, Leo's, Mia's and Zoe's scanned faces with drawn ones:
+  - new eyes, sized from the distance between the scan's eyes (half of it wide, 0.42 of it tall), with big irises and two highlights;
+  - a short stroke for the nose;
+  - a small stroke for the mouth;
+  - blush, on a skin flattened to one tone.
+  The user's verdict, with screenshots of Mia close up, in game and on the player cards: "They look terrible and look like aliens. The nose, eyes and mouth are rendered the worst. Max's eyes and facial features look good enough."
+- *Why:*
+  - The style sheet copied the *shapes* of an anime face (big round eyes, a dot nose, a tiny mouth) onto a child's head with realistic proportions. Doll eyes over a real face read as uncanny.
+  - Max's face reads as drawn because of its *finish*: an even skin tone, a bold lash line, solid brows, a clean white and iris, and one line for the mouth. Its proportions are realistic.
+  - It was shipped on Blender front views and renders alone. The user saw it first on the phone. Rule 4 says to let the user choose from side-by-sides before replacing a character's face.
+- *Fix:*
+  - Every kid is rebuilt from their own scanned face.
+  - `face_ink.py` gives that face Max's finish without redrawing it:
+    - a dark lash line along each eye's own top edge (the boys' lines end at the corner, the girls' end in a small flick), with a faint line under the eye;
+    - the brows' own outline, filled with one dark brown;
+    - the lips' parting darkened along its own curve;
+    - the skin flattened, keeping half its shading.
+  - Each eye's opening, brow and mouth is measured from the scan. The nose is left as scanned.
+  - `polish_all.py --no-ink` ships the plain scans.
+  - Reviewed at in-game, menu and close-up distance and on the player cards (`review/characters_v2/faces_v113.jpg`). Approval still to come from the user.
+- *Rule:*
+  - Restyle a face by its finish (line weight, flat colour, clean edges), never by replacing its features' shapes or proportions.
+  - Keep each kid's own eyes, nose and mouth.
+  - Show a face change to the user as a side-by-side before it ships.
+
+**C15. Faces folded as the head nodded (every rigged character, fixed in v114).**
+- *What:* the user's recording of the title screen showed Hana's face creasing across the mouth and chin as she watched the ball. The numbers:
+  - 38% of Hana's face above the Head joint, and three-quarters of her jaw, were partly on the Neck bone;
+  - Mom had over 1,000 face vertices on the Neck, the Shopkeeper about 400, and Max's and every kid's jaw some.
+  The menu nods the head 6 to 20° down to watch the ball, and a slide 44°. The part on the Neck stayed behind, and the lower face squashed into the neck. The face lean (C2) took only vertices at least 90% on the Head, so Hana's lower face also kept the scan's noisy normals. The light/shade step then ran across it as a jagged crease that crawled as she moved.
+- *Why:*
+  - The scans' automatic rigs blend Head and Neck over the whole lower face. C6 was fixed for the scripted kids (v79) but never checked on the rigged scans. That is rule 6 again.
+  - Every review used a still pose with the head level.
+- *Fix* (`polish_lib.rigid_head`, run on every character by `polish_all.py`):
+  - The whole head moves with the Head bone: everything above a cut through the Head joint that dips forward under the chin. Below the cut, the weights blend back to the neck over 12% of the head's height.
+  - `face_lean` now takes every head vertex, the jaw included. It leans toward a sphere behind the face instead of one flat forward direction, so the face shades as one rounded shape: lit whole in front light, with a clean curved edge when the sun is to one side.
+  - Checked at the menu's -20° and the slide's -44°: `review/characters_v2/head_tilt_v114.jpg`.
+- *Rule:*
+  - Check skin weights by numbers on every new character: the face is 100% on the Head.
+  - Review heads in motion, nodded and turned, never only in the idle pose.
+
+**C16. White tears in dark clothes and hair (every scanned character, fixed in v114).**
+- *What:* white specks, slivers and streaks in Hana's jacket and trousers, Max's jeans and the other kids' clothes. The user: "lots of white tears in all the characters, from hair to face to clothing".
+- *Why:*
+  - A render of the vertex colours alone showed them all; the atlas alone was clean.
+  - The rigs' `paint()` (`meshy_boy.py`) gives each garment's faces the garment's colour and divides its texels by it. Faces whose texel wasn't recognised as the garment (light folds, highlights, unpainted seams) stayed "no part": a white vertex colour times a light texel.
+  - Cutting to 32k triangles made them bigger.
+  - The shop's recolouring left them white.
+  - Most of them share no edge with their garment (the scans are cut along every colour line), so a check by connected faces found almost none.
+- *Fix* (`polish_lib.absorb_tears`): by surface, not topology. A greyish face of no part joins garment p when p covers 65% of the surface within 2 cm of it (the face itself not counted). This moved 969 of Hana's faces. Skin never moves (its colour is too saturated), and wide features keep their middles: her jacket's "H", the hoodie, the striped cuffs.
+- *Rule:* diagnose a colour fault by splitting the render: vertex colours only, atlas only, rim off, ink hull coloured, outfit parts (`review/cartoon/render_scenes.py` `DIAG`). Look at a garment in the parts view before trusting it.
+
+**C17. The rim light drew white scratches on dark clothes and hair, and the review renderer lagged the shader.**
+- *What:* with the tears gone, thin white lines remained along every crease of Hana's black trousers and every clump of her hair.
+- *Why:* `ToonCharacter`'s rim whitened the colour under it by 45%, whatever that colour was. On near-black cloth (0.02) that adds 0.45 × 0.3: a light line on every inner crease, pocket edge and hair clump, not only round the silhouette. C3 tinted the rim, but not enough for black.
+- *Fix:* the rim is whitened by 45% of the colour's lightness (its brightest channel). A light shirt and skin keep their bright edge, and dark hair and clothes keep only a faint sheen of their own colour.
+- *Also:* `review/cartoon/render_scenes.py` had never received v111's rim, its characters-cast-no-shadows, or the close-up review scenes. They lived only in a scratch copy, so its renders were not the game's (C9 again). It is now up to date, with the diagnostics above.
+- *Rule:*
+  - A light term that adds light scales with the surface's own lightness.
+  - Copy every scratch copy of a review tool back before committing. The mirrors listed in `CLAUDE.md` include the review renderer.
+
+**C18. Mia's right eye (v114).**
+- *What:* after C14, the user found Mia's own right eye (on the left as we look at her) narrower and squinting next to her left: "Take a reference from the right eye and fix it."
+- *Fix:* `face_ink.py` replaces it with her left eye, mirrored across the middle of the face, before the lash lines are drawn. Inside the replaced eye the result is written as it is, not as a change, or the old iris showed through as grey specks.
+- *Rule:* when one side of a scanned face is worse, mirror the good side rather than redraw it. That keeps the kid's own eye, which C14's rule asks for.
+
+**C19. The torso was one rigid block (every character, fixed in v115).**
+- *What:* the user's recordings of Hana and Max dribbling: "the characters' bodies are so stiff, the chest to abdomen part. Because of that hand movement, it looks like hanging from a fixed thing."
+- *Why:*
+  - `CharacterRig` swung the legs, knees, arms, elbows, head and bag about the body's side axis, and pitched the whole body as one piece.
+  - The models' Hips, Spine and Chest bones were never moved; they weren't even on the rig. So the arms swung from a ribcage that never moved.
+  - In a real stride:
+    - the pelvis turns with the legs and the ribcage the other way with the arms;
+    - the trunk sways over the standing leg and dips as the legs reach apart;
+    - the chest breathes all the while.
+- *Fix* (`CharacterRig.Torso`, worked out from the limbs' own pose, so every animator gets it):
+  - the chest turns up to ±15° with the arms' swing, using the sine of each arm's swing so both arms raised overhead turn nothing;
+  - the pelvis turns up to ±10° the other way with the legs;
+  - the torso sways 3° over the straighter leg and dips 2° at full stride;
+  - the chest breathes 0.9°;
+  - the head turns, sways and dips back, so the eyes stay level and ahead;
+  - the builder puts Hips, Spine and Chest on the rig (v115).
+- *Why no weight change:* the torso's weights already blend Hips to Spine to Chest over about 30 cm, so the turn bends through the waist rather than creasing.
+- *Reviewed:* `review/cartoon/render_scenes.py` mirrors it (`TORSO=0` gives the old rigid torso). Its `gait` scene renders a run or walk cycle: `review/characters_v2/torso_run_v115.gif`, `torso_walk_v115.gif`.
+- *Rule:*
+  - Animate the trunk, not only the limbs: a procedural gait needs the pelvis and chest turning against each other.
+  - Review motion as motion (a whole cycle), not as one pose.
 
 ## D. Art direction and look
 
@@ -300,6 +391,10 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
 
 Never re-propose what is rejected here.
 - **Characters:** keep the user's own character designs: outfit, hair, likeness and their reference photos and drawings. Don't replace them with generic anime models (v84 was reverted at once). They should look like polished game characters, not photographs.
+- **Kids' faces:**
+  - Keep each kid's own scanned eyes, nose and mouth, at their own sizes.
+  - No drawn-on doll eyes or stroke noses and mouths (v111 was reverted as "aliens").
+  - The target is Max's face: realistic proportions with a drawn finish.
 - **Comic filter:** dots and hatching on the characters as well as the street (raised on request).
 - **Controls:**
   - nothing inside the stick's ring;

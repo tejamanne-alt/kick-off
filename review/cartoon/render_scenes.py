@@ -6,6 +6,14 @@
 # <scene>_normal.png (view-space normals, 0.5 + 0.5 n) and <scene>_data.png (r, g: depth as a fraction of FAR in two
 # 8-bit halves, b: the mask: 1 street, 0.5 foliage (the plants kit), 0 a figure or a cel: the people, the ball, and
 # the things the kid plays with (coins, animals, cars, crates, cones, the pipe: CELS)).
+# Characters cast no shadows, as in the game (NO_CHAR_SHADOWS=0 lets them). Review scenes: kids (the four primary kids),
+# teens (Hana and Max), solo (SOLO=<Model>, SOLO_H=<height>, SOLO_BAG, SOLO_POSE: one figure three-quarter, front and
+# running), gait (SOLO at four moments of its run, GAIT_OFFSET radians on; GAIT=walk for a walk); for those and the cast scenes, CAM_FOV, CAM_X, CAM_Z, CAM_TZ move the camera, and HEAD_TILT=<degrees> nods
+# every head (the menu nods 6 to 20 down, a slide 44). DIAG=<mode> isolates a character fault (docs/LEARNINGS.md C16, C17):
+# norim (no rim), crack (no rim; the ink hull magenta, so cracks and inner outlines show), vc (vertex colours only), tex
+# (the atlas only), parts (each face coloured by its outfit part, UV2.x: 0 white, 1 red, 2 blue, 3 green, 4 yellow;
+# PARTS_UV names the layer, 'Parts' in the polished FBXs). RIM_FLAT=1 draws the rim as v111 to v113 did (whitened by 45%
+# whatever the colour), for before-and-after boards. TORSO=0 keeps the torso rigid (as before v115: CharacterRig.Torso).
 # --data-only renders only the data pass. The toon look: the albedo (atlas x vertex colour)
 # times a band between the shade tint and the sun, the sun's cast shadows, and for the people the ink hull and a rim.
 import bpy, math, os, sys, random
@@ -17,6 +25,8 @@ RW, RH = (int(argv[3]), int(argv[4])) if len(argv) > 4 and argv[3].isdigit() els
 FAR = 300.0
 os.makedirs(OUT, exist_ok=True)
 random.seed(7)
+
+DIAG = os.environ.get('DIAG', '')
 
 bpy.ops.wm.read_factory_settings(use_empty=True)
 S = bpy.context.scene
@@ -77,7 +87,7 @@ def toon(name, tex=None, colour=(1, 1, 1), shade=KIT_SHADE, mask=1.0, vcol=True,
     sw = nt.nodes.new('ShaderNodeGroup'); sw.node_tree = PASS
     geo = nt.nodes.new('ShaderNodeNewGeometry')
     if ink:
-        e = nt.nodes.new('ShaderNodeEmission'); e.inputs['Color'].default_value = (0.012, 0.01, 0.016, 1)
+        e = nt.nodes.new('ShaderNodeEmission'); e.inputs['Color'].default_value = (1.0, 0.0, 1.0, 1) if DIAG == 'crack' else (0.012, 0.01, 0.016, 1)
         tr = nt.nodes.new('ShaderNodeBsdfTransparent')
         mx = nt.nodes.new('ShaderNodeMath'); mx.operation = 'MAXIMUM'
         nt.links.new(sw.outputs['normal'], mx.inputs[0]); nt.links.new(sw.outputs['data'], mx.inputs[1])
@@ -89,6 +99,24 @@ def toon(name, tex=None, colour=(1, 1, 1), shade=KIT_SHADE, mask=1.0, vcol=True,
     rgb = nt.nodes.new('ShaderNodeRGB'); rgb.outputs[0].default_value = tuple(colour) + (1,)
     albedo = rgb.outputs[0]
     alpha = None
+    if DIAG == 'parts' and name.startswith('fig'):
+        m = bpy.data.materials.new(name); m.use_nodes = True; nt = m.node_tree
+        for n in list(nt.nodes):
+            if n.type != 'OUTPUT_MATERIAL': nt.nodes.remove(n)
+        attr = nt.nodes.new('ShaderNodeAttribute'); attr.attribute_name = os.environ.get('PARTS_UV', 'Parts')
+        sep = nt.nodes.new('ShaderNodeSeparateXYZ'); nt.links.new(attr.outputs['Vector'], sep.inputs[0])
+        ramp = nt.nodes.new('ShaderNodeValToRGB'); ramp.color_ramp.interpolation = 'CONSTANT'
+        mp = nt.nodes.new('ShaderNodeMath'); mp.operation = 'DIVIDE'; mp.inputs[1].default_value = 5.0
+        nt.links.new(sep.outputs[0], mp.inputs[0]); nt.links.new(mp.outputs[0], ramp.inputs[0])
+        el = ramp.color_ramp.elements; el[0].position = 0.0; el[0].color = (1, 1, 1, 1); el[1].position = 0.18; el[1].color = (1, 0, 0, 1)
+        for pos, c in ((0.38, (0, 0.2, 1, 1)), (0.58, (0, 0.8, 0, 1)), (0.78, (1, 0.9, 0, 1))):
+            e = el.new(pos); e.color = c
+        em = nt.nodes.new('ShaderNodeEmission'); nt.links.new(ramp.outputs[0], em.inputs[0])
+        nt.links.new(em.outputs[0], nt.nodes['Material Output'].inputs['Surface'])
+        m.use_backface_culling = True
+        return m
+    if tex is not None and DIAG == 'vc' and name.startswith('fig'): tex = None
+    if vcol and DIAG == 'tex' and name.startswith('fig'): vcol = False
     if tex is not None:
         t = nt.nodes.new('ShaderNodeTexImage'); t.image = tex
         albedo = _mix(nt, t.outputs['Color'], albedo, 1.0, 'MULTIPLY')
@@ -128,11 +156,22 @@ def toon(name, tex=None, colour=(1, 1, 1), shade=KIT_SHADE, mask=1.0, vcol=True,
         ndv = nt.nodes.new('ShaderNodeVectorMath'); ndv.operation = 'DOT_PRODUCT'
         nt.links.new(geo.outputs['Normal'], ndv.inputs[0]); nt.links.new(geo.outputs['Incoming'], ndv.inputs[1])
         rr = nt.nodes.new('ShaderNodeMapRange'); rr.interpolation_type = 'SMOOTHSTEP'
-        rr.inputs['From Min'].default_value = 0.4; rr.inputs['From Max'].default_value = 0.24
+        # ToonCharacter's rim: smoothstep(0.66, 0.8, 1 - N.V), tinted by the albedo (lerp(albedo, 1, 0.45 * max(albedo)));
+        # OLD_LOOK=1 draws the rim as it was before November 2026 (white, wider)
+        OLD = os.environ.get('OLD_LOOK') == '1'
+        rr.inputs['From Min'].default_value = 0.4 if OLD else 0.34; rr.inputs['From Max'].default_value = 0.24 if OLD else 0.2
         nt.links.new(ndv.outputs['Value'], rr.inputs['Value'])
         rk = nt.nodes.new('ShaderNodeMath'); rk.operation = 'MULTIPLY'; rk.inputs[1].default_value = rim
         nt.links.new(rr.outputs['Result'], rk.inputs[0])
-        col = _mix(nt, col, SUN, rk.outputs[0], 'ADD')
+        # whitened by 45% of the albedo's lightness (its brightest channel), as ToonCharacter
+        _sep = nt.nodes.new('ShaderNodeSeparateColor'); nt.links.new(albedo, _sep.inputs['Color'])
+        _m1 = nt.nodes.new('ShaderNodeMath'); _m1.operation = 'MAXIMUM'; nt.links.new(_sep.outputs[0], _m1.inputs[0]); nt.links.new(_sep.outputs[1], _m1.inputs[1])
+        _m2 = nt.nodes.new('ShaderNodeMath'); _m2.operation = 'MAXIMUM'; nt.links.new(_m1.outputs[0], _m2.inputs[0]); nt.links.new(_sep.outputs[2], _m2.inputs[1])
+        _fk = nt.nodes.new('ShaderNodeMath'); _fk.operation = 'MULTIPLY'; _fk.inputs[1].default_value = 0.45; nt.links.new(_m2.outputs[0], _fk.inputs[0])
+        # (RIM_FLAT=1: whitened by 45% whatever the colour, as from November 2026 to v113)
+        tint = _mix(nt, albedo, (1, 1, 1), 1.0 if OLD else (0.45 if os.environ.get('RIM_FLAT') == '1' else _fk.outputs[0]))
+        tsun = _mix(nt, tint, SUN, 1.0, 'MULTIPLY')
+        col = _mix(nt, col, tsun, rk.outputs[0], 'ADD')
     # the normal pass: view-space normal, 0.5 + 0.5 n
     vt = nt.nodes.new('ShaderNodeVectorTransform'); vt.vector_type = 'NORMAL'; vt.convert_from = 'WORLD'; vt.convert_to = 'CAMERA'
     nt.links.new(geo.outputs['Normal'], vt.inputs[0])
@@ -298,6 +337,12 @@ def P(**k):
     return d
 
 
+def walk_pose(phase):
+    s = math.sin(phase)
+    return P(legF=s * 20, legB=-s * 20, kneeF=-(6 + 22 * max(0, math.cos(phase + 0.9))), kneeB=-(6 + 22 * max(0, math.cos(phase + math.pi + 0.9))),
+             armF=-s * 16, armB=s * 16, elbowF=16, elbowB=16)
+
+
 def run_pose(phase):
     def fold(a):
         s = max(0.0, math.cos(a + 0.9)); return 14.0 + 80.0 * s * s
@@ -322,6 +367,7 @@ POSES = {
 
 
 def person(model, loc, yaw, pose, height, bag=None, mask=0.0, ink_w=0.006, rim=0.2, lift=0.0):
+    if DIAG in ('norim', 'crack', 'vc', 'tex', 'parts'): rim = 0.0
     """A kid or a passer-by from its FBX: its atlas times its vertex colours, one Locker Room bag (or none), posed
     with the game's joint angles, scaled to its standing height, turned by yaw (66 = the game's three-quarter view
     running right; 0 faces the camera), its feet on the ground (or lift above it)."""
@@ -361,7 +407,25 @@ def person(model, loc, yaw, pose, height, bag=None, mask=0.0, ink_w=0.006, rim=0
     for n, f in (('R', 'F'), ('L', 'B')):
         swing('UpperLeg.' + n, p['leg' + f]); swing('LowerLeg.' + n, min(p['knee' + f], 0))
         swing('UpperArm.' + n, p['arm' + f]); swing('LowerArm.' + n, max(p['elbow' + f], 0))
-    swing('Bag', p['bag'] * 0.3); swing('Head', p['headTilt']); swing('Hips', p['lean'], sign=+1)
+    swing('Bag', p['bag'] * 0.3); swing('Head', float(os.environ['HEAD_TILT']) if os.environ.get('HEAD_TILT') else p['headTilt']); swing('Hips', p['lean'], sign=+1)
+    # the torso, as CharacterRig.Torso (TORSO=0: the rigid torso of v114 and before). In Blender's axes the figure faces -y,
+    # its near (right) side is -x: a turn about +z brings the near side forward; a sway about +y tips the top to +x (away).
+    if os.environ.get('TORSO', '1') == '1' and 'Spine' in rig.pose.bones:
+        def turn(bone, turn_deg, sway_deg, dip_deg=0.0):
+            # dip: forward, about the side axis (+x here: a positive turn about +x tips the top toward -y, forward)
+            if bone not in rig.pose.bones: return
+            pb = rig.pose.bones[bone]; inv = pb.bone.matrix_local.to_3x3().inverted()
+            q = Quaternion(inv @ Vector((0, 0, 1)), math.radians(turn_deg)) @ Quaternion(inv @ Vector((0, 1, 0)), math.radians(-sway_deg)) \
+                @ Quaternion(inv @ Vector((1, 0, 0)), math.radians(dip_deg))
+            pb.rotation_quaternion = q @ pb.rotation_quaternion
+        sn = lambda a: math.sin(math.radians(a))
+        arms = sn(p['armF']) - sn(p['armB']); legs = sn(p['legF']) - sn(p['legB'])
+        ct = max(-15.0, min(15.0, arms * 11.0)); ht = max(-10.0, min(10.0, legs * 6.5))
+        apart = min(1.0, abs(legs) / 0.4)
+        sway = max(-1.0, min(1.0, (abs(p['kneeB']) - abs(p['kneeF'])) / 40.0)) * apart * 3.0
+        dip = 2.0 * min(1.0, abs(legs) / 1.2)
+        back = (ct - ht) * 0.5
+        turn('Hips', ht, 0.0); turn('Spine', back, sway, dip * 0.5); turn('Chest', back, 0.0, dip * 0.5); turn('Head', -ct, -sway, -dip)
     rig.scale = (height / native,) * 3
     rig.rotation_euler.z = math.radians(yaw)
     bpy.context.view_layer.update()
@@ -369,6 +433,10 @@ def person(model, loc, yaw, pose, height, bag=None, mask=0.0, ink_w=0.006, rim=0
     rig.location += Vector((loc[0] - (mn.x + mx.x) / 2, loc[1] - (mn.y + mx.y) / 2, loc[2] + lift - mn.z))
     bpy.context.view_layer.update()
     outline(objs, ink_w * native / height * 0.6, mask)
+    # as in the game (LevelBuildKit.BuildModelCharacter): characters cast no shadows (and receive none)
+    if os.environ.get('NO_CHAR_SHADOWS', '1') == '1':
+        for o in objs:
+            if o.type == 'MESH': o.visible_shadow = False
     return objs
 
 
@@ -653,7 +721,50 @@ def scene_menu():
     ball((1.95, -0.55, 1.0))
 
 
-SCENES = dict(home=scene_home, market=scene_market, beach=scene_beach, site=scene_site, park=scene_park,
+def scene_kids():
+    """the four primary-school kids side by side, three-quarter on, as the menus see them"""
+    cast_backdrop()
+    person('PrimaryBoy', (-1.95, 0.0, 0.0), 25, 'idle', 1.30, bag='RaceCar')
+    person('PrimaryBoy2', (-0.65, 0.0, 0.0), 25, 'idle', 1.32, bag='KickOff')
+    person('PrimaryGirl', (0.65, 0.0, 0.0), 25, 'idle', 1.27, bag='DenimBow')
+    person('PrimaryGirl2', (1.95, 0.0, 0.0), 25, 'idle', 1.29, bag='Unicorn')
+
+
+def scene_teens():
+    """Hana and Max, front and three-quarter"""
+    cast_backdrop()
+    person('Girl', (-1.6, 0.0, 0.0), 25, 'idle', 1.65, bag='GoldenTrail')
+    person('Girl', (-0.55, 0.0, 0.0), 0, 'idle', 1.65, bag='GoldenTrail')
+    person('BackpackBoy', (0.55, 0.0, 0.0), 0, 'idle', 1.75, bag='KickOff')
+    person('BackpackBoy', (1.65, 0.0, 0.0), 25, 'idle', 1.75, bag='KickOff')
+
+
+def scene_gait():
+    """one character at four moments of its run, three-quarter on (as the game's camera sees a run): GAIT=walk for the
+    walk; SOLO, SOLO_H, SOLO_BAG as for solo"""
+    cast_backdrop()
+    m = os.environ.get('SOLO', 'PrimaryBoy'); bag = os.environ.get('SOLO_BAG') or None
+    h = float(os.environ.get('SOLO_H', '1.3'))
+    walk = os.environ.get('GAIT') == 'walk'
+    off = float(os.environ.get('GAIT_OFFSET', '0'))      # (radians: pi gives the other half of the cycle)
+    for i in range(4):
+        ph = off + i * math.pi / 4
+        key = 'gait%d' % i
+        POSES[key] = walk_pose(ph) if walk else run_pose(ph)
+        person(m, (-1.95 + i * 1.3, 0.0, 0.0), 66, key, h, bag=bag)
+
+
+def scene_solo():
+    """one character close up for review: three-quarter idle, front idle and running, against the cast backdrop"""
+    cast_backdrop()
+    m = os.environ.get('SOLO', 'PrimaryBoy'); bag = os.environ.get('SOLO_BAG') or None
+    h = float(os.environ.get('SOLO_H', '1.3'))
+    person(m, (-1.15, 0.0, 0.0), 30, 'idle', h, bag=bag)
+    person(m, (0.15, 0.0, 0.0), 0, 'idle', h, bag=bag)
+    person(m, (1.45, 0.0, 0.0), 66, os.environ.get('SOLO_POSE', 'run_stride'), h, bag=bag)
+
+
+SCENES = dict(gait=scene_gait, kids=scene_kids, teens=scene_teens, solo=scene_solo, home=scene_home, market=scene_market, beach=scene_beach, site=scene_site, park=scene_park,
               california=scene_california, cast_a=scene_cast_a, cast_b=scene_cast_b, menu=scene_menu)
 SCENES[SCENE]()
 
@@ -661,10 +772,10 @@ SCENES[SCENE]()
 cam = bpy.data.objects.new('cam', bpy.data.cameras.new('cam')); S.collection.objects.link(cam); S.camera = cam
 cam.data.sensor_fit = 'VERTICAL'
 cam.data.clip_start = 0.3; cam.data.clip_end = FAR
-if SCENE.startswith('cast'):
-    cam.data.angle_y = math.radians(20)
-    cam.location = (0.15, -8.6, 1.25)
-    target = Vector((0.15, 0.0, 1.05))
+if SCENE.startswith('cast') or SCENE in ('solo', 'kids', 'teens', 'gait'):
+    cam.data.angle_y = math.radians(float(os.environ.get('CAM_FOV', '20')))
+    cam.location = (float(os.environ.get('CAM_X', '0.15')), -8.6, float(os.environ.get('CAM_Z', '1.25')))
+    target = Vector((float(os.environ.get('CAM_X', '0.15')), 0.0, float(os.environ.get('CAM_TZ', '1.05'))))
 else:
     cam.data.angle_y = math.radians(CAM['fov'])
     cam.location = (CAM['x'], -CAM['back'], CAM['up'])

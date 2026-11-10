@@ -11,8 +11,8 @@
 //   the figure (_OutlinePush), so the small folds inside the silhouette draw no specks of ink;
 // - the step from shade to light is as narrow as before but anti-aliased: it widens to a pixel
 //   where the surface turns faster than a pixel can show, instead of shimmering;
-// - the rim is a narrower band and takes the colour under it (hair stays dark hair with a soft
-//   sheen, not white flecks).
+// - the rim is a narrower band and takes the colour under it, whitened only as much as that colour
+//   is light (dark hair and clothes keep a faint sheen, never white flecks or scratches).
 // Alpha carries _ComicWorld for the filters (Shaders/PostFX): 0 (people and the ball) takes the comic filter
 // except creases across it (its painted face and eyes stay clear) and slips half as far; 0.125 (the cars: a cel) is
 // drawn like the street by the comic and sketch filters (creases and all) and as an inked cel by the classic cartoon,
@@ -163,11 +163,15 @@ Shader "DribbleToSchool/ToonCharacter"
                 fixed3 col = lerp(tex.rgb * DtsShadeTint(_ShadowColor.rgb, n), tex.rgb * DtsSun(), lit);
 
                 // A rim of light round the silhouette, brightest on the sunny side, so the figure
-                // lifts off whatever is behind it; tinted by the colour under it, so dark hair keeps
-                // a soft sheen rather than white flecks.
+                // lifts off whatever is behind it; tinted by the colour under it, and whitened only
+                // as much as that colour is light: a light shirt or skin gets a bright edge, while dark
+                // hair, jeans and jackets keep a faint sheen of their own colour. (Whitened by the
+                // same 45% everywhere, the rim drew every crease and clump inside dark clothes and hair
+                // as a white scratch: docs/LEARNINGS.md C17.)
                 float3 v = normalize(_WorldSpaceCameraPos - i.worldPos);
                 float rim = smoothstep(0.66, 0.8, 1.0 - saturate(dot(n, v))) * lerp(0.4, 1.0, saturate(d + 0.35));
-                col += rim * _RimStrength * DtsSun() * lerp(tex.rgb, fixed3(1, 1, 1), 0.45);
+                float light = max(tex.r, max(tex.g, tex.b));
+                col += rim * _RimStrength * DtsSun() * lerp(tex.rgb, fixed3(1, 1, 1), 0.45 * light);
 
                 col = DtsHaze(col, i.worldPos, 1.0);
                 return fixed4(col, _ComicWorld);

@@ -1079,6 +1079,114 @@ listed in `docs/LEARNINGS.md` B1 to B6 and C1 to C12.
   - a non-school outfit after a switch;
   - the Memory Profiler showing one kid's meshes per scene.
 
+## The kids keep their own faces, with Max's finish (generated content v113)
+
+- **Why.** The user rejected the drawn faces of v111 (`face_paint.py`): "They look terrible and look like aliens. The nose,
+  eyes and mouth are rendered the worst. Max's eyes and facial features look good enough." The user asked for them to be
+  reverted, and if possible made like Max. `docs/LEARNINGS.md` C14 has the cause: doll-eye shapes on a realistic
+  child's head. Max reads as drawn because of his finish, not his shapes.
+- **Reverted.** Kai, Leo, Mia and Zoe are rebuilt from their own scanned faces. The mesh polish of v111 (welding,
+  normals, 32k triangles, filled atlas gaps) is kept.
+- **Max's finish** (`tools/blender/face_ink.py`, run by `polish_all.py`): nothing is redrawn or moved.
+  - **Eyes:** each eye's opening is found in the scan, and a dark lash line is drawn along its own top edge. The boys'
+    lines end at the corner; the girls' end in a small flick. A faint line goes under the eye. The white is cleaned,
+    the iris gets a little more contrast, and the scan's highlights stay.
+  - **Brows** keep their own outline, filled with one dark brown.
+  - **Mouth:** the lips' parting is darkened along its own curve, and the lips keep their colour.
+  - **Nose:** as scanned.
+  - **Skin:** flattened toward its own tone, keeping half its shading.
+  - `polish_all.py --no-ink` gives the plain scans if the user prefers them.
+- **New player cards** for the four kids (`Resources/UI/Player*.png`, `portrait_teen.py`).
+- **Cost:** none. Only the four kids' 2048 atlases changed. The FBXs are the ones v111/v112 ship, since the geometry
+  comes from the same originals by the same polish.
+- **Reviewed** in Blender with the game's toon look (`review/characters_v2/`):
+  - `faces_v113.jpg`: each kid as the rejected v111 face, the plain scan and v113, close up front and turned, next to
+    Max at the same scale;
+  - `player_cards_v113.jpg`: the same three on the player cards;
+  - `faces_before_after.jpg`, `player_cards_before_after.jpg`, `cast_a_all_looks.jpg`, `cast_b_all_looks.jpg` and
+    `mia_poses.jpg` (every pose clean, `review_poses.py --leaks`): redone with v113, so no board shows the rejected
+    faces as the current state.
+- **Checked:** the scripts compile against the reference assemblies with no new errors (only `GeneratedContent.Version`
+  changed).
+- **Not run in Unity or on a device.** Check the four kids on the Nord CE5 in every look, and ask the user to choose
+  between the finish and the plain scans (`--no-ink`) from the board.
+
+## Faces that stay whole, no white tears, Mia's eye (generated content v114)
+
+**Why.** The user sent a recording of the title screen (Hana juggling) and three screenshots:
+- Mia's right eye didn't look good;
+- "lots of white tears in all the characters, from hair to face to clothing";
+- Hana's face "is getting folded" as she animates.
+The user asked for a check on every character, playable and not.
+
+**What was wrong**, each found by splitting the render (`docs/LEARNINGS.md` C15 to C18):
+- **Folded faces.** The rigged scans' automatic weights put the lower face partly on the Neck bone: 38% of Hana's face
+  and three-quarters of her jaw, over 1,000 of Mom's face vertices, and every jaw some. The menu nods the head 6 to 20°
+  to watch the ball, and the lower face squashed into the neck. The face's normal lean also skipped those vertices, so
+  the light/shade step ran across the mouth and chin as a jagged crease.
+- **White tears.** In a render of the vertex colours alone, white specks and slivers showed in every dark garment. They
+  are light streaks the scans painted into the clothes (folds, highlights, unpainted seams), left out of their garment
+  as a white vertex colour times a light texel.
+- **White scratches.** The rim light whitened every colour by 45%, so it drew each crease of dark trousers and each
+  clump of dark hair as a light line.
+- **Mia's right eye** was scanned narrower and squinting.
+
+**Fixed** (`tools/blender/polish_lib.py`, run on all twelve characters by `polish_all.py`):
+- `rigid_head`: the head above a cut through the Head joint, dipping under the chin, follows the Head alone, blending
+  to the neck below it.
+- `face_lean`: the whole face, jaw and chin included, leans toward a sphere behind it, so it shades as one rounded
+  shape.
+- `absorb_tears`: a greyish face of no outfit part joins the garment that covers 65% of the surface within 2 cm of it.
+  It then shades and recolours with that garment. Skin, the jacket's "H", the hoodie and stripes stay.
+- **`ToonCharacter`'s rim** is whitened by 45% of the colour's lightness. Light clothes and skin keep their edge, and
+  dark clothes and hair keep a faint sheen. Its Blender mirrors were updated in the same change: `portrait_teen.py`,
+  `review_teen.py`, `review_poses.py`, and `review/cartoon/render_scenes.py`, which also gets the review scenes and
+  diagnostics it had been missing.
+- **Mia's right eye** is her left one, mirrored (`face_ink.py`).
+- **New player cards** for all six playable kids.
+
+**Cost:**
+- One `max` of three channels per character pixel in `ToonCharacter`.
+- The meshes are the same size (32k / 14k triangles) and the atlases the same.
+
+**Reviewed** in `review/characters_v2/` (Blender, the game's toon look):
+- `tears_v114.jpg`: every character before and after;
+- `head_tilt_v114.jpg`: heads nodded 20° and 44°;
+- `mia_eye_v114.jpg`;
+- `player_cards_v114.jpg`.
+
+**Not run in Unity or on a device.** Check on the phone:
+- the title screen's juggling, and a slide;
+- every look;
+- the shop's recolours of Hana's jacket and Max's jeans.
+
+## The middle of the body moves (generated content v115)
+
+- **Why.** The user's recordings of Hana and Max dribbling: "the characters' bodies are so stiff, the chest to abdomen
+  part. Because of that hand movement, it looks like hanging from a fixed thing." `CharacterRig` swung the limbs and
+  pitched the whole body as one, and never moved the models' Hips, Spine or Chest bones (`docs/LEARNINGS.md` C19).
+- **`CharacterRig.Torso`** works the trunk out from the limbs' own pose, so every animator gets it: the run, the walk,
+  the passers-by, the menu's keepy-uppies, kicks, co-op ghosts.
+  - **Chest:** turns up to ±15° with the arms' swing (a run about 12°, a walk about 5°).
+  - **Pelvis:** turns up to ±10° the other way with the legs.
+  - **Lower back:** shares the chest's turn against the pelvis, so the twist runs through the waist.
+  - **Sway:** the torso sways 3° over the standing leg and dips 2° as the legs reach apart.
+  - **Breathing:** the chest breathes (0.9°, each character at its own moment).
+  - **Head:** turns, sways and dips back, so the eyes stay level and on the way ahead.
+  - The turns use the sine of each limb's swing (how far the hand or foot reaches in front), so arms raised overhead
+    turn nothing. All six amplitudes can be tuned on the component.
+- **The builder** (`LevelBuildKit.BuildModelCharacter`) puts the Hips, Spine and Chest bones on the rig.
+- **Weights:** no change. The torso already blends from Hips to Spine to Chest over about 30 cm, so the turn bends
+  through the waist.
+- **Cost:** three more joints per character per frame (a few quaternion products).
+- **Reviewed:** `review/cartoon/render_scenes.py` mirrors it (`TORSO=0` gives the old rigid torso), and its `gait`
+  scene renders a run or a walk cycle. See `review/characters_v2/torso_run_v115.gif` (Hana's run, before and after),
+  `torso_run_v115.jpg` and `torso_walk_v115.gif` (Mom's walk).
+- **Checked:** the scripts compile against the reference assemblies with no new errors.
+- **Not run in Unity or on a device.** Check the turn's direction on the phone first: the near shoulder comes forward
+  with the near arm. If it is mirrored, flip the sign in `Torso`. Then look at a run, a walk, the menu's juggling and a
+  kick.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

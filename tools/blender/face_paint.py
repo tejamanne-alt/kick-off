@@ -1,3 +1,8 @@
+# REJECTED (docs/LEARNINGS.md, C14): the user found these drawn faces alien (big doll eyes, a stroke for a nose and a
+# mouth). polish_all.py no longer runs it; face_ink.py gives the kids' own faces Max's finish instead, and uses the head
+# canvas, the feature search and the drawing helpers below (Head, detect, spec_for, smooth_skin, stroke). Don't bring the
+# painted faces back.
+#
 # Paints an illustrated face onto a scanned kid's atlas, so the four primary-school kids read as game characters (drawn
 # eyes, clean skin, a simple mouth, in the spirit of Hana's and Max's painted faces) instead of photographs of children,
 # while keeping their own skin tone, hair, outfit and head:

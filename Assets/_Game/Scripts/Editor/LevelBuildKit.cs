@@ -456,6 +456,10 @@ namespace DribbleToSchool.EditorTools
             rig.elbowFront = rightNear ? elbowR : elbowL; rig.elbowBack = rightNear ? elbowL : elbowR;
             rig.head = head;
             rig.bag = bag;
+            // The torso's own bones, so the middle of the body turns, sways and breathes (CharacterRig.Torso).
+            rig.hips = hips;
+            rig.spine = bone("Spine");
+            rig.chest = bone("Chest");
 
             smr.sharedMaterial = material;
             // Four bones a vertex, whatever the device's quality level: the models are weighted with smooth four-bone

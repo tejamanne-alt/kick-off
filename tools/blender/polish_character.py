@@ -18,16 +18,24 @@
 #   12 mm on skin, 20 mm on clothes, 35 mm on hair, so hair and clothes shade as clean toon shapes and faces keep theirs.
 # - Back-to-front triangles. A few hundred triangles faced into the body (the cut folded them); culled, they were pin-
 #   holes. A triangle whose surroundings clearly face the other way is turned round.
-# - The face. The inner face (eyes, nose, mouth, the middle of the cheeks) leans its normals toward the head's forward
-#   direction (--face-lean), so it is lit as one clean shape instead of breaking into patches round a scanned nose and
-#   lips; the lean fades out toward the jaw and the cheeks' edge, whose normals stay true for the ink outline's width.
+# - A head that folded. The scans' automatic rigs put the lower face part on the Neck bone, so it creased and squashed
+#   into the neck as the head nodded (docs/LEARNINGS.md C15). Everything above a cut through the Head joint, dipping under
+#   the chin, follows the Head alone, blending back to the neck below it.
+# - The face. The face (eyes, nose, mouth, cheeks, the jaw and chin) leans its normals toward a sphere behind it
+#   (--face-lean), so it is lit as one rounded shape instead of breaking into patches round a scanned nose and lips, with
+#   a clean curved edge when the sun is to one side; the lean fades out toward the cheeks' edge and the hairline, whose
+#   normals stay true for the ink outline's width.
+# - White tears. Light streaks in a dark garment's texture (folds, highlights, unpainted seams) were left out of the
+#   garment, a white vertex colour times a light texel: white specks and slivers in jackets, trousers and hair
+#   (docs/LEARNINGS.md C16). A greyish face of no outfit part that its garment surrounds joins the garment.
 # - Weight. 100k triangles a kid (and 30k for each bag) is about three triangles per pixel at the kid's size in a level;
 #   cut to --tris (60k) and --bag-tris (12k), the head and hands held back so faces and fingers keep their detail.
 # - Mipmaps. The atlas' gaps between islands held other colours, which the GPU's smaller mip levels averaged into the
 #   islands' edges. Every gap is filled from its island (a push-pull fill), so no mip level draws a foreign colour.
 # Nothing moves: no vertex is displaced except where open edges are welded (by at most --merge), so painted detail stays
-# where it was. The bones, rest pose, weights (at most four a vertex, normalised), outfit parts (UV2.x, one per face) and
-# vertex colours are kept; the FBX is written with the same export settings as meshy_rigged.py.
+# where it was. The bones and rest pose are kept; the weights are kept (at most four a vertex, normalised) except the
+# head's, the outfit parts (UV2.x, one per face) and vertex colours except the tears'; the FBX is written with the same
+# export settings as meshy_rigged.py.
 import bpy, bmesh, sys, os, json, time
 import numpy as np
 from scipy.spatial import cKDTree
@@ -51,6 +59,7 @@ bpy.ops.wm.read_factory_settings(use_empty=True)
 bpy.ops.import_scene.fbx(filepath=SRC, use_custom_normals=True, axis_forward='-Z', axis_up='Y', primary_bone_axis='Y',
                          secondary_bone_axis='X')
 rig = [o for o in bpy.data.objects if o.type == 'ARMATURE'][0]
+ATLAS_PX = pl.load_png(ATLAS)
 report = {'name': NAME, 'meshes': {}}
 t0 = time.time()
 for o in [o for o in bpy.data.objects if o.type == 'MESH']:
@@ -63,8 +72,12 @@ for o in [o for o in bpy.data.objects if o.type == 'MESH']:
     else:
         pl.decimate(o, BAG_TRIS, pl.protect_group(o, set(), keep=1.0))
     r['unflipped'] = pl.unflip(o)
+    if body:
+        r['head_made_rigid'] = pl.rigid_head(o, rig)
     face = pl.face_lean(o, rig, FACE_LEAN) if (body and FACE) else None
     r['mixed_part_faces_fixed'] = pl.fix_parts(o)
+    if body:
+        r['tear_faces_absorbed'] = pl.absorb_tears(o, ATLAS_PX)
     pl.fix_weights(o)
     pl.smooth_normals(o, face)
     r['tris_out'] = pl.tris(o); r['open_edges_out'] = pl.open_edges(o)

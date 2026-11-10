@@ -1,13 +1,15 @@
 # Rebuilds every character model the game ships from its pre-polish original, reproducibly (docs/LEARNINGS.md,
 # "The characters looked low quality"):
-#   python3 polish_all.py [--blender /path/to/blenv/bin/python] [--source <git commit>] [--out <dir>] [--install]
+#   python3 polish_all.py [--blender /path/to/blenv/bin/python] [--source <git commit>] [--out <dir>] [--install] [--no-ink]
 #     --source  the commit holding the original FBXs and atlases (default f1b17b1: the last commit before the polish);
 #               taken with `git show`, so a rerun never polishes an already polished model twice
 #     --out     where the results go (default ./polished); --install copies them into Assets/_Game/Art/Models
+#     --no-ink  the kids' scanned faces exactly as they are (no face_ink.py finish)
 # What it does:
-#   the four primary-school kids (Kai, Leo, Mia, Zoe): face_paint.py (an illustrated face in place of the scan's
-#     photographic one), then polish_character.py (welded, smoothed normals, the inner face leaned forward, 32k
-#     triangles, each Locker Room bag 8k, the atlas' gaps filled);
+#   the four primary-school kids (Kai, Leo, Mia, Zoe): face_ink.py (their own scanned faces given the finish of Max's:
+#     a dark lash line along each eye's own top edge, solid brows, the lips' parting, an even skin tone; nothing redrawn
+#     or moved), then polish_character.py (welded, smoothed normals, the inner face leaned forward, 32k triangles, each
+#     Locker Room bag 8k, the atlas' gaps filled). (face_paint.py's drawn faces were rejected: docs/LEARNINGS.md, C14.)
 #   Hana and Max: polish_character.py the same way (their painted faces are kept);
 #   the six passers-by: polish_character.py at 14k triangles;
 #   the five Locker Room bags' shared atlases (RGBA: the alpha marks the recolourable cloth): the gaps filled;
@@ -29,6 +31,7 @@ ap.add_argument('--source', default='f1b17b1')
 ap.add_argument('--out', default=os.path.join(os.getcwd(), 'polished'))
 ap.add_argument('--install', action='store_true')
 ap.add_argument('--only', nargs='*')
+ap.add_argument('--no-ink', action='store_true')
 a = ap.parse_args()
 OUT = os.path.abspath(a.out)
 SRC = os.path.join(OUT, '_source')
@@ -60,9 +63,12 @@ def want(n): return not a.only or n in a.only
 
 for n in KIDS:
     if not want(n): continue
-    painted = os.path.join(SRC, n + 'Atlas_painted.png')
-    blender('face_paint.py', n, original(n + '.fbx'), original(n + 'Atlas.png'), painted, '--review', os.path.join(OUT, n + '_face.png'))
-    blender('polish_character.py', original(n + '.fbx'), painted, OUT, '--name', n, '--tris', PLAYER_TRIS, '--bag-tris', BAG_TRIS, '--face-lean', 0.95)
+    atlas = original(n + 'Atlas.png')
+    if not a.no_ink:
+        inked = os.path.join(SRC, n + 'Atlas_inked.png')
+        blender('face_ink.py', n, original(n + '.fbx'), atlas, inked, '--review', os.path.join(OUT, n + '_face.png'))
+        atlas = inked
+    blender('polish_character.py', original(n + '.fbx'), atlas, OUT, '--name', n, '--tris', PLAYER_TRIS, '--bag-tris', BAG_TRIS, '--face-lean', 0.95)
 for n in TEENS:
     if not want(n): continue
     blender('polish_character.py', original(n + '.fbx'), original(n + 'Atlas.png'), OUT, '--name', n, '--tris', PLAYER_TRIS, '--bag-tris', BAG_TRIS, '--face-lean', 0.85)
