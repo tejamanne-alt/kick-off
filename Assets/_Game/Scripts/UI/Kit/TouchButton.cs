@@ -120,27 +120,38 @@ namespace DribbleToSchool.UI.Kit
         }
 
         /// <summary>
+        /// Where a hint's two lines go, as fractions of the disc (0..1 from its lower left): the label moved up a little, and the
+        /// small hint line under it. Every corner of both lies well inside the circle (at most <see cref="TextReach"/> of the
+        /// disc's size from its centre, the circle's edge being 0.5), so neither the text nor its box ever reaches the rim.
+        /// </summary>
+        public static readonly Rect HintLabelArea = Rect.MinMaxRect(0.15f, 0.25f, 0.85f, 0.39f);
+        public static readonly Rect HintArea = Rect.MinMaxRect(0.27f, 0.125f, 0.73f, 0.235f);
+        /// <summary>How far from the disc's centre a text box's corner may lie (the circle's edge is 0.5; the rim is inside it).</summary>
+        public const float TextReach = 0.45f;
+
+        /// <summary>
         /// A small second line of text along the bottom of the disc (KICK's "hold to control"), under the label, which moves up a
-        /// little to make room. It shrinks to fit the disc's narrower bottom.
+        /// little to make room. It shrinks to fit (two lines if it must), and like the label it stays inside the circle. It has no
+        /// background of its own: the button's glass is behind it.
         /// </summary>
         public Text AddHint(Text label, string text, int size)
         {
-            if (label != null)
-            {
-                label.rectTransform.anchorMin = new Vector2(0f, 0.2f);
-                label.rectTransform.anchorMax = new Vector2(1f, 0.37f);
-            }
+            if (label != null) Place(label.rectTransform, HintLabelArea);
             var hint = UIKit.Label(Content, "Hint", text, size, new Color(1f, 1f, 1f, 0.55f), TextAnchor.MiddleCenter, true);
-            var rt = hint.rectTransform;
-            rt.anchorMin = new Vector2(0.21f, 0.08f);       // (clear of the rim where the disc narrows)
-            rt.anchorMax = new Vector2(0.79f, 0.2f);
-            rt.offsetMin = rt.offsetMax = Vector2.zero;
-            UIKit.Fit(hint, 11);
+            Place(hint.rectTransform, HintArea);
+            UIKit.Fit(hint, 10);
             var sh = hint.gameObject.AddComponent<Shadow>();
             sh.effectColor = new Color(0f, 0f, 0f, 0.25f);
             sh.effectDistance = new Vector2(0f, -1.5f);
             contentGraphics = null;
             return hint;
+        }
+
+        static void Place(RectTransform rt, Rect area)
+        {
+            rt.anchorMin = area.min;
+            rt.anchorMax = area.max;
+            rt.offsetMin = rt.offsetMax = Vector2.zero;
         }
 
         /// <summary>Called every frame by the HUD with the button's input state.</summary>
