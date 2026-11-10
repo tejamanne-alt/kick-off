@@ -1044,12 +1044,40 @@ listed in `docs/LEARNINGS.md` B1 to B6 and C1 to C12.
 - the generated content v111 rebuild.
 
 **Still to do:**
-- build only the chosen kid and their bag in each scene;
 - bake the audio;
 - fewer draws on the title screen;
 - cheaper filter normals;
 - recolour outfits in the shader;
 - regenerate the store art and stickers that show the kids.
+
+## Only the chosen kid and the bag they wear are loaded (generated content v112)
+
+- **Why.** Every scene (the menu, every level, the Holiday core) was saved with all six playable kids and the five
+  bags fitted to each, and only switched one kid and one bag on (`CharacterChoice`, `BagWear`). So every scene loaded
+  them all: after the polish, about 545k vertices (~83 MB with the readable copies) and 11 atlases, for one kid on
+  screen.
+- **How:**
+  - **The builder.** `LevelBuildKit.BuildCast` now saves each kid's and bag's renderer without a mesh or material.
+    It moves both into a `Presentation/CastPart` asset at `Resources/Cast/<Model>/<Renderer>.asset`, and adds a
+    `Presentation/LazyRenderer` (execution order -1000). That loads them as the object becomes active and lets them
+    go as it is hidden. It keeps the renderer's built bounds, so culling is unchanged.
+  - **What loads at start.** `CharacterChoice` runs first (-2000), so the kids not chosen are hidden before anything
+    on them wakes. The builder saves every bag hidden, and `BagWear` shows the one worn. A scene now loads one kid
+    and one bag: about 46k vertices (~7 MB) and two atlases.
+  - **Switching kids.** When the menu switches kids, `CharacterChoice` loads the new kid's meshes before putting the
+    remembered outfit back on, and asks Unity to unload what the old kid let go.
+  - **Outfits.** `ModelOutfit.ForgetMesh` drops a released kid's recoloured copy.
+  - **Co-op.** Ghosts keep `LazyRenderer` when stripped, so each loads its kid (and its bag, through its own
+    `BagWear`) as it appears. The templates stay empty.
+- **In the editor**, outside play, the generated scenes show the kids without their meshes (they load in play).
+  Generated scenes are never edited by hand.
+- **Checked.** The scripts compile against the reference assemblies with no new errors. The new types each have a
+  file of their own (`ScriptConventionTests`).
+- **Not run in Unity.** Check in the editor and on the phone:
+  - the kid appears in the menu, a level, the Holiday Run and a co-op race;
+  - switching kids in the menu and trying bags in the Locker Room;
+  - a non-school outfit after a switch;
+  - the Memory Profiler showing one kid's meshes per scene.
 
 ## After Phase 8 (next steps)
 

@@ -183,6 +183,24 @@ namespace DribbleToSchool.Presentation
             return new Color(Mathf.Clamp01(to.r * k), Mathf.Clamp01(to.g * k), Mathf.Clamp01(to.b * k), c.a);
         }
 
+        /// <summary>
+        /// The renderer's mesh is being let go (Presentation/LazyRenderer, as the kid is hidden): the recoloured copy goes
+        /// too, with everything read from it, so the next Dress copies the mesh loaded then. The colours asked for are
+        /// kept; whoever shows the kid again dresses them (CharacterChoice replays the outfit).
+        /// </summary>
+        public void ForgetMesh()
+        {
+            if (mesh != null) Destroy(mesh);
+            mesh = null;
+            original = null;
+            parts = null;
+            vertices = null;
+            accentRest = null;
+            accentVertices = null;
+            accentHidden = false;
+            made = Made.Nothing;
+        }
+
         void OnDestroy()
         {
             if (mesh != null) Destroy(mesh);

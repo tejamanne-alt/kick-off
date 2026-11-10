@@ -54,6 +54,8 @@ namespace DribbleToSchool.EditorTools
                     wear.bagIds = new string[parts.bags.Count];
                     for (int b = 0; b < parts.bags.Count; b++) wear.bagIds[b] = DribbleToSchool.Cosmetics.Bags.IdOfMesh(parts.bags[b].name);
                     wear.onBag = parts.onBag != null ? parts.onBag.ToArray() : new GameObject[0];
+                    // Saved hidden: BagWear shows the worn one as it starts, so the others never load their meshes.
+                    foreach (var r in parts.bags) r.gameObject.SetActive(false);
                     cast.bags.Add(wear);
                 }
                 else if (parts.bags != null)
@@ -61,6 +63,9 @@ namespace DribbleToSchool.EditorTools
                     // (a kid with a bag of their own whose model has bags fitted all the same: never worn)
                     foreach (var r in parts.bags) Object.DestroyImmediate(r.gameObject);
                 }
+                // Saved without their meshes: only the kid shown, and the bag they wear, are loaded (LazyRenderer).
+                foreach (var r in parts.visual.GetComponentsInChildren<SkinnedMeshRenderer>(true))
+                    MakeLazy(r, info.model);
                 cast.all.Add(parts);
                 ids.Add(info.id);
             }
@@ -94,6 +99,37 @@ namespace DribbleToSchool.EditorTools
                 cast.outfit = choice;
             }
             return cast;
+        }
+
+        /// <summary>Where the kids' meshes and materials are kept, out of the scenes (Presentation/CastPart).</summary>
+        const string CastDir = Root + "/Resources/Cast";
+
+        /// <summary>
+        /// Moves a renderer's mesh and material into a CastPart under Resources/Cast/&lt;model&gt;/ and leaves the renderer
+        /// empty with a LazyRenderer that loads them while it is shown, so a scene holding every kid and every bag loads
+        /// only the kid on screen and the bag they wear (docs/LEARNINGS.md B2; the scenes held about 270 MB of meshes for one
+        /// kid).
+        /// </summary>
+        static void MakeLazy(SkinnedMeshRenderer r, string model)
+        {
+            if (r == null || r.sharedMesh == null) return;
+            string folder = CastDir + "/" + model;
+            EnsureFolder(folder);
+            string path = folder + "/" + r.name + ".asset";
+            var part = AssetDatabase.LoadAssetAtPath<CastPart>(path);
+            if (part == null)
+            {
+                part = ScriptableObject.CreateInstance<CastPart>();
+                AssetDatabase.CreateAsset(part, path);
+            }
+            part.mesh = r.sharedMesh;
+            part.material = r.sharedMaterial;
+            EditorUtility.SetDirty(part);
+            var lazy = r.gameObject.AddComponent<LazyRenderer>();
+            lazy.resource = "Cast/" + model + "/" + r.name;
+            lazy.bounds = r.localBounds;
+            r.sharedMesh = null;
+            r.sharedMaterial = null;
         }
     }
 }

@@ -55,16 +55,18 @@ It ignores the first 6 s after a scene loads, and the time after resuming from t
 | Character FBX total | | 28 MB (was 90 MB) |
 | Character atlas | 2048 (kids), 1024 (bags), gaps filled for every mip | as listed |
 | Skinned renderers drawn | 1 kid + 1 bag + passers-by on screen | as listed |
+| Character meshes in memory per scene | the chosen kid and the bag they wear | about 46k vertices, ~7 MB, plus 2 atlases (was 545k vertices, ~83 MB, plus 11 atlases, since every kid and bag was saved into every scene) |
 | Full-screen passes, Original look | grade only (bloom on High) | 1 to 8 |
 | Full-screen passes, filters | comic 2, sketch 1, classic 3, plus DepthNormals | unchanged; scaled by the render scale |
 
+**Loading only what is shown.** Every scene still contains all six kids and their bags (`CharacterChoice` and `BagWear` switch them), but the builder saves their renderers empty. A `LazyRenderer` loads the mesh and material from `Resources/Cast/<Model>/<Renderer>` (a `CastPart`) while the object is shown and lets them go when it is hidden. So only the chosen kid and the bag they wear are in memory. When the menu switches kids, it frees the old one at once. Co-op ghosts load their kid as they appear.
+
 **Still to do.** Each of these is a known cost, ranked by expected gain:
-1. **Build only the chosen kid and the bag they wear.** Every scene still holds all six kids and their 30 bag meshes, inactive: about 3× less than before the polish, but still memory and load time.
-2. **Bake the music and ambience offline.** Runtime synthesis makes about 100 MB of garbage at each scene change. Uploads are now spread at one clip per frame.
-3. **Fewer draws on the title screen.** Its camera looks down the whole street (about 300 renderers). Shorten the menu street, or add per-layer cull distances.
-4. **Cheaper filter normals.** Rebuild the filters' normals from depth instead of a DepthNormals pass. Run the classic cartoon's smoothing pass at half resolution on Low.
-5. **Recolour outfits in the shader,** so meshes need not be readable (halves mesh memory).
-6. **Shader variant warm-up** (a ShaderVariantCollection recorded in the editor). PostFX already warms its own passes.
+1. **Bake the music and ambience offline.** Runtime synthesis makes about 100 MB of garbage at each scene change. Uploads are now spread at one clip per frame.
+2. **Fewer draws on the title screen.** Its camera looks down the whole street (about 300 renderers). Shorten the menu street, or add per-layer cull distances.
+3. **Cheaper filter normals.** Rebuild the filters' normals from depth instead of a DepthNormals pass. Run the classic cartoon's smoothing pass at half resolution on Low.
+4. **Recolour outfits in the shader,** so meshes need not be readable (halves mesh memory).
+5. **Shader variant warm-up** (a ShaderVariantCollection recorded in the editor). PostFX already warms its own passes.
 
 ## Check on the phone
 

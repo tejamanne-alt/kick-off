@@ -102,8 +102,13 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
 - *What:* the playable kids grew from 17k to 26k, then 30k, then 100k triangles (v89, to fix "mitten" hands). Every kid FBX also carried five 30k bags. All six kids and 30 bag meshes were built into every scene, readable: about 270 MB of mesh memory, for one kid on screen. That is 3 to 4.5 triangles per pixel at play size.
 - *Why:* detail was fixed by raising the global triangle count instead of spending triangles where they show. Mia's hair took over half her 100k.
 - *Fix:* the November 2026 polish: 32k for each playable kid, with the head, hands and texture seams protected in decimation; 8k bags; 14k passers-by. The character FBX files went from 90 MB to 28 MB.
-- *Still to do:* build only the chosen kid, and load bags on demand. A follow-up task was suggested.
+- *Then (v112):* the kids' and bags' meshes moved out of the scenes. The builder saves their renderers empty, and a `LazyRenderer` loads each from a `CastPart` under `Resources/Cast/` only while it is shown. So a scene loads one kid and one bag: about 46k vertices instead of 545k.
 - *Rule:* a triangle budget per character type (`docs/PERFORMANCE.md`). Decimate with weights: spend triangles on the face, hands and printed detail, not on hair mass.
+
+**B2a. Script order decides what loads.**
+- *What:* the scenes are saved with every kid active, and `CharacterChoice` hides all but one as it starts. With lazy meshes, each kid's loader would have run before being hidden, loading every kid anyway. The bags are the same under `BagWear`.
+- *Fix:* `CharacterChoice` runs first (execution order -2000) and hides the others before anything on them wakes. The builder saves every bag hidden, and `BagWear` shows the worn one.
+- *Rule:* when a component's start-up cost depends on whether its object is shown, decide who runs first: set it with `DefaultExecutionOrder` or with the state the scene is saved in. Never leave it to Unity's unspecified order.
 
 **B3. The filters' cost was never measured.**
 - *What:* classic cartoon is about 73 texture reads per pixel, at native resolution, on the title screen too. "If older phones struggle, pass 8 can run at half resolution" was written down and never done.
