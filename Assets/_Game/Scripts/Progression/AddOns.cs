@@ -53,7 +53,8 @@ namespace DribbleToSchool.Progression
     /// is unlocked by finishing every story level; each level has a California scene built beside the
     /// original (&lt;scene&gt;_CA, Editor/StreetBuilder.Coast). Florida (a Space Coast beach town on the A1A) is
     /// unlocked the same way and so far has only chapter 3, the beach (&lt;scene&gt;_FL, Editor/StreetBuilder.Florida):
-    /// while it is chosen, the other chapters' levels are locked. India and a Tokyo city add-on are still to come.
+    /// while it is chosen, the other chapters' levels are locked. India is still to come (Florida took the Tokyo city
+    /// add-on's place in the list).
     /// The filters (a look over the whole picture, drawn by World/PostFX) are listed beside them: the
     /// original look, the comic halftone (a printed comic: cel bands, halftone dots, an ink line,
     /// colour plates out of register, paper), the pencil sketch (pencil lines and hatching on paper,
@@ -81,9 +82,9 @@ namespace DribbleToSchool.Progression
         {
             Original,
             California,
-            Florida,
             new AddOn("india", "addon.india", "addon.india.place", "_IN", false, Audio.MusicCountry.Japan, true),
-            new AddOn("japan", "addon.japan", "addon.japan.place", "_JP", false, Audio.MusicCountry.Japan, true),
+            // (in the card the Tokyo city add-on had, which was dropped)
+            Florida,
         };
 
         public const string OriginalFilter = "original";

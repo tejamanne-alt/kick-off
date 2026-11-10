@@ -108,7 +108,8 @@ around them has real depth.
 **The original town and the add-ons.** The original streets above are Kamakura, Japan: a seaside
 town south of Tokyo (Japanese shop names, concrete poles, block walls, the railway). Add-ons put the
 same levels in another country's streets, with that country's music, chosen in Add-ons and
-Filters (Progression/AddOns, UI/AddOnsPanel); India and a Tokyo city add-on are listed as coming soon.
+Filters (Progression/AddOns, UI/AddOnsPanel); India is listed as coming soon, and Florida took the place of the Tokyo city
+add-on that was listed beside it.
 **California** (Santa Monica), unlocked by finishing every story level, has a `<scene>_CA` scene for
 each level, built beside the original with `LevelBuildKit.California` set. It is a sunny California coast town (the Coast kit, `tools/blender/kit_buildings_cal.py`): stucco
 villas and single-storey ranch houses under hipped terracotta barrel-tile roofs, white two-storey

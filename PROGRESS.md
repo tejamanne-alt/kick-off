@@ -1338,6 +1338,9 @@ The user asked for a check on every character, playable and not.
   `LevelManager.NextLevel` (Next finishes after the beach), `nextLocked`, and a guard in `LoadLevel`). A locked level's node
   or strip chip says why when tapped (`map.notInTownTitle`, `map.notInTown`) and offers Seaside Road. California's rule is
   unchanged.
+- **Florida replaces Tokyo** in Add-ons & Filters: the Tokyo city add-on (`japan`, `_JP`, listed as coming soon) is gone,
+  with its strings, and Florida's card stands where it stood (the list: Original, California, India, Florida). The co-op
+  locations (only the add-ons that can be chosen) are still Original, California, Florida.
 - **Co-op:** Florida only runs Seaside Road. The picker shuts the pairs that don't fit (`coop.place.only`,
   `coop.route.notIn`). The host's random picks only choose a pair that fits (`CoopSession.LocationFits`, set to
   `CoopLocations.Fits`), and a stale Florida choice on another route runs in the original streets. Adding a location changes
