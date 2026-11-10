@@ -1308,6 +1308,20 @@ The user asked for a check on every character, playable and not.
     Unity change.
   - Confirm Xcode's issue navigator is empty.
 
+## Every APK installs over the one before it
+
+- **Why.** An APK the user built and sent to the Nord CE5 over WhatsApp failed to install ("Installation failed.
+  Please try again.") over the test builds already on the phone (`docs/LEARNINGS.md` A14). An APK from Unity's own
+  Build button carried the store build number as its version code, far below the test builds' (about a million and
+  up), and Android refuses a lower version code over an installed copy.
+- **Fixed:** `Editor/AndroidApkVersionCode` writes the always-rising test version code (`BuildScripts.TestVersionCode`)
+  into every APK's generated Gradle project (`launcher/build.gradle`), however it is built. Player Settings' store build
+  number is never changed. App bundles keep it.
+- **Not fixable in code:** an APK signed with another key than the copy on the phone (built on another computer, or
+  with the release key) still needs that copy uninstalled once.
+- **Checked:** no syntax or new compile errors in any `#if` combination, no warnings, `unity_api_check` 6000.5 clean.
+  **Not run in Unity:** build an APK with Unity's Build button and look for "[Build] APK version code" in the console.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

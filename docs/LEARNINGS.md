@@ -124,6 +124,20 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
   - Settings every build needs are applied on load, not only in our build menu.
   - A builder that tidies up after itself should not warn about its own normal output: fix the code that made it.
 
+**A14. An APK from Unity's own Build button wouldn't install over a test build (fixed November 2026).**
+- *What:* the user built an APK (version name 1.0, 148 MB), sent it to the Nord CE5 over WhatsApp, and the phone said only "Installation failed. Please try again." The phone already had test builds of the game.
+- *Why:* Android refuses an APK over an installed copy when:
+  - its version code is lower (`INSTALL_FAILED_VERSION_DOWNGRADE`), or
+  - it is signed with another key (`INSTALL_FAILED_UPDATE_INCOMPATIBLE`).
+  OxygenOS shows neither reason.
+  - The "Kick Off > Build" menu gave test APKs a version code that always rises (about a million and up), but an APK from Unity's own Build button carried the store build number, a small number. The iOS minimum had the same gap (A13): settings applied only by our build menu.
+- *Fix:*
+  - `Editor/AndroidApkVersionCode` writes the rising version code into every APK's generated Gradle project, whatever builds it. It never touches Player Settings' store build number, even if the build fails. App bundles (the store uploads) keep the store number.
+  - A copy signed with another key still needs one uninstall (`docs/RELEASE.md`).
+- *Rule:*
+  - Anything every build needs goes in a build callback or an on-load step, not only in our build menu: the user builds with whatever button is in front of them.
+  - When an install fails, get the reason from `adb install -r` before guessing.
+
 ## B. Performance and mobile
 
 **B1. 28 fps with uneven frames on a mid-range phone (November 2026).**
