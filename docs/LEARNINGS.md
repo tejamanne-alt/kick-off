@@ -322,6 +322,20 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
   - Animate the trunk, not only the limbs: a procedural gait needs the pelvis and chest turning against each other.
   - Review motion as motion (a whole cycle), not as one pose.
 
+**C20. The review boards showed faults the game doesn't have, and hid ones it does (found and fixed in v116).**
+- *What:* the user, looking at the v114 boards, saw black spots on Kai's face (and brown patches on every chin). The user also saw white tears left at Hana's and Max's trouser hems, on Max's belt, and along Mia's hairline.
+- *Why:*
+  - **The review renderer.** `review/cartoon/render_scenes.py` drew the ink hull with a Solidify modifier on the figure itself. That threw away the figure's own normals: the smoothed, face-leaned normals the game shades with. Every face was therefore shaded with the scan's raw normals: brown patches, a jagged chin.
+  - **The hull's set-back.** The hull was also never set back from the camera as `ToonCharacter`'s `_OutlinePush` (1.2 cm) sets it, so it poked through round every nose and mouth corner as black spots.
+  - The game had neither fault. It took a split render (`DIAG=crack` turned the spots magenta) to see it.
+  - **The tears were real.** The v114 rule needed the garment to cover 65% of the surface around a face. A trouser hem's pale band sits against the white shoe, a belt's streaks against the hoodie's hem, and a fringe's tips against the face, so the other untagged thing outvoted the garment.
+- *Fix:*
+  - The renderer's hull is now a copy of the figure (its own surface drawn as nothing), set 1.2 cm back from the camera. The figure keeps its normals. `OUTLINE_PUSH=0` gives the old hull.
+  - `absorb_tears` has a second test: the garment against only the neighbours that look like the face (texels within 0.2), while that kind stays sparse round it (a streak, not a printed letter: Leo's "01" and Hana's "H" stay). It runs four rounds, so a band a few faces wide goes too.
+- *Rule:*
+  - Before trusting a review renderer, check it on one known case against the game, and check that each modifier keeps what the game reads (custom normals, vertex colours, UVs). C9 again.
+  - Look at a garment's edges (hems, waistbands, fringes) in the parts view, not only its middle.
+
 ## D. Art direction and look
 
 **D1. A golden-hour haze hid the kid** (before v37).

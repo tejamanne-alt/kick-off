@@ -14,10 +14,12 @@
 # (the atlas only), parts (each face coloured by its outfit part, UV2.x: 0 white, 1 red, 2 blue, 3 green, 4 yellow;
 # PARTS_UV names the layer, 'Parts' in the polished FBXs). RIM_FLAT=1 draws the rim as v111 to v113 did (whitened by 45%
 # whatever the colour), for before-and-after boards. TORSO=0 keeps the torso rigid (as before v115: CharacterRig.Torso).
+# The figures' ink hull is set back 1.2 cm from the camera as ToonCharacter's (OUTLINE_PUSH=0: the hull of before v116,
+# which also lost the figure's own normals: docs/LEARNINGS.md C20).
 # --data-only renders only the data pass. The toon look: the albedo (atlas x vertex colour)
 # times a band between the shade tint and the sun, the sun's cast shadows, and for the people the ink hull and a rim.
 import bpy, math, os, sys, random
-from mathutils import Vector, Quaternion
+from mathutils import Vector, Quaternion, Matrix
 
 argv = sys.argv[sys.argv.index('--') + 1:]
 MODELS, OUT, SCENE = argv[0], argv[1], argv[2]
@@ -278,13 +280,34 @@ def ink(mask, key):
     return MATS[k]
 
 
-def outline(objs, width, mask):
-    """ToonCharacter's ink hull: back faces pushed out (a flipped solidify)."""
+HOLLOW = None
+
+
+def outline(objs, width, mask, push=0.0):
+    """ToonCharacter's ink hull: back faces pushed out (a flipped solidify). push (m): the hull set back from the camera, as
+    ToonCharacter's _OutlinePush (0.012), so the folds inside the figure (round a nose, a mouth's corner) draw no ink: the
+    hull is then a copy of the figure (its own surface drawn as nothing) moved that far away from the camera, which looks
+    along +y in every scene here (docs/LEARNINGS.md C20: without it the review boards drew ink specks the game doesn't)."""
+    global HOLLOW
     mat = ink(mask, mask)
     for o in meshes(objs):
-        o.data.materials.append(mat)
-        sol = o.modifiers.new('ink', 'SOLIDIFY'); sol.thickness = width; sol.offset = 1
-        sol.use_flip_normals = True; sol.material_offset = len(o.data.materials) - 1
+        if push <= 0:
+            o.data.materials.append(mat)
+            sol = o.modifiers.new('ink', 'SOLIDIFY'); sol.thickness = width; sol.offset = 1
+            sol.use_flip_normals = True; sol.material_offset = len(o.data.materials) - 1
+            continue
+        if HOLLOW is None:
+            HOLLOW = bpy.data.materials.new('hollow'); HOLLOW.use_nodes = True
+            nt = HOLLOW.node_tree; tr = nt.nodes.new('ShaderNodeBsdfTransparent')
+            nt.links.new(tr.outputs[0], nt.nodes['Material Output'].inputs['Surface'])
+        d = o.copy(); d.data = o.data.copy(); d.name = o.name + '.ink'
+        for c in o.users_collection: c.objects.link(d)
+        d.data.materials.clear(); d.data.materials.append(HOLLOW); d.data.materials.append(mat)
+        for poly in d.data.polygons: poly.material_index = 0
+        sol = d.modifiers.new('ink', 'SOLIDIFY'); sol.thickness = width; sol.offset = 1
+        sol.use_flip_normals = True; sol.material_offset = 1
+        d.visible_shadow = False
+        d.matrix_world = Matrix.Translation((0.0, push, 0.0)) @ o.matrix_world
 
 
 CELS = {'Animals': None, 'Street': {'CrateStack', 'Crate', 'TrafficCone', 'RoadBarrier', 'ProduceCrate'},
@@ -432,7 +455,7 @@ def person(model, loc, yaw, pose, height, bag=None, mask=0.0, ink_w=0.006, rim=0
     mn, mx = bounds(objs, evaluated=True)
     rig.location += Vector((loc[0] - (mn.x + mx.x) / 2, loc[1] - (mn.y + mx.y) / 2, loc[2] + lift - mn.z))
     bpy.context.view_layer.update()
-    outline(objs, ink_w * native / height * 0.6, mask)
+    outline(objs, ink_w * native / height * 0.6, mask, push=float(os.environ.get('OUTLINE_PUSH', '0.012')))
     # as in the game (LevelBuildKit.BuildModelCharacter): characters cast no shadows (and receive none)
     if os.environ.get('NO_CHAR_SHADOWS', '1') == '1':
         for o in objs:
