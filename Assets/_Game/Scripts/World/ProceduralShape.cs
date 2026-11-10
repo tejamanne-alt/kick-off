@@ -12,7 +12,9 @@ namespace DribbleToSchool.World
     public abstract class ProceduralShape : MonoBehaviour
     {
         Mesh mesh;
+#if UNITY_EDITOR
         bool dirty;
+#endif
 
         protected virtual int SubmeshCount { get { return 1; } }
         protected abstract void Build(MeshBuilder builder);
@@ -22,6 +24,11 @@ namespace DribbleToSchool.World
             Rebuild();
         }
 
+#if UNITY_EDITOR
+        // The live rebuild while a parameter is edited in the Inspector. OnValidate only ever runs in the editor (and may
+        // not touch the MeshFilter itself, hence the flag the next Update picks up), so a player has nothing to rebuild
+        // here and gets no Update at all: a level holds hundreds of these shapes, and each empty Update still cost a
+        // call every frame on the phone.
         void OnValidate()
         {
             dirty = true;
@@ -33,6 +40,7 @@ namespace DribbleToSchool.World
             dirty = false;
             Rebuild();
         }
+#endif
 
         public void Rebuild()
         {

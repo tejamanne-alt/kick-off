@@ -225,7 +225,7 @@ namespace DribbleToSchool.Core
         void Awake()
         {
             Current = this;
-            Application.targetFrameRate = 60;
+            GraphicsQuality.ApplyFrameRate();   // 60, or what the device settled on (Core/GraphicsQuality)
             Screen.sleepTimeout = SleepTimeout.NeverSleep;
             TimeControl.ResetTime();
             checkpoints.RemoveAll(c => c == null);

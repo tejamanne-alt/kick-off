@@ -481,6 +481,66 @@ the hip, which render in the cloth's colour. What it still shows:
 - The boys' shorts: a few-pixel crease at the hip when a leg is lifted, and the hem's edge is a little uneven (its
   rounded rim is shaded per face) when seen from very close.
 
+## Polishing the characters (`polish_all.py`)
+
+Every shipped character (the six playable kids with their Locker Room bags, the six passers-by, the five bag atlases) is
+rebuilt from its pre-polish original. That is the FBX and atlas at commit `f1b17b1`, taken with `git show`, so a rerun
+never polishes a polished model twice:
+
+```
+blenv/bin/python -m pip install numpy scipy pillow          # (bpy==5.2.3 needs Python 3.13)
+python3 polish_all.py --blender $PWD/blenv/bin/python --out /tmp/polished              # about 4 minutes
+python3 polish_all.py --blender $PWD/blenv/bin/python --out /tmp/polished --install    # and copy into Art/Models
+python3 polish_all.py ... --only PrimaryGirl                                           # one character
+```
+
+Then render the player cards again: `fbx_to_blend.py`, then `portrait_teen.py` (above). Bump
+`GeneratedContent.Version`.
+
+Why each step exists is in `docs/LEARNINGS.md`, C1 to C8. In short:
+
+- **`face_paint.py`** (Kai, Leo, Mia, Zoe) paints an illustrated face over the scan's photographic one:
+  - **How it places the paint:** every atlas texel is placed in 3D by a UV rasteriser and seen in a front view of the
+    head (640 px for 32 cm).
+  - **The skin:** replaced by a smooth field of its own colour.
+  - **The features**, drawn as supersampled vector shapes and projected back into the atlas: eyes (white, a warm
+    iris, pupil, two highlights, a dark lash line, a flick for the girls), brows, a nose stroke, the kid's mouth (Kai's
+    grin, the others' smiles), a little blush.
+  - **Where they go:** where the scan's features were (the darkest blobs for the irises, the reddest for the mouth),
+    unless `STYLES` places them. Mia's hair and cheeks mislead the search, so hers are placed.
+  - **The extent:** only the face oval changes, fading back to the scan at the sides, the ears and the hairline.
+  - **Review:** `--review face.png` writes the scan's face, the painted canvas and the result side by side.
+- **`polish_character.py`** (every character; the steps are in `polish_lib.py`):
+  - drops loose vertices and welds open-edge vertices within `--merge` (2 mm);
+  - decimates to `--tris` (32k kids, 14k passers-by) and `--bag-tris` (8k), holding back the head and hands (0.3) and
+    texture-island borders (0.15), so faces, fingers and printed numbers keep their shape;
+  - turns round triangles whose surroundings clearly face the other way;
+  - keeps one outfit part per face, and at most four normalised bone weights;
+  - rebuilds the normals:
+    - from the surface around each vertex: 12 mm on skin, 20 mm on clothes, 35 mm on hair;
+    - hair points away from the centre of its mass (the rim light then shows only at the hair's outline);
+    - the inner face leans toward the head's forward direction (`--face-lean`), so it is lit as one shape;
+  - push-pull fills every atlas gap from its island, so no mip level mixes in a foreign colour.
+
+  No vertex moves except where open edges are welded. The bones, rest pose, weights, outfit parts, vertex colours,
+  bags and neck heights stay as they were. The export settings are `meshy_rigged.py`'s. `<Name>_polish.json` records
+  what was done.
+- **`polish_bags.py`** fills the five shared bag atlases (RGBA: the alpha is the recolour mask) the same way.
+
+**Reviewing.** Three tools are available:
+- `review/cartoon/render_scenes.py`, with the cast scenes and the filter ports in `review/{filter,sketch,cartoon}`,
+  renders the game's look in every filter;
+- `fbx_to_blend.py` rebuilds a `.blend` from a shipped FBX for `review_teen.py`, `review_poses.py` and
+  `portrait_teen.py`;
+- the boards in `review/characters_v2/`.
+
+Three rules for reviews:
+- characters cast no shadows in the game, so turn their shadows off in review scenes, or faces look dirtier than they
+  are;
+- when `ToonCharacter.shader` changes, update these renderers' copies of it in the same change;
+- run `review_poses.py --leaks` on a rebuilt character before shipping it (done for Mia in the November 2026 polish:
+  clean, `review/characters_v2/mia_poses.jpg`; not yet for the other five).
+
 ## Cars
 
 Five original cars in a chunky, cozy style (`car.py`, previews with `review_car.py`): `hatch` (the

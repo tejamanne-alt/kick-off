@@ -80,14 +80,27 @@ namespace DribbleToSchool.UI.Kit
         {
             float dt = Time.unscaledDeltaTime;
             current = Mathf.Lerp(current, target, 1f - Mathf.Exp(-18f * dt));
-            transform.localScale = baseScale * current * pulse;
+            // The eases only ever approach their targets, so without landing on them a released button would keep
+            // moving by invisible fractions of a pixel for seconds (the push decays all the way down to float
+            // underflow), and every one of those frames rebuilds its face, shine and best-fit label. Within these
+            // limits (a ten-thousandth of the scale, a hundredth of a canvas pixel of push) nothing visible is left.
+            if (Mathf.Abs(current - target) < 1e-4f) current = target;
+            // Write only when the value really changes: a write dirties the transform, and can have the canvas
+            // re-batch, even when nothing moved. (Compared with what the transform holds now, not with our last
+            // write, so anything else that scales this object, such as the UIPopIn on the Stuck? button, is
+            // overridden exactly as before.)
+            var tr = transform;
+            Vector3 scale = baseScale * current * pulse;
+            if (tr.localScale != scale) tr.localScale = scale;
 
             push = down ? Mathf.MoveTowards(push, 1f, dt * 30f) : Mathf.Lerp(push, 0f, 1f - Mathf.Exp(-20f * dt));
+            if (!down && push < 1e-3f) push = 0f;
             if (face != null)
             {
                 Vector2 offset = new Vector2(0f, -Depth * 0.8f * push);
-                face.offsetMin = faceMin + offset;
-                face.offsetMax = faceMax + offset;
+                Vector2 min = faceMin + offset, max = faceMax + offset;
+                if (face.offsetMin != min) face.offsetMin = min;
+                if (face.offsetMax != max) face.offsetMax = max;
             }
             // Keep the base matched to the face (toggles recolour the face).
             if (keyBase != null && faceImage != null) keyBase.color = BaseColor(faceImage.color);

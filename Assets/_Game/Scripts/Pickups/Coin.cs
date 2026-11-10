@@ -32,6 +32,14 @@ namespace DribbleToSchool.Pickups
         Vector3 basePosition;
         float phase;
         float collectedAt;
+        // The visual may not be at full size (shrunk by the pop, or as built): set it back on the next idle frame, once,
+        // instead of writing the scale every frame for every coin.
+        bool resize = true;
+
+        /// <summary>How far past the side of the view (world units) a coin stops spinning and bobbing: room for the coin, its
+        /// bob and its shadow, which the chapters' lowest sun (ChapterTheme, about 0.8 m sideways per metre of height) throws
+        /// up to about 3 m to the side of the highest coins (some 3.7 m up), plus slack for the tilted view.</summary>
+        const float RestBeyond = 4f;
 
         void Awake()
         {
@@ -209,17 +217,29 @@ namespace DribbleToSchool.Pickups
             if (visual == null) return;
             if (Collected)
             {
+                // Once the pop is over the visual is hidden: nothing left to move until the level restarts.
+                if (!visual.gameObject.activeSelf) return;
                 // Quick pop up and shrink away.
                 float t = Mathf.Clamp01((Time.time - collectedAt) / 0.3f);
                 visual.localPosition = basePosition + Vector3.up * t * 0.6f;
                 visual.localScale = Vector3.one * (1f - t);
+                resize = true;
                 visual.localRotation = Quaternion.Euler(0f, Time.time * 900f + phase * 57f, 0f);
                 if (t >= 1f) visual.gameObject.SetActive(false);
                 return;
             }
+            if (resize)
+            {
+                visual.localScale = Vector3.one;
+                resize = false;
+            }
+            // Well off screen the spin and the bob are skipped (a level has hundreds of coins, and each wrote two transforms
+            // every frame): both follow the clock alone, so a coin is posed exactly right again the frame it comes back
+            // into view, the magnet's pull included. Without a camera every coin animates, as before.
+            Vector3 at = transform.position;
+            if (World.AmbientView.Valid && !World.AmbientView.InViewX(at.x, at.z, RestBeyond)) return;
             // A real 3D spin about the vertical axis.
             visual.localRotation = Quaternion.Euler(0f, (Time.time * 4f + phase) * Mathf.Rad2Deg, 0f);
-            visual.localScale = Vector3.one;
             visual.localPosition = basePosition + Vector3.up * Mathf.Sin(Time.time * 2f + phase) * 0.06f;
         }
 

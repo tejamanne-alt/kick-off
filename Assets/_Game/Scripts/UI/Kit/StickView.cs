@@ -58,9 +58,7 @@ namespace DribbleToSchool.UI.Kit
         public void Show(Rect ring, Vector2 stick, float knobScale, bool active, bool pulledDown)
         {
             if (root == null) return;
-            root.anchorMin = new Vector2(ring.xMin, ring.yMin);
-            root.anchorMax = new Vector2(ring.xMax, ring.yMax);
-            root.offsetMin = root.offsetMax = Vector2.zero;
+            StretchBetween(root, new Vector2(ring.xMin, ring.yMin), new Vector2(ring.xMax, ring.yMax));
             knobSize = knobScale;
 
             if (active && !wasActive) Haptics.Press(false);
@@ -70,9 +68,7 @@ namespace DribbleToSchool.UI.Kit
             wasDown = pulledDown;
 
             Vector2 c = new Vector2(0.5f, 0.5f) + (active ? stick : Vector2.zero) * knobTravel;
-            knobRect.anchorMin = c - Vector2.one * knobSize * 0.5f;
-            knobRect.anchorMax = c + Vector2.one * knobSize * 0.5f;
-            knobRect.offsetMin = knobRect.offsetMax = Vector2.zero;
+            StretchBetween(knobRect, c - Vector2.one * knobSize * 0.5f, c + Vector2.one * knobSize * 0.5f);
 
             float dt = Time.unscaledDeltaTime;
             held = Mathf.MoveTowards(held, active ? 1f : 0f, dt * (active ? 14f : 5f));
@@ -80,6 +76,19 @@ namespace DribbleToSchool.UI.Kit
             SetAlpha(rim, Mathf.Lerp(restRim, heldRim, held));
             SetAlpha(knob, Mathf.Lerp(restKnob, heldKnob, held));
             SetAlpha(knobRim, Mathf.Lerp(restRim * 0.7f, heldRim, held));
+        }
+
+        /// <summary>
+        /// Stretches <paramref name="rt"/> between two anchors with no offsets, writing only what changed: this runs
+        /// every frame, and a RectTransform write can dirty the HUD canvas (a rebuild and re-batch) even when the
+        /// value is the same, while the stick mostly sits still.
+        /// </summary>
+        static void StretchBetween(RectTransform rt, Vector2 min, Vector2 max)
+        {
+            if (rt.anchorMin != min) rt.anchorMin = min;
+            if (rt.anchorMax != max) rt.anchorMax = max;
+            if (rt.offsetMin != Vector2.zero) rt.offsetMin = Vector2.zero;
+            if (rt.offsetMax != Vector2.zero) rt.offsetMax = Vector2.zero;
         }
 
         static void SetAlpha(Image image, float alpha)

@@ -32,6 +32,14 @@ namespace DribbleToSchool.UI
             }
         }
 
+        void Awake()
+        {
+            // Every level has this panel. A component with OnGUI costs Unity an IMGUI pass every frame even when it draws
+            // nothing, so in a release build, where the panel can never show, it switches itself off (GameHud still reads
+            // visible and ScreenRect, which work on a disabled component).
+            if (!Available) enabled = false;
+        }
+
         void Update()
         {
             if (!Available) return;

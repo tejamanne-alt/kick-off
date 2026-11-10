@@ -131,6 +131,8 @@ namespace DribbleToSchool.EditorTools
             cam.fieldOfView = 34f;     // with CameraFollow2D's close framing: about 9 m back, under 3 m up
             cam.nearClipPlane = 0.3f;
             cam.farClipPlane = 2500f;
+            cam.allowHDR = false;    // an 8-bit picture, no MSAA (Core/GraphicsQuality.ConfigureCamera does the same at runtime)
+            cam.allowMSAA = false;
             var mood = Theme.mood;
             cam.clearFlags = CameraClearFlags.SolidColor;
             cam.backgroundColor = mood.horizon;

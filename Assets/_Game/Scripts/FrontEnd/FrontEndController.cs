@@ -115,7 +115,7 @@ namespace DribbleToSchool.FrontEnd
 
         void Start()
         {
-            Application.targetFrameRate = 60;
+            DribbleToSchool.Core.GraphicsQuality.ApplyFrameRate();   // 60, or what the device settled on (Core/GraphicsQuality)
             Screen.sleepTimeout = SleepTimeout.SystemSetting;   // menus may dim; levels keep the screen on
             TimeControl.ResetTime();
 

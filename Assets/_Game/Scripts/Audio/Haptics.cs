@@ -10,7 +10,8 @@ namespace DribbleToSchool.Audio
     /// Light taps for kicks, perfect touches and landings, and a crisp click when a
     /// button goes down. iOS uses the Taptic Engine (Plugins/iOS/DTSHaptics.mm);
     /// Android uses the system click effects on API 29+ and short vibrations with
-    /// amplitude before that. No-op in the editor and when disabled in Settings.
+    /// amplitude before that (pulses closer than 35 ms are thinned out there: see MinPulseGap).
+    /// No-op in the editor and when disabled in Settings.
     /// </summary>
     public static class Haptics
     {
@@ -86,24 +87,54 @@ namespace DribbleToSchool.Audio
 #if UNITY_ANDROID && !UNITY_EDITOR
         static AndroidJavaObject vibrator;
         static int sdk = -1;
+        // android.os.VibrationEffect (API 26+), looked up once: a JNI class lookup on every pulse cost a kick or a
+        // landing a little main-thread time each.
+        static AndroidJavaClass effectClass;
+        // The effects already made, kept for the app's life: a VibrationEffect is immutable, so the same one can be
+        // played again, and there are only a handful (one per predefined effect, one per duration and amplitude used).
+        static readonly System.Collections.Generic.Dictionary<int, AndroidJavaObject> predefined =
+            new System.Collections.Generic.Dictionary<int, AndroidJavaObject>();
+        static readonly System.Collections.Generic.Dictionary<int, AndroidJavaObject> oneShots =
+            new System.Collections.Generic.Dictionary<int, AndroidJavaObject>();
 
         // android.os.VibrationEffect predefined effects (API 29+).
         const int EffectClick = 0, EffectTick = 2, EffectHeavyClick = 5;
 
+        // Pulses closer together than this can't be told apart, and each is a synchronous Binder call into the
+        // system's vibrator service; a later pulse in the window is dropped unless it is stronger than the last one
+        // played (a heavy bump right after a light tap still comes through, as it did when it cut the tap short).
+        const float MinPulseGap = 0.035f;
+        static float lastPulseTime = -1f;
+        static int lastPulseAmplitude;
+
+        /// <summary>True when a pulse of this strength should be dropped (see <see cref="MinPulseGap"/>); else records it.</summary>
+        static bool TooSoon(int amplitude)
+        {
+            float now = Time.unscaledTime;
+            if (now - lastPulseTime < MinPulseGap && amplitude <= lastPulseAmplitude) return true;
+            lastPulseTime = now;
+            lastPulseAmplitude = amplitude;
+            return false;
+        }
+
         /// <summary>A system click effect where available (crisper than a timed buzz), else a short vibration.</summary>
         static void AndroidEffect(int effect, int fallbackMs, int fallbackAmplitude)
         {
-            if (!EnsureVibrator()) return;
+            if (!EnsureVibrator() || TooSoon(fallbackAmplitude)) return;
             if (sdk < 29)
             {
-                AndroidVibrate(fallbackMs, fallbackAmplitude);
+                OneShot(fallbackMs, fallbackAmplitude);
                 return;
             }
             try
             {
-                using (var effectClass = new AndroidJavaClass("android.os.VibrationEffect"))
-                using (var e = effectClass.CallStatic<AndroidJavaObject>("createPredefined", effect))
-                    vibrator.Call("vibrate", e);
+                AndroidJavaObject e;
+                if (!predefined.TryGetValue(effect, out e))
+                {
+                    e = effectClass.CallStatic<AndroidJavaObject>("createPredefined", effect);
+                    if (e != null) predefined[effect] = e;
+                }
+                vibrator.Call("vibrate", e);
             }
             catch (System.Exception ex)
             {
@@ -123,24 +154,37 @@ namespace DribbleToSchool.Audio
                     using (var version = new AndroidJavaClass("android.os.Build$VERSION"))
                         sdk = version.GetStatic<int>("SDK_INT");
                 }
+                if (effectClass == null && vibrator != null && sdk >= 26)
+                    effectClass = new AndroidJavaClass("android.os.VibrationEffect");
             }
             catch (System.Exception e)
             {
                 Debug.LogWarning("[Haptics] " + e.Message);
             }
-            return vibrator != null;
+            return vibrator != null && (sdk < 26 || effectClass != null);
         }
 
         static void AndroidVibrate(int ms, int amplitude)
         {
-            if (!EnsureVibrator()) return;
+            if (!EnsureVibrator() || TooSoon(amplitude)) return;
+            OneShot(ms, amplitude);
+        }
+
+        /// <summary>A short vibration: with its amplitude on API 26+, a plain timed buzz before that.</summary>
+        static void OneShot(int ms, int amplitude)
+        {
             try
             {
                 if (sdk >= 26)
                 {
-                    using (var effectClass = new AndroidJavaClass("android.os.VibrationEffect"))
-                    using (var effect = effectClass.CallStatic<AndroidJavaObject>("createOneShot", (long)ms, amplitude))
-                        vibrator.Call("vibrate", effect);
+                    int key = ms * 256 + amplitude;   // amplitude is 1-255
+                    AndroidJavaObject effect;
+                    if (!oneShots.TryGetValue(key, out effect))
+                    {
+                        effect = effectClass.CallStatic<AndroidJavaObject>("createOneShot", (long)ms, amplitude);
+                        if (effect != null) oneShots[key] = effect;
+                    }
+                    vibrator.Call("vibrate", effect);
                 }
                 else
                 {

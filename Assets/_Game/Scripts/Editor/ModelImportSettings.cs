@@ -13,7 +13,7 @@ namespace DribbleToSchool.EditorTools
     public class ModelImportSettings : AssetPostprocessor
     {
         // Bump to re-import the models when these settings change.
-        public override uint GetVersion() { return 7; }
+        public override uint GetVersion() { return 8; }
 
         void OnPreprocessModel()
         {
@@ -30,6 +30,9 @@ namespace DribbleToSchool.EditorTools
             importer.importCameras = false;
             importer.importLights = false;
             importer.importNormals = ModelImporterNormals.Import;
+            // No shader in the game reads tangents (Toon, ToonCharacter, Water...): not computing them keeps 16 bytes a vertex
+            // out of every mesh, which the GPU otherwise skins and reads for nothing on every character every frame.
+            importer.importTangents = ModelImporterTangents.None;
             importer.preserveHierarchy = true;
         }
 

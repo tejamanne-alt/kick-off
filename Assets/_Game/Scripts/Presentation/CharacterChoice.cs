@@ -5,10 +5,14 @@ namespace DribbleToSchool.Presentation
 {
     /// <summary>
     /// The player can be any kid of the <see cref="PlayerRoster"/> (Settings, the picker). All of
-    /// them are built into the level; this shows the one chosen, live. The shop's outfits go to
+    /// them are built into the level; this shows the one chosen, live. Only the one shown has its meshes loaded
+    /// (<see cref="LazyRenderer"/>). The shop's outfits go to
     /// the kid on screen and are remembered (<see cref="OutfitMemory"/>), so a kid who is picked
     /// later comes out in the same clothes without every kid having been dressed up front.
     /// </summary>
+    // (before every other script, LazyRenderer included: the kids not chosen are hidden before anything on them wakes,
+    // so their meshes are never loaded; the scenes are saved with every kid active)
+    [DefaultExecutionOrder(-2000)]
     public class CharacterChoice : MonoBehaviour, IOutfit, IAccentOutfit
     {
         [Tooltip("The roster id of each kid below (PlayerRoster).")]
@@ -57,8 +61,15 @@ namespace DribbleToSchool.Presentation
             for (int i = 0; i < characters.Length; i++)
                 if (characters[i] != null) characters[i].SetActive(i == chosen);
             if (chosen == shown) return;
+            bool switched = shown >= 0;
             shown = chosen;
+            // (the kid's meshes in before the outfit is put back on them; the bags not worn stay out)
+            if (characters[chosen] != null)
+                foreach (var lazy in characters[chosen].GetComponentsInChildren<LazyRenderer>()) lazy.Load();
             look.ReplayOn(OutfitOf(chosen));
+            // The kid just hidden let go of their meshes (Presentation/LazyRenderer): free them now, not at the next
+            // scene load, so browsing the kids in the menu never holds more than one in memory.
+            if (switched) Resources.UnloadUnusedAssets();
         }
 
         public void SetOutfit(Color shirt, Color legwear)

@@ -41,7 +41,8 @@ nt.links.new(mix.outputs['Result'], m2.inputs['A']); nt.links.new(band.outputs['
 ndv = nt.nodes.new('ShaderNodeVectorMath'); ndv.operation = 'DOT_PRODUCT'
 nt.links.new(geo.outputs['Normal'], ndv.inputs[0]); nt.links.new(geo.outputs['Incoming'], ndv.inputs[1])
 rim = nt.nodes.new('ShaderNodeMapRange'); rim.interpolation_type = 'SMOOTHSTEP'
-rim.inputs['From Min'].default_value = 0.4; rim.inputs['From Max'].default_value = 0.24
+# ToonCharacter's rim: smoothstep(0.66, 0.8, 1 - N.V), tinted by the colour under it (lerp(albedo, 1, 0.45))
+rim.inputs['From Min'].default_value = 0.34; rim.inputs['From Max'].default_value = 0.2
 nt.links.new(ndv.outputs['Value'], rim.inputs['Value'])
 side = nt.nodes.new('ShaderNodeMapRange'); side.inputs['From Min'].default_value = -0.35; side.inputs['From Max'].default_value = 0.65
 side.inputs['To Min'].default_value = 0.4; side.inputs['To Max'].default_value = 1.0
@@ -50,8 +51,12 @@ rk = nt.nodes.new('ShaderNodeMath'); rk.operation = 'MULTIPLY'
 nt.links.new(rim.outputs['Result'], rk.inputs[0]); nt.links.new(side.outputs['Result'], rk.inputs[1])
 rk2 = nt.nodes.new('ShaderNodeMath'); rk2.operation = 'MULTIPLY'; rk2.inputs[1].default_value = 0.22
 nt.links.new(rk.outputs[0], rk2.inputs[0])
+tint = nt.nodes.new('ShaderNodeMix'); tint.data_type = 'RGBA'; tint.inputs['Factor'].default_value = 0.45
+nt.links.new(mix.outputs['Result'], tint.inputs['A']); tint.inputs['B'].default_value = (1, 1, 1, 1)
+tsun = nt.nodes.new('ShaderNodeMix'); tsun.data_type = 'RGBA'; tsun.blend_type = 'MULTIPLY'; tsun.inputs['Factor'].default_value = 1
+nt.links.new(tint.outputs['Result'], tsun.inputs['A']); tsun.inputs['B'].default_value = SUN + (1,)
 add = nt.nodes.new('ShaderNodeMix'); add.data_type = 'RGBA'; add.blend_type = 'ADD'
-add.inputs['B'].default_value = SUN + (1,)
+nt.links.new(tsun.outputs['Result'], add.inputs['B'])
 nt.links.new(rk2.outputs[0], add.inputs['Factor']); nt.links.new(m2.outputs['Result'], add.inputs['A'])
 em = nt.nodes.new('ShaderNodeEmission'); nt.links.new(add.outputs['Result'], em.inputs['Color'])
 nt.links.new(em.outputs[0], nt.nodes['Material Output'].inputs['Surface'])

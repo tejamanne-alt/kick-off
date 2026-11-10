@@ -86,7 +86,8 @@ namespace DribbleToSchool.Coop
                 if (c == null) continue;
                 // (a trail is a Renderer too: it goes before the renderers are kept, or every ghost's ball smears the street)
                 if (c is TrailRenderer) { DestroyImmediate(c); continue; }
-                if (c is Transform || c is Renderer || c is MeshFilter || c is CharacterRig || c is BagWear) continue;
+                // (a kid's renderers load their mesh as they appear: LazyRenderer stays)
+                if (c is Transform || c is Renderer || c is MeshFilter || c is CharacterRig || c is BagWear || c is LazyRenderer) continue;
                 if (c is Collider2D || c is Collider || c is Rigidbody2D || c is Rigidbody || c is MonoBehaviour)
                     DestroyImmediate(c);
             }
