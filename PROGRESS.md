@@ -1208,8 +1208,14 @@ The user asked for a check on every character, playable and not.
   - Rebuilt: all twelve characters (`polish_all.py`).
   - Absorbed faces: Max about 1,970 (was 570), Hana 1,880 (was 970), Mia 1,690 (was 1,060).
   - Hana's striped cuffs, cut into jagged white triangles at 32k, are now plain maroon.
-- **New player cards** for the six playable kids. **Boards:** `review/characters_v2/tears_v116.jpg` (every character,
-  v115 and v116, both with the corrected renderer) and `kai_face_v116.jpg`.
+- **The face must be nearly grey or white** for the second test. On the first try it took Mia's beige patterned
+  headband for streaks.
+- **The player cards** (Blender renders shipped in the game) had the review renderer's fault: `portrait_teen.py` put
+  the hull on the figure, so the cards' faces had black specks round the nose. The cards, `review_teen.py` and
+  `review_poses.py` now share `tools/blender/ink_hull.py` (the figure keeps its normals; the hull is set back), and all
+  six cards are rendered again.
+- **Boards:** `review/characters_v2/tears_v116.jpg` (every character, v115 and v116, both with the corrected renderer),
+  `kai_face_v116.jpg` and `player_cards_v116.jpg`.
 - **Cost:** none (same meshes and atlases).
 - **Not run in Unity or on a device.**
 

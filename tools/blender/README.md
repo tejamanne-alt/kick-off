@@ -548,7 +548,8 @@ Why each step exists is in `docs/LEARNINGS.md`, C1 to C8 and C14. In short:
   Its `gait` scene shows a figure at four moments of a run or walk (`GAIT_OFFSET` for the other half of the cycle), with
   `CharacterRig`'s torso motion mirrored (`TORSO=0` for the rigid torso of before v115);
 - `fbx_to_blend.py` rebuilds a `.blend` from a shipped FBX for `review_teen.py`, `review_poses.py` and
-  `portrait_teen.py`;
+  `portrait_teen.py`. These three draw the outline with `ink_hull.py`: a copy of the figure set back from the camera,
+  as the game's, so the figure keeps its own normals;
 - the boards in `review/characters_v2/`.
 
 Three rules for reviews:

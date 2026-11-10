@@ -308,11 +308,11 @@ for b in BAGS: toon(b.data.materials[0], TINT)
 ol = bpy.data.materials.new('Outline'); ol.use_nodes = True; ol.use_backface_culling = True
 on = ol.node_tree; e = on.nodes.new('ShaderNodeEmission'); e.inputs['Color'].default_value = (0.012, 0.009, 0.014, 1)
 on.links.new(e.outputs[0], on.nodes['Material Output'].inputs['Surface'])
-kid.data.materials.append(ol)
-sol = kid.modifiers.new('outline', 'SOLIDIFY'); sol.thickness = 0.005; sol.offset = 1; sol.use_flip_normals = True; sol.material_offset = 1
-for b in BAGS:
-    b.data.materials.append(ol)
-    bs = b.modifiers.new('outline', 'SOLIDIFY'); bs.thickness = 0.005; bs.offset = 1; bs.use_flip_normals = True; bs.material_offset = 1
+# the outline: hull copies of the figure and its bag set back from the camera (ink_hull.py; docs/LEARNINGS.md C20)
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import ink_hull
+hull, sol = ink_hull.make(kid, ol, 0.005)
+BAG_HULLS = [ink_hull.make(b, ol, 0.005) for b in BAGS]
 S.world = bpy.data.worlds.new('w'); S.world.color = (0.62, 0.78, 0.95)
 S.render.engine = 'BLENDER_EEVEE'; S.view_settings.view_transform = 'Standard'
 try: S.eevee.taa_render_samples = 8
@@ -403,6 +403,10 @@ for k, (name, p, yaw) in enumerate(GRID):
     else: cam.data.ortho_scale = scale
     cam.location = (c[0], -(DIST if DIST > 0 else 6.0), c[2]); cam.rotation_euler = (math.radians(90), 0, 0)
     sol.thickness = 0.0045
+    for bh, bs in BAG_HULLS: bs.thickness = 0.0045
+    _top = max((kid.matrix_world @ v.co).z for v in kid.data.vertices[::50]) - min((kid.matrix_world @ v.co).z for v in kid.data.vertices[::50])
+    ink_hull.set_back(hull, kid, (0, 1, 0), ink_hull.PUSH * _top / 1.6)
+    for (bh, bs), b in zip(BAG_HULLS, BAGS): ink_hull.set_back(bh, b, (0, 1, 0), ink_hull.PUSH * _top / 1.6)
     S.render.film_transparent = False
     kid.data.materials[0] = mat
     render(os.path.join(tmp, 'tile_%04d.png' % k))
