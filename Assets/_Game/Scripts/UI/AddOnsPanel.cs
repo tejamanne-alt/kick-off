@@ -8,8 +8,8 @@ namespace DribbleToSchool.UI
 {
     /// <summary>
     /// Add-ons and Filters (a button on the title screen, after Stickers): the add-ons (the same levels in another country's streets with that
-    /// country's music: the original Kamakura, Japan; California, unlocked by finishing every level; India and
-    /// a Tokyo city still to come) as cards to choose from, and the filters (a look over the whole picture:
+    /// country's music: the original Kamakura, Japan; California and Florida, unlocked by finishing every level; India
+    /// still to come) as cards to choose from, and the filters (a look over the whole picture:
     /// the original, the comic halftone and the pencil sketch). A choice is saved at once; an add-on applies from the next
     /// level loaded, a filter at once.
     /// Progression/AddOns has the list and the rules.

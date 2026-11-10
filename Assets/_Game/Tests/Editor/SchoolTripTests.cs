@@ -376,6 +376,17 @@ namespace DribbleToSchool.Tests
             Assert.IsFalse(SchoolTrips.OnTime(data, "street"), "a finished route in a current save still needs its trip");
             Assert.IsEmpty(data.trips);
         }
+
+        [Test]
+        public void AnAddOnWithOnlySomeLevelsPointsToTheFirstShortOfThreeStars()
+        {
+            var stars = new Dictionary<string, int> { { "L11", 3 }, { "L12", 2 }, { "L13", 3 }, { "L14", 1 } };
+            var beach = new List<string> { "L11", "L12", "L13", "L14" };
+            Assert.AreEqual("L12", LevelUnlocks.FirstShortOfStars(beach, id => stars[id]));
+            stars["L12"] = 3; stars["L14"] = 3;
+            Assert.AreEqual("L11", LevelUnlocks.FirstShortOfStars(beach, id => stars[id]), "all three-starred: the first");
+            Assert.IsNull(LevelUnlocks.FirstShortOfStars(new List<string>(), id => 0));
+        }
     }
 }
 #endif

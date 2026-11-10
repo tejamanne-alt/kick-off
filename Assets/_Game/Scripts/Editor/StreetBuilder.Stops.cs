@@ -468,12 +468,14 @@ namespace DribbleToSchool.EditorTools
         {
             float hx = gx + 0.4f, hz = 3.3f, gy = ground(hx, hz);
             Color white = new Color(0.97f, 0.97f, 0.95f), teal = new Color(0.2f, 0.62f, 0.72f);
-            if (Model(p, "Buildings", "Garage", hx, gy, hz, 0f, 1.15f, white, teal, new Color(0.85f, 0.42f, 0.32f)) == null)
+            // (Florida: the weathered snack shack with its hatch propped up, in the café's teal)
+            bool shack = FL && Model(p, "Florida", "ShackFL", hx, gy, hz, 0f, 1f, null, new Color(0.42f, 0.72f, 0.78f)) != null;
+            if (!shack && Model(p, "Buildings", "Garage", hx, gy, hz, 0f, 1.15f, white, teal, new Color(0.85f, 0.42f, 0.32f)) == null)
             {
                 Solid(p, "Kiosk", new Vector3(hx, gy + 1.4f, hz + 2.4f), new Vector3(3.6f, 2.8f, 4.8f), white);
                 Solid(p, "KioskRoof", new Vector3(hx, gy + 2.9f, hz + 2.4f), new Vector3(4f, 0.2f, 5.2f), teal);
             }
-            Model(p, "Street", "Awning", hx, gy + 2.2f, hz - 0.05f, 0f, 1.5f, teal);
+            if (!shack) Model(p, "Street", "Awning", hx, gy + 2.2f, hz - 0.05f, 0f, 1.5f, teal);
             NameBoard(p, "BEACH CAFE", new Vector3(hx, gy + 3.75f, hz - 0.15f), 0.06f, teal, Color.white);
             foreach (float dx in new[] { -1.4f, 1.4f })
                 Solid(p, "BoardPost", new Vector3(hx + dx, gy + 1.85f, hz - 0.1f), new Vector3(0.1f, 3.7f, 0.1f), new Color(0.45f, 0.34f, 0.24f));
@@ -485,7 +487,8 @@ namespace DribbleToSchool.EditorTools
             // The hut is 5 m deep: at 3.6 m behind the footpath it ends well before the water's edge.
             float hx = gx + 1.6f, hz = 3.6f, gy = ground(hx, hz);
             Color white = new Color(0.97f, 0.97f, 0.95f), blue = new Color(0.18f, 0.5f, 0.78f);
-            if (Model(p, "Buildings", "Garage", hx, gy, hz, 0f, 1f, white, blue, new Color(0.85f, 0.42f, 0.32f)) == null)
+            bool shack = FL && Model(p, "Florida", "ShackFL", hx, gy, hz, 0f, 1f, null, new Color(0.30f, 0.56f, 0.80f)) != null;
+            if (!shack && Model(p, "Buildings", "Garage", hx, gy, hz, 0f, 1f, white, blue, new Color(0.85f, 0.42f, 0.32f)) == null)
             {
                 Solid(p, "SurfHut", new Vector3(hx, gy + 1.4f, hz + 2f), new Vector3(3.2f, 2.8f, 4f), white);
                 Solid(p, "SurfHutRoof", new Vector3(hx, gy + 2.9f, hz + 2f), new Vector3(3.6f, 0.2f, 4.4f), blue);

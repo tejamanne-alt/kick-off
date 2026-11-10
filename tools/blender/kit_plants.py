@@ -620,6 +620,137 @@ def build_palm_date():
     return pieces, {0: G.hexc(WOOD_PALM), 1: R_PALM.base}, {'kind': 'tree', 'trunkRadius': 0.55}
 
 
+# ---------------------------------------------------------------- Florida's fan palms
+R_SABAL = G.Ramp('#1d4636', '#4a8448', '#a6c46c')     # the sabal's leaves: a deep, slightly blue green
+WOOD_SABAL = '#8d877b'                                 # its trunk: weathered grey
+
+
+def fan_leaf(base, az, elev, petiole, R, rng, segs=8, rows=2, spread=1.9, droop=0.5, fold=0.35, ramp=R_SABAL, dry=False):
+    """A costapalmate fan leaf (the sabal's): a stalk out from the crown, then a fan of narrow segments radiating
+    over `spread` radians, each drooping toward its split tip, the middle of the fan folded down a little along the
+    stalk's line (the costa). Two-sided strips; u across a segment, v base to tip in the frond texture."""
+    d = np.array((math.cos(az), math.sin(az), 0.0))
+    s = np.array((-math.sin(az), math.cos(az), 0.0))
+    ce, se = math.cos(elev), math.sin(elev)
+    fwd = d * ce + UP * se
+    p0 = np.asarray(base, float)
+    hub = p0 + fwd * petiole + UP * (-0.08 * petiole)
+    pieces = []
+    stalk = G.tube(np.array([p0, (p0 + hub) / 2 + UP * 0.05, hub]), np.array([0.035, 0.03, 0.025]), 4)
+    stalk.color(G.hexc('#6f7a45' if not dry else '#8a6d44')); stalk.part(0)
+    pieces.append(stalk)
+    V = []; Fc = []; Uu = []; Vv = []; side = []
+    th = 0.012
+    for j in range(segs):
+        phi = -spread / 2 + spread * (j + 0.5) / segs
+        dirj = G.unit(fwd * math.cos(phi) + s * math.sin(phi))
+        wj = R * math.sin(spread / segs / 2) * 1.1
+        perp = G.unit(np.cross(dirj, UP)) if abs(dirj[2]) < 0.95 else s
+        mid = 1 - abs(phi) / (spread / 2)
+        base_i = len(V)
+        for i in range(rows + 1):
+            t = i / rows
+            r_ = R * (0.12 + 0.88 * t) * (0.86 + 0.14 * mid)
+            sag = droop * R * (t ** 2) * (0.6 + 0.4 * (1 - mid)) + fold * 0.25 * mid * t
+            c = hub + dirj * r_ - UP * sag
+            half = wj * (0.25 + 0.75 * min(1.0, t * 1.4)) * (1 - 0.65 * max(0.0, t - 0.75) / 0.25)
+            for k_, off in enumerate((-1.0, 0.0, 1.0)):
+                lift = th if k_ == 1 else -0.25 * half * 0.4
+                V.append(c + perp * off * half + UP * lift); Uu.append(0.5 + off * 0.5); Vv.append(t); side.append(1)
+            for k_, off in enumerate((-1.0, 0.0, 1.0)):
+                lift = -th if k_ == 1 else -0.25 * half * 0.4
+                V.append(c + perp * off * half + UP * lift); Uu.append(0.5 + off * 0.5); Vv.append(t); side.append(-1)
+        for i in range(rows):
+            a = base_i + i * 6; b = a + 6
+            Fc += [(a + 0, b + 0, b + 1, a + 1), (a + 1, b + 1, b + 2, a + 2)]
+            Fc += [(a + 3, a + 4, b + 4, b + 3), (a + 4, a + 5, b + 5, b + 4)]
+    p = G.Piece(V, Fc)
+    side = np.array(side, float)
+    p = G.orient(p, lambda c, i: UP * (1 if side[p.F[i][0]] > 0 else -1))
+    p.N = G.vnormals(p.V, p.F)
+    tt = np.array(Vv); uu = np.array(Uu)
+    midu = 1 - np.abs(uu - 0.5) * 2
+    s_top = 0.34 + 0.32 * G.smoothstep(0.0, 0.7, tt) + 0.16 * midu
+    sh = np.where(side > 0, s_top, 0.12 + 0.1 * tt)
+    p.color((R_DRY if dry else ramp)(sh + rng.uniform(-0.05, 0.05))); p.part(0 if dry else 1)
+    p.U = AT.region_uv('frond', uu, tt)
+    pieces.append(p)
+    return pieces
+
+
+def sabal(seed, height, lean, n_leaves, R, petiole, boots=0.6, n_dry=3, r_base=0.22, r_top=0.19):
+    """A sabal (cabbage) palm, Florida's state tree: a straight grey trunk, the old leaf bases ('boots') still
+    criss-crossing its upper part (boots: the share of the trunk they cover, from the top), and a dense round
+    crown of fan leaves on long stalks, a few dry ones hanging under it."""
+    rng = RNG(seed)
+    pts = [(0, 0, -0.12), (lean * 0.2, 0.0, height * 0.35), (lean * 0.6, 0.02, height * 0.7), (lean, 0.03, height)]
+    pieces = palm(seed, pts, r_base, r_top, 0.5, 0, 1.0, 0.3, 0, n_dead=0)
+    trunk = pieces[0]
+    z = trunk.V[:, 2]
+    k = (0.78 + 0.22 * np.sin(z * 9.0 + seed)) * (1 - 0.3 * G.smoothstep(0.6, 0.0, z))
+    trunk.color(G.hexc(WOOD_SABAL)[None, :] * k[:, None])
+    top = np.array(pts[-1], float)
+    # the boots: short split leaf bases sticking out and up in a lattice round the upper trunk
+    if boots > 0:
+        zb = height * (1 - boots)
+        rows = max(2, int((height - zb) / 0.28))
+        for i in range(rows):
+            zz = zb + (height - 0.25 - zb) * i / max(1, rows - 1)
+            tt = zz / height
+            cx, cy = lean * tt ** 1.3, 0.03 * tt
+            rr = r_base + (r_top - r_base) * tt
+            for j in range(7):
+                a = 2 * PI * j / 7 + (i % 2) * PI / 7 + rng.normal(0, 0.08)
+                dvec = np.array((math.cos(a), math.sin(a), 0.0))
+                base = np.array((cx, cy, zz)) + dvec * rr * 0.85
+                tip = base + dvec * rng.uniform(0.16, 0.26) + UP * rng.uniform(0.12, 0.2)
+                sv = np.array((-math.sin(a), math.cos(a), 0.0)) * 0.07
+                bt = G.Piece([base - sv, base + sv, tip + sv * 0.5, tip - sv * 0.5, base - sv - dvec * 0.01, base + sv - dvec * 0.01,
+                              tip + sv * 0.5 - dvec * 0.01, tip - sv * 0.5 - dvec * 0.01],
+                             [(0, 1, 2, 3), (5, 4, 7, 6)])
+                bt = G.orient(bt, lambda c, f, dvec=dvec: dvec if f == 0 else -dvec)
+                bt.color(G.hexc('#7a6650') * rng.uniform(0.85, 1.1)); bt.part(0)
+                pieces.append(bt)
+    # the crown: leaves on golden-angle azimuths, the first ones up, the lower ones arching out and down
+    ga = PI * (3 - 5 ** 0.5); ph = rng.uniform(0, 2 * PI)
+    for k in range(n_leaves):
+        f = k / max(n_leaves - 1, 1)
+        az = ph + ga * k + rng.normal(0, 0.1)
+        el = 1.25 - 1.55 * f + rng.normal(0, 0.08)
+        base = top + np.array((math.cos(az), math.sin(az), 0)) * r_top * 0.6 + UP * 0.05
+        pieces += fan_leaf(base, az, el, petiole * rng.uniform(0.85, 1.15), R * rng.uniform(0.9, 1.08), rng,
+                           droop=0.45 + 0.25 * f)
+    for k in range(n_dry):
+        az = ph + 2 * PI * (k + 0.3) / max(1, n_dry) + rng.normal(0, 0.2)
+        base = top - UP * 0.15 + np.array((math.cos(az), math.sin(az), 0)) * r_top * 0.7
+        pieces += fan_leaf(base, az, -1.25, petiole * 0.5, R * 0.8, rng, segs=7, rows=2, spread=1.2, droop=0.25, dry=True)
+    return pieces
+
+
+def build_palm_sabal():
+    # The Florida street palm, as in the references: about 7 m, the boots on its upper half.
+    pieces = sabal(331, 7.0, 0.35, 28, 1.25, 1.05, boots=0.55)
+    return pieces, {0: G.hexc(WOOD_SABAL), 1: R_SABAL.base}, {'kind': 'tree', 'trunkRadius': 0.22}
+
+
+def build_palm_sabal_tall():
+    # A tall old sabal, its trunk smooth below a short band of boots, seen over the roofs.
+    pieces = sabal(337, 11.0, 0.7, 26, 1.2, 1.0, boots=0.18, n_dry=2, r_base=0.21, r_top=0.17)
+    return pieces, {0: G.hexc(WOOD_SABAL), 1: R_SABAL.base}, {'kind': 'tree', 'trunkRadius': 0.21}
+
+
+def build_saw_palmetto():
+    # Saw palmetto, the dunes' and verges' low fan palm: a clump of fans on short stalks straight off the sand.
+    rng = RNG(347)
+    pieces = []
+    for k in range(9):
+        az = 2 * PI * k / 9 + rng.normal(0, 0.15)
+        base = np.array((math.cos(az) * 0.15, math.sin(az) * 0.15, 0.0))
+        pieces += fan_leaf(base, az, 1.1 - 0.06 * k + rng.normal(0, 0.1), 0.5 * rng.uniform(0.8, 1.2), 0.62 * rng.uniform(0.85, 1.1), rng,
+                           segs=5, rows=2, spread=1.8, droop=0.3, ramp=R_SABAL)
+    return pieces, {0: G.hexc('#6f7a45'), 1: R_SABAL.base}, {'kind': 'bush'}
+
+
 # ---------------------------------------------------------------- bushes
 def card_bush(seed, spec, ramp, height, card=0.68, density=1.35, flowers=None):
     """A low clustered shrub of leaf cards over dark cores, sitting on the ground (no stems show).
@@ -959,6 +1090,7 @@ MODELS = [
     ('GrassTuft', build_grass_tuft), ('TallGrass', build_tall_grass), ('DuneGrass', build_dune_grass),
     ('Reeds', build_reeds), ('FlowerPatch', build_flower_patch),
     ('PalmFan', build_palm_fan), ('PalmDate', build_palm_date),
+    ('PalmSabal', build_palm_sabal), ('PalmSabalTall', build_palm_sabal_tall), ('SawPalmetto', build_saw_palmetto),
 ]
 BUDGET = {'tree': 6000, 'bush': 1200, 'grass': 800, 'hedge': 600}
 

@@ -31,16 +31,20 @@ namespace DribbleToSchool.UI
             UIKit.SectionLabel(UIKit.Row(face.transform, "StagesLabel", -y, 46f, 50f, 50f), Loc.T("coop.pick.stages"));
             y -= 60f;
             int count = RouteTable.All.Length + 1;
+            // The chosen location, unless it is random: a route its streets don't have yet (Florida: only the beach) is shut.
+            bool anyPlace = sel.addOn >= CoopLocations.Count;
             for (int i = 0; i < count; i++)
             {
                 bool random = i == RouteTable.All.Length;
                 var route = random ? null : RouteTable.All[i];
                 byte value = random ? CoopSelection.Random : (byte)i;
-                bool open = random || Store.Monetization.IsChapterUnlocked(route.chapter);
+                bool fits = random || anyPlace || CoopLocations.Fits(i, sel.addOn);
+                bool open = random || (Store.Monetization.IsChapterUnlocked(route.chapter) && fits);
                 bool chosen = sel.route == value || (random && sel.route >= RouteTable.All.Length);
                 Color colour = random ? UITheme.Gold : ChapterColour(catalog, route.chapter);
                 string title = random ? Loc.T("coop.random.route") : Loc.T(route.NameKey);
-                string line = random ? Loc.T("coop.random.routeShort") : Loc.F("coop.legs", route.levels.Length);
+                string line = random ? Loc.T("coop.random.routeShort") : !fits ? Loc.F("coop.route.notIn", Loc.T(CoopLocations.At(sel.addOn).nameKey))
+                    : Loc.F("coop.legs", route.levels.Length);
                 var cell = Cell(face.transform, i % 4, y - (i / 4) * (CardH + Gap), CardW, CardH);
                 Card(cell, title, line, colour, chosen, open, () =>
                 {
@@ -58,10 +62,14 @@ namespace DribbleToSchool.UI
                 bool random = i == CoopLocations.Count;
                 var place = random ? null : CoopLocations.At(i);
                 byte value = random ? CoopSelection.Random : (byte)i;
-                bool open = random || place.Unlocked;
+                // A location with only some routes (Florida: the beach) is shut while the chosen route isn't one of them.
+                bool anyRoute = sel.route >= RouteTable.All.Length;
+                bool fits = random || anyRoute || CoopLocations.Fits(sel.route, i);
+                bool open = random || (place.Unlocked && fits);
                 bool chosen = sel.addOn == value || (random && sel.addOn >= CoopLocations.Count);
                 string title = random ? Loc.T("coop.random.place") : Loc.T(place.nameKey);
-                string line = random ? Loc.T("coop.random.placeShort") : open ? Loc.T(place.placeKey) : Loc.T("addons.locked");
+                string line = random ? Loc.T("coop.random.placeShort") : !place.Unlocked ? Loc.T("addons.locked")
+                    : !fits ? Loc.F("coop.place.only", OnlyRoutes(place)) : Loc.T(place.placeKey);
                 var cell = Cell(face.transform, i % 4, y - (i / 4) * (CardH + Gap), CardW, CardH);
                 Card(cell, title, line, random ? UITheme.Gold : UITheme.Blue, chosen, open, () =>
                 {
@@ -81,6 +89,15 @@ namespace DribbleToSchool.UI
             }, 44);
             UIKit.Place((RectTransform)done.transform, new Vector2(1f, 0f), new Vector2(-50f, 40f), new Vector2(320f, 100f), new Vector2(1f, 0f));
             return root;
+        }
+
+        /// <summary>The names of the routes a location has (Florida: "Seaside Road").</summary>
+        static string OnlyRoutes(Progression.AddOn place)
+        {
+            var names = new System.Collections.Generic.List<string>();
+            foreach (var route in RouteTable.All)
+                if (place.HasChapter(route.chapter)) names.Add(Loc.T(route.NameKey));
+            return string.Join(", ", names.ToArray());
         }
 
         static Color ChapterColour(LevelCatalog catalog, int chapter)
