@@ -214,8 +214,7 @@ namespace DribbleToSchool.World
                 if (hopper) lift = Mathf.Abs(Mathf.Sin(phase)) * 0.05f * Mathf.Clamp01(speed / Mathf.Max(0.05f, walkSpeed));
                 else lift = Mathf.Abs(Mathf.Sin(phase)) * 0.006f;
             }
-            transform.position = new Vector3(x, y + lift, z);
-            transform.rotation = Quaternion.Euler(0f, yaw, pitch);
+            transform.SetPositionAndRotation(new Vector3(x, y + lift, z), Quaternion.Euler(0f, yaw, pitch));
             if (state == State.Fly || !head.ready) return;
             // The pigeon's head: nodding back and forth as it walks, quick pecks when it stops.
             if (state == State.Walk)

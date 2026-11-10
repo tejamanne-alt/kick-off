@@ -118,6 +118,9 @@ namespace DribbleToSchool.FrontEnd
 
         public override string Title { get { return Loc.T("map.choose"); } }
 
+        /// <summary>The mat is opaque and reaches well past the safe area: nothing of the 3D street shows.</summary>
+        public override bool CoversStage { get { return true; } }
+
         // ------------------------------------------------------------------ building
 
         protected override void Build(RectTransform root)
@@ -922,6 +925,20 @@ namespace DribbleToSchool.FrontEnd
             ReleasePicture();
         }
 
+        static ResourceRequest preload;
+
+        /// <summary>
+        /// Start reading the map's picture in the background (the title screen, one tap before the map): a 3200 x 1800
+        /// texture read and uploaded in the frame the map opened. The map's own load then finds it in memory; until
+        /// then nothing changes. Let go with the picture when the map hides.
+        /// </summary>
+        public static void Preload()
+        {
+            // (one under way, or done and still in memory: a scene change unloads it)
+            if (preload != null && (!preload.isDone || preload.asset != null)) return;
+            preload = Resources.LoadAsync<Texture2D>(TownMap.Image);
+        }
+
         /// <summary>Load the picture (a texture, or a sprite if it was imported as one) while the map is on screen.</summary>
         void EnsurePicture()
         {
@@ -954,6 +971,7 @@ namespace DribbleToSchool.FrontEnd
             if (plain != null) plain.enabled = true;
             if (texture != null) Resources.UnloadAsset(texture);
             texture = null;
+            preload = null;
         }
 
         void ShowRoute(string id)

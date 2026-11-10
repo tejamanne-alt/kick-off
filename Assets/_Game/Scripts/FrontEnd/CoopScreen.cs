@@ -251,7 +251,13 @@ namespace DribbleToSchool.FrontEnd
             {
                 if (Time.unscaledTime < nextRefresh) return signature;   // the list changes often: twice a second is plenty
                 nextRefresh = Time.unscaledTime + 0.5f;
-                foreach (var r in s.Rooms) sb.Append(r.address).Append(r.beacon.players).Append((int)r.beacon.phase).Append(r.beacon.hostName).Append(r.rssi / 10).Append(';');
+                // What the list draws: the rooms nearest first, each with its signal word. The raw strength jitters by
+                // 5 to 10 dB, and keying on it rebuilt the whole list about twice a second for nothing.
+                sortedRooms.Clear();
+                sortedRooms.AddRange(s.Rooms);
+                sortedRooms.Sort(Nearest);
+                foreach (var r in sortedRooms) sb.Append(r.address).Append(r.beacon.players).Append((int)r.beacon.phase).Append(r.beacon.hostName).Append(SignalLevel(r.rssi)).Append(';');
+                sortedRooms.Clear();
             }
             if (v == View.Lobby || v == View.Race)
             {
@@ -392,7 +398,7 @@ namespace DribbleToSchool.FrontEnd
         void BuildJoin()
         {
             var list = new List<CoopRoom>(Session.Rooms);
-            list.Sort((a, b) => b.rssi.CompareTo(a.rssi));   // the nearest first
+            list.Sort(Nearest);   // the nearest first
             var heading = UIKit.Label(body, "Heading", Loc.T(list.Count > 0 ? "coop.join.pick" : "coop.join.looking"), 36, Color.white, TextAnchor.MiddleLeft, true);
             UIKit.GlassText(heading);
             float listWidth = Mathf.Min(1100f, BodyWidth - 40f);
@@ -431,9 +437,16 @@ namespace DribbleToSchool.FrontEnd
             }
         }
 
+        static readonly System.Comparison<CoopRoom> Nearest = (a, b) => b.rssi.CompareTo(a.rssi);
+        readonly List<CoopRoom> sortedRooms = new List<CoopRoom>();
+
+        /// <summary>2 strong, 1 good, 0 weak: what <see cref="Signal"/> says.</summary>
+        static int SignalLevel(int rssi) { return rssi > -60 ? 2 : rssi > -78 ? 1 : 0; }
+
         static string Signal(int rssi)
         {
-            return Loc.T(rssi > -60 ? "coop.signal.strong" : rssi > -78 ? "coop.signal.good" : "coop.signal.weak");
+            int level = SignalLevel(rssi);
+            return Loc.T(level == 2 ? "coop.signal.strong" : level == 1 ? "coop.signal.good" : "coop.signal.weak");
         }
 
         void BuildConnecting()

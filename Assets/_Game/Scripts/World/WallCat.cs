@@ -113,8 +113,7 @@ namespace DribbleToSchool.World
             }
 
             yaw = Mathf.SmoothDampAngle(yaw, targetYaw, ref yawVelocity, 0.35f);
-            transform.position = pos;
-            transform.rotation = Quaternion.Euler(roll, yaw, pitchRock);
+            transform.SetPositionAndRotation(pos, Quaternion.Euler(roll, yaw, pitchRock));
             // The tail: a lazy swish, quicker while it is on the move.
             swishPhase += dt * (state == State.Sit ? 1.6f : 3.2f);
             tail.Set(3f + 17f * (Mathf.Sin(swishPhase) + 0.25f * Mathf.Sin(2.1f * swishPhase)));
@@ -191,8 +190,7 @@ namespace DribbleToSchool.World
             side = Chance(0.5f) ? 1f : -1f;
             yaw = targetYaw = side > 0f ? Range(-20f, 20f) : 180f + Range(-20f, 20f);
             if (model != null) model.gameObject.SetActive(true);
-            transform.position = new Vector3(x, w.z, w.w);
-            transform.rotation = Quaternion.Euler(0f, yaw, 0f);
+            transform.SetPositionAndRotation(new Vector3(x, w.z, w.w), Quaternion.Euler(0f, yaw, 0f));
             Sit(Range(3f, 8f));
         }
     }

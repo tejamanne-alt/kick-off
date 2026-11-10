@@ -67,9 +67,19 @@ namespace DribbleToSchool.Presentation
             if (characters[chosen] != null)
                 foreach (var lazy in characters[chosen].GetComponentsInChildren<LazyRenderer>()) lazy.Load();
             look.ReplayOn(OutfitOf(chosen));
-            // The kid just hidden let go of their meshes (Presentation/LazyRenderer): free them now, not at the next
-            // scene load, so browsing the kids in the menu never holds more than one in memory.
-            if (switched) Resources.UnloadUnusedAssets();
+            // The kid just hidden let go of their meshes (Presentation/LazyRenderer): free them a second after the last
+            // switch, not at the next scene load, so browsing the kids in the menu holds only the ones just shown. (The
+            // sweep walks every object in the scene and collects garbage: run on every tap, it was a hitch per tap.)
+            if (switched)
+            {
+                CancelInvoke(nameof(FreeHidden));
+                Invoke(nameof(FreeHidden), 1f);
+            }
+        }
+
+        void FreeHidden()
+        {
+            Resources.UnloadUnusedAssets();
         }
 
         public void SetOutfit(Color shirt, Color legwear)

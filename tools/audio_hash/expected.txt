@@ -1,0 +1,102 @@
+music Japan Menu: E242A4E9D29C9E0D
+music Japan Street: 6997219478CEC36D
+music Japan Market: 067B042183877FC2
+music Japan Beach: 867E9ABC3EBB97BC
+music Japan Underpass: 0D7B59F7A07D74FC
+music Japan Site: CD5D34227C0C996D
+music Japan Park: 6FBCBC9D97402803
+music California Menu: B1C86B65979453A5
+music California Street: 3A82349AD3EF78FF
+music California Market: 025496D0BA20BCA3
+music California Beach: F4DAB54C4ACFADE7
+music California Underpass: 172C261437E33E57
+music California Site: 7365A32D283E768D
+music California Park: 7D84203AB6990690
+music Florida Menu: D7150A0961DCC6DA
+music Florida Street: 22E2A6798D156E6B
+music Florida Market: 4C619A685B0DD5C8
+music Florida Beach: 8B7340EFDBEB10E7
+music Florida Underpass: 29944770BBEA28DB
+music Florida Site: 275A9B1E8FC2DFC0
+music Florida Park: F1B737780DC1803F
+bed Menu: 7489AEBF2D30AD77
+cue Menu 0 robin gap 7-16 volume 0.20238577 pan 0.3 0.6 pitch 0.06 sweep False: C9AC62E390EDF2DF
+cue Menu 1 tit gap 10-22 volume 0.16443843 pan -0.3 0.6 pitch 0.06 sweep False: 24125D5AB44698EB
+bed Street: 824971BFAC955B34
+cue Street 0 car gap 7-15 volume 0.4260282 pan 0 0 pitch 0.08 sweep True: E3D2A32C078D860C
+cue Street 1 van gap 18-34 volume 0.38729835 pan 0 0 pitch 0.06 sweep True: 01582ABECD0FD122
+cue Street 2 horn gap 25-50 volume 0.17041127 pan 0.4 0.5 pitch 0.06 sweep False: CAD6311A3646E6A1
+cue Street 3 bicycle gap 28-55 volume 0.1859032 pan -0.3 0.5 pitch 0.06 sweep False: 2F5CE7AA75387434
+cue Street 4 dog gap 22-45 volume 0.15491934 pan 0.5 0.4 pitch 0.1 sweep False: 1E2CAB4A43B33BDE
+cue Street 5 church gap 50-90 volume 0.15491934 pan -0.5 0.2 pitch 0 sweep False: 9604A265EBD9BC50
+cue Street 6 sparrows gap 6-13 volume 0.1859032 pan 0 0.8 pitch 0.06 sweep False: 504C7C7FF2BFD808
+cue Street 7 pigeon gap 26-48 volume 0.15491934 pan 0.5 0.4 pitch 0.04 sweep False: 03776B09826A957D
+bed Market: 895B088B287CFD21
+cue Market 0 shopBell gap 12-24 volume 0.1776138 pan 0 0.8 pitch 0.06 sweep False: FF4010A426430799
+cue Market 1 cart gap 18-34 volume 0.2186016 pan 0 0 pitch 0.06 sweep True: B1BA9A4F0D93BB3B
+cue Market 2 pigeons gap 14-28 volume 0.20493902 pan 0 0.7 pitch 0.06 sweep False: 08EE941E1C1DBF02
+cue Market 3 clock gap 55-95 volume 0.122963406 pan 0.4 0.3 pitch 0 sweep False: 45C62C2FE94BDD6F
+cue Market 4 bicycle gap 26-50 volume 0.15028861 pan 0 0.7 pitch 0.06 sweep False: 2F5CE7AA75387434
+cue Market 5 laugh gap 35-70 volume 0.0546504 pan 0 0.8 pitch 0.12 sweep False: B4E37BF4BE4301D6
+cue Market 6 van gap 28-50 volume 0.23909551 pan 0 0 pitch 0.06 sweep True: EACF41DF51AEE077
+bed Beach: 22CE808D6D687815
+cue Beach 0 gull gap 4-10 volume 0.2862167 pan 0 0.8 pitch 0.08 sweep False: 5237E495C1CACF64
+cue Beach 1 gullLaugh gap 9-20 volume 0.2504396 pan 0 0.8 pitch 0.08 sweep False: 9EB20118C2591C3A
+cue Beach 2 gullFar gap 6-14 volume 0.1252198 pan 0 0.9 pitch 0.1 sweep False: C084AB7AC02256A6
+cue Beach 3 buoy gap 35-65 volume 0.14310835 pan -0.6 0.3 pitch 0.03 sweep False: 8038165D0B13D4F9
+cue Beach 4 ship gap 70-130 volume 0.1252198 pan 0.6 0.3 pitch 0.02 sweep False: 1A93202F7D47082E
+cue Beach 5 splash gap 15-32 volume 0.1609969 pan 0 0.8 pitch 0.06 sweep False: 72AABB509D3B2F04
+bed Underpass: 86AA99C725F48601
+cue Underpass 0 drip gap 2.5-7 volume 0.24000001 pan 0 0.9 pitch 0.15 sweep False: 021038658C0B4974
+cue Underpass 1 train gap 30-55 volume 0.48000002 pan 0 0 pitch 0.04 sweep True: ED14E3B932538E4A
+cue Underpass 2 steps gap 18-34 volume 0.192 pan 0 0.8 pitch 0.06 sweep False: 1C16D3E49136C867
+cue Underpass 3 flutter gap 30-60 volume 0.16000001 pan 0 0.8 pitch 0.06 sweep False: D780EFA15BECC998
+cue Underpass 4 hornEcho gap 35-70 volume 0.112 pan 0 0.8 pitch 0.06 sweep False: C886387FB8DA3ABD
+cue Underpass 5 car gap 12-24 volume 0.28 pan 0 0 pitch 0.06 sweep True: 9A6487E6EF9902B5
+bed Site: 5D2CFAEA9ADB585E
+cue Site 0 reversing gap 22-40 volume 0.20552371 pan 0.5 0.4 pitch 0.02 sweep False: BDAE97C9F4854757
+cue Site 1 jackhammer gap 10-22 volume 0.2740316 pan -0.4 0.5 pitch 0.05 sweep False: B379D29986C512FD
+cue Site 2 hammer gap 8-17 volume 0.2740316 pan 0 0.8 pitch 0.06 sweep False: 4562C79F48639DF0
+cue Site 3 digger gap 25-45 volume 0.32541254 pan 0.3 0.5 pitch 0.05 sweep False: 62FF6BDF2C6C227E
+cue Site 4 drill gap 20-40 volume 0.1541428 pan 0 0.8 pitch 0.06 sweep False: B22F3E5CDEB1E659
+cue Site 5 airBrake gap 35-70 volume 0.18839674 pan 0 0.8 pitch 0.06 sweep False: 5D1BD673EC728CD8
+cue Site 6 pipes gap 40-75 volume 0.23977767 pan 0 0.8 pitch 0.05 sweep False: D71E03866BA1B35C
+cue Site 7 truck gap 25-45 volume 0.38535696 pan 0 0 pitch 0.04 sweep True: 888FE68EDC2EBD58
+bed Park: 6074A870AA4F9E75
+cue Park 0 robin gap 4-9 volume 0.20493902 pan 0 0.9 pitch 0.06 sweep False: EB8C4261D68C2B27
+cue Park 1 tit gap 5-12 volume 0.1776138 pan 0 0.9 pitch 0.06 sweep False: D780142348F27F1C
+cue Park 2 blackbird gap 8-18 volume 0.20493902 pan 0 0.9 pitch 0.06 sweep False: AC626F1F7D813EE0
+cue Park 3 woodpigeon gap 16-32 volume 0.1639512 pan 0 0.8 pitch 0.04 sweep False: 4327EBBE3D7D4BED
+cue Park 4 ducks gap 15-30 volume 0.1639512 pan 0.5 0.4 pitch 0.08 sweep False: 2CA253DFE8B10F86
+cue Park 5 woodpecker gap 30-60 volume 0.122963406 pan -0.5 0.4 pitch 0.06 sweep False: 5D96E865CF2BDD04
+cue Park 6 dog gap 25-50 volume 0.1093008 pan 0 0.8 pitch 0.1 sweep False: 139D9BA45EFE6DC7
+cue Park 7 bicycle gap 30-60 volume 0.136626 pan 0 0.8 pitch 0.06 sweep False: 2F5CE7AA75387434
+sfx Kick: 8873DDE70965429C
+sfx Touch: 54CE0B9F93A6663E
+sfx Perfect: C5477F752A8B35BA
+sfx Juggle: 1D4F91C511414EE4
+sfx Trap: 1E0673F01D4FFBA4
+sfx Jump: 4C545C24D73BE5C7
+sfx Land: 616098459CF40600
+sfx Bounce: 21E8FAD8B3722ACC
+sfx Coin: 950E16816CA017C2
+sfx Sticker: 062DBB964320C073
+sfx Checkpoint: FA3F95C4C440741F
+sfx Bell: 3DFB85668D7DB786
+sfx Goal: 7E1CA86AA17E6DCD
+sfx Lose: E6EC08E28945FE18
+sfx Splash: C84C81DB5F992B00
+sfx Woof: 05388FA2E882A2D6
+sfx Squawk: 4402A12BA15CCAAB
+sfx Oof: 42AA75233D22F2C4
+sfx Boing: 25EC1C89522E6368
+sfx Switch: 2CFF835D28582135
+sfx Gate: E90748AD9D388662
+sfx Beep: 4D07604D2FDF1BBB
+sfx Click: 20995F849B7CE26C
+sfx Purchase: A2A382ED6FEF34B2
+sfx Whistle: AD4DFB554F67FB2B
+sfx Respawn: CF431E1C6E3002D4
+sfx DoubleJump: DE21FC5534BBBCD4
+sfx Slide: 3347990730D7C97D
+sfx GetUp: AB97948A9DBFC43A

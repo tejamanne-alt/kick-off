@@ -39,6 +39,12 @@ namespace DribbleToSchool.FrontEnd
         public virtual bool HandleBack() { return false; }
 
         /// <summary>
+        /// True when the screen hides the whole view under something opaque (reaching past the safe area), so the menu's
+        /// 3D camera need not draw at all while it shows (MenuStage.Covered).
+        /// </summary>
+        public virtual bool CoversStage { get { return false; } }
+
+        /// <summary>
         /// Where the menu's 3D camera should look while this screen shows (called every frame).
         /// Busy screens look up at the sky, a calm backdrop.
         /// </summary>
@@ -193,7 +199,11 @@ namespace DribbleToSchool.FrontEnd
         {
             var stage = Stage;
             if (stage != null && screens.ContainsKey(current) && screens[current].Root != null)
+            {
                 screens[current].FrameStage(stage);
+                stage.Covered = screens[current].CoversStage && screens[current].Root.gameObject.activeInHierarchy;
+            }
+            else if (stage != null) stage.Covered = false;
             if (screens.ContainsKey(current) && screens[current].Root != null && screens[current].Root.gameObject.activeSelf)
                 screens[current].Tick();
         }

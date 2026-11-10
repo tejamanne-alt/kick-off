@@ -48,20 +48,27 @@ namespace DribbleToSchool.Hazards
         public override void ResetState()
         {
             time = phaseOffset;
-            Animate();
+            Animate(true);
         }
 
         void Update()
         {
             time += Time.deltaTime;
-            Animate();
+            // Well off screen only the jet's height is kept (the lift on the ball follows it); the jets and droplets are
+            // posed from the clock alone, so they are exactly right again the frame the fountain comes back into view.
+            Vector3 at = transform.position;
+            Animate(!World.AmbientView.Valid || World.AmbientView.OutsideBy(at.x, at.z) <= RestBeyond);
         }
 
-        void Animate()
+        /// <summary>How far outside the view's sides the fountain rests: its droplets' spread and a margin.</summary>
+        const float RestBeyond = 3f;
+
+        void Animate(bool pose)
         {
             float wave = 0.5f + 0.5f * Mathf.Sin(time / Mathf.Max(pulsePeriod, 0.1f) * Mathf.PI * 2f);
             float k = Mathf.Lerp(lowestFraction, 1f, wave);
             CurrentHeight = maxHeight * k;
+            if (!pose) return;
 
             if (jets != null)
             {

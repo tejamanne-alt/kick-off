@@ -62,24 +62,58 @@ namespace DribbleToSchool.Analytics
             }
         }
 
-        /// <summary>Appends JSON lines to persistentDataPath/analytics.jsonl, trimmed to the newest ~2000 events.</summary>
+        /// <summary>
+        /// Appends JSON lines to persistentDataPath/analytics.jsonl, trimmed to the newest ~2000 events. The file is
+        /// written off the main thread, by one writer at a time, in the order the events came: each event used to open,
+        /// append to and close the file in the frame it happened (a ball lost mid-level, say), and every 200th read
+        /// and rewrote the whole file there too.
+        /// </summary>
         class LocalFileSink : IAnalyticsSink
         {
             const int MaxLines = 2000;
             readonly string path = Path.Combine(Application.persistentDataPath, "analytics.jsonl");
-            int writes;
+            readonly object gate = new object();
+            readonly Queue<string> pending = new Queue<string>();
+            bool writing;
+            int writes;   // (the writer's alone)
 
             public void Send(string eventName, IList<KeyValuePair<string, string>> fields)
             {
                 var sb = new StringBuilder("{\"t\":\"").Append(DateTime.UtcNow.ToString("o")).Append("\",\"e\":\"").Append(Escape(eventName)).Append('"');
                 foreach (var f in fields) sb.Append(",\"").Append(Escape(f.Key)).Append("\":\"").Append(Escape(f.Value)).Append('"');
-                sb.Append('}');
-                try
+                sb.Append("}\n");
+                lock (gate)
                 {
-                    File.AppendAllText(path, sb.ToString() + "\n");
-                    if (++writes % 200 == 0) Trim();
+                    pending.Enqueue(sb.ToString());
+                    if (writing) return;   // the writer that is running takes it too
+                    writing = true;
                 }
-                catch (Exception) { }
+                if (!System.Threading.ThreadPool.QueueUserWorkItem(Write))
+                    lock (gate) writing = false;
+            }
+
+            /// <summary>On a worker thread: append everything waiting, until nothing is.</summary>
+            void Write(object unused)
+            {
+                var batch = new StringBuilder();
+                while (true)
+                {
+                    int lines = 0;
+                    batch.Length = 0;
+                    lock (gate)
+                    {
+                        while (pending.Count > 0) { batch.Append(pending.Dequeue()); lines++; }
+                        if (lines == 0) { writing = false; return; }
+                    }
+                    try
+                    {
+                        File.AppendAllText(path, batch.ToString());
+                        int before = writes;
+                        writes += lines;
+                        if (writes / 200 != before / 200) Trim();
+                    }
+                    catch (Exception) { }
+                }
             }
 
             void Trim()

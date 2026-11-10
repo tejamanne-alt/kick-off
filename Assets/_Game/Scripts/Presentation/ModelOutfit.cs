@@ -33,6 +33,12 @@ namespace DribbleToSchool.Presentation
         Mesh mesh;
         Color[] original;
         Vector2[] parts;
+        // Worked out once per mesh copy, so a change of outfit is one multiply per channel a vertex (a passer-by's respawn
+        // redressed ~9k vertices in one physics step: docs/PERFORMANCE.md): each vertex's part, its brightness against its
+        // part's default colour (Recolor's k), and its own colour as the mesh stores it.
+        byte[] vertexPart;
+        float[] vertexK;
+        Color32[] original32;
         // The accent (the tie) can be taken off: its vertices all collapse to one point on the chest.
         // The mesh's vertices are kept as last set and only the tie's are changed in place (a copy of every
         // vertex for each change was 1.2 MB of garbage for a 100k-vertex kid).
@@ -100,8 +106,9 @@ namespace DribbleToSchool.Presentation
                 smr.sharedMesh = mesh;
                 made = Made.Original;   // the copy has the model's own colours
                 FindAccent();
+                Prepare();
             }
-            if (original == null || parts == null || parts.Length != original.Length) return;
+            if (original == null || parts == null || parts.Length != original.Length || vertexPart == null) return;
             bool same = made == Made.Outfit && shirt.Equals(madeShirt) && legwear.Equals(madeLegwear) && currentHair.Equals(madeHair)
                 && accented == madeAccented && (!accented || currentAccent.Equals(madeAccent));
             if (!same)
@@ -109,15 +116,18 @@ namespace DribbleToSchool.Presentation
                 var colors = colorBuffer;
                 colors.Clear();
                 if (colors.Capacity < original.Length) colors.Capacity = original.Length;
+                bool hair = currentHair != default(Color);
                 for (int i = 0; i < original.Length; i++)
                 {
-                    int part = Mathf.RoundToInt(parts[i].x);
-                    Color c = original[i];
-                    if (part == 1) c = Recolor(c, defaultShirt, shirt);
-                    else if (part == 2) c = Recolor(c, defaultLegwear, legwear);
-                    else if (part == 3 && currentHair != default(Color)) c = Recolor(c, defaultHair, currentHair);
-                    else if (part == 4 && accented) c = Recolor(c, defaultAccent, currentAccent);
-                    colors.Add(c);
+                    // (the same colours as Recolor, through the same rounding as Color to Color32)
+                    switch (vertexPart[i])
+                    {
+                        case 1: colors.Add(Scaled(shirt, vertexK[i], original32[i].a)); break;
+                        case 2: colors.Add(Scaled(legwear, vertexK[i], original32[i].a)); break;
+                        case 3: colors.Add(hair ? Scaled(currentHair, vertexK[i], original32[i].a) : original32[i]); break;
+                        case 4: colors.Add(accented ? Scaled(currentAccent, vertexK[i], original32[i].a) : original32[i]); break;
+                        default: colors.Add(original32[i]); break;
+                    }
                 }
                 mesh.SetColors(colors);
                 made = Made.Outfit;
@@ -169,19 +179,43 @@ namespace DribbleToSchool.Presentation
                 var colors = colorBuffer;
                 colors.Clear();
                 if (colors.Capacity < original.Length) colors.Capacity = original.Length;
-                for (int i = 0; i < original.Length; i++) colors.Add(original[i]);
+                for (int i = 0; i < original.Length; i++) colors.Add(original32 != null ? original32[i] : (Color32)original[i]);
                 mesh.SetColors(colors);
                 made = Made.Original;
             }
             ShowAccent();
         }
 
-        /// <summary>Keeps how much lighter or darker this vertex is than the default colour.</summary>
-        static Color Recolor(Color c, Color from, Color to)
+        /// <summary>
+        /// Each vertex's part, its k (how much lighter or darker it is than its part's default colour: the recolour keeps it) and
+        /// its own colour, from the mesh copy. The default colours are the model's own, set when the level is built.
+        /// </summary>
+        void Prepare()
         {
-            float k = (c.r + c.g + c.b) / Mathf.Max(0.01f, from.r + from.g + from.b);
-            return new Color(Mathf.Clamp01(to.r * k), Mathf.Clamp01(to.g * k), Mathf.Clamp01(to.b * k), c.a);
+            if (original == null || parts == null || parts.Length != original.Length) return;
+            int n = original.Length;
+            vertexPart = new byte[n];
+            vertexK = new float[n];
+            original32 = new Color32[n];
+            for (int i = 0; i < n; i++)
+            {
+                int part = Mathf.RoundToInt(parts[i].x);
+                Color c = original[i];
+                Color from = part == 1 ? defaultShirt : part == 2 ? defaultLegwear : part == 3 ? defaultHair : defaultAccent;
+                vertexPart[i] = (byte)Mathf.Clamp(part, 0, 255);
+                vertexK[i] = (c.r + c.g + c.b) / Mathf.Max(0.01f, from.r + from.g + from.b);
+                original32[i] = c;
+            }
         }
+
+        /// <summary>The recoloured vertex: the new colour times the vertex's k, clamped, with the vertex's own alpha (as Recolor did,
+        /// rounded to bytes as Color to Color32 does).</summary>
+        static Color32 Scaled(Color to, float k, byte alpha)
+        {
+            return new Color32(ToByte(to.r * k), ToByte(to.g * k), ToByte(to.b * k), alpha);
+        }
+
+        static byte ToByte(float v) { return (byte)Mathf.Round(Mathf.Clamp01(v) * 255f); }
 
         /// <summary>
         /// The renderer's mesh is being let go (Presentation/LazyRenderer, as the kid is hidden): the recoloured copy goes
@@ -194,6 +228,9 @@ namespace DribbleToSchool.Presentation
             mesh = null;
             original = null;
             parts = null;
+            vertexPart = null;
+            vertexK = null;
+            original32 = null;
             vertices = null;
             accentRest = null;
             accentVertices = null;

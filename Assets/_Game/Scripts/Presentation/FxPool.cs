@@ -24,12 +24,16 @@ namespace DribbleToSchool.Presentation
 
         Particle[] particles;
         SpriteRenderer[] renderers;
+        Transform[] transforms;
         int next;
+        // How many slots are alive: between bursts (most of the time) Step has nothing to look at.
+        int live;
 
         void Awake()
         {
             particles = new Particle[capacity];
             renderers = new SpriteRenderer[capacity];
+            transforms = new Transform[capacity];
             for (int i = 0; i < capacity; i++)
             {
                 var go = new GameObject("p");
@@ -38,6 +42,7 @@ namespace DribbleToSchool.Presentation
                 sr.sortingOrder = sortingOrder;
                 sr.enabled = false;
                 renderers[i] = sr;
+                transforms[i] = go.transform;
             }
         }
 
@@ -64,6 +69,7 @@ namespace DribbleToSchool.Presentation
         {
             int i = next;
             next = (next + 1) % capacity;
+            if (!particles[i].alive) live++;
             particles[i] = new Particle
             {
                 alive = true, align = align, position = position, velocity = velocity, gravity = gravity, drag = drag,
@@ -96,6 +102,7 @@ namespace DribbleToSchool.Presentation
 
         void Step(float dt)
         {
+            if (live == 0) return;
             for (int i = 0; i < capacity; i++)
             {
                 if (!particles[i].alive) continue;
@@ -106,6 +113,7 @@ namespace DribbleToSchool.Presentation
                     p.alive = false;
                     particles[i] = p;
                     renderers[i].enabled = false;
+                    live--;
                     continue;
                 }
                 p.velocity.y -= p.gravity * dt;
@@ -117,9 +125,10 @@ namespace DribbleToSchool.Presentation
                 float t = p.life / p.maxLife;
                 var sr = renderers[i];
                 float angle = p.align && p.velocity.sqrMagnitude > 0.0001f ? Mathf.Atan2(p.velocity.y, p.velocity.x) * Mathf.Rad2Deg : p.rotation;
-                sr.transform.SetPositionAndRotation(new Vector3(p.position.x, p.position.y, p.z), Quaternion.Euler(0f, 0f, angle));
+                var tr = transforms[i];
+                tr.SetPositionAndRotation(new Vector3(p.position.x, p.position.y, p.z), Quaternion.Euler(0f, 0f, angle));
                 float size = Mathf.Lerp(p.size0, p.size1, t);
-                sr.transform.localScale = new Vector3(size, size * p.aspect, size);
+                tr.localScale = new Vector3(size, size * p.aspect, size);
                 Color c = p.color;
                 c.a *= 1f - t * t;
                 sr.color = c;

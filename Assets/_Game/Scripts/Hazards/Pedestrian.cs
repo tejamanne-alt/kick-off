@@ -198,9 +198,14 @@ namespace DribbleToSchool.Hazards
         void IgnoreKid()
         {
             if (ignoredKid == null) return;
-            foreach (var kc in ignoredKid.GetComponentsInChildren<Collider2D>())
-                foreach (var c in own) Physics2D.IgnoreCollision(c, kc, true);
+            // (into a reused list: this runs at every spawn)
+            ignoredKid.GetComponentsInChildren(kidColliders);
+            for (int k = 0; k < kidColliders.Count; k++)
+                foreach (var c in own) Physics2D.IgnoreCollision(c, kidColliders[k], true);
+            kidColliders.Clear();
         }
+
+        static readonly List<Collider2D> kidColliders = new List<Collider2D>();
 
         float Rand01()
         {

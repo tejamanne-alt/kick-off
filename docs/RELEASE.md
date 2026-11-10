@@ -70,6 +70,9 @@ In Unity: **File > Build Profiles > Android > Switch Platform**, then in **Publi
 keystore and the `upload` key and type both passwords (Unity forgets them when it closes), then **Kick Off > Build > Android App
 Bundle (release)**. It writes `Builds/Android/KickOff.aab` and shows it in Finder. Without a key it stops and says what to set,
 rather than building a bundle Play would refuse. If Unity offers to update the Android SDK (target API 36), accept.
+The **Kick Off > Build** menu builds with LZ4HC compression (plain LZ4 for the development APK): on Android only an LZ4
+build streams textures and meshes to the GPU in the background (`docs/LEARNINGS.md` B8). Unity's own Build button uses
+the Build Profile's **Compression Method** instead: set it to **LZ4HC** there too.
 
 From Terminal instead (Unity closed):
 ```

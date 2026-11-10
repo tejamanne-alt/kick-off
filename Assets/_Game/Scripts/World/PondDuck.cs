@@ -74,8 +74,7 @@ namespace DribbleToSchool.World
                 yaw = Mathf.SmoothDampAngle(yaw, want, ref yawVelocity, 0.6f);
             }
             float bob = Mathf.Sin(Time.time * 1.7f + seed) * 0.006f;
-            transform.position = new Vector3(p.x, waterY + bob, p.z);
-            transform.rotation = Quaternion.Euler(Mathf.Sin(Time.time * 1.3f + seed) * 2f, yaw, Mathf.Sin(Time.time * 1.1f) * 1.5f);
+            transform.SetPositionAndRotation(new Vector3(p.x, waterY + bob, p.z), Quaternion.Euler(Mathf.Sin(Time.time * 1.3f + seed) * 2f, yaw, Mathf.Sin(Time.time * 1.1f) * 1.5f));
 
             // The head: dabbling (bill down) while stopped, glancing about as it paddles.
             float k = (Time.time - dabbleStart) / 1.4f;

@@ -1,4 +1,4 @@
-// The sky dome: an inverted sphere centred on the camera, drawn behind everything. A clear
+// The sky dome: an inverted sphere centred on the camera, behind everything. A clear
 // anime sky: a deep cobalt that stays rich almost down to the horizon, only a little lighter
 // there, a faint bright band right at the horizon, and a soft glow and disc where the sun sits (high, so
 // usually only the glow shows). Colours come from the WorldLook globals, so the sky, the haze and
@@ -7,7 +7,10 @@ Shader "DribbleToSchool/Sky"
 {
     SubShader
     {
-        Tags { "Queue"="Background" "RenderType"="Background" "PreviewType"="Skybox" }
+        // Drawn after the opaque and cut-out geometry (Arm's "skybox last"), depth-tested against it and writing no
+        // depth: the sky is shaded only where it shows, not under every street pixel first. The same picture, as the
+        // dome (radius 2000, following the camera) lies beyond everything in view, and nothing drawn before it blends.
+        Tags { "Queue"="AlphaTest+1" "RenderType"="Background" "PreviewType"="Skybox" }
         Cull Front
         ZWrite Off
 

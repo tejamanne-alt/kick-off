@@ -434,7 +434,12 @@ namespace DribbleToSchool.UI
 
         void UpdateMessages()
         {
-            fade.color = new Color(0.05f, 0.04f, 0.08f, level.FadeAmount);
+            // Off while clear (the Holiday HUD does the same): an alpha-0 Image over the whole screen is still drawn,
+            // a full-screen blended quad every frame of every level.
+            float dark = level.FadeAmount;
+            bool showFade = dark > 0.002f;
+            if (showFade) fade.color = new Color(0.05f, 0.04f, 0.08f, dark);
+            if (fade.enabled != showFade) fade.enabled = showFade;
 
             float tLeft = toastUntil - Time.unscaledTime;
             toast.gameObject.SetActive(tLeft > 0f);

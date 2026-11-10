@@ -1,5 +1,4 @@
 using DribbleToSchool.Core;
-using DribbleToSchool.Localization;
 using UnityEngine;
 
 namespace DribbleToSchool.Challenges
@@ -17,7 +16,7 @@ namespace DribbleToSchool.Challenges
             {
                 var level = LevelManager.Current;
                 int now = level != null ? level.ball.JuggleCount : 0;
-                return Loc.F("challenge.status.juggle", now, best, Mathf.CeilToInt(TimeLeft));
+                return CachedStatus("challenge.status.juggle", now, best, Mathf.CeilToInt(TimeLeft));
             }
         }
 

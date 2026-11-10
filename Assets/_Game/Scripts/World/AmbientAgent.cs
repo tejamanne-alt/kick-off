@@ -35,7 +35,8 @@ namespace DribbleToSchool.World
             if (dt <= 0f) return;
             // Far out of sight, check back now and then instead of every frame.
             if (Time.time < nextWake) return;
-            if (!AmbientView.Valid || AmbientView.OutsideBy(transform.position.x, transform.position.z) > sleepMargin + Reach)
+            Vector3 at = transform.position;
+            if (!AmbientView.Valid || AmbientView.OutsideBy(at.x, at.z) > sleepMargin + Reach)
             {
                 nextWake = Time.time + 0.5f;
                 Sleep();

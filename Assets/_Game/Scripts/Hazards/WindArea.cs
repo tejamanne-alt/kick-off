@@ -22,6 +22,10 @@ namespace DribbleToSchool.Hazards
 
         float time;
         Bounds area;
+        // Each streak's renderer, found once, and whether they were last shown: a gust switches them on or off, not
+        // every frame.
+        SpriteRenderer[] streakRenderers;
+        int shownBlowing = -1;
 
         void Awake()
         {
@@ -29,9 +33,15 @@ namespace DribbleToSchool.Hazards
             col.isTrigger = true;
             area = col.bounds;
             IsBlowing = true;
+            if (streaks != null)
+            {
+                streakRenderers = new SpriteRenderer[streaks.Length];
+                for (int i = 0; i < streaks.Length; i++)
+                    if (streaks[i] != null) streakRenderers[i] = streaks[i].GetComponent<SpriteRenderer>();
+            }
         }
 
-        public override void ResetState() { time = 0f; }
+        public override void ResetState() { time = 0f; shownBlowing = -1; }
 
         void Update()
         {
@@ -41,11 +51,14 @@ namespace DribbleToSchool.Hazards
             if (streaks == null) return;
             Vector2 dir = ballAcceleration.normalized;
             float speed = Mathf.Clamp(ballAcceleration.magnitude, 2f, 12f);
-            foreach (var s in streaks)
+            int blowing = IsBlowing ? 1 : 0;
+            bool show = blowing != shownBlowing && streakRenderers != null;
+            shownBlowing = blowing;
+            for (int i = 0; i < streaks.Length; i++)
             {
+                var s = streaks[i];
                 if (s == null) continue;
-                var sr = s.GetComponent<SpriteRenderer>();
-                if (sr != null) sr.enabled = IsBlowing;
+                if (show && i < streakRenderers.Length && streakRenderers[i] != null) streakRenderers[i].enabled = IsBlowing;
                 Vector3 p = s.position + (Vector3)(dir * speed * Time.deltaTime);
                 // Wrap streaks around inside the area.
                 if (p.x < area.min.x) p.x = area.max.x;

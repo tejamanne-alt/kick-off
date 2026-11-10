@@ -9,7 +9,13 @@ namespace DribbleToSchool.Audio
     /// </summary>
     public sealed class Track
     {
-        public readonly float[] buf;
+        float[] data;
+        readonly int length;
+
+        /// <summary>The samples, made when the part is first written: one the arrangement never plays costs nothing.</summary>
+        public float[] buf { get { return data ?? (data = Scratch.Rent(length)); } }
+        /// <summary>The samples if anything was written, else null (an empty part adds nothing to the mix).</summary>
+        internal float[] Written { get { return data; } }
         /// <summary>-1 (left) to 1 (right).</summary>
         public float pan;
         /// <summary>How much goes to the shared reverb (0 dry, 1 very wet).</summary>
@@ -20,21 +26,64 @@ namespace DribbleToSchool.Audio
 
         public Track(int length, float pan, float send, float gain)
         {
-            buf = new float[length];
+            this.length = length;
             this.pan = pan;
             this.send = send;
             this.gain = gain;
         }
 
-        public int Length { get { return buf.Length; } }
+        public int Length { get { return length; } }
 
         /// <summary>Add a sample at any index: wraps round the loop.</summary>
         public void Add(int index, float v)
         {
-            int n = buf.Length;
+            int n = length;
             index %= n;
             if (index < 0) index += n;
             buf[index] += v;
+        }
+    }
+
+    /// <summary>
+    /// Work buffers reused within one synthesis on this thread: a place's bed (AmbienceGenerator) or its music loop
+    /// (MusicGenerator), between <see cref="Begin"/> and <see cref="End"/>. A bed's voices and layers each needed
+    /// whole-loop buffers of the same length, thrown away one after another: 40 to 118 MB of garbage a place, made
+    /// every time a place is entered (six times a Holiday Run lap). Outside a synthesis Rent just allocates and Return
+    /// drops. Only buffers thrown away inside are returned, never one that is kept or played, and each comes back
+    /// cleared, so the sound is exactly the same, sample for sample.
+    /// </summary>
+    static class Scratch
+    {
+        [ThreadStatic] static List<float[]> free;
+        /// <summary>At most this many are kept for reuse (a bed's busiest step, a crowd voice, needs five at once).</summary>
+        const int MaxKept = 8;
+
+        public static void Begin() { if (free == null) free = new List<float[]>(MaxKept + 1); }
+        public static void End() { free = null; }
+
+        /// <summary>A buffer of exactly <paramref name="length"/> floats, all zero.</summary>
+        public static float[] Rent(int length)
+        {
+            var f = free;
+            if (f != null)
+                for (int i = f.Count - 1; i >= 0; i--)
+                {
+                    var b = f[i];
+                    if (b.Length != length) continue;
+                    f.RemoveAt(i);
+                    Array.Clear(b, 0, b.Length);
+                    return b;
+                }
+            return new float[length];
+        }
+
+        /// <summary>Hand back a buffer nothing will read or write again.</summary>
+        public static void Return(float[] b)
+        {
+            var f = free;
+            if (f == null || b == null) return;
+            f.Add(b);
+            if (f.Count > MaxKept) f.RemoveAt(0);
         }
     }
 
@@ -81,7 +130,7 @@ namespace DribbleToSchool.Audio
         public Mixdown(int length)
         {
             this.length = length;
-            duckEnv = new float[length];
+            duckEnv = Scratch.Rent(length);
         }
 
         public int Length { get { return length; } }
@@ -95,19 +144,23 @@ namespace DribbleToSchool.Audio
 
         /// <summary>
         /// Mix every track down to interleaved stereo with the loudness at <paramref name="targetRms"/>
-        /// (or, when that is 0, with the loudest peak at the ceiling: for one-shots).
+        /// (or, when that is 0, with the loudest peak at the ceiling: for one-shots). A mixdown renders once: its
+        /// tracks' buffers are handed back for reuse as they are mixed in.
         /// </summary>
         public float[] Render(float targetRms, float ceiling = 0.98f)
         {
-            var left = new float[length];
-            var right = new float[length];
-            var send = new float[length];
+            if (rendered) throw new InvalidOperationException("A Mixdown renders once.");
+            rendered = true;
+            var left = Scratch.Rent(length);
+            var right = Scratch.Rent(length);
+            var send = Scratch.Rent(length);
             foreach (var t in tracks)
             {
                 double a = (Math.Max(-1f, Math.Min(1f, t.pan)) + 1.0) * Math.PI * 0.25;
                 float gl = (float)Math.Cos(a) * t.gain * 1.414f, gr = (float)Math.Sin(a) * t.gain * 1.414f;
                 float gs = t.send * t.gain;
-                var b = t.buf;
+                var b = t.Written;
+                if (b == null) continue;
                 for (int i = 0; i < length; i++)
                 {
                     float v = b[i];
@@ -118,8 +171,11 @@ namespace DribbleToSchool.Audio
                     send[i] += v * gs;
                 }
             }
+            foreach (var t in tracks) Scratch.Return(t.Written);
+            Scratch.Return(duckEnv);
 
             if (wet > 0f) Reverb(send, left, right);
+            Scratch.Return(send);
 
             HighPass(left, 28f);
             HighPass(right, 28f);
@@ -135,11 +191,20 @@ namespace DribbleToSchool.Audio
             }
             if (wowCents > 0f)
             {
-                left = Wow(left, wowCents, wowCycles, 0.0);
-                right = Wow(right, wowCents, wowCycles, 0.25);
+                var wowLeft = Wow(left, wowCents, wowCycles, 0.0);
+                Scratch.Return(left);
+                left = wowLeft;
+                var wowRight = Wow(right, wowCents, wowCycles, 0.25);
+                Scratch.Return(right);
+                right = wowRight;
             }
-            return Finish(left, right, targetRms, ceiling);
+            var mixed = Finish(left, right, targetRms, ceiling);
+            Scratch.Return(left);
+            Scratch.Return(right);
+            return mixed;
         }
+
+        bool rendered;
 
         /// <summary>Interleave, match the loudness, soft-clip any peaks and keep under the ceiling.</summary>
         public static float[] Finish(float[] left, float[] right, float targetRms, float ceiling)
@@ -228,7 +293,7 @@ namespace DribbleToSchool.Audio
         static float[] Wow(float[] buf, float cents, int cycles, double phase)
         {
             int n = buf.Length;
-            var outBuf = new float[n];
+            var outBuf = Scratch.Rent(n);
             // A sine delay of depth D samples at f Hz bends pitch by 2*pi*f*D/sr; solve D for the cents asked.
             double hz = cycles * Synth.SampleRate / (double)n;
             double ratio = Math.Pow(2, cents / 1200.0) - 1;

@@ -1390,6 +1390,75 @@ The user asked for a check on every character, playable and not.
 - **Not run in Unity:** the `_FL` scenes' build, the new FBXs' import, the terraces against the real tides and stops in each
   level, the school end, the map's new note, the co-op picker, the music in game, and the frame rate on the phone.
 
+## The audit: work nobody sees (generated content v118)
+
+- **Why.** The user asked for a performance audit across the game and every supported device: faster, with the same
+  assets and the same gameplay. Four reviews ran in parallel: gameplay scripts; UI, menus, co-op and audio; GPU and
+  shaders; loading, memory and builds. Each finding was checked in the code before anything changed, and only changes
+  that keep the picture, the sound and the play exactly the same went in (`docs/LEARNINGS.md` B8). The costs and what
+  is still to do are in `docs/PERFORMANCE.md`, "The November 2026 audit".
+- **Off screen, or nothing changed: skip it.**
+  - `TideWash` rebuilds its sheet only when it is on screen and its level or clock moved (each wash re-uploaded a mesh
+    every frame), and reads its transform once.
+  - `Lapping` (about 45 breaking-wave crests a beach level) rests out of view; its pose follows the clock alone.
+  - `Fountain` keeps the jet's height (the ball's lift) but poses its jets and droplets only on screen.
+  - `Crossing` writes its signal's colours and its cars only when they change (the queue mostly stands still).
+  - `Springboard`, `DarknessOverlay` and collected coins stop writing once at rest (a collected coin switches itself
+    off until the level resets it).
+  - `WindArea` finds its streaks' renderers once and switches them only when a gust starts or stops.
+  - `FxPool` returns at once with no live particle and keeps its transforms; the ambient animals read their position
+    once and write position and rotation together; `WheelSpin` reads its car's position once.
+- **Built every frame: build it on change.**
+  - `GameInput`: one touch layout a frame (it was worked out about five times), and no new delegate every frame.
+  - The challenges' status line is built again only when a number in it or the language changes.
+  - The coach card compares what it shows field by field (it built a string every frame) and writes its rect on change.
+  - The Holiday HUD's buttons get the same write-on-change as the story HUD's.
+  - The co-op join list is keyed on what it draws (the signal word and the order), not the raw strength, which jitters:
+    it was rebuilt about twice a second for nothing.
+  - `ModelOutfit` works out each vertex's part and shade once, so a passer-by's recolour is one multiply a channel (the
+    same Color32 rounding as before).
+  - `KidController` finds a moving surface through the ground collider's body: static ground skips the search.
+  - The ball and passers-by fill a reused list with the kid's colliders.
+- **Hidden: don't draw it.**
+  - The map screen's opaque mat hides the whole 3D menu street: while it shows, the menu camera draws nothing and its
+    filter rests (`MenuStage.Covered`, `FrontEndScreen.CoversStage`).
+  - The story HUD's clear fade is switched off while clear, as the Holiday HUD's already was.
+  - The sky dome is drawn after the opaque geometry (`Sky.shader`), so only the sky that shows is shaded.
+  - The Fields, the Sea and the menu's field cast no shadows (they lie under everything), and the distant hills and the
+    clouds receive none (far past the shadow distance). Generated content v118.
+- **Garbage and memory.**
+  - The music and ambience generators reuse their work buffers within a place's synthesis (`Scratch` in `Mixdown.cs`),
+    and a part the arrangement never plays gets no buffer. Every one of the 95 clips is bit-identical to before (a hash of
+    each, `tools/audio_hash`). Garbage per new place: Market 170 → 113 MB, the others 13–25 MB less.
+  - The ambient cues' samples are let go once Unity has its copy (up to 8 MB a place).
+  - A Holiday Run stage's combined street meshes (`StaticBatcher`) and tide meshes are destroyed with the stage. They
+    belong to no scene, so they stayed after it unloaded: a lap's worth more each day of the run.
+  - The kid picker frees the kid just hidden a second after the last tap, not on every tap (a hitch per tap).
+  - The async upload buffer is 16 MB (was 32): the largest texture is about 10 MB.
+- **Loading and I/O.**
+  - Every scripted build is LZ4HC (LZ4 for the development APK). On Android only LZ4 builds use the async upload
+    pipeline, so textures no longer go up in the frame their scene comes in. Set the Build Profile's Compression Method
+    to LZ4HC for Unity's Build button too (`docs/RELEASE.md`).
+  - The map's picture (3200 × 1800) is read in the background from the title screen, one tap before the map opens.
+  - Analytics writes its file on a worker thread, in order.
+  - iOS: the accelerometer is off; nothing reads it.
+- **Left for later, with the reasons** (`docs/PERFORMANCE.md` "Still to do"): the audio bake (Vorbis needs a listening
+  A/B), the Holiday stage wake (measure first), the filter normals and the classic cartoon's shader savings (need a
+  shader compile and screenshot diffs), async scene loads, nested canvases for the menu animations (every button needs
+  testing), occlusion culling for the title screen, shader recolouring so meshes need not be readable, the noise texture
+  (within 1/255 only), the co-op and haptics JNI calls, and pinning the remaining player settings. iOS still has
+  screen-space shadows (a look change, so it is the user's call).
+- **Checked:**
+  - No syntax errors in any `#if` combination; the compiler errors are exactly a clean tree's (the stand-ins' misses);
+    no warnings. `unity_api_check` 6000.7 (the newest branch): clean.
+  - The audio: all 95 clips hashed before and after, identical. Merged with the Florida add-on (#53), whose 7 new
+    music loops are in `tools/audio_hash/expected.txt` too; the 95 from before are unchanged.
+- **Not run in Unity or on the phone.** Every saving above is an estimate. On the Nord CE5:
+  - Rebuild the generated content (v118) and play Low Tide, a story level with a crossing, and a Holiday Run lap.
+  - Compare the frame times, and the Memory Profiler after two Holiday Run days.
+  - Open the map in each look: it should look the same, and the GPU should go nearly idle.
+  - Check the sky and the far hills look the same.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

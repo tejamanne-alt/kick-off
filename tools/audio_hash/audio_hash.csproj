@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Compiles the game's audio generators, unchanged, outside Unity (they are pure C#). See README.md. -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <Optimize>true</Optimize>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Program.cs" />
+    <Compile Include="../../Assets/_Game/Scripts/Audio/Synth.cs" />
+    <Compile Include="../../Assets/_Game/Scripts/Audio/Mixdown.cs" />
+    <Compile Include="../../Assets/_Game/Scripts/Audio/Instruments.cs" />
+    <Compile Include="../../Assets/_Game/Scripts/Audio/MusicGenerator.cs" />
+    <Compile Include="../../Assets/_Game/Scripts/Audio/AmbienceGenerator.cs" />
+    <Compile Include="../../Assets/_Game/Scripts/Audio/SoundBank.cs" />
+    <Compile Include="../../Assets/_Game/Scripts/Audio/Soundscape.cs" />
+    <Compile Include="../../Assets/_Game/Scripts/Audio/MusicCountry.cs" />
+  </ItemGroup>
+</Project>

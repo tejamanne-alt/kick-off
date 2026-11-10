@@ -11,13 +11,37 @@ namespace DribbleToSchool.World
     /// </summary>
     public class StaticBatcher : MonoBehaviour
     {
+        // The combined meshes made here, which belong to no scene: unloading a Holiday Run stage (an additive scene) left
+        // every one of them in memory, a lap's worth more each day of the run. Only renderers under this object draw them.
+        readonly List<Mesh> combined = new List<Mesh>();
+
         void Start()
         {
             if (!Application.isPlaying) return;
             var parts = new List<GameObject>();
+            var filters = new List<MeshFilter>();
+            var before = new HashSet<Mesh>();
             foreach (var filter in GetComponentsInChildren<MeshFilter>())
-                if (filter.GetComponentInParent<KitInstance>() == null) parts.Add(filter.gameObject);
-            if (parts.Count > 0) StaticBatchingUtility.Combine(parts.ToArray(), gameObject);
+                if (filter.GetComponentInParent<KitInstance>() == null)
+                {
+                    parts.Add(filter.gameObject);
+                    filters.Add(filter);
+                    if (filter.sharedMesh != null) before.Add(filter.sharedMesh);
+                }
+            if (parts.Count == 0) return;
+            StaticBatchingUtility.Combine(parts.ToArray(), gameObject);
+            foreach (var filter in filters)
+            {
+                var mesh = filter.sharedMesh;
+                if (mesh != null && !before.Contains(mesh) && !combined.Contains(mesh)) combined.Add(mesh);
+            }
+        }
+
+        void OnDestroy()
+        {
+            foreach (var mesh in combined)
+                if (mesh != null) Destroy(mesh);
+            combined.Clear();
         }
     }
 }
