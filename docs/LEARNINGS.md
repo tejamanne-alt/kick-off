@@ -209,7 +209,7 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
 - *What:* the APK reached 854 MB. The `_CA` scenes double the level scenes.
 - *Rule:* review build size every release. Share assets between skins instead of copying them.
 
-**B8. Work nobody sees, and memory nobody frees (November 2026 audit, generated content v117).**
+**B8. Work nobody sees, and memory nobody frees (November 2026 audit, generated content v118).**
 - *What:* a four-part audit (gameplay scripts; UI, audio and co-op; GPU; loading, memory and builds) found costs paid
   for nothing:
   - **Off screen or at rest:** about 45 breaking-wave crests per beach level, the tide washes (a mesh rebuilt and

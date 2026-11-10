@@ -44,6 +44,14 @@ namespace DribbleToSchool.EditorTools
         /// English signs (BuildingsCAAtlas.png). False builds the original street, as it always was.
         /// </summary>
         public static bool California;
+        /// <summary>
+        /// True while a level's Florida scene is built (GeneratedContent: chapter 3's levels only, so far): the beach takes the
+        /// Florida kit's town on its seawall terraces (StreetBuilder.Florida) and the school at its end is Florida's
+        /// (FloridaSchool); the home street before the beach is the Coast kit's, with sabal palms; the signs are English.
+        /// </summary>
+        public static bool Florida;
+        /// <summary>The level whose scene is being built (null for the test track and the menu).</summary>
+        public static string LevelId;
         public static ArtBaker.ArtSet Art { get; private set; }
         public static Color GroundColor { get { return Theme.groundFill; } }
         public static Color ObstacleColor { get { return Theme.obstacle; } }
@@ -121,6 +129,7 @@ namespace DribbleToSchool.EditorTools
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             Chapter = Mathf.Clamp(chapter, 1, 5);
             Theme = ChapterTheme.For(Chapter);
+            LevelId = def != null ? def.levelId : null;
 
             var camGo = new GameObject("Main Camera");
             camGo.tag = "MainCamera";
@@ -579,7 +588,7 @@ namespace DribbleToSchool.EditorTools
         // ---------- Asset kits (tools/blender/kit_*.py, docs/ART_DIRECTION.md) ----------
 
         /// <summary>The asset kits made in Blender, each in Art/Models/&lt;kit&gt;/ with its atlas and manifest.</summary>
-        public static readonly string[] Kits = { "Plants", "Buildings", "Street", "Terrain", "Leisure", "Works", "Animals", "Barriers", "Coast" };
+        public static readonly string[] Kits = { "Plants", "Buildings", "Street", "Terrain", "Leisure", "Works", "Animals", "Barriers", "Coast", "Florida" };
 
         static readonly Dictionary<string, Dictionary<string, object>> kitManifests = new Dictionary<string, Dictionary<string, object>>();
 
@@ -747,7 +756,7 @@ namespace DribbleToSchool.EditorTools
             if (prefab == null || Art == null || !Art.kits.TryGetValue(kit, out material) || material == null) return null;
             // The California skin's shops have English signs: the same atlas layout, its own texture.
             Material skin;
-            if (California && Art.kits.TryGetValue(kit + "CA", out skin) && skin != null) material = skin;
+            if ((California || Florida) && Art.kits.TryGetValue(kit + "CA", out skin) && skin != null) material = skin;
             // A model the kid plays with is a cel for the classic cartoon filter (its kit's "Cel" copy).
             Material cel;
             if (celModels.Contains(kit + "/" + model) && Art.kits.TryGetValue(kit + "Cel", out cel) && cel != null) material = cel;
@@ -3668,6 +3677,9 @@ namespace DribbleToSchool.EditorTools
                     calmSand.Add(new Vector2(x - 4f, x + 200f));
                     sand = null;
                 }
+
+                // Florida's own school (LevelBuildKit.Florida), when its scene is built and its kit is there.
+                if (FloridaSchool(school, x, x + 0.4f, groundTop)) return;
 
                 Color stone = new Color(0.92f, 0.9f, 0.85f), trim = new Color(0.7f, 0.68f, 0.64f), roof = new Color(0.32f, 0.35f, 0.42f);
                 var concrete = Art.surfaces[ProceduralArt.Surface.Concrete];

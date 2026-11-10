@@ -2,7 +2,7 @@
 
 The game makes all its music, ambience and sound effects in code (`Assets/_Game/Scripts/Audio/`). Those generators are
 pure C#, so this compiles them unchanged outside Unity and prints a hash of every clip they make: each place's music in
-each country, each place's bed and cues (with their timings and levels), and every sound effect. 95 clips in all.
+each country, each place's bed and cues (with their timings and levels), and every sound effect. 102 clips in all.
 
 ```
 dotnet run -c Release --project tools/audio_hash > /tmp/now.txt && diff tools/audio_hash/expected.txt /tmp/now.txt

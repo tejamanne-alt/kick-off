@@ -42,16 +42,24 @@ namespace DribbleToSchool.Audio
         {
             // (the mix's work buffers are reused as it renders: Mixdown's Scratch)
             Scratch.Begin();
-            try { return Arrange(country == MusicCountry.California ? StyleOf(scape) : JapanStyleOf(scape)); }
+            try
+            {
+                switch (country)
+                {
+                    case MusicCountry.California: return Arrange(StyleOf(scape));
+                    case MusicCountry.Florida: return Arrange(FloridaStyleOf(scape));
+                    default: return Arrange(JapanStyleOf(scape));
+                }
+            }
             finally { Scratch.End(); }
         }
 
         // ================= Styles =================
 
-        enum Comp { None, Jangle, Acoustic, Fingerpick, Palm, Funk, Rhodes, RhodesHeld, Organ }
-        enum Lead { Surf, Whistle, Glock, Guitar, Acoustic, Rhodes, Koto, Flute }
-        enum Kit { Pop, Surf, Funk, WestCoast, Folk }
-        enum Bass { Pick, Sub }
+        enum Comp { None, Jangle, Acoustic, Fingerpick, Palm, Funk, Rhodes, RhodesHeld, Organ, Skank, Montuno, OrganBubble }
+        enum Lead { Surf, Whistle, Glock, Guitar, Acoustic, Rhodes, Koto, Flute, SteelPan, Marimba, Vibes }
+        enum Kit { Pop, Surf, Funk, WestCoast, Folk, Calypso, Son, OneDrop }
+        enum Bass { Pick, Sub, Upright }
 
         sealed class Style
         {
@@ -248,6 +256,104 @@ namespace DribbleToSchool.Audio
             }
         }
 
+        /// <summary>
+        /// The Florida add-on's music: the sounds of a Florida beach town, from the Caribbean and Cuba up the
+        /// coast. Steel pans and marimba over calypso and soca on the beach, a Cuban son on Home Street (a marimba
+        /// montuno, an upright bass's tumbao, clave, bongos, congas and a guiro), Miami salsa in the market, a
+        /// neon Miami night groove in the underpass, a calypso drive on the building site, a laid-back one-drop
+        /// in the park, and a sunset trop-rock for the menu (a fingerpicked acoustic and a steel pan).
+        /// </summary>
+        static Style FloridaStyleOf(Soundscape scape)
+        {
+            switch (scape)
+            {
+                case Soundscape.Street:
+                    // A Cuban son on a sunny morning: a marimba montuno, a strummed acoustic like a tres, the upright's
+                    // tumbao, the clave with bongos, congas and the guiro; vibes sing the tune, then the steel pan.
+                    return new Style
+                    {
+                        bpm = 104, swing = 0, key = 67, mode = Mode.Major, seed = 211,
+                        chords = new[] { "G", "C", "D7", "C", "G", "C", "D7", "G",
+                                         "Em", "C", "D7", "G", "Em", "Am7", "D7", "D7" },
+                        comp = Comp.Montuno, comp2 = Comp.Acoustic, comp2OnlyInB = true, leadA = Lead.Vibes, leadB = Lead.SteelPan,
+                        leadLo = 67, leadHi = 83, bass = Bass.Upright, kit = Kit.Son,
+                        room = 0.5f, wet = 0.2f,
+                    };
+                case Soundscape.Market:
+                    // Miami salsa: a minor montuno on the marimba over a Rhodes, the tumbao, clave and bongos, claps on
+                    // the second half; a nylon-string guitar's tune, then the flute.
+                    return new Style
+                    {
+                        bpm = 112, swing = 0, key = 57, mode = Mode.Minor, seed = 222,
+                        chords = new[] { "Am", "Dm7", "E7", "Am", "Am", "Dm7", "G7", "Cmaj7",
+                                         "Fmaj7", "Dm7", "E7", "Am", "Fmaj7", "Bm7b5", "E7", "E7" },
+                        comp = Comp.Montuno, comp2 = Comp.Rhodes, leadA = Lead.Guitar, leadB = Lead.Flute,
+                        leadLo = 64, leadHi = 81, bass = Bass.Upright, kit = Kit.Son, claps = true,
+                        room = 0.45f, wet = 0.18f,
+                    };
+                case Soundscape.Beach:
+                    // Soca on the sand: the guitar's off-beat skank, a bright strum in the second half, a bouncing bass,
+                    // four on the floor with claps, congas and a tambourine; the steel pan's tune, then the marimba's.
+                    return new Style
+                    {
+                        bpm = 124, swing = 0, key = 65, mode = Mode.Major, seed = 233,
+                        chords = new[] { "F", "Bb", "C7", "F", "F", "Bb", "C7", "F",
+                                         "Dm", "Bb", "C7", "F", "Bb", "C7", "F", "C7" },
+                        comp = Comp.Skank, comp2 = Comp.Acoustic, comp2OnlyInB = true, leadA = Lead.SteelPan, leadB = Lead.Marimba,
+                        leadLo = 65, leadHi = 84, leadSend = 0.4f, bass = Bass.Pick, kit = Kit.Calypso, claps = true, tambourine = true,
+                        room = 0.65f, wet = 0.22f,
+                    };
+                case Soundscape.Underpass:
+                    // A neon Miami night: held Rhodes chords, funk chops in the second half, a deep sub, swung sixteenth
+                    // hats; a gliding synth whistle, then the vibes, in the tunnel's echo.
+                    return new Style
+                    {
+                        bpm = 100, swing = 0.06, key = 62, mode = Mode.Dorian, seed = 244,
+                        chords = new[] { "Dm9", "Dm9", "G13", "G13", "Dm9", "Em9", "Fmaj9", "A7",
+                                         "Bbmaj7", "Am9", "Gm7", "A7", "Dm9", "G13", "Bbmaj7", "A7" },
+                        comp = Comp.RhodesHeld, comp2 = Comp.Funk, comp2OnlyInB = true, leadA = Lead.Whistle, leadB = Lead.Vibes,
+                        leadLo = 69, leadHi = 84, leadSend = 0.45f, bass = Bass.Sub, kit = Kit.WestCoast, claps = true,
+                        room = 0.85f, wet = 0.3f, tone = 6000, vinyl = 0.3f,
+                    };
+                case Soundscape.Site:
+                    // A calypso drive for the building site: the skank, a combo organ in the second half, the soca kit;
+                    // a clean guitar's tune, then the steel pan.
+                    return new Style
+                    {
+                        bpm = 126, swing = 0, key = 70, mode = Mode.Mixolydian, seed = 255,
+                        chords = new[] { "Bb", "Eb", "F7", "Bb", "Bb", "Eb", "F7", "Bb",
+                                         "Gm", "Eb", "F7", "Bb", "Gm", "Cm7", "F7", "F7" },
+                        comp = Comp.Skank, comp2 = Comp.Organ, comp2OnlyInB = true, leadA = Lead.Guitar, leadB = Lead.SteelPan,
+                        leadLo = 65, leadHi = 82, leadSend = 0.45f, bass = Bass.Pick, kit = Kit.Calypso, claps = true,
+                        room = 0.6f, wet = 0.22f,
+                    };
+                case Soundscape.Park:
+                    // A lazy one-drop afternoon under the live oaks: the skank, an organ's bubble in the second half,
+                    // a round bass; the marimba's tune, then the steel pan.
+                    return new Style
+                    {
+                        bpm = 86, swing = 0.08, key = 60, mode = Mode.Major, seed = 266,
+                        chords = new[] { "C", "F", "G", "C", "Am", "F", "G", "G",
+                                         "F", "G", "Em", "Am", "F", "G", "C", "G" },
+                        comp = Comp.Skank, comp2 = Comp.OrganBubble, comp2OnlyInB = true, leadA = Lead.Marimba, leadB = Lead.SteelPan,
+                        leadLo = 67, leadHi = 84, bass = Bass.Pick, kit = Kit.OneDrop,
+                        room = 0.6f, wet = 0.24f,
+                    };
+                default:
+                    // The menu: a sunset over the Atlantic. A fingerpicked acoustic, a marimba montuno in the second
+                    // half, a gentle one-drop; the steel pan's tune, then the vibes.
+                    return new Style
+                    {
+                        bpm = 92, swing = 0.06, key = 62, mode = Mode.Major, seed = 207,
+                        chords = new[] { "D", "G", "A7", "D", "Bm", "G", "A7", "A7",
+                                         "G", "A7", "F#m", "Bm", "Em7", "A7", "D", "A7" },
+                        comp = Comp.Fingerpick, comp2 = Comp.Montuno, comp2OnlyInB = true, leadA = Lead.SteelPan, leadB = Lead.Vibes,
+                        leadLo = 67, leadHi = 83, bass = Bass.Pick, kit = Kit.OneDrop,
+                        room = 0.65f, wet = 0.26f, tone = 6500,
+                    };
+            }
+        }
+
         // ================= The arranger =================
 
         static float[] Arrange(Style st)
@@ -277,9 +383,9 @@ namespace DribbleToSchool.Audio
                 bool fill = bar == Bars / 2 - 1 || bar == Bars - 1;
                 foreach (var ch in s.ChordsIn(bar))
                 {
-                    Play(st.comp, st.comp == Comp.Organ ? organ : gtr, s, bar, ch, rng, 1f);
+                    Play(st.comp, OnOrgan(st.comp) ? organ : gtr, s, bar, ch, rng, 1f);
                     if (st.comp2 != Comp.None && (!st.comp2OnlyInB || inB))
-                        Play(st.comp2, st.comp2 == Comp.Organ ? organ : gtr2, s, bar, ch, rng, 0.75f);
+                        Play(st.comp2, OnOrgan(st.comp2) ? organ : gtr2, s, bar, ch, rng, 0.75f);
                     if (st.oohs && (inB || st.comp2 == Comp.None || !st.comp2OnlyInB))
                         Instruments.Oohs(oohs, s.T(bar, ch.beat), ch.chord.Voice(60, 72, 3), s.Beats(ch.length), 0.6f, bar * 7 + 1);
                     BassLine(st, bass, s, bar, ch, fill);
@@ -296,9 +402,13 @@ namespace DribbleToSchool.Audio
             return mix.Render(Loudness);
         }
 
+        /// <summary>The organ's own track takes the organ's parts (its chords and its reggae bubble).</summary>
+        static bool OnOrgan(Comp comp) { return comp == Comp.Organ || comp == Comp.OrganBubble; }
+
         static void BassNote(Style st, Track bass, Song s, int bar, double beat, int midi, double beats, float vel, int seed)
         {
             if (st.bass == Bass.Sub) Instruments.SubBass(bass, s.T(bar, beat), Synth.MidiToHz(midi), s.Beats(beats), vel);
+            else if (st.bass == Bass.Upright) Instruments.UprightBass(bass, s.T(bar, beat), Synth.MidiToHz(midi), s.Beats(beats), vel, seed);
             else Instruments.PickBass(bass, s.T(bar, beat), Synth.MidiToHz(midi), s.Beats(beats), vel, seed);
         }
 
@@ -323,6 +433,24 @@ namespace DribbleToSchool.Audio
                     at = new[] { 0, 0.75, 1.5, 2.5, 2.75, 3.5 };
                     line = new[] { root, root + 12, root, root, root + 12, root + 7 };
                     len = 0.4;
+                    break;
+                case Kit.Son:
+                    // The tumbao: nothing on the one, the root anticipated on the "and" of two, the fifth on four.
+                    at = new[] { 1.5, 3 };
+                    line = new[] { root, root + 7 };
+                    len = 1.3;
+                    break;
+                case Kit.Calypso:
+                    // Soca's bounce: root, a push, the fifth, the octave and back down.
+                    at = new[] { 0, 0.75, 1.5, 2, 2.75, 3.5 };
+                    line = new[] { root, root, root + 7, root + 12, root + 7, root };
+                    len = 0.4;
+                    break;
+                case Kit.OneDrop:
+                    // A round reggae line, leaving space: the root held, a lift to the fifth, an octave pickup.
+                    at = new[] { 0, 1.5, 2.5, 3 };
+                    line = new[] { root, root + 7, root + 12, root + 7 };
+                    len = 0.9;
                     break;
                 default:
                     at = new[] { 0, 1.5, 2, 3, 3.5 };
@@ -422,6 +550,42 @@ namespace DribbleToSchool.Audio
                 case Comp.Organ:
                     Instruments.Organ(tr, s.T(bar, ch.beat), ch.chord.Voice(55, 70, 3), s.Beats(span - 0.05), 0.75f * level);
                     break;
+                case Comp.Skank:
+                {
+                    // The off-beat chop of calypso, ska and reggae: a short, bright chord on every "and".
+                    var v = ch.chord.Voice(60, 76, 3);
+                    for (double b = 0.5; b < span; b += 1)
+                        Instruments.Jangle(tr, s.T(bar, ch.beat + b), v, s.Beats(0.22), 0.55f * level, bar * 60 + (int)(b * 4), true, true);
+                    break;
+                }
+                case Comp.Montuno:
+                {
+                    // A piano-style montuno on the marimba: the chord broken into a syncopated eighth-note figure,
+                    // the top note doubled an octave down, the last eighth pushing into the next chord.
+                    var v = ch.chord.Voice(60, 79, 4);
+                    if (v.Length == 0) break;
+                    double[] at = { 0, 0.5, 1.5, 2, 2.5, 3.5 };
+                    int[] pick = { 0, 2, 1, 3, 2, 1 };
+                    for (int k = 0; k < at.Length; k++)
+                    {
+                        if (at[k] >= span) break;
+                        int m = v[pick[k] % v.Length];
+                        float vel = (k == 0 || k == 3 ? 0.62f : 0.48f) * level;
+                        Instruments.Marimba(tr, s.T(bar, ch.beat + at[k]), Synth.MidiToHz(m), vel);
+                        if (k == 0 || k == 3) Instruments.Marimba(tr, s.T(bar, ch.beat + at[k]), Synth.MidiToHz(m - 12), vel * 0.6f);
+                    }
+                    break;
+                }
+                case Comp.OrganBubble:
+                {
+                    // Reggae's organ "bubble": short chords on the off-beats, the "and" of each beat pushed by a ghost.
+                    var v = ch.chord.Voice(55, 70, 3);
+                    for (double b = 0.5; b < span; b += 1)
+                        Instruments.Organ(tr, s.T(bar, ch.beat + b), v, s.Beats(0.3), 0.5f * level);
+                    for (double b = 0.75; b < span; b += 2)
+                        Instruments.Organ(tr, s.T(bar, ch.beat + b), v, s.Beats(0.15), 0.28f * level);
+                    break;
+                }
             }
         }
 
@@ -441,6 +605,14 @@ namespace DribbleToSchool.Audio
                 case Lead.Koto: Instruments.Pluck(tr, t, f, d + 0.35, v * 0.8f, n.midi * 7 + (int)(n.beat * 4), 0.72f, 0.993f); break;
                 // A breathy bamboo flute (shakuhachi-like).
                 case Lead.Flute: Instruments.Flute(tr, t, f, d * 0.95, v * 0.8f, n.midi * 5 + (int)(n.beat * 4)); break;
+                // Florida's: a steel pan, a marimba (a soft roll on the long notes) and the vibraphone.
+                case Lead.SteelPan: Instruments.SteelPan(tr, t, f, d, v * 1.05f); break;
+                case Lead.Marimba:
+                    Instruments.Marimba(tr, t, f, v * 1.1f);
+                    for (double r = 0.25; r < n.len - 0.2; r += 0.25)
+                        Instruments.Marimba(tr, s.T(n) + s.Beats(r), f, v * 0.55f);
+                    break;
+                case Lead.Vibes: Instruments.Vibes(tr, t, f, d, v * 1.05f); break;
                 default: Instruments.Rhodes(tr, t, f, d, v * 0.65f); break;
             }
             return f;
@@ -455,6 +627,11 @@ namespace DribbleToSchool.Audio
         /// </summary>
         static void Drums(Style st, Song s, Mixdown mix, Track kick, Track snare, Track hats, Track perc, int bar, bool inB, bool fill, Random rng)
         {
+            if (st.kit == Kit.Calypso || st.kit == Kit.Son || st.kit == Kit.OneDrop)
+            {
+                TropicalDrums(st, s, mix, kick, snare, hats, perc, bar, inB, fill, rng);
+                return;
+            }
             double[] kicks;
             switch (st.kit)
             {
@@ -509,6 +686,86 @@ namespace DribbleToSchool.Audio
             }
             if ((st.kit == Kit.Funk || st.kit == Kit.WestCoast || st.kit == Kit.Pop) && inB && !fill)
                 Instruments.OpenHat(hats, s.T(bar, 3.5), 0.4f, bar);
+        }
+
+        /// <summary>
+        /// Florida's kits. Calypso: soca's four on the floor, the backbeat with claps, open off-beat hats, congas
+        /// and a tambourine. Son: no backbeat at all, the 3-2 son clave over two bars, bongos playing the martillo,
+        /// the congas' tumbao (open tones on four and its "and"), a guiro scraping each half bar, a soft kick and a
+        /// side-stick. One-drop: the kick and the side-stick together on the third beat only, swung hats and a
+        /// shaker. A crash opens each half; the fill is the hand drums rolling down.
+        /// </summary>
+        static void TropicalDrums(Style st, Song s, Mixdown mix, Track kick, Track snare, Track hats, Track perc, int bar, bool inB, bool fill, Random rng)
+        {
+            double[] kicks = st.kit == Kit.Calypso ? new[] { 0.0, 1, 2, 3 } : st.kit == Kit.Son ? new[] { 0.0, 2.5 } : new[] { 2.0 };
+            foreach (double k in kicks)
+            {
+                if (fill && k >= 3) continue;
+                double t = s.T(bar, k);
+                Instruments.Kick(kick, t, st.kit == Kit.Son ? 0.6f : (k == 0 || k == 2 ? 0.95f : 0.8f));
+                mix.Duck(t, st.kit == Kit.Son ? 0.25f : 0.45f, 0.1);
+            }
+
+            switch (st.kit)
+            {
+                case Kit.Calypso:
+                    foreach (double b in new[] { 1.0, 3.0 })
+                    {
+                        if (fill && b >= 3) continue;
+                        Instruments.Snare(snare, s.T(bar, b), 0.72f, bar * 4 + (int)b);
+                        if (st.claps) Instruments.Clap(perc, s.T(bar, b) + 0.004, 0.5f, bar * 4 + (int)b);
+                    }
+                    for (int e = 0; e < 8; e++)
+                    {
+                        double b = e * 0.5;
+                        if (fill && b >= 3) break;
+                        if (e % 2 == 1) Instruments.OpenHat(hats, s.T(bar, b), 0.32f, bar * 8 + e);
+                        else Instruments.Hat(hats, s.T(bar, b), 0.3f, bar * 8 + e);
+                        if (st.tambourine && e % 2 == 1 && inB) Instruments.Tambourine(perc, s.T(bar, b + 0.25), 0.25f, bar * 8 + e);
+                    }
+                    if (!fill)
+                        foreach (double b in new[] { 1.5, 3.0, 3.5 }) Instruments.Conga(perc, s.T(bar, b), 0.45f, b != 3.0);
+                    break;
+                case Kit.Son:
+                {
+                    // The 3-2 son clave: three strokes in the first bar of each pair, two in the second.
+                    double[] clave = bar % 2 == 0 ? new[] { 0, 1.5, 3 } : new[] { 1.0, 2 };
+                    foreach (double b in clave) Instruments.Clave(perc, s.T(bar, b), 0.5f);
+                    for (int e = 0; e < 8; e++)
+                    {
+                        double b = e * 0.5;
+                        if (fill && b >= 3) break;
+                        Instruments.Bongo(perc, s.T(bar, b), e % 2 == 0 ? 0.42f : 0.26f, e % 4 != 2, bar * 8 + e);
+                    }
+                    if (!fill)
+                    {
+                        Instruments.Conga(perc, s.T(bar, 1), 0.3f, true);
+                        Instruments.Conga(perc, s.T(bar, 3), 0.55f, true);
+                        Instruments.Conga(perc, s.T(bar, 3.5), 0.5f, false);
+                    }
+                    Instruments.Guiro(perc, s.T(bar, 0), s.Beats(0.6), 0.32f, bar * 4);
+                    Instruments.Guiro(perc, s.T(bar, 2), s.Beats(0.6), 0.32f, bar * 4 + 2);
+                    if (inB) Instruments.Rim(snare, s.T(bar, 3), 0.45f);
+                    if (st.claps && inB) Instruments.Clap(perc, s.T(bar, 3) + 0.004, 0.3f, bar * 4);
+                    break;
+                }
+                default:
+                    // One-drop: the side-stick lands with the kick on three.
+                    Instruments.Rim(snare, s.T(bar, 2), 0.8f);
+                    if (inB) Instruments.Snare(snare, s.T(bar, 2), 0.35f, bar * 4);
+                    for (int e = 0; e < 8; e++)
+                    {
+                        double b = e * 0.5;
+                        if (fill && b >= 3) break;
+                        Instruments.Hat(hats, s.T(bar, b), (e % 2 == 0 ? 0.36f : 0.22f) * (float)(0.85 + rng.NextDouble() * 0.3), bar * 8 + e);
+                        Instruments.Shaker(perc, s.T(bar, b + 0.25), 0.18f, bar * 8 + e);
+                    }
+                    break;
+            }
+
+            if (fill)
+                for (int k = 0; k < 4; k++) Instruments.Conga(perc, s.T(bar, 3 + k * 0.25), 0.6f, k < 2);
+            if (bar == 0 || bar == Bars / 2) Instruments.Crash(hats, s.T(bar, 0), 0.6f, bar);
         }
 
         /// <summary>The highest <paramref name="count"/> notes of a voicing (an up-strum catches the top strings).</summary>

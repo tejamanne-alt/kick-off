@@ -500,10 +500,11 @@ namespace DribbleToSchool.EditorTools
         /// </summary>
         static void Plant(Transform parent, string model, Sprite fallback, float x, float groundY, float z, float scale, float spriteScale, int order, System.Random rng)
         {
+            model = FloridaPalm(model);
             Color? leaves = null;
             bool leafy = model.StartsWith("Broadleaf") || model == "Birch" || model.StartsWith("Bush");
             if (leafy) leaves = SummerLeaves[rng.Next(SummerLeaves.Length)];
-            else if (model.StartsWith("Palm")) leaves = PalmGreens[rng.Next(PalmGreens.Length)];
+            else if (model.StartsWith("Palm") && !model.StartsWith("PalmSabal")) leaves = PalmGreens[rng.Next(PalmGreens.Length)];
             else if ((model == "TallGrass" || model == "GrassTuft") && rng.NextDouble() < 0.8) leaves = MeadowGreens[rng.Next(MeadowGreens.Length)];
             if (Model(parent, "Plants", model, x, groundY, z, Rand(rng, 0f, 360f), scale, leaves) != null) return;
             if (fallback != null) CutOut(parent, model, fallback, x, groundY, z, spriteScale, order, rng.NextDouble() < 0.5);
@@ -2139,7 +2140,7 @@ namespace DribbleToSchool.EditorTools
                 pierReach = Mathf.Max(PierWidth * 0.5f, (climb.end - climb.foot) * 0.5f + 0.8f);
                 PierOnCourse(track, root, climb, 13);
             }
-            else if (track.HasSeasidePier && CA && (chunk == null || chunk.level) && LevelBuildKit.HasKitModel("Coast", "PierSpan") && propsEnd - x0 > 60f)
+            else if (track.HasSeasidePier && CA && !FL && (chunk == null || chunk.level) && LevelBuildKit.HasKitModel("Coast", "PierSpan") && propsEnd - x0 > 60f)
             {
                 pierReach = PierReach;
                 for (float tryX = x0 + (propsEnd - x0) * 0.55f; tryX < propsEnd - pierReach - 8f; tryX += 7f)
@@ -2150,6 +2151,10 @@ namespace DribbleToSchool.EditorTools
                 }
                 if (!float.IsNaN(pierX)) Pier(track, root, pierX, sea, 6.2f, 13);
             }
+            // Florida: the beach town on its seawall terraces (StreetBuilder.Florida); the beach's own things keep to the gaps
+            // between them, and the school's last block is set out before the gate.
+            var terraces = FL && (chunk == null || chunk.level) ? FloridaStrip(track, root, x0 + Margin(3f), propsEnd - 3f, pierX, pierReach) : null;
+            if (FL && schoolEnd) FloridaSchoolApproach(track, root, track.GoalX);
             // Lifeguard towers: one every 55 to 80 m (every 30 to 45 lined the beach with the same tower), each painted its own
             // way (the beach patrol's huts come in a few colours) and set a little back or forward.
             var towers = new List<float>();
@@ -2157,12 +2162,13 @@ namespace DribbleToSchool.EditorTools
             {
                 if (Blocked(track, x - 2f, x + 2f, out skip)) continue;     // a stop's plot (StreetBuilder.Stops)
                 if (Mathf.Abs(x - pierX) < pierReach + 2f) continue;        // (the pier's stairs)
+                if (InStrip(terraces, x - 2.5f, x + 2.5f)) continue;       // (Florida's terraces)
                 float tz = 7.4f + Rand(rng, -0.5f, 0.6f);
                 LifeguardTower(root, x, GroundAt(track, x, tz), tz, TowerBodies[rng.Next(TowerBodies.Length)], TowerRoofs[rng.Next(TowerRoofs.Length)]);
                 towers.Add(x);
             }
             // Date palms and the odd young fan palm along the back of the beach.
-            if (CA) StreetPalms(track, root, rng, x0 + Margin(3f), propsEnd - 3f, 2.8f, 14f, 30f, pierX - pierReach, pierX + pierReach);
+            if (CA && !FL) StreetPalms(track, root, rng, x0 + Margin(3f), propsEnd - 3f, 2.8f, 14f, 30f, pierX - pierReach, pierX + pierReach);
             Color[] canopy = { new Color(0.9f, 0.3f, 0.28f), new Color(0.25f, 0.5f, 0.85f), new Color(1f, 0.75f, 0.2f), new Color(0.3f, 0.66f, 0.62f) };
             Color[] towels = { new Color(0.95f, 0.55f, 0.6f), new Color(0.45f, 0.75f, 0.9f), new Color(1f, 0.85f, 0.35f), new Color(0.55f, 0.8f, 0.55f) };
             bool beachKit = LevelBuildKit.HasKitModel("Leisure", "Parasol");
@@ -2171,6 +2177,7 @@ namespace DribbleToSchool.EditorTools
                 float z = Rand(rng, 3.4f, 5.2f), gy = GroundAt(track, x, z);
                 if (Blocked(track, x - 1.5f, x + 2.6f, out skip)) continue;
                 if (x > pierX - pierReach - 2.6f && x < pierX + pierReach + 1.5f) continue;     // (the pier's stairs and paths)
+                if (InStrip(terraces, x - 1.5f, x + 2.6f)) continue;
                 if (beachKit)
                 {
                     if (towers.Any(t => Mathf.Abs(t - x) < 3f)) continue;
@@ -2207,6 +2214,7 @@ namespace DribbleToSchool.EditorTools
             for (float x = x0 + 15f; x < Mathf.Min(x1 - Margin(4f), coastX - 3f); x += rockModels ? Rand(rng, 12f, 24f) : Rand(rng, 22f, 38f))
             {
                 // Rocks at the water's edge, bedded in the sand, darker where the sea wets them.
+                if (InStrip(terraces, x - 3f, x + 4f)) continue;
                 float gy = track.LowestGroundTop - 0.12f, s = Rand(rng, 0.8f, 1.6f);
                 if (rockModels)
                 {
@@ -2247,6 +2255,7 @@ namespace DribbleToSchool.EditorTools
                         float px = x + k * Rand(rng, 2.2f, 3.4f), pz = Rand(rng, 5.6f, 7f);
                         if (towers.Any(t => Mathf.Abs(t - px) < 4.5f) || px > propsEnd || Blocked(track, px - 1.5f, px + 1.5f, out skip)) continue;
                         if (Mathf.Abs(px - pierX) < pierReach + 1.5f) continue;     // (the pier and its stairs)
+                        if (InStrip(terraces, px - 1.5f, px + 1.5f)) continue;
                         Plant(root, rng.NextDouble() < 0.5 ? "Palm" : "PalmShort", null, px, GroundAt(track, px, pz) - 0.1f, pz, Rand(rng, 0.85f, 1.15f), 1f, -60, rng);
                     }
                 }
@@ -2322,6 +2331,8 @@ namespace DribbleToSchool.EditorTools
 
         static void LifeguardTower(Transform root, float x, float gy, float z, Color? body = null, Color? roof = null)
         {
+            // (Florida: its painted stand on stilts, in the beach patrol's colours: walls, then roof and trim)
+            if (FL && Model(root, "Florida", "LifeguardFL", x, gy, z, 0f, 1f, body, roof, roof) != null) return;
             if (Model(root, "Leisure", "LifeguardTower", x, gy, z, 0f, 1f, body, roof) != null) return;
             Color white = new Color(0.96f, 0.96f, 0.94f), red = new Color(0.85f, 0.25f, 0.22f), dark = new Color(0.3f, 0.35f, 0.42f);
             const float deck = 2.6f;

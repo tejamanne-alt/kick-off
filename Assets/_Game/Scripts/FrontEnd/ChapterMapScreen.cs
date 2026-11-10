@@ -1153,7 +1153,8 @@ namespace DribbleToSchool.FrontEnd
             Color disc = unlocked ? face : late != null ? LateRed : Color.Lerp(Color.Lerp(face, UITheme.Locked, 0.35f), Color.white, 0.45f);
             var button = UIKit.Button(holder, "Button", "", disc, () => Tap(catalog, def, late));
             UIKit.Place((RectTransform)button.transform, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(diameter, diameter), new Vector2(0.5f, 0.5f));
-            button.interactable = unlocked || late != null;
+            // A level the chosen add-on's streets don't have yet (Florida: only the beach) also answers a tap, to say so.
+            button.interactable = unlocked || late != null || LevelUnlocks.NotInTown(def);
             UIKit.MakeRound(button);
             // The next level's disc breathes (its stars and name stay still; UIPulse hands the scale to the button's press animation).
             if (beacon == Beacon.Play || beacon == Beacon.Replay) button.gameObject.AddComponent<UIPulse>();
@@ -1289,8 +1290,46 @@ namespace DribbleToSchool.FrontEnd
         /// <summary>A level's button: play it, or, if a late trip to school holds it back, say so (<see cref="ShowLate"/>).</summary>
         void Tap(LevelCatalog catalog, LevelDefinition def, Route late)
         {
-            if (late == null) Controller.PlayLevel(def);
+            if (LevelUnlocks.NotInTown(def)) ShowNotInTown();
+            else if (late == null) Controller.PlayLevel(def);
             else ShowLate(catalog, late);
+        }
+
+        /// <summary>
+        /// Why a level is locked in an add-on that has only some of the routes so far (Florida: Seaside Road): the others are
+        /// coming, and the original streets or California have them all. The main button shows a route the add-on has.
+        /// </summary>
+        void ShowNotInTown()
+        {
+            var addOn = AddOns.Active;
+            Route there = null;
+            var names = new List<string>();
+            foreach (var route in RouteTable.All)
+                if (addOn.HasChapter(route.chapter))
+                {
+                    if (there == null) there = route;
+                    names.Add(Loc.T(route.NameKey));
+                }
+            string town = Loc.T(addOn.nameKey);
+            GameObject root;
+            var card = UIKit.Modal(Controller.CanvasRoot, "NotInTown", new Vector2(980f, 560f), out root);
+            UIKit.Header(card.transform, Loc.F("map.notInTownTitle", town), 620f);
+            var text = UIKit.Label(card.transform, "Text", Loc.F("map.notInTown", town, string.Join(", ", names.ToArray())), 38, UITheme.Ink,
+                TextAnchor.MiddleCenter, true);
+            text.rectTransform.anchorMin = Vector2.zero;
+            text.rectTransform.anchorMax = Vector2.one;
+            text.rectTransform.offsetMin = new Vector2(60f, 170f);
+            text.rectTransform.offsetMax = new Vector2(-60f, -76f);
+            UIKit.Fit(text, 26);
+            var notNow = UIKit.Button(card.transform, "NotNow", Loc.T("map.notNow"), UITheme.Paper, () => Object.Destroy(root), 36, UITheme.Ink);
+            UIKit.Place((RectTransform)notNow.transform, new Vector2(0.27f, 0f), new Vector2(0f, 95f), new Vector2(340f, 100f));
+            var go = UIKit.Button(card.transform, "Show", there != null ? Loc.T(there.NameKey) : Loc.T("map.notNow"), UITheme.Green, () =>
+            {
+                Object.Destroy(root);
+                if (there != null) ShowRoute(there.id);
+            }, 40);
+            UIKit.Place((RectTransform)go.transform, new Vector2(0.73f, 0f), new Vector2(0f, 95f), new Vector2(380f, 100f));
+            go.interactable = there != null;
         }
 
         /// <summary>
@@ -1384,7 +1423,7 @@ namespace DribbleToSchool.FrontEnd
                 var button = UIKit.Button(stripRoot, "Level_" + levelId, unlocked ? number : "", unlocked ? face : late != null ? LateRed : UITheme.Locked, () => Tap(catalog, def, late), 36);
                 var rt = (RectTransform)button.transform;
                 UIKit.Place(rt, new Vector2(0f, 0f), new Vector2(x + chip * 0.5f, ChipY), new Vector2(chip, 54f), new Vector2(0.5f, 0.5f));
-                button.interactable = unlocked || late != null;
+                button.interactable = unlocked || late != null || LevelUnlocks.NotInTown(def);
                 // The touch target: the whole slot, the chip and its stars, the full height of the bar.
                 var hit = UIKit.Rect(button.transform, "Hit");
                 UIKit.Place(hit, new Vector2(0.5f, 0.5f), new Vector2(0f, StripHeight * 0.5f - ChipY), new Vector2(chip + gap, StripHeight), new Vector2(0.5f, 0.5f));

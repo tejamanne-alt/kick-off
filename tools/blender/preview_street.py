@@ -21,6 +21,11 @@ surfaces_dir = args[args.index('--surfaces') + 1] if '--surfaces' in args else N
 # --spans x0:x1:top,...  the level's ground spans (beach: dunes and channels as LevelBuildKit.BeachGround draws them)
 spans_arg = [tuple(float(v) for v in t.split(':')) for t in args[args.index('--spans') + 1].split(',')] if '--spans' in args else None
 cam_x = float(args[args.index('--cam') + 1]) if '--cam' in args else 0.0
+# --florida (chapter 3): the Florida add-on's beach town on its seawall terraces (StreetBuilder.Florida); --level L11..L14
+# picks where the strip starts; --open a:b,... are stretches left as open beach (the level's tides, channels, dunes, stops).
+florida = '--florida' in args
+fl_level = args[args.index('--level') + 1] if '--level' in args else 'L11'
+fl_open = [tuple(float(v) for v in t.split(':')) for t in args[args.index('--open') + 1].split(',')] if '--open' in args else []
 rng = random.Random(seed * 31 + chapter)
 
 # ---------------------------------------------------------------- the chapter's light (sRGB)
@@ -549,7 +554,7 @@ def plant(model, x, y, z, scale):
     leaves = None
     if model.startswith('Broadleaf') or model == 'Birch' or model.startswith('Bush'):
         leaves = rng.choice(SUMMER)
-    elif model.startswith('Palm'):
+    elif model.startswith('Palm') and not model.startswith('PalmSabal'):
         leaves = PALM
     elif model in ('TallGrass', 'GrassTuft') and rng.random() < .8:
         leaves = rng.choice(MEADOW)
@@ -802,26 +807,89 @@ def market():
     palm_skyline(64, 100, 12, 28)
 
 
+# ---------------------------------------------------------------- Florida's strip (StreetBuilder.Florida)
+FL_FRONT, FL_FRONTAGE, FL_BACK, FL_RISE = 2.5, 5.0, 18.0, 0.22
+FL_LOTS = [
+    ('Restroom', 8.8, [('RestroomFL', 4.2, FL_FRONTAGE + .4), ('SignTurtleFL', .6, 3.3)]),
+    ('Shack', 10.2, [('ShackFL', 2.6, FL_FRONTAGE), ('KayakRackFL', 7.1, FL_FRONTAGE + .8), ('SignAccessFL', 9.4, 3.4)]),
+    ('Diner', 17.4, [('DinerSignFL', 1.4, 3.7), ('DinerFL', 10.0, FL_FRONTAGE + .6), ('SignHurricaneFL', 3.6, 3.3)]),
+    ('Motel', 22.4, [('MotelSignFL', 1.9, 3.7), ('MotelPoolFL', 12.2, 3.3), ('MotelFL', 12.6, 8.4)]),
+    ('Rentals', 13.2, [('PoleSignalFL', .4, 3.2), ('RentalsFL', 5.6, FL_FRONTAGE), ('HydrantFL', 11.9, 3.4)]),
+    ('DecoSurf', 7.8, [('DecoSurfFL', 3.9, FL_FRONTAGE)]), ('DecoCafe', 6.5, [('DecoCafeFL', 3.25, FL_FRONTAGE)]),
+    ('DecoBait', 6.5, [('DecoBaitFL', 3.25, FL_FRONTAGE)]), ('DecoIce', 8.3, [('DecoIceFL', 4.5, FL_FRONTAGE)]),
+    ('DecoShut', 7.2, [('DecoShutFL', 3.6, FL_FRONTAGE)]),
+]
+FL_START = {'L12': 2, 'L13': 3, 'L14': 5}
+
+
+def florida_strip(x0, x1):
+    """The Florida beach town (StreetBuilder.FloridaStrip): lots in order on seawall terraces, open beach left between."""
+    strip = []
+    open_ = sorted(fl_open)
+    nxt = FL_START.get(fl_level, 0)
+    r_ = random.Random(311)
+    a = x0 + 1.5
+    for _ in range(400):
+        if a >= x1 - 6: break
+        moved = False
+        for o in open_:
+            if o[0] <= a < o[1]: a = o[1]; moved = True
+        if moved: continue
+        b = x1 - 1
+        for o in open_:
+            if a < o[0] < b: b = o[0]
+        y = max([SAND.base] + [max(SAND.height(sx, FL_FRONT), SAND.height(sx, FL_FRONT + .25)) for sx in np.arange(a, b + .01, .5)]) + FL_RISE
+        x, tries = a, 0
+        while tries < len(FL_LOTS):
+            name, w, models = FL_LOTS[nxt % len(FL_LOTS)]; nxt += 1
+            if x + w > b: tries += 1; continue
+            for m, dx, z in models: place('Florida', m, x + dx, y, z)
+            x += w; tries = 0
+        if x - a > 1:
+            box(a - .3, x + .3, SAND.base - 1.5, y - .06, FL_FRONT + .25, FL_BACK, (.82, .8, .76), 'seawall', 'Concrete')
+            box(a - .3, x + .3, y - .06, y, FL_FRONT, FL_BACK, (.86, .84, .81), 'promenade', 'Paving')
+            box(a - .3, x + .3, SAND.base - .2, y, FL_FRONT, FL_FRONT + .25, (.78, .77, .74), 'kerb', 'Concrete')
+            px = a + r_.uniform(1.5, 4)
+            while px < x - 1: plant('PalmSabal', px, y, r_.uniform(3.2, 3.6), r_.uniform(.85, 1.1)); px += r_.uniform(9, 14)
+            lx, k = a + r_.uniform(5, 8), 0
+            while lx < x - 2:
+                place('Florida', 'LampFL', lx, y, 3.0)
+                if k % 2 == 0: place('Florida', 'BenchFL', lx + 2.2, y, 4.3); place('Florida', 'TrashFL', lx + 3.8, y, 4.2)
+                lx += r_.uniform(14, 19); k += 1
+            tx = a + r_.uniform(2, 6)
+            while tx < x - 1: plant('PalmSabalTall', tx, y, r_.uniform(FL_BACK - 2.4, FL_BACK - .8), r_.uniform(.9, 1.15)); tx += r_.uniform(10, 16)
+            strip.append((a - .5, x + .5))
+        a = b + .01
+    return strip
+
+
+def in_strip(strip, a, b):
+    return any(b > s0 and a < s1 for s0, s1 in strip)
+
+
 def beach():
     g = SAND.height
     towers = []
+    strip = florida_strip(X0 - 30, X1 + 30) if florida else []
     x = X0
     while x < X1:
-        place('Leisure', 'LifeguardTower', x, g(x, 7.4), 7.4); towers.append(x)
+        if not in_strip(strip, x - 2.5, x + 2.5):
+            place('Florida', 'LifeguardFL', x, g(x, 7.4), 7.4) if florida else place('Leisure', 'LifeguardTower', x, g(x, 7.4), 7.4)
+            towers.append(x)
         x += rng.uniform(30, 45)
     # (StreetBuilder.Beach: the pier, and date palms along the back of the beach.)
     pier_x = X0 + (X1 - X0) * .55
     while any(abs(t - pier_x) < 9 for t in towers): pier_x += 7
-    if has('Coast', 'PierSpan'):
+    if has('Coast', 'PierSpan') and not florida:
         for i in range(13): coast_house('PierSpan', pier_x, SAND.base - .3, 6.2 + 12 * i)
         coast_house('PierEnd', pier_x, SAND.base - .3, 6.2 + 12 * 13)
-    street_palms(2.8, 14, 30, lambda x, z: g(x, z) - .1)
+    if not florida: street_palms(2.8, 14, 30, lambda x, z: g(x, z) - .1)
     canopy = [(.9, .3, .28), (.25, .5, .85), (1, .75, .2), (.3, .66, .62)]
     towels = [(.95, .55, .6), (.45, .75, .9), (1, .85, .35), (.55, .8, .55)]
     x = X0 + 8
     while x < X1:
         z = rng.uniform(3.4, 5.2)
-        if any(abs(t - x) < 3 for t in towers) or abs(x - pier_x) < 5:
+        if any(abs(t - x) < 3 for t in towers) or abs(x - pier_x) < 5 or in_strip(strip, x - 1.5, x + 2.6):
             x += rng.uniform(5, 11); continue
         p = place('Leisure', 'Parasol', x, g(x, z) - .05, z, rng.uniform(0, 360), 1, [rng.choice(canopy), None, None])
         if p: p.rotation_euler = (math.radians(rng.uniform(-7, 7)), math.radians(rng.uniform(-7, 7)), p.rotation_euler.z)
@@ -837,6 +905,7 @@ def beach():
     x = X0 + 15
     while x < X1:
         s_ = rng.uniform(.8, 1.6); rz = rng.uniform(8.6, 11); bx, bz = x + rng.uniform(2, 3.5), rz - rng.uniform(.5, 1.2)
+        if in_strip(strip, x - 3, x + 4): x += rng.uniform(12, 24); continue
         place('Terrain', 'RockCluster', x, g(x, rz) - .15, rz, rng.uniform(-30, 30), s_ * .8)
         if rng.random() < .5:
             place('Terrain', rng.choice(['Boulder1', 'Boulder2']), bx, g(bx, bz) - .1, bz, rng.uniform(0, 360), rng.uniform(.7, 1.1))
@@ -845,7 +914,7 @@ def beach():
     while x < X1:
         for k in range(rng.randrange(1, 4)):
             px, pz = x + k * rng.uniform(2.2, 3.4), rng.uniform(5.6, 7)
-            if any(abs(t - px) < 4.5 for t in towers): continue
+            if any(abs(t - px) < 4.5 for t in towers) or in_strip(strip, px - 1.5, px + 1.5): continue
             plant(rng.choice(['Palm', 'PalmShort']), px, g(px, pz) - .1, pz, rng.uniform(.85, 1.15))
         x += rng.uniform(16, 32)
     x = X0

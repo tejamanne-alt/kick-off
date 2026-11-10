@@ -247,6 +247,47 @@ namespace DribbleToSchool.Tests
             Assert.AreEqual(SessionPhase.Lobby, room[0].Phase);
         }
 
+        /// <summary>A room whose third location (like Florida) has only the third route's streets.</summary>
+        static Room PartialTownRoom()
+        {
+            var room = new Room(2);
+            for (int i = 0; i < 2; i++)
+            {
+                room[i].AddOnCount = 3;
+                room[i].LocationFits = (route, location) => location != 2 || route == 2;
+            }
+            room.Gather();
+            return room;
+        }
+
+        static CoopSelection RaceIn(byte route, byte addOn)
+        {
+            var room = PartialTownRoom();
+            room[1].Select(route, addOn);
+            room.Run(600);
+            room.StartRace();
+            Assert.AreEqual(room[0].RaceSelection.route, room[1].RaceSelection.route);
+            Assert.AreEqual(room[0].RaceSelection.addOn, room[1].RaceSelection.addOn);
+            return room[0].RaceSelection;
+        }
+
+        [Test]
+        public void ALocationWithOnlySomeRoutesOnlyRunsThose()
+        {
+            // A random route in the partial town: always the one it has.
+            for (int k = 0; k < 6; k++) Assert.AreEqual(2, RaceIn(CoopSelection.Random, 2).route);
+            // A random location on another route: never the partial town.
+            for (int k = 0; k < 6; k++) Assert.AreNotEqual(2, RaceIn(4, CoopSelection.Random).addOn);
+            // The partial town chosen for a route it doesn't have (a stale choice): the original streets.
+            var s = RaceIn(4, 2);
+            Assert.AreEqual(4, s.route);
+            Assert.AreEqual(0, s.addOn);
+            // Its own route runs there.
+            s = RaceIn(2, 2);
+            Assert.AreEqual(2, s.route);
+            Assert.AreEqual(2, s.addOn);
+        }
+
         [Test]
         public void ARandomStageIsResolvedOnceForEveryone()
         {
