@@ -54,7 +54,21 @@ namespace DribbleToSchool.UI
         RectTransform card, picture, tile;
         Text title, body;
         UIPopIn pop;
-        string shown;
+        // What the card shows (null id: nothing), compared field by field each frame instead of a string built
+        // every frame: a how-to or a tip, its id, compact or not, and the language its text is in.
+        string shownId, shownLanguage;
+        bool shownHint, shownCompact;
+
+        bool Showing(string id, bool hint, bool compact)
+        {
+            string language = Loc.Current;
+            if (shownId != null && shownHint == hint && shownCompact == compact && shownId == id && shownLanguage == language) return true;
+            shownId = id;
+            shownHint = hint;
+            shownCompact = compact;
+            shownLanguage = language;
+            return false;
+        }
 
         ActionSpot current;
         float currentSince;
@@ -267,10 +281,8 @@ namespace DribbleToSchool.UI
 
         void Show(CoachCatalog.Entry entry, bool compact)
         {
-            string signature = entry.id + (compact ? "#" : "") + "@" + Loc.Current;
-            if (signature != shown)
+            if (!Showing(entry.id, false, compact))
             {
-                shown = signature;
                 SetPicture(true, entry.picture);
                 title.text = Loc.T(entry.TitleKey);
                 body.text = compact ? "" : Loc.T(entry.TextKey);
@@ -282,12 +294,10 @@ namespace DribbleToSchool.UI
 
         void ShowHint(string id)
         {
-            string signature = "tut." + id + "@" + Loc.Current;
             ControlsGuide.Picture pic;
             bool hasPicture = CoachCatalog.HintPicture(id, out pic);
-            if (signature != shown)
+            if (!Showing(id, true, false))
             {
-                shown = signature;
                 SetPicture(hasPicture, pic);
                 title.text = "";
                 body.text = Loc.T("tut." + id);
@@ -305,8 +315,8 @@ namespace DribbleToSchool.UI
 
         void Hide()
         {
-            if (shown == null) return;
-            shown = null;
+            if (shownId == null) return;
+            shownId = null;
             card.gameObject.SetActive(false);
         }
 
@@ -390,8 +400,12 @@ namespace DribbleToSchool.UI
             float height = compact ? CompactHeight : FullHeight;
             float x = beside ? infoRight + Margin + (slot - width) * 0.5f : 30f;
             float top = beside ? 30f : infoBottom + 14f;
-            card.anchoredPosition = new Vector2(x, -top);
-            card.sizeDelta = new Vector2(width, height);
+            // Placed every frame while the card shows, and it mostly stands still: write only a change (a size write
+            // re-lays the card's best-fit text).
+            var position = new Vector2(x, -top);
+            var size = new Vector2(width, height);
+            if (card.anchoredPosition != position) card.anchoredPosition = position;
+            if (card.sizeDelta != size) card.sizeDelta = size;
         }
     }
 }

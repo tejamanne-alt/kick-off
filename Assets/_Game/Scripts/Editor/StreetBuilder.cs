@@ -2091,6 +2091,7 @@ namespace DribbleToSchool.EditorTools
                 {
                     var water = Solid(root, "Sea", new Vector3((x0 + x1) * 0.5f, sea - 0.05f, 480f), new Vector3(x1 - x0 + 1600f, 0.1f, 950f), Color.white, Art.surfaces[ProceduralArt.Surface.Sea]);
                     water.faces = MeshBuilder.Faces.Top;
+                    NoShadowCast(water);   // the lowest surface: its shadow could only fall under itself
                     water.Rebuild();
                 }
             }
@@ -2604,6 +2605,7 @@ namespace DribbleToSchool.EditorTools
                 // Flat fields from the end of the street ground out to the hills, so nothing floats.
                 var plain = Solid(root, "Fields", new Vector3((x0 + x1) * 0.5f, y - 0.06f, (BackZ + 760f) * 0.5f - 1f), new Vector3(x1 - x0 + 2200f, 0.1f, 760f - BackZ), fields);
                 plain.faces = MeshBuilder.Faces.Top;
+                NoShadowCast(plain);   // under everything, so its shadow falls on nothing (it filled the whole shadow map)
                 plain.Rebuild();
                 // Layers that tile seamlessly at the kit's tile widths, each deeper in the haze: a wooded
                 // rise, rolling hills, then two mountain ranges, the far one offset half a tile so its
@@ -2635,7 +2637,18 @@ namespace DribbleToSchool.EditorTools
             float tile = TileWidth("Terrain", model) * scale;
             if (tile < 1f) return;
             for (float x = Mathf.Floor(a / tile) * tile + phase * tile; x < b + tile; x += tile)
-                Model(root, "Terrain", model, x, y, z, 0f, scale, grass, null, null, false);
+            {
+                var copy = Model(root, "Terrain", model, x, y, z, 0f, scale, grass, null, null, false);
+                // Nor do they receive any: past the shadow distance every pixel's shadow lookup came back lit.
+                if (copy != null) foreach (var r in copy.GetComponentsInChildren<MeshRenderer>()) r.receiveShadows = false;
+            }
+        }
+
+        /// <summary>A flat surface lower than everything near it casts no shadow worth drawing: none into the shadow map.</summary>
+        public static void NoShadowCast(Component shape)
+        {
+            var r = shape.GetComponent<MeshRenderer>();
+            if (r != null) r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
         }
 
         /// <summary>The distance a kit model repeats at along x (its manifest's tileWidth), else its width.</summary>

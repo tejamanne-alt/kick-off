@@ -70,15 +70,20 @@ namespace DribbleToSchool.Audio
         {
             var pack = new AmbiencePack { scape = scape };
             var cues = new List<AmbientCue>();
+            // The bed's layers and voices are all as long as the loop: their work buffers are reused one to the next
+            // (a cue's are each its own length, so there is nothing to reuse there).
+            Scratch.Begin();
+            try { pack.bed = Bed(scape); }
+            finally { Scratch.End(); }
             switch (scape)
             {
-                case Soundscape.Street: pack.bed = StreetBed(); StreetCues(cues); break;
-                case Soundscape.Market: pack.bed = MarketBed(); MarketCues(cues); break;
-                case Soundscape.Beach: pack.bed = BeachBed(); BeachCues(cues); break;
-                case Soundscape.Underpass: pack.bed = UnderpassBed(); UnderpassCues(cues); break;
-                case Soundscape.Site: pack.bed = SiteBed(); SiteCues(cues); break;
-                case Soundscape.Park: pack.bed = ParkBed(); ParkCues(cues); break;
-                default: pack.bed = MenuBed(); MenuCues(cues); break;
+                case Soundscape.Street: StreetCues(cues); break;
+                case Soundscape.Market: MarketCues(cues); break;
+                case Soundscape.Beach: BeachCues(cues); break;
+                case Soundscape.Underpass: UnderpassCues(cues); break;
+                case Soundscape.Site: SiteCues(cues); break;
+                case Soundscape.Park: ParkCues(cues); break;
+                default: MenuCues(cues); break;
             }
             // The cues follow their place's loudness (a little less steeply, so a quiet place's birdsong
             // or shop bell still carries): against the old common bed level, 0.075.
@@ -90,13 +95,27 @@ namespace DribbleToSchool.Audio
 
         // ================= Beds =================
 
+        static float[] Bed(Soundscape scape)
+        {
+            switch (scape)
+            {
+                case Soundscape.Street: return StreetBed();
+                case Soundscape.Market: return MarketBed();
+                case Soundscape.Beach: return BeachBed();
+                case Soundscape.Underpass: return UnderpassBed();
+                case Soundscape.Site: return SiteBed();
+                case Soundscape.Park: return ParkBed();
+                default: return MenuBed();
+            }
+        }
+
         static int BedLength { get { return (int)(BedSeconds * Sr); } }
 
         /// <summary>A continuous layer made a little longer than the loop, then folded so its end crossfades into its start.</summary>
         static void Layer(Track into, Func<int, float> sample)
         {
             int len = into.Length, fold = (int)(Fold * Sr);
-            var raw = new float[len + fold];
+            var raw = Scratch.Rent(len + fold);
             for (int i = 0; i < raw.Length; i++) raw[i] = sample(i);
             for (int i = 0; i < len; i++)
             {
@@ -108,6 +127,7 @@ namespace DribbleToSchool.Audio
                 }
                 into.buf[i] += v;
             }
+            Scratch.Return(raw);
         }
 
         /// <summary>Low-passed noise with a slow swell: traffic, a city's hum, room tone, surf.</summary>
@@ -207,8 +227,8 @@ namespace DribbleToSchool.Audio
             var foam = new Svf();
             var rng = new Random(seed);
             int total = t.Length + (int)(Fold * Sr);
-            var env = new float[total];
-            var bright = new float[total];
+            var env = Scratch.Rent(total);
+            var bright = Scratch.Rent(total);
             double at = offset * 7;
             while (at < total / (double)Sr)
             {
@@ -232,6 +252,8 @@ namespace DribbleToSchool.Audio
                 foam.Process(x, 3800, 0.5);
                 return body + foam.high * 0.5f * bright[i] * env[i];
             });
+            Scratch.Return(env);
+            Scratch.Return(bright);
         }
 
         static float[] UnderpassBed()
@@ -615,10 +637,10 @@ namespace DribbleToSchool.Audio
                 var fb = new Svf();
                 var lp = new Svf();
                 int total = t.Length + (int)(Fold * Sr);
-                var amp = new float[total];
-                var form1 = new float[total];
-                var form2 = new float[total];
-                var pitch = new float[total];
+                var amp = Scratch.Rent(total);
+                var form1 = Scratch.Rent(total);
+                var form2 = Scratch.Rent(total);
+                var pitch = Scratch.Rent(total);
                 double time = r.NextDouble() * 2;
                 while (time < total / (double)Sr)
                 {
@@ -655,6 +677,10 @@ namespace DribbleToSchool.Audio
                     fb.Process(src, Math.Round(form2[i] / 50) * 50, 6);
                     return lp.Process((fa.band + fb.band * 0.5f) * amp[i], 1500, 0.7);
                 });
+                Scratch.Return(amp);
+                Scratch.Return(form1);
+                Scratch.Return(form2);
+                Scratch.Return(pitch);
             }
 
             public static void Laugh(Track t, double at, Random r)

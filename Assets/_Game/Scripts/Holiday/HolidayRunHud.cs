@@ -1256,9 +1256,13 @@ namespace DribbleToSchool.Holiday
 
         static void PlaceButton(RectTransform rect, Rect normalized)
         {
-            rect.anchorMin = new Vector2(normalized.x, normalized.y);
-            rect.anchorMax = new Vector2(normalized.xMax, normalized.yMax);
-            rect.offsetMin = rect.offsetMax = Vector2.zero;
+            // Called every frame for each button, which mostly stands still: write only what changed, as GameHud does,
+            // since a RectTransform write can dirty the HUD canvas (a rebuild and re-batch) even when the value is the same.
+            Vector2 min = new Vector2(normalized.x, normalized.y), max = new Vector2(normalized.xMax, normalized.yMax);
+            if (rect.anchorMin != min) rect.anchorMin = min;
+            if (rect.anchorMax != max) rect.anchorMax = max;
+            if (rect.offsetMin != Vector2.zero) rect.offsetMin = Vector2.zero;
+            if (rect.offsetMax != Vector2.zero) rect.offsetMax = Vector2.zero;
         }
 
         /// <summary>A touch that starts on the pause button is the button's, not a jump.</summary>

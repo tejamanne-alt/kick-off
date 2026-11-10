@@ -91,7 +91,7 @@ namespace DribbleToSchool.Core
             Time.maximumDeltaTime = 0.1f;                  // after a hitch, at most six catch-up physics steps, not twenty
             Physics2D.reuseCollisionCallbacks = true;      // no new Collision2D per bounce
             QualitySettings.asyncUploadTimeSlice = 4;      // ms a frame for streaming textures and meshes to the GPU
-            QualitySettings.asyncUploadBufferSize = 32;    // MB
+            QualitySettings.asyncUploadBufferSize = 16;    // MB, kept for the session: the largest texture (the coast atlas, ~10 MB) fits, and Unity grows it for a bigger one
             QualitySettings.asyncUploadPersistentBuffer = true;
 
             nativeShort = Mathf.Min(Screen.width, Screen.height);

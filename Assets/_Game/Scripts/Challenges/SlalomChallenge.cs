@@ -1,4 +1,3 @@
-using DribbleToSchool.Localization;
 using UnityEngine;
 
 namespace DribbleToSchool.Challenges
@@ -20,7 +19,7 @@ namespace DribbleToSchool.Challenges
 
         public override string StatusText
         {
-            get { return Loc.F("challenge.status.slalom", passed, gates != null ? gates.Length : 0, missed, FormatScore(Score)); }
+            get { return CachedStatus("challenge.status.slalom", passed, gates != null ? gates.Length : 0, missed, Score); }
         }
 
         public override string FormatScore(int score)

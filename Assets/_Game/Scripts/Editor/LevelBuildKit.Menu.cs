@@ -79,6 +79,7 @@ namespace DribbleToSchool.EditorTools
             var field = StreetBuilder.Solid(scenery.transform, "Field", new Vector3(-250f, -0.25f, -216f), new Vector3(800f, 0.3f, 400f),
                 new Color(0.62f, 0.72f, 0.52f), Art.surfaces[ProceduralArt.Surface.Grass]);
             field.faces = MeshBuilder.Faces.Top;
+            StreetBuilder.NoShadowCast(field);   // the lowest ground in the shot: its shadow falls on nothing
             field.Rebuild();
             scenery.AddComponent<StaticBatcher>();
 

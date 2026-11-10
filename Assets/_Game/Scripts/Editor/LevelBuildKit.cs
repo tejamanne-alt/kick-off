@@ -958,7 +958,9 @@ namespace DribbleToSchool.EditorTools
                 cloud.seed = rng.Next();
                 cloud.width = 60f + (float)rng.NextDouble() * 90f;
                 cloud.height = cloud.width * (0.28f + (float)rng.NextDouble() * 0.16f);   // broad, flat-bottomed banks
-                go.GetComponent<MeshRenderer>().sharedMaterial = Art.cloud;
+                var cloudRenderer = go.GetComponent<MeshRenderer>();
+                cloudRenderer.sharedMaterial = Art.cloud;
+                cloudRenderer.receiveShadows = false;   // hundreds of metres away, far past the shadow distance
                 cloud.Rebuild();
             }
             clouds.gameObject.AddComponent<StaticBatcher>();

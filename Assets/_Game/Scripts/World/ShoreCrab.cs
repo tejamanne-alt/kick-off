@@ -108,8 +108,7 @@ namespace DribbleToSchool.World
 
             yaw = Mathf.SmoothDampAngle(yaw, targetYaw, ref yawVelocity, 0.25f);
             float y = GroundY(x, baseY) - sink + lift;
-            transform.position = new Vector3(x, y, transform.position.z);
-            transform.rotation = Quaternion.Euler(0f, yaw, rock);
+            transform.SetPositionAndRotation(new Vector3(x, y, transform.position.z), Quaternion.Euler(0f, yaw, rock));
             // Claws: a lazy wave while it waits, snapping as it runs.
             clawPhase += dt * (state == State.Scuttle ? 9f : 2.6f);
             float wave = state == State.Scuttle ? 12f : 22f;

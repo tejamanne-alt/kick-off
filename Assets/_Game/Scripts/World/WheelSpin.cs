@@ -20,8 +20,9 @@ namespace DribbleToSchool.World
 
         void LateUpdate()
         {
-            Vector3 delta = transform.position - lastPosition;
-            lastPosition = transform.position;
+            Vector3 at = transform.position;
+            Vector3 delta = at - lastPosition;
+            lastPosition = at;
             if (wheels == null || delta.sqrMagnitude < 1e-8f) return;
             float angle = delta.magnitude / Mathf.Max(radius, 0.05f) * Mathf.Rad2Deg;
             foreach (var wheel in wheels)

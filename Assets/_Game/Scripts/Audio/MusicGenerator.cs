@@ -40,7 +40,10 @@ namespace DribbleToSchool.Audio
         /// <summary>The loop for a place, in the style of the country its streets are in.</summary>
         public static float[] Generate(Soundscape scape, MusicCountry country)
         {
-            return Arrange(country == MusicCountry.California ? StyleOf(scape) : JapanStyleOf(scape));
+            // (the mix's work buffers are reused as it renders: Mixdown's Scratch)
+            Scratch.Begin();
+            try { return Arrange(country == MusicCountry.California ? StyleOf(scape) : JapanStyleOf(scape)); }
+            finally { Scratch.End(); }
         }
 
         // ================= Styles =================

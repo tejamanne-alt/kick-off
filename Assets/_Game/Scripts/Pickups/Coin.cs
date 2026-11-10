@@ -208,10 +208,10 @@ namespace DribbleToSchool.Pickups
 
         void Update()
         {
+            Vector3 at = transform.position;
             if (!Collected && KidReach())
             {
-                Vector2 p = transform.position;
-                if (Mathf.Abs(p.x - reachFeet.x) <= reachHalfWidth + radius && p.y >= reachFeet.y - radius && p.y <= reachTop + radius * 0.5f)
+                if (Mathf.Abs(at.x - reachFeet.x) <= reachHalfWidth + radius && at.y >= reachFeet.y - radius && at.y <= reachTop + radius * 0.5f)
                     TryCollect();
             }
             if (visual == null) return;
@@ -225,7 +225,13 @@ namespace DribbleToSchool.Pickups
                 visual.localScale = Vector3.one * (1f - t);
                 resize = true;
                 visual.localRotation = Quaternion.Euler(0f, Time.time * 900f + phase * 57f, 0f);
-                if (t >= 1f) visual.gameObject.SetActive(false);
+                if (t >= 1f)
+                {
+                    visual.gameObject.SetActive(false);
+                    // Nothing moves until the level restarts: ResetState switches the coin back on (LevelManager finds and
+                    // resets it whether it is enabled or not).
+                    enabled = false;
+                }
                 return;
             }
             if (resize)
@@ -236,7 +242,6 @@ namespace DribbleToSchool.Pickups
             // Well off screen the spin and the bob are skipped (a level has hundreds of coins, and each wrote two transforms
             // every frame): both follow the clock alone, so a coin is posed exactly right again the frame it comes back
             // into view, the magnet's pull included. Without a camera every coin animates, as before.
-            Vector3 at = transform.position;
             if (World.AmbientView.Valid && !World.AmbientView.InViewX(at.x, at.z, RestBeyond)) return;
             // A real 3D spin about the vertical axis.
             visual.localRotation = Quaternion.Euler(0f, (Time.time * 4f + phase) * Mathf.Rad2Deg, 0f);
@@ -246,6 +251,7 @@ namespace DribbleToSchool.Pickups
         public void ResetState()
         {
             Collected = false;
+            enabled = true;
             GetComponent<Collider2D>().enabled = true;
             if (visual != null)
             {

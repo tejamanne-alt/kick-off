@@ -65,6 +65,42 @@ namespace DribbleToSchool.FrontEnd
         /// <summary>The shot the camera is in or easing toward.</summary>
         public MenuShot Shot { get { return shot; } }
 
+        /// <summary>
+        /// True while a screen hides the whole view under something opaque (the map's mat): the camera then draws
+        /// nothing, no shadows, no filter, only a clear, and is put back as it was when that screen goes. The street
+        /// and the teen go on moving, so they are exactly where they would have been.
+        /// </summary>
+        public bool Covered
+        {
+            get { return covered; }
+            set
+            {
+                if (value == covered || cam == null) return;
+                covered = value;
+                if (covered)
+                {
+                    coveredMask = cam.cullingMask;
+                    coveredClear = cam.clearFlags;
+                    cam.cullingMask = 0;
+                    cam.clearFlags = CameraClearFlags.SolidColor;
+                    var post = cam.GetComponent<World.PostFX>();
+                    if (post != null && post.enabled) { post.enabled = false; pausedPost = post; }
+                }
+                else
+                {
+                    cam.cullingMask = coveredMask;
+                    cam.clearFlags = coveredClear;
+                    if (pausedPost != null) pausedPost.enabled = true;
+                    pausedPost = null;
+                }
+            }
+        }
+
+        bool covered;
+        int coveredMask;
+        CameraClearFlags coveredClear;
+        World.PostFX pausedPost;
+
         void Awake()
         {
             Current = this;

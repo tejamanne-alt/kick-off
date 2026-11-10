@@ -50,11 +50,16 @@ namespace DribbleToSchool.EditorTools
             return v.Length > 0 && v.IndexOf('.') < 0 ? v + ".0" : v;
         }
 
-        /// <summary>Raises Player Settings' iOS target to <see cref="IosMinimumVersion"/> (never lowers it).</summary>
+        /// <summary>
+        /// Raises Player Settings' iOS target to <see cref="IosMinimumVersion"/> (never lowers it), and switches off the
+        /// accelerometer, which nothing reads (the game takes touches, the mouse and keys through the Input System):
+        /// left at Unity's 60 Hz, an iPhone sampled it all game long.
+        /// </summary>
         public static void ApplyIosMinimum()
         {
             if (OlderThan(PlayerSettings.iOS.targetOSVersionString, IosMinimumVersion))
                 PlayerSettings.iOS.targetOSVersionString = IosMinimumVersion;
+            if (PlayerSettings.accelerometerFrequency != 0) PlayerSettings.accelerometerFrequency = 0;
         }
 
         const string IconPath = LevelBuildKit.Root + "/Art/Generated/AppIcon.png";
@@ -475,6 +480,12 @@ namespace DribbleToSchool.EditorTools
             }
             Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(location)) ?? BuildRoot);
 
+            // LZ4 data (LZ4HC for the builds that ship or are tested, plain LZ4 for the quicker development build): on
+            // Android only LZ4 builds use the async upload pipeline (Unity's "Texture and mesh loading"), so with the
+            // default ZIP every texture went up in the frame its scene came in, mid-run in the Holiday Run, and the
+            // asyncUpload settings (Core/GraphicsQuality) did nothing. LZ4 also unpacks faster than ZIP at every load.
+            if ((options & (BuildOptions.CompressWithLz4 | BuildOptions.CompressWithLz4HC)) == 0)
+                options |= (options & BuildOptions.Development) != 0 ? BuildOptions.CompressWithLz4 : BuildOptions.CompressWithLz4HC;
             var report = BuildPipeline.BuildPlayer(new BuildPlayerOptions
             {
                 scenes = scenes,

@@ -29,11 +29,17 @@ namespace DribbleToSchool.Hazards
         void LateUpdate()
         {
             amount = Mathf.MoveTowards(amount, DarkZone.Wanted, fadeSpeed * Time.deltaTime);
+            // Out of the underpass (most of every level) it stays hidden, with nothing to write.
+            if (amount <= 0.001f)
+            {
+                if (sr.enabled) sr.enabled = false;
+                return;
+            }
             Color c = sr.color;
             c.a = amount;
             sr.color = c;
-            sr.enabled = amount > 0.001f;
-            if (!sr.enabled || follow == null) return;
+            if (!sr.enabled) sr.enabled = true;
+            if (follow == null) return;
 
             // The sprite is a 2x2-unit square; scale it to cover the whole view.
             Vector3 target = new Vector3(follow.position.x, follow.position.y + 0.3f, 0f);

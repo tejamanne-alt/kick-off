@@ -78,9 +78,8 @@ namespace DribbleToSchool.World
 
             float wantYaw = YawToward(Mathf.Cos(heading), Mathf.Sin(heading));
             yaw = Mathf.SmoothDampAngle(yaw, wantYaw, ref yawVelocity, 0.12f);
-            transform.position = new Vector3(x, y, z);
             // Banking into its turns, the body pitching a little with each beat.
-            transform.rotation = Quaternion.Euler(Mathf.Clamp(-turn * 7f, -16f, 16f), yaw, Mathf.Sin(flap * 0.5f) * 5f);
+            transform.SetPositionAndRotation(new Vector3(x, y, z), Quaternion.Euler(Mathf.Clamp(-turn * 7f, -16f, 16f), yaw, Mathf.Sin(flap * 0.5f) * 5f));
             // Wings: 0 (flat) to 80 degrees up, fast.
             float beat = 38f + 38f * Mathf.Sin(flap);
             wingL.Set(beat);

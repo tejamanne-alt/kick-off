@@ -62,6 +62,10 @@ namespace DribbleToSchool.Hazards
         public event System.Action<Light> LightChanged;
 
         float time;
+        // What was last written, so a frame that changes nothing writes nothing: the signal's two figures (-1: not yet
+        // written) and each car's z (NaN: not yet placed). Most of the cycle the queue stands still at the stop line.
+        int shownFigures = -1;
+        float[] placedZ;
 
         void Awake()
         {
@@ -73,6 +77,8 @@ namespace DribbleToSchool.Hazards
         {
             time = phaseOffset;
             Current = Evaluate(time);
+            shownFigures = -1;
+            if (placedZ != null) for (int i = 0; i < placedZ.Length; i++) placedZ[i] = float.NaN;
             ApplyVisuals();
         }
 
@@ -100,12 +106,22 @@ namespace DribbleToSchool.Hazards
         void ApplyVisuals()
         {
             bool flashOn = Mathf.Repeat(time * 3f, 1f) < 0.55f;
-            if (greenFigure != null)
-                greenFigure.color = Current == Light.Green || (Current == Light.Amber && flashOn) ? new Color(0.35f, 1f, 0.5f) : figureOff;
-            if (redFigure != null)
-                redFigure.color = Current == Light.Red ? new Color(1f, 0.32f, 0.28f) : figureOff;
+            bool greenOn = Current == Light.Green || (Current == Light.Amber && flashOn), redOn = Current == Light.Red;
+            int figures = (greenOn ? 1 : 0) | (redOn ? 2 : 0);
+            if (figures != shownFigures)
+            {
+                shownFigures = figures;
+                if (greenFigure != null) greenFigure.color = greenOn ? new Color(0.35f, 1f, 0.5f) : figureOff;
+                if (redFigure != null) redFigure.color = redOn ? new Color(1f, 0.32f, 0.28f) : figureOff;
+            }
 
             if (cars == null) return;
+            if (placedZ == null || placedZ.Length != cars.Length)
+            {
+                placedZ = new float[cars.Length];
+                for (int i = 0; i < placedZ.Length; i++) placedZ[i] = float.NaN;
+            }
+            float x = transform.position.x;
             float c = Mathf.Repeat(time, CycleLength);
             float waitTime = greenTime + amberTime;
             for (int i = 0; i < cars.Length; i++)
@@ -126,13 +142,11 @@ namespace DribbleToSchool.Hazards
                     float u = Mathf.Clamp01((k - i * 0.3f) / 0.65f);
                     z = Mathf.Lerp(queueZ, exitZ, u * u);
                 }
-                PlaceCar(cars[i], z);
+                // (NaN never equals anything, so a car not yet placed always is)
+                if (z == placedZ[i]) continue;
+                placedZ[i] = z;
+                cars[i].position = new Vector3(x, groundY, z);
             }
-        }
-
-        void PlaceCar(Transform car, float z)
-        {
-            car.position = new Vector3(transform.position.x, groundY, z);
         }
 
         static float Smooth(float u) { return u * u * (3f - 2f * u); }

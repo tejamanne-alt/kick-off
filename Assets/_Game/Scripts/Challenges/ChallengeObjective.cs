@@ -29,6 +29,33 @@ namespace DribbleToSchool.Challenges
         /// <summary>How the score reads on the results screen.</summary>
         public virtual string FormatScore(int score) { return score.ToString(); }
 
+        // The HUD reads StatusText ten times a second; the line is built again only when a number in it, or the language,
+        // has changed (each build boxed its numbers and made a new string).
+        string status, statusKey, statusLanguage;
+        int statusA, statusB, statusC, statusD;
+        bool statusScored;
+
+        /// <summary>Loc.F(key, a, b, c), kept while a, b, c and the language are unchanged.</summary>
+        protected string CachedStatus(string key, int a, int b, int c) { return Cached(key, a, b, c, 0, false); }
+
+        /// <summary>Loc.F(key, a, b, c, FormatScore(score)), kept while they and the language are unchanged.</summary>
+        protected string CachedStatus(string key, int a, int b, int c, int score) { return Cached(key, a, b, c, score, true); }
+
+        string Cached(string key, int a, int b, int c, int d, bool scored)
+        {
+            string language = Localization.Loc.Current;
+            if (status == null || key != statusKey || language != statusLanguage || scored != statusScored ||
+                a != statusA || b != statusB || c != statusC || d != statusD)
+            {
+                status = scored ? Localization.Loc.F(key, a, b, c, FormatScore(d)) : Localization.Loc.F(key, a, b, c);
+                statusKey = key;
+                statusLanguage = language;
+                statusScored = scored;
+                statusA = a; statusB = b; statusC = c; statusD = d;
+            }
+            return status;
+        }
+
         public int StarsFor(int score)
         {
             int stars = 0;

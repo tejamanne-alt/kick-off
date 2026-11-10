@@ -187,7 +187,8 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
 
 **B5. Runtime audio synthesis spikes.**
 - *What:* each scene change generated 1.5 to 4 s of audio on two threads, made about 100 MB of garbage, and uploaded 10 to 13 MB of clips in one frame.
-- *Fix (partial):* one clip upload per frame.
+- *Fix (partial):* one clip upload per frame. Then (B8) the generators reuse their work buffers, and the cues' samples are
+  let go once uploaded.
 - *Still to do:* bake the loops offline.
 - *Rule:* never synthesize or upload large assets while a level runs. Spread uploads over frames.
 
@@ -207,6 +208,37 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
 **B7. Build size.**
 - *What:* the APK reached 854 MB. The `_CA` scenes double the level scenes.
 - *Rule:* review build size every release. Share assets between skins instead of copying them.
+
+**B8. Work nobody sees, and memory nobody frees (November 2026 audit, generated content v117).**
+- *What:* a four-part audit (gameplay scripts; UI, audio and co-op; GPU; loading, memory and builds) found costs paid
+  for nothing:
+  - **Off screen or at rest:** about 45 breaking-wave crests per beach level, the tide washes (a mesh rebuilt and
+    re-uploaded every frame each), crossings' signals and cars, fountains, springboards, the underpass darkness and
+    collected coins all wrote their transforms, colours or meshes every frame, in view or not, changed or not.
+  - **Hidden:** the map screen's opaque mat hid the whole 3D menu street, which still drew every frame with its
+    shadows and filter (3 to 6 ms of GPU with a filter, est.). The story HUD drew an alpha-0 full-screen fade every
+    frame. The sky dome was shaded under every street pixel before they covered it.
+  - **Rebuilt per frame:** the challenge status line (a new string 10 times a second), the coach card's signature
+    string and rect, the Holiday HUD's button rects, the co-op join list (rebuilt about twice a second because the raw
+    signal strength jitters, though it only shows three words), and the touch layout (5 times a frame).
+  - **Main-thread I/O:** each analytics event opened and appended to its file in the frame it happened.
+  - **Garbage:** the music and ambience generators threw away whole-loop buffers voice after voice (Market: 170 MB
+    of garbage a visit, six visits a Holiday Run lap), and kept every cue's samples after Unity had its own copy.
+  - **Leaks:** a Holiday Run stage's combined street mesh and its tide meshes belong to no scene, so unloading the
+    stage left them in memory: a lap's worth more each day of the run.
+  - **Builds:** the scripted builds were ZIP-compressed, so on Android no texture or mesh used the async upload
+    pipeline, and the `asyncUpload` settings did nothing.
+- *Why:* each was written to be correct, and nobody asked what it cost when nothing changes or nothing shows. B6's
+  rule had been applied where the cost was noticed, not everywhere.
+- *Fix:* see PROGRESS "The audit: work nobody sees" for the full list. Each change keeps what is drawn and played
+  exactly the same: the audio generators were checked sample for sample (SHA-256 of all 95 clips before and after),
+  every rest test is on a pose that follows the clock alone, and what a covered screen hides is opaque.
+- *Rule:*
+  - Every per-frame script asks two questions: what if nothing changed, and what if it isn't on screen? Rest on a pose
+    that follows the clock alone (so it is exact on return), write on change, and skip what a covering screen hides.
+  - Whatever is created at runtime (a mesh, a combined batch, a texture) is destroyed by whoever made it: scene
+    unloads don't free it, and an additive scene never calls `UnloadUnusedAssets`.
+  - A change to generated sound is checked bit for bit against the old output (the harness in PROGRESS).
 
 ## C. Characters
 

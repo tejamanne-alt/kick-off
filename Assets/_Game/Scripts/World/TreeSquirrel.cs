@@ -198,8 +198,7 @@ namespace DribbleToSchool.World
             float smooth = state == State.Dash ? 0.08f : 0.15f;
             yaw = Mathf.SmoothDampAngle(yaw, targetYaw, ref yawVelocity, smooth);
             pitch = Mathf.SmoothDamp(pitch, targetPitch, ref pitchVelocity, state == State.Climb ? 0.08f : 0.1f);
-            transform.position = new Vector3(x, y, z);
-            transform.rotation = Quaternion.Euler(0f, yaw, pitch);
+            transform.SetPositionAndRotation(new Vector3(x, y, z), Quaternion.Euler(0f, yaw, pitch));
             // Flicks of the tail: up and back, then settling.
             float k = (Time.time - flickStart) / 0.35f;
             float flick = k >= 0f && k <= 1f ? Mathf.Sin(k * Mathf.PI) * 24f : 0f;

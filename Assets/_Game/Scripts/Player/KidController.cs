@@ -271,7 +271,10 @@ namespace DribbleToSchool.Player
                 Collider2D hit = groundHits[i];
                 if (!IsSolidToKid(hit)) continue;
                 IsGrounded = true;
-                var surface = hit.GetComponentInParent<IMovingSurface>();
+                // A moving surface carries its own body (IMovingSurface), so static ground, which has none, needs no
+                // search up its parents every physics step.
+                var body = hit.attachedRigidbody;
+                var surface = body != null ? body.GetComponent<IMovingSurface>() : null;
                 if (surface != null) GroundVelocity = surface.SurfaceVelocity;
                 return;
             }

@@ -122,9 +122,13 @@ namespace DribbleToSchool.Ball
         void IgnoreKid()
         {
             if (kid == null) return;
-            foreach (var c in kid.GetComponentsInChildren<Collider2D>())
-                Physics2D.IgnoreCollision(Circle, c, true);
+            // (into a reused list: this runs twice a slide)
+            kid.GetComponentsInChildren(kidColliders);
+            for (int i = 0; i < kidColliders.Count; i++) Physics2D.IgnoreCollision(Circle, kidColliders[i], true);
+            kidColliders.Clear();
         }
+
+        static readonly System.Collections.Generic.List<Collider2D> kidColliders = new System.Collections.Generic.List<Collider2D>();
 
         /// <summary>Push tuning values onto the rigidbody and material. Safe to call at runtime.</summary>
         public void ApplyTuning()

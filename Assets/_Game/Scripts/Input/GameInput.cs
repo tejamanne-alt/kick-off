@@ -265,7 +265,22 @@ namespace DribbleToSchool.InputHandling
             };
         }
 
-        ControlLayout Current { get { return LayoutOn(Screen.width, Screen.height, Screen.safeArea, GameSettings.LeftHanded); } }
+        // (worked out once a frame: the HUD, the camera and this script read it about five times a frame, and it only changes
+        // with the screen, the safe area or the left-handed setting)
+        ControlLayout currentLayout;
+        int currentLayoutFrame = -1;
+        ControlLayout Current
+        {
+            get
+            {
+                if (currentLayoutFrame != Time.frameCount)
+                {
+                    currentLayout = LayoutOn(Screen.width, Screen.height, Screen.safeArea, GameSettings.LeftHanded);
+                    currentLayoutFrame = Time.frameCount;
+                }
+                return currentLayout;
+            }
+        }
 
         /// <summary>
         /// How much the layout shrinks so the stick's area and the buttons fit side by side: 1 on phones and tablets
@@ -321,8 +336,12 @@ namespace DribbleToSchool.InputHandling
         // (in the picture's pixels: the panel's dots per inch, scaled with the 3D picture's resolution; Core/GraphicsQuality)
         float Dpi { get { return DribbleToSchool.Core.GraphicsQuality.TouchDpi; } }
 
+        /// <summary>"No finger with this id this frame": made once, as a lambda that uses the instance would be a new delegate every frame.</summary>
+        System.Predicate<int> notSampled;
+
         void Awake()
         {
+            notSampled = id => !ContainsSample(id);
             // One per scene; during a scene load the newest instance takes over.
             Instance = this;
             if (worldCamera == null) worldCamera = Camera.main;
@@ -364,7 +383,7 @@ namespace DribbleToSchool.InputHandling
                 OnPointerUp(pointers[id]);
                 pointers.Remove(id);
             }
-            ignored.RemoveWhere(id => !ContainsSample(id));
+            ignored.RemoveWhere(notSampled);
 
             foreach (var s in samples)
             {

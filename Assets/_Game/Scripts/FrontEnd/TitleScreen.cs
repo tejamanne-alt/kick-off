@@ -242,6 +242,7 @@ namespace DribbleToSchool.FrontEnd
             starsLabel.text = Loc.F("menu.stars", got, total);
             RefreshPlayer();
             ShowHolidayBest();
+            ChapterMapScreen.Preload();   // PLAY opens the map: its picture is read in the background meanwhile
         }
 
         public override void FrameStage(MenuStage stage)

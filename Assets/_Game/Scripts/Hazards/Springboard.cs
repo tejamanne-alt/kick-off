@@ -20,6 +20,8 @@ namespace DribbleToSchool.Hazards
         readonly Dictionary<Rigidbody2D, float> lastLaunch = new Dictionary<Rigidbody2D, float>();
         float squashTime = -10f;
         Vector3 visualBaseScale = Vector3.one;
+        // Set once the pad is back at its own scale: nothing to write until the next bounce.
+        bool atRest;
 
         void Awake()
         {
@@ -53,6 +55,9 @@ namespace DribbleToSchool.Hazards
         {
             if (visual == null) return;
             float t = Mathf.Clamp01((Time.time - squashTime) / 0.3f);
+            if (t < 1f) atRest = false;
+            else if (atRest) return;
+            else atRest = true;   // (this frame writes the rest scale: the squash is exactly 0 at t = 1)
             float squash = Mathf.Sin(t * Mathf.PI) * 0.35f * (1f - t);
             visual.localScale = new Vector3(visualBaseScale.x * (1f + squash), visualBaseScale.y * (1f - squash), visualBaseScale.z);
         }

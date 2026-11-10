@@ -386,6 +386,8 @@ namespace DribbleToSchool.Audio
                 var cue = uploading.cues[uploadingCue];
                 using (MusicUploadMarker.Auto())
                     uploading.cueClips[uploadingCue] = Stereo("cue_" + cue.name, cue.clip);
+                // Unity has its own copy now, and only cueClips is played: the samples (up to 8 MB a place) go.
+                cue.clip = null;
                 uploadingCue++;
             }
             if (uploadingCue < uploading.cues.Length) return;
