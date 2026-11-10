@@ -1,6 +1,6 @@
 // Lists every Unity API (type and member) the project's scripts use, resolved by Roslyn against Unity reference assemblies:
 // one line per use, "Type.Member<TAB>file:line<TAB>full signature<TAB>namespace". With WARNINGS=1 it lists the compiler's
-// warnings instead. Used by run.sh (README.md there).
+// warnings instead; with ERRORS=1, the parser's syntax errors (SYNTAX) and the compiler's errors (ERROR). Used by run.sh (README.md there).
 //   dotnet apiscan.dll <Assets dir> <UnityEngine.dll;UnityEditor.dll> <stubs dir> <defines; separated>
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -15,6 +15,16 @@ var netRefs = ((string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES")).Split(
     .Select(p => MetadataReference.CreateFromFile(p));
 var comp = CSharpCompilation.Create("scan", trees, netRefs.Concat(refs.Select(r => MetadataReference.CreateFromFile(r))),
     new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, allowUnsafe: true));
+if (Environment.GetEnvironmentVariable("ERRORS") == "1")
+{
+    // syntax errors (the parser's: they never depend on references), then the compiler's errors, all in the project's files
+    foreach (var t in trees.Where(t => !t.FilePath.StartsWith(stubs)))
+        foreach (var d in t.GetDiagnostics().Where(d => d.Severity == DiagnosticSeverity.Error))
+            Console.WriteLine($"SYNTAX\t{d.Id}\t{Path.GetRelativePath(project, t.FilePath)}:{d.Location.GetLineSpan().StartLinePosition.Line + 1}\t{d.GetMessage()}");
+    foreach (var d in comp.GetDiagnostics().Where(d => d.Severity == DiagnosticSeverity.Error && d.Location.SourceTree != null && !d.Location.SourceTree.FilePath.StartsWith(stubs)))
+        Console.WriteLine($"ERROR\t{d.Id}\t{Path.GetRelativePath(project, d.Location.SourceTree.FilePath)}:{d.Location.GetLineSpan().StartLinePosition.Line + 1}\t{d.GetMessage()}");
+    return;
+}
 if (Environment.GetEnvironmentVariable("WARNINGS") == "1")
 {
     foreach (var d in comp.GetDiagnostics().Where(d => d.Severity == DiagnosticSeverity.Warning && !d.Location.SourceTree.FilePath.StartsWith(stubs)))

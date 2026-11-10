@@ -1,5 +1,9 @@
 # Unity API check: what a newer Unity refuses to compile
 
+`run.sh` checks two things, and exits with an error if either fails:
+- every script parses under every combination of the `#if` symbols the scripts use, the tests included;
+- no Unity API the scripts use is an error in the given Unity version.
+
 The repository's compile checks run against Unity 2021's reference assemblies, since no Unity 6 references are
 published. So an API that a newer Unity has removed compiles "clean" there and only fails in the user's editor.
 `Object.GetInstanceID()`, an error from Unity 6.5, put the editor into Safe Mode that way (`docs/LEARNINGS.md` A11).
@@ -25,8 +29,13 @@ How it works:
   parameter count, and prints the project's uses of the ones that are errors (`true`).
   - Uses of another overload (another parameter count) are left out.
   - A line can still be a different type's member of the same name, so check the signature it prints.
-- `run.sh`: fetches both inputs into `/tmp/unity_api_check` (or `$UNITY_API_CHECK_WORK`), builds `apiscan` and runs both
-  steps. It needs dotnet 8, Python 3, git and curl.
+- With `ERRORS=1`, `apiscan` prints the parser's syntax errors (`SYNTAX`) and the compiler's errors (`ERROR`) instead.
+  `run.sh` fails on any `SYNTAX` line. A file behind an `#if` that no symbol set defines is never parsed, which is how
+  a broken test reached the user (`docs/LEARNINGS.md` A12). The `ERROR` lines include the stand-ins' expected misses, so
+  compare them with a clean tree's.
+- `run.sh`: fetches the inputs (the reference assemblies, NUnit for the tests, the reference source) into
+  `/tmp/unity_api_check` (or `$UNITY_API_CHECK_WORK`), builds `apiscan` and runs all three steps. It needs dotnet 8,
+  Python 3, git and curl.
 
 What it can't see:
 - APIs that didn't exist in Unity 2021 resolve to nothing. They are newer than the removals so far, but a Unity 7 might
