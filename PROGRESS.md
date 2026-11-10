@@ -1322,6 +1322,13 @@ The user asked for a check on every character, playable and not.
 - **Checked:** no syntax or new compile errors in any `#if` combination, no warnings, `unity_api_check` 6000.5 clean.
   **Not run in Unity:** build an APK with Unity's Build button and look for "[Build] APK version code" in the console.
 
+## Image prompts for a Florida add-on (docs only)
+
+- **`docs/IMAGE_PROMPTS.md`**: copy-paste ChatGPT prompts for the reference images a new add-on town is modelled from. It has a base prompt for any place (the side-scroller's straight-on camera and empty play lane, the game's midday cobalt light, no people, invented signs), a Florida block (A1A beach-town Art Deco and MiMo, concrete-block ranch houses, hurricane shutters, sabal palms, concrete poles, span-wire signals) and one shot per chapter, with the six supplied street illustrations as F3-1 to F3-6, plus props, plants and texture-plate sheets.
+- **Photorealistic, lit like the game:** the images are modelling references for script-built Blender kits; the toon look comes from the shaders and grade. The supplied illustrations are used for content and layout only (they are a sunset).
+- **Add-ons:** none for Blender (`bpy` scripts) or Unity (built-in pipeline, own shaders).
+- No game code or assets changed; the Florida add-on itself (`_FL` scenes, its kit) is not built.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.
