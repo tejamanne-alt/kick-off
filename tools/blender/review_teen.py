@@ -21,7 +21,7 @@ kid = bpy.data.objects['Kid']; rig = bpy.data.objects['KidRig']
 
 # The game's toon shading (ToonCharacter.shader with WorldLook's daylight), as shader nodes:
 #   lit  = smoothstep(-0.02, 0.06, N.L)
-#   col  = albedo * lerp(shade, sun, lit) + rim * 0.22 * sun
+#   col  = albedo * lerp(shade, sun, lit) + rim * 0.22 * sun * lerp(albedo, 1, 0.45 * max(albedo))
 SUN = (1.0, 0.97, 0.92)
 SHADE = tuple(0.25 * a + 0.75 * b for a, b in zip((0.68, 0.7, 0.88), (0.52, 0.56, 0.66)))
 mat = kid.data.materials[0]; nt = mat.node_tree
@@ -38,11 +38,11 @@ band.inputs['A'].default_value = SHADE + (1,); band.inputs['B'].default_value = 
 nt.links.new(lit.outputs['Result'], band.inputs['Factor'])
 m2 = nt.nodes.new('ShaderNodeMix'); m2.data_type = 'RGBA'; m2.blend_type = 'MULTIPLY'; m2.inputs['Factor'].default_value = 1
 nt.links.new(mix.outputs['Result'], m2.inputs['A']); nt.links.new(band.outputs['Result'], m2.inputs['B'])
-# rim: smoothstep(0.6, 0.76, 1 - N.V) * lerp(0.4, 1, saturate(N.L + 0.35))
+# rim: smoothstep(0.66, 0.8, 1 - N.V) * lerp(0.4, 1, saturate(N.L + 0.35)), tinted as ToonCharacter's
 ndv = nt.nodes.new('ShaderNodeVectorMath'); ndv.operation = 'DOT_PRODUCT'
 nt.links.new(geo.outputs['Normal'], ndv.inputs[0]); nt.links.new(geo.outputs['Incoming'], ndv.inputs[1])
 rim = nt.nodes.new('ShaderNodeMapRange'); rim.interpolation_type = 'SMOOTHSTEP'
-rim.inputs['From Min'].default_value = 0.4; rim.inputs['From Max'].default_value = 0.24
+rim.inputs['From Min'].default_value = 0.34; rim.inputs['From Max'].default_value = 0.2
 rim.inputs['To Min'].default_value = 0.0; rim.inputs['To Max'].default_value = 1.0
 nt.links.new(ndv.outputs['Value'], rim.inputs['Value'])
 side = nt.nodes.new('ShaderNodeMapRange'); side.inputs['From Min'].default_value = -0.35; side.inputs['From Max'].default_value = 0.65
@@ -53,8 +53,17 @@ nt.links.new(rim.outputs['Result'], rk.inputs[0]); nt.links.new(side.outputs['Re
 RIM = float(os.environ.get('REVIEW_RIM', '0.22'))
 rk2 = nt.nodes.new('ShaderNodeMath'); rk2.operation = 'MULTIPLY'; rk2.inputs[1].default_value = RIM
 nt.links.new(rk.outputs[0], rk2.inputs[0])
+# the rim's colour, as ToonCharacter: the albedo whitened by 45% of its lightness (its brightest channel), times the sun
+_sep = nt.nodes.new('ShaderNodeSeparateColor'); nt.links.new(mix.outputs['Result'], _sep.inputs['Color'])
+_m1 = nt.nodes.new('ShaderNodeMath'); _m1.operation = 'MAXIMUM'; nt.links.new(_sep.outputs[0], _m1.inputs[0]); nt.links.new(_sep.outputs[1], _m1.inputs[1])
+_m2 = nt.nodes.new('ShaderNodeMath'); _m2.operation = 'MAXIMUM'; nt.links.new(_m1.outputs[0], _m2.inputs[0]); nt.links.new(_sep.outputs[2], _m2.inputs[1])
+_fk = nt.nodes.new('ShaderNodeMath'); _fk.operation = 'MULTIPLY'; _fk.inputs[1].default_value = 0.45; nt.links.new(_m2.outputs[0], _fk.inputs[0])
+_tint = nt.nodes.new('ShaderNodeMix'); _tint.data_type = 'RGBA'; nt.links.new(_fk.outputs[0], _tint.inputs['Factor'])
+nt.links.new(mix.outputs['Result'], _tint.inputs['A']); _tint.inputs['B'].default_value = (1, 1, 1, 1)
+_tsun = nt.nodes.new('ShaderNodeMix'); _tsun.data_type = 'RGBA'; _tsun.blend_type = 'MULTIPLY'; _tsun.inputs['Factor'].default_value = 1
+nt.links.new(_tint.outputs['Result'], _tsun.inputs['A']); _tsun.inputs['B'].default_value = SUN + (1,)
 add = nt.nodes.new('ShaderNodeMix'); add.data_type = 'RGBA'; add.blend_type = 'ADD'
-add.inputs['B'].default_value = SUN + (1,)
+nt.links.new(_tsun.outputs['Result'], add.inputs['B'])
 nt.links.new(rk2.outputs[0], add.inputs['Factor']); nt.links.new(m2.outputs['Result'], add.inputs['A'])
 em = nt.nodes.new('ShaderNodeEmission'); nt.links.new(add.outputs['Result'], em.inputs['Color'])
 nt.links.new(em.outputs[0], nt.nodes['Material Output'].inputs['Surface'])

@@ -14,7 +14,9 @@
 #   - each brow keeps its own outline, filled with one dark brown (its own darkest colour, warmed toward the hair's);
 #   - the parting of the lips is darkened along its own curve; the lips keep their colour;
 #   - the skin is flattened (an edge-preserving filter, then halfway toward its own smooth tone), so the scan's pores and
-#     blotches go and the features stand out on an even tone, as on Max.
+#     blotches go and the features stand out on an even tone, as on Max;
+#   - where one eye was scanned worse than the other (Mia's right: docs/LEARNINGS.md C18), the kid's style mirrors the good
+#     eye across the middle of the face into its place first (mirror_eye), and there the result is written as it is.
 # The work happens in a front view of the head (face_paint.Head: every atlas texel placed in 3D), and only the change is
 # carried back to the atlas texels (divided by the vertex colour the game multiplies by), so whatever is not changed
 # keeps the atlas' own sharpness. No vertex moves.
@@ -35,7 +37,10 @@ INK = (36, 24, 28)
 STYLES = {
     'PrimaryBoy': dict(lash=0.9, flick=0.0, taper=0.55),
     'PrimaryBoy2': dict(lash=0.95, flick=0.0, taper=0.55),
-    'PrimaryGirl': dict(lash=1.05, flick=0.45, taper=0.0),
+    # Mia's own right eye (the one on the left as we look at her) was scanned narrower and squinting: it is replaced by her
+    # left eye, mirrored across the middle of the face (mirror_eye: which of the canvas' eyes is replaced; the canvas
+    # looks at the face from the front with the kid's right on its right, so 1 is the kid's right eye)
+    'PrimaryGirl': dict(lash=1.05, flick=0.45, taper=0.0, mirror_eye=1),
     'PrimaryGirl2': dict(lash=1.05, flick=0.45, taper=0.0),
 }
 
@@ -115,10 +120,28 @@ def finish(head, name, spec):
     st = STYLES[name]
     img, filled = fp.front_view(head)
     img = img.astype(np.float32)
+    before = img.copy()
     skin, _ = fp.smooth_skin(head)
+    D = spec['d']
+    replace = np.zeros((C, C), np.float32)       # where the result is written as it is, not as a change
+    if st.get('mirror_eye') is not None:
+        # one eye replaced by the other mirrored across the middle between them (blended in over a soft oval that
+        # reaches the lids, not the brow), before anything else reads it, so the lines are drawn round the new eye
+        k = st['mirror_eye']
+        (tx, ty), (sx, sy) = spec['eyes'][k], spec['eyes'][1 - k]
+        src = np.clip(np.round(tx + sx - np.arange(C)).astype(int), 0, C - 1)
+        # (the front view's small holes, where no texel landed, filled from their nearest neighbours first, so the old eye
+        # shows through none of them)
+        di, (yy, xx) = ndimage.distance_transform_edt(~filled, return_indices=True)
+        whole = np.where((di < 10)[..., None], img[yy, xx], img)
+        mirrored = whole[:, src]; mfill = (di < 10)[:, src]
+        if abs(sy - ty) > 0.5:
+            mirrored = ndimage.shift(mirrored, (ty - sy, 0, 0), order=1, mode='nearest')
+        m = ellipse(tx, ty, 0.46 * D, 0.22 * D, soft=0.4) * mfill
+        img = img * (1 - m[..., None]) + mirrored * m[..., None]
+        replace = m
     L = img.mean(2); Ls = skin.mean(2)
     dark = np.clip((Ls - L) / np.maximum(Ls, 1e-3), 0, 1)
-    D = spec['d']
     # 1) the skin: an edge-preserving filter, then plain skin halfway toward its own smooth tone
     out = img.copy()
     for _ in range(2):
@@ -182,11 +205,11 @@ def finish(head, name, spec):
         fp.stroke(dr, ll, 0.012 * D, 0.012 * D, col + (200,), swell=0.5)
     ln = np.asarray(lines.resize((C, C), Image.LANCZOS)).astype(np.float32) / 255
     out = fp.over(out, ln)
-    out = np.where(filled[..., None], np.clip(out, 0, 1), img)
-    return img, out, filled
+    out = np.where(filled[..., None], np.clip(out, 0, 1), before)
+    return before, out, filled, replace
 
 
-def apply(head, spec, before, after):
+def apply(head, spec, before, after, replace=None):
     """The change from before to after carried back to the face's atlas texels, fading out round the face's oval and
     toward the sides, the hairline and the neck (the same reach as face_paint)."""
     yy, xx = head.cy, head.cx
@@ -199,12 +222,20 @@ def apply(head, spec, before, after):
     oval = np.clip((1.3 - ro) / 0.3, 0, 1)
     k = np.maximum(front, under * 1.0) * oval * np.clip((head.hw - 0.5) / 0.3, 0, 1)
     sel = (head.hw > 0.5) & (head.part == 0) & ((front > 0) | under)
-    delta = (head.sample(after) - head.sample(before)) / np.maximum(head.vc, 0.05)
+    vc = np.maximum(head.vc, 0.05)
+    delta = (head.sample(after) - head.sample(before)) / vc
     A = head.A.copy()
     flat = A.reshape(-1, 3)
     idx = np.flatnonzero(head.m.ravel())
     w = (k * sel)[:, None]
-    flat[idx] = np.clip(flat[idx] + delta * w, 0, 1)
+    changed = flat[idx] + delta * w
+    if replace is not None and replace.any():
+        # a replaced feature (a mirrored eye): the result itself, not a change, where the change is large
+        # (in full on every forward-facing texel of the face's skin: the eye's socket turns away, and a part-way blend
+        # left grey specks of the old eye in the new white)
+        r = np.clip(head.sample(replace[..., None])[:, :1], 0, 1) * ((head.hw > 0.5) & (head.part == 0) & (head.facing > 0.0))[:, None]
+        changed = changed * (1 - r) + (head.sample(after) / vc) * r
+    flat[idx] = np.clip(changed, 0, 1)
     return flat.reshape(A.shape), sel
 
 
@@ -218,8 +249,8 @@ if __name__ == '__main__':
     head = fp.Head(d, atlas)
     found = fp.detect(head)
     spec = fp.spec_for(name, found)
-    before, after, filled = finish(head, name, spec)
-    out, sel = apply(head, spec, before, after)
+    before, after, filled, replace = finish(head, name, spec)
+    out, sel = apply(head, spec, before, after, replace)
     if review:
         res, _ = head.splat(out.reshape(-1, 3)[np.flatnonzero(head.m.ravel())] * head.vc, sel)
         save_png(np.concatenate([before, after, res], 1), review)

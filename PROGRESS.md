@@ -1111,6 +1111,55 @@ listed in `docs/LEARNINGS.md` B1 to B6 and C1 to C12.
 - **Not run in Unity or on a device.** Check the four kids on the Nord CE5 in every look, and ask the user to choose
   between the finish and the plain scans (`--no-ink`) from the board.
 
+## Faces that stay whole, no white tears, Mia's eye (generated content v114)
+
+**Why.** The user sent a recording of the title screen (Hana juggling) and three screenshots:
+- Mia's right eye didn't look good;
+- "lots of white tears in all the characters, from hair to face to clothing";
+- Hana's face "is getting folded" as she animates.
+The user asked for a check on every character, playable and not.
+
+**What was wrong**, each found by splitting the render (`docs/LEARNINGS.md` C15 to C18):
+- **Folded faces.** The rigged scans' automatic weights put the lower face partly on the Neck bone: 38% of Hana's face
+  and three-quarters of her jaw, over 1,000 of Mom's face vertices, and every jaw some. The menu nods the head 6 to 20°
+  to watch the ball, and the lower face squashed into the neck. The face's normal lean also skipped those vertices, so
+  the light/shade step ran across the mouth and chin as a jagged crease.
+- **White tears.** In a render of the vertex colours alone, white specks and slivers showed in every dark garment. They
+  are light streaks the scans painted into the clothes (folds, highlights, unpainted seams), left out of their garment
+  as a white vertex colour times a light texel.
+- **White scratches.** The rim light whitened every colour by 45%, so it drew each crease of dark trousers and each
+  clump of dark hair as a light line.
+- **Mia's right eye** was scanned narrower and squinting.
+
+**Fixed** (`tools/blender/polish_lib.py`, run on all twelve characters by `polish_all.py`):
+- `rigid_head`: the head above a cut through the Head joint, dipping under the chin, follows the Head alone, blending
+  to the neck below it.
+- `face_lean`: the whole face, jaw and chin included, leans toward a sphere behind it, so it shades as one rounded
+  shape.
+- `absorb_tears`: a greyish face of no outfit part joins the garment that covers 65% of the surface within 2 cm of it.
+  It then shades and recolours with that garment. Skin, the jacket's "H", the hoodie and stripes stay.
+- **`ToonCharacter`'s rim** is whitened by 45% of the colour's lightness. Light clothes and skin keep their edge, and
+  dark clothes and hair keep a faint sheen. Its Blender mirrors were updated in the same change: `portrait_teen.py`,
+  `review_teen.py`, `review_poses.py`, and `review/cartoon/render_scenes.py`, which also gets the review scenes and
+  diagnostics it had been missing.
+- **Mia's right eye** is her left one, mirrored (`face_ink.py`).
+- **New player cards** for all six playable kids.
+
+**Cost:**
+- One `max` of three channels per character pixel in `ToonCharacter`.
+- The meshes are the same size (32k / 14k triangles) and the atlases the same.
+
+**Reviewed** in `review/characters_v2/` (Blender, the game's toon look):
+- `tears_v114.jpg`: every character before and after;
+- `head_tilt_v114.jpg`: heads nodded 20° and 44°;
+- `mia_eye_v114.jpg`;
+- `player_cards_v114.jpg`.
+
+**Not run in Unity or on a device.** Check on the phone:
+- the title screen's juggling, and a slide;
+- every look;
+- the shop's recolours of Hana's jacket and Max's jeans.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

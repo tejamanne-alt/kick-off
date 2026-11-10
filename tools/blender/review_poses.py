@@ -264,7 +264,7 @@ def toon(mat, tint=None):
     ndv = nt.nodes.new('ShaderNodeVectorMath'); ndv.operation = 'DOT_PRODUCT'
     nt.links.new(geo.outputs['Normal'], ndv.inputs[0]); nt.links.new(geo.outputs['Incoming'], ndv.inputs[1])
     rim = nt.nodes.new('ShaderNodeMapRange'); rim.interpolation_type = 'SMOOTHSTEP'
-    rim.inputs['From Min'].default_value = 0.4; rim.inputs['From Max'].default_value = 0.24
+    rim.inputs['From Min'].default_value = 0.34; rim.inputs['From Max'].default_value = 0.2
     rim.inputs['To Min'].default_value = 0.0; rim.inputs['To Max'].default_value = 1.0
     nt.links.new(ndv.outputs['Value'], rim.inputs['Value'])
     side = nt.nodes.new('ShaderNodeMapRange'); side.inputs['From Min'].default_value = -0.35; side.inputs['From Max'].default_value = 0.65
@@ -274,8 +274,17 @@ def toon(mat, tint=None):
     nt.links.new(rim.outputs['Result'], rk.inputs[0]); nt.links.new(side.outputs['Result'], rk.inputs[1])
     rk2 = nt.nodes.new('ShaderNodeMath'); rk2.operation = 'MULTIPLY'; rk2.inputs[1].default_value = 0.22
     nt.links.new(rk.outputs[0], rk2.inputs[0])
+    # the rim's colour, as ToonCharacter: the albedo whitened by 45% of its lightness (its brightest channel), times the sun
+    _sep = nt.nodes.new('ShaderNodeSeparateColor'); nt.links.new(mix.outputs['Result'], _sep.inputs['Color'])
+    _m1 = nt.nodes.new('ShaderNodeMath'); _m1.operation = 'MAXIMUM'; nt.links.new(_sep.outputs[0], _m1.inputs[0]); nt.links.new(_sep.outputs[1], _m1.inputs[1])
+    _m2 = nt.nodes.new('ShaderNodeMath'); _m2.operation = 'MAXIMUM'; nt.links.new(_m1.outputs[0], _m2.inputs[0]); nt.links.new(_sep.outputs[2], _m2.inputs[1])
+    _fk = nt.nodes.new('ShaderNodeMath'); _fk.operation = 'MULTIPLY'; _fk.inputs[1].default_value = 0.45; nt.links.new(_m2.outputs[0], _fk.inputs[0])
+    _tint = nt.nodes.new('ShaderNodeMix'); _tint.data_type = 'RGBA'; nt.links.new(_fk.outputs[0], _tint.inputs['Factor'])
+    nt.links.new(mix.outputs['Result'], _tint.inputs['A']); _tint.inputs['B'].default_value = (1, 1, 1, 1)
+    _tsun = nt.nodes.new('ShaderNodeMix'); _tsun.data_type = 'RGBA'; _tsun.blend_type = 'MULTIPLY'; _tsun.inputs['Factor'].default_value = 1
+    nt.links.new(_tint.outputs['Result'], _tsun.inputs['A']); _tsun.inputs['B'].default_value = SUN + (1,)
     add = nt.nodes.new('ShaderNodeMix'); add.data_type = 'RGBA'; add.blend_type = 'ADD'
-    add.inputs['B'].default_value = SUN + (1,)
+    nt.links.new(_tsun.outputs['Result'], add.inputs['B'])
     nt.links.new(rk2.outputs[0], add.inputs['Factor']); nt.links.new(m2.outputs['Result'], add.inputs['A'])
     em = nt.nodes.new('ShaderNodeEmission'); nt.links.new(add.outputs['Result'], em.inputs['Color'])
     nt.links.new(em.outputs[0], nt.nodes['Material Output'].inputs['Surface'])

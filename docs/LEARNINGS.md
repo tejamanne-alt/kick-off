@@ -18,7 +18,8 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
    - at the current camera's play size, close up, and on the title screen;
    - from the game's camera angles;
    - in all four looks (Original, Comic halftone, Pencil sketch, Classic cartoon);
-   - with characters casting no shadows, as in the game.
+   - with characters casting no shadows, as in the game;
+   - with the head nodded and turned as the menu and the run move it, not only in the idle pose (C15).
 6. **A fix for one asset is a fix for all of them.** When a pipeline bug is found and fixed, rebuild every asset made by the old pipeline in the same change.
 7. **Record every revert,** with who decided, why, and "don't retry X".
 
@@ -194,6 +195,7 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
 - *What:* weights by nearness put 18 to 29% of the front of the head partly on the Neck bone, so faces folded as the head turned.
 - *Fix:* a rigid head above the jaw (v79).
 - *Rule:* use the source's own skin weights where they exist, and check weight distributions with numbers.
+- *Later:* the source's own weights were no better. The rigged scans folded the same way until v114 (C15).
 
 **C7. Decimation removed joints, and later dragged prints.**
 - *What:*
@@ -256,6 +258,47 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
   - Restyle a face by its finish (line weight, flat colour, clean edges), never by replacing its features' shapes or proportions.
   - Keep each kid's own eyes, nose and mouth.
   - Show a face change to the user as a side-by-side before it ships.
+
+**C15. Faces folded as the head nodded (every rigged character, fixed in v114).**
+- *What:* the user's recording of the title screen showed Hana's face creasing across the mouth and chin as she watched the ball. The numbers:
+  - 38% of Hana's face above the Head joint, and three-quarters of her jaw, were partly on the Neck bone;
+  - Mom had over 1,000 face vertices on the Neck, the Shopkeeper about 400, and Max's and every kid's jaw some.
+  The menu nods the head 6 to 20° down to watch the ball, and a slide 44°. The part on the Neck stayed behind, and the lower face squashed into the neck. The face lean (C2) took only vertices at least 90% on the Head, so Hana's lower face also kept the scan's noisy normals. The light/shade step then ran across it as a jagged crease that crawled as she moved.
+- *Why:*
+  - The scans' automatic rigs blend Head and Neck over the whole lower face. C6 was fixed for the scripted kids (v79) but never checked on the rigged scans. That is rule 6 again.
+  - Every review used a still pose with the head level.
+- *Fix* (`polish_lib.rigid_head`, run on every character by `polish_all.py`):
+  - The whole head moves with the Head bone: everything above a cut through the Head joint that dips forward under the chin. Below the cut, the weights blend back to the neck over 12% of the head's height.
+  - `face_lean` now takes every head vertex, the jaw included. It leans toward a sphere behind the face instead of one flat forward direction, so the face shades as one rounded shape: lit whole in front light, with a clean curved edge when the sun is to one side.
+  - Checked at the menu's -20° and the slide's -44°: `review/characters_v2/head_tilt_v114.jpg`.
+- *Rule:*
+  - Check skin weights by numbers on every new character: the face is 100% on the Head.
+  - Review heads in motion, nodded and turned, never only in the idle pose.
+
+**C16. White tears in dark clothes and hair (every scanned character, fixed in v114).**
+- *What:* white specks, slivers and streaks in Hana's jacket and trousers, Max's jeans and the other kids' clothes. The user: "lots of white tears in all the characters, from hair to face to clothing".
+- *Why:*
+  - A render of the vertex colours alone showed them all; the atlas alone was clean.
+  - The rigs' `paint()` (`meshy_boy.py`) gives each garment's faces the garment's colour and divides its texels by it. Faces whose texel wasn't recognised as the garment (light folds, highlights, unpainted seams) stayed "no part": a white vertex colour times a light texel.
+  - Cutting to 32k triangles made them bigger.
+  - The shop's recolouring left them white.
+  - Most of them share no edge with their garment (the scans are cut along every colour line), so a check by connected faces found almost none.
+- *Fix* (`polish_lib.absorb_tears`): by surface, not topology. A greyish face of no part joins garment p when p covers 65% of the surface within 2 cm of it (the face itself not counted). This moved 969 of Hana's faces. Skin never moves (its colour is too saturated), and wide features keep their middles: her jacket's "H", the hoodie, the striped cuffs.
+- *Rule:* diagnose a colour fault by splitting the render: vertex colours only, atlas only, rim off, ink hull coloured, outfit parts (`review/cartoon/render_scenes.py` `DIAG`). Look at a garment in the parts view before trusting it.
+
+**C17. The rim light drew white scratches on dark clothes and hair, and the review renderer lagged the shader.**
+- *What:* with the tears gone, thin white lines remained along every crease of Hana's black trousers and every clump of her hair.
+- *Why:* `ToonCharacter`'s rim whitened the colour under it by 45%, whatever that colour was. On near-black cloth (0.02) that adds 0.45 × 0.3: a light line on every inner crease, pocket edge and hair clump, not only round the silhouette. C3 tinted the rim, but not enough for black.
+- *Fix:* the rim is whitened by 45% of the colour's lightness (its brightest channel). A light shirt and skin keep their bright edge, and dark hair and clothes keep only a faint sheen of their own colour.
+- *Also:* `review/cartoon/render_scenes.py` had never received v111's rim, its characters-cast-no-shadows, or the close-up review scenes. They lived only in a scratch copy, so its renders were not the game's (C9 again). It is now up to date, with the diagnostics above.
+- *Rule:*
+  - A light term that adds light scales with the surface's own lightness.
+  - Copy every scratch copy of a review tool back before committing. The mirrors listed in `CLAUDE.md` include the review renderer.
+
+**C18. Mia's right eye (v114).**
+- *What:* after C14, the user found Mia's own right eye (on the left as we look at her) narrower and squinting next to her left: "Take a reference from the right eye and fix it."
+- *Fix:* `face_ink.py` replaces it with her left eye, mirrored across the middle of the face, before the lash lines are drawn. Inside the replaced eye the result is written as it is, not as a change, or the old iris showed through as grey specks.
+- *Rule:* when one side of a scanned face is worse, mirror the good side rather than redraw it. That keeps the kid's own eye, which C14's rule asks for.
 
 ## D. Art direction and look
 

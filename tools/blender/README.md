@@ -521,21 +521,28 @@ Why each step exists is in `docs/LEARNINGS.md`, C1 to C8 and C14. In short:
   - decimates to `--tris` (32k kids, 14k passers-by) and `--bag-tris` (8k), holding back the head and hands (0.3) and
     texture-island borders (0.15), so faces, fingers and printed numbers keep their shape;
   - turns round triangles whose surroundings clearly face the other way;
+  - makes the head rigid (`rigid_head`): everything above a cut through the Head joint, dipping under the chin, follows
+    the Head alone, blending back to the neck below it. Otherwise the face folds as the head nods (LEARNINGS C15);
   - keeps one outfit part per face, and at most four normalised bone weights;
+  - absorbs white tears (`absorb_tears`): a greyish face of no outfit part joins the garment around it when that
+    garment covers 65% of the surface within 2 cm of it (LEARNINGS C16). `<Name>_polish.json`'s `tear_faces_absorbed`
+    says how many moved;
   - rebuilds the normals:
     - from the surface around each vertex: 12 mm on skin, 20 mm on clothes, 35 mm on hair;
     - hair points away from the centre of its mass (the rim light then shows only at the hair's outline);
-    - the inner face leans toward the head's forward direction (`--face-lean`), so it is lit as one shape;
+    - the face, jaw and chin included, leans toward a sphere behind it (`--face-lean`), so it is lit as one rounded
+      shape;
   - push-pull fills every atlas gap from its island, so no mip level mixes in a foreign colour.
 
-  No vertex moves except where open edges are welded. The bones, rest pose, weights, outfit parts, vertex colours,
-  bags and neck heights stay as they were. The export settings are `meshy_rigged.py`'s. `<Name>_polish.json` records
-  what was done.
+  No vertex moves except where open edges are welded. The bones, rest pose, bags and neck heights stay as they were;
+  so do the weights, outfit parts and vertex colours, except the head's weights and the tears' parts and colours. The
+  export settings are `meshy_rigged.py`'s. `<Name>_polish.json` records what was done.
 - **`polish_bags.py`** fills the five shared bag atlases (RGBA: the alpha is the recolour mask) the same way.
 
 **Reviewing.** Three tools are available:
 - `review/cartoon/render_scenes.py`, with the cast scenes and the filter ports in `review/{filter,sketch,cartoon}`,
-  renders the game's look in every filter;
+  renders the game's look in every filter. Its `solo`, `kids` and `teens` scenes, `HEAD_TILT` and `DIAG` modes (vertex
+  colours only, atlas only, rim off, ink hull coloured, outfit parts) are for finding a character fault (its header);
 - `fbx_to_blend.py` rebuilds a `.blend` from a shipped FBX for `review_teen.py`, `review_poses.py` and
   `portrait_teen.py`;
 - the boards in `review/characters_v2/`.
