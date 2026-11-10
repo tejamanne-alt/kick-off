@@ -2,7 +2,8 @@
 
 These prompts make the reference images for a new add-on town: a base prompt that works for any place, a
 **Florida** block, and one prompt per shot. They were written for a Florida add-on (a third town next to
-Kamakura and California, `<scene>_FL` beside `<scene>_CA`). That add-on is not built yet.
+Kamakura and California, `<scene>_FL` beside `<scene>_CA`). Its chapter 3 is built from the six photographic
+references these prompts made (`review/florida/refs`, F3-1 to F3-6); the other chapters' shots are still to make.
 
 ## Photorealistic or not: photorealistic, but lit like the game
 

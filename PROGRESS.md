@@ -1329,6 +1329,64 @@ The user asked for a check on every character, playable and not.
 - **Add-ons:** none for Blender (`bpy` scripts) or Unity (built-in pipeline, own shaders).
 - No game code or assets changed; the Florida add-on itself (`_FL` scenes, its kit) is not built.
 
+## The Florida add-on: chapter 3, its own music (generated content v117)
+
+- **Add-ons & Filters** lists **Florida, Cocoa Beach, USA · Seaside Road** after California (`Progression/AddOns.Florida`, id
+  `florida`, scenes `<scene>_FL`). It is unlocked as California is, by finishing every story level. So far it has only chapter
+  3 (`AddOn.chapters`, `AddOns.FloridaChapters`): while it is chosen, every other chapter's levels are locked
+  (`LevelUnlocks.NotInTown`, in `IsUnlocked`, `NextToPlay` (which falls back to the first beach level short of three stars),
+  `LevelManager.NextLevel` (Next finishes after the beach), `nextLocked`, and a guard in `LoadLevel`). A locked level's node
+  or strip chip says why when tapped (`map.notInTownTitle`, `map.notInTown`) and offers Seaside Road. California's rule is
+  unchanged.
+- **Co-op:** Florida only runs Seaside Road. The picker shuts the pairs that don't fit (`coop.place.only`,
+  `coop.route.notIn`). The host's random picks only choose a pair that fits (`CoopSession.LocationFits`, set to
+  `CoopLocations.Fits`), and a stale Florida choice on another route runs in the original streets. Adding a location changes
+  the content hash, so an older build is turned away as another version.
+- **Florida's own music** (`MusicCountry.Florida`, appended so the clip keys of the others stay; `MusicGenerator.FloridaStyleOf`):
+  - the beach: soca with steel pans and a marimba;
+  - Home Street: a Cuban son (a marimba montuno, an upright bass's tumbao, the 3-2 son clave, bongos, congas, a guiro);
+  - the market: Miami salsa;
+  - the underpass: a neon Miami night groove;
+  - the building site: a calypso drive;
+  - the park: a one-drop;
+  - the menu: a trop-rock sunset.
+  New instruments: `Instruments.Clave`, `Bongo`, `Guiro`. New parts: the off-beat `Skank`, the `Montuno` and reggae's
+  `OrganBubble`.
+- **The Florida kit** (`tools/blender/kit_buildings_fl.py`, `kit_buildings.py --kit Florida`, `Art/Models/Florida`: 39
+  models, 9.8 MB with the atlas), after the user's references in `review/florida/refs`. Review sheets and street previews are
+  in `review/florida/`. It holds the beach front, the diner and motel, the rental shop, five Art Deco shops, the street's
+  things and Seagrove High. Its signs and patterns are painted by the kit (`kit_buildings_atlas.EXTRA`). The Plants kit gains
+  `PalmSabal`, `PalmSabalTall` and `SawPalmetto` (`fan_leaf`, `sabal`). Every model is within ART_DIRECTION's budgets: the
+  motel 5,992 triangles, the diner 4,520, the sabals 5,340 and 5,012, the street things 90 to 1,132.
+- **The `_FL` scenes** (`GeneratedContent.BuildFlorida`, `LevelSpec.FloridaPath`, built for chapter 3's levels and C03; kept
+  by `DeleteStaleScenes`; required by `AllScenesExist`):
+  - The kid's beach is unchanged: its sand, tides, channels, dunes and sea, and every gameplay piece.
+  - `StreetBuilder.Florida` puts the town on seawall terraces behind the lane, running out over the sea. It leaves open beach
+    over the tides, channels, dunes' slopes, stops and pier.
+  - The beach's parasols, towers, rocks and palms keep to the gaps (`InStrip`).
+  - The strip runs in the references' order. Each level starts it where the one before left off (L11 at the beach front, L12
+    at the diner, L13 at the motel, L14 at the Deco shops).
+  - Toward the school: the bus shelter, a mailbox and the school-zone beacon. The school is `TrackBuilder.FloridaSchool`
+    (`LevelBuildKit.Florida.cs`).
+  - The lifeguard towers become Florida's stand, the surf school's and the café's huts the snack shack.
+  - L11's home street before the beach is the Coast kit's suburb, with sabals for its date and fan palms (`FloridaPalm`).
+  - The Buildings kit draws with its English-sign atlas.
+- **Cost:** nothing in the original or California scenes (Florida's code only runs with `LevelBuildKit.Florida` set). In a
+  `_FL` scene, per the estimates below; none of this has been measured:
+  - textures: one more 4096 x 4096 atlas, about 16 MB in memory at RGBA32, a quarter of that compressed;
+  - geometry on screen: about 12k triangles of buildings, 25k to 35k of sabals and a few hundred of street things;
+  - collision: the terraces are three boxes per run and have no colliders.
+  - It must be checked on the Nord CE5 (L13's motel stretch is the heaviest).
+- **Checked:**
+  - compile: no new compile errors in any `#if` set; `unity_api_check` 6000.7 clean.
+  - tests: the co-op session tests run outside Unity (68 pass; a planted bug in the new rule made its test fail).
+  - music: Florida's loops render in a harness at the target loudness, with no NaN samples.
+  - kits: the Coast kit rebuilds byte-identical; the Plants kit rebuilds identical apart from the three new palms (same
+    atlas, no existing manifest entry changed).
+  - previews: `preview_street.py --florida` renders through the game camera.
+- **Not run in Unity:** the `_FL` scenes' build, the new FBXs' import, the terraces against the real tides and stops in each
+  level, the school end, the map's new note, the co-op picker, the music in game, and the frame rate on the phone.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

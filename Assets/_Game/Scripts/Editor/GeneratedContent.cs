@@ -22,7 +22,7 @@ namespace DribbleToSchool.EditorTools
     public static class GeneratedContent
     {
         /// <summary>Bump when layouts or the scene rig change so scenes regenerate.</summary>
-        public const int Version = 116;   // 116: white tears at hems, belts and hairlines absorbed too (absorb_tears's second test); 115: the torso on the rig (Hips, Spine, Chest: CharacterRig.Torso turns, sways and breathes the middle of the body); 114: every character's head rigid on the Head bone (faces no longer fold as the head nods), the face shaded round, white tears absorbed into their garments, Mia's right eye mirrored from her left; 113: the kids keep their own scanned faces, with Max's finish (face_ink.py; the drawn faces of 111 were rejected); 112: the kids' and bags' meshes out of the scenes (Resources/Cast, LazyRenderer); 111: polished characters (welded, 32k / 14k triangles, illustrated kids' faces), cameras without HDR or MSAA, the player's thicker outline
+        public const int Version = 117;   // 117: the Florida add-on: chapter 3's levels each get a <scene>_FL scene (the Florida kit's beach town on seawall terraces, Seagrove High at the end), the Coast and Florida kits' palms, Florida's music; 116: white tears at hems, belts and hairlines absorbed too (absorb_tears's second test); 115: the torso on the rig (Hips, Spine, Chest: CharacterRig.Torso turns, sways and breathes the middle of the body); 114: every character's head rigid on the Head bone (faces no longer fold as the head nods), the face shaded round, white tears absorbed into their garments, Mia's right eye mirrored from her left; 113: the kids keep their own scanned faces, with Max's finish (face_ink.py; the drawn faces of 111 were rejected); 112: the kids' and bags' meshes out of the scenes (Resources/Cast, LazyRenderer); 111: polished characters (welded, 32k / 14k triangles, illustrated kids' faces), cameras without HDR or MSAA, the player's thicker outline
 
         const string ScenesDir = LevelBuildKit.Root + "/Scenes";
         const string LevelsDir = LevelBuildKit.Root + "/Levels";
@@ -59,6 +59,10 @@ namespace DribbleToSchool.EditorTools
             public string ScenePath { get { return ScenesDir + "/Levels/" + scene + ".unity"; } }
             /// <summary>The level's California scene (the California add-on, unlocked by finishing every level: Progression/AddOns).</summary>
             public string CaliforniaPath { get { return ScenesDir + "/Levels/" + scene + Progression.AddOns.CaliforniaSuffix + ".unity"; } }
+            /// <summary>The level's Florida scene (the Florida add-on: so far only chapter 3's levels have one).</summary>
+            public string FloridaPath { get { return ScenesDir + "/Levels/" + scene + Progression.AddOns.FloridaSuffix + ".unity"; } }
+            /// <summary>Florida's streets have this level's chapter (Progression/AddOns.Florida).</summary>
+            public bool InFlorida { get { return Progression.AddOns.Florida.HasChapter(chapter); } }
         }
 
         /// <summary>
@@ -275,6 +279,12 @@ namespace DribbleToSchool.EditorTools
                 // And its California scene: the same level on the Coast kit's streets (the original is untouched).
                 BuildCalifornia(Levels[i], catalog);
                 buildScenes.Add(new EditorBuildSettingsScene(Levels[i].CaliforniaPath, true));
+                // And, for the beach so far, its Florida scene.
+                if (Levels[i].InFlorida)
+                {
+                    BuildFlorida(Levels[i], catalog);
+                    buildScenes.Add(new EditorBuildSettingsScene(Levels[i].FloridaPath, true));
+                }
             }
             LevelBuildKit.BuildScene(TestTrackScene, null, catalog, GreyboxLevels.TestTrack);
             buildScenes.Add(new EditorBuildSettingsScene(TestTrackScene, true));
@@ -289,7 +299,7 @@ namespace DribbleToSchool.EditorTools
             AssetDatabase.SaveAssets();
 
             EditorSceneManager.OpenScene(FrontEndScene);
-            Debug.Log("[Kick Off] Built the menu, " + Levels.Length + " levels (each with its California scene), the test track and the Holiday Run (its core scene and " + HolidayStages.Count + " stages). The menu is open - press Play.");
+            Debug.Log("[Kick Off] Built the menu, " + Levels.Length + " levels (each with its California scene, the beach's with Florida's too), the test track and the Holiday Run (its core scene and " + HolidayStages.Count + " stages). The menu is open - press Play.");
         }
 
         static CosmeticCatalog BuildCosmetics()
@@ -381,11 +391,26 @@ namespace DribbleToSchool.EditorTools
             finally { LevelBuildKit.California = false; }
         }
 
+        /// <summary>A level's Florida scene (LevelBuildKit.Florida set only while it is built).</summary>
+        static void BuildFlorida(LevelSpec spec, LevelCatalog catalog)
+        {
+            var def = AssetDatabase.LoadAssetAtPath<LevelDefinition>(LevelsDir + "/" + spec.id + ".asset");
+            catalog = AssetDatabase.LoadAssetAtPath<LevelCatalog>(LevelsDir + "/LevelCatalog.asset");
+            LevelBuildKit.Cosmetics = AssetDatabase.LoadAssetAtPath<CosmeticCatalog>(CosmeticsDir + "/CosmeticCatalog.asset");
+            LevelBuildKit.Florida = true;
+            try { LevelBuildKit.BuildScene(spec.FloridaPath, def, catalog, spec.layout, spec.chapter); }
+            finally { LevelBuildKit.Florida = false; }
+        }
+
         /// <summary>Remove generated level scenes that are no longer in the Levels table.</summary>
         static void DeleteStaleScenes()
         {
             var keep = new HashSet<string>();
-            foreach (var spec in Levels) { keep.Add(spec.ScenePath); keep.Add(spec.CaliforniaPath); }
+            foreach (var spec in Levels)
+            {
+                keep.Add(spec.ScenePath); keep.Add(spec.CaliforniaPath);
+                if (spec.InFlorida) keep.Add(spec.FloridaPath);
+            }
             foreach (string guid in AssetDatabase.FindAssets("t:Scene", new[] { ScenesDir + "/Levels" }))
             {
                 string path = AssetDatabase.GUIDToAssetPath(guid);
@@ -401,6 +426,7 @@ namespace DribbleToSchool.EditorTools
             {
                 if (AssetDatabase.LoadAssetAtPath<SceneAsset>(spec.ScenePath) == null) return false;
                 if (AssetDatabase.LoadAssetAtPath<SceneAsset>(spec.CaliforniaPath) == null) return false;
+                if (spec.InFlorida && AssetDatabase.LoadAssetAtPath<SceneAsset>(spec.FloridaPath) == null) return false;
             }
             return HolidayRunBuilder.AllScenesExist();
         }

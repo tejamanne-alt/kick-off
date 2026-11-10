@@ -14,6 +14,9 @@ PAD = 6
 rng = np.random.default_rng(5)
 
 
+# A kit's own tile painter, paint(img, put), run after the shared ones (kit_buildings.py sets it for Florida).
+EXTRA = None
+
 def _ss(e0, e1, x):
     t = np.clip((x - e0) / (e1 - e0), 0, 1); return t * t * (3 - 2 * t)
 
@@ -634,6 +637,7 @@ def paint(path, buildings):
     put(img, 'banner', banner); put(img, 'wear', wear); put(img, 'solar', solar)
     import kit_buildings_signs as SG
     SG.paint(img, put)
+    if EXTRA: EXTRA(img, put)        # a kit's own tiles (the Florida kit's signs and patterns)
     for B in buildings:
         for mp in B.maps:
             name = B.name + '.' + mp

@@ -622,9 +622,10 @@ vertex colours times the atlas, and recolourable parts in UV2.x.
 
 | Kit | Script | What's in it |
 |---|---|---|
-| Plants | `kit_plants.py` | conifers, broadleaf trees (five), a cloud-pruned garden pine, birch, cherry, palms (a tall California fan palm and a date palm among them), bushes, hedge blocks, grasses, reeds, flowers; the trees' and bushes' leaves are cut-out leaf-clump cards (`kit_plants_leaves.py`) |
+| Plants | `kit_plants.py` | conifers, broadleaf trees (five), a cloud-pruned garden pine, birch, cherry, palms (a tall California fan palm and a date palm among them; Florida's sabal palm in two heights, with its fan leaves and its boots, and a saw palmetto), bushes, hedge blocks, grasses, reeds, flowers; the trees' and bushes' leaves are cut-out leaf-clump cards (`kit_plants_leaves.py`) |
 | Buildings | `kit_buildings.py` | gabled and long houses, bungalow, fruit shop and bakery, flats, warehouse, school, garage; the town's shops and houses (`kit_buildings_town.py`): a small supermarket, cafe, bookshop, florist, noodle house, convenience store, two narrow tiled three-storey buildings, a white house with a corrugated lean-to and a garden pine, a flat-roofed house with a balcony, a house with a carport; `KIT_SIGNS=CA` writes only `BuildingsCAAtlas.png`, the same atlas with English shop names, for the California skin |
 | Coast | `kit_buildings.py --kit Coast` | the California skin's town (built into the levels' `_CA` scenes only; `kit_buildings_cal.py`, its own 4096 x 4096 atlas at about 2.8 x the Buildings kit's texel density: 96 px/m on the fronts, so a villa's front is some 1300 px across): a stucco villa with a garage, a ranch house with solar panels, a Craftsman house with a front porch, a beach condo, a surf shop, a Spanish Revival shop, a pier span and the pier's end with its roundhouse; hipped roofs of barrel tiles (the atlas' `hip` feature) |
+| Florida | `kit_buildings.py --kit Florida` | the Florida add-on's beach town (built into chapter 3's `_FL` scenes only; `kit_buildings_fl.py`, after `review/florida/refs`, on its own 4096 x 4096 atlas, the shops' fronts at 72 to 80 px/m and the small things at 12): a concrete-block restroom with beach showers, a weathered snack shack, a lifeguard stand, a dune crossover, a chrome diner and its pole sign, a Miami Modern motel with its sign and pool, a rental shop, five Art Deco shops (surf shop, Cuban café, bait and tackle, ice-cream parlour with a glass-block tower, a shut shop behind its accordion gate), the street's things (lamps, benches, bins, a hydrant, a mailbox, signs, a concrete pole with its mast-arm signal, a bus shelter, the school-zone beacon, kayaks, a volleyball net, fences, a goal) and Seagrove High (the school, its gate, fence, marquee, flags, covered walkway, a portable). Its signs, glass block, breeze block and flags are painted by the kit itself (`paint()`, through `kit_buildings_atlas.EXTRA`) with Inter and the Lobster script face (`fonts-inter`, `fonts-lobster`) |
 | Street | `kit_street.py` | utility pole (concrete; `UtilityPoleWood` for the California skin), lamp, pedestrian signal, walls, fences, hoarding, planters, benches, vending machines, signs, crates, pots, stalls, awnings, A-frame board, banner flag, electrical cabinet, bicycle hoops, wheelie bins, doorstep pots |
 | Terrain | `kit_terrain.py` | boulders, rock clusters, cliffs, a headland, mountain ranges, rolling hills, a forest strip, dunes, sand and gravel piles |
 | Leisure | `kit_leisure.py` | lifeguard tower, parasols, beach things, trampoline, swing tree and frame, fountain, raft, sign board, checkpoint flag, targets, playground |
@@ -633,6 +634,8 @@ vertex colours times the atlas, and recolourable parts in UV2.x.
 | Barriers | `kit_barriers.py` | things to slide under, each spanning the footpath with a clear 0.85 m gap over the kid's line (`kit_barriers_models.py`, built with the Works kit's geometry and atlas modules): painters' boards on trestles, a car-park barrier arm, a hedge trimmer's work platform, a propped apple bough; a market stall under its awning, a half-raised roll shutter, a delivery roller conveyor; a surf rack, a rowing boat upturned on trestles, a boardwalk crossing, a lifeguard's rescue-board stand; a sheeted scaffold, steel beams on trestles, a pipe rack, a site barrier; a fallen trunk, an old oak's propped bough, a rope-net tunnel, a play tower. The manifest's `slideHalf` / `slideTop` (or `slideRadius` / `slideCentre`) give the solid the game builds a collider for |
 
 ```
+blenv/bin/python kit_buildings.py -- $PWD/out/florida --kit Florida      # Florida.json, FloridaAtlas.png, Florida.blend, <Model>.fbx
+cp out/florida/*.fbx out/florida/FloridaAtlas.png out/florida/Florida.json ../../Assets/_Game/Art/Models/Florida/
 blenv/bin/python kit_plants.py -- $PWD/out/plants                       # writes the FBXs, atlas, manifest and Plants.blend
 blenv/bin/python review_kit.py -- $PWD/out/plants/Plants.blend $PWD/plants_sheet.png [--models A,B] [--cols 4]
 cp out/plants/*.fbx out/plants/PlantsAtlas.png out/plants/Plants.json ../../Assets/_Game/Art/Models/Plants/
@@ -653,6 +656,8 @@ judge layout, scale, silhouettes and colour):
 
 ```
 blenv/bin/python preview_street.py -- $PWD/out $PWD/street_ch1.png --chapter 1 [--seed 7] [--wide]
+# the Florida beach town (StreetBuilder.Florida): where the level picks the strip up, and the stretches left as open beach
+blenv/bin/python preview_street.py -- $PWD/out $PWD/street_fl.png --chapter 3 --florida --level L13 [--spans a:b:top,...] [--open a:b,...]
 ```
 
 ## The town map

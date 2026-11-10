@@ -120,6 +120,20 @@ timber pier on concrete piles running out from the beach, and English shop signs
 (`BuildingsCAAtlas.png`). A fan palm is 16.5 m tall, and the camera's top edge sits at about
 2.4 m + 0.23 x the distance, so grown fan palms stand 60 m or more back (StreetBuilder.PalmSkyline),
 where their crowns show over the roofs; near the street they are young ones or date palms.
+**Florida** (Cocoa Beach, on the A1A), unlocked the same way, so far has only chapter 3, the beach: each of its levels has a
+`<scene>_FL` scene (`LevelBuildKit.Florida`, `StreetBuilder.Florida`, the Florida kit `tools/blender/kit_buildings_fl.py`),
+after the user's photographic references in `review/florida/refs` (F3-1 to F3-6, made with `docs/IMAGE_PROMPTS.md`). The kid's
+beach is unchanged (the sand, the tides, the channels, the dunes and the sea about 9.6 m behind the lane: the tide's wash, the
+sand's mesh and the wet sand all depend on that depth); the town stands behind it on seawall terraces running out over the
+sea, a low kerb along the sand and paving on top, and the beach stays open wherever a tide or a channel crosses, a dune's
+slope runs, or a stop stands, so the sea shows between the terraces and the tide still runs up from it. The strip runs in the
+references' order (the restroom with its showers, the snack shack and its kayaks, the diner, the motel with its pool, the
+rental shop, the Art Deco shops in pastel stucco with racing stripes, eyebrows and glass block) and each level takes it up
+where the one before left off. The promenade carries sabal palms (Florida's state tree: a grey trunk with its old leaf bases,
+a round crown of fan leaves), teal lamps, benches and bins; tall old sabals stand up over the roofs. The lifeguard towers are
+the Florida stand, the stops' huts the snack shack, the home street before the beach the Coast kit's stucco villas with sabals
+for their palms, and the school Seagrove High (cream and teal concrete block, an aluminium fence, a marquee, the US and Florida
+flags). Every name on a sign is invented.
 
 ## Production rules (Blender kits)
 

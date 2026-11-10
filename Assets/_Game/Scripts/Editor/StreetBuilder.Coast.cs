@@ -17,7 +17,7 @@ namespace DribbleToSchool.EditorTools
         /// True while a level's California scene is being built: the streets take the Coast kit's
         /// houses, palms, hedges and pier. Otherwise every street is built exactly as before.
         /// </summary>
-        static bool CA { get { return LevelBuildKit.California && LevelBuildKit.HasKitModel("Coast", "VillaStucco"); } }
+        static bool CA { get { return (LevelBuildKit.California || LevelBuildKit.Florida) && LevelBuildKit.HasKitModel("Coast", "VillaStucco"); } }
 
         /// <summary>The street's utility pole: wooden on a California street, the original concrete one otherwise.</summary>
         static string PoleModel { get { return CA && LevelBuildKit.HasKitModel("Street", "UtilityPoleWood") ? "UtilityPoleWood" : "UtilityPole"; } }
