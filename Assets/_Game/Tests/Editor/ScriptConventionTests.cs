@@ -65,6 +65,37 @@ namespace DribbleToSchool.Tests
             }
             Assert.IsEmpty(problems, "files that hold two components: " + string.Join("; ", problems.ToArray()));
         }
+
+        /// <summary>
+        /// Unity APIs that a newer Unity 6 refuses to compile (an [Obsolete] error), which an older editor still accepts. One
+        /// call stops the whole game assembly from compiling, and the editor opens in Safe Mode (docs/LEARNINGS.md A11). The
+        /// full check, against Unity's own reference source for any version, is tools/unity_api_check.
+        /// </summary>
+        static readonly (string pattern, string why)[] RemovedApis =
+        {
+            (@"\bGetInstanceID\s*\(", "Object.GetInstanceID is an error from Unity 6.5 (use GetEntityId, or no id at all)"),
+            (@"\bInstanceIDToObject\s*\(", "EditorUtility.InstanceIDToObject takes an EntityId from Unity 6.5"),
+            (@"new\s+Material\s*\(\s*\"", "creating a material from shader source text is an error"),
+        };
+
+        [Test]
+        public void NoScriptCallsAnApiANewerUnityRemoved()
+        {
+            var root = Path.Combine(Application.dataPath, "_Game");
+            var problems = new List<string>();
+            foreach (var file in Directory.GetFiles(root, "*.cs", SearchOption.AllDirectories))
+            {
+                if (file.EndsWith("ScriptConventionTests.cs")) continue;
+                var lines = File.ReadAllLines(file);
+                for (int i = 0; i < lines.Length; i++)
+                {
+                    string code = lines[i].Split(new[] { "//" }, StringSplitOptions.None)[0];
+                    foreach (var (pattern, why) in RemovedApis)
+                        if (Regex.IsMatch(code, pattern)) problems.Add(Path.GetFileName(file) + ":" + (i + 1) + ": " + why);
+                }
+            }
+            Assert.IsEmpty(problems, string.Join("\n", problems.ToArray()));
+        }
     }
 }
 #endif

@@ -519,7 +519,7 @@ namespace DribbleToSchool.EditorTools
         }
 
         [Serializable]
-        class ModelColors { public float[] top; public float[] legwear; public float[] hair; public float[] accent; }
+        class ModelColors { public float[] top = null, legwear = null, hair = null, accent = null; }   // (filled by JsonUtility)
 
         /// <summary>
         /// The colours a model was made with (its top, legwear, hair and tie), from the JSON file the
@@ -805,7 +805,7 @@ namespace DribbleToSchool.EditorTools
         public static readonly string[] CarTypes = { "Hatch", "Wagon", "Van", "Pickup", "Fourby" };
 
         [Serializable]
-        class CarInfo { public float[] paint; public float wheelRadius = 0.32f; }
+        class CarInfo { public float[] paint = null; public float wheelRadius = 0.32f; }   // (filled by JsonUtility)
 
         /// <summary>
         /// A car standing with its wheels on <paramref name="position"/>, turned <paramref name="yaw"/>

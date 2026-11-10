@@ -218,7 +218,9 @@ namespace DribbleToSchool.Coop
 #endif
         }
 
-        bool askedForPermission;
+#if !(UNITY_IOS && !UNITY_EDITOR)
+        bool askedForPermission;   // (iOS asks only once, by itself: OpenSettingsIfDenied)
+#endif
 
         /// <summary>
         /// "Allow Bluetooth": the first time the system's own question (Android); after a no (or on iOS, which asks only once,

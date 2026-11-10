@@ -73,6 +73,23 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
 - *Fix:* a version code that always rises; `Bone4` set in code; and, from November 2026, `BuildScripts.ApplyAndroidPerformanceSettings` plus `Core/GraphicsQuality`.
 - *Rule:* rule 3.
 
+**A11. The editor opened in Safe Mode on Unity 6.5 (introduced in v115, fixed November 2026 without a content rebuild).**
+- *What:* the user opened the project in a newer Unity 6 and got "The project you are opening contains compilation errors". The cause was `Object.GetInstanceID()` in `CharacterRig` (added in v115 for the breathing's phase): an error from Unity 6.5 (`[Obsolete("Use GetEntityId instead.", true)]`), a warning in 6.4, fine in 6.0.
+  - The console also listed five CS0675 warnings in `RoomBeacon` (int fields widened to `ulong` straight from a signed int, which sign-extends), and "This project uses Input Manager, which is marked for deprecation".
+  - Unity compiles the editor scripts only after the game's, so nothing past the first error was ever checked.
+- *Why:* every check here compiles against Unity 2021's reference assemblies (no Unity 6 references are published). An API that a newer Unity removed compiles clean, and the project's `6000.0.68f1` says nothing about the editor a user actually opens it in. The Input Manager was the default of a fresh project, as `ProjectSettings` isn't in git (A10).
+- *Fix:*
+  - `CharacterRig` spreads the breathing by a golden-ratio counter, with no id.
+  - `RoomBeacon` widens through `uint`; the bits are the same, since every field is masked small and positive first.
+  - `Editor/InputHandling` sets Active Input Handling to the Input System package on load and offers the restart. The game already read input through the Input System when it is on, and `UIKit` builds its `InputSystemUIInputModule`.
+  - Five "never assigned" or "never used" field warnings that the editor and player builds would have shown are gone.
+  - `tools/unity_api_check` resolves every Unity API the scripts use (Roslyn, every `#if` combination) and checks it against the `[Obsolete]` list of Unity's own C# reference source for any version (`run.sh 6000.5`). For 6000.5 and 6000.7 the only error was `GetInstanceID`; the old code was flagged, the new is clean.
+  - `ScriptConventionTests.NoScriptCallsAnApiANewerUnityRemoved` fails on the known removed calls inside any Unity.
+- *Rule:*
+  - Before a change is pushed, run `tools/unity_api_check/run.sh` against the newest Unity 6 branch, not only the compile check: what the user opens the project in can be newer than `ProjectVersion.txt`.
+  - Use no instance ids at all.
+  - Widen signed values through an unsigned type.
+
 ## B. Performance and mobile
 
 **B1. 28 fps with uneven frames on a mid-range phone (November 2026).**

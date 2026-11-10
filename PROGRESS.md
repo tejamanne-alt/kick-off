@@ -1220,6 +1220,42 @@ The user asked for a check on every character, playable and not.
 - **Cost:** none (same meshes and atlases).
 - **Not run in Unity or on a device.**
 
+## Opens in Unity 6.5 without Safe Mode; a clean console
+
+- **Why.** The user opened the project in a newer Unity 6 and it offered Safe Mode: "The project you are opening
+  contains compilation errors". The console listed:
+  - `CharacterRig.cs(100,28): error CS0619: 'Object.GetInstanceID()' is obsolete: 'Use GetEntityId instead.'`;
+  - five CS0675 warnings in `RoomBeacon`;
+  - "This project uses Input Manager, which is marked for deprecation".
+- **The cause** (`docs/LEARNINGS.md` A11). `GetInstanceID` (added in v115 to spread the characters' breathing) is an
+  error from Unity 6.5, a warning in 6.4 and fine in 6.0. Every check here compiles against Unity 2021's reference
+  assemblies, so it passed. Unity compiles the editor scripts only after the game's, so nothing behind that error had
+  been checked in 6.5 either.
+- **Fixed:**
+  - `CharacterRig` spreads the breathing by a golden-ratio counter, with no id.
+  - `RoomBeacon` widens each field through `uint` (the bits are unchanged).
+  - `Editor/InputHandling` sets Active Input Handling to the Input System package when the editor loads, and offers
+    the restart it needs. The game's input already uses the Input System when it is on (`GameInput`, `UIKit`'s
+    `InputSystemUIInputModule`), and nothing else reads input.
+  - Initialised five fields that only `JsonUtility` or a player build fills, so their warnings don't appear in the
+    editor or the build log.
+- **The check that would have caught it:** `tools/unity_api_check`.
+  - It resolves every Unity API the scripts use with Roslyn, for every `#if` combination, and checks each against the
+    `[Obsolete]` list in Unity's own C# reference source for a given version.
+  - For 6000.5 and 6000.7 the only error in the whole project (game, editor, tests) was `GetInstanceID`. The check
+    flags the old code and passes the new.
+  - `ScriptConventionTests.NoScriptCallsAnApiANewerUnityRemoved` guards the known removed calls inside Unity.
+- **Checked:**
+  - The compile check: no new errors.
+  - Roslyn: no compiler warnings left in any `#if` combination. The same scan shows the five CS0675 on the old
+    `RoomBeacon`.
+  - `unity_api_check` for 6000.5 and 6000.7: no errors.
+- **Not run in Unity.** Open the project in the user's Unity:
+  - accept the restart;
+  - confirm the console is clean;
+  - play a level with touch on the phone, since the input now goes through the Input System;
+  - run the edit-mode tests.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

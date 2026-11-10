@@ -85,10 +85,12 @@ namespace DribbleToSchool.Coop.Net
         {
             ulong v = (ulong)(protocol & 7);
             v = (v << 24) | (sessionId & SessionMask);
-            v = (v << 6) | (ulong)(Math.Min(MaxEpoch, epoch) & 63);
-            v = (v << 3) | (ulong)(Math.Min(7, (int)players) & 7);
-            v = (v << 2) | (ulong)(hostSlot & 3);
-            v = (v << 2) | (ulong)((int)phase & 3);
+            // (each field masked to its bits as an int, then widened through uint, never straight from a signed int: a
+            // straight cast sign-extends, CS0675. The masks keep every value small and positive, so the bits are the same.)
+            v = (v << 6) | (uint)(Math.Min(MaxEpoch, epoch) & 63);
+            v = (v << 3) | (uint)(Math.Min(7, (int)players) & 7);
+            v = (v << 2) | (uint)(hostSlot & 3);
+            v = (v << 2) | (uint)((int)phase & 3);
             var chars = new char[LocalNameLength];
             chars[0] = 'K';
             for (int i = LocalNameLength - 1; i >= 1; i--) { chars[i] = Base64Url[(int)(v & 63)]; v >>= 6; }
@@ -105,7 +107,7 @@ namespace DribbleToSchool.Coop.Net
             {
                 int d = Base64Url.IndexOf(name[i]);
                 if (d < 0) return false;
-                v = (v << 6) | (ulong)d;
+                v = (v << 6) | (uint)d;
             }
             int phase = (int)(v & 3); v >>= 2;
             beacon.hostSlot = (byte)(v & 3); v >>= 2;
