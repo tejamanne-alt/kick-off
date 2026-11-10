@@ -300,6 +300,28 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
 - *Fix:* `face_ink.py` replaces it with her left eye, mirrored across the middle of the face, before the lash lines are drawn. Inside the replaced eye the result is written as it is, not as a change, or the old iris showed through as grey specks.
 - *Rule:* when one side of a scanned face is worse, mirror the good side rather than redraw it. That keeps the kid's own eye, which C14's rule asks for.
 
+**C19. The torso was one rigid block (every character, fixed in v115).**
+- *What:* the user's recordings of Hana and Max dribbling: "the characters' bodies are so stiff, the chest to abdomen part. Because of that hand movement, it looks like hanging from a fixed thing."
+- *Why:*
+  - `CharacterRig` swung the legs, knees, arms, elbows, head and bag about the body's side axis, and pitched the whole body as one piece.
+  - The models' Hips, Spine and Chest bones were never moved; they weren't even on the rig. So the arms swung from a ribcage that never moved.
+  - In a real stride:
+    - the pelvis turns with the legs and the ribcage the other way with the arms;
+    - the trunk sways over the standing leg and dips as the legs reach apart;
+    - the chest breathes all the while.
+- *Fix* (`CharacterRig.Torso`, worked out from the limbs' own pose, so every animator gets it):
+  - the chest turns up to ±15° with the arms' swing, using the sine of each arm's swing so both arms raised overhead turn nothing;
+  - the pelvis turns up to ±10° the other way with the legs;
+  - the torso sways 3° over the straighter leg and dips 2° at full stride;
+  - the chest breathes 0.9°;
+  - the head turns, sways and dips back, so the eyes stay level and ahead;
+  - the builder puts Hips, Spine and Chest on the rig (v115).
+- *Why no weight change:* the torso's weights already blend Hips to Spine to Chest over about 30 cm, so the turn bends through the waist rather than creasing.
+- *Reviewed:* `review/cartoon/render_scenes.py` mirrors it (`TORSO=0` gives the old rigid torso). Its `gait` scene renders a run or walk cycle: `review/characters_v2/torso_run_v115.gif`, `torso_walk_v115.gif`.
+- *Rule:*
+  - Animate the trunk, not only the limbs: a procedural gait needs the pelvis and chest turning against each other.
+  - Review motion as motion (a whole cycle), not as one pose.
+
 ## D. Art direction and look
 
 **D1. A golden-hour haze hid the kid** (before v37).

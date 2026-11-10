@@ -8,12 +8,12 @@
 # the things the kid plays with (coins, animals, cars, crates, cones, the pipe: CELS)).
 # Characters cast no shadows, as in the game (NO_CHAR_SHADOWS=0 lets them). Review scenes: kids (the four primary kids),
 # teens (Hana and Max), solo (SOLO=<Model>, SOLO_H=<height>, SOLO_BAG, SOLO_POSE: one figure three-quarter, front and
-# running); for those and the cast scenes, CAM_FOV, CAM_X, CAM_Z, CAM_TZ move the camera, and HEAD_TILT=<degrees> nods
+# running), gait (SOLO at four moments of its run, GAIT_OFFSET radians on; GAIT=walk for a walk); for those and the cast scenes, CAM_FOV, CAM_X, CAM_Z, CAM_TZ move the camera, and HEAD_TILT=<degrees> nods
 # every head (the menu nods 6 to 20 down, a slide 44). DIAG=<mode> isolates a character fault (docs/LEARNINGS.md C16, C17):
 # norim (no rim), crack (no rim; the ink hull magenta, so cracks and inner outlines show), vc (vertex colours only), tex
 # (the atlas only), parts (each face coloured by its outfit part, UV2.x: 0 white, 1 red, 2 blue, 3 green, 4 yellow;
 # PARTS_UV names the layer, 'Parts' in the polished FBXs). RIM_FLAT=1 draws the rim as v111 to v113 did (whitened by 45%
-# whatever the colour), for before-and-after boards.
+# whatever the colour), for before-and-after boards. TORSO=0 keeps the torso rigid (as before v115: CharacterRig.Torso).
 # --data-only renders only the data pass. The toon look: the albedo (atlas x vertex colour)
 # times a band between the shade tint and the sun, the sun's cast shadows, and for the people the ink hull and a rim.
 import bpy, math, os, sys, random
@@ -337,6 +337,12 @@ def P(**k):
     return d
 
 
+def walk_pose(phase):
+    s = math.sin(phase)
+    return P(legF=s * 20, legB=-s * 20, kneeF=-(6 + 22 * max(0, math.cos(phase + 0.9))), kneeB=-(6 + 22 * max(0, math.cos(phase + math.pi + 0.9))),
+             armF=-s * 16, armB=s * 16, elbowF=16, elbowB=16)
+
+
 def run_pose(phase):
     def fold(a):
         s = max(0.0, math.cos(a + 0.9)); return 14.0 + 80.0 * s * s
@@ -402,6 +408,24 @@ def person(model, loc, yaw, pose, height, bag=None, mask=0.0, ink_w=0.006, rim=0
         swing('UpperLeg.' + n, p['leg' + f]); swing('LowerLeg.' + n, min(p['knee' + f], 0))
         swing('UpperArm.' + n, p['arm' + f]); swing('LowerArm.' + n, max(p['elbow' + f], 0))
     swing('Bag', p['bag'] * 0.3); swing('Head', float(os.environ['HEAD_TILT']) if os.environ.get('HEAD_TILT') else p['headTilt']); swing('Hips', p['lean'], sign=+1)
+    # the torso, as CharacterRig.Torso (TORSO=0: the rigid torso of v114 and before). In Blender's axes the figure faces -y,
+    # its near (right) side is -x: a turn about +z brings the near side forward; a sway about +y tips the top to +x (away).
+    if os.environ.get('TORSO', '1') == '1' and 'Spine' in rig.pose.bones:
+        def turn(bone, turn_deg, sway_deg, dip_deg=0.0):
+            # dip: forward, about the side axis (+x here: a positive turn about +x tips the top toward -y, forward)
+            if bone not in rig.pose.bones: return
+            pb = rig.pose.bones[bone]; inv = pb.bone.matrix_local.to_3x3().inverted()
+            q = Quaternion(inv @ Vector((0, 0, 1)), math.radians(turn_deg)) @ Quaternion(inv @ Vector((0, 1, 0)), math.radians(-sway_deg)) \
+                @ Quaternion(inv @ Vector((1, 0, 0)), math.radians(dip_deg))
+            pb.rotation_quaternion = q @ pb.rotation_quaternion
+        sn = lambda a: math.sin(math.radians(a))
+        arms = sn(p['armF']) - sn(p['armB']); legs = sn(p['legF']) - sn(p['legB'])
+        ct = max(-15.0, min(15.0, arms * 11.0)); ht = max(-10.0, min(10.0, legs * 6.5))
+        apart = min(1.0, abs(legs) / 0.4)
+        sway = max(-1.0, min(1.0, (abs(p['kneeB']) - abs(p['kneeF'])) / 40.0)) * apart * 3.0
+        dip = 2.0 * min(1.0, abs(legs) / 1.2)
+        back = (ct - ht) * 0.5
+        turn('Hips', ht, 0.0); turn('Spine', back, sway, dip * 0.5); turn('Chest', back, 0.0, dip * 0.5); turn('Head', -ct, -sway, -dip)
     rig.scale = (height / native,) * 3
     rig.rotation_euler.z = math.radians(yaw)
     bpy.context.view_layer.update()
@@ -715,6 +739,21 @@ def scene_teens():
     person('BackpackBoy', (1.65, 0.0, 0.0), 25, 'idle', 1.75, bag='KickOff')
 
 
+def scene_gait():
+    """one character at four moments of its run, three-quarter on (as the game's camera sees a run): GAIT=walk for the
+    walk; SOLO, SOLO_H, SOLO_BAG as for solo"""
+    cast_backdrop()
+    m = os.environ.get('SOLO', 'PrimaryBoy'); bag = os.environ.get('SOLO_BAG') or None
+    h = float(os.environ.get('SOLO_H', '1.3'))
+    walk = os.environ.get('GAIT') == 'walk'
+    off = float(os.environ.get('GAIT_OFFSET', '0'))      # (radians: pi gives the other half of the cycle)
+    for i in range(4):
+        ph = off + i * math.pi / 4
+        key = 'gait%d' % i
+        POSES[key] = walk_pose(ph) if walk else run_pose(ph)
+        person(m, (-1.95 + i * 1.3, 0.0, 0.0), 66, key, h, bag=bag)
+
+
 def scene_solo():
     """one character close up for review: three-quarter idle, front idle and running, against the cast backdrop"""
     cast_backdrop()
@@ -725,7 +764,7 @@ def scene_solo():
     person(m, (1.45, 0.0, 0.0), 66, os.environ.get('SOLO_POSE', 'run_stride'), h, bag=bag)
 
 
-SCENES = dict(kids=scene_kids, teens=scene_teens, solo=scene_solo, home=scene_home, market=scene_market, beach=scene_beach, site=scene_site, park=scene_park,
+SCENES = dict(gait=scene_gait, kids=scene_kids, teens=scene_teens, solo=scene_solo, home=scene_home, market=scene_market, beach=scene_beach, site=scene_site, park=scene_park,
               california=scene_california, cast_a=scene_cast_a, cast_b=scene_cast_b, menu=scene_menu)
 SCENES[SCENE]()
 
@@ -733,7 +772,7 @@ SCENES[SCENE]()
 cam = bpy.data.objects.new('cam', bpy.data.cameras.new('cam')); S.collection.objects.link(cam); S.camera = cam
 cam.data.sensor_fit = 'VERTICAL'
 cam.data.clip_start = 0.3; cam.data.clip_end = FAR
-if SCENE.startswith('cast') or SCENE in ('solo', 'kids', 'teens'):
+if SCENE.startswith('cast') or SCENE in ('solo', 'kids', 'teens', 'gait'):
     cam.data.angle_y = math.radians(float(os.environ.get('CAM_FOV', '20')))
     cam.location = (float(os.environ.get('CAM_X', '0.15')), -8.6, float(os.environ.get('CAM_Z', '1.25')))
     target = Vector((float(os.environ.get('CAM_X', '0.15')), 0.0, float(os.environ.get('CAM_TZ', '1.05'))))

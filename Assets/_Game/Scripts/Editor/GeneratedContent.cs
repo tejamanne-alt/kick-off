@@ -22,7 +22,7 @@ namespace DribbleToSchool.EditorTools
     public static class GeneratedContent
     {
         /// <summary>Bump when layouts or the scene rig change so scenes regenerate.</summary>
-        public const int Version = 114;   // 114: every character's head rigid on the Head bone (faces no longer fold as the head nods), the face shaded round, white tears absorbed into their garments, Mia's right eye mirrored from her left; 113: the kids keep their own scanned faces, with Max's finish (face_ink.py; the drawn faces of 111 were rejected); 112: the kids' and bags' meshes out of the scenes (Resources/Cast, LazyRenderer); 111: polished characters (welded, 32k / 14k triangles, illustrated kids' faces), cameras without HDR or MSAA, the player's thicker outline
+        public const int Version = 115;   // 115: the torso on the rig (Hips, Spine, Chest: CharacterRig.Torso turns, sways and breathes the middle of the body); 114: every character's head rigid on the Head bone (faces no longer fold as the head nods), the face shaded round, white tears absorbed into their garments, Mia's right eye mirrored from her left; 113: the kids keep their own scanned faces, with Max's finish (face_ink.py; the drawn faces of 111 were rejected); 112: the kids' and bags' meshes out of the scenes (Resources/Cast, LazyRenderer); 111: polished characters (welded, 32k / 14k triangles, illustrated kids' faces), cameras without HDR or MSAA, the player's thicker outline
 
         const string ScenesDir = LevelBuildKit.Root + "/Scenes";
         const string LevelsDir = LevelBuildKit.Root + "/Levels";

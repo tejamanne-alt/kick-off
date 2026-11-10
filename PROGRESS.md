@@ -1160,6 +1160,33 @@ The user asked for a check on every character, playable and not.
 - every look;
 - the shop's recolours of Hana's jacket and Max's jeans.
 
+## The middle of the body moves (generated content v115)
+
+- **Why.** The user's recordings of Hana and Max dribbling: "the characters' bodies are so stiff, the chest to abdomen
+  part. Because of that hand movement, it looks like hanging from a fixed thing." `CharacterRig` swung the limbs and
+  pitched the whole body as one, and never moved the models' Hips, Spine or Chest bones (`docs/LEARNINGS.md` C19).
+- **`CharacterRig.Torso`** works the trunk out from the limbs' own pose, so every animator gets it: the run, the walk,
+  the passers-by, the menu's keepy-uppies, kicks, co-op ghosts.
+  - **Chest:** turns up to ±15° with the arms' swing (a run about 12°, a walk about 5°).
+  - **Pelvis:** turns up to ±10° the other way with the legs.
+  - **Lower back:** shares the chest's turn against the pelvis, so the twist runs through the waist.
+  - **Sway:** the torso sways 3° over the standing leg and dips 2° as the legs reach apart.
+  - **Breathing:** the chest breathes (0.9°, each character at its own moment).
+  - **Head:** turns, sways and dips back, so the eyes stay level and on the way ahead.
+  - The turns use the sine of each limb's swing (how far the hand or foot reaches in front), so arms raised overhead
+    turn nothing. All six amplitudes can be tuned on the component.
+- **The builder** (`LevelBuildKit.BuildModelCharacter`) puts the Hips, Spine and Chest bones on the rig.
+- **Weights:** no change. The torso already blends from Hips to Spine to Chest over about 30 cm, so the turn bends
+  through the waist.
+- **Cost:** three more joints per character per frame (a few quaternion products).
+- **Reviewed:** `review/cartoon/render_scenes.py` mirrors it (`TORSO=0` gives the old rigid torso), and its `gait`
+  scene renders a run or a walk cycle. See `review/characters_v2/torso_run_v115.gif` (Hana's run, before and after),
+  `torso_run_v115.jpg` and `torso_walk_v115.gif` (Mom's walk).
+- **Checked:** the scripts compile against the reference assemblies with no new errors.
+- **Not run in Unity or on a device.** Check the turn's direction on the phone first: the near shoulder comes forward
+  with the near arm. If it is mirrored, flip the sign in `Torso`. Then look at a run, a walk, the menu's juggling and a
+  kick.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

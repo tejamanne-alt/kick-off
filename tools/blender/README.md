@@ -542,7 +542,9 @@ Why each step exists is in `docs/LEARNINGS.md`, C1 to C8 and C14. In short:
 **Reviewing.** Three tools are available:
 - `review/cartoon/render_scenes.py`, with the cast scenes and the filter ports in `review/{filter,sketch,cartoon}`,
   renders the game's look in every filter. Its `solo`, `kids` and `teens` scenes, `HEAD_TILT` and `DIAG` modes (vertex
-  colours only, atlas only, rim off, ink hull coloured, outfit parts) are for finding a character fault (its header);
+  colours only, atlas only, rim off, ink hull coloured, outfit parts) are for finding a character fault (its header).
+  Its `gait` scene shows a figure at four moments of a run or walk (`GAIT_OFFSET` for the other half of the cycle), with
+  `CharacterRig`'s torso motion mirrored (`TORSO=0` for the rigid torso of before v115);
 - `fbx_to_blend.py` rebuilds a `.blend` from a shipped FBX for `review_teen.py`, `review_poses.py` and
   `portrait_teen.py`;
 - the boards in `review/characters_v2/`.
