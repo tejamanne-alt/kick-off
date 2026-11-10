@@ -237,6 +237,12 @@ namespace DribbleToSchool.Coop
         /// <summary>How many routes and locations there are to choose from (set by the game; random picks among them).</summary>
         public int RouteCount = 6, AddOnCount = 2;
         /// <summary>
+        /// Whether a location has a route's streets (route, location; set by the game: Florida has only the beach so far). Random
+        /// choices only pick a pair that fits, and a chosen location that doesn't fit the route runs in the first (the original).
+        /// Null: every location has every route.
+        /// </summary>
+        public Func<int, int, bool> LocationFits;
+        /// <summary>
         /// A fingerprint of what the race refers to by index (the kids, routes and locations; set by the game). A phone whose
         /// fingerprint differs is turned away as another version (0 on either side: not checked).
         /// </summary>

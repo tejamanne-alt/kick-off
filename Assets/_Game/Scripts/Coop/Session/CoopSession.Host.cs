@@ -238,8 +238,20 @@ namespace DribbleToSchool.Coop
         void BeginLoading(double now)
         {
             var s = Selection;
-            if (s.route == CoopSelection.Random || s.route >= RouteCount) s.route = (byte)random.Next(Math.Max(1, RouteCount));
-            if (s.addOn == CoopSelection.Random || s.addOn >= AddOnCount) s.addOn = (byte)random.Next(Math.Max(1, AddOnCount));
+            bool anyRoute = s.route == CoopSelection.Random || s.route >= RouteCount;
+            bool anyPlace = s.addOn == CoopSelection.Random || s.addOn >= AddOnCount;
+            if (LocationFits == null)
+            {
+                if (anyRoute) s.route = (byte)random.Next(Math.Max(1, RouteCount));
+                if (anyPlace) s.addOn = (byte)random.Next(Math.Max(1, AddOnCount));
+            }
+            else
+            {
+                // A random route in a chosen location: one of the routes it has (Florida: the beach).
+                if (anyRoute) s.route = (byte)PickFitting(RouteCount, r => anyPlace || LocationFits(r, s.addOn));
+                if (anyPlace) s.addOn = (byte)PickFitting(AddOnCount, a => LocationFits(s.route, a));
+                else if (!LocationFits(s.route, s.addOn)) s.addOn = 0;
+            }
             RaceSelection = s;
             RaceId = (byte)(RaceId == 255 ? 1 : RaceId + 1);
             foreach (var p in players)
@@ -415,6 +427,15 @@ namespace DribbleToSchool.Coop
             SendTo(peer);
             peer.uid = 0;
             peer.rejectedAt = clock.NowMs;   // the player's phone hangs up once it reads the reason; else it is dropped in a moment
+        }
+
+        /// <summary>A random index below <paramref name="count"/> that <paramref name="fits"/> (any, if none does).</summary>
+        int PickFitting(int count, Func<int, bool> fits)
+        {
+            count = Math.Max(1, count);
+            var ok = new List<int>();
+            for (int i = 0; i < count; i++) if (fits(i)) ok.Add(i);
+            return ok.Count > 0 ? ok[random.Next(ok.Count)] : random.Next(count);
         }
 
         void ApplySelect(CoopPlayer by, byte route, byte addOn)

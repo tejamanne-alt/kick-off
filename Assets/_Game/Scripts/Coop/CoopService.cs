@@ -62,6 +62,7 @@ namespace DribbleToSchool.Coop
             Session = new CoopSession(link, clock, CoopProfile.Uid, CoopProfile.Name, CoopProfile.Character, 0, CoopProfile.TagSeed);
             Session.RouteCount = RouteTable.All.Length;
             Session.AddOnCount = CoopLocations.Count;
+            Session.LocationFits = CoopLocations.Fits;
             Session.ContentHash = ContentHash();
             Session.KeepHostingWhilePaused = Application.platform == RuntimePlatform.IPhonePlayer;
             Session.Noticed += OnNotice;
@@ -352,6 +353,13 @@ namespace DribbleToSchool.Coop
         public static Progression.AddOn At(int index)
         {
             return index >= 0 && index < List.Count ? List[index] : Progression.AddOns.Original;
+        }
+
+        /// <summary>The location (by index) has the route's streets (by index in RouteTable.All): Florida has only the beach so far.</summary>
+        public static bool Fits(int route, int location)
+        {
+            if (route < 0 || route >= RouteTable.All.Length) return true;
+            return At(location).HasChapter(RouteTable.All[route].chapter);
         }
 
         public static int IndexOf(Progression.AddOn a)

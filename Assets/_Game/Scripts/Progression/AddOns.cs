@@ -18,9 +18,16 @@ namespace DribbleToSchool.Progression
         public readonly Audio.MusicCountry music;
         /// <summary>Unlocked by finishing every story level (the original needs nothing).</summary>
         public readonly bool needsEveryLevel;
+        /// <summary>
+        /// The chapters built in its streets (null: every one). While it is the active add-on, the levels of the
+        /// other chapters stay locked (LevelUnlocks.NotInTown): Florida has only the beach so far.
+        /// </summary>
+        public readonly int[] chapters;
 
-        public AddOn(string id, string nameKey, string placeKey, string sceneSuffix, bool available, Audio.MusicCountry music, bool needsEveryLevel)
+        public AddOn(string id, string nameKey, string placeKey, string sceneSuffix, bool available, Audio.MusicCountry music, bool needsEveryLevel,
+            int[] chapters = null)
         {
+            this.chapters = chapters;
             this.id = id;
             this.nameKey = nameKey;
             this.placeKey = placeKey;
@@ -31,6 +38,12 @@ namespace DribbleToSchool.Progression
         }
 
         public bool Unlocked { get { return available && (!needsEveryLevel || AddOns.EveryLevelFinished); } }
+
+        /// <summary>Its streets have this chapter's levels (every chapter when it lists none).</summary>
+        public bool HasChapter(int chapter) { return chapters == null || System.Array.IndexOf(chapters, chapter) >= 0; }
+
+        /// <summary>It has only some of the chapters (the map says the others are still to come).</summary>
+        public bool Partial { get { return chapters != null; } }
     }
 
     /// <summary>
@@ -38,7 +51,9 @@ namespace DribbleToSchool.Progression
     /// Add-ons and Filters (UI/AddOnsPanel, from the title screen). The original is Kamakura, Japan (a seaside town south
     /// of Tokyo: its shop signs, concrete poles, block walls and the railway). California (Santa Monica)
     /// is unlocked by finishing every story level; each level has a California scene built beside the
-    /// original (&lt;scene&gt;_CA, Editor/StreetBuilder.Coast). India and a Tokyo city add-on are still to come.
+    /// original (&lt;scene&gt;_CA, Editor/StreetBuilder.Coast). Florida (a Space Coast beach town on the A1A) is
+    /// unlocked the same way and so far has only chapter 3, the beach (&lt;scene&gt;_FL, Editor/StreetBuilder.Florida):
+    /// while it is chosen, the other chapters' levels are locked. India and a Tokyo city add-on are still to come.
     /// The filters (a look over the whole picture, drawn by World/PostFX) are listed beside them: the
     /// original look, the comic halftone (a printed comic: cel bands, halftone dots, an ink line,
     /// colour plates out of register, paper), the pencil sketch (pencil lines and hatching on paper,
@@ -51,14 +66,22 @@ namespace DribbleToSchool.Progression
         public const string CaliforniaId = "california";
         /// <summary>What a level's California scene adds to its scene's name.</summary>
         public const string CaliforniaSuffix = "_CA";
+        public const string FloridaId = "florida";
+        /// <summary>What a level's Florida scene adds to its scene's name.</summary>
+        public const string FloridaSuffix = "_FL";
+        /// <summary>The chapters Florida's streets have so far: the beach (Seaside Road).</summary>
+        public static readonly int[] FloridaChapters = { 3 };
 
         public static readonly AddOn Original = new AddOn(OriginalId, "addon.original", "addon.original.place", "", true, Audio.MusicCountry.Japan, false);
         public static readonly AddOn California = new AddOn(CaliforniaId, "addon.california", "addon.california.place", CaliforniaSuffix, true, Audio.MusicCountry.California, true);
+        public static readonly AddOn Florida = new AddOn(FloridaId, "addon.florida", "addon.florida.place", FloridaSuffix, true, Audio.MusicCountry.Florida, true,
+            FloridaChapters);
 
         public static readonly AddOn[] All =
         {
             Original,
             California,
+            Florida,
             new AddOn("india", "addon.india", "addon.india.place", "_IN", false, Audio.MusicCountry.Japan, true),
             new AddOn("japan", "addon.japan", "addon.japan.place", "_JP", false, Audio.MusicCountry.Japan, true),
         };
@@ -116,6 +139,9 @@ namespace DribbleToSchool.Progression
                 return a.Unlocked ? a : Original;
             }
         }
+
+        /// <summary>The active add-on's streets have this chapter's levels (the original and California have every chapter).</summary>
+        public static bool InTown(int chapter) { return Active.HasChapter(chapter); }
 
         /// <summary>Choose an add-on (only an unlocked one is kept); saves.</summary>
         public static void Select(AddOn addOn)

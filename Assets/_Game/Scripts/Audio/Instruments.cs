@@ -438,6 +438,60 @@ namespace DribbleToSchool.Audio
             }
         }
 
+        /// <summary>Claves: two hardwood sticks struck together, a bright, dry knock with a short ring.</summary>
+        public static void Clave(Track tr, double time, float vel)
+        {
+            int start = Index(time);
+            int n = (int)(0.12 * Sr);
+            double p1 = 0, p2 = 0;
+            for (int i = 0; i < n; i++)
+            {
+                double t = i / (double)Sr;
+                p1 += 2500.0 / Sr;
+                p2 += 3700.0 / Sr;
+                double v = (Math.Sin(TwoPi * p1) + 0.25 * Math.Sin(TwoPi * p2) * Math.Exp(-t * 40)) * Math.Exp(-t * 38) * Math.Min(1, t / 0.0008);
+                tr.Add(start + i, (float)v * vel * 0.45f * Tail(i, n));
+            }
+        }
+
+        /// <summary>A bongo, played with the fingers: the small drum (high) or the larger one, a tight skin with a quick pitch drop.</summary>
+        public static void Bongo(Track tr, double time, float vel, bool high, int seed)
+        {
+            int start = Index(time);
+            int n = (int)(0.2 * Sr);
+            double ph = 0;
+            double f0 = high ? 520 : 380;
+            var noise = new NoiseSource(seed);
+            var slap = new Svf();
+            for (int i = 0; i < n; i++)
+            {
+                double t = i / (double)Sr;
+                ph += f0 * (1 + 0.22 * Math.Exp(-t * 60)) / Sr;
+                slap.Process(noise.White(), 3000, 0.8);
+                double v = Math.Sin(TwoPi * ph) * Math.Exp(-t * (high ? 24 : 18)) + slap.band * 0.35 * Math.Exp(-t * 120);
+                tr.Add(start + i, (float)(v * Math.Min(1, t / 0.001)) * vel * 0.55f * Tail(i, n));
+            }
+        }
+
+        /// <summary>A guiro: a stick scraped along a ridged gourd, a rasp of quick ticks over <paramref name="dur"/> seconds.</summary>
+        public static void Guiro(Track tr, double time, double dur, float vel, int seed)
+        {
+            int start = Index(time);
+            double len = Math.Min(Math.Max(dur, 0.08), 0.5);
+            int n = (int)((len + 0.03) * Sr);
+            var noise = new NoiseSource(seed);
+            var flt = new Svf();
+            double ridges = 48.0;
+            for (int i = 0; i < n; i++)
+            {
+                double t = i / (double)Sr;
+                flt.Process(noise.White(), 3600, 1.4);
+                double tick = Math.Pow(0.5 + 0.5 * Math.Cos(TwoPi * ridges * t), 6);
+                double env = Math.Min(1, t / 0.01) * (t < len ? 1 - 0.4 * t / len : Math.Max(0, 1 - (t - len) / 0.03));
+                tr.Add(start + i, flt.band * (float)(tick * env) * vel * Tail(i, n));
+            }
+        }
+
         /// <summary>Old vinyl over the whole loop: a soft, dark hiss and a scatter of gentle crackles.</summary>
         public static void Vinyl(Track tr, float vel, int seed)
         {

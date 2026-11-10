@@ -18,6 +18,8 @@ namespace DribbleToSchool.Progression
         public static bool IsUnlocked(LevelCatalog catalog, LevelDefinition level)
         {
             if (!Store.Monetization.IsChapterUnlocked(level.chapter)) return false;
+            // An add-on with only some chapters built (Florida: the beach) keeps the others' levels locked.
+            if (NotInTown(level)) return false;
             if (level.isChallenge)
             {
                 foreach (var l in catalog.LevelsInChapter(level.chapter))
@@ -28,6 +30,15 @@ namespace DribbleToSchool.Progression
             }
             var previous = PreviousStory(catalog, level);
             return StoryOpen(level.levelId, previous != null ? previous.levelId : null, SaveSystem.Data, Cozy);
+        }
+
+        /// <summary>
+        /// The level's chapter isn't in the active add-on's streets yet (Florida has only the beach): it stays locked while that
+        /// add-on is chosen, and the map says so when it is tapped.
+        /// </summary>
+        public static bool NotInTown(LevelDefinition level)
+        {
+            return level != null && !AddOns.InTown(level.chapter);
         }
 
         /// <summary>
@@ -67,9 +78,31 @@ namespace DribbleToSchool.Progression
             string id = NextToPlay(story, SaveSystem.Data, Cozy, levelId =>
             {
                 var def = catalog.FindById(levelId);
-                return def != null && Store.Monetization.IsChapterUnlocked(def.chapter);
+                return def != null && Store.Monetization.IsChapterUnlocked(def.chapter) && AddOns.InTown(def.chapter);
             });
-            return id != null ? catalog.FindById(id) : null;
+            var next = id != null ? catalog.FindById(id) : null;
+            // Everything done (an add-on needs every level finished) and the last level isn't in this add-on's streets:
+            // the first of its levels still short of three stars, or else its first.
+            if (next != null && NotInTown(next))
+            {
+                var inTown = new List<string>();
+                foreach (string s in story)
+                {
+                    var def = catalog.FindById(s);
+                    if (def != null && !NotInTown(def)) inTown.Add(s);
+                }
+                string pick = FirstShortOfStars(inTown, SaveSystem.StarsFor);
+                next = pick != null ? catalog.FindById(pick) : null;
+            }
+            return next;
+        }
+
+        /// <summary>The first of <paramref name="levels"/> with fewer than three stars, else the first; null if there are none.</summary>
+        public static string FirstShortOfStars(IList<string> levels, Func<string, int> stars)
+        {
+            foreach (string id in levels)
+                if (stars(id) < 3) return id;
+            return levels.Count > 0 ? levels[0] : null;
         }
 
         /// <summary>Cozy mode (the school bell turned off): stages open without an on-time trip.</summary>

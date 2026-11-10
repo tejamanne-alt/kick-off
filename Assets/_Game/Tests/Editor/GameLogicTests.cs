@@ -25,6 +25,52 @@ namespace DribbleToSchool.Tests
         // ---------- Localization ----------
 
         [Test]
+        public void EveryAddOnHasItsNamesAndItsOwnSceneSuffix()
+        {
+            var en = StringTables.For("en");
+            var ids = new HashSet<string>();
+            var suffixes = new HashSet<string>();
+            foreach (var a in AddOns.All)
+            {
+                Assert.IsTrue(ids.Add(a.id), a.id + " is listed twice");
+                if (a.sceneSuffix.Length > 0) Assert.IsTrue(suffixes.Add(a.sceneSuffix), a.id + "'s scene suffix is another's");
+                Assert.IsTrue(en.ContainsKey(a.nameKey), a.nameKey);
+                Assert.IsTrue(en.ContainsKey(a.placeKey), a.placeKey);
+            }
+            Assert.AreSame(AddOns.Florida, AddOns.ById(AddOns.FloridaId));
+            Assert.AreSame(AddOns.Florida, AddOns.OfScene("L12_LowTide" + AddOns.FloridaSuffix));
+        }
+
+        [Test]
+        public void FloridaHasOnlyTheBeachSoFarAndItsOwnMusic()
+        {
+            var fl = AddOns.Florida;
+            Assert.IsTrue(fl.available);
+            Assert.IsTrue(fl.needsEveryLevel, "Florida is unlocked like California, by finishing every level");
+            Assert.AreEqual(MusicCountry.Florida, fl.music);
+            Assert.IsTrue(fl.Partial);
+            for (int chapter = 1; chapter <= 5; chapter++)
+                Assert.AreEqual(chapter == 3, fl.HasChapter(chapter), "chapter " + chapter);
+            for (int chapter = 1; chapter <= 5; chapter++)
+            {
+                Assert.IsTrue(AddOns.Original.HasChapter(chapter));
+                Assert.IsTrue(AddOns.California.HasChapter(chapter));
+            }
+            Assert.IsFalse(AddOns.California.Partial);
+        }
+
+        [Test]
+        public void EveryCountrysMusicIsItsOwn()
+        {
+            // The loops differ by country: Florida's beach isn't California's surf rock or the original's J-pop.
+            var fl = MusicGenerator.Generate(Soundscape.Beach, MusicCountry.Florida);
+            var ca = MusicGenerator.Generate(Soundscape.Beach, MusicCountry.California);
+            var jp = MusicGenerator.Generate(Soundscape.Beach, MusicCountry.Japan);
+            Assert.AreNotEqual(fl.Length, ca.Length);
+            Assert.AreNotEqual(fl.Length, jp.Length);
+        }
+
+        [Test]
         public void EveryLanguageHasTheSameKeys()
         {
             var en = StringTables.For("en");
@@ -190,13 +236,16 @@ namespace DribbleToSchool.Tests
         [Test]
         public void MusicLoopsForEverySoundscape()
         {
-            foreach (var scape in Soundscapes.All)
-            {
-                float[] music = MusicGenerator.Generate(scape);
-                Assert.AreEqual(0, music.Length % MusicGenerator.Channels, scape + " is not whole stereo frames");
-                Assert.Greater(music.Length / MusicGenerator.Channels, Synth.SampleRate * 20, scape + " too short");
-                Assert.IsFalse(music.Any(v => float.IsNaN(v) || Mathf.Abs(v) > 1f), scape + " invalid samples");
-            }
+            // Every country's loops (the original's, California's and Florida's), for every place.
+            foreach (MusicCountry country in System.Enum.GetValues(typeof(MusicCountry)))
+                foreach (var scape in Soundscapes.All)
+                {
+                    float[] music = MusicGenerator.Generate(scape, country);
+                    string what = country + " " + scape;
+                    Assert.AreEqual(0, music.Length % MusicGenerator.Channels, what + " is not whole stereo frames");
+                    Assert.Greater(music.Length / MusicGenerator.Channels, Synth.SampleRate * 20, what + " too short");
+                    Assert.IsFalse(music.Any(v => float.IsNaN(v) || Mathf.Abs(v) > 1f), what + " invalid samples");
+                }
         }
 
         [Test]

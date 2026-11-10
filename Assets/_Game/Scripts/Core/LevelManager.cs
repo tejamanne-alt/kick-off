@@ -180,7 +180,9 @@ namespace DribbleToSchool.Core
                     var leg = catalog.FindById(TripRoute.levels[LegIndex + 1]);
                     if (leg != null && LevelUnlocks.IsUnlocked(catalog, leg)) return leg;
                 }
-                return catalog.NextAfter(level);
+                // Not into a level the chosen add-on's streets don't have yet (Florida: only the beach); Next then finishes.
+                var after = catalog.NextAfter(level);
+                return after != null && LevelUnlocks.NotInTown(after) ? null : after;
             }
         }
 
@@ -655,7 +657,7 @@ namespace DribbleToSchool.Core
             if (level != null) SaveResult(ref result);
             // After a route's last leg, is the next stage still shut (a trip that has never got to school on time)?
             var next = result.onRoute && result.lastLeg && catalog != null ? catalog.NextAfter(level) : null;
-            result.nextLocked = next != null && !LevelUnlocks.StoryOpen(next.levelId, level.levelId, SaveSystem.Data, Cozy);
+            result.nextLocked = next != null && !LevelUnlocks.NotInTown(next) && !LevelUnlocks.StoryOpen(next.levelId, level.levelId, SaveSystem.Data, Cozy);
             Result = result;
 
             SetState(LevelState.Complete);
@@ -795,6 +797,13 @@ namespace DribbleToSchool.Core
         public static void LoadLevel(LevelDefinition def)
         {
             TimeControl.ResetTime();
+            // A level the chosen add-on's streets don't have yet stays locked (the map and Next never offer one): back to the map.
+            if (LevelUnlocks.NotInTown(def))
+            {
+                Debug.LogWarning("[Levels] " + def.levelId + " isn't in " + Progression.AddOns.Active.id + "'s streets yet: back to the map.");
+                FrontEnd.FrontEndController.Open(FrontEnd.FrontEndScreenId.Map, def.chapter);
+                return;
+            }
             // The level's scene for the add-on chosen in Settings (Progression/AddOns: California...).
             SceneManager.LoadScene(Progression.AddOns.SceneFor(def.sceneName));
         }
