@@ -434,6 +434,67 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
   - Before trusting a review renderer, check it on one known case against the game, and check that each modifier keeps what the game reads (custom normals, vertex colours, UVs). C9 again.
   - Look at a garment's edges (hems, waistbands, fringes) in the parts view, not only its middle.
 
+**C21. Feet and legs through the pavement in a slide, a kick and a landing (every playable kid, fixed in v119).**
+- *What:* the user's screenshots of Mia sliding: her legs went into the ground. Posed on the shipped models and measured
+  against the ground (a Blender copy of `CharacterRig` and `KidAnimator`), the slide put the back foot and shin 17 to 25 cm
+  under the pavement on all six kids, the front heel 5 to 9 cm. The landing crouch sank 1 to 5 cm, a kick from a stride
+  2 to 3 cm, and even the run's passing step 2 to 3 cm.
+- *Why:*
+  - The poses are joint angles, written for the procedural kid long ago. Nothing ever checked where the model's surface
+    ends up: the feet can't point (no ankle on the rig), so a shin folded back under a level thigh, as the slide's back
+    leg was, drives the foot straight down.
+  - Every pose review (`review_poses.py`) framed the figure on its own, with no ground line.
+- *Fix:*
+  - The slide's back leg is tucked with its knee up (the thigh 45 degrees above level) and its foot planted ahead of it.
+  - `CharacterRig` keeps the model above the ground: `LevelBuildKit` measures about 140 points on each model's surface
+    (the extremes of the soles, shins, knees, seat, forearms and hands, each in its bone's frame), and after every pose
+    the body is lifted just enough that none is lower than the lowest stands at rest. Every animator gets it: the kid,
+    the menu's keepy-uppies, co-op ghosts, passers-by.
+  - Measured on all six kids after the fix: at most 0.6 cm under the ground in any of the poses above.
+- *Rule:* a pose is checked against the ground on the real models (the depth below it, in cm), not only by eye from
+  the side. A pose written as joint angles needs a contact constraint, or it drifts through the floor on the next model.
+
+**C22. White and stray patches in any outfit but the character's own (every scanned character, fixed in v119).**
+- *What:* after v116, the user still saw "white tears/patches across all the models", with Mia in the game as the
+  example: a white collar, white slivers at the sleeves, red and white streaks down her shorts, khaki flecks on her
+  socks, a zebra of green and pink in the shorts. They were playing in the Holiday kit (a teal top, khaki shorts).
+- *Why:*
+  - The shop recolours outfit parts 1 to 3 only. A face painted the garment's colour but left with no part keeps its
+    own colour; a garment-tagged face on something else takes the garment's new colour.
+  - C16 and C20 absorbed only *greyish* faces of no part, and every review board was made in each character's own
+    colours, where a white face on a white shirt, a red one on red shorts or a navy one on navy jeans is invisible.
+  - The atlas divides a garment's texels by its colour channel by channel. For a saturated colour (Mia's red shorts)
+    the faint green and blue channels blew up into stripes that show in any other outfit.
+  - The other characters had the same faults: Max's navy waistband and turned-up hems, the red and white slivers in
+    Kai's plaid, and so on.
+- *Fix:* `polish_lib.settle_parts`, run on every character by `polish_all.py`:
+  - a face takes the part covering most of the surface round it (bare skin has no vote for a face that isn't skin, and
+    a face's own kind has none) when a good share of that part there is painted like it, or when it is a sparse pale
+    streak; skin never joins a garment, and prints and logos keep their part (their colours are unlike the garment's);
+  - a stray island of a garment on something else (the shorts-tagged flecks on a sock) leaves the garment and shows its
+    texel as painted;
+  - a face moved into a garment takes its vertex colour, and its texels become their light against the garment's colour,
+    in grey; a saturated garment's texels become grey the same way (no zebra);
+  - along the hairline: the scans painted Max's fringe (white highlights, grey tips, brown spots) across his forehead,
+    where the modelled fringe doesn't lie, and the shading turned it into the "black spots". Light paint on the skin
+    within 2 cm of the hair takes the colour of that face's own skin; slivers of no part on the hair's edge take the
+    skin, and specks inside the hair join it. Partly done: the white slivers and dark spots are gone, the grey tips are
+    much fainter but still show on his card (`review/characters_v2/max_forehead_v119.jpg`).
+- *Then the brows (the user's word: "Don't wipe out the eyebrows, keep them as they were").* The first hairline rules
+  painted over the jogger's brows (her scan tags them as hair) and broke Mom's (they lie within 2 cm of her hair).
+  Now nothing in `settle_parts` touches a face or texel within 7 mm of a mark on the face that isn't joined to the hair
+  (a brow, even one tagged as hair, the eyes, the lips), and the hairline steps take only light paint. Checked by a
+  pixel difference of every head before and after (`heads_changed_pixels_v119.jpg`): the changes lie on the hairlines
+  only.
+- *Rule:*
+  - Review every character in an outfit that is not its own (the Holiday kit: `outfit_render.py`) as well as its
+    default. A fault that only shows in one colour is still a fault.
+  - A clean-up of paint near the face is checked with a pixel difference of the heads before and after: it must not
+    reach the brows, eyes or mouth.
+  - A rule that moves parts by colour judges once on the parts as they came, never round by round from its own
+    results (each cascade here ate a garment: a shirt into the hair, cream sleeves into a jacket), and compares colours
+    by ratio, not difference (every dark colour is near every other by difference).
+
 ## D. Art direction and look
 
 **D1. A golden-hour haze hid the kid** (before v37).
@@ -473,6 +534,7 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
 - **E6. Coins the drawn kid ran through.** The capsule was 1.2 m tall; the drawn kid is about 1.6 m. *Rule:* collision matches the drawn character; run `tools/coin_audit.py` after a layout change.
 - **E7. Camera framing back and forth** (v85 closer; v86 closer still, reverted). *Rule:* any camera change passes a collectible-visibility sweep and the control-layout check.
 - **E8. The map and the levels disagreed.** *Rule:* one layout is the source of truth, with validators in both directions.
+- **E9. A flower obstacle that looked painted on the floor (fixed in v119).** Chapter 1's low obstacle was sometimes three of the Plants kit's flower patches standing straight on the paving, their leaves flat on it, with nothing to say what blocks the way. *Fix:* a raised bed: a stone kerb, soil and the patches growing out of it (`FlowerBed`). *Rule:* an obstacle reads as solid from the side: give soft things (plants, cloth) a hard base or container.
 
 ## F. UI and menus
 
@@ -503,6 +565,7 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
 
 Never re-propose what is rejected here.
 - **Characters:** keep the user's own character designs: outfit, hair, likeness and their reference photos and drawings. Don't replace them with generic anime models (v84 was reverted at once). They should look like polished game characters, not photographs.
+- **Brows:** keep every character's eyebrows exactly as they are; no clean-up may wipe or repaint them (C22).
 - **Kids' faces:**
   - Keep each kid's own scanned eyes, nose and mouth, at their own sizes.
   - No drawn-on doll eyes or stroke noses and mouths (v111 was reverted as "aliens").

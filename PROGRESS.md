@@ -1473,6 +1473,57 @@ The user asked for a check on every character, playable and not.
   and the hint now take `TouchButton.HintLabelArea` and `HintArea`, whose corners lie at most `TextReach` (0.45) from the
   centre, clear of the rim; `TouchButtonTests` checks it.
 
+## Feet on the ground, no stray patches in any outfit, a flower bed (generated content v119)
+
+**Why.** The user's screenshots of Mia in the Holiday kit (teal top, khaki shorts):
+- "lots of white tears/patches across all the models";
+- the flower obstacle looked "attached to the floor";
+- when sliding or kicking, "the foot/legs are going into the ground";
+- black spots on Max's forehead (his player card).
+They asked for each to be fixed on every character. Later: "Don't wipe out the eyebrows, keep them as they were."
+
+**Feet and legs through the ground** (`docs/LEARNINGS.md` C21). Posed on the shipped models and measured
+(`tools/blender/ground_check.py`), the slide put the back foot and shin 17 to 25 cm under the pavement on all six
+kids, a landing 1 to 5 cm, a kick from a stride and the run's passing step 2 to 3 cm.
+- **The slide's back leg** is tucked with its knee up and its foot planted (`KidAnimator.SlidePose`, and
+  `CoopGhost`'s copy), instead of the shin folded down under a level thigh.
+- **`CharacterRig` keeps the model on the ground.** `LevelBuildKit.MeasureGroundPoints` stores about 140 points of
+  each model's surface (the extremes of the soles, shins, knees, seat, forearms and hands, in their bones' frames).
+  After every pose the rig lifts the body just enough that none is lower than the lowest stands at rest. Every
+  animator gets it: the kid, the menu, co-op ghosts, passers-by.
+- **Measured after:** at most 0.6 cm under the ground on any of the six kids in any pose checked. The slide now
+  lifts the body 7 to 15 cm above where the pose put it: the trailing foot and the planted hand meet the ground.
+- `review/characters_v2/slide_ground_v119.jpg`: Mia and Max from the side, before and after.
+
+**Patches in a recoloured outfit** (C22). Rendered flat in the Holiday kit (`tools/blender/outfit_render.py`), every
+scanned character showed faces left out of a garment (Mia's white collar and sleeve hems, the red and white streaks
+down her shorts, Max's navy waistband and hems, red and white slivers in Kai's plaid, Hana's dark jacket slivers) or
+tagged with one they don't belong to (khaki flecks on Mia's socks), and a green and pink zebra in Mia's shorts.
+`polish_lib.settle_parts`, run on all twelve characters by `polish_all.py`:
+- a face of no part joins the part round it when it is painted like it (by colour ratio) or is a sparse pale streak;
+  only faces of no part move into a part, judged once where a rule could cascade;
+- a stray island of a garment on something else leaves it and shows its texel as painted;
+- a saturated garment's texels become grey shading (no zebra);
+- along the hairline, light paint on the skin within 2 cm of the hair takes the skin's colour (Max's forehead).
+- **The brows are untouched:** nothing within 7 mm of a mark on the face that isn't joined to the hair is changed,
+  and a pixel difference of every head shows changes on the hairlines only.
+- Boards: `outfits_holiday_v119.jpg` (all twelve, Holiday kit, before and after), `heads_brows_kept_v119.jpg`,
+  `heads_changed_pixels_v119.jpg`, `max_forehead_v119.jpg`, `player_cards_v119.jpg` (all six cards re-rendered).
+- **Still to do:** Max's grey fringe tips are fainter but not gone; Max's waistband keeps a few navy patches; one
+  jacket-tagged wedge in the office worker's shirt (a peninsula of the jacket, not an island) stays.
+
+**The flower obstacle** (E9). Chapter 1's low obstacle could be three flower patches standing on the bare paving, their
+leaves flat on it. It is now a raised bed (`LevelBuildKit.FlowerBed`): a stone kerb, soil, the patches growing out of it
+to a little over the box's top.
+
+**Cost** (`docs/PERFORMANCE.md`): about 140 points transformed per posed model character per frame (one matrix per
+bone, est. 0.01 to 0.03 ms each on the Nord CE5). Meshes and atlases are the same size.
+
+**Checked:** no new compile errors in any `#if` set (a planted error is caught), `unity_api_check` 6000.7 clean, the
+ground measured on all six kids, every character rendered before and after. **Not run in Unity or on a device.** Check
+on the phone: a slide (the trailing foot on the pavement, the slide still clears the bars), kicks, a landing, the run
+(no visible change in its bounce), the flower bed in L01, and Mia, Max and Kai in the Holiday kit.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

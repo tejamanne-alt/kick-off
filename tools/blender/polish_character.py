@@ -78,6 +78,7 @@ for o in [o for o in bpy.data.objects if o.type == 'MESH']:
     r['mixed_part_faces_fixed'] = pl.fix_parts(o)
     if body:
         r['tear_faces_absorbed'] = pl.absorb_tears(o, ATLAS_PX)
+        r['faces_settled'], r['hairline_faces_repainted'] = pl.settle_parts(o, ATLAS_PX)
     pl.fix_weights(o)
     pl.smooth_normals(o, face)
     r['tris_out'] = pl.tris(o); r['open_edges_out'] = pl.open_edges(o)
@@ -94,7 +95,7 @@ bpy.ops.export_scene.fbx(filepath=out_fbx, use_selection=True, apply_scale_optio
 
 # the atlas: every gap filled from its island (the body's UVs; the bags have atlases of their own, shared by every kid)
 kid = bpy.data.objects['Kid']
-filled = pl.fill_atlas(kid, ATLAS)
+filled = pl.push_pull(ATLAS_PX, pl.coverage(pl.uv_triangles(kid), ATLAS_PX.shape[0]))   # (with settle_parts' texels)
 pl.save_png(filled, os.path.join(OUT, NAME + 'Atlas.png'))
 with open(os.path.join(OUT, NAME + '_polish.json'), 'w') as f:
     json.dump(report, f, indent=1)

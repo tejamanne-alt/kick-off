@@ -469,6 +469,7 @@ namespace DribbleToSchool.EditorTools
             rig.hips = hips;
             rig.spine = bone("Spine");
             rig.chest = bone("Chest");
+            MeasureGroundPoints(rig, smr);
 
             smr.sharedMaterial = material;
             // Four bones a vertex, whatever the device's quality level: the models are weighted with smooth four-bone
@@ -525,6 +526,74 @@ namespace DribbleToSchool.EditorTools
             // On a kid who wears the Locker Room's bags, the pennant comes and goes with the bag (Presentation/BagWear).
             if (parts.bags != null) parts.onBag = new List<GameObject> { pole.gameObject, flag.gameObject };
             return parts;
+        }
+
+        /// <summary>The bones that can come near the ground in a pose: the seat, the legs, the feet, the forearms and hands.</summary>
+        static readonly string[] GroundBoneNames =
+            { "Hips", "UpperLeg.L", "UpperLeg.R", "LowerLeg.L", "LowerLeg.R", "Foot.L", "Foot.R", "LowerArm.L", "LowerArm.R", "Hand.L", "Hand.R" };
+
+        /// <summary>
+        /// The points CharacterRig keeps above the ground (docs/LEARNINGS.md C21): for each bone that can come near it, the
+        /// vertices it carries most of that reach furthest in 14 directions of the bone's own frame (its sides, ends and
+        /// corners), in that frame. The posed joints are angles, so the mesh itself is the only place to learn where a sole,
+        /// a heel, a knee or the seat is; about 140 points a model, a few microseconds a frame.
+        /// </summary>
+        static void MeasureGroundPoints(CharacterRig rig, SkinnedMeshRenderer smr)
+        {
+            Mesh mesh = smr.sharedMesh;
+            Transform[] bones = smr.bones;
+            if (mesh == null || bones == null) return;
+            Vector3[] verts = mesh.vertices;
+            BoneWeight[] weights = mesh.boneWeights;
+            Matrix4x4[] binds = mesh.bindposes;
+            if (verts.Length == 0 || weights.Length != verts.Length || binds.Length != bones.Length) return;
+            var dirs = new List<Vector3>();
+            for (int x = -1; x <= 1; x++)
+                for (int y = -1; y <= 1; y++)
+                    for (int z = -1; z <= 1; z++)
+                    {
+                        int n = Mathf.Abs(x) + Mathf.Abs(y) + Mathf.Abs(z);
+                        if (n == 1 || n == 3) dirs.Add(new Vector3(x, y, z).normalized);
+                    }
+            var groundBones = new List<Transform>();
+            var points = new List<Vector3>();
+            var pointBone = new List<int>();
+            foreach (string name in GroundBoneNames)
+            {
+                int bi = -1;
+                for (int i = 0; i < bones.Length && bi < 0; i++)
+                    if (bones[i] != null && (SameName(bones[i].name, name) || SameName(bones[i].name, name.Replace('.', '_')))) bi = i;
+                if (bi < 0) continue;
+                var local = new List<Vector3>();
+                for (int v = 0; v < verts.Length; v++)
+                    if (DominantBone(weights[v]) == bi) local.Add(binds[bi].MultiplyPoint3x4(verts[v]));
+                if (local.Count == 0) continue;
+                var chosen = new HashSet<int>();
+                foreach (Vector3 d in dirs)
+                {
+                    int best = 0; float bestDot = float.MinValue;
+                    for (int k = 0; k < local.Count; k++)
+                    {
+                        float dot = Vector3.Dot(local[k], d);
+                        if (dot > bestDot) { bestDot = dot; best = k; }
+                    }
+                    chosen.Add(best);
+                }
+                groundBones.Add(bones[bi]);
+                foreach (int k in chosen) { points.Add(local[k]); pointBone.Add(groundBones.Count - 1); }
+            }
+            rig.groundBones = groundBones.ToArray();
+            rig.groundPoints = points.ToArray();
+            rig.groundPointBone = pointBone.ToArray();
+        }
+
+        static int DominantBone(BoneWeight w)
+        {
+            int b = w.boneIndex0; float best = w.weight0;
+            if (w.weight1 > best) { b = w.boneIndex1; best = w.weight1; }
+            if (w.weight2 > best) { b = w.boneIndex2; best = w.weight2; }
+            if (w.weight3 > best) { b = w.boneIndex3; }
+            return b;
         }
 
         [Serializable]
@@ -2862,7 +2931,7 @@ namespace DribbleToSchool.EditorTools
                     // A low step: the stone border (procedural), or the chapter's own low thing.
                     switch (Chapter)
                     {
-                        case 1: return pick % 3 == 1 && FillWith(parent, "Plants", "FlowerPatch", center, size, 1.4f, 3, 1, 0f, null);
+                        case 1: return pick % 3 == 1 && FlowerBed(parent, center, size);
                         case 2:
                         case 4: return pick % 2 == 1 && FillWith(parent, "Street", "Pallet", center, size, 1.2f, 1, 2, 90f, null);
                         default: return false;
@@ -2886,6 +2955,37 @@ namespace DribbleToSchool.EditorTools
                 // Drinks crates stack whole crates rather than stretching one stack tall.
                 Vector3 crates = KitSize("Street", "DrinksCrates");
                 return Stretch(parent, "Street", "DrinksCrates", center, size, 0.9f, 1f, 0f, null, crates.y > 0.05f ? Mathf.Max(1, Mathf.RoundToInt(h / crates.y)) : 1);
+            }
+
+            /// <summary>
+            /// A raised flower bed filling a low obstacle's box: a stone kerb round a bed of soil, the Plants kit's flower
+            /// patches growing out of it up to the top of the box (a little over: they're soft). The patches alone stood on the
+            /// bare paving with their leaves flat on it, so the obstacle read as flowers painted on the floor
+            /// (docs/LEARNINGS.md E9).
+            /// </summary>
+            bool FlowerBed(Transform parent, Vector2 center, Vector2 size)
+            {
+                Vector3 native = KitSize("Plants", "FlowerPatch");
+                if (native.x < 0.05f || native.y < 0.05f || native.z < 0.05f || !HasKitModel("Plants", "FlowerPatch")) return false;
+                float w = size.x, h = size.y;
+                const float depth = 1.4f, wall = 0.07f;
+                float kerb = Mathf.Clamp(h * 0.42f, 0.08f, 0.2f);
+                // the kerb (a stone box the bed's size) and the soil just inside its rim
+                Part(parent, "Kerb", new Vector3(0f, -h * 0.5f + kerb * 0.5f, 0f), new Vector3(w, kerb, depth),
+                    new Color(0.74f, 0.73f, 0.7f), Art.surfaces[ProceduralArt.Surface.Concrete]);
+                Part(parent, "Soil", new Vector3(0f, -h * 0.5f + kerb + 0.004f, 0f), new Vector3(w - 2f * wall, 0.01f, depth - 2f * wall),
+                    new Color(0.34f, 0.25f, 0.18f));
+                // three patches across the bed, from the soil to a little over the box's top
+                float bottom = center.y - h * 0.5f + kerb, tall = h - kerb + 0.08f;
+                float inner = depth - 2f * wall, each = inner / 3f;
+                for (int c = 0; c < 3; c++)
+                {
+                    float z = -inner * 0.5f + each * (c + 0.5f);
+                    var t = KitModel(parent, "Plants", "FlowerPatch", new Vector3(center.x, bottom, z), (c % 2) * 180f, 1f, null);   // (half turned, so they differ; a quarter turn would swap the stretch)
+                    if (t == null) return false;
+                    t.localScale = new Vector3((w - 2f * wall) / native.x, tall / native.y, each * 1.15f / native.z);
+                }
+                return true;
             }
 
             static readonly Color[] BinTints =

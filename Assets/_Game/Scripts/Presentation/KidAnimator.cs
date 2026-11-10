@@ -416,12 +416,12 @@ namespace DribbleToSchool.Presentation
 
         /// <summary>
         /// A feet-first slide, like a slide tackle: leaning far back, the front leg stretched out
-        /// just off the ground, the back leg folded under with its knee up, the far hand planted on
+        /// just off the ground, the back leg tucked with its knee up and its foot planted, the far hand planted on
         /// the ground beside the hip and the near arm thrown forward for balance, chin down to
         /// look ahead. Joint angles are in the body's frame, so the lean adds to every limb: each
         /// limb below is written as (its direction in the world, from straight down, + forward)
         /// minus the lean. The body drops so the hips sit <see cref="slideHipHeight"/> of a leg
-        /// above the ground.
+        /// above the ground; CharacterRig then lifts it just as far as keeps every part of the model above the ground.
         /// </summary>
         RigPose SlidePose(float speed)
         {
@@ -436,8 +436,11 @@ namespace DribbleToSchool.Presentation
             s.kneeF = -6f;
             // The trailing foot scuffs along the ground, quicker the faster the slide.
             float scuff = Mathf.Sin(Time.time * (18f + 12f * (1f - spent))) * 5f * (1f - spent * 0.6f);
-            s.legB = 96f - lean + scuff;    // thigh forward and a touch up...
-            s.kneeB = -148f + scuff * 1.5f; // ...the shin folded back under it
+            // The back leg tucked with its knee up and its foot planted ahead of it: the thigh 45 degrees above level, the
+            // shin slanting forward down to the ground. (Its shin folded back under a level thigh, as before, put the foot
+            // and shin a fifth of a metre into the pavement, as the foot can't point: docs/LEARNINGS.md C21.)
+            s.legB = 135f - lean + scuff;
+            s.kneeB = -80f + scuff * 1.5f;
             s.armB = 24f - lean;    // down along the side to the hand on the ground by the hip
             s.elbowB = 10f;
             s.armF = 95f - lean;    // reaching forward toward the feet for balance (the hand stays under the bar)

@@ -529,6 +529,15 @@ Why each step exists is in `docs/LEARNINGS.md`, C1 to C8 and C14. In short:
     that look like the face, while that kind stays sparse round it: hems over white shoes, belts under a hoodie's hem,
     a fringe's tips over the face (LEARNINGS C16, C20). `<Name>_polish.json`'s `tear_faces_absorbed` says how many
     moved;
+  - settles the outfit parts (`settle_parts`, LEARNINGS C22): a face takes the part covering most of the surface round it
+    when a good share of that part there is painted like it (bare skin has no vote for a face that isn't skin), or when
+    it is a sparse pale streak; a stray island of a garment on something else (shorts-tagged flecks on a sock) leaves it
+    and shows its texel as painted; a face moved into a garment takes its colour, its texels their light against it in
+    grey, and a saturated garment's texels become grey the same way (Mia's red shorts made a green and pink zebra in any
+    other outfit); along the hairline, light paint on the skin within 2 cm of the hair takes that face's own skin,
+    slivers of no part on the hair's edge take the skin and specks inside the hair join it (Max's forehead). Nothing
+    within 7 mm of a mark on the face that isn't joined to the hair (a brow, the eyes, the lips) is touched: the brows
+    stay exactly as they were. `faces_settled` and `hairline_faces_repainted` in `<Name>_polish.json` count them;
   - rebuilds the normals:
     - from the surface around each vertex: 12 mm on skin, 20 mm on clothes, 35 mm on hair;
     - hair points away from the centre of its mass (the rim light then shows only at the hair's outline);
@@ -541,7 +550,7 @@ Why each step exists is in `docs/LEARNINGS.md`, C1 to C8 and C14. In short:
   export settings are `meshy_rigged.py`'s. `<Name>_polish.json` records what was done.
 - **`polish_bags.py`** fills the five shared bag atlases (RGBA: the alpha is the recolour mask) the same way.
 
-**Reviewing.** Three tools are available:
+**Reviewing.** These tools are available:
 - `review/cartoon/render_scenes.py`, with the cast scenes and the filter ports in `review/{filter,sketch,cartoon}`,
   renders the game's look in every filter. Its `solo`, `kids` and `teens` scenes, `HEAD_TILT` and `DIAG` modes (vertex
   colours only, atlas only, rim off, ink hull coloured, outfit parts) are for finding a character fault (its header).
@@ -551,6 +560,11 @@ Why each step exists is in `docs/LEARNINGS.md`, C1 to C8 and C14. In short:
   `portrait_teen.py`. These three draw the outline with `ink_hull.py`: a copy of the figure set back from the camera,
   as the game's, so the figure keeps its own normals;
 - the boards in `review/characters_v2/`.
+
+- `outfit_render.py` renders a character flat in the shop's Holiday kit (or `MODE=parts`, `MODE=default`, `HEAD=1`): the
+  faults that only show when an outfit is recoloured (LEARNINGS C22);
+- `ground_check.py` poses a model as `CharacterRig` and `KidAnimator` do (the slide, the run, kicks, the landing) and
+  prints how far it goes below the ground, before and after the rig's ground contact (LEARNINGS C21).
 
 Three rules for reviews:
 - characters cast no shadows in the game, so turn their shadows off in review scenes, or faces look dirtier than they

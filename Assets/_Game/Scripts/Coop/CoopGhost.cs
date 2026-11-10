@@ -159,7 +159,7 @@ namespace DribbleToSchool.Coop
                 const float lean = 58f;
                 p.lean = Mathf.Lerp(p.lean, -lean, k);
                 p.legF = Mathf.Lerp(p.legF, 82f - lean, k); p.kneeF = Mathf.Lerp(p.kneeF, -6f, k);
-                p.legB = Mathf.Lerp(p.legB, 96f - lean, k); p.kneeB = Mathf.Lerp(p.kneeB, -148f, k);
+                p.legB = Mathf.Lerp(p.legB, 135f - lean, k); p.kneeB = Mathf.Lerp(p.kneeB, -80f, k);   // (the back knee up, its foot planted)
                 p.armB = Mathf.Lerp(p.armB, 24f - lean, k); p.armF = Mathf.Lerp(p.armF, 95f - lean, k);
                 p.headTilt = Mathf.Lerp(p.headTilt, -44f, k);
                 p.bob = Mathf.Lerp(p.bob, -0.32f, k);

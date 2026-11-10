@@ -297,6 +297,356 @@ def absorb_tears(o, atlas):
     return int(moved.sum())
 
 
+SETTLE_RADIUS = 0.012     # the neighbourhood that decides a face's part, as a share of the figure's height (2 cm at 1.65 m)
+SETTLE_SHARE = 0.55       # another part must cover this much of it (the face and its own kind not counted)
+SETTLE_LIKE = 0.25        # and the face must look like that part there: its colour (vertex colour x texel, sRGB) within
+                          # this of that part's faces round it, by _unlike
+SETTLE_LIKE_SHARE = 0.3   # (of that part's surface round the face)
+SETTLE_OUT = 0.6          # a face leaves its garment only with no part (bare skin, a shoe, a sock) covering this much round it
+SETTLE_ISLAND = 0.01      # a piece of a garment under this share of it, on something else, is a stray island
+SETTLE_STRAY = 0.35       # and, to show its texel as painted, its own garment covering at most this much (a stray island)
+SKIN_LIKE = 0.14          # a face this near the skin's colour (the hands') is skin, and never joins a garment
+HAIRLINE = 0.008          # a forehead sliver lies this near the hair (a share of the height: 1.3 cm at 1.65 m)...
+HAIRLINE_SKIN = 0.6       # ...with skin covering this much round it...
+HAIRLINE_TEX = 0.012      # a texel this near the hair (2 cm at 1.65 m), painted unlike the skin face it lies on, takes that skin
+HAIRLINE_TEX_UNLIKE = 0.12  # (by _unlike: the grey tips are nearly the skin's colour)
+BROW_MARGIN = 0.004       # a mark on the face not joined to the hair (a brow) is kept with everything this near it (7 mm)
+HAIRLINE_LIGHT = 0.5      # the hairline steps take only paint at least this light against the skin (never a brow)
+SKIN_TEXELS = 0.4         # a face with this share of its texels skin-coloured is skin, for the texels above
+HAIR_TIP_SKIN = 0.65      # a hair face with skin covering this much round it is a fringe tip lying on the skin
+HAIRLINE_EDGE = 0.8       # or skin and hair together this much (with skin at least 0.3): the edge between them
+HAIRLINE_IN = 0.75        # a speck with hair covering this much round it joins the hair
+HAIRLINE_OWN = 0.25       # ...and its own kind at most this much (a brow, a drawn line, has more of itself round it)
+
+
+def _srgb(c):
+    c = np.clip(c, 0, 1)
+    return np.where(c <= 0.0031308, c * 12.92, 1.055 * np.power(c, 1 / 2.4) - 0.055)
+
+
+def _unlike(a, b):
+    """How unlike two colours are (sRGB), by ratio: the largest of the channels' log ratios, a little lifted off black.
+    A difference would put every dark colour near every other (Hana's maroon jacket, black trousers and dark hair), and
+    a ratio tells them apart while white and light grey stay close."""
+    return np.abs(np.log((np.asarray(a) + 0.1) / (np.asarray(b) + 0.1))).max(-1)
+
+
+def _dominant_bone_faces(o, names):
+    """Faces whose vertices all have one of the named bones as their largest weight."""
+    me = o.data
+    gi = {g.index: g.name for g in o.vertex_groups}
+    dom = np.array([gi[max(v.groups, key=lambda g: g.weight).group] in names if len(v.groups) else False for v in me.vertices])
+    lv = np.zeros(len(me.loops), int); me.loops.foreach_get('vertex_index', lv)
+    ls = np.zeros(len(me.polygons), int); me.polygons.foreach_get('loop_start', ls)
+    lt = np.zeros(len(me.polygons), int); me.polygons.foreach_get('loop_total', lt)
+    ok = dom[lv].astype(int)
+    return np.add.reduceat(ok, ls) == lt
+
+
+def settle_parts(o, atlas):
+    """Every face takes the outfit part of the surface round it when it is painted like that surface (docs/LEARNINGS.md
+    C22). absorb_tears() took only greyish faces of no part, and every review was made in each character's own colours,
+    where a white face on a white shirt or a navy one on navy jeans looks right. In any other outfit (the shop recolours
+    parts 1 to 3 only) they showed: Mia's white collar and sleeve hems and the red and white streaks down her shorts on a
+    teal and khaki Holiday kit, Max's navy waistband and turned-up hems, the red and white slivers in Kai's plaid, khaki
+    flecks on Mia's socks (shorts-tagged faces there). A face moves to the part q that covers SETTLE_SHARE of the surface
+    within SETTLE_RADIUS of it (on the same side) when its colour is within SETTLE_LIKE of one of q's faces there; skin
+    (the hands' colour) never joins a garment. Prints and logos keep their part: their colours are unlike the garment
+    round them. Then the hairline: a sliver of no part next to the hair (the scan's pale or dark fringe tips painted on
+    the forehead, which read as specks) with skin round it and few of its own kind is painted with the skin round it.
+    Moving into garment q, a face takes q's vertex colour and its texels become the light they had against q's colour
+    (grey, so the recolour shades it like the rest of q); moving out to part 0 it keeps its colours exactly. Edits
+    `atlas` in place. Returns (faces moved, hairline faces repainted)."""
+    me = o.data
+    if len(me.uv_layers) < 2 or 'Col' not in me.color_attributes: return 0, 0
+    col = me.color_attributes['Col']
+    if col.domain != 'CORNER': return 0, 0
+    me.calc_loop_triangles()
+    nv = len(me.vertices); P = len(me.polygons)
+    co = np.zeros(nv * 3); me.vertices.foreach_get('co', co); co = co.reshape(-1, 3)
+    ls = np.zeros(P, int); me.polygons.foreach_get('loop_start', ls)
+    lt = np.zeros(P, int); me.polygons.foreach_get('loop_total', lt)
+    u0 = np.zeros(len(me.loops) * 2); me.uv_layers[0].data.foreach_get('uv', u0); u0 = u0.reshape(-1, 2)
+    u1 = np.zeros(len(me.loops) * 2); me.uv_layers[1].data.foreach_get('uv', u1); u1 = u1.reshape(-1, 2)
+    cd = np.zeros(len(me.loops) * 4); col.data.foreach_get('color', cd); cd = cd.reshape(-1, 4)
+    part = np.round(u1[ls, 0]).astype(int)
+    cen = np.zeros(P * 3); me.polygons.foreach_get('center', cen); cen = cen.reshape(-1, 3)
+    nrm = np.zeros(P * 3); me.polygons.foreach_get('normal', nrm); nrm = nrm.reshape(-1, 3)
+    area = np.zeros(P); me.polygons.foreach_get('area', area)
+    H = co[:, 2].max() - co[:, 2].min()
+    Hh, Ww = atlas.shape[:2]
+    def texel(uv):
+        x = np.clip((uv[:, 0] % 1.0) * Ww, 0, Ww - 1).astype(int); y = np.clip((1 - uv[:, 1] % 1.0) * Hh, 0, Hh - 1).astype(int)
+        return atlas[y, x, :3]
+    fid = np.repeat(np.arange(P), lt)
+    tsum = np.zeros((P, 3)); np.add.at(tsum, fid, texel(u0))
+    ucen = np.zeros((P, 2)); np.add.at(ucen, fid, u0); ucen /= lt[:, None]
+    tex = (tsum + texel(ucen)) / (lt + 1)[:, None]
+    vsum = np.zeros((P, 3)); np.add.at(vsum, fid, _srgb(cd[:, :3])); vcs = vsum / lt[:, None]
+    app = vcs * tex                                   # the colour the face shows in the character's own outfit (sRGB)
+    colour = {}
+    for q in (1, 2, 3, 4):
+        m = np.repeat(part == q, lt)
+        if m.any():
+            vals, cnt = np.unique(np.round(cd[m], 4), axis=0, return_counts=True); colour[q] = vals[np.argmax(cnt)]
+    if not colour: return 0, 0
+    hands = _dominant_bone_faces(o, {'Hand.L', 'Hand.R'}) & (part == 0)
+    skin = np.median(app[hands], 0) if hands.sum() > 20 else None
+    skinlike = ((np.linalg.norm(app - skin, axis=1) < SKIN_LIKE) | (_unlike(app, skin) < 0.3)) if skin is not None else np.zeros(P, bool)
+    # and a hand (a fist in shadow by a cuff is darker than the skin's median) is never a garment's
+    hand_faces = _dominant_bone_faces(o, {'Hand.L', 'Hand.R'})
+    tree = cKDTree(cen)
+    hood = tree.query_ball_point(cen, SETTLE_RADIUS * H)
+    mx, mn = tex.max(1), tex.min(1)
+    pale = ((mx - mn) / np.maximum(mx, 1e-4) < TEAR_NEUTRAL) & (mx > 0.5)
+    # the brows are kept exactly as they were (the user's word): nothing here moves, repaints or recolours a face or a
+    # texel within BROW_MARGIN of a mark on the face that is not joined to the hair: a brow (even one a scan tagged as
+    # hair), an eye, the lips, a freckle. The fringe's painted tips and spots grow out of the hair, so they are joined
+    # to it and stay in reach (pieces: faces of the head that are not skin, sharing a vertex or within 3 mm)
+    head_faces = _dominant_bone_faces(o, {'Head'})
+    keep = np.zeros(P, bool)
+    if skin is not None:
+        marks = head_faces & ((part == 3) | ((part == 0) & ~skinlike))
+        if marks.any():
+            from scipy.sparse import coo_matrix
+            from scipy.sparse.csgraph import connected_components
+            lv_ = np.zeros(len(me.loops), int); me.loops.foreach_get('vertex_index', lv_)
+            fv_ = np.repeat(np.arange(P), lt)
+            o_ = np.argsort(lv_, kind='stable'); lvs_, fvs_ = lv_[o_], fv_[o_]
+            first_ = np.r_[True, lvs_[1:] != lvs_[:-1]]
+            hf_ = np.maximum.accumulate(np.where(first_, np.arange(len(lvs_)), 0))
+            e = np.concatenate([np.stack([fvs_[hf_], fvs_], 1), tree.query_pairs(0.002 * H, output_type='ndarray')])
+            e = e[marks[e[:, 0]] & marks[e[:, 1]]]
+            _n, lab = connected_components(coo_matrix((np.ones(len(e)), (e[:, 0], e[:, 1])), shape=(P, P)), directed=False)
+            hair_area = np.bincount(lab[marks & (part == 3)], area[marks & (part == 3)], _n) if (marks & (part == 3)).any() else np.zeros(_n)
+            main = np.argmax(hair_area) if hair_area.max() > 0 else -1
+            lone = marks & (lab != main)
+            if lone.any():
+                d, _k = cKDTree(cen[lone]).query(cen, distance_upper_bound=BROW_MARGIN * H)
+                keep = np.isfinite(d) & head_faces
+    new_part = part.copy()
+    new_vc = {}                                       # a face moved out of a garment by its texel: the vertex colour it takes
+    for rnd in range(4):
+        changed = False
+        for i in range(P):
+            ids = np.asarray([j for j in hood[i] if j != i], int)
+            if len(ids) == 0: continue
+            w = area[ids] * (nrm[ids] @ nrm[i] > 0.3)
+            if keep[i]: continue
+            pi = new_part[i]
+            # the face's own kind (its part, painted like it) doesn't vote: a band (a collar, a stripe) is mostly itself
+            own = (new_part[ids] == pi) & (np.linalg.norm(app[ids] - app[i], axis=1) < 0.12)
+            if pi == 0 and not skinlike[i]:
+                # bare skin round a face that isn't skin has no say in which garment it is (a collar between the neck
+                # and the shirt is the shirt's)
+                w = w * ~(skinlike[ids] & (new_part[ids] == 0))
+            tot = w[~own].sum()
+            if tot <= 0: continue
+            best, bw = pi, 0.0
+            for q in np.unique(new_part[ids]):
+                if q == pi: continue
+                s_ = w[new_part[ids] == q].sum()
+                if s_ > bw: best, bw = q, s_
+            if best == pi or bw < SETTLE_SHARE * tot: continue
+            if best != 0 and (skinlike[i] or hand_faces[i]): continue
+            if best != 0 and pi != 0: continue            # (only a face of no part joins a part: a garment's or the hair's
+                                                          # face never moves to another, which on dark clothes and dark
+                                                          # hair painted alike took whole patches of one into the other)
+            if best == 0:
+                # out of a garment: only a stray bit of it, judged on the parts as they came (never a cascade that eats
+                # the garment's own edge, one face after another), with something else nearly all round it
+                if rnd > 0 or pi != part[i]: continue
+                if w[part[ids] == 0].sum() < SETTLE_OUT * w.sum(): continue
+                if pi in (1, 2, 4) and w[part[ids] == pi].sum() <= SETTLE_STRAY * w.sum():
+                    # a stray island of the garment on something else (shorts-tagged faces on a sock): its texel is what is
+                    # painted there, with no garment colour over it (a garment's own hem has much of the garment round it)
+                    new_part[i] = 0; new_vc[i] = np.ones(4); changed = True; continue
+            sel = (new_part[ids] == best) & (w > 0)
+            other = ids[sel]
+            if len(other) == 0: continue
+            # like that part there: a good share of it (not one stray face of it) painted like this face
+            like = lambda c: w[sel][_unlike(app[other], c) < SETTLE_LIKE].sum() >= SETTLE_LIKE_SHARE * w[sel].sum()
+            if like(app[i]):
+                pass
+            elif best == 0 and pi in (1, 2, 4):
+                # a garment's face on something else (shorts-tagged faces on a sock): its texel alone, without the
+                # garment's colour, may be what is painted there
+                if not like(tex[i]): continue
+                d_tex = np.linalg.norm(app[other] - tex[i], axis=1)
+                j = other[np.argmin(d_tex)]
+                new_vc[i] = cd[ls[j]:ls[j] + lt[j]].mean(0)
+            elif best != 0 and pi == 0 and pale[i] and rnd == 0 and \
+                    w[(part[ids] == 0) & (_unlike(app[ids], app[i]) < 0.3)].sum() <= TEAR_OWN_MAX * w.sum():
+                pass                                      # a pale streak, sparse, in a garment: a tear (judged once, on the
+                                                          # parts as they came: round by round it ate a cream sleeve's edge)
+            else:
+                continue
+            new_part[i] = best; changed = True
+        if not changed: break
+    # stray islands of a garment (a fleck of the shorts on a sock, bigger than the neighbourhood above): every piece of
+    # the garment's surface (faces within 1 cm of each other) under SETTLE_ISLAND of the garment, with no part covering
+    # SETTLE_OUT round it, shows its texel as painted, with no garment colour over it
+    pairs = tree.query_pairs(0.006 * H, output_type='ndarray')
+    # (and faces sharing a vertex: a big triangle's centre is further than that from its neighbours')
+    lv = np.zeros(len(me.loops), int); me.loops.foreach_get('vertex_index', lv)
+    fv = np.repeat(np.arange(P), lt)
+    order = np.argsort(lv, kind='stable'); lvs, fvs = lv[order], fv[order]
+    first = np.r_[True, lvs[1:] != lvs[:-1]]
+    head_face = np.maximum.accumulate(np.where(first, np.arange(len(lvs)), 0))
+    pairs = np.concatenate([pairs, np.stack([fvs[head_face], fvs], 1)])
+    from scipy.sparse import coo_matrix
+    from scipy.sparse.csgraph import connected_components
+    for q in (1, 2, 4):
+        mq = new_part == q
+        if mq.sum() < 50: continue
+        e = pairs[mq[pairs[:, 0]] & mq[pairs[:, 1]]]
+        g = coo_matrix((np.ones(len(e)), (e[:, 0], e[:, 1])), shape=(P, P))
+        nc, lab = connected_components(g, directed=False)
+        total = area[mq].sum()
+        for c in np.unique(lab[mq]):
+            faces = np.flatnonzero(mq & (lab == c))
+            if area[faces].sum() >= SETTLE_ISLAND * total: continue
+            round_ = np.unique(np.concatenate([hood[f] for f in faces]))
+            round_ = round_[lab[round_] != c] if len(round_) else round_
+            if len(round_) == 0 or area[round_][new_part[round_] == 0].sum() < SETTLE_OUT * area[round_].sum(): continue
+            for f in faces:
+                if not keep[f]: new_part[f] = 0; new_vc[f] = np.ones(4)
+    moved = np.flatnonzero(new_part != part)
+    # the hairline: slivers of no part next to the hair, skin round them, few of their own kind
+    hair = new_part == 3
+    repaint = np.zeros(P, bool)
+    if skin is not None and hair.any():
+        near_hair = np.zeros(P, bool)
+        htree = cKDTree(cen[hair])
+        d, _ = htree.query(cen, distance_upper_bound=HAIRLINE * H); near_hair = np.isfinite(d)
+        # the fringe's tips lying on the skin: hair faces with skin nearly all round them (decimation cut Max's fringe
+        # into long spikes down his forehead, which the ink and the shading turned into dark specks)
+        for i in np.flatnonzero(hair & ~hand_faces & ~keep):
+            ids = np.asarray([j for j in hood[i] if j != i], int)
+            if len(ids) == 0: continue
+            w = area[ids] * (nrm[ids] @ nrm[i] > 0.3); tot = w.sum()
+            if tot > 0 and w[skinlike[ids] & (new_part[ids] == 0)].sum() >= HAIR_TIP_SKIN * tot and \
+                    app[i] @ np.array([0.299, 0.587, 0.114]) >= HAIRLINE_LIGHT * (skin @ np.array([0.299, 0.587, 0.114])):
+                repaint[i] = True                        # (a light tip: some scans tag the brows as hair, and they're dark)
+        skin_now = skinlike | repaint
+        to_hair = []
+        for i in np.flatnonzero(near_hair & (new_part == 0) & ~skinlike & ~keep):
+            ids = np.asarray([j for j in hood[i] if j != i], int)
+            if len(ids) == 0: continue
+            w = area[ids] * (nrm[ids] @ nrm[i] > 0.3); tot = w.sum()
+            if tot <= 0: continue
+            sk = w[skin_now[ids] & ((new_part[ids] == 0) | repaint[ids])].sum()
+            hw = w[(new_part[ids] == 3) & ~repaint[ids]].sum()
+            own = w[(new_part[ids] == 0) & ~skinlike[ids] & (np.linalg.norm(app[ids] - app[i], axis=1) < 0.2)].sum()
+            if own > HAIRLINE_OWN * tot: continue        # (a brow, an earring, a headband: its own kind round it)
+            if (sk >= HAIRLINE_SKIN * tot or (sk + hw >= HAIRLINE_EDGE * tot and sk >= 0.3 * tot)) and \
+                    app[i] @ np.array([0.299, 0.587, 0.114]) >= HAIRLINE_LIGHT * (skin @ np.array([0.299, 0.587, 0.114])):
+                repaint[i] = True                        # (on the skin, or on the edge between the hair and the skin; pale or grey paint only: a brow is dark)
+            elif hw >= HAIRLINE_IN * tot:
+                to_hair.append(i)       # a speck inside the hair (the scalp under Max's fringe, painted grey and white by
+                                        # the scan, showed between the fringe's tips as pale and dark spots)
+    if skin is not None and hair.any():
+        for i in to_hair: new_part[i] = 3                # (as a face moved into a garment: the hair's colour, grey texels)
+    # a repainted face is skin: no part, a white vertex colour, its texels the skin's (below)
+    for i in np.flatnonzero(repaint):
+        new_part[i] = 0; new_vc[i] = np.ones(4)
+    moved = np.flatnonzero(new_part != part)
+    for i in np.flatnonzero(repaint):
+        if new_part[i] == part[i]: moved = np.append(moved, i)
+    # write the parts and vertex colours
+    lm = np.zeros(len(me.loops), bool)
+    for i in moved:
+        q = new_part[i]
+        sl = slice(ls[i], ls[i] + lt[i])
+        u1[sl, 0] = q
+        if q != 0: cd[sl] = colour[q]
+        elif i in new_vc: cd[sl] = new_vc[i]
+    me.uv_layers[1].data.foreach_set('uv', u1.ravel())
+    col.data.foreach_set('color', cd.ravel())
+    me.update()
+    # and the texels: a face moved into a garment keeps its light against the garment's colour, as grey; a repainted
+    # hairline sliver takes the skin round it
+    into = np.zeros(P, bool); into[moved] = new_part[moved] != 0
+    if into.any() or repaint.any():
+        me.calc_loop_triangles()
+        LT = len(me.loop_triangles)
+        tpoly = np.zeros(LT, int); me.loop_triangles.foreach_get('polygon_index', tpoly)
+        tri, _ = rasterize(uv_triangles(o), Hh)
+        m = tri >= 0
+        poly = np.full(tri.shape, -1); poly[m] = tpoly[tri[m]]
+        lumw = np.array([0.299, 0.587, 0.114])
+        sel = (poly >= 0) & into[np.maximum(poly, 0)]
+        if sel.any():
+            Y, X = np.nonzero(sel); f = poly[Y, X]
+            shown = vcs[f] * atlas[Y, X, :3]
+            dq = np.array([_srgb(colour[new_part[k]][:3]) for k in f])
+            g = np.clip((shown @ lumw) / np.maximum(dq @ lumw, 1e-3), 0, 1)
+            atlas[Y, X, :3] = g[:, None]
+        sel = (poly >= 0) & repaint[np.maximum(poly, 0)]
+        if sel.any():
+            Y, X = np.nonzero(sel); f = poly[Y, X]
+            sk_faces = np.flatnonzero(skinlike & (new_part == 0))
+            stree = cKDTree(cen[sk_faces])
+            _, nn = stree.query(cen[f], k=6)
+            want = app[sk_faces[nn]].mean(1)                  # the skin round each sliver
+            atlas[Y, X, :3] = np.clip(want, 0, 1)            # (its vertex colour is white now)
+    # the fringe painted on the forehead: the scans painted hair strands, their pale highlights and grey tips across the
+    # skin under the fringe, where the modelled fringe doesn't lie (Max's forehead: the "black spots"). On a skin face,
+    # a texel within HAIRLINE_TEX of the hair that is painted unlike the skin takes the colour of that face's own skin.
+    painted = 0
+    if skin is not None and (new_part == 3).any():
+        me.calc_loop_triangles()
+        LT = len(me.loop_triangles)
+        tpoly = np.zeros(LT, int); me.loop_triangles.foreach_get('polygon_index', tpoly)
+        tv = np.zeros(LT * 3, int); me.loop_triangles.foreach_get('vertices', tv); tv = tv.reshape(-1, 3)
+        tri, bary = rasterize(uv_triangles(o), Hh)
+        m = tri >= 0
+        m[m] = (new_part == 0)[tpoly[tri[m]]] & ~repaint[tpoly[tri[m]]] & ~keep[tpoly[tri[m]]]
+        if m.any():
+            Y, X = np.nonzero(m); t = tri[Y, X]; f = tpoly[t]
+            shown = atlas[Y, X, :3] * vcs[f]
+            # a skin face: at least SKIN_TEXELS of its texels skin-coloured (a brow's faces are mostly dark)
+            sk_t = _unlike(shown, skin) < 0.3
+            frac = np.bincount(f, sk_t, P) / np.maximum(np.bincount(f, None, P), 1)
+            keep = frac[f] >= SKIN_TEXELS
+            Y, X, t, f, shown, sk_t = Y[keep], X[keep], t[keep], f[keep], shown[keep], sk_t[keep]
+            pos = (co[tv[t]] * bary[Y, X][..., None]).sum(1)
+            d, _h = cKDTree(cen[new_part == 3]).query(pos, distance_upper_bound=HAIRLINE_TEX * H)
+            near = np.isfinite(d)
+            ssum = np.zeros((P, 3)); np.add.at(ssum, f[sk_t], shown[sk_t])
+            own_skin = ssum / np.maximum(np.bincount(f[sk_t], None, P), 1)[:, None]
+            lumw = np.array([0.299, 0.587, 0.114])
+            light = (shown @ lumw) >= HAIRLINE_LIGHT * (own_skin[f] @ lumw)       # (never a brow: brows are dark)
+            bad = near & light & (_unlike(shown, own_skin[f]) > HAIRLINE_TEX_UNLIKE)
+            good = ~bad & sk_t
+            gsum = np.zeros((P, 3)); gcnt = np.zeros(P)
+            np.add.at(gsum, f[good], atlas[Y[good], X[good], :3]); np.add.at(gcnt, f[good], 1)
+            ok = bad & (gcnt[f] > 0)
+            atlas[Y[ok], X[ok], :3] = gsum[f[ok]] / gcnt[f[ok]][:, None]
+            painted = int(ok.sum())
+    # a garment of a strongly saturated colour (Mia's red shorts): its texels were divided by that colour channel by
+    # channel, which blew the faint other channels up into stripes of green and pink in any other outfit (a zebra on a
+    # khaki kit). They become the light they have against the garment's colour, as grey, like the faces moved in above.
+    sat_parts = [q for q in (1, 2) if q in colour and (lambda c: c.min() < 0.35 * c.max())(_srgb(colour[q][:3]))]
+    greyed = 0
+    if sat_parts:
+        me.calc_loop_triangles()
+        tpoly = np.zeros(len(me.loop_triangles), int); me.loop_triangles.foreach_get('polygon_index', tpoly)
+        tri, _b = rasterize(uv_triangles(o), Hh)
+        m = tri >= 0
+        poly = np.full(tri.shape, -1); poly[m] = tpoly[tri[m]]
+        lumw = np.array([0.299, 0.587, 0.114])
+        for q in sat_parts:
+            sel = (poly >= 0) & (new_part[np.maximum(poly, 0)] == q) & ~into[np.maximum(poly, 0)]
+            if not sel.any(): continue
+            Y, X = np.nonzero(sel); f = poly[Y, X]
+            dq = _srgb(colour[q][:3])
+            g = np.clip(((vcs[f] * atlas[Y, X, :3]) @ lumw) / max(dq @ lumw, 1e-3), 0, 1)
+            atlas[Y, X, :3] = g[:, None]
+            greyed += int(sel.sum())
+    return int(len(moved)), int(repaint.sum()) + painted // 64     # (texels counted as faces of about 64 texels)
+
+
 def face_lean(o, rig, strength):
     """The face's lean toward a smooth rounded shape: per vertex, how much (0..strength), and the direction it leans to.
     The face is the skin (part 0) of the head (on the Head bone, made rigid by rigid_head) facing forward; its middle,
