@@ -1256,6 +1256,27 @@ The user asked for a check on every character, playable and not.
   - play a level with touch on the phone, since the input now goes through the Input System;
   - run the edit-mode tests.
 
+## The tests compile again (fix for #49)
+
+- **Why.** After #49 the user's console showed nine errors on `Tests/Editor/ScriptConventionTests.cs` line 78, and still
+  the Input Manager warning. The new test's pattern held `\"` inside a C# verbatim string, which ends the string
+  (`docs/LEARNINGS.md` A12). The editor assembly, with the tests and the new `InputHandling`, stopped compiling, so the
+  input setting was never applied either.
+- **Fixed:** the pattern uses `""`, the verbatim string's quote.
+- **The gap:** the test file is behind `#if UNITY_INCLUDE_TESTS`, which no check defined, so it was never even parsed.
+  `tools/unity_api_check/run.sh` now parses every script under every combination of the scripts' `#if` symbols, the
+  tests included, with NUnit referenced so they bind. It exits with an error on any syntax error.
+- **Checked:**
+  - No syntax errors in any combination.
+  - No compile errors beyond those the tree before #49 already had (the checks' stand-ins for uGUI and the Input
+    System), tests included.
+  - Planted back, the old line 78 is caught with Unity's own errors.
+  - `run.sh 6000.5`: no errors.
+- **Not run in Unity.** Open the project:
+  - accept the "Restart Unity" prompt (Active Input Handling switching to the Input System);
+  - confirm the console is clean;
+  - run the edit-mode tests.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

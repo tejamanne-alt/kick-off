@@ -75,7 +75,7 @@ namespace DribbleToSchool.Tests
         {
             (@"\bGetInstanceID\s*\(", "Object.GetInstanceID is an error from Unity 6.5 (use GetEntityId, or no id at all)"),
             (@"\bInstanceIDToObject\s*\(", "EditorUtility.InstanceIDToObject takes an EntityId from Unity 6.5"),
-            (@"new\s+Material\s*\(\s*\"", "creating a material from shader source text is an error"),
+            (@"new\s+Material\s*\(\s*""", "creating a material from shader source text is an error"),   // ("" is a quote in @"")
         };
 
         [Test]

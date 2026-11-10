@@ -90,6 +90,21 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
   - Use no instance ids at all.
   - Widen signed values through an unsigned type.
 
+**A12. The check for A11 broke the build itself (PR #49, fixed in #50).**
+- *What:* `ScriptConventionTests.NoScriptCallsAnApiANewerUnityRemoved`, added in #49, had the pattern `@"new\s+Material\s*\(\s*\""`. In a C# verbatim string `\"` is a backslash and then the end of the string, so the line didn't parse. Unity reported nine syntax errors on line 78 and stopped compiling the editor assembly. That assembly holds the tests and the editor scripts, including the new `InputHandling`, so the Input Manager warning stayed too.
+- *Why:*
+  - The test file is wrapped in `#if UNITY_INCLUDE_TESTS`, which Unity defines when the Test Framework package is installed.
+  - None of the checks defined it. Text behind an `#if` that isn't defined is skipped by the compiler, not even parsed.
+  - The checks reported "clean" for a file they never read. The Roslyn API scan did define it, but only collected API names, not errors.
+- *Fix:*
+  - `""` is the quote inside a verbatim string.
+  - `tools/unity_api_check/run.sh` now also parses every script under every combination of the `#if` symbols the scripts use (the editor with the tests, both players, the optional IAP and screenshot code), with NUnit referenced so the tests bind. It fails on any syntax error.
+  - Planted back, the broken line is caught with Unity's own errors. All binding errors were compared with the tree before #49: none new.
+- *Rule:*
+  - A check covers only the code it compiles. List the `#if` symbols the scripts use, and compile once per combination, tests included.
+  - In a verbatim string, a quote is `""`.
+  - A new check is itself code: run it before pushing it (A3: plant an error, see it caught).
+
 ## B. Performance and mobile
 
 **B1. 28 fps with uneven frames on a mid-range phone (November 2026).**
