@@ -1206,7 +1206,7 @@ The user asked for a check on every character, playable and not.
   against the face. A printed letter has many of its own kind round it and stays: Leo's "AWESOME 01" and Hana's "H"
   are checked.
   - Rebuilt: all twelve characters (`polish_all.py`).
-  - Absorbed faces: Max about 1,970 (was 570), Hana 1,880 (was 970), Mia 1,690 (was 1,060).
+  - Absorbed faces: Max about 1,680 (was 570), Hana 1,600 (was 970), Mia 1,190 (was 1,060).
   - Hana's striped cuffs, cut into jagged white triangles at 32k, are now plain maroon.
 - **The face must be nearly grey or white** for the second test. On the first try it took Mia's beige patterned
   headband for streaks.
