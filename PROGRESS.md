@@ -1079,6 +1079,38 @@ listed in `docs/LEARNINGS.md` B1 to B6 and C1 to C12.
   - a non-school outfit after a switch;
   - the Memory Profiler showing one kid's meshes per scene.
 
+## The kids keep their own faces, with Max's finish (generated content v113)
+
+- **Why.** The user rejected the drawn faces of v111 (`face_paint.py`): "They look terrible and look like aliens. The nose,
+  eyes and mouth are rendered the worst. Max's eyes and facial features look good enough." The user asked for them to be
+  reverted, and if possible made like Max. `docs/LEARNINGS.md` C14 has the cause: doll-eye shapes on a realistic
+  child's head. Max reads as drawn because of his finish, not his shapes.
+- **Reverted.** Kai, Leo, Mia and Zoe are rebuilt from their own scanned faces. The mesh polish of v111 (welding,
+  normals, 32k triangles, filled atlas gaps) is kept.
+- **Max's finish** (`tools/blender/face_ink.py`, run by `polish_all.py`): nothing is redrawn or moved.
+  - **Eyes:** each eye's opening is found in the scan, and a dark lash line is drawn along its own top edge. The boys'
+    lines end at the corner; the girls' end in a small flick. A faint line goes under the eye. The white is cleaned,
+    the iris gets a little more contrast, and the scan's highlights stay.
+  - **Brows** keep their own outline, filled with one dark brown.
+  - **Mouth:** the lips' parting is darkened along its own curve, and the lips keep their colour.
+  - **Nose:** as scanned.
+  - **Skin:** flattened toward its own tone, keeping half its shading.
+  - `polish_all.py --no-ink` gives the plain scans if the user prefers them.
+- **New player cards** for the four kids (`Resources/UI/Player*.png`, `portrait_teen.py`).
+- **Cost:** none. Only the four kids' 2048 atlases changed. The FBXs are the ones v111/v112 ship, since the geometry
+  comes from the same originals by the same polish.
+- **Reviewed** in Blender with the game's toon look (`review/characters_v2/`):
+  - `faces_v113.jpg`: each kid as the rejected v111 face, the plain scan and v113, close up front and turned, next to
+    Max at the same scale;
+  - `player_cards_v113.jpg`: the same three on the player cards;
+  - `faces_before_after.jpg`, `player_cards_before_after.jpg`, `cast_a_all_looks.jpg`, `cast_b_all_looks.jpg` and
+    `mia_poses.jpg` (every pose clean, `review_poses.py --leaks`): redone with v113, so no board shows the rejected
+    faces as the current state.
+- **Checked:** the scripts compile against the reference assemblies with no new errors (only `GeneratedContent.Version`
+  changed).
+- **Not run in Unity or on a device.** Check the four kids on the Nord CE5 in every look, and ask the user to choose
+  between the finish and the plain scans (`--no-ink`) from the board.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

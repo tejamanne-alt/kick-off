@@ -180,7 +180,7 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
   Then the user said the kids "look a bit real life" and that even Hana and Max "look like low-quality assets".
 - *Why:* there was never a written target for style, fidelity or budget, and the photographic texture (baked lighting, a real child's face) was never addressed.
 - *Fix (November 2026):* the user's own designs are kept, but restyled:
-  - an illustrated face replaces the photographic one (`tools/blender/face_paint.py`): drawn eyes with highlights, simple brows, a nose stroke, the kid's own mouth, a little blush, in their own skin tone;
+  - an illustrated face replaced the photographic one (`tools/blender/face_paint.py`): drawn eyes with highlights, simple brows, a nose stroke, the kid's own mouth, a little blush, in their own skin tone. The user rejected it as alien (C14). Since v113 each kid keeps their own face with Max's finish (`face_ink.py`);
   - the mesh is repaired (C1, C2).
   Reviewed before and after in `review/characters_v2/`.
 - *Rule:* rule 4. "Make it a game character" means the user's design with a game finish. It does not mean a generic replacement: that is exactly what was reverted in v84.
@@ -230,6 +230,32 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
 **C13. Rigs and heights.**
 - *What:* `CharacterRig` once reset adults to kid size. One shared neck height would have made all four kids the same height.
 - *Rule:* rig code never writes absolute scale. Heights live in the roster table. Check feet on the ground.
+
+**C14. The drawn kid faces looked alien (v111, reverted in v113).**
+- *What:* `face_paint.py` replaced Kai's, Leo's, Mia's and Zoe's scanned faces with drawn ones:
+  - new eyes, sized from the distance between the scan's eyes (half of it wide, 0.42 of it tall), with big irises and two highlights;
+  - a short stroke for the nose;
+  - a small stroke for the mouth;
+  - blush, on a skin flattened to one tone.
+  The user's verdict, with screenshots of Mia close up, in game and on the player cards: "They look terrible and look like aliens. The nose, eyes and mouth are rendered the worst. Max's eyes and facial features look good enough."
+- *Why:*
+  - The style sheet copied the *shapes* of an anime face (big round eyes, a dot nose, a tiny mouth) onto a child's head with realistic proportions. Doll eyes over a real face read as uncanny.
+  - Max's face reads as drawn because of its *finish*: an even skin tone, a bold lash line, solid brows, a clean white and iris, and one line for the mouth. Its proportions are realistic.
+  - It was shipped on Blender front views and renders alone. The user saw it first on the phone. Rule 4 says to let the user choose from side-by-sides before replacing a character's face.
+- *Fix:*
+  - Every kid is rebuilt from their own scanned face.
+  - `face_ink.py` gives that face Max's finish without redrawing it:
+    - a dark lash line along each eye's own top edge (the boys' lines end at the corner, the girls' end in a small flick), with a faint line under the eye;
+    - the brows' own outline, filled with one dark brown;
+    - the lips' parting darkened along its own curve;
+    - the skin flattened, keeping half its shading.
+  - Each eye's opening, brow and mouth is measured from the scan. The nose is left as scanned.
+  - `polish_all.py --no-ink` ships the plain scans.
+  - Reviewed at in-game, menu and close-up distance and on the player cards (`review/characters_v2/faces_v113.jpg`). Approval still to come from the user.
+- *Rule:*
+  - Restyle a face by its finish (line weight, flat colour, clean edges), never by replacing its features' shapes or proportions.
+  - Keep each kid's own eyes, nose and mouth.
+  - Show a face change to the user as a side-by-side before it ships.
 
 ## D. Art direction and look
 
@@ -300,6 +326,10 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
 
 Never re-propose what is rejected here.
 - **Characters:** keep the user's own character designs: outfit, hair, likeness and their reference photos and drawings. Don't replace them with generic anime models (v84 was reverted at once). They should look like polished game characters, not photographs.
+- **Kids' faces:**
+  - Keep each kid's own scanned eyes, nose and mouth, at their own sizes.
+  - No drawn-on doll eyes or stroke noses and mouths (v111 was reverted as "aliens").
+  - The target is Max's face: realistic proportions with a drawn finish.
 - **Comic filter:** dots and hatching on the characters as well as the street (raised on request).
 - **Controls:**
   - nothing inside the stick's ring;
