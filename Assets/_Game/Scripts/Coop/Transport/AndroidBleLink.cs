@@ -23,7 +23,7 @@ namespace DribbleToSchool.Coop.Transport
         int next;
         RadioState state = RadioState.Unknown;
         int maxPacket = CoopFraming.MinPacket;
-        AndroidJavaObject plugin;
+        AndroidJavaObject plugin = null;   // (made in the Android player only)
         byte[] unpacked = new byte[4096];
 
         public AndroidBleLink()

@@ -303,7 +303,7 @@ namespace DribbleToSchool.EditorTools
 
         /// <summary>A bag's Bag&lt;Id&gt;.json (tools/blender/meshy_bag.py): its cloth's colour, sRGB.</summary>
         [System.Serializable]
-        class BagInfo { public string id; public float[] cloth; }
+        class BagInfo { public string id = null; public float[] cloth = null; }   // (filled by JsonUtility)
 
         static Material CharacterMaterial(string name, Shader shader, string atlas, bool player)
         {

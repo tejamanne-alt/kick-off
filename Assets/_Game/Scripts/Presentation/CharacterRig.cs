@@ -96,9 +96,14 @@ namespace DribbleToSchool.Presentation
                 Quaternion inv = Quaternion.Inverse(t.rotation);
                 joints[t] = new Joint { rest = t.localRotation, axis = inv * swing, up = inv * up, ahead = inv * ahead };
             }
-            // (each character breathes at its own moment, not the whole street in step)
-            breathPhase = (GetInstanceID() & 1023) * 0.37f;
+            // (each character breathes at its own moment, not the whole street in step: the golden ratio spreads the
+            // rigs' moments evenly over the 2.9 s breath, however many there are. Not GetInstanceID, an error from Unity
+            // 6.5: docs/LEARNINGS.md A11.)
+            breathPhase = (rigsMade++ * 0.618034f) % 1f * BreathPeriod;
         }
+
+        static int rigsMade;
+        const float BreathPeriod = 2f * Mathf.PI / 2.2f;
 
         public void Pose(RigPose p)
         {
