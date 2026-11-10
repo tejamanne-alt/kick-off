@@ -105,6 +105,25 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
   - In a verbatim string, a quote is `""`.
   - A new check is itself code: run it before pushing it (A3: plant an error, see it caught).
 
+**A13. Xcode's GameAssembly warnings, and a builder warning on every Holiday Run build (fixed November 2026).**
+- *What:* once the project compiled in Unity 6.5, the user's first iPhone build showed 13 issues in Xcode's GameAssembly target. The Unity console showed four warnings from the level build.
+  - One "The selected platform is no longer supported by libc++" (`-W#warnings`): the IL2CPP code was compiled for an iOS older than 15.
+  - Twelve libtool "'x.o' has no symbols": IL2CPP files of assemblies with no code of their own. They are expected, but libtool warns about each.
+  - "Holiday Run stage 11 to 14: 'Waves' was left outside the Stage object; moved under it", from the level build.
+- *Why:*
+  - The iOS minimum (15.0) was only set by `BuildScripts.ApplyPlayerSettings`, which only the "Kick Off > Build" menu items call. A build from Unity's own Build button kept Unity's older default. ProjectSettings isn't in git (A10).
+  - The beach's waves were built at the scene's root to keep them out of the street's static batch. A Holiday Run stage must hold everything under one Stage object, so its builder moved them and warned, on every build.
+- *Fix:*
+  - `BuildScripts.IosMinimumVersion` is applied whenever the editor loads (`AppleSigning.Apply`, with the signing), never lowering a higher setting.
+  - `IosPostBuild` raises every target's and configuration's `IPHONEOS_DEPLOYMENT_TARGET` in the exported project to at least that.
+  - `IosPostBuild` gives GameAssembly (and the project, which static libraries inherit) `OTHER_LIBTOOLFLAGS = -no_warning_for_no_symbols`.
+  - The waves go under the animals' root, with the other moving things outside the batch, which the Holiday builder already files under the Stage.
+  - The Input Manager warning that remained is Unity's own, printed at start-up. It stops after the restart `InputHandling` offers (A11).
+- *Rule:*
+  - Treat the user's Xcode issue navigator like the Unity console (A4): every warning there is fixed in the export step.
+  - Settings every build needs are applied on load, not only in our build menu.
+  - A builder that tidies up after itself should not warn about its own normal output: fix the code that made it.
+
 ## B. Performance and mobile
 
 **B1. 28 fps with uneven frames on a mid-range phone (November 2026).**
