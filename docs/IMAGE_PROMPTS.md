@@ -1,6 +1,9 @@
-# Kick Off 2: ChatGPT Images prompts for the five cities
+# Kick Off 2: image prompts for the five cities (ChatGPT and Gemini)
 
-Copy-paste prompts for the reference images each city is modelled and lit from. The cities, their routes and legs are
+Copy-paste prompts for the reference images each city is modelled and lit from, for **ChatGPT** (ChatGPT Images) and
+**Gemini** (Nano Banana). They are the same prompts: only the format line and how each message is sent differ ("The two
+versions" below). The page made by `tools/prompts_page` does both for you: pick the tool at the top, and each Copy button
+gives that tool's version. The cities, their routes and legs are
 designed in `docs/CITIES.md`. Every level here has its own prompt, under the same id (`KM1-1` is Kamakura, route 1,
 leg 1).
 
@@ -8,7 +11,7 @@ There are three layers, pasted in order:
 1. **The base prompt:** the same for every city.
 2. **The city block:** the place, its buildings, materials, plants, street, vehicles, and its own light and climate.
 3. **One shot per message:** a level (its street from start to end), a mini-game's set, the city's look target, or an
-   asset sheet.
+   asset sheet, ending with its format line.
 
 ## What the images are for
 
@@ -25,21 +28,54 @@ The game never shows these images. Every building, prop and plant is modelled by
 The straight-on side view matters: the game is a side-scroller, so a street is seen as a row of fronts. A picture
 looking down a street can't be measured into one.
 
-## How to use them in ChatGPT
+## The two versions
 
-1. **One chat per city.** Start a new chat. Paste the **base prompt** and that city's **block** together as the first
-   message. ChatGPT may answer with a test image or a question: say "Ready for the shots."
-2. **Then one shot per message, one level at a time,** in the order listed. For the next leg of the same route, attach
-   the previous leg's image: the shot says what continues.
-3. Ask for the **widest landscape format** (3:2). The phone's screen is about 2.2:1, so the important things are kept in
-   the middle band.
-4. If the pictures drift (people creeping in, a vanishing-point street, the wrong light, brand names), paste the base
-   prompt again with "Keep to these rules."
-5. Save each result as `review/<city>/refs/<id>_<what>.png`, for example `review/kamakura/refs/KM1-1_hase_lanes.png`,
+**Ask for the widest picture each tool makes.** The game is a side-scroller and a leg is a long strip of street, so a
+wider picture shows more of it at once, as the phone does (its screen is about 2.2:1).
+
+| | ChatGPT (ChatGPT Images 2.0 and later) | Gemini (Nano Banana 2.1, the app's default) |
+|---|---|---|
+| Street and set shots (levels, mini-game sets) | **3:1**, the widest it makes | **4:1** (it also makes 8:1, too thin a strip to show a three-storey front with its roofs and sky) |
+| Look target | 21:9 | 21:9 |
+| Sheet | 16:9 | 16:9 |
+| Plate (six squares in a grid) | 3:2 | 3:2 |
+| The first message | the base prompt and the city block | the base prompt (its Gemini format line) and the city block |
+| Each shot | the shot, ending with its format line | the city block again, then the shot, ending with its format line |
+
+Neither app has a ratio picker for these: the ratio is asked for in words, so every shot ends with a `FORMAT:` line (the
+page adds it). Gemini follows its latest message most closely and lets earlier instructions fade over a long chat, so a
+Gemini shot carries the city block with it. If Gemini says it can't make 4:1 (Nano Banana Pro stops at 21:9), ask for 21:9.
+
+**Which Gemini model:** Nano Banana 2.1 for every street shot: it is the Gemini app's default, makes 4:1, and its
+photographs hold up well against Pro's for a fraction of the cost. Nano Banana Pro (Gemini 3 Pro Image; on a Google AI Pro
+or Ultra plan, "Redo with Pro" in the image's three-dot menu) for the look targets, the sheets and any shot where 2.1
+misses part of a long prompt: it follows long, detailed prompts more closely and draws signs and small text better. For
+an exact ratio and 4K, Google AI Studio sets both as settings instead of words. (Model names and menus as of November
+2026: check the app if they have moved.)
+
+## How to use them
+
+1. **One chat per city, in one tool.** Start a new chat and paste the **first message**: the base prompt and that city's
+   block together (in Gemini, the base prompt with its Gemini format line). If it answers with a test image or a question,
+   say "Ready for the shots."
+2. **Then one shot per message, one level at a time,** in the order listed, each ending with its `FORMAT:` line. In
+   Gemini, paste the city block above each shot. For the next leg of the same route, attach the previous leg's image:
+   the shot says what continues.
+3. If the pictures drift (people creeping in, a street seen at an angle, edges bending, the wrong light, brand names, a
+   narrower picture), paste the base prompt again with "Keep to these rules."
+4. Save each result as `review/<city>/refs/<id>_<what>.png`, for example `review/kamakura/refs/KM1-1_hase_lanes.png`,
    outside `Assets/` so nothing reaches a build. Then ask for the city's kit to be built from them.
+5. Keep each city in one tool, so its pictures match each other. Different cities can use different tools.
 
 The order per city: the **look target** first (it fixes the light for the chat), then every level, then the sheets and
 plates.
+
+**Format lines** (end each shot with the one for its kind; the page adds them):
+- ChatGPT, a street or set shot: `FORMAT: one straight-on ultra-wide panorama, aspect ratio 3:1 (the widest you can make).`
+- Gemini, a street or set shot: `FORMAT: one straight-on ultra-wide panorama, aspect ratio 4:1.`
+- Look target: `FORMAT: a cinematic widescreen frame, aspect ratio 21:9.`
+- Sheet: `FORMAT: aspect ratio 16:9.`
+- Plate: `FORMAT: aspect ratio 3:2 (three squares by two).`
 
 ## The base prompt (paste first, with the city block)
 
@@ -67,14 +103,16 @@ Do not imitate any specific game or film, and include nothing from one: no logos
 CAMERA (every street image, unless a shot says otherwise)
 - A straight-on side view: the street runs left to right, parallel to the picture, and the building fronts face the
   camera squarely. No diagonal streets, no vanishing point, no aerial or low-angle views.
-- Eye height about 2.5 m, about 9 m from the building fronts. A natural 35-50 mm lens, verticals vertical, no fisheye.
-  The horizon a little above the middle.
+- One continuous panorama, as if the camera slid sideways along the street, always about 9 m from the building fronts at
+  an eye height of about 2.5 m: every front is seen square-on across the whole width, verticals stay vertical, and
+  nothing curves or bends toward the edges. No fisheye or wide-angle stretching. The horizon a little above the middle.
 - Layers from front to back: an EMPTY, continuous walking surface across the bottom fifth of the picture (the play
   lane: a sidewalk, path, boardwalk, platform or sand, flat, with nothing standing on it except at its edges), then the
   kerb or edge, the row of fronts, a back row of roofs, trees and towers, and the far skyline or hills.
 - The picture reads left to right as the leg: where it starts on the left, where it ends on the right.
 - Everything sharp from front to back: no depth of field, bokeh, motion blur, vignette, lens flare or film grain.
-- The widest landscape format (3:2).
+- FORMAT: a street or set shot is one ultra-wide panorama at 3:1, the widest landscape you can make; a look target is a
+  21:9 widescreen frame; a sheet 16:9; a plate 3:2. Every shot ends with its own FORMAT line: use exactly that ratio.
 
 LIGHT
 Use exactly the light the city block describes: the season, the time of day, the colour temperature of the sun and of
@@ -96,6 +134,13 @@ When a shot is a SHEET (objects on a plain background) or a PLATE (a flat, strai
 light above and follow the shot.
 
 The city block follows. Then wait for my shots, one per message.
+```
+
+**In Gemini,** replace the base prompt's FORMAT line with:
+
+```text
+- FORMAT: a street or set shot is one ultra-wide panorama at 4:1; a look target is a 21:9 widescreen frame; a sheet 16:9;
+  a plate 3:2. Every shot ends with its own FORMAT line: use exactly that ratio.
 ```
 
 ## Kamakura, Japan

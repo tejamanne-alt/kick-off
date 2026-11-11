@@ -1711,6 +1711,28 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
   shared row, the rebuild without `_CA` scenes, Florida's scenes in the new light (measure them against Florida's look target
   once the user has made it), and the APK size and frame rate on the phone.
 
+## The city prompts for ChatGPT and Gemini, at the widest each makes (docs and tools only)
+
+- **Why.** The user asked for the prompts in two versions, ChatGPT and Gemini, each asking for the widest landscape
+  picture, and which Gemini model to use.
+- **The widest each makes** (November 2026, from OpenAI's and Google's announcements and third-party guides; Google's own
+  docs weren't reachable from the session): ChatGPT Images 2.0 makes up to 3:1; Gemini's Nano Banana 2.1 (the app's
+  default) up to 8:1, and Nano Banana Pro up to 21:9. Street and set shots now ask for **3:1** in ChatGPT and **4:1** in
+  Gemini: 8:1 is too thin a strip for a three-storey front with its roofs and sky. Look targets are 21:9, sheets 16:9,
+  plates 3:2.
+- **A panorama, not a wider lens.** The base prompt's camera now asks for one continuous straight-on panorama, as if the
+  camera slid sideways along the street 9 m from the fronts. A 3:1 or 4:1 frame through one lens would bend the fronts at
+  its edges, and a bent front can't be measured.
+- **Every shot ends with its `FORMAT:` line** (neither app has a ratio picker for these). In Gemini each shot also carries
+  its city block, as Gemini follows its latest message most closely.
+- **Which Gemini model** (`docs/IMAGE_PROMPTS.md`, "The two versions"): Nano Banana 2.1 for the street shots (4:1, far
+  cheaper); Nano Banana Pro ("Redo with Pro" on a Google AI Pro or Ultra plan) for the look targets, the sheets and any shot
+  2.1 gets wrong; Google AI Studio for an exact ratio and 4K.
+- **The page** (`tools/prompts_page`): a ChatGPT / Gemini switch; each Copy button gives that tool's version. The format
+  lines and Gemini's base-prompt line are read from the doc. Checked in Chromium: both versions' copy text, no script
+  errors, no sideways scroll at phone width.
+- No game code or assets changed.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

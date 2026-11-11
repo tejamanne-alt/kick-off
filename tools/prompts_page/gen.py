@@ -39,7 +39,25 @@ def section(text, start, end_pat=r'\n## '):
     m = re.search(end_pat, text[i + len(start):])
     return text[i: i + len(start) + (m.start() if m else len(text))]
 
-base = blocks_in(section(P, '## The base prompt'))[0]
+base_section = blocks_in(section(P, '## The base prompt'))
+base = base_section[0]
+# The two tools' versions: the base prompt's FORMAT line (Gemini's is the second block in that section), and each kind of
+# shot's FORMAT line (the doc's "Format lines").
+fmt_line = re.search(r'- FORMAT:.*?use exactly that ratio\.', base, re.S)
+if not fmt_line or not base_section[1].startswith('- FORMAT:'):
+    sys.exit("gen.py: the base prompt's FORMAT line or Gemini's replacement has moved: update the generator")
+bases = {'chatgpt': base, 'gemini': base.replace(fmt_line.group(0), base_section[1].strip())}
+FORMAT_KEYS = {'ChatGPT, a street or set shot': ('chatgpt', 'level'), 'Gemini, a street or set shot': ('gemini', 'level'),
+               'Look target': ('both', 'look'), 'Sheet': ('both', 'sheet'), 'Plate': ('both', 'plate')}
+formats = {'chatgpt': {}, 'gemini': {}}
+for label, line in re.findall(r'^- ([^:`]+): `(FORMAT: [^`]+)`', P, re.M):
+    tool, kind = FORMAT_KEYS[label]
+    for t in (['chatgpt', 'gemini'] if tool == 'both' else [tool]):
+        formats[t][kind] = line
+for t in formats:
+    if sorted(formats[t]) != ['level', 'look', 'plate', 'sheet']:
+        sys.exit('gen.py: missing format lines for ' + t + ': ' + str(sorted(formats[t])))
+KINDS = {'LEVEL': 'level', 'LOOK TARGET': 'look', 'SHEET': 'sheet', 'PLATE': 'plate'}
 
 # --- legs from CITIES.md: id -> (title, kind)
 legs = {}
@@ -63,15 +81,15 @@ for c in CITIES:
             mm = re.match(r'(LEVEL|SHEET|PLATE|LOOK TARGET) ([A-Z]{2}[0-9]?-?[P0-9]+),? ([^.]+)\.', first)
             kind, sid, title = mm.group(1), mm.group(2), mm.group(3)
             badge = legs.get(sid, (None, None))[1] if kind == 'LEVEL' else ('Sheet' if kind == 'SHEET' else 'Plate')
-            items.append(dict(id=sid, title=title, badge=badge, text=b))
+            items.append(dict(id=sid, title=title, badge=badge, kind=KINDS[kind], text=b))
         rid = head.split(' ', 1)[0]
         groups.append(dict(head=head, route=routes.get(rid), items=items))
     look = [b for b in blocks_in(sec) if b.startswith('LOOK TARGET')][0]
     mm = re.match(r'LOOK TARGET ([A-Z]{2}-0), ([^.]+)\.', look)
-    out.append(dict(c, block=city_block, look=dict(id=mm.group(1), title=mm.group(2), badge='Look target', text=look),
+    out.append(dict(c, block=city_block, look=dict(id=mm.group(1), title=mm.group(2), badge='Look target', kind='look', text=look),
                     groups=groups, sun=clim[c['key']][0], shade=clim[c['key']][1]))
 
-data = dict(base=base, cities=out)
+data = dict(base=bases, formats=formats, cities=out)
 total = sum(len(g['items']) for c in out for g in c['groups']) + len(out)
 print('cities', len(out), 'shots', total, 'levels', sum(1 for c in out for g in c['groups'] for i in g['items'] if i['badge'] not in ('Sheet', 'Plate')))
 tpl = open(os.path.join(HERE, 'template.html')).read()
