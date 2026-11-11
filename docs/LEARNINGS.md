@@ -138,6 +138,28 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
   - Anything every build needs goes in a build callback or an on-load step, not only in our build menu: the user builds with whatever button is in front of them.
   - When an install fails, get the reason from `adb install -r` before guessing.
 
+**A15. Pinning Unity 6.6 broke the Input System package (fixed November 2026).**
+- *What:* after the project was pinned to 6000.6.7f1 (#58), the editor stopped with about a hundred CS0619 errors in
+  `Library/PackageCache/com.unity.inputsystem@.../Editor`: `'TreeView' / 'TreeViewItem' / 'TreeViewState' is obsolete`.
+  A follow-on UXML error ("Could not load type InputActionAsset") and the Input Manager warning came from the same
+  failure.
+- *Why:*
+  - `Packages/manifest.json` pinned Input System 1.11.2 (October 2024). Unity 6.2 made the non-generic `TreeView`
+    classes obsolete, and 6.6 made that an error. Input System 1.14.1 switched to `TreeView<int>`.
+  - The pin's PR said "Unity raises any package below its minimums when it opens the project". That was wrong for this
+    package: Unity only raises packages below the editor's own declared minimum, and 1.11.2 isn't one.
+  - None of the checks compile packages: `unity_api_check` reads only `Assets/`.
+- *Fix:*
+  - Input System 1.20.1, the newest release. It also carries the `EntityId` changes for 6.5 and newer. The game's
+    calls are unchanged since 1.11: `Keyboard`, `Mouse` and `Touchscreen.current`, and
+    `InputSystemUIInputModule.AssignDefaultActions`.
+  - `tools/unity_api_check/package_minimums.py`, run by `run.sh`, fails when a package is older than the pinned Unity
+    needs (a table of known minimums).
+- *Rule:*
+  - Before changing the pinned Unity version, read each package's changelog for that version.
+  - Add a row to `package_minimums.py` for every package a Unity release breaks.
+  - Say only what was checked. "Unity upgrades it" was a guess.
+
 ## B. Performance and mobile
 
 **B1. 28 fps with uneven frames on a mid-range phone (November 2026).**

@@ -34,5 +34,7 @@ for d in "UNITY_ANDROID;UNITY_EDITOR;ENABLE_INPUT_SYSTEM;UNITY_INCLUDE_TESTS;UNI
   ERRORS=1 dotnet "$WORK/bin/apiscan.dll" "$REPO/Assets" "$REFS" "$WORK/stubs" "$d" 2>/dev/null | grep '^SYNTAX' >> "$WORK/syntax.txt" || true
 done
 if [ -s "$WORK/syntax.txt" ]; then echo "SYNTAX ERRORS (Unity will not compile these):"; sort -u "$WORK/syntax.txt"; fi
+# the packages, against the pinned Unity (nothing here compiles them: docs/LEARNINGS.md A15)
+python3 "$HERE/package_minimums.py" "$REPO" || PACKAGES_BAD=1
 python3 "$HERE/obsolete_check.py" "$WORK/ref-$VERSION" "$WORK/uses.txt" "$@"
-[ ! -s "$WORK/syntax.txt" ]
+[ ! -s "$WORK/syntax.txt" ] && [ -z "${PACKAGES_BAD:-}" ]
