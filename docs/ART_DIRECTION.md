@@ -56,7 +56,7 @@ pass (paler sky, olive greens, less saturation, a warm gain) drifted away from t
 
 ## The comic halftone filter
 
-An optional look (Add-ons & Filters on the title screen, `World/PostFX.cs`, passes 4 and 5 of
+An optional look (Filters on the title screen and in the pause menu, `World/PostFX.cs`, passes 4 and 5 of
 `Shaders/PostFX.shader`) that redraws the graded picture as a printed comic, over every model in
 every scene:
 
@@ -83,7 +83,7 @@ Previews of the real models through a numpy port of the shader are in `review/fi
 
 ## The pencil sketch filter
 
-An optional look (Add-ons & Filters, pass 6 of `Shaders/PostFX.shader`): warm drawing paper, a faint
+An optional look (Filters, pass 6 of `Shaders/PostFX.shader`): warm drawing paper, a faint
 wash of the colour, pencil hatching for the tone in up to three directions as it darkens, the sky left
 open, and the outline drawn twice with a wandering offset from the depth and normals. The figures
 keep their colour (75 percent) and get no creases, so the kid stands out on the page and the painted
@@ -105,13 +105,19 @@ around them has real depth.
 | 4 Underpass and building site | Clear city day | Slightly paler sky | Tower crane, hoarding, scaffold, concrete pipes, warehouses |
 | 5 Park and school | Summer afternoon | Clear, a touch warmer | Green trees, a few blossoms, birches, hedges, pond, school |
 
-**The original town and the add-ons.** The original streets above are Kamakura, Japan: a seaside
-town south of Tokyo (Japanese shop names, concrete poles, block walls, the railway). Add-ons put the
-same levels in another country's streets, with that country's music, chosen in Add-ons and
-Filters (Progression/AddOns, UI/AddOnsPanel); India is listed as coming soon, and Florida took the place of the Tokyo city
-add-on that was listed beside it.
-**California** (Santa Monica), unlocked by finishing every story level, has a `<scene>_CA` scene for
-each level, built beside the original with `LevelBuildKit.California` set. It is a sunny California coast town (the Coast kit, `tools/blender/kit_buildings_cal.py`): stucco
+**The cities.** The original streets above are Kamakura, Japan: a seaside town south of Tokyo (Japanese shop names,
+concrete poles, block walls, the railway). The game is now five cities, each a chapter of its own with its own streets,
+light and play, chosen after PLAY (`Progression/Cities`, `UI/CityPicker`; the design is `docs/CITIES.md`): Kamakura,
+Florida (Miami), Madrid, New York and Mumbai. The add-ons, which put the same levels in another country's streets, are gone.
+**Each city's light** is Kamakura's measured look shifted by the city's climate (`CityClimate`): the colour temperature of
+its direct sun and of its shade, and how humid its air is (a milky horizon and nearer haze, or a deeper sky and crisper
+distance). It is applied to a city's scenes as they are built, so it costs nothing at runtime, and every filter reads it.
+Florida's (a 5,000 K sun, 8,500 K shade, humid air) is in its scenes since v122 (`review/cities/florida_climate_v122.jpg`);
+the other cities' are set in `Progression/Cities` for when they are built. Measure each city's screenshots against its
+look target (`docs/IMAGE_PROMPTS.md`, LOOK TARGET) once the user has made it, as Kamakura's were measured.
+**California** (Santa Monica) was an add-on before the cities and is not one of the five: since v122 its `<scene>_CA`
+scenes are no longer built. Its Coast kit and builder code stay, because Florida's streets share them. It had a `<scene>_CA`
+scene for each level, built beside the original with `LevelBuildKit.California` set. It is a sunny California coast town (the Coast kit, `tools/blender/kit_buildings_cal.py`): stucco
 villas and single-storey ranch houses under hipped terracotta barrel-tile roofs, white two-storey
 Craftsman houses with deep front porches, white beach condos with glass balconies, beach-town shops
 (a stepped-parapet surf shop, a Spanish Revival shop with arched windows and a tiled pent roof),
@@ -121,7 +127,7 @@ timber pier on concrete piles running out from the beach, and English shop signs
 (`BuildingsCAAtlas.png`). A fan palm is 16.5 m tall, and the camera's top edge sits at about
 2.4 m + 0.23 x the distance, so grown fan palms stand 60 m or more back (StreetBuilder.PalmSkyline),
 where their crowns show over the roofs; near the street they are young ones or date palms.
-**Florida** (Cocoa Beach, on the A1A), unlocked the same way, so far has chapter 1, Home Street, and chapter 3, the beach: each of their levels has a
+**Florida**, unlocked by finishing every one of Kamakura's story levels (its streets so far are a Space Coast beach town, Cocoa Beach on the A1A, and a canal suburb; its new routes in `docs/CITIES.md` are set in Miami and reuse this kit), so far has chapter 1, Home Street, and chapter 3, the beach: each of their levels has a
 `<scene>_FL` scene (`LevelBuildKit.Florida`, `StreetBuilder.Florida`, the Florida kit `tools/blender/kit_buildings_fl.py`),
 after the user's photographic references in `review/florida/refs` (F3-1 to F3-6, made with `docs/IMAGE_PROMPTS.md`). The kid's
 beach is unchanged (the sand, the tides, the channels, the dunes and the sea about 9.6 m behind the lane: the tide's wash, the

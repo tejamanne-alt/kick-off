@@ -41,7 +41,7 @@ namespace DribbleToSchool.Coop
         public byte RaceId { get; private set; }
         /// <summary>The route being raced (the stage), and its location (an add-on).</summary>
         public Route Route { get; private set; }
-        public AddOn Location { get; private set; }
+        public City Location { get; private set; }
         /// <summary>The leg this phone is on (0 starts at home).</summary>
         public int Leg { get; private set; }
         public int LegCount { get { return Route != null ? Route.levels.Length : 1; } }
@@ -155,7 +155,7 @@ namespace DribbleToSchool.Coop
             Leg = Mathf.Clamp(leg, 0, LegCount - 1);
             var catalog = service.Catalog;
             var def = catalog != null ? catalog.FindById(Route.levels[Leg]) : null;
-            string scene = def != null ? AddOns.SceneFor(def.sceneName, Location) : null;
+            string scene = def != null ? Cities.SceneFor(def.sceneName, Location) : null;
             if (scene == null || !Application.CanStreamedLevelBeLoaded(scene))
             {
                 // (every phone in the race has the same content, CoopService.ContentHash: this is a broken build. Out of the

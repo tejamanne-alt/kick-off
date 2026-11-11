@@ -1,5 +1,8 @@
 # The town, the routes and the way to school
 
+This is Kamakura's town, the original. The game's five cities, each with its own home, school and routes, are designed in
+`docs/CITIES.md`; Kamakura's new routes there will replace the six below once built.
+
 One home, one school, six ways between them. **Every route is one trip from the front door to the school gate, and each story level is one leg of it**: the route's first level starts on the home front, its last level ends at the school's arch, and every level in between runs from one stop on the way to the next (the bus stop, granny's house, the church, the station...). The level that ends at a stop and the next one on the same route, which starts there, build the same stop, so the legs join up. The map shows the town with the six routes drawn from the house to the school, every stop at its own place in the town (the station at the foot of the railway bridge, the surf school on the boardwalk where the beach begins...), and each level's node on its own leg near where the level starts: a route's first node just past the streets it shares with other routes outside the house, every later node shortly after the stop it starts from.
 
 Nothing here has been run in Unity or on a device (see PROGRESS.md for what was checked offline).

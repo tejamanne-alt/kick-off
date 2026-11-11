@@ -800,12 +800,12 @@ namespace DribbleToSchool.Core
             // A level the chosen add-on's streets don't have yet stays locked (the map and Next never offer one): back to the map.
             if (LevelUnlocks.NotInTown(def))
             {
-                Debug.LogWarning("[Levels] " + def.levelId + " isn't in " + Progression.AddOns.Active.id + "'s streets yet: back to the map.");
+                Debug.LogWarning("[Levels] " + def.levelId + " isn't in " + Progression.Cities.Active.id + "'s streets yet: back to the map.");
                 FrontEnd.FrontEndController.Open(FrontEnd.FrontEndScreenId.Map, def.chapter);
                 return;
             }
-            // The level's scene for the add-on chosen in Settings (Progression/AddOns: California...).
-            SceneManager.LoadScene(Progression.AddOns.SceneFor(def.sceneName));
+            // The level's scene in the city chosen in the city picker (Progression/Cities: Florida...).
+            SceneManager.LoadScene(Progression.Cities.SceneFor(def.sceneName));
         }
 
         void SetState(LevelState next)

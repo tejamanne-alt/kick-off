@@ -3,6 +3,36 @@
 The kid is modelled, textured, rigged and weighted by script in Blender (run as the
 `bpy` Python module, no window needed), then exported to `Assets/_Game/Art/Models/Kid.fbx`.
 
+## Installing Blender and its add-ons
+
+Blender runs here as the `bpy` module: the whole of Blender 5.2.3 LTS (Cycles, EEVEE, the importers and exporters), with no
+window. A fresh Linux machine or cloud container needs:
+
+```
+python3 -m venv blenv && blenv/bin/pip install bpy==5.2.3 pillow    # Blender, and Pillow for the kits' atlases
+apt-get install -y libegl1 libegl-mesa0 libgl1-mesa-dri             # EEVEE renders headless through Mesa's software EGL
+```
+
+The add-ons the scripts and the work need come with Blender. Turn them on once (saved in the user preferences):
+
+```
+blenv/bin/python -c "import bpy, addon_utils
+for m in ('io_scene_fbx', 'io_scene_gltf2', 'node_wrangler', 'rigify', 'io_mesh_uv_layout', 'cycles'):
+    addon_utils.enable(m, default_set=True, persistent=True)
+bpy.ops.wm.save_userpref()"
+```
+
+- **FBX** and **glTF** export the models (`kit_lib.export_model`).
+- **Cycles** bakes ambient occlusion into vertex colours, so the kits' weathering and depth cost nothing in the game
+  (`docs/CITIES.md`, "The look").
+- **Node Wrangler** helps with the atlas-painting node trees.
+- **Rigify** and **UV Layout** help with the characters.
+- Nothing from the extensions site is needed (it isn't reachable from the cloud sessions either). The full Blender app with a
+  window is only for looking at things by hand: install it from blender.org on your own computer, the same 5.2 LTS.
+
+Checked in a cloud session (November 2026): the Florida, Plants and Buildings kits build, and `preview_street.py` renders
+with EEVEE.
+
 ```
 python -m venv blenv && blenv/bin/pip install bpy==5.2.3
 python face.py face.png                         # paints the face / atlas texture
@@ -678,6 +708,8 @@ blenv/bin/python preview_street.py -- $PWD/out $PWD/street_ch1.png --chapter 1 [
 blenv/bin/python preview_street.py -- $PWD/out $PWD/street_fl.png --chapter 3 --florida --level L13 [--spans a:b:top,...] [--open a:b,...]
 # Florida's Home Street (StreetBuilder.FloridaHome): the canal and its drawbridge (leaves up --lift degrees), the kid's house
 blenv/bin/python preview_street.py -- $PWD/out $PWD/street_fl1.png --chapter 1 --florida [--canal a:b] [--lift deg] [--home x]
+../city_climate/run.sh Florida 1 3 $PWD/moods             # a city's light, by the game's own CityClimate code (needs dotnet 8)
+blenv/bin/python preview_street.py -- $PWD/out $PWD/street_fl1_city.png --chapter 1 --florida --mood-json $PWD/moods/florida_ch1.json
 ```
 
 ## The town map

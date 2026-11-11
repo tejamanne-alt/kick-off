@@ -1653,6 +1653,64 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
 - **Not run in Unity:** building the `_FL` scenes, importing the new FBXs, the drawbridge's leaves under the kid and the ball,
   the golf cart's ride, the sprinklers' throw, the storm's gusts, the stops, and the frame rate on the phone.
 
+## Five cities, a city picker, Filters on their own (generated content v122)
+
+- **Why.** The user asked to drop the add-ons (the same levels in another country's streets: "boring with same gameplay
+  styles") for **five cities as chapters of their own**, Florida, Madrid, New York, Mumbai and Kamakura, each with **2 to 3
+  routes** from home to school and **3 to 5 levels a route**. The routes are realistic: transit (bus, tram, metro, subway,
+  local train, ferry), errands for an aunt or uncle, shopping for classwork, something dropped and fetched back, and a
+  mini-game instead of a routine dribble on every route longer than three levels. The user also asked for each city's own
+  colour temperature and climate, ChatGPT Images prompts for one city and one level at a time, Blender with its add-ons, and
+  the look and feel of a recent big-budget open-world game (four reference screenshots, kept out of the repository), with
+  the filters still easy to apply.
+- **Asked, not answered.** Three questions (Kamakura's 23 levels, California, how far to push the look) closed unanswered
+  when the session's worker restarted, so the recommended options were taken: Kamakura keeps its 23 levels until its new
+  routes are built; California leaves (below); the look goes into light, grade and baked texture, not new render passes.
+- **The design: `docs/CITIES.md`.** Each city: its home, school, light and climate (season, time, the sun's and the shade's
+  colour temperatures, air, weather, palette), and three routes of 3, 4 and 5 legs, every leg described (12 a city, 60 in
+  all, 15 of them mini-games). The mini-games are five systems skinned per city: the ride (board, balance, get off at your
+  stop; express or local, change lines), the errand (an aunt's basket from a balcony, throwing a boat's line, wrapping a
+  bento, a pretzel-cart rush, sorting dabbawalas' tiffins), shopping for classwork (in each city's money), drop and come back,
+  and wait-then-cross. Also: how the cinematic look is reached on the Nord CE5 and stays filter-safe, and what each city
+  still needs.
+- **The prompts: `docs/IMAGE_PROMPTS.md`, rewritten.** A base prompt (photoreal and cinematic in each city's own light, the
+  side-scroller's straight-on camera, an empty play lane, no people, invented signs, no game's content), a block per city
+  with its colour temperatures and climate, then one prompt per level (all 60), a look target per city, and sheets and
+  plates in neutral light for the atlases. The Florida add-on's earlier prompts are in the history.
+- **The game:**
+  - **Filters** (`UI/FiltersPanel`, `Progression/Filters`) replace Add-ons & Filters on the title screen, and sit beside
+    Settings in the level's, the race's and the Holiday Run's pause menus (one row shared, so no card grows), so a filter can
+    be tried over the level itself. Saved as before (`SaveData.filter`).
+  - **The city picker** (`UI/CityPicker`, `Progression/Cities`) after PLAY and HOLIDAY RUN: five cards. After PLAY,
+    Kamakura (its 23 levels) and Florida (its 9: Home Street and the beach, unlocked by finishing Kamakura's levels, as
+    before) can be chosen, and the map opens in that city. After HOLIDAY RUN only Kamakura can (no other city has a run yet).
+    Madrid, New York and Mumbai show as coming soon. The chosen city is saved in `SaveData.addOn` as before (Kamakura keeps
+    the id "original").
+  - **California is not a city:** it left the list, and its `<scene>_CA` scenes are no longer built (`DeleteStaleScenes`
+    removes them). A save that chose it plays Kamakura. Its Coast kit and builder code stay: Florida's streets share them.
+  - **Co-op locations** are the cities that can be played (Kamakura, Florida): the content hash changes, so older builds
+    are turned away as another version.
+  - **Florida's climate** (`CityClimate`: a 5,000 K sun, 8,500 K shade, humid air, a touch of teal in the grade's shadows) is
+    applied as its scenes are built (`LevelBuildKit.ThemeFor`). Kamakura's look is the reference and doesn't change.
+    `review/cities/florida_climate_v122.jpg` shows Home Street before and after through the game camera.
+- **Tools:** Blender 5.2.3 (`bpy`) with Pillow, its bundled add-ons turned on, and Mesa's EGL for headless EEVEE
+  (`tools/blender/README.md`, "Installing Blender and its add-ons"); `tools/city_climate/run.sh` runs the game's own climate
+  code and writes moods for `preview_street.py --mood-json`.
+- **Cost:**
+  - The build loses California's 28 `_CA` scenes (23 levels and 5 challenges): 39 level scenes instead of 67. The Coast kit's
+    models that only California used leave the build with them; the ones Florida's scenes use stay, with the Coast atlas.
+    The APK should shrink noticeably (B7); measure it.
+  - Florida's climate and the grade tint are different values in the same shader inputs: no runtime cost.
+  - The picker and the Filters screen are built only while open.
+- **Checked:**
+  - compile: every `#if` set against the clean tree, no new error kinds, and two planted errors were caught in every set;
+    `unity_api_check` 6000.6 and 6000.7 clean;
+  - the climate maths: `tools/city_climate/run.sh` runs the game's own code and passes the test's assertions;
+  - the kits build, and the preview renders.
+- **Not run in Unity:** the picker and the Filters screen (layout in both languages at 4:3, 16:9 and 21:9), the pause menus'
+  shared row, the rebuild without `_CA` scenes, Florida's scenes in the new light (measure them against Florida's look target
+  once the user has made it), and the APK size and frame rate on the phone.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

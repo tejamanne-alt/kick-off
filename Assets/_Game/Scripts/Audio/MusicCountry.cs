@@ -1,9 +1,9 @@
 namespace DribbleToSchool.Audio
 {
     /// <summary>
-    /// Whose music plays: the country the streets are in (Progression/AddOns). Japan for the original town
-    /// (Kamakura), California for the California add-on, Florida for the Florida add-on. Add-ons still to come
-    /// play the original's. New countries go at the end: AudioDirector keys its clips by the number.
+    /// Whose music plays: the country the streets are in (Progression/Cities). Japan for Kamakura, Florida for Florida.
+    /// California's (the add-on before the cities) is no longer played. Cities still to come play Kamakura's until they
+    /// have their own. New countries go at the end: AudioDirector keys its clips by the number.
     /// </summary>
     public enum MusicCountry { Japan, California, Florida }
 }

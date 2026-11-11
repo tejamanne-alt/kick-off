@@ -57,7 +57,7 @@ namespace DribbleToSchool.EditorTools
             int savedChapter = Chapter;
             ChapterTheme savedTheme = Theme;
             Chapter = chapter;
-            Theme = ChapterTheme.For(chapter);
+            Theme = ThemeFor(chapter);
             try { build(); }
             finally
             {

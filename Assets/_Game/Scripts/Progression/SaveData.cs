@@ -57,11 +57,11 @@ namespace DribbleToSchool.Progression
         public List<string> schoolMedals = new List<string>();
         public bool schoolTrophy;
 
-        /// <summary>The add-on chosen in Settings (Progression/AddOns: "original", "california"...); empty in older saves.</summary>
+        /// <summary>The city chosen in the city picker (Progression/Cities: "original" is Kamakura, "florida"...); empty in older saves. (Its name is from the add-ons, before the cities.)</summary>
         public string addOn = "";
-        /// <summary>The filter chosen in Settings (Progression/AddOns.Filters).</summary>
+        /// <summary>The filter chosen in Filters (Progression/Filters).</summary>
         public string filter = "original";
-        /// <summary>Older saves' California switch (before the add-ons): read once by AddOns.Selected.</summary>
+        /// <summary>Older saves' California switch (before the add-ons). California is not a city: Cities.Select clears it.</summary>
         public bool californiaSkin;
 
         // Co-op (Coop/): races finished at the school gate on this phone, and how many of them it won. Older saves have 0.

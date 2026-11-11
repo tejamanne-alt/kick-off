@@ -1,0 +1,269 @@
+<title>Kick Off 2 City Prompts</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: a transit-board header with one tab per city; below it a single reading column of prompt cards, grouped by route. */
+:root {
+  --bg: #eef0f4;
+  --surface: #ffffff;
+  --sunk: #f6f7f9;
+  --ink: #161922;
+  --muted: #586071;
+  --line: #d9dde5;
+  --brand: #2a55c4;
+  --ok: #1f8a4c;
+  --city: var(--brand);
+  --font-display: "Barlow Condensed", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+  --font-body: "IBM Plex Sans", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111318; --surface: #191c23; --sunk: #14161c; --ink: #e8eaf0; --muted: #9ba2b2; --line: #2a2f3a;
+    --brand: #7d9cff; --ok: #4cc283; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111318; --surface: #191c23; --sunk: #14161c; --ink: #e8eaf0; --muted: #9ba2b2; --line: #2a2f3a;
+  --brand: #7d9cff; --ok: #4cc283; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 48px;
+}
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--surface); }
+.wrap { max-width: 980px; margin: 0 auto; }
+header.top {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--surface);
+  border-bottom: 1px solid var(--line); margin: 0 calc(-1 * max(16px, env(safe-area-inset-left, 0px))) 0;
+  padding: 14px max(16px, env(safe-area-inset-right, 0px)) 0 max(16px, env(safe-area-inset-left, 0px));
+}
+.brandline { max-width: 980px; margin: 0 auto; display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.brandline h1 { font-family: var(--font-display); font-weight: 700; font-size: 26px; letter-spacing: 0.02em; margin: 0; text-transform: uppercase; }
+.brandline .sub { color: var(--muted); font-size: 13px; }
+nav.tabs { max-width: 980px; margin: 10px auto 0; display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; }
+nav.tabs::-webkit-scrollbar { display: none; }
+nav.tabs a {
+  flex: none; text-decoration: none; color: var(--muted); font-family: var(--font-display); font-weight: 600; font-size: 18px;
+  letter-spacing: 0.04em; text-transform: uppercase; padding: 6px 12px 9px; border-bottom: 4px solid transparent; display: flex; align-items: center; gap: 8px;
+}
+nav.tabs a .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--dot); }
+nav.tabs a[aria-current="page"] { color: var(--ink); border-bottom-color: var(--dot); }
+nav.tabs a:focus-visible, button:focus-visible, label.made:focus-within { outline: 2px solid var(--brand); outline-offset: 2px; border-radius: 4px; }
+
+main { padding-top: 22px; display: grid; gap: 18px; }
+h2.city { font-family: var(--font-display); font-weight: 700; font-size: 44px; line-height: 1; margin: 6px 0 0; text-transform: uppercase; letter-spacing: 0.01em; text-wrap: balance; }
+h2.city small { font-family: var(--font-body); font-size: 15px; font-weight: 500; color: var(--muted); text-transform: none; letter-spacing: 0; margin-left: 10px; }
+h3 { font-family: var(--font-display); font-weight: 700; font-size: 24px; text-transform: uppercase; letter-spacing: 0.03em; margin: 0; }
+p { margin: 0; max-width: 68ch; }
+.lede { color: var(--muted); }
+
+.climate { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { display: inline-flex; align-items: center; gap: 8px; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 5px 12px 5px 6px; font-size: 13px; }
+.chip.plain { padding-left: 12px; }
+.chip .sw { width: 20px; height: 20px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.15); }
+.chip b { font-weight: 600; font-variant-numeric: tabular-nums; }
+.progress { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+.steps { display: grid; gap: 10px; counter-reset: step; padding: 0; margin: 0; list-style: none; }
+.steps li { display: grid; grid-template-columns: 30px 1fr; gap: 10px; align-items: start; }
+.steps li::before { counter-increment: step; content: counter(step); font-family: var(--font-display); font-weight: 700; font-size: 18px;
+  width: 30px; height: 30px; border-radius: 50%; background: var(--ink); color: var(--surface); display: grid; place-items: center; }
+.steps li > div { min-width: 0; padding-top: 3px; }
+
+.route { display: grid; gap: 10px; margin-top: 10px; }
+.route-head { display: grid; gap: 2px; border-left: 4px solid var(--city); padding: 2px 0 2px 12px; }
+.route-head .trip { color: var(--muted); font-size: 13.5px; }
+
+.shot { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.shot.first { border-color: var(--city); box-shadow: 0 0 0 1px var(--city) inset; }
+.shot-head { display: flex; align-items: center; gap: 10px; padding: 10px 12px; flex-wrap: wrap; border-bottom: 1px solid var(--line); }
+.sid { font-family: var(--font-mono); font-weight: 500; font-size: 13px; background: var(--sunk); border: 1px solid var(--line); border-radius: 6px; padding: 1px 7px; }
+.badge { font-size: 11.5px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--city); }
+.shot-title { font-weight: 600; flex: 1 1 220px; min-width: 0; }
+.actions { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+button.copy {
+  font: 600 13px var(--font-body); color: #fff; background: var(--city); border: 0; border-radius: 7px; padding: 7px 14px; cursor: pointer; min-width: 96px;
+}
+button.copy:hover { filter: brightness(1.08); }
+button.copy.done { background: var(--ok); }
+label.made { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); cursor: pointer; user-select: none; }
+label.made input { width: 16px; height: 16px; accent-color: var(--ok); }
+.shot.is-made .shot-title { color: var(--muted); }
+pre.prompt {
+  margin: 0; padding: 12px 14px; font-family: var(--font-mono); font-size: 12.5px; line-height: 1.6; white-space: pre-wrap; word-break: break-word;
+  background: var(--sunk); color: var(--ink); max-height: 22em; overflow: auto;
+}
+details.more summary { cursor: pointer; padding: 9px 14px; font-size: 13px; color: var(--muted); }
+.note { font-size: 13.5px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 14px; }
+@media (max-width: 520px) {
+  h2.city { font-size: 36px; }
+  h2.city small { display: block; margin: 6px 0 0; }
+  .actions { width: 100%; justify-content: space-between; margin-left: 0; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<header class="top">
+  <div class="brandline">
+    <h1>Kick Off 2 · City prompts</h1>
+    <span class="sub">Reference images for ChatGPT Images, one city and one level at a time</span>
+  </div>
+  <nav class="tabs" id="tabs" aria-label="Cities"></nav>
+</header>
+<div class="wrap"><main id="view"></main></div>
+
+<script>
+const DATA = /*DATA*/null;
+const view = document.getElementById('view');
+const tabs = document.getElementById('tabs');
+
+function el(tag, attrs, ...kids) {
+  const e = document.createElement(tag);
+  for (const k in (attrs || {})) {
+    if (k === 'class') e.className = attrs[k];
+    else if (k === 'style') e.setAttribute('style', attrs[k]);
+    else if (k.startsWith('on')) e.addEventListener(k.slice(2), attrs[k]);
+    else e.setAttribute(k, attrs[k]);
+  }
+  for (const k of kids) if (k != null) e.append(k.nodeType ? k : document.createTextNode(k));
+  return e;
+}
+
+// A blackbody's colour at a temperature (Krystek's approximation to the Planckian locus, as the game's CityClimate uses).
+function kelvinColor(t) {
+  const u = (0.860117757 + 1.54118254e-4 * t + 1.28641212e-7 * t * t) / (1 + 8.42420235e-4 * t + 7.08145163e-7 * t * t);
+  const v = (0.317398726 + 4.22806245e-5 * t + 4.20481691e-8 * t * t) / (1 - 2.89741816e-5 * t + 1.61456053e-7 * t * t);
+  const d = 2 * u - 8 * v + 4, x = 3 * u / d, y = 2 * v / d;
+  const X = x / y, Y = 1, Z = (1 - x - y) / y;
+  let rgb = [3.2406 * X - 1.5372 * Y - 0.4986 * Z, -0.9689 * X + 1.8758 * Y + 0.0415 * Z, 0.0557 * X - 0.2040 * Y + 1.0570 * Z].map(c => Math.max(c, 0));
+  const m = Math.max(...rgb);
+  rgb = rgb.map(c => c / m).map(c => c <= 0.0031308 ? 12.92 * c : 1.055 * Math.pow(c, 1 / 2.4) - 0.055);
+  return 'rgb(' + rgb.map(c => Math.round(c * 255)).join(',') + ')';
+}
+
+const store = {
+  get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+  set(k, v) { try { if (v) localStorage.setItem(k, v); else localStorage.removeItem(k); } catch (e) {} }
+};
+
+function copyButton(getText, preEl, label) {
+  const b = el('button', { class: 'copy', type: 'button' }, label || 'Copy');
+  b.addEventListener('click', () => {
+    const text = getText();
+    const done = ok => {
+      b.textContent = ok ? 'Copied' : 'Selected: press copy';
+      b.classList.toggle('done', ok);
+      setTimeout(() => { b.textContent = label || 'Copy'; b.classList.remove('done'); }, 1600);
+    };
+    const select = () => {
+      if (!preEl) return done(false);
+      const r = document.createRange(); r.selectNodeContents(preEl);
+      const s = window.getSelection(); s.removeAllRanges(); s.addRange(r); done(false);
+    };
+    try {
+      navigator.clipboard.writeText(text).then(() => done(true), select);
+    } catch (e) { select(); }
+  });
+  return b;
+}
+
+function shotCard(shot, city, opts) {
+  opts = opts || {};
+  const key = 'made:' + shot.id;
+  const pre = el('pre', { class: 'prompt' }, shot.text);
+  const card = el('article', { class: 'shot' + (opts.first ? ' first' : ''), id: 'shot-' + shot.id });
+  const box = el('input', { type: 'checkbox', id: 'made-' + shot.id });
+  box.checked = !!store.get(key);
+  card.classList.toggle('is-made', box.checked);
+  box.addEventListener('change', () => { store.set(key, box.checked ? '1' : ''); card.classList.toggle('is-made', box.checked); refreshProgress(city); });
+  const head = el('div', { class: 'shot-head' },
+    el('span', { class: 'sid' }, shot.id),
+    shot.badge ? el('span', { class: 'badge' }, shot.badge) : null,
+    el('span', { class: 'shot-title' }, shot.title),
+    el('div', { class: 'actions' },
+      opts.noMade ? null : el('label', { class: 'made', for: 'made-' + shot.id }, box, 'Made'),
+      copyButton(() => opts.copyText ? opts.copyText() : shot.text, pre, opts.copyLabel)));
+  card.append(head);
+  if (opts.collapse) card.append(el('details', { class: 'more' }, el('summary', null, opts.collapse), pre));
+  else card.append(pre);
+  return card;
+}
+
+function shotsOf(city) {
+  const ids = [city.look.id];
+  city.groups.forEach(g => g.items.forEach(i => ids.push(i.id)));
+  return ids;
+}
+function refreshProgress(city) {
+  const p = document.getElementById('progress');
+  if (!p || !city) return;
+  const ids = shotsOf(city), made = ids.filter(id => store.get('made:' + id)).length;
+  p.textContent = made + ' of ' + ids.length + ' images made';
+}
+
+function renderStart() {
+  document.documentElement.style.setProperty('--city', 'var(--brand)');
+  const steps = el('ol', { class: 'steps' },
+    el('li', null, el('div', null, el('b', null, 'One chat per city. '), 'Open a new ChatGPT chat and paste that city’s ', el('b', null, 'first message'), ' (the base prompt and the city block together: each city tab has a button that copies both). If it answers with a question or a test picture, reply “Ready for the shots.”')),
+    el('li', null, el('div', null, el('b', null, 'Then one image per message, ', ), 'in the order on the city’s tab: the look target first (it fixes the light), then each level, then the sheets and plates. For the next leg of the same route, attach the previous leg’s picture.')),
+    el('li', null, el('div', null, el('b', null, 'Ask for the widest landscape picture (3:2). '), 'If the pictures drift (people creeping in, a street seen at an angle, the wrong light, brand names), paste the base prompt again with “Keep to these rules.”')),
+    el('li', null, el('div', null, el('b', null, 'Save each one '), 'as review/<city>/refs/<id>_<what>.png, for example review/kamakura/refs/KM1-1_hase_lanes.png, then ask for the city’s kit to be built from them. Tick “Made” as you go: this browser remembers.')));
+  view.replaceChildren(
+    el('section', { style: 'display:grid;gap:12px' },
+      el('h2', { class: 'city' }, 'Start here'),
+      el('p', { class: 'lede' }, 'Five cities, three routes each, every level its own prompt: 60 levels, a look target per city, and sheets and plates for the textures. The images are references the 3D artists model and light from; the game never shows them. Street shots are straight-on side views because the game is a side-scroller.')),
+    el('section', { style: 'display:grid;gap:12px' }, el('h3', null, 'How to use them'), steps),
+    el('section', { style: 'display:grid;gap:10px' },
+      el('h3', null, 'The base prompt'),
+      el('p', { class: 'lede' }, 'The same for every city. On its own it is here to read; to start a chat, use the city tab’s “Copy first message”, which includes it.'),
+      shotCard({ id: 'BASE', title: 'For every city', badge: 'Base prompt', text: DATA.base }, null, { noMade: true })),
+    el('p', { class: 'note' }, 'Written for the game’s design in docs/CITIES.md; the same prompts are in docs/IMAGE_PROMPTS.md.'));
+}
+
+function renderCity(city) {
+  document.documentElement.style.setProperty('--city', city.accent);
+  const header = el('section', { style: 'display:grid;gap:10px' },
+    el('h2', { class: 'city' }, city.name, el('small', null, city.country)),
+    el('div', { class: 'climate' },
+      el('span', { class: 'chip' }, el('span', { class: 'sw', style: 'background:' + kelvinColor(city.sun) }), 'Sun ', el('b', null, city.sun.toLocaleString('en-US') + ' K')),
+      el('span', { class: 'chip' }, el('span', { class: 'sw', style: 'background:' + kelvinColor(city.shade) }), 'Shade ', el('b', null, city.shade.toLocaleString('en-US') + ' K')),
+      el('span', { class: 'chip plain' }, city.when),
+      el('span', { class: 'chip plain' }, city.air)),
+    el('div', { class: 'progress', id: 'progress' }));
+  const opening = el('section', { style: 'display:grid;gap:10px' },
+    el('h3', null, 'First message'),
+    shotCard({ id: 'Message 1', title: 'The base prompt and the ' + city.name + ' block, together', badge: 'Paste first', text: city.block }, city,
+      { first: true, noMade: true, copyLabel: 'Copy first message', copyText: () => DATA.base + '\n\n' + city.block, collapse: 'Show the ' + city.name + ' block' }),
+    el('h3', { style: 'margin-top:8px' }, 'Look target'),
+    shotCard(city.look, city));
+  const groups = city.groups.map(g => {
+    const r = g.route;
+    const head = el('div', { class: 'route-head' },
+      el('h3', null, g.head + (r ? ' · ' + r.legs + ' legs' : '')),
+      r ? el('div', { class: 'trip' }, r.trip) : null);
+    return el('section', { class: 'route' }, head, ...g.items.map(i => shotCard(i, city)));
+  });
+  view.replaceChildren(header, opening, ...groups);
+  refreshProgress(city);
+}
+
+function route() {
+  const h = (location.hash || '').replace('#', '');
+  const city = DATA.cities.find(c => c.hash === h);
+  for (const a of tabs.children) a.toggleAttribute('aria-current', false);
+  const active = tabs.querySelector('a[href="#' + (city ? city.hash : 'start') + '"]');
+  if (active) { active.setAttribute('aria-current', 'page'); active.scrollIntoView({ inline: 'center', block: 'nearest' }); }
+  if (city) renderCity(city); else renderStart();
+  window.scrollTo(0, 0);
+}
+
+tabs.append(el('a', { href: '#start', style: '--dot: var(--brand)' }, el('span', { class: 'dot' }), 'Start'));
+for (const c of DATA.cities) tabs.append(el('a', { href: '#' + c.hash, style: '--dot:' + c.accent }, el('span', { class: 'dot' }), c.name));
+window.addEventListener('hashchange', route);
+route();
+</script>

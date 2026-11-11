@@ -1301,7 +1301,7 @@ namespace DribbleToSchool.FrontEnd
         /// </summary>
         void ShowNotInTown()
         {
-            var addOn = AddOns.Active;
+            var addOn = Cities.Active;
             Route there = null;
             var names = new List<string>();
             foreach (var route in RouteTable.All)

@@ -68,8 +68,8 @@ namespace DribbleToSchool.UI
                 bool open = random || (place.Unlocked && fits);
                 bool chosen = sel.addOn == value || (random && sel.addOn >= CoopLocations.Count);
                 string title = random ? Loc.T("coop.random.place") : Loc.T(place.nameKey);
-                string line = random ? Loc.T("coop.random.placeShort") : !place.Unlocked ? Loc.T("addons.locked")
-                    : !fits ? Loc.F("coop.place.only", OnlyRoutes(place)) : Loc.T(place.placeKey);
+                string line = random ? Loc.T("coop.random.placeShort") : !place.Unlocked ? Loc.T("city.pick.locked")
+                    : !fits ? Loc.F("coop.place.only", OnlyRoutes(place)) : Loc.T(place.countryKey);
                 var cell = Cell(face.transform, i % 4, y - (i / 4) * (CardH + Gap), CardW, CardH);
                 Card(cell, title, line, random ? UITheme.Gold : UITheme.Blue, chosen, open, () =>
                 {
@@ -92,7 +92,7 @@ namespace DribbleToSchool.UI
         }
 
         /// <summary>The names of the routes a location has (Florida: "Home Street, Seaside Road").</summary>
-        static string OnlyRoutes(Progression.AddOn place)
+        static string OnlyRoutes(Progression.City place)
         {
             var names = new System.Collections.Generic.List<string>();
             foreach (var route in RouteTable.All)

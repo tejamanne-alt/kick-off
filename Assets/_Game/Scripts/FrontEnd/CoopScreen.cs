@@ -532,7 +532,7 @@ namespace DribbleToSchool.FrontEnd
             UIKit.Fit(stops, 18);
             bool randomPlace = sel.addOn == CoopSelection.Random || sel.addOn >= CoopLocations.Count;
             var place = randomPlace ? null : CoopLocations.At(sel.addOn);
-            var loc = UIKit.Label(stage.transform, "Location", Loc.F("coop.location", randomPlace ? Loc.T("coop.random.place") : Loc.T(place.nameKey) + " · " + Loc.T(place.placeKey)), 30, UITheme.Ink, TextAnchor.MiddleLeft, true);
+            var loc = UIKit.Label(stage.transform, "Location", Loc.F("coop.location", randomPlace ? Loc.T("coop.random.place") : Loc.T(place.nameKey) + " · " + Loc.T(place.countryKey)), 30, UITheme.Ink, TextAnchor.MiddleLeft, true);
             UIKit.Place(loc.rectTransform, new Vector2(0f, 1f), new Vector2(30f, -252f), new Vector2(right - 60f, 48f), new Vector2(0f, 1f));
             UIKit.Fit(loc, 20);
             var chooser = s.InSlot(sel.chosenBy);

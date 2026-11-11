@@ -39,9 +39,10 @@ namespace DribbleToSchool.EditorTools
         public static ChapterTheme Theme = ChapterTheme.For(1);
         public static int Chapter = 1;
         /// <summary>
-        /// True while a level's California scene is built (GeneratedContent: the skin the player unlocks by
-        /// finishing every level): the streets take the Coast kit (StreetBuilder.Coast) and the shops their
-        /// English signs (BuildingsCAAtlas.png). False builds the original street, as it always was.
+        /// True while a level's California scene is built: the streets take the Coast kit (StreetBuilder.Coast) and the shops their
+        /// English signs (BuildingsCAAtlas.png). California was an add-on before the cities and is not one of the five
+        /// (Progression/Cities), so GeneratedContent no longer builds its scenes and nothing sets this. The Coast code it guards
+        /// stays: Florida's streets share it.
         /// </summary>
         public static bool California;
         /// <summary>
@@ -52,6 +53,18 @@ namespace DribbleToSchool.EditorTools
         public static bool Florida;
         /// <summary>The level whose scene is being built (null for the test track and the menu).</summary>
         public static string LevelId;
+
+        /// <summary>
+        /// A chapter's theme in the city whose scene is being built: while a Florida scene is built, the chapter's mood in Florida's
+        /// climate (a warmer sun, teal shade, humid air: Progression/Cities, CityClimate). It is baked into the scene's WorldLook and
+        /// PostFX, so it costs nothing at runtime and every filter reads it.
+        /// </summary>
+        public static ChapterTheme ThemeFor(int chapter)
+        {
+            var t = ChapterTheme.For(chapter);
+            if (Florida) t.mood = Progression.Cities.Florida.climate.Apply(t.mood);
+            return t;
+        }
         public static ArtBaker.ArtSet Art { get; private set; }
         public static Color GroundColor { get { return Theme.groundFill; } }
         public static Color ObstacleColor { get { return Theme.obstacle; } }
@@ -128,7 +141,7 @@ namespace DribbleToSchool.EditorTools
             EnsureFolder(Path.GetDirectoryName(scenePath).Replace('\\', '/'));
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             Chapter = Mathf.Clamp(chapter, 1, 5);
-            Theme = ChapterTheme.For(Chapter);
+            Theme = ThemeFor(Chapter);
             LevelId = def != null ? def.levelId : null;
 
             var camGo = new GameObject("Main Camera");

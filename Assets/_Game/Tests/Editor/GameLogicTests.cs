@@ -25,38 +25,90 @@ namespace DribbleToSchool.Tests
         // ---------- Localization ----------
 
         [Test]
-        public void EveryAddOnHasItsNamesAndItsOwnSceneSuffix()
+        public void EveryCityHasItsNamesAndItsOwnSceneSuffix()
         {
-            var en = StringTables.For("en");
             var ids = new HashSet<string>();
             var suffixes = new HashSet<string>();
-            foreach (var a in AddOns.All)
+            Assert.AreEqual(5, Cities.All.Length, "Kamakura, Florida, Madrid, New York, Mumbai (docs/CITIES.md)");
+            foreach (var c in Cities.All)
             {
-                Assert.IsTrue(ids.Add(a.id), a.id + " is listed twice");
-                if (a.sceneSuffix.Length > 0) Assert.IsTrue(suffixes.Add(a.sceneSuffix), a.id + "'s scene suffix is another's");
-                Assert.IsTrue(en.ContainsKey(a.nameKey), a.nameKey);
-                Assert.IsTrue(en.ContainsKey(a.placeKey), a.placeKey);
+                Assert.IsTrue(ids.Add(c.id), c.id + " is listed twice");
+                if (c.sceneSuffix.Length > 0) Assert.IsTrue(suffixes.Add(c.sceneSuffix), c.id + "'s scene suffix is another's");
+                foreach (string lang in new[] { "en", "es" })
+                {
+                    var table = StringTables.For(lang);
+                    foreach (string key in new[] { c.nameKey, c.countryKey, c.aboutKey })
+                        Assert.IsTrue(table.ContainsKey(key), lang + ": " + key);
+                }
             }
-            Assert.AreSame(AddOns.Florida, AddOns.ById(AddOns.FloridaId));
-            Assert.AreSame(AddOns.Florida, AddOns.OfScene("L12_LowTide" + AddOns.FloridaSuffix));
+            Assert.AreEqual("original", Cities.Kamakura.id, "a saved id never changes: Kamakura keeps the original town's");
+            Assert.AreSame(Cities.Kamakura, Cities.All[0]);
+            Assert.AreSame(Cities.Florida, Cities.ById(Cities.FloridaId));
+            Assert.AreSame(Cities.Florida, Cities.OfScene("L12_LowTide" + Cities.FloridaSuffix));
+            Assert.AreSame(Cities.Kamakura, Cities.OfScene("L12_LowTide_CA"), "California's scenes are Kamakura's music, not a city");
+            Assert.IsNull(Cities.ById("california"), "California is not one of the five cities");
+            Assert.IsTrue(Cities.Kamakura.story && Cities.Kamakura.holidayRun);
+            foreach (var c in new[] { Cities.Madrid, Cities.NewYork, Cities.Mumbai })
+                Assert.IsFalse(c.story || c.holidayRun, c.id + " is still to build: listed as coming soon");
         }
 
         [Test]
         public void FloridaHasHomeStreetAndTheBeachSoFarAndItsOwnMusic()
         {
-            var fl = AddOns.Florida;
-            Assert.IsTrue(fl.available);
-            Assert.IsTrue(fl.needsEveryLevel, "Florida is unlocked like California, by finishing every level");
+            var fl = Cities.Florida;
+            Assert.IsTrue(fl.story);
+            Assert.IsFalse(fl.holidayRun, "the Holiday Run has no Florida stages yet");
+            Assert.IsTrue(fl.needsEveryLevel, "Florida is unlocked by finishing every one of Kamakura's levels");
             Assert.AreEqual(MusicCountry.Florida, fl.music);
             Assert.IsTrue(fl.Partial);
             for (int chapter = 1; chapter <= 5; chapter++)
                 Assert.AreEqual(chapter == 1 || chapter == 3, fl.HasChapter(chapter), "chapter " + chapter);
             for (int chapter = 1; chapter <= 5; chapter++)
+                Assert.IsTrue(Cities.Kamakura.HasChapter(chapter));
+            Assert.IsFalse(Cities.Kamakura.Partial);
+        }
+
+        [Test]
+        public void KamakurasClimateChangesNothingAndTheOthersFollowTheirColourTemperature()
+        {
+            var mood = ChapterTheme.For(3).mood;
+            var same = Cities.Kamakura.climate.Apply(mood);
+            Assert.AreEqual(mood.sun, same.sun);
+            Assert.AreEqual(mood.horizon, same.horizon);
+            Assert.AreEqual(mood.hazeStrength, same.hazeStrength);
+
+            // A blackbody goes bluer as it gets hotter, and the shift between equal temperatures is none.
+            Vector3 warm = CityClimate.Blackbody(3000f), cool = CityClimate.Blackbody(9000f);
+            Assert.Greater(warm.x / warm.z, cool.x / cool.z);
+            Vector3 none = CityClimate.Shift(5400f, 5400f);
+            Assert.AreEqual(1f, none.x, 1e-4f); Assert.AreEqual(1f, none.y, 1e-4f); Assert.AreEqual(1f, none.z, 1e-4f);
+
+            // Florida: a warmer sun, its brightness kept; humid air pales the horizon and starts the haze nearer.
+            var fl = Cities.Florida.climate.Apply(mood);
+            Assert.Greater(fl.sun.r / fl.sun.b, mood.sun.r / mood.sun.b, "a 5,000 K sun is warmer than Kamakura's 5,400 K");
+            Assert.AreEqual(Mathf.Max(mood.sun.r, Mathf.Max(mood.sun.g, mood.sun.b)), Mathf.Max(fl.sun.r, Mathf.Max(fl.sun.g, fl.sun.b)), 0.002f);
+            Assert.Greater(fl.horizon.grayscale, mood.horizon.grayscale);
+            Assert.Less(fl.hazeStart, mood.hazeStart);
+            Assert.Greater(fl.hazeStrength, mood.hazeStrength);
+            Assert.Less(fl.hazeStrength, 0.8f + 1e-4f, "the haze never hides the street");
+
+            // Madrid: a golden low sun in dry air, the haze thinner and further off.
+            var md = Cities.Madrid.climate.Apply(mood);
+            Assert.Greater(md.sun.r / md.sun.b, fl.sun.r / fl.sun.b);
+            Assert.Less(md.hazeStrength, mood.hazeStrength);
+            Assert.Greater(md.hazeStart, mood.hazeStart);
+        }
+
+        [Test]
+        public void TheFiltersKeepTheirSavedIds()
+        {
+            CollectionAssert.AreEqual(new[] { "original", "comic", "sketch", "classic" }, Filters.All, "saved by id (SaveData.filter): never rename one");
+            var en = StringTables.For("en");
+            foreach (string f in Filters.All)
             {
-                Assert.IsTrue(AddOns.Original.HasChapter(chapter));
-                Assert.IsTrue(AddOns.California.HasChapter(chapter));
+                Assert.IsTrue(en.ContainsKey("filter." + f), f);
+                Assert.IsTrue(en.ContainsKey("filter." + f + ".about"), f);
             }
-            Assert.IsFalse(AddOns.California.Partial);
         }
 
         [Test]

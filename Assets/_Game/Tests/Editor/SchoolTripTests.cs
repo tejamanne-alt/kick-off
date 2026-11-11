@@ -378,7 +378,7 @@ namespace DribbleToSchool.Tests
         }
 
         [Test]
-        public void AnAddOnWithOnlySomeLevelsPointsToTheFirstShortOfThreeStars()
+        public void ACityWithOnlySomeLevelsPointsToTheFirstShortOfThreeStars()
         {
             var stars = new Dictionary<string, int> { { "L11", 3 }, { "L12", 2 }, { "L13", 3 }, { "L14", 1 } };
             var beach = new List<string> { "L11", "L12", "L13", "L14" };

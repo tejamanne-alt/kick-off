@@ -580,6 +580,19 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
 **D7. Texture detail raised with no memory line** (the Coast atlas at 4096², TownMap.jpg at 23 MB uncompressed).
 - *Rule:* every texture increase states its compressed memory per platform.
 
+**D8. Add-ons that only reskinned the same levels (v69 to v121, replaced in v122).**
+- *What:* California and Florida put the original town's levels in another country's streets. The user, after Florida's
+  Home Street: the cities were "boring with same gameplay styles". In v122 the add-ons became five cities, each with its own
+  routes, transit, errands and mini-games (`docs/CITIES.md`).
+- *Why:* a new place was treated as a look over existing play, so each one cost a whole kit and gave the player nothing new
+  to do. Florida's own drawbridge, golf cart and sprinklers (v121) were the first play of a place's own.
+- *California, retired:* not one of the user's five cities. The question about it closed unanswered (the session's worker
+  restarted), so the recommended option was taken: it left the picker and its `_CA` scenes are no longer built; its Coast
+  kit and builder code stay, since Florida shares them. To bring it back: add it to `Cities.All` and build its scenes again
+  in `GeneratedContent`. Don't re-add it unasked.
+- *Rule:* a new place brings new play: its own routes, how people there get around, and what a child there does on the way.
+  A reskin is not a city.
+
 ## E. Levels and world
 
 - **E1. Every level had chapter-1 scenery.** A new-scene call unloaded the level definition. *Rule:* pass data into scene builders explicitly; never hold asset references across a new-scene call.
@@ -633,7 +646,13 @@ Never re-propose what is rejected here.
   - nothing inside the stick's ring;
   - a ball icon on the KICK button, not a boot;
   - no auto-run.
-- **Town:** the original Japanese seaside town stays the main town; other countries are add-ons.
+- **Cities, not add-ons (v122):** five cities, each a chapter with its own routes and play, picked after PLAY and HOLIDAY RUN:
+  Kamakura (the original town, still first), Florida, Madrid, New York, Mumbai. Each has its own colour temperature and
+  climate. No reskins of another city's levels (D8).
+- **The look:** the user's bar is a recent big-budget open-world game's look and feel (warm sun against cool shade, haze,
+  weathered, dense streets), reached through light, grade and baked texture within the phone's budget, never by copying
+  that game's content. The filters must keep working in every city.
+- **Filters:** easy to reach: on the title screen and in every pause menu.
 - **Store art:** use the user's own artwork for the app icon.
 
 ## How to add an entry

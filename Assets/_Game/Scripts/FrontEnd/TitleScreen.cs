@@ -10,7 +10,7 @@ namespace DribbleToSchool.FrontEnd
     /// <summary>
     /// The launch screen. The left column holds the logo, PLAY, HOLIDAY RUN (the endless mode) beside CO-OP (racing friends
     /// nearby over Bluetooth, FrontEnd/CoopScreen) and the
-    /// Locker Room, Stickers and Settings buttons; the rest of the screen is the live street, where
+    /// Locker Room, Stickers, Filters and Settings buttons. PLAY and HOLIDAY RUN each ask which city first (UI/CityPicker); the rest of the screen is the live street, where
     /// the menu's camera puts the chosen teen juggling (tap them, or the player card in the corner,
     /// to switch between the boy and the girl). Credits and the stars collected sit along the bottom
     /// left. Sizes are in the 1080-tall canvas inside the safe area, so the column fits from 4:3 to 21:9.
@@ -53,14 +53,16 @@ namespace DribbleToSchool.FrontEnd
             UIKit.Place(logo, new Vector2(0f, 1f), new Vector2(Column * 0.5f + 20f, -300f), logo.sizeDelta, new Vector2(0.5f, 0.5f));
             UIKit.PopIn(logo.gameObject);
 
-            var play = UIKit.Button(column, "Play", Loc.T("menu.play"), UITheme.Accent, () => Controller.Show(FrontEndScreenId.Map), 68);
+            // PLAY: which city (UI/CityPicker), then that city's map.
+            var play = UIKit.Button(column, "Play", Loc.T("menu.play"), UITheme.Accent,
+                () => CityPicker.Open(Controller.CanvasRoot, CityPicker.Mode.Story, () => Controller.Show(FrontEndScreenId.Map)), 68);
             UIKit.Place((RectTransform)play.transform, new Vector2(0f, 1f), new Vector2(Column * 0.5f + 20f, -604f), new Vector2(450f, 136f), new Vector2(0.5f, 0.5f));
             UIKit.PopIn(play.gameObject, 0.15f);
             play.gameObject.AddComponent<UIPulse>().amount = 0.025f;
 
             // HOLIDAY RUN and CO-OP side by side under PLAY. HOLIDAY RUN's label is built by hand below, so that the best distance
             // can sit on the button once there is one.
-            var holiday = UIKit.Button(column, "Holiday", "", HolidayColor, StartHolidayRun, 42);
+            var holiday = UIKit.Button(column, "Holiday", "", HolidayColor, () => CityPicker.Open(Controller.CanvasRoot, CityPicker.Mode.Holiday, StartHolidayRun), 42);
             UIKit.Place((RectTransform)holiday.transform, new Vector2(0f, 1f), new Vector2(Column * 0.5f + 20f - ModeHalfStep, -744f), new Vector2(ModeWidth, 112f), new Vector2(0.5f, 0.5f));
             UIKit.PopIn(holiday.gameObject, 0.19f);
             var holidayPulse = holiday.gameObject.AddComponent<UIPulse>();
@@ -76,7 +78,7 @@ namespace DribbleToSchool.FrontEnd
             coopPulse.amount = 0.018f;
             coopPulse.speed = 2.1f;
 
-            // Secondary row under HOLIDAY RUN: Locker Room, Stickers, Add-ons & Filters (UI/AddOnsPanel), Settings.
+            // Secondary row under HOLIDAY RUN: Locker Room, Stickers, Filters (UI/FiltersPanel), Settings.
             float w = 176f, gap = 12f, x0 = 20f + (Column - (w * 4f + gap * 3f)) * 0.5f;
             var shop = UIKit.Button(column, "Shop", Loc.T("menu.locker"), UITheme.Blue, () => Controller.Show(FrontEndScreenId.Shop), 32);
             UIKit.Place((RectTransform)shop.transform, new Vector2(0f, 1f), new Vector2(x0, -880f), new Vector2(w, 88f), new Vector2(0f, 0.5f));
@@ -84,10 +86,10 @@ namespace DribbleToSchool.FrontEnd
             var album = UIKit.Button(column, "Album", Loc.T("menu.album"), UITheme.Blue, () => Controller.Show(FrontEndScreenId.Album), 32);
             UIKit.Place((RectTransform)album.transform, new Vector2(0f, 1f), new Vector2(x0 + w + gap, -880f), new Vector2(w, 88f), new Vector2(0f, 0.5f));
             UIKit.PopIn(album.gameObject, 0.27f);
-            // Orange like its old row in Settings: the streets of another country, and the filters over the picture.
-            var addOns = UIKit.Button(column, "AddOns", Loc.T("menu.addons"), new Color(0.95f, 0.55f, 0.25f), () => AddOnsPanel.Open(Controller.CanvasRoot, null), 28);
-            UIKit.Place((RectTransform)addOns.transform, new Vector2(0f, 1f), new Vector2(x0 + (w + gap) * 2f, -880f), new Vector2(w, 88f), new Vector2(0f, 0.5f));
-            UIKit.PopIn(addOns.gameObject, 0.3f);
+            // Orange, as the looks over the picture always were (it was Add-ons & Filters before the cities).
+            var filters = UIKit.Button(column, "Filters", Loc.T("menu.filters"), FiltersPanel.ButtonColor, () => FiltersPanel.Open(Controller.CanvasRoot, null), 32);
+            UIKit.Place((RectTransform)filters.transform, new Vector2(0f, 1f), new Vector2(x0 + (w + gap) * 2f, -880f), new Vector2(w, 88f), new Vector2(0f, 0.5f));
+            UIKit.PopIn(filters.gameObject, 0.3f);
             var settings = UIKit.Button(column, "Settings", Loc.T("menu.settings"), UITheme.Blue, Controller.OpenSettings, 32);
             UIKit.Place((RectTransform)settings.transform, new Vector2(0f, 1f), new Vector2(x0 + (w + gap) * 3f, -880f), new Vector2(w, 88f), new Vector2(0f, 0.5f));
             UIKit.PopIn(settings.gameObject, 0.34f);
