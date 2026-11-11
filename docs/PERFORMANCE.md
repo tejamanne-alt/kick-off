@@ -53,7 +53,7 @@ It ignores the first 6 s after a scene loads, and the time after resuming from t
 
 | Item | Budget | Today |
 |---|---|---|
-| Playable kid body | 32k triangles; head, hands and texture seams protected | 32k (was 100k) |
+| Playable kid body | 32k triangles; head, hands and texture seams protected | 32k (was 100k), plus up to ~1k from splitting two-colour triangles (v120: 32.7k to 33.0k) |
 | Locker Room bag | 8k triangles | 8k (was 30k) |
 | Passer-by | 14k triangles | 14k (was 30k) |
 | Character FBX total | | 28 MB (was 90 MB) |

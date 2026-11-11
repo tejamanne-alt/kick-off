@@ -71,6 +71,8 @@ for o in [o for o in bpy.data.objects if o.type == 'MESH']:
         pl.decimate(o, KID_TRIS, g)
     else:
         pl.decimate(o, BAG_TRIS, pl.protect_group(o, set(), keep=1.0))
+    if body:
+        r['mixed_faces_split'] = pl.split_mixed(o, ATLAS_PX)
     r['unflipped'] = pl.unflip(o)
     if body:
         r['head_made_rigid'] = pl.rigid_head(o, rig)

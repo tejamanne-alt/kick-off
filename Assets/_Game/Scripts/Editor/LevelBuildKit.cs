@@ -1168,6 +1168,7 @@ namespace DribbleToSchool.EditorTools
                 {
                     // A tidal channel across the sand (drawn with the beach's ground): only the splash.
                     LoseZone(name, fromX, toX, top, "lose.splash");
+                    SplashSurface(name, fromX, toX, top - 0.1f, top);
                     return;
                 }
                 if (surfaceDrop > 0f)
@@ -1216,6 +1217,21 @@ namespace DribbleToSchool.EditorTools
                 }
 
                 LoseZone(name, fromX, toX, top, message);
+                if (surfaceDrop > 0f) SplashSurface(name, fromX, toX, top - surfaceDrop, top);
+            }
+
+            /// <summary>The water's surface, from <paramref name="surfaceY"/> down to the lose zone: whatever goes in splashes there.</summary>
+            void SplashSurface(string name, float fromX, float toX, float surfaceY, float top)
+            {
+                var go = new GameObject(name + "Splash");
+                go.transform.SetParent(root, false);
+                float bottom = Mathf.Min(top - 2.2f, -1f) + 0.5f;     // (the lose zone's top: LoseZone)
+                float h = Mathf.Max(0.2f, surfaceY - bottom);
+                go.transform.position = new Vector2((fromX + toX) * 0.5f, surfaceY - h * 0.5f);
+                var trigger = go.AddComponent<BoxCollider2D>();
+                trigger.isTrigger = true;
+                trigger.size = new Vector2(toX - fromX, h);
+                go.AddComponent<WaterSplash>().surfaceY = surfaceY;
             }
 
             void LoseZone(string name, float fromX, float toX, float top, string message)

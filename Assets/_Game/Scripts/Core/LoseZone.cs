@@ -27,7 +27,8 @@ namespace DribbleToSchool.Core
             if (rb == null) return;
             if (rb.GetComponent<BallController>() != null || rb.GetComponent<KidController>() != null)
             {
-                if (message == "lose.splash" || message == "lose.tide") GameEvents.Raise(GameEventType.Splash, rb.position);
+                // (the tide's zone is the water itself; a trench's or a stream's splash is raised at its surface by WaterSplash)
+                if (message == "lose.tide") GameEvents.Raise(GameEventType.Splash, rb.position, 0.6f);
                 level.LoseBall(message);
             }
         }

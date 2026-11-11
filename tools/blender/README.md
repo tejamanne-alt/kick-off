@@ -520,6 +520,9 @@ Why each step exists is in `docs/LEARNINGS.md`, C1 to C8 and C14. In short:
   - drops loose vertices and welds open-edge vertices within `--merge` (2 mm);
   - decimates to `--tris` (32k kids, 14k passers-by) and `--bag-tris` (8k), holding back the head and hands (0.3) and
     texture-island borders (0.15), so faces, fingers and printed numbers keep their shape;
+  - splits the large triangles decimation left painted in two colours (`split_mixed`: a stripe, a garment and bare skin
+    in one triangle can't take one outfit part; the largest first, about 1,000 more triangles a figure at most, LEARNINGS
+    C23);
   - turns round triangles whose surroundings clearly face the other way;
   - makes the head rigid (`rigid_head`): everything above a cut through the Head joint, dipping under the chin, follows
     the Head alone, blending back to the neck below it. Otherwise the face folds as the head nods (LEARNINGS C15);
@@ -534,7 +537,8 @@ Why each step exists is in `docs/LEARNINGS.md`, C1 to C8 and C14. In short:
     it is a sparse pale streak; a stray island of a garment on something else (shorts-tagged flecks on a sock) leaves it
     and shows its texel as painted; a face moved into a garment takes its colour, its texels their light against it in
     grey, and a saturated garment's texels become grey the same way (Mia's red shorts made a green and pink zebra in any
-    other outfit); along the hairline, light paint on the skin within 2 cm of the hair takes that face's own skin,
+    other outfit); small pale clusters near a garment or the hair join it whole, and a mostly pure-white face joins the
+    garment closing it in (a white stripe's pieces); a face is skin only if its own texels are (C23); along the hairline, light paint on the skin within 2 cm of the hair takes that face's own skin,
     slivers of no part on the hair's edge take the skin and specks inside the hair join it (Max's forehead). Nothing
     within 7 mm of a mark on the face that isn't joined to the hair (a brow, the eyes, the lips) is touched: the brows
     stay exactly as they were. `faces_settled` and `hairline_faces_repainted` in `<Name>_polish.json` count them;

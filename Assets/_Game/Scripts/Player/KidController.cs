@@ -40,6 +40,11 @@ namespace DribbleToSchool.Player
         public int Facing { get; private set; }
         public bool InputEnabled { get; set; }
         public float SpeedX { get { return Body.linearVelocity.x; } }
+        /// <summary>
+        /// The kid's own pace across the ground: the speed less the moving surface's under the feet. A platform carries a
+        /// kid who stands still, and the walk cycle drawn from the world speed walked on the spot (docs/LEARNINGS.md C23).
+        /// </summary>
+        public float StrideSpeedX { get { return Body.linearVelocity.x - GroundVelocity.x; } }
         public Vector2 FeetPosition { get { return feet != null ? (Vector2)feet.position : Body.position; } }
         /// <summary>Product of all active speed modifiers (puddles, sand...).</summary>
         public float SpeedMultiplier { get; private set; }
