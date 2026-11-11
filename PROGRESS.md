@@ -1534,6 +1534,47 @@ on the phone: a slide (the trailing foot on the pavement, the slide still clears
 - Checked: `tools/unity_api_check/run.sh 6000.6` (the pinned branch) and `6000.7` (the newest): clean. Not opened in
   6000.6.7f1 here: check the console after the first open.
 
+## Mia's white stripes, standing still on platforms, a splash you can see, a still slide (generated content v120)
+
+**Why.** The user's screenshots of Mia in her own colours (white streaks down the sides of her red shorts, white specks
+along her hair) and three recordings: on Duck Pond's moving platforms the kid walked on the spot; a ball falling in the
+water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNINGS.md` C23).
+
+- **Mia's white.** Decimation left a few very large triangles (up to 20 cm²) across the shorts' white side stripe, the
+  red and the bare leg at once, which no outfit part can fit.
+  - `polish_lib.split_mixed` splits large two-colour triangles (largest first, up to ~1,000 more triangles a figure:
+    32.7k to 33.0k for the kids, 14.1k to 14.7k for the passers-by).
+  - `settle_parts`:
+    - judges skin by a face's own texels (a white and red blend averages to pink);
+    - joins small pale clusters near a garment or the hair to it whole (in the hair only specks, so the shopkeeper's
+      white under-scarf stays);
+    - joins a mostly pure-white face to the garment closing it in;
+    - never pulls a face with bare skin in it into a garment.
+  - All twelve characters rebuilt, the six player cards rendered again. The brows are untouched (the head pixel
+    difference, `heads_changed_pixels_v120.jpg`, shows the hairlines only).
+  - Boards: `mia_white_v120.jpg` and `cast_own_and_holiday_v120.jpg` (every character in its own colours and the
+    Holiday kit, before and after).
+  - Still there: a few small white slivers by Mia's fist and the shirt's hem at her waistband.
+- **Platforms.** The walk cycle follows `KidController.StrideSpeedX`: the speed over the surface under the feet, so a kid
+  standing on a moving platform stands still until the player moves.
+- **The splash.** It was raised by the water's lose zone, two metres under the surface, as the screen faded.
+  - A `WaterSplash` trigger at the surface of every trench, stream and tidal channel raises it where the ball or the kid
+    goes in. A kid's fall splashes harder than a ball.
+  - `FxDirector.Splash` draws two foam rings flat on the water, a crown of drops, a column up the middle, hanging spray,
+    and the drops landing back in rings.
+- **The slide** holds its pose: the trailing leg's ±5° scuff (3 to 5 times a second) and the body's judder are gone.
+- **Cost:** up to ~1k triangles a figure; the splash is ~40 pooled particles once per splash.
+- **Checked:**
+  - no new compile errors in any `#if` set;
+  - `unity_api_check` 6000.6 clean;
+  - every character rendered before and after.
+
+  **Not run in Unity or on a device.** Check on the phone:
+  - Duck Pond: stand on a platform, then walk on it;
+  - the ball and the kid falling into water (Duck Pond, a beach channel);
+  - a slide;
+  - Mia close up on the title screen.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

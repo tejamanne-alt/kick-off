@@ -495,6 +495,40 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
     results (each cascade here ate a garment: a shirt into the hair, cream sleeves into a jacket), and compares colours
     by ratio, not difference (every dark colour is near every other by difference).
 
+**C23. Still white on Mia; walking on the spot on a platform; a splash nobody saw; a vibrating leg in the slide (v120).**
+- *What:* the user's screenshots and recordings after v119:
+  - Mia in her own colours still showed white streaks down the sides of her red shorts and white specks along her hair;
+  - on Duck Pond's moving platforms the kid kept walking on the spot instead of standing still;
+  - a ball or a kid falling into water showed only the word "Splash!";
+  - in a slide, one leg vibrated.
+- *Why:*
+  - **Mia.** Decimation to 32k triangles left a few very large triangles (up to 20 cm²) across her shorts' white side
+    stripe, the red and the bare leg at once. A triangle has one outfit part, so no tagging rule could fix it. The rest
+    were bands of white faces (a stripe is mostly itself round each face, so C22's per-face rules left it), and faces
+    half white, half red, whose average colour is a skin-like pink, so the skin guard kept them out.
+  - **The platform.** `KidAnimator` drove the walk cycle from the body's world speed. A moving platform carries the
+    body, so standing still on it read as walking.
+  - **The splash.** It was raised by the water's `LoseZone`, two metres under the surface: under the water and as the
+    screen faded. It was also only 14 small drops.
+  - **The leg.** The slide's trailing leg was "scuffed" on purpose: ±5 degrees at 3 to 5 swings a second, the knee half
+    as much again, plus a judder of the body.
+- *Fix:*
+  - `polish_lib.split_mixed`: a large triangle painted in two colours is split (twice at most, the largest first, about
+    1,000 triangles a figure at most), so the pieces take their own parts. `settle_parts` judges skin by a face's own
+    texels (at least a quarter skin-coloured), joins small pale clusters near a garment or the hair to it whole, and joins
+    a mostly pure-white face to the garment closing it in. A face with bare skin in its texels never joins a garment.
+  - `KidController.StrideSpeedX` (the speed less the surface's) drives the gait.
+  - `WaterSplash` at the surface of every trench, stream and tidal channel raises the splash where things go in, and
+    `FxDirector.Splash` draws foam rings, a crown of drops, a column, spray and the drops landing back.
+  - The slide holds its pose: no scuff, no judder.
+- *Still to do:* a few small white slivers by Mia's fist and the shirt's hem at her waistband remain.
+- *Rule:*
+  - An effect is raised where it shows, and checked in a recording or a frame-by-frame look, not only in the code.
+  - An animation driven by speed uses the speed over the ground under the feet.
+  - Don't add a high-frequency wobble to a held pose: at 60 fps it reads as a fault, not as life.
+  - When a fault survives tagging fixes, look at the triangles themselves (a face-ID render: `outfit_render.py`'s
+    approach), not only at the tags.
+
 ## D. Art direction and look
 
 **D1. A golden-hour haze hid the kid** (before v37).

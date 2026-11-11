@@ -116,7 +116,7 @@ namespace DribbleToSchool.Presentation
                     pool.Burst(spark, p + Vector2.up * 1.8f, 10, Vector2.up, 360f, 1.5f, 3f, new Color(0.5f, 1f, 0.6f), 0.22f, 0.03f, 0.6f, 1f, 1f, 200f);
                     break;
                 case GameEventType.Splash:
-                    pool.Burst(drop, p, 14, Vector2.up, 70f, 3f, 7f, new Color(0.55f, 0.8f, 1f, 0.95f), 0.16f, 0.08f, 0.7f, 18f, 0.5f);
+                    Splash(p, k);
                     break;
                 case GameEventType.BallLost:
                     Dust(p, 6, 2f);
@@ -145,6 +145,52 @@ namespace DribbleToSchool.Presentation
                         pool.Burst(puff, p + Vector2.up * 2f, 12, Vector2.up, 140f, 4f, 9f, Confetti[i], 0.14f, 0.12f, 1.8f, 6f, 1.5f, 500f);
                     StartCoroutine(GoalSlowMo());
                     break;
+            }
+        }
+
+        // ---------- Water ----------
+
+        static readonly Color Foam = new Color(0.94f, 0.98f, 1f, 0.9f);
+        static readonly Color Spray = new Color(0.62f, 0.84f, 1f, 0.95f);
+
+        /// <summary>
+        /// Something breaks the water's surface at <paramref name="p"/> (k: how hard, 0 to 1; a kid's fall is near 1): two
+        /// rings of foam spreading flat on the water, a crown of drops thrown up and out, a column up the middle that falls
+        /// back, spray hanging in the air, and drops landing back in rings of their own. (The fourteen drops that were all of
+        /// it were spawned two metres under the surface, out of sight: docs/LEARNINGS.md C23.)
+        /// </summary>
+        void Splash(Vector2 p, float k)
+        {
+            k = Mathf.Clamp01(k <= 0f ? 0.5f : k);
+            float s = 0.7f + 0.6f * k;
+            Sprite ring = ProceduralSprites.Ring;
+            if (ring != null)
+            {
+                pool.EmitShaped(ring, p + Vector2.up * 0.02f, Vector2.zero, Foam, 0.25f * s, 1.9f * s, 0.55f, 0.28f, -0.05f);
+                pool.EmitShaped(ring, p + Vector2.up * 0.02f, Vector2.zero, new Color(1f, 1f, 1f, 0.6f), 0.1f * s, 1.2f * s, 0.8f, 0.28f, -0.05f);
+            }
+            // the crown: out and up on both sides
+            pool.Burst(drop, p, Mathf.RoundToInt(14 + 12 * k), Vector2.up, 110f, 2.5f * s, 6.5f * s, Spray, 0.2f * s, 0.08f, 0.85f, 14f, 0.4f, 0f, 0.15f);
+            // the column up the middle, falling back
+            pool.Burst(drop, p, Mathf.RoundToInt(5 + 6 * k), Vector2.up, 18f, 5f * s, 8.5f * s, Foam, 0.24f * s, 0.12f, 1f, 14f, 0.3f, 0f, 0.05f);
+            // spray hanging in the air
+            pool.Burst(puff, p + Vector2.up * 0.15f, Mathf.RoundToInt(4 + 4 * k), Vector2.up, 120f, 0.6f, 1.8f * s, new Color(0.9f, 0.97f, 1f, 0.55f),
+                0.35f * s, 0.9f * s, 0.7f, -0.3f, 2f, 60f, 0.2f);
+            if (k > 0.6f) Shake(0.04f * k, 0.12f);
+            StartCoroutine(SplashBack(p, s));
+        }
+
+        /// <summary>The thrown water landing again a moment later: little rings and flicks on the surface round the splash.</summary>
+        IEnumerator SplashBack(Vector2 p, float s)
+        {
+            yield return new WaitForSeconds(0.45f);
+            if (pool == null) yield break;
+            Sprite ring = ProceduralSprites.Ring;
+            for (int i = 0; i < 4; i++)
+            {
+                Vector2 at = p + new Vector2(Random.Range(-0.9f, 0.9f) * s, 0.02f);
+                if (ring != null) pool.EmitShaped(ring, at, Vector2.zero, new Color(1f, 1f, 1f, 0.7f), 0.08f, 0.6f * s, 0.45f, 0.28f, -0.05f);
+                pool.Burst(drop, at, 3, Vector2.up, 50f, 1f, 2.2f, Spray, 0.1f, 0.05f, 0.4f, 12f, 0.3f);
             }
         }
 

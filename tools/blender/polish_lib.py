@@ -297,12 +297,70 @@ def absorb_tears(o, atlas):
     return int(moved.sum())
 
 
+SPLIT_AREA = 0.01         # a triangle wider than this share of the figure's height (squared) that is painted in two colours...
+SPLIT_MIX = (0.12, 0.88)  # ...(this share of its texels unlike its median colour, by _unlike > 0.3) is split
+SPLIT_ROUNDS = 2
+SPLIT_BUDGET = 1000       # at most about this many triangles added a figure
+
+
+def split_mixed(o, atlas):
+    """Decimation left a few very large triangles across a stripe, a garment and bare skin at once (Mia's white side
+    stripe down her red shorts, as white wedges a triangle wide: docs/LEARNINGS.md C23). A triangle has one outfit part,
+    so no part fixes it; it is split (each edge cut once, twice over), so the pieces can each take their own part. Only
+    triangles wider than SPLIT_AREA whose texels hold two colours are split, the largest first, up to SPLIT_BUDGET more
+    triangles a figure. The
+    weights, UVs, parts and colours are interpolated by the split; nothing moves. Returns the triangles added."""
+    me = o.data
+    co = np.zeros(len(me.vertices) * 3); me.vertices.foreach_get('co', co)
+    H = np.ptp(co.reshape(-1, 3)[:, 2])
+    Hh = atlas.shape[0]
+    before = tris(o)
+    for _ in range(SPLIT_ROUNDS):
+        me = o.data; P = len(me.polygons)
+        me.calc_loop_triangles()
+        tpoly = np.zeros(len(me.loop_triangles), int); me.loop_triangles.foreach_get('polygon_index', tpoly)
+        tri, _b = rasterize(uv_triangles(o), Hh)
+        Y, X = np.nonzero(tri >= 0); f = tpoly[tri[Y, X]]
+        col = atlas[Y, X, :3]
+        if 'Col' in me.color_attributes and me.color_attributes['Col'].domain == 'CORNER':
+            lt = np.zeros(P, int); me.polygons.foreach_get('loop_total', lt)
+            ls = np.zeros(P, int); me.polygons.foreach_get('loop_start', ls)
+            cd = np.zeros(len(me.loops) * 4); me.color_attributes['Col'].data.foreach_get('color', cd)
+            col = col * _srgb(cd.reshape(-1, 4)[ls, :3])[f]
+        med = np.zeros((P, 3))
+        for c in range(3):                                   # (each face's median colour, channel by channel)
+            order = np.lexsort((col[:, c], f)); fs = f[order]; vs = col[order, c]
+            starts = np.searchsorted(fs, np.arange(P)); ends = np.searchsorted(fs, np.arange(P), 'right')
+            mid = np.clip((starts + ends) // 2, 0, len(vs) - 1); med[:, c] = np.where(ends > starts, vs[mid], 1.0)
+        far = np.bincount(f, _unlike(col, med[f]) > 0.3, P) / np.maximum(np.bincount(f, None, P), 1)
+        area = np.zeros(P); me.polygons.foreach_get('area', area)
+        sel = np.flatnonzero((area > (SPLIT_AREA * H) ** 2) & (far >= SPLIT_MIX[0]) & (far <= SPLIT_MIX[1]))
+        if len(sel) == 0 or tris(o) - before >= SPLIT_BUDGET: break
+        # (the largest first, a fifth of the budget's worth a round at most: a plaid or a print is two colours everywhere)
+        sel = sel[np.argsort(-area[sel])][:max(1, (SPLIT_BUDGET - (tris(o) - before)) // 5)]
+        bm = bmesh.new(); bm.from_mesh(me); bm.faces.ensure_lookup_table()
+        edges = list({e for i in sel for e in bm.faces[int(i)].edges})
+        bmesh.ops.subdivide_edges(bm, edges=edges, cuts=1, use_grid_fill=True)
+        bmesh.ops.triangulate(bm, faces=[x for x in bm.faces if len(x.verts) > 3])
+        bm.to_mesh(me); bm.free(); me.update()
+    return tris(o) - before
+
+
 SETTLE_RADIUS = 0.012     # the neighbourhood that decides a face's part, as a share of the figure's height (2 cm at 1.65 m)
 SETTLE_SHARE = 0.55       # another part must cover this much of it (the face and its own kind not counted)
 SETTLE_LIKE = 0.25        # and the face must look like that part there: its colour (vertex colour x texel, sRGB) within
                           # this of that part's faces round it, by _unlike
 SETTLE_LIKE_SHARE = 0.3   # (of that part's surface round the face)
 SETTLE_OUT = 0.6          # a face leaves its garment only with no part (bare skin, a shoe, a sock) covering this much round it
+PALE_RING = 0.7           # a small pale cluster joins the part covering this much of the surface round it...
+PALE_CLUSTER = 0.06       # ...when it is under this share of that part's area
+PALE_ENCLOSED = 0.85      # ...or, closed in by the part this much all round it,
+PALE_CLUSTER_ENCLOSED = 0.15  # under this share
+MIXED_SKIN = 0.12         # a face with this share of its texels bare skin never joins a garment
+MIXED_LIKE = 0.15         # a face of no part with this share of its texels the garment's colour round it...
+MIXED_ALL = 0.85          # ...and with the garment's and white this much of it, joins the garment
+MIXED_WHITE = 0.4         # ...or with this share of it pure white, in a garment that covers most of the surface round it
+PALE_CLUSTER_HAIR = 0.01  # ...and in the hair, under this share of it
 SETTLE_ISLAND = 0.01      # a piece of a garment under this share of it, on something else, is a stray island
 SETTLE_STRAY = 0.35       # and, to show its texel as painted, its own garment covering at most this much (a stray island)
 SKIN_LIKE = 0.14          # a face this near the skin's colour (the hands') is skin, and never joins a garment
@@ -424,6 +482,26 @@ def settle_parts(o, atlas):
             if lone.any():
                 d, _k = cKDTree(cen[lone]).query(cen, distance_upper_bound=BROW_MARGIN * H)
                 keep = np.isfinite(d) & head_faces
+    # what each face's texels hold (decimation left a few very large triangles across a stripe, a garment and the bare
+    # leg at once): the share of them that are skin, pale, and like each part's own colour round the figure
+    me.calc_loop_triangles()
+    tpoly0 = np.zeros(len(me.loop_triangles), int); me.loop_triangles.foreach_get('polygon_index', tpoly0)
+    tri0, _b0 = rasterize(uv_triangles(o), Hh)
+    Y0, X0 = np.nonzero(tri0 >= 0); f0 = tpoly0[tri0[Y0, X0]]
+    shown0 = atlas[Y0, X0, :3] * vcs[f0]
+    cnt0 = np.maximum(np.bincount(f0, None, P), 1)
+    sk_t = (_unlike(shown0, skin) < 0.2) if skin is not None else np.zeros(len(f0), bool)   # (strict: a blend of white and red is not skin)
+    frac_skin = np.bincount(f0, sk_t, P) / cnt0
+    m0, n0 = shown0.max(1), shown0.min(1)
+    frac_pale = np.bincount(f0, ((m0 - n0) / np.maximum(m0, 1e-4) < TEAR_NEUTRAL) & (m0 > 0.6), P) / cnt0
+    frac_white = np.bincount(f0, ((m0 - n0) / np.maximum(m0, 1e-4) < 0.1) & (m0 > 0.85), P) / cnt0
+    frac_like = {}
+    for q in (1, 2, 4):
+        if (part == q).any():
+            frac_like[q] = np.bincount(f0, _unlike(shown0, np.median(app[part == q], 0)) < 0.3, P) / cnt0
+    bare = frac_skin > MIXED_SKIN
+    # (a face is skin only if its own texels are: a blend of white and red averages to a skin-like pink)
+    skinlike &= frac_skin >= 0.25
     new_part = part.copy()
     new_vc = {}                                       # a face moved out of a garment by its texel: the vertex colour it takes
     for rnd in range(4):
@@ -448,7 +526,7 @@ def settle_parts(o, atlas):
                 s_ = w[new_part[ids] == q].sum()
                 if s_ > bw: best, bw = q, s_
             if best == pi or bw < SETTLE_SHARE * tot: continue
-            if best != 0 and (skinlike[i] or hand_faces[i]): continue
+            if best != 0 and (skinlike[i] or hand_faces[i] or bare[i]): continue
             if best != 0 and pi != 0: continue            # (only a face of no part joins a part: a garment's or the hair's
                                                           # face never moves to another, which on dark clothes and dark
                                                           # hair painted alike took whole patches of one into the other)
@@ -483,6 +561,60 @@ def settle_parts(o, atlas):
                 continue
             new_part[i] = best; changed = True
         if not changed: break
+    # small pale clusters inside a garment or the hair: a white side stripe cut into slivers down Mia's red shorts, the
+    # white specks along the edge of her hair (docs/LEARNINGS.md C23). A band is mostly itself round each of its faces,
+    # so the face-by-face test above leaves it; taken whole, a cluster of pale faces of no part (sharing a vertex or within
+    # 3 mm) joins the part that covers PALE_RING of the surface round it (bare skin counting against it) when it is under
+    # PALE_CLUSTER of that part's area: a cream sleeve, a white T-shirt or a hood is far bigger, and stays.
+    # a face of no part made only of the garment round it and white (a stripe cut across it): the garment's
+    for i in np.flatnonzero((new_part == 0) & ~keep & ~hand_faces & ~skinlike & ~bare):
+        ids = np.asarray([j for j in hood[i] if j != i], int)
+        if len(ids) == 0: continue
+        for q, fl in frac_like.items():
+            near = area[ids][new_part[ids] == q].sum()
+            if near >= 0.3 * area[ids].sum() and fl[i] >= MIXED_LIKE and fl[i] + frac_pale[i] >= MIXED_ALL:
+                new_part[i] = q; break
+            # mostly pure white (not cream, not pale blue) in a garment that covers most of the surface round it: the pieces of a white stripe cut across the garment (a white T-shirt or a cream sleeve is mostly
+            # itself round each of its faces)
+            w_ = area[ids]                                # (skin counts here too)
+            if frac_white[i] >= MIXED_WHITE and frac_white[i] + fl[i] >= MIXED_ALL - 0.05 and \
+                    w_[part[ids] == q].sum() >= 0.6 * max(w_.sum(), 1e-12):
+                new_part[i] = q; break
+    lightish = ((mx - mn) / np.maximum(mx, 1e-4) < 0.3) & (mx > 0.5)      # (pale, or pale with some of the garment in it)
+    cand = (new_part == 0) & lightish & ~skinlike & ~keep & ~bare      # (a hand's pale scraps too: skin is never pale)
+    # (and only near a garment or the hair: a chain of pale faces down a leg tied a stripe to the white socks)
+    parted = np.flatnonzero(new_part > 0)
+    if len(parted): cand &= np.isfinite(cKDTree(cen[parted]).query(cen, distance_upper_bound=0.025 * H)[0])
+    if cand.any():
+        from scipy.sparse import coo_matrix
+        from scipy.sparse.csgraph import connected_components
+        lv2 = np.zeros(len(me.loops), int); me.loops.foreach_get('vertex_index', lv2)
+        fv2 = np.repeat(np.arange(P), lt)
+        o2 = np.argsort(lv2, kind='stable'); lvs2, fvs2 = lv2[o2], fv2[o2]
+        first2 = np.r_[True, lvs2[1:] != lvs2[:-1]]
+        hf2 = np.maximum.accumulate(np.where(first2, np.arange(len(lvs2)), 0))
+        e = np.concatenate([np.stack([fvs2[hf2], fvs2], 1), tree.query_pairs(0.002 * H, output_type='ndarray')])
+        e = e[cand[e[:, 0]] & cand[e[:, 1]]]
+        _n, lab = connected_components(coo_matrix((np.ones(len(e)), (e[:, 0], e[:, 1])), shape=(P, P)), directed=False)
+        part_area = {q: area[new_part == q].sum() for q in (1, 2, 3, 4)}
+        for c in np.unique(lab[cand]):
+            faces = np.flatnonzero(cand & (lab == c))
+            ring = np.unique(np.concatenate([hood[f] for f in faces]))
+            ring = ring[~(cand[ring] & (lab[ring] == c))]
+            if len(ring) == 0: continue
+            w = area[ring]                                # (skin counts: a white band along the face, the shopkeeper's
+            tot = w.sum()                                 #  under-scarf, is not closed in by the scarf)
+            if tot <= 0: continue
+            best, bw = 0, 0.0
+            for q in (1, 2, 3, 4):
+                s_ = w[new_part[ring] == q].sum()
+                if s_ > bw: best, bw = q, s_
+            if not best or bw < PALE_RING * tot: continue
+            # (a cluster the part closes in all round may be bigger: the few large triangles of a stripe cut by decimation)
+            cap = PALE_CLUSTER_ENCLOSED if bw >= PALE_ENCLOSED * tot else PALE_CLUSTER
+            if best == 3: cap = PALE_CLUSTER_HAIR      # (in the hair only specks: the shopkeeper's white under-scarf is a band)
+            if area[faces].sum() > cap * part_area[best]: continue
+            for f in faces: new_part[f] = best
     # stray islands of a garment (a fleck of the shorts on a sock, bigger than the neighbourhood above): every piece of
     # the garment's surface (faces within 1 cm of each other) under SETTLE_ISLAND of the garment, with no part covering
     # SETTLE_OUT round it, shows its texel as painted, with no garment colour over it

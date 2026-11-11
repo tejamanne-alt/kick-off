@@ -11,7 +11,7 @@ namespace DribbleToSchool.Presentation
     /// ball within the stride,
     /// idle breathing, a jump that drives one knee up off the other foot, a double jump that is a
     /// second, harder push in the air (the knee driven up again, the other leg kicking down, both arms
-    /// swung up hard, then the legs gathered under to land: a real body's move, no spin); a feet-first slide that lunges in with an overshoot, scuffs along and springs up;
+    /// swung up hard, then the legs gathered under to land: a real body's move, no spin); a feet-first slide that lunges in with an overshoot, holds still as it skids and springs up;
     /// a cocked-knee kick that snaps through, a crouching landing, a celebration at the gate and
     /// a stumble when the ball is lost.
     /// </summary>
@@ -184,7 +184,7 @@ namespace DribbleToSchool.Presentation
         void LateUpdate()
         {
             if (kid == null) return;
-            float speed = Mathf.Abs(kid.SpeedX);
+            float speed = Mathf.Abs(kid.StrideSpeedX);   // (on a moving platform, standing still is standing still)
             float runK = Mathf.Clamp01(speed / Mathf.Max(kid.RunSpeed, 0.1f));
             float vy = kid.Body.linearVelocity.y;
 
@@ -434,13 +434,12 @@ namespace DribbleToSchool.Presentation
             s.lean = -lean;
             s.legF = 82f - lean;    // nearly level, the heel skimming the ground
             s.kneeF = -6f;
-            // The trailing foot scuffs along the ground, quicker the faster the slide.
-            float scuff = Mathf.Sin(Time.time * (18f + 12f * (1f - spent))) * 5f * (1f - spent * 0.6f);
             // The back leg tucked with its knee up and its foot planted ahead of it: the thigh 45 degrees above level, the
             // shin slanting forward down to the ground. (Its shin folded back under a level thigh, as before, put the foot
-            // and shin a fifth of a metre into the pavement, as the foot can't point: docs/LEARNINGS.md C21.)
-            s.legB = 135f - lean + scuff;
-            s.kneeB = -80f + scuff * 1.5f;
+            // and shin a fifth of a metre into the pavement, as the foot can't point: docs/LEARNINGS.md C21.) Held still:
+            // a scuff that swung it +-5 degrees four times a second, and a judder of the body, read as a vibrating leg (C23).
+            s.legB = 135f - lean;
+            s.kneeB = -80f;
             s.armB = 24f - lean;    // down along the side to the hand on the ground by the hip
             s.elbowB = 10f;
             s.armF = 95f - lean;    // reaching forward toward the feet for balance (the hand stays under the bar)
@@ -450,8 +449,6 @@ namespace DribbleToSchool.Presentation
             // down with the lean; drop the body by what's left to put them at the wanted height.
             float hipAbovePivot = hipHeight - pivotHeight;
             s.bob = slideHipHeight * hipHeight - pivotHeight - hipAbovePivot * Mathf.Cos(lean * Mathf.Deg2Rad);
-            // A faint judder while skidding fast over the ground.
-            s.bob += Mathf.Sin(Time.time * 47f) * 0.006f * Mathf.Clamp01(speed / 4f);
             return s;
         }
 
