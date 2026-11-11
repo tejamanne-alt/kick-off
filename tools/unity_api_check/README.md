@@ -38,6 +38,10 @@ How it works:
   `/tmp/unity_api_check` (or `$UNITY_API_CHECK_WORK`), builds `apiscan` and runs all three steps. It needs dotnet 8,
   Python 3, git and curl.
 
+`package_minimums.py` (also run by `run.sh`) checks `Packages/manifest.json` against the pinned Unity: a table of the
+oldest version of each package that still compiles from a given Unity on (Input System 1.14.1 from 6.2: LEARNINGS A15).
+The packages themselves are never compiled here.
+
 What it can't see:
 - APIs that didn't exist in Unity 2021 resolve to nothing. They are newer than the removals so far, but a Unity 7 might
   remove one.

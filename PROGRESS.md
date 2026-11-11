@@ -1575,6 +1575,19 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
   - a slide;
   - Mia close up on the title screen.
 
+## Input System 1.20.1 for Unity 6.6
+
+- **Why.** Opened in the pinned 6000.6.7f1, the editor failed to compile Input System 1.11.2: about a hundred CS0619
+  errors on `TreeView`, `TreeViewItem` and `TreeViewState`, which 6.6 makes obsolete as an error (`docs/LEARNINGS.md`
+  A15).
+- **Fix:** `Packages/manifest.json` takes Input System 1.20.1, which uses `TreeView<int>` from 6.2 on. The game's calls
+  into it are unchanged.
+- `tools/unity_api_check/package_minimums.py`, run by `run.sh`, fails when a package is too old for the pinned Unity.
+  It catches the old manifest and passes the new one.
+- **On the user's machine:** close Unity, delete `Packages/packages-lock.json` and
+  `Library/PackageCache/com.unity.inputsystem@*`, then reopen. Unity keeps the old copy otherwise.
+- **Not opened in Unity here.**
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.
