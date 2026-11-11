@@ -158,7 +158,7 @@ namespace DribbleToSchool.EditorTools
                 holder.SetParent(root, false);
                 holder.gameObject.AddComponent<StaticBatcher>();
                 // The street's own houses, walls and poles stay out of the plot.
-                QuietAreas.Add(new Vector2(x + StreetBuilder.HomePlotLeft, x + StreetBuilder.HomePlotRight));
+                QuietAreas.Add(new Vector2(x, x) + StreetBuilder.HomePlot);
                 AsChapter(HomeLeadInRules.HomeChapter, () =>
                 {
                     StreetBuilder.HomeFront(holder, x, groundTop);

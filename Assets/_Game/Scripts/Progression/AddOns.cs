@@ -20,7 +20,7 @@ namespace DribbleToSchool.Progression
         public readonly bool needsEveryLevel;
         /// <summary>
         /// The chapters built in its streets (null: every one). While it is the active add-on, the levels of the
-        /// other chapters stay locked (LevelUnlocks.NotInTown): Florida has only the beach so far.
+        /// other chapters stay locked (LevelUnlocks.NotInTown): Florida has Home Street and the beach so far.
         /// </summary>
         public readonly int[] chapters;
 
@@ -70,8 +70,8 @@ namespace DribbleToSchool.Progression
         public const string FloridaId = "florida";
         /// <summary>What a level's Florida scene adds to its scene's name.</summary>
         public const string FloridaSuffix = "_FL";
-        /// <summary>The chapters Florida's streets have so far: the beach (Seaside Road).</summary>
-        public static readonly int[] FloridaChapters = { 3 };
+        /// <summary>The chapters Florida's streets have so far: Home Street (a canal suburb) and the beach (Seaside Road).</summary>
+        public static readonly int[] FloridaChapters = { 1, 3 };
 
         public static readonly AddOn Original = new AddOn(OriginalId, "addon.original", "addon.original.place", "", true, Audio.MusicCountry.Japan, false);
         public static readonly AddOn California = new AddOn(CaliforniaId, "addon.california", "addon.california.place", CaliforniaSuffix, true, Audio.MusicCountry.California, true);

@@ -18,7 +18,7 @@ from kit_buildings_geo import *
 from kit_buildings_parts import *
 from kit_buildings_bits import *
 from kit_buildings_town import decal, flat_ac
-from kit_buildings_cal import (hip, roof_z, column, gutter, condenser, surfboard, glass_panel, stucco_box, cal_window,
+from kit_buildings_cal import (hip, roof_z, column, gutter, condenser, surfboard, glass_panel, stucco_box, cal_window, arch_head,
                                surround, house_number, wall_vent)
 import kit_buildings_signs as SG
 
@@ -45,6 +45,7 @@ for _k, _v in FL_MAT.items():
 # ---------------------------------------------------------------- the kit's tiles (allocated by kit_buildings.py)
 TILES = [
     ('fl_glassblock', 256, 256), ('fl_breeze', 256, 256), ('fl_chain', 128, 128), ('fl_gate', 128, 128),
+    ('fl_screen', 128, 128), ('fl_lattice', 128, 128), ('sg_nowake', 224, 280),
     ('fl_men', 96, 128), ('fl_women', 96, 128), ('fl_flagus', 380, 200), ('fl_flagfl', 300, 200),
     ('sg_access23', 256, 320), ('sg_access', 256, 320), ('sg_turtle', 256, 320), ('sg_hurricane', 320, 256),
     ('sg_diner', 640, 300), ('sg_motel', 512, 300), ('sg_vacancy', 384, 96), ('sg_rentals', 768, 112),
@@ -1256,6 +1257,333 @@ def school_gate(B):
     return H + 0.5
 
 
+# ================================================================ Home Street (the user's chapter 1 references)
+def screen_panels(B, wf, u0, u1, v0, v1, cols=3, out=0.0):
+    """A screened porch's front: the dark screen mesh between white frame members (the room behind barely shows)."""
+    tile_cells(B, wf, u0, u1, v0, v1, out - 0.02, 'fl_screen', 0.8)
+    for k in range(cols + 1):
+        u = u0 + (u1 - u0) * k / cols
+        put(B, wf, fbox((u - 0.05, v0, out - 0.02), (u + 0.05, v1, out + 0.06), 0.008, 'trim'))
+    for v in (v0, (v0 + v1) * 0.45, v1 - 0.05):
+        put(B, wf, fbox((u0, v, out - 0.02), (u1, v + 0.06, out + 0.05), 0.006, 'trim'))
+
+
+def ranch(B):
+    """The Florida concrete-block ranch house (the kid's home, after the first reference): smooth stucco in a faded pastel
+    (part 1), a low hipped roof of white concrete tile, a striped aluminium awning over the jalousie window, the front door in
+    its own colour (part 2: the home's red) up two terrazzo steps, a screened porch on the right, an AC condenser on its pad,
+    the meter, a coach lamp, white gutters."""
+    W, H, D = B.W, B.H, B.D
+    win = (-W / 2 + 0.9, -W / 2 + 3.4, 1.0, 2.2)
+    door_o = (-1.7, -0.7, 0.3, 2.45)
+    porch = (0.3, W / 2 - 0.5, 0.3, 2.6)
+    F, Rt, Lf, Bk = stucco_box(B, -W / 2, W / 2, 0.0, D, H, fronts=[win, door_o, porch], rights=[(2.0, 3.4, 1.0, 2.2)],
+                               lefts=[(-6.0, -4.6, 1.0, 2.2)])
+    cal_window(B, F, *win, cols=2, rows=4, seed=1101, glass='glass2')
+    awning(B, F, win[0] - 0.15, win[1] + 0.15, win[3] + 0.42, 0.75, 0.35, 9, mat_a='whitep', mat_b='skyb', valance=0.1, scallops=False)
+    door(B, F, *door_o, depth=0.14, mat='accent', glass=0.32, panels=((1, 2),), name='Door')
+    steps(B, F, door_o[0] - 0.35, door_o[1] + 0.35, [0.3, 0.15], tread=0.32)
+    lantern(B, F, door_o[1] + 0.35, 2.05, out=0.14, name='Lamp')
+    # the screened porch: its room (a chair inside), the screen and frame
+    shop_room(B, porch[0], porch[1], porch[2], porch[3], 2.4, floor='concw')
+    B.add(cbox2((porch[0] + 1.2, 1.2, 0.3), (porch[0] + 1.8, 1.8, 0.75), 0.05, 'white'))
+    screen_panels(B, F, porch[0], porch[1], porch[2], porch[3], cols=3)
+    put(B, F, fbox((porch[0] - 0.1, 0.0, -0.02), (porch[1] + 0.1, 0.3, 0.12), 0.01, 'concw'))
+    cal_window(B, Rt, 2.0, 3.4, 1.0, 2.2, cols=2, rows=4, seed=1102, cheap=True)
+    cal_window(B, Lf, -6.0, -4.6, 1.0, 2.2, cols=2, rows=4, seed=1103, cheap=True)
+    top = hip(B, -W / 2, W / 2, 0.0, D, H, B.RH, over=0.5)
+    gutter(B, -W / 2 - 0.5, W / 2 + 0.5, -0.5, H - 0.04, pipe_x=W / 2 - 0.16, pipe_wall_y=-0.07)
+    condenser(B, -W / 2 + 0.75, -0.7, wall_y=-0.07, z_in=1.4)
+    meter_box(B, F, -W / 2 + 3.9, 1.3)
+    wall_vent(B, F, porch[0] - 0.6, 0.18)
+    B.feat('front', 'ao', a0=-W / 2, a1=W / 2, b=H - 0.02, length=0.45, k=0.3)
+    return top + 0.62
+
+
+def ranch_small(B):
+    """A small Florida block house (the pink and the yellow ones in the references): stucco, a white concrete-tile hip roof,
+    jalousie windows (one under a striped awning, one with a louvred shutter), the door in its colour, the AC unit, the meter."""
+    W, H, D = B.W, B.H, B.D
+    w1 = (-W / 2 + 0.7, -W / 2 + 2.7, 1.0, 2.2)
+    door_o = (-0.35, 0.6, 0.15, 2.3)
+    w2 = (1.4, W / 2 - 0.8, 1.0, 2.2)
+    F, Rt, Lf, Bk = stucco_box(B, -W / 2, W / 2, 0.0, D, H, fronts=[w1, door_o, w2], rights=[(2.4, 3.6, 1.0, 2.2)])
+    cal_window(B, F, *w1, cols=2, rows=4, seed=1111, glass='glass1')
+    awning(B, F, w1[0] - 0.15, w1[1] + 0.15, w1[3] + 0.4, 0.7, 0.32, 7, mat_a='whitep', mat_b='accentw', valance=0.1, scallops=False)
+    cal_window(B, F, *w2, cols=2, rows=4, seed=1112, glass='glass2')
+    # a louvred storm shutter propped beside the right window
+    sh = fbox((w2[1] + 0.12, w2[2] - 0.05, 0.0), (w2[1] + 0.12 + (w2[1] - w2[0]) * 0.5, w2[3] + 0.05, 0.05), 0.01, 'tex')
+    uv_fn(sh, faces_facing(sh, (0, 0, 1), 0.9), 'louvre', lambda co: ((co.x - w2[1]) / 0.8, (co.y - w2[2]) / 1.2), 0.02)
+    put(B, F, sh)
+    door(B, F, *door_o, depth=0.14, mat='accent', glass=None, panels=((1, 2),), name='Door')
+    steps(B, F, door_o[0] - 0.3, door_o[1] + 0.3, [0.15], tread=0.34)
+    cal_window(B, Rt, 2.4, 3.6, 1.0, 2.2, cols=2, rows=4, seed=1113, cheap=True)
+    top = hip(B, -W / 2, W / 2, 0.0, D, H, B.RH, over=0.45)
+    gutter(B, -W / 2 - 0.45, W / 2 + 0.45, -0.45, H - 0.04, pipe_x=-W / 2 + 0.16, pipe_wall_y=-0.07)
+    condenser(B, W / 2 + 0.75, 1.2, wall_x=W / 2 + 0.07, z_in=1.4)
+    meter_box(B, F, door_o[1] + 0.55, 1.35)
+    B.feat('front', 'ao', a0=-W / 2, a1=W / 2, b=H - 0.02, length=0.45, k=0.3)
+    return top + 0.62
+
+
+def gable_metal(B, x0, x1, y0, y1, ze, rise, over=0.35, mat='roofp', seam=0.45):
+    """A standing-seam metal gable roof, its gable to the street (the ridge along Y), seams down both slopes."""
+    X0, X1, Y0, Y1 = x0 - over, x1 + over, y0 - over, y1 + over
+    xm = (X0 + X1) / 2
+    zt, zr = ze + 0.08, ze + rise + 0.08
+    mb = MB()
+    mb.face([(X0, Y0, zt), (xm, Y0, zr), (xm, Y1, zr), (X0, Y1, zt)], mat, (-1, 0, 1), 1.0)
+    mb.face([(xm, Y0, zr), (X1, Y0, zt), (X1, Y1, zt), (xm, Y1, zr)], mat, (1, 0, 1), 1.0)
+    for x in (X0, X1):
+        mb.face([(x, Y0, ze), (x, Y1, ze), (x, Y1, zt), (x, Y0, zt)], 'roofw', (1 if x > xm else -1, 0, 0), 0.7)
+    # the gable end over the front wall, in the walls' colour (its eaves' edge in trim)
+    mb.face([(x0, y0 + 0.02, ze), (xm, y0 + 0.02, zr - 0.12), (x1, y0 + 0.02, ze)], 'wallw', (0, -1, 0), 0.95)
+    mb.face([(X0, Y0, ze), (xm, Y0, zr - 0.04), (xm, Y0, zr - 0.12), (X0 + 0.2, Y0, ze)], 'trim', (0, -1, 0), 0.9)
+    mb.face([(xm, Y0, zr - 0.04), (X1, Y0, ze), (X1 - 0.2, Y0, ze), (xm, Y0, zr - 0.12)], 'trim', (0, -1, 0), 0.9)
+    B.add(mb.bm())
+    y = Y0 + seam * 0.5
+    while y < Y1:
+        for xa, xb in ((X0, xm), (xm, X1)):
+            za = zt + (zr - zt) * (0 if xa == X0 else 1) + 0.025; zb = zt + (zr - zt) * (1 if xa == X0 else 0) + 0.025
+            B.add(tube([(xa, y, za), (xb, y, zb)], 0.012, 'roofw', 3, caps=False))
+        y += seam
+    B.add(tube([(xm, Y0, zr + 0.03), (xm, Y1, zr + 0.03)], 0.05, 'roofw', 5))
+    return zr
+
+
+def cottage(B):
+    """An Old Florida frame cottage (Granny's, the second reference): lap siding in a faded pastel (part 1) raised on piers
+    over a white lattice skirt, a standing-seam metal roof with its gable to the street, a deep front porch on white posts with
+    a railing and a porch swing, steps up the middle, a door and windows with louvred shutters (part 2), a fern hanging."""
+    W, H, D = B.W, B.H, B.D
+    fl = 0.6                                       # the raised floor
+    pd = 1.5                                       # the porch's depth in front of the wall
+    door_o = (-0.5, 0.5, fl, fl + 2.15)
+    wins = [(-W / 2 + 0.8, -W / 2 + 2.2, fl + 0.8, fl + 2.1), (W / 2 - 2.2, W / 2 - 0.8, fl + 0.8, fl + 2.1)]
+    F, Rt, Bk, Lf = frames(B)
+    wall(B, F, -W / 2, W / 2, H, [door_o] + wins, fl, mode='lap')
+    wall(B, Rt, 0, D, H, [(2.5, 3.7, fl + 0.8, fl + 2.1)], fl, mode='lap')
+    wall(B, Lf, -D, 0, H, [], fl, mode='lap')
+    wall(B, Bk, -W / 2, W / 2, H, [], fl, mode='lap')
+    box_shell_corners(B, fl, H, 0.1, mat='trim')
+    for k, w in enumerate(wins):
+        window(B, F, *w, depth=0.12, fw=0.06, cols=2, rows=2, frame='trimw', glass=('glass1', 'glass0')[k], sill='trim', head=None, seed=1121 + k)
+        for s in (-1, 1):
+            u = w[0] - 0.42 if s < 0 else w[1] + 0.02
+            sh = fbox((u, w[2] - 0.05, 0.0), (u + 0.4, w[3] + 0.05, 0.05), 0.01, 'tex')
+            uv_fn(sh, faces_facing(sh, (0, 0, 1), 0.9), 'louvre', lambda co, u=u, w=w: ((co.x - u) / 0.4, (co.y - w[2]) / (w[3] - w[2])), 0.02)
+            put(B, F, sh)
+    window(B, Rt, 2.5, 3.7, fl + 0.8, fl + 2.1, cols=2, rows=2, frame='trimw', glass='glass0', seed=1123, cheap=True)
+    door(B, F, *door_o, depth=0.1, mat='accent', glass=0.55, panels=((1, 1),), name='Door')
+    # the skirt under the house: piers and lattice
+    tile_cells(B, F, -W / 2, W / 2, 0.0, fl - 0.05, 0.02, 'fl_lattice', 0.8)
+    # the porch: its floor, posts, railing either side of the steps, its shed roof, the swing
+    B.add(cbox2((-W / 2 - 0.1, -pd, fl - 0.12), (W / 2 + 0.1, 0.0, fl), 0.02, 'woodg'))
+    tile_cells(B, WF((0, -pd, 0), (1, 0, 0), 'front'), -W / 2 - 0.1, W / 2 + 0.1, 0.0, fl - 0.12, 0.0, 'fl_lattice', 0.8)
+    for x in (-W / 2 + 0.05, -0.85, 0.85, W / 2 - 0.05):
+        B.add(cbox2((x - 0.08, -pd + 0.05, fl), (x + 0.08, -pd + 0.21, H - 0.15), 0.01, 'trim'))
+    for a, b in ((-W / 2 + 0.05, -0.85), (0.85, W / 2 - 0.05)):
+        pipe_rail(B, [(a, -pd + 0.13, fl), (b, -pd + 0.13, fl)], h=0.85, mat='white', bars=0.12, r=0.02, mid=False)
+    for k in range(3):
+        z = fl - 0.2 * (k + 1)
+        B.add(cbox2((-0.8, -pd - 0.24 * (k + 1), z), (0.8, -pd - 0.24 * k, z + 0.2), 0.01, 'woodg'))
+    shed(B, -W / 2 - 0.2, W / 2 + 0.2, -pd - 0.25, 0.05, H - 0.2, H + 0.25, t=0.1, pitch=0.3, mat='roof', edge_mat='roofw', fascia_mat='trim', feat=False)
+    # the swing on its chains, on the right of the porch
+    sx = W / 2 - 1.6
+    for dx in (-0.6, 0.6):
+        B.add(tube([(sx + dx, -pd * 0.55, H - 0.25), (sx + dx, -pd * 0.55, fl + 0.55)], 0.008, 'black', 3))
+    B.add(cbox2((sx - 0.65, -pd * 0.55 - 0.22, fl + 0.45), (sx + 0.65, -pd * 0.55 + 0.22, fl + 0.52), 0.01, 'white'))
+    B.add(cbox2((sx - 0.65, -pd * 0.55 + 0.18, fl + 0.52), (sx + 0.65, -pd * 0.55 + 0.24, fl + 0.95), 0.01, 'white'))
+    # a fern hanging at the left
+    B.add(tube([(-W / 2 + 0.9, -pd * 0.6, H - 0.25), (-W / 2 + 0.9, -pd * 0.6, H - 0.7)], 0.006, 'black', 3))
+    B.add(blob((-W / 2 + 0.9, -pd * 0.6, H - 0.85), (0.35, 0.35, 0.22), 'leafl', 7, 3, 1124))
+    top = gable_metal(B, -W / 2, W / 2, 0.0, D, H, B.RH, over=0.35)
+    vv = fbox((-0.4, H + 0.55, -0.02), (0.4, H + 1.05, 0.03), 0.004, 'tex')
+    uv_fn(vv, faces_facing(vv, (0, 0, 1), 0.9), 'louvre', lambda co: ((co.x + 0.4) / 0.8, (co.y - H - 0.55) / 0.5), 0.02)
+    put(B, WF((0, -0.3, 0), (1, 0, 0), 'front'), vv)
+    B.feat('front', 'ao', a0=-W / 2, a1=W / 2, b=H - 0.2, length=0.6, k=0.35)
+    return top + 0.1
+
+
+def church_fl(B):
+    """St Mary's in Florida (the second reference): a white stucco Mission church, its gable to the street under a curved
+    parapet with a quatrefoil window, red barrel-tile roof, an arched timber door up brick steps, lanterns either side, a
+    square bell tower at the left with an open arched belfry, its bell, a little tiled cap and a cross."""
+    W, H, D = B.W, B.H, B.D
+    n = 11
+    curve = [(-W / 2, H)] + [(u, H + 2.4 * math.cos((u / (W / 2)) * math.pi / 2) ** 0.8 + 0.3 * (abs(u) < 1.2))
+                             for u in np.linspace(-W / 2 + 0.01, W / 2 - 0.01, n)] + [(W / 2, H)]
+    door_o = (-0.9, 0.9, 0.45, 3.0)
+    F, Rt, Bk, Lf = frames(B)
+    wall(B, F, -W / 2, W / 2, curve, [door_o, (-W / 2 + 1.0, -W / 2 + 1.8, 1.6, 3.6), (W / 2 - 1.8, W / 2 - 1.0, 1.6, 3.6)], 0.0)
+    wall(B, Rt, 0, D, H, [(3.0, 3.8, 1.6, 3.6), (7.0, 7.8, 1.6, 3.6)], 0.0)
+    wall(B, Lf, -D, 0, H, [], 0.0)
+    wall(B, Bk, -W / 2, W / 2, H, [], 0.0)
+    door(B, F, *door_o, depth=0.3, mat='woodd', glass=None, panels=((2, 3),), double=True, name='Door')
+    arch_head(B, F, door_o[0], door_o[1], door_o[3], band=0.22, glass='glass0', mat='trim')
+    for u0 in (-W / 2 + 1.0, W / 2 - 1.8):
+        window(B, F, u0, u0 + 0.8, 1.6, 3.6, depth=0.25, fw=0.05, cols=1, rows=2, frame='woodd', glass='glass3', sill='trim', head=None, seed=1131)
+        arch_head(B, F, u0, u0 + 0.8, 3.6, band=0.1, glass='glass3')
+        lantern(B, F, u0 + (1.3 if u0 < 0 else -0.5), 2.4, out=0.15, name='Lamp')
+    for wo in ((3.0, 3.8), (7.0, 7.8)):
+        window(B, Rt, wo[0], wo[1], 1.6, 3.6, cols=1, rows=2, frame='woodd', glass='glass3', seed=1132, cheap=True)
+    # the quatrefoil over the door
+    for dx, dy in ((0.3, 0), (-0.3, 0), (0, 0.3), (0, -0.3)):
+        porthole(B, F, dx, H + 0.6 + dy, r=0.3, mat='trim')
+    steps(B, F, door_o[0] - 0.6, door_o[1] + 0.6, [0.45, 0.3, 0.15], tread=0.34, mat='accentw')
+    pitched(B, 'y', -W / 2 - 0.3, W / 2 + 0.3, 0.2, D + 0.3, H - 0.15, 2.0, mat='roof', barge=(False, True))
+    B.feat('roof', 'hip', x0=-W / 2 - 0.3, x1=W / 2 + 0.3, y0=0.2, y1=D + 0.3, row=0.32, pitch=0.25)
+    # the bell tower on the left, a little forward of the nave
+    tx, ty, tw, th = -W / 2 - 1.5, -0.3, 2.8, 9.5
+    TF = WF((tx - tw / 2, ty, 0), (1, 0, 0), 'front')
+    wall(B, TF, 0.0, tw, th, [(0.6, tw - 0.6, th - 2.6, th - 0.8)], 0.0)
+    for wf, a, b in ((WF((tx + tw / 2, ty, 0), (0, 1, 0), 'right'), 0.0, tw), (WF((tx - tw / 2, ty + tw, 0), (0, -1, 0), 'left'), 0.0, tw),
+                     (WF((tx + tw / 2, ty + tw, 0), (-1, 0, 0), 'front'), 0.0, tw)):
+        wall(B, wf, a, b, th, [(0.6, tw - 0.6, th - 2.6, th - 0.8)], 0.0)
+    arch_head(B, TF, 0.6, tw - 0.6, th - 0.8, band=0.15, glass='glass2', mat='trim')
+    bell, _ = lathe([(0.0, 0.0), (0.42, 0.0), (0.38, 0.12), (0.24, 0.55), (0.12, 0.7), (0.0, 0.72)], 12, 'brass')
+    xform(bell, T(tx, ty + tw / 2, th - 2.1)); B.add(bell)
+    B.add(box((tx - tw / 2 - 0.1, ty - 0.1, th - 2.7), (tx + tw / 2 + 0.1, ty + tw + 0.1, th - 2.6), 'trim'))
+    capz = hip(B, tx - tw / 2, tx + tw / 2, ty, ty + tw, th, 1.1, over=0.25, caps=True)
+    B.add(tube([(tx, ty + tw / 2, capz), (tx, ty + tw / 2, capz + 1.0)], 0.05, 'black', 5))
+    B.add(tube([(tx - 0.28, ty + tw / 2, capz + 0.72), (tx + 0.28, ty + tw / 2, capz + 0.72)], 0.05, 'black', 5))
+    for x in (door_o[0] - 1.0, door_o[1] + 1.0):
+        pot(B, (x, -1.3, 0.0), 0.32, 0.55, 'pot', 'flowers', seed=1133 + int(x * 10), scale=1.3)
+    B.feat('front', 'ao', a0=-W / 2, a1=W / 2, b=H - 0.02, length=0.5, k=0.3)
+    return th + 1.3
+
+
+def mailbox_post(B):
+    """A rural mailbox on a timber post at the kerb, its flag down."""
+    B.add(cbox2((-0.05, -0.05, 0.0), (0.05, 0.05, 1.05), 0.01, 'woodg'))
+    B.add(cbox2((-0.12, -0.25, 0.95), (0.12, 0.25, 1.05), 0.01, 'woodg'))
+    box_, _ = lathe([(0.0, 0.0), (0.12, 0.0), (0.12, 0.42), (0.0, 0.42)], 10, 'galvw')
+    xform(box_, T(0, -0.21, 1.17) @ R(math.pi / 2, 'X')); B.add(box_)
+    B.add(cbox2((-0.12, -0.21, 1.05), (0.12, 0.21, 1.17), 0.01, 'galvw'))
+    B.add(cbox2((0.12, 0.05, 1.12), (0.14, 0.1, 1.35), 0.005, 'flred'))
+    return 1.4
+
+
+def golf_cart(B):
+    """A groundskeeper's utility golf cart (the Home Street's ride, LevelBuildKit.GolfCart): white body, a green flat deck the
+    whole length at 0.95 m (no canopy over it, so the kid rides on it), four wheels, a little amber beacon."""
+    L, Wd = B.W, B.D
+    B.add(cbox2((-L / 2 + 0.05, -Wd / 2, 0.32), (L / 2 - 0.05, Wd / 2, 0.82), 0.06, 'white'))
+    B.add(cbox2((L / 2 - 0.55, -Wd / 2 + 0.05, 0.3), (L / 2, Wd / 2 - 0.05, 0.85), 0.12, 'white'))
+    B.add(cbox2((-L / 2, -Wd / 2 - 0.03, 0.85), (L / 2, Wd / 2 + 0.03, 0.95), 0.02, 'aquad'))
+    for x in np.linspace(-L / 2 + 0.2, L / 2 - 0.2, 6):
+        B.add(box((float(x) - 0.02, -Wd / 2, 0.95), (float(x) + 0.02, Wd / 2, 0.965), 'greyd'))
+    for x in (-L / 2 + 0.42, L / 2 - 0.42):
+        for y in (-Wd / 2 - 0.02, Wd / 2 + 0.02):
+            wh, _ = lathe([(0.0, -0.09), (0.22, -0.09), (0.24, 0.0), (0.22, 0.09), (0.0, 0.09)], 12, 'rubber')
+            xform(wh, T(x, y, 0.24) @ R(math.pi / 2, 'X')); B.add(wh)
+    B.add(tube([(-L / 2 + 0.12, Wd / 2 - 0.12, 0.95), (-L / 2 + 0.12, Wd / 2 - 0.12, 1.35)], 0.02, 'greyd', 4))
+    bl, _ = lathe([(0.0, 0.0), (0.06, 0.0), (0.06, 0.1), (0.0, 0.13)], 8, 'flora')
+    xform(bl, T(-L / 2 + 0.12, Wd / 2 - 0.12, 1.35)); B.add(bl)
+    for x in (L / 2 - 0.02,):
+        for y in (-Wd / 2 + 0.2, Wd / 2 - 0.2):
+            hl, _ = lathe([(0.0, 0.0), (0.06, 0.0), (0.06, 0.02), (0.0, 0.03)], 8, 'lamp')
+            xform(hl, T(x, y, 0.62) @ R(math.pi / 2, 'Y')); B.add(hl)
+    return 1.5
+
+
+def sprinkler(B):
+    """A pop-up lawn sprinkler on the verge, its head up and three thin arcs of spray (the jets themselves are the game's)."""
+    hd, _ = lathe([(0.0, 0.0), (0.06, 0.0), (0.05, 0.14), (0.03, 0.18), (0.0, 0.18)], 10, 'black')
+    B.add(hd)
+    rim, _ = lathe([(0.12, 0.0), (0.16, 0.0), (0.16, 0.02), (0.12, 0.02)], 12, 'greyd')
+    B.add(rim)
+    for k, a in enumerate((-0.55, 0.0, 0.55)):
+        d = np.array((math.sin(a), -math.cos(a), 0.0))
+        pts = [(d[0] * r, d[1] * r, 0.18 + 1.6 * (r / 2.2) - 1.3 * (r / 2.2) ** 2) for r in np.linspace(0.0, 2.2, 8)]
+        B.add(tube(pts, 0.018, 'water', 4, caps=False))
+    return 0.9
+
+
+def draw_leaf(B):
+    """One leaf of the canal's bascule drawbridge (its origin at the hinge, reaching +X 2.5 m; the game scales it to the gap):
+    a steel deck across the street's footpath and verge, a yellow edge at its tip, a low kerb in front and a railing behind
+    (none between the kid and the camera), the counterweight's top under the hinge."""
+    L = B.W
+    B.add(cbox2((0.0, -1.75, -0.3), (L, 1.75, 0.0), 0.02, 'grey'))
+    for x in np.arange(0.15, L, 0.3):
+        B.add(box((float(x) - 0.012, -1.7, -0.002), (float(x) + 0.012, 1.7, 0.006), 'greyd'))
+    B.add(box((L - 0.12, -1.75, -0.29), (L - 0.02, 1.75, 0.01), 'flyel'))
+    B.add(cbox2((0.0, -1.78, 0.0), (L, -1.66, 0.12), 0.01, 'grey'))
+    pipe_rail(B, [(0.05, 1.68, 0.0), (L - 0.05, 1.68, 0.0)], h=1.05, posts=1.2, mat='skyb', bars=0.0, r=0.025)
+    B.add(cbox2((-0.7, -1.7, -1.4), (0.2, 1.7, -0.3), 0.03, 'greyd'))
+    return 1.1
+
+
+def draw_tower(B):
+    """The bridge tender's house on the bank: a little square tower of white stucco, windows on every side, a teal hipped
+    metal roof, the door to the street."""
+    W, H, D = B.W, B.H, B.D
+    F, Rt, Lf, Bk = stucco_box(B, -W / 2, W / 2, 0.0, D, H, fronts=[(-0.45, 0.45, 0.0, 2.1), (-0.8, 0.8, 2.9, 3.9)],
+                               rights=[(0.5, D - 0.5, 2.9, 3.9)], lefts=[(-D + 0.5, -0.5, 2.9, 3.9)])
+    door(B, F, -0.45, 0.45, 0.0, 2.1, depth=0.1, mat='accent', glass=0.4, panels=((1, 1),), name='Door')
+    window(B, F, -0.8, 0.8, 2.9, 3.9, depth=0.12, fw=0.05, cols=3, frame='alu', glass='glass0', sill='trim', head=None, seed=1141)
+    window(B, Rt, 0.5, D - 0.5, 2.9, 3.9, cols=2, frame='alu', glass='glass1', seed=1142, cheap=True)
+    window(B, Lf, -D + 0.5, -0.5, 2.9, 3.9, cols=2, frame='alu', glass='glass1', seed=1143, cheap=True)
+    eyebrow(B, F, -1.0, 1.0, 4.0, out=0.4)
+    return hip_plain(B, -W / 2, W / 2, 0.0, D, H, 1.0, over=0.35, mat='roofp', seams=0.4) + 0.1
+
+
+def gate_post(B):
+    """The gate arm's post on the road: a grey cabinet on a pole, the arm's pivot at its top (the arm is GateArmFL)."""
+    B.add(cbox2((-0.18, -0.18, 0.0), (0.18, 0.18, 0.9), 0.03, 'greyd'))
+    B.add(cbox2((-0.14, -0.2, 0.55), (0.14, -0.18, 0.75), 0.01, 'flyel'))
+    return 1.0
+
+
+def gate_arm(B):
+    """The drawbridge's traffic gate arm, upright at rest (its origin at the pivot; the drawbridge turns it down across the
+    road): red and white bands, a lamp at its tip."""
+    L = B.H
+    for k in range(int(L / 0.5)):
+        B.add(cbox2((-0.05, -0.05, k * 0.5), (0.05, 0.05, (k + 1) * 0.5), 0.01, 'flred' if k % 2 else 'white'))
+    lp, _ = lathe([(0.0, 0.0), (0.07, 0.0), (0.07, 0.06), (0.0, 0.1)], 8, 'neonr')
+    xform(lp, T(0, 0, L)); B.add(lp)
+    return L + 0.1
+
+
+def canal_rail(B):
+    """A concrete bridge balustrade (the canal bridge of the references): posts with teal inset panels and two rails, 5 m."""
+    W = B.W
+    for x in np.linspace(-W / 2, W / 2, 3):
+        B.add(cbox2((float(x) - 0.2, -0.2, 0.0), (float(x) + 0.2, 0.2, 1.15), 0.03, 'concp'))
+        B.add(cbox2((float(x) - 0.13, -0.21, 0.3), (float(x) + 0.13, -0.2, 0.9), 0.01, 'aqua'))
+        B.add(cbox2((float(x) - 0.25, -0.25, 1.15), (float(x) + 0.25, 0.25, 1.25), 0.02, 'concp'))
+    for z0, z1 in ((0.0, 0.25), (0.55, 0.68), (0.95, 1.08)):
+        B.add(cbox2((-W / 2, -0.12, z0), (W / 2, 0.12, z1), 0.02, 'concp'))
+    return 1.3
+
+
+def dock(B):
+    """A canal-side boat dock: a timber deck on piles, a boat lift's posts and cradle with a white boat in it under a canopy."""
+    W, D = B.W, B.D
+    for x in (-W / 2 + 0.1, -W / 2 + 0.9):
+        for y in np.arange(0.2, D, 1.6):
+            B.add(tube([(x, float(y), -1.5), (x, float(y), 0.15)], 0.09, 'woodg', 6))
+    B.add(cbox2((-W / 2, 0.0, 0.0), (-W / 2 + 1.0, D, 0.1), 0.01, 'woodg'))
+    bx = 0.6
+    for y in (0.6, D - 0.6):
+        for x in (bx - 1.1, bx + 1.1):
+            B.add(tube([(x, y, -1.5), (x, y, 2.6)], 0.08, 'white', 6))
+    B.add(cbox2((bx - 1.25, 0.4, 2.55), (bx + 1.25, D - 0.4, 2.65), 0.02, 'white'))
+    hull = [(bx + 0.9 * math.cos(a) * (0.6 if math.sin(a) > 0.95 else 1.0), 1.0 + (D - 2.0) * (0.5 + 0.5 * math.sin(a))) for a in np.linspace(0, 2 * math.pi, 18)[:-1]]
+    hb = extrude_poly(hull, 0.75, 'white', side_mat='white', back=True)
+    xform(hb, T(0, 0, 0.35)); B.add(hb)
+    B.add(box((bx - 0.92, 1.0, 0.75), (bx + 0.92, D - 1.0, 0.82), 'aqua'))
+    B.add(cbox2((bx - 0.5, D * 0.45, 1.1), (bx + 0.5, D * 0.6, 1.5), 0.05, 'glass'))
+    return 2.7
+
+
+def sign_nowake(B):
+    post_sign(B, 0.0, 0.0, 'sg_nowake', 0.6, 0.75, z_bottom=1.3, post='woodg')
+    return 2.1
+
+
 # ================================================================ the tiles (PIL; kit_buildings_atlas.EXTRA)
 from PIL import Image, ImageDraw
 _c = SG._c
@@ -1324,6 +1652,36 @@ def t_gate(dr, w, h, k):
     for i in range(-n, n + 1):
         dr.line([(i * c, 0), (i * c + c, h / 2), (i * c, h)], fill=_c((0.70, 0.72, 0.74)), width=max(1, int(3 * k)))
         dr.line([(i * c + c, 0), (i * c, h / 2), (i * c + c, h)], fill=_c((0.70, 0.72, 0.74)), width=max(1, int(3 * k)))
+
+
+def t_screen(dr, w, h, k):
+    """A porch screen: dark grey mesh with the dim room behind just showing."""
+    dr.rectangle([0, 0, w, h], fill=_c((0.20, 0.21, 0.22)))
+    dr.rectangle([0, h * 0.55, w, h], fill=_c((0.16, 0.16, 0.17)))
+    for i in range(0, int(w), max(2, int(3 * k))):
+        dr.line([(i, 0), (i, h)], fill=_c((0.27, 0.28, 0.29)), width=1)
+    for j in range(0, int(h), max(2, int(3 * k))):
+        dr.line([(0, j), (w, j)], fill=_c((0.27, 0.28, 0.29)), width=1)
+
+
+def t_lattice(dr, w, h, k):
+    """White diagonal lattice over the dark crawl space under a raised cottage."""
+    dr.rectangle([0, 0, w, h], fill=_c((0.10, 0.10, 0.11)))
+    n = 4; c = w / n
+    for i in range(-n, 2 * n + 1):
+        dr.line([(i * c, 0), (i * c + h, h)], fill=_c((0.93, 0.93, 0.91)), width=max(2, int(5 * k)))
+        dr.line([(i * c, 0), (i * c - h, h)], fill=_c((0.90, 0.90, 0.88)), width=max(2, int(5 * k)))
+
+
+def t_nowake(dr, w, h, k):
+    red = (0.78, 0.16, 0.16)
+    dr.rectangle([0, 0, w, h], fill=_c(WHITE))
+    b = w * 0.05
+    dr.rectangle([b, b, w - b, h - b], outline=_c((0.1, 0.1, 0.1)), width=max(1, int(3 * k)))
+    cx, cy, r = w / 2, h * 0.5, w * 0.38
+    dr.ellipse([cx - r, cy - r, cx + r, cy + r], outline=_c(red), width=int(w * 0.06))
+    _label(dr, w, h, 'NO', BOLD, 0.2, (0.1, 0.1, 0.1), cy=0.42)
+    _label(dr, w, h, 'WAKE', BOLD, 0.2, (0.1, 0.1, 0.1), cy=0.6, maxw=0.62)
 
 
 def t_person(woman):
@@ -1507,6 +1865,9 @@ def paint(img, put):
     pp(img, 'fl_breeze', t_breeze, (0.93, 0.93, 0.91))
     pp(img, 'fl_chain', t_chain, (0.5, 0.54, 0.5))
     pp(img, 'fl_gate', t_gate, (0.16, 0.17, 0.19))
+    pp(img, 'fl_screen', t_screen, (0.2, 0.21, 0.22))
+    pp(img, 'fl_lattice', t_lattice, (0.1, 0.1, 0.11))
+    pp(img, 'sg_nowake', t_nowake, WHITE)
     pp(img, 'fl_men', t_person(False), WHITE)
     pp(img, 'fl_women', t_person(True), WHITE)
     pp(img, 'fl_flagus', t_flag_us, WHITE)
@@ -1589,6 +1950,28 @@ def pal_fl(pal):
         ('SoccerGoalFL', 3.0, 1.8, 1.2, 0.0, soccer_goal, pal((0.95, 0.95, 0.93), (0.95, 0.95, 0.93), (0.56, 0.55, 0.54)), 2.0, prop, {}),
         ('KayakRackFL', 3.0, 1.3, 1.6, 0.0, kayak_rack, pal((0.62, 0.58, 0.52), (0.62, 0.58, 0.52), (0.56, 0.55, 0.54)), 3.0, prop, {}),
         ('VolleyNetFL', 8.0, 2.4, 0.2, 0.0, volley_net, pal((0.95, 0.95, 0.93), (0.95, 0.95, 0.93), (0.56, 0.55, 0.54)), 2.6, prop, {}),
+        # Home Street (chapter 1)
+        ('RanchFL', 12.0, 2.9, 9.0, 1.4, ranch,
+         pal((0.70, 0.86, 0.82), (0.80, 0.22, 0.17), (0.88, 0.87, 0.84), trim=(0.96, 0.96, 0.95), frame=(0.95, 0.95, 0.94), conc=(0.82, 0.8, 0.77)), 4.8,
+         {'wall': 'stucco', 'ppm': 64}, {}),
+        ('RanchSmallFL', 8.5, 2.8, 7.5, 1.3, ranch_small,
+         pal((0.96, 0.74, 0.70), (0.42, 0.60, 0.66), (0.88, 0.87, 0.84), trim=(0.96, 0.96, 0.95), frame=(0.95, 0.95, 0.94)), 4.6,
+         {'wall': 'stucco', 'ppm': 64}, {}),
+        ('CottageFL', 8.0, 3.6, 8.0, 2.0, cottage,
+         pal((0.95, 0.76, 0.80), (0.70, 0.82, 0.84), (0.74, 0.76, 0.78), trim=(0.97, 0.97, 0.96)), 6.2, {'wall': 'siding', 'ppm': 64}, {}),
+        ('ChurchFL', 8.0, 6.0, 12.0, 2.0, church_fl,
+         pal((0.97, 0.96, 0.93), (0.66, 0.24, 0.18), (0.74, 0.36, 0.26), trim=(0.93, 0.91, 0.86)), 11.0, {'wall': 'stucco', 'ppm': 48}, {}),
+        ('MailboxPostFL', 0.4, 1.4, 0.6, 0.0, mailbox_post, pal((0.95, 0.95, 0.93), (0.6, 0.6, 0.6), (0.56, 0.55, 0.54)), 1.6, prop, {}),
+        ('GolfCartFL', 2.3, 1.0, 1.2, 0.0, golf_cart, pal((0.95, 0.95, 0.93), (0.6, 0.6, 0.6), (0.56, 0.55, 0.54)), 1.6, prop, {}),
+        ('SprinklerFL', 0.5, 0.3, 0.5, 0.0, sprinkler, pal((0.95, 0.95, 0.93), (0.6, 0.6, 0.6), (0.56, 0.55, 0.54)), 1.2, prop, {}),
+        ('DrawLeafFL', 2.5, 0.3, 3.5, 0.0, draw_leaf, pal((0.6, 0.62, 0.64), (0.6, 0.6, 0.6), (0.56, 0.55, 0.54)), 1.4, prop, {}),
+        ('DrawTowerFL', 2.4, 4.4, 2.4, 0.0, draw_tower,
+         pal((0.95, 0.95, 0.93), (0.20, 0.55, 0.58), (0.30, 0.62, 0.64)), 5.8, {'wall': 'stucco', 'ppm': 32}, {}),
+        ('GatePostFL', 0.4, 0.9, 0.4, 0.0, gate_post, pal((0.95, 0.95, 0.93), (0.6, 0.6, 0.6), (0.56, 0.55, 0.54)), 1.0, prop, {}),
+        ('GateArmFL', 0.2, 4.2, 0.2, 0.0, gate_arm, pal((0.95, 0.95, 0.93), (0.6, 0.6, 0.6), (0.56, 0.55, 0.54)), 4.4, prop, {}),
+        ('CanalRailFL', 5.0, 1.2, 0.4, 0.0, canal_rail, pal((0.86, 0.84, 0.80), (0.6, 0.6, 0.6), (0.56, 0.55, 0.54)), 1.4, prop, {}),
+        ('DockFL', 3.0, 2.6, 7.0, 0.0, dock, pal((0.62, 0.58, 0.52), (0.6, 0.6, 0.6), (0.56, 0.55, 0.54)), 3.0, prop, {}),
+        ('SignNoWakeFL', 0.6, 2.1, 0.2, 0.0, sign_nowake, pal((0.95, 0.95, 0.93), (0.6, 0.6, 0.6), (0.56, 0.55, 0.54)), 2.2, prop, {}),
         ('SchoolFL', 30.0, 7.2, 12.0, 0.0, school_fl,
          pal((0.92, 0.88, 0.77), (0.16, 0.58, 0.60), (0.56, 0.55, 0.54), trim=(0.96, 0.95, 0.92), frame=(0.82, 0.83, 0.84)), 9.4,
          {'wall': 'render', 'ppm': 48}, {}),

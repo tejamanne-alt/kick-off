@@ -132,6 +132,15 @@ def audit(name, body, line0):
                 tops.append((lo, hi, c[1] + 0.175 + max(0, tr[1]), 'moving platform'))
         elif fn == 'Fountain':
             jets.append((g(0), g(1), g(2)))
+        # Florida's set pieces (LevelBuildKit.FloridaPlay): a sprinkler's jets (2.8 m), a golf cart's bed riding to and fro
+        # (0.95 m up, 2.3 m long), a drawbridge whose leaves down are ground across its canal.
+        elif fn == 'Sprinkler':
+            jets.append((g(0), g(1), g(2, 2.8)))
+        elif fn == 'GolfCart':
+            x0, x1, gt = g(0), g(1), g(2)
+            tops.append((x0, x1, gt + 0.95, 'golf cart'))
+        elif fn == 'Drawbridge':
+            solid(g(0), g(1), g(2) - 0.3, g(2), 'drawbridge')
         elif fn == 'Springboard':
             springs.append(g(0))
         elif fn == 'Coin':

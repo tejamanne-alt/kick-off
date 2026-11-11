@@ -690,6 +690,16 @@ namespace DribbleToSchool.EditorTools
             return v != null && v.Count >= 3 ? new Vector3(Convert.ToSingle(v[0]), Convert.ToSingle(v[2]), Convert.ToSingle(v[1])) : Vector3.zero;
         }
 
+        /// <summary>The near-bottom-left corner of a kit model's bounds from its manifest (Unity axes: z is how far it comes forward of its origin, negative), or zero if unknown.</summary>
+        public static Vector3 KitMin(string kit, string model)
+        {
+            var info = KitInfo(kit, model);
+            object min;
+            if (info == null || !info.TryGetValue("min", out min)) return Vector3.zero;
+            var v = min as List<object>;
+            return v != null && v.Count >= 3 ? new Vector3(Convert.ToSingle(v[0]), Convert.ToSingle(v[2]), Convert.ToSingle(v[1])) : Vector3.zero;
+        }
+
         /// <summary>
         /// A passer-by made from a rigged model (tools/blender/meshy_rigged.py): the model's file, its neck joint's height
         /// (game units: what BuildModelCharacter scales the model by), and its wardrobe. Each walker picks its top, legwear and
@@ -1078,6 +1088,8 @@ namespace DribbleToSchool.EditorTools
             public readonly List<Vector2> OpenAreas = new List<Vector2>();
             /// <summary>Stretches (x from, x to) where the street's own scenery stays out of the way (the school grounds).</summary>
             public readonly List<Vector2> QuietAreas = new List<Vector2>();
+            /// <summary>Canals across the street (Florida's drawbridge): no building stands over them, front or back.</summary>
+            public readonly List<Vector2> Canals = new List<Vector2>();
             /// <summary>x of the school gate, once the layout has placed it.</summary>
             public float GoalX = float.MinValue;
             /// <summary>Every ground span as (fromX, toX, top).</summary>
@@ -2575,9 +2587,11 @@ namespace DribbleToSchool.EditorTools
             /// <summary>A plaza floor fountain: pulsing jets from a grate flush with the paving, which lift the ball.</summary>
             public void Fountain(float x, float groundTop, float height, float strength)
             {
-                Coaching.Mark("fountain", x - 1f, x + 1f);
+                Coaching.Mark(sprinklerLook ? "sprinkler" : "fountain", x - 1f, x + 1f);
                 StreetBuilder.Patch(root, "WetPaving", x - 1.8f, x + 1.8f, groundTop, -StreetBuilder.PathHalf, StreetBuilder.PathHalf, new Color(0.55f, 0.6f, 0.62f));
-                if (KitModel(root, "Leisure", "Fountain", new Vector3(x, groundTop, 0f)) == null)   // a stone-kerbed grate, jets at x 0 and +-0.45
+                // (Florida's lawn sprinkler: the same jets from a pop-up head on the verge; LevelBuildKit.Florida.Sprinkler)
+                if (sprinklerLook && KitModel(root, "Florida", "SprinklerFL", new Vector3(x, groundTop, StreetBuilder.PathHalf + 0.35f)) != null) { }
+                else if (KitModel(root, "Leisure", "Fountain", new Vector3(x, groundTop, 0f)) == null)   // a stone-kerbed grate, jets at x 0 and +-0.45
                 {
                     StreetBuilder.Patch(root, "Grate", x - 0.75f, x + 0.75f, groundTop, -0.75f, 0.75f, new Color(0.3f, 0.32f, 0.36f), null, 0.02f);
                     for (float gx = x - 0.6f; gx <= x + 0.61f; gx += 0.2f)
@@ -4176,6 +4190,7 @@ namespace DribbleToSchool.EditorTools
             void SlabAvoidingSideStreets(Transform parent, string name, float from, float to, float top, bool closeLeft, bool closeRight, StreetBuilder.Part part)
             {
                 var cuts = new List<Vector2>(OpenAreas);
+                if (part == StreetBuilder.Part.Back) cuts.AddRange(Canals);     // (the canal runs back from the lane; the road crosses it)
                 cuts.Sort((p, q) => p.x.CompareTo(q.x));
                 float a = from;
                 foreach (var cut in cuts)

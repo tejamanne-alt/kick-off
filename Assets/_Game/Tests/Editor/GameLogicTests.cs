@@ -42,7 +42,7 @@ namespace DribbleToSchool.Tests
         }
 
         [Test]
-        public void FloridaHasOnlyTheBeachSoFarAndItsOwnMusic()
+        public void FloridaHasHomeStreetAndTheBeachSoFarAndItsOwnMusic()
         {
             var fl = AddOns.Florida;
             Assert.IsTrue(fl.available);
@@ -50,7 +50,7 @@ namespace DribbleToSchool.Tests
             Assert.AreEqual(MusicCountry.Florida, fl.music);
             Assert.IsTrue(fl.Partial);
             for (int chapter = 1; chapter <= 5; chapter++)
-                Assert.AreEqual(chapter == 3, fl.HasChapter(chapter), "chapter " + chapter);
+                Assert.AreEqual(chapter == 1 || chapter == 3, fl.HasChapter(chapter), "chapter " + chapter);
             for (int chapter = 1; chapter <= 5; chapter++)
             {
                 Assert.IsTrue(AddOns.Original.HasChapter(chapter));

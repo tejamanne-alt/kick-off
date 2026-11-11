@@ -115,6 +115,13 @@ namespace DribbleToSchool.EditorTools
             t.CoinArc(35.5f, 38.5f, 1.2f, 1.2f, 3);
             t.CoinArc(51.5f, 54f, 0.7f, 1.3f, 3);
             t.CoinRow(58f, 64f, 0.5f, 3);
+            if (t.InFlorida)
+            {
+                // Florida: a lawn sprinkler on the way to the bus stop throws the ball up to a row of coins.
+                t.Sprinkler(65.5f);
+                t.Sign("Sprinkler! Dribble\nthrough the spray", new Vector2(64.5f, 3.6f));
+                t.CoinArc(64.6f, 66.4f, 2.7f, 0.6f, 3);
+            }
             t.Sticker(new Vector2(41f, 3.2f));
             t.Goal(70f);
         }
@@ -142,7 +149,13 @@ namespace DribbleToSchool.EditorTools
             t.Ground(59.5f, 92f);
             t.SlideUnder(63f, TrackBuilder.SlideLook.BoomBarrier);
 
-            t.ParkedCar(68f, CarYellow);
+            if (t.InFlorida)
+            {
+                // Florida: a groundskeeper's golf cart drives up and down here; hop on its bed and ride, or slip past.
+                t.GolfCart(65f, 72.5f);
+                t.Sign("Golf cart!\nHop on and ride", new Vector2(66f, 3.6f));
+            }
+            else t.ParkedCar(68f, CarYellow);
             t.Checkpoint(73f);
             t.Wall(78f, 0.3f, 0f, 0.6f);
             t.CoinRow(5f, 10f, 0.5f, 3);
@@ -173,14 +186,25 @@ namespace DribbleToSchool.EditorTools
             t.Checkpoint(36f, 1.8f);
 
             t.Ramp(new Vector2(44f, 1.8f), new Vector2(50f, 0f));
-            t.Ground(44f, 66f);
+            bool canal = t.InFlorida;      // Florida: a canal with a drawbridge where the original has a flooded trench
+            t.Ground(44f, canal ? 65.5f : 66f);
             t.Checkpoint(52f);
             t.StepAndHighWall(58f);
             t.Sign("Step up, stop, chip over", new Vector2(58f, 3.6f));
 
-            t.Water(66f, 68f);
-            t.Ground(68f, 128f);
-            t.Checkpoint(71f);
+            if (canal)
+            {
+                t.Drawbridge(65.5f, 70.5f);
+                t.Sign("Drawbridge! Wait for it\nto come all the way down", new Vector2(63f, 3.8f));
+                t.Ground(70.5f, 128f);
+                t.Checkpoint(72f);
+            }
+            else
+            {
+                t.Water(66f, 68f);
+                t.Ground(68f, 128f);
+                t.Checkpoint(71f);
+            }
             t.CrateStack(78f);
             t.SlideUnder(82.5f, TrackBuilder.SlideLook.AppleBough);
 
@@ -216,6 +240,12 @@ namespace DribbleToSchool.EditorTools
             t.SlideUnder(30.3f, TrackBuilder.SlideLook.AppleBough);
 
             t.Checkpoint(33f);
+            if (t.InFlorida)
+            {
+                // Florida: a sprinkler on Garden Lane's verge, coins high in its spray.
+                t.Sprinkler(36f);
+                t.CoinArc(35.1f, 36.9f, 2.8f, 0.6f, 3);
+            }
             t.Wall(40f, 0.6f);
             t.SwitchAndGate(new Vector2(44f, 2.8f), 47f);
             t.Sign("Higher this time", new Vector2(42f, 4.2f));
@@ -243,7 +273,14 @@ namespace DribbleToSchool.EditorTools
             t.Start(0f);
             t.Hint(7f, "puddle");
             t.Ground(-8f, 48f);
-            t.Sign("Rainy morning.\nPuddles slow everything down", new Vector2(5f, 3.2f));
+            if (t.InFlorida)
+            {
+                // Florida: an afternoon thunderstorm. Gusts against the kid, then behind, as well as the puddles.
+                t.Sign("Afternoon storm!\nGusts push the ball about", new Vector2(5f, 3.2f));
+                t.Wind(30f, 46f, 0f, 5f, new Vector2(-4.5f, 0f), 4.2f);
+                t.Wind(84f, 100f, 0f, 5f, new Vector2(4f, 0f), 3.6f);
+            }
+            else t.Sign("Rainy morning.\nPuddles slow everything down", new Vector2(5f, 3.2f));
 
             t.Puddle(10f, 13f);
             t.Wall(18f, 0.3f, 0f, 0.6f);

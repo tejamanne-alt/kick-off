@@ -6,8 +6,8 @@ using NUnit.Framework;
 namespace DribbleToSchool.Tests
 {
     /// <summary>
-    /// The Florida add-on's streets need their kit: every model StreetBuilder.Florida and LevelBuildKit.Florida place is in the
-    /// Florida kit (its FBX and its manifest entry), and the palms it plants are in the Plants kit.
+    /// The Florida add-on's streets need their kit: every model StreetBuilder.Florida(Home) and LevelBuildKit.Florida(Play) place
+    /// is in the Florida kit (its FBX and its manifest entry), and the palms and live oaks it plants are in the Plants kit.
     /// </summary>
     public class FloridaKitTests
     {
@@ -26,10 +26,10 @@ namespace DribbleToSchool.Tests
         }
 
         [Test]
-        public void TheSabalPalmsAreInThePlantsKit()
+        public void TheSabalPalmsAndTheLiveOakAreInThePlantsKit()
         {
             string manifest = File.ReadAllText(Models + "Plants/Plants.json");
-            foreach (string model in new[] { "PalmSabal", "PalmSabalTall", "SawPalmetto" })
+            foreach (string model in new[] { "PalmSabal", "PalmSabalTall", "SawPalmetto", "LiveOak" })
             {
                 Assert.IsTrue(File.Exists(Models + "Plants/" + model + ".fbx"), model + ".fbx is missing");
                 Assert.IsTrue(Regex.IsMatch(manifest, "\"" + model + "\"\\s*:"), model + " is not in Plants.json");

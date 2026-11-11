@@ -121,7 +121,7 @@ timber pier on concrete piles running out from the beach, and English shop signs
 (`BuildingsCAAtlas.png`). A fan palm is 16.5 m tall, and the camera's top edge sits at about
 2.4 m + 0.23 x the distance, so grown fan palms stand 60 m or more back (StreetBuilder.PalmSkyline),
 where their crowns show over the roofs; near the street they are young ones or date palms.
-**Florida** (Cocoa Beach, on the A1A), unlocked the same way, so far has only chapter 3, the beach: each of its levels has a
+**Florida** (Cocoa Beach, on the A1A), unlocked the same way, so far has chapter 1, Home Street, and chapter 3, the beach: each of their levels has a
 `<scene>_FL` scene (`LevelBuildKit.Florida`, `StreetBuilder.Florida`, the Florida kit `tools/blender/kit_buildings_fl.py`),
 after the user's photographic references in `review/florida/refs` (F3-1 to F3-6, made with `docs/IMAGE_PROMPTS.md`). The kid's
 beach is unchanged (the sand, the tides, the channels, the dunes and the sea about 9.6 m behind the lane: the tide's wash, the
@@ -132,9 +132,19 @@ references' order (the restroom with its showers, the snack shack and its kayaks
 rental shop, the Art Deco shops in pastel stucco with racing stripes, eyebrows and glass block) and each level takes it up
 where the one before left off. The promenade carries sabal palms (Florida's state tree: a grey trunk with its old leaf bases,
 a round crown of fan leaves), teal lamps, benches and bins; tall old sabals stand up over the roofs. The lifeguard towers are
-the Florida stand, the stops' huts the snack shack, the home street before the beach the Coast kit's stucco villas with sabals
-for their palms, and the school Seagrove High (cream and teal concrete block, an aluminium fence, a marquee, the US and Florida
-flags). Every name on a sign is invented.
+the Florida stand, the stops' huts the snack shack, the home street before the beach Florida's own (below), and the school
+Seagrove High (cream and teal concrete block, an aluminium fence, a marquee, the US and Florida flags). Every name on a sign
+is invented.
+Florida's **Home Street** (`StreetBuilder.FloridaHome`, after `review/florida/refs` F1-1 to F1-5) is a canal suburb, not
+California's stucco villas: one-storey concrete-block ranch houses in faded pastels (seafoam, pink, butter yellow, sky blue,
+peach, white) with a strong door colour, aluminium awnings and screened porches under pale metal or shingle roofs, and Old
+Florida frame cottages with deep porches, swings and picket fences; rural mailboxes on posts at the kerb; great live oaks
+hung with Spanish moss standing between the street's houses and the back row (StreetBuilder.StreetOaks, the Plants kit's
+`LiveOak`: a low, very wide crown of 14 leaf masses and 64 grey-green moss strands), sabals in the gardens. The kid's house is
+a seafoam ranch with the red front door; granny's a pink cottage, Sam's a yellow ranch, St Mary's a white Spanish Mission
+church with a bell tower and red tile, the bus stop Florida's aluminium shelter. A canal runs back from the street under a
+bascule drawbridge: tender's towers on the banks, gates across the footpath behind the lane, a concrete balustrade with teal panels, docks with
+boats on their lifts, a No Wake sign on its pile.
 
 ## Production rules (Blender kits)
 

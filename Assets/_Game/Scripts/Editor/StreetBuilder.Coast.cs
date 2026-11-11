@@ -31,6 +31,7 @@ namespace DribbleToSchool.EditorTools
         /// <summary>The kit a building model lives in: the Coast kit's California models, else the Buildings kit.</summary>
         public static string KitOf(string model)
         {
+            if (model != null && FloridaHouses.Contains(model)) return "Florida";
             return model != null && CoastModels.Contains(model) ? "Coast" : "Buildings";
         }
 
@@ -45,6 +46,9 @@ namespace DribbleToSchool.EditorTools
                 case "CraftsmanPorch": return 2.2f;
                 case "VillaRanch": return 1.0f;
                 case "VillaStucco": return 0.4f;
+                case "CottageFL": return 2.3f;          // (Florida: the cottage's porch and steps, the ranch's steps)
+                case "RanchFL": return 0.7f;
+                case "RanchSmallFL": return 0.4f;
                 case "BeachCondo": return 0.6f;
                 default: return 0f;
             }
@@ -133,7 +137,8 @@ namespace DribbleToSchool.EditorTools
                 if (!OnSideStreetRange(track, x, x + width) && (chunk == null || x + width <= x1))
                 {
                     float cx = x + width * 0.5f;
-                    CoastHouse(root, m, cx, GroundAt(track, cx), Rand(rng, zMin, zMax));
+                    if (FloridaHouses.Contains(m)) FloridaHouse(root, m, cx, GroundAt(track, cx), Rand(rng, zMin, zMax));
+                    else CoastHouse(root, m, cx, GroundAt(track, cx), Rand(rng, zMin, zMax));
                 }
                 x += width + Rand(rng, 1.5f, 5f);
             }

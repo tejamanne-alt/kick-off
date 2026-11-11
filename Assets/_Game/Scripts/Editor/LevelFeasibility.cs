@@ -59,6 +59,8 @@ namespace DribbleToSchool.EditorTools
         public void AddLedge(float from, float to, float top, float groundTop) { ledges.Add(new Ledge { from = from, to = to, top = top, groundTop = groundTop }); }
         public void AddBarrier(float x, float length, float clearance, string look) { barriers.Add(new Barrier { x = x, length = length, clearance = clearance, look = look }); }
         public void AddRoof(float from, float to, float height) { roofs.Add(new Roof { from = from, to = to, height = height }); }
+        /// <summary>A drawbridge over a hole (its leaves down make it ground at <paramref name="top"/>; the kid waits for them).</summary>
+        public void AddDrawbridge(float from, float to, float top) { bridges.Add(new Bridge { left = from, right = to, lowTop = top, highTop = top, kind = "drawbridge" }); }
 
         /// <summary>A platform that slides to and fro (a pallet on a crane, a raft): over its travel it covers [x - w/2, x + travel + w/2].</summary>
         public void AddSliding(float centerX, float centerY, float width, float travelX, float travelY)

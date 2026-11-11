@@ -1588,6 +1588,71 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
   `Library/PackageCache/com.unity.inputsystem@*`, then reopen. Unity keeps the old copy otherwise.
 - **Not opened in Unity here.**
 
+## Florida's Home Street: a canal suburb that plays differently (generated content v121)
+
+- **Why.** The user asked for a Florida Home Street from five references (ranch houses with red doors, awnings and screened
+  porches, pink and yellow ranches, Old Florida cottages with porch swings and picket fences, a Mission church with a bell
+  tower, a bus shelter, live oaks with Spanish moss, a canal with docks, a boat lift, a No Wake sign and a concrete bridge rail)
+  that is "more exciting rather than the same gameplay across all cities". Mid-way the user also asked for "good garden space
+  and lawn areas in front of a few homes".
+- **Chapter 1 in Florida.** `AddOns.FloridaChapters` is `{ 1, 3 }` (`addon.florida.place`: "Home Street, Seaside Road"), so
+  chapter 1's levels and C01 each get a `<scene>_FL` scene and are open while Florida is chosen. Every Florida level's home
+  street before its seam (chapter 3's too) is now Florida's, not the Coast kit's villas.
+- **Florida-only gameplay** (`LevelBuildKit.FloridaPlay`, `TrackBuilder.InFlorida`; the original and California layouts are
+  untouched):
+  - **L01 and L04: lawn sprinklers** (`Sprinkler`, a fountain with the sprinkler's look) throw the ball up to an arc of coins.
+  - **L02: the groundskeeper's golf cart** (`GolfCart`, a `MovingPlatform` with a 0.95 m flat bed) drives up and down where
+    the original has a parked car: hop on and ride, or slip past.
+  - **L03: a canal under a bascule drawbridge** (`Drawbridge`, `Hazards/Drawbridge`) replaces the flooded trench. The canal is
+    5 m, wider than a double jump. Its two leaves are kinematic bodies on a cycle: down 6 s, then bells, flashing lights and
+    gate arms (1.6 s), up (2.2 s), held (2.4 s), down (2.2 s). Wait for it. The worst wait is 8.4 s, inside L03's 80 s bell.
+    `LevelFeasibility.AddDrawbridge` counts the leaves as the bridge over the hole
+    (`ADrawbridgeCrossesACanalNoJumpCould`).
+  - **L05: an afternoon thunderstorm**, with gusts against the kid and then behind, instead of the rainy morning.
+  - Each has its how-to: `coach.drawbridge`, `coach.sprinkler`, `coach.golfcart` (en, es; `CoachPlan.Actions`,
+    `CoachCatalog`).
+- **The street** (`StreetBuilder.FloridaHome`, and Florida branches in `StreetBuilder`):
+  - houses: `RanchFL`, `RanchSmallFL` and `CottageFL` in faded pastels (`RanchPaints`, `CottagePaints`), front yards mostly
+    open lawn (fewer pickets, fewer hedges), rural mailboxes at the kerb;
+  - **deep gardens:** about one lot in three (`GardenLot`, by place) sets its house 3.2 m further back behind a mown lawn,
+    with a walk from the gate to the door, beds along the front, an island bed with a saw palmetto or a young sabal, and
+    hibiscus at the corners (`FrontGardenFL`);
+  - live oaks with Spanish moss between the rows (`StreetOaks`), and sabals in the gardens;
+  - the back row and the far row are Florida's houses;
+  - the horizon is only the pine flatwoods' tree line: Florida is flat (`DistantHills`).
+  - The kid's house is a seafoam ranch with the red door (`HomeInfoFL`, a wider plot). Granny's is a pink cottage, Sam's a
+    yellow ranch, St Mary's the Mission church (`MissionChurchFL`), the bus stop the aluminium shelter (`BusStopFL`).
+  - The canal runs back to the end of the ground, with docks and boats on lifts, the No Wake sign on its pile, and the
+    concrete balustrades along its banks behind the street. `TrackBuilder.Canals` keeps houses, back rows and far rows off
+    it and cuts it from the verge; it is not an open area, which would pave a side street over it.
+- **Kits:**
+  - The Florida kit gains 14 models (`kit_buildings_fl.py`): the two ranches, the cottage, the church, the mailbox post, the
+    golf cart, the sprinkler, the drawbridge's leaf, tower, gate post and arm, the balustrade, the dock and the No Wake sign.
+  - Every existing model's manifest entry is unchanged, but the atlas is repainted with the new tiles, so every Florida FBX is
+    re-exported with it.
+  - The Plants kit gains `LiveOak` (5,080 triangles), and nothing else in it changed (same atlas, same entries).
+- **Cost** (estimates, not measured):
+  - Nothing changes in the original or California scenes.
+  - In a chapter 1 `_FL` scene, against California's suburb, which it replaces: the houses are lighter (1,774 to 3,070
+    triangles against the villas' 3,877 to 5,276).
+  - A live oak (5,080) costs about what a palm does, and one to three are on screen.
+  - A deep garden adds about 6k to 7k (up to 7 flower patches at 711, a saw palmetto at 864, two shrubs at 780), and one is
+    on screen at a time.
+  - The drawbridge set is about 4k triangles.
+  - The flat horizon drops the hills and both mountain ranges.
+  - No new textures: it uses the same Florida atlas.
+  - Physics: two kinematic leaves and one moving platform.
+  - It must be checked on the Nord CE5, first L03's canal.
+- **Checked:**
+  - compile: no new compile errors in any `#if` set; `unity_api_check` 6000.6 and 6000.7 clean;
+  - tests: `LevelFeasibilityTests` 9 pass outside Unity;
+  - the coin audit: 447 coins, 0 problems;
+  - the coach texts are within the card's limits (36 and 140) in both languages;
+  - previews: `preview_street.py --chapter 1 --florida [--canal a:b --lift deg] [--home x]` mirrors the street. Its renders are
+    in `review/florida/home_street_*.jpg`.
+- **Not run in Unity:** building the `_FL` scenes, importing the new FBXs, the drawbridge's leaves under the kid and the ball,
+  the golf cart's ride, the sprinklers' throw, the storm's gusts, the stops, and the frame rate on the phone.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

@@ -57,6 +57,20 @@ namespace DribbleToSchool.Tests
         }
 
         [Test]
+        public void ADrawbridgeCrossesACanalNoJumpCould()
+        {
+            // Florida's canal: 5 m, wider than a double jump; its drawbridge's leaves down are ground from bank to bank.
+            Assert.IsNotEmpty(Level(10f, 15f).Check(), "5 m, no bridge");
+            var canal = Level(10f, 15f);
+            canal.AddDrawbridge(10f, 15f, 0f);
+            Assert.IsEmpty(canal.Check());
+            // A drawbridge that stops short of the far bank (a leaf missing) is no way over.
+            var short_ = Level(10f, 15f);
+            short_.AddDrawbridge(10f, 12.5f, 0f);
+            Assert.IsNotEmpty(short_.Check());
+        }
+
+        [Test]
         public void ABridgeFromAFarOffPlaceIsNoBridge()
         {
             var f = Level(10f, 18f);

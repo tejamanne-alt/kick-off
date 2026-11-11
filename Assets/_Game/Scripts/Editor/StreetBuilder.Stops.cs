@@ -184,6 +184,7 @@ namespace DribbleToSchool.EditorTools
         /// </summary>
         static void BusStop(Transform p, float gx, float gy, System.Random rng)
         {
+            if (FL && LevelBuildKit.HasKitModel("Florida", "BusShelterFL")) { BusStopFL(p, gx, gy, rng); return; }
             Color frame = new Color(0.22f, 0.38f, 0.34f), glass = new Color(0.78f, 0.88f, 0.92f);
             float sx = gx + 1.7f, z0 = PoleZ + 0.1f, z1 = PropertyZ + 1.15f, h = 2.35f, half = 1.75f;
             foreach (float dx in new[] { -half, half })
@@ -250,17 +251,20 @@ namespace DribbleToSchool.EditorTools
         /// <paramref name="doorFromMiddle"/> from the middle of its front): a picket fence along the street with an open gateway
         /// between two pillars, a path to the door, hedges at the ends of the plot. What the garden holds is the caller's.
         /// </summary>
-        static void FrontGarden(Transform p, float gx, float gy, string model, float doorFromMiddle, Color wall, Color trim, Color roof, Color fence)
+        static void FrontGarden(Transform p, float gx, float gy, string model, float doorFromMiddle, Color wall, Color trim, Color roof, Color fence,
+            string kit = "Buildings", float setback = 0f)
         {
-            float wallZ = PropertyZ + 0.15f, houseZ = HomeHouseZ;
+            float wallZ = PropertyZ + 0.15f, houseZ = HomeHouseZ + setback;
             float plotA = gx + StopPlotLeft + 0.2f, plotB = gx + StopPlotRight - 0.2f;
             float gateL = gx - 0.75f, gateR = gx + 0.75f;
             float houseX = gx - doorFromMiddle;
-            if (Model(p, "Buildings", model, houseX, gy, houseZ, 0f, 1f, wall, trim, roof) != null)
-                ContactShadow(p, houseX - 3.4f, houseX + 3.4f, gy, houseZ - 0.45f, houseZ);
+            float halfW = kit == "Buildings" ? 3.4f : LevelBuildKit.KitSize(kit, model).x * 0.5f;
+            if (Model(p, kit, model, houseX, gy, houseZ, 0f, 1f, wall, trim, roof) != null)
+                ContactShadow(p, houseX - halfW, houseX + halfW, gy, houseZ - 0.45f, houseZ);
             else
                 Building(p, houseX, gy, houseZ, ProceduralArt.FacadeKind.Bungalow, House3D.RoofStyle.GableSideways, 7f, 2.2f, wall, roof);
-            Patch(p, "GardenPath", gx - 0.6f, gx + 0.6f, gy, wallZ + 0.25f, houseZ - 0.62f, new Color(0.88f, 0.86f, 0.82f), Art.surfaces[ProceduralArt.Surface.Paving], 0.014f);
+            float steps = kit == "Buildings" ? 0.62f : -LevelBuildKit.KitMin(kit, model).z + 0.02f;
+            Patch(p, "GardenPath", gx - 0.6f, gx + 0.6f, gy, wallZ + 0.25f, Mathf.Max(wallZ + 0.5f, houseZ - steps), new Color(0.88f, 0.86f, 0.82f), Art.surfaces[ProceduralArt.Surface.Paving], 0.014f);
             if (Row(p, "Street", "PicketFence2", plotA + 0.25f, gateL - 0.25f, gy, wallZ, fence))
                 Row(p, "Street", "PicketFence2", gateR + 0.25f, plotB - 0.25f, gy, wallZ, fence);
             else
@@ -280,19 +284,24 @@ namespace DribbleToSchool.EditorTools
         /// </summary>
         static void GrannysHouse(Transform p, float gx, float gy, System.Random rng)
         {
-            FrontGarden(p, gx, gy, "Bungalow", 0.625f, new Color(0.96f, 0.9f, 0.94f), new Color(0.36f, 0.58f, 0.44f), new Color(0.72f, 0.42f, 0.34f), new Color(0.98f, 0.98f, 0.96f));
+            // (Florida: an Old Florida frame cottage, pink with a green door, its porch and swing where the bench was.)
+            bool fl = FL && LevelBuildKit.HasKitModel("Florida", "CottageFL");
+            if (fl) FrontGarden(p, gx, gy, "CottageFL", 0f, new Color(0.95f, 0.76f, 0.8f), new Color(0.36f, 0.58f, 0.44f), new Color(0.78f, 0.79f, 0.8f), new Color(0.98f, 0.98f, 0.96f),
+                "Florida", CottageSetbackFL);
+            else FrontGarden(p, gx, gy, "Bungalow", 0.625f, new Color(0.96f, 0.9f, 0.94f), new Color(0.36f, 0.58f, 0.44f), new Color(0.72f, 0.42f, 0.34f), new Color(0.98f, 0.98f, 0.96f));
             float wallZ = PropertyZ + 0.15f;
             float[] bedX = { -3.6f, -2.7f, -1.6f, 1.4f, 2.3f, 3.4f, 4.6f, 5.7f }, bedZ = { 2.9f, 3.3f, 2.85f, 2.9f, 3.35f, 2.9f, 3.2f, 2.85f };
             for (int i = 0; i < bedX.Length; i++)
                 Model(p, "Plants", "FlowerPatch", gx + bedX[i], gy, bedZ[i], Rand(rng, 0f, 360f), Rand(rng, 1.1f, 1.5f), null, Petals[i % Petals.Length]);
             Model(p, "Plants", "ShrubFlowering", gx - 3.2f, gy, HomeHouseZ - 0.4f, Rand(rng, 0f, 360f), 1.1f);
             Model(p, "Plants", "ShrubFlowering", gx + 3.5f, gy, HomeHouseZ - 0.3f, Rand(rng, 0f, 360f), 1f);
-            Model(p, "Street", "Bench", gx - 2.4f, gy, HomeHouseZ - 1.0f, 0f, 0.95f);
+            if (!fl) Model(p, "Street", "Bench", gx - 2.4f, gy, HomeHouseZ - 1.0f, 0f, 0.95f);     // (the cottage has its porch swing)
             Model(p, "Street", "PotGroup", gx + 1.1f, gy, HomeHouseZ - 0.7f, 10f, 1f, Petals[4]);
             // Her cat on the left gatepost, and her sign on the right one.
             Model(p, "Animals", "Cat", gx - 0.75f, gy + 1.95f, wallZ, 200f, 0.9f, new Color(0.95f, 0.62f, 0.3f));
             NameBoard(p, "Granny's", new Vector3(gx + 0.75f, gy + 1.35f, wallZ - 0.3f), 0.022f, new Color(0.98f, 0.95f, 0.85f), new Color(0.45f, 0.3f, 0.55f));
-            Plant(p, "BroadleafWide", null, gx + 6.2f, gy, HomeHouseZ + 6.5f, 1.05f, 1f, -70, rng);
+            if (fl && LevelBuildKit.HasKitModel("Plants", "LiveOak")) Plant(p, "LiveOak", null, gx + 5.4f, gy, HomeHouseZ + 9.5f, 0.95f, 1f, -70, rng);
+            else Plant(p, "BroadleafWide", null, gx + 6.2f, gy, HomeHouseZ + 6.5f, 1.05f, 1f, -70, rng);
         }
 
         /// <summary>
@@ -301,7 +310,11 @@ namespace DribbleToSchool.EditorTools
         /// </summary>
         static void SamsHouse(Transform p, float gx, float gy, System.Random rng)
         {
-            FrontGarden(p, gx, gy, "HouseFlat", -2.55f, new Color(0.78f, 0.88f, 0.95f), new Color(0.98f, 0.78f, 0.25f), new Color(0.3f, 0.32f, 0.36f), new Color(0.96f, 0.97f, 0.98f));
+            // (Florida: a little block ranch in butter yellow with a teal door.)
+            bool fl = FL && LevelBuildKit.HasKitModel("Florida", "RanchSmallFL");
+            if (fl) FrontGarden(p, gx, gy, "RanchSmallFL", 0.125f, new Color(0.96f, 0.88f, 0.6f), new Color(0.2f, 0.5f, 0.56f), new Color(0.86f, 0.86f, 0.84f), new Color(0.96f, 0.97f, 0.98f),
+                "Florida", 0.4f);
+            else FrontGarden(p, gx, gy, "HouseFlat", -2.55f, new Color(0.78f, 0.88f, 0.95f), new Color(0.98f, 0.78f, 0.25f), new Color(0.3f, 0.32f, 0.36f), new Color(0.96f, 0.97f, 0.98f));
             float wallZ = PropertyZ + 0.15f;
             Plaque(p, "12", gx - 0.75f, gy + 1.3f, wallZ - 0.25f);
             Model(p, "Street", "Bicycle", gx + 2.6f, gy, 3.05f, -10f, 1f, BikeColors[1]);
@@ -316,6 +329,7 @@ namespace DribbleToSchool.EditorTools
             sphere.Rebuild();
             Model(p, "Plants", "BushRound", gx - 3.4f, gy, 3.6f, Rand(rng, 0f, 360f), 0.9f, SummerLeaves[1]);
             Model(p, "Street", "PotGroup", gx + 5.8f, gy, HomeHouseZ - 0.6f, -12f, 1f, Petals[2]);
+            if (fl) Plant(p, "PalmSabal", null, gx + 6.6f, gy, HomeHouseZ + 1.2f, 0.75f, 1f, -60, rng);
         }
 
         /// <summary>
@@ -325,6 +339,7 @@ namespace DribbleToSchool.EditorTools
         /// </summary>
         static void Church(Transform p, float gx, float gy, System.Random rng)
         {
+            if (FL && LevelBuildKit.HasKitModel("Florida", "ChurchFL")) { MissionChurchFL(p, gx, gy, rng); return; }
             Color stone = new Color(0.86f, 0.83f, 0.76f), trim = new Color(0.7f, 0.67f, 0.6f), slate = new Color(0.33f, 0.36f, 0.43f);
             Color glass = new Color(0.36f, 0.46f, 0.74f), wood = new Color(0.4f, 0.25f, 0.16f);
             float front = 7.0f, wallZ = PropertyZ + 0.15f;

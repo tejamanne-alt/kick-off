@@ -51,6 +51,10 @@ namespace DribbleToSchool.UI
             new Entry("people", ControlsGuide.Picture.Kick),
             new Entry("seagull", ControlsGuide.Picture.Walk),
             new Entry("fountain", ControlsGuide.Picture.Walk),
+            // the Florida add-on's own (LevelBuildKit.FloridaPlay)
+            new Entry("drawbridge", ControlsGuide.Picture.Wait),
+            new Entry("sprinkler", ControlsGuide.Picture.Walk),
+            new Entry("golfcart", ControlsGuide.Picture.Jump),
         };
 
         /// <summary>The challenges' steps: what to do now, shown all the way through a challenge.</summary>
