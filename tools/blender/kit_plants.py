@@ -198,6 +198,54 @@ def build_broadleaf_wide():
     return pieces, {0: G.hexc(WOOD), 1: R_BROAD_L.base}, {'kind': 'tree', 'trunkRadius': tr}
 
 
+R_OAK = G.Ramp('#132c1e', '#3c6534', '#8eaa5a')        # a live oak's small, dark, leathery leaves
+
+
+def spanish_moss(masses, rng, n, top_frac=0.55):
+    """Spanish moss hanging from a crown's underside: thin, tapering, two-sided strands in a soft grey-green, each swaying a
+    little out of true, some long and some short (fixed colour, part 0: the street's leaf tints leave it grey)."""
+    pieces = []
+    for k in range(n):
+        m = masses[rng.integers(len(masses))]
+        a = rng.uniform(0, 2 * PI)
+        top = np.array(m.c, float) + np.array((math.cos(a) * m.r[0] * rng.uniform(0.4, 1.0),
+                                               math.sin(a) * m.r[1] * rng.uniform(0.4, 1.0), -m.r[2] * top_frac))
+        L = rng.uniform(1.0, 2.3)
+        w = rng.uniform(0.24, 0.42)
+        lean = np.array((rng.normal(0, 0.12), rng.normal(0, 0.12), 0.0))
+        face = np.array((math.cos(a + PI / 2), math.sin(a + PI / 2), 0.0))
+        rows = 3
+        V = []; F = []
+        for i in range(rows + 1):
+            t = i / rows
+            c = top + lean * t - UP * L * t
+            half = w * 0.5 * (1 - 0.75 * t)
+            V += [c - face * half, c + face * half]
+        for i in range(rows):
+            a0 = i * 2
+            F += [(a0, a0 + 2, a0 + 3, a0 + 1), (a0 + 1, a0 + 3, a0 + 2, a0)]
+        p = G.Piece(V, F)
+        shade = np.array([0.75 + 0.3 * (1 - i // 2 / rows) for i in range(len(V))])
+        p.color(G.hexc('#b9bca3')[None, :] * shade[:, None] * rng.uniform(0.88, 1.05)); p.part(0)
+        pieces.append(p)
+    return pieces
+
+
+def build_live_oak():
+    # Florida's southern live oak: a short, thick trunk splitting low into long, wide-reaching limbs under a broad, low,
+    # dark crown, hung with Spanish moss (the streets of the references are shaded by them).
+    rng = RNG(353)
+    tr = 0.42
+    masses = LV.masses_from((0, 0.0, 5.2), (6.2, 4.0, 2.0), 14, rng, rf=(0.27, 0.34), shell=0.68, zlo=-0.45, top=0.3)
+    for m in masses:                                   # the crown droops at its rim, as an old oak's limbs do
+        m.c[2] -= 0.5 * (abs(m.c[0]) / 5.5) ** 2 * 2.0
+    ctrl = [(0, 0, -0.14), (0.08, 0.0, 0.9), (-0.05, 0.03, 1.7), (0.03, 0.0, 2.8), (0.0, 0.05, 4.6)]
+    pieces = leaf_tree(353, masses, ctrl, tr, 1.4, R_OAK, card=1.4, limb_r=(0.55, 0.7), flare_amt=0.7, rng=rng,
+                       limb_end=0.12, groups=5, fork_spread=0.8)
+    pieces += spanish_moss(masses, rng, 64, top_frac=0.35)
+    return pieces, {0: G.hexc(WOOD), 1: R_OAK.base}, {'kind': 'tree', 'trunkRadius': tr}
+
+
 def build_broadleaf_small():
     # a smaller street tree: a round, lobed crown on a slim stem, pruned up clear of the pavement
     rng = RNG(55)
@@ -1091,6 +1139,7 @@ MODELS = [
     ('Reeds', build_reeds), ('FlowerPatch', build_flower_patch),
     ('PalmFan', build_palm_fan), ('PalmDate', build_palm_date),
     ('PalmSabal', build_palm_sabal), ('PalmSabalTall', build_palm_sabal_tall), ('SawPalmetto', build_saw_palmetto),
+    ('LiveOak', build_live_oak),
 ]
 BUDGET = {'tree': 6000, 'bush': 1200, 'grass': 800, 'hedge': 600}
 

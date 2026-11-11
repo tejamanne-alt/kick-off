@@ -91,7 +91,7 @@ namespace DribbleToSchool.UI
             return root;
         }
 
-        /// <summary>The names of the routes a location has (Florida: "Seaside Road").</summary>
+        /// <summary>The names of the routes a location has (Florida: "Home Street, Seaside Road").</summary>
         static string OnlyRoutes(Progression.AddOn place)
         {
             var names = new System.Collections.Generic.List<string>();

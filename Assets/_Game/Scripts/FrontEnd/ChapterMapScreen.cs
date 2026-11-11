@@ -1296,7 +1296,7 @@ namespace DribbleToSchool.FrontEnd
         }
 
         /// <summary>
-        /// Why a level is locked in an add-on that has only some of the routes so far (Florida: Seaside Road): the others are
+        /// Why a level is locked in an add-on that has only some of the routes so far (Florida: Home Street and Seaside Road): the others are
         /// coming, and the original streets or California have them all. The main button shows a route the add-on has.
         /// </summary>
         void ShowNotInTown()

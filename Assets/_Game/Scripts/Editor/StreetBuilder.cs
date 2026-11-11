@@ -302,7 +302,7 @@ namespace DribbleToSchool.EditorTools
         static bool OverlapsBackRow(LevelBuildKit.TrackBuilder track, float a, float b)
         {
             if (AcrossSeam(track, a, b)) return true;
-            foreach (var area in track.OpenAreas)
+            foreach (var area in track.OpenAreas.Concat(track.Canals))
                 if (b > area.x - 0.6f && a < area.y + 0.6f) return true;
             float goal = track.GoalX;
             return goal > track.MinX && b > goal + 8f && a < goal + 24f;
@@ -990,8 +990,10 @@ namespace DribbleToSchool.EditorTools
                     break;
                 default:
                     TreeBand(track, root, rng, x0, x1, 34f, 37f, green, 5f, 10f);
-                    // The next street over: stucco villas under tile roofs (the kit's gabled houses without the Coast kit).
-                    if (CA) CoastFarRow(track, root, rng, x0, x1, 40f, 46f, "VillaStucco", "VillaRanch", "CraftsmanPorch", "VillaStucco");
+                    // The next street over: stucco villas under tile roofs (the kit's gabled houses without the Coast kit; Florida's
+                    // ranches and cottages in Florida).
+                    if (FL) CoastFarRow(track, root, rng, x0, x1, 40f, 46f, "RanchFL", "CottageFL", "RanchSmallFL", "RanchFL");
+                    else if (CA) CoastFarRow(track, root, rng, x0, x1, 40f, 46f, "VillaStucco", "VillaRanch", "CraftsmanPorch", "VillaStucco");
                     else FarRow(track, root, rng, x0, x1, 40f, 46f, gable, longHouse, ProceduralArt.FacadeKind.Bungalow, gable);
                     TreeBand(track, root, rng, x0, x1, 56f, 66f, green, 4f, 8f);
                     if (CA) PalmSkyline(track, root, rng, x0, x1, 64f, 105f, 10f, 26f);
@@ -1068,7 +1070,7 @@ namespace DribbleToSchool.EditorTools
         static bool OnSideStreetRange(LevelBuildKit.TrackBuilder track, float a, float b)
         {
             if (AcrossSeam(track, a, b)) return true;
-            foreach (var area in track.OpenAreas)
+            foreach (var area in track.OpenAreas.Concat(track.Canals))
                 if (b > area.x - 0.6f && a < area.y + 0.6f) return true;
             return false;
         }
@@ -1533,8 +1535,11 @@ namespace DribbleToSchool.EditorTools
                 // clipped hedge, or an open lawn running down to the pavement.)
                 float gate = Rand(rng, x + 2f, x + lot - 4f);
                 double front = rng.NextDouble();
-                bool picket = front < (CA ? 0.35 : 0.3) && LevelBuildKit.HasKitModel("Street", "PicketFence2");
-                bool hedge = CA && !picket && front < 0.65 && LevelBuildKit.HasKitModel("Plants", "HedgeBlock2");
+                // (Florida's front yards are mostly open lawn to the sidewalk: fewer pickets and hedges.)
+                bool picket = front < (FL ? 0.2 : CA ? 0.35 : 0.3) && LevelBuildKit.HasKitModel("Street", "PicketFence2");
+                // (Florida: about one lot in three is a deep garden, its house well back behind a lawn and beds, and no hedge hides it.)
+                bool garden = FL && GardenLot(x);
+                bool hedge = CA && !picket && !garden && front < (FL ? 0.4 : 0.65) && LevelBuildKit.HasKitModel("Plants", "HedgeBlock2");
                 if (picket)
                 {
                     ContactShadow(root, x + 0.1f, x + lot - 0.1f, gy, PropertyZ - 0.25f, PropertyZ + 0.02f);
@@ -1553,14 +1558,15 @@ namespace DribbleToSchool.EditorTools
                 }
                 // Now and then a post box at the kerb of the lot, or a bicycle leaning on the wall.
                 double life = rng.NextDouble();
-                if (life < 0.12) Model(root, "Street", "PostBox", x + Rand(rng, 1f, lot - 1f), gy, PoleZ - 0.1f);
+                if (FL && life < 0.6) Model(root, "Florida", "MailboxPostFL", gate + Rand(rng, -0.6f, 0.6f), gy, PoleZ + 0.05f);   // (rural mailboxes at the kerb)
+                else if (life < 0.12) Model(root, "Street", "PostBox", x + Rand(rng, 1f, lot - 1f), gy, PoleZ - 0.1f);
                 else if (life < 0.3 && !picket && !hedge && gate - x > 3.4f) Model(root, "Street", "Bicycle", Rand(rng, x + 1.2f, gate - 1f), gy, PropertyZ - 0.32f, 180f + Rand(rng, -6f, 6f), 1f, BikeColors[rng.Next(BikeColors.Length)]);
 
                 // The house: the next of the home street's houses that fits the lot (with no kit, one of
                 // the three painted kinds).
                 string house = houses.Next(m => LevelBuildKit.KitSize(KitOf(m), m).x <= lot - 0.8f);
                 int kind = rng.Next(3);
-                float z = PropertyZ + 1.6f + Rand(rng, 0f, 1.4f) + (house == "HouseLeanTo" ? 0.3f : 0f) + CoastSetback(house);
+                float z = PropertyZ + 1.6f + Rand(rng, 0f, 1.4f) + (house == "HouseLeanTo" ? 0.3f : 0f) + CoastSetback(house) + (garden ? GardenDepth : 0f);
                 Color roof = rng.NextDouble() < 0.75 ? roofDark : roofRed;
                 var facade = kind == 0 ? ProceduralArt.FacadeKind.HouseGable : kind == 1 && lot >= 11f ? ProceduralArt.FacadeKind.HouseLong : ProceduralArt.FacadeKind.Bungalow;
                 if (house == "HouseGable") facade = ProceduralArt.FacadeKind.HouseGable;
@@ -1574,15 +1580,16 @@ namespace DribbleToSchool.EditorTools
                     else Building(root, cx, gy, z, facade, House3D.RoofStyle.Shed, 5.5f, 1f, new Color(0.88f, 0.89f, 0.9f), roofDark);
                 }
                 float houseHalf = (town ? LevelBuildKit.KitSize(KitOf(house), house).x : ProceduralArt.FacadeSize(facade).x) * 0.5f;
+                if (garden && town) FrontGardenFL(root, house, x, lot, gate, gy, cx, houseHalf, z);
 
                 // Life at the gate: the bins out for collection or a doorstep of pots; garden shrubs over
                 // the block wall; a bicycle under the carport.
                 if (LevelBuildKit.HasKitModel("Street", "BinPair"))
                 {
                     double d = rng.NextDouble();
-                    if (d < 0.3 && !picket)
+                    if (d < 0.3 && !picket && !garden)      // (not on a deep garden's walk)
                         Model(root, "Street", "BinPair", gate + 1.1f, gy, PropertyZ + 0.55f, Rand(rng, -10f, 10f), 1f, BinColors[rng.Next(BinColors.Length)], BinColors[rng.Next(BinColors.Length)]);
-                    else if (d < 0.55)
+                    else if (d < 0.55 && !garden)
                         Model(root, "Street", "PotGroup", gate + 0.55f, gy, PropertyZ + 0.6f, Rand(rng, -20f, 20f), 1f, Petals[rng.Next(Petals.Length)]);
                 }
                 float yard = x + lot - (cx + houseHalf);
@@ -1597,17 +1604,20 @@ namespace DribbleToSchool.EditorTools
                     // when the gap beside the house is wide enough for it.
                     if (rng.NextDouble() < 0.7)
                     {
-                        string[] back = CA ? new[] { "Broadleaf", "PalmDate", "BroadleafLarge", "PalmFan", "BroadleafWide", "Broadleaf", "PalmDate", "BroadleafSmall" }
+                        string[] back = FL ? new[] { "LiveOak", "PalmDate", "PalmFan", "PalmDate", "BroadleafWide", "PalmFan", "PalmDate", "LiveOak" }
+                            : CA ? new[] { "Broadleaf", "PalmDate", "BroadleafLarge", "PalmFan", "BroadleafWide", "Broadleaf", "PalmDate", "BroadleafSmall" }
                             : new[] { "Broadleaf", "BroadleafLarge", "BroadleafWide", "ConiferTall", "Broadleaf", "Birch", "BroadleafSmall" };
                         string tree = back[rng.Next(back.Length)];
                         // (A fan palm this close is a young one: a grown one's crown would stand out of the view.)
                         // (The draws in the original order, so the original street comes out as it was.)
-                        float tx = cx + Rand(rng, -houseHalf, houseHalf), tz = z + 8f + Rand(rng, 0f, 3f);
+                        // (Florida's houses are 7.5 to 9 m deep: their trees stand further back.)
+                        float tx = cx + Rand(rng, -houseHalf, houseHalf), tz = z + (FL ? 10.5f : 8f) + Rand(rng, 0f, 3f);
+                        if (FL) tz = Mathf.Min(tz, BackRowFL - 2.5f);      // (clear of the back row)
                         float ts = tree == "PalmFan" ? Rand(rng, 0.45f, 0.55f) : Rand(rng, 0.9f, 1.25f);
                         Plant(root, tree, null, tx, gy, tz, ts, 1f, -70, rng);
                     }
                     float gap = (cx - houseHalf) - x;
-                    if (gap > 4f && house != "HouseCarport" && !CoastModels.Contains(house ?? "") && rng.NextDouble() < 0.4 && LevelBuildKit.HasKitModel("Buildings", "Garage"))
+                    if (gap > 4f && house != "HouseCarport" && !CoastModels.Contains(house ?? "") && !FloridaHouses.Contains(house ?? "") && rng.NextDouble() < 0.4 && LevelBuildKit.HasKitModel("Buildings", "Garage"))
                     {
                         // A garage beside the house, set back a little, painted to match it.
                         var p = HousePaints[Scramble(Mathf.Abs(Mathf.RoundToInt(cx * 7f + z * 13f)) + 1) % HousePaints.Length];
@@ -1636,18 +1646,20 @@ namespace DribbleToSchool.EditorTools
                 }
                 x += lot;
             }
-            // Palms in the front gardens, every couple of lots.
+            // Palms in the front gardens, every couple of lots (Florida: sabals, and the great live oaks over the roofs).
             if (CA) StreetPalms(track, root, rng, x0, x1, PropertyZ + 0.95f, 12f, 26f);
+            if (FL) StreetOaks(track, root, rng, x0, x1);
             // A second row of houses further back gives the street depth (never on a side street).
-            var backRow = new Deck(CA ? new[] { "VillaStucco", "VillaRanch", "CraftsmanPorch", "VillaStucco", "VillaRanch" }
+            var backRow = new Deck(FL ? new[] { "RanchFL", "CottageFL", "RanchSmallFL", "RanchFL", "CottageFL" }
+                : CA ? new[] { "VillaStucco", "VillaRanch", "CraftsmanPorch", "VillaStucco", "VillaRanch" }
                 : new[] { "HouseGable", "HouseLong", "HouseLeanTo", "HouseFlat" }, rng);
             for (float x = Lo(x0, 20f); x < Hi(x1, 20f); x += Rand(rng, 10f, 14f))
             {
                 string house = backRow.Next(m => true);
                 var facade = rng.NextDouble() < 0.5 ? ProceduralArt.FacadeKind.HouseGable : ProceduralArt.FacadeKind.HouseLong;
                 var roofStyle = rng.NextDouble() < 0.5 ? House3D.RoofStyle.GableToStreet : House3D.RoofStyle.GableSideways;
-                float bz = Rand(rng, 20f, 24f);
-                if (house == "HouseLeanTo" || house == "HouseFlat" || CoastModels.Contains(house))
+                float bz = Rand(rng, 20f, 24f) + (FL ? BackRowFL - 20f : 0f);
+                if (house == "HouseLeanTo" || house == "HouseFlat" || CoastModels.Contains(house) || FloridaHouses.Contains(house))
                 {
                     float half = LevelBuildKit.KitSize(KitOf(house), house).x * 0.5f + 0.3f;
                     if (!OverlapsBackRow(track, x - half, x + half)) TownHouse(root, house, x, GroundAt(track, x), bz);
@@ -1688,7 +1700,9 @@ namespace DribbleToSchool.EditorTools
         /// <summary>The California skin's: beach-town and Mission shops among the kit's.</summary>
         static readonly string[] MarketFrontsCA = { "ShopFruit", "ShopBeach", "ShopShutter", "ShopMission", "ShopMart", "ShopCafe", "ShopBeach", "ShopBooks", "ShopFlorist", "ShopMission", "ShopTall", "ShopBoutique" };
         /// <summary>The home street's houses (HouseLong and HouseCarport want the wider lots).</summary>
-        static string[] HomeHouses { get { return CA ? HomeHousesCA : HomeHousesTown; } }
+        static string[] HomeHouses { get { return FL ? HomeHousesFL : CA ? HomeHousesCA : HomeHousesTown; } }
+        /// <summary>Florida's: concrete-block ranch houses in faded pastels and Old Florida frame cottages (StreetBuilder.Florida).</summary>
+        static readonly string[] HomeHousesFL = { "RanchFL", "CottageFL", "RanchSmallFL", "RanchFL", "RanchSmallFL", "CottageFL" };
         static readonly string[] HomeHousesTown = { "HouseGable", "HouseLong", "Bungalow", "HouseLeanTo", "HouseFlat", "HouseCarport" };
         /// <summary>The California skin's: stucco villas, ranch houses and Craftsman porches (the villas want the wider lots).</summary>
         static readonly string[] HomeHousesCA = { "VillaStucco", "CraftsmanPorch", "VillaRanch", "VillaStucco", "CraftsmanPorch", "VillaRanch" };
@@ -1870,6 +1884,7 @@ namespace DribbleToSchool.EditorTools
         /// </summary>
         static bool TownHouse(Transform root, string model, float x, float gy, float z)
         {
+            if (FloridaHouses.Contains(model)) return FloridaHouse(root, model, x, gy, z);
             if (CoastModels.Contains(model)) return CoastHouse(root, model, x, gy, z);
             if (model == "HouseGable" || model == "HouseLong" || model == "Bungalow") return false;
             float w = LevelBuildKit.KitSize("Buildings", model).x;
@@ -2626,6 +2641,7 @@ namespace DribbleToSchool.EditorTools
                 // Each level sees its own stretch of them (the rows are world-anchored: without this, the same skyline everywhere).
                 float shift = (levelSalt % 997) / 997f;
                 Layer(root, "ForestStrip", x0 - 250f, x1 + 250f, y - 0.3f, 70f, 1f, shift, null);
+                if (FL) return;     // (Florida is flat: only the pine flatwoods' tree line on the horizon, under a big sky)
                 Layer(root, "HillsRolling", x0 - 450f, x1 + 450f, y - 0.4f, 230f, 1f, (shift * 3.7f) % 1f, grass);
                 Layer(root, "MountainRange1", x0 - 700f, x1 + 700f, y - 0.8f, 440f, 0.75f, (shift * 7.3f) % 1f, grass);
                 Layer(root, "MountainRange2", x0 - 900f, x1 + 900f, y - 0.8f, 640f, 1f, (0.5f + shift * 5.1f) % 1f, grass);

@@ -83,6 +83,9 @@ namespace DribbleToSchool.EditorTools
             "MotelSignFL", "MotelPoolFL", "MotelFL", "PoleSignalFL", "RentalsFL", "HydrantFL", "DecoSurfFL", "DecoCafeFL", "DecoBaitFL",
             "DecoIceFL", "DecoShutFL", "LampFL", "BenchFL", "TrashFL", "SchoolZoneFL", "BusShelterFL", "MailboxFL", "SignAccessUpFL",
             "LifeguardFL", "SchoolGateFL", "FenceAluFL", "MarqueeFL", "SchoolFL", "WalkwayFL", "FlagpoleFL", "PortableFL",
+            // The Home Street (StreetBuilder.FloridaHome, LevelBuildKit.FloridaPlay).
+            "RanchFL", "RanchSmallFL", "CottageFL", "ChurchFL", "MailboxPostFL", "GolfCartFL", "SprinklerFL", "DrawLeafFL", "DrawTowerFL",
+            "GatePostFL", "GateArmFL", "CanalRailFL", "DockFL", "SignNoWakeFL",
         };
 
         /// <summary>Where each level's stretch of the strip starts (L11 at the beach front, then the diner, the motel, the shops).</summary>
@@ -226,6 +229,56 @@ namespace DribbleToSchool.EditorTools
             Model(p, "Florida", "MailboxFL", goalX - 18.5f, gy(goalX - 18.5f, 2.9f), 2.9f);
             Model(p, "Florida", "SignAccessUpFL", goalX - 21f, gy(goalX - 21f, 3.0f), 3.0f);
             p.gameObject.AddComponent<StaticBatcher>();
+        }
+
+        /// <summary>The Florida kit's houses (the Home Street, chapter 1): the block ranches and the Old Florida cottage.</summary>
+        static readonly HashSet<string> FloridaHouses = new HashSet<string> { "RanchFL", "RanchSmallFL", "CottageFL" };
+
+        // Paint schemes (wall, accent: the door and shutters, roof), sRGB: the references' faded Florida pastels (seafoam, pink,
+        // butter yellow, sky blue, peach, white) over pale metal or shingle roofs, the doors a strong colour against them.
+        static readonly Paint[] RanchPaints =
+        {
+            new Paint(new Color(0.70f, 0.86f, 0.82f), new Color(0.80f, 0.22f, 0.17f), new Color(0.88f, 0.87f, 0.84f)),   // seafoam, red door
+            new Paint(new Color(0.94f, 0.76f, 0.78f), new Color(0.20f, 0.42f, 0.50f), new Color(0.86f, 0.85f, 0.82f)),   // pink, teal
+            new Paint(new Color(0.96f, 0.88f, 0.60f), new Color(0.22f, 0.36f, 0.56f), new Color(0.84f, 0.84f, 0.82f)),   // butter yellow, navy
+            new Paint(new Color(0.72f, 0.84f, 0.93f), new Color(0.92f, 0.92f, 0.88f), new Color(0.80f, 0.80f, 0.79f)),   // sky blue, white
+            new Paint(new Color(0.97f, 0.80f, 0.66f), new Color(0.24f, 0.46f, 0.38f), new Color(0.88f, 0.86f, 0.82f)),   // peach, palm green
+            new Paint(new Color(0.94f, 0.93f, 0.89f), new Color(0.16f, 0.50f, 0.56f), new Color(0.62f, 0.64f, 0.66f)),   // white, teal
+        };
+        static readonly Paint[] CottagePaints =
+        {
+            new Paint(new Color(0.95f, 0.78f, 0.80f), new Color(0.95f, 0.95f, 0.92f), new Color(0.80f, 0.81f, 0.80f)),   // pink, white trim
+            new Paint(new Color(0.78f, 0.88f, 0.80f), new Color(0.95f, 0.95f, 0.92f), new Color(0.78f, 0.79f, 0.78f)),   // mint
+            new Paint(new Color(0.97f, 0.91f, 0.66f), new Color(0.95f, 0.95f, 0.92f), new Color(0.80f, 0.80f, 0.79f)),   // yellow
+            new Paint(new Color(0.76f, 0.85f, 0.94f), new Color(0.95f, 0.95f, 0.92f), new Color(0.76f, 0.77f, 0.78f)),   // pale blue
+        };
+
+        /// <summary>A Florida kit house at (x, gy, z), painted from its schemes, with a contact shadow. False without the kit.</summary>
+        static bool FloridaHouse(Transform root, string model, float x, float gy, float z)
+        {
+            if (!LevelBuildKit.HasKitModel("Florida", model)) return false;
+            var schemes = model == "CottageFL" ? CottagePaints : RanchPaints;
+            var p = schemes[Scramble(Mathf.Abs(Mathf.RoundToInt(x * 7f + z * 13f))) % schemes.Length];
+            if (Model(root, "Florida", model, x, gy, z, 0f, 1f, p.wall, p.trim, p.roof) == null) return false;
+            float w = LevelBuildKit.KitSize("Florida", model).x;
+            ContactShadow(root, x - w * 0.5f, x + w * 0.5f, gy, z - 0.45f, z);
+            return true;
+        }
+
+        /// <summary>
+        /// The Home Street's great live oaks, hung with Spanish moss: one every two or three lots, between the street's houses and
+        /// the back row's (a trunk can't stand in a house: the front houses, the deep gardens' too, reach back to z 19, the back
+        /// row's begin at 22.8), their wide crowns over the roofs and the moss hanging down between them.
+        /// </summary>
+        static void StreetOaks(LevelBuildKit.TrackBuilder track, Transform root, System.Random rng, float x0, float x1)
+        {
+            if (!LevelBuildKit.HasKitModel("Plants", "LiveOak")) return;
+            for (float x = x0 + Rand(rng, 6f, 20f); x < x1 - 2f; x += Rand(rng, 24f, 36f))
+            {
+                if (OnSideStreetRange(track, x - 3f, x + 3f) || OverlapsBackRow(track, x - 4f, x + 4f)) continue;
+                float z = Rand(rng, OakRowFL - 0.5f, OakRowFL + 0.5f);
+                Plant(root, "LiveOak", null, x, GroundAt(track, x, z), z, Rand(rng, 0.95f, 1.2f), 1f, -70, rng);
+            }
         }
 
         /// <summary>California's palms in Florida: the sabal for the date palm, the tall old sabal for the very tall fan palm.</summary>

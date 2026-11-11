@@ -19,6 +19,9 @@ namespace DribbleToSchool.EditorTools
         /// <summary>The plot the home front fills, from the gate: the street's own houses and walls keep out of it (a QuietArea).</summary>
         public const float HomePlotLeft = -3.6f, HomePlotRight = 7.6f;
 
+        /// <summary>The plot the home front fills, from the gate (Florida's ranch house is wider: StreetBuilder.FloridaHome).</summary>
+        public static Vector2 HomePlot { get { return FL && LevelBuildKit.HasKitModel("Florida", HomeInfoFL.HouseModel) ? HomePlotFL : new Vector2(HomePlotLeft, HomePlotRight); } }
+
         // ---------------------------------------------------------------- the home front
 
         /// <summary>
@@ -30,6 +33,7 @@ namespace DribbleToSchool.EditorTools
         /// </summary>
         public static void HomeFront(Transform parent, float gx, float gy)
         {
+            if (FL && LevelBuildKit.HasKitModel("Florida", HomeInfoFL.HouseModel)) { HomeFrontFL(parent, gx, gy); return; }
             var rng = new System.Random(2024);
             float wallZ = PropertyZ + 0.15f;                         // the property line, where the street's fences and walls stand
             float houseX = gx - HomeInfo.DoorFromMiddle;             // the front door is under the gate
