@@ -9,7 +9,7 @@ namespace DribbleToSchool.UI
     /// <summary>
     /// A picture in the menus (a kid's card, a bag, a sticker, the logo, the town map) drawn in the classic cartoon
     /// filter's look while it is chosen (Resources/Shaders/CartoonPicture, the same colour as the camera's pass:
-    /// World/ClassicLook), and as itself otherwise. It follows the filter at once (AddOns.FilterChanged): choosing it in
+    /// World/ClassicLook), and as itself otherwise. It follows the filter at once (Filters.Changed): choosing it in
     /// Add-ons &amp; Filters turns the pictures already on screen. Text is never filtered: only these pictures are.
     /// A cel (a kid, a bag, a sticker) is outlined outside its shape; the logo keeps its own outline; the town map is
     /// painted like the scenery.
@@ -41,20 +41,20 @@ namespace DribbleToSchool.UI
 
         void OnEnable()
         {
-            AddOns.FilterChanged += Refresh;
+            Filters.Changed += Refresh;
             Refresh();
         }
 
         void OnDisable()
         {
-            AddOns.FilterChanged -= Refresh;
+            Filters.Changed -= Refresh;
         }
 
         void Refresh()
         {
             if (graphic == null) graphic = GetComponent<Graphic>();
             if (graphic == null) return;
-            var wanted = AddOns.ClassicOn ? MaterialFor(kind) : null;
+            var wanted = Filters.ClassicOn ? MaterialFor(kind) : null;
             // (null: the graphic's own default UI material)
             if (graphic.material != (wanted != null ? wanted : graphic.defaultMaterial)) graphic.material = wanted;
         }

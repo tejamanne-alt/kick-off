@@ -56,7 +56,7 @@ namespace DribbleToSchool.UI
         const int MaxLive = 3;
 
         /// <summary>The words show: the comic filter or the pencil sketch is chosen.</summary>
-        public static bool On { get { string f = AddOns.Filter; return f == AddOns.ComicFilter || f == AddOns.SketchFilter; } }
+        public static bool On { get { string f = Filters.Chosen; return f == Filters.Comic || f == Filters.Sketch; } }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void Boot()
@@ -154,7 +154,7 @@ namespace DribbleToSchool.UI
             if (!EnsureCanvas()) return;
             while (live.Count >= MaxLive) Remove(0);
 
-            bool pencil = AddOns.Filter == AddOns.SketchFilter;   // pencil lettering on the sketch filter
+            bool pencil = Filters.Chosen == Filters.Sketch;   // pencil lettering on the sketch filter
             float fontSize = FontSize(size);
             var go = new GameObject("Pop", typeof(RectTransform));
             var rect = (RectTransform)go.transform;

@@ -191,7 +191,7 @@ namespace DribbleToSchool.Coop
     {
         /// <summary>The route (Levels/RouteTable.All), or <see cref="Random"/>.</summary>
         public byte route;
-        /// <summary>The location (Progression/AddOns.All), or <see cref="Random"/>.</summary>
+        /// <summary>The location (Progression/Cities.All), or <see cref="Random"/>.</summary>
         public byte addOn;
         /// <summary>The slot of the player who chose, or <see cref="Nobody"/> for the host's default.</summary>
         public byte chosenBy;

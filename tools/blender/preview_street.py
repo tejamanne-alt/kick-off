@@ -4,6 +4,7 @@
 # Kit models get the street's paint schemes (ModelTint's brightness-ratio recolour). The shading is
 # Blender's, not the game's toon ramp, so judge layout, scale, silhouettes and colour, not shading.
 #   blenv/bin/python preview_street.py -- <kits dir> <out.png> [--chapter 1..5] [--seed N] [--wide] [--haze-end M] [--surfaces DIR] [--samples N]
+#       [--mood-json FILE] (a city's light: see --mood-json below)
 # <kits dir> holds one folder per kit with <Kit>.blend and <Kit>.json inside (any folder names).
 # --surfaces: a folder of the game's ground textures (Surface_<Name>.png, 8 x 8 units each), e.g.
 # exported from ProceduralArt.SurfaceTexture; without it the ground is flat colour.
@@ -50,6 +51,15 @@ MOODS = {
 mood = dict(MOODS[chapter])
 if '--haze-end' in args:          # try a different haze range
     mood['haze_end'] = float(args[args.index('--haze-end') + 1])
+# --mood-json FILE: a city's mood (Progression/Cities, CityClimate.Apply over the chapter's), as the climate harness in
+# tools/blender/README.md ("A city's light") writes it from the game's own C#: its keys replace the chapter's.
+if '--mood-json' in args:
+    with open(args[args.index('--mood-json') + 1]) as f:
+        city_mood = json.load(f)
+    unknown = set(city_mood) - set(mood)
+    if unknown:
+        raise SystemExit('--mood-json: keys this preview does not know: %s' % sorted(unknown))
+    mood.update({k: (tuple(v) if isinstance(v, list) else v) for k, v in city_mood.items()})
 
 
 def lin(c):

@@ -522,7 +522,7 @@ namespace DribbleToSchool.UI
             if (level.Objective != null)
                 PauseButton(card.transform, ref y, "pause.howToPlay", UITheme.Gold, () => ChallengeGuide.Open(root, level.Objective, LevelId, null, null));
             PauseButton(card.transform, ref y, "pause.controls", new Color(0.25f, 0.62f, 0.7f), () => ControlsGuide.Open(root, null));
-            PauseButton(card.transform, ref y, "pause.settings", new Color(0.6f, 0.5f, 0.8f), () => SettingsPanel.Open(root, null));
+            PauseSettingsAndFilters(card.transform, ref y);
             PauseButton(card.transform, ref y, "pause.quit", UITheme.Red, () => level.QuitToMap());
             if (skip)
                 PauseButton(card.transform, ref y, "pause.skip", UITheme.Locked, () => level.LoadNextLevel());
@@ -544,7 +544,7 @@ namespace DribbleToSchool.UI
             PauseButton(card.transform, ref y, "pause.resume", UITheme.Green, () => level.Resume());
             PauseButton(card.transform, ref y, "pause.checkpoint", UITheme.Blue, () => { level.Resume(); level.RespawnAtCheckpoint(); });
             PauseButton(card.transform, ref y, "pause.controls", new Color(0.25f, 0.62f, 0.7f), () => ControlsGuide.Open(root, null));
-            PauseButton(card.transform, ref y, "pause.settings", new Color(0.6f, 0.5f, 0.8f), () => SettingsPanel.Open(root, null));
+            PauseSettingsAndFilters(card.transform, ref y);
             PauseButton(card.transform, ref y, "coop.pause.leave", UITheme.Red, () =>
                 CoopStagePicker.Confirm(root, Loc.T("coop.confirmLeave.race"), () => { if (LevelManager.Race != null) LevelManager.Race.Leave(); }));
         }
@@ -556,6 +556,13 @@ namespace DribbleToSchool.UI
         {
             var b = UIKit.Button(parent, key, Loc.T(key), color, action, 40);
             UIKit.Place((RectTransform)b.transform, new Vector2(0.5f, 1f), new Vector2(0f, y), new Vector2(520f, pauseStep - 16f));
+            y -= pauseStep;
+        }
+
+        /// <summary>Settings and Filters side by side in one row (UI/FiltersPanel): a filter can be tried over the level itself.</summary>
+        void PauseSettingsAndFilters(Transform parent, ref float y)
+        {
+            FiltersPanel.PauseRow(parent, root, y, pauseStep - 16f, new Color(0.6f, 0.5f, 0.8f));
             y -= pauseStep;
         }
 

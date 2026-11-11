@@ -93,9 +93,9 @@ namespace DribbleToSchool.Audio
         static MusicCountry WantedCountry()
         {
             var level = LevelManager.Current;
-            if (level == null) return Progression.AddOns.Active.music;
+            if (level == null) return Progression.Cities.Active.music;
             if (level.endless) return MusicCountry.Japan;
-            return Progression.AddOns.OfScene(level.gameObject.scene.name).music;
+            return Progression.Cities.OfScene(level.gameObject.scene.name).music;
         }
         Ambience playingAmbience;
 

@@ -38,7 +38,7 @@ namespace DribbleToSchool.Progression
         /// </summary>
         public static bool NotInTown(LevelDefinition level)
         {
-            return level != null && !AddOns.InTown(level.chapter);
+            return level != null && !Cities.InTown(level.chapter);
         }
 
         /// <summary>
@@ -78,7 +78,7 @@ namespace DribbleToSchool.Progression
             string id = NextToPlay(story, SaveSystem.Data, Cozy, levelId =>
             {
                 var def = catalog.FindById(levelId);
-                return def != null && Store.Monetization.IsChapterUnlocked(def.chapter) && AddOns.InTown(def.chapter);
+                return def != null && Store.Monetization.IsChapterUnlocked(def.chapter) && Cities.InTown(def.chapter);
             });
             var next = id != null ? catalog.FindById(id) : null;
             // Everything done (an add-on needs every level finished) and the last level isn't in this add-on's streets:

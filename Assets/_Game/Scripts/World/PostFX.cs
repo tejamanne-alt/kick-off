@@ -11,7 +11,7 @@ namespace DribbleToSchool.World
     /// faintly mauve mid-greys) and a light vignette. The bloom runs on a quarter-size chain so it
     /// stays cheap on phones; turn it off with <see cref="bloom"/>.
     ///
-    /// With the comic halftone filter chosen in Settings (Progression/AddOns.Filter, live: read every
+    /// With the comic halftone filter chosen in Settings (Progression/Filters.Chosen, live: read every
     /// frame) the grade feeds two more passes instead: the comic look (punchier colour in cel bands, the
     /// shade as halftone dots, hatching in the deepest shade, an ink line from the camera's depth and
     /// normals) and the print (the colour plates slipping out of register toward the edges, warm paper,
@@ -169,14 +169,14 @@ namespace DribbleToSchool.World
         static readonly int SketchPaperId = Shader.PropertyToID("_Paper");
         static readonly int ClassicScaleId = Shader.PropertyToID("_ClassicScale");
 
-        /// <summary>The comic halftone filter is on: chosen in Add-ons &amp; Filters, or forced here.</summary>
-        public bool ComicOn { get { return !forceSketch && !forceClassic && (forceComic || Progression.AddOns.Filter == Progression.AddOns.ComicFilter); } }
+        /// <summary>The comic halftone filter is on: chosen in Filters, or forced here.</summary>
+        public bool ComicOn { get { return !forceSketch && !forceClassic && (forceComic || Progression.Filters.Chosen == Progression.Filters.Comic); } }
 
-        /// <summary>The pencil sketch filter is on: chosen in Add-ons &amp; Filters, or forced here.</summary>
-        public bool SketchOn { get { return !forceClassic && (forceSketch || (!forceComic && Progression.AddOns.Filter == Progression.AddOns.SketchFilter)); } }
+        /// <summary>The pencil sketch filter is on: chosen in Filters, or forced here.</summary>
+        public bool SketchOn { get { return !forceClassic && (forceSketch || (!forceComic && Progression.Filters.Chosen == Progression.Filters.Sketch)); } }
 
-        /// <summary>The classic cartoon filter is on: chosen in Add-ons &amp; Filters, or forced here.</summary>
-        public bool ClassicOn { get { return forceClassic || (!forceComic && !forceSketch && Progression.AddOns.Filter == Progression.AddOns.ClassicFilter); } }
+        /// <summary>The classic cartoon filter is on: chosen in Filters, or forced here.</summary>
+        public bool ClassicOn { get { return forceClassic || (!forceComic && !forceSketch && Progression.Filters.Chosen == Progression.Filters.Classic); } }
 
         void OnEnable()
         {

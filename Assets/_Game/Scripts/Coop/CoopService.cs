@@ -330,19 +330,19 @@ namespace DribbleToSchool.Coop
         public void Shutdown() { }
     }
 
-    /// <summary>The locations a race can run in: the add-ons that exist (Progression/AddOns), by index on the wire.</summary>
+    /// <summary>The locations a race can run in: the cities whose streets can be played (Progression/Cities), by index on the wire.</summary>
     public static class CoopLocations
     {
-        static List<Progression.AddOn> list;
+        static List<Progression.City> list;
 
-        static List<Progression.AddOn> List
+        static List<Progression.City> List
         {
             get
             {
                 if (list == null)
                 {
-                    list = new List<Progression.AddOn>();
-                    foreach (var a in Progression.AddOns.All) if (a.available) list.Add(a);
+                    list = new List<Progression.City>();
+                    foreach (var a in Progression.Cities.All) if (a.story) list.Add(a);
                 }
                 return list;
             }
@@ -350,9 +350,9 @@ namespace DribbleToSchool.Coop
 
         public static int Count { get { return List.Count; } }
 
-        public static Progression.AddOn At(int index)
+        public static Progression.City At(int index)
         {
-            return index >= 0 && index < List.Count ? List[index] : Progression.AddOns.Original;
+            return index >= 0 && index < List.Count ? List[index] : Progression.Cities.Kamakura;
         }
 
         /// <summary>The location (by index) has the route's streets (by index in RouteTable.All): Florida has only the beach so far.</summary>
@@ -362,7 +362,7 @@ namespace DribbleToSchool.Coop
             return At(location).HasChapter(RouteTable.All[route].chapter);
         }
 
-        public static int IndexOf(Progression.AddOn a)
+        public static int IndexOf(Progression.City a)
         {
             int i = List.IndexOf(a);
             return i < 0 ? 0 : i;

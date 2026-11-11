@@ -19,11 +19,11 @@ no accounts, no server.
   the stage and the location**, as in a fighting game's stage select (one choice is enough for everyone): the choice goes
   to the host, the last one it receives wins, the lobby shows who chose, and everybody's READY is cleared so nobody starts
   on a stage they didn't see. The stages are the six routes from home to school (2 to 5 legs each, about 2 to 6 minutes),
-  plus Random; the locations are the add-ons (the original Kamakura streets, California) plus Random. A location only one
+  plus Random; the locations are the cities whose streets can be played (Kamakura, Florida: `Progression/Cities`) plus Random. A location only one
   player has unlocked plays for everyone once that player picks it. Where chapters are sold (`Monetization.RequireUnlock`),
   a stage outside the chooser's purchase can't be chosen by them.
-- **Filters are your own.** The comic and pencil filters stay each phone's own choice, from Add-ons & Filters on the title
-  screen, as before. They are not part of the lobby.
+- **Filters are your own.** The comic and pencil filters stay each phone's own choice, from Filters on the title
+  screen or the pause menu. They are not part of the lobby.
 - **The start.** When everyone (at least two) is READY, a 3-second countdown starts (anyone un-readying, changing the
   stage, joining or dropping out stops it). Every phone loads the route's first leg; the race waits until they all have
   (at most 15 s), then counts **3, 2, 1, GO** to the same instant on every phone.
@@ -278,8 +278,8 @@ First-run checklist on devices:
 1. Two phones of each kind if possible (iPhone + Android is the important pair). Allow Bluetooth on each. HOST on one,
    JOIN on the others: the lobby shows names, tags, kids and seats.
 2. Same name on two phones: the tags differ. Leave a name empty: "Player N" for the seat.
-3. Change the stage and the location from a non-host phone: every lobby updates, READY clears. Pick California from a
-   phone that has it unlocked while another hasn't: both race in California.
+3. Change the stage and the location from a non-host phone: every lobby updates, READY clears. Pick Florida from a
+   phone that has it unlocked while another hasn't: both race in Florida (on Home Street or the beach, the routes it has).
 4. All READY: 3-2-1 in the lobby, then the first leg loads on every phone, then 3-2-1-GO together (film two phones side
    by side to compare).
 5. Ghosts: in the right place, running, jumping and sliding, name tags readable, edge markers for ghosts out of view.
