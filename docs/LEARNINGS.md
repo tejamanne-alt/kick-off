@@ -615,6 +615,9 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
   built from KM-x2 (57 triangles, its fence 20), its power lines taken off the roof, the sides laid at the picture's
   scale (110 px to the metre) instead of stretched. *Rule:* when a picture has a glitch on the asset itself, ask for a
   clean picture before repairing it, and never show a glitched picture as the reference on a board without saying so.
+- *Then:* the user corrected KM1-1 and chose it as the home's reference, removing KM-x2. The home is built from KM1-1
+  again; the corrected picture still draws the right third of the upper storey half see-through, which the kit rebuilds
+  from its own left third (`repair_km11`), and the eave's step is replaced by the roof's left end, mirrored.
 
 **D10. Kamakura's pictures drifted from the look target, and the plan followed the drift (v122).**
 - *What:* the base prompt asks for photorealistic pictures, and Kamakura's look target KM-0 came out a photograph. But the
@@ -624,7 +627,7 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
   painted pixels. The user, sending KM-0: "Assets and backgrounds should look good as in the attached image".
 - *Why:* each picture was checked for its content (the right street, objects, route), never against the look target.
 - *Fix:* the painted pictures are made again as photographs in KM-0's look with their layouts kept (BASE KM-R0 and a
-  RESTYLE prompt each, the home's picture KM-x2 first as the test, `docs/KAMAKURA_BUILD.md`), into `review/kamakura/refs/photo`; the
+  RESTYLE prompt each, the home's picture KM1-1 first as the test, `docs/KAMAKURA_BUILD.md`), into `review/kamakura/refs/photo`; the
   prompts that asked for the painted style now ask for KM-0's look. Still to decide: the map pair, made in the painted
   style.
 - *Rule:* a city's look target is the bar for every picture of it. Check each new picture against it when it arrives;
@@ -641,7 +644,8 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
 
 **D12. What comparing Kamakura's pictures with their models caught, and the prompt rule each set (v122).**
 - *What:* building the home and the vending machine from the user's pictures, and setting each model beside its
-  picture (the proof boards), showed faults in the pictures themselves, each costing a fix in the kit. D9 to D11 are
+  picture (the proof boards), showed faults in the pictures themselves, each costing a fix in the kit. (KM-x2, a second
+  picture of the home, has since been removed; the faults it showed still set rules.) D9 to D11 are
   the largest. All of them:
 
 | Fault | Where | What the kit had to do | The rule now in the prompts |

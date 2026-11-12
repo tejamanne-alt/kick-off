@@ -1885,6 +1885,20 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
     what the kit did, and the rule each set. The rules: the base prompt's new BUILT INTO 3D section and plate rules
     (every city), KM-R0's ALSO FIX, KM-S0's object-alone rule, and "Check each picture before saving it" in
     `docs/IMAGE_PROMPTS.md` and on the page's Start tab.
+- **The home back on KM1-1** (the user: KM-x2 removed; the corrected KM1-1 is the home's reference). The home is
+  measured again in the corrected KM1-1 (119 px to the metre, the pavement at y 890, the middle at x 1029; the upper
+  roof's eaves 515 to 1477, its ridge 640 to 1352; the skirt roof's eave 465 to 1615 at y 548; the gable 730 to 1350,
+  its peak at 1040; the fence 285 to 1620, its top at y 620). `repair_km11` rebuilds what the corrected picture still
+  draws half see-through: the upper roof's right end takes its left end, mirrored about x 996 (the eave's step at 1275
+  goes); the upper storey's right third takes its own light band and boards, the left air conditioner and the downpipe,
+  flipped into place. The right half of the gable and of the skirt roof keep a faint see-through texture (left as
+  drawn). In front of the fence, nine groups cut out with GrabCut (the pots on the left, the bush, the morning glory and
+  hydrangea, the hydrangea planter, the flowers, both bonsai groups, the bicycle, the morning glory on the right); the
+  persimmon behind the fence is a card (its leaves and orange fruit, the largest green mass with what lies near it), the
+  roof and wall behind it made from their left half about the gable's middle. KM-P3 on the hidden faces and the roof
+  trial as before. `KmHome` 57 triangles, `KmHomeFence` 10, `KmHomeGarden` 144, `KmHomeTree` 2. KM-x2 is deleted; the
+  build plan's RESTYLE KM-x2 is gone (KM1-1 is the photographic test again, its prompt now asking for the see-through
+  parts made solid and an invented name on the vending machine), and ASSET KM-B01 attaches KM1-1.
 - **Who makes the photographs:** the user, in the Gemini app (a phone works), sending each result in the chat or pushing
   it. From the cloud session there is no image model to run: the Hugging Face connector has running Spaces switched off
   (gradio=none), huggingface.co and hf.space are blocked by the proxy, and Gemini's API needs the user's key (declined for
