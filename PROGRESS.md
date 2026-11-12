@@ -1760,6 +1760,9 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
     level ends at the school gate. Route 1's line stops at 1-3; it joins the approach just north of it.
   - Liberties with the real town: Kamakura Station east of Wakamiya-oji, and the tram crossing the avenue at its first
     torii. The view is a tilted bird's-eye, not straight down. KM2-4's rock shelves lie east of the avenue on the map.
+  - A second pair (`KM-MAP1_plan_v2.webp`, `KM-MAP2_clean_v2.webp`, 1500 x 837) redraws the same composition with a HOME
+    label. It also lines up to the pixel and measures the same: route 1 5.9% and 6.6%, route 2 5.7% and 15.7%, route 3
+    1.7% and 17.8%.
   - Still to do: a full-size map (the game's map picture is 3200 x 1800), then the layout file traced from the plan.
 
 ## After Phase 8 (next steps)
