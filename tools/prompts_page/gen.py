@@ -57,7 +57,32 @@ for label, line in re.findall(r'^- ([^:`]+): `(FORMAT: [^`]+)`', P, re.M):
 for t in formats:
     if sorted(formats[t]) != ['level', 'look', 'plate', 'sheet']:
         sys.exit('gen.py: missing format lines for ' + t + ': ' + str(sorted(formats[t])))
-KINDS = {'LEVEL': 'level', 'LOOK TARGET': 'look', 'SHEET': 'sheet', 'PLATE': 'plate', 'MAP': 'map'}
+KINDS = {'LEVEL': 'level', 'LOOK TARGET': 'look', 'SHEET': 'sheet', 'PLATE': 'plate', 'MAP': 'map',
+         'BASE': 'base', 'TEXTURE': 'texture', 'ASSET': 'asset', 'FOLIAGE': 'foliage', 'BUILD': 'build'}
+BADGES = {'SHEET': 'Sheet', 'PLATE': 'Plate', 'MAP': 'Map', 'BASE': 'Paste first', 'TEXTURE': 'Texture', 'ASSET': 'Model sheet',
+          'FOLIAGE': 'Foliage', 'BUILD': 'Claude Code'}
+FIRST_LINE = re.compile(r'(LEVEL|SHEET|PLATE|LOOK TARGET|MAP|BASE|TEXTURE|ASSET|FOLIAGE|BUILD) ([A-Z]{2}[0-9]?-[A-Z]*[0-9]*),? ([^.]+)\.')
+
+
+def prompt_groups(text, heading):
+    """The prompt groups under each heading of this level ('#### ' in a city's section, '### ' in a build document)."""
+    groups = []
+    for m in re.finditer(r'\n' + heading + r' ([^\n]+)\n(.*?)(?=\n' + heading + r' |\Z)', text, re.S):
+        head, body = m.group(1), m.group(2)
+        items = []
+        for b in blocks_in(body):
+            mm = FIRST_LINE.match(b.split('\n', 1)[0])
+            if not mm:
+                sys.exit('gen.py: a prompt under "' + head + '" does not start with its kind and id: ' + b[:60])
+            kind, sid, title = mm.group(1), mm.group(2), mm.group(3)
+            badge = legs.get(sid, (None, None))[1] if kind == 'LEVEL' else BADGES.get(kind)
+            items.append(dict(id=sid, title=title[:1].upper() + title[1:], badge=badge, kind=KINDS[kind], text=b))
+        rid = head.split(' ', 1)[0]
+        # A group's note: the paragraph between its heading and its first prompt (a city's map says what to attach).
+        note = body.split('```text', 1)[0].strip().replace('`', '').replace('\n', ' ')
+        if items:
+            groups.append(dict(head=head, route=routes.get(rid), note=note or None, items=items))
+    return groups
 
 # --- legs from CITIES.md: id -> (title, kind)
 legs = {}
@@ -72,20 +97,11 @@ out = []
 for c in CITIES:
     sec = section(P, '## ' + c['h2'])
     city_block = blocks_in(section(sec, '### The ', r'\n### '))[0]
-    groups = []
-    for m in re.finditer(r'\n#### ([^\n]+)\n(.*?)(?=\n#### |\Z)', sec, re.S):
-        head, body = m.group(1), m.group(2)
-        items = []
-        for b in blocks_in(body):
-            first = b.split('\n', 1)[0]
-            mm = re.match(r'(LEVEL|SHEET|PLATE|LOOK TARGET|MAP) ([A-Z]{2}[0-9]?-?[A-Z]*[0-9]+),? ([^.]+)\.', first)
-            kind, sid, title = mm.group(1), mm.group(2), mm.group(3)
-            badge = legs.get(sid, (None, None))[1] if kind == 'LEVEL' else {'SHEET': 'Sheet', 'PLATE': 'Plate', 'MAP': 'Map'}.get(kind)
-            items.append(dict(id=sid, title=title[:1].upper() + title[1:], badge=badge, kind=KINDS[kind], text=b))
-        rid = head.split(' ', 1)[0]
-        # A group's note: the paragraph between its heading and its first prompt (a city's map says what to attach).
-        note = body.split('```text', 1)[0].strip().replace('`', '').replace('\n', ' ')
-        groups.append(dict(head=head, route=routes.get(rid), note=note or None, items=items))
+    groups = prompt_groups(sec, '####')
+    # A city's build document (docs/<CITY>_BUILD.md: its assets and levels, in order), added at the end of its tab once written.
+    build = os.path.join(REPO, 'docs', c['name'].upper().replace(' ', '_') + '_BUILD.md')
+    if os.path.exists(build):
+        groups += [dict(g, head='Build \u00b7 ' + g['head']) for g in prompt_groups(section(open(build).read(), '## The prompts'), '###')]
     look = [b for b in blocks_in(sec) if b.startswith('LOOK TARGET')][0]
     mm = re.match(r'LOOK TARGET ([A-Z]{2}-0), ([^.]+)\.', look)
     out.append(dict(c, block=city_block, look=dict(id=mm.group(1), title=mm.group(2), badge='Look target', kind='look', text=look),
@@ -93,8 +109,12 @@ for c in CITIES:
 
 data = dict(base=bases, formats=formats, cities=out)
 total = sum(len(g['items']) for c in out for g in c['groups']) + len(out)
-print('cities', len(out), 'shots', total, 'levels', sum(1 for c in out for g in c['groups'] for i in g['items'] if i['kind'] == 'level'),
-      'maps', sum(1 for c in out for g in c['groups'] for i in g['items'] if i['kind'] == 'map'))
+kinds = {}
+for c in out:
+    for g in c['groups']:
+        for i in g['items']:
+            kinds[i['kind']] = kinds.get(i['kind'], 0) + 1
+print('cities', len(out), 'prompts', total, kinds)
 tpl = open(os.path.join(HERE, 'template.html')).read()
 open(sys.argv[1], 'w').write(
     tpl.replace('/*DATA*/null', json.dumps(data, ensure_ascii=False).replace('</', '<\\/')))

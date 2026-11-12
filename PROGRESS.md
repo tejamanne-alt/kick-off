@@ -1770,6 +1770,31 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
   - Still to do: the layout file traced from the plan (the map picture at the game's 3200 x 1800 from the 2752 x 1536
     original).
 
+## How Kamakura gets built: the asset and level prompts, in order (docs and tools only)
+
+- **Why.** The user asked for the prompts to design Kamakura's objects and levels, in the right order, as identical to the
+  reference images as possible, at the highest resolution, with the Blender add-ons that needs, and whether Meshy is
+  available.
+- **`docs/KAMAKURA_BUILD.md`** (and the end of the Kamakura tab on the prompts page): a model-sheet base prompt for Gemini
+  (one object, a 2 x 2 sheet of front, side, back and three-quarter views, flat shadowless light, grey, copied exactly from
+  the reference); 15 textures (the plates made tileable, the levels' grounds); 18 street props, 4 vehicles and 32
+  buildings and set pieces (each with its source pictures and real size); 5 foliage and bark sheets for the script-built
+  plants; then the Claude Code prompts: the kit, Kamakura's routes and map layout, the 12 levels in route order with each
+  mini-game system just before its first leg, the map screen, and the switch from the original 23 levels.
+- **What "identical" means** is written down: image-to-3D is very close, not pixel-perfect, so every model is checked
+  beside its source from the game camera in all four looks; sources at the highest resolution are kept in `review/`, while
+  the game bakes each texture into the Kamakura atlas at the size the camera shows it, within the phone's budgets; no
+  light painted into textures (the game lights them).
+- **Meshy** is available through the user's Higgsfield account (Meshy 7 Image to 3D, Multi-Image to 3D, Remesh, Retexture;
+  also Tripo P2, which removes baked lighting). meshy.ai itself is not reachable from the cloud sessions, and there is no
+  Meshy connector.
+- **Blender:** pymeshlab (decimation that keeps texture seams), xatlas (atlas packing) and trimesh (checks) in Blender's
+  Python, and libopengl0 for pymeshlab (`tools/blender/README.md`); import `bpy` before `pymeshlab`. The Astradite
+  environment's setup script installs them (not yet proven in a fresh session).
+- **The page:** the build documents (`docs/<CITY>_BUILD.md`) are read into their city's tab; copied asset and build
+  prompts get no city block or format line.
+- No game code or assets changed.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

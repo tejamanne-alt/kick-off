@@ -10,7 +10,8 @@ window. A fresh Linux machine or cloud container needs:
 
 ```
 python3 -m venv blenv && blenv/bin/pip install bpy==5.2.3 pillow    # Blender, and Pillow for the kits' atlases
-apt-get install -y libegl1 libegl-mesa0 libgl1-mesa-dri             # EEVEE renders headless through Mesa's software EGL
+blenv/bin/pip install pymeshlab xatlas trimesh                       # for models made by image-to-3D (below)
+apt-get install -y libegl1 libegl-mesa0 libgl1-mesa-dri libopengl0  # EEVEE headless through Mesa's software EGL; OpenGL for pymeshlab
 ```
 
 The add-ons the scripts and the work need come with Blender. Turn them on once (saved in the user preferences):
@@ -27,6 +28,14 @@ bpy.ops.wm.save_userpref()"
   (`docs/CITIES.md`, "The look").
 - **Node Wrangler** helps with the atlas-painting node trees.
 - **Rigify** and **UV Layout** help with the characters.
+- For models made by image-to-3D (Meshy, through Higgsfield: `docs/KAMAKURA_BUILD.md`), three Python libraries in the same
+  environment: **pymeshlab** (decimation that keeps the texture's seams: `meshing_decimation_quadric_edge_collapse_with_texture`),
+  **xatlas** (packing every model's UVs into one kit atlas) and **trimesh** (checks: open edges, size, triangle counts).
+  Import `bpy` before `pymeshlab` in a script: the other order clashes over a shared threading library (TBB) and `bpy` fails
+  to load.
+- Meshy itself runs through the user's Higgsfield account (`meshy_multi_image_to_3d`, `meshy_v7_image_to_3d`, remesh and
+  retexture), not meshy.ai, which the cloud sessions can't reach. A Meshy plugin for Blender isn't needed: the models come in
+  as GLB, which Blender's own glTF importer reads.
 - Nothing from the extensions site is needed (it isn't reachable from the cloud sessions either). The full Blender app with a
   window is only for looking at things by hand: install it from blender.org on your own computer, the same 5.2 LTS.
 

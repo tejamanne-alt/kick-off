@@ -245,7 +245,7 @@ function refreshProgress(city) {
   const p = document.getElementById('progress');
   if (!p || !city) return;
   const ids = shotsOf(city), made = ids.filter(id => store.get('made:' + id)).length;
-  p.textContent = made + ' of ' + ids.length + ' images made';
+  p.textContent = made + ' of ' + ids.length + ' done';
 }
 
 function renderStart() {
