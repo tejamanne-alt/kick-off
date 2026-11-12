@@ -10,23 +10,24 @@ The target is assets that look like the reference images: the same shapes and pr
 materials and wear, in the look of KM-0, the look target (a photograph, not a painting). The way there is **projection modelling in Blender**, proven on the home and the red
 vending machine (`review/kamakura/kit_proof_board.jpg`, `tools/blender/kit_buildings_km.py`):
 - **The fronts are your pictures,** in their photographic versions (see "First: your pictures in KM-0's look"). Each model is built by script to the measurements of the picture it comes from (the
-  home: 119 px to the metre, the ground at y 890), and the picture's own pixels are projected onto every face that faces
+  home, from KM-x2: 110 px to the metre, the pavement at y 874), and the picture's own pixels are projected onto every face that faces
   the street. Straight on, the model is the picture, pixel for pixel; turned, it is a real 3D shape: the fence in front,
   the house set back, the roofs sloping away.
 - **Sides, backs and roofs out of view** take samples of the same picture's materials (the dark boards, the roof tiles),
   or a side the props sheet shows, straightened when it is drawn at an angle (the vending machine's side, from KM-P1).
 - **Things standing in front of a building are their own models:** plants, pots, bicycles, signs that stand off the wall.
-  Painted on, they smear when the camera turns (on the proof board: the persimmon on the skirt roof, the pots on the fence).
+  Painted on, they smear when the camera turns (on the proof board: the pots, the plants and the bin on the fence).
   They are cut out of the pictures and rebuilt: plants as leaf cards from the pictures' own leaves, the rest as props.
-- **The pictures' glitches are repaired, not copied:** KM1-1's ghosted building beside the home's upper roof is replaced by
-  the roof's good half, mirrored. Each repair is written in the script, at the pixels it touches.
+- **The pictures' glitches are not copied:** a clean picture replaces one with a glitch (KM1-1 drew a ghosted building over
+  the home's right half; the home is built from KM-x2, which shows it whole), or else the glitch is repaired, noted in the
+  script at the pixels it touches. Things that only pass in front (KM-x2's power lines across the roof) are taken off.
 - **The pictures' light comes with them.** The photographs carry KM-0's sun and shade, so the Kamakura kit is drawn as
   the clouds are: `Toon` with `_Lighting` 0.25, the pictures' light kept as it is and a quarter of the game's sun added.
   The city's climate, the haze and every filter still apply. It is not lit twice.
 - **The highest resolution where it shows:** the fronts at the pictures' full resolution (the home's front is 1,340 px
   across), in the Kamakura atlas (4096 x 4096), within the phone's budgets (`docs/ART_DIRECTION.md`: a building 6,000
   triangles, a street prop 1,500, a tree 6,000, a gameplay structure 5,000; `docs/PERFORMANCE.md`). The proof's home is
-  49 triangles with its fence, and the vending machine 10: the detail is in the picture, not the mesh.
+  57 triangles and its fence 20, and the vending machine 10: the detail is in the picture, not the mesh.
 - Every asset is checked against its source: rendered straight on and turned, beside the picture, and in all four looks,
   and redone until it matches (an acceptance board: `docs/LEARNINGS.md` rule 4, A8).
 
@@ -72,7 +73,7 @@ For the stores, generate on a paid plan or credit Meshy in the game's credits.
 
 ## The order
 
-0. **Your pictures in KM-0's look** (BASE KM-R0, then RESTYLE): the painted ones made again as photographs, KM1-1 first
+0. **Your pictures in KM-0's look** (BASE KM-R0, then RESTYLE): the painted ones made again as photographs, KM-x2 first
    as the test.
 1. **Textures** (KM-T): the plates made tileable, and the grounds of the levels.
 2. **Street props** (KM-A01 to A18): everything on the props sheet, used in every route.
@@ -88,10 +89,10 @@ For the stores, generate on a paid plan or credit Meshy in the game's credits.
 ### First: your pictures in KM-0's look
 
 KM-0 is the bar for every asset and background (a photograph: real materials, a deep cobalt sky with cumulus, sea haze).
-Twelve level pictures and the props and plants sheets came out painted instead, so each is made again as a photograph
+Twelve level pictures, the home's picture (KM-x2) and the props and plants sheets came out painted instead, so each is made again as a photograph
 of the same place, with its layout kept, since the models are measured from it. A new Gemini chat with Nano Banana 2.1
 (it keeps the 4:1 shape; Pro stops at 21:9): paste KM-R0 with KM-0 attached, then one RESTYLE per message, attaching that
-picture. KM1-1 first, as the test: push it and Claude rebuilds the proof board from it; then the rest, in this order. Save
+picture. KM-x2 (the home's picture) first, as the test: push it and Claude rebuilds the home from it; then the rest. Save
 each as review/kamakura/refs/photo/ with the same file name (PNG). If a picture drifts from KM-0's look, attach KM-0 again
 with it; if objects move, say "Same layout as the attached picture, object for object", or try again.
 
@@ -128,6 +129,15 @@ CHANGE TO KM-0'S LOOK
 - Sharp from front to back: no depth of field, vignette, lens flare or film grain.
 
 Then wait for my first picture.
+```
+
+```text
+RESTYLE KM-x2, the home street. Attach KM-x2. Make it a photograph in KM-0's look, by the rules above: every object
+exactly where it is, at its size and with its outline; only the look changes. Keep: the level crossing and the tram,
+the convex mirror, the phone box, the vending machine; the kid's home with its fence, its entrance, the air
+conditioners, the pots and the hydrangea; the shop and its sign (a short invented name where the text is garbled), the
+kei truck in its garage, the scooter and the bicycle; the shrine with its stone torii and lanterns; the rickshaw.
+FORMAT: exactly the attached picture's shape, 4:1.
 ```
 
 ```text
@@ -532,10 +542,11 @@ largest size you can make.
 In the model sheet chat, in this order: the two shared ends first.
 
 ```text
-ASSET KM-B01, the home. Attach KM1-1. The kid's two-storey house at the left of the picture: dark-stained timber walls,
-grey kawara roofs with the lower porch roof, the balcony rail, aluminium windows, the air-conditioner units, the gas meter,
-the entrance door; with its dark board fence and gate in front (not the plants or the bicycle: they are separate). Real
-size: 8 m wide, 7 m deep, 7.5 m to the ridge. Same rules as before.
+ASSET KM-B01, the home. Attach KM-x2. The kid's two-storey house in the middle of the picture: dark-stained timber
+walls, grey kawara roofs (the hipped upper roof, and the skirt roof round the ground floor with the entrance gable),
+aluminium windows, the two air-conditioner units, the sliding entrance doors; with its dark board fence either side of
+the entrance (not the pots, the plants or the bin: they are separate). Real size: 8.3 m wide, 8.2 m deep, 6.3 m to the
+ridge. Same rules as before.
 ```
 
 ```text

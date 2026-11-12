@@ -61,7 +61,7 @@ KINDS = {'LEVEL': 'level', 'LOOK TARGET': 'look', 'SHEET': 'sheet', 'PLATE': 'pl
          'BASE': 'base', 'TEXTURE': 'texture', 'ASSET': 'asset', 'FOLIAGE': 'foliage', 'BUILD': 'build', 'RESTYLE': 'restyle'}
 BADGES = {'SHEET': 'Sheet', 'PLATE': 'Plate', 'MAP': 'Map', 'BASE': 'Paste first', 'TEXTURE': 'Texture', 'ASSET': 'Model sheet',
           'FOLIAGE': 'Foliage', 'BUILD': 'Claude Code', 'RESTYLE': 'Restyle'}
-FIRST_LINE = re.compile(r'(LEVEL|SHEET|PLATE|LOOK TARGET|MAP|BASE|TEXTURE|ASSET|FOLIAGE|BUILD|RESTYLE) ([A-Z]{2}[0-9]?-[A-Z]*[0-9]*),? ([^.]+)\.')
+FIRST_LINE = re.compile(r'(LEVEL|SHEET|PLATE|LOOK TARGET|MAP|BASE|TEXTURE|ASSET|FOLIAGE|BUILD|RESTYLE) ([A-Z]{2}[0-9]?-[A-Za-z]*[0-9]*),? ([^.]+)\.')
 
 
 def prompt_groups(text, heading):

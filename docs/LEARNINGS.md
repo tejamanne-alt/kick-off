@@ -609,6 +609,12 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
   wall), and things standing in front of a building (plants, pots, the bicycle) must be their own models.
 - *Rule:* build from the user's own pictures first. Prove a method on two assets with a side-by-side board before writing
   prompts for fifty, and use a generator only for what the pictures can't give.
+- *Redone:* the first proof built the home from KM1-1, where Gemini drew a ghosted, half-transparent building over the
+  home's right half; the model papered over it by mirroring the good half, and the board's own picture still showed it.
+  The user read it as the model "fading building parts" and sent KM-x2, a picture with the home whole. The home is now
+  built from KM-x2 (57 triangles, its fence 20), its power lines taken off the roof, the sides laid at the picture's
+  scale (110 px to the metre) instead of stretched. *Rule:* when a picture has a glitch on the asset itself, ask for a
+  clean picture before repairing it, and never show a glitched picture as the reference on a board without saying so.
 
 **D10. Kamakura's pictures drifted from the look target, and the plan followed the drift (v122).**
 - *What:* the base prompt asks for photorealistic pictures, and Kamakura's look target KM-0 came out a photograph. But the
@@ -618,7 +624,7 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
   painted pixels. The user, sending KM-0: "Assets and backgrounds should look good as in the attached image".
 - *Why:* each picture was checked for its content (the right street, objects, route), never against the look target.
 - *Fix:* the painted pictures are made again as photographs in KM-0's look with their layouts kept (BASE KM-R0 and a
-  RESTYLE prompt each, KM1-1 first as the test, `docs/KAMAKURA_BUILD.md`), into `review/kamakura/refs/photo`; the
+  RESTYLE prompt each, the home's picture KM-x2 first as the test, `docs/KAMAKURA_BUILD.md`), into `review/kamakura/refs/photo`; the
   prompts that asked for the painted style now ask for KM-0's look. Still to decide: the map pair, made in the painted
   style.
 - *Rule:* a city's look target is the bar for every picture of it. Check each new picture against it when it arrives;

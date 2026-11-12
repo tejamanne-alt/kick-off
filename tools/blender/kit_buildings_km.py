@@ -2,7 +2,7 @@
 # (review/kamakura/refs), each street-facing face textured by projecting the picture's own pixels onto it, so seen from the
 # street, as the game camera sees it, the model shows exactly the painting. Sides and tops take samples from the same
 # pictures (the props sheet shows the props' sides). This first version builds two models, to prove the method: the kid's
-# home with its fence (KM1-1) and the red vending machine (KM1-1 front, KM-P1 side).
+# home with its fence (KM-x2) and the red vending machine (KM1-1 front, KM-P1 side).
 #   blenv/bin/python kit_buildings_km.py -- /abs/outdir [--board /abs/board.png]
 # Writes into outdir: <Model>.fbx per model, KamakuraAtlas.png, Kamakura.json, Kamakura.blend; with --board, a review board
 # of each model beside its source picture: the picture, the model straight on, the model at three-quarters.
@@ -83,7 +83,9 @@ class Builder:
         self.side_pos, self.side_size = side_pos, side_size
 
     def face(self, pts, side=None):
-        """pts: corners in order, counter-clockwise seen from outside. side: a (pos, size) sample for a non-front face."""
+        """pts: corners in order, counter-clockwise seen from outside. side: a sample for a non-front face: (pos, size),
+        stretched once across the face, or (pos, size, px_per_m), laid at the picture's scale from the face's corner (the
+        sample made big enough by tiled())."""
         vs = [self.bm.verts.new(p) for p in pts]
         f = self.bm.faces.new(vs)
         f.normal_update()
@@ -94,7 +96,9 @@ class Builder:
                 px, py = self.front_map(loop.vert.co)
                 loop[self.uv].uv = self.atlas.uv(self.front_pos, px, py)
         else:
-            pos, (w, h) = side or (self.side_pos, self.side_size)
+            side = side or (self.side_pos, self.side_size)
+            pos, (w, h) = side[0], side[1]
+            metric = side[2] if len(side) > 2 else None
             # stretch the sample over the face's extent along its two widest axes
             cos = [l.vert.co for l in f.loops]
             ax = sorted(range(3), key=lambda i: -(max(c[i] for c in cos) - min(c[i] for c in cos)))
@@ -103,6 +107,18 @@ class Builder:
                 a, bax = bax, a
             lo_a, hi_a = min(c[a] for c in cos), max(c[a] for c in cos)
             lo_b, hi_b = min(c[bax] for c in cos), max(c[bax] for c in cos)
+            if metric:
+                # in the face's own plane: u level along it, v up its slope (or across a level face), in metres
+                u = Vector((1, 0, 0)) if abs(n.z) > 0.999 else Vector((0, 0, 1)).cross(n).normalized()
+                v = n.cross(u).normalized()
+                lo_u = min(c.dot(u) for c in cos)
+                hi_v = max(c.dot(v) for c in cos)
+                for loop in f.loops:
+                    c = loop.vert.co
+                    px = min((c.dot(u) - lo_u) * metric, w - 1)
+                    py = min((hi_v - c.dot(v)) * metric, h - 1)
+                    loop[self.uv].uv = self.atlas.uv(pos, px, py)
+                return f
             for loop in f.loops:
                 c = loop.vert.co
                 s = (c[a] - lo_a) / max(hi_a - lo_a, 1e-6)
@@ -183,6 +199,15 @@ def keep_uv_white(o):
 
 
 # ---------------------------------------------------------------- the models
+def tiled(im, w, h):
+    """The sample repeated to w x h px, so a face laid at the picture's scale never runs off it."""
+    out = Image.new('RGB', (w, h))
+    for y in range(0, h, im.height):
+        for x in range(0, w, im.width):
+            out.paste(im, (x, y))
+    return out
+
+
 def unsky(im, box):
     """Paints out the sky inside box (the band of the roofs' outlines), so a roof edge that sits a few pixels off the
     drawn one shows tiles, not blue. Sky is the saturated blue (blue 45 above red, 12 above green), widened by 3 px; each takes
@@ -230,52 +255,82 @@ def build_vending(atlas):
     return b.object('KmVendingRed'), dict(source='KM1-1 (front), KM-P1 (side)', real_size=[W, D, H])
 
 
+# The home's picture (KM-x2, the user's clean picture of the kid's home: KM1-1 drew a ghosted building over its right
+# half) and its measurements: the sliding entrance doors (about 1.9 m) and the vending machine beside it (1.83 m) give
+# about 110 px to the metre; the pavement is at y 874; the upper storey's middle at x 1766.
+HOME = dict(src='KM-x2_home_street.png', cx=1766.0, gy=874.0, s=110.0, crop=(1340, 175, 2270, 880))
+
+
+def dewire(im, wires, x0, x1, half=3, period=25):
+    """Takes the power lines off a roof: each wire (y at x0, y at x1, +1 to copy from below or -1 from above) is a
+    straight band 2 x half + 1 px tall, filled from one tile row (period px) beside it, where the tiles repeat."""
+    a = np.asarray(im.convert('RGB')).copy()
+    for ya, yb, side in wires:
+        for x in range(x0, x1):
+            yc = int(round(ya + (yb - ya) * (x - x0) / (x1 - x0)))
+            for y in range(yc - half, yc + half + 1):
+                a[y, x] = a[y + side * period, x]
+    return Image.fromarray(a)
+
+
 def build_home(atlas):
-    """KM-B01, the kid's home (KM1-1, left): the two-storey timber house, its roofs and the fence in front. The picture is
-    about 119 px to the metre at the house; the ground is at y 890, the house's middle at x 1029."""
-    km11 = ref('KM1-1_hase_lanes.png')
-    # the ghosted patch beside the upper roof (a generation glitch in KM1-1): the roof is mirrored from its good left half
-    fixed = km11.copy()
-    # and the wall under its right half, where the same glitch shows a ghosted neighbour (above the right air conditioner)
-    for band in ((1200, 79, 1480, 232), (1267, 225, 1410, 383)):
-        mirror = km11.crop((2 * 987 - band[2], band[1], 2 * 987 - band[0], band[3])).transpose(Image.FLIP_LEFT_RIGHT)
-        fixed.paste(mirror, band[:2])
-    fixed = unsky(fixed, (440, 50, 1620, 272))    # the roofs and the light band under the upper eave
-    cx, gy, s = 1029.0, 890.0, 119.0
-    crop_box = (280, 60, 1620, 892)
+    """KM-B01, the kid's home (KM-x2): the two-storey timber house with its hipped upper roof, the skirt roof round the
+    ground floor with the entrance gable, the air conditioners on the skirt roof, and the board fence either side of the
+    entrance."""
+    src = ref(HOME['src'])
+    # the two power lines across the upper roof belong to the street's poles, not the house
+    fixed = dewire(src, [(229, 256, +1), (267.5, 299, -1)], 1340, 2300)
+    fixed = unsky(fixed, (1340, 170, 2300, 330))    # the upper roof's outline against the sky
+    cx, gy, s, crop_box = HOME['cx'], HOME['gy'], HOME['s'], HOME['crop']
     fpos = atlas.place(fixed.crop(crop_box))
     fmap = lambda co: (cx + co.x * s - crop_box[0], gy - co.z * s - crop_box[1])
-    boards = fixed.crop((580, 270, 700, 380))              # the upper storey's dark boards (left of the window), for the sides
+    # the samples for the sides, laid at the picture's scale (110 px to the metre), repeated to cover the largest face
+    # the upper storey's dark boards (left of the window, under the light band), drawn out along their grain to a
+    # storey's height so no seam crosses them, then repeated along the wall
+    boards = tiled(fixed.crop((1432, 362, 1528, 440)).resize((96, 330), Image.BICUBIC), 1056, 330)
     bpos = atlas.place(boards)
-    tiles = fixed.crop((700, 110, 900, 200))               # the roof's tiles, for the back slopes and gable ends
+    tiles = tiled(fixed.crop((1600, 255, 1800, 305)), 1000, 750)     # the upper roof's tiles (two rows), wires taken off
     tpos = atlas.place(tiles)
-    side, roof = (bpos, boards.size), (tpos, tiles.size)
+    casing = fixed.crop((1480, 450, 1504, 494))            # the air conditioner's casing beside its grille
+    cpos = atlas.place(casing)
+    side, roof, ac = (bpos, boards.size, s), (tpos, tiles.size, s), (cpos, casing.size)
     X = lambda px: (px - cx) / s
     Z = lambda py: (gy - py) / s
+    P = lambda x, y, z: Vector((x, y, z))
 
     house = Builder(atlas, fpos, fmap, bpos, boards.size)
-    # the ground floor (seen between the skirt roof and the fence) and the upper storey, symmetric about x 987 like the
-    # roof (the picture's wall stops at x 1267, where the glitch starts; the repair above carries it on to 1407)
-    house.box(X(475), X(1585), -3.0, 4.0, 0.0, Z(546), side=side, skip=('bottom', 'top'))
-    house.box(X(567), X(1407), -2.0, 3.0, Z(546), Z(226), side=side, skip=('bottom',))
-    # the skirt roof round the ground floor: its eave at y 546 from x 462 to 1605, hipped at both corners, meeting the
-    # upper storey's wall at y 455 on the left and 432 on the right (as drawn)
-    P = lambda x, y, z: Vector((x, y, z))
-    house.skirt((X(462), X(1605), -3.6, 4.6), (X(567), X(1407), -2.0, 3.0, Z(455), Z(432)), Z(546), side=roof)
-    # the entrance gable on the porch roof: its front triangle faces the street
-    ga, gb, gpeak = X(720), X(1275), Z(355)
-    house.face([P(ga, -3.7, Z(530)), P(gb, -3.7, Z(530)), P((ga + gb) / 2, -3.7, gpeak)], roof)
-    house.face([P(gb, -3.7, Z(530)), P(gb, -2.2, Z(450)), P((ga + gb) / 2, -2.2, gpeak), P((ga + gb) / 2, -3.7, gpeak)], roof)
-    house.face([P(ga, -2.2, Z(450)), P(ga, -3.7, Z(530)), P((ga + gb) / 2, -3.7, gpeak), P((ga + gb) / 2, -2.2, gpeak)], roof)
-    # the upper roof
-    house.hip_roof(X(500), X(1474), X(643), X(1331), -2.6, 0.5, 3.6, Z(224), Z(79), side=roof)
+    # the ground floor, under the skirt roof (its front: the entrance bay and, behind the fence, the walls), and the upper
+    # storey, set back
+    house.box(X(1390), X(2255), -3.0, 4.0, 0.0, Z(582), side=side, skip=('bottom', 'top'))
+    house.box(X(1425), X(2110), -2.0, 3.0, Z(582), Z(312), side=side, skip=('bottom',))
+    # the skirt roof: its eave at y 582 from x 1345 to 2258, hipped at both corners, meeting the upper walls at y 497-500
+    house.skirt((X(1345), X(2258), -3.6, 4.6), (X(1425), X(2110), -2.0, 3.0, Z(497), Z(500)), Z(582), side=roof)
+    # the entrance gable on the skirt roof: its front triangle (eaves at y 557, the ridge ornament's top at 412) faces
+    # the street; its two slopes run back to the upper wall
+    # the street; its two slopes keep the barge line's height at every depth (so straight on they stay inside the
+    # triangle) and run back over the skirt roof, meeting it in a valley, to the upper wall
+    ga, gb, gm, gpeak, gbase = X(1565), X(2065), X(1813), Z(412), Z(557)
+    zs = lambda y: Z(582) + (y + 3.6) / 1.6 * (Z(498) - Z(582))     # the skirt roof's height at depth y
+    yv = -3.6 + (gbase - Z(582)) / (Z(498) - Z(582)) * 1.6           # where the gable's eave meets the skirt
+    t = (zs(-2.0) - gbase) / (gpeak - gbase)                          # how far up the slope the valley reaches the wall
+    house.face([P(ga, -3.7, gbase), P(gb, -3.7, gbase), P(gm, -3.7, gpeak)], roof)
+    for e in (ga, gb):
+        xv = e + (gm - e) * t
+        house.face([P(e, -3.7, gbase), P(e, yv, gbase), P(xv, -2.0, zs(-2.0)), P(gm, -2.0, gpeak), P(gm, -3.7, gpeak)], roof)
+    # the two air conditioners standing on the skirt roof against the upper wall
+    for a0, a1 in ((1420, 1510), (2010, 2097)):
+        house.box(X(a0), X(a1), -2.35, -2.0, Z(502), Z(443), side=ac, skip=('bottom', 'back'))
+    # the upper roof, hipped: eaves x 1385 to 2147 at y 310, the ridge x 1450 to 2103 at y 184 (its cap's top)
+    house.hip_roof(X(1385), X(2147), X(1450), X(2103), -2.6, 0.5, 3.6, Z(310), Z(184), side=roof)
     home = house.object('KmHome')
 
     fence = Builder(atlas, fpos, fmap, bpos, boards.size)
-    fence.box(X(284), X(1612), -4.6, -4.45, 0.0, Z(620), side=side, skip=('bottom',))
+    for f0, f1 in ((1388, 1655), (1968, 2255)):            # either side of the entrance, 2.1 m tall
+        fence.box(X(f0), X(f1), -3.45, -3.3, 0.0, Z(645), side=side, skip=('bottom',))
     fence_obj = fence.object('KmHomeFence')
     fence_obj.parent = home
-    return home, dict(source='KM1-1 (left): the house and its fence', real_size=[round((1612 - 284) / s, 2), 8.6, round(Z(79), 2)])
+    return home, dict(source='KM-x2 (the middle): the house and its fence',
+                      real_size=[round((2258 - 1345) / s, 2), 8.2, round(Z(184), 2)])
 
 
 # ---------------------------------------------------------------- the review board
@@ -331,12 +386,14 @@ def board(home, vend, atlas_path, out):
     km11 = ref('KM1-1_hase_lanes.png')
     rows = []
     # the home: the picture, the model straight on (orthographic, at the picture's scale), the model at three-quarters
-    hw, hh = (1620 - 280) / 119.0, (892 - 60) / 119.0
-    a = km11.crop((280, 60, 1620, 892))
-    hx, hz = ((280 + 1620) / 2 - 1029) / 119.0, (890 - (60 + 892) / 2) / 119.0
-    b = render(os.path.join(tmp, 'km_home_front.png'), (hx, -40, hz), (hx, 0, hz), ortho=hw, size=(1340, 832),
+    x0, y0, x1, y1 = HOME['crop']
+    sc = HOME['s']
+    W, H = x1 - x0, y1 - y0
+    a = ref(HOME['src']).crop(HOME['crop'])
+    hx, hz = ((x0 + x1) / 2 - HOME['cx']) / sc, (HOME['gy'] - (y0 + y1) / 2) / sc
+    b = render(os.path.join(tmp, 'km_home_front.png'), (hx, -40, hz), (hx, 0, hz), ortho=W / sc, size=(W, H),
                only={'KmHome', 'KmHomeFence'})
-    c = render(os.path.join(tmp, 'km_home_34.png'), (hx - 13, -16, 5.0), (hx, 0, 3.0), fov=40, size=(1340, 832),
+    c = render(os.path.join(tmp, 'km_home_34.png'), (hx - 11, -14, 5.0), (hx, 0, 3.2), fov=40, size=(W, H),
                only={'KmHome', 'KmHomeFence'})
     rows.append([a, b, c])
     a = km11.crop((1681, 621, 1819, 866)).resize((276, 490))

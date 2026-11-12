@@ -1840,6 +1840,15 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
   picture's own weather; repair what can't be real), and a RESTYLE prompt for each of the 14 painted pictures, KM1-1
   first as the test, saved into `review/kamakura/refs/photo`. The plates (KM-P3) are already photographs. KM-P4, the
   model-sheet prompt and the foliage prompt now ask for KM-0's look. The prompts page has a RESTYLE kind.
+- **The home, rebuilt from KM-x2** (`review/kamakura/refs/KM-x2_home_street.png`, the user's picture of the home whole:
+  KM1-1 had drawn a ghosted building over its right half, which the user saw on the board as the model fading parts;
+  `docs/LEARNINGS.md` D9). 110 px to the metre (the entrance doors and the vending machine), the pavement at y 874:
+  the upper storey and its hipped roof, the skirt roof with the entrance gable (its slopes kept inside the gable's
+  outline and meeting the skirt in valleys), the two air conditioners as boxes on the skirt roof, the fence either side
+  of the entrance. The two power lines across the roof are taken off (each band filled from the tile row beside it);
+  sides and hidden roofs are laid at the picture's scale from repeated samples instead of stretched. `KmHome` 57
+  triangles, `KmHomeFence` 20, the vending machine 10. RESTYLE KM-x2 is now the photographic test, before KM1-1;
+  ASSET KM-B01 attaches KM-x2. Still flat on the board: the pots, plants and bin on the fence, the garden tree above it.
 
 ## After Phase 8 (next steps)
 
