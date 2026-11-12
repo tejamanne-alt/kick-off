@@ -344,6 +344,80 @@ timber boards, beige mortar wall with sea-salt bloom, grey kawara roof tiles, a 
 stone steps, a sliding aluminium window with screen. No text.
 ```
 
+#### Kamakura map
+
+Added once all 17 of Kamakura's images were in (`review/kamakura/refs`). In Gemini, with Nano Banana Pro, attach these
+seven: KM-0 (the look target), KM1-1 (home), KM1-4 (the school), KM2-1, KM2-5, KM3-1 and KM3-3. Send the plan, then the
+clean map.
+
+```text
+MAP KM-MAP1, the plan. You are the lead game architect and level designer of a side-scrolling soccer game for phones: a
+kid dribbles a football from home to school through Kamakura, Japan. Design Kamakura's school-run map: one picture of the
+town seen from directly above, with every route from the kid's home to the school on real streets. The seven images I
+attached are Kamakura's reference pictures for the same game: the map must look like the same place, with the same
+buildings, materials, plants, colours and light. Ignore the sparkle mark in their corners.
+
+THE TOWN (north at the top)
+- The sea and Yuigahama beach along the south edge, with the coast road behind the sand; wooded hills with temple roofs
+  across the north and the west; the town between them, a close grid of narrow lanes.
+- HOME in Hase, in the south-west, between the tram line and the coast road: the kid's two-storey dark-timber house from
+  the first level picture (the persimmon tree, the potted plants, the bicycle, the cat on the block wall).
+- SCHOOL in the north-east, beside the great shrine at the head of the long avenue Wakamiya-oji: the white concrete school
+  with the clock from the second level picture, its sandy sports ground behind a green fence, the cherry tree by its gate.
+- The single-track tram (green and cream) runs from Hase east to Kamakura Station between the houses, crossing the lanes
+  at level crossings with black-and-yellow bars.
+
+THE ROUTES
+- Every route starts at the same front door (HOME) and ends at the same school gate (SCHOOL).
+- Shared at both ends, like a real school run. The first 5 to 15% of every route is the home stem: the same narrow lane
+  from the front door to the corner with the two vending machines and the convex mirror. The last 5 to 15% is the school
+  approach: the same short way from the shrine's great red gate past the arched stone bridge and the lotus pond to the
+  school gate. The middle 70 to 90% of each route is its own: the routes fan out from the vending-machine corner, never
+  share a street in their middles (crossing at a junction or a level crossing is fine), and meet again only at the
+  shrine's great red gate.
+- Each route follows real streets, lanes, footpaths, steps and crossings; route 1 rides the tram between two stations.
+- The stops along each route, in order (each level ends at one stop, and the next level starts there):
+  Route 1, the tram (4 levels): 1-1 Hase Station, the tram's little platform east of home, past a small shrine gate and a
+  level crossing. 1-2 Kamakura Station, the end of the line: ride the tram east through Yuigahama and Wadazuka stations.
+  1-3 the top of Komachi-dori, the narrow shopping street running north from the station to the shrine's great red gate.
+  1-4 SCHOOL, along the school approach.
+  Route 2, the coast (5 levels): 2-1 the boardwalk, down a lane of surf shops and under the coast road through a short
+  pedestrian tunnel. 2-2 Grandma's whitebait shop on the beach road, after a walk east along the sand past the fishing
+  boats and the lifeguard tower (2-3 is played at the shop). 2-4 the first great torii at the foot of Wakamiya-oji, past
+  low rock shelves and steps at the beach's eastern end. 2-5 SCHOOL, north up Wakamiya-oji's raised footpath between stone
+  lanterns and cherry trees to the shrine's great red gate, then the school approach.
+  Route 3, the temple hills (3 levels): 3-1 the trail head, up a temple's stone steps between banks of hydrangeas,
+  north-west of home. 3-2 Genjiyama park, along the wooded ridge trail: a wooden footbridge over a gully, a cave tomb cut
+  in the cliff. 3-3 SCHOOL, down through the bamboo grove past the temple bell tower and the stone steps to the shrine's
+  great red gate, then the school approach.
+- Real distances: a walking leg 150 to 400 m, the tram ride about 2 km. The whole map covers about 3 km from west to
+  east.
+
+THE LOOK
+- A straight-down aerial view of the town, looking directly down from high above: grey kawara-tiled roofs, treetops,
+  lanes with their white edge lines and green walking strips, crossings, the tram track, shrine and temple roofs among the
+  trees, the beach and its surf. No tilt, no perspective.
+- In the painted style of the six level pictures: a detailed, hand-painted anime background, with clean shapes, crisp
+  edges and rich, true colours. In the look target's light: a clear May morning with the sun low in the east, soft
+  shadows all falling west, a little haze over the sea.
+- Streets readable at a glance, block by block, as on a well-made game's world map. Do not imitate any specific game.
+- No people. No text, labels, logos or watermarks of your own.
+- Everything the routes need lies inside the central three-quarters of the picture; the edges are more of the town, the
+  hills and the sea, not a border or a frame.
+
+FIRST, THE PLAN: draw the routes on the map as a key. Each route a thick coloured line (route 1 red, route 2 blue, route 3
+yellow), dashed where it rides the tram; HOME a white house symbol; SCHOOL a white flag; each stop a white circle with its
+number (1-1, 1-2 and so on). Where routes share the home stem and the school approach, run their lines side by side.
+
+FORMAT: aspect ratio 16:9, the largest size you can make.
+```
+
+```text
+MAP KM-MAP2, the clean map. Now make exactly the same map again with every line, symbol, number and label removed: only
+the town seen from above. Change nothing else: the same streets, buildings, trees, water and light. FORMAT: aspect ratio
+16:9, the largest size you can make.
+```
+
 ## Florida (Miami), USA
 
 ### The Florida block (paste right after the base prompt)
@@ -1061,8 +1135,8 @@ THE ROUTES
 - Every route starts at the same front door (HOME) and ends at the same school gate (SCHOOL).
 - Shared at both ends, like a real school run: the first 5 to 15% of every route is the same stretch from the front door
   ({HOME_STEM}), and the last 5 to 15% is the same approach to the gate ({SCHOOL_APPROACH}). The middle 70 to 90% of each
-  route is its own streets: the routes fan out from the home stem, never cross in their middles, and come back together
-  only for the school approach.
+  route is its own streets: the routes fan out from the home stem, never share a street in their middles (crossing at a
+  junction is fine), and come back together only for the school approach.
 - Each route follows real streets, footpaths, steps, crossings and parks, the way a child there would really walk. Where
   it rides (a tram, bus, train, metro or ferry), it boards at a real stop and gets off at another, along that line's track,
   road or water.
@@ -1074,7 +1148,7 @@ THE LOOK
 - A straight-down aerial view, like a drone photograph taken from high above looking directly down at the
   neighbourhood: roofs, treetops, roads with their lane and crossing markings, kerbs and pavements, parked vehicles, rail
   tracks, water. No tilt, no perspective. North at the top.
-- Photorealistic and cinematic like the attached images, in their light: {LIGHT}. Soft shadows, all falling the same way.
+- {STYLE}, like the attached images, in their light: {LIGHT}. Soft shadows, all falling the same way.
 - Streets readable at a glance, block by block, as on a well-made game's world map. Do not imitate any specific game.
 - No people. No text, labels, logos or watermarks of your own.
 - Everything the routes need lies inside the central three-quarters of the picture; the edges are more of the city, not a

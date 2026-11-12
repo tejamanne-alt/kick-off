@@ -182,12 +182,14 @@ function renderToolbar() {
   document.getElementById('toolnote').textContent = TOOLS[tool].note;
 }
 
+/** A street, look, sheet or plate shot takes the tool's format line and, in Gemini, the city block; a map prompt carries its own. */
+function formatted(shot) { return !!(shot.kind && DATA.formats[tool][shot.kind]); }
 /** What a shot card shows: the shot and, for a shot, this tool's format line. */
-function shotText(shot) { return shot.kind ? shot.text + '\n' + DATA.formats[tool][shot.kind] : shot.text; }
+function shotText(shot) { return formatted(shot) ? shot.text + '\n' + DATA.formats[tool][shot.kind] : shot.text; }
 /** What its Copy button gives: in Gemini, the city block above the shot. */
 function shotCopy(shot, city) {
   const t = shotText(shot);
-  return tool === 'gemini' && city && shot.kind ? city.block + '\n\n' + t : t;
+  return tool === 'gemini' && city && formatted(shot) ? city.block + '\n\n' + t : t;
 }
 
 function copyButton(getText, preEl, label) {
@@ -224,7 +226,7 @@ function shotCard(shot, city, opts) {
     el('span', { class: 'sid' }, shot.id),
     shot.badge ? el('span', { class: 'badge' }, shot.badge) : null,
     el('span', { class: 'shot-title' }, shot.title),
-    tool === 'gemini' && city && shot.kind ? el('span', { class: 'plus', title: 'In Gemini, Copy puts the city block above the shot' }, '+ ' + city.name + ' block') : null,
+    tool === 'gemini' && city && formatted(shot) ? el('span', { class: 'plus', title: 'In Gemini, Copy puts the city block above the shot' }, '+ ' + city.name + ' block') : null,
     el('div', { class: 'actions' },
       opts.noMade ? null : el('label', { class: 'made', for: 'made-' + shot.id }, box, 'Made'),
       copyButton(() => opts.copyText ? opts.copyText() : shotCopy(shot, city), pre, opts.copyLabel)));
@@ -301,7 +303,7 @@ function renderCity(city) {
     const r = g.route;
     const head = el('div', { class: 'route-head' },
       el('h3', null, g.head + (r ? ' · ' + r.legs + ' legs' : '')),
-      r ? el('div', { class: 'trip' }, r.trip) : null);
+      r ? el('div', { class: 'trip' }, r.trip) : g.note ? el('div', { class: 'trip' }, g.note) : null);
     return el('section', { class: 'route' }, head, ...g.items.map(i => shotCard(i, city)));
   });
   view.replaceChildren(header, opening, ...groups);

@@ -1733,6 +1733,24 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
   errors, no sideways scroll at phone width.
 - No game code or assets changed.
 
+## Kamakura's references, and its map prompt (docs and tools only)
+
+- **The images.** The user made Kamakura's 17 images in Gemini (Nano Banana): the look target, all 12 levels (4:1), the
+  props and plants sheets, the texture plates, and Gemini's first reply. They are in `review/kamakura/refs`, named by shot
+  (`KM1-1_hase_lanes.webp`...), as shared (2,000 px wide, with Gemini's mark). The level pictures came out as painted,
+  anime-style backgrounds; only the look target is photographic. The three level pictures that end at the school show three
+  different schools: the map, and later the kit, use KM1-4's (white concrete, the clock, the sandy ground, the cherry tree).
+- **Routes share their two ends** (`docs/CITIES.md`): the first 5 to 15% of every route is the home stem, the last 5 to 15%
+  the school approach, and the middles never share a street (crossing at a junction or a level crossing is fine: Kamakura's
+  home lies between the tram line and the sea, so one route must cross it).
+- **The map prompt** (`docs/IMAGE_PROMPTS.md`: the template, and "Kamakura map"): written once all of a city's images are in,
+  at the user's request, and shown only then at the end of that city's tab on the prompts page. Kamakura's: the home stem is
+  the lane to the vending-machine corner, the school approach runs from the shrine's great red gate past the lotus pond to
+  the school gate; the three routes' stops in order; a straight-down view in the level pictures' painted style and the look
+  target's light. Two messages in Nano Banana Pro with seven references attached: the plan (the routes as a key), then the
+  same map clean, for the map screen.
+- No game code or assets changed.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

@@ -57,7 +57,7 @@ for label, line in re.findall(r'^- ([^:`]+): `(FORMAT: [^`]+)`', P, re.M):
 for t in formats:
     if sorted(formats[t]) != ['level', 'look', 'plate', 'sheet']:
         sys.exit('gen.py: missing format lines for ' + t + ': ' + str(sorted(formats[t])))
-KINDS = {'LEVEL': 'level', 'LOOK TARGET': 'look', 'SHEET': 'sheet', 'PLATE': 'plate'}
+KINDS = {'LEVEL': 'level', 'LOOK TARGET': 'look', 'SHEET': 'sheet', 'PLATE': 'plate', 'MAP': 'map'}
 
 # --- legs from CITIES.md: id -> (title, kind)
 legs = {}
@@ -78,12 +78,14 @@ for c in CITIES:
         items = []
         for b in blocks_in(body):
             first = b.split('\n', 1)[0]
-            mm = re.match(r'(LEVEL|SHEET|PLATE|LOOK TARGET) ([A-Z]{2}[0-9]?-?[P0-9]+),? ([^.]+)\.', first)
+            mm = re.match(r'(LEVEL|SHEET|PLATE|LOOK TARGET|MAP) ([A-Z]{2}[0-9]?-?[A-Z]*[0-9]+),? ([^.]+)\.', first)
             kind, sid, title = mm.group(1), mm.group(2), mm.group(3)
-            badge = legs.get(sid, (None, None))[1] if kind == 'LEVEL' else ('Sheet' if kind == 'SHEET' else 'Plate')
-            items.append(dict(id=sid, title=title, badge=badge, kind=KINDS[kind], text=b))
+            badge = legs.get(sid, (None, None))[1] if kind == 'LEVEL' else {'SHEET': 'Sheet', 'PLATE': 'Plate', 'MAP': 'Map'}.get(kind)
+            items.append(dict(id=sid, title=title[:1].upper() + title[1:], badge=badge, kind=KINDS[kind], text=b))
         rid = head.split(' ', 1)[0]
-        groups.append(dict(head=head, route=routes.get(rid), items=items))
+        # A group's note: the paragraph between its heading and its first prompt (a city's map says what to attach).
+        note = body.split('```text', 1)[0].strip().replace('`', '').replace('\n', ' ')
+        groups.append(dict(head=head, route=routes.get(rid), note=note or None, items=items))
     look = [b for b in blocks_in(sec) if b.startswith('LOOK TARGET')][0]
     mm = re.match(r'LOOK TARGET ([A-Z]{2}-0), ([^.]+)\.', look)
     out.append(dict(c, block=city_block, look=dict(id=mm.group(1), title=mm.group(2), badge='Look target', kind='look', text=look),
@@ -91,7 +93,8 @@ for c in CITIES:
 
 data = dict(base=bases, formats=formats, cities=out)
 total = sum(len(g['items']) for c in out for g in c['groups']) + len(out)
-print('cities', len(out), 'shots', total, 'levels', sum(1 for c in out for g in c['groups'] for i in g['items'] if i['badge'] not in ('Sheet', 'Plate')))
+print('cities', len(out), 'shots', total, 'levels', sum(1 for c in out for g in c['groups'] for i in g['items'] if i['kind'] == 'level'),
+      'maps', sum(1 for c in out for g in c['groups'] for i in g['items'] if i['kind'] == 'map'))
 tpl = open(os.path.join(HERE, 'template.html')).read()
 open(sys.argv[1], 'w').write(
     tpl.replace('/*DATA*/null', json.dumps(data, ensure_ascii=False).replace('</', '<\\/')))
