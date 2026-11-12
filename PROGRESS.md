@@ -1849,6 +1849,26 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
   sides and hidden roofs are laid at the picture's scale from repeated samples instead of stretched. `KmHome` 57
   triangles, `KmHomeFence` 20, the vending machine 10. RESTYLE KM-x2 is now the photographic test, before KM1-1;
   ASSET KM-B01 attaches KM-x2. Still flat on the board: the pots, plants and bin on the fence, the garden tree above it.
+- **The home's pots and plants, their own models** (at the user's go-ahead). `kit_buildings_km.py` cuts what stands in
+  front of KM-x2's fence out of the picture: ten groups (the bin, the pots on the left, the long planter, a small pot,
+  the white flowers, the urn, the two bonsai, the planter on the right, the stone stand, the hydrangea), each by OpenCV's
+  GrabCut on its box, seeded with what is surely the group (saturated or bright; hints for the dark bowl and the urn)
+  and what is surely fence (dark brownish grey that stays the same up and down a board). Each group stands just in front
+  of the fence as a cut-out on half an elliptic cylinder (8 quads), the picture's own pixels and the group's mask in the
+  atlas's alpha; the fence and porch walls behind get them painted out (each column's boards carried down from above
+  every object). The garden tree behind the right fence is a cut-out card between fence and house, the wall behind it
+  painted from its left half. `KmHomeGarden` (160 triangles) and `KmHomeTree` (2), children of the home, drawn with
+  `KamakuraCutout` (Toon, _ALPHATEST_ON); the atlas is RGBA now (ASTC 4x4 the same 16 MB; ETC2 with alpha 16 MB, not 8).
+  The board adds close-ups of both groups turned. The ground under them is y 881 (it was 874: the pots' feet).
+- **Power lines off the roof, redone:** each wire is tracked column by column (the darkest thin line near its rough
+  line; the top one sags) and its band filled from exactly one tile row away (the rows repeat every 20 px, measured on
+  the roof), the same shift for the whole wire so the tiles stay in line. Inpainting smudged; a per-column choice was
+  jagged.
+- **The user's corrected KM1-1** came in as `KM1-1_hase_lanes.png.PNG` (a phone upload): renamed to
+  `KM1-1_hase_lanes.png`. Its ghosted building beside the roof is gone, but the right third of the upper storey (x 960
+  to 1200) and the right air conditioner are still half see-through, so the home stays built from KM-x2. Everything
+  else sits 5 px right and 2 down of the first version: the vending machine's crop follows. Its machine's panel read
+  as a real drink logo: repainted with an invented name (`docs/LEARNINGS.md` D11).
 - **Who makes the photographs:** the user, in the Gemini app (a phone works), sending each result in the chat or pushing
   it. From the cloud session there is no image model to run: the Hugging Face connector has running Spaces switched off
   (gradio=none), huggingface.co and hf.space are blocked by the proxy, and Gemini's API needs the user's key (declined for

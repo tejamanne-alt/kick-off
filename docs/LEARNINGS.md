@@ -630,6 +630,15 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
 - *Rule:* a city's look target is the bar for every picture of it. Check each new picture against it when it arrives;
   regenerate a drift, never adopt it.
 
+**D11. A real drink brand in a corrected picture (Kamakura, KM1-1).**
+- *What:* the user's corrected KM1-1 fixed the ghosted house, but Gemini drew the red vending machine's panel as a white
+  script on red that reads as a real soft-drink logo (the first version's was garbled; KM-x2's is close in style too).
+  The base prompt asks for invented names only, and the stores won't take a real trademark.
+- *Fix:* the kit repaints the panel in its own red with an invented name in Japanese (うみかぜ, "sea breeze";
+  `kit_buildings_km.rebrand`), before the machine's front is projected.
+- *Rule:* every new or corrected picture is checked for real brands and logos before anything is built from it; a
+  real one is repainted with an invented name, never shipped.
+
 ## E. Levels and world
 
 - **E1. Every level had chapter-1 scenery.** A new-scene call unloaded the level definition. *Rule:* pass data into scene builders explicitly; never hold asset references across a new-scene call.

@@ -16,8 +16,12 @@ vending machine (`review/kamakura/kit_proof_board.jpg`, `tools/blender/kit_build
 - **Sides, backs and roofs out of view** take samples of the same picture's materials (the dark boards, the roof tiles),
   or a side the props sheet shows, straightened when it is drawn at an angle (the vending machine's side, from KM-P1).
 - **Things standing in front of a building are their own models:** plants, pots, bicycles, signs that stand off the wall.
-  Painted on, they smear when the camera turns (on the proof board: the pots, the plants and the bin on the fence).
-  They are cut out of the pictures and rebuilt: plants as leaf cards from the pictures' own leaves, the rest as props.
+  Painted on, they smear when the camera turns. They are cut out of the picture (OpenCV's GrabCut, per group, with
+  hints) and stand in front as cut-outs on half an elliptic cylinder: straight on exactly the picture, turned round; the
+  wall or fence behind gets them painted out (its boards carried down). The home's pots, plants, bin, urn and stand are
+  done this way (`KmHomeGarden`), and its garden tree as a card behind the fence (`KmHomeTree`).
+- **No real brands:** a logo that reads as a real one (the corrected KM1-1's vending machine) is repainted with an
+  invented name in the city's script (うみかぜ), in its own colours.
 - **The pictures' glitches are not copied:** a clean picture replaces one with a glitch (KM1-1 drew a ghosted building over
   the home's right half; the home is built from KM-x2, which shows it whole), or else the glitch is repaired, noted in the
   script at the pixels it touches. Things that only pass in front (KM-x2's power lines across the roof) are taken off.
