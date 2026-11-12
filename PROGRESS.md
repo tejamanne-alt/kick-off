@@ -1737,7 +1737,8 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
 
 - **The images.** The user made Kamakura's 17 images in Gemini (Nano Banana): the look target, all 12 levels (4:1), the
   props and plants sheets, the texture plates, and Gemini's first reply. They are in `review/kamakura/refs`, named by shot
-  (`KM1-1_hase_lanes.webp`...), as shared (2,000 px wide, with Gemini's mark). The level pictures came out as painted,
+  (`KM1-1_hase_lanes.png`...): the user's full-size originals (levels 4128 x 1024, the look target 3168 x 1344, the maps
+  2752 x 1536), with Gemini's mark. Each was checked against the smaller copy shared in the chat (the same picture). The level pictures came out as painted,
   anime-style backgrounds; only the look target is photographic. The three level pictures that end at the school show three
   different schools: the map, and later the kit, use KM1-4's (white concrete, the clock, the sandy ground, the cherry tree).
 - **Routes share their two ends** (`docs/CITIES.md`): the first 5 to 15% of every route is the home stem, the last 5 to 15%
@@ -1749,7 +1750,7 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
   the school gate; the three routes' stops in order; a straight-down view in the level pictures' painted style and the look
   target's light. Two messages in Nano Banana Pro with seven references attached: the plan (the routes as a key), then the
   same map clean, for the map screen.
-- **Kamakura's map** (`review/kamakura/refs/KM-MAP1_plan.webp`, `KM-MAP2_clean.webp`, 1672 x 941, Nano Banana Pro). The
+- **Kamakura's map: the first pair** (1672 x 941, Nano Banana Pro; its small copies are in the history at `53c1b84`). The
   clean map lines up with the plan to the pixel (phase correlation, every 192 px tile: no shift; the plan's lines painted
   on the clean map fall on its streets), so the routes can be traced from the plan onto it. Checked against the rules:
   - every route leaves the house and reaches the school gate; the middles share no street (route 2 crosses the tram line
@@ -1760,10 +1761,14 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
     level ends at the school gate. Route 1's line stops at 1-3; it joins the approach just north of it.
   - Liberties with the real town: Kamakura Station east of Wakamiya-oji, and the tram crossing the avenue at its first
     torii. The view is a tilted bird's-eye, not straight down. KM2-4's rock shelves lie east of the avenue on the map.
-  - A second pair (`KM-MAP1_plan_v2.webp`, `KM-MAP2_clean_v2.webp`, 1500 x 837) redraws the same composition with a HOME
-    label. It also lines up to the pixel and measures the same: route 1 5.9% and 6.6%, route 2 5.7% and 15.7%, route 3
-    1.7% and 17.8%.
-  - Still to do: a full-size map (the game's map picture is 3200 x 1800), then the layout file traced from the plan.
+  - **The second pair is the one in use** (`KM-MAP1_plan.png`, `KM-MAP2_clean.png`, 2752 x 1536, the user's full-size
+    originals). It redraws the same composition with a HOME label, lines up with its plan (every 256 px tile; the two that
+    don't match are covered by the plan's lines and labels), and measures the same: route 1 5.9% and 6.6%, route 2 5.7% and
+    15.7%, route 3 1.7% and 17.8%.
+  - Repository size: the originals are PNG, 177 MB for the city. Lossless WebP keeps every colour pixel and halves that
+    (about 87 MB); the choice for the next cities is the user's.
+  - Still to do: the layout file traced from the plan (the map picture at the game's 3200 x 1800 from the 2752 x 1536
+    original).
 
 ## After Phase 8 (next steps)
 
