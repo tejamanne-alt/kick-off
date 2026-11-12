@@ -106,12 +106,108 @@ For the stores, generate on a paid plan or credit Meshy in the game's credits.
 7. **The levels** (BUILD KM-L): the city's plumbing, then each route's legs in order, each mini-game system just before
    the first leg that needs it, then the map screen, then the switch from the old 23 levels.
 
+## The sheets' assets, by id
+
+The eight sheets and plates in `review/kamakura/refs` (KM-P1 to KM-P8) give the levels more than their pictures show.
+Each asset has an id the level prompts below use. What a level's picture shows is built from the picture (projected);
+a sheet gives the same object's other sides and every extra copy. The props are built like the vending machine, the
+plants by `kit_plants.py`, the plates assembled piece by piece like KM-P3, the animals in the animals kit.
+
+**Props and vehicles** (KM-P1: KM-A01 to A18, KM-V01 to V04; KM-P5, new):
+
+| Id | Asset (KM-P5) | Real size |
+|---|---|---|
+| KM-A19 | the blue drink vending machine | 1.83 m tall |
+| KM-A20 | the can and bottle recycling bins, a row of three | 1.0 m tall |
+| KM-A21 | the green public phone box | 2.3 m tall |
+| KM-A22 | an air-conditioner outdoor unit on its stand (the home's) | 0.9 m tall |
+| KM-A23 | the gas and electricity meters on their wall board | 0.8 m wide |
+| KM-A24 | a house letterbox | 0.45 m tall |
+| KM-A25 | a grey roadside control cabinet | 1.6 m tall |
+| KM-A26 | a concrete street-lamp pole with its curved arm | 7 m tall |
+| KM-A27 | a bicycle rack with parked bicycles | 2.4 m long |
+| KM-A28 | Hase Station's ticket gate with its IC card reader | 1.0 m tall |
+| KM-A29 | a station name board on two posts | 1.8 m wide |
+| KM-A30 | the yellow "beware of black kites" sign | 2.2 m tall |
+| KM-A31 | nobori banner flags in a weighted stand | 2.4 m tall |
+| KM-A32 | an A-frame chalkboard menu and a wooden stool | 1.0 m tall |
+| KM-A33 | the souvenir rack of chopsticks and fans | 1.4 m tall |
+| KM-A34 | stacked red and green plastic crates | 0.9 m tall |
+| KM-A35 | stacked polystyrene fish boxes and a hose reel | 0.8 m tall |
+| KM-A36 | a surfboard rack with a wetsuit on a hanger | 2.0 m tall |
+| KM-A37 | crab traps and a heap of fishing nets with floats | 1.2 m long |
+| KM-A38 | the rice ball in its wrapper (the Kite Thief's) | 10 cm across |
+| KM-V01 | the tram: KM-P5 adds its front | 12 m long |
+| KM-V05 | a small white compact car (its number plate blanked) | 3.9 m long |
+| KM-B20 | the fishing boat on its rollers: KM-P5 adds its 3D shape | 5 m long |
+
+**Plants** (KM-P2 and KM-P6), built as leaf-card plants (`kit_plants.py`), dressed with the sheets' own leaves:
+
+| Id | Plant | Sheet |
+|---|---|---|
+| KM-G01 to G11 | black pine, camphor, Japanese cedar, cherry in green leaf, bamboo clump, blue hydrangea, azalea, persimmon, potted bonsai, morning glory on a trellis, mossy stone with ferns | KM-P2 |
+| KM-G12 | a big old ginkgo | KM-P6 |
+| KM-G13 | a Japanese maple | KM-P6 |
+| KM-G14 | a zelkova park tree | KM-P6 |
+| KM-G15 | a clipped garden pine | KM-P6 |
+| KM-G16 | a cherry in pink blossom | KM-P6 |
+| KM-G17 | tall timber bamboo | KM-P6 |
+| KM-G18 | a Japanese cedar's foot with its roots and ferns | KM-P6 |
+| KM-G19, G20 | hydrangea bushes, pink and violet | KM-P6 |
+| KM-G21 | a clipped hedge | KM-P6 |
+| KM-G22 | lotus leaves and flowers | KM-P6 |
+| KM-G23 | dune grass with a beach shrub | KM-P6 |
+| KM-G24 | a clump of ferns | KM-P6 |
+| KM-G25 | a boulder with moss and ivy | KM-P6 |
+| KM-G26 to G33 | the home's pots: the bonsai pine, the bonsai in a dark bowl, the round shrub planter, the pink flowers, the white flowers, the hydrangea planter, the morning glories, the plant on its stone stand (their backs and sides, behind the cut-outs) | KM-P6 |
+
+**Plates** (KM-P3: KM-T01 to T06; KM-P7, new): KM-T16 rusty corrugated iron, KM-T17 silver-grey timber boards, KM-T18
+vermilion torii timber over its black base, KM-T19 a mossy random-stone wall, KM-T20 streaked white concrete, KM-T21
+ceramic siding.
+
+**Animals** (KM-P4 and KM-P8), each moved by one of the game's ambient behaviours (`World/`), or a hazard (`Hazards/`):
+
+| Id | Animal | Sheet | Behaviour |
+|---|---|---|---|
+| KM-N01 | the ginger cat | KM-P4 | WallCat |
+| KM-N02 | the tanuki | KM-P4 | TreeSquirrel's dash, into the undergrowth instead of up a tree |
+| KM-N03 | a Pallas's squirrel | KM-P4 | TreeSquirrel |
+| KM-N04 | a Shiba Inu (red collar) | KM-P4 | Dog (the hazard: noses a low ball back; chip it over) |
+| KM-N05 | the black kite | KM-P4 | perched (CritterIdle), circling (SkyFlock), the snack dive (Seagull) |
+| KM-N06 | a large-billed crow | KM-P4 | GroundBird |
+| KM-N07 | a shrine pigeon | KM-P4 | GroundBird; SkyFlock over the town |
+| KM-N08 | a tree sparrow | KM-P4 | GroundBird, in twos and threes |
+| KM-N09 | a barn swallow | KM-P4 | perched on the wires (CritterIdle); SkyFlock, low and fast |
+| KM-N10 | a black-tailed gull | KM-P4 | GroundBird on the sand; SkyFlock over the sea |
+| KM-N11 | a little egret | KM-P4 | GroundBird, wading at the water's edge |
+| KM-N12, N13 | koi, red-and-white and golden | KM-P8 | PondDuck, just under the water |
+| KM-N14 | a pond turtle | KM-P8 | basking on a stone (CritterIdle); slides in when the kid comes close |
+| KM-N15 | a grey heron | KM-P8 | GroundBird, slow; standing at the pond's edge |
+| KM-N16 | a cormorant | KM-P8 | on a rock, wings held open to dry (CritterIdle) |
+| KM-N17 | a white wagtail | KM-P8 | GroundBird, tail wagging |
+| KM-N18 | a Japanese white-eye | KM-P8 | in a tree's crown (CritterIdle), darting between trees |
+| KM-N19 | a brown-eared bulbul | KM-P8 | GroundBird; perched in the trees |
+| KM-N20 | an oriental turtle dove | KM-P8 | GroundBird |
+| KM-N21 | a calico cat | KM-P8 | WallCat; asleep on a step (CritterIdle) |
+| KM-N22 | a black-and-white cat | KM-P8 | WallCat, stretched out on a wall top |
+| KM-N23 | a tree frog | KM-P8 | on a leaf (CritterIdle: its throat; a hop when the ball lands near) |
+| KM-N24 | a land snail | KM-P8 | on a wet leaf or step (CritterIdle, creeping) |
+| KM-N25 | an Asian swallowtail | KM-P8 | FlitButterfly |
+| KM-N26 | a red dragonfly | KM-P8 | FlitButterfly, straighter and faster, hanging still in the air |
+| KM-N27 | a shore crab | KM-P8 | ShoreCrab |
+| KM-N28 | a starfish | KM-P8 | in a tide pool (still) |
+
+**Rules for the levels:** the dressing never stands on the play lane (only hazards do); ambient animals score nothing
+and stop nothing; no more than 12 animals awake on screen at once (AmbientAgent rests the rest); every addition keeps the
+level's side-by-side with its picture true: it goes where the picture has room for it (behind a fence, in a pond, on a
+wire, in the sky, at the lane's edges), never over something the picture shows.
+
 ## The prompts
 
 ### First: your pictures in KM-0's look
 
 KM-0 is the bar for every asset and background (a photograph: real materials, a deep cobalt sky with cumulus, sea haze).
-Twelve level pictures and the props and plants sheets came out painted instead, so each is made again as a photograph
+Twelve level pictures, the props and plants sheets and the second props sheet (KM-P5) came out painted instead, so each is made again as a photograph
 of the same place, with its layout kept, since the models are measured from it. A new Gemini chat with Nano Banana 2.1
 (it keeps the 4:1 shape; Pro stops at 21:9): paste KM-R0 with KM-0 attached, then one RESTYLE per message, attaching that
 picture. KM1-1 (the home's picture) first, as the test: push it and Claude rebuilds the home from it; then the rest. Save
@@ -270,6 +366,15 @@ RESTYLE KM-P2, the plants sheet. Attach KM-P2. Make it a photograph in KM-0's lo
 where it is, at its size and with its outline; only the look changes. Each plant a photograph of the real plant, on the same plain mid-grey
 background, in the same place and at the same size, with its grey scale poles, in even soft studio light.
 FORMAT: exactly the attached picture's shape, 4:1.
+```
+
+```text
+RESTYLE KM-P5, the second props sheet. Attach KM-P5. Make it a photograph in KM-0's look, by the rules above: every
+object exactly where it is, at its size and with its outline; only the look changes. Each object a photograph of the
+real thing, on the same plain mid-grey background, in even soft studio light with a small soft shadow under each. Keep
+the signs' Japanese text where it is legible; garbled text becomes a short invented name. The small car: no badge on
+its grille and no readable number plate (a plain white plate). The tram keeps its green-and-cream colours.
+FORMAT: exactly the attached picture's shape, 16:9.
 ```
 
 ### Step 0: the model sheet base prompt (only when Claude asks for a sheet)
@@ -747,8 +852,10 @@ tall with the plinth. Same rules as before.
 
 ```text
 BUILD KM-K, the Kamakura kit. Read CLAUDE.md, docs/LEARNINGS.md, docs/PERFORMANCE.md, docs/ART_DIRECTION.md ("Production
-rules") and docs/KAMAKURA_BUILD.md first. The pictures are in review/kamakura/refs, the textures in review/kamakura/textures
-(KM-T), the foliage in review/kamakura/foliage (KM-F), any model sheets in review/kamakura/sheets.
+rules") and docs/KAMAKURA_BUILD.md first. The pictures are in review/kamakura/refs, with the eight sheets and plates
+(KM-P1 to P8: every asset's id in "The sheets' assets, by id"), the textures in review/kamakura/textures (KM-T), the
+foliage in review/kamakura/foliage (KM-F), any model sheets in review/kamakura/sheets. The animals (KM-N) go into the
+animals kit, built from KM-P4 and KM-P8 like the props.
 1. The models, in this plan's order, in tools/blender/kit_buildings_km.py (the home and the vending machine are its
    proof): measure each asset in its source picture (pixels to the metre from a known size), build it by script at real
    size (front to -Y, origin on the ground), project the picture's pixels onto the faces toward the street, sample its
@@ -777,6 +884,8 @@ KM-L99): level ids KM1-1 ... KM3-3 in Editor/GeneratedContent.cs, their stops in
 Kamakura's map layout (as TownMapLayout.json is for the original); 2-5 and 3-3 end at the school gate. Build the home stem
 (the lane from the house to the vending-machine corner) and the school approach (from the great red gate past the arched
 bridge to the school gate) once, as pieces every route's first and last legs use. Nothing is shown to players yet.
+Every level then places the sheets' assets its prompt lists, by id (docs/KAMAKURA_BUILD.md, "The sheets' assets, by id"),
+by that section's rules for the levels.
 ```
 
 ```text
@@ -785,8 +894,15 @@ the home and its fence (the home stem's start), the persimmon, the potted plants
 convex mirror, the red and the blue vending machines, the little shrine with its torii and steps, the lane, the level
 crossing (bells, lamps, barriers: the tram passes, wait for it), the beige house behind, the poles and the gantry, Hase
 Station's platform with the hydrangeas (the stop). The play lane is the green walking strip. Hazards: a line of
-first-graders in yellow caps walking to school (don't bump them), a delivery scooter, the cat on the wall. Then: the
-coin audit, LevelFeasibility, and a side-by-side of preview_street.py through the game camera against the reference.
+first-graders in yellow caps walking to school (don't bump them), a delivery scooter, the cat on the wall.
+From the sheets: on the home, its air conditioners' backs and stands (KM-A22), its meters and letterbox (KM-A23, A24)
+and the backs of its pots (KM-G26 to G33); the blue
+vending machine (KM-A19) beside the red, the recycling bins (KM-A20) beside them; a control cabinet (KM-A25) by the
+crossing; street lamps (KM-A26) on the poles; the tram's front at the crossing (KM-V01); Hase's ticket gate and name
+board (KM-A28, A29); pink and violet hydrangeas (KM-G19, G20) among the blue. Animals: the ginger cat on the block wall
+(KM-N01, WallCat: the hazard above); sparrows on the pavement (KM-N08); swallows on the wires, darting low over the
+lane (KM-N09); a crow on the recycling bins (KM-N06). Then: the coin audit, LevelFeasibility, and a side-by-side of
+preview_street.py through the game camera against the reference.
 ```
 
 ```text
@@ -794,13 +910,23 @@ BUILD KM-L13, KM1-3 Komachi-dori (dribble). From review/kamakura/refs/KM1-3_koma
 square (the taxi sign, the barriers, the bicycles, the red gateway), the convex mirror and the pole, the soft-serve stand,
 the croquette shop, the rice-cracker shop, the souvenir shop with its banners, the "beware of kites" sign, the rickshaw,
 the shrine's side gate (the stop). Stone paving. Hazards: dense sightseers, the rickshaw as a slow moving obstacle to ride
-behind, a black kite diving at a snack (the gull-style hazard, with the new kite model). Same checks as KM-L11.
+behind, a black kite diving at a snack (KM-N05: the Seagull dive). From the sheets: the phone box and a bicycle rack in
+the station square (KM-A21, A27), the bins (KM-A20), a street lamp (KM-A26); along the shops the kite sign (KM-A30),
+nobori flags (KM-A31), the chalkboard and stools (KM-A32), the souvenir rack (KM-A33), crates (KM-A34); the shops' tin
+roofs in rusty corrugated iron (KM-T16). Animals: pigeons in the station square (KM-N07, GroundBird: they burst up as
+the ball comes), a calico cat asleep on a shop's step (KM-N21), sparrows under the stools (KM-N08). Same checks as
+KM-L11.
 ```
 
 ```text
 BUILD KM-L14, KM1-4 The Shrine Bridge (dribble, ends at school). From review/kamakura/refs/KM1-4_the_shrine_bridge.png:
 the shrine's gravel, the purification pavilion, the lanterns, the arched stone bridge over the lotus pond (a hump to
-jump), the fortune racks, the stairs and hall behind, then the school approach to the school gate (the end). Pigeons.
+jump), the fortune racks, the stairs and hall behind, then the school approach to the school gate (the end). From the
+sheets: the big ginkgo (KM-G12), the lotus in the pond (KM-G22), the hall's vermilion timber (KM-T18), the shrine's
+mossy stone wall (KM-T19), the cherry in blossom at the school gate (KM-G16), a clipped hedge along the school (KM-G21).
+Animals: koi under the lotus (KM-N12, N13), a turtle basking on a stone in the pond (KM-N14), a grey heron at the
+pond's edge (KM-N15: it lifts off slowly as the kid crosses the bridge), pigeons and turtle doves on the gravel
+(KM-N07, N20), a swallowtail and a red dragonfly over the lotus (KM-N25, N26), a white-eye in the cherry (KM-N18).
 Same checks.
 ```
 
@@ -810,61 +936,91 @@ card reader in time, board before the chime ends, keep the ball still against th
 press STOP at your stop; a missed stop makes the next leg longer). Then KM1-2: a fixed side-on camera inside the tram,
 built from review/kamakura/refs/KM1-2_ride_the_enoden.png (the benches, straps, poles, windows, door, route map,
 next-stop display, stop button; the houses outside slide past as painted layers); three stops, Yuigahama, Wadazuka,
-Kamakura; the grandmother boarding at Yuigahama (give up your seat for a bonus). Tests for the ride's rules.
+Kamakura; the grandmother boarding at Yuigahama (give up your seat for a bonus). From the sheets: the stations seen
+through the doors at each stop with their ticket gates and name boards (KM-A28, A29); swallows on the wires and pigeons
+on the platforms (KM-N09, N07) in the passing layers. Tests for the ride's rules.
 ```
 
 ```text
 BUILD KM-L21, KM2-1 Down to Yuigahama (dribble). From review/kamakura/refs/KM2-1_down_to_yuigahama.png: the home stem,
 then the houses, the lane, the surf shop, the tunnel under the coast road (dark: DarkZone), the surf rental hut, the
-boardwalk onto the sand (the stop). Same checks.
+boardwalk onto the sand (the stop). From the sheets: surfboard racks with wetsuits (KM-A36), the bicycle rack with
+board carriers (KM-A27), a letterbox at each house (KM-A24); the surf huts in silver-grey timber (KM-T17), the tunnel
+and the road's embankment in streaked concrete (KM-T20), the neighbours' houses in ceramic siding (KM-T21); dune grass
+at the boardwalk's end (KM-G23), the garden pines (KM-G15). Animals: a Shiba Inu on its patch of the lane before the
+tunnel (KM-N04, the Dog hazard: it noses a low ball back; chip it over), a black-and-white cat stretched out on a wall
+(KM-N22), sparrows and a wagtail on the boardwalk (KM-N08, N17). Same checks.
 ```
 
 ```text
 BUILD KM-L22, KM2-2 Yuigahama Morning (dribble). From review/kamakura/refs/KM2-2_yuigahama_morning.png: along the beach
 past the surfboards, the fishing boats on their rollers with the nets and crates, the lifeguard tower, the litter sacks,
 the sea wall and the beach houses, to the road and Grandma's shop (the stop). Tide on the sand (Tide), a black kite
-circling. Same checks.
+circling (KM-N05). From the sheets: the boats in 3D (KM-B20), crab traps and nets (KM-A37), fish boxes (KM-A35), dune
+grass at the foot of the sea wall (KM-G23), the sea wall in streaked concrete (KM-T20). Animals: gulls standing on the
+sand and crossing over the sea (KM-N10), an egret wading at the water's edge (KM-N11), shore crabs at the tide line
+(KM-N27), a crow at the litter sacks (KM-N06). Same checks.
 ```
 
 ```text
 BUILD KM-L23, the errand (mini-game M2) and KM2-3 Grandma's Whitebait Shop. Build the errand system once (docs/CITIES.md,
 M2), then KM2-3 at the shop from review/kamakura/refs/KM2-3_grandmas_whitebait_shop.png: fold the furoshiki's four
 corners in the order shown, tie the knot in two timed taps; the bento then rides on the backpack for the rest of the
-route (the Delivered badge). Tests for the errand's rules.
+route (the Delivered badge). From the sheets: the fish boxes and hose reel (KM-A35), crates (KM-A34). Animals: a
+calico cat on the shop's step, watching the drying whitebait (KM-N21), a gull on the sea wall eyeing it too (KM-N10), a
+swallow at its nest under the shop's eave (KM-N09). Tests for the errand's rules.
 ```
 
 ```text
 BUILD KM-L24, drop and come back (M4) and KM2-4 The Kite Thief. Build the drop-and-come-back system once (docs/CITIES.md,
 M4), then KM2-4 from review/kamakura/refs/KM2-4_the_kite_thief.png: the rock shelves with tide pools, the steps, the pine
 with the kite; the kite snatches the rice ball and drops it on a rock behind; dribble back for it before a wave covers it,
-then on to the great wooden torii at the foot of the avenue (the stop). Same checks.
+then on to the great wooden torii at the foot of the avenue (the stop). From the sheets: the rice ball itself (KM-A38),
+the kite (KM-N05: perched on the pine, then the snatch), the black pines (KM-G01), dune grass on the headland (KM-G23).
+Animals: a cormorant drying its wings on a rock (KM-N16), shore crabs and starfish in the tide pools (KM-N27, N28),
+gulls over the waves (KM-N10). Same checks.
 ```
 
 ```text
 BUILD KM-L25, KM2-5 Wakamiya-oji (dribble, ends at school). From review/kamakura/refs/KM2-5_wakamiya_oji.png: the raised
 footpath between lanterns and cherry trees, the bakery, the pottery shop, the sweets shop, the crossing with the volunteer's
 flag (wait, then cross), the great red torii, then the school approach to the school gate (the end; KM1-4's school, not the
-one in this picture). Same checks.
+one in this picture). From the sheets: nobori flags and a chalkboard at the shops (KM-A31, A32), the vending machines
+(KM-A06, A19) with crates and bins beside them (KM-A34, A20), street lamps (KM-A26); the great torii in vermilion timber
+(KM-T18); the side buildings in ceramic siding (KM-T21); a small car parked across the road (KM-V05); the cherries along
+the path in green leaf (KM-G04) and the one
+by the school's gate in blossom (KM-G16), a clipped hedge (KM-G21). Animals: white-eyes and a bulbul in the cherries
+(KM-N18, N19), pigeons on the raised path (KM-N07), a crow on the bins (KM-N06). Same checks.
 ```
 
 ```text
 BUILD KM-L31, KM3-1 Hydrangea Steps (dribble, the June rain). From review/kamakura/refs/KM3-1_hydrangea_steps.png: the
 home stem, the back gate, the mossy wall, the stone steps between hydrangea banks (wet stone: the ball runs on), the
 lantern, the rest hut and umbrella stand, the trail signpost (the stop). The rain's light: Kamakura's June drizzle
-(docs/CITIES.md: about 6,800 K, no hard shadows; a CityClimate for the route). Same checks.
+(docs/CITIES.md: about 6,800 K, no hard shadows; a CityClimate for the route). From the sheets: the hydrangea banks in
+blue, pink and violet (KM-G06, G19, G20), ferns (KM-G24), mossy boulders (KM-G25), the home's back wall in mossy stone
+(KM-T19). Animals, for the rain: tree frogs on the hydrangea leaves (KM-N23: one hops off when the ball lands near),
+snails on the wet steps' edges (KM-N24), a bulbul calling from a branch (KM-N19). No butterflies in the rain. Same
+checks.
 ```
 
 ```text
 BUILD KM-L32, KM3-2 The Hiking Trail (dribble). From review/kamakura/refs/KM3-2_the_hiking_trail.png: roots as steps, the
 signpost, the stream and the wooden footbridge, the cave tomb with its pagoda, the tanuki (a new animal), ferns, the rail
-fence, to Genjiyama park (the stop). Same checks.
+fence, to Genjiyama park (the stop). The tanuki is KM-N02 (it watches, then dashes into the undergrowth when the kid
+comes close). From the sheets: the cedars' feet with their roots and ferns (KM-G18), ferns (KM-G24), mossy boulders
+(KM-G25). Animals: a Pallas's squirrel crossing the trail and up a cedar (KM-N03, TreeSquirrel), a tree frog by the
+stream (KM-N23), a crow in the canopy (KM-N06), a snail on the footbridge's rail (KM-N24). Same checks.
 ```
 
 ```text
 BUILD KM-L33, KM3-3 Genjiyama Down to School (dribble, ends at school). From
 review/kamakura/refs/KM3-3_genjiyama_down_to_school.png: the lawn and the statue, the benches, the bell tower (the
 morning bell: a timing moment), the bamboo grove, the stone steps down, then the school approach to the school gate (the
-end; KM1-4's school). Same checks.
+end; KM1-4's school). From the sheets: the park's zelkovas and a maple (KM-G14, G13), the timber bamboo grove
+(KM-G17), the bins by the benches (KM-A20), the school's clipped hedge (KM-G21), mossy boulders by the steps (KM-G25).
+Animals: Pallas's squirrels on the lawn, dashing up the zelkovas (KM-N03, TreeSquirrel), turtle doves and a crow on the
+lawn (KM-N20, N06), a wagtail on the wet school yard (KM-N17). Same checks.
 ```
 
 ```text

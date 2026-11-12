@@ -1924,6 +1924,19 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
   white concrete, ceramic siding); KM-P8 thirty more figures (koi and a pond turtle, a grey heron, a cormorant drying its
   wings, a wagtail, a white-eye, a bulbul, a turtle dove, a calico and a black-and-white cat, a tree frog, a snail, a
   swallowtail, a red dragonfly, a shore crab, a starfish), each with its real size.
+- **The eight sheets in, and the level prompts place them** (the user pushed KM-P5 to P8: "Now update the level design
+  prompts accordingly"). The uploads came as `.png.PNG` (one `.pn.PNG`) and renamed; the second "P8" file was KM-P4's
+  animals, now `KM-P4_animals_sheet.png`. Checked before use: KM-P4, P6, P7 and P8 are photographs as asked; KM-P5 came
+  out illustrated, with a readable number plate and some garbled text (RESTYLE KM-P5 added; `docs/LEARNINGS.md` D12).
+  `docs/KAMAKURA_BUILD.md` gains "The sheets' assets, by id": every asset of the eight sheets with an id (props KM-A19
+  to A38 and KM-V05; plants KM-G01 to G33; plates KM-T16 to T21; animals KM-N01 to N28), its real size and, for each
+  animal, the game behaviour that moves it (WallCat, GroundBird, PondDuck, ShoreCrab, TreeSquirrel, FlitButterfly,
+  SkyFlock, the Dog hazard, the kite's Seagull dive), plus the levels' rules (nothing on the play lane but hazards, at
+  most 12 animals awake on screen, the side-by-side with the picture stays true). Every level prompt, KM-L11 to KM-L33,
+  now lists the sheets' assets it places, by id: for instance KM1-4's ginkgo, lotus, koi, basking turtle, heron, doves,
+  swallowtail and dragonfly; KM2-1's Shiba Inu as the Dog hazard; KM2-4's cormorant, crabs and starfish; KM3-1's tree
+  frogs and snails in the rain; KM3-3's squirrels on the lawn. A script check: every id used is defined, and every new
+  asset is placed in at least one level. BUILD KM-K reads all eight sheets.
 - **Who makes the photographs:** the user, in the Gemini app (a phone works), sending each result in the chat or pushing
   it. From the cloud session there is no image model to run: the Hugging Face connector has running Spaces switched off
   (gradio=none), huggingface.co and hf.space are blocked by the proxy, and Gemini's API needs the user's key (declined for

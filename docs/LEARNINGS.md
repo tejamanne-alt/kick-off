@@ -663,6 +663,9 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
 | Upload names | `KM1-1_hase_lanes.png.PNG`, `IMG_9620.png` | rename | save with exactly the id's name |
 | Hidden faces sampled from the front: stretched, an ornament smeared over a wall, streaks | the first proof | lay samples at real size; then KM-P3 | (the kit: hidden faces from the city's plates) |
 | A plate under a metre across, with nests and paint splashes | KM-P3's tiles and boards | build walls board by board and roofs tile by tile from the clean pieces | a plate shows about 2 m by 2 m, evenly weathered, no standout marks |
+| A sheet came out illustrated though it asked for KM-0's photographic look, with KM-0 attached | KM-P5 (KM-P4, P6, P7, P8 came out photographs) | RESTYLE KM-P5; shapes taken from it meanwhile | (the check before saving: the look target) |
+| A readable number plate and a grille badge on a car; garbled sign text | KM-P5's car, station board, fish boxes | the plate and badge blanked when built; RESTYLE KM-P5 asks for them gone | no readable plates (base prompt); every word legible |
+| A file saved as another sheet's id | KM-P4's animals uploaded as `KM-P8_animals.png.PNG` beside the real KM-P8 | renamed `KM-P4_animals_sheet.png` | save with exactly the id's name |
 
 - *Why:* the pictures were checked for their content (the right street, the right objects), not for being buildable:
   solid, clean, apart, unbranded, consistent.
