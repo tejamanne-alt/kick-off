@@ -1869,6 +1869,22 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
   to 1200) and the right air conditioner are still half see-through, so the home stays built from KM-x2. Everything
   else sits 5 px right and 2 down of the first version: the vending machine's crop follows. Its machine's panel read
   as a real drink logo: repainted with an invented name (`docs/LEARNINGS.md` D11).
+- **KM-P3 on the home, and the comparison faults as prompt rules** (the user: use KM-P3's plates; try its tiles for
+  more detail; record the comparison fails and build them into the prompts).
+  - Every face the picture doesn't show now takes KM-P3's photographic boards and tiles, in the house's colours (Lab
+    mean and spread), at 160 px to the metre. A plate covers under a metre and has nests and paint splashes, so laid
+    whole it repeated in a grid: walls are assembled board by board (a random one of the plate's five boards, made to
+    repeat top to bottom, started at a random height, some upside down), roofs tile by tile from the 4 clean tiles of
+    the plate's 9 (each brought to the same average colour, so no patchwork). Scale: boards 0.15 m, tiles 0.23 m wide,
+    as the house's own.
+  - A trial on the board (not exported; `KmHomeTrialP3` in the .blend): the street-facing roofs in KM-P3's tiles as
+    well, the picture's ridge cap and both gutters kept as strips, with close-ups of the roof now and in the trial.
+  - `docs/LEARNINGS.md` D12 lists every fault the comparisons found in the pictures (painted drift, a see-through
+    building, a real logo, power lines over a roof, pots against the fence, sky on the roofline, garbled text, one home
+    drawn two ways, a corrected picture shifted, phone upload names, stretched side samples, a small plate with debris),
+    what the kit did, and the rule each set. The rules: the base prompt's new BUILT INTO 3D section and plate rules
+    (every city), KM-R0's ALSO FIX, KM-S0's object-alone rule, and "Check each picture before saving it" in
+    `docs/IMAGE_PROMPTS.md` and on the page's Start tab.
 - **Who makes the photographs:** the user, in the Gemini app (a phone works), sending each result in the chat or pushing
   it. From the cloud session there is no image model to run: the Hugging Face connector has running Spaces switched off
   (gradio=none), huggingface.co and hf.space are blocked by the proxy, and Gemini's API needs the user's key (declined for

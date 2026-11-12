@@ -162,7 +162,8 @@ boats on their lifts, a No Wake sign on its pile.
   at UV (0.97, 0.03) for flat-coloured parts; paint wear, panel lines, windows and signs into the atlas.
 - **A kit projected from the user's pictures** (Kamakura: `docs/KAMAKURA_BUILD.md`) keeps the pictures' own light, so
   its material is `Toon` with `_Lighting` 0.25 (as the clouds): the pictures' sun and shade as they are, a quarter of the
-  game's sun added. Its fronts are the pictures' pixels; its sides are samples of the same pictures. The pictures are in
+  game's sun added. Its fronts are the pictures' pixels; its hidden faces are the city's photographic plates (KM-P3),
+  in the pictures' colours, at real size, assembled piece by piece so nothing repeats in a grid. The pictures are in
   the city's look target's look (Kamakura's KM-0: a photograph), never a painted drift of it (D10).
 - **Recolourable parts:** UV channel 2, x = part id. 0 is fixed; 1 to 3 are tint groups (wall paint,
   foliage, fabric) the game can recolour at load, keeping each vertex's brightness relative to the

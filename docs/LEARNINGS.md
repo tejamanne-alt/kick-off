@@ -639,6 +639,33 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
 - *Rule:* every new or corrected picture is checked for real brands and logos before anything is built from it; a
   real one is repainted with an invented name, never shipped.
 
+**D12. What comparing Kamakura's pictures with their models caught, and the prompt rule each set (v122).**
+- *What:* building the home and the vending machine from the user's pictures, and setting each model beside its
+  picture (the proof boards), showed faults in the pictures themselves, each costing a fix in the kit. D9 to D11 are
+  the largest. All of them:
+
+| Fault | Where | What the kit had to do | The rule now in the prompts |
+|---|---|---|---|
+| Painted, anime-style pictures under a photographic look target | 12 level pictures, KM-P1, KM-P2 against KM-0 (D10) | have every one restyled (RESTYLE) | check each picture against the look target before saving |
+| A ghosted, half see-through building | KM1-1's home, its right half; the right third still in the corrected KM1-1 (D9) | mirror the good half; then build from KM-x2 | base prompt, BUILT INTO 3D: solid and whole; KM-R0 and KM-S0 fix it |
+| A real drink brand's logo | the corrected KM1-1's vending machine; KM-x2's is close (D11) | repaint the panel (うみかぜ) | no real brands, vending machines included; KM-R0 and KM-S0 replace it |
+| Power lines across a roof | KM-x2: two lines over the home's upper roof | track each line, fill it from one tile row away | lines run above the rooflines, never across a front or roof; KM-R0 removes them |
+| Pots, plants, a bin and an urn against the fence, touching and overlapping, dark ones on dark boards | KM-x2 (KM1-1 the same) | GrabCut per group with hints; boards painted back; cut-outs | what stands in front of a wall stands apart, the wall showing between |
+| A tree behind the fence, over the wall | KM-x2 | a cut-out card; the wall behind made from its left half | (the same rule) |
+| Roof outlines a few px off the drawn edge, sky on the roof | KM1-1, KM-x2 | paint the sky out of the roof band | crisp outlines against the sky |
+| Garbled sign text | KM-x2's shop sign | not modelled yet | every word legible; KM-R0 makes it an invented name |
+| One home drawn as two different houses | KM1-1 and KM-x2 | the home follows KM-x2 | a building seen before is the same building: attach its picture |
+| A corrected picture moved everything 5 px | the corrected KM1-1 | re-measure every crop from it | (the kit: re-measure whenever a picture is replaced) |
+| Upload names | `KM1-1_hase_lanes.png.PNG`, `IMG_9620.png` | rename | save with exactly the id's name |
+| Hidden faces sampled from the front: stretched, an ornament smeared over a wall, streaks | the first proof | lay samples at real size; then KM-P3 | (the kit: hidden faces from the city's plates) |
+| A plate under a metre across, with nests and paint splashes | KM-P3's tiles and boards | build walls board by board and roofs tile by tile from the clean pieces | a plate shows about 2 m by 2 m, evenly weathered, no standout marks |
+
+- *Why:* the pictures were checked for their content (the right street, the right objects), not for being buildable:
+  solid, clean, apart, unbranded, consistent.
+- *Rule:* every picture passes "Check each picture before saving it" (`docs/IMAGE_PROMPTS.md`, and the prompts page's
+  Start tab) before anything is built from it. Each fault a model's board finds in a picture becomes a rule in the
+  prompts (the base prompt's BUILT INTO 3D and SHEETS AND PLATES, KM-R0's ALSO FIX, KM-S0) and a row here.
+
 ## E. Levels and world
 
 - **E1. Every level had chapter-1 scenery.** A new-scene call unloaded the level definition. *Rule:* pass data into scene builders explicitly; never hold asset references across a new-scene call.

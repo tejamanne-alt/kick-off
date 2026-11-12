@@ -13,8 +13,12 @@ vending machine (`review/kamakura/kit_proof_board.jpg`, `tools/blender/kit_build
   home, from KM-x2: 110 px to the metre, the pavement at y 874), and the picture's own pixels are projected onto every face that faces
   the street. Straight on, the model is the picture, pixel for pixel; turned, it is a real 3D shape: the fence in front,
   the house set back, the roofs sloping away.
-- **Sides, backs and roofs out of view** take samples of the same picture's materials (the dark boards, the roof tiles),
-  or a side the props sheet shows, straightened when it is drawn at an angle (the vending machine's side, from KM-P1).
+- **Sides, backs and roofs out of view** take the city's photographic plates (KM-P3: boards, tiles, mortar, block,
+  stone), in the picture's colours, at real size (160 px to the metre), assembled piece by piece so nothing repeats in a
+  grid: walls board by board (each a random board of the plate, started at a random height, some upside down), roofs
+  tile by tile from the plate's clean tiles (nests and debris left out). Or a side the props sheet shows, straightened
+  when it is drawn at an angle (the vending machine's side, from KM-P1). On trial: the street-facing roofs in KM-P3's
+  tiles too, the picture's ridge cap and gutters kept as strips (the board's last rows).
 - **Things standing in front of a building are their own models:** plants, pots, bicycles, signs that stand off the wall.
   Painted on, they smear when the camera turns. They are cut out of the picture (OpenCV's GrabCut, per group, with
   hints) and stand in front as cut-outs on half an elliptic cylinder: straight on exactly the picture, turned round; the
@@ -114,8 +118,15 @@ KEEP EXACTLY
 - Every building, wall, fence, pole, wire, sign, vehicle, plant and object: in the same place, at the same size, with the
   same outline, the same number of storeys, windows, doors, posts and panels. Add nothing, remove nothing, move nothing.
 - The colours of things: the same paint, timber, tiles, signs and flowers.
-- Signs keep their Japanese text. Where text is garbled, a short invented name in the same place and size. No real brands.
+- Signs keep their Japanese text.
 - The picture's weather and time of day.
+
+ALSO FIX (the only changes to the layout)
+- Anything see-through, ghosted, faded or half-drawn becomes solid and whole, continuing what is around it.
+- Power lines crossing in front of a building's front or roof are removed. The poles, and the lines above the roofs, stay.
+- A logo that resembles a real brand (a vending machine's drink panel above all) becomes an invented Japanese name in the
+  same place, at the same size, in the same colours.
+- Garbled text becomes a short, legible invented name in the same place and size.
 
 CHANGE TO KM-0'S LOOK
 - A real photograph, not a painting or an illustration: no outlines, no brush strokes, no flat or cel shading, no anime
@@ -126,8 +137,6 @@ CHANGE TO KM-0'S LOOK
   blue-grey shade, deep contact shadows, a deep cobalt sky with big cumulus, a soft sea haze turning far hills blue. A
   picture in another light keeps it, photographed (a drizzle stays soft and shadowless); a sheet keeps its studio light.
 - Natural, rich colour as in KM-0, with no colour filter or tint over the whole picture.
-- Repair what can't be real (a ghosted or half-drawn building, a doubled object) by continuing what is around it, in the
-  same place.
 - No people: where a person would be, leave it empty. No animals except those in the picture. Add no text, labels, logos
   or watermarks.
 - Sharp from front to back: no depth of field, vignette, lens flare or film grain.
@@ -279,8 +288,11 @@ THE SHEET
 - A plain, even mid-grey background (#808080) in every panel. No floor, no other objects, no people.
 - Light: flat, even and shadowless, as on an overcast day in a studio. No cast shadows, no dark corners added, no
   highlights or reflections painted in, no rim light. Colours exactly as the lit parts of the reference.
-- Signs and lettering on the object are copied as they are in the reference. Add no labels, captions, arrows, numbers,
+- Signs and lettering on the object are copied as they are in the reference, unless they resemble a real brand: then an
+  invented name in the same place, size and colours. Every word legible. Add no labels, captions, arrows, numbers,
   logos or watermarks of your own.
+- The object alone, solid and whole: no wires, plants, bins or other objects in front of it or touching it, nothing
+  see-through but glass. Where the reference hides part of it behind something, show that part plainly.
 
 FORMAT: aspect ratio 1:1, the largest size you can make.
 
@@ -289,7 +301,9 @@ Then wait for my first object.
 
 ### Step 1: textures
 
-Gemini, Nano Banana 2.1 or Pro, a new chat. Attach the named source image each time.
+Claude builds walls and roofs from KM-P3 itself (board by board, tile by tile), so KM-T01 to T03 (boards, mortar, tiles)
+are needed only when Claude asks for more variety; the grounds (KM-T07 on) are still made here. Gemini, Nano Banana 2.1
+or Pro, a new chat. Attach the named source image each time.
 
 ```text
 TEXTURE KM-T01, dark-stained timber boards. Attach KM-P3. Make the top-left plate of the attached image (dark-stained

@@ -63,9 +63,16 @@ an exact ratio and 4K, Google AI Studio sets both as settings instead of words. 
    the shot says what continues.
 3. If the pictures drift (people creeping in, a street seen at an angle, edges bending, the wrong light, brand names, a
    narrower picture), paste the base prompt again with "Keep to these rules."
-4. Save each result as `review/<city>/refs/<id>_<what>.png`, for example `review/kamakura/refs/KM1-1_hase_lanes.png`,
-   outside `Assets/` so nothing reaches a build. Then ask for the city's kit to be built from them.
-5. Keep each city in one tool, so its pictures match each other. Different cities can use different tools.
+4. **Check each picture before saving it** (what comparing Kamakura's pictures with their models caught,
+   `docs/LEARNINGS.md` D12): it looks like the city's look target (Kamakura's KM-0 is a photograph, not a painting);
+   every building is solid (nothing see-through, ghosted or half-drawn); no real brand or logo, vending machines
+   included; no power line crossing in front of a building; every word legible; what stands in front of a wall stands
+   apart; a building seen before is the same building. If one fails, ask for just that fix ("Make the right half of the
+   house solid; change nothing else") or make the picture again.
+5. Save each result as `review/<city>/refs/<id>_<what>.png`, for example `review/kamakura/refs/KM1-1_hase_lanes.png`,
+   outside `Assets/` so nothing reaches a build, with exactly that name (a phone upload can add `.PNG` or name it
+   `IMG_1234.png`: rename it). Then ask for the city's kit to be built from them.
+6. Keep each city in one tool, so its pictures match each other. Different cities can use different tools.
 
 The order per city: the **look target** first (it fixes the light for the chat), then every level, then the sheets and
 plates.
@@ -129,9 +136,26 @@ CONTENT
   unless a shot asks for one. Parked vehicles are empty and nothing is moving.
 - Add no text, labels, captions, borders, logos or watermarks of your own.
 
+BUILT INTO 3D (our artists cut your pictures into models, so each must be clean)
+- Every building, wall and object is solid and whole: nothing transparent, ghosted, faded, double-exposed, half-drawn or
+  blending into what is behind it. Only glass is see-through.
+- A building that appears in more than one image is the same building in each: when I attach its earlier picture, copy
+  it exactly.
+- Overhead power lines and cables run from pole to pole above the rooflines or against the sky. None crosses in front of
+  a building's front or roof. The poles and their wires stay.
+- No real brands anywhere, vending machines, drink panels, cans and bottles included: invented names, and no lettering,
+  script, colour scheme or symbol that resembles a real brand.
+- Every word legible, in correct characters of the city's script: no garbled or made-up characters.
+- What stands in front of a wall (pots, plants, bins, bicycles, signs) stands apart, with the wall showing between the
+  pieces: nothing overlaps anything else, and together they hide at most the lowest third of a front.
+- Crisp outlines against the sky: rooflines, trees, poles.
+
 SHEETS AND PLATES
 When a shot is a SHEET (objects on a plain background) or a PLATE (a flat, straight-on texture), ignore the camera and
 light above and follow the shot.
+- A sheet's objects never touch or overlap each other.
+- A plate shows about 2 m by 2 m of real surface unless the shot gives another size, evenly weathered all over, with no
+  single mark that would stand out when it repeats (no nests or clumps, paint splashes, big stains, holes or signs).
 
 The city block follows. Then wait for my shots, one per message.
 ```

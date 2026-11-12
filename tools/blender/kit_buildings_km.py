@@ -84,7 +84,7 @@ class Builder:
         self.atlas, self.front_pos, self.front_map = atlas, front_pos, front_map
         self.side_pos, self.side_size = side_pos, side_size
 
-    def face(self, pts, side=None):
+    def face(self, pts, side=None, project=True):
         """pts: corners in order, counter-clockwise seen from outside. side: a sample for a non-front face: (pos, size),
         stretched once across the face, or (pos, size, px_per_m), laid at the picture's scale from the face's corner (the
         sample made big enough by tiled())."""
@@ -92,7 +92,7 @@ class Builder:
         f = self.bm.faces.new(vs)
         f.normal_update()
         n = f.normal
-        front = n.y < -0.25    # facing the street (walls, roof slopes toward it)
+        front = project and n.y < -0.25    # facing the street (walls, roof slopes toward it)
         if front:
             for loop in f.loops:
                 px, py = self.front_map(loop.vert.co)
@@ -151,16 +151,16 @@ class Builder:
         self.face([P(x1, y_eave_front, z_eave), P(x1, y_eave_back, z_eave), P(x1, y_ridge, z_ridge)], side)
         self.face([P(x0, y_eave_back, z_eave), P(x1, y_eave_back, z_eave), P(x1, y_eave_front, z_eave), P(x0, y_eave_front, z_eave)], side)
 
-    def hip_roof(self, x0, x1, xr0, xr1, y_eave_front, y_ridge, y_eave_back, z_eave, z_ridge, side=None):
+    def hip_roof(self, x0, x1, xr0, xr1, y_eave_front, y_ridge, y_eave_back, z_eave, z_ridge, side=None, project=True):
         """A hipped roof: the ridge (xr0 to xr1) shorter than the eaves, a sloping triangle at each end."""
         P = lambda x, y, z: Vector((x, y, z))
-        self.face([P(x0, y_eave_front, z_eave), P(x1, y_eave_front, z_eave), P(xr1, y_ridge, z_ridge), P(xr0, y_ridge, z_ridge)], side)
+        self.face([P(x0, y_eave_front, z_eave), P(x1, y_eave_front, z_eave), P(xr1, y_ridge, z_ridge), P(xr0, y_ridge, z_ridge)], side, project)
         self.face([P(x1, y_eave_back, z_eave), P(x0, y_eave_back, z_eave), P(xr0, y_ridge, z_ridge), P(xr1, y_ridge, z_ridge)], side)
         self.face([P(x0, y_eave_back, z_eave), P(x0, y_eave_front, z_eave), P(xr0, y_ridge, z_ridge)], side)
         self.face([P(x1, y_eave_front, z_eave), P(x1, y_eave_back, z_eave), P(xr1, y_ridge, z_ridge)], side)
         self.face([P(x0, y_eave_back, z_eave), P(x1, y_eave_back, z_eave), P(x1, y_eave_front, z_eave), P(x0, y_eave_front, z_eave)], side)
 
-    def skirt(self, outer, inner, z_eave, side=None):
+    def skirt(self, outer, inner, z_eave, side=None, project=True):
         """A ground-floor roof skirt (hisashi): four slopes from an eave rectangle up to the upper storey's walls.
         outer: (x0, x1, y0, y1) at z_eave. inner: (x0, x1, y0, y1, z_left, z_right), the line the slopes meet the walls."""
         P = lambda x, y, z: Vector((x, y, z))
@@ -169,7 +169,7 @@ class Builder:
         o = [P(ox0, oy0, z_eave), P(ox1, oy0, z_eave), P(ox1, oy1, z_eave), P(ox0, oy1, z_eave)]
         i = [P(ix0, iy0, zl), P(ix1, iy0, zr), P(ix1, iy1, zr), P(ix0, iy1, zl)]
         for k in range(4):
-            self.face([o[k], o[(k + 1) % 4], i[(k + 1) % 4], i[k]], side)
+            self.face([o[k], o[(k + 1) % 4], i[(k + 1) % 4], i[k]], side, project)
 
     def object(self, name, outward=True):
         # every face outward (Unity draws front faces only): turned round where it faces the model's middle; a cut-out
@@ -204,6 +204,115 @@ def keep_uv_white(o):
 
 
 # ---------------------------------------------------------------- the models
+# KM-P3, the user's photographic texture plates: a 3 x 2 grid (boards, mortar, tiles / concrete block, stone steps, window),
+# each about 843 x 848 px, straight on, close up. Their scale, from what they show next to the house's own picture: the
+# boards are about 170 px wide in the plate and 0.15 m in life; a tile's column is about 200 px and, on the home, 0.23 m.
+P3 = 'KM-P3_texture_plates.png'
+P3_PLATES = {'boards': (0, 0), 'mortar': (1, 0), 'tiles': (2, 0), 'block': (0, 1), 'stone': (1, 1), 'window': (2, 1)}
+P3_PX_PER_M = {'boards': 1130.0, 'tiles': 880.0}
+
+
+def p3_plate(name, trim=10):
+    im = ref(P3)
+    c, r = P3_PLATES[name]
+    w, h = im.width / 3, im.height / 2
+    return im.crop((round(c * w) + trim, round(r * h) + trim, round((c + 1) * w) - trim, round((r + 1) * h) - trim))
+
+
+def seamless(im):
+    """The plate made to repeat without a seam: blended with itself shifted by half, the shifted copy at the edges (where
+    its own wrap is continuous) and the plate in the middle."""
+    a = np.asarray(im.convert('RGB')).astype(np.float32)
+    h, w = a.shape[:2]
+    b = np.roll(a, (h // 2, w // 2), (0, 1))
+    tent = lambda n: 1 - np.abs(np.linspace(-1, 1, n))
+    wa = np.outer(tent(h), tent(w)) + 1e-3
+    wb = np.roll(wa, (h // 2, w // 2), (0, 1))
+    return Image.fromarray(((a * wa[..., None] + b * wb[..., None]) / (wa + wb)[..., None]).clip(0, 255).astype(np.uint8))
+
+
+def match_colours(im, ref_im):
+    """im's colours moved to ref_im's (each Lab channel's mean and spread), so a plate takes the house's own colours."""
+    a = cv2.cvtColor(np.asarray(im.convert('RGB')), cv2.COLOR_RGB2LAB).astype(np.float32)
+    r = cv2.cvtColor(np.asarray(ref_im.convert('RGB')), cv2.COLOR_RGB2LAB).astype(np.float32)
+    for c in range(3):
+        a[..., c] = (a[..., c] - a[..., c].mean()) / (a[..., c].std() + 1e-6) * r[..., c].std() + r[..., c].mean()
+    return Image.fromarray(cv2.cvtColor(a.clip(0, 255).astype(np.uint8), cv2.COLOR_LAB2RGB))
+
+
+# In the plates' own pixels (p3_plate, its 10 px border trimmed): the boards' grooves, and the tiles' column seams and
+# the cut just below each row's shadowed lower edge (one band = one row of tiles with its edge).
+P3_BOARD_GROOVES = [0, 142, 317, 490, 665, 823]
+P3_TILE_COLUMNS = [180, 385, 590, 795]
+P3_TILE_ROWS = [45, 240, 440, 655]
+
+
+def boards_texture(colours_from, px_per_m, w, h, seed=11):
+    """KM-P3's boards, laid one board at a time: each board a random one of the plate's five, made to repeat top to
+    bottom without a seam, sometimes upside down, started at a random height; so no patch of the plate repeats in a grid.
+    In the house's colours, at px_per_m, w x h px."""
+    rng = np.random.default_rng(seed)
+    pl = match_colours(p3_plate('boards'), colours_from)
+    k = px_per_m / P3_PX_PER_M['boards']
+    strips = []
+    for x0, x1 in zip(P3_BOARD_GROOVES[:-1], P3_BOARD_GROOVES[1:]):
+        a = np.asarray(pl.crop((x0, 0, x1, pl.height))).astype(np.float32)
+        b = np.roll(a, a.shape[0] // 2, 0)
+        t = 1 - np.abs(np.linspace(-1, 1, a.shape[0])) + 1e-3
+        wb = np.roll(t, a.shape[0] // 2)
+        a = (a * t[:, None, None] + b * wb[:, None, None]) / (t + wb)[:, None, None]
+        im = Image.fromarray(a.clip(0, 255).astype(np.uint8))
+        strips.append(np.asarray(im.resize((max(round(im.width * k), 2), max(round(im.height * k), 2)), Image.LANCZOS)))
+    out = np.zeros((h, w, 3), np.uint8)
+    x = 0
+    while x < w:
+        st = strips[rng.integers(len(strips))]
+        if rng.random() < 0.5:
+            st = st[::-1]
+        st = np.roll(st, rng.integers(st.shape[0]), 0)
+        col = np.concatenate([st] * (h // st.shape[0] + 2), 0)[:h]
+        out[:, x:x + st.shape[1]] = col[:, :min(st.shape[1], w - x)]
+        x += st.shape[1]
+    return Image.fromarray(out)
+
+
+def tiles_texture(colours_from, px_per_m, w, h, seed=7):
+    """KM-P3's tiles, laid one tile at a time: each a random one of the plate's clean tiles (the ones with no nest or
+    debris on them), so neither a stain nor a clump repeats in a grid. Each tile cell is one column wide and one row tall
+    with its shadowed lower edge, so cells fit in any order. In the house's colours, at px_per_m, w x h px."""
+    rng = np.random.default_rng(seed)
+    pl = match_colours(p3_plate('tiles'), colours_from)
+    raw = np.asarray(p3_plate('tiles')).astype(np.int32)
+    cw, ch = 205, 205
+    cells = []
+    for y0, y1 in zip(P3_TILE_ROWS[:-1], P3_TILE_ROWS[1:]):
+        for x0, x1 in zip(P3_TILE_COLUMNS[:-1], P3_TILE_COLUMNS[1:]):
+            r = raw[y0:y1, x0:x1]
+            debris = ((r[..., 0] - r[..., 2] > 18) & (r[..., 0] > 60)).mean()
+            if debris < 0.004:
+                cells.append(pl.crop((x0, y0, x1, y1)).resize((cw, ch), Image.LANCZOS))
+    k = px_per_m / P3_PX_PER_M['tiles']
+    sw, sh = max(round(cw * k), 4), max(round(ch * k), 4)
+    cells = [np.asarray(c.resize((sw, sh), Image.LANCZOS)).astype(np.float32) for c in cells]
+    # each tile brought to the same average colour (its own stains and sheen kept), so the roof shows no patchwork
+    mean = np.mean([c.reshape(-1, 3).mean(0) for c in cells], 0)
+    cells = [(c - c.reshape(-1, 3).mean(0) + mean).clip(0, 255).astype(np.uint8) for c in cells]
+    out = np.zeros((h + sh, w + sw, 3), np.uint8)
+    for y in range(0, h, sh):
+        for x in range(0, w, sw):
+            out[y:y + sh, x:x + sw] = cells[rng.integers(len(cells))]
+    print('tiles: %d clean tiles of KM-P3\'s 9' % len(cells))
+    return Image.fromarray(out[:h, :w])
+
+
+def plate_sample(name, colours_from, px_per_m, w, h):
+    """A KM-P3 plate, seamless, in the house's colours, at px_per_m, repeated to w x h px."""
+    im = seamless(match_colours(p3_plate(name), colours_from))
+    k = px_per_m / P3_PX_PER_M[name]
+    im = im.resize((max(round(im.width * k), 8), max(round(im.height * k), 8)), Image.LANCZOS)
+    return tiled(im, w, h)
+
+
 def tiled(im, w, h):
     """The sample repeated to w x h px, so a face laid at the picture's scale never runs off it."""
     out = Image.new('RGB', (w, h))
@@ -337,7 +446,9 @@ def dewire(im, wires, x0, x1, roof=(210, 305), search=8, half=2):
 def build_home(atlas):
     """KM-B01, the kid's home (KM-x2): the two-storey timber house with its hipped upper roof, the skirt roof round the
     ground floor with the entrance gable, the air conditioners on the skirt roof, and the board fence either side of the
-    entrance."""
+    entrance. Every face the picture doesn't show takes KM-P3's photographic boards and tiles, in the house's colours.
+    Also returns a trial (not exported): the same house with KM-P3's tiles on the street-facing roofs too, the picture's
+    ridge cap and gutters kept as strips."""
     src = ref(HOME['src'])
     # what stands in front of the fence, and the garden tree, become their own models: their pixels leave the walls
     masks = garden_masks(src)
@@ -357,45 +468,56 @@ def build_home(atlas):
     cx, gy, s, crop_box = HOME['cx'], HOME['gy'], HOME['s'], HOME['crop']
     fpos = atlas.place(fixed.crop(crop_box))
     fmap = lambda co: (cx + co.x * s - crop_box[0], gy - co.z * s - crop_box[1])
-    # the samples for the sides, laid at the picture's scale (110 px to the metre), repeated to cover the largest face
-    # the upper storey's dark boards (left of the window, under the light band), drawn out along their grain to a
-    # storey's height so no seam crosses them, then repeated along the wall
-    boards = tiled(fixed.crop((1432, 385, 1528, 440)).resize((96, 330), Image.BICUBIC), 1056, 330)
+    # the hidden faces: KM-P3's boards and tiles at 160 px to the metre, coloured like the picture's boards and roof
+    dens = 160.0
+    boards = boards_texture(fixed.crop((1432, 385, 1528, 440)), dens, 1320, 440)
     bpos = atlas.place(boards)
-    tiles = tiled(fixed.crop((1600, 255, 1800, 305)), 1000, 750)     # the upper roof's tiles (two rows), wires taken off
+    tiles = tiles_texture(fixed.crop((1600, 210, 1900, 300)), dens, 1120, 1100)
     tpos = atlas.place(tiles)
     casing = fixed.crop((1480, 450, 1504, 494))            # the air conditioner's casing beside its grille
     cpos = atlas.place(casing)
-    side, roof, ac = (bpos, boards.size, s), (tpos, tiles.size, s), (cpos, casing.size)
+    side, roof, ac = (bpos, boards.size, dens), (tpos, tiles.size, dens), (cpos, casing.size)
     X = lambda px: (px - cx) / s
     Z = lambda py: (gy - py) / s
     P = lambda x, y, z: Vector((x, y, z))
 
-    house = Builder(atlas, fpos, fmap, bpos, boards.size)
-    # the ground floor, under the skirt roof (its front: the entrance bay and, behind the fence, the walls), and the upper
-    # storey, set back
-    house.box(X(1390), X(2255), -3.0, 4.0, 0.0, Z(582), side=side, skip=('bottom', 'top'))
-    house.box(X(1425), X(2110), -2.0, 3.0, Z(582), Z(312), side=side, skip=('bottom',))
-    # the skirt roof: its eave at y 582 from x 1345 to 2258, hipped at both corners, meeting the upper walls at y 497-500
-    house.skirt((X(1345), X(2258), -3.6, 4.6), (X(1425), X(2110), -2.0, 3.0, Z(497), Z(500)), Z(582), side=roof)
-    # the entrance gable on the skirt roof: its front triangle (eaves at y 557, the ridge ornament's top at 412) faces
-    # the street; its two slopes run back to the upper wall
-    # the street; its two slopes keep the barge line's height at every depth (so straight on they stay inside the
-    # triangle) and run back over the skirt roof, meeting it in a valley, to the upper wall
-    ga, gb, gm, gpeak, gbase = X(1565), X(2065), X(1813), Z(412), Z(557)
-    zs = lambda y: Z(582) + (y + 3.6) / 1.6 * (Z(498) - Z(582))     # the skirt roof's height at depth y
-    yv = -3.6 + (gbase - Z(582)) / (Z(498) - Z(582)) * 1.6           # where the gable's eave meets the skirt
-    t = (zs(-2.0) - gbase) / (gpeak - gbase)                          # how far up the slope the valley reaches the wall
-    house.face([P(ga, -3.7, gbase), P(gb, -3.7, gbase), P(gm, -3.7, gpeak)], roof)
-    for e in (ga, gb):
-        xv = e + (gm - e) * t
-        house.face([P(e, -3.7, gbase), P(e, yv, gbase), P(xv, -2.0, zs(-2.0)), P(gm, -2.0, gpeak), P(gm, -3.7, gpeak)], roof)
-    # the two air conditioners standing on the skirt roof against the upper wall
-    for a0, a1 in ((1420, 1510), (2010, 2097)):
-        house.box(X(a0), X(a1), -2.35, -2.0, Z(502), Z(443), side=ac, skip=('bottom', 'back'))
-    # the upper roof, hipped: eaves x 1385 to 2147 at y 310, the ridge x 1450 to 2103 at y 184 (its cap's top)
-    house.hip_roof(X(1385), X(2147), X(1450), X(2103), -2.6, 0.5, 3.6, Z(310), Z(184), side=roof)
-    home = house.object('KmHome')
+    def house(name, plate_roofs):
+        h = Builder(atlas, fpos, fmap, bpos, boards.size)
+        pr = not plate_roofs
+        # the ground floor, under the skirt roof (its front: the entrance bay and, behind the fence, the walls), and the
+        # upper storey, set back
+        h.box(X(1390), X(2255), -3.0, 4.0, 0.0, Z(582), side=side, skip=('bottom', 'top'))
+        h.box(X(1425), X(2110), -2.0, 3.0, Z(582), Z(312), side=side, skip=('bottom',))
+        # the skirt roof: its eave at y 582 from x 1345 to 2258, hipped at both corners, meeting the upper walls at
+        # y 497-500
+        h.skirt((X(1345), X(2258), -3.6, 4.6), (X(1425), X(2110), -2.0, 3.0, Z(497), Z(500)), Z(582), side=roof,
+                project=pr)
+        # the entrance gable on the skirt roof: its front triangle (eaves at y 557, the ridge ornament's top at 412)
+        # faces the street; its two slopes keep the barge line's height at every depth (so straight on they stay inside
+        # the triangle) and run back over the skirt roof, meeting it in a valley, to the upper wall
+        ga, gb, gm, gpeak, gbase = X(1565), X(2065), X(1813), Z(412), Z(557)
+        zs = lambda y: Z(582) + (y + 3.6) / 1.6 * (Z(498) - Z(582))     # the skirt roof's height at depth y
+        yv = -3.6 + (gbase - Z(582)) / (Z(498) - Z(582)) * 1.6           # where the gable's eave meets the skirt
+        t = (zs(-2.0) - gbase) / (gpeak - gbase)                          # how far up the slope the valley reaches
+        h.face([P(ga, -3.7, gbase), P(gb, -3.7, gbase), P(gm, -3.7, gpeak)], roof)
+        for e in (ga, gb):
+            xv = e + (gm - e) * t
+            h.face([P(e, -3.7, gbase), P(e, yv, gbase), P(xv, -2.0, zs(-2.0)), P(gm, -2.0, gpeak), P(gm, -3.7, gpeak)],
+                   roof)
+        # the two air conditioners standing on the skirt roof against the upper wall
+        for a0, a1 in ((1420, 1510), (2010, 2097)):
+            h.box(X(a0), X(a1), -2.35, -2.0, Z(502), Z(443), side=ac, skip=('bottom', 'back'))
+        # the upper roof, hipped: eaves x 1385 to 2147 at y 310, the ridge x 1450 to 2103 at y 184 (its cap's top)
+        h.hip_roof(X(1385), X(2147), X(1450), X(2103), -2.6, 0.5, 3.6, Z(310), Z(184), side=roof, project=pr)
+        if plate_roofs:
+            # the picture's ridge cap and the two gutters, as strips in front of the plate-tiled roofs
+            h.box(X(1447), X(2105), -0.1, 0.6, Z(216), Z(180), side=roof, skip=('bottom',))
+            h.box(X(1383), X(2149), -2.7, -2.55, Z(316), Z(300), side=roof, skip=('back',))
+            h.box(X(1343), X(2260), -3.7, -3.55, Z(592), Z(574), side=roof, skip=('back',))
+        return h.object(name)
+
+    home = house('KmHome', False)
+    trial = house('KmHomeTrialP3', True)
 
     fence = Builder(atlas, fpos, fmap, bpos, boards.size)
     for f0, f1 in ((1388, 1655), (1968, 2255)):            # either side of the entrance, 2.1 m tall
@@ -405,11 +527,12 @@ def build_home(atlas):
     garden, tree = build_garden(atlas, src, masks, tmask)
     garden.parent = home
     tree.parent = home
-    return home, dict(source='KM-x2 (the middle): the house and its fence; in front of it, the pots, plants, bin, urn and '
-                             'stand (KmHomeGarden), behind the right fence the garden tree (KmHomeTree)',
-                      cutouts=list(CUTOUTS), cutout_material='Toon, _ALPHATEST_ON, _Cutoff 0.5, _Cull 0 (KamakuraCutout)',
-                      real_size=[round((2258 - 1345) / s, 2), 8.2, round(Z(184), 2)])
-
+    return home, trial, dict(source='KM-x2 (the middle): the house and its fence; in front of it, the pots, plants, bin, '
+                                    'urn and stand (KmHomeGarden), behind the right fence the garden tree (KmHomeTree); '
+                                    'the hidden faces in KM-P3\'s boards and tiles',
+                             cutouts=list(CUTOUTS),
+                             cutout_material='Toon, _ALPHATEST_ON, _Cutoff 0.5, _Cull 0 (KamakuraCutout)',
+                             real_size=[round((2258 - 1345) / s, 2), 8.2, round(Z(184), 2)])
 
 
 # ---------------------------------------------------------------- the things in front of the home
@@ -660,7 +783,30 @@ def board(home, vend, atlas_path, out):
                size=(900, 600), only=names)
     e = render(os.path.join(tmp, 'km_garden_right.png'), (gr + 2.2, -7.2, 1.4), (gr, -3.5, 0.55), fov=38,
                size=(900, 600), only=names)
-    rows.append([Image.new('RGB', (10, 10), (40, 40, 46)), d, e])
+    from PIL import ImageDraw, ImageFont
+    try:
+        small = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf', 30)
+    except OSError:
+        small = ImageFont.load_default()
+
+    def label(text, w=900, h=600):
+        im = Image.new('RGB', (w, h), (40, 40, 46))
+        ImageDraw.Draw(im).multiline_text((10, 10), text, fill=(235, 235, 240), font=small, spacing=10)
+        return im
+
+    rows.append([label('Close up, turned:\nthe pots and plants\nstand on their own'), d, e])
+    # the trial: the street-facing roofs in KM-P3's photographic tiles too (the picture's ridge cap and gutters kept)
+    trial = {'KmHomeTrialP3', 'KmHomeFence'} | set(CUTOUTS)
+    b2 = render(os.path.join(tmp, 'km_trial_front.png'), (hx, -40, hz), (hx, 0, hz), ortho=W / sc, size=(W, H),
+                only=trial)
+    c2 = render(os.path.join(tmp, 'km_trial_34.png'), (hx - 11, -14, 5.0), (hx, 0, 3.2), fov=40, size=(W, H), only=trial)
+    rows.append([label('Trial: every roof in\nKM-P3\'s photographic\ntiles (ridge cap and\ngutters from your\npicture)'), b2, c2])
+    # the roofs close up, turned: as now (the picture's tiles in front) and the trial
+    rx = X(1500)
+    cam, tgt = (rx - 2.6, -6.0, 6.6), (rx + 0.6, -1.5, 5.0)
+    f1 = render(os.path.join(tmp, 'km_roof_now.png'), cam, tgt, fov=36, size=(900, 600), only=names)
+    f2 = render(os.path.join(tmp, 'km_roof_trial.png'), cam, tgt, fov=36, size=(900, 600), only=trial)
+    rows.append([label('The roofs close up:\nnow (left) and the\ntrial (right)'), f1, f2])
     pad, head = 24, 70
     widths = [max(r[i].width for r in rows) for i in range(3)]
     W = sum(widths) + pad * 4
@@ -691,7 +837,7 @@ def main():
     K.reset()
     atlas = Atlas(ATLAS_SIZE)
     vend, vinfo = build_vending(atlas)
-    home, hinfo = build_home(atlas)
+    home, trial, hinfo = build_home(atlas)
     home.location.x = 0
     vend.location.x = 8.5
     atlas_path = os.path.join(OUT, 'KamakuraAtlas.png')
@@ -702,6 +848,7 @@ def main():
     bsdf = next(n for n in cut.node_tree.nodes if n.type == 'BSDF_DIFFUSE')
     with_cutout(cut, ct, bsdf.outputs[0])
     manifest = K.Manifest('Kamakura', 'KamakuraAtlas.png')
+    K.assign(trial, mat)                 # the KM-P3 roof trial: in the .blend and on the board, not exported
     for root, info in ((home, hinfo), (vend, vinfo)):
         K.assign(root, mat)
         for c in root.children_recursive:
