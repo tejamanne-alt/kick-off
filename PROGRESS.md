@@ -1849,6 +1849,10 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
   sides and hidden roofs are laid at the picture's scale from repeated samples instead of stretched. `KmHome` 57
   triangles, `KmHomeFence` 20, the vending machine 10. RESTYLE KM-x2 is now the photographic test, before KM1-1;
   ASSET KM-B01 attaches KM-x2. Still flat on the board: the pots, plants and bin on the fence, the garden tree above it.
+- **Who makes the photographs:** the user, in the Gemini app (a phone works), sending each result in the chat or pushing
+  it. From the cloud session there is no image model to run: the Hugging Face connector has running Spaces switched off
+  (gradio=none), huggingface.co and hf.space are blocked by the proxy, and Gemini's API needs the user's key (declined for
+  now: it could be added later as a network secret for generativelanguage.googleapis.com, header x-goog-api-key).
 
 ## After Phase 8 (next steps)
 
