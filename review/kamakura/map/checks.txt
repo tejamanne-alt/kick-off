@@ -1,17 +1,17 @@
-KM1: 2866 px in the game (3453 on the map)
+KM1: 2496 px in the game (3008 on the map)
 KM2: 2976 px in the game (3586 on the map)
 KM3: 2465 px in the game (2971 on the map)
 
 ok   KM1 starts at home and ends at school
-ok   KM1 is 2866 px long (1200 or more)
+ok   KM1 is 2496 px long (1200 or more)
 ok   KM2 starts at home and ends at school
 ok   KM2 is 2976 px long (1200 or more)
 ok   KM3 starts at home and ends at school
 ok   KM3 is 2465 px long (1200 or more)
-ok   KM1 shares 8.0 % of its length with another route leaving home (5 to 15 %)
-ok   KM1 shares 14.8 % with another route at the school end (15 % at most)
+ok   KM1 shares 9.1 % of its length with another route leaving home (5 to 15 %)
+ok   KM1 shares 5.6 % with another route at the school end (15 % at most)
 ok   KM2 shares 7.4 % of its length with another route leaving home (5 to 15 %)
-ok   KM2 shares 14.2 % with another route at the school end (15 % at most)
+ok   KM2 shares 11.2 % with another route at the school end (15 % at most)
 ok   KM3 shares 5.8 % of its length with another route leaving home (5 to 15 %)
 ok   KM3 shares 13.5 % with another route at the school end (15 % at most)
 ok   KM1 and KM2 keep 90 px apart in their middles, but for 1 crossing(s) 176 px long
@@ -20,7 +20,7 @@ ok   KM2 and KM3 keep 90 px apart in their middles, but for 0 crossing(s) 0 px l
 ok   KM1-1 node (1012, 1114) inside the core's inner area
 ok   KM1-2 node (1291, 1103) inside the core's inner area
 ok   KM1-3 node (2341, 987) inside the core's inner area
-ok   KM1-4 node (2072, 602) inside the core's inner area
+ok   KM1-4 node (2200, 509) inside the core's inner area
 ok   KM2-1 node (822, 1326) inside the core's inner area
 ok   KM2-2 node (1073, 1346) inside the core's inner area
 ok   KM2-3 node (1850, 1320) inside the core's inner area
@@ -52,7 +52,7 @@ ok   stop kamakuraStation clear of every node (119 px)
 ok   stop shrineSideGate within 2 px of KM1
 ok   the level starting at shrineSideGate has its node within 260 px after it
 ok   stop shrineSideGate lies after a node of its route
-ok   stop shrineSideGate clear of every node (119 px)
+ok   stop shrineSideGate clear of every node (100 px)
 ok   stop boardwalk within 2 px of KM2
 ok   the level starting at boardwalk has its node within 260 px after it
 ok   stop boardwalk lies after a node of its route

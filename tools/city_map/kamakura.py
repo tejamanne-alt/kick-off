@@ -28,14 +28,15 @@ APPROACH = [(1868, 358), (1960, 358), (2100, 360), SCHOOL]       # from under th
 SHRINE_STEPS = [(1876, 470), (1872, 420), (1868, 358)]           # the central path and steps up to the torii's foot
 
 ROUTES = {
-    # KM1 The Enoden: the lane by the tracks to Hase Station, the tram to Kamakura Station, up Komachi-dori, into the
-    # shrine at its side gate, over the arched bridge, up to the torii and along to school
+    # KM1 The Enoden: the lane by the tracks to Hase Station, the tram to Kamakura Station, up Komachi-dori to the
+    # shrine's side gate, then straight on up the street along the shrine's east side and right to the school (the user:
+    # "after 1-3 go straight and right to school, instead of shrine route")
     'KM1': STEM + [(330, 1078), (370, 1090), (420, 1092), (540, 1092), (720, 1090), (860, 1080),
                    (900, 1078), (1100, 1077), (1300, 1077), (1500, 1077), (1700, 1077), (1880, 1078), (2100, 1080),
                    (2250, 1080),
                    (2265, 1020), (2268, 940), (2285, 885), (2260, 800), (2230, 700), (2205, 600), (2188, 520),
-                   (2180, 490), (2120, 485), (2090, 482),
-                   (2030, 478), (1975, 475), (1905, 472)] + SHRINE_STEPS + APPROACH[1:],
+                   (2180, 490), (2120, 485), (2100, 483),
+                   (2100, 430)] + APPROACH[2:],
     # KM2 The Shonan Coast: down the lane, across the coast road, through the tunnel to the boardwalk, along the sand
     # to Grandma's shop, past the lifeguard tower to the rocks, back to the avenue's foot, up the avenue under both torii
     'KM2': STEM + [(330, 1078), (370, 1090), (395, 1105), (397, 1180), (400, 1245), (437, 1272), (437, 1330),
@@ -62,7 +63,7 @@ NAMES = {'KM1': 'The Enoden', 'KM2': 'The Shonan Coast', 'KM3': 'The Temple Hill
 STOPS = [
     ('hase', 'KM1', 'Hase Station', (860, 1080)),
     ('kamakuraStation', 'KM1', 'Kamakura Station', (2250, 1080)),
-    ('shrineSideGate', 'KM1', "Shrine side gate", (2090, 482)),
+    ('shrineSideGate', 'KM1', "Shrine side gate", (2100, 483)),
     ('boardwalk', 'KM2', 'The boardwalk', (600, 1396)),
     ('grandmasShop', 'KM2', "Grandma's shop", (1534, 1330)),
     ('lifeguardTower', 'KM2', 'Lifeguard tower', (1800, 1342)),
@@ -79,6 +80,7 @@ LEGS = {   # each level: its route, where it starts (home or a stop), its name
     'KM3-1': ('KM3', 'home', 'Hydrangea Steps'), 'KM3-2': ('KM3', 'trailSign', 'The Hiking Trail'),
     'KM3-3': ('KM3', 'genjiyama', 'Genjiyama Down to School'),
 }
+NODE_AFTER = {'KM1-4': 100}      # px past its stop where a level's node goes, if not the usual 120 (KM1-4: clear of the school's pin)
 RIDES = [('KM1', 'hase', 'kamakuraStation')]       # drawn dashed: the tram
 DISTRICTS = [('hase', (520, 960)), ('yuigahama', (1100, 1430)), ('komachi', (2330, 640)), ('wakamiya', (1990, 800)),
              ('shrine', (1860, 160)), ('hills', (560, 120)), ('sea', (900, 1500))]
@@ -153,7 +155,7 @@ def plan():
     nodes = {}
     for lid, (r, start, _) in LEGS.items():
         pts = routes[r]
-        s = own[r] + 150 if start == 'home' else along(pts, stops[start][2])[0] + 120
+        s = own[r] + 150 if start == 'home' else along(pts, stops[start][2])[0] + NODE_AFTER.get(lid, 120)
         nodes[lid] = at(pts, s)
     return routes, stops, nodes, home, school, own
 

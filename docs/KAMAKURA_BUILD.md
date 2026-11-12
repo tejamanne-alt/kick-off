@@ -216,10 +216,11 @@ where the game puts a level's node near its start). `tools/city_map/kamakura.py`
 
 **The routes, on the map's own roads:**
 - **Home** is the two-storey house on the lane west of the tram line's end; all three routes leave its gate together
-  to the corner (8.0 %, 7.4 % and 5.8 % of their lengths: the user's 5 to 15 %).
+  to the corner (9.1 %, 7.4 % and 5.8 % of their lengths: the user's 5 to 15 %).
 - **KM1 The Enoden (red):** along the lane by the tracks to **Hase Station** (KM1-1), the tram along the line to
-  **Kamakura Station** (KM1-2, dashed), up the red-paved Komachi-dori to the **shrine's side gate** (KM1-3), into the
-  shrine over the arched stone bridge and up the central steps (KM1-4).
+  **Kamakura Station** (KM1-2, dashed), up the red-paved Komachi-dori to the **shrine's side gate** (KM1-3), then
+  straight on up the street along the shrine's east side to the zebra crossing at the top, and right to the school gate
+  (KM1-4; the user: "after 1-3 go straight and right to school, instead of shrine route").
 - **KM2 The Shonan Coast (blue):** down the lane, across the coast road and through the tunnel to **the boardwalk**
   (KM2-1), along the sand past the boats to **Grandma's shop** (KM2-2), from the shop to the **lifeguard tower** (KM2-3,
   the errand), along the beach to the rocks and back to the avenue's foot, under **the great torii** (KM2-4), up
@@ -228,8 +229,9 @@ where the game puts a level's node near its start). `tools/city_map/kamakura.py`
 - **KM3 The Temple Hills (yellow):** up the lane to the hydrangea steps and the temple at their top, the **trail sign**
   (KM3-1), the ridge walkway past the cave tomb to **Genjiyama park** (KM3-2), through the bamboo to the bell tower,
   down its steps and along to the torii (KM3-3).
-- **The school approach:** all three meet under the upper vermilion torii and share the road east to the school gate
-  (14.8 %, 14.2 % and 13.5 % of their lengths).
+- **The school approach:** routes 2 and 3 meet under the upper vermilion torii and share the road east to the school
+  gate; route 1 joins it at the zebra crossing (5.6 %, 11.2 % and 13.5 % of their lengths: the user's 5 to 15 %). KM1-4's
+  node sits 100 px past its stop (not the usual 120) to keep clear of the school's pin.
 
 **The frame:** the clean map sits in the game's 3200 x 1800 picture at 0.83 game px per map px (x 458 to 2742, y 209
 to 1484), so every node and both places fall in the core's inner area. The ring round it is MAP KM-MAP3 (the map zoomed
@@ -928,8 +930,8 @@ KM-L99): level ids KM1-1 ... KM3-3 in Editor/GeneratedContent.cs, their stops in
 review/kamakura/map/KamakuraMapLayout.json: hase, kamakuraStation, shrineSideGate, boardwalk, grandmasShop,
 lifeguardTower, greatTorii, trailSign, genjiyama), scenes <id>_KM. The map's layout is that file (docs/KAMAKURA_BUILD.md,
 "The map plan"; tools/city_map/kamakura.py writes and checks it). Build the home stem (out of the gate to the corner)
-and the school approach (under the upper torii and along the road to the school gate) once, as pieces every route's
-first and last legs use. Nothing is shown to players yet.
+and the school approach (from under the upper torii along the road to the school gate; route 1 joins it at the zebra
+crossing) once, as pieces every route's first and last legs use. Nothing is shown to players yet.
 Every level then places the sheets' assets its prompt lists, by id (docs/KAMAKURA_BUILD.md, "The sheets' assets, by id"),
 by that section's rules for the levels.
 ```
@@ -965,15 +967,17 @@ KM-L11.
 ```
 
 ```text
-BUILD KM-L14, KM1-4 The Shrine Bridge (dribble, ends at school). From review/kamakura/refs/KM1-4_the_shrine_bridge.png:
-the shrine's gravel, the purification pavilion, the lanterns, the arched stone bridge over the lotus pond (a hump to
-jump), the fortune racks, the stairs and hall behind, then the school approach to the school gate (the end). From the
-sheets: the big ginkgo (KM-G12), the lotus in the pond (KM-G22), the hall's vermilion timber (KM-T18), the shrine's
-mossy stone wall (KM-T19), the cherry in blossom at the school gate (KM-G16), a clipped hedge along the school (KM-G21).
-Animals: koi under the lotus (KM-N12, N13), a turtle basking on a stone in the pond (KM-N14), a grey heron at the
-pond's edge (KM-N15: it lifts off slowly as the kid crosses the bridge), pigeons and turtle doves on the gravel
-(KM-N07, N20), a swallowtail and a red dragonfly over the lotus (KM-N25, N26), a white-eye in the cherry (KM-N18).
-Same checks.
+BUILD KM-L14, KM1-4 The Shrine Bridge (dribble, ends at school). From the shrine's side gate straight on up the street
+along the shrine's east side, then right to the school (the map plan). The play lane is the street's pavement; the
+shrine is seen over its low stone wall, as review/kamakura/refs/KM1-4_the_shrine_bridge.png shows it: the gravel, the
+purification pavilion, the lanterns, the arched stone bridge over the lotus pond, the fortune racks, the stairs and hall
+behind. At the top, the zebra crossing (wait for the green man: M5), then right along the road to the school gate (the
+end). From the sheets: the big ginkgo leaning over the wall (KM-G12), the lotus in the pond (KM-G22), the hall's
+vermilion timber (KM-T18), the shrine's mossy stone wall along the street (KM-T19), the cherry in blossom at the school
+gate (KM-G16), a clipped hedge along the school (KM-G21). Animals: koi under the lotus (KM-N12, N13), a turtle basking
+on a stone in the pond (KM-N14), a grey heron at the pond's edge (KM-N15: it lifts off slowly as the kid passes),
+pigeons and turtle doves on the pavement (KM-N07, N20: they burst up as the ball comes), a swallowtail and a red
+dragonfly over the lotus (KM-N25, N26), a white-eye in the cherry (KM-N18). Same checks.
 ```
 
 ```text

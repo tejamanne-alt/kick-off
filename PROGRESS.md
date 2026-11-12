@@ -1946,6 +1946,13 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
   `review/kamakura/map/` (the plan image, `KamakuraMapLayout.json` for the game's 3200 x 1800 picture at 0.83, the
   checks). The map's ring for other screen shapes comes from MAP KM-MAP3 (the map zoomed out), the clean map put back
   over its middle. KM-L00 and KM-L90 now use the layout; `docs/KAMAKURA_BUILD.md` "The map plan" describes it.
+- **Route 1 straight to school** (the user, on the map plan: "For route 1, red one, after 1-3 go straight and right to
+  school, instead of shrine route"). From the shrine's side gate, route 1 now goes straight up the street along the
+  shrine's east side to the zebra crossing and right along the road to the school gate (`tools/city_map/kamakura.py`),
+  instead of into the shrine over the bridge. Every check passes: route 1 is 2496 px, shares 9.1 % leaving home and
+  5.6 % at the school (both in the user's 5 to 15 %); KM1-4's node sits 100 px past its stop, clear of the school's pin.
+  KM1-4's design follows (`docs/CITIES.md`, BUILD KM-L14): the shrine seen over its wall from the street, the bridge's
+  hump traded for the zebra crossing at the top; its title and picture stay.
 - **Who makes the photographs:** the user, in the Gemini app (a phone works), sending each result in the chat or pushing
   it. From the cloud session there is no image model to run: the Hugging Face connector has running Spaces switched off
   (gradio=none), huggingface.co and hf.space are blocked by the proxy, and Gemini's API needs the user's key (declined for

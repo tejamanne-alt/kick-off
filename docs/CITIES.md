@@ -167,8 +167,9 @@ raised path down its middle. Hiking trails cross the wooded hills between temple
 3. **KM1-3 Komachi-dori** (dribble). The shopping street from the station: shop curtains (*noren*), a sweet-potato ice
    cream stand, a whitebait croquette shop, sightseers (dense pedestrians), a rickshaw puller (a slow moving obstacle
    to ride behind), and a black kite diving at a sightseer's snack (a gull-style hazard). "Beware of kites" signs.
-4. **KM1-4 The Shrine Bridge** (dribble). Into the shrine's grounds: the steep arched stone bridge over the lotus pond
-   (a hump to jump), pigeons, the big stone steps, the vermilion gate, then the school's gate on the hill beside.
+4. **KM1-4 The Shrine Bridge** (dribble). From the shrine's side gate straight on up the street along the shrine's
+   wall: over it the arched stone bridge across the lotus pond, the big stone steps and the vermilion gate; pigeons
+   on the pavement, a zebra crossing at the top (M5), then right to the school's gate on the hill beside.
 
 ### KM2 The Shonan Coast (5 legs)
 1. **KM2-1 Down to Yuigahama** (dribble). Home, under the coast road through a dim pedestrian tunnel (`DarkZone`), out
