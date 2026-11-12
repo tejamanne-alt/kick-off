@@ -1749,7 +1749,18 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
   the school gate; the three routes' stops in order; a straight-down view in the level pictures' painted style and the look
   target's light. Two messages in Nano Banana Pro with seven references attached: the plan (the routes as a key), then the
   same map clean, for the map screen.
-- No game code or assets changed.
+- **Kamakura's map** (`review/kamakura/refs/KM-MAP1_plan.webp`, `KM-MAP2_clean.webp`, 1672 x 941, Nano Banana Pro). The
+  clean map lines up with the plan to the pixel (phase correlation, every 192 px tile: no shift; the plan's lines painted
+  on the clean map fall on its streets), so the routes can be traced from the plan onto it. Checked against the rules:
+  - every route leaves the house and reaches the school gate; the middles share no street (route 2 crosses the tram line
+    at Hase Station and at the avenue's first torii); every route's stops are in order;
+  - shared start and end, measured along the lines (approximate): route 1 6.5% and 7.8%, route 2 6.1% and 15.3%, route 3
+    2.4% (it turns north almost at the door) and 16.9% (it joins at the shrine's great red gate);
+  - 2-5 and 3-3 are drawn where those routes join the school approach, not at the school: in the game each route's last
+    level ends at the school gate. Route 1's line stops at 1-3; it joins the approach just north of it.
+  - Liberties with the real town: Kamakura Station east of Wakamiya-oji, and the tram crossing the avenue at its first
+    torii. The view is a tilted bird's-eye, not straight down. KM2-4's rock shelves lie east of the avenue on the map.
+  - Still to do: a full-size map (the game's map picture is 3200 x 1800), then the layout file traced from the plan.
 
 ## After Phase 8 (next steps)
 
