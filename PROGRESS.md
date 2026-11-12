@@ -1827,6 +1827,12 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
   is one 4096 x 4096 texture: 64 MB uncompressed (RGBA), 16 MB as ASTC 4x4 or 7.5 MB at 6x6, 8 MB as ETC2 RGB, a third
   more with mipmaps; the proof's triangles are 59 in all, against budgets of 6,000 a building and 1,500 a prop.
 - **Not yet:** run on the Nord CE5 (nothing in the game to run).
+- **SHEET KM-P4, Kamakura's animals and birds** (`docs/IMAGE_PROMPTS.md`, with KM-P1 to P3 in the Kamakura tab), at the
+  user's request: 30 figures in a 6 x 5 grid, side profiles facing right, front views and from-below flying views, each
+  with its real size. The animals already in the pictures are copied from them: the ginger cat on KM1-1's block wall, the
+  black kite of KM2-2 and KM2-4, the tanuki of KM3-2; then Kamakura's own in May: a Pallas's squirrel (the temples'), a
+  Shiba Inu, a large-billed crow, a shrine pigeon, a tree sparrow, a barn swallow, a black-tailed gull, a little egret.
+  `docs/KAMAKURA_BUILD.md` builds the animals from it.
 
 ## After Phase 8 (next steps)
 

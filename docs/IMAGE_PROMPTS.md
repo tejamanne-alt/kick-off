@@ -344,6 +344,41 @@ timber boards, beige mortar wall with sea-salt bloom, grey kawara roof tiles, a 
 stone steps, a sliding aluminium window with screen. No text.
 ```
 
+```text
+SHEET KM-P4, Kamakura animals and birds. Attach KM1-1, KM2-2, KM2-4, KM3-2 and KM-P1. Follow the base prompt's content
+rules, but ignore its camera and light; this sheet asks for animals.
+Japan's animals and birds as they live in Kamakura on a May morning, for a game's 3D artists, on a plain mid-grey
+background (#808080). Thirty figures, evenly spaced in a grid six across and five down, each apart with space round it,
+no lines between them. Each figure fills its own space, not to one scale (the real sizes give the proportions). Side
+views are strict profiles facing right; front views are straight on; "from below" looks straight up at the bird flying
+overhead, wings fully spread, level and symmetrical. Each animal is the same individual in all its views: the same
+markings, colours and proportions. Painted exactly in the style of the attached pictures (the same detailed hand-painted
+anime background art, line work and colours), in even soft studio light with a small soft shadow under the ones on the
+ground. Real animals: no clothes, no cartoon faces or expressions.
+Row 1: the ginger cat from the block wall in KM1-1 (an orange tabby with a long tail, 25 cm at the shoulder): walking,
+side view; sitting, side view; sitting, front view. The tanuki from the trail in KM3-2 (a Japanese raccoon dog:
+grizzled grey-brown coat, dark eye mask, dark legs, bushy tail; 30 cm at the shoulder, 60 cm long): walking, side view;
+sitting, side view; standing, front view.
+Row 2: a Pallas's squirrel, as at Kamakura's temples (olive-brown back, chestnut-red belly, bushy grizzled tail; 20 cm
+and an 18 cm tail): running, side view; sitting up holding a nut, side view; sitting up, front view. A Shiba Inu (red
+coat with cream cheeks, chest and belly, curled tail, pricked ears, a red collar and no lead; 38 cm at the shoulder):
+standing, side view; sitting, side view; sitting, front view.
+Row 3: the black kite from the pine in KM2-4 and the sky in KM2-2 (dark brown, a pale patch under each wing near the
+tip, a shallow notched tail; 60 cm long, wings 1.6 m across): perched, side view; gliding, from below; diving at a
+snack, side view, wings half folded back and talons reaching forward. A large-billed crow (glossy black, heavy arched
+bill, steep forehead; 57 cm, wings 1 m across): standing, side view; hopping, side view; flying, from below.
+Row 4: a shrine pigeon, as at Tsurugaoka Hachimangu (blue-grey, two black wing bars, a green and purple sheen on the
+neck; 32 cm, wings 65 cm across): standing, side view; pecking, side view; flying, from below. A Eurasian tree sparrow
+(chestnut cap, a black spot on a white cheek, black bib; 14 cm): perched, side view; hopping, side view; flying, from
+below.
+Row 5: a barn swallow, back for the summer (glossy blue-black back, red throat and forehead, cream belly, long tail
+streamers; 18 cm): perched, side view; flying, from below. A black-tailed gull (white head and body, dark grey back, a
+black band across its white tail, a yellow bill with a red and black tip, yellow legs; 46 cm, wings 1.2 m across):
+standing, side view; flying, from below. A little egret (all white, black bill and legs, yellow feet, two long plumes
+on the nape; 60 cm, wings 95 cm across): standing, side view; flying, from below.
+No people, no labels, no text.
+```
+
 #### Kamakura map
 
 Added once all 17 of Kamakura's images were in (`review/kamakura/refs`). In Gemini, with Nano Banana Pro, attach these

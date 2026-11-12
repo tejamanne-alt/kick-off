@@ -43,7 +43,10 @@ vending machine (`review/kamakura/kit_proof_board.jpg`, `tools/blender/kit_build
 - **Plants are built by script** as leaf-card trees (`tools/blender/kit_plants.py`), shaped from KM-P2's silhouettes and
   painted from the foliage sheets below and the pictures' own leaves.
 - **Ground and walls** use tileable textures made from the plates (KM-P3) and the level pictures.
-- **Animals** come from the animals kit, repainted (the cat); the black kite and the tanuki are new models in it.
+- **Animals and birds** are built from KM-P4, the sheet of Kamakura's animals and birds (its prompt is with KM-P1 to P3
+  in the Kamakura tab), like the props: each one's side view projected onto its sides, its front and from-below views
+  onto the rest. The animals kit's cat, dog, pigeon, gull and squirrel take Kamakura's coats from it; the black kite, the
+  crow, the tanuki, the sparrow, the swallow and the egret are new models in it.
 - **The far layers** (hills, the back rows of roofs, the sea) are painted cards cut from the level pictures, so they match
   them exactly.
 
