@@ -670,6 +670,17 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
   Start tab) before anything is built from it. Each fault a model's board finds in a picture becomes a rule in the
   prompts (the base prompt's BUILT INTO 3D and SHEETS AND PLATES, KM-R0's ALSO FIX, KM-S0) and a row here.
 
+**D13. Cut-outs along a crowded fence (Kamakura's home, with its new entrance).**
+- *What:* making room for the entrance moved the pots and took the bicycle off the fence line. A ghost of the bicycle
+  then showed on the fence: its cut-out had missed thin spokes and tubes, which nobody saw while the bicycle stood in
+  front of them. And both bonsai trees lost their canopies: each group's background was learnt from a strip round its
+  box, which along KM1-1's crowded fence held the next group's leaves, so leaves were taken for background.
+- *Fix:* every group that moves or leaves has its whole box painted out, not just its outline; a group's background is
+  learnt from the fence above it (and the fence-like pixels inside its box), not from beside it; the two dark canopies
+  have hints.
+- *Rule:* when a cut-out moves away from where the picture had it, paint out its box, since its outline is never
+  perfect. Along a row of touching objects, never learn the background from the neighbours' side.
+
 ## E. Levels and world
 
 - **E1. Every level had chapter-1 scenery.** A new-scene call unloaded the level definition. *Rule:* pass data into scene builders explicitly; never hold asset references across a new-scene call.

@@ -1899,6 +1899,18 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
   trial as before. `KmHome` 57 triangles, `KmHomeFence` 10, `KmHomeGarden` 144, `KmHomeTree` 2. KM-x2 is deleted; the
   build plan's RESTYLE KM-x2 is gone (KM1-1 is the photographic test again, its prompt now asking for the see-through
   parts made solid and an invented name on the vending machine), and ASSET KM-B01 attaches KM1-1.
+- **The home's entrance** (the user, showing the earlier board's entrance: "Can we introduce the entrance for home"):
+  KM1-1's fence runs unbroken, so the fence now opens under the entrance gable (x 873 to 1208, a post at each side)
+  onto the entrance of KM-x2, the earlier picture of the same home: the bay x 1657 to 1967, y 592 to 883 (doors, light,
+  house number, the walls with the nameplate, the step), cut once from KM-x2 in git history (d9630ba~1) with the urn,
+  the white flowers and the bonsai in front of it painted out (`kit_buildings_km.py -- --entrance-from <png>` writes
+  `review/kamakura/refs/parts/KM-x2_entrance.png`), scaled 119/110, its colours brought halfway to KM1-1's, its top eased
+  into the wall under the eave. The pots and flowers close up to the left of the opening, both bonsai groups move to its
+  right; the bicycle and the last morning glory leave the fence line. Two fixes on the way (`docs/LEARNINGS.md` D13):
+  each moved group's whole box is painted out (the bicycle's ghost stayed on the fence), and a group's background is
+  learnt from the fence above it, not beside it (both bonsai had lost their canopies to their neighbours' leaves), with
+  hints on the two dark canopies. RESTYLE KM1-1 now asks for the opening with the entrance part attached; ASSET KM-B01
+  attaches the part. `KmHome` 57 triangles, `KmHomeFence` 20, `KmHomeGarden` 112, `KmHomeTree` 2.
 - **Who makes the photographs:** the user, in the Gemini app (a phone works), sending each result in the chat or pushing
   it. From the cloud session there is no image model to run: the Hugging Face connector has running Spaces switched off
   (gradio=none), huggingface.co and hf.space are blocked by the proxy, and Gemini's API needs the user's key (declined for

@@ -22,9 +22,15 @@ vending machine (`review/kamakura/kit_proof_board.jpg`, `tools/blender/kit_build
 - **Things standing in front of a building are their own models:** plants, pots, bicycles, signs that stand off the wall.
   Painted on, they smear when the camera turns. They are cut out of the picture (OpenCV's GrabCut, per group, with
   hints) and stand in front as cut-outs on half an elliptic cylinder: straight on exactly the picture, turned round; the
-  wall or fence behind gets them painted out (its boards carried down). The home's pots, plants and bicycle are done
-  this way (`KmHomeGarden`), and its persimmon tree as a card behind the fence (`KmHomeTree`). The bicycle is to become
-  its own modelled prop (KM-A08): as a cut-out, the fence shows inside its wheels.
+  wall or fence behind gets them painted out (its boards carried down). The home's pots and plants are done this way
+  (`KmHomeGarden`), and its persimmon tree as a card behind the fence (`KmHomeTree`).
+- **The home's entrance** (asked for by the user: KM1-1's fence runs unbroken): the fence opens under the entrance
+  gable onto the entrance of KM-x2, the earlier picture of the same home (the sliding lattice doors, the light and house
+  number above them, the plaster-and-board walls either side with the nameplate, the step), kept as a part
+  (`review/kamakura/refs/parts/KM-x2_entrance.png`, the urn and bonsai in front of it painted out), set into the wall at
+  the house's scale with a fence post at each side of the opening. The pots and flowers close up to the left of it, both
+  bonsai groups stand to its right; the bicycle and the last morning glory no longer fit along the fence (the bicycle
+  is its own prop, KM-A08).
 - **No real brands:** a logo that reads as a real one (the corrected KM1-1's vending machine) is repainted with an
   invented name in the city's script (うみかぜ), in its own colours.
 - **The pictures' glitches are not copied:** a clean picture replaces one with a glitch, or else the glitch is repaired,
@@ -38,8 +44,8 @@ vending machine (`review/kamakura/kit_proof_board.jpg`, `tools/blender/kit_build
 - **The highest resolution where it shows:** the fronts at the pictures' full resolution (the home's front is 1,340 px
   across), in the Kamakura atlas (4096 x 4096), within the phone's budgets (`docs/ART_DIRECTION.md`: a building 6,000
   triangles, a street prop 1,500, a tree 6,000, a gameplay structure 5,000; `docs/PERFORMANCE.md`). The proof's home is
-  57 triangles, its fence 10, its pots, plants and bicycle 144, its tree 2, and the vending machine 10: the detail is
-  in the picture, not the mesh.
+  57 triangles, its fence 20, its pots and plants 112, its tree 2, and the vending machine 10: the detail is in the
+  picture, not the mesh.
 - Every asset is checked against its source: rendered straight on and turned, beside the picture, and in all four looks,
   and redone until it matches (an acceptance board: `docs/LEARNINGS.md` rule 4, A8).
 
@@ -149,12 +155,16 @@ Then wait for my first picture.
 ```
 
 ```text
-RESTYLE KM1-1, Hase Lanes. Attach KM1-1. Make it a photograph in KM-0's look, by the rules above: every object exactly
+RESTYLE KM1-1, Hase Lanes. Attach KM1-1 (and the entrance part, below). Make it a photograph in KM-0's look, by the rules above: every object exactly
 where it is, at its size and with its outline; only the look changes. Keep: the kid's home with its fence, the persimmon,
 the pots and the bicycle; the ginger cat on the block wall; the convex mirror, the two vending machines, the little shrine
 and its vermilion torii; the level crossing; Hase Station's platform and the hydrangeas. Make the right third of the
 home's upper storey, its air conditioner, and the right half of the entrance gable solid: continue them as their left
-halves show them. Give the vending machine's red panel an invented Japanese name.
+halves show them. Give the vending machine's red panel an invented Japanese name. One change to the layout: open the
+home's fence under the entrance gable, a gap about 2.8 m wide (x 873 to 1208), showing the entrance in the second
+picture I attach (review/kamakura/refs/parts/KM-x2_entrance.png: the sliding lattice doors, the light, the walls either
+side with the nameplate, the step) at the same size; the pots and flowers closed up to the left of the gap, the bonsai
+to its right, the bicycle and the last morning glory gone.
 FORMAT: exactly the attached picture's shape, 4:1.
 ```
 
@@ -558,9 +568,10 @@ In the model sheet chat, in this order: the two shared ends first.
 ```text
 ASSET KM-B01, the home. Attach KM1-1. The kid's two-storey house at the left of the picture: dark-stained timber walls,
 grey kawara roofs (the hipped upper roof, and the skirt roof round the ground floor with the entrance gable), aluminium
-windows, the balcony rail, the two air-conditioner units; with its long dark board fence in front (not the pots, the
-plants, the bicycle or the persimmon: they are separate). Real size: 9.7 m wide, 8.2 m deep, 7 m to the ridge. Same
-rules as before.
+windows, the balcony rail, the two air-conditioner units; the entrance under the gable (attach
+review/kamakura/refs/parts/KM-x2_entrance.png too: the sliding lattice doors and their walls); with its long dark board
+fence in front, open at the entrance (not the pots, the plants or the persimmon: they are separate). Real size: 9.7 m
+wide, 8.2 m deep, 7 m to the ridge. Same rules as before.
 ```
 
 ```text
