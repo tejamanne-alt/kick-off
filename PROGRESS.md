@@ -1765,8 +1765,8 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
     originals). It redraws the same composition with a HOME label, lines up with its plan (every 256 px tile; the two that
     don't match are covered by the plan's lines and labels), and measures the same: route 1 5.9% and 6.6%, route 2 5.7% and
     15.7%, route 3 1.7% and 17.8%.
-  - Repository size: the originals are PNG, 177 MB for the city. Lossless WebP keeps every colour pixel and halves that
-    (about 87 MB); the choice for the next cities is the user's.
+  - The originals stay PNG, for every city: repository size doesn't matter to the user (Kamakura's are 177 MB; lossless
+    WebP would halve that, and was declined). Don't convert or re-propose it.
   - Still to do: the layout file traced from the plan (the map picture at the game's 3200 x 1800 from the 2752 x 1536
     original).
 
