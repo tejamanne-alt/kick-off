@@ -15,6 +15,11 @@ This is the design. What is built so far, and what each city still needs, is at 
 - **Each route is three to five levels**, and each level is one leg of the trip, from one stop to the next (as the
   original town's routes are: `docs/WORLD_MAP.md`). The level that ends at a stop and the next one, which starts there,
   build the same stop.
+- **Routes share their two ends, as real school runs do.** The first 5 to 15% of every route is the same stretch from the
+  front door (the **home stem**), and the last 5 to 15% the same approach to the school gate (the **school approach**). The
+  middle 70 to 90% is each route's own streets, and no two routes' middles cross. So every route's first leg starts along
+  the home stem and its last leg ends along the school approach. Each city's map is drawn this way (`docs/IMAGE_PROMPTS.md`,
+  "The map prompt"), and the levels are built from the map: one layout is the source of truth (`docs/LEARNINGS.md` E8).
 - **Three kinds of leg:**
   - **A dribble.** The game as it plays now: a street with its hazards, coins, stickers and a target time, ending at a stop.
   - **A ride, between legs** (three-leg routes only). When a route takes a bus, tram or ferry between two dribbles,

@@ -1030,6 +1030,71 @@ monsoon-stained painted plaster, carved wooden verandah boards, Gothic carved ba
 rolling shutter, a blue tarpaulin. No text.
 ```
 
+## The map prompt (added to a city once all its images are in)
+
+Each city's map is one picture of its neighbourhood from straight above, with every route from home to school on real
+streets: the picture the game's map screen shows, with the routes, stops and level nodes drawn over it by the game
+(`docs/WORLD_MAP.md`). A city's map prompt is written, and added to the end of its tab on the prompts page, **only once
+the user has shared all of that city's images**. It names that city's streets, stops, home stem and school approach
+(`docs/CITIES.md`), and describes the look of those images, so the map matches them.
+
+How it is used, in Gemini (Nano Banana Pro, for its closer following of a long prompt; 16:9 at the largest size):
+1. A new chat. Attach the city's look target and the first and last level of each route (seven images).
+2. Send the map prompt: it asks for **the plan**, the map with the routes drawn on it as a key.
+3. Send the clean-map message: the same map with every line, symbol and label taken off. That clean picture is the map
+   screen's picture; the plan is kept to trace the routes, stops and level nodes into the map's layout file.
+4. Save both as `review/<city>/refs/<CITY>-MAP_plan.png` and `review/<city>/refs/<CITY>-MAP_clean.png`.
+
+The user's reference for how a top-down street map should read (roofs, treetops, road markings, crossings, block by block)
+was a screenshot of another game's store art. It is not stored, and nothing of its look is copied.
+
+The template each city's prompt is filled from (`{...}` are the city's own):
+
+```text
+You are the lead game architect and level designer of a side-scrolling soccer game for phones: a kid dribbles a football
+from home to school through {CITY}. Design the city's school-run map: one picture of the neighbourhood seen from
+directly above, with every route from the kid's home to the school on real streets. The images I attached are this
+city's reference pictures for the same game: the map must look like the same place, with the same buildings, materials,
+plants, colours and light. Ignore any watermark or sparkle mark in them.
+
+THE ROUTES
+- Every route starts at the same front door (HOME) and ends at the same school gate (SCHOOL).
+- Shared at both ends, like a real school run: the first 5 to 15% of every route is the same stretch from the front door
+  ({HOME_STEM}), and the last 5 to 15% is the same approach to the gate ({SCHOOL_APPROACH}). The middle 70 to 90% of each
+  route is its own streets: the routes fan out from the home stem, never cross in their middles, and come back together
+  only for the school approach.
+- Each route follows real streets, footpaths, steps, crossings and parks, the way a child there would really walk. Where
+  it rides (a tram, bus, train, metro or ferry), it boards at a real stop and gets off at another, along that line's track,
+  road or water.
+- The stops along each route, in order (each level ends at one stop, and the next level starts there):
+{ROUTES}
+- Real distances: a walking leg 150 to 400 m, a ride 1 to 3 km. The whole map covers about {SPAN}.
+
+THE LOOK
+- A straight-down aerial view, like a drone photograph taken from high above looking directly down at the
+  neighbourhood: roofs, treetops, roads with their lane and crossing markings, kerbs and pavements, parked vehicles, rail
+  tracks, water. No tilt, no perspective. North at the top.
+- Photorealistic and cinematic like the attached images, in their light: {LIGHT}. Soft shadows, all falling the same way.
+- Streets readable at a glance, block by block, as on a well-made game's world map. Do not imitate any specific game.
+- No people. No text, labels, logos or watermarks of your own.
+- Everything the routes need lies inside the central three-quarters of the picture; the edges are more of the city, not a
+  border or a frame.
+
+FIRST, THE PLAN: draw the routes on the map as a key. Each route a thick coloured line (route 1 red, route 2 blue, route 3
+yellow), dashed where it rides; HOME a white house symbol; SCHOOL a white flag; each stop a white circle with its number
+(1-1, 1-2 and so on for route 1). Where routes share a street, run their lines side by side.
+
+FORMAT: aspect ratio 16:9, the largest size you can make.
+```
+
+The clean-map message, sent after the plan:
+
+```text
+Now make exactly the same map again with every line, symbol, number and label removed: only the city seen from above.
+Change nothing else: the same streets, buildings, trees, water and light. FORMAT: aspect ratio 16:9, the largest size
+you can make.
+```
+
 ## Add-ons for Blender and Unity
 
 - **Blender:** the kits are built by script with the `bpy` module (`bpy==5.2.3`, `tools/blender/README.md`). The add-ons

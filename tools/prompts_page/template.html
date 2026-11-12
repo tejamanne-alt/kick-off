@@ -168,10 +168,10 @@ const store = {
 
 // The two tools: the same prompts, with each tool's format lines; a Gemini shot carries its city block (docs/IMAGE_PROMPTS.md).
 const TOOLS = {
-  chatgpt: { name: 'ChatGPT', note: 'ChatGPT Images: streets at 3:1, the widest it makes' },
   gemini: { name: 'Gemini', note: 'Nano Banana 2.1: streets at 4:1; each shot carries its city block' },
+  chatgpt: { name: 'ChatGPT', note: 'ChatGPT Images: streets at 3:1, the widest it makes' },
 };
-let tool = store.get('tool') === 'gemini' ? 'gemini' : 'chatgpt';
+let tool = store.get('tool') === 'chatgpt' ? 'chatgpt' : 'gemini';   // Gemini first: the user's choice for the cities
 
 function renderToolbar() {
   const seg = document.getElementById('toolseg');
