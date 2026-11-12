@@ -1833,6 +1833,13 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
   black kite of KM2-2 and KM2-4, the tanuki of KM3-2; then Kamakura's own in May: a Pallas's squirrel (the temples'), a
   Shiba Inu, a large-billed crow, a shrine pigeon, a tree sparrow, a barn swallow, a black-tailed gull, a little egret.
   `docs/KAMAKURA_BUILD.md` builds the animals from it.
+- **KM-0 is the bar** (the user, with KM-0: "Assets and backgrounds should look good as in the attached image"). Twelve
+  level pictures and the props and plants sheets had come out painted, and the plan had followed them (`docs/LEARNINGS.md`
+  D10). New, first in the build plan and the Kamakura tab: BASE KM-R0, the photographic restyle (keep every object's
+  place, size and outline; change only the look, to KM-0's: real materials, its light, natural colour; keep each
+  picture's own weather; repair what can't be real), and a RESTYLE prompt for each of the 14 painted pictures, KM1-1
+  first as the test, saved into `review/kamakura/refs/photo`. The plates (KM-P3) are already photographs. KM-P4, the
+  model-sheet prompt and the foliage prompt now ask for KM-0's look. The prompts page has a RESTYLE kind.
 
 ## After Phase 8 (next steps)
 

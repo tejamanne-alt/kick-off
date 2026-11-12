@@ -7,9 +7,9 @@ into the game. Every prompt is here in the order it is used, and on the prompts 
 ## What "identical" means here
 
 The target is assets that look like the reference images: the same shapes and proportions, every part, the same colours,
-materials, wear and painted style. The way there is **projection modelling in Blender**, proven on the home and the red
+materials and wear, in the look of KM-0, the look target (a photograph, not a painting). The way there is **projection modelling in Blender**, proven on the home and the red
 vending machine (`review/kamakura/kit_proof_board.jpg`, `tools/blender/kit_buildings_km.py`):
-- **The fronts are your pictures.** Each model is built by script to the measurements of the picture it comes from (the
+- **The fronts are your pictures,** in their photographic versions (see "First: your pictures in KM-0's look"). Each model is built by script to the measurements of the picture it comes from (the
   home: 119 px to the metre, the ground at y 890), and the picture's own pixels are projected onto every face that faces
   the street. Straight on, the model is the picture, pixel for pixel; turned, it is a real 3D shape: the fence in front,
   the house set back, the roofs sloping away.
@@ -20,8 +20,8 @@ vending machine (`review/kamakura/kit_proof_board.jpg`, `tools/blender/kit_build
   They are cut out of the pictures and rebuilt: plants as leaf cards from the pictures' own leaves, the rest as props.
 - **The pictures' glitches are repaired, not copied:** KM1-1's ghosted building beside the home's upper roof is replaced by
   the roof's good half, mirrored. Each repair is written in the script, at the pixels it touches.
-- **The pictures' light comes with them.** The paintings carry their own sun and shade, so the Kamakura kit is drawn as
-  the clouds are: `Toon` with `_Lighting` 0.25, the painted light kept as it is and a quarter of the game's sun added.
+- **The pictures' light comes with them.** The photographs carry KM-0's sun and shade, so the Kamakura kit is drawn as
+  the clouds are: `Toon` with `_Lighting` 0.25, the pictures' light kept as it is and a quarter of the game's sun added.
   The city's climate, the haze and every filter still apply. It is not lit twice.
 - **The highest resolution where it shows:** the fronts at the pictures' full resolution (the home's front is 1,340 px
   across), in the Kamakura atlas (4096 x 4096), within the phone's budgets (`docs/ART_DIRECTION.md`: a building 6,000
@@ -34,7 +34,7 @@ vending machine (`review/kamakura/kit_proof_board.jpg`, `tools/blender/kit_build
 
 | Step | Who | Tool | Output |
 |---|---|---|---|
-| 1. The pictures | the user (done) | Gemini | the 17 references and the maps, `review/kamakura/refs` |
+| 1. The pictures, in KM-0's look | the user | Gemini: the painted ones made again as photographs (RESTYLE, below) | `review/kamakura/refs/photo` (the originals stay in `refs`) |
 | 2. The models | Claude | Blender 5.2.3 (`bpy`), by script, with the pictures projected (`tools/blender/kit_buildings_km.py`) | real size, within budget, in the Kamakura atlas, FBX in `Assets/_Game/Art/Models/Kamakura` |
 | 3. Extra views, only when asked | the user | Gemini, Nano Banana Pro: a model sheet (Step 0) | only for an asset whose side or back is seen in play and that no picture shows; Claude asks for it by its id |
 | 4. Organic shapes, only when asked | the user in meshy.ai | Meshy Multi-Image to 3D, from a model sheet's four views | only what boxes and slopes can't build: so far the bronze statue (KM-B32) |
@@ -47,7 +47,7 @@ vending machine (`review/kamakura/kit_proof_board.jpg`, `tools/blender/kit_build
   in the Kamakura tab), like the props: each one's side view projected onto its sides, its front and from-below views
   onto the rest. The animals kit's cat, dog, pigeon, gull and squirrel take Kamakura's coats from it; the black kite, the
   crow, the tanuki, the sparrow, the swallow and the egret are new models in it.
-- **The far layers** (hills, the back rows of roofs, the sea) are painted cards cut from the level pictures, so they match
+- **The far layers** (hills, the back rows of roofs, the sea) are cards cut from the level pictures, so they match
   them exactly.
 
 **Why not Meshy for everything:** image-to-3D rebuilds the shape and repaints the texture from a few views, so it comes
@@ -72,6 +72,8 @@ For the stores, generate on a paid plan or credit Meshy in the game's credits.
 
 ## The order
 
+0. **Your pictures in KM-0's look** (BASE KM-R0, then RESTYLE): the painted ones made again as photographs, KM1-1 first
+   as the test.
 1. **Textures** (KM-T): the plates made tileable, and the grounds of the levels.
 2. **Street props** (KM-A01 to A18): everything on the props sheet, used in every route.
 3. **Vehicles** (KM-V): the tram, the kei truck, the scooter, the bicycle, the rickshaw.
@@ -82,6 +84,160 @@ For the stores, generate on a paid plan or credit Meshy in the game's credits.
    the first leg that needs it, then the map screen, then the switch from the old 23 levels.
 
 ## The prompts
+
+### First: your pictures in KM-0's look
+
+KM-0 is the bar for every asset and background (a photograph: real materials, a deep cobalt sky with cumulus, sea haze).
+Twelve level pictures and the props and plants sheets came out painted instead, so each is made again as a photograph
+of the same place, with its layout kept, since the models are measured from it. A new Gemini chat with Nano Banana 2.1
+(it keeps the 4:1 shape; Pro stops at 21:9): paste KM-R0 with KM-0 attached, then one RESTYLE per message, attaching that
+picture. KM1-1 first, as the test: push it and Claude rebuilds the proof board from it; then the rest, in this order. Save
+each as review/kamakura/refs/photo/ with the same file name (PNG). If a picture drifts from KM-0's look, attach KM-0 again
+with it; if objects move, say "Same layout as the attached picture, object for object", or try again.
+
+```text
+BASE KM-R0, the photographic restyle. Attach KM-0. You are turning a game's painted street pictures into photographs for
+its 3D artists. Read all of this, then follow it for every picture in this chat.
+
+THE GOAL
+I will attach one painted picture at a time. Make the same picture again as a photograph of the same place, in the look
+of the picture attached now (KM-0, Kamakura in its light). Our artists measure each picture and project it onto their 3D
+models, so nothing may move.
+
+KEEP EXACTLY
+- The frame: the same shape, the same framing and horizon, the same straight-on side view.
+- Every building, wall, fence, pole, wire, sign, vehicle, plant and object: in the same place, at the same size, with the
+  same outline, the same number of storeys, windows, doors, posts and panels. Add nothing, remove nothing, move nothing.
+- The colours of things: the same paint, timber, tiles, signs and flowers.
+- Signs keep their Japanese text. Where text is garbled, a short invented name in the same place and size. No real brands.
+- The picture's weather and time of day.
+
+CHANGE TO KM-0'S LOOK
+- A real photograph, not a painting or an illustration: no outlines, no brush strokes, no flat or cel shading, no anime
+  look.
+- Real materials at full detail: the grain of weathered timber, glazed kawara tiles with their sheen and dirt, mortar with
+  salt bloom, rust, moss, chipped paint, worn asphalt and stone.
+- KM-0's light for a clear morning: the sun 40 degrees up behind the camera to the left, near-white direct sun, clean cool
+  blue-grey shade, deep contact shadows, a deep cobalt sky with big cumulus, a soft sea haze turning far hills blue. A
+  picture in another light keeps it, photographed (a drizzle stays soft and shadowless); a sheet keeps its studio light.
+- Natural, rich colour as in KM-0, with no colour filter or tint over the whole picture.
+- Repair what can't be real (a ghosted or half-drawn building, a doubled object) by continuing what is around it, in the
+  same place.
+- No people: where a person would be, leave it empty. No animals except those in the picture. Add no text, labels, logos
+  or watermarks.
+- Sharp from front to back: no depth of field, vignette, lens flare or film grain.
+
+Then wait for my first picture.
+```
+
+```text
+RESTYLE KM1-1, Hase Lanes. Attach KM1-1. Make it a photograph in KM-0's look, by the rules above: every object exactly
+where it is, at its size and with its outline; only the look changes. Keep: the kid's home with its fence, the persimmon,
+the pots and the bicycle; the ginger cat on the block wall; the convex mirror, the two vending machines, the little shrine
+and its vermilion torii; the level crossing; Hase Station's platform and the hydrangeas. Repair the ghosted building
+beside the home's upper roof: continue the roof and the wall as their left halves show them.
+FORMAT: exactly the attached picture's shape, 4:1.
+```
+
+```text
+RESTYLE KM1-2, Ride the Enoden. Attach KM1-2. Make it a photograph in KM-0's look, by the rules above: every object exactly
+where it is, at its size and with its outline; only the look changes. Keep: the tram car's green bench, the straps and poles, the
+route map and its invented station names, the door, the warm sun patches on the floor, and the houses and gardens outside
+the windows, photographed too, a little brighter than the car.
+FORMAT: exactly the attached picture's shape, 4:1.
+```
+
+```text
+RESTYLE KM1-3, Komachi-dori. Attach KM1-3. Make it a photograph in KM-0's look, by the rules above: every object exactly
+where it is, at its size and with its outline; only the look changes. Keep: the red gateway sign and the taxi sign; every shop with its
+noren, its signboard (the same Japanese text), lanterns and goods; the rickshaw; the "beware of kites" sign with its bird;
+the side gate at the right.
+FORMAT: exactly the attached picture's shape, 4:1.
+```
+
+```text
+RESTYLE KM1-4, The Shrine Bridge. Attach KM1-4. Make it a photograph in KM-0's look, by the rules above: every object exactly
+where it is, at its size and with its outline; only the look changes. Keep: the arched stone bridge over the lotus pond, the basin
+under its little roof, the stone lanterns, the fortune racks, the steps up to the vermilion hall; then the school with its
+clock, the sports ground, the green fence, the gate with its notice board, the cherry tree.
+FORMAT: exactly the attached picture's shape, 4:1.
+```
+
+```text
+RESTYLE KM2-1, Down to Yuigahama. Attach KM2-1. Make it a photograph in KM-0's look, by the rules above: every object exactly
+where it is, at its size and with its outline; only the look changes. Keep: the houses, the surfboards by the doors, the tunnel under the
+road with its sign, the surf shop, the boardwalk with sand drifting over it, the beach and the sea at the right.
+FORMAT: exactly the attached picture's shape, 4:1.
+```
+
+```text
+RESTYLE KM2-2, Yuigahama Morning. Attach KM2-2. Make it a photograph in KM-0's look, by the rules above: every object exactly
+where it is, at its size and with its outline; only the look changes. Keep: the beach and the sea, the boats on their rollers with their nets,
+the lifeguard tower, the litter sacks, the surfboards, the kite in the sky, the pines and the beach houses, the road at the
+right. The sand is Yuigahama's: dark grey-brown, paler where dry.
+FORMAT: exactly the attached picture's shape, 4:1.
+```
+
+```text
+RESTYLE KM2-3, Grandma's Whitebait Shop. Attach KM2-3. Make it a photograph in KM-0's look, by the rules above: every object exactly
+where it is, at its size and with its outline; only the look changes. Keep: the shop and its sign (the same text), the drying racks
+with the whitebait, the counter with the bento on its cloth, the boxes, the hose reel, the scooter; the sea wall and the
+beach at the right.
+FORMAT: exactly the attached picture's shape, 4:1.
+```
+
+```text
+RESTYLE KM2-4, The Kite Thief. Attach KM2-4. Make it a photograph in KM-0's look, by the rules above: every object exactly
+where it is, at its size and with its outline; only the look changes. Keep: the rock shelves with their tide pools and seaweed, the worn steps, the
+waves, the rice ball on its rock, the kite on its pine branch, the grey wooden torii and the stone lanterns of the avenue
+at the right.
+FORMAT: exactly the attached picture's shape, 4:1.
+```
+
+```text
+RESTYLE KM2-5, Wakamiya-oji. Attach KM2-5. Make it a photograph in KM-0's look, by the rules above: every object exactly
+where it is, at its size and with its outline; only the look changes. Keep: the shops with their signs (the same text), the crossing, the raised
+path with its lanterns, the great vermilion torii, the school's gate and its cherry tree.
+FORMAT: exactly the attached picture's shape, 4:1.
+```
+
+```text
+RESTYLE KM3-1, Hydrangea Steps. Attach KM3-1. Make it a photograph in KM-0's look, by the rules above: every object exactly
+where it is, at its size and with its outline; only the look changes. This one keeps its own light: a June drizzle, overcast, soft and
+shadowless, everything wet and glistening, mist in the trees (not KM-0's sun). Keep: the back gate, the stone steps, the
+hydrangeas, the lantern, the rest hut and its umbrellas, the trail sign.
+FORMAT: exactly the attached picture's shape, 4:1.
+```
+
+```text
+RESTYLE KM3-2, The Hiking Trail. Attach KM3-2. Make it a photograph in KM-0's look, by the rules above: every object exactly
+where it is, at its size and with its outline; only the look changes. This one keeps its own light: KM3-1's drizzle and mist. Keep: the trail
+and its roots, the signpost, the footbridge, the cave tomb with its pagoda, the tanuki, the rail fence.
+FORMAT: exactly the attached picture's shape, 4:1.
+```
+
+```text
+RESTYLE KM3-3, Genjiyama Down to School. Attach KM3-3. Make it a photograph in KM-0's look, by the rules above: every object exactly
+where it is, at its size and with its outline; only the look changes. This one keeps its own light: KM3-1's drizzle, lifting at the
+right into brighter cloud. Keep: the bronze statue on its plinth, the benches, the bell tower and its bell, the bamboo, the
+steps, the school's back gate and the school.
+FORMAT: exactly the attached picture's shape, 4:1.
+```
+
+```text
+RESTYLE KM-P1, the props sheet. Attach KM-P1. Make it a photograph in KM-0's look, by the rules above: every object exactly
+where it is, at its size and with its outline; only the look changes. Each object a photograph of the real thing, on the same plain mid-grey
+background, in the same place and at the same size, in even soft studio light with a small soft shadow under each. Keep
+the signs' Japanese text.
+FORMAT: exactly the attached picture's shape, 16:9.
+```
+
+```text
+RESTYLE KM-P2, the plants sheet. Attach KM-P2. Make it a photograph in KM-0's look, by the rules above: every object exactly
+where it is, at its size and with its outline; only the look changes. Each plant a photograph of the real plant, on the same plain mid-grey
+background, in the same place and at the same size, with its grey scale poles, in even soft studio light.
+FORMAT: exactly the attached picture's shape, 4:1.
+```
 
 ### Step 0: the model sheet base prompt (only when Claude asks for a sheet)
 
@@ -95,10 +251,10 @@ generator. Read all of this, then follow it for every image in this chat.
 
 THE GOAL
 Each image is one object from the reference pictures I attach, shown as a model sheet so that it can be rebuilt in 3D
-exactly. It must be the same object: copy its shape, proportions, every part and detail, its colours, materials, wear
-and painted style exactly as the reference shows them. Do not redesign, simplify, tidy up or improve anything. Where the
-reference does not show a side, continue it plainly in the same materials and colours. Keep the painted look of the
-reference (a detailed hand-painted anime background style), not a photograph and not a cartoon.
+exactly. It must be the same object: copy its shape, proportions, every part and detail, its colours, materials and wear
+exactly as the reference shows them. Do not redesign, simplify, tidy up or improve anything. Where the
+reference does not show a side, continue it plainly in the same materials and colours. Make it look like a photograph of the
+real object, in the look of KM-0 (real materials, natural colour), not a painting, an illustration or a cartoon.
 
 THE SHEET
 - One square picture divided into four equal panels in a 2 x 2 grid, with a thin plain gap between them:
@@ -344,7 +500,7 @@ A new Gemini chat. These paint the leaves and bark the script-built trees are dr
 FOLIAGE KM-F01, needles and sprays. Attach KM-P2. Paint isolated clumps of foliage exactly like the attached plants, on a
 pure white background, flat shadowless light, no stems crossing each other, spread out in a grid with space between
 them: eight clumps of the black pine's needles (top left plant), eight sprays of the Japanese cedar (the tall conifer),
-four of the bonsai pine. Same colours and painted style. FORMAT: aspect ratio 1:1, the largest size you can make.
+four of the bonsai pine. Same colours, photographed like KM-0. FORMAT: aspect ratio 1:1, the largest size you can make.
 ```
 
 ```text

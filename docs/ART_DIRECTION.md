@@ -160,9 +160,10 @@ boats on their lifts, a No Wake sign on its pile.
   `Attach.<what>` mark attachment points (wire ends, lamp lights, hooks). Use `kit_lib.export_model`.
 - **Material:** one per kit, vertex colours times the kit atlas. Keep the atlas's plain white corner
   at UV (0.97, 0.03) for flat-coloured parts; paint wear, panel lines, windows and signs into the atlas.
-- **A kit projected from painted pictures** (Kamakura: `docs/KAMAKURA_BUILD.md`) keeps the pictures' own light, so its
-  material is `Toon` with `_Lighting` 0.25 (as the clouds): the painted sun and shade as they are, a quarter of the
-  game's sun added. Its fronts are the pictures' pixels; its sides are samples of the same pictures.
+- **A kit projected from the user's pictures** (Kamakura: `docs/KAMAKURA_BUILD.md`) keeps the pictures' own light, so
+  its material is `Toon` with `_Lighting` 0.25 (as the clouds): the pictures' sun and shade as they are, a quarter of the
+  game's sun added. Its fronts are the pictures' pixels; its sides are samples of the same pictures. The pictures are in
+  the city's look target's look (Kamakura's KM-0: a photograph), never a painted drift of it (D10).
 - **Recolourable parts:** UV channel 2, x = part id. 0 is fixed; 1 to 3 are tint groups (wall paint,
   foliage, fabric) the game can recolour at load, keeping each vertex's brightness relative to the
   part's base colour. The kit manifest records each part's base colour (sRGB).

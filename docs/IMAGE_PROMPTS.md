@@ -345,16 +345,16 @@ stone steps, a sliding aluminium window with screen. No text.
 ```
 
 ```text
-SHEET KM-P4, Kamakura animals and birds. Attach KM1-1, KM2-2, KM2-4, KM3-2 and KM-P1. Follow the base prompt's content
-rules, but ignore its camera and light; this sheet asks for animals.
+SHEET KM-P4, Kamakura animals and birds. Attach KM-0, KM1-1, KM2-2, KM2-4 and KM3-2 (their photographic versions once
+made). Follow the base prompt's content rules, but ignore its camera and light; this sheet asks for animals.
 Japan's animals and birds as they live in Kamakura on a May morning, for a game's 3D artists, on a plain mid-grey
 background (#808080). Thirty figures, evenly spaced in a grid six across and five down, each apart with space round it,
 no lines between them. Each figure fills its own space, not to one scale (the real sizes give the proportions). Side
 views are strict profiles facing right; front views are straight on; "from below" looks straight up at the bird flying
 overhead, wings fully spread, level and symmetrical. Each animal is the same individual in all its views: the same
-markings, colours and proportions. Painted exactly in the style of the attached pictures (the same detailed hand-painted
-anime background art, line work and colours), in even soft studio light with a small soft shadow under the ones on the
-ground. Real animals: no clothes, no cartoon faces or expressions.
+markings, colours and proportions. Photographed in the look of KM-0 (the first picture attached): real animals with real
+fur and feathers, natural colour, sharp detail, not a painting or an illustration, in even soft daylight with a small
+soft shadow under the ones on the ground. No clothes, no cartoon faces or expressions.
 Row 1: the ginger cat from the block wall in KM1-1 (an orange tabby with a long tail, 25 cm at the shoulder): walking,
 side view; sitting, side view; sitting, front view. The tanuki from the trail in KM3-2 (a Japanese raccoon dog:
 grizzled grey-brown coat, dark eye mask, dark legs, bushy tail; 30 cm at the shoulder, 60 cm long): walking, side view;

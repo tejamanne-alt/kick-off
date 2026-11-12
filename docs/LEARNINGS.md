@@ -610,6 +610,20 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
 - *Rule:* build from the user's own pictures first. Prove a method on two assets with a side-by-side board before writing
   prompts for fifty, and use a generator only for what the pictures can't give.
 
+**D10. Kamakura's pictures drifted from the look target, and the plan followed the drift (v122).**
+- *What:* the base prompt asks for photorealistic pictures, and Kamakura's look target KM-0 came out a photograph. But the
+  12 level pictures and the props and plants sheets came out as painted, anime-style illustrations. The plan took their
+  style as the target: the map prompt asked for "the painted style of the six level pictures", the model-sheet prompt for
+  "the painted look... not a photograph", KM-P4 for "hand-painted anime background art", and the projection proof copied
+  painted pixels. The user, sending KM-0: "Assets and backgrounds should look good as in the attached image".
+- *Why:* each picture was checked for its content (the right street, objects, route), never against the look target.
+- *Fix:* the painted pictures are made again as photographs in KM-0's look with their layouts kept (BASE KM-R0 and a
+  RESTYLE prompt each, KM1-1 first as the test, `docs/KAMAKURA_BUILD.md`), into `review/kamakura/refs/photo`; the
+  prompts that asked for the painted style now ask for KM-0's look. Still to decide: the map pair, made in the painted
+  style.
+- *Rule:* a city's look target is the bar for every picture of it. Check each new picture against it when it arrives;
+  regenerate a drift, never adopt it.
+
 ## E. Levels and world
 
 - **E1. Every level had chapter-1 scenery.** A new-scene call unloaded the level definition. *Rule:* pass data into scene builders explicitly; never hold asset references across a new-scene call.
@@ -668,7 +682,8 @@ Never re-propose what is rejected here.
   climate. No reskins of another city's levels (D8).
 - **The look:** the user's bar is a recent big-budget open-world game's look and feel (warm sun against cool shade, haze,
   weathered, dense streets), reached through light, grade and baked texture within the phone's budget, never by copying
-  that game's content. The filters must keep working in every city.
+  that game's content. The filters must keep working in every city. Each city's look target is the bar for its assets
+  and backgrounds: for Kamakura, KM-0 (a photograph), not the painted style some of its pictures came out in (D10).
 - **Filters:** easy to reach: on the title screen and in every pause menu.
 - **City assets from the user's pictures:** Kamakura's models are built in Blender with the user's pictures projected onto
   them, identical to the pictures (D9). Meshy (the user's meshy.ai account) only for what that can't build. The user has no
