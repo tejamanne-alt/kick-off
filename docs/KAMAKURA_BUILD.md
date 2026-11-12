@@ -202,6 +202,51 @@ and stop nothing; no more than 12 animals awake on screen at once (AmbientAgent 
 level's side-by-side with its picture true: it goes where the picture has room for it (behind a fence, in a pond, on a
 wire, in the sky, at the lane's edges), never over something the picture shows.
 
+## The map plan
+
+Kamakura's map screen, traced from the route design (`docs/CITIES.md`), not from a generated plan: the user's map
+pictures showed the town well, but both of Gemini's plans broke the design (the second sent route 1 up route 2's avenue,
+put Kamakura Station at the torii, drew route 2 twice and gave level 1-4 no node; both put the circles at the legs' ends,
+where the game puts a level's node near its start). `tools/city_map/kamakura.py` holds the plan, checks it and writes:
+- `review/kamakura/map/KM-MAP3_plan_game.png`: the plan drawn on the clean map at the game's sizes (nodes 150 px, stop
+  markers, the tram dashed);
+- `review/kamakura/map/KamakuraMapLayout.json`: the layout in TownMapLayout's format (home, school, three routes, twelve
+  nodes, nine stops, districts, street names, the tram ride), in the game's 3200 x 1800 picture;
+- `review/kamakura/map/checks.txt`: every check below, with the measurements.
+
+**The routes, on the map's own roads:**
+- **Home** is the two-storey house on the lane west of the tram line's end; all three routes leave its gate together
+  to the corner (8.0 %, 7.4 % and 5.8 % of their lengths: the user's 5 to 15 %).
+- **KM1 The Enoden (red):** along the lane by the tracks to **Hase Station** (KM1-1), the tram along the line to
+  **Kamakura Station** (KM1-2, dashed), up the red-paved Komachi-dori to the **shrine's side gate** (KM1-3), into the
+  shrine over the arched stone bridge and up the central steps (KM1-4).
+- **KM2 The Shonan Coast (blue):** down the lane, across the coast road and through the tunnel to **the boardwalk**
+  (KM2-1), along the sand past the boats to **Grandma's shop** (KM2-2), from the shop to the **lifeguard tower** (KM2-3,
+  the errand), along the beach to the rocks and back to the avenue's foot, under **the great torii** (KM2-4), up
+  Wakamiya-oji between the cherries and lanterns to the central steps (KM2-5). It crosses the tram line once, at right
+  angles, at the great torii: the one crossing.
+- **KM3 The Temple Hills (yellow):** up the lane to the hydrangea steps and the temple at their top, the **trail sign**
+  (KM3-1), the ridge walkway past the cave tomb to **Genjiyama park** (KM3-2), through the bamboo to the bell tower,
+  down its steps and along to the torii (KM3-3).
+- **The school approach:** all three meet under the upper vermilion torii and share the road east to the school gate
+  (14.8 %, 14.2 % and 13.5 % of their lengths).
+
+**The frame:** the clean map sits in the game's 3200 x 1800 picture at 0.83 game px per map px (x 458 to 2742, y 209
+to 1484), so every node and both places fall in the core's inner area. The ring round it is MAP KM-MAP3 (the map zoomed
+out, in the Kamakura map group of `docs/IMAGE_PROMPTS.md`); Claude puts the clean map back over its middle pixel for
+pixel (aligned by phase correlation, the seam blended), so the layout stays true.
+
+**The checks** (the map screen's, `Tests/Editor/TownMapTests.cs`, with Kamakura's two rules): every route from home to
+school and 1200 px or longer; the shared ends 5 to 15 % at home and at most 15 % at the school (instead of the
+original's 320 px); 90 px apart in the middles but for the one crossing (176 px long); every node in the core's inner
+area, within 12 px of its route, in playing order, 190 px or more from every other (closest 219, 2-3 and 2-4); a
+route's first node 150 px into its own stretch; every later node 120 px past the stop it starts from; every stop on its
+route between its levels' nodes, 96 px or more from every node. All pass.
+
+**Two notes for the levels:** the map's tram line has no level crossing at home (KM1-1's picture has one: the level
+keeps it); the map's great torii at the avenue's foot is vermilion, KM2-4's is grey wood (the level follows its
+picture).
+
 ## The prompts
 
 ### First: your pictures in KM-0's look
@@ -879,11 +924,12 @@ animals kit, built from KM-P4 and KM-P8 like the props.
 ```text
 BUILD KM-L00, Kamakura's routes in the game. Read CLAUDE.md, docs/LEARNINGS.md, docs/CITIES.md ("Kamakura") and
 docs/KAMAKURA_BUILD.md first. Add Kamakura's three new routes beside the original town's 23 levels (which stay until
-KM-L99): level ids KM1-1 ... KM3-3 in Editor/GeneratedContent.cs, their stops in Levels/RouteTable.cs, scenes
-<id>_KM. Trace the routes, stops and level nodes from review/kamakura/refs/KM-MAP1_plan.png onto KM-MAP2_clean.png into
-Kamakura's map layout (as TownMapLayout.json is for the original); 2-5 and 3-3 end at the school gate. Build the home stem
-(the lane from the house to the vending-machine corner) and the school approach (from the great red gate past the arched
-bridge to the school gate) once, as pieces every route's first and last legs use. Nothing is shown to players yet.
+KM-L99): level ids KM1-1 ... KM3-3 in Editor/GeneratedContent.cs, their stops in Levels/RouteTable.cs (the ids in
+review/kamakura/map/KamakuraMapLayout.json: hase, kamakuraStation, shrineSideGate, boardwalk, grandmasShop,
+lifeguardTower, greatTorii, trailSign, genjiyama), scenes <id>_KM. The map's layout is that file (docs/KAMAKURA_BUILD.md,
+"The map plan"; tools/city_map/kamakura.py writes and checks it). Build the home stem (out of the gate to the corner)
+and the school approach (under the upper torii and along the road to the school gate) once, as pieces every route's
+first and last legs use. Nothing is shown to players yet.
 Every level then places the sheets' assets its prompt lists, by id (docs/KAMAKURA_BUILD.md, "The sheets' assets, by id"),
 by that section's rules for the levels.
 ```
@@ -1024,9 +1070,12 @@ lawn (KM-N20, N06), a wagtail on the wet school yard (KM-N17). Same checks.
 ```
 
 ```text
-BUILD KM-L90, Kamakura's map screen. Show Kamakura's map (KM-MAP2_clean, at the game's 3200 x 1800) with its three routes,
-stops and level nodes from the layout traced in KM-L00, on the map screen when Kamakura is chosen. The same checks as the
-original map (TownMapTests, MapViewTests, MapIndicatorTests).
+BUILD KM-L90, Kamakura's map screen. The picture: KM-MAP3 (the map zoomed out) with KM-MAP2_clean put back over its
+middle at 0.83 (x 458, y 209; aligned by phase correlation, the seam blended), 3200 x 1800, as Resources/UI/KamakuraMap.
+The layout: review/kamakura/map/KamakuraMapLayout.json into Resources. The map screen shows the chosen city's picture
+and layout (TownMap reading a city's files; the tram ride drawn dashed). Run TownMapTests, MapViewTests and
+MapIndicatorTests on it, with Kamakura's two rules (one right-angle crossing; the shared ends by the user's 5 to 15 %),
+and check it on the Nord CE5.
 ```
 
 ```text

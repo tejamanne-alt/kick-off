@@ -665,6 +665,7 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
 | A plate under a metre across, with nests and paint splashes | KM-P3's tiles and boards | build walls board by board and roofs tile by tile from the clean pieces | a plate shows about 2 m by 2 m, evenly weathered, no standout marks |
 | A sheet came out illustrated though it asked for KM-0's photographic look, with KM-0 attached | KM-P5 (KM-P4, P6, P7, P8 came out photographs) | RESTYLE KM-P5; shapes taken from it meanwhile | (the check before saving: the look target) |
 | A readable number plate and a grille badge on a car; garbled sign text | KM-P5's car, station board, fish boxes | the plate and badge blanked when built; RESTYLE KM-P5 asks for them gone | no readable plates (base prompt); every word legible |
+| A route plan that breaks the route design: route 1 up route 2's avenue, Kamakura Station at the torii, route 2 drawn twice, a level with no node, circles at the legs' ends | the user's second Kamakura map plan (and the first: circles at the ends) | the plan traced from docs/CITIES.md on the clean map, checked by script (`tools/city_map/kamakura.py`) | (the kit: a map plan is traced from the route design and checked, never taken from a generated plan) |
 | A file saved as another sheet's id | KM-P4's animals uploaded as `KM-P8_animals.png.PNG` beside the real KM-P8 | renamed `KM-P4_animals_sheet.png` | save with exactly the id's name |
 
 - *Why:* the pictures were checked for their content (the right street, the right objects), not for being buildable:

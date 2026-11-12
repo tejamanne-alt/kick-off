@@ -561,6 +561,15 @@ the town seen from above. Change nothing else: the same streets, buildings, tree
 16:9, the largest size you can make.
 ```
 
+```text
+MAP KM-MAP3, the map zoomed out. Attach KM-MAP2_clean. Make the same map seen from further away: the whole attached
+picture, unchanged, in the middle of the new one at 71 % of its width, with its top edge 12 % down from the new
+picture's top, and more of Kamakura added round it in the same style, light and scale: more wooded hills with temple
+roofs at the top; the town, the coast road and the tram line carrying on to the left and right; more sea and surf at
+the bottom, with a little more beach. Nothing new crosses the middle, no labels, no lines, no people. FORMAT: aspect
+ratio 16:9, the largest size you can make.
+```
+
 ## Florida (Miami), USA
 
 ### The Florida block (paste right after the base prompt)

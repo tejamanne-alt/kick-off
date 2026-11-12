@@ -1937,6 +1937,15 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
   swallowtail and dragonfly; KM2-1's Shiba Inu as the Dog hazard; KM2-4's cormorant, crabs and starfish; KM3-1's tree
   frogs and snails in the rain; KM3-3's squirrels on the lawn. A script check: every id used is defined, and every new
   asset is placed in at least one level. BUILD KM-K reads all eight sheets.
+- **Kamakura's map plan** (the user, with the clean map and a new plan: "Create plan for Kamakura Map"). The new
+  plan's map is the repo's KM-MAP2_clean; its routes broke the design (route 1 up the avenue, Kamakura Station at the
+  torii, route 2 drawn twice, no node for 1-4). `tools/city_map/kamakura.py` traces the three routes from `docs/CITIES.md`
+  along the clean map's roads, places the nine stops at their places and the twelve nodes as the map screen does (near
+  each leg's start), checks it all (TownMapTests' rules, with one right-angle crossing allowed and the shared ends by the
+  user's 5 to 15 %: 8.0/7.4/5.8 % at home, 14.8/14.2/13.5 % at the school; closest nodes 219 px) and writes
+  `review/kamakura/map/` (the plan image, `KamakuraMapLayout.json` for the game's 3200 x 1800 picture at 0.83, the
+  checks). The map's ring for other screen shapes comes from MAP KM-MAP3 (the map zoomed out), the clean map put back
+  over its middle. KM-L00 and KM-L90 now use the layout; `docs/KAMAKURA_BUILD.md` "The map plan" describes it.
 - **Who makes the photographs:** the user, in the Gemini app (a phone works), sending each result in the chat or pushing
   it. From the cloud session there is no image model to run: the Hugging Face connector has running Spaces switched off
   (gradio=none), huggingface.co and hf.space are blocked by the proxy, and Gemini's API needs the user's key (declined for
