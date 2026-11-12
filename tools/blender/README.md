@@ -28,14 +28,15 @@ bpy.ops.wm.save_userpref()"
   (`docs/CITIES.md`, "The look").
 - **Node Wrangler** helps with the atlas-painting node trees.
 - **Rigify** and **UV Layout** help with the characters.
-- For models made by image-to-3D (Meshy, through Higgsfield: `docs/KAMAKURA_BUILD.md`), three Python libraries in the same
+- For models made by image-to-3D (Meshy, on the user's meshy.ai account: `docs/KAMAKURA_BUILD.md`), three Python libraries in the same
   environment: **pymeshlab** (decimation that keeps the texture's seams: `meshing_decimation_quadric_edge_collapse_with_texture`),
   **xatlas** (packing every model's UVs into one kit atlas) and **trimesh** (checks: open edges, size, triangle counts).
   Import `bpy` before `pymeshlab` in a script: the other order clashes over a shared threading library (TBB) and `bpy` fails
   to load.
-- Meshy itself runs through the user's Higgsfield account (`meshy_multi_image_to_3d`, `meshy_v7_image_to_3d`, remesh and
-  retexture), not meshy.ai, which the cloud sessions can't reach. A Meshy plugin for Blender isn't needed: the models come in
-  as GLB, which Blender's own glTF importer reads.
+- Meshy runs on the user's meshy.ai account: in its web app from the four views `crop_sheet_views.py` cuts out of each model
+  sheet, or through Meshy's API with the user's key (entered in the session's secure credential form, which also opens the
+  cloud session's network to api.meshy.ai). A Meshy plugin for Blender isn't needed: the models come in as GLB, which
+  Blender's own glTF importer reads.
 - Nothing from the extensions site is needed (it isn't reachable from the cloud sessions either). The full Blender app with a
   window is only for looking at things by hand: install it from blender.org on your own computer, the same 5.2 LTS.
 

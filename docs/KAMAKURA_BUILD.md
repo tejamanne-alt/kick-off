@@ -17,8 +17,8 @@ materials, wear and painted style. To get there and stay honest about it:
   1,500, a tree 6,000, a gameplay structure 5,000; `docs/PERFORMANCE.md`). A vending machine is about 120 px tall on the
   phone at 864 lines: a 4K texture there costs memory on the Nord CE5 and shows nothing more.
 - **No light painted in.** The game lights every surface itself (`ToonCharacter`/`Toon`, the city's light, the filters).
-  So the sheets are drawn in flat, shadowless light, and Meshy textures with shading baked in are redone or delit (Tripo's
-  `delight`). A texture with shadows painted in is shaded twice.
+  So the sheets are drawn in flat, shadowless light, and a Meshy texture with shading baked in is retextured or redone.
+  A texture with shadows painted in is shaded twice.
 - **The painted look comes from the textures and the toon shader together.** The level pictures are painted backgrounds;
   the textures carry that paint, the toon shading keeps it flat.
 
@@ -27,7 +27,7 @@ materials, wear and painted style. To get there and stay honest about it:
 | Step | Who | Tool | Output |
 |---|---|---|---|
 | 1. Model sheets | the user | Gemini, Nano Banana Pro (2.1 for the plates) | one 2 x 2 sheet per asset: front, right, back, three-quarter; `review/kamakura/sheets/<id>_<name>.png` |
-| 2. 3D models | Claude (or the user in meshy.ai) | Meshy Multi-Image to 3D, through the user's Higgsfield account | a textured GLB per asset: `review/kamakura/models/<id>_<name>.glb` |
+| 2. 3D models | the user in meshy.ai (or Claude through Meshy's API, with the user's key) | Meshy Multi-Image to 3D, from the four views Claude cuts out of each sheet | a textured GLB per asset: `review/kamakura/models/<id>_<name>.glb` |
 | 3. The kit | Claude | Blender 5.2.3 (`bpy`) with pymeshlab, xatlas, trimesh | real size, cleaned, cut to budget, baked into the Kamakura atlas, FBX in `Assets/_Game/Art/Models/Kamakura` |
 | 4. The levels | Claude | the level builder (`Editor/`) | Kamakura's routes, leg by leg, in route order |
 
@@ -38,17 +38,27 @@ materials, wear and painted style. To get there and stay honest about it:
 - **The far layers** (hills, the back rows of roofs, the sea) are painted cards cut from the level pictures, so they match
   them exactly.
 
-**Meshy settings** (Higgsfield model `meshy_multi_image_to_3d`, the sheet's four views cropped apart; `get_cost` first):
+**Meshy, two ways.** Meshy runs on the user's meshy.ai account (the cloud sessions can't reach meshy.ai's website, and
+there is no Meshy connector):
+- **The user in meshy.ai** (the default). Claude cuts each sheet into its four views
+  (`tools/blender/crop_sheet_views.py` into `review/kamakura/sheets/views/`: `<id>_1_front.png`, `_2_right`, `_3_back`,
+  `_4_three_quarter`) and pushes them. In meshy.ai, Image to 3D with several images: upload the four, set what the table
+  says, generate, download the GLB, save it as `review/kamakura/models/<id>_<name>.glb`, push.
+- **Claude through Meshy's API** (optional): the user creates an API key in their Meshy account (if their plan includes
+  the API) and enters it in the secure credential form Claude shows (never in the chat). Claude then runs the same
+  settings and says how many credits the whole set will take before generating.
 
-| Kind | Views | `target_polycount` (cut to budget after) | Other settings |
+| Kind | Views | Target polycount (cut to budget after) | Other settings |
 |---|---|---|---|
-| Street prop, small set piece | 4 | 3,000 (budget 1,500) | `should_texture` on, `enable_pbr` off, `should_remesh` on, `topology` triangle, `symmetry_mode` on for symmetric things (vending machine, torii, lantern), else auto |
+| Street prop, small set piece | 4 | 3,000 (budget 1,500) | the newest Meshy model; topology triangle; texture on at the highest quality the plan offers; PBR off; symmetry on for symmetric things (vending machine, torii, lantern), else auto |
 | Vehicle | 4 | 8,000 (budget 5,000) | as above, symmetry auto |
 | Building, gameplay structure | 4 | 12,000 (budget 6,000 / 5,000) | as above, symmetry off |
 
-If a model comes back with shading baked into its texture, run Tripo P2 (`tripo_p2_image_to_3d`, `delight` on, `auto_size`
-on, `texture_quality` detailed) on the front view, or Meshy Retexture with the sheet as the style image. Meshy's terms:
-a free Meshy plan gives CC BY 4.0 models; through Higgsfield, check the terms on the account before the game ships.
+If a model comes back with shading baked into its texture, retexture it in Meshy (AI texturing) with its front view as
+the reference image and the texture prompt "flat, evenly lit colours exactly as the reference, no shadows, no
+highlights", or make its sheet again in flatter light. **Meshy's terms:** on a free plan its models are CC BY 4.0 (Meshy
+must be credited); on a paid plan they are private, with full commercial use. For the stores, generate on a paid plan or
+credit Meshy in the game's credits.
 
 ## The order
 
@@ -529,9 +539,10 @@ tall with the plinth. Same rules as before.
 BUILD KM-K, the Kamakura kit. Read CLAUDE.md, docs/LEARNINGS.md, docs/PERFORMANCE.md, docs/ART_DIRECTION.md ("Production
 rules") and docs/KAMAKURA_BUILD.md first. The model sheets are in review/kamakura/sheets (KM-A, KM-V, KM-B), the textures
 in review/kamakura/textures (KM-T), the foliage in review/kamakura/foliage (KM-F).
-1. For each sheet, crop its four views and run Meshy Multi-Image to 3D through Higgsfield with the settings in
-   docs/KAMAKURA_BUILD.md (preflight the cost and tell me the total before generating). Save each GLB in
-   review/kamakura/models.
+1. The models: I make them in meshy.ai from the views in review/kamakura/sheets/views and push the GLBs to
+   review/kamakura/models. (Or, if I have given my Meshy API key through the secure credential form, run Meshy's
+   Multi-Image to 3D API with the settings in docs/KAMAKURA_BUILD.md, telling me the credit total before generating.)
+   Check every GLB is there and matches its sheet before going on.
 2. Write tools/blender/kit_buildings_km.py: import each GLB, set its real size from the sheet's stated size, front to -Y,
    origin at the centre of its footprint on the ground; weld open edges and rebuild normals as polish_lib does for scans;
    decimate to the budget keeping texture seams; bake every texture into the Kamakura atlas (4096 x 4096, xatlas packing,
@@ -658,8 +669,8 @@ three new routes instead of the original 23 levels; a save upgrade keeps every s
 
 ## Cost (est., none generated)
 
-- **Generation:** about 55 model sheets and 20 texture and foliage sheets in Gemini; about 55 Meshy models through
-  Higgsfield (credits per model shown by `get_cost` before any run).
+- **Generation:** about 55 model sheets and 20 texture and foliage sheets in Gemini; about 55 Meshy models on the user's
+  meshy.ai account (credits per model as Meshy shows them).
 - **In the game:** one 4096 x 4096 Kamakura atlas (16 MB uncompressed, about 4 MB compressed) plus the plants' atlas;
   every model within its budget. A street on screen is about the original town's in triangles. Checked on the Nord CE5
   before the switch (KM-L99).

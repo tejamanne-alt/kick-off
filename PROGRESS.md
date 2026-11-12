@@ -1785,9 +1785,11 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
   beside its source from the game camera in all four looks; sources at the highest resolution are kept in `review/`, while
   the game bakes each texture into the Kamakura atlas at the size the camera shows it, within the phone's budgets; no
   light painted into textures (the game lights them).
-- **Meshy** is available through the user's Higgsfield account (Meshy 7 Image to 3D, Multi-Image to 3D, Remesh, Retexture;
-  also Tripo P2, which removes baked lighting). meshy.ai itself is not reachable from the cloud sessions, and there is no
-  Meshy connector.
+- **Meshy** runs on the user's meshy.ai account. (A Higgsfield connector is attached to the workspace and offers Meshy, but
+  it isn't the user's account: don't use it.) The user makes the models in meshy.ai from the four views
+  `tools/blender/crop_sheet_views.py` cuts out of each sheet, or Claude runs Meshy's API with the user's key, given through
+  the secure credential form. meshy.ai is not otherwise reachable from the cloud sessions, and there is no Meshy connector.
+  Meshy's free plan makes CC BY 4.0 models (credit Meshy); a paid plan keeps them private.
 - **Blender:** pymeshlab (decimation that keeps texture seams), xatlas (atlas packing) and trimesh (checks) in Blender's
   Python, and libopengl0 for pymeshlab (`tools/blender/README.md`); import `bpy` before `pymeshlab`. The Astradite
   environment's setup script installs them (not yet proven in a fresh session).
