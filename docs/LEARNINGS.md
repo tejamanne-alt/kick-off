@@ -593,6 +593,23 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
 - *Rule:* a new place brings new play: its own routes, how people there get around, and what a child there does on the way.
   A reskin is not a city.
 
+**D9. A city's assets planned through image-to-3D when its pictures already had them (Kamakura, the v122 build plan).**
+- *What:* the first plan for Kamakura's objects had the user redraw about 55 assets as Gemini model sheets, then make each
+  into a model in Meshy (and, before the user said they have no Higgsfield account, through Higgsfield): two generations
+  per asset, ending "very close, not pixel-perfect", at about 12,000 triangles a building to cut to budget, with light
+  baked in. The user asked: "Can't Blender achieve the same? Do we really need to use Meshy?"
+- *Why:* the plan reached for a generator before checking what the user's 17 pictures already gave: straight-on fronts of
+  nearly every building and prop, at full resolution.
+- *Fix:* projection modelling (`tools/blender/kit_buildings_km.py`): each model built by script to its picture's
+  measurements, the picture's pixels projected onto the faces toward the street, the sides sampled from the same picture.
+  Proven on the home and the red vending machine beside their pictures (`review/kamakura/kit_proof_board.jpg`): straight
+  on, pixel for pixel the picture; 49 triangles (the home and its fence) and 10. Gemini sheets and Meshy only when asked for, for an unseen side or
+  an organic shape (the statue). What the proof also showed: a picture's sky must be painted out of the roof outlines
+  (a roof edge a few pixels off shows blue), a side sample must avoid ornaments (the gable's onigawara smeared over a whole
+  wall), and things standing in front of a building (plants, pots, the bicycle) must be their own models.
+- *Rule:* build from the user's own pictures first. Prove a method on two assets with a side-by-side board before writing
+  prompts for fifty, and use a generator only for what the pictures can't give.
+
 ## E. Levels and world
 
 - **E1. Every level had chapter-1 scenery.** A new-scene call unloaded the level definition. *Rule:* pass data into scene builders explicitly; never hold asset references across a new-scene call.
@@ -653,6 +670,10 @@ Never re-propose what is rejected here.
   weathered, dense streets), reached through light, grade and baked texture within the phone's budget, never by copying
   that game's content. The filters must keep working in every city.
 - **Filters:** easy to reach: on the title screen and in every pause menu.
+- **City assets from the user's pictures:** Kamakura's models are built in Blender with the user's pictures projected onto
+  them, identical to the pictures (D9). Meshy (the user's meshy.ai account) only for what that can't build. The user has no
+  Higgsfield account: don't use the Higgsfield connector. Keep the reference pictures as PNG originals (repo size doesn't
+  matter); don't propose WebP.
 - **Store art:** use the user's own artwork for the app icon.
 
 ## How to add an entry

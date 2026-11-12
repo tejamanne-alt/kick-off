@@ -1797,6 +1797,37 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
   prompts get no city block or format line.
 - No game code or assets changed.
 
+## Kamakura's models: built in Blender from the user's pictures (tools and docs only)
+
+- **Why.** The user: "Can't Blender achieve the same? Do we really need to use Meshy? Which is the best? Based on that let's
+  go ahead." Blender is better here, proven on two assets: the pictures already show nearly every asset straight on, at
+  full resolution (`docs/LEARNINGS.md` D9).
+- **`tools/blender/kit_buildings_km.py`** builds the Kamakura kit by projection modelling:
+  - each model scripted to its picture's measurements (the home: 119 px to the metre, the ground at y 890, centred on x
+    1029), the picture's pixels projected onto every face toward the street, the sides, back and hidden roofs sampled from
+    the same picture (a side drawn at an angle is straightened by a homography: the vending machine's, from KM-P1);
+  - the builder's shapes: boxes, gable and hipped roofs, and a hipped skirt roof round a ground floor (a hisashi);
+  - the picture's glitches repaired and noted: KM1-1's ghosted building beside the upper roof and under it is replaced by
+    the house's good half, mirrored about x 987; the sky is painted out of the roof outlines (a saturated-blue mask, widened
+    3 px over its fringe, filled from the roof inward);
+  - one 4096 x 4096 atlas, one material, the white corner kept, an FBX per model, `Kamakura.json`, `Kamakura.blend`;
+    `--board` renders each model beside its picture, straight on and at three-quarters.
+- **The proof:** the home with its fence (KM-B01: `KmHome` 39 triangles, and `KmHomeFence`, its child, 10) and the red
+  vending machine (KM-A06: `KmVendingRed`, 10 triangles), board in `review/kamakura/kit_proof_board.jpg`. Straight on,
+  each is its picture; turned, the fence stands in front, the house is set back under a hipped upper roof and a skirt roof,
+  and the machine has its side from the props sheet. Still flat on the proof: the persimmon (on the skirt roof), the pots
+  and the bicycle (on the fence); they become their own models.
+- **The light:** the pictures carry their own sun and shade, so the kit is to be drawn with `Toon` `_Lighting` 0.25 (as the
+  clouds), not lit twice (`docs/ART_DIRECTION.md`, production rules). The board renders it unlit.
+- **`docs/KAMAKURA_BUILD.md`** rewritten to the Blender-first pipeline: what "identical" means now (the fronts are the
+  pictures), who does what, why not Meshy for everything, the ASSET model-sheet prompts only when Claude asks for one by id,
+  Meshy only for the exceptions (so far the statue, KM-B32), the BUILD KM-K prompt, the cost (no model sheets up front, one
+  Meshy model). `tools/blender/README.md` lists the kit.
+- **Cost:** nothing in the game yet: no FBX is in `Assets/` until the user approves the board. The kit's atlas, once in,
+  is one 4096 x 4096 texture: 64 MB uncompressed (RGBA), 16 MB as ASTC 4x4 or 7.5 MB at 6x6, 8 MB as ETC2 RGB, a third
+  more with mipmaps; the proof's triangles are 59 in all, against budgets of 6,000 a building and 1,500 a prop.
+- **Not yet:** run on the Nord CE5 (nothing in the game to run).
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

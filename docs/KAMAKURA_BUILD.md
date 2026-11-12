@@ -7,58 +7,65 @@ into the game. Every prompt is here in the order it is used, and on the prompts 
 ## What "identical" means here
 
 The target is assets that look like the reference images: the same shapes and proportions, every part, the same colours,
-materials, wear and painted style. To get there and stay honest about it:
-- **Image-to-3D is very close, not pixel-perfect.** Meshy rebuilds the shape from the views it is given and paints the
-  texture from them. Every asset is therefore checked against its source: rendered from the game camera beside the
-  reference picture, in all four looks, and redone until it matches (an acceptance board: `docs/LEARNINGS.md` rule 4, A8).
-- **The sources are made at the highest resolution:** model sheets at 4K, Meshy textures at its highest setting. They are
-  kept in `review/kamakura/` for good. **In the game** each asset's texture is baked into the Kamakura kit's atlas at the
-  size the camera shows it, within the phone's budgets (`docs/ART_DIRECTION.md`: a building 6,000 triangles, a street prop
-  1,500, a tree 6,000, a gameplay structure 5,000; `docs/PERFORMANCE.md`). A vending machine is about 120 px tall on the
-  phone at 864 lines: a 4K texture there costs memory on the Nord CE5 and shows nothing more.
-- **No light painted in.** The game lights every surface itself (`ToonCharacter`/`Toon`, the city's light, the filters).
-  So the sheets are drawn in flat, shadowless light, and a Meshy texture with shading baked in is retextured or redone.
-  A texture with shadows painted in is shaded twice.
-- **The painted look comes from the textures and the toon shader together.** The level pictures are painted backgrounds;
-  the textures carry that paint, the toon shading keeps it flat.
+materials, wear and painted style. The way there is **projection modelling in Blender**, proven on the home and the red
+vending machine (`review/kamakura/kit_proof_board.jpg`, `tools/blender/kit_buildings_km.py`):
+- **The fronts are your pictures.** Each model is built by script to the measurements of the picture it comes from (the
+  home: 119 px to the metre, the ground at y 890), and the picture's own pixels are projected onto every face that faces
+  the street. Straight on, the model is the picture, pixel for pixel; turned, it is a real 3D shape: the fence in front,
+  the house set back, the roofs sloping away.
+- **Sides, backs and roofs out of view** take samples of the same picture's materials (the dark boards, the roof tiles),
+  or a side the props sheet shows, straightened when it is drawn at an angle (the vending machine's side, from KM-P1).
+- **Things standing in front of a building are their own models:** plants, pots, bicycles, signs that stand off the wall.
+  Painted on, they smear when the camera turns (on the proof board: the persimmon on the skirt roof, the pots on the fence).
+  They are cut out of the pictures and rebuilt: plants as leaf cards from the pictures' own leaves, the rest as props.
+- **The pictures' glitches are repaired, not copied:** KM1-1's ghosted building beside the home's upper roof is replaced by
+  the roof's good half, mirrored. Each repair is written in the script, at the pixels it touches.
+- **The pictures' light comes with them.** The paintings carry their own sun and shade, so the Kamakura kit is drawn as
+  the clouds are: `Toon` with `_Lighting` 0.25, the painted light kept as it is and a quarter of the game's sun added.
+  The city's climate, the haze and every filter still apply. It is not lit twice.
+- **The highest resolution where it shows:** the fronts at the pictures' full resolution (the home's front is 1,340 px
+  across), in the Kamakura atlas (4096 x 4096), within the phone's budgets (`docs/ART_DIRECTION.md`: a building 6,000
+  triangles, a street prop 1,500, a tree 6,000, a gameplay structure 5,000; `docs/PERFORMANCE.md`). The proof's home is
+  49 triangles with its fence, and the vending machine 10: the detail is in the picture, not the mesh.
+- Every asset is checked against its source: rendered straight on and turned, beside the picture, and in all four looks,
+  and redone until it matches (an acceptance board: `docs/LEARNINGS.md` rule 4, A8).
 
 ## The pipeline: who does what
 
 | Step | Who | Tool | Output |
 |---|---|---|---|
-| 1. Model sheets | the user | Gemini, Nano Banana Pro (2.1 for the plates) | one 2 x 2 sheet per asset: front, right, back, three-quarter; `review/kamakura/sheets/<id>_<name>.png` |
-| 2. 3D models | the user in meshy.ai (or Claude through Meshy's API, with the user's key) | Meshy Multi-Image to 3D, from the four views Claude cuts out of each sheet | a textured GLB per asset: `review/kamakura/models/<id>_<name>.glb` |
-| 3. The kit | Claude | Blender 5.2.3 (`bpy`) with pymeshlab, xatlas, trimesh | real size, cleaned, cut to budget, baked into the Kamakura atlas, FBX in `Assets/_Game/Art/Models/Kamakura` |
-| 4. The levels | Claude | the level builder (`Editor/`) | Kamakura's routes, leg by leg, in route order |
+| 1. The pictures | the user (done) | Gemini | the 17 references and the maps, `review/kamakura/refs` |
+| 2. The models | Claude | Blender 5.2.3 (`bpy`), by script, with the pictures projected (`tools/blender/kit_buildings_km.py`) | real size, within budget, in the Kamakura atlas, FBX in `Assets/_Game/Art/Models/Kamakura` |
+| 3. Extra views, only when asked | the user | Gemini, Nano Banana Pro: a model sheet (Step 0) | only for an asset whose side or back is seen in play and that no picture shows; Claude asks for it by its id |
+| 4. Organic shapes, only when asked | the user in meshy.ai | Meshy Multi-Image to 3D, from a model sheet's four views | only what boxes and slopes can't build: so far the bronze statue (KM-B32) |
+| 5. The levels | Claude | the level builder (`Editor/`) | Kamakura's routes, leg by leg, in route order |
 
-- **Plants are not made in Meshy:** image-to-3D turns foliage into lumps. They are built by script as leaf-card trees
-  (`tools/blender/kit_plants.py`), shaped from KM-P2's silhouettes and painted from the foliage sheets below.
+- **Plants are built by script** as leaf-card trees (`tools/blender/kit_plants.py`), shaped from KM-P2's silhouettes and
+  painted from the foliage sheets below and the pictures' own leaves.
 - **Ground and walls** use tileable textures made from the plates (KM-P3) and the level pictures.
 - **Animals** come from the animals kit, repainted (the cat); the black kite and the tanuki are new models in it.
 - **The far layers** (hills, the back rows of roofs, the sea) are painted cards cut from the level pictures, so they match
   them exactly.
 
-**Meshy, two ways.** Meshy runs on the user's meshy.ai account (the cloud sessions can't reach meshy.ai's website, and
-there is no Meshy connector):
-- **The user in meshy.ai** (the default). Claude cuts each sheet into its four views
+**Why not Meshy for everything:** image-to-3D rebuilds the shape and repaints the texture from a few views, so it comes
+back close but not identical (softened edges, repainted signs, light baked in), at about 12,000 triangles a building
+that then have to be cut to budget; and the sheets it needs are themselves redrawings of the pictures. Projection keeps
+your pictures' own pixels, costs no credits, and is fully repeatable.
+
+**Meshy, for the exceptions, two ways.** Meshy runs on the user's meshy.ai account (the cloud sessions can't reach
+meshy.ai's website, and there is no Meshy connector):
+- **The user in meshy.ai** (the default). Claude cuts the asset's sheet into its four views
   (`tools/blender/crop_sheet_views.py` into `review/kamakura/sheets/views/`: `<id>_1_front.png`, `_2_right`, `_3_back`,
-  `_4_three_quarter`) and pushes them. In meshy.ai, Image to 3D with several images: upload the four, set what the table
-  says, generate, download the GLB, save it as `review/kamakura/models/<id>_<name>.glb`, push.
+  `_4_three_quarter`) and pushes them. In meshy.ai, Image to 3D with several images: upload the four, the newest Meshy
+  model, topology triangle, target polycount 12,000 (cut to budget after), texture on at the highest quality the plan
+  offers, PBR off, symmetry auto; generate, download the GLB, save it as `review/kamakura/models/<id>_<name>.glb`, push.
 - **Claude through Meshy's API** (optional): the user creates an API key in their Meshy account (if their plan includes
   the API) and enters it in the secure credential form Claude shows (never in the chat). Claude then runs the same
-  settings and says how many credits the whole set will take before generating.
+  settings and says how many credits it will take before generating.
 
-| Kind | Views | Target polycount (cut to budget after) | Other settings |
-|---|---|---|---|
-| Street prop, small set piece | 4 | 3,000 (budget 1,500) | the newest Meshy model; topology triangle; texture on at the highest quality the plan offers; PBR off; symmetry on for symmetric things (vending machine, torii, lantern), else auto |
-| Vehicle | 4 | 8,000 (budget 5,000) | as above, symmetry auto |
-| Building, gameplay structure | 4 | 12,000 (budget 6,000 / 5,000) | as above, symmetry off |
-
-If a model comes back with shading baked into its texture, retexture it in Meshy (AI texturing) with its front view as
-the reference image and the texture prompt "flat, evenly lit colours exactly as the reference, no shadows, no
-highlights", or make its sheet again in flatter light. **Meshy's terms:** on a free plan its models are CC BY 4.0 (Meshy
-must be credited); on a paid plan they are private, with full commercial use. For the stores, generate on a paid plan or
-credit Meshy in the game's credits.
+Claude cleans the GLB, sets its real size and projects the picture onto it like any other model. **Meshy's terms:** on a
+free plan its models are CC BY 4.0 (Meshy must be credited); on a paid plan they are private, with full commercial use.
+For the stores, generate on a paid plan or credit Meshy in the game's credits.
 
 ## The order
 
@@ -73,9 +80,11 @@ credit Meshy in the game's credits.
 
 ## The prompts
 
-### Step 0: the model sheet base prompt
+### Step 0: the model sheet base prompt (only when Claude asks for a sheet)
 
-Paste this first in a new Gemini chat (Nano Banana Pro). Then send one asset per message, attaching its source images.
+Claude builds every asset from the pictures first. A sheet is needed only when an asset's side or back is seen in play
+and no picture shows it, or for a Meshy exception (the statue); Claude then names the asset's id. Paste this first in a
+new Gemini chat (Nano Banana Pro), then send that asset's ASSET prompt from Steps 2, 3 and 5, attaching its source images.
 
 ```text
 BASE KM-S0, the model sheet base prompt. You are making model sheets for a game's 3D artists and an image-to-3D
@@ -202,7 +211,9 @@ picture seen straight down. Flat light, the same colours. FORMAT: aspect ratio 1
 
 ### Step 2: street props
 
-In the model sheet chat. Each message names its source pictures: attach them with it.
+The ASSET prompts of Steps 2, 3 and 5 make model sheets: send one only when Claude asks for it by its id (Step 0). They
+also list each asset's parts, source pictures and real size, which is what Claude builds it to. In the model sheet chat,
+each message names its source pictures: attach them with it.
 
 ```text
 ASSET KM-A01, the concrete utility pole with a transformer. Attach KM-P1 and KM1-1. The left pole on the props sheet: a
@@ -537,22 +548,24 @@ tall with the plinth. Same rules as before.
 
 ```text
 BUILD KM-K, the Kamakura kit. Read CLAUDE.md, docs/LEARNINGS.md, docs/PERFORMANCE.md, docs/ART_DIRECTION.md ("Production
-rules") and docs/KAMAKURA_BUILD.md first. The model sheets are in review/kamakura/sheets (KM-A, KM-V, KM-B), the textures
-in review/kamakura/textures (KM-T), the foliage in review/kamakura/foliage (KM-F).
-1. The models: I make them in meshy.ai from the views in review/kamakura/sheets/views and push the GLBs to
-   review/kamakura/models. (Or, if I have given my Meshy API key through the secure credential form, run Meshy's
-   Multi-Image to 3D API with the settings in docs/KAMAKURA_BUILD.md, telling me the credit total before generating.)
-   Check every GLB is there and matches its sheet before going on.
-2. Write tools/blender/kit_buildings_km.py: import each GLB, set its real size from the sheet's stated size, front to -Y,
-   origin at the centre of its footprint on the ground; weld open edges and rebuild normals as polish_lib does for scans;
-   decimate to the budget keeping texture seams; bake every texture into the Kamakura atlas (4096 x 4096, xatlas packing,
-   islands padded for the whole mip chain); the kit's one material; export one FBX per model and the manifest into
-   Assets/_Game/Art/Models/Kamakura.
+rules") and docs/KAMAKURA_BUILD.md first. The pictures are in review/kamakura/refs, the textures in review/kamakura/textures
+(KM-T), the foliage in review/kamakura/foliage (KM-F), any model sheets in review/kamakura/sheets.
+1. The models, in this plan's order, in tools/blender/kit_buildings_km.py (the home and the vending machine are its
+   proof): measure each asset in its source picture (pixels to the metre from a known size), build it by script at real
+   size (front to -Y, origin on the ground), project the picture's pixels onto the faces toward the street, sample its
+   materials for the sides, back and roofs, repair the picture's glitches (each one noted). Cut out what stands in front
+   of a building into its own model. Where a side or back seen in play has no picture, ask me for that asset's sheet by
+   its id. Only the statue (KM-B32), or a shape boxes and slopes can't build, comes from Meshy (the GLB from me in
+   review/kamakura/models, or through Meshy's API if I have given my key in the secure credential form, telling me the
+   credits first).
+2. The kit: every model in the Kamakura atlas (4096 x 4096, padded for the whole mip chain), one material (Toon, _Lighting
+   0.25: the pictures carry their own light), one FBX per model and the manifest into Assets/_Game/Art/Models/Kamakura.
 3. The plants: extend kit_plants.py with Kamakura's (black pine, camphor, cedar, cherry in leaf, bamboo, hydrangea, azalea,
-   persimmon, bonsai, morning glory, mossy stone), shaped from KM-P2's silhouettes, dressed with the KM-F sheets.
-4. Review: render every model beside its source picture from the game camera, in all four looks, and the whole kit at
-   play size (review/kamakura/kit_*.jpg). List every model's triangles against its budget and the atlas's memory. Show me
-   the boards before anything goes into a level.
+   persimmon, bonsai, morning glory, mossy stone), shaped from KM-P2's silhouettes, dressed with the KM-F sheets and the
+   pictures' own leaves.
+4. Review: render every model beside its source picture, straight on and turned, from the game camera, in all four looks,
+   and the whole kit at play size (review/kamakura/kit_*.jpg). List every model's triangles against its budget and the
+   atlas's memory. Show me the boards before anything goes into a level.
 ```
 
 ### Step 7: the levels (Claude Code, in this order)
@@ -669,8 +682,9 @@ three new routes instead of the original 23 levels; a save upgrade keeps every s
 
 ## Cost (est., none generated)
 
-- **Generation:** about 55 model sheets and 20 texture and foliage sheets in Gemini; about 55 Meshy models on the user's
-  meshy.ai account (credits per model as Meshy shows them).
-- **In the game:** one 4096 x 4096 Kamakura atlas (16 MB uncompressed, about 4 MB compressed) plus the plants' atlas;
+- **Generation:** the 20 texture and foliage sheets in Gemini; a model sheet only where Claude asks for one; one Meshy
+  model (the statue) on the user's meshy.ai account. Everything else is built from the pictures already made.
+- **In the game:** one 4096 x 4096 Kamakura atlas (64 MB uncompressed, 16 MB as ASTC 4x4 or 7.5 MB at 6x6, a third more
+  with mipmaps) plus the plants' atlas;
   every model within its budget. A street on screen is about the original town's in triangles. Checked on the Nord CE5
   before the switch (KM-L99).
