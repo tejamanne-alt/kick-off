@@ -1911,6 +1911,19 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
   learnt from the fence above it, not beside it (both bonsai had lost their canopies to their neighbours' leaves), with
   hints on the two dark canopies. RESTYLE KM1-1 now asks for the opening with the entrance part attached; ASSET KM-B01
   attaches the part. `KmHome` 57 triangles, `KmHomeFence` 20, `KmHomeGarden` 112, `KmHomeTree` 2.
+- **Four more Kamakura sheets and plates** (the user: one more prompt for each of the four, from the pictures in the
+  Kamakura folder, the home's plants included; eight in all). From a survey of all 14 pictures, each new prompt follows
+  the one it extends in the Kamakura tab, attaches KM-0 and the pictures its things come from, and asks for KM-0's
+  photographic look: KM-P5 more props and vehicles (the blue vending machine, recycling bins, a phone box, the home's
+  air-conditioner unit, meters and letterbox, a control cabinet, a street lamp, a bicycle rack, Hase's ticket gate, a
+  station board, the kite warning sign, nobori flags, a chalkboard sign and stool, a souvenir rack, crates, fish boxes
+  and a hose reel, a surfboard rack, crab traps and nets, the tram, a small car, a fishing boat, the rice ball); KM-P6
+  more plants (ginkgo, maple, zelkova, a clipped garden pine, the cherry in blossom, tall bamboo, a cedar with its roots;
+  pink and violet hydrangeas, a hedge, lotus, dune grass, ferns, a mossy boulder; and the home's eight pots and bonsai);
+  KM-P7 six more plates (rusty corrugated iron, silver-grey timber, vermilion torii timber, a mossy stone wall, streaked
+  white concrete, ceramic siding); KM-P8 thirty more figures (koi and a pond turtle, a grey heron, a cormorant drying its
+  wings, a wagtail, a white-eye, a bulbul, a turtle dove, a calico and a black-and-white cat, a tree frog, a snail, a
+  swallowtail, a red dragonfly, a shore crab, a starfish), each with its real size.
 - **Who makes the photographs:** the user, in the Gemini app (a phone works), sending each result in the chat or pushing
   it. From the cloud session there is no image model to run: the Hugging Face connector has running Spaces switched off
   (gradio=none), huggingface.co and hf.space are blocked by the proxy, and Gemini's API needs the user's key (declined for

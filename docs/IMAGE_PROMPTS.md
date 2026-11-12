@@ -353,6 +353,32 @@ whitebait drying rack. No labels.
 ```
 
 ```text
+SHEET KM-P5, more Kamakura street props and vehicles. Attach KM-0, KM1-1, KM1-3, KM2-1 and KM2-3 (their photographic
+versions once made). Follow the base prompt's content rules, but ignore its camera and light.
+More of the things in the attached pictures, for a game's 3D artists, on a plain mid-grey background (#808080): each
+object apart with space round it, shown straight from the front and from a three-quarter angle, all at one scale except
+the rice ball (shown larger), photographed in the look of KM-0 (the first picture attached: real materials, natural
+colour, sharp detail, not a painting), in even soft studio light with a small soft shadow under each. Copy each one's
+design and colours from the picture it appears in. Every brand and sign invented, in Japanese, legible.
+Street: a second drink vending machine in a blue livery (KM1-1); a pair of can and bottle recycling bins; a green
+public phone box with its folding door; an air-conditioner outdoor unit on its metal stand (the home's, KM1-1); a gas
+meter and an electricity meter on their wall board; a house letterbox on a short post; a grey roadside control
+cabinet; the top of a concrete street-lamp pole with its curved arm and lamp; a bicycle rack with three parked bicycles;
+Hase Station's ticket gate with its IC card reader (KM1-1); a station name board on two posts, its name invented.
+Shops: the yellow "beware of black kites" warning sign with a kite drawn on it (KM1-3); three nobori banner flags on
+poles in a weighted stand; an A-frame chalkboard menu sign and a wooden stool; a souvenir rack of chopsticks and
+folding fans; a stack of red and green plastic crates; a stack of white polystyrene fish boxes beside a garden-hose reel
+(KM2-3).
+Beach: a rack of surfboards in several colours with a wetsuit on a hanger (KM2-1); two cylindrical net crab traps
+beside a heap of fishing nets with their floats.
+Vehicles: the green-and-cream tram car, its livery invented, from the side and from the front (KM1-1); a small white
+compact car with no badges; a small wooden fishing boat resting on its wooden rollers.
+And, larger: a rice ball (onigiri) in its clear wrapper with its band of seaweed.
+Real sizes: the vending machine 1.83 m tall, the phone box 2.3 m, the ticket gate 1 m, the tram 12 m long, the car
+3.9 m, the boat 5 m, the rice ball 10 cm across. No labels.
+```
+
+```text
 SHEET KM-P2, Kamakura plants. Follow the base prompt's content rules, but ignore its camera and light.
 On a plain mid-grey background, each plant apart, from the side, at the same scale, with a 1.8 m grey pole for scale (not
 a person), in even soft studio light: a leaning Japanese black pine, a camphor tree, a Japanese cedar, a cherry tree in
@@ -361,11 +387,42 @@ trellis, a mossy stone with ferns. No labels.
 ```
 
 ```text
+SHEET KM-P6, more Kamakura plants and trees. Attach KM-0, KM1-1, KM1-4, KM3-1 and KM3-3 (their photographic versions
+once made). Follow the base prompt's content rules, but ignore its camera and light.
+More of the plants in the attached pictures, for a game's 3D artists, on a plain mid-grey background (#808080), each
+plant apart, from the side, photographed in the look of KM-0 (the first picture attached: real leaves and bark, natural
+colour, sharp detail, not a painting), in even soft studio light. Copy each from the picture it grows in.
+Top row, the trees at one scale beside a 1.8 m grey pole (not a person): a big old ginkgo in full green leaf (the
+shrine, KM1-4); a Japanese maple in green leaf; a broad zelkova park tree (KM3-3); a clipped garden pine with
+cloud-pruned pads; a cherry tree in pink blossom (the school's gate, KM1-4); a tall stand of timber bamboo, eight culms
+(KM3-3); a Japanese cedar with its buttress roots and ferns at its foot.
+Second row, the shrubs and ground plants at the same scale: hydrangea bushes in pink and in violet (KM3-1); a section of
+clipped hedge (the school's, KM3-3); lotus leaves with two pink flowers at the water line (the shrine pond, KM1-4);
+coastal dune grass with a low beach shrub; a big clump of ferns; a large boulder covered in moss and ivy.
+Bottom row, the home's pots and potted plants (KM1-1), larger, beside a 0.5 m grey pole: the cloud-pruned bonsai pine in
+its terracotta pot; a bonsai in a dark glazed bowl; a round clipped shrub in a long terracotta planter; pink flowers in a
+grey pot; white flowers in a terracotta pot; a hydrangea in a white rectangular planter; morning glories in a pot with a
+small bamboo trellis; a small flowering plant on a stone stand. No labels.
+```
+
+```text
 PLATE KM-P3, Kamakura texture plates. Ignore the base prompt's camera and light.
 Six square texture plates in a grid, each a flat, straight-on, edge-to-edge surface with no perspective, in flat, even,
 shadowless overcast light (no cast shadows, no shading, no highlights), true colours with their weathering: dark-stained
 timber boards, beige mortar wall with sea-salt bloom, grey kawara roof tiles, a concrete block wall with moss, worn
 stone steps, a sliding aluminium window with screen. No text.
+```
+
+```text
+PLATE KM-P7, more Kamakura texture plates. Attach KM-0, KM1-3, KM1-4, KM2-1 and KM2-3 (their photographic versions once
+made). Ignore the base prompt's camera and light.
+Six more square texture plates in a grid, each a flat, straight-on, edge-to-edge surface with no perspective, about
+2 m by 2 m of real surface, in flat, even, shadowless overcast light (no cast shadows, no shading, no highlights),
+photographed in the look of KM-0 (the first picture attached), true colours, evenly weathered all over with no single
+mark that stands out: rusty corrugated iron sheet (the shop roofs, KM1-3); silver-grey weathered timber boards (the
+beach huts, KM2-1); vermilion-lacquered timber above a black base band (the torii, KM1-4); a mossy random-stone
+retaining wall (the shrine, KM1-4); weathered white concrete with rain streaks (the sea wall, KM2-3); light grey
+ceramic siding panels in horizontal laps (the neighbours' houses). No text.
 ```
 
 ```text
@@ -400,6 +457,33 @@ streamers; 18 cm): perched, side view; flying, from below. A black-tailed gull (
 black band across its white tail, a yellow bill with a red and black tip, yellow legs; 46 cm, wings 1.2 m across):
 standing, side view; flying, from below. A little egret (all white, black bill and legs, yellow feet, two long plumes
 on the nape; 60 cm, wings 95 cm across): standing, side view; flying, from below.
+No people, no labels, no text.
+```
+
+```text
+SHEET KM-P8, more Kamakura animals and birds. Attach KM-0, KM1-4, KM2-4 and KM3-1 (their photographic versions once
+made). Follow the base prompt's content rules, but ignore its camera and light; this sheet asks for animals.
+More of Kamakura's animals, birds and small creatures in late spring, for a game's 3D artists, on a plain mid-grey
+background (#808080). Thirty figures, evenly spaced in a grid six across and five down, each apart with space round it,
+no lines between them. Each figure fills its own space, not to one scale (the real sizes give the proportions). Side
+views are strict profiles facing right; "from above" looks straight down; "from below" looks straight up at a bird
+overhead, wings fully spread, level and symmetrical. Each animal is the same individual in all its views. Photographed
+in the look of KM-0 (the first picture attached): real animals, natural colour, sharp detail, not a painting, in even
+soft daylight with a small soft shadow under the ones on the ground. No clothes, no cartoon faces or expressions.
+Row 1, the shrine pond (KM1-4): a red-and-white koi (60 cm), from above swimming straight, and from above turning; a
+golden koi (55 cm), the same two; a Japanese pond turtle (18 cm shell), basking, side view, and swimming, from above.
+Row 2: a grey heron (95 cm, wings 1.7 m): standing, side view; flying, from below. A Japanese cormorant on the rocks
+(KM2-4; 84 cm): standing, side view; standing with its wings held open to dry, front view; flying, from below. A white
+wagtail (21 cm): standing, side view.
+Row 3: a Japanese white-eye (12 cm, olive green with a white eye ring): perched, side view; flying, from below. A
+brown-eared bulbul (28 cm): perched, side view; flying, from below. An oriental turtle dove (33 cm): standing, side
+view; flying, from below.
+Row 4: a calico cat (25 cm at the shoulder): walking, side view; sitting, front view; curled up asleep, side view. A
+black-and-white cat: walking, side view; sitting, side view; lying stretched out along a wall top, side view.
+Row 5, small creatures, each shown large: a Japanese tree frog (4 cm) on a hydrangea leaf, side view (KM3-1); a land
+snail (3 cm) on a leaf, side view; an Asian swallowtail butterfly (10 cm), wings open, from above; a red dragonfly
+(4 cm), from above; a Japanese shore crab (4 cm) on a rock, from above (KM2-4); a small starfish (10 cm) in a tide pool,
+from above.
 No people, no labels, no text.
 ```
 
