@@ -2037,7 +2037,11 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
   the heron's pale legs were missing, a shadow and a strip of backdrop kept; texture is now a cue too, and each mask
   was compared with the old one. The cormorant on its rock idles (its catalogue entry); the koi and turtle sway (the
   review had discarded their turn). Animals get a budget in `docs/ART_DIRECTION.md`: 2,500 triangles (all 43 under it,
-  the largest 2,278).
+  the largest 2,248). A second and a third frame-by-frame pass: the backdrop between the cats' whiskers, the running
+  squirrel's dark shadow, the sitting squirrel's 6 px gap (closed, painted with fur), the insects built sideways
+  (turned head +X, flapping flat to 76 degrees up as FlitButterfly does). Result: 43 models, 55 motions, 595 checks
+  passed, 7 known limits (the small birds and insects in flight are built from one view), none failed. The review
+  page: https://claude.ai/artifact/MERPAe1mamCFnSRnGwApnm (`review/kamakura/animals/`).
 
 ## After Phase 8 (next steps)
 

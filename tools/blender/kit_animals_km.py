@@ -718,7 +718,7 @@ GAME_SEES = {
     'side': 'the right flank (Right), and at most the Right 3/4 as it passes; Front, Back, Top and Bottom are built '
             'from the side picture alone (a soft, mirrored likeness there, never seen in play)',
     'below': 'from below and to the side as it crosses the sky; its side and top come from the one view from below',
-    'above': 'from above (Top), through the water or on the ground; its sides and underside come from the one view '
+    'above': 'from above (Top), through the water or flitting past; its sides and underside come from the one view '
              'from above',
 }
 NEEDS_FLIGHT_SHEET = ('KM-N05', 'KM-N06', 'KM-N07', 'KM-N10', 'KM-N11', 'KM-N15', 'KM-N16')   # KM-S1 (Step 4b)
@@ -745,6 +745,7 @@ def checks_of(name, spec, info, motions):
         repairs.append('a lower threshold (%d) for see-through wings' % spec['thresh'])
     repairs.append('holes of fur or feather filled, gaps of smooth backdrop left open')
     flying = info['view'] == 'below'
+    in_flight = flying or (info['view'] == 'above' and any(p.startswith('Wing') for p in parts))
     c = [
         (1, 'Every part once', 'pass', 'meshes: ' + ', '.join('%s %d tris' % kv for kv in info['parts'].items()) +
          ('; pivots only: ' + ', '.join(info['empties']) if info['empties'] else '') + '. Checked in Top and Bottom.'),
@@ -753,11 +754,13 @@ def checks_of(name, spec, info, motions):
          'touch along a thin part\'s edge (closed, no gap)' % (slits, pinches, info['edges'])),
         (3, 'Depth from each part\'s own width', 'pass' if max(info['depth_to_width'].values()) <= 1.01 else 'FAIL',
          'deepest / half-width: ' + ', '.join('%s %.2f' % kv for kv in info['depth_to_width'].items())),
-        (4, 'Views the game sees have real source data',
-         'limit' if (flying and info['id'] in NEEDS_FLIGHT_SHEET) else 'pass',
+        (4, 'Views the game sees have real source data', 'limit' if in_flight else 'pass',
          'The game sees it ' + GAME_SEES[info['view']] + '.' +
          (' Large on screen in flight: rebuilt from its four-view KM-S1 sheet when it comes.'
-          if flying and info['id'] in NEEDS_FLIGHT_SHEET else '')),
+          if flying and info['id'] in NEEDS_FLIGHT_SHEET else
+          ' From the side it is a thin plate and its top is its underside mirrored: built from one view, accepted '
+          'because it is a few pixels across on the phone (KAMAKURA_BUILD Step 4b); a bird large on screen gets a '
+          'four-view sheet.' if in_flight else '')),
         (5, 'Real size, triangles', 'pass' if info['tris'] <= 2500 else 'FAIL',
          '%s m; %d triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit' % (
              ' x '.join('%.2f' % v for v in info['size']), info['tris'])),

@@ -11,9 +11,10 @@
   "<b>Motions as the game plays them.</b> The run swings the legs 28 degrees, as the game's dog does at a full run; the swallowtail and dragonfly beat their wings from flat to 76 degrees up as the game's butterfly does (they had been built sideways, so the flap twisted them); the cormorant on its rock only idles, as its catalogue entry says; the koi and turtle now visibly sway."
  ],
  "limits": [
-  "<b>Top, bottom, front and back</b> come from the side picture alone, so the belly and back are the side's fur stretched and mirrored. The game never shows them; they are here so a doubled part or a gap can't hide.",
-  "<b>The squirrel running</b> is drawn mid-leap with its legs flat along the ground, so it scurries (the body bounds, the tail streams) rather than swinging legs. The game's tree squirrel moves only its tail.",
-  "<b>The Shiba</b> shows each pair of legs touching in the picture, so each pair is one piece at the body's middle, with pivots for the far legs."
+  "<b>Top, bottom, front and back</b> of an animal built from its side come from that side picture alone: the belly and back are the side's fur stretched and mirrored. The game shows the right side; these views are rendered so a doubled part or a gap can't hide.",
+  "<b>The seven in flight</b> (sparrow, swallow, white-eye, bulbul, dove, swallowtail, dragonfly) are built from one view: from the side each is a thin plate, and its top is its underside mirrored. They are a few pixels across on the phone; check 4 marks each as a known limit.",
+  "<b>The squirrel running</b> is drawn mid-leap with its legs flat along the ground, so it scurries (the body bounds, the tail streams) instead of swinging legs; the game's tree squirrel moves only its tail.",
+  "<b>The Shiba</b> shows each pair of legs touching in the picture, so each pair is one piece at the body's middle, with pivots for the far legs. <b>The sitting squirrel's</b> 6 px gap between tail and back is closed and painted with fur."
  ],
  "pending": [
   "<b>The large birds in flight</b> (black kite, gull, crow, pigeon, heron, egret, cormorant) wait for their four-view KM-S1 sheets (KAMAKURA_BUILD Step 4b). The perched and standing ones are here.",

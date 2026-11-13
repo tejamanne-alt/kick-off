@@ -151,7 +151,7 @@ def page(folder, title, notes):
         w('<p>%s</p>' % para)
     w('<div class="tally"><span class="pill pass">%d models</span>' % len(names))
     for k in ('pass', 'limit', 'FAIL', 'n/a'):
-        w('<span class="pill %s">%d %s</span>' % (cls[k], counts.get(k, 0), {'pass': 'checks passed', 'limit': 'known limits',
+        w('<span class="pill %s">%d %s</span>' % (cls[k] if counts.get(k, 0) else 'na', counts.get(k, 0), {'pass': 'checks passed', 'limit': 'known limits',
                                                                           'FAIL': 'failed', 'n/a': 'not applicable'}[k]))
     w('</div></header>\n')
     w('<div class="notes">')
