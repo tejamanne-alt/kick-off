@@ -27,7 +27,7 @@ namespace DribbleToSchool.Hazards
         public Vector2 stealVelocity = new Vector2(-4.5f, 3.5f);
         public float stealCooldown = 1.2f;
         public Transform visual;
-        [Tooltip("Leg pivots (at the hips and shoulders), swung while trotting.")]
+        [Tooltip("Leg pivots (at the hips and shoulders), swung whole while trotting; a model with jointed legs (ShinFR.., FootFR.. under them) walks them with planted feet instead (World/LegGait).")]
         public Transform[] legs;
         [Tooltip("The axis, in each leg's own space, the legs swing about (the kit's dog: up).")]
         public Vector3 legAxis = Vector3.forward;
@@ -54,6 +54,8 @@ namespace DribbleToSchool.Hazards
         Quaternion[] legRest;
         Quaternion tailRest, headRest;
         float stride, wagPhase;
+        World.LegGait.Rig rig;      // jointed legs (LegFR.. with ShinFR.. and FootFR..): walked with planted feet
+        float legPhase, gaitWeight;
 
         Mode mode;
         float modeUntil, targetX, targetZ, depth;
@@ -75,6 +77,13 @@ namespace DribbleToSchool.Hazards
             for (int i = 0; i < legRest.Length; i++) legRest[i] = legs[i] != null ? legs[i].localRotation : Quaternion.identity;
             if (tail != null) tailRest = tail.localRotation;
             if (head != null) headRest = head.localRotation;
+            // A model with jointed legs (the Kamakura kit's) walks them with its feet planted (World/LegGait); the
+            // original kit's dog, legs in one piece, swings them whole as before.
+            if (visual != null)
+            {
+                rig = World.LegGait.Rig.Find(visual, visual);
+                if (rig.Count == 0) rig = null;
+            }
             rng ^= (uint)Mathf.Abs(Mathf.RoundToInt(minX * 131f + maxX * 17f)) + 1u;
             Pedestrian.ClaimLane(this, minX, maxX);
             ResetState();
@@ -217,10 +226,28 @@ namespace DribbleToSchool.Hazards
             float run = IsChasing ? chaseSpeed : speed;
             float gait = Mathf.Clamp01(run / 0.6f);
             stride += dt * run * 9f;
-            Vector3 s = visualBaseScale;
-            s.y = visualBaseScale.y * (1f + Mathf.Sin(stride * 2f) * 0.04f * gait);
-            visual.localScale = s;
-            if (legs != null)
+            if (rig != null)
+            {
+                // A walk, turning into a trot from 1 to 1.8 m/s. The cycle runs as fast as the feet must step for the
+                // planted ones not to skate: the body covers stride / duty of a leg's length each cycle.
+                float trot = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(1f, 1.8f, run));
+                float duty = Mathf.Lerp(World.LegGait.Duty(World.LegGait.Kind.Walk), World.LegGait.Duty(World.LegGait.Kind.Trot), trot);
+                float reach = Mathf.Lerp(World.LegGait.Stride(World.LegGait.Kind.Walk), World.LegGait.Stride(World.LegGait.Kind.Trot), trot) * rig.Length;
+                legPhase += dt * run * duty / Mathf.Max(0.01f, reach);
+                legPhase -= Mathf.Floor(legPhase);
+                gaitWeight = Mathf.MoveTowards(gaitWeight, gait, 4f * dt);
+                float lift = gaitWeight * Mathf.Lerp(rig.BodyLift(legPhase, World.LegGait.Kind.Walk), rig.BodyLift(legPhase, World.LegGait.Kind.Trot), trot);
+                lift = rig.Pose(legPhase, trot, gaitWeight, lift);       // lowered where a foot must reach the ground
+                visual.localPosition = new Vector3(visualBase.x, visualBase.y + lift * visualBaseScale.y, depth);
+                visual.localScale = visualBaseScale;
+            }
+            else
+            {
+                Vector3 s = visualBaseScale;
+                s.y = visualBaseScale.y * (1f + Mathf.Sin(stride * 2f) * 0.04f * gait);
+                visual.localScale = s;
+            }
+            if (rig == null && legs != null)
                 for (int i = 0; i < legs.Length && i < legRest.Length; i++)
                     if (legs[i] != null)
                         legs[i].localRotation = legRest[i] * Quaternion.AngleAxis(Mathf.Sin(stride + (i == 0 || i == 3 ? 0f : Mathf.PI)) * 28f * gait, legAxis);

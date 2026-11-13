@@ -37,8 +37,14 @@ Every asset with moving parts is shown moving, as animated previews, one per mot
 | A machine or a door | its own motion (a barrier lifting, a door sliding) |
 
 A part that tears from the body at its joint, swings the wrong way, or moves something that should stay still is a
-fault (D16: the cat's legs came off when it walked). Each motion is shown at the game's own amplitude (the swing its
-behaviour uses, e.g. Hazards/Dog's 28 degrees at a full run), and looked at frame by frame before it is shown.
+fault (D16: the cat's legs came off when it walked). Each motion is the game's own: the behaviour's code ported line by
+line (`World/LegGait.cs` and `tools/blender/asset_review.py` share the gait), changed in both together, never made up
+for the review (D19: the review bounced birds the game walks). It is shown at 24 frames a cycle and looked at frame by
+frame before it is shown.
+
+A walking animal's legs are jointed (a thigh, a shin, a foot point), its feet planted on the ground through the stance
+and lifted forward in the swing, its knees bending as in the picture (D19: rigid legs swung from the hip scissored and
+floated). A bird walks on its feet, never bounces on the spot, and pecks by tipping its body on planted feet.
 
 Views the source picture can't show (an animal relief's top, bottom, front and back, built from one side) are still
 rendered and labelled as built from the side alone. The review says which views the game's camera actually sees.
@@ -77,6 +83,9 @@ rendered and labelled as built from the side alone. The review says which views 
 15. Every moving part overlaps what it's joined to, far enough to stay covered at the largest swing: no seam at rest,
     no gap mid-stride (D16). Every leg the picture shows is its own part, near legs in front of the body, far ones
     behind.
+16. Feet planted, measured (D19): through every motion each foot point's height is read from the posed model; no foot
+    more than 1 % of the animal's height below the ground, some foot always down in a walk, and no foot moving in a
+    peck. The numbers are printed on the review.
 
 A check is marked passed only after the thing it names has been looked at for that asset, and its note says what was
 looked at (D18: "checked on the cuts sheet" was written for 43 cut-outs before the sheet was read).

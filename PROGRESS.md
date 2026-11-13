@@ -2042,6 +2042,18 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
   (turned head +X, flapping flat to 76 degrees up as FlitButterfly does). Result: 43 models, 55 motions, 595 checks
   passed, 7 known limits (the small birds and insects in flight are built from one view), none failed. The review
   page: https://claude.ai/artifact/MERPAe1mamCFnSRnGwApnm (`review/kamakura/animals/`).
+- **The animals' walks rebuilt** (the user, with screen recordings: "The walking and moving animations are bad";
+  `docs/LEARNINGS.md` D19). Rigid legs swung from the hip scissored and floated, and the review bounced birds the game
+  walks. Now every walking leg is jointed (Leg.., Shin.., a Foot empty), found from the picture (`leg_masks` at the
+  knee; `bird_legs` as the thin parts reaching the ground; a lone leg twinned behind the body), and one gait drives
+  both the game and the review: `Assets/_Game/Scripts/World/LegGait.cs` (foot paths planted then lifted forward,
+  two-bone legs, the body lowered where a foot must reach; walk, trot, a bird's step, hop, a peck on planted feet) and
+  its mirror in `tools/blender/asset_review.py`. `Hazards/Dog` walks a model with shins on it, blending walk into trot
+  from 1 to 1.8 m/s at a cadence that keeps the feet from skating; `World/GroundBird` steps, hops and pecks one
+  (`headNod`, `headSlide`, `peckTurn`, `peckTip`; the original kit's models, without shins, move as before).
+  `Tests/Editor/LegGaitTests.cs`: the foot path, the solver, and a rig keeping planted feet on the ground and holding
+  them through a peck. Check 16 measures every foot through every motion. The heron's 2 px lower legs, dropped by the
+  cut-out's cleanup, are grown back. Not yet run in Unity or on the Nord CE5: the Kamakura animals aren't in a level.
 
 ## After Phase 8 (next steps)
 

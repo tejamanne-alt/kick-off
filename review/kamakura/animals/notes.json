@@ -1,20 +1,20 @@
 {
  "intro": [
-  "Every animal built from your sheets KM-P4 and KM-P8, reviewed by the strict rules you asked for (docs/ASSET_REVIEW.md): each one from all eight sides, each of its motions animated, its source beside it, and all fifteen checks with their results.",
-  "Each animal is a relief cut from one view of the sheet: the game's camera sees its right side (the Right view), and a walker crossing the screen at most its right three-quarter. The other views are rendered so a fault there can't hide, but they are built from that one side picture."
+  "Every animal built from your sheets KM-P4 and KM-P8, reviewed by the strict rules (docs/ASSET_REVIEW.md): each one from all eight sides, each of its motions animated at 24 frames, its source beside it, and sixteen checks with their results.",
+  "The motions are now the game's own code: the same gait drives the review and the game's Dog and GroundBird (World/LegGait.cs). Each animal is a relief cut from one view of its sheet; the game's camera sees its right side (the Right view)."
  ],
  "fixed": [
-  "<b>Legs that came off.</b> The first walk test showed the cat's lower legs swinging loose. Every leg is now its own piece, cut below the belly: near legs in front of the body, far legs behind it, each reaching up inside the body so no swing opens a gap (learning D16). Cat, tanuki, calico and tuxedo walk on four legs, in diagonal pairs as the game's dog swings them; the Shiba's touching pairs are one piece each.",
-  "<b>A seam at every joint.</b> Tail, head and wings now overlap the body by about half their own thickness.",
-  "<b>Tips that vanished from behind.</b> Ear tips, tail tips and thin feathers were one-sided, which the game's shader doesn't draw from the back. Now split and given depth; the closed-shell check fails on a single such edge (D17).",
-  "<b>Cut-outs that lost fur and feathers.</b> Going through every frame showed the squirrels missing half their back and tail, the running squirrel keeping its shadow, backdrop kept between the sitting squirrel's tail and back, holes in the kite's wing and the heron without its legs. Fur and feathers are now found by their texture as well as their colour; a second pass took the backdrop out from between the cats' whiskers and closed the sitting squirrel's 6 px gap with painted fur. Every cut-out was compared with the one before, gains and losses marked (D18).",
-  "<b>Motions as the game plays them.</b> The run swings the legs 28 degrees, as the game's dog does at a full run; the swallowtail and dragonfly beat their wings from flat to 76 degrees up as the game's butterfly does (they had been built sideways, so the flap twisted them); the cormorant on its rock only idles, as its catalogue entry says; the koi and turtle now visibly sway."
+  "<b>Walks rebuilt from your recordings.</b> Legs were one rigid piece swung from the hip: they scissored, every foot left the ground at both ends of its swing, and the body rose when it should have dropped. Every walking leg is now jointed (thigh, shin, foot), each foot planted on the ground while the body passes over it, then lifted and carried forward, the knee solved to reach it. Cats, the tanuki and the Shiba walk in four beats and run at a trot (learning D19).",
+  "<b>Birds walk instead of bouncing.</b> The review had bounced every bird on the spot; the game never did. Birds now step on jointed legs, their heads nodding with each step; sparrows hop with both feet, crouching, springing and tucking their feet. A peck tips the body forward on planted feet, so the beak reaches the ground and the neck never folds.",
+  "<b>Feet are measured, not eyeballed.</b> A new check (16) reads every foot's height through every motion: none goes below the ground, a walk always has a foot down, a peck moves no foot. Its numbers are on each animal.",
+  "<b>The heron's legs.</b> Its long lower legs and toes, 2 to 3 px wide on the sheet, had been dropped by the cut-out's cleanup: it stood on its ankles. Thin parts are now grown back from the figure.",
+  "<b>Earlier in this review:</b> legs that came off (D16), tips that vanished from behind (D17), cut-outs that lost fur and feathers (D18), the insects' wings and the swim fixed."
  ],
  "limits": [
-  "<b>Top, bottom, front and back</b> of an animal built from its side come from that side picture alone: the belly and back are the side's fur stretched and mirrored. The game shows the right side; these views are rendered so a doubled part or a gap can't hide.",
-  "<b>The seven in flight</b> (sparrow, swallow, white-eye, bulbul, dove, swallowtail, dragonfly) are built from one view: from the side each is a thin plate, and its top is its underside mirrored. They are a few pixels across on the phone; check 4 marks each as a known limit.",
-  "<b>The squirrel running</b> is drawn mid-leap with its legs flat along the ground, so it scurries (the body bounds, the tail streams) instead of swinging legs; the game's tree squirrel moves only its tail.",
-  "<b>The Shiba</b> shows each pair of legs touching in the picture, so each pair is one piece at the body's middle, with pivots for the far legs. <b>The sitting squirrel's</b> 6 px gap between tail and back is closed and painted with fur."
+  "<b>Top, bottom, front and back</b> of an animal built from its side come from that side picture alone: the belly and back are the side's fur stretched and mirrored. The game shows the right side.",
+  "<b>The seven in flight</b> (sparrow, swallow, white-eye, bulbul, dove, swallowtail, dragonfly) are built from one view: from the side each is a thin plate, its top its underside mirrored. They are a few pixels across on the phone; check 4 marks each as a known limit.",
+  "<b>A pair of legs drawn as one</b> (the Shiba's, the crow's, the gull's) is twinned: the far leg is a copy of the near one, set behind the body, stepping out of phase.",
+  "<b>The squirrel running</b> is drawn mid-leap with its legs flat along the ground, so it scurries; the game's tree squirrel moves only its tail. <b>The sitting squirrel's</b> 6 px gap between tail and back is closed and painted with fur."
  ],
  "pending": [
   "<b>The large birds in flight</b> (black kite, gull, crow, pigeon, heron, egret, cormorant) wait for their four-view KM-S1 sheets (KAMAKURA_BUILD Step 4b). The perched and standing ones are here.",

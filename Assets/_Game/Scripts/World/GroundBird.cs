@@ -8,6 +8,10 @@ namespace DribbleToSchool.World
     /// hopping), turns, pecks, and when the kid runs close it takes off: the standing model gives
     /// way to the flying one, which flaps up and away from the kid in an arc until it is out of
     /// sight. A while later, once its spot is out of sight too, it is back there on the ground.
+    ///
+    /// A model with jointed legs (LegR, LegL, each with a Shin and a Foot: the Kamakura kit's) steps them as it walks,
+    /// crouches, springs and lands on them as it hops, and keeps its feet planted while a peck tips its body forward
+    /// (World/LegGait; the asset review renders the same).
     /// </summary>
     public class GroundBird : AmbientAgent
     {
@@ -28,6 +32,12 @@ namespace DribbleToSchool.World
         public float walkSpeed = 0.3f;
         [Tooltip("Gulls hop; pigeons walk nodding their heads.")]
         public bool hopper;
+        [Tooltip("How far the head slides forward and back with each step (metres; the original kit's pigeon: 0.018).")]
+        public float headSlide = 0.018f;
+        [Tooltip("How far the head nods forward and back with each step (degrees): a photo cut-out's head nods, as one that slides shows its cut edge.")]
+        public float headNod;
+        [Tooltip("A peck: the head's turn beak-down (degrees) and the body's tip forward on its feet (degrees). The original kit's: 62 and 0; a photo cut-out's: 25 and 30, so the neck never folds.")]
+        public float peckTurn = 62f, peckTip;
         [Tooltip("The kid this close (metres) makes it fly off.")]
         public float startle = 2.6f;
         public float flightSpeed = 3.5f;
@@ -45,6 +55,7 @@ namespace DribbleToSchool.World
         float peckStart = -10f, nextPeck;
         float flownAt;
         Vector3 velocity;
+        LegGait.Rig rig;        // jointed legs (LegR, LegL with ShinR.. and FootR..): stepped, hopped and planted
 
         protected override float Reach { get { return roam + 1f; } }
 
@@ -54,6 +65,11 @@ namespace DribbleToSchool.World
             head.Capture();
             wingA.Capture();
             wingB.Capture();
+            if (standing != null)
+            {
+                rig = LegGait.Rig.Find(standing, transform);
+                if (rig.Count == 0) rig = null;
+            }
             yaw = targetYaw = transform.eulerAngles.y;
             Land(homeX, homeZ);
             until = Time.time + Range(0.5f, 3f);
@@ -128,7 +144,8 @@ namespace DribbleToSchool.World
                     z += dz / dist * step;
                     targetYaw = SideYaw(dx, dz, 10f);
                 }
-                phase += dt * (hopper ? 9f : 15f) * Mathf.Clamp01(speed / Mathf.Max(0.05f, walkSpeed) + 0.2f);
+                // a hopper's lift is |sin| (two hops a turn); with jointed legs, one crouch-spring-land a turn, so twice as fast
+                phase += dt * (hopper ? (rig != null ? 18f : 9f) : 15f) * Mathf.Clamp01(speed / Mathf.Max(0.05f, walkSpeed) + 0.2f);
                 if (dist <= 0.005f)
                 {
                     speed = 0f;
@@ -208,24 +225,40 @@ namespace DribbleToSchool.World
         void Apply()
         {
             yaw = Mathf.SmoothDampAngle(yaw, targetYaw, ref yawVelocity, state == State.Fly ? 0.12f : 0.18f);
-            float lift = 0f;
+            float lift = 0f, tip = 0f;
+            float pace = Mathf.Clamp01(speed / Mathf.Max(0.05f, walkSpeed));
+            float k = (Time.time - peckStart) / 0.22f;
+            float peck = state == State.Idle && k >= 0f && k <= 1f ? Mathf.Sin(k * Mathf.PI) : 0f;
             if (state == State.Walk)
             {
-                if (hopper) lift = Mathf.Abs(Mathf.Sin(phase)) * 0.05f * Mathf.Clamp01(speed / Mathf.Max(0.05f, walkSpeed));
+                if (hopper && rig != null)
+                {
+                    // crouch, spring, tuck the feet, land (the review's hop): up 5 cm, down into the knees between
+                    float sh = Mathf.Sin(phase);
+                    lift = (sh > 0f ? 0.05f * sh : 0.12f * rig.Length * sh) * pace;
+                }
+                else if (hopper) lift = Mathf.Abs(Mathf.Sin(phase)) * 0.05f * pace;
+                else if (rig != null)       // two nods a stride; the body as low as a foot needs to reach the ground
+                    lift = rig.Pose(phase / (4f * Mathf.PI), 0f, pace, rig.BodyLift(phase / (4f * Mathf.PI), LegGait.Kind.Step) * pace);
                 else lift = Mathf.Abs(Mathf.Sin(phase)) * 0.006f;
             }
-            transform.SetPositionAndRotation(new Vector3(x, y + lift, z), Quaternion.Euler(0f, yaw, pitch));
+            else if (state == State.Idle) tip = peckTip * peck;
+            // A peck tips the body forward on its feet (nose down: a negative turn about the model's side axis).
+            transform.SetPositionAndRotation(new Vector3(x, y + lift, z), Quaternion.Euler(0f, yaw, pitch - tip));
+            if (rig != null && state != State.Fly && state != State.Gone)
+            {
+                if (state == State.Walk && hopper) rig.Hop(Mathf.Sin(phase) * pace, lift);
+                else if (state != State.Walk) rig.Plant(-tip * Mathf.Deg2Rad);
+            }
             if (state == State.Fly || !head.ready) return;
-            // The pigeon's head: nodding back and forth as it walks, quick pecks when it stops.
+            // The head: nodding back and forth as it walks, quick pecks when it stops.
             if (state == State.Walk)
             {
-                head.Set(6f);
-                head.Slide(new Vector3(Mathf.Sin(phase) * 0.018f, 0f, 0f));
+                head.Set(6f + headNod * Mathf.Sin(phase));
+                head.Slide(new Vector3(Mathf.Sin(phase) * headSlide, 0f, 0f));
                 return;
             }
-            float k = (Time.time - peckStart) / 0.22f;
-            float peck = k >= 0f && k <= 1f ? Mathf.Sin(k * Mathf.PI) * 62f : 0f;
-            head.Set(8f + peck + Mathf.Sin(Time.time * 1.3f + seed) * 6f);
+            head.Set(8f + peckTurn * peck + Mathf.Sin(Time.time * 1.3f + seed) * 6f);
             head.Slide(Vector3.zero);
         }
     }

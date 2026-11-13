@@ -770,6 +770,30 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
   dragonfly, drawn head-up on the sheet, built with their wings along the body, so the flap twisted them (`head_up`
   turns them head +X; seen from above, the sheet's left wing is WingL). The insects flap up only, as FlitButterfly does.
 
+**D19. Walks that were pendulums and birds that bounced (the user's screen recordings of the review page).**
+- *What:* the user: "The walking and moving animations are bad", with recordings of the cat, Shiba, calico, crow,
+  pigeon, gull and heron. Each leg was one rigid piece swung from the hip, so the legs scissored, every foot left the
+  ground at both ends of its swing, and the body rose when it should have dropped (the Shiba's run floated with all
+  four feet up). The walk and the run were the same trot at two sizes. Every bird "walked" by bouncing on the spot,
+  feet and all, its head tilting; a peck tilted the head 40 degrees and never reached the ground.
+- *Why:* the review's motions were invented, not the game's: GroundBird walks a pigeon without a hop, slides its head
+  1.8 cm and pecks 62 degrees, and only its gulls hop 5 cm; the review bounced every bird 18 % of its height. And the
+  game's own dog had the same rigid swing (`Hazards/Dog.cs`: a sine of 28 degrees on each leg). Under it all, a leg
+  with no knee can't keep its foot on the ground. Building the fix found two more: the heron had stood on its ankles
+  all along (its 2 px lower legs cut off by the cleanup and dropped), and a bird's legs can't be found by a belly line
+  (its tail hangs below it).
+- *Fix:* jointed legs: a thigh (Leg..) and a shin (Shin..) with a Foot empty at the contact, cut at the knee for the
+  four-legged (`leg_masks`), found as the thin parts reaching the ground for birds (`bird_legs`), a lone leg twinned
+  behind the body so a foot is always down. One gait for the game and the review (`World/LegGait.cs`, `asset_review.py`):
+  each foot's path planted on the ground then lifted forward, the knees solved to reach it (two-bone), the body lowered
+  where a foot must reach; a four-beat walk, a trot, a bird's step, a hop that crouches and tucks its feet. Dog and
+  GroundBird use it for a model with shins (the original kit's keep their old motion). A photo cut-out's head nods
+  instead of sliding, and a peck tips the body on planted feet with a small head turn: a big turn or slide shows the
+  cut edge. The thin parts the cleanup drops are grown back from the figure. 24 frames a motion, not 12.
+- *Rule:* the review's motions are the game's behaviour code, ported line by line and changed together, never
+  invented for the review. Feet are measured, not looked at: check 16 reads every foot's height through every motion
+  (none below the ground, one always down in a walk, none moving in a peck).
+
 ## E. Levels and world
 
 - **E1. Every level had chapter-1 scenery.** A new-scene call unloaded the level definition. *Rule:* pass data into scene builders explicitly; never hold asset references across a new-scene call.

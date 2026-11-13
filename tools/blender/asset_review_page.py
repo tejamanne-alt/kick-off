@@ -13,7 +13,7 @@ import sys
 CHECKS = [
     'Every part once', 'Closed shell', 'Depth from own width', 'Views the game sees', 'Size, triangles',
     'Outline whole', 'No holes', 'Own models before walls', 'Look target', 'Solid', 'No brands',
-    'No wires or sky', 'Repairs listed', 'Rig names', 'Joints overlap',
+    'No wires or sky', 'Repairs listed', 'Rig names', 'Joints overlap', 'Feet planted',
 ]
 GROUPS = [
     ('walk', 'Walking', 'four legs swinging in diagonal pairs, as the game\'s dog swings them'),
@@ -165,13 +165,13 @@ def page(folder, title, notes):
     # the matrix
     w('<h2 style="margin-bottom:10px">Every model against every check</h2>')
     w('<div class="matrix-box"><table class="matrix"><thead><tr><th class="name">Model</th>')
-    for i in range(1, 16):
+    for i in range(1, len(CHECKS) + 1):
         w('<th title="%s">%d</th>' % (esc(CHECKS[i - 1]), i))
     w('<th>tris</th><th>motions</th></tr></thead><tbody>')
     for key, label, _ in GROUPS:
         if key not in by_group:
             continue
-        w('<tr class="grp"><td colspan="18">%s</td></tr>' % esc(label))
+        w('<tr class="grp"><td colspan="%d">%s</td></tr>' % (len(CHECKS) + 3, esc(label)))
         for n in by_group[key]:
             r = review[n]
             w('<tr><td class="name"><a href="#%s">%s</a></td>' % (esc(n), esc(n)))
@@ -216,8 +216,8 @@ def page(folder, title, notes):
                                                        'n/a': 'n/a'}[k]) for k in ('FAIL', 'limit', 'pass', 'n/a') if k in tally)
             w('<div class="chips">%s</div>' % ''.join('<span class="cell %s" title="%s">%d</span>' % (cls[c[2]], esc(c[1]), c[0])
                                                     for c in r['checks']))
-            w('<details class="checks"%s><summary>The 15 checks: %s</summary><table class="checks">' % (
-                ' open' if 'FAIL' in tally or 'limit' in tally else '', esc(summary)))
+            w('<details class="checks"%s><summary>The %d checks: %s</summary><table class="checks">' % (
+                ' open' if 'FAIL' in tally or 'limit' in tally else '', len(r['checks']), esc(summary)))
             for c in r['checks']:
                 w('<tr><td class="n">%d</td><td class="c">%s</td><td class="r"><span class="pill %s">%s</span></td>'
                   '<td class="w">%s</td></tr>' % (c[0], esc(c[1]), cls[c[2]], esc(c[2]), esc(c[3])))
