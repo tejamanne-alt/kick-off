@@ -67,10 +67,12 @@ vending machine (`review/kamakura/kit_proof_board.jpg`, `tools/blender/kit_build
 - **Plants are built by script** as leaf-card trees (`tools/blender/kit_plants.py`), shaped from KM-P2's silhouettes and
   painted from the foliage sheets below and the pictures' own leaves.
 - **Ground and walls** use tileable textures made from the plates (KM-P3) and the level pictures.
-- **Animals and birds** (`tools/blender/kit_animals_km.py`; proof: the ginger cat and the black kite,
-  `review/kamakura/animals_proof_board.jpg`): each a relief shaped from its outline in one view of the sheet, the photo
-  on both faces (its back face reads as the other flank when the game turns the animal round), its tail or wings
-  separate parts with their pivots, as the animals kit's rig has them. They are built from KM-P4 and KM-P8, the sheets
+- **Animals and birds** (`tools/blender/kit_animals_km.py`; proof: the ginger cat, approved, and the black kite,
+  `review/kamakura/animals_proof_board.jpg`): an animal standing, sitting or perched is a relief shaped from its outline
+  in its side view, round in section, the photo on both faces (its back face reads as the other flank when the game
+  turns the animal round), its tail separate with its pivot, as the animals kit's rig has it. A bird that flies large on
+  screen is built from four views (Step 4b): its body from the side, its wings and tail with their upper faces from
+  above and lower faces from below, their thickness from the front, the wings separate at the shoulders. They are built from KM-P4 and KM-P8, the sheets
   of Kamakura's animals and birds (in the Kamakura tab, with the other sheets), like the props: each one's side view projected onto its sides, its front and from-below views
   onto the rest. The animals kit's cat, dog, pigeon, gull and squirrel take Kamakura's coats from it; the black kite, the
   crow, the tanuki, the sparrow, the swallow and the egret are new models in it.
@@ -743,6 +745,84 @@ FOLIAGE KM-F05, bark and moss. Attach KM-P2. Five straight-on, seamless vertical
 top to bottom: the black pine's, the camphor's, the cedar's, the cherry's (with its dark band) and the persimmon's; and a
 sixth strip of the moss and ferns from the mossy stone. Flat light, the same colours. FORMAT: aspect ratio 1:1, the
 largest size you can make.
+```
+
+### Step 4b: birds in flight (four views each)
+
+The animals are built from KM-P4 and KM-P8 (`tools/blender/kit_animals_km.py`). An animal standing, sitting or perched
+is a relief from its side view (the ginger cat: approved). A bird in flight is not: built from its one view from below,
+the black kite had no body, back or tail shape from the side, which is how the game sees a bird crossing the sky (the
+user: "not good when flying, and the tail and back are not right"). So each bird that flies large on screen gets a sheet
+of four views of one wingbeat pose: its body and head from the side, its wings' and tail's upper faces from above and
+lower faces from below, their thickness and angle from the front. A new Gemini chat with Nano Banana Pro: paste KM-S1
+with KM-0 attached, then one bird per message with its sheet attached. Save each as
+`review/kamakura/sheets/<id>_<name>_flight.png` (for example `KM-N05_black_kite_flight.png`). The small birds (sparrow,
+swallow, white-eye, bulbul, turtle dove, wagtail) are a few pixels on the phone: their views from below are enough.
+
+```text
+BASE KM-S1, the bird-in-flight model sheet. Attach KM-0. You are making model sheets of birds in flight for a game's 3D
+artists, who build each bird from its four views. Read all of this, then follow it for every bird in this chat.
+
+THE BIRD
+Each image is one bird from the sheet I attach with it, the same individual: its markings, colours and proportions
+exactly as there. A real bird photographed in the look of the picture attached now (KM-0: real feathers, natural
+colour, sharp detail), not a painting or an illustration.
+
+THE SHEET
+- One square picture in four equal panels, 2 x 2, with a thin plain gap between them. The same bird at the same size
+  in every panel, nothing cropped:
+  - top left: SIDE, a strict profile, head to the right, both wings raised straight up above the back (the top of the
+    wingbeat), so the whole body, head, beak, tail and tucked feet show clear below them;
+  - top right: FROM ABOVE, looking straight down on its back, wings fully spread and level, tail fanned, head at the top;
+  - bottom left: FROM BELOW, looking straight up at its underside, the same spread wings and tail, head at the top;
+  - bottom right: FRONT, head-on, wings fully spread and level.
+- Orthographic-looking views: no perspective, the wings symmetrical, the body straight, the spread wings filling about
+  90 % of their panel's width.
+- A plain, even mid-grey background (#808080), no shadow on it, no sky, no ground, no other bird.
+- Even, soft, shadowless light; colours true.
+- No labels, numbers, arrows, logos or watermarks.
+
+FORMAT: aspect ratio 1:1, the largest size you can make.
+
+Then wait for my first bird.
+```
+
+```text
+ASSET KM-N05, the black kite in flight. Attach KM-P4. The black kite of KM-P4's third row: dark brown, a pale patch
+under each wing near the tip, a shallow notched tail, yellow feet tucked. Real size: 60 cm long, wings 1.6 m across.
+Same rules as before.
+```
+
+```text
+ASSET KM-N10, the black-tailed gull in flight. Attach KM-P4. The gull of KM-P4's last row: white head and body, dark
+grey back and wings with black tips, a black band across its white tail, a yellow bill with a red and black tip.
+Real size: 46 cm long, wings 1.2 m across. Same rules as before.
+```
+
+```text
+ASSET KM-N06, the large-billed crow in flight. Attach KM-P4. The crow of KM-P4's third row: glossy black, the heavy
+arched bill, fingered wing tips. Real size: 57 cm long, wings 1 m across. Same rules as before.
+```
+
+```text
+ASSET KM-N07, the shrine pigeon in flight. Attach KM-P4. The pigeon of KM-P4's fourth row: blue-grey, two black wing
+bars, the green and purple sheen on its neck. Real size: 32 cm long, wings 65 cm across. Same rules as before.
+```
+
+```text
+ASSET KM-N15, the grey heron in flight. Attach KM-P8. The heron of KM-P8's second row, flying as herons do: its neck
+folded back in an S, its legs trailing straight behind the tail. Real size: 95 cm long, wings 1.7 m across. Same rules
+as before.
+```
+
+```text
+ASSET KM-N11, the little egret in flight. Attach KM-P4. The egret of KM-P4's last row: all white, its neck folded
+back, its black legs trailing with their yellow feet. Real size: 60 cm long, wings 95 cm across. Same rules as before.
+```
+
+```text
+ASSET KM-N16, the cormorant in flight. Attach KM-P8. The cormorant of KM-P8's second row, its neck stretched forward,
+glossy black-brown with a yellow face patch. Real size: 84 cm long, wings 1.3 m across. Same rules as before.
 ```
 
 ### Step 5: buildings and set pieces

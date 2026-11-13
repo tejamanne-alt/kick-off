@@ -2011,6 +2011,12 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
   part is now round in section from its own local half-width (the tail as deep as it is wide, the body capped at
   7.5 cm a side), the outline at depth 0 so front and back meet, the colours carried past the outline. The board adds
   the cat from above: one tail, one closed body. `KmCatSitting` 1144 triangles, `KmKiteFlying` 1234.
+- **The animals proof judged** (the user: "Cat is good enough. The eagle is not good when flying, and the tail and back
+  are not right"; the user hadn't found "the kite": it is the black kite, the bird of prey on KM-P4's third row and in
+  KM2-4, KM2-2 and "The Kite Thief"). The cat's method stands for animals seen side-on. Flying birds need more views
+  (`docs/LEARNINGS.md` D15): BASE KM-S1 and seven ASSET prompts (black kite, gull, crow, pigeon, heron, egret,
+  cormorant), each a 2 x 2 sheet of one wingbeat pose (side with the wings raised, above, below, front), in
+  `docs/KAMAKURA_BUILD.md` Step 4b and on the prompts page. The small birds stay single-view.
 - **Who makes the photographs:** the user, in the Gemini app (a phone works), sending each result in the chat or pushing
   it. From the cloud session there is no image model to run: the Hugging Face connector has running Spaces switched off
   (gradio=none), huggingface.co and hf.space are blocked by the proxy, and Gemini's API needs the user's key (declined for

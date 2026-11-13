@@ -702,6 +702,17 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
 - *Rule:* give a cut-out depth from its own local width, never one rule scaled to the whole figure; check a relief from
   above and count its open edges (a gap between the faces adds hundreds).
 
+**D15. A flying bird built from one view (the black kite proof).**
+- *What:* the user, on the proof board: the kite is "not good when flying, and the tail and back are not right". Built
+  from KM-P4's one view of it in flight (from below), it had no body, head or tail shape from the side, and its back
+  showed its underside mirrored.
+- *Why:* the cat's method (a relief from one view) works for a shape the game sees from one side. A bird in flight is
+  seen from the side, from below and, as it banks or flaps, from above: one view can't give those.
+- *Fix:* a four-view model sheet for each bird that flies large on screen (BASE KM-S1, `docs/KAMAKURA_BUILD.md` Step 4b:
+  side with the wings raised, above, below, front), the bird built from all four. The cat, approved, stays a relief.
+- *Rule:* before building an asset from one view, list the views the game will see it from. If the source doesn't
+  show them, ask for a sheet that does before building.
+
 ## E. Levels and world
 
 - **E1. Every level had chapter-1 scenery.** A new-scene call unloaded the level definition. *Rule:* pass data into scene builders explicitly; never hold asset references across a new-scene call.
