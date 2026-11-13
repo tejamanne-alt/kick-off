@@ -41,6 +41,7 @@ BOARD = ARGS[ARGS.index('--board') + 1] if '--board' in ARGS else None
 CUTS = ARGS[ARGS.index('--cuts') + 1] if '--cuts' in ARGS else None
 REVIEW = ARGS[ARGS.index('--review') + 1] if '--review' in ARGS else None
 ONLY = set(ARGS[ARGS.index('--only') + 1].split(',')) if '--only' in ARGS else None
+FRESH = '--fresh' in ARGS
 REFS = KB.REFS
 P4, P8 = 'KM-P4_animals_sheet.png', 'KM-P8_more_animals.png'
 
@@ -716,24 +717,33 @@ def review(roots, infos, results, atlas_path, out_dir):
             o.data.materials.append(mat)
     for root in roots.values():
         root.location = (0, 0, 0)
-    index = {}
+    # resumable: a render already in the folder is kept (--fresh renders all again), and review.json is written after
+    # every model, so a stopped run loses at most the model it was on
+    index_path = os.path.join(out_dir, 'review.json')
+    index = json.load(open(index_path)) if os.path.exists(index_path) and not FRESH else {}
+
+    def due(path):
+        return FRESH or not os.path.exists(path)
+
     for name, root in roots.items():
         info = infos[name]
         sheet, spec, mask, parts = results[name]
         src = sheet.crop(spec['box'])
         src.thumbnail((600, 400))
         src.save(os.path.join(out_dir, 'source', name + '.jpg'), quality=85)
-        AR.eight_views(root, os.path.join(out_dir, 'views', name + '.jpg'), KB.render, cell_px=360,
-                       title='%s (%s): every side' % (name, info['id']))
+        views = os.path.join(out_dir, 'views', name + '.jpg')
+        if due(views):
+            AR.eight_views(root, views, KB.render, cell_px=360, title='%s (%s): every side' % (name, info['id']))
         motions = []
         for motion, pose, view, ms in motions_of(name, info):
-            AR.motion_gif(root, pose, os.path.join(out_dir, 'motion', '%s_%s.gif' % (name, motion)), KB.render,
-                          view=view, frames=12, cell_px=280, ms=ms, label=motion)
+            gif = os.path.join(out_dir, 'motion', '%s_%s.gif' % (name, motion))
+            if due(gif):
+                AR.motion_gif(root, pose, gif, KB.render, view=view, frames=12, cell_px=280, ms=ms, label=motion)
             motions.append(motion)
         checks = checks_of(name, spec, info, motions)
         index[name] = dict(info, motions=motions, checks=checks)
+        json.dump({n: index[n] for n in ANIMALS if n in index}, open(index_path, 'w'), indent=1)
         print('reviewed', name, motions)
-    json.dump(index, open(os.path.join(out_dir, 'review.json'), 'w'), indent=1)
 
 
 def main():
