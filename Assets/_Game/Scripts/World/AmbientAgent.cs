@@ -159,6 +159,16 @@ namespace DribbleToSchool.World
                 else transform.localRotation = rest * Quaternion.AngleAxis(degrees, axis);
             }
 
+            /// <summary>A wing beaten as a real one is (WingStroke, D21): flapped up by flap about its axis, swept back by
+            /// sweep about sweepAxis (in its own space), and, a wing in links, folded at the wrist by fold (its outer
+            /// links turned the other way). A wing with no links flaps and sweeps whole.</summary>
+            public void SetWing(float flap, float fold, float sweep, Vector3 sweepAxis)
+            {
+                if (!ready) return;
+                if (chain != null) chain.SetWing(flap, fold, sweep, sweepAxis);
+                else transform.localRotation = rest * Quaternion.AngleAxis(sweep, sweepAxis) * Quaternion.AngleAxis(flap, axis);
+            }
+
             /// <summary>Rotate about a second axis as well (in the part's own space).</summary>
             public void Set(float degrees, Vector3 otherAxis, float otherDegrees)
             {

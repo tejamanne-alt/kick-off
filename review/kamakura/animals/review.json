@@ -177,16 +177,16 @@
    "LegFL": 14,
    "LegFR": 17,
    "Tail": 6,
-   "ShinBL": 8,
-   "ShinBR": 15,
-   "ShinFL": 10,
-   "ShinFR": 12,
+   "ShinBL": 7,
+   "ShinBR": 10,
+   "ShinFL": 8,
+   "ShinFR": 9,
    "Tail2": 7,
    "Tail3": 14,
-   "ToeBL": 5,
-   "ToeBR": 11,
-   "ToeFL": 7,
-   "ToeFR": 4
+   "ToeBL": 6,
+   "ToeBR": 16,
+   "ToeFL": 9,
+   "ToeFR": 7
   },
   "empties": [
    "FootBL",
@@ -219,7 +219,7 @@
    "SkinFar": 0.96
   },
   "edges": 2307,
-  "leg_length": 0.1283,
+  "leg_length": 0.1189,
   "game": {
    "component": "WallCat",
    "tail": "Tail",
@@ -231,17 +231,17 @@
    "walk": {
     "sink": 0.0,
     "contact": 0.0,
-    "held": 0.0682
+    "held": 0.0629
    },
    "run": {
     "sink": 0.0,
-    "contact": 0.0088,
-    "held": 0.1239
+    "contact": 0.0105,
+    "held": 0.1153
    },
    "bound": {
     "sink": 0.0,
-    "contact": 0.1319,
-    "held": 0.1419
+    "contact": 0.1311,
+    "held": 0.1397
    }
   },
   "motions": [
@@ -344,7 +344,7 @@
     16,
     "Feet planted",
     "pass",
-    "walk: sink 0.0 mm, lowest foot 0.0 mm up, held 68.2 mm; run: sink 0.0 mm, lowest foot 8.8 mm up, held 123.9 mm; bound: sink 0.0 mm, lowest foot 131.9 mm up, held 141.9 mm (tolerance 3.0 mm, 1 % of its height)"
+    "walk: sink 0.0 mm, lowest foot 0.0 mm up, held 62.9 mm; run: sink 0.0 mm, lowest foot 10.5 mm up, held 115.3 mm; bound: sink 0.0 mm, lowest foot 131.1 mm up, held 139.7 mm (tolerance 3.0 mm, 1 % of its height)"
    ],
    [
     17,
@@ -377,16 +377,16 @@
    "LegFL": 13,
    "LegFR": 10,
    "Tail": 13,
-   "ShinBL": 11,
-   "ShinBR": 12,
-   "ShinFL": 11,
-   "ShinFR": 16,
+   "ShinBL": 7,
+   "ShinBR": 7,
+   "ShinFL": 7,
+   "ShinFR": 13,
    "Tail2": 13,
    "Tail3": 16,
-   "ToeBL": 8,
-   "ToeBR": 11,
-   "ToeFL": 8,
-   "ToeFR": 9
+   "ToeBL": 12,
+   "ToeBR": 16,
+   "ToeFL": 12,
+   "ToeFR": 12
   },
   "empties": [
    "FootBL",
@@ -419,7 +419,7 @@
    "SkinFar": 0.91
   },
   "edges": 1683,
-  "leg_length": 0.1554,
+  "leg_length": 0.1412,
   "game": {
    "component": "Dog",
    "tail": "Tail",
@@ -432,12 +432,12 @@
    "walk": {
     "sink": 0.0,
     "contact": 0.0,
-    "held": 0.084
+    "held": 0.0778
    },
    "run": {
     "sink": 0.0,
     "contact": 0.0137,
-    "held": 0.1472
+    "held": 0.1343
    }
   },
   "motions": [
@@ -539,7 +539,7 @@
     16,
     "Feet planted",
     "pass",
-    "walk: sink 0.0 mm, lowest foot 0.0 mm up, held 84.0 mm; run: sink 0.0 mm, lowest foot 13.7 mm up, held 147.2 mm (tolerance 3.6 mm, 1 % of its height)"
+    "walk: sink 0.0 mm, lowest foot 0.0 mm up, held 77.8 mm; run: sink 0.0 mm, lowest foot 13.7 mm up, held 134.3 mm (tolerance 3.6 mm, 1 % of its height)"
    ],
    [
     17,
@@ -720,44 +720,82 @@
    562
   ],
   "view": "side",
-  "px_per_m": 1047.5,
-  "tris": 1269,
+  "px_per_m": 1042.5,
+  "tris": 1368,
   "meshes": {
-   "Skin": 1269
+   "Skin": 1078,
+   "SkinFar": 290
   },
   "parts": {
-   "Body": 324,
+   "Body": 140,
+   "Hips": 82,
+   "LegBL": 23,
+   "LegBR": 15,
+   "LegFL": 12,
+   "LegFR": 9,
    "Tail": 21,
-   "Tail2": 23,
-   "Tail3": 54
+   "ShinBL": 12,
+   "ShinBR": 12,
+   "ShinFL": 14,
+   "ShinFR": 15,
+   "Tail2": 20,
+   "Tail3": 41,
+   "ToeBL": 12,
+   "ToeBR": 12,
+   "ToeFL": 14,
+   "ToeFR": 15
   },
   "empties": [
+   "FootBL",
+   "TipBL",
+   "FootBR",
+   "TipBR",
+   "FootFL",
+   "TipFL",
+   "FootFR",
+   "TipFR",
    "Attach.Front"
   ],
   "size": [
-   0.398,
-   0.068,
-   0.155
+   0.399,
+   0.067,
+   0.153
   ],
   "open_edges": {
    "Skin": [
     0,
-    65
+    46
+   ],
+   "SkinFar": [
+    0,
+    37
    ]
   },
   "depth_to_width": {
-   "Skin": 0.68
+   "Skin": 0.69,
+   "SkinFar": 0.96
   },
-  "edges": 1840,
-  "leg_length": null,
+  "edges": 1969,
+  "leg_length": 0.0642,
   "game": {
    "component": "TreeSquirrel",
    "tail": "Tail",
    "tailAxis": "side",
-   "note": "its dash: the model mid-leap"
+   "hips": "Hips",
+   "hipsAxis": "side",
+   "legs": "LegGait.Bound (its four legs and its back bound, D21)"
   },
-  "copied": [],
-  "feet": {},
+  "copied": [
+   "LegFL",
+   "LegBL"
+  ],
+  "feet": {
+   "dash": {
+    "sink": 0.0,
+    "contact": 0.1484,
+    "held": 0.1489
+   }
+  },
   "motions": [
    "dash"
   ],
@@ -766,19 +804,19 @@
     1,
     "Every part once",
     "pass",
-    "skinned meshes: Skin 1269 tris; bones: Body, Tail, Tail2, Tail3; marker bones: Attach.Front. Checked in Top and Bottom."
+    "skinned meshes: Skin 1078 tris, SkinFar 290 tris; bones: Body, Hips, LegBL, LegBR, LegFL, LegFR, Tail, ShinBL, ShinBR, ShinFL, ShinFR, Tail2, Tail3, ToeBL, ToeBR, ToeFL, ToeFR; marker bones: FootBL, TipBL, FootBR, TipBR, FootFL, TipFL, FootFR, TipFR, Attach.Front. Checked in Top and Bottom."
    ],
    [
     2,
     "Closed shell",
     "pass",
-    "0 edges with one face (a slit, or a fin that would vanish from behind); 65 of 1840 edges where the two faces touch along a thin part's edge (closed, no gap)"
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 83 of 1969 edges where the two faces touch along a thin part's edge (closed, no gap)"
    ],
    [
     3,
     "Depth from each part's own width",
     "pass",
-    "deepest / half-width: Skin 0.68"
+    "deepest / half-width: Skin 0.69, SkinFar 0.96"
    ],
    [
     4,
@@ -790,7 +828,7 @@
     5,
     "Real size, triangles",
     "pass",
-    "0.40 x 0.07 x 0.15 m; 1269 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+    "0.40 x 0.07 x 0.15 m; 1368 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
    ],
    [
     6,
@@ -844,25 +882,25 @@
     14,
     "Rig names and pivots",
     "pass",
-    "Tail, Tail2, Tail3 (+ Attach.Front): bones at the joints, each named as the behaviour finds it"
+    "Hips, LegBL, LegBR, LegFL, LegFR, Tail, ShinBL, ShinBR, ShinFL, ShinFR, Tail2, Tail3, ToeBL, ToeBR, ToeFL, ToeFR (+ FootBL, TipBL, FootBR, TipBR, FootFL, TipFL, FootFR, TipFR, Attach.Front): bones at the joints, each named as the behaviour finds it"
    ],
    [
     15,
     "Joints overlap, no seam, no gap mid-motion",
     "pass",
-    "one skin bending at every joint, the bones sharing it across each (D21: no part edge to show); motions looked at frame by frame, full size: dash"
+    "one skin bending at every joint, the bones sharing it across each (D21: no part edge to show); legs, near and far: LegBL, LegBR, LegFL, LegFR; motions looked at frame by frame, full size: dash"
    ],
    [
     16,
     "Feet planted",
-    "n/a",
-    "no legs that walk"
+    "pass",
+    "dash: sink 0.0 mm, lowest foot 148.4 mm up, held 148.9 mm (tolerance 1.5 mm, 1 % of its height)"
    ],
    [
     17,
     "Each part holds only itself",
     "pass",
-    "looked at on its part map at full size, part by part: Tail, Tail2, Tail3"
+    "looked at on its part map at full size, part by part: Hips, LegBL, LegBR, LegFL, LegFR, Tail, ShinBL, ShinBR, ShinFL, ShinFR, Tail2, Tail3, ToeBL, ToeBR, ToeFL, ToeFR; LegFL, LegBL a copy of the near leg, set behind (the far leg, reaching under the belly mid-stride (its thigh a patch of belly, a flap when it swings), taken out); legs drawn on the sheet where their shape couldn't part them"
    ]
   ]
  },
@@ -1045,16 +1083,16 @@
    "LegFL": 20,
    "LegFR": 18,
    "Tail": 4,
-   "ShinBL": 14,
-   "ShinBR": 13,
-   "ShinFL": 15,
-   "ShinFR": 16,
+   "ShinBL": 11,
+   "ShinBR": 12,
+   "ShinFL": 12,
+   "ShinFR": 12,
    "Tail2": 7,
    "Tail3": 20,
-   "ToeBL": 8,
-   "ToeBR": 9,
-   "ToeFL": 15,
-   "ToeFR": 14
+   "ToeBL": 11,
+   "ToeBR": 10,
+   "ToeFL": 18,
+   "ToeFR": 18
   },
   "empties": [
    "FootBL",
@@ -1087,7 +1125,7 @@
    "SkinFar": 0.9
   },
   "edges": 1672,
-  "leg_length": 0.252,
+  "leg_length": 0.2346,
   "game": {
    "component": "Dog",
    "tail": "Tail",
@@ -1102,12 +1140,12 @@
    "walk": {
     "sink": 0.0,
     "contact": 0.0,
-    "held": 0.1385
+    "held": 0.1286
    },
    "run": {
     "sink": 0.0,
-    "contact": 0.0172,
-    "held": 0.2304
+    "contact": 0.017,
+    "held": 0.2139
    }
   },
   "motions": [
@@ -1209,7 +1247,7 @@
     16,
     "Feet planted",
     "pass",
-    "walk: sink 0.0 mm, lowest foot 0.0 mm up, held 138.5 mm; run: sink 0.0 mm, lowest foot 17.2 mm up, held 230.4 mm (tolerance 5.8 mm, 1 % of its height)"
+    "walk: sink 0.0 mm, lowest foot 0.0 mm up, held 128.6 mm; run: sink 0.0 mm, lowest foot 17.0 mm up, held 213.9 mm (tolerance 5.8 mm, 1 % of its height)"
    ],
    [
     17,
@@ -2660,7 +2698,8 @@
    "Skin": 980
   },
   "parts": {
-   "Body": 121,
+   "Body": 71,
+   "Tail": 50,
    "WingL": 37,
    "WingR": 38,
    "WingL2": 65,
@@ -2691,7 +2730,14 @@
     "WingR",
     "WingL"
    ],
-   "wingAxis": "long"
+   "wingAxis": "long",
+   "wingUp": 50.0,
+   "wingDown": 40.0,
+   "wingFold": 65.0,
+   "wingSweep": 20.0,
+   "wingSweepAxis": "up",
+   "flyingTail": "Tail",
+   "flyingTailAxis": "side"
   },
   "copied": [],
   "feet": {},
@@ -2703,7 +2749,7 @@
     1,
     "Every part once",
     "pass",
-    "skinned meshes: Skin 980 tris; bones: Body, WingL, WingR, WingL2, WingR2; marker bones: Attach.Front. Checked in Top and Bottom."
+    "skinned meshes: Skin 980 tris; bones: Body, Tail, WingL, WingR, WingL2, WingR2; marker bones: Attach.Front. Checked in Top and Bottom."
    ],
    [
     2,
@@ -2781,7 +2827,7 @@
     14,
     "Rig names and pivots",
     "pass",
-    "WingL, WingR, WingL2, WingR2 (+ Attach.Front): bones at the joints, each named as the behaviour finds it"
+    "Tail, WingL, WingR, WingL2, WingR2 (+ Attach.Front): bones at the joints, each named as the behaviour finds it"
    ],
    [
     15,
@@ -2799,7 +2845,7 @@
     17,
     "Each part holds only itself",
     "pass",
-    "looked at on its part map at full size, part by part: WingL, WingR, WingL2, WingR2"
+    "looked at on its part map at full size, part by part: Tail, WingL, WingR, WingL2, WingR2"
    ]
   ]
  },
@@ -2968,7 +3014,8 @@
    "Skin": 1216
   },
   "parts": {
-   "Body": 192,
+   "Body": 49,
+   "Tail": 143,
    "WingL": 55,
    "WingR": 49,
    "WingL2": 52,
@@ -2999,7 +3046,14 @@
     "WingR",
     "WingL"
    ],
-   "wingAxis": "long"
+   "wingAxis": "long",
+   "wingUp": 35.0,
+   "wingDown": 32.0,
+   "wingFold": 50.0,
+   "wingSweep": 28.0,
+   "wingSweepAxis": "up",
+   "flyingTail": "Tail",
+   "flyingTailAxis": "side"
   },
   "copied": [],
   "feet": {},
@@ -3011,7 +3065,7 @@
     1,
     "Every part once",
     "pass",
-    "skinned meshes: Skin 1216 tris; bones: Body, WingL, WingR, WingL2, WingR2; marker bones: Attach.Front. Checked in Top and Bottom."
+    "skinned meshes: Skin 1216 tris; bones: Body, Tail, WingL, WingR, WingL2, WingR2; marker bones: Attach.Front. Checked in Top and Bottom."
    ],
    [
     2,
@@ -3089,7 +3143,7 @@
     14,
     "Rig names and pivots",
     "pass",
-    "WingL, WingR, WingL2, WingR2 (+ Attach.Front): bones at the joints, each named as the behaviour finds it"
+    "Tail, WingL, WingR, WingL2, WingR2 (+ Attach.Front): bones at the joints, each named as the behaviour finds it"
    ],
    [
     15,
@@ -3107,7 +3161,7 @@
     17,
     "Each part holds only itself",
     "pass",
-    "looked at on its part map at full size, part by part: WingL, WingR, WingL2, WingR2"
+    "looked at on its part map at full size, part by part: Tail, WingL, WingR, WingL2, WingR2"
    ]
   ]
  },
@@ -5342,7 +5396,8 @@
    "Skin": 1138
   },
   "parts": {
-   "Body": 114,
+   "Body": 79,
+   "Tail": 35,
    "WingL": 44,
    "WingR": 42,
    "WingL2": 83,
@@ -5373,7 +5428,14 @@
     "WingR",
     "WingL"
    ],
-   "wingAxis": "long"
+   "wingAxis": "long",
+   "wingUp": 50.0,
+   "wingDown": 40.0,
+   "wingFold": 65.0,
+   "wingSweep": 20.0,
+   "wingSweepAxis": "up",
+   "flyingTail": "Tail",
+   "flyingTailAxis": "side"
   },
   "copied": [],
   "feet": {},
@@ -5385,7 +5447,7 @@
     1,
     "Every part once",
     "pass",
-    "skinned meshes: Skin 1138 tris; bones: Body, WingL, WingR, WingL2, WingR2; marker bones: Attach.Front. Checked in Top and Bottom."
+    "skinned meshes: Skin 1138 tris; bones: Body, Tail, WingL, WingR, WingL2, WingR2; marker bones: Attach.Front. Checked in Top and Bottom."
    ],
    [
     2,
@@ -5463,7 +5525,7 @@
     14,
     "Rig names and pivots",
     "pass",
-    "WingL, WingR, WingL2, WingR2 (+ Attach.Front): bones at the joints, each named as the behaviour finds it"
+    "Tail, WingL, WingR, WingL2, WingR2 (+ Attach.Front): bones at the joints, each named as the behaviour finds it"
    ],
    [
     15,
@@ -5481,7 +5543,7 @@
     17,
     "Each part holds only itself",
     "pass",
-    "looked at on its part map at full size, part by part: WingL, WingR, WingL2, WingR2"
+    "looked at on its part map at full size, part by part: Tail, WingL, WingR, WingL2, WingR2"
    ]
   ]
  },
@@ -5662,7 +5724,8 @@
    "Skin": 1200
   },
   "parts": {
-   "Body": 138,
+   "Body": 66,
+   "Tail": 72,
    "WingL": 59,
    "WingR": 59,
    "WingL2": 71,
@@ -5693,7 +5756,14 @@
     "WingR",
     "WingL"
    ],
-   "wingAxis": "long"
+   "wingAxis": "long",
+   "wingUp": 45.0,
+   "wingDown": 38.0,
+   "wingFold": 60.0,
+   "wingSweep": 18.0,
+   "wingSweepAxis": "up",
+   "flyingTail": "Tail",
+   "flyingTailAxis": "side"
   },
   "copied": [],
   "feet": {},
@@ -5705,7 +5775,7 @@
     1,
     "Every part once",
     "pass",
-    "skinned meshes: Skin 1200 tris; bones: Body, WingL, WingR, WingL2, WingR2; marker bones: Attach.Front. Checked in Top and Bottom."
+    "skinned meshes: Skin 1200 tris; bones: Body, Tail, WingL, WingR, WingL2, WingR2; marker bones: Attach.Front. Checked in Top and Bottom."
    ],
    [
     2,
@@ -5783,7 +5853,7 @@
     14,
     "Rig names and pivots",
     "pass",
-    "WingL, WingR, WingL2, WingR2 (+ Attach.Front): bones at the joints, each named as the behaviour finds it"
+    "Tail, WingL, WingR, WingL2, WingR2 (+ Attach.Front): bones at the joints, each named as the behaviour finds it"
    ],
    [
     15,
@@ -5801,7 +5871,7 @@
     17,
     "Each part holds only itself",
     "pass",
-    "looked at on its part map at full size, part by part: WingL, WingR, WingL2, WingR2"
+    "looked at on its part map at full size, part by part: Tail, WingL, WingR, WingL2, WingR2"
    ]
   ]
  },
@@ -6009,7 +6079,8 @@
    "Skin": 1278
   },
   "parts": {
-   "Body": 155,
+   "Body": 61,
+   "Tail": 94,
    "WingL": 60,
    "WingR": 60,
    "WingL2": 64,
@@ -6021,7 +6092,7 @@
   "size": [
    0.313,
    0.525,
-   0.05
+   0.049
   ],
   "open_edges": {
    "Skin": [
@@ -6040,7 +6111,14 @@
     "WingR",
     "WingL"
    ],
-   "wingAxis": "long"
+   "wingAxis": "long",
+   "wingUp": 55.0,
+   "wingDown": 45.0,
+   "wingFold": 45.0,
+   "wingSweep": 15.0,
+   "wingSweepAxis": "up",
+   "flyingTail": "Tail",
+   "flyingTailAxis": "side"
   },
   "copied": [],
   "feet": {},
@@ -6052,7 +6130,7 @@
     1,
     "Every part once",
     "pass",
-    "skinned meshes: Skin 1278 tris; bones: Body, WingL, WingR, WingL2, WingR2; marker bones: Attach.Front. Checked in Top and Bottom."
+    "skinned meshes: Skin 1278 tris; bones: Body, Tail, WingL, WingR, WingL2, WingR2; marker bones: Attach.Front. Checked in Top and Bottom."
    ],
    [
     2,
@@ -6130,7 +6208,7 @@
     14,
     "Rig names and pivots",
     "pass",
-    "WingL, WingR, WingL2, WingR2 (+ Attach.Front): bones at the joints, each named as the behaviour finds it"
+    "Tail, WingL, WingR, WingL2, WingR2 (+ Attach.Front): bones at the joints, each named as the behaviour finds it"
    ],
    [
     15,
@@ -6148,7 +6226,7 @@
     17,
     "Each part holds only itself",
     "pass",
-    "looked at on its part map at full size, part by part: WingL, WingR, WingL2, WingR2"
+    "looked at on its part map at full size, part by part: Tail, WingL, WingR, WingL2, WingR2"
    ]
   ]
  },
@@ -6175,16 +6253,16 @@
    "LegFL": 14,
    "LegFR": 12,
    "Tail": 3,
-   "ShinBL": 12,
-   "ShinBR": 15,
-   "ShinFL": 13,
-   "ShinFR": 19,
+   "ShinBL": 8,
+   "ShinBR": 10,
+   "ShinFL": 9,
+   "ShinFR": 15,
    "Tail2": 14,
    "Tail3": 15,
-   "ToeBL": 6,
-   "ToeBR": 9,
-   "ToeFL": 8,
-   "ToeFR": 9
+   "ToeBL": 10,
+   "ToeBR": 14,
+   "ToeFL": 12,
+   "ToeFR": 13
   },
   "empties": [
    "FootBL",
@@ -6217,7 +6295,7 @@
    "SkinFar": 0.93
   },
   "edges": 1649,
-  "leg_length": 0.1274,
+  "leg_length": 0.1173,
   "game": {
    "component": "WallCat",
    "tail": "Tail",
@@ -6229,17 +6307,17 @@
    "walk": {
     "sink": 0.0,
     "contact": 0.0,
-    "held": 0.0657
+    "held": 0.0608
    },
    "run": {
     "sink": 0.0,
     "contact": 0.0096,
-    "held": 0.1257
+    "held": 0.1159
    },
    "bound": {
     "sink": 0.0,
-    "contact": 0.1336,
-    "held": 0.142
+    "contact": 0.1309,
+    "held": 0.1401
    }
   },
   "motions": [
@@ -6342,7 +6420,7 @@
     16,
     "Feet planted",
     "pass",
-    "walk: sink 0.0 mm, lowest foot 0.0 mm up, held 65.7 mm; run: sink 0.0 mm, lowest foot 9.6 mm up, held 125.7 mm; bound: sink 0.0 mm, lowest foot 133.6 mm up, held 142.0 mm (tolerance 3.0 mm, 1 % of its height)"
+    "walk: sink 0.0 mm, lowest foot 0.0 mm up, held 60.8 mm; run: sink 0.0 mm, lowest foot 9.6 mm up, held 115.9 mm; bound: sink 0.0 mm, lowest foot 130.9 mm up, held 140.1 mm (tolerance 3.0 mm, 1 % of its height)"
    ],
    [
     17,
@@ -6524,16 +6602,16 @@
    "LegFL": 14,
    "LegFR": 16,
    "Tail": 8,
-   "ShinBL": 10,
-   "ShinBR": 12,
-   "ShinFL": 9,
-   "ShinFR": 19,
+   "ShinBL": 7,
+   "ShinBR": 7,
+   "ShinFL": 7,
+   "ShinFR": 15,
    "Tail2": 5,
    "Tail3": 14,
-   "ToeBL": 6,
-   "ToeBR": 11,
-   "ToeFL": 8,
-   "ToeFR": 13
+   "ToeBL": 9,
+   "ToeBR": 16,
+   "ToeFL": 10,
+   "ToeFR": 17
   },
   "empties": [
    "FootBL",
@@ -6566,7 +6644,7 @@
    "SkinFar": 0.92
   },
   "edges": 2307,
-  "leg_length": 0.1335,
+  "leg_length": 0.1229,
   "game": {
    "component": "WallCat",
    "tail": "Tail",
@@ -6578,17 +6656,17 @@
    "walk": {
     "sink": 0.0,
     "contact": 0.0,
-    "held": 0.0723
+    "held": 0.0677
    },
    "run": {
     "sink": 0.0,
-    "contact": 0.0091,
-    "held": 0.1287
+    "contact": 0.0093,
+    "held": 0.117
    },
    "bound": {
     "sink": 0.0,
-    "contact": 0.1323,
-    "held": 0.1475
+    "contact": 0.1301,
+    "held": 0.145
    }
   },
   "motions": [
@@ -6691,7 +6769,7 @@
     16,
     "Feet planted",
     "pass",
-    "walk: sink 0.0 mm, lowest foot 0.0 mm up, held 72.3 mm; run: sink 0.0 mm, lowest foot 9.1 mm up, held 128.7 mm; bound: sink 0.0 mm, lowest foot 132.3 mm up, held 147.5 mm (tolerance 3.0 mm, 1 % of its height)"
+    "walk: sink 0.0 mm, lowest foot 0.0 mm up, held 67.7 mm; run: sink 0.0 mm, lowest foot 9.3 mm up, held 117.0 mm; bound: sink 0.0 mm, lowest foot 130.1 mm up, held 145.0 mm (tolerance 3.0 mm, 1 % of its height)"
    ],
    [
     17,

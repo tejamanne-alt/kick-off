@@ -263,6 +263,35 @@ namespace DribbleToSchool.Tests
                 Object.DestroyImmediate(root.gameObject);
             }
         }
+
+        [Test]
+        public void ABoundIsOneSmoothLoopStandingOnTheGroundAtContact()
+        {
+            // D21: a squirrel's dash bounds on its legs (TreeSquirrel): each pair of feet on one loop, k 1 meeting k 0,
+            // never through the ground, both pairs down at contact; the hind feet reaching ahead of their hips to land and
+            // stretching behind them after the push; the back gathered at contact and stretched in the air.
+            foreach (bool hind in new[] { true, false })
+            {
+                Vector2 a = LegGait.BoundFoot(hind, 0f), b = LegGait.BoundFoot(hind, 1f - 1e-4f);
+                Assert.Less((a - b).magnitude, 0.01f, "the loop closes");
+                Assert.AreEqual(0f, a.y, 1e-3f, "down at contact");
+                Vector2 last = a;
+                float most = -1f, least = 1f;
+                for (int i = 1; i <= 200; i++)
+                {
+                    Vector2 f = LegGait.BoundFoot(hind, i / 200f);
+                    Assert.GreaterOrEqual(f.y, 0f, "never through the ground");
+                    Assert.Less((f - last).magnitude, 0.08f, "no jump at " + i / 200f);
+                    Assert.GreaterOrEqual(LegGait.BoundRoll(hind, i / 200f), 0f, "never heel down");
+                    most = Mathf.Max(most, f.x);
+                    least = Mathf.Min(least, f.x);
+                    last = f;
+                }
+                Assert.Greater(most - least, 0.6f, hind ? "the hind feet swing far" : "the front feet reach far");
+            }
+            Assert.Greater(LegGait.BoundSpine(0f), 0f, "the back gathered at contact");
+            Assert.Less(LegGait.BoundSpine(0.2f), 0f, "and stretched in the air");
+        }
     }
 }
 #endif

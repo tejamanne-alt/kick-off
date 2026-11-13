@@ -100,6 +100,54 @@ namespace DribbleToSchool.World
             return t * t * (3f - 2f * t);
         }
 
+        // A bound (a squirrel's dash, D21), one hop from contact (k 0) round to the next (k 1): where each pair of feet is
+        // against its hip, in leg lengths (forward, up), and how far each foot is rolled (degrees). The hind feet push
+        // off from under the body and stretch back, then swing forward past the front ones to land ahead; the front feet
+        // tuck under the chest in the air, reach far forward, and sweep back under the shoulders as they land.
+        static readonly float[] BoundK = { 0f, 0.14f, 0.38f, 0.65f, 0.88f };
+        static readonly Vector2[] HindKeys = { new Vector2(0.15f, 0f), new Vector2(-0.45f, 0.03f), new Vector2(-0.55f, 0.25f), new Vector2(-0.05f, 0.35f), new Vector2(0.35f, 0.18f) };
+        static readonly Vector2[] FrontKeys = { new Vector2(-0.05f, 0f), new Vector2(-0.35f, 0.15f), new Vector2(0.45f, 0.3f), new Vector2(0.5f, 0.22f), new Vector2(0.4f, 0.08f) };
+        static readonly float[] HindRoll = { 30f, 40f, 50f, 30f, 0f };
+        static readonly float[] FrontRoll = { 0f, 60f, 40f, 15f, 0f };
+        static readonly float[] SpineKeys = { 12f, -8f, -6f, 4f, 10f };
+
+        /// <summary>A foot's place against its hip at k (0..1) of a bound, in leg lengths (forward, up): hind or front.
+        /// A smooth loop through the keys (Catmull-Rom), so k 1 meets k 0 and nothing jumps.</summary>
+        public static Vector2 BoundFoot(bool hind, float k)
+        {
+            Vector2 v = Loop(BoundK, hind ? HindKeys : FrontKeys, k);
+            v.y = Mathf.Max(0f, v.y);       // the smooth curve dips a little past its keys: never through the ground
+            return v;
+        }
+
+        /// <summary>A foot's roll at k of a bound (radians, toes down), and the back's flex (radians, its rear turned
+        /// down: gathered at contact, stretched in the air).</summary>
+        public static float BoundRoll(bool hind, float k) { return Mathf.Max(0f, LoopF(BoundK, hind ? HindRoll : FrontRoll, k)) * Mathf.Deg2Rad; }
+        public static float BoundSpine(float k) { return LoopF(BoundK, SpineKeys, k) * Mathf.Deg2Rad; }
+
+        static Vector2 Loop(float[] ks, Vector2[] vs, float k)
+        {
+            return new Vector2(LoopF(ks, X(vs), k), LoopF(ks, Y(vs), k));
+        }
+
+        static float[] X(Vector2[] vs) { var a = new float[vs.Length]; for (int i = 0; i < a.Length; i++) a[i] = vs[i].x; return a; }
+        static float[] Y(Vector2[] vs) { var a = new float[vs.Length]; for (int i = 0; i < a.Length; i++) a[i] = vs[i].y; return a; }
+
+        /// <summary>A periodic Catmull-Rom curve through values vs at times ks (0 &lt;= ks[0] &lt; .. &lt; 1), sampled at k.</summary>
+        public static float LoopF(float[] ks, float[] vs, float k)
+        {
+            int n = ks.Length;
+            k -= Mathf.Floor(k);
+            int i = n - 1;
+            for (int j = 0; j < n; j++) if (ks[j] <= k) i = j;
+            int i0 = (i + n - 1) % n, i2 = (i + 1) % n, i3 = (i + 2) % n;
+            float t0 = ks[i], t1 = i2 == 0 ? ks[0] + 1f : ks[i2];
+            if (k < ks[0]) { t0 -= 1f; }
+            float u = Mathf.Clamp01((k - t0) / Mathf.Max(1e-5f, t1 - t0));
+            float p0 = vs[i0], p1 = vs[i], p2 = vs[i2], p3 = vs[i3];
+            return 0.5f * (2f * p1 + (-p0 + p2) * u + (2f * p0 - 5f * p1 + 4f * p2 - p3) * u * u + (-p0 + 3f * p1 - 3f * p2 + p3) * u * u * u);
+        }
+
         /// <summary>Which way a knee bends: as it does in the model; a straight leg's, a front leg's forward and a hind
         /// leg's or a bird's back.</summary>
         public static float Bend(Vector2 knee, Vector2 foot, bool front)
@@ -125,7 +173,7 @@ namespace DribbleToSchool.World
                 // from the tip, at rest
                 public Vector2 hip, knee, end, foot, tip, fromTip;
                 public float length, bend;
-                public bool bird;
+                public bool bird, underHips;        // underHips: hangs from a back's rear half (Hips) that flexes
             }
 
             readonly Leg[] legs;
@@ -134,6 +182,10 @@ namespace DribbleToSchool.World
             /// <summary>The axis (in the root's own space) a positive turn about which brings its forward toward up: a
             /// body pitched by Pose turns about it, at the root's origin.</summary>
             public Vector3 Side { get; private set; }
+
+            Transform hips;                 // a back's rear half (Hips), if the model has one: its turn moves the hind legs' hips
+            Vector2 hipsPivot;              // in the root's side plane
+            Vector3 hipsForward;            // the root's forward, in the hips' own space at rest
 
             public int Count { get { return legs.Length; } }
 
@@ -167,6 +219,7 @@ namespace DribbleToSchool.World
                     var leg = new Leg();
                     leg.name = n;
                     leg.bird = n.Length == 1;
+                    leg.underHips = thigh.parent != null && thigh.parent.name == "Hips";
                     leg.thigh = thigh;
                     leg.shin = shin;
                     leg.thighRest = thigh.localRotation;
@@ -195,6 +248,13 @@ namespace DribbleToSchool.World
                 }
                 var rig = new Rig(root, found.ToArray());
                 rig.Side = side;
+                var hips = Deep(model, "Hips");
+                if (hips != null)
+                {
+                    rig.hips = hips;
+                    rig.hipsPivot = Plane(root, hips.position);
+                    rig.hipsForward = hips.InverseTransformDirection(root.TransformDirection(Vector3.right));
+                }
                 return rig;
             }
 
@@ -220,6 +280,15 @@ namespace DribbleToSchool.World
             /// roll it lies level on the ground: the bones end at the ankle, set back from the toes as the foot lies.</summary>
             void Place(ref Leg leg, Vector2 target, float tip = 0f, float roll = 0f)
             {
+                if (leg.underHips && hips != null)
+                {
+                    // the hips turned by h (forward toward up): the target into their frame, as if they had not turned
+                    Vector3 f = root.InverseTransformDirection(hips.TransformDirection(hipsForward));
+                    float h = Mathf.Atan2(f.y, f.x), hc = Mathf.Cos(-h), hs = Mathf.Sin(-h);
+                    Vector2 d = target - hipsPivot;
+                    target = hipsPivot + new Vector2(d.x * hc - d.y * hs, d.x * hs + d.y * hc);
+                    tip += h;
+                }
                 float a = tip + roll, c = Mathf.Cos(a), s = Mathf.Sin(a);
                 Vector2 back = new Vector2(leg.fromTip.x * c + leg.fromTip.y * s, -leg.fromTip.x * s + leg.fromTip.y * c);
                 Vector2 turn = TwoBone(leg.knee, leg.end, target + back - leg.hip, leg.bend);
@@ -391,6 +460,31 @@ namespace DribbleToSchool.World
                     // tucked in the air, the toes curled under; planted with the knees taking the crouch
                     Place(ref legs[i], s > 0f ? f + new Vector2(-0.15f * L * s, 0.25f * L * s) : new Vector2(f.x, -lift),
                           0f, s > 0f ? 0.6f * s : 0f);
+                }
+            }
+
+            /// <summary>A bound at k (0..1) of one hop (TreeSquirrel's dash, D21): each pair of feet on its loop
+            /// (BoundFoot), the far leg of each pair a little behind the near one, as a squirrel's are; lift 0..1 scales
+            /// it (a small forage hop, or settling to rest). pitch: the body's own turn (radians, forward toward up, as the
+            /// root is turned): the feet are placed as for a level body, so at contact they stand on the ground. The back's
+            /// flex is the caller's to set on the Hips (BoundSpine): the hind legs follow it.</summary>
+            public void Bound(float k, float lift = 1f, float pitch = 0f)
+            {
+                float c = Mathf.Cos(-pitch), s = Mathf.Sin(-pitch);
+                for (int i = 0; i < legs.Length; i++)
+                {
+                    bool hind = legs[i].name[0] == 'B';
+                    float q = k + (legs[i].name.Length > 1 && legs[i].name[1] == 'L' ? -0.06f : 0f);
+                    Vector2 rest = legs[i].hip + legs[i].tip;
+                    Vector2 key = BoundFoot(hind, q);
+                    float L = legs[i].length;
+                    // against the hip, as the keys are, above the ground (the root's y 0), for a level body; at lift 0 the
+                    // rest pose
+                    // (a bound's contact is a moment: the feet meet the ground on their pads, the leg a little bent, so the
+                    // shin's lower edge stays above it: 4 % of a hind leg, 8 % of a front one, whose forepaw is long)
+                    Vector2 want = Vector2.Lerp(rest, new Vector2(legs[i].hip.x + key.x * L, (key.y + (hind ? 0.04f : 0.08f)) * L), lift);
+                    want = new Vector2(want.x * c - want.y * s, want.x * s + want.y * c);
+                    Place(ref legs[i], want, pitch, BoundRoll(hind, q) * lift);
                 }
             }
 

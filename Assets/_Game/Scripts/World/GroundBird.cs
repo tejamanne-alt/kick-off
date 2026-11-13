@@ -23,6 +23,16 @@ namespace DribbleToSchool.World
         public Part head;
         [Tooltip("The flying model's wings, flapped about their axis (the first one mirrored).")]
         public Part wingA, wingB;
+        [Tooltip("A real bird's beat (WingStroke, D21): the wing raised wingUp above level and beaten wingDown below it, folded " +
+                 "wingFold at the wrist and swept wingSweep back on the upstroke, about wingSweepAxis (the wing's own space). " +
+                 "wingFold and wingSweep 0: the original kit's even beat of 40 degrees.")]
+        public float wingUp = 40f, wingDown = 40f, wingFold, wingSweep;
+        public Vector3 wingSweepAxis = Vector3.up;
+        [Tooltip("Optional: the flying model's tail, tilted with each beat (degrees at its fullest).")]
+        public Part flyingTail;
+        public float flyingTailTilt = 6f;
+        [Tooltip("How far the body rises on each downstroke (metres).")]
+        public float flyBob = 0.01f;
         [Tooltip("Ground height where there is no baked ground strip.")]
         public float baseY;
         public float homeX, homeZ;
@@ -58,7 +68,7 @@ namespace DribbleToSchool.World
         float x, y, z, tx, tz;
         float speed;
         float yaw, yawVelocity, targetYaw;
-        float phase, flap, pitch;
+        float phase, flap, pitch, flyRise;
         float peckStart = -10f, nextPeck;
         float flownAt;
         Vector3 velocity;
@@ -72,6 +82,7 @@ namespace DribbleToSchool.World
             head.Capture();
             wingA.Capture();
             wingB.Capture();
+            flyingTail.Capture();
             tail.Capture();
             plume.Capture();
             if (standing != null)
@@ -238,16 +249,29 @@ namespace DribbleToSchool.World
             pitch = Mathf.Lerp(pitch, Mathf.Atan2(velocity.y, Mathf.Abs(velocity.x) + Mathf.Abs(velocity.z)) * Mathf.Rad2Deg * 0.6f, 4f * dt);
             float age = Time.time - flownAt;
             flap += dt * Mathf.Lerp(19f, 12f, Mathf.Clamp01(age / 1.5f));
-            float a = Mathf.Sin(flap) * 40f;
-            wingA.Set(-a);
-            wingB.Set(a);
+            if (wingFold > 0f || wingSweep > 0f)
+            {
+                // spread on the way down, folded at the wrist and swept back on the way up (WingStroke)
+                Vector4 st = WingStroke.At(flap, wingUp, wingDown, wingFold, wingSweep);
+                wingA.SetWing(-st.x, -st.y, -st.z, wingSweepAxis);
+                wingB.SetWing(st.x, st.y, st.z, wingSweepAxis);
+                flyingTail.Set(-st.w * flyingTailTilt);      // dipped as the body rises (positive turns it up)
+                flyRise = st.w * flyBob;
+            }
+            else
+            {
+                float a = Mathf.Sin(flap) * 40f;
+                wingA.Set(-a);
+                wingB.Set(a);
+                flyRise = 0f;
+            }
             if ((age > 0.5f && !AmbientView.InView(x, y, z, 1.5f)) || age > 8f) Hide();
         }
 
         void Apply()
         {
             yaw = Mathf.SmoothDampAngle(yaw, targetYaw, ref yawVelocity, state == State.Fly ? 0.12f : 0.18f);
-            float lift = 0f, tip = 0f;
+            float lift = state == State.Fly ? flyRise : 0f, tip = 0f;
             float pace = Mathf.Clamp01(speed / Mathf.Max(0.05f, walkSpeed));
             float k = (Time.time - peckStart) / 0.22f;
             float peck = state == State.Idle && k >= 0f && k <= 1f ? Mathf.Sin(k * Mathf.PI) : 0f;

@@ -52,7 +52,7 @@ def A(cid, sheet, box, view, size, depth, parts=(), refine=False, wings=None, ex
       thresh=42, legs=False, shadow=0.13, head_up=False, fill=(), dark_shadow=False, whiskers=False, hop=False,
       leg_width=0.06, peck=(25.0, 30.0), swim=None, flippers=None, outline=7.0, leg_area=(), leg_lines=None,
       leg_drop=(), leg_seeds=None, front_fins=(), curl=False, beat=None, beard=(), heel=False, keep_body=(),
-      bob=None, hind=False):
+      bob=None, hind=False, spine=False, grey_shadow=False):
     """One model: its catalogue id (KM-Nxx), sheet, the figure's box (sheet px), its view (side: head to the right,
     standing on its lowest pixel; below: a flyer seen from beneath, head up; above: lying flat, seen from above), its
     size (('w' or 'h', metres) of the figure's outline), its half-depth cap (m), its parts ((name, polygon in sheet px,
@@ -79,7 +79,10 @@ def A(cid, sheet, box, view, size, depth, parts=(), refine=False, wings=None, ex
     the feathers to its foot and each toe; a pixel goes to the leg whose lines it lies nearest; far None: the near leg's
     copy stands for it, as when the two overlap all along), leg_drop (polygons taken out of the model: a leg raised
     mid-step, which can't plant), leg_seeds (a four-legged animal's group whose legs touch all the way down: {'B': (near
-    lines, far lines or None)}, standing in for the pieces leg_masks seeds from; far None: the near leg's copy). front_fins (a fish's fins near the first cut
+    lines, far lines or None)}, standing in for the pieces leg_masks seeds from; far None: the near leg's copy; a third
+    entry True: the far leg found from its lines only to be taken out, the near leg's copy standing in, D21: the
+    squirrel's far legs reach under its belly mid-stride, their thighs a patch of belly that swung out below it as a
+    flap in a bound). front_fins (a fish's fins near the first cut
     of its tail: polygons kept whole with the body, not split across two links), curl (a tail curled over the back: it
     wags side to side about the body's long axis, never swung up and down in the picture's plane), beat (an insect's
     wingbeat, (middle, swing) degrees: FlitButterfly's beatMid and beatSwing; a butterfly's 38, 38 by default). beard
@@ -90,14 +93,18 @@ def A(cid, sheet, box, view, size, depth, parts=(), refine=False, wings=None, ex
     overlap may grow into: the egret's back beside its head plumes, which would have turned with the head). bob (a bird
     on the ground: how far its head thrusts and holds with each step, as a share of its leg's length: a pigeon's head
     holds still in the air while its body walks under it, then thrusts forward, D21; None: a small nod only). hind (an
-    insect whose hind wings beat apart from its forewings: a dragonfly's, D21)."""
+    insect whose hind wings beat apart from its forewings: a dragonfly's, D21). spine (a four-legged animal whose back
+    flexes and stretches as it bounds: the squirrel's, D21: its rear half a bone of its own, Hips, carrying the hind legs
+    and the tail). grey_shadow (an animal whose shadow lies close around its feet: low in the box, any pixel with no
+    colour of its own is shadow, even where the paw beside it makes its window look textured; D21: the squirrel's feet
+    carried pale shards of ground. Not for a grey or black animal, whose own fur is as neutral)."""
     return dict(id=cid, sheet=sheet, box=box, view=view, size=size, depth=depth, parts=list(parts), refine=refine,
                 wings=wings, exclude=list(exclude), empties=list(empties), step=step, thresh=thresh, legs=legs,
                 shadow=shadow, head_up=head_up, fill=list(fill), dark_shadow=dark_shadow, whiskers=whiskers,
                 hop=hop, leg_width=leg_width, peck=peck, swim=swim, flippers=flippers, outline=outline,
                 leg_area=list(leg_area), leg_lines=leg_lines, leg_drop=list(leg_drop), leg_seeds=leg_seeds,
                 front_fins=list(front_fins), curl=curl, beat=beat, beard=list(beard), heel=heel,
-                keep_body=list(keep_body), bob=bob, hind=hind)
+                keep_body=list(keep_body), bob=bob, hind=hind, spine=spine, grey_shadow=grey_shadow)
 
 
 ANIMALS = {
@@ -117,7 +124,11 @@ ANIMALS = {
                          refine=True),
     'KmSquirrelRunning': A('KM-N03', P4, (11, 374, 450, 562), 'side', ('w', 0.40), 0.04,
                            [('Tail', [(11, 374), (148, 374), (144, 488), (11, 496)], (144, 450))], step=15, shadow=0.3,
-                           dark_shadow=True),
+                           dark_shadow=True, legs=True, spine=True, grey_shadow=True,
+                           leg_seeds={'F': ([[(352, 480), (375, 505), (400, 522), (415, 530)]],
+                                            [[(318, 495), (335, 515), (355, 530)]], True),
+                                      'B': ([[(162, 488), (153, 510), (155, 532), (168, 537)]],
+                                            [[(195, 500), (210, 512), (232, 520)]], True)}),
     'KmSquirrelSitting': A('KM-N03', P4, (523, 322, 837, 606), 'side', ('h', 0.30), 0.045,
                            [('Tail', [(523, 322), (676, 322), (676, 405), (652, 440), (652, 612), (523, 612)], (650, 594))],
                            fill=[[(659, 426), (650, 450), (642, 472), (637, 497), (636, 522), (638, 548), (654, 548),
@@ -253,7 +264,10 @@ ANIMALS = {
     'KmBulbulPerched': A('KM-N19', P8, (972, 640, 1277, 912), 'side', ('w', 0.28), 0.025,
                          [('Head', [(1160, 640), (1271, 640), (1271, 700), (1232, 705), (1228, 722), (1205, 730),
                                     (1180, 728), (1160, 712), (1150, 695)], (1195, 725))], refine=True),
-    'KmBulbulFlying': A('KM-N19', P8, (1406, 626, 1806, 907), 'below', ('w', 0.40), 0.02, wings=0.07, refine=True),
+    'KmBulbulFlying': A('KM-N19', P8, (1406, 626, 1806, 907), 'below', ('w', 0.40), 0.02, wings=0.07, refine=True,
+                        # its tail fans out wider than its body: drawn from the base of its feathers, under the white
+                        # puffs of its coverts (no narrowing finds it, D21)
+                        parts=[('Tail', [(1550, 812), (1670, 812), (1670, 907), (1550, 907)], (1608, 812))]),
     'KmDoveStanding': A('KM-N20', P8, (1863, 647, 2225, 905), 'side', ('w', 0.33), 0.05,
                         [('Head', [(2142, 647), (2222, 647), (2222, 727), (2135, 738)], (2139, 722))], refine=True,
                         legs='biped', peck=(35.0, 18.0),
@@ -314,6 +328,7 @@ def figure_mask(sheet, spec):
         tex &= (np.abs(r - bg).sum(-1) > 12).astype(np.uint8)
     m |= tex
     shadow = np.zeros(m.shape, bool)
+    ground = np.zeros(m.shape, bool)
     if spec['view'] == 'side':
         lum = r.mean(-1)
         chroma = r.max(-1) - r.min(-1)
@@ -328,6 +343,10 @@ def figure_mask(sheet, spec):
         shadow = (low & grey) | (tall & grey & (dev < 3))
         if spec['dark_shadow']:     # its core darker than any backdrop grey; a paw, as dark, is textured where it isn't
             shadow |= tall & (chroma < 12) & (lum < bg.mean() - 2) & (dev < 8)
+        if spec['grey_shadow']:     # beside a paw the window is textured by the paw, not by the pixel itself (D21): the
+            # shadow and the backdrop showing between the feet, low down, without colour of their own
+            ground = tall & (chroma < 8) & (lum > bg.mean() - 60) & (lum < bg.mean() + 15)
+            shadow |= ground
         m[shadow] = 0
     for poly in spec['exclude']:
         cv2.fillPoly(m, [np.array([(x - x0, y - y0) for x, y in poly], np.int32)], 0)
@@ -382,6 +401,12 @@ def figure_mask(sheet, spec):
     like = ((dev < 3) & ((r.max(-1) - r.min(-1)) < 10) & (np.abs(r.mean(-1) - bg.mean()) < 12)).astype(np.uint8)
     n, lab, st, _ = cv2.connectedComponentsWithStats(like, 8)
     m[np.isin(lab, 1 + np.nonzero(st[1:, 4] >= 40)[0])] = 0
+    if ground.any():                # grey_shadow: the ground between the feet stays out however small its patch, or
+        n, lab, st, _ = cv2.connectedComponentsWithStats(ground.astype(np.uint8), 8)    # the hole fill puts it back
+        m[np.isin(lab, 1 + np.nonzero(st[1:, 4] >= 6)[0])] = 0
+        m = cv2.morphologyEx(m, cv2.MORPH_OPEN, np.ones((2, 2), np.uint8))
+        n, lab, st, _ = cv2.connectedComponentsWithStats(m, 8)
+        m = (lab == 1 + int(np.argmax(st[1:, 4]))).astype(np.uint8)
     if spec['beard']:
         # under a cat's chin, the backdrop between its whiskers: neutral and within the backdrop's own range of grey
         # (lighter where the whiskers' glow lies on it), cut out; fur there has colour or is far brighter (D20)
@@ -492,7 +517,11 @@ def leg_masks(rest, biped=False, seeds=None, origin=(0, 0), own=None):
         if g not in drawn:
             info[len(info) + 1] = (g, None)
             seed_lab[lab == i] = len(info)
-    for g, (near, far) in drawn.items():
+    # a third entry True: the far leg is found from its lines only to take it out, and the near one is copied for it
+    copy_far = {g for g, entry in drawn.items() if len(entry) > 2 and entry[2]}
+    gone = np.zeros((h, w), np.uint8)
+    for g, entry in drawn.items():
+        near, far = entry[:2]
         for lines, side in ((near, 'R'), (far, 'L')):
             if not lines:               # no far leg drawn: the near one is copied for it
                 continue
@@ -532,6 +561,11 @@ def leg_masks(rest, biped=False, seeds=None, origin=(0, 0), own=None):
     for g, found in groups.items():
         # drawn legs come near first; found ones, the larger is the near one
         found.sort(key=lambda t: (t[1] != 'R', -int(t[0].sum())) if t[1] else (0, -int(t[0].sum())))
+        if g in copy_far:           # the far leg's pixels leave the model; the near leg's copy stands in (below)
+            for m, side in found:
+                if side == 'L':
+                    gone |= m
+            found = [t for t in found if t[1] != 'L']
         ms = [m for m, _ in found]
         while len(ms) > 2:          # a stray third piece joins whichever of the two is nearer
             extra = ms.pop()
@@ -563,11 +597,13 @@ def leg_masks(rest, biped=False, seeds=None, origin=(0, 0), own=None):
             sides[name] = sign
             fx = np.nonzero(m[max(0, foot_row - 2):foot_row + 1])[1]
             feet[name] = (float(fx.mean()), float(foot_row))
-            paw = np.zeros_like(m)              # the paw: the lowest eighth of the leg, kept level at its wrist (_foot)
-            paw[int(foot_row - 0.12 * legh):] = 1
+            paw = np.zeros_like(m)              # the paw: the lowest fifth of the leg, kept level at its wrist (_foot)
+            paw[int(foot_row - 0.2 * legh):] = 1
             _foot(m, paw, rest, shin, 'Toe' + g + side, feet[name], 0.1 * legh, masks, pivots, name, own_px=own)
         if len(ms) == 1:
             _twin(masks, pivots, sides, feet, 'Leg' + g + 'R', 'Leg' + g + 'L', own)
+    if own is not None and gone.any():
+        own['_gone'] = (gone & rest).astype(np.uint8)
     return masks, pivots, sides, feet, belly
 
 
@@ -972,6 +1008,11 @@ def part_masks(spec, mask):
                 # there, not the backdrop (D20)
                 legh = int(np.nonzero(rest)[0].max()) - belly
                 below[belly + 1 + int(0.15 * legh):] = 1
+            gone = own.pop('_gone', None)
+            if gone is not None:        # a far leg taken out for its copy (leg_seeds' third entry): below the skirt
+                gone = (gone & below).astype(np.uint8)
+                taken |= gone
+                own['_drop'] |= gone
         for name, pm in legs.items():
             parts[name] = pm
             pivots[name] = (x0 + lpiv[name][0], y0 + lpiv[name][1])
@@ -1038,6 +1079,41 @@ def part_masks(spec, mask):
             own[name] = pm.copy()
             pivots[name] = (root_x, shoulder_here)
             taken |= pm
+    if spec['spine'] and spec['legs'] is True:
+        # the rear half of the body (behind the middle between the shoulders and the hips) a bone of its own, so the
+        # back flexes and stretches as it bounds (D21): pivoting on the back's centre line there
+        fx = [pivots[n][0] for n in parts if n.startswith('LegF') and n in pivots]
+        bx = [pivots[n][0] for n in parts if n.startswith('LegB') and n in pivots]
+        if fx and bx:
+            split = 0.5 * (np.mean(fx) + np.mean(bx)) - x0
+            rest_body = (mask & (1 - taken)).astype(np.uint8)
+            xx = np.arange(w)[None, :].repeat(h, 0)
+            hips = (rest_body & (xx < split)).astype(np.uint8)
+            col = np.nonzero(rest_body[:, int(split)])[0]
+            if hips.sum() > 50 and len(col):
+                parts['Hips'], own['Hips'] = hips, hips.copy()
+                pivots['Hips'] = (x0 + split, y0 + 0.5 * (col.min() + col.max()))
+                taken |= hips
+    if spec['wings'] and spec['view'] == 'below' and 'Tail' not in parts:
+        # a flying bird's tail a part of its own (D21): what lies behind its vent, where the body below the belly's
+        # widest row narrows to under 55 % of it; a flat fan, tilting with each beat. A tail that fans out wider than
+        # the body (the bulbul's) is drawn in its spec instead
+        rest_body = (mask & (1 - taken)).astype(np.uint8)
+        widths = rest_body.sum(1)
+        rows = np.nonzero(widths)[0]
+        if len(rows):
+            lower = rows[rows > rows.min() + 0.35 * (rows.max() - rows.min())]
+            widest = int(lower[np.argmax(widths[lower])]) if len(lower) else int(rows.max())
+            vent = widest
+            while vent < rows.max() and widths[vent] >= 0.55 * widths[widest]:
+                vent += 1
+            tail = rest_body.copy()
+            tail[:vent] = 0
+            if tail.sum() > 40:
+                vx = np.nonzero(rest_body[vent])[0]
+                parts['Tail'], own['Tail'] = tail, tail.copy()
+                pivots['Tail'] = (x0 + float(vx.mean() if len(vx) else w / 2), y0 + float(vent))
+                taken |= tail
     # tails and wings in links, a fish's rear as a tail in links, a turtle's flippers: not one rigid piece (D19)
     if 'Tail' in parts and spec['view'] == 'side':
         px, py = pivots['Tail']
@@ -1283,7 +1359,12 @@ def build(name, spec, atlas, sheet):
         return p[:3] in ('Leg', 'Shi', 'Toe') and suffix(p) in far_sfx
 
     def parent(p):
-        return None if p == 'Body' else (_parent_of(p) or 'Body')
+        if p == 'Body':
+            return None
+        up = _parent_of(p) or 'Body'
+        if up == 'Body' and 'Hips' in parts and (p == 'Tail' or p.startswith('LegB')):
+            up = 'Hips'             # the back's rear half carries the hind legs and the tail (D21)
+        return up
 
     bones = ['Body'] + sorted((p for p in parts if p != 'Body'), key=lambda p: (_depth(p), p))
     deform = [b for b in bones if b == 'Body' or (b in own and own[b].any())]
@@ -1311,6 +1392,8 @@ def build(name, spec, atlas, sheet):
             return max(6.0, 0.6 * t) if spec['swim'] else max(4.0, 0.7 * t)
         if b.startswith('Wing'):
             return 3.0 if spec['head_up'] else max(4.0, (0.5 if b[-1] == '2' else 0.3) * t)
+        if b == 'Hips':
+            return max(6.0, 0.25 * t)
         if b.startswith('Flipper') or b.startswith('Fin'):
             return max(3.0, 0.4 * t)
         if b.startswith('Hind'):
@@ -1409,11 +1492,16 @@ def build(name, spec, atlas, sheet):
         W = weights(layer, members, pts)
         wing = np.zeros(len(pts), np.float32)
         for b, i in gi.items():
-            if b.startswith('Wing') or b.startswith('Hind'):
+            if b.startswith('Wing') or b.startswith('Hind') or (b == 'Tail' and view == 'below'):
                 wing += W[:, i]
-        cap = spec['depth'] * (1.0 - 0.6 * wing)
+        cap = spec['depth']
         d, R = np.maximum(dist - 1.0, 0.0) / s, np.maximum(radius - 1.0, np.maximum(dist - 1.0, 0.5)) / s
-        dz = cap * np.tanh(np.sqrt(np.maximum(d * (2 * R - d), 0.0)) / cap)
+        dz_round = cap * np.tanh(np.sqrt(np.maximum(d * (2 * R - d), 0.0)) / cap)
+        # a wing or a flying bird's tail is a thin, even plate, its edge rounded over a couple of pixels (D21: rounded
+        # like a limb, each feather a ridge, the wings read as pleated fans and the tail as a ringed stub)
+        dz_flat = 0.22 * cap * np.tanh(np.maximum(dist - 1.0, 0.0) / 2.5)
+        wing = np.clip(wing, 0.0, 1.0)
+        dz = (1.0 - wing) * dz_round + wing * dz_flat
         if not far:
             body_depth = float(np.max(dz[W[:, gi['Body']] > 0.9])) if (W[:, gi['Body']] > 0.9).any() else float(np.max(dz))
         off = (0.6 * body_depth * leg_share(W, True)) if far else (-0.6 * body_depth * leg_share(W, False))
@@ -1826,6 +1914,13 @@ HEAD_BOB = {'KM-N07': 0.16, 'KM-N20': 0.16, 'KM-N17': 0.16, 'KM-N15': 0.10, 'KM-
             'KM-N10': 0.06}
 
 
+# each small bird's beat in flight (WingStroke, D21): raised, beaten below level, folded at the wrist and swept back on
+# the upstroke (degrees): a sparrow's and a white-eye's deep and well folded, a swallow's shallower and swept far back, a
+# dove's deep and less folded
+STROKE = {'KM-N08': (50.0, 40.0, 65.0, 20.0), 'KM-N09': (35.0, 32.0, 50.0, 28.0), 'KM-N18': (50.0, 40.0, 65.0, 20.0),
+          'KM-N19': (45.0, 38.0, 60.0, 18.0), 'KM-N20': (55.0, 45.0, 45.0, 15.0)}
+
+
 def head_bob_of(name, info):
     """GroundBird's headSlide for this bird (metres)."""
     spec = ANIMALS[name]
@@ -1841,17 +1936,23 @@ def game_settings(name, info):
     spec, parts = ANIMALS[name], info['parts']
     legs = [p for p in parts if p.startswith('Leg')]
     bird = any(len(p) == 4 for p in legs)
+    if 'Running' in name:           # TreeSquirrel: its dash, four legs and its back bounding
+        return {'component': 'TreeSquirrel', 'tail': 'Tail', 'tailAxis': 'side', 'hips': 'Hips', 'hipsAxis': 'side',
+                'legs': 'LegGait.Bound (its four legs and its back bound, D21)'}
     if legs and not bird:
         if spec['whiskers']:
             return {'component': 'WallCat', 'tail': 'Tail', 'tailAxis': 'side', 'legs': 'LegGait (tucked in a bound)'}
         # a tail curled over the back wags side to side about the body's long axis (D20)
         return {'component': 'Dog', 'tail': 'Tail', 'tailAxis': 'long' if spec['curl'] else 'side',
                 'head': 'Head' if 'Head' in parts else None, 'legs': 'LegGait (walk into trot)'}
-    if 'Running' in name:
-        return {'component': 'TreeSquirrel', 'tail': 'Tail', 'tailAxis': 'side', 'note': 'its dash: the model mid-leap'}
     if 'WingL' in parts:
         if info['view'] == 'below':
-            return {'component': 'GroundBird (flying model) or SkyFlock', 'wings': ['WingR', 'WingL'], 'wingAxis': 'long'}
+            up, down, fold, sweep = STROKE.get(info['id'], (45.0, 38.0, 55.0, 18.0))
+            out = {'component': 'GroundBird (flying model) or SkyFlock', 'wings': ['WingR', 'WingL'], 'wingAxis': 'long',
+                   'wingUp': up, 'wingDown': down, 'wingFold': fold, 'wingSweep': sweep, 'wingSweepAxis': 'up'}
+            if 'Tail' in parts:     # GroundBird's flyingTail, tilting with each beat
+                out.update(flyingTail='Tail', flyingTailAxis='side')
+            return out
         out = {'component': 'FlitButterfly', 'wingL': 'WingL', 'wingR': 'WingR', 'wingAxis': 'long'}
         if spec['beat']:            # a dragonfly beats its wings about flat; a butterfly claps them up (the default)
             out.update(beatMid=spec['beat'][0], beatSwing=spec['beat'][1])
@@ -1915,6 +2016,9 @@ def motions_of(name, info):
     bird = any(len(p) == 4 for p in legs)                   # LegR / LegL: a bird's two
     L = info.get('leg_length') or 0.45 * h
     cat = spec['whiskers']
+    if 'Running' in name:           # TreeSquirrel's dash: long bounds, its legs and back bounding (D21)
+        pose, period = AR.dash(h)
+        return [_timed('dash', pose, None, period)]
     if legs and not bird:
         # Dog (and the walkers that use LegGait): a walk at 0.5 m/s for a cat, 0.8 for the dog and the tanuki; a trot
         # at 2 m/s; the cycle as long as the planted feet need not to skate
@@ -1934,12 +2038,10 @@ def motions_of(name, info):
             pose, period = AR.bound(h)
             out.append(_timed('bound', pose, None, period))
         return out
-    if 'Running' in name:           # mid-leap, legs flat: TreeSquirrel's dash
-        pose, period = AR.dash(h)
-        return [_timed('dash', pose, None, period)]
     if 'WingL' in parts:
         if view == 'below':         # GroundBird's take-off flight, 40 degrees at 15 radians a second
-            pose, period = AR.flight(span)
+            up, down, fold, sweep = STROKE.get(info['id'], (45.0, 38.0, 55.0, 18.0))
+            pose, period = AR.flight(span, up, down, fold, sweep)
             return [_timed('fly', pose, AR.UP_BELOW, period)]
         # FlitButterfly: beatMid + beatSwing sin, 50 radians a second (a butterfly's 38 + 38 sin; a dragonfly's about flat)
         mid, swing = spec['beat'] or (38.0, 38.0)
@@ -2083,7 +2185,9 @@ def parts_note(spec, info):
     said = ['looked at on its part map at full size, part by part: ' + ', '.join(parts)]
     copied = info.get('copied', [])
     if copied:
-        why = ('the far leg, beside the near one all the way down in the picture, taken out' if
+        why = ('the far leg, reaching under the belly mid-stride (its thigh a patch of belly, a flap when it swings), '
+               'taken out' if spec['leg_seeds'] and any(len(e) > 2 and e[2] for e in spec['leg_seeds'].values()) else
+               'the far leg, beside the near one all the way down in the picture, taken out' if
                spec['leg_lines'] and len(spec['leg_lines']) > 2 else
                'the leg raised mid-step in the picture taken out: it can\'t plant' if spec['leg_drop'] and
                spec['legs'] == 'biped' else

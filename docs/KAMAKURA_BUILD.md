@@ -180,13 +180,13 @@ ceramic siding.
 |---|---|---|---|
 | KM-N01 | the ginger cat | KM-P4 | WallCat |
 | KM-N02 | the tanuki | KM-P4 | walks and trots off into the undergrowth on its jointed legs (LegGait, as the Dog walks; a squirrel's hops don't suit it, D19), its brush swaying |
-| KM-N03 | a Pallas's squirrel | KM-P4 | TreeSquirrel |
+| KM-N03 | a Pallas's squirrel | KM-P4 | TreeSquirrel, bounding on its legs (`LegGait.Bound`, D21): the hind feet land ahead of the front ones, the back (a `hips` bone carrying the hind legs and tail) gathers at each landing and stretches in the air; smaller hops as it forages, a scamper up a trunk; its far legs copies of the near ones (in the photo they reach under its belly) |
 | KM-N04 | a Shiba Inu (red collar) | KM-P4 | Dog (the hazard: noses a low ball back; chip it over); its curled tail wags side to side over its back (`tailAxis` long, D20), never up and down in the picture's plane |
 | KM-N05 | the black kite | KM-P4 | perched (CritterIdle), circling (SkyFlock), the snack dive (Seagull) |
 | KM-N06 | a large-billed crow | KM-P4 | GroundBird |
 | KM-N07 | a shrine pigeon | KM-P4 | GroundBird, its head holding in the air and thrusting as it walks (`headSlide`, D21); SkyFlock over the town |
-| KM-N08 | a tree sparrow | KM-P4 | GroundBird, in twos and threes |
-| KM-N09 | a barn swallow | KM-P4 | perched on the wires (CritterIdle); SkyFlock, low and fast |
+| KM-N08 | a tree sparrow | KM-P4 | GroundBird, in twos and threes; in flight its wings beat down spread and fold at the wrist on the way up (`WingStroke`, `wingFold` 65, D21), its tail tilting with each beat |
+| KM-N09 | a barn swallow | KM-P4 | perched on the wires (CritterIdle); SkyFlock, low and fast, a shallow beat swept far back (`wingSweep` 28, D21) |
 | KM-N10 | a black-tailed gull | KM-P4 | GroundBird on the sand; SkyFlock over the sea |
 | KM-N11 | a little egret | KM-P4 | GroundBird, wading at the water's edge |
 | KM-N12, N13 | koi, red-and-white and golden | KM-P8 | PondDuck, just under the water, the tail (in links) swept as it swims, the head recoiling against it (`headRecoil` 0.15) and the pectoral fins sculling (`fins`, D21) |
@@ -194,7 +194,7 @@ ceramic siding.
 | KM-N15 | a grey heron | KM-P8 | GroundBird, slow; standing at the pond's edge |
 | KM-N16 | a cormorant | KM-P8 | on a rock, wings held open to dry (CritterIdle) |
 | KM-N17 | a white wagtail | KM-P8 | GroundBird, its tail (in links) pumping all the while |
-| KM-N18 | a Japanese white-eye | KM-P8 | in a tree's crown (CritterIdle), darting between trees |
+| KM-N18 | a Japanese white-eye | KM-P8 | in a tree's crown (CritterIdle), darting between trees on a deep folding beat (`WingStroke`, as the sparrow's, D21) |
 | KM-N19 | a brown-eared bulbul | KM-P8 | GroundBird; perched in the trees |
 | KM-N20 | an oriental turtle dove | KM-P8 | GroundBird |
 | KM-N21 | a calico cat | KM-P8 | WallCat; asleep on a step (CritterIdle) |
@@ -764,7 +764,9 @@ swallow, white-eye, bulbul, turtle dove, wagtail) are a few pixels on the phone:
 Every animal that moves is one skin on bones (D21): the relief bends at its joints, bound to an armature whose bones carry
 the part names the behaviours look for (Body, Tail.., Head, Head2, LegFR.., ShinFR.., ToeFR.., FootFR.., TipFR..,
 WingL.., HindL.., FinL..), so its FBX imports with a Generic rig (`ModelImportSettings`: the kit is not one of the
-original kits, which have no bones). A bird's feet are toes in the round, not the photo's flat side view.
+original kits, which have no bones). A bird's feet are toes in the round, not the photo's flat side view. Wings, a
+dragonfly's hind wings and a flyer's tail are thin plates, not rounded like a body; a flyer seen from below has its
+tail as a bone (Tail) that tilts with its wingbeat, and the running squirrel has legs and a Hips bone for its bound.
 
 ```text
 BASE KM-S1, the bird-in-flight model sheet. Attach KM-0. You are making model sheets of birds in flight for a game's 3D

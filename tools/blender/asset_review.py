@@ -410,8 +410,16 @@ def legs_of(parts):
         bend = -math.copysign(1, cross) if abs(cross) > 0.08 * l1 * l2 else (1 if sfx.startswith('F') else -1)
         mark = parts.get('Tip' + sfx)       # the front of the toes on the ground (LegGait.Rig.Find); else the foot
         tip = (end[0] + mark.location.x, end[1] + mark.location.z) if (mark is not None and toe is not None) else f
-        out[sfx] = (thigh, shin, (thigh.location.x, thigh.location.z), knee, f, l1 + l2, bend, toe, end,
-                    (f[0] - end[0], f[1] - end[1]), tip, (end[0] - tip[0], end[1] - tip[1]))
+        # a leg hanging from a back's rear half (Hips) that flexes: its hip in the root's frame, and the Hips with it
+        hips = parts.get('Hips')
+        under = hips if (hips is not None and isinstance(thigh, Bone) and thigh.pb.parent is not None
+                         and thigh.pb.parent.name == 'Hips') else None
+        hip = (thigh.location.x, thigh.location.z)
+        if under is not None:
+            hip = (hip[0] + hips.location.x, hip[1] + hips.location.z)
+        out[sfx] = (thigh, shin, hip, knee, f, l1 + l2, bend, toe, end,
+                    (f[0] - end[0], f[1] - end[1]), tip, (end[0] - tip[0], end[1] - tip[1]), under,
+                    (hips.location.x, hips.location.z) if under is not None else None)
     return out
 
 
@@ -420,7 +428,14 @@ def _place(leg, target_root, tip=0.0, roll=0.0):
     by roll (radians, toes down: D21) and turned back by the thigh's and shin's turns and by the body's tip (degrees,
     the review's pitch), so with no roll it lies level: the bones end at the ankle, set back from the toes as the foot
     lies (LegGait.Rig.Place)."""
-    thigh, shin, hip, knee, foot, _, bend, toe, end, off, tipr, from_tip = leg
+    thigh, shin, hip, knee, foot, _, bend, toe, end, off, tipr, from_tip, under, hp = leg
+    if under is not None:
+        # the Hips turned by h (forward toward up; Blender's +Y turn is the other way): the target into their frame
+        h = -under.rotation_euler[1]
+        c0, s0 = math.cos(-h), math.sin(-h)
+        dx, dz = target_root[0] - hp[0], target_root[1] - hp[1]
+        target_root = (hp[0] + dx * c0 - dz * s0, hp[1] + dx * s0 + dz * c0)
+        tip = tip - math.degrees(h)
     a = R(tip) - roll
     c, s = math.cos(a), math.sin(a)
     bx, bz = from_tip[0] * c - from_tip[1] * s, from_tip[0] * s + from_tip[1] * c
@@ -460,6 +475,52 @@ def _lift_at(x, hF, hB, xF, xB, nF, nB):
     if nF == 0 or nB == 0 or abs(xF - xB) < 1e-4:
         return min(hF, hB)
     return hB + (x - xB) * (hF - hB) / (xF - xB)
+
+
+# LegGait's bound (a squirrel's dash, D21): keys at k, each pair's foot against its hip in leg lengths, rolls, the back
+BOUND_K = (0.0, 0.14, 0.38, 0.65, 0.88)
+HIND_KEYS = ((0.15, 0.0), (-0.45, 0.03), (-0.55, 0.25), (-0.05, 0.35), (0.35, 0.18))
+FRONT_KEYS = ((-0.05, 0.0), (-0.35, 0.15), (0.45, 0.3), (0.5, 0.22), (0.4, 0.08))
+HIND_ROLL = (30.0, 40.0, 50.0, 30.0, 0.0)
+FRONT_ROLL = (0.0, 60.0, 40.0, 15.0, 0.0)
+SPINE_KEYS = (12.0, -8.0, -6.0, 4.0, 10.0)
+
+
+def loop_f(ks, vs, k):
+    """LegGait.LoopF: a periodic Catmull-Rom curve through vs at ks, sampled at k."""
+    n = len(ks)
+    k -= math.floor(k)
+    i = n - 1
+    for j in range(n):
+        if ks[j] <= k:
+            i = j
+    i0, i2, i3 = (i + n - 1) % n, (i + 1) % n, (i + 2) % n
+    t0, t1 = ks[i], (ks[0] + 1.0 if i2 == 0 else ks[i2])
+    u = min(1.0, max(0.0, (k - t0) / max(1e-5, t1 - t0)))
+    p0, p1, p2, p3 = vs[i0], vs[i], vs[i2], vs[i3]
+    return 0.5 * (2 * p1 + (-p0 + p2) * u + (2 * p0 - 5 * p1 + 4 * p2 - p3) * u * u + (-p0 + 3 * p1 - 3 * p2 + p3) * u ** 3)
+
+
+def bound_foot(hind, k):
+    keys = HIND_KEYS if hind else FRONT_KEYS
+    return loop_f(BOUND_K, [v[0] for v in keys], k), max(0.0, loop_f(BOUND_K, [v[1] for v in keys], k))
+
+
+def bound_legs(legs, k, amount=1.0, pitch=0.0):
+    """LegGait.Rig.Bound: each pair's feet on the bound's loop (the far leg 0.06 behind), for a level body turned back by
+    the body's pitch (radians, forward toward up), the feet rolled."""
+    c, s = math.cos(-pitch), math.sin(-pitch)
+    for sfx, leg in legs.items():
+        hind = sfx.startswith('B')
+        q = k + (-0.06 if len(sfx) > 1 and sfx[1] == 'L' else 0.0)
+        hip, tipr = leg[2], (leg[2][0] + leg[10][0], leg[2][1] + leg[10][1])
+        kx, kz = bound_foot(hind, q)
+        L = leg[5]
+        wx = tipr[0] + (hip[0] + kx * L - tipr[0]) * amount
+        wz = tipr[1] + ((kz + (0.04 if hind else 0.08)) * L - tipr[1]) * amount   # above the ground (z 0), on the pads
+        wx, wz = wx * c - wz * s, wx * s + wz * c
+        roll = R(max(0.0, loop_f(BOUND_K, HIND_ROLL if hind else FRONT_ROLL, q))) * amount    # never heel down
+        _place(leg, (wx, wz), tip=-math.degrees(pitch), roll=roll)
 
 
 def walk_legs(legs, kind, p, lift, pitched=True):
@@ -716,7 +777,8 @@ def smooth_damp(current, target, vel, smooth_time, dt):
 def dash(height, hop_time=0.18):
     """TreeSquirrel's dash: long low hops, the body 12 cm up at the top of each (lift 0.12 sin(k pi)), pitched from 12
     degrees nose up to 12 nose down across each (eased by SmoothDamp over 0.1 s, as the game does: D21, the review had
-    left it flat), the tail streaming behind the pitch (-8 + 0.7 pitch), in links so it whips."""
+    left it flat), the tail streaming behind the pitch (-8 + 0.7 pitch), in links so it whips; a model with jointed legs
+    and a back (Hips) bounds with them (LegGait.Bound, BoundSpine), as TreeSquirrel drives them."""
     steps = 240
     dt = hop_time / steps
     pitch, vel, rec = 0.0, 0.0, []
@@ -734,8 +796,14 @@ def dash(height, hop_time=0.18):
     def pose(parts, root, p):
         if 'Tail' in parts:
             set_chain(parts, 'Tail', 'y', track, p)
+        gp = game_pitch(p * hop_time)
+        if 'Hips' in parts:     # the back's rear half: its CCW flex is the Blender +Y turn's opposite
+            parts['Hips'].rotation_euler = (0, -R(loop_f(BOUND_K, SPINE_KEYS, p)), 0)
+        legs = legs_of(parts)
+        if legs:
+            bound_legs(legs, p, 1.0, R(gp))
         # the review's pitch is nose down; the game's nose up
-        return 0.12 * math.sin(math.pi * p), -game_pitch(p * hop_time)
+        return 0.12 * math.sin(math.pi * p), -gp
     return pose, hop_time
 
 
@@ -790,13 +858,40 @@ def pond(tail=None, flippers=None, recoil=0.0, fins=None):
     return pose, period
 
 
-def flight(span, beat=40.0, rate=15.0):
-    """GroundBird's take-off flight (and the small birds' SkyFlock beat): the wings beat +-beat degrees, rate radians a
-    second, about the body's long axis, each wing in two links so its tip trails the beat."""
+DOWN_SHARE = 0.55
+
+
+def wing_stroke(u, up, down, fold, sweep):
+    """WingStroke.At at u (0..1 of a beat, 0 its top): (flap up, wrist fold, sweep back: degrees; the body's rise -1..1)
+    (D21): spread and sweeping a little forward on the downstroke, folded at the wrist and swept back on the upstroke."""
+    u -= math.floor(u)
+    if u < DOWN_SHARE:
+        w = u / DOWN_SHARE
+        e, sn = 0.5 - 0.5 * math.cos(math.pi * w), math.sin(math.pi * w)
+        return up + (-down - up) * e, 0.0, -0.3 * sweep * sn, sn
+    v = (u - DOWN_SHARE) / (1 - DOWN_SHARE)
+    ev, sv = 0.5 - 0.5 * math.cos(math.pi * v), math.sin(math.pi * v)
+    return -down + (up + down) * ev, fold * sv, sweep * sv, -0.4 * sv
+
+
+def flight(span, up=40.0, down=40.0, fold=0.0, sweep=0.0, rate=15.0, tail_tilt=6.0, bob=0.01):
+    """GroundBird's take-off flight (and SkyFlock's bursts): with fold or sweep, a real bird's beat (wing_stroke: the
+    wing in two links, its outer link folding at the wrist; swept about the vertical), the tail tilting and the body
+    rising with each downstroke; without, the original kit's even beat of +-up degrees, the tip trailing. rate radians
+    a second."""
     period = 2 * math.pi / rate
-    track = chain_track(lambda t: beat * math.sin(rate * t), period)
+    track = chain_track(lambda t: up * math.sin(rate * t), period)
 
     def pose(parts, root, p):
+        if fold > 0 or sweep > 0:
+            fl, fo, sw, rise = wing_stroke(p, up, down, fold, sweep)
+            for wing, sign in (('WingL', 1), ('WingR', -1)):
+                if wing in parts:       # flap about the long axis, sweep about the vertical (Part.SetWing)
+                    parts[wing].rotation_euler = (R(sign * fl), 0, R(sign * sw))
+                if wing + '2' in parts:
+                    parts[wing + '2'].rotation_euler = (R(-sign * fo), 0, 0)
+            _set(parts, 'Tail', y=-tail_tilt * rise)
+            return bob * rise, 0.0
         for wing, sign in (('WingL', 1), ('WingR', -1)):
             if wing in parts:
                 links = [wing] + ([wing + '2'] if wing + '2' in parts else [])

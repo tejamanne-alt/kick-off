@@ -13,6 +13,10 @@ namespace DribbleToSchool.World
         public Transform model;
         [Tooltip("The bushy tail, flicked about its axis.")]
         public Part tail;
+        [Tooltip("Optional: the back's rear half (Hips, the Kamakura kit's running squirrel), flexed and stretched as it bounds " +
+                 "(D21), about its axis (positive turns the nose down, as GroundBird's head). With jointed legs under the model " +
+                 "(LegGait), the legs bound too.")]
+        public Part hips;
         [Tooltip("Ground height where there is no baked ground strip.")]
         public float baseY;
         public float homeX, homeZ;
@@ -33,6 +37,8 @@ namespace DribbleToSchool.World
         float treeSide = 1f, climbTop;
         float yaw, yawVelocity, targetYaw, pitch, pitchVelocity, targetPitch;
         float flickStart = -10f, nextFlick;
+        LegGait.Rig rig;            // jointed legs (the Kamakura kit's running squirrel): bounding
+        float boundAmount = 1f;
 
         protected override float Reach { get { return roam + 10f; } }
 
@@ -40,6 +46,12 @@ namespace DribbleToSchool.World
         {
             base.Awake();
             tail.Capture();
+            hips.Capture();
+            if (model != null)
+            {
+                rig = LegGait.Rig.Find(model, transform);
+                if (rig.Count == 0) rig = null;
+            }
             yaw = targetYaw = transform.eulerAngles.y;
             Home();
         }
@@ -204,6 +216,24 @@ namespace DribbleToSchool.World
             float flick = k >= 0f && k <= 1f ? Mathf.Sin(k * Mathf.PI) * 24f : 0f;
             // in a dash the tail streams behind the bounding body (its pitch), whipping as it follows (D21)
             tail.Set(state == State.Dash ? -8f + 0.7f * pitch : 4f + flick);
+            if (rig == null) return;
+            // the legs and back in a bound: pushing off, stretched in the air, gathered to land (LegGait.Bound); a small
+            // one for a forage hop, scampering up a trunk; crouched, the feet gathered under it, when it stops
+            float step = 0f, want = 1f;
+            if (state == State.Hop || state == State.Dash)
+            {
+                step = Mathf.Clamp01((Time.time - started) / hopTime);
+                want = state == State.Dash ? 1f : 0.6f;
+            }
+            else if (state == State.Climb)
+            {
+                step = (Time.time - started) * 3.5f;
+                step -= Mathf.Floor(step);
+                want = 0.7f;
+            }
+            boundAmount = Mathf.MoveTowards(boundAmount, want, 4f * Time.deltaTime);
+            hips.Set(-LegGait.BoundSpine(step) * Mathf.Rad2Deg * boundAmount);
+            rig.Bound(step, boundAmount, state == State.Climb ? 0f : pitch * Mathf.Deg2Rad);
         }
     }
 }

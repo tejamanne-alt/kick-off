@@ -39,7 +39,9 @@ Every asset with moving parts is shown moving, as animated previews, one per mot
 A part that tears from the body at its joint, swings the wrong way, or moves something that should stay still is a
 fault (D16: the cat's legs came off when it walked). Each motion is checked against how the real species moves, not
 only against the measures (D21): a pigeon's head holds and thrusts, a perched bird looks about in quick turns and
-holds, a foot lifts heel first and lands flat, a back tilts with the stride, a dragonfly's hind wings lead its fore. Each motion is the game's own: the behaviour's code ported line by
+holds, a foot lifts heel first and lands flat, a back tilts with the stride, a dragonfly's hind wings lead its fore, a
+bird's wing beats down spread and comes up folded at the wrist and swept back (`World/WingStroke.cs`), a squirrel
+bounds on its legs with its back gathering and stretching. Each motion is the game's own: the behaviour's code ported line by
 line (`World/LegGait.cs` and `tools/blender/asset_review.py` share the gait), changed in both together, never made up
 for the review (D19: the review bounced birds the game walks). It is shown at 24 frames a cycle and looked at frame by
 frame before it is shown: at full size, every second frame at least, never only as thumbnails on a contact sheet
@@ -53,7 +55,8 @@ forward in the swing, its knees bending as in the picture (D19: rigid legs swung
 A bird walks on its feet, never bounces on the spot, and pecks by tipping its body on planted feet, no further than
 its legs can keep them planted. Every other part that bends in the real animal bends in the model: a tail in three
 links and a bird's wing in two (`World/PartChain.cs`: each link a share of the angle, each trailing the one before), a
-fish's tail, a turtle's flippers; an insect's wings stay rigid, as real ones are. A part with no source motion stays
+fish's tail, a turtle's flippers; an insect's wings stay rigid, as real ones are. A flat part (a wing, a tail fan, a
+fin) is built flat, not rounded like the body: seen edge on it is thin. A part with no source motion stays
 still, and the review says so.
 
 Each motion plays at the game's own speed (24 frames a cycle); one too quick for a GIF to show (a wingbeat, a

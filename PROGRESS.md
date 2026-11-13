@@ -2110,6 +2110,28 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
     passed, 7 known limits (the seven in flight built from one view), none failed; 975 to 2,296 triangles. Every
     motion looked at full size. Not yet run in Unity or on the Nord CE5: the animals aren't in a level.
 
+- **Wings that beat like wings, a squirrel that bounds** (the user's five more recordings: the sparrow, swallow and
+  white-eye flying, the koi, the squirrel running; `docs/LEARNINGS.md` D21).
+  - `World/WingStroke`: the downstroke spread and a little forward, in 0.55 of the beat; the upstroke folded at the
+    wrist and swept back; the body rising on the downstroke. `GroundBird` and `SkyFlock` use it when a wing has
+    `wingFold` or `wingSweep` (`Part.SetWing`, `PartChain.SetWing`: the inner link flaps and sweeps, the outer folds),
+    and tilt a `flyingTail` with it. Per species in the kit's `STROKE`.
+  - Wings, hind wings and flyers' tails are flat plates in the relief; a flyer from below has a `Tail` bone (the
+    bulbul's, wider than its body, drawn on the sheet).
+  - The running squirrel has legs and a `Hips` bone (`spine`). `LegGait.Bound` (smooth keyed loops for each pair of
+    feet, their roll and the back, the hind legs in the hips' frame) and `TreeSquirrel` drive it in a dash, a hop and
+    a climb. Its far legs are copies of the near ones (`leg_seeds`' third entry) and the ground around its feet is
+    left out (`grey_shadow`): the first bound showed grey shards and dark flaps from the photo's far legs.
+  - Tests: `WingStrokeTests` (one smooth loop, spread down and folded up; a wing in links folding its outer link) and
+    `LegGaitTests` `ABoundIsOneSmoothLoopStandingOnTheGroundAtContact` (checked against the review's mirror; not yet
+    run in Unity).
+  - C#: `run.sh` passes on 6000.7; the errors-only compile comparison caught one new error (a reused name in
+    `TreeSquirrel`), fixed, then no new error in any of three symbol sets.
+  - Cost: a few sines and quaternion products per awake animal per frame (est.); the meshes stay 801 to 2,296
+    triangles. The review (version 4 of https://claude.ai/artifact/MERPAe1mamCFnSRnGwApnm): 43 models, 57 motions,
+    654 checks passed, 7 known limits (the seven in flight built from one view), none failed. The squirrel and every
+    flyer looked at in large frames, each skin layer on its own. Not yet run in Unity or on the Nord CE5.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

@@ -968,11 +968,56 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
       jointed there (`heel`), its thigh moves only the bare shank above it, and the body stays whole.
     - The squirrel's dash in the review was flat although `TreeSquirrel` pitches it 12 degrees each way: a behaviour
       left unported is a review that lies. It is ported (SmoothDamp and all), and the tail streams behind the pitch.
+  - Five more clips (the sparrow, swallow and white-eye flying, the koi, the squirrel running) showed:
+    - *Paddle wings:* the small birds' wings went up and down stiff, on a sine, the same shape both ways, like oars. A
+      real wing beats down spread and a little forward, in a bit over half the beat. On the way up it folds at the wrist
+      and sweeps back, and the body rises on each downstroke. That stroke is `WingStroke.At` (and `wing_stroke` in the
+      mirror). `GroundBird` and `SkyFlock` set it on a wing in two links (`Part.SetWing`: the inner link flaps and
+      sweeps, the outer link folds against the flap). Each species has its own numbers (`STROKE`). The sparrow and
+      white-eye fold deepest. The swallow beats shallow and sweeps back the most. The dove beats widest and folds least.
+    - *Ridged wings and a lumpy tail:* the relief rounded every part like a body, so a wing seen from in front was a
+      ridge and the tail a lump. Wings, a dragonfly's hind wings and a flyer's tail are now thin plates, with a little
+      lift only at their edges. A flyer seen from below has its tail as a bone of its own, which tilts with the stroke.
+    - *A squirrel sliding on frozen legs:* the dash pitched the body, but the legs were never moved (it had no leg bones,
+      and its legs were left in the body). A squirrel bounds. The hind feet land ahead of the front ones, push off
+      together and stretch out behind; the back gathers at contact and stretches in the air. The legs are cut and boned
+      (`leg_seeds`, `spine`: a Hips bone that carries the hind legs and tail). `LegGait.Bound` places the feet on that
+      loop and `TreeSquirrel` drives it in a dash, a hop and a climb.
+    - The koi (already fixed in the first round) was looked at again: its fins scull and its head answers the tail.
+  - Found while making these:
+    - The squirrel was taken for a walking dog once it had legs: species checks go before the general leg branch.
+    - The bound's feet sank 3.3 mm (check 16). The smooth curve through the keys dips below them, so the feet are now
+      clamped at the ground. The real cause was the shin's own depth under its ankle, so each contact keeps the leg
+      a little long. Clamping the roll too made it worse (-4.2 mm), which showed the cause was the shape and not the
+      curve. The measure, not the curve, says where the foot is.
+    - The dragonfly's hind wings were first cut where the wings overlap by the body, so the cut took the abdomen. The
+      gap between the fore and hind wings is looked for in the wing's outer rows only.
+    - The squirrel's new C# reused a variable name already in the method (CS0128). The errors-only comparison against
+      the last commit caught it before the push; `run.sh` alone does not (it fails only on syntax).
+    - The squirrel's first bound, looked at in large frames, had the user's "extended parts" again: grey shards at its
+      front paws and dark flaps under its belly. The near skin alone was clean, so the far legs' layer made both:
+      - The cut-out had kept the ground beside its feet. Its contact shadow and the backdrop between its front paws were
+        taken as fur, because the paw beside them made their window look textured. With `grey_shadow`, any pixel low in
+        the box with no colour of its own is ground, however small its patch. It is off for grey and black animals,
+        whose fur is as neutral.
+      - The photo's far legs reach under the belly mid-stride, so the far hind thigh was a patch of belly. In a walk
+        it barely moves; in a bound it swings out below the belly as a straight-edged flap. Those legs are found from
+        their lines only to be taken out, and the near legs' copies stand in (`leg_seeds`' third entry). A bound
+        lands its pairs nearly together, so the copies sit just behind, as a real squirrel's do.
+    - The bulbul's tail stayed a faceted block. Its tail fans out wider than its body, so no narrowing finds its base:
+      the widest lower row was the tail's own tip, and the "tail" was its last three rows. It is drawn on the sheet,
+      from the base of the feathers.
 - *Rule:*
   - A moving animal is one skin on bones, never pieces turning over a body.
   - A part made from a side view (a foot, a fin) is built in the round when other views see it.
   - Each motion is checked against how the real species moves, not only against the measures.
   - A visible fault is fixed or put to the user, never filed as "too small to see".
+  - A flat thing (a wing, a fin, a tail fan) is built flat. A wing beats as a wing does: spread down, folded up, never
+    the same shape both ways.
+  - An animal whose motion moves its legs has leg bones. A pitched body on still legs is a slide, not a run.
+  - A motion that swings a part further than before is looked at in large frames, with each skin layer on its own:
+    what a walk hides, a bound shows.
+  - Before pushing C#, compare the compile errors against the last commit (`ERRORS=1`): a new line is a new error.
 
 ## E. Levels and world
 

@@ -15,6 +15,11 @@ namespace DribbleToSchool.World
         public Transform[] birds = new Transform[0];
         [Tooltip("Two per bird: the wing flapped with a negative angle, then its mirror.")]
         public Part[] wings = new Part[0];
+        [Tooltip("A real bird's beat in the bursts (WingStroke, D21): raised wingUp, beaten wingDown, folded wingFold at the " +
+                 "wrist and swept wingSweep back on the upstroke about wingSweepAxis. wingFold and wingSweep 0: the original " +
+                 "kit's even beat.")]
+        public float wingUp = 40f, wingDown = 40f, wingFold, wingSweep;
+        public Vector3 wingSweepAxis = Vector3.up;
         [Tooltip("Depths the flock (every bird in it) keeps between.")]
         public float zMin = 1f, zMax = 3f;
         [Tooltip("Heights in the view: 0 is the view's middle, 1 its top edge.")]
@@ -30,7 +35,7 @@ namespace DribbleToSchool.World
         int count;
         Vector3[] offsets = new Vector3[0];
         float[] phases = new float[0], flapUntil = new float[0], flapAngle = new float[0], yaws = new float[0];
-        float[] wingNow = new float[0];
+        float[] wingNow = new float[0], flapNow = new float[0], foldNow = new float[0], sweepNow = new float[0];
         bool[] flapping = new bool[0];
 
         protected override float Reach { get { return 100000f; } }   // tied to the view: never rests
@@ -47,6 +52,9 @@ namespace DribbleToSchool.World
             yaws = new float[count];
             flapping = new bool[count];
             wingNow = new float[count];
+            foldNow = new float[count];
+            flapNow = new float[count];
+            sweepNow = new float[count];
             Show(false);
             until = Time.time + Range(0.5f, gapMax * 0.5f);
         }
@@ -109,10 +117,29 @@ namespace DribbleToSchool.World
                     wingNow[i] = Mathf.Sin(flapAngle[i]) * 36f;
                 }
                 else wingNow[i] = Mathf.MoveTowards(wingNow[i], 8f + Mathf.Sin(t * 1.5f + ph) * 4f, 90f * dt);
-                float a = wingNow[i];
                 int w = i * 2;
-                if (w + 1 < wings.Length)
+                if (wingFold > 0f || wingSweep > 0f)
                 {
+                    // spread down, folded and swept back up; in a glide spread, a little swept, eased in and out of it
+                    // its own state (wingNow is the even beat's): spread in the glide at the even beat's hold
+                    float fl = wingNow[i], fo = 0f, sw = 0.3f * wingSweep;
+                    if (flapping[i])
+                    {
+                        Vector4 st = WingStroke.At(flapAngle[i], wingUp, wingDown, wingFold, wingSweep);
+                        fl = st.x; fo = st.y; sw = st.z;
+                    }
+                    flapNow[i] = Mathf.MoveTowards(flapNow[i], fl, 900f * dt);
+                    foldNow[i] = Mathf.MoveTowards(foldNow[i], fo, 900f * dt);
+                    sweepNow[i] = Mathf.MoveTowards(sweepNow[i], sw, 400f * dt);
+                    if (w + 1 < wings.Length)
+                    {
+                        wings[w].SetWing(-flapNow[i], -foldNow[i], -sweepNow[i], wingSweepAxis);
+                        wings[w + 1].SetWing(flapNow[i], foldNow[i], sweepNow[i], wingSweepAxis);
+                    }
+                }
+                else if (w + 1 < wings.Length)
+                {
+                    float a = wingNow[i];
                     wings[w].Set(-a);
                     wings[w + 1].Set(a);
                 }

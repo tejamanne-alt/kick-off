@@ -78,6 +78,20 @@ namespace DribbleToSchool.World
                     links[i].localRotation = rest[i] * Quaternion.AngleAxis(angle[i] * Share(i, links.Length), axes[i]);
         }
 
+        /// <summary>A wing's links set at once (WingStroke, D21): the first flapped by flap about its axis and swept by
+        /// sweep about sweepAxis (in the first link's space), the others folded by fold between them, turned against
+        /// the flap, so the outer wing bends down at the wrist. The lag is forgotten.</summary>
+        public void SetWing(float flap, float fold, float sweep, Vector3 sweepAxis)
+        {
+            if (links.Length == 0) return;
+            for (int i = 0; i < links.Length; i++) angle[i] = 0f;
+            if (links[0] != null)
+                links[0].localRotation = rest[0] * Quaternion.AngleAxis(sweep, sweepAxis) * Quaternion.AngleAxis(flap, axes[0]);
+            for (int i = 1; i < links.Length; i++)
+                if (links[i] != null)
+                    links[i].localRotation = rest[i] * Quaternion.AngleAxis(-fold / (links.Length - 1), axes[i]);
+        }
+
         /// <summary>Every link back in its rest pose, the lag forgotten.</summary>
         public void Rest()
         {
