@@ -55,6 +55,11 @@ vending machine (`review/kamakura/kit_proof_board.jpg`, `tools/blender/kit_build
 | 4. Organic shapes, only when asked | the user in meshy.ai | Meshy Multi-Image to 3D, from a model sheet's four views | only what boxes and slopes can't build: so far the bronze statue (KM-B32) |
 | 5. The levels | Claude | the level builder (`Editor/`) | Kamakura's routes, leg by leg, in route order |
 
+- **Where each look comes from, after the restyles:** every level picture is a photograph now (`refs/photo`). The props
+  and plants sheets KM-P1, KM-P2 and KM-P5 stayed illustrations through two passes, so they give shapes and the sides a
+  picture doesn't show: a prop's front is projected from the photographic level picture it stands in, a prop in no level
+  picture gets a single-object sheet (KM-S0) when its look matters, and plants take their leaves from KM-P6 and the
+  foliage sheets. KM-P3, P4, P6, P7 and P8 are photographs as made.
 - **The sheets and plates come in pairs:** KM-P1 and KM-P5 (props and vehicles), KM-P2 and KM-P6 (plants and trees, the
   home's pots among them), KM-P3 and KM-P7 (texture plates), KM-P4 and KM-P8 (animals and birds). The second of each
   pair (in the Kamakura tab, right after the first) adds what the level pictures show and the first one doesn't, in

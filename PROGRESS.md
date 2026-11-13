@@ -1989,6 +1989,12 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
   `tools/unity_api_check/run.sh` passes on 6000.6 and 6000.7; the compiler shows no new error with the editor and test
   symbols (1135 known stand-in misses before and after) and caught a planted one. The tests themselves run in Unity
   (not run here). Nothing a player sees changes.
+- **The second-pass restyles checked** (the user pushed the eight over their first passes). Now photographs, layouts
+  kept: KM1-2 (the door about 30 px left), KM1-3 (its torii sign still garbled: repainted when built), KM3-1, KM3-2 (the
+  trail sign now legible), KM3-3 (the bell tower and the school gate 100 to 150 px left, the order kept). So all twelve
+  level pictures are photographs. KM-P1, KM-P2 and KM-P5 stayed illustrations (KM-P1's red machine gained a real logo):
+  no third pass; they give shapes and hidden sides, the fronts come from the photographic level pictures
+  (`docs/KAMAKURA_BUILD.md`, "Where each look comes from"; `docs/LEARNINGS.md` D12).
 - **Who makes the photographs:** the user, in the Gemini app (a phone works), sending each result in the chat or pushing
   it. From the cloud session there is no image model to run: the Hugging Face connector has running Spaces switched off
   (gradio=none), huggingface.co and hf.space are blocked by the proxy, and Gemini's API needs the user's key (declined for
