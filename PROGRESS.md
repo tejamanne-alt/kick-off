@@ -1995,6 +1995,18 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
   level pictures are photographs. KM-P1, KM-P2 and KM-P5 stayed illustrations (KM-P1's red machine gained a real logo):
   no third pass; they give shapes and hidden sides, the fronts come from the photographic level pictures
   (`docs/KAMAKURA_BUILD.md`, "Where each look comes from"; `docs/LEARNINGS.md` D12).
+- **The animals proof: the ginger cat and the black kite** (`tools/blender/kit_animals_km.py`, the user: "Go ahead with
+  the cat and kite proof"). Each figure is found on KM-P4 (what differs from the sheet's grey; the cat's soft shadow
+  left out), triangulated (outline points every 5 px, inside every 13 to 14 px, Delaunay), and made a relief: the depth
+  at a point grows with the square root of its distance from the outline, to 7.5 cm each side for the cat's body and
+  1 cm for the kite's wings; the photo is projected on both faces. The moving parts are separate meshes with their
+  origins at the pivots: the cat's Tail (cut where it meets the body, x 648, y 262) and the kite's WingL and WingR (at
+  the shoulders), under a root named after the model with Attach.Front, as the animals kit's rig contract has them, so
+  `WallCat` swishes the tail and `Seagull`/`SkyFlock` flap the wings. Sizes from the sheet's stated ones: the cat 0.38 m
+  sitting (646 px to the metre), the kite 1.6 m across (280 px). The kite's pale tail fan, close to the sheet's grey,
+  was left out by the first outline: GrabCut inside the figure's hull finds it (`refine`). `KmCatSitting` 1240
+  triangles, `KmKiteFlying` 1390 (the original animals: cat 1422, seagull 1316). Board:
+  `review/kamakura/animals_proof_board.jpg` (the sheet, straight on, turned, moving). Nothing in the game yet.
 - **Who makes the photographs:** the user, in the Gemini app (a phone works), sending each result in the chat or pushing
   it. From the cloud session there is no image model to run: the Hugging Face connector has running Spaces switched off
   (gradio=none), huggingface.co and hf.space are blocked by the proxy, and Gemini's API needs the user's key (declined for
