@@ -762,6 +762,13 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
   composed with the view.
 - *Rule:* a check says pass only after the thing it names has been looked at for that asset, and says what was
   looked at. A cut-out is judged against its picture at full size, part by part, not from a thumbnail sheet.
+- *The second pass* (every frame of the re-render looked at again) found four more, each fixed and each mask compared
+  with the last: the backdrop between a cat's whiskers taken in by the texture cue (`whiskers`, the cats only: the
+  same rule cost the heron its pale legs); the running squirrel's shadow darker than any backdrop grey
+  (`dark_shadow`) and a shadow or speck refilled by the hole fill; a 6 px gap of lit backdrop between the sitting
+  squirrel's tail and back, closed and painted with fur (`fill`, listed as a repair); and the swallowtail and
+  dragonfly, drawn head-up on the sheet, built with their wings along the body, so the flap twisted them (`head_up`
+  turns them head +X; seen from above, the sheet's left wing is WingL). The insects flap up only, as FlitButterfly does.
 
 ## E. Levels and world
 

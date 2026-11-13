@@ -194,12 +194,14 @@ def peck(height):
     return pose
 
 
-def fly(span, beat=40):
-    """A wingbeat: the wings rise and fall about the body's long axis, the body rises a little on the downstroke."""
+def fly(span, beat=40, up_only=False):
+    """A wingbeat: the wings rise and fall about the body's long axis, the body rises a little on the downstroke.
+    up_only: from flat to beat degrees up and back, never below, as FlitButterfly beats an insect's (38 + 38 sin)."""
     def pose(parts, root, p):
         a = 2 * math.pi * p
-        _set(parts, 'WingL', x=beat * math.sin(a))
-        _set(parts, 'WingR', x=-beat * math.sin(a))
+        w = beat * (0.5 + 0.5 * math.sin(a)) if up_only else beat * math.sin(a)
+        _set(parts, 'WingL', x=w)
+        _set(parts, 'WingR', x=-w)
         return -0.04 * span * math.sin(a), 0.0
     return pose
 
@@ -232,3 +234,4 @@ def idle(height):
 
 UP_BELOW = _rot(('Z', -30), ('X', -20))      # a flyer seen from beneath and to the side, as one overhead
 UP_ABOVE = _rot(('X', 55))                    # a thing lying flat, seen from in front and above
+INSECT = _rot(('Z', -70), ('X', 35))          # an insect, from ahead and to its right, above: both wings in a V

@@ -47,7 +47,7 @@ P4, P8 = 'KM-P4_animals_sheet.png', 'KM-P8_more_animals.png'
 
 
 def A(cid, sheet, box, view, size, depth, parts=(), refine=False, wings=None, exclude=(), empties=(), step=None,
-      thresh=42, legs=False, shadow=0.13):
+      thresh=42, legs=False, shadow=0.13, head_up=False, fill=(), dark_shadow=False, whiskers=False):
     """One model: its catalogue id (KM-Nxx), sheet, the figure's box (sheet px), its view (side: head to the right,
     standing on its lowest pixel; below: a flyer seen from beneath, head up; above: lying flat, seen from above), its
     size (('w' or 'h', metres) of the figure's outline), its half-depth cap (m), its parts ((name, polygon in sheet px,
@@ -56,27 +56,35 @@ def A(cid, sheet, box, view, size, depth, parts=(), refine=False, wings=None, ex
     pivots the rig wants with no mesh of their own: (name, pivot)), thresh (how far from the grey a pixel must be to
     count as the figure: lower for see-through wings), legs (a walker's legs found and cut off one by one, see
     leg_masks: the near ones LegFR and LegBR, the far ones LegFL and LegBL, an empty for any the picture doesn't show,
-    as Hazards/Dog wants four), shadow (how high up the box a smooth grey shadow is looked for: a low animal's)."""
+    as Hazards/Dog wants four), shadow (how high up the box a smooth grey shadow is looked for: a low animal's),
+    head_up (seen from above with its head to the top of the sheet, as the insects are: turned so its head is +X like
+    every other model, its wings out to the sides, hinged about its body as FlitButterfly flaps them), fill (polygons in which a narrow gap's neutral grey
+    is closed and painted with the fur around it: fill_pixels), dark_shadow (the shadow's core darker than any
+    backdrop grey), whiskers (a cat: the backdrop between its whiskers left out)."""
     return dict(id=cid, sheet=sheet, box=box, view=view, size=size, depth=depth, parts=list(parts), refine=refine,
                 wings=wings, exclude=list(exclude), empties=list(empties), step=step, thresh=thresh, legs=legs,
-                shadow=shadow)
+                shadow=shadow, head_up=head_up, fill=list(fill), dark_shadow=dark_shadow, whiskers=whiskers)
 
 
 ANIMALS = {
     # ---------------------------------------------------------------- KM-P4
     'KmCatSitting': A('KM-N01', P4, (500, 18, 858, 284), 'side', ('h', 0.38), 0.075,
-                      [('Tail', [(500, 228), (656, 228), (656, 284), (500, 284)], (648, 262))]),
+                      [('Tail', [(500, 228), (656, 228), (656, 284), (500, 284)], (648, 262))], whiskers=True),
     'KmCatWalking': A('KM-N01', P4, (21, 44, 443, 280), 'side', ('h', 0.30), 0.06,
-                      [('Tail', [(21, 113), (112, 113), (102, 166), (66, 214), (21, 214)], (106, 137))], legs=True),
+                      [('Tail', [(21, 113), (112, 113), (102, 166), (66, 214), (21, 214)], (106, 137))],
+                       legs=True, whiskers=True),
     'KmTanukiWalking': A('KM-N02', P4, (1409, 50, 1838, 281), 'side', ('h', 0.36), 0.09,
                          [('Tail', [(1409, 83), (1497, 91), (1497, 194), (1490, 256), (1409, 256)], (1494, 128))],
                          refine=True, legs=True, step=15),
     'KmTanukiSitting': A('KM-N02', P4, (1898, 31, 2280, 282), 'side', ('h', 0.40), 0.09,
                          [('Tail', [(1898, 204), (2034, 204), (2034, 273), (1898, 273)], (2034, 237))], refine=True),
     'KmSquirrelRunning': A('KM-N03', P4, (11, 374, 450, 562), 'side', ('w', 0.40), 0.04,
-                           [('Tail', [(11, 374), (148, 374), (144, 488), (11, 496)], (144, 450))], step=15, shadow=0.3),
+                           [('Tail', [(11, 374), (148, 374), (144, 488), (11, 496)], (144, 450))], step=15, shadow=0.3,
+                           dark_shadow=True),
     'KmSquirrelSitting': A('KM-N03', P4, (523, 322, 837, 606), 'side', ('h', 0.30), 0.045,
-                           [('Tail', [(523, 322), (676, 322), (676, 405), (652, 440), (652, 612), (523, 612)], (650, 594))]),
+                           [('Tail', [(523, 322), (676, 322), (676, 405), (652, 440), (652, 612), (523, 612)], (650, 594))],
+                           fill=[[(659, 426), (650, 450), (642, 472), (637, 497), (636, 522), (638, 548), (654, 548),
+                                   (653, 522), (654, 497), (659, 472), (667, 452), (676, 426)]]),
     'KmShibaStanding': A('KM-N04', P4, (1474, 314, 1808, 605), 'side', ('h', 0.58), 0.09,
                          [('Tail', [(1493, 340), (1586, 340), (1588, 420), (1493, 426)], (1570, 420)),
                           ('Head', [(1705, 314), (1808, 314), (1808, 433), (1728, 433)], (1734, 426))], legs=True),
@@ -92,7 +100,7 @@ ANIMALS = {
                           [('Head', [(269, 942), (356, 942), (356, 1013), (283, 1035)], (291, 1024))], refine=True),
     'KmPigeonPecking': A('KM-N07', P4, (491, 1027, 847, 1203), 'side', ('w', 0.34), 0.05,
                          [('Head', [(778, 1068), (840, 1068), (840, 1171), (772, 1171)], (789, 1089))], refine=True,
-                         shadow=0.3),
+                         shadow=0.3, dark_shadow=True),
     'KmSparrowPerched': A('KM-N08', P4, (1443, 961, 1755, 1213), 'side', ('w', 0.15), 0.025,
                           [('Head', [(1641, 961), (1749, 961), (1749, 1063), (1650, 1075)], (1665, 1063))], refine=True),
     'KmSparrowHopping': A('KM-N08', P4, (1898, 979, 2235, 1213), 'side', ('w', 0.15), 0.025,
@@ -131,16 +139,20 @@ ANIMALS = {
                         [('Head', [(2142, 647), (2222, 647), (2222, 727), (2135, 738)], (2155, 724))], refine=True),
     'KmDoveFlying': A('KM-N20', P8, (2314, 646, 2731, 900), 'below', ('w', 0.53), 0.025, wings=0.08, refine=True),
     'KmCalicoWalking': A('KM-N21', P8, (12, 936, 438, 1220), 'side', ('h', 0.30), 0.06,
-                         [('Tail', [(12, 993), (102, 993), (98, 1047), (61, 1059), (12, 1059)], (94, 1022))], refine=True, legs=True),
-    'KmCalicoAsleep': A('KM-N21', P8, (967, 965, 1337, 1206), 'side', ('w', 0.42), 0.09, refine=True),
+                         [('Tail', [(12, 993), (102, 993), (98, 1047), (61, 1059), (12, 1059)], (94, 1022))],
+                          refine=True, legs=True, whiskers=True),
+    'KmCalicoAsleep': A('KM-N21', P8, (967, 965, 1337, 1206), 'side', ('w', 0.42), 0.09, refine=True, whiskers=True),
     'KmTuxedoWalking': A('KM-N22', P8, (1392, 969, 1801, 1216), 'side', ('h', 0.30), 0.06,
-                         [('Tail', [(1392, 1012), (1479, 1012), (1479, 1063), (1423, 1166), (1392, 1166)], (1471, 1048))], refine=True, legs=True),
+                         [('Tail', [(1392, 1012), (1479, 1012), (1479, 1063), (1423, 1166), (1392, 1166)], (1471, 1048))],
+                          refine=True, legs=True, whiskers=True),
     'KmTuxedoSitting': A('KM-N22', P8, (1872, 936, 2218, 1220), 'side', ('h', 0.38), 0.075,
-                         [('Tail', [(1872, 1149), (2002, 1149), (2002, 1209), (1872, 1209)], (2002, 1179))], refine=True),
+                         [('Tail', [(1872, 1149), (2002, 1149), (2002, 1209), (1872, 1209)], (2002, 1179))],
+                          refine=True, whiskers=True),
     'KmTuxedoLying': A('KM-N22', P8, (2308, 995, 2724, 1172), 'side', ('w', 0.60), 0.075,
-                       [('Tail', [(2308, 1071), (2404, 1071), (2404, 1113), (2308, 1113)], (2400, 1095))], refine=True),
-    'KmSwallowtail': A('KM-N25', P8, (961, 1248, 1334, 1531), 'above', ('w', 0.10), 0.003, wings=0.025),
-    'KmDragonfly': A('KM-N26', P8, (1398, 1255, 1814, 1524), 'above', ('w', 0.07), 0.002, wings=0.025, thresh=14),
+                       [('Tail', [(2308, 1071), (2404, 1071), (2404, 1113), (2308, 1113)], (2400, 1095))],
+                        refine=True, whiskers=True),
+    'KmSwallowtail': A('KM-N25', P8, (961, 1248, 1334, 1531), 'above', ('w', 0.10), 0.003, wings=0.025, head_up=True),
+    'KmDragonfly': A('KM-N26', P8, (1398, 1255, 1814, 1524), 'above', ('w', 0.07), 0.002, wings=0.025, head_up=True, thresh=14),
 }
 
 
@@ -162,7 +174,13 @@ def figure_mask(sheet, spec):
     g = r.mean(-1).astype(np.float32)
     mean = cv2.blur(g, (7, 7))
     dev = np.sqrt(np.maximum(cv2.blur(g * g, (7, 7)) - mean * mean, 0))
-    m |= cv2.erode((dev > TEXTURE).astype(np.uint8), cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (7, 7)))
+    tex = cv2.erode((dev > TEXTURE).astype(np.uint8), cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (7, 7)))
+    if spec['whiskers']:
+        # between a cat's whiskers the window is textured but the pixel is backdrop: there each pixel must differ from
+        # the backdrop itself (the whiskers, 1 or 2 px, go with the opening below). Not for every model: a heron's
+        # pale legs and a dragonfly's clear wings are as close to the backdrop.
+        tex &= (np.abs(r - bg).sum(-1) > 12).astype(np.uint8)
+    m |= tex
     shadow = np.zeros(m.shape, bool)
     if spec['view'] == 'side':
         lum = r.mean(-1)
@@ -173,8 +191,11 @@ def figure_mask(sheet, spec):
         tall[int(m.shape[0] * (1 - spec['shadow'])):] = True
         grey = (chroma < 14) & (lum < bg.mean() - 2) & (lum > bg.mean() - 45)
         # in the lowest eighth any such grey is shadow (the contact shadow under a paw, textured though it is); higher,
-        # for an animal whose shadow reaches up (spec shadow), only where it is smooth too, as fur never is (D18)
+        # for a low animal whose shadow reaches up between its legs (spec shadow), only where it is smooth too, as fur
+        # never is; with dark_shadow, a neutral grey darker than any backdrop too (D18)
         shadow = (low & grey) | (tall & grey & (dev < 3))
+        if spec['dark_shadow']:     # its core darker than any backdrop grey; a paw, as dark, is textured where it isn't
+            shadow |= tall & (chroma < 12) & (lum < bg.mean() - 2) & (dev < 8)
         m[shadow] = 0
     for poly in spec['exclude']:
         cv2.fillPoly(m, [np.array([(x - x0, y - y0) for x, y in poly], np.int32)], 0)
@@ -209,7 +230,27 @@ def figure_mask(sheet, spec):
             backdrop = (dev[hole] < 3).mean() > 0.3 and np.abs(np.median(r[hole], 0) - bg).sum() < 30
             if not backdrop and (area < m.size * 0.01 or dev[hole].mean() > TEXTURE):
                 m[hole] = 1
+    # a shadow enclosed by legs is not filled back in (a patch of 40 px or more: a grey fleck in a rock is no shadow)
+    n, lab, st, _ = cv2.connectedComponentsWithStats(shadow.astype(np.uint8), 8)
+    m[np.isin(lab, 1 + np.nonzero(st[1:, 4] >= 40)[0])] = 0
+    # the backdrop itself, wherever GrabCut or a hole fill took it in (between a pigeon's legs): smooth, no colour,
+    # within 12 of the backdrop's grey, in a patch of 40 px or more (a flat speck of a grey rock is not backdrop)
+    like = ((dev < 3) & ((r.max(-1) - r.min(-1)) < 10) & (np.abs(r.mean(-1) - bg.mean()) < 12)).astype(np.uint8)
+    n, lab, st, _ = cv2.connectedComponentsWithStats(like, 8)
+    m[np.isin(lab, 1 + np.nonzero(st[1:, 4] >= 40)[0])] = 0
+    m[fill_pixels(spec, r)] = 1     # a narrow gap closed, painted with the fur around it (build inpaints it)
     return m
+
+
+def fill_pixels(spec, r):
+    """The backdrop pixels of a narrow gap the spec closes (fill polygons: neutral grey inside them), as a mask of the
+    box. Too narrow to cut cleanly from a soft picture (the sitting squirrel's tail and back, 6 px apart, lit off the
+    backdrop's grey), the gap is closed and painted with the fur around it, a repair the review lists (D18)."""
+    x0, y0, x1, y1 = spec['box']
+    f = np.zeros(r.shape[:2], np.uint8)
+    for poly in spec['fill']:
+        cv2.fillPoly(f, [np.array([(x - x0, y - y0) for x, y in poly], np.int32)], 1)
+    return (f > 0) & ((r.max(-1) - r.min(-1)) < 12)
 
 
 def _longest_run(row):
@@ -338,10 +379,12 @@ def part_masks(spec, mask):
         beyond = (np.abs(xx - cx) > bw) & (np.arange(h)[:, None] < wing_bottom)
         rows = np.nonzero((mask & far).any(1))[0]
         shoulder = y0 + int(rows.min() + 0.3 * (rows.max() - rows.min()))
-        for name, side in (('WingR', xx < cx), ('WingL', xx >= cx)):
+        # seen from below, the sheet's left is the bird's right wing; seen from above, its left
+        left_first = spec['view'] == 'above'
+        for name, side in (('WingL' if left_first else 'WingR', xx < cx), ('WingR' if left_first else 'WingL', xx >= cx)):
             pm = (mask & beyond & side & (1 - taken)).astype(np.uint8)
             parts[name] = pm
-            pivots[name] = (x0 + cx + (bw if name == 'WingL' else -bw), shoulder)
+            pivots[name] = (x0 + cx + (bw if side[0, -1] else -bw), shoulder)
             taken |= pm
     body = (mask & (1 - taken)).astype(np.uint8)
     for name, pm in list(parts.items()):
@@ -442,6 +485,8 @@ def build(name, spec, atlas, sheet):
     # the figure's own colours carried outward past its outline (the sheet's grey there would show as a seam where the
     # two faces meet, and as a halo at the edge)
     inner = cv2.erode(mask, np.ones((3, 3), np.uint8))
+    filled = fill_pixels(spec, rgb.astype(np.int32))
+    inner[cv2.dilate(filled.astype(np.uint8), np.ones((5, 5), np.uint8)) > 0] = 0
     rgb = cv2.inpaint(rgb, (1 - inner).astype(np.uint8), 4, cv2.INPAINT_TELEA)
     alpha = cv2.dilate(mask, np.ones((3, 3), np.uint8)) * 255
     pos = atlas.place(Image.fromarray(np.dstack([rgb, alpha]).astype(np.uint8), 'RGBA'))
@@ -455,6 +500,8 @@ def build(name, spec, atlas, sheet):
             return Vector(((gx - ox) / s, 0.0, (oy - gy) / s))
         if view == 'below':
             return Vector(((oy - gy) / s, (gx - ox) / s, 0.0))
+        if spec['head_up']:         # from above, head to the top of the sheet: its left wing is the sheet's left (+Y)
+            return Vector(((oy - gy) / s, (ox - gx) / s, 0.0))
         return Vector(((gx - ox) / s, (oy - gy) / s, 0.0))
 
     depth_axis = Vector((0, 1, 0)) if view == 'side' else Vector((0, 0, 1))
@@ -655,7 +702,7 @@ def motions_of(name, info):
     if 'WingL' in parts:
         if view == 'below':
             return [('fly', AR.fly(span), AR.UP_BELOW, 70)]
-        return [('fly', AR.fly(span, beat=55), AR.UP_ABOVE, 50)]
+        return [('fly', AR.fly(span, beat=76, up_only=True), AR.INSECT, 50)]
     if view == 'above':
         return [('swim', AR.swim(h), AR.UP_ABOVE, 90)]
     if 'Running' in name:           # mid-leap, legs flat along the ground: it scurries (Hazards/TreeSquirrel moves its tail)
@@ -690,6 +737,10 @@ def checks_of(name, spec, info, motions):
         repairs.append('GrabCut inside the outline (colours close to the sheet\'s grey kept)')
     if spec['exclude']:
         repairs.append('%d area(s) left out (the perch wire)' % len(spec['exclude']))
+    if spec['fill']:
+        repairs.append('a 6 px gap of backdrop between tail and back closed and painted with the fur around it')
+    if spec['dark_shadow']:
+        repairs.append('the dark core of the shadow between the legs removed (grey, smooth, darker than the backdrop)')
     if spec['thresh'] != 42:
         repairs.append('a lower threshold (%d) for see-through wings' % spec['thresh'])
     repairs.append('holes of fur or feather filled, gaps of smooth backdrop left open')
