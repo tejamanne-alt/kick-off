@@ -1,6 +1,7 @@
 # Kamakura's animals (docs/KAMAKURA_BUILD.md, "The sheets' assets, by id": KM-N01 to N28), from the user's photographic
-# sheets KM-P4 and KM-P8. Each animal is a relief shaped from its outline in one view of the sheet: thickest where the
-# outline is widest (the depth at a point grows with the square root of its distance from the outline), the photo
+# sheets KM-P4 and KM-P8. Each animal is a relief shaped from its outline in one view of the sheet, round in section: a
+# limb of half-width R is sqrt(d (2R - d)) deep at d from its edge, so a tail is as deep as it is wide, and a body is
+# capped softly at its real half-depth; the faces meet at the outline (depth 0 there). The photo
 # projected onto both faces, so straight on it is the photo exactly and turned it has a body. Each moving part (a tail,
 # wings) is its own mesh with its origin at its pivot, under an empty root named after the model, as the animals kit's
 # rig contract has it (kit_animals.py), so the game's behaviours (World/WallCat, Hazards/Seagull, World/SkyFlock) move
@@ -90,8 +91,9 @@ def figure_mask(sheet, box, shadow, refine=False):
 
 def relief(mask, step):
     """A triangulation of the mask: points along its outline every 5 px and inside it every step px, Delaunay, the
-    triangles inside the mask kept. Returns the points (px, in the mask's frame), the triangles, and each point's
-    distance from the outline."""
+    triangles inside the mask kept. Returns the points (px, in the mask's frame), the triangles, each point's distance
+    from the outline, and the local half-width there (the largest distance from the outline nearby: the radius of the
+    limb the point is on)."""
     h, w = mask.shape
     dist = cv2.distanceTransform(mask, cv2.DIST_L2, 5)
     cs, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
@@ -123,13 +125,25 @@ def relief(mask, step):
         if 0 <= int(cy) < h and 0 <= int(cx) < w and mask[int(cy), int(cx)]:
             tris.append((uniq[a], uniq[b], uniq[c]))
     d = np.array([dist[min(int(round(k[1])), h - 1), min(int(round(k[0])), w - 1)] for k in keys], np.float32)
-    return np.array(keys, np.float32), tris, d
+    # the local half-width: the distance field's largest value within a few half-widths, so a tail's points see the
+    # tail's own radius, not the body's
+    local = dist.copy()
+    for k in (9, 17, 33):
+        grown = cv2.dilate(dist, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (k, k)))
+        local = np.where(dist > k / 4.0, grown, local)
+    local = np.maximum(cv2.dilate(dist, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (9, 9))), local)
+    r = np.array([local[min(int(round(k[1])), h - 1), min(int(round(k[0])), w - 1)] for k in keys], np.float32)
+    return np.array(keys, np.float32), tris, d, r
 
 
 def build(name, spec, atlas, sheet):
     x0, y0, x1, y1 = spec['box']
     mask = figure_mask(sheet, spec['box'], spec['shadow'], spec.get('refine', False))
-    rgb = np.asarray(sheet.convert('RGB'))[y0:y1, x0:x1]
+    rgb = np.ascontiguousarray(np.asarray(sheet.convert('RGB'))[y0:y1, x0:x1])
+    # the figure's own colours carried outward past its outline (the sheet's grey there would show as a seam where the
+    # two faces meet, and as a halo at the edge)
+    inner = cv2.erode(mask, np.ones((3, 3), np.uint8))
+    rgb = cv2.inpaint(rgb, (1 - inner).astype(np.uint8), 4, cv2.INPAINT_TELEA)
     alpha = cv2.dilate(mask, np.ones((3, 3), np.uint8)) * 255
     pos = atlas.place(Image.fromarray(np.dstack([rgb, alpha]).astype(np.uint8), 'RGBA'))
     s, (ox, oy) = spec['px_per_m'], spec['origin']
@@ -138,13 +152,15 @@ def build(name, spec, atlas, sheet):
     root = bpy.data.objects.new(name, None)
     bpy.context.scene.collection.objects.link(root)
     tris_total = 0
-    dmax_all = cv2.distanceTransform(mask, cv2.DIST_L2, 5).max()
     for part, rule, pivot, depth in spec['parts']:
         pm = (mask & rule(xx, yy).astype(np.uint8)).astype(np.uint8)
-        pts, tris, dist = relief(pm, spec['step'])
-        dm = max(float(dist.max()), 1.0)
-        # a part's depth follows its own outline, scaled against the figure's widest point, so a tail stays slim
-        dz = depth * np.sqrt(dist / max(dm, dmax_all * (0.25 if part != 'Body' else 1.0)))
+        pts, tris, dist, radius = relief(pm, spec['step'])
+        # a round cross-section: a limb of radius R seen side-on is sqrt(d (2R - d)) deep at d from its edge, so a tail
+        # is as deep as it is wide; a body wider than it is deep is capped, softly, at its half-depth (depth, metres)
+        # the outline's own pixels are 1 from the edge in the distance field: they get depth 0, so the two faces meet
+        d, R = np.maximum(dist - 1.0, 0.0) / s, np.maximum(radius - 1.0, np.maximum(dist - 1.0, 0.5)) / s
+        round_z = np.sqrt(np.maximum(d * (2 * R - d), 0.0))
+        dz = depth * np.tanh(round_z / depth)
         bm = bmesh.new()
         uvl = bm.loops.layers.uv.new('UVMap')
         px, py = pivot if pivot else (ox, oy)
@@ -166,6 +182,10 @@ def build(name, spec, atlas, sheet):
                     loop[uvl].uv = atlas.uv(pos, pts[k][0], pts[k][1])
         bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=1e-5)
         bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+        # a check: edges outside the closed shell (flat slivers where a triangle's three corners all lie on the outline;
+        # they close nothing that shows, but a gap between the faces would add hundreds here)
+        open_edges = sum(1 for e in bm.edges if not e.is_manifold)
+        print('  %s.%s: %d edges outside the closed shell' % (name, part, open_edges))
         me = bpy.data.meshes.new(name + '.' + part)
         bm.to_mesh(me)
         bm.free()
@@ -220,11 +240,18 @@ def board(roots, atlas_path, out, sheet):
     cz = (spec['origin'][1] - (y0 + y1) / 2) / spec['px_per_m']
     b = shot('cat_front.png', (cx, -6, cz), (cx, 0, cz), ortho=w, size=a.size, only=names(cat))
     c = shot('cat_34.png', (cx - 0.75, -0.95, 0.45), (cx - 0.05, 0, 0.17), fov=40, size=(700, 520), only=names(cat))
+    top = shot('cat_top.png', (cx, -0.001, 2.0), (cx, 0, 0), ortho=w * 1.05, size=(700, 300), only=names(cat))
     tail = bpy.data.objects['KmCatSitting.Tail']
     tail.rotation_euler = Euler((0, 0, math.radians(35)))
     d = shot('cat_swish.png', (cx + 0.75, -0.95, 0.42), (cx - 0.05, 0, 0.16), fov=40, size=(700, 520), only=names(cat))
     tail.rotation_euler = Euler((0, 0, 0))
     rows.append([a, b, c, d])
+    from PIL import ImageDraw as _D
+    lab = Image.new('RGB', (700, 300), (40, 40, 46))
+    _D.Draw(lab).multiline_text((10, 10), 'The cat from above:\none tail, round,\nas deep as it is wide', fill=(235, 235, 240),
+                                font=__import__('PIL.ImageFont', fromlist=['x']).truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf', 28),
+                                spacing=8)
+    rows.append([lab, top, Image.new('RGB', (10, 10), (40, 40, 46)), Image.new('RGB', (10, 10), (40, 40, 46))])
     # the kite: the sheet, from beneath, from the side and below as the game sees one overhead, and with its wings up
     spec = ANIMALS['KmKiteFlying']
     x0, y0, x1, y1 = spec['box']

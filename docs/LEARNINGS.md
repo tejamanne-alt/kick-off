@@ -689,6 +689,19 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
 - *Rule:* when a cut-out moves away from where the picture had it, paint out its box, since its outline is never
   perfect. Along a row of touching objects, never learn the background from the neighbours' side.
 
+**D14. The cat proof had two tails (Kamakura's animals, `kit_animals_km.py`).**
+- *What:* the user, on the animals proof board: "Cat is having two tails instead of one". Turned, the cat showed its
+  tail twice.
+- *Why:* each part was given depth by one rule for every part (deepest where its outline is widest, scaled against
+  the whole figure), so the 2 cm tail got about 8 cm of depth: a tall thin blade whose front and back faces, turned,
+  read as two tails. And the outline's own pixels sit 1 px inside the figure, so they got about 2 cm of depth: the two
+  faces never met, leaving a gap all round (seen from above as a grey line along the cat's back).
+- *Fix:* a round cross-section from each limb's own half-width (sqrt(d (2R - d)), capped softly at the part's
+  half-depth), the outline at depth 0 so the faces close; the colours carried past the outline so the seam shows fur.
+  The board adds a view from above, where a doubled or split part can't hide.
+- *Rule:* give a cut-out depth from its own local width, never one rule scaled to the whole figure; check a relief from
+  above and count its open edges (a gap between the faces adds hundreds).
+
 ## E. Levels and world
 
 - **E1. Every level had chapter-1 scenery.** A new-scene call unloaded the level definition. *Rule:* pass data into scene builders explicitly; never hold asset references across a new-scene call.

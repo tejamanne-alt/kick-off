@@ -2007,6 +2007,10 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
   was left out by the first outline: GrabCut inside the figure's hull finds it (`refine`). `KmCatSitting` 1240
   triangles, `KmKiteFlying` 1390 (the original animals: cat 1422, seagull 1316). Board:
   `review/kamakura/animals_proof_board.jpg` (the sheet, straight on, turned, moving). Nothing in the game yet.
+- **The cat's two tails fixed** (the user: "Cat is having two tails instead of one"; `docs/LEARNINGS.md` D14). Every
+  part is now round in section from its own local half-width (the tail as deep as it is wide, the body capped at
+  7.5 cm a side), the outline at depth 0 so front and back meet, the colours carried past the outline. The board adds
+  the cat from above: one tail, one closed body. `KmCatSitting` 1144 triangles, `KmKiteFlying` 1234.
 - **Who makes the photographs:** the user, in the Gemini app (a phone works), sending each result in the chat or pushing
   it. From the cloud session there is no image model to run: the Hugging Face connector has running Spaces switched off
   (gradio=none), huggingface.co and hf.space are blocked by the proxy, and Gemini's API needs the user's key (declined for
