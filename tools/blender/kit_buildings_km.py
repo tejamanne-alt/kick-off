@@ -322,14 +322,17 @@ def tiled(im, w, h):
     return out
 
 
-def unsky(im, box):
+def unsky(im, box, pale=False):
     """Paints out the sky inside box (the band of the roofs' outlines), so a roof edge that sits a few pixels off the
     drawn one shows tiles, not blue. Sky is the saturated blue (blue 45 above red, 12 above green), widened by 3 px; each takes
     the mean of its non-sky neighbours, growing inward from the roof until none is left."""
     a = np.asarray(im.convert('RGB'), dtype=np.float32).copy()
     x0, y0, x1, y1 = box
     r = a[y0:y1, x0:x1]
-    sky = (r[..., 2] - r[..., 0] > 45) & (r[..., 2] - r[..., 1] > 12) & (r[..., 2] > 90)
+    if pale:     # a photograph's pale summer sky (about 194, 212, 232): bright, a little bluer than it is red or green
+        sky = (r[..., 2] - r[..., 0] > 25) & (r[..., 2] - r[..., 1] > 8) & (r[..., 2] > 150)
+    else:
+        sky = (r[..., 2] - r[..., 0] > 45) & (r[..., 2] - r[..., 1] > 12) & (r[..., 2] > 90)
     for _ in range(3):     # and the soft fringe round it, which would otherwise seed the fill with blue
         sky = sky | np.roll(sky, 1, 0) | np.roll(sky, -1, 0) | np.roll(sky, 1, 1) | np.roll(sky, -1, 1)
     for _ in range(400):
@@ -372,12 +375,12 @@ def rebrand(im, box, text, font='/usr/share/fonts/opentype/ipafont-gothic/ipagp.
 
 
 def build_vending(atlas):
-    """KM-A06, the red drink vending machine: its front from KM1-1 (straight on), its side from KM-P1 (straightened)."""
-    km11, p1 = ref('KM1-1_hase_lanes.png'), ref('KM-P1_props_sheet.png')
-    # the corrected KM1-1's machine carries a logo that reads as a real drink brand: an invented one instead
-    km11 = rebrand(km11, (1700, 746, 1749, 786), 'うみかぜ')
+    """KM-A06, the red drink vending machine: its front from the photographic KM1-1 (straight on), its side from KM-P1
+    (straightened; KM-P1's photographic version is still to come)."""
+    km11, p1 = ref(HOME['src']), ref('KM-P1_props_sheet.png')
+    km11 = rebrand_machines(km11)
     W, D, H = 1.0, 0.75, 1.83
-    x0, y0, x1, y1 = 1686, 623, 1824, 868        # the front, in KM1-1's pixels (the corrected KM1-1)
+    x0, y0, x1, y1 = 1687, 625, 1824, 873        # the front, in the photographic KM1-1's pixels
     front = km11.crop((x0, y0, x1, y1))
     fpos = atlas.place(front)
     side = rectify(p1, [(1700, 48), (1757, 62), (1755, 398), (1700, 428)], (104, 254))
@@ -390,12 +393,21 @@ def build_vending(atlas):
     b.box(-W / 2, W / 2, -D / 2, D / 2, 0.0, H, skip=('top', 'bottom'))
     P = lambda x, y, z: Vector((x, y, z))
     b.face([P(-W / 2, -D / 2, H), P(W / 2, -D / 2, H), P(W / 2, D / 2, H), P(-W / 2, D / 2, H)], (tpos, top.size))
-    return b.object('KmVendingRed'), dict(source='KM1-1 (front), KM-P1 (side)', real_size=[W, D, H])
+    return b.object('KmVendingRed'), dict(source='photo/KM1-1 (front), KM-P1 (side)', real_size=[W, D, H])
 
 
-# The home's picture: KM1-1 (the user's corrected version), the house at its left. About 119 px to the metre (the fence
-# and the storeys); the pavement where the pots stand is at y 890; the house's middle at x 1029.
-HOME = dict(src='KM1-1_hase_lanes.png', cx=1029.0, gy=890.0, s=119.0, crop=(270, 40, 1640, 894))
+def rebrand_machines(im):
+    """Both vending machines in the photographic KM1-1 kept the real drink logo through the restyle: each panel gets an
+    invented name, and the red machine's round badge is painted out in the panel's white."""
+    im = rebrand(im, (1702, 750, 1754, 790), 'うみかぜ')
+    im = rebrand(im, (1857, 754, 1910, 793), 'うみかぜ')
+    return rebrand(im, (1786, 741, 1818, 763), '')
+
+
+# The home's picture: the photographic KM1-1 (refs/photo, the restyle of the user's corrected KM1-1), the house at its
+# left, with its entrance under the gable and the fence open in front of it. About 120 px to the metre (the entrance
+# doors, 2.1 m); the pavement where the pots stand is at y 893; the gable's middle at x 1052.
+HOME = dict(src='photo/KM1-1_hase_lanes.png', cx=1052.0, gy=893.0, s=120.0, crop=(270, 40, 1640, 897))
 
 
 def dewire(im, wires, x0, x1, roof=(210, 305), search=8, half=2):
@@ -442,120 +454,32 @@ def dewire(im, wires, x0, x1, roof=(210, 305), search=8, half=2):
     return Image.fromarray(a)
 
 
-def repair_km11(im):
-    """The corrected KM1-1 still draws the right third of the home's upper storey half see-through, its air conditioner
-    faded, and the upper roof's eave stepping up at x 1275. The upper roof's right end takes its left end, mirrored about
-    the roof's middle (x 996: eaves 515 to 1477); the upper storey's right third is rebuilt from its own left third: the
-    light band under the eaves and the boards repeated, the left air conditioner and the downpipe flipped into place."""
-    a = np.asarray(im.convert('RGB')).copy()
-    src = a.copy()
-    c = 996
-    xs = np.arange(1200, 1500)
-    a[55:236, xs] = src[55:236, 2 * c - xs]
-    band = src[228:270, 590:710]
-    boards = src[290:380, 590:710]
-    for x in range(1240, 1414, band.shape[1]):
-        w = min(band.shape[1], 1414 - x)
-        a[228:270, x:x + w] = band[:, :w]
-        for y in range(270, 462, boards.shape[0]):
-            h = min(boards.shape[0], 462 - y)
-            a[y:y + h, x:x + w] = boards[:h, :w]
-    ac = src[380:482, 565:683][:, ::-1]                 # the left air conditioner with its legs, flipped
-    a[380:482, 1295:1413] = ac
-    pipe = src[228:462, 540:578][:, ::-1]               # the downpipe and the wall's edge, flipped to the right corner
-    a[228:462, 1414:1452] = pipe
-    return Image.fromarray(a)
-
-
-# The home's entrance (the user asked for one: KM1-1's fence runs unbroken in front of the house). It is the entrance
-# of KM-x2, an earlier picture of the same home the user has since removed: the bay from the left fence's end to the
-# right one's (x 1657 to 1967), from under the skirt roof's gutter (y 592) to the ground (y 883): the two sliding
-# lattice doors, the light and the house number above them, the plaster-and-board walls either side with the nameplate,
-# the step. The urn and the white flowers in front of its left wall and the bonsai in front of its right one are
-# painted out (GrabCut, as the home's own pots). Made once, from KM-x2 in git history (d9630ba~1):
-#   blenv/bin/python kit_buildings_km.py -- --entrance-from /abs/KM-x2_home_street.png
-ENTRANCE = os.path.join(REFS, 'parts', 'KM-x2_entrance.png')
-ENTRANCE_BOX = (1657, 592, 1967, 883)
-ENTRANCE_PX_PER_M = 110.0
-X2_GROUPS = [
-    ('white_flowers', (1612, 802, 1662), [(1624, 855, 1658, 879)]),
-    ('urn', (1655, 791, 1697), [(1664, 806, 1690, 870), (1662, 858, 1679, 876)]),
-    ('bonsai', (1915, 753, 2098), [(1940, 856, 1998, 878), (2008, 854, 2028, 878), (2014, 830, 2060, 878),
-                                   (2028, 775, 2042, 826)]),
-]
-X2_BACK = {'bonsai': [(1913, 846, 1934, 886), (2064, 812, 2098, 851)]}
-
-
-def make_entrance(x2_path):
-    x2 = Image.open(x2_path).convert('RGB')
-    masks = garden_masks(x2, X2_GROUPS, X2_BACK, 882)
-    allm = np.zeros(np.asarray(x2).shape[:2], np.uint8)
-    for m in masks.values():
-        allm |= m
-    part = paint_out(x2, allm, ref_rows=(732, 749)).crop(ENTRANCE_BOX)
-    os.makedirs(os.path.dirname(ENTRANCE), exist_ok=True)
-    part.save(ENTRANCE)
-    print('entrance', ENTRANCE, part.size)
-
-
-def add_entrance(fixed, cx, gy, s):
-    """The entrance set into the house's ground floor under the gable (its middle at x 1040), at the house's scale, its
-    colours brought halfway to the house's own; posts copied from the fence at both ends of the opening. Returns the
-    picture and the opening's x range (in picture px)."""
-    part = Image.open(ENTRANCE).convert('RGB')
-    k = s / ENTRANCE_PX_PER_M
-    part = part.resize((round(part.width * k), round(part.height * k)), Image.LANCZOS)
-    matched = match_colours(part, fixed.crop((530, 548, 1600, 625)))
-    part = Image.blend(part, matched, 0.5)
-    w, h = part.size
-    x0, y1 = round(1040 - w / 2), round(gy)
-    y0 = y1 - h
-    a = np.asarray(fixed).copy()
-    p = np.asarray(part).astype(np.float32)
-    ramp = np.clip(np.arange(h) / 6.0, 0, 1)[:, None, None]          # its top edge eased into the wall under the eave
-    a[y0:y1, x0:x0 + w] = (p * ramp + a[y0:y1, x0:x0 + w] * (1 - ramp)).astype(np.uint8)
-    post = a[618:y1, 748:758].copy()                                  # one of the fence's posts
-    a[618:y1, x0 - 10:x0] = post
-    a[618:y1, x0 + w:x0 + w + 10] = post
-    return Image.fromarray(a), (x0, x0 + w)
-
-
 def build_home(atlas):
-    """KM-B01, the kid's home (KM1-1, its left): the two-storey timber house with its hipped upper roof, the skirt roof
-    round the ground floor with the entrance gable, the air conditioners on the skirt roof, and the long board fence in
-    front. Every face the picture doesn't show takes KM-P3's photographic boards and tiles, in the house's colours.
-    Also returns a trial (not exported): the same house with KM-P3's tiles on the street-facing roofs too, the picture's
-    ridge cap and gutters kept as strips."""
+    """KM-B01, the kid's home (the photographic KM1-1, its left): the two-storey timber house with its hipped upper roof,
+    the skirt roof round the ground floor with the entrance gable, the air conditioners on the skirt roof, the entrance
+    with its sliding lattice doors, and the board fence either side of it. Every face the picture doesn't show takes
+    KM-P3's photographic boards and tiles, in the house's colours. Also returns a trial (not exported): the same house
+    with KM-P3's tiles on the street-facing roofs too, the picture's ridge cap and gutters kept as strips."""
     src = ref(HOME['src'])
-    # what stands in front of the fence, and the persimmon tree behind it, become their own models: their pixels leave
-    # the walls
+    # what stands in front of the fence becomes its own models: their pixels leave the fence and the entrance's walls
     masks = garden_masks(src)
-    tmask = tree_mask(src)
-    allm = np.zeros_like(tmask)
+    allm = np.zeros(np.asarray(src).shape[:2], np.uint8)
     for m in masks.values():
         allm |= m
-    # every group moves along the fence or leaves it, so each one's whole box is painted out (a thin bicycle's mask
-    # misses spokes and tubes, which stayed on the fence once the bicycle no longer stood in front of them)
     for _, (x0, y0, x1), _ in GARDEN:
         allm[y0 - 4:GARDEN_GROUND + 1, x0 - 4:x1 + 4] = 1
-    fixed = paint_out(src, allm, ref_rows=(700, 720))
-    a = np.asarray(fixed).copy()
-    tm = cv2.dilate(tmask, np.ones((5, 5), np.uint8)) > 0
-    ys, xs = np.nonzero(tm)
-    a[ys, xs] = a[ys, 2 * 1040 - xs]     # the roof and wall behind the tree: their left half, about the gable's middle
-    fixed = repair_km11(Image.fromarray(a))
-    fixed = unsky(fixed, (480, 50, 1520, 240))      # the upper roof's outline against the sky
+    fixed = paint_out(src, allm, ref_rows=(650, 720))
+    fixed = unsky(fixed, (500, 30, 1540, 240), pale=True)     # the upper roof's outline against the sky
     cx, gy, s, crop_box = HOME['cx'], HOME['gy'], HOME['s'], HOME['crop']
-    fixed, (ex0, ex1) = add_entrance(fixed, cx, gy, s)
     fpos = atlas.place(fixed.crop(crop_box))
     fmap = lambda co: (cx + co.x * s - crop_box[0], gy - co.z * s - crop_box[1])
     # the hidden faces: KM-P3's boards and tiles at 160 px to the metre, coloured like the picture's boards and roof
     dens = 160.0
-    boards = boards_texture(fixed.crop((590, 290, 700, 370)), dens, 1320, 440)
+    boards = boards_texture(fixed.crop((605, 265, 725, 380)), dens, 1320, 440)
     bpos = atlas.place(boards)
-    tiles = tiles_texture(fixed.crop((700, 120, 1000, 200)), dens, 1120, 1100)
+    tiles = tiles_texture(fixed.crop((700, 100, 1000, 180)), dens, 1120, 1100)
     tpos = atlas.place(tiles)
-    casing = fixed.crop((640, 395, 664, 440))              # the air conditioner's casing beside its grille
+    casing = fixed.crop((665, 392, 693, 450))              # the air conditioner's casing beside its grille
     cpos = atlas.place(casing)
     side, roof, ac = (bpos, boards.size, dens), (tpos, tiles.size, dens), (cpos, casing.size)
     X = lambda px: (px - cx) / s
@@ -565,80 +489,72 @@ def build_home(atlas):
     def house(name, plate_roofs):
         h = Builder(atlas, fpos, fmap, bpos, boards.size)
         pr = not plate_roofs
-        # the ground floor, under the skirt roof (seen between it and the fence), and the upper storey, set back
-        h.box(X(530), X(1605), -3.0, 4.0, 0.0, Z(548), side=side, skip=('bottom', 'top'))
-        h.box(X(578), X(1414), -2.0, 3.0, Z(548), Z(228), side=side, skip=('bottom',))
-        # the skirt roof: its eave at y 548 from x 465 to 1615, hipped at both corners, meeting the upper walls at y 465
-        h.skirt((X(465), X(1615), -3.6, 4.6), (X(578), X(1414), -2.0, 3.0, Z(465), Z(465)), Z(548), side=roof, project=pr)
-        # the entrance gable on the skirt roof: its front triangle (eaves at y 512, the ridge ornament's top at 345)
+        # the ground floor (its front: the entrance between the fences, the walls behind them) and the upper storey,
+        # set back
+        h.box(X(520), X(1600), -3.0, 4.0, 0.0, Z(548), side=side, skip=('bottom', 'top'))
+        h.box(X(598), X(1482), -2.0, 3.0, Z(548), Z(220), side=side, skip=('bottom',))
+        # the skirt roof: its eave at y 548 from x 466 to 1624, hipped at both corners, meeting the upper walls at y 470
+        h.skirt((X(466), X(1624), -3.6, 4.6), (X(598), X(1482), -2.0, 3.0, Z(470), Z(470)), Z(548), side=roof,
+                project=pr)
+        # the entrance gable on the skirt roof: its front triangle (eaves at y 522, the ridge ornament's top at 352)
         # faces the street; its two slopes keep the barge line's height at every depth (so straight on they stay inside
         # the triangle) and run back over the skirt roof, meeting it in a valley, to the upper wall
-        ga, gb, gm, gpeak, gbase = X(730), X(1350), X(1040), Z(345), Z(512)
-        zs = lambda y: Z(548) + (y + 3.6) / 1.6 * (Z(465) - Z(548))     # the skirt roof's height at depth y
-        yv = -3.6 + (gbase - Z(548)) / (Z(465) - Z(548)) * 1.6           # where the gable's eave meets the skirt
+        ga, gb, gm, gpeak, gbase = X(745), X(1360), X(1052), Z(352), Z(522)
+        zs = lambda y: Z(548) + (y + 3.6) / 1.6 * (Z(470) - Z(548))     # the skirt roof's height at depth y
+        yv = -3.6 + (gbase - Z(548)) / (Z(470) - Z(548)) * 1.6           # where the gable's eave meets the skirt
         t = (zs(-2.0) - gbase) / (gpeak - gbase)                          # how far up the slope the valley reaches
         h.face([P(ga, -3.7, gbase), P(gb, -3.7, gbase), P(gm, -3.7, gpeak)], roof)
         for e in (ga, gb):
             xv = e + (gm - e) * t
             h.face([P(e, -3.7, gbase), P(e, yv, gbase), P(xv, -2.0, zs(-2.0)), P(gm, -2.0, gpeak), P(gm, -3.7, gpeak)],
                    roof)
-        # the two air conditioners standing on the skirt roof against the upper wall (the right one rebuilt)
-        for a0, a1 in ((565, 683), (1295, 1413)):
-            h.box(X(a0), X(a1), -2.35, -2.0, Z(455), Z(383), side=ac, skip=('bottom', 'back'))
-        # the upper roof, hipped: eaves x 515 to 1477 at y 228, the ridge x 640 to 1352 at y 64 (its cap's top)
-        h.hip_roof(X(515), X(1477), X(640), X(1352), -2.6, 0.5, 3.6, Z(228), Z(64), side=roof, project=pr)
+        # the two air conditioners standing on the skirt roof against the upper wall
+        for a0, a1 in ((592, 696), (1315, 1420)):
+            h.box(X(a0), X(a1), -2.35, -2.0, Z(455), Z(387), side=ac, skip=('bottom', 'back'))
+        # the upper roof, hipped: eaves x 528 to 1507 at y 222, the ridge x 672 to 1478 at y 80 (its cap's top)
+        h.hip_roof(X(528), X(1507), X(672), X(1478), -2.6, 0.5, 3.6, Z(222), Z(80), side=roof, project=pr)
         if plate_roofs:
             # the picture's ridge cap and the two gutters, as strips in front of the plate-tiled roofs
-            h.box(X(640), X(1352), -0.1, 0.6, Z(98), Z(64), side=roof, skip=('bottom',))
-            h.box(X(513), X(1479), -2.7, -2.55, Z(237), Z(221), side=roof, skip=('back',))
-            h.box(X(463), X(1617), -3.7, -3.55, Z(557), Z(541), side=roof, skip=('back',))
+            h.box(X(672), X(1478), -0.1, 0.6, Z(104), Z(80), side=roof, skip=('bottom',))
+            h.box(X(526), X(1509), -2.7, -2.55, Z(228), Z(214), side=roof, skip=('back',))
+            h.box(X(464), X(1626), -3.7, -3.55, Z(553), Z(540), side=roof, skip=('back',))
         return h.object(name)
 
     home = house('KmHome', False)
     trial = house('KmHomeTrialP3', True)
 
     fence = Builder(atlas, fpos, fmap, bpos, boards.size)
-    for f0, f1 in ((285, ex0), (ex1, 1620)):            # 2.3 m tall, along the lane, open at the entrance
+    for f0, f1 in ((281, 876), (1270, 1622)):            # 2.3 m tall, along the lane, open at the entrance
         fence.box(X(f0), X(f1), -4.6, -4.45, 0.0, Z(620), side=side, skip=('bottom',))
     fence_obj = fence.object('KmHomeFence')
     fence_obj.parent = home
-    # the pots either side of the entrance: those left of it closed up to its left, the two bonsai groups to its right;
-    # the bicycle and the last morning glory no longer fit along the fence (the bicycle is its own prop, KM-A08)
-    left = ['pots_left', 'bush', 'morning_glory', 'hydrangea', 'flowers']
-    right = ['bonsai_left', 'bonsai_right']
-    edge = lambda n, f: f(np.nonzero(masks[n])[1])
-    shift = {n: min(0, (ex0 - 14) - max(edge(m, np.max) for m in left)) for n in left}
-    shift.update({n: (ex1 + 14) - min(edge(m, np.min) for m in right) for n in right})
-    garden, tree = build_garden(atlas, src, masks, tmask, shift)
+    garden, _ = build_garden(atlas, src, masks, None)
     garden.parent = home
-    tree.parent = home
-    return home, trial, dict(source='KM1-1 (left): the house and its fence; in front of it, the pots, plants and bicycle '
-                                    '(KmHomeGarden), behind the fence the persimmon tree (KmHomeTree); the hidden faces in '
-                                    "KM-P3's boards and tiles",
-                             cutouts=list(CUTOUTS),
+    return home, trial, dict(source='photo/KM1-1 (left): the house, its entrance and its fence; in front of the fence, '
+                                    'the pots, hydrangeas and bonsai (KmHomeGarden); the hidden faces in KM-P3\'s boards '
+                                    'and tiles',
+                             cutouts=['KmHomeGarden'],
                              cutout_material='Toon, _ALPHATEST_ON, _Cutoff 0.5, _Cull 0 (KamakuraCutout)',
-                             real_size=[round((1620 - 285) / s, 2), 9.2, round(Z(64), 2)])
+                             real_size=[round((1624 - 281) / s, 2), 9.2, round(Z(80), 2)])
 
 
 # ---------------------------------------------------------------- the things in front of the home
-# What stands on the pavement in front of KM1-1's fence, in groups that touch: (name, the box round it, hints of where it
-# surely is: the pots' bodies, dark ones above all, which a colour model alone takes for the fence). The ground is y 890.
-GARDEN_GROUND = 890
+# What stands on the pavement in front of the photographic KM1-1's fence, in groups that touch: (name, the box round it,
+# hints of where it surely is: the grey and dark pots, the bonsai trunk, which a colour model alone takes for the
+# fence). The ground is at y 893.
+GARDEN_GROUND = 893
 GARDEN = [
-    ('pots_left', (398, 796, 508), [(408, 860, 442, 886), (458, 848, 488, 864), (448, 866, 502, 886)]),
-    ('bush', (503, 820, 582), [(510, 865, 578, 887)]),
-    ('morning_glory', (578, 726, 702), [(588, 860, 624, 887), (642, 848, 688, 887)]),
-    ('hydrangea', (698, 740, 812), [(705, 862, 806, 887)]),
-    ('flowers', (808, 746, 952), [(815, 856, 868, 887), (886, 850, 934, 887)]),
-    ('bonsai_left', (944, 736, 1105), [(966, 850, 1024, 887), (1052, 807, 1100, 834), (1022, 866, 1098, 887),
-                                       (962, 752, 1022, 788), (982, 796, 1032, 828), (976, 790, 991, 848)]),
-    ('bonsai_right', (1078, 744, 1282), [(1102, 864, 1173, 887), (1182, 864, 1209, 887), (1190, 832, 1243, 887),
-                                         (1182, 755, 1238, 788), (1228, 800, 1268, 818), (1206, 790, 1224, 828)]),
-    ('bicycle', (1266, 733, 1510), []),
-    ('morning_glory_right', (1515, 722, 1588), [(1528, 852, 1575, 887)]),
+    ('pots_left', (394, 795, 507), [(400, 870, 425, 892), (444, 860, 503, 892), (405, 860, 440, 892)]),
+    ('planter_left', (507, 826, 587), [(512, 872, 584, 892)]),
+    ('hydrangea_pink', (580, 726, 698), [(645, 852, 690, 892), (600, 862, 640, 892)]),
+    ('hydrangea_planter', (698, 744, 810), [(700, 865, 805, 892)]),
+    ('hydrangea_pots', (810, 756, 944), [(810, 860, 870, 892), (885, 855, 935, 892)]),
+    ('bonsai_bowl', (1293, 795, 1396), [(1316, 873, 1390, 892), (1340, 840, 1360, 873)]),
+    ('bonsai_pine', (1387, 754, 1516), [(1427, 801, 1477, 873), (1421, 873, 1499, 892)]),
+    ('pot_right', (1529, 812, 1585), [(1535, 851, 1582, 892)]),
 ]
-# fence seen between and beside them: never part of them (the shaded boards under the big bonsai's canopy)
-GARDEN_BACK = {'bonsai_right': [(1178, 792, 1203, 828)]}
+# fence seen between and beside them: never part of them
+GARDEN_BACK = {}
 
 
 def garden_masks(src, groups=None, back=None, ground=None):
@@ -765,6 +681,8 @@ def build_garden(atlas, src, masks, tmask, shift=None):
         # each group a little further out than the one before where they overlap, so no two cut-outs share a plane
         cutout_arc(g, atlas, src, m, box, cx, gy, s, -4.62 - 0.01 * (i % 3), name, (shift or {}).get(name, 0))
     garden = g.object('KmHomeGarden', outward=False)
+    if tmask is None:
+        return garden, None
     t = Builder(atlas, None, None, None, None)
     ys, xs = np.nonzero(tmask)
     x0, y0, x1, y1 = int(xs.min()), int(ys.min()), int(xs.max()) + 1, int(ys.max()) + 1
@@ -852,7 +770,7 @@ def board(home, vend, atlas_path, out):
             o.data.materials.clear()
             o.data.materials.append(cut if o.name in CUTOUTS else mat)
     tmp = os.path.dirname(out)
-    km11 = ref('KM1-1_hase_lanes.png')
+    km11 = rebrand_machines(ref(HOME['src']))
     rows = []
     # the home: the picture, the model straight on (orthographic, at the picture's scale), the model at three-quarters
     x0, y0, x1, y1 = HOME['crop']
@@ -865,15 +783,15 @@ def board(home, vend, atlas_path, out):
     c = render(os.path.join(tmp, 'km_home_34.png'), (hx - 13, -17, 5.5), (hx, 0, 3.2), fov=40, size=(W, H),
                only={'KmHome', 'KmHomeFence'} | set(CUTOUTS))
     rows.append([a, b, c])
-    a = km11.crop((1681, 621, 1819, 866)).resize((276, 490))
+    a = km11.crop((1687, 625, 1824, 873)).resize((276, 500))
     b = render(os.path.join(tmp, 'km_vend_front.png'), (0, -10, 0.915), (0, 0, 0.915), ortho=1.83,
-               size=(276, 490), only={'KmVendingRed'})
+               size=(276, 500), only={'KmVendingRed'})
     c = render(os.path.join(tmp, 'km_vend_34.png'), (2.4, -2.6, 1.6), (0, 0, 0.9), fov=40, size=(560, 490), only={'KmVendingRed'})
     rows.append([a, b, c])
     # close up, turned: the two groups in front of the fence, standing on their own
     names = {'KmHome', 'KmHomeFence'} | set(CUTOUTS)
     X = lambda px: (px - HOME['cx']) / sc
-    gl, gr = (X(400) + X(950)) / 2, (X(950) + X(1510)) / 2
+    gl, gr = (X(394) + X(944)) / 2, (X(1293) + X(1585)) / 2
     d = render(os.path.join(tmp, 'km_garden_left.png'), (gl - 2.6, -8.6, 1.5), (gl, -4.7, 0.5), fov=40,
                size=(900, 600), only=names)
     e = render(os.path.join(tmp, 'km_garden_right.png'), (gr + 2.6, -8.6, 1.5), (gr, -4.7, 0.55), fov=40,
@@ -897,7 +815,7 @@ def board(home, vend, atlas_path, out):
     c2 = render(os.path.join(tmp, 'km_trial_34.png'), (hx - 13, -17, 5.5), (hx, 0, 3.2), fov=40, size=(W, H), only=trial)
     rows.append([label('Trial: every roof in\nKM-P3\'s photographic\ntiles (ridge cap and\ngutters from your\npicture)'), b2, c2])
     # the roofs close up, turned: as now (the picture's tiles in front) and the trial
-    rx = X(640)
+    rx = X(672)
     cam, tgt = (rx - 2.6, -6.0, 7.4), (rx + 0.6, -1.5, 5.8)
     f1 = render(os.path.join(tmp, 'km_roof_now.png'), cam, tgt, fov=36, size=(900, 600), only=names)
     f2 = render(os.path.join(tmp, 'km_roof_trial.png'), cam, tgt, fov=36, size=(900, 600), only=trial)
@@ -928,9 +846,6 @@ def board(home, vend, atlas_path, out):
 
 
 def main():
-    if '--entrance-from' in ARGS:
-        make_entrance(ARGS[ARGS.index('--entrance-from') + 1])
-        return
     os.makedirs(OUT, exist_ok=True)
     K.reset()
     atlas = Atlas(ATLAS_SIZE)

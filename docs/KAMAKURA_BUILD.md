@@ -10,7 +10,7 @@ The target is assets that look like the reference images: the same shapes and pr
 materials and wear, in the look of KM-0, the look target (a photograph, not a painting). The way there is **projection modelling in Blender**, proven on the home and the red
 vending machine (`review/kamakura/kit_proof_board.jpg`, `tools/blender/kit_buildings_km.py`):
 - **The fronts are your pictures,** in their photographic versions (see "First: your pictures in KM-0's look"). Each model is built by script to the measurements of the picture it comes from (the
-  home, from KM1-1: 119 px to the metre, the pavement at y 890), and the picture's own pixels are projected onto every face that faces
+  home, from the photographic KM1-1: 120 px to the metre, the pavement at y 893), and the picture's own pixels are projected onto every face that faces
   the street. Straight on, the model is the picture, pixel for pixel; turned, it is a real 3D shape: the fence in front,
   the house set back, the roofs sloping away.
 - **Sides, backs and roofs out of view** take the city's photographic plates (KM-P3: boards, tiles, mortar, block,
@@ -22,30 +22,26 @@ vending machine (`review/kamakura/kit_proof_board.jpg`, `tools/blender/kit_build
 - **Things standing in front of a building are their own models:** plants, pots, bicycles, signs that stand off the wall.
   Painted on, they smear when the camera turns. They are cut out of the picture (OpenCV's GrabCut, per group, with
   hints) and stand in front as cut-outs on half an elliptic cylinder: straight on exactly the picture, turned round; the
-  wall or fence behind gets them painted out (its boards carried down). The home's pots and plants are done this way
-  (`KmHomeGarden`), and its persimmon tree as a card behind the fence (`KmHomeTree`).
-- **The home's entrance** (asked for by the user: KM1-1's fence runs unbroken): the fence opens under the entrance
-  gable onto the entrance of KM-x2, the earlier picture of the same home (the sliding lattice doors, the light and house
-  number above them, the plaster-and-board walls either side with the nameplate, the step), kept as a part
-  (`review/kamakura/refs/parts/KM-x2_entrance.png`, the urn and bonsai in front of it painted out), set into the wall at
-  the house's scale with a fence post at each side of the opening. The pots and flowers close up to the left of it, both
-  bonsai groups stand to its right; the bicycle and the last morning glory no longer fit along the fence (the bicycle
-  is its own prop, KM-A08).
-- **No real brands:** a logo that reads as a real one (the corrected KM1-1's vending machine) is repainted with an
-  invented name in the city's script (うみかぜ), in its own colours.
+  wall or fence behind gets them painted out (its boards carried down). The home's pots, hydrangeas and bonsai are
+  done this way (`KmHomeGarden`, eight groups).
+- **The home is built from the photographic KM1-1** (`refs/photo`), which has the house whole: its upper storey solid,
+  its entrance under the gable (the sliding lattice doors, the light, the walls with the nameplate, the step) with the
+  fence open in front of it (the restyle added it from `review/kamakura/refs/parts/KM-x2_entrance.png`), the pots either
+  side. The persimmon and the bicycle are gone from it: a level places them as their own models (KM-G08, KM-A08).
+- **No real brands:** a logo that reads as a real one is repainted with an invented name in the city's script
+  (うみかぜ), in its own colours (`rebrand_machines`: both vending machines in the photographic KM1-1).
 - **The pictures' glitches are not copied:** a clean picture replaces one with a glitch, or else the glitch is repaired,
-  noted in the script at the pixels it touches (`repair_km11`: the corrected KM1-1 still draws the right third of the
-  home's upper storey half see-through and the upper roof's eave stepping up; the roof's right end takes its left end,
-  mirrored, and the storey's right third is rebuilt from its own left third). Things that only pass in front (power
-  lines across a roof) are taken off (`dewire`).
+  noted in the script at the pixels it touches. Things that only pass in front (power lines across a roof) are taken
+  off (`dewire`); a picture's sky is painted out of the roofs' outlines (`unsky`, `pale=True` for a photograph's pale
+  sky).
 - **The pictures' light comes with them.** The photographs carry KM-0's sun and shade, so the Kamakura kit is drawn as
   the clouds are: `Toon` with `_Lighting` 0.25, the pictures' light kept as it is and a quarter of the game's sun added.
   The city's climate, the haze and every filter still apply. It is not lit twice.
 - **The highest resolution where it shows:** the fronts at the pictures' full resolution (the home's front is 1,340 px
   across), in the Kamakura atlas (4096 x 4096), within the phone's budgets (`docs/ART_DIRECTION.md`: a building 6,000
   triangles, a street prop 1,500, a tree 6,000, a gameplay structure 5,000; `docs/PERFORMANCE.md`). The proof's home is
-  57 triangles, its fence 20, its pots and plants 112, its tree 2, and the vending machine 10: the detail is in the
-  picture, not the mesh.
+  57 triangles, its fence 20, its pots and plants 128, and the vending machine 10: the detail is in the picture, not
+  the mesh.
 - Every asset is checked against its source: rendered straight on and turned, beside the picture, and in all four looks,
   and redone until it matches (an acceptance board: `docs/LEARNINGS.md` rule 4, A8).
 
@@ -746,12 +742,12 @@ largest size you can make.
 In the model sheet chat, in this order: the two shared ends first.
 
 ```text
-ASSET KM-B01, the home. Attach KM1-1. The kid's two-storey house at the left of the picture: dark-stained timber walls,
-grey kawara roofs (the hipped upper roof, and the skirt roof round the ground floor with the entrance gable), aluminium
-windows, the balcony rail, the two air-conditioner units; the entrance under the gable (attach
-review/kamakura/refs/parts/KM-x2_entrance.png too: the sliding lattice doors and their walls); with its long dark board
-fence in front, open at the entrance (not the pots, the plants or the persimmon: they are separate). Real size: 9.7 m
-wide, 8.2 m deep, 7 m to the ridge. Same rules as before.
+ASSET KM-B01, the home. Attach review/kamakura/refs/photo/KM1-1_hase_lanes.png. The kid's two-storey house at the left
+of the picture: dark-stained timber walls, grey kawara roofs (the hipped upper roof, and the skirt roof round the ground
+floor with the entrance gable), aluminium windows, the balcony rail, the two air-conditioner units, the entrance under
+the gable with its sliding lattice doors; with its dark board fence either side of the entrance (not the pots or the
+plants: they are separate). Real size: 11.2 m wide with the fence, 8.2 m deep, 6.8 m to the ridge. Same rules as
+before.
 ```
 
 ```text

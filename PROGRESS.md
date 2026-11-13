@@ -1965,6 +1965,17 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
   the game's own sky replaces. Still illustrations: KM1-2, KM1-3, KM3-1, KM3-2, KM3-3 (bell tower and gate about 60 px
   left), KM-P1, KM-P2, KM-P5 (P1 and P5 almost unchanged). KM1-1 kept the real drink logo on both machines: the kit
   rebrands both. BASE KM-R1, the second pass, added for the eight (`docs/LEARNINGS.md` D12).
+- **The home from the photographic KM1-1.** Measured again in the restyle (120 px to the metre, the pavement at y 893,
+  the gable's middle at x 1052; the upper roof's eaves 528 to 1507 at y 222, its ridge 672 to 1478 at y 80; the skirt
+  roof's eave 466 to 1624 at y 548; the gable 745 to 1360, its peak at y 352; the fences 281 to 876 and 1270 to 1622,
+  their top at y 620). The photo has the house whole and its entrance in place, so the painted picture's repairs
+  (`repair_km11`) and the grafted entrance (`--entrance-from`) are gone from the script; the entrance part stays in
+  `refs/parts` as RESTYLE KM1-1 attaches it. Eight cut-out groups along the fence (the pots, three hydrangea groups,
+  both bonsai, a pot), no tree (the restyle dropped the persimmon: a level places KM-G08). Both vending machines kept
+  the real logo through the restyle: `rebrand_machines` repaints both panels and the red one's badge. `unsky` gains
+  `pale=True` for the photo's pale sky; the ridge sits at the cap's real top (y 80: at y 72 a sliver of sky came with it).
+  `KmHome` 57 triangles, `KmHomeFence` 20, `KmHomeGarden` 128, `KmVendingRed` 10. With the roofs now photographs, the
+  picture's own tiles hold up beside KM-P3's and keep their rolled edge tiles: the trial stays on the board, not taken.
 - **Who makes the photographs:** the user, in the Gemini app (a phone works), sending each result in the chat or pushing
   it. From the cloud session there is no image model to run: the Hugging Face connector has running Spaces switched off
   (gradio=none), huggingface.co and hf.space are blocked by the proxy, and Gemini's API needs the user's key (declined for
