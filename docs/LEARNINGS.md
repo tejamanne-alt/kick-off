@@ -715,6 +715,35 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
 - *Rule:* before building an asset from one view, list the views the game will see it from. If the source doesn't
   show them, ask for a sheet that does before building.
 
+**D16. Legs that came off when the cat walked (found by the strict review's first motion test).**
+- *What:* the first walk and run previews (`docs/ASSET_REVIEW.md`, section 2) showed the cat's lower legs swinging
+  loose under the body, a gap opening at each joint, and a thin pale seam where every part met the body even at rest.
+  The straight-on board, which never moved anything, had hidden all of it.
+- *Why:* three causes. The legs were cut where the figure's row width fell below 40 % of its widest row, which is
+  near the paws, so only the shins swung while the thighs stayed on the body. Each pair (near and far leg together)
+  was one rigid piece, so its top corners swung out from under the belly. And each part's mesh stopped half a pixel
+  inside its own outline, so two neighbouring parts left a pixel's gap between them.
+- *Fix:* the belly is the lowest row where one unbroken run still spans 35 % of the figure; every leg below it is
+  its own piece (near legs LegFR/LegBR in front of the body's middle, far legs LegFL/LegBL behind it, an empty for any
+  the picture doesn't show); each leg reaches up into the body over half its length, narrowing, with its pivot inside
+  that reach; every other part (tail, head, wings) overlaps the body by about half its own thickness. The review's
+  swing matches the game's (Hazards/Dog: 28 degrees at a full run), not more.
+- *Rule:* every moving part overlaps what it's joined to, far enough to stay covered at the game's largest swing. An
+  asset with moving parts is never shown until its motions have been rendered and looked at frame by frame.
+
+**D17. One-sided fins and a closed-shell check that passed them (the same review, `kit_animals_km.py`).**
+- *What:* every animal had 30 to 60 edges with only one face, at ear tips, tail tips and thin feathers, and the
+  review's "closed shell" check passed them, because it allowed up to 5 % of edges to be open.
+- *Why:* a triangle whose three corners all lie on the outline has no depth (the outline is at depth 0 so the faces
+  close), so its front and back copies merge into one flat, one-sided triangle. `Shaders/Toon.shader` culls back faces
+  (`_Cull` 2), so seen from behind such a tip disappears. The 5 % allowance was a guess, never tied to what shows.
+- *Fix:* such triangles are split at their middle, given a little depth; thin parts get points along their spine, so
+  the triangles don't span them from edge to edge; the outline is sampled every 7 px (the alpha cut-out gives the
+  crisp edge, not the mesh), which kept every animal under the new 2,500-triangle budget. The check now fails on a
+  single edge with one face and prints, apart, the edges where the faces touch along a thin part.
+- *Rule:* a check's threshold comes from what shows in the game, never from a guess; a mesh seen from both sides has
+  no edge with one face.
+
 ## E. Levels and world
 
 - **E1. Every level had chapter-1 scenery.** A new-scene call unloaded the level definition. *Rule:* pass data into scene builders explicitly; never hold asset references across a new-scene call.

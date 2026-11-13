@@ -171,6 +171,6 @@ boats on their lifts, a No Wake sign on its pile.
 - **Normals:** smooth or custom split normals so light falls softly. Stylized flat planes are fine on
   rocks and cliffs, as long as they are intended.
 - **Budgets (triangles):** building 6,000; tree 6,000 (leaf-card crowns; 2,500 otherwise); bush 1,200; grass 800; street prop 1,500;
-  boulder 600; landscape strip 6,000; gameplay structure 5,000.
+  boulder 600; landscape strip 6,000; gameplay structure 5,000; animal 2,500 (the original kit's were 1,220 to 1,960).
 - **Review:** render every kit with `review_kit.py` and look at it critically before handing it over;
   check street layouts in daylight with `preview_street.py`.

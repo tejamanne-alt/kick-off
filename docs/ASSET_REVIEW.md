@@ -37,13 +37,19 @@ Every asset with moving parts is shown moving, as animated previews, one per mot
 | A machine or a door | its own motion (a barrier lifting, a door sliding) |
 
 A part that tears from the body at its joint, swings the wrong way, or moves something that should stay still is a
-fault.
+fault (D16: the cat's legs came off when it walked). Each motion is shown at the game's own amplitude (the swing its
+behaviour uses, e.g. Hazards/Dog's 28 degrees at a full run), and looked at frame by frame before it is shown.
+
+Views the source picture can't show (an animal relief's top, bottom, front and back, built from one side) are still
+rendered and labelled as built from the side alone. The review says which views the game's camera actually sees.
 
 ## 3. The checks (each one a fault that happened)
 
 **Shape**
 1. Every part is there once: one tail, one head (D14: the cat had two tails). Check the top and bottom views.
-2. The shell is closed: front and back faces meet; the open-edge count is printed and small (D14: a gap all round).
+2. The shell is closed: front and back faces meet (D14: a gap all round), and no edge has only one face (D17: flat
+   fins at the outline's tips, which vanish from behind because the Toon shader culls back faces). The count of
+   edges where the two faces touch along a thin part is printed too.
 3. Depth comes from each part's own width, round in section: a thin part is never a tall blade (D14).
 4. Every view the game will see has real source data: no flat body from the side, no back that is the underside
    mirrored (D15: the kite in flight). If the source can't show a view, a sheet that does is asked for first.
@@ -67,6 +73,9 @@ fault.
 **Rig**
 14. Parts are named as the game's behaviour expects (Tail, Head, LegFL, LegFR, LegBL, LegBR, WingL, WingR), each with
     its origin at its joint; the motions in section 2 show them moving.
+15. Every moving part overlaps what it's joined to, far enough to stay covered at the largest swing: no seam at rest,
+    no gap mid-stride (D16). Every leg the picture shows is its own part, near legs in front of the body, far ones
+    behind.
 
 ## 4. What the user is shown
 
