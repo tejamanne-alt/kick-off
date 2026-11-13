@@ -906,6 +906,18 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
   carried that should stay, no fin or plume cut in two. Motions are looked at full size, every second frame, not as
   thumbnails.
 
+**D21. Still not natural: stray parts at the neck and front legs, big gummed bird feet (the user, after D20). Open.**
+- *What:* the user, on the D20 review: "still there are lots imperfections in the animals/birds/fish movements. Also I
+  see some extra extended parts to characters. For example below the neck and near the front legs. Even the birds feet
+  are big and feel like they got gummed to something. Make the movements so natural and realistic." Screen
+  recordings of every updated model follow.
+- *Known before the user said so, and only written down as limits:* thigh corners showing 2 to 4 px below the belly
+  at full stride, a 2 to 3 px step at a crow's nape at the bottom of a peck, far legs that are copies of the near ones.
+  Calling a visible fault "too small to see at play size" is not a fix: the user looks at the review, not at play size.
+- *Rule so far:* the D20 checks proved each part held only itself and each foot stayed down; they did not prove the
+  animal moves like the real one. A motion passes only when it looks like the animal: side by side with how the real
+  animal moves, not only against the measures.
+
 ## E. Levels and world
 
 - **E1. Every level had chapter-1 scenery.** A new-scene call unloaded the level definition. *Rule:* pass data into scene builders explicitly; never hold asset references across a new-scene call.
