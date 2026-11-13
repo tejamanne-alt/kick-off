@@ -43,13 +43,14 @@ for the review (D19: the review bounced birds the game walks). It is shown at 24
 frame before it is shown: at full size, every second frame at least, never only as thumbnails on a contact sheet
 (D20: four-legged birds looked right at 170 px).
 
-A walking animal's legs are jointed (a thigh, a shin, a foot of its own kept level), its feet planted on the ground
-through the stance and lifted forward in the swing, its knees bending as in the picture (D19: rigid legs swung from
-the hip scissored and floated). A bird walks on its feet, never bounces on the spot, and pecks by tipping its body on planted feet, no
-further than its legs can keep them planted. Every other part that bends in the real animal bends in the model: a tail
-in three links and a bird's wing in two (`World/PartChain.cs`: each link a share of the angle, each trailing the one
-before), a fish's tail, a turtle's flippers; an insect's wings stay rigid, as real ones are. A part with no source
-motion stays still, and the review says so.
+A walking animal's legs are jointed as the animal's are (a thigh, a shin, a foot of its own kept level, turning at the
+ankle; a bird's bare leg one bone hinged at the heel), its feet planted on the ground through the stance and lifted
+forward in the swing, its knees bending as in the picture (D19: rigid legs swung from the hip scissored and floated).
+A bird walks on its feet, never bounces on the spot, and pecks by tipping its body on planted feet, no further than
+its legs can keep them planted. Every other part that bends in the real animal bends in the model: a tail in three
+links and a bird's wing in two (`World/PartChain.cs`: each link a share of the angle, each trailing the one before), a
+fish's tail, a turtle's flippers; an insect's wings stay rigid, as real ones are. A part with no source motion stays
+still, and the review says so.
 
 Each motion plays at the game's own speed (24 frames a cycle); one too quick for a GIF to show (a wingbeat, a
 butterfly's flutter) is slowed to 30 ms a frame and labelled with how much (x1/4). The motion's source is named: the

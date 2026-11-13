@@ -244,7 +244,9 @@ def two_bone(knee, foot, target, bend):
 
 def legs_of(parts):
     """Each jointed leg: {suffix: (thigh, shin, hip (x, z), knee from the hip, foot from the hip, length, bend, toe or
-    None)}. The toe (Toe..: a bird's toes, a paw) hangs from the shin at the foot and is kept level (D20)."""
+    None, end from the hip, the foot from the end)}. The toe (Toe..: a bird's toes, a paw) hangs from the shin at the
+    ankle, the Foot point under it, and is kept level (D20); the bones end at the ankle (the end), or at the foot when
+    there is no toe. LegGait.Rig.Find is the same."""
     out = {}
     for name, thigh in parts.items():
         if not name.startswith('Leg') or thigh.type != 'MESH':
@@ -253,22 +255,29 @@ def legs_of(parts):
         shin, foot = parts.get('Shin' + sfx), parts.get('Foot' + sfx)
         if shin is None or foot is None:
             continue
+        toe = parts.get('Toe' + sfx)
         knee = (shin.location.x, shin.location.z)
-        f = (knee[0] + foot.location.x, knee[1] + foot.location.z)
-        l1, l2 = math.hypot(*knee), math.hypot(f[0] - knee[0], f[1] - knee[1])
-        cross = knee[0] * (f[1] - knee[1]) - knee[1] * (f[0] - knee[0])
+        end = (knee[0] + toe.location.x, knee[1] + toe.location.z) if toe is not None else None
+        base = end or knee                              # the Foot point hangs from the toe, or from the shin
+        f = (base[0] + foot.location.x, base[1] + foot.location.z)
+        end = end or f
+        l1, l2 = math.hypot(*knee), math.hypot(end[0] - knee[0], end[1] - knee[1])
+        cross = knee[0] * (end[1] - knee[1]) - knee[1] * (end[0] - knee[0])
         # the knee bends as it does in the picture; a straight leg: a front leg's forward, a hind leg's or a bird's back
         bend = -math.copysign(1, cross) if abs(cross) > 0.08 * l1 * l2 else (1 if sfx.startswith('F') else -1)
-        out[sfx] = (thigh, shin, (thigh.location.x, thigh.location.z), knee, f, l1 + l2, bend, parts.get('Toe' + sfx))
+        out[sfx] = (thigh, shin, (thigh.location.x, thigh.location.z), knee, f, l1 + l2, bend, toe, end,
+                    (f[0] - end[0], f[1] - end[1]))
     return out
 
 
 def _place(leg, target_root, tip=0.0):
     """Turn a leg's thigh and shin so its foot is at target_root (x, z in the root's frame), its toe kept level with
-    the ground: turned back by the thigh's and shin's turns and by the body's tip (degrees, the review's pitch:
-    LegGait.Rig.Place)."""
-    thigh, shin, hip, knee, foot, _, bend, toe = leg
-    d1, d2 = two_bone(knee, foot, (target_root[0] - hip[0], target_root[1] - hip[1]), bend)
+    the ground: turned back by the thigh's and shin's turns and by the body's tip (degrees, the review's pitch). The
+    bones end at the ankle, the foot's offset below it turned into the root's frame by the tip (LegGait.Rig.Place)."""
+    thigh, shin, hip, knee, foot, _, bend, toe, end, off = leg
+    c, s = math.cos(R(tip)), math.sin(R(tip))
+    ox, oz = off[0] * c - off[1] * s, off[0] * s + off[1] * c
+    d1, d2 = two_bone(knee, end, (target_root[0] - ox - hip[0], target_root[1] - oz - hip[1]), bend)
     thigh.rotation_euler = (0, -d1, 0)      # Blender's +Y turns forward toward down: the opposite of forward-to-up
     shin.rotation_euler = (0, -d2, 0)
     if toe is not None:
@@ -298,8 +307,9 @@ def gait(kind, height, head_nod=0.0, tail=None, period=1.0, tail_axis='y'):
             middle = foot[0] if len(sfx) == 1 else (hip[0] + foot[0]) / 2      # a bird's foot stays where it stands
             dx, dz = foot_path(p + g['phase'].get(sfx, 0.0), g['duty'], g['stride'] * leg[5], g['step'] * leg[5])
             want[sfx] = (middle + dx, dz)               # planted on the ground (z 0), not at the picture's height
-            # the body comes down as far as a foot needs to reach the ground (98 % of the leg: a straight one can't step)
-            tx, tz = want[sfx][0] - hip[0], want[sfx][1] - hip[1]
+            # the body comes down as far as a foot needs to reach the ground (98 % of the leg: a straight one can't step);
+            # the bones reach the ankle above the foot
+            tx, tz = want[sfx][0] - leg[9][0] - hip[0], want[sfx][1] - leg[9][1] - hip[1]
             r = 0.98 * leg[5]
             if tz < 0 and abs(tx) < r:
                 dip = max(dip, -tz - math.sqrt(r * r - tx * tx))
@@ -390,10 +400,10 @@ def peck(height, turn=25.0, tip=30.0):
     def reachable(legs, deg):
         c, s = math.cos(math.radians(deg)), math.sin(math.radians(deg))
         for leg in legs.values():
-            fx, fz = leg[2][0] + leg[4][0], leg[2][1] + leg[4][1]
+            fx, fz = leg[2][0] + leg[8][0], leg[2][1] + leg[8][1]       # the ankle over the planted, level foot
             tx, tz = fx * c - fz * s - leg[2][0], fx * s + fz * c - leg[2][1]
             l1 = math.hypot(*leg[3])
-            l2 = math.hypot(leg[4][0] - leg[3][0], leg[4][1] - leg[3][1])
+            l2 = math.hypot(leg[8][0] - leg[3][0], leg[8][1] - leg[3][1])
             d = math.hypot(tx, tz)
             if d > 0.98 * (l1 + l2) or d < abs(l1 - l2):
                 return False

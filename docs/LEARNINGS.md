@@ -862,13 +862,34 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
   - The koi's pectoral fins are kept whole with the body (`front_fins`), and no part's overlap grows into them.
   - The heron's head outline takes the whole plume.
   - A foot of its own: each jointed leg's foot (a bird's toes, from its drawn toe lines or where the leg spreads; a
-    paw, the lowest quarter of a four-legged leg) is a part, `Toe..`, hung from the shin at the contact point. The gait
-    keeps it level with the ground, turned back by the leg's turns and the body's tip (`LegGait.Rig.Place`, and
-    `_place` in the review). A drawn leg's contact point is straight under its ankle, not under its longest toe (the
-    pigeon's leg had turned about its toe tip). A bird's leg is jointed along its tarsus alone, the toes left out.
-  - Tail outlines drawn round the tail, each pivot at the tail's root. Head outlines on the perched sparrow, white-eye
-    and bulbul drawn round the head and neck: their boxes took a block of wing, back or breast, which turned with the
-    head as the bird looked about.
+    paw, the lowest eighth of a four-legged leg) is a part, `Toe..`, hung from the shin at the ankle, with the Foot
+    point under it. The leg's two bones end at the ankle, aimed so the level foot below lands on its target. The gait
+    keeps the foot level, turned back by the leg's turns and the body's tip (`LegGait.Rig.Place`, and `_place` in the
+    review). A first try kept a quarter-leg paw level about its contact point instead: the paw sheared off the shin at
+    every step and showed as a loose block (the Shiba). A foot, like every part, turns about its joint.
+  - A bird's leg jointed as a bird's is: the bare leg is one rigid bone (the tarsus), hinged at the heel where it leaves
+    the feathers, and the thigh is a bone hidden in the body, from a hip up and forward of the heel. Cutting the bare
+    leg at its middle made a knee no bird has, and left the leg straight at rest. To step, the pecking pigeon's body
+    dipped half a leg and its "knee" folded to -127 degrees, laying the shin into the ground. Where the picture shows
+    a bare shank above the heel (the egret), the drawn leg line names the heel (`heel`). The hidden thigh's mesh is the
+    feathered drumstick from hip to heel: a band of feathers over the heel alone floated off the belly mid-stride. It
+    is twice the bare leg's median width, at most a third of the leg's length: measured at the leg's top, where the
+    feathers flare, the hopping sparrow's became a disc of belly.
+  - A drawn leg keeps only its connected whole: the standing pigeon's far back toe, cut off from its foot by the near
+    leg in front of it, floated as a dark fleck when the far foot stepped.
+  - Scaly toes kept whole: the crows' pale scale highlights are as light as the backdrop and were cut away along the
+    toes' edges, so the toes read as broken fragments (in every render since the first). Inside a drawn leg area, gaps
+    of up to 4 px are closed. A 7 px sliver of shadow left of the wagtail's foot is excluded.
+  - The egret's head plumes, outside its head's outline, stayed with the body while the head pecked, joined to the
+    back by a thin stalk where a plume's tip touched it. They are now the head's, the stalk cut, and the back beside
+    them kept out of the head's overlap (`keep_body`), or a sliver of back would have turned with the head.
+    The feet cost up to 220 triangles a walker, and a render was started before counting: the ginger cat, the tuxedo
+    and the tanuki went over the 2,500 budget (check 5 failed), and the render was stopped. They now space their
+    outlines 9 px, as the calico and the Shiba do. Count a changed kit's triangles with a build-only run before
+    rendering its review.
+  - Tail outlines drawn round the tail, each pivot at the tail's root. Head outlines on the perched sparrow, white-eye,
+    bulbul, standing crow, hopping sparrow and gull drawn round the head and neck: their boxes took a block of wing,
+    back or breast, which turned with the head as the bird looked about or pecked.
   - A curled tail wags about the long axis (`curl`; Dog's `tailAxis` long).
   - FlitButterfly's beat is a setting (`beatMid`, `beatSwing`; the dragonfly's 4 ± 24 about flat).
 - *Rule:* check 16 measures every leg mesh's lowest point, not only the contact points (a foot point on the ground

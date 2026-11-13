@@ -2076,8 +2076,10 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
     of the body below the belly.
   - Tail outlines redrawn; the body carries on under a drawn part's edge; `front_fins`, `curl` and `beard` added.
   - FlitButterfly's wingbeat is a setting (`beatMid`, `beatSwing`; the dragonfly 4 ± 24).
-  - A foot of its own (`Toe..`) under every jointed shin, kept level by `LegGait.Rig.Place` and its mirror: check 16
-    now measures every leg mesh, and found toes sinking by up to a fifth of a bird's height. The four boxes drawn for
+  - A foot of its own (`Toe..`) under every jointed shin, turning at the ankle and kept level by
+    `LegGait.Rig.Place` and its mirror (the bones end at the ankle). Check 16 now measures every leg mesh, and found
+    toes sinking by up to a fifth of a bird's height. A bird's bare leg is one bone hinged at the heel, the thigh hidden
+    in the body (the egret's drawn heel mid-leg). The four boxes drawn for
     tails are redrawn round their tails. `Tests/Editor/LegGaitTests.cs`: a foot stays level through a walk and a peck.
   - The review: check 17, and `parts/<Model>.jpg` beside every source. LEARNINGS rule 8 and D20; ASSET_REVIEW check 17.
   - C#: `run.sh` passes on 6000.7; the errors-only compile comparison shows no new error in either symbol set, and a

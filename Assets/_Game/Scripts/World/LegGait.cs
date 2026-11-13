@@ -92,7 +92,10 @@ namespace DribbleToSchool.World
                 public Transform thigh, shin, toe;   // toe: optional, the foot kept level (Toe..)
                 public Quaternion thighRest, shinRest, toeRest;
                 public Vector3 thighAxis, shinAxis, toeAxis;
-                public Vector2 hip, knee, foot;     // hip in the root's side plane; knee and foot from the hip
+                // hip in the root's side plane; knee, end and foot from the hip. end: where the two bones end, the
+                // ankle (the toe's joint) or, with no toe, the foot; off: the foot from the end, at rest (the foot
+                // below a level toe stays that far from its ankle however the leg turns)
+                public Vector2 hip, knee, end, foot, off;
                 public float length, bend;
                 public bool bird;
             }
@@ -138,8 +141,9 @@ namespace DribbleToSchool.World
                     leg.shinRest = shin.localRotation;
                     leg.thighAxis = Quaternion.Inverse(thigh.rotation) * sideWorld;
                     leg.shinAxis = Quaternion.Inverse(shin.rotation) * sideWorld;
-                    // a foot of its own (a bird's toes, a paw), hung from the shin at the foot: kept level with the
-                    // ground, as a foot stays flat (D20: a bird's long toes, rigid in its shin, tipped into the floor)
+                    // a foot of its own (a bird's toes, a paw), hung from the shin at the ankle, the Foot point under
+                    // it: kept level with the ground, as a foot stays flat (D20: a bird's long toes, rigid in its
+                    // shin, tipped into the floor; a tall paw kept level about its contact point sheared off the shin)
                     leg.toe = Deep(shin, "Toe" + n);
                     if (leg.toe != null)
                     {
@@ -149,8 +153,10 @@ namespace DribbleToSchool.World
                     leg.hip = Plane(root, thigh.position);
                     leg.knee = Plane(root, shin.position) - leg.hip;
                     leg.foot = Plane(root, foot.position) - leg.hip;
-                    leg.length = leg.knee.magnitude + (leg.foot - leg.knee).magnitude;
-                    leg.bend = Bend(leg.knee, leg.foot, n[0] == 'F');
+                    leg.end = leg.toe != null ? Plane(root, leg.toe.position) - leg.hip : leg.foot;
+                    leg.off = leg.foot - leg.end;
+                    leg.length = leg.knee.magnitude + (leg.end - leg.knee).magnitude;
+                    leg.bend = Bend(leg.knee, leg.end, n[0] == 'F');
                     if (leg.length > 1e-4f) found.Add(leg);
                 }
                 return new Rig(root, found.ToArray());
@@ -173,11 +179,14 @@ namespace DribbleToSchool.World
                 return null;
             }
 
-            /// <summary>Turn a leg so its foot reaches target, its toe (if any) turned back by the leg's turns and by tip,
-            /// the body's own turn (radians, forward toward up), so the foot stays level with the ground.</summary>
+            /// <summary>Turn a leg so its foot reaches target (in the root's plane), its toe (if any) turned back by the
+            /// leg's turns and by tip, the body's own turn (radians, forward toward up), so the foot stays level with
+            /// the ground: the bones end at the ankle, the foot's offset below it turned into the root's frame.</summary>
             void Place(ref Leg leg, Vector2 target, float tip = 0f)
             {
-                Vector2 turn = TwoBone(leg.knee, leg.foot, target - leg.hip, leg.bend);
+                float c = Mathf.Cos(tip), s = Mathf.Sin(tip);
+                Vector2 off = new Vector2(leg.off.x * c + leg.off.y * s, -leg.off.x * s + leg.off.y * c);
+                Vector2 turn = TwoBone(leg.knee, leg.end, target - off - leg.hip, leg.bend);
                 leg.thigh.localRotation = leg.thighRest * Quaternion.AngleAxis(turn.x * Mathf.Rad2Deg, leg.thighAxis);
                 leg.shin.localRotation = leg.shinRest * Quaternion.AngleAxis(turn.y * Mathf.Rad2Deg, leg.shinAxis);
                 if (leg.toe != null)
@@ -212,7 +221,7 @@ namespace DribbleToSchool.World
                         w = Vector2.Lerp(Target(leg, middle, Kind.Walk, p, 0f), Target(leg, middle, Kind.Trot, p, 0f), trot);
                     }
                     want[i] = Vector2.Lerp(foot, w, weight);
-                    Vector2 t = want[i] - leg.hip;
+                    Vector2 t = want[i] - leg.off - leg.hip;     // where the bones must reach: the ankle above the foot
                     float r = 0.98f * leg.length;
                     if (t.y < 0f && Mathf.Abs(t.x) < r) dip = Mathf.Max(dip, -t.y - Mathf.Sqrt(r * r - t.x * t.x));
                 }
@@ -247,9 +256,9 @@ namespace DribbleToSchool.World
                 float c = Mathf.Cos(tip), s = Mathf.Sin(tip);
                 for (int i = 0; i < legs.Length; i++)
                 {
-                    Vector2 f = legs[i].hip + legs[i].foot;
+                    Vector2 f = legs[i].hip + legs[i].end;     // the ankle stays over the planted, level foot
                     Vector2 t = new Vector2(f.x * c + f.y * s, -f.x * s + f.y * c) - legs[i].hip;
-                    float l1 = legs[i].knee.magnitude, l2 = (legs[i].foot - legs[i].knee).magnitude;
+                    float l1 = legs[i].knee.magnitude, l2 = (legs[i].end - legs[i].knee).magnitude;
                     if (t.magnitude > 0.98f * (l1 + l2) || t.magnitude < Mathf.Abs(l1 - l2)) return false;
                 }
                 return true;
