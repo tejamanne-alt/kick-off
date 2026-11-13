@@ -259,7 +259,9 @@ of the same place, with its layout kept, since the models are measured from it. 
 (it keeps the 4:1 shape; Pro stops at 21:9): paste KM-R0 with KM-0 attached, then one RESTYLE per message, attaching that
 picture. KM1-1 (the home's picture) first, as the test: push it and Claude rebuilds the home from it; then the rest. Save
 each as review/kamakura/refs/photo/ with the same file name (PNG). If a picture drifts from KM-0's look, attach KM-0 again
-with it; if objects move, say "Same layout as the attached picture, object for object", or try again.
+with it; if objects move, say "Same layout as the attached picture, object for object", or try again. A picture that
+comes back still an illustration takes the second pass: BASE KM-R1 in a new chat, then its RESTYLE prompt again,
+attaching its first-pass result from refs/photo; save it over that result.
 
 ```text
 BASE KM-R0, the photographic restyle. Attach KM-0. You are turning a game's painted street pictures into photographs for
@@ -422,6 +424,18 @@ real thing, on the same plain mid-grey background, in even soft studio light wit
 the signs' Japanese text where it is legible; garbled text becomes a short invented name. The small car: no badge on
 its grille and no readable number plate (a plain white plate). The tram keeps its green-and-cream colours.
 FORMAT: exactly the attached picture's shape, 16:9.
+```
+
+```text
+BASE KM-R1, the second pass. Attach KM-0 and review/kamakura/refs/photo/KM2-3_grandmas_whitebait_shop.png. Some of my
+pictures came back from the first pass still as illustrations: outlines, flat colours, painted texture. That is the one
+thing that must change, and it must change completely. The second picture attached is one that came out right: the
+same layout as its painted original, but a real photograph in the look of KM-0. Make every picture I send now like it.
+For each: keep every object where it is, at its size, with its outline, exactly as before (all the KEEP EXACTLY and ALSO
+FIX rules of KM-R0 still hold), and replace every surface with real photographed material: real timber grain, real
+stone, real leaves, real metal and paint, real light and shadow, real depth. No outlines, no ink lines, no cel shading,
+no painted brush texture anywhere, not even at the edges of objects. A sheet keeps its plain grey background and its
+studio light, its objects photographed like product photos. Then wait for my first picture.
 ```
 
 ### Step 0: the model sheet base prompt (only when Claude asks for a sheet)

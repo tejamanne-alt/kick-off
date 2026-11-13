@@ -1958,6 +1958,13 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
   KM-P3, P4, P6, P7 and P8 are photographs already. The 12 level pictures have theirs. The check found the nine ground
   texture prompts (KM-T07 to T15) attaching the painted level pictures with no word of the photographic look: they now
   attach each picture's photographic version and KM-0, and are made after the restyle (`docs/LEARNINGS.md` D12).
+- **The first-pass restyles checked** (the user pushed all 15 into `review/kamakura/refs/photo`). Each beside its
+  original, by eye, with the layout's drift measured per tile (phase correlation on blurred edges). Passed, photographic
+  with the layout kept: KM1-1 (now with the home's entrance, its upper storey solid, the bicycle gone), KM1-4, KM2-1,
+  KM2-2 (the view about 90 px further left), KM2-3, KM2-4, KM2-5; several have a pale sky instead of KM-0's cobalt, which
+  the game's own sky replaces. Still illustrations: KM1-2, KM1-3, KM3-1, KM3-2, KM3-3 (bell tower and gate about 60 px
+  left), KM-P1, KM-P2, KM-P5 (P1 and P5 almost unchanged). KM1-1 kept the real drink logo on both machines: the kit
+  rebrands both. BASE KM-R1, the second pass, added for the eight (`docs/LEARNINGS.md` D12).
 - **Who makes the photographs:** the user, in the Gemini app (a phone works), sending each result in the chat or pushing
   it. From the cloud session there is no image model to run: the Hugging Face connector has running Spaces switched off
   (gradio=none), huggingface.co and hf.space are blocked by the proxy, and Gemini's API needs the user's key (declined for
