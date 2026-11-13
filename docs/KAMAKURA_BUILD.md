@@ -465,7 +465,9 @@ Then wait for my first object.
 
 Claude builds walls and roofs from KM-P3 itself (board by board, tile by tile), so KM-T01 to T03 (boards, mortar, tiles)
 are needed only when Claude asks for more variety; the grounds (KM-T07 on) are still made here. Gemini, Nano Banana 2.1
-or Pro, a new chat. Attach the named source image each time.
+or Pro, a new chat. Attach the named source image each time. The grounds come from the level pictures: make them after
+the restyle, attaching each picture's photographic version (review/kamakura/refs/photo) and KM-0, so they come out as
+photographs, never painted.
 
 ```text
 TEXTURE KM-T01, dark-stained timber boards. Attach KM-P3. Make the top-left plate of the attached image (dark-stained
@@ -505,57 +507,65 @@ colours. It is a single window, not tileable. FORMAT: aspect ratio 1:1, the larg
 ```
 
 ```text
-TEXTURE KM-T07, the lane and its walking strip. Attach KM1-1. Make a seamless texture of the road surface along the
-front of the attached picture, seen straight down: grey asphalt with fine cracks and patches, the white edge line and
-the green-painted walking strip beside it. Tileable along its length (left edge into right edge). Flat shadowless light,
+TEXTURE KM-T07, the lane and its walking strip. Attach KM1-1 (its photographic version) and KM-0. Photographed in KM-0's
+look, not painted. Make a seamless texture of the road surface along the front of the attached picture, seen straight
+down: grey asphalt with fine cracks and patches, the white edge line and the green-painted walking strip beside it.
+Tileable along its length (left edge into right edge). Flat shadowless light, the same colours. FORMAT: aspect ratio
+4:1, the largest size you can make.
+```
+
+```text
+TEXTURE KM-T08, stone paving. Attach KM1-3 (its photographic version) and KM-0. Photographed in KM-0's look, not
+painted. Make a seamless, tileable square texture of the pale grey stone paving of the shopping street in the attached
+picture, seen straight down, flat shadowless light, the same colours. FORMAT: aspect ratio 1:1, the largest size you can
+make.
+```
+
+```text
+TEXTURE KM-T09, the shrine's gravel. Attach KM1-4 (its photographic version) and KM-0. Photographed in KM-0's look, not
+painted. Make a seamless, tileable square texture of the pale raked gravel of the shrine path in the attached picture,
+seen straight down, flat light, the same colours. FORMAT: aspect ratio 1:1, the largest size you can make.
+```
+
+```text
+TEXTURE KM-T10, sand, dry and wet. Attach KM2-2 (its photographic version) and KM-0. Photographed in KM-0's look, not
+painted. Make a seamless texture of the beach in the attached picture seen straight down: pale dry sand at the top half
+shading into darker wet sand with a line of seaweed and shells, tileable along its length (left into right). Flat light,
 the same colours. FORMAT: aspect ratio 4:1, the largest size you can make.
 ```
 
 ```text
-TEXTURE KM-T08, stone paving. Attach KM1-3. Make a seamless, tileable square texture of the pale grey stone paving of the
-shopping street in the attached picture, seen straight down, flat shadowless light, the same colours. FORMAT: aspect
-ratio 1:1, the largest size you can make.
-```
-
-```text
-TEXTURE KM-T09, the shrine's gravel. Attach KM1-4. Make a seamless, tileable square texture of the pale raked gravel of
-the shrine path in the attached picture, seen straight down, flat light, the same colours. FORMAT: aspect ratio 1:1, the
+TEXTURE KM-T11, boardwalk planks. Attach KM2-1 (its photographic version) and KM-0. Photographed in KM-0's look, not
+painted. Make a seamless texture of the weathered boardwalk planks on the sand in the attached picture, seen straight
+down, sand drifted in the gaps, tileable along its length. Flat light, the same colours. FORMAT: aspect ratio 4:1, the
 largest size you can make.
 ```
 
 ```text
-TEXTURE KM-T10, sand, dry and wet. Attach KM2-2. Make a seamless texture of the beach in the attached picture seen
-straight down: pale dry sand at the top half shading into darker wet sand with a line of seaweed and shells, tileable
-along its length (left into right). Flat light, the same colours. FORMAT: aspect ratio 4:1, the largest size you can make.
+TEXTURE KM-T12, rock shelf. Attach KM2-4 (its photographic version) and KM-0. Photographed in KM-0's look, not painted.
+Make a seamless, tileable square texture of the dark wave-cut rock shelves in the attached picture seen straight down:
+barnacles, seaweed, small tide pools. Flat light, the same colours. FORMAT: aspect ratio 1:1, the largest size you can
+make.
 ```
 
 ```text
-TEXTURE KM-T11, boardwalk planks. Attach KM2-1. Make a seamless texture of the weathered boardwalk planks on the sand in
-the attached picture, seen straight down, sand drifted in the gaps, tileable along its length. Flat light, the same
-colours. FORMAT: aspect ratio 4:1, the largest size you can make.
+TEXTURE KM-T13, wet stone paving. Attach KM3-1 (its photographic version) and KM-0. Photographed in KM-0's look, not
+painted. Make a seamless, tileable square texture of the wet, mossy stone paving at the foot of the attached picture
+seen straight down, rain-darkened, with fallen leaves and small puddles. Flat light, the same colours. FORMAT: aspect
+ratio 1:1, the largest size you can make.
 ```
 
 ```text
-TEXTURE KM-T12, rock shelf. Attach KM2-4. Make a seamless, tileable square texture of the dark wave-cut rock shelves in
-the attached picture seen straight down: barnacles, seaweed, small tide pools. Flat light, the same colours. FORMAT:
-aspect ratio 1:1, the largest size you can make.
+TEXTURE KM-T14, the forest trail. Attach KM3-2 (its photographic version) and KM-0. Photographed in KM-0's look, not
+painted. Make a seamless, tileable square texture of the earth trail in the attached picture seen straight down: wet
+dark earth, fallen leaves, small roots and stones. Flat light, the same colours. FORMAT: aspect ratio 1:1, the largest
+size you can make.
 ```
 
 ```text
-TEXTURE KM-T13, wet stone paving. Attach KM3-1. Make a seamless, tileable square texture of the wet, mossy stone paving at
-the foot of the attached picture seen straight down, rain-darkened, with fallen leaves and small puddles. Flat light, the
-same colours. FORMAT: aspect ratio 1:1, the largest size you can make.
-```
-
-```text
-TEXTURE KM-T14, the forest trail. Attach KM3-2. Make a seamless, tileable square texture of the earth trail in the
-attached picture seen straight down: wet dark earth, fallen leaves, small roots and stones. Flat light, the same colours.
-FORMAT: aspect ratio 1:1, the largest size you can make.
-```
-
-```text
-TEXTURE KM-T15, the hilltop lawn. Attach KM3-3. Make a seamless, tileable square texture of the wet lawn in the attached
-picture seen straight down. Flat light, the same colours. FORMAT: aspect ratio 1:1, the largest size you can make.
+TEXTURE KM-T15, the hilltop lawn. Attach KM3-3 (its photographic version) and KM-0. Photographed in KM-0's look, not
+painted. Make a seamless, tileable square texture of the wet lawn in the attached picture seen straight down. Flat
+light, the same colours. FORMAT: aspect ratio 1:1, the largest size you can make.
 ```
 
 ### Step 2: street props

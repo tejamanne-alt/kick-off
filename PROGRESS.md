@@ -1953,6 +1953,11 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
   5.6 % at the school (both in the user's 5 to 15 %); KM1-4's node sits 100 px past its stop, clear of the school's pin.
   KM1-4's design follows (`docs/CITIES.md`, BUILD KM-L14): the shrine seen over its wall from the street, the bridge's
   hump traded for the zebra crossing at the top; its title and picture stay.
+- **Which pictures need the restyle** (the user: "Won't the other props require the restyle?"). Checked all eight
+  sheets: KM-P1 (props), KM-P2 (plants) and KM-P5 (more props) are painted or illustrated and have RESTYLE prompts;
+  KM-P3, P4, P6, P7 and P8 are photographs already. The 12 level pictures have theirs. The check found the nine ground
+  texture prompts (KM-T07 to T15) attaching the painted level pictures with no word of the photographic look: they now
+  attach each picture's photographic version and KM-0, and are made after the restyle (`docs/LEARNINGS.md` D12).
 - **Who makes the photographs:** the user, in the Gemini app (a phone works), sending each result in the chat or pushing
   it. From the cloud session there is no image model to run: the Hugging Face connector has running Spaces switched off
   (gradio=none), huggingface.co and hf.space are blocked by the proxy, and Gemini's API needs the user's key (declined for
