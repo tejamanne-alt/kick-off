@@ -2054,6 +2054,15 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
   `Tests/Editor/LegGaitTests.cs`: the foot path, the solver, and a rig keeping planted feet on the ground and holding
   them through a peck. Check 16 measures every foot through every motion. The heron's 2 px lower legs, dropped by the
   cut-out's cleanup, are grown back. Not yet run in Unity or on the Nord CE5: the Kamakura animals aren't in a level.
+- **The same fixes for every other animal** (the user: "Add this to our learnings and avoid these mistakes. Now analyse
+  and apply these fixes to other animals and birds"). The analysis, by model: rigid parts where the animal bends
+  (tails, birds' wings, the koi, the turtle's flippers), motions invented for the review (sitting cats turning heads,
+  the Shiba's tail, perched birds, the koi), and behaviours blind to jointed legs (WallCat). Now: tails in three links
+  and wings in two (`World/PartChain.cs`, through `AmbientAgent.Part`, CritterIdle and the Dog's tail), PondDuck's koi
+  tail and turtle flippers, GroundBird's tail pump (the wagtail), WallCat tucking a walking cat's legs through a bound,
+  a peck tipping only as far as the feet stay planted (`LegGait.Rig.Reach`). Every review motion is its behaviour's
+  code at its real speed, the settings recorded per model in the manifest (`game`). Lessons: LEARNINGS rule 8 and
+  D19; the image prompts' animal-sheet rules and KM-S1 (republished, version 22). `Tests/Editor/PartChainTests.cs`.
 
 ## After Phase 8 (next steps)
 
