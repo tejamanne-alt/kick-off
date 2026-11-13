@@ -2074,7 +2074,8 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
     `leg_drop` for a raised leg).
   - Four-legged legs seeded by drawn lines where a pair touches (`leg_seeds`); each leg kept to its own pixels, a skirt
     of the body below the belly.
-  - Tail outlines redrawn; the body carries on under a drawn part's edge; `front_fins`, `curl` and `beard` added.
+  - Tail and head outlines redrawn (heads pivoting at the nape); the body carries on under a drawn tail's edge;
+    `front_fins`, `curl`, `beard` and `keep_body` added.
   - FlitButterfly's wingbeat is a setting (`beatMid`, `beatSwing`; the dragonfly 4 ± 24).
   - A foot of its own (`Toe..`) under every jointed shin, turning at the ankle and kept level by
     `LegGait.Rig.Place` and its mirror (the bones end at the ankle). Check 16 now measures every leg mesh, and found
@@ -2084,6 +2085,9 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
   - The review: check 17, and `parts/<Model>.jpg` beside every source. LEARNINGS rule 8 and D20; ASSET_REVIEW check 17.
   - C#: `run.sh` passes on 6000.7; the errors-only compile comparison shows no new error in either symbol set, and a
     planted error is caught.
+  - The review (republished, version 2 of https://claude.ai/artifact/MERPAe1mamCFnSRnGwApnm): 43 models, 57 motions,
+    653 checks passed, 7 known limits (the seven in flight built from one view), none failed; the largest 2,278
+    triangles. Every motion and part map was looked at at full size. Not yet run in Unity or on the Nord CE5.
 
 ## After Phase 8 (next steps)
 

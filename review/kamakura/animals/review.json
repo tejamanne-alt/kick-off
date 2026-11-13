@@ -1,0 +1,8077 @@
+{
+ "KmCatSitting": {
+  "id": "KM-N01",
+  "sheet": "KM-P4_animals_sheet.png",
+  "box": [
+   500,
+   18,
+   858,
+   284
+  ],
+  "view": "side",
+  "px_per_m": 657.9,
+  "tris": 1257,
+  "parts": {
+   "Body": 933,
+   "Tail": 120,
+   "Tail2": 112,
+   "Tail3": 92
+  },
+  "empties": [
+   "Attach.Front"
+  ],
+  "size": [
+   0.515,
+   0.132,
+   0.378
+  ],
+  "open_edges": {
+   "Body": [
+    0,
+    42
+   ],
+   "Tail": [
+    0,
+    16
+   ],
+   "Tail2": [
+    0,
+    19
+   ],
+   "Tail3": [
+    0,
+    14
+   ]
+  },
+  "depth_to_width": {
+   "Body": 0.64,
+   "Tail": 0.89,
+   "Tail2": 0.88,
+   "Tail3": 0.98
+  },
+  "edges": 1796,
+  "leg_length": null,
+  "game": {
+   "component": "WallCat",
+   "tail": "Tail",
+   "tailAxis": "side"
+  },
+  "copied": [],
+  "feet": {},
+  "motions": [
+   "swish"
+  ],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "meshes: Body 933 tris, Tail 120 tris, Tail2 112 tris, Tail3 92 tris; pivots only: Attach.Front. Checked in Top and Bottom."
+   ],
+   [
+    2,
+    "Closed shell",
+    "pass",
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 91 of 1796 edges where the two faces touch along a thin part's edge (closed, no gap)"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "pass",
+    "deepest / half-width: Body 0.64, Tail 0.89, Tail2 0.88, Tail3 0.98"
+   ],
+   [
+    4,
+    "Views the game sees have real source data",
+    "pass",
+    "The game sees it the right flank (Right), and at most the Right 3/4 as it passes; Front, Back, Top and Bottom are built from the side picture alone (a soft, mirrored likeness there, never seen in play)."
+   ],
+   [
+    5,
+    "Real size, triangles",
+    "pass",
+    "0.52 x 0.13 x 0.38 m; 1257 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+   ],
+   [
+    6,
+    "Outline whole, no background or shadow",
+    "pass",
+    "looked at on the cuts sheet (cuts.jpg), and against the cut before the texture cue (D18)"
+   ],
+   [
+    7,
+    "No holes; real gaps open",
+    "pass",
+    "looked at on the cuts sheet: no hole in the fur or feathers; the backdrop between tail and back, legs and wings stays open"
+   ],
+   [
+    8,
+    "Things before a wall are their own models",
+    "n/a",
+    "an animal on a plain sheet"
+   ],
+   [
+    9,
+    "The look target's look",
+    "pass",
+    "KM-P4_animals_sheet.png: photographic, as KM-0"
+   ],
+   [
+    10,
+    "Solid, nothing ghosted",
+    "pass",
+    "no see-through parts but real wings"
+   ],
+   [
+    11,
+    "No real brand or logo",
+    "pass",
+    "none (the Shiba's collar is plain)"
+   ],
+   [
+    12,
+    "No wires, no sky, crisp outline",
+    "pass",
+    "a plain sheet; the outline is cut from it at full resolution"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "fur and feathers found by their texture as well as their colour; the ground shadow removed (the lowest 13 % of the box); holes of fur or feather filled, gaps of smooth backdrop left open"
+   ],
+   [
+    14,
+    "Rig names and pivots",
+    "pass",
+    "Tail, Tail2, Tail3 (+ Attach.Front): origins at the joints"
+   ],
+   [
+    15,
+    "Joints overlap, no seam, no gap mid-motion",
+    "pass",
+    "every part overlaps the body; motions looked at frame by frame: swish"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no legs that walk"
+   ],
+   [
+    17,
+    "Each part holds only itself",
+    "pass",
+    "looked at on its part map at full size, part by part: Tail, Tail2, Tail3"
+   ]
+  ]
+ },
+ "KmCatWalking": {
+  "id": "KM-N01",
+  "sheet": "KM-P4_animals_sheet.png",
+  "box": [
+   21,
+   44,
+   443,
+   280
+  ],
+  "view": "side",
+  "px_per_m": 716.7,
+  "tris": 2240,
+  "parts": {
+   "Body": 1124,
+   "Tail": 62,
+   "LegFR": 120,
+   "LegFL": 108,
+   "LegBR": 156,
+   "LegBL": 146,
+   "ShinFR": 72,
+   "ShinFL": 58,
+   "ShinBR": 84,
+   "ShinBL": 42,
+   "Tail2": 52,
+   "ToeFR": 26,
+   "ToeFL": 28,
+   "ToeBR": 78,
+   "ToeBL": 20,
+   "Tail3": 64
+  },
+  "empties": [
+   "Attach.Front",
+   "FootBL",
+   "FootBR",
+   "FootFL",
+   "FootFR"
+  ],
+  "size": [
+   0.565,
+   0.117,
+   0.297
+  ],
+  "open_edges": {
+   "Body": [
+    0,
+    17
+   ],
+   "Tail": [
+    0,
+    8
+   ],
+   "LegFR": [
+    0,
+    7
+   ],
+   "LegFL": [
+    0,
+    7
+   ],
+   "LegBR": [
+    0,
+    11
+   ],
+   "LegBL": [
+    0,
+    15
+   ],
+   "ShinFR": [
+    0,
+    11
+   ],
+   "ShinFL": [
+    0,
+    7
+   ],
+   "ShinBR": [
+    0,
+    8
+   ],
+   "ShinBL": [
+    0,
+    3
+   ],
+   "Tail2": [
+    0,
+    7
+   ],
+   "ToeFR": [
+    0,
+    2
+   ],
+   "ToeFL": [
+    0,
+    1
+   ],
+   "ToeBR": [
+    0,
+    13
+   ],
+   "ToeBL": [
+    0,
+    1
+   ],
+   "Tail3": [
+    0,
+    9
+   ]
+  },
+  "depth_to_width": {
+   "Body": 0.65,
+   "Tail": 0.98,
+   "LegFR": 0.92,
+   "LegFL": 0.92,
+   "LegBR": 0.89,
+   "LegBL": 0.95,
+   "ShinFR": 0.89,
+   "ShinFL": 0.97,
+   "ShinBR": 0.92,
+   "ShinBL": 0.94,
+   "Tail2": 0.96,
+   "ToeFR": 0.96,
+   "ToeFL": 0.96,
+   "ToeBR": 0.92,
+   "ToeBL": 0.94,
+   "Tail3": 0.89
+  },
+  "edges": 3233,
+  "leg_length": 0.1283,
+  "game": {
+   "component": "WallCat",
+   "tail": "Tail",
+   "tailAxis": "side",
+   "legs": "LegGait (tucked in a bound)"
+  },
+  "copied": [],
+  "feet": {
+   "walk": {
+    "sink": 0.0,
+    "contact": 0.0,
+    "held": 0.069
+   },
+   "run": {
+    "sink": 0.0,
+    "contact": 0.0055,
+    "held": 0.1256
+   },
+   "bound": {
+    "sink": 0.0,
+    "contact": 0.1245,
+    "held": 0.1366
+   }
+  },
+  "motions": [
+   "walk",
+   "run",
+   "bound"
+  ],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "meshes: Body 1124 tris, Tail 62 tris, LegFR 120 tris, LegFL 108 tris, LegBR 156 tris, LegBL 146 tris, ShinFR 72 tris, ShinFL 58 tris, ShinBR 84 tris, ShinBL 42 tris, Tail2 52 tris, ToeFR 26 tris, ToeFL 28 tris, ToeBR 78 tris, ToeBL 20 tris, Tail3 64 tris; pivots only: Attach.Front, FootBL, FootBR, FootFL, FootFR. Checked in Top and Bottom."
+   ],
+   [
+    2,
+    "Closed shell",
+    "pass",
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 127 of 3233 edges where the two faces touch along a thin part's edge (closed, no gap)"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "pass",
+    "deepest / half-width: Body 0.65, Tail 0.98, LegFR 0.92, LegFL 0.92, LegBR 0.89, LegBL 0.95, ShinFR 0.89, ShinFL 0.97, ShinBR 0.92, ShinBL 0.94, Tail2 0.96, ToeFR 0.96, ToeFL 0.96, ToeBR 0.92, ToeBL 0.94, Tail3 0.89"
+   ],
+   [
+    4,
+    "Views the game sees have real source data",
+    "pass",
+    "The game sees it the right flank (Right), and at most the Right 3/4 as it passes; Front, Back, Top and Bottom are built from the side picture alone (a soft, mirrored likeness there, never seen in play)."
+   ],
+   [
+    5,
+    "Real size, triangles",
+    "pass",
+    "0.56 x 0.12 x 0.30 m; 2240 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+   ],
+   [
+    6,
+    "Outline whole, no background or shadow",
+    "pass",
+    "looked at on the cuts sheet (cuts.jpg), and against the cut before the texture cue (D18)"
+   ],
+   [
+    7,
+    "No holes; real gaps open",
+    "pass",
+    "looked at on the cuts sheet: no hole in the fur or feathers; the backdrop between tail and back, legs and wings stays open"
+   ],
+   [
+    8,
+    "Things before a wall are their own models",
+    "n/a",
+    "an animal on a plain sheet"
+   ],
+   [
+    9,
+    "The look target's look",
+    "pass",
+    "KM-P4_animals_sheet.png: photographic, as KM-0"
+   ],
+   [
+    10,
+    "Solid, nothing ghosted",
+    "pass",
+    "no see-through parts but real wings"
+   ],
+   [
+    11,
+    "No real brand or logo",
+    "pass",
+    "none (the Shiba's collar is plain)"
+   ],
+   [
+    12,
+    "No wires, no sky, crisp outline",
+    "pass",
+    "a plain sheet; the outline is cut from it at full resolution"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "fur and feathers found by their texture as well as their colour; the ground shadow removed (the lowest 13 % of the box); holes of fur or feather filled, gaps of smooth backdrop left open"
+   ],
+   [
+    14,
+    "Rig names and pivots",
+    "pass",
+    "Tail, LegFR, LegFL, LegBR, LegBL, ShinFR, ShinFL, ShinBR, ShinBL, Tail2, ToeFR, ToeFL, ToeBR, ToeBL, Tail3 (+ Attach.Front, FootBL, FootBR, FootFL, FootFR): origins at the joints"
+   ],
+   [
+    15,
+    "Joints overlap, no seam, no gap mid-motion",
+    "pass",
+    "every part overlaps the body; four legs, near and far: LegBL, LegBR, LegFL, LegFR; motions looked at frame by frame: walk, run, bound"
+   ],
+   [
+    16,
+    "Feet planted",
+    "pass",
+    "walk: sink 0.0 mm, lowest foot 0.0 mm up, held 69.0 mm; run: sink 0.0 mm, lowest foot 5.5 mm up, held 125.6 mm; bound: sink 0.0 mm, lowest foot 124.5 mm up, held 136.6 mm (tolerance 3.0 mm, 1 % of its height)"
+   ],
+   [
+    17,
+    "Each part holds only itself",
+    "pass",
+    "looked at on its part map at full size, part by part: Tail, LegFR, LegFL, LegBR, LegBL, ShinFR, ShinFL, ShinBR, ShinBL, Tail2, ToeFR, ToeFL, ToeBR, ToeBL, Tail3; every leg the picture shows is its own part, its own pixels only"
+   ]
+  ]
+ },
+ "KmTanukiWalking": {
+  "id": "KM-N02",
+  "sheet": "KM-P4_animals_sheet.png",
+  "box": [
+   1409,
+   50,
+   1838,
+   281
+  ],
+  "view": "side",
+  "px_per_m": 588.9,
+  "tris": 2028,
+  "parts": {
+   "Body": 750,
+   "Tail": 106,
+   "LegFR": 88,
+   "LegFL": 122,
+   "LegBR": 126,
+   "LegBL": 102,
+   "ShinFR": 98,
+   "ShinFL": 72,
+   "ShinBR": 72,
+   "ShinBL": 72,
+   "Tail2": 156,
+   "ToeFR": 38,
+   "ToeFL": 36,
+   "ToeBR": 52,
+   "ToeBL": 38,
+   "Tail3": 100
+  },
+  "empties": [
+   "Attach.Front",
+   "FootBL",
+   "FootBR",
+   "FootFL",
+   "FootFR"
+  ],
+  "size": [
+   0.698,
+   0.169,
+   0.358
+  ],
+  "open_edges": {
+   "Body": [
+    0,
+    41
+   ],
+   "Tail": [
+    0,
+    3
+   ],
+   "LegFR": [
+    0,
+    7
+   ],
+   "LegFL": [
+    0,
+    16
+   ],
+   "LegBR": [
+    0,
+    15
+   ],
+   "LegBL": [
+    0,
+    14
+   ],
+   "ShinFR": [
+    0,
+    16
+   ],
+   "ShinFL": [
+    0,
+    11
+   ],
+   "ShinBR": [
+    0,
+    8
+   ],
+   "ShinBL": [
+    0,
+    10
+   ],
+   "Tail2": [
+    0,
+    13
+   ],
+   "ToeFR": [
+    0,
+    3
+   ],
+   "ToeFL": [
+    0,
+    3
+   ],
+   "ToeBR": [
+    0,
+    7
+   ],
+   "ToeBL": [
+    0,
+    5
+   ],
+   "Tail3": [
+    0,
+    12
+   ]
+  },
+  "depth_to_width": {
+   "Body": 0.65,
+   "Tail": 0.88,
+   "LegFR": 0.92,
+   "LegFL": 0.88,
+   "LegBR": 0.91,
+   "LegBL": 0.93,
+   "ShinFR": 0.98,
+   "ShinFL": 0.95,
+   "ShinBR": 0.98,
+   "ShinBL": 0.99,
+   "Tail2": 0.91,
+   "ToeFR": 0.99,
+   "ToeFL": 0.99,
+   "ToeBR": 0.99,
+   "ToeBL": 0.99,
+   "Tail3": 0.94
+  },
+  "edges": 2858,
+  "leg_length": 0.1554,
+  "game": {
+   "component": "Dog",
+   "tail": "Tail",
+   "tailAxis": "side",
+   "head": null,
+   "legs": "LegGait (walk into trot)"
+  },
+  "copied": [],
+  "feet": {
+   "walk": {
+    "sink": 0.0,
+    "contact": 0.0,
+    "held": 0.0854
+   },
+   "run": {
+    "sink": 0.0,
+    "contact": 0.0066,
+    "held": 0.1494
+   }
+  },
+  "motions": [
+   "walk",
+   "run"
+  ],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "meshes: Body 750 tris, Tail 106 tris, LegFR 88 tris, LegFL 122 tris, LegBR 126 tris, LegBL 102 tris, ShinFR 98 tris, ShinFL 72 tris, ShinBR 72 tris, ShinBL 72 tris, Tail2 156 tris, ToeFR 38 tris, ToeFL 36 tris, ToeBR 52 tris, ToeBL 38 tris, Tail3 100 tris; pivots only: Attach.Front, FootBL, FootBR, FootFL, FootFR. Checked in Top and Bottom."
+   ],
+   [
+    2,
+    "Closed shell",
+    "pass",
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 184 of 2858 edges where the two faces touch along a thin part's edge (closed, no gap)"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "pass",
+    "deepest / half-width: Body 0.65, Tail 0.88, LegFR 0.92, LegFL 0.88, LegBR 0.91, LegBL 0.93, ShinFR 0.98, ShinFL 0.95, ShinBR 0.98, ShinBL 0.99, Tail2 0.91, ToeFR 0.99, ToeFL 0.99, ToeBR 0.99, ToeBL 0.99, Tail3 0.94"
+   ],
+   [
+    4,
+    "Views the game sees have real source data",
+    "pass",
+    "The game sees it the right flank (Right), and at most the Right 3/4 as it passes; Front, Back, Top and Bottom are built from the side picture alone (a soft, mirrored likeness there, never seen in play)."
+   ],
+   [
+    5,
+    "Real size, triangles",
+    "pass",
+    "0.70 x 0.17 x 0.36 m; 2028 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+   ],
+   [
+    6,
+    "Outline whole, no background or shadow",
+    "pass",
+    "looked at on the cuts sheet (cuts.jpg), and against the cut before the texture cue (D18)"
+   ],
+   [
+    7,
+    "No holes; real gaps open",
+    "pass",
+    "looked at on the cuts sheet: no hole in the fur or feathers; the backdrop between tail and back, legs and wings stays open"
+   ],
+   [
+    8,
+    "Things before a wall are their own models",
+    "n/a",
+    "an animal on a plain sheet"
+   ],
+   [
+    9,
+    "The look target's look",
+    "pass",
+    "KM-P4_animals_sheet.png: photographic, as KM-0"
+   ],
+   [
+    10,
+    "Solid, nothing ghosted",
+    "pass",
+    "no see-through parts but real wings"
+   ],
+   [
+    11,
+    "No real brand or logo",
+    "pass",
+    "none (the Shiba's collar is plain)"
+   ],
+   [
+    12,
+    "No wires, no sky, crisp outline",
+    "pass",
+    "a plain sheet; the outline is cut from it at full resolution"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "fur and feathers found by their texture as well as their colour; the ground shadow removed (the lowest 13 % of the box); GrabCut inside the outline (colours close to the sheet's grey kept); holes of fur or feather filled, gaps of smooth backdrop left open"
+   ],
+   [
+    14,
+    "Rig names and pivots",
+    "pass",
+    "Tail, LegFR, LegFL, LegBR, LegBL, ShinFR, ShinFL, ShinBR, ShinBL, Tail2, ToeFR, ToeFL, ToeBR, ToeBL, Tail3 (+ Attach.Front, FootBL, FootBR, FootFL, FootFR): origins at the joints"
+   ],
+   [
+    15,
+    "Joints overlap, no seam, no gap mid-motion",
+    "pass",
+    "every part overlaps the body; four legs, near and far: LegBL, LegBR, LegFL, LegFR; motions looked at frame by frame: walk, run"
+   ],
+   [
+    16,
+    "Feet planted",
+    "pass",
+    "walk: sink 0.0 mm, lowest foot 0.0 mm up, held 85.4 mm; run: sink 0.0 mm, lowest foot 6.6 mm up, held 149.4 mm (tolerance 3.6 mm, 1 % of its height)"
+   ],
+   [
+    17,
+    "Each part holds only itself",
+    "pass",
+    "looked at on its part map at full size, part by part: Tail, LegFR, LegFL, LegBR, LegBL, ShinFR, ShinFL, ShinBR, ShinBL, Tail2, ToeFR, ToeFL, ToeBR, ToeBL, Tail3; every leg the picture shows is its own part, its own pixels only"
+   ]
+  ]
+ },
+ "KmTanukiSitting": {
+  "id": "KM-N02",
+  "sheet": "KM-P4_animals_sheet.png",
+  "box": [
+   1898,
+   31,
+   2280,
+   282
+  ],
+  "view": "side",
+  "px_per_m": 585.0,
+  "tris": 1624,
+  "parts": {
+   "Body": 1274,
+   "Tail": 178,
+   "Tail2": 86,
+   "Tail3": 86
+  },
+  "empties": [
+   "Attach.Front"
+  ],
+  "size": [
+   0.615,
+   0.159,
+   0.398
+  ],
+  "open_edges": {
+   "Body": [
+    0,
+    43
+   ],
+   "Tail": [
+    0,
+    28
+   ],
+   "Tail2": [
+    0,
+    3
+   ],
+   "Tail3": [
+    0,
+    6
+   ]
+  },
+  "depth_to_width": {
+   "Body": 0.64,
+   "Tail": 0.91,
+   "Tail2": 0.93,
+   "Tail3": 0.94
+  },
+  "edges": 2356,
+  "leg_length": null,
+  "game": {
+   "component": "CritterIdle",
+   "motions": [
+    {
+     "part": "Tail",
+     "axis": "side",
+     "amplitude": 8.0,
+     "speed": 1.0
+    }
+   ]
+  },
+  "copied": [],
+  "feet": {},
+  "motions": [
+   "idle"
+  ],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "meshes: Body 1274 tris, Tail 178 tris, Tail2 86 tris, Tail3 86 tris; pivots only: Attach.Front. Checked in Top and Bottom."
+   ],
+   [
+    2,
+    "Closed shell",
+    "pass",
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 80 of 2356 edges where the two faces touch along a thin part's edge (closed, no gap)"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "pass",
+    "deepest / half-width: Body 0.64, Tail 0.91, Tail2 0.93, Tail3 0.94"
+   ],
+   [
+    4,
+    "Views the game sees have real source data",
+    "pass",
+    "The game sees it the right flank (Right), and at most the Right 3/4 as it passes; Front, Back, Top and Bottom are built from the side picture alone (a soft, mirrored likeness there, never seen in play)."
+   ],
+   [
+    5,
+    "Real size, triangles",
+    "pass",
+    "0.61 x 0.16 x 0.40 m; 1624 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+   ],
+   [
+    6,
+    "Outline whole, no background or shadow",
+    "pass",
+    "looked at on the cuts sheet (cuts.jpg), and against the cut before the texture cue (D18)"
+   ],
+   [
+    7,
+    "No holes; real gaps open",
+    "pass",
+    "looked at on the cuts sheet: no hole in the fur or feathers; the backdrop between tail and back, legs and wings stays open"
+   ],
+   [
+    8,
+    "Things before a wall are their own models",
+    "n/a",
+    "an animal on a plain sheet"
+   ],
+   [
+    9,
+    "The look target's look",
+    "pass",
+    "KM-P4_animals_sheet.png: photographic, as KM-0"
+   ],
+   [
+    10,
+    "Solid, nothing ghosted",
+    "pass",
+    "no see-through parts but real wings"
+   ],
+   [
+    11,
+    "No real brand or logo",
+    "pass",
+    "none (the Shiba's collar is plain)"
+   ],
+   [
+    12,
+    "No wires, no sky, crisp outline",
+    "pass",
+    "a plain sheet; the outline is cut from it at full resolution"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "fur and feathers found by their texture as well as their colour; the ground shadow removed (the lowest 13 % of the box); GrabCut inside the outline (colours close to the sheet's grey kept); holes of fur or feather filled, gaps of smooth backdrop left open"
+   ],
+   [
+    14,
+    "Rig names and pivots",
+    "pass",
+    "Tail, Tail2, Tail3 (+ Attach.Front): origins at the joints"
+   ],
+   [
+    15,
+    "Joints overlap, no seam, no gap mid-motion",
+    "pass",
+    "every part overlaps the body; motions looked at frame by frame: idle"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no legs that walk"
+   ],
+   [
+    17,
+    "Each part holds only itself",
+    "pass",
+    "looked at on its part map at full size, part by part: Tail, Tail2, Tail3"
+   ]
+  ]
+ },
+ "KmSquirrelRunning": {
+  "id": "KM-N03",
+  "sheet": "KM-P4_animals_sheet.png",
+  "box": [
+   11,
+   374,
+   450,
+   562
+  ],
+  "view": "side",
+  "px_per_m": 1047.5,
+  "tris": 1787,
+  "parts": {
+   "Body": 1077,
+   "Tail": 242,
+   "Tail2": 224,
+   "Tail3": 244
+  },
+  "empties": [
+   "Attach.Front"
+  ],
+  "size": [
+   0.398,
+   0.068,
+   0.154
+  ],
+  "open_edges": {
+   "Body": [
+    0,
+    66
+   ],
+   "Tail": [
+    0,
+    25
+   ],
+   "Tail2": [
+    0,
+    23
+   ],
+   "Tail3": [
+    0,
+    24
+   ]
+  },
+  "depth_to_width": {
+   "Body": 0.68,
+   "Tail": 0.87,
+   "Tail2": 0.86,
+   "Tail3": 0.89
+  },
+  "edges": 2544,
+  "leg_length": null,
+  "game": {
+   "component": "TreeSquirrel",
+   "tail": "Tail",
+   "tailAxis": "side",
+   "note": "its dash: the model mid-leap"
+  },
+  "copied": [],
+  "feet": {},
+  "motions": [
+   "dash"
+  ],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "meshes: Body 1077 tris, Tail 242 tris, Tail2 224 tris, Tail3 244 tris; pivots only: Attach.Front. Checked in Top and Bottom."
+   ],
+   [
+    2,
+    "Closed shell",
+    "pass",
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 138 of 2544 edges where the two faces touch along a thin part's edge (closed, no gap)"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "pass",
+    "deepest / half-width: Body 0.68, Tail 0.87, Tail2 0.86, Tail3 0.89"
+   ],
+   [
+    4,
+    "Views the game sees have real source data",
+    "pass",
+    "The game sees it the right flank (Right), and at most the Right 3/4 as it passes; Front, Back, Top and Bottom are built from the side picture alone (a soft, mirrored likeness there, never seen in play)."
+   ],
+   [
+    5,
+    "Real size, triangles",
+    "pass",
+    "0.40 x 0.07 x 0.15 m; 1787 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+   ],
+   [
+    6,
+    "Outline whole, no background or shadow",
+    "pass",
+    "looked at on the cuts sheet (cuts.jpg), and against the cut before the texture cue (D18)"
+   ],
+   [
+    7,
+    "No holes; real gaps open",
+    "pass",
+    "looked at on the cuts sheet: no hole in the fur or feathers; the backdrop between tail and back, legs and wings stays open"
+   ],
+   [
+    8,
+    "Things before a wall are their own models",
+    "n/a",
+    "an animal on a plain sheet"
+   ],
+   [
+    9,
+    "The look target's look",
+    "pass",
+    "KM-P4_animals_sheet.png: photographic, as KM-0"
+   ],
+   [
+    10,
+    "Solid, nothing ghosted",
+    "pass",
+    "no see-through parts but real wings"
+   ],
+   [
+    11,
+    "No real brand or logo",
+    "pass",
+    "none (the Shiba's collar is plain)"
+   ],
+   [
+    12,
+    "No wires, no sky, crisp outline",
+    "pass",
+    "a plain sheet; the outline is cut from it at full resolution"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "fur and feathers found by their texture as well as their colour; the ground shadow removed (the lowest 30 % of the box); the dark core of the shadow between the legs removed (grey, smooth, darker than the backdrop); holes of fur or feather filled, gaps of smooth backdrop left open"
+   ],
+   [
+    14,
+    "Rig names and pivots",
+    "pass",
+    "Tail, Tail2, Tail3 (+ Attach.Front): origins at the joints"
+   ],
+   [
+    15,
+    "Joints overlap, no seam, no gap mid-motion",
+    "pass",
+    "every part overlaps the body; motions looked at frame by frame: dash"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no legs that walk"
+   ],
+   [
+    17,
+    "Each part holds only itself",
+    "pass",
+    "looked at on its part map at full size, part by part: Tail, Tail2, Tail3"
+   ]
+  ]
+ },
+ "KmSquirrelSitting": {
+  "id": "KM-N03",
+  "sheet": "KM-P4_animals_sheet.png",
+  "box": [
+   523,
+   322,
+   837,
+   606
+  ],
+  "view": "side",
+  "px_per_m": 883.3,
+  "tris": 1758,
+  "parts": {
+   "Body": 756,
+   "Tail": 338,
+   "Tail2": 328,
+   "Tail3": 336
+  },
+  "empties": [
+   "Attach.Front"
+  ],
+  "size": [
+   0.333,
+   0.08,
+   0.299
+  ],
+  "open_edges": {
+   "Body": [
+    0,
+    39
+   ],
+   "Tail": [
+    0,
+    24
+   ],
+   "Tail2": [
+    0,
+    26
+   ],
+   "Tail3": [
+    0,
+    28
+   ]
+  },
+  "depth_to_width": {
+   "Body": 0.62,
+   "Tail": 0.83,
+   "Tail2": 0.81,
+   "Tail3": 0.82
+  },
+  "edges": 2520,
+  "leg_length": null,
+  "game": {
+   "component": "TreeSquirrel",
+   "tail": "Tail",
+   "tailAxis": "side"
+  },
+  "copied": [],
+  "feet": {},
+  "motions": [
+   "flick"
+  ],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "meshes: Body 756 tris, Tail 338 tris, Tail2 328 tris, Tail3 336 tris; pivots only: Attach.Front. Checked in Top and Bottom."
+   ],
+   [
+    2,
+    "Closed shell",
+    "pass",
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 117 of 2520 edges where the two faces touch along a thin part's edge (closed, no gap)"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "pass",
+    "deepest / half-width: Body 0.62, Tail 0.83, Tail2 0.81, Tail3 0.82"
+   ],
+   [
+    4,
+    "Views the game sees have real source data",
+    "pass",
+    "The game sees it the right flank (Right), and at most the Right 3/4 as it passes; Front, Back, Top and Bottom are built from the side picture alone (a soft, mirrored likeness there, never seen in play)."
+   ],
+   [
+    5,
+    "Real size, triangles",
+    "pass",
+    "0.33 x 0.08 x 0.30 m; 1758 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+   ],
+   [
+    6,
+    "Outline whole, no background or shadow",
+    "pass",
+    "looked at on the cuts sheet (cuts.jpg), and against the cut before the texture cue (D18)"
+   ],
+   [
+    7,
+    "No holes; real gaps open",
+    "pass",
+    "looked at on the cuts sheet: no hole in the fur or feathers; the backdrop between tail and back, legs and wings stays open"
+   ],
+   [
+    8,
+    "Things before a wall are their own models",
+    "n/a",
+    "an animal on a plain sheet"
+   ],
+   [
+    9,
+    "The look target's look",
+    "pass",
+    "KM-P4_animals_sheet.png: photographic, as KM-0"
+   ],
+   [
+    10,
+    "Solid, nothing ghosted",
+    "pass",
+    "no see-through parts but real wings"
+   ],
+   [
+    11,
+    "No real brand or logo",
+    "pass",
+    "none (the Shiba's collar is plain)"
+   ],
+   [
+    12,
+    "No wires, no sky, crisp outline",
+    "pass",
+    "a plain sheet; the outline is cut from it at full resolution"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "fur and feathers found by their texture as well as their colour; the ground shadow removed (the lowest 13 % of the box); a 6 px gap of backdrop between tail and back closed and painted with the fur around it; holes of fur or feather filled, gaps of smooth backdrop left open"
+   ],
+   [
+    14,
+    "Rig names and pivots",
+    "pass",
+    "Tail, Tail2, Tail3 (+ Attach.Front): origins at the joints"
+   ],
+   [
+    15,
+    "Joints overlap, no seam, no gap mid-motion",
+    "pass",
+    "every part overlaps the body; motions looked at frame by frame: flick"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no legs that walk"
+   ],
+   [
+    17,
+    "Each part holds only itself",
+    "pass",
+    "looked at on its part map at full size, part by part: Tail, Tail2, Tail3"
+   ]
+  ]
+ },
+ "KmShibaStanding": {
+  "id": "KM-N04",
+  "sheet": "KM-P4_animals_sheet.png",
+  "box": [
+   1474,
+   314,
+   1808,
+   605
+  ],
+  "view": "side",
+  "px_per_m": 470.7,
+  "tris": 2218,
+  "parts": {
+   "Body": 440,
+   "Tail": 100,
+   "Head": 188,
+   "LegFR": 178,
+   "LegFL": 178,
+   "LegBR": 138,
+   "LegBL": 198,
+   "ShinFR": 88,
+   "ShinFL": 88,
+   "ShinBR": 108,
+   "ShinBL": 60,
+   "Tail2": 118,
+   "ToeFR": 66,
+   "ToeFL": 66,
+   "ToeBR": 54,
+   "ToeBL": 32,
+   "Tail3": 118
+  },
+  "empties": [
+   "Attach.Front",
+   "FootBL",
+   "FootBR",
+   "FootFL",
+   "FootFR"
+  ],
+  "size": [
+   0.669,
+   0.199,
+   0.576
+  ],
+  "open_edges": {
+   "Body": [
+    0,
+    32
+   ],
+   "Tail": [
+    0,
+    14
+   ],
+   "Head": [
+    0,
+    15
+   ],
+   "LegFR": [
+    0,
+    24
+   ],
+   "LegFL": [
+    0,
+    24
+   ],
+   "LegBR": [
+    0,
+    19
+   ],
+   "LegBL": [
+    0,
+    31
+   ],
+   "ShinFR": [
+    0,
+    13
+   ],
+   "ShinFL": [
+    0,
+    13
+   ],
+   "ShinBR": [
+    0,
+    19
+   ],
+   "ShinBL": [
+    0,
+    7
+   ],
+   "Tail2": [
+    0,
+    12
+   ],
+   "ToeFR": [
+    0,
+    10
+   ],
+   "ToeFL": [
+    0,
+    10
+   ],
+   "ToeBR": [
+    0,
+    8
+   ],
+   "ToeBL": [
+    0,
+    2
+   ],
+   "Tail3": [
+    0,
+    10
+   ]
+  },
+  "depth_to_width": {
+   "Body": 0.66,
+   "Tail": 0.93,
+   "Head": 0.79,
+   "LegFR": 0.82,
+   "LegFL": 0.82,
+   "LegBR": 0.93,
+   "LegBL": 0.94,
+   "ShinFR": 0.96,
+   "ShinFL": 0.96,
+   "ShinBR": 0.94,
+   "ShinBL": 0.99,
+   "Tail2": 0.89,
+   "ToeFR": 0.92,
+   "ToeFL": 0.92,
+   "ToeBR": 0.96,
+   "ToeBL": 0.99,
+   "Tail3": 0.91
+  },
+  "edges": 3064,
+  "leg_length": 0.252,
+  "game": {
+   "component": "Dog",
+   "tail": "Tail",
+   "tailAxis": "long",
+   "head": "Head",
+   "legs": "LegGait (walk into trot)"
+  },
+  "copied": [
+   "LegFL"
+  ],
+  "feet": {
+   "walk": {
+    "sink": 0.0,
+    "contact": 0.0,
+    "held": 0.14
+   },
+   "run": {
+    "sink": 0.0,
+    "contact": 0.0113,
+    "held": 0.2349
+   }
+  },
+  "motions": [
+   "walk",
+   "run"
+  ],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "meshes: Body 440 tris, Tail 100 tris, Head 188 tris, LegFR 178 tris, LegFL 178 tris, LegBR 138 tris, LegBL 198 tris, ShinFR 88 tris, ShinFL 88 tris, ShinBR 108 tris, ShinBL 60 tris, Tail2 118 tris, ToeFR 66 tris, ToeFL 66 tris, ToeBR 54 tris, ToeBL 32 tris, Tail3 118 tris; pivots only: Attach.Front, FootBL, FootBR, FootFL, FootFR. Checked in Top and Bottom."
+   ],
+   [
+    2,
+    "Closed shell",
+    "pass",
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 263 of 3064 edges where the two faces touch along a thin part's edge (closed, no gap)"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "pass",
+    "deepest / half-width: Body 0.66, Tail 0.93, Head 0.79, LegFR 0.82, LegFL 0.82, LegBR 0.93, LegBL 0.94, ShinFR 0.96, ShinFL 0.96, ShinBR 0.94, ShinBL 0.99, Tail2 0.89, ToeFR 0.92, ToeFL 0.92, ToeBR 0.96, ToeBL 0.99, Tail3 0.91"
+   ],
+   [
+    4,
+    "Views the game sees have real source data",
+    "pass",
+    "The game sees it the right flank (Right), and at most the Right 3/4 as it passes; Front, Back, Top and Bottom are built from the side picture alone (a soft, mirrored likeness there, never seen in play)."
+   ],
+   [
+    5,
+    "Real size, triangles",
+    "pass",
+    "0.67 x 0.20 x 0.58 m; 2218 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+   ],
+   [
+    6,
+    "Outline whole, no background or shadow",
+    "pass",
+    "looked at on the cuts sheet (cuts.jpg), and against the cut before the texture cue (D18)"
+   ],
+   [
+    7,
+    "No holes; real gaps open",
+    "pass",
+    "looked at on the cuts sheet: no hole in the fur or feathers; the backdrop between tail and back, legs and wings stays open"
+   ],
+   [
+    8,
+    "Things before a wall are their own models",
+    "n/a",
+    "an animal on a plain sheet"
+   ],
+   [
+    9,
+    "The look target's look",
+    "pass",
+    "KM-P4_animals_sheet.png: photographic, as KM-0"
+   ],
+   [
+    10,
+    "Solid, nothing ghosted",
+    "pass",
+    "no see-through parts but real wings"
+   ],
+   [
+    11,
+    "No real brand or logo",
+    "pass",
+    "none (the Shiba's collar is plain)"
+   ],
+   [
+    12,
+    "No wires, no sky, crisp outline",
+    "pass",
+    "a plain sheet; the outline is cut from it at full resolution"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "fur and feathers found by their texture as well as their colour; the ground shadow removed (the lowest 13 % of the box); holes of fur or feather filled, gaps of smooth backdrop left open"
+   ],
+   [
+    14,
+    "Rig names and pivots",
+    "pass",
+    "Tail, Head, LegFR, LegFL, LegBR, LegBL, ShinFR, ShinFL, ShinBR, ShinBL, Tail2, ToeFR, ToeFL, ToeBR, ToeBL, Tail3 (+ Attach.Front, FootBL, FootBR, FootFL, FootFR): origins at the joints"
+   ],
+   [
+    15,
+    "Joints overlap, no seam, no gap mid-motion",
+    "pass",
+    "every part overlaps the body; four legs, near and far: LegBL, LegBR, LegFL, LegFR; motions looked at frame by frame: walk, run"
+   ],
+   [
+    16,
+    "Feet planted",
+    "pass",
+    "walk: sink 0.0 mm, lowest foot 0.0 mm up, held 140.0 mm; run: sink 0.0 mm, lowest foot 11.3 mm up, held 234.9 mm (tolerance 5.8 mm, 1 % of its height)"
+   ],
+   [
+    17,
+    "Each part holds only itself",
+    "pass",
+    "looked at on its part map at full size, part by part: Tail, Head, LegFR, LegFL, LegBR, LegBL, ShinFR, ShinFL, ShinBR, ShinBL, Tail2, ToeFR, ToeFL, ToeBR, ToeBL, Tail3; LegFL a copy of the near leg, set behind (the far leg shows only as a paw behind the near one: the paw taken out); legs drawn on the sheet where their shape couldn't part them; the curled tail sways about the long axis; the rump carries on under it"
+   ]
+  ]
+ },
+ "KmShibaSitting": {
+  "id": "KM-N04",
+  "sheet": "KM-P4_animals_sheet.png",
+  "box": [
+   1940,
+   317,
+   2235,
+   601
+  ],
+  "view": "side",
+  "px_per_m": 430.6,
+  "tris": 1356,
+  "parts": {
+   "Body": 956,
+   "Tail": 104,
+   "Tail2": 126,
+   "Tail3": 170
+  },
+  "empties": [
+   "Attach.Front"
+  ],
+  "size": [
+   0.643,
+   0.159,
+   0.618
+  ],
+  "open_edges": {
+   "Body": [
+    0,
+    52
+   ],
+   "Tail": [
+    0,
+    13
+   ],
+   "Tail2": [
+    0,
+    13
+   ],
+   "Tail3": [
+    0,
+    21
+   ]
+  },
+  "depth_to_width": {
+   "Body": 0.64,
+   "Tail": 0.84,
+   "Tail2": 0.94,
+   "Tail3": 0.9
+  },
+  "edges": 1935,
+  "leg_length": null,
+  "game": {
+   "component": "CritterIdle",
+   "motions": [
+    {
+     "part": "Tail",
+     "axis": "long",
+     "amplitude": 15.0,
+     "speed": 6.0
+    }
+   ]
+  },
+  "copied": [],
+  "feet": {},
+  "motions": [
+   "idle"
+  ],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "meshes: Body 956 tris, Tail 104 tris, Tail2 126 tris, Tail3 170 tris; pivots only: Attach.Front. Checked in Top and Bottom."
+   ],
+   [
+    2,
+    "Closed shell",
+    "pass",
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 99 of 1935 edges where the two faces touch along a thin part's edge (closed, no gap)"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "pass",
+    "deepest / half-width: Body 0.64, Tail 0.84, Tail2 0.94, Tail3 0.90"
+   ],
+   [
+    4,
+    "Views the game sees have real source data",
+    "pass",
+    "The game sees it the right flank (Right), and at most the Right 3/4 as it passes; Front, Back, Top and Bottom are built from the side picture alone (a soft, mirrored likeness there, never seen in play)."
+   ],
+   [
+    5,
+    "Real size, triangles",
+    "pass",
+    "0.64 x 0.16 x 0.62 m; 1356 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+   ],
+   [
+    6,
+    "Outline whole, no background or shadow",
+    "pass",
+    "looked at on the cuts sheet (cuts.jpg), and against the cut before the texture cue (D18)"
+   ],
+   [
+    7,
+    "No holes; real gaps open",
+    "pass",
+    "looked at on the cuts sheet: no hole in the fur or feathers; the backdrop between tail and back, legs and wings stays open"
+   ],
+   [
+    8,
+    "Things before a wall are their own models",
+    "n/a",
+    "an animal on a plain sheet"
+   ],
+   [
+    9,
+    "The look target's look",
+    "pass",
+    "KM-P4_animals_sheet.png: photographic, as KM-0"
+   ],
+   [
+    10,
+    "Solid, nothing ghosted",
+    "pass",
+    "no see-through parts but real wings"
+   ],
+   [
+    11,
+    "No real brand or logo",
+    "pass",
+    "none (the Shiba's collar is plain)"
+   ],
+   [
+    12,
+    "No wires, no sky, crisp outline",
+    "pass",
+    "a plain sheet; the outline is cut from it at full resolution"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "fur and feathers found by their texture as well as their colour; the ground shadow removed (the lowest 13 % of the box); holes of fur or feather filled, gaps of smooth backdrop left open"
+   ],
+   [
+    14,
+    "Rig names and pivots",
+    "pass",
+    "Tail, Tail2, Tail3 (+ Attach.Front): origins at the joints"
+   ],
+   [
+    15,
+    "Joints overlap, no seam, no gap mid-motion",
+    "pass",
+    "every part overlaps the body; motions looked at frame by frame: idle"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no legs that walk"
+   ],
+   [
+    17,
+    "Each part holds only itself",
+    "pass",
+    "looked at on its part map at full size, part by part: Tail, Tail2, Tail3; the curled tail sways about the long axis; the rump carries on under it"
+   ]
+  ]
+ },
+ "KmKitePerched": {
+  "id": "KM-N05",
+  "sheet": "KM-P4_animals_sheet.png",
+  "box": [
+   89,
+   625,
+   358,
+   931
+  ],
+  "view": "side",
+  "px_per_m": 386.7,
+  "tris": 1206,
+  "parts": {
+   "Body": 1030,
+   "Head": 176
+  },
+  "empties": [
+   "Attach.Front"
+  ],
+  "size": [
+   0.649,
+   0.135,
+   0.747
+  ],
+  "open_edges": {
+   "Body": [
+    0,
+    58
+   ],
+   "Head": [
+    0,
+    13
+   ]
+  },
+  "depth_to_width": {
+   "Body": 0.48,
+   "Head": 0.83
+  },
+  "edges": 1738,
+  "leg_length": null,
+  "game": {
+   "component": "CritterIdle",
+   "motions": [
+    {
+     "part": "Head",
+     "axis": "up",
+     "amplitude": 12.0,
+     "speed": 0.9
+    }
+   ]
+  },
+  "copied": [],
+  "feet": {},
+  "motions": [
+   "idle"
+  ],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "meshes: Body 1030 tris, Head 176 tris; pivots only: Attach.Front. Checked in Top and Bottom."
+   ],
+   [
+    2,
+    "Closed shell",
+    "pass",
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 71 of 1738 edges where the two faces touch along a thin part's edge (closed, no gap)"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "pass",
+    "deepest / half-width: Body 0.48, Head 0.83"
+   ],
+   [
+    4,
+    "Views the game sees have real source data",
+    "pass",
+    "The game sees it the right flank (Right), and at most the Right 3/4 as it passes; Front, Back, Top and Bottom are built from the side picture alone (a soft, mirrored likeness there, never seen in play)."
+   ],
+   [
+    5,
+    "Real size, triangles",
+    "pass",
+    "0.65 x 0.14 x 0.75 m; 1206 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+   ],
+   [
+    6,
+    "Outline whole, no background or shadow",
+    "pass",
+    "looked at on the cuts sheet (cuts.jpg), and against the cut before the texture cue (D18)"
+   ],
+   [
+    7,
+    "No holes; real gaps open",
+    "pass",
+    "looked at on the cuts sheet: no hole in the fur or feathers; the backdrop between tail and back, legs and wings stays open"
+   ],
+   [
+    8,
+    "Things before a wall are their own models",
+    "n/a",
+    "an animal on a plain sheet"
+   ],
+   [
+    9,
+    "The look target's look",
+    "pass",
+    "KM-P4_animals_sheet.png: photographic, as KM-0"
+   ],
+   [
+    10,
+    "Solid, nothing ghosted",
+    "pass",
+    "no see-through parts but real wings"
+   ],
+   [
+    11,
+    "No real brand or logo",
+    "pass",
+    "none (the Shiba's collar is plain)"
+   ],
+   [
+    12,
+    "No wires, no sky, crisp outline",
+    "pass",
+    "a plain sheet; the outline is cut from it at full resolution"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "fur and feathers found by their texture as well as their colour; the ground shadow removed (the lowest 13 % of the box); holes of fur or feather filled, gaps of smooth backdrop left open"
+   ],
+   [
+    14,
+    "Rig names and pivots",
+    "pass",
+    "Head (+ Attach.Front): origins at the joints"
+   ],
+   [
+    15,
+    "Joints overlap, no seam, no gap mid-motion",
+    "pass",
+    "every part overlaps the body; motions looked at frame by frame: idle"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no legs that walk"
+   ],
+   [
+    17,
+    "Each part holds only itself",
+    "pass",
+    "looked at on its part map at full size, part by part: Head"
+   ]
+  ]
+ },
+ "KmCrowStanding": {
+  "id": "KM-N06",
+  "sheet": "KM-P4_animals_sheet.png",
+  "box": [
+   1426,
+   638,
+   1788,
+   919
+  ],
+  "view": "side",
+  "px_per_m": 607.0,
+  "tris": 1648,
+  "parts": {
+   "Body": 712,
+   "Head": 288,
+   "LegR": 62,
+   "LegL": 62,
+   "ShinR": 98,
+   "ShinL": 98,
+   "ToeR": 164,
+   "ToeL": 164
+  },
+  "empties": [
+   "Attach.Front",
+   "FootL",
+   "FootR"
+  ],
+  "size": [
+   0.565,
+   0.107,
+   0.427
+  ],
+  "open_edges": {
+   "Body": [
+    0,
+    45
+   ],
+   "Head": [
+    0,
+    16
+   ],
+   "LegR": [
+    0,
+    8
+   ],
+   "LegL": [
+    0,
+    8
+   ],
+   "ShinR": [
+    0,
+    15
+   ],
+   "ShinL": [
+    0,
+    15
+   ],
+   "ToeR": [
+    0,
+    28
+   ],
+   "ToeL": [
+    0,
+    28
+   ]
+  },
+  "depth_to_width": {
+   "Body": 0.63,
+   "Head": 0.78,
+   "LegR": 1.0,
+   "LegL": 1.0,
+   "ShinR": 1.0,
+   "ShinL": 1.0,
+   "ToeR": 0.97,
+   "ToeL": 0.97
+  },
+  "edges": 2309,
+  "leg_length": 0.1178,
+  "game": {
+   "component": "GroundBird",
+   "head": "Head",
+   "headAxis": "side",
+   "hopper": false,
+   "headSlide": 0,
+   "headNod": 7,
+   "peckTurn": 25.0,
+   "peckTip": 30.0,
+   "legs": "LegGait (stepped, hopped, planted)"
+  },
+  "copied": [
+   "LegL"
+  ],
+  "feet": {
+   "walk": {
+    "sink": 0.0,
+    "contact": 0.0,
+    "held": 0.0648
+   },
+   "peck": {
+    "sink": 0.0,
+    "contact": 0.0,
+    "held": 0.0
+   }
+  },
+  "motions": [
+   "walk",
+   "peck"
+  ],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "meshes: Body 712 tris, Head 288 tris, LegR 62 tris, LegL 62 tris, ShinR 98 tris, ShinL 98 tris, ToeR 164 tris, ToeL 164 tris; pivots only: Attach.Front, FootL, FootR. Checked in Top and Bottom."
+   ],
+   [
+    2,
+    "Closed shell",
+    "pass",
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 163 of 2309 edges where the two faces touch along a thin part's edge (closed, no gap)"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "pass",
+    "deepest / half-width: Body 0.63, Head 0.78, LegR 1.00, LegL 1.00, ShinR 1.00, ShinL 1.00, ToeR 0.97, ToeL 0.97"
+   ],
+   [
+    4,
+    "Views the game sees have real source data",
+    "pass",
+    "The game sees it the right flank (Right), and at most the Right 3/4 as it passes; Front, Back, Top and Bottom are built from the side picture alone (a soft, mirrored likeness there, never seen in play)."
+   ],
+   [
+    5,
+    "Real size, triangles",
+    "pass",
+    "0.56 x 0.11 x 0.43 m; 1648 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+   ],
+   [
+    6,
+    "Outline whole, no background or shadow",
+    "pass",
+    "looked at on the cuts sheet (cuts.jpg), and against the cut before the texture cue (D18)"
+   ],
+   [
+    7,
+    "No holes; real gaps open",
+    "pass",
+    "looked at on the cuts sheet: no hole in the fur or feathers; the backdrop between tail and back, legs and wings stays open"
+   ],
+   [
+    8,
+    "Things before a wall are their own models",
+    "n/a",
+    "an animal on a plain sheet"
+   ],
+   [
+    9,
+    "The look target's look",
+    "pass",
+    "KM-P4_animals_sheet.png: photographic, as KM-0"
+   ],
+   [
+    10,
+    "Solid, nothing ghosted",
+    "pass",
+    "no see-through parts but real wings"
+   ],
+   [
+    11,
+    "No real brand or logo",
+    "pass",
+    "none (the Shiba's collar is plain)"
+   ],
+   [
+    12,
+    "No wires, no sky, crisp outline",
+    "pass",
+    "a plain sheet; the outline is cut from it at full resolution"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "fur and feathers found by their texture as well as their colour; the ground shadow removed (the lowest 13 % of the box); holes of fur or feather filled, gaps of smooth backdrop left open"
+   ],
+   [
+    14,
+    "Rig names and pivots",
+    "pass",
+    "Head, LegR, LegL, ShinR, ShinL, ToeR, ToeL (+ Attach.Front, FootL, FootR): origins at the joints"
+   ],
+   [
+    15,
+    "Joints overlap, no seam, no gap mid-motion",
+    "pass",
+    "every part overlaps the body; four legs, near and far: LegL, LegR; motions looked at frame by frame: walk, peck"
+   ],
+   [
+    16,
+    "Feet planted",
+    "pass",
+    "walk: sink 0.0 mm, lowest foot 0.0 mm up, held 64.8 mm; peck: sink 0.0 mm, lowest foot 0.0 mm up, held 0.0 mm (tolerance 4.3 mm, 1 % of its height)"
+   ],
+   [
+    17,
+    "Each part holds only itself",
+    "pass",
+    "looked at on its part map at full size, part by part: Head, LegR, LegL, ShinR, ShinL, ToeR, ToeL; LegL a copy of the near leg, set behind (the far leg, beside the near one all the way down in the picture, taken out); legs drawn on the sheet where their shape couldn't part them"
+   ]
+  ]
+ },
+ "KmCrowHopping": {
+  "id": "KM-N06",
+  "sheet": "KM-P4_animals_sheet.png",
+  "box": [
+   1882,
+   659,
+   2272,
+   910
+  ],
+  "view": "side",
+  "px_per_m": 656.1,
+  "tris": 1774,
+  "parts": {
+   "Body": 818,
+   "Head": 280,
+   "LegR": 64,
+   "LegL": 64,
+   "ShinR": 100,
+   "ShinL": 100,
+   "ToeR": 174,
+   "ToeL": 174
+  },
+  "empties": [
+   "Attach.Front",
+   "FootL",
+   "FootR"
+  ],
+  "size": [
+   0.564,
+   0.103,
+   0.349
+  ],
+  "open_edges": {
+   "Body": [
+    0,
+    44
+   ],
+   "Head": [
+    0,
+    30
+   ],
+   "LegR": [
+    0,
+    9
+   ],
+   "LegL": [
+    0,
+    9
+   ],
+   "ShinR": [
+    0,
+    13
+   ],
+   "ShinL": [
+    0,
+    13
+   ],
+   "ToeR": [
+    0,
+    30
+   ],
+   "ToeL": [
+    0,
+    30
+   ]
+  },
+  "depth_to_width": {
+   "Body": 0.67,
+   "Head": 0.84,
+   "LegR": 0.96,
+   "LegL": 0.96,
+   "ShinR": 0.97,
+   "ShinL": 0.97,
+   "ToeR": 0.99,
+   "ToeL": 0.99
+  },
+  "edges": 2483,
+  "leg_length": 0.1026,
+  "game": {
+   "component": "GroundBird",
+   "head": "Head",
+   "headAxis": "side",
+   "hopper": false,
+   "headSlide": 0,
+   "headNod": 7,
+   "peckTurn": 25.0,
+   "peckTip": 30.0,
+   "legs": "LegGait (stepped, hopped, planted)"
+  },
+  "copied": [
+   "LegL"
+  ],
+  "feet": {
+   "walk": {
+    "sink": 0.0,
+    "contact": 0.0,
+    "held": 0.0564
+   },
+   "peck": {
+    "sink": 0.0,
+    "contact": 0.0,
+    "held": 0.0
+   }
+  },
+  "motions": [
+   "walk",
+   "peck"
+  ],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "meshes: Body 818 tris, Head 280 tris, LegR 64 tris, LegL 64 tris, ShinR 100 tris, ShinL 100 tris, ToeR 174 tris, ToeL 174 tris; pivots only: Attach.Front, FootL, FootR. Checked in Top and Bottom."
+   ],
+   [
+    2,
+    "Closed shell",
+    "pass",
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 178 of 2483 edges where the two faces touch along a thin part's edge (closed, no gap)"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "pass",
+    "deepest / half-width: Body 0.67, Head 0.84, LegR 0.96, LegL 0.96, ShinR 0.97, ShinL 0.97, ToeR 0.99, ToeL 0.99"
+   ],
+   [
+    4,
+    "Views the game sees have real source data",
+    "pass",
+    "The game sees it the right flank (Right), and at most the Right 3/4 as it passes; Front, Back, Top and Bottom are built from the side picture alone (a soft, mirrored likeness there, never seen in play)."
+   ],
+   [
+    5,
+    "Real size, triangles",
+    "pass",
+    "0.56 x 0.10 x 0.35 m; 1774 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+   ],
+   [
+    6,
+    "Outline whole, no background or shadow",
+    "pass",
+    "looked at on the cuts sheet (cuts.jpg), and against the cut before the texture cue (D18)"
+   ],
+   [
+    7,
+    "No holes; real gaps open",
+    "pass",
+    "looked at on the cuts sheet: no hole in the fur or feathers; the backdrop between tail and back, legs and wings stays open"
+   ],
+   [
+    8,
+    "Things before a wall are their own models",
+    "n/a",
+    "an animal on a plain sheet"
+   ],
+   [
+    9,
+    "The look target's look",
+    "pass",
+    "KM-P4_animals_sheet.png: photographic, as KM-0"
+   ],
+   [
+    10,
+    "Solid, nothing ghosted",
+    "pass",
+    "no see-through parts but real wings"
+   ],
+   [
+    11,
+    "No real brand or logo",
+    "pass",
+    "none (the Shiba's collar is plain)"
+   ],
+   [
+    12,
+    "No wires, no sky, crisp outline",
+    "pass",
+    "a plain sheet; the outline is cut from it at full resolution"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "fur and feathers found by their texture as well as their colour; the ground shadow removed (the lowest 13 % of the box); holes of fur or feather filled, gaps of smooth backdrop left open"
+   ],
+   [
+    14,
+    "Rig names and pivots",
+    "pass",
+    "Head, LegR, LegL, ShinR, ShinL, ToeR, ToeL (+ Attach.Front, FootL, FootR): origins at the joints"
+   ],
+   [
+    15,
+    "Joints overlap, no seam, no gap mid-motion",
+    "pass",
+    "every part overlaps the body; four legs, near and far: LegL, LegR; motions looked at frame by frame: walk, peck"
+   ],
+   [
+    16,
+    "Feet planted",
+    "pass",
+    "walk: sink 0.0 mm, lowest foot 0.0 mm up, held 56.4 mm; peck: sink 0.0 mm, lowest foot 0.0 mm up, held 0.0 mm (tolerance 3.5 mm, 1 % of its height)"
+   ],
+   [
+    17,
+    "Each part holds only itself",
+    "pass",
+    "looked at on its part map at full size, part by part: Head, LegR, LegL, ShinR, ShinL, ToeR, ToeL; LegL a copy of the near leg, set behind (the leg raised mid-step in the picture taken out: it can't plant); legs drawn on the sheet where their shape couldn't part them"
+   ]
+  ]
+ },
+ "KmPigeonStanding": {
+  "id": "KM-N07",
+  "sheet": "KM-P4_animals_sheet.png",
+  "box": [
+   76,
+   942,
+   359,
+   1218
+  ],
+  "view": "side",
+  "px_per_m": 890.0,
+  "tris": 1348,
+  "parts": {
+   "Body": 724,
+   "Head": 206,
+   "LegR": 30,
+   "LegL": 38,
+   "ShinR": 68,
+   "ShinL": 62,
+   "ToeR": 138,
+   "ToeL": 82
+  },
+  "empties": [
+   "Attach.Front",
+   "FootL",
+   "FootR"
+  ],
+  "size": [
+   0.297,
+   0.084,
+   0.287
+  ],
+  "open_edges": {
+   "Body": [
+    0,
+    53
+   ],
+   "Head": [
+    0,
+    6
+   ],
+   "LegR": [
+    0,
+    2
+   ],
+   "LegL": [
+    0,
+    5
+   ],
+   "ShinR": [
+    0,
+    10
+   ],
+   "ShinL": [
+    0,
+    9
+   ],
+   "ToeR": [
+    0,
+    24
+   ],
+   "ToeL": [
+    0,
+    10
+   ]
+  },
+  "depth_to_width": {
+   "Body": 0.69,
+   "Head": 0.89,
+   "LegR": 1.0,
+   "LegL": 1.0,
+   "ShinR": 1.0,
+   "ShinL": 1.0,
+   "ToeR": 0.99,
+   "ToeL": 1.0
+  },
+  "edges": 1903,
+  "leg_length": 0.0456,
+  "game": {
+   "component": "GroundBird",
+   "head": "Head",
+   "headAxis": "side",
+   "hopper": false,
+   "headSlide": 0,
+   "headNod": 7,
+   "peckTurn": 25.0,
+   "peckTip": 30.0,
+   "legs": "LegGait (stepped, hopped, planted)"
+  },
+  "copied": [],
+  "feet": {
+   "walk": {
+    "sink": 0.0,
+    "contact": 0.0,
+    "held": 0.024
+   },
+   "peck": {
+    "sink": 0.0,
+    "contact": 0.0,
+    "held": 0.0
+   }
+  },
+  "motions": [
+   "walk",
+   "peck"
+  ],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "meshes: Body 724 tris, Head 206 tris, LegR 30 tris, LegL 38 tris, ShinR 68 tris, ShinL 62 tris, ToeR 138 tris, ToeL 82 tris; pivots only: Attach.Front, FootL, FootR. Checked in Top and Bottom."
+   ],
+   [
+    2,
+    "Closed shell",
+    "pass",
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 119 of 1903 edges where the two faces touch along a thin part's edge (closed, no gap)"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "pass",
+    "deepest / half-width: Body 0.69, Head 0.89, LegR 1.00, LegL 1.00, ShinR 1.00, ShinL 1.00, ToeR 0.99, ToeL 1.00"
+   ],
+   [
+    4,
+    "Views the game sees have real source data",
+    "pass",
+    "The game sees it the right flank (Right), and at most the Right 3/4 as it passes; Front, Back, Top and Bottom are built from the side picture alone (a soft, mirrored likeness there, never seen in play)."
+   ],
+   [
+    5,
+    "Real size, triangles",
+    "pass",
+    "0.30 x 0.08 x 0.29 m; 1348 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+   ],
+   [
+    6,
+    "Outline whole, no background or shadow",
+    "pass",
+    "looked at on the cuts sheet (cuts.jpg), and against the cut before the texture cue (D18)"
+   ],
+   [
+    7,
+    "No holes; real gaps open",
+    "pass",
+    "looked at on the cuts sheet: no hole in the fur or feathers; the backdrop between tail and back, legs and wings stays open"
+   ],
+   [
+    8,
+    "Things before a wall are their own models",
+    "n/a",
+    "an animal on a plain sheet"
+   ],
+   [
+    9,
+    "The look target's look",
+    "pass",
+    "KM-P4_animals_sheet.png: photographic, as KM-0"
+   ],
+   [
+    10,
+    "Solid, nothing ghosted",
+    "pass",
+    "no see-through parts but real wings"
+   ],
+   [
+    11,
+    "No real brand or logo",
+    "pass",
+    "none (the Shiba's collar is plain)"
+   ],
+   [
+    12,
+    "No wires, no sky, crisp outline",
+    "pass",
+    "a plain sheet; the outline is cut from it at full resolution"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "fur and feathers found by their texture as well as their colour; the ground shadow removed (the lowest 13 % of the box); GrabCut inside the outline (colours close to the sheet's grey kept); holes of fur or feather filled, gaps of smooth backdrop left open"
+   ],
+   [
+    14,
+    "Rig names and pivots",
+    "pass",
+    "Head, LegR, LegL, ShinR, ShinL, ToeR, ToeL (+ Attach.Front, FootL, FootR): origins at the joints"
+   ],
+   [
+    15,
+    "Joints overlap, no seam, no gap mid-motion",
+    "pass",
+    "every part overlaps the body; four legs, near and far: LegL, LegR; motions looked at frame by frame: walk, peck"
+   ],
+   [
+    16,
+    "Feet planted",
+    "pass",
+    "walk: sink 0.0 mm, lowest foot 0.0 mm up, held 24.0 mm; peck: sink 0.0 mm, lowest foot 0.0 mm up, held 0.0 mm (tolerance 2.9 mm, 1 % of its height)"
+   ],
+   [
+    17,
+    "Each part holds only itself",
+    "pass",
+    "looked at on its part map at full size, part by part: Head, LegR, LegL, ShinR, ShinL, ToeR, ToeL; every leg the picture shows is its own part, its own pixels only; legs drawn on the sheet where their shape couldn't part them"
+   ]
+  ]
+ },
+ "KmPigeonPecking": {
+  "id": "KM-N07",
+  "sheet": "KM-P4_animals_sheet.png",
+  "box": [
+   491,
+   1027,
+   847,
+   1203
+  ],
+  "view": "side",
+  "px_per_m": 1000.0,
+  "tris": 2170,
+  "parts": {
+   "Body": 1328,
+   "Head": 340,
+   "LegR": 28,
+   "LegL": 34,
+   "ShinR": 68,
+   "ShinL": 116,
+   "ToeR": 136,
+   "ToeL": 120
+  },
+  "empties": [
+   "Attach.Front",
+   "FootL",
+   "FootR"
+  ],
+  "size": [
+   0.338,
+   0.081,
+   0.155
+  ],
+  "open_edges": {
+   "Body": [
+    0,
+    46
+   ],
+   "Head": [
+    0,
+    15
+   ],
+   "LegR": [
+    0,
+    2
+   ],
+   "LegL": [
+    0,
+    1
+   ],
+   "ShinR": [
+    0,
+    11
+   ],
+   "ShinL": [
+    0,
+    17
+   ],
+   "ToeR": [
+    0,
+    23
+   ],
+   "ToeL": [
+    0,
+    19
+   ]
+  },
+  "depth_to_width": {
+   "Body": 0.71,
+   "Head": 0.91,
+   "LegR": 1.0,
+   "LegL": 1.0,
+   "ShinR": 1.0,
+   "ShinL": 0.99,
+   "ToeR": 0.98,
+   "ToeL": 0.99
+  },
+  "edges": 3121,
+  "leg_length": 0.0394,
+  "game": {
+   "component": "GroundBird",
+   "head": "Head",
+   "headAxis": "side",
+   "hopper": false,
+   "headSlide": 0,
+   "headNod": 7,
+   "peckTurn": 35.0,
+   "peckTip": 18.0,
+   "legs": "LegGait (stepped, hopped, planted)"
+  },
+  "copied": [],
+  "feet": {
+   "walk": {
+    "sink": 0.0,
+    "contact": 0.0,
+    "held": 0.0219
+   },
+   "peck": {
+    "sink": 0.0,
+    "contact": 0.0,
+    "held": 0.0
+   }
+  },
+  "motions": [
+   "walk",
+   "peck"
+  ],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "meshes: Body 1328 tris, Head 340 tris, LegR 28 tris, LegL 34 tris, ShinR 68 tris, ShinL 116 tris, ToeR 136 tris, ToeL 120 tris; pivots only: Attach.Front, FootL, FootR. Checked in Top and Bottom."
+   ],
+   [
+    2,
+    "Closed shell",
+    "pass",
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 134 of 3121 edges where the two faces touch along a thin part's edge (closed, no gap)"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "pass",
+    "deepest / half-width: Body 0.71, Head 0.91, LegR 1.00, LegL 1.00, ShinR 1.00, ShinL 0.99, ToeR 0.98, ToeL 0.99"
+   ],
+   [
+    4,
+    "Views the game sees have real source data",
+    "pass",
+    "The game sees it the right flank (Right), and at most the Right 3/4 as it passes; Front, Back, Top and Bottom are built from the side picture alone (a soft, mirrored likeness there, never seen in play)."
+   ],
+   [
+    5,
+    "Real size, triangles",
+    "pass",
+    "0.34 x 0.08 x 0.15 m; 2170 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+   ],
+   [
+    6,
+    "Outline whole, no background or shadow",
+    "pass",
+    "looked at on the cuts sheet (cuts.jpg), and against the cut before the texture cue (D18)"
+   ],
+   [
+    7,
+    "No holes; real gaps open",
+    "pass",
+    "looked at on the cuts sheet: no hole in the fur or feathers; the backdrop between tail and back, legs and wings stays open"
+   ],
+   [
+    8,
+    "Things before a wall are their own models",
+    "n/a",
+    "an animal on a plain sheet"
+   ],
+   [
+    9,
+    "The look target's look",
+    "pass",
+    "KM-P4_animals_sheet.png: photographic, as KM-0"
+   ],
+   [
+    10,
+    "Solid, nothing ghosted",
+    "pass",
+    "no see-through parts but real wings"
+   ],
+   [
+    11,
+    "No real brand or logo",
+    "pass",
+    "none (the Shiba's collar is plain)"
+   ],
+   [
+    12,
+    "No wires, no sky, crisp outline",
+    "pass",
+    "a plain sheet; the outline is cut from it at full resolution"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "fur and feathers found by their texture as well as their colour; the ground shadow removed (the lowest 30 % of the box); GrabCut inside the outline (colours close to the sheet's grey kept); the dark core of the shadow between the legs removed (grey, smooth, darker than the backdrop); holes of fur or feather filled, gaps of smooth backdrop left open"
+   ],
+   [
+    14,
+    "Rig names and pivots",
+    "pass",
+    "Head, LegR, LegL, ShinR, ShinL, ToeR, ToeL (+ Attach.Front, FootL, FootR): origins at the joints"
+   ],
+   [
+    15,
+    "Joints overlap, no seam, no gap mid-motion",
+    "pass",
+    "every part overlaps the body; four legs, near and far: LegL, LegR; motions looked at frame by frame: walk, peck"
+   ],
+   [
+    16,
+    "Feet planted",
+    "pass",
+    "walk: sink 0.0 mm, lowest foot 0.0 mm up, held 21.9 mm; peck: sink 0.0 mm, lowest foot 0.0 mm up, held 0.0 mm (tolerance 1.6 mm, 1 % of its height)"
+   ],
+   [
+    17,
+    "Each part holds only itself",
+    "pass",
+    "looked at on its part map at full size, part by part: Head, LegR, LegL, ShinR, ShinL, ToeR, ToeL; every leg the picture shows is its own part, its own pixels only; legs drawn on the sheet where their shape couldn't part them"
+   ]
+  ]
+ },
+ "KmSparrowPerched": {
+  "id": "KM-N08",
+  "sheet": "KM-P4_animals_sheet.png",
+  "box": [
+   1443,
+   961,
+   1755,
+   1213
+  ],
+  "view": "side",
+  "px_per_m": 1973.3,
+  "tris": 1173,
+  "parts": {
+   "Body": 855,
+   "Head": 318
+  },
+  "empties": [
+   "Attach.Front"
+  ],
+  "size": [
+   0.149,
+   0.041,
+   0.119
+  ],
+  "open_edges": {
+   "Body": [
+    0,
+    59
+   ],
+   "Head": [
+    0,
+    14
+   ]
+  },
+  "depth_to_width": {
+   "Body": 0.71,
+   "Head": 0.82
+  },
+  "edges": 1689,
+  "leg_length": null,
+  "game": {
+   "component": "CritterIdle",
+   "motions": [
+    {
+     "part": "Head",
+     "axis": "up",
+     "amplitude": 12.0,
+     "speed": 0.9
+    }
+   ]
+  },
+  "copied": [],
+  "feet": {},
+  "motions": [
+   "idle"
+  ],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "meshes: Body 855 tris, Head 318 tris; pivots only: Attach.Front. Checked in Top and Bottom."
+   ],
+   [
+    2,
+    "Closed shell",
+    "pass",
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 73 of 1689 edges where the two faces touch along a thin part's edge (closed, no gap)"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "pass",
+    "deepest / half-width: Body 0.71, Head 0.82"
+   ],
+   [
+    4,
+    "Views the game sees have real source data",
+    "pass",
+    "The game sees it the right flank (Right), and at most the Right 3/4 as it passes; Front, Back, Top and Bottom are built from the side picture alone (a soft, mirrored likeness there, never seen in play)."
+   ],
+   [
+    5,
+    "Real size, triangles",
+    "pass",
+    "0.15 x 0.04 x 0.12 m; 1173 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+   ],
+   [
+    6,
+    "Outline whole, no background or shadow",
+    "pass",
+    "looked at on the cuts sheet (cuts.jpg), and against the cut before the texture cue (D18)"
+   ],
+   [
+    7,
+    "No holes; real gaps open",
+    "pass",
+    "looked at on the cuts sheet: no hole in the fur or feathers; the backdrop between tail and back, legs and wings stays open"
+   ],
+   [
+    8,
+    "Things before a wall are their own models",
+    "n/a",
+    "an animal on a plain sheet"
+   ],
+   [
+    9,
+    "The look target's look",
+    "pass",
+    "KM-P4_animals_sheet.png: photographic, as KM-0"
+   ],
+   [
+    10,
+    "Solid, nothing ghosted",
+    "pass",
+    "no see-through parts but real wings"
+   ],
+   [
+    11,
+    "No real brand or logo",
+    "pass",
+    "none (the Shiba's collar is plain)"
+   ],
+   [
+    12,
+    "No wires, no sky, crisp outline",
+    "pass",
+    "a plain sheet; the outline is cut from it at full resolution"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "fur and feathers found by their texture as well as their colour; the ground shadow removed (the lowest 13 % of the box); GrabCut inside the outline (colours close to the sheet's grey kept); holes of fur or feather filled, gaps of smooth backdrop left open"
+   ],
+   [
+    14,
+    "Rig names and pivots",
+    "pass",
+    "Head (+ Attach.Front): origins at the joints"
+   ],
+   [
+    15,
+    "Joints overlap, no seam, no gap mid-motion",
+    "pass",
+    "every part overlaps the body; motions looked at frame by frame: idle"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no legs that walk"
+   ],
+   [
+    17,
+    "Each part holds only itself",
+    "pass",
+    "looked at on its part map at full size, part by part: Head"
+   ]
+  ]
+ },
+ "KmSparrowHopping": {
+  "id": "KM-N08",
+  "sheet": "KM-P4_animals_sheet.png",
+  "box": [
+   1898,
+   979,
+   2235,
+   1213
+  ],
+  "view": "side",
+  "px_per_m": 2140.0,
+  "tris": 1578,
+  "parts": {
+   "Body": 832,
+   "Head": 386,
+   "LegR": 54,
+   "LegL": 54,
+   "ShinR": 126,
+   "ShinL": 126
+  },
+  "empties": [
+   "Attach.Front",
+   "FootL",
+   "FootR"
+  ],
+  "size": [
+   0.149,
+   0.036,
+   0.091
+  ],
+  "open_edges": {
+   "Body": [
+    0,
+    50
+   ],
+   "Head": [
+    0,
+    15
+   ],
+   "LegR": [
+    0,
+    3
+   ],
+   "LegL": [
+    0,
+    3
+   ],
+   "ShinR": [
+    0,
+    15
+   ],
+   "ShinL": [
+    0,
+    15
+   ]
+  },
+  "depth_to_width": {
+   "Body": 0.79,
+   "Head": 0.85,
+   "LegR": 0.9,
+   "LegL": 0.9,
+   "ShinR": 0.96,
+   "ShinL": 0.96
+  },
+  "edges": 2266,
+  "leg_length": 0.0422,
+  "game": {
+   "component": "GroundBird",
+   "head": "Head",
+   "headAxis": "side",
+   "hopper": true,
+   "headSlide": 0,
+   "headNod": 7,
+   "peckTurn": 25.0,
+   "peckTip": 30.0,
+   "legs": "LegGait (stepped, hopped, planted)"
+  },
+  "copied": [
+   "LegL"
+  ],
+  "feet": {
+   "hop": {
+    "sink": 0.0,
+    "contact": 0.06,
+    "held": 0.0605
+   },
+   "peck": {
+    "sink": 0.0,
+    "contact": 0.0,
+    "held": 0.0
+   }
+  },
+  "motions": [
+   "hop",
+   "peck"
+  ],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "meshes: Body 832 tris, Head 386 tris, LegR 54 tris, LegL 54 tris, ShinR 126 tris, ShinL 126 tris; pivots only: Attach.Front, FootL, FootR. Checked in Top and Bottom."
+   ],
+   [
+    2,
+    "Closed shell",
+    "pass",
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 101 of 2266 edges where the two faces touch along a thin part's edge (closed, no gap)"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "pass",
+    "deepest / half-width: Body 0.79, Head 0.85, LegR 0.90, LegL 0.90, ShinR 0.96, ShinL 0.96"
+   ],
+   [
+    4,
+    "Views the game sees have real source data",
+    "pass",
+    "The game sees it the right flank (Right), and at most the Right 3/4 as it passes; Front, Back, Top and Bottom are built from the side picture alone (a soft, mirrored likeness there, never seen in play)."
+   ],
+   [
+    5,
+    "Real size, triangles",
+    "pass",
+    "0.15 x 0.04 x 0.09 m; 1578 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+   ],
+   [
+    6,
+    "Outline whole, no background or shadow",
+    "pass",
+    "looked at on the cuts sheet (cuts.jpg), and against the cut before the texture cue (D18)"
+   ],
+   [
+    7,
+    "No holes; real gaps open",
+    "pass",
+    "looked at on the cuts sheet: no hole in the fur or feathers; the backdrop between tail and back, legs and wings stays open"
+   ],
+   [
+    8,
+    "Things before a wall are their own models",
+    "n/a",
+    "an animal on a plain sheet"
+   ],
+   [
+    9,
+    "The look target's look",
+    "pass",
+    "KM-P4_animals_sheet.png: photographic, as KM-0"
+   ],
+   [
+    10,
+    "Solid, nothing ghosted",
+    "pass",
+    "no see-through parts but real wings"
+   ],
+   [
+    11,
+    "No real brand or logo",
+    "pass",
+    "none (the Shiba's collar is plain)"
+   ],
+   [
+    12,
+    "No wires, no sky, crisp outline",
+    "pass",
+    "a plain sheet; the outline is cut from it at full resolution"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "fur and feathers found by their texture as well as their colour; the ground shadow removed (the lowest 13 % of the box); GrabCut inside the outline (colours close to the sheet's grey kept); holes of fur or feather filled, gaps of smooth backdrop left open"
+   ],
+   [
+    14,
+    "Rig names and pivots",
+    "pass",
+    "Head, LegR, LegL, ShinR, ShinL (+ Attach.Front, FootL, FootR): origins at the joints"
+   ],
+   [
+    15,
+    "Joints overlap, no seam, no gap mid-motion",
+    "pass",
+    "every part overlaps the body; four legs, near and far: LegL, LegR; motions looked at frame by frame: hop, peck"
+   ],
+   [
+    16,
+    "Feet planted",
+    "pass",
+    "hop: sink 0.0 mm, lowest foot 60.0 mm up, held 60.5 mm; peck: sink 0.0 mm, lowest foot 0.0 mm up, held 0.0 mm (tolerance 0.9 mm, 1 % of its height)"
+   ],
+   [
+    17,
+    "Each part holds only itself",
+    "pass",
+    "looked at on its part map at full size, part by part: Head, LegR, LegL, ShinR, ShinL; LegL a copy of the near leg, set behind (the leg raised mid-step in the picture taken out: it can't plant); legs drawn on the sheet where their shape couldn't part them"
+   ]
+  ]
+ },
+ "KmSparrowFlying": {
+  "id": "KM-N08",
+  "sheet": "KM-P4_animals_sheet.png",
+  "box": [
+   2359,
+   958,
+   2696,
+   1201
+  ],
+  "view": "below",
+  "px_per_m": 1528.6,
+  "tris": 1708,
+  "parts": {
+   "Body": 490,
+   "WingR": 296,
+   "WingL": 320,
+   "WingL2": 310,
+   "WingR2": 292
+  },
+  "empties": [
+   "Attach.Front"
+  ],
+  "size": [
+   0.148,
+   0.208,
+   0.03
+  ],
+  "open_edges": {
+   "Body": [
+    0,
+    32
+   ],
+   "WingR": [
+    0,
+    19
+   ],
+   "WingL": [
+    0,
+    28
+   ],
+   "WingL2": [
+    0,
+    22
+   ],
+   "WingR2": [
+    0,
+    12
+   ]
+  },
+  "depth_to_width": {
+   "Body": 0.77,
+   "WingR": 0.37,
+   "WingL": 0.37,
+   "WingL2": 0.39,
+   "WingR2": 0.39
+  },
+  "edges": 2449,
+  "leg_length": null,
+  "game": {
+   "component": "GroundBird (flying model) or SkyFlock",
+   "wings": [
+    "WingR",
+    "WingL"
+   ],
+   "wingAxis": "long"
+  },
+  "copied": [],
+  "feet": {},
+  "motions": [
+   "fly"
+  ],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "meshes: Body 490 tris, WingR 296 tris, WingL 320 tris, WingL2 310 tris, WingR2 292 tris; pivots only: Attach.Front. Checked in Top and Bottom."
+   ],
+   [
+    2,
+    "Closed shell",
+    "pass",
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 113 of 2449 edges where the two faces touch along a thin part's edge (closed, no gap)"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "pass",
+    "deepest / half-width: Body 0.77, WingR 0.37, WingL 0.37, WingL2 0.39, WingR2 0.39"
+   ],
+   [
+    4,
+    "Views the game sees have real source data",
+    "limit",
+    "The game sees it from below and to the side as it crosses the sky; its side and top come from the one view from below. From the side it is a thin plate and its top is its underside mirrored: built from one view, accepted because it is a few pixels across on the phone (KAMAKURA_BUILD Step 4b); a bird large on screen gets a four-view sheet."
+   ],
+   [
+    5,
+    "Real size, triangles",
+    "pass",
+    "0.15 x 0.21 x 0.03 m; 1708 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+   ],
+   [
+    6,
+    "Outline whole, no background or shadow",
+    "pass",
+    "looked at on the cuts sheet (cuts.jpg), and against the cut before the texture cue (D18)"
+   ],
+   [
+    7,
+    "No holes; real gaps open",
+    "pass",
+    "looked at on the cuts sheet: no hole in the fur or feathers; the backdrop between tail and back, legs and wings stays open"
+   ],
+   [
+    8,
+    "Things before a wall are their own models",
+    "n/a",
+    "an animal on a plain sheet"
+   ],
+   [
+    9,
+    "The look target's look",
+    "pass",
+    "KM-P4_animals_sheet.png: photographic, as KM-0"
+   ],
+   [
+    10,
+    "Solid, nothing ghosted",
+    "pass",
+    "no see-through parts but real wings"
+   ],
+   [
+    11,
+    "No real brand or logo",
+    "pass",
+    "none (the Shiba's collar is plain)"
+   ],
+   [
+    12,
+    "No wires, no sky, crisp outline",
+    "pass",
+    "a plain sheet; the outline is cut from it at full resolution"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "fur and feathers found by their texture as well as their colour; the ground shadow removed (the lowest 13 % of the box); GrabCut inside the outline (colours close to the sheet's grey kept); holes of fur or feather filled, gaps of smooth backdrop left open"
+   ],
+   [
+    14,
+    "Rig names and pivots",
+    "pass",
+    "WingR, WingL, WingL2, WingR2 (+ Attach.Front): origins at the joints"
+   ],
+   [
+    15,
+    "Joints overlap, no seam, no gap mid-motion",
+    "pass",
+    "every part overlaps the body; motions looked at frame by frame: fly"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no legs that walk"
+   ],
+   [
+    17,
+    "Each part holds only itself",
+    "pass",
+    "looked at on its part map at full size, part by part: WingR, WingL, WingL2, WingR2"
+   ]
+  ]
+ },
+ "KmSwallowPerched": {
+  "id": "KM-N09",
+  "sheet": "KM-P4_animals_sheet.png",
+  "box": [
+   0,
+   1255,
+   466,
+   1525
+  ],
+  "view": "side",
+  "px_per_m": 1154.5,
+  "tris": 1006,
+  "parts": {
+   "Body": 1006
+  },
+  "empties": [
+   "Attach.Front"
+  ],
+  "size": [
+   0.228,
+   0.038,
+   0.217
+  ],
+  "open_edges": {
+   "Body": [
+    0,
+    94
+   ]
+  },
+  "depth_to_width": {
+   "Body": 0.52
+  },
+  "edges": 1415,
+  "leg_length": null,
+  "game": {
+   "component": null,
+   "note": "still: nothing of it moves"
+  },
+  "copied": [],
+  "feet": {},
+  "motions": [],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "meshes: Body 1006 tris; pivots only: Attach.Front. Checked in Top and Bottom."
+   ],
+   [
+    2,
+    "Closed shell",
+    "pass",
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 94 of 1415 edges where the two faces touch along a thin part's edge (closed, no gap)"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "pass",
+    "deepest / half-width: Body 0.52"
+   ],
+   [
+    4,
+    "Views the game sees have real source data",
+    "pass",
+    "The game sees it the right flank (Right), and at most the Right 3/4 as it passes; Front, Back, Top and Bottom are built from the side picture alone (a soft, mirrored likeness there, never seen in play)."
+   ],
+   [
+    5,
+    "Real size, triangles",
+    "pass",
+    "0.23 x 0.04 x 0.22 m; 1006 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+   ],
+   [
+    6,
+    "Outline whole, no background or shadow",
+    "pass",
+    "looked at on the cuts sheet (cuts.jpg), and against the cut before the texture cue (D18)"
+   ],
+   [
+    7,
+    "No holes; real gaps open",
+    "pass",
+    "looked at on the cuts sheet: no hole in the fur or feathers; the backdrop between tail and back, legs and wings stays open"
+   ],
+   [
+    8,
+    "Things before a wall are their own models",
+    "n/a",
+    "an animal on a plain sheet"
+   ],
+   [
+    9,
+    "The look target's look",
+    "pass",
+    "KM-P4_animals_sheet.png: photographic, as KM-0"
+   ],
+   [
+    10,
+    "Solid, nothing ghosted",
+    "pass",
+    "no see-through parts but real wings"
+   ],
+   [
+    11,
+    "No real brand or logo",
+    "pass",
+    "none (the Shiba's collar is plain)"
+   ],
+   [
+    12,
+    "No wires, no sky, crisp outline",
+    "pass",
+    "a plain sheet; the outline is cut from it at full resolution"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "fur and feathers found by their texture as well as their colour; the ground shadow removed (the lowest 13 % of the box); 2 area(s) left out (the perch wire); holes of fur or feather filled, gaps of smooth backdrop left open"
+   ],
+   [
+    14,
+    "Rig names and pivots",
+    "pass",
+    "one piece: nothing moves"
+   ],
+   [
+    15,
+    "Joints overlap, no seam, no gap mid-motion",
+    "pass",
+    "no moving parts"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no legs that walk"
+   ],
+   [
+    17,
+    "Each part holds only itself",
+    "pass",
+    "one piece: looked at on its part map"
+   ]
+  ]
+ },
+ "KmSwallowFlying": {
+  "id": "KM-N09",
+  "sheet": "KM-P4_animals_sheet.png",
+  "box": [
+   466,
+   1265,
+   908,
+   1526
+  ],
+  "view": "below",
+  "px_per_m": 1290.9,
+  "tris": 1690,
+  "parts": {
+   "Body": 658,
+   "WingR": 278,
+   "WingL": 320,
+   "WingL2": 230,
+   "WingR2": 204
+  },
+  "empties": [
+   "Attach.Front"
+  ],
+  "size": [
+   0.189,
+   0.328,
+   0.027
+  ],
+  "open_edges": {
+   "Body": [
+    0,
+    69
+   ],
+   "WingR": [
+    0,
+    15
+   ],
+   "WingL": [
+    0,
+    27
+   ],
+   "WingL2": [
+    0,
+    21
+   ],
+   "WingR2": [
+    0,
+    18
+   ]
+  },
+  "depth_to_width": {
+   "Body": 0.59,
+   "WingR": 0.22,
+   "WingL": 0.22,
+   "WingL2": 0.3,
+   "WingR2": 0.31
+  },
+  "edges": 2385,
+  "leg_length": null,
+  "game": {
+   "component": "GroundBird (flying model) or SkyFlock",
+   "wings": [
+    "WingR",
+    "WingL"
+   ],
+   "wingAxis": "long"
+  },
+  "copied": [],
+  "feet": {},
+  "motions": [
+   "fly"
+  ],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "meshes: Body 658 tris, WingR 278 tris, WingL 320 tris, WingL2 230 tris, WingR2 204 tris; pivots only: Attach.Front. Checked in Top and Bottom."
+   ],
+   [
+    2,
+    "Closed shell",
+    "pass",
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 150 of 2385 edges where the two faces touch along a thin part's edge (closed, no gap)"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "pass",
+    "deepest / half-width: Body 0.59, WingR 0.22, WingL 0.22, WingL2 0.30, WingR2 0.31"
+   ],
+   [
+    4,
+    "Views the game sees have real source data",
+    "limit",
+    "The game sees it from below and to the side as it crosses the sky; its side and top come from the one view from below. From the side it is a thin plate and its top is its underside mirrored: built from one view, accepted because it is a few pixels across on the phone (KAMAKURA_BUILD Step 4b); a bird large on screen gets a four-view sheet."
+   ],
+   [
+    5,
+    "Real size, triangles",
+    "pass",
+    "0.19 x 0.33 x 0.03 m; 1690 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+   ],
+   [
+    6,
+    "Outline whole, no background or shadow",
+    "pass",
+    "looked at on the cuts sheet (cuts.jpg), and against the cut before the texture cue (D18)"
+   ],
+   [
+    7,
+    "No holes; real gaps open",
+    "pass",
+    "looked at on the cuts sheet: no hole in the fur or feathers; the backdrop between tail and back, legs and wings stays open"
+   ],
+   [
+    8,
+    "Things before a wall are their own models",
+    "n/a",
+    "an animal on a plain sheet"
+   ],
+   [
+    9,
+    "The look target's look",
+    "pass",
+    "KM-P4_animals_sheet.png: photographic, as KM-0"
+   ],
+   [
+    10,
+    "Solid, nothing ghosted",
+    "pass",
+    "no see-through parts but real wings"
+   ],
+   [
+    11,
+    "No real brand or logo",
+    "pass",
+    "none (the Shiba's collar is plain)"
+   ],
+   [
+    12,
+    "No wires, no sky, crisp outline",
+    "pass",
+    "a plain sheet; the outline is cut from it at full resolution"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "fur and feathers found by their texture as well as their colour; the ground shadow removed (the lowest 13 % of the box); holes of fur or feather filled, gaps of smooth backdrop left open"
+   ],
+   [
+    14,
+    "Rig names and pivots",
+    "pass",
+    "WingR, WingL, WingL2, WingR2 (+ Attach.Front): origins at the joints"
+   ],
+   [
+    15,
+    "Joints overlap, no seam, no gap mid-motion",
+    "pass",
+    "every part overlaps the body; motions looked at frame by frame: fly"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no legs that walk"
+   ],
+   [
+    17,
+    "Each part holds only itself",
+    "pass",
+    "looked at on its part map at full size, part by part: WingR, WingL, WingL2, WingR2"
+   ]
+  ]
+ },
+ "KmGullStanding": {
+  "id": "KM-N10",
+  "sheet": "KM-P4_animals_sheet.png",
+  "box": [
+   960,
+   1255,
+   1296,
+   1527
+  ],
+  "view": "side",
+  "px_per_m": 747.1,
+  "tris": 1532,
+  "parts": {
+   "Body": 670,
+   "Head": 286,
+   "LegR": 70,
+   "LegL": 116,
+   "ShinR": 126,
+   "ShinL": 110,
+   "ToeR": 96,
+   "ToeL": 58
+  },
+  "empties": [
+   "Attach.Front",
+   "FootL",
+   "FootR"
+  ],
+  "size": [
+   0.427,
+   0.099,
+   0.339
+  ],
+  "open_edges": {
+   "Body": [
+    0,
+    47
+   ],
+   "Head": [
+    0,
+    23
+   ],
+   "LegR": [
+    0,
+    2
+   ],
+   "LegL": [
+    0,
+    18
+   ],
+   "ShinR": [
+    0,
+    19
+   ],
+   "ShinL": [
+    0,
+    15
+   ],
+   "ToeR": [
+    0,
+    14
+   ],
+   "ToeL": [
+    0,
+    6
+   ]
+  },
+  "depth_to_width": {
+   "Body": 0.71,
+   "Head": 0.88,
+   "LegR": 0.98,
+   "LegL": 0.98,
+   "ShinR": 0.99,
+   "ShinL": 1.0,
+   "ToeR": 0.99,
+   "ToeL": 1.0
+  },
+  "edges": 2154,
+  "leg_length": 0.1393,
+  "game": {
+   "component": "GroundBird",
+   "head": "Head",
+   "headAxis": "side",
+   "hopper": false,
+   "headSlide": 0,
+   "headNod": 7,
+   "peckTurn": 25.0,
+   "peckTip": 30.0,
+   "legs": "LegGait (stepped, hopped, planted)"
+  },
+  "copied": [],
+  "feet": {
+   "walk": {
+    "sink": 0.0,
+    "contact": 0.0,
+    "held": 0.0798
+   },
+   "peck": {
+    "sink": 0.0,
+    "contact": 0.0,
+    "held": 0.0
+   }
+  },
+  "motions": [
+   "walk",
+   "peck"
+  ],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "meshes: Body 670 tris, Head 286 tris, LegR 70 tris, LegL 116 tris, ShinR 126 tris, ShinL 110 tris, ToeR 96 tris, ToeL 58 tris; pivots only: Attach.Front, FootL, FootR. Checked in Top and Bottom."
+   ],
+   [
+    2,
+    "Closed shell",
+    "pass",
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 144 of 2154 edges where the two faces touch along a thin part's edge (closed, no gap)"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "pass",
+    "deepest / half-width: Body 0.71, Head 0.88, LegR 0.98, LegL 0.98, ShinR 0.99, ShinL 1.00, ToeR 0.99, ToeL 1.00"
+   ],
+   [
+    4,
+    "Views the game sees have real source data",
+    "pass",
+    "The game sees it the right flank (Right), and at most the Right 3/4 as it passes; Front, Back, Top and Bottom are built from the side picture alone (a soft, mirrored likeness there, never seen in play)."
+   ],
+   [
+    5,
+    "Real size, triangles",
+    "pass",
+    "0.43 x 0.10 x 0.34 m; 1532 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+   ],
+   [
+    6,
+    "Outline whole, no background or shadow",
+    "pass",
+    "looked at on the cuts sheet (cuts.jpg), and against the cut before the texture cue (D18)"
+   ],
+   [
+    7,
+    "No holes; real gaps open",
+    "pass",
+    "looked at on the cuts sheet: no hole in the fur or feathers; the backdrop between tail and back, legs and wings stays open"
+   ],
+   [
+    8,
+    "Things before a wall are their own models",
+    "n/a",
+    "an animal on a plain sheet"
+   ],
+   [
+    9,
+    "The look target's look",
+    "pass",
+    "KM-P4_animals_sheet.png: photographic, as KM-0"
+   ],
+   [
+    10,
+    "Solid, nothing ghosted",
+    "pass",
+    "no see-through parts but real wings"
+   ],
+   [
+    11,
+    "No real brand or logo",
+    "pass",
+    "none (the Shiba's collar is plain)"
+   ],
+   [
+    12,
+    "No wires, no sky, crisp outline",
+    "pass",
+    "a plain sheet; the outline is cut from it at full resolution"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "fur and feathers found by their texture as well as their colour; the ground shadow removed (the lowest 13 % of the box); GrabCut inside the outline (colours close to the sheet's grey kept); holes of fur or feather filled, gaps of smooth backdrop left open"
+   ],
+   [
+    14,
+    "Rig names and pivots",
+    "pass",
+    "Head, LegR, LegL, ShinR, ShinL, ToeR, ToeL (+ Attach.Front, FootL, FootR): origins at the joints"
+   ],
+   [
+    15,
+    "Joints overlap, no seam, no gap mid-motion",
+    "pass",
+    "every part overlaps the body; four legs, near and far: LegL, LegR; motions looked at frame by frame: walk, peck"
+   ],
+   [
+    16,
+    "Feet planted",
+    "pass",
+    "walk: sink 0.0 mm, lowest foot 0.0 mm up, held 79.8 mm; peck: sink 0.0 mm, lowest foot 0.0 mm up, held 0.0 mm (tolerance 3.4 mm, 1 % of its height)"
+   ],
+   [
+    17,
+    "Each part holds only itself",
+    "pass",
+    "looked at on its part map at full size, part by part: Head, LegR, LegL, ShinR, ShinL, ToeR, ToeL; every leg the picture shows is its own part, its own pixels only; legs drawn on the sheet where their shape couldn't part them"
+   ]
+  ]
+ },
+ "KmEgretStanding": {
+  "id": "KM-N11",
+  "sheet": "KM-P4_animals_sheet.png",
+  "box": [
+   1939,
+   1238,
+   2225,
+   1535
+  ],
+  "view": "side",
+  "px_per_m": 509.1,
+  "tris": 1536,
+  "parts": {
+   "Body": 500,
+   "Head": 298,
+   "LegR": 110,
+   "LegL": 102,
+   "ShinR": 132,
+   "ShinL": 128,
+   "ToeR": 142,
+   "ToeL": 124
+  },
+  "empties": [
+   "Attach.Front",
+   "FootL",
+   "FootR"
+  ],
+  "size": [
+   0.523,
+   0.093,
+   0.546
+  ],
+  "open_edges": {
+   "Body": [
+    0,
+    34
+   ],
+   "Head": [
+    0,
+    29
+   ],
+   "LegR": [
+    0,
+    14
+   ],
+   "LegL": [
+    0,
+    13
+   ],
+   "ShinR": [
+    0,
+    20
+   ],
+   "ShinL": [
+    0,
+    18
+   ],
+   "ToeR": [
+    0,
+    20
+   ],
+   "ToeL": [
+    0,
+    17
+   ]
+  },
+  "depth_to_width": {
+   "Body": 0.55,
+   "Head": 0.91,
+   "LegR": 0.99,
+   "LegL": 0.99,
+   "ShinR": 0.99,
+   "ShinL": 0.99,
+   "ToeR": 0.99,
+   "ToeL": 0.99
+  },
+  "edges": 2139,
+  "leg_length": 0.2385,
+  "game": {
+   "component": "GroundBird",
+   "head": "Head",
+   "headAxis": "side",
+   "hopper": false,
+   "headSlide": 0,
+   "headNod": 7,
+   "peckTurn": 40.0,
+   "peckTip": 15.0,
+   "legs": "LegGait (stepped, hopped, planted)"
+  },
+  "copied": [],
+  "feet": {
+   "walk": {
+    "sink": 0.0,
+    "contact": 0.0,
+    "held": 0.1304
+   },
+   "peck": {
+    "sink": 0.0,
+    "contact": 0.0,
+    "held": 0.0
+   }
+  },
+  "motions": [
+   "walk",
+   "peck"
+  ],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "meshes: Body 500 tris, Head 298 tris, LegR 110 tris, LegL 102 tris, ShinR 132 tris, ShinL 128 tris, ToeR 142 tris, ToeL 124 tris; pivots only: Attach.Front, FootL, FootR. Checked in Top and Bottom."
+   ],
+   [
+    2,
+    "Closed shell",
+    "pass",
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 165 of 2139 edges where the two faces touch along a thin part's edge (closed, no gap)"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "pass",
+    "deepest / half-width: Body 0.55, Head 0.91, LegR 0.99, LegL 0.99, ShinR 0.99, ShinL 0.99, ToeR 0.99, ToeL 0.99"
+   ],
+   [
+    4,
+    "Views the game sees have real source data",
+    "pass",
+    "The game sees it the right flank (Right), and at most the Right 3/4 as it passes; Front, Back, Top and Bottom are built from the side picture alone (a soft, mirrored likeness there, never seen in play)."
+   ],
+   [
+    5,
+    "Real size, triangles",
+    "pass",
+    "0.52 x 0.09 x 0.55 m; 1536 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+   ],
+   [
+    6,
+    "Outline whole, no background or shadow",
+    "pass",
+    "looked at on the cuts sheet (cuts.jpg), and against the cut before the texture cue (D18)"
+   ],
+   [
+    7,
+    "No holes; real gaps open",
+    "pass",
+    "looked at on the cuts sheet: no hole in the fur or feathers; the backdrop between tail and back, legs and wings stays open"
+   ],
+   [
+    8,
+    "Things before a wall are their own models",
+    "n/a",
+    "an animal on a plain sheet"
+   ],
+   [
+    9,
+    "The look target's look",
+    "pass",
+    "KM-P4_animals_sheet.png: photographic, as KM-0"
+   ],
+   [
+    10,
+    "Solid, nothing ghosted",
+    "pass",
+    "no see-through parts but real wings"
+   ],
+   [
+    11,
+    "No real brand or logo",
+    "pass",
+    "none (the Shiba's collar is plain)"
+   ],
+   [
+    12,
+    "No wires, no sky, crisp outline",
+    "pass",
+    "a plain sheet; the outline is cut from it at full resolution"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "fur and feathers found by their texture as well as their colour; the ground shadow removed (the lowest 13 % of the box); 1 area(s) left out (the perch wire); holes of fur or feather filled, gaps of smooth backdrop left open"
+   ],
+   [
+    14,
+    "Rig names and pivots",
+    "pass",
+    "Head, LegR, LegL, ShinR, ShinL, ToeR, ToeL (+ Attach.Front, FootL, FootR): origins at the joints"
+   ],
+   [
+    15,
+    "Joints overlap, no seam, no gap mid-motion",
+    "pass",
+    "every part overlaps the body; four legs, near and far: LegL, LegR; motions looked at frame by frame: walk, peck"
+   ],
+   [
+    16,
+    "Feet planted",
+    "pass",
+    "walk: sink 0.0 mm, lowest foot 0.0 mm up, held 130.4 mm; peck: sink 0.0 mm, lowest foot 0.0 mm up, held 0.0 mm (tolerance 5.5 mm, 1 % of its height)"
+   ],
+   [
+    17,
+    "Each part holds only itself",
+    "pass",
+    "looked at on its part map at full size, part by part: Head, LegR, LegL, ShinR, ShinL, ToeR, ToeL; every leg the picture shows is its own part, its own pixels only; legs drawn on the sheet where their shape couldn't part them"
+   ]
+  ]
+ },
+ "KmKoiRedWhite": {
+  "id": "KM-N12",
+  "sheet": "KM-P8_more_animals.png",
+  "box": [
+   21,
+   60,
+   428,
+   238
+  ],
+  "view": "above",
+  "px_per_m": 651.7,
+  "tris": 1812,
+  "parts": {
+   "Body": 800,
+   "Tail": 532,
+   "Tail2": 268,
+   "Tail3": 212
+  },
+  "empties": [
+   "Attach.Front"
+  ],
+  "size": [
+   0.598,
+   0.247,
+   0.097
+  ],
+  "open_edges": {
+   "Body": [
+    0,
+    10
+   ],
+   "Tail": [
+    0,
+    21
+   ],
+   "Tail2": [
+    0,
+    21
+   ],
+   "Tail3": [
+    0,
+    19
+   ]
+  },
+  "depth_to_width": {
+   "Body": 0.72,
+   "Tail": 0.77,
+   "Tail2": 0.91,
+   "Tail3": 0.91
+  },
+  "edges": 2647,
+  "leg_length": null,
+  "game": {
+   "component": "PondDuck",
+   "tail": "Tail",
+   "tailAxis": "up",
+   "tailSweep": 22,
+   "tailBeat": 1.6
+  },
+  "copied": [],
+  "feet": {},
+  "motions": [
+   "swim"
+  ],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "meshes: Body 800 tris, Tail 532 tris, Tail2 268 tris, Tail3 212 tris; pivots only: Attach.Front. Checked in Top and Bottom."
+   ],
+   [
+    2,
+    "Closed shell",
+    "pass",
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 71 of 2647 edges where the two faces touch along a thin part's edge (closed, no gap)"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "pass",
+    "deepest / half-width: Body 0.72, Tail 0.77, Tail2 0.91, Tail3 0.91"
+   ],
+   [
+    4,
+    "Views the game sees have real source data",
+    "pass",
+    "The game sees it from above (Top), through the water or flitting past; its sides and underside come from the one view from above."
+   ],
+   [
+    5,
+    "Real size, triangles",
+    "pass",
+    "0.60 x 0.25 x 0.10 m; 1812 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+   ],
+   [
+    6,
+    "Outline whole, no background or shadow",
+    "pass",
+    "looked at on the cuts sheet (cuts.jpg), and against the cut before the texture cue (D18)"
+   ],
+   [
+    7,
+    "No holes; real gaps open",
+    "pass",
+    "looked at on the cuts sheet: no hole in the fur or feathers; the backdrop between tail and back, legs and wings stays open"
+   ],
+   [
+    8,
+    "Things before a wall are their own models",
+    "n/a",
+    "an animal on a plain sheet"
+   ],
+   [
+    9,
+    "The look target's look",
+    "pass",
+    "KM-P8_more_animals.png: photographic, as KM-0"
+   ],
+   [
+    10,
+    "Solid, nothing ghosted",
+    "pass",
+    "no see-through parts but real wings"
+   ],
+   [
+    11,
+    "No real brand or logo",
+    "pass",
+    "none (the Shiba's collar is plain)"
+   ],
+   [
+    12,
+    "No wires, no sky, crisp outline",
+    "pass",
+    "a plain sheet; the outline is cut from it at full resolution"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "fur and feathers found by their texture as well as their colour; the ground shadow removed (the lowest 13 % of the box); holes of fur or feather filled, gaps of smooth backdrop left open"
+   ],
+   [
+    14,
+    "Rig names and pivots",
+    "pass",
+    "Tail, Tail2, Tail3 (+ Attach.Front): origins at the joints"
+   ],
+   [
+    15,
+    "Joints overlap, no seam, no gap mid-motion",
+    "pass",
+    "every part overlaps the body; motions looked at frame by frame: swim"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no legs that walk"
+   ],
+   [
+    17,
+    "Each part holds only itself",
+    "pass",
+    "looked at on its part map at full size, part by part: Tail, Tail2, Tail3; the pectoral fins kept whole with the body"
+   ]
+  ]
+ },
+ "KmKoiRedWhiteTurning": {
+  "id": "KM-N12",
+  "sheet": "KM-P8_more_animals.png",
+  "box": [
+   505,
+   48,
+   874,
+   238
+  ],
+  "view": "above",
+  "px_per_m": 678.8,
+  "tris": 1902,
+  "parts": {
+   "Body": 902,
+   "Tail": 524,
+   "Tail2": 218,
+   "Tail3": 258
+  },
+  "empties": [
+   "Attach.Front"
+  ],
+  "size": [
+   0.516,
+   0.243,
+   0.095
+  ],
+  "open_edges": {
+   "Body": [
+    0,
+    13
+   ],
+   "Tail": [
+    0,
+    16
+   ],
+   "Tail2": [
+    0,
+    12
+   ],
+   "Tail3": [
+    0,
+    26
+   ]
+  },
+  "depth_to_width": {
+   "Body": 0.74,
+   "Tail": 0.79,
+   "Tail2": 0.92,
+   "Tail3": 0.94
+  },
+  "edges": 2786,
+  "leg_length": null,
+  "game": {
+   "component": "PondDuck",
+   "tail": "Tail",
+   "tailAxis": "up",
+   "tailSweep": 22,
+   "tailBeat": 1.6
+  },
+  "copied": [],
+  "feet": {},
+  "motions": [
+   "swim"
+  ],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "meshes: Body 902 tris, Tail 524 tris, Tail2 218 tris, Tail3 258 tris; pivots only: Attach.Front. Checked in Top and Bottom."
+   ],
+   [
+    2,
+    "Closed shell",
+    "pass",
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 67 of 2786 edges where the two faces touch along a thin part's edge (closed, no gap)"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "pass",
+    "deepest / half-width: Body 0.74, Tail 0.79, Tail2 0.92, Tail3 0.94"
+   ],
+   [
+    4,
+    "Views the game sees have real source data",
+    "pass",
+    "The game sees it from above (Top), through the water or flitting past; its sides and underside come from the one view from above."
+   ],
+   [
+    5,
+    "Real size, triangles",
+    "pass",
+    "0.52 x 0.24 x 0.10 m; 1902 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+   ],
+   [
+    6,
+    "Outline whole, no background or shadow",
+    "pass",
+    "looked at on the cuts sheet (cuts.jpg), and against the cut before the texture cue (D18)"
+   ],
+   [
+    7,
+    "No holes; real gaps open",
+    "pass",
+    "looked at on the cuts sheet: no hole in the fur or feathers; the backdrop between tail and back, legs and wings stays open"
+   ],
+   [
+    8,
+    "Things before a wall are their own models",
+    "n/a",
+    "an animal on a plain sheet"
+   ],
+   [
+    9,
+    "The look target's look",
+    "pass",
+    "KM-P8_more_animals.png: photographic, as KM-0"
+   ],
+   [
+    10,
+    "Solid, nothing ghosted",
+    "pass",
+    "no see-through parts but real wings"
+   ],
+   [
+    11,
+    "No real brand or logo",
+    "pass",
+    "none (the Shiba's collar is plain)"
+   ],
+   [
+    12,
+    "No wires, no sky, crisp outline",
+    "pass",
+    "a plain sheet; the outline is cut from it at full resolution"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "fur and feathers found by their texture as well as their colour; the ground shadow removed (the lowest 13 % of the box); holes of fur or feather filled, gaps of smooth backdrop left open"
+   ],
+   [
+    14,
+    "Rig names and pivots",
+    "pass",
+    "Tail, Tail2, Tail3 (+ Attach.Front): origins at the joints"
+   ],
+   [
+    15,
+    "Joints overlap, no seam, no gap mid-motion",
+    "pass",
+    "every part overlaps the body; motions looked at frame by frame: swim"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no legs that walk"
+   ],
+   [
+    17,
+    "Each part holds only itself",
+    "pass",
+    "looked at on its part map at full size, part by part: Tail, Tail2, Tail3; the pectoral fins kept whole with the body"
+   ]
+  ]
+ },
+ "KmKoiGold": {
+  "id": "KM-N13",
+  "sheet": "KM-P8_more_animals.png",
+  "box": [
+   952,
+   68,
+   1355,
+   238
+  ],
+  "view": "above",
+  "px_per_m": 703.6,
+  "tris": 1836,
+  "parts": {
+   "Body": 810,
+   "Tail": 536,
+   "Tail2": 266,
+   "Tail3": 224
+  },
+  "empties": [
+   "Attach.Front"
+  ],
+  "size": [
+   0.547,
+   0.216,
+   0.093
+  ],
+  "open_edges": {
+   "Body": [
+    0,
+    7
+   ],
+   "Tail": [
+    0,
+    14
+   ],
+   "Tail2": [
+    0,
+    16
+   ],
+   "Tail3": [
+    0,
+    14
+   ]
+  },
+  "depth_to_width": {
+   "Body": 0.75,
+   "Tail": 0.79,
+   "Tail2": 0.91,
+   "Tail3": 0.94
+  },
+  "edges": 2703,
+  "leg_length": null,
+  "game": {
+   "component": "PondDuck",
+   "tail": "Tail",
+   "tailAxis": "up",
+   "tailSweep": 22,
+   "tailBeat": 1.6
+  },
+  "copied": [],
+  "feet": {},
+  "motions": [
+   "swim"
+  ],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "meshes: Body 810 tris, Tail 536 tris, Tail2 266 tris, Tail3 224 tris; pivots only: Attach.Front. Checked in Top and Bottom."
+   ],
+   [
+    2,
+    "Closed shell",
+    "pass",
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 51 of 2703 edges where the two faces touch along a thin part's edge (closed, no gap)"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "pass",
+    "deepest / half-width: Body 0.75, Tail 0.79, Tail2 0.91, Tail3 0.94"
+   ],
+   [
+    4,
+    "Views the game sees have real source data",
+    "pass",
+    "The game sees it from above (Top), through the water or flitting past; its sides and underside come from the one view from above."
+   ],
+   [
+    5,
+    "Real size, triangles",
+    "pass",
+    "0.55 x 0.22 x 0.09 m; 1836 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+   ],
+   [
+    6,
+    "Outline whole, no background or shadow",
+    "pass",
+    "looked at on the cuts sheet (cuts.jpg), and against the cut before the texture cue (D18)"
+   ],
+   [
+    7,
+    "No holes; real gaps open",
+    "pass",
+    "looked at on the cuts sheet: no hole in the fur or feathers; the backdrop between tail and back, legs and wings stays open"
+   ],
+   [
+    8,
+    "Things before a wall are their own models",
+    "n/a",
+    "an animal on a plain sheet"
+   ],
+   [
+    9,
+    "The look target's look",
+    "pass",
+    "KM-P8_more_animals.png: photographic, as KM-0"
+   ],
+   [
+    10,
+    "Solid, nothing ghosted",
+    "pass",
+    "no see-through parts but real wings"
+   ],
+   [
+    11,
+    "No real brand or logo",
+    "pass",
+    "none (the Shiba's collar is plain)"
+   ],
+   [
+    12,
+    "No wires, no sky, crisp outline",
+    "pass",
+    "a plain sheet; the outline is cut from it at full resolution"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "fur and feathers found by their texture as well as their colour; the ground shadow removed (the lowest 13 % of the box); holes of fur or feather filled, gaps of smooth backdrop left open"
+   ],
+   [
+    14,
+    "Rig names and pivots",
+    "pass",
+    "Tail, Tail2, Tail3 (+ Attach.Front): origins at the joints"
+   ],
+   [
+    15,
+    "Joints overlap, no seam, no gap mid-motion",
+    "pass",
+    "every part overlaps the body; motions looked at frame by frame: swim"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no legs that walk"
+   ],
+   [
+    17,
+    "Each part holds only itself",
+    "pass",
+    "looked at on its part map at full size, part by part: Tail, Tail2, Tail3; the pectoral fins kept whole with the body"
+   ]
+  ]
+ },
+ "KmKoiGoldTurning": {
+  "id": "KM-N13",
+  "sheet": "KM-P8_more_animals.png",
+  "box": [
+   1408,
+   44,
+   1807,
+   256
+  ],
+  "view": "above",
+  "px_per_m": 797.9,
+  "tris": 1610,
+  "parts": {
+   "Body": 634,
+   "Tail": 422,
+   "Tail2": 248,
+   "Tail3": 306
+  },
+  "empties": [
+   "Attach.Front"
+  ],
+  "size": [
+   0.479,
+   0.243,
+   0.088
+  ],
+  "open_edges": {
+   "Body": [
+    0,
+    8
+   ],
+   "Tail": [
+    0,
+    9
+   ],
+   "Tail2": [
+    0,
+    15
+   ],
+   "Tail3": [
+    0,
+    30
+   ]
+  },
+  "depth_to_width": {
+   "Body": 0.78,
+   "Tail": 0.8,
+   "Tail2": 0.91,
+   "Tail3": 0.95
+  },
+  "edges": 2353,
+  "leg_length": null,
+  "game": {
+   "component": "PondDuck",
+   "tail": "Tail",
+   "tailAxis": "up",
+   "tailSweep": 22,
+   "tailBeat": 1.6
+  },
+  "copied": [],
+  "feet": {},
+  "motions": [
+   "swim"
+  ],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "meshes: Body 634 tris, Tail 422 tris, Tail2 248 tris, Tail3 306 tris; pivots only: Attach.Front. Checked in Top and Bottom."
+   ],
+   [
+    2,
+    "Closed shell",
+    "pass",
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 62 of 2353 edges where the two faces touch along a thin part's edge (closed, no gap)"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "pass",
+    "deepest / half-width: Body 0.78, Tail 0.80, Tail2 0.91, Tail3 0.95"
+   ],
+   [
+    4,
+    "Views the game sees have real source data",
+    "pass",
+    "The game sees it from above (Top), through the water or flitting past; its sides and underside come from the one view from above."
+   ],
+   [
+    5,
+    "Real size, triangles",
+    "pass",
+    "0.48 x 0.24 x 0.09 m; 1610 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+   ],
+   [
+    6,
+    "Outline whole, no background or shadow",
+    "pass",
+    "looked at on the cuts sheet (cuts.jpg), and against the cut before the texture cue (D18)"
+   ],
+   [
+    7,
+    "No holes; real gaps open",
+    "pass",
+    "looked at on the cuts sheet: no hole in the fur or feathers; the backdrop between tail and back, legs and wings stays open"
+   ],
+   [
+    8,
+    "Things before a wall are their own models",
+    "n/a",
+    "an animal on a plain sheet"
+   ],
+   [
+    9,
+    "The look target's look",
+    "pass",
+    "KM-P8_more_animals.png: photographic, as KM-0"
+   ],
+   [
+    10,
+    "Solid, nothing ghosted",
+    "pass",
+    "no see-through parts but real wings"
+   ],
+   [
+    11,
+    "No real brand or logo",
+    "pass",
+    "none (the Shiba's collar is plain)"
+   ],
+   [
+    12,
+    "No wires, no sky, crisp outline",
+    "pass",
+    "a plain sheet; the outline is cut from it at full resolution"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "fur and feathers found by their texture as well as their colour; the ground shadow removed (the lowest 13 % of the box); holes of fur or feather filled, gaps of smooth backdrop left open"
+   ],
+   [
+    14,
+    "Rig names and pivots",
+    "pass",
+    "Tail, Tail2, Tail3 (+ Attach.Front): origins at the joints"
+   ],
+   [
+    15,
+    "Joints overlap, no seam, no gap mid-motion",
+    "pass",
+    "every part overlaps the body; motions looked at frame by frame: swim"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no legs that walk"
+   ],
+   [
+    17,
+    "Each part holds only itself",
+    "pass",
+    "looked at on its part map at full size, part by part: Tail, Tail2, Tail3; the pectoral fins kept whole with the body"
+   ]
+  ]
+ },
+ "KmTurtleBasking": {
+  "id": "KM-N14",
+  "sheet": "KM-P8_more_animals.png",
+  "box": [
+   1867,
+   66,
+   2255,
+   237
+  ],
+  "view": "side",
+  "px_per_m": 1030.6,
+  "tris": 2194,
+  "parts": {
+   "Body": 2194
+  },
+  "empties": [
+   "Attach.Front"
+  ],
+  "size": [
+   0.359,
+   0.089,
+   0.149
+  ],
+  "open_edges": {
+   "Body": [
+    0,
+    33
+   ]
+  },
+  "depth_to_width": {
+   "Body": 0.62
+  },
+  "edges": 3258,
+  "leg_length": null,
+  "game": {
+   "component": null,
+   "note": "still: nothing of it moves"
+  },
+  "copied": [],
+  "feet": {},
+  "motions": [],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "meshes: Body 2194 tris; pivots only: Attach.Front. Checked in Top and Bottom."
+   ],
+   [
+    2,
+    "Closed shell",
+    "pass",
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 33 of 3258 edges where the two faces touch along a thin part's edge (closed, no gap)"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "pass",
+    "deepest / half-width: Body 0.62"
+   ],
+   [
+    4,
+    "Views the game sees have real source data",
+    "pass",
+    "The game sees it the right flank (Right), and at most the Right 3/4 as it passes; Front, Back, Top and Bottom are built from the side picture alone (a soft, mirrored likeness there, never seen in play)."
+   ],
+   [
+    5,
+    "Real size, triangles",
+    "pass",
+    "0.36 x 0.09 x 0.15 m; 2194 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+   ],
+   [
+    6,
+    "Outline whole, no background or shadow",
+    "pass",
+    "looked at on the cuts sheet (cuts.jpg), and against the cut before the texture cue (D18)"
+   ],
+   [
+    7,
+    "No holes; real gaps open",
+    "pass",
+    "looked at on the cuts sheet: no hole in the fur or feathers; the backdrop between tail and back, legs and wings stays open"
+   ],
+   [
+    8,
+    "Things before a wall are their own models",
+    "n/a",
+    "an animal on a plain sheet"
+   ],
+   [
+    9,
+    "The look target's look",
+    "pass",
+    "KM-P8_more_animals.png: photographic, as KM-0"
+   ],
+   [
+    10,
+    "Solid, nothing ghosted",
+    "pass",
+    "no see-through parts but real wings"
+   ],
+   [
+    11,
+    "No real brand or logo",
+    "pass",
+    "none (the Shiba's collar is plain)"
+   ],
+   [
+    12,
+    "No wires, no sky, crisp outline",
+    "pass",
+    "a plain sheet; the outline is cut from it at full resolution"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "fur and feathers found by their texture as well as their colour; the ground shadow removed (the lowest 13 % of the box); GrabCut inside the outline (colours close to the sheet's grey kept); holes of fur or feather filled, gaps of smooth backdrop left open"
+   ],
+   [
+    14,
+    "Rig names and pivots",
+    "pass",
+    "one piece: nothing moves"
+   ],
+   [
+    15,
+    "Joints overlap, no seam, no gap mid-motion",
+    "pass",
+    "no moving parts"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no legs that walk"
+   ],
+   [
+    17,
+    "Each part holds only itself",
+    "pass",
+    "one piece: looked at on its part map"
+   ]
+  ]
+ },
+ "KmTurtleSwimming": {
+  "id": "KM-N14",
+  "sheet": "KM-P8_more_animals.png",
+  "box": [
+   2327,
+   16,
+   2715,
+   274
+  ],
+  "view": "above",
+  "px_per_m": 1127.3,
+  "tris": 1630,
+  "parts": {
+   "Body": 1098,
+   "FlipperBR": 144,
+   "FlipperBL": 154,
+   "FlipperFR": 114,
+   "FlipperFL": 120
+  },
+  "empties": [
+   "Attach.Front"
+  ],
+  "size": [
+   0.327,
+   0.214,
+   0.068
+  ],
+  "open_edges": {
+   "Body": [
+    0,
+    35
+   ],
+   "FlipperBR": [
+    0,
+    12
+   ],
+   "FlipperBL": [
+    0,
+    19
+   ],
+   "FlipperFR": [
+    0,
+    12
+   ],
+   "FlipperFL": [
+    0,
+    15
+   ]
+  },
+  "depth_to_width": {
+   "Body": 0.46,
+   "FlipperBR": 0.93,
+   "FlipperBL": 0.92,
+   "FlipperFR": 0.96,
+   "FlipperFL": 0.95
+  },
+  "edges": 2352,
+  "leg_length": null,
+  "game": {
+   "component": "PondDuck",
+   "flippers": [
+    "FlipperFR",
+    "FlipperFL",
+    "FlipperBR",
+    "FlipperBL"
+   ],
+   "flipperAxis": "up",
+   "flipperSweep": 28,
+   "flipperStroke": 0.9
+  },
+  "copied": [],
+  "feet": {},
+  "motions": [
+   "swim"
+  ],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "meshes: Body 1098 tris, FlipperBR 144 tris, FlipperBL 154 tris, FlipperFR 114 tris, FlipperFL 120 tris; pivots only: Attach.Front. Checked in Top and Bottom."
+   ],
+   [
+    2,
+    "Closed shell",
+    "pass",
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 93 of 2352 edges where the two faces touch along a thin part's edge (closed, no gap)"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "pass",
+    "deepest / half-width: Body 0.46, FlipperBR 0.93, FlipperBL 0.92, FlipperFR 0.96, FlipperFL 0.95"
+   ],
+   [
+    4,
+    "Views the game sees have real source data",
+    "pass",
+    "The game sees it from above (Top), through the water or flitting past; its sides and underside come from the one view from above."
+   ],
+   [
+    5,
+    "Real size, triangles",
+    "pass",
+    "0.33 x 0.21 x 0.07 m; 1630 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+   ],
+   [
+    6,
+    "Outline whole, no background or shadow",
+    "pass",
+    "looked at on the cuts sheet (cuts.jpg), and against the cut before the texture cue (D18)"
+   ],
+   [
+    7,
+    "No holes; real gaps open",
+    "pass",
+    "looked at on the cuts sheet: no hole in the fur or feathers; the backdrop between tail and back, legs and wings stays open"
+   ],
+   [
+    8,
+    "Things before a wall are their own models",
+    "n/a",
+    "an animal on a plain sheet"
+   ],
+   [
+    9,
+    "The look target's look",
+    "pass",
+    "KM-P8_more_animals.png: photographic, as KM-0"
+   ],
+   [
+    10,
+    "Solid, nothing ghosted",
+    "pass",
+    "no see-through parts but real wings"
+   ],
+   [
+    11,
+    "No real brand or logo",
+    "pass",
+    "none (the Shiba's collar is plain)"
+   ],
+   [
+    12,
+    "No wires, no sky, crisp outline",
+    "pass",
+    "a plain sheet; the outline is cut from it at full resolution"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "fur and feathers found by their texture as well as their colour; the ground shadow removed (the lowest 13 % of the box); GrabCut inside the outline (colours close to the sheet's grey kept); holes of fur or feather filled, gaps of smooth backdrop left open"
+   ],
+   [
+    14,
+    "Rig names and pivots",
+    "pass",
+    "FlipperBR, FlipperBL, FlipperFR, FlipperFL (+ Attach.Front): origins at the joints"
+   ],
+   [
+    15,
+    "Joints overlap, no seam, no gap mid-motion",
+    "pass",
+    "every part overlaps the body; motions looked at frame by frame: swim"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no legs that walk"
+   ],
+   [
+    17,
+    "Each part holds only itself",
+    "pass",
+    "looked at on its part map at full size, part by part: FlipperBR, FlipperBL, FlipperFR, FlipperFL"
+   ]
+  ]
+ },
+ "KmHeronStanding": {
+  "id": "KM-N15",
+  "sheet": "KM-P8_more_animals.png",
+  "box": [
+   101,
+   303,
+   366,
+   609
+  ],
+  "view": "side",
+  "px_per_m": 317.8,
+  "tris": 1690,
+  "parts": {
+   "Body": 482,
+   "Head": 258,
+   "LegR": 198,
+   "LegL": 120,
+   "ShinR": 248,
+   "ShinL": 194,
+   "ToeR": 124,
+   "ToeL": 66
+  },
+  "empties": [
+   "Attach.Front",
+   "FootL",
+   "FootR"
+  ],
+  "size": [
+   0.771,
+   0.137,
+   0.897
+  ],
+  "open_edges": {
+   "Body": [
+    0,
+    26
+   ],
+   "Head": [
+    0,
+    28
+   ],
+   "LegR": [
+    0,
+    25
+   ],
+   "LegL": [
+    0,
+    9
+   ],
+   "ShinR": [
+    0,
+    35
+   ],
+   "ShinL": [
+    0,
+    26
+   ],
+   "ToeR": [
+    0,
+    19
+   ],
+   "ToeL": [
+    0,
+    9
+   ]
+  },
+  "depth_to_width": {
+   "Body": 0.49,
+   "Head": 0.88,
+   "LegR": 0.92,
+   "LegL": 0.94,
+   "ShinR": 0.97,
+   "ShinL": 0.98,
+   "ToeR": 0.96,
+   "ToeL": 0.99
+  },
+  "edges": 2358,
+  "leg_length": 0.5969,
+  "game": {
+   "component": "GroundBird",
+   "head": "Head",
+   "headAxis": "side",
+   "hopper": false,
+   "headSlide": 0,
+   "headNod": 7,
+   "peckTurn": 25.0,
+   "peckTip": 30.0,
+   "legs": "LegGait (stepped, hopped, planted)"
+  },
+  "copied": [],
+  "feet": {
+   "walk": {
+    "sink": 0.0,
+    "contact": 0.0,
+    "held": 0.3532
+   },
+   "peck": {
+    "sink": 0.0,
+    "contact": 0.0,
+    "held": 0.0
+   }
+  },
+  "motions": [
+   "walk",
+   "peck"
+  ],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "meshes: Body 482 tris, Head 258 tris, LegR 198 tris, LegL 120 tris, ShinR 248 tris, ShinL 194 tris, ToeR 124 tris, ToeL 66 tris; pivots only: Attach.Front, FootL, FootR. Checked in Top and Bottom."
+   ],
+   [
+    2,
+    "Closed shell",
+    "pass",
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 177 of 2358 edges where the two faces touch along a thin part's edge (closed, no gap)"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "pass",
+    "deepest / half-width: Body 0.49, Head 0.88, LegR 0.92, LegL 0.94, ShinR 0.97, ShinL 0.98, ToeR 0.96, ToeL 0.99"
+   ],
+   [
+    4,
+    "Views the game sees have real source data",
+    "pass",
+    "The game sees it the right flank (Right), and at most the Right 3/4 as it passes; Front, Back, Top and Bottom are built from the side picture alone (a soft, mirrored likeness there, never seen in play)."
+   ],
+   [
+    5,
+    "Real size, triangles",
+    "pass",
+    "0.77 x 0.14 x 0.90 m; 1690 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+   ],
+   [
+    6,
+    "Outline whole, no background or shadow",
+    "pass",
+    "looked at on the cuts sheet (cuts.jpg), and against the cut before the texture cue (D18)"
+   ],
+   [
+    7,
+    "No holes; real gaps open",
+    "pass",
+    "looked at on the cuts sheet: no hole in the fur or feathers; the backdrop between tail and back, legs and wings stays open"
+   ],
+   [
+    8,
+    "Things before a wall are their own models",
+    "n/a",
+    "an animal on a plain sheet"
+   ],
+   [
+    9,
+    "The look target's look",
+    "pass",
+    "KM-P8_more_animals.png: photographic, as KM-0"
+   ],
+   [
+    10,
+    "Solid, nothing ghosted",
+    "pass",
+    "no see-through parts but real wings"
+   ],
+   [
+    11,
+    "No real brand or logo",
+    "pass",
+    "none (the Shiba's collar is plain)"
+   ],
+   [
+    12,
+    "No wires, no sky, crisp outline",
+    "pass",
+    "a plain sheet; the outline is cut from it at full resolution"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "fur and feathers found by their texture as well as their colour; the ground shadow removed (the lowest 13 % of the box); GrabCut inside the outline (colours close to the sheet's grey kept); holes of fur or feather filled, gaps of smooth backdrop left open"
+   ],
+   [
+    14,
+    "Rig names and pivots",
+    "pass",
+    "Head, LegR, LegL, ShinR, ShinL, ToeR, ToeL (+ Attach.Front, FootL, FootR): origins at the joints"
+   ],
+   [
+    15,
+    "Joints overlap, no seam, no gap mid-motion",
+    "pass",
+    "every part overlaps the body; four legs, near and far: LegL, LegR; motions looked at frame by frame: walk, peck"
+   ],
+   [
+    16,
+    "Feet planted",
+    "pass",
+    "walk: sink 0.0 mm, lowest foot 0.0 mm up, held 353.2 mm; peck: sink 0.0 mm, lowest foot 0.0 mm up, held 0.0 mm (tolerance 9.0 mm, 1 % of its height)"
+   ],
+   [
+    17,
+    "Each part holds only itself",
+    "pass",
+    "looked at on its part map at full size, part by part: Head, LegR, LegL, ShinR, ShinL, ToeR, ToeL; every leg the picture shows is its own part, its own pixels only; legs drawn on the sheet where their shape couldn't part them"
+   ]
+  ]
+ },
+ "KmCormorantStanding": {
+  "id": "KM-N16",
+  "sheet": "KM-P8_more_animals.png",
+  "box": [
+   1011,
+   317,
+   1279,
+   604
+  ],
+  "view": "side",
+  "px_per_m": 317.6,
+  "tris": 988,
+  "parts": {
+   "Body": 818,
+   "Head": 170
+  },
+  "empties": [
+   "Attach.Front"
+  ],
+  "size": [
+   0.784,
+   0.135,
+   0.847
+  ],
+  "open_edges": {
+   "Body": [
+    0,
+    54
+   ],
+   "Head": [
+    0,
+    7
+   ]
+  },
+  "depth_to_width": {
+   "Body": 0.48,
+   "Head": 0.8
+  },
+  "edges": 1421,
+  "leg_length": null,
+  "game": {
+   "component": "CritterIdle",
+   "motions": [
+    {
+     "part": "Head",
+     "axis": "up",
+     "amplitude": 10.0,
+     "speed": 0.7
+    }
+   ]
+  },
+  "copied": [],
+  "feet": {},
+  "motions": [
+   "idle"
+  ],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "meshes: Body 818 tris, Head 170 tris; pivots only: Attach.Front. Checked in Top and Bottom."
+   ],
+   [
+    2,
+    "Closed shell",
+    "pass",
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 61 of 1421 edges where the two faces touch along a thin part's edge (closed, no gap)"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "pass",
+    "deepest / half-width: Body 0.48, Head 0.80"
+   ],
+   [
+    4,
+    "Views the game sees have real source data",
+    "pass",
+    "The game sees it the right flank (Right), and at most the Right 3/4 as it passes; Front, Back, Top and Bottom are built from the side picture alone (a soft, mirrored likeness there, never seen in play)."
+   ],
+   [
+    5,
+    "Real size, triangles",
+    "pass",
+    "0.78 x 0.14 x 0.85 m; 988 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+   ],
+   [
+    6,
+    "Outline whole, no background or shadow",
+    "pass",
+    "looked at on the cuts sheet (cuts.jpg), and against the cut before the texture cue (D18)"
+   ],
+   [
+    7,
+    "No holes; real gaps open",
+    "pass",
+    "looked at on the cuts sheet: no hole in the fur or feathers; the backdrop between tail and back, legs and wings stays open"
+   ],
+   [
+    8,
+    "Things before a wall are their own models",
+    "n/a",
+    "an animal on a plain sheet"
+   ],
+   [
+    9,
+    "The look target's look",
+    "pass",
+    "KM-P8_more_animals.png: photographic, as KM-0"
+   ],
+   [
+    10,
+    "Solid, nothing ghosted",
+    "pass",
+    "no see-through parts but real wings"
+   ],
+   [
+    11,
+    "No real brand or logo",
+    "pass",
+    "none (the Shiba's collar is plain)"
+   ],
+   [
+    12,
+    "No wires, no sky, crisp outline",
+    "pass",
+    "a plain sheet; the outline is cut from it at full resolution"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "fur and feathers found by their texture as well as their colour; the ground shadow removed (the lowest 13 % of the box); GrabCut inside the outline (colours close to the sheet's grey kept); holes of fur or feather filled, gaps of smooth backdrop left open"
+   ],
+   [
+    14,
+    "Rig names and pivots",
+    "pass",
+    "Head (+ Attach.Front): origins at the joints"
+   ],
+   [
+    15,
+    "Joints overlap, no seam, no gap mid-motion",
+    "pass",
+    "every part overlaps the body; motions looked at frame by frame: idle"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no legs that walk"
+   ],
+   [
+    17,
+    "Each part holds only itself",
+    "pass",
+    "looked at on its part map at full size, part by part: Head"
+   ]
+  ]
+ },
+ "KmCormorantDrying": {
+  "id": "KM-N16",
+  "sheet": "KM-P8_more_animals.png",
+  "box": [
+   1390,
+   323,
+   1822,
+   602
+  ],
+  "view": "side",
+  "px_per_m": 437.9,
+  "tris": 1342,
+  "parts": {
+   "Body": 1342
+  },
+  "empties": [
+   "Attach.Front"
+  ],
+  "size": [
+   0.945,
+   0.128,
+   0.596
+  ],
+  "open_edges": {
+   "Body": [
+    0,
+    57
+   ]
+  },
+  "depth_to_width": {
+   "Body": 0.59
+  },
+  "edges": 1956,
+  "leg_length": null,
+  "game": {
+   "component": null,
+   "note": "still: nothing of it moves"
+  },
+  "copied": [],
+  "feet": {},
+  "motions": [],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "meshes: Body 1342 tris; pivots only: Attach.Front. Checked in Top and Bottom."
+   ],
+   [
+    2,
+    "Closed shell",
+    "pass",
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 57 of 1956 edges where the two faces touch along a thin part's edge (closed, no gap)"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "pass",
+    "deepest / half-width: Body 0.59"
+   ],
+   [
+    4,
+    "Views the game sees have real source data",
+    "pass",
+    "The game sees it the right flank (Right), and at most the Right 3/4 as it passes; Front, Back, Top and Bottom are built from the side picture alone (a soft, mirrored likeness there, never seen in play)."
+   ],
+   [
+    5,
+    "Real size, triangles",
+    "pass",
+    "0.94 x 0.13 x 0.60 m; 1342 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+   ],
+   [
+    6,
+    "Outline whole, no background or shadow",
+    "pass",
+    "looked at on the cuts sheet (cuts.jpg), and against the cut before the texture cue (D18)"
+   ],
+   [
+    7,
+    "No holes; real gaps open",
+    "pass",
+    "looked at on the cuts sheet: no hole in the fur or feathers; the backdrop between tail and back, legs and wings stays open"
+   ],
+   [
+    8,
+    "Things before a wall are their own models",
+    "n/a",
+    "an animal on a plain sheet"
+   ],
+   [
+    9,
+    "The look target's look",
+    "pass",
+    "KM-P8_more_animals.png: photographic, as KM-0"
+   ],
+   [
+    10,
+    "Solid, nothing ghosted",
+    "pass",
+    "no see-through parts but real wings"
+   ],
+   [
+    11,
+    "No real brand or logo",
+    "pass",
+    "none (the Shiba's collar is plain)"
+   ],
+   [
+    12,
+    "No wires, no sky, crisp outline",
+    "pass",
+    "a plain sheet; the outline is cut from it at full resolution"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "fur and feathers found by their texture as well as their colour; the ground shadow removed (the lowest 13 % of the box); GrabCut inside the outline (colours close to the sheet's grey kept); holes of fur or feather filled, gaps of smooth backdrop left open"
+   ],
+   [
+    14,
+    "Rig names and pivots",
+    "pass",
+    "one piece: nothing moves"
+   ],
+   [
+    15,
+    "Joints overlap, no seam, no gap mid-motion",
+    "pass",
+    "no moving parts"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no legs that walk"
+   ],
+   [
+    17,
+    "Each part holds only itself",
+    "pass",
+    "one piece: looked at on its part map"
+   ]
+  ]
+ },
+ "KmWagtail": {
+  "id": "KM-N17",
+  "sheet": "KM-P8_more_animals.png",
+  "box": [
+   2316,
+   345,
+   2684,
+   582
+  ],
+  "view": "side",
+  "px_per_m": 1676.2,
+  "tris": 1918,
+  "parts": {
+   "Body": 524,
+   "Head": 298,
+   "Tail": 122,
+   "LegR": 82,
+   "LegL": 82,
+   "ShinR": 158,
+   "ShinL": 158,
+   "Tail2": 114,
+   "ToeR": 134,
+   "ToeL": 134,
+   "Tail3": 112
+  },
+  "empties": [
+   "Attach.Front",
+   "FootL",
+   "FootR"
+  ],
+  "size": [
+   0.209,
+   0.033,
+   0.129
+  ],
+  "open_edges": {
+   "Body": [
+    0,
+    35
+   ],
+   "Head": [
+    0,
+    12
+   ],
+   "Tail": [
+    0,
+    18
+   ],
+   "LegR": [
+    0,
+    12
+   ],
+   "LegL": [
+    0,
+    12
+   ],
+   "ShinR": [
+    0,
+    31
+   ],
+   "ShinL": [
+    0,
+    31
+   ],
+   "Tail2": [
+    0,
+    21
+   ],
+   "ToeR": [
+    0,
+    21
+   ],
+   "ToeL": [
+    0,
+    21
+   ],
+   "Tail3": [
+    0,
+    21
+   ]
+  },
+  "depth_to_width": {
+   "Body": 0.7,
+   "Head": 0.77,
+   "Tail": 0.84,
+   "LegR": 0.95,
+   "LegL": 0.95,
+   "ShinR": 0.99,
+   "ShinL": 0.99,
+   "Tail2": 0.95,
+   "ToeR": 0.95,
+   "ToeL": 0.95,
+   "Tail3": 0.96
+  },
+  "edges": 2642,
+  "leg_length": 0.0571,
+  "game": {
+   "component": "GroundBird",
+   "head": "Head",
+   "headAxis": "side",
+   "hopper": false,
+   "headSlide": 0,
+   "headNod": 7,
+   "peckTurn": 25.0,
+   "peckTip": 30.0,
+   "legs": "LegGait (stepped, hopped, planted)",
+   "tail": "Tail",
+   "tailAxis": "side",
+   "tailPump": 14,
+   "tailPumpRate": 3
+  },
+  "copied": [
+   "LegL"
+  ],
+  "feet": {
+   "walk": {
+    "sink": 0.0,
+    "contact": 0.0,
+    "held": 0.0314
+   },
+   "peck": {
+    "sink": 0.0,
+    "contact": 0.0,
+    "held": 0.0
+   }
+  },
+  "motions": [
+   "walk",
+   "peck"
+  ],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "meshes: Body 524 tris, Head 298 tris, Tail 122 tris, LegR 82 tris, LegL 82 tris, ShinR 158 tris, ShinL 158 tris, Tail2 114 tris, ToeR 134 tris, ToeL 134 tris, Tail3 112 tris; pivots only: Attach.Front, FootL, FootR. Checked in Top and Bottom."
+   ],
+   [
+    2,
+    "Closed shell",
+    "pass",
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 235 of 2642 edges where the two faces touch along a thin part's edge (closed, no gap)"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "pass",
+    "deepest / half-width: Body 0.70, Head 0.77, Tail 0.84, LegR 0.95, LegL 0.95, ShinR 0.99, ShinL 0.99, Tail2 0.95, ToeR 0.95, ToeL 0.95, Tail3 0.96"
+   ],
+   [
+    4,
+    "Views the game sees have real source data",
+    "pass",
+    "The game sees it the right flank (Right), and at most the Right 3/4 as it passes; Front, Back, Top and Bottom are built from the side picture alone (a soft, mirrored likeness there, never seen in play)."
+   ],
+   [
+    5,
+    "Real size, triangles",
+    "pass",
+    "0.21 x 0.03 x 0.13 m; 1918 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+   ],
+   [
+    6,
+    "Outline whole, no background or shadow",
+    "pass",
+    "looked at on the cuts sheet (cuts.jpg), and against the cut before the texture cue (D18)"
+   ],
+   [
+    7,
+    "No holes; real gaps open",
+    "pass",
+    "looked at on the cuts sheet: no hole in the fur or feathers; the backdrop between tail and back, legs and wings stays open"
+   ],
+   [
+    8,
+    "Things before a wall are their own models",
+    "n/a",
+    "an animal on a plain sheet"
+   ],
+   [
+    9,
+    "The look target's look",
+    "pass",
+    "KM-P8_more_animals.png: photographic, as KM-0"
+   ],
+   [
+    10,
+    "Solid, nothing ghosted",
+    "pass",
+    "no see-through parts but real wings"
+   ],
+   [
+    11,
+    "No real brand or logo",
+    "pass",
+    "none (the Shiba's collar is plain)"
+   ],
+   [
+    12,
+    "No wires, no sky, crisp outline",
+    "pass",
+    "a plain sheet; the outline is cut from it at full resolution"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "fur and feathers found by their texture as well as their colour; the ground shadow removed (the lowest 13 % of the box); GrabCut inside the outline (colours close to the sheet's grey kept); 1 area(s) left out (the perch wire); holes of fur or feather filled, gaps of smooth backdrop left open"
+   ],
+   [
+    14,
+    "Rig names and pivots",
+    "pass",
+    "Head, Tail, LegR, LegL, ShinR, ShinL, Tail2, ToeR, ToeL, Tail3 (+ Attach.Front, FootL, FootR): origins at the joints"
+   ],
+   [
+    15,
+    "Joints overlap, no seam, no gap mid-motion",
+    "pass",
+    "every part overlaps the body; four legs, near and far: LegL, LegR; motions looked at frame by frame: walk, peck"
+   ],
+   [
+    16,
+    "Feet planted",
+    "pass",
+    "walk: sink 0.0 mm, lowest foot 0.0 mm up, held 31.4 mm; peck: sink 0.0 mm, lowest foot 0.0 mm up, held 0.0 mm (tolerance 1.3 mm, 1 % of its height)"
+   ],
+   [
+    17,
+    "Each part holds only itself",
+    "pass",
+    "looked at on its part map at full size, part by part: Head, Tail, LegR, LegL, ShinR, ShinL, Tail2, ToeR, ToeL, Tail3; LegL a copy of the near leg, set behind (the far leg, beside the near one all the way down in the picture, taken out); legs drawn on the sheet where their shape couldn't part them"
+   ]
+  ]
+ },
+ "KmWhiteEyePerched": {
+  "id": "KM-N18",
+  "sheet": "KM-P8_more_animals.png",
+  "box": [
+   66,
+   651,
+   366,
+   932
+  ],
+  "view": "side",
+  "px_per_m": 2184.6,
+  "tris": 1001,
+  "parts": {
+   "Body": 763,
+   "Head": 238
+  },
+  "empties": [
+   "Attach.Front"
+  ],
+  "size": [
+   0.129,
+   0.028,
+   0.121
+  ],
+  "open_edges": {
+   "Body": [
+    0,
+    48
+   ],
+   "Head": [
+    0,
+    15
+   ]
+  },
+  "depth_to_width": {
+   "Body": 0.56,
+   "Head": 0.72
+  },
+  "edges": 1442,
+  "leg_length": null,
+  "game": {
+   "component": "CritterIdle",
+   "motions": [
+    {
+     "part": "Head",
+     "axis": "up",
+     "amplitude": 12.0,
+     "speed": 0.9
+    }
+   ]
+  },
+  "copied": [],
+  "feet": {},
+  "motions": [
+   "idle"
+  ],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "meshes: Body 763 tris, Head 238 tris; pivots only: Attach.Front. Checked in Top and Bottom."
+   ],
+   [
+    2,
+    "Closed shell",
+    "pass",
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 63 of 1442 edges where the two faces touch along a thin part's edge (closed, no gap)"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "pass",
+    "deepest / half-width: Body 0.56, Head 0.72"
+   ],
+   [
+    4,
+    "Views the game sees have real source data",
+    "pass",
+    "The game sees it the right flank (Right), and at most the Right 3/4 as it passes; Front, Back, Top and Bottom are built from the side picture alone (a soft, mirrored likeness there, never seen in play)."
+   ],
+   [
+    5,
+    "Real size, triangles",
+    "pass",
+    "0.13 x 0.03 x 0.12 m; 1001 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+   ],
+   [
+    6,
+    "Outline whole, no background or shadow",
+    "pass",
+    "looked at on the cuts sheet (cuts.jpg), and against the cut before the texture cue (D18)"
+   ],
+   [
+    7,
+    "No holes; real gaps open",
+    "pass",
+    "looked at on the cuts sheet: no hole in the fur or feathers; the backdrop between tail and back, legs and wings stays open"
+   ],
+   [
+    8,
+    "Things before a wall are their own models",
+    "n/a",
+    "an animal on a plain sheet"
+   ],
+   [
+    9,
+    "The look target's look",
+    "pass",
+    "KM-P8_more_animals.png: photographic, as KM-0"
+   ],
+   [
+    10,
+    "Solid, nothing ghosted",
+    "pass",
+    "no see-through parts but real wings"
+   ],
+   [
+    11,
+    "No real brand or logo",
+    "pass",
+    "none (the Shiba's collar is plain)"
+   ],
+   [
+    12,
+    "No wires, no sky, crisp outline",
+    "pass",
+    "a plain sheet; the outline is cut from it at full resolution"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "fur and feathers found by their texture as well as their colour; the ground shadow removed (the lowest 13 % of the box); holes of fur or feather filled, gaps of smooth backdrop left open"
+   ],
+   [
+    14,
+    "Rig names and pivots",
+    "pass",
+    "Head (+ Attach.Front): origins at the joints"
+   ],
+   [
+    15,
+    "Joints overlap, no seam, no gap mid-motion",
+    "pass",
+    "every part overlaps the body; motions looked at frame by frame: idle"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no legs that walk"
+   ],
+   [
+    17,
+    "Each part holds only itself",
+    "pass",
+    "looked at on its part map at full size, part by part: Head"
+   ]
+  ]
+ },
+ "KmWhiteEyeFlying": {
+  "id": "KM-N18",
+  "sheet": "KM-P8_more_animals.png",
+  "box": [
+   509,
+   639,
+   863,
+   891
+  ],
+  "view": "below",
+  "px_per_m": 1877.8,
+  "tris": 1694,
+  "parts": {
+   "Body": 390,
+   "WingR": 304,
+   "WingL": 298,
+   "WingL2": 356,
+   "WingR2": 346
+  },
+  "empties": [
+   "Attach.Front"
+  ],
+  "size": [
+   0.125,
+   0.178,
+   0.02
+  ],
+  "open_edges": {
+   "Body": [
+    0,
+    19
+   ],
+   "WingR": [
+    0,
+    8
+   ],
+   "WingL": [
+    0,
+    9
+   ],
+   "WingL2": [
+    0,
+    24
+   ],
+   "WingR2": [
+    0,
+    21
+   ]
+  },
+  "depth_to_width": {
+   "Body": 0.68,
+   "WingR": 0.22,
+   "WingL": 0.22,
+   "WingL2": 0.25,
+   "WingR2": 0.26
+  },
+  "edges": 2460,
+  "leg_length": null,
+  "game": {
+   "component": "GroundBird (flying model) or SkyFlock",
+   "wings": [
+    "WingR",
+    "WingL"
+   ],
+   "wingAxis": "long"
+  },
+  "copied": [],
+  "feet": {},
+  "motions": [
+   "fly"
+  ],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "meshes: Body 390 tris, WingR 304 tris, WingL 298 tris, WingL2 356 tris, WingR2 346 tris; pivots only: Attach.Front. Checked in Top and Bottom."
+   ],
+   [
+    2,
+    "Closed shell",
+    "pass",
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 81 of 2460 edges where the two faces touch along a thin part's edge (closed, no gap)"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "pass",
+    "deepest / half-width: Body 0.68, WingR 0.22, WingL 0.22, WingL2 0.25, WingR2 0.26"
+   ],
+   [
+    4,
+    "Views the game sees have real source data",
+    "limit",
+    "The game sees it from below and to the side as it crosses the sky; its side and top come from the one view from below. From the side it is a thin plate and its top is its underside mirrored: built from one view, accepted because it is a few pixels across on the phone (KAMAKURA_BUILD Step 4b); a bird large on screen gets a four-view sheet."
+   ],
+   [
+    5,
+    "Real size, triangles",
+    "pass",
+    "0.12 x 0.18 x 0.02 m; 1694 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+   ],
+   [
+    6,
+    "Outline whole, no background or shadow",
+    "pass",
+    "looked at on the cuts sheet (cuts.jpg), and against the cut before the texture cue (D18)"
+   ],
+   [
+    7,
+    "No holes; real gaps open",
+    "pass",
+    "looked at on the cuts sheet: no hole in the fur or feathers; the backdrop between tail and back, legs and wings stays open"
+   ],
+   [
+    8,
+    "Things before a wall are their own models",
+    "n/a",
+    "an animal on a plain sheet"
+   ],
+   [
+    9,
+    "The look target's look",
+    "pass",
+    "KM-P8_more_animals.png: photographic, as KM-0"
+   ],
+   [
+    10,
+    "Solid, nothing ghosted",
+    "pass",
+    "no see-through parts but real wings"
+   ],
+   [
+    11,
+    "No real brand or logo",
+    "pass",
+    "none (the Shiba's collar is plain)"
+   ],
+   [
+    12,
+    "No wires, no sky, crisp outline",
+    "pass",
+    "a plain sheet; the outline is cut from it at full resolution"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "fur and feathers found by their texture as well as their colour; the ground shadow removed (the lowest 13 % of the box); holes of fur or feather filled, gaps of smooth backdrop left open"
+   ],
+   [
+    14,
+    "Rig names and pivots",
+    "pass",
+    "WingR, WingL, WingL2, WingR2 (+ Attach.Front): origins at the joints"
+   ],
+   [
+    15,
+    "Joints overlap, no seam, no gap mid-motion",
+    "pass",
+    "every part overlaps the body; motions looked at frame by frame: fly"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no legs that walk"
+   ],
+   [
+    17,
+    "Each part holds only itself",
+    "pass",
+    "looked at on its part map at full size, part by part: WingR, WingL, WingL2, WingR2"
+   ]
+  ]
+ },
+ "KmBulbulPerched": {
+  "id": "KM-N19",
+  "sheet": "KM-P8_more_animals.png",
+  "box": [
+   972,
+   640,
+   1277,
+   912
+  ],
+  "view": "side",
+  "px_per_m": 1032.1,
+  "tris": 1053,
+  "parts": {
+   "Body": 749,
+   "Head": 304
+  },
+  "empties": [
+   "Attach.Front"
+  ],
+  "size": [
+   0.278,
+   0.048,
+   0.247
+  ],
+  "open_edges": {
+   "Body": [
+    0,
+    55
+   ],
+   "Head": [
+    0,
+    16
+   ]
+  },
+  "depth_to_width": {
+   "Body": 0.5,
+   "Head": 0.6
+  },
+  "edges": 1510,
+  "leg_length": null,
+  "game": {
+   "component": "CritterIdle",
+   "motions": [
+    {
+     "part": "Head",
+     "axis": "up",
+     "amplitude": 12.0,
+     "speed": 0.9
+    }
+   ]
+  },
+  "copied": [],
+  "feet": {},
+  "motions": [
+   "idle"
+  ],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "meshes: Body 749 tris, Head 304 tris; pivots only: Attach.Front. Checked in Top and Bottom."
+   ],
+   [
+    2,
+    "Closed shell",
+    "pass",
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 71 of 1510 edges where the two faces touch along a thin part's edge (closed, no gap)"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "pass",
+    "deepest / half-width: Body 0.50, Head 0.60"
+   ],
+   [
+    4,
+    "Views the game sees have real source data",
+    "pass",
+    "The game sees it the right flank (Right), and at most the Right 3/4 as it passes; Front, Back, Top and Bottom are built from the side picture alone (a soft, mirrored likeness there, never seen in play)."
+   ],
+   [
+    5,
+    "Real size, triangles",
+    "pass",
+    "0.28 x 0.05 x 0.25 m; 1053 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+   ],
+   [
+    6,
+    "Outline whole, no background or shadow",
+    "pass",
+    "looked at on the cuts sheet (cuts.jpg), and against the cut before the texture cue (D18)"
+   ],
+   [
+    7,
+    "No holes; real gaps open",
+    "pass",
+    "looked at on the cuts sheet: no hole in the fur or feathers; the backdrop between tail and back, legs and wings stays open"
+   ],
+   [
+    8,
+    "Things before a wall are their own models",
+    "n/a",
+    "an animal on a plain sheet"
+   ],
+   [
+    9,
+    "The look target's look",
+    "pass",
+    "KM-P8_more_animals.png: photographic, as KM-0"
+   ],
+   [
+    10,
+    "Solid, nothing ghosted",
+    "pass",
+    "no see-through parts but real wings"
+   ],
+   [
+    11,
+    "No real brand or logo",
+    "pass",
+    "none (the Shiba's collar is plain)"
+   ],
+   [
+    12,
+    "No wires, no sky, crisp outline",
+    "pass",
+    "a plain sheet; the outline is cut from it at full resolution"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "fur and feathers found by their texture as well as their colour; the ground shadow removed (the lowest 13 % of the box); GrabCut inside the outline (colours close to the sheet's grey kept); holes of fur or feather filled, gaps of smooth backdrop left open"
+   ],
+   [
+    14,
+    "Rig names and pivots",
+    "pass",
+    "Head (+ Attach.Front): origins at the joints"
+   ],
+   [
+    15,
+    "Joints overlap, no seam, no gap mid-motion",
+    "pass",
+    "every part overlaps the body; motions looked at frame by frame: idle"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no legs that walk"
+   ],
+   [
+    17,
+    "Each part holds only itself",
+    "pass",
+    "looked at on its part map at full size, part by part: Head"
+   ]
+  ]
+ },
+ "KmBulbulFlying": {
+  "id": "KM-N19",
+  "sheet": "KM-P8_more_animals.png",
+  "box": [
+   1406,
+   626,
+   1806,
+   907
+  ],
+  "view": "below",
+  "px_per_m": 960.0,
+  "tris": 1882,
+  "parts": {
+   "Body": 440,
+   "WingR": 348,
+   "WingL": 350,
+   "WingL2": 384,
+   "WingR2": 360
+  },
+  "empties": [
+   "Attach.Front"
+  ],
+  "size": [
+   0.275,
+   0.398,
+   0.038
+  ],
+  "open_edges": {
+   "Body": [
+    0,
+    21
+   ],
+   "WingR": [
+    0,
+    17
+   ],
+   "WingL": [
+    0,
+    18
+   ],
+   "WingL2": [
+    0,
+    33
+   ],
+   "WingR2": [
+    0,
+    28
+   ]
+  },
+  "depth_to_width": {
+   "Body": 0.53,
+   "WingR": 0.16,
+   "WingL": 0.16,
+   "WingL2": 0.2,
+   "WingR2": 0.2
+  },
+  "edges": 2706,
+  "leg_length": null,
+  "game": {
+   "component": "GroundBird (flying model) or SkyFlock",
+   "wings": [
+    "WingR",
+    "WingL"
+   ],
+   "wingAxis": "long"
+  },
+  "copied": [],
+  "feet": {},
+  "motions": [
+   "fly"
+  ],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "meshes: Body 440 tris, WingR 348 tris, WingL 350 tris, WingL2 384 tris, WingR2 360 tris; pivots only: Attach.Front. Checked in Top and Bottom."
+   ],
+   [
+    2,
+    "Closed shell",
+    "pass",
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 117 of 2706 edges where the two faces touch along a thin part's edge (closed, no gap)"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "pass",
+    "deepest / half-width: Body 0.53, WingR 0.16, WingL 0.16, WingL2 0.20, WingR2 0.20"
+   ],
+   [
+    4,
+    "Views the game sees have real source data",
+    "limit",
+    "The game sees it from below and to the side as it crosses the sky; its side and top come from the one view from below. From the side it is a thin plate and its top is its underside mirrored: built from one view, accepted because it is a few pixels across on the phone (KAMAKURA_BUILD Step 4b); a bird large on screen gets a four-view sheet."
+   ],
+   [
+    5,
+    "Real size, triangles",
+    "pass",
+    "0.28 x 0.40 x 0.04 m; 1882 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+   ],
+   [
+    6,
+    "Outline whole, no background or shadow",
+    "pass",
+    "looked at on the cuts sheet (cuts.jpg), and against the cut before the texture cue (D18)"
+   ],
+   [
+    7,
+    "No holes; real gaps open",
+    "pass",
+    "looked at on the cuts sheet: no hole in the fur or feathers; the backdrop between tail and back, legs and wings stays open"
+   ],
+   [
+    8,
+    "Things before a wall are their own models",
+    "n/a",
+    "an animal on a plain sheet"
+   ],
+   [
+    9,
+    "The look target's look",
+    "pass",
+    "KM-P8_more_animals.png: photographic, as KM-0"
+   ],
+   [
+    10,
+    "Solid, nothing ghosted",
+    "pass",
+    "no see-through parts but real wings"
+   ],
+   [
+    11,
+    "No real brand or logo",
+    "pass",
+    "none (the Shiba's collar is plain)"
+   ],
+   [
+    12,
+    "No wires, no sky, crisp outline",
+    "pass",
+    "a plain sheet; the outline is cut from it at full resolution"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "fur and feathers found by their texture as well as their colour; the ground shadow removed (the lowest 13 % of the box); GrabCut inside the outline (colours close to the sheet's grey kept); holes of fur or feather filled, gaps of smooth backdrop left open"
+   ],
+   [
+    14,
+    "Rig names and pivots",
+    "pass",
+    "WingR, WingL, WingL2, WingR2 (+ Attach.Front): origins at the joints"
+   ],
+   [
+    15,
+    "Joints overlap, no seam, no gap mid-motion",
+    "pass",
+    "every part overlaps the body; motions looked at frame by frame: fly"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no legs that walk"
+   ],
+   [
+    17,
+    "Each part holds only itself",
+    "pass",
+    "looked at on its part map at full size, part by part: WingR, WingL, WingL2, WingR2"
+   ]
+  ]
+ },
+ "KmDoveStanding": {
+  "id": "KM-N20",
+  "sheet": "KM-P8_more_animals.png",
+  "box": [
+   1863,
+   647,
+   2225,
+   905
+  ],
+  "view": "side",
+  "px_per_m": 1048.5,
+  "tris": 1518,
+  "parts": {
+   "Body": 894,
+   "Head": 224,
+   "LegR": 34,
+   "LegL": 40,
+   "ShinR": 58,
+   "ShinL": 42,
+   "ToeR": 170,
+   "ToeL": 56
+  },
+  "empties": [
+   "Attach.Front",
+   "FootL",
+   "FootR"
+  ],
+  "size": [
+   0.329,
+   0.081,
+   0.224
+  ],
+  "open_edges": {
+   "Body": [
+    0,
+    60
+   ],
+   "Head": [
+    0,
+    8
+   ],
+   "LegR": [
+    0,
+    1
+   ],
+   "LegL": [
+    0,
+    5
+   ],
+   "ShinR": [
+    0,
+    6
+   ],
+   "ShinL": [
+    0,
+    5
+   ],
+   "ToeR": [
+    0,
+    31
+   ],
+   "ToeL": [
+    0,
+    6
+   ]
+  },
+  "depth_to_width": {
+   "Body": 0.72,
+   "Head": 0.91,
+   "LegR": 0.99,
+   "LegL": 1.0,
+   "ShinR": 1.0,
+   "ShinL": 0.99,
+   "ToeR": 0.98,
+   "ToeL": 1.0
+  },
+  "edges": 2155,
+  "leg_length": 0.0379,
+  "game": {
+   "component": "GroundBird",
+   "head": "Head",
+   "headAxis": "side",
+   "hopper": false,
+   "headSlide": 0,
+   "headNod": 7,
+   "peckTurn": 35.0,
+   "peckTip": 18.0,
+   "legs": "LegGait (stepped, hopped, planted)"
+  },
+  "copied": [],
+  "feet": {
+   "walk": {
+    "sink": 0.0,
+    "contact": 0.0,
+    "held": 0.024
+   },
+   "peck": {
+    "sink": 0.0,
+    "contact": 0.0,
+    "held": 0.0
+   }
+  },
+  "motions": [
+   "walk",
+   "peck"
+  ],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "meshes: Body 894 tris, Head 224 tris, LegR 34 tris, LegL 40 tris, ShinR 58 tris, ShinL 42 tris, ToeR 170 tris, ToeL 56 tris; pivots only: Attach.Front, FootL, FootR. Checked in Top and Bottom."
+   ],
+   [
+    2,
+    "Closed shell",
+    "pass",
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 122 of 2155 edges where the two faces touch along a thin part's edge (closed, no gap)"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "pass",
+    "deepest / half-width: Body 0.72, Head 0.91, LegR 0.99, LegL 1.00, ShinR 1.00, ShinL 0.99, ToeR 0.98, ToeL 1.00"
+   ],
+   [
+    4,
+    "Views the game sees have real source data",
+    "pass",
+    "The game sees it the right flank (Right), and at most the Right 3/4 as it passes; Front, Back, Top and Bottom are built from the side picture alone (a soft, mirrored likeness there, never seen in play)."
+   ],
+   [
+    5,
+    "Real size, triangles",
+    "pass",
+    "0.33 x 0.08 x 0.22 m; 1518 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+   ],
+   [
+    6,
+    "Outline whole, no background or shadow",
+    "pass",
+    "looked at on the cuts sheet (cuts.jpg), and against the cut before the texture cue (D18)"
+   ],
+   [
+    7,
+    "No holes; real gaps open",
+    "pass",
+    "looked at on the cuts sheet: no hole in the fur or feathers; the backdrop between tail and back, legs and wings stays open"
+   ],
+   [
+    8,
+    "Things before a wall are their own models",
+    "n/a",
+    "an animal on a plain sheet"
+   ],
+   [
+    9,
+    "The look target's look",
+    "pass",
+    "KM-P8_more_animals.png: photographic, as KM-0"
+   ],
+   [
+    10,
+    "Solid, nothing ghosted",
+    "pass",
+    "no see-through parts but real wings"
+   ],
+   [
+    11,
+    "No real brand or logo",
+    "pass",
+    "none (the Shiba's collar is plain)"
+   ],
+   [
+    12,
+    "No wires, no sky, crisp outline",
+    "pass",
+    "a plain sheet; the outline is cut from it at full resolution"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "fur and feathers found by their texture as well as their colour; the ground shadow removed (the lowest 13 % of the box); GrabCut inside the outline (colours close to the sheet's grey kept); holes of fur or feather filled, gaps of smooth backdrop left open"
+   ],
+   [
+    14,
+    "Rig names and pivots",
+    "pass",
+    "Head, LegR, LegL, ShinR, ShinL, ToeR, ToeL (+ Attach.Front, FootL, FootR): origins at the joints"
+   ],
+   [
+    15,
+    "Joints overlap, no seam, no gap mid-motion",
+    "pass",
+    "every part overlaps the body; four legs, near and far: LegL, LegR; motions looked at frame by frame: walk, peck"
+   ],
+   [
+    16,
+    "Feet planted",
+    "pass",
+    "walk: sink 0.0 mm, lowest foot 0.0 mm up, held 24.0 mm; peck: sink 0.0 mm, lowest foot 0.0 mm up, held 0.0 mm (tolerance 2.2 mm, 1 % of its height)"
+   ],
+   [
+    17,
+    "Each part holds only itself",
+    "pass",
+    "looked at on its part map at full size, part by part: Head, LegR, LegL, ShinR, ShinL, ToeR, ToeL; every leg the picture shows is its own part, its own pixels only; legs drawn on the sheet where their shape couldn't part them"
+   ]
+  ]
+ },
+ "KmDoveFlying": {
+  "id": "KM-N20",
+  "sheet": "KM-P8_more_animals.png",
+  "box": [
+   2314,
+   646,
+   2731,
+   900
+  ],
+  "view": "below",
+  "px_per_m": 756.6,
+  "tris": 2146,
+  "parts": {
+   "Body": 612,
+   "WingR": 382,
+   "WingL": 386,
+   "WingL2": 390,
+   "WingR2": 376
+  },
+  "empties": [
+   "Attach.Front"
+  ],
+  "size": [
+   0.313,
+   0.527,
+   0.049
+  ],
+  "open_edges": {
+   "Body": [
+    0,
+    28
+   ],
+   "WingR": [
+    0,
+    19
+   ],
+   "WingL": [
+    0,
+    21
+   ],
+   "WingL2": [
+    0,
+    38
+   ],
+   "WingR2": [
+    0,
+    31
+   ]
+  },
+  "depth_to_width": {
+   "Body": 0.42,
+   "WingR": 0.17,
+   "WingL": 0.17,
+   "WingL2": 0.22,
+   "WingR2": 0.22
+  },
+  "edges": 3082,
+  "leg_length": null,
+  "game": {
+   "component": "GroundBird (flying model) or SkyFlock",
+   "wings": [
+    "WingR",
+    "WingL"
+   ],
+   "wingAxis": "long"
+  },
+  "copied": [],
+  "feet": {},
+  "motions": [
+   "fly"
+  ],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "meshes: Body 612 tris, WingR 382 tris, WingL 386 tris, WingL2 390 tris, WingR2 376 tris; pivots only: Attach.Front. Checked in Top and Bottom."
+   ],
+   [
+    2,
+    "Closed shell",
+    "pass",
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 137 of 3082 edges where the two faces touch along a thin part's edge (closed, no gap)"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "pass",
+    "deepest / half-width: Body 0.42, WingR 0.17, WingL 0.17, WingL2 0.22, WingR2 0.22"
+   ],
+   [
+    4,
+    "Views the game sees have real source data",
+    "limit",
+    "The game sees it from below and to the side as it crosses the sky; its side and top come from the one view from below. From the side it is a thin plate and its top is its underside mirrored: built from one view, accepted because it is a few pixels across on the phone (KAMAKURA_BUILD Step 4b); a bird large on screen gets a four-view sheet."
+   ],
+   [
+    5,
+    "Real size, triangles",
+    "pass",
+    "0.31 x 0.53 x 0.05 m; 2146 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+   ],
+   [
+    6,
+    "Outline whole, no background or shadow",
+    "pass",
+    "looked at on the cuts sheet (cuts.jpg), and against the cut before the texture cue (D18)"
+   ],
+   [
+    7,
+    "No holes; real gaps open",
+    "pass",
+    "looked at on the cuts sheet: no hole in the fur or feathers; the backdrop between tail and back, legs and wings stays open"
+   ],
+   [
+    8,
+    "Things before a wall are their own models",
+    "n/a",
+    "an animal on a plain sheet"
+   ],
+   [
+    9,
+    "The look target's look",
+    "pass",
+    "KM-P8_more_animals.png: photographic, as KM-0"
+   ],
+   [
+    10,
+    "Solid, nothing ghosted",
+    "pass",
+    "no see-through parts but real wings"
+   ],
+   [
+    11,
+    "No real brand or logo",
+    "pass",
+    "none (the Shiba's collar is plain)"
+   ],
+   [
+    12,
+    "No wires, no sky, crisp outline",
+    "pass",
+    "a plain sheet; the outline is cut from it at full resolution"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "fur and feathers found by their texture as well as their colour; the ground shadow removed (the lowest 13 % of the box); GrabCut inside the outline (colours close to the sheet's grey kept); holes of fur or feather filled, gaps of smooth backdrop left open"
+   ],
+   [
+    14,
+    "Rig names and pivots",
+    "pass",
+    "WingR, WingL, WingL2, WingR2 (+ Attach.Front): origins at the joints"
+   ],
+   [
+    15,
+    "Joints overlap, no seam, no gap mid-motion",
+    "pass",
+    "every part overlaps the body; motions looked at frame by frame: fly"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no legs that walk"
+   ],
+   [
+    17,
+    "Each part holds only itself",
+    "pass",
+    "looked at on its part map at full size, part by part: WingR, WingL, WingL2, WingR2"
+   ]
+  ]
+ },
+ "KmCalicoWalking": {
+  "id": "KM-N21",
+  "sheet": "KM-P8_more_animals.png",
+  "box": [
+   12,
+   936,
+   438,
+   1220
+  ],
+  "view": "side",
+  "px_per_m": 723.3,
+  "tris": 1950,
+  "parts": {
+   "Body": 662,
+   "Tail": 70,
+   "LegFR": 104,
+   "LegFL": 122,
+   "LegBR": 138,
+   "LegBL": 116,
+   "ShinFR": 120,
+   "ShinFL": 78,
+   "ShinBR": 108,
+   "ShinBL": 66,
+   "Tail2": 108,
+   "ToeFR": 48,
+   "ToeFL": 48,
+   "ToeBR": 48,
+   "ToeBL": 36,
+   "Tail3": 78
+  },
+  "empties": [
+   "Attach.Front",
+   "FootBL",
+   "FootBR",
+   "FootFL",
+   "FootFR"
+  ],
+  "size": [
+   0.542,
+   0.12,
+   0.297
+  ],
+  "open_edges": {
+   "Body": [
+    0,
+    30
+   ],
+   "Tail": [
+    0,
+    6
+   ],
+   "LegFR": [
+    0,
+    11
+   ],
+   "LegFL": [
+    0,
+    17
+   ],
+   "LegBR": [
+    0,
+    16
+   ],
+   "LegBL": [
+    0,
+    19
+   ],
+   "ShinFR": [
+    0,
+    22
+   ],
+   "ShinFL": [
+    0,
+    12
+   ],
+   "ShinBR": [
+    0,
+    17
+   ],
+   "ShinBL": [
+    0,
+    11
+   ],
+   "Tail2": [
+    0,
+    19
+   ],
+   "ToeFR": [
+    0,
+    7
+   ],
+   "ToeFL": [
+    0,
+    7
+   ],
+   "ToeBR": [
+    0,
+    6
+   ],
+   "ToeBL": [
+    0,
+    5
+   ],
+   "Tail3": [
+    0,
+    13
+   ]
+  },
+  "depth_to_width": {
+   "Body": 0.64,
+   "Tail": 0.95,
+   "LegFR": 0.96,
+   "LegFL": 0.9,
+   "LegBR": 0.89,
+   "LegBL": 0.97,
+   "ShinFR": 0.97,
+   "ShinFL": 0.93,
+   "ShinBR": 0.93,
+   "ShinBL": 0.95,
+   "Tail2": 0.97,
+   "ToeFR": 0.97,
+   "ToeFL": 0.94,
+   "ToeBR": 0.95,
+   "ToeBL": 0.95,
+   "Tail3": 0.98
+  },
+  "edges": 2707,
+  "leg_length": 0.1274,
+  "game": {
+   "component": "WallCat",
+   "tail": "Tail",
+   "tailAxis": "side",
+   "legs": "LegGait (tucked in a bound)"
+  },
+  "copied": [],
+  "feet": {
+   "walk": {
+    "sink": 0.0,
+    "contact": 0.0,
+    "held": 0.0703
+   },
+   "run": {
+    "sink": 0.0,
+    "contact": 0.0053,
+    "held": 0.128
+   },
+   "bound": {
+    "sink": 0.0,
+    "contact": 0.1247,
+    "held": 0.1358
+   }
+  },
+  "motions": [
+   "walk",
+   "run",
+   "bound"
+  ],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "meshes: Body 662 tris, Tail 70 tris, LegFR 104 tris, LegFL 122 tris, LegBR 138 tris, LegBL 116 tris, ShinFR 120 tris, ShinFL 78 tris, ShinBR 108 tris, ShinBL 66 tris, Tail2 108 tris, ToeFR 48 tris, ToeFL 48 tris, ToeBR 48 tris, ToeBL 36 tris, Tail3 78 tris; pivots only: Attach.Front, FootBL, FootBR, FootFL, FootFR. Checked in Top and Bottom."
+   ],
+   [
+    2,
+    "Closed shell",
+    "pass",
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 218 of 2707 edges where the two faces touch along a thin part's edge (closed, no gap)"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "pass",
+    "deepest / half-width: Body 0.64, Tail 0.95, LegFR 0.96, LegFL 0.90, LegBR 0.89, LegBL 0.97, ShinFR 0.97, ShinFL 0.93, ShinBR 0.93, ShinBL 0.95, Tail2 0.97, ToeFR 0.97, ToeFL 0.94, ToeBR 0.95, ToeBL 0.95, Tail3 0.98"
+   ],
+   [
+    4,
+    "Views the game sees have real source data",
+    "pass",
+    "The game sees it the right flank (Right), and at most the Right 3/4 as it passes; Front, Back, Top and Bottom are built from the side picture alone (a soft, mirrored likeness there, never seen in play)."
+   ],
+   [
+    5,
+    "Real size, triangles",
+    "pass",
+    "0.54 x 0.12 x 0.30 m; 1950 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+   ],
+   [
+    6,
+    "Outline whole, no background or shadow",
+    "pass",
+    "looked at on the cuts sheet (cuts.jpg), and against the cut before the texture cue (D18)"
+   ],
+   [
+    7,
+    "No holes; real gaps open",
+    "pass",
+    "looked at on the cuts sheet: no hole in the fur or feathers; the backdrop between tail and back, legs and wings stays open"
+   ],
+   [
+    8,
+    "Things before a wall are their own models",
+    "n/a",
+    "an animal on a plain sheet"
+   ],
+   [
+    9,
+    "The look target's look",
+    "pass",
+    "KM-P8_more_animals.png: photographic, as KM-0"
+   ],
+   [
+    10,
+    "Solid, nothing ghosted",
+    "pass",
+    "no see-through parts but real wings"
+   ],
+   [
+    11,
+    "No real brand or logo",
+    "pass",
+    "none (the Shiba's collar is plain)"
+   ],
+   [
+    12,
+    "No wires, no sky, crisp outline",
+    "pass",
+    "a plain sheet; the outline is cut from it at full resolution"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "fur and feathers found by their texture as well as their colour; the ground shadow removed (the lowest 13 % of the box); GrabCut inside the outline (colours close to the sheet's grey kept); holes of fur or feather filled, gaps of smooth backdrop left open"
+   ],
+   [
+    14,
+    "Rig names and pivots",
+    "pass",
+    "Tail, LegFR, LegFL, LegBR, LegBL, ShinFR, ShinFL, ShinBR, ShinBL, Tail2, ToeFR, ToeFL, ToeBR, ToeBL, Tail3 (+ Attach.Front, FootBL, FootBR, FootFL, FootFR): origins at the joints"
+   ],
+   [
+    15,
+    "Joints overlap, no seam, no gap mid-motion",
+    "pass",
+    "every part overlaps the body; four legs, near and far: LegBL, LegBR, LegFL, LegFR; motions looked at frame by frame: walk, run, bound"
+   ],
+   [
+    16,
+    "Feet planted",
+    "pass",
+    "walk: sink 0.0 mm, lowest foot 0.0 mm up, held 70.3 mm; run: sink 0.0 mm, lowest foot 5.3 mm up, held 128.0 mm; bound: sink 0.0 mm, lowest foot 124.7 mm up, held 135.8 mm (tolerance 3.0 mm, 1 % of its height)"
+   ],
+   [
+    17,
+    "Each part holds only itself",
+    "pass",
+    "looked at on its part map at full size, part by part: Tail, LegFR, LegFL, LegBR, LegBL, ShinFR, ShinFL, ShinBR, ShinBL, Tail2, ToeFR, ToeFL, ToeBR, ToeBL, Tail3; every leg the picture shows is its own part, its own pixels only"
+   ]
+  ]
+ },
+ "KmCalicoAsleep": {
+  "id": "KM-N21",
+  "sheet": "KM-P8_more_animals.png",
+  "box": [
+   967,
+   965,
+   1337,
+   1206
+  ],
+  "view": "side",
+  "px_per_m": 826.2,
+  "tris": 1976,
+  "parts": {
+   "Body": 1976
+  },
+  "empties": [
+   "Attach.Front"
+  ],
+  "size": [
+   0.419,
+   0.16,
+   0.258
+  ],
+  "open_edges": {
+   "Body": [
+    0,
+    57
+   ]
+  },
+  "depth_to_width": {
+   "Body": 0.62
+  },
+  "edges": 2907,
+  "leg_length": null,
+  "game": {
+   "component": null,
+   "note": "still: nothing of it moves"
+  },
+  "copied": [],
+  "feet": {},
+  "motions": [],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "meshes: Body 1976 tris; pivots only: Attach.Front. Checked in Top and Bottom."
+   ],
+   [
+    2,
+    "Closed shell",
+    "pass",
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 57 of 2907 edges where the two faces touch along a thin part's edge (closed, no gap)"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "pass",
+    "deepest / half-width: Body 0.62"
+   ],
+   [
+    4,
+    "Views the game sees have real source data",
+    "pass",
+    "The game sees it the right flank (Right), and at most the Right 3/4 as it passes; Front, Back, Top and Bottom are built from the side picture alone (a soft, mirrored likeness there, never seen in play)."
+   ],
+   [
+    5,
+    "Real size, triangles",
+    "pass",
+    "0.42 x 0.16 x 0.26 m; 1976 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+   ],
+   [
+    6,
+    "Outline whole, no background or shadow",
+    "pass",
+    "looked at on the cuts sheet (cuts.jpg), and against the cut before the texture cue (D18)"
+   ],
+   [
+    7,
+    "No holes; real gaps open",
+    "pass",
+    "looked at on the cuts sheet: no hole in the fur or feathers; the backdrop between tail and back, legs and wings stays open"
+   ],
+   [
+    8,
+    "Things before a wall are their own models",
+    "n/a",
+    "an animal on a plain sheet"
+   ],
+   [
+    9,
+    "The look target's look",
+    "pass",
+    "KM-P8_more_animals.png: photographic, as KM-0"
+   ],
+   [
+    10,
+    "Solid, nothing ghosted",
+    "pass",
+    "no see-through parts but real wings"
+   ],
+   [
+    11,
+    "No real brand or logo",
+    "pass",
+    "none (the Shiba's collar is plain)"
+   ],
+   [
+    12,
+    "No wires, no sky, crisp outline",
+    "pass",
+    "a plain sheet; the outline is cut from it at full resolution"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "fur and feathers found by their texture as well as their colour; the ground shadow removed (the lowest 13 % of the box); GrabCut inside the outline (colours close to the sheet's grey kept); holes of fur or feather filled, gaps of smooth backdrop left open"
+   ],
+   [
+    14,
+    "Rig names and pivots",
+    "pass",
+    "one piece: nothing moves"
+   ],
+   [
+    15,
+    "Joints overlap, no seam, no gap mid-motion",
+    "pass",
+    "no moving parts"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no legs that walk"
+   ],
+   [
+    17,
+    "Each part holds only itself",
+    "pass",
+    "one piece: looked at on its part map"
+   ]
+  ]
+ },
+ "KmTuxedoWalking": {
+  "id": "KM-N22",
+  "sheet": "KM-P8_more_animals.png",
+  "box": [
+   1392,
+   969,
+   1801,
+   1216
+  ],
+  "view": "side",
+  "px_per_m": 733.3,
+  "tris": 2278,
+  "parts": {
+   "Body": 1070,
+   "Tail": 70,
+   "LegFR": 150,
+   "LegFL": 116,
+   "LegBR": 182,
+   "LegBL": 134,
+   "ShinFR": 82,
+   "ShinFL": 58,
+   "ShinBR": 74,
+   "ShinBL": 56,
+   "Tail2": 60,
+   "ToeFR": 42,
+   "ToeFL": 32,
+   "ToeBR": 54,
+   "ToeBL": 42,
+   "Tail3": 56
+  },
+  "empties": [
+   "Attach.Front",
+   "FootBL",
+   "FootBR",
+   "FootFL",
+   "FootFR"
+  ],
+  "size": [
+   0.526,
+   0.12,
+   0.297
+  ],
+  "open_edges": {
+   "Body": [
+    0,
+    16
+   ],
+   "Tail": [
+    0,
+    5
+   ],
+   "LegFR": [
+    0,
+    17
+   ],
+   "LegFL": [
+    0,
+    9
+   ],
+   "LegBR": [
+    0,
+    17
+   ],
+   "LegBL": [
+    0,
+    11
+   ],
+   "ShinFR": [
+    0,
+    11
+   ],
+   "ShinFL": [
+    0,
+    5
+   ],
+   "ShinBR": [
+    0,
+    10
+   ],
+   "ShinBL": [
+    0,
+    6
+   ],
+   "Tail2": [
+    0,
+    9
+   ],
+   "ToeFR": [
+    0,
+    5
+   ],
+   "ToeFL": [
+    0,
+    3
+   ],
+   "ToeBR": [
+    0,
+    8
+   ],
+   "ToeBL": [
+    0,
+    6
+   ],
+   "Tail3": [
+    0,
+    6
+   ]
+  },
+  "depth_to_width": {
+   "Body": 0.65,
+   "Tail": 0.99,
+   "LegFR": 0.94,
+   "LegFL": 0.94,
+   "LegBR": 0.89,
+   "LegBL": 0.93,
+   "ShinFR": 0.93,
+   "ShinFL": 0.96,
+   "ShinBR": 0.92,
+   "ShinBL": 0.96,
+   "Tail2": 1.0,
+   "ToeFR": 0.99,
+   "ToeFL": 0.99,
+   "ToeBR": 0.97,
+   "ToeBL": 0.98,
+   "Tail3": 0.98
+  },
+  "edges": 3273,
+  "leg_length": 0.1335,
+  "game": {
+   "component": "WallCat",
+   "tail": "Tail",
+   "tailAxis": "side",
+   "legs": "LegGait (tucked in a bound)"
+  },
+  "copied": [],
+  "feet": {
+   "walk": {
+    "sink": 0.0,
+    "contact": 0.0,
+    "held": 0.0732
+   },
+   "run": {
+    "sink": 0.0,
+    "contact": 0.0059,
+    "held": 0.1321
+   },
+   "bound": {
+    "sink": 0.0,
+    "contact": 0.1223,
+    "held": 0.1372
+   }
+  },
+  "motions": [
+   "walk",
+   "run",
+   "bound"
+  ],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "meshes: Body 1070 tris, Tail 70 tris, LegFR 150 tris, LegFL 116 tris, LegBR 182 tris, LegBL 134 tris, ShinFR 82 tris, ShinFL 58 tris, ShinBR 74 tris, ShinBL 56 tris, Tail2 60 tris, ToeFR 42 tris, ToeFL 32 tris, ToeBR 54 tris, ToeBL 42 tris, Tail3 56 tris; pivots only: Attach.Front, FootBL, FootBR, FootFL, FootFR. Checked in Top and Bottom."
+   ],
+   [
+    2,
+    "Closed shell",
+    "pass",
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 144 of 3273 edges where the two faces touch along a thin part's edge (closed, no gap)"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "pass",
+    "deepest / half-width: Body 0.65, Tail 0.99, LegFR 0.94, LegFL 0.94, LegBR 0.89, LegBL 0.93, ShinFR 0.93, ShinFL 0.96, ShinBR 0.92, ShinBL 0.96, Tail2 1.00, ToeFR 0.99, ToeFL 0.99, ToeBR 0.97, ToeBL 0.98, Tail3 0.98"
+   ],
+   [
+    4,
+    "Views the game sees have real source data",
+    "pass",
+    "The game sees it the right flank (Right), and at most the Right 3/4 as it passes; Front, Back, Top and Bottom are built from the side picture alone (a soft, mirrored likeness there, never seen in play)."
+   ],
+   [
+    5,
+    "Real size, triangles",
+    "pass",
+    "0.53 x 0.12 x 0.30 m; 2278 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+   ],
+   [
+    6,
+    "Outline whole, no background or shadow",
+    "pass",
+    "looked at on the cuts sheet (cuts.jpg), and against the cut before the texture cue (D18)"
+   ],
+   [
+    7,
+    "No holes; real gaps open",
+    "pass",
+    "looked at on the cuts sheet: no hole in the fur or feathers; the backdrop between tail and back, legs and wings stays open"
+   ],
+   [
+    8,
+    "Things before a wall are their own models",
+    "n/a",
+    "an animal on a plain sheet"
+   ],
+   [
+    9,
+    "The look target's look",
+    "pass",
+    "KM-P8_more_animals.png: photographic, as KM-0"
+   ],
+   [
+    10,
+    "Solid, nothing ghosted",
+    "pass",
+    "no see-through parts but real wings"
+   ],
+   [
+    11,
+    "No real brand or logo",
+    "pass",
+    "none (the Shiba's collar is plain)"
+   ],
+   [
+    12,
+    "No wires, no sky, crisp outline",
+    "pass",
+    "a plain sheet; the outline is cut from it at full resolution"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "fur and feathers found by their texture as well as their colour; the ground shadow removed (the lowest 13 % of the box); GrabCut inside the outline (colours close to the sheet's grey kept); holes of fur or feather filled, gaps of smooth backdrop left open"
+   ],
+   [
+    14,
+    "Rig names and pivots",
+    "pass",
+    "Tail, LegFR, LegFL, LegBR, LegBL, ShinFR, ShinFL, ShinBR, ShinBL, Tail2, ToeFR, ToeFL, ToeBR, ToeBL, Tail3 (+ Attach.Front, FootBL, FootBR, FootFL, FootFR): origins at the joints"
+   ],
+   [
+    15,
+    "Joints overlap, no seam, no gap mid-motion",
+    "pass",
+    "every part overlaps the body; four legs, near and far: LegBL, LegBR, LegFL, LegFR; motions looked at frame by frame: walk, run, bound"
+   ],
+   [
+    16,
+    "Feet planted",
+    "pass",
+    "walk: sink 0.0 mm, lowest foot 0.0 mm up, held 73.2 mm; run: sink 0.0 mm, lowest foot 5.9 mm up, held 132.1 mm; bound: sink 0.0 mm, lowest foot 122.3 mm up, held 137.2 mm (tolerance 3.0 mm, 1 % of its height)"
+   ],
+   [
+    17,
+    "Each part holds only itself",
+    "pass",
+    "looked at on its part map at full size, part by part: Tail, LegFR, LegFL, LegBR, LegBL, ShinFR, ShinFL, ShinBR, ShinBL, Tail2, ToeFR, ToeFL, ToeBR, ToeBL, Tail3; every leg the picture shows is its own part, its own pixels only"
+   ]
+  ]
+ },
+ "KmTuxedoSitting": {
+  "id": "KM-N22",
+  "sheet": "KM-P8_more_animals.png",
+  "box": [
+   1872,
+   936,
+   2218,
+   1220
+  ],
+  "view": "side",
+  "px_per_m": 697.4,
+  "tris": 1283,
+  "parts": {
+   "Body": 1015,
+   "Tail": 88,
+   "Tail2": 78,
+   "Tail3": 102
+  },
+  "empties": [
+   "Attach.Front"
+  ],
+  "size": [
+   0.422,
+   0.135,
+   0.379
+  ],
+  "open_edges": {
+   "Body": [
+    0,
+    66
+   ],
+   "Tail": [
+    0,
+    11
+   ],
+   "Tail2": [
+    0,
+    11
+   ],
+   "Tail3": [
+    0,
+    18
+   ]
+  },
+  "depth_to_width": {
+   "Body": 0.61,
+   "Tail": 0.96,
+   "Tail2": 0.97,
+   "Tail3": 0.93
+  },
+  "edges": 1820,
+  "leg_length": null,
+  "game": {
+   "component": "WallCat",
+   "tail": "Tail",
+   "tailAxis": "side"
+  },
+  "copied": [],
+  "feet": {},
+  "motions": [
+   "swish"
+  ],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "meshes: Body 1015 tris, Tail 88 tris, Tail2 78 tris, Tail3 102 tris; pivots only: Attach.Front. Checked in Top and Bottom."
+   ],
+   [
+    2,
+    "Closed shell",
+    "pass",
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 106 of 1820 edges where the two faces touch along a thin part's edge (closed, no gap)"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "pass",
+    "deepest / half-width: Body 0.61, Tail 0.96, Tail2 0.97, Tail3 0.93"
+   ],
+   [
+    4,
+    "Views the game sees have real source data",
+    "pass",
+    "The game sees it the right flank (Right), and at most the Right 3/4 as it passes; Front, Back, Top and Bottom are built from the side picture alone (a soft, mirrored likeness there, never seen in play)."
+   ],
+   [
+    5,
+    "Real size, triangles",
+    "pass",
+    "0.42 x 0.14 x 0.38 m; 1283 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+   ],
+   [
+    6,
+    "Outline whole, no background or shadow",
+    "pass",
+    "looked at on the cuts sheet (cuts.jpg), and against the cut before the texture cue (D18)"
+   ],
+   [
+    7,
+    "No holes; real gaps open",
+    "pass",
+    "looked at on the cuts sheet: no hole in the fur or feathers; the backdrop between tail and back, legs and wings stays open"
+   ],
+   [
+    8,
+    "Things before a wall are their own models",
+    "n/a",
+    "an animal on a plain sheet"
+   ],
+   [
+    9,
+    "The look target's look",
+    "pass",
+    "KM-P8_more_animals.png: photographic, as KM-0"
+   ],
+   [
+    10,
+    "Solid, nothing ghosted",
+    "pass",
+    "no see-through parts but real wings"
+   ],
+   [
+    11,
+    "No real brand or logo",
+    "pass",
+    "none (the Shiba's collar is plain)"
+   ],
+   [
+    12,
+    "No wires, no sky, crisp outline",
+    "pass",
+    "a plain sheet; the outline is cut from it at full resolution"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "fur and feathers found by their texture as well as their colour; the ground shadow removed (the lowest 13 % of the box); GrabCut inside the outline (colours close to the sheet's grey kept); holes of fur or feather filled, gaps of smooth backdrop left open"
+   ],
+   [
+    14,
+    "Rig names and pivots",
+    "pass",
+    "Tail, Tail2, Tail3 (+ Attach.Front): origins at the joints"
+   ],
+   [
+    15,
+    "Joints overlap, no seam, no gap mid-motion",
+    "pass",
+    "every part overlaps the body; motions looked at frame by frame: swish"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no legs that walk"
+   ],
+   [
+    17,
+    "Each part holds only itself",
+    "pass",
+    "looked at on its part map at full size, part by part: Tail, Tail2, Tail3"
+   ]
+  ]
+ },
+ "KmTuxedoLying": {
+  "id": "KM-N22",
+  "sheet": "KM-P8_more_animals.png",
+  "box": [
+   2308,
+   995,
+   2724,
+   1172
+  ],
+  "view": "side",
+  "px_per_m": 663.3,
+  "tris": 2140,
+  "parts": {
+   "Body": 1926,
+   "Tail": 98,
+   "Tail2": 66,
+   "Tail3": 50
+  },
+  "empties": [
+   "Attach.Front"
+  ],
+  "size": [
+   0.598,
+   0.117,
+   0.232
+  ],
+  "open_edges": {
+   "Body": [
+    0,
+    53
+   ],
+   "Tail": [
+    0,
+    12
+   ],
+   "Tail2": [
+    0,
+    5
+   ],
+   "Tail3": [
+    0,
+    4
+   ]
+  },
+  "depth_to_width": {
+   "Body": 0.75,
+   "Tail": 0.97,
+   "Tail2": 0.98,
+   "Tail3": 0.87
+  },
+  "edges": 3136,
+  "leg_length": null,
+  "game": {
+   "component": "CritterIdle",
+   "motions": [
+    {
+     "part": "Tail",
+     "axis": "side",
+     "amplitude": 12.0,
+     "speed": 1.2
+    }
+   ]
+  },
+  "copied": [],
+  "feet": {},
+  "motions": [
+   "idle"
+  ],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "meshes: Body 1926 tris, Tail 98 tris, Tail2 66 tris, Tail3 50 tris; pivots only: Attach.Front. Checked in Top and Bottom."
+   ],
+   [
+    2,
+    "Closed shell",
+    "pass",
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 74 of 3136 edges where the two faces touch along a thin part's edge (closed, no gap)"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "pass",
+    "deepest / half-width: Body 0.75, Tail 0.97, Tail2 0.98, Tail3 0.87"
+   ],
+   [
+    4,
+    "Views the game sees have real source data",
+    "pass",
+    "The game sees it the right flank (Right), and at most the Right 3/4 as it passes; Front, Back, Top and Bottom are built from the side picture alone (a soft, mirrored likeness there, never seen in play)."
+   ],
+   [
+    5,
+    "Real size, triangles",
+    "pass",
+    "0.60 x 0.12 x 0.23 m; 2140 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+   ],
+   [
+    6,
+    "Outline whole, no background or shadow",
+    "pass",
+    "looked at on the cuts sheet (cuts.jpg), and against the cut before the texture cue (D18)"
+   ],
+   [
+    7,
+    "No holes; real gaps open",
+    "pass",
+    "looked at on the cuts sheet: no hole in the fur or feathers; the backdrop between tail and back, legs and wings stays open"
+   ],
+   [
+    8,
+    "Things before a wall are their own models",
+    "n/a",
+    "an animal on a plain sheet"
+   ],
+   [
+    9,
+    "The look target's look",
+    "pass",
+    "KM-P8_more_animals.png: photographic, as KM-0"
+   ],
+   [
+    10,
+    "Solid, nothing ghosted",
+    "pass",
+    "no see-through parts but real wings"
+   ],
+   [
+    11,
+    "No real brand or logo",
+    "pass",
+    "none (the Shiba's collar is plain)"
+   ],
+   [
+    12,
+    "No wires, no sky, crisp outline",
+    "pass",
+    "a plain sheet; the outline is cut from it at full resolution"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "fur and feathers found by their texture as well as their colour; the ground shadow removed (the lowest 13 % of the box); GrabCut inside the outline (colours close to the sheet's grey kept); holes of fur or feather filled, gaps of smooth backdrop left open"
+   ],
+   [
+    14,
+    "Rig names and pivots",
+    "pass",
+    "Tail, Tail2, Tail3 (+ Attach.Front): origins at the joints"
+   ],
+   [
+    15,
+    "Joints overlap, no seam, no gap mid-motion",
+    "pass",
+    "every part overlaps the body; motions looked at frame by frame: idle"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no legs that walk"
+   ],
+   [
+    17,
+    "Each part holds only itself",
+    "pass",
+    "looked at on its part map at full size, part by part: Tail, Tail2, Tail3"
+   ]
+  ]
+ },
+ "KmSwallowtail": {
+  "id": "KM-N25",
+  "sheet": "KM-P8_more_animals.png",
+  "box": [
+   961,
+   1248,
+   1334,
+   1531
+  ],
+  "view": "above",
+  "px_per_m": 3570.0,
+  "tris": 1926,
+  "parts": {
+   "Body": 178,
+   "WingL": 844,
+   "WingR": 904
+  },
+  "empties": [
+   "Attach.Front"
+  ],
+  "size": [
+   0.075,
+   0.099,
+   0.004
+  ],
+  "open_edges": {
+   "Body": [
+    0,
+    26
+   ],
+   "WingL": [
+    0,
+    44
+   ],
+   "WingR": [
+    0,
+    62
+   ]
+  },
+  "depth_to_width": {
+   "Body": 0.8,
+   "WingL": 0.09,
+   "WingR": 0.09
+  },
+  "edges": 2757,
+  "leg_length": null,
+  "game": {
+   "component": "FlitButterfly",
+   "wingL": "WingL",
+   "wingR": "WingR",
+   "wingAxis": "long"
+  },
+  "copied": [],
+  "feet": {},
+  "motions": [
+   "fly"
+  ],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "meshes: Body 178 tris, WingL 844 tris, WingR 904 tris; pivots only: Attach.Front. Checked in Top and Bottom."
+   ],
+   [
+    2,
+    "Closed shell",
+    "pass",
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 132 of 2757 edges where the two faces touch along a thin part's edge (closed, no gap)"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "pass",
+    "deepest / half-width: Body 0.80, WingL 0.09, WingR 0.09"
+   ],
+   [
+    4,
+    "Views the game sees have real source data",
+    "limit",
+    "The game sees it from above (Top), through the water or flitting past; its sides and underside come from the one view from above. From the side it is a thin plate and its top is its underside mirrored: built from one view, accepted because it is a few pixels across on the phone (KAMAKURA_BUILD Step 4b); a bird large on screen gets a four-view sheet."
+   ],
+   [
+    5,
+    "Real size, triangles",
+    "pass",
+    "0.07 x 0.10 x 0.00 m; 1926 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+   ],
+   [
+    6,
+    "Outline whole, no background or shadow",
+    "pass",
+    "looked at on the cuts sheet (cuts.jpg), and against the cut before the texture cue (D18)"
+   ],
+   [
+    7,
+    "No holes; real gaps open",
+    "pass",
+    "looked at on the cuts sheet: no hole in the fur or feathers; the backdrop between tail and back, legs and wings stays open"
+   ],
+   [
+    8,
+    "Things before a wall are their own models",
+    "n/a",
+    "an animal on a plain sheet"
+   ],
+   [
+    9,
+    "The look target's look",
+    "pass",
+    "KM-P8_more_animals.png: photographic, as KM-0"
+   ],
+   [
+    10,
+    "Solid, nothing ghosted",
+    "pass",
+    "no see-through parts but real wings"
+   ],
+   [
+    11,
+    "No real brand or logo",
+    "pass",
+    "none (the Shiba's collar is plain)"
+   ],
+   [
+    12,
+    "No wires, no sky, crisp outline",
+    "pass",
+    "a plain sheet; the outline is cut from it at full resolution"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "fur and feathers found by their texture as well as their colour; the ground shadow removed (the lowest 13 % of the box); holes of fur or feather filled, gaps of smooth backdrop left open"
+   ],
+   [
+    14,
+    "Rig names and pivots",
+    "pass",
+    "WingL, WingR (+ Attach.Front): origins at the joints"
+   ],
+   [
+    15,
+    "Joints overlap, no seam, no gap mid-motion",
+    "pass",
+    "every part overlaps the body; motions looked at frame by frame: fly"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no legs that walk"
+   ],
+   [
+    17,
+    "Each part holds only itself",
+    "pass",
+    "looked at on its part map at full size, part by part: WingL, WingR"
+   ]
+  ]
+ },
+ "KmDragonfly": {
+  "id": "KM-N26",
+  "sheet": "KM-P8_more_animals.png",
+  "box": [
+   1398,
+   1255,
+   1814,
+   1524
+  ],
+  "view": "above",
+  "px_per_m": 5728.6,
+  "tris": 1846,
+  "parts": {
+   "Body": 284,
+   "WingL": 768,
+   "WingR": 794
+  },
+  "empties": [
+   "Attach.Front"
+  ],
+  "size": [
+   0.044,
+   0.07,
+   0.003
+  ],
+  "open_edges": {
+   "Body": [
+    0,
+    35
+   ],
+   "WingL": [
+    0,
+    25
+   ],
+   "WingR": [
+    0,
+    43
+   ]
+  },
+  "depth_to_width": {
+   "Body": 0.79,
+   "WingL": 0.11,
+   "WingR": 0.1
+  },
+  "edges": 2666,
+  "leg_length": null,
+  "game": {
+   "component": "FlitButterfly",
+   "wingL": "WingL",
+   "wingR": "WingR",
+   "wingAxis": "long",
+   "beatMid": 4.0,
+   "beatSwing": 24.0
+  },
+  "copied": [],
+  "feet": {},
+  "motions": [
+   "fly"
+  ],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "meshes: Body 284 tris, WingL 768 tris, WingR 794 tris; pivots only: Attach.Front. Checked in Top and Bottom."
+   ],
+   [
+    2,
+    "Closed shell",
+    "pass",
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 103 of 2666 edges where the two faces touch along a thin part's edge (closed, no gap)"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "pass",
+    "deepest / half-width: Body 0.79, WingL 0.11, WingR 0.10"
+   ],
+   [
+    4,
+    "Views the game sees have real source data",
+    "limit",
+    "The game sees it from above (Top), through the water or flitting past; its sides and underside come from the one view from above. From the side it is a thin plate and its top is its underside mirrored: built from one view, accepted because it is a few pixels across on the phone (KAMAKURA_BUILD Step 4b); a bird large on screen gets a four-view sheet."
+   ],
+   [
+    5,
+    "Real size, triangles",
+    "pass",
+    "0.04 x 0.07 x 0.00 m; 1846 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+   ],
+   [
+    6,
+    "Outline whole, no background or shadow",
+    "pass",
+    "looked at on the cuts sheet (cuts.jpg), and against the cut before the texture cue (D18)"
+   ],
+   [
+    7,
+    "No holes; real gaps open",
+    "pass",
+    "looked at on the cuts sheet: no hole in the fur or feathers; the backdrop between tail and back, legs and wings stays open"
+   ],
+   [
+    8,
+    "Things before a wall are their own models",
+    "n/a",
+    "an animal on a plain sheet"
+   ],
+   [
+    9,
+    "The look target's look",
+    "pass",
+    "KM-P8_more_animals.png: photographic, as KM-0"
+   ],
+   [
+    10,
+    "Solid, nothing ghosted",
+    "pass",
+    "no see-through parts but real wings"
+   ],
+   [
+    11,
+    "No real brand or logo",
+    "pass",
+    "none (the Shiba's collar is plain)"
+   ],
+   [
+    12,
+    "No wires, no sky, crisp outline",
+    "pass",
+    "a plain sheet; the outline is cut from it at full resolution"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "fur and feathers found by their texture as well as their colour; the ground shadow removed (the lowest 13 % of the box); a lower threshold (14) for see-through wings; holes of fur or feather filled, gaps of smooth backdrop left open"
+   ],
+   [
+    14,
+    "Rig names and pivots",
+    "pass",
+    "WingL, WingR (+ Attach.Front): origins at the joints"
+   ],
+   [
+    15,
+    "Joints overlap, no seam, no gap mid-motion",
+    "pass",
+    "every part overlaps the body; motions looked at frame by frame: fly"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no legs that walk"
+   ],
+   [
+    17,
+    "Each part holds only itself",
+    "pass",
+    "looked at on its part map at full size, part by part: WingL, WingR"
+   ]
+  ]
+ }
+}

@@ -134,7 +134,7 @@ ANIMALS = {
                        [('Head', [(278, 625), (360, 625), (360, 700), (290, 712)], (290, 690))]),
     'KmCrowStanding': A('KM-N06', P4, (1426, 638, 1788, 919), 'side', ('w', 0.57), 0.06,
                         [('Head', [(1665, 638), (1781, 638), (1781, 700), (1726, 690), (1718, 718), (1712, 730), (1690, 734),
-                                  (1676, 720), (1668, 690)], (1690, 728))], legs='biped',
+                                  (1676, 720), (1668, 690)], (1673, 712))], legs='biped',
                         leg_area=[[(1598, 856), (1630, 854), (1652, 884), (1695, 886), (1695, 906), (1598, 906)]],
                         leg_lines=([[(1622, 857), (1636, 875), (1646, 889)], [(1640, 892), (1686, 895)],
                                     [(1640, 896), (1688, 900)], [(1630, 893), (1606, 898)], [(1625, 898), (1612, 902)]],
@@ -147,7 +147,7 @@ ANIMALS = {
                        leg_drop=[[(2111, 826), (2156, 822), (2198, 834), (2198, 852), (2150, 868), (2118, 868),
                                   (2111, 848)]]),
     'KmPigeonStanding': A('KM-N07', P4, (76, 942, 359, 1218), 'side', ('w', 0.30), 0.05,
-                          [('Head', [(269, 942), (356, 942), (356, 1013), (283, 1035)], (291, 1024))], refine=True,
+                          [('Head', [(269, 942), (356, 942), (356, 1013), (283, 1035)], (281, 1022))], refine=True,
                           legs='biped',
                           leg_area=[[(240, 1182), (246, 1176), (253, 1170), (258, 1166), (266, 1166), (274, 1180),
                                      (312, 1186), (312, 1208), (228, 1208), (228, 1192)]],
@@ -169,7 +169,7 @@ ANIMALS = {
                                      (1662, 1018), (1650, 992)], (1680, 1052))], refine=True),
     'KmSparrowHopping': A('KM-N08', P4, (1898, 979, 2235, 1213), 'side', ('w', 0.15), 0.025,
                           [('Head', [(2125, 979), (2229, 979), (2229, 1030), (2190, 1040), (2180, 1062), (2160, 1068), (2142, 1060),
-                                    (2132, 1040), (2125, 1015)], (2158, 1062))], refine=True,
+                                    (2132, 1040), (2125, 1015)], (2136, 1048))], refine=True,
                           legs='biped', hop=True,
                           leg_area=[[(2060, 1139), (2078, 1139), (2094, 1158), (2108, 1176), (2110, 1192), (2084, 1192),
                                      (2060, 1152)]],
@@ -183,7 +183,7 @@ ANIMALS = {
     'KmSwallowFlying': A('KM-N09', P4, (466, 1265, 908, 1526), 'below', ('w', 0.33), 0.015, wings=0.07),
     'KmGullStanding': A('KM-N10', P4, (960, 1255, 1296, 1527), 'side', ('h', 0.34), 0.06,
                         [('Head', [(1180, 1255), (1290, 1255), (1290, 1310), (1245, 1312), (1242, 1336), (1222, 1345), (1200, 1342),
-                                  (1188, 1325), (1182, 1300)], (1215, 1340))],
+                                  (1188, 1325), (1182, 1300)], (1190, 1326))],
                         refine=True, legs='biped', leg_width=0.09,
                         leg_area=[[(1143, 1448), (1178, 1442), (1181, 1492), (1216, 1498), (1216, 1524), (1140, 1524)]],
                         leg_lines=([[(1153, 1447), (1155, 1475), (1156, 1505)], [(1156, 1506), (1200, 1511)],
@@ -233,7 +233,7 @@ ANIMALS = {
                              [('Head', [(1160, 317), (1273, 317), (1273, 369), (1168, 378)], (1177, 369))], refine=True),
     'KmCormorantDrying': A('KM-N16', P8, (1390, 323, 1822, 602), 'side', ('w', 0.95), 0.07, refine=True),
     'KmWagtail': A('KM-N17', P8, (2316, 345, 2684, 582), 'side', ('w', 0.21), 0.02,
-                   [('Head', [(2550, 345), (2677, 345), (2677, 412), (2560, 423)], (2571, 412)),
+                   [('Head', [(2550, 345), (2677, 345), (2677, 412), (2560, 423)], (2559, 410)),
                     ('Tail', [(2316, 490), (2445, 463), (2455, 475), (2455, 495), (2316, 520)], (2450, 482))],
                    refine=True, legs='biped', exclude=[[(2522, 544), (2561, 544), (2561, 553), (2522, 553)]],
                    leg_area=[[(2536, 500), (2556, 499), (2585, 545), (2620, 552), (2620, 570), (2518, 570), (2518, 545)]],
@@ -249,7 +249,7 @@ ANIMALS = {
                                     (1180, 728), (1160, 712), (1150, 695)], (1195, 725))], refine=True),
     'KmBulbulFlying': A('KM-N19', P8, (1406, 626, 1806, 907), 'below', ('w', 0.40), 0.02, wings=0.07, refine=True),
     'KmDoveStanding': A('KM-N20', P8, (1863, 647, 2225, 905), 'side', ('w', 0.33), 0.05,
-                        [('Head', [(2142, 647), (2222, 647), (2222, 727), (2135, 738)], (2155, 724))], refine=True,
+                        [('Head', [(2142, 647), (2222, 647), (2222, 727), (2135, 738)], (2139, 722))], refine=True,
                         legs='biped', peck=(35.0, 18.0),
                         leg_area=[[(2062, 862), (2068, 856), (2085, 853), (2100, 851), (2108, 862), (2135, 868),
                                    (2158, 880), (2158, 893), (2050, 893), (2050, 872)]],
@@ -886,7 +886,12 @@ def part_masks(spec, mask):
         pm &= mask & (1 - taken)
         parts[name], pivots[name] = pm, pivot
         taken |= pm
-    drawn_parts = taken.copy()
+    # the body carries on under a drawn tail (below), never under a head: there the band ran up the neck's outline
+    # and stood as a spike at the nape when the head turned (D20); a head's own overlap covers its neck seam
+    drawn_parts = np.zeros_like(mask)
+    for name in parts:
+        if name.startswith('Tail'):
+            drawn_parts |= parts[name]
     banded = set()
     if spec['legs']:
         rest = (mask & (1 - taken)).astype(np.uint8)
@@ -991,9 +996,20 @@ def part_masks(spec, mask):
             banded.add(name)
             taken |= own                # its own pixels leave the body; its reach into the shell stays the shell's
     body = (mask & (1 - taken)).astype(np.uint8)
+    if 'Head' in parts and parts['Head'].any():
+        # the strip of body between a head's outline and the figure's edge (the back of the neck, where the drawn
+        # outline runs inside the figure) is the head's: left in the body, it stood up as a spike at the nape whenever
+        # the head turned (D20). Body within a third of the head's thickness of both the head and the edge.
+        hm = parts['Head']
+        D = max(3.0, 0.3 * float(cv2.distanceTransform(hm, cv2.DIST_L2, 5).max()))
+        near_head = cv2.distanceTransform((1 - hm).astype(np.uint8), cv2.DIST_L2, 5) <= D
+        near_edge = cv2.distanceTransform(mask.astype(np.uint8), cv2.DIST_L2, 5) <= D
+        strip = (body > 0) & near_head & near_edge & (solo == 0)
+        parts['Head'] = (hm | strip).astype(np.uint8)
+        body[strip] = 0
     if drawn_parts.any():
-        # the body carries on under a drawn part's edge (its tail's, its head's), as far as the part may sway off it:
-        # D20, the Shiba's rump showed the backdrop through a slit under its curled tail
+        # the body carries on under a drawn tail's edge, as far as the tail may sway off it: D20, the Shiba's rump
+        # showed the backdrop through a slit under its curled tail
         fh = int(np.ptp(np.nonzero(mask)[0])) + 1
         k = 2 * max(2, int(round(0.03 * fh))) + 1
         body |= (cv2.dilate(body, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (k, k))) & drawn_parts).astype(np.uint8)

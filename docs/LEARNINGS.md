@@ -858,7 +858,7 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
     The Shiba's far hind leg is now its own. Its far front leg shows only as a strip and a paw, and split off it walked
     as a loose paw, so it is a copy of the near leg, with the paw taken out (`leg_drop`).
   - Tail outlines redrawn (the tanuki's and the calico's, on grids at 4 to 8 times size).
-  - The body carries on 3 % of its height under a drawn part's edge.
+  - The body carries on 3 % of its height under a drawn tail's edge (not a head's: see the heads below).
   - The koi's pectoral fins are kept whole with the body (`front_fins`), and no part's overlap grows into them.
   - The heron's head outline takes the whole plume.
   - A foot of its own: each jointed leg's foot (a bird's toes, from its drawn toe lines or where the leg spreads; a
@@ -889,7 +889,15 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
     rendering its review.
   - Tail outlines drawn round the tail, each pivot at the tail's root. Head outlines on the perched sparrow, white-eye,
     bulbul, standing crow, hopping sparrow and gull drawn round the head and neck: their boxes took a block of wing,
-    back or breast, which turned with the head as the bird looked about or pecked.
+    back or breast, which turned with the head as the bird looked about or pecked. A head pivots at its nape, the back
+    of the neck: redrawn, three first pivoted at the throat, and the back of the head, behind the pivot, rose above the
+    back as a spike when the head turned down to peck. Moving the pivots did not remove the spike: it was the body's
+    band under a drawn part's edge (added for the Shiba's tail), which under a head ran up the neck's outline and stood
+    at the nape as the head turned. The band is for tails only. A thinner spike stayed, in the rest pose too: the strip
+    of body left between a head's drawn outline and the figure's edge, up the back of the neck (the outline ran inside
+    the figure there; the pigeon's and the dove's since D19). Body within a third of the head's thickness of both the
+    head and the figure's edge now goes to the head. Two guesses were rendered before the body alone was drawn at the
+    nape and showed the strip: look at the parts, not the motion, to find which part a fault belongs to.
   - A curled tail wags about the long axis (`curl`; Dog's `tailAxis` long).
   - FlitButterfly's beat is a setting (`beatMid`, `beatSwing`; the dragonfly's 4 ± 24 about flat).
 - *Rule:* check 16 measures every leg mesh's lowest point, not only the contact points (a foot point on the ground
