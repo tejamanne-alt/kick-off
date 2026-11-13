@@ -51,7 +51,8 @@ P4, P8 = 'KM-P4_animals_sheet.png', 'KM-P8_more_animals.png'
 def A(cid, sheet, box, view, size, depth, parts=(), refine=False, wings=None, exclude=(), empties=(), step=None,
       thresh=42, legs=False, shadow=0.13, head_up=False, fill=(), dark_shadow=False, whiskers=False, hop=False,
       leg_width=0.06, peck=(25.0, 30.0), swim=None, flippers=None, outline=7.0, leg_area=(), leg_lines=None,
-      leg_drop=(), leg_seeds=None, front_fins=(), curl=False, beat=None, beard=(), heel=False, keep_body=()):
+      leg_drop=(), leg_seeds=None, front_fins=(), curl=False, beat=None, beard=(), heel=False, keep_body=(),
+      bob=None, hind=False):
     """One model: its catalogue id (KM-Nxx), sheet, the figure's box (sheet px), its view (side: head to the right,
     standing on its lowest pixel; below: a flyer seen from beneath, head up; above: lying flat, seen from above), its
     size (('w' or 'h', metres) of the figure's outline), its half-depth cap (m), its parts ((name, polygon in sheet px,
@@ -86,14 +87,17 @@ def A(cid, sheet, box, view, size, depth, parts=(), refine=False, wings=None, ex
     every pixel of the backdrop's own neutral grey is cut out, and the strands left hanging opened away). heel (a bird
     whose picture shows a bare shank above the heel, the egret's: each drawn leg line's second point is the heel, where
     the leg bends; else the heel is where the bare leg leaves the feathers). keep_body (polygons of the body no part's
-    overlap may grow into: the egret's back beside its head plumes, which would have turned with the head)."""
+    overlap may grow into: the egret's back beside its head plumes, which would have turned with the head). bob (a bird
+    on the ground: how far its head thrusts and holds with each step, as a share of its leg's length: a pigeon's head
+    holds still in the air while its body walks under it, then thrusts forward, D21; None: a small nod only). hind (an
+    insect whose hind wings beat apart from its forewings: a dragonfly's, D21)."""
     return dict(id=cid, sheet=sheet, box=box, view=view, size=size, depth=depth, parts=list(parts), refine=refine,
                 wings=wings, exclude=list(exclude), empties=list(empties), step=step, thresh=thresh, legs=legs,
                 shadow=shadow, head_up=head_up, fill=list(fill), dark_shadow=dark_shadow, whiskers=whiskers,
                 hop=hop, leg_width=leg_width, peck=peck, swim=swim, flippers=flippers, outline=outline,
                 leg_area=list(leg_area), leg_lines=leg_lines, leg_drop=list(leg_drop), leg_seeds=leg_seeds,
                 front_fins=list(front_fins), curl=curl, beat=beat, beard=list(beard), heel=heel,
-                keep_body=list(keep_body))
+                keep_body=list(keep_body), bob=bob, hind=hind)
 
 
 ANIMALS = {
@@ -191,7 +195,9 @@ ANIMALS = {
                                    [[(1166, 1444), (1167, 1475), (1170, 1499)], [(1170, 1500), (1208, 1504)],
                                     [(1170, 1500), (1190, 1500)]])),
     'KmEgretStanding': A('KM-N11', P4, (1939, 1238, 2225, 1535), 'side', ('h', 0.55), 0.05,
-                         [('Head', [(2040, 1262), (2110, 1238), (2222, 1238), (2222, 1292), (2122, 1301), (2105, 1284),
+                         [('Plume', [(2038, 1272), (2075, 1266), (2100, 1257), (2113, 1257), (2113, 1274), (2082, 1299),
+                                     (2038, 1299)], (2110, 1265)),
+                          ('Head', [(2040, 1262), (2110, 1238), (2222, 1238), (2222, 1292), (2122, 1301), (2105, 1284),
                                     (2072, 1294), (2040, 1290)], (2127, 1292))],
                          legs='biped', peck=(40.0, 15.0), heel=True,
                          exclude=[[(2068, 1294), (2086, 1294), (2086, 1297), (2068, 1297)]],
@@ -228,7 +234,7 @@ ANIMALS = {
                          leg_lines=([[(207, 476), (204, 516), (215, 586)], [(215, 588), (197, 592)],
                                      [(215, 588), (257, 590)], [(215, 588), (245, 598)]],
                                     [[(192, 483), (184, 512), (200, 579)], [(200, 581), (177, 584)],
-                                     [(200, 581), (232, 582)]])),
+                                     [(200, 581), (232, 582)]]), heel=True),
     'KmCormorantStanding': A('KM-N16', P8, (1011, 317, 1279, 604), 'side', ('h', 0.85), 0.07,
                              [('Head', [(1160, 317), (1273, 317), (1273, 369), (1168, 378)], (1177, 369))], refine=True),
     'KmCormorantDrying': A('KM-N16', P8, (1390, 323, 1822, 602), 'side', ('w', 0.95), 0.07, refine=True),
@@ -278,7 +284,7 @@ ANIMALS = {
                         refine=True, whiskers=True),
     'KmSwallowtail': A('KM-N25', P8, (961, 1248, 1334, 1531), 'above', ('w', 0.10), 0.003, wings=0.025, head_up=True),
     'KmDragonfly': A('KM-N26', P8, (1398, 1255, 1814, 1524), 'above', ('w', 0.07), 0.002, wings=0.025, head_up=True, thresh=14,
-                     beat=(4.0, 24.0)),
+                     beat=(4.0, 24.0), hind=True),
 }
 
 
@@ -413,7 +419,7 @@ def _longest_run(row):
     return int((ends - starts).max()) if len(starts) else 0
 
 
-def _twin(masks, pivots, sides, feet, near, far):
+def _twin(masks, pivots, sides, feet, near, far, own=None):
     """The picture shows a pair of legs as one (one behind the other): the far leg is a copy of the near one, set
     behind the body. Hidden behind it at rest, it steps out of phase, so a foot is always down (D19: a bird on its one
     leg stood on nothing while that leg swung)."""
@@ -422,11 +428,13 @@ def _twin(masks, pivots, sides, feet, near, far):
         if a in masks:
             masks[b] = masks[a].copy()
             pivots[b] = pivots[a]
+            if own is not None and a in own:
+                own[b] = own[a].copy()
     sides[near], sides[far] = -1, 1
     feet[far] = feet[near]
 
 
-def leg_masks(rest, biped=False, seeds=None, origin=(0, 0)):
+def leg_masks(rest, biped=False, seeds=None, origin=(0, 0), own=None):
     """A walker's legs, from what is left of its figure once its tail and head are taken: each one a thigh (Leg..,
     pivoting at the hip or shoulder) and a shin (Shin.., pivoting at the knee), with the foot's contact point.
 
@@ -543,22 +551,27 @@ def leg_masks(rest, biped=False, seeds=None, origin=(0, 0)):
             lower_leg = ((m & (1 - above)) | (knee_band & m)) & rest
             if lower_leg.sum() < 20:            # too short to bend: one piece, no knee
                 masks[name] = ((m | hip_band) & rest).astype(np.uint8)
+                if own is not None:
+                    own[name] = (m & rest).astype(np.uint8)
             else:
                 masks[name], masks[shin] = thigh.astype(np.uint8), lower_leg.astype(np.uint8)
                 pivots[shin] = (knee_x, float(knee))
+                if own is not None:     # each part's own pixels, without its reach into the one above (the weights')
+                    own[name] = (m & above & rest).astype(np.uint8)
+                    own[shin] = (m & (1 - above) & rest).astype(np.uint8)
             pivots[name] = (hip_x, belly - 0.3 * legh)
             sides[name] = sign
             fx = np.nonzero(m[max(0, foot_row - 2):foot_row + 1])[1]
             feet[name] = (float(fx.mean()), float(foot_row))
             paw = np.zeros_like(m)              # the paw: the lowest eighth of the leg, kept level at its wrist (_foot)
             paw[int(foot_row - 0.12 * legh):] = 1
-            _foot(m, paw, rest, shin, 'Toe' + g + side, feet[name], 0.1 * legh, masks, pivots, name)
+            _foot(m, paw, rest, shin, 'Toe' + g + side, feet[name], 0.1 * legh, masks, pivots, name, own_px=own)
         if len(ms) == 1:
-            _twin(masks, pivots, sides, feet, 'Leg' + g + 'R', 'Leg' + g + 'L')
+            _twin(masks, pivots, sides, feet, 'Leg' + g + 'R', 'Leg' + g + 'L', own)
     return masks, pivots, sides, feet, belly
 
 
-def bird_legs(rest, width=0.06):
+def bird_legs(rest, width=0.06, own=None):
     """A bird's legs: the thin parts of its figure that reach the ground (D19). Opening the figure with a disk wider
     than a leg leaves the body; what it took away and what touches the lowest twelfth of the figure is legs and toes
     (a tail tip or a hanging plume ends higher). Each leg is cut at its middle: the upper part (Leg.., pivoting where
@@ -593,16 +606,16 @@ def bird_legs(rest, width=0.06):
         legs[j] = legs[j] | extra
     masks, pivots, sides, feet = {}, {}, {}, {}
     for m, (side, sign) in zip(legs, (('R', -1 if len(legs) > 1 else 0), ('L', 1))):
-        _bird_leg(m, rest, side, sign, masks, pivots, sides, feet)
+        _bird_leg(m, rest, side, sign, masks, pivots, sides, feet, own=own)
     if len(legs) == 1:
-        _twin(masks, pivots, sides, feet, 'LegR', 'LegL')
+        _twin(masks, pivots, sides, feet, 'LegR', 'LegL', own)
     core = np.zeros_like(rest)
     for m in legs:
         core |= m
     return masks, pivots, sides, feet, top, core
 
 
-def _foot(m, toes, keep, shin, toe, foot, reach, masks, pivots, thigh=None, ankle=None):
+def _foot(m, toes, keep, shin, toe, foot, reach, masks, pivots, thigh=None, ankle=None, own_px=None):
     """A leg's foot as its own part, Toe.. under the shin, pivoting at the ankle (where it meets the shin), which the
     gait keeps level with the ground; the Foot point hangs under it (D20: a bird's long toes, rigid in its shin, tipped
     into the floor whenever the shin turned, by up to a fifth of its height; a paw by up to 3 %; and a tall paw kept
@@ -618,6 +631,11 @@ def _foot(m, toes, keep, shin, toe, foot, reach, masks, pivots, thigh=None, ankl
     for part in (shin, thigh):              # nothing of the foot stays on a part that turns with the leg
         if part in masks:
             masks[part] = (masks[part] & (1 - own)).astype(np.uint8)
+    if own_px is not None:
+        own_px[toe] = (own & keep).astype(np.uint8)
+        for part in (shin, thigh):
+            if part in own_px:
+                own_px[part] = (own_px[part] & (1 - own)).astype(np.uint8)
     if ankle is None:
         ys = np.nonzero(own)[0]
         top = int(ys.min())
@@ -641,7 +659,8 @@ def _spread(m):
     return rows
 
 
-def _bird_leg(m, keep, side, sign, masks, pivots, sides, feet, toes=None, ankle_x=None, ankle=None, heel=None):
+def _bird_leg(m, keep, side, sign, masks, pivots, sides, feet, toes=None, ankle_x=None, ankle=None, heel=None,
+              own=None):
     """One bird's leg (m: its bare pixels), jointed as a bird's is (D20): the bare leg is one rigid bone, the tarsus,
     hinged at the heel where it leaves the feathers (the joint that bends backward); the thigh is a bone hidden in the
     body, from a hip up and forward of the heel, its mesh only the feathers over the heel. So: Shin.. the whole bare
@@ -693,6 +712,11 @@ def _bird_leg(m, keep, side, sign, masks, pivots, sides, feet, toes=None, ankle_
         masks[shin] = ((m | reach) & keep).astype(np.uint8)
         pivots[shin] = (top_x, float(t0))
         pivots[name] = hip
+        if own is not None:
+            # the skin the thigh moves: only the feathers just over the heel, blended into the body (D21): skinned with
+            # the whole drumstick, the heron's thigh dragged its breast feathers out below its body as it strode
+            own[name] = (feathers & keep & (1 - m)).astype(np.uint8)
+            own[shin] = (m & keep).astype(np.uint8)
     else:
         hx, hy = heel
         above = np.zeros_like(m)
@@ -702,11 +726,14 @@ def _bird_leg(m, keep, side, sign, masks, pivots, sides, feet, toes=None, ankle_
         masks[name] = (((m & above) | feathers) & keep).astype(np.uint8)
         masks[shin] = ((lower | (reach & m)) & keep).astype(np.uint8)
         pivots[shin] = (float(hx), float(hy))
-        pivots[name] = (top_x + 0.5 * (top_x - hx), t0 - 0.5 * (hy - t0))
+        pivots[name] = (top_x + 0.3 * (top_x - hx), t0 - 0.3 * (hy - t0))
+        if own is not None:     # the bare shank only: the breast feathers over it stay the body's (D21, the heron)
+            own[name] = ((m & above) & keep).astype(np.uint8)
+            own[shin] = (lower & keep).astype(np.uint8)
     sides[name] = sign
     fx = np.nonzero(whole[max(0, fb_whole - 2):fb_whole + 1])[1]
     feet[name] = (float(fx.mean()) if ankle_x is None else float(ankle_x), float(fb_whole))
-    _foot(whole, toes, keep, shin, 'Toe' + side, feet[name], 0.08 * L, masks, pivots, None, ankle)
+    _foot(whole, toes, keep, shin, 'Toe' + side, feet[name], 0.08 * L, masks, pivots, None, ankle, own_px=own)
 
 
 def _polys(polys, shape, x0, y0):
@@ -725,7 +752,7 @@ def _line_dist(lines, shape, x0, y0):
     return cv2.distanceTransform(canvas, cv2.DIST_L2, 5)
 
 
-def drawn_legs(rest, spec):
+def drawn_legs(rest, spec, own=None):
     """A bird's legs as drawn on its sheet (D20), where bird_legs can't find them by their thinness: two legs touching
     all the way down (the gull's, the heron's: found as one, then copied, a bird on four legs), legs as thick as the
     disk (the pigeons', the dove's: only a toe was found), a leg raised mid-step (the hopping crow's and sparrow's, left
@@ -777,9 +804,9 @@ def drawn_legs(rest, spec):
             toes = ((_line_dist(lines[1:], shape, x0, y0) < _line_dist(lines[:1], shape, x0, y0)) | below).astype(np.uint8)
         heel = (lines[0][1][0] - x0, lines[0][1][1] - y0) if spec['heel'] and len(lines[0]) > 2 else None
         _bird_leg(m, keep, side, sign, masks, pivots, sides, feet, toes, lines[0][-1][0] - x0,
-                  (lines[0][-1][0] - x0, lines[0][-1][1] - y0) if len(lines) > 1 else None, heel)
+                  (lines[0][-1][0] - x0, lines[0][-1][1] - y0) if len(lines) > 1 else None, heel, own=own)
     if len(ms) == 1:
-        _twin(masks, pivots, sides, feet, 'LegR', 'LegL')
+        _twin(masks, pivots, sides, feet, 'LegR', 'LegL', own)
     return masks, pivots, sides, feet, int(np.nonzero(rest)[0].min()), (area | drop).astype(np.uint8)
 
 
@@ -806,7 +833,7 @@ def _geodesic(mask, seed):
     return dist
 
 
-def split_links(region, seed, starts, name):
+def split_links(region, seed, starts, name, own=None):
     """A part cut into links along its length (D19): region's pixels by their distance from seed through the part
     (_geodesic), the links starting at the shares starts of its full length (the first at 0). Each link but the first
     reaches back into the one before by about half the part's thickness there, so no gap opens as it bends. Returns
@@ -824,6 +851,8 @@ def split_links(region, seed, starts, name):
         band = (dist >= max(0, lo - 2)) & (dist <= lo + 2)
         bys, bxs = np.nonzero(band)
         pivot = (float(bxs.mean()), float(bys.mean())) if len(bys) else (float(seed[0]), float(seed[1]))
+        if own is not None:     # the link's own pixels, without its reach back (the weights')
+            own[name if k == 0 else name + str(k + 1)] = core.copy()
         if k > 0:       # reach back into the link before
             back = ((dist >= lo - max(3, int(0.6 * thick))) & (dist < lo)).astype(np.uint8)
             core = core | back
@@ -877,6 +906,7 @@ def part_masks(spec, mask):
     x0, y0, x1, y1 = spec['box']
     h, w = mask.shape
     parts, pivots, sides = {}, {}, {}
+    own = {'_drop': np.zeros_like(mask)}     # each part's own pixels, without its overlaps: the skin's weights (D21)
     taken = np.zeros_like(mask)
     solo = _polys(spec['keep_body'], mask.shape, x0, y0) & mask     # the body's alone: no part's overlap grows into
     #                                                                   it (keep_body; a koi's front fins, below)
@@ -885,7 +915,27 @@ def part_masks(spec, mask):
         cv2.fillPoly(pm, [np.array([(x - x0, y - y0) for x, y in poly], np.int32)], 1)
         pm &= mask & (1 - taken)
         parts[name], pivots[name] = pm, pivot
+        own[name] = pm.copy()
         taken |= pm
+    # a bird's head in two links (D21): its neck (Head, at the nape) and its head (Head2), so a peck or a look about
+    # bends the neck and turns the head on it, the skin following, where one rigid piece swung from the nape
+    if ('Head' in parts and spec['view'] == 'side' and spec['legs'] is not True and not spec['whiskers']
+            and parts['Head'].any()):
+        # the neck turns about its middle where it meets the body, as a real neck bends about its spine: about the nape
+        # (the drawn pivot) the back of the head rose into a point as the head went down to peck (D21)
+        hm = parts['Head']
+        rest_of = (mask & (1 - hm)).astype(np.uint8)
+        seam = hm & cv2.dilate(rest_of, np.ones((5, 5), np.uint8))
+        sy_, sx_ = np.nonzero(seam)
+        if len(sy_):
+            pivots['Head'] = (x0 + float(sx_.mean()), y0 + float(sy_.mean()))
+        px, py = pivots['Head']
+        links, _ = split_links(parts['Head'], (px - x0, py - y0), (0.0, 0.3), 'Head', own)
+        if len(links) > 1:
+            for nm, m, pv in links:
+                parts[nm] = m
+                if nm != 'Head':
+                    pivots[nm] = (x0 + pv[0], y0 + pv[1])
     # the body carries on under a drawn tail (below), never under a head: there the band ran up the neck's outline
     # and stood as a spike at the nape when the head turned (D20); a head's own overlap covers its neck seam
     drawn_parts = np.zeros_like(mask)
@@ -900,17 +950,23 @@ def part_masks(spec, mask):
         drop = _polys(spec['leg_drop'], mask.shape, x0, y0) & rest
         rest = (rest & (1 - drop)).astype(np.uint8)
         taken |= drop
+        own['_drop'] |= drop
         biped = spec['legs'] == 'biped'
         below = np.zeros_like(mask)
         if biped:                       # a bird's bare legs leave the body; their reach into the feathers stays its
             if spec['leg_lines']:
-                legs, lpiv, lsides, lfeet, belly, core = drawn_legs(rest, spec)
+                legs, lpiv, lsides, lfeet, belly, core = drawn_legs(rest, spec, own)
             else:
-                legs, lpiv, lsides, lfeet, belly, core = bird_legs(rest, spec['leg_width'])
+                legs, lpiv, lsides, lfeet, belly, core = bird_legs(rest, spec['leg_width'], own)
             below = core
             taken |= core               # a leg raised mid-step and taken out (leg_drop) leaves the body too
+            legs_own = np.zeros_like(mask)
+            for n in legs:
+                if n in own and not n.startswith('Leg'):
+                    legs_own |= own[n]
+            own['_drop'] |= (core & (1 - legs_own)).astype(np.uint8)
         else:
-            legs, lpiv, lsides, lfeet, belly = leg_masks(rest, seeds=spec['leg_seeds'], origin=(x0, y0))
+            legs, lpiv, lsides, lfeet, belly = leg_masks(rest, seeds=spec['leg_seeds'], origin=(x0, y0), own=own)
             if belly is not None:
                 # the body keeps a skirt below its belly, a sixth of the leg deep: a thigh turning off it shows fur
                 # there, not the backdrop (D20)
@@ -946,13 +1002,46 @@ def part_masks(spec, mask):
         left_first = spec['view'] == 'above'
         for name, side in (('WingL' if left_first else 'WingR', xx < cx), ('WingR' if left_first else 'WingL', xx >= cx)):
             pm = (mask & beyond & side & (1 - taken)).astype(np.uint8)
+            if spec['head_up'] and pm.any():
+                # an insect's wings end where the wings do, out from the body: the abdomen's edges below them (wider
+                # than the body's half-width) stay the body's, or they flap (D21)
+                wy = np.nonzero((pm & (np.abs(xx - cx) > 4.0 * bw)).any(1))[0]
+                if len(wy):
+                    pm[wy.max() + 3:] = 0
+                    pm[:max(0, wy.min() - 3)] = 0
+                # its antennae stay the body's too: thin strokes the wings' broad shapes don't reach
+                broad = cv2.morphologyEx(pm, cv2.MORPH_OPEN, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (9, 9)))
+                pm = (pm & cv2.dilate(broad, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (9, 9)))).astype(np.uint8)
+            root_x = x0 + cx + (bw if side[0, -1] else -bw)
+            if spec['hind'] and pm.any():
+                # a dragonfly's hind wing apart from its forewing (D21: they beat out of step): cut at the row where the
+                # wing is narrowest near the body, between the two wings' roots (the head is up the sheet)
+                # the wings overlap at their roots; out toward their tips the backdrop shows between them
+                out_wing = pm & (np.abs(xx - cx) > 4.0 * bw)
+                ry = np.nonzero(out_wing.any(1))[0]         # the wings' own rows (not the abdomen's, below them)
+                lo, hi = int(ry.min() + 0.2 * (ry.max() - ry.min())), int(ry.min() + 0.8 * (ry.max() - ry.min()))
+                counts = out_wing.sum(1)
+                gap = lo + int(np.argmin(counts[lo:hi + 1]))
+                hind = pm.copy()
+                hind[:gap + 1] = 0
+                pm[gap + 1:] = 0
+                hname = 'Hind' + name[-1]
+                hy = np.nonzero(hind & (np.abs(xx - cx) < 2.5 * bw))[0]
+                parts[hname], own[hname] = hind, hind.copy()
+                pivots[hname] = (root_x, y0 + (float(hy.min()) if len(hy) else gap + 1.0))
+                taken |= hind
+                fy = np.nonzero(pm & (np.abs(xx - cx) < 2.5 * bw))[0]
+                shoulder_here = y0 + (float(np.median(fy)) if len(fy) else shoulder)
+            else:
+                shoulder_here = shoulder
             parts[name] = pm
-            pivots[name] = (x0 + cx + (bw if side[0, -1] else -bw), shoulder)
+            own[name] = pm.copy()
+            pivots[name] = (root_x, shoulder_here)
             taken |= pm
     # tails and wings in links, a fish's rear as a tail in links, a turtle's flippers: not one rigid piece (D19)
     if 'Tail' in parts and spec['view'] == 'side':
         px, py = pivots['Tail']
-        links, _ = split_links(parts['Tail'], (px - x0, py - y0), (0.0, 0.4, 0.7), 'Tail')
+        links, _ = split_links(parts['Tail'], (px - x0, py - y0), (0.0, 0.4, 0.7), 'Tail', own)
         if len(links) > 1:
             for nm, m, pv in links:
                 parts[nm] = m
@@ -962,7 +1051,7 @@ def part_masks(spec, mask):
     for wing in ('WingL', 'WingR'):         # a bird's wing bends at the wrist; an insect's doesn't
         if wing in parts and parts[wing].any() and not spec['head_up']:
             px, py = pivots[wing]
-            links, _ = split_links(parts[wing], (px - x0, py - y0), (0.0, 0.5), wing)
+            links, _ = split_links(parts[wing], (px - x0, py - y0), (0.0, 0.5), wing, own)
             if len(links) > 1:
                 for nm, m, pv in links:
                     parts[nm] = m
@@ -974,15 +1063,29 @@ def part_masks(spec, mask):
         ys, xs = np.nonzero(rest)
         end = xs.max() if spec['swim'] == 'right' else xs.min()
         seed = (float(end), float(ys[xs == end].mean()))
-        links, _ = split_links(rest, seed, (0.0, 0.45, 0.65, 0.82), 'Front')
+        links, _ = split_links(rest, seed, (0.0, 0.45, 0.65, 0.82), 'Front', own)
         # a pectoral fin near the first cut stays whole with the body (D20: the cut, measured through the fish, ran
         # across the fins, and their outer halves swung with the tail as loose flecks)
         fins = _polys(spec['front_fins'], mask.shape, x0, y0) & rest
         solo |= fins
+        # each pectoral fin its own part (D21: a koi sculls them), hinged where it meets the body
+        cy = float(np.nonzero(rest)[0].mean())
+        for poly in spec['front_fins']:
+            fm = (_polys([poly], mask.shape, x0, y0) & rest).astype(np.uint8)
+            if fm.sum() < 15:
+                continue
+            fy, fx = np.nonzero(fm)
+            fname = 'FinL' if fy.mean() < cy else 'FinR'       # above the length on the sheet: its left (+Y)
+            root = np.argsort(np.abs(fy - cy))[:max(3, len(fy) // 20)]
+            parts[fname], own[fname] = fm, fm.copy()
+            pivots[fname] = (x0 + float(fx[root].mean()), y0 + float(fy[root].mean()))
+            taken |= fm
         links = [(nm, (m & (1 - fins)).astype(np.uint8) if k else (m | fins).astype(np.uint8), pv)
                  for k, (nm, m, pv) in enumerate(links)]
+        own.pop('Front', None)
         for k, (nm, m, pv) in enumerate(links[1:]):
             name = 'Tail' if k == 0 else 'Tail' + str(k + 1)
+            own[name] = (own.pop(nm) & (1 - fins)).astype(np.uint8)
             parts[name] = m
             pivots[name] = (x0 + pv[0], y0 + pv[1])
             if k > 0:
@@ -990,11 +1093,12 @@ def part_masks(spec, mask):
             taken |= m & (1 - links[k][1])      # the tail's own pixels leave the body; its reach back stays the body's
     if spec['flippers']:
         rest = (mask & (1 - taken)).astype(np.uint8)
-        for name, (m, pv, own) in flipper_masks(rest, spec['flippers']).items():
+        for name, (m, pv, fown) in flipper_masks(rest, spec['flippers']).items():
             parts[name] = m.astype(np.uint8)
+            own[name] = fown.astype(np.uint8)
             pivots[name] = (x0 + pv[0], y0 + pv[1])
             banded.add(name)
-            taken |= own                # its own pixels leave the body; its reach into the shell stays the shell's
+            taken |= fown               # its own pixels leave the body; its reach into the shell stays the shell's
     body = (mask & (1 - taken)).astype(np.uint8)
     if 'Head' in parts and parts['Head'].any():
         # the strip of body between a head's outline and the figure's edge (the back of the neck, where the drawn
@@ -1006,6 +1110,7 @@ def part_masks(spec, mask):
         near_edge = cv2.distanceTransform(mask.astype(np.uint8), cv2.DIST_L2, 5) <= D
         strip = (body > 0) & near_head & near_edge & (solo == 0)
         parts['Head'] = (hm | strip).astype(np.uint8)
+        own['Head'] = (own['Head'] | strip).astype(np.uint8)
         body[strip] = 0
     if drawn_parts.any():
         # the body carries on under a drawn tail's edge, as far as the tail may sway off it: D20, the Shiba's rump
@@ -1022,7 +1127,8 @@ def part_masks(spec, mask):
         parts[name] = (pm | (grown & body & (1 - solo))).astype(np.uint8)
     parts['Body'] = body
     pivots['Body'] = None
-    return parts, pivots, sides
+    own['Body'] = body.copy()
+    return parts, pivots, sides, own
 
 
 def relief(mask, step, outline=7.0):
@@ -1109,7 +1215,9 @@ def _parent_of(part):
         return 'Leg' + part[4:]
     if part.startswith('Toe'):
         return 'Shin' + part[3:]
-    m = re.match(r'^(Tail|WingL|WingR)(\d)$', part)
+    if part == 'Plume':             # a crest's long plumes hang from the head (the egret's: D21)
+        return 'Head2'
+    m = re.match(r'^(Tail|WingL|WingR|Head)(\d)$', part)
     if m:
         n = int(m.group(2))
         return m.group(1) if n == 2 else m.group(1) + str(n - 1)
@@ -1161,27 +1269,167 @@ def build(name, spec, atlas, sheet):
         return Vector(((gx - ox) / s, (oy - gy) / s, 0.0))
 
     depth_axis = Vector((0, 1, 0)) if view == 'side' else Vector((0, 0, 1))
-    root = bpy.data.objects.new(name, None)
-    bpy.context.scene.collection.objects.link(root)
-    parts, pivots, sides = part_masks(spec, mask)
-    tris_total, part_tris, open_edges, ratio = 0, {}, {}, {}
-    body_depth = 0.0
-    objs = {}
-    # the Body first (its depth places the legs), each link before the one hanging from it
-    for part in sorted(parts, key=lambda p: (p != 'Body', _depth(p))):
-        pm = parts[part]
-        if pm.sum() < 30:
+    parts, pivots, sides, own = part_masks(spec, mask)
+    biped = spec['legs'] == 'biped'
+    # the far legs (behind the body: LegFL.., a bird's LegL) are a mesh of their own behind the body; every other part
+    # is one continuous mesh with the body that bends at its joints (D21: rigid photo pieces turning over the body
+    # showed their straight edges and corners at every joint, below the neck and at the tops of the legs)
+    far_sfx = {n[3:] for n, sd in sides.items() if sd == 1 and n.startswith('Leg')}
+
+    def suffix(p):
+        return p[4:] if p.startswith('Shin') else p[3:] if p[:3] in ('Leg', 'Toe') else None
+
+    def is_far(p):
+        return p[:3] in ('Leg', 'Shi', 'Toe') and suffix(p) in far_sfx
+
+    def parent(p):
+        return None if p == 'Body' else (_parent_of(p) or 'Body')
+
+    bones = ['Body'] + sorted((p for p in parts if p != 'Body'), key=lambda p: (_depth(p), p))
+    deform = [b for b in bones if b == 'Body' or (b in own and own[b].any())]
+    gi = {b: i for i, b in enumerate(deform)}           # vertex group index of each deforming bone
+
+    def thick(m):
+        return 2.0 * float(cv2.distanceTransform(m.astype(np.uint8), cv2.DIST_L2, 5).max()) if m.any() else 0.0
+
+    def blend(b):
+        """The half-width (px) over which bone b and its parent share the skin at their joint: wide at a shoulder or a
+        hip so the flank moves with the leg as a real one does, narrow at an ankle or a wing's root."""
+        t = thick(own[b]) if b in own else 0.0
+        if b.startswith('Leg'):
+            return max(4.0, (0.6 if biped else 0.9) * t)
+        if b.startswith('Shin'):
+            return max(3.0, (0.6 if biped else 0.5) * t)
+        if b.startswith('Toe'):
+            sh = 'Shin' + b[3:]
+            return max(2.0, 0.5 * thick(own[sh]) if sh in own else 2.0)
+        if b == 'Head2':
+            return max(3.0, 0.2 * t)
+        if b.startswith('Head'):
+            return max(4.0, 0.35 * t)
+        if b.startswith('Tail'):
+            return max(6.0, 0.6 * t) if spec['swim'] else max(4.0, 0.7 * t)
+        if b.startswith('Wing'):
+            return 3.0 if spec['head_up'] else max(4.0, (0.5 if b[-1] == '2' else 0.3) * t)
+        if b.startswith('Flipper') or b.startswith('Fin'):
+            return max(3.0, 0.4 * t)
+        if b.startswith('Hind'):
+            return 3.0
+        return max(3.0, 0.4 * t)
+
+    def weights(layer, members, pts):
+        """Each point's bone weights (npts x len(deform)): every pixel of layer belongs to the deepest member bone whose
+        own pixels hold it (the Body elsewhere); across each joint the two bones share it, half and half at the line
+        between their pixels, fading to the one alone at the blend's width either side."""
+        h, w = layer.shape
+        lab = np.full((h, w), -1, np.int32)
+        lab[layer > 0] = gi['Body']
+        for b in sorted(members, key=lambda b: (_depth(b), b)):
+            lab[(own[b] > 0) & (layer > 0)] = gi[b]
+        present = [b for b in deform if (lab == gi[b]).any()]
+        dist = {b: cv2.distanceTransform((lab != gi[b]).astype(np.uint8), cv2.DIST_L2, 5) for b in present}
+        # a point just off the layer (a split triangle's centre) takes the nearest labelled pixel's bone
+        src = np.where(lab >= 0, 0, 255).astype(np.uint8)
+        _, near = cv2.distanceTransformWithLabels(src, cv2.DIST_L2, 5, labelType=cv2.DIST_LABEL_PIXEL)
+        zy, zx = np.nonzero(src == 0)
+        lut_y = np.zeros(int(near.max()) + 1, np.int32)
+        lut_x = np.zeros(int(near.max()) + 1, np.int32)
+        lut_y[near[zy, zx]], lut_x[near[zy, zx]] = zy, zx
+        py = np.clip(np.round(pts[:, 1]).astype(int), 0, h - 1)
+        px = np.clip(np.round(pts[:, 0]).astype(int), 0, w - 1)
+        ny, nx = lut_y[near[py, px]], lut_x[near[py, px]]
+        L = lab[ny, nx]
+        W = np.zeros((len(pts), len(deform)), np.float32)
+        W[np.arange(len(pts)), L] = 1.0
+        children = {b: [c for c in present if parent(c) == b] for b in present}
+        for b in present:
+            sel = L == gi[b]
+            if not sel.any():
+                continue
+            P = parent(b)
+            if P in present:
+                f = 0.5 * np.clip(1.0 - dist[P][ny[sel], nx[sel]] / blend(b), 0.0, 1.0)
+                W[sel, gi[b]] -= f
+                W[sel, gi[P]] += f
+            for c in children[b]:
+                g = 0.5 * np.clip(1.0 - dist[c][ny[sel], nx[sel]] / blend(c), 0.0, 1.0) * W[sel, gi[b]]
+                W[sel, gi[b]] -= g
+                W[sel, gi[c]] += g
+        return W / np.maximum(W.sum(1, keepdims=True), 1e-6)
+
+    def leg_share(W, far):
+        """How much of each point is leg (near or far as asked): it stands that far out from the body's middle."""
+        out = np.zeros(len(W), np.float32)
+        for b, i in gi.items():
+            if b[:3] in ('Leg', 'Shi', 'Toe') and is_far(b) == far and suffix(b) is not None:
+                out += W[:, i] * (0.5 if (biped and b.startswith('Leg')) else 1.0)
+        return out
+
+    covered = np.zeros_like(mask)
+    for b, m in own.items():
+        if not b.startswith('_'):
+            covered |= m
+    # a bird's toes are built in the round (below): its photo's toes, a side view of a foot, were a flat plate from any
+    # other angle, big and stuck to the ground (D21)
+    def photo_part(b):
+        return not (biped and b.startswith('Toe'))
+
+    near_members = [b for b in deform if b != 'Body' and not is_far(b) and photo_part(b)]
+    far_members = [b for b in deform if is_far(b) and photo_part(b)]
+    main = own['Body'].copy()
+    for b in near_members:
+        main |= own[b]
+    main |= (mask & (1 - covered) & (1 - own['_drop'])).astype(np.uint8)   # anything left over is body
+    # the far legs' own pixels (a bird's: its bare legs, not the feathered drumstick, which is the body's texture) and a
+    # short reach into the body, hidden behind it: with each part's whole reach up into the body, a far thigh carried a
+    # patch of flank or breast that swung out in front of the animal (D21: the heron's, the user's "extended parts")
+    fh = int(np.ptp(np.nonzero(mask)[0])) + 1
+    far_layer = np.zeros_like(mask)
+    for b in far_members:
+        if biped and b.startswith('Leg') and not spec['heel']:     # the drumstick's feathers (with heel: bare shank)
             continue
-        pts, tris, dist, radius = relief(pm, step, spec['outline'])
-        cap = spec['depth'] if not part.startswith('Wing') else spec['depth'] * 0.4
+        far_layer |= own[b]
+    if far_layer.any():
+        k = 2 * max(3, int(round(0.06 * fh))) + 1
+        # into the body only: grown over a near leg beside it, the far leg dragged a ghost of that leg with it (D21)
+        far_layer = (far_layer | (cv2.dilate(far_layer, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (k, k)))
+                                  & own['Body']))
+        far_layer = far_layer.astype(np.uint8)
+    layers = [('Skin', main.astype(np.uint8), near_members, False)]
+    if far_layer.any():
+        layers.append(('SkinFar', far_layer.astype(np.uint8), far_members, True))
+
+    root = bpy.data.objects.new(name, bpy.data.armatures.new(name))
+    bpy.context.scene.collection.objects.link(root)
+    tris_total, mesh_tris, open_edges, ratio, dominant = 0, {}, {}, {}, Counter()
+    body_depth = 0.0
+    built = []
+    for mname, layer, members, far in layers:
+        pts, tris, dist, radius = relief(layer, step, spec['outline'])
+        W = weights(layer, members, pts)
+        wing = np.zeros(len(pts), np.float32)
+        for b, i in gi.items():
+            if b.startswith('Wing') or b.startswith('Hind'):
+                wing += W[:, i]
+        cap = spec['depth'] * (1.0 - 0.6 * wing)
         d, R = np.maximum(dist - 1.0, 0.0) / s, np.maximum(radius - 1.0, np.maximum(dist - 1.0, 0.5)) / s
         dz = cap * np.tanh(np.sqrt(np.maximum(d * (2 * R - d), 0.0)) / cap)
+        if not far:
+            body_depth = float(np.max(dz[W[:, gi['Body']] > 0.9])) if (W[:, gi['Body']] > 0.9).any() else float(np.max(dz))
+        off = (0.6 * body_depth * leg_share(W, True)) if far else (-0.6 * body_depth * leg_share(W, False))
+        if view != 'side':
+            off = np.zeros(len(pts), np.float32)
         bm = bmesh.new()
         uvl = bm.loops.layers.uv.new('UVMap')
-        piv = to_model(*pivots[part]) if pivots[part] else Vector()
+        dl = bm.verts.layers.deform.verify()
         face_verts = {}
         for sign in (-1, 1):
-            vs = [bm.verts.new(to_model(p[0] + x0, p[1] + y0) + depth_axis * (sign * dz[i]) - piv) for i, p in enumerate(pts)]
+            vs = []
+            for i, p in enumerate(pts):
+                v = bm.verts.new(to_model(p[0] + x0, p[1] + y0) + depth_axis * (sign * dz[i] + off[i]))
+                for j in np.nonzero(W[i] > 1e-3)[0]:
+                    v[dl][int(j)] = float(W[i, j])
+                vs.append(v)
             face_verts[sign] = vs
             for a, b, c in tris:
                 order = (a, b, c) if sign < 0 else (a, c, b)
@@ -1210,67 +1458,211 @@ def build(name, spec, atlas, sheet):
         bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=1e-5)
         bmesh.ops.dissolve_degenerate(bm, dist=1e-6, edges=bm.edges[:])
         bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
-        if part == 'Body':
-            body_depth = float(np.max(dz))
-        open_edges[part] = [sum(1 for e in bm.edges if len(e.link_faces) == 1),
-                            sum(1 for e in bm.edges if len(e.link_faces) > 2)]
-        ratio[part] = round(float(np.max(dz) / max(np.max(R), 1e-6)), 2)
-        me = bpy.data.meshes.new(name + '.' + part)
+        open_edges[mname] = [sum(1 for e in bm.edges if len(e.link_faces) == 1),
+                             sum(1 for e in bm.edges if len(e.link_faces) > 2)]
+        ratio[mname] = round(float(np.max(dz) / max(np.max(R), 1e-6)), 2)
+        for i in range(len(pts)):
+            dominant[deform[int(np.argmax(W[i]))]] += 1
+        me = bpy.data.meshes.new(name + '.' + mname)
         bm.to_mesh(me)
         bm.free()
-        o = bpy.data.objects.new(name + '.' + part, me)
+        o = bpy.data.objects.new(name + '.' + mname, me)
         bpy.context.scene.collection.objects.link(o)
-        up = _parent_of(part)
-        thigh = objs.get(up) if up else None
-        if thigh is not None:       # a shin hangs from its thigh, a link from the link before, its origin at the joint
-            o.parent = thigh
-            o.location = piv - to_model(*pivots[up])
-        else:
-            o.parent = root
-            # a near leg stands in front of the body's middle, a far one behind it (the top view shows four legs)
-            o.location = piv + depth_axis * (sides.get(part, 0) * 0.6 * body_depth)
-        objs[part] = o
+        for b in deform:                    # the groups in the deform layer's order
+            o.vertex_groups.new(name=b)
+        o.parent = root
+        mod = o.modifiers.new('Armature', 'ARMATURE')
+        mod.object = root
         KB.keep_uv_white(o)
         me.polygons.foreach_set('use_smooth', [True] * len(me.polygons))
-        part_tris[part] = len(me.polygons)
+        mesh_tris[mname] = len(me.polygons)
         tris_total += len(me.polygons)
-    # each foot's contact point, an empty under its shin (or its thigh, for a leg too short to bend): where the gait
-    # puts the foot on the ground (LegGait)
-    for leg, foot in spec.pop('_feet', {}).items():
-        suffix = leg[3:]
-        holder = ('Toe' + suffix if 'Toe' + suffix in objs else 'Shin' + suffix if 'Shin' + suffix in objs else leg)
-        if holder not in objs:
-            continue
-        e = bpy.data.objects.new(name + '.Foot' + suffix, None)
-        bpy.context.scene.collection.objects.link(e)
-        e.parent = objs[holder]
-        e.location = to_model(*foot) - to_model(*pivots[holder])
-    for ename, epiv in spec['empties'] + spec.pop('_auto_empties', []):
-        e = bpy.data.objects.new(name + '.' + ename, None)
-        bpy.context.scene.collection.objects.link(e)
-        e.parent = root
-        e.location = to_model(*epiv) + depth_axis * (0.6 * body_depth if ename.endswith('L') and ename.startswith('Leg') else
-                                                     -0.6 * body_depth if ename.startswith('Leg') else 0.0)
+        built.append(o)
+
+    if biped:
+        # each foot's toes joined into the skin its leg is in (one skinned mesh, two with far legs: D21's budget)
+        for far in (False, True):
+            o = bird_toes(name, own, pivots, deform, is_far, body_depth, to_model, s, x0, y0, atlas, pos, far)
+            if o is None:
+                continue
+            target = next((b for b in built if b.name.endswith('.SkinFar' if far else '.Skin')), built[0])
+            n = len(o.data.polygons)
+            with bpy.context.temp_override(active_object=target, object=target,
+                                           selected_objects=[target, o], selected_editable_objects=[target, o]):
+                bpy.ops.object.join()
+            key = 'SkinFar' if target.name.endswith('.SkinFar') else 'Skin'
+            mesh_tris[key] += n
+            tris_total += n
+
+    # the skeleton: a bone at each part's pivot, named as the part (the game's behaviours find them by name), every bone
+    # pointing along +Y with no roll, so its rest frame is the model's own (turning a bone turns its part as turning the
+    # part's mesh did); a Foot under each foot at its contact point and a Tip at the front of its toes (LegGait); the
+    # pivots a behaviour wants without a part of their own (spec empties, a dog's missing far legs) as bones that hold
+    # nothing
+    feet = spec.pop('_feet', {})
+    tips = {}
+    for leg, foot in feet.items():
+        t = 'Toe' + leg[3:]
+        if t in own and own[t].any():
+            fx_, fy_ = toe_front(own[t])
+            tips[leg[3:]] = (x0 + fx_, y0 + fy_)
+    extra = [(e, p, 'Body') for e, p in spec['empties'] + spec.pop('_auto_empties', [])]
+    bpy.context.view_layer.objects.active = root
+    root.select_set(True)
+    bpy.ops.object.mode_set(mode='EDIT')
+    eb = root.data.edit_bones
+    blen = max(0.005, 0.05 * spec['size'][1])          # drawn length only: a bone turns about its head
+
+    def new_bone(bname, head, par, deforming):
+        b = eb.new(bname)
+        b.head = head
+        b.tail = head + Vector((0.0, blen, 0.0))
+        b.roll = 0.0
+        b.use_deform = deforming
+        if par is not None:
+            b.parent = eb[par]
+        return b
+
+    new_bone('Body', Vector((0.0, 0.0, 0.0)), None, True)
+    for b in bones[1:]:
+        new_bone(b, to_model(*pivots[b]), parent(b), b in gi)
+    for leg, foot in feet.items():
+        sfx = leg[3:]
+        holder = 'Toe' + sfx if 'Toe' + sfx in eb else 'Shin' + sfx if 'Shin' + sfx in eb else leg
+        if holder in eb:
+            new_bone('Foot' + sfx, to_model(*foot), holder, False)
+            if sfx in tips and 'Toe' + sfx in eb:
+                new_bone('Tip' + sfx, to_model(*tips[sfx]), 'Toe' + sfx, False)
+    for ename, epiv, par in extra:
+        if ename not in eb:
+            new_bone(ename, to_model(*epiv), par, False)
+    bpy.ops.object.mode_set(mode='OBJECT')
+    root.select_set(False)
+    for pb in root.pose.bones:
+        pb.rotation_mode = 'XYZ'
     front = bpy.data.objects.new(name + '.Attach.Front', None)
     bpy.context.scene.collection.objects.link(front)
     front.parent = root
     front.location = (0, -1, 0)
     bpy.context.view_layer.update()
-    def knee_to_end(sfx):           # the shin's bone: knee to ankle, or to the foot with no toe
-        return (objs['Toe' + sfx].location if 'Toe' + sfx in objs else root_child(root, 'Foot' + sfx).location).length
+    head = {b.name: b.head_local.copy() for b in root.data.bones}
 
-    lengths = [objs['Shin' + n[3:]].location.length + knee_to_end(n[3:])
-               for n in objs if n.startswith('Leg') and 'Shin' + n[3:] in objs and root_child(root, 'Foot' + n[3:])]
-    meshes = [o for o in root.children_recursive if o.type == 'MESH']
-    lo = [min((o.matrix_world @ v.co)[k] for o in meshes for v in o.data.vertices) for k in range(3)]
-    hi = [max((o.matrix_world @ v.co)[k] for o in meshes for v in o.data.vertices) for k in range(3)]
+    def knee_to_end(sfx):           # the shin's bone: knee to ankle, or to the foot with no toe
+        end = 'Toe' + sfx if 'Toe' + sfx in head else 'Foot' + sfx
+        return (head[end] - head['Shin' + sfx]).length
+
+    lengths = [(head['Shin' + n[3:]] - head[n]).length + knee_to_end(n[3:])
+               for n in head if n.startswith('Leg') and 'Shin' + n[3:] in head and 'Foot' + n[3:] in head]
+    lo = [min(v.co[k] for o in built for v in o.data.vertices) for k in range(3)]
+    hi = [max(v.co[k] for o in built for v in o.data.vertices) for k in range(3)]
     info = dict(id=spec['id'], sheet=spec['sheet'], box=list(spec['box']), view=view, px_per_m=round(s, 1),
-                tris=tris_total, parts=part_tris,
-                empties=[o.name.split('.', 1)[1] for o in root.children_recursive if o.type == 'EMPTY'],
+                tris=tris_total, meshes=mesh_tris, parts={b: dominant.get(b, 0) for b in deform},
+                empties=[b.name for b in root.data.bones if not b.use_deform] + ['Attach.Front'],
                 size=[round(hi[k] - lo[k], 3) for k in range(3)], open_edges=open_edges, depth_to_width=ratio,
-                edges=sum(len(o.data.edges) for o in meshes),
+                edges=sum(len(o.data.edges) for o in built),
                 leg_length=round(sum(lengths) / len(lengths), 4) if lengths else None)
-    return root, info, mask, parts
+    return root, info, mask, {b: m for b, m in own.items() if not b.startswith('_')}
+
+
+def toe_front(m):
+    """The front of a foot's toes on the ground: the front-most pixel in the band at the foot's bottom (a third of the
+    foot's height), not in its lowest rows only, which a back toe drawn lower than the front ones may hold alone (D21:
+    the dove's far foot was planted on its back toe and walked backwards)."""
+    ty, tx = np.nonzero(m)
+    bottom = int(ty.max())
+    band = ty >= bottom - max(3, int(0.35 * (bottom - int(ty.min()))))
+    return float(tx[band].max()), float(bottom)
+
+
+def bird_toes(name, own, pivots, deform, is_far, body_depth, to_model, s, x0, y0, atlas, pos, far=None):
+    """A bird's feet in the round (D21): for each foot, three toes forward (straight ahead and spread 28 degrees either
+    side) and one back, each a tapered tube from under the ankle to its claw, a little arched, lying on the ground; their
+    lengths, thickness and the side they stand on come from the photo's toes, and each is mapped along the photo's toe
+    (its scales and its dark claw) so it keeps the picture's colour. Weighted to the foot's Toe bone, they lift, curl
+    and plant with it. Returns the mesh object, or None."""
+    bm = bmesh.new()
+    uvl = bm.loops.layers.uv.new('UVMap')
+    dl = bm.verts.layers.deform.verify()
+    gi = {b: i for i, b in enumerate(deform)}
+    sides, sections = 6, 5
+    made = False
+    for t in [b for b in deform if b.startswith('Toe') and (far is None or is_far(b) == far)]:
+        m = own.get(t)
+        if m is None or m.sum() < 10:
+            continue
+        ty, tx = np.nonzero(m)
+        bottom = int(ty.max())
+        ax, ay = pivots[t][0] - x0, pivots[t][1] - y0          # the ankle, in the mask's frame
+        low = ty >= bottom - max(3, int(0.35 * (bottom - int(ty.min()))))
+        front, rear = toe_front(m)[0], float(tx[low].min())
+        cols = np.bincount(tx)
+        th = float(np.percentile(cols[cols > 0], 30)) if (cols > 0).any() else 3.0
+        th = max(2.0, min(th, 0.5 * max(1.0, front - ax)))
+        Lf = max(2.0, front - ax) / s
+        Lh = min(max((ax - rear) / s if rear < ax else 0.4 * Lf, 0.3 * Lf), 0.6 * Lf)
+        r0 = min(0.5 * th / s, 0.22 * Lf)
+        yoff = (0.6 if is_far(t) else -0.6) * body_depth
+        A = to_model(ax + x0, ay + y0)
+        gz = to_model(ax + x0, bottom + y0).z      # this foot's own ground: a far foot is drawn higher (its Tip there)
+        sy = bottom - th / 2.0                                   # the photo's toe runs along this row
+        for yaw, L, sx0, sx1 in ((0.0, Lf, ax, front), (28.0, 0.8 * Lf, ax, front), (-28.0, 0.8 * Lf, ax, front),
+                                 (180.0, Lh, ax, rear if rear < ax else ax - Lh * s)):
+            a = math.radians(yaw)
+            d = Vector((math.cos(a), math.sin(a), 0.0))
+            up = Vector((0.0, 0.0, 1.0))
+            side = d.cross(up)
+            rings = []
+            for k in range(sections + 1):
+                u = k / sections
+                c = Vector((A.x, yoff, gz)) + d * (L * u)
+                # each toe leaves the ankle (where the leg ends) and reaches the ground within a fifth of its length,
+                # then lies on it, arching a little, its claw down
+                c.z = (gz + r0 * (1.0 - 0.55 * u) + 0.5 * r0 * math.sin(math.pi * u)
+                       + max(0.0, A.z - gz - r0) * max(0.0, 1.0 - u / 0.2) ** 2)
+                r = r0 * (1.0 - 0.65 * u)
+                ring = []
+                for j in range(sides):
+                    ang = 2 * math.pi * j / sides
+                    v = bm.verts.new(c + side * (r * math.cos(ang)) + up * (r * math.sin(ang)))
+                    v[dl][gi[t]] = 1.0
+                    ring.append((v, sx0 + (sx1 - sx0) * u, sy - 0.45 * th * math.sin(ang)))
+                rings.append(ring)
+            tipc = Vector((A.x, yoff, 0.0)) + d * (L * 1.06)
+            tipc.z = gz + 0.25 * r0
+            tip = bm.verts.new(tipc)
+            tip[dl][gi[t]] = 1.0
+            tip_uv = (sx1, sy)
+
+            def face(vs):
+                try:
+                    f = bm.faces.new([v for v, _, _ in vs])
+                except ValueError:
+                    return
+                for loop, (_, ux, uy) in zip(f.loops, vs):
+                    loop[uvl].uv = atlas.uv(pos, ux, uy)
+
+            for k in range(sections):
+                for j in range(sides):
+                    j2 = (j + 1) % sides
+                    face([rings[k][j], rings[k][j2], rings[k + 1][j2], rings[k + 1][j]])
+            for j in range(sides):
+                face([rings[-1][j], rings[-1][(j + 1) % sides], (tip, tip_uv[0], tip_uv[1])])
+            face(list(reversed(rings[0])))
+            made = True
+    if not made:
+        bm.free()
+        return None
+    bmesh.ops.triangulate(bm, faces=bm.faces[:])
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    me = bpy.data.meshes.new(name + '.SkinToes')
+    bm.to_mesh(me)
+    bm.free()
+    o = bpy.data.objects.new(name + '.SkinToes', me)
+    bpy.context.scene.collection.objects.link(o)
+    for b in deform:
+        o.vertex_groups.new(name=b)
+    me.polygons.foreach_set('use_smooth', [True] * len(me.polygons))
+    return o
 
 
 def export(root, path):
@@ -1335,7 +1727,8 @@ def part_map(sheet, spec, parts, out):
     photo = np.asarray(sheet.convert('RGB'))[y0:y1, x0:x1].astype(np.float32)
     over = photo * 0.3 + 60
     rng = np.random.RandomState(7)
-    names = sorted(parts, key=lambda p: (p != 'Body', p))
+    # the near legs drawn last: a far leg copied from the near one lies under it
+    names = sorted(parts, key=lambda p: (p != 'Body', p[:3] in ('Leg', 'Shi', 'Toe') and p.endswith('R'), p))
     colours = {p: (np.array([150, 150, 150]) if p == 'Body' else rng.randint(60, 256, 3)) for p in names}
     for p in names:
         pm = parts[p] > 0
@@ -1427,6 +1820,19 @@ TEXTURE = 6.0                # the local deviation above which a pixel is fur or
 ON_A_ROCK = ('KM-N16',)      # the cormorant, drawn on its rock: CritterIdle, never walks (KAMAKURA_BUILD's catalogue)
 
 
+# how far each walking bird's head thrusts and holds with each step, as a share of its leg's length (D21): a pigeon's,
+# a dove's and a wagtail's strongly; a heron's and an egret's as they stalk; a crow's and a gull's a little
+HEAD_BOB = {'KM-N07': 0.16, 'KM-N20': 0.16, 'KM-N17': 0.16, 'KM-N15': 0.10, 'KM-N11': 0.10, 'KM-N06': 0.06,
+            'KM-N10': 0.06}
+
+
+def head_bob_of(name, info):
+    """GroundBird's headSlide for this bird (metres)."""
+    spec = ANIMALS[name]
+    share = spec['bob'] if spec['bob'] is not None else HEAD_BOB.get(info['id'], 0.0)
+    return share * (info.get('leg_length') or 0.0)
+
+
 def game_settings(name, info):
     """How the game moves a model (for the level builder; the review renders the same numbers, motions_of): the
     behaviour component and the settings that differ from its defaults. Parts in links (Tail2.., WingL2) and jointed
@@ -1449,18 +1855,28 @@ def game_settings(name, info):
         out = {'component': 'FlitButterfly', 'wingL': 'WingL', 'wingR': 'WingR', 'wingAxis': 'long'}
         if spec['beat']:            # a dragonfly beats its wings about flat; a butterfly claps them up (the default)
             out.update(beatMid=spec['beat'][0], beatSwing=spec['beat'][1])
+        if 'HindL' in parts:        # its hind wings ahead of its forewings (D21)
+            out.update(hindL='HindL', hindR='HindR', hindLead=1.6)
         return out
     if spec['swim']:
-        return {'component': 'PondDuck', 'tail': 'Tail', 'tailAxis': 'up', 'tailSweep': 22, 'tailBeat': 1.6}
+        out = {'component': 'PondDuck', 'tail': 'Tail', 'tailAxis': 'up', 'tailSweep': 22, 'tailBeat': 1.6,
+               'headRecoil': 0.15}
+        if 'FinL' in parts or 'FinR' in parts:
+            out.update(fins=[f for f in ('FinL', 'FinR') if f in parts], finAxis='up', finSweep=25, finBeat=0.8)
+        return out
     if spec['flippers']:
         return {'component': 'PondDuck', 'flippers': ['FlipperFR', 'FlipperFL', 'FlipperBR', 'FlipperBL'],
                 'flipperAxis': 'up', 'flipperSweep': 28, 'flipperStroke': 0.9}
     if bird and info['id'] not in ON_A_ROCK:
         turn, tip = spec['peck']
+        bob = head_bob_of(name, info)
         out = {'component': 'GroundBird', 'head': 'Head', 'headAxis': 'side', 'hopper': bool(spec['hop']),
-               'headSlide': 0, 'headNod': 7, 'peckTurn': turn, 'peckTip': tip, 'legs': 'LegGait (stepped, hopped, planted)'}
+               'headSlide': round(bob, 4), 'headNod': 2 if bob >= 0.1 * (info.get('leg_length') or 0.0) else 5,
+               'peckTurn': turn, 'peckTip': tip, 'legs': 'LegGait (stepped, hopped, planted; feet rolled)'}
         if 'Tail' in parts:
             out.update(tail='Tail', tailAxis='side', tailPump=14, tailPumpRate=3)
+        if 'Plume' in parts:        # a crest's plumes hang from the head (D21)
+            out.update(plume='Plume', plumeAxis='side')
         return out
     if 'Tail' in parts and info['view'] == 'side':
         if 'Squirrel' in name:
@@ -1471,8 +1887,9 @@ def game_settings(name, info):
         return {'component': 'CritterIdle', 'motions': [{'part': 'Tail', 'axis': 'long' if spec['curl'] else 'side',
                                                           'amplitude': amp, 'speed': speed}]}
     if 'Head' in parts:
-        amp, speed = (10.0, 0.7) if info['id'] in ON_A_ROCK else (12.0, 0.9)
-        return {'component': 'CritterIdle', 'motions': [{'part': 'Head', 'axis': 'up', 'amplitude': amp, 'speed': speed}]}
+        amp, speed = (14.0, 0.7) if info['id'] in ON_A_ROCK else (22.0, 0.9)
+        return {'component': 'CritterIdle', 'motions': [{'part': 'Head', 'axis': 'up', 'amplitude': amp, 'speed': speed,
+                                                          'snap': True}]}
     return {'component': None, 'note': 'still: nothing of it moves'}
 
 
@@ -1526,21 +1943,24 @@ def motions_of(name, info):
             return [_timed('fly', pose, AR.UP_BELOW, period)]
         # FlitButterfly: beatMid + beatSwing sin, 50 radians a second (a butterfly's 38 + 38 sin; a dragonfly's about flat)
         mid, swing = spec['beat'] or (38.0, 38.0)
-        return [_timed('fly', AR.fly(span, mid, swing), AR.INSECT, 2 * math.pi / 50)]
-    if spec['swim']:                # PondDuck's koi: the tail swept 22 degrees, 1.6 times a second
-        pose, period = AR.pond(tail=(22.0, 1.6))
+        return [_timed('fly', AR.fly(span, mid, swing, 1.6), AR.INSECT, 2 * math.pi / 50)]
+    if spec['swim']:                # PondDuck's koi: the tail swept 22 degrees, 1.6 times a second; fins and recoil
+        pose, period = AR.pond(tail=(22.0, 1.6), recoil=0.15,
+                               fins=(25.0, 0.8) if ('FinL' in parts or 'FinR' in parts) else None)
         return [_timed('swim', pose, AR.UP_ABOVE, period)]
     if spec['flippers']:            # PondDuck's turtle: the flippers paddled 28 degrees, 0.9 strokes a second
         pose, period = AR.pond(flippers=(28.0, 0.9))
         return [_timed('swim', pose, AR.UP_ABOVE, period)]
     if bird and info['id'] not in ON_A_ROCK:
         turn, tip = spec['peck']
-        peck = _timed('peck', AR.peck(h, turn, tip), None, 0.22 / 0.45)      # GroundBird's 0.22 s peck, then a pause
+        peck = _timed('peck', AR.peck(h, turn, tip, 0.22 / 0.45), None, 0.22 / 0.45)   # GroundBird's 0.22 s peck, a pause
         pump = (14.0, 0.0, 3.0) if 'Tail' in parts else None                  # a wagtail's tail: 14 degrees, 3 a second
         if spec['hop']:             # GroundBird's hopper: one crouch-spring-land every 2 pi / 18 s
             return [_timed('hop', AR.hop(h), None, 2 * math.pi / 18), peck]
         tw = 4 * math.pi / 15       # GroundBird's walk: phase 15 radians a second, a stride every two nods
-        return [_timed('walk', AR.gait('step', h, head_nod=7.0, tail=pump, period=tw), None, tw), peck]
+        bob = head_bob_of(name, info)
+        nod = 2.0 if bob >= 0.1 * L else 5.0
+        return [_timed('walk', AR.gait('step', h, head_nod=nod, tail=pump, period=tw, bob=bob), None, tw), peck]
     if 'Tail' in parts and view == 'side':
         if 'Squirrel' in name:      # TreeSquirrel sitting up: its tail flicked
             pose, period = AR.flick()
@@ -1553,8 +1973,8 @@ def motions_of(name, info):
         pose, period = AR.critter('Tail', 'x' if spec['curl'] else 'y', amp, speed)
         return [_timed('idle', pose, None, period)]
     if 'Head' in parts:             # CritterIdle: a perched bird, or one on its rock, looking about
-        amp, speed = (10.0, 0.7) if info['id'] in ON_A_ROCK else (12.0, 0.9)
-        pose, period = AR.critter('Head', 'z', amp, speed)
+        amp, speed = (14.0, 0.7) if info['id'] in ON_A_ROCK else (22.0, 0.9)
+        pose, period = AR.critter('Head', 'z', amp, speed, snap=True)
         return [_timed('idle', pose, None, period)]
     return []
 
@@ -1614,8 +2034,9 @@ def checks_of(name, spec, info, motions):
     flying = info['view'] == 'below'
     in_flight = flying or (info['view'] == 'above' and any(p.startswith('Wing') for p in parts))
     c = [
-        (1, 'Every part once', 'pass', 'meshes: ' + ', '.join('%s %d tris' % kv for kv in info['parts'].items()) +
-         ('; pivots only: ' + ', '.join(info['empties']) if info['empties'] else '') + '. Checked in Top and Bottom.'),
+        (1, 'Every part once', 'pass', 'skinned meshes: ' + ', '.join('%s %d tris' % kv for kv in info['meshes'].items()) +
+         '; bones: ' + ', '.join(info['parts']) +
+         ('; marker bones: ' + ', '.join(info['empties']) if info['empties'] else '') + '. Checked in Top and Bottom.'),
         (2, 'Closed shell', 'pass' if slits == 0 else 'FAIL',
          '%d edges with one face (a slit, or a fin that would vanish from behind); %d of %d edges where the two faces '
          'touch along a thin part\'s edge (closed, no gap)' % (slits, pinches, info['edges'])),
@@ -1643,10 +2064,11 @@ def checks_of(name, spec, info, motions):
         (13, 'Repairs listed', 'pass', '; '.join(repairs)),
         (14, 'Rig names and pivots', 'pass',
          ', '.join(p for p in parts if p != 'Body') + (' (+ ' + ', '.join(info['empties']) + ')' if info['empties'] else '')
-         + ': origins at the joints' if len(parts) > 1 else 'one piece: nothing moves'),
+         + ': bones at the joints, each named as the behaviour finds it' if len(parts) > 1 else 'one piece: nothing moves'),
         (15, 'Joints overlap, no seam, no gap mid-motion', 'pass' if motions or len(parts) == 1 else 'FAIL',
-         ('every part overlaps the body; ' + ('four legs, near and far: ' + ', '.join(legs) + '; ' if legs else '') +
-          'motions looked at frame by frame: ' + ', '.join(motions)) if motions else 'no moving parts'),
+         ('one skin bending at every joint, the bones sharing it across each (D21: no part edge to show); ' +
+          ('legs, near and far: ' + ', '.join(legs) + '; ' if legs else '') +
+          'motions looked at frame by frame, full size: ' + ', '.join(motions)) if motions else 'no moving parts'),
         (16, 'Feet planted', feet_result(info, motions)[0], feet_result(info, motions)[1]),
         (17, 'Each part holds only itself', 'pass', parts_note(spec, info)),
     ]

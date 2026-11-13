@@ -184,12 +184,12 @@ ceramic siding.
 | KM-N04 | a Shiba Inu (red collar) | KM-P4 | Dog (the hazard: noses a low ball back; chip it over); its curled tail wags side to side over its back (`tailAxis` long, D20), never up and down in the picture's plane |
 | KM-N05 | the black kite | KM-P4 | perched (CritterIdle), circling (SkyFlock), the snack dive (Seagull) |
 | KM-N06 | a large-billed crow | KM-P4 | GroundBird |
-| KM-N07 | a shrine pigeon | KM-P4 | GroundBird; SkyFlock over the town |
+| KM-N07 | a shrine pigeon | KM-P4 | GroundBird, its head holding in the air and thrusting as it walks (`headSlide`, D21); SkyFlock over the town |
 | KM-N08 | a tree sparrow | KM-P4 | GroundBird, in twos and threes |
 | KM-N09 | a barn swallow | KM-P4 | perched on the wires (CritterIdle); SkyFlock, low and fast |
 | KM-N10 | a black-tailed gull | KM-P4 | GroundBird on the sand; SkyFlock over the sea |
 | KM-N11 | a little egret | KM-P4 | GroundBird, wading at the water's edge |
-| KM-N12, N13 | koi, red-and-white and golden | KM-P8 | PondDuck, just under the water, the tail (in links) swept as it swims |
+| KM-N12, N13 | koi, red-and-white and golden | KM-P8 | PondDuck, just under the water, the tail (in links) swept as it swims, the head recoiling against it (`headRecoil` 0.15) and the pectoral fins sculling (`fins`, D21) |
 | KM-N14 | a pond turtle | KM-P8 | basking on a stone (still); slides in when the kid comes close and swims (PondDuck, its four flippers paddling) |
 | KM-N15 | a grey heron | KM-P8 | GroundBird, slow; standing at the pond's edge |
 | KM-N16 | a cormorant | KM-P8 | on a rock, wings held open to dry (CritterIdle) |
@@ -202,7 +202,7 @@ ceramic siding.
 | KM-N23 | a tree frog | KM-P8 | on a leaf (CritterIdle: its throat; a hop when the ball lands near) |
 | KM-N24 | a land snail | KM-P8 | on a wet leaf or step (CritterIdle, creeping) |
 | KM-N25 | an Asian swallowtail | KM-P8 | FlitButterfly |
-| KM-N26 | a red dragonfly | KM-P8 | FlitButterfly, straighter and faster, hanging still in the air; its wings beat about flat (`beatMid` 4, `beatSwing` 24, D20), not clapped up as a butterfly's |
+| KM-N26 | a red dragonfly | KM-P8 | FlitButterfly, straighter and faster, hanging still in the air; its wings beat about flat (`beatMid` 4, `beatSwing` 24, D20), not clapped up as a butterfly's, its hind wings ahead of its fore (`hindL`, `hindR`, `hindLead` 1.6, D21) |
 | KM-N27 | a shore crab | KM-P8 | ShoreCrab |
 | KM-N28 | a starfish | KM-P8 | in a tide pool (still) |
 
@@ -761,6 +761,10 @@ lower faces from below, their thickness and angle from the front. A new Gemini c
 with KM-0 attached, then one bird per message with its sheet attached. Save each as
 `review/kamakura/sheets/<id>_<name>_flight.png` (for example `KM-N05_black_kite_flight.png`). The small birds (sparrow,
 swallow, white-eye, bulbul, turtle dove, wagtail) are a few pixels on the phone: their views from below are enough.
+Every animal that moves is one skin on bones (D21): the relief bends at its joints, bound to an armature whose bones carry
+the part names the behaviours look for (Body, Tail.., Head, Head2, LegFR.., ShinFR.., ToeFR.., FootFR.., TipFR..,
+WingL.., HindL.., FinL..), so its FBX imports with a Generic rig (`ModelImportSettings`: the kit is not one of the
+original kits, which have no bones). A bird's feet are toes in the round, not the photo's flat side view.
 
 ```text
 BASE KM-S1, the bird-in-flight model sheet. Attach KM-0. You are making model sheets of birds in flight for a game's 3D

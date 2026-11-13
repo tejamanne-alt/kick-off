@@ -73,6 +73,33 @@ namespace DribbleToSchool.World
             return new Vector2(d1, th2 - Mathf.Atan2(foot.y - knee.y, foot.x - knee.x) - d1);
         }
 
+        /// <summary>How far a foot is rolled at phase p of its cycle (radians, toes down: its heel lifted, D21). Late in
+        /// the stance the heel lifts and the foot rolls over its toes; in the swing a bird's toes curl down and a
+        /// mammal's paw folds back (a front paw the most, its pad turned up behind it); it comes level again before it
+        /// lands, flat. A foot kept level all the way round looked stuck to a board.</summary>
+        public static float Roll(Kind kind, bool front, float p)
+        {
+            p -= Mathf.Floor(p);
+            float off, swing;
+            if (kind == Kind.Step) { off = 25f; swing = 55f; }
+            else if (kind == Kind.Walk) { off = front ? 30f : 25f; swing = front ? 75f : 40f; }
+            else { off = front ? 35f : 30f; swing = front ? 90f : 50f; }
+            float duty = Duty(kind), r;
+            if (p < duty) r = off * Smooth(0.75f, 1f, p / duty);
+            else
+            {
+                float u = (p - duty) / (1f - duty);
+                r = u < 0.35f ? Mathf.Lerp(off, swing, Smooth(0f, 0.35f, u)) : u < 0.85f ? swing * (1f - Smooth(0.35f, 0.85f, u)) : 0f;
+            }
+            return r * Mathf.Deg2Rad;
+        }
+
+        static float Smooth(float a, float b, float x)
+        {
+            float t = Mathf.Clamp01((x - a) / (b - a));
+            return t * t * (3f - 2f * t);
+        }
+
         /// <summary>Which way a knee bends: as it does in the model; a straight leg's, a front leg's forward and a hind
         /// leg's or a bird's back.</summary>
         public static float Bend(Vector2 knee, Vector2 foot, bool front)
@@ -92,16 +119,21 @@ namespace DribbleToSchool.World
                 public Transform thigh, shin, toe;   // toe: optional, the foot kept level (Toe..)
                 public Quaternion thighRest, shinRest, toeRest;
                 public Vector3 thighAxis, shinAxis, toeAxis;
-                // hip in the root's side plane; knee, end and foot from the hip. end: where the two bones end, the
-                // ankle (the toe's joint) or, with no toe, the foot; off: the foot from the end, at rest (the foot
-                // below a level toe stays that far from its ankle however the leg turns)
-                public Vector2 hip, knee, end, foot, off;
+                // hip in the root's side plane; knee, end, foot and tip from the hip. end: where the two bones end, the
+                // ankle (the toe's joint) or, with no toe, the foot; tip: the front of the toes on the ground (a Tip..
+                // under the toe; else the foot): the point the gait plants and rolls the foot over; fromTip: the end
+                // from the tip, at rest
+                public Vector2 hip, knee, end, foot, tip, fromTip;
                 public float length, bend;
                 public bool bird;
             }
 
             readonly Leg[] legs;
             readonly Transform root;
+
+            /// <summary>The axis (in the root's own space) a positive turn about which brings its forward toward up: a
+            /// body pitched by Pose turns about it, at the root's origin.</summary>
+            public Vector3 Side { get; private set; }
 
             public int Count { get { return legs.Length; } }
 
@@ -154,12 +186,16 @@ namespace DribbleToSchool.World
                     leg.knee = Plane(root, shin.position) - leg.hip;
                     leg.foot = Plane(root, foot.position) - leg.hip;
                     leg.end = leg.toe != null ? Plane(root, leg.toe.position) - leg.hip : leg.foot;
-                    leg.off = leg.foot - leg.end;
+                    var tipMark = leg.toe != null ? Deep(leg.toe, "Tip" + n) : null;
+                    leg.tip = tipMark != null ? Plane(root, tipMark.position) - leg.hip : leg.foot;
+                    leg.fromTip = leg.end - leg.tip;
                     leg.length = leg.knee.magnitude + (leg.end - leg.knee).magnitude;
                     leg.bend = Bend(leg.knee, leg.end, n[0] == 'F');
                     if (leg.length > 1e-4f) found.Add(leg);
                 }
-                return new Rig(root, found.ToArray());
+                var rig = new Rig(root, found.ToArray());
+                rig.Side = side;
+                return rig;
             }
 
             static Vector2 Plane(Transform root, Vector3 world)
@@ -179,18 +215,18 @@ namespace DribbleToSchool.World
                 return null;
             }
 
-            /// <summary>Turn a leg so its foot reaches target (in the root's plane), its toe (if any) turned back by the
-            /// leg's turns and by tip, the body's own turn (radians, forward toward up), so the foot stays level with
-            /// the ground: the bones end at the ankle, the foot's offset below it turned into the root's frame.</summary>
-            void Place(ref Leg leg, Vector2 target, float tip = 0f)
+            /// <summary>Turn a leg so the front of its toes reaches target (in the root's plane), the foot rolled by roll
+            /// (radians, toes down) and turned back by tip, the body's own turn (radians, forward toward up), so with no
+            /// roll it lies level on the ground: the bones end at the ankle, set back from the toes as the foot lies.</summary>
+            void Place(ref Leg leg, Vector2 target, float tip = 0f, float roll = 0f)
             {
-                float c = Mathf.Cos(tip), s = Mathf.Sin(tip);
-                Vector2 off = new Vector2(leg.off.x * c + leg.off.y * s, -leg.off.x * s + leg.off.y * c);
-                Vector2 turn = TwoBone(leg.knee, leg.end, target - off - leg.hip, leg.bend);
+                float a = tip + roll, c = Mathf.Cos(a), s = Mathf.Sin(a);
+                Vector2 back = new Vector2(leg.fromTip.x * c + leg.fromTip.y * s, -leg.fromTip.x * s + leg.fromTip.y * c);
+                Vector2 turn = TwoBone(leg.knee, leg.end, target + back - leg.hip, leg.bend);
                 leg.thigh.localRotation = leg.thighRest * Quaternion.AngleAxis(turn.x * Mathf.Rad2Deg, leg.thighAxis);
                 leg.shin.localRotation = leg.shinRest * Quaternion.AngleAxis(turn.y * Mathf.Rad2Deg, leg.shinAxis);
                 if (leg.toe != null)
-                    leg.toe.localRotation = leg.toeRest * Quaternion.AngleAxis(-(turn.x + turn.y + tip) * Mathf.Rad2Deg, leg.toeAxis);
+                    leg.toe.localRotation = leg.toeRest * Quaternion.AngleAxis(-(turn.x + turn.y + tip + roll) * Mathf.Rad2Deg, leg.toeAxis);
             }
 
             /// <summary>The body's rise (+) or dip (-) at phase p of a gait (its root moves by it; the feet stay down).</summary>
@@ -203,31 +239,99 @@ namespace DribbleToSchool.World
             /// rest pose to 1 the full gait, the body lifted by lift (metres, in the root's space) while the feet stay
             /// on the ground. A bird's legs always step. The body comes down as far as a foot needs to reach the ground
             /// (a leg reaches 98 % of its length: a straight one can't step without), so it returns the lift used: move
-            /// the body by that.</summary>
+            /// the body by that. The body stays level: for a pitched one, the other overload.</summary>
             public float Pose(float p, float trot, float weight, float lift)
             {
+                float pitch;
+                return Walk(p, trot, weight, lift, false, out pitch);
+            }
+
+            /// <summary>As Pose, and the body pitched (radians, forward toward up, about Side at the root's origin) as the
+            /// front and the hind legs each set how low their end of it must come (D21: a real back tilts with the
+            /// stride; one carried level on straight legs read as a table on wheels): turn the root by pitch, then move
+            /// it by the lift returned. A bird's two legs share one end: no pitch.</summary>
+            public float Pose(float p, float trot, float weight, float lift, out float pitch)
+            {
+                return Walk(p, trot, weight, lift, true, out pitch);
+            }
+
+            float Walk(float p, float trot, float weight, float lift, bool pitched, out float pitch)
+            {
                 var want = new Vector2[legs.Length];
-                float dip = 0f;
+                var roll = new float[legs.Length];
                 for (int i = 0; i < legs.Length; i++)
                 {
                     var leg = legs[i];
-                    Vector2 foot = leg.hip + leg.foot;
+                    Vector2 tip = leg.hip + leg.tip;
                     Vector2 w;
+                    float r;
                     if (leg.bird)
-                        w = Target(leg, foot.x, Kind.Step, p, 0f);
+                    {
+                        w = Target(leg, tip.x, Kind.Step, p, 0f);
+                        r = Roll(Kind.Step, false, p + Phase(Kind.Step, leg.name));
+                    }
                     else
                     {
-                        float middle = (leg.hip.x + foot.x) * 0.5f;
+                        float middle = (leg.hip.x + tip.x) * 0.5f;
+                        bool front = leg.name[0] == 'F';
                         w = Vector2.Lerp(Target(leg, middle, Kind.Walk, p, 0f), Target(leg, middle, Kind.Trot, p, 0f), trot);
+                        r = Mathf.Lerp(Roll(Kind.Walk, front, p + Phase(Kind.Walk, leg.name)),
+                                       Roll(Kind.Trot, front, p + Phase(Kind.Trot, leg.name)), trot);
                     }
-                    want[i] = Vector2.Lerp(foot, w, weight);
-                    Vector2 t = want[i] - leg.off - leg.hip;     // where the bones must reach: the ankle above the foot
-                    float r = 0.98f * leg.length;
-                    if (t.y < 0f && Mathf.Abs(t.x) < r) dip = Mathf.Max(dip, -t.y - Mathf.Sqrt(r * r - t.x * t.x));
+                    want[i] = Vector2.Lerp(tip, w, weight);
+                    roll[i] = r * weight;
                 }
-                lift -= dip;
-                for (int i = 0; i < legs.Length; i++) Place(ref legs[i], want[i] - new Vector2(0f, lift));
-                return lift;
+                // each end of the body as low as its legs need to reach their ankles (above the planted toes)
+                float hF = lift, hB = lift, xF = 0f, xB = 0f;
+                int nF = 0, nB = 0;
+                pitch = 0f;
+                for (int pass = 0; pass < 2; pass++)
+                {
+                    float dipF = 0f, dipB = 0f, lift0 = pitched ? LiftAt(0f, hF, hB, xF, xB, nF, nB) : lift;
+                    float c = Mathf.Cos(pitch), s = Mathf.Sin(pitch);
+                    nF = nB = 0;
+                    xF = xB = 0f;
+                    for (int i = 0; i < legs.Length; i++)
+                    {
+                        var leg = legs[i];
+                        Vector2 ankle = Ankle(leg, want[i], roll[i]);
+                        Vector2 g = ankle - new Vector2(0f, lift0);
+                        Vector2 t = new Vector2(g.x * c + g.y * s, -g.x * s + g.y * c) - leg.hip;
+                        float r = 0.98f * leg.length;
+                        float dip = t.y < 0f && Mathf.Abs(t.x) < r ? Mathf.Max(0f, -t.y - Mathf.Sqrt(r * r - t.x * t.x)) : 0f;
+                        if (pitched && leg.name[0] == 'F') { dipF = Mathf.Max(dipF, dip); xF += leg.hip.x; nF++; }
+                        else { dipB = Mathf.Max(dipB, dip); xB += leg.hip.x; nB++; }
+                    }
+                    if (nF > 0) xF /= nF;
+                    if (nB > 0) xB /= nB;
+                    if (pass == 0) { hF = lift - (nF > 0 ? dipF : dipB); hB = lift - dipB; }
+                    else { hF -= nF > 0 ? dipF : dipB; hB -= dipB; }
+                    if (!pitched) { hF = hB = Mathf.Min(hF, hB); }
+                    pitch = pitched && nF > 0 && nB > 0 && Mathf.Abs(xF - xB) > 1e-4f ? Mathf.Atan2(hF - hB, xF - xB) : 0f;
+                }
+                float liftUsed = pitched ? LiftAt(0f, hF, hB, xF, xB, nF, nB) : Mathf.Min(hF, hB);
+                float pc = Mathf.Cos(pitch), ps = Mathf.Sin(pitch);
+                for (int i = 0; i < legs.Length; i++)
+                {
+                    // the toes' target in the root's frame: lowered by the lift, turned back by the body's pitch
+                    Vector2 g = want[i] - new Vector2(0f, liftUsed);
+                    Place(ref legs[i], new Vector2(g.x * pc + g.y * ps, -g.x * ps + g.y * pc), pitch, roll[i]);
+                }
+                return liftUsed;
+            }
+
+            /// <summary>The body's height at x along it when its front end is at hF over xF and its back at hB over xB.</summary>
+            static float LiftAt(float x, float hF, float hB, float xF, float xB, int nF, int nB)
+            {
+                if (nF == 0 || nB == 0 || Mathf.Abs(xF - xB) < 1e-4f) return Mathf.Min(hF, hB);
+                return hB + (x - xB) * (hF - hB) / (xF - xB);
+            }
+
+            /// <summary>Where a leg's ankle is when the front of its toes is at tip and the foot is rolled by roll.</summary>
+            static Vector2 Ankle(Leg leg, Vector2 tip, float roll)
+            {
+                float c = Mathf.Cos(roll), s = Mathf.Sin(roll);
+                return tip + new Vector2(leg.fromTip.x * c + leg.fromTip.y * s, -leg.fromTip.x * s + leg.fromTip.y * c);
             }
 
             Vector2 Target(Leg leg, float middle, Kind kind, float p, float lift)
@@ -271,7 +375,7 @@ namespace DribbleToSchool.World
                 float c = Mathf.Cos(tip), s = Mathf.Sin(tip);
                 for (int i = 0; i < legs.Length; i++)
                 {
-                    Vector2 f = legs[i].hip + legs[i].foot;
+                    Vector2 f = legs[i].hip + legs[i].tip;
                     Place(ref legs[i], new Vector2(f.x * c + f.y * s, -f.x * s + f.y * c), tip);
                 }
             }
@@ -282,9 +386,11 @@ namespace DribbleToSchool.World
             {
                 for (int i = 0; i < legs.Length; i++)
                 {
-                    Vector2 f = legs[i].hip + legs[i].foot;
+                    Vector2 f = legs[i].hip + legs[i].tip;
                     float L = legs[i].length;
-                    Place(ref legs[i], s > 0f ? f + new Vector2(-0.15f * L * s, 0.25f * L * s) : new Vector2(f.x, -lift));
+                    // tucked in the air, the toes curled under; planted with the knees taking the crouch
+                    Place(ref legs[i], s > 0f ? f + new Vector2(-0.15f * L * s, 0.25f * L * s) : new Vector2(f.x, -lift),
+                          0f, s > 0f ? 0.6f * s : 0f);
                 }
             }
 

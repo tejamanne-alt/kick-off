@@ -2089,6 +2089,24 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
     653 checks passed, 7 known limits (the seven in flight built from one view), none failed; the largest 2,278
     triangles. Every motion and part map was looked at at full size. Not yet run in Unity or on the Nord CE5.
 
+- **One skin per animal, feet that roll, movements of the real species** (the user, with 16 recordings: "lots
+  imperfections in the animals/birds/fish movements", "extra extended parts ... below the neck and near the front
+  legs", "birds feet are big and feel like they got gummed"; `docs/LEARNINGS.md` D21).
+  - Every Kamakura animal is now one skinned mesh (two with its far legs) on an armature. The bones carry the old
+    part names, and the weights come from each part's own pixels, shared across a joint band, so nothing shows an edge.
+    The FBX keeps the armature and the weights.
+  - Bird feet are toes in the round on the foot's bone.
+  - `LegGait`: a foot rolls over its toes at the end of the stance (planted at a Tip bone), curls or folds in the swing
+    and lands flat. The leg's bones end at the ankle. `Rig.Pose(.., out pitch)` tilts a four-legged animal's back with
+    its legs, and `Hazards/Dog` uses it, holding its head steady against the tilt.
+  - Birds: necks in two links (Head, Head2); `GroundBird.HeadBob` (hold and thrust, `headSlide` per species);
+    `CritterIdle` `snap` (a perched bird's look about).
+  - `PondDuck` `headRecoil` and `fins` (koi); `FlitButterfly` `hindL`/`hindR`/`hindLead` (the dragonfly).
+  - The review mirrors all of it; each motion GIF is framed on its posed frames.
+  - Tests: `LegGaitTests`, a foot that lies level when planted, rolls over its toes and lands level, and a tilted back
+    keeping every planted foot down (checked against the review's mirror; not yet run in Unity).
+  - C#: `run.sh` passes on 6000.7, and the errors-only compile comparison shows no new error in either symbol set.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

@@ -202,7 +202,8 @@ namespace DribbleToSchool.World
             // Flicks of the tail: up and back, then settling.
             float k = (Time.time - flickStart) / 0.35f;
             float flick = k >= 0f && k <= 1f ? Mathf.Sin(k * Mathf.PI) * 24f : 0f;
-            tail.Set(state == State.Dash ? -8f : 4f + flick);
+            // in a dash the tail streams behind the bounding body (its pitch), whipping as it follows (D21)
+            tail.Set(state == State.Dash ? -8f + 0.7f * pitch : 4f + flick);
         }
     }
 }

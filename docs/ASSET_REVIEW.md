@@ -37,14 +37,18 @@ Every asset with moving parts is shown moving, as animated previews, one per mot
 | A machine or a door | its own motion (a barrier lifting, a door sliding) |
 
 A part that tears from the body at its joint, swings the wrong way, or moves something that should stay still is a
-fault (D16: the cat's legs came off when it walked). Each motion is the game's own: the behaviour's code ported line by
+fault (D16: the cat's legs came off when it walked). Each motion is checked against how the real species moves, not
+only against the measures (D21): a pigeon's head holds and thrusts, a perched bird looks about in quick turns and
+holds, a foot lifts heel first and lands flat, a back tilts with the stride, a dragonfly's hind wings lead its fore. Each motion is the game's own: the behaviour's code ported line by
 line (`World/LegGait.cs` and `tools/blender/asset_review.py` share the gait), changed in both together, never made up
 for the review (D19: the review bounced birds the game walks). It is shown at 24 frames a cycle and looked at frame by
 frame before it is shown: at full size, every second frame at least, never only as thumbnails on a contact sheet
 (D20: four-legged birds looked right at 170 px).
 
-A walking animal's legs are jointed as the animal's are (a thigh, a shin, a foot of its own kept level, turning at the
-ankle; a bird's bare leg one bone hinged at the heel), its feet planted on the ground through the stance and lifted
+An animal that moves is one skin on bones (D21): a continuous mesh bound to an armature, every bone named as the
+behaviour finds it, sharing the skin across each joint, never rigid pieces turning over a body (their edges show at
+every joint). A walking animal's legs are jointed as the animal's are (a thigh, a shin, a foot of its own, turning at
+the ankle and rolling over its toes, a bird's toes in the round; a bird's bare leg one bone hinged at the heel), its feet planted on the ground through the stance and lifted
 forward in the swing, its knees bending as in the picture (D19: rigid legs swung from the hip scissored and floated).
 A bird walks on its feet, never bounces on the spot, and pecks by tipping its body on planted feet, no further than
 its legs can keep them planted. Every other part that bends in the real animal bends in the model: a tail in three
@@ -95,7 +99,7 @@ rendered and labelled as built from the side alone. The review says which views 
     no gap mid-stride (D16). Every leg the picture shows is its own part, near legs in front of the body, far ones
     behind.
 16. Feet planted, measured (D19): through every motion each foot point's height, and the lowest point of every leg
-    mesh (thigh, shin and toes), is read from the posed model. No foot or leg goes more than 1 % of the animal's height
+    (the posed skin's leg vertices: thigh, shin and toes), is read from the posed model. No foot or leg goes more than 1 % of the animal's height
     below the ground, some foot is always down in a walk, and no foot moves in a peck. A foot point on the ground says
     nothing of the toes beside it: a bird's long toes, rigid in its shin, sank by a fifth of its height while every
     foot point stood (D20); each foot is now its own part, kept level. The numbers are printed on the review.

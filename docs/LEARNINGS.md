@@ -29,7 +29,9 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
    line (`World/LegGait.cs`, `World/PartChain.cs` and their mirrors in `asset_review.py`), never invented for a review;
    what can be measured is measured (the feet, check 16). The original kit's models keep their motion. Each part is
    looked at on the model's full-size part map before a motion is trusted (D20: birds on four legs passed every
-   measure): one leg per leg part, nothing still in the body that should move, no fin or plume cut in two.
+   measure): one leg per leg part, nothing still in the body that should move, no fin or plume cut in two. An animal
+   that moves is one skin on bones, never rigid pieces turning over a body, and its feet roll and its neck bends as the
+   species' do (D21: the user saw the pieces' edges at every joint and feet glued down).
 9. **Record every revert,** with who decided, why, and "don't retry X".
 
 ## A. Process and verification
@@ -906,17 +908,71 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
   carried that should stay, no fin or plume cut in two. Motions are looked at full size, every second frame, not as
   thumbnails.
 
-**D21. Still not natural: stray parts at the neck and front legs, big gummed bird feet (the user, after D20). Open.**
-- *What:* the user, on the D20 review: "still there are lots imperfections in the animals/birds/fish movements. Also I
-  see some extra extended parts to characters. For example below the neck and near the front legs. Even the birds feet
-  are big and feel like they got gummed to something. Make the movements so natural and realistic." Screen
-  recordings of every updated model follow.
-- *Known before the user said so, and only written down as limits:* thigh corners showing 2 to 4 px below the belly
-  at full stride, a 2 to 3 px step at a crow's nape at the bottom of a peck, far legs that are copies of the near ones.
-  Calling a visible fault "too small to see at play size" is not a fix: the user looks at the review, not at play size.
-- *Rule so far:* the D20 checks proved each part held only itself and each foot stayed down; they did not prove the
-  animal moves like the real one. A motion passes only when it looks like the animal: side by side with how the real
-  animal moves, not only against the measures.
+**D21. Rigid photo pieces, glued plates for feet, and motions that weren't the animal's (the user, after D20).**
+- *What:* the user, with 16 screen recordings of the D20 review: "still there are lots imperfections in the
+  animals/birds/fish movements. Also I see some extra extended parts to characters. For example below the neck and near
+  the front legs. Even the birds feet are big and feel like they got gummed to something. Make the movements so natural
+  and realistic." Looked at full size against the real animals, the faults were:
+  - *Rigid pieces turning over a body:* every part was its own rigid relief turning about its pivot over the body's.
+    At every joint its straight edge and corners showed: flaps at the tops of the legs, a straight cut under the chest,
+    blocks below the neck when a head turned, a corner under the belly at full stride. Overlaps (D16) only hid the
+    gap at rest.
+  - *Feet as flat plates:* a bird's foot was the photo's side view of its toes, cut out flat: from any angle but
+    side-on, a big pink or yellow slab. Kept level all through the step (D20), it never lifted or curled, so it
+    looked glued to the ground.
+  - *Legs that don't move as legs do:* a paw that never rolled or folded, a back carried level on legs that swing (a
+    table on wheels).
+  - *Movements not the animal's:*
+    - a pigeon's head nodding on a sine, where a real one holds still in the air and then thrusts;
+    - a peck that tipped a rigid head;
+    - perched birds swaying their heads like toys;
+    - a dragonfly's four wings beating as one;
+    - koi fins that never moved and a fish whose head never answered its tail;
+    - antennae and abdomen edges flapping with the wings.
+  - *Known and written off:* some of these were on the review as "limits, too small to see at play size". The user
+    looks at the review, not at play size.
+- *Why:* the cut-out pipeline made parts as separate meshes because that was how the original kit's models moved. Every
+  fix since D16 patched the seams that this makes, instead of asking whether a real body is made of pieces. The checks
+  proved that parts held only themselves and that feet stayed down, never that the animal moved like itself.
+- *Fix:*
+  - **One skin per animal:** a continuous relief of the near side, plus one of the far legs behind it. It is bound to an
+    armature whose bones are the old parts, same names and same pivots. Each bone's weight comes from its own pixels,
+    shared with its parent across a joint band (wide at a shoulder or hip, narrow at an ankle). The skin bends; nothing
+    shows an edge. The FBX carries the armature and the weights.
+  - **Real bird feet:** three toes forward and one back, tapered tubes that lie on the ground, mapped from the photo's
+    toes, on the foot's bone.
+  - **Feet that roll (`LegGait.Roll`):** late in the stance the heel lifts and the foot rolls over its toes (planted at
+    a Tip bone at the front of the toes). In the swing, toes curl and paws fold, front paws the most. The foot lands
+    flat. The leg's bones end at the ankle.
+  - **A back that tilts:** each end of the body is as low as its own legs need (`Rig.Pose(.., out pitch)`), and the Dog
+    holds its head steady against the tilt.
+  - **Birds' necks in two links** (Head, Head2), so a peck and a look about bend the neck. Pigeons, doves and wagtails
+    hold their heads in the air and thrust (`GroundBird.HeadBob`); herons and egrets less; crows and gulls a little.
+    Perched birds look about in quick turns and holds (`CritterIdle` `snap`).
+  - **Koi** recoil against their tail (`PondDuck.headRecoil`) and scull their pectoral fins (`fins`). A **dragonfly's**
+    hind wings beat ahead of its forewings (`FlitButterfly.hindL/hindR`). An insect's antennae and abdomen stay in its
+    body.
+  - Each motion GIF is framed on all its posed frames: pecking heads had been cut off at the frame's edge.
+  - Found while checking the new render frame by frame:
+    - A neck turning about its nape raised the back of the head into a point. A neck turns about the middle of its
+      seam with the body.
+    - The far legs' skin carried a patch of flank or breast that swung out in front (the heron's): it is now the
+      legs' own pixels and a short reach behind the body.
+    - The dove's far foot walked backwards: its back toe, drawn lower than the front ones, was taken for the front
+      of its toes (`toe_front`).
+    - The egret's plumes swung up when it pecked: they now hang on a bone of their own (`plume`).
+    - Trimming the far legs grew them into the near leg beside them: the Shiba's far hind leg dragged a grey ghost
+      of the near one. The reach goes into the body's pixels only.
+    - The heron tore a dark fold into its body mid-stride. Its thigh had been given the breast feathers over the
+      heel, and its heel had been put at the top of its bare leg. A heron's heel is halfway down, like the egret's:
+      jointed there (`heel`), its thigh moves only the bare shank above it, and the body stays whole.
+    - The squirrel's dash in the review was flat although `TreeSquirrel` pitches it 12 degrees each way: a behaviour
+      left unported is a review that lies. It is ported (SmoothDamp and all), and the tail streams behind the pitch.
+- *Rule:*
+  - A moving animal is one skin on bones, never pieces turning over a body.
+  - A part made from a side view (a foot, a fin) is built in the round when other views see it.
+  - Each motion is checked against how the real species moves, not only against the measures.
+  - A visible fault is fixed or put to the user, never filed as "too small to see".
 
 ## E. Levels and world
 

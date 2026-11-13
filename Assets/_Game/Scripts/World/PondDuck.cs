@@ -17,6 +17,13 @@ namespace DribbleToSchool.World
         public Part tail;
         [Tooltip("The tail's sweep either side (degrees) and beats per second.")]
         public float tailSweep = 22f, tailBeat = 1.6f;
+        [Tooltip("A fish's head swinging against its tail (a share of the tail's sweep, degrees of the whole body's yaw): " +
+                 "a real fish's body waves, its head recoiling as its tail sweeps.")]
+        public float headRecoil;
+        [Tooltip("Optional: a fish's pectoral fins (left then right), sculling in turn, most when it hangs still.")]
+        public Part[] fins = new Part[0];
+        [Tooltip("The fins' scull either side (degrees) and strokes per second.")]
+        public float finSweep = 25f, finBeat = 0.8f;
         [Tooltip("Optional: a turtle's flippers, paddled in turn (front right and back left together, then the others).")]
         public Part[] flippers = new Part[0];
         [Tooltip("The flippers' sweep either side (degrees) and strokes per second.")]
@@ -44,6 +51,7 @@ namespace DribbleToSchool.World
             head.Capture();
             tail.Capture();
             Capture(flippers);
+            Capture(fins);
             angle = Range(0f, Mathf.PI * 2f);
             wobblePhase = Range(0f, 10f);
             wobbleRate = Range(0.12f, 0.22f);
@@ -87,7 +95,10 @@ namespace DribbleToSchool.World
                 yaw = Mathf.SmoothDampAngle(yaw, want, ref yawVelocity, 0.6f);
             }
             float bob = Mathf.Sin(Time.time * 1.7f + seed) * 0.006f;
-            transform.SetPositionAndRotation(new Vector3(p.x, waterY + bob, p.z), Quaternion.Euler(Mathf.Sin(Time.time * 1.3f + seed) * 2f, yaw, Mathf.Sin(Time.time * 1.1f) * 1.5f));
+            // a fish's head recoiling against its tail's sweep (the tail is set below from the same wave)
+            float wave = Mathf.Sin((Time.time + seed) * tailBeat * Mathf.PI * 2f) * tailSweep * (0.25f + 0.75f * rate);
+            float recoil = tail.ready ? -headRecoil * wave : 0f;
+            transform.SetPositionAndRotation(new Vector3(p.x, waterY + bob, p.z), Quaternion.Euler(Mathf.Sin(Time.time * 1.3f + seed) * 2f, yaw + recoil, Mathf.Sin(Time.time * 1.1f) * 1.5f));
 
             // The head: dabbling (bill down) while stopped, glancing about as it paddles.
             float k = (Time.time - dabbleStart) / 1.4f;
@@ -99,6 +110,10 @@ namespace DribbleToSchool.World
             tail.Set(Mathf.Sin(t * tailBeat * Mathf.PI * 2f) * tailSweep * (0.25f + 0.75f * rate));
             for (int i = 0; i < flippers.Length; i++)
                 flippers[i].Set(Mathf.Sin(t * flipperStroke * Mathf.PI * 2f + (i == 0 || i == 3 ? 0f : Mathf.PI)) * flipperSweep * rate);
+            // a fish's pectoral fins sculling in turn, out from the body and back (left positive, right mirrored),
+            // fullest as it hangs still, folded in a little as it swims fast
+            for (int i = 0; i < fins.Length; i++)
+                fins[i].Set((i == 0 ? 1f : -1f) * (0.5f + 0.5f * Mathf.Sin(t * finBeat * Mathf.PI * 2f + i * Mathf.PI)) * finSweep * (1f - 0.5f * rate));
         }
     }
 }

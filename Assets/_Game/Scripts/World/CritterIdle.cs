@@ -24,6 +24,8 @@ namespace DribbleToSchool.World
             public float offset;
             [Tooltip("Radians, added to the random start phase.")]
             public float phase;
+            [Tooltip("A bird looking about: quick turns to a new direction, each held a while (Look), not a smooth sway.")]
+            public bool snap;
         }
 
         public Motion[] motions = new Motion[0];
@@ -53,6 +55,23 @@ namespace DribbleToSchool.World
             start = Random.value * 100f;
         }
 
+        static readonly float[] Looks = { 0f, 0.85f, 0.35f, -0.6f, -0.15f, 0.55f, -0.9f, -0.35f };
+
+        /// <summary>A bird's look about at x (radians; the pattern repeats every 2 pi), -1..1 (D21): it turns its head
+        /// quickly to a new direction (a fifth of each spell, eased) and holds it, eight spells a turn, as a perched bird
+        /// does, where a smooth sway read as a toy's. The asset review moves the same (asset_review.py: look_about).</summary>
+        public static float Look(float x)
+        {
+            float u = x / (2f * Mathf.PI);
+            u -= Mathf.Floor(u);
+            int n = Looks.Length;
+            float f = u * n;
+            int i = Mathf.Min(n - 1, (int)f);
+            float k = Mathf.Clamp01((f - i) / 0.2f);
+            k = k * k * (3f - 2f * k);
+            return Mathf.Lerp(Looks[(i + n - 1) % n], Looks[i], k);
+        }
+
         void Update()
         {
             float t = Time.time + start;
@@ -60,9 +79,11 @@ namespace DribbleToSchool.World
             {
                 var m = motions[i];
                 if (m.part == null) continue;
-                // A pecking or swishing rhythm: mostly sine, with a sharper return so it reads as a gesture.
+                // A pecking or swishing rhythm: mostly sine, with a sharper return so it reads as a gesture; a bird's
+                // look about in quick turns and holds.
                 float s = Mathf.Sin(t * m.speed + m.phase);
-                float angle = m.offset + m.amplitude * (s + 0.25f * Mathf.Sin(2f * (t * m.speed + m.phase)));
+                float angle = m.snap ? m.offset + m.amplitude * Look(t * m.speed + m.phase)
+                                     : m.offset + m.amplitude * (s + 0.25f * Mathf.Sin(2f * (t * m.speed + m.phase)));
                 if (chains[i] != null) chains[i].Set(angle, Time.deltaTime);
                 else m.part.localRotation = rest[i] * Quaternion.AngleAxis(angle, m.axis);
             }

@@ -56,7 +56,7 @@ namespace DribbleToSchool.Hazards
         float stride, wagPhase;
         World.LegGait.Rig rig;      // jointed legs (LegFR.. with ShinFR.. and FootFR..): walked with planted feet
         World.PartChain tailChain;  // a tail in links (Tail, Tail2, Tail3): wagged link by link
-        float legPhase, gaitWeight;
+        float legPhase, gaitWeight, bodyPitch;
 
         Mode mode;
         float modeUntil, targetX, targetZ, depth;
@@ -243,7 +243,11 @@ namespace DribbleToSchool.Hazards
                 legPhase -= Mathf.Floor(legPhase);
                 gaitWeight = Mathf.MoveTowards(gaitWeight, gait, 4f * dt);
                 float lift = gaitWeight * Mathf.Lerp(rig.BodyLift(legPhase, World.LegGait.Kind.Walk), rig.BodyLift(legPhase, World.LegGait.Kind.Trot), trot);
-                lift = rig.Pose(legPhase, trot, gaitWeight, lift);       // lowered where a foot must reach the ground
+                // lowered where a foot must reach the ground, the back tilting as the front and hind legs reach (D21)
+                float pitch;
+                lift = rig.Pose(legPhase, trot, gaitWeight, lift, out pitch);
+                bodyPitch = pitch * Mathf.Rad2Deg;
+                visual.localRotation = Quaternion.Euler(0f, yaw, 0f) * Quaternion.AngleAxis(bodyPitch, rig.Side);
                 visual.localPosition = new Vector3(visualBase.x, visualBase.y + lift * visualBaseScale.y, depth);
                 visual.localScale = visualBaseScale;
             }
@@ -270,7 +274,9 @@ namespace DribbleToSchool.Hazards
             float wantTurn = !IsChasing && mode == Mode.Look ? Mathf.Sin(Time.time * 0.9f + minX) * 32f : 0f;
             nod = Mathf.MoveTowards(nod, wantNod, 90f * dt);
             turn = Mathf.MoveTowards(turn, wantTurn, 70f * dt);
-            head.localRotation = headRest * Quaternion.AngleAxis(nod, headNodAxis) * Quaternion.AngleAxis(turn, headTurnAxis);
+            // the head held steady as the back tilts (a positive nod is nose down; the body's pitch is nose up)
+            float steady = rig != null ? bodyPitch : 0f;
+            head.localRotation = headRest * Quaternion.AngleAxis(nod + steady, headNodAxis) * Quaternion.AngleAxis(turn, headTurnAxis);
         }
 
         void Steal(Ball.BallController ball)

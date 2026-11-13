@@ -32,7 +32,8 @@ namespace DribbleToSchool.World
         public float walkSpeed = 0.3f;
         [Tooltip("Gulls hop; pigeons walk nodding their heads.")]
         public bool hopper;
-        [Tooltip("How far the head slides forward and back with each step (metres; the original kit's pigeon: 0.018).")]
+        [Tooltip("How far the head thrusts forward and holds with each step (metres; the original kit's pigeon: 0.018): it " +
+                 "holds still in the air while the body walks under it, then thrusts forward (HeadBob).")]
         public float headSlide = 0.018f;
         [Tooltip("How far the head nods forward and back with each step (degrees): a photo cut-out's head nods, as one that slides shows its cut edge.")]
         public float headNod;
@@ -40,6 +41,8 @@ namespace DribbleToSchool.World
         public float peckTurn = 62f, peckTip;
         [Tooltip("Optional: a tail that pumps up and down all the while it is on the ground (a wagtail's; in links, so the pump runs down it).")]
         public Part tail;
+        [Tooltip("Optional: a crest's long plumes (an egret's), hanging from the head: turned back by most of the head's and the body's turn, as plumes hang.")]
+        public Part plume;
         [Tooltip("The tail's pump either side (degrees) and pumps per second.")]
         public float tailPump = 14f, tailPumpRate = 3f;
         [Tooltip("The kid this close (metres) makes it fly off.")]
@@ -70,6 +73,7 @@ namespace DribbleToSchool.World
             wingA.Capture();
             wingB.Capture();
             tail.Capture();
+            plume.Capture();
             if (standing != null)
             {
                 rig = LegGait.Rig.Find(standing, transform);
@@ -173,6 +177,19 @@ namespace DribbleToSchool.World
             y = GroundY(x, baseY);
         }
 
+        /// <summary>A walking bird's head against its body at walk phase phase (radians; a step every 2 pi), -1 back to
+        /// +1 forward (D21): for most of the step it holds still in the air, so it slides back as the body walks under
+        /// it, then thrusts forward in a quick eased move early in the next foot's swing. The asset review moves the same
+        /// (tools/blender/asset_review.py: head_bob).</summary>
+        public static float HeadBob(float phase)
+        {
+            float u = phase / (2f * Mathf.PI);
+            u -= Mathf.Floor(u);
+            float v = u - 0.45f;
+            v -= Mathf.Floor(v);
+            return v < 0.7f ? 1f - 2f * v / 0.7f : -1f + 2f * Ease((v - 0.7f) / 0.3f);
+        }
+
         void Decide()
         {
             float r = Rand01();
@@ -266,11 +283,14 @@ namespace DribbleToSchool.World
             if (state == State.Walk)
             {
                 head.Set(6f + headNod * Mathf.Sin(phase));
-                head.Slide(new Vector3(Mathf.Sin(phase) * headSlide, 0f, 0f));
+                head.Slide(new Vector3(HeadBob(phase) * headSlide, 0f, 0f));
+                plume.Set(-0.8f * headNod * Mathf.Sin(phase));
                 return;
             }
-            head.Set(8f + peckTurn * peck + Mathf.Sin(Time.time * 1.3f + seed) * 6f);
+            float look = Mathf.Sin(Time.time * 1.3f + seed) * 6f;
+            head.Set(8f + peckTurn * peck + look);
             head.Slide(Vector3.zero);
+            plume.Set(-0.8f * (peckTurn * peck + look + tip));
         }
     }
 }

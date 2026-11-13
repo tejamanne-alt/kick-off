@@ -47,8 +47,60 @@ def local_points(root):
     return [inv @ (o.matrix_world @ v.co) for o in meshes_of(root) for v in o.data.vertices]
 
 
+class Bone:
+    """A skinned model's bone with what the motions use of a part object (D21): rotation_euler (in its rest frame, which
+    is the model's own: every bone points along +Y with no roll), location (its pivot's offset from its parent's, as a
+    part's was), matrix_world (at its pivot), type ('MESH' if it moves skin, 'EMPTY' if it only marks a point)."""
+
+    def __init__(self, rig, pb):
+        self.rig, self.pb, self.name = rig, pb, pb.name
+        b = pb.bone
+        self._rest = (b.head_local - b.parent.head_local) if b.parent else b.head_local.copy()
+        self.type = 'MESH' if b.use_deform else 'EMPTY'
+
+    @property
+    def rotation_euler(self):
+        return self.pb.rotation_euler
+
+    @rotation_euler.setter
+    def rotation_euler(self, value):
+        self.pb.rotation_euler = value
+
+    @property
+    def location(self):
+        return self._rest + self.pb.location
+
+    @location.setter
+    def location(self, value):
+        self.pb.location = Vector(value) - self._rest
+
+    @property
+    def matrix_world(self):
+        return self.rig.matrix_world @ self.pb.matrix
+
+
 def copy_of(root, name):
-    """A linked duplicate of root's hierarchy (the meshes shared): {part name: object}, and the new root."""
+    """A linked duplicate of root's hierarchy (the meshes shared): {part name: object}, and the new root. A skinned
+    model's root is its armature: the copy shares the skeleton and the skin's mesh but has its own pose, and its parts
+    are its bones (Bone)."""
+    if root.type == 'ARMATURE':
+        new_root = root.copy()
+        new_root.name = name
+        bpy.context.scene.collection.objects.link(new_root)
+        for c in root.children:
+            d = c.copy()
+            bpy.context.scene.collection.objects.link(d)
+            d.parent = new_root
+            d.matrix_parent_inverse = c.matrix_parent_inverse.copy()
+            d.location, d.rotation_euler, d.scale = c.location.copy(), c.rotation_euler.copy(), c.scale.copy()
+            for m in d.modifiers:
+                if m.type == 'ARMATURE':
+                    m.object = new_root
+        for pb in new_root.pose.bones:
+            pb.rotation_mode = 'XYZ'
+            pb.rotation_euler = (0.0, 0.0, 0.0)
+            pb.location = (0.0, 0.0, 0.0)
+        return new_root, {pb.name: Bone(new_root, pb) for pb in new_root.pose.bones}
     new_root = bpy.data.objects.new(name, None)
     bpy.context.scene.collection.objects.link(new_root)
     parts = {}
@@ -73,13 +125,17 @@ def remove(objs):
 
 
 def _grid_render(posed, cols, rows, cell, path, size, render):
-    """Lay out [(root copy, rotation 3x3, local centre)] in a cols x rows grid of square cells, render it once."""
-    for i, (root, rot, centre) in enumerate(posed):
+    """Lay out [(root copy, rotation 3x3, local centre[, the body's own move: a 4x4 in its frame])] in a cols x rows grid
+    of square cells, render it once. The body's move (a lift and a pitch about the model's origin on the ground, as the
+    game turns it) is applied before the view, so planted feet stay planted in the frame (D21)."""
+    for i, entry in enumerate(posed):
+        root, rot, centre = entry[:3]
+        body = entry[3] if len(entry) > 3 else Matrix.Identity(4)
         c, r = i % cols, i // cols
         target = Vector(((c - (cols - 1) / 2) * cell, 0.0, ((rows - 1) / 2 - r) * cell))
-        root.matrix_world = Matrix.Translation(target - rot @ centre) @ rot.to_4x4()
+        root.matrix_world = Matrix.Translation(target - rot @ centre) @ rot.to_4x4() @ body
     bpy.context.view_layer.update()
-    names = {o.name for root, _, _ in posed for o in root.children_recursive if o.type == 'MESH'}
+    names = {o.name for entry in posed for o in entry[0].children_recursive if o.type == 'MESH'}
     # Blender's orthographic scale spans the frame's longer side
     return render(path, (0, -50, 0), (0, 0, 0), ortho=max(cols, rows) * cell, size=size, only=names)
 
@@ -136,11 +192,37 @@ def motion_gif(root, pose, path, render, view=None, frames=12, cell_px=300, ms=8
         c, parts = copy_of(root, root.name + '.motion')
         moved = pose(parts, c, i / frames)
         lift, pitch, yaw = moved if len(moved) == 3 else (moved[0], moved[1], 0.0)
-        # the whole body's turn is composed with the view here (the grid sets each copy's whole transform)
-        rot = view @ Matrix.Rotation(R(yaw), 3, 'Z') @ Matrix.Rotation(R(pitch), 3, 'Y')
-        posed.append((c, rot, centre - Vector((0, 0, lift))))
+        # the whole body's move, about the model's origin on the ground as the game moves it, then the view
+        body = (Matrix.Translation((0.0, 0.0, lift)) @ Matrix.Rotation(R(yaw), 4, 'Z') @
+                Matrix.Rotation(R(pitch), 4, 'Y'))
+        posed.append((c, view, centre, body))
+    # framed on every posed frame, not the rest pose: a peck or a stride reaches past the animal at rest (D21: the
+    # pecking birds' heads were cut off at the frame's edge)
+    bpy.context.view_layer.update()
+    dg = bpy.context.evaluated_depsgraph_get()
+    lo_v, hi_v = Vector((1e9, 1e9, 1e9)), Vector((-1e9, -1e9, -1e9))
+    for c, rot, _, body in posed:
+        c.matrix_world = Matrix.Identity(4)
+    bpy.context.view_layer.update()
+    for c, rot, _, body in posed:
+        m4 = rot.to_4x4() @ body
+        for o in c.children_recursive:
+            if o.type != 'MESH':
+                continue
+            ev = o.evaluated_get(dg)
+            me = ev.to_mesh()
+            mw = m4 @ o.matrix_world
+            for v in me.vertices:
+                q = mw @ v.co
+                lo_v = Vector((min(lo_v.x, q.x), min(lo_v.y, q.y), min(lo_v.z, q.z)))
+                hi_v = Vector((max(hi_v.x, q.x), max(hi_v.y, q.y), max(hi_v.z, q.z)))
+            ev.to_mesh_clear()
+    if hi_v.x > lo_v.x:
+        cv = (lo_v + hi_v) / 2
+        cell = max(hi_v.x - lo_v.x, hi_v.z - lo_v.z) * 1.12
+        posed = [(c, rot, rot.inverted() @ cv, body) for c, rot, _, body in posed]
     im = _grid_render(posed, cols, rows, cell, path + '.png', (cols * cell_px, rows * cell_px), render)
-    remove([o for c, _, _ in posed for o in [c] + list(c.children_recursive)])
+    remove([o for entry in posed for o in [entry[0]] + list(entry[0].children_recursive)])
     imgs = []
     f = ImageFont.truetype(FONT, 18)
     for i in range(frames):
@@ -169,10 +251,26 @@ def measure_feet(root, pose, frames=48):
         return None
     track = {f.name: [] for f in feet}
     legs = [o for n, o in parts.items() if n[:3] in ('Leg', 'Shi', 'Toe') and o.type == 'MESH']
+    skin = {}           # a skinned model: each skin mesh's vertices that are mostly leg
+    if c.type == 'ARMATURE':
+        legs = []
+        for o in c.children:
+            if o.type != 'MESH':
+                continue
+            names = {g.index: g.name for g in o.vertex_groups}
+            idx = []
+            for v in o.data.vertices:
+                best = max(v.groups, key=lambda g: g.weight, default=None)
+                if best is not None and best.weight > 0.5 and names[best.group][:3] in ('Leg', 'Shi', 'Toe'):
+                    idx.append(v.index)
+            if idx:
+                skin[o] = idx
     lows, deep = [], 0.0
     for i in range(frames):
         for o in parts.values():
             o.rotation_euler = (0.0, 0.0, 0.0)
+            if isinstance(o, Bone):
+                o.pb.location = (0.0, 0.0, 0.0)
         moved = pose(parts, c, i / frames)
         lift, pitch = moved[0], moved[1]
         c.matrix_world = Matrix.Translation((0.0, 0.0, lift)) @ Matrix.Rotation(R(pitch), 4, 'Y')
@@ -186,12 +284,57 @@ def measure_feet(root, pose, frames=48):
         for o in legs:
             mw = o.matrix_world
             deep = max(deep, -min((mw @ v.co).z for v in o.data.vertices))
+        if skin:
+            dg = bpy.context.evaluated_depsgraph_get()
+            for o, idx in skin.items():
+                me = o.evaluated_get(dg).to_mesh()
+                mw = o.matrix_world
+                deep = max(deep, -min((mw @ me.vertices[i].co).z for i in idx))
+                o.evaluated_get(dg).to_mesh_clear()
     remove([c] + list(c.children_recursive))
     held = max(max(math.hypot(x - t[0][0], z - t[0][1]) for x, z in t) for t in track.values())
     return dict(sink=round(max(0.0, -min(lows), deep), 4), contact=round(max(lows), 4), held=round(held, 4))
 
 
 # ------------------------------------------------------------------ the motions, as the game's behaviours move the parts
+
+def head_bob(phase):
+    """GroundBird.HeadBob: a walking bird's head against its body at walk phase phase (radians; a step every 2 pi), -1
+    back to +1 forward (D21): it holds still in the air for most of the step, then thrusts forward, eased."""
+    u = phase / (2 * math.pi)
+    u -= math.floor(u)
+    v = (u - 0.45) % 1.0
+    if v < 0.7:
+        return 1 - 2 * v / 0.7
+    t = (v - 0.7) / 0.3
+    return -1 + 2 * t * t * (3 - 2 * t)
+
+
+LOOKS = (0.0, 0.85, 0.35, -0.6, -0.15, 0.55, -0.9, -0.35)
+
+
+def look_about(x):
+    """CritterIdle.Look: a bird's look about (-1..1; the pattern repeats every 2 pi): a quick eased turn to a new
+    direction (a fifth of each spell), held, eight spells a turn (D21)."""
+    u = (x / (2 * math.pi)) % 1.0
+    n = len(LOOKS)
+    f = u * n
+    i = min(n - 1, int(f))
+    k = min(1.0, max(0.0, (f - i) / 0.2))
+    k = k * k * (3 - 2 * k)
+    return LOOKS[(i - 1) % n] + (LOOKS[i] - LOOKS[(i - 1) % n]) * k
+
+
+def _slide(parts, name, x):
+    """GroundBird's head.Slide: the part moved x metres forward from its rest place (in its parent's frame)."""
+    o = parts.get(name)
+    if o is None:
+        return
+    if isinstance(o, Bone):
+        o.pb.location = (x, 0.0, 0.0)
+    else:
+        o.location.x += x
+
 
 def _set(parts, name, x=0.0, y=0.0, z=0.0):
     if name in parts:
@@ -265,32 +408,124 @@ def legs_of(parts):
         cross = knee[0] * (end[1] - knee[1]) - knee[1] * (end[0] - knee[0])
         # the knee bends as it does in the picture; a straight leg: a front leg's forward, a hind leg's or a bird's back
         bend = -math.copysign(1, cross) if abs(cross) > 0.08 * l1 * l2 else (1 if sfx.startswith('F') else -1)
+        mark = parts.get('Tip' + sfx)       # the front of the toes on the ground (LegGait.Rig.Find); else the foot
+        tip = (end[0] + mark.location.x, end[1] + mark.location.z) if (mark is not None and toe is not None) else f
         out[sfx] = (thigh, shin, (thigh.location.x, thigh.location.z), knee, f, l1 + l2, bend, toe, end,
-                    (f[0] - end[0], f[1] - end[1]))
+                    (f[0] - end[0], f[1] - end[1]), tip, (end[0] - tip[0], end[1] - tip[1]))
     return out
 
 
-def _place(leg, target_root, tip=0.0):
-    """Turn a leg's thigh and shin so its foot is at target_root (x, z in the root's frame), its toe kept level with
-    the ground: turned back by the thigh's and shin's turns and by the body's tip (degrees, the review's pitch). The
-    bones end at the ankle, the foot's offset below it turned into the root's frame by the tip (LegGait.Rig.Place)."""
-    thigh, shin, hip, knee, foot, _, bend, toe, end, off = leg
-    c, s = math.cos(R(tip)), math.sin(R(tip))
-    ox, oz = off[0] * c - off[1] * s, off[0] * s + off[1] * c
-    d1, d2 = two_bone(knee, end, (target_root[0] - ox - hip[0], target_root[1] - oz - hip[1]), bend)
+def _place(leg, target_root, tip=0.0, roll=0.0):
+    """Turn a leg's thigh and shin so the front of its toes is at target_root (x, z in the root's frame), the foot rolled
+    by roll (radians, toes down: D21) and turned back by the thigh's and shin's turns and by the body's tip (degrees,
+    the review's pitch), so with no roll it lies level: the bones end at the ankle, set back from the toes as the foot
+    lies (LegGait.Rig.Place)."""
+    thigh, shin, hip, knee, foot, _, bend, toe, end, off, tipr, from_tip = leg
+    a = R(tip) - roll
+    c, s = math.cos(a), math.sin(a)
+    bx, bz = from_tip[0] * c - from_tip[1] * s, from_tip[0] * s + from_tip[1] * c
+    d1, d2 = two_bone(knee, end, (target_root[0] + bx - hip[0], target_root[1] + bz - hip[1]), bend)
     thigh.rotation_euler = (0, -d1, 0)      # Blender's +Y turns forward toward down: the opposite of forward-to-up
     shin.rotation_euler = (0, -d2, 0)
     if toe is not None:
-        toe.rotation_euler = (0, d1 + d2 - R(tip), 0)
+        toe.rotation_euler = (0, d1 + d2 - R(tip) + roll, 0)
 
 
-def gait(kind, height, head_nod=0.0, tail=None, period=1.0, tail_axis='y'):
+def _smooth(a, b, x):
+    t = min(1.0, max(0.0, (x - a) / (b - a)))
+    return t * t * (3 - 2 * t)
+
+
+def foot_roll(kind, front, p):
+    """LegGait.Roll: how far a foot is rolled at phase p of its cycle (radians, toes down, D21): the heel lifting late
+    in the stance, a bird's toes curling and a mammal's paw folding back in the swing, level again before it lands."""
+    p -= math.floor(p)
+    if kind == 'step':
+        off, swing = 25.0, 55.0
+    elif kind == 'walk':
+        off, swing = (30.0, 75.0) if front else (25.0, 40.0)
+    else:
+        off, swing = (35.0, 90.0) if front else (30.0, 50.0)
+    duty = GAITS[kind]['duty']
+    if p < duty:
+        r = off * _smooth(0.75, 1.0, p / duty)
+    else:
+        u = (p - duty) / (1 - duty)
+        r = (off + (swing - off) * _smooth(0.0, 0.35, u) if u < 0.35 else
+             swing * (1 - _smooth(0.35, 0.85, u)) if u < 0.85 else 0.0)
+    return R(r)
+
+
+def _lift_at(x, hF, hB, xF, xB, nF, nB):
+    if nF == 0 or nB == 0 or abs(xF - xB) < 1e-4:
+        return min(hF, hB)
+    return hB + (x - xB) * (hF - hB) / (xF - xB)
+
+
+def walk_legs(legs, kind, p, lift, pitched=True):
+    """LegGait.Rig.Walk (Pose): each foot's toes on its path and its roll; each end of the body as low as its legs need
+    to reach their ankles, the body pitched between them (a four-legged one: D21); every leg placed. Returns (the lift
+    at the root's origin, the pitch: radians, forward toward up)."""
+    g = GAITS[kind]
+    want, roll = {}, {}
+    for sfx, leg in legs.items():
+        hip, tipr = leg[2], (leg[2][0] + leg[10][0], leg[2][1] + leg[10][1])
+        middle = tipr[0] if len(sfx) == 1 else (hip[0] + tipr[0]) / 2      # a bird's foot stays where it stands
+        q = p + g['phase'].get(sfx, 0.0)
+        dx, dz = foot_path(q, g['duty'], g['stride'] * leg[5], g['step'] * leg[5])
+        want[sfx] = (middle + dx, dz)               # planted on the ground (z 0), not at the picture's height
+        roll[sfx] = foot_roll(kind, sfx.startswith('F'), q)
+    hF = hB = lift
+    xF = xB = 0.0
+    nF = nB = 0
+    pitch = 0.0
+    for pas in range(2):
+        lift0 = _lift_at(0.0, hF, hB, xF, xB, nF, nB) if pitched else lift
+        c, s = math.cos(pitch), math.sin(pitch)
+        dipF = dipB = 0.0
+        nF = nB = 0
+        xF = xB = 0.0
+        for sfx, leg in legs.items():
+            hip, ft = leg[2], leg[11]
+            cr, sr = math.cos(roll[sfx]), math.sin(roll[sfx])
+            ax = want[sfx][0] + ft[0] * cr + ft[1] * sr
+            az = want[sfx][1] - ft[0] * sr + ft[1] * cr
+            gx, gz = ax, az - lift0
+            tx, tz = gx * c + gz * s - hip[0], -gx * s + gz * c - hip[1]
+            r = 0.98 * leg[5]
+            dip = max(0.0, -tz - math.sqrt(r * r - tx * tx)) if (tz < 0 and abs(tx) < r) else 0.0
+            if pitched and sfx.startswith('F'):
+                dipF, xF, nF = max(dipF, dip), xF + hip[0], nF + 1
+            else:
+                dipB, xB, nB = max(dipB, dip), xB + hip[0], nB + 1
+        xF = xF / nF if nF else 0.0
+        xB = xB / nB if nB else 0.0
+        if pas == 0:
+            hF, hB = lift - (dipF if nF else dipB), lift - dipB
+        else:
+            hF, hB = hF - (dipF if nF else dipB), hB - dipB
+        if not pitched:
+            hF = hB = min(hF, hB)
+        pitch = math.atan2(hF - hB, xF - xB) if (pitched and nF and nB and abs(xF - xB) > 1e-4) else 0.0
+    used = _lift_at(0.0, hF, hB, xF, xB, nF, nB) if pitched else min(hF, hB)
+    c, s = math.cos(pitch), math.sin(pitch)
+    for sfx, leg in legs.items():
+        gx, gz = want[sfx][0], want[sfx][1] - used
+        # in the review's terms the body's tip is nose-down: -pitch
+        _place(leg, (gx * c + gz * s, -gx * s + gz * c), tip=-math.degrees(pitch), roll=roll[sfx])
+    return used, pitch
+
+
+def gait(kind, height, head_nod=0.0, tail=None, period=1.0, tail_axis='y', bob=0.0):
     """A walk, a trot or a bird's walk (GAITS), its feet planted: the motion LegGait gives the game. Stride, step and
     bob are shares of the leg's length. head_nod: a bird's head nodding forward and back with each step (degrees,
     about the neck: GroundBird's headNod; a photo cut-out's head can't slide without its cut edge showing, D19).
-    tail_axis: the tail's swing axis, 'y' its side (in the picture's plane), 'x' its long axis (a curled tail, D20)."""
+    tail_axis: the tail's swing axis, 'y' its side (in the picture's plane), 'x' its long axis (a curled tail, D20).
+    bob: how far a bird's head thrusts and holds with each step (metres: GroundBird's headSlide, head_bob)."""
     g = GAITS[kind]
     track = None
+    # a bird's head nods in links (its neck and its head: GroundBird's head.Set through PartChain), two nods a cycle
+    nod = chain_track(lambda t: 6 + head_nod * math.sin(4 * math.pi * t / period), period) if head_nod else None
     if tail:        # (degrees either side, about centre, beats a second): wagged in links, whole beats in a cycle
         amp, mid, rate = tail
         beats = max(1, round(rate * period))
@@ -301,26 +536,18 @@ def gait(kind, height, head_nod=0.0, tail=None, period=1.0, tail_axis='y'):
         legs = legs_of(parts)
         L = sum(l[5] for l in legs.values()) / max(1, len(legs))
         lift = g['bob'] * L * 0.5 * (1 - math.cos(2 * a))
-        want, dip = {}, 0.0
-        for sfx, leg in legs.items():
-            hip, foot = leg[2], (leg[2][0] + leg[4][0], leg[2][1] + leg[4][1])
-            middle = foot[0] if len(sfx) == 1 else (hip[0] + foot[0]) / 2      # a bird's foot stays where it stands
-            dx, dz = foot_path(p + g['phase'].get(sfx, 0.0), g['duty'], g['stride'] * leg[5], g['step'] * leg[5])
-            want[sfx] = (middle + dx, dz)               # planted on the ground (z 0), not at the picture's height
-            # the body comes down as far as a foot needs to reach the ground (98 % of the leg: a straight one can't step);
-            # the bones reach the ankle above the foot
-            tx, tz = want[sfx][0] - leg[9][0] - hip[0], want[sfx][1] - leg[9][1] - hip[1]
-            r = 0.98 * leg[5]
-            if tz < 0 and abs(tx) < r:
-                dip = max(dip, -tz - math.sqrt(r * r - tx * tx))
-        lift -= dip
-        for sfx, leg in legs.items():
-            _place(leg, (want[sfx][0], want[sfx][1] - lift))
+        lift, pitch = walk_legs(legs, kind, p, lift)
+        down = -math.degrees(pitch)                 # the review's pitch: nose down
         if track is not None:
             set_chain(parts, 'Tail', tail_axis, track, p)
         if 'Head' in parts:
-            _set(parts, 'Head', y=(6 + head_nod * math.sin(2 * a)) if head_nod else 3 * math.sin(2 * a))
-        return lift, 0.0            # the body doesn't pitch: the game's Dog and GroundBird don't
+            if nod is not None:     # a bird: its neck and head nod, its head thrusting and holding (GroundBird)
+                set_chain(parts, 'Head', 'y', nod, p)
+                _slide(parts, 'Head', bob * head_bob(4 * math.pi * p))
+                _set(parts, 'Plume', y=-0.8 * head_nod * math.sin(2 * a))
+            else:                   # a four-legged animal holds its head steady as its back tilts (Dog: the same)
+                _set(parts, 'Head', y=4.0 - down)
+        return lift, down
     return pose
 
 
@@ -383,17 +610,17 @@ def hop(height, hop_height=0.05):
         L = sum(l[5] for l in legs.values()) / max(1, len(legs))
         lift = hop_height * sa if sa > 0 else 0.12 * L * sa
         for sfx, leg in legs.items():
-            hip, foot = leg[2], (leg[2][0] + leg[4][0], leg[2][1] + leg[4][1])
-            if sa > 0:      # in the air: the feet tucked under it, a little back
-                _place(leg, (foot[0] - 0.15 * L * sa, foot[1] + 0.25 * L * sa))
+            hip, tipr = leg[2], (leg[2][0] + leg[10][0], leg[2][1] + leg[10][1])
+            if sa > 0:      # in the air: the feet tucked under it, a little back, the toes curled (LegGait.Rig.Hop)
+                _place(leg, (tipr[0] - 0.15 * L * sa, tipr[1] + 0.25 * L * sa), roll=0.6 * sa)
             else:           # on the ground: planted, the knees taking the crouch
-                _place(leg, (foot[0], -lift))
+                _place(leg, (tipr[0], -lift))
         _set(parts, 'Head', y=-8 * sa)
         return lift, -6 * max(0.0, sa)
     return pose
 
 
-def peck(height, turn=25.0, tip=30.0):
+def peck(height, turn=25.0, tip=30.0, period=0.22 / 0.45):
     """A bird pecking, as GroundBird pecks (peckTurn, peckTip): the body tipping forward on its feet and the head
     turning beak-down with it, so the beak reaches the ground; then a pause. A photo cut-out's head turned alone by
     62 degrees (the original kit's) folds at the neck like a broken one (D19): most of the reach is the body's."""
@@ -409,11 +636,18 @@ def peck(height, turn=25.0, tip=30.0):
                 return False
         return True
 
+    def head_angle(t):
+        k = (t / period) / 0.45
+        return 8 + turn * (math.sin(math.pi * k) if k <= 1 else 0.0)
+    track = chain_track(head_angle, period)     # the neck bends, the head following a moment late (PartChain)
+
     def pose(parts, root, p):
         k = p / 0.45
         e = math.sin(math.pi * k) if k <= 1 else 0.0
-        _set(parts, 'Head', y=8 + turn * e)
+        set_chain(parts, 'Head', 'y', track, p)
         legs = legs_of(parts)
+        # a crest's plumes hang: turned back by most of the head's and the body's turn (GroundBird's plume)
+        _set(parts, 'Plume', y=-0.8 * (turn * e + tip * e))
         want = tip * e
         if not reachable(legs, want):       # LegGait.Rig.Reach: no further than both feet can stay planted
             lo, hi = 0.0, want
@@ -425,7 +659,7 @@ def peck(height, turn=25.0, tip=30.0):
         # the tip, in the tipped body's frame (Blender's +Y turn: x' = x cos + z sin, z' = -x sin + z cos)
         c, s = math.cos(math.radians(want)), math.sin(math.radians(want))
         for leg in legs.values():
-            fx, fz = leg[2][0] + leg[4][0], leg[2][1] + leg[4][1]
+            fx, fz = leg[2][0] + leg[10][0], leg[2][1] + leg[10][1]
             _place(leg, (fx * c - fz * s, fx * s + fz * c), tip=want)
         return 0.0, want
     return pose
@@ -443,11 +677,14 @@ def swish(rate, amp=17.0, mid=3.0, period=None):
     return pose, period
 
 
-def critter(part, axis, amp, speed, offset=0.0):
+def critter(part, axis, amp, speed, offset=0.0, snap=False):
     """CritterIdle: offset + amp (sin(t speed) + 0.25 sin 2(t speed)), speed radians a second, about axis; a part in
-    links bends link by link."""
+    links bends link by link. snap: a bird's look about, quick turns and holds (look_about)."""
     period = 2 * math.pi / speed
-    track = chain_track(lambda t: offset + amp * (math.sin(speed * t) + 0.25 * math.sin(2 * speed * t)), period)
+    if snap:
+        track = chain_track(lambda t: offset + amp * look_about(speed * t), period)
+    else:
+        track = chain_track(lambda t: offset + amp * (math.sin(speed * t) + 0.25 * math.sin(2 * speed * t)), period)
 
     def pose(parts, root, p):
         set_chain(parts, part, axis, track, p)
@@ -465,14 +702,40 @@ def flick(period=1.2):
     return pose, period
 
 
+def smooth_damp(current, target, vel, smooth_time, dt):
+    """Unity's Mathf.SmoothDamp (a critically damped spring), as the game eases a pitch or a yaw."""
+    omega = 2.0 / smooth_time
+    x = omega * dt
+    e = 1.0 / (1.0 + x + 0.48 * x * x + 0.235 * x * x * x)
+    change = current - target
+    temp = (vel + omega * change) * dt
+    vel = (vel - omega * temp) * e
+    return target + (change + temp) * e, vel
+
+
 def dash(height, hop_time=0.18):
-    """TreeSquirrel's dash: long low hops, the body 12 cm up at the top of each (lift 0.12 sin(k pi)), the tail held
-    back at -8 degrees."""
+    """TreeSquirrel's dash: long low hops, the body 12 cm up at the top of each (lift 0.12 sin(k pi)), pitched from 12
+    degrees nose up to 12 nose down across each (eased by SmoothDamp over 0.1 s, as the game does: D21, the review had
+    left it flat), the tail streaming behind the pitch (-8 + 0.7 pitch), in links so it whips."""
+    steps = 240
+    dt = hop_time / steps
+    pitch, vel, rec = 0.0, 0.0, []
+    for cycle in range(4):
+        for i in range(steps):
+            k = i / steps
+            pitch, vel = smooth_damp(pitch, 12.0 + (-24.0) * k, vel, 0.1, dt)
+            if cycle == 3:
+                rec.append(pitch)
+
+    def game_pitch(t):
+        return rec[int((t / hop_time) % 1.0 * steps) % steps]
+    track = chain_track(lambda t: -8.0 + 0.7 * game_pitch(t), hop_time)
+
     def pose(parts, root, p):
         if 'Tail' in parts:
-            for l in ['Tail'] + [n for n in ('Tail2', 'Tail3') if n in parts]:
-                parts[l].rotation_euler = (0, R(-8 * chain_share(0, 1)), 0) if l == 'Tail' else (0, 0, 0)
-        return 0.12 * math.sin(math.pi * p), 0.0
+            set_chain(parts, 'Tail', 'y', track, p)
+        # the review's pitch is nose down; the game's nose up
+        return 0.12 * math.sin(math.pi * p), -game_pitch(p * hop_time)
     return pose, hop_time
 
 
@@ -482,21 +745,25 @@ def bound(height):
     def pose(parts, root, p):
         s = math.sin(math.pi * p)
         for leg in legs_of(parts).values():
-            hip, foot = leg[2], (leg[2][0] + leg[4][0], leg[2][1] + leg[4][1])
+            tipr = (leg[2][0] + leg[10][0], leg[2][1] + leg[10][1])
             L = leg[5]
-            _place(leg, (foot[0] - 0.15 * L * s, foot[1] + 0.25 * L * s) if s > 0 else (foot[0], 0.0))
+            _place(leg, (tipr[0] - 0.15 * L * s, tipr[1] + 0.25 * L * s) if s > 0 else (tipr[0], 0.0),
+                   roll=0.6 * s if s > 0 else 0.0)
         # WallCat's pitchRock is the game's nose-up turn; the review's pitch is nose-down
         return 0.09 * s, -8 * math.sin(2 * math.pi * p)
     return pose, 0.34
 
 
-def pond(tail=None, flippers=None):
+def pond(tail=None, flippers=None, recoil=0.0, fins=None):
     """PondDuck's koi and turtle: a tail swept tail[0] degrees either side tail[1] times a second, in links (about the
-    vertical: they are seen from above), or four flippers paddled flippers[0] degrees at flippers[1] strokes a second,
-    front right with back left, then the others."""
+    vertical: they are seen from above), the whole fish yawing recoil of it the other way (its head recoiling, D21),
+    its pectoral fins (fins: (sweep, strokes a second)) sculling in turn; or four flippers paddled flippers[0] degrees
+    at flippers[1] strokes a second, front right with back left, then the others."""
     if tail:
         sweep, beat = tail
         period = 1.0 / beat
+        if fins:        # two tail beats a loop, so the slower fins loop too
+            period = max(period, round(beat / fins[1]) / beat if fins[1] > 0 else period)
         track = chain_track(lambda t: sweep * math.sin(2 * math.pi * beat * t), period)
     else:
         sweep, beat = flippers
@@ -505,6 +772,15 @@ def pond(tail=None, flippers=None):
     def pose(parts, root, p):
         if tail:
             set_chain(parts, 'Tail', 'z', track, p)
+            t = p * period
+            yaw = -recoil * sweep * math.sin(2 * math.pi * beat * t)
+            if fins:
+                fs, fb = fins
+                for i, name in enumerate(('FinL', 'FinR')):
+                    if name in parts:
+                        out = (0.5 + 0.5 * math.sin(2 * math.pi * fb * t + i * math.pi)) * fs
+                        parts[name].rotation_euler = (0, 0, R(out if name == 'FinL' else -out))
+            return 0.0, 0.0, yaw
         else:
             for name, ph in (('FlipperFR', 0.0), ('FlipperBL', 0.0), ('FlipperFL', math.pi), ('FlipperBR', math.pi)):
                 if name in parts:
@@ -530,14 +806,19 @@ def flight(span, beat=40.0, rate=15.0):
     return pose, period
 
 
-def fly(span, mid=38.0, swing=38.0):
+def fly(span, mid=38.0, swing=38.0, hind_lead=1.6):
     """FlitButterfly's wingbeat: mid + swing sin, about the body's long axis (a butterfly's 38 + 38: from flat to 76
-    degrees up and back; a dragonfly's about flat, D20), the body rising a little on the downstroke."""
+    degrees up and back; a dragonfly's about flat, D20), the body rising a little on the downstroke; a dragonfly's
+    hind wings (HindL, HindR) hind_lead radians ahead of its forewings (D21)."""
     def pose(parts, root, p):
         a = 2 * math.pi * p
         w = mid + swing * math.sin(a)
         _set(parts, 'WingL', x=w)
         _set(parts, 'WingR', x=-w)
+        if 'HindL' in parts:
+            wh = mid + swing * math.sin(a + hind_lead)
+            _set(parts, 'HindL', x=wh)
+            _set(parts, 'HindR', x=-wh)
         return -0.04 * span * math.sin(a), 0.0
     return pose
 

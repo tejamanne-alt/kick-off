@@ -158,45 +158,105 @@ namespace DribbleToSchool.Tests
         }
 
         [Test]
-        public void AFootOfItsOwnStaysLevelThroughAWalkAndAPeck()
+        public void AFootLiesLevelPlantedRollsOverItsToesAndLandsLevelAgain()
         {
-            // D20: a bird's long toes, rigid in its shin, tipped into the floor as the shin turned; a tall paw kept level
-            // about its contact point sheared off the shin. A Toe hangs from the shin at the ankle with the Foot point
-            // under it: the leg's bones end at the ankle, the toes keep their rest direction in the world however the
-            // leg and the body turn, and the foot under them is planted through the stance.
+            // D20 then D21: a bird's toes, rigid in its shin, tipped into the floor; kept level all the way round they
+            // looked glued to a board. A Toe hangs from the shin at the ankle, the Foot under it and a Tip at the front
+            // of the toes: planted, the foot lies level on the ground; late in the stance its heel lifts and it rolls
+            // over its toes (the Tip still down); in the swing its toes curl down; it lands level. Through a peck it
+            // lies level and holds.
             var root = new GameObject("Bird").transform;
             try
             {
                 var right = Node("LegR", root, new Vector3(0.01f, 0.12f, 0f));
                 var shin = Node("ShinR", right, new Vector3(-0.02f, -0.06f, 0f));
                 var toe = Node("ToeR", shin, new Vector3(0.01f, -0.05f, 0f));
-                var foot = Node("FootR", toe, new Vector3(0.012f, -0.01f, 0f));
+                var foot = Node("FootR", toe, new Vector3(0.002f, -0.01f, 0f));
+                var tip = Node("TipR", toe, new Vector3(0.03f, -0.01f, 0f));
                 var left = Node("LegL", root, new Vector3(-0.01f, 0.12f, 0f));
                 Node("FootL", Node("ShinL", left, new Vector3(-0.02f, -0.06f, 0f)), new Vector3(0.01f, -0.06f, 0f));
                 var rig = LegGait.Rig.Find(root, root);
                 Assert.AreEqual(2, rig.Count);
                 Vector3 along = toe.right;
-                float duty = LegGait.Duty(LegGait.Kind.Step), turned = 0f;
-                for (int i = 0; i < 32; i++)
+                float duty = LegGait.Duty(LegGait.Kind.Step), restAnkle = toe.position.y;
+                float rolled = 0f, curled = 0f, ankleUp = 0f;
+                for (int i = 0; i < 64; i++)
                 {
-                    float p = i / 32f;
+                    float p = i / 64f;
                     root.position = new Vector3(0f, rig.Pose(p, 0f, 1f, 0f), 0f);
-                    Assert.Greater(Vector3.Dot(toe.right, along), 0.9999f, "the toes stay level at phase " + p);
                     float ph = p + LegGait.Phase(LegGait.Kind.Step, "R");
                     ph -= Mathf.Floor(ph);
-                    if (ph < duty) Assert.AreEqual(0f, foot.position.y, 2e-3f, "the foot is planted at phase " + p);
-                    else Assert.GreaterOrEqual(foot.position.y, -2e-3f, "the foot never goes through the ground");
-                    turned = Mathf.Max(turned, Vector3.Angle(shin.right, Vector3.right));
+                    float angle = Vector3.Angle(toe.right, along);
+                    Assert.GreaterOrEqual(tip.position.y, -2e-3f, "the toes never go through the ground at phase " + p);
+                    if (ph < 0.7f * duty)
+                    {
+                        Assert.AreEqual(0f, tip.position.y, 2e-3f, "planted at phase " + p);
+                        Assert.Less(angle, 0.5f, "and lying level");
+                    }
+                    else if (ph > 0.85f * duty && ph < duty)
+                    {
+                        Assert.AreEqual(0f, tip.position.y, 2e-3f, "the toes still down as the heel lifts, phase " + p);
+                        rolled = Mathf.Max(rolled, angle);
+                        ankleUp = Mathf.Max(ankleUp, toe.position.y - restAnkle - root.position.y);
+                    }
+                    else if (ph > duty + 0.2f * (1f - duty) && ph < duty + 0.5f * (1f - duty))
+                        curled = Mathf.Max(curled, angle);
+                    else if (ph > duty + 0.9f * (1f - duty))
+                        Assert.Less(angle, 0.5f, "level again before it lands, phase " + p);
                 }
-                Assert.Greater(turned, 5f, "while the shin itself turned");
+                Assert.Greater(rolled, 8f, "the foot rolls over its toes late in the stance");
+                Assert.Greater(ankleUp, 1e-3f, "its heel lifting");
+                Assert.Greater(curled, 30f, "and its toes curl in the swing");
                 rig.Rest();
                 root.position = Vector3.zero;
-                Vector3 stood = foot.position;
-                float tip = rig.Reach(-20f * Mathf.Deg2Rad);
-                root.rotation = Quaternion.AngleAxis(tip * Mathf.Rad2Deg, Vector3.forward);
-                rig.Plant(tip);
+                Vector3 stood = tip.position;
+                float lean = rig.Reach(-20f * Mathf.Deg2Rad);
+                root.rotation = Quaternion.AngleAxis(lean * Mathf.Rad2Deg, Vector3.forward);
+                rig.Plant(lean);
                 Assert.Greater(Vector3.Dot(toe.right, along), 0.9999f, "level as the body tips to peck");
-                Assert.Less((foot.position - stood).magnitude, 2e-3f, "and the foot holds where it stood");
+                Assert.Less((tip.position - stood).magnitude, 2e-3f, "and the foot holds where it stood");
+            }
+            finally
+            {
+                Object.DestroyImmediate(root.gameObject);
+            }
+        }
+
+        [Test]
+        public void ABackTiltedByItsLegsKeepsEveryPlantedFootOnTheGround()
+        {
+            // D21: each end of the body as low as its own legs need, the back tilting between them, the feet planted.
+            var root = new GameObject("Animal").transform;
+            try
+            {
+                string[] names = { "FR", "FL", "BR", "BL" };
+                foreach (string n in names)
+                {
+                    bool front = n[0] == 'F';
+                    var thigh = Node("Leg" + n, root, new Vector3(front ? 0.12f : -0.12f, 0.3f, 0f));
+                    var shin = Node("Shin" + n, thigh, new Vector3(front ? 0.02f : -0.02f, -0.15f, 0f));
+                    Node("Foot" + n, shin, new Vector3(front ? -0.01f : 0.015f, -0.15f, 0f));
+                }
+                var rig = LegGait.Rig.Find(root, root);
+                Assert.AreEqual(4, rig.Count);
+                float duty = LegGait.Duty(LegGait.Kind.Walk), most = 0f;
+                for (int i = 0; i < 64; i++)
+                {
+                    float p = i / 64f, pitch;
+                    float lift = rig.Pose(p, 0f, 1f, 0f, out pitch);
+                    root.SetPositionAndRotation(new Vector3(0f, lift, 0f), Quaternion.AngleAxis(pitch * Mathf.Rad2Deg, rig.Side));
+                    Assert.Less(Mathf.Abs(pitch), 0.2f, "the back tilts a little, not much");
+                    most = Mathf.Max(most, Mathf.Abs(pitch));
+                    foreach (string n in names)
+                    {
+                        float ph = p + LegGait.Phase(LegGait.Kind.Walk, n);
+                        ph -= Mathf.Floor(ph);
+                        float y = root.Find("Leg" + n + "/Shin" + n + "/Foot" + n).position.y;
+                        if (ph < duty) Assert.AreEqual(0f, y, 3e-3f, n + " is planted at phase " + p);
+                        else Assert.GreaterOrEqual(y, -3e-3f, n + " never goes through the ground");
+                    }
+                }
+                Assert.Greater(most, 1e-3f, "and it does tilt");
             }
             finally
             {

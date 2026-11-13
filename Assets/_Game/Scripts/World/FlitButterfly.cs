@@ -11,6 +11,9 @@ namespace DribbleToSchool.World
     public class FlitButterfly : AmbientAgent
     {
         public Part wingL, wingR;
+        [Tooltip("Optional: hind wings that beat apart from the forewings (a dragonfly's), hindLead radians ahead of them.")]
+        public Part hindL, hindR;
+        public float hindLead = 1.6f;
         public float homeX, homeY, homeZ;
         [Tooltip("How far it wanders from home along the street, and in height.")]
         public float roam = 2.5f, rise = 0.6f;
@@ -32,6 +35,8 @@ namespace DribbleToSchool.World
             base.Awake();
             wingL.Capture();
             wingR.Capture();
+            hindL.Capture();
+            hindR.Capture();
             x = homeX + Range(-roam, roam) * 0.5f;
             y = homeY;
             z = Mathf.Clamp(homeZ, zMin, zMax);
@@ -87,6 +92,10 @@ namespace DribbleToSchool.World
             float beat = beatMid + beatSwing * Mathf.Sin(flap);
             wingL.Set(beat);
             wingR.Set(-beat);
+            // a dragonfly's hind wings lead its forewings, so its four wings never move as one (D21)
+            float hind = beatMid + beatSwing * Mathf.Sin(flap + hindLead);
+            hindL.Set(hind);
+            hindR.Set(-hind);
         }
     }
 }
