@@ -1976,6 +1976,19 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
   `pale=True` for the photo's pale sky; the ridge sits at the cap's real top (y 80: at y 72 a sliver of sky came with it).
   `KmHome` 57 triangles, `KmHomeFence` 20, `KmHomeGarden` 128, `KmVendingRed` 10. With the roofs now photographs, the
   picture's own tiles hold up beside KM-P3's and keep their rolled edge tiles: the trial stays on the board, not taken.
+- **KM-L00, first part: Kamakura's routes in the code** (the user: "Yes" to starting it). `Levels/CityRoutes.cs`: a
+  `CityRouteSet` per city (routes, stops, a `Leg` per level with its kind: dribble, mini-game M1/M2, twist M4), in
+  `RouteTable`'s `Route` and `Stop` shapes with the same `From`, `To`, `Of`; Kamakura's three routes (KM1 4 legs, KM2 5,
+  KM3 3) and nine stops (hase, kamakuraStation, shrineSideGate, boardwalk, grandmasShop, lifeguardTower, greatTorii,
+  trailSign, genjiyama), as the map plan has them. `StopKind.Shrine` added at the end (the set-piece builder switches on
+  the stop's id and defaults on its kind, so nothing else changes). `RouteTable.All` stays the original town's six: the
+  map screen and its tests need exactly those until KM-L99. Names in English and Spanish (routes, stops with their "to"
+  phrases, levels). `Tests/Editor/CityRoutesTests.cs`: three routes of 4, 5 and 3 legs, home to school through each
+  stop once, nothing shared with the original town, each leg's kind and name as `docs/CITIES.md` designs it, every name
+  in both languages, and the map plan's routes, nodes and stops (`review/kamakura/map/KamakuraMapLayout.json`). Checks:
+  `tools/unity_api_check/run.sh` passes on 6000.6 and 6000.7; the compiler shows no new error with the editor and test
+  symbols (1135 known stand-in misses before and after) and caught a planted one. The tests themselves run in Unity
+  (not run here). Nothing a player sees changes.
 - **Who makes the photographs:** the user, in the Gemini app (a phone works), sending each result in the chat or pushing
   it. From the cloud session there is no image model to run: the Hugging Face connector has running Spaces switched off
   (gradio=none), huggingface.co and hf.space are blocked by the proxy, and Gemini's API needs the user's key (declined for

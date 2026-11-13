@@ -25,6 +25,8 @@ namespace DribbleToSchool.Levels
         Site,
         /// <summary>Something in the park: the bandstand, the boathouse, the allotments.</summary>
         Park,
+        /// <summary>A shrine's gate or torii (Kamakura's routes: Levels/CityRoutes).</summary>
+        Shrine,
     }
 
     /// <summary>

@@ -9,6 +9,10 @@ Nothing here has been run in Unity or on a device (see PROGRESS.md for what was 
 
 ## The routes (`Levels/RouteTable.cs`)
 
+A city's own routes (`Levels/CityRoutes.cs`: Kamakura's three so far, `docs/CITIES.md`) sit beside these six, in the same
+`Route` and `Stop` shapes, with a `Leg` for each level (dribble, mini-game or twist). Nothing plays them until the city
+switches to them (Kamakura: KM-L99 in `docs/KAMAKURA_BUILD.md`); `Tests/Editor/CityRoutesTests.cs` checks them.
+
 | Route (en / es) | Chapter | Levels along it (place) | The challenge beside it |
 |---|---|---|---|
 | **Home Street** / Mi calle (`street`) | 1 | L01 Out the Door (the front of the house), L02 Parked Cars (Elm Street), L03 Up the Hill (Hill Road), L04 Garden Gate (Garden Lane), L05 Puddle Lane | C01 Keepy-Uppy (the front garden) |

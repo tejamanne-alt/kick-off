@@ -952,6 +952,9 @@ lifeguardTower, greatTorii, trailSign, genjiyama), scenes <id>_KM. The map's lay
 "The map plan"; tools/city_map/kamakura.py writes and checks it). Build the home stem (out of the gate to the corner)
 and the school approach (from under the upper torii along the road to the school gate; route 1 joins it at the zebra
 crossing) once, as pieces every route's first and last legs use. Nothing is shown to players yet.
+(Done in part: Levels/CityRoutes.cs holds Kamakura's routes, legs and stops beside RouteTable, which stays the original
+town's six until KM-L99; the names are in StringTables; CityRoutesTests checks them against docs/CITIES.md and the map
+plan. The level ids join GeneratedContent's table, with their scenes, as each level is built, KM-L11 on.)
 Every level then places the sheets' assets its prompt lists, by id (docs/KAMAKURA_BUILD.md, "The sheets' assets, by id"),
 by that section's rules for the levels.
 ```
