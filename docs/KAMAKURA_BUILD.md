@@ -72,7 +72,10 @@ vending machine (`review/kamakura/kit_proof_board.jpg`, `tools/blender/kit_build
   in its side view, round in section, the photo on both faces (its back face reads as the other flank when the game
   turns the animal round), its tail separate with its pivot, as the animals kit's rig has it. A bird that flies large on
   screen is built from four views (Step 4b): its body from the side, its wings and tail with their upper faces from
-  above and lower faces from below, their thickness from the front, the wings separate at the shoulders. They are built from KM-P4 and KM-P8, the sheets
+  above and lower faces from below, their thickness from the front, the wings separate at the shoulders. Built so far
+  (`review/kamakura/animals_board.jpg`): every animal seen side-on, the small birds in flight, the insects. Still to
+  come: the large birds in flight (their KM-S1 sheets), and the frog, snail, crab and starfish, which KM-P8 drew on
+  photo backgrounds (a leaf, a rock, a tide pool), so they need their own cut-outs. They are built from KM-P4 and KM-P8, the sheets
   of Kamakura's animals and birds (in the Kamakura tab, with the other sheets), like the props: each one's side view projected onto its sides, its front and from-below views
   onto the rest. The animals kit's cat, dog, pigeon, gull and squirrel take Kamakura's coats from it; the black kite, the
   crow, the tanuki, the sparrow, the swallow and the egret are new models in it.
