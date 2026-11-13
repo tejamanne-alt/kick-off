@@ -10,46 +10,34 @@
   ],
   "view": "side",
   "px_per_m": 657.9,
-  "tris": 1257,
+  "tris": 1117,
+  "meshes": {
+   "Skin": 1117
+  },
   "parts": {
-   "Body": 933,
-   "Tail": 120,
-   "Tail2": 112,
-   "Tail3": 92
+   "Body": 277,
+   "Tail": 26,
+   "Tail2": 21,
+   "Tail3": 21
   },
   "empties": [
    "Attach.Front"
   ],
   "size": [
-   0.515,
+   0.514,
    0.132,
    0.378
   ],
   "open_edges": {
-   "Body": [
+   "Skin": [
     0,
-    42
-   ],
-   "Tail": [
-    0,
-    16
-   ],
-   "Tail2": [
-    0,
-    19
-   ],
-   "Tail3": [
-    0,
-    14
+    66
    ]
   },
   "depth_to_width": {
-   "Body": 0.64,
-   "Tail": 0.89,
-   "Tail2": 0.88,
-   "Tail3": 0.98
+   "Skin": 0.64
   },
-  "edges": 1796,
+  "edges": 1611,
   "leg_length": null,
   "game": {
    "component": "WallCat",
@@ -66,19 +54,19 @@
     1,
     "Every part once",
     "pass",
-    "meshes: Body 933 tris, Tail 120 tris, Tail2 112 tris, Tail3 92 tris; pivots only: Attach.Front. Checked in Top and Bottom."
+    "skinned meshes: Skin 1117 tris; bones: Body, Tail, Tail2, Tail3; marker bones: Attach.Front. Checked in Top and Bottom."
    ],
    [
     2,
     "Closed shell",
     "pass",
-    "0 edges with one face (a slit, or a fin that would vanish from behind); 91 of 1796 edges where the two faces touch along a thin part's edge (closed, no gap)"
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 66 of 1611 edges where the two faces touch along a thin part's edge (closed, no gap)"
    ],
    [
     3,
     "Depth from each part's own width",
     "pass",
-    "deepest / half-width: Body 0.64, Tail 0.89, Tail2 0.88, Tail3 0.98"
+    "deepest / half-width: Skin 0.64"
    ],
    [
     4,
@@ -90,7 +78,7 @@
     5,
     "Real size, triangles",
     "pass",
-    "0.52 x 0.13 x 0.38 m; 1257 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+    "0.51 x 0.13 x 0.38 m; 1117 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
    ],
    [
     6,
@@ -144,13 +132,13 @@
     14,
     "Rig names and pivots",
     "pass",
-    "Tail, Tail2, Tail3 (+ Attach.Front): origins at the joints"
+    "Tail, Tail2, Tail3 (+ Attach.Front): bones at the joints, each named as the behaviour finds it"
    ],
    [
     15,
     "Joints overlap, no seam, no gap mid-motion",
     "pass",
-    "every part overlaps the body; motions looked at frame by frame: swish"
+    "one skin bending at every joint, the bones sharing it across each (D21: no part edge to show); motions looked at frame by frame, full size: swish"
    ],
    [
     16,
@@ -177,122 +165,60 @@
   ],
   "view": "side",
   "px_per_m": 716.7,
-  "tris": 2240,
+  "tris": 1564,
+  "meshes": {
+   "Skin": 1286,
+   "SkinFar": 278
+  },
   "parts": {
-   "Body": 1124,
-   "Tail": 62,
-   "LegFR": 120,
-   "LegFL": 108,
-   "LegBR": 156,
-   "LegBL": 146,
-   "ShinFR": 72,
-   "ShinFL": 58,
-   "ShinBR": 84,
-   "ShinBL": 42,
-   "Tail2": 52,
-   "ToeFR": 26,
-   "ToeFL": 28,
-   "ToeBR": 78,
-   "ToeBL": 20,
-   "Tail3": 64
+   "Body": 341,
+   "LegBL": 18,
+   "LegBR": 19,
+   "LegFL": 14,
+   "LegFR": 17,
+   "Tail": 6,
+   "ShinBL": 8,
+   "ShinBR": 15,
+   "ShinFL": 10,
+   "ShinFR": 12,
+   "Tail2": 7,
+   "Tail3": 14,
+   "ToeBL": 5,
+   "ToeBR": 11,
+   "ToeFL": 7,
+   "ToeFR": 4
   },
   "empties": [
-   "Attach.Front",
    "FootBL",
+   "TipBL",
    "FootBR",
+   "TipBR",
    "FootFL",
-   "FootFR"
+   "TipFL",
+   "FootFR",
+   "TipFR",
+   "Attach.Front"
   ],
   "size": [
    0.565,
-   0.117,
+   0.104,
    0.297
   ],
   "open_edges": {
-   "Body": [
+   "Skin": [
     0,
-    17
+    19
    ],
-   "Tail": [
+   "SkinFar": [
     0,
-    8
-   ],
-   "LegFR": [
-    0,
-    7
-   ],
-   "LegFL": [
-    0,
-    7
-   ],
-   "LegBR": [
-    0,
-    11
-   ],
-   "LegBL": [
-    0,
-    15
-   ],
-   "ShinFR": [
-    0,
-    11
-   ],
-   "ShinFL": [
-    0,
-    7
-   ],
-   "ShinBR": [
-    0,
-    8
-   ],
-   "ShinBL": [
-    0,
-    3
-   ],
-   "Tail2": [
-    0,
-    7
-   ],
-   "ToeFR": [
-    0,
-    2
-   ],
-   "ToeFL": [
-    0,
-    1
-   ],
-   "ToeBR": [
-    0,
-    13
-   ],
-   "ToeBL": [
-    0,
-    1
-   ],
-   "Tail3": [
-    0,
-    9
+    20
    ]
   },
   "depth_to_width": {
-   "Body": 0.65,
-   "Tail": 0.98,
-   "LegFR": 0.92,
-   "LegFL": 0.92,
-   "LegBR": 0.89,
-   "LegBL": 0.95,
-   "ShinFR": 0.89,
-   "ShinFL": 0.97,
-   "ShinBR": 0.92,
-   "ShinBL": 0.94,
-   "Tail2": 0.96,
-   "ToeFR": 0.96,
-   "ToeFL": 0.96,
-   "ToeBR": 0.92,
-   "ToeBL": 0.94,
-   "Tail3": 0.89
+   "Skin": 0.65,
+   "SkinFar": 0.96
   },
-  "edges": 3233,
+  "edges": 2307,
   "leg_length": 0.1283,
   "game": {
    "component": "WallCat",
@@ -305,17 +231,17 @@
    "walk": {
     "sink": 0.0,
     "contact": 0.0,
-    "held": 0.069
+    "held": 0.0682
    },
    "run": {
     "sink": 0.0,
-    "contact": 0.0055,
-    "held": 0.1256
+    "contact": 0.0088,
+    "held": 0.1239
    },
    "bound": {
     "sink": 0.0,
-    "contact": 0.1245,
-    "held": 0.1366
+    "contact": 0.1319,
+    "held": 0.1419
    }
   },
   "motions": [
@@ -328,19 +254,19 @@
     1,
     "Every part once",
     "pass",
-    "meshes: Body 1124 tris, Tail 62 tris, LegFR 120 tris, LegFL 108 tris, LegBR 156 tris, LegBL 146 tris, ShinFR 72 tris, ShinFL 58 tris, ShinBR 84 tris, ShinBL 42 tris, Tail2 52 tris, ToeFR 26 tris, ToeFL 28 tris, ToeBR 78 tris, ToeBL 20 tris, Tail3 64 tris; pivots only: Attach.Front, FootBL, FootBR, FootFL, FootFR. Checked in Top and Bottom."
+    "skinned meshes: Skin 1286 tris, SkinFar 278 tris; bones: Body, LegBL, LegBR, LegFL, LegFR, Tail, ShinBL, ShinBR, ShinFL, ShinFR, Tail2, Tail3, ToeBL, ToeBR, ToeFL, ToeFR; marker bones: FootBL, TipBL, FootBR, TipBR, FootFL, TipFL, FootFR, TipFR, Attach.Front. Checked in Top and Bottom."
    ],
    [
     2,
     "Closed shell",
     "pass",
-    "0 edges with one face (a slit, or a fin that would vanish from behind); 127 of 3233 edges where the two faces touch along a thin part's edge (closed, no gap)"
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 39 of 2307 edges where the two faces touch along a thin part's edge (closed, no gap)"
    ],
    [
     3,
     "Depth from each part's own width",
     "pass",
-    "deepest / half-width: Body 0.65, Tail 0.98, LegFR 0.92, LegFL 0.92, LegBR 0.89, LegBL 0.95, ShinFR 0.89, ShinFL 0.97, ShinBR 0.92, ShinBL 0.94, Tail2 0.96, ToeFR 0.96, ToeFL 0.96, ToeBR 0.92, ToeBL 0.94, Tail3 0.89"
+    "deepest / half-width: Skin 0.65, SkinFar 0.96"
    ],
    [
     4,
@@ -352,7 +278,7 @@
     5,
     "Real size, triangles",
     "pass",
-    "0.56 x 0.12 x 0.30 m; 2240 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+    "0.56 x 0.10 x 0.30 m; 1564 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
    ],
    [
     6,
@@ -406,25 +332,25 @@
     14,
     "Rig names and pivots",
     "pass",
-    "Tail, LegFR, LegFL, LegBR, LegBL, ShinFR, ShinFL, ShinBR, ShinBL, Tail2, ToeFR, ToeFL, ToeBR, ToeBL, Tail3 (+ Attach.Front, FootBL, FootBR, FootFL, FootFR): origins at the joints"
+    "LegBL, LegBR, LegFL, LegFR, Tail, ShinBL, ShinBR, ShinFL, ShinFR, Tail2, Tail3, ToeBL, ToeBR, ToeFL, ToeFR (+ FootBL, TipBL, FootBR, TipBR, FootFL, TipFL, FootFR, TipFR, Attach.Front): bones at the joints, each named as the behaviour finds it"
    ],
    [
     15,
     "Joints overlap, no seam, no gap mid-motion",
     "pass",
-    "every part overlaps the body; four legs, near and far: LegBL, LegBR, LegFL, LegFR; motions looked at frame by frame: walk, run, bound"
+    "one skin bending at every joint, the bones sharing it across each (D21: no part edge to show); legs, near and far: LegBL, LegBR, LegFL, LegFR; motions looked at frame by frame, full size: walk, run, bound"
    ],
    [
     16,
     "Feet planted",
     "pass",
-    "walk: sink 0.0 mm, lowest foot 0.0 mm up, held 69.0 mm; run: sink 0.0 mm, lowest foot 5.5 mm up, held 125.6 mm; bound: sink 0.0 mm, lowest foot 124.5 mm up, held 136.6 mm (tolerance 3.0 mm, 1 % of its height)"
+    "walk: sink 0.0 mm, lowest foot 0.0 mm up, held 68.2 mm; run: sink 0.0 mm, lowest foot 8.8 mm up, held 123.9 mm; bound: sink 0.0 mm, lowest foot 131.9 mm up, held 141.9 mm (tolerance 3.0 mm, 1 % of its height)"
    ],
    [
     17,
     "Each part holds only itself",
     "pass",
-    "looked at on its part map at full size, part by part: Tail, LegFR, LegFL, LegBR, LegBL, ShinFR, ShinFL, ShinBR, ShinBL, Tail2, ToeFR, ToeFL, ToeBR, ToeBL, Tail3; every leg the picture shows is its own part, its own pixels only"
+    "looked at on its part map at full size, part by part: LegBL, LegBR, LegFL, LegFR, Tail, ShinBL, ShinBR, ShinFL, ShinFR, Tail2, Tail3, ToeBL, ToeBR, ToeFL, ToeFR; every leg the picture shows is its own part, its own pixels only"
    ]
   ]
  },
@@ -439,122 +365,60 @@
   ],
   "view": "side",
   "px_per_m": 588.9,
-  "tris": 2028,
+  "tris": 1162,
+  "meshes": {
+   "Skin": 900,
+   "SkinFar": 262
+  },
   "parts": {
-   "Body": 750,
-   "Tail": 106,
-   "LegFR": 88,
-   "LegFL": 122,
-   "LegBR": 126,
-   "LegBL": 102,
-   "ShinFR": 98,
-   "ShinFL": 72,
-   "ShinBR": 72,
-   "ShinBL": 72,
-   "Tail2": 156,
-   "ToeFR": 38,
-   "ToeFL": 36,
-   "ToeBR": 52,
-   "ToeBL": 38,
-   "Tail3": 100
+   "Body": 231,
+   "LegBL": 12,
+   "LegBR": 12,
+   "LegFL": 13,
+   "LegFR": 10,
+   "Tail": 13,
+   "ShinBL": 11,
+   "ShinBR": 12,
+   "ShinFL": 11,
+   "ShinFR": 16,
+   "Tail2": 13,
+   "Tail3": 16,
+   "ToeBL": 8,
+   "ToeBR": 11,
+   "ToeFL": 8,
+   "ToeFR": 9
   },
   "empties": [
-   "Attach.Front",
    "FootBL",
+   "TipBL",
    "FootBR",
+   "TipBR",
    "FootFL",
-   "FootFR"
+   "TipFL",
+   "FootFR",
+   "TipFR",
+   "Attach.Front"
   ],
   "size": [
-   0.698,
-   0.169,
+   0.696,
+   0.157,
    0.358
   ],
   "open_edges": {
-   "Body": [
+   "Skin": [
     0,
-    41
+    36
    ],
-   "Tail": [
+   "SkinFar": [
     0,
-    3
-   ],
-   "LegFR": [
-    0,
-    7
-   ],
-   "LegFL": [
-    0,
-    16
-   ],
-   "LegBR": [
-    0,
-    15
-   ],
-   "LegBL": [
-    0,
-    14
-   ],
-   "ShinFR": [
-    0,
-    16
-   ],
-   "ShinFL": [
-    0,
-    11
-   ],
-   "ShinBR": [
-    0,
-    8
-   ],
-   "ShinBL": [
-    0,
-    10
-   ],
-   "Tail2": [
-    0,
-    13
-   ],
-   "ToeFR": [
-    0,
-    3
-   ],
-   "ToeFL": [
-    0,
-    3
-   ],
-   "ToeBR": [
-    0,
-    7
-   ],
-   "ToeBL": [
-    0,
-    5
-   ],
-   "Tail3": [
-    0,
-    12
+    24
    ]
   },
   "depth_to_width": {
-   "Body": 0.65,
-   "Tail": 0.88,
-   "LegFR": 0.92,
-   "LegFL": 0.88,
-   "LegBR": 0.91,
-   "LegBL": 0.93,
-   "ShinFR": 0.98,
-   "ShinFL": 0.95,
-   "ShinBR": 0.98,
-   "ShinBL": 0.99,
-   "Tail2": 0.91,
-   "ToeFR": 0.99,
-   "ToeFL": 0.99,
-   "ToeBR": 0.99,
-   "ToeBL": 0.99,
-   "Tail3": 0.94
+   "Skin": 0.65,
+   "SkinFar": 0.91
   },
-  "edges": 2858,
+  "edges": 1683,
   "leg_length": 0.1554,
   "game": {
    "component": "Dog",
@@ -568,12 +432,12 @@
    "walk": {
     "sink": 0.0,
     "contact": 0.0,
-    "held": 0.0854
+    "held": 0.084
    },
    "run": {
     "sink": 0.0,
-    "contact": 0.0066,
-    "held": 0.1494
+    "contact": 0.0137,
+    "held": 0.1472
    }
   },
   "motions": [
@@ -585,19 +449,19 @@
     1,
     "Every part once",
     "pass",
-    "meshes: Body 750 tris, Tail 106 tris, LegFR 88 tris, LegFL 122 tris, LegBR 126 tris, LegBL 102 tris, ShinFR 98 tris, ShinFL 72 tris, ShinBR 72 tris, ShinBL 72 tris, Tail2 156 tris, ToeFR 38 tris, ToeFL 36 tris, ToeBR 52 tris, ToeBL 38 tris, Tail3 100 tris; pivots only: Attach.Front, FootBL, FootBR, FootFL, FootFR. Checked in Top and Bottom."
+    "skinned meshes: Skin 900 tris, SkinFar 262 tris; bones: Body, LegBL, LegBR, LegFL, LegFR, Tail, ShinBL, ShinBR, ShinFL, ShinFR, Tail2, Tail3, ToeBL, ToeBR, ToeFL, ToeFR; marker bones: FootBL, TipBL, FootBR, TipBR, FootFL, TipFL, FootFR, TipFR, Attach.Front. Checked in Top and Bottom."
    ],
    [
     2,
     "Closed shell",
     "pass",
-    "0 edges with one face (a slit, or a fin that would vanish from behind); 184 of 2858 edges where the two faces touch along a thin part's edge (closed, no gap)"
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 60 of 1683 edges where the two faces touch along a thin part's edge (closed, no gap)"
    ],
    [
     3,
     "Depth from each part's own width",
     "pass",
-    "deepest / half-width: Body 0.65, Tail 0.88, LegFR 0.92, LegFL 0.88, LegBR 0.91, LegBL 0.93, ShinFR 0.98, ShinFL 0.95, ShinBR 0.98, ShinBL 0.99, Tail2 0.91, ToeFR 0.99, ToeFL 0.99, ToeBR 0.99, ToeBL 0.99, Tail3 0.94"
+    "deepest / half-width: Skin 0.65, SkinFar 0.91"
    ],
    [
     4,
@@ -609,7 +473,7 @@
     5,
     "Real size, triangles",
     "pass",
-    "0.70 x 0.17 x 0.36 m; 2028 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+    "0.70 x 0.16 x 0.36 m; 1162 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
    ],
    [
     6,
@@ -663,25 +527,25 @@
     14,
     "Rig names and pivots",
     "pass",
-    "Tail, LegFR, LegFL, LegBR, LegBL, ShinFR, ShinFL, ShinBR, ShinBL, Tail2, ToeFR, ToeFL, ToeBR, ToeBL, Tail3 (+ Attach.Front, FootBL, FootBR, FootFL, FootFR): origins at the joints"
+    "LegBL, LegBR, LegFL, LegFR, Tail, ShinBL, ShinBR, ShinFL, ShinFR, Tail2, Tail3, ToeBL, ToeBR, ToeFL, ToeFR (+ FootBL, TipBL, FootBR, TipBR, FootFL, TipFL, FootFR, TipFR, Attach.Front): bones at the joints, each named as the behaviour finds it"
    ],
    [
     15,
     "Joints overlap, no seam, no gap mid-motion",
     "pass",
-    "every part overlaps the body; four legs, near and far: LegBL, LegBR, LegFL, LegFR; motions looked at frame by frame: walk, run"
+    "one skin bending at every joint, the bones sharing it across each (D21: no part edge to show); legs, near and far: LegBL, LegBR, LegFL, LegFR; motions looked at frame by frame, full size: walk, run"
    ],
    [
     16,
     "Feet planted",
     "pass",
-    "walk: sink 0.0 mm, lowest foot 0.0 mm up, held 85.4 mm; run: sink 0.0 mm, lowest foot 6.6 mm up, held 149.4 mm (tolerance 3.6 mm, 1 % of its height)"
+    "walk: sink 0.0 mm, lowest foot 0.0 mm up, held 84.0 mm; run: sink 0.0 mm, lowest foot 13.7 mm up, held 147.2 mm (tolerance 3.6 mm, 1 % of its height)"
    ],
    [
     17,
     "Each part holds only itself",
     "pass",
-    "looked at on its part map at full size, part by part: Tail, LegFR, LegFL, LegBR, LegBL, ShinFR, ShinFL, ShinBR, ShinBL, Tail2, ToeFR, ToeFL, ToeBR, ToeBL, Tail3; every leg the picture shows is its own part, its own pixels only"
+    "looked at on its part map at full size, part by part: LegBL, LegBR, LegFL, LegFR, Tail, ShinBL, ShinBR, ShinFL, ShinFR, Tail2, Tail3, ToeBL, ToeBR, ToeFL, ToeFR; every leg the picture shows is its own part, its own pixels only"
    ]
   ]
  },
@@ -696,46 +560,34 @@
   ],
   "view": "side",
   "px_per_m": 585.0,
-  "tris": 1624,
+  "tris": 1384,
+  "meshes": {
+   "Skin": 1384
+  },
   "parts": {
-   "Body": 1274,
-   "Tail": 178,
-   "Tail2": 86,
-   "Tail3": 86
+   "Body": 375,
+   "Tail": 17,
+   "Tail2": 15,
+   "Tail3": 17
   },
   "empties": [
    "Attach.Front"
   ],
   "size": [
-   0.615,
+   0.619,
    0.159,
    0.398
   ],
   "open_edges": {
-   "Body": [
+   "Skin": [
     0,
-    43
-   ],
-   "Tail": [
-    0,
-    28
-   ],
-   "Tail2": [
-    0,
-    3
-   ],
-   "Tail3": [
-    0,
-    6
+    46
    ]
   },
   "depth_to_width": {
-   "Body": 0.64,
-   "Tail": 0.91,
-   "Tail2": 0.93,
-   "Tail3": 0.94
+   "Skin": 0.64
   },
-  "edges": 2356,
+  "edges": 2030,
   "leg_length": null,
   "game": {
    "component": "CritterIdle",
@@ -758,19 +610,19 @@
     1,
     "Every part once",
     "pass",
-    "meshes: Body 1274 tris, Tail 178 tris, Tail2 86 tris, Tail3 86 tris; pivots only: Attach.Front. Checked in Top and Bottom."
+    "skinned meshes: Skin 1384 tris; bones: Body, Tail, Tail2, Tail3; marker bones: Attach.Front. Checked in Top and Bottom."
    ],
    [
     2,
     "Closed shell",
     "pass",
-    "0 edges with one face (a slit, or a fin that would vanish from behind); 80 of 2356 edges where the two faces touch along a thin part's edge (closed, no gap)"
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 46 of 2030 edges where the two faces touch along a thin part's edge (closed, no gap)"
    ],
    [
     3,
     "Depth from each part's own width",
     "pass",
-    "deepest / half-width: Body 0.64, Tail 0.91, Tail2 0.93, Tail3 0.94"
+    "deepest / half-width: Skin 0.64"
    ],
    [
     4,
@@ -782,7 +634,7 @@
     5,
     "Real size, triangles",
     "pass",
-    "0.61 x 0.16 x 0.40 m; 1624 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+    "0.62 x 0.16 x 0.40 m; 1384 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
    ],
    [
     6,
@@ -836,13 +688,13 @@
     14,
     "Rig names and pivots",
     "pass",
-    "Tail, Tail2, Tail3 (+ Attach.Front): origins at the joints"
+    "Tail, Tail2, Tail3 (+ Attach.Front): bones at the joints, each named as the behaviour finds it"
    ],
    [
     15,
     "Joints overlap, no seam, no gap mid-motion",
     "pass",
-    "every part overlaps the body; motions looked at frame by frame: idle"
+    "one skin bending at every joint, the bones sharing it across each (D21: no part edge to show); motions looked at frame by frame, full size: idle"
    ],
    [
     16,
@@ -869,12 +721,15 @@
   ],
   "view": "side",
   "px_per_m": 1047.5,
-  "tris": 1787,
+  "tris": 1269,
+  "meshes": {
+   "Skin": 1269
+  },
   "parts": {
-   "Body": 1077,
-   "Tail": 242,
-   "Tail2": 224,
-   "Tail3": 244
+   "Body": 324,
+   "Tail": 21,
+   "Tail2": 23,
+   "Tail3": 54
   },
   "empties": [
    "Attach.Front"
@@ -882,33 +737,18 @@
   "size": [
    0.398,
    0.068,
-   0.154
+   0.155
   ],
   "open_edges": {
-   "Body": [
+   "Skin": [
     0,
-    66
-   ],
-   "Tail": [
-    0,
-    25
-   ],
-   "Tail2": [
-    0,
-    23
-   ],
-   "Tail3": [
-    0,
-    24
+    65
    ]
   },
   "depth_to_width": {
-   "Body": 0.68,
-   "Tail": 0.87,
-   "Tail2": 0.86,
-   "Tail3": 0.89
+   "Skin": 0.68
   },
-  "edges": 2544,
+  "edges": 1840,
   "leg_length": null,
   "game": {
    "component": "TreeSquirrel",
@@ -926,19 +766,19 @@
     1,
     "Every part once",
     "pass",
-    "meshes: Body 1077 tris, Tail 242 tris, Tail2 224 tris, Tail3 244 tris; pivots only: Attach.Front. Checked in Top and Bottom."
+    "skinned meshes: Skin 1269 tris; bones: Body, Tail, Tail2, Tail3; marker bones: Attach.Front. Checked in Top and Bottom."
    ],
    [
     2,
     "Closed shell",
     "pass",
-    "0 edges with one face (a slit, or a fin that would vanish from behind); 138 of 2544 edges where the two faces touch along a thin part's edge (closed, no gap)"
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 65 of 1840 edges where the two faces touch along a thin part's edge (closed, no gap)"
    ],
    [
     3,
     "Depth from each part's own width",
     "pass",
-    "deepest / half-width: Body 0.68, Tail 0.87, Tail2 0.86, Tail3 0.89"
+    "deepest / half-width: Skin 0.68"
    ],
    [
     4,
@@ -950,7 +790,7 @@
     5,
     "Real size, triangles",
     "pass",
-    "0.40 x 0.07 x 0.15 m; 1787 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+    "0.40 x 0.07 x 0.15 m; 1269 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
    ],
    [
     6,
@@ -1004,13 +844,13 @@
     14,
     "Rig names and pivots",
     "pass",
-    "Tail, Tail2, Tail3 (+ Attach.Front): origins at the joints"
+    "Tail, Tail2, Tail3 (+ Attach.Front): bones at the joints, each named as the behaviour finds it"
    ],
    [
     15,
     "Joints overlap, no seam, no gap mid-motion",
     "pass",
-    "every part overlaps the body; motions looked at frame by frame: dash"
+    "one skin bending at every joint, the bones sharing it across each (D21: no part edge to show); motions looked at frame by frame, full size: dash"
    ],
    [
     16,
@@ -1037,46 +877,34 @@
   ],
   "view": "side",
   "px_per_m": 883.3,
-  "tris": 1758,
+  "tris": 1276,
+  "meshes": {
+   "Skin": 1276
+  },
   "parts": {
-   "Body": 756,
-   "Tail": 338,
-   "Tail2": 328,
-   "Tail3": 336
+   "Body": 215,
+   "Tail": 53,
+   "Tail2": 46,
+   "Tail3": 91
   },
   "empties": [
    "Attach.Front"
   ],
   "size": [
    0.333,
-   0.08,
+   0.081,
    0.299
   ],
   "open_edges": {
-   "Body": [
+   "Skin": [
     0,
-    39
-   ],
-   "Tail": [
-    0,
-    24
-   ],
-   "Tail2": [
-    0,
-    26
-   ],
-   "Tail3": [
-    0,
-    28
+    68
    ]
   },
   "depth_to_width": {
-   "Body": 0.62,
-   "Tail": 0.83,
-   "Tail2": 0.81,
-   "Tail3": 0.82
+   "Skin": 0.61
   },
-  "edges": 2520,
+  "edges": 1846,
   "leg_length": null,
   "game": {
    "component": "TreeSquirrel",
@@ -1093,19 +921,19 @@
     1,
     "Every part once",
     "pass",
-    "meshes: Body 756 tris, Tail 338 tris, Tail2 328 tris, Tail3 336 tris; pivots only: Attach.Front. Checked in Top and Bottom."
+    "skinned meshes: Skin 1276 tris; bones: Body, Tail, Tail2, Tail3; marker bones: Attach.Front. Checked in Top and Bottom."
    ],
    [
     2,
     "Closed shell",
     "pass",
-    "0 edges with one face (a slit, or a fin that would vanish from behind); 117 of 2520 edges where the two faces touch along a thin part's edge (closed, no gap)"
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 68 of 1846 edges where the two faces touch along a thin part's edge (closed, no gap)"
    ],
    [
     3,
     "Depth from each part's own width",
     "pass",
-    "deepest / half-width: Body 0.62, Tail 0.83, Tail2 0.81, Tail3 0.82"
+    "deepest / half-width: Skin 0.61"
    ],
    [
     4,
@@ -1117,7 +945,7 @@
     5,
     "Real size, triangles",
     "pass",
-    "0.33 x 0.08 x 0.30 m; 1758 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+    "0.33 x 0.08 x 0.30 m; 1276 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
    ],
    [
     6,
@@ -1171,13 +999,13 @@
     14,
     "Rig names and pivots",
     "pass",
-    "Tail, Tail2, Tail3 (+ Attach.Front): origins at the joints"
+    "Tail, Tail2, Tail3 (+ Attach.Front): bones at the joints, each named as the behaviour finds it"
    ],
    [
     15,
     "Joints overlap, no seam, no gap mid-motion",
     "pass",
-    "every part overlaps the body; motions looked at frame by frame: flick"
+    "one skin bending at every joint, the bones sharing it across each (D21: no part edge to show); motions looked at frame by frame, full size: flick"
    ],
    [
     16,
@@ -1204,128 +1032,61 @@
   ],
   "view": "side",
   "px_per_m": 470.7,
-  "tris": 2218,
+  "tris": 1194,
+  "meshes": {
+   "Skin": 728,
+   "SkinFar": 466
+  },
   "parts": {
-   "Body": 440,
-   "Tail": 100,
-   "Head": 188,
-   "LegFR": 178,
-   "LegFL": 178,
-   "LegBR": 138,
-   "LegBL": 198,
-   "ShinFR": 88,
-   "ShinFL": 88,
-   "ShinBR": 108,
-   "ShinBL": 60,
-   "Tail2": 118,
-   "ToeFR": 66,
-   "ToeFL": 66,
-   "ToeBR": 54,
-   "ToeBL": 32,
-   "Tail3": 118
+   "Body": 156,
+   "Head": 44,
+   "LegBL": 35,
+   "LegBR": 17,
+   "LegFL": 20,
+   "LegFR": 18,
+   "Tail": 4,
+   "ShinBL": 14,
+   "ShinBR": 13,
+   "ShinFL": 15,
+   "ShinFR": 16,
+   "Tail2": 7,
+   "Tail3": 20,
+   "ToeBL": 8,
+   "ToeBR": 9,
+   "ToeFL": 15,
+   "ToeFR": 14
   },
   "empties": [
-   "Attach.Front",
    "FootBL",
+   "TipBL",
    "FootBR",
+   "TipBR",
    "FootFL",
-   "FootFR"
+   "TipFL",
+   "FootFR",
+   "TipFR",
+   "Attach.Front"
   ],
   "size": [
-   0.669,
-   0.199,
-   0.576
+   0.667,
+   0.162,
+   0.578
   ],
   "open_edges": {
-   "Body": [
+   "Skin": [
     0,
-    32
+    51
    ],
-   "Tail": [
+   "SkinFar": [
     0,
-    14
-   ],
-   "Head": [
-    0,
-    15
-   ],
-   "LegFR": [
-    0,
-    24
-   ],
-   "LegFL": [
-    0,
-    24
-   ],
-   "LegBR": [
-    0,
-    19
-   ],
-   "LegBL": [
-    0,
-    31
-   ],
-   "ShinFR": [
-    0,
-    13
-   ],
-   "ShinFL": [
-    0,
-    13
-   ],
-   "ShinBR": [
-    0,
-    19
-   ],
-   "ShinBL": [
-    0,
-    7
-   ],
-   "Tail2": [
-    0,
-    12
-   ],
-   "ToeFR": [
-    0,
-    10
-   ],
-   "ToeFL": [
-    0,
-    10
-   ],
-   "ToeBR": [
-    0,
-    8
-   ],
-   "ToeBL": [
-    0,
-    2
-   ],
-   "Tail3": [
-    0,
-    10
+    68
    ]
   },
   "depth_to_width": {
-   "Body": 0.66,
-   "Tail": 0.93,
-   "Head": 0.79,
-   "LegFR": 0.82,
-   "LegFL": 0.82,
-   "LegBR": 0.93,
-   "LegBL": 0.94,
-   "ShinFR": 0.96,
-   "ShinFL": 0.96,
-   "ShinBR": 0.94,
-   "ShinBL": 0.99,
-   "Tail2": 0.89,
-   "ToeFR": 0.92,
-   "ToeFL": 0.92,
-   "ToeBR": 0.96,
-   "ToeBL": 0.99,
-   "Tail3": 0.91
+   "Skin": 0.65,
+   "SkinFar": 0.9
   },
-  "edges": 3064,
+  "edges": 1672,
   "leg_length": 0.252,
   "game": {
    "component": "Dog",
@@ -1341,12 +1102,12 @@
    "walk": {
     "sink": 0.0,
     "contact": 0.0,
-    "held": 0.14
+    "held": 0.1385
    },
    "run": {
     "sink": 0.0,
-    "contact": 0.0113,
-    "held": 0.2349
+    "contact": 0.0172,
+    "held": 0.2304
    }
   },
   "motions": [
@@ -1358,19 +1119,19 @@
     1,
     "Every part once",
     "pass",
-    "meshes: Body 440 tris, Tail 100 tris, Head 188 tris, LegFR 178 tris, LegFL 178 tris, LegBR 138 tris, LegBL 198 tris, ShinFR 88 tris, ShinFL 88 tris, ShinBR 108 tris, ShinBL 60 tris, Tail2 118 tris, ToeFR 66 tris, ToeFL 66 tris, ToeBR 54 tris, ToeBL 32 tris, Tail3 118 tris; pivots only: Attach.Front, FootBL, FootBR, FootFL, FootFR. Checked in Top and Bottom."
+    "skinned meshes: Skin 728 tris, SkinFar 466 tris; bones: Body, Head, LegBL, LegBR, LegFL, LegFR, Tail, ShinBL, ShinBR, ShinFL, ShinFR, Tail2, Tail3, ToeBL, ToeBR, ToeFL, ToeFR; marker bones: FootBL, TipBL, FootBR, TipBR, FootFL, TipFL, FootFR, TipFR, Attach.Front. Checked in Top and Bottom."
    ],
    [
     2,
     "Closed shell",
     "pass",
-    "0 edges with one face (a slit, or a fin that would vanish from behind); 263 of 3064 edges where the two faces touch along a thin part's edge (closed, no gap)"
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 119 of 1672 edges where the two faces touch along a thin part's edge (closed, no gap)"
    ],
    [
     3,
     "Depth from each part's own width",
     "pass",
-    "deepest / half-width: Body 0.66, Tail 0.93, Head 0.79, LegFR 0.82, LegFL 0.82, LegBR 0.93, LegBL 0.94, ShinFR 0.96, ShinFL 0.96, ShinBR 0.94, ShinBL 0.99, Tail2 0.89, ToeFR 0.92, ToeFL 0.92, ToeBR 0.96, ToeBL 0.99, Tail3 0.91"
+    "deepest / half-width: Skin 0.65, SkinFar 0.90"
    ],
    [
     4,
@@ -1382,7 +1143,7 @@
     5,
     "Real size, triangles",
     "pass",
-    "0.67 x 0.20 x 0.58 m; 2218 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+    "0.67 x 0.16 x 0.58 m; 1194 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
    ],
    [
     6,
@@ -1436,25 +1197,25 @@
     14,
     "Rig names and pivots",
     "pass",
-    "Tail, Head, LegFR, LegFL, LegBR, LegBL, ShinFR, ShinFL, ShinBR, ShinBL, Tail2, ToeFR, ToeFL, ToeBR, ToeBL, Tail3 (+ Attach.Front, FootBL, FootBR, FootFL, FootFR): origins at the joints"
+    "Head, LegBL, LegBR, LegFL, LegFR, Tail, ShinBL, ShinBR, ShinFL, ShinFR, Tail2, Tail3, ToeBL, ToeBR, ToeFL, ToeFR (+ FootBL, TipBL, FootBR, TipBR, FootFL, TipFL, FootFR, TipFR, Attach.Front): bones at the joints, each named as the behaviour finds it"
    ],
    [
     15,
     "Joints overlap, no seam, no gap mid-motion",
     "pass",
-    "every part overlaps the body; four legs, near and far: LegBL, LegBR, LegFL, LegFR; motions looked at frame by frame: walk, run"
+    "one skin bending at every joint, the bones sharing it across each (D21: no part edge to show); legs, near and far: LegBL, LegBR, LegFL, LegFR; motions looked at frame by frame, full size: walk, run"
    ],
    [
     16,
     "Feet planted",
     "pass",
-    "walk: sink 0.0 mm, lowest foot 0.0 mm up, held 140.0 mm; run: sink 0.0 mm, lowest foot 11.3 mm up, held 234.9 mm (tolerance 5.8 mm, 1 % of its height)"
+    "walk: sink 0.0 mm, lowest foot 0.0 mm up, held 138.5 mm; run: sink 0.0 mm, lowest foot 17.2 mm up, held 230.4 mm (tolerance 5.8 mm, 1 % of its height)"
    ],
    [
     17,
     "Each part holds only itself",
     "pass",
-    "looked at on its part map at full size, part by part: Tail, Head, LegFR, LegFL, LegBR, LegBL, ShinFR, ShinFL, ShinBR, ShinBL, Tail2, ToeFR, ToeFL, ToeBR, ToeBL, Tail3; LegFL a copy of the near leg, set behind (the far leg shows only as a paw behind the near one: the paw taken out); legs drawn on the sheet where their shape couldn't part them; the curled tail sways about the long axis; the rump carries on under it"
+    "looked at on its part map at full size, part by part: Head, LegBL, LegBR, LegFL, LegFR, Tail, ShinBL, ShinBR, ShinFL, ShinFR, Tail2, Tail3, ToeBL, ToeBR, ToeFL, ToeFR; LegFL a copy of the near leg, set behind (the far leg shows only as a paw behind the near one: the paw taken out); legs drawn on the sheet where their shape couldn't part them; the curled tail sways about the long axis; the rump carries on under it"
    ]
   ]
  },
@@ -1469,46 +1230,34 @@
   ],
   "view": "side",
   "px_per_m": 430.6,
-  "tris": 1356,
+  "tris": 996,
+  "meshes": {
+   "Skin": 996
+  },
   "parts": {
-   "Body": 956,
-   "Tail": 104,
-   "Tail2": 126,
-   "Tail3": 170
+   "Body": 294,
+   "Tail": 6,
+   "Tail2": 7,
+   "Tail3": 22
   },
   "empties": [
    "Attach.Front"
   ],
   "size": [
-   0.643,
+   0.641,
    0.159,
    0.618
   ],
   "open_edges": {
-   "Body": [
+   "Skin": [
     0,
-    52
-   ],
-   "Tail": [
-    0,
-    13
-   ],
-   "Tail2": [
-    0,
-    13
-   ],
-   "Tail3": [
-    0,
-    21
+    51
    ]
   },
   "depth_to_width": {
-   "Body": 0.64,
-   "Tail": 0.84,
-   "Tail2": 0.94,
-   "Tail3": 0.9
+   "Skin": 0.64
   },
-  "edges": 1935,
+  "edges": 1443,
   "leg_length": null,
   "game": {
    "component": "CritterIdle",
@@ -1531,19 +1280,19 @@
     1,
     "Every part once",
     "pass",
-    "meshes: Body 956 tris, Tail 104 tris, Tail2 126 tris, Tail3 170 tris; pivots only: Attach.Front. Checked in Top and Bottom."
+    "skinned meshes: Skin 996 tris; bones: Body, Tail, Tail2, Tail3; marker bones: Attach.Front. Checked in Top and Bottom."
    ],
    [
     2,
     "Closed shell",
     "pass",
-    "0 edges with one face (a slit, or a fin that would vanish from behind); 99 of 1935 edges where the two faces touch along a thin part's edge (closed, no gap)"
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 51 of 1443 edges where the two faces touch along a thin part's edge (closed, no gap)"
    ],
    [
     3,
     "Depth from each part's own width",
     "pass",
-    "deepest / half-width: Body 0.64, Tail 0.84, Tail2 0.94, Tail3 0.90"
+    "deepest / half-width: Skin 0.64"
    ],
    [
     4,
@@ -1555,7 +1304,7 @@
     5,
     "Real size, triangles",
     "pass",
-    "0.64 x 0.16 x 0.62 m; 1356 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+    "0.64 x 0.16 x 0.62 m; 996 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
    ],
    [
     6,
@@ -1609,13 +1358,13 @@
     14,
     "Rig names and pivots",
     "pass",
-    "Tail, Tail2, Tail3 (+ Attach.Front): origins at the joints"
+    "Tail, Tail2, Tail3 (+ Attach.Front): bones at the joints, each named as the behaviour finds it"
    ],
    [
     15,
     "Joints overlap, no seam, no gap mid-motion",
     "pass",
-    "every part overlaps the body; motions looked at frame by frame: idle"
+    "one skin bending at every joint, the bones sharing it across each (D21: no part edge to show); motions looked at frame by frame, full size: idle"
    ],
    [
     16,
@@ -1642,10 +1391,14 @@
   ],
   "view": "side",
   "px_per_m": 386.7,
-  "tris": 1206,
+  "tris": 1080,
+  "meshes": {
+   "Skin": 1080
+  },
   "parts": {
-   "Body": 1030,
-   "Head": 176
+   "Body": 329,
+   "Head": 3,
+   "Head2": 30
   },
   "empties": [
    "Attach.Front"
@@ -1656,20 +1409,15 @@
    0.747
   ],
   "open_edges": {
-   "Body": [
+   "Skin": [
     0,
-    58
-   ],
-   "Head": [
-    0,
-    13
+    56
    ]
   },
   "depth_to_width": {
-   "Body": 0.48,
-   "Head": 0.83
+   "Skin": 0.48
   },
-  "edges": 1738,
+  "edges": 1564,
   "leg_length": null,
   "game": {
    "component": "CritterIdle",
@@ -1677,8 +1425,9 @@
     {
      "part": "Head",
      "axis": "up",
-     "amplitude": 12.0,
-     "speed": 0.9
+     "amplitude": 22.0,
+     "speed": 0.9,
+     "snap": true
     }
    ]
   },
@@ -1692,19 +1441,19 @@
     1,
     "Every part once",
     "pass",
-    "meshes: Body 1030 tris, Head 176 tris; pivots only: Attach.Front. Checked in Top and Bottom."
+    "skinned meshes: Skin 1080 tris; bones: Body, Head, Head2; marker bones: Attach.Front. Checked in Top and Bottom."
    ],
    [
     2,
     "Closed shell",
     "pass",
-    "0 edges with one face (a slit, or a fin that would vanish from behind); 71 of 1738 edges where the two faces touch along a thin part's edge (closed, no gap)"
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 56 of 1564 edges where the two faces touch along a thin part's edge (closed, no gap)"
    ],
    [
     3,
     "Depth from each part's own width",
     "pass",
-    "deepest / half-width: Body 0.48, Head 0.83"
+    "deepest / half-width: Skin 0.48"
    ],
    [
     4,
@@ -1716,7 +1465,7 @@
     5,
     "Real size, triangles",
     "pass",
-    "0.65 x 0.14 x 0.75 m; 1206 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+    "0.65 x 0.14 x 0.75 m; 1080 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
    ],
    [
     6,
@@ -1770,13 +1519,13 @@
     14,
     "Rig names and pivots",
     "pass",
-    "Head (+ Attach.Front): origins at the joints"
+    "Head, Head2 (+ Attach.Front): bones at the joints, each named as the behaviour finds it"
    ],
    [
     15,
     "Joints overlap, no seam, no gap mid-motion",
     "pass",
-    "every part overlaps the body; motions looked at frame by frame: idle"
+    "one skin bending at every joint, the bones sharing it across each (D21: no part edge to show); motions looked at frame by frame, full size: idle"
    ],
    [
     16,
@@ -1788,7 +1537,7 @@
     17,
     "Each part holds only itself",
     "pass",
-    "looked at on its part map at full size, part by part: Head"
+    "looked at on its part map at full size, part by part: Head, Head2"
    ]
   ]
  },
@@ -1803,83 +1552,60 @@
   ],
   "view": "side",
   "px_per_m": 607.0,
-  "tris": 1648,
+  "tris": 1600,
+  "meshes": {
+   "Skin": 1200,
+   "SkinFar": 400
+  },
   "parts": {
-   "Body": 712,
-   "Head": 288,
-   "LegR": 62,
-   "LegL": 62,
-   "ShinR": 98,
-   "ShinL": 98,
-   "ToeR": 164,
-   "ToeL": 164
+   "Body": 225,
+   "Head": 20,
+   "LegL": 2,
+   "LegR": 2,
+   "Head2": 46,
+   "ShinL": 24,
+   "ShinR": 25,
+   "ToeL": 0,
+   "ToeR": 0
   },
   "empties": [
-   "Attach.Front",
    "FootL",
-   "FootR"
+   "TipL",
+   "FootR",
+   "TipR",
+   "Attach.Front"
   ],
   "size": [
    0.565,
-   0.107,
-   0.427
+   0.118,
+   0.425
   ],
   "open_edges": {
-   "Body": [
+   "Skin": [
     0,
-    45
+    52
    ],
-   "Head": [
-    0,
-    16
-   ],
-   "LegR": [
-    0,
-    8
-   ],
-   "LegL": [
-    0,
-    8
-   ],
-   "ShinR": [
+   "SkinFar": [
     0,
     15
-   ],
-   "ShinL": [
-    0,
-    15
-   ],
-   "ToeR": [
-    0,
-    28
-   ],
-   "ToeL": [
-    0,
-    28
    ]
   },
   "depth_to_width": {
-   "Body": 0.63,
-   "Head": 0.78,
-   "LegR": 1.0,
-   "LegL": 1.0,
-   "ShinR": 1.0,
-   "ShinL": 1.0,
-   "ToeR": 0.97,
-   "ToeL": 0.97
+   "Skin": 0.63,
+   "SkinFar": 0.93
   },
-  "edges": 2309,
+  "edges": 2333,
   "leg_length": 0.1178,
   "game": {
    "component": "GroundBird",
    "head": "Head",
    "headAxis": "side",
    "hopper": false,
-   "headSlide": 0,
-   "headNod": 7,
+   "headSlide": 0.0071,
+   "headNod": 5,
    "peckTurn": 25.0,
    "peckTip": 30.0,
-   "legs": "LegGait (stepped, hopped, planted)"
+   "legs": "LegGait (stepped, hopped, planted; feet rolled)"
   },
   "copied": [
    "LegL"
@@ -1887,8 +1613,8 @@
   "feet": {
    "walk": {
     "sink": 0.0,
-    "contact": 0.0,
-    "held": 0.0648
+    "contact": 0.0028,
+    "held": 0.0783
    },
    "peck": {
     "sink": 0.0,
@@ -1905,19 +1631,19 @@
     1,
     "Every part once",
     "pass",
-    "meshes: Body 712 tris, Head 288 tris, LegR 62 tris, LegL 62 tris, ShinR 98 tris, ShinL 98 tris, ToeR 164 tris, ToeL 164 tris; pivots only: Attach.Front, FootL, FootR. Checked in Top and Bottom."
+    "skinned meshes: Skin 1200 tris, SkinFar 400 tris; bones: Body, Head, LegL, LegR, Head2, ShinL, ShinR, ToeL, ToeR; marker bones: FootL, TipL, FootR, TipR, Attach.Front. Checked in Top and Bottom."
    ],
    [
     2,
     "Closed shell",
     "pass",
-    "0 edges with one face (a slit, or a fin that would vanish from behind); 163 of 2309 edges where the two faces touch along a thin part's edge (closed, no gap)"
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 67 of 2333 edges where the two faces touch along a thin part's edge (closed, no gap)"
    ],
    [
     3,
     "Depth from each part's own width",
     "pass",
-    "deepest / half-width: Body 0.63, Head 0.78, LegR 1.00, LegL 1.00, ShinR 1.00, ShinL 1.00, ToeR 0.97, ToeL 0.97"
+    "deepest / half-width: Skin 0.63, SkinFar 0.93"
    ],
    [
     4,
@@ -1929,7 +1655,7 @@
     5,
     "Real size, triangles",
     "pass",
-    "0.56 x 0.11 x 0.43 m; 1648 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+    "0.56 x 0.12 x 0.42 m; 1600 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
    ],
    [
     6,
@@ -1983,25 +1709,25 @@
     14,
     "Rig names and pivots",
     "pass",
-    "Head, LegR, LegL, ShinR, ShinL, ToeR, ToeL (+ Attach.Front, FootL, FootR): origins at the joints"
+    "Head, LegL, LegR, Head2, ShinL, ShinR, ToeL, ToeR (+ FootL, TipL, FootR, TipR, Attach.Front): bones at the joints, each named as the behaviour finds it"
    ],
    [
     15,
     "Joints overlap, no seam, no gap mid-motion",
     "pass",
-    "every part overlaps the body; four legs, near and far: LegL, LegR; motions looked at frame by frame: walk, peck"
+    "one skin bending at every joint, the bones sharing it across each (D21: no part edge to show); legs, near and far: LegL, LegR; motions looked at frame by frame, full size: walk, peck"
    ],
    [
     16,
     "Feet planted",
     "pass",
-    "walk: sink 0.0 mm, lowest foot 0.0 mm up, held 64.8 mm; peck: sink 0.0 mm, lowest foot 0.0 mm up, held 0.0 mm (tolerance 4.3 mm, 1 % of its height)"
+    "walk: sink 0.0 mm, lowest foot 2.8 mm up, held 78.3 mm; peck: sink 0.0 mm, lowest foot 0.0 mm up, held 0.0 mm (tolerance 4.2 mm, 1 % of its height)"
    ],
    [
     17,
     "Each part holds only itself",
     "pass",
-    "looked at on its part map at full size, part by part: Head, LegR, LegL, ShinR, ShinL, ToeR, ToeL; LegL a copy of the near leg, set behind (the far leg, beside the near one all the way down in the picture, taken out); legs drawn on the sheet where their shape couldn't part them"
+    "looked at on its part map at full size, part by part: Head, LegL, LegR, Head2, ShinL, ShinR, ToeL, ToeR; LegL a copy of the near leg, set behind (the far leg, beside the near one all the way down in the picture, taken out); legs drawn on the sheet where their shape couldn't part them"
    ]
   ]
  },
@@ -2016,92 +1742,69 @@
   ],
   "view": "side",
   "px_per_m": 656.1,
-  "tris": 1774,
+  "tris": 1652,
+  "meshes": {
+   "Skin": 1260,
+   "SkinFar": 392
+  },
   "parts": {
-   "Body": 818,
-   "Head": 280,
-   "LegR": 64,
-   "LegL": 64,
-   "ShinR": 100,
-   "ShinL": 100,
-   "ToeR": 174,
-   "ToeL": 174
+   "Body": 249,
+   "Head": 11,
+   "LegL": 3,
+   "LegR": 1,
+   "Head2": 43,
+   "ShinL": 24,
+   "ShinR": 25,
+   "ToeL": 0,
+   "ToeR": 0
   },
   "empties": [
-   "Attach.Front",
    "FootL",
-   "FootR"
+   "TipL",
+   "FootR",
+   "TipR",
+   "Attach.Front"
   ],
   "size": [
-   0.564,
-   0.103,
-   0.349
+   0.568,
+   0.11,
+   0.348
   ],
   "open_edges": {
-   "Body": [
+   "Skin": [
     0,
-    44
+    52
    ],
-   "Head": [
+   "SkinFar": [
     0,
-    30
-   ],
-   "LegR": [
-    0,
-    9
-   ],
-   "LegL": [
-    0,
-    9
-   ],
-   "ShinR": [
-    0,
-    13
-   ],
-   "ShinL": [
-    0,
-    13
-   ],
-   "ToeR": [
-    0,
-    30
-   ],
-   "ToeL": [
-    0,
-    30
+    16
    ]
   },
   "depth_to_width": {
-   "Body": 0.67,
-   "Head": 0.84,
-   "LegR": 0.96,
-   "LegL": 0.96,
-   "ShinR": 0.97,
-   "ShinL": 0.97,
-   "ToeR": 0.99,
-   "ToeL": 0.99
+   "Skin": 0.67,
+   "SkinFar": 0.99
   },
-  "edges": 2483,
+  "edges": 2410,
   "leg_length": 0.1026,
   "game": {
    "component": "GroundBird",
    "head": "Head",
    "headAxis": "side",
    "hopper": false,
-   "headSlide": 0,
-   "headNod": 7,
+   "headSlide": 0.0062,
+   "headNod": 5,
    "peckTurn": 25.0,
    "peckTip": 30.0,
-   "legs": "LegGait (stepped, hopped, planted)"
+   "legs": "LegGait (stepped, hopped, planted; feet rolled)"
   },
   "copied": [
    "LegL"
   ],
   "feet": {
    "walk": {
-    "sink": 0.0,
-    "contact": 0.0,
-    "held": 0.0564
+    "sink": 0.0001,
+    "contact": 0.0026,
+    "held": 0.0709
    },
    "peck": {
     "sink": 0.0,
@@ -2118,19 +1821,19 @@
     1,
     "Every part once",
     "pass",
-    "meshes: Body 818 tris, Head 280 tris, LegR 64 tris, LegL 64 tris, ShinR 100 tris, ShinL 100 tris, ToeR 174 tris, ToeL 174 tris; pivots only: Attach.Front, FootL, FootR. Checked in Top and Bottom."
+    "skinned meshes: Skin 1260 tris, SkinFar 392 tris; bones: Body, Head, LegL, LegR, Head2, ShinL, ShinR, ToeL, ToeR; marker bones: FootL, TipL, FootR, TipR, Attach.Front. Checked in Top and Bottom."
    ],
    [
     2,
     "Closed shell",
     "pass",
-    "0 edges with one face (a slit, or a fin that would vanish from behind); 178 of 2483 edges where the two faces touch along a thin part's edge (closed, no gap)"
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 68 of 2410 edges where the two faces touch along a thin part's edge (closed, no gap)"
    ],
    [
     3,
     "Depth from each part's own width",
     "pass",
-    "deepest / half-width: Body 0.67, Head 0.84, LegR 0.96, LegL 0.96, ShinR 0.97, ShinL 0.97, ToeR 0.99, ToeL 0.99"
+    "deepest / half-width: Skin 0.67, SkinFar 0.99"
    ],
    [
     4,
@@ -2142,7 +1845,7 @@
     5,
     "Real size, triangles",
     "pass",
-    "0.56 x 0.10 x 0.35 m; 1774 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+    "0.57 x 0.11 x 0.35 m; 1652 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
    ],
    [
     6,
@@ -2196,25 +1899,25 @@
     14,
     "Rig names and pivots",
     "pass",
-    "Head, LegR, LegL, ShinR, ShinL, ToeR, ToeL (+ Attach.Front, FootL, FootR): origins at the joints"
+    "Head, LegL, LegR, Head2, ShinL, ShinR, ToeL, ToeR (+ FootL, TipL, FootR, TipR, Attach.Front): bones at the joints, each named as the behaviour finds it"
    ],
    [
     15,
     "Joints overlap, no seam, no gap mid-motion",
     "pass",
-    "every part overlaps the body; four legs, near and far: LegL, LegR; motions looked at frame by frame: walk, peck"
+    "one skin bending at every joint, the bones sharing it across each (D21: no part edge to show); legs, near and far: LegL, LegR; motions looked at frame by frame, full size: walk, peck"
    ],
    [
     16,
     "Feet planted",
     "pass",
-    "walk: sink 0.0 mm, lowest foot 0.0 mm up, held 56.4 mm; peck: sink 0.0 mm, lowest foot 0.0 mm up, held 0.0 mm (tolerance 3.5 mm, 1 % of its height)"
+    "walk: sink 0.1 mm, lowest foot 2.6 mm up, held 70.9 mm; peck: sink 0.0 mm, lowest foot 0.0 mm up, held 0.0 mm (tolerance 3.5 mm, 1 % of its height)"
    ],
    [
     17,
     "Each part holds only itself",
     "pass",
-    "looked at on its part map at full size, part by part: Head, LegR, LegL, ShinR, ShinL, ToeR, ToeL; LegL a copy of the near leg, set behind (the leg raised mid-step in the picture taken out: it can't plant); legs drawn on the sheet where their shape couldn't part them"
+    "looked at on its part map at full size, part by part: Head, LegL, LegR, Head2, ShinL, ShinR, ToeL, ToeR; LegL a copy of the near leg, set behind (the leg raised mid-step in the picture taken out: it can't plant); legs drawn on the sheet where their shape couldn't part them"
    ]
   ]
  },
@@ -2229,90 +1932,67 @@
   ],
   "view": "side",
   "px_per_m": 890.0,
-  "tris": 1348,
+  "tris": 1500,
+  "meshes": {
+   "Skin": 1120,
+   "SkinFar": 380
+  },
   "parts": {
-   "Body": 724,
-   "Head": 206,
-   "LegR": 30,
-   "LegL": 38,
-   "ShinR": 68,
-   "ShinL": 62,
-   "ToeR": 138,
-   "ToeL": 82
+   "Body": 230,
+   "Head": 7,
+   "LegL": 1,
+   "LegR": 1,
+   "Head2": 42,
+   "ShinL": 14,
+   "ShinR": 11,
+   "ToeL": 0,
+   "ToeR": 0
   },
   "empties": [
-   "Attach.Front",
    "FootL",
-   "FootR"
+   "TipL",
+   "FootR",
+   "TipR",
+   "Attach.Front"
   ],
   "size": [
-   0.297,
-   0.084,
-   0.287
+   0.298,
+   0.088,
+   0.286
   ],
   "open_edges": {
-   "Body": [
+   "Skin": [
     0,
-    53
+    45
    ],
-   "Head": [
+   "SkinFar": [
     0,
-    6
-   ],
-   "LegR": [
-    0,
-    2
-   ],
-   "LegL": [
-    0,
-    5
-   ],
-   "ShinR": [
-    0,
-    10
-   ],
-   "ShinL": [
-    0,
-    9
-   ],
-   "ToeR": [
-    0,
-    24
-   ],
-   "ToeL": [
-    0,
-    10
+    15
    ]
   },
   "depth_to_width": {
-   "Body": 0.69,
-   "Head": 0.89,
-   "LegR": 1.0,
-   "LegL": 1.0,
-   "ShinR": 1.0,
-   "ShinL": 1.0,
-   "ToeR": 0.99,
-   "ToeL": 1.0
+   "Skin": 0.69,
+   "SkinFar": 0.96
   },
-  "edges": 1903,
+  "edges": 2190,
   "leg_length": 0.0456,
   "game": {
    "component": "GroundBird",
    "head": "Head",
    "headAxis": "side",
    "hopper": false,
-   "headSlide": 0,
-   "headNod": 7,
+   "headSlide": 0.0073,
+   "headNod": 2,
    "peckTurn": 25.0,
    "peckTip": 30.0,
-   "legs": "LegGait (stepped, hopped, planted)"
+   "legs": "LegGait (stepped, hopped, planted; feet rolled)"
   },
   "copied": [],
   "feet": {
    "walk": {
-    "sink": 0.0,
-    "contact": 0.0,
-    "held": 0.024
+    "sink": 0.0003,
+    "contact": 0.0017,
+    "held": 0.0503
    },
    "peck": {
     "sink": 0.0,
@@ -2329,19 +2009,19 @@
     1,
     "Every part once",
     "pass",
-    "meshes: Body 724 tris, Head 206 tris, LegR 30 tris, LegL 38 tris, ShinR 68 tris, ShinL 62 tris, ToeR 138 tris, ToeL 82 tris; pivots only: Attach.Front, FootL, FootR. Checked in Top and Bottom."
+    "skinned meshes: Skin 1120 tris, SkinFar 380 tris; bones: Body, Head, LegL, LegR, Head2, ShinL, ShinR, ToeL, ToeR; marker bones: FootL, TipL, FootR, TipR, Attach.Front. Checked in Top and Bottom."
    ],
    [
     2,
     "Closed shell",
     "pass",
-    "0 edges with one face (a slit, or a fin that would vanish from behind); 119 of 1903 edges where the two faces touch along a thin part's edge (closed, no gap)"
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 60 of 2190 edges where the two faces touch along a thin part's edge (closed, no gap)"
    ],
    [
     3,
     "Depth from each part's own width",
     "pass",
-    "deepest / half-width: Body 0.69, Head 0.89, LegR 1.00, LegL 1.00, ShinR 1.00, ShinL 1.00, ToeR 0.99, ToeL 1.00"
+    "deepest / half-width: Skin 0.69, SkinFar 0.96"
    ],
    [
     4,
@@ -2353,7 +2033,7 @@
     5,
     "Real size, triangles",
     "pass",
-    "0.30 x 0.08 x 0.29 m; 1348 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+    "0.30 x 0.09 x 0.29 m; 1500 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
    ],
    [
     6,
@@ -2407,25 +2087,25 @@
     14,
     "Rig names and pivots",
     "pass",
-    "Head, LegR, LegL, ShinR, ShinL, ToeR, ToeL (+ Attach.Front, FootL, FootR): origins at the joints"
+    "Head, LegL, LegR, Head2, ShinL, ShinR, ToeL, ToeR (+ FootL, TipL, FootR, TipR, Attach.Front): bones at the joints, each named as the behaviour finds it"
    ],
    [
     15,
     "Joints overlap, no seam, no gap mid-motion",
     "pass",
-    "every part overlaps the body; four legs, near and far: LegL, LegR; motions looked at frame by frame: walk, peck"
+    "one skin bending at every joint, the bones sharing it across each (D21: no part edge to show); legs, near and far: LegL, LegR; motions looked at frame by frame, full size: walk, peck"
    ],
    [
     16,
     "Feet planted",
     "pass",
-    "walk: sink 0.0 mm, lowest foot 0.0 mm up, held 24.0 mm; peck: sink 0.0 mm, lowest foot 0.0 mm up, held 0.0 mm (tolerance 2.9 mm, 1 % of its height)"
+    "walk: sink 0.3 mm, lowest foot 1.7 mm up, held 50.3 mm; peck: sink 0.0 mm, lowest foot 0.0 mm up, held 0.0 mm (tolerance 2.9 mm, 1 % of its height)"
    ],
    [
     17,
     "Each part holds only itself",
     "pass",
-    "looked at on its part map at full size, part by part: Head, LegR, LegL, ShinR, ShinL, ToeR, ToeL; every leg the picture shows is its own part, its own pixels only; legs drawn on the sheet where their shape couldn't part them"
+    "looked at on its part map at full size, part by part: Head, LegL, LegR, Head2, ShinL, ShinR, ToeL, ToeR; every leg the picture shows is its own part, its own pixels only; legs drawn on the sheet where their shape couldn't part them"
    ]
   ]
  },
@@ -2440,90 +2120,67 @@
   ],
   "view": "side",
   "px_per_m": 1000.0,
-  "tris": 2170,
+  "tris": 2296,
+  "meshes": {
+   "Skin": 1830,
+   "SkinFar": 466
+  },
   "parts": {
-   "Body": 1328,
-   "Head": 340,
-   "LegR": 28,
-   "LegL": 34,
-   "ShinR": 68,
-   "ShinL": 116,
-   "ToeR": 136,
-   "ToeL": 120
+   "Body": 397,
+   "Head": 9,
+   "LegL": 7,
+   "LegR": 0,
+   "Head2": 63,
+   "ShinL": 24,
+   "ShinR": 14,
+   "ToeL": 0,
+   "ToeR": 0
   },
   "empties": [
-   "Attach.Front",
    "FootL",
-   "FootR"
+   "TipL",
+   "FootR",
+   "TipR",
+   "Attach.Front"
   ],
   "size": [
    0.338,
    0.081,
-   0.155
+   0.154
   ],
   "open_edges": {
-   "Body": [
+   "Skin": [
     0,
-    46
+    47
    ],
-   "Head": [
+   "SkinFar": [
     0,
-    15
-   ],
-   "LegR": [
-    0,
-    2
-   ],
-   "LegL": [
-    0,
-    1
-   ],
-   "ShinR": [
-    0,
-    11
-   ],
-   "ShinL": [
-    0,
-    17
-   ],
-   "ToeR": [
-    0,
-    23
-   ],
-   "ToeL": [
-    0,
-    19
+    30
    ]
   },
   "depth_to_width": {
-   "Body": 0.71,
-   "Head": 0.91,
-   "LegR": 1.0,
-   "LegL": 1.0,
-   "ShinR": 1.0,
-   "ShinL": 0.99,
-   "ToeR": 0.98,
-   "ToeL": 0.99
+   "Skin": 0.71,
+   "SkinFar": 1.0
   },
-  "edges": 3121,
+  "edges": 3367,
   "leg_length": 0.0394,
   "game": {
    "component": "GroundBird",
    "head": "Head",
    "headAxis": "side",
    "hopper": false,
-   "headSlide": 0,
-   "headNod": 7,
+   "headSlide": 0.0063,
+   "headNod": 2,
    "peckTurn": 35.0,
    "peckTip": 18.0,
-   "legs": "LegGait (stepped, hopped, planted)"
+   "legs": "LegGait (stepped, hopped, planted; feet rolled)"
   },
   "copied": [],
   "feet": {
    "walk": {
-    "sink": 0.0,
-    "contact": 0.0,
-    "held": 0.0219
+    "sink": 0.0004,
+    "contact": 0.0014,
+    "held": 0.0403
    },
    "peck": {
     "sink": 0.0,
@@ -2540,19 +2197,19 @@
     1,
     "Every part once",
     "pass",
-    "meshes: Body 1328 tris, Head 340 tris, LegR 28 tris, LegL 34 tris, ShinR 68 tris, ShinL 116 tris, ToeR 136 tris, ToeL 120 tris; pivots only: Attach.Front, FootL, FootR. Checked in Top and Bottom."
+    "skinned meshes: Skin 1830 tris, SkinFar 466 tris; bones: Body, Head, LegL, LegR, Head2, ShinL, ShinR, ToeL, ToeR; marker bones: FootL, TipL, FootR, TipR, Attach.Front. Checked in Top and Bottom."
    ],
    [
     2,
     "Closed shell",
     "pass",
-    "0 edges with one face (a slit, or a fin that would vanish from behind); 134 of 3121 edges where the two faces touch along a thin part's edge (closed, no gap)"
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 77 of 3367 edges where the two faces touch along a thin part's edge (closed, no gap)"
    ],
    [
     3,
     "Depth from each part's own width",
     "pass",
-    "deepest / half-width: Body 0.71, Head 0.91, LegR 1.00, LegL 1.00, ShinR 1.00, ShinL 0.99, ToeR 0.98, ToeL 0.99"
+    "deepest / half-width: Skin 0.71, SkinFar 1.00"
    ],
    [
     4,
@@ -2564,7 +2221,7 @@
     5,
     "Real size, triangles",
     "pass",
-    "0.34 x 0.08 x 0.15 m; 2170 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+    "0.34 x 0.08 x 0.15 m; 2296 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
    ],
    [
     6,
@@ -2618,25 +2275,25 @@
     14,
     "Rig names and pivots",
     "pass",
-    "Head, LegR, LegL, ShinR, ShinL, ToeR, ToeL (+ Attach.Front, FootL, FootR): origins at the joints"
+    "Head, LegL, LegR, Head2, ShinL, ShinR, ToeL, ToeR (+ FootL, TipL, FootR, TipR, Attach.Front): bones at the joints, each named as the behaviour finds it"
    ],
    [
     15,
     "Joints overlap, no seam, no gap mid-motion",
     "pass",
-    "every part overlaps the body; four legs, near and far: LegL, LegR; motions looked at frame by frame: walk, peck"
+    "one skin bending at every joint, the bones sharing it across each (D21: no part edge to show); legs, near and far: LegL, LegR; motions looked at frame by frame, full size: walk, peck"
    ],
    [
     16,
     "Feet planted",
     "pass",
-    "walk: sink 0.0 mm, lowest foot 0.0 mm up, held 21.9 mm; peck: sink 0.0 mm, lowest foot 0.0 mm up, held 0.0 mm (tolerance 1.6 mm, 1 % of its height)"
+    "walk: sink 0.4 mm, lowest foot 1.4 mm up, held 40.3 mm; peck: sink 0.0 mm, lowest foot 0.0 mm up, held 0.0 mm (tolerance 1.5 mm, 1 % of its height)"
    ],
    [
     17,
     "Each part holds only itself",
     "pass",
-    "looked at on its part map at full size, part by part: Head, LegR, LegL, ShinR, ShinL, ToeR, ToeL; every leg the picture shows is its own part, its own pixels only; legs drawn on the sheet where their shape couldn't part them"
+    "looked at on its part map at full size, part by part: Head, LegL, LegR, Head2, ShinL, ShinR, ToeL, ToeR; every leg the picture shows is its own part, its own pixels only; legs drawn on the sheet where their shape couldn't part them"
    ]
   ]
  },
@@ -2651,34 +2308,33 @@
   ],
   "view": "side",
   "px_per_m": 1973.3,
-  "tris": 1173,
+  "tris": 975,
+  "meshes": {
+   "Skin": 975
+  },
   "parts": {
-   "Body": 855,
-   "Head": 318
+   "Body": 253,
+   "Head": 7,
+   "Head2": 53
   },
   "empties": [
    "Attach.Front"
   ],
   "size": [
-   0.149,
+   0.148,
    0.041,
    0.119
   ],
   "open_edges": {
-   "Body": [
+   "Skin": [
     0,
-    59
-   ],
-   "Head": [
-    0,
-    14
+    48
    ]
   },
   "depth_to_width": {
-   "Body": 0.71,
-   "Head": 0.82
+   "Skin": 0.71
   },
-  "edges": 1689,
+  "edges": 1417,
   "leg_length": null,
   "game": {
    "component": "CritterIdle",
@@ -2686,8 +2342,9 @@
     {
      "part": "Head",
      "axis": "up",
-     "amplitude": 12.0,
-     "speed": 0.9
+     "amplitude": 22.0,
+     "speed": 0.9,
+     "snap": true
     }
    ]
   },
@@ -2701,19 +2358,19 @@
     1,
     "Every part once",
     "pass",
-    "meshes: Body 855 tris, Head 318 tris; pivots only: Attach.Front. Checked in Top and Bottom."
+    "skinned meshes: Skin 975 tris; bones: Body, Head, Head2; marker bones: Attach.Front. Checked in Top and Bottom."
    ],
    [
     2,
     "Closed shell",
     "pass",
-    "0 edges with one face (a slit, or a fin that would vanish from behind); 73 of 1689 edges where the two faces touch along a thin part's edge (closed, no gap)"
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 48 of 1417 edges where the two faces touch along a thin part's edge (closed, no gap)"
    ],
    [
     3,
     "Depth from each part's own width",
     "pass",
-    "deepest / half-width: Body 0.71, Head 0.82"
+    "deepest / half-width: Skin 0.71"
    ],
    [
     4,
@@ -2725,7 +2382,7 @@
     5,
     "Real size, triangles",
     "pass",
-    "0.15 x 0.04 x 0.12 m; 1173 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+    "0.15 x 0.04 x 0.12 m; 975 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
    ],
    [
     6,
@@ -2779,13 +2436,13 @@
     14,
     "Rig names and pivots",
     "pass",
-    "Head (+ Attach.Front): origins at the joints"
+    "Head, Head2 (+ Attach.Front): bones at the joints, each named as the behaviour finds it"
    ],
    [
     15,
     "Joints overlap, no seam, no gap mid-motion",
     "pass",
-    "every part overlaps the body; motions looked at frame by frame: idle"
+    "one skin bending at every joint, the bones sharing it across each (D21: no part edge to show); motions looked at frame by frame, full size: idle"
    ],
    [
     16,
@@ -2797,7 +2454,7 @@
     17,
     "Each part holds only itself",
     "pass",
-    "looked at on its part map at full size, part by part: Head"
+    "looked at on its part map at full size, part by part: Head, Head2"
    ]
   ]
  },
@@ -2812,71 +2469,56 @@
   ],
   "view": "side",
   "px_per_m": 2140.0,
-  "tris": 1578,
+  "tris": 1258,
+  "meshes": {
+   "Skin": 1114,
+   "SkinFar": 144
+  },
   "parts": {
-   "Body": 832,
-   "Head": 386,
-   "LegR": 54,
-   "LegL": 54,
-   "ShinR": 126,
-   "ShinL": 126
+   "Body": 260,
+   "Head": 13,
+   "LegL": 2,
+   "LegR": 2,
+   "Head2": 55,
+   "ShinL": 29,
+   "ShinR": 28
   },
   "empties": [
-   "Attach.Front",
    "FootL",
-   "FootR"
+   "FootR",
+   "Attach.Front"
   ],
   "size": [
-   0.149,
-   0.036,
-   0.091
+   0.148,
+   0.037,
+   0.092
   ],
   "open_edges": {
-   "Body": [
+   "Skin": [
     0,
-    50
+    64
    ],
-   "Head": [
+   "SkinFar": [
     0,
-    15
-   ],
-   "LegR": [
-    0,
-    3
-   ],
-   "LegL": [
-    0,
-    3
-   ],
-   "ShinR": [
-    0,
-    15
-   ],
-   "ShinL": [
-    0,
-    15
+    16
    ]
   },
   "depth_to_width": {
-   "Body": 0.79,
-   "Head": 0.85,
-   "LegR": 0.9,
-   "LegL": 0.9,
-   "ShinR": 0.96,
-   "ShinL": 0.96
+   "Skin": 0.78,
+   "SkinFar": 0.96
   },
-  "edges": 2266,
+  "edges": 1807,
   "leg_length": 0.0422,
   "game": {
    "component": "GroundBird",
    "head": "Head",
    "headAxis": "side",
    "hopper": true,
-   "headSlide": 0,
-   "headNod": 7,
+   "headSlide": 0.0,
+   "headNod": 5,
    "peckTurn": 25.0,
    "peckTip": 30.0,
-   "legs": "LegGait (stepped, hopped, planted)"
+   "legs": "LegGait (stepped, hopped, planted; feet rolled)"
   },
   "copied": [
    "LegL"
@@ -2902,19 +2544,19 @@
     1,
     "Every part once",
     "pass",
-    "meshes: Body 832 tris, Head 386 tris, LegR 54 tris, LegL 54 tris, ShinR 126 tris, ShinL 126 tris; pivots only: Attach.Front, FootL, FootR. Checked in Top and Bottom."
+    "skinned meshes: Skin 1114 tris, SkinFar 144 tris; bones: Body, Head, LegL, LegR, Head2, ShinL, ShinR; marker bones: FootL, FootR, Attach.Front. Checked in Top and Bottom."
    ],
    [
     2,
     "Closed shell",
     "pass",
-    "0 edges with one face (a slit, or a fin that would vanish from behind); 101 of 2266 edges where the two faces touch along a thin part's edge (closed, no gap)"
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 80 of 1807 edges where the two faces touch along a thin part's edge (closed, no gap)"
    ],
    [
     3,
     "Depth from each part's own width",
     "pass",
-    "deepest / half-width: Body 0.79, Head 0.85, LegR 0.90, LegL 0.90, ShinR 0.96, ShinL 0.96"
+    "deepest / half-width: Skin 0.78, SkinFar 0.96"
    ],
    [
     4,
@@ -2926,7 +2568,7 @@
     5,
     "Real size, triangles",
     "pass",
-    "0.15 x 0.04 x 0.09 m; 1578 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+    "0.15 x 0.04 x 0.09 m; 1258 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
    ],
    [
     6,
@@ -2980,13 +2622,13 @@
     14,
     "Rig names and pivots",
     "pass",
-    "Head, LegR, LegL, ShinR, ShinL (+ Attach.Front, FootL, FootR): origins at the joints"
+    "Head, LegL, LegR, Head2, ShinL, ShinR (+ FootL, FootR, Attach.Front): bones at the joints, each named as the behaviour finds it"
    ],
    [
     15,
     "Joints overlap, no seam, no gap mid-motion",
     "pass",
-    "every part overlaps the body; four legs, near and far: LegL, LegR; motions looked at frame by frame: hop, peck"
+    "one skin bending at every joint, the bones sharing it across each (D21: no part edge to show); legs, near and far: LegL, LegR; motions looked at frame by frame, full size: hop, peck"
    ],
    [
     16,
@@ -2998,7 +2640,7 @@
     17,
     "Each part holds only itself",
     "pass",
-    "looked at on its part map at full size, part by part: Head, LegR, LegL, ShinR, ShinL; LegL a copy of the near leg, set behind (the leg raised mid-step in the picture taken out: it can't plant); legs drawn on the sheet where their shape couldn't part them"
+    "looked at on its part map at full size, part by part: Head, LegL, LegR, Head2, ShinL, ShinR; LegL a copy of the near leg, set behind (the leg raised mid-step in the picture taken out: it can't plant); legs drawn on the sheet where their shape couldn't part them"
    ]
   ]
  },
@@ -3013,52 +2655,35 @@
   ],
   "view": "below",
   "px_per_m": 1528.6,
-  "tris": 1708,
+  "tris": 980,
+  "meshes": {
+   "Skin": 980
+  },
   "parts": {
-   "Body": 490,
-   "WingR": 296,
-   "WingL": 320,
-   "WingL2": 310,
-   "WingR2": 292
+   "Body": 121,
+   "WingL": 37,
+   "WingR": 38,
+   "WingL2": 65,
+   "WingR2": 57
   },
   "empties": [
    "Attach.Front"
   ],
   "size": [
    0.148,
-   0.208,
-   0.03
+   0.209,
+   0.036
   ],
   "open_edges": {
-   "Body": [
+   "Skin": [
     0,
-    32
-   ],
-   "WingR": [
-    0,
-    19
-   ],
-   "WingL": [
-    0,
-    28
-   ],
-   "WingL2": [
-    0,
-    22
-   ],
-   "WingR2": [
-    0,
-    12
+    36
    ]
   },
   "depth_to_width": {
-   "Body": 0.77,
-   "WingR": 0.37,
-   "WingL": 0.37,
-   "WingL2": 0.39,
-   "WingR2": 0.39
+   "Skin": 0.6
   },
-  "edges": 2449,
+  "edges": 1434,
   "leg_length": null,
   "game": {
    "component": "GroundBird (flying model) or SkyFlock",
@@ -3078,19 +2703,19 @@
     1,
     "Every part once",
     "pass",
-    "meshes: Body 490 tris, WingR 296 tris, WingL 320 tris, WingL2 310 tris, WingR2 292 tris; pivots only: Attach.Front. Checked in Top and Bottom."
+    "skinned meshes: Skin 980 tris; bones: Body, WingL, WingR, WingL2, WingR2; marker bones: Attach.Front. Checked in Top and Bottom."
    ],
    [
     2,
     "Closed shell",
     "pass",
-    "0 edges with one face (a slit, or a fin that would vanish from behind); 113 of 2449 edges where the two faces touch along a thin part's edge (closed, no gap)"
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 36 of 1434 edges where the two faces touch along a thin part's edge (closed, no gap)"
    ],
    [
     3,
     "Depth from each part's own width",
     "pass",
-    "deepest / half-width: Body 0.77, WingR 0.37, WingL 0.37, WingL2 0.39, WingR2 0.39"
+    "deepest / half-width: Skin 0.60"
    ],
    [
     4,
@@ -3102,7 +2727,7 @@
     5,
     "Real size, triangles",
     "pass",
-    "0.15 x 0.21 x 0.03 m; 1708 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+    "0.15 x 0.21 x 0.04 m; 980 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
    ],
    [
     6,
@@ -3156,13 +2781,13 @@
     14,
     "Rig names and pivots",
     "pass",
-    "WingR, WingL, WingL2, WingR2 (+ Attach.Front): origins at the joints"
+    "WingL, WingR, WingL2, WingR2 (+ Attach.Front): bones at the joints, each named as the behaviour finds it"
    ],
    [
     15,
     "Joints overlap, no seam, no gap mid-motion",
     "pass",
-    "every part overlaps the body; motions looked at frame by frame: fly"
+    "one skin bending at every joint, the bones sharing it across each (D21: no part edge to show); motions looked at frame by frame, full size: fly"
    ],
    [
     16,
@@ -3174,7 +2799,7 @@
     17,
     "Each part holds only itself",
     "pass",
-    "looked at on its part map at full size, part by part: WingR, WingL, WingL2, WingR2"
+    "looked at on its part map at full size, part by part: WingL, WingR, WingL2, WingR2"
    ]
   ]
  },
@@ -3190,8 +2815,11 @@
   "view": "side",
   "px_per_m": 1154.5,
   "tris": 1006,
+  "meshes": {
+   "Skin": 1006
+  },
   "parts": {
-   "Body": 1006
+   "Body": 338
   },
   "empties": [
    "Attach.Front"
@@ -3202,13 +2830,13 @@
    0.217
   ],
   "open_edges": {
-   "Body": [
+   "Skin": [
     0,
     94
    ]
   },
   "depth_to_width": {
-   "Body": 0.52
+   "Skin": 0.52
   },
   "edges": 1415,
   "leg_length": null,
@@ -3224,7 +2852,7 @@
     1,
     "Every part once",
     "pass",
-    "meshes: Body 1006 tris; pivots only: Attach.Front. Checked in Top and Bottom."
+    "skinned meshes: Skin 1006 tris; bones: Body; marker bones: Attach.Front. Checked in Top and Bottom."
    ],
    [
     2,
@@ -3236,7 +2864,7 @@
     3,
     "Depth from each part's own width",
     "pass",
-    "deepest / half-width: Body 0.52"
+    "deepest / half-width: Skin 0.52"
    ],
    [
     4,
@@ -3335,52 +2963,35 @@
   ],
   "view": "below",
   "px_per_m": 1290.9,
-  "tris": 1690,
+  "tris": 1216,
+  "meshes": {
+   "Skin": 1216
+  },
   "parts": {
-   "Body": 658,
-   "WingR": 278,
-   "WingL": 320,
-   "WingL2": 230,
-   "WingR2": 204
+   "Body": 192,
+   "WingL": 55,
+   "WingR": 49,
+   "WingL2": 52,
+   "WingR2": 48
   },
   "empties": [
    "Attach.Front"
   ],
   "size": [
    0.189,
-   0.328,
-   0.027
+   0.327,
+   0.029
   ],
   "open_edges": {
-   "Body": [
+   "Skin": [
     0,
-    69
-   ],
-   "WingR": [
-    0,
-    15
-   ],
-   "WingL": [
-    0,
-    27
-   ],
-   "WingL2": [
-    0,
-    21
-   ],
-   "WingR2": [
-    0,
-    18
+    100
    ]
   },
   "depth_to_width": {
-   "Body": 0.59,
-   "WingR": 0.22,
-   "WingL": 0.22,
-   "WingL2": 0.3,
-   "WingR2": 0.31
+   "Skin": 0.45
   },
-  "edges": 2385,
+  "edges": 1724,
   "leg_length": null,
   "game": {
    "component": "GroundBird (flying model) or SkyFlock",
@@ -3400,19 +3011,19 @@
     1,
     "Every part once",
     "pass",
-    "meshes: Body 658 tris, WingR 278 tris, WingL 320 tris, WingL2 230 tris, WingR2 204 tris; pivots only: Attach.Front. Checked in Top and Bottom."
+    "skinned meshes: Skin 1216 tris; bones: Body, WingL, WingR, WingL2, WingR2; marker bones: Attach.Front. Checked in Top and Bottom."
    ],
    [
     2,
     "Closed shell",
     "pass",
-    "0 edges with one face (a slit, or a fin that would vanish from behind); 150 of 2385 edges where the two faces touch along a thin part's edge (closed, no gap)"
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 100 of 1724 edges where the two faces touch along a thin part's edge (closed, no gap)"
    ],
    [
     3,
     "Depth from each part's own width",
     "pass",
-    "deepest / half-width: Body 0.59, WingR 0.22, WingL 0.22, WingL2 0.30, WingR2 0.31"
+    "deepest / half-width: Skin 0.45"
    ],
    [
     4,
@@ -3424,7 +3035,7 @@
     5,
     "Real size, triangles",
     "pass",
-    "0.19 x 0.33 x 0.03 m; 1690 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+    "0.19 x 0.33 x 0.03 m; 1216 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
    ],
    [
     6,
@@ -3478,13 +3089,13 @@
     14,
     "Rig names and pivots",
     "pass",
-    "WingR, WingL, WingL2, WingR2 (+ Attach.Front): origins at the joints"
+    "WingL, WingR, WingL2, WingR2 (+ Attach.Front): bones at the joints, each named as the behaviour finds it"
    ],
    [
     15,
     "Joints overlap, no seam, no gap mid-motion",
     "pass",
-    "every part overlaps the body; motions looked at frame by frame: fly"
+    "one skin bending at every joint, the bones sharing it across each (D21: no part edge to show); motions looked at frame by frame, full size: fly"
    ],
    [
     16,
@@ -3496,7 +3107,7 @@
     17,
     "Each part holds only itself",
     "pass",
-    "looked at on its part map at full size, part by part: WingR, WingL, WingL2, WingR2"
+    "looked at on its part map at full size, part by part: WingL, WingR, WingL2, WingR2"
    ]
   ]
  },
@@ -3511,90 +3122,67 @@
   ],
   "view": "side",
   "px_per_m": 747.1,
-  "tris": 1532,
+  "tris": 1526,
+  "meshes": {
+   "Skin": 1118,
+   "SkinFar": 408
+  },
   "parts": {
-   "Body": 670,
-   "Head": 286,
-   "LegR": 70,
-   "LegL": 116,
-   "ShinR": 126,
-   "ShinL": 110,
-   "ToeR": 96,
-   "ToeL": 58
+   "Body": 203,
+   "Head": 6,
+   "LegL": 3,
+   "LegR": 1,
+   "Head2": 57,
+   "ShinL": 25,
+   "ShinR": 30,
+   "ToeL": 0,
+   "ToeR": 0
   },
   "empties": [
-   "Attach.Front",
    "FootL",
-   "FootR"
+   "TipL",
+   "FootR",
+   "TipR",
+   "Attach.Front"
   ],
   "size": [
    0.427,
-   0.099,
-   0.339
+   0.1,
+   0.338
   ],
   "open_edges": {
-   "Body": [
+   "Skin": [
     0,
-    47
+    41
    ],
-   "Head": [
-    0,
-    23
-   ],
-   "LegR": [
-    0,
-    2
-   ],
-   "LegL": [
-    0,
-    18
-   ],
-   "ShinR": [
-    0,
-    19
-   ],
-   "ShinL": [
+   "SkinFar": [
     0,
     15
-   ],
-   "ToeR": [
-    0,
-    14
-   ],
-   "ToeL": [
-    0,
-    6
    ]
   },
   "depth_to_width": {
-   "Body": 0.71,
-   "Head": 0.88,
-   "LegR": 0.98,
-   "LegL": 0.98,
-   "ShinR": 0.99,
-   "ShinL": 1.0,
-   "ToeR": 0.99,
-   "ToeL": 1.0
+   "Skin": 0.71,
+   "SkinFar": 0.97
   },
-  "edges": 2154,
+  "edges": 2233,
   "leg_length": 0.1393,
   "game": {
    "component": "GroundBird",
    "head": "Head",
    "headAxis": "side",
    "hopper": false,
-   "headSlide": 0,
-   "headNod": 7,
+   "headSlide": 0.0084,
+   "headNod": 5,
    "peckTurn": 25.0,
    "peckTip": 30.0,
-   "legs": "LegGait (stepped, hopped, planted)"
+   "legs": "LegGait (stepped, hopped, planted; feet rolled)"
   },
   "copied": [],
   "feet": {
    "walk": {
-    "sink": 0.0,
-    "contact": 0.0,
-    "held": 0.0798
+    "sink": 0.0004,
+    "contact": 0.0022,
+    "held": 0.0795
    },
    "peck": {
     "sink": 0.0,
@@ -3611,19 +3199,19 @@
     1,
     "Every part once",
     "pass",
-    "meshes: Body 670 tris, Head 286 tris, LegR 70 tris, LegL 116 tris, ShinR 126 tris, ShinL 110 tris, ToeR 96 tris, ToeL 58 tris; pivots only: Attach.Front, FootL, FootR. Checked in Top and Bottom."
+    "skinned meshes: Skin 1118 tris, SkinFar 408 tris; bones: Body, Head, LegL, LegR, Head2, ShinL, ShinR, ToeL, ToeR; marker bones: FootL, TipL, FootR, TipR, Attach.Front. Checked in Top and Bottom."
    ],
    [
     2,
     "Closed shell",
     "pass",
-    "0 edges with one face (a slit, or a fin that would vanish from behind); 144 of 2154 edges where the two faces touch along a thin part's edge (closed, no gap)"
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 56 of 2233 edges where the two faces touch along a thin part's edge (closed, no gap)"
    ],
    [
     3,
     "Depth from each part's own width",
     "pass",
-    "deepest / half-width: Body 0.71, Head 0.88, LegR 0.98, LegL 0.98, ShinR 0.99, ShinL 1.00, ToeR 0.99, ToeL 1.00"
+    "deepest / half-width: Skin 0.71, SkinFar 0.97"
    ],
    [
     4,
@@ -3635,7 +3223,7 @@
     5,
     "Real size, triangles",
     "pass",
-    "0.43 x 0.10 x 0.34 m; 1532 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+    "0.43 x 0.10 x 0.34 m; 1526 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
    ],
    [
     6,
@@ -3689,25 +3277,25 @@
     14,
     "Rig names and pivots",
     "pass",
-    "Head, LegR, LegL, ShinR, ShinL, ToeR, ToeL (+ Attach.Front, FootL, FootR): origins at the joints"
+    "Head, LegL, LegR, Head2, ShinL, ShinR, ToeL, ToeR (+ FootL, TipL, FootR, TipR, Attach.Front): bones at the joints, each named as the behaviour finds it"
    ],
    [
     15,
     "Joints overlap, no seam, no gap mid-motion",
     "pass",
-    "every part overlaps the body; four legs, near and far: LegL, LegR; motions looked at frame by frame: walk, peck"
+    "one skin bending at every joint, the bones sharing it across each (D21: no part edge to show); legs, near and far: LegL, LegR; motions looked at frame by frame, full size: walk, peck"
    ],
    [
     16,
     "Feet planted",
     "pass",
-    "walk: sink 0.0 mm, lowest foot 0.0 mm up, held 79.8 mm; peck: sink 0.0 mm, lowest foot 0.0 mm up, held 0.0 mm (tolerance 3.4 mm, 1 % of its height)"
+    "walk: sink 0.4 mm, lowest foot 2.2 mm up, held 79.5 mm; peck: sink 0.0 mm, lowest foot 0.0 mm up, held 0.0 mm (tolerance 3.4 mm, 1 % of its height)"
    ],
    [
     17,
     "Each part holds only itself",
     "pass",
-    "looked at on its part map at full size, part by part: Head, LegR, LegL, ShinR, ShinL, ToeR, ToeL; every leg the picture shows is its own part, its own pixels only; legs drawn on the sheet where their shape couldn't part them"
+    "looked at on its part map at full size, part by part: Head, LegL, LegR, Head2, ShinL, ShinR, ToeL, ToeR; every leg the picture shows is its own part, its own pixels only; legs drawn on the sheet where their shape couldn't part them"
    ]
   ]
  },
@@ -3722,90 +3310,70 @@
   ],
   "view": "side",
   "px_per_m": 509.1,
-  "tris": 1536,
+  "tris": 1662,
+  "meshes": {
+   "Skin": 1162,
+   "SkinFar": 500
+  },
   "parts": {
-   "Body": 500,
-   "Head": 298,
-   "LegR": 110,
-   "LegL": 102,
-   "ShinR": 132,
-   "ShinL": 128,
-   "ToeR": 142,
-   "ToeL": 124
+   "Body": 176,
+   "Head": 14,
+   "LegL": 20,
+   "LegR": 19,
+   "Head2": 44,
+   "ShinL": 37,
+   "ShinR": 33,
+   "Plume": 44,
+   "ToeL": 0,
+   "ToeR": 0
   },
   "empties": [
-   "Attach.Front",
    "FootL",
-   "FootR"
+   "TipL",
+   "FootR",
+   "TipR",
+   "Attach.Front"
   ],
   "size": [
-   0.523,
-   0.093,
-   0.546
+   0.521,
+   0.123,
+   0.547
   ],
   "open_edges": {
-   "Body": [
+   "Skin": [
     0,
-    34
+    69
    ],
-   "Head": [
+   "SkinFar": [
     0,
-    29
-   ],
-   "LegR": [
-    0,
-    14
-   ],
-   "LegL": [
-    0,
-    13
-   ],
-   "ShinR": [
-    0,
-    20
-   ],
-   "ShinL": [
-    0,
-    18
-   ],
-   "ToeR": [
-    0,
-    20
-   ],
-   "ToeL": [
-    0,
-    17
+    31
    ]
   },
   "depth_to_width": {
-   "Body": 0.55,
-   "Head": 0.91,
-   "LegR": 0.99,
-   "LegL": 0.99,
-   "ShinR": 0.99,
-   "ShinL": 0.99,
-   "ToeR": 0.99,
-   "ToeL": 0.99
+   "Skin": 0.55,
+   "SkinFar": 0.99
   },
-  "edges": 2139,
-  "leg_length": 0.2385,
+  "edges": 2393,
+  "leg_length": 0.224,
   "game": {
    "component": "GroundBird",
    "head": "Head",
    "headAxis": "side",
    "hopper": false,
-   "headSlide": 0,
-   "headNod": 7,
+   "headSlide": 0.0224,
+   "headNod": 2,
    "peckTurn": 40.0,
    "peckTip": 15.0,
-   "legs": "LegGait (stepped, hopped, planted)"
+   "legs": "LegGait (stepped, hopped, planted; feet rolled)",
+   "plume": "Plume",
+   "plumeAxis": "side"
   },
   "copied": [],
   "feet": {
    "walk": {
-    "sink": 0.0,
-    "contact": 0.0,
-    "held": 0.1304
+    "sink": 0.0011,
+    "contact": 0.0039,
+    "held": 0.1249
    },
    "peck": {
     "sink": 0.0,
@@ -3822,19 +3390,19 @@
     1,
     "Every part once",
     "pass",
-    "meshes: Body 500 tris, Head 298 tris, LegR 110 tris, LegL 102 tris, ShinR 132 tris, ShinL 128 tris, ToeR 142 tris, ToeL 124 tris; pivots only: Attach.Front, FootL, FootR. Checked in Top and Bottom."
+    "skinned meshes: Skin 1162 tris, SkinFar 500 tris; bones: Body, Head, LegL, LegR, Head2, ShinL, ShinR, Plume, ToeL, ToeR; marker bones: FootL, TipL, FootR, TipR, Attach.Front. Checked in Top and Bottom."
    ],
    [
     2,
     "Closed shell",
     "pass",
-    "0 edges with one face (a slit, or a fin that would vanish from behind); 165 of 2139 edges where the two faces touch along a thin part's edge (closed, no gap)"
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 100 of 2393 edges where the two faces touch along a thin part's edge (closed, no gap)"
    ],
    [
     3,
     "Depth from each part's own width",
     "pass",
-    "deepest / half-width: Body 0.55, Head 0.91, LegR 0.99, LegL 0.99, ShinR 0.99, ShinL 0.99, ToeR 0.99, ToeL 0.99"
+    "deepest / half-width: Skin 0.55, SkinFar 0.99"
    ],
    [
     4,
@@ -3846,7 +3414,7 @@
     5,
     "Real size, triangles",
     "pass",
-    "0.52 x 0.09 x 0.55 m; 1536 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+    "0.52 x 0.12 x 0.55 m; 1662 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
    ],
    [
     6,
@@ -3900,25 +3468,25 @@
     14,
     "Rig names and pivots",
     "pass",
-    "Head, LegR, LegL, ShinR, ShinL, ToeR, ToeL (+ Attach.Front, FootL, FootR): origins at the joints"
+    "Head, LegL, LegR, Head2, ShinL, ShinR, Plume, ToeL, ToeR (+ FootL, TipL, FootR, TipR, Attach.Front): bones at the joints, each named as the behaviour finds it"
    ],
    [
     15,
     "Joints overlap, no seam, no gap mid-motion",
     "pass",
-    "every part overlaps the body; four legs, near and far: LegL, LegR; motions looked at frame by frame: walk, peck"
+    "one skin bending at every joint, the bones sharing it across each (D21: no part edge to show); legs, near and far: LegL, LegR; motions looked at frame by frame, full size: walk, peck"
    ],
    [
     16,
     "Feet planted",
     "pass",
-    "walk: sink 0.0 mm, lowest foot 0.0 mm up, held 130.4 mm; peck: sink 0.0 mm, lowest foot 0.0 mm up, held 0.0 mm (tolerance 5.5 mm, 1 % of its height)"
+    "walk: sink 1.1 mm, lowest foot 3.9 mm up, held 124.9 mm; peck: sink 0.0 mm, lowest foot 0.0 mm up, held 0.0 mm (tolerance 5.5 mm, 1 % of its height)"
    ],
    [
     17,
     "Each part holds only itself",
     "pass",
-    "looked at on its part map at full size, part by part: Head, LegR, LegL, ShinR, ShinL, ToeR, ToeL; every leg the picture shows is its own part, its own pixels only; legs drawn on the sheet where their shape couldn't part them"
+    "looked at on its part map at full size, part by part: Head, LegL, LegR, Head2, ShinL, ShinR, Plume, ToeL, ToeR; every leg the picture shows is its own part, its own pixels only; legs drawn on the sheet where their shape couldn't part them"
    ]
   ]
  },
@@ -3933,12 +3501,17 @@
   ],
   "view": "above",
   "px_per_m": 651.7,
-  "tris": 1812,
+  "tris": 1378,
+  "meshes": {
+   "Skin": 1378
+  },
   "parts": {
-   "Body": 800,
-   "Tail": 532,
-   "Tail2": 268,
-   "Tail3": 212
+   "Body": 181,
+   "FinL": 21,
+   "FinR": 31,
+   "Tail": 85,
+   "Tail2": 44,
+   "Tail3": 56
   },
   "empties": [
    "Attach.Front"
@@ -3949,37 +3522,30 @@
    0.097
   ],
   "open_edges": {
-   "Body": [
+   "Skin": [
     0,
-    10
-   ],
-   "Tail": [
-    0,
-    21
-   ],
-   "Tail2": [
-    0,
-    21
-   ],
-   "Tail3": [
-    0,
-    19
+    35
    ]
   },
   "depth_to_width": {
-   "Body": 0.72,
-   "Tail": 0.77,
-   "Tail2": 0.91,
-   "Tail3": 0.91
+   "Skin": 0.72
   },
-  "edges": 2647,
+  "edges": 2032,
   "leg_length": null,
   "game": {
    "component": "PondDuck",
    "tail": "Tail",
    "tailAxis": "up",
    "tailSweep": 22,
-   "tailBeat": 1.6
+   "tailBeat": 1.6,
+   "headRecoil": 0.15,
+   "fins": [
+    "FinL",
+    "FinR"
+   ],
+   "finAxis": "up",
+   "finSweep": 25,
+   "finBeat": 0.8
   },
   "copied": [],
   "feet": {},
@@ -3991,19 +3557,19 @@
     1,
     "Every part once",
     "pass",
-    "meshes: Body 800 tris, Tail 532 tris, Tail2 268 tris, Tail3 212 tris; pivots only: Attach.Front. Checked in Top and Bottom."
+    "skinned meshes: Skin 1378 tris; bones: Body, FinL, FinR, Tail, Tail2, Tail3; marker bones: Attach.Front. Checked in Top and Bottom."
    ],
    [
     2,
     "Closed shell",
     "pass",
-    "0 edges with one face (a slit, or a fin that would vanish from behind); 71 of 2647 edges where the two faces touch along a thin part's edge (closed, no gap)"
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 35 of 2032 edges where the two faces touch along a thin part's edge (closed, no gap)"
    ],
    [
     3,
     "Depth from each part's own width",
     "pass",
-    "deepest / half-width: Body 0.72, Tail 0.77, Tail2 0.91, Tail3 0.91"
+    "deepest / half-width: Skin 0.72"
    ],
    [
     4,
@@ -4015,7 +3581,7 @@
     5,
     "Real size, triangles",
     "pass",
-    "0.60 x 0.25 x 0.10 m; 1812 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+    "0.60 x 0.25 x 0.10 m; 1378 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
    ],
    [
     6,
@@ -4069,13 +3635,13 @@
     14,
     "Rig names and pivots",
     "pass",
-    "Tail, Tail2, Tail3 (+ Attach.Front): origins at the joints"
+    "FinL, FinR, Tail, Tail2, Tail3 (+ Attach.Front): bones at the joints, each named as the behaviour finds it"
    ],
    [
     15,
     "Joints overlap, no seam, no gap mid-motion",
     "pass",
-    "every part overlaps the body; motions looked at frame by frame: swim"
+    "one skin bending at every joint, the bones sharing it across each (D21: no part edge to show); motions looked at frame by frame, full size: swim"
    ],
    [
     16,
@@ -4087,7 +3653,7 @@
     17,
     "Each part holds only itself",
     "pass",
-    "looked at on its part map at full size, part by part: Tail, Tail2, Tail3; the pectoral fins kept whole with the body"
+    "looked at on its part map at full size, part by part: FinL, FinR, Tail, Tail2, Tail3; the pectoral fins kept whole with the body"
    ]
   ]
  },
@@ -4102,53 +3668,51 @@
   ],
   "view": "above",
   "px_per_m": 678.8,
-  "tris": 1902,
+  "tris": 1478,
+  "meshes": {
+   "Skin": 1478
+  },
   "parts": {
-   "Body": 902,
-   "Tail": 524,
-   "Tail2": 218,
-   "Tail3": 258
+   "Body": 207,
+   "FinL": 26,
+   "FinR": 31,
+   "Tail": 74,
+   "Tail2": 43,
+   "Tail3": 63
   },
   "empties": [
    "Attach.Front"
   ],
   "size": [
    0.516,
-   0.243,
+   0.242,
    0.095
   ],
   "open_edges": {
-   "Body": [
+   "Skin": [
     0,
-    13
-   ],
-   "Tail": [
-    0,
-    16
-   ],
-   "Tail2": [
-    0,
-    12
-   ],
-   "Tail3": [
-    0,
-    26
+    50
    ]
   },
   "depth_to_width": {
-   "Body": 0.74,
-   "Tail": 0.79,
-   "Tail2": 0.92,
-   "Tail3": 0.94
+   "Skin": 0.74
   },
-  "edges": 2786,
+  "edges": 2167,
   "leg_length": null,
   "game": {
    "component": "PondDuck",
    "tail": "Tail",
    "tailAxis": "up",
    "tailSweep": 22,
-   "tailBeat": 1.6
+   "tailBeat": 1.6,
+   "headRecoil": 0.15,
+   "fins": [
+    "FinL",
+    "FinR"
+   ],
+   "finAxis": "up",
+   "finSweep": 25,
+   "finBeat": 0.8
   },
   "copied": [],
   "feet": {},
@@ -4160,19 +3724,19 @@
     1,
     "Every part once",
     "pass",
-    "meshes: Body 902 tris, Tail 524 tris, Tail2 218 tris, Tail3 258 tris; pivots only: Attach.Front. Checked in Top and Bottom."
+    "skinned meshes: Skin 1478 tris; bones: Body, FinL, FinR, Tail, Tail2, Tail3; marker bones: Attach.Front. Checked in Top and Bottom."
    ],
    [
     2,
     "Closed shell",
     "pass",
-    "0 edges with one face (a slit, or a fin that would vanish from behind); 67 of 2786 edges where the two faces touch along a thin part's edge (closed, no gap)"
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 50 of 2167 edges where the two faces touch along a thin part's edge (closed, no gap)"
    ],
    [
     3,
     "Depth from each part's own width",
     "pass",
-    "deepest / half-width: Body 0.74, Tail 0.79, Tail2 0.92, Tail3 0.94"
+    "deepest / half-width: Skin 0.74"
    ],
    [
     4,
@@ -4184,7 +3748,7 @@
     5,
     "Real size, triangles",
     "pass",
-    "0.52 x 0.24 x 0.10 m; 1902 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+    "0.52 x 0.24 x 0.10 m; 1478 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
    ],
    [
     6,
@@ -4238,13 +3802,13 @@
     14,
     "Rig names and pivots",
     "pass",
-    "Tail, Tail2, Tail3 (+ Attach.Front): origins at the joints"
+    "FinL, FinR, Tail, Tail2, Tail3 (+ Attach.Front): bones at the joints, each named as the behaviour finds it"
    ],
    [
     15,
     "Joints overlap, no seam, no gap mid-motion",
     "pass",
-    "every part overlaps the body; motions looked at frame by frame: swim"
+    "one skin bending at every joint, the bones sharing it across each (D21: no part edge to show); motions looked at frame by frame, full size: swim"
    ],
    [
     16,
@@ -4256,7 +3820,7 @@
     17,
     "Each part holds only itself",
     "pass",
-    "looked at on its part map at full size, part by part: Tail, Tail2, Tail3; the pectoral fins kept whole with the body"
+    "looked at on its part map at full size, part by part: FinL, FinR, Tail, Tail2, Tail3; the pectoral fins kept whole with the body"
    ]
   ]
  },
@@ -4271,53 +3835,51 @@
   ],
   "view": "above",
   "px_per_m": 703.6,
-  "tris": 1836,
+  "tris": 1418,
+  "meshes": {
+   "Skin": 1418
+  },
   "parts": {
-   "Body": 810,
-   "Tail": 536,
-   "Tail2": 266,
-   "Tail3": 224
+   "Body": 175,
+   "FinL": 26,
+   "FinR": 32,
+   "Tail": 88,
+   "Tail2": 50,
+   "Tail3": 59
   },
   "empties": [
    "Attach.Front"
   ],
   "size": [
-   0.547,
+   0.546,
    0.216,
    0.093
   ],
   "open_edges": {
-   "Body": [
+   "Skin": [
     0,
-    7
-   ],
-   "Tail": [
-    0,
-    14
-   ],
-   "Tail2": [
-    0,
-    16
-   ],
-   "Tail3": [
-    0,
-    14
+    27
    ]
   },
   "depth_to_width": {
-   "Body": 0.75,
-   "Tail": 0.79,
-   "Tail2": 0.91,
-   "Tail3": 0.94
+   "Skin": 0.75
   },
-  "edges": 2703,
+  "edges": 2100,
   "leg_length": null,
   "game": {
    "component": "PondDuck",
    "tail": "Tail",
    "tailAxis": "up",
    "tailSweep": 22,
-   "tailBeat": 1.6
+   "tailBeat": 1.6,
+   "headRecoil": 0.15,
+   "fins": [
+    "FinL",
+    "FinR"
+   ],
+   "finAxis": "up",
+   "finSweep": 25,
+   "finBeat": 0.8
   },
   "copied": [],
   "feet": {},
@@ -4329,19 +3891,19 @@
     1,
     "Every part once",
     "pass",
-    "meshes: Body 810 tris, Tail 536 tris, Tail2 266 tris, Tail3 224 tris; pivots only: Attach.Front. Checked in Top and Bottom."
+    "skinned meshes: Skin 1418 tris; bones: Body, FinL, FinR, Tail, Tail2, Tail3; marker bones: Attach.Front. Checked in Top and Bottom."
    ],
    [
     2,
     "Closed shell",
     "pass",
-    "0 edges with one face (a slit, or a fin that would vanish from behind); 51 of 2703 edges where the two faces touch along a thin part's edge (closed, no gap)"
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 27 of 2100 edges where the two faces touch along a thin part's edge (closed, no gap)"
    ],
    [
     3,
     "Depth from each part's own width",
     "pass",
-    "deepest / half-width: Body 0.75, Tail 0.79, Tail2 0.91, Tail3 0.94"
+    "deepest / half-width: Skin 0.75"
    ],
    [
     4,
@@ -4353,7 +3915,7 @@
     5,
     "Real size, triangles",
     "pass",
-    "0.55 x 0.22 x 0.09 m; 1836 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+    "0.55 x 0.22 x 0.09 m; 1418 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
    ],
    [
     6,
@@ -4407,13 +3969,13 @@
     14,
     "Rig names and pivots",
     "pass",
-    "Tail, Tail2, Tail3 (+ Attach.Front): origins at the joints"
+    "FinL, FinR, Tail, Tail2, Tail3 (+ Attach.Front): bones at the joints, each named as the behaviour finds it"
    ],
    [
     15,
     "Joints overlap, no seam, no gap mid-motion",
     "pass",
-    "every part overlaps the body; motions looked at frame by frame: swim"
+    "one skin bending at every joint, the bones sharing it across each (D21: no part edge to show); motions looked at frame by frame, full size: swim"
    ],
    [
     16,
@@ -4425,7 +3987,7 @@
     17,
     "Each part holds only itself",
     "pass",
-    "looked at on its part map at full size, part by part: Tail, Tail2, Tail3; the pectoral fins kept whole with the body"
+    "looked at on its part map at full size, part by part: FinL, FinR, Tail, Tail2, Tail3; the pectoral fins kept whole with the body"
    ]
   ]
  },
@@ -4440,53 +4002,51 @@
   ],
   "view": "above",
   "px_per_m": 797.9,
-  "tris": 1610,
+  "tris": 1228,
+  "meshes": {
+   "Skin": 1228
+  },
   "parts": {
-   "Body": 634,
-   "Tail": 422,
-   "Tail2": 248,
-   "Tail3": 306
+   "Body": 131,
+   "FinL": 27,
+   "FinR": 34,
+   "Tail": 74,
+   "Tail2": 49,
+   "Tail3": 76
   },
   "empties": [
    "Attach.Front"
   ],
   "size": [
-   0.479,
-   0.243,
+   0.477,
+   0.242,
    0.088
   ],
   "open_edges": {
-   "Body": [
+   "Skin": [
     0,
-    8
-   ],
-   "Tail": [
-    0,
-    9
-   ],
-   "Tail2": [
-    0,
-    15
-   ],
-   "Tail3": [
-    0,
-    30
+    38
    ]
   },
   "depth_to_width": {
-   "Body": 0.78,
-   "Tail": 0.8,
-   "Tail2": 0.91,
-   "Tail3": 0.95
+   "Skin": 0.78
   },
-  "edges": 2353,
+  "edges": 1804,
   "leg_length": null,
   "game": {
    "component": "PondDuck",
    "tail": "Tail",
    "tailAxis": "up",
    "tailSweep": 22,
-   "tailBeat": 1.6
+   "tailBeat": 1.6,
+   "headRecoil": 0.15,
+   "fins": [
+    "FinL",
+    "FinR"
+   ],
+   "finAxis": "up",
+   "finSweep": 25,
+   "finBeat": 0.8
   },
   "copied": [],
   "feet": {},
@@ -4498,19 +4058,19 @@
     1,
     "Every part once",
     "pass",
-    "meshes: Body 634 tris, Tail 422 tris, Tail2 248 tris, Tail3 306 tris; pivots only: Attach.Front. Checked in Top and Bottom."
+    "skinned meshes: Skin 1228 tris; bones: Body, FinL, FinR, Tail, Tail2, Tail3; marker bones: Attach.Front. Checked in Top and Bottom."
    ],
    [
     2,
     "Closed shell",
     "pass",
-    "0 edges with one face (a slit, or a fin that would vanish from behind); 62 of 2353 edges where the two faces touch along a thin part's edge (closed, no gap)"
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 38 of 1804 edges where the two faces touch along a thin part's edge (closed, no gap)"
    ],
    [
     3,
     "Depth from each part's own width",
     "pass",
-    "deepest / half-width: Body 0.78, Tail 0.80, Tail2 0.91, Tail3 0.95"
+    "deepest / half-width: Skin 0.78"
    ],
    [
     4,
@@ -4522,7 +4082,7 @@
     5,
     "Real size, triangles",
     "pass",
-    "0.48 x 0.24 x 0.09 m; 1610 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+    "0.48 x 0.24 x 0.09 m; 1228 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
    ],
    [
     6,
@@ -4576,13 +4136,13 @@
     14,
     "Rig names and pivots",
     "pass",
-    "Tail, Tail2, Tail3 (+ Attach.Front): origins at the joints"
+    "FinL, FinR, Tail, Tail2, Tail3 (+ Attach.Front): bones at the joints, each named as the behaviour finds it"
    ],
    [
     15,
     "Joints overlap, no seam, no gap mid-motion",
     "pass",
-    "every part overlaps the body; motions looked at frame by frame: swim"
+    "one skin bending at every joint, the bones sharing it across each (D21: no part edge to show); motions looked at frame by frame, full size: swim"
    ],
    [
     16,
@@ -4594,7 +4154,7 @@
     17,
     "Each part holds only itself",
     "pass",
-    "looked at on its part map at full size, part by part: Tail, Tail2, Tail3; the pectoral fins kept whole with the body"
+    "looked at on its part map at full size, part by part: FinL, FinR, Tail, Tail2, Tail3; the pectoral fins kept whole with the body"
    ]
   ]
  },
@@ -4610,8 +4170,11 @@
   "view": "side",
   "px_per_m": 1030.6,
   "tris": 2194,
+  "meshes": {
+   "Skin": 2194
+  },
   "parts": {
-   "Body": 2194
+   "Body": 618
   },
   "empties": [
    "Attach.Front"
@@ -4622,13 +4185,13 @@
    0.149
   ],
   "open_edges": {
-   "Body": [
+   "Skin": [
     0,
     33
    ]
   },
   "depth_to_width": {
-   "Body": 0.62
+   "Skin": 0.62
   },
   "edges": 3258,
   "leg_length": null,
@@ -4644,7 +4207,7 @@
     1,
     "Every part once",
     "pass",
-    "meshes: Body 2194 tris; pivots only: Attach.Front. Checked in Top and Bottom."
+    "skinned meshes: Skin 2194 tris; bones: Body; marker bones: Attach.Front. Checked in Top and Bottom."
    ],
    [
     2,
@@ -4656,7 +4219,7 @@
     3,
     "Depth from each part's own width",
     "pass",
-    "deepest / half-width: Body 0.62"
+    "deepest / half-width: Skin 0.62"
    ],
    [
     4,
@@ -4755,52 +4318,35 @@
   ],
   "view": "above",
   "px_per_m": 1127.3,
-  "tris": 1630,
+  "tris": 1406,
+  "meshes": {
+   "Skin": 1406
+  },
   "parts": {
-   "Body": 1098,
-   "FlipperBR": 144,
-   "FlipperBL": 154,
-   "FlipperFR": 114,
-   "FlipperFL": 120
+   "Body": 319,
+   "FlipperBL": 35,
+   "FlipperBR": 41,
+   "FlipperFL": 30,
+   "FlipperFR": 30
   },
   "empties": [
    "Attach.Front"
   ],
   "size": [
-   0.327,
+   0.328,
    0.214,
    0.068
   ],
   "open_edges": {
-   "Body": [
+   "Skin": [
     0,
-    35
-   ],
-   "FlipperBR": [
-    0,
-    12
-   ],
-   "FlipperBL": [
-    0,
-    19
-   ],
-   "FlipperFR": [
-    0,
-    12
-   ],
-   "FlipperFL": [
-    0,
-    15
+    47
    ]
   },
   "depth_to_width": {
-   "Body": 0.46,
-   "FlipperBR": 0.93,
-   "FlipperBL": 0.92,
-   "FlipperFR": 0.96,
-   "FlipperFL": 0.95
+   "Skin": 0.46
   },
-  "edges": 2352,
+  "edges": 2062,
   "leg_length": null,
   "game": {
    "component": "PondDuck",
@@ -4824,19 +4370,19 @@
     1,
     "Every part once",
     "pass",
-    "meshes: Body 1098 tris, FlipperBR 144 tris, FlipperBL 154 tris, FlipperFR 114 tris, FlipperFL 120 tris; pivots only: Attach.Front. Checked in Top and Bottom."
+    "skinned meshes: Skin 1406 tris; bones: Body, FlipperBL, FlipperBR, FlipperFL, FlipperFR; marker bones: Attach.Front. Checked in Top and Bottom."
    ],
    [
     2,
     "Closed shell",
     "pass",
-    "0 edges with one face (a slit, or a fin that would vanish from behind); 93 of 2352 edges where the two faces touch along a thin part's edge (closed, no gap)"
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 47 of 2062 edges where the two faces touch along a thin part's edge (closed, no gap)"
    ],
    [
     3,
     "Depth from each part's own width",
     "pass",
-    "deepest / half-width: Body 0.46, FlipperBR 0.93, FlipperBL 0.92, FlipperFR 0.96, FlipperFL 0.95"
+    "deepest / half-width: Skin 0.46"
    ],
    [
     4,
@@ -4848,7 +4394,7 @@
     5,
     "Real size, triangles",
     "pass",
-    "0.33 x 0.21 x 0.07 m; 1630 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+    "0.33 x 0.21 x 0.07 m; 1406 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
    ],
    [
     6,
@@ -4902,13 +4448,13 @@
     14,
     "Rig names and pivots",
     "pass",
-    "FlipperBR, FlipperBL, FlipperFR, FlipperFL (+ Attach.Front): origins at the joints"
+    "FlipperBL, FlipperBR, FlipperFL, FlipperFR (+ Attach.Front): bones at the joints, each named as the behaviour finds it"
    ],
    [
     15,
     "Joints overlap, no seam, no gap mid-motion",
     "pass",
-    "every part overlaps the body; motions looked at frame by frame: swim"
+    "one skin bending at every joint, the bones sharing it across each (D21: no part edge to show); motions looked at frame by frame, full size: swim"
    ],
    [
     16,
@@ -4920,7 +4466,7 @@
     17,
     "Each part holds only itself",
     "pass",
-    "looked at on its part map at full size, part by part: FlipperBR, FlipperBL, FlipperFR, FlipperFL"
+    "looked at on its part map at full size, part by part: FlipperBL, FlipperBR, FlipperFL, FlipperFR"
    ]
   ]
  },
@@ -4935,94 +4481,71 @@
   ],
   "view": "side",
   "px_per_m": 317.8,
-  "tris": 1690,
+  "tris": 1610,
+  "meshes": {
+   "Skin": 1120,
+   "SkinFar": 490
+  },
   "parts": {
-   "Body": 482,
-   "Head": 258,
-   "LegR": 198,
-   "LegL": 120,
-   "ShinR": 248,
-   "ShinL": 194,
-   "ToeR": 124,
-   "ToeL": 66
+   "Body": 177,
+   "Head": 19,
+   "LegL": 14,
+   "LegR": 21,
+   "Head2": 67,
+   "ShinL": 34,
+   "ShinR": 37,
+   "ToeL": 0,
+   "ToeR": 0
   },
   "empties": [
-   "Attach.Front",
    "FootL",
-   "FootR"
+   "TipL",
+   "FootR",
+   "TipR",
+   "Attach.Front"
   ],
   "size": [
-   0.771,
-   0.137,
-   0.897
+   0.78,
+   0.139,
+   0.896
   ],
   "open_edges": {
-   "Body": [
+   "Skin": [
+    0,
+    64
+   ],
+   "SkinFar": [
     0,
     26
-   ],
-   "Head": [
-    0,
-    28
-   ],
-   "LegR": [
-    0,
-    25
-   ],
-   "LegL": [
-    0,
-    9
-   ],
-   "ShinR": [
-    0,
-    35
-   ],
-   "ShinL": [
-    0,
-    26
-   ],
-   "ToeR": [
-    0,
-    19
-   ],
-   "ToeL": [
-    0,
-    9
    ]
   },
   "depth_to_width": {
-   "Body": 0.49,
-   "Head": 0.88,
-   "LegR": 0.92,
-   "LegL": 0.94,
-   "ShinR": 0.97,
-   "ShinL": 0.98,
-   "ToeR": 0.96,
-   "ToeL": 0.99
+   "Skin": 0.49,
+   "SkinFar": 0.94
   },
-  "edges": 2358,
-  "leg_length": 0.5969,
+  "edges": 2325,
+  "leg_length": 0.3763,
   "game": {
    "component": "GroundBird",
    "head": "Head",
    "headAxis": "side",
    "hopper": false,
-   "headSlide": 0,
-   "headNod": 7,
+   "headSlide": 0.0376,
+   "headNod": 2,
    "peckTurn": 25.0,
    "peckTip": 30.0,
-   "legs": "LegGait (stepped, hopped, planted)"
+   "legs": "LegGait (stepped, hopped, planted; feet rolled)"
   },
   "copied": [],
   "feet": {
    "walk": {
-    "sink": 0.0,
-    "contact": 0.0,
-    "held": 0.3532
+    "sink": 0.0005,
+    "contact": 0.0034,
+    "held": 0.2175
    },
    "peck": {
     "sink": 0.0,
-    "contact": 0.0,
+    "contact": -0.0,
     "held": 0.0
    }
   },
@@ -5035,19 +4558,19 @@
     1,
     "Every part once",
     "pass",
-    "meshes: Body 482 tris, Head 258 tris, LegR 198 tris, LegL 120 tris, ShinR 248 tris, ShinL 194 tris, ToeR 124 tris, ToeL 66 tris; pivots only: Attach.Front, FootL, FootR. Checked in Top and Bottom."
+    "skinned meshes: Skin 1120 tris, SkinFar 490 tris; bones: Body, Head, LegL, LegR, Head2, ShinL, ShinR, ToeL, ToeR; marker bones: FootL, TipL, FootR, TipR, Attach.Front. Checked in Top and Bottom."
    ],
    [
     2,
     "Closed shell",
     "pass",
-    "0 edges with one face (a slit, or a fin that would vanish from behind); 177 of 2358 edges where the two faces touch along a thin part's edge (closed, no gap)"
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 90 of 2325 edges where the two faces touch along a thin part's edge (closed, no gap)"
    ],
    [
     3,
     "Depth from each part's own width",
     "pass",
-    "deepest / half-width: Body 0.49, Head 0.88, LegR 0.92, LegL 0.94, ShinR 0.97, ShinL 0.98, ToeR 0.96, ToeL 0.99"
+    "deepest / half-width: Skin 0.49, SkinFar 0.94"
    ],
    [
     4,
@@ -5059,7 +4582,7 @@
     5,
     "Real size, triangles",
     "pass",
-    "0.77 x 0.14 x 0.90 m; 1690 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+    "0.78 x 0.14 x 0.90 m; 1610 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
    ],
    [
     6,
@@ -5113,25 +4636,25 @@
     14,
     "Rig names and pivots",
     "pass",
-    "Head, LegR, LegL, ShinR, ShinL, ToeR, ToeL (+ Attach.Front, FootL, FootR): origins at the joints"
+    "Head, LegL, LegR, Head2, ShinL, ShinR, ToeL, ToeR (+ FootL, TipL, FootR, TipR, Attach.Front): bones at the joints, each named as the behaviour finds it"
    ],
    [
     15,
     "Joints overlap, no seam, no gap mid-motion",
     "pass",
-    "every part overlaps the body; four legs, near and far: LegL, LegR; motions looked at frame by frame: walk, peck"
+    "one skin bending at every joint, the bones sharing it across each (D21: no part edge to show); legs, near and far: LegL, LegR; motions looked at frame by frame, full size: walk, peck"
    ],
    [
     16,
     "Feet planted",
     "pass",
-    "walk: sink 0.0 mm, lowest foot 0.0 mm up, held 353.2 mm; peck: sink 0.0 mm, lowest foot 0.0 mm up, held 0.0 mm (tolerance 9.0 mm, 1 % of its height)"
+    "walk: sink 0.5 mm, lowest foot 3.4 mm up, held 217.5 mm; peck: sink 0.0 mm, lowest foot -0.0 mm up, held 0.0 mm (tolerance 9.0 mm, 1 % of its height)"
    ],
    [
     17,
     "Each part holds only itself",
     "pass",
-    "looked at on its part map at full size, part by part: Head, LegR, LegL, ShinR, ShinL, ToeR, ToeL; every leg the picture shows is its own part, its own pixels only; legs drawn on the sheet where their shape couldn't part them"
+    "looked at on its part map at full size, part by part: Head, LegL, LegR, Head2, ShinL, ShinR, ToeL, ToeR; every leg the picture shows is its own part, its own pixels only; legs drawn on the sheet where their shape couldn't part them"
    ]
   ]
  },
@@ -5146,34 +4669,33 @@
   ],
   "view": "side",
   "px_per_m": 317.6,
-  "tris": 988,
+  "tris": 896,
+  "meshes": {
+   "Skin": 896
+  },
   "parts": {
-   "Body": 818,
-   "Head": 170
+   "Body": 262,
+   "Head": 9,
+   "Head2": 42
   },
   "empties": [
    "Attach.Front"
   ],
   "size": [
-   0.784,
+   0.787,
    0.135,
    0.847
   ],
   "open_edges": {
-   "Body": [
+   "Skin": [
     0,
-    54
-   ],
-   "Head": [
-    0,
-    7
+    39
    ]
   },
   "depth_to_width": {
-   "Body": 0.48,
-   "Head": 0.8
+   "Skin": 0.48
   },
-  "edges": 1421,
+  "edges": 1306,
   "leg_length": null,
   "game": {
    "component": "CritterIdle",
@@ -5181,8 +4703,9 @@
     {
      "part": "Head",
      "axis": "up",
-     "amplitude": 10.0,
-     "speed": 0.7
+     "amplitude": 14.0,
+     "speed": 0.7,
+     "snap": true
     }
    ]
   },
@@ -5196,19 +4719,19 @@
     1,
     "Every part once",
     "pass",
-    "meshes: Body 818 tris, Head 170 tris; pivots only: Attach.Front. Checked in Top and Bottom."
+    "skinned meshes: Skin 896 tris; bones: Body, Head, Head2; marker bones: Attach.Front. Checked in Top and Bottom."
    ],
    [
     2,
     "Closed shell",
     "pass",
-    "0 edges with one face (a slit, or a fin that would vanish from behind); 61 of 1421 edges where the two faces touch along a thin part's edge (closed, no gap)"
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 39 of 1306 edges where the two faces touch along a thin part's edge (closed, no gap)"
    ],
    [
     3,
     "Depth from each part's own width",
     "pass",
-    "deepest / half-width: Body 0.48, Head 0.80"
+    "deepest / half-width: Skin 0.48"
    ],
    [
     4,
@@ -5220,7 +4743,7 @@
     5,
     "Real size, triangles",
     "pass",
-    "0.78 x 0.14 x 0.85 m; 988 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+    "0.79 x 0.14 x 0.85 m; 896 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
    ],
    [
     6,
@@ -5274,13 +4797,13 @@
     14,
     "Rig names and pivots",
     "pass",
-    "Head (+ Attach.Front): origins at the joints"
+    "Head, Head2 (+ Attach.Front): bones at the joints, each named as the behaviour finds it"
    ],
    [
     15,
     "Joints overlap, no seam, no gap mid-motion",
     "pass",
-    "every part overlaps the body; motions looked at frame by frame: idle"
+    "one skin bending at every joint, the bones sharing it across each (D21: no part edge to show); motions looked at frame by frame, full size: idle"
    ],
    [
     16,
@@ -5292,7 +4815,7 @@
     17,
     "Each part holds only itself",
     "pass",
-    "looked at on its part map at full size, part by part: Head"
+    "looked at on its part map at full size, part by part: Head, Head2"
    ]
   ]
  },
@@ -5308,8 +4831,11 @@
   "view": "side",
   "px_per_m": 437.9,
   "tris": 1342,
+  "meshes": {
+   "Skin": 1342
+  },
   "parts": {
-   "Body": 1342
+   "Body": 451
   },
   "empties": [
    "Attach.Front"
@@ -5320,13 +4846,13 @@
    0.596
   ],
   "open_edges": {
-   "Body": [
+   "Skin": [
     0,
     57
    ]
   },
   "depth_to_width": {
-   "Body": 0.59
+   "Skin": 0.59
   },
   "edges": 1956,
   "leg_length": null,
@@ -5342,7 +4868,7 @@
     1,
     "Every part once",
     "pass",
-    "meshes: Body 1342 tris; pivots only: Attach.Front. Checked in Top and Bottom."
+    "skinned meshes: Skin 1342 tris; bones: Body; marker bones: Attach.Front. Checked in Top and Bottom."
    ],
    [
     2,
@@ -5354,7 +4880,7 @@
     3,
     "Depth from each part's own width",
     "pass",
-    "deepest / half-width: Body 0.59"
+    "deepest / half-width: Skin 0.59"
    ],
    [
     4,
@@ -5453,101 +4979,63 @@
   ],
   "view": "side",
   "px_per_m": 1676.2,
-  "tris": 1918,
+  "tris": 1698,
+  "meshes": {
+   "Skin": 1266,
+   "SkinFar": 432
+  },
   "parts": {
-   "Body": 524,
-   "Head": 298,
-   "Tail": 122,
-   "LegR": 82,
-   "LegL": 82,
-   "ShinR": 158,
-   "ShinL": 158,
-   "Tail2": 114,
-   "ToeR": 134,
-   "ToeL": 134,
-   "Tail3": 112
+   "Body": 144,
+   "Head": 9,
+   "LegL": 3,
+   "LegR": 1,
+   "Tail": 31,
+   "Head2": 51,
+   "ShinL": 35,
+   "ShinR": 33,
+   "Tail2": 31,
+   "Tail3": 25,
+   "ToeL": 0,
+   "ToeR": 0
   },
   "empties": [
-   "Attach.Front",
    "FootL",
-   "FootR"
+   "TipL",
+   "FootR",
+   "TipR",
+   "Attach.Front"
   ],
   "size": [
    0.209,
-   0.033,
-   0.129
+   0.04,
+   0.128
   ],
   "open_edges": {
-   "Body": [
+   "Skin": [
     0,
-    35
+    85
    ],
-   "Head": [
+   "SkinFar": [
     0,
-    12
-   ],
-   "Tail": [
-    0,
-    18
-   ],
-   "LegR": [
-    0,
-    12
-   ],
-   "LegL": [
-    0,
-    12
-   ],
-   "ShinR": [
-    0,
-    31
-   ],
-   "ShinL": [
-    0,
-    31
-   ],
-   "Tail2": [
-    0,
-    21
-   ],
-   "ToeR": [
-    0,
-    21
-   ],
-   "ToeL": [
-    0,
-    21
-   ],
-   "Tail3": [
-    0,
-    21
+    22
    ]
   },
   "depth_to_width": {
-   "Body": 0.7,
-   "Head": 0.77,
-   "Tail": 0.84,
-   "LegR": 0.95,
-   "LegL": 0.95,
-   "ShinR": 0.99,
-   "ShinL": 0.99,
-   "Tail2": 0.95,
-   "ToeR": 0.95,
-   "ToeL": 0.95,
-   "Tail3": 0.96
+   "Skin": 0.62,
+   "SkinFar": 0.97
   },
-  "edges": 2642,
+  "edges": 2440,
   "leg_length": 0.0571,
   "game": {
    "component": "GroundBird",
    "head": "Head",
    "headAxis": "side",
    "hopper": false,
-   "headSlide": 0,
-   "headNod": 7,
+   "headSlide": 0.0091,
+   "headNod": 2,
    "peckTurn": 25.0,
    "peckTip": 30.0,
-   "legs": "LegGait (stepped, hopped, planted)",
+   "legs": "LegGait (stepped, hopped, planted; feet rolled)",
    "tail": "Tail",
    "tailAxis": "side",
    "tailPump": 14,
@@ -5559,8 +5047,8 @@
   "feet": {
    "walk": {
     "sink": 0.0,
-    "contact": 0.0,
-    "held": 0.0314
+    "contact": 0.001,
+    "held": 0.0321
    },
    "peck": {
     "sink": 0.0,
@@ -5577,19 +5065,19 @@
     1,
     "Every part once",
     "pass",
-    "meshes: Body 524 tris, Head 298 tris, Tail 122 tris, LegR 82 tris, LegL 82 tris, ShinR 158 tris, ShinL 158 tris, Tail2 114 tris, ToeR 134 tris, ToeL 134 tris, Tail3 112 tris; pivots only: Attach.Front, FootL, FootR. Checked in Top and Bottom."
+    "skinned meshes: Skin 1266 tris, SkinFar 432 tris; bones: Body, Head, LegL, LegR, Tail, Head2, ShinL, ShinR, Tail2, Tail3, ToeL, ToeR; marker bones: FootL, TipL, FootR, TipR, Attach.Front. Checked in Top and Bottom."
    ],
    [
     2,
     "Closed shell",
     "pass",
-    "0 edges with one face (a slit, or a fin that would vanish from behind); 235 of 2642 edges where the two faces touch along a thin part's edge (closed, no gap)"
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 107 of 2440 edges where the two faces touch along a thin part's edge (closed, no gap)"
    ],
    [
     3,
     "Depth from each part's own width",
     "pass",
-    "deepest / half-width: Body 0.70, Head 0.77, Tail 0.84, LegR 0.95, LegL 0.95, ShinR 0.99, ShinL 0.99, Tail2 0.95, ToeR 0.95, ToeL 0.95, Tail3 0.96"
+    "deepest / half-width: Skin 0.62, SkinFar 0.97"
    ],
    [
     4,
@@ -5601,7 +5089,7 @@
     5,
     "Real size, triangles",
     "pass",
-    "0.21 x 0.03 x 0.13 m; 1918 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+    "0.21 x 0.04 x 0.13 m; 1698 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
    ],
    [
     6,
@@ -5655,25 +5143,25 @@
     14,
     "Rig names and pivots",
     "pass",
-    "Head, Tail, LegR, LegL, ShinR, ShinL, Tail2, ToeR, ToeL, Tail3 (+ Attach.Front, FootL, FootR): origins at the joints"
+    "Head, LegL, LegR, Tail, Head2, ShinL, ShinR, Tail2, Tail3, ToeL, ToeR (+ FootL, TipL, FootR, TipR, Attach.Front): bones at the joints, each named as the behaviour finds it"
    ],
    [
     15,
     "Joints overlap, no seam, no gap mid-motion",
     "pass",
-    "every part overlaps the body; four legs, near and far: LegL, LegR; motions looked at frame by frame: walk, peck"
+    "one skin bending at every joint, the bones sharing it across each (D21: no part edge to show); legs, near and far: LegL, LegR; motions looked at frame by frame, full size: walk, peck"
    ],
    [
     16,
     "Feet planted",
     "pass",
-    "walk: sink 0.0 mm, lowest foot 0.0 mm up, held 31.4 mm; peck: sink 0.0 mm, lowest foot 0.0 mm up, held 0.0 mm (tolerance 1.3 mm, 1 % of its height)"
+    "walk: sink 0.0 mm, lowest foot 1.0 mm up, held 32.1 mm; peck: sink 0.0 mm, lowest foot 0.0 mm up, held 0.0 mm (tolerance 1.3 mm, 1 % of its height)"
    ],
    [
     17,
     "Each part holds only itself",
     "pass",
-    "looked at on its part map at full size, part by part: Head, Tail, LegR, LegL, ShinR, ShinL, Tail2, ToeR, ToeL, Tail3; LegL a copy of the near leg, set behind (the far leg, beside the near one all the way down in the picture, taken out); legs drawn on the sheet where their shape couldn't part them"
+    "looked at on its part map at full size, part by part: Head, LegL, LegR, Tail, Head2, ShinL, ShinR, Tail2, Tail3, ToeL, ToeR; LegL a copy of the near leg, set behind (the far leg, beside the near one all the way down in the picture, taken out); legs drawn on the sheet where their shape couldn't part them"
    ]
   ]
  },
@@ -5688,34 +5176,33 @@
   ],
   "view": "side",
   "px_per_m": 2184.6,
-  "tris": 1001,
+  "tris": 801,
+  "meshes": {
+   "Skin": 801
+  },
   "parts": {
-   "Body": 763,
-   "Head": 238
+   "Body": 237,
+   "Head": 5,
+   "Head2": 38
   },
   "empties": [
    "Attach.Front"
   ],
   "size": [
-   0.129,
+   0.128,
    0.028,
    0.121
   ],
   "open_edges": {
-   "Body": [
+   "Skin": [
     0,
-    48
-   ],
-   "Head": [
-    0,
-    15
+    35
    ]
   },
   "depth_to_width": {
-   "Body": 0.56,
-   "Head": 0.72
+   "Skin": 0.55
   },
-  "edges": 1442,
+  "edges": 1170,
   "leg_length": null,
   "game": {
    "component": "CritterIdle",
@@ -5723,8 +5210,9 @@
     {
      "part": "Head",
      "axis": "up",
-     "amplitude": 12.0,
-     "speed": 0.9
+     "amplitude": 22.0,
+     "speed": 0.9,
+     "snap": true
     }
    ]
   },
@@ -5738,19 +5226,19 @@
     1,
     "Every part once",
     "pass",
-    "meshes: Body 763 tris, Head 238 tris; pivots only: Attach.Front. Checked in Top and Bottom."
+    "skinned meshes: Skin 801 tris; bones: Body, Head, Head2; marker bones: Attach.Front. Checked in Top and Bottom."
    ],
    [
     2,
     "Closed shell",
     "pass",
-    "0 edges with one face (a slit, or a fin that would vanish from behind); 63 of 1442 edges where the two faces touch along a thin part's edge (closed, no gap)"
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 35 of 1170 edges where the two faces touch along a thin part's edge (closed, no gap)"
    ],
    [
     3,
     "Depth from each part's own width",
     "pass",
-    "deepest / half-width: Body 0.56, Head 0.72"
+    "deepest / half-width: Skin 0.55"
    ],
    [
     4,
@@ -5762,7 +5250,7 @@
     5,
     "Real size, triangles",
     "pass",
-    "0.13 x 0.03 x 0.12 m; 1001 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+    "0.13 x 0.03 x 0.12 m; 801 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
    ],
    [
     6,
@@ -5816,13 +5304,13 @@
     14,
     "Rig names and pivots",
     "pass",
-    "Head (+ Attach.Front): origins at the joints"
+    "Head, Head2 (+ Attach.Front): bones at the joints, each named as the behaviour finds it"
    ],
    [
     15,
     "Joints overlap, no seam, no gap mid-motion",
     "pass",
-    "every part overlaps the body; motions looked at frame by frame: idle"
+    "one skin bending at every joint, the bones sharing it across each (D21: no part edge to show); motions looked at frame by frame, full size: idle"
    ],
    [
     16,
@@ -5834,7 +5322,7 @@
     17,
     "Each part holds only itself",
     "pass",
-    "looked at on its part map at full size, part by part: Head"
+    "looked at on its part map at full size, part by part: Head, Head2"
    ]
   ]
  },
@@ -5849,52 +5337,35 @@
   ],
   "view": "below",
   "px_per_m": 1877.8,
-  "tris": 1694,
+  "tris": 1138,
+  "meshes": {
+   "Skin": 1138
+  },
   "parts": {
-   "Body": 390,
-   "WingR": 304,
-   "WingL": 298,
-   "WingL2": 356,
-   "WingR2": 346
+   "Body": 114,
+   "WingL": 44,
+   "WingR": 42,
+   "WingL2": 83,
+   "WingR2": 79
   },
   "empties": [
    "Attach.Front"
   ],
   "size": [
    0.125,
-   0.178,
-   0.02
+   0.179,
+   0.023
   ],
   "open_edges": {
-   "Body": [
+   "Skin": [
     0,
-    19
-   ],
-   "WingR": [
-    0,
-    8
-   ],
-   "WingL": [
-    0,
-    9
-   ],
-   "WingL2": [
-    0,
-    24
-   ],
-   "WingR2": [
-    0,
-    21
+    52
    ]
   },
   "depth_to_width": {
-   "Body": 0.68,
-   "WingR": 0.22,
-   "WingL": 0.22,
-   "WingL2": 0.25,
-   "WingR2": 0.26
+   "Skin": 0.44
   },
-  "edges": 2460,
+  "edges": 1655,
   "leg_length": null,
   "game": {
    "component": "GroundBird (flying model) or SkyFlock",
@@ -5914,19 +5385,19 @@
     1,
     "Every part once",
     "pass",
-    "meshes: Body 390 tris, WingR 304 tris, WingL 298 tris, WingL2 356 tris, WingR2 346 tris; pivots only: Attach.Front. Checked in Top and Bottom."
+    "skinned meshes: Skin 1138 tris; bones: Body, WingL, WingR, WingL2, WingR2; marker bones: Attach.Front. Checked in Top and Bottom."
    ],
    [
     2,
     "Closed shell",
     "pass",
-    "0 edges with one face (a slit, or a fin that would vanish from behind); 81 of 2460 edges where the two faces touch along a thin part's edge (closed, no gap)"
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 52 of 1655 edges where the two faces touch along a thin part's edge (closed, no gap)"
    ],
    [
     3,
     "Depth from each part's own width",
     "pass",
-    "deepest / half-width: Body 0.68, WingR 0.22, WingL 0.22, WingL2 0.25, WingR2 0.26"
+    "deepest / half-width: Skin 0.44"
    ],
    [
     4,
@@ -5938,7 +5409,7 @@
     5,
     "Real size, triangles",
     "pass",
-    "0.12 x 0.18 x 0.02 m; 1694 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+    "0.12 x 0.18 x 0.02 m; 1138 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
    ],
    [
     6,
@@ -5992,13 +5463,13 @@
     14,
     "Rig names and pivots",
     "pass",
-    "WingR, WingL, WingL2, WingR2 (+ Attach.Front): origins at the joints"
+    "WingL, WingR, WingL2, WingR2 (+ Attach.Front): bones at the joints, each named as the behaviour finds it"
    ],
    [
     15,
     "Joints overlap, no seam, no gap mid-motion",
     "pass",
-    "every part overlaps the body; motions looked at frame by frame: fly"
+    "one skin bending at every joint, the bones sharing it across each (D21: no part edge to show); motions looked at frame by frame, full size: fly"
    ],
    [
     16,
@@ -6010,7 +5481,7 @@
     17,
     "Each part holds only itself",
     "pass",
-    "looked at on its part map at full size, part by part: WingR, WingL, WingL2, WingR2"
+    "looked at on its part map at full size, part by part: WingL, WingR, WingL2, WingR2"
    ]
   ]
  },
@@ -6025,10 +5496,14 @@
   ],
   "view": "side",
   "px_per_m": 1032.1,
-  "tris": 1053,
+  "tris": 889,
+  "meshes": {
+   "Skin": 889
+  },
   "parts": {
-   "Body": 749,
-   "Head": 304
+   "Body": 229,
+   "Head": 7,
+   "Head2": 58
   },
   "empties": [
    "Attach.Front"
@@ -6039,20 +5514,15 @@
    0.247
   ],
   "open_edges": {
-   "Body": [
+   "Skin": [
     0,
-    55
-   ],
-   "Head": [
-    0,
-    16
+    54
    ]
   },
   "depth_to_width": {
-   "Body": 0.5,
-   "Head": 0.6
+   "Skin": 0.48
   },
-  "edges": 1510,
+  "edges": 1281,
   "leg_length": null,
   "game": {
    "component": "CritterIdle",
@@ -6060,8 +5530,9 @@
     {
      "part": "Head",
      "axis": "up",
-     "amplitude": 12.0,
-     "speed": 0.9
+     "amplitude": 22.0,
+     "speed": 0.9,
+     "snap": true
     }
    ]
   },
@@ -6075,19 +5546,19 @@
     1,
     "Every part once",
     "pass",
-    "meshes: Body 749 tris, Head 304 tris; pivots only: Attach.Front. Checked in Top and Bottom."
+    "skinned meshes: Skin 889 tris; bones: Body, Head, Head2; marker bones: Attach.Front. Checked in Top and Bottom."
    ],
    [
     2,
     "Closed shell",
     "pass",
-    "0 edges with one face (a slit, or a fin that would vanish from behind); 71 of 1510 edges where the two faces touch along a thin part's edge (closed, no gap)"
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 54 of 1281 edges where the two faces touch along a thin part's edge (closed, no gap)"
    ],
    [
     3,
     "Depth from each part's own width",
     "pass",
-    "deepest / half-width: Body 0.50, Head 0.60"
+    "deepest / half-width: Skin 0.48"
    ],
    [
     4,
@@ -6099,7 +5570,7 @@
     5,
     "Real size, triangles",
     "pass",
-    "0.28 x 0.05 x 0.25 m; 1053 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+    "0.28 x 0.05 x 0.25 m; 889 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
    ],
    [
     6,
@@ -6153,13 +5624,13 @@
     14,
     "Rig names and pivots",
     "pass",
-    "Head (+ Attach.Front): origins at the joints"
+    "Head, Head2 (+ Attach.Front): bones at the joints, each named as the behaviour finds it"
    ],
    [
     15,
     "Joints overlap, no seam, no gap mid-motion",
     "pass",
-    "every part overlaps the body; motions looked at frame by frame: idle"
+    "one skin bending at every joint, the bones sharing it across each (D21: no part edge to show); motions looked at frame by frame, full size: idle"
    ],
    [
     16,
@@ -6171,7 +5642,7 @@
     17,
     "Each part holds only itself",
     "pass",
-    "looked at on its part map at full size, part by part: Head"
+    "looked at on its part map at full size, part by part: Head, Head2"
    ]
   ]
  },
@@ -6186,52 +5657,35 @@
   ],
   "view": "below",
   "px_per_m": 960.0,
-  "tris": 1882,
+  "tris": 1200,
+  "meshes": {
+   "Skin": 1200
+  },
   "parts": {
-   "Body": 440,
-   "WingR": 348,
-   "WingL": 350,
-   "WingL2": 384,
-   "WingR2": 360
+   "Body": 138,
+   "WingL": 59,
+   "WingR": 59,
+   "WingL2": 71,
+   "WingR2": 68
   },
   "empties": [
    "Attach.Front"
   ],
   "size": [
    0.275,
-   0.398,
-   0.038
+   0.396,
+   0.04
   ],
   "open_edges": {
-   "Body": [
+   "Skin": [
     0,
-    21
-   ],
-   "WingR": [
-    0,
-    17
-   ],
-   "WingL": [
-    0,
-    18
-   ],
-   "WingL2": [
-    0,
-    33
-   ],
-   "WingR2": [
-    0,
-    28
+    62
    ]
   },
   "depth_to_width": {
-   "Body": 0.53,
-   "WingR": 0.16,
-   "WingL": 0.16,
-   "WingL2": 0.2,
-   "WingR2": 0.2
+   "Skin": 0.38
   },
-  "edges": 2706,
+  "edges": 1738,
   "leg_length": null,
   "game": {
    "component": "GroundBird (flying model) or SkyFlock",
@@ -6251,19 +5705,19 @@
     1,
     "Every part once",
     "pass",
-    "meshes: Body 440 tris, WingR 348 tris, WingL 350 tris, WingL2 384 tris, WingR2 360 tris; pivots only: Attach.Front. Checked in Top and Bottom."
+    "skinned meshes: Skin 1200 tris; bones: Body, WingL, WingR, WingL2, WingR2; marker bones: Attach.Front. Checked in Top and Bottom."
    ],
    [
     2,
     "Closed shell",
     "pass",
-    "0 edges with one face (a slit, or a fin that would vanish from behind); 117 of 2706 edges where the two faces touch along a thin part's edge (closed, no gap)"
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 62 of 1738 edges where the two faces touch along a thin part's edge (closed, no gap)"
    ],
    [
     3,
     "Depth from each part's own width",
     "pass",
-    "deepest / half-width: Body 0.53, WingR 0.16, WingL 0.16, WingL2 0.20, WingR2 0.20"
+    "deepest / half-width: Skin 0.38"
    ],
    [
     4,
@@ -6275,7 +5729,7 @@
     5,
     "Real size, triangles",
     "pass",
-    "0.28 x 0.40 x 0.04 m; 1882 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+    "0.28 x 0.40 x 0.04 m; 1200 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
    ],
    [
     6,
@@ -6329,13 +5783,13 @@
     14,
     "Rig names and pivots",
     "pass",
-    "WingR, WingL, WingL2, WingR2 (+ Attach.Front): origins at the joints"
+    "WingL, WingR, WingL2, WingR2 (+ Attach.Front): bones at the joints, each named as the behaviour finds it"
    ],
    [
     15,
     "Joints overlap, no seam, no gap mid-motion",
     "pass",
-    "every part overlaps the body; motions looked at frame by frame: fly"
+    "one skin bending at every joint, the bones sharing it across each (D21: no part edge to show); motions looked at frame by frame, full size: fly"
    ],
    [
     16,
@@ -6347,7 +5801,7 @@
     17,
     "Each part holds only itself",
     "pass",
-    "looked at on its part map at full size, part by part: WingR, WingL, WingL2, WingR2"
+    "looked at on its part map at full size, part by part: WingL, WingR, WingL2, WingR2"
    ]
   ]
  },
@@ -6362,90 +5816,67 @@
   ],
   "view": "side",
   "px_per_m": 1048.5,
-  "tris": 1518,
+  "tris": 1626,
+  "meshes": {
+   "Skin": 1268,
+   "SkinFar": 358
+  },
   "parts": {
-   "Body": 894,
-   "Head": 224,
-   "LegR": 34,
-   "LegL": 40,
-   "ShinR": 58,
-   "ShinL": 42,
-   "ToeR": 170,
-   "ToeL": 56
+   "Body": 268,
+   "Head": 7,
+   "LegL": 1,
+   "LegR": 1,
+   "Head2": 42,
+   "ShinL": 9,
+   "ShinR": 16,
+   "ToeL": 0,
+   "ToeR": 0
   },
   "empties": [
-   "Attach.Front",
    "FootL",
-   "FootR"
+   "TipL",
+   "FootR",
+   "TipR",
+   "Attach.Front"
   ],
   "size": [
    0.329,
-   0.081,
+   0.085,
    0.224
   ],
   "open_edges": {
-   "Body": [
+   "Skin": [
     0,
-    60
+    46
    ],
-   "Head": [
+   "SkinFar": [
     0,
-    8
-   ],
-   "LegR": [
-    0,
-    1
-   ],
-   "LegL": [
-    0,
-    5
-   ],
-   "ShinR": [
-    0,
-    6
-   ],
-   "ShinL": [
-    0,
-    5
-   ],
-   "ToeR": [
-    0,
-    31
-   ],
-   "ToeL": [
-    0,
-    6
+    9
    ]
   },
   "depth_to_width": {
-   "Body": 0.72,
-   "Head": 0.91,
-   "LegR": 0.99,
-   "LegL": 1.0,
-   "ShinR": 1.0,
-   "ShinL": 0.99,
-   "ToeR": 0.98,
-   "ToeL": 1.0
+   "Skin": 0.72,
+   "SkinFar": 0.96
   },
-  "edges": 2155,
+  "edges": 2384,
   "leg_length": 0.0379,
   "game": {
    "component": "GroundBird",
    "head": "Head",
    "headAxis": "side",
    "hopper": false,
-   "headSlide": 0,
-   "headNod": 7,
+   "headSlide": 0.0061,
+   "headNod": 2,
    "peckTurn": 35.0,
    "peckTip": 18.0,
-   "legs": "LegGait (stepped, hopped, planted)"
+   "legs": "LegGait (stepped, hopped, planted; feet rolled)"
   },
   "copied": [],
   "feet": {
    "walk": {
-    "sink": 0.0,
-    "contact": 0.0,
-    "held": 0.024
+    "sink": 0.0015,
+    "contact": 0.0012,
+    "held": 0.0503
    },
    "peck": {
     "sink": 0.0,
@@ -6462,19 +5893,19 @@
     1,
     "Every part once",
     "pass",
-    "meshes: Body 894 tris, Head 224 tris, LegR 34 tris, LegL 40 tris, ShinR 58 tris, ShinL 42 tris, ToeR 170 tris, ToeL 56 tris; pivots only: Attach.Front, FootL, FootR. Checked in Top and Bottom."
+    "skinned meshes: Skin 1268 tris, SkinFar 358 tris; bones: Body, Head, LegL, LegR, Head2, ShinL, ShinR, ToeL, ToeR; marker bones: FootL, TipL, FootR, TipR, Attach.Front. Checked in Top and Bottom."
    ],
    [
     2,
     "Closed shell",
     "pass",
-    "0 edges with one face (a slit, or a fin that would vanish from behind); 122 of 2155 edges where the two faces touch along a thin part's edge (closed, no gap)"
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 55 of 2384 edges where the two faces touch along a thin part's edge (closed, no gap)"
    ],
    [
     3,
     "Depth from each part's own width",
     "pass",
-    "deepest / half-width: Body 0.72, Head 0.91, LegR 0.99, LegL 1.00, ShinR 1.00, ShinL 0.99, ToeR 0.98, ToeL 1.00"
+    "deepest / half-width: Skin 0.72, SkinFar 0.96"
    ],
    [
     4,
@@ -6486,7 +5917,7 @@
     5,
     "Real size, triangles",
     "pass",
-    "0.33 x 0.08 x 0.22 m; 1518 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+    "0.33 x 0.09 x 0.22 m; 1626 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
    ],
    [
     6,
@@ -6540,25 +5971,25 @@
     14,
     "Rig names and pivots",
     "pass",
-    "Head, LegR, LegL, ShinR, ShinL, ToeR, ToeL (+ Attach.Front, FootL, FootR): origins at the joints"
+    "Head, LegL, LegR, Head2, ShinL, ShinR, ToeL, ToeR (+ FootL, TipL, FootR, TipR, Attach.Front): bones at the joints, each named as the behaviour finds it"
    ],
    [
     15,
     "Joints overlap, no seam, no gap mid-motion",
     "pass",
-    "every part overlaps the body; four legs, near and far: LegL, LegR; motions looked at frame by frame: walk, peck"
+    "one skin bending at every joint, the bones sharing it across each (D21: no part edge to show); legs, near and far: LegL, LegR; motions looked at frame by frame, full size: walk, peck"
    ],
    [
     16,
     "Feet planted",
     "pass",
-    "walk: sink 0.0 mm, lowest foot 0.0 mm up, held 24.0 mm; peck: sink 0.0 mm, lowest foot 0.0 mm up, held 0.0 mm (tolerance 2.2 mm, 1 % of its height)"
+    "walk: sink 1.5 mm, lowest foot 1.2 mm up, held 50.3 mm; peck: sink 0.0 mm, lowest foot 0.0 mm up, held 0.0 mm (tolerance 2.2 mm, 1 % of its height)"
    ],
    [
     17,
     "Each part holds only itself",
     "pass",
-    "looked at on its part map at full size, part by part: Head, LegR, LegL, ShinR, ShinL, ToeR, ToeL; every leg the picture shows is its own part, its own pixels only; legs drawn on the sheet where their shape couldn't part them"
+    "looked at on its part map at full size, part by part: Head, LegL, LegR, Head2, ShinL, ShinR, ToeL, ToeR; every leg the picture shows is its own part, its own pixels only; legs drawn on the sheet where their shape couldn't part them"
    ]
   ]
  },
@@ -6573,52 +6004,35 @@
   ],
   "view": "below",
   "px_per_m": 756.6,
-  "tris": 2146,
+  "tris": 1278,
+  "meshes": {
+   "Skin": 1278
+  },
   "parts": {
-   "Body": 612,
-   "WingR": 382,
-   "WingL": 386,
-   "WingL2": 390,
-   "WingR2": 376
+   "Body": 155,
+   "WingL": 60,
+   "WingR": 60,
+   "WingL2": 64,
+   "WingR2": 61
   },
   "empties": [
    "Attach.Front"
   ],
   "size": [
    0.313,
-   0.527,
-   0.049
+   0.525,
+   0.05
   ],
   "open_edges": {
-   "Body": [
+   "Skin": [
     0,
-    28
-   ],
-   "WingR": [
-    0,
-    19
-   ],
-   "WingL": [
-    0,
-    21
-   ],
-   "WingL2": [
-    0,
-    38
-   ],
-   "WingR2": [
-    0,
-    31
+    42
    ]
   },
   "depth_to_width": {
-   "Body": 0.42,
-   "WingR": 0.17,
-   "WingL": 0.17,
-   "WingL2": 0.22,
-   "WingR2": 0.22
+   "Skin": 0.36
   },
-  "edges": 3082,
+  "edges": 1875,
   "leg_length": null,
   "game": {
    "component": "GroundBird (flying model) or SkyFlock",
@@ -6638,19 +6052,19 @@
     1,
     "Every part once",
     "pass",
-    "meshes: Body 612 tris, WingR 382 tris, WingL 386 tris, WingL2 390 tris, WingR2 376 tris; pivots only: Attach.Front. Checked in Top and Bottom."
+    "skinned meshes: Skin 1278 tris; bones: Body, WingL, WingR, WingL2, WingR2; marker bones: Attach.Front. Checked in Top and Bottom."
    ],
    [
     2,
     "Closed shell",
     "pass",
-    "0 edges with one face (a slit, or a fin that would vanish from behind); 137 of 3082 edges where the two faces touch along a thin part's edge (closed, no gap)"
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 42 of 1875 edges where the two faces touch along a thin part's edge (closed, no gap)"
    ],
    [
     3,
     "Depth from each part's own width",
     "pass",
-    "deepest / half-width: Body 0.42, WingR 0.17, WingL 0.17, WingL2 0.22, WingR2 0.22"
+    "deepest / half-width: Skin 0.36"
    ],
    [
     4,
@@ -6662,7 +6076,7 @@
     5,
     "Real size, triangles",
     "pass",
-    "0.31 x 0.53 x 0.05 m; 2146 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+    "0.31 x 0.53 x 0.05 m; 1278 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
    ],
    [
     6,
@@ -6716,13 +6130,13 @@
     14,
     "Rig names and pivots",
     "pass",
-    "WingR, WingL, WingL2, WingR2 (+ Attach.Front): origins at the joints"
+    "WingL, WingR, WingL2, WingR2 (+ Attach.Front): bones at the joints, each named as the behaviour finds it"
    ],
    [
     15,
     "Joints overlap, no seam, no gap mid-motion",
     "pass",
-    "every part overlaps the body; motions looked at frame by frame: fly"
+    "one skin bending at every joint, the bones sharing it across each (D21: no part edge to show); motions looked at frame by frame, full size: fly"
    ],
    [
     16,
@@ -6734,7 +6148,7 @@
     17,
     "Each part holds only itself",
     "pass",
-    "looked at on its part map at full size, part by part: WingR, WingL, WingL2, WingR2"
+    "looked at on its part map at full size, part by part: WingL, WingR, WingL2, WingR2"
    ]
   ]
  },
@@ -6749,122 +6163,60 @@
   ],
   "view": "side",
   "px_per_m": 723.3,
-  "tris": 1950,
+  "tris": 1164,
+  "meshes": {
+   "Skin": 872,
+   "SkinFar": 292
+  },
   "parts": {
-   "Body": 662,
-   "Tail": 70,
-   "LegFR": 104,
-   "LegFL": 122,
-   "LegBR": 138,
-   "LegBL": 116,
-   "ShinFR": 120,
-   "ShinFL": 78,
-   "ShinBR": 108,
-   "ShinBL": 66,
-   "Tail2": 108,
-   "ToeFR": 48,
-   "ToeFL": 48,
-   "ToeBR": 48,
-   "ToeBL": 36,
-   "Tail3": 78
+   "Body": 226,
+   "LegBL": 14,
+   "LegBR": 16,
+   "LegFL": 14,
+   "LegFR": 12,
+   "Tail": 3,
+   "ShinBL": 12,
+   "ShinBR": 15,
+   "ShinFL": 13,
+   "ShinFR": 19,
+   "Tail2": 14,
+   "Tail3": 15,
+   "ToeBL": 6,
+   "ToeBR": 9,
+   "ToeFL": 8,
+   "ToeFR": 9
   },
   "empties": [
-   "Attach.Front",
    "FootBL",
+   "TipBL",
    "FootBR",
+   "TipBR",
    "FootFL",
-   "FootFR"
+   "TipFL",
+   "FootFR",
+   "TipFR",
+   "Attach.Front"
   ],
   "size": [
    0.542,
-   0.12,
+   0.106,
    0.297
   ],
   "open_edges": {
-   "Body": [
+   "Skin": [
     0,
-    30
+    56
    ],
-   "Tail": [
+   "SkinFar": [
     0,
-    6
-   ],
-   "LegFR": [
-    0,
-    11
-   ],
-   "LegFL": [
-    0,
-    17
-   ],
-   "LegBR": [
-    0,
-    16
-   ],
-   "LegBL": [
-    0,
-    19
-   ],
-   "ShinFR": [
-    0,
-    22
-   ],
-   "ShinFL": [
-    0,
-    12
-   ],
-   "ShinBR": [
-    0,
-    17
-   ],
-   "ShinBL": [
-    0,
-    11
-   ],
-   "Tail2": [
-    0,
-    19
-   ],
-   "ToeFR": [
-    0,
-    7
-   ],
-   "ToeFL": [
-    0,
-    7
-   ],
-   "ToeBR": [
-    0,
-    6
-   ],
-   "ToeBL": [
-    0,
-    5
-   ],
-   "Tail3": [
-    0,
-    13
+    41
    ]
   },
   "depth_to_width": {
-   "Body": 0.64,
-   "Tail": 0.95,
-   "LegFR": 0.96,
-   "LegFL": 0.9,
-   "LegBR": 0.89,
-   "LegBL": 0.97,
-   "ShinFR": 0.97,
-   "ShinFL": 0.93,
-   "ShinBR": 0.93,
-   "ShinBL": 0.95,
-   "Tail2": 0.97,
-   "ToeFR": 0.97,
-   "ToeFL": 0.94,
-   "ToeBR": 0.95,
-   "ToeBL": 0.95,
-   "Tail3": 0.98
+   "Skin": 0.64,
+   "SkinFar": 0.93
   },
-  "edges": 2707,
+  "edges": 1649,
   "leg_length": 0.1274,
   "game": {
    "component": "WallCat",
@@ -6877,17 +6229,17 @@
    "walk": {
     "sink": 0.0,
     "contact": 0.0,
-    "held": 0.0703
+    "held": 0.0657
    },
    "run": {
     "sink": 0.0,
-    "contact": 0.0053,
-    "held": 0.128
+    "contact": 0.0096,
+    "held": 0.1257
    },
    "bound": {
     "sink": 0.0,
-    "contact": 0.1247,
-    "held": 0.1358
+    "contact": 0.1336,
+    "held": 0.142
    }
   },
   "motions": [
@@ -6900,19 +6252,19 @@
     1,
     "Every part once",
     "pass",
-    "meshes: Body 662 tris, Tail 70 tris, LegFR 104 tris, LegFL 122 tris, LegBR 138 tris, LegBL 116 tris, ShinFR 120 tris, ShinFL 78 tris, ShinBR 108 tris, ShinBL 66 tris, Tail2 108 tris, ToeFR 48 tris, ToeFL 48 tris, ToeBR 48 tris, ToeBL 36 tris, Tail3 78 tris; pivots only: Attach.Front, FootBL, FootBR, FootFL, FootFR. Checked in Top and Bottom."
+    "skinned meshes: Skin 872 tris, SkinFar 292 tris; bones: Body, LegBL, LegBR, LegFL, LegFR, Tail, ShinBL, ShinBR, ShinFL, ShinFR, Tail2, Tail3, ToeBL, ToeBR, ToeFL, ToeFR; marker bones: FootBL, TipBL, FootBR, TipBR, FootFL, TipFL, FootFR, TipFR, Attach.Front. Checked in Top and Bottom."
    ],
    [
     2,
     "Closed shell",
     "pass",
-    "0 edges with one face (a slit, or a fin that would vanish from behind); 218 of 2707 edges where the two faces touch along a thin part's edge (closed, no gap)"
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 97 of 1649 edges where the two faces touch along a thin part's edge (closed, no gap)"
    ],
    [
     3,
     "Depth from each part's own width",
     "pass",
-    "deepest / half-width: Body 0.64, Tail 0.95, LegFR 0.96, LegFL 0.90, LegBR 0.89, LegBL 0.97, ShinFR 0.97, ShinFL 0.93, ShinBR 0.93, ShinBL 0.95, Tail2 0.97, ToeFR 0.97, ToeFL 0.94, ToeBR 0.95, ToeBL 0.95, Tail3 0.98"
+    "deepest / half-width: Skin 0.64, SkinFar 0.93"
    ],
    [
     4,
@@ -6924,7 +6276,7 @@
     5,
     "Real size, triangles",
     "pass",
-    "0.54 x 0.12 x 0.30 m; 1950 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+    "0.54 x 0.11 x 0.30 m; 1164 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
    ],
    [
     6,
@@ -6978,25 +6330,25 @@
     14,
     "Rig names and pivots",
     "pass",
-    "Tail, LegFR, LegFL, LegBR, LegBL, ShinFR, ShinFL, ShinBR, ShinBL, Tail2, ToeFR, ToeFL, ToeBR, ToeBL, Tail3 (+ Attach.Front, FootBL, FootBR, FootFL, FootFR): origins at the joints"
+    "LegBL, LegBR, LegFL, LegFR, Tail, ShinBL, ShinBR, ShinFL, ShinFR, Tail2, Tail3, ToeBL, ToeBR, ToeFL, ToeFR (+ FootBL, TipBL, FootBR, TipBR, FootFL, TipFL, FootFR, TipFR, Attach.Front): bones at the joints, each named as the behaviour finds it"
    ],
    [
     15,
     "Joints overlap, no seam, no gap mid-motion",
     "pass",
-    "every part overlaps the body; four legs, near and far: LegBL, LegBR, LegFL, LegFR; motions looked at frame by frame: walk, run, bound"
+    "one skin bending at every joint, the bones sharing it across each (D21: no part edge to show); legs, near and far: LegBL, LegBR, LegFL, LegFR; motions looked at frame by frame, full size: walk, run, bound"
    ],
    [
     16,
     "Feet planted",
     "pass",
-    "walk: sink 0.0 mm, lowest foot 0.0 mm up, held 70.3 mm; run: sink 0.0 mm, lowest foot 5.3 mm up, held 128.0 mm; bound: sink 0.0 mm, lowest foot 124.7 mm up, held 135.8 mm (tolerance 3.0 mm, 1 % of its height)"
+    "walk: sink 0.0 mm, lowest foot 0.0 mm up, held 65.7 mm; run: sink 0.0 mm, lowest foot 9.6 mm up, held 125.7 mm; bound: sink 0.0 mm, lowest foot 133.6 mm up, held 142.0 mm (tolerance 3.0 mm, 1 % of its height)"
    ],
    [
     17,
     "Each part holds only itself",
     "pass",
-    "looked at on its part map at full size, part by part: Tail, LegFR, LegFL, LegBR, LegBL, ShinFR, ShinFL, ShinBR, ShinBL, Tail2, ToeFR, ToeFL, ToeBR, ToeBL, Tail3; every leg the picture shows is its own part, its own pixels only"
+    "looked at on its part map at full size, part by part: LegBL, LegBR, LegFL, LegFR, Tail, ShinBL, ShinBR, ShinFL, ShinFR, Tail2, Tail3, ToeBL, ToeBR, ToeFL, ToeFR; every leg the picture shows is its own part, its own pixels only"
    ]
   ]
  },
@@ -7012,8 +6364,11 @@
   "view": "side",
   "px_per_m": 826.2,
   "tris": 1976,
+  "meshes": {
+   "Skin": 1976
+  },
   "parts": {
-   "Body": 1976
+   "Body": 552
   },
   "empties": [
    "Attach.Front"
@@ -7024,13 +6379,13 @@
    0.258
   ],
   "open_edges": {
-   "Body": [
+   "Skin": [
     0,
     57
    ]
   },
   "depth_to_width": {
-   "Body": 0.62
+   "Skin": 0.62
   },
   "edges": 2907,
   "leg_length": null,
@@ -7046,7 +6401,7 @@
     1,
     "Every part once",
     "pass",
-    "meshes: Body 1976 tris; pivots only: Attach.Front. Checked in Top and Bottom."
+    "skinned meshes: Skin 1976 tris; bones: Body; marker bones: Attach.Front. Checked in Top and Bottom."
    ],
    [
     2,
@@ -7058,7 +6413,7 @@
     3,
     "Depth from each part's own width",
     "pass",
-    "deepest / half-width: Body 0.62"
+    "deepest / half-width: Skin 0.62"
    ],
    [
     4,
@@ -7157,122 +6512,60 @@
   ],
   "view": "side",
   "px_per_m": 733.3,
-  "tris": 2278,
+  "tris": 1576,
+  "meshes": {
+   "Skin": 1306,
+   "SkinFar": 270
+  },
   "parts": {
-   "Body": 1070,
-   "Tail": 70,
-   "LegFR": 150,
-   "LegFL": 116,
-   "LegBR": 182,
-   "LegBL": 134,
-   "ShinFR": 82,
-   "ShinFL": 58,
-   "ShinBR": 74,
-   "ShinBL": 56,
-   "Tail2": 60,
-   "ToeFR": 42,
-   "ToeFL": 32,
-   "ToeBR": 54,
-   "ToeBL": 42,
-   "Tail3": 56
+   "Body": 331,
+   "LegBL": 15,
+   "LegBR": 19,
+   "LegFL": 14,
+   "LegFR": 16,
+   "Tail": 8,
+   "ShinBL": 10,
+   "ShinBR": 12,
+   "ShinFL": 9,
+   "ShinFR": 19,
+   "Tail2": 5,
+   "Tail3": 14,
+   "ToeBL": 6,
+   "ToeBR": 11,
+   "ToeFL": 8,
+   "ToeFR": 13
   },
   "empties": [
-   "Attach.Front",
    "FootBL",
+   "TipBL",
    "FootBR",
+   "TipBR",
    "FootFL",
-   "FootFR"
+   "TipFL",
+   "FootFR",
+   "TipFR",
+   "Attach.Front"
   ],
   "size": [
-   0.526,
-   0.12,
-   0.297
+   0.525,
+   0.104,
+   0.299
   ],
   "open_edges": {
-   "Body": [
+   "Skin": [
+    0,
+    41
+   ],
+   "SkinFar": [
     0,
     16
-   ],
-   "Tail": [
-    0,
-    5
-   ],
-   "LegFR": [
-    0,
-    17
-   ],
-   "LegFL": [
-    0,
-    9
-   ],
-   "LegBR": [
-    0,
-    17
-   ],
-   "LegBL": [
-    0,
-    11
-   ],
-   "ShinFR": [
-    0,
-    11
-   ],
-   "ShinFL": [
-    0,
-    5
-   ],
-   "ShinBR": [
-    0,
-    10
-   ],
-   "ShinBL": [
-    0,
-    6
-   ],
-   "Tail2": [
-    0,
-    9
-   ],
-   "ToeFR": [
-    0,
-    5
-   ],
-   "ToeFL": [
-    0,
-    3
-   ],
-   "ToeBR": [
-    0,
-    8
-   ],
-   "ToeBL": [
-    0,
-    6
-   ],
-   "Tail3": [
-    0,
-    6
    ]
   },
   "depth_to_width": {
-   "Body": 0.65,
-   "Tail": 0.99,
-   "LegFR": 0.94,
-   "LegFL": 0.94,
-   "LegBR": 0.89,
-   "LegBL": 0.93,
-   "ShinFR": 0.93,
-   "ShinFL": 0.96,
-   "ShinBR": 0.92,
-   "ShinBL": 0.96,
-   "Tail2": 1.0,
-   "ToeFR": 0.99,
-   "ToeFL": 0.99,
-   "ToeBR": 0.97,
-   "ToeBL": 0.98,
-   "Tail3": 0.98
+   "Skin": 0.65,
+   "SkinFar": 0.92
   },
-  "edges": 3273,
+  "edges": 2307,
   "leg_length": 0.1335,
   "game": {
    "component": "WallCat",
@@ -7285,17 +6578,17 @@
    "walk": {
     "sink": 0.0,
     "contact": 0.0,
-    "held": 0.0732
+    "held": 0.0723
    },
    "run": {
     "sink": 0.0,
-    "contact": 0.0059,
-    "held": 0.1321
+    "contact": 0.0091,
+    "held": 0.1287
    },
    "bound": {
     "sink": 0.0,
-    "contact": 0.1223,
-    "held": 0.1372
+    "contact": 0.1323,
+    "held": 0.1475
    }
   },
   "motions": [
@@ -7308,19 +6601,19 @@
     1,
     "Every part once",
     "pass",
-    "meshes: Body 1070 tris, Tail 70 tris, LegFR 150 tris, LegFL 116 tris, LegBR 182 tris, LegBL 134 tris, ShinFR 82 tris, ShinFL 58 tris, ShinBR 74 tris, ShinBL 56 tris, Tail2 60 tris, ToeFR 42 tris, ToeFL 32 tris, ToeBR 54 tris, ToeBL 42 tris, Tail3 56 tris; pivots only: Attach.Front, FootBL, FootBR, FootFL, FootFR. Checked in Top and Bottom."
+    "skinned meshes: Skin 1306 tris, SkinFar 270 tris; bones: Body, LegBL, LegBR, LegFL, LegFR, Tail, ShinBL, ShinBR, ShinFL, ShinFR, Tail2, Tail3, ToeBL, ToeBR, ToeFL, ToeFR; marker bones: FootBL, TipBL, FootBR, TipBR, FootFL, TipFL, FootFR, TipFR, Attach.Front. Checked in Top and Bottom."
    ],
    [
     2,
     "Closed shell",
     "pass",
-    "0 edges with one face (a slit, or a fin that would vanish from behind); 144 of 3273 edges where the two faces touch along a thin part's edge (closed, no gap)"
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 57 of 2307 edges where the two faces touch along a thin part's edge (closed, no gap)"
    ],
    [
     3,
     "Depth from each part's own width",
     "pass",
-    "deepest / half-width: Body 0.65, Tail 0.99, LegFR 0.94, LegFL 0.94, LegBR 0.89, LegBL 0.93, ShinFR 0.93, ShinFL 0.96, ShinBR 0.92, ShinBL 0.96, Tail2 1.00, ToeFR 0.99, ToeFL 0.99, ToeBR 0.97, ToeBL 0.98, Tail3 0.98"
+    "deepest / half-width: Skin 0.65, SkinFar 0.92"
    ],
    [
     4,
@@ -7332,7 +6625,7 @@
     5,
     "Real size, triangles",
     "pass",
-    "0.53 x 0.12 x 0.30 m; 2278 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+    "0.53 x 0.10 x 0.30 m; 1576 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
    ],
    [
     6,
@@ -7386,25 +6679,25 @@
     14,
     "Rig names and pivots",
     "pass",
-    "Tail, LegFR, LegFL, LegBR, LegBL, ShinFR, ShinFL, ShinBR, ShinBL, Tail2, ToeFR, ToeFL, ToeBR, ToeBL, Tail3 (+ Attach.Front, FootBL, FootBR, FootFL, FootFR): origins at the joints"
+    "LegBL, LegBR, LegFL, LegFR, Tail, ShinBL, ShinBR, ShinFL, ShinFR, Tail2, Tail3, ToeBL, ToeBR, ToeFL, ToeFR (+ FootBL, TipBL, FootBR, TipBR, FootFL, TipFL, FootFR, TipFR, Attach.Front): bones at the joints, each named as the behaviour finds it"
    ],
    [
     15,
     "Joints overlap, no seam, no gap mid-motion",
     "pass",
-    "every part overlaps the body; four legs, near and far: LegBL, LegBR, LegFL, LegFR; motions looked at frame by frame: walk, run, bound"
+    "one skin bending at every joint, the bones sharing it across each (D21: no part edge to show); legs, near and far: LegBL, LegBR, LegFL, LegFR; motions looked at frame by frame, full size: walk, run, bound"
    ],
    [
     16,
     "Feet planted",
     "pass",
-    "walk: sink 0.0 mm, lowest foot 0.0 mm up, held 73.2 mm; run: sink 0.0 mm, lowest foot 5.9 mm up, held 132.1 mm; bound: sink 0.0 mm, lowest foot 122.3 mm up, held 137.2 mm (tolerance 3.0 mm, 1 % of its height)"
+    "walk: sink 0.0 mm, lowest foot 0.0 mm up, held 72.3 mm; run: sink 0.0 mm, lowest foot 9.1 mm up, held 128.7 mm; bound: sink 0.0 mm, lowest foot 132.3 mm up, held 147.5 mm (tolerance 3.0 mm, 1 % of its height)"
    ],
    [
     17,
     "Each part holds only itself",
     "pass",
-    "looked at on its part map at full size, part by part: Tail, LegFR, LegFL, LegBR, LegBL, ShinFR, ShinFL, ShinBR, ShinBL, Tail2, ToeFR, ToeFL, ToeBR, ToeBL, Tail3; every leg the picture shows is its own part, its own pixels only"
+    "looked at on its part map at full size, part by part: LegBL, LegBR, LegFL, LegFR, Tail, ShinBL, ShinBR, ShinFL, ShinFR, Tail2, Tail3, ToeBL, ToeBR, ToeFL, ToeFR; every leg the picture shows is its own part, its own pixels only"
    ]
   ]
  },
@@ -7419,46 +6712,34 @@
   ],
   "view": "side",
   "px_per_m": 697.4,
-  "tris": 1283,
+  "tris": 1103,
+  "meshes": {
+   "Skin": 1103
+  },
   "parts": {
-   "Body": 1015,
-   "Tail": 88,
-   "Tail2": 78,
-   "Tail3": 102
+   "Body": 294,
+   "Tail": 17,
+   "Tail2": 15,
+   "Tail3": 21
   },
   "empties": [
    "Attach.Front"
   ],
   "size": [
-   0.422,
+   0.42,
    0.135,
    0.379
   ],
   "open_edges": {
-   "Body": [
+   "Skin": [
     0,
-    66
-   ],
-   "Tail": [
-    0,
-    11
-   ],
-   "Tail2": [
-    0,
-    11
-   ],
-   "Tail3": [
-    0,
-    18
+    73
    ]
   },
   "depth_to_width": {
-   "Body": 0.61,
-   "Tail": 0.96,
-   "Tail2": 0.97,
-   "Tail3": 0.93
+   "Skin": 0.61
   },
-  "edges": 1820,
+  "edges": 1583,
   "leg_length": null,
   "game": {
    "component": "WallCat",
@@ -7475,19 +6756,19 @@
     1,
     "Every part once",
     "pass",
-    "meshes: Body 1015 tris, Tail 88 tris, Tail2 78 tris, Tail3 102 tris; pivots only: Attach.Front. Checked in Top and Bottom."
+    "skinned meshes: Skin 1103 tris; bones: Body, Tail, Tail2, Tail3; marker bones: Attach.Front. Checked in Top and Bottom."
    ],
    [
     2,
     "Closed shell",
     "pass",
-    "0 edges with one face (a slit, or a fin that would vanish from behind); 106 of 1820 edges where the two faces touch along a thin part's edge (closed, no gap)"
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 73 of 1583 edges where the two faces touch along a thin part's edge (closed, no gap)"
    ],
    [
     3,
     "Depth from each part's own width",
     "pass",
-    "deepest / half-width: Body 0.61, Tail 0.96, Tail2 0.97, Tail3 0.93"
+    "deepest / half-width: Skin 0.61"
    ],
    [
     4,
@@ -7499,7 +6780,7 @@
     5,
     "Real size, triangles",
     "pass",
-    "0.42 x 0.14 x 0.38 m; 1283 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+    "0.42 x 0.14 x 0.38 m; 1103 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
    ],
    [
     6,
@@ -7553,13 +6834,13 @@
     14,
     "Rig names and pivots",
     "pass",
-    "Tail, Tail2, Tail3 (+ Attach.Front): origins at the joints"
+    "Tail, Tail2, Tail3 (+ Attach.Front): bones at the joints, each named as the behaviour finds it"
    ],
    [
     15,
     "Joints overlap, no seam, no gap mid-motion",
     "pass",
-    "every part overlaps the body; motions looked at frame by frame: swish"
+    "one skin bending at every joint, the bones sharing it across each (D21: no part edge to show); motions looked at frame by frame, full size: swish"
    ],
    [
     16,
@@ -7586,46 +6867,34 @@
   ],
   "view": "side",
   "px_per_m": 663.3,
-  "tris": 2140,
+  "tris": 1972,
+  "meshes": {
+   "Skin": 1972
+  },
   "parts": {
-   "Body": 1926,
-   "Tail": 98,
-   "Tail2": 66,
-   "Tail3": 50
+   "Body": 529,
+   "Tail": 10,
+   "Tail2": 9,
+   "Tail3": 12
   },
   "empties": [
    "Attach.Front"
   ],
   "size": [
-   0.598,
+   0.597,
    0.117,
-   0.232
+   0.234
   ],
   "open_edges": {
-   "Body": [
+   "Skin": [
     0,
-    53
-   ],
-   "Tail": [
-    0,
-    12
-   ],
-   "Tail2": [
-    0,
-    5
-   ],
-   "Tail3": [
-    0,
-    4
+    47
    ]
   },
   "depth_to_width": {
-   "Body": 0.75,
-   "Tail": 0.97,
-   "Tail2": 0.98,
-   "Tail3": 0.87
+   "Skin": 0.75
   },
-  "edges": 3136,
+  "edges": 2911,
   "leg_length": null,
   "game": {
    "component": "CritterIdle",
@@ -7648,19 +6917,19 @@
     1,
     "Every part once",
     "pass",
-    "meshes: Body 1926 tris, Tail 98 tris, Tail2 66 tris, Tail3 50 tris; pivots only: Attach.Front. Checked in Top and Bottom."
+    "skinned meshes: Skin 1972 tris; bones: Body, Tail, Tail2, Tail3; marker bones: Attach.Front. Checked in Top and Bottom."
    ],
    [
     2,
     "Closed shell",
     "pass",
-    "0 edges with one face (a slit, or a fin that would vanish from behind); 74 of 3136 edges where the two faces touch along a thin part's edge (closed, no gap)"
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 47 of 2911 edges where the two faces touch along a thin part's edge (closed, no gap)"
    ],
    [
     3,
     "Depth from each part's own width",
     "pass",
-    "deepest / half-width: Body 0.75, Tail 0.97, Tail2 0.98, Tail3 0.87"
+    "deepest / half-width: Skin 0.75"
    ],
    [
     4,
@@ -7672,7 +6941,7 @@
     5,
     "Real size, triangles",
     "pass",
-    "0.60 x 0.12 x 0.23 m; 2140 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+    "0.60 x 0.12 x 0.23 m; 1972 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
    ],
    [
     6,
@@ -7726,13 +6995,13 @@
     14,
     "Rig names and pivots",
     "pass",
-    "Tail, Tail2, Tail3 (+ Attach.Front): origins at the joints"
+    "Tail, Tail2, Tail3 (+ Attach.Front): bones at the joints, each named as the behaviour finds it"
    ],
    [
     15,
     "Joints overlap, no seam, no gap mid-motion",
     "pass",
-    "every part overlaps the body; motions looked at frame by frame: idle"
+    "one skin bending at every joint, the bones sharing it across each (D21: no part edge to show); motions looked at frame by frame, full size: idle"
    ],
    [
     16,
@@ -7759,11 +7028,14 @@
   ],
   "view": "above",
   "px_per_m": 3570.0,
-  "tris": 1926,
+  "tris": 1584,
+  "meshes": {
+   "Skin": 1584
+  },
   "parts": {
-   "Body": 178,
-   "WingL": 844,
-   "WingR": 904
+   "Body": 105,
+   "WingL": 205,
+   "WingR": 213
   },
   "empties": [
    "Attach.Front"
@@ -7771,28 +7043,18 @@
   "size": [
    0.075,
    0.099,
-   0.004
+   0.006
   ],
   "open_edges": {
-   "Body": [
+   "Skin": [
     0,
-    26
-   ],
-   "WingL": [
-    0,
-    44
-   ],
-   "WingR": [
-    0,
-    62
+    85
    ]
   },
   "depth_to_width": {
-   "Body": 0.8,
-   "WingL": 0.09,
-   "WingR": 0.09
+   "Skin": 0.21
   },
-  "edges": 2757,
+  "edges": 2291,
   "leg_length": null,
   "game": {
    "component": "FlitButterfly",
@@ -7810,19 +7072,19 @@
     1,
     "Every part once",
     "pass",
-    "meshes: Body 178 tris, WingL 844 tris, WingR 904 tris; pivots only: Attach.Front. Checked in Top and Bottom."
+    "skinned meshes: Skin 1584 tris; bones: Body, WingL, WingR; marker bones: Attach.Front. Checked in Top and Bottom."
    ],
    [
     2,
     "Closed shell",
     "pass",
-    "0 edges with one face (a slit, or a fin that would vanish from behind); 132 of 2757 edges where the two faces touch along a thin part's edge (closed, no gap)"
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 85 of 2291 edges where the two faces touch along a thin part's edge (closed, no gap)"
    ],
    [
     3,
     "Depth from each part's own width",
     "pass",
-    "deepest / half-width: Body 0.80, WingL 0.09, WingR 0.09"
+    "deepest / half-width: Skin 0.21"
    ],
    [
     4,
@@ -7834,7 +7096,7 @@
     5,
     "Real size, triangles",
     "pass",
-    "0.07 x 0.10 x 0.00 m; 1926 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+    "0.07 x 0.10 x 0.01 m; 1584 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
    ],
    [
     6,
@@ -7888,13 +7150,13 @@
     14,
     "Rig names and pivots",
     "pass",
-    "WingL, WingR (+ Attach.Front): origins at the joints"
+    "WingL, WingR (+ Attach.Front): bones at the joints, each named as the behaviour finds it"
    ],
    [
     15,
     "Joints overlap, no seam, no gap mid-motion",
     "pass",
-    "every part overlaps the body; motions looked at frame by frame: fly"
+    "one skin bending at every joint, the bones sharing it across each (D21: no part edge to show); motions looked at frame by frame, full size: fly"
    ],
    [
     16,
@@ -7921,11 +7183,16 @@
   ],
   "view": "above",
   "px_per_m": 5728.6,
-  "tris": 1846,
+  "tris": 1314,
+  "meshes": {
+   "Skin": 1314
+  },
   "parts": {
-   "Body": 284,
-   "WingL": 768,
-   "WingR": 794
+   "Body": 78,
+   "HindL": 91,
+   "HindR": 91,
+   "WingL": 100,
+   "WingR": 97
   },
   "empties": [
    "Attach.Front"
@@ -7933,28 +7200,18 @@
   "size": [
    0.044,
    0.07,
-   0.003
+   0.004
   ],
   "open_edges": {
-   "Body": [
+   "Skin": [
     0,
-    35
-   ],
-   "WingL": [
-    0,
-    25
-   ],
-   "WingR": [
-    0,
-    43
+    45
    ]
   },
   "depth_to_width": {
-   "Body": 0.79,
-   "WingL": 0.11,
-   "WingR": 0.1
+   "Skin": 0.25
   },
-  "edges": 2666,
+  "edges": 1926,
   "leg_length": null,
   "game": {
    "component": "FlitButterfly",
@@ -7962,7 +7219,10 @@
    "wingR": "WingR",
    "wingAxis": "long",
    "beatMid": 4.0,
-   "beatSwing": 24.0
+   "beatSwing": 24.0,
+   "hindL": "HindL",
+   "hindR": "HindR",
+   "hindLead": 1.6
   },
   "copied": [],
   "feet": {},
@@ -7974,19 +7234,19 @@
     1,
     "Every part once",
     "pass",
-    "meshes: Body 284 tris, WingL 768 tris, WingR 794 tris; pivots only: Attach.Front. Checked in Top and Bottom."
+    "skinned meshes: Skin 1314 tris; bones: Body, HindL, HindR, WingL, WingR; marker bones: Attach.Front. Checked in Top and Bottom."
    ],
    [
     2,
     "Closed shell",
     "pass",
-    "0 edges with one face (a slit, or a fin that would vanish from behind); 103 of 2666 edges where the two faces touch along a thin part's edge (closed, no gap)"
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 45 of 1926 edges where the two faces touch along a thin part's edge (closed, no gap)"
    ],
    [
     3,
     "Depth from each part's own width",
     "pass",
-    "deepest / half-width: Body 0.79, WingL 0.11, WingR 0.10"
+    "deepest / half-width: Skin 0.25"
    ],
    [
     4,
@@ -7998,7 +7258,7 @@
     5,
     "Real size, triangles",
     "pass",
-    "0.04 x 0.07 x 0.00 m; 1846 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+    "0.04 x 0.07 x 0.00 m; 1314 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
    ],
    [
     6,
@@ -8052,13 +7312,13 @@
     14,
     "Rig names and pivots",
     "pass",
-    "WingL, WingR (+ Attach.Front): origins at the joints"
+    "HindL, HindR, WingL, WingR (+ Attach.Front): bones at the joints, each named as the behaviour finds it"
    ],
    [
     15,
     "Joints overlap, no seam, no gap mid-motion",
     "pass",
-    "every part overlaps the body; motions looked at frame by frame: fly"
+    "one skin bending at every joint, the bones sharing it across each (D21: no part edge to show); motions looked at frame by frame, full size: fly"
    ],
    [
     16,
@@ -8070,7 +7330,7 @@
     17,
     "Each part holds only itself",
     "pass",
-    "looked at on its part map at full size, part by part: WingL, WingR"
+    "looked at on its part map at full size, part by part: HindL, HindR, WingL, WingR"
    ]
   ]
  }

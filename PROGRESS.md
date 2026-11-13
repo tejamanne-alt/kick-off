@@ -2106,6 +2106,9 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
   - Tests: `LegGaitTests`, a foot that lies level when planted, rolls over its toes and lands level, and a tilted back
     keeping every planted foot down (checked against the review's mirror; not yet run in Unity).
   - C#: `run.sh` passes on 6000.7, and the errors-only compile comparison shows no new error in either symbol set.
+  - The review (version 3 of https://claude.ai/artifact/MERPAe1mamCFnSRnGwApnm): 43 models, 57 motions, 653 checks
+    passed, 7 known limits (the seven in flight built from one view), none failed; 975 to 2,296 triangles. Every
+    motion looked at full size. Not yet run in Unity or on the Nord CE5: the animals aren't in a level.
 
 ## After Phase 8 (next steps)
 
