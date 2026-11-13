@@ -2021,6 +2021,23 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
   it. From the cloud session there is no image model to run: the Hugging Face connector has running Spaces switched off
   (gradio=none), huggingface.co and hf.space are blocked by the proxy, and Gemini's API needs the user's key (declined for
   now: it could be added later as a network secret for generativelanguage.googleapis.com, header x-goog-api-key).
+- **The strict asset review** (the user: "put strict conditions based on our issues and fixes ... share all views
+  front, back, top, bottom, left, left 3/4, right and right 3/4 ... walking, running and flying animations ... a strict
+  note for the review"). `docs/ASSET_REVIEW.md` is the rule, in CLAUDE.md and LEARNINGS rule 7: every asset from all
+  eight sides on one sheet, each of its motions as a GIF at the game's own amplitude, its source beside it, and
+  fifteen checks, each from a fault that reached the user (D9 to D18), marked passed only once looked at.
+  `tools/blender/asset_review.py` renders the sheets and motions (many linked copies per render),
+  `asset_review_page.py` the page; `kit_animals_km.py --review` reviews the animals into `review/kamakura/animals/`
+  (resumable: renders kept, `review.json` written after every model; `--fresh` redoes them).
+- **What the review found in the 43 animals, and the fixes.** Legs that came off when the cat walked (D16): every leg
+  now its own piece below the belly, near legs in front of the body and far ones behind, each reaching up inside it;
+  every other moving part overlaps the body. One-sided fins at the outline's tips, which the Toon shader would cull
+  from behind, and a closed-shell check that had allowed 5 % open edges (D17): split and given depth, the check now
+  fails on one. Cut-outs judged by colour alone (D18): the squirrels' grey-brown backs and tails, the kite's wing and
+  the heron's pale legs were missing, a shadow and a strip of backdrop kept; texture is now a cue too, and each mask
+  was compared with the old one. The cormorant on its rock idles (its catalogue entry); the koi and turtle sway (the
+  review had discarded their turn). Animals get a budget in `docs/ART_DIRECTION.md`: 2,500 triangles (all 43 under it,
+  the largest 2,278).
 
 ## After Phase 8 (next steps)
 

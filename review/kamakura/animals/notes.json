@@ -1,0 +1,23 @@
+{
+ "intro": [
+  "Every animal built from your sheets KM-P4 and KM-P8, reviewed by the strict rules you asked for (docs/ASSET_REVIEW.md): each one from all eight sides, each of its motions animated, its source beside it, and all fifteen checks with their results.",
+  "Each animal is a relief cut from one view of the sheet: the game's camera sees its right side (the Right view), and a walker crossing the screen at most its right three-quarter. The other views are rendered so a fault there can't hide, but they are built from that one side picture."
+ ],
+ "fixed": [
+  "<b>Legs that came off.</b> The first walk test showed the cat's lower legs swinging loose. Every leg is now its own piece, cut below the belly: near legs in front of the body, far legs behind it, each reaching up inside the body so no swing opens a gap (learning D16). Cat, tanuki, calico and tuxedo walk on four legs, in diagonal pairs as the game's dog swings them; the Shiba's touching pairs are one piece each.",
+  "<b>A seam at every joint.</b> Tail, head and wings now overlap the body by about half their own thickness.",
+  "<b>Tips that vanished from behind.</b> Ear tips, tail tips and thin feathers were one-sided, which the game's shader doesn't draw from the back. Now split and given depth; the closed-shell check fails on a single such edge (D17).",
+  "<b>Cut-outs that lost fur and feathers.</b> Going through every frame showed the squirrels missing half their back and tail, the running squirrel keeping its shadow, a strip of backdrop between the sitting squirrel's tail and back, holes in the kite's wing and the heron without its pale upper legs. Fur and feathers are now found by their texture as well as their colour, and every cut-out was compared with the old one (D18).",
+  "<b>Motions as the game plays them.</b> The run swings the legs 28 degrees, as the game's dog does at a full run; the cormorant on its rock only idles, as its catalogue entry says; the koi and turtle now visibly sway (the review had been discarding their turn)."
+ ],
+ "limits": [
+  "<b>Top, bottom, front and back</b> come from the side picture alone, so the belly and back are the side's fur stretched and mirrored. The game never shows them; they are here so a doubled part or a gap can't hide.",
+  "<b>The squirrel running</b> is drawn mid-leap with its legs flat along the ground, so it scurries (the body bounds, the tail streams) rather than swinging legs. The game's tree squirrel moves only its tail.",
+  "<b>The Shiba</b> shows each pair of legs touching in the picture, so each pair is one piece at the body's middle, with pivots for the far legs."
+ ],
+ "pending": [
+  "<b>The large birds in flight</b> (black kite, gull, crow, pigeon, heron, egret, cormorant) wait for their four-view KM-S1 sheets (KAMAKURA_BUILD Step 4b). The perched and standing ones are here.",
+  "<b>The frog, snail, crab and starfish</b> sit on photo backgrounds on the sheets and need their own cut-outs.",
+  "<b>In the game:</b> nothing is placed in a level yet; the kit's FBX files are built, and the reference-phone check comes with the first level that uses them."
+ ]
+}
