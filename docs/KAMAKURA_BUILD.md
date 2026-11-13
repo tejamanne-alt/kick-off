@@ -181,7 +181,7 @@ ceramic siding.
 | KM-N01 | the ginger cat | KM-P4 | WallCat |
 | KM-N02 | the tanuki | KM-P4 | walks and trots off into the undergrowth on its jointed legs (LegGait, as the Dog walks; a squirrel's hops don't suit it, D19), its brush swaying |
 | KM-N03 | a Pallas's squirrel | KM-P4 | TreeSquirrel |
-| KM-N04 | a Shiba Inu (red collar) | KM-P4 | Dog (the hazard: noses a low ball back; chip it over) |
+| KM-N04 | a Shiba Inu (red collar) | KM-P4 | Dog (the hazard: noses a low ball back; chip it over); its curled tail wags side to side over its back (`tailAxis` long, D20), never up and down in the picture's plane |
 | KM-N05 | the black kite | KM-P4 | perched (CritterIdle), circling (SkyFlock), the snack dive (Seagull) |
 | KM-N06 | a large-billed crow | KM-P4 | GroundBird |
 | KM-N07 | a shrine pigeon | KM-P4 | GroundBird; SkyFlock over the town |
@@ -202,7 +202,7 @@ ceramic siding.
 | KM-N23 | a tree frog | KM-P8 | on a leaf (CritterIdle: its throat; a hop when the ball lands near) |
 | KM-N24 | a land snail | KM-P8 | on a wet leaf or step (CritterIdle, creeping) |
 | KM-N25 | an Asian swallowtail | KM-P8 | FlitButterfly |
-| KM-N26 | a red dragonfly | KM-P8 | FlitButterfly, straighter and faster, hanging still in the air |
+| KM-N26 | a red dragonfly | KM-P8 | FlitButterfly, straighter and faster, hanging still in the air; its wings beat about flat (`beatMid` 4, `beatSwing` 24, D20), not clapped up as a butterfly's |
 | KM-N27 | a shore crab | KM-P8 | ShoreCrab |
 | KM-N28 | a starfish | KM-P8 | in a tide pool (still) |
 

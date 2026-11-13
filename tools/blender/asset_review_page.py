@@ -1,5 +1,6 @@
 # The asset review's page (docs/ASSET_REVIEW.md, section 4): every model's eight views, its motions, its source and its
-# fifteen checks, from the review folder a kit's --review wrote (review.json, views/, motion/, source/, cuts.jpg).
+# seventeen checks, from the review folder a kit's --review wrote (review.json, views/, motion/, source/, parts/,
+# cuts.jpg).
 #
 #   python3 tools/blender/asset_review_page.py review/kamakura/animals "Kamakura animals" [notes.json]
 #
@@ -13,7 +14,7 @@ import sys
 CHECKS = [
     'Every part once', 'Closed shell', 'Depth from own width', 'Views the game sees', 'Size, triangles',
     'Outline whole', 'No holes', 'Own models before walls', 'Look target', 'Solid', 'No brands',
-    'No wires or sky', 'Repairs listed', 'Rig names', 'Joints overlap', 'Feet planted',
+    'No wires or sky', 'Repairs listed', 'Rig names', 'Joints overlap', 'Feet planted', 'Each part only itself',
 ]
 GROUPS = [
     ('walk', 'Walking', 'four legs swinging in diagonal pairs, as the game\'s dog swings them'),
@@ -205,6 +206,9 @@ def page(folder, title, notes):
               % (esc(n), esc(n)))
             w('<div class="row"><figure class="src"><img src="source/%s.jpg" loading="lazy" alt="%s on its sheet">'
               '<figcaption>The source: %s</figcaption></figure>' % (esc(n), esc(n), esc(r['sheet'])))
+            if os.path.exists(os.path.join(folder, 'parts', n + '.jpg')):
+                w('<figure class="src"><img src="parts/%s.jpg" loading="lazy" alt="%s\'s parts, each its own colour">'
+                  '<figcaption>Its parts, each its own colour</figcaption></figure>' % (esc(n), esc(n)))
             if r['motions']:
                 w('<div class="motions">%s</div>' % ''.join(
                     '<figure><img src="motion/%s_%s.gif" loading="lazy" alt="%s: %s"><figcaption>%s</figcaption></figure>'

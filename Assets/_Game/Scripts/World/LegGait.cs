@@ -89,9 +89,9 @@ namespace DribbleToSchool.World
             struct Leg
             {
                 public string name;
-                public Transform thigh, shin;
-                public Quaternion thighRest, shinRest;
-                public Vector3 thighAxis, shinAxis;
+                public Transform thigh, shin, toe;   // toe: optional, the foot kept level (Toe..)
+                public Quaternion thighRest, shinRest, toeRest;
+                public Vector3 thighAxis, shinAxis, toeAxis;
                 public Vector2 hip, knee, foot;     // hip in the root's side plane; knee and foot from the hip
                 public float length, bend;
                 public bool bird;
@@ -138,6 +138,14 @@ namespace DribbleToSchool.World
                     leg.shinRest = shin.localRotation;
                     leg.thighAxis = Quaternion.Inverse(thigh.rotation) * sideWorld;
                     leg.shinAxis = Quaternion.Inverse(shin.rotation) * sideWorld;
+                    // a foot of its own (a bird's toes, a paw), hung from the shin at the foot: kept level with the
+                    // ground, as a foot stays flat (D20: a bird's long toes, rigid in its shin, tipped into the floor)
+                    leg.toe = Deep(shin, "Toe" + n);
+                    if (leg.toe != null)
+                    {
+                        leg.toeRest = leg.toe.localRotation;
+                        leg.toeAxis = Quaternion.Inverse(leg.toe.rotation) * sideWorld;
+                    }
                     leg.hip = Plane(root, thigh.position);
                     leg.knee = Plane(root, shin.position) - leg.hip;
                     leg.foot = Plane(root, foot.position) - leg.hip;
@@ -165,11 +173,15 @@ namespace DribbleToSchool.World
                 return null;
             }
 
-            void Place(ref Leg leg, Vector2 target)
+            /// <summary>Turn a leg so its foot reaches target, its toe (if any) turned back by the leg's turns and by tip,
+            /// the body's own turn (radians, forward toward up), so the foot stays level with the ground.</summary>
+            void Place(ref Leg leg, Vector2 target, float tip = 0f)
             {
                 Vector2 turn = TwoBone(leg.knee, leg.foot, target - leg.hip, leg.bend);
                 leg.thigh.localRotation = leg.thighRest * Quaternion.AngleAxis(turn.x * Mathf.Rad2Deg, leg.thighAxis);
                 leg.shin.localRotation = leg.shinRest * Quaternion.AngleAxis(turn.y * Mathf.Rad2Deg, leg.shinAxis);
+                if (leg.toe != null)
+                    leg.toe.localRotation = leg.toeRest * Quaternion.AngleAxis(-(turn.x + turn.y + tip) * Mathf.Rad2Deg, leg.toeAxis);
             }
 
             /// <summary>The body's rise (+) or dip (-) at phase p of a gait (its root moves by it; the feet stay down).</summary>
@@ -251,7 +263,7 @@ namespace DribbleToSchool.World
                 for (int i = 0; i < legs.Length; i++)
                 {
                     Vector2 f = legs[i].hip + legs[i].foot;
-                    Place(ref legs[i], new Vector2(f.x * c + f.y * s, -f.x * s + f.y * c));
+                    Place(ref legs[i], new Vector2(f.x * c + f.y * s, -f.x * s + f.y * c), tip);
                 }
             }
 
@@ -274,6 +286,7 @@ namespace DribbleToSchool.World
                 {
                     legs[i].thigh.localRotation = legs[i].thighRest;
                     legs[i].shin.localRotation = legs[i].shinRest;
+                    if (legs[i].toe != null) legs[i].toe.localRotation = legs[i].toeRest;
                 }
             }
         }

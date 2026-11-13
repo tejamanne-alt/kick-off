@@ -2063,6 +2063,25 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
   a peck tipping only as far as the feet stay planted (`LegGait.Rig.Reach`). Every review motion is its behaviour's
   code at its real speed, the settings recorded per model in the manifest (`game`). Lessons: LEARNINGS rule 8 and
   D19; the image prompts' animal-sheet rules and KM-S1 (republished, version 22). `Tests/Editor/PartChainTests.cs`.
+- **Each part holds only itself** (the frame-by-frame pass on that render; `docs/LEARNINGS.md` D20). At full size,
+  and on each model's parts drawn in colour, 13 models were cut wrongly although all 16 checks passed. Five birds and
+  the Shiba walked on four legs: two touching legs were found as one, then copied. The pecking pigeon and the dove
+  walked a toe. The hopping crow and sparrow kept their raised leg in the body. The tanuki's and the calico's tail
+  outlines took a leg's pixels, and the tanuki's thighs its belly. A slit opened under the Shiba's curled tail. The
+  four koi's pectoral fins were cut across two links. The heron's plume tip stayed behind. The dragonfly flapped like
+  a butterfly, and the ginger cat's chin carried a grey block of backdrop.
+  - Bird legs drawn on the sheet (`leg_area`, `leg_lines`; a far leg copied only where the picture hides it;
+    `leg_drop` for a raised leg).
+  - Four-legged legs seeded by drawn lines where a pair touches (`leg_seeds`); each leg kept to its own pixels, a skirt
+    of the body below the belly.
+  - Tail outlines redrawn; the body carries on under a drawn part's edge; `front_fins`, `curl` and `beard` added.
+  - FlitButterfly's wingbeat is a setting (`beatMid`, `beatSwing`; the dragonfly 4 ± 24).
+  - A foot of its own (`Toe..`) under every jointed shin, kept level by `LegGait.Rig.Place` and its mirror: check 16
+    now measures every leg mesh, and found toes sinking by up to a fifth of a bird's height. The four boxes drawn for
+    tails are redrawn round their tails. `Tests/Editor/LegGaitTests.cs`: a foot stays level through a walk and a peck.
+  - The review: check 17, and `parts/<Model>.jpg` beside every source. LEARNINGS rule 8 and D20; ASSET_REVIEW check 17.
+  - C#: `run.sh` passes on 6000.7; the errors-only compile comparison shows no new error in either symbol set, and a
+    planted error is caught.
 
 ## After Phase 8 (next steps)
 

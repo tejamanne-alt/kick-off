@@ -156,6 +156,44 @@ namespace DribbleToSchool.Tests
                 Object.DestroyImmediate(root.gameObject);
             }
         }
+
+        [Test]
+        public void AFootOfItsOwnStaysLevelThroughAWalkAndAPeck()
+        {
+            // D20: a bird's long toes, rigid in its shin, tipped into the floor as the shin turned. With a Toe under the
+            // shin at the foot, the toes keep their rest direction in the world however the leg and the body turn.
+            var root = new GameObject("Bird").transform;
+            try
+            {
+                var right = Node("LegR", root, new Vector3(0.01f, 0.12f, 0f));
+                var shin = Node("ShinR", right, new Vector3(-0.02f, -0.06f, 0f));
+                Node("FootR", shin, new Vector3(0.01f, -0.06f, 0f));
+                var toe = Node("ToeR", shin, new Vector3(0.01f, -0.06f, 0f));
+                var left = Node("LegL", root, new Vector3(-0.01f, 0.12f, 0f));
+                Node("FootL", Node("ShinL", left, new Vector3(-0.02f, -0.06f, 0f)), new Vector3(0.01f, -0.06f, 0f));
+                var rig = LegGait.Rig.Find(root, root);
+                Assert.AreEqual(2, rig.Count);
+                Vector3 along = toe.right;
+                float turned = 0f;
+                for (int i = 0; i < 32; i++)
+                {
+                    root.position = new Vector3(0f, rig.Pose(i / 32f, 0f, 1f, 0f), 0f);
+                    Assert.Greater(Vector3.Dot(toe.right, along), 0.9999f, "the toes stay level at phase " + i / 32f);
+                    turned = Mathf.Max(turned, Vector3.Angle(shin.right, Vector3.right));
+                }
+                Assert.Greater(turned, 5f, "while the shin itself turned");
+                rig.Rest();
+                root.position = Vector3.zero;
+                float tip = rig.Reach(-20f * Mathf.Deg2Rad);
+                root.rotation = Quaternion.AngleAxis(tip * Mathf.Rad2Deg, Vector3.forward);
+                rig.Plant(tip);
+                Assert.Greater(Vector3.Dot(toe.right, along), 0.9999f, "level as the body tips to peck");
+            }
+            finally
+            {
+                Object.DestroyImmediate(root.gameObject);
+            }
+        }
     }
 }
 #endif

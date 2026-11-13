@@ -40,11 +40,12 @@ A part that tears from the body at its joint, swings the wrong way, or moves som
 fault (D16: the cat's legs came off when it walked). Each motion is the game's own: the behaviour's code ported line by
 line (`World/LegGait.cs` and `tools/blender/asset_review.py` share the gait), changed in both together, never made up
 for the review (D19: the review bounced birds the game walks). It is shown at 24 frames a cycle and looked at frame by
-frame before it is shown.
+frame before it is shown: at full size, every second frame at least, never only as thumbnails on a contact sheet
+(D20: four-legged birds looked right at 170 px).
 
-A walking animal's legs are jointed (a thigh, a shin, a foot point), its feet planted on the ground through the stance
-and lifted forward in the swing, its knees bending as in the picture (D19: rigid legs swung from the hip scissored and
-floated). A bird walks on its feet, never bounces on the spot, and pecks by tipping its body on planted feet, no
+A walking animal's legs are jointed (a thigh, a shin, a foot of its own kept level), its feet planted on the ground
+through the stance and lifted forward in the swing, its knees bending as in the picture (D19: rigid legs swung from
+the hip scissored and floated). A bird walks on its feet, never bounces on the spot, and pecks by tipping its body on planted feet, no
 further than its legs can keep them planted. Every other part that bends in the real animal bends in the model: a tail
 in three links and a bird's wing in two (`World/PartChain.cs`: each link a share of the angle, each trailing the one
 before), a fish's tail, a turtle's flippers; an insect's wings stay rigid, as real ones are. A part with no source
@@ -92,16 +93,25 @@ rendered and labelled as built from the side alone. The review says which views 
 15. Every moving part overlaps what it's joined to, far enough to stay covered at the largest swing: no seam at rest,
     no gap mid-stride (D16). Every leg the picture shows is its own part, near legs in front of the body, far ones
     behind.
-16. Feet planted, measured (D19): through every motion each foot point's height is read from the posed model; no foot
-    more than 1 % of the animal's height below the ground, some foot always down in a walk, and no foot moving in a
-    peck. The numbers are printed on the review.
+16. Feet planted, measured (D19): through every motion each foot point's height, and the lowest point of every leg
+    mesh (thigh, shin and toes), is read from the posed model. No foot or leg goes more than 1 % of the animal's height
+    below the ground, some foot is always down in a walk, and no foot moves in a peck. A foot point on the ground says
+    nothing of the toes beside it: a bird's long toes, rigid in its shin, sank by a fifth of its height while every
+    foot point stood (D20); each foot is now its own part, kept level. The numbers are printed on the review.
+17. Each part holds only itself (D20: birds walked on four legs, a raised leg stayed in the body as a third, fins were
+    cut in two, all while checks 1 to 16 passed). The model's parts are drawn in colour on its picture at full size
+    (`parts/<Model>.jpg` beside its source on the review), and each is looked at. Each leg part holds one leg. A far leg
+    is copied from the near one only where the picture hides it. The body keeps nothing a motion should carry (a toe, a
+    raised leg, a plume's tip), and a part carries nothing that should stay (a strip of tail on a leg, belly fur on a
+    thigh). No fin is cut across two links. Where shape can't part them, legs and fins are drawn on the sheet
+    (`leg_area`, `leg_lines`, `leg_drop`, `leg_seeds`, `front_fins`).
 
 A check is marked passed only after the thing it names has been looked at for that asset, and its note says what was
 looked at (D18: "checked on the cuts sheet" was written for 43 cut-outs before the sheet was read).
 
 ## 4. What the user is shown
 
-One review per asset or per kit: the eight views, the motions, the asset beside its source, the checks with their
-results (passed, or the fault and what is being done about it). It is published as a page the user can open on a
-phone (an Artifact), the files kept in `review/<city>/`. A check that fails is said plainly, never left for the user to
-find.
+One review per asset or per kit: the eight views, the motions, the asset beside its source and its part map, the
+checks with their results (passed, or the fault and what is being done about it). It is published as a page the user
+can open on a phone (an Artifact), the files kept in `review/<city>/`. A check that fails is said plainly, never left
+for the user to find.

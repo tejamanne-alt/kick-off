@@ -27,7 +27,9 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
    where it bends: legs at the knee with the feet planted, tails and wings as chains of links, a fish's tail, a
    turtle's flippers; never one rigid piece swung from a pivot. Each motion is the game's behaviour code ported line by
    line (`World/LegGait.cs`, `World/PartChain.cs` and their mirrors in `asset_review.py`), never invented for a review;
-   what can be measured is measured (the feet, check 16). The original kit's models keep their motion.
+   what can be measured is measured (the feet, check 16). The original kit's models keep their motion. Each part is
+   looked at on the model's full-size part map before a motion is trusted (D20: birds on four legs passed every
+   measure): one leg per leg part, nothing still in the body that should move, no fin or plume cut in two.
 9. **Record every revert,** with who decided, why, and "don't retry X".
 
 ## A. Process and verification
@@ -813,6 +815,67 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
 - *Also:* animal sheets are asked for in a way that makes this possible (`docs/IMAGE_PROMPTS.md`, SHEETS AND PLATES,
   and KM-S1): every leg on its own and not hidden behind another, the tail clear of the body, wings spread clear of it,
   thin parts never hair-thin, an even backdrop with no glow between parts.
+
+**D20. Birds on four legs, a third leg left standing, and fins cut in two (the frame-by-frame pass after D19).**
+- *What:* the D19 rebuild passed all 16 checks, and its GIFs looked right at contact-sheet size. Looked at frame by
+  frame at full size, and on each model's parts drawn in colour at full size, the cuts were wrong in 13 models:
+  - *Two legs in one part, then copied:* the gull, the heron, the standing crow, the standing pigeon and the wagtail
+    walked on four legs. Their two legs touch in the picture, so `bird_legs` found one leg and `_twin` copied it, two
+    legs and all. The Shiba's hind pair was the same.
+  - *Only a toe found:* on the pecking pigeon and the dove. Their legs are as thick as the opening disk, so the real legs
+    stayed in the body and the walk moved a toe under them. The pecking pigeon's toe floated off as the body tipped.
+  - *A raised leg left in the body:* on the hopping crow and sparrow. The leg drawn mid-step stayed in the body as a
+    third, still leg.
+  - *Tail outlines taking a leg:* the tanuki's took half its far hind leg (left a pale sliver and a stick); the calico's
+    sat too high, so its lower stripes swung with the far hind leg.
+  - *Thighs taking the belly:* every pixel below the tanuki's belly line went to its nearest leg, so its thighs spanned
+    the belly, and their straight tops showed as steps when they turned.
+  - *A slit under the Shiba's tail:* its tail outline took the rump under its curl, which opened onto the backdrop as
+    the tail moved. The Dog also swung that curled tail up and down in the picture's plane, which a real Shiba doesn't.
+  - *Fins cut in two:* on all four koi. The tail's first cut, measured through the fish, ran across the pectoral fins,
+    and the first link's overlap took the rest, so half of each fin swung with the tail as a loose fleck.
+  - *Small parts left behind:* the heron's plume tip, outside the head's outline, stayed behind when it pecked.
+  - *A butterfly's wingbeat:* the dragonfly flapped like a butterfly, 0 to 76 degrees up, because FlitButterfly
+    hard-coded one beat for every insect.
+  - *Toes through the floor:* check 16 measured each foot's single contact point, and every one stood on the ground.
+    But a bird's long toes were rigid in its shin, so whenever the shin turned they tipped into the floor, by up to a
+    fifth of the bird's height (the hopping crow 20 %, the pigeons 14 to 16 %). Paws dipped 1 to 3 %.
+  - *Tail outlines drawn as boxes:* they took body with the tail. The sitting cat's took a strip of rump. The sitting
+    tanuki's took 34 px of body, and its pivot sat inside the body. The sitting Shiba's took a slab of haunch, and its
+    seams showed as the curl swayed. The sitting tuxedo's took white fur. The lying tuxedo's cut its tail in two,
+    leaving the lower edge still in the body.
+- *Why:* checks passed on what was measured (feet, slits, depth), not on what each part held. The cuts sheet is 43
+  thumbnails, too small to count legs. The contact sheets were 8 frames at 170 px. Leg finding by shape assumes legs
+  stand apart and hang straight, which most pictures don't.
+- *Fix:*
+  - Legs drawn on the sheet where shape can't part them (`leg_area`, `leg_lines`): a pixel goes to the leg whose line
+    it lies nearest. Where the far leg stands beside the near one all the way down (the standing crow's and the
+    wagtail's thin tarsi), the far one is taken out and the near one, with every toe, is copied for it, so each leg
+    part is one leg.
+  - A leg raised mid-step is taken out (`leg_drop`): it can't plant, and its toes would sink into the ground.
+  - Four-legged legs: seeded by drawn lines where a pair touches all the way down (`leg_seeds`). Each leg takes only
+    pixels within 0.4 of a leg's length of its seed, and the body keeps a skirt 0.15 of a leg deep below its belly.
+    The Shiba's far hind leg is now its own. Its far front leg shows only as a strip and a paw, and split off it walked
+    as a loose paw, so it is a copy of the near leg, with the paw taken out (`leg_drop`).
+  - Tail outlines redrawn (the tanuki's and the calico's, on grids at 4 to 8 times size).
+  - The body carries on 3 % of its height under a drawn part's edge.
+  - The koi's pectoral fins are kept whole with the body (`front_fins`), and no part's overlap grows into them.
+  - The heron's head outline takes the whole plume.
+  - A foot of its own: each jointed leg's foot (a bird's toes, from its drawn toe lines or where the leg spreads; a
+    paw, the lowest quarter of a four-legged leg) is a part, `Toe..`, hung from the shin at the contact point. The gait
+    keeps it level with the ground, turned back by the leg's turns and the body's tip (`LegGait.Rig.Place`, and
+    `_place` in the review). A drawn leg's contact point is straight under its ankle, not under its longest toe (the
+    pigeon's leg had turned about its toe tip). A bird's leg is jointed along its tarsus alone, the toes left out.
+  - Tail outlines drawn round the tail, each pivot at the tail's root. Head outlines on the perched sparrow, white-eye
+    and bulbul drawn round the head and neck: their boxes took a block of wing, back or breast, which turned with the
+    head as the bird looked about.
+  - A curled tail wags about the long axis (`curl`; Dog's `tailAxis` long).
+  - FlitButterfly's beat is a setting (`beatMid`, `beatSwing`; the dragonfly's 4 ± 24 about flat).
+- *Rule:* check 16 measures every leg mesh's lowest point, not only the contact points (a foot point on the ground
+  says nothing of the toes beside it). Check 17: each model's parts are drawn in colour on its picture at full size
+  (`parts/<Model>.jpg` in its review), and each is looked at: one leg per leg part, nothing left in the body that the motion should carry, nothing
+  carried that should stay, no fin or plume cut in two. Motions are looked at full size, every second frame, not as
+  thumbnails.
 
 ## E. Levels and world
 

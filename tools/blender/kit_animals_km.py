@@ -50,7 +50,8 @@ P4, P8 = 'KM-P4_animals_sheet.png', 'KM-P8_more_animals.png'
 
 def A(cid, sheet, box, view, size, depth, parts=(), refine=False, wings=None, exclude=(), empties=(), step=None,
       thresh=42, legs=False, shadow=0.13, head_up=False, fill=(), dark_shadow=False, whiskers=False, hop=False,
-      leg_width=0.06, peck=(25.0, 30.0), swim=None, flippers=None, outline=7.0):
+      leg_width=0.06, peck=(25.0, 30.0), swim=None, flippers=None, outline=7.0, leg_area=(), leg_lines=None,
+      leg_drop=(), leg_seeds=None, front_fins=(), curl=False, beat=None, beard=()):
     """One model: its catalogue id (KM-Nxx), sheet, the figure's box (sheet px), its view (side: head to the right,
     standing on its lowest pixel; below: a flyer seen from beneath, head up; above: lying flat, seen from above), its
     size (('w' or 'h', metres) of the figure's outline), its half-depth cap (m), its parts ((name, polygon in sheet px,
@@ -70,25 +71,42 @@ def A(cid, sheet, box, view, size, depth, parts=(), refine=False, wings=None, ex
     standing with its feet apart tips less, or its hind foot can't stay down), swim (a fish seen from above: the side its
     head is on, 'left' or 'right'; its rear becomes a Tail in links, swept as it swims), flippers (a turtle seen from
     above: its head's side; its four flippers become parts that paddle), outline (px between the mesh's outline points:
-    wider for a model of many parts to keep it in budget; the alpha cut-out keeps the edge crisp)."""
+    wider for a model of many parts to keep it in budget; the alpha cut-out keeps the edge crisp).
+
+    Legs drawn where the picture's can't be found by shape (D20; sheet px): leg_area (polygons: every pixel of the figure
+    in them is a bird's bare leg or foot), leg_lines ((near, far): each a list of polylines, the leg from where it leaves
+    the feathers to its foot and each toe; a pixel goes to the leg whose lines it lies nearest; far None: the near leg's
+    copy stands for it, as when the two overlap all along), leg_drop (polygons taken out of the model: a leg raised
+    mid-step, which can't plant), leg_seeds (a four-legged animal's group whose legs touch all the way down: {'B': (near
+    lines, far lines or None)}, standing in for the pieces leg_masks seeds from; far None: the near leg's copy). front_fins (a fish's fins near the first cut
+    of its tail: polygons kept whole with the body, not split across two links), curl (a tail curled over the back: it
+    wags side to side about the body's long axis, never swung up and down in the picture's plane), beat (an insect's
+    wingbeat, (middle, swing) degrees: FlitButterfly's beatMid and beatSwing; a butterfly's 38, 38 by default). beard
+    (a cat: polygons under its chin where the backdrop between its whiskers was taken in as a grey block, D20: there
+    every pixel of the backdrop's own neutral grey is cut out, and the strands left hanging opened away)."""
     return dict(id=cid, sheet=sheet, box=box, view=view, size=size, depth=depth, parts=list(parts), refine=refine,
                 wings=wings, exclude=list(exclude), empties=list(empties), step=step, thresh=thresh, legs=legs,
                 shadow=shadow, head_up=head_up, fill=list(fill), dark_shadow=dark_shadow, whiskers=whiskers,
-                hop=hop, leg_width=leg_width, peck=peck, swim=swim, flippers=flippers, outline=outline)
+                hop=hop, leg_width=leg_width, peck=peck, swim=swim, flippers=flippers, outline=outline,
+                leg_area=list(leg_area), leg_lines=leg_lines, leg_drop=list(leg_drop), leg_seeds=leg_seeds,
+                front_fins=list(front_fins), curl=curl, beat=beat, beard=list(beard))
 
 
 ANIMALS = {
     # ---------------------------------------------------------------- KM-P4
     'KmCatSitting': A('KM-N01', P4, (500, 18, 858, 284), 'side', ('h', 0.38), 0.075,
-                      [('Tail', [(500, 228), (656, 228), (656, 284), (500, 284)], (648, 262))], whiskers=True),
+                      [('Tail', [(500, 228), (600, 228), (630, 243), (645, 246), (649, 256), (649, 284), (500, 284)], (648, 262))],
+                      whiskers=True),
     'KmCatWalking': A('KM-N01', P4, (21, 44, 443, 280), 'side', ('h', 0.30), 0.06,
                       [('Tail', [(21, 113), (112, 113), (102, 166), (66, 214), (21, 214)], (106, 137))],
-                       legs=True, whiskers=True),
+                       legs=True, whiskers=True, beard=[[(398, 114), (432, 114), (432, 146), (398, 146)]]),
     'KmTanukiWalking': A('KM-N02', P4, (1409, 50, 1838, 281), 'side', ('h', 0.36), 0.09,
-                         [('Tail', [(1409, 83), (1497, 91), (1497, 194), (1490, 256), (1409, 256)], (1494, 128))],
+                         [('Tail', [(1409, 83), (1497, 91), (1497, 150), (1480, 196), (1472, 215), (1462, 248), (1409, 256)],
+                           (1494, 128))],
                          refine=True, legs=True, step=19),
     'KmTanukiSitting': A('KM-N02', P4, (1898, 31, 2280, 282), 'side', ('h', 0.40), 0.09,
-                         [('Tail', [(1898, 204), (2034, 204), (2034, 273), (1898, 273)], (2034, 237))], refine=True),
+                         [('Tail', [(1898, 204), (1990, 204), (2000, 215), (2003, 240), (2005, 273), (1898, 273)], (2002, 237))],
+                         refine=True),
     'KmSquirrelRunning': A('KM-N03', P4, (11, 374, 450, 562), 'side', ('w', 0.40), 0.04,
                            [('Tail', [(11, 374), (148, 374), (144, 488), (11, 496)], (144, 450))], step=15, shadow=0.3,
                            dark_shadow=True),
@@ -99,26 +117,59 @@ ANIMALS = {
     'KmShibaStanding': A('KM-N04', P4, (1474, 314, 1808, 605), 'side', ('h', 0.58), 0.09,
                          [('Tail', [(1493, 340), (1586, 340), (1588, 420), (1493, 426)], (1570, 420)),
                           ('Head', [(1705, 314), (1808, 314), (1808, 433), (1728, 433)], (1734, 426))], legs=True,
-                         step=22, outline=9.0),
+                         step=22, outline=9.0, curl=True,
+                         leg_seeds={'F': ([[(1683, 505), (1686, 545), (1692, 586)]], None),
+                                    'B': ([[(1500, 500), (1492, 545), (1496, 585)]], [[(1548, 485), (1525, 530), (1519, 572)]])},
+                         leg_drop=[[(1701, 568), (1712, 566), (1720, 571), (1720, 587), (1709, 587), (1706, 580),
+                                    (1701, 576)]]),
     'KmShibaSitting': A('KM-N04', P4, (1940, 317, 2235, 601), 'side', ('h', 0.62), 0.09,
-                        [('Tail', [(1940, 499), (2000, 499), (2000, 601), (1940, 601)], (1997, 550))]),
+                        [('Tail', [(1943, 545), (1949, 524), (1962, 513), (1980, 509), (1996, 512), (2004, 521), (2001, 540),
+                                   (1998, 560), (1993, 579), (1975, 586), (1954, 582), (1943, 566)], (1997, 550))],
+                        curl=True),
     'KmKitePerched': A('KM-N05', P4, (89, 625, 358, 931), 'side', ('h', 0.75), 0.07,
                        [('Head', [(278, 625), (360, 625), (360, 700), (290, 712)], (290, 690))]),
     'KmCrowStanding': A('KM-N06', P4, (1426, 638, 1788, 919), 'side', ('w', 0.57), 0.06,
-                        [('Head', [(1649, 638), (1781, 638), (1781, 722), (1677, 760)], (1663, 722))], legs='biped'),
+                        [('Head', [(1649, 638), (1781, 638), (1781, 722), (1677, 760)], (1663, 722))], legs='biped',
+                        leg_area=[[(1598, 856), (1630, 854), (1652, 884), (1695, 886), (1695, 906), (1598, 906)]],
+                        leg_lines=([[(1622, 857), (1636, 875), (1646, 889)], [(1640, 892), (1686, 895)],
+                                    [(1640, 896), (1688, 900)], [(1630, 893), (1606, 898)], [(1625, 898), (1612, 902)]],
+                                   None, [[(1607, 857), (1620, 873), (1630, 886)]])),
     'KmCrowHopping': A('KM-N06', P4, (1882, 659, 2272, 910), 'side', ('w', 0.57), 0.06,
-                       [('Head', [(2156, 659), (2272, 659), (2272, 733), (2178, 742)], (2170, 720))], legs='biped'),
+                       [('Head', [(2156, 659), (2272, 659), (2272, 733), (2178, 742)], (2170, 720))], legs='biped',
+                       leg_area=[[(2078, 858), (2097, 855), (2128, 882), (2168, 884), (2168, 900), (2076, 900)]],
+                       leg_lines=([[(2088, 858), (2105, 872), (2118, 885)], [(2118, 887), (2084, 891)],
+                                   [(2118, 887), (2162, 891)]], None),
+                       leg_drop=[[(2111, 826), (2156, 822), (2198, 834), (2198, 852), (2150, 868), (2118, 868),
+                                  (2111, 848)]]),
     'KmPigeonStanding': A('KM-N07', P4, (76, 942, 359, 1218), 'side', ('w', 0.30), 0.05,
                           [('Head', [(269, 942), (356, 942), (356, 1013), (283, 1035)], (291, 1024))], refine=True,
-                          legs='biped'),
+                          legs='biped',
+                          leg_area=[[(240, 1182), (246, 1176), (253, 1170), (258, 1166), (266, 1166), (274, 1180),
+                                     (312, 1186), (312, 1208), (228, 1208), (228, 1192)]],
+                          leg_lines=([[(246, 1176), (250, 1186), (256, 1194)], [(256, 1194), (236, 1198)],
+                                      [(256, 1194), (298, 1201)], [(256, 1194), (272, 1204)]],
+                                     [[(256, 1170), (262, 1180), (268, 1188)], [(268, 1188), (305, 1191)],
+                                      [(262, 1186), (240, 1188)]])),
     'KmPigeonPecking': A('KM-N07', P4, (491, 1027, 847, 1203), 'side', ('w', 0.34), 0.05,
                          [('Head', [(778, 1068), (840, 1068), (840, 1171), (772, 1171)], (789, 1089))], refine=True,
-                         shadow=0.3, dark_shadow=True, legs='biped', peck=(35.0, 18.0)),
+                         shadow=0.3, dark_shadow=True, legs='biped', peck=(35.0, 18.0),
+                         leg_area=[[(668, 1179), (676, 1172), (684, 1167), (692, 1164), (697, 1153), (714, 1151),
+                                    (730, 1162), (745, 1168), (800, 1170), (800, 1196), (652, 1196), (652, 1182)]],
+                         leg_lines=([[(683, 1166), (692, 1176), (700, 1185)], [(700, 1185), (660, 1180)],
+                                     [(700, 1185), (738, 1187)], [(700, 1185), (712, 1193)]],
+                                    [[(703, 1154), (712, 1163), (721, 1170)], [(721, 1171), (788, 1177)],
+                                     [(718, 1169), (688, 1169)]])),
     'KmSparrowPerched': A('KM-N08', P4, (1443, 961, 1755, 1213), 'side', ('w', 0.15), 0.025,
-                          [('Head', [(1641, 961), (1749, 961), (1749, 1063), (1650, 1075)], (1665, 1063))], refine=True),
+                          [('Head', [(1648, 961), (1749, 961), (1749, 1052), (1718, 1060), (1690, 1060), (1672, 1045),
+                                     (1662, 1018), (1650, 992)], (1680, 1052))], refine=True),
     'KmSparrowHopping': A('KM-N08', P4, (1898, 979, 2235, 1213), 'side', ('w', 0.15), 0.025,
                           [('Head', [(2122, 979), (2229, 979), (2229, 1083), (2135, 1092)], (2144, 1076))], refine=True,
-                          legs='biped', hop=True),
+                          legs='biped', hop=True,
+                          leg_area=[[(2060, 1139), (2078, 1139), (2094, 1158), (2108, 1176), (2110, 1192), (2084, 1192),
+                                     (2060, 1152)]],
+                          leg_lines=([[(2068, 1141), (2078, 1152), (2088, 1166), (2100, 1178)]], None),
+                          leg_drop=[[(2112, 1134), (2195, 1138), (2195, 1160), (2150, 1162), (2132, 1180), (2114, 1180),
+                                     (2112, 1160)]]),
     'KmSparrowFlying': A('KM-N08', P4, (2359, 958, 2696, 1201), 'below', ('w', 0.21), 0.02, wings=0.09, refine=True),
     'KmSwallowPerched': A('KM-N09', P4, (0, 1255, 466, 1525), 'side', ('h', 0.22), 0.02,
                           exclude=[[(0, 1350), (122, 1365), (122, 1415), (0, 1400)],
@@ -126,54 +177,92 @@ ANIMALS = {
     'KmSwallowFlying': A('KM-N09', P4, (466, 1265, 908, 1526), 'below', ('w', 0.33), 0.015, wings=0.07),
     'KmGullStanding': A('KM-N10', P4, (960, 1255, 1296, 1527), 'side', ('h', 0.34), 0.06,
                         [('Head', [(1173, 1255), (1290, 1255), (1290, 1352), (1189, 1375)], (1199, 1358))],
-                        refine=True, legs='biped', leg_width=0.09),
+                        refine=True, legs='biped', leg_width=0.09,
+                        leg_area=[[(1143, 1448), (1178, 1442), (1181, 1492), (1216, 1498), (1216, 1524), (1140, 1524)]],
+                        leg_lines=([[(1153, 1447), (1155, 1475), (1156, 1505)], [(1156, 1506), (1200, 1511)],
+                                    [(1156, 1506), (1185, 1518)], [(1156, 1506), (1148, 1512)]],
+                                   [[(1166, 1444), (1167, 1475), (1170, 1499)], [(1170, 1500), (1208, 1504)],
+                                    [(1170, 1500), (1190, 1500)]])),
     'KmEgretStanding': A('KM-N11', P4, (1939, 1238, 2225, 1535), 'side', ('h', 0.55), 0.05,
                          [('Head', [(2110, 1238), (2222, 1238), (2222, 1292), (2122, 1301)], (2127, 1292))],
                          legs='biped', peck=(40.0, 15.0)),
     # ---------------------------------------------------------------- KM-P8
-    'KmKoiRedWhite': A('KM-N12', P8, (21, 60, 428, 238), 'above', ('w', 0.60), 0.06, swim='right'),
-    'KmKoiRedWhiteTurning': A('KM-N12', P8, (505, 48, 874, 238), 'above', ('w', 0.52), 0.06, swim='right'),
-    'KmKoiGold': A('KM-N13', P8, (952, 68, 1355, 238), 'above', ('w', 0.55), 0.06, swim='left'),
-    'KmKoiGoldTurning': A('KM-N13', P8, (1408, 44, 1807, 256), 'above', ('w', 0.48), 0.06, swim='left'),
+    'KmKoiRedWhite': A('KM-N12', P8, (21, 60, 428, 238), 'above', ('w', 0.60), 0.06, swim='right',
+                       front_fins=[[(282, 104), (287, 80), (294, 67), (306, 70), (327, 99), (327, 104)],
+                                   [(284, 179), (326, 177), (331, 200), (321, 231), (300, 233), (284, 210)]]),
+    'KmKoiRedWhiteTurning': A('KM-N12', P8, (505, 48, 874, 238), 'above', ('w', 0.52), 0.06, swim='right',
+                              front_fins=[[(714, 79), (732, 66), (762, 77), (786, 86), (790, 90), (776, 96), (750, 108),
+                                           (730, 106)],
+                                          [(797, 166), (810, 152), (822, 144), (832, 160), (836, 192), (830, 208),
+                                           (812, 208), (798, 190)]]),
+    'KmKoiGold': A('KM-N13', P8, (952, 68, 1355, 238), 'above', ('w', 0.55), 0.06, swim='left',
+                   front_fins=[[(1050, 111), (1056, 90), (1070, 76), (1092, 74), (1100, 95), (1098, 111)],
+                               [(1045, 185), (1095, 185), (1100, 210), (1088, 230), (1062, 231), (1046, 212)]]),
+    'KmKoiGoldTurning': A('KM-N13', P8, (1408, 44, 1807, 256), 'above', ('w', 0.48), 0.06, swim='left',
+                          front_fins=[[(1508, 96), (1512, 62), (1525, 50), (1550, 54), (1557, 80), (1552, 95)],
+                                      [(1506, 178), (1556, 174), (1560, 200), (1550, 233), (1525, 236), (1506, 215)]]),
     'KmTurtleBasking': A('KM-N14', P8, (1867, 66, 2255, 237), 'side', ('w', 0.36), 0.05, refine=True),
     'KmTurtleSwimming': A('KM-N14', P8, (2327, 16, 2715, 274), 'above', ('w', 0.33), 0.035, refine=True,
                           flippers='right'),
     'KmHeronStanding': A('KM-N15', P8, (101, 303, 366, 609), 'side', ('h', 0.90), 0.07,
-                         [('Head', [(219, 303), (363, 303), (363, 362), (228, 371)], (278, 359))], refine=True,
-                         legs='biped'),
+                         [('Head', [(212, 303), (363, 303), (363, 362), (228, 371), (212, 367)], (278, 359))], refine=True,
+                         legs='biped',
+                         leg_area=[[(172, 505), (183, 490), (200, 481), (216, 473), (225, 520), (262, 575), (345, 583),
+                                    (345, 604), (140, 604), (140, 592), (172, 560)]],
+                         leg_lines=([[(207, 476), (204, 516), (215, 586)], [(215, 588), (197, 592)],
+                                     [(215, 588), (257, 590)], [(215, 588), (245, 598)]],
+                                    [[(192, 483), (184, 512), (200, 579)], [(200, 581), (177, 584)],
+                                     [(200, 581), (232, 582)]])),
     'KmCormorantStanding': A('KM-N16', P8, (1011, 317, 1279, 604), 'side', ('h', 0.85), 0.07,
                              [('Head', [(1160, 317), (1273, 317), (1273, 369), (1168, 378)], (1177, 369))], refine=True),
     'KmCormorantDrying': A('KM-N16', P8, (1390, 323, 1822, 602), 'side', ('w', 0.95), 0.07, refine=True),
     'KmWagtail': A('KM-N17', P8, (2316, 345, 2684, 582), 'side', ('w', 0.21), 0.02,
                    [('Head', [(2550, 345), (2677, 345), (2677, 412), (2560, 423)], (2571, 412)),
                     ('Tail', [(2316, 490), (2445, 463), (2455, 475), (2455, 495), (2316, 520)], (2450, 482))],
-                   refine=True, legs='biped'),
+                   refine=True, legs='biped',
+                   leg_area=[[(2536, 500), (2556, 499), (2585, 545), (2620, 552), (2620, 570), (2518, 570), (2518, 545)]],
+                   leg_lines=([[(2550, 503), (2561, 525), (2574, 549)], [(2572, 552), (2614, 559)],
+                               [(2572, 556), (2600, 566)], [(2565, 556), (2541, 557)], [(2565, 559), (2542, 564)]],
+                              None, [[(2540, 507), (2552, 528), (2565, 547)]])),
     'KmWhiteEyePerched': A('KM-N18', P8, (66, 651, 366, 932), 'side', ('w', 0.13), 0.015,
-                           [('Head', [(265, 651), (360, 651), (360, 749), (277, 761)], (285, 743))]),
+                           [('Head', [(258, 651), (362, 651), (362, 712), (318, 718), (312, 732), (296, 738), (280, 726),
+                                      (270, 705), (262, 685)], (294, 730))]),
     'KmWhiteEyeFlying': A('KM-N18', P8, (509, 639, 863, 891), 'below', ('w', 0.18), 0.012, wings=0.08),
     'KmBulbulPerched': A('KM-N19', P8, (972, 640, 1277, 912), 'side', ('w', 0.28), 0.025,
-                         [('Head', [(1148, 640), (1271, 640), (1271, 740), (1160, 751)], (1171, 734))], refine=True),
+                         [('Head', [(1160, 640), (1271, 640), (1271, 700), (1232, 705), (1228, 722), (1205, 730),
+                                    (1180, 728), (1160, 712), (1150, 695)], (1195, 725))], refine=True),
     'KmBulbulFlying': A('KM-N19', P8, (1406, 626, 1806, 907), 'below', ('w', 0.40), 0.02, wings=0.07, refine=True),
     'KmDoveStanding': A('KM-N20', P8, (1863, 647, 2225, 905), 'side', ('w', 0.33), 0.05,
                         [('Head', [(2142, 647), (2222, 647), (2222, 727), (2135, 738)], (2155, 724))], refine=True,
-                        legs='biped', peck=(35.0, 18.0)),
+                        legs='biped', peck=(35.0, 18.0),
+                        leg_area=[[(2062, 862), (2068, 856), (2085, 853), (2100, 851), (2108, 862), (2135, 868),
+                                   (2158, 880), (2158, 893), (2050, 893), (2050, 872)]],
+                        leg_lines=([[(2092, 856), (2098, 866), (2100, 876)], [(2100, 878), (2152, 885)],
+                                    [(2100, 878), (2122, 889)], [(2100, 878), (2080, 885)]],
+                                   [[(2072, 858), (2078, 866), (2082, 872)], [(2082, 873), (2056, 878)],
+                                    [(2082, 873), (2128, 874)]])),
     'KmDoveFlying': A('KM-N20', P8, (2314, 646, 2731, 900), 'below', ('w', 0.53), 0.025, wings=0.08, refine=True),
     'KmCalicoWalking': A('KM-N21', P8, (12, 936, 438, 1220), 'side', ('h', 0.30), 0.06,
-                         [('Tail', [(12, 1098), (60, 1086), (100, 1076), (114, 1090), (85, 1108), (50, 1124), (12, 1142)],
+                         [('Tail', [(12, 1110), (30, 1112), (50, 1106), (70, 1100), (88, 1090), (100, 1076), (114, 1090),
+                                    (100, 1112), (88, 1124), (72, 1136), (55, 1144), (35, 1142), (12, 1142)],
                            (106, 1088))],
-                          refine=True, legs=True, whiskers=True, step=19, outline=9.0),
+                          refine=True, legs=True, whiskers=True, step=19, outline=9.0,
+                          beard=[[(385, 1048), (408, 1048), (408, 1070), (385, 1070)]]),
     'KmCalicoAsleep': A('KM-N21', P8, (967, 965, 1337, 1206), 'side', ('w', 0.42), 0.09, refine=True, whiskers=True),
     'KmTuxedoWalking': A('KM-N22', P8, (1392, 969, 1801, 1216), 'side', ('h', 0.30), 0.06,
                          [('Tail', [(1392, 1012), (1479, 1012), (1479, 1063), (1423, 1166), (1392, 1166)], (1471, 1048))],
                           refine=True, legs=True, whiskers=True),
     'KmTuxedoSitting': A('KM-N22', P8, (1872, 936, 2218, 1220), 'side', ('h', 0.38), 0.075,
-                         [('Tail', [(1872, 1149), (2002, 1149), (2002, 1209), (1872, 1209)], (2002, 1179))],
+                         [('Tail', [(1872, 1149), (1960, 1149), (1960, 1166), (1975, 1170), (1986, 1180), (1988, 1205),
+                                    (1872, 1209)], (1985, 1186))],
                           refine=True, whiskers=True),
     'KmTuxedoLying': A('KM-N22', P8, (2308, 995, 2724, 1172), 'side', ('w', 0.60), 0.075,
-                       [('Tail', [(2308, 1071), (2404, 1071), (2404, 1113), (2308, 1113)], (2400, 1095))],
+                       [('Tail', [(2310, 1100), (2340, 1094), (2370, 1088), (2398, 1083), (2402, 1092), (2400, 1099), (2385, 1105),
+                                  (2370, 1112), (2355, 1119), (2340, 1124), (2318, 1124), (2310, 1115)], (2398, 1092))],
                         refine=True, whiskers=True),
     'KmSwallowtail': A('KM-N25', P8, (961, 1248, 1334, 1531), 'above', ('w', 0.10), 0.003, wings=0.025, head_up=True),
-    'KmDragonfly': A('KM-N26', P8, (1398, 1255, 1814, 1524), 'above', ('w', 0.07), 0.002, wings=0.025, head_up=True, thresh=14),
+    'KmDragonfly': A('KM-N26', P8, (1398, 1255, 1814, 1524), 'above', ('w', 0.07), 0.002, wings=0.025, head_up=True, thresh=14,
+                     beat=(4.0, 24.0)),
 }
 
 
@@ -271,6 +360,16 @@ def figure_mask(sheet, spec):
     like = ((dev < 3) & ((r.max(-1) - r.min(-1)) < 10) & (np.abs(r.mean(-1) - bg.mean()) < 12)).astype(np.uint8)
     n, lab, st, _ = cv2.connectedComponentsWithStats(like, 8)
     m[np.isin(lab, 1 + np.nonzero(st[1:, 4] >= 40)[0])] = 0
+    if spec['beard']:
+        # under a cat's chin, the backdrop between its whiskers: neutral and within the backdrop's own range of grey
+        # (lighter where the whiskers' glow lies on it), cut out; fur there has colour or is far brighter (D20)
+        zone = _polys(spec['beard'], m.shape, x0, y0) > 0
+        lum = r.mean(-1)
+        m[zone & ((r.max(-1) - r.min(-1)) < 14) & (lum > bg.mean() - 10) & (lum < bg.mean() + 45)] = 0
+        opened = cv2.morphologyEx(m, cv2.MORPH_OPEN, np.ones((3, 3), np.uint8))
+        m[zone] = opened[zone]
+        n, lab, st, _ = cv2.connectedComponentsWithStats(m, 8)
+        m = (lab == 1 + int(np.argmax(st[1:, 4]))).astype(np.uint8)
     m[fill_pixels(spec, r)] = 1     # a narrow gap closed, painted with the fur around it (build inpaints it)
     return m
 
@@ -296,17 +395,16 @@ def _twin(masks, pivots, sides, feet, near, far):
     """The picture shows a pair of legs as one (one behind the other): the far leg is a copy of the near one, set
     behind the body. Hidden behind it at rest, it steps out of phase, so a foot is always down (D19: a bird on its one
     leg stood on nothing while that leg swung)."""
-    shin_near, shin_far = 'Shin' + near[3:], 'Shin' + far[3:]
-    masks[far] = masks[near].copy()
-    pivots[far] = pivots[near]
-    if shin_near in masks:
-        masks[shin_far] = masks[shin_near].copy()
-        pivots[shin_far] = pivots[shin_near]
+    for pre in ('Leg', 'Shin', 'Toe'):
+        a, b = pre + near[3:], pre + far[3:]
+        if a in masks:
+            masks[b] = masks[a].copy()
+            pivots[b] = pivots[a]
     sides[near], sides[far] = -1, 1
     feet[far] = feet[near]
 
 
-def leg_masks(rest, biped=False):
+def leg_masks(rest, biped=False, seeds=None, origin=(0, 0)):
     """A walker's legs, from what is left of its figure once its tail and head are taken: each one a thigh (Leg..,
     pivoting at the hip or shoulder) and a shin (Shin.., pivoting at the knee), with the foot's contact point.
 
@@ -317,6 +415,12 @@ def leg_masks(rest, biped=False):
     front legs are those ahead of the torso's middle; a bird's two legs are one group. Of two in a group the larger is
     the near one (the right leg: the model's right flank faces the camera), the other the far one; a group of one is
     the near leg alone, at the body's middle.
+
+    seeds: a group whose two legs touch all the way down, found as one piece and copied (the Shiba's: four legs each
+    end, D20): {'F' or 'B': (near lines, far lines)}, polylines in sheet px (origin: the mask's corner on the sheet),
+    seeding the group's two legs in place of the piece. A leg takes only what lies within two fifths of a leg's length
+    of its seed: fur hanging between two legs stays the body's (D20: the tanuki's thighs took its whole belly, and
+    their straight tops showed as steps across it when they turned).
 
     Every joint overlaps (D16): the thigh reaches up into the body over half the leg's length, narrowing, its pivot
     inside that reach, three tenths of the leg's length above the belly; the shin reaches up into the thigh the same
@@ -349,19 +453,36 @@ def leg_masks(rest, biped=False):
             and np.nonzero(lab == i)[0].max() >= bottom - 0.25 * legh]
     if not keep:
         return none
-    src = np.full((h, w), 255, np.uint8)
+    tx = np.nonzero(rest[:belly + 1])[1].mean()
+    drawn = seeds or {}
+    seed_lab = np.zeros((h, w), np.int32)
+    info = {}                   # seed label: (group, its side if drawn)
     for i in keep:
-        src[lab == i] = 0
-    near_px = cv2.distanceTransformWithLabels(src, cv2.DIST_L2, 5, labelType=cv2.DIST_LABEL_PIXEL)[1]
+        g = '' if biped else 'F' if np.nonzero(lab == i)[1].mean() >= tx else 'B'
+        if g not in drawn:
+            info[len(info) + 1] = (g, None)
+            seed_lab[lab == i] = len(info)
+    for g, (near, far) in drawn.items():
+        for lines, side in ((near, 'R'), (far, 'L')):
+            if not lines:               # no far leg drawn: the near one is copied for it
+                continue
+            canvas = np.zeros((h, w), np.uint8)
+            for line in lines:
+                cv2.polylines(canvas, [np.array([(x - origin[0], y - origin[1]) for x, y in line], np.int32)],
+                              False, 1, 3)
+            info[len(info) + 1] = (g, side)
+            seed_lab[(canvas > 0) & (region > 0)] = len(info)
+    src = np.where(seed_lab > 0, 0, 255).astype(np.uint8)
+    dist, near_px = cv2.distanceTransformWithLabels(src, cv2.DIST_L2, 5, labelType=cv2.DIST_LABEL_PIXEL)
     lut = np.zeros(int(near_px.max()) + 1, np.int32)
     zy, zx = np.nonzero(src == 0)
-    lut[near_px[zy, zx]] = lab[zy, zx]
-    owner = lut[near_px] * (region > 0)
-    tx = np.nonzero(rest[:belly + 1])[1].mean()
+    lut[near_px[zy, zx]] = seed_lab[zy, zx]
+    owner = lut[near_px] * (region > 0) * (dist <= 0.4 * legh)
     groups = {'': []} if biped else {'F': [], 'B': []}
-    for i in keep:
+    for i, (g, side) in info.items():
         m = (owner == i).astype(np.uint8)
-        groups['' if biped else 'F' if np.nonzero(m)[1].mean() >= tx else 'B'].append(m)
+        if m.any():
+            groups[g].append((m, side))
 
     def reach_up(m, row, height, taper):
         """A band above row, as wide as m is there and narrowing upward: the part's reach into the one above."""
@@ -378,8 +499,10 @@ def leg_masks(rest, biped=False):
         return band, mid
 
     masks, pivots, sides, feet = {}, {}, {}, {}
-    for g, ms in groups.items():
-        ms.sort(key=lambda m: -int(m.sum()))
+    for g, found in groups.items():
+        # drawn legs come near first; found ones, the larger is the near one
+        found.sort(key=lambda t: (t[1] != 'R', -int(t[0].sum())) if t[1] else (0, -int(t[0].sum())))
+        ms = [m for m, _ in found]
         while len(ms) > 2:          # a stray third piece joins whichever of the two is nearer
             extra = ms.pop()
             ex = np.nonzero(extra)[1].mean()
@@ -405,6 +528,9 @@ def leg_masks(rest, biped=False):
             sides[name] = sign
             fx = np.nonzero(m[max(0, foot_row - 2):foot_row + 1])[1]
             feet[name] = (float(fx.mean()), float(foot_row))
+            paw = np.zeros_like(m)              # the paw and pastern: the lowest quarter of the leg, kept level (_foot)
+            paw[int(foot_row - 0.25 * legh):] = 1
+            _foot(m, paw, rest, shin, 'Toe' + g + side, feet[name], 0.06 * legh, masks, pivots, name)
         if len(ms) == 1:
             _twin(masks, pivots, sides, feet, 'Leg' + g + 'R', 'Leg' + g + 'L')
     return masks, pivots, sides, feet, belly
@@ -445,45 +571,149 @@ def bird_legs(rest, width=0.06):
         legs[j] = legs[j] | extra
     masks, pivots, sides, feet = {}, {}, {}, {}
     for m, (side, sign) in zip(legs, (('R', -1 if len(legs) > 1 else 0), ('L', 1))):
-        name, shin = 'Leg' + side, 'Shin' + side
-        my = np.nonzero(m)[0]
-        t0, fb = int(my.min()), int(my.max())
-        L = fb - t0
-        joint = int(t0 + 0.5 * L)
-
-        def band_above(src, row, height):
-            cols = np.nonzero(src[row:row + 3].any(0))[0]
-            mid, half = (cols.min() + cols.max()) / 2.0, (cols.max() - cols.min()) / 2.0 + 1
-            b = np.zeros_like(src)
-            H = max(2, int(height))
-            for t in range(0, H + 1):
-                kk = half * (1 - 0.3 * t / H)
-                if row - t >= 0:
-                    b[row - t, max(0, int(mid - kk)):min(w, int(mid + kk) + 1)] = 1
-            return b, mid
-
-        hip_band, hip_x = band_above(m, t0, 0.3 * L)
-        above = np.zeros_like(m)
-        above[:joint + 1] = 1
-        upper = ((m & above) | hip_band) & rest
-        lower_core = m & (1 - above)
-        if lower_core.sum() < 15:
-            masks[name] = ((m | hip_band) & rest).astype(np.uint8)
-        else:
-            kb, knee_x = band_above(lower_core, joint + 1, 0.2 * L)
-            masks[name] = upper.astype(np.uint8)
-            masks[shin] = ((lower_core | (kb & m)) & rest).astype(np.uint8)
-            pivots[shin] = (knee_x, float(joint))
-        pivots[name] = (hip_x, float(t0) - 0.1 * L)
-        sides[name] = sign
-        fx = np.nonzero(m[max(0, fb - 2):fb + 1])[1]
-        feet[name] = (float(fx.mean()), float(fb))
+        _bird_leg(m, rest, side, sign, masks, pivots, sides, feet)
     if len(legs) == 1:
         _twin(masks, pivots, sides, feet, 'LegR', 'LegL')
     core = np.zeros_like(rest)
     for m in legs:
         core |= m
     return masks, pivots, sides, feet, top, core
+
+
+def _foot(m, toes, keep, shin, toe, foot, reach, masks, pivots, thigh=None):
+    """A leg's foot as its own part, Toe.. under the shin, pivoting at the foot's contact point, which the gait keeps
+    level on the ground (D20: a bird's long toes, rigid in its shin, tipped into the floor whenever the shin turned, by
+    up to a fifth of its height; a paw by up to 3 %). toes: the foot's own pixels; they leave the shin, and the foot
+    reaches up into the shin by reach px, so the ankle stays covered as the shin turns over it."""
+    own = (m & toes).astype(np.uint8)
+    if shin not in masks or own.sum() < 15:
+        return
+    k = 2 * max(2, int(round(reach))) + 1
+    up = cv2.dilate(own, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (k, k))) & masks[shin] & (1 - own)
+    masks[toe] = ((own | up) & keep).astype(np.uint8)
+    for part in (shin, thigh):              # nothing of the foot stays on a part that turns with the leg
+        if part in masks:
+            masks[part] = (masks[part] & (1 - own)).astype(np.uint8)
+    pivots[toe] = foot
+
+
+def _spread(m):
+    """A thin leg's toes: the rows at its foot where it spreads wider than twice the leg above (an egret's)."""
+    ys = np.nonzero(m)[0]
+    if not len(ys):
+        return np.zeros_like(m)
+    t0, fb = int(ys.min()), int(ys.max())
+    widths = m.sum(1)
+    leg = np.median(widths[t0:t0 + max(1, int(0.7 * (fb - t0)))])
+    top = fb
+    while top > t0 and widths[top - 1] > 2 * leg:
+        top -= 1
+    rows = np.zeros_like(m)
+    rows[max(t0, top - 1):fb + 1] = 1
+    return rows
+
+
+def _bird_leg(m, keep, side, sign, masks, pivots, sides, feet, toes=None, ankle_x=None):
+    """One bird's leg (m: its bare pixels) jointed at its middle: the upper part (Leg.., pivoting where the leg leaves
+    the feathers, reaching up into them) and the lower (Shin.., pivoting at the joint, reaching up into the upper), its
+    foot where its toes meet the ground, the toes a level foot of their own (_foot; toes: their pixels, else the rows
+    where the leg spreads). keep: the pixels a reach may cover. ankle_x: the foot's contact straight under the
+    ankle (a drawn leg's line ends there), not the middle of its lowest pixels, which a long toe pulls forward (D20: the
+    pigeon's leg turned about its toe tip, and its shin swept through the ground)."""
+    w = m.shape[1]
+    name, shin = 'Leg' + side, 'Shin' + side
+    whole = m
+    toes = _spread(m) if toes is None else toes
+    # the leg jointed along its own length, the toes left out: on a short leg (a pigeon's) they reach above its middle
+    fb_whole = int(np.nonzero(m)[0].max())
+    tarsus = (m & (1 - toes)).astype(np.uint8)
+    if tarsus.sum() >= 30:
+        m = tarsus
+    my = np.nonzero(m)[0]
+    t0, fb = int(my.min()), int(my.max())
+    L = fb - t0
+    joint = int(t0 + 0.5 * L)
+
+    def band_above(src, row, height):
+        cols = np.nonzero(src[row:row + 3].any(0))[0]
+        mid, half = (cols.min() + cols.max()) / 2.0, (cols.max() - cols.min()) / 2.0 + 1
+        b = np.zeros_like(src)
+        H = max(2, int(height))
+        for t in range(0, H + 1):
+            kk = half * (1 - 0.3 * t / H)
+            if row - t >= 0:
+                b[row - t, max(0, int(mid - kk)):min(w, int(mid + kk) + 1)] = 1
+        return b, mid
+
+    hip_band, hip_x = band_above(m, t0, 0.3 * L)
+    above = np.zeros_like(m)
+    above[:joint + 1] = 1
+    upper = ((m & above) | hip_band) & keep
+    lower_core = m & (1 - above)
+    if lower_core.sum() < 15:
+        masks[name] = ((m | hip_band) & keep).astype(np.uint8)
+    else:
+        kb, knee_x = band_above(lower_core, joint + 1, 0.2 * L)
+        masks[name] = upper.astype(np.uint8)
+        masks[shin] = ((lower_core | (kb & m)) & keep).astype(np.uint8)
+        pivots[shin] = (knee_x, float(joint))
+    pivots[name] = (hip_x, float(t0) - 0.1 * L)
+    sides[name] = sign
+    fx = np.nonzero(whole[max(0, fb_whole - 2):fb_whole + 1])[1]
+    feet[name] = (float(fx.mean()) if ankle_x is None else float(ankle_x), float(fb_whole))
+    _foot(whole, toes, keep, shin, 'Toe' + side, feet[name], 0.08 * L, masks, pivots, name)
+
+
+def _polys(polys, shape, x0, y0):
+    """The pixels inside polygons given in sheet px, in a mask whose corner is the sheet's (x0, y0)."""
+    m = np.zeros(shape, np.uint8)
+    for poly in polys:
+        cv2.fillPoly(m, [np.array([(x - x0, y - y0) for x, y in poly], np.int32)], 1)
+    return m
+
+
+def _line_dist(lines, shape, x0, y0):
+    """Each pixel's distance from the nearest of polylines given in sheet px."""
+    canvas = np.full(shape, 255, np.uint8)
+    for line in lines:
+        cv2.polylines(canvas, [np.array([(x - x0, y - y0) for x, y in line], np.int32)], False, 0, 1)
+    return cv2.distanceTransform(canvas, cv2.DIST_L2, 5)
+
+
+def drawn_legs(rest, spec):
+    """A bird's legs as drawn on its sheet (D20), where bird_legs can't find them by their thinness: two legs touching
+    all the way down (the gull's, the heron's: found as one, then copied, a bird on four legs), legs as thick as the
+    disk (the pigeons', the dove's: only a toe was found), a leg raised mid-step (the hopping crow's and sparrow's, left
+    in the body as a third). Every pixel of the figure in leg_area is a leg's: the one whose leg_lines it lies nearest;
+    the far leg's lines None, the near leg is copied for it (_twin). leg_drop's pixels leave the model: a leg raised
+    mid-step can't plant, and the standing leg's copy stands in for it. A third entry in leg_lines: the far leg's own
+    lines, where it stands beside the near one all the way down (the standing crow's, the wagtail's two tarsi): its
+    pixels leave the model and the near leg, with every toe, is copied for it, so each leg is one leg. Returns as bird_legs does; the core is every
+    pixel the body gives up (the legs' and the dropped)."""
+    x0, y0 = spec['box'][:2]
+    shape = rest.shape
+    drop = _polys(spec['leg_drop'], shape, x0, y0) & rest
+    keep = (rest & (1 - drop)).astype(np.uint8)
+    area = _polys(spec['leg_area'], shape, x0, y0) & keep
+    near_lines, far_lines = spec['leg_lines'][:2]
+    dn = _line_dist(near_lines, shape, x0, y0)
+    if len(spec['leg_lines']) > 2:      # a far leg seen beside the near one, taken out: the near one's copy stands in
+        hidden = area & (_line_dist(spec['leg_lines'][2], shape, x0, y0) < dn)
+        drop = (drop | hidden).astype(np.uint8)
+        area = (area & (1 - hidden)).astype(np.uint8)
+        keep = (keep & (1 - hidden)).astype(np.uint8)
+    ms = [(area & (dn <= (_line_dist(far_lines, shape, x0, y0) if far_lines else np.inf))).astype(np.uint8)]
+    if far_lines:
+        ms.append((area & (1 - ms[0])).astype(np.uint8))
+    masks, pivots, sides, feet = {}, {}, {}, {}
+    for m, lines, (side, sign) in zip(ms, (near_lines, far_lines), (('R', -1 if len(ms) > 1 else 0), ('L', 1))):
+        # the foot: what lies nearer the toes' lines than the leg's own (the first line)
+        toes = (_line_dist(lines[1:], shape, x0, y0) < _line_dist(lines[:1], shape, x0, y0)).astype(np.uint8) \
+            if len(lines) > 1 else None
+        _bird_leg(m, keep, side, sign, masks, pivots, sides, feet, toes, lines[0][-1][0] - x0)
+    if len(ms) == 1:
+        _twin(masks, pivots, sides, feet, 'LegR', 'LegL')
+    return masks, pivots, sides, feet, int(np.nonzero(rest)[0].min()), (area | drop).astype(np.uint8)
 
 
 def _geodesic(mask, seed):
@@ -581,24 +811,38 @@ def part_masks(spec, mask):
     h, w = mask.shape
     parts, pivots, sides = {}, {}, {}
     taken = np.zeros_like(mask)
+    solo = np.zeros_like(mask)          # the body's alone: no part's overlap grows into it (a koi's front fins)
     for name, poly, pivot in spec['parts']:
         pm = np.zeros_like(mask)
         cv2.fillPoly(pm, [np.array([(x - x0, y - y0) for x, y in poly], np.int32)], 1)
         pm &= mask & (1 - taken)
         parts[name], pivots[name] = pm, pivot
         taken |= pm
+    drawn_parts = taken.copy()
     banded = set()
     if spec['legs']:
         rest = (mask & (1 - taken)).astype(np.uint8)
+        # a leg (or a paw) taken out of the model: raised mid-step, or peeking out behind the near one where the far
+        # leg is otherwise hidden (its copy stands in for it); it leaves the body too
+        drop = _polys(spec['leg_drop'], mask.shape, x0, y0) & rest
+        rest = (rest & (1 - drop)).astype(np.uint8)
+        taken |= drop
         biped = spec['legs'] == 'biped'
         below = np.zeros_like(mask)
         if biped:                       # a bird's bare legs leave the body; their reach into the feathers stays its
-            legs, lpiv, lsides, lfeet, belly, core = bird_legs(rest, spec['leg_width'])
+            if spec['leg_lines']:
+                legs, lpiv, lsides, lfeet, belly, core = drawn_legs(rest, spec)
+            else:
+                legs, lpiv, lsides, lfeet, belly, core = bird_legs(rest, spec['leg_width'])
             below = core
+            taken |= core               # a leg raised mid-step and taken out (leg_drop) leaves the body too
         else:
-            legs, lpiv, lsides, lfeet, belly = leg_masks(rest)
+            legs, lpiv, lsides, lfeet, belly = leg_masks(rest, seeds=spec['leg_seeds'], origin=(x0, y0))
             if belly is not None:
-                below[belly + 1:] = 1
+                # the body keeps a skirt below its belly, a sixth of the leg deep: a thigh turning off it shows fur
+                # there, not the backdrop (D20)
+                legh = int(np.nonzero(rest)[0].max()) - belly
+                below[belly + 1 + int(0.15 * legh):] = 1
         for name, pm in legs.items():
             parts[name] = pm
             pivots[name] = (x0 + lpiv[name][0], y0 + lpiv[name][1])
@@ -658,6 +902,12 @@ def part_masks(spec, mask):
         end = xs.max() if spec['swim'] == 'right' else xs.min()
         seed = (float(end), float(ys[xs == end].mean()))
         links, _ = split_links(rest, seed, (0.0, 0.45, 0.65, 0.82), 'Front')
+        # a pectoral fin near the first cut stays whole with the body (D20: the cut, measured through the fish, ran
+        # across the fins, and their outer halves swung with the tail as loose flecks)
+        fins = _polys(spec['front_fins'], mask.shape, x0, y0) & rest
+        solo |= fins
+        links = [(nm, (m & (1 - fins)).astype(np.uint8) if k else (m | fins).astype(np.uint8), pv)
+                 for k, (nm, m, pv) in enumerate(links)]
         for k, (nm, m, pv) in enumerate(links[1:]):
             name = 'Tail' if k == 0 else 'Tail' + str(k + 1)
             parts[name] = m
@@ -673,13 +923,19 @@ def part_masks(spec, mask):
             banded.add(name)
             taken |= own                # its own pixels leave the body; its reach into the shell stays the shell's
     body = (mask & (1 - taken)).astype(np.uint8)
+    if drawn_parts.any():
+        # the body carries on under a drawn part's edge (its tail's, its head's), as far as the part may sway off it:
+        # D20, the Shiba's rump showed the backdrop through a slit under its curled tail
+        fh = int(np.ptp(np.nonzero(mask)[0])) + 1
+        k = 2 * max(2, int(round(0.03 * fh))) + 1
+        body |= (cv2.dilate(body, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (k, k))) & drawn_parts).astype(np.uint8)
     for name, pm in list(parts.items()):
         if name in banded or not pm.any():
             continue
         thick = float(cv2.distanceTransform(pm, cv2.DIST_L2, 5).max())
         k = 2 * int(round(max(3.0, 0.6 * thick))) + 1
         grown = cv2.dilate(pm, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (k, k)))
-        parts[name] = (pm | (grown & body)).astype(np.uint8)
+        parts[name] = (pm | (grown & body & (1 - solo))).astype(np.uint8)
     parts['Body'] = body
     pivots['Body'] = None
     return parts, pivots, sides
@@ -767,6 +1023,8 @@ def _parent_of(part):
     """The part a part hangs from: a shin from its thigh, a link (Tail3, WingL2) from the link before."""
     if part.startswith('Shin'):
         return 'Leg' + part[4:]
+    if part.startswith('Toe'):
+        return 'Shin' + part[3:]
     m = re.match(r'^(Tail|WingL|WingR)(\d)$', part)
     if m:
         n = int(m.group(2))
@@ -982,6 +1240,43 @@ def cuts_sheet(results, out):
     print('cuts', out, sheet_im.size)
 
 
+def part_map(sheet, spec, parts, out):
+    """One model's parts on its picture at full size, each its own colour, outlined and named (D20: two legs in one
+    part, a raised leg left in the body, a fin cut in two, all hidden at the cuts sheet's thumbnail size). Joints are
+    white rings, feet red crosses."""
+    x0, y0, x1, y1 = spec['box']
+    photo = np.asarray(sheet.convert('RGB'))[y0:y1, x0:x1].astype(np.float32)
+    over = photo * 0.3 + 60
+    rng = np.random.RandomState(7)
+    names = sorted(parts, key=lambda p: (p != 'Body', p))
+    colours = {p: (np.array([150, 150, 150]) if p == 'Body' else rng.randint(60, 256, 3)) for p in names}
+    for p in names:
+        pm = parts[p] > 0
+        over[pm] = photo[pm] * 0.4 + colours[p] * 0.6
+    im8 = over.clip(0, 255).astype(np.uint8).copy()
+    for p in names:
+        cs, _ = cv2.findContours(parts[p].astype(np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+        cv2.drawContours(im8, cs, -1, tuple(int(v) for v in colours[p]), 1)
+    im = Image.fromarray(im8)
+    sc = max(1, int(1000 / max(im.size)))
+    im = im.resize((im.width * sc, im.height * sc), Image.NEAREST)
+    d = ImageDraw.Draw(im)
+    font = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf', 13)
+    for p in names:
+        ys, xs = np.nonzero(parts[p])
+        if len(ys):
+            d.text((xs.mean() * sc - 12, ys.mean() * sc - 7), p, fill=(255, 255, 255), font=font,
+                   stroke_width=2, stroke_fill=(0, 0, 0))
+    for (px, py), kind in spec.get('_joints', []):
+        px, py, r = (px - x0) * sc, (py - y0) * sc, 4
+        if kind == 'foot':
+            d.line([(px - r, py - r), (px + r, py + r)], fill=(255, 0, 0), width=2)
+            d.line([(px - r, py + r), (px + r, py - r)], fill=(255, 0, 0), width=2)
+        else:
+            d.ellipse([px - r, py - r, px + r, py + r], outline=(255, 255, 255), width=2)
+    im.save(out, quality=88)
+
+
 def board(roots, infos, atlas_path, out, sheets):
     """Each model: its sheet, the model straight on, the model turned (from in front and to the left, a little above;
     a flyer from below and to the side, as one is seen overhead; a thing lying flat from in front and above)."""
@@ -1056,14 +1351,18 @@ def game_settings(name, info):
     if legs and not bird:
         if spec['whiskers']:
             return {'component': 'WallCat', 'tail': 'Tail', 'tailAxis': 'side', 'legs': 'LegGait (tucked in a bound)'}
-        return {'component': 'Dog', 'tail': 'Tail', 'tailAxis': 'side', 'head': 'Head' if 'Head' in parts else None,
-                'legs': 'LegGait (walk into trot)'}
+        # a tail curled over the back wags side to side about the body's long axis (D20)
+        return {'component': 'Dog', 'tail': 'Tail', 'tailAxis': 'long' if spec['curl'] else 'side',
+                'head': 'Head' if 'Head' in parts else None, 'legs': 'LegGait (walk into trot)'}
     if 'Running' in name:
         return {'component': 'TreeSquirrel', 'tail': 'Tail', 'tailAxis': 'side', 'note': 'its dash: the model mid-leap'}
     if 'WingL' in parts:
         if info['view'] == 'below':
             return {'component': 'GroundBird (flying model) or SkyFlock', 'wings': ['WingR', 'WingL'], 'wingAxis': 'long'}
-        return {'component': 'FlitButterfly', 'wingL': 'WingL', 'wingR': 'WingR', 'wingAxis': 'long'}
+        out = {'component': 'FlitButterfly', 'wingL': 'WingL', 'wingR': 'WingR', 'wingAxis': 'long'}
+        if spec['beat']:            # a dragonfly beats its wings about flat; a butterfly claps them up (the default)
+            out.update(beatMid=spec['beat'][0], beatSwing=spec['beat'][1])
+        return out
     if spec['swim']:
         return {'component': 'PondDuck', 'tail': 'Tail', 'tailAxis': 'up', 'tailSweep': 22, 'tailBeat': 1.6}
     if spec['flippers']:
@@ -1082,7 +1381,8 @@ def game_settings(name, info):
         if spec['whiskers'] and 'Sitting' in name:
             return {'component': 'WallCat', 'tail': 'Tail', 'tailAxis': 'side'}
         amp, speed = (15.0, 6.0) if 'Shiba' in name else (12.0, 1.2) if spec['whiskers'] else (8.0, 1.0)
-        return {'component': 'CritterIdle', 'motions': [{'part': 'Tail', 'axis': 'side', 'amplitude': amp, 'speed': speed}]}
+        return {'component': 'CritterIdle', 'motions': [{'part': 'Tail', 'axis': 'long' if spec['curl'] else 'side',
+                                                          'amplitude': amp, 'speed': speed}]}
     if 'Head' in parts:
         amp, speed = (10.0, 0.7) if info['id'] in ON_A_ROCK else (12.0, 0.9)
         return {'component': 'CritterIdle', 'motions': [{'part': 'Head', 'axis': 'up', 'amplitude': amp, 'speed': speed}]}
@@ -1123,8 +1423,9 @@ def motions_of(name, info):
             wag_w, wag_r = (25.0, 0.0, 8 / (2 * math.pi)), (25.0, 0.0, 13 / (2 * math.pi))
         else:       # the tanuki's brush swaying with its gait
             wag_w = wag_r = (10.0, 0.0, 6 / (2 * math.pi))
-        out = [_timed('walk', AR.gait('walk', h, tail=wag_w, period=tw), None, tw),
-               _timed('run', AR.gait('trot', h, tail=wag_r, period=tr), None, tr)]
+        axis = 'x' if spec['curl'] else 'y'         # a curled tail sways about the long axis (D20)
+        out = [_timed('walk', AR.gait('walk', h, tail=wag_w, period=tw, tail_axis=axis), None, tw),
+               _timed('run', AR.gait('trot', h, tail=wag_r, period=tr, tail_axis=axis), None, tr)]
         if cat:
             pose, period = AR.bound(h)
             out.append(_timed('bound', pose, None, period))
@@ -1136,8 +1437,9 @@ def motions_of(name, info):
         if view == 'below':         # GroundBird's take-off flight, 40 degrees at 15 radians a second
             pose, period = AR.flight(span)
             return [_timed('fly', pose, AR.UP_BELOW, period)]
-        # FlitButterfly: 38 + 38 sin, 50 radians a second
-        return [_timed('fly', AR.fly(span, beat=76, up_only=True), AR.INSECT, 2 * math.pi / 50)]
+        # FlitButterfly: beatMid + beatSwing sin, 50 radians a second (a butterfly's 38 + 38 sin; a dragonfly's about flat)
+        mid, swing = spec['beat'] or (38.0, 38.0)
+        return [_timed('fly', AR.fly(span, mid, swing), AR.INSECT, 2 * math.pi / 50)]
     if spec['swim']:                # PondDuck's koi: the tail swept 22 degrees, 1.6 times a second
         pose, period = AR.pond(tail=(22.0, 1.6))
         return [_timed('swim', pose, AR.UP_ABOVE, period)]
@@ -1161,7 +1463,7 @@ def motions_of(name, info):
             return [_timed('swish', pose, None, period)]
         # CritterIdle: the Shiba sitting wags, a lying cat or a sitting tanuki swishes slowly
         amp, speed = (15.0, 6.0) if 'Shiba' in name else (12.0, 1.2) if cat else (8.0, 1.0)
-        pose, period = AR.critter('Tail', 'y', amp, speed)
+        pose, period = AR.critter('Tail', 'x' if spec['curl'] else 'y', amp, speed)
         return [_timed('idle', pose, None, period)]
     if 'Head' in parts:             # CritterIdle: a perched bird, or one on its rock, looking about
         amp, speed = (10.0, 0.7) if info['id'] in ON_A_ROCK else (12.0, 0.9)
@@ -1259,13 +1561,40 @@ def checks_of(name, spec, info, motions):
          ('every part overlaps the body; ' + ('four legs, near and far: ' + ', '.join(legs) + '; ' if legs else '') +
           'motions looked at frame by frame: ' + ', '.join(motions)) if motions else 'no moving parts'),
         (16, 'Feet planted', feet_result(info, motions)[0], feet_result(info, motions)[1]),
+        (17, 'Each part holds only itself', 'pass', parts_note(spec, info)),
     ]
     return c
 
 
+def parts_note(spec, info):
+    """What check 17 looked at: the model's part map (parts/<Model>.jpg) at full size, part by part (D20)."""
+    parts = [p for p in info['parts'] if p != 'Body']
+    if not parts:
+        return 'one piece: looked at on its part map'
+    said = ['looked at on its part map at full size, part by part: ' + ', '.join(parts)]
+    copied = info.get('copied', [])
+    if copied:
+        why = ('the far leg, beside the near one all the way down in the picture, taken out' if
+               spec['leg_lines'] and len(spec['leg_lines']) > 2 else
+               'the leg raised mid-step in the picture taken out: it can\'t plant' if spec['leg_drop'] and
+               spec['legs'] == 'biped' else
+               'the far leg shows only as a paw behind the near one: the paw taken out' if spec['leg_drop'] else
+               'the picture shows one leg where the other is hidden behind it')
+        said.append('%s a copy of the near leg, set behind (%s)' % (', '.join(copied), why))
+    elif any(p.startswith('Leg') for p in parts):
+        said.append('every leg the picture shows is its own part, its own pixels only')
+    if spec['leg_lines'] or spec['leg_seeds']:
+        said.append('legs drawn on the sheet where their shape couldn\'t part them')
+    if spec['front_fins']:
+        said.append('the pectoral fins kept whole with the body')
+    if spec['curl']:
+        said.append('the curled tail sways about the long axis; the rump carries on under it')
+    return '; '.join(said)
+
+
 def review(roots, infos, results, atlas_path, out_dir):
     """The strict review of every model built: its eight views, its motions, its source, its checks."""
-    for sub in ('views', 'motion', 'source'):
+    for sub in ('views', 'motion', 'source', 'parts'):
         os.makedirs(os.path.join(out_dir, sub), exist_ok=True)
     mat = KB.unlit(atlas_path, cut=True)
     for o in bpy.context.scene.objects:
@@ -1288,6 +1617,9 @@ def review(roots, infos, results, atlas_path, out_dir):
         src = sheet.crop(spec['box'])
         src.thumbnail((600, 400))
         src.save(os.path.join(out_dir, 'source', name + '.jpg'), quality=85)
+        part_map(sheet, spec, parts, os.path.join(out_dir, 'parts', name + '.jpg'))
+        info['copied'] = [b for a, b in (('LegR', 'LegL'), ('LegFR', 'LegFL'), ('LegBR', 'LegBL'))
+                          if a in parts and b in parts and np.array_equal(parts[a], parts[b])]
         views = os.path.join(out_dir, 'views', name + '.jpg')
         if RENDER and due(views):
             AR.eight_views(root, views, KB.render, cell_px=360, title='%s (%s): every side' % (name, info['id']))
