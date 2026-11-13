@@ -21,7 +21,9 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
    - with characters casting no shadows, as in the game;
    - with the head nodded and turned as the menu and the run move it, not only in the idle pose (C15).
 6. **A fix for one asset is a fix for all of them.** When a pipeline bug is found and fixed, rebuild every asset made by the old pipeline in the same change.
-7. **Record every revert,** with who decided, why, and "don't retry X".
+7. **Review every asset by `docs/ASSET_REVIEW.md`** (strict, the user's rule): all eight views, its motions animated,
+   every check passed or the fault said plainly. A straight-on board hid a doubled tail (D14) and a flat flying bird (D15).
+8. **Record every revert,** with who decided, why, and "don't retry X".
 
 ## A. Process and verification
 
@@ -774,6 +776,8 @@ Never re-propose what is rejected here.
   that game's content. The filters must keep working in every city. Each city's look target is the bar for its assets
   and backgrounds: for Kamakura, KM-0 (a photograph), not the painted style some of its pictures came out in (D10).
 - **Filters:** easy to reach: on the title screen and in every pause menu.
+- **Asset reviews:** every asset shown in all eight views (front, back, top, bottom, left, left 3/4, right, right 3/4)
+  and in motion (walk, run, fly, as it applies), with the checks of `docs/ASSET_REVIEW.md`. Strict, every time.
 - **City assets from the user's pictures:** Kamakura's models are built in Blender with the user's pictures projected onto
   them, identical to the pictures (D9). Meshy (the user's meshy.ai account) only for what that can't build. The user has no
   Higgsfield account: don't use the Higgsfield connector. Keep the reference pictures as PNG originals (repo size doesn't
