@@ -744,6 +744,25 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
 - *Rule:* a check's threshold comes from what shows in the game, never from a guess; a mesh seen from both sides has
   no edge with one face.
 
+**D18. Cut-outs judged by colour alone, and two checks passed without looking (the review's frame-by-frame pass).**
+- *What:* going through every motion frame by frame, the squirrels came out with half their back and tail missing
+  (a pale ghost of a tail), the running squirrel with its shadow under it, the sitting one with a strip of backdrop
+  between tail and back, the perched kite with holes in its wing, the heron without its pale upper legs. The review
+  page said "Outline whole: pass, checked on the cuts sheet" for all 43: the cuts sheet had been made, not read.
+  The koi's and turtle's swim also showed nothing moving: the review set the body's turn, then the grid overwrote it.
+- *Why:* the figure was what differs from the sheet's grey by more than a threshold; a squirrel's grey-brown fur,
+  a kite's wing and a heron's pale legs are close to that grey. A small hole was filled whatever it held, so a sliver
+  of backdrop seen between tail and back was filled too. The shadow rule looked only at the box's lowest eighth, and a
+  low squirrel's shadow sits higher.
+- *Fix:* texture as well as colour: fur and feathers have a local deviation of 18 to 22 over 7 px, the studio backdrop
+  under 1, so whatever is textured is the figure (`TEXTURE`). A hole is filled when it is fur or feather, never when
+  it is smooth backdrop, whatever its size. The contact shadow under a paw is still removed in the lowest eighth;
+  a model whose shadow reaches higher says so (`shadow=0.3`), and only smooth grey is taken there. Every mask was
+  compared with the old one, gains in green and losses in red, and each change looked at. The swim's turn is
+  composed with the view.
+- *Rule:* a check says pass only after the thing it names has been looked at for that asset, and says what was
+  looked at. A cut-out is judged against its picture at full size, part by part, not from a thumbnail sheet.
+
 ## E. Levels and world
 
 - **E1. Every level had chapter-1 scenery.** A new-scene call unloaded the level definition. *Rule:* pass data into scene builders explicitly; never hold asset references across a new-scene call.

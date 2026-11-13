@@ -47,7 +47,7 @@ P4, P8 = 'KM-P4_animals_sheet.png', 'KM-P8_more_animals.png'
 
 
 def A(cid, sheet, box, view, size, depth, parts=(), refine=False, wings=None, exclude=(), empties=(), step=None,
-      thresh=42, legs=False):
+      thresh=42, legs=False, shadow=0.13):
     """One model: its catalogue id (KM-Nxx), sheet, the figure's box (sheet px), its view (side: head to the right,
     standing on its lowest pixel; below: a flyer seen from beneath, head up; above: lying flat, seen from above), its
     size (('w' or 'h', metres) of the figure's outline), its half-depth cap (m), its parts ((name, polygon in sheet px,
@@ -56,9 +56,10 @@ def A(cid, sheet, box, view, size, depth, parts=(), refine=False, wings=None, ex
     pivots the rig wants with no mesh of their own: (name, pivot)), thresh (how far from the grey a pixel must be to
     count as the figure: lower for see-through wings), legs (a walker's legs found and cut off one by one, see
     leg_masks: the near ones LegFR and LegBR, the far ones LegFL and LegBL, an empty for any the picture doesn't show,
-    as Hazards/Dog wants four)."""
+    as Hazards/Dog wants four), shadow (how high up the box a smooth grey shadow is looked for: a low animal's)."""
     return dict(id=cid, sheet=sheet, box=box, view=view, size=size, depth=depth, parts=list(parts), refine=refine,
-                wings=wings, exclude=list(exclude), empties=list(empties), step=step, thresh=thresh, legs=legs)
+                wings=wings, exclude=list(exclude), empties=list(empties), step=step, thresh=thresh, legs=legs,
+                shadow=shadow)
 
 
 ANIMALS = {
@@ -73,7 +74,7 @@ ANIMALS = {
     'KmTanukiSitting': A('KM-N02', P4, (1898, 31, 2280, 282), 'side', ('h', 0.40), 0.09,
                          [('Tail', [(1898, 204), (2034, 204), (2034, 273), (1898, 273)], (2034, 237))], refine=True),
     'KmSquirrelRunning': A('KM-N03', P4, (11, 374, 450, 562), 'side', ('w', 0.40), 0.04,
-                           [('Tail', [(11, 374), (148, 374), (144, 488), (11, 496)], (144, 450))], step=15),
+                           [('Tail', [(11, 374), (148, 374), (144, 488), (11, 496)], (144, 450))], step=15, shadow=0.3),
     'KmSquirrelSitting': A('KM-N03', P4, (523, 322, 837, 606), 'side', ('h', 0.30), 0.045,
                            [('Tail', [(523, 322), (676, 322), (676, 405), (652, 440), (652, 612), (523, 612)], (650, 594))]),
     'KmShibaStanding': A('KM-N04', P4, (1474, 314, 1808, 605), 'side', ('h', 0.58), 0.09,
@@ -90,7 +91,8 @@ ANIMALS = {
     'KmPigeonStanding': A('KM-N07', P4, (76, 942, 359, 1218), 'side', ('w', 0.30), 0.05,
                           [('Head', [(269, 942), (356, 942), (356, 1013), (283, 1035)], (291, 1024))], refine=True),
     'KmPigeonPecking': A('KM-N07', P4, (491, 1027, 847, 1203), 'side', ('w', 0.34), 0.05,
-                         [('Head', [(778, 1068), (840, 1068), (840, 1171), (772, 1171)], (789, 1089))], refine=True),
+                         [('Head', [(778, 1068), (840, 1068), (840, 1171), (772, 1171)], (789, 1089))], refine=True,
+                         shadow=0.3),
     'KmSparrowPerched': A('KM-N08', P4, (1443, 961, 1755, 1213), 'side', ('w', 0.15), 0.025,
                           [('Head', [(1641, 961), (1749, 961), (1749, 1063), (1650, 1075)], (1665, 1063))], refine=True),
     'KmSparrowHopping': A('KM-N08', P4, (1898, 979, 2235, 1213), 'side', ('w', 0.15), 0.025,
@@ -143,23 +145,36 @@ ANIMALS = {
 
 
 def figure_mask(sheet, spec):
-    """The figure in its box: what differs from the sheet's grey, its holes filled, the largest piece. The soft neutral
-    shadow under a figure on the ground is left out (darker than the grey, no colour of its own, in the lowest eighth of
-    the box only: higher up, a grey bird's own feathers look the same). With refine, GrabCut finds the parts close to
-    the sheet's grey (a kite's pale tail, a grey pigeon or heron)."""
+    """The figure in its box: what differs from the sheet's grey or is textured (fur, feathers), its holes filled, the
+    largest piece. The soft neutral shadow under a figure on the ground is left out (darker than the grey, no colour of
+    its own, in the lowest eighth of the box, or, smooth, as high as spec shadow: higher up, a grey bird's own feathers
+    look the same). With
+    refine, GrabCut finds the parts close to the sheet's grey (a kite's pale tail, a grey pigeon or heron)."""
     a = np.asarray(sheet.convert('RGB')).astype(np.int32)
     x0, y0, x1, y1 = spec['box']
     r = a[y0:y1, x0:x1]
     border = np.concatenate([r[:4].reshape(-1, 3), r[-4:].reshape(-1, 3), r[:, :4].reshape(-1, 3), r[:, -4:].reshape(-1, 3)])
     bg = np.median(border, 0)
     m = (np.abs(r - bg).sum(-1) > spec['thresh']).astype(np.uint8)
+    # texture: fur and feathers are textured (local deviation 18 to 22 over 7 px), the studio backdrop smooth (under 1,
+    # 95 % under 3), so what is textured is the figure even where its colour is the backdrop's (a squirrel's grey-brown
+    # back, a kite's wing: D18). Shrunk 3 px, so the window's reach past the outline isn't taken.
+    g = r.mean(-1).astype(np.float32)
+    mean = cv2.blur(g, (7, 7))
+    dev = np.sqrt(np.maximum(cv2.blur(g * g, (7, 7)) - mean * mean, 0))
+    m |= cv2.erode((dev > TEXTURE).astype(np.uint8), cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (7, 7)))
     shadow = np.zeros(m.shape, bool)
     if spec['view'] == 'side':
         lum = r.mean(-1)
         chroma = r.max(-1) - r.min(-1)
         low = np.zeros(m.shape, bool)
         low[int(m.shape[0] * 0.87):] = True
-        shadow = low & (chroma < 14) & (lum < bg.mean() - 2) & (lum > bg.mean() - 45)
+        tall = np.zeros(m.shape, bool)
+        tall[int(m.shape[0] * (1 - spec['shadow'])):] = True
+        grey = (chroma < 14) & (lum < bg.mean() - 2) & (lum > bg.mean() - 45)
+        # in the lowest eighth any such grey is shadow (the contact shadow under a paw, textured though it is); higher,
+        # for an animal whose shadow reaches up (spec shadow), only where it is smooth too, as fur never is (D18)
+        shadow = (low & grey) | (tall & grey & (dev < 3))
         m[shadow] = 0
     for poly in spec['exclude']:
         cv2.fillPoly(m, [np.array([(x - x0, y - y0) for x, y in poly], np.int32)], 0)
@@ -182,15 +197,17 @@ def figure_mask(sheet, spec):
         m = cv2.morphologyEx(m, cv2.MORPH_OPEN, np.ones((3, 3), np.uint8))
         n, lab, st, _ = cv2.connectedComponentsWithStats(m, 8)
         m = (lab == 1 + int(np.argmax(st[1:, 4]))).astype(np.uint8)
-    # holes: filled when under 1 % of the box (a kite's grey-brown feather patches), or when they are not the sheet's
-    # grey (a dark shell's middle); a larger gap of the sheet's own grey (between a squirrel's tail and back) stays open
+    # holes: filled when under 1 % of the box (a kite's grey-brown feather patches), or when they are textured and not
+    # the sheet's grey (a dark shell's middle); a larger smooth gap stays open, the backdrop seen between a squirrel's
+    # tail and back, even where the backdrop is lit lighter there (D18)
     inv = (1 - m).astype(np.uint8)
     hn, hl, hs, _ = cv2.connectedComponentsWithStats(inv, 4)
     for i in range(1, hn):
         x, y, w, h, area = hs[i]
         if x > 0 and y > 0 and x + w < m.shape[1] and y + h < m.shape[0]:
             hole = hl == i
-            if area < m.size * 0.01 or np.abs(r[hole].mean(0) - bg).sum() > 30:
+            backdrop = (dev[hole] < 3).mean() > 0.3 and np.abs(np.median(r[hole], 0) - bg).sum() < 30
+            if not backdrop and (area < m.size * 0.01 or dev[hole].mean() > TEXTURE):
                 m[hole] = 1
     return m
 
@@ -624,6 +641,10 @@ def board(roots, infos, atlas_path, out, sheets):
     print('board', out, sheet_im.size)
 
 
+TEXTURE = 6.0                # the local deviation above which a pixel is fur or feather, not the backdrop
+ON_A_ROCK = ('KM-N16',)      # the cormorant, drawn on its rock: CritterIdle, never walks (KAMAKURA_BUILD's catalogue)
+
+
 def motions_of(name, info):
     """The motions a model is shown in (docs/ASSET_REVIEW.md, section 2), with the view to show each from."""
     parts, view = info['parts'], info['view']
@@ -639,7 +660,7 @@ def motions_of(name, info):
         return [('swim', AR.swim(h), AR.UP_ABOVE, 90)]
     if 'Running' in name:           # mid-leap, legs flat along the ground: it scurries (Hazards/TreeSquirrel moves its tail)
         return [('scurry', AR.scurry(h), None, 60), ('idle', AR.idle(h), None, 110)]
-    if 'Head' in parts and 'Perched' not in name:
+    if 'Head' in parts and 'Perched' not in name and info['id'] not in ON_A_ROCK:
         return [('walk', AR.hop(h), None, 80), ('peck', AR.peck(h), None, 80)]
     if 'Head' in parts or 'Tail' in parts:
         return [('idle', AR.idle(h), None, 110)]
@@ -663,14 +684,15 @@ def checks_of(name, spec, info, motions):
     pinches = sum(v[1] for v in info['open_edges'].values())
     parts = [p for p in info['parts']]
     legs = sorted(p for p in parts + info['empties'] if p.startswith('Leg'))
-    repairs = ['the ground shadow removed (bottom rows)']
+    repairs = ['fur and feathers found by their texture as well as their colour',
+               'the ground shadow removed (the lowest %d %% of the box)' % round(100 * max(spec['shadow'], 0.13))]
     if spec['refine']:
         repairs.append('GrabCut inside the outline (colours close to the sheet\'s grey kept)')
     if spec['exclude']:
         repairs.append('%d area(s) left out (the perch wire)' % len(spec['exclude']))
     if spec['thresh'] != 42:
         repairs.append('a lower threshold (%d) for see-through wings' % spec['thresh'])
-    repairs.append('small holes filled, real gaps left open')
+    repairs.append('holes of fur or feather filled, gaps of smooth backdrop left open')
     flying = info['view'] == 'below'
     c = [
         (1, 'Every part once', 'pass', 'meshes: ' + ', '.join('%s %d tris' % kv for kv in info['parts'].items()) +
@@ -688,8 +710,10 @@ def checks_of(name, spec, info, motions):
         (5, 'Real size, triangles', 'pass' if info['tris'] <= 2500 else 'FAIL',
          '%s m; %d triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit' % (
              ' x '.join('%.2f' % v for v in info['size']), info['tris'])),
-        (6, 'Outline whole, no background or shadow', 'pass', 'checked on the cuts sheet (cuts.jpg)'),
-        (7, 'No holes; real gaps open', 'pass', 'checked on the cuts sheet'),
+        (6, 'Outline whole, no background or shadow', 'pass',
+         'looked at on the cuts sheet (cuts.jpg), and against the cut before the texture cue (D18)'),
+        (7, 'No holes; real gaps open', 'pass', 'looked at on the cuts sheet: no hole in the fur or feathers; the '
+         'backdrop between tail and back, legs and wings stays open'),
         (8, 'Things before a wall are their own models', 'n/a', 'an animal on a plain sheet'),
         (9, 'The look target\'s look', 'pass', spec['sheet'] + ': photographic, as KM-0'),
         (10, 'Solid, nothing ghosted', 'pass', 'no see-through parts but real wings'),

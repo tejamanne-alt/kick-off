@@ -118,7 +118,8 @@ def eight_views(root, path, render, cell_px=400, title=None):
 
 def motion_gif(root, pose, path, render, view=None, frames=12, cell_px=300, ms=80, label=None):
     """One motion as an animated GIF: frames copies of the model, each posed by pose(parts, root_copy, phase 0..1)
-    (it sets the parts' rotation_euler and returns (lift metres, pitch degrees) for the whole body), rendered once in a
+    (it sets the parts' rotation_euler and returns (lift metres, pitch degrees[, yaw degrees]) for the whole body),
+    rendered once in a
     4-column grid and cut into frames. view: the rotation to show it from (default: the game view, a little above)."""
     view = view if view is not None else _rot(('X', 10))
     pts = local_points(root)
@@ -132,8 +133,10 @@ def motion_gif(root, pose, path, render, view=None, frames=12, cell_px=300, ms=8
     posed = []
     for i in range(frames):
         c, parts = copy_of(root, root.name + '.motion')
-        lift, pitch = pose(parts, c, i / frames)
-        rot = view @ _rot(('Z', 0)) @ Matrix.Rotation(R(pitch), 3, 'Y')
+        moved = pose(parts, c, i / frames)
+        lift, pitch, yaw = moved if len(moved) == 3 else (moved[0], moved[1], 0.0)
+        # the whole body's turn is composed with the view here (the grid sets each copy's whole transform)
+        rot = view @ Matrix.Rotation(R(yaw), 3, 'Z') @ Matrix.Rotation(R(pitch), 3, 'Y')
         posed.append((c, rot, centre - Vector((0, 0, lift))))
     im = _grid_render(posed, cols, rows, cell, path + '.png', (cols * cell_px, rows * cell_px), render)
     remove([o for c, _, _ in posed for o in [c] + list(c.children_recursive)])
@@ -213,8 +216,7 @@ def scurry(height):
 def swim(length):
     """A fish or a turtle swimming: the body sways side to side."""
     def pose(parts, root, p):
-        root.rotation_euler = (0, 0, R(10 * math.sin(2 * math.pi * p)))
-        return 0.0, 0.0
+        return 0.0, 0.0, 12 * math.sin(2 * math.pi * p)
     return pose
 
 

@@ -56,8 +56,9 @@ rendered and labelled as built from the side alone. The review says which views 
 5. Real size, stated, with the triangle count against its budget (`docs/ART_DIRECTION.md`) and the atlas's memory.
 
 **Cut-outs**
-6. The outline is whole: parts close to the background's grey are found (the kite's pale tail, a grey pigeon), and
-   nothing of the background or the shadow is included (D14 work: the squirrel's shadow).
+6. The outline is whole: parts close to the background's grey are found (the kite's pale tail, a grey pigeon, a
+   squirrel's grey-brown fur: by texture as well as colour, D18), and nothing of the background or the shadow is
+   included (the squirrel's shadow). Judged against the picture at full size, part by part.
 7. No holes in the asset; a gap that is really background (between a squirrel's tail and back) stays open.
 8. Things standing in front of a wall are their own models; a moved cut-out paints out its whole box, never just its
    outline (D13: the bicycle's ghost, the bonsai with no canopy).
@@ -76,6 +77,9 @@ rendered and labelled as built from the side alone. The review says which views 
 15. Every moving part overlaps what it's joined to, far enough to stay covered at the largest swing: no seam at rest,
     no gap mid-stride (D16). Every leg the picture shows is its own part, near legs in front of the body, far ones
     behind.
+
+A check is marked passed only after the thing it names has been looked at for that asset, and its note says what was
+looked at (D18: "checked on the cuts sheet" was written for 43 cut-outs before the sheet was read).
 
 ## 4. What the user is shown
 
