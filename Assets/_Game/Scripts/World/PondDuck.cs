@@ -6,10 +6,21 @@ namespace DribbleToSchool.World
     /// A duck on the park pond (Animals kit): it paddles round the pond in slow, loose loops, each
     /// duck on its own line and at its own pace, now and then easing to a stop to dabble or look
     /// about before it paddles on, bobbing on the water and turning along its way.
+    ///
+    /// The same loop serves the Kamakura kit's koi and swimming turtle: a koi sweeps its tail (a Tail in links, so the
+    /// sweep runs down it), a turtle paddles its flippers in turn; both settle as it slows to a stop (D19).
     /// </summary>
     public class PondDuck : AmbientAgent
     {
         public Part head;
+        [Tooltip("Optional: a fish's tail (a Tail in links), swept side to side while it swims.")]
+        public Part tail;
+        [Tooltip("The tail's sweep either side (degrees) and beats per second.")]
+        public float tailSweep = 22f, tailBeat = 1.6f;
+        [Tooltip("Optional: a turtle's flippers, paddled in turn (front right and back left together, then the others).")]
+        public Part[] flippers = new Part[0];
+        [Tooltip("The flippers' sweep either side (degrees) and strokes per second.")]
+        public float flipperSweep = 28f, flipperStroke = 0.9f;
         [Tooltip("The pond's centre (x, z), and the water's height.")]
         public float centerX, centerZ, waterY;
         [Tooltip("The pond's turn (degrees): its long axis runs along x at 0.")]
@@ -31,6 +42,8 @@ namespace DribbleToSchool.World
         {
             base.Awake();
             head.Capture();
+            tail.Capture();
+            Capture(flippers);
             angle = Range(0f, Mathf.PI * 2f);
             wobblePhase = Range(0f, 10f);
             wobbleRate = Range(0.12f, 0.22f);
@@ -81,6 +94,11 @@ namespace DribbleToSchool.World
             float dabble = k >= 0f && k <= 1f ? Mathf.Sin(k * Mathf.PI) * 40f : 0f;
             head.Set(4f + dabble, Vector3.forward, Mathf.Sin(Time.time * 0.7f + seed) * 18f * (1f - rate * 0.5f));
             if (stopped && k > 1.2f && Chance(0.01f)) dabbleStart = Time.time;
+            // A fish's tail sweeping, a turtle's flippers paddling: full while it swims, a slow drift when it stops.
+            float t = Time.time + seed;
+            tail.Set(Mathf.Sin(t * tailBeat * Mathf.PI * 2f) * tailSweep * (0.25f + 0.75f * rate));
+            for (int i = 0; i < flippers.Length; i++)
+                flippers[i].Set(Mathf.Sin(t * flipperStroke * Mathf.PI * 2f + (i == 0 || i == 3 ? 0f : Mathf.PI)) * flipperSweep * rate);
         }
     }
 }

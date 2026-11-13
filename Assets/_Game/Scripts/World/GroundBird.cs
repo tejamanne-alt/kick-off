@@ -38,6 +38,10 @@ namespace DribbleToSchool.World
         public float headNod;
         [Tooltip("A peck: the head's turn beak-down (degrees) and the body's tip forward on its feet (degrees). The original kit's: 62 and 0; a photo cut-out's: 25 and 30, so the neck never folds.")]
         public float peckTurn = 62f, peckTip;
+        [Tooltip("Optional: a tail that pumps up and down all the while it is on the ground (a wagtail's; in links, so the pump runs down it).")]
+        public Part tail;
+        [Tooltip("The tail's pump either side (degrees) and pumps per second.")]
+        public float tailPump = 14f, tailPumpRate = 3f;
         [Tooltip("The kid this close (metres) makes it fly off.")]
         public float startle = 2.6f;
         public float flightSpeed = 3.5f;
@@ -65,6 +69,7 @@ namespace DribbleToSchool.World
             head.Capture();
             wingA.Capture();
             wingB.Capture();
+            tail.Capture();
             if (standing != null)
             {
                 rig = LegGait.Rig.Find(standing, transform);
@@ -242,7 +247,12 @@ namespace DribbleToSchool.World
                     lift = rig.Pose(phase / (4f * Mathf.PI), 0f, pace, rig.BodyLift(phase / (4f * Mathf.PI), LegGait.Kind.Step) * pace);
                 else lift = Mathf.Abs(Mathf.Sin(phase)) * 0.006f;
             }
-            else if (state == State.Idle) tip = peckTip * peck;
+            else if (state == State.Idle)
+            {
+                tip = peckTip * peck;
+                // no further than the legs can keep both feet planted
+                if (rig != null) tip = -rig.Reach(-tip * Mathf.Deg2Rad) * Mathf.Rad2Deg;
+            }
             // A peck tips the body forward on its feet (nose down: a negative turn about the model's side axis).
             transform.SetPositionAndRotation(new Vector3(x, y + lift, z), Quaternion.Euler(0f, yaw, pitch - tip));
             if (rig != null && state != State.Fly && state != State.Gone)
@@ -250,6 +260,7 @@ namespace DribbleToSchool.World
                 if (state == State.Walk && hopper) rig.Hop(Mathf.Sin(phase) * pace, lift);
                 else if (state != State.Walk) rig.Plant(-tip * Mathf.Deg2Rad);
             }
+            if (state != State.Fly && state != State.Gone) tail.Set(Mathf.Sin((Time.time + seed) * tailPumpRate * Mathf.PI * 2f) * tailPump);
             if (state == State.Fly || !head.ready) return;
             // The head: nodding back and forth as it walks, quick pecks when it stops.
             if (state == State.Walk)

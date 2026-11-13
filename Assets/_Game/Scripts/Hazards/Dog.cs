@@ -55,6 +55,7 @@ namespace DribbleToSchool.Hazards
         Quaternion tailRest, headRest;
         float stride, wagPhase;
         World.LegGait.Rig rig;      // jointed legs (LegFR.. with ShinFR.. and FootFR..): walked with planted feet
+        World.PartChain tailChain;  // a tail in links (Tail, Tail2, Tail3): wagged link by link
         float legPhase, gaitWeight;
 
         Mode mode;
@@ -75,7 +76,12 @@ namespace DribbleToSchool.Hazards
             // Swing each part from its rest pose (model parts may come in rotated).
             legRest = new Quaternion[legs != null ? legs.Length : 0];
             for (int i = 0; i < legRest.Length; i++) legRest[i] = legs[i] != null ? legs[i].localRotation : Quaternion.identity;
-            if (tail != null) tailRest = tail.localRotation;
+            if (tail != null)
+            {
+                tailRest = tail.localRotation;
+                tailChain = World.PartChain.Find(tail, tailAxis);
+                if (tailChain.Links < 2) tailChain = null;
+            }
             if (head != null) headRest = head.localRotation;
             // A model with jointed legs (the Kamakura kit's) walks them with its feet planted (World/LegGait); the
             // original kit's dog, legs in one piece, swings them whole as before.
@@ -254,8 +260,9 @@ namespace DribbleToSchool.Hazards
 
             // The tail: always going, faster when it plays.
             wagPhase += dt * (IsChasing ? 16f : mode == Mode.Dash ? 13f : mode == Mode.Sniff ? 5f : 8f);
-            if (tail != null)
-                tail.localRotation = tailRest * Quaternion.AngleAxis(Mathf.Sin(wagPhase) * (mode == Mode.Sniff && !IsChasing ? 14f : 25f), tailAxis);
+            float wag = Mathf.Sin(wagPhase) * (mode == Mode.Sniff && !IsChasing ? 14f : 25f);
+            if (tailChain != null) tailChain.Set(wag, dt);
+            else if (tail != null) tail.localRotation = tailRest * Quaternion.AngleAxis(wag, tailAxis);
 
             if (head == null) return;
             // Nose down to sniff, glancing about when it stops to look, up when chasing.

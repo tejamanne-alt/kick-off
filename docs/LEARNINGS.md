@@ -23,7 +23,12 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
 6. **A fix for one asset is a fix for all of them.** When a pipeline bug is found and fixed, rebuild every asset made by the old pipeline in the same change.
 7. **Review every asset by `docs/ASSET_REVIEW.md`** (strict, the user's rule): all eight views, its motions animated,
    every check passed or the fault said plainly. A straight-on board hid a doubled tail (D14) and a flat flying bird (D15).
-8. **Record every revert,** with who decided, why, and "don't retry X".
+8. **Move an animal as the real one moves, and as the game moves it** (the user's recordings, D16 to D19). Jointed
+   where it bends: legs at the knee with the feet planted, tails and wings as chains of links, a fish's tail, a
+   turtle's flippers; never one rigid piece swung from a pivot. Each motion is the game's behaviour code ported line by
+   line (`World/LegGait.cs`, `World/PartChain.cs` and their mirrors in `asset_review.py`), never invented for a review;
+   what can be measured is measured (the feet, check 16). The original kit's models keep their motion.
+9. **Record every revert,** with who decided, why, and "don't retry X".
 
 ## A. Process and verification
 
@@ -793,6 +798,21 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
 - *Rule:* the review's motions are the game's behaviour code, ported line by line and changed together, never
   invented for the review. Feet are measured, not looked at: check 16 reads every foot's height through every motion
   (none below the ground, one always down in a walk, none moving in a peck).
+- *Applied to every other animal* (the user: "apply these fixes to other animals and birds"). The analysis found the
+  same three faults across the kit. Rigid where the animal bends: every tail one stick, every bird's wing one paddle,
+  the koi turning stiff, the turtle's flippers still; now tails are three links and wings two (`World/PartChain.cs`,
+  each link a share of the angle and trailing the one before), the koi's tail sweeps in links, the turtle's flippers
+  paddle (PondDuck), and insects keep their rigid wings. Motions invented for the review: the sitting cats turned
+  their heads (WallCat only swishes the tail), the Shiba's tail and the perched birds' idles were made up, the koi's
+  swim too; now each is its behaviour's code (WallCat 3 + 17 (sin + 0.25 sin 2.1), Dog 25 degrees at 8 rad/s,
+  TreeSquirrel's flick and dash, CritterIdle, PondDuck), at its real speed. Behaviours blind to jointed legs: WallCat
+  now tucks a walking cat's legs through a bound. The tanuki, planned on a squirrel's hops, walks and trots on its legs.
+  Measuring found two pecks lifting a foot (a pigeon's and a dove's feet stand apart): a peck now tips the body only as
+  far as the legs can keep both feet planted (`LegGait.Rig.Reach`). And a calico's lifted hind paw (10 px up) was
+  dropped as a leg, its pixels given to the other: a leg now counts within a quarter of its length of the ground.
+- *Also:* animal sheets are asked for in a way that makes this possible (`docs/IMAGE_PROMPTS.md`, SHEETS AND PLATES,
+  and KM-S1): every leg on its own and not hidden behind another, the tail clear of the body, wings spread clear of it,
+  thin parts never hair-thin, an even backdrop with no glow between parts.
 
 ## E. Levels and world
 

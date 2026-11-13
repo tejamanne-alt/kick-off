@@ -113,7 +113,9 @@ namespace DribbleToSchool.World
 
         // ---------------------------------------------------------------- parts
 
-        /// <summary>A model part swung from its rest pose (kit parts' axes are the model's).</summary>
+        /// <summary>A model part swung from its rest pose (kit parts' axes are the model's). A part in links (Tail with
+        /// Tail2 and Tail3 under it, WingL with WingL2: the Kamakura kit's) bends link by link (PartChain); one without
+        /// moves whole, as before.</summary>
         [System.Serializable]
         public struct Part
         {
@@ -122,6 +124,7 @@ namespace DribbleToSchool.World
             [System.NonSerialized] public Quaternion rest;
             [System.NonSerialized] public Vector3 restPosition;
             [System.NonSerialized] public bool ready;
+            [System.NonSerialized] public PartChain chain;
 
             public Part(Transform transform, Vector3 axis)
             {
@@ -130,6 +133,7 @@ namespace DribbleToSchool.World
                 rest = transform != null ? transform.localRotation : Quaternion.identity;
                 restPosition = transform != null ? transform.localPosition : Vector3.zero;
                 ready = transform != null;
+                chain = Linked(transform, axis);
             }
 
             public void Capture()
@@ -138,11 +142,21 @@ namespace DribbleToSchool.World
                 if (!ready) return;
                 rest = transform.localRotation;
                 restPosition = transform.localPosition;
+                chain = Linked(transform, axis);
+            }
+
+            static PartChain Linked(Transform t, Vector3 axis)
+            {
+                if (t == null) return null;
+                var c = PartChain.Find(t, axis);
+                return c.Links > 1 ? c : null;
             }
 
             public void Set(float degrees)
             {
-                if (ready) transform.localRotation = rest * Quaternion.AngleAxis(degrees, axis);
+                if (!ready) return;
+                if (chain != null) chain.Set(degrees, Time.deltaTime);
+                else transform.localRotation = rest * Quaternion.AngleAxis(degrees, axis);
             }
 
             /// <summary>Rotate about a second axis as well (in the part's own space).</summary>

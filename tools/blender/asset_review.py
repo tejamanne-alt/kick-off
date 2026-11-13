@@ -264,11 +264,16 @@ def _place(leg, target_root):
     shin.rotation_euler = (0, -d2, 0)
 
 
-def gait(kind, height, head_nod=0.0):
+def gait(kind, height, head_nod=0.0, tail=None, period=1.0):
     """A walk, a trot or a bird's walk (GAITS), its feet planted: the motion LegGait gives the game. Stride, step and
     bob are shares of the leg's length. head_nod: a bird's head nodding forward and back with each step (degrees,
     about the neck: GroundBird's headNod; a photo cut-out's head can't slide without its cut edge showing, D19)."""
     g = GAITS[kind]
+    track = None
+    if tail:        # (degrees either side, about centre, beats a second): wagged in links, whole beats in a cycle
+        amp, mid, rate = tail
+        beats = max(1, round(rate * period))
+        track = chain_track(lambda t: mid + amp * math.sin(2 * math.pi * beats * t / period), period)
 
     def pose(parts, root, p):
         a = 2 * math.pi * p
@@ -289,11 +294,57 @@ def gait(kind, height, head_nod=0.0):
         lift -= dip
         for sfx, leg in legs.items():
             _place(leg, (want[sfx][0], want[sfx][1] - lift))
-        _set(parts, 'Tail', y=4 * math.sin(a), z=10 * math.sin(a))
+        if track is not None:
+            set_chain(parts, 'Tail', 'y', track, p)
         if 'Head' in parts:
             _set(parts, 'Head', y=(6 + head_nod * math.sin(2 * a)) if head_nod else 3 * math.sin(2 * a))
         return lift, 0.0            # the body doesn't pitch: the game's Dog and GroundBird don't
     return pose
+
+
+# ------------------------------------------------------------------ links (World/PartChain.cs is the same)
+#
+# A tail, a wing, a fish's tail in links (Tail, Tail2, Tail3): each link takes a share of the angle (the first the most:
+# n - i over 1 + .. + n) and each further link follows the one before it LAG seconds late, so a swish runs down the part
+# like a whip instead of swinging one stick.
+
+LAG = 0.06
+
+
+def chain_share(i, n):
+    return (n - i) / (n * (n + 1) * 0.5)
+
+
+def chain_track(angle, period, samples=240):
+    """The links' angles through one period of a motion whose first link follows angle(t) (degrees, t in seconds): the
+    lag filter run as the game runs it (on fine steps), past its start, then sampled. Returns f(p, i): link i's angle
+    at phase p (0..1)."""
+    n_max, sub = 6, 20
+    dt = period / (samples * sub)
+    a = [0.0] * n_max
+    rec = []
+    follow = 1.0 - math.exp(-dt / LAG)
+    for cycle in range(3):
+        for k in range(samples):
+            for j in range(sub):
+                t = (k + j / sub) * period / samples
+                a[0] = angle(t)
+                for i in range(1, n_max):
+                    a[i] += (a[i - 1] - a[i]) * follow
+            if cycle == 2:
+                rec.append(list(a))
+    return lambda p, i: rec[int(p % 1.0 * samples) % samples][i]
+
+
+def set_chain(parts, name, axis, track, p):
+    """Bend the chain name, name2, .. by track (chain_track) at phase p, about axis ('x', 'y' or 'z' of each link)."""
+    links = [name] + [name + str(k) for k in range(2, 10) if name + str(k) in parts]
+    links = [l for l in links if l in parts]
+    n = len(links)
+    for i, l in enumerate(links):
+        deg = track(p, i) * chain_share(i, n)
+        r = {'x': (R(deg), 0, 0), 'y': (0, R(deg), 0), 'z': (0, 0, R(deg))}[axis]
+        parts[l].rotation_euler = r
 
 
 def walk(height, run=False):
@@ -324,18 +375,137 @@ def peck(height, turn=25.0, tip=30.0):
     """A bird pecking, as GroundBird pecks (peckTurn, peckTip): the body tipping forward on its feet and the head
     turning beak-down with it, so the beak reaches the ground; then a pause. A photo cut-out's head turned alone by
     62 degrees (the original kit's) folds at the neck like a broken one (D19): most of the reach is the body's."""
+    def reachable(legs, deg):
+        c, s = math.cos(math.radians(deg)), math.sin(math.radians(deg))
+        for leg in legs.values():
+            fx, fz = leg[2][0] + leg[4][0], leg[2][1] + leg[4][1]
+            tx, tz = fx * c - fz * s - leg[2][0], fx * s + fz * c - leg[2][1]
+            l1 = math.hypot(*leg[3])
+            l2 = math.hypot(leg[4][0] - leg[3][0], leg[4][1] - leg[3][1])
+            d = math.hypot(tx, tz)
+            if d > 0.98 * (l1 + l2) or d < abs(l1 - l2):
+                return False
+        return True
+
     def pose(parts, root, p):
         k = p / 0.45
         e = math.sin(math.pi * k) if k <= 1 else 0.0
         _set(parts, 'Head', y=8 + turn * e)
+        legs = legs_of(parts)
+        want = tip * e
+        if not reachable(legs, want):       # LegGait.Rig.Reach: no further than both feet can stay planted
+            lo, hi = 0.0, want
+            for _ in range(16):
+                mid = (lo + hi) / 2
+                lo, hi = (mid, hi) if reachable(legs, mid) else (lo, mid)
+            want = lo
         # the body tips about its origin, between its feet; each foot stays where it stood: its place turned back by
         # the tip, in the tipped body's frame (Blender's +Y turn: x' = x cos + z sin, z' = -x sin + z cos)
-        c, s = math.cos(math.radians(tip * e)), math.sin(math.radians(tip * e))
-        for leg in legs_of(parts).values():
+        c, s = math.cos(math.radians(want)), math.sin(math.radians(want))
+        for leg in legs.values():
             fx, fz = leg[2][0] + leg[4][0], leg[2][1] + leg[4][1]
             _place(leg, (fx * c - fz * s, fx * s + fz * c))
-        return 0.0, tip * e
+        return 0.0, want
     return pose
+
+
+def swish(rate, amp=17.0, mid=3.0, period=None):
+    """WallCat's tail (its sitting cat): 3 + 17 (sin f + 0.25 sin 2.1 f), f turning rate radians a second (1.6 sitting,
+    3.2 on the move); the 2.1 shown as 2 so the loop closes. In links about the tail's side axis."""
+    period = period or 2 * math.pi / rate
+    track = chain_track(lambda t: mid + amp * (math.sin(rate * t) + 0.25 * math.sin(2 * rate * t)), period)
+
+    def pose(parts, root, p):
+        set_chain(parts, 'Tail', 'y', track, p)
+        return 0.0, 0.0
+    return pose, period
+
+
+def critter(part, axis, amp, speed, offset=0.0):
+    """CritterIdle: offset + amp (sin(t speed) + 0.25 sin 2(t speed)), speed radians a second, about axis; a part in
+    links bends link by link."""
+    period = 2 * math.pi / speed
+    track = chain_track(lambda t: offset + amp * (math.sin(speed * t) + 0.25 * math.sin(2 * speed * t)), period)
+
+    def pose(parts, root, p):
+        set_chain(parts, part, axis, track, p)
+        return 0.0, 0.0
+    return pose, period
+
+
+def flick(period=1.2):
+    """TreeSquirrel's tail flick: 4 + 24 sin(k pi) over 0.35 s, then settling (a flick every period seconds)."""
+    track = chain_track(lambda t: 4 + (24 * math.sin(math.pi * t / 0.35) if t < 0.35 else 0.0), period)
+
+    def pose(parts, root, p):
+        set_chain(parts, 'Tail', 'y', track, p)
+        return 0.0, 0.0
+    return pose, period
+
+
+def dash(height, hop_time=0.18):
+    """TreeSquirrel's dash: long low hops, the body 12 cm up at the top of each (lift 0.12 sin(k pi)), the tail held
+    back at -8 degrees."""
+    def pose(parts, root, p):
+        if 'Tail' in parts:
+            for l in ['Tail'] + [n for n in ('Tail2', 'Tail3') if n in parts]:
+                parts[l].rotation_euler = (0, R(-8 * chain_share(0, 1)), 0) if l == 'Tail' else (0, 0, 0)
+        return 0.12 * math.sin(math.pi * p), 0.0
+    return pose, hop_time
+
+
+def bound(height):
+    """WallCat padding along a wall top in soft bounds of 0.34 s: up 9 cm and down, the body rocking 8 degrees
+    (sin 2 pi k), a walking model's legs tucked through the bound and landing (LegGait.Rig.Hop)."""
+    def pose(parts, root, p):
+        s = math.sin(math.pi * p)
+        for leg in legs_of(parts).values():
+            hip, foot = leg[2], (leg[2][0] + leg[4][0], leg[2][1] + leg[4][1])
+            L = leg[5]
+            _place(leg, (foot[0] - 0.15 * L * s, foot[1] + 0.25 * L * s) if s > 0 else (foot[0], 0.0))
+        # WallCat's pitchRock is the game's nose-up turn; the review's pitch is nose-down
+        return 0.09 * s, -8 * math.sin(2 * math.pi * p)
+    return pose, 0.34
+
+
+def pond(tail=None, flippers=None):
+    """PondDuck's koi and turtle: a tail swept tail[0] degrees either side tail[1] times a second, in links (about the
+    vertical: they are seen from above), or four flippers paddled flippers[0] degrees at flippers[1] strokes a second,
+    front right with back left, then the others."""
+    if tail:
+        sweep, beat = tail
+        period = 1.0 / beat
+        track = chain_track(lambda t: sweep * math.sin(2 * math.pi * beat * t), period)
+    else:
+        sweep, beat = flippers
+        period = 1.0 / beat
+
+    def pose(parts, root, p):
+        if tail:
+            set_chain(parts, 'Tail', 'z', track, p)
+        else:
+            for name, ph in (('FlipperFR', 0.0), ('FlipperBL', 0.0), ('FlipperFL', math.pi), ('FlipperBR', math.pi)):
+                if name in parts:
+                    side = 1 if name.endswith('R') else -1
+                    parts[name].rotation_euler = (0, 0, R(side * sweep * math.sin(2 * math.pi * p + ph)))
+        return 0.0, 0.0
+    return pose, period
+
+
+def flight(span, beat=40.0, rate=15.0):
+    """GroundBird's take-off flight (and the small birds' SkyFlock beat): the wings beat +-beat degrees, rate radians a
+    second, about the body's long axis, each wing in two links so its tip trails the beat."""
+    period = 2 * math.pi / rate
+    track = chain_track(lambda t: beat * math.sin(rate * t), period)
+
+    def pose(parts, root, p):
+        for wing, sign in (('WingL', 1), ('WingR', -1)):
+            if wing in parts:
+                links = [wing] + ([wing + '2'] if wing + '2' in parts else [])
+                for i, l in enumerate(links):
+                    parts[l].rotation_euler = (R(sign * track(p, i) * chain_share(i, len(links))), 0, 0)
+        return -0.04 * span * math.sin(2 * math.pi * p), 0.0
+    return pose, period
 
 
 def fly(span, beat=40, up_only=False):

@@ -154,6 +154,13 @@ SHEETS AND PLATES
 When a shot is a SHEET (objects on a plain background) or a PLATE (a flat, straight-on texture), ignore the camera and
 light above and follow the shot.
 - A sheet's objects never touch or overlap each other.
+- An animal on a sheet is cut out and given moving legs, tail and wings, so: every leg shows on its own, the far legs
+  stepped apart from the near ones and never hidden behind them, each foot flat on the ground line with its toes
+  apart; the tail held clear of the body, backdrop showing between them, never curled against the back; a bird in
+  flight with both wings fully spread and clear of its body; a fish seen whole from above, its tail fin spread; legs,
+  toes, antennae and tail streamers drawn clearly, never hair-thin; whiskers faint or none.
+- The backdrop behind an animal is one even grey: no glow, halo or lighter patch around or between its parts, and no
+  shadow touching it (a soft separate shadow on the ground, or none).
 - A plate shows about 2 m by 2 m of real surface unless the shot gives another size, evenly weathered all over, with no
   single mark that would stand out when it repeats (no nests or clumps, paint splashes, big stains, holes or signs).
 

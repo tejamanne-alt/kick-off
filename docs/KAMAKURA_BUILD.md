@@ -179,7 +179,7 @@ ceramic siding.
 | Id | Animal | Sheet | Behaviour |
 |---|---|---|---|
 | KM-N01 | the ginger cat | KM-P4 | WallCat |
-| KM-N02 | the tanuki | KM-P4 | TreeSquirrel's dash, into the undergrowth instead of up a tree |
+| KM-N02 | the tanuki | KM-P4 | walks and trots off into the undergrowth on its jointed legs (LegGait, as the Dog walks; a squirrel's hops don't suit it, D19), its brush swaying |
 | KM-N03 | a Pallas's squirrel | KM-P4 | TreeSquirrel |
 | KM-N04 | a Shiba Inu (red collar) | KM-P4 | Dog (the hazard: noses a low ball back; chip it over) |
 | KM-N05 | the black kite | KM-P4 | perched (CritterIdle), circling (SkyFlock), the snack dive (Seagull) |
@@ -189,11 +189,11 @@ ceramic siding.
 | KM-N09 | a barn swallow | KM-P4 | perched on the wires (CritterIdle); SkyFlock, low and fast |
 | KM-N10 | a black-tailed gull | KM-P4 | GroundBird on the sand; SkyFlock over the sea |
 | KM-N11 | a little egret | KM-P4 | GroundBird, wading at the water's edge |
-| KM-N12, N13 | koi, red-and-white and golden | KM-P8 | PondDuck, just under the water |
-| KM-N14 | a pond turtle | KM-P8 | basking on a stone (CritterIdle); slides in when the kid comes close |
+| KM-N12, N13 | koi, red-and-white and golden | KM-P8 | PondDuck, just under the water, the tail (in links) swept as it swims |
+| KM-N14 | a pond turtle | KM-P8 | basking on a stone (still); slides in when the kid comes close and swims (PondDuck, its four flippers paddling) |
 | KM-N15 | a grey heron | KM-P8 | GroundBird, slow; standing at the pond's edge |
 | KM-N16 | a cormorant | KM-P8 | on a rock, wings held open to dry (CritterIdle) |
-| KM-N17 | a white wagtail | KM-P8 | GroundBird, tail wagging |
+| KM-N17 | a white wagtail | KM-P8 | GroundBird, its tail (in links) pumping all the while |
 | KM-N18 | a Japanese white-eye | KM-P8 | in a tree's crown (CritterIdle), darting between trees |
 | KM-N19 | a brown-eared bulbul | KM-P8 | GroundBird; perched in the trees |
 | KM-N20 | an oriental turtle dove | KM-P8 | GroundBird |
@@ -781,7 +781,11 @@ THE SHEET
   - bottom right: FRONT, head-on, wings fully spread and level.
 - Orthographic-looking views: no perspective, the wings symmetrical, the body straight, the spread wings filling about
   90 % of their panel's width.
-- A plain, even mid-grey background (#808080), no shadow on it, no sky, no ground, no other bird.
+- A plain, even mid-grey background (#808080), no shadow on it, no sky, no ground, no other bird; the grey the same
+  everywhere, with no glow or lighter patch around the bird or between its feathers.
+- Our artists cut the wings into an inner and an outer half that beat, so: each wing's whole outline shows, clear of
+  the body and the other wing; the primaries' tips sharp, each feather edge crisp; the tail fanned clear of the body;
+  the feet tucked but drawn clearly, never hair-thin.
 - Even, soft, shadowless light; colours true.
 - No labels, numbers, arrows, logos or watermarks.
 

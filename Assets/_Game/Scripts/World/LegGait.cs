@@ -215,8 +215,36 @@ namespace DribbleToSchool.World
                 return new Vector2(middle + d.x, d.y - lift);   // planted on the ground (the root's y 0), not at the model's height
             }
 
+            /// <summary>As much of tip (radians) as the body can tip about the root's origin with every foot still
+            /// planted (each leg reaching 98 % of its length): a bird with its feet apart tips less, or a foot would lift.
+            /// Turn the body by this, then Plant it.</summary>
+            public float Reach(float tip)
+            {
+                if (Reachable(tip)) return tip;
+                float lo = 0f, hi = tip;
+                for (int k = 0; k < 16; k++)
+                {
+                    float mid = (lo + hi) * 0.5f;
+                    if (Reachable(mid)) lo = mid; else hi = mid;
+                }
+                return lo;
+            }
+
+            bool Reachable(float tip)
+            {
+                float c = Mathf.Cos(tip), s = Mathf.Sin(tip);
+                for (int i = 0; i < legs.Length; i++)
+                {
+                    Vector2 f = legs[i].hip + legs[i].foot;
+                    Vector2 t = new Vector2(f.x * c + f.y * s, -f.x * s + f.y * c) - legs[i].hip;
+                    float l1 = legs[i].knee.magnitude, l2 = (legs[i].foot - legs[i].knee).magnitude;
+                    if (t.magnitude > 0.98f * (l1 + l2) || t.magnitude < Mathf.Abs(l1 - l2)) return false;
+                }
+                return true;
+            }
+
             /// <summary>Hold every foot where it stands while the body tips by tip (radians, forward toward up: a peck
-            /// is negative) about the root's origin, between the feet.</summary>
+            /// is negative) about the root's origin, between the feet (tip no further than Reach allows).</summary>
             public void Plant(float tip)
             {
                 float c = Mathf.Cos(tip), s = Mathf.Sin(tip);

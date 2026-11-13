@@ -44,7 +44,16 @@ frame before it is shown.
 
 A walking animal's legs are jointed (a thigh, a shin, a foot point), its feet planted on the ground through the stance
 and lifted forward in the swing, its knees bending as in the picture (D19: rigid legs swung from the hip scissored and
-floated). A bird walks on its feet, never bounces on the spot, and pecks by tipping its body on planted feet.
+floated). A bird walks on its feet, never bounces on the spot, and pecks by tipping its body on planted feet, no
+further than its legs can keep them planted. Every other part that bends in the real animal bends in the model: a tail
+in three links and a bird's wing in two (`World/PartChain.cs`: each link a share of the angle, each trailing the one
+before), a fish's tail, a turtle's flippers; an insect's wings stay rigid, as real ones are. A part with no source
+motion stays still, and the review says so.
+
+Each motion plays at the game's own speed (24 frames a cycle); one too quick for a GIF to show (a wingbeat, a
+butterfly's flutter) is slowed to 30 ms a frame and labelled with how much (x1/4). The motion's source is named: the
+behaviour (WallCat, Dog, GroundBird, TreeSquirrel, PondDuck, CritterIdle, FlitButterfly) and its numbers, which the
+kit's manifest records for the level builder (`game` in `KamakuraAnimals.json`).
 
 Views the source picture can't show (an animal relief's top, bottom, front and back, built from one side) are still
 rendered and labelled as built from the side alone. The review says which views the game's camera actually sees.

@@ -86,6 +86,34 @@ namespace DribbleToSchool.Tests
         }
 
         [Test]
+        public void ABirdWithItsFeetApartTipsOnlyAsFarAsItsLegsKeepThemPlanted()
+        {
+            var root = new GameObject("Bird").transform;
+            try
+            {
+                // Two legs bent a little at the knee, the feet well apart: a deep peck would lift the hind foot.
+                var right = Node("LegR", root, new Vector3(0.02f, 0.12f, 0f));
+                Node("FootR", Node("ShinR", right, new Vector3(0.03f, -0.055f, 0f)), new Vector3(0f, -0.055f, 0f));
+                var left = Node("LegL", root, new Vector3(-0.02f, 0.12f, 0f));
+                Node("FootL", Node("ShinL", left, new Vector3(-0.03f, -0.055f, 0f)), new Vector3(0f, -0.055f, 0f));
+                var rig = LegGait.Rig.Find(root, root);
+                Assert.AreEqual(2, rig.Count);
+                float want = -40f * Mathf.Deg2Rad, tip = rig.Reach(want);
+                Assert.Less(Mathf.Abs(tip), Mathf.Abs(want), "it tips less than asked");
+                Assert.Greater(Mathf.Abs(tip), 0f, "but it does tip");
+                Vector3 r0 = root.Find("LegR/ShinR/FootR").position, l0 = root.Find("LegL/ShinL/FootL").position;
+                root.rotation = Quaternion.AngleAxis(tip * Mathf.Rad2Deg, Vector3.forward);
+                rig.Plant(tip);
+                Assert.Less((root.Find("LegR/ShinR/FootR").position - r0).magnitude, 1e-3f, "the front foot holds");
+                Assert.Less((root.Find("LegL/ShinL/FootL").position - l0).magnitude, 1e-3f, "the hind foot holds");
+            }
+            finally
+            {
+                Object.DestroyImmediate(root.gameObject);
+            }
+        }
+
+        [Test]
         public void ARigKeepsEveryPlantedFootOnTheGroundAndHoldsItsFeetThroughAPeck()
         {
             var root = new GameObject("Animal").transform;

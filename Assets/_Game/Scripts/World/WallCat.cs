@@ -14,6 +14,7 @@ namespace DribbleToSchool.World
         public Transform model;
         [Tooltip("The tail, swished about its axis.")]
         public Part tail;
+        LegGait.Rig rig;        // a walking model's jointed legs (the Kamakura kit's), tucked through a bound
         [Tooltip("Wall tops it may sit on: (from x, to x, top height, depth z).")]
         public Vector4[] walls = new Vector4[0];
         [Tooltip("The wall top it starts on.")]
@@ -40,6 +41,8 @@ namespace DribbleToSchool.World
         {
             base.Awake();
             tail.Capture();
+            rig = LegGait.Rig.Find(transform, transform);
+            if (rig.Count == 0) rig = null;
             x = transform.position.x;
             yaw = targetYaw = transform.eulerAngles.y;
             side = Mathf.Cos(yaw * Mathf.Deg2Rad) >= 0f ? 1f : -1f;
@@ -95,6 +98,8 @@ namespace DribbleToSchool.World
                     pos.x = x;
                     pos.y += Mathf.Sin(k * Mathf.PI) * 0.09f;
                     pitchRock = Mathf.Sin(k * Mathf.PI * 2f) * 8f;
+                    // a model with jointed legs tucks them through the bound and lands on them (LegGait.Rig.Hop)
+                    if (rig != null) rig.Hop(Mathf.Sin(k * Mathf.PI), 0f);
                     break;
                 }
                 case State.Leave:

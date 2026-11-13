@@ -32,14 +32,23 @@ namespace DribbleToSchool.World
         public float driftSpeed = 1f;
 
         Quaternion[] rest;
+        PartChain[] chains;     // a part in links (a Tail with Tail2, Tail3) bends link by link
         Vector3 home;
         float start;
 
         void Awake()
         {
             rest = new Quaternion[motions.Length];
+            chains = new PartChain[motions.Length];
             for (int i = 0; i < motions.Length; i++)
+            {
                 rest[i] = motions[i].part != null ? motions[i].part.localRotation : Quaternion.identity;
+                if (motions[i].part != null)
+                {
+                    var c = PartChain.Find(motions[i].part, motions[i].axis);
+                    if (c.Links > 1) chains[i] = c;
+                }
+            }
             home = transform.localPosition;
             start = Random.value * 100f;
         }
@@ -54,7 +63,8 @@ namespace DribbleToSchool.World
                 // A pecking or swishing rhythm: mostly sine, with a sharper return so it reads as a gesture.
                 float s = Mathf.Sin(t * m.speed + m.phase);
                 float angle = m.offset + m.amplitude * (s + 0.25f * Mathf.Sin(2f * (t * m.speed + m.phase)));
-                m.part.localRotation = rest[i] * Quaternion.AngleAxis(angle, m.axis);
+                if (chains[i] != null) chains[i].Set(angle, Time.deltaTime);
+                else m.part.localRotation = rest[i] * Quaternion.AngleAxis(angle, m.axis);
             }
             if (drift != Vector3.zero)
             {
