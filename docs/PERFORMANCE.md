@@ -59,6 +59,7 @@ It ignores the first 6 s after a scene loads, and the time after resuming from t
 | Character FBX total | | 28 MB (was 90 MB) |
 | Character atlas | 2048 (kids), 1024 (bags), gaps filled for every mip | as listed |
 | Skinned renderers drawn | 1 kid + 1 bag + passers-by on screen | as listed |
+| A Kamakura street prop | built of solids in the Kamakura atlas, 1,500 triangles | 12 to 368 triangles (KM1-1's first six: the pole 184, the mirror 134, the blue machine 12, the crossing signal 368, the barrier 68, the torii 288), one renderer each, the shared atlas (no new texture); not yet in a level, not yet measured on the Nord CE5 |
 | A Kamakura animal | one skinned mesh (two with far legs behind), 2,500 triangles, up to 30 bones, GPU skinned (D21) | 801 to 2,296 triangles, at most 17 deforming bones; 1 or 2 renderers where the rigid parts were 4 to 20 (est.: fewer draw calls, a little skinning work). A flyer's wingbeat (`WingStroke`) and a squirrel's bound (`LegGait.Bound`) add a few sines and quaternion products per animal per frame, and at most 12 animals are awake (est.: negligible); not yet in a level, not yet measured on the Nord CE5 |
 | Character meshes in memory per scene | the chosen kid and the bag they wear | about 46k vertices, ~7 MB, plus 2 atlases (was 545k vertices, ~83 MB, plus 11 atlases, since every kid and bag was saved into every scene) |
 | Full-screen passes, Original look | grade only (bloom on High) | 1 to 8 |

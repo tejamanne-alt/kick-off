@@ -38,7 +38,8 @@ VIEWS = [
 
 
 def meshes_of(root):
-    return [o for o in root.children_recursive if o.type == 'MESH']
+    """Every mesh of a model: its parts', and the root's own when the root is a mesh (a prop, a building)."""
+    return ([root] if root.type == 'MESH' else []) + [o for o in root.children_recursive if o.type == 'MESH']
 
 
 def local_points(root):
@@ -101,7 +102,10 @@ def copy_of(root, name):
             pb.rotation_euler = (0.0, 0.0, 0.0)
             pb.location = (0.0, 0.0, 0.0)
         return new_root, {pb.name: Bone(new_root, pb) for pb in new_root.pose.bones}
-    new_root = bpy.data.objects.new(name, None)
+    # a root that is a mesh itself (a prop, a building) is copied with its mesh; else an empty stands for it
+    new_root = root.copy() if root.type == 'MESH' else bpy.data.objects.new(name, None)
+    new_root.name = name
+    new_root.parent = None
     bpy.context.scene.collection.objects.link(new_root)
     parts = {}
 
@@ -135,7 +139,7 @@ def _grid_render(posed, cols, rows, cell, path, size, render):
         target = Vector(((c - (cols - 1) / 2) * cell, 0.0, ((rows - 1) / 2 - r) * cell))
         root.matrix_world = Matrix.Translation(target - rot @ centre) @ rot.to_4x4() @ body
     bpy.context.view_layer.update()
-    names = {o.name for entry in posed for o in entry[0].children_recursive if o.type == 'MESH'}
+    names = {o.name for entry in posed for o in meshes_of(entry[0])}
     # Blender's orthographic scale spans the frame's longer side
     return render(path, (0, -50, 0), (0, 0, 0), ortho=max(cols, rows) * cell, size=size, only=names)
 

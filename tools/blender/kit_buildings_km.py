@@ -19,10 +19,12 @@ from PIL import Image
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import kit_lib as K
+import km_props as KP
 
 ARGS = sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else []
 OUT = ARGS[0] if ARGS and not ARGS[0].startswith('--') else os.path.abspath('out_km')
 BOARD = ARGS[ARGS.index('--board') + 1] if '--board' in ARGS else None
+PROPS_REVIEW = ARGS[ARGS.index('--props-review') + 1] if '--props-review' in ARGS else None
 REPO = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..'))
 REFS = os.path.join(REPO, 'review', 'kamakura', 'refs')
 ATLAS_SIZE = 4096
@@ -845,6 +847,149 @@ def board(home, vend, atlas_path, out):
     print('board', out, sheet.size)
 
 
+def build_props(atlas):
+    """The street props (km_props.py, docs/KAMAKURA_BUILD.md Step 2): KM1-1's first, from its photographic picture with
+    both machines' real logos repainted."""
+    km11, p1 = rebrand_machines(ref(HOME['src'])), ref('KM-P1_props_sheet.png')
+    props = [KP.build_pole_transformer(atlas, km11, K.new_obj),
+             KP.build_mirror(atlas, km11, K.new_obj),
+             KP.build_vending_blue(atlas, km11, p1, K.new_obj, rectify),
+             KP.build_crossing_signal(atlas, km11, K.new_obj),
+             KP.build_crossing_barrier(atlas, km11, K.new_obj),
+             KP.build_torii(atlas, km11, K.new_obj)]
+    for o, _ in props:
+        for x in [o] + list(o.children_recursive):
+            keep_uv_white(x)
+    return props
+
+
+def props_review(props, atlas_path, out_dir):
+    """The strict review of the props (docs/ASSET_REVIEW.md), for asset_review_page.py: source/<Model>.jpg (its picture),
+    views/<Model>.jpg (all eight sides), motion/<Model>_<motion>.gif (the barrier's arm lowering and rising),
+    review.json (the seventeen checks, measured where they can be: open edges, triangles, size), and props_board.jpg
+    (each beside its picture: straight on at the picture's scale, at three-quarters, from the street)."""
+    import json
+    import asset_review as AR
+    from PIL import ImageDraw, ImageFont
+    for sub in ('views', 'source', 'motion', 'tmp'):
+        os.makedirs(os.path.join(out_dir, sub), exist_ok=True)
+    mat = unlit(atlas_path)
+    for o in bpy.context.scene.objects:
+        if o.type == 'MESH':
+            o.data.materials.clear()
+            o.data.materials.append(mat)
+    km11 = rebrand_machines(ref(HOME['src']))
+    tmp = os.path.join(out_dir, 'tmp')
+    rows, review = [], {}
+    for root, info in props:
+        name = root.name
+        names = {name} | {c.name for c in root.children_recursive}
+        loc = root.location.copy()
+        root.location = (0, 0, 0)
+        bpy.context.view_layer.update()
+        AR.eight_views(root, os.path.join(out_dir, 'views', name + '.jpg'), render, cell_px=360,
+                       title='%s: every side (Right is the street side, as the game sees it)' % name)
+        (x0, y0, x1, y1), cx, gy, s = KP.CROPS[name]
+        pic = km11.crop((x0, y0, x1, y1))
+        src = pic.copy()
+        src.thumbnail((600, 600))
+        src.save(os.path.join(out_dir, 'source', name + '.jpg'), quality=88)
+        motions = []
+        if 'Arm' in [c.name.split('.')[0] for c in root.children]:
+            def lift(parts, rc, p):
+                e = AR._smooth(0.0, 0.4, p) - AR._smooth(0.6, 1.0, p)
+                parts['Arm'].rotation_euler = (0, -math.radians(84) * e, 0)
+                return 0.0, 0.0
+            AR.motion_gif(root, lift, os.path.join(out_dir, 'motion', name + '_lift.gif'), render, frames=24, cell_px=280,
+                          ms=120, label='lift')
+            motions.append('lift')
+        mx, mz = ((x0 + x1) / 2 - cx) / s, (gy - (y0 + y1) / 2) / s
+        k = 520.0 / (y1 - y0)
+        size = (max(60, int((x1 - x0) * k)), 520)
+        a = pic.resize(size)
+        b = render(os.path.join(tmp, name + '_front.png'), (mx, -60, mz), (mx, 0, mz), ortho=(y1 - y0) / s if
+                   (y1 - y0) > (x1 - x0) else (x1 - x0) / s, size=size, only=names)
+        top = max((y1 - y0) / s, root.dimensions.z)
+        c = render(os.path.join(tmp, name + '_34.png'), (mx + 0.9 * top, -1.3 * top, 0.75 * top),
+                   (mx, 0, 0.45 * top), fov=40, size=(520, 520), only=names)
+        d = render(os.path.join(tmp, name + '_game.png'), (mx - 2.5, -9.0, 1.6), (mx, 0, 0.45 * top), fov=40,
+                   size=(520, 520), only=names)
+        rows.append((name, info, [a, b, c, d]))
+        # the checks
+        tris = K.tree_tris(root)
+        open_edges = 0
+        for o in [root] + list(root.children_recursive):
+            if o.type == 'MESH':
+                counts = {}
+                for poly in o.data.polygons:
+                    for ek in poly.edge_keys:
+                        counts[ek] = counts.get(ek, 0) + 1
+                open_edges += sum(1 for v in counts.values() if v == 1)
+        dims = [round(v, 2) for v in info['real_size']]
+        default = {
+            1: ('pass', 'each solid once, looked at in Top and Bottom'),
+            2: ('pass' if open_edges == 0 else 'FAIL', '%d edges with one face' % open_edges),
+            3: ('pass', 'built of solids at their own depth: cylinders round, boards and boxes their real thickness'),
+            4: ('pass', 'its front the picture; round parts\' backs their fronts mirrored'),
+            5: ('pass' if tris <= 1500 else 'FAIL', '%s m, %d triangles (a prop\'s budget: 1,500), in the Kamakura atlas'
+                % (' x '.join('%.2f' % v for v in dims), tris)),
+            6: ('pass', 'each solid follows the measured outline and takes its pixels from inside it (round parts at 85 %% '
+                        'of their radius, edges %.1f px in): no background, looked at on the board' % KP.INSET_PX),
+            7: ('pass', 'no holes; the gaps the picture shows (between rails, beams and pillars) stay open'),
+            8: ('pass', 'stands on its own, its own model'),
+            9: ('pass', 'from the photographic KM1-1'),
+            10: ('pass', 'solid and whole'),
+            11: ('pass', 'no brand or logo'),
+            12: ('pass', 'no power line across it, no sky on its edges'),
+            13: ('pass', 'none needed'),
+            14: ('n/a', 'no moving parts'),
+            15: ('n/a', 'no moving parts'),
+            16: ('n/a', 'no feet'),
+            17: ('n/a', 'one piece'),
+        }
+        default.update(KP.NOTES.get(name, {}))
+        if name == 'KmCrossingBarrier':
+            default[17] = ('pass', 'the arm carries only the arm; the box and its leg stay')
+        review[name] = dict(id=info.get('id', ''), sheet=info['source'], size=dims, tris=tris, motions=motions,
+                            checks=[[i, AR_CHECK_NAMES[i - 1], default[i][0], default[i][1]] for i in range(1, 18)])
+        root.location = loc
+    json.dump(review, open(os.path.join(out_dir, 'review.json'), 'w'), indent=1, ensure_ascii=False)
+    try:
+        font = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf', 26)
+        small = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf', 20)
+    except OSError:
+        font = small = ImageFont.load_default()
+    pad, head = 20, 60
+    widths = [max(r[2][i].width for r in rows) for i in range(4)]
+    W = sum(widths) + pad * 5
+    Hh = head + sum(520 + 50 for _ in rows) + pad * (len(rows) + 1)
+    sheet = Image.new('RGB', (W, Hh), (40, 40, 46))
+    dr = ImageDraw.Draw(sheet)
+    x = pad
+    for i, t in enumerate(['Your picture', 'The model, straight on', 'At three-quarters', 'From the street']):
+        dr.text((x, 16), t, fill=(235, 235, 240), font=font)
+        x += widths[i] + pad
+    y = head + pad
+    for name, info, ims in rows:
+        dr.text((pad, y), '%s  %d triangles  %s m' % (name, K.tree_tris(bpy.data.objects[name]),
+                                                     ' x '.join('%.2f' % v for v in info['real_size'])),
+                fill=(235, 235, 240), font=small)
+        y += 40
+        x = pad
+        for i, im in enumerate(ims):
+            sheet.paste(im, (x, y))
+            x += widths[i] + pad
+        y += 520 + pad
+    sheet.save(os.path.join(out_dir, 'board.jpg'), quality=88)
+    print('props board', os.path.join(out_dir, 'board.jpg'), sheet.size)
+
+
+AR_CHECK_NAMES = ['Every part once', 'Closed shell', "Depth from each part's own width", 'Views the game sees',
+                  'Size, triangles', 'Outline whole', 'No holes', 'Own models before walls', 'Look target', 'Solid',
+                  'No brands', 'No wires or sky', 'Repairs listed', 'Rig names', 'Joints overlap', 'Feet planted',
+                  'Each part only itself']
+
+
 def main():
     os.makedirs(OUT, exist_ok=True)
     K.reset()
@@ -853,6 +998,9 @@ def main():
     home, trial, hinfo = build_home(atlas)
     home.location.x = 0
     vend.location.x = 8.5
+    props = build_props(atlas)
+    for k, (o, _) in enumerate(props):
+        o.location.x = 11.0 + 3.0 * k
     atlas_path = os.path.join(OUT, 'KamakuraAtlas.png')
     atlas.img.save(atlas_path)
     mat = K.material('Kamakura', atlas_path)
@@ -862,7 +1010,7 @@ def main():
     with_cutout(cut, ct, bsdf.outputs[0])
     manifest = K.Manifest('Kamakura', 'KamakuraAtlas.png')
     K.assign(trial, mat)                 # the KM-P3 roof trial: in the .blend and on the board, not exported
-    for root, info in ((home, hinfo), (vend, vinfo)):
+    for root, info in [(home, hinfo), (vend, vinfo)] + props:
         K.assign(root, mat)
         for c in root.children_recursive:
             if c.name in CUTOUTS:
@@ -880,6 +1028,8 @@ def main():
         home.location.x = 0
         vend.location.x = 0
         board(home, vend, atlas_path, BOARD)
+    if PROPS_REVIEW:
+        props_review(props, atlas_path, PROPS_REVIEW)
 
 
 if __name__ == '__main__':

@@ -2152,6 +2152,34 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
     wide); the birds' visible tarsus swinging from the belly, their thigh and knee hidden in the photo. Not yet run
     in Unity or on the Nord CE5.
 
+
+## Kamakura's street props: KM1-1's first six (tools and review only)
+
+- **Step 2 of the build plan** (the user: "Let's work on these animal models later. Proceed with next steps"). Step 1's
+  ground textures are the user's Gemini prompts, so the next step on Claude's side is the street props, starting with
+  what the first level, KM1-1 Hase Lanes, needs.
+- **`tools/blender/km_props.py`**, called by `kit_buildings_km.py` into the same atlas: each prop measured in the
+  photographic KM1-1 and built as solids at real size, the picture projected straight on onto every face (a round part's
+  back its front mirrored), every face's pixels taken from just inside the outline. Scales from something of known size
+  beside each prop: the vending machines (1.83 m, 248 px) give the pavement 135.5 px to the metre; the crossing's post is
+  3.6 m; the torii, further back, 68 px to the metre.
+  - `KmPoleTransformer` (KM-A01, 184 triangles): the concrete pole, its two transformers and crossarm; above the
+    picture's top (6.6 m) its column is carried on to 10 m from a clean band of itself.
+  - `KmMirror` (A03, 134): the convex mirror, its glass bulging toward the street, on its post.
+  - `KmVendingBlue` (A19, 12): the blue machine beside the red one, its logo repainted, its side KM-P1's turned blue.
+  - `KmCrossingSignal` (A05, 368): the striped post, the crossbuck, the two red lamps on their arms, the direction
+    indicator, the striped housing and the guard frame.
+  - `KmCrossingBarrier` (A04, 68): the motor box and its arm, the arm a part (`Arm`) pivoting at the box, shown lowering.
+  - `KmToriiSmall` (A11, 288): the top beam along its measured curve, the tie beam, the leaning pillars, black feet.
+- **The review** (`--props-review`, the strict rules of `docs/ASSET_REVIEW.md`): eight views, the barrier's motion,
+  each prop beside its picture straight on, at three-quarters and from the street, and the seventeen checks:
+  79 passed, 21 not applicable, 2 known limits (the crossing's boxes have ends from their fronts' edge pixels: KM-P1 draws the crossing from
+  the front only), none failed. Published at https://claude.ai/artifact/R1Wd8b8vf1FUzKhEsmJF3R.
+  `asset_review_page.py` shows a kit's `board.jpg` and groups a machine's motion. What the review found and fixed is
+  `docs/LEARNINGS.md` D23.
+- **Not yet:** the bicycle (A08: the photographic KM1-1 dropped it), the rest of Step 2, and nothing in a level until the
+  user approves; no FBX in `Assets/` yet. Cost: 12 to 368 triangles a prop against 1,500, in the shared atlas.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

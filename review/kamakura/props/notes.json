@@ -1,0 +1,19 @@
+{
+ "intro": [
+  "Step 2 of the build plan, the street props, starting with the ones the first level (KM1-1 Hase Lanes) needs. Each one is measured in your photographic KM1-1 and built by script as real solids at real size: round poles, drums, discs, boards, boxes and a curved beam. Your picture's own pixels are projected straight on onto every face, so from the street each prop is your picture, and from any other side it is still a solid object, never a flat card.",
+  "Sizes come from the picture itself, measured against something of known size beside each prop: the vending machines are 1.83 m and 248 px tall, so the pavement is 135.5 px to the metre; the crossing signal's post is 3.6 m; the torii, further back, is 68 px to the metre. The board below shows each prop beside its picture: straight on, at three-quarters and from the street."
+ ],
+ "fixed": [
+  "<b>Found and fixed while reviewing.</b> The barrier's arm was first drawn up to the picture's top, but it ends at y 258: above that it took the sky. The torii's top beam was first a box: its curved tips took the trees behind, so it now follows the measured curve, and its upper face takes the beam's own grey-brown instead of the thin line of leaves along its top. The pillars' feet, hidden by leaves and the stone wall, take the vermilion just above and stand on black feet. Every round part and edge takes its pixels from just inside its outline, never the background along it. Every shell is closed (check 2 caught open ends on five props: post bottoms, arm ends, pillar tops)."
+ ],
+ "limits": [
+  "<b>The crossing's boxes</b> (the direction indicator, the striped housing, the guard frame, the barrier's motor box) have ends made from their fronts' edge pixels: the props sheet draws the crossing from the front only. They read at three-quarters from the street; a model sheet (ASSET KM-A04, KM-A05) would give them their own.",
+  "<b>The blue vending machine's side</b> is the red machine's side from the props sheet, turned blue: KM1-1 shows only its front.",
+  "<b>The pole above the picture</b> (6.6 m to 10 m) is its own column carried on; the wires and the street lamp's arm are left to the level."
+ ],
+ "pending": [
+  "<b>The bicycle</b> (KM-A08): the photographic KM1-1 no longer shows it, and the props sheet's is an illustration; it needs its own sheet (ASSET KM-A08) or a picture that shows it.",
+  "<b>The rest of Step 2</b>: the plain pole (KM-A02), the bus stop (A07), the stone lanterns (A09, A10), the paper lantern (A12), the noren (A13), the shop signs (A14), the drying rack (A15), the trail sign (A16), the umbrella stand (A17), the bench (A18), and the KM-P5 props (A19 to A38), each from the level picture it stands in.",
+  "<b>In the game:</b> nothing goes into a level until you approve these; then the kit's FBX files go into Assets/_Game/Art/Models/Kamakura."
+ ]
+}

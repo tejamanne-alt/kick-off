@@ -593,6 +593,13 @@ light, the same colours. FORMAT: aspect ratio 1:1, the largest size you can make
 
 ### Step 2: street props
 
+Built so far (`tools/blender/km_props.py`, reviewed in `review/kamakura/props/`), from the photographic KM1-1, each measured
+against the vending machines beside it (1.83 m, 248 px: 135.5 px to the metre): the transformer pole (KM-A01), the convex
+mirror (A03; orange in the photo, green on KM-P1), the blue vending machine (A19), the crossing signal (A05) and barrier
+(A04, its arm a part that lowers), the small torii (A11). The bicycle (A08) waits for a picture that shows it: the
+photographic KM1-1 dropped it. The props are solids, not cards: their sides are the picture's own pixels where round, KM-P1's
+where a box's side shows, and a model sheet is asked for only where neither gives a side the game sees.
+
 The ASSET prompts of Steps 2, 3 and 5 make model sheets: send one only when Claude asks for it by its id (Step 0). They
 also list each asset's parts, source pictures and real size, which is what Claude builds it to. In the model sheet chat,
 each message names its source pictures: attach them with it.

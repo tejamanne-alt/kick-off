@@ -1,6 +1,6 @@
 # The asset review's page (docs/ASSET_REVIEW.md, section 4): every model's eight views, its motions, its source and its
 # seventeen checks, from the review folder a kit's --review wrote (review.json, views/, motion/, source/, parts/,
-# cuts.jpg).
+# cuts.jpg, and board.jpg: each model beside its picture).
 #
 #   python3 tools/blender/asset_review_page.py review/kamakura/animals "Kamakura animals" [notes.json]
 #
@@ -23,6 +23,7 @@ GROUPS = [
     ('fly', 'In flight', 'small birds and insects, seen from below or above as they pass'),
     ('swim', 'In the water', 'koi and a swimming turtle'),
     ('idle', 'Resting', 'sitting, lying or perched: the tail or head moves'),
+    ('lift', 'Machines', 'their own motion: a barrier lowering and rising'),
     ('', 'Still', 'nothing moves'),
 ]
 
@@ -182,6 +183,11 @@ def page(folder, title, notes):
             w('<td>%d</td><td style="text-align:left">%s</td></tr>' % (r['tris'], esc(', '.join(r['motions']) or '–')))
     w('</tbody></table></div>')
     w('<div class="legend">%s</div>\n' % ''.join('<span><b>%d</b>%s</span>' % (i + 1, esc(c)) for i, c in enumerate(CHECKS)))
+    if os.path.exists(os.path.join(folder, 'board.jpg')):
+        w('<figure class="cuts"><h2>Each beside its picture</h2><img src="board.jpg" loading="lazy" alt="Each model '
+          'beside its source picture: the picture, the model straight on at the picture\'s scale, at three-quarters and '
+          'from the street"><figcaption>Your picture, the model straight on at the picture\'s scale, at three-quarters, '
+          'and from the street as the game camera sees it.</figcaption></figure>\n')
     if os.path.exists(os.path.join(folder, 'cuts.jpg')):
         w('<figure class="cuts"><h2>The cut-outs</h2><img src="cuts.jpg" loading="lazy" alt="Every model\'s outline on its '
           'sheet, its parts coloured: body grey, tail orange, head cyan, near legs bright, far legs dark, wings purple">'

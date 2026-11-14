@@ -1060,6 +1060,28 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
 - *Rule:* a joint goes where the animal's is and bends as the animal's does, whatever the photo's pose. When a motion
   is reported unnatural twice, ask whether the source can give what the motion needs, and say so to the user.
 
+**D23. Props from a picture: what stands behind an edge comes with it (KM1-1's first street props, found in their review).**
+- *What:* the first six props built from the photographic KM1-1 (the transformer pole, the convex mirror, the blue
+  vending machine, the crossing signal and its barrier, the small torii) as real solids with the picture projected onto
+  every face. The review, read at full size and from all eight sides, found:
+  - the barrier's arm built up to the picture's top, when the arm ends at y 258: its top took the sky;
+  - the torii's top beam as a box, when the real beam curves up to its tips: its corners took the trees;
+  - every edge face (a beam's top, a cylinder's side) took the pixels along the outline, where the picture blends the
+    object into what stands behind it: green streaks along the torii's top and pillars;
+  - the mirror's back sampled from a patch that was leaves, not its orange hood;
+  - five props with open ends (post bottoms, arm ends, pillar tops) that the review's closed-shell check counted as
+    failures: in the game a culled back face would show a hole;
+  - the review's eight views took only a model's child meshes (the animals' roots are armatures), so a prop whose root
+    is its own mesh rendered nothing.
+- *Why:* a solid's outline was set to the measured edge, and its pixels taken right on that edge; samples were picked by
+  coordinates without looking at what was there; the review tools were written for one kind of root.
+- *Fix:* each shape follows the picture's own outline (the arm's measured line, the beam's measured curve); every round
+  part takes its pixels from 85 % of its radius and every edge face from 2.5 px inside the outline (`SHRINK`,
+  `INSET_PX`); a beam's upper face, a thin line in the picture, takes a clean patch of its own colour; every sample is
+  looked at; every open end is capped; `asset_review` counts a mesh root's own mesh.
+- *Rule:* a projected solid takes its pixels from inside its outline, never on it; a face the picture shows only edge on
+  gets a sample of its own colour; every sample is looked at before it is used.
+
 ## E. Levels and world
 
 - **E1. Every level had chapter-1 scenery.** A new-scene call unloaded the level definition. *Rule:* pass data into scene builders explicitly; never hold asset references across a new-scene call.
