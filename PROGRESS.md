@@ -2204,6 +2204,20 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
   usage ran out too fast), so a utility pole (KM-A01, A02), too tall for one ChatGPT image to hold in detail, comes in
   ChatGPT as two halves per tall view at one scale, overlapping by about 1 m (`1_front_top.png`, `1_front_bottom.png`).
 
+
+## KM1-1's first views in, and the next batch's prompts (docs only)
+
+- The user pushed the views of seven of KM1-1's props, made in ChatGPT (`review/kamakura/sheets/`): the transformer pole
+  (its tall views in halves), the mirror, the barrier, the crossing signal, the bicycle, the small torii and the blue
+  vending machine; the red machine (KM-A06) is still to come. Checked: 1024 x 1536, 1536 x 1024 and 1254 x 1254, each
+  view sharp and the same object from side to side, the brand panels invented; the pole's halves overlap at its warning
+  plate at one scale. The pole's back view copies its front (its transformer on the same side), so its back takes only
+  the column from it. The signal follows the props sheet (its lamps either side of the post), not KM1-1's stacked lamps.
+- `docs/KAMAKURA_BUILD.md`: ASSET prompts for the second props sheet's things, KM-A20 to A38, each attaching KM-P5 and the
+  photographic level picture it stands in; Step 2 lists KM1-1's second batch (A20, A22 to A26, A28, A29) and then the
+  tram; in ChatGPT the 7 m street lamp comes in halves and the 12 m tram in a left and a right half. Prompts page
+  version 26.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

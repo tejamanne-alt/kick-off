@@ -462,13 +462,17 @@ FORMAT lines below instead (the prompts page's ChatGPT switch puts them in). Cha
 suits the vending machines and signs. A utility pole (KM-A01, KM-A02) is 10 m tall, too tall for one of ChatGPT's images
 to hold in detail, so in ChatGPT its FRONT, RIGHT SIDE and BACK each come in two halves at one scale, overlapping by about
 1 m: after the top half, send "Next: bottom half.". Save them as `1_front_top.png` and `1_front_bottom.png`, and so on
-(`4_top.png` and `5_three_quarter.png` stay one image each).
+(`4_top.png` and `5_three_quarter.png` stay one image each). The street lamp (KM-A26, 7 m) comes in halves the same way, and
+the tram (KM-V01, 12 m long) in a left and a right half of its long views ("Next: right half.", `1_front_left.png`,
+`1_front_right.png`).
 
 - `KM-S0`: `FORMAT: the aspect ratio the object fills best, the same for FRONT, RIGHT SIDE and BACK: 2:3 for a tall object (a signal, a lantern), 3:2 for a long one (a bench, a tram, a vehicle), 1:1 otherwise; TOP and THREE-QUARTER 1:1. The largest size you can make.`
 - `KM-S1`: `FORMAT: SIDE 1:1; FROM ABOVE, FROM BELOW and FRONT 3:2 (the spread wings across). The largest size you can make.`
 - `KM-S2`: `FORMAT: RIGHT SIDE and LEFT SIDE 3:2 for a long animal (a cat, a dog, a tanuki, a squirrel with its tail), 1:1 for a bird; FROM ABOVE the same as the sides; FRONT and BACK 1:1. The largest size you can make.`
 - `KM-A01`: `FORMAT: 2:3, the largest size you can make. The pole is 10 m tall, too tall for one image: make FRONT, RIGHT SIDE and BACK each in two images at the same scale, first its top half (from about 4.5 m up to its top), then, when I say "Next: bottom half.", its bottom half (from the ground up to about 5.5 m), the two overlapping by about 1 m. TOP and THREE-QUARTER as one image each, 1:1.`
 - `KM-A02`: `FORMAT: 2:3, the largest size you can make. The pole is 10 m tall, too tall for one image: make FRONT, RIGHT SIDE and BACK each in two images at the same scale, first its top half (from about 4.5 m up to its top), then, when I say "Next: bottom half.", its bottom half (from the ground up to about 5.5 m), the two overlapping by about 1 m. TOP and THREE-QUARTER as one image each, 1:1.`
+- `KM-A26`: `FORMAT: 2:3, the largest size you can make. The lamp's pole is 7 m tall, too tall for one image: make FRONT, RIGHT SIDE and BACK each in two images at the same scale, first its top half (from about 3 m up to its top), then, when I say "Next: bottom half.", its bottom half (from the ground up to about 4 m), the two overlapping by about 1 m. TOP and THREE-QUARTER as one image each, 1:1.`
+- `KM-V01`: `FORMAT: 3:2, the largest size you can make. The tram is 12 m long, too long for one image: make FRONT, BACK and TOP each in two images at the same scale, first its left half, then, when I say "Next: right half.", its right half, the two overlapping by about 1 m. RIGHT SIDE (its end) and THREE-QUARTER as one image each, 1:1.`
 - `KM-T07`: `FORMAT: aspect ratio 3:2, the largest size you can make; tileable along its length.`
 - `KM-T10`: `FORMAT: aspect ratio 3:2, the largest size you can make; tileable along its length.`
 - `KM-T11`: `FORMAT: aspect ratio 3:2, the largest size you can make; tileable along its length.`
@@ -642,7 +646,10 @@ light, the same colours. FORMAT: aspect ratio 1:1, the largest size you can make
 
 The first batch, KM1-1's, in this order (each one a new chat, its five views saved as Step 0 says): KM-A06 the red
 vending machine, KM-A19 the blue one, KM-A05 the crossing signal, KM-A04 the barrier, KM-A01 the transformer pole,
-KM-A03 the mirror, KM-A11 the small torii, KM-A08 the bicycle. Each is built as it comes in (`tools/blender/km_props.py`,
+KM-A03 the mirror, KM-A11 the small torii, KM-A08 the bicycle (all in but KM-A06). Then KM1-1's second batch, from the
+second props sheet: KM-A20 the recycling bins, KM-A22 the air-conditioner unit, KM-A23 the meters, KM-A24 the letterbox,
+KM-A25 the control cabinet, KM-A26 the street lamp, KM-A28 the ticket gate, KM-A29 the station name board; then the tram
+(KM-V01, Step 3). The rest (KM-A21, A27, A30 to A38) as their levels come. Each is built as it comes in (`tools/blender/km_props.py`,
 reviewed in `review/kamakura/props/`). Until then the props stand as first built from KM1-1's own pixels, measured
 against the vending machines beside them (1.83 m, 248 px: 135.5 px to the metre): right in shape, size and place, too soft
 in close-up (D24). The level picture stays the authority for design, size and place; the views give the pixels.
@@ -686,6 +693,82 @@ ASSET KM-A19, the blue drink vending machine. Attach KM1-1 (its photographic ver
 beside the red one in KM1-1: its rows of drinks, its panels, coin slot and drawer exactly as there; its logo panel reads
 うみかぜ in white on red (the real drink logo is not copied); its sides and back plain blue, built as the red machine's
 on the props sheet. Real size: 1.83 m tall, 1.0 m wide, 0.75 m deep. Same rules as before.
+```
+
+```text
+ASSET KM-A20, the recycling bins. Attach KM-P5 and KM1-1 (its photographic version). The row of three can and bottle recycling bins by the vending machines: their colours, round openings and lettering (invented words, no real logos), as KM1-1 and KM-P5 show them. Real size: 1.0 m tall. Same rules as before.
+```
+
+```text
+ASSET KM-A21, the green public phone box. Attach KM-P5. The green public phone box with its folding glass door and the phone inside, as KM-P5 draws it. Real size: 2.3 m tall, 0.9 m square. Same rules as before.
+```
+
+```text
+ASSET KM-A22, the air-conditioner outdoor unit. Attach KM-P5 and KM1-1 (its photographic version). The home's air-conditioner outdoor unit on its metal stand, its fan grille and pipes, as on the home's walls in KM1-1. Real size: 0.9 m tall, 0.8 m wide, 0.3 m deep. Same rules as before.
+```
+
+```text
+ASSET KM-A23, the gas and electricity meters. Attach KM-P5 and KM1-1 (its photographic version). The gas meter and the electricity meter on their wall board, with their pipes and cables, as on the home in KM1-1. Real size: 0.8 m wide, 0.7 m tall. Same rules as before.
+```
+
+```text
+ASSET KM-A24, the house letterbox. Attach KM-P5 and KM1-1 (its photographic version). The home's letterbox on its short post, as KM1-1 shows it by the entrance. Real size: 0.45 m tall box on a 1.1 m post. Same rules as before.
+```
+
+```text
+ASSET KM-A25, the grey control cabinet. Attach KM-P5 and KM1-1 (its photographic version). The grey roadside control cabinet by the level crossing, its doors, vents, labels and the box on its post, as in KM1-1. Real size: 1.6 m tall. Same rules as before.
+```
+
+```text
+ASSET KM-A26, the street lamp. Attach KM-P5 and KM1-1 (its photographic version). The concrete street-lamp pole with its curved steel arm and lamp, as on the poles in KM1-1. Real size: 7 m tall, the arm 1.5 m long. Same rules as before.
+```
+
+```text
+ASSET KM-A27, the bicycle rack. Attach KM-P5 and KM2-1 (its photographic version). The steel bicycle rack with three parked city bicycles, one with a surfboard carrier, as by the boardwalk in KM2-1. Real size: 2.4 m long, 1.1 m tall. Same rules as before.
+```
+
+```text
+ASSET KM-A28, Hase Station's ticket gate. Attach KM-P5 and KM1-1 (its photographic version). The station ticket gate with its IC card reader and its small screen, as at Hase Station in KM1-1. Real size: 1.0 m tall, 1.2 m long. Same rules as before.
+```
+
+```text
+ASSET KM-A29, the station name board. Attach KM-P5 and KM1-1 (its photographic version). The station's name board on its two posts, white with the name in black and the next stations' names below it, as at Hase Station in KM1-1 (the names as KM1-1 writes them, or invented, never a real company's logo). Real size: 1.8 m wide, 2.2 m tall. Same rules as before.
+```
+
+```text
+ASSET KM-A30, the black-kite warning sign. Attach KM-P5 and KM1-3 (its photographic version). The yellow "beware of black kites" sign with the kite drawn on it, on its post, as on Komachi-dori in KM1-3 (its words in Japanese, legible). Real size: 2.2 m tall. Same rules as before.
+```
+
+```text
+ASSET KM-A31, the nobori banner flags. Attach KM-P5 and KM1-3 (its photographic version). The three tall nobori banner flags on their poles in a weighted stand, their colours and invented words as in KM1-3. Real size: 2.4 m tall. Same rules as before.
+```
+
+```text
+ASSET KM-A32, the A-frame menu sign and stool. Attach KM-P5 and KM1-3 (its photographic version). A shop's wooden A-frame chalkboard menu (its menu in Japanese, legible, invented) and the wooden stool beside it, as in KM1-3. Real size: the sign 1.0 m tall, the stool 0.45 m. Same rules as before.
+```
+
+```text
+ASSET KM-A33, the souvenir rack. Attach KM-P5 and KM1-3 (its photographic version). The souvenir rack of chopsticks in paper sleeves and folding fans, as outside the shops in KM1-3. Real size: 1.4 m tall. Same rules as before.
+```
+
+```text
+ASSET KM-A34, the stacked crates. Attach KM-P5 and KM2-3 (its photographic version). A stack of red and green plastic crates, as by the shops in KM2-3. Real size: 0.9 m tall. Same rules as before.
+```
+
+```text
+ASSET KM-A35, the fish boxes and hose reel. Attach KM-P5 and KM2-3 (its photographic version). The stack of white polystyrene fish boxes and the garden-hose reel beside it, as at Grandma's shop in KM2-3. Real size: 0.8 m tall. Same rules as before.
+```
+
+```text
+ASSET KM-A36, the surfboard rack. Attach KM-P5 and KM2-1 (its photographic version). The rack of surfboards in several colours with a wetsuit on a hanger, as at the surf shop in KM2-1 (no real brands on the boards). Real size: 2.0 m tall. Same rules as before.
+```
+
+```text
+ASSET KM-A37, the crab traps and nets. Attach KM-P5 and KM2-4 (its photographic version). Two cylindrical net crab traps beside a heap of fishing nets with their floats, as on the rocks in KM2-4. Real size: 1.2 m long. Same rules as before.
+```
+
+```text
+ASSET KM-A38, the rice ball. Attach KM-P5 and KM2-4 (its photographic version). The Kite Thief's rice ball (onigiri) in its clear wrapper with its band of seaweed. Real size: 10 cm across. Same rules as before.
 ```
 
 ```text
