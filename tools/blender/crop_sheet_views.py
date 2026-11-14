@@ -1,3 +1,4 @@
+# (For the old 2 x 2 model sheets. Since D24 each view comes as its own full-size image, BASE KM-S0, and needs no cutting.)
 # Cuts a model sheet (docs/KAMAKURA_BUILD.md, "the model sheet base prompt") into its four views, ready to upload to
 # Meshy's Multi-Image to 3D: <name>_1_front.png, _2_right.png, _3_back.png, _4_three_quarter.png.
 #   python3 tools/blender/crop_sheet_views.py <sheet.png | sheets dir> <out dir>

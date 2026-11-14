@@ -1082,6 +1082,24 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
 - *Rule:* a projected solid takes its pixels from inside its outline, never on it; a face the picture shows only edge on
   gets a sample of its own colour; every sample is looked at before it is used.
 
+**D24. Props soft in close-up: a street picture has too few pixels for one object (the user, on KM1-1's first props).**
+- *What:* "The textures are not great. The models should be of high definition for all." The first six props were
+  built from KM1-1's own pixels: a whole street in 4128 px, so 135.5 px to the metre where they stand, 68 for the torii
+  further back, 38 px across the pole. On the review boards, enlarged to show them, they were soft; no projection or
+  modelling adds detail the picture does not hold.
+- *Why:* the plan took "identical to the pictures" to mean the pictures' own pixels on every front (D9), and asked for a
+  model sheet only where a side was missing. Identical design and high definition are two things: the level picture
+  can give the first, not the second.
+- *Fix (the user chose it from four: own views, code-made materials, both, upscaling):* every asset gets its own views,
+  each a separate full-size image made in Gemini (BASE KM-S0, `docs/KAMAKURA_BUILD.md` Step 0): front, right side, back,
+  top and a three-quarter view, the object filling the frame, 4 to 10 times the level picture's pixels. The level picture
+  stays the authority for the design, colours, size and place; the views give the pixels on every side. The birds' and
+  walkers' sheets (KM-S1, KM-S2) became separate full-size views as well, the walkers' with their left side too. The
+  models' geometry gets finer with them (round parts round, edges bevelled, small parts their own shapes).
+- *Rule:* an asset's texture comes from a picture of that asset, at a resolution meant for it, never from a scene that
+  shows it small; a review board shows each model at the size the user will judge it, and its pixels per metre are
+  stated beside it.
+
 ## E. Levels and world
 
 - **E1. Every level had chapter-1 scenery.** A new-scene call unloaded the level definition. *Rule:* pass data into scene builders explicitly; never hold asset references across a new-scene call.

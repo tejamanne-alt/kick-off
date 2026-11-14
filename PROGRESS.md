@@ -2180,6 +2180,23 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
 - **Not yet:** the bicycle (A08: the photographic KM1-1 dropped it), the rest of Step 2, and nothing in a level until the
   user approves; no FBX in `Assets/` yet. Cost: 12 to 368 triangles a prop against 1,500, in the shared atlas.
 
+
+## High definition for every Kamakura asset: each from its own views (docs only)
+
+- The user, on the first props: "The textures are not great. The models should be of high definition for all." The
+  cause: a level picture shows a whole street, so the props in it have 68 to 135 px to the metre. Asked to choose, the
+  user chose model views made in Gemini over code-made materials or upscaling (`docs/LEARNINGS.md` D24).
+- `docs/KAMAKURA_BUILD.md`: BASE KM-S0 is now the views base prompt for every asset, each view a separate full-size
+  image (front, right side, back, top, three-quarter; 9:16 for a tall object, 16:9 for a long one), saved as
+  `review/kamakura/sheets/<id>_<name>/1_front.png` and so on. KM-S1 (birds in flight) and KM-S2 (walkers, with a left
+  side now) are separate views too. "What identical means" gains high definition: the level picture sets the design,
+  colours, size and place, the views give the pixels. Step 2 lists KM1-1's batch in order (the red and blue machines,
+  the crossing signal and barrier, the transformer pole, the mirror, the small torii, the bicycle) and gains ASSET KM-A19
+  (the blue machine); the props' prompts attach the photographic KM1-1, the mirror's says orange as the photo shows it,
+  at its measured size. The prompts page is regenerated from the plan (version 23 of
+  https://claude.ai/artifact/EwNU9FwNju6vseGkURd2NC, `tools/prompts_page/gen.py`).
+- Until the views come, the props stand as first built: right in shape, size and place, soft in close-up.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

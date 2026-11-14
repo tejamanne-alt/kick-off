@@ -12,6 +12,7 @@
   "<b>The pole above the picture</b> (6.6 m to 10 m) is its own column carried on; the wires and the street lamp's arm are left to the level."
  ],
  "pending": [
+  "<b>High definition</b> (your note: \"The textures are not great. The models should be of high definition for all\"): these six are built from KM1-1's own pixels, 68 to 135 per metre, so they are soft close up. Each will be rebuilt from its own full-size views, made in Gemini with BASE KM-S0 (the prompts page, Kamakura tab, Build), in this order: the red and blue vending machines, the crossing signal and barrier, the transformer pole, the mirror, the small torii, the bicycle.",
   "<b>The bicycle</b> (KM-A08): the photographic KM1-1 no longer shows it, and the props sheet's is an illustration; it needs its own sheet (ASSET KM-A08) or a picture that shows it.",
   "<b>The rest of Step 2</b>: the plain pole (KM-A02), the bus stop (A07), the stone lanterns (A09, A10), the paper lantern (A12), the noren (A13), the shop signs (A14), the drying rack (A15), the trail sign (A16), the umbrella stand (A17), the bench (A18), and the KM-P5 props (A19 to A38), each from the level picture it stands in.",
   "<b>In the game:</b> nothing goes into a level until you approve these; then the kit's FBX files go into Assets/_Game/Art/Models/Kamakura."

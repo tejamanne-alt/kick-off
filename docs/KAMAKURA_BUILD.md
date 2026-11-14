@@ -37,6 +37,12 @@ vending machine (`review/kamakura/kit_proof_board.jpg`, `tools/blender/kit_build
 - **The pictures' light comes with them.** The photographs carry KM-0's sun and shade, so the Kamakura kit is drawn as
   the clouds are: `Toon` with `_Lighting` 0.25, the pictures' light kept as it is and a quarter of the game's sun added.
   The city's climate, the haze and every filter still apply. It is not lit twice.
+- **High definition for every asset** (the user: "The models should be of high definition for all"). A level picture
+  shows a whole street, so a prop in it has only 68 to 135 px to the metre: built from it, the first props were soft
+  (`docs/LEARNINGS.md` D24). So every asset now gets its own views, each a full-size image (Step 0, BASE KM-S0): front,
+  right side, back, top and a three-quarter view, the object filling the frame, 4 to 10 times the level picture's
+  pixels. The level picture still decides the design, colours, size and place; the views give the pixels, on every
+  side. The model's geometry is finer too: round parts round, edges bevelled, small parts their own shapes.
 - **The highest resolution where it shows:** the fronts at the pictures' full resolution (the home's front is 1,340 px
   across), in the Kamakura atlas (4096 x 4096), within the phone's budgets (`docs/ART_DIRECTION.md`: a building 6,000
   triangles, a street prop 1,500, a tree 6,000, a gameplay structure 5,000; `docs/PERFORMANCE.md`). The proof's home is
@@ -447,39 +453,56 @@ no painted brush texture anywhere, not even at the edges of objects. A sheet kee
 studio light, its objects photographed like product photos. Then wait for my first picture.
 ```
 
-### Step 0: the model sheet base prompt (only when Claude asks for a sheet)
+### Step 0: the views base prompt (every asset, high definition)
 
-Claude builds every asset from the pictures first. A sheet is needed only when an asset's side or back is seen in play
-and no picture shows it, or for a Meshy exception (the statue); Claude then names the asset's id. Paste this first in a
-new Gemini chat (Nano Banana Pro), then send that asset's ASSET prompt from Steps 2, 3 and 5, attaching its source images.
+Every asset is built from its own views, each a separate full-size image (the user chose this for high definition over
+the level pictures' own pixels, code-made materials or upscaling). A new Gemini chat (Nano Banana Pro) per asset: paste
+KM-S0 with KM-0 attached, then that asset's ASSET prompt from Steps 2, 3 and 5 with its source images attached. Gemini
+makes the FRONT; then send, one at a time, "Next: RIGHT SIDE.", "Next: BACK.", "Next: TOP.", "Next: THREE-QUARTER.".
+Check each before the next (the base prompt's checks), and redo one that fails rather than going on.
+
+Save them as `review/kamakura/sheets/<id>_<name>/` with `1_front.png`, `2_right.png`, `3_back.png`, `4_top.png`,
+`5_three_quarter.png` (for example `review/kamakura/sheets/KM-A05_crossing_signal/1_front.png`). Make them in the
+order Claude asks for, starting with KM1-1's (the list in Step 2).
 
 ```text
-BASE KM-S0, the model sheet base prompt. You are making model sheets for a game's 3D artists and an image-to-3D
-generator. Read all of this, then follow it for every image in this chat.
+BASE KM-S0, the views base prompt. Attach KM-0. You are making the reference views a game's 3D artists build one object
+from, in high definition. Read all of this, then follow it for every image in this chat.
 
-THE GOAL
-Each image is one object from the reference pictures I attach, shown as a model sheet so that it can be rebuilt in 3D
-exactly. It must be the same object: copy its shape, proportions, every part and detail, its colours, materials and wear
-exactly as the reference shows them. Do not redesign, simplify, tidy up or improve anything. Where the
-reference does not show a side, continue it plainly in the same materials and colours. Make it look like a photograph of the
-real object, in the look of KM-0 (real materials, natural colour), not a painting, an illustration or a cartoon.
+THE OBJECT
+It is the object in the reference pictures I attach with it, the same one: copy its shape, proportions, every part and
+detail, its colours, materials, wear and lettering exactly as the references show them. Do not redesign, simplify, tidy
+up or improve anything. Where no reference shows a side, continue it plainly in the same materials and colours, as the
+real object would be. A photograph of the real object in the look of the picture attached now (KM-0: real materials,
+natural colour, sharp detail), not a painting, an illustration or a cartoon.
 
-THE SHEET
-- One square picture divided into four equal panels in a 2 x 2 grid, with a thin plain gap between them:
-  top left the FRONT (the side that faces the street), top right the RIGHT SIDE, bottom left the BACK, bottom right a
-  THREE-QUARTER view from the front left.
-- In every panel the whole object, centred, at the same scale, filling about 80% of the panel, nothing cropped.
-- Straight, orthographic-looking views for front, side and back: no perspective distortion, verticals vertical.
-- A plain, even mid-grey background (#808080) in every panel. No floor, no other objects, no people.
-- Light: flat, even and shadowless, as on an overcast day in a studio. No cast shadows, no dark corners added, no
-  highlights or reflections painted in, no rim light. Colours exactly as the lit parts of the reference.
-- Signs and lettering on the object are copied as they are in the reference, unless they resemble a real brand: then an
-  invented name in the same place, size and colours. Every word legible. Add no labels, captions, arrows, numbers,
-  logos or watermarks of your own.
-- The object alone, solid and whole: no wires, plants, bins or other objects in front of it or touching it, nothing
-  see-through but glass. Where the reference hides part of it behind something, show that part plainly.
+THE VIEWS
+One view per image, in this order, each when I ask for it: FRONT (the side that faces the street), RIGHT SIDE, BACK,
+TOP (looking straight down), THREE-QUARTER (from the front left, a little above). Every view:
+- the whole object, centred, nothing cropped, filling about 85 % of the image's height or width, whichever it reaches
+  first;
+- the same object at the same scale in FRONT, RIGHT SIDE and BACK: its height the same number of pixels in each;
+- straight on and orthographic-looking for FRONT, RIGHT SIDE, BACK and TOP: no perspective, verticals vertical, the far
+  end the same size as the near;
+- the highest detail you can draw: every bolt, seam, stripe edge, letter and patch of wear sharp, nothing smeared or
+  painted soft.
 
-FORMAT: aspect ratio 1:1, the largest size you can make.
+THE BACKGROUND AND LIGHT
+- A plain, even mid-grey background (#808080), the same everywhere: no floor, no shadow on it, no glow or lighter patch
+  around the object, no other objects, no people.
+- Flat, even, shadowless light, as on an overcast day in a studio: no cast shadows, no dark corners added, no highlights
+  or reflections painted in, no rim light. Colours exactly as the lit parts of the reference.
+
+THE OBJECT ALONE
+- Solid and whole: no wires, plants, bins or other objects in front of it or touching it; nothing see-through but glass.
+  Where a reference hides part of it behind something, show that part plainly.
+- Signs and lettering copied as they are in the reference, every word legible, unless one resembles a real brand: then
+  an invented name in the same place, size and colours. Add no labels, captions, arrows, numbers, logos or watermarks of
+  your own.
+
+FORMAT: the aspect ratio the object fills best, the same for FRONT, RIGHT SIDE and BACK: 9:16 for a tall object (a
+pole, a signal, a lantern), 16:9 for a long one (a bench, a tram, a vehicle), 1:1 otherwise; TOP and THREE-QUARTER 1:1.
+The largest size you can make.
 
 Then wait for my first object.
 ```
@@ -593,22 +616,18 @@ light, the same colours. FORMAT: aspect ratio 1:1, the largest size you can make
 
 ### Step 2: street props
 
-Built so far (`tools/blender/km_props.py`, reviewed in `review/kamakura/props/`), from the photographic KM1-1, each measured
-against the vending machines beside it (1.83 m, 248 px: 135.5 px to the metre): the transformer pole (KM-A01), the convex
-mirror (A03; orange in the photo, green on KM-P1), the blue vending machine (A19), the crossing signal (A05) and barrier
-(A04, its arm a part that lowers), the small torii (A11). The bicycle (A08) waits for a picture that shows it: the
-photographic KM1-1 dropped it. The props are solids, not cards: their sides are the picture's own pixels where round, KM-P1's
-where a box's side shows, and a model sheet is asked for only where neither gives a side the game sees.
-
-The ASSET prompts of Steps 2, 3 and 5 make model sheets: send one only when Claude asks for it by its id (Step 0). They
-also list each asset's parts, source pictures and real size, which is what Claude builds it to. In the model sheet chat,
-each message names its source pictures: attach them with it.
+The first batch, KM1-1's, in this order (each one a new chat, its five views saved as Step 0 says): KM-A06 the red
+vending machine, KM-A19 the blue one, KM-A05 the crossing signal, KM-A04 the barrier, KM-A01 the transformer pole,
+KM-A03 the mirror, KM-A11 the small torii, KM-A08 the bicycle. Each is built as it comes in (`tools/blender/km_props.py`,
+reviewed in `review/kamakura/props/`). Until then the props stand as first built from KM1-1's own pixels, measured
+against the vending machines beside them (1.83 m, 248 px: 135.5 px to the metre): right in shape, size and place, too soft
+in close-up (D24). The level picture stays the authority for design, size and place; the views give the pixels.
 
 ```text
-ASSET KM-A01, the concrete utility pole with a transformer. Attach KM-P1 and KM1-1. The left pole on the props sheet: a
+ASSET KM-A01, the concrete utility pole with a transformer. Attach KM-P1 and KM1-1 (its photographic version). The left pole on the props sheet: a
 grey concrete pole with steel crossarms, white insulators, a cylindrical transformer, cable clamps and its number plates,
 as on the street in KM1-1. Real size: 10 m tall above the ground (show it all), 0.35 m across at the foot.
-Same rules: the 2 x 2 model sheet, flat light, grey background, identical to the reference.
+Same rules as before.
 ```
 
 ```text
@@ -617,26 +636,32 @@ a grey box, no transformer. Real size: 10 m tall, 0.35 m across. Same rules as b
 ```
 
 ```text
-ASSET KM-A03, the convex corner mirror. Attach KM-P1 and KM1-1. The round mirror with an orange hood on its bent green
-post. Real size: 2.6 m tall, the mirror 0.6 m across. Same rules as before.
+ASSET KM-A03, the convex corner mirror. Attach KM-P1 and KM1-1 (its photographic version). The round mirror with its orange hood on
+its post, as KM1-1 shows it beside the vending machines (orange there, green on the props sheet: follow KM1-1). Real size: 3.8 m tall, the mirror 0.77 m across (as measured in KM1-1). Same rules as before.
 ```
 
 ```text
-ASSET KM-A04, the level-crossing barrier. Attach KM-P1 and KM1-1. The black-and-yellow striped barrier arm on its striped
+ASSET KM-A04, the level-crossing barrier. Attach KM-P1 and KM1-1 (its photographic version). The black-and-yellow striped barrier arm on its striped
 motor box, the arm raised. Real size: the box 1.1 m tall, the arm 3.5 m long. Same rules as before.
 ```
 
 ```text
-ASSET KM-A05, the level-crossing signal. Attach KM-P1 and KM1-1. The striped post with the yellow-and-black crossbuck,
+ASSET KM-A05, the level-crossing signal. Attach KM-P1 and KM1-1 (its photographic version). The striped post with the yellow-and-black crossbuck,
 the two red lamps, the direction lamp, the bell box and the striped guard frame at its foot. Real size: 3.6 m tall. Same
 rules as before.
 ```
 
 ```text
-ASSET KM-A06, the red drink vending machine. Attach KM-P1 and KM1-1. The red-and-white machine with its rows of drinks,
+ASSET KM-A06, the red drink vending machine. Attach KM-P1 and KM1-1 (its photographic version). The red-and-white machine with its rows of drinks,
 coin slot and the drawer at the bottom. Real size: 1.83 m tall, 1.0 m wide, 0.75 m deep. Same rules as before.
-(Then ask for the same machine in the blue livery of KM1-1's second machine: "Now the same model sheet, the machine
-painted exactly like the blue machine in KM1-1.")
+Its logo panel reads うみかぜ in white on its red, as the kit has repainted it (KM1-1's real drink logo is not copied).
+```
+
+```text
+ASSET KM-A19, the blue drink vending machine. Attach KM1-1 (its photographic version) and KM-P1. The blue machine
+beside the red one in KM1-1: its rows of drinks, its panels, coin slot and drawer exactly as there; its logo panel reads
+うみかぜ in white on red (the real drink logo is not copied); its sides and back plain blue, built as the red machine's
+on the props sheet. Real size: 1.83 m tall, 1.0 m wide, 0.75 m deep. Same rules as before.
 ```
 
 ```text
@@ -645,7 +670,8 @@ concrete base. Real size: 2.3 m tall. Same rules as before.
 ```
 
 ```text
-ASSET KM-A08, the city bicycle. Attach KM-P1 and KM1-1. The dark brown city bicycle with the front basket, stand down.
+ASSET KM-A08, the city bicycle. Attach KM-P1 and KM1-1 (the first, painted version: the photographic one no longer
+shows it). The dark brown city bicycle with the front basket, stand down.
 Real size: 1.8 m long, 1.0 m tall. Same rules as before.
 ```
 
@@ -660,7 +686,7 @@ as before.
 ```
 
 ```text
-ASSET KM-A11, the small vermilion torii. Attach KM-P1 and KM1-1. The vermilion torii with black top beam and black feet.
+ASSET KM-A11, the small vermilion torii. Attach KM-P1 and KM1-1 (its photographic version). The vermilion torii with black top beam and black feet.
 Real size: 2.6 m tall, 2.8 m wide. Same rules as before.
 ```
 
@@ -766,8 +792,10 @@ user: "not good when flying, and the tail and back are not right"). So each bird
 of four views of one wingbeat pose: its body and head from the side, its wings' and tail's upper faces from above and
 lower faces from below, their thickness and angle from the front. A new Gemini chat with Nano Banana Pro: paste KM-S1
 with KM-0 attached, then one bird per message with its sheet attached. Save each as
-`review/kamakura/sheets/<id>_<name>_flight.png` (for example `KM-N05_black_kite_flight.png`). The small birds (sparrow,
-swallow, white-eye, bulbul, turtle dove, wagtail) are a few pixels on the phone: their views from below are enough.
+`review/kamakura/sheets/<id>_<name>_flight/` as `1_side.png`, `2_above.png`, `3_below.png`, `4_front.png` (send "Next:
+FROM ABOVE." and so on after the SIDE; for example `review/kamakura/sheets/KM-N05_black_kite_flight/1_side.png`). The
+small birds in flight (sparrow, swallow, white-eye, bulbul, turtle dove) come after the large ones, for high definition
+too.
 Every animal that moves is one skin on bones (D21): the relief bends at its joints, bound to an armature whose bones carry
 the part names the behaviours look for (Body, Tail.., Head, Head2, LegFR.., ShinFR.., ToeFR.., FootFR.., TipFR..,
 WingL.., HindL.., FinL..), so its FBX imports with a Generic rig (`ModelImportSettings`: the kit is not one of the
@@ -784,16 +812,16 @@ Each image is one bird from the sheet I attach with it, the same individual: its
 exactly as there. A real bird photographed in the look of the picture attached now (KM-0: real feathers, natural
 colour, sharp detail), not a painting or an illustration.
 
-THE SHEET
-- One square picture in four equal panels, 2 x 2, with a thin plain gap between them. The same bird at the same size
-  in every panel, nothing cropped:
-  - top left: SIDE, a strict profile, head to the right, both wings raised straight up above the back (the top of the
+THE VIEWS
+One view per image, in this order, each when I ask for it, the same bird at the same scale in every one, nothing
+cropped, in the highest detail you can draw:
+  - SIDE: a strict profile, head to the right, both wings raised straight up above the back (the top of the
     wingbeat), so the whole body, head, beak, tail and tucked feet show clear below them;
-  - top right: FROM ABOVE, looking straight down on its back, wings fully spread and level, tail fanned, head at the top;
-  - bottom left: FROM BELOW, looking straight up at its underside, the same spread wings and tail, head at the top;
-  - bottom right: FRONT, head-on, wings fully spread and level.
+  - FROM ABOVE: looking straight down on its back, wings fully spread and level, tail fanned, head at the top;
+  - FROM BELOW: looking straight up at its underside, the same spread wings and tail, head at the top;
+  - FRONT: head-on, wings fully spread and level.
 - Orthographic-looking views: no perspective, the wings symmetrical, the body straight, the spread wings filling about
-  90 % of their panel's width.
+  90 % of the image's width.
 - A plain, even mid-grey background (#808080), no shadow on it, no sky, no ground, no other bird; the grey the same
   everywhere, with no glow or lighter patch around the bird or between its feathers.
 - Our artists cut the wings into an inner and an outer half that beat, so: each wing's whole outline shows, clear of
@@ -802,9 +830,9 @@ THE SHEET
 - Even, soft, shadowless light; colours true.
 - No labels, numbers, arrows, logos or watermarks.
 
-FORMAT: aspect ratio 1:1, the largest size you can make.
+FORMAT: SIDE 1:1; FROM ABOVE, FROM BELOW and FRONT 16:9 (the spread wings across). The largest size you can make.
 
-Then wait for my first bird.
+Then wait for my first bird. Make its SIDE first; I will ask for each next view.
 ```
 
 ```text
@@ -854,8 +882,9 @@ has been a fix to that one photo, and the user still saw unusual knees. So each 
 standing still, square, every leg whole: the legs are cut at the joints the picture shows (a front leg's elbow and wrist,
 a hind leg's knee and hock, a bird's heel), the far legs are its own, and the body takes its width from above and its
 shape from the front and back. A new Gemini chat with Nano Banana Pro: paste KM-S2 with KM-0 attached, then one animal per
-message with its sheet attached. Save each as `review/kamakura/sheets/<id>_<name>_stand.png` (for example
-`KM-N04_shiba_stand.png`).
+message with its sheet attached; then "Next: LEFT SIDE.", "Next: FROM ABOVE.", "Next: FRONT.", "Next: BACK.". Save each
+animal's views in `review/kamakura/sheets/<id>_<name>_stand/` as `1_right.png`, `2_left.png`, `3_above.png`,
+`4_front.png`, `5_back.png` (for example `review/kamakura/sheets/KM-N04_shiba_stand/1_right.png`).
 
 ```text
 BASE KM-S2, the standing model sheet. Attach KM-0. You are making model sheets of animals and birds for a game's 3D
@@ -877,14 +906,15 @@ the toes, nothing raised, nothing crossed:
 - a bird: both legs straight under it, a little apart so both show whole from the side, the heel joint clear, the toes
   spread flat on the ground, none curled under the body.
 
-THE SHEET
-- One square picture in four equal panels, 2 x 2, with a thin plain gap between them. The same animal at the same size
-  in every panel, the same pose, nothing cropped:
-  - top left: SIDE, a strict profile, head to the right;
-  - top right: FROM ABOVE, looking straight down on its back, head at the top;
-  - bottom left: FRONT, head-on;
-  - bottom right: BACK, from straight behind.
-- Orthographic-looking views: no perspective, the body straight, the animal filling about 80 % of its panel.
+THE VIEWS
+One view per image, in this order, each when I ask for it, the same animal at the same scale and in the same pose in
+every one, nothing cropped, in the highest detail you can draw (every hair, feather and claw sharp):
+  - RIGHT SIDE: a strict profile, head to the right;
+  - LEFT SIDE: a strict profile, head to the left (its other flank and its far legs, as they really are);
+  - FROM ABOVE: looking straight down on its back, head at the top;
+  - FRONT: head-on;
+  - BACK: from straight behind.
+- Orthographic-looking views: no perspective, the body straight, the animal filling about 85 % of the image.
 - A plain, even mid-grey background (#808080), no shadow on it, no ground line, no grass, no other animal; the grey the
   same everywhere, with no glow or lighter patch around the animal, between its legs or under its belly.
 - Our artists cut each leg from the body, so: every leg's whole outline shows, clear of the body, the other legs and
@@ -892,9 +922,10 @@ THE SHEET
 - Even, soft, shadowless light; colours true.
 - No labels, numbers, arrows, logos or watermarks.
 
-FORMAT: aspect ratio 1:1, the largest size you can make.
+FORMAT: RIGHT SIDE and LEFT SIDE 16:9 for a long animal (a cat, a dog, a tanuki, a squirrel with its tail), 1:1 for
+a bird; FROM ABOVE the same as the sides; FRONT and BACK 1:1. The largest size you can make.
 
-Then wait for my first animal.
+Then wait for my first animal. Make its RIGHT SIDE first; I will ask for each next view.
 ```
 
 ```text
