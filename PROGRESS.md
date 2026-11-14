@@ -2196,6 +2196,12 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
   at its measured size. The prompts page is regenerated from the plan (version 23 of
   https://claude.ai/artifact/EwNU9FwNju6vseGkURd2NC, `tools/prompts_page/gen.py`).
 - Until the views come, the props stand as first built: right in shape, size and place, soft in close-up.
+- **ChatGPT or Gemini** (the user: "Can I use ChatGPT for images?"). Either works; each asset's views stay in one chat
+  of one tool. ChatGPT's images are smaller (about 1,536 px) and only 1:1, 2:3 or 3:2, so `docs/KAMAKURA_BUILD.md` lists
+  ChatGPT's FORMAT line for every prompt still to make that asks for another shape (KM-S0, KM-S1, KM-S2, the textures
+  KM-T07, T10, T11), and `tools/prompts_page/gen.py` gives those prompts a version per tool, so the page's ChatGPT
+  switch puts ChatGPT's line in (`template.html`: a prompt's `tools`). The utility poles stay in Gemini: at 10 m tall,
+  ChatGPT's largest image gives them no more detail than the street picture.
 
 ## After Phase 8 (next steps)
 

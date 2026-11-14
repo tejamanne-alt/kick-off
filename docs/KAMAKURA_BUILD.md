@@ -453,12 +453,32 @@ no painted brush texture anywhere, not even at the edges of objects. A sheet kee
 studio light, its objects photographed like product photos. Then wait for my first picture.
 ```
 
+### ChatGPT or Gemini
+
+Every prompt below works in either tool. Keep each asset's views, and each set of sheets, in one chat of one tool, so
+they match. Gemini (Nano Banana Pro) makes the largest images (about 4,096 px) and every shape asked for; ChatGPT's are
+smaller (about 1,536 px on the long side) and come in 1:1, 2:3 and 3:2 only, so in ChatGPT these prompts end with the
+FORMAT lines below instead (the prompts page's ChatGPT switch puts them in). ChatGPT writes lettering cleanly, which
+suits the vending machines and signs. Make the utility poles (KM-A01, KM-A02) in Gemini: at 10 m tall, ChatGPT's largest
+image gives them no more detail than the street picture.
+
+- `KM-S0`: `FORMAT: the aspect ratio the object fills best, the same for FRONT, RIGHT SIDE and BACK: 2:3 for a tall object (a signal, a lantern), 3:2 for a long one (a bench, a tram, a vehicle), 1:1 otherwise; TOP and THREE-QUARTER 1:1. The largest size you can make.`
+- `KM-S1`: `FORMAT: SIDE 1:1; FROM ABOVE, FROM BELOW and FRONT 3:2 (the spread wings across). The largest size you can make.`
+- `KM-S2`: `FORMAT: RIGHT SIDE and LEFT SIDE 3:2 for a long animal (a cat, a dog, a tanuki, a squirrel with its tail), 1:1 for a bird; FROM ABOVE the same as the sides; FRONT and BACK 1:1. The largest size you can make.`
+- `KM-T07`: `FORMAT: aspect ratio 3:2, the largest size you can make; tileable along its length.`
+- `KM-T10`: `FORMAT: aspect ratio 3:2, the largest size you can make; tileable along its length.`
+- `KM-T11`: `FORMAT: aspect ratio 3:2, the largest size you can make; tileable along its length.`
+
+The restyles (RESTYLE, done) keep the level pictures' 4:1 shape, which only Gemini makes.
+
 ### Step 0: the views base prompt (every asset, high definition)
 
 Every asset is built from its own views, each a separate full-size image (the user chose this for high definition over
-the level pictures' own pixels, code-made materials or upscaling). A new Gemini chat (Nano Banana Pro) per asset: paste
-KM-S0 with KM-0 attached, then that asset's ASSET prompt from Steps 2, 3 and 5 with its source images attached. Gemini
-makes the FRONT; then send, one at a time, "Next: RIGHT SIDE.", "Next: BACK.", "Next: TOP.", "Next: THREE-QUARTER.".
+the level pictures' own pixels, code-made materials or upscaling). A new chat per asset, in Gemini (Nano Banana Pro) or
+ChatGPT: paste KM-S0 with KM-0 attached, then that asset's ASSET prompt from Steps 2, 3 and 5
+with its source images attached. Keep all of an asset's views in one chat of one tool. In ChatGPT the prompts page's
+switch gives each prompt ChatGPT's frame shapes (1:1, 2:3, 3:2); make the utility poles in Gemini, whose larger images
+give a 10 m pole more detail than the street picture. The tool makes the FRONT; then send, one at a time, "Next: RIGHT SIDE.", "Next: BACK.", "Next: TOP.", "Next: THREE-QUARTER.".
 Check each before the next (the base prompt's checks), and redo one that fails rather than going on.
 
 Save them as `review/kamakura/sheets/<id>_<name>/` with `1_front.png`, `2_right.png`, `3_back.png`, `4_top.png`,
@@ -790,7 +810,7 @@ is a relief from its side view (the ginger cat: approved). A bird in flight is n
 the black kite had no body, back or tail shape from the side, which is how the game sees a bird crossing the sky (the
 user: "not good when flying, and the tail and back are not right"). So each bird that flies large on screen gets a sheet
 of four views of one wingbeat pose: its body and head from the side, its wings' and tail's upper faces from above and
-lower faces from below, their thickness and angle from the front. A new Gemini chat with Nano Banana Pro: paste KM-S1
+lower faces from below, their thickness and angle from the front. A new chat in Gemini (Nano Banana Pro) or ChatGPT: paste KM-S1
 with KM-0 attached, then one bird per message with its sheet attached. Save each as
 `review/kamakura/sheets/<id>_<name>_flight/` as `1_side.png`, `2_above.png`, `3_below.png`, `4_front.png` (send "Next:
 FROM ABOVE." and so on after the SIDE; for example `review/kamakura/sheets/KM-N05_black_kite_flight/1_side.png`). The
@@ -881,7 +901,7 @@ from the leg's height, the body's width and the face from the front guessed from
 has been a fix to that one photo, and the user still saw unusual knees. So each walker gets a sheet of four views of it
 standing still, square, every leg whole: the legs are cut at the joints the picture shows (a front leg's elbow and wrist,
 a hind leg's knee and hock, a bird's heel), the far legs are its own, and the body takes its width from above and its
-shape from the front and back. A new Gemini chat with Nano Banana Pro: paste KM-S2 with KM-0 attached, then one animal per
+shape from the front and back. A new chat in Gemini (Nano Banana Pro) or ChatGPT: paste KM-S2 with KM-0 attached, then one animal per
 message with its sheet attached; then "Next: LEFT SIDE.", "Next: FROM ABOVE.", "Next: FRONT.", "Next: BACK.". Save each
 animal's views in `review/kamakura/sheets/<id>_<name>_stand/` as `1_right.png`, `2_left.png`, `3_above.png`,
 `4_front.png`, `5_back.png` (for example `review/kamakura/sheets/KM-N04_shiba_stand/1_right.png`).

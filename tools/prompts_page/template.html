@@ -185,7 +185,10 @@ function renderToolbar() {
 /** A street, look, sheet or plate shot takes the tool's format line and, in Gemini, the city block; a map prompt carries its own. */
 function formatted(shot) { return !!(shot.kind && DATA.formats[tool][shot.kind]); }
 /** What a shot card shows: the shot and, for a shot, this tool's format line. */
-function shotText(shot) { return formatted(shot) ? shot.text + '\n' + DATA.formats[tool][shot.kind] : shot.text; }
+function shotText(shot) {
+  if (shot.tools) return shot.tools[tool];       // a build prompt with each tool's own FORMAT line
+  return formatted(shot) ? shot.text + '\n' + DATA.formats[tool][shot.kind] : shot.text;
+}
 /** What its Copy button gives: in Gemini, the city block above the shot. */
 function shotCopy(shot, city) {
   const t = shotText(shot);

@@ -64,6 +64,26 @@ BADGES = {'SHEET': 'Sheet', 'PLATE': 'Plate', 'MAP': 'Map', 'BASE': 'Paste first
 FIRST_LINE = re.compile(r'(LEVEL|SHEET|PLATE|LOOK TARGET|MAP|BASE|TEXTURE|ASSET|FOLIAGE|BUILD|RESTYLE) ([A-Z]{2}[0-9]?-[A-Za-z]*[0-9]*),? ([^.]+)\.')
 
 
+def chatgpt_formats(doc):
+    """A build document's ChatGPT FORMAT lines (its "ChatGPT or Gemini" section): {prompt id: line}. Its prompts end with
+    Gemini's; in ChatGPT, which makes only 1:1, 2:3 and 3:2 and smaller images, these replace them."""
+    return dict(re.findall(r'^- `([A-Z]{2}-[A-Z]*\d+)`: `(FORMAT: [^`]+)`', doc, re.M))
+
+
+def with_tools(item, alt):
+    """item with a version per tool when alt has a ChatGPT FORMAT line for it: its own last FORMAT paragraph replaced."""
+    line = alt.get(item['id'])
+    if not line:
+        return item
+    text = item['text']
+    m = list(re.finditer(r'FORMAT:.*?(?=\n\n|\Z)', text, re.S))       # its last FORMAT, to the end of that paragraph
+    if not m:
+        sys.exit('gen.py: ' + item['id'] + ' has a ChatGPT FORMAT line but no FORMAT of its own')
+    k = m[-1]
+    chat = text[:k.start()] + line + text[k.end():]
+    return dict(item, tools={'gemini': text, 'chatgpt': chat})
+
+
 def prompt_groups(text, heading):
     """The prompt groups under each heading of this level ('#### ' in a city's section, '### ' in a build document)."""
     groups = []
@@ -101,7 +121,14 @@ for c in CITIES:
     # A city's build document (docs/<CITY>_BUILD.md: its assets and levels, in order), added at the end of its tab once written.
     build = os.path.join(REPO, 'docs', c['name'].upper().replace(' ', '_') + '_BUILD.md')
     if os.path.exists(build):
-        groups += [dict(g, head='Build \u00b7 ' + g['head']) for g in prompt_groups(section(open(build).read(), '## The prompts'), '###')]
+        doc = open(build).read()
+        alt = chatgpt_formats(doc)
+        built = [dict(g, head='Build \u00b7 ' + g['head'], items=[with_tools(i, alt) for i in g['items']])
+                 for g in prompt_groups(section(doc, '## The prompts'), '###')]
+        missing = set(alt) - {i['id'] for g in built for i in g['items']}
+        if missing:
+            sys.exit('gen.py: ChatGPT FORMAT lines for prompts not found: ' + ', '.join(sorted(missing)))
+        groups += built
     look = [b for b in blocks_in(sec) if b.startswith('LOOK TARGET')][0]
     mm = re.match(r'LOOK TARGET ([A-Z]{2}-0), ([^.]+)\.', look)
     out.append(dict(c, block=city_block, look=dict(id=mm.group(1), title=mm.group(2), badge='Look target', kind='look', text=look),
