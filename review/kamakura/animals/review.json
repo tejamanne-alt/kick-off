@@ -165,28 +165,28 @@
   ],
   "view": "side",
   "px_per_m": 716.7,
-  "tris": 1564,
+  "tris": 1546,
   "meshes": {
-   "Skin": 1286,
-   "SkinFar": 278
+   "Skin": 1272,
+   "SkinFar": 274
   },
   "parts": {
-   "Body": 341,
-   "LegBL": 18,
-   "LegBR": 19,
-   "LegFL": 14,
-   "LegFR": 17,
+   "Body": 285,
+   "LegBL": 50,
+   "LegBR": 23,
+   "LegFL": 20,
+   "LegFR": 3,
    "Tail": 6,
-   "ShinBL": 7,
+   "ShinBL": 5,
    "ShinBR": 10,
-   "ShinFL": 8,
-   "ShinFR": 9,
-   "Tail2": 7,
+   "ShinFL": 17,
+   "ShinFR": 23,
+   "Tail2": 9,
    "Tail3": 14,
-   "ToeBL": 6,
-   "ToeBR": 16,
-   "ToeFL": 9,
-   "ToeFR": 7
+   "ToeBL": 5,
+   "ToeBR": 14,
+   "ToeFL": 10,
+   "ToeFR": 9
   },
   "empties": [
    "FootBL",
@@ -201,25 +201,25 @@
   ],
   "size": [
    0.565,
-   0.104,
-   0.297
+   0.108,
+   0.299
   ],
   "open_edges": {
    "Skin": [
     0,
-    19
+    26
    ],
    "SkinFar": [
     0,
-    20
+    14
    ]
   },
   "depth_to_width": {
    "Skin": 0.65,
-   "SkinFar": 0.96
+   "SkinFar": 0.93
   },
-  "edges": 2307,
-  "leg_length": 0.1189,
+  "edges": 2279,
+  "leg_length": 0.1178,
   "game": {
    "component": "WallCat",
    "tail": "Tail",
@@ -231,17 +231,17 @@
    "walk": {
     "sink": 0.0,
     "contact": 0.0,
-    "held": 0.0629
+    "held": 0.0657
    },
    "run": {
     "sink": 0.0,
-    "contact": 0.0105,
-    "held": 0.1153
+    "contact": 0.0107,
+    "held": 0.1114
    },
    "bound": {
     "sink": 0.0,
-    "contact": 0.1311,
-    "held": 0.1397
+    "contact": 0.1297,
+    "held": 0.1399
    }
   },
   "motions": [
@@ -254,19 +254,19 @@
     1,
     "Every part once",
     "pass",
-    "skinned meshes: Skin 1286 tris, SkinFar 278 tris; bones: Body, LegBL, LegBR, LegFL, LegFR, Tail, ShinBL, ShinBR, ShinFL, ShinFR, Tail2, Tail3, ToeBL, ToeBR, ToeFL, ToeFR; marker bones: FootBL, TipBL, FootBR, TipBR, FootFL, TipFL, FootFR, TipFR, Attach.Front. Checked in Top and Bottom."
+    "skinned meshes: Skin 1272 tris, SkinFar 274 tris; bones: Body, LegBL, LegBR, LegFL, LegFR, Tail, ShinBL, ShinBR, ShinFL, ShinFR, Tail2, Tail3, ToeBL, ToeBR, ToeFL, ToeFR; marker bones: FootBL, TipBL, FootBR, TipBR, FootFL, TipFL, FootFR, TipFR, Attach.Front. Checked in Top and Bottom."
    ],
    [
     2,
     "Closed shell",
     "pass",
-    "0 edges with one face (a slit, or a fin that would vanish from behind); 39 of 2307 edges where the two faces touch along a thin part's edge (closed, no gap)"
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 40 of 2279 edges where the two faces touch along a thin part's edge (closed, no gap)"
    ],
    [
     3,
     "Depth from each part's own width",
     "pass",
-    "deepest / half-width: Skin 0.65, SkinFar 0.96"
+    "deepest / half-width: Skin 0.65, SkinFar 0.93"
    ],
    [
     4,
@@ -278,7 +278,7 @@
     5,
     "Real size, triangles",
     "pass",
-    "0.56 x 0.10 x 0.30 m; 1564 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+    "0.56 x 0.11 x 0.30 m; 1546 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
    ],
    [
     6,
@@ -344,7 +344,7 @@
     16,
     "Feet planted",
     "pass",
-    "walk: sink 0.0 mm, lowest foot 0.0 mm up, held 62.9 mm; run: sink 0.0 mm, lowest foot 10.5 mm up, held 115.3 mm; bound: sink 0.0 mm, lowest foot 131.1 mm up, held 139.7 mm (tolerance 3.0 mm, 1 % of its height)"
+    "walk: sink 0.0 mm, lowest foot 0.0 mm up, held 65.7 mm; run: sink 0.0 mm, lowest foot 10.7 mm up, held 111.4 mm; bound: sink 0.0 mm, lowest foot 129.7 mm up, held 139.9 mm (tolerance 3.0 mm, 1 % of its height)"
    ],
    [
     17,
@@ -365,28 +365,28 @@
   ],
   "view": "side",
   "px_per_m": 588.9,
-  "tris": 1162,
+  "tris": 1148,
   "meshes": {
-   "Skin": 900,
-   "SkinFar": 262
+   "Skin": 880,
+   "SkinFar": 268
   },
   "parts": {
-   "Body": 231,
-   "LegBL": 12,
-   "LegBR": 12,
-   "LegFL": 13,
-   "LegFR": 10,
+   "Body": 187,
+   "LegBL": 32,
+   "LegBR": 16,
+   "LegFL": 24,
+   "LegFR": 2,
    "Tail": 13,
-   "ShinBL": 7,
+   "ShinBL": 5,
    "ShinBR": 7,
-   "ShinFL": 7,
-   "ShinFR": 13,
-   "Tail2": 13,
-   "Tail3": 16,
+   "ShinFL": 16,
+   "ShinFR": 16,
+   "Tail2": 14,
+   "Tail3": 17,
    "ToeBL": 12,
-   "ToeBR": 16,
-   "ToeFL": 12,
-   "ToeFR": 12
+   "ToeBR": 14,
+   "ToeFL": 14,
+   "ToeFR": 14
   },
   "empties": [
    "FootBL",
@@ -400,26 +400,26 @@
    "Attach.Front"
   ],
   "size": [
-   0.696,
+   0.698,
    0.157,
    0.358
   ],
   "open_edges": {
    "Skin": [
     0,
-    36
+    32
    ],
    "SkinFar": [
     0,
-    24
+    25
    ]
   },
   "depth_to_width": {
    "Skin": 0.65,
-   "SkinFar": 0.91
+   "SkinFar": 0.89
   },
-  "edges": 1683,
-  "leg_length": 0.1412,
+  "edges": 1665,
+  "leg_length": 0.1402,
   "game": {
    "component": "Dog",
    "tail": "Tail",
@@ -432,12 +432,12 @@
    "walk": {
     "sink": 0.0,
     "contact": 0.0,
-    "held": 0.0778
+    "held": 0.0809
    },
    "run": {
     "sink": 0.0,
     "contact": 0.0137,
-    "held": 0.1343
+    "held": 0.1325
    }
   },
   "motions": [
@@ -449,19 +449,19 @@
     1,
     "Every part once",
     "pass",
-    "skinned meshes: Skin 900 tris, SkinFar 262 tris; bones: Body, LegBL, LegBR, LegFL, LegFR, Tail, ShinBL, ShinBR, ShinFL, ShinFR, Tail2, Tail3, ToeBL, ToeBR, ToeFL, ToeFR; marker bones: FootBL, TipBL, FootBR, TipBR, FootFL, TipFL, FootFR, TipFR, Attach.Front. Checked in Top and Bottom."
+    "skinned meshes: Skin 880 tris, SkinFar 268 tris; bones: Body, LegBL, LegBR, LegFL, LegFR, Tail, ShinBL, ShinBR, ShinFL, ShinFR, Tail2, Tail3, ToeBL, ToeBR, ToeFL, ToeFR; marker bones: FootBL, TipBL, FootBR, TipBR, FootFL, TipFL, FootFR, TipFR, Attach.Front. Checked in Top and Bottom."
    ],
    [
     2,
     "Closed shell",
     "pass",
-    "0 edges with one face (a slit, or a fin that would vanish from behind); 60 of 1683 edges where the two faces touch along a thin part's edge (closed, no gap)"
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 57 of 1665 edges where the two faces touch along a thin part's edge (closed, no gap)"
    ],
    [
     3,
     "Depth from each part's own width",
     "pass",
-    "deepest / half-width: Skin 0.65, SkinFar 0.91"
+    "deepest / half-width: Skin 0.65, SkinFar 0.89"
    ],
    [
     4,
@@ -473,7 +473,7 @@
     5,
     "Real size, triangles",
     "pass",
-    "0.70 x 0.16 x 0.36 m; 1162 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+    "0.70 x 0.16 x 0.36 m; 1148 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
    ],
    [
     6,
@@ -539,7 +539,7 @@
     16,
     "Feet planted",
     "pass",
-    "walk: sink 0.0 mm, lowest foot 0.0 mm up, held 77.8 mm; run: sink 0.0 mm, lowest foot 13.7 mm up, held 134.3 mm (tolerance 3.6 mm, 1 % of its height)"
+    "walk: sink 0.0 mm, lowest foot 0.0 mm up, held 80.9 mm; run: sink 0.0 mm, lowest foot 13.7 mm up, held 132.5 mm (tolerance 3.6 mm, 1 % of its height)"
    ],
    [
     17,
@@ -721,29 +721,29 @@
   ],
   "view": "side",
   "px_per_m": 1042.5,
-  "tris": 1368,
+  "tris": 1338,
   "meshes": {
-   "Skin": 1078,
-   "SkinFar": 290
+   "Skin": 1058,
+   "SkinFar": 280
   },
   "parts": {
-   "Body": 140,
-   "Hips": 82,
-   "LegBL": 23,
-   "LegBR": 15,
-   "LegFL": 12,
-   "LegFR": 9,
+   "Body": 119,
+   "Hips": 77,
+   "LegBL": 26,
+   "LegBR": 19,
+   "LegFL": 18,
+   "LegFR": 2,
    "Tail": 21,
-   "ShinBL": 12,
-   "ShinBR": 12,
-   "ShinFL": 14,
-   "ShinFR": 15,
+   "ShinBL": 10,
+   "ShinBR": 10,
+   "ShinFL": 17,
+   "ShinFR": 18,
    "Tail2": 20,
-   "Tail3": 41,
-   "ToeBL": 12,
-   "ToeBR": 12,
-   "ToeFL": 14,
-   "ToeFR": 15
+   "Tail3": 42,
+   "ToeBL": 11,
+   "ToeBR": 11,
+   "ToeFL": 22,
+   "ToeFR": 21
   },
   "empties": [
    "FootBL",
@@ -758,7 +758,7 @@
   ],
   "size": [
    0.399,
-   0.067,
+   0.066,
    0.153
   ],
   "open_edges": {
@@ -768,15 +768,15 @@
    ],
    "SkinFar": [
     0,
-    37
+    34
    ]
   },
   "depth_to_width": {
-   "Skin": 0.69,
+   "Skin": 0.71,
    "SkinFar": 0.96
   },
-  "edges": 1969,
-  "leg_length": 0.0642,
+  "edges": 1927,
+  "leg_length": 0.0625,
   "game": {
    "component": "TreeSquirrel",
    "tail": "Tail",
@@ -792,8 +792,8 @@
   "feet": {
    "dash": {
     "sink": 0.0,
-    "contact": 0.1484,
-    "held": 0.1489
+    "contact": 0.1473,
+    "held": 0.1477
    }
   },
   "motions": [
@@ -804,19 +804,19 @@
     1,
     "Every part once",
     "pass",
-    "skinned meshes: Skin 1078 tris, SkinFar 290 tris; bones: Body, Hips, LegBL, LegBR, LegFL, LegFR, Tail, ShinBL, ShinBR, ShinFL, ShinFR, Tail2, Tail3, ToeBL, ToeBR, ToeFL, ToeFR; marker bones: FootBL, TipBL, FootBR, TipBR, FootFL, TipFL, FootFR, TipFR, Attach.Front. Checked in Top and Bottom."
+    "skinned meshes: Skin 1058 tris, SkinFar 280 tris; bones: Body, Hips, LegBL, LegBR, LegFL, LegFR, Tail, ShinBL, ShinBR, ShinFL, ShinFR, Tail2, Tail3, ToeBL, ToeBR, ToeFL, ToeFR; marker bones: FootBL, TipBL, FootBR, TipBR, FootFL, TipFL, FootFR, TipFR, Attach.Front. Checked in Top and Bottom."
    ],
    [
     2,
     "Closed shell",
     "pass",
-    "0 edges with one face (a slit, or a fin that would vanish from behind); 83 of 1969 edges where the two faces touch along a thin part's edge (closed, no gap)"
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 80 of 1927 edges where the two faces touch along a thin part's edge (closed, no gap)"
    ],
    [
     3,
     "Depth from each part's own width",
     "pass",
-    "deepest / half-width: Skin 0.69, SkinFar 0.96"
+    "deepest / half-width: Skin 0.71, SkinFar 0.96"
    ],
    [
     4,
@@ -828,7 +828,7 @@
     5,
     "Real size, triangles",
     "pass",
-    "0.40 x 0.07 x 0.15 m; 1368 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+    "0.40 x 0.07 x 0.15 m; 1338 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
    ],
    [
     6,
@@ -894,7 +894,7 @@
     16,
     "Feet planted",
     "pass",
-    "dash: sink 0.0 mm, lowest foot 148.4 mm up, held 148.9 mm (tolerance 1.5 mm, 1 % of its height)"
+    "dash: sink 0.0 mm, lowest foot 147.3 mm up, held 147.7 mm (tolerance 1.5 mm, 1 % of its height)"
    ],
    [
     17,
@@ -1070,29 +1070,29 @@
   ],
   "view": "side",
   "px_per_m": 470.7,
-  "tris": 1194,
+  "tris": 1098,
   "meshes": {
-   "Skin": 728,
-   "SkinFar": 466
+   "Skin": 700,
+   "SkinFar": 398
   },
   "parts": {
-   "Body": 156,
+   "Body": 86,
    "Head": 44,
-   "LegBL": 35,
-   "LegBR": 17,
-   "LegFL": 20,
-   "LegFR": 18,
+   "LegBL": 44,
+   "LegBR": 23,
+   "LegFL": 32,
+   "LegFR": 7,
    "Tail": 4,
-   "ShinBL": 11,
-   "ShinBR": 12,
-   "ShinFL": 12,
-   "ShinFR": 12,
+   "ShinBL": 10,
+   "ShinBR": 9,
+   "ShinFL": 20,
+   "ShinFR": 19,
    "Tail2": 7,
    "Tail3": 20,
    "ToeBL": 11,
    "ToeBR": 10,
-   "ToeFL": 18,
-   "ToeFR": 18
+   "ToeFL": 23,
+   "ToeFR": 22
   },
   "empties": [
    "FootBL",
@@ -1107,25 +1107,25 @@
   ],
   "size": [
    0.667,
-   0.162,
+   0.187,
    0.578
   ],
   "open_edges": {
    "Skin": [
     0,
-    51
+    50
    ],
    "SkinFar": [
     0,
-    68
+    57
    ]
   },
   "depth_to_width": {
    "Skin": 0.65,
-   "SkinFar": 0.9
+   "SkinFar": 0.88
   },
-  "edges": 1672,
-  "leg_length": 0.2346,
+  "edges": 1540,
+  "leg_length": 0.2347,
   "game": {
    "component": "Dog",
    "tail": "Tail",
@@ -1134,18 +1134,19 @@
    "legs": "LegGait (walk into trot)"
   },
   "copied": [
-   "LegFL"
+   "LegFL",
+   "LegBL"
   ],
   "feet": {
    "walk": {
     "sink": 0.0,
-    "contact": 0.0,
-    "held": 0.1286
+    "contact": -0.0,
+    "held": 0.1436
    },
    "run": {
     "sink": 0.0,
-    "contact": 0.017,
-    "held": 0.2139
+    "contact": 0.0165,
+    "held": 0.216
    }
   },
   "motions": [
@@ -1157,19 +1158,19 @@
     1,
     "Every part once",
     "pass",
-    "skinned meshes: Skin 728 tris, SkinFar 466 tris; bones: Body, Head, LegBL, LegBR, LegFL, LegFR, Tail, ShinBL, ShinBR, ShinFL, ShinFR, Tail2, Tail3, ToeBL, ToeBR, ToeFL, ToeFR; marker bones: FootBL, TipBL, FootBR, TipBR, FootFL, TipFL, FootFR, TipFR, Attach.Front. Checked in Top and Bottom."
+    "skinned meshes: Skin 700 tris, SkinFar 398 tris; bones: Body, Head, LegBL, LegBR, LegFL, LegFR, Tail, ShinBL, ShinBR, ShinFL, ShinFR, Tail2, Tail3, ToeBL, ToeBR, ToeFL, ToeFR; marker bones: FootBL, TipBL, FootBR, TipBR, FootFL, TipFL, FootFR, TipFR, Attach.Front. Checked in Top and Bottom."
    ],
    [
     2,
     "Closed shell",
     "pass",
-    "0 edges with one face (a slit, or a fin that would vanish from behind); 119 of 1672 edges where the two faces touch along a thin part's edge (closed, no gap)"
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 107 of 1540 edges where the two faces touch along a thin part's edge (closed, no gap)"
    ],
    [
     3,
     "Depth from each part's own width",
     "pass",
-    "deepest / half-width: Skin 0.65, SkinFar 0.90"
+    "deepest / half-width: Skin 0.65, SkinFar 0.88"
    ],
    [
     4,
@@ -1181,7 +1182,7 @@
     5,
     "Real size, triangles",
     "pass",
-    "0.67 x 0.16 x 0.58 m; 1194 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+    "0.67 x 0.19 x 0.58 m; 1098 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
    ],
    [
     6,
@@ -1247,13 +1248,13 @@
     16,
     "Feet planted",
     "pass",
-    "walk: sink 0.0 mm, lowest foot 0.0 mm up, held 128.6 mm; run: sink 0.0 mm, lowest foot 17.0 mm up, held 213.9 mm (tolerance 5.8 mm, 1 % of its height)"
+    "walk: sink 0.0 mm, lowest foot -0.0 mm up, held 143.6 mm; run: sink 0.0 mm, lowest foot 16.5 mm up, held 216.0 mm (tolerance 5.8 mm, 1 % of its height)"
    ],
    [
     17,
     "Each part holds only itself",
     "pass",
-    "looked at on its part map at full size, part by part: Head, LegBL, LegBR, LegFL, LegFR, Tail, ShinBL, ShinBR, ShinFL, ShinFR, Tail2, Tail3, ToeBL, ToeBR, ToeFL, ToeFR; LegFL a copy of the near leg, set behind (the far leg shows only as a paw behind the near one: the paw taken out); legs drawn on the sheet where their shape couldn't part them; the curled tail sways about the long axis; the rump carries on under it"
+    "looked at on its part map at full size, part by part: Head, LegBL, LegBR, LegFL, LegFR, Tail, ShinBL, ShinBR, ShinFL, ShinFR, Tail2, Tail3, ToeBL, ToeBR, ToeFL, ToeFR; LegFL, LegBL a copy of the near leg, set behind (the far leg, reaching under the belly mid-stride (its thigh a patch of belly, a flap when it swings), taken out); legs drawn on the sheet where their shape couldn't part them; the curled tail sways about the long axis; the rump carries on under it"
    ]
   ]
  },
@@ -1590,18 +1591,18 @@
   ],
   "view": "side",
   "px_per_m": 607.0,
-  "tris": 1600,
+  "tris": 1632,
   "meshes": {
    "Skin": 1200,
-   "SkinFar": 400
+   "SkinFar": 432
   },
   "parts": {
-   "Body": 225,
+   "Body": 207,
    "Head": 20,
-   "LegL": 2,
+   "LegL": 23,
    "LegR": 2,
    "Head2": 46,
-   "ShinL": 24,
+   "ShinL": 27,
    "ShinR": 25,
    "ToeL": 0,
    "ToeR": 0
@@ -1625,14 +1626,14 @@
    ],
    "SkinFar": [
     0,
-    15
+    23
    ]
   },
   "depth_to_width": {
    "Skin": 0.63,
-   "SkinFar": 0.93
+   "SkinFar": 0.98
   },
-  "edges": 2333,
+  "edges": 2373,
   "leg_length": 0.1178,
   "game": {
    "component": "GroundBird",
@@ -1651,8 +1652,8 @@
   "feet": {
    "walk": {
     "sink": 0.0,
-    "contact": 0.0028,
-    "held": 0.0783
+    "contact": 0.0022,
+    "held": 0.0651
    },
    "peck": {
     "sink": 0.0,
@@ -1669,19 +1670,19 @@
     1,
     "Every part once",
     "pass",
-    "skinned meshes: Skin 1200 tris, SkinFar 400 tris; bones: Body, Head, LegL, LegR, Head2, ShinL, ShinR, ToeL, ToeR; marker bones: FootL, TipL, FootR, TipR, Attach.Front. Checked in Top and Bottom."
+    "skinned meshes: Skin 1200 tris, SkinFar 432 tris; bones: Body, Head, LegL, LegR, Head2, ShinL, ShinR, ToeL, ToeR; marker bones: FootL, TipL, FootR, TipR, Attach.Front. Checked in Top and Bottom."
    ],
    [
     2,
     "Closed shell",
     "pass",
-    "0 edges with one face (a slit, or a fin that would vanish from behind); 67 of 2333 edges where the two faces touch along a thin part's edge (closed, no gap)"
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 75 of 2373 edges where the two faces touch along a thin part's edge (closed, no gap)"
    ],
    [
     3,
     "Depth from each part's own width",
     "pass",
-    "deepest / half-width: Skin 0.63, SkinFar 0.93"
+    "deepest / half-width: Skin 0.63, SkinFar 0.98"
    ],
    [
     4,
@@ -1693,7 +1694,7 @@
     5,
     "Real size, triangles",
     "pass",
-    "0.56 x 0.12 x 0.42 m; 1600 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+    "0.56 x 0.12 x 0.42 m; 1632 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
    ],
    [
     6,
@@ -1759,7 +1760,7 @@
     16,
     "Feet planted",
     "pass",
-    "walk: sink 0.0 mm, lowest foot 2.8 mm up, held 78.3 mm; peck: sink 0.0 mm, lowest foot 0.0 mm up, held 0.0 mm (tolerance 4.2 mm, 1 % of its height)"
+    "walk: sink 0.0 mm, lowest foot 2.2 mm up, held 65.1 mm; peck: sink 0.0 mm, lowest foot 0.0 mm up, held 0.0 mm (tolerance 4.2 mm, 1 % of its height)"
    ],
    [
     17,
@@ -1780,18 +1781,18 @@
   ],
   "view": "side",
   "px_per_m": 656.1,
-  "tris": 1652,
+  "tris": 1682,
   "meshes": {
    "Skin": 1260,
-   "SkinFar": 392
+   "SkinFar": 422
   },
   "parts": {
-   "Body": 249,
+   "Body": 237,
    "Head": 11,
-   "LegL": 3,
+   "LegL": 23,
    "LegR": 1,
    "Head2": 43,
-   "ShinL": 24,
+   "ShinL": 26,
    "ShinR": 25,
    "ToeL": 0,
    "ToeR": 0
@@ -1815,14 +1816,14 @@
    ],
    "SkinFar": [
     0,
-    16
+    21
    ]
   },
   "depth_to_width": {
    "Skin": 0.67,
-   "SkinFar": 0.99
+   "SkinFar": 0.95
   },
-  "edges": 2410,
+  "edges": 2450,
   "leg_length": 0.1026,
   "game": {
    "component": "GroundBird",
@@ -1840,9 +1841,9 @@
   ],
   "feet": {
    "walk": {
-    "sink": 0.0001,
-    "contact": 0.0026,
-    "held": 0.0709
+    "sink": 0.0,
+    "contact": 0.002,
+    "held": 0.057
    },
    "peck": {
     "sink": 0.0,
@@ -1859,19 +1860,19 @@
     1,
     "Every part once",
     "pass",
-    "skinned meshes: Skin 1260 tris, SkinFar 392 tris; bones: Body, Head, LegL, LegR, Head2, ShinL, ShinR, ToeL, ToeR; marker bones: FootL, TipL, FootR, TipR, Attach.Front. Checked in Top and Bottom."
+    "skinned meshes: Skin 1260 tris, SkinFar 422 tris; bones: Body, Head, LegL, LegR, Head2, ShinL, ShinR, ToeL, ToeR; marker bones: FootL, TipL, FootR, TipR, Attach.Front. Checked in Top and Bottom."
    ],
    [
     2,
     "Closed shell",
     "pass",
-    "0 edges with one face (a slit, or a fin that would vanish from behind); 68 of 2410 edges where the two faces touch along a thin part's edge (closed, no gap)"
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 73 of 2450 edges where the two faces touch along a thin part's edge (closed, no gap)"
    ],
    [
     3,
     "Depth from each part's own width",
     "pass",
-    "deepest / half-width: Skin 0.67, SkinFar 0.99"
+    "deepest / half-width: Skin 0.67, SkinFar 0.95"
    ],
    [
     4,
@@ -1883,7 +1884,7 @@
     5,
     "Real size, triangles",
     "pass",
-    "0.57 x 0.11 x 0.35 m; 1652 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+    "0.57 x 0.11 x 0.35 m; 1682 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
    ],
    [
     6,
@@ -1949,7 +1950,7 @@
     16,
     "Feet planted",
     "pass",
-    "walk: sink 0.1 mm, lowest foot 2.6 mm up, held 70.9 mm; peck: sink 0.0 mm, lowest foot 0.0 mm up, held 0.0 mm (tolerance 3.5 mm, 1 % of its height)"
+    "walk: sink 0.0 mm, lowest foot 2.0 mm up, held 57.0 mm; peck: sink 0.0 mm, lowest foot 0.0 mm up, held 0.0 mm (tolerance 3.5 mm, 1 % of its height)"
    ],
    [
     17,
@@ -1970,18 +1971,18 @@
   ],
   "view": "side",
   "px_per_m": 890.0,
-  "tris": 1500,
+  "tris": 1492,
   "meshes": {
    "Skin": 1120,
-   "SkinFar": 380
+   "SkinFar": 372
   },
   "parts": {
-   "Body": 230,
+   "Body": 210,
    "Head": 7,
-   "LegL": 1,
+   "LegL": 21,
    "LegR": 1,
    "Head2": 42,
-   "ShinL": 14,
+   "ShinL": 12,
    "ShinR": 11,
    "ToeL": 0,
    "ToeR": 0
@@ -2005,14 +2006,14 @@
    ],
    "SkinFar": [
     0,
-    15
+    13
    ]
   },
   "depth_to_width": {
    "Skin": 0.69,
-   "SkinFar": 0.96
+   "SkinFar": 0.97
   },
-  "edges": 2190,
+  "edges": 2180,
   "leg_length": 0.0456,
   "game": {
    "component": "GroundBird",
@@ -2028,9 +2029,9 @@
   "copied": [],
   "feet": {
    "walk": {
-    "sink": 0.0003,
-    "contact": 0.0017,
-    "held": 0.0503
+    "sink": 0.0001,
+    "contact": 0.0009,
+    "held": 0.0345
    },
    "peck": {
     "sink": 0.0,
@@ -2047,19 +2048,19 @@
     1,
     "Every part once",
     "pass",
-    "skinned meshes: Skin 1120 tris, SkinFar 380 tris; bones: Body, Head, LegL, LegR, Head2, ShinL, ShinR, ToeL, ToeR; marker bones: FootL, TipL, FootR, TipR, Attach.Front. Checked in Top and Bottom."
+    "skinned meshes: Skin 1120 tris, SkinFar 372 tris; bones: Body, Head, LegL, LegR, Head2, ShinL, ShinR, ToeL, ToeR; marker bones: FootL, TipL, FootR, TipR, Attach.Front. Checked in Top and Bottom."
    ],
    [
     2,
     "Closed shell",
     "pass",
-    "0 edges with one face (a slit, or a fin that would vanish from behind); 60 of 2190 edges where the two faces touch along a thin part's edge (closed, no gap)"
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 58 of 2180 edges where the two faces touch along a thin part's edge (closed, no gap)"
    ],
    [
     3,
     "Depth from each part's own width",
     "pass",
-    "deepest / half-width: Skin 0.69, SkinFar 0.96"
+    "deepest / half-width: Skin 0.69, SkinFar 0.97"
    ],
    [
     4,
@@ -2071,7 +2072,7 @@
     5,
     "Real size, triangles",
     "pass",
-    "0.30 x 0.09 x 0.29 m; 1500 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+    "0.30 x 0.09 x 0.29 m; 1492 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
    ],
    [
     6,
@@ -2137,7 +2138,7 @@
     16,
     "Feet planted",
     "pass",
-    "walk: sink 0.3 mm, lowest foot 1.7 mm up, held 50.3 mm; peck: sink 0.0 mm, lowest foot 0.0 mm up, held 0.0 mm (tolerance 2.9 mm, 1 % of its height)"
+    "walk: sink 0.1 mm, lowest foot 0.9 mm up, held 34.5 mm; peck: sink 0.0 mm, lowest foot 0.0 mm up, held 0.0 mm (tolerance 2.9 mm, 1 % of its height)"
    ],
    [
     17,
@@ -2158,18 +2159,18 @@
   ],
   "view": "side",
   "px_per_m": 1000.0,
-  "tris": 2296,
+  "tris": 2248,
   "meshes": {
    "Skin": 1830,
-   "SkinFar": 466
+   "SkinFar": 418
   },
   "parts": {
-   "Body": 397,
+   "Body": 368,
    "Head": 9,
-   "LegL": 7,
+   "LegL": 20,
    "LegR": 0,
    "Head2": 63,
-   "ShinL": 24,
+   "ShinL": 27,
    "ShinR": 14,
    "ToeL": 0,
    "ToeR": 0
@@ -2193,14 +2194,14 @@
    ],
    "SkinFar": [
     0,
-    30
+    19
    ]
   },
   "depth_to_width": {
    "Skin": 0.71,
-   "SkinFar": 1.0
+   "SkinFar": 0.97
   },
-  "edges": 3367,
+  "edges": 3306,
   "leg_length": 0.0394,
   "game": {
    "component": "GroundBird",
@@ -2216,9 +2217,9 @@
   "copied": [],
   "feet": {
    "walk": {
-    "sink": 0.0004,
-    "contact": 0.0014,
-    "held": 0.0403
+    "sink": 0.0,
+    "contact": 0.0008,
+    "held": 0.0275
    },
    "peck": {
     "sink": 0.0,
@@ -2235,19 +2236,19 @@
     1,
     "Every part once",
     "pass",
-    "skinned meshes: Skin 1830 tris, SkinFar 466 tris; bones: Body, Head, LegL, LegR, Head2, ShinL, ShinR, ToeL, ToeR; marker bones: FootL, TipL, FootR, TipR, Attach.Front. Checked in Top and Bottom."
+    "skinned meshes: Skin 1830 tris, SkinFar 418 tris; bones: Body, Head, LegL, LegR, Head2, ShinL, ShinR, ToeL, ToeR; marker bones: FootL, TipL, FootR, TipR, Attach.Front. Checked in Top and Bottom."
    ],
    [
     2,
     "Closed shell",
     "pass",
-    "0 edges with one face (a slit, or a fin that would vanish from behind); 77 of 3367 edges where the two faces touch along a thin part's edge (closed, no gap)"
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 66 of 3306 edges where the two faces touch along a thin part's edge (closed, no gap)"
    ],
    [
     3,
     "Depth from each part's own width",
     "pass",
-    "deepest / half-width: Skin 0.71, SkinFar 1.00"
+    "deepest / half-width: Skin 0.71, SkinFar 0.97"
    ],
    [
     4,
@@ -2259,7 +2260,7 @@
     5,
     "Real size, triangles",
     "pass",
-    "0.34 x 0.08 x 0.15 m; 2296 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+    "0.34 x 0.08 x 0.15 m; 2248 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
    ],
    [
     6,
@@ -2325,7 +2326,7 @@
     16,
     "Feet planted",
     "pass",
-    "walk: sink 0.4 mm, lowest foot 1.4 mm up, held 40.3 mm; peck: sink 0.0 mm, lowest foot 0.0 mm up, held 0.0 mm (tolerance 1.5 mm, 1 % of its height)"
+    "walk: sink 0.0 mm, lowest foot 0.8 mm up, held 27.5 mm; peck: sink 0.0 mm, lowest foot 0.0 mm up, held 0.0 mm (tolerance 1.5 mm, 1 % of its height)"
    ],
    [
     17,
@@ -2507,18 +2508,18 @@
   ],
   "view": "side",
   "px_per_m": 2140.0,
-  "tris": 1258,
+  "tris": 1188,
   "meshes": {
-   "Skin": 1114,
-   "SkinFar": 144
+   "Skin": 1082,
+   "SkinFar": 106
   },
   "parts": {
-   "Body": 260,
+   "Body": 233,
    "Head": 13,
-   "LegL": 2,
+   "LegL": 14,
    "LegR": 2,
-   "Head2": 55,
-   "ShinL": 29,
+   "Head2": 53,
+   "ShinL": 28,
    "ShinR": 28
   },
   "empties": [
@@ -2527,25 +2528,25 @@
    "Attach.Front"
   ],
   "size": [
-   0.148,
+   0.149,
    0.037,
-   0.092
+   0.091
   ],
   "open_edges": {
    "Skin": [
     0,
-    64
+    60
    ],
    "SkinFar": [
     0,
-    16
+    7
    ]
   },
   "depth_to_width": {
    "Skin": 0.78,
-   "SkinFar": 0.96
+   "SkinFar": 0.97
   },
-  "edges": 1807,
+  "edges": 1715,
   "leg_length": 0.0422,
   "game": {
    "component": "GroundBird",
@@ -2564,8 +2565,8 @@
   "feet": {
    "hop": {
     "sink": 0.0,
-    "contact": 0.06,
-    "held": 0.0605
+    "contact": 0.0686,
+    "held": 0.0689
    },
    "peck": {
     "sink": 0.0,
@@ -2582,19 +2583,19 @@
     1,
     "Every part once",
     "pass",
-    "skinned meshes: Skin 1114 tris, SkinFar 144 tris; bones: Body, Head, LegL, LegR, Head2, ShinL, ShinR; marker bones: FootL, FootR, Attach.Front. Checked in Top and Bottom."
+    "skinned meshes: Skin 1082 tris, SkinFar 106 tris; bones: Body, Head, LegL, LegR, Head2, ShinL, ShinR; marker bones: FootL, FootR, Attach.Front. Checked in Top and Bottom."
    ],
    [
     2,
     "Closed shell",
     "pass",
-    "0 edges with one face (a slit, or a fin that would vanish from behind); 80 of 1807 edges where the two faces touch along a thin part's edge (closed, no gap)"
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 67 of 1715 edges where the two faces touch along a thin part's edge (closed, no gap)"
    ],
    [
     3,
     "Depth from each part's own width",
     "pass",
-    "deepest / half-width: Skin 0.78, SkinFar 0.96"
+    "deepest / half-width: Skin 0.78, SkinFar 0.97"
    ],
    [
     4,
@@ -2606,7 +2607,7 @@
     5,
     "Real size, triangles",
     "pass",
-    "0.15 x 0.04 x 0.09 m; 1258 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+    "0.15 x 0.04 x 0.09 m; 1188 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
    ],
    [
     6,
@@ -2672,7 +2673,7 @@
     16,
     "Feet planted",
     "pass",
-    "hop: sink 0.0 mm, lowest foot 60.0 mm up, held 60.5 mm; peck: sink 0.0 mm, lowest foot 0.0 mm up, held 0.0 mm (tolerance 0.9 mm, 1 % of its height)"
+    "hop: sink 0.0 mm, lowest foot 68.6 mm up, held 68.9 mm; peck: sink 0.0 mm, lowest foot 0.0 mm up, held 0.0 mm (tolerance 0.9 mm, 1 % of its height)"
    ],
    [
     17,
@@ -3176,18 +3177,18 @@
   ],
   "view": "side",
   "px_per_m": 747.1,
-  "tris": 1526,
+  "tris": 1544,
   "meshes": {
    "Skin": 1118,
-   "SkinFar": 408
+   "SkinFar": 426
   },
   "parts": {
-   "Body": 203,
+   "Body": 184,
    "Head": 6,
-   "LegL": 3,
+   "LegL": 14,
    "LegR": 1,
    "Head2": 57,
-   "ShinL": 25,
+   "ShinL": 34,
    "ShinR": 30,
    "ToeL": 0,
    "ToeR": 0
@@ -3211,14 +3212,14 @@
    ],
    "SkinFar": [
     0,
-    15
+    20
    ]
   },
   "depth_to_width": {
    "Skin": 0.71,
-   "SkinFar": 0.97
+   "SkinFar": 1.0
   },
-  "edges": 2233,
+  "edges": 2255,
   "leg_length": 0.1393,
   "game": {
    "component": "GroundBird",
@@ -3234,9 +3235,9 @@
   "copied": [],
   "feet": {
    "walk": {
-    "sink": 0.0004,
-    "contact": 0.0022,
-    "held": 0.0795
+    "sink": 0.0002,
+    "contact": 0.0018,
+    "held": 0.0788
    },
    "peck": {
     "sink": 0.0,
@@ -3253,19 +3254,19 @@
     1,
     "Every part once",
     "pass",
-    "skinned meshes: Skin 1118 tris, SkinFar 408 tris; bones: Body, Head, LegL, LegR, Head2, ShinL, ShinR, ToeL, ToeR; marker bones: FootL, TipL, FootR, TipR, Attach.Front. Checked in Top and Bottom."
+    "skinned meshes: Skin 1118 tris, SkinFar 426 tris; bones: Body, Head, LegL, LegR, Head2, ShinL, ShinR, ToeL, ToeR; marker bones: FootL, TipL, FootR, TipR, Attach.Front. Checked in Top and Bottom."
    ],
    [
     2,
     "Closed shell",
     "pass",
-    "0 edges with one face (a slit, or a fin that would vanish from behind); 56 of 2233 edges where the two faces touch along a thin part's edge (closed, no gap)"
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 61 of 2255 edges where the two faces touch along a thin part's edge (closed, no gap)"
    ],
    [
     3,
     "Depth from each part's own width",
     "pass",
-    "deepest / half-width: Skin 0.71, SkinFar 0.97"
+    "deepest / half-width: Skin 0.71, SkinFar 1.00"
    ],
    [
     4,
@@ -3277,7 +3278,7 @@
     5,
     "Real size, triangles",
     "pass",
-    "0.43 x 0.10 x 0.34 m; 1526 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+    "0.43 x 0.10 x 0.34 m; 1544 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
    ],
    [
     6,
@@ -3343,7 +3344,7 @@
     16,
     "Feet planted",
     "pass",
-    "walk: sink 0.4 mm, lowest foot 2.2 mm up, held 79.5 mm; peck: sink 0.0 mm, lowest foot 0.0 mm up, held 0.0 mm (tolerance 3.4 mm, 1 % of its height)"
+    "walk: sink 0.2 mm, lowest foot 1.8 mm up, held 78.8 mm; peck: sink 0.0 mm, lowest foot 0.0 mm up, held 0.0 mm (tolerance 3.4 mm, 1 % of its height)"
    ],
    [
     17,
@@ -3364,18 +3365,18 @@
   ],
   "view": "side",
   "px_per_m": 509.1,
-  "tris": 1662,
+  "tris": 1672,
   "meshes": {
    "Skin": 1162,
-   "SkinFar": 500
+   "SkinFar": 510
   },
   "parts": {
-   "Body": 176,
+   "Body": 159,
    "Head": 14,
-   "LegL": 20,
+   "LegL": 37,
    "LegR": 19,
    "Head2": 44,
-   "ShinL": 37,
+   "ShinL": 39,
    "ShinR": 33,
    "Plume": 44,
    "ToeL": 0,
@@ -3400,14 +3401,14 @@
    ],
    "SkinFar": [
     0,
-    31
+    36
    ]
   },
   "depth_to_width": {
    "Skin": 0.55,
    "SkinFar": 0.99
   },
-  "edges": 2393,
+  "edges": 2403,
   "leg_length": 0.224,
   "game": {
    "component": "GroundBird",
@@ -3425,9 +3426,9 @@
   "copied": [],
   "feet": {
    "walk": {
-    "sink": 0.0011,
-    "contact": 0.0039,
-    "held": 0.1249
+    "sink": 0.0006,
+    "contact": 0.0031,
+    "held": 0.1208
    },
    "peck": {
     "sink": 0.0,
@@ -3444,13 +3445,13 @@
     1,
     "Every part once",
     "pass",
-    "skinned meshes: Skin 1162 tris, SkinFar 500 tris; bones: Body, Head, LegL, LegR, Head2, ShinL, ShinR, Plume, ToeL, ToeR; marker bones: FootL, TipL, FootR, TipR, Attach.Front. Checked in Top and Bottom."
+    "skinned meshes: Skin 1162 tris, SkinFar 510 tris; bones: Body, Head, LegL, LegR, Head2, ShinL, ShinR, Plume, ToeL, ToeR; marker bones: FootL, TipL, FootR, TipR, Attach.Front. Checked in Top and Bottom."
    ],
    [
     2,
     "Closed shell",
     "pass",
-    "0 edges with one face (a slit, or a fin that would vanish from behind); 100 of 2393 edges where the two faces touch along a thin part's edge (closed, no gap)"
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 105 of 2403 edges where the two faces touch along a thin part's edge (closed, no gap)"
    ],
    [
     3,
@@ -3468,7 +3469,7 @@
     5,
     "Real size, triangles",
     "pass",
-    "0.52 x 0.12 x 0.55 m; 1662 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+    "0.52 x 0.12 x 0.55 m; 1672 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
    ],
    [
     6,
@@ -3534,7 +3535,7 @@
     16,
     "Feet planted",
     "pass",
-    "walk: sink 1.1 mm, lowest foot 3.9 mm up, held 124.9 mm; peck: sink 0.0 mm, lowest foot 0.0 mm up, held 0.0 mm (tolerance 5.5 mm, 1 % of its height)"
+    "walk: sink 0.6 mm, lowest foot 3.1 mm up, held 120.8 mm; peck: sink 0.0 mm, lowest foot 0.0 mm up, held 0.0 mm (tolerance 5.5 mm, 1 % of its height)"
    ],
    [
     17,
@@ -4535,18 +4536,18 @@
   ],
   "view": "side",
   "px_per_m": 317.8,
-  "tris": 1610,
+  "tris": 1612,
   "meshes": {
    "Skin": 1120,
-   "SkinFar": 490
+   "SkinFar": 492
   },
   "parts": {
-   "Body": 177,
+   "Body": 151,
    "Head": 19,
-   "LegL": 14,
+   "LegL": 33,
    "LegR": 21,
    "Head2": 67,
-   "ShinL": 34,
+   "ShinL": 39,
    "ShinR": 37,
    "ToeL": 0,
    "ToeR": 0
@@ -4570,14 +4571,14 @@
    ],
    "SkinFar": [
     0,
-    26
+    28
    ]
   },
   "depth_to_width": {
    "Skin": 0.49,
-   "SkinFar": 0.94
+   "SkinFar": 0.96
   },
-  "edges": 2325,
+  "edges": 2326,
   "leg_length": 0.3763,
   "game": {
    "component": "GroundBird",
@@ -4593,9 +4594,9 @@
   "copied": [],
   "feet": {
    "walk": {
-    "sink": 0.0005,
-    "contact": 0.0034,
-    "held": 0.2175
+    "sink": 0.0001,
+    "contact": 0.0027,
+    "held": 0.219
    },
    "peck": {
     "sink": 0.0,
@@ -4612,19 +4613,19 @@
     1,
     "Every part once",
     "pass",
-    "skinned meshes: Skin 1120 tris, SkinFar 490 tris; bones: Body, Head, LegL, LegR, Head2, ShinL, ShinR, ToeL, ToeR; marker bones: FootL, TipL, FootR, TipR, Attach.Front. Checked in Top and Bottom."
+    "skinned meshes: Skin 1120 tris, SkinFar 492 tris; bones: Body, Head, LegL, LegR, Head2, ShinL, ShinR, ToeL, ToeR; marker bones: FootL, TipL, FootR, TipR, Attach.Front. Checked in Top and Bottom."
    ],
    [
     2,
     "Closed shell",
     "pass",
-    "0 edges with one face (a slit, or a fin that would vanish from behind); 90 of 2325 edges where the two faces touch along a thin part's edge (closed, no gap)"
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 92 of 2326 edges where the two faces touch along a thin part's edge (closed, no gap)"
    ],
    [
     3,
     "Depth from each part's own width",
     "pass",
-    "deepest / half-width: Skin 0.49, SkinFar 0.94"
+    "deepest / half-width: Skin 0.49, SkinFar 0.96"
    ],
    [
     4,
@@ -4636,7 +4637,7 @@
     5,
     "Real size, triangles",
     "pass",
-    "0.78 x 0.14 x 0.90 m; 1610 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+    "0.78 x 0.14 x 0.90 m; 1612 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
    ],
    [
     6,
@@ -4702,7 +4703,7 @@
     16,
     "Feet planted",
     "pass",
-    "walk: sink 0.5 mm, lowest foot 3.4 mm up, held 217.5 mm; peck: sink 0.0 mm, lowest foot -0.0 mm up, held 0.0 mm (tolerance 9.0 mm, 1 % of its height)"
+    "walk: sink 0.1 mm, lowest foot 2.7 mm up, held 219.0 mm; peck: sink 0.0 mm, lowest foot -0.0 mm up, held 0.0 mm (tolerance 9.0 mm, 1 % of its height)"
    ],
    [
     17,
@@ -5033,19 +5034,19 @@
   ],
   "view": "side",
   "px_per_m": 1676.2,
-  "tris": 1698,
+  "tris": 1716,
   "meshes": {
    "Skin": 1266,
-   "SkinFar": 432
+   "SkinFar": 450
   },
   "parts": {
-   "Body": 144,
+   "Body": 128,
    "Head": 9,
-   "LegL": 3,
+   "LegL": 18,
    "LegR": 1,
    "Tail": 31,
    "Head2": 51,
-   "ShinL": 35,
+   "ShinL": 38,
    "ShinR": 33,
    "Tail2": 31,
    "Tail3": 25,
@@ -5071,14 +5072,14 @@
    ],
    "SkinFar": [
     0,
-    22
+    28
    ]
   },
   "depth_to_width": {
    "Skin": 0.62,
-   "SkinFar": 0.97
+   "SkinFar": 0.98
   },
-  "edges": 2440,
+  "edges": 2461,
   "leg_length": 0.0571,
   "game": {
    "component": "GroundBird",
@@ -5101,8 +5102,8 @@
   "feet": {
    "walk": {
     "sink": 0.0,
-    "contact": 0.001,
-    "held": 0.0321
+    "contact": 0.0008,
+    "held": 0.0311
    },
    "peck": {
     "sink": 0.0,
@@ -5119,19 +5120,19 @@
     1,
     "Every part once",
     "pass",
-    "skinned meshes: Skin 1266 tris, SkinFar 432 tris; bones: Body, Head, LegL, LegR, Tail, Head2, ShinL, ShinR, Tail2, Tail3, ToeL, ToeR; marker bones: FootL, TipL, FootR, TipR, Attach.Front. Checked in Top and Bottom."
+    "skinned meshes: Skin 1266 tris, SkinFar 450 tris; bones: Body, Head, LegL, LegR, Tail, Head2, ShinL, ShinR, Tail2, Tail3, ToeL, ToeR; marker bones: FootL, TipL, FootR, TipR, Attach.Front. Checked in Top and Bottom."
    ],
    [
     2,
     "Closed shell",
     "pass",
-    "0 edges with one face (a slit, or a fin that would vanish from behind); 107 of 2440 edges where the two faces touch along a thin part's edge (closed, no gap)"
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 113 of 2461 edges where the two faces touch along a thin part's edge (closed, no gap)"
    ],
    [
     3,
     "Depth from each part's own width",
     "pass",
-    "deepest / half-width: Skin 0.62, SkinFar 0.97"
+    "deepest / half-width: Skin 0.62, SkinFar 0.98"
    ],
    [
     4,
@@ -5143,7 +5144,7 @@
     5,
     "Real size, triangles",
     "pass",
-    "0.21 x 0.04 x 0.13 m; 1698 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+    "0.21 x 0.04 x 0.13 m; 1716 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
    ],
    [
     6,
@@ -5209,7 +5210,7 @@
     16,
     "Feet planted",
     "pass",
-    "walk: sink 0.0 mm, lowest foot 1.0 mm up, held 32.1 mm; peck: sink 0.0 mm, lowest foot 0.0 mm up, held 0.0 mm (tolerance 1.3 mm, 1 % of its height)"
+    "walk: sink 0.0 mm, lowest foot 0.8 mm up, held 31.1 mm; peck: sink 0.0 mm, lowest foot 0.0 mm up, held 0.0 mm (tolerance 1.3 mm, 1 % of its height)"
    ],
    [
     17,
@@ -5886,18 +5887,18 @@
   ],
   "view": "side",
   "px_per_m": 1048.5,
-  "tris": 1626,
+  "tris": 1602,
   "meshes": {
    "Skin": 1268,
-   "SkinFar": 358
+   "SkinFar": 334
   },
   "parts": {
-   "Body": 268,
+   "Body": 248,
    "Head": 7,
-   "LegL": 1,
+   "LegL": 16,
    "LegR": 1,
    "Head2": 42,
-   "ShinL": 9,
+   "ShinL": 8,
    "ShinR": 16,
    "ToeL": 0,
    "ToeR": 0
@@ -5921,14 +5922,14 @@
    ],
    "SkinFar": [
     0,
-    9
+    2
    ]
   },
   "depth_to_width": {
    "Skin": 0.72,
    "SkinFar": 0.96
   },
-  "edges": 2384,
+  "edges": 2355,
   "leg_length": 0.0379,
   "game": {
    "component": "GroundBird",
@@ -5944,9 +5945,9 @@
   "copied": [],
   "feet": {
    "walk": {
-    "sink": 0.0015,
-    "contact": 0.0012,
-    "held": 0.0503
+    "sink": 0.0012,
+    "contact": 0.0006,
+    "held": 0.0345
    },
    "peck": {
     "sink": 0.0,
@@ -5963,13 +5964,13 @@
     1,
     "Every part once",
     "pass",
-    "skinned meshes: Skin 1268 tris, SkinFar 358 tris; bones: Body, Head, LegL, LegR, Head2, ShinL, ShinR, ToeL, ToeR; marker bones: FootL, TipL, FootR, TipR, Attach.Front. Checked in Top and Bottom."
+    "skinned meshes: Skin 1268 tris, SkinFar 334 tris; bones: Body, Head, LegL, LegR, Head2, ShinL, ShinR, ToeL, ToeR; marker bones: FootL, TipL, FootR, TipR, Attach.Front. Checked in Top and Bottom."
    ],
    [
     2,
     "Closed shell",
     "pass",
-    "0 edges with one face (a slit, or a fin that would vanish from behind); 55 of 2384 edges where the two faces touch along a thin part's edge (closed, no gap)"
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 48 of 2355 edges where the two faces touch along a thin part's edge (closed, no gap)"
    ],
    [
     3,
@@ -5987,7 +5988,7 @@
     5,
     "Real size, triangles",
     "pass",
-    "0.33 x 0.09 x 0.22 m; 1626 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+    "0.33 x 0.09 x 0.22 m; 1602 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
    ],
    [
     6,
@@ -6053,7 +6054,7 @@
     16,
     "Feet planted",
     "pass",
-    "walk: sink 1.5 mm, lowest foot 1.2 mm up, held 50.3 mm; peck: sink 0.0 mm, lowest foot 0.0 mm up, held 0.0 mm (tolerance 2.2 mm, 1 % of its height)"
+    "walk: sink 1.2 mm, lowest foot 0.6 mm up, held 34.5 mm; peck: sink 0.0 mm, lowest foot 0.0 mm up, held 0.0 mm (tolerance 2.2 mm, 1 % of its height)"
    ],
    [
     17,
@@ -6241,28 +6242,28 @@
   ],
   "view": "side",
   "px_per_m": 723.3,
-  "tris": 1164,
+  "tris": 1112,
   "meshes": {
-   "Skin": 872,
-   "SkinFar": 292
+   "Skin": 856,
+   "SkinFar": 256
   },
   "parts": {
-   "Body": 226,
-   "LegBL": 14,
-   "LegBR": 16,
-   "LegFL": 14,
-   "LegFR": 12,
+   "Body": 179,
+   "LegBL": 27,
+   "LegBR": 19,
+   "LegFL": 23,
+   "LegFR": 3,
    "Tail": 3,
-   "ShinBL": 8,
-   "ShinBR": 10,
-   "ShinFL": 9,
-   "ShinFR": 15,
-   "Tail2": 14,
+   "ShinBL": 7,
+   "ShinBR": 12,
+   "ShinFL": 17,
+   "ShinFR": 20,
+   "Tail2": 15,
    "Tail3": 15,
-   "ToeBL": 10,
-   "ToeBR": 14,
-   "ToeFL": 12,
-   "ToeFR": 13
+   "ToeBL": 9,
+   "ToeBR": 10,
+   "ToeFL": 14,
+   "ToeFR": 17
   },
   "empties": [
    "FootBL",
@@ -6277,25 +6278,25 @@
   ],
   "size": [
    0.542,
-   0.106,
-   0.297
+   0.11,
+   0.299
   ],
   "open_edges": {
    "Skin": [
     0,
-    56
+    53
    ],
    "SkinFar": [
     0,
-    41
+    30
    ]
   },
   "depth_to_width": {
    "Skin": 0.64,
-   "SkinFar": 0.93
+   "SkinFar": 0.92
   },
-  "edges": 1649,
-  "leg_length": 0.1173,
+  "edges": 1585,
+  "leg_length": 0.1161,
   "game": {
    "component": "WallCat",
    "tail": "Tail",
@@ -6307,17 +6308,17 @@
    "walk": {
     "sink": 0.0,
     "contact": 0.0,
-    "held": 0.0608
+    "held": 0.0631
    },
    "run": {
     "sink": 0.0,
     "contact": 0.0096,
-    "held": 0.1159
+    "held": 0.1122
    },
    "bound": {
     "sink": 0.0,
-    "contact": 0.1309,
-    "held": 0.1401
+    "contact": 0.131,
+    "held": 0.1411
    }
   },
   "motions": [
@@ -6330,19 +6331,19 @@
     1,
     "Every part once",
     "pass",
-    "skinned meshes: Skin 872 tris, SkinFar 292 tris; bones: Body, LegBL, LegBR, LegFL, LegFR, Tail, ShinBL, ShinBR, ShinFL, ShinFR, Tail2, Tail3, ToeBL, ToeBR, ToeFL, ToeFR; marker bones: FootBL, TipBL, FootBR, TipBR, FootFL, TipFL, FootFR, TipFR, Attach.Front. Checked in Top and Bottom."
+    "skinned meshes: Skin 856 tris, SkinFar 256 tris; bones: Body, LegBL, LegBR, LegFL, LegFR, Tail, ShinBL, ShinBR, ShinFL, ShinFR, Tail2, Tail3, ToeBL, ToeBR, ToeFL, ToeFR; marker bones: FootBL, TipBL, FootBR, TipBR, FootFL, TipFL, FootFR, TipFR, Attach.Front. Checked in Top and Bottom."
    ],
    [
     2,
     "Closed shell",
     "pass",
-    "0 edges with one face (a slit, or a fin that would vanish from behind); 97 of 1649 edges where the two faces touch along a thin part's edge (closed, no gap)"
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 83 of 1585 edges where the two faces touch along a thin part's edge (closed, no gap)"
    ],
    [
     3,
     "Depth from each part's own width",
     "pass",
-    "deepest / half-width: Skin 0.64, SkinFar 0.93"
+    "deepest / half-width: Skin 0.64, SkinFar 0.92"
    ],
    [
     4,
@@ -6354,7 +6355,7 @@
     5,
     "Real size, triangles",
     "pass",
-    "0.54 x 0.11 x 0.30 m; 1164 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+    "0.54 x 0.11 x 0.30 m; 1112 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
    ],
    [
     6,
@@ -6420,7 +6421,7 @@
     16,
     "Feet planted",
     "pass",
-    "walk: sink 0.0 mm, lowest foot 0.0 mm up, held 60.8 mm; run: sink 0.0 mm, lowest foot 9.6 mm up, held 115.9 mm; bound: sink 0.0 mm, lowest foot 130.9 mm up, held 140.1 mm (tolerance 3.0 mm, 1 % of its height)"
+    "walk: sink 0.0 mm, lowest foot 0.0 mm up, held 63.1 mm; run: sink 0.0 mm, lowest foot 9.6 mm up, held 112.2 mm; bound: sink 0.0 mm, lowest foot 131.0 mm up, held 141.1 mm (tolerance 3.0 mm, 1 % of its height)"
    ],
    [
     17,
@@ -6590,28 +6591,28 @@
   ],
   "view": "side",
   "px_per_m": 733.3,
-  "tris": 1576,
+  "tris": 1562,
   "meshes": {
-   "Skin": 1306,
-   "SkinFar": 270
+   "Skin": 1300,
+   "SkinFar": 262
   },
   "parts": {
-   "Body": 331,
-   "LegBL": 15,
-   "LegBR": 19,
-   "LegFL": 14,
-   "LegFR": 16,
+   "Body": 281,
+   "LegBL": 39,
+   "LegBR": 21,
+   "LegFL": 19,
+   "LegFR": 2,
    "Tail": 8,
    "ShinBL": 7,
-   "ShinBR": 7,
-   "ShinFL": 7,
-   "ShinFR": 15,
-   "Tail2": 5,
-   "Tail3": 14,
-   "ToeBL": 9,
-   "ToeBR": 16,
-   "ToeFL": 10,
-   "ToeFR": 17
+   "ShinBR": 10,
+   "ShinFL": 16,
+   "ShinFR": 26,
+   "Tail2": 10,
+   "Tail3": 15,
+   "ToeBL": 7,
+   "ToeBR": 12,
+   "ToeFL": 13,
+   "ToeFR": 19
   },
   "empties": [
    "FootBL",
@@ -6625,26 +6626,26 @@
    "Attach.Front"
   ],
   "size": [
-   0.525,
-   0.104,
+   0.526,
+   0.115,
    0.299
   ],
   "open_edges": {
    "Skin": [
     0,
-    41
+    46
    ],
    "SkinFar": [
     0,
-    16
+    10
    ]
   },
   "depth_to_width": {
    "Skin": 0.65,
-   "SkinFar": 0.92
+   "SkinFar": 0.91
   },
-  "edges": 2307,
-  "leg_length": 0.1229,
+  "edges": 2287,
+  "leg_length": 0.1213,
   "game": {
    "component": "WallCat",
    "tail": "Tail",
@@ -6656,17 +6657,17 @@
    "walk": {
     "sink": 0.0,
     "contact": 0.0,
-    "held": 0.0677
+    "held": 0.0708
    },
    "run": {
     "sink": 0.0,
     "contact": 0.0093,
-    "held": 0.117
+    "held": 0.111
    },
    "bound": {
     "sink": 0.0,
-    "contact": 0.1301,
-    "held": 0.145
+    "contact": 0.1278,
+    "held": 0.1456
    }
   },
   "motions": [
@@ -6679,19 +6680,19 @@
     1,
     "Every part once",
     "pass",
-    "skinned meshes: Skin 1306 tris, SkinFar 270 tris; bones: Body, LegBL, LegBR, LegFL, LegFR, Tail, ShinBL, ShinBR, ShinFL, ShinFR, Tail2, Tail3, ToeBL, ToeBR, ToeFL, ToeFR; marker bones: FootBL, TipBL, FootBR, TipBR, FootFL, TipFL, FootFR, TipFR, Attach.Front. Checked in Top and Bottom."
+    "skinned meshes: Skin 1300 tris, SkinFar 262 tris; bones: Body, LegBL, LegBR, LegFL, LegFR, Tail, ShinBL, ShinBR, ShinFL, ShinFR, Tail2, Tail3, ToeBL, ToeBR, ToeFL, ToeFR; marker bones: FootBL, TipBL, FootBR, TipBR, FootFL, TipFL, FootFR, TipFR, Attach.Front. Checked in Top and Bottom."
    ],
    [
     2,
     "Closed shell",
     "pass",
-    "0 edges with one face (a slit, or a fin that would vanish from behind); 57 of 2307 edges where the two faces touch along a thin part's edge (closed, no gap)"
+    "0 edges with one face (a slit, or a fin that would vanish from behind); 56 of 2287 edges where the two faces touch along a thin part's edge (closed, no gap)"
    ],
    [
     3,
     "Depth from each part's own width",
     "pass",
-    "deepest / half-width: Skin 0.65, SkinFar 0.92"
+    "deepest / half-width: Skin 0.65, SkinFar 0.91"
    ],
    [
     4,
@@ -6703,7 +6704,7 @@
     5,
     "Real size, triangles",
     "pass",
-    "0.53 x 0.10 x 0.30 m; 1576 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
+    "0.53 x 0.12 x 0.30 m; 1562 triangles (the animal budget 2,500, docs/ART_DIRECTION.md); one 4096 atlas for the whole kit"
    ],
    [
     6,
@@ -6769,7 +6770,7 @@
     16,
     "Feet planted",
     "pass",
-    "walk: sink 0.0 mm, lowest foot 0.0 mm up, held 67.7 mm; run: sink 0.0 mm, lowest foot 9.3 mm up, held 117.0 mm; bound: sink 0.0 mm, lowest foot 130.1 mm up, held 145.0 mm (tolerance 3.0 mm, 1 % of its height)"
+    "walk: sink 0.0 mm, lowest foot 0.0 mm up, held 70.8 mm; run: sink 0.0 mm, lowest foot 9.3 mm up, held 111.0 mm; bound: sink 0.0 mm, lowest foot 127.8 mm up, held 145.6 mm (tolerance 3.0 mm, 1 % of its height)"
    ],
    [
     17,

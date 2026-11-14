@@ -55,24 +55,24 @@ namespace DribbleToSchool.Tests
         [Test]
         public void TheTwoBoneSolverPutsTheFootOnItsTargetAndLeavesARestingLegAlone()
         {
+            // legs whose knee lies behind the hip-to-foot line, as every joint here bends (an elbow, a hock, a heel: D22)
             var legs = new[]
             {
-                new[] { new Vector2(0.05f, -0.5f), new Vector2(0f, -1f) },
+                new[] { new Vector2(-0.05f, -0.5f), new Vector2(0f, -1f) },
                 new[] { new Vector2(-0.08f, -0.45f), new Vector2(0.02f, -0.95f) },
             };
             foreach (var leg in legs)
             {
-                foreach (bool front in new[] { true, false })
+                Vector2 rest = LegGait.TwoBone(leg[0], leg[1], leg[1], LegGait.Bend);
+                Assert.AreEqual(0f, rest.x, 1e-3f, "a leg asked for its own foot stays put");
+                Assert.AreEqual(0f, rest.y, 1e-3f);
+                foreach (var target in new[] { new Vector2(0.2f, -0.9f), new Vector2(-0.25f, -0.88f), new Vector2(0.1f, -0.7f) })
                 {
-                    float bend = LegGait.Bend(leg[0], leg[1], front);
-                    Vector2 rest = LegGait.TwoBone(leg[0], leg[1], leg[1], bend);
-                    Assert.AreEqual(0f, rest.x, 1e-3f, "a leg asked for its own foot stays put");
-                    Assert.AreEqual(0f, rest.y, 1e-3f);
-                    foreach (var target in new[] { new Vector2(0.2f, -0.9f), new Vector2(-0.25f, -0.88f), new Vector2(0.1f, -0.7f) })
-                    {
-                        Vector2 at = Reach(leg[0], leg[1], LegGait.TwoBone(leg[0], leg[1], target, bend));
-                        Assert.Less((at - target).magnitude, 1e-3f, "the foot reaches " + target);
-                    }
+                    Vector2 turn = LegGait.TwoBone(leg[0], leg[1], target, LegGait.Bend);
+                    Assert.Less((Reach(leg[0], leg[1], turn) - target).magnitude, 1e-3f, "the foot reaches " + target);
+                    // the knee bent back: behind the hip-to-foot line
+                    Vector2 k = Rotate(leg[0], turn.x);
+                    Assert.Greater(k.x * target.y - k.y * target.x, 0f, "the knee behind the line to " + target);
                 }
             }
         }
@@ -262,6 +262,30 @@ namespace DribbleToSchool.Tests
             {
                 Object.DestroyImmediate(root.gameObject);
             }
+        }
+
+        [Test]
+        public void AHoppingBirdsFootIsOneLoopPlantedThenTuckedUnderIt()
+        {
+            // D22: a sparrow's hop (GroundBird's hopper): on the ground planted, the body passing over the foot; in the
+            // air it trails off the push, tucks up under the belly, toes curled, and reaches forward to land; one loop
+            const float L = 1f;
+            Vector3 last = LegGait.HopFoot(0f, L);
+            Assert.Less((LegGait.HopFoot(1f - 1e-4f, L) - last).magnitude, 0.01f, "the loop closes");
+            float highest = 0f;
+            for (int i = 1; i <= 200; i++)
+            {
+                float u = i / 200f;
+                Vector3 f = LegGait.HopFoot(u, L);
+                Assert.Less((f - last).magnitude, 0.05f, "no jump at " + u);
+                if (u > 0.5f) Assert.AreEqual(0f, f.y, 1e-5f, "planted on the ground at " + u);
+                else highest = Mathf.Max(highest, f.y);
+                Assert.GreaterOrEqual(f.z, -1e-5f, "the toes never bent up");
+                last = f;
+            }
+            Assert.Greater(highest, 0.4f * L, "tucked well up in the air");
+            Assert.Less(LegGait.HopFoot(0.01f, L).x, -0.25f * L, "trailing off the push");
+            Assert.Greater(LegGait.HopFoot(0.49f, L).x, 0.05f * L, "reaching forward to land");
         }
 
         [Test]

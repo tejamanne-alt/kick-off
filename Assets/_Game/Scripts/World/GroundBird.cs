@@ -279,9 +279,9 @@ namespace DribbleToSchool.World
             {
                 if (hopper && rig != null)
                 {
-                    // crouch, spring, tuck the feet, land (the review's hop): up 5 cm, down into the knees between
+                    // crouch, spring, tuck the feet, land (the review's hop): up 5 cm, down into the heels between
                     float sh = Mathf.Sin(phase);
-                    lift = (sh > 0f ? 0.05f * sh : 0.12f * rig.Length * sh) * pace;
+                    lift = (sh > 0f ? 0.05f * sh : LegGait.HopCrouch * rig.Length * sh) * pace;
                 }
                 else if (hopper) lift = Mathf.Abs(Mathf.Sin(phase)) * 0.05f * pace;
                 else if (rig != null)       // two nods a stride; the body as low as a foot needs to reach the ground
@@ -298,7 +298,7 @@ namespace DribbleToSchool.World
             transform.SetPositionAndRotation(new Vector3(x, y + lift, z), Quaternion.Euler(0f, yaw, pitch - tip));
             if (rig != null && state != State.Fly && state != State.Gone)
             {
-                if (state == State.Walk && hopper) rig.Hop(Mathf.Sin(phase) * pace, lift);
+                if (state == State.Walk && hopper) rig.HopLoop(phase / (2f * Mathf.PI), pace, lift);
                 else if (state != State.Walk) rig.Plant(-tip * Mathf.Deg2Rad);
             }
             if (state != State.Fly && state != State.Gone) tail.Set(Mathf.Sin((Time.time + seed) * tailPumpRate * Mathf.PI * 2f) * tailPump);

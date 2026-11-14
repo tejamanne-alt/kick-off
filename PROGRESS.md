@@ -2132,6 +2132,26 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
     654 checks passed, 7 known limits (the seven in flight built from one view), none failed. The squirrel and every
     flyer looked at in large frames, each skin layer on its own. Not yet run in Unity or on the Nord CE5.
 
+- **Knees where the animal's are** (the user's recordings of the cat, tanuki, Shiba, pigeon and sparrow: "The knees
+  and movements while moving for the animals look very unusual. The rear legs of Shiba aren't rendered properly";
+  `docs/LEARNINGS.md` D22).
+  - `JOINTS`: a front leg's elbow just under the belly and its wrist 28 % up (the pastern and paw are its foot,
+    folding back in the swing); a hind leg's hock 42 % up. Every joint bends back (`LegGait.Bend` is now a
+    constant): an elbow, a hock, a heel.
+  - The Shiba's far hind leg is a copy of the near one, its pale top out of the belly. The far legs' layer reaches
+    straight up and belongs to its leg; a far leg's top is not kept in the body's skirt (the block at the cat's elbow).
+  - Birds: a hop is one loop (`LegGait.HopFoot`, `Rig.HopLoop`; `GroundBird` calls it with its phase), crouching 30 %
+    of the leg; a step lifts the foot an eighth of the leg. The sparrow's raised leg goes with its knee.
+  - Tests: `LegGaitTests` (the solver with every joint bent back; a hopping foot's loop), checked against the mirror.
+  - Four-view standing sheets for every walker and ground bird: `BASE KM-S2` in `docs/KAMAKURA_BUILD.md` Step 4c,
+    for the user to make.
+  - C#: `run.sh` passes on 6000.7; the errors-only compile comparison shows no new error in three symbol sets.
+  - The review (version 5 of https://claude.ai/artifact/MERPAe1mamCFnSRnGwApnm): 43 models, 57 motions, 654 checks
+    passed, 7 known limits, none failed; 801 to 2,248 triangles; every foot within tolerance. Still seen: a small
+    notch at the top of the cat's far hind leg when it kicks far back (that leg is the photo's own, its haunch
+    wide); the birds' visible tarsus swinging from the belly, their thigh and knee hidden in the photo. Not yet run
+    in Unity or on the Nord CE5.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

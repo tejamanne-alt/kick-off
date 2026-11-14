@@ -838,6 +838,128 @@ ASSET KM-N16, the cormorant in flight. Attach KM-P8. The cormorant of KM-P8's se
 glossy black-brown with a yellow face patch. Real size: 84 cm long, wings 1.3 m across. Same rules as before.
 ```
 
+### Step 4c: animals and birds that walk (four views each)
+
+An animal that walks is built from one photo of it mid-stride (D22). The photo decides too much: the legs come in the
+pose it caught, overlapping, the far legs hidden or seen only as a pale inner strip (the Shiba's), the joints guessed
+from the leg's height, the body's width and the face from the front guessed from the side. Every round of fixes since D19
+has been a fix to that one photo, and the user still saw unusual knees. So each walker gets a sheet of four views of it
+standing still, square, every leg whole: the legs are cut at the joints the picture shows (a front leg's elbow and wrist,
+a hind leg's knee and hock, a bird's heel), the far legs are its own, and the body takes its width from above and its
+shape from the front and back. A new Gemini chat with Nano Banana Pro: paste KM-S2 with KM-0 attached, then one animal per
+message with its sheet attached. Save each as `review/kamakura/sheets/<id>_<name>_stand.png` (for example
+`KM-N04_shiba_stand.png`).
+
+```text
+BASE KM-S2, the standing model sheet. Attach KM-0. You are making model sheets of animals and birds for a game's 3D
+artists, who build each one from its four views and make it walk. Read all of this, then follow it for every animal in
+this chat.
+
+THE ANIMAL
+Each image is one animal from the sheet I attach with it, the same individual: its markings, colours and proportions
+exactly as there. A real animal photographed in the look of the picture attached now (KM-0: real fur or feathers,
+natural colour, sharp detail), not a painting or an illustration.
+
+THE POSE
+Standing still and relaxed on level ground, weight on all its feet, head level and looking ahead, mouth or beak closed,
+the tail held as it naturally is. Every leg straight down under the body and whole, from where it leaves the body to
+the toes, nothing raised, nothing crossed:
+- a four-legged animal: the near front leg a little ahead of the far front leg, and the near hind leg a little behind
+  the far hind leg, so from the side all four legs show whole, side by side, none hidden behind another; each joint
+  (elbow, wrist, knee, hock) where it is on the real animal, clear to see;
+- a bird: both legs straight under it, a little apart so both show whole from the side, the heel joint clear, the toes
+  spread flat on the ground, none curled under the body.
+
+THE SHEET
+- One square picture in four equal panels, 2 x 2, with a thin plain gap between them. The same animal at the same size
+  in every panel, the same pose, nothing cropped:
+  - top left: SIDE, a strict profile, head to the right;
+  - top right: FROM ABOVE, looking straight down on its back, head at the top;
+  - bottom left: FRONT, head-on;
+  - bottom right: BACK, from straight behind.
+- Orthographic-looking views: no perspective, the body straight, the animal filling about 80 % of its panel.
+- A plain, even mid-grey background (#808080), no shadow on it, no ground line, no grass, no other animal; the grey the
+  same everywhere, with no glow or lighter patch around the animal, between its legs or under its belly.
+- Our artists cut each leg from the body, so: every leg's whole outline shows, clear of the body, the other legs and
+  the tail; the gap between the legs is plain grey; fur and feather edges crisp, never blurred into the grey.
+- Even, soft, shadowless light; colours true.
+- No labels, numbers, arrows, logos or watermarks.
+
+FORMAT: aspect ratio 1:1, the largest size you can make.
+
+Then wait for my first animal.
+```
+
+```text
+ASSET KM-N04, the Shiba Inu. Attach KM-P4. The Shiba of KM-P4: red with cream cheeks, chest, belly and legs' insides,
+the red collar, the tail curled over its back. Real size: 39 cm at the shoulder. Same rules as before.
+```
+
+```text
+ASSET KM-N01, the ginger cat. Attach KM-P4. The ginger tabby of KM-P4, white paws behind, the ringed tail.
+Real size: 25 cm at the shoulder, 46 cm long without the tail. Same rules as before.
+```
+
+```text
+ASSET KM-N21, the calico cat. Attach KM-P8. The calico of KM-P8: white, ginger and black patches exactly as there.
+Real size: 24 cm at the shoulder. Same rules as before.
+```
+
+```text
+ASSET KM-N22, the black-and-white cat. Attach KM-P8. The black-and-white cat of KM-P8, its markings exactly as there.
+Real size: 25 cm at the shoulder. Same rules as before.
+```
+
+```text
+ASSET KM-N02, the tanuki. Attach KM-P4. The tanuki of KM-P4: grizzled grey-brown, the dark mask and legs, the bushy
+tail. Real size: 30 cm at the shoulder, 55 cm long without the tail. Same rules as before.
+```
+
+```text
+ASSET KM-N03, the Pallas's squirrel. Attach KM-P4. The squirrel of KM-P4: grey-brown back, the rufous belly, the long
+bushy tail held out behind it, not over its back. Real size: 20 cm long without the tail. Same rules as before.
+```
+
+```text
+ASSET KM-N07, the shrine pigeon. Attach KM-P4. The pigeon of KM-P4: blue-grey, two black wing bars, the green and purple
+sheen on its neck, pink legs. Real size: 32 cm long. Same rules as before.
+```
+
+```text
+ASSET KM-N20, the oriental turtle dove. Attach KM-P8. The turtle dove of KM-P8: the scaly rufous and black back, the
+striped neck patch. Real size: 33 cm long. Same rules as before.
+```
+
+```text
+ASSET KM-N06, the large-billed crow. Attach KM-P4. The crow of KM-P4: glossy black, the heavy arched bill. Real size:
+57 cm long. Same rules as before.
+```
+
+```text
+ASSET KM-N08, the tree sparrow. Attach KM-P4. The sparrow of KM-P4: chestnut cap, the black cheek spot, streaked brown
+back. Real size: 14 cm long. Same rules as before.
+```
+
+```text
+ASSET KM-N17, the white wagtail. Attach KM-P8. The wagtail of KM-P8: black, white and grey, its long tail held level.
+Real size: 18 cm long. Same rules as before.
+```
+
+```text
+ASSET KM-N10, the black-tailed gull. Attach KM-P4. The gull of KM-P4: white, dark grey back, yellow legs.
+Real size: 46 cm long. Same rules as before.
+```
+
+```text
+ASSET KM-N11, the little egret. Attach KM-P4. The egret of KM-P4: all white, black legs with yellow feet, its plumes.
+Real size: 60 cm long. Same rules as before.
+```
+
+```text
+ASSET KM-N15, the grey heron. Attach KM-P8. The heron of KM-P8, standing tall, its neck in a gentle S.
+Real size: 95 cm long. Same rules as before.
+```
+
 ### Step 5: buildings and set pieces
 
 In the model sheet chat, in this order: the two shared ends first.

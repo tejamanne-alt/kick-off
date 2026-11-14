@@ -355,7 +355,7 @@ GAITS = {
     # a trot: diagonal pairs together, a moment with no foot down between them
     'trot': dict(duty=0.42, stride=0.9, step=0.22, bob=0.03, phase={'FR': 0.0, 'BL': 0.0, 'FL': 0.5, 'BR': 0.5}),
     # a bird's walk: one foot then the other
-    'step': dict(duty=0.6, stride=0.55, step=0.22, bob=-0.008, phase={'R': 0.0, 'L': 0.5}),
+    'step': dict(duty=0.6, stride=0.55, step=0.12, bob=-0.008, phase={'R': 0.0, 'L': 0.5}),   # a low shuffle (D22)
 }
 
 
@@ -367,6 +367,9 @@ def foot_path(p, duty, stride, step):
         return stride * (0.5 - p / duty), 0.0
     t = (p - duty) / (1.0 - duty)
     return stride * (t * t * (3 - 2 * t) - 0.5), step * math.sin(math.pi * t)
+
+
+BEND = -1     # LegGait.Bend: the knee (an elbow, a hock, a heel) behind the hip-to-foot line
 
 
 def two_bone(knee, foot, target, bend):
@@ -405,9 +408,9 @@ def legs_of(parts):
         f = (base[0] + foot.location.x, base[1] + foot.location.z)
         end = end or f
         l1, l2 = math.hypot(*knee), math.hypot(end[0] - knee[0], end[1] - knee[1])
-        cross = knee[0] * (end[1] - knee[1]) - knee[1] * (end[0] - knee[0])
-        # the knee bends as it does in the picture; a straight leg: a front leg's forward, a hind leg's or a bird's back
-        bend = -math.copysign(1, cross) if abs(cross) > 0.08 * l1 * l2 else (1 if sfx.startswith('F') else -1)
+        # every joint here bends back, whatever pose the picture caught (D22): a front leg's elbow, a hind leg's hock, a
+        # bird's heel. Read from the picture, a front leg caught reaching back bent its joint forward all through its step
+        bend = BEND
         mark = parts.get('Tip' + sfx)       # the front of the toes on the ground (LegGait.Rig.Find); else the foot
         tip = (end[0] + mark.location.x, end[1] + mark.location.z) if (mark is not None and toe is not None) else f
         # a leg hanging from a back's rear half (Hips) that flexes: its hip in the root's frame, and the Hips with it
@@ -456,7 +459,7 @@ def foot_roll(kind, front, p):
     in the stance, a bird's toes curling and a mammal's paw folding back in the swing, level again before it lands."""
     p -= math.floor(p)
     if kind == 'step':
-        off, swing = 25.0, 55.0
+        off, swing = 20.0, 35.0
     elif kind == 'walk':
         off, swing = (30.0, 75.0) if front else (25.0, 40.0)
     else:
@@ -662,23 +665,40 @@ def walk(height, run=False):
     return gait('trot' if run else 'walk', height)
 
 
+def hop_feet(u, L):
+    """LegGait.HopFoot: where a hopping bird's foot is at u (0..1 of one hop: the air first, then the ground), from where
+    it stands, and its roll (toes down, radians), for a leg of length L (D22). On the ground it is planted and the body
+    passes over it, from a little forward (landing) to trailing behind (the push), the heel lifting at the push; in the
+    air it trails off the push, tucks up under the belly with its toes curled, and reaches forward to land: one loop."""
+    u -= math.floor(u)
+    if u < 0.5:
+        a = u / 0.5
+        return (L * (-0.3 + 0.4 * _smooth(0.0, 1.0, a)), 0.45 * L * math.sin(math.pi * a),
+                0.5 * (1 - a) + 0.6 * math.sin(math.pi * a))
+    b = (u - 0.5) / 0.5
+    return L * (0.1 - 0.4 * b), 0.0, 0.5 * _smooth(0.7, 1.0, b)
+
+
 def hop(height, hop_height=0.05):
-    """A bird that hops with both feet (GroundBird's hopper: lifts |sin| x 5 cm): it crouches, springs, tucks its
-    feet in the air and lands on them."""
+    """A bird that hops with both feet (GroundBird's hopper): it crouches deep on its heels, springs (up 5 cm), its
+    feet trailing, tucks them up under its belly, reaches them forward and lands on them (hop_feet, D22: the feet had
+    moved a few pixels, the legs hanging the same all through the hop)."""
     def pose(parts, root, p):
         sa = math.sin(2 * math.pi * p)
         legs = legs_of(parts)
         L = sum(l[5] for l in legs.values()) / max(1, len(legs))
-        lift = hop_height * sa if sa > 0 else 0.12 * L * sa
+        lift = hop_height * sa if sa > 0 else HOP_CROUCH * L * sa
         for sfx, leg in legs.items():
             hip, tipr = leg[2], (leg[2][0] + leg[10][0], leg[2][1] + leg[10][1])
-            if sa > 0:      # in the air: the feet tucked under it, a little back, the toes curled (LegGait.Rig.Hop)
-                _place(leg, (tipr[0] - 0.15 * L * sa, tipr[1] + 0.25 * L * sa), roll=0.6 * sa)
-            else:           # on the ground: planted, the knees taking the crouch
-                _place(leg, (tipr[0], -lift))
+            dx, dz, roll = hop_feet(p, leg[5])
+            # in the air from where it stands, lifted with the body; on the ground on the ground
+            _place(leg, (tipr[0] + dx, tipr[1] + dz if sa > 0 else -lift), roll=roll)
         _set(parts, 'Head', y=-8 * sa)
         return lift, -6 * max(0.0, sa)
     return pose
+
+
+HOP_CROUCH = 0.3        # GroundBird's hopper: the body down into the heels by this share of the leg between hops
 
 
 def peck(height, turn=25.0, tip=30.0, period=0.22 / 0.45):

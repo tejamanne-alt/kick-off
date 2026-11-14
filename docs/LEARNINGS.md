@@ -31,7 +31,8 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
    looked at on the model's full-size part map before a motion is trusted (D20: birds on four legs passed every
    measure): one leg per leg part, nothing still in the body that should move, no fin or plume cut in two. An animal
    that moves is one skin on bones, never rigid pieces turning over a body, and its feet roll and its neck bends as the
-   species' do (D21: the user saw the pieces' edges at every joint and feet glued down).
+   species' do (D21: the user saw the pieces' edges at every joint and feet glued down). Its joints are where the
+   animal's are and bend the way the animal's do, never read from the pose a photo caught (D22).
 9. **Record every revert,** with who decided, why, and "don't retry X".
 
 ## A. Process and verification
@@ -1018,6 +1019,46 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
   - A motion that swings a part further than before is looked at in large frames, with each skin layer on its own:
     what a walk hides, a bound shows.
   - Before pushing C#, compare the compile errors against the last commit (`ERRORS=1`): a new line is a new error.
+
+**D22. Knees in the wrong places, and a Shiba with broken hind legs (the user, after D21).**
+- *What:* five more recordings (the ginger cat walking, running and bounding; the tanuki; the Shiba; the pigeon
+  walking; the sparrow hopping): "Still the movements are unusual. The knees and movements while moving for the animals
+  look very unusual. The rear legs of Shiba aren't rendered properly." And: should they give four-side pictures?
+  Looked at in large frames:
+  - *A knee halfway down every leg:* `leg_masks` put each leg's one joint at half its height below the belly. A dog's
+    or a cat's front leg has no joint there: its elbow is at the belly, its forearm runs straight to the wrist a quarter
+    up from the ground, and the wrist is what folds back in each step. So the forearm bent in its middle. A hind leg's
+    visible joint is the hock, two fifths up, not halfway.
+  - *Joints bent the way the photo's pose said:* each knee's direction was read from the picture. A front leg caught
+    reaching back bent forward all through its step, like a hind leg.
+  - *The Shiba's far hind leg:* in its photo, that leg shows only as a pale inner strip. Cut out and walked, it was a
+    white stick with a wedge on top, and its top stayed in the belly as a pale wedge.
+  - *A block at the cat's elbow:* the far legs' layer reached into the body every way, so its top was a slab. Shared
+    with the body's bone, the slab half turned with the leg and swung out below the belly as a cap. Behind that, the
+    body's skirt kept the far front leg's top, a still block hanging between the front legs.
+  - *A sparrow whose legs never moved in a hop:* the tuck was a tenth to a quarter of its leg, a few pixels; the legs
+    hung the same all through. Its raised leg's feathered knee stayed in the body as a pale lump.
+  - *A pigeon's swinging leg folded to a zig-zag,* lifted a fifth of its leg with its toes rolled 55 degrees.
+- *Why:* the joints were placed by a rule of thumb, and their direction by the photo, never by the animal's anatomy.
+  Every round since D19 fixed what the one mid-stride photo gave, and the checks measured feet, not knees.
+- *Fix:*
+  - **Joints where the animal's are (`JOINTS`):** a front leg's elbow just under the belly, its wrist 28 % up, the
+    pastern and paw below the wrist as its foot, folding back in the swing; a hind leg's hock 42 % up, the paw the
+    lowest 15 %.
+  - **Every joint bends back** (`LegGait.Bend`, `asset_review.BEND`): an elbow, a hock, a bird's heel.
+  - The Shiba's far hind leg is a copy of the near one, and its pale top is taken out of the belly (`leg_drop`).
+  - The far legs' layer reaches straight up into the body and belongs wholly to its leg, so it runs up out of sight.
+    A far leg's top is no longer kept in the body's skirt.
+  - A bird's hop is one loop (`LegGait.HopFoot`, `Rig.HopLoop`, `asset_review.hop_feet`). It crouches 30 % of its
+    leg. Its feet trail off the push, tuck up under the belly with the toes curled, and reach forward to land. The
+    sparrow's raised leg goes with its knee.
+  - A bird's step lifts its foot an eighth of its leg, a shuffle, with its toes closing less.
+- *What one photo can't give:* a walker's joints read from a mid-stride photo stay a guess, its far legs a copy, its
+  width and face a guess. Each walking animal and ground bird now has a four-view standing sheet to make (`BASE KM-S2`,
+  `docs/KAMAKURA_BUILD.md` Step 4c), all four legs whole and apart; built from those, the cut follows the joints the
+  picture shows.
+- *Rule:* a joint goes where the animal's is and bends as the animal's does, whatever the photo's pose. When a motion
+  is reported unnatural twice, ask whether the source can give what the motion needs, and say so to the user.
 
 ## E. Levels and world
 

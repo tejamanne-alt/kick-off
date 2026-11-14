@@ -138,9 +138,14 @@ ANIMALS = {
                           ('Head', [(1705, 314), (1808, 314), (1808, 433), (1728, 433)], (1734, 426))], legs=True,
                          step=22, outline=9.0, curl=True,
                          leg_seeds={'F': ([[(1683, 505), (1686, 545), (1692, 586)]], None),
-                                    'B': ([[(1500, 500), (1492, 545), (1496, 585)]], [[(1548, 485), (1525, 530), (1519, 572)]])},
+                                    'B': ([[(1500, 500), (1492, 545), (1496, 585)]], [[(1548, 485), (1525, 530), (1519, 572)]],
+                                          True)},   # its far hind leg shows only as a pale inner strip: copied (D22)
                          leg_drop=[[(1701, 568), (1712, 566), (1720, 571), (1720, 587), (1709, 587), (1706, 580),
-                                    (1701, 576)]]),
+                                    (1701, 576)],
+                                   # the far hind thigh's pale top and its crease, up into the belly (D22): left in the
+                                   # body, a pale wedge hung in front of the hind leg as it walked
+                                   [(1544, 500), (1543, 484), (1549, 474), (1556, 465), (1566, 462), (1574, 468),
+                                    (1584, 476), (1600, 482), (1600, 500)]]),
     'KmShibaSitting': A('KM-N04', P4, (1940, 317, 2235, 601), 'side', ('h', 0.62), 0.09,
                         [('Tail', [(1943, 545), (1949, 524), (1962, 513), (1980, 509), (1996, 512), (2004, 521), (2001, 540),
                                    (1998, 560), (1993, 579), (1975, 586), (1954, 582), (1943, 566)], (1997, 550))],
@@ -189,8 +194,9 @@ ANIMALS = {
                           leg_area=[[(2060, 1139), (2078, 1139), (2094, 1158), (2108, 1176), (2110, 1192), (2084, 1192),
                                      (2060, 1152)]],
                           leg_lines=([[(2068, 1141), (2078, 1152), (2088, 1166), (2100, 1178)]], None),
-                          leg_drop=[[(2112, 1134), (2195, 1138), (2195, 1160), (2150, 1162), (2132, 1180), (2114, 1180),
-                                     (2112, 1160)]]),
+                          # the raised leg with its feathered knee (D22: left in the body, a pale lump under the belly)
+                          leg_drop=[[(2087, 1137), (2195, 1138), (2195, 1160), (2150, 1162), (2132, 1180), (2114, 1180),
+                                     (2110, 1155), (2087, 1153)]]),
     'KmSparrowFlying': A('KM-N08', P4, (2359, 958, 2696, 1201), 'below', ('w', 0.21), 0.02, wings=0.09, refine=True),
     'KmSwallowPerched': A('KM-N09', P4, (0, 1255, 466, 1525), 'side', ('h', 0.22), 0.02,
                           exclude=[[(0, 1350), (122, 1365), (122, 1415), (0, 1400)],
@@ -459,6 +465,12 @@ def _twin(masks, pivots, sides, feet, near, far, own=None):
     feet[far] = feet[near]
 
 
+# a four-legged animal's joints, as shares of its leg below the belly (D22): {group: (the knee's row down from the belly,
+# the foot's height up from the ground)}. Front: the elbow just under the belly and the wrist 28 % up (the pastern and
+# paw below it are the Toe, folding back in the swing); hind: the hock 42 % up, the paw the lowest 15 %
+JOINTS = {'F': (0.12, 0.28), 'B': (0.58, 0.15), '': (0.5, 0.2)}
+
+
 def leg_masks(rest, biped=False, seeds=None, origin=(0, 0), own=None):
     """A walker's legs, from what is left of its figure once its tail and head are taken: each one a thigh (Leg..,
     pivoting at the hip or shoulder) and a shin (Shin.., pivoting at the knee), with the foot's contact point.
@@ -576,7 +588,12 @@ def leg_masks(rest, biped=False, seeds=None, origin=(0, 0), own=None):
             name, shin = 'Leg' + g + side, 'Shin' + g + side
             ly = np.nonzero(m)[0]
             foot_row = int(ly.max())
-            knee = int(belly + 0.5 * (foot_row - belly))
+            # the joints where the animal's are (D22): a front leg's elbow just under the belly, its forearm down to the
+            # wrist, the pastern and paw below folding back at the wrist (its Toe); a hind leg's hock two fifths up from
+            # the ground, the long cannon below it, the paw. A joint halfway down every leg bent a dog's forearm in its
+            # middle and its hind leg above the hock
+            knee_at, paw_at = JOINTS[g]
+            knee = int(belly + knee_at * (foot_row - belly))
             hip_band, hip_x = reach_up(m, belly, 0.5 * legh, 0.35)
             above = np.zeros_like(m)
             above[:knee + 1] = 1
@@ -597,8 +614,8 @@ def leg_masks(rest, biped=False, seeds=None, origin=(0, 0), own=None):
             sides[name] = sign
             fx = np.nonzero(m[max(0, foot_row - 2):foot_row + 1])[1]
             feet[name] = (float(fx.mean()), float(foot_row))
-            paw = np.zeros_like(m)              # the paw: the lowest fifth of the leg, kept level at its wrist (_foot)
-            paw[int(foot_row - 0.2 * legh):] = 1
+            paw = np.zeros_like(m)              # the foot below its ankle (a front leg's: below the wrist), _foot
+            paw[int(foot_row - paw_at * legh):] = 1
             _foot(m, paw, rest, shin, 'Toe' + g + side, feet[name], 0.1 * legh, masks, pivots, name, own_px=own)
         if len(ms) == 1:
             _twin(masks, pivots, sides, feet, 'Leg' + g + 'R', 'Leg' + g + 'L', own)
@@ -1005,20 +1022,24 @@ def part_masks(spec, mask):
             legs, lpiv, lsides, lfeet, belly = leg_masks(rest, seeds=spec['leg_seeds'], origin=(x0, y0), own=own)
             if belly is not None:
                 # the body keeps a skirt below its belly, a sixth of the leg deep: a thigh turning off it shows fur
-                # there, not the backdrop (D20)
+                # there, not the backdrop (D20). Not a far leg's: its top kept in the body hung below the belly as a
+                # still block between the front legs while the leg walked on behind (D22); the far legs' layer runs
+                # up behind the body instead
                 legh = int(np.nonzero(rest)[0].max()) - belly
                 below[belly + 1 + int(0.15 * legh):] = 1
+                below_far = np.zeros_like(mask)
+                below_far[belly + 1:] = 1
             gone = own.pop('_gone', None)
-            if gone is not None:        # a far leg taken out for its copy (leg_seeds' third entry): below the skirt
-                gone = (gone & below).astype(np.uint8)
-                taken |= gone
+            if gone is not None:        # a far leg taken out for its copy (leg_seeds' third entry), all of it: kept in the
+                taken |= gone           # belly's skirt, the Shiba's pale inner thigh hung there as a wedge (D22)
                 own['_drop'] |= gone
         for name, pm in legs.items():
             parts[name] = pm
             pivots[name] = (x0 + lpiv[name][0], y0 + lpiv[name][1])
             if name in lsides:
                 sides[name] = lsides[name]
-            taken |= pm & below          # the thigh's reach into the body stays the body's too
+            far_leg = not biped and belly is not None and name.endswith('L')
+            taken |= pm & (below_far if far_leg else below)   # the thigh's reach into the body stays the body's
             banded.add(name)
         for name, (fx, fy) in lfeet.items():
             spec.setdefault('_feet', {})[name] = (x0 + fx, y0 + fy)
@@ -1400,15 +1421,25 @@ def build(name, spec, atlas, sheet):
             return 3.0
         return max(3.0, 0.4 * t)
 
-    def weights(layer, members, pts):
+    def weights(layer, members, pts, far=False):
         """Each point's bone weights (npts x len(deform)): every pixel of layer belongs to the deepest member bone whose
         own pixels hold it (the Body elsewhere); across each joint the two bones share it, half and half at the line
-        between their pixels, fading to the one alone at the blend's width either side."""
+        between their pixels, fading to the one alone at the blend's width either side. far: the far legs' layer, whose
+        reach up into the body belongs to the leg it rises from (D22): shared with the body, it half turned with the leg
+        and swung out below the belly as a cap at the elbow; the leg's own, it runs up out of sight behind the body."""
         h, w = layer.shape
         lab = np.full((h, w), -1, np.int32)
         lab[layer > 0] = gi['Body']
         for b in sorted(members, key=lambda b: (_depth(b), b)):
             lab[(own[b] > 0) & (layer > 0)] = gi[b]
+        if far and (lab != gi['Body']).any():
+            mine = np.where((lab >= 0) & (lab != gi['Body']), 0, 255).astype(np.uint8)
+            _, nearest = cv2.distanceTransformWithLabels(mine, cv2.DIST_L2, 5, labelType=cv2.DIST_LABEL_PIXEL)
+            my, mx = np.nonzero(mine == 0)
+            to = np.zeros(int(nearest.max()) + 1, np.int32)
+            to[nearest[my, mx]] = lab[my, mx]
+            reach = lab == gi['Body']
+            lab[reach] = to[nearest[reach]]
         present = [b for b in deform if (lab == gi[b]).any()]
         dist = {b: cv2.distanceTransform((lab != gi[b]).astype(np.uint8), cv2.DIST_L2, 5) for b in present}
         # a point just off the layer (a split triangle's centre) takes the nearest labelled pixel's bone
@@ -1474,10 +1505,13 @@ def build(name, spec, atlas, sheet):
         far_layer |= own[b]
     if far_layer.any():
         k = 2 * max(3, int(round(0.06 * fh))) + 1
-        # into the body only: grown over a near leg beside it, the far leg dragged a ghost of that leg with it (D21)
-        far_layer = (far_layer | (cv2.dilate(far_layer, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (k, k)))
-                                  & own['Body']))
-        far_layer = far_layer.astype(np.uint8)
+        # into the body only: grown over a near leg beside it, the far leg dragged a ghost of that leg with it (D21); and
+        # straight up only: grown every way, its top was a slab as wide as the leg and more, whose corners turned with
+        # the leg and dropped below the belly as a block at the elbow (D22)
+        reach = np.zeros_like(far_layer)
+        for d in range(1, k + 1):
+            reach[:-d] |= far_layer[d:]
+        far_layer = (far_layer | (reach & own['Body'])).astype(np.uint8)
     layers = [('Skin', main.astype(np.uint8), near_members, False)]
     if far_layer.any():
         layers.append(('SkinFar', far_layer.astype(np.uint8), far_members, True))
@@ -1489,7 +1523,7 @@ def build(name, spec, atlas, sheet):
     built = []
     for mname, layer, members, far in layers:
         pts, tris, dist, radius = relief(layer, step, spec['outline'])
-        W = weights(layer, members, pts)
+        W = weights(layer, members, pts, far)
         wing = np.zeros(len(pts), np.float32)
         for b, i in gi.items():
             if b.startswith('Wing') or b.startswith('Hind') or (b == 'Tail' and view == 'below'):

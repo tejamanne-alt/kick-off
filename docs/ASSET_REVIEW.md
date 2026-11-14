@@ -49,8 +49,10 @@ frame before it is shown: at full size, every second frame at least, never only 
 
 An animal that moves is one skin on bones (D21): a continuous mesh bound to an armature, every bone named as the
 behaviour finds it, sharing the skin across each joint, never rigid pieces turning over a body (their edges show at
-every joint). A walking animal's legs are jointed as the animal's are (a thigh, a shin, a foot of its own, turning at
-the ankle and rolling over its toes, a bird's toes in the round; a bird's bare leg one bone hinged at the heel), its feet planted on the ground through the stance and lifted
+every joint). A walking animal's legs are jointed where the animal's are (D22: a front leg's elbow just under the
+belly and its wrist low down, the pastern and paw folding back at the wrist; a hind leg's hock two fifths up; a bird's
+bare leg one bone hinged at the heel, its toes in the round), every joint bending back as an elbow, a hock and a heel
+do, whatever pose the source photo caught, its feet planted on the ground through the stance and lifted
 forward in the swing, its knees bending as in the picture (D19: rigid legs swung from the hip scissored and floated).
 A bird walks on its feet, never bounces on the spot, and pecks by tipping its body on planted feet, no further than
 its legs can keep them planted. Every other part that bends in the real animal bends in the model: a tail in three

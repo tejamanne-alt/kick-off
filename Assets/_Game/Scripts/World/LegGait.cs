@@ -26,7 +26,8 @@ namespace DribbleToSchool.World
         public static float Stride(Kind kind) { return kind == Kind.Walk ? 0.6f : kind == Kind.Trot ? 0.9f : 0.55f; }
 
         /// <summary>How high a foot lifts in its swing, as a share of the leg's length.</summary>
-        public static float Lift(Kind kind) { return kind == Kind.Walk ? 0.14f : kind == Kind.Trot ? 0.22f : 0.22f; }
+        // a bird's step lifts its foot low, a shuffle (D22: lifted a fifth of its leg, the swinging leg folded to a zig-zag)
+        public static float Lift(Kind kind) { return kind == Kind.Walk ? 0.14f : kind == Kind.Trot ? 0.22f : 0.12f; }
 
         /// <summary>The body's rise (+) or dip (-) twice a cycle, as a share of the leg's length.</summary>
         public static float Bob(Kind kind) { return kind == Kind.Walk ? -0.012f : kind == Kind.Trot ? 0.03f : -0.008f; }
@@ -81,7 +82,7 @@ namespace DribbleToSchool.World
         {
             p -= Mathf.Floor(p);
             float off, swing;
-            if (kind == Kind.Step) { off = 25f; swing = 55f; }
+            if (kind == Kind.Step) { off = 20f; swing = 35f; }     // a bird's toes closing as it lifts them (D22: less)
             else if (kind == Kind.Walk) { off = front ? 30f : 25f; swing = front ? 75f : 40f; }
             else { off = front ? 35f : 30f; swing = front ? 90f : 50f; }
             float duty = Duty(kind), r;
@@ -92,6 +93,27 @@ namespace DribbleToSchool.World
                 r = u < 0.35f ? Mathf.Lerp(off, swing, Smooth(0f, 0.35f, u)) : u < 0.85f ? swing * (1f - Smooth(0.35f, 0.85f, u)) : 0f;
             }
             return r * Mathf.Deg2Rad;
+        }
+
+        /// <summary>How far a hopping bird's body sinks into its heels between hops, as a share of its leg (D22).</summary>
+        public const float HopCrouch = 0.3f;
+
+        /// <summary>Where a hopping bird's foot is at u (0..1 of one hop: the air, then the ground), from where it stands,
+        /// for a leg of length L, and its roll (z: toes down, radians), docs/LEARNINGS.md D22. On the ground it is planted
+        /// and the body passes over it, from a little forward (landing) to trailing behind (the push), the heel lifting at
+        /// the push; in the air it trails off the push, tucks up under the belly with its toes curled, and reaches forward
+        /// to land: one loop. (The feet had moved a few pixels, the legs hanging the same all through the hop.)</summary>
+        public static Vector3 HopFoot(float u, float L)
+        {
+            u -= Mathf.Floor(u);
+            if (u < 0.5f)
+            {
+                float a = u / 0.5f;
+                return new Vector3(L * (-0.3f + 0.4f * Smooth(0f, 1f, a)), 0.45f * L * Mathf.Sin(Mathf.PI * a),
+                                   0.5f * (1f - a) + 0.6f * Mathf.Sin(Mathf.PI * a));
+            }
+            float b = (u - 0.5f) / 0.5f;
+            return new Vector3(L * (0.1f - 0.4f * b), 0f, 0.5f * Smooth(0.7f, 1f, b));
         }
 
         static float Smooth(float a, float b, float x)
@@ -148,14 +170,11 @@ namespace DribbleToSchool.World
             return 0.5f * (2f * p1 + (-p0 + p2) * u + (2f * p0 - 5f * p1 + 4f * p2 - p3) * u * u + (-p0 + 3f * p1 - 3f * p2 + p3) * u * u * u);
         }
 
-        /// <summary>Which way a knee bends: as it does in the model; a straight leg's, a front leg's forward and a hind
-        /// leg's or a bird's back.</summary>
-        public static float Bend(Vector2 knee, Vector2 foot, bool front)
-        {
-            float cross = knee.x * (foot.y - knee.y) - knee.y * (foot.x - knee.x);
-            if (Mathf.Abs(cross) > 0.08f * knee.magnitude * (foot - knee).magnitude) return -Mathf.Sign(cross);
-            return front ? 1f : -1f;
-        }
+        /// <summary>Which way a knee bends: back, behind the hip-to-foot line, for every leg (docs/LEARNINGS.md D22): a
+        /// front leg's knee is its elbow (the kit puts it just under the belly, and the wrist below folds as the foot),
+        /// a hind leg's is its hock, a bird's is its heel. Read from the picture, a front leg caught reaching back bent
+        /// its joint forward all through its step.</summary>
+        public const float Bend = -1f;
 
         /// <summary>A model's jointed legs, captured in their rest pose against the root they move with (a Dog's visual,
         /// a GroundBird's own transform). Legs without a shin and a foot are left alone.</summary>
@@ -243,7 +262,7 @@ namespace DribbleToSchool.World
                     leg.tip = tipMark != null ? Plane(root, tipMark.position) - leg.hip : leg.foot;
                     leg.fromTip = leg.end - leg.tip;
                     leg.length = leg.knee.magnitude + (leg.end - leg.knee).magnitude;
-                    leg.bend = Bend(leg.knee, leg.end, n[0] == 'F');
+                    leg.bend = Bend;
                     if (leg.length > 1e-4f) found.Add(leg);
                 }
                 var rig = new Rig(root, found.ToArray());
@@ -460,6 +479,20 @@ namespace DribbleToSchool.World
                     // tucked in the air, the toes curled under; planted with the knees taking the crouch
                     Place(ref legs[i], s > 0f ? f + new Vector2(-0.15f * L * s, 0.25f * L * s) : new Vector2(f.x, -lift),
                           0f, s > 0f ? 0.6f * s : 0f);
+                }
+            }
+
+            /// <summary>A bird's hop at u (0..1 of one: the air, then the ground; GroundBird's phase over 2 pi), amount
+            /// 0..1 (its pace): each foot on HopFoot, lifted with the body in the air, on the ground when down (the body
+            /// lowered by -lift into its heels).</summary>
+            public void HopLoop(float u, float amount, float lift)
+            {
+                bool air = u - Mathf.Floor(u) < 0.5f;
+                for (int i = 0; i < legs.Length; i++)
+                {
+                    Vector2 f = legs[i].hip + legs[i].tip;
+                    Vector3 h = HopFoot(u, legs[i].length) * amount;
+                    Place(ref legs[i], air ? f + new Vector2(h.x, h.y) : new Vector2(f.x + h.x, -lift), 0f, h.z);
                 }
             }
 
