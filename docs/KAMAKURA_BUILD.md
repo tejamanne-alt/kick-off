@@ -505,8 +505,11 @@ real object would be. A photograph of the real object in the look of the picture
 natural colour, sharp detail), not a painting, an illustration or a cartoon.
 
 THE VIEWS
-One view per image, in this order, each when I ask for it: FRONT (the side that faces the street), RIGHT SIDE, BACK,
-TOP (looking straight down), THREE-QUARTER (from the front left, a little above). Every view:
+One view per image, in this order, each when I ask for it: FRONT (the side that faces the street), RIGHT SIDE (from
+its right as you face its FRONT), BACK (the side opposite FRONT, away from the street: for a long object, a bicycle or a
+tram, its other long side, not its end), TOP (looking straight down, FRONT at the bottom of the image), THREE-QUARTER
+(from the front left, a little above). Every view:
+- the same object in the same pose: the same proportions, every moving part (an arm, a door, a stand) the same in each;
 - the whole object, centred, nothing cropped, filling about 85 % of the image's height or width, whichever it reaches
   first;
 - the same object at the same scale in FRONT, RIGHT SIDE and BACK: its height the same number of pixels in each;
@@ -649,10 +652,11 @@ vending machine, KM-A19 the blue one, KM-A05 the crossing signal, KM-A04 the bar
 KM-A03 the mirror, KM-A11 the small torii, KM-A08 the bicycle (all in but KM-A06). Then KM1-1's second batch, from the
 second props sheet: KM-A20 the recycling bins, KM-A22 the air-conditioner unit, KM-A23 the meters, KM-A24 the letterbox,
 KM-A25 the control cabinet, KM-A26 the street lamp, KM-A28 the ticket gate, KM-A29 the station name board; then the tram
-(KM-V01, Step 3). The rest (KM-A21, A27, A30 to A38) as their levels come. Each is built as it comes in (`tools/blender/km_props.py`,
-reviewed in `review/kamakura/props/`). Until then the props stand as first built from KM1-1's own pixels, measured
-against the vending machines beside them (1.83 m, 248 px: 135.5 px to the metre): right in shape, size and place, too soft
-in close-up (D24). The level picture stays the authority for design, size and place; the views give the pixels.
+(KM-V01, Step 3). The rest (KM-A21, A27, A30 to A38) as their levels come. Each is built as its views come in (`tools/blender/km_views.py`: carved
+from its views and textured from them, D25; reviewed in `review/kamakura/props/`): KM1-1's first batch (A01, A03, A04,
+A05, A08, A11, A19) is built from them. A view must show the same object as the others: the same proportions and pose,
+BACK its far side (for a bicycle, the side away from the street, not its rear). The level picture stays the authority
+for design, size and place; the views give the pixels.
 
 ```text
 ASSET KM-A01, the concrete utility pole with a transformer. Attach KM-P1 and KM1-1 (its photographic version). The left pole on the props sheet: a

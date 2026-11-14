@@ -1100,6 +1100,35 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
   shows it small; a review board shows each model at the size the user will judge it, and its pixels per metre are
   stated beside it.
 
+**D25. Props carved from their views: the views disagree with one another (KM1-1's seven props, rebuilt from the user's
+views).**
+- *What:* the seven props rebuilt from the user's views (`km_views.py`: each carved from its front, right-side and top
+  outlines, textured from all its views). The first renders, looked at side by side with the views, showed:
+  - the pole a mass of spikes: its step bolts and hanging cables, a few voxels thin, collapsed into long triangles when
+    the mesh was cut to its 1,500;
+  - the torii's pillars square: its top view shows only the top beam, so nothing rounded the pillars under it;
+  - grey background on the barrier's and the vending machine's backs: each view lined up by its outer box, and a back
+    view drawn 5 to 7 % wider than the front, or its arm at another angle, moves its box but not its object;
+  - the barrier's arm lowered in its top view and raised in the others; the bicycle's "back" made from its rear end, not
+    its far side;
+  - the barrier's motion GIF framed on its arm alone (`asset_review.motion_gif` measured a model's children, not a
+    root that is its own mesh), so each frame showed pieces of its neighbours.
+- *Why:* views made one at a time by an image model are each right on their own, not with one another: proportions,
+  poses and which side is "back" drift between them. The carving trusted every outline equally.
+- *Fix:* parts thinner than 5 to 8 cm stay in the texture only (`thin`); in the heights where posts stand, each round
+  piece no wider than a post (`round_w`, measured in the views: the pole's column is 0.55 m in them) is made round in
+  section; a slice is cut by the top view only where the cut slice still
+  reaches what its front and side show (so the top hollows, never removes: the lowered arm is left out); a back or left
+  view is slid and stretched across (up to 8 %) until its whole outline best covers the opposite side's, the top until
+  its extent matches the front's and the side's; a view made from another side is renamed (`view_map`). The pole,
+  first carved without its top view (it seemed to disagree), came out with grey slabs where its crossarms cross; with
+  the top used where it agrees, they are gone. The decimation left a few open or three-way edges where the surface met
+  itself at an edge, so the surface is first re-meshed on a finer grid (Blender's voxel remesh), which makes it one
+  closed, manifold shell. `motion_gif` frames the root's own mesh too. Still to do: the crossing signal's guard frame stays solid, as no view shows its hollow (the
+  far bars show through the near ones, and from above the crossbuck and lamps cover it).
+- *Rule:* before carving from views, check each against the others (sizes, outlines, poses, which side it shows); register
+  them by the object, not by its box; and look at the decimated mesh, not only the dense one.
+
 ## E. Levels and world
 
 - **E1. Every level had chapter-1 scenery.** A new-scene call unloaded the level definition. *Rule:* pass data into scene builders explicitly; never hold asset references across a new-scene call.

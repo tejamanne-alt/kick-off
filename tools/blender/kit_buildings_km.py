@@ -19,7 +19,7 @@ from PIL import Image
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import kit_lib as K
-import km_props as KP
+import km_views as KV
 
 ARGS = sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else []
 OUT = ARGS[0] if ARGS and not ARGS[0].startswith('--') else os.path.abspath('out_km')
@@ -847,51 +847,67 @@ def board(home, vend, atlas_path, out):
     print('board', out, sheet.size)
 
 
-def build_props(atlas):
-    """The street props (km_props.py, docs/KAMAKURA_BUILD.md Step 2): KM1-1's first, from its photographic picture with
-    both machines' real logos repainted."""
-    km11, p1 = rebrand_machines(ref(HOME['src'])), ref('KM-P1_props_sheet.png')
-    props = [KP.build_pole_transformer(atlas, km11, K.new_obj),
-             KP.build_mirror(atlas, km11, K.new_obj),
-             KP.build_vending_blue(atlas, km11, p1, K.new_obj, rectify),
-             KP.build_crossing_signal(atlas, km11, K.new_obj),
-             KP.build_crossing_barrier(atlas, km11, K.new_obj),
-             KP.build_torii(atlas, km11, K.new_obj)]
-    for o, _ in props:
-        for x in [o] + list(o.children_recursive):
+def build_props():
+    """The street props (km_views.py, docs/KAMAKURA_BUILD.md Step 2): KM1-1's, each carved from the user's own views of it
+    (front, right side, back, top) and textured from them, in its own texture (<Model>.png beside its FBX)."""
+    props = []
+    for name, (pid, folder, height, opts) in KV.props().items():
+        root, img, fr = KV.build(name, os.path.join(KV.SHEETS, folder), height, K.new_obj, **opts)
+        cut = bool(opts.get('cutout'))
+        tex = name + '.png'
+        Image.fromarray(img if cut else img[..., :3]).save(os.path.join(OUT, tex))
+        for x in [root] + list(root.children_recursive):
             keep_uv_white(x)
+            x.data.uv_layers.active_index = 0
+        print('%-18s %s views, %.2f x %.2f x %.2f m, top in %s slices, round in %s' % (
+            name, folder, fr.W, fr.D, fr.H, fr.slices['top'], fr.slices['round']))
+        props.append((root, dict(id=pid, source='sheets/%s (its views, made from KM1-1)' % folder,
+                                 real_size=[round(fr.W, 2), round(fr.D, 2), height], texture=tex, cutout=cut)))
     return props
 
 
-def props_review(props, atlas_path, out_dir):
-    """The strict review of the props (docs/ASSET_REVIEW.md), for asset_review_page.py: source/<Model>.jpg (its picture),
-    views/<Model>.jpg (all eight sides), motion/<Model>_<motion>.gif (the barrier's arm lowering and rising),
-    review.json (the seventeen checks, measured where they can be: open edges, triangles, size), and props_board.jpg
-    (each beside its picture: straight on at the picture's scale, at three-quarters, from the street)."""
+def props_review(props, out_dir):
+    """The strict review of the props (docs/ASSET_REVIEW.md), for asset_review_page.py: source/<Model>.jpg (the user's
+    front view), views/<Model>.jpg (all eight sides), motion/<Model>_<motion>.gif (the barrier's arm lowering and
+    rising), review.json (the seventeen checks, measured where they can be: open edges, triangles, size), and board.jpg
+    (each beside its views: the front view and the model straight on at the same scale, the three-quarter view and the
+    model at three-quarters, and the model from the street)."""
     import json
     import asset_review as AR
     from PIL import ImageDraw, ImageFont
     for sub in ('views', 'source', 'motion', 'tmp'):
         os.makedirs(os.path.join(out_dir, sub), exist_ok=True)
-    mat = unlit(atlas_path)
-    for o in bpy.context.scene.objects:
-        if o.type == 'MESH':
+    for root, info in props:
+        m = unlit(os.path.join(OUT, info['texture']), cut=info['cutout'])
+        for o in [root] + list(root.children_recursive):
             o.data.materials.clear()
-            o.data.materials.append(mat)
-    km11 = rebrand_machines(ref(HOME['src']))
+            o.data.materials.append(m)
     tmp = os.path.join(out_dir, 'tmp')
     rows, review = [], {}
+    S = 520
     for root, info in props:
         name = root.name
         names = {name} | {c.name for c in root.children_recursive}
+        folder = os.path.join(KV.SHEETS, info['source'].split('/')[1].split(' ')[0])
+        views = KV.read_views(folder)
         loc = root.location.copy()
         root.location = (0, 0, 0)
         bpy.context.view_layer.update()
         AR.eight_views(root, os.path.join(out_dir, 'views', name + '.jpg'), render, cell_px=360,
                        title='%s: every side (Right is the street side, as the game sees it)' % name)
-        (x0, y0, x1, y1), cx, gy, s = KP.CROPS[name]
-        pic = km11.crop((x0, y0, x1, y1))
-        src = pic.copy()
+        W, D, H = info['real_size']
+
+        def crop(im):
+            """The view cut to its object with a margin, and the margin's frame in metres (its middle x, z and height),
+            the object's box being W x H."""
+            x0, y0, x1, y1 = KV.bbox(KV.object_mask(im))
+            p = int(0.04 * max(x1 - x0, y1 - y0))
+            c = (max(0, x0 - p), max(0, y0 - p), min(im.shape[1], x1 + p), min(im.shape[0], y1 + p))
+            s = (y1 - y0) / H
+            return (Image.fromarray(im).crop(c), ((c[0] + c[2]) / 2 - x0) / s - W / 2, (y1 - (c[1] + c[3]) / 2) / s,
+                    (c[2] - c[0]) / s, (c[3] - c[1]) / s)
+        front, fx, fz, fw, fh = crop(views['front'])
+        src = front.copy()
         src.thumbnail((600, 600))
         src.save(os.path.join(out_dir, 'source', name + '.jpg'), quality=88)
         motions = []
@@ -903,41 +919,41 @@ def props_review(props, atlas_path, out_dir):
             AR.motion_gif(root, lift, os.path.join(out_dir, 'motion', name + '_lift.gif'), render, frames=24, cell_px=280,
                           ms=120, label='lift')
             motions.append('lift')
-        mx, mz = ((x0 + x1) / 2 - cx) / s, (gy - (y0 + y1) / 2) / s
-        k = 520.0 / (y1 - y0)
-        size = (max(60, int((x1 - x0) * k)), 520)
-        a = pic.resize(size)
-        b = render(os.path.join(tmp, name + '_front.png'), (mx, -60, mz), (mx, 0, mz), ortho=(y1 - y0) / s if
-                   (y1 - y0) > (x1 - x0) else (x1 - x0) / s, size=size, only=names)
-        top = max((y1 - y0) / s, root.dimensions.z)
-        c = render(os.path.join(tmp, name + '_34.png'), (mx + 0.9 * top, -1.3 * top, 0.75 * top),
-                   (mx, 0, 0.45 * top), fov=40, size=(520, 520), only=names)
-        d = render(os.path.join(tmp, name + '_game.png'), (mx - 2.5, -9.0, 1.6), (mx, 0, 0.45 * top), fov=40,
-                   size=(520, 520), only=names)
-        rows.append((name, info, [a, b, c, d]))
+        k = S / front.height
+        size = (max(60, int(front.width * k)), S)
+        a = front.resize(size)
+        b = render(os.path.join(tmp, name + '_front.png'), (fx, -60, fz), (fx, 0, fz), ortho=max(fw, fh), size=size,
+                   only=names)
+        three = views.get('three')
+        c0 = crop(three)[0] if three is not None else Image.new('RGB', (S, S), (60, 60, 66))
+        c0.thumbnail((S, S))
+        top = max(H, W)
+        c = render(os.path.join(tmp, name + '_34.png'), (1.0 * top, -1.35 * top, 0.7 * top), (0, 0, 0.45 * H), fov=40,
+                   size=(S, S), only=names)
+        d = render(os.path.join(tmp, name + '_game.png'), (-2.5, -9.0, 1.6), (0, 0, 0.45 * H), fov=40, size=(S, S),
+                   only=names)
+        rows.append((name, info, [a, b, c0, c, d]))
         # the checks
         tris = K.tree_tris(root)
         open_edges = 0
         for o in [root] + list(root.children_recursive):
-            if o.type == 'MESH':
-                counts = {}
-                for poly in o.data.polygons:
-                    for ek in poly.edge_keys:
-                        counts[ek] = counts.get(ek, 0) + 1
-                open_edges += sum(1 for v in counts.values() if v == 1)
-        dims = [round(v, 2) for v in info['real_size']]
+            counts = {}
+            for poly in o.data.polygons:
+                for ek in poly.edge_keys:
+                    counts[ek] = counts.get(ek, 0) + 1
+            open_edges += sum(1 for v in counts.values() if v == 1)
         default = {
-            1: ('pass', 'each solid once, looked at in Top and Bottom'),
+            1: ('pass', 'one solid carved from its views: each part once, looked at in Top and Bottom'),
             2: ('pass' if open_edges == 0 else 'FAIL', '%d edges with one face' % open_edges),
-            3: ('pass', 'built of solids at their own depth: cylinders round, boards and boxes their real thickness'),
-            4: ('pass', 'its front the picture; round parts\' backs their fronts mirrored'),
-            5: ('pass' if tris <= 1500 else 'FAIL', '%s m, %d triangles (a prop\'s budget: 1,500), in the Kamakura atlas'
-                % (' x '.join('%.2f' % v for v in dims), tris)),
-            6: ('pass', 'each solid follows the measured outline and takes its pixels from inside it (round parts at 85 %% '
-                        'of their radius, edges %.1f px in): no background, looked at on the board' % KP.INSET_PX),
-            7: ('pass', 'no holes; the gaps the picture shows (between rails, beams and pillars) stay open'),
+            3: ('pass', 'carved from its front, side and top views: each part as deep as its side and top show it'),
+            4: ('pass', 'every face takes its pixels from the view that faces it squarely and can see it (the solid says '
+                        'what hides what); the left side the right side\'s (no view of its own)'),
+            5: ('pass' if tris <= 1500 else 'FAIL', '%s m, %d triangles (a prop\'s budget: 1,500), its own %d px texture'
+                % (' x '.join('%.2f' % v for v in info['real_size']), tris, 1024)),
+            6: ('pass', 'its outline the views\' outlines; no background on its edges (looked at on the board)'),
+            7: ('pass', 'no holes; the gaps the views show (between bars, beams and pillars) stay open'),
             8: ('pass', 'stands on its own, its own model'),
-            9: ('pass', 'from the photographic KM1-1'),
+            9: ('pass', 'from the user\'s views (BASE KM-S0), made from the photographic KM1-1'),
             10: ('pass', 'solid and whole'),
             11: ('pass', 'no brand or logo'),
             12: ('pass', 'no power line across it, no sky on its edges'),
@@ -947,11 +963,10 @@ def props_review(props, atlas_path, out_dir):
             16: ('n/a', 'no feet'),
             17: ('n/a', 'one piece'),
         }
-        default.update(KP.NOTES.get(name, {}))
-        if name == 'KmCrossingBarrier':
-            default[17] = ('pass', 'the arm carries only the arm; the box and its leg stay')
-        review[name] = dict(id=info.get('id', ''), sheet=info['source'], size=dims, tris=tris, motions=motions,
-                            checks=[[i, AR_CHECK_NAMES[i - 1], default[i][0], default[i][1]] for i in range(1, 18)])
+        default.update(KV.NOTES.get(name, {}))
+        review[name] = dict(id=info.get('id', ''), sheet=info['source'], size=info['real_size'], tris=tris,
+                            motions=motions, checks=[[i, AR_CHECK_NAMES[i - 1], default[i][0], default[i][1]]
+                                                     for i in range(1, 18)])
         root.location = loc
     json.dump(review, open(os.path.join(out_dir, 'review.json'), 'w'), indent=1, ensure_ascii=False)
     try:
@@ -960,13 +975,15 @@ def props_review(props, atlas_path, out_dir):
     except OSError:
         font = small = ImageFont.load_default()
     pad, head = 20, 60
-    widths = [max(r[2][i].width for r in rows) for i in range(4)]
-    W = sum(widths) + pad * 5
-    Hh = head + sum(520 + 50 for _ in rows) + pad * (len(rows) + 1)
-    sheet = Image.new('RGB', (W, Hh), (40, 40, 46))
+    heads = ['Your front view', 'The model, straight on', 'Your three-quarter view', 'The model at three-quarters',
+             'From the street']
+    widths = [max(max(r[2][i].width for r in rows), 300) for i in range(len(heads))]
+    Wd = sum(widths) + pad * (len(heads) + 1)
+    Hh = head + sum(S + 50 for _ in rows) + pad * (len(rows) + 1)
+    sheet = Image.new('RGB', (Wd, Hh), (40, 40, 46))
     dr = ImageDraw.Draw(sheet)
     x = pad
-    for i, t in enumerate(['Your picture', 'The model, straight on', 'At three-quarters', 'From the street']):
+    for i, t in enumerate(heads):
         dr.text((x, 16), t, fill=(235, 235, 240), font=font)
         x += widths[i] + pad
     y = head + pad
@@ -979,7 +996,7 @@ def props_review(props, atlas_path, out_dir):
         for i, im in enumerate(ims):
             sheet.paste(im, (x, y))
             x += widths[i] + pad
-        y += 520 + pad
+        y += S + pad
     sheet.save(os.path.join(out_dir, 'board.jpg'), quality=88)
     print('props board', os.path.join(out_dir, 'board.jpg'), sheet.size)
 
@@ -998,7 +1015,7 @@ def main():
     home, trial, hinfo = build_home(atlas)
     home.location.x = 0
     vend.location.x = 8.5
-    props = build_props(atlas)
+    props = build_props()
     for k, (o, _) in enumerate(props):
         o.location.x = 11.0 + 3.0 * k
     atlas_path = os.path.join(OUT, 'KamakuraAtlas.png')
@@ -1011,7 +1028,15 @@ def main():
     manifest = K.Manifest('Kamakura', 'KamakuraAtlas.png')
     K.assign(trial, mat)                 # the KM-P3 roof trial: in the .blend and on the board, not exported
     for root, info in [(home, hinfo), (vend, vinfo)] + props:
-        K.assign(root, mat)
+        if 'texture' in info:                # a prop from its views: its own texture
+            pm = K.material(root.name, os.path.join(OUT, info['texture']))
+            if info['cutout']:
+                pt = next(n for n in pm.node_tree.nodes if n.type == 'TEX_IMAGE')
+                pb = next(n for n in pm.node_tree.nodes if n.type == 'BSDF_DIFFUSE')
+                with_cutout(pm, pt, pb.outputs[0])
+            K.assign(root, pm)
+        else:
+            K.assign(root, mat)
         for c in root.children_recursive:
             if c.name in CUTOUTS:
                 c.data.materials.clear()
@@ -1029,7 +1054,7 @@ def main():
         vend.location.x = 0
         board(home, vend, atlas_path, BOARD)
     if PROPS_REVIEW:
-        props_review(props, atlas_path, PROPS_REVIEW)
+        props_review(props, PROPS_REVIEW)
 
 
 if __name__ == '__main__':

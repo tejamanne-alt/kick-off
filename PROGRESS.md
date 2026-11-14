@@ -2218,6 +2218,42 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
   tram; in ChatGPT the 7 m street lamp comes in halves and the 12 m tram in a left and a right half. Prompts page
   version 26.
 
+## KM1-1's seven props rebuilt from their views (tools, review and docs)
+
+- **`tools/blender/km_views.py`** (new) builds a prop from the user's views of it, and replaces `km_props.py` (built
+  from KM1-1's own pixels: soft in close-up, D24):
+  - each view is cut from its grey (what differs from it or is textured; small holes filled, a slot's dark inside, not
+    a gap through it), a view in halves stitched where they overlap (the pole);
+  - the views are sized and registered by the object: the front and the right side set width, depth and height; the
+    back (or a real left) is slid and stretched across, up to 8 %, until its outline best covers the opposite side's;
+    the top until its extent matches the front's and the side's;
+  - the solid is carved as a field (each outline's signed distance) on a 1 to 2 cm grid: inside the front's and the
+    side's outlines, and the top's where the cut slice still reaches what front and side show there; posts rounded in
+    section where the top cannot see them (`round_z`, `round_w`); parts under 5 to 8 cm left to the texture (`thin`);
+  - its surface is extracted (surface nets), re-meshed closed and manifold (voxel remesh), cut to 1,500 triangles
+    (planar faces merged first, any hole closed),
+    unwrapped (the faces toward the street given twice the texels) and baked into its own 1024 texture: each texel from
+    the views that face its point squarely and can see it (the carved solid says what hides what), a side with no view
+    of its own taking the opposite side's;
+  - options per prop (`props()`): the barrier's `Arm` its own part pivoting on the box (`split_above`); the bicycle a
+    4 cm slab in its front's outline below the saddle, with cut-out spokes and basket (`slab_below`, RGBA), its "back"
+    view its left (`view_map`).
+- `kit_buildings_km.py` builds the seven from `km_views.props()` (`KmPoleTransformer`, `KmMirror`, `KmVendingBlue`,
+  `KmCrossingSignal`, `KmCrossingBarrier`, `KmToriiSmall`, the new `KmBicycle`), each with its own material and texture
+  (`<Model>.png` beside its FBX; the bicycle's material cut-out), named in `Kamakura.json` (`texture`, `cutout`).
+  `--props-review` now puts each beside its views: the front view and the model straight on at the same scale, the
+  three-quarter view and the model at three-quarters, and the model from the street (`review/kamakura/props/board.jpg`),
+  with the eight views, the barrier's motion and the seventeen checks (`review.json`).
+- The first renders found these faults, fixed and recorded (D25): the pole spiky (bolts and cables collapsed by the
+  decimation) and slabbed where its crossarms cross (carved without its top view), the torii's pillars and the pole's
+  column square, grey background on the backs (views lined up by their boxes), the barrier's arm lowered in its top
+  view, the bicycle's back view its rear end, a few open edges after the decimation. One stays: the crossing signal's
+  guard frame is solid, as no view shows its hollow.
+- BASE KM-S0 now says what BACK and TOP are (the far side, not a long object's end; FRONT at the bottom of TOP) and asks
+  for the same pose in every view (prompts page version 27).
+- Cost (`docs/PERFORMANCE.md`): 1,452 to 1,454 triangles each, a 1024 texture each, about 5.6 MB for the seven (est.); not
+  yet in a level, not yet measured on the Nord CE5.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

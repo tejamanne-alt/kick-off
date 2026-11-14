@@ -210,7 +210,7 @@ def motion_gif(root, pose, path, render, view=None, frames=12, cell_px=300, ms=8
     bpy.context.view_layer.update()
     for c, rot, _, body in posed:
         m4 = rot.to_4x4() @ body
-        for o in c.children_recursive:
+        for o in [c] + list(c.children_recursive):         # a prop's root is its own mesh (D25: the barrier's box)
             if o.type != 'MESH':
                 continue
             ev = o.evaluated_get(dg)

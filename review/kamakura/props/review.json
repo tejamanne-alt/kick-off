@@ -1,20 +1,20 @@
 {
  "KmPoleTransformer": {
   "id": "KM-A01",
-  "sheet": "photo/KM1-1 (x 1570 to 1730), its column carried on above the picture",
+  "sheet": "sheets/KM-A01_concrete_utility_pole_with_transformer (its views, made from KM1-1)",
   "size": [
-   1.1,
-   0.4,
+   2.24,
+   1.01,
    10.0
   ],
-  "tris": 184,
+  "tris": 1454,
   "motions": [],
   "checks": [
    [
     1,
     "Every part once",
     "pass",
-    "each solid once, looked at in Top and Bottom"
+    "one solid carved from its views: each part once, looked at in Top and Bottom"
    ],
    [
     2,
@@ -26,31 +26,31 @@
     3,
     "Depth from each part's own width",
     "pass",
-    "built of solids at their own depth: cylinders round, boards and boxes their real thickness"
+    "carved from its front, side and top: the top used where it agrees with them (the crossarms, the column), the column round in section"
    ],
    [
     4,
     "Views the game sees",
     "pass",
-    "round: its back is its front mirrored, as a concrete pole looks; the column above the picture is its own band carried on"
+    "every face takes its pixels from the view that faces it squarely and can see it (the solid says what hides what); the left side the right side's (no view of its own)"
    ],
    [
     5,
     "Size, triangles",
     "pass",
-    "1.10 x 0.40 x 10.00 m, 184 triangles (a prop's budget: 1,500), in the Kamakura atlas"
+    "2.24 x 1.01 x 10.00 m, 1454 triangles (a prop's budget: 1,500), its own 1024 px texture"
    ],
    [
     6,
     "Outline whole",
     "pass",
-    "each solid follows the measured outline and takes its pixels from inside it (round parts at 85 % of their radius, edges 2.5 px in): no background, looked at on the board"
+    "its outline the views' outlines; no background on its edges (looked at on the board)"
    ],
    [
     7,
     "No holes",
     "pass",
-    "no holes; the gaps the picture shows (between rails, beams and pillars) stay open"
+    "no holes; the gaps the views show (between bars, beams and pillars) stay open"
    ],
    [
     8,
@@ -62,7 +62,7 @@
     9,
     "Look target",
     "pass",
-    "from the photographic KM1-1"
+    "from the user's views (BASE KM-S0), made from the photographic KM1-1"
    ],
    [
     10,
@@ -80,13 +80,13 @@
     12,
     "No wires or sky",
     "pass",
-    "the wires and the street lamp's arm crossing the pole are left out of the model (the level hangs its own); the transformers' faces show none"
+    "the step bolts and the cables, thinner than 8 cm, are in its texture only, not its solid"
    ],
    [
     13,
     "Repairs listed",
     "pass",
-    "the column above the picture's top (6.6 m to 10 m) made from a clean band of the pole (y 300 to 380)"
+    "its front, side and back each made in two halves; joined where they overlap (the warning plate)"
    ],
    [
     14,
@@ -116,20 +116,20 @@
  },
  "KmMirror": {
   "id": "KM-A03",
-  "sheet": "photo/KM1-1 (x 1780 to 1895)",
+  "sheet": "sheets/KM-A03_convex_corner_mirror (its views, made from KM1-1)",
   "size": [
-   0.77,
-   0.15,
+   0.85,
+   0.35,
    3.8
   ],
-  "tris": 134,
+  "tris": 1454,
   "motions": [],
   "checks": [
    [
     1,
     "Every part once",
     "pass",
-    "each solid once, looked at in Top and Bottom"
+    "one solid carved from its views: each part once, looked at in Top and Bottom"
    ],
    [
     2,
@@ -141,31 +141,31 @@
     3,
     "Depth from each part's own width",
     "pass",
-    "built of solids at their own depth: cylinders round, boards and boxes their real thickness"
+    "carved from its front, side and top views: each part as deep as its side and top show it"
    ],
    [
     4,
     "Views the game sees",
     "pass",
-    "the glass from the picture; the hood's back its rim's orange; the post round"
+    "every face takes its pixels from the view that faces it squarely and can see it (the solid says what hides what); the left side the right side's (no view of its own)"
    ],
    [
     5,
     "Size, triangles",
     "pass",
-    "0.77 x 0.15 x 3.80 m, 134 triangles (a prop's budget: 1,500), in the Kamakura atlas"
+    "0.85 x 0.35 x 3.80 m, 1454 triangles (a prop's budget: 1,500), its own 1024 px texture"
    ],
    [
     6,
     "Outline whole",
     "pass",
-    "each solid follows the measured outline and takes its pixels from inside it (round parts at 85 % of their radius, edges 2.5 px in): no background, looked at on the board"
+    "its outline the views' outlines; no background on its edges (looked at on the board)"
    ],
    [
     7,
     "No holes",
     "pass",
-    "no holes; the gaps the picture shows (between rails, beams and pillars) stay open"
+    "no holes; the gaps the views show (between bars, beams and pillars) stay open"
    ],
    [
     8,
@@ -177,7 +177,7 @@
     9,
     "Look target",
     "pass",
-    "from the photographic KM1-1"
+    "from the user's views (BASE KM-S0), made from the photographic KM1-1"
    ],
    [
     10,
@@ -190,6 +190,121 @@
     "No brands",
     "pass",
     "no brand or logo"
+   ],
+   [
+    12,
+    "No wires or sky",
+    "pass",
+    "no power line across it, no sky on its edges"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "the glass is as grey as the views' background: its holes in the outline filled"
+   ],
+   [
+    14,
+    "Rig names",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    15,
+    "Joints overlap",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no feet"
+   ],
+   [
+    17,
+    "Each part only itself",
+    "n/a",
+    "one piece"
+   ]
+  ]
+ },
+ "KmVendingBlue": {
+  "id": "KM-A19",
+  "sheet": "sheets/KM-A19_blue_vending_machine (its views, made from KM1-1)",
+  "size": [
+   0.99,
+   0.73,
+   1.83
+  ],
+  "tris": 1454,
+  "motions": [],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "one solid carved from its views: each part once, looked at in Top and Bottom"
+   ],
+   [
+    2,
+    "Closed shell",
+    "pass",
+    "0 edges with one face"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "pass",
+    "carved from its front, side and top views: each part as deep as its side and top show it"
+   ],
+   [
+    4,
+    "Views the game sees",
+    "pass",
+    "every face takes its pixels from the view that faces it squarely and can see it (the solid says what hides what); the left side the right side's (no view of its own)"
+   ],
+   [
+    5,
+    "Size, triangles",
+    "pass",
+    "0.99 x 0.73 x 1.83 m, 1454 triangles (a prop's budget: 1,500), its own 1024 px texture"
+   ],
+   [
+    6,
+    "Outline whole",
+    "pass",
+    "its outline the views' outlines; no background on its edges (looked at on the board)"
+   ],
+   [
+    7,
+    "No holes",
+    "pass",
+    "no holes; the gaps the views show (between bars, beams and pillars) stay open"
+   ],
+   [
+    8,
+    "Own models before walls",
+    "pass",
+    "stands on its own, its own model"
+   ],
+   [
+    9,
+    "Look target",
+    "pass",
+    "from the user's views (BASE KM-S0), made from the photographic KM1-1"
+   ],
+   [
+    10,
+    "Solid",
+    "pass",
+    "solid and whole"
+   ],
+   [
+    11,
+    "No brands",
+    "pass",
+    "its logo panel reads うみかぜ, as the prompt asks (no real drink logo)"
    ],
    [
     12,
@@ -229,137 +344,22 @@
    ]
   ]
  },
- "KmVendingBlue": {
-  "id": "KM-A19",
-  "sheet": "photo/KM1-1 (front), KM-P1 (side, turned blue)",
-  "size": [
-   1.0,
-   0.75,
-   1.83
-  ],
-  "tris": 12,
-  "motions": [],
-  "checks": [
-   [
-    1,
-    "Every part once",
-    "pass",
-    "each solid once, looked at in Top and Bottom"
-   ],
-   [
-    2,
-    "Closed shell",
-    "pass",
-    "0 edges with one face"
-   ],
-   [
-    3,
-    "Depth from each part's own width",
-    "pass",
-    "built of solids at their own depth: cylinders round, boards and boxes their real thickness"
-   ],
-   [
-    4,
-    "Views the game sees",
-    "pass",
-    "its sides and back from KM-P1's red machine, turned blue (the photographic KM1-1 shows only its front)"
-   ],
-   [
-    5,
-    "Size, triangles",
-    "pass",
-    "1.00 x 0.75 x 1.83 m, 12 triangles (a prop's budget: 1,500), in the Kamakura atlas"
-   ],
-   [
-    6,
-    "Outline whole",
-    "pass",
-    "each solid follows the measured outline and takes its pixels from inside it (round parts at 85 % of their radius, edges 2.5 px in): no background, looked at on the board"
-   ],
-   [
-    7,
-    "No holes",
-    "pass",
-    "no holes; the gaps the picture shows (between rails, beams and pillars) stay open"
-   ],
-   [
-    8,
-    "Own models before walls",
-    "pass",
-    "stands on its own, its own model"
-   ],
-   [
-    9,
-    "Look target",
-    "pass",
-    "from the photographic KM1-1"
-   ],
-   [
-    10,
-    "Solid",
-    "pass",
-    "solid and whole"
-   ],
-   [
-    11,
-    "No brands",
-    "pass",
-    "its real drink logo repainted with an invented name (rebrand_machines), as on the red machine"
-   ],
-   [
-    12,
-    "No wires or sky",
-    "pass",
-    "no power line across it, no sky on its edges"
-   ],
-   [
-    13,
-    "Repairs listed",
-    "pass",
-    "the logo panel repainted (うみかぜ); the side from KM-P1, turned blue"
-   ],
-   [
-    14,
-    "Rig names",
-    "n/a",
-    "no moving parts"
-   ],
-   [
-    15,
-    "Joints overlap",
-    "n/a",
-    "no moving parts"
-   ],
-   [
-    16,
-    "Feet planted",
-    "n/a",
-    "no feet"
-   ],
-   [
-    17,
-    "Each part only itself",
-    "n/a",
-    "one piece"
-   ]
-  ]
- },
  "KmCrossingSignal": {
   "id": "KM-A05",
-  "sheet": "photo/KM1-1 (x 2360 to 2545)",
+  "sheet": "sheets/KM-A05_level_crossing_signal (its views, made from KM1-1)",
   "size": [
-   1.3,
-   0.6,
+   1.06,
+   0.62,
    3.6
   ],
-  "tris": 368,
+  "tris": 1454,
   "motions": [],
   "checks": [
    [
     1,
     "Every part once",
     "pass",
-    "each solid once, looked at in Top and Bottom"
+    "one solid carved from its views: each part once, looked at in Top and Bottom"
    ],
    [
     2,
@@ -370,32 +370,32 @@
    [
     3,
     "Depth from each part's own width",
-    "pass",
-    "built of solids at their own depth: cylinders round, boards and boxes their real thickness"
+    "limit",
+    "the post round in section; the guard frame solid: its front and side see its far bars through its near ones, and from above the crossbuck and lamps cover it"
    ],
    [
     4,
     "Views the game sees",
-    "limit",
-    "the direction indicator's, the housing's and the guard frame's ends are their fronts' edge pixels stretched: KM-P1 draws the crossing from the front only. Seen at three-quarters from the street they read; a sheet (ASSET KM-A05) would give them their own"
+    "pass",
+    "every face takes its pixels from the view that faces it squarely and can see it (the solid says what hides what); the left side the right side's (no view of its own)"
    ],
    [
     5,
     "Size, triangles",
     "pass",
-    "1.30 x 0.60 x 3.60 m, 368 triangles (a prop's budget: 1,500), in the Kamakura atlas"
+    "1.06 x 0.62 x 3.60 m, 1454 triangles (a prop's budget: 1,500), its own 1024 px texture"
    ],
    [
     6,
     "Outline whole",
     "pass",
-    "each solid follows the measured outline and takes its pixels from inside it (round parts at 85 % of their radius, edges 2.5 px in): no background, looked at on the board"
+    "its outline the views' outlines; no background on its edges (looked at on the board)"
    ],
    [
     7,
     "No holes",
     "pass",
-    "no holes; the gaps the picture shows (between rails, beams and pillars) stay open"
+    "no holes; the gaps the views show (between bars, beams and pillars) stay open"
    ],
    [
     8,
@@ -407,7 +407,7 @@
     9,
     "Look target",
     "pass",
-    "from the photographic KM1-1"
+    "from the user's views (BASE KM-S0), made from the photographic KM1-1"
    ],
    [
     10,
@@ -461,13 +461,13 @@
  },
  "KmCrossingBarrier": {
   "id": "KM-A04",
-  "sheet": "photo/KM1-1 (x 2525 to 2610)",
+  "sheet": "sheets/KM-A04_level_crossing_barrier (its views, made from KM1-1)",
   "size": [
-   0.4,
-   0.3,
+   1.22,
+   0.69,
    4.5
   ],
-  "tris": 68,
+  "tris": 1452,
   "motions": [
    "lift"
   ],
@@ -476,7 +476,7 @@
     1,
     "Every part once",
     "pass",
-    "each solid once, looked at in Top and Bottom"
+    "one solid carved from its views: each part once, looked at in Top and Bottom"
    ],
    [
     2,
@@ -488,31 +488,31 @@
     3,
     "Depth from each part's own width",
     "pass",
-    "built of solids at their own depth: cylinders round, boards and boxes their real thickness"
+    "the arm drawn lowered in its top view, raised in the others: the top used only for the box"
    ],
    [
     4,
     "Views the game sees",
-    "limit",
-    "the motor box's ends are its front's edge pixels stretched (KM-P1 shows the front only)"
+    "pass",
+    "every face takes its pixels from the view that faces it squarely and can see it (the solid says what hides what); the left side the right side's (no view of its own)"
    ],
    [
     5,
     "Size, triangles",
     "pass",
-    "0.40 x 0.30 x 4.50 m, 68 triangles (a prop's budget: 1,500), in the Kamakura atlas"
+    "1.22 x 0.69 x 4.50 m, 1452 triangles (a prop's budget: 1,500), its own 1024 px texture"
    ],
    [
     6,
     "Outline whole",
     "pass",
-    "each solid follows the measured outline and takes its pixels from inside it (round parts at 85 % of their radius, edges 2.5 px in): no background, looked at on the board"
+    "its outline the views' outlines; no background on its edges (looked at on the board)"
    ],
    [
     7,
     "No holes",
     "pass",
-    "no holes; the gaps the picture shows (between rails, beams and pillars) stay open"
+    "no holes; the gaps the views show (between bars, beams and pillars) stay open"
    ],
    [
     8,
@@ -524,7 +524,7 @@
     9,
     "Look target",
     "pass",
-    "from the photographic KM1-1"
+    "from the user's views (BASE KM-S0), made from the photographic KM1-1"
    ],
    [
     10,
@@ -560,7 +560,7 @@
     15,
     "Joints overlap",
     "pass",
-    "the arm's foot stays inside the box at every angle of its swing (looked at in the motion)"
+    "the arm's foot stays on the box at every angle of its swing (looked at in the motion)"
    ],
    [
     16,
@@ -578,20 +578,20 @@
  },
  "KmToriiSmall": {
   "id": "KM-A11",
-  "sheet": "photo/KM1-1 (x 1990 to 2205); its feet, hidden by the leaves and the stone wall, made",
+  "sheet": "sheets/KM-A11_small_vermilion_torii (its views, made from KM1-1)",
   "size": [
-   2.7,
-   0.3,
-   2.7
+   2.79,
+   0.31,
+   2.6
   ],
-  "tris": 288,
+  "tris": 1454,
   "motions": [],
   "checks": [
    [
     1,
     "Every part once",
     "pass",
-    "each solid once, looked at in Top and Bottom"
+    "one solid carved from its views: each part once, looked at in Top and Bottom"
    ],
    [
     2,
@@ -603,31 +603,31 @@
     3,
     "Depth from each part's own width",
     "pass",
-    "built of solids at their own depth: cylinders round, boards and boxes their real thickness"
+    "the pillars round in section below the tie beam (the top view sees only the top beam)"
    ],
    [
     4,
     "Views the game sees",
     "pass",
-    "its front the picture; round parts' backs their fronts mirrored"
+    "every face takes its pixels from the view that faces it squarely and can see it (the solid says what hides what); the left side the right side's (no view of its own)"
    ],
    [
     5,
     "Size, triangles",
     "pass",
-    "2.70 x 0.30 x 2.70 m, 288 triangles (a prop's budget: 1,500), in the Kamakura atlas"
+    "2.79 x 0.31 x 2.60 m, 1454 triangles (a prop's budget: 1,500), its own 1024 px texture"
    ],
    [
     6,
     "Outline whole",
     "pass",
-    "each solid follows the measured outline and takes its pixels from inside it (round parts at 85 % of their radius, edges 2.5 px in): no background, looked at on the board"
+    "its outline the views' outlines; no background on its edges (looked at on the board)"
    ],
    [
     7,
     "No holes",
     "pass",
-    "no holes; the gaps the picture shows (between rails, beams and pillars) stay open"
+    "no holes; the gaps the views show (between bars, beams and pillars) stay open"
    ],
    [
     8,
@@ -639,7 +639,7 @@
     9,
     "Look target",
     "pass",
-    "from the photographic KM1-1"
+    "from the user's views (BASE KM-S0), made from the photographic KM1-1"
    ],
    [
     10,
@@ -663,7 +663,122 @@
     13,
     "Repairs listed",
     "pass",
-    "the pillars' feet, hidden by leaves and the stone wall in the picture, made: the 40 rows above for the vermilion, black feet from the shrine's shadow"
+    "none needed"
+   ],
+   [
+    14,
+    "Rig names",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    15,
+    "Joints overlap",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no feet"
+   ],
+   [
+    17,
+    "Each part only itself",
+    "n/a",
+    "one piece"
+   ]
+  ]
+ },
+ "KmBicycle": {
+  "id": "KM-A08",
+  "sheet": "sheets/KM-A08_city_bicycle (its views, made from KM1-1)",
+  "size": [
+   1.79,
+   0.67,
+   1.15
+  ],
+  "tris": 1454,
+  "motions": [],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "one solid carved from its views: each part once, looked at in Top and Bottom"
+   ],
+   [
+    2,
+    "Closed shell",
+    "pass",
+    "0 edges with one face"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "pass",
+    "below the saddle a slab 4 cm thick in its front's outline (wheels, frame, guards); the saddle, bars and basket carved from all its views"
+   ],
+   [
+    4,
+    "Views the game sees",
+    "pass",
+    "its rear view is its left (from behind, as the views were made); its far side takes its near side's pixels (no view of it)"
+   ],
+   [
+    5,
+    "Size, triangles",
+    "pass",
+    "1.79 x 0.67 x 1.15 m, 1454 triangles (a prop's budget: 1,500), its own 1024 px texture"
+   ],
+   [
+    6,
+    "Outline whole",
+    "pass",
+    "its outline the views' outlines; no background on its edges (looked at on the board)"
+   ],
+   [
+    7,
+    "No holes",
+    "pass",
+    "the spokes and the basket's mesh open in its texture's alpha (the cut-out material)"
+   ],
+   [
+    8,
+    "Own models before walls",
+    "pass",
+    "stands on its own, its own model"
+   ],
+   [
+    9,
+    "Look target",
+    "pass",
+    "from the user's views (BASE KM-S0), made from the photographic KM1-1"
+   ],
+   [
+    10,
+    "Solid",
+    "pass",
+    "solid and whole"
+   ],
+   [
+    11,
+    "No brands",
+    "pass",
+    "no brand or logo"
+   ],
+   [
+    12,
+    "No wires or sky",
+    "pass",
+    "no power line across it, no sky on its edges"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "none needed"
    ],
    [
     14,
