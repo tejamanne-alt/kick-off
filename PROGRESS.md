@@ -2200,8 +2200,9 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
   of one tool. ChatGPT's images are smaller (about 1,536 px) and only 1:1, 2:3 or 3:2, so `docs/KAMAKURA_BUILD.md` lists
   ChatGPT's FORMAT line for every prompt still to make that asks for another shape (KM-S0, KM-S1, KM-S2, the textures
   KM-T07, T10, T11), and `tools/prompts_page/gen.py` gives those prompts a version per tool, so the page's ChatGPT
-  switch puts ChatGPT's line in (`template.html`: a prompt's `tools`). The utility poles stay in Gemini: at 10 m tall,
-  ChatGPT's largest image gives them no more detail than the street picture.
+  switch puts ChatGPT's line in (`template.html`: a prompt's `tools`). The user then moved the assets to ChatGPT (Gemini's
+  usage ran out too fast), so a utility pole (KM-A01, A02), too tall for one ChatGPT image to hold in detail, comes in
+  ChatGPT as two halves per tall view at one scale, overlapping by about 1 m (`1_front_top.png`, `1_front_bottom.png`).
 
 ## After Phase 8 (next steps)
 

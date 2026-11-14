@@ -71,16 +71,18 @@ def chatgpt_formats(doc):
 
 
 def with_tools(item, alt):
-    """item with a version per tool when alt has a ChatGPT FORMAT line for it: its own last FORMAT paragraph replaced."""
+    """item with a version per tool when alt has a ChatGPT FORMAT line for it: its own last FORMAT paragraph replaced, or
+    the line added after it when it has none (an ASSET prompt, which follows its base prompt's FORMAT)."""
     line = alt.get(item['id'])
     if not line:
         return item
     text = item['text']
     m = list(re.finditer(r'FORMAT:.*?(?=\n\n|\Z)', text, re.S))       # its last FORMAT, to the end of that paragraph
-    if not m:
-        sys.exit('gen.py: ' + item['id'] + ' has a ChatGPT FORMAT line but no FORMAT of its own')
-    k = m[-1]
-    chat = text[:k.start()] + line + text[k.end():]
+    if m:
+        k = m[-1]
+        chat = text[:k.start()] + line + text[k.end():]
+    else:                       # an ASSET prompt takes the base's FORMAT: ChatGPT's own line follows it (a pole in halves)
+        chat = text + '\n' + line
     return dict(item, tools={'gemini': text, 'chatgpt': chat})
 
 

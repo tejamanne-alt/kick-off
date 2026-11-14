@@ -459,12 +459,16 @@ Every prompt below works in either tool. Keep each asset's views, and each set o
 they match. Gemini (Nano Banana Pro) makes the largest images (about 4,096 px) and every shape asked for; ChatGPT's are
 smaller (about 1,536 px on the long side) and come in 1:1, 2:3 and 3:2 only, so in ChatGPT these prompts end with the
 FORMAT lines below instead (the prompts page's ChatGPT switch puts them in). ChatGPT writes lettering cleanly, which
-suits the vending machines and signs. Make the utility poles (KM-A01, KM-A02) in Gemini: at 10 m tall, ChatGPT's largest
-image gives them no more detail than the street picture.
+suits the vending machines and signs. A utility pole (KM-A01, KM-A02) is 10 m tall, too tall for one of ChatGPT's images
+to hold in detail, so in ChatGPT its FRONT, RIGHT SIDE and BACK each come in two halves at one scale, overlapping by about
+1 m: after the top half, send "Next: bottom half.". Save them as `1_front_top.png` and `1_front_bottom.png`, and so on
+(`4_top.png` and `5_three_quarter.png` stay one image each).
 
 - `KM-S0`: `FORMAT: the aspect ratio the object fills best, the same for FRONT, RIGHT SIDE and BACK: 2:3 for a tall object (a signal, a lantern), 3:2 for a long one (a bench, a tram, a vehicle), 1:1 otherwise; TOP and THREE-QUARTER 1:1. The largest size you can make.`
 - `KM-S1`: `FORMAT: SIDE 1:1; FROM ABOVE, FROM BELOW and FRONT 3:2 (the spread wings across). The largest size you can make.`
 - `KM-S2`: `FORMAT: RIGHT SIDE and LEFT SIDE 3:2 for a long animal (a cat, a dog, a tanuki, a squirrel with its tail), 1:1 for a bird; FROM ABOVE the same as the sides; FRONT and BACK 1:1. The largest size you can make.`
+- `KM-A01`: `FORMAT: 2:3, the largest size you can make. The pole is 10 m tall, too tall for one image: make FRONT, RIGHT SIDE and BACK each in two images at the same scale, first its top half (from about 4.5 m up to its top), then, when I say "Next: bottom half.", its bottom half (from the ground up to about 5.5 m), the two overlapping by about 1 m. TOP and THREE-QUARTER as one image each, 1:1.`
+- `KM-A02`: `FORMAT: 2:3, the largest size you can make. The pole is 10 m tall, too tall for one image: make FRONT, RIGHT SIDE and BACK each in two images at the same scale, first its top half (from about 4.5 m up to its top), then, when I say "Next: bottom half.", its bottom half (from the ground up to about 5.5 m), the two overlapping by about 1 m. TOP and THREE-QUARTER as one image each, 1:1.`
 - `KM-T07`: `FORMAT: aspect ratio 3:2, the largest size you can make; tileable along its length.`
 - `KM-T10`: `FORMAT: aspect ratio 3:2, the largest size you can make; tileable along its length.`
 - `KM-T11`: `FORMAT: aspect ratio 3:2, the largest size you can make; tileable along its length.`
@@ -477,8 +481,8 @@ Every asset is built from its own views, each a separate full-size image (the us
 the level pictures' own pixels, code-made materials or upscaling). A new chat per asset, in Gemini (Nano Banana Pro) or
 ChatGPT: paste KM-S0 with KM-0 attached, then that asset's ASSET prompt from Steps 2, 3 and 5
 with its source images attached. Keep all of an asset's views in one chat of one tool. In ChatGPT the prompts page's
-switch gives each prompt ChatGPT's frame shapes (1:1, 2:3, 3:2); make the utility poles in Gemini, whose larger images
-give a 10 m pole more detail than the street picture. The tool makes the FRONT; then send, one at a time, "Next: RIGHT SIDE.", "Next: BACK.", "Next: TOP.", "Next: THREE-QUARTER.".
+switch gives each prompt ChatGPT's frame shapes (1:1, 2:3, 3:2), and a 10 m utility pole's tall views in two halves
+(top, then "Next: bottom half.", saved as `1_front_top.png` and `1_front_bottom.png`). The tool makes the FRONT; then send, one at a time, "Next: RIGHT SIDE.", "Next: BACK.", "Next: TOP.", "Next: THREE-QUARTER.".
 Check each before the next (the base prompt's checks), and redo one that fails rather than going on.
 
 Save them as `review/kamakura/sheets/<id>_<name>/` with `1_front.png`, `2_right.png`, `3_back.png`, `4_top.png`,
