@@ -2422,7 +2422,11 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
   `tools/prompts_page/gen_characters.py` builds it from each city's build doc, "Characters (<code>-C)" (its
   prompts, where each sheet goes, the Gemini notes, the meshy.ai steps), with `characters.html`, the city page's
   look. One prompt for each first-grader, nothing attached (the game's kids' faces are not Japanese). A switch
-  between Gemini (16:9, the corner kept clear of its mark) and ChatGPT (3:2, its own FORMAT paragraph from the doc).
+  between Gemini and ChatGPT.
+- The user's first boy from Gemini came out anime; they want Mia's realism (C24). The prompts now attach Mia's four
+  pictures for the style alone, faces described as Japanese, and ask for one view a picture: the front, then the back
+  and both sides with the front attached, pushed as `1_front.png` to `4_right_side.png`. The page shows each child's
+  four prompts in order.
 
 ## After Phase 8 (next steps)
 

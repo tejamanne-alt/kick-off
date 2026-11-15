@@ -563,6 +563,18 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
   - When a fault survives tagging fixes, look at the triangles themselves (a face-ID render: `outfit_render.py`'s
     approach), not only at the tags.
 
+**C24. The first-graders' sheet came out anime (KM-C01).**
+- *What:* Gemini drew the first-grade boy as a flat anime figure; the user: "the characters aren't realistic. The
+  reality should be as Mia".
+- *Why:* the prompt asked for "a stylised 3D game character, flat cel-style colours" and attached nothing, after the
+  user rightly ruled out Mia's and Kai's faces as a reference for Japanese children. The style went with the faces.
+  And four views in one picture leave a face too few pixels for realism.
+- *Fix:* Mia's four source pictures are attached for the drawing style alone ("copy only the style, never her face,
+  hair, clothes or shoes"); the faces are described as Japanese. One view a picture, as hers were: the front first,
+  then the back and both sides, each with the front attached (docs/KAMAKURA_BUILD.md, "Characters (KM-C)").
+- *Rule:* a reference can be used for its style and not its face; say which. New characters match the game's own in
+  realism. Ask for one view a picture when faces matter.
+
 ## D. Art direction and look
 
 **D1. A golden-hour haze hid the kid** (before v37).

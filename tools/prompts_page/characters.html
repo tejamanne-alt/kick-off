@@ -137,7 +137,7 @@ button.ghost.done { color: var(--ok); border-color: var(--ok); }
 <header class="top">
   <div class="brandline">
     <h1>Kick Off 2 · Character prompts</h1>
-    <span class="sub">Model sheets in Gemini or ChatGPT, models in meshy.ai, one character at a time</span>
+    <span class="sub">Pictures in Gemini or ChatGPT, models in meshy.ai, one character at a time</span>
   </div>
   <div class="toolbar"><span class="label" id="tool-label">Prompts for</span><div class="seg" role="group" aria-labelledby="tool-label" id="toolseg"></div><span class="toolnote" id="toolnote"></span></div>
   <nav class="tabs" id="tabs" aria-label="Sections"></nav>
@@ -167,8 +167,8 @@ const store = {
 
 // The two tools: the same prompts, each with its own FORMAT paragraph (the build doc's).
 const TOOLS = {
-  gemini: { name: 'Gemini', note: '16:9, the bottom-right corner kept clear of its sparkle mark' },
-  chatgpt: { name: 'ChatGPT', note: '3:2, the widest it makes; it adds no mark' },
+  gemini: { name: 'Gemini', note: 'Portrait 2:3, one view a picture; its sparkle mark stays clear of the child' },
+  chatgpt: { name: 'ChatGPT', note: 'Portrait 2:3, one view a picture; it adds no mark' },
 };
 let tool = store.get('tool') === 'chatgpt' ? 'chatgpt' : 'gemini';   // Gemini first: the user's choice for characters
 
@@ -198,32 +198,33 @@ function copyButton(getText, preEl, label, cls) {
   return b;
 }
 
-function promptCard(p, city) {
-  const key = 'made:' + p.id;
-  const text = p.tools[tool];
+function promptCard(ch, v, city) {
+  const key = 'made:' + ch.id + ':' + v.file;
+  const text = v.tools[tool];
   const pre = el('pre', { class: 'prompt' }, text);
-  const card = el('article', { class: 'shot', id: 'shot-' + p.id });
-  const box = el('input', { type: 'checkbox', id: 'made-' + p.id });
+  const card = el('article', { class: 'shot' + (v.view === 'Front' ? ' first' : ''), id: 'shot-' + ch.id + '-' + v.file });
+  const box = el('input', { type: 'checkbox', id: 'made-' + ch.id + '-' + v.file });
   box.checked = !!store.get(key);
   card.classList.toggle('is-made', box.checked);
   box.addEventListener('change', () => { store.set(key, box.checked ? '1' : ''); card.classList.toggle('is-made', box.checked); progress(city); });
-  const path = el('code', null, p.path);
+  const path = el('code', null, v.path);
   card.append(
     el('div', { class: 'shot-head' },
-      el('span', { class: 'sid' }, p.id),
+      el('span', { class: 'sid' }, v.file.slice(0, 1)),
       el('span', { class: 'badge' }, TOOLS[tool].name),
-      el('span', { class: 'shot-title' }, p.title),
-      el('div', { class: 'actions' }, el('label', { class: 'made', for: 'made-' + p.id }, box, 'Pushed'), copyButton(() => text, pre))),
+      el('span', { class: 'shot-title' }, v.view + ' view', el('span', { class: 'lede' }, v.view === 'Front' ? ' · attach Mia’s four pictures' : ' · attach the front you just made')),
+      el('div', { class: 'actions' }, el('label', { class: 'made', for: 'made-' + ch.id + '-' + v.file }, box, 'Pushed'), copyButton(() => text, pre))),
     pre,
-    el('div', { class: 'pathrow' }, 'Push the sheet as', path, copyButton(() => p.path, path, 'Copy path', 'ghost')));
+    el('div', { class: 'pathrow' }, 'Push it as', path, copyButton(() => v.path, path, 'Copy path', 'ghost')));
   return card;
 }
 
 function progress(city) {
   const n = document.getElementById('progress');
   if (!n || !city) return;
-  const made = city.prompts.filter(p => store.get('made:' + p.id)).length;
-  n.textContent = made + ' of ' + city.prompts.length + ' pushed';
+  let all = 0, made = 0;
+  city.characters.forEach(ch => ch.views.forEach(v => { all++; if (store.get('made:' + ch.id + ':' + v.file)) made++; }));
+  n.textContent = made + ' of ' + all + ' pictures pushed';
 }
 
 const SECTIONS = () => [{ key: 'start', name: 'Start', accent: 'var(--brand)' }]
@@ -239,15 +240,16 @@ function renderTabs(current) {
 }
 
 function renderStart() {
-  const first = DATA.cities[0];
+  const first = DATA.cities[0], name = TOOLS[tool].name;
   view.replaceChildren(
     el('h2', { class: 'city' }, 'Characters', el('small', null, 'the people a level needs that the game doesn’t have')),
-    el('p', { class: 'lede' }, 'Each character is a model sheet you make in Gemini, then a rigged model you make from it in meshy.ai. Between the two I cut the sheet into its four views, and after it I bring the model into the game and review it before any level uses it.'),
+    el('p', { class: 'lede' }, 'Each character is four pictures you make in ' + name + ', then a rigged model you make from them in meshy.ai. The look is Mia’s: a realistic, detailed illustration of a real child, one view a picture, as hers were.'),
     el('ol', { class: 'steps' },
-      el('li', null, el('div', null, el('b', null, 'One ' + TOOLS[tool].name + ' chat for each character. '), 'Pick the tool at the top, copy the character’s prompt from the city’s tab, paste it, and attach nothing. It makes one picture: the same child four times, front, side, back and three-quarter.')),
-      el('li', null, el('div', null, el('b', null, 'Check it before you push. '), 'The four views must be the same child, with the same hair, clothes and bag, and the arms must stand clear of the body. If one view differs, make the sheet again.')),
-      el('li', null, el('div', null, el('b', null, 'Push it where the card says. '), 'I cut it into its four views and push them beside the sheet.')),
-      el('li', null, el('div', null, el('b', null, 'Make the model in meshy.ai '), 'from the four views, with the settings on the meshy.ai tab, and push the FBX beside the sheet.')),
+      el('li', null, el('div', null, el('b', null, 'One ' + name + ' chat for each child, the front first. '), 'Copy the front prompt from the city’s tab and attach the four pictures of Mia (front, back and both sides): they set the drawing style and realism, never the face.')),
+      el('li', null, el('div', null, el('b', null, 'Then the back and the two sides, '), 'one message each, each with the front you just made attached so it stays the same child.')),
+      el('li', null, el('div', null, el('b', null, 'Check the four before you push '), 'with the list on the city’s tab. If one view comes out a different child, make that view again.')),
+      el('li', null, el('div', null, el('b', null, 'Push them where the cards say. '))),
+      el('li', null, el('div', null, el('b', null, 'Make the model in meshy.ai '), 'from the four pictures, with the settings on the meshy.ai tab, and push the FBX beside them.')),
       el('li', null, el('div', null, el('b', null, 'I bring it into the game and review it: '), 'eight views, the walk animated, the face checked as the head turns. It goes into a level once you approve it.'))),
     el('div', { class: 'card' },
       el('h3', null, 'Why new characters'),
@@ -261,14 +263,17 @@ function renderCity(city) {
     el('h2', { class: 'city' }, city.name, el('small', null, city.country + ' · ' + city.who)),
     el('p', { class: 'progress', id: 'progress' }),
     el('p', { class: 'lede' }, 'Passers-by, not playable kids: they walk the pavement like the jogger and Grandad, and the game recolours their clothes and bags so a line of five looks like five children.'),
-    ...city.prompts.map(p => promptCard(p, city)),
+    ...city.characters.map(ch => el('section', { class: 'route' },
+      el('div', { class: 'route-head' }, el('h3', null, ch.id + ' · ' + ch.title), el('span', { class: 'trip' }, 'One chat: the front first, then the back and both sides')),
+      ...ch.views.map(v => promptCard(ch, v, city)))),
     el('div', { class: 'card' },
       el('h3', null, 'Before you push'),
       el('ul', { class: 'checks' },
-        el('li', null, 'The same child four times: hair, cap, bag and clothes alike in every view.'),
-        el('li', null, 'An A-pose in every view: the arms straight and out, a hand’s width from the body all the way down.'),
-        el('li', null, 'Flat colours with no light or shadow painted in, and no writing or logos.'),
-        tool === 'gemini' ? el('li', null, 'The bottom-right corner empty, clear of Gemini’s sparkle mark.') : null)),
+        el('li', null, 'The same child in all four: face, hair, cap, randoseru and clothes alike.'),
+        el('li', null, 'Realistic like Mia’s pictures, not anime or cartoon; the face Japanese, not Mia’s.'),
+        el('li', null, 'True front, back and side views of the whole child, cap to shoes, in the relaxed A-pose with the arms clear of the body.'),
+        el('li', null, 'No logos or writing anywhere.'),
+        tool === 'gemini' ? el('li', null, 'Gemini’s sparkle mark in the corner, clear of the child.') : null)),
     city.notes[tool] ? el('p', { class: 'note', html: city.notes[tool] }) : null);
   progress(city);
 }

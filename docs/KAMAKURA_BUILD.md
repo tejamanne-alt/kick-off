@@ -229,49 +229,91 @@ So two new passers-by (`LevelBuildKit.Passersby`, walked by `Pedestrian`), each 
 of five looks like five children: **KM-C01** a first-grade boy, **KM-C02** a first-grade girl. The cap stays yellow;
 the randoseru, the shirt and the shorts or skirt vary.
 
+The look is Mia's (the user: "the reality should be as Mia"): a realistic, detailed illustration of a real child,
+as in the four pictures her model was made from (front, back and both sides, one view a picture). They are attached to
+every front prompt for the drawing style alone; the faces stay Japanese. One view a picture, as hers were, so a face has
+the detail that realism needs: in one picture of four views it had a quarter of the pixels. (Gemini's first boy, from a
+prompt asking for "a stylised 3D game character" in one picture, came out an anime figure; that line is gone.)
+
 ```text
-ASSET KM-C01, a first-grade boy walking to school, a model sheet. Attach nothing. A Japanese boy in his first year of
-primary school, about 6 years old and 1.15 m tall, with a natural Japanese child's face: dark brown eyes, short black
-hair, a gentle everyday look, drawn true to life and respectfully, not exaggerated or caricatured. He wears the round
-yellow school safety cap with its chin strap; a black leather randoseru school backpack with the yellow
-first-grader's safety cover over its flap; a plain white short-sleeved shirt; navy shorts; white socks and white
-trainers. No logos, no writing. STYLE: a stylised 3D game character, soft rounded shapes, the head about a fifth of the height,
-simple clean features, flat cel-style colours. FORMAT: one image, aspect ratio 16:9, flat mid-grey background
-(#808080); the child in an A-pose (arms straight and out 30 to 40 degrees from the body, a hand's width between arm and
-body all the way down, hands open, legs a little apart, feet flat), the same child four times side by side at the same
-scale and height: front, left side, back, three-quarter from the front left, with clear space between them and the
-bottom-right corner left empty. Even flat light, no cast shadows, no lighting painted into the colours. Nothing else in
-the image.
+ASSET KM-C01, a first-grade boy walking to school, FRONT view. Attach the four pictures of Mia (front, back and
+both sides). A Japanese boy in his first year of primary school, about 6 years old and 1.15 m tall, with a natural Japanese child's face: dark brown eyes,
+short straight black hair, a gentle everyday look, true to life and respectful, not exaggerated or caricatured. He wears the round yellow
+school safety cap with its chin strap; a black leather randoseru school backpack with the yellow first-grader's safety
+cover over its flap; a plain white short-sleeved shirt; navy shorts; white socks and white trainers. No logos, no writing.
+STYLE: exactly the drawing style and realism of the attached pictures of Mia: a realistic, detailed illustration of a
+real child with natural proportions, true-to-life skin, hair and cloth, clean dark outlines and soft even shading. Not
+anime, not cartoon, not chibi. Copy only the style from her pictures, never her face, hair, clothes or shoes.
+FORMAT: one image, portrait 2:3, plain flat mid-grey background (#808080), the whole child from cap to shoes,
+centred with room all round, seen straight from the front, in a relaxed A-pose: arms straight and a little out from the
+body, a hand's width between arm and body all the way down, hands open, feet flat and a little apart. Even soft studio
+light, no shadow on the ground. Nothing else in the image.
 ```
 
 ```text
-ASSET KM-C02, a first-grade girl walking to school, a model sheet. Attach nothing. A Japanese girl in her first year
-of primary school, about 6 years old and 1.15 m tall, with a natural Japanese child's face: dark brown eyes, black hair
-in a bob, a gentle everyday look, drawn true to life and respectfully, not exaggerated or caricatured. She wears the
-round yellow school safety cap with its chin strap; a red leather randoseru school backpack with the yellow
-first-grader's safety cover over its flap; a plain white short-sleeved shirt; a navy pleated skirt; white socks and
-white trainers. No logos, no writing. STYLE: a stylised 3D game character, soft rounded shapes, the head about a fifth of the height,
-simple clean features, flat cel-style colours. FORMAT: one image, aspect ratio 16:9, flat mid-grey background
-(#808080); the child in an A-pose (arms straight and out 30 to 40 degrees from the body, a hand's width between arm and
-body all the way down, hands open, legs a little apart, feet flat), the same child four times side by side at the same
-scale and height: front, left side, back, three-quarter from the front left, with clear space between them and the
-bottom-right corner left empty. Even flat light, no cast shadows, no lighting painted into the colours. Nothing else in
-the image.
+ASSET KM-C01, BACK view. Attach the front view just made. The same boy exactly as in it: the same face, hair,
+cap, randoseru, clothes, shoes and drawing style, the same size and A-pose, now seen straight from behind. One image, portrait 2:3, the same
+plain flat mid-grey background (#808080) and soft studio light. Nothing else in the image.
 ```
 
-One Gemini chat for each, nothing attached: the game's own kids are not a reference here, their faces not being
-Japanese. Gemini is the user's choice for characters. It marks its pictures with a small sparkle in the bottom-right
-corner (as on KM1-1's): the corner is kept empty so the mark never touches a view, and Claude cuts it away with the
-background. If it makes a square picture, the four views in one row still work; if it draws a view different from the
-others (another hairstyle, another bag), make that sheet again.
+```text
+ASSET KM-C01, LEFT SIDE view. Attach the front view just made. The same boy exactly as in it: the same face, hair,
+cap, randoseru, clothes, shoes and drawing style, the same size and A-pose, now seen straight from his left side, a true side view with the face in profile looking left. One image, portrait 2:3, the same
+plain flat mid-grey background (#808080) and soft studio light. Nothing else in the image.
+```
 
-In ChatGPT, which makes only 1:1, 2:3 and 3:2 pictures and marks none of them, the same prompts with this FORMAT
-paragraph in place of theirs, one chat for each, nothing attached:
-- ChatGPT: `FORMAT: one image, aspect ratio 3:2, flat mid-grey background (#808080); the child in an A-pose (arms straight and out 30 to 40 degrees from the body, a hand's width between arm and body all the way down, hands open, legs a little apart, feet flat), the same child four times side by side at the same scale and height, small enough that all four fit with clear space between them: front, left side, back, three-quarter from the front left. Even flat light, no cast shadows, no lighting painted into the colours. Nothing else in the image.`
+```text
+ASSET KM-C01, RIGHT SIDE view. Attach the front view just made. The same boy exactly as in it: the same face, hair,
+cap, randoseru, clothes, shoes and drawing style, the same size and A-pose, now seen straight from his right side, a true side view with the face in profile looking right. One image, portrait 2:3, the same
+plain flat mid-grey background (#808080) and soft studio light. Nothing else in the image.
+```
 
-The sheet (made in Gemini) goes in `review/kamakura/characters/KM-C01_first_grade_boy/1_sheet.png` (and `KM-C02_first_grade_girl`).
-Claude cuts it into its four views and pushes them, then in meshy.ai:
-1. **Image to 3D**, several images: the four views; the newest model; symmetry on; PBR off (base colour only: the
+```text
+ASSET KM-C02, a first-grade girl walking to school, FRONT view. Attach the four pictures of Mia (front, back and
+both sides). A Japanese girl in her first year of primary school, about 6 years old and 1.15 m tall, with a natural Japanese child's face: dark brown eyes,
+black hair in a bob, a gentle everyday look, true to life and respectful, not exaggerated or caricatured. She wears the round yellow
+school safety cap with its chin strap; a red leather randoseru school backpack with the yellow first-grader's safety
+cover over its flap; a plain white short-sleeved shirt; a navy pleated skirt; white socks and white trainers. No logos, no writing.
+STYLE: exactly the drawing style and realism of the attached pictures of Mia: a realistic, detailed illustration of a
+real child with natural proportions, true-to-life skin, hair and cloth, clean dark outlines and soft even shading. Not
+anime, not cartoon, not chibi. Copy only the style from her pictures, never her face, hair, clothes or shoes.
+FORMAT: one image, portrait 2:3, plain flat mid-grey background (#808080), the whole child from cap to shoes,
+centred with room all round, seen straight from the front, in a relaxed A-pose: arms straight and a little out from the
+body, a hand's width between arm and body all the way down, hands open, feet flat and a little apart. Even soft studio
+light, no shadow on the ground. Nothing else in the image.
+```
+
+```text
+ASSET KM-C02, BACK view. Attach the front view just made. The same girl exactly as in it: the same face, hair,
+cap, randoseru, clothes, shoes and drawing style, the same size and A-pose, now seen straight from behind. One image, portrait 2:3, the same
+plain flat mid-grey background (#808080) and soft studio light. Nothing else in the image.
+```
+
+```text
+ASSET KM-C02, LEFT SIDE view. Attach the front view just made. The same girl exactly as in it: the same face, hair,
+cap, randoseru, clothes, shoes and drawing style, the same size and A-pose, now seen straight from her left side, a true side view with the face in profile looking left. One image, portrait 2:3, the same
+plain flat mid-grey background (#808080) and soft studio light. Nothing else in the image.
+```
+
+```text
+ASSET KM-C02, RIGHT SIDE view. Attach the front view just made. The same girl exactly as in it: the same face, hair,
+cap, randoseru, clothes, shoes and drawing style, the same size and A-pose, now seen straight from her right side, a true side view with the face in profile looking right. One image, portrait 2:3, the same
+plain flat mid-grey background (#808080) and soft studio light. Nothing else in the image.
+```
+
+One chat for each child, the front first; then the back and the two sides, each with the front just made attached, so
+it stays the same child. If a view comes out a different child (another face, hair or bag), make that view again.
+Gemini is the user's choice for characters. It marks its pictures with a small sparkle in the bottom-right corner (as
+on KM1-1's): the child stands centred with room all round, so the mark never touches them, and Claude cuts it away with
+the background.
+
+In ChatGPT, which makes 2:3 pictures too and marks none of them, the same prompts, with this FORMAT paragraph in the
+front's:
+- ChatGPT: `FORMAT: one image, portrait 2:3, plain flat mid-grey background (#808080), the whole child from cap to shoes, centred, seen straight from the front, in a relaxed A-pose: arms straight and a little out from the body, a hand's width between arm and body all the way down, hands open, feet flat and a little apart. Even soft studio light, no shadow on the ground. Nothing else in the image.`
+
+The four pictures of each go in `review/kamakura/characters/KM-C01_first_grade_boy/` (and `KM-C02_first_grade_girl/`)
+as `1_front.png`, `2_back.png`, `3_left_side.png` and `4_right_side.png`. Then in meshy.ai:
+1. **Image to 3D**, several images: the four pictures; the newest model; symmetry on; PBR off (base colour only: the
    game's toon shader uses the colour alone, and lighting in the texture fights it); the largest texture offered.
 2. **Remesh** before rigging: Target Polycount *Fixed*, *Custom*, Topology *Quad*. A passer-by (C01, C02): 15,000
    quads, about 30,000 triangles. A playable kid: 50,000 quads, about 100,000 triangles. These are what
@@ -281,7 +323,7 @@ Claude cuts it into its four views and pushes them, then in meshy.ai:
    don't matter: the game moves every character's bones in code (`CharacterRig`, `WalkerAnimator`) and the importer
    drops the clip. If the download needs one, add one plain walk.
 4. **Download**: FBX, the rigged model with its one animation, as one file; origin at the bottom. The size doesn't
-   matter (`meshy_rigged.py` scales to the roster's height). Save it beside the sheet as `<id>_<name>.fbx` and push.
+   matter (`meshy_rigged.py` scales to the roster's height). Save it beside the pictures as `<id>_<name>.fbx` and push.
 Then `meshy_rigged.py` (a profile for each), `polish_all.py`, the strict review (docs/ASSET_REVIEW.md: eight views,
 the walk animated, the face 100% on the Head, C15), and the user's approval before the level uses them. Meshy's terms
 as above: a paid plan for full commercial use, or Meshy credited.
