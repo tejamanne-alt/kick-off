@@ -627,6 +627,30 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
   to 13,000 and land at 13,400. The shipped characters are polished as before, so their rebuild is unchanged.
 - *Rule:* compare a polished character with its import from behind and at the hems, not only from the front.
 
+**C29. The first-graders' audit: a belt in every other outfit, camouflage on the randoseru, and a review that skipped the torso.**
+- *What:* after the user approved the first-graders unseen and asked for audits by these learnings, each was rendered
+  from all eight sides in loud colours unlike its own (a teal shirt, mustard legwear, a magenta randoseru), as C22 asks.
+  - Both waistbands stayed navy, as a belt (C22's fault on Max).
+  - The boy's black randoseru came out mottled like camouflage, its leather's highlights and near-black creases times
+    the new colour. The girl's straps were flecked.
+  - The boy's cover had a buckle with folds round it that meshy.ai painted and his picture doesn't have.
+  - `review_poses.py` posed the limbs but not the torso. The game turns the pelvis against the chest
+    (`CharacterRig.Torso`, C19), so the first review's walk was not the game's (C9, C20).
+  - Fixing the cover, the first try also painted the hair under the cap yellow: the cap's back is yellow and turned back
+    too, which widened the cover's box up to the head.
+- *Fix (`meshy_rigged.py`, the first-graders' profiles):*
+  - The waistband's dark faces join the legwear.
+  - `even_parts` presses a part's texel light toward its median, so the randoseru's 5th to 95th percentiles span 0.22
+    (the shorts' own spread). The default colour holds.
+  - `plain_cover` paints the cover's middle in its own median yellow. It looks for the cover below the shoulders only,
+    so the cap is never taken into it.
+  - `review_poses.py` ports the torso, as `review/cartoon/render_scenes.py` already did.
+  - Checked again in the loud outfit from every side, and every second frame of the walk at full size.
+- *Rule:* audit a new character in an outfit unlike its own before calling it done, part by part (the waistband, the
+  bag's leather, the hems). A review tool that poses a character mirrors every part of the game's posing, the torso
+  included. A region found by colour is bounded by the body too (below the shoulders, on the back), never by colour
+  alone.
+
 ## D. Art direction and look
 
 **D1. A golden-hour haze hid the kid** (before v37).

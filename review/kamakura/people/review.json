@@ -7,7 +7,7 @@
    0.3,
    1.17
   ],
-  "tris": 13428,
+  "tris": 13402,
   "motions": [
    "stroll",
    "chat",
@@ -48,7 +48,7 @@
     5,
     "Size, triangles",
     "pass",
-    "1.17 m tall (a six-year-old), 13,428 triangles (a passer-by's budget: 14,000), a 2048 atlas"
+    "1.17 m tall (a six-year-old), 13,402 triangles (a passer-by's budget: 14,000), a 2048 atlas; in the game its neck at 1.04 (the player kid's 1.3, a grown-up's 1.586: four-fifths of the kid, two-thirds of a grown-up, C13)"
    ],
    [
     6,
@@ -95,8 +95,8 @@
    [
     13,
     "Repairs listed",
-    "limit",
-    "the hems held in the polish (where two outfit parts meet; cut freely they left dark flaps over the knees, C28). From meshy.ai's own texture, not repaired: a buckle in the middle of the randoseru's yellow cover with painted folds round it (his back view has two rivets and no buckle)"
+    "pass",
+    "the hems held in the polish (cut freely they left dark flaps over the knees, C28); the boy's yellow cover painted plain in its own yellow over its middle, as his picture draws it (meshy.ai had painted a buckle and folds there); the waistband joined to the legwear (in another outfit it stayed navy as a belt, C22); the randoseru's light evened (its leather's highlights and creases read as camouflage in any other colour, C22); all found in the audit's loud-outfit renders (a teal shirt, mustard legwear, a magenta randoseru) from every side"
    ],
    [
     14,
@@ -108,7 +108,7 @@
     15,
     "Joints overlap",
     "pass",
-    "one skin bound to the bones: no seam at the hips, knees, shoulders or neck in any frame of the stroll"
+    "one skin bound to the bones: no seam at the hips, knees, shoulders or neck in any frame of the stroll, with the game's torso turning (CharacterRig.Torso: the pelvis against the chest, C19); the head's nod in the chat folds nothing (C15)"
    ],
    [
     16,
@@ -120,7 +120,7 @@
     17,
     "Each part only itself",
     "pass",
-    "the outfit parts drawn recoloured (the palette): the shirt, the legwear and the randoseru each their own, the cap, socks and shoes left as they are"
+    "each outfit part looked at in a loud outfit unlike its own from all eight sides (C22): the shirt, the legwear with its waistband, the randoseru each their own; the cap, the cover, socks and shoes left as they are"
    ]
   ]
  },
@@ -132,7 +132,7 @@
    0.28,
    1.15
   ],
-  "tris": 13379,
+  "tris": 13357,
   "motions": [
    "stroll",
    "chat",
@@ -173,7 +173,7 @@
     5,
     "Size, triangles",
     "pass",
-    "1.15 m tall (a six-year-old), 13,379 triangles (a passer-by's budget: 14,000), a 2048 atlas"
+    "1.15 m tall (a six-year-old), 13,357 triangles (a passer-by's budget: 14,000), a 2048 atlas; in the game its neck at 1.04 (the player kid's 1.3, a grown-up's 1.586: four-fifths of the kid, two-thirds of a grown-up, C13)"
    ],
    [
     6,
@@ -220,8 +220,8 @@
    [
     13,
     "Repairs listed",
-    "limit",
-    "the hems held in the polish (where two outfit parts meet; cut freely they left dark flaps over the knees, C28). From meshy.ai's own texture, not repaired: small white slivers where the blouse meets the culottes' waistband"
+    "pass",
+    "the hems held in the polish (cut freely they left dark flaps over the knees, C28); small white slivers where the blouse meets the culottes' waistband are left, tucked-in shirt in any outfit; the waistband joined to the legwear (in another outfit it stayed navy as a belt, C22); the randoseru's light evened (its leather's highlights and creases read as camouflage in any other colour, C22); all found in the audit's loud-outfit renders (a teal shirt, mustard legwear, a magenta randoseru) from every side"
    ],
    [
     14,
@@ -233,7 +233,7 @@
     15,
     "Joints overlap",
     "pass",
-    "one skin bound to the bones: no seam at the hips, knees, shoulders or neck in any frame of the stroll"
+    "one skin bound to the bones: no seam at the hips, knees, shoulders or neck in any frame of the stroll, with the game's torso turning (CharacterRig.Torso: the pelvis against the chest, C19); the head's nod in the chat folds nothing (C15)"
    ],
    [
     16,
@@ -245,7 +245,7 @@
     17,
     "Each part only itself",
     "pass",
-    "the outfit parts drawn recoloured (the palette): the shirt, the legwear and the randoseru each their own, the cap, socks and shoes left as they are"
+    "each outfit part looked at in a loud outfit unlike its own from all eight sides (C22): the shirt, the legwear with its waistband, the randoseru each their own; the cap, the cover, socks and shoes left as they are"
    ]
   ]
  }

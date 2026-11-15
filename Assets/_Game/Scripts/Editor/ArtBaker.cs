@@ -260,6 +260,10 @@ namespace DribbleToSchool.EditorTools
             foreach (string passerby in LevelBuildKit.PasserbyModels)
                 if (AssetDatabase.LoadAssetAtPath<GameObject>(LevelBuildKit.ModelsDir + "/" + passerby + ".fbx") != null)
                     set.passersby[passerby] = CharacterMaterial(passerby, toonCharacter, passerby + "Atlas", false);
+            // (KM1-1's first-graders, placed by their level: the same pedestrians' line and rim)
+            foreach (string child in LevelBuildKit.FirstGraderModels)
+                if (AssetDatabase.LoadAssetAtPath<GameObject>(LevelBuildKit.ModelsDir + "/" + child + ".fbx") != null)
+                    set.passersby[child] = CharacterMaterial(child, toonCharacter, child + "Atlas", false);
             foreach (var player in PlayerRoster.All)
             {
                 // A kid whose model is not in the project yet is left out (LevelBuildKit.BuildCast says so).

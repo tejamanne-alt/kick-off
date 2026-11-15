@@ -1,18 +1,19 @@
 {
  "intro": [
   "KM1-1's first-graders, KM-C01 (the boy) and KM-C02 (the girl): passers-by who walk to school in a line in their yellow caps. Made from your four Gemini pictures each by meshy.ai (its model, texture and rig), then brought into the game's character contract (meshy_rigged.py: the game's bones, the outfit parts marked for recolouring) and polished as the other passers-by are (polish_all.py: welded, smoothed, cut to a passer-by's budget).",
-  "Each is about 13,400 triangles in a 2048 atlas. The eight views are in the game's toon look; the motions are the game's own walker code (WalkerAnimator) ported line by line: the stroll, chatting when stopped, waiting at the kerb. The palette strip shows how a line of them would be dressed: the shirt, the legwear and the randoseru change from child to child, the yellow cap stays."
+  "Each is about 13,400 triangles (13,402 and 13,357) in a 2048 atlas. The eight views are in the game's toon look; the motions are the game's own walker code (WalkerAnimator) ported line by line: the stroll, chatting when stopped, waiting at the kerb. The palette strip shows how a line of them would be dressed: the shirt, the legwear and the randoseru change from child to child, the yellow cap stays."
  ],
  "fixed": [
+  "<b>The audit after your go-ahead</b> (LEARNINGS C13, C15, C19, C21, C22): each dressed in loud colours unlike its own, from every side. In another outfit the waistband stayed navy as a belt, and the randoseru's glossy leather turned to camouflage; the waistband now goes with the legwear and the randoseru's light is evened. The boy's cover is now plain yellow, as his picture draws it (meshy.ai had painted a buckle in its middle). The motions now include the game's torso turning (the pelvis against the chest), as the game poses every character.",
   "<b>Fixed before this review</b> (C28): cut down to its budget, the boy's shorts' hem collapsed onto his legs and left two dark flaps over the back of his knees. The polish now holds back the edges where two outfit parts meet (a hem, a collar, a waistband) for these two, and cuts to 1,000 under the budget, which their split two-coloured faces bring back to about 13,400.",
   "<b>Their rig</b> (C26): meshy.ai's newer rig names its spine Spine02, Spine01, Spine and its neck 'neck'; the import reads them by their place in the chain."
  ],
  "limits": [
-  "<b>From meshy.ai's own texture</b>, not repaired: a buckle in the middle of the boy's yellow cover with painted folds round it (your picture has two rivets and no buckle), and small white slivers at the girl's waistband. I can paint the cover plain yellow if you'd like.",
+  "<b>From meshy.ai's own texture</b>, left: small white slivers at the girl's waistband (her blouse tucked in; in another outfit they take the shirt's colour), and a few faint creases on the boy's randoseru.",
   "<b>The stroll</b> swings the legs from the hip with no foot planting, as every passer-by's does in the game: the feet lift 1 to 3 cm off the ground in mid-stride.",
   "<b>Open edges</b>: 29 (boy) and 100 (girl), meshy.ai's own, along the straps, the cap and the waist; none shows as a hole."
  ],
  "pending": [
-  "<b>Waiting for you:</b> your approval. Then they go into the project with their own list (not the grown-ups' walkers, so they appear only where KM1-1 places them) and their palette, and KM1-1 lines them up."
+  "<b>Approved</b> (your go-ahead to proceed): installed in the project in their own list, for KM1-1 to line up. Tell me in the morning if anything looks off."
  ]
 }

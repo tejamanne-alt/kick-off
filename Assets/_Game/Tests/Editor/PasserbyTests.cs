@@ -36,6 +36,29 @@ namespace DribbleToSchool.Tests
         }
 
         [Test]
+        public void FirstGradersStandApartAndSmaller()
+        {
+            // KM1-1's first-graders: never drawn by the footpath's turns (the walkers), dressed from a wardrobe of their own,
+            // shorter than the kid and taller than a toddler (docs/LEARNINGS.md C13), each model in the project with its atlas
+            // and its default colours.
+            var walkers = new HashSet<string>(LevelBuildKit.PasserbyModels);
+            Assert.AreEqual(LevelBuildKit.FirstGraders.Length, LevelBuildKit.FirstGraderModels.Length);
+            foreach (var p in LevelBuildKit.FirstGraders)
+            {
+                Assert.IsFalse(walkers.Contains(p.model), p.model + ": not one of the footpath's walkers");
+                Assert.AreSame(p, LevelBuildKit.PasserbyNamed(p.model), p.model + ": found by name");
+                Assert.Greater(p.tops.Length, 1, p.model + ": shirts to change into");
+                Assert.Greater(p.legwears.Length, 1, p.model + ": legwear to change into");
+                Assert.Greater(p.thirds.Length, 1, p.model + ": randoseru colours");
+                Assert.IsTrue(p.NeckHeight < 1.3f * 0.9f && p.NeckHeight > 0.9f, p.model + ": a six-year-old, shorter than the kid");
+                string path = LevelBuildKit.ModelsDir + "/" + p.model;
+                Assert.IsTrue(System.IO.File.Exists(path + ".fbx"), path + ".fbx");
+                Assert.IsTrue(System.IO.File.Exists(path + "Atlas.png"), path + "Atlas.png");
+                Assert.IsTrue(System.IO.File.Exists(path + ".json"), path + ".json");
+            }
+        }
+
+        [Test]
         public void EachComesAlongOnceBeforeAnyComesAgain()
         {
             int n = LevelBuildKit.Passersby.Length;

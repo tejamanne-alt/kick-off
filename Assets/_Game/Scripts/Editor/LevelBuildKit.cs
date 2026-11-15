@@ -817,10 +817,45 @@ namespace DribbleToSchool.EditorTools
         /// <summary>The rigged passers-by's model files (ArtBaker makes each its material).</summary>
         public static readonly string[] PasserbyModels = Array.ConvertAll(Passersby, p => p.model);
 
-        /// <summary>The rigged passer-by of that model file (null if there is none).</summary>
+        /// <summary>A first-grader's neck height (game units): four-fifths of the kid's 1.3, two-thirds of a grown-up's (docs/LEARNINGS.md C13).</summary>
+        public const float FirstGraderNeck = 1.04f;
+
+        // The first-graders' wardrobe: light shirts and blouses, dark shorts and culottes, and the randoseru each chose.
+        static readonly Color[] SchoolTops =
+        {
+            new Color(0.97f, 0.97f, 0.99f), new Color(0.78f, 0.86f, 0.95f), new Color(0.98f, 0.94f, 0.76f), new Color(0.97f, 0.84f, 0.86f),
+            new Color(0.8f, 0.92f, 0.84f), new Color(0.86f, 0.87f, 0.88f),
+        };
+        static readonly Color[] SchoolLegwears =
+        {
+            new Color(0.12f, 0.15f, 0.28f), new Color(0.25f, 0.25f, 0.27f), new Color(0.62f, 0.55f, 0.4f), new Color(0.1f, 0.1f, 0.11f),
+            new Color(0.24f, 0.33f, 0.5f),
+        };
+        static readonly Color[] Randoseru =
+        {
+            new Color(0.08f, 0.08f, 0.09f), new Color(0.66f, 0.05f, 0.06f), new Color(0.36f, 0.2f, 0.12f), new Color(0.1f, 0.14f, 0.32f),
+            new Color(0.9f, 0.55f, 0.66f), new Color(0.6f, 0.5f, 0.78f), new Color(0.12f, 0.3f, 0.22f), new Color(0.7f, 0.52f, 0.3f),
+        };
+
+        /// <summary>
+        /// KM1-1's first-graders (docs/KAMAKURA_BUILD.md, KM-C01 and KM-C02): six-year-olds walking to school in a line in their
+        /// yellow caps, a randoseru on their backs. Not walkers of the footpath (<see cref="Passersby"/>, which every level draws
+        /// from): they appear only where a level places them. Each is dressed from these (the third part is the randoseru); the
+        /// yellow cap and its cover stay.
+        /// </summary>
+        public static readonly Passerby[] FirstGraders =
+        {
+            new Passerby("FirstGraderBoy", FirstGraderNeck, SchoolTops, SchoolLegwears, Randoseru),
+            new Passerby("FirstGraderGirl", FirstGraderNeck, SchoolTops, SchoolLegwears, Randoseru),
+        };
+
+        /// <summary>The first-graders' model files (ArtBaker makes each its material, as for the passers-by).</summary>
+        public static readonly string[] FirstGraderModels = Array.ConvertAll(FirstGraders, p => p.model);
+
+        /// <summary>The rigged passer-by or first-grader of that model file (null if there is none).</summary>
         public static Passerby PasserbyNamed(string model)
         {
-            return Array.Find(Passersby, p => p.model == model);
+            return Array.Find(Passersby, p => p.model == model) ?? Array.Find(FirstGraders, p => p.model == model);
         }
 
         /// <summary>

@@ -443,6 +443,22 @@ def parts_firstgrader(randoseru):
         f.top((s < 0.16) & (v > 0.62) & (f.z > f.hip - 0.02))                    # (not the socks and shoes, below)
         f.legwear((h > 200) & (h < 255) & (s > 0.2) & (v < 0.45), 0.1)
         f.third(randoseru(h, s, v) & (f.skull < 0.5) & (f.z > f.hip - 0.1) & (f.hand < 0.5), 0.1)
+        # the randoseru's small islands of its own colour that the big pieces left out (black on its black, invisible
+        # until it is dressed in another colour: C22): joined where the randoseru is most of what is round them
+        join = randoseru(h, s, v) & (f.FP == 0) & (f.skull < 0.5) & (f.hand < 0.5)
+        for _ in range(4):
+            near = np.zeros((f.nv, 2)); np.add.at(near, f.tri.ravel(), np.repeat(np.stack([f.FP == 3, f.FP != 3], 1), 3, 0))
+            share = (near[:, 0] / np.maximum(near.sum(1), 1))[f.tri].mean(1)
+            take = join & (f.FP == 0) & (share > 0.5)
+            if not take.any(): break
+            f.FP[take] = 3
+        log('randoseru islands joined: %d faces' % (f.FP[join] == 3).sum())
+        # the waistband (the shorts' or culottes' own, as dark as their navy but greyer): with the legwear, else in any
+        # other colour it stays navy as a belt (docs/LEARNINGS.md C22, Max's waistband; the first-graders' audit)
+        band = ((v < 0.3) & (f.FP == 0) & (f.z > f.hip - 0.02) & (f.z < f.hip + 0.3) & (f.legs > 0.3) & (f.head < 0.3)
+                & (f.hand < 0.5) & (f.foot < 0.3) & ((h > 190) | (s < 0.35)))
+        f.FP[band] = 2
+        log('waistband with the legwear: %d faces' % band.sum())
         return f.done('first-grader', ('shirt', 'shorts', 'randoseru'))
     return parts
 
@@ -460,9 +476,12 @@ PROFILES = {'awesome': {'parts': parts_awesome, 'stands': 1.32},
             'shopkeeper': {'parts': parts_shopkeeper, 'stands': 1.60},
             'grandad': {'parts': parts_grandad, 'stands': 1.70},
             # KM1-1's first-graders (passers-by), six or seven years old: the boy's randoseru black, the girl's red
-            'firstgrader_boy': {'parts': parts_firstgrader(lambda h, s, v: (v < 0.2) & (s < 0.5)), 'stands': 1.17},
+            # (even: the randoseru's light kept to this spread, its glossy leather otherwise mottled in any colour but its
+            # own: the first-graders' audit, C22)
+            'firstgrader_boy': {'parts': parts_firstgrader(lambda h, s, v: (v < 0.2) & (s < 0.5)), 'stands': 1.17,
+                                'even': {3: 0.22}, 'plain_cover': True},
             'firstgrader_girl': {'parts': parts_firstgrader(lambda h, s, v: ((h < 15) | (h > 340)) & (s > 0.5) & (v > 0.2)),
-                                 'stands': 1.15}}
+                                 'stands': 1.15, 'even': {3: 0.22}}}
 PROFILE = PROFILES[PROFILE_NAME]
 
 
@@ -476,10 +495,78 @@ def parts_without_pack(parts, o, px):
         mt.pack_faces = find
 
 
+def even_parts(o, png, spreads):
+    """A part's texels' light (the atlas holds each garment's light against its colour) pressed toward their median until
+    the 5th to the 95th percentile span `spread`: a glossy black leather's highlights and near-black creases, times any
+    other colour, read as camouflage. The median stays, so the default colour does."""
+    import cv2
+    me = o.data
+    im = cv2.imread(png, cv2.IMREAD_UNCHANGED); H, W = im.shape[:2]
+    uv = np.zeros(len(me.loops) * 2); me.uv_layers[0].data.foreach_get('uv', uv); uv = uv.reshape(-1, 2)
+    u2 = np.zeros(len(me.loops) * 2); me.uv_layers[1].data.foreach_get('uv', u2); part = np.round(u2.reshape(-1, 2)[:, 0])
+    for p, spread in spreads.items():
+        mask = np.zeros((H, W), np.uint8)
+        for poly in me.polygons:
+            li = list(poly.loop_indices)
+            if part[li[0]] != p: continue
+            cv2.fillPoly(mask, [np.round(np.stack([uv[li, 0] * W, (1 - uv[li, 1]) * H], 1)).astype(np.int32)], 1)
+        m = mask > 0
+        if not m.any(): continue
+        rgb = im[..., :3][m].astype(np.float32)
+        L = rgb.mean(1)
+        lo, med, hi = np.percentile(L, [5, 50, 95])
+        k = min(1.0, spread * 255 / max(hi - lo, 1e-3))
+        L2 = np.clip(med + (L - med) * k, 0, 255)
+        im[..., :3][m] = np.clip(rgb * (L2 / np.maximum(L, 1.0))[:, None], 0, 255).astype(np.uint8)
+        log('part %d evened: light %d..%d (median %d) pressed by %.2f' % (p, lo, hi, med, k))
+    cv2.imwrite(png, im)
+
+
+def plain_cover(o, png, below, middle=(0.62, 0.84)):
+    """The randoseru's yellow cover as the user's picture draws it: meshy.ai painted a buckle in its middle with folds
+    round it, which no view of the first-grade boy has (the first-graders' audit). The cover is the yellow faces turned to
+    the back (+y) below the shoulders (`below`: the cap's back is yellow and turned back too, and took the hair under it
+    into the cover's box); the faces over its middle (`middle`: the share of its width and height), whatever their
+    colour, take the cover's median yellow. Its rivets, near the corners, stay."""
+    import cv2
+    me = o.data
+    im = cv2.imread(png, cv2.IMREAD_UNCHANGED); H, W = im.shape[:2]
+    uv = np.zeros(len(me.loops) * 2); me.uv_layers[0].data.foreach_get('uv', uv); uv = uv.reshape(-1, 2)
+    nf = len(me.polygons)
+    cen = np.zeros(nf * 3); me.polygons.foreach_get('center', cen); cen = cen.reshape(-1, 3)
+    nrm = np.zeros(nf * 3); me.polygons.foreach_get('normal', nrm); nrm = nrm.reshape(-1, 3)
+    polys = [list(p.loop_indices) for p in me.polygons]
+    def texels(li):
+        m = np.zeros((H, W), np.uint8)
+        cv2.fillPoly(m, [np.round(np.stack([uv[li, 0] * W, (1 - uv[li, 1]) * H], 1)).astype(np.int32)], 1)
+        return m > 0
+    fc = np.array([im[..., :3][texels(li)].reshape(-1, 3).mean(0) if texels(li).any() else (0, 0, 0) for li in polys])[:, ::-1] / 255.0
+    h, sat, v = hsv(fc)
+    yellow = (h > 38) & (h < 64) & (sat > 0.45) & (v > 0.45) & (nrm[:, 1] > 0.6) & (cen[:, 2] < below)
+    if yellow.sum() < 20: log('plain cover: no cover found'); return
+    x0, x1 = np.percentile(cen[yellow, 0], [2, 98]); z0, z1 = np.percentile(cen[yellow, 2], [2, 98])
+    yb = np.percentile(cen[yellow, 1], 50)
+    mx, mz = (x0 + x1) / 2, (z0 + z1) / 2
+    inner = ((np.abs(cen[:, 0] - mx) < (x1 - x0) * middle[0] / 2) & (np.abs(cen[:, 2] - mz) < (z1 - z0) * middle[1] / 2)
+             & (nrm[:, 1] > 0.3) & (np.abs(cen[:, 1] - yb) < 0.06 * (z1 - z0) / 0.4) & (cen[:, 2] < below))
+    allm = np.zeros((H, W), bool)
+    for i in np.flatnonzero(yellow): allm |= texels(polys[i])
+    med = np.median(im[..., :3][allm].reshape(-1, 3), axis=0)
+    n = 0
+    for i in np.flatnonzero(inner):
+        m = texels(polys[i]); im[..., :3][m] = med; n += 1
+    cv2.imwrite(png, im)
+    log('plain cover: %d faces over its middle painted its yellow %s (the cover %d faces)' % (n, med[::-1], yellow.sum()))
+
+
 def finish(o, rig, img, px):
     png = os.path.join(OUT, NAME + 'Atlas.png')
     mb.face_parts = PROFILE['parts']
     refs = mb.paint(o, img, px, png, plain_last=True)
+    if PROFILE.get('even'): even_parts(o, png, PROFILE['even'])
+    if PROFILE.get('plain_cover'):            # (below the shoulders: halfway from the chest joint to the neck's)
+        B = rig.data.bones
+        plain_cover(o, png, (B['Chest'].head_local.z + B['Neck'].head_local.z) / 2 + 0.25 * (B['Neck'].head_local.z - B['Chest'].head_local.z))
     o.data.materials.clear(); o.data.materials.append(atlas_material('Kid', png))
     o.name = 'Kid'; o.data.name = 'Kid'
     tris = sum(len(p.vertices) - 2 for p in o.data.polygons)

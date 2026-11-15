@@ -449,8 +449,31 @@ def pose(p):
     if 'Bag' in rig.pose.bones: swing('Bag', p['bag'] * (0.3 if BAGS else 1.0))
     swing('Head', p['headTilt'])
     swing('Hips', p['lean'], sign=+1)      # a forward lean tips the top toward -Y (forward): +X
+    torso(p)
     # the stroll's bob (RigPose.bob, game units: the kid's neck at 1.3 of them), in the model's own height
     rig.location.z = p.get('bob', 0.0) * NECK_M / 1.3
+
+def torso(p):
+    """CharacterRig.Torso, as review/cartoon/render_scenes.py mirrors it (docs/LEARNINGS.md C19): the pelvis turns with the
+    legs and the chest the other way with the arms, the torso sways over the straighter leg and dips at full stride, the
+    head turns, sways and dips back. (TORSO=0: the rigid torso, as this review drew it before; the breath's 0.9 degrees
+    left out.) The figure faces -y, its near (right) side -x: a turn about +z brings the near side forward."""
+    if os.environ.get('TORSO', '1') != '1' or 'Spine' not in rig.pose.bones: return
+    def turn(bone, turn_deg, sway_deg, dip_deg=0.0):
+        if bone not in rig.pose.bones: return
+        pb = rig.pose.bones[bone]; inv = pb.bone.matrix_local.to_3x3().inverted()
+        q = Quaternion(inv @ Vector((0, 0, 1)), math.radians(turn_deg)) @ Quaternion(inv @ Vector((0, 1, 0)), math.radians(-sway_deg)) \
+            @ Quaternion(inv @ Vector((1, 0, 0)), math.radians(dip_deg))
+        pb.rotation_quaternion = q @ pb.rotation_quaternion
+    sn = lambda a: math.sin(math.radians(a))
+    arms = sn(p['armF']) - sn(p['armB']); legs = sn(p['legF']) - sn(p['legB'])
+    ct = max(-15.0, min(15.0, arms * 11.0)); ht = max(-10.0, min(10.0, legs * 6.5))
+    apart = min(1.0, abs(legs) / 0.4)
+    sway = max(-1.0, min(1.0, (abs(p['kneeB']) - abs(p['kneeF'])) / 40.0)) * apart * 3.0
+    dip = 2.0 * min(1.0, abs(legs) / 1.2)
+    back = (ct - ht) * 0.5
+    turn('Hips', ht, 0.0); turn('Spine', back, sway, dip * 0.5); turn('Chest', back, 0.0, dip * 0.5); turn('Head', -ct, -sway, -dip)
+
 
 def world_bounds():
     dg = C.evaluated_depsgraph_get(); ev = kid.evaluated_get(dg); m = ev.to_mesh()

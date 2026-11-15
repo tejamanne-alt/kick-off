@@ -2494,6 +2494,23 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
 - After approval they go into their own list (not the grown-ups' walkers, which every level draws from), and KM1-1
   lines them up.
 
+## The first-graders audited and installed (tools, game, tests and docs)
+
+- The user approved the scooter and the first-graders without looking, asking for audits by LEARNINGS. The first-graders'
+  audit (C13, C15, C19, C21, C22: C29) found:
+  - the waistbands staying navy in other outfits;
+  - the boy's randoseru mottled in any colour but black;
+  - a buckle meshy.ai painted on the boy's cover;
+  - a review walk without the game's torso turning.
+- All fixed in the import (`meshy_rigged.py`: the waistband with the legwear, `even_parts`, `plain_cover`) and the review
+  (`review_poses.py`: the torso). Checked in a loud outfit from every side and frame by frame; republished.
+- Installed: `FirstGraderBoy` and `FirstGraderGirl` (13,402 and 13,357 triangles) in `Art/Models`.
+  - `LevelBuildKit.FirstGraders`: neck 1.04, four-fifths of the kid's (C13); shirts, shorts and culottes; eight
+    randoseru colours. Kept apart from the footpath's walkers, so they appear only where KM1-1 places them.
+  - `ArtBaker` makes their materials. `PasserbyTests.FirstGradersStandApartAndSmaller`.
+  - Checks: `unity_api_check` 6000.7 passes, and the compiler's errors match the committed tree's in two symbol sets (a
+    planted error caught).
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.
