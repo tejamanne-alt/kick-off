@@ -240,8 +240,9 @@ ASSET KM-C01, a first-grade boy walking to school, FRONT view. Attach the four p
 both sides). A Japanese boy in his first year of primary school, about 6 years old and 1.15 m tall, with a natural Japanese child's face: dark brown eyes,
 short straight black hair, a gentle everyday look, true to life and respectful, not exaggerated or caricatured. He wears the round yellow
 school safety cap with its chin strap; a black leather randoseru school backpack with the yellow first-grader's safety
-cover over its flap; a plain white short-sleeved shirt, tucked in; knee-length navy shorts; white socks and white trainers. No logos, no writing. The picture is made into a 3D model, so every piece of clothing is solid and sits close to the
-body: nothing loose, flared, floating or see-through, and no gap between clothes and skin anywhere.
+cover over its flap; a plain white short-sleeved shirt, tucked in, the sleeves fitting close to the arms; knee-length navy shorts that fit close round each leg, not wide or flared, the hems resting against the legs; white socks and white trainers. No logos, no writing. The picture is made into a 3D model, so every piece of clothing is solid and sits close to the
+body: nothing loose, flared, floating or see-through, and no gap between clothes and skin anywhere. The randoseru sits flat against the back, its shoulder straps flat on the shoulders and chest with no gap under
+them; the cap's chin strap lies flat against the cheeks; the cap's brim is short and firm.
 STYLE: exactly the drawing style and realism of the attached pictures of Mia: a realistic, detailed illustration of a
 real child with natural proportions, true-to-life skin, hair and cloth, clean dark outlines and soft even shading. Not
 anime, not cartoon, not chibi. Copy only the style from her pictures, never her face, hair, clothes or shoes.
@@ -254,19 +255,19 @@ light, no shadow on the ground. Nothing else in the image.
 
 ```text
 ASSET KM-C01, BACK view. Attach the front view just made. The same boy exactly as in it: the same face, hair,
-cap, randoseru, clothes (solid and close to the body), shoes and drawing style, the same size and the same A-pose (arms straight and out at 45 degrees, well clear of the body), now seen straight from behind. One image, portrait 2:3, the same
+cap, randoseru, clothes (solid and close to the body, the bag and straps flat against it), shoes and drawing style, the same size and the same A-pose (arms straight and out at 45 degrees, well clear of the body), now seen straight from behind. One image, portrait 2:3, the same
 plain flat mid-grey background (#808080) and soft studio light. Nothing else in the image.
 ```
 
 ```text
 ASSET KM-C01, LEFT SIDE view. Attach the front view just made. The same boy exactly as in it: the same face, hair,
-cap, randoseru, clothes (solid and close to the body), shoes and drawing style, the same size and the same A-pose (arms straight and out at 45 degrees, well clear of the body), now seen straight from his left side, a true side view with the face in profile looking left. One image, portrait 2:3, the same
+cap, randoseru, clothes (solid and close to the body, the bag and straps flat against it), shoes and drawing style, the same size and the same A-pose (arms straight and out at 45 degrees, well clear of the body), now seen straight from his left side, a true side view with the face in profile looking left. One image, portrait 2:3, the same
 plain flat mid-grey background (#808080) and soft studio light. Nothing else in the image.
 ```
 
 ```text
 ASSET KM-C01, RIGHT SIDE view. Attach the front view just made. The same boy exactly as in it: the same face, hair,
-cap, randoseru, clothes (solid and close to the body), shoes and drawing style, the same size and the same A-pose (arms straight and out at 45 degrees, well clear of the body), now seen straight from his right side, a true side view with the face in profile looking right. One image, portrait 2:3, the same
+cap, randoseru, clothes (solid and close to the body, the bag and straps flat against it), shoes and drawing style, the same size and the same A-pose (arms straight and out at 45 degrees, well clear of the body), now seen straight from his right side, a true side view with the face in profile looking right. One image, portrait 2:3, the same
 plain flat mid-grey background (#808080) and soft studio light. Nothing else in the image.
 ```
 
@@ -275,8 +276,9 @@ ASSET KM-C02, a first-grade girl walking to school, FRONT view. Attach the four 
 both sides). A Japanese girl in her first year of primary school, about 6 years old and 1.15 m tall, with a natural Japanese child's face: dark brown eyes,
 black hair in a bob, a gentle everyday look, true to life and respectful, not exaggerated or caricatured. She wears the round yellow
 school safety cap with its chin strap; a red leather randoseru school backpack with the yellow first-grader's safety
-cover over its flap; a plain white short-sleeved shirt, tucked in; knee-length navy culottes (a divided skirt: it looks like a skirt from the front but is made like wide shorts, one leg each side, closed all round); white socks and white trainers. No logos, no writing. The picture is made into a 3D model, so every piece of clothing is solid and sits close to the
-body: nothing loose, flared, floating or see-through, and no gap between clothes and skin anywhere.
+cover over its flap; a plain white short-sleeved shirt, tucked in, the sleeves fitting close to the arms; knee-length navy culottes (a divided skirt: it looks like a skirt from the front but is made like shorts, one leg each side, closed all round, each leg fitting fairly close, the hems resting near the legs); white socks and white trainers. No logos, no writing. The picture is made into a 3D model, so every piece of clothing is solid and sits close to the
+body: nothing loose, flared, floating or see-through, and no gap between clothes and skin anywhere. The randoseru sits flat against the back, its shoulder straps flat on the shoulders and chest with no gap under
+them; the cap's chin strap lies flat against the cheeks; the cap's brim is short and firm.
 STYLE: exactly the drawing style and realism of the attached pictures of Mia: a realistic, detailed illustration of a
 real child with natural proportions, true-to-life skin, hair and cloth, clean dark outlines and soft even shading. Not
 anime, not cartoon, not chibi. Copy only the style from her pictures, never her face, hair, clothes or shoes.
@@ -289,19 +291,19 @@ light, no shadow on the ground. Nothing else in the image.
 
 ```text
 ASSET KM-C02, BACK view. Attach the front view just made. The same girl exactly as in it: the same face, hair,
-cap, randoseru, clothes (solid and close to the body), shoes and drawing style, the same size and the same A-pose (arms straight and out at 45 degrees, well clear of the body), now seen straight from behind. One image, portrait 2:3, the same
+cap, randoseru, clothes (solid and close to the body, the bag and straps flat against it), shoes and drawing style, the same size and the same A-pose (arms straight and out at 45 degrees, well clear of the body), now seen straight from behind. One image, portrait 2:3, the same
 plain flat mid-grey background (#808080) and soft studio light. Nothing else in the image.
 ```
 
 ```text
 ASSET KM-C02, LEFT SIDE view. Attach the front view just made. The same girl exactly as in it: the same face, hair,
-cap, randoseru, clothes (solid and close to the body), shoes and drawing style, the same size and the same A-pose (arms straight and out at 45 degrees, well clear of the body), now seen straight from her left side, a true side view with the face in profile looking left. One image, portrait 2:3, the same
+cap, randoseru, clothes (solid and close to the body, the bag and straps flat against it), shoes and drawing style, the same size and the same A-pose (arms straight and out at 45 degrees, well clear of the body), now seen straight from her left side, a true side view with the face in profile looking left. One image, portrait 2:3, the same
 plain flat mid-grey background (#808080) and soft studio light. Nothing else in the image.
 ```
 
 ```text
 ASSET KM-C02, RIGHT SIDE view. Attach the front view just made. The same girl exactly as in it: the same face, hair,
-cap, randoseru, clothes (solid and close to the body), shoes and drawing style, the same size and the same A-pose (arms straight and out at 45 degrees, well clear of the body), now seen straight from her right side, a true side view with the face in profile looking right. One image, portrait 2:3, the same
+cap, randoseru, clothes (solid and close to the body, the bag and straps flat against it), shoes and drawing style, the same size and the same A-pose (arms straight and out at 45 degrees, well clear of the body), now seen straight from her right side, a true side view with the face in profile looking right. One image, portrait 2:3, the same
 plain flat mid-grey background (#808080) and soft studio light. Nothing else in the image.
 ```
 

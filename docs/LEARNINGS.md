@@ -580,8 +580,9 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
   the skirt should have been: "the kid skirt gone transparent and also found no inner wear is included".
 - *Why:* a flared, pleated skirt is a thin open cone with nothing inside. Image-to-3D makes it a paper-thin shell, and
   a remesh at a fixed count drops thin shells first. The prompt said only "a navy pleated skirt".
-- *Fix:* the girl wears knee-length navy culottes (a divided skirt, made like wide shorts, closed all round), the boy
-  knee-length shorts, both shirts tucked in. Every character prompt says the clothes are solid and close to the body,
+- *Fix:* the girl wears knee-length navy culottes (a divided skirt, made like shorts, closed all round), the boy
+  knee-length shorts close round each leg, both shirts tucked in with close sleeves; the randoseru, its straps and the
+  cap's chin strap lie flat with no gap under them, the brim short and firm. Every character prompt says the clothes are solid and close to the body,
   nothing loose, flared, floating or see-through. The model is checked before the remesh, and a thin part the remesh
   breaks is remeshed again at 30,000 quads.
 - *Rule:* a character made into a 3D model wears solid clothes close to the body. No open skirts, capes, loose sleeves
