@@ -240,6 +240,7 @@ class Frame:
         (the street lamp's top, its arm toward the street); flip: views drawn unmirrored (the tram's back, its pantograph
         at the same end as in its front), mirrored left to right. The images on disk stay as made."""
         self.paint = []                                 # see painted()
+        self.clean = {}                                 # {view: its image with a railing painted out} (see paint_out)
         views = {(view_map or {}).get(k, k): v for k, v in views.items()}
         views = {k: np.ascontiguousarray(np.rot90(v, (turn or {}).get(k, 0))) for k, v in views.items()}
         views = {k: np.ascontiguousarray(v[:, ::-1]) if k in flip else v for k, v in views.items()}
@@ -367,6 +368,19 @@ class Frame:
 
     def image(self, view):
         return self.rgba[self.src[view]]
+
+    def paint_out(self, view, boxes, grow=4):
+        """The view's image with what the boxes (metres) cover painted out from around it (cv2 inpainting), kept as
+        self.clean[view]: what stands behind a railing, coloured without the railing's bars on it (D28)."""
+        img = self.image(view)
+        mask = np.zeros(img.shape[:2], np.uint8)
+        for x0, x1, y0, y1, z0, z1 in boxes:
+            C = np.array([(x, y, z) for x in (x0, x1) for y in (y0, y1) for z in (z0, z1)], np.float32)
+            u, v = self.px(view, C)
+            mask[max(int(v.min()) - grow, 0):int(v.max()) + grow + 1,
+                 max(int(u.min()) - grow, 0):int(u.max()) + grow + 1] = 255
+        rgb = cv2.inpaint(np.ascontiguousarray(img[..., :3]), mask, 6, cv2.INPAINT_TELEA)
+        self.clean[view] = np.concatenate([rgb, img[..., 3:]], 2) if img.shape[2] == 4 else rgb
 
     def sdf(self, view, P):
         """The view's silhouette as a signed distance in metres (negative inside), at the points P seen from the view
@@ -586,16 +600,32 @@ def colours(frame, hits, P, N, views, sharp=8.0):
     """Each point's colour and alpha from the views that face and see it, weighted by how squarely each faces it."""
     acc = np.zeros((len(P), 4), np.float32)
     wsum = np.zeros(len(P), np.float32)
+    own = owners(frame, P)                              # points a paint rule gives to one view alone
+    owned = np.zeros(len(P), bool)
+    for m in own.values():
+        owned |= m
+
+    def take(view, idx, u, v, clean):
+        out = sample(frame.image(view), u, v)
+        if clean.any():
+            out[clean] = sample(frame.clean[view], u[clean], v[clean])
+        return out
+
     for view in views:
         w = np.clip(N @ np.asarray(NORMALS[view], np.float32), 0, 1) ** sharp
         w = w * visible(frame, hits, view, P)
+        if own:
+            w = np.where(owned, 0.0, w)
+            if view in own:
+                w = np.where(own[view], 1.0, w)         # every face of it, whichever way it faces
         sel = np.nonzero(w > 1e-4)[0]
         if not len(sel):
             continue
-        u, v = frame.px(view, painted(frame, view, P[sel]))
+        Q, clean = painted(frame, view, P[sel])
+        u, v = frame.px(view, Q)
         w_sel = w[sel] * (covered(frame, view, u, v) > 0.5)        # only where this view shows the object
         w_sel = w_sel * ~unpainted(frame, view, P[sel])
-        acc[sel] += sample(frame.image(view), u, v) * w_sel[:, None]
+        acc[sel] += take(view, sel, u, v, clean) * w_sel[:, None]
         wsum[sel] += w_sel
     miss = np.nonzero(wsum < 1e-3)[0]
     if len(miss):                                      # seen by none of the views facing it (a wall's inner face that a
@@ -604,12 +634,19 @@ def colours(frame, hits, P, N, views, sharp=8.0):
                                                        # reflected into its outline (never the top's: what hides it from
                                                        # above is what the top shows there, the house's roof tiles)
         best = face.argmax(1)
+        best = np.where(face.max(1) < 0.2, 0, best)    # a face near level (a floor under a roof, an underside): the
+                                                       # front's, not whichever side its normal's last digits lean to
+                                                       # (the platform's floor streaked triangle by triangle, D29)
+        for i, view in enumerate(names):               # a point given to one view takes that view's
+            if view in own:
+                best = np.where(own[view][miss], i, best)
         for i, view in enumerate(names):
             sel = miss[best == i]
             if not len(sel):
                 continue
-            u, v = reflected(frame, view, *frame.px(view, painted(frame, view, P[sel])))
-            acc[sel] = sample(frame.image(view), u, v) * 0.85        # a little darker: a face no view shows is in shade
+            Q, clean = painted(frame, view, P[sel])
+            u, v = reflected(frame, view, *frame.px(view, Q))
+            acc[sel] = take(view, sel, u, v, clean) * 0.85        # a little darker: a face no view shows is in shade
             wsum[sel] = 1.0
     return acc / np.maximum(wsum, 1e-6)[:, None]
 
@@ -627,22 +664,49 @@ def painted(frame, view, P):
     """The points P moved to where the view draws them: a rule of the prop's paint (view, box, {axis: (to0, to1)}) takes
     the box's points along each axis named from the box's own extent onto to0..to1 (to0 > to1: mirrored), or with
     {axis: (other, to0, to1)} from the box's extent along the other axis (a floor no view sees, its depth onto the
-    height of the front view's concrete), for a part
+    height of the front view's concrete; {axis: (other, to0, to1, period)}: to0..to1 repeated every period metres
+    along the other axis, mirrored, so as not to stretch it), for a part
     the view draws elsewhere or another size than the other views do (the shrine's top view draws its roof as wide as
-    its base and half as deep, D28). The first rule whose box holds a point moves it."""
+    its base and half as deep, D28). The first rule whose box holds a point moves it. A rule with 'clean': True
+    samples the view's copy with its railing painted out (Frame.clean: what stands behind a railing, the platform's
+    benches); one with 'only': True gives its box's points to that view alone, every face of them (see owners).
+    Returns the moved points and which of them take the clean copy."""
     Q = P.copy()
     done = np.zeros(len(P), bool)
+    clean = np.zeros(len(P), bool)
     for v, box, to in frame.paint:
         if v != view or to is None:
             continue
         m = _in_box(P, box) & ~done
+        if to.get('clean'):
+            clean |= m
         for axis, rule in to.items():
-            frm, t0, t1 = rule if len(rule) == 3 else (axis, *rule)
+            if axis not in AXES:
+                continue
+            frm, t0, t1, period = {2: (axis, *rule, None), 3: (*rule, None), 4: rule}[len(rule)]
             i, j = AXES[axis], AXES[frm]
             a0, a1 = box[2 * j], box[2 * j + 1]
-            Q[m, i] = t0 + (P[m, j] - a0) / (a1 - a0) * (t1 - t0)
+            f = (P[m, j] - a0) / (a1 - a0)
+            if period:                                  # repeated every period metres, mirrored so no seam shows
+                f = 1.0 - np.abs(np.mod((P[m, j] - a0) / period, 2.0) - 1.0)
+            Q[m, i] = t0 + f * (t1 - t0)
         done |= m
-    return Q
+    return Q, clean
+
+
+def owners(frame, P):
+    """{view: points it alone colours}: a paint rule with 'only': True gives every face of the points in its box to its
+    view, at its own place there, whichever way it faces and whatever hides it (a railing's bars silver all round; the
+    benches behind it, whose backs the back view draws as a wall). The first such rule holding a point wins."""
+    out = {}
+    taken = np.zeros(len(P), bool)
+    for v, box, to in frame.paint:
+        if to is None or not to.get('only'):
+            continue
+        m = _in_box(P, box) & ~taken
+        out[v] = out.get(v, np.zeros(len(P), bool)) | m
+        taken |= m
+    return out
 
 
 def unpainted(frame, view, P):
@@ -732,6 +796,62 @@ def bake(frame, tri_pos, tri_uv, tri_nrm, size, views):
 SHEETS = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'review', 'kamakura', 'sheets')
 
 
+def platform_b06():
+    """KM-B06, the Hase station platform's shelter, as its FRONT and RIGHT SIDE views draw it (the user: its
+    three-quarter view and back do not match them, D28): measured in metres off them. Its back wall a band from 1.23 to
+    2.12 m with the space below it open, two benches standing in front of it; a railing of bars along the front with a
+    gate and a card reader; its left end open, its right end a rail and a half-height panel; the floor at 0.43 m; the
+    roof falling to the back. Its back view (a wall to the floor) is used only for the band's back; its
+    three-quarter view (both) not at all."""
+    floor = 0.43
+    bars = (-3.28, -3.155, -3.014, -2.86, -2.705, -2.55, -2.394, -2.245, -2.097, -1.808, -1.653, -1.497, -1.338,
+            -1.179, 0.775, 1.113, 1.30, 1.487, 1.675, 1.858, 2.043, 2.361, 2.502, 2.66, 2.82, 2.983, 3.16, 3.31)
+    uprights = (-3.485, -3.428, -1.976, -0.998, 0.441, 2.21, 3.42, 3.495)
+    railing = ([('box', x - 0.0175, x + 0.0175, -1.033, -0.998, floor, 1.31) for x in bars] +        # bars
+               [('box', x - 0.024, x + 0.024, -1.04, -0.991, floor, 1.335) for x in uprights] +     # posts
+               [('box', x0, x1, -1.04, -0.991, z0, z1) for x0, x1 in ((-3.51, -0.975), (0.42, 3.52))
+                for z0, z1 in ((0.48, 0.52), (1.285, 1.335))] +                                     # rails
+               [('box', -0.492, -0.456, -1.035, -0.995, floor, 1.27), ('box', 0.34, 0.383, -1.035, -0.995, floor, 1.27),
+                ('box', -0.492, 0.383, -1.035, -0.995, 1.225, 1.27)])                                # the gate's hoop
+    reader = ('box', -0.875, -0.575, -1.06, -0.86, floor, 1.40)
+    benches = [p for x0, x1, legs in ((-2.84, -1.02, ((-2.78, -2.68), (-1.72, -1.63), (-1.12, -1.03))),
+                                      (0.47, 2.76, ((0.49, 0.58), (1.66, 1.75), (2.62, 2.71))))
+               for p in [('box', x0, x1, 0.66, 1.08, 0.80, 0.88),                                    # the seat
+                         ('box', legs[0][0], legs[-1][1], 0.98, 1.04, floor, 0.80)] +              # its back
+                        [('box', a, b, 0.70, 1.04, floor, 0.80) for a, b in legs]]                   # its legs
+    posts = [('box', x - 0.045, x + 0.045, y0, y1, floor, z1) for x in (-3.42, -0.93, 0.91, 3.38)
+             for y0, y1, z1 in ((-0.98, -0.88, 2.62), (1.16, 1.28, 2.45))]
+    drawn_posts = [(a, b, 0, 0, floor, 2.2) for a, b in ((-3.47, -3.37), (-3.225, -3.164), (-0.973, -0.886),
+                                                          (0.752, 0.821), (0.868, 0.955), (3.063, 3.142),
+                                                          (3.345, 3.395))]
+    shape = solids(('box', -3.58, 3.58, -1.15, 1.33, 0.0, floor),                  # the platform
+                   ('box', -0.98, 0.6, -1.37, -1.15, 0.0, 0.21),                    # its step
+                   *railing, reader, *benches, *posts,
+                   ('box', -3.42, 3.38, 1.19, 1.25, 1.23, 2.12),                    # the back wall, a band
+                   ('box', 3.34, 3.42, -0.04, 1.22, floor, 1.50),                   # the right end's panel
+                   *[('box', a, b, -0.95, -0.06, floor, 1.52) for a, b in ((3.40, 3.46), (-3.46, -3.40))],  # end rails
+                   ('box', -3.5, 3.5, -1.0, -0.86, 2.45, 2.62),                     # the beams
+                   ('box', -3.5, 3.5, 1.15, 1.3, 2.42, 2.55),
+                   *[('shed', x - 0.05, x + 0.05, -1.0, 1.3, 3.05, 2.84, 0.3) for x in (-3.47, -0.93, 0.91, 3.43)],
+                   ('shed', -3.78, 3.78, -1.37, 1.37, 3.2, 2.95, 0.12),             # the roof
+                   ('box', -3.78, 3.78, -1.37, -1.29, 3.0, 3.2))                    # its fascia
+    paint = [('front', (-3.6, 3.6, -1.07, -0.96, 0.44, 1.45), {'only': True}),     # the railing: silver all round
+             ('front', (-0.9, -0.52, -1.08, -0.84, 0.44, 1.45), {'only': True}),   # the card reader
+             ('front', (-2.9, 2.8, 0.6, 1.12, 0.44, 0.92), {'only': True, 'clean': True}),  # the benches, bars out
+             # the band's face: the front view draws it between the back posts as it sees them, nearer the middle
+             ('front', (-3.45, 3.45, 1.18, 1.215, 1.2, 2.15), {'x': (-3.2, 3.14), 'clean': True}),
+             ('back', (-3.45, 3.45, 1.215, 1.3, 1.2, 2.15), {'z': (1.2, 1.98)}),    # its back: the back view's top half
+             # the end rails: the side view draws its rail an eighth higher than the front does (1.44 m, 1.31 m)
+             *[(v, (-3.5, 3.5, -0.96, -0.05, 0.38, 1.53), {'z': (0.38, 1.674)}) for v in ('right', 'left')],
+             # the floor, which no view shows, the front's concrete by its depth, repeated (by the step, the
+             # concrete beside it); the roof's underside, drawn from below in the front view, the near part higher
+             ('front', (-1.0, 0.62, -1.14, 1.33, 0.42, 0.48), {'x': (-2.62, -1.0), 'z': ('y', 0.04, 0.37, 0.33)}),
+             ('front', (-3.55, 3.55, -1.14, 1.33, 0.42, 0.48), {'z': ('y', 0.04, 0.37, 0.33)}),
+             ('front', (-3.8, 3.8, -1.28, 1.37, 2.7, 3.1), {'z': ('y', 2.95, 2.65)})]
+    return dict(vox=0.015, budget=4000, tex=2048, smooth_angle=5.0, cutout=True, shape=shape, paint=paint,
+                clean=[('front', [b[1:] for b in railing] + [reader[1:]] + drawn_posts)])
+
+
 def props():
     """KM1-1's props from their views: {model: (id, folder, height in metres, build options)}. The heights are the real
     ones (docs/KAMAKURA_BUILD.md Step 2); widths and depths come from the views' own proportions."""
@@ -813,34 +933,7 @@ def props():
         'KmWireGantry': ('KM-B07', 'KM-B07_overhead_wire_gantry', 7.5,
                          dict(vox=0.02, budget=3000, tex=2048, cutout=True, hole_fill=0.2, round_z=[(0.0, 5.0)],
                               round_w=0.5)),
-        'KmStationPlatform': ('KM-B06', 'KM-B06_hase_station_platform', 3.2,
-                              dict(vox=0.02, budget=4000, tex=2048, smooth_angle=5.0, cutout=True,
-                                   shape=solids(('box', -3.6, 3.6, -1.25, 1.35, 0.0, 0.3),         # the platform's foot
-                                                ('box', -3.52, 3.52, -1.12, 1.31, 0.3, 0.55),     # and its top
-                                                ('box', -0.6, 0.5, -1.37, -1.12, 0.0, 0.22),      # the step
-                                                ('box', -3.45, 3.45, -0.97, -0.92, 0.55, 1.3),    # the railing
-                                                ('cut', -0.43, 0.33, -1.1, -0.85, 0.56, 1.4),     # its gate
-                                                ('box', -0.66, -0.43, -1.05, -0.85, 0.55, 1.4),   # the card reader
-                                                ('box', -3.45, 3.45, 1.18, 1.3, 0.55, 2.0),       # the back wall
-                                                *[p for sx in (-1, 1) for p in (
-                                                    ('box', *sorted((sx * 3.38, sx * 3.48)), -0.11, 1.3, 0.55, 1.45),
-                                                    ('box', *sorted((sx * 3.40, sx * 3.46)), -0.88, -0.11, 0.55,
-                                                     1.35))],                                    # the ends: a panel, a rail
-                                                *[('box', x - 0.05, x + 0.05, y0, y1, 0.55, z1)
-                                                  for x in (-3.42, -0.92, 0.92, 3.42)
-                                                  for y0, y1, z1 in ((-0.98, -0.88, 2.62), (1.0, 1.1, 2.45))],  # posts
-                                                ('box', -3.5, 3.5, -1.0, -0.86, 2.45, 2.62),      # the beams
-                                                ('box', -3.5, 3.5, 1.0, 1.3, 2.42, 2.55),
-                                                *[('shed', x - 0.05, x + 0.05, -1.0, 1.3, 3.05, 2.84, 0.3)
-                                                  for x in (-3.47, -0.92, 0.92, 3.47)],           # the rafters
-                                                ('shed', -3.78, 3.78, -1.37, 1.37, 3.2, 2.95, 0.12),   # the roof
-                                                ('box', -3.78, 3.78, -1.37, -1.29, 3.0, 3.2)),    # its fascia
-                                   # the floor under the roof, which no view shows, the front's concrete by its depth;
-                                   # the roof's underside, drawn from below in the front view, the near part higher;
-                                   # the back wall's left end, where the front view sees past it (D28)
-                                   paint=[('front', (-3.55, 3.55, -0.95, 1.18, 0.5, 0.6), {'z': ('y', 0.12, 0.5)}),
-                                          ('front', (-3.8, 3.8, -1.28, 1.37, 2.7, 3.1), {'z': ('y', 2.95, 2.65)}),
-                                          ('front', (-3.5, -3.2, 1.0, 1.35, 1.3, 2.05), {'x': (-3.15, -2.85)})])),
+        'KmStationPlatform': ('KM-B06', 'KM-B06_hase_station_platform', 3.2, platform_b06()),
     }
 
 
@@ -920,12 +1013,17 @@ NOTES = {           # each prop's own check results (asset_review: the seventeen
                      'its right side\'s'),
     },
     'KmStationPlatform': {
-        3: ('pass', 'modelled from solids measured off its views (D28): the platform and step, the front railing with its '
-                    'gate and card reader, the back wall, the end panels and rails, the posts, beams, rafters and the '
-                    'sloping roof; an open shelter (carved, it was filled solid to the back wall\'s height)'),
-        4: ('limit', 'the floor and the roof\'s underside, which no view shows straight, take the front\'s concrete and its '
-                     'view of the underside from below; the bench is painted on the front railing\'s plate'),
-        7: ('pass', 'the end rails\' gaps open in its texture\'s alpha (the cut-out material)'),
+        3: ('pass', 'modelled from solids measured off its FRONT and RIGHT SIDE (D28, D29): the platform and step, a '
+                    'railing of 28 bars, 8 uprights and two rails with the gate\'s hoop and the card reader, two '
+                    'benches, the back wall a band from 1.23 to 2.12 m with the space below it open, the right end\'s '
+                    'rail and half-height panel, the left end open, posts, beams, rafters and the sloping roof'),
+        4: ('limit', 'its BACK and THREE-QUARTER views draw the back wall down to the floor, where its FRONT and SIDE (the '
+                     'ones you said are right) show a band with benches below: the back view colours only the band\'s '
+                     'back, the three-quarter view nothing. The floor and the roof\'s underside, which no view shows '
+                     'straight, take the front\'s concrete (repeated, not stretched) and its view of the underside; the '
+                     'benches take the front view with the railing painted out'),
+        7: ('pass', 'the end rails\' gaps open in its texture\'s alpha (the cut-out material); the front railing\'s '
+                    'bars are solids, open between'),
         13: ('pass', 'its front, back and top each made in two halves from one master; 7.6 m long at its 3.2 m height, by its '
                      'views\' proportions (the prompt: 10 m)'),
     },
@@ -949,13 +1047,14 @@ NOTES = {           # each prop's own check results (asset_review: the seventeen
 # ---------------------------------------------------------------- in Blender
 def build(name, folder, height, new_obj, budget=1500, vox=0.01, tex=1024, top='auto', round_z=(), round_max=1.6,
           round_w=0.3, hole_fill=0.004, view_map=None, cutout=False, thin=0.0, turn=None, flip=(), ignore=(),
-          shape=None, parts=None, smooth_angle=35.0, paint=()):
+          shape=None, parts=None, smooth_angle=35.0, paint=(), clean=()):
     """The prop named name from the views in folder, height metres tall (or ('width', metres) for one measured along the
     street), its origin on the ground under its middle: its
     mesh (at most budget triangles), UVs and texture (tex x tex, RGBA). shape(frame) may change the carved field (a
     bicycle's wheels a thin slab); parts(frame) may split it into [(name or None, field, pivot or None)], each its own
     object (None: the root), a child's origin at its pivot. paint: where a view draws a part elsewhere or not at all
-    (see painted). Returns (root, texture array, frame)."""
+    (see painted); clean: [(view, boxes)], that view's copy with the boxes painted out (Frame.paint_out). Returns
+    (root, texture array, frame)."""
     import bpy
     import time
     t0 = time.time()
@@ -968,6 +1067,8 @@ def build(name, folder, height, new_obj, budget=1500, vox=0.01, tex=1024, top='a
         height = height[1] * (y1 - y0) / (x1 - x0)
     frame = Frame(views, height, vox, hole_fill, view_map, cutout, thin, turn, flip)
     frame.paint = list(paint)
+    for view, boxes in clean:
+        frame.paint_out(view, boxes)
     stage('views read and registered')
     frame.carve(top, round_z, round_max, round_w)
     stage('carved')
@@ -997,6 +1098,10 @@ def build(name, folder, height, new_obj, budget=1500, vox=0.01, tex=1024, top='a
     uv_unwrap(root, smooth_angle)
     stage('unwrapped')
     tri_pos, tri_uv, tri_nrm = triangles(root)
+    if getattr(shape, 'flat', False):                   # solids: each triangle's own normal, not its corners' smoothed
+        fn = np.cross(tri_pos[:, 1] - tri_pos[:, 0], tri_pos[:, 2] - tri_pos[:, 0])   # ones (a floor's corner at a
+        fn /= np.maximum(np.linalg.norm(fn, axis=1, keepdims=True), 1e-9)              # rail's foot leaned toward
+        tri_nrm = np.repeat(fn[:, None, :], 3, 1).astype(np.float32)                   # the front: streaks, D29)
     views = [v for v in ('front', 'back', 'right', 'left', 'top') if v != 'top' or 'top' in frame.masks]
     img = bake(frame, tri_pos, tri_uv, tri_nrm, tex, views)
     stage('baked')
@@ -1199,6 +1304,7 @@ def solids(*parts):
                 f = np.minimum(f, g)
                 f = np.minimum(f, box(x0, x1, y0, y1, ze - 0.12, ze))   # its eaves' edge, 12 cm
         return f.astype(np.float32)
+    shape.flat = True                                   # flat faces: baked by their own normals (build, D29)
     return shape
 
 

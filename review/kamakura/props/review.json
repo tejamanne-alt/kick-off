@@ -2443,13 +2443,13 @@
     3,
     "Depth from each part's own width",
     "pass",
-    "modelled from solids measured off its views (D28): the platform and step, the front railing with its gate and card reader, the back wall, the end panels and rails, the posts, beams, rafters and the sloping roof; an open shelter (carved, it was filled solid to the back wall's height)"
+    "modelled from solids measured off its FRONT and RIGHT SIDE (D28, D29): the platform and step, a railing of 28 bars, 8 uprights and two rails with the gate's hoop and the card reader, two benches, the back wall a band from 1.23 to 2.12 m with the space below it open, the right end's rail and half-height panel, the left end open, posts, beams, rafters and the sloping roof"
    ],
    [
     4,
     "Views the game sees",
     "limit",
-    "the floor and the roof's underside, which no view shows straight, take the front's concrete and its view of the underside from below; the bench is painted on the front railing's plate"
+    "its BACK and THREE-QUARTER views draw the back wall down to the floor, where its FRONT and SIDE (the ones you said are right) show a band with benches below: the back view colours only the band's back, the three-quarter view nothing. The floor and the roof's underside, which no view shows straight, take the front's concrete (repeated, not stretched) and its view of the underside; the benches take the front view with the railing painted out"
    ],
    [
     5,
@@ -2467,7 +2467,7 @@
     7,
     "No holes",
     "pass",
-    "the end rails' gaps open in its texture's alpha (the cut-out material)"
+    "the end rails' gaps open in its texture's alpha (the cut-out material); the front railing's bars are solids, open between"
    ],
    [
     8,

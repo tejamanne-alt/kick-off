@@ -2370,6 +2370,29 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
 - The review renders the four again. Not yet in a level; the five new models wait for the user's approval to go into
   the game with the seventeen.
 
+## The bus stop as its front and side draw it (tools, review and docs)
+
+- The user: "3/4 view and back aren't matching with front and side views for bus stop" (the station platform's
+  shelter, KM-B06). Its front draws the back wall as a band from 1.23 to 2.12 m with open space and two benches below
+  it; it also shows the left end open and the floor at 0.43 m. Its back and three-quarter views draw a wall down to
+  the floor. The model had followed the back.
+- `km_views.py` (D29): `platform_b06()` measured afresh off the front and side with a metre grid laid over each:
+  - a railing of 28 bars, 8 uprights and two rails, the gate's hoop and the card reader, at the places the front draws
+    them;
+  - two benches and the band;
+  - the right end's rail and half-height panel, the left end open, one step.
+  New paint rules:
+  - `only`: a box's points coloured by one view alone, every face (the railing silver all round, the benches' backs
+    not the back view's wall);
+  - `clean`: the view's copy with the railing and posts painted out (`Frame.paint_out`), for what stands behind them;
+  - a repeat period: the floor takes the front's concrete repeated, not stretched.
+  The floor came out streaked: a level face no view sees took whichever side its normal's rounding leaned to. It now
+  takes the front's (`colours`); a model of solids is baked by each triangle's own normal. The house and the shrine are
+  rebuilt the same way (a carved prop's hidden level faces would change too when next built: its bottom).
+- `kit_buildings_km.py --props-review <folder> --only A,B` builds only the named models (the others keep their last
+  review); `--install` still builds all.
+- The review renders the platform, the house and the shrine again.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

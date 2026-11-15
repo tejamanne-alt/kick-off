@@ -1209,6 +1209,34 @@ views).**
 - *Rule:* a building or a set piece with eaves, balconies or open rooms is modelled from solids measured off its
   views, never carved; a prop is carved. Every disagreement between views gets a paint rule, not an average.
 
+**D29. The bus stop's views draw its back wall two ways, and the model followed the wrong ones.**
+- *What:* the user: "3/4 view and back aren't matching with front and side views for bus stop" (the station
+  platform's shelter, KM-B06). Its FRONT draws the back wall as a band from 1.23 to 2.12 m, open below it, with two
+  benches standing in front of the band. It has an open left end and the floor at 0.43 m. Its BACK and THREE-QUARTER
+  views draw a corrugated wall down to the floor. The model built after D28 had followed the back:
+  - a full back wall, the front's open space below the band painted on its lower half;
+  - the benches painted flat on the front railing, a plate;
+  - the left end a copy of the right (a rail and a panel);
+  - the floor at 0.55 m.
+- *Why:* the front's grey through the railing read as the wall's own colour, not as the background it is: measured
+  only by its outline, which fills the closed gaps between bars, the front could not say it was open. And a missing
+  side was copied from the opposite one by default, where the front's own perspective shows it open.
+- *Fix:* the shelter measured afresh off its front and side with a metre grid laid over each (`platform_b06`): the
+  band, the benches, a railing of 28 bars, 8 uprights, two rails and the gate's hoop, at the places the front draws
+  them. The left end is open. The front owns every face of the railing, the card reader and the benches (paint rule
+  `only`): silver all round, not the back view's wall on their backs. The benches take the front view with the
+  railing and the posts painted out (`clean`, `Frame.paint_out`). The end rails take the side view lowered to the
+  front's rail height; the band's back takes the back view's upper half.
+- *Then:* the floor came out streaked, triangle by triangle. Under the roof no view sees it, so it takes the side
+  view facing it most; for a level face that choice came down to the last digits of its normal. Each triangle took the
+  front's, the back's or a side's row at floor height, drawn across it. A face near level that no view sees now takes
+  the front's, which is where its paint rules are written. The floor takes the front's concrete repeated every
+  0.33 m, mirrored, not stretched, and a model of solids is baked by each triangle's own normal (`solids` marks its
+  shape `flat`). The house and the shrine are rebuilt that way too.
+- *Rule:* when views disagree, the user's word decides which are right (here the front and side); then read the right
+  ones for what they show through gaps, with a metre grid over them, not only for their outline. A side no view shows
+  is not copied from its opposite when another view's perspective shows it. Never let rounding noise choose a view.
+
 ## E. Levels and world
 
 - **E1. Every level had chapter-1 scenery.** A new-scene call unloaded the level definition. *Rule:* pass data into scene builders explicitly; never hold asset references across a new-scene call.

@@ -815,6 +815,8 @@ def build_props():
     (front, right side, back, top) and textured from them, in its own texture (<Model>.png beside its FBX)."""
     props = []
     for name, (pid, folder, height, opts) in KV.props().items():
+        if ONLY and PROPS_REVIEW and not INSTALL and name not in ONLY:
+            continue                     # a review of just these: the others keep their last review (props_review)
         root, img, fr = KV.build(name, os.path.join(KV.SHEETS, folder), height, K.new_obj, **opts)
         cut = bool(opts.get('cutout'))
         tex = name + 'Atlas.png'
@@ -940,12 +942,16 @@ def props_review(props, out_dir, only=None):
                             motions=motions, checks=[[i, AR_CHECK_NAMES[i - 1], default[i][0], default[i][1]]
                                                      for i in range(1, 18)])
         root.location = loc
+    for name in KV.props():                  # not built this time (--only): as last reviewed
+        if name not in review and name in last:
+            review[name] = last[name]
+    review = {name: review[name] for name in KV.props() if name in review}
     json.dump(review, open(path, 'w'), indent=1, ensure_ascii=False)
     rows = []
-    for root, info in props:
-        files = [os.path.join(out_dir, 'rows', '%s_%d.jpg' % (root.name, i)) for i in range(5)]
+    for name in review:
+        files = [os.path.join(out_dir, 'rows', '%s_%d.jpg' % (name, i)) for i in range(5)]
         if all(os.path.exists(f) for f in files):
-            rows.append((root.name, review[root.name], [Image.open(f) for f in files]))
+            rows.append((name, review[name], [Image.open(f) for f in files]))
     try:
         font = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf', 26)
         small = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf', 20)
