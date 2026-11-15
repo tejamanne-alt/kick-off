@@ -2418,6 +2418,10 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
   their faces not being Japanese) and the meshy.ai settings are in docs/KAMAKURA_BUILD.md,
   "Characters (KM-C)". In short: remesh Fixed, Quad, 15,000 for a passer-by or 50,000 for a playable kid; auto-rig as
   a humanoid; FBX with one plain walk (the game animates in code).
+- A character prompts page beside the city one (https://claude.ai/artifact/MaXwYwxsyA6Jk4ikxNkqkM):
+  `tools/prompts_page/gen_characters.py` builds it from each city's build doc, "Characters (<code>-C)" (its
+  prompts, where each sheet goes, the Gemini notes, the meshy.ai steps), with `characters.html`, the city page's
+  look. One prompt for each first-grader, nothing attached (the game's kids' faces are not Japanese).
 
 ## After Phase 8 (next steps)
 

@@ -230,22 +230,37 @@ of five looks like five children: **KM-C01** a first-grade boy, **KM-C02** a fir
 the randoseru, the shirt and the shorts or skirt vary.
 
 ```text
-ASSET KM-C01 and KM-C02, two first-graders walking to school, a model sheet each. Attach nothing: no picture of the
-game's own kids, whose faces are not Japanese. Two Japanese first-graders, about 6 years old and 1.15 m tall, with
-natural Japanese children's faces: dark brown eyes, black hair, a gentle everyday look, drawn true to life and
-respectfully, not exaggerated or caricatured. C01 a boy with short black hair; C02 a girl with a black bob. Each wears
-the round yellow school safety cap with its chin strap; a leather randoseru school backpack (C01 black, C02 red) with
-the yellow first-grader's safety cover over its flap; a plain white short-sleeved shirt; navy shorts (C01) or a navy
-pleated skirt (C02); white socks and white trainers. No logos, no writing. STYLE: a stylised 3D game character, soft
-rounded shapes, the head about a fifth of the height, simple clean features, flat cel-style colours. FORMAT: one
-image, aspect ratio 16:9, flat mid-grey background (#808080); the child in an A-pose (arms straight and out 30 to 40
-degrees from the body, a hand's width between arm and body all the way down, hands open, legs a little apart, feet
-flat), the same child four times side by side at the same scale and height: front, left side, back, three-quarter
-from the front left, with clear space between them and the bottom-right corner left empty. Even flat light, no cast
-shadows, no lighting painted into the colours. Nothing else in the image.
+ASSET KM-C01, a first-grade boy walking to school, a model sheet. Attach nothing. A Japanese boy in his first year of
+primary school, about 6 years old and 1.15 m tall, with a natural Japanese child's face: dark brown eyes, short black
+hair, a gentle everyday look, drawn true to life and respectfully, not exaggerated or caricatured. He wears the round
+yellow school safety cap with its chin strap; a black leather randoseru school backpack with the yellow
+first-grader's safety cover over its flap; a plain white short-sleeved shirt; navy shorts; white socks and white
+trainers. No logos, no writing. STYLE: a stylised 3D game character, soft rounded shapes, the head about a fifth of the height,
+simple clean features, flat cel-style colours. FORMAT: one image, aspect ratio 16:9, flat mid-grey background
+(#808080); the child in an A-pose (arms straight and out 30 to 40 degrees from the body, a hand's width between arm and
+body all the way down, hands open, legs a little apart, feet flat), the same child four times side by side at the same
+scale and height: front, left side, back, three-quarter from the front left, with clear space between them and the
+bottom-right corner left empty. Even flat light, no cast shadows, no lighting painted into the colours. Nothing else in
+the image.
 ```
 
-Made in Gemini (the user's choice for characters). Gemini marks its pictures with a small sparkle in the bottom-right
+```text
+ASSET KM-C02, a first-grade girl walking to school, a model sheet. Attach nothing. A Japanese girl in her first year
+of primary school, about 6 years old and 1.15 m tall, with a natural Japanese child's face: dark brown eyes, black hair
+in a bob, a gentle everyday look, drawn true to life and respectfully, not exaggerated or caricatured. She wears the
+round yellow school safety cap with its chin strap; a red leather randoseru school backpack with the yellow
+first-grader's safety cover over its flap; a plain white short-sleeved shirt; a navy pleated skirt; white socks and
+white trainers. No logos, no writing. STYLE: a stylised 3D game character, soft rounded shapes, the head about a fifth of the height,
+simple clean features, flat cel-style colours. FORMAT: one image, aspect ratio 16:9, flat mid-grey background
+(#808080); the child in an A-pose (arms straight and out 30 to 40 degrees from the body, a hand's width between arm and
+body all the way down, hands open, legs a little apart, feet flat), the same child four times side by side at the same
+scale and height: front, left side, back, three-quarter from the front left, with clear space between them and the
+bottom-right corner left empty. Even flat light, no cast shadows, no lighting painted into the colours. Nothing else in
+the image.
+```
+
+One Gemini chat for each, nothing attached: the game's own kids are not a reference here, their faces not being
+Japanese. Made in Gemini (the user's choice for characters). Gemini marks its pictures with a small sparkle in the bottom-right
 corner (as on KM1-1's): the corner is kept empty so the mark never touches a view, and Claude cuts it away with the
 background. If Gemini makes a square picture, the four views in one row still work; if it draws a view different
 from the others (another hairstyle, another bag), make that sheet again.
