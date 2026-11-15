@@ -3,7 +3,7 @@
 # street, as the game camera sees it, the model shows exactly the painting. Sides and tops take samples from the same
 # pictures. The kid's home with its fence and garden (KM1-1) is built this way; the street props are carved from the user's
 # own views of each (km_views.py), each in its own texture.
-#   blenv/bin/python kit_buildings_km.py -- /abs/outdir [--board /abs/board.png]
+#   blenv/bin/python kit_buildings_km.py -- /abs/outdir [--board /abs/board.png] [--props-review <folder> [--only A,B]]
 # Writes into outdir: <Model>.fbx per model, KamakuraAtlas.png, Kamakura.json, Kamakura.blend; with --board, a review board
 # of each model beside its source picture: the picture, the model straight on, the model at three-quarters.
 import bpy
@@ -25,6 +25,7 @@ ARGS = sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else []
 OUT = ARGS[0] if ARGS and not ARGS[0].startswith('--') else os.path.abspath('out_km')
 BOARD = ARGS[ARGS.index('--board') + 1] if '--board' in ARGS else None
 PROPS_REVIEW = ARGS[ARGS.index('--props-review') + 1] if '--props-review' in ARGS else None
+ONLY = set(ARGS[ARGS.index('--only') + 1].split(',')) if '--only' in ARGS else None     # review just these models
 REPO = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..'))
 REFS = os.path.join(REPO, 'review', 'kamakura', 'refs')
 ATLAS_SIZE = 4096
@@ -827,27 +828,33 @@ def build_props():
     return props
 
 
-def props_review(props, out_dir):
+def props_review(props, out_dir, only=None):
     """The strict review of the props (docs/ASSET_REVIEW.md), for asset_review_page.py: source/<Model>.jpg (the user's
     front view), views/<Model>.jpg (all eight sides), motion/<Model>_<motion>.gif (the barrier's arm lowering and
     rising), review.json (the seventeen checks, measured where they can be: open edges, triangles, size), and board.jpg
     (each beside its views: the front view and the model straight on at the same scale, the three-quarter view and the
-    model at three-quarters, and the model from the street)."""
+    model at three-quarters, and the model from the street; each model's row kept in rows/). only: the models to render
+    again (new or changed); the others keep their files, checks and row from the last review."""
     import json
     import asset_review as AR
     from PIL import ImageDraw, ImageFont
-    for sub in ('views', 'source', 'motion', 'tmp'):
+    for sub in ('views', 'source', 'motion', 'tmp', 'rows'):
         os.makedirs(os.path.join(out_dir, sub), exist_ok=True)
+    path = os.path.join(out_dir, 'review.json')
+    last = json.load(open(path)) if only and os.path.exists(path) else {}
     for root, info in props:
         m = unlit(os.path.join(OUT, info['texture']), cut=info['cutout'])
         for o in [root] + list(root.children_recursive):
             o.data.materials.clear()
             o.data.materials.append(m)
     tmp = os.path.join(out_dir, 'tmp')
-    rows, review = [], {}
+    review = {}
     S = 520
     for root, info in props:
         name = root.name
+        if only and name not in only and name in last:
+            review[name] = last[name]
+            continue
         names = {name} | {c.name for c in root.children_recursive}
         folder = os.path.join(KV.SHEETS, info['source'].split('/')[1].split(' ')[0])
         views = KV.read_views(folder)
@@ -893,7 +900,8 @@ def props_review(props, out_dir):
                    size=(S, S), only=names)
         d = render(os.path.join(tmp, name + '_game.png'), (-2.5, -9.0, 1.6), (0, 0, 0.45 * H), fov=40, size=(S, S),
                    only=names)
-        rows.append((name, info, [a, b, c0, c, d]))
+        for i, im in enumerate([a, b, c0, c, d]):
+            im.convert('RGB').save(os.path.join(out_dir, 'rows', '%s_%d.jpg' % (name, i)), quality=90)
         # the checks
         tris = K.tree_tris(root)
         open_edges = 0
@@ -930,7 +938,12 @@ def props_review(props, out_dir):
                             motions=motions, checks=[[i, AR_CHECK_NAMES[i - 1], default[i][0], default[i][1]]
                                                      for i in range(1, 18)])
         root.location = loc
-    json.dump(review, open(os.path.join(out_dir, 'review.json'), 'w'), indent=1, ensure_ascii=False)
+    json.dump(review, open(path, 'w'), indent=1, ensure_ascii=False)
+    rows = []
+    for root, info in props:
+        files = [os.path.join(out_dir, 'rows', '%s_%d.jpg' % (root.name, i)) for i in range(5)]
+        if all(os.path.exists(f) for f in files):
+            rows.append((root.name, review[root.name], [Image.open(f) for f in files]))
     try:
         font = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf', 26)
         small = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf', 20)
@@ -949,9 +962,8 @@ def props_review(props, out_dir):
         dr.text((x, 16), t, fill=(235, 235, 240), font=font)
         x += widths[i] + pad
     y = head + pad
-    for name, info, ims in rows:
-        dr.text((pad, y), '%s  %d triangles  %s m' % (name, K.tree_tris(bpy.data.objects[name]),
-                                                     ' x '.join('%.2f' % v for v in info['real_size'])),
+    for name, rv, ims in rows:
+        dr.text((pad, y), '%s  %d triangles  %s m' % (name, rv['tris'], ' x '.join('%.2f' % v for v in rv['size'])),
                 fill=(235, 235, 240), font=small)
         y += 40
         x = pad
@@ -1013,7 +1025,7 @@ def main():
         home.location.x = 0
         board(home, atlas_path, BOARD)
     if PROPS_REVIEW:
-        props_review(props, PROPS_REVIEW)
+        props_review(props, PROPS_REVIEW, ONLY)
 
 
 if __name__ == '__main__':

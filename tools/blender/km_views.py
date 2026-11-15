@@ -633,8 +633,9 @@ NOTES = {           # each prop's own check results (asset_review: the seventeen
         11: ('pass', 'the station\'s and its neighbours\' names (長谷, 極楽寺, 由比ヶ浜), no brand'),
     },
     'KmTram': {
-        7: ('limit', 'its windows show the street its FRONT view was drawn with (houses and flowers through the glass), '
-                     'not the car\'s inside as its BACK does: a FRONT redo would give the inside'),
+        4: ('limit', 'its BACK draws the roof units where its FRONT and TOP have them, not mirrored: their far faces take '
+                     'the roof\'s pixels (seen only from the far side, above the roof line)'),
+        7: ('pass', 'its windows show the car\'s inside, the plain grey through the far windows (its FRONT redone)'),
         12: ('pass', 'its pantograph stands free; the overhead wire is the level\'s'),
     },
     'KmBicycle': {

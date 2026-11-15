@@ -1,14 +1,14 @@
 {
  "intro": [
   "Step 2, KM1-1's street props and the tram, each built in high definition from your own views of it (front, right side, back, top and three-quarter, made in ChatGPT). Each is carved as one solid from its views' outlines, then textured from the views themselves: every point takes its pixels from the view that faces it squarely and can see it. Heights or widths are the real ones from the prompts; the rest comes from your views' proportions.",
-  "New in this round: the red vending machine, the recycling bins, the air-conditioner unit, the gas and electricity meters, the letterbox, the control cabinet, the street lamp, the ticket gate, the station name board and the tram. The first seven are as before, apart from the crossing signal, whose guard frame is now open. Each prop is 1,452 to 1,454 triangles, one closed shell, in its own 1024 texture; the tram is 3,880 triangles in a 2048 texture. The board below puts each beside your views: your front view and the model straight on at the same scale, your three-quarter view and the model at three-quarters, then the model from the street."
+  "New in this round: the red vending machine, the recycling bins, the air-conditioner unit, the gas and electricity meters, the letterbox, the control cabinet, the street lamp, the ticket gate, the station name board and the tram (its FRONT redone, its windows now showing the car's inside). The first seven are as before, apart from the crossing signal, whose guard frame is now open. Each prop is 1,452 to 1,454 triangles, one closed shell, in its own 1024 texture; the tram is 3,880 triangles in a 2048 texture. The board below puts each beside your views: your front view and the model straight on at the same scale, your three-quarter view and the model at three-quarters, then the model from the street."
  ],
  "fixed": [
   "<b>Found and fixed while building this round</b> (D26): a notch ran right through the red machine. A stretch of its window was as grey as the background and was taken for a gap; a hole now counts as a gap only where it is as flat as the background. The air conditioner's stand carved with a shelf where its front and side rails cross; the stand now keeps only the legs and rails its views show. The same fix opens the crossing signal's guard frame, which the last review listed as solid. The ticket gate's flap came out as a block as deep as the gate; it is now a thin plate.",
   "<b>From the first round</b> (D25): the pole's spikes and grey slabs, square posts, grey background on the backs (views lined up by their boxes, not the objects), open edges after shrinking to the budget."
  ],
  "limits": [
-  "<b>The tram's windows</b> show the street its FRONT view was drawn with (houses and hydrangeas through the glass), not the car's inside as its BACK shows it. In the game that street would travel with the tram. A FRONT redo (both halves) with the inside showing through the glass would fix it.",
+  "<b>The tram's roof units</b>: its BACK draws them where its FRONT and TOP have them, not mirrored, so their far faces take the roof's pixels. Only the far side shows it, above the roof line. Its windows now show the car's inside (your FRONT redo).",
   "<b>The ticket gate</b>: its views disagree about the flap (face-on in the front, a rod from the side), and its top view repeats its front. So its flap is a thin plate set by hand at the gate's front end, and its top takes the nearest sides' pixels.",
   "<b>The control cabinet</b> is as deep as its side and three-quarter views show it (0.28 m). Its top view draws it much deeper.",
   "<b>Sides with no view of their own</b> take the opposite side's pixels: every prop's left side takes its right side's, and the bicycle's far side its near side's.",
@@ -16,7 +16,7 @@
   "<b>Hollows the views cannot see into</b> are filled: between the bicycle's pedals and its frame, inside the signal's lamp hoods."
  ],
  "pending": [
-  "<b>Next from you:</b> the tram's FRONT again, both halves, its windows showing the car's inside (the prompt is in the build plan, Step 2). Then the next level's assets, as the build plan lists them.",
+  "<b>Next from you:</b> KM1-1's last batch: the plain pole, the wire gantry, the station platform, the little shrine, the beige house, two foliage sheets and the lane (the build plan, Step 2).",
   "<b>In the game:</b> nothing goes into a level until you approve these. Then the kit's FBX files and their textures go into Assets/_Game/Art/Models/Kamakura."
  ]
 }

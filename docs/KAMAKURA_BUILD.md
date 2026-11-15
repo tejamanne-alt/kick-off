@@ -660,11 +660,10 @@ second props sheet: KM-A20 the recycling bins, KM-A22 the air-conditioner unit, 
 KM-A25 the control cabinet, KM-A26 the street lamp, KM-A28 the ticket gate, KM-A29 the station name board; then the tram
 (KM-V01, Step 3). The rest (KM-A21, A27, A30 to A38) as their levels come. Each is built as its views come in (`tools/blender/km_views.py`: carved
 from its views and textured from them, D25; reviewed in `review/kamakura/props/`): KM1-1's first batch (A01, A03, A04,
-A05, A08, A11, A19), its second (A06, A20, A22 to A26, A28, A29) and the tram (V01) are built from them. Still wanted:
-the tram's FRONT again (both halves), its windows showing the car's inside, seats and straps, with only the plain grey
-through the far windows, as its BACK shows them (its first FRONT shows a street through the glass).
+A05, A08, A11, A19), its second (A06, A20, A22 to A26, A28, A29) and the tram (V01) are built from them; the tram's FRONT
+was made again, its windows showing the car's inside (the first showed a street through the glass).
 
-KM1-1's last batch, all its level still needs, in this order: the tram's FRONT again (above); KM-A02 the plain pole (in
+KM1-1's last batch, all its level still needs, in this order: KM-A02 the plain pole (in
 halves, as KM-A01); from Step 5, KM-B07 the overhead wire gantry (in halves, its lattice open), KM-B06 Hase Station's
 platform (in left and right halves), KM-B05 the little shrine, KM-B04 the beige stucco house; from Step 4, the foliage
 sheets KM-F02 (the persimmon's leaves) and KM-F04 (the hydrangeas and morning glories); from Step 1, the lane KM-T07.

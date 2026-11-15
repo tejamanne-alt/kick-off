@@ -2295,6 +2295,16 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
 - Cost (`docs/PERFORMANCE.md`): the props 1,452 to 1,454 triangles each, a 1024 texture each, about 12 MB for the
   sixteen; the tram 3,880 triangles and a 2048 texture (about 2.7 MB); est., not yet in a level or measured on the phone.
 
+## The tram's windows; the review renders only what changed (tools, review and docs)
+
+- The user made the tram's FRONT again (both halves): its windows now show the car's inside, the plain grey through the
+  far windows, as its BACK does. Rebuilt; its check 7 passes. Its BACK still draws the roof units where the FRONT has
+  them, not mirrored (their far faces take the roof's pixels, seen only from the far side): noted as check 4's limit.
+- `kit_buildings_km.py --props-review <folder> --only A,B` renders only the named models again; the others keep their
+  eight views, source, checks and board row from the last review (each row kept in `rows/`), so a new batch of views
+  takes minutes to review instead of the hour all seventeen take.
+- Next from the user: KM1-1's last batch (`docs/KAMAKURA_BUILD.md`, Step 2).
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.
