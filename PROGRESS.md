@@ -2393,6 +2393,20 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
   review); `--install` still builds all.
 - The review renders the platform, the house and the shrine again.
 
+## KM1-1's twenty-two Kamakura models in the game (tools, tests, review and docs)
+
+- The user approved the plain pole, the house, the shrine, the bus stop (the station platform) and the wire gantry:
+  "All good I have reviewed the models and I approve them".
+- `kit_buildings_km.py --install Assets/_Game/Art/Models/Kamakura --props-review review/kamakura/props`: all
+  twenty-two built, installed and reviewed in one run, so what is in the project is what the review shows. The
+  seventeen approved before are rebuilt as last reviewed, with the D27 joins and sizes (the transformer pole's back,
+  the street lamp's front). A level face no view sees now takes the front's colours (D29); compared view by view with
+  the approved renders, that changed only the hidden undersides and the ticket gate's top, which now takes its side's
+  silver panel by a paint rule (as it looked when approved, without the seam).
+- `KamakuraKitTests`: at least twenty-two models, each with its FBX and texture, within its kind's budget (the gantry
+  a set piece's 4,000).
+- Next: the KM1-1 level (BUILD KM-L11) places them; then the foliage (KM-F02, KM-F04) and the lane texture (KM-T07).
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

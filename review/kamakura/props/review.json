@@ -1644,7 +1644,7 @@
     4,
     "Views the game sees",
     "limit",
-    "its top takes the nearest sides' pixels: its top view is left out (it shows the front)"
+    "its top takes its side's silver panel, laid across it: its top view is left out (it shows the front)"
    ],
    [
     5,

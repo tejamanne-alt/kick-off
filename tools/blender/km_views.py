@@ -881,7 +881,11 @@ def props():
         'KmStreetLamp': ('KM-A26', 'KM-A26_street_lamp', 7.0,
                          dict(vox=0.02, round_z=[(0.0, 7.0)], round_w=0.5, thin=0.05)),
         'KmTicketGate': ('KM-A28', 'KM-A28_ticket_gate', 1.0,
-                         dict(ignore=('top',), thin=0.03, shape=plate_beyond(-0.04, -0.204, 0.012))),
+                         dict(ignore=('top',), thin=0.03, shape=plate_beyond(-0.04, -0.204, 0.012),
+                              # its top, which no view shows (its top view repeats its front): the side's silver panel
+                              # laid across it (D29: not whichever view a level face's rounding leans to)
+                              paint=[('right', (-0.3, 0.3, -0.25, 0.45, 0.675, 0.75),
+                                      {'only': True, 'z': ('x', 0.53, 0.66)})])),
         'KmStationSign': ('KM-A29', 'KM-A29_station_name_board', ('width', 1.8),
                           dict(round_z=[(0.0, 2.4)], round_w=0.09)),
         # the tram: a vehicle, 12 m long (its own budget, docs/PERFORMANCE.md)
@@ -976,7 +980,8 @@ NOTES = {           # each prop's own check results (asset_review: the seventeen
     'KmTicketGate': {
         3: ('limit', 'its flap a plate 2.4 cm thick at the body\'s front end: its side view draws the flap as a rod and its '
                      'top view repeats its front (each redone once), so the flap\'s depth is set by hand'),
-        4: ('limit', 'its top takes the nearest sides\' pixels: its top view is left out (it shows the front)'),
+        4: ('limit', 'its top takes its side\'s silver panel, laid across it: its top view is left out (it shows the '
+                     'front)'),
     },
     'KmStationSign': {
         3: ('pass', 'the posts round in section; the board as thin as its side view shows it'),

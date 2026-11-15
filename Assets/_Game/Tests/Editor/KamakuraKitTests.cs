@@ -37,7 +37,7 @@ namespace DribbleToSchool.Tests
             Assert.IsNotNull(root, "Kamakura.json does not parse");
             var models = root["models"] as Dictionary<string, object>;
             Assert.IsNotNull(models, "Kamakura.json has no models");
-            Assert.GreaterOrEqual(models.Count, 17, "KM1-1's approved props and the tram");
+            Assert.GreaterOrEqual(models.Count, 22, "KM1-1's approved props, buildings, set pieces and the tram");
             foreach (var kv in models)
             {
                 var info = (Dictionary<string, object>)kv.Value;
