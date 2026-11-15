@@ -133,14 +133,19 @@ class Frame:
     """The views sized to one another and to the real height (each view's pixel mapping), and the solid carved from them
     as a field on a grid of nodes vox apart: negative inside, metres to the surface."""
 
-    def __init__(self, views, height, vox=0.01, hole_fill=0.004, view_map=None, cutout=False, thin=0.0):
+    def __init__(self, views, height, vox=0.01, hole_fill=0.004, view_map=None, cutout=False, thin=0.0, turn=None,
+                 flip=()):
         """views: {view: image}; view_map renames the user's views where an image was made from another side than its
         name says (a bicycle's 'back' from its rear end: {'back': 'left'}). A side with no view of its own takes the
         opposite side's (a far side looks like the near one): the back the front's, the left the right's. cutout: each
         view's alpha is the object's own outline, its gaps open (a wheel's spokes), for a cut-out material. thin: what is
         thinner than this many metres in a view (a pole's step bolts, a hanging cable) is left out of the solid, shown
-        only by the texture where it crosses the solid."""
+        only by the texture where it crosses the solid. turn: {view: quarter turns anticlockwise} for a view drawn turned
+        (the street lamp's top, its arm toward the street); flip: views drawn unmirrored (the tram's back, its pantograph
+        at the same end as in its front), mirrored left to right. The images on disk stay as made."""
         views = {(view_map or {}).get(k, k): v for k, v in views.items()}
+        views = {k: np.ascontiguousarray(np.rot90(v, (turn or {}).get(k, 0))) for k, v in views.items()}
+        views = {k: np.ascontiguousarray(v[:, ::-1]) if k in flip else v for k, v in views.items()}
         self.views = views
         self.masks = {k: object_mask(v, hole_fill=hole_fill) for k, v in views.items() if k != 'three'}
         self.box = {k: bbox(m) for k, m in self.masks.items()}
@@ -586,14 +591,14 @@ NOTES = {           # each prop's own check results (asset_review: the seventeen
 
 # ---------------------------------------------------------------- in Blender
 def build(name, folder, height, new_obj, budget=1500, vox=0.01, tex=1024, top='auto', round_z=(), round_max=1.6,
-          round_w=0.3, hole_fill=0.004, view_map=None, cutout=False, thin=0.0, shape=None, parts=None,
-          smooth_angle=35.0):
+          round_w=0.3, hole_fill=0.004, view_map=None, cutout=False, thin=0.0, turn=None, flip=(), shape=None,
+          parts=None, smooth_angle=35.0):
     """The prop named name from the views in folder, height metres tall, its origin on the ground under its middle: its
     mesh (at most budget triangles), UVs and texture (tex x tex, RGBA). shape(frame) may change the carved field (a
     bicycle's wheels a thin slab); parts(frame) may split it into [(name or None, field, pivot or None)], each its own
     object (None: the root), a child's origin at its pivot. Returns (root, texture array, frame)."""
     import bpy
-    frame = Frame(read_views(folder), height, vox, hole_fill, view_map, cutout, thin)
+    frame = Frame(read_views(folder), height, vox, hole_fill, view_map, cutout, thin, turn, flip)
     frame.carve(top, round_z, round_max, round_w)
     if shape is not None:
         frame.field = shape(frame)

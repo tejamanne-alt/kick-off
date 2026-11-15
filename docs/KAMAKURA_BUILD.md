@@ -486,12 +486,16 @@ the level pictures' own pixels, code-made materials or upscaling). A new chat pe
 ChatGPT: paste KM-S0 with KM-0 attached, then that asset's ASSET prompt from Steps 2, 3 and 5
 with its source images attached. Keep all of an asset's views in one chat of one tool. In ChatGPT the prompts page's
 switch gives each prompt ChatGPT's frame shapes (1:1, 2:3, 3:2), and a 10 m utility pole's tall views in two halves
-(top, then "Next: bottom half.", saved as `1_front_top.png` and `1_front_bottom.png`). The tool makes the FRONT; then send, one at a time, "Next: RIGHT SIDE.", "Next: BACK.", "Next: TOP.", "Next: THREE-QUARTER.".
+(top, then "Next: bottom half.", saved as `1_front_top_half.png` and `2_front_bottom_half.png`). The tool makes the FRONT; then send, one at a time, "Next: RIGHT SIDE.", "Next: BACK.", "Next: TOP.", "Next: THREE-QUARTER.".
 Check each before the next (the base prompt's checks), and redo one that fails rather than going on.
 
-Save them as `review/kamakura/sheets/<id>_<name>/` with `1_front.png`, `2_right.png`, `3_back.png`, `4_top.png`,
-`5_three_quarter.png` (for example `review/kamakura/sheets/KM-A05_crossing_signal/1_front.png`). Make them in the
-order Claude asks for, starting with KM1-1's (the list in Step 2).
+Save them as `review/kamakura/sheets/<id>_<name>/` with `1_front.png`, `2_right_side.png`, `3_back.png`, `4_top.png`,
+`5_three_quarter.png` (for example `review/kamakura/sheets/KM-A05_level_crossing_signal/1_front.png`); a view in halves
+as `1_front_top_half.png`, `2_front_bottom_half.png` and so on for a tall object (`KM-A01`, `KM-A26`), or
+`1_front_left_half.png`, `2_front_right_half.png` for a long one (`KM-V01`). Claude renames them to this when they come
+in otherwise, and checks each view before building: it shows what its name says (a TOP from straight above, not the front
+again), BACK is the far side, every view has the same pose, and halves join. Make them in the order Claude asks for,
+starting with KM1-1's (the list in Step 2).
 
 ```text
 BASE KM-S0, the views base prompt. Attach KM-0. You are making the reference views a game's 3D artists build one object

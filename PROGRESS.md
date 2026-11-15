@@ -2254,6 +2254,27 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
 - Cost (`docs/PERFORMANCE.md`): 1,452 to 1,454 triangles each, a 1024 texture each, about 5.6 MB for the seven (est.); not
   yet in a level, not yet measured on the Nord CE5.
 
+## KM1-1's second batch of views in, renamed and checked (review files and docs)
+
+- The user pushed the views of the red vending machine (KM-A06), KM1-1's second batch but the recycling bins (KM-A22
+  to A26, A28, A29) and the tram (KM-V01), made in ChatGPT. Their folders and files renamed to the convention
+  (`<id>_<name>/1_front.png`, `2_right_side.png`, `3_back.png`, `4_top.png`, `5_three_quarter.png`; the street lamp's
+  tall views in top and bottom halves, the tram's long ones in left and right halves): `KM-A22_air_conditioner_outdoor_unit`,
+  `KM-A23_gas_and_electricity_meters`, `KM-A24_house_letterbox`, `KM-A25_grey_control_cabinet`, `KM-A26_street_lamp`,
+  `KM-A28_ticket_gate`, `KM-A29_station_name_board`. `docs/KAMAKURA_BUILD.md` now gives these names.
+- Checked, view by view (each cut from its grey, the halves stitched):
+  - ready: the red machine, the air-conditioner unit, the letterbox, the control cabinet, the name board; the tram's
+    halves join cleanly (front, back and roof), the lamp's too;
+  - the meters' (KM-A23) TOP is its front again, not a view from above: to redo, or built without it (a wall board's
+    top is hardly seen);
+  - the ticket gate's (KM-A28) TOP is its front again, and its RIGHT SIDE shows the flap face-on where the front shows it
+    face-on too (from the side it is edge-on): both to redo;
+  - the street lamp's (KM-A26) TOP is turned a quarter: its arm points to the bottom (the street) where the front shows
+    it to the right; `km_views.Frame` takes `turn={'top': 1}` for it (a quarter anticlockwise), the image left as made;
+  - the tram's BACK has its pantograph and roof units at the same end as the FRONT, where the far side would show them
+    at the other: `flip=('back',)` mirrors it, the image left as made.
+- Still to come: the recycling bins (KM-A20).
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.
