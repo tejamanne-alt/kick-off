@@ -260,10 +260,14 @@ the image.
 ```
 
 One Gemini chat for each, nothing attached: the game's own kids are not a reference here, their faces not being
-Japanese. Made in Gemini (the user's choice for characters). Gemini marks its pictures with a small sparkle in the bottom-right
+Japanese. Gemini is the user's choice for characters. It marks its pictures with a small sparkle in the bottom-right
 corner (as on KM1-1's): the corner is kept empty so the mark never touches a view, and Claude cuts it away with the
-background. If Gemini makes a square picture, the four views in one row still work; if it draws a view different
-from the others (another hairstyle, another bag), make that sheet again.
+background. If it makes a square picture, the four views in one row still work; if it draws a view different from the
+others (another hairstyle, another bag), make that sheet again.
+
+In ChatGPT, which makes only 1:1, 2:3 and 3:2 pictures and marks none of them, the same prompts with this FORMAT
+paragraph in place of theirs, one chat for each, nothing attached:
+- ChatGPT: `FORMAT: one image, aspect ratio 3:2, flat mid-grey background (#808080); the child in an A-pose (arms straight and out 30 to 40 degrees from the body, a hand's width between arm and body all the way down, hands open, legs a little apart, feet flat), the same child four times side by side at the same scale and height, small enough that all four fit with clear space between them: front, left side, back, three-quarter from the front left. Even flat light, no cast shadows, no lighting painted into the colours. Nothing else in the image.`
 
 The sheet (made in Gemini) goes in `review/kamakura/characters/KM-C01_first_grade_boy/1_sheet.png` (and `KM-C02_first_grade_girl`).
 Claude cuts it into its four views and pushes them, then in meshy.ai:

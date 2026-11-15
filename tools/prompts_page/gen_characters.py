@@ -52,8 +52,15 @@ def city_data(c):
     why = re.search(r"can't be used:\n((?:- .*\n(?:  .*\n)*)+)", sec)
     reasons = [inline(joined(b.split('\n'))) for b in re.split(r'\n(?=- )', why.group(1).strip())] if why else []
     reasons = [r[2:] if r.startswith('- ') else r for r in reasons]
-    # the Gemini notes: the paragraph after the prompts
+    # the Gemini notes: the paragraph after the prompts; ChatGPT's: the next, and its FORMAT paragraph
     gem = re.search(r'```\n\n(One Gemini chat.*?)\n\n', sec, re.S)
+    cg = re.search(r'\n\n(In ChatGPT.*?):\n- ChatGPT: `(FORMAT: [^`]+)`', sec, re.S)
+    if not cg:
+        sys.exit("gen_characters.py: ChatGPT's FORMAT paragraph has moved: update the generator")
+    for p in prompts:
+        if ' FORMAT: ' not in p['text']:
+            sys.exit('gen_characters.py: %s has no FORMAT paragraph' % p['id'])
+        p['tools'] = dict(gemini=p['text'], chatgpt=p['text'][:p['text'].index(' FORMAT: ')] + ' ' + cg.group(2))
     # the meshy.ai steps: the numbered list, and what follows it
     steps = re.search(r'then in meshy\.ai:\n((?:\d\. .*\n(?:   .*\n)*)+)(Then .*?)(?:\n\n|$)', sec, re.S)
     if not steps:
@@ -68,7 +75,8 @@ def city_data(c):
     table = dict(passer=dict(who=nums.group(1), quads=nums.group(2), tris=nums.group(3), game=nums.group(6)),
                  kid=dict(quads=nums.group(4), tris=nums.group(5), game=nums.group(7)))
     return dict(key=c['key'], name=c['name'], country=c['country'], accent=c['accent'], who=c['who'], prompts=prompts,
-                reasons=reasons, gemini=inline(joined(gem.group(1).split('\n'))) if gem else '',
+                reasons=reasons, notes=dict(gemini=inline(joined(gem.group(1).split('\n'))) if gem else '',
+                                            chatgpt=inline(joined(cg.group(1).split('\n'))) + '.'),
                 meshy=meshy, after=inline(joined(steps.group(2).split('\n'))), table=table)
 
 

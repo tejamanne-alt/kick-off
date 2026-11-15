@@ -2421,7 +2421,8 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
 - A character prompts page beside the city one (https://claude.ai/artifact/MaXwYwxsyA6Jk4ikxNkqkM):
   `tools/prompts_page/gen_characters.py` builds it from each city's build doc, "Characters (<code>-C)" (its
   prompts, where each sheet goes, the Gemini notes, the meshy.ai steps), with `characters.html`, the city page's
-  look. One prompt for each first-grader, nothing attached (the game's kids' faces are not Japanese).
+  look. One prompt for each first-grader, nothing attached (the game's kids' faces are not Japanese). A switch
+  between Gemini (16:9, the corner kept clear of its mark) and ChatGPT (3:2, its own FORMAT paragraph from the doc).
 
 ## After Phase 8 (next steps)
 

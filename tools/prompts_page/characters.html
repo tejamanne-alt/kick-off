@@ -137,8 +137,9 @@ button.ghost.done { color: var(--ok); border-color: var(--ok); }
 <header class="top">
   <div class="brandline">
     <h1>Kick Off 2 · Character prompts</h1>
-    <span class="sub">Model sheets in Gemini, models in meshy.ai, one character at a time</span>
+    <span class="sub">Model sheets in Gemini or ChatGPT, models in meshy.ai, one character at a time</span>
   </div>
+  <div class="toolbar"><span class="label" id="tool-label">Prompts for</span><div class="seg" role="group" aria-labelledby="tool-label" id="toolseg"></div><span class="toolnote" id="toolnote"></span></div>
   <nav class="tabs" id="tabs" aria-label="Sections"></nav>
 </header>
 <div class="wrap"><main id="view"></main></div>
@@ -164,6 +165,21 @@ const store = {
   set(k, v) { try { if (v) localStorage.setItem(k, v); else localStorage.removeItem(k); } catch (e) {} }
 };
 
+// The two tools: the same prompts, each with its own FORMAT paragraph (the build doc's).
+const TOOLS = {
+  gemini: { name: 'Gemini', note: '16:9, the bottom-right corner kept clear of its sparkle mark' },
+  chatgpt: { name: 'ChatGPT', note: '3:2, the widest it makes; it adds no mark' },
+};
+let tool = store.get('tool') === 'chatgpt' ? 'chatgpt' : 'gemini';   // Gemini first: the user's choice for characters
+
+function renderToolbar() {
+  document.getElementById('toolseg').replaceChildren(...Object.keys(TOOLS).map(t => el('button', {
+    type: 'button', 'aria-pressed': String(t === tool),
+    onclick: () => { tool = t; store.set('tool', t); renderToolbar(); route(); }
+  }, TOOLS[t].name)));
+  document.getElementById('toolnote').textContent = TOOLS[tool].note;
+}
+
 function copyButton(getText, preEl, label, cls) {
   const b = el('button', { class: cls || 'copy', type: 'button' }, label || 'Copy');
   b.addEventListener('click', () => {
@@ -184,7 +200,8 @@ function copyButton(getText, preEl, label, cls) {
 
 function promptCard(p, city) {
   const key = 'made:' + p.id;
-  const pre = el('pre', { class: 'prompt' }, p.text);
+  const text = p.tools[tool];
+  const pre = el('pre', { class: 'prompt' }, text);
   const card = el('article', { class: 'shot', id: 'shot-' + p.id });
   const box = el('input', { type: 'checkbox', id: 'made-' + p.id });
   box.checked = !!store.get(key);
@@ -194,9 +211,9 @@ function promptCard(p, city) {
   card.append(
     el('div', { class: 'shot-head' },
       el('span', { class: 'sid' }, p.id),
-      el('span', { class: 'badge' }, 'Gemini'),
+      el('span', { class: 'badge' }, TOOLS[tool].name),
       el('span', { class: 'shot-title' }, p.title),
-      el('div', { class: 'actions' }, el('label', { class: 'made', for: 'made-' + p.id }, box, 'Pushed'), copyButton(() => p.text, pre))),
+      el('div', { class: 'actions' }, el('label', { class: 'made', for: 'made-' + p.id }, box, 'Pushed'), copyButton(() => text, pre))),
     pre,
     el('div', { class: 'pathrow' }, 'Push the sheet as', path, copyButton(() => p.path, path, 'Copy path', 'ghost')));
   return card;
@@ -227,7 +244,7 @@ function renderStart() {
     el('h2', { class: 'city' }, 'Characters', el('small', null, 'the people a level needs that the game doesn’t have')),
     el('p', { class: 'lede' }, 'Each character is a model sheet you make in Gemini, then a rigged model you make from it in meshy.ai. Between the two I cut the sheet into its four views, and after it I bring the model into the game and review it before any level uses it.'),
     el('ol', { class: 'steps' },
-      el('li', null, el('div', null, el('b', null, 'One Gemini chat for each character. '), 'Copy its prompt from the city’s tab, paste it, and attach nothing. Gemini makes one picture: the same child four times, front, side, back and three-quarter.')),
+      el('li', null, el('div', null, el('b', null, 'One ' + TOOLS[tool].name + ' chat for each character. '), 'Pick the tool at the top, copy the character’s prompt from the city’s tab, paste it, and attach nothing. It makes one picture: the same child four times, front, side, back and three-quarter.')),
       el('li', null, el('div', null, el('b', null, 'Check it before you push. '), 'The four views must be the same child, with the same hair, clothes and bag, and the arms must stand clear of the body. If one view differs, make the sheet again.')),
       el('li', null, el('div', null, el('b', null, 'Push it where the card says. '), 'I cut it into its four views and push them beside the sheet.')),
       el('li', null, el('div', null, el('b', null, 'Make the model in meshy.ai '), 'from the four views, with the settings on the meshy.ai tab, and push the FBX beside the sheet.')),
@@ -251,8 +268,8 @@ function renderCity(city) {
         el('li', null, 'The same child four times: hair, cap, bag and clothes alike in every view.'),
         el('li', null, 'An A-pose in every view: the arms straight and out, a hand’s width from the body all the way down.'),
         el('li', null, 'Flat colours with no light or shadow painted in, and no writing or logos.'),
-        el('li', null, 'The bottom-right corner empty, clear of Gemini’s sparkle mark.'))),
-    city.gemini ? el('p', { class: 'note', html: city.gemini }) : null);
+        tool === 'gemini' ? el('li', null, 'The bottom-right corner empty, clear of Gemini’s sparkle mark.') : null)),
+    city.notes[tool] ? el('p', { class: 'note', html: city.notes[tool] }) : null);
   progress(city);
 }
 
@@ -271,6 +288,7 @@ function renderMeshy() {
 }
 
 function route() {
+  renderToolbar();
   const key = (location.hash || '#start').slice(1);
   const s = SECTIONS().find(x => x.key === key) || SECTIONS()[0];
   document.documentElement.style.setProperty('--city', s.accent);
