@@ -11,7 +11,8 @@
 #     or moved), then polish_character.py (welded, smoothed normals, the inner face leaned forward, 32k triangles, each
 #     Locker Room bag 8k, the atlas' gaps filled). (face_paint.py's drawn faces were rejected: docs/LEARNINGS.md, C14.)
 #   Hana and Max: polish_character.py the same way (their painted faces are kept);
-#   the six passers-by: polish_character.py at 14k triangles;
+#   the six passers-by: polish_character.py at 14k triangles; the extra passers-by (EXTRA_WALKERS: KM1-1's
+#     first-graders) imported from their Meshy models by meshy_rigged.py first;
 #   the extra bags (EXTRA_BAGS: the two randoseru, built from the user's views) fitted onto each kid's original first;
 #   the Locker Room bags' shared atlases (RGBA: the alpha marks the recolourable cloth): the gaps filled;
 #   every <Name>.json's "tris" updated.
@@ -28,6 +29,12 @@ BAGS = ['KickOff', 'RaceCar', 'Unicorn', 'DenimBow', 'GoldenTrail']
 # prepared (meshy_bag.py prep, with its own colour arguments), and fitted onto every kid's original before its polish.
 EXTRA_BAGS = [('RandoseruRed', ['--hue', '340,18', '--sat', '0.5']),     # its red body recolourable
               ('RandoseruBlack', ['--sat', '2'])]                       # its own colours (black stays black)
+# Passers-by added after the source commit: imported from the user's Meshy model (meshy_rigged.py, its profile) at
+# 30k triangles, then polished as the others are. KM1-1's first-graders (docs/KAMAKURA_BUILD.md, KM-C01, C02).
+EXTRA_WALKERS = [('FirstGraderBoy', 'review/kamakura/characters/KM-C01_first_grade_boy/KM-C01_first_grade_boy.fbx',
+                  'firstgrader_boy'),
+                 ('FirstGraderGirl', 'review/kamakura/characters/KM-C02_first_grade_girl/KM-C02_first_grade_girl.fbx',
+                  'firstgrader_girl')]
 PLAYER_TRIS, BAG_TRIS, WALKER_TRIS = 32000, 8000, 14000
 
 ap = argparse.ArgumentParser()
@@ -105,6 +112,13 @@ for n in TEENS:
 for n in WALKERS:
     if not want(n): continue
     blender('polish_character.py', original(n + '.fbx'), original(n + 'Atlas.png'), OUT, '--name', n, '--tris', WALKER_TRIS, '--face-lean', 0.85)
+for n, fbx, profile in EXTRA_WALKERS:
+    if not want(n): continue
+    blender('meshy_rigged.py', os.path.join(REPO, fbx), SRC, '--profile', profile, '--name', n, '--tris', 30000)
+    # (their hems held where the outfit parts meet, C28; cut to 1,000 under the budget, which splitting their
+    # two-coloured faces brings to about 13,400)
+    blender('polish_character.py', os.path.join(SRC, n + '.fbx'), os.path.join(SRC, n + 'Atlas.png'), OUT, '--name', n,
+            '--tris', WALKER_TRIS - 1000, '--face-lean', 0.85, '--part-edges', 0.15)
 if want('bags'):
     for b in BAGS: original('Bag%sAtlas.png' % b)
     # (the islands from a kid who has every bag: the extra bags are only in the fitted copy)
@@ -113,11 +127,12 @@ if want('bags'):
     blender('polish_bags.py', girl if EXTRA_BAGS else original('Girl.fbx'), SRC, OUT, *(BAGS + [b for b, _ in EXTRA_BAGS]))
 
 # the json files: the original's colours, the new triangle count
-for n in KIDS + TEENS + WALKERS:
+for n in KIDS + TEENS + WALKERS + [w for w, _, _ in EXTRA_WALKERS]:
     if not want(n): continue
     rep = os.path.join(OUT, n + '_polish.json')
     if not os.path.exists(rep): continue
-    with open(original(n + '.json')) as f: data = json.load(f)
+    src = os.path.join(SRC, n + '.json')                    # (an extra walker's: from its import)
+    with open(src if os.path.exists(src) else original(n + '.json')) as f: data = json.load(f)
     with open(rep) as f: data['tris'] = json.load(f)['meshes']['Kid']['tris_out']
     with open(os.path.join(OUT, n + '.json'), 'w') as f: json.dump(data, f)
 

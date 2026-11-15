@@ -34,7 +34,11 @@
 #   plaid     Kai (PrimaryBoy): a primary-school boy in an A-pose; short black hair, a red plaid flannel shirt over a
 #             white hood, light-blue cargo jeans, chunky black-and-white sneakers (meshy_teen's colour rules for him).
 #
-#   blenv/bin/python meshy_rigged.py -- /abs/rigged.fbx /abs/outdir [--profile awesome|plaid|rainbow|explorer|varsity|denim|jogger|mom|office|courier|shopkeeper|grandad] [--name <Name>] [--tris 100000]
+#   firstgrader_boy, firstgrader_girl  FirstGraderBoy, FirstGraderGirl (passers-by in KM1-1): six-year-olds in an A-pose
+#             in yellow caps, a white shirt or blouse, navy shorts or culottes, white socks and shoes, a randoseru (black,
+#             red) with its yellow cover; Meshy's newer rig (Spine02, Spine01, Spine, neck, head_end: C26) (--tris 30000)
+#
+#   blenv/bin/python meshy_rigged.py -- /abs/rigged.fbx /abs/outdir [--profile awesome|plaid|rainbow|explorer|varsity|denim|jogger|mom|office|courier|shopkeeper|grandad|firstgrader_boy|firstgrader_girl] [--name <Name>] [--tris 100000]
 #     -> outdir/<Name>.fbx, <Name>.blend, <Name>.json, <Name>Atlas.png
 import bpy, sys, os, json
 import numpy as np
@@ -56,7 +60,8 @@ argv = _argv
 SRC, OUT = argv[0], argv[1]
 TRIS = int(argv[argv.index('--tris') + 1]) if '--tris' in argv else 100000
 NAME = argv[argv.index('--name') + 1] if '--name' in argv else {'awesome': 'PrimaryBoy2', 'plaid': 'PrimaryBoy', 'rainbow': 'PrimaryGirl2', 'explorer': 'PrimaryGirl', 'varsity': 'Girl', 'denim': 'BackpackBoy', 'jogger': 'Jogger', 'mom': 'Mom',
-        'office': 'OfficeWorker', 'courier': 'Courier', 'shopkeeper': 'Shopkeeper', 'grandad': 'Grandad'}[PROFILE_NAME]
+        'office': 'OfficeWorker', 'courier': 'Courier', 'shopkeeper': 'Shopkeeper', 'grandad': 'Grandad',
+        'firstgrader_boy': 'FirstGraderBoy', 'firstgrader_girl': 'FirstGraderGirl'}[PROFILE_NAME]
 os.makedirs(OUT, exist_ok=True)
 C = bpy.context
 mb.log = lambda *a: print('[meshy_rigged]', *a, flush=True)
@@ -187,8 +192,12 @@ def joints(bones):
     """The game's joints (meshy_boy.bone_list) from the skeleton's."""
     h = lambda n: bones[n][0].copy()
     t = lambda n: bones[n][1].copy()
-    J = {'pelvis': h('Hips'), 'spine': h('Spine1'), 'chest': h('Spine2'), 'neck0': h('Neck'), 'neck1': h('Head'),
-         'headtop': h('HeadTop_End')}
+    # the spine by its place in the chain (Mixamo's Spine, Spine1, Spine2; Meshy's newer Spine02, Spine01, Spine), the
+    # neck and the head's top by either rig's name ('Neck' or 'neck', 'HeadTop_End' or 'head_end')
+    spine = {spine_rank(n): n for n in bones if n.startswith('Spine') and n in PARENT}
+    one = lambda *names: next(n for n in names if n in bones)
+    J = {'pelvis': h('Hips'), 'spine': h(spine[1]), 'chest': h(spine[2]), 'neck0': h(one('Neck', 'neck')),
+         'neck1': h('Head'), 'headtop': h(one('HeadTop_End', 'head_end'))}
     J['pelvis'][0] = J['spine'][0] = J['chest'][0] = J['neck0'][0] = J['neck1'][0] = J['headtop'][0] = \
         (h('Head')[0] + h('Hips')[0]) / 2                        # (the spine straight up the middle)
     for side, n in (('Left', 'L'), ('Right', 'R')):
@@ -196,7 +205,8 @@ def joints(bones):
         J['toe' + n] = t(side + 'ToeBase')
         J['shoulder' + n], J['elbow' + n], J['wrist' + n] = h(side + 'Arm'), h(side + 'ForeArm'), h(side + 'Hand')
         tip = side + 'HandMiddle3'
-        J['tip' + n] = t(tip) if tip in bones else h(side + 'Hand') + 2.2 * (t(side + 'Hand') - h(side + 'Hand'))
+        J['tip' + n] = (t(tip) if tip in bones else h(side + 'Hand_End') if side + 'Hand_End' in bones   # (Meshy's: the
+                        else h(side + 'Hand') + 2.2 * (t(side + 'Hand') - h(side + 'Hand')))         # fingertips)
     return J
 
 
@@ -423,6 +433,20 @@ def parts_grandad(o, px):
     return f.done('grandad', ('cardigan', 'trousers', 'cap'))
 
 
+def parts_firstgrader(randoseru):
+    """A first-grader's parts (KM1-1's line of them walking to school, docs/KAMAKURA_BUILD.md KM-C01, C02): 1 the white
+    shirt or blouse, 2 the navy shorts or culottes, 3 the randoseru's body (its colour the one each child chose);
+    0 the skin, the black hair, the yellow cap (every first-grader's), the randoseru's yellow cover, the white socks
+    and the white shoes."""
+    def parts(o, px):
+        f = Faces(o, px); h, s, v = f.h, f.s, f.v
+        f.top((s < 0.16) & (v > 0.62) & (f.z > f.hip - 0.02))                    # (not the socks and shoes, below)
+        f.legwear((h > 200) & (h < 255) & (s > 0.2) & (v < 0.45), 0.1)
+        f.third(randoseru(h, s, v) & (f.skull < 0.5) & (f.z > f.hip - 0.1) & (f.hand < 0.5), 0.1)
+        return f.done('first-grader', ('shirt', 'shorts', 'randoseru'))
+    return parts
+
+
 PROFILES = {'awesome': {'parts': parts_awesome, 'stands': 1.32},
             'plaid': {'parts': lambda o, px: mt.parts_plaid(o, px), 'stands': 1.30},
             'rainbow': {'parts': lambda o, px: parts_without_pack(mt.parts_rainbow, o, px), 'stands': 1.29},
@@ -434,7 +458,11 @@ PROFILES = {'awesome': {'parts': parts_awesome, 'stands': 1.32},
             'office': {'parts': parts_office, 'stands': 1.80},
             'courier': {'parts': parts_courier, 'stands': 1.72},
             'shopkeeper': {'parts': parts_shopkeeper, 'stands': 1.60},
-            'grandad': {'parts': parts_grandad, 'stands': 1.70}}
+            'grandad': {'parts': parts_grandad, 'stands': 1.70},
+            # KM1-1's first-graders (passers-by), six or seven years old: the boy's randoseru black, the girl's red
+            'firstgrader_boy': {'parts': parts_firstgrader(lambda h, s, v: (v < 0.2) & (s < 0.5)), 'stands': 1.17},
+            'firstgrader_girl': {'parts': parts_firstgrader(lambda h, s, v: ((h < 15) | (h > 340)) & (s > 0.5) & (v > 0.2)),
+                                 'stands': 1.15}}
 PROFILE = PROFILES[PROFILE_NAME]
 
 

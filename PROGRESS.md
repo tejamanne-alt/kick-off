@@ -2478,6 +2478,22 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
   `WheelSpin`.
 - The other props are unchanged: `ends` defaults to the old behaviour, and the new helpers are used only by the scooter.
 
+## KM1-1's first-graders, imported and reviewed (tools, review and docs)
+
+- KM-C01 (the boy) and KM-C02 (the girl) from the user's Gemini views and meshy.ai models:
+  - `meshy_rigged.py` reads Meshy's newer rig (`Spine02`, `Spine01`, `Spine`, `neck`, `head_end`, `Hand_End`).
+  - Profiles `firstgrader_boy` and `firstgrader_girl`: parts 1 shirt, 2 shorts or culottes, 3 the randoseru; the
+    yellow cap stays yellow.
+  - `polish_all.py` imports and polishes them (`EXTRA_WALKERS`), holding back the hems (C28): 13,428 and 13,379
+    triangles.
+- `review_poses.py` gains `--walker` (`WalkerAnimator` ported: the stroll, chat, wait), `--views8`, `--frames` and
+  `--outfit` (`ModelOutfit`'s recolour). It also fixes a stepped slice bpy 5 refuses.
+- The strict review is published (Kamakura first-graders), waiting for the user's approval. It covers the eight views,
+  the three motions, five outfits each and the checks. Limits from Meshy's texture: a buckle on the boy's cover and
+  slivers at the girl's waist.
+- After approval they go into their own list (not the grown-ups' walkers, which every level draws from), and KM1-1
+  lines them up.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

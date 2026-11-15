@@ -617,6 +617,16 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
   narrower; the five earlier bags keep the old way. `--sat 2` gives a bag no recolourable cloth (the black leather).
 - *Rule:* measure a surface by samples spread over it, not by its vertices, whenever a mesh may have large flat faces.
 
+**C28. Cut to its budget, a first-grader's shorts left dark flaps over his knees (fixed before review).**
+- *What:* the first-grade boy (KM-C01), polished to a passer-by's 14k triangles, showed two dark triangles hanging
+  below the back of his shorts' hems, over the backs of his knees. The import at 28k had none.
+- *Why:* the polish's cut holds back the head, the hands and the texture's seams, but not where one outfit part meets
+  another. A hem's edge was collapsed onto the leg's vertices below, so a navy triangle stretched over the skin.
+- *Fix:* `polish_character.py --part-edges 0.15` holds back the vertices where two outfit parts meet
+  (`polish_lib.part_border_vertices`). It is used for the first-graders (`polish_all.py`, `EXTRA_WALKERS`), which are cut
+  to 13,000 and land at 13,400. The shipped characters are polished as before, so their rebuild is unchanged.
+- *Rule:* compare a polished character with its import from behind and at the hems, not only from the front.
+
 ## D. Art direction and look
 
 **D1. A golden-hour haze hid the kid** (before v37).

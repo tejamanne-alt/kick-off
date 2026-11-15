@@ -419,6 +419,8 @@ the body forward, a positive `headTilt` tips the head back; `--list` prints ever
 is the game's own look (the teen turned 24 degrees toward the camera from side-on), 24 a
 three-quarter front view, 90 the side; the menu poses use 42 (it turns 48 degrees) in place of 66.
 
+For a passer-by, `review_poses.py --walker` renders the walker's poses instead (`WalkerAnimator.cs` ported line by line: the stroll, chatting and waiting, 24 frames each), `--views8` the standing figure from all eight sides, and `--frames <dir>` keeps every cell, framed alike, for the motion GIFs; `--outfit "r,g,b;r,g,b;r,g,b" --outfit-from <Name>.json` dresses its parts as `ModelOutfit.cs` does. The first-graders' review (`review/kamakura/people`) was made this way. They are imported and polished by `polish_all.py` (`EXTRA_WALKERS`: `meshy_rigged.py --profile firstgrader_boy|firstgrader_girl`, then `polish_character.py --part-edges 0.15`, C28).
+
 ```
 blenv/bin/python review_poses.py -- $PWD/Boy.blend $PWD/boy_poses.png --jobs 3 --leaks
 blenv/bin/python review_poses.py -- $PWD/Boy.blend $PWD/knees.png --poses run_kneeup,kick_contact --yaws 66,90 --focus 0.3,0.7 --cell 600x600

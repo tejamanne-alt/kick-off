@@ -52,12 +52,28 @@ def seam_vertices(me):
     return distinct > 1
 
 
-def protect_group(o, bones, keep=0.3, seam_keep=0.15):
+def part_border_vertices(me):
+    """Vertices where two outfit parts meet (UV2.x differs between the faces around them): a hem, a collar's edge."""
+    nv = len(me.vertices)
+    if len(me.uv_layers) < 2: return np.zeros(nv, bool)
+    lv = np.zeros(len(me.loops), int); me.loops.foreach_get('vertex_index', lv)
+    uv = np.zeros(len(me.loops) * 2); me.uv_layers[1].data.foreach_get('uv', uv)
+    part = np.round(uv.reshape(-1, 2)[:, 0]).astype(int)
+    lo = np.full(nv, 99); hi = np.full(nv, -99)
+    np.minimum.at(lo, lv, part); np.maximum.at(hi, lv, part)
+    return hi > lo
+
+
+def protect_group(o, bones, keep=0.3, seam_keep=0.15, part_keep=None):
     """The vertex group the decimator cuts: 1 everywhere, down to `keep` on vertices weighted to the named bones and to
-    `seam_keep` on the texture islands' borders."""
+    `seam_keep` on the texture islands' borders; with part_keep, down to that where two outfit parts meet (a hem: cut
+    freely, its edge collapsed onto the leg below and left dark flaps over the skin, docs/LEARNINGS.md C28)."""
     g = o.vertex_groups.new(name='_Cut')
     names = {vg.index: vg.name for vg in o.vertex_groups}
     seam = seam_vertices(o.data)
+    if part_keep is not None:
+        seam = seam | part_border_vertices(o.data)
+        seam_keep = min(seam_keep, part_keep)
     for v in o.data.vertices:
         w = sum(x.weight for x in v.groups if names.get(x.group) in bones)
         cut = 1.0 - (1.0 - keep) * min(1.0, w * 1.5)

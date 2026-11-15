@@ -55,7 +55,7 @@ It ignores the first 6 s after a scene loads, and the time after resuming from t
 |---|---|---|
 | Playable kid body | 32k triangles; head, hands and texture seams protected | 32k (was 100k), plus up to ~1k from splitting two-colour triangles (v120: 32.7k to 33.0k) |
 | Locker Room bag | 8k triangles | 8k (was 30k); the two randoseru 8,000 each, seven bags a kid now (est. +0.75 MB a kid file, +4.5 MB in all; only the worn bag is loaded, so no runtime cost; not yet measured on the Nord CE5) |
-| Passer-by | 14k triangles | 14k (was 30k) |
+| Passer-by | 14k triangles | 14k (was 30k); KM1-1's first-graders (in review) 13,428 and 13,379 in a 2048 atlas each (est. ~1.5 MB of FBX each; only where KM1-1 places them) |
 | Character FBX total | | 33 MB with the two randoseru (28 MB before; was 90 MB) |
 | Character atlas | 2048 (kids), 1024 (bags), gaps filled for every mip | as listed |
 | Skinned renderers drawn | 1 kid + 1 bag + passers-by on screen | as listed |

@@ -17,6 +17,7 @@ CHECKS = [
     'No wires or sky', 'Repairs listed', 'Rig names', 'Joints overlap', 'Feet planted', 'Each part only itself',
 ]
 GROUPS = [
+    ('stroll', 'Passers-by', 'walking, chatting and waiting, as the game\'s WalkerAnimator moves them'),
     ('walk', 'Walking', 'four legs swinging in diagonal pairs, as the game\'s dog swings them'),
     ('scurry', 'Scurrying', 'drawn mid-leap: the body bounds, the tail streams'),
     ('peck', 'On the ground', 'birds that hop and peck'),
@@ -214,11 +215,12 @@ def page(folder, title, notes):
               '<figcaption>The source: %s</figcaption></figure>' % (esc(n), esc(n), esc(r['sheet'])))
             if os.path.exists(os.path.join(folder, 'parts', n + '.jpg')):
                 w('<figure class="src"><img src="parts/%s.jpg" loading="lazy" alt="%s\'s parts, each its own colour">'
-                  '<figcaption>Its parts, each its own colour</figcaption></figure>' % (esc(n), esc(n)))
+                  '<figcaption>%s</figcaption></figure>' % (esc(n), esc(n), esc(r.get('parts_caption',
+                                                                                     'Its parts, each its own colour'))))
             if r['motions']:
                 w('<div class="motions">%s</div>' % ''.join(
                     '<figure><img src="motion/%s_%s.gif" loading="lazy" alt="%s: %s"><figcaption>%s</figcaption></figure>'
-                    % (esc(n), esc(m), esc(n), esc(m), esc(m)) for m in r['motions']))
+                    % (esc(n), esc(m), esc(n), esc(m), esc(r.get('motion_notes', {}).get(m, m))) for m in r['motions']))
             else:
                 w('<p class="still">No moving parts: it stays still in the game.</p>')
             w('</div>')
