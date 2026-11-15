@@ -241,11 +241,16 @@ rounded shapes, the head about a fifth of the height, simple clean features, fla
 image, aspect ratio 16:9, flat mid-grey background (#808080); the child in an A-pose (arms straight and out 30 to 40
 degrees from the body, a hand's width between arm and body all the way down, hands open, legs a little apart, feet
 flat), the same child four times side by side at the same scale and height: front, left side, back, three-quarter
-from the front left. Even flat light, no cast shadows, no lighting painted into the colours. Nothing else in the
-image.
+from the front left, with clear space between them and the bottom-right corner left empty. Even flat light, no cast
+shadows, no lighting painted into the colours. Nothing else in the image.
 ```
 
-The sheet goes in `review/kamakura/characters/KM-C01_first_grade_boy/1_sheet.png` (and `KM-C02_first_grade_girl`).
+Made in Gemini (the user's choice for characters). Gemini marks its pictures with a small sparkle in the bottom-right
+corner (as on KM1-1's): the corner is kept empty so the mark never touches a view, and Claude cuts it away with the
+background. If Gemini makes a square picture, the four views in one row still work; if it draws a view different
+from the others (another hairstyle, another bag), make that sheet again.
+
+The sheet (made in Gemini) goes in `review/kamakura/characters/KM-C01_first_grade_boy/1_sheet.png` (and `KM-C02_first_grade_girl`).
 Claude cuts it into its four views and pushes them, then in meshy.ai:
 1. **Image to 3D**, several images: the four views; the newest model; symmetry on; PBR off (base colour only: the
    game's toon shader uses the colour alone, and lighting in the texture fights it); the largest texture offered.

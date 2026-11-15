@@ -2414,7 +2414,8 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
   straight on, but faces no view sees (inside the step-through) take the rear view's tail light; to fix, then review.
 - KM1-1's first-graders in yellow caps: the game's kids can't be used. They are the player's choices, a passer-by's
   budget is 14,000 triangles to their 32,000, and they are too tall, with no caps or randoseru. So two new passers-by
-  (KM-C01, KM-C02): the ChatGPT model-sheet prompt and the meshy.ai settings are in docs/KAMAKURA_BUILD.md,
+  (KM-C01, KM-C02): the model-sheet prompt (for Gemini, the user's choice for characters; no game kid attached,
+  their faces not being Japanese) and the meshy.ai settings are in docs/KAMAKURA_BUILD.md,
   "Characters (KM-C)". In short: remesh Fixed, Quad, 15,000 for a passer-by or 50,000 for a playable kid; auto-rig as
   a humanoid; FBX with one plain walk (the game animates in code).
 
