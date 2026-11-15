@@ -462,8 +462,8 @@ FORMAT lines below instead (the prompts page's ChatGPT switch puts them in). Cha
 suits the vending machines and signs. A utility pole (KM-A01, KM-A02) is 10 m tall, too tall for one of ChatGPT's images
 to hold in detail, so in ChatGPT its FRONT, RIGHT SIDE and BACK each come in two halves at one scale, overlapping by about
 1 m: after the top half, send "Next: bottom half.". Save them as `1_front_top_half.png` and `2_front_bottom_half.png`,
-and so on (the TOP and the THREE-QUARTER stay one image each). The street lamp (KM-A26, 7 m) and the wire gantry (KM-B07,
-7.5 m) come in halves the same way; the tram (KM-V01, 12 m long) and the station platform (KM-B06, 10 m) in a left and a
+and so on (the TOP and the THREE-QUARTER stay one image each). The street lamp (KM-A26, 7 m) comes in halves the same way (the wire gantry, KM-B07,
+in one image a view: its halves came at two scales); the tram (KM-V01, 12 m long) and the station platform (KM-B06, 10 m) in a left and a
 right half of their long views ("Next: right half.", `1_front_left_half.png`, `2_front_right_half.png`).
 
 - `KM-S0`: `FORMAT: the aspect ratio the object fills best, the same for FRONT, RIGHT SIDE and BACK: 2:3 for a tall object (a signal, a lantern), 3:2 for a long one (a bench, a tram, a vehicle), 1:1 otherwise; TOP and THREE-QUARTER 1:1. The largest size you can make.`
@@ -473,7 +473,7 @@ right half of their long views ("Next: right half.", `1_front_left_half.png`, `2
 - `KM-A02`: `FORMAT: 2:3, the largest size you can make. The pole is 10 m tall, too tall for one image: make FRONT, RIGHT SIDE and BACK each in two images at the same scale, first its top half (from about 4.5 m up to its top), then, when I say "Next: bottom half.", its bottom half (from the ground up to about 5.5 m), the two overlapping by about 1 m. TOP and THREE-QUARTER as one image each, 1:1.`
 - `KM-A26`: `FORMAT: 2:3, the largest size you can make. The lamp's pole is 7 m tall, too tall for one image: make FRONT, RIGHT SIDE and BACK each in two images at the same scale, first its top half (from about 3 m up to its top), then, when I say "Next: bottom half.", its bottom half (from the ground up to about 4 m), the two overlapping by about 1 m. TOP and THREE-QUARTER as one image each, 1:1.`
 - `KM-B06`: `FORMAT: 3:2, the largest size you can make. The platform is 10 m long, too long for one image: make FRONT, BACK and TOP each in two images at the same scale, first its left half, then, when I say "Next: right half.", its right half, the two overlapping by about 1 m. RIGHT SIDE (its end) and THREE-QUARTER as one image each, 1:1.`
-- `KM-B07`: `FORMAT: 2:3, the largest size you can make. The gantry is 7.5 m tall, too tall for one image: make FRONT, RIGHT SIDE and BACK each in two images at the same scale, first its top half (from about 3.5 m up to its top, with the whole arm), then, when I say "Next: bottom half.", its bottom half (from the ground up to about 4.5 m), the two overlapping by about 1 m; the lattice open, the grey background showing through it. TOP and THREE-QUARTER as one image each, 1:1.`
+- `KM-B07`: `FORMAT: 2:3, the largest size you can make. FRONT, RIGHT SIDE and BACK each one image of the whole gantry, from the ground to the top of its pole, at one scale: the pole the same width in pixels in all three; the lattice open, the grey background showing through it. TOP and THREE-QUARTER as one image each, 1:1.`
 - `KM-V01`: `FORMAT: 3:2, the largest size you can make. The tram is 12 m long, too long for one image: make FRONT, BACK and TOP each in two images at the same scale, first its left half, then, when I say "Next: right half.", its right half, the two overlapping by about 1 m. RIGHT SIDE (its end) and THREE-QUARTER as one image each, 1:1.`
 - `KM-T07`: `FORMAT: aspect ratio 3:2, the largest size you can make; tileable along its length.`
 - `KM-T10`: `FORMAT: aspect ratio 3:2, the largest size you can make; tileable along its length.`
@@ -660,17 +660,20 @@ second props sheet: KM-A20 the recycling bins, KM-A22 the air-conditioner unit, 
 KM-A25 the control cabinet, KM-A26 the street lamp, KM-A28 the ticket gate, KM-A29 the station name board; then the tram
 (KM-V01, Step 3). The rest (KM-A21, A27, A30 to A38) as their levels come. Each is built as its views come in (`tools/blender/km_views.py`: carved
 from its views and textured from them, D25; reviewed in `review/kamakura/props/`): KM1-1's first batch (A01, A03, A04,
-A05, A08, A11, A19), its second (A06, A20, A22 to A26, A28, A29) and the tram (V01) are built from them; the tram's FRONT
-was made again, its windows showing the car's inside (the first showed a street through the glass).
+A05, A08, A11, A19), its second (A06, A20, A22 to A26, A28, A29), the tram (V01) and its last batch (A02, B04, B05, B06)
+are built from them; the tram's FRONT was made again, its windows showing the car's inside (the first showed a street
+through the glass).
 
 KM1-1's last batch, all its level still needs, in this order: KM-A02 the plain pole (in
-halves, as KM-A01); from Step 5, KM-B07 the overhead wire gantry (in halves, its lattice open), KM-B06 Hase Station's
+halves, as KM-A01); from Step 5, KM-B07 the overhead wire gantry (one image a view, its lattice open), KM-B06 Hase Station's
 platform (in left and right halves), KM-B05 the little shrine, KM-B04 the beige stucco house; from Step 4, the foliage
 sheets KM-F02 (the persimmon's leaves) and KM-F04 (the hydrangeas and morning glories); from Step 1, the lane KM-T07.
 The views go in `review/kamakura/sheets/<id>_<name>/` as before (`KM-A02_plain_concrete_utility_pole`,
 `KM-B07_overhead_wire_gantry`, `KM-B06_hase_station_platform`, `KM-B05_little_shrine`, `KM-B04_beige_stucco_house`); a
-foliage sheet or a texture, one image, as `review/kamakura/sheets/KM-F02_broad_leaves.png`, `KM-F04_flowers.png`,
-`KM-T07_lane.png`. A view must show the same object as the others: the same proportions and pose,
+foliage sheet or a texture, one image, in its own folder as `1_sheet.png` or `1_texture.png`
+(`KM-F02_broad_leaves/1_sheet.png`, `KM-F04_flowers/1_sheet.png`, `KM-T07_lane_walking_strip/1_texture.png`), with a
+README of what it holds if wanted. All in but the gantry (KM-B07), to make again, one image a view (its halves came at
+two scales, the bottom ones close-ups of the pole). A view must show the same object as the others: the same proportions and pose,
 BACK its far side (for a bicycle, the side away from the street, not its rear). The level picture stays the authority
 for design, size and place; the views give the pixels.
 

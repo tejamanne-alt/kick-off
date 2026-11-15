@@ -1126,6 +1126,8 @@ views).**
   itself at an edge, so the surface is first re-meshed on a finer grid (Blender's voxel remesh), which makes it one
   closed, manifold shell. `motion_gif` frames the root's own mesh too. Still to do: the crossing signal's guard frame stays solid, as no view shows its hollow (the
   far bars show through the near ones, and from above the crossbuck and lamps cover it).
+- *Rule:* before carving from views, check each against the others (sizes, outlines, poses, which side it shows); register
+  them by the object, not by its box; and look at the decimated mesh, not only the dense one.
 
 **D26. KM1-1's second batch from views: a notch, a shelf, and a gate drawn three ways.**
 - *What:* building the red machine, the recycling bins, the air-conditioner unit, the meters, the letterbox, the control
@@ -1148,8 +1150,38 @@ views).**
   sized by it (`('width', m)`).
 - *Rule:* check each view on arrival against the others (what it shows, its pose, its mirror) and ask for one redo; if
   that fails too, build the part from the views that agree, by hand where needed, and say so in the review.
-- *Rule:* before carving from views, check each against the others (sizes, outlines, poses, which side it shows); register
-  them by the object, not by its box; and look at the decimated mesh, not only the dense one.
+
+**D27. KM1-1's last batch: halves that joined wrongly, a view drawn narrower, and a shrine its views draw two ways.**
+- *What:* the plain pole, the wire gantry, the station platform, the little shrine and the beige house, from the user's
+  views:
+  - the platform's two halves joined with a grey strip and a doubled post in the middle: each half ends in a grey
+    margin past its cut, and the join was laid by the image's end, not the object's;
+  - the joins of separately drawn halves could be several percent off: the transformer pole's back came out 3 % taller
+    than its front and side (approved that way), the street lamp's front 1.4 %;
+  - the gantry's bottom halves came as close-ups of its pole, at about 2.4 times its top halves' scale: not joinable;
+  - the shrine's back is drawn about a quarter narrower than its front: grey from beyond its outline on the model's
+    back; its side view draws the steps standing out in front of the wall where the front, top and three-quarter views
+    show walls beside them, so the carving made a pyramid of steps the shrine's whole width, and a block of the shrine's
+    depth where the lantern stands; the walls' inner faces, seen by no view, came out as streaks of the front's pixels;
+  - the beige house's balcony, entrance canopy and window hood ran the whole width of its front as thin ledges (dark
+    lines from the street): the side view says how far each stands out, the front where, and carved from both each
+    spans the wall;
+  - the house took 38 minutes to build and the platform over 40: surface nets over the whole grid (a house's 20
+    million nodes), and merging the planar faces of a mesh of millions of triangles.
+- *Why:* halves and views drawn one at a time by an image model drift apart, in scale and in what they show; the stitch
+  trusted its first match and the image's edges, the texturing trusted each view everywhere it reached.
+- *Fix:* a view's halves join by matched features or a band, whichever makes the overlap agree best, the seam in the
+  middle of the objects' overlap; then the views of one object must agree on its size (front, side and back as tall,
+  front and back as long), a join that does not set from the size the others agree on (`joins_of`, `pick_join`). A
+  view colours a point only where its own outline covers it (`covered`), else the views that do; a face no view sees
+  takes the side view facing it most, its pixels reflected into its outline (`reflected`), never the top's (what hides a
+  canopy from above is the roof the top view shows). Where views disagree on part of an object, rules by region
+  (`regions`): the shrine's walls from its front and top alone, its lantern kept to its own depth; the house's front
+  flush with its wall but over its balcony, canopy and hood. Surface nets on the crossed edges only, and a mesh of over
+  a million triangles cut roughly before its planar faces merge: the house builds in about five minutes. The gantry is
+  asked for again, one image a view.
+- *Rule:* a view in halves is joined by its object, checked against the object's other views, and the halves of one
+  view must be one scale (ask again if not); a view colours only what it shows.
 
 ## E. Levels and world
 

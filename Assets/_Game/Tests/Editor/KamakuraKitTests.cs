@@ -9,11 +9,19 @@ namespace DribbleToSchool.Tests
     /// <summary>
     /// The Kamakura kit (tools/blender/km_views.py, installed by kit_buildings_km.py --install): every model in its manifest
     /// has its FBX and its own texture, and keeps its triangle budget (docs/PERFORMANCE.md: a street prop 1,500, a vehicle
-    /// 4,000).
+    /// or a set piece 4,000, a house 5,000).
     /// </summary>
     public class KamakuraKitTests
     {
         const string Dir = "Assets/_Game/Art/Models/Kamakura/";
+
+        /// <summary>docs/PERFORMANCE.md: a house 5,000 triangles, a vehicle or a set piece 4,000, a street prop 1,500.</summary>
+        static int KindBudget(string model)
+        {
+            if (model.StartsWith("KmHouse")) return 5000;
+            if (model.StartsWith("KmTram") || model.StartsWith("KmShrine") || model.StartsWith("KmStation")) return 4000;
+            return 1500;
+        }
 
         [Test]
         public void KamakuraIsAKit()
@@ -37,7 +45,7 @@ namespace DribbleToSchool.Tests
                     kv.Key + "'s texture is missing");
                 double tris = Convert.ToDouble(info["tris"]), budget = Convert.ToDouble(info["budget"]);
                 Assert.LessOrEqual(tris, budget, kv.Key + " is over its budget");
-                Assert.LessOrEqual(budget, kv.Key.StartsWith("KmTram") ? 4000 : 1500, kv.Key + "'s budget is over its kind's");
+                Assert.LessOrEqual(budget, KindBudget(kv.Key), kv.Key + "'s budget is over its kind's");
             }
         }
     }

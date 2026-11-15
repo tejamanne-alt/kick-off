@@ -33,7 +33,7 @@ VIEWS = ('front', 'right', 'back', 'top', 'three')
 def read_views(folder):
     """{view: RGB uint8 array}: each view's image, a view in halves stitched. File names as the user saved them:
     1_front.png, 2_right_side.png or 2_right.png, ...; halves as 1_front_top_half.png and 2_front_bottom_half.png, or
-    1_front_left.png and 1_front_right.png."""
+    1_front_left_half.png and 2_front_right_half.png ('_half' may be left out)."""
     parts = {}
     for f in sorted(os.listdir(folder)):
         if not f.lower().endswith(('.png', '.jpg', '.jpeg', '.webp')):
@@ -53,44 +53,132 @@ def read_views(folder):
             part = toks[-1]
         im = np.asarray(Image.open(os.path.join(folder, f)).convert('RGB'))
         parts.setdefault(view, {})[part] = im
-    out = {}
+    out, halves = {}, {}
     for view, ps in parts.items():
         if None in ps:
             out[view] = ps[None]
         elif 'top' in ps and 'bottom' in ps:
-            out[view] = stitch(ps['top'], ps['bottom'], vertical=True)
+            halves[view] = (ps['top'], ps['bottom'], True)
         elif 'left' in ps and 'right' in ps:
-            out[view] = stitch(ps['left'], ps['right'], vertical=False)
+            # a long object's halves, turned so the join runs top to bottom like a tall one's
+            halves[view] = (np.transpose(ps['left'], (1, 0, 2)), np.transpose(ps['right'], (1, 0, 2)), False)
+    # each view's ways to join its halves, then the one that agrees with the others: the same object at one scale is as
+    # tall (or as long) in its front, side and back (the top view has a scale of its own)
+    joins = {v: joins_of(a, b) for v, (a, b, _) in halves.items()}
+    for group in ([v for v in joins if v != 'top'], [v for v in joins if v == 'top']):
+        for v, (a, b, vertical) in ((v, halves[v]) for v in group):
+            shift = pick_join(joins[v], [joins[w] for w in group if w != v])
+            im = stitch(a, b, shift)
+            out[v] = im if vertical else np.transpose(im, (1, 0, 2))
     return out
 
 
-def stitch(a, b, vertical=True):
-    """Two halves of one view (a: the top or left, b: the bottom or right), overlapping: b's start found in a by matching a
-    band of a's end inside b, then b laid on from there."""
-    if not vertical:
-        return np.transpose(stitch(np.transpose(a, (1, 0, 2)), np.transpose(b, (1, 0, 2))), (1, 0, 2))
+def joins_of(a, b):
+    """The ways two halves of a view (a above b, as turned by read_views) could join: [(dy, dx, error, size)] for the shift
+    most of their matched features agree on and the one a band of a's end finds inside b, error how much the halves'
+    objects differ where they overlap, size how tall the object stitched that way is; and how tall b and a's objects
+    are without their overlap (for a shift set from another view's size)."""
+    ma, mb = object_mask(a), object_mask(b)
+    ra, rb = np.nonzero(ma.any(1))[0], np.nonzero(mb.any(1))[0]
+    out = []
+    for sh in (_shift_by_features(a, b, ma, mb), _shift_by_band(a, b, ma)):
+        if sh is not None:
+            out.append((sh[0], sh[1], _overlap_error(a, b, ma, mb, *sh), sh[0] + rb[-1] - ra[0]))
+    return dict(found=out, span=rb[-1] - ra[0])
+
+
+def pick_join(own, others, tol=0.02):
+    """The join for a view: the one that agrees best where the halves overlap, among those within tol of the size the views
+    agree on (the median of each view's best); if none is, the shift that gives that size. A platform's posts repeat, so a
+    shift a post away matches some features too; a pole's back drawn apart from its front can match better a little off
+    (D27)."""
+    best = lambda j: min(j['found'], key=lambda f: f[2]) if j['found'] else None
+    sizes = [best(j)[3] for j in [own] + others if best(j) is not None]
+    if not sizes:
+        raise ValueError('two halves that do not join')
+    target = float(np.median(sizes))
+    near = [f for f in own['found'] if abs(f[3] - target) <= tol * target]
+    if near:
+        f = min(near, key=lambda f: f[2])
+        return f[0], f[1]
+    dx = best(own)[1] if own['found'] else 0
+    return int(round(target - own['span'])), dx
+
+
+def stitch(a, b, shift):
+    """Two halves of one view (a above b) laid together with b's row 0 at a's row dy and its column 0 at a's column dx:
+    b laid on from the middle of the objects' overlap, not of the images' (a half can end in a grey margin past its
+    cut: the station platform's halves, D27)."""
+    dy, dx = shift
+    ma, mb = object_mask(a), object_mask(b)
     ha, wa = a.shape[:2]
-    hb = b.shape[0]
-    band = a[ha - 260:ha - 40]
-    m = object_mask(a)
-    cols = np.nonzero(m[ha - 260:ha - 40].any(0))[0]
-    x0, x1 = (max(0, cols.min() - 40), min(wa, cols.max() + 40)) if len(cols) else (0, wa)
-    tpl = cv2.cvtColor(np.ascontiguousarray(band[:, x0:x1]), cv2.COLOR_RGB2GRAY)
-    search = cv2.cvtColor(np.ascontiguousarray(b[:min(hb, 900)]), cv2.COLOR_RGB2GRAY)
-    res = cv2.matchTemplate(search, tpl, cv2.TM_CCOEFF_NORMED)
-    _, score, _, (bx, by) = cv2.minMaxLoc(res)
-    # a's row ha - 260 is b's row by, its column x0 is b's column bx
-    dy = (ha - 260) - by
-    dx = x0 - bx
-    H = dy + hb
-    W = max(wa, b.shape[1] + max(0, dx))
-    out = np.full((H, W, 3), np.median(a[:8].reshape(-1, 3), 0).astype(np.uint8), np.uint8)
-    out[:ha, :wa] = a
-    xs = max(0, dx)
-    seam = ha - 150                     # a above the seam, b below it (in the overlap)
-    out[seam:dy + hb, xs:xs + b.shape[1]] = b[seam - dy:, :min(b.shape[1], W - xs)]
-    stitch.last_score = score
+    hb, wb = b.shape[:2]
+    x0 = min(0, dx)
+    H, W = max(ha, dy + hb), max(wa, dx + wb) - x0
+    out = np.full((H, W, 3), np.median(np.concatenate([a[:8].reshape(-1, 3), b[-8:].reshape(-1, 3)]), 0).astype(np.uint8),
+                  np.uint8)
+    out[:ha, -x0:-x0 + wa] = a
+    a_end = np.nonzero(ma.any(1))[0][-1]
+    b_start = np.nonzero(mb.any(1))[0][0] + dy
+    seam = int(np.clip((a_end + b_start) // 2, max(dy, 0), ha))   # a above the middle of the objects' overlap, b below
+    out[seam:dy + hb, dx - x0:dx - x0 + wb] = b[seam - dy:]
     return out
+
+
+def _overlap_error(a, b, ma, mb, dy, dx):
+    """How much the two halves' objects differ where they overlap with b shifted by (dy, dx): their mean colour
+    difference there (infinite if they hardly overlap)."""
+    r0, r1 = max(dy, 0), min(a.shape[0], dy + b.shape[0])
+    c0, c1 = max(dx, 0), min(a.shape[1], dx + b.shape[1])
+    if r1 - r0 < 20 or c1 - c0 < 20:
+        return float('inf')
+    m = ma[r0:r1, c0:c1] & mb[r0 - dy:r1 - dy, c0 - dx:c1 - dx]
+    if m.sum() < 500:
+        return float('inf')
+    d = np.abs(a[r0:r1, c0:c1].astype(np.float32) - b[r0 - dy:r1 - dy, c0 - dx:c1 - dx].astype(np.float32)).mean(-1)
+    return float(d[m].mean())
+
+
+def _shift_by_features(a, b, ma, mb, tol=4.0):
+    """(dy, dx) where b lies on a, the shift most matched ORB features on the objects agree on; None if too few do."""
+    ga = cv2.cvtColor(np.ascontiguousarray(a), cv2.COLOR_RGB2GRAY)
+    gb = cv2.cvtColor(np.ascontiguousarray(b), cv2.COLOR_RGB2GRAY)
+    orb = cv2.ORB_create(6000)
+    ka, da = orb.detectAndCompute(ga, ma.astype(np.uint8) * 255)
+    kb, db = orb.detectAndCompute(gb, mb.astype(np.uint8) * 255)
+    if da is None or db is None:
+        return None
+    matches = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True).match(da, db)
+    if len(matches) < 12:
+        return None
+    d = np.array([np.subtract(ka[m.queryIdx].pt, kb[m.trainIdx].pt) for m in matches])   # (dx, dy) of each match
+    ha, wa = a.shape[:2]
+    d = d[(d[:, 1] > 0.2 * ha) & (d[:, 1] < ha) & (np.abs(d[:, 0]) < 0.3 * wa)]       # b below a's top, roughly under it
+    if len(d) < 12:
+        return None
+    near = (np.abs(d[:, None, :] - d[None, :, :]) <= tol).all(-1).sum(1)
+    best = d[near.argmax()]
+    inl = d[(np.abs(d - best) <= tol).all(1)]
+    if len(inl) < 12:
+        return None
+    dx, dy = np.median(inl, 0)
+    return int(round(dy)), int(round(dx))
+
+
+def _shift_by_band(a, b, ma):
+    """(dy, dx) where b lies on a: a band near the end of a's object matched inside b's start."""
+    rows = np.nonzero(ma.any(1))[0]
+    end = rows[-1] + 1
+    band = a[end - 260:end - 40]
+    cols = np.nonzero(ma[end - 260:end - 40].any(0))[0]
+    x0, x1 = (max(0, cols.min() - 40), min(a.shape[1], cols.max() + 40)) if len(cols) else (0, a.shape[1])
+    tpl = cv2.cvtColor(np.ascontiguousarray(band[:, x0:x1]), cv2.COLOR_RGB2GRAY)
+    search = cv2.cvtColor(np.ascontiguousarray(b[:min(b.shape[0], 900)]), cv2.COLOR_RGB2GRAY)
+    if search.shape[0] < tpl.shape[0] or search.shape[1] < tpl.shape[1]:
+        return None
+    res = cv2.matchTemplate(search, tpl, cv2.TM_CCOEFF_NORMED)
+    _, _, _, (bx, by) = cv2.minMaxLoc(res)
+    return (end - 260) - by, x0 - bx          # a's row end - 260 is b's row by, its column x0 b's column bx
 
 
 def object_mask(im, thresh=24.0, tex=3.0, hole_fill=0.004):
@@ -156,6 +244,9 @@ class Frame:
         views = {k: np.ascontiguousarray(v[:, ::-1]) if k in flip else v for k, v in views.items()}
         self.views = views
         self.masks = {k: object_mask(v, hole_fill=hole_fill) for k, v in views.items() if k != 'three'}
+        # where each view shows the object (before thin parts are taken out of the carving): a view colours a point only
+        # where it does, so a view drawn narrower than the others leaves its edges to them (the shrine's back, D27)
+        self.cover = {k: m.astype(np.float32) for k, m in self.masks.items()}
         self.box = {k: bbox(m) for k, m in self.masks.items()}
         self.src = {k: k for k in self.masks}
         self.src.setdefault('back', 'front')
@@ -277,14 +368,23 @@ class Frame:
         return self.rgba[self.src[view]]
 
     def sdf(self, view, P):
-        """The view's silhouette as a signed distance in metres (negative inside), at the points P seen from the view."""
+        """The view's silhouette as a signed distance in metres (negative inside), at the points P seen from the view
+        ('front_outer': the front's outline with its holes filled)."""
         if view not in self._sdf:
-            m = self.masks[view].astype(np.uint8)
+            m = self.masks[view.replace('_outer', '')].astype(np.uint8)
+            if view.endswith('_outer'):
+                inv = (1 - m).astype(np.uint8)
+                n, lab, st, _ = cv2.connectedComponentsWithStats(inv, 4)
+                for i in range(1, n):
+                    x, y, w, h, _ = st[i]
+                    if x > 0 and y > 0 and x + w < m.shape[1] and y + h < m.shape[0]:
+                        m[lab == i] = 1
             inside = cv2.distanceTransform(m, cv2.DIST_L2, 5)
             outside = cv2.distanceTransform(1 - m, cv2.DIST_L2, 5)
             self._sdf[view] = (outside - inside).astype(np.float32)
-        u, v = self.px(view, P)
-        return remap(self._sdf[view], u, v, cv2.BORDER_CONSTANT, 1e4).reshape(-1) / self.scale[view]
+        base = view.replace('_outer', '')
+        u, v = self.px(base, P)
+        return remap(self._sdf[view], u, v, cv2.BORDER_CONSTANT, 1e4).reshape(-1) / self.scale[base]
 
     def carve(self, top='auto', round_z=(), round_max=1.6, round_w=0.3, top_cover=0.9):
         """The field: inside where the front and the right side both show the object. Each horizontal slice also inside the
@@ -295,7 +395,14 @@ class Frame:
         over round_w metres) made round in section: a post, under a beam the top view cannot see past."""
         xs, ys, zs = self.xs, self.ys, self.zs
         gx, gz = np.meshgrid(xs, zs, indexing='ij')
-        F = self.sdf('front', np.stack([gx.ravel(), np.zeros(gx.size), gz.ravel()], 1)).reshape(gx.shape)
+        pts = np.stack([gx.ravel(), np.zeros(gx.size), gz.ravel()], 1)
+        F = self.sdf('front', pts).reshape(gx.shape)
+        if 'back' in self.masks:
+            # a gap the front shows is a gap only where the back shows it too: the station platform's front draws its
+            # gateway open to the grey, its back a wall there (D27); inside the front's outline, the back fills it
+            B = self.sdf('back', pts).reshape(gx.shape)
+            outer = self.sdf('front_outer', pts).reshape(gx.shape)
+            F = np.minimum(F, np.maximum(B, outer))
         gy, gz = np.meshgrid(ys, zs, indexing='ij')
         S = self.sdf('right', np.stack([np.zeros(gy.size), gy.ravel(), gz.ravel()], 1)).reshape(gy.shape)
         field = np.maximum(F[:, None, :], S[None, :, :]).astype(np.float32)
@@ -365,12 +472,13 @@ class Frame:
 
 def surface_nets(field, vox, origin):
     """The field's zero surface as quads (naive surface nets): one vertex in each cell the surface crosses, at the mean of
-    its edges' crossings; one quad across each crossed edge. Closed and outward-facing where the field is negative inside."""
+    its edges' crossings; one quad across each crossed edge. Closed and outward-facing where the field is negative inside.
+    Only the crossed edges are kept (a house's grid has 20 million nodes, its surface a few hundred thousand)."""
     f = np.pad(field, 1, constant_values=1e3)
-    nx, ny, nz = f.shape
-    inside = f < 0
-    acc = np.zeros((nx - 1, ny - 1, nz - 1, 3), np.float64)
-    cnt = np.zeros((nx - 1, ny - 1, nz - 1), np.int32)
+    cells = tuple(n - 1 for n in f.shape)
+    acc = np.zeros((int(np.prod(cells)), 3), np.float64)
+    cnt = np.zeros(int(np.prod(cells)), np.int32)
+    edges = []
     for axis in range(3):
         a = [slice(None)] * 3
         b = [slice(None)] * 3
@@ -378,36 +486,32 @@ def surface_nets(field, vox, origin):
         b[axis] = slice(1, None)
         fa, fb = f[tuple(a)], f[tuple(b)]
         cross = (fa < 0) != (fb < 0)
-        t = np.where(cross, fa / np.where(cross, fa - fb, 1), 0)
-        # each crossed edge's point, in node units, added to the four cells around it
-        idx = np.indices(fa.shape).astype(np.float64)
-        idx[axis] += t
-        pts = np.moveaxis(idx, 0, -1)
-        others = [ax for ax in range(3) if ax != axis]
-        for du in (0, 1):
+        e = np.argwhere(cross)                          # each crossed edge by its low end's node
+        va, vb = fa[cross], fb[cross]
+        p = e.astype(np.float64)
+        p[:, axis] += va / (va - vb)                    # where along it the surface crosses, in node units
+        u, w = [ax for ax in range(3) if ax != axis]
+        for du in (0, 1):                               # the four cells around the edge
             for dw in (0, 1):
-                sl = [slice(None)] * 3
-                sl[others[0]] = slice(du, du + f.shape[others[0]] - 1)
-                sl[others[1]] = slice(dw, dw + f.shape[others[1]] - 1)
-                c = cross[tuple(sl)]
-                acc += np.where(c[..., None], pts[tuple(sl)], 0)
-                cnt += c
+                c = e.copy()
+                c[:, u] -= du
+                c[:, w] -= dw
+                ok = (c >= 0).all(1) & (c[:, 0] < cells[0]) & (c[:, 1] < cells[1]) & (c[:, 2] < cells[2])
+                flat = np.ravel_multi_index(tuple(c[ok].T), cells)
+                np.add.at(acc, flat, p[ok])
+                np.add.at(cnt, flat, 1)
+        edges.append((axis, e, va < 0))
     has = cnt > 0
     vid = np.full(cnt.shape, -1, np.int64)
     vid[has] = np.arange(has.sum())
     verts = acc[has] / cnt[has][:, None]
     verts = (verts - 1) * vox + origin                  # the pad shifted every node by one
+    vid = vid.reshape(cells)
     quads = []
-    for axis in range(3):
-        a = [slice(None)] * 3
-        b = [slice(None)] * 3
-        a[axis] = slice(0, -1)
-        b[axis] = slice(1, None)
-        fa, fb = f[tuple(a)], f[tuple(b)]
-        cross = (fa < 0) != (fb < 0)
+    for axis, e, ins in edges:
         u, w = [ax for ax in range(3) if ax != axis]
-        e = np.argwhere(cross)
-        e = e[(e[:, u] >= 1) & (e[:, w] >= 1) & (e[:, u] < f.shape[u] - 1) & (e[:, w] < f.shape[w] - 1)]
+        keep = (e[:, u] >= 1) & (e[:, w] >= 1) & (e[:, u] < f.shape[u] - 1) & (e[:, w] < f.shape[w] - 1)
+        e, ins = e[keep], ins[keep]
         corners = []
         for du, dw in ((-1, -1), (0, -1), (0, 0), (-1, 0)):
             c = e.copy()
@@ -415,8 +519,7 @@ def surface_nets(field, vox, origin):
             c[:, w] += dw
             corners.append(vid[c[:, 0], c[:, 1], c[:, 2]])
         q = np.stack(corners, 1)
-        ins = fa[e[:, 0], e[:, 1], e[:, 2]] < 0         # inside at the edge's low end: the surface faces +axis
-        flip = ins if axis == 1 else ~ins
+        flip = ins if axis == 1 else ~ins              # inside at the edge's low end: the surface faces +axis
         q[flip] = q[flip][:, ::-1]
         quads.append(q)
     quads = np.concatenate(quads)
@@ -485,20 +588,56 @@ def colours(frame, hits, P, N, views, sharp=8.0):
     for view in views:
         w = np.clip(N @ np.asarray(NORMALS[view], np.float32), 0, 1) ** sharp
         w = w * visible(frame, hits, view, P)
-        sel = w > 1e-4
-        if not sel.any():
+        sel = np.nonzero(w > 1e-4)[0]
+        if not len(sel):
             continue
         u, v = frame.px(view, P[sel])
-        acc[sel] += sample(frame.image(view), u, v) * w[sel, None]
-        wsum[sel] += w[sel]
-    miss = wsum < 1e-3
-    if miss.any():                                     # seen squarely by none: the nearest-facing view, shaded
-        for view in views:
-            w = (np.clip(N[miss] @ np.asarray(NORMALS[view], np.float32), 0, 1) + 0.05) ** 2
-            u, v = frame.px(view, P[miss])
-            acc[miss] += sample(frame.image(view), u, v) * w[:, None] * 0.7
-            wsum[miss] += w
+        w_sel = w[sel] * (covered(frame, view, u, v) > 0.5)        # only where this view shows the object
+        acc[sel] += sample(frame.image(view), u, v) * w_sel[:, None]
+        wsum[sel] += w_sel
+    miss = np.nonzero(wsum < 1e-3)[0]
+    if len(miss):                                      # seen by none of the views facing it (a wall's inner face that a
+        names = [v for v in views if v != 'top']       # side view leaves out, a canopy under the eaves): the side view
+        face = np.stack([N[miss] @ np.asarray(NORMALS[v], np.float32) for v in names], 1)   # facing it most, its pixels
+                                                       # reflected into its outline (never the top's: what hides it from
+                                                       # above is what the top shows there, the house's roof tiles)
+        best = face.argmax(1)
+        for i, view in enumerate(names):
+            sel = miss[best == i]
+            if not len(sel):
+                continue
+            u, v = reflected(frame, view, *frame.px(view, P[sel]))
+            acc[sel] = sample(frame.image(view), u, v) * 0.85        # a little darker: a face no view shows is in shade
+            wsum[sel] = 1.0
     return acc / np.maximum(wsum, 1e-6)[:, None]
+
+
+def reflected(frame, view, u, v):
+    """The view's pixels (u, v) moved onto its object: one off it reflected about the nearest pixel on it (so a texture
+    carries on past the outline instead of smearing its edge), or that nearest pixel if the reflection is off it too."""
+    src = frame.src[view]
+    if not hasattr(frame, '_near'):
+        frame._near = {}
+    if src not in frame._near:
+        on = frame.cover[src] > 0.5
+        _, lab = cv2.distanceTransformWithLabels((~on).astype(np.uint8), cv2.DIST_L2, 5,
+                                                 labelType=cv2.DIST_LABEL_PIXEL)
+        ys, xs = np.nonzero(on)                     # the object's pixels, each its own label
+        table = np.zeros((int(lab.max()) + 1, 2), np.float32)
+        table[lab[ys, xs]] = np.stack([xs, ys], 1)
+        frame._near[src] = (lab, table)
+    lab, table = frame._near[src]
+    ui = np.clip(np.round(u).astype(int), 0, lab.shape[1] - 1)
+    vi = np.clip(np.round(v).astype(int), 0, lab.shape[0] - 1)
+    c = table[lab[vi, ui]]
+    ru, rv = 2 * c[:, 0] - u, 2 * c[:, 1] - v
+    ok = covered(frame, view, ru, rv) > 0.5
+    return np.where(ok, ru, c[:, 0]), np.where(ok, rv, c[:, 1])
+
+
+def covered(frame, view, u, v):
+    """How much of the view's object is at its pixels (u, v): 1 on it, 0 off it (bilinear between)."""
+    return remap(frame.cover[frame.src[view]], u, v, cv2.BORDER_CONSTANT, 0.0).reshape(-1)
 
 
 def bake(frame, tri_pos, tri_uv, tri_nrm, size, views):
@@ -584,6 +723,21 @@ def props():
                           dict(round_z=[(0.0, 2.4)], round_w=0.09)),
         # the tram: a vehicle, 12 m long (its own budget, docs/PERFORMANCE.md)
         'KmTram': ('KM-V01', 'KM-V01_tram', ('width', 12.0), dict(vox=0.03, budget=4000, tex=2048)),
+        # KM1-1's last batch: the plain pole, and the buildings and set pieces (their own budgets, docs/PERFORMANCE.md)
+        'KmPolePlain': ('KM-A02', 'KM-A02_plain_concrete_utility_pole', 10.0,
+                        dict(vox=0.02, round_z=[(0.0, 10.0)], round_w=0.7, thin=0.08)),
+        'KmHouseBeige': ('KM-B04', 'KM-B04_beige_stucco_house', 7.5,
+                         dict(vox=0.03, budget=5000, tex=2048,
+                              shape=regions((-9, 9, 2.55, 5.4, 'flush', -3.43,
+                                             [(-0.7, 3.5, 3.25, 4.65),          # the balcony
+                                              (-3.75, -0.95, 2.75, 3.3),        # the entrance canopy
+                                              (-1.0, 2.9, 2.7, 3.0)])))),       # the lower window's hood
+        'KmShrineSmall': ('KM-B05', 'KM-B05_little_shrine', 4.0,
+                          dict(vox=0.015, budget=4000, tex=2048,
+                               shape=regions((-9, -0.85, -1, 1.55, 'front_top'), (0.80, 9, -1, 1.55, 'front_top'),
+                                             (1.05, 9, 1.55, 2.9, 'depth', -0.27, 0.32)))),
+        'KmStationPlatform': ('KM-B06', 'KM-B06_hase_station_platform', 3.2,             # its views make it 7.6 m long
+                              dict(vox=0.02, budget=4000, tex=2048, thin=0.03)),
     }
 
 
@@ -638,6 +792,30 @@ NOTES = {           # each prop's own check results (asset_review: the seventeen
         7: ('pass', 'its windows show the car\'s inside, the plain grey through the far windows (its FRONT redone)'),
         12: ('pass', 'its pantograph stands free; the overhead wire is the level\'s'),
     },
+    'KmPolePlain': {
+        3: ('pass', 'carved from its front, side and top: the column round in section, the crossarms as deep as its side and '
+                    'top show them'),
+        12: ('pass', 'its cables, thinner than 8 cm, in its texture only'),
+        13: ('pass', 'its front, side and back each made in two halves; each joined so the three come out the same height'),
+    },
+    'KmHouseBeige': {
+        3: ('pass', 'its front flush with its wall but over the balcony, the entrance canopy and the lower window\'s hood: '
+                    'the side view shows how far they stand out, the front where, and carved from both alone they ran the '
+                    'whole front as ledges'),
+        4: ('pass', 'faces no view sees (the canopy\'s top under the eaves) take the side view facing them'),
+    },
+    'KmShrineSmall': {
+        3: ('limit', 'its walls beside the steps carved from its front and top alone (its side view draws the steps '
+                     'standing out in front of them); its lantern kept to its own depth'),
+        4: ('limit', 'its back is drawn a quarter narrower than its front, so its back\'s edges take its sides\' pixels; '
+                     'the walls\' inner faces, seen by no view, take the side view\'s stones reflected; its left side is '
+                     'its right side\'s, the lantern there included'),
+    },
+    'KmStationPlatform': {
+        3: ('pass', 'the gap its front draws through the back wall at the gateway left out (its back shows a wall there)'),
+        13: ('pass', 'its front, back and top each made in two halves from one master; 7.6 m long at its 3.2 m height, by its '
+                     'views\' proportions (the prompt: 10 m)'),
+    },
     'KmBicycle': {
         3: ('pass', 'below the saddle a slab 4 cm thick in its front\'s outline (wheels, frame, guards); the saddle, bars '
                     'and basket carved from all its views'),
@@ -658,12 +836,19 @@ def build(name, folder, height, new_obj, budget=1500, vox=0.01, tex=1024, top='a
     bicycle's wheels a thin slab); parts(frame) may split it into [(name or None, field, pivot or None)], each its own
     object (None: the root), a child's origin at its pivot. Returns (root, texture array, frame)."""
     import bpy
+    import time
+    t0 = time.time()
+
+    def stage(what):
+        print('  %s: %s %.0f s' % (name, what, time.time() - t0), flush=True)
     views = {k: v for k, v in read_views(folder).items() if k not in ignore}     # a view that shows something else
     if isinstance(height, tuple):                       # ('width', metres) or ('length', metres): along the street
         x0, y0, x1, y1 = bbox(object_mask(views['front']))
         height = height[1] * (y1 - y0) / (x1 - x0)
     frame = Frame(views, height, vox, hole_fill, view_map, cutout, thin, turn, flip)
+    stage('views read and registered')
     frame.carve(top, round_z, round_max, round_w)
+    stage('carved')
     if shape is not None:
         frame.field = shape(frame)
         frame.V = frame.field < 0
@@ -674,9 +859,11 @@ def build(name, folder, height, new_obj, budget=1500, vox=0.01, tex=1024, top='a
         o = new_obj(pname or name, mesh_from(pname or name, verts, quads, frame.vox))
         remesh(o, frame.vox)
         objs.append(o)
+    stage('surfaced and remeshed, %d faces' % sum(len(o.data.polygons) for o in objs))
     counts = [len(o.data.polygons) for o in objs]
     for o, c in zip(objs, counts):
         decimate(o, max(60, int(budget * c / sum(counts))))
+    stage('cut to %d triangles' % sum(len(o.data.polygons) for o in objs))
     # one texture for them all: joined for the UVs and the bake, then parted again by a material slot each
     slots = [bpy.data.materials.new('_part%d' % k) for k in range(len(objs))]
     for o, m in zip(objs, slots):
@@ -686,9 +873,11 @@ def build(name, folder, height, new_obj, budget=1500, vox=0.01, tex=1024, top='a
         with bpy.context.temp_override(active_object=root, selected_editable_objects=objs, object=root):
             bpy.ops.object.join()
     uv_unwrap(root, smooth_angle)
+    stage('unwrapped')
     tri_pos, tri_uv, tri_nrm = triangles(root)
     views = [v for v in ('front', 'back', 'right', 'left', 'top') if v != 'top' or 'top' in frame.masks]
     img = bake(frame, tri_pos, tri_uv, tri_nrm, tex, views)
+    stage('baked')
     if len(objs) > 1:
         for x in bpy.context.scene.objects:
             x.select_set(False)
@@ -801,6 +990,43 @@ def hollow_below(z0, d, posts=()):
     return shape
 
 
+def regions(*rules):
+    """shape(): rules for boxes of the solid ((x0, x1, z0, z1) in metres) where its views disagree:
+    ('front_top',): carved from the front and the top alone there (its side view draws something else there: the little
+    shrine's side shows its steps standing out in front of the wall, its front, top and three-quarter views walls beside
+    them);
+    ('depth', y0, y1): kept to y0..y1 there (a part a view draws apart from the rest: the shrine's lantern, which its
+    side view merges with the shrine's own depth);
+    ('flush', y_face, [(x0, x1, z0, z1), ...]): no further forward than y_face there but in the boxes listed (what stands
+    out from a wall: the side view shows how far a balcony or a canopy comes out, the front view where it is, and carved
+    from both it would run the wall's whole width: the beige house's ledges, D27)."""
+    def shape(frame):
+        f = frame.field.copy()
+        X = frame.xs[:, None, None]
+        Y = frame.ys[None, :, None]
+        Z = frame.zs[None, None, :]
+        T = None
+        for x0, x1, z0, z1, kind, *arg in rules:
+            inbox = (X >= x0) & (X <= x1) & (Z >= z0) & (Z <= z1)
+            if kind == 'front_top':
+                if T is None:
+                    gx, gy = np.meshgrid(frame.xs, frame.ys, indexing='ij')
+                    T = frame.sdf('top', np.stack([gx.ravel(), gy.ravel(), np.zeros(gx.size)], 1)).reshape(gx.shape)
+                g = np.maximum(frame.F[:, None, :], T[:, :, None])
+            elif kind == 'flush':
+                y_face, allowed = arg
+                out = np.ones(np.broadcast(X, Z).shape, bool)
+                for a0, a1, b0, b1 in allowed:
+                    out &= ~((X >= a0) & (X <= a1) & (Z >= b0) & (Z <= b1))
+                g = np.where(out, np.maximum(f, y_face - Y), f)
+            else:
+                y0, y1 = arg
+                g = np.maximum(f, np.maximum(y0 - Y, Y - y1))
+            f = np.where(inbox, g, f)
+        return f.astype(np.float32)
+    return shape
+
+
 def slab_below(z0, half):
     """shape(): below z0 only a slab half metres either side of the middle, in the front's outline (a bicycle: its wheels,
     frame and guards one plane, the cut-out texture showing the spokes); above it the carved solid (saddle, bars, basket)."""
@@ -812,12 +1038,21 @@ def slab_below(z0, half):
     return shape
 
 
-def decimate(o, budget):
-    """Down to the budget: planar faces merged first (a box's sides one face each), then collapsed."""
+def decimate(o, budget, big=1_000_000):
+    """Down to the budget: planar faces merged first (a box's sides one face each), then collapsed. A surface of more
+    than big triangles (a building's) is first collapsed to a few hundred thousand: merging the planar faces of millions
+    took the station platform over ten minutes (D27)."""
     import bpy
     tris = sum(len(p.vertices) - 2 for p in o.data.polygons)
     if tris <= budget:
         return
+    if tris > big:
+        m = o.modifiers.new('Rough', 'DECIMATE')
+        m.decimate_type = 'COLLAPSE'
+        m.use_collapse_triangulate = True
+        m.ratio = 300_000 / tris
+        with bpy.context.temp_override(object=o, active_object=o, selected_objects=[o]):
+            bpy.ops.object.modifier_apply(modifier=m.name)
     m = o.modifiers.new('Planar', 'DECIMATE')
     m.decimate_type = 'DISSOLVE'
     m.angle_limit = math.radians(2.0)

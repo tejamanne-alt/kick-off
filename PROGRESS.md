@@ -2322,6 +2322,32 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
 - Not yet in a level: KM1-1 (BUILD KM-L11) places them once its last batch of views is in. Not yet measured on the
   Nord CE5.
 
+## KM1-1's last batch from its views: the plain pole, the house, the shrine and the platform (tools, review and docs)
+
+- The user pushed the views of the plain pole (KM-A02), the wire gantry (KM-B07), the station platform (KM-B06, its long
+  views cut from one full master each, with the masters and a README), the little shrine (KM-B05), the beige house
+  (KM-B04), the foliage sheets KM-F02 and KM-F04 and the lane texture KM-T07. Renamed to the convention (the halves
+  `_half`, the platform's folder without `_corrected`, a sheet `1_sheet.png`, the texture `1_texture.png`).
+- Checked: all ready but the gantry, whose bottom halves are close-ups at about 2.4 times its top halves' scale; it is
+  asked for again, one image a view (its ChatGPT FORMAT line changed). The lane texture's ends show a faint band and
+  a few light patches where they meet; to blend out when the level lays it.
+- `km_views.py` (D27):
+  - halves join by matched features or a band, whichever makes the overlap agree best, the seam in the middle of the
+    objects' overlap; the views of one object then agree on its size (`joins_of`, `pick_join`): the transformer pole's
+    back, 3 % taller than its front in the approved build, now matches it, the lamp's front within 1.5 %;
+  - a view colours a point only where its own outline covers it (`covered`); a face no view sees takes the side view
+    facing it, reflected into its outline (`reflected`), never the top's;
+  - a gap the front shows is a gap only where the back shows it too (the platform's gateway);
+  - rules by region where views disagree (`regions`: `front_top`, `depth`, `flush`): the shrine's walls and lantern,
+    the house's balcony, canopy and hood;
+  - surface nets on the crossed edges only, and a mesh of over a million triangles cut roughly before its planar faces
+    merge: the house builds in about 5 minutes (was 38), the platform in about 1 (was over 40); each build stage timed.
+- New models: `KmPolePlain` (1,454 triangles), `KmHouseBeige` (4,850, a house's budget 5,000), `KmShrineSmall` and
+  `KmStationPlatform` (3,880 each, a set piece's 4,000), each in its own 2048 texture; the platform 7.6 m long at its
+  3.2 m height, by its views' proportions (the prompt said 10 m). The review renders all twenty-one again.
+- Still to come: the gantry's views again. Not yet in a level; the four new models wait for the user's approval to go
+  into the game with the seventeen.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.
