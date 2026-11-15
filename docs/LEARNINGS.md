@@ -1183,6 +1183,32 @@ views).**
 - *Rule:* a view in halves is joined by its object, checked against the object's other views, and the halves of one
   view must be one scale (ask again if not); a view colours only what it shows.
 
+**D28. Buildings carved from their outlines warp at three-quarter angles; the shrine's views draw it three ways.**
+- *What:* the user: "3/4 views are distorted for shrine and home heavily" (the platform's too, in their screenshots).
+  Rendered grey:
+  - the house's balcony, canopy and hoods stood out as bands through its depth, its roof's hips bumpy;
+  - the shrine's lantern came out twice, its base folded, its roof a lump;
+  - the platform's open shelter was filled solid up to its back wall's height, the inside painted on the railing.
+  Once modelled from solids, the shrine's texture went wrong where its views disagree:
+  - its top view draws the roof as wide as the base and 1.7 m deep, the ridge running across, where its front, side
+    and three-quarter views show a roof half as wide and 2.4 m deep, the ridge running front to back: roof tiles on the
+    base behind the shrine, stone on the roof's front;
+  - its side view draws the stairs standing in front of the wall: stairs painted on the side walls;
+  - its back view draws the base a fifth narrower and the shrine a tenth wider.
+- *Why:* carving keeps what every view's outline covers, so what stands out in one view stands out through the whole
+  depth of the others: right for a pole or a box, wrong for a building, whose eaves, balconies and open rooms are
+  outlines with nothing behind them. And views made one at a time by an image model disagree on where parts are and
+  how big: a projection that trusts each view everywhere paints every disagreement onto the model.
+- *Fix:* the house, the shrine and the platform are modelled from solids measured in metres off their views
+  (`solids`: boxes, battered walls, hipped, gabled and shed roofs, cuts), then textured by the same bake; flat faces
+  cannot warp, and they shade flat. Each view's outline is measured in metres, row by row, before the solids are
+  written. Where a view draws a part elsewhere, at another size or wrongly, a paint rule says where to take its pixels
+  from, or not to take them at all (`paint`, `painted`, `unpainted`). The shrine's roof takes its tiles from the side,
+  the base behind it the paving in front, mirrored, and the side walls the wall behind the stairs. The platform's floor
+  and roof underside, which no view shows, take the front's concrete and its view of the underside.
+- *Rule:* a building or a set piece with eaves, balconies or open rooms is modelled from solids measured off its
+  views, never carved; a prop is carved. Every disagreement between views gets a paint rule, not an average.
+
 ## E. Levels and world
 
 - **E1. Every level had chapter-1 scenery.** A new-scene call unloaded the level definition. *Rule:* pass data into scene builders explicitly; never hold asset references across a new-scene call.

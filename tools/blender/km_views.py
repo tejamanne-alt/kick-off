@@ -239,6 +239,7 @@ class Frame:
         only by the texture where it crosses the solid. turn: {view: quarter turns anticlockwise} for a view drawn turned
         (the street lamp's top, its arm toward the street); flip: views drawn unmirrored (the tram's back, its pantograph
         at the same end as in its front), mirrored left to right. The images on disk stay as made."""
+        self.paint = []                                 # see painted()
         views = {(view_map or {}).get(k, k): v for k, v in views.items()}
         views = {k: np.ascontiguousarray(np.rot90(v, (turn or {}).get(k, 0))) for k, v in views.items()}
         views = {k: np.ascontiguousarray(v[:, ::-1]) if k in flip else v for k, v in views.items()}
@@ -591,8 +592,9 @@ def colours(frame, hits, P, N, views, sharp=8.0):
         sel = np.nonzero(w > 1e-4)[0]
         if not len(sel):
             continue
-        u, v = frame.px(view, P[sel])
+        u, v = frame.px(view, painted(frame, view, P[sel]))
         w_sel = w[sel] * (covered(frame, view, u, v) > 0.5)        # only where this view shows the object
+        w_sel = w_sel * ~unpainted(frame, view, P[sel])
         acc[sel] += sample(frame.image(view), u, v) * w_sel[:, None]
         wsum[sel] += w_sel
     miss = np.nonzero(wsum < 1e-3)[0]
@@ -606,10 +608,51 @@ def colours(frame, hits, P, N, views, sharp=8.0):
             sel = miss[best == i]
             if not len(sel):
                 continue
-            u, v = reflected(frame, view, *frame.px(view, P[sel]))
+            u, v = reflected(frame, view, *frame.px(view, painted(frame, view, P[sel])))
             acc[sel] = sample(frame.image(view), u, v) * 0.85        # a little darker: a face no view shows is in shade
             wsum[sel] = 1.0
     return acc / np.maximum(wsum, 1e-6)[:, None]
+
+
+AXES = {'x': 0, 'y': 1, 'z': 2}
+
+
+def _in_box(P, box):
+    x0, x1, y0, y1, z0, z1 = box
+    return ((P[:, 0] >= x0) & (P[:, 0] <= x1) & (P[:, 1] >= y0) & (P[:, 1] <= y1) & (P[:, 2] >= z0)
+            & (P[:, 2] <= z1))
+
+
+def painted(frame, view, P):
+    """The points P moved to where the view draws them: a rule of the prop's paint (view, box, {axis: (to0, to1)}) takes
+    the box's points along each axis named from the box's own extent onto to0..to1 (to0 > to1: mirrored), or with
+    {axis: (other, to0, to1)} from the box's extent along the other axis (a floor no view sees, its depth onto the
+    height of the front view's concrete), for a part
+    the view draws elsewhere or another size than the other views do (the shrine's top view draws its roof as wide as
+    its base and half as deep, D28). The first rule whose box holds a point moves it."""
+    Q = P.copy()
+    done = np.zeros(len(P), bool)
+    for v, box, to in frame.paint:
+        if v != view or to is None:
+            continue
+        m = _in_box(P, box) & ~done
+        for axis, rule in to.items():
+            frm, t0, t1 = rule if len(rule) == 3 else (axis, *rule)
+            i, j = AXES[axis], AXES[frm]
+            a0, a1 = box[2 * j], box[2 * j + 1]
+            Q[m, i] = t0 + (P[m, j] - a0) / (a1 - a0) * (t1 - t0)
+        done |= m
+    return Q
+
+
+def unpainted(frame, view, P):
+    """Where the view is not to colour P at all: a paint rule (view, box, None), for a part the view draws wrongly (the
+    shrine's roof, its ridge drawn across from above where every other view runs it front to back)."""
+    out = np.zeros(len(P), bool)
+    for v, box, to in frame.paint:
+        if v == view and to is None:
+            out |= _in_box(P, box)
+    return out
 
 
 def reflected(frame, view, u, v):
@@ -727,17 +770,77 @@ def props():
         'KmPolePlain': ('KM-A02', 'KM-A02_plain_concrete_utility_pole', 10.0,
                         dict(vox=0.02, round_z=[(0.0, 10.0)], round_w=0.7, thin=0.08)),
         'KmHouseBeige': ('KM-B04', 'KM-B04_beige_stucco_house', 7.5,
-                         dict(vox=0.03, budget=5000, tex=2048,
-                              shape=regions((-9, 9, 2.55, 5.4, 'flush', -3.43,
-                                             [(-0.7, 3.5, 3.25, 4.65),          # the balcony
-                                              (-3.75, -0.95, 2.75, 3.3),        # the entrance canopy
-                                              (-1.0, 2.9, 2.7, 3.0)])))),       # the lower window's hood
+                         dict(vox=0.04, budget=5000, tex=2048, smooth_angle=5.0,
+                              shape=solids(('box', -3.5, 3.5, -3.4, 3.47, 0.0, 6.0),            # the walls
+                                           ('hip', -4.1, 4.1, -4.0, 3.95, 6.05, 7.45, 0.42, 0.36),   # the roof
+                                           ('box', -0.7, 3.45, -3.76, -3.4, 3.3, 4.05),        # the balcony
+                                           ('box', -0.7, 3.45, -3.76, -3.66, 4.05, 4.6),       # its railing
+                                           ('box', -3.6, -0.85, -3.76, -3.4, 2.85, 3.1),       # the entrance canopy
+                                           ('box', -0.9, 2.85, -3.58, -3.4, 2.75, 2.9),        # the lower window's hood
+                                           ('box', -3.6, -1.6, -3.7, -3.4, 0.0, 0.15)))),      # the entrance step
         'KmShrineSmall': ('KM-B05', 'KM-B05_little_shrine', 4.0,
-                          dict(vox=0.015, budget=4000, tex=2048,
-                               shape=regions((-9, -0.85, -1, 1.55, 'front_top'), (0.80, 9, -1, 1.55, 'front_top'),
-                                             (1.05, 9, 1.55, 2.9, 'depth', -0.27, 0.32)))),
-        'KmStationPlatform': ('KM-B06', 'KM-B06_hase_station_platform', 3.2,             # its views make it 7.6 m long
-                              dict(vox=0.02, budget=4000, tex=2048, thin=0.03)),
+                          dict(vox=0.015, budget=4000, tex=2048, smooth_angle=5.0,
+                               shape=solids(('box', -2.72, 2.72, -1.94, 1.9, 0.0, 1.47, 0.34),  # the stone base
+                                            ('cut', -0.8, 0.75, -2.0, -0.4, 0.0, 1.6),        # the stairs' channel
+                                            *[('box', -0.8, 0.75, y, -0.38, 0.0, 0.21 * (i + 1))
+                                              for i, y in enumerate((-1.94, -1.79, -1.58, -1.33, -1.11, -0.91,
+                                                                     -0.65))],               # its seven steps
+                                            ('box', -0.96, 0.96, -0.05, 1.8, 1.47, 1.9),      # the raised floor
+                                            ('box', -0.88, 0.88, 0.07, 1.76, 1.9, 2.85),      # the shrine
+                                            ('box', -1.0, 1.0, -0.3, 1.85, 2.8, 3.3, -0.3),   # its bracketed eaves
+                                            ('gable', -1.31, 1.31, -0.45, 1.93, 3.3, 3.92),   # its roof
+                                            ('box', 1.17, 1.75, -0.44, 0.14, 1.47, 1.85),     # the lantern: its foot,
+                                            ('box', 1.31, 1.61, -0.30, 0.0, 1.85, 2.15),      # shaft,
+                                            ('box', 1.29, 1.63, -0.32, 0.02, 2.15, 2.45),     # fire box,
+                                            ('box', 1.19, 1.73, -0.42, 0.12, 2.45, 2.65),     # cap,
+                                            ('box', 1.33, 1.59, -0.28, -0.02, 2.65, 2.85),    # top
+                                            ('box', 1.41, 1.51, -0.20, -0.10, 2.85, 2.95)),   # and finial
+                               # where the views draw it otherwise (measured in metres, D28): the top view draws the
+                               # roof as wide as the base and half as deep, its ridge across, so the roof takes its
+                               # tiles from the side; the base's top behind the shrine, under that roof in the top
+                               # view, the paving in front of it mirrored, and where the top view draws the lantern
+                               # (0.6 m right of where the others do) the paving in front; the side view draws the stairs standing out in
+                               # front of the wall, so the walls' fronts take the wall behind, mirrored (the left
+                               # side the right's view); the back view draws the base a fifth
+                               # narrower and the shrine a tenth wider
+                               paint=[('top', (-1.38, 1.38, -0.55, 2.0, 2.75, 4.1), None),
+                                      ('top', (1.6, 2.6, -0.5, 0.2, 1.3, 1.6), {'y': (-1.6, -0.9)}),
+                                      ('top', (-2.8, 2.8, 0.2, 2.0, 1.3, 1.6), {'y': (-0.5, -1.9)}),
+                                      ('right', (1.9, 2.9, -2.0, -0.6, -0.1, 1.5), {'y': (0.8, -0.6)}),
+                                      ('left', (-2.9, -1.9, -2.0, -0.6, -0.1, 1.5), {'y': (0.8, -0.6)}),
+                                      ('back', (-2.9, 2.9, 1.5, 2.1, -0.1, 1.5), {'x': (-2.29, 2.29)}),
+                                      ('back', (-1.5, 1.5, 0.5, 2.1, 1.47, 4.1), {'x': (-1.65, 1.65)})])),
+        'KmWireGantry': ('KM-B07', 'KM-B07_overhead_wire_gantry', 7.5,
+                         dict(vox=0.02, budget=3000, tex=2048, cutout=True, hole_fill=0.2, round_z=[(0.0, 5.0)],
+                              round_w=0.5)),
+        'KmStationPlatform': ('KM-B06', 'KM-B06_hase_station_platform', 3.2,
+                              dict(vox=0.02, budget=4000, tex=2048, smooth_angle=5.0, cutout=True,
+                                   shape=solids(('box', -3.6, 3.6, -1.25, 1.35, 0.0, 0.3),         # the platform's foot
+                                                ('box', -3.52, 3.52, -1.12, 1.31, 0.3, 0.55),     # and its top
+                                                ('box', -0.6, 0.5, -1.37, -1.12, 0.0, 0.22),      # the step
+                                                ('box', -3.45, 3.45, -0.97, -0.92, 0.55, 1.3),    # the railing
+                                                ('cut', -0.43, 0.33, -1.1, -0.85, 0.56, 1.4),     # its gate
+                                                ('box', -0.66, -0.43, -1.05, -0.85, 0.55, 1.4),   # the card reader
+                                                ('box', -3.45, 3.45, 1.18, 1.3, 0.55, 2.0),       # the back wall
+                                                *[p for sx in (-1, 1) for p in (
+                                                    ('box', *sorted((sx * 3.38, sx * 3.48)), -0.11, 1.3, 0.55, 1.45),
+                                                    ('box', *sorted((sx * 3.40, sx * 3.46)), -0.88, -0.11, 0.55,
+                                                     1.35))],                                    # the ends: a panel, a rail
+                                                *[('box', x - 0.05, x + 0.05, y0, y1, 0.55, z1)
+                                                  for x in (-3.42, -0.92, 0.92, 3.42)
+                                                  for y0, y1, z1 in ((-0.98, -0.88, 2.62), (1.0, 1.1, 2.45))],  # posts
+                                                ('box', -3.5, 3.5, -1.0, -0.86, 2.45, 2.62),      # the beams
+                                                ('box', -3.5, 3.5, 1.0, 1.3, 2.42, 2.55),
+                                                *[('shed', x - 0.05, x + 0.05, -1.0, 1.3, 3.05, 2.84, 0.3)
+                                                  for x in (-3.47, -0.92, 0.92, 3.47)],           # the rafters
+                                                ('shed', -3.78, 3.78, -1.37, 1.37, 3.2, 2.95, 0.12),   # the roof
+                                                ('box', -3.78, 3.78, -1.37, -1.29, 3.0, 3.2)),    # its fascia
+                                   # the floor under the roof, which no view shows, the front's concrete by its depth;
+                                   # the roof's underside, drawn from below in the front view, the near part higher;
+                                   # the back wall's left end, where the front view sees past it (D28)
+                                   paint=[('front', (-3.55, 3.55, -0.95, 1.18, 0.5, 0.6), {'z': ('y', 0.12, 0.5)}),
+                                          ('front', (-3.8, 3.8, -1.28, 1.37, 2.7, 3.1), {'z': ('y', 2.95, 2.65)}),
+                                          ('front', (-3.5, -3.2, 1.0, 1.35, 1.3, 2.05), {'x': (-3.15, -2.85)})])),
     }
 
 
@@ -799,22 +902,39 @@ NOTES = {           # each prop's own check results (asset_review: the seventeen
         13: ('pass', 'its front, side and back each made in two halves; each joined so the three come out the same height'),
     },
     'KmHouseBeige': {
-        3: ('pass', 'its front flush with its wall but over the balcony, the entrance canopy and the lower window\'s hood: '
-                    'the side view shows how far they stand out, the front where, and carved from both alone they ran the '
-                    'whole front as ledges'),
+        3: ('pass', 'modelled from solids measured off its views (D28): its walls, hipped roof, balcony and railing, '
+                    'entrance canopy, the lower window\'s hood and the step; flat faces hold at any angle (carved from '
+                    'its outlines, they warped at three-quarter)'),
         4: ('pass', 'faces no view sees (the canopy\'s top under the eaves) take the side view facing them'),
+        10: ('pass', 'solid; the balcony railing a plate 10 cm thick, the window behind it in its texture'),
     },
     'KmShrineSmall': {
-        3: ('limit', 'its walls beside the steps carved from its front and top alone (its side view draws the steps '
-                     'standing out in front of them); its lantern kept to its own depth'),
-        4: ('limit', 'its back is drawn a quarter narrower than its front, so its back\'s edges take its sides\' pixels; '
-                     'the walls\' inner faces, seen by no view, take the side view\'s stones reflected; its left side is '
-                     'its right side\'s, the lantern there included'),
+        3: ('pass', 'modelled from solids measured off its views (D28): the battered stone base, the stairs\' channel and '
+                    'its seven steps, the raised floor, the shrine, its bracketed eaves and gabled roof, the lantern\'s '
+                    'seven stones'),
+        4: ('limit', 'its views disagree, so each part takes its pixels where they draw it (paint rules): the top view '
+                     'draws the roof as wide as the base, its ridge across, so the roof takes its tiles from the side; '
+                     'the base behind the shrine, under that roof from above, the paving in front; the side view draws '
+                     'the stairs in front of the wall, so the walls\' fronts take the wall behind; the back view\'s '
+                     'base is drawn a fifth narrower and its shrine a tenth wider, each scaled to fit. Its left side is '
+                     'its right side\'s'),
     },
     'KmStationPlatform': {
-        3: ('pass', 'the gap its front draws through the back wall at the gateway left out (its back shows a wall there)'),
+        3: ('pass', 'modelled from solids measured off its views (D28): the platform and step, the front railing with its '
+                    'gate and card reader, the back wall, the end panels and rails, the posts, beams, rafters and the '
+                    'sloping roof; an open shelter (carved, it was filled solid to the back wall\'s height)'),
+        4: ('limit', 'the floor and the roof\'s underside, which no view shows straight, take the front\'s concrete and its '
+                     'view of the underside from below; the bench is painted on the front railing\'s plate'),
+        7: ('pass', 'the end rails\' gaps open in its texture\'s alpha (the cut-out material)'),
         13: ('pass', 'its front, back and top each made in two halves from one master; 7.6 m long at its 3.2 m height, by its '
                      'views\' proportions (the prompt: 10 m)'),
+    },
+    'KmWireGantry': {
+        3: ('pass', 'carved from its front, side and top: the pole round in section, the lattice beam and the brace as deep '
+                    'as its side and top show them'),
+        7: ('pass', 'the lattice\'s gaps open in its texture\'s alpha (the cut-out material)'),
+        12: ('pass', 'the overhead wire is the level\'s: only its hangers and insulators are the model\'s'),
+        13: ('pass', 'one image a view (its views in halves came at two scales and were asked for again)'),
     },
     'KmBicycle': {
         3: ('pass', 'below the saddle a slab 4 cm thick in its front\'s outline (wheels, frame, guards); the saddle, bars '
@@ -829,12 +949,13 @@ NOTES = {           # each prop's own check results (asset_review: the seventeen
 # ---------------------------------------------------------------- in Blender
 def build(name, folder, height, new_obj, budget=1500, vox=0.01, tex=1024, top='auto', round_z=(), round_max=1.6,
           round_w=0.3, hole_fill=0.004, view_map=None, cutout=False, thin=0.0, turn=None, flip=(), ignore=(),
-          shape=None, parts=None, smooth_angle=35.0):
+          shape=None, parts=None, smooth_angle=35.0, paint=()):
     """The prop named name from the views in folder, height metres tall (or ('width', metres) for one measured along the
     street), its origin on the ground under its middle: its
     mesh (at most budget triangles), UVs and texture (tex x tex, RGBA). shape(frame) may change the carved field (a
     bicycle's wheels a thin slab); parts(frame) may split it into [(name or None, field, pivot or None)], each its own
-    object (None: the root), a child's origin at its pivot. Returns (root, texture array, frame)."""
+    object (None: the root), a child's origin at its pivot. paint: where a view draws a part elsewhere or not at all
+    (see painted). Returns (root, texture array, frame)."""
     import bpy
     import time
     t0 = time.time()
@@ -846,6 +967,7 @@ def build(name, folder, height, new_obj, budget=1500, vox=0.01, tex=1024, top='a
         x0, y0, x1, y1 = bbox(object_mask(views['front']))
         height = height[1] * (y1 - y0) / (x1 - x0)
     frame = Frame(views, height, vox, hole_fill, view_map, cutout, thin, turn, flip)
+    frame.paint = list(paint)
     stage('views read and registered')
     frame.carve(top, round_z, round_max, round_w)
     stage('carved')
@@ -997,9 +1119,11 @@ def regions(*rules):
     them);
     ('depth', y0, y1): kept to y0..y1 there (a part a view draws apart from the rest: the shrine's lantern, which its
     side view merges with the shrine's own depth);
-    ('flush', y_face, [(x0, x1, z0, z1), ...]): no further forward than y_face there but in the boxes listed (what stands
-    out from a wall: the side view shows how far a balcony or a canopy comes out, the front view where it is, and carved
-    from both it would run the wall's whole width: the beige house's ledges, D27)."""
+    ('flush', y_face, [(x0, x1, z0, z1, y_out), ...]): no further forward than y_face there but in the boxes listed, each
+    as far as its own y_out (what stands out from a wall: the side view shows how far a balcony or a canopy comes out,
+    the front view where it is, and carved from both it would run the wall's whole width: the beige house's ledges,
+    D27);
+    ('flush_back', y_face, [...]): the same for the back, no further back than y_face."""
     def shape(frame):
         f = frame.field.copy()
         X = frame.xs[:, None, None]
@@ -1013,16 +1137,67 @@ def regions(*rules):
                     gx, gy = np.meshgrid(frame.xs, frame.ys, indexing='ij')
                     T = frame.sdf('top', np.stack([gx.ravel(), gy.ravel(), np.zeros(gx.size)], 1)).reshape(gx.shape)
                 g = np.maximum(frame.F[:, None, :], T[:, :, None])
-            elif kind == 'flush':
+            elif kind in ('flush', 'flush_back'):
                 y_face, allowed = arg
-                out = np.ones(np.broadcast(X, Z).shape, bool)
-                for a0, a1, b0, b1 in allowed:
-                    out &= ~((X >= a0) & (X <= a1) & (Z >= b0) & (Z <= b1))
-                g = np.where(out, np.maximum(f, y_face - Y), f)
+                sign = 1.0 if kind == 'flush' else -1.0          # front: y >= limit; back: y <= limit
+                limit = np.full(np.broadcast(X, Z).shape, y_face, np.float32)
+                for a0, a1, b0, b1, y_out in allowed:
+                    limit = np.where((X >= a0) & (X <= a1) & (Z >= b0) & (Z <= b1), y_out, limit)
+                g = np.maximum(f, sign * (limit - Y))
             else:
                 y0, y1 = arg
                 g = np.maximum(f, np.maximum(y0 - Y, Y - y1))
             f = np.where(inbox, g, f)
+        return f.astype(np.float32)
+    return shape
+
+
+def solids(*parts):
+    """shape(): the object as simple solids measured off its views, textured from them as ever. For a building: carved
+    from outlines alone, every beam, eave and railing one view shows runs through its whole depth, and the bumps warp
+    its texture seen at an angle (the house's and the shrine's, D28); flat faces cannot. Parts, in metres (x across, y
+    from the front at -y, z up), added in turn:
+    ('box', x0, x1, y0, y1, z0, z1[, taper]): a box, narrower by taper a side at its top (a battered stone wall);
+    ('hip', x0, x1, y0, y1, z_eave, z_top, sx, sy): a hipped roof over the rectangle, its slopes rising sx across and
+        sy front to back (a short ridge where they meet below z_top);
+    ('gable', x0, x1, y0, y1, z_eave, z_top): a gabled roof, its ridge running front to back;
+    ('shed', x0, x1, y0, y1, z_front, z_back, thick): a flat roof thick metres deep, its top falling from z_front at its
+        front (y0) to z_back at its back (y1);
+    ('cut', x0, x1, y0, y1, z0, z1): a box taken away (the stairs' channel)."""
+    def shape(frame):
+        X = frame.xs[:, None, None]
+        Y = frame.ys[None, :, None]
+        Z = frame.zs[None, None, :]
+        f = np.full((len(frame.xs), len(frame.ys), len(frame.zs)), 1e3, np.float32)
+
+        def box(x0, x1, y0, y1, z0, z1, taper=0.0):
+            t = taper * np.clip((Z - z0) / max(z1 - z0, 1e-6), 0, 1)
+            g = np.abs(X - (x0 + x1) / 2) - ((x1 - x0) / 2 - t)
+            g = np.maximum(g, np.maximum(y0 - Y, Y - y1))
+            return np.maximum(g, np.maximum(z0 - Z, Z - z1))
+
+        for kind, *a in parts:
+            if kind == 'box':
+                f = np.minimum(f, box(*a))
+            elif kind == 'cut':
+                f = np.maximum(f, -box(*a))
+            elif kind == 'shed':
+                x0, x1, y0, y1, zf, zb, th = a
+                top = zf + (Y - y0) / (y1 - y0) * (zb - zf)
+                g = np.maximum(np.abs(X - (x0 + x1) / 2) - (x1 - x0) / 2, np.maximum(y0 - Y, Y - y1))
+                f = np.minimum(f, np.maximum(g, np.maximum(Z - top, top - th - Z)))
+            else:
+                x0, x1, y0, y1, ze, zt = a[:6]
+                dx = (x1 - x0) / 2 - np.abs(X - (x0 + x1) / 2)        # how far in from the side edges
+                dy = (y1 - y0) / 2 - np.abs(Y - (y0 + y1) / 2)        # and from the front and back edges
+                if kind == 'hip':
+                    sx, sy = a[6:8]
+                    h = np.minimum(sx * dx, sy * dy)
+                else:
+                    h = (zt - ze) / ((x1 - x0) / 2) * dx + 0 * dy
+                g = np.maximum(np.maximum(-dx, -dy), np.maximum(ze - Z, Z - np.minimum(ze + h, zt)))
+                f = np.minimum(f, g)
+                f = np.minimum(f, box(x0, x1, y0, y1, ze - 0.12, ze))   # its eaves' edge, 12 cm
         return f.astype(np.float32)
     return shape
 

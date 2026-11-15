@@ -660,9 +660,12 @@ second props sheet: KM-A20 the recycling bins, KM-A22 the air-conditioner unit, 
 KM-A25 the control cabinet, KM-A26 the street lamp, KM-A28 the ticket gate, KM-A29 the station name board; then the tram
 (KM-V01, Step 3). The rest (KM-A21, A27, A30 to A38) as their levels come. Each is built as its views come in (`tools/blender/km_views.py`: carved
 from its views and textured from them, D25; reviewed in `review/kamakura/props/`): KM1-1's first batch (A01, A03, A04,
-A05, A08, A11, A19), its second (A06, A20, A22 to A26, A28, A29), the tram (V01) and its last batch (A02, B04, B05, B06)
+A05, A08, A11, A19), its second (A06, A20, A22 to A26, A28, A29), the tram (V01) and its last batch (A02, B04 to B07)
 are built from them; the tram's FRONT was made again, its windows showing the car's inside (the first showed a street
-through the glass).
+through the glass). A building or set piece with eaves, balconies or open rooms (the house B04, the shrine B05, the
+platform B06) is not carved: it is modelled from solids measured in metres off its views and textured from them, a
+paint rule wherever its views disagree (D28). Its views must still show it whole from each side; where one draws a
+part elsewhere or another size, say so in the folder's README if it is known.
 
 KM1-1's last batch, all its level still needs, in this order: KM-A02 the plain pole (in
 halves, as KM-A01); from Step 5, KM-B07 the overhead wire gantry (one image a view, its lattice open), KM-B06 Hase Station's

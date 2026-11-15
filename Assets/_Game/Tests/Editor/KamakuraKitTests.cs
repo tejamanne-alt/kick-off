@@ -19,7 +19,8 @@ namespace DribbleToSchool.Tests
         static int KindBudget(string model)
         {
             if (model.StartsWith("KmHouse")) return 5000;
-            if (model.StartsWith("KmTram") || model.StartsWith("KmShrine") || model.StartsWith("KmStation")) return 4000;
+            if (model.StartsWith("KmTram") || model.StartsWith("KmShrine") || model.StartsWith("KmStation") ||
+                model.StartsWith("KmWireGantry")) return 4000;
             return 1500;
         }
 

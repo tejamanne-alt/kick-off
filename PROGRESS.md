@@ -2348,6 +2348,28 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
 - Still to come: the gantry's views again. Not yet in a level; the four new models wait for the user's approval to go
   into the game with the seventeen.
 
+## The buildings modelled from solids; the gantry from its new views (tools, review and docs)
+
+- The user: "3/4 views are distorted for shrine and home heavily" (with the platform's). Rendered grey, the carving
+  showed why: what one view shows standing out ran through the whole depth of the others (the house's balcony, canopy
+  and hoods as bands, the shrine's lantern twice and its base folded, the platform filled solid up to its back wall).
+- `km_views.py` (D28):
+  - `solids(...)`: a building modelled from solids measured in metres off its views (boxes, battered walls, hipped,
+    gabled and shed roofs, cuts), in place of the carved field, then meshed, unwrapped and baked as before; flat
+    faces, shaded flat;
+  - `paint`: where a view draws a part elsewhere, at another size or wrongly, the part takes its pixels from where that
+    view draws it, or not from that view at all (`painted`, `unpainted`); a face no view sees can take another axis's
+    pixels (the platform's floor its front's concrete by its depth).
+- `KmHouseBeige` (4,850 triangles): walls, hipped roof, balcony and railing, canopy, hood, step. `KmShrineSmall`
+  (3,880): the battered base, the stairs' channel and seven steps, the floor, the shrine, its eaves and gabled roof, the
+  lantern; its top view's roof (as wide as the base, the ridge across), its side view's stairs (in front of the wall)
+  and its back view's sizes set right by paint rules. `KmStationPlatform` (3,880): an open shelter now (the platform,
+  railing with gate and card reader, back wall, end panels and rails cut out, posts, beams, rafters, sloping roof).
+- The gantry's views came again, one image a view: `KmWireGantry` carved from them (2,910 triangles, its lattice cut
+  out, a 2048 texture); the old halves removed.
+- The review renders the four again. Not yet in a level; the five new models wait for the user's approval to go into
+  the game with the seventeen.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.
