@@ -1293,6 +1293,36 @@ views).**
   ones for what they show through gaps, with a metre grid over them, not only for their outline. A side no view shows
   is not copied from its opposite when another view's perspective shows it. Never let rounding noise choose a view.
 
+**D30. The scooter's first build: a tail light on its nose and a shelf behind its headlight (fixed before review).**
+- *What:* the delivery scooter (KM-V03), first built like the bicycle, looked right in the five straight renders. Close
+  up it was wrong in three ways:
+  - a red tail light was painted on the front mudguard and inside the step-through, and the rear box's lid on the
+    basket's front;
+  - a flat shelf as wide as the handlebar stood behind the headlight;
+  - the grips were cut short.
+- *Why:*
+  - A side with no view takes the opposite side's mirrored, and a vehicle's nose is not its tail. The faces its rear
+    view cannot see (the leg shield's back, behind the seat) fell back to the side view facing them most: the rear
+    again, its tail light reflected onto them.
+  - Its top view draws the front half 10 to 20 cm further back than its sides and everything a quarter narrower.
+    Carved by it, the handlebar's height met the leg shield's footprint, which made the shelf.
+  - Its sides and its rear draw the bar 5 cm apart in height, and the mirrors 25 cm apart along it.
+- *Fix (`km_views`):*
+  - `ends='sides'`: no nose from the tail. What no view sees takes the long sides' pixels from 4 cm inside the part,
+    because at the outline's own column they are half background and came out grey streaks.
+  - Carved from its sides and rear alone. `depths()` keeps each part to the width its rear view shows.
+  - `solids()` joined on (`joined()`) for the bar, its clamp and the mirror stems.
+  - The top only paints, moved to where the sides draw each part by paint rules.
+  - The stems take the mirrors' own grey, because a straight stem sampling a slanted one-centimetre line is mostly the
+    background, which the cut-out material makes transparent.
+  - A loose-piece count found the floating mirrors, bar and a ghost by the front tyre. Each is joined or removed.
+- *Rule:*
+  - Look at a model close up and from its nose, not only in straight views: a fault on a hidden face shows only at an
+    angle.
+  - A vehicle's ends are not mirrors of each other.
+  - Count a model's loose pieces before review; one piece unless it is meant to be several.
+  - When one view disagrees with the others on positions, it paints and does not carve.
+
 ## E. Levels and world
 
 - **E1. Every level had chapter-1 scenery.** A new-scene call unloaded the level definition. *Rule:* pass data into scene builders explicitly; never hold asset references across a new-scene call.

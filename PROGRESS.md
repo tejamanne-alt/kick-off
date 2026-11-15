@@ -2463,6 +2463,21 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
   `Resources/UI`. Cost: +4.5 MB of FBX in all, nothing at runtime (only the worn bag loads). Not yet seen in the
   editor or on the Nord CE5.
 
+## The delivery scooter rebuilt for review (tools, review and docs)
+
+- KM-V03's first build, looked at close up and from its nose, had a tail light on its front mudguard and inside the
+  step-through, the box's lid on the basket's front, a shelf behind the headlight, and the mirrors and bar floating
+  (D30). Rebuilt:
+  - carved from its sides and rear only, each part kept to its own width (`km_views.depths`);
+  - the handlebar, its clamp and the mirror stems as solids (`joined`);
+  - the top view painting only, moved to where the sides draw each part;
+  - `ends='sides'`: its nose and hidden faces take the sides' colours from just inside each part.
+- One piece, 0 open edges, 2,910 triangles, a 1024 RGBA texture (spokes and basket cut out). The strict review
+  (`--props-review review/kamakura/props --only KmScooter`) is published with the other props (version 11), waiting for
+  the user's approval. One piece, standing: if KM1-1 has it ride past, its wheels become their own parts for
+  `WheelSpin`.
+- The other props are unchanged: `ends` defaults to the old behaviour, and the new helpers are used only by the scooter.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

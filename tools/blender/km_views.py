@@ -630,6 +630,8 @@ def colours(frame, hits, P, N, views, sharp=8.0):
     miss = np.nonzero(wsum < 1e-3)[0]
     if len(miss):                                      # seen by none of the views facing it (a wall's inner face that a
         names = [v for v in views if v != 'top']       # side view leaves out, a canopy under the eaves): the side view
+        if getattr(frame, 'ends', 'mirror') == 'sides':  # (a vehicle: its long sides', never an end's, D30)
+            names = [v for v in names if v in ('front', 'back')]
         face = np.stack([N[miss] @ np.asarray(NORMALS[v], np.float32) for v in names], 1)   # facing it most, its pixels
                                                        # reflected into its outline (never the top's: what hides it from
                                                        # above is what the top shows there, the house's roof tiles)
@@ -640,11 +642,15 @@ def colours(frame, hits, P, N, views, sharp=8.0):
         for i, view in enumerate(names):               # a point given to one view takes that view's
             if view in own:
                 best = np.where(own[view][miss], i, best)
+        inset = 0.04 if getattr(frame, 'ends', 'mirror') == 'sides' else 0.0
         for i, view in enumerate(names):
             sel = miss[best == i]
             if not len(sel):
                 continue
-            Q, clean = painted(frame, view, P[sel])
+            # a vehicle's face across its length (the box's front, the seat's, the leg shield's back) is one column of its
+            # sides' pictures: at its own place that column is the outline's edge, half the grey behind, so it is taken
+            # from a few centimetres inside the part (D30)
+            Q, clean = painted(frame, view, P[sel] - inset * N[sel])
             u, v = reflected(frame, view, *frame.px(view, Q))
             acc[sel] = take(view, sel, u, v, clean) * 0.85        # a little darker: a face no view shows is in shade
             wsum[sel] = 1.0
@@ -852,6 +858,62 @@ def platform_b06():
                 clean=[('front', [b[1:] for b in railing] + [reader[1:]] + drawn_posts)])
 
 
+# KM-V03's parts, measured in metres off its views (x along it, its nose at -x; y from its front (FRONT's side) at -y;
+# z up): each part's depth from its end view (RIGHT SIDE), where it is from its sides (D30)
+SCOOTER_DEPTHS = [
+    (-0.95, -0.45, 0.00, 0.63, -0.08, 0.08),     # front wheel, fork and mudguard
+    (-0.95, -0.70, 0.00, 0.50, -0.045, 0.045),   # the tyre alone ahead of the fork
+    (-0.86, -0.44, 0.63, 0.90, -0.20, 0.20),     # the basket (the fork's top inside it)
+    (-0.48, -0.29, 0.84, 1.07, -0.10, 0.10),     # headlight, cowl and neck
+    (-0.49, -0.43, 0.92, 1.02, -0.16, 0.16),     # the front indicators, drawn at two places along it
+    (-0.35, -0.29, 0.92, 1.02, -0.16, 0.16),
+    (-0.29, -0.08, 0.86, 1.07, 1.00, -1.00),     # nothing carved where the grips are drawn: the bar is a solid
+    (-0.50, -0.30, 1.07, 1.25, -0.29, -0.12),    # the mirrors, one each side (its sides draw them 25 cm apart)
+    (-0.30, -0.08, 1.07, 1.25, 0.12, 0.29),
+    (-0.30, -0.10, 0.15, 0.40, -0.17, 0.17),     # the leg shield's foot
+    (-0.48, -0.43, 0.63, 0.84, -0.08, 0.08),     # the green fork cover in front of the leg shield, which starts where
+    (-0.48, -0.40, 0.40, 0.63, -0.08, 0.08),     # its sides draw its white (else its front is the cover's colour)
+    (-0.45, -0.33, 0.15, 0.40, -0.08, 0.08),
+    (-0.45, -0.28, 0.00, 0.15, -0.045, 0.045),   # the front tyre's back (else the side stand's foot, beside it)
+    (-0.10, 0.33, 0.36, 0.66, -0.15, 0.15),      # the body and its side covers
+    (-0.08, 0.45, 0.66, 0.84, -0.13, 0.13),      # the seat
+    (-0.18, 0.63, 0.00, 0.36, -0.20, 0.14),      # engine, exhaust (its side, -y), chain case
+    (-0.02, 0.12, 0.00, 0.40, -0.24, 0.23),      # footrests and the side stand
+    (0.33, 0.95, 0.33, 0.66, -0.13, 0.13),       # rear mudguard and shock absorbers
+    (0.68, 0.80, 0.54, 0.66, -0.18, 0.18),       # rear indicators
+    (0.63, 0.95, 0.00, 0.33, -0.05, 0.05),       # rear tyre
+    (0.42, 0.95, 0.66, 1.13, -0.20, 0.20),       # rack and box
+]
+SCOOTER_SOLIDS = [
+    ('box', -0.255, -0.215, -0.29, 0.29, 0.935, 0.975),    # the handlebar, straight across
+    ('box', -0.300, -0.215, -0.05, 0.05, 0.930, 0.980),    # its clamp on the steering, behind the headlight
+    ('box', -0.445, -0.425, -0.15, -0.10, 0.980, 1.100),   # the mirrors' stems: one from the cowl (as its FRONT draws
+    ('box', -0.245, -0.225, 0.13, 0.155, 0.950, 1.100),    # it), one from the bar, each to its mirror
+]
+SCOOTER_PAINT = [
+    # the basket's front, which no view shows: its side's mesh laid across it (one column of the side, stretched, was a
+    # streaked panel)
+    ('front', (-0.88, -0.76, -0.21, 0.21, 0.63, 0.90), {'x': ('y', -0.80, -0.50)}),
+    # the stems the mirrors' own dark grey: drawn a centimetre thick on a slant, a straight stem would sample mostly the
+    # grey behind them, and with the cut-out material vanish
+    ('right', (-0.45, -0.42, -0.16, -0.105, 0.975, 1.105), {'only': True, 'y': (-0.24, -0.20), 'z': (1.15, 1.19)}),
+    ('right', (-0.25, -0.22, 0.125, 0.16, 0.976, 1.105), {'only': True, 'y': (0.20, 0.24), 'z': (1.15, 1.19)}),
+    # the end view draws the grips 5 cm higher than the sides do
+    ('right', (-0.26, -0.21, -0.30, 0.30, 0.93, 0.98), {'z': (0.99, 1.035)}),
+    # the top, moved to where the sides draw each part (and a quarter narrower: y x 0.75), but the bar's own width
+    ('top', (-0.27, -0.20, -0.35, 0.35, 0.93, 0.99), {'x': (-0.20, -0.13)}),
+    # the headlight's shell from above: the top's green neck behind its lens (the lens it draws facing up, stretched
+    # along the shell, was a chrome box)
+    ('top', (-0.50, -0.28, -0.20, 0.20, 0.98, 1.10), {'x': (-0.23, -0.12), 'y': (-0.15, 0.15)}),
+    ('top', (-0.95, -0.83, -0.35, 0.35, 0.0, 1.3), {'x': (-0.95, -0.669), 'y': (-0.2625, 0.2625)}),
+    ('top', (-0.83, -0.457, -0.35, 0.35, 0.0, 1.3), {'x': (-0.669, -0.392), 'y': (-0.2625, 0.2625)}),
+    ('top', (-0.457, -0.38, -0.35, 0.35, 0.0, 1.3), {'x': (-0.392, -0.296), 'y': (-0.2625, 0.2625)}),
+    ('top', (-0.38, -0.27, -0.35, 0.35, 0.0, 1.3), {'x': (-0.296, -0.20), 'y': (-0.2625, 0.2625)}),
+    ('top', (-0.27, -0.03, -0.35, 0.35, 0.0, 1.3), {'x': (-0.20, 0.025), 'y': (-0.2625, 0.2625)}),
+    ('top', (-0.03, 0.445, -0.35, 0.35, 0.0, 1.3), {'x': (0.025, 0.46), 'y': (-0.2625, 0.2625)}),
+    ('top', (0.445, 0.95, -0.35, 0.35, 0.0, 1.3), {'x': (0.46, 0.95), 'y': (-0.2625, 0.2625)}),
+]
+
 def props():
     """KM1-1's props from their views: {model: (id, folder, height in metres, build options)}. The heights are the real
     ones (docs/KAMAKURA_BUILD.md Step 2); widths and depths come from the views' own proportions."""
@@ -892,9 +954,13 @@ def props():
         'KmTram': ('KM-V01', 'KM-V01_tram', ('width', 12.0), dict(vox=0.03, budget=4000, tex=2048)),
         # the delivery scooter: KM1-1's hazard, a vehicle (its views as the bicycle's: FRONT and BACK its long sides,
         # RIGHT SIDE its rear end; its TOP drawn with its nose down, turned so its nose is to the left as in its FRONT);
-        # its spokes and basket open in the texture's alpha
+        # its spokes and basket open in the texture's alpha. Its top draws the front half 10 to 20 cm further back and
+        # everything a quarter narrower than its sides and its end do: so it is carved from those alone, each part
+        # kept to its depth, the handlebar a solid, and the top only paints, moved to where the sides draw (D30)
         'KmScooter': ('KM-V03', 'KM-V03_delivery_scooter', ('width', 1.8),
-                      dict(budget=3000, tex=1024, top='always', cutout=True, hole_fill=0.05, turn={'top': 3})),
+                      dict(budget=3000, tex=1024, top=False, cutout=True, hole_fill=0.05, turn={'top': 3},
+                           ends='sides', shape=joined(depths(*SCOOTER_DEPTHS), solids(*SCOOTER_SOLIDS)),
+                           paint=SCOOTER_PAINT)),
         # KM1-1's last batch: the plain pole, and the buildings and set pieces (their own budgets, docs/PERFORMANCE.md)
         'KmPolePlain': ('KM-A02', 'KM-A02_plain_concrete_utility_pole', 10.0,
                         dict(vox=0.02, round_z=[(0.0, 10.0)], round_w=0.7, thin=0.08)),
@@ -1044,6 +1110,22 @@ NOTES = {           # each prop's own check results (asset_review: the seventeen
         12: ('pass', 'the overhead wire is the level\'s: only its hangers and insulators are the model\'s'),
         13: ('pass', 'one image a view (its views in halves came at two scales and were asked for again)'),
     },
+    'KmScooter': {
+        3: ('pass', 'carved from its two long sides and its rear end, each part kept to the depth its rear view shows '
+                    '(D30): its top draws the front half 10 to 20 cm further back and a quarter narrower, and carved by '
+                    'it a shelf stood behind the headlight. The handlebar a solid: its sides and its rear draw it 5 cm '
+                    'apart in height'),
+        4: ('limit', 'no view of its nose: the nose, and the faces its rear view cannot see (the step-through behind the '
+                     'seat, the box\'s front), take its long sides\' pixels from just inside each part, never its '
+                     'rear\'s (a tail light was painted on the front mudguard and inside the step-through); its top moved '
+                     'to where its sides draw each part, the headlight\'s shell the green neck behind the lens'),
+        7: ('pass', 'the spokes and the basket\'s mesh open in its texture\'s alpha (the cut-out material)'),
+        13: ('pass', 'its sides draw the mirrors 25 cm apart along it: one each side, where each is drawn, each on a '
+                     'stem (a solid, the mirror\'s own dark grey: drawn slanting a centimetre thick, carved they came '
+                     'off); the bar on a clamp behind the headlight; the grips take its rear view\'s grips; one piece '
+                     '(a ghost beside the front tyre, the side stand\'s foot, taken out)'),
+        14: ('n/a', 'one piece, standing: if KM1-1 has it ride past, its wheels become their own parts for WheelSpin'),
+    },
     'KmBicycle': {
         3: ('pass', 'below the saddle a slab 4 cm thick in its front\'s outline (wheels, frame, guards); the saddle, bars '
                     'and basket carved from all its views'),
@@ -1057,14 +1139,16 @@ NOTES = {           # each prop's own check results (asset_review: the seventeen
 # ---------------------------------------------------------------- in Blender
 def build(name, folder, height, new_obj, budget=1500, vox=0.01, tex=1024, top='auto', round_z=(), round_max=1.6,
           round_w=0.3, hole_fill=0.004, view_map=None, cutout=False, thin=0.0, turn=None, flip=(), ignore=(),
-          shape=None, parts=None, smooth_angle=35.0, paint=(), clean=()):
+          shape=None, parts=None, smooth_angle=35.0, paint=(), clean=(), ends='mirror'):
     """The prop named name from the views in folder, height metres tall (or ('width', metres) for one measured along the
     street), its origin on the ground under its middle: its
     mesh (at most budget triangles), UVs and texture (tex x tex, RGBA). shape(frame) may change the carved field (a
     bicycle's wheels a thin slab); parts(frame) may split it into [(name or None, field, pivot or None)], each its own
     object (None: the root), a child's origin at its pivot. paint: where a view draws a part elsewhere or not at all
-    (see painted); clean: [(view, boxes)], that view's copy with the boxes painted out (Frame.paint_out). Returns
-    (root, texture array, frame)."""
+    (see painted); clean: [(view, boxes)], that view's copy with the boxes painted out (Frame.paint_out). ends='sides':
+    an end with no view of its own is not the other end's mirrored (a vehicle's nose is not its tail), and what its end
+    view cannot see (the step-through behind the seat) takes the long sides' pictures, not that end's: a tail light
+    painted on the front fender and inside the step-through (D30). Returns (root, texture array, frame)."""
     import bpy
     import time
     t0 = time.time()
@@ -1077,6 +1161,7 @@ def build(name, folder, height, new_obj, budget=1500, vox=0.01, tex=1024, top='a
         height = height[1] * (y1 - y0) / (x1 - x0)
     frame = Frame(views, height, vox, hole_fill, view_map, cutout, thin, turn, flip)
     frame.paint = list(paint)
+    frame.ends = ends
     for view, boxes in clean:
         frame.paint_out(view, boxes)
     stage('views read and registered')
@@ -1113,6 +1198,8 @@ def build(name, folder, height, new_obj, budget=1500, vox=0.01, tex=1024, top='a
         fn /= np.maximum(np.linalg.norm(fn, axis=1, keepdims=True), 1e-9)              # rail's foot leaned toward
         tri_nrm = np.repeat(fn[:, None, :], 3, 1).astype(np.float32)                   # the front: streaks, D29)
     views = [v for v in ('front', 'back', 'right', 'left', 'top') if v != 'top' or 'top' in frame.masks]
+    if ends == 'sides' and 'left' not in frame.masks:
+        views.remove('left')                            # its nose: no view, so the sides' (colours, D30)
     img = bake(frame, tri_pos, tri_uv, tri_nrm, tex, views)
     stage('baked')
     if len(objs) > 1:
@@ -1328,6 +1415,36 @@ def slab_below(z0, half):
         return np.minimum(slab, np.maximum(frame.field, z0 - Z)).astype(np.float32)
     return shape
 
+
+
+def depths(*rules):
+    """shape(): each rule (x0, x1, z0, z1, y0, y1) keeps the carving in its box to y0..y1 (y0 > y1: nothing there), a
+    later rule overriding an earlier one where their boxes meet (the general first, then the details). For an object
+    whose views disagree with its top (a scooter's top view draws its basket and headlight 20 cm further back than its
+    sides do, and carved by it a shelf stands behind the headlight): carved from its sides and its end alone, each
+    height takes the widest thing the end view shows there (the handlebar's width at the box's height, the box's at the
+    seat's), so each part is kept to its own depth, measured off the end view (D30)."""
+    def shape(frame):
+        X = frame.xs[:, None]
+        Z = frame.zs[None, :]
+        lo = np.full((len(frame.xs), len(frame.zs)), -1e3, np.float32)
+        hi = np.full((len(frame.xs), len(frame.zs)), 1e3, np.float32)
+        for x0, x1, z0, z1, y0, y1 in rules:
+            m = (X >= x0) & (X <= x1) & (Z >= z0) & (Z <= z1)
+            lo = np.where(m, y0, lo)
+            hi = np.where(m, y1, hi)
+        Y = frame.ys[None, :, None]
+        g = np.maximum(lo[:, None, :] - Y, Y - hi[:, None, :])
+        return np.maximum(frame.field, g).astype(np.float32)
+    return shape
+
+
+def joined(*shapes):
+    """shape(): the union of shapes: the carving kept to its depths, and solids() for a part the views draw too
+    differently to carve (a scooter's handlebar, at one height in its side views and another in its end view)."""
+    def shape(frame):
+        return np.minimum.reduce([s(frame) for s in shapes]).astype(np.float32)
+    return shape
 
 def decimate(o, budget, big=1_000_000):
     """Down to the budget: planar faces merged first (a box's sides one face each), then collapsed. A surface of more

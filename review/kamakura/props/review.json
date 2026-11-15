@@ -1956,6 +1956,121 @@
    ]
   ]
  },
+ "KmScooter": {
+  "id": "KM-V03",
+  "sheet": "sheets/KM-V03_delivery_scooter (its views, made from KM1-1)",
+  "size": [
+   1.8,
+   0.59,
+   1.22
+  ],
+  "tris": 2910,
+  "motions": [],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "one solid carved from its views: each part once, looked at in Top and Bottom"
+   ],
+   [
+    2,
+    "Closed shell",
+    "pass",
+    "0 edges with one face"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "pass",
+    "carved from its two long sides and its rear end, each part kept to the depth its rear view shows (D30): its top draws the front half 10 to 20 cm further back and a quarter narrower, and carved by it a shelf stood behind the headlight. The handlebar a solid: its sides and its rear draw it 5 cm apart in height"
+   ],
+   [
+    4,
+    "Views the game sees",
+    "limit",
+    "no view of its nose: the nose, and the faces its rear view cannot see (the step-through behind the seat, the box's front), take its long sides' pixels from just inside each part, never its rear's (a tail light was painted on the front mudguard and inside the step-through); its top moved to where its sides draw each part, the headlight's shell the green neck behind the lens"
+   ],
+   [
+    5,
+    "Size, triangles",
+    "pass",
+    "1.80 x 0.59 x 1.22 m, 2910 triangles (its budget: 3,000), its own 1024 px texture"
+   ],
+   [
+    6,
+    "Outline whole",
+    "pass",
+    "its outline the views' outlines; no background on its edges (looked at on the board)"
+   ],
+   [
+    7,
+    "No holes",
+    "pass",
+    "the spokes and the basket's mesh open in its texture's alpha (the cut-out material)"
+   ],
+   [
+    8,
+    "Own models before walls",
+    "pass",
+    "stands on its own, its own model"
+   ],
+   [
+    9,
+    "Look target",
+    "pass",
+    "from the user's views (BASE KM-S0), made from the photographic KM1-1"
+   ],
+   [
+    10,
+    "Solid",
+    "pass",
+    "solid and whole"
+   ],
+   [
+    11,
+    "No brands",
+    "pass",
+    "no brand or logo"
+   ],
+   [
+    12,
+    "No wires or sky",
+    "pass",
+    "no power line across it, no sky on its edges"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "its sides draw the mirrors 25 cm apart along it: one each side, where each is drawn, each on a stem (a solid, the mirror's own dark grey: drawn slanting a centimetre thick, carved they came off); the bar on a clamp behind the headlight; the grips take its rear view's grips; one piece (a ghost beside the front tyre, the side stand's foot, taken out)"
+   ],
+   [
+    14,
+    "Rig names",
+    "n/a",
+    "one piece, standing: if KM1-1 has it ride past, its wheels become their own parts for WheelSpin"
+   ],
+   [
+    15,
+    "Joints overlap",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no feet"
+   ],
+   [
+    17,
+    "Each part only itself",
+    "n/a",
+    "one piece"
+   ]
+  ]
+ },
  "KmPolePlain": {
   "id": "KM-A02",
   "sheet": "sheets/KM-A02_plain_concrete_utility_pole (its views, made from KM1-1)",
