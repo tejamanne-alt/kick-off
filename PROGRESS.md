@@ -2520,9 +2520,15 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
   those parts modelled apart.
 - The kit rebuilt for the install came out the same as the installed one. The textures are identical; the FBX files
   differ only in their export time and their objects' ids, so only the scooter's files and the manifest were copied.
-- KM1-1's proposed layout (`review/kamakura/levels/KM1-1/layout.json`) and its board (`preview_km_level.py`) are
-  waiting for the user's approval before the level is built (A8). The level waits on the foliage (KM-F02, KM-F04) and
-  the lane texture (KM-T07).
+- KM1-1's proposed layout is published as a board, waiting for the user's approval before the level is built (A8):
+  `review/kamakura/levels/KM1-1/layout.json`, rendered by `preview_km_level.py` and written up by `km_level_board.py`.
+  - About 105 m from the home's door to Hase's platform, every approved model placed by its street face.
+  - The play beats: the cat on the wall, the first-graders' line, the parked scooter, the crossing with the tram, the
+    stop.
+  - Placeholders for what's still to come.
+  - Questions for the user: lane houses (new sheets, or the two repainted); the foliage (KM-F02, KM-F04) and the lane
+    (KM-T07) sheets.
+  - A plan rendered four times too small was caught and fixed before showing (E12).
 - Checks: `unity_api_check` 6000.7 passes, and the compiler's errors match the committed tree's.
 
 ## After Phase 8 (next steps)

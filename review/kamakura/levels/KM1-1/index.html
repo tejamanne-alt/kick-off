@@ -1,0 +1,95 @@
+<title>KM1-1 layout</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Source+Sans+3:wght@400;600&family=Zen+Kaku+Gothic+New:wght@500;700&display=swap">
+<style>
+:root { --bg: #f1f2ef; --panel: #ffffff; --ink: #1f2522; --muted: #5d6762; --line: #d6dbd6; --accent: #b23a2e;
+  --strip: #2a2e2c; --note-bg: #f7f1e3; --note-ink: #6b4f12;
+  --display: "Zen Kaku Gothic New", "Hiragino Sans", "Segoe UI", system-ui, sans-serif;
+  --body: "Source Sans 3", "Segoe UI", system-ui, sans-serif; --mono: "JetBrains Mono", ui-monospace, Menlo, monospace; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #151816; --panel: #1d211f; --ink: #e6ebe7; --muted: #9ba8a1; --line: #2f3632; --accent: #ef8a7c;
+  --strip: #0f1110; --note-bg: #322a17; --note-ink: #ecc977; color-scheme: dark } }
+:root[data-theme="dark"] { --bg: #151816; --panel: #1d211f; --ink: #e6ebe7; --muted: #9ba8a1; --line: #2f3632;
+  --accent: #ef8a7c; --strip: #0f1110; --note-bg: #322a17; --note-ink: #ecc977; color-scheme: dark }
+body { background: var(--bg); color: var(--ink); font: 16px/1.55 var(--body); }
+.wrap { max-width: 1180px; margin: 0 auto; padding-block: 28px 64px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: flex; flex-direction: column; gap: 28px; }
+h1, h2 { font-family: var(--display); margin: 0; line-height: 1.2; text-wrap: balance; }
+h1 { font-size: 2rem; } h2 { font-size: 1.3rem; }
+p { margin: 0; max-width: 70ch; }
+.eyebrow { font: 600 0.75rem var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+section { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+figure { margin: 0; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+figcaption { font: 0.8rem var(--mono); color: var(--muted); }
+.scroll { overflow-x: auto; border-radius: 8px; background: var(--strip); }
+.scroll img { display: block; height: 320px; width: auto; max-width: none; }
+.full img { width: 100%; height: auto; border-radius: 8px; display: block; }
+table { border-collapse: collapse; width: 100%; font-size: 0.92rem; }
+td, th { border-top: 1px solid var(--line); padding: 7px 10px 7px 0; vertical-align: top; text-align: left; }
+th { font: 600 0.78rem var(--mono); color: var(--muted); }
+td.x { font: 0.85rem var(--mono); white-space: nowrap; font-variant-numeric: tabular-nums; width: 5em; }
+.table-box { overflow-x: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 4px 14px 10px; }
+ul { margin: 0; padding-left: 1.1em; display: flex; flex-direction: column; gap: 6px; max-width: 75ch; }
+.ask { background: var(--note-bg); color: var(--note-ink); border-radius: 8px; padding: 14px 16px; }
+.ask ul { color: var(--ink); }
+</style><div class="wrap">
+<header class="stack"><div class="eyebrow">Kamakura · route 1 · leg 1 · proposed layout</div><h1>KM1-1 Hase Lanes</h1>
+<p>The first leg of route 1, from the home's front door to Hase Station's platform, laid out from your KM1-1 picture with the Kamakura models you approved. This is the layout before any level code is written: approve it, or tell me what to move, and the level is built from it (its scenes, play and hazards in the game's level builder).</p>
+<p>About 105 m of lane, a 90-second leg at the kid's pace. The picture's ensemble is about 30 m wide, so its set pieces are spread along the lane in the picture's order, with the play between them.</p>
+</header>
+<section><h2>The picture it comes from</h2><figure class="full"><img src="reference.jpg" alt="KM1-1 Hase Lanes, the reference picture"><figcaption>KM1-1 Hase Lanes, the photographic version the models were built from (the home, the vending corner, the shrine up its steps, the crossing, the platform).</figcaption></figure></section>
+<section><h2>Through the game camera</h2><p>Each model at its real size and place, seen as the player will see it: the camera 12 m back, the lane (the green walking strip) at the front. See-through boxes are what is still to come. The shading is Blender's, not the game's toon look: judge the places, sizes, order and gaps.</p><figure><div class="scroll"><img src="strip.jpg" alt="The layout through the game camera, screen by screen"></div><figcaption>Scroll sideways: each screen is what the camera shows as the kid walks on; the red figure is the kid (1.57 m) with the ball.</figcaption></figure></section>
+<section><h2>From above</h2><figure class="full"><img src="plan.jpg" alt="The level from above, each place labelled"><figcaption>The camera is below the picture; red lines mark the play beats.</figcaption></figure></section>
+<section><h2>The play</h2><div class="table-box"><table><thead><tr><th>x (m)</th><th>What happens</th></tr></thead><tbody>
+<tr><td class="x">-12</td><td>start: out of the home&#x27;s door (the home stem)</td></tr>
+<tr><td class="x">15</td><td>the ginger cat on the block wall (WallCat): it swipes at a ball kicked high</td></tr>
+<tr><td class="x">24</td><td>first-graders walking to school in a line, slower than the kid: get past without the ball touching one (Pedestrian bump)</td></tr>
+<tr><td class="x">36</td><td>the little shrine up its steps: coins on the steps&#x27; line</td></tr>
+<tr><td class="x">45</td><td>the parked scooter: dribble round it (an obstacle), its rider walking a parcel to the door</td></tr>
+<tr><td class="x">61</td><td>the level crossing: the bells ring, the barriers come down, the tram passes; wait, then cross (Crossing, with the tram as its traffic)</td></tr>
+<tr><td class="x">79</td><td>Hase Station&#x27;s platform: the stop (the leg ends; KM1-2 rides the tram)</td></tr>
+</tbody></table></div></section>
+<section><h2>Where everything stands</h2><div class="table-box"><table><thead><tr><th>x (m)</th><th>Model</th><th>Why there</th></tr></thead><tbody>
+<tr><td class="x">-15.6</td><td>KmAirConditioner</td><td>KM-A22, the home&#x27;s outdoor unit on its stand</td></tr>
+<tr><td class="x">-12.0</td><td>KmHome</td><td>the home and its fence: the level starts at its door</td></tr>
+<tr><td class="x">-9.6</td><td>KmLetterbox</td><td>KM-A24 by the gate</td></tr>
+<tr><td class="x">-4.4</td><td>KmBicycle</td><td>the bicycle against the fence</td></tr>
+<tr><td class="x">3.0</td><td>KmPoleTransformer</td><td>the pole with its transformer</td></tr>
+<tr><td class="x">5.0</td><td>KmMirror</td><td>the convex mirror at the kerb</td></tr>
+<tr><td class="x">6.7</td><td>KmVendingRed</td><td>the red machine</td></tr>
+<tr><td class="x">7.8</td><td>KmVendingBlue</td><td>the blue machine (KM-A19) beside the red</td></tr>
+<tr><td class="x">9.2</td><td>KmRecyclingBins</td><td>the recycling bins (KM-A20): a crow on them</td></tr>
+<tr><td class="x">36.0</td><td>KmToriiSmall</td><td>the little shrine&#x27;s torii, up its steps</td></tr>
+<tr><td class="x">36.0</td><td>KmShrineSmall</td><td>the little shrine behind it</td></tr>
+<tr><td class="x">45.0</td><td>KmScooter</td><td>the delivery scooter, parked at a door while its rider delivers</td></tr>
+<tr><td class="x">49.0</td><td>KmHouseBeige</td><td>the beige stucco house (KM-B04)</td></tr>
+<tr><td class="x">54.0</td><td>KmPolePlain</td><td>a plain pole with a street lamp (KM-A26)</td></tr>
+<tr><td class="x">54.6</td><td>KmStreetLamp</td><td>the street lamp on it</td></tr>
+<tr><td class="x">57.2</td><td>KmControlCabinet</td><td>the crossing&#x27;s control cabinet (KM-A25)</td></tr>
+<tr><td class="x">59.0</td><td>KmCrossingSignal</td><td>the crossing&#x27;s bells and lamps, this side</td></tr>
+<tr><td class="x">60.1</td><td>KmCrossingBarrier</td><td>its barrier</td></tr>
+<tr><td class="x">63.0</td><td>KmTram</td><td>the tram coming down the tracks to the crossing (toward the camera, as Crossing&#x27;s traffic)</td></tr>
+<tr><td class="x">63.0</td><td>KmWireGantry</td><td>the overhead wire gantry over the tracks</td></tr>
+<tr><td class="x">65.9</td><td>KmCrossingBarrier</td><td>the far barrier</td></tr>
+<tr><td class="x">67.0</td><td>KmCrossingSignal</td><td>the far bells and lamps</td></tr>
+<tr><td class="x">70.0</td><td>KmPolePlain</td><td>a pole by the station</td></tr>
+<tr><td class="x">73.6</td><td>KmTicketGate</td><td>Hase&#x27;s ticket gate (KM-A28)</td></tr>
+<tr><td class="x">79.0</td><td>KmStationPlatform</td><td>Hase Station&#x27;s platform: the stop</td></tr>
+<tr><td class="x">85.0</td><td>KmStationSign</td><td>the station&#x27;s name board (KM-A29)</td></tr>
+<tr><td class="x">-9.0</td><td>(to come)</td><td>potted plants and morning glories (KM-F04 to come)</td></tr>
+<tr><td class="x">-0.8</td><td>(to come)</td><td>persimmon (KM-F02 to come)</td></tr>
+<tr><td class="x">21.0</td><td>(to come)</td><td>block wall (a KM-T plate)</td></tr>
+<tr><td class="x">21.5</td><td>(to come)</td><td>houses behind the wall (lane houses to come: new KM-B sheets, or the two houses repainted)</td></tr>
+<tr><td class="x">36.0</td><td>(to come)</td><td>steps up to the shrine (in its model)</td></tr>
+<tr><td class="x">41.0</td><td>(to come)</td><td>houses behind the shrine&#x27;s lane (to come, as above)</td></tr>
+<tr><td class="x">56.0</td><td>(to come)</td><td>wooden fence and gate (a KM-T plate)</td></tr>
+<tr><td class="x">63.0</td><td>(to come)</td><td>rails across the lane</td></tr>
+<tr><td class="x">71.0</td><td>(to come)</td><td>chain-link fence along the tracks</td></tr>
+<tr><td class="x">71.4</td><td>(to come)</td><td>hydrangeas, blue (KM-F04 to come)</td></tr>
+<tr><td class="x">88.0</td><td>(to come)</td><td>hydrangeas, pink and violet (KM-G19, G20; KM-F04 to come)</td></tr>
+<tr><td class="x">91.0</td><td>(to come)</td><td>black pines (plants kit)</td></tr>
+</tbody></table></div></section>
+<section><h2>Decided for now</h2><ul><li>The delivery scooter is <b>parked</b> at the beige house's door while its rider delivers: an obstacle to dribble round. A scooter riding past would need its wheels modelled apart from the fork and exhaust its pictures draw over them.</li><li>The <b>first-graders</b> walk in a line ahead of the kid, slower, on the walking strip: get past without the ball touching one.</li><li>The <b>tram</b> crosses the lane toward the camera at the level crossing, as the game's crossings run their traffic: the bells ring, the barriers come down, wait for it to pass.</li><li>The <b>block wall with the cat</b> comes after the vending corner (in the picture it is left of the home, before the level's start).</li><li>The <b>tram's tracks</b> cross the street's depth, so in the level they get their own list that the house rows and the verge keep out of (LEARNINGS E11), and nothing taller than 0.4 m stands between the camera and the lane (E10).</li></ul></section>
+<section class="ask"><h2>For you</h2><ul><li><b>The lane's houses.</b> The kit has two houses for KM1-1 (the home and the beige house); between the set pieces the lane needs more frontage. Would you like new lane-house sheets (two or three ordinary Kamakura houses, KM-B), or should I reuse the two houses repainted?</li><li><b>Three sheets the level waits on:</b> KM-F02 (the persimmon's leaves), KM-F04 (the hydrangeas and morning glories) and KM-T07 (the lane and its walking strip). Their prompts are in docs/KAMAKURA_BUILD.md and on the prompts page.</li><li><b>Anything to move:</b> a model's place, the order, the length, or the play beats.</li></ul></section>
+</div>

@@ -2,66 +2,464 @@
  "level": "KM1-1",
  "name": "Hase Lanes",
  "about": "A proposed layout for the user's approval before the level is built (docs/LEARNINGS.md A8): KM1-1_hase_lanes.png's ensemble, left to right, spread along the lane from the home's front door (x = -12, where every story level starts) to Hase Station's platform. Game axes: x along the lane (m), z away from the camera (the green walking strip, the play lane, at z = 0), front: the z of a model's street face. Kit: the Kamakura kit (Art/Models/Kamakura, and the home from kit_buildings_km.py).",
- "length": [-14, 94],
+ "length": [
+  -14,
+  94
+ ],
  "ground": [
-  {"what": "road", "z": [-7.0, -0.75], "rgb": [0.36, 0.37, 0.38]},
-  {"what": "edge line", "z": [-0.85, -0.75], "rgb": [0.92, 0.92, 0.9]},
-  {"what": "green walking strip (the play lane)", "z": [-0.75, 0.75], "rgb": [0.33, 0.55, 0.42]},
-  {"what": "gutter and kerb", "z": [0.75, 1.05], "rgb": [0.66, 0.65, 0.62]},
-  {"what": "frontage", "z": [1.05, 30.0], "rgb": [0.6, 0.58, 0.55]}
+  {
+   "what": "road",
+   "z": [
+    -7.0,
+    -0.75
+   ],
+   "rgb": [
+    0.36,
+    0.37,
+    0.38
+   ]
+  },
+  {
+   "what": "edge line",
+   "z": [
+    -0.85,
+    -0.75
+   ],
+   "rgb": [
+    0.92,
+    0.92,
+    0.9
+   ]
+  },
+  {
+   "what": "green walking strip (the play lane)",
+   "z": [
+    -0.75,
+    0.75
+   ],
+   "rgb": [
+    0.33,
+    0.55,
+    0.42
+   ]
+  },
+  {
+   "what": "gutter and kerb",
+   "z": [
+    0.75,
+    1.05
+   ],
+   "rgb": [
+    0.66,
+    0.65,
+    0.62
+   ]
+  },
+  {
+   "what": "frontage",
+   "z": [
+    1.05,
+    30.0
+   ],
+   "rgb": [
+    0.6,
+    0.58,
+    0.55
+   ]
+  }
  ],
  "placements": [
-  {"model": "KmHome", "x": -12.0, "front": 1.6, "note": "the home and its fence: the level starts at its door"},
-  {"model": "KmLetterbox", "x": -9.6, "front": 1.15, "note": "KM-A24 by the gate"},
-  {"model": "KmAirConditioner", "x": -15.6, "front": 1.2, "note": "KM-A22, the home's outdoor unit on its stand"},
-  {"model": "KmBicycle", "x": -4.4, "front": 1.1, "note": "the bicycle against the fence"},
-  {"model": "KmPoleTransformer", "x": 3.0, "front": 1.15, "note": "the pole with its transformer"},
-  {"model": "KmMirror", "x": 5.0, "front": 0.85, "note": "the convex mirror at the kerb"},
-  {"model": "KmVendingRed", "x": 6.7, "front": 1.25, "note": "the red machine"},
-  {"model": "KmVendingBlue", "x": 7.8, "front": 1.25, "note": "the blue machine (KM-A19) beside the red"},
-  {"model": "KmRecyclingBins", "x": 9.2, "front": 1.3, "note": "the recycling bins (KM-A20): a crow on them"},
-  {"model": "KmToriiSmall", "x": 36.0, "front": 2.4, "note": "the little shrine's torii, up its steps"},
-  {"model": "KmShrineSmall", "x": 36.0, "front": 4.2, "note": "the little shrine behind it"},
-  {"model": "KmScooter", "x": 45.0, "front": 0.95, "note": "the delivery scooter, parked at a door while its rider delivers"},
-  {"model": "KmHouseBeige", "x": 49.0, "front": 3.4, "note": "the beige stucco house (KM-B04)"},
-  {"model": "KmPolePlain", "x": 54.0, "front": 1.15, "note": "a plain pole with a street lamp (KM-A26)"},
-  {"model": "KmStreetLamp", "x": 54.6, "front": 1.1, "note": "the street lamp on it"},
-  {"model": "KmControlCabinet", "x": 57.2, "front": 1.4, "note": "the crossing's control cabinet (KM-A25)"},
-  {"model": "KmCrossingSignal", "x": 59.0, "front": 0.95, "note": "the crossing's bells and lamps, this side"},
-  {"model": "KmCrossingBarrier", "x": 60.1, "front": 0.95, "note": "its barrier"},
-  {"model": "KmCrossingBarrier", "x": 65.9, "front": 0.95, "note": "the far barrier"},
-  {"model": "KmCrossingSignal", "x": 67.0, "front": 0.95, "note": "the far bells and lamps"},
-  {"model": "KmTram", "x": 63.0, "front": 9.0, "yaw": 90, "note": "the tram coming down the tracks to the crossing (toward the camera, as Crossing's traffic)"},
-  {"model": "KmPolePlain", "x": 70.0, "front": 1.15, "note": "a pole by the station"},
-  {"model": "KmWireGantry", "x": 63.0, "front": 4.5, "note": "the overhead wire gantry over the tracks"},
-  {"model": "KmTicketGate", "x": 73.6, "front": 1.3, "note": "Hase's ticket gate (KM-A28)"},
-  {"model": "KmStationPlatform", "x": 79.0, "front": 2.3, "note": "Hase Station's platform: the stop"},
-  {"model": "KmStationSign", "x": 85.0, "front": 1.4, "note": "the station's name board (KM-A29)"}
+  {
+   "model": "KmHome",
+   "x": -12.0,
+   "front": 1.6,
+   "note": "the home and its fence: the level starts at its door"
+  },
+  {
+   "model": "KmLetterbox",
+   "x": -9.6,
+   "front": 1.15,
+   "note": "KM-A24 by the gate"
+  },
+  {
+   "model": "KmAirConditioner",
+   "x": -15.6,
+   "front": 1.2,
+   "note": "KM-A22, the home's outdoor unit on its stand"
+  },
+  {
+   "model": "KmBicycle",
+   "x": -4.4,
+   "front": 1.1,
+   "note": "the bicycle against the fence"
+  },
+  {
+   "model": "KmPoleTransformer",
+   "x": 3.0,
+   "front": 1.15,
+   "note": "the pole with its transformer"
+  },
+  {
+   "model": "KmMirror",
+   "x": 5.0,
+   "front": 0.85,
+   "note": "the convex mirror at the kerb"
+  },
+  {
+   "model": "KmVendingRed",
+   "x": 6.7,
+   "front": 1.25,
+   "note": "the red machine"
+  },
+  {
+   "model": "KmVendingBlue",
+   "x": 7.8,
+   "front": 1.25,
+   "note": "the blue machine (KM-A19) beside the red"
+  },
+  {
+   "model": "KmRecyclingBins",
+   "x": 9.2,
+   "front": 1.3,
+   "note": "the recycling bins (KM-A20): a crow on them"
+  },
+  {
+   "model": "KmToriiSmall",
+   "x": 36.0,
+   "front": 2.4,
+   "note": "the little shrine's torii, up its steps"
+  },
+  {
+   "model": "KmShrineSmall",
+   "x": 36.0,
+   "front": 4.2,
+   "note": "the little shrine behind it"
+  },
+  {
+   "model": "KmScooter",
+   "x": 45.0,
+   "front": 0.95,
+   "note": "the delivery scooter, parked at a door while its rider delivers"
+  },
+  {
+   "model": "KmHouseBeige",
+   "x": 49.0,
+   "front": 3.4,
+   "note": "the beige stucco house (KM-B04)"
+  },
+  {
+   "model": "KmPolePlain",
+   "x": 54.0,
+   "front": 1.15,
+   "note": "a plain pole with a street lamp (KM-A26)"
+  },
+  {
+   "model": "KmStreetLamp",
+   "x": 54.6,
+   "front": 1.1,
+   "note": "the street lamp on it"
+  },
+  {
+   "model": "KmControlCabinet",
+   "x": 57.2,
+   "front": 1.4,
+   "note": "the crossing's control cabinet (KM-A25)"
+  },
+  {
+   "model": "KmCrossingSignal",
+   "x": 59.0,
+   "front": 0.95,
+   "note": "the crossing's bells and lamps, this side"
+  },
+  {
+   "model": "KmCrossingBarrier",
+   "x": 60.1,
+   "front": 0.95,
+   "note": "its barrier"
+  },
+  {
+   "model": "KmCrossingBarrier",
+   "x": 65.9,
+   "front": 0.95,
+   "note": "the far barrier"
+  },
+  {
+   "model": "KmCrossingSignal",
+   "x": 67.0,
+   "front": 0.95,
+   "note": "the far bells and lamps"
+  },
+  {
+   "model": "KmTram",
+   "x": 63.0,
+   "front": 9.0,
+   "yaw": 90,
+   "note": "the tram coming down the tracks to the crossing (toward the camera, as Crossing's traffic)"
+  },
+  {
+   "model": "KmPolePlain",
+   "x": 70.0,
+   "front": 1.15,
+   "note": "a pole by the station"
+  },
+  {
+   "model": "KmWireGantry",
+   "x": 63.0,
+   "front": 4.5,
+   "note": "the overhead wire gantry over the tracks"
+  },
+  {
+   "model": "KmTicketGate",
+   "x": 73.6,
+   "front": 1.3,
+   "note": "Hase's ticket gate (KM-A28)"
+  },
+  {
+   "model": "KmStationPlatform",
+   "x": 79.0,
+   "front": 2.3,
+   "note": "Hase Station's platform: the stop"
+  },
+  {
+   "model": "KmStationSign",
+   "x": 85.0,
+   "front": 1.4,
+   "note": "the station's name board (KM-A29)"
+  }
  ],
  "markers": [
-  {"what": "persimmon (KM-F02 to come)", "x": -0.8, "front": 2.6, "w": 3.2, "d": 2.6, "h": 4.6, "rgb": [0.36, 0.52, 0.24]},
-  {"what": "potted plants and morning glories (KM-F04 to come)", "x": -9.0, "front": 1.15, "w": 5.0, "d": 0.4, "h": 0.6, "rgb": [0.42, 0.56, 0.36]},
-  {"what": "block wall (a KM-T plate)", "x": 21.0, "front": 1.4, "w": 22.0, "d": 0.2, "h": 1.6, "rgb": [0.66, 0.66, 0.63]},
-  {"what": "steps up to the shrine (in its model)", "x": 36.0, "front": 1.2, "w": 2.6, "d": 1.2, "h": 0.15, "rgb": [0.58, 0.57, 0.55]},
-  {"what": "rails across the lane", "x": 63.0, "front": -7.0, "w": 2.2, "d": 30.0, "h": 0.06, "rgb": [0.3, 0.27, 0.24]},
-  {"what": "hydrangeas, blue (KM-F04 to come)", "x": 71.4, "front": 1.3, "w": 2.0, "d": 1.0, "h": 1.1, "rgb": [0.42, 0.52, 0.86]},
-  {"what": "hydrangeas, pink and violet (KM-G19, G20; KM-F04 to come)", "x": 88.0, "front": 1.3, "w": 4.0, "d": 1.2, "h": 1.2, "rgb": [0.66, 0.5, 0.8]},
-  {"what": "black pines (plants kit)", "x": 91.0, "front": 4.0, "w": 4.0, "d": 3.0, "h": 8.0, "rgb": [0.2, 0.36, 0.22]}
+  {
+   "what": "persimmon (KM-F02 to come)",
+   "x": -0.8,
+   "front": 2.6,
+   "w": 2.6,
+   "d": 2.6,
+   "h": 4.2,
+   "rgb": [
+    0.36,
+    0.52,
+    0.24
+   ]
+  },
+  {
+   "what": "potted plants and morning glories (KM-F04 to come)",
+   "x": -9.0,
+   "front": 1.15,
+   "w": 5.0,
+   "d": 0.4,
+   "h": 0.6,
+   "rgb": [
+    0.42,
+    0.56,
+    0.36
+   ]
+  },
+  {
+   "what": "block wall (a KM-T plate)",
+   "x": 21.0,
+   "front": 1.4,
+   "w": 22.0,
+   "d": 0.2,
+   "h": 1.6,
+   "rgb": [
+    0.66,
+    0.66,
+    0.63
+   ]
+  },
+  {
+   "what": "steps up to the shrine (in its model)",
+   "x": 36.0,
+   "front": 1.2,
+   "w": 2.6,
+   "d": 1.2,
+   "h": 0.15,
+   "rgb": [
+    0.58,
+    0.57,
+    0.55
+   ]
+  },
+  {
+   "what": "rails across the lane",
+   "x": 63.0,
+   "front": -7.0,
+   "w": 2.2,
+   "d": 30.0,
+   "h": 0.06,
+   "rgb": [
+    0.3,
+    0.27,
+    0.24
+   ]
+  },
+  {
+   "what": "hydrangeas, blue (KM-F04 to come)",
+   "x": 71.4,
+   "front": 1.3,
+   "w": 2.0,
+   "d": 1.0,
+   "h": 1.1,
+   "rgb": [
+    0.42,
+    0.52,
+    0.86
+   ]
+  },
+  {
+   "what": "hydrangeas, pink and violet (KM-G19, G20; KM-F04 to come)",
+   "x": 88.0,
+   "front": 1.3,
+   "w": 4.0,
+   "d": 1.2,
+   "h": 1.2,
+   "rgb": [
+    0.66,
+    0.5,
+    0.8
+   ]
+  },
+  {
+   "what": "black pines (plants kit)",
+   "x": 91.0,
+   "front": 4.0,
+   "w": 4.0,
+   "d": 3.0,
+   "h": 8.0,
+   "rgb": [
+    0.2,
+    0.36,
+    0.22
+   ]
+  },
+  {
+   "what": "houses behind the wall (lane houses to come: new KM-B sheets, or the two houses repainted)",
+   "x": 21.5,
+   "front": 5.0,
+   "w": 21.0,
+   "d": 7.0,
+   "h": 6.8,
+   "rgb": [
+    0.78,
+    0.74,
+    0.66
+   ]
+  },
+  {
+   "what": "houses behind the shrine's lane (to come, as above)",
+   "x": 41.0,
+   "front": 9.0,
+   "w": 6.0,
+   "d": 7.0,
+   "h": 6.5,
+   "rgb": [
+    0.78,
+    0.74,
+    0.66
+   ]
+  },
+  {
+   "what": "wooden fence and gate (a KM-T plate)",
+   "x": 56.0,
+   "front": 1.4,
+   "w": 4.0,
+   "d": 0.12,
+   "h": 1.7,
+   "rgb": [
+    0.45,
+    0.36,
+    0.28
+   ]
+  },
+  {
+   "what": "chain-link fence along the tracks",
+   "x": 71.0,
+   "front": 1.6,
+   "w": 4.6,
+   "d": 0.08,
+   "h": 1.8,
+   "rgb": [
+    0.62,
+    0.64,
+    0.6
+   ]
+  }
  ],
  "people": [
-  {"model": "FirstGraderGirl", "x": 24.0, "outfit": ["-", "-", "-"]},
-  {"model": "FirstGraderBoy", "x": 25.5, "outfit": ["0.78,0.86,0.95", "0.25,0.25,0.27", "0.36,0.2,0.12"]},
-  {"model": "FirstGraderGirl", "x": 27.0, "outfit": ["0.97,0.84,0.86", "0.12,0.15,0.28", "0.9,0.55,0.66"]},
-  {"model": "FirstGraderBoy", "x": 28.5, "outfit": ["-", "-", "-"]},
-  {"model": "FirstGraderGirl", "x": 30.0, "outfit": ["0.8,0.92,0.84", "0.24,0.33,0.5", "0.6,0.5,0.78"]}
+  {
+   "model": "FirstGraderGirl",
+   "x": 24.0,
+   "outfit": [
+    "-",
+    "-",
+    "-"
+   ]
+  },
+  {
+   "model": "FirstGraderBoy",
+   "x": 25.5,
+   "outfit": [
+    "0.78,0.86,0.95",
+    "0.25,0.25,0.27",
+    "0.36,0.2,0.12"
+   ]
+  },
+  {
+   "model": "FirstGraderGirl",
+   "x": 27.0,
+   "outfit": [
+    "0.97,0.84,0.86",
+    "0.12,0.15,0.28",
+    "0.9,0.55,0.66"
+   ]
+  },
+  {
+   "model": "FirstGraderBoy",
+   "x": 28.5,
+   "outfit": [
+    "-",
+    "-",
+    "-"
+   ]
+  },
+  {
+   "model": "FirstGraderGirl",
+   "x": 30.0,
+   "outfit": [
+    "0.8,0.92,0.84",
+    "0.24,0.33,0.5",
+    "0.6,0.5,0.78"
+   ]
+  }
  ],
  "play": [
-  {"x": -12.0, "what": "start: out of the home's door (the home stem)"},
-  {"x": 15.0, "what": "the ginger cat on the block wall (WallCat): it swipes at a ball kicked high"},
-  {"x": 24.0, "what": "first-graders walking to school in a line, slower than the kid: get past without the ball touching one (Pedestrian bump)"},
-  {"x": 36.0, "what": "the little shrine up its steps: coins on the steps' line"},
-  {"x": 45.0, "what": "the parked scooter: dribble round it (an obstacle), its rider walking a parcel to the door"},
-  {"x": 61.0, "what": "the level crossing: the bells ring, the barriers come down, the tram passes; wait, then cross (Crossing, with the tram as its traffic)"},
-  {"x": 79.0, "what": "Hase Station's platform: the stop (the leg ends; KM1-2 rides the tram)"}
+  {
+   "x": -12.0,
+   "what": "start: out of the home's door (the home stem)"
+  },
+  {
+   "x": 15.0,
+   "what": "the ginger cat on the block wall (WallCat): it swipes at a ball kicked high"
+  },
+  {
+   "x": 24.0,
+   "what": "first-graders walking to school in a line, slower than the kid: get past without the ball touching one (Pedestrian bump)"
+  },
+  {
+   "x": 36.0,
+   "what": "the little shrine up its steps: coins on the steps' line"
+  },
+  {
+   "x": 45.0,
+   "what": "the parked scooter: dribble round it (an obstacle), its rider walking a parcel to the door"
+  },
+  {
+   "x": 61.0,
+   "what": "the level crossing: the bells ring, the barriers come down, the tram passes; wait, then cross (Crossing, with the tram as its traffic)"
+  },
+  {
+   "x": 79.0,
+   "what": "Hase Station's platform: the stop (the leg ends; KM1-2 rides the tram)"
+  }
  ]
 }

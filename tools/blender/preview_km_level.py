@@ -72,8 +72,13 @@ for p in lay['placements']:
         e.location = (p['x'], p['front'] + size[0] / 2, 0)
     else:
         e.location = (p['x'], p['front'] - mn[1], 0)
-for k in lay['markers']:
-    box(k['what'], k['x'] - k['w'] / 2, k['x'] + k['w'] / 2, k['front'], k['front'] + k['d'], 0.0, k['h'], k['rgb'])
+for k in lay['markers']:          # what is still to come: half see-through, so it reads as a placeholder
+    o = box(k['what'], k['x'] - k['w'] / 2, k['x'] + k['w'] / 2, k['front'], k['front'] + k['d'], 0.0, k['h'], k['rgb'])
+    m = o.data.materials[0]
+    m.node_tree.nodes['Principled BSDF'].inputs['Alpha'].default_value = 0.55
+    try: m.surface_render_method = 'BLENDED'
+    except Exception: m.blend_method = 'BLEND'
+    o.visible_shadow = False
 
 # the first-graders at their game height (neck 1.04 against the kid's 1.3: about 1.25 m to the kid's 1.57), on the lane
 people = []
@@ -100,11 +105,11 @@ for p in lay.get('people', []):
 
 # the light: a clear May morning
 sun = bpy.data.objects.new('sun', bpy.data.lights.new('sun', 'SUN')); S.collection.objects.link(sun)
-sun.data.energy = 3.6; sun.data.color = (1, 0.97, 0.93)
+sun.data.energy = 2.2; sun.data.color = (1, 0.97, 0.93)
 sun.rotation_euler = (math.radians(50), 0, math.radians(-30))
 S.world = bpy.data.worlds.new('w'); S.world.use_nodes = True
 S.world.node_tree.nodes['Background'].inputs['Color'].default_value = (0.42, 0.62, 0.88, 1)
-S.world.node_tree.nodes['Background'].inputs['Strength'].default_value = 0.9
+S.world.node_tree.nodes['Background'].inputs['Strength'].default_value = 0.55
 S.render.engine = 'BLENDER_EEVEE'
 S.view_settings.view_transform = 'Standard'
 S.render.resolution_x, S.render.resolution_y = 1280, 720
@@ -133,7 +138,7 @@ print('missing models', missing)
 
 # the plan from above, orthographic: the whole level
 kidm.location = (X0 - 100, 0, 0); ball.location = (X0 - 100, 0, 0)
-cam.data.type = 'ORTHO'; cam.data.ortho_scale = (X1 - X0) + 4
+cam.data.type = 'ORTHO'; cam.data.sensor_fit = 'HORIZONTAL'; cam.data.ortho_scale = (X1 - X0) + 4   # (its width: the level's length)
 cam.location = ((X0 + X1) / 2, 6.0, 60); cam.rotation_euler = (0, 0, 0)
 S.render.resolution_x, S.render.resolution_y = 3200, int(3200 * 30 / ((X1 - X0) + 4))
 S.render.filepath = os.path.join(OUT, 'plan.png')
@@ -156,11 +161,11 @@ span = (X1 - X0) + 4
 px = lambda x: (x - (X0 - 2)) / span * W
 py = lambda z: (21.0 - z) / 30.0 * H
 d = ImageDraw.Draw(plan)
-fs = ImageFont.truetype(font, 15) if os.path.exists(font) else f
+fs = ImageFont.truetype(font, 14) if os.path.exists(font) else f
 for n, it in enumerate(lay['placements'] + lay['markers']):
     x, z = it['x'], it['front']
     label = it.get('model') or it['what']
-    yy = py(z) + 8 + (n % 3) * 17
+    yy = py(z) + 10 + (n % 5) * 19
     d.line([(px(x), py(z)), (px(x), yy)], fill=(20, 20, 20), width=1)
     d.text((px(x) + 2, yy), label, font=fs, fill=(10, 10, 10), stroke_width=2, stroke_fill=(250, 250, 250))
 for it in lay['play']:
