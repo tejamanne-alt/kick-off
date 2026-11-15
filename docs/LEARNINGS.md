@@ -1232,7 +1232,9 @@ views).**
   front's, the back's or a side's row at floor height, drawn across it. A face near level that no view sees now takes
   the front's, which is where its paint rules are written. The floor takes the front's concrete repeated every
   0.33 m, mirrored, not stretched, and a model of solids is baked by each triangle's own normal (`solids` marks its
-  shape `flat`). The house and the shrine are rebuilt that way too.
+  shape `flat`). The house and the shrine are rebuilt that way too. Rebuilt for the install, the approved props
+  changed only on their undersides, but the ticket gate's top (its top view is left out) went from the side's silver
+  to the front's dark screen; it now takes the side's silver panel by a paint rule, laid across it.
 - *Rule:* when views disagree, the user's word decides which are right (here the front and side); then read the right
   ones for what they show through gaps, with a metre grid over them, not only for their outline. A side no view shows
   is not copied from its opposite when another view's perspective shows it. Never let rounding noise choose a view.

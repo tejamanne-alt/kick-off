@@ -4,19 +4,19 @@
  "models": {
   "KmPoleTransformer": {
    "size": [
-    2.054,
-    0.851,
-    9.991
+    2.051,
+    0.837,
+    9.986
    ],
    "min": [
-    -0.954,
-    -0.351,
+    -0.955,
+    -0.352,
     0.011
    ],
    "max": [
-    1.1,
-    0.5,
-    10.003
+    1.097,
+    0.485,
+    9.997
    ],
    "tris": 1454,
    "parts": {},
@@ -94,7 +94,7 @@
   },
   "KmCrossingSignal": {
    "size": [
-    1.052,
+    1.04,
     0.634,
     3.591
    ],
@@ -104,7 +104,7 @@
     0.001
    ],
    "max": [
-    0.529,
+    0.517,
     0.318,
     3.592
    ],
@@ -394,26 +394,26 @@
   },
   "KmStreetLamp": {
    "size": [
-    2.497,
-    0.474,
-    6.988
+    2.533,
+    0.471,
+    6.996
    ],
    "min": [
-    -1.222,
-    -0.229,
+    -1.239,
+    -0.231,
     0.006
    ],
    "max": [
-    1.274,
-    0.244,
-    6.994
+    1.293,
+    0.24,
+    7.003
    ],
    "tris": 1454,
    "parts": {},
    "id": "KM-A26",
    "source": "sheets/KM-A26_street_lamp (its views, made from KM1-1)",
    "real_size": [
-    2.55,
+    2.59,
     0.49,
     7.0
    ],
@@ -455,7 +455,7 @@
   "KmStationSign": {
    "size": [
     1.798,
-    0.166,
+    0.168,
     2.138
    ],
    "min": [
@@ -465,7 +465,7 @@
    ],
    "max": [
     0.897,
-    0.082,
+    0.083,
     2.141
    ],
    "tris": 1454,
@@ -484,19 +484,19 @@
   },
   "KmTram": {
    "size": [
-    11.995,
-    2.308,
+    11.997,
+    2.307,
     4.884
    ],
    "min": [
-    -6.0,
-    -1.157,
-    0.005
+    -5.999,
+    -1.156,
+    0.007
    ],
    "max": [
-    5.996,
+    5.998,
     1.151,
-    4.889
+    4.891
    ],
    "tris": 3878,
    "parts": {},
@@ -509,6 +509,156 @@
    ],
    "texture": "KmTramAtlas.png",
    "cutout": false,
+   "budget": 4000,
+   "tex_px": 2048
+  },
+  "KmPolePlain": {
+   "size": [
+    2.26,
+    0.945,
+    9.998
+   ],
+   "min": [
+    -1.134,
+    -0.475,
+    0.006
+   ],
+   "max": [
+    1.125,
+    0.469,
+    10.004
+   ],
+   "tris": 1454,
+   "parts": {},
+   "id": "KM-A02",
+   "source": "sheets/KM-A02_plain_concrete_utility_pole (its views, made from KM1-1)",
+   "real_size": [
+    2.26,
+    0.96,
+    10.0
+   ],
+   "texture": "KmPolePlainAtlas.png",
+   "cutout": false,
+   "budget": 1500,
+   "tex_px": 1024
+  },
+  "KmHouseBeige": {
+   "size": [
+    8.196,
+    7.947,
+    7.449
+   ],
+   "min": [
+    -4.1,
+    -3.998,
+    -0.0
+   ],
+   "max": [
+    4.097,
+    3.949,
+    7.449
+   ],
+   "tris": 4850,
+   "parts": {},
+   "id": "KM-B04",
+   "source": "sheets/KM-B04_beige_stucco_house (its views, made from KM1-1)",
+   "real_size": [
+    8.59,
+    8.12,
+    7.5
+   ],
+   "texture": "KmHouseBeigeAtlas.png",
+   "cutout": false,
+   "budget": 5000,
+   "tex_px": 2048
+  },
+  "KmShrineSmall": {
+   "size": [
+    5.428,
+    3.87,
+    3.915
+   ],
+   "min": [
+    -2.714,
+    -1.94,
+    0.0
+   ],
+   "max": [
+    2.714,
+    1.93,
+    3.915
+   ],
+   "tris": 3880,
+   "parts": {},
+   "id": "KM-B05",
+   "source": "sheets/KM-B05_little_shrine (its views, made from KM1-1)",
+   "real_size": [
+    5.44,
+    3.88,
+    4.0
+   ],
+   "texture": "KmShrineSmallAtlas.png",
+   "cutout": false,
+   "budget": 4000,
+   "tex_px": 2048
+  },
+  "KmWireGantry": {
+   "size": [
+    4.84,
+    0.59,
+    7.491
+   ],
+   "min": [
+    -2.429,
+    -0.298,
+    0.008
+   ],
+   "max": [
+    2.411,
+    0.292,
+    7.498
+   ],
+   "tris": 2910,
+   "parts": {},
+   "id": "KM-B07",
+   "source": "sheets/KM-B07_overhead_wire_gantry (its views, made from KM1-1)",
+   "real_size": [
+    4.85,
+    0.59,
+    7.5
+   ],
+   "texture": "KmWireGantryAtlas.png",
+   "cutout": true,
+   "budget": 3000,
+   "tex_px": 2048
+  },
+  "KmStationPlatform": {
+   "size": [
+    7.56,
+    2.733,
+    3.196
+   ],
+   "min": [
+    -3.78,
+    -1.368,
+    0.0
+   ],
+   "max": [
+    3.78,
+    1.366,
+    3.197
+   ],
+   "tris": 3880,
+   "parts": {},
+   "id": "KM-B06",
+   "source": "sheets/KM-B06_hase_station_platform (its views, made from KM1-1)",
+   "real_size": [
+    7.59,
+    2.73,
+    3.2
+   ],
+   "texture": "KmStationPlatformAtlas.png",
+   "cutout": true,
    "budget": 4000,
    "tex_px": 2048
   }

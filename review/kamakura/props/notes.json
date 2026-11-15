@@ -1,7 +1,7 @@
 {
  "intro": [
   "KM1-1's street props, buildings, set pieces and the tram, each built in high definition from your own views of it (front, right side, back, top and three-quarter, made in ChatGPT). A prop is carved as one solid from its views' outlines. A building or set piece (the house, the shrine, the platform) is modelled from simple solids measured in metres off your views: walls, roofs, steps, posts and rails. Either way it is then textured from the views themselves: every point takes its pixels from the view that faces it squarely, can see it and shows the object there. Heights or widths are the real ones from the prompts; the rest comes from your views' proportions.",
-  "New in this round: the bus stop (the station platform) remodelled after your note that its three-quarter view and back don't match its front and side. It now follows the front and side. The back wall is a band from 1.23 to 2.12 m with open space below. Two benches stand in front of it, behind a railing of real bars. The left end is open and the right end has a rail and a half-height panel. The house and the shrine are baked again with a small fix to how flat faces take their colour; the other nineteen are as in the last round. A prop is about 1,450 triangles in a 1024 texture; the house 4,850, the shrine and the platform 3,880 each, the gantry 2,910 and the tram 3,878, each in a 2048 texture. The board puts each beside your views: your front view and the model straight on at the same scale, your three-quarter view and the model at three-quarters, then the model from the street."
+  "Approved and in the game: all twenty-two are in the project (Assets/_Game/Art/Models/Kamakura), built in the same run that rendered this page, so what is in the game is what you see here. Last round the bus stop was rebuilt as its front and side views draw it. A prop is about 1,450 triangles in a 1024 texture; the house 4,850, the shrine and the platform 3,880 each, the gantry 2,910 and the tram 3,878, each in a 2048 texture. The board puts each beside your views: your front view and the model straight on at the same scale, your three-quarter view and the model at three-quarters, then the model from the street."
  ],
  "fixed": [
   "<b>Fixed this round</b> (D29): the bus stop had followed its back view, a wall down to the floor, with the benches painted flat on the front railing and the left end copied from the right. Your front view shows the back wall as a high band with benches below and open space under it, the left end open and the floor lower (0.43 m). It is now built that way: a railing of 28 bars, uprights and rails with the gate and card reader where the front draws them, the benches as solids, the band, the end rail and panel from the side.",
@@ -18,7 +18,6 @@
   "<b>Thin parts</b> (poles' bolts and cables, the bicycle's spokes and basket mesh) are in the texture, not the solid; the bicycle's spokes, the gantry's lattice and the bus stop's end rails are cut out."
  ],
  "pending": [
-  "<b>Your approval:</b> the plain pole, the house, the shrine, the platform and the gantry go into the game once you approve them (the seventeen approved are already in Assets/_Game/Art/Models/Kamakura). Then KM1-1 places them.",
-  "<b>Still to build for KM1-1:</b> the foliage sheets (KM-F02, KM-F04) and the lane texture (KM-T07), with the level."
+  "<b>Next:</b> the KM1-1 level places them (BUILD KM-L11); then the foliage sheets (KM-F02, KM-F04) and the lane texture (KM-T07)."
  ]
 }
