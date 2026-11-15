@@ -2511,6 +2511,20 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
   - Checks: `unity_api_check` 6000.7 passes, and the compiler's errors match the committed tree's in two symbol sets (a
     planted error caught).
 
+## The delivery scooter installed; KM1-1's layout proposed (tools, game, tests and docs)
+
+- The scooter (KM-V03), approved on the user's go-ahead, is in `Art/Models/Kamakura`: 2,910 triangles and a 1024 RGBA
+  texture, cut out. `KamakuraKitTests` gives it a vehicle's 4,000 and counts 23 models.
+- KM1-1 parks it at a door while its rider delivers, as an obstacle. Its side views draw the fork, the shock, the
+  exhaust and the chain case over its wheels, so wheels that roll would carry them round. A riding scooter would need
+  those parts modelled apart.
+- The kit rebuilt for the install came out the same as the installed one. The textures are identical; the FBX files
+  differ only in their export time and their objects' ids, so only the scooter's files and the manifest were copied.
+- KM1-1's proposed layout (`review/kamakura/levels/KM1-1/layout.json`) and its board (`preview_km_level.py`) are
+  waiting for the user's approval before the level is built (A8). The level waits on the foliage (KM-F02, KM-F04) and
+  the lane texture (KM-T07).
+- Checks: `unity_api_check` 6000.7 passes, and the compiler's errors match the committed tree's.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

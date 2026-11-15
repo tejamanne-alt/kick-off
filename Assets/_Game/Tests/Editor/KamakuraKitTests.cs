@@ -19,8 +19,8 @@ namespace DribbleToSchool.Tests
         static int KindBudget(string model)
         {
             if (model.StartsWith("KmHouse")) return 5000;
-            if (model.StartsWith("KmTram") || model.StartsWith("KmShrine") || model.StartsWith("KmStation") ||
-                model.StartsWith("KmWireGantry")) return 4000;
+            if (model.StartsWith("KmTram") || model.StartsWith("KmScooter") || model.StartsWith("KmShrine") ||
+                model.StartsWith("KmStation") || model.StartsWith("KmWireGantry")) return 4000;
             return 1500;
         }
 
@@ -37,7 +37,7 @@ namespace DribbleToSchool.Tests
             Assert.IsNotNull(root, "Kamakura.json does not parse");
             var models = root["models"] as Dictionary<string, object>;
             Assert.IsNotNull(models, "Kamakura.json has no models");
-            Assert.GreaterOrEqual(models.Count, 22, "KM1-1's approved props, buildings, set pieces and the tram");
+            Assert.GreaterOrEqual(models.Count, 23, "KM1-1's approved props, buildings, set pieces, the tram and the scooter");
             foreach (var kv in models)
             {
                 var info = (Dictionary<string, object>)kv.Value;
