@@ -2443,6 +2443,18 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
 - Next: a profile for each in `meshy_rigged.py` (cap, randoseru, shirt, shorts or culottes as recolourable parts),
   `polish_all.py`, the strict review, then the passers-by table.
 
+## Two randoseru for the Locker Room, from the user's views (tools and review)
+
+- The user sent a red and a black randoseru, four views each (both sides, the flap, the straps), to be modelled and
+  made available to the playable kids too. In `review/bags/randoseru_red/` and `randoseru_black/`.
+- `tools/blender/bag_views.py`: a bag built from its views with `km_views.py` (carved and baked), behind the back panel
+  only the two straps' bands kept (carved from outlines alone they merge into a vest, C11), its top painted from the
+  flap; exported as one textured FBX for `meshy_bag.py`. 11,640 triangles each before the kids' polish (bags 8,000).
+- `meshy_bag.py prep --even` (C27): measured by points spread over the surface; `--sat 2` for no recolourable cloth.
+  RandoseruRed: its red body recolourable; RandoseruBlack: its own colours.
+- Fitted for a preview: the red on Mia, the black on Kai (`review/bags/preview_worn.jpg`). Waiting for the user's
+  approval before every kid gets them (fit on all six, polish, the Locker Room's items, icons).
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

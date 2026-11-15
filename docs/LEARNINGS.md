@@ -596,6 +596,17 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
   Mixamo rigs; `neck` maps to Neck. Found by listing the bones before importing.
 - *Rule:* list a new rig's bones and their parents before importing it; map a chain by its order, not its names.
 
+**C27. The bag tool measured a flat-sided bag by vertices it no longer had (the randoseru).**
+- *What:* `meshy_bag.py prep` decides which side the straps are on, where the back panel is and how tall the body is
+  from the bag's vertices down its middle. On the randoseru, built from the user's views (`bag_views.py`), it chose
+  the wrong side for the black one and failed on the red one.
+- *Why:* a randoseru's flap and back panel are flat, and decimation keeps no vertices inside flat faces, so the
+  middle had almost none. Meshy's organic models never had that problem. The black bag's straps also come in to the
+  handle and crossed the strip measured as the back panel.
+- *Fix:* `--even` measures the bag by points spread evenly over its surface (`stat_points`), and the middle strip is
+  narrower; the five earlier bags keep the old way. `--sat 2` gives a bag no recolourable cloth (the black leather).
+- *Rule:* measure a surface by samples spread over it, not by its vertices, whenever a mesh may have large flat faces.
+
 ## D. Art direction and look
 
 **D1. A golden-hour haze hid the kid** (before v37).
