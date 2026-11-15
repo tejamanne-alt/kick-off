@@ -28,8 +28,15 @@ namespace DribbleToSchool.Cosmetics
         /// <summary>The classic tan canvas backpack with silver zips and dark mesh side pockets (meshy_bag.py --id GoldenTrail).</summary>
         public const string GoldenTrailId = "bag_goldentrail";
 
+        /// <summary>The red randoseru, a Japanese school backpack with the yellow first-grader's cover; its red body takes
+        /// the bag colour (tools/blender/bag_views.py, then meshy_bag.py --id RandoseruRed).</summary>
+        public const string RandoseruRedId = "bag_randoserured";
+
+        /// <summary>The black randoseru with the yellow cover; it keeps its own colours (meshy_bag.py --id RandoseruBlack --sat 2).</summary>
+        public const string RandoseruBlackId = "bag_randoserublack";
+
         /// <summary>The bags every kid has from the start (SaveSystem owns them in every save).</summary>
-        public static readonly string[] Starter = { NoneId, DefaultId, RaceCarId, UnicornId, DenimBowId, GoldenTrailId };
+        public static readonly string[] Starter = { NoneId, DefaultId, RaceCarId, UnicornId, DenimBowId, GoldenTrailId, RandoseruRedId, RandoseruBlackId };
 
         /// <summary>
         /// The colours bags can be worn in (Settings): the first, the bag's own colours; the rest recolour its cloth

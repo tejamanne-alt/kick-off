@@ -54,9 +54,9 @@ It ignores the first 6 s after a scene loads, and the time after resuming from t
 | Item | Budget | Today |
 |---|---|---|
 | Playable kid body | 32k triangles; head, hands and texture seams protected | 32k (was 100k), plus up to ~1k from splitting two-colour triangles (v120: 32.7k to 33.0k) |
-| Locker Room bag | 8k triangles | 8k (was 30k) |
+| Locker Room bag | 8k triangles | 8k (was 30k); the two randoseru 8,000 each, seven bags a kid now (est. +0.75 MB a kid file, +4.5 MB in all; only the worn bag is loaded, so no runtime cost; not yet measured on the Nord CE5) |
 | Passer-by | 14k triangles | 14k (was 30k) |
-| Character FBX total | | 28 MB (was 90 MB) |
+| Character FBX total | | 33 MB with the two randoseru (28 MB before; was 90 MB) |
 | Character atlas | 2048 (kids), 1024 (bags), gaps filled for every mip | as listed |
 | Skinned renderers drawn | 1 kid + 1 bag + passers-by on screen | as listed |
 | A Kamakura street prop | carved from its own views (`km_views.py`), 1,500 triangles, its own texture | KM1-1's seventeen at 1,452 to 1,454 triangles each (the first seven, then the red machine, the recycling bins, the air-conditioner unit, the meters, the letterbox, the control cabinet, the street lamp, the ticket gate, the name board, the plain pole: the plain pole installed with the buildings), one renderer each (the barrier two); a 1024 x 1024 texture each, RGB (about 0.7 MB with mips in ETC2), the bicycle RGBA for its cut-out spokes (about 1.4 MB): about 12 MB for the sixteen, est.; a level loads only those it places; in the project (`Art/Models/Kamakura`, approved), not yet in a level, not yet measured on the Nord CE5 |

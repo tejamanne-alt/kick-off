@@ -2454,6 +2454,14 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
   RandoseruRed: its red body recolourable; RandoseruBlack: its own colours.
 - Fitted for a preview: the red on Mia, the black on Kai (`review/bags/preview_worn.jpg`). Waiting for the user's
   approval before every kid gets them (fit on all six, polish, the Locker Room's items, icons).
+- The user approved both. Every playable kid now carries them (`Bag_RandoseruRed`, `Bag_RandoseruBlack`, 8,000
+  triangles each): `polish_all.py`'s `EXTRA_BAGS` builds them from their views, fits them onto each kid's original
+  before the polish (`fit_source_blend.py`, then `meshy_bag.py fit`) and icons them. The six kids' bodies and their
+  earlier five bags came out identical to the installed ones (positions, UVs, groups, atlases).
+- In the game: `Bags.RandoseruRedId` and `RandoseruBlackId`, free in the Locker Room (`Bags.Starter`), rows in
+  `CosmeticsTable` (red recolourable, black its own colours), atlases `BagRandoseru{Red,Black}Atlas.png`, icons in
+  `Resources/UI`. Cost: +4.5 MB of FBX in all, nothing at runtime (only the worn bag loads). Not yet seen in the
+  editor or on the Nord CE5.
 
 ## After Phase 8 (next steps)
 

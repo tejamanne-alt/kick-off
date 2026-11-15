@@ -79,6 +79,13 @@ blenv/bin/python meshy_bag.py -- prep /abs/sparkle_unicorn_backpack.fbx $PWD --i
 blenv/bin/python meshy_bag.py -- prep /abs/denim_bow_backpack.fbx $PWD --id DenimBow --hue 195,232 --sat 0.18   # the Denim Bow one
 blenv/bin/python meshy_bag.py -- prep /abs/golden_trail_backpack.fbx $PWD --id GoldenTrail --hue 20,48 --sat 0.3   # the Golden Trail one
     # (then fit it to each kid's fitted .blend in turn, and icon it, as above: a kid's file carries all their bags)
+blenv/bin/python bag_views.py -- RandoseruRed $PWD   # a bag from the user's own views (review/bags/randoseru_red/):
+    # carved and baked by km_views.py, only the two straps' bands kept behind the back panel, exported as one FBX
+blenv/bin/python meshy_bag.py -- prep $PWD/RandoseruRed.fbx $PWD --id RandoseruRed --tris 12000 --even --hue 340,18 --sat 0.5
+blenv/bin/python meshy_bag.py -- prep $PWD/RandoseruBlack.fbx $PWD --id RandoseruBlack --tris 12000 --even --sat 2   # its own colours
+    # (--even: a bag with flat sides measured by points over its surface, docs/LEARNINGS.md C27. polish_all.py does all
+    # of this for the two randoseru, EXTRA_BAGS: it builds them, fits them onto every kid's original before the polish
+    # (fit_source_blend.py, then fit), and icons them; the kids' bodies and earlier bags come out unchanged)
     # (PrimaryBoy2.fbx/.blend/.json, PrimaryBoy2Atlas.png; see "Leo and the bags" below; primary.py --boy2 would overwrite it)
 blenv/bin/python meshy_teen.py -- /abs/little_star_in_plaid.fbx $PWD --profile plaid   # Kai, from a supplied model
     # (PrimaryBoy.fbx/.blend/.json, PrimaryBoyAtlas.png; primary.py --boy would overwrite it)

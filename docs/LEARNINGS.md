@@ -172,6 +172,16 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
   - Add a row to `package_minimums.py` for every package a Unity release breaks.
   - Say only what was checked. "Unity upgrades it" was a guess.
 
+**A16. A new helper script overwrote an existing tool of the same name (caught before commit, November 2026).**
+- *What:* while fitting the two randoseru onto the kids, a new helper was written as `tools/blender/fbx_to_blend.py`.
+  A tool by that name already existed, with other import axes and other callers, and the write replaced it. The diff
+  showed it before anything was committed.
+- *Why:* the file was written without first checking whether that path already held something.
+- *Fix:* the original was restored with `git checkout`. The helper is now `tools/blender/fit_source_blend.py`.
+- *Rule:*
+  - Before writing a new file, look at the path (`ls`, or `git ls-files`). A name already taken gets a new name.
+  - Read `git status` before every commit: a tool you meant to add should show as `??`, not `M`.
+
 ## B. Performance and mobile
 
 **B1. 28 fps with uneven frames on a mid-range phone (November 2026).**
