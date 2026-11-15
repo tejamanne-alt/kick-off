@@ -230,17 +230,19 @@ of five looks like five children: **KM-C01** a first-grade boy, **KM-C02** a fir
 the randoseru, the shirt and the shorts or skirt vary.
 
 ```text
-ASSET KM-C01 and KM-C02, two first-graders walking to school, a model sheet each. Attach a picture of one of the
-game's primary-school kids (Mia or Kai) for the look, and KM1-1. A Japanese first-grader, about 6 years old and
-1.15 m tall: C01 a boy with short black hair; C02 a girl with a black bob. Each wears the round yellow school safety
-cap with its chin strap; a leather randoseru school backpack (C01 black, C02 red) with the yellow first-grader's
-safety cover over its flap; a plain white short-sleeved shirt; navy shorts (C01) or a navy pleated skirt (C02); white
-socks and white trainers. No logos, no writing. FORMAT: one image, aspect ratio 16:9, flat mid-grey background
-(#808080); the child in an A-pose (arms straight and out 30 to 40 degrees from the body, a hand's width between arm
-and body all the way down, hands open, legs a little apart, feet flat), the same child four times side by side at
-the same scale and height: front, left side, back, three-quarter from the front left. Even flat light, no cast
-shadows, no lighting painted into the colours: flat cel-style colours and game proportions like the game's kids.
-Nothing else in the image.
+ASSET KM-C01 and KM-C02, two first-graders walking to school, a model sheet each. Attach nothing: no picture of the
+game's own kids, whose faces are not Japanese. Two Japanese first-graders, about 6 years old and 1.15 m tall, with
+natural Japanese children's faces: dark brown eyes, black hair, a gentle everyday look, drawn true to life and
+respectfully, not exaggerated or caricatured. C01 a boy with short black hair; C02 a girl with a black bob. Each wears
+the round yellow school safety cap with its chin strap; a leather randoseru school backpack (C01 black, C02 red) with
+the yellow first-grader's safety cover over its flap; a plain white short-sleeved shirt; navy shorts (C01) or a navy
+pleated skirt (C02); white socks and white trainers. No logos, no writing. STYLE: a stylised 3D game character, soft
+rounded shapes, the head about a fifth of the height, simple clean features, flat cel-style colours. FORMAT: one
+image, aspect ratio 16:9, flat mid-grey background (#808080); the child in an A-pose (arms straight and out 30 to 40
+degrees from the body, a hand's width between arm and body all the way down, hands open, legs a little apart, feet
+flat), the same child four times side by side at the same scale and height: front, left side, back, three-quarter
+from the front left. Even flat light, no cast shadows, no lighting painted into the colours. Nothing else in the
+image.
 ```
 
 The sheet goes in `review/kamakura/characters/KM-C01_first_grade_boy/1_sheet.png` (and `KM-C02_first_grade_girl`).
