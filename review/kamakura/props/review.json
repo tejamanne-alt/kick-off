@@ -2098,7 +2098,7 @@
     3,
     "Depth from each part's own width",
     "pass",
-    "its front flush with its wall but over the balcony, the entrance canopy and the lower window's hood: the side view shows how far they stand out, the front where, and carved from both alone they ran the whole front as ledges"
+    "modelled from solids measured off its views (D28): its walls, hipped roof, balcony and railing, entrance canopy, the lower window's hood and the step; flat faces hold at any angle (carved from its outlines, they warped at three-quarter)"
    ],
    [
     4,
@@ -2140,7 +2140,7 @@
     10,
     "Solid",
     "pass",
-    "solid and whole"
+    "solid; the balcony railing a plate 10 cm thick, the window behind it in its texture"
    ],
    [
     11,
@@ -2212,14 +2212,14 @@
    [
     3,
     "Depth from each part's own width",
-    "limit",
-    "its walls beside the steps carved from its front and top alone (its side view draws the steps standing out in front of them); its lantern kept to its own depth"
+    "pass",
+    "modelled from solids measured off its views (D28): the battered stone base, the stairs' channel and its seven steps, the raised floor, the shrine, its bracketed eaves and gabled roof, the lantern's seven stones"
    ],
    [
     4,
     "Views the game sees",
     "limit",
-    "its back is drawn a quarter narrower than its front, so its back's edges take its sides' pixels; the walls' inner faces, seen by no view, take the side view's stones reflected; its left side is its right side's, the lantern there included"
+    "its views disagree, so each part takes its pixels where they draw it (paint rules): the top view draws the roof as wide as the base, its ridge across, so the roof takes its tiles from the side; the base behind the shrine, under that roof from above, the paving in front; the side view draws the stairs in front of the wall, so the walls' fronts take the wall behind; the back view's base is drawn a fifth narrower and its shrine a tenth wider, each scaled to fit. Its left side is its right side's"
    ],
    [
     5,
@@ -2301,6 +2301,121 @@
    ]
   ]
  },
+ "KmWireGantry": {
+  "id": "KM-B07",
+  "sheet": "sheets/KM-B07_overhead_wire_gantry (its views, made from KM1-1)",
+  "size": [
+   4.85,
+   0.59,
+   7.5
+  ],
+  "tris": 2910,
+  "motions": [],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "one solid carved from its views: each part once, looked at in Top and Bottom"
+   ],
+   [
+    2,
+    "Closed shell",
+    "pass",
+    "0 edges with one face"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "pass",
+    "carved from its front, side and top: the pole round in section, the lattice beam and the brace as deep as its side and top show them"
+   ],
+   [
+    4,
+    "Views the game sees",
+    "pass",
+    "every face takes its pixels from the view that faces it squarely and can see it (the solid says what hides what); the left side the right side's (no view of its own)"
+   ],
+   [
+    5,
+    "Size, triangles",
+    "pass",
+    "4.85 x 0.59 x 7.50 m, 2910 triangles (its budget: 3,000), its own 2048 px texture"
+   ],
+   [
+    6,
+    "Outline whole",
+    "pass",
+    "its outline the views' outlines; no background on its edges (looked at on the board)"
+   ],
+   [
+    7,
+    "No holes",
+    "pass",
+    "the lattice's gaps open in its texture's alpha (the cut-out material)"
+   ],
+   [
+    8,
+    "Own models before walls",
+    "pass",
+    "stands on its own, its own model"
+   ],
+   [
+    9,
+    "Look target",
+    "pass",
+    "from the user's views (BASE KM-S0), made from the photographic KM1-1"
+   ],
+   [
+    10,
+    "Solid",
+    "pass",
+    "solid and whole"
+   ],
+   [
+    11,
+    "No brands",
+    "pass",
+    "no brand or logo"
+   ],
+   [
+    12,
+    "No wires or sky",
+    "pass",
+    "the overhead wire is the level's: only its hangers and insulators are the model's"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "one image a view (its views in halves came at two scales and were asked for again)"
+   ],
+   [
+    14,
+    "Rig names",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    15,
+    "Joints overlap",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no feet"
+   ],
+   [
+    17,
+    "Each part only itself",
+    "n/a",
+    "one piece"
+   ]
+  ]
+ },
  "KmStationPlatform": {
   "id": "KM-B06",
   "sheet": "sheets/KM-B06_hase_station_platform (its views, made from KM1-1)",
@@ -2328,13 +2443,13 @@
     3,
     "Depth from each part's own width",
     "pass",
-    "the gap its front draws through the back wall at the gateway left out (its back shows a wall there)"
+    "modelled from solids measured off its views (D28): the platform and step, the front railing with its gate and card reader, the back wall, the end panels and rails, the posts, beams, rafters and the sloping roof; an open shelter (carved, it was filled solid to the back wall's height)"
    ],
    [
     4,
     "Views the game sees",
-    "pass",
-    "every face takes its pixels from the view that faces it squarely and can see it (the solid says what hides what); the left side the right side's (no view of its own)"
+    "limit",
+    "the floor and the roof's underside, which no view shows straight, take the front's concrete and its view of the underside from below; the bench is painted on the front railing's plate"
    ],
    [
     5,
@@ -2352,7 +2467,7 @@
     7,
     "No holes",
     "pass",
-    "no holes; the gaps the views show (between bars, beams and pillars) stay open"
+    "the end rails' gaps open in its texture's alpha (the cut-out material)"
    ],
    [
     8,
