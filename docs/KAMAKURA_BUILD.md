@@ -461,10 +461,10 @@ smaller (about 1,536 px on the long side) and come in 1:1, 2:3 and 3:2 only, so 
 FORMAT lines below instead (the prompts page's ChatGPT switch puts them in). ChatGPT writes lettering cleanly, which
 suits the vending machines and signs. A utility pole (KM-A01, KM-A02) is 10 m tall, too tall for one of ChatGPT's images
 to hold in detail, so in ChatGPT its FRONT, RIGHT SIDE and BACK each come in two halves at one scale, overlapping by about
-1 m: after the top half, send "Next: bottom half.". Save them as `1_front_top.png` and `1_front_bottom.png`, and so on
-(`4_top.png` and `5_three_quarter.png` stay one image each). The street lamp (KM-A26, 7 m) comes in halves the same way, and
-the tram (KM-V01, 12 m long) in a left and a right half of its long views ("Next: right half.", `1_front_left.png`,
-`1_front_right.png`).
+1 m: after the top half, send "Next: bottom half.". Save them as `1_front_top_half.png` and `2_front_bottom_half.png`,
+and so on (the TOP and the THREE-QUARTER stay one image each). The street lamp (KM-A26, 7 m) and the wire gantry (KM-B07,
+7.5 m) come in halves the same way; the tram (KM-V01, 12 m long) and the station platform (KM-B06, 10 m) in a left and a
+right half of their long views ("Next: right half.", `1_front_left_half.png`, `2_front_right_half.png`).
 
 - `KM-S0`: `FORMAT: the aspect ratio the object fills best, the same for FRONT, RIGHT SIDE and BACK: 2:3 for a tall object (a signal, a lantern), 3:2 for a long one (a bench, a tram, a vehicle), 1:1 otherwise; TOP and THREE-QUARTER 1:1. The largest size you can make.`
 - `KM-S1`: `FORMAT: SIDE 1:1; FROM ABOVE, FROM BELOW and FRONT 3:2 (the spread wings across). The largest size you can make.`
@@ -472,6 +472,8 @@ the tram (KM-V01, 12 m long) in a left and a right half of its long views ("Next
 - `KM-A01`: `FORMAT: 2:3, the largest size you can make. The pole is 10 m tall, too tall for one image: make FRONT, RIGHT SIDE and BACK each in two images at the same scale, first its top half (from about 4.5 m up to its top), then, when I say "Next: bottom half.", its bottom half (from the ground up to about 5.5 m), the two overlapping by about 1 m. TOP and THREE-QUARTER as one image each, 1:1.`
 - `KM-A02`: `FORMAT: 2:3, the largest size you can make. The pole is 10 m tall, too tall for one image: make FRONT, RIGHT SIDE and BACK each in two images at the same scale, first its top half (from about 4.5 m up to its top), then, when I say "Next: bottom half.", its bottom half (from the ground up to about 5.5 m), the two overlapping by about 1 m. TOP and THREE-QUARTER as one image each, 1:1.`
 - `KM-A26`: `FORMAT: 2:3, the largest size you can make. The lamp's pole is 7 m tall, too tall for one image: make FRONT, RIGHT SIDE and BACK each in two images at the same scale, first its top half (from about 3 m up to its top), then, when I say "Next: bottom half.", its bottom half (from the ground up to about 4 m), the two overlapping by about 1 m. TOP and THREE-QUARTER as one image each, 1:1.`
+- `KM-B06`: `FORMAT: 3:2, the largest size you can make. The platform is 10 m long, too long for one image: make FRONT, BACK and TOP each in two images at the same scale, first its left half, then, when I say "Next: right half.", its right half, the two overlapping by about 1 m. RIGHT SIDE (its end) and THREE-QUARTER as one image each, 1:1.`
+- `KM-B07`: `FORMAT: 2:3, the largest size you can make. The gantry is 7.5 m tall, too tall for one image: make FRONT, RIGHT SIDE and BACK each in two images at the same scale, first its top half (from about 3.5 m up to its top, with the whole arm), then, when I say "Next: bottom half.", its bottom half (from the ground up to about 4.5 m), the two overlapping by about 1 m; the lattice open, the grey background showing through it. TOP and THREE-QUARTER as one image each, 1:1.`
 - `KM-V01`: `FORMAT: 3:2, the largest size you can make. The tram is 12 m long, too long for one image: make FRONT, BACK and TOP each in two images at the same scale, first its left half, then, when I say "Next: right half.", its right half, the two overlapping by about 1 m. RIGHT SIDE (its end) and THREE-QUARTER as one image each, 1:1.`
 - `KM-T07`: `FORMAT: aspect ratio 3:2, the largest size you can make; tileable along its length.`
 - `KM-T10`: `FORMAT: aspect ratio 3:2, the largest size you can make; tileable along its length.`
@@ -660,7 +662,16 @@ KM-A25 the control cabinet, KM-A26 the street lamp, KM-A28 the ticket gate, KM-A
 from its views and textured from them, D25; reviewed in `review/kamakura/props/`): KM1-1's first batch (A01, A03, A04,
 A05, A08, A11, A19), its second (A06, A20, A22 to A26, A28, A29) and the tram (V01) are built from them. Still wanted:
 the tram's FRONT again (both halves), its windows showing the car's inside, seats and straps, with only the plain grey
-through the far windows, as its BACK shows them (its first FRONT shows a street through the glass). A view must show the same object as the others: the same proportions and pose,
+through the far windows, as its BACK shows them (its first FRONT shows a street through the glass).
+
+KM1-1's last batch, all its level still needs, in this order: the tram's FRONT again (above); KM-A02 the plain pole (in
+halves, as KM-A01); from Step 5, KM-B07 the overhead wire gantry (in halves, its lattice open), KM-B06 Hase Station's
+platform (in left and right halves), KM-B05 the little shrine, KM-B04 the beige stucco house; from Step 4, the foliage
+sheets KM-F02 (the persimmon's leaves) and KM-F04 (the hydrangeas and morning glories); from Step 1, the lane KM-T07.
+The views go in `review/kamakura/sheets/<id>_<name>/` as before (`KM-A02_plain_concrete_utility_pole`,
+`KM-B07_overhead_wire_gantry`, `KM-B06_hase_station_platform`, `KM-B05_little_shrine`, `KM-B04_beige_stucco_house`); a
+foliage sheet or a texture, one image, as `review/kamakura/sheets/KM-F02_broad_leaves.png`, `KM-F04_flowers.png`,
+`KM-T07_lane.png`. A view must show the same object as the others: the same proportions and pose,
 BACK its far side (for a bicycle, the side away from the street, not its rear). The level picture stays the authority
 for design, size and place; the views give the pixels.
 
