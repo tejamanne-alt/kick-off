@@ -890,6 +890,11 @@ def props():
                           dict(round_z=[(0.0, 2.4)], round_w=0.09)),
         # the tram: a vehicle, 12 m long (its own budget, docs/PERFORMANCE.md)
         'KmTram': ('KM-V01', 'KM-V01_tram', ('width', 12.0), dict(vox=0.03, budget=4000, tex=2048)),
+        # the delivery scooter: KM1-1's hazard, a vehicle (its views as the bicycle's: FRONT and BACK its long sides,
+        # RIGHT SIDE its rear end; its TOP drawn with its nose down, turned so its nose is to the left as in its FRONT);
+        # its spokes and basket open in the texture's alpha
+        'KmScooter': ('KM-V03', 'KM-V03_delivery_scooter', ('width', 1.8),
+                      dict(budget=3000, tex=1024, top='always', cutout=True, hole_fill=0.05, turn={'top': 3})),
         # KM1-1's last batch: the plain pole, and the buildings and set pieces (their own budgets, docs/PERFORMANCE.md)
         'KmPolePlain': ('KM-A02', 'KM-A02_plain_concrete_utility_pole', 10.0,
                         dict(vox=0.02, round_z=[(0.0, 10.0)], round_w=0.7, thin=0.08)),

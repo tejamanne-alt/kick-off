@@ -2407,6 +2407,17 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
   a set piece's 4,000).
 - Next: the KM1-1 level (BUILD KM-L11) places them; then the foliage (KM-F02, KM-F04) and the lane texture (KM-T07).
 
+## The delivery scooter's views; the first-graders planned (tools and docs)
+
+- The user pushed KM-V03, the delivery scooter's five views. `km_views.py` builds it as `KmScooter`: a vehicle,
+  3,000 triangles, its spokes and basket cut out, its top view turned nose-left. The first build is right from
+  straight on, but faces no view sees (inside the step-through) take the rear view's tail light; to fix, then review.
+- KM1-1's first-graders in yellow caps: the game's kids can't be used. They are the player's choices, a passer-by's
+  budget is 14,000 triangles to their 32,000, and they are too tall, with no caps or randoseru. So two new passers-by
+  (KM-C01, KM-C02): the ChatGPT model-sheet prompt and the meshy.ai settings are in docs/KAMAKURA_BUILD.md,
+  "Characters (KM-C)". In short: remesh Fixed, Quad, 15,000 for a passer-by or 50,000 for a playable kid; auto-rig as
+  a humanoid; FBX with one plain walk (the game animates in code).
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

@@ -217,6 +217,49 @@ and stop nothing; no more than 12 animals awake on screen at once (AmbientAgent 
 level's side-by-side with its picture true: it goes where the picture has room for it (behind a fence, in a pond, on a
 wire, in the sky, at the lane's edges), never over something the picture shows.
 
+## Characters (KM-C)
+
+KM1-1's hazard "a line of first-graders in yellow caps walking to school" needs new characters. The game's own kids
+can't be used:
+- they are the player's choices, so a line of Mias and Kais would put the player's own kid in the crowd;
+- each is 32,000 triangles, where a passer-by is 14,000: a line of five would be about 160,000 (docs/PERFORMANCE.md);
+- they are 1.27 to 1.32 m tall, a first-grader about 1.15 m, and none has the yellow cap or the randoseru.
+
+So two new passers-by (`LevelBuildKit.Passersby`, walked by `Pedestrian`), each with parts the game recolours so a line
+of five looks like five children: **KM-C01** a first-grade boy, **KM-C02** a first-grade girl. The cap stays yellow;
+the randoseru, the shirt and the shorts or skirt vary.
+
+```text
+ASSET KM-C01 and KM-C02, two first-graders walking to school, a model sheet each. Attach a picture of one of the
+game's primary-school kids (Mia or Kai) for the look, and KM1-1. A Japanese first-grader, about 6 years old and
+1.15 m tall: C01 a boy with short black hair; C02 a girl with a black bob. Each wears the round yellow school safety
+cap with its chin strap; a leather randoseru school backpack (C01 black, C02 red) with the yellow first-grader's
+safety cover over its flap; a plain white short-sleeved shirt; navy shorts (C01) or a navy pleated skirt (C02); white
+socks and white trainers. No logos, no writing. FORMAT: one image, aspect ratio 16:9, flat mid-grey background
+(#808080); the child in an A-pose (arms straight and out 30 to 40 degrees from the body, a hand's width between arm
+and body all the way down, hands open, legs a little apart, feet flat), the same child four times side by side at
+the same scale and height: front, left side, back, three-quarter from the front left. Even flat light, no cast
+shadows, no lighting painted into the colours: flat cel-style colours and game proportions like the game's kids.
+Nothing else in the image.
+```
+
+The sheet goes in `review/kamakura/characters/KM-C01_first_grade_boy/1_sheet.png` (and `KM-C02_first_grade_girl`).
+Claude cuts it into its four views and pushes them, then in meshy.ai:
+1. **Image to 3D**, several images: the four views; the newest model; symmetry on; PBR off (base colour only: the
+   game's toon shader uses the colour alone, and lighting in the texture fights it); the largest texture offered.
+2. **Remesh** before rigging: Target Polycount *Fixed*, *Custom*, Topology *Quad*. A passer-by (C01, C02): 15,000
+   quads, about 30,000 triangles. A playable kid: 50,000 quads, about 100,000 triangles. These are what
+   `meshy_rigged.py --tris` expects; `polish_all.py` then cuts them to 14,000 and 32,000 keeping the face, the hands,
+   the joints' loops and the print seams (C7). Don't go lower in Meshy: its cut can't protect those.
+3. **Animate**: auto-rig as a humanoid (its skeleton is the Mixamo-style one `meshy_rigged.py` reads). Animations
+   don't matter: the game moves every character's bones in code (`CharacterRig`, `WalkerAnimator`) and the importer
+   drops the clip. If the download needs one, add one plain walk.
+4. **Download**: FBX, the rigged model with its one animation, as one file; origin at the bottom. The size doesn't
+   matter (`meshy_rigged.py` scales to the roster's height). Save it beside the sheet as `<id>_<name>.fbx` and push.
+Then `meshy_rigged.py` (a profile for each), `polish_all.py`, the strict review (docs/ASSET_REVIEW.md: eight views,
+the walk animated, the face 100% on the Head, C15), and the user's approval before the level uses them. Meshy's terms
+as above: a paid plan for full commercial use, or Meshy credited.
+
 ## The map plan
 
 Kamakura's map screen, traced from the route design (`docs/CITIES.md`), not from a generated plan: the user's map
