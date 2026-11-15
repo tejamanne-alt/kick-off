@@ -38,7 +38,7 @@
     5,
     "Size, triangles",
     "pass",
-    "2.24 x 1.01 x 10.00 m, 1454 triangles (a prop's budget: 1,500), its own 1024 px texture"
+    "2.24 x 1.01 x 10.00 m, 1454 triangles (its budget: 1,500), its own 1024 px texture"
    ],
    [
     6,
@@ -153,7 +153,7 @@
     5,
     "Size, triangles",
     "pass",
-    "0.85 x 0.35 x 3.80 m, 1454 triangles (a prop's budget: 1,500), its own 1024 px texture"
+    "0.85 x 0.35 x 3.80 m, 1454 triangles (its budget: 1,500), its own 1024 px texture"
    ],
    [
     6,
@@ -268,7 +268,7 @@
     5,
     "Size, triangles",
     "pass",
-    "0.99 x 0.73 x 1.83 m, 1454 triangles (a prop's budget: 1,500), its own 1024 px texture"
+    "0.99 x 0.73 x 1.83 m, 1454 triangles (its budget: 1,500), its own 1024 px texture"
    ],
    [
     6,
@@ -370,8 +370,8 @@
    [
     3,
     "Depth from each part's own width",
-    "limit",
-    "the post round in section; the guard frame solid: its front and side see its far bars through its near ones, and from above the crossbuck and lamps cover it"
+    "pass",
+    "the post round in section; the guard frame open, its bars only (no view shows its hollow: its far bars show through its near ones, and from above the crossbuck covers it, so the band its views show is kept and the middle left open)"
    ],
    [
     4,
@@ -383,7 +383,7 @@
     5,
     "Size, triangles",
     "pass",
-    "1.06 x 0.62 x 3.60 m, 1454 triangles (a prop's budget: 1,500), its own 1024 px texture"
+    "1.06 x 0.62 x 3.60 m, 1454 triangles (its budget: 1,500), its own 1024 px texture"
    ],
    [
     6,
@@ -500,7 +500,7 @@
     5,
     "Size, triangles",
     "pass",
-    "1.22 x 0.69 x 4.50 m, 1452 triangles (a prop's budget: 1,500), its own 1024 px texture"
+    "1.22 x 0.69 x 4.50 m, 1452 triangles (its budget: 1,500), its own 1024 px texture"
    ],
    [
     6,
@@ -615,7 +615,7 @@
     5,
     "Size, triangles",
     "pass",
-    "2.79 x 0.31 x 2.60 m, 1454 triangles (a prop's budget: 1,500), its own 1024 px texture"
+    "2.79 x 0.31 x 2.60 m, 1454 triangles (its budget: 1,500), its own 1024 px texture"
    ],
    [
     6,
@@ -730,7 +730,7 @@
     5,
     "Size, triangles",
     "pass",
-    "1.79 x 0.67 x 1.15 m, 1454 triangles (a prop's budget: 1,500), its own 1024 px texture"
+    "1.79 x 0.67 x 1.15 m, 1454 triangles (its budget: 1,500), its own 1024 px texture"
    ],
    [
     6,
@@ -773,6 +773,1156 @@
     "No wires or sky",
     "pass",
     "no power line across it, no sky on its edges"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "none needed"
+   ],
+   [
+    14,
+    "Rig names",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    15,
+    "Joints overlap",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no feet"
+   ],
+   [
+    17,
+    "Each part only itself",
+    "n/a",
+    "one piece"
+   ]
+  ]
+ },
+ "KmVendingRed": {
+  "id": "KM-A06",
+  "sheet": "sheets/KM-A06_red_vending_machine (its views, made from KM1-1)",
+  "size": [
+   1.03,
+   0.72,
+   1.83
+  ],
+  "tris": 1454,
+  "motions": [],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "one solid carved from its views: each part once, looked at in Top and Bottom"
+   ],
+   [
+    2,
+    "Closed shell",
+    "pass",
+    "0 edges with one face"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "pass",
+    "carved from its front, side and top views: each part as deep as its side and top show it"
+   ],
+   [
+    4,
+    "Views the game sees",
+    "pass",
+    "every face takes its pixels from the view that faces it squarely and can see it (the solid says what hides what); the left side the right side's (no view of its own)"
+   ],
+   [
+    5,
+    "Size, triangles",
+    "pass",
+    "1.03 x 0.72 x 1.83 m, 1454 triangles (its budget: 1,500), its own 1024 px texture"
+   ],
+   [
+    6,
+    "Outline whole",
+    "pass",
+    "its outline the views' outlines; no background on its edges (looked at on the board)"
+   ],
+   [
+    7,
+    "No holes",
+    "pass",
+    "no holes; the gaps the views show (between bars, beams and pillars) stay open"
+   ],
+   [
+    8,
+    "Own models before walls",
+    "pass",
+    "stands on its own, its own model"
+   ],
+   [
+    9,
+    "Look target",
+    "pass",
+    "from the user's views (BASE KM-S0), made from the photographic KM1-1"
+   ],
+   [
+    10,
+    "Solid",
+    "pass",
+    "solid and whole"
+   ],
+   [
+    11,
+    "No brands",
+    "pass",
+    "its logo panel reads うみかぜ, as the prompt asks (no real drink logo)"
+   ],
+   [
+    12,
+    "No wires or sky",
+    "pass",
+    "no power line across it, no sky on its edges"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "none needed"
+   ],
+   [
+    14,
+    "Rig names",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    15,
+    "Joints overlap",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no feet"
+   ],
+   [
+    17,
+    "Each part only itself",
+    "n/a",
+    "one piece"
+   ]
+  ]
+ },
+ "KmRecyclingBins": {
+  "id": "KM-A20",
+  "sheet": "sheets/KM-A20_recycling_bins (its views, made from KM1-1)",
+  "size": [
+   1.39,
+   0.51,
+   1.0
+  ],
+  "tris": 1454,
+  "motions": [],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "one solid carved from its views: each part once, looked at in Top and Bottom"
+   ],
+   [
+    2,
+    "Closed shell",
+    "pass",
+    "0 edges with one face"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "pass",
+    "carved from its front, side and top views: each part as deep as its side and top show it"
+   ],
+   [
+    4,
+    "Views the game sees",
+    "pass",
+    "every face takes its pixels from the view that faces it squarely and can see it (the solid says what hides what); the left side the right side's (no view of its own)"
+   ],
+   [
+    5,
+    "Size, triangles",
+    "pass",
+    "1.39 x 0.51 x 1.00 m, 1454 triangles (its budget: 1,500), its own 1024 px texture"
+   ],
+   [
+    6,
+    "Outline whole",
+    "pass",
+    "its outline the views' outlines; no background on its edges (looked at on the board)"
+   ],
+   [
+    7,
+    "No holes",
+    "pass",
+    "no holes; the gaps the views show (between bars, beams and pillars) stay open"
+   ],
+   [
+    8,
+    "Own models before walls",
+    "pass",
+    "stands on its own, its own model"
+   ],
+   [
+    9,
+    "Look target",
+    "pass",
+    "from the user's views (BASE KM-S0), made from the photographic KM1-1"
+   ],
+   [
+    10,
+    "Solid",
+    "pass",
+    "solid and whole"
+   ],
+   [
+    11,
+    "No brands",
+    "pass",
+    "its labels are generic words (カン, ペットボトル, ペット) with invented lines under them, as the prompt asks; no brand"
+   ],
+   [
+    12,
+    "No wires or sky",
+    "pass",
+    "no power line across it, no sky on its edges"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "none needed"
+   ],
+   [
+    14,
+    "Rig names",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    15,
+    "Joints overlap",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no feet"
+   ],
+   [
+    17,
+    "Each part only itself",
+    "n/a",
+    "one piece"
+   ]
+  ]
+ },
+ "KmAirConditioner": {
+  "id": "KM-A22",
+  "sheet": "sheets/KM-A22_air_conditioner_outdoor_unit (its views, made from KM1-1)",
+  "size": [
+   0.8,
+   0.39,
+   1.13
+  ],
+  "tris": 1454,
+  "motions": [],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "one solid carved from its views: each part once, looked at in Top and Bottom"
+   ],
+   [
+    2,
+    "Closed shell",
+    "pass",
+    "0 edges with one face"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "pass",
+    "the stand open: its legs and rails only, the band its views show (the front's and the side's rails crossing would otherwise fill it with a shelf)"
+   ],
+   [
+    4,
+    "Views the game sees",
+    "pass",
+    "every face takes its pixels from the view that faces it squarely and can see it (the solid says what hides what); the left side the right side's (no view of its own)"
+   ],
+   [
+    5,
+    "Size, triangles",
+    "pass",
+    "0.80 x 0.39 x 1.13 m, 1454 triangles (its budget: 1,500), its own 1024 px texture"
+   ],
+   [
+    6,
+    "Outline whole",
+    "pass",
+    "its outline the views' outlines; no background on its edges (looked at on the board)"
+   ],
+   [
+    7,
+    "No holes",
+    "pass",
+    "no holes; the gaps the views show (between bars, beams and pillars) stay open"
+   ],
+   [
+    8,
+    "Own models before walls",
+    "pass",
+    "stands on its own, its own model"
+   ],
+   [
+    9,
+    "Look target",
+    "pass",
+    "from the user's views (BASE KM-S0), made from the photographic KM1-1"
+   ],
+   [
+    10,
+    "Solid",
+    "pass",
+    "solid and whole"
+   ],
+   [
+    11,
+    "No brands",
+    "pass",
+    "its maker's plate an invented code (KM-50)"
+   ],
+   [
+    12,
+    "No wires or sky",
+    "pass",
+    "no power line across it, no sky on its edges"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "none needed"
+   ],
+   [
+    14,
+    "Rig names",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    15,
+    "Joints overlap",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no feet"
+   ],
+   [
+    17,
+    "Each part only itself",
+    "n/a",
+    "one piece"
+   ]
+  ]
+ },
+ "KmMeters": {
+  "id": "KM-A23",
+  "sheet": "sheets/KM-A23_gas_and_electricity_meters (its views, made from KM1-1)",
+  "size": [
+   0.8,
+   0.2,
+   0.8
+  ],
+  "tris": 1454,
+  "motions": [],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "one solid carved from its views: each part once, looked at in Top and Bottom"
+   ],
+   [
+    2,
+    "Closed shell",
+    "pass",
+    "0 edges with one face"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "pass",
+    "the board and meters carved from its front, side and top; the pipes below the board round"
+   ],
+   [
+    4,
+    "Views the game sees",
+    "pass",
+    "every face takes its pixels from the view that faces it squarely and can see it (the solid says what hides what); the left side the right side's (no view of its own)"
+   ],
+   [
+    5,
+    "Size, triangles",
+    "pass",
+    "0.80 x 0.20 x 0.80 m, 1454 triangles (its budget: 1,500), its own 1024 px texture"
+   ],
+   [
+    6,
+    "Outline whole",
+    "pass",
+    "its outline the views' outlines; no background on its edges (looked at on the board)"
+   ],
+   [
+    7,
+    "No holes",
+    "pass",
+    "no holes; the gaps the views show (between bars, beams and pillars) stay open"
+   ],
+   [
+    8,
+    "Own models before walls",
+    "pass",
+    "stands on its own, its own model"
+   ],
+   [
+    9,
+    "Look target",
+    "pass",
+    "from the user's views (BASE KM-S0), made from the photographic KM1-1"
+   ],
+   [
+    10,
+    "Solid",
+    "pass",
+    "solid and whole"
+   ],
+   [
+    11,
+    "No brands",
+    "pass",
+    "no brand or logo"
+   ],
+   [
+    12,
+    "No wires or sky",
+    "pass",
+    "no power line across it, no sky on its edges"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "none needed"
+   ],
+   [
+    14,
+    "Rig names",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    15,
+    "Joints overlap",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no feet"
+   ],
+   [
+    17,
+    "Each part only itself",
+    "n/a",
+    "one piece"
+   ]
+  ]
+ },
+ "KmLetterbox": {
+  "id": "KM-A24",
+  "sheet": "sheets/KM-A24_house_letterbox (its views, made from KM1-1)",
+  "size": [
+   0.49,
+   0.3,
+   1.55
+  ],
+  "tris": 1454,
+  "motions": [],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "one solid carved from its views: each part once, looked at in Top and Bottom"
+   ],
+   [
+    2,
+    "Closed shell",
+    "pass",
+    "0 edges with one face"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "pass",
+    "carved from its front, side and top views: each part as deep as its side and top show it"
+   ],
+   [
+    4,
+    "Views the game sees",
+    "pass",
+    "every face takes its pixels from the view that faces it squarely and can see it (the solid says what hides what); the left side the right side's (no view of its own)"
+   ],
+   [
+    5,
+    "Size, triangles",
+    "pass",
+    "0.49 x 0.30 x 1.55 m, 1454 triangles (its budget: 1,500), its own 1024 px texture"
+   ],
+   [
+    6,
+    "Outline whole",
+    "pass",
+    "its outline the views' outlines; no background on its edges (looked at on the board)"
+   ],
+   [
+    7,
+    "No holes",
+    "pass",
+    "no holes; the gaps the views show (between bars, beams and pillars) stay open"
+   ],
+   [
+    8,
+    "Own models before walls",
+    "pass",
+    "stands on its own, its own model"
+   ],
+   [
+    9,
+    "Look target",
+    "pass",
+    "from the user's views (BASE KM-S0), made from the photographic KM1-1"
+   ],
+   [
+    10,
+    "Solid",
+    "pass",
+    "solid and whole"
+   ],
+   [
+    11,
+    "No brands",
+    "pass",
+    "its labels generic (郵便, post) and invented; no brand"
+   ],
+   [
+    12,
+    "No wires or sky",
+    "pass",
+    "no power line across it, no sky on its edges"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "none needed"
+   ],
+   [
+    14,
+    "Rig names",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    15,
+    "Joints overlap",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no feet"
+   ],
+   [
+    17,
+    "Each part only itself",
+    "n/a",
+    "one piece"
+   ]
+  ]
+ },
+ "KmControlCabinet": {
+  "id": "KM-A25",
+  "sheet": "sheets/KM-A25_grey_control_cabinet (its views, made from KM1-1)",
+  "size": [
+   1.07,
+   0.28,
+   1.6
+  ],
+  "tris": 1454,
+  "motions": [],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "one solid carved from its views: each part once, looked at in Top and Bottom"
+   ],
+   [
+    2,
+    "Closed shell",
+    "pass",
+    "0 edges with one face"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "pass",
+    "as deep as its side and three-quarter views show it (0.28 m); its top view draws it deeper, and the side's depth is kept"
+   ],
+   [
+    4,
+    "Views the game sees",
+    "pass",
+    "every face takes its pixels from the view that faces it squarely and can see it (the solid says what hides what); the left side the right side's (no view of its own)"
+   ],
+   [
+    5,
+    "Size, triangles",
+    "pass",
+    "1.07 x 0.28 x 1.60 m, 1454 triangles (its budget: 1,500), its own 1024 px texture"
+   ],
+   [
+    6,
+    "Outline whole",
+    "pass",
+    "its outline the views' outlines; no background on its edges (looked at on the board)"
+   ],
+   [
+    7,
+    "No holes",
+    "pass",
+    "no holes; the gaps the views show (between bars, beams and pillars) stay open"
+   ],
+   [
+    8,
+    "Own models before walls",
+    "pass",
+    "stands on its own, its own model"
+   ],
+   [
+    9,
+    "Look target",
+    "pass",
+    "from the user's views (BASE KM-S0), made from the photographic KM1-1"
+   ],
+   [
+    10,
+    "Solid",
+    "pass",
+    "solid and whole"
+   ],
+   [
+    11,
+    "No brands",
+    "pass",
+    "no brand or logo"
+   ],
+   [
+    12,
+    "No wires or sky",
+    "pass",
+    "no power line across it, no sky on its edges"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "none needed"
+   ],
+   [
+    14,
+    "Rig names",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    15,
+    "Joints overlap",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no feet"
+   ],
+   [
+    17,
+    "Each part only itself",
+    "n/a",
+    "one piece"
+   ]
+  ]
+ },
+ "KmStreetLamp": {
+  "id": "KM-A26",
+  "sheet": "sheets/KM-A26_street_lamp (its views, made from KM1-1)",
+  "size": [
+   2.55,
+   0.49,
+   7.0
+  ],
+  "tris": 1454,
+  "motions": [],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "one solid carved from its views: each part once, looked at in Top and Bottom"
+   ],
+   [
+    2,
+    "Closed shell",
+    "pass",
+    "0 edges with one face"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "pass",
+    "the column round in section; the arm and lamp from the front, side and top"
+   ],
+   [
+    4,
+    "Views the game sees",
+    "pass",
+    "every face takes its pixels from the view that faces it squarely and can see it (the solid says what hides what); the left side the right side's (no view of its own)"
+   ],
+   [
+    5,
+    "Size, triangles",
+    "pass",
+    "2.55 x 0.49 x 7.00 m, 1454 triangles (its budget: 1,500), its own 1024 px texture"
+   ],
+   [
+    6,
+    "Outline whole",
+    "pass",
+    "its outline the views' outlines; no background on its edges (looked at on the board)"
+   ],
+   [
+    7,
+    "No holes",
+    "pass",
+    "no holes; the gaps the views show (between bars, beams and pillars) stay open"
+   ],
+   [
+    8,
+    "Own models before walls",
+    "pass",
+    "stands on its own, its own model"
+   ],
+   [
+    9,
+    "Look target",
+    "pass",
+    "from the user's views (BASE KM-S0), made from the photographic KM1-1"
+   ],
+   [
+    10,
+    "Solid",
+    "pass",
+    "solid and whole"
+   ],
+   [
+    11,
+    "No brands",
+    "pass",
+    "no brand or logo"
+   ],
+   [
+    12,
+    "No wires or sky",
+    "pass",
+    "its cables, thinner than 5 cm, in its texture only"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "its front, side and back each made in two halves; joined where they overlap"
+   ],
+   [
+    14,
+    "Rig names",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    15,
+    "Joints overlap",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no feet"
+   ],
+   [
+    17,
+    "Each part only itself",
+    "n/a",
+    "one piece"
+   ]
+  ]
+ },
+ "KmTicketGate": {
+  "id": "KM-A28",
+  "sheet": "sheets/KM-A28_ticket_gate (its views, made from KM1-1)",
+  "size": [
+   0.55,
+   0.83,
+   1.0
+  ],
+  "tris": 1454,
+  "motions": [],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "one solid carved from its views: each part once, looked at in Top and Bottom"
+   ],
+   [
+    2,
+    "Closed shell",
+    "pass",
+    "0 edges with one face"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "limit",
+    "its flap a plate 2.4 cm thick at the body's front end: its side view draws the flap as a rod and its top view repeats its front (each redone once), so the flap's depth is set by hand"
+   ],
+   [
+    4,
+    "Views the game sees",
+    "limit",
+    "its top takes the nearest sides' pixels: its top view is left out (it shows the front)"
+   ],
+   [
+    5,
+    "Size, triangles",
+    "pass",
+    "0.55 x 0.83 x 1.00 m, 1454 triangles (its budget: 1,500), its own 1024 px texture"
+   ],
+   [
+    6,
+    "Outline whole",
+    "pass",
+    "its outline the views' outlines; no background on its edges (looked at on the board)"
+   ],
+   [
+    7,
+    "No holes",
+    "pass",
+    "no holes; the gaps the views show (between bars, beams and pillars) stay open"
+   ],
+   [
+    8,
+    "Own models before walls",
+    "pass",
+    "stands on its own, its own model"
+   ],
+   [
+    9,
+    "Look target",
+    "pass",
+    "from the user's views (BASE KM-S0), made from the photographic KM1-1"
+   ],
+   [
+    10,
+    "Solid",
+    "pass",
+    "solid and whole"
+   ],
+   [
+    11,
+    "No brands",
+    "pass",
+    "no brand or logo"
+   ],
+   [
+    12,
+    "No wires or sky",
+    "pass",
+    "no power line across it, no sky on its edges"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "none needed"
+   ],
+   [
+    14,
+    "Rig names",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    15,
+    "Joints overlap",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no feet"
+   ],
+   [
+    17,
+    "Each part only itself",
+    "n/a",
+    "one piece"
+   ]
+  ]
+ },
+ "KmStationSign": {
+  "id": "KM-A29",
+  "sheet": "sheets/KM-A29_station_name_board (its views, made from KM1-1)",
+  "size": [
+   1.8,
+   0.16,
+   2.14
+  ],
+  "tris": 1454,
+  "motions": [],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "one solid carved from its views: each part once, looked at in Top and Bottom"
+   ],
+   [
+    2,
+    "Closed shell",
+    "pass",
+    "0 edges with one face"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "pass",
+    "the posts round in section; the board as thin as its side view shows it"
+   ],
+   [
+    4,
+    "Views the game sees",
+    "pass",
+    "every face takes its pixels from the view that faces it squarely and can see it (the solid says what hides what); the left side the right side's (no view of its own)"
+   ],
+   [
+    5,
+    "Size, triangles",
+    "pass",
+    "1.80 x 0.16 x 2.14 m, 1454 triangles (its budget: 1,500), its own 1024 px texture"
+   ],
+   [
+    6,
+    "Outline whole",
+    "pass",
+    "its outline the views' outlines; no background on its edges (looked at on the board)"
+   ],
+   [
+    7,
+    "No holes",
+    "pass",
+    "no holes; the gaps the views show (between bars, beams and pillars) stay open"
+   ],
+   [
+    8,
+    "Own models before walls",
+    "pass",
+    "stands on its own, its own model"
+   ],
+   [
+    9,
+    "Look target",
+    "pass",
+    "from the user's views (BASE KM-S0), made from the photographic KM1-1"
+   ],
+   [
+    10,
+    "Solid",
+    "pass",
+    "solid and whole"
+   ],
+   [
+    11,
+    "No brands",
+    "pass",
+    "the station's and its neighbours' names (長谷, 極楽寺, 由比ヶ浜), no brand"
+   ],
+   [
+    12,
+    "No wires or sky",
+    "pass",
+    "no power line across it, no sky on its edges"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "none needed"
+   ],
+   [
+    14,
+    "Rig names",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    15,
+    "Joints overlap",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no feet"
+   ],
+   [
+    17,
+    "Each part only itself",
+    "n/a",
+    "one piece"
+   ]
+  ]
+ },
+ "KmTram": {
+  "id": "KM-V01",
+  "sheet": "sheets/KM-V01_tram (its views, made from KM1-1)",
+  "size": [
+   12.0,
+   2.31,
+   4.89
+  ],
+  "tris": 3880,
+  "motions": [],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "one solid carved from its views: each part once, looked at in Top and Bottom"
+   ],
+   [
+    2,
+    "Closed shell",
+    "pass",
+    "0 edges with one face"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "pass",
+    "carved from its front, side and top views: each part as deep as its side and top show it"
+   ],
+   [
+    4,
+    "Views the game sees",
+    "pass",
+    "every face takes its pixels from the view that faces it squarely and can see it (the solid says what hides what); the left side the right side's (no view of its own)"
+   ],
+   [
+    5,
+    "Size, triangles",
+    "pass",
+    "12.00 x 2.31 x 4.89 m, 3880 triangles (its budget: 4,000), its own 2048 px texture"
+   ],
+   [
+    6,
+    "Outline whole",
+    "pass",
+    "its outline the views' outlines; no background on its edges (looked at on the board)"
+   ],
+   [
+    7,
+    "No holes",
+    "limit",
+    "its windows show the street its FRONT view was drawn with (houses and flowers through the glass), not the car's inside as its BACK does: a FRONT redo would give the inside"
+   ],
+   [
+    8,
+    "Own models before walls",
+    "pass",
+    "stands on its own, its own model"
+   ],
+   [
+    9,
+    "Look target",
+    "pass",
+    "from the user's views (BASE KM-S0), made from the photographic KM1-1"
+   ],
+   [
+    10,
+    "Solid",
+    "pass",
+    "solid and whole"
+   ],
+   [
+    11,
+    "No brands",
+    "pass",
+    "no brand or logo"
+   ],
+   [
+    12,
+    "No wires or sky",
+    "pass",
+    "its pantograph stands free; the overhead wire is the level's"
    ],
    [
     13,

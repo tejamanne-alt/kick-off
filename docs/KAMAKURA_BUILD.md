@@ -658,7 +658,9 @@ second props sheet: KM-A20 the recycling bins, KM-A22 the air-conditioner unit, 
 KM-A25 the control cabinet, KM-A26 the street lamp, KM-A28 the ticket gate, KM-A29 the station name board; then the tram
 (KM-V01, Step 3). The rest (KM-A21, A27, A30 to A38) as their levels come. Each is built as its views come in (`tools/blender/km_views.py`: carved
 from its views and textured from them, D25; reviewed in `review/kamakura/props/`): KM1-1's first batch (A01, A03, A04,
-A05, A08, A11, A19) is built from them. A view must show the same object as the others: the same proportions and pose,
+A05, A08, A11, A19), its second (A06, A20, A22 to A26, A28, A29) and the tram (V01) are built from them. Still wanted:
+the tram's FRONT again (both halves), its windows showing the car's inside, seats and straps, with only the plain grey
+through the far windows, as its BACK shows them (its first FRONT shows a street through the glass). A view must show the same object as the others: the same proportions and pose,
 BACK its far side (for a bicycle, the side away from the street, not its rear). The level picture stays the authority
 for design, size and place; the views give the pixels.
 

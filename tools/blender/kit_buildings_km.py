@@ -1,8 +1,8 @@
 # The KAMAKURA kit (docs/KAMAKURA_BUILD.md): models built by script to the measurements of the user's reference pictures
 # (review/kamakura/refs), each street-facing face textured by projecting the picture's own pixels onto it, so seen from the
 # street, as the game camera sees it, the model shows exactly the painting. Sides and tops take samples from the same
-# pictures (the props sheet shows the props' sides). This first version builds two models, to prove the method: the kid's
-# home with its fence and garden (KM1-1) and the red vending machine (KM1-1 front, KM-P1 side).
+# pictures. The kid's home with its fence and garden (KM1-1) is built this way; the street props are carved from the user's
+# own views of each (km_views.py), each in its own texture.
 #   blenv/bin/python kit_buildings_km.py -- /abs/outdir [--board /abs/board.png]
 # Writes into outdir: <Model>.fbx per model, KamakuraAtlas.png, Kamakura.json, Kamakura.blend; with --board, a review board
 # of each model beside its source picture: the picture, the model straight on, the model at three-quarters.
@@ -60,19 +60,6 @@ class Atlas:
     def uv(self, pos, px, py):
         """Atlas UV of pixel (px, py) inside the region placed at pos."""
         return ((pos[0] + px) / self.size, 1.0 - (pos[1] + py) / self.size)
-
-
-def rectify(im, quad, size):
-    """The four-cornered region quad (top left, top right, bottom right, bottom left; picture pixels) straightened into a
-    rectangle of size (w, h): a side panel seen at an angle, made flat."""
-    w, h = size
-    dst = [(0, 0), (w, 0), (w, h), (0, h)]
-    A, b = [], []
-    for (x, y), (u, v) in zip(quad, dst):
-        A.append([u, v, 1, 0, 0, 0, -u * x, -v * x]); b.append(x)
-        A.append([0, 0, 0, u, v, 1, -u * y, -v * y]); b.append(y)
-    coeffs = np.linalg.solve(np.array(A, float), np.array(b, float))
-    return im.transform((w, h), Image.PERSPECTIVE, tuple(coeffs), Image.BICUBIC)
 
 
 # ---------------------------------------------------------------- geometry with projected UVs
@@ -374,28 +361,6 @@ def rebrand(im, box, text, font='/usr/share/fonts/opentype/ipafont-gothic/ipagp.
     d.text(((x0 + x1 - w) / 2, (y0 + y1) / 2 - size * 0.6), text, font=f, fill=(250, 248, 244),
            stroke_width=0)
     return out
-
-
-def build_vending(atlas):
-    """KM-A06, the red drink vending machine: its front from the photographic KM1-1 (straight on), its side from KM-P1
-    (straightened; KM-P1's photographic version is still to come)."""
-    km11, p1 = ref(HOME['src']), ref('KM-P1_props_sheet.png')
-    km11 = rebrand_machines(km11)
-    W, D, H = 1.0, 0.75, 1.83
-    x0, y0, x1, y1 = 1687, 625, 1824, 873        # the front, in the photographic KM1-1's pixels
-    front = km11.crop((x0, y0, x1, y1))
-    fpos = atlas.place(front)
-    side = rectify(p1, [(1700, 48), (1757, 62), (1755, 398), (1700, 428)], (104, 254))
-    spos = atlas.place(side)
-    top = side.crop((10, 4, 94, 40)).resize((104, 78))
-    tpos = atlas.place(top)
-    sx, sz = (x1 - x0) / W, (y1 - y0) / H
-    fmap = lambda co: ((co.x + W / 2) * sx, (H - co.z) * sz)
-    b = Builder(atlas, fpos, fmap, spos, side.size)
-    b.box(-W / 2, W / 2, -D / 2, D / 2, 0.0, H, skip=('top', 'bottom'))
-    P = lambda x, y, z: Vector((x, y, z))
-    b.face([P(-W / 2, -D / 2, H), P(W / 2, -D / 2, H), P(W / 2, D / 2, H), P(-W / 2, D / 2, H)], (tpos, top.size))
-    return b.object('KmVendingRed'), dict(source='photo/KM1-1 (front), KM-P1 (side)', real_size=[W, D, H])
 
 
 def rebrand_machines(im):
@@ -765,7 +730,7 @@ def render(path, cam_loc, cam_target, ortho=None, fov=34.0, size=(1200, 900), on
     return Image.open(path).convert('RGB')
 
 
-def board(home, vend, atlas_path, out):
+def board(home, atlas_path, out):
     mat, cut = unlit(atlas_path), unlit(atlas_path, cut=True)
     for o in bpy.context.scene.objects:
         if o.type == 'MESH':
@@ -784,11 +749,6 @@ def board(home, vend, atlas_path, out):
                only={'KmHome', 'KmHomeFence'} | set(CUTOUTS))
     c = render(os.path.join(tmp, 'km_home_34.png'), (hx - 13, -17, 5.5), (hx, 0, 3.2), fov=40, size=(W, H),
                only={'KmHome', 'KmHomeFence'} | set(CUTOUTS))
-    rows.append([a, b, c])
-    a = km11.crop((1687, 625, 1824, 873)).resize((276, 500))
-    b = render(os.path.join(tmp, 'km_vend_front.png'), (0, -10, 0.915), (0, 0, 0.915), ortho=1.83,
-               size=(276, 500), only={'KmVendingRed'})
-    c = render(os.path.join(tmp, 'km_vend_34.png'), (2.4, -2.6, 1.6), (0, 0, 0.9), fov=40, size=(560, 490), only={'KmVendingRed'})
     rows.append([a, b, c])
     # close up, turned: the two groups in front of the fence, standing on their own
     names = {'KmHome', 'KmHomeFence'} | set(CUTOUTS)
@@ -862,7 +822,8 @@ def build_props():
         print('%-18s %s views, %.2f x %.2f x %.2f m, top in %s slices, round in %s' % (
             name, folder, fr.W, fr.D, fr.H, fr.slices['top'], fr.slices['round']))
         props.append((root, dict(id=pid, source='sheets/%s (its views, made from KM1-1)' % folder,
-                                 real_size=[round(fr.W, 2), round(fr.D, 2), height], texture=tex, cutout=cut)))
+                                 real_size=[round(fr.W, 2), round(fr.D, 2), round(fr.H, 2)], texture=tex, cutout=cut,
+                                 budget=opts.get('budget', 1500), tex_px=opts.get('tex', 1024))))
     return props
 
 
@@ -948,8 +909,9 @@ def props_review(props, out_dir):
             3: ('pass', 'carved from its front, side and top views: each part as deep as its side and top show it'),
             4: ('pass', 'every face takes its pixels from the view that faces it squarely and can see it (the solid says '
                         'what hides what); the left side the right side\'s (no view of its own)'),
-            5: ('pass' if tris <= 1500 else 'FAIL', '%s m, %d triangles (a prop\'s budget: 1,500), its own %d px texture'
-                % (' x '.join('%.2f' % v for v in info['real_size']), tris, 1024)),
+            5: ('pass' if tris <= info['budget'] else 'FAIL', '%s m, %d triangles (its budget: %s), its own %d px texture'
+                % (' x '.join('%.2f' % v for v in info['real_size']), tris, '{:,}'.format(info['budget']),
+                   info['tex_px'])),
             6: ('pass', 'its outline the views\' outlines; no background on its edges (looked at on the board)'),
             7: ('pass', 'no holes; the gaps the views show (between bars, beams and pillars) stay open'),
             8: ('pass', 'stands on its own, its own model'),
@@ -1011,10 +973,8 @@ def main():
     os.makedirs(OUT, exist_ok=True)
     K.reset()
     atlas = Atlas(ATLAS_SIZE)
-    vend, vinfo = build_vending(atlas)
     home, trial, hinfo = build_home(atlas)
     home.location.x = 0
-    vend.location.x = 8.5
     props = build_props()
     for k, (o, _) in enumerate(props):
         o.location.x = 11.0 + 3.0 * k
@@ -1027,7 +987,7 @@ def main():
     with_cutout(cut, ct, bsdf.outputs[0])
     manifest = K.Manifest('Kamakura', 'KamakuraAtlas.png')
     K.assign(trial, mat)                 # the KM-P3 roof trial: in the .blend and on the board, not exported
-    for root, info in [(home, hinfo), (vend, vinfo)] + props:
+    for root, info in [(home, hinfo)] + props:
         if 'texture' in info:                # a prop from its views: its own texture
             pm = K.material(root.name, os.path.join(OUT, info['texture']))
             if info['cutout']:
@@ -1051,8 +1011,7 @@ def main():
     bpy.ops.wm.save_as_mainfile(filepath=os.path.join(OUT, 'Kamakura.blend'))
     if BOARD:
         home.location.x = 0
-        vend.location.x = 0
-        board(home, vend, atlas_path, BOARD)
+        board(home, atlas_path, BOARD)
     if PROPS_REVIEW:
         props_review(props, PROPS_REVIEW)
 

@@ -2272,8 +2272,28 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
   - the street lamp's (KM-A26) TOP is turned a quarter: its arm points to the bottom (the street) where the front shows
     it to the right; `km_views.Frame` takes `turn={'top': 1}` for it (a quarter anticlockwise), the image left as made;
   - the tram's BACK has its pantograph and roof units at the same end as the FRONT, where the far side would show them
-    at the other: `flip=('back',)` mirrors it, the image left as made.
+    at the other: `flip=('back',)` mirrors it, the image left as made. (The user then redid both, so neither is used.)
 - Still to come: the recycling bins (KM-A20).
+
+## KM1-1's second batch and the tram built from their views (tools, review and docs)
+
+- The user redid the views asked for (the meters' TOP, the lamp's TOP, the ticket gate's TOP and RIGHT SIDE, the tram's
+  BACK halves) and added the recycling bins (KM-A20). Checked: all right now but the gate's, whose TOP repeats its front
+  again and whose RIGHT SIDE draws the flap as a rod; the gate is built from its front, side and back, its flap a thin
+  plate set by hand (`plate_beyond`), its top view left out (`ignore`).
+- `km_views.props()` gains `KmVendingRed` (replacing the one projected from KM1-1, and with it `build_vending` and the
+  home board's vending row), `KmRecyclingBins`, `KmAirConditioner`, `KmMeters`, `KmLetterbox`, `KmControlCabinet`,
+  `KmStreetLamp`, `KmTicketGate`, `KmStationSign` and `KmTram` (a vehicle: 4,000 triangles, a 2048 texture, sized by its
+  12 m length). A prop the prompt gives a width for is sized by it (`('width', m)`).
+- Found and fixed while building (D26): a notch through the red machine (a stretch of its window as grey as the
+  background taken for a gap: a hole is now a gap only if it is as flat as the background), a shelf in the
+  air-conditioner's stand and the crossing signal's solid guard frame (`hollow_below` keeps the band the views show and
+  opens the middle, the signal's post kept), the gate's flap a slab as deep as its body.
+- The review (`review/kamakura/props/`) now covers all seventeen; check 5 measures each against its own budget.
+- Still to do: the tram's windows show the street its FRONT was drawn with; a FRONT redo (both halves) with the car's
+  inside through the glass is asked for in `docs/KAMAKURA_BUILD.md` Step 2.
+- Cost (`docs/PERFORMANCE.md`): the props 1,452 to 1,454 triangles each, a 1024 texture each, about 12 MB for the
+  sixteen; the tram 3,880 triangles and a 2048 texture (about 2.7 MB); est., not yet in a level or measured on the phone.
 
 ## After Phase 8 (next steps)
 

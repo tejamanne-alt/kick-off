@@ -1126,6 +1126,28 @@ views).**
   itself at an edge, so the surface is first re-meshed on a finer grid (Blender's voxel remesh), which makes it one
   closed, manifold shell. `motion_gif` frames the root's own mesh too. Still to do: the crossing signal's guard frame stays solid, as no view shows its hollow (the
   far bars show through the near ones, and from above the crossbuck and lamps cover it).
+
+**D26. KM1-1's second batch from views: a notch, a shelf, and a gate drawn three ways.**
+- *What:* building the red machine, the recycling bins, the air-conditioner unit, the meters, the letterbox, the control
+  cabinet, the street lamp, the ticket gate, the name board and the tram from the user's views:
+  - the red machine had a notch through it: a stretch inside its window as grey as the background, 5,400 px, larger than
+    the size under which holes are filled, was taken for a gap;
+  - the air-conditioner's stand carved with a shelf, and the crossing signal's guard frame stayed solid (D25): where the
+    front's and the side's bars cross, the carving fills the middle;
+  - the ticket gate's side view drew its flap face-on, then (redone) as a rod, never edge-on, and its top view repeated
+    its front twice; the meters' top view repeated its front once; the lamp's top came turned a quarter and the tram's
+    back unmirrored (both redone by the user);
+  - a view's proportions and the prompt's size disagree (the air-conditioner unit 0.64 m wide for 0.9 m tall, the
+    prompt 0.8 m wide).
+- *Why:* the hole test went by size alone; no view shows a frame's inside, so the carving cannot tell it from a block;
+  an image model draws a part it cannot picture (a flap edge-on, a top) as one it can.
+- *Fix:* a hole is a gap only where it is as flat as the background (its pixels spread about 1; the glass about 5);
+  `hollow_below` keeps the band a stand's or frame's views show and opens its middle, posts kept (it also fixes the
+  signal's frame); the gate is built without its top view (`ignore`), its flap a thin plate at the body's front end
+  (`plate_beyond`); `turn` and `flip` set right a view drawn turned or unmirrored; a prop the prompt gives a width for is
+  sized by it (`('width', m)`).
+- *Rule:* check each view on arrival against the others (what it shows, its pose, its mirror) and ask for one redo; if
+  that fails too, build the part from the views that agree, by hand where needed, and say so in the review.
 - *Rule:* before carving from views, check each against the others (sizes, outlines, poses, which side it shows); register
   them by the object, not by its box; and look at the decimated mesh, not only the dense one.
 

@@ -114,12 +114,20 @@ def object_mask(im, thresh=24.0, tex=3.0, hole_fill=0.004):
     inv = (1 - m).astype(np.uint8)
     hn, hl, hs, _ = cv2.connectedComponentsWithStats(inv, 4)
     small = max(60, hole_fill * m.sum())
+    # each hole's mean colour and spread, all at once
+    lab = hl.ravel()
+    cnt = np.maximum(np.bincount(lab, minlength=hn), 1)
+    mean = np.stack([np.bincount(lab, a[..., c].ravel(), hn) / cnt for c in range(3)], 1)
+    sq = np.stack([np.bincount(lab, (a[..., c] ** 2).ravel(), hn) / cnt for c in range(3)], 1)
+    spread = np.sqrt(np.maximum(sq - mean ** 2, 0)).mean(1)
+    fill = np.zeros(hn, bool)
     for i in range(1, hn):
         x, y, w, h, area = hs[i]
         if x > 0 and y > 0 and x + w < m.shape[1] and y + h < m.shape[0]:
-            hole = hl == i
-            if area < small or np.abs(np.median(a[hole], 0) - bg).sum() > thresh:
-                m[hole] = 1
+            # the background seen through a gap is as flat as the background (its pixels spread about 1); glass or a
+            # shadowed inside the grey's colour is not (about 5: the red machine's window, D25)
+            fill[i] = area < small or np.abs(mean[i] - bg).sum() > thresh or spread[i] > 3.0
+    m = m | fill[hl]
     return m.astype(bool)
 
 
@@ -550,7 +558,8 @@ def props():
                               dict(vox=0.02, round_z=[(0.0, 10.0)], round_w=0.7, thin=0.08)),
         'KmMirror': ('KM-A03', 'KM-A03_convex_corner_mirror', 3.8, dict(round_z=[(0.0, 2.9)], hole_fill=0.2)),
         'KmVendingBlue': ('KM-A19', 'KM-A19_blue_vending_machine', 1.83, dict()),
-        'KmCrossingSignal': ('KM-A05', 'KM-A05_level_crossing_signal', 3.6, dict(round_z=[(0.95, 3.6)], round_w=0.2)),
+        'KmCrossingSignal': ('KM-A05', 'KM-A05_level_crossing_signal', 3.6,
+                             dict(round_z=[(0.95, 3.6)], round_w=0.2, shape=hollow_below(0.95, 0.07, [(0.0, 0.0, 0.12)]))),
         'KmCrossingBarrier': ('KM-A04', 'KM-A04_level_crossing_barrier', 4.5,
                               dict(round_z=[(1.75, 4.5)], round_w=0.15,
                                                                          parts=split_above(1.50, 'Arm', 1.56))),
@@ -558,6 +567,23 @@ def props():
         'KmBicycle': ('KM-A08', 'KM-A08_city_bicycle', 1.15,
                       dict(view_map={'back': 'left'}, top='always', cutout=True, hole_fill=0.05,
                            shape=slab_below(0.68, 0.02))),
+        # KM1-1's second batch
+        'KmVendingRed': ('KM-A06', 'KM-A06_red_vending_machine', 1.83, dict()),
+        'KmRecyclingBins': ('KM-A20', 'KM-A20_recycling_bins', 1.0, dict()),
+        'KmAirConditioner': ('KM-A22', 'KM-A22_air_conditioner_outdoor_unit', ('width', 0.8),
+                             dict(shape=hollow_below(0.55, 0.06))),
+        'KmMeters': ('KM-A23', 'KM-A23_gas_and_electricity_meters', ('width', 0.8),
+                     dict(round_z=[(0.0, 0.15)], round_w=0.1)),
+        'KmLetterbox': ('KM-A24', 'KM-A24_house_letterbox', 1.55, dict()),
+        'KmControlCabinet': ('KM-A25', 'KM-A25_grey_control_cabinet', 1.6, dict()),
+        'KmStreetLamp': ('KM-A26', 'KM-A26_street_lamp', 7.0,
+                         dict(vox=0.02, round_z=[(0.0, 7.0)], round_w=0.5, thin=0.05)),
+        'KmTicketGate': ('KM-A28', 'KM-A28_ticket_gate', 1.0,
+                         dict(ignore=('top',), thin=0.03, shape=plate_beyond(-0.04, -0.204, 0.012))),
+        'KmStationSign': ('KM-A29', 'KM-A29_station_name_board', ('width', 1.8),
+                          dict(round_z=[(0.0, 2.4)], round_w=0.09)),
+        # the tram: a vehicle, 12 m long (its own budget, docs/PERFORMANCE.md)
+        'KmTram': ('KM-V01', 'KM-V01_tram', ('width', 12.0), dict(vox=0.03, budget=4000, tex=2048)),
     }
 
 
@@ -570,8 +596,9 @@ NOTES = {           # each prop's own check results (asset_review: the seventeen
     },
     'KmMirror': {13: ('pass', 'the glass is as grey as the views\' background: its holes in the outline filled')},
     'KmVendingBlue': {11: ('pass', 'its logo panel reads うみかぜ, as the prompt asks (no real drink logo)')},
-    'KmCrossingSignal': {3: ('limit', 'the post round in section; the guard frame solid: its front and side see its far '
-                                      'bars through its near ones, and from above the crossbuck and lamps cover it')},
+    'KmCrossingSignal': {3: ('pass', 'the post round in section; the guard frame open, its bars only (no view shows '
+                                     'its hollow: its far bars show through its near ones, and from above the crossbuck '
+                                     'covers it, so the band its views show is kept and the middle left open)')},
     'KmCrossingBarrier': {
         3: ('pass', 'the arm drawn lowered in its top view, raised in the others: the top used only for the box'),
         14: ('pass', 'its arm is its own part, Arm, its origin at the pivot on the box: shown lowering and rising'),
@@ -579,6 +606,37 @@ NOTES = {           # each prop's own check results (asset_review: the seventeen
         17: ('pass', 'the arm carries only the arm; the box and its leg stay'),
     },
     'KmToriiSmall': {3: ('pass', 'the pillars round in section below the tie beam (the top view sees only the top beam)')},
+    'KmVendingRed': {11: ('pass', 'its logo panel reads うみかぜ, as the prompt asks (no real drink logo)')},
+    'KmRecyclingBins': {11: ('pass', 'its labels are generic words (カン, ペットボトル, ペット) with invented lines under '
+                                     'them, as the prompt asks; no brand')},
+    'KmAirConditioner': {
+        3: ('pass', 'the stand open: its legs and rails only, the band its views show (the front\'s and the side\'s '
+                    'rails crossing would otherwise fill it with a shelf)'),
+        11: ('pass', 'its maker\'s plate an invented code (KM-50)'),
+    },
+    'KmMeters': {3: ('pass', 'the board and meters carved from its front, side and top; the pipes below the board round')},
+    'KmLetterbox': {11: ('pass', 'its labels generic (郵便, post) and invented; no brand')},
+    'KmControlCabinet': {3: ('pass', 'as deep as its side and three-quarter views show it (0.28 m); its top view draws it '
+                                     'deeper, and the side\'s depth is kept')},
+    'KmStreetLamp': {
+        3: ('pass', 'the column round in section; the arm and lamp from the front, side and top'),
+        12: ('pass', 'its cables, thinner than 5 cm, in its texture only'),
+        13: ('pass', 'its front, side and back each made in two halves; joined where they overlap'),
+    },
+    'KmTicketGate': {
+        3: ('limit', 'its flap a plate 2.4 cm thick at the body\'s front end: its side view draws the flap as a rod and its '
+                     'top view repeats its front (each redone once), so the flap\'s depth is set by hand'),
+        4: ('limit', 'its top takes the nearest sides\' pixels: its top view is left out (it shows the front)'),
+    },
+    'KmStationSign': {
+        3: ('pass', 'the posts round in section; the board as thin as its side view shows it'),
+        11: ('pass', 'the station\'s and its neighbours\' names (長谷, 極楽寺, 由比ヶ浜), no brand'),
+    },
+    'KmTram': {
+        7: ('limit', 'its windows show the street its FRONT view was drawn with (houses and flowers through the glass), '
+                     'not the car\'s inside as its BACK does: a FRONT redo would give the inside'),
+        12: ('pass', 'its pantograph stands free; the overhead wire is the level\'s'),
+    },
     'KmBicycle': {
         3: ('pass', 'below the saddle a slab 4 cm thick in its front\'s outline (wheels, frame, guards); the saddle, bars '
                     'and basket carved from all its views'),
@@ -591,14 +649,19 @@ NOTES = {           # each prop's own check results (asset_review: the seventeen
 
 # ---------------------------------------------------------------- in Blender
 def build(name, folder, height, new_obj, budget=1500, vox=0.01, tex=1024, top='auto', round_z=(), round_max=1.6,
-          round_w=0.3, hole_fill=0.004, view_map=None, cutout=False, thin=0.0, turn=None, flip=(), shape=None,
-          parts=None, smooth_angle=35.0):
-    """The prop named name from the views in folder, height metres tall, its origin on the ground under its middle: its
+          round_w=0.3, hole_fill=0.004, view_map=None, cutout=False, thin=0.0, turn=None, flip=(), ignore=(),
+          shape=None, parts=None, smooth_angle=35.0):
+    """The prop named name from the views in folder, height metres tall (or ('width', metres) for one measured along the
+    street), its origin on the ground under its middle: its
     mesh (at most budget triangles), UVs and texture (tex x tex, RGBA). shape(frame) may change the carved field (a
     bicycle's wheels a thin slab); parts(frame) may split it into [(name or None, field, pivot or None)], each its own
     object (None: the root), a child's origin at its pivot. Returns (root, texture array, frame)."""
     import bpy
-    frame = Frame(read_views(folder), height, vox, hole_fill, view_map, cutout, thin, turn, flip)
+    views = {k: v for k, v in read_views(folder).items() if k not in ignore}     # a view that shows something else
+    if isinstance(height, tuple):                       # ('width', metres) or ('length', metres): along the street
+        x0, y0, x1, y1 = bbox(object_mask(views['front']))
+        height = height[1] * (y1 - y0) / (x1 - x0)
+    frame = Frame(views, height, vox, hole_fill, view_map, cutout, thin, turn, flip)
     frame.carve(top, round_z, round_max, round_w)
     if shape is not None:
         frame.field = shape(frame)
@@ -701,6 +764,40 @@ def split_above(z_cut, part_name, pivot_z):
         pivot = (float(frame.xs[ii].mean()), float(frame.ys[jj].mean()), pivot_z)
         return [(None, below, None), (part_name, above, pivot)]
     return parts
+
+
+def plate_beyond(x0, y0, half):
+    """shape(): beyond x0 along the street only a plate half metres either side of y0, in the front's outline (a ticket
+    gate's flap, which its side view draws otherwise)."""
+    def shape(frame):
+        X = frame.xs[:, None, None]
+        Y = frame.ys[None, :, None]
+        plate = np.maximum(frame.F[:, None, :], np.abs(Y - y0) - half)
+        return np.where(X > x0, plate, frame.field).astype(np.float32)
+    return shape
+
+
+def hollow_below(z0, d, posts=()):
+    """shape(): below z0 only a band d metres deep inside each slice's outline (a stand's legs and rails, a guard frame's
+    bars), the middle left open, but for posts ((x, y, radius) kept whole): where the front's and the side's bars cross,
+    the carving alone fills the middle with a shelf no view shows."""
+    def shape(frame):
+        f = frame.field.copy()
+        X, Y = frame.xs[:, None], frame.ys[None, :]
+        for k, z in enumerate(frame.zs):
+            if z >= z0:
+                break
+            inside = f[:, :, k] < 0
+            if not inside.any():
+                continue
+            ii, jj = np.nonzero(inside.any(1))[0], np.nonzero(inside.any(0))[0]
+            xl, xh, yl, yh = frame.xs[ii[0]], frame.xs[ii[-1]], frame.ys[jj[0]], frame.ys[jj[-1]]
+            g = np.minimum(np.minimum(X - xl, xh - X), np.minimum(Y - yl, yh - Y)) - d
+            for px, py, r in posts:
+                g = np.minimum(g, np.sqrt((X - px) ** 2 + (Y - py) ** 2) - r)
+            f[:, :, k] = np.maximum(f[:, :, k], g)
+        return f
+    return shape
 
 
 def slab_below(z0, half):
