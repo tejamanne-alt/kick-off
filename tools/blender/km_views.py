@@ -1124,7 +1124,8 @@ NOTES = {           # each prop's own check results (asset_review: the seventeen
                      'stem (a solid, the mirror\'s own dark grey: drawn slanting a centimetre thick, carved they came '
                      'off); the bar on a clamp behind the headlight; the grips take its rear view\'s grips; one piece '
                      '(a ghost beside the front tyre, the side stand\'s foot, taken out)'),
-        14: ('n/a', 'one piece, standing: if KM1-1 has it ride past, its wheels become their own parts for WheelSpin'),
+        14: ('n/a', 'one piece: KM1-1 parks it at a door while its rider delivers (an obstacle; its side views draw the fork, '
+                    'shock, exhaust and chain case over its wheels, so rolling wheels would carry them round)'),
     },
     'KmBicycle': {
         3: ('pass', 'below the saddle a slab 4 cm thick in its front\'s outline (wheels, frame, guards); the saddle, bars '
