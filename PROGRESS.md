@@ -2431,6 +2431,18 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
   prompts now ask for solid clothes close to the body, the girl in knee-length navy culottes, the shirts tucked in; and
   the Meshy steps say to check the model before remeshing and remesh again at 30,000 quads if a thin part breaks.
 
+## The first-graders' pictures and Meshy models in (review, tools and docs)
+
+- The user pushed both children: four Gemini pictures each and Meshy's rigged FBX, its animated FBX and textures.
+  Renamed to the convention in `review/kamakura/characters/KM-C01_first_grade_boy/` and `KM-C02_first_grade_girl/`
+  (the girl's folder was KM-C01: corrected), each with a README. Checked: the same child in all four views, Mia's
+  realism, the front and back in an A-pose, the left side facing left; the textures are embedded in each FBX; about
+  14,000 quads (28,000 to 29,000 triangles) each.
+- Their rig names the spine the other way up from Mixamo's (C26): `meshy_rigged.py` now maps the spine by its place
+  in the chain (the same result for the earlier kids) and knows a lowercase `neck`.
+- Next: a profile for each in `meshy_rigged.py` (cap, randoseru, shirt, shorts or culottes as recolourable parts),
+  `polish_all.py`, the strict review, then the passers-by table.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

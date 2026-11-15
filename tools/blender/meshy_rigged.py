@@ -63,7 +63,7 @@ mb.log = lambda *a: print('[meshy_rigged]', *a, flush=True)
 log = mb.log
 
 # The model's bones -> the game's (anything else: the bone of its nearest named ancestor in this table).
-GAME_BONE = {'Hips': 'Hips', 'Spine': 'Hips', 'Spine1': 'Spine', 'Spine2': 'Chest', 'Neck': 'Neck', 'Head': 'Head',
+GAME_BONE = {'Hips': 'Hips', 'Spine': 'Hips', 'Spine1': 'Spine', 'Spine2': 'Chest', 'Neck': 'Neck', 'neck': 'Neck', 'Head': 'Head',
              'HeadTop_End': 'Head', 'headfront': 'Head',
              'LeftShoulder': 'Chest', 'RightShoulder': 'Chest',
              'LeftArm': 'UpperArm.L', 'LeftForeArm': 'LowerArm.L', 'LeftHand': 'Hand.L',
@@ -78,8 +78,20 @@ def short(name): return name.split(':')[-1]
 PARENT = {}               # each of the model's bones' parent (load): an extra bone goes with its nearest named ancestor
 
 
+def spine_rank(s):
+    """How many spine bones lie between this one and the hips: the spine's bones mapped by their place in the chain,
+    not their names. Mixamo's run Spine, Spine1, Spine2 upward; Meshy's newer rig runs Spine02, Spine01, Spine (its
+    'Spine' is the chest), so a table by name made the chest the hips."""
+    n, p = 0, PARENT.get(s)
+    while p is not None and short(p).startswith('Spine'):
+        n, p = n + 1, PARENT.get(short(p))
+    return n
+
+
 def game_bone(name):
     s = short(name)
+    if s.startswith('Spine') and s in PARENT:
+        return ('Hips', 'Spine', 'Chest')[min(spine_rank(s), 2)]
     while s is not None:
         if s in GAME_BONE: return GAME_BONE[s]
         for side, n in (('Left', 'L'), ('Right', 'R')):        # the fingers

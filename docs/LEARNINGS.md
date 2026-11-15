@@ -588,6 +588,14 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
 - *Rule:* a character made into a 3D model wears solid clothes close to the body. No open skirts, capes, loose sleeves
   or floating hems. Check the model before and after a remesh.
 
+**C26. Meshy's newer rig names its spine the other way up (KM-C01, KM-C02).**
+- *What:* the first-graders' rigs run Hips, Spine02, Spine01, Spine, neck, Head: their `Spine` is the chest and their
+  lowest spine bone is `Spine02`. Mixamo's run Spine, Spine1, Spine2. `meshy_rigged.py` mapped bones by name ('Spine'
+  to the hips) and didn't know `Spine01`, `Spine02` or a lowercase `neck`: the chest would have moved with the hips.
+- *Fix:* the spine's bones map by their place in the chain from the hips (`spine_rank`), which gives the same for the
+  Mixamo rigs; `neck` maps to Neck. Found by listing the bones before importing.
+- *Rule:* list a new rig's bones and their parents before importing it; map a chain by its order, not its names.
+
 ## D. Art direction and look
 
 **D1. A golden-hour haze hid the kid** (before v37).

@@ -332,7 +332,10 @@ as `1_front.png`, `2_back.png`, `3_left_side.png` and `4_right_side.png`. Then i
    don't matter: the game moves every character's bones in code (`CharacterRig`, `WalkerAnimator`) and the importer
    drops the clip. If the download needs one, add one plain walk.
 4. **Download**: FBX, the rigged model with its one animation, as one file; origin at the bottom. The size doesn't
-   matter (`meshy_rigged.py` scales to the roster's height). Save it beside the pictures as `<id>_<name>.fbx` and push.
+   matter (`meshy_rigged.py` scales to the roster's height). Meshy gives the rigged character (`…_character_meshyrig.fbx`,
+   the one the game imports) and, with animations, `…_All_animation.fbx` and its textures; push them as they come
+   and Claude renames them: `<id>_<name>.fbx`, `<id>_<name>_animations.fbx`, `<id>_<name>_texture.png`, the PBR maps
+   in `meshy_maps/` (KM-C01 and KM-C02 are in, each with a README).
 Then `meshy_rigged.py` (a profile for each), `polish_all.py`, the strict review (docs/ASSET_REVIEW.md: eight views,
 the walk animated, the face 100% on the Head, C15), and the user's approval before the level uses them. Meshy's terms
 as above: a paid plan for full commercial use, or Meshy credited.
