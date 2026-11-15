@@ -245,26 +245,27 @@ STYLE: exactly the drawing style and realism of the attached pictures of Mia: a 
 real child with natural proportions, true-to-life skin, hair and cloth, clean dark outlines and soft even shading. Not
 anime, not cartoon, not chibi. Copy only the style from her pictures, never her face, hair, clothes or shoes.
 FORMAT: one image, portrait 2:3, plain flat mid-grey background (#808080), the whole child from cap to shoes,
-centred with room all round, seen straight from the front, in a relaxed A-pose: arms straight and a little out from the
-body, a hand's width between arm and body all the way down, hands open, feet flat and a little apart. Even soft studio
+centred with room all round, seen straight from the front, in an A-pose: both arms straight and held out to the sides
+at 45 degrees from the body, well clear of it all the way down, palms facing down, fingers together; legs straight,
+feet flat and a little apart. Not the arms hanging at the sides as in Mia's pictures: take her style, not her pose. Even soft studio
 light, no shadow on the ground. Nothing else in the image.
 ```
 
 ```text
 ASSET KM-C01, BACK view. Attach the front view just made. The same boy exactly as in it: the same face, hair,
-cap, randoseru, clothes, shoes and drawing style, the same size and A-pose, now seen straight from behind. One image, portrait 2:3, the same
+cap, randoseru, clothes, shoes and drawing style, the same size and the same A-pose (arms straight and out at 45 degrees, well clear of the body), now seen straight from behind. One image, portrait 2:3, the same
 plain flat mid-grey background (#808080) and soft studio light. Nothing else in the image.
 ```
 
 ```text
 ASSET KM-C01, LEFT SIDE view. Attach the front view just made. The same boy exactly as in it: the same face, hair,
-cap, randoseru, clothes, shoes and drawing style, the same size and A-pose, now seen straight from his left side, a true side view with the face in profile looking left. One image, portrait 2:3, the same
+cap, randoseru, clothes, shoes and drawing style, the same size and the same A-pose (arms straight and out at 45 degrees, well clear of the body), now seen straight from his left side, a true side view with the face in profile looking left. One image, portrait 2:3, the same
 plain flat mid-grey background (#808080) and soft studio light. Nothing else in the image.
 ```
 
 ```text
 ASSET KM-C01, RIGHT SIDE view. Attach the front view just made. The same boy exactly as in it: the same face, hair,
-cap, randoseru, clothes, shoes and drawing style, the same size and A-pose, now seen straight from his right side, a true side view with the face in profile looking right. One image, portrait 2:3, the same
+cap, randoseru, clothes, shoes and drawing style, the same size and the same A-pose (arms straight and out at 45 degrees, well clear of the body), now seen straight from his right side, a true side view with the face in profile looking right. One image, portrait 2:3, the same
 plain flat mid-grey background (#808080) and soft studio light. Nothing else in the image.
 ```
 
@@ -278,26 +279,27 @@ STYLE: exactly the drawing style and realism of the attached pictures of Mia: a 
 real child with natural proportions, true-to-life skin, hair and cloth, clean dark outlines and soft even shading. Not
 anime, not cartoon, not chibi. Copy only the style from her pictures, never her face, hair, clothes or shoes.
 FORMAT: one image, portrait 2:3, plain flat mid-grey background (#808080), the whole child from cap to shoes,
-centred with room all round, seen straight from the front, in a relaxed A-pose: arms straight and a little out from the
-body, a hand's width between arm and body all the way down, hands open, feet flat and a little apart. Even soft studio
+centred with room all round, seen straight from the front, in an A-pose: both arms straight and held out to the sides
+at 45 degrees from the body, well clear of it all the way down, palms facing down, fingers together; legs straight,
+feet flat and a little apart. Not the arms hanging at the sides as in Mia's pictures: take her style, not her pose. Even soft studio
 light, no shadow on the ground. Nothing else in the image.
 ```
 
 ```text
 ASSET KM-C02, BACK view. Attach the front view just made. The same girl exactly as in it: the same face, hair,
-cap, randoseru, clothes, shoes and drawing style, the same size and A-pose, now seen straight from behind. One image, portrait 2:3, the same
+cap, randoseru, clothes, shoes and drawing style, the same size and the same A-pose (arms straight and out at 45 degrees, well clear of the body), now seen straight from behind. One image, portrait 2:3, the same
 plain flat mid-grey background (#808080) and soft studio light. Nothing else in the image.
 ```
 
 ```text
 ASSET KM-C02, LEFT SIDE view. Attach the front view just made. The same girl exactly as in it: the same face, hair,
-cap, randoseru, clothes, shoes and drawing style, the same size and A-pose, now seen straight from her left side, a true side view with the face in profile looking left. One image, portrait 2:3, the same
+cap, randoseru, clothes, shoes and drawing style, the same size and the same A-pose (arms straight and out at 45 degrees, well clear of the body), now seen straight from her left side, a true side view with the face in profile looking left. One image, portrait 2:3, the same
 plain flat mid-grey background (#808080) and soft studio light. Nothing else in the image.
 ```
 
 ```text
 ASSET KM-C02, RIGHT SIDE view. Attach the front view just made. The same girl exactly as in it: the same face, hair,
-cap, randoseru, clothes, shoes and drawing style, the same size and A-pose, now seen straight from her right side, a true side view with the face in profile looking right. One image, portrait 2:3, the same
+cap, randoseru, clothes, shoes and drawing style, the same size and the same A-pose (arms straight and out at 45 degrees, well clear of the body), now seen straight from her right side, a true side view with the face in profile looking right. One image, portrait 2:3, the same
 plain flat mid-grey background (#808080) and soft studio light. Nothing else in the image.
 ```
 
@@ -309,7 +311,7 @@ the background.
 
 In ChatGPT, which makes 2:3 pictures too and marks none of them, the same prompts, with this FORMAT paragraph in the
 front's:
-- ChatGPT: `FORMAT: one image, portrait 2:3, plain flat mid-grey background (#808080), the whole child from cap to shoes, centred, seen straight from the front, in a relaxed A-pose: arms straight and a little out from the body, a hand's width between arm and body all the way down, hands open, feet flat and a little apart. Even soft studio light, no shadow on the ground. Nothing else in the image.`
+- ChatGPT: `FORMAT: one image, portrait 2:3, plain flat mid-grey background (#808080), the whole child from cap to shoes, centred, seen straight from the front, in an A-pose: both arms straight and held out to the sides at 45 degrees from the body, well clear of it all the way down, palms facing down, fingers together; legs straight, feet flat and a little apart. Not the arms hanging at the sides as in Mia's pictures: take her style, not her pose. Even soft studio light, no shadow on the ground. Nothing else in the image.`
 
 The four pictures of each go in `review/kamakura/characters/KM-C01_first_grade_boy/` (and `KM-C02_first_grade_girl/`)
 as `1_front.png`, `2_back.png`, `3_left_side.png` and `4_right_side.png`. Then in meshy.ai:
