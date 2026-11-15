@@ -2305,6 +2305,23 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
   takes minutes to review instead of the hour all seventeen take.
 - Next from the user: KM1-1's last batch (`docs/KAMAKURA_BUILD.md`, Step 2).
 
+## The approved Kamakura models in the game project (tools, editor code, tests and docs)
+
+- The user approved the seventeen on the review page (KM1-1's sixteen props and the tram). `kit_buildings_km.py
+  --install Assets/_Game/Art/Models/Kamakura` copies them into the project: each FBX (with an `Attach.Front` 1 m in front,
+  which `LevelBuildKit.KitModel` turns toward the camera), its own texture `<Model>Atlas.png` (1024, the tram 2048; the
+  bicycle's with an alpha) and `Kamakura.json` (each model's size, triangles, budget, texture, whether it is cut out).
+  27 MB in all.
+- `LevelBuildKit.Kits` gains "Kamakura", and `KitModelNames` lists a kit's manifest. A model that has its own texture
+  (`texture` in its manifest entry) gets its own material from `ArtBaker` (`Kit<kit>_<model>`, the toon shader, cut out
+  at 0.5 where the manifest says so, `AlphaClip`), and `KitModel` puts it on before the kit's own; `ModelImportSettings`
+  keeps the alpha coverage of a Kamakura texture that has one in every mip.
+- `KamakuraKitTests`: every model in the manifest has its FBX and its texture, and keeps its budget (a prop 1,500, a
+  vehicle 4,000). Compile checks: `tools/unity_api_check/run.sh` 6000.6 and 6000.7 pass; the compiler's errors match the
+  committed tree's in three symbol sets (the stand-ins' expected misses only).
+- Not yet in a level: KM1-1 (BUILD KM-L11) places them once its last batch of views is in. Not yet measured on the
+  Nord CE5.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

@@ -17,6 +17,6 @@
  ],
  "pending": [
   "<b>Next from you:</b> KM1-1's last batch: the plain pole, the wire gantry, the station platform, the little shrine, the beige house, two foliage sheets and the lane (the build plan, Step 2).",
-  "<b>In the game:</b> nothing goes into a level until you approve these. Then the kit's FBX files and their textures go into Assets/_Game/Art/Models/Kamakura."
+  "<b>In the game:</b> approved, and in the project (Assets/_Game/Art/Models/Kamakura). KM1-1 places them once its last batch of views is in."
  ]
 }

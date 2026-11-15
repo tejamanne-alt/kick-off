@@ -669,8 +669,12 @@ namespace DribbleToSchool.EditorTools
 
         // ---------- Asset kits (tools/blender/kit_*.py, docs/ART_DIRECTION.md) ----------
 
-        /// <summary>The asset kits made in Blender, each in Art/Models/&lt;kit&gt;/ with its atlas and manifest.</summary>
-        public static readonly string[] Kits = { "Plants", "Buildings", "Street", "Terrain", "Leisure", "Works", "Animals", "Barriers", "Coast", "Florida" };
+        /// <summary>
+        /// The asset kits made in Blender, each in Art/Models/&lt;kit&gt;/ with its atlas and manifest. The Kamakura kit's
+        /// models (tools/blender/km_views.py, each carved from its own views) each have their own texture instead, named
+        /// in the manifest ("texture"), and so their own material (ArtBaker: Kit&lt;kit&gt;_&lt;model&gt;).
+        /// </summary>
+        public static readonly string[] Kits = { "Plants", "Buildings", "Street", "Terrain", "Leisure", "Works", "Animals", "Barriers", "Coast", "Florida", "Kamakura" };
 
         static readonly Dictionary<string, Dictionary<string, object>> kitManifests = new Dictionary<string, Dictionary<string, object>>();
 
@@ -691,6 +695,15 @@ namespace DribbleToSchool.EditorTools
             }
             object entry;
             return models != null && models.TryGetValue(model, out entry) ? entry as Dictionary<string, object> : null;
+        }
+
+        /// <summary>The models in a kit's manifest (none if it has no manifest).</summary>
+        public static IEnumerable<string> KitModelNames(string kit)
+        {
+            KitInfo(kit, "");   // reads the manifest into the cache
+            Dictionary<string, object> models;
+            if (kitManifests.TryGetValue(kit, out models) && models != null) return models.Keys;
+            return new string[0];
         }
 
         /// <summary>A kit model's size from its manifest: x across, y up, z deep (Unity axes), or zero if unknown.</summary>
@@ -844,14 +857,19 @@ namespace DribbleToSchool.EditorTools
             Color? tint1 = null, Color? tint2 = null, Color? tint3 = null, bool castShadows = true)
         {
             var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(ModelsDir + "/" + kit + "/" + model + ".fbx");
+            if (prefab == null || Art == null) return null;
+            // A model with its own texture (the Kamakura kit's) wears its own material; the others their kit's.
             Material material;
-            if (prefab == null || Art == null || !Art.kits.TryGetValue(kit, out material) || material == null) return null;
-            // The California skin's shops have English signs: the same atlas layout, its own texture.
-            Material skin;
-            if ((California || Florida) && Art.kits.TryGetValue(kit + "CA", out skin) && skin != null) material = skin;
-            // A model the kid plays with is a cel for the classic cartoon filter (its kit's "Cel" copy).
-            Material cel;
-            if (celModels.Contains(kit + "/" + model) && Art.kits.TryGetValue(kit + "Cel", out cel) && cel != null) material = cel;
+            if (!Art.kits.TryGetValue(kit + "/" + model, out material) || material == null)
+            {
+                if (!Art.kits.TryGetValue(kit, out material) || material == null) return null;
+                // The California skin's shops have English signs: the same atlas layout, its own texture.
+                Material skin;
+                if ((California || Florida) && Art.kits.TryGetValue(kit + "CA", out skin) && skin != null) material = skin;
+                // A model the kid plays with is a cel for the classic cartoon filter (its kit's "Cel" copy).
+                Material cel;
+                if (celModels.Contains(kit + "/" + model) && Art.kits.TryGetValue(kit + "Cel", out cel) && cel != null) material = cel;
+            }
             var go = new GameObject(model);
             go.transform.SetParent(parent, false);
             go.transform.position = position;

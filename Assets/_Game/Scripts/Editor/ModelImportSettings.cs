@@ -38,8 +38,9 @@ namespace DribbleToSchool.EditorTools
 
         /// <summary>
         /// The models' atlases (painted detail plus a plain white corner the flat-coloured parts
-        /// sample): clamped, so filtering never bleeds the far edge into the white corner, and kept at
-        /// full size (the buildings kit's atlas is 2048 x 4096; the default cap would halve it).
+        /// sample), and the Kamakura models' own textures (&lt;Model&gt;Atlas.png): clamped, so filtering never
+        /// bleeds the far edge into the white corner, and kept at full size (the buildings kit's atlas is
+        /// 2048 x 4096; the default cap would halve it).
         /// </summary>
         void OnPreprocessTexture()
         {
@@ -56,7 +57,9 @@ namespace DribbleToSchool.EditorTools
             // The leaf sprites (the plants' trees and bushes, the barriers' propped boughs) are cut out
             // at alpha 0.5: keep that coverage in every mip so far trees don't thin out, and keep
             // colour under the transparent texels.
-            if (path.EndsWith("/PlantsAtlas.png") || path.EndsWith("/BarriersAtlas.png"))
+            // The same for a Kamakura model's own texture that has an alpha (the bicycle's spokes and basket, cut out).
+            if (path.EndsWith("/PlantsAtlas.png") || path.EndsWith("/BarriersAtlas.png") ||
+                (path.Contains("/Art/Models/Kamakura/") && importer.DoesSourceTextureHaveAlpha()))
             {
                 importer.alphaIsTransparency = true;
                 importer.mipMapsPreserveCoverage = true;

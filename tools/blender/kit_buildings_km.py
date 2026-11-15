@@ -4,6 +4,7 @@
 # pictures. The kid's home with its fence and garden (KM1-1) is built this way; the street props are carved from the user's
 # own views of each (km_views.py), each in its own texture.
 #   blenv/bin/python kit_buildings_km.py -- /abs/outdir [--board /abs/board.png] [--props-review <folder> [--only A,B]]
+#       [--install /abs/Assets/_Game/Art/Models/Kamakura]   (the props built from their views, into the game)
 # Writes into outdir: <Model>.fbx per model, KamakuraAtlas.png, Kamakura.json, Kamakura.blend; with --board, a review board
 # of each model beside its source picture: the picture, the model straight on, the model at three-quarters.
 import bpy
@@ -26,6 +27,7 @@ OUT = ARGS[0] if ARGS and not ARGS[0].startswith('--') else os.path.abspath('out
 BOARD = ARGS[ARGS.index('--board') + 1] if '--board' in ARGS else None
 PROPS_REVIEW = ARGS[ARGS.index('--props-review') + 1] if '--props-review' in ARGS else None
 ONLY = set(ARGS[ARGS.index('--only') + 1].split(',')) if '--only' in ARGS else None     # review just these models
+INSTALL = ARGS[ARGS.index('--install') + 1] if '--install' in ARGS else None   # the game's folder for the approved models
 REPO = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..'))
 REFS = os.path.join(REPO, 'review', 'kamakura', 'refs')
 ATLAS_SIZE = 4096
@@ -815,7 +817,7 @@ def build_props():
     for name, (pid, folder, height, opts) in KV.props().items():
         root, img, fr = KV.build(name, os.path.join(KV.SHEETS, folder), height, K.new_obj, **opts)
         cut = bool(opts.get('cutout'))
-        tex = name + '.png'
+        tex = name + 'Atlas.png'
         Image.fromarray(img if cut else img[..., :3]).save(os.path.join(OUT, tex))
         for x in [root] + list(root.children_recursive):
             keep_uv_white(x)
@@ -998,6 +1000,7 @@ def main():
     bsdf = next(n for n in cut.node_tree.nodes if n.type == 'BSDF_DIFFUSE')
     with_cutout(cut, ct, bsdf.outputs[0])
     manifest = K.Manifest('Kamakura', 'KamakuraAtlas.png')
+    installed = K.Manifest('Kamakura', None)     # the models built from their views, each with its own texture
     K.assign(trial, mat)                 # the KM-P3 roof trial: in the .blend and on the board, not exported
     for root, info in [(home, hinfo)] + props:
         if 'texture' in info:                # a prop from its views: its own texture
@@ -1015,11 +1018,25 @@ def main():
                 c.data.materials.append(cut)
         loc = root.location.copy()
         root.location = (0, 0, 0)
+        # the game turns a kit model's Attach.Front (1 m in front of it) toward the camera (LevelBuildKit.KitModel)
+        front = K.attach(root, 'Front', (0, -1, 0)) if 'texture' in info else None
         K.export_model(root, os.path.join(OUT, root.name + '.fbx'))
         manifest.add(root, **info)
+        if front is not None:
+            installed.add(root, **info)
+            bpy.data.objects.remove(front)
         root.location = loc
         print('%-14s %5d triangles' % (root.name, K.tree_tris(root)))
     manifest.save(os.path.join(OUT, 'Kamakura.json'))
+    if INSTALL:
+        # the approved models into the game (Assets/_Game/Art/Models/Kamakura): each FBX, its texture and their manifest
+        import shutil
+        os.makedirs(INSTALL, exist_ok=True)
+        for root, info in props:
+            shutil.copy(os.path.join(OUT, root.name + '.fbx'), INSTALL)
+            shutil.copy(os.path.join(OUT, info['texture']), INSTALL)
+        installed.save(os.path.join(INSTALL, 'Kamakura.json'))
+        print('installed', len(props), 'models in', INSTALL)
     bpy.ops.wm.save_as_mainfile(filepath=os.path.join(OUT, 'Kamakura.blend'))
     if BOARD:
         home.location.x = 0

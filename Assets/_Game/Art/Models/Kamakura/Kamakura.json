@@ -1,0 +1,516 @@
+{
+ "kit": "Kamakura",
+ "atlas": null,
+ "models": {
+  "KmPoleTransformer": {
+   "size": [
+    2.054,
+    0.851,
+    9.991
+   ],
+   "min": [
+    -0.954,
+    -0.351,
+    0.011
+   ],
+   "max": [
+    1.1,
+    0.5,
+    10.003
+   ],
+   "tris": 1454,
+   "parts": {},
+   "id": "KM-A01",
+   "source": "sheets/KM-A01_concrete_utility_pole_with_transformer (its views, made from KM1-1)",
+   "real_size": [
+    2.24,
+    1.01,
+    10.0
+   ],
+   "texture": "KmPoleTransformerAtlas.png",
+   "cutout": false,
+   "budget": 1500,
+   "tex_px": 1024
+  },
+  "KmMirror": {
+   "size": [
+    0.803,
+    0.346,
+    3.796
+   ],
+   "min": [
+    -0.403,
+    -0.174,
+    0.004
+   ],
+   "max": [
+    0.4,
+    0.172,
+    3.8
+   ],
+   "tris": 1454,
+   "parts": {},
+   "id": "KM-A03",
+   "source": "sheets/KM-A03_convex_corner_mirror (its views, made from KM1-1)",
+   "real_size": [
+    0.85,
+    0.35,
+    3.8
+   ],
+   "texture": "KmMirrorAtlas.png",
+   "cutout": false,
+   "budget": 1500,
+   "tex_px": 1024
+  },
+  "KmVendingBlue": {
+   "size": [
+    0.989,
+    0.729,
+    1.829
+   ],
+   "min": [
+    -0.493,
+    -0.365,
+    0.002
+   ],
+   "max": [
+    0.496,
+    0.363,
+    1.831
+   ],
+   "tris": 1454,
+   "parts": {},
+   "id": "KM-A19",
+   "source": "sheets/KM-A19_blue_vending_machine (its views, made from KM1-1)",
+   "real_size": [
+    0.99,
+    0.73,
+    1.83
+   ],
+   "texture": "KmVendingBlueAtlas.png",
+   "cutout": false,
+   "budget": 1500,
+   "tex_px": 1024
+  },
+  "KmCrossingSignal": {
+   "size": [
+    1.052,
+    0.634,
+    3.591
+   ],
+   "min": [
+    -0.523,
+    -0.316,
+    0.001
+   ],
+   "max": [
+    0.529,
+    0.318,
+    3.592
+   ],
+   "tris": 1454,
+   "parts": {},
+   "id": "KM-A05",
+   "source": "sheets/KM-A05_level_crossing_signal (its views, made from KM1-1)",
+   "real_size": [
+    1.06,
+    0.62,
+    3.6
+   ],
+   "texture": "KmCrossingSignalAtlas.png",
+   "cutout": false,
+   "budget": 1500,
+   "tex_px": 1024
+  },
+  "KmCrossingBarrier": {
+   "size": [
+    1.206,
+    0.683,
+    4.506
+   ],
+   "min": [
+    -0.61,
+    -0.343,
+    0.003
+   ],
+   "max": [
+    0.596,
+    0.34,
+    4.509
+   ],
+   "tris": 1452,
+   "parts": {},
+   "id": "KM-A04",
+   "source": "sheets/KM-A04_level_crossing_barrier (its views, made from KM1-1)",
+   "real_size": [
+    1.22,
+    0.69,
+    4.5
+   ],
+   "texture": "KmCrossingBarrierAtlas.png",
+   "cutout": false,
+   "budget": 1500,
+   "tex_px": 1024
+  },
+  "KmToriiSmall": {
+   "size": [
+    2.787,
+    0.305,
+    2.6
+   ],
+   "min": [
+    -1.396,
+    -0.155,
+    0.001
+   ],
+   "max": [
+    1.392,
+    0.15,
+    2.601
+   ],
+   "tris": 1454,
+   "parts": {},
+   "id": "KM-A11",
+   "source": "sheets/KM-A11_small_vermilion_torii (its views, made from KM1-1)",
+   "real_size": [
+    2.79,
+    0.31,
+    2.6
+   ],
+   "texture": "KmToriiSmallAtlas.png",
+   "cutout": false,
+   "budget": 1500,
+   "tex_px": 1024
+  },
+  "KmBicycle": {
+   "size": [
+    1.792,
+    0.66,
+    1.146
+   ],
+   "min": [
+    -0.897,
+    -0.332,
+    0.003
+   ],
+   "max": [
+    0.895,
+    0.329,
+    1.15
+   ],
+   "tris": 1454,
+   "parts": {},
+   "id": "KM-A08",
+   "source": "sheets/KM-A08_city_bicycle (its views, made from KM1-1)",
+   "real_size": [
+    1.79,
+    0.67,
+    1.15
+   ],
+   "texture": "KmBicycleAtlas.png",
+   "cutout": true,
+   "budget": 1500,
+   "tex_px": 1024
+  },
+  "KmVendingRed": {
+   "size": [
+    1.029,
+    0.715,
+    1.828
+   ],
+   "min": [
+    -0.514,
+    -0.358,
+    0.002
+   ],
+   "max": [
+    0.515,
+    0.357,
+    1.83
+   ],
+   "tris": 1454,
+   "parts": {},
+   "id": "KM-A06",
+   "source": "sheets/KM-A06_red_vending_machine (its views, made from KM1-1)",
+   "real_size": [
+    1.03,
+    0.72,
+    1.83
+   ],
+   "texture": "KmVendingRedAtlas.png",
+   "cutout": false,
+   "budget": 1500,
+   "tex_px": 1024
+  },
+  "KmRecyclingBins": {
+   "size": [
+    1.39,
+    0.505,
+    1.0
+   ],
+   "min": [
+    -0.695,
+    -0.253,
+    0.001
+   ],
+   "max": [
+    0.695,
+    0.252,
+    1.001
+   ],
+   "tris": 1454,
+   "parts": {},
+   "id": "KM-A20",
+   "source": "sheets/KM-A20_recycling_bins (its views, made from KM1-1)",
+   "real_size": [
+    1.39,
+    0.51,
+    1.0
+   ],
+   "texture": "KmRecyclingBinsAtlas.png",
+   "cutout": false,
+   "budget": 1500,
+   "tex_px": 1024
+  },
+  "KmAirConditioner": {
+   "size": [
+    0.797,
+    0.386,
+    1.122
+   ],
+   "min": [
+    -0.399,
+    -0.194,
+    0.001
+   ],
+   "max": [
+    0.398,
+    0.192,
+    1.124
+   ],
+   "tris": 1454,
+   "parts": {},
+   "id": "KM-A22",
+   "source": "sheets/KM-A22_air_conditioner_outdoor_unit (its views, made from KM1-1)",
+   "real_size": [
+    0.8,
+    0.39,
+    1.13
+   ],
+   "texture": "KmAirConditionerAtlas.png",
+   "cutout": false,
+   "budget": 1500,
+   "tex_px": 1024
+  },
+  "KmMeters": {
+   "size": [
+    0.797,
+    0.201,
+    0.796
+   ],
+   "min": [
+    -0.4,
+    -0.1,
+    0.001
+   ],
+   "max": [
+    0.397,
+    0.101,
+    0.797
+   ],
+   "tris": 1454,
+   "parts": {},
+   "id": "KM-A23",
+   "source": "sheets/KM-A23_gas_and_electricity_meters (its views, made from KM1-1)",
+   "real_size": [
+    0.8,
+    0.2,
+    0.8
+   ],
+   "texture": "KmMetersAtlas.png",
+   "cutout": false,
+   "budget": 1500,
+   "tex_px": 1024
+  },
+  "KmLetterbox": {
+   "size": [
+    0.487,
+    0.297,
+    1.548
+   ],
+   "min": [
+    -0.244,
+    -0.149,
+    0.002
+   ],
+   "max": [
+    0.243,
+    0.148,
+    1.55
+   ],
+   "tris": 1454,
+   "parts": {},
+   "id": "KM-A24",
+   "source": "sheets/KM-A24_house_letterbox (its views, made from KM1-1)",
+   "real_size": [
+    0.49,
+    0.3,
+    1.55
+   ],
+   "texture": "KmLetterboxAtlas.png",
+   "cutout": false,
+   "budget": 1500,
+   "tex_px": 1024
+  },
+  "KmControlCabinet": {
+   "size": [
+    1.063,
+    0.282,
+    1.6
+   ],
+   "min": [
+    -0.534,
+    -0.142,
+    0.001
+   ],
+   "max": [
+    0.529,
+    0.14,
+    1.601
+   ],
+   "tris": 1454,
+   "parts": {},
+   "id": "KM-A25",
+   "source": "sheets/KM-A25_grey_control_cabinet (its views, made from KM1-1)",
+   "real_size": [
+    1.07,
+    0.28,
+    1.6
+   ],
+   "texture": "KmControlCabinetAtlas.png",
+   "cutout": false,
+   "budget": 1500,
+   "tex_px": 1024
+  },
+  "KmStreetLamp": {
+   "size": [
+    2.497,
+    0.474,
+    6.988
+   ],
+   "min": [
+    -1.222,
+    -0.229,
+    0.006
+   ],
+   "max": [
+    1.274,
+    0.244,
+    6.994
+   ],
+   "tris": 1454,
+   "parts": {},
+   "id": "KM-A26",
+   "source": "sheets/KM-A26_street_lamp (its views, made from KM1-1)",
+   "real_size": [
+    2.55,
+    0.49,
+    7.0
+   ],
+   "texture": "KmStreetLampAtlas.png",
+   "cutout": false,
+   "budget": 1500,
+   "tex_px": 1024
+  },
+  "KmTicketGate": {
+   "size": [
+    0.554,
+    0.639,
+    0.999
+   ],
+   "min": [
+    -0.278,
+    -0.226,
+    0.001
+   ],
+   "max": [
+    0.276,
+    0.413,
+    1.0
+   ],
+   "tris": 1454,
+   "parts": {},
+   "id": "KM-A28",
+   "source": "sheets/KM-A28_ticket_gate (its views, made from KM1-1)",
+   "real_size": [
+    0.55,
+    0.83,
+    1.0
+   ],
+   "texture": "KmTicketGateAtlas.png",
+   "cutout": false,
+   "budget": 1500,
+   "tex_px": 1024
+  },
+  "KmStationSign": {
+   "size": [
+    1.798,
+    0.166,
+    2.138
+   ],
+   "min": [
+    -0.901,
+    -0.084,
+    0.003
+   ],
+   "max": [
+    0.897,
+    0.082,
+    2.141
+   ],
+   "tris": 1454,
+   "parts": {},
+   "id": "KM-A29",
+   "source": "sheets/KM-A29_station_name_board (its views, made from KM1-1)",
+   "real_size": [
+    1.8,
+    0.16,
+    2.14
+   ],
+   "texture": "KmStationSignAtlas.png",
+   "cutout": false,
+   "budget": 1500,
+   "tex_px": 1024
+  },
+  "KmTram": {
+   "size": [
+    11.995,
+    2.308,
+    4.884
+   ],
+   "min": [
+    -6.0,
+    -1.157,
+    0.005
+   ],
+   "max": [
+    5.996,
+    1.151,
+    4.889
+   ],
+   "tris": 3878,
+   "parts": {},
+   "id": "KM-V01",
+   "source": "sheets/KM-V01_tram (its views, made from KM1-1)",
+   "real_size": [
+    12.0,
+    2.31,
+    4.89
+   ],
+   "texture": "KmTramAtlas.png",
+   "cutout": false,
+   "budget": 4000,
+   "tex_px": 2048
+  }
+ }
+}
