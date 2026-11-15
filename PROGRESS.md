@@ -2293,7 +2293,7 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
 - Still to do: the tram's windows show the street its FRONT was drawn with; a FRONT redo (both halves) with the car's
   inside through the glass is asked for in `docs/KAMAKURA_BUILD.md` Step 2.
 - Cost (`docs/PERFORMANCE.md`): the props 1,452 to 1,454 triangles each, a 1024 texture each, about 12 MB for the
-  sixteen; the tram 3,880 triangles and a 2048 texture (about 2.7 MB); est., not yet in a level or measured on the phone.
+  sixteen; the tram 3,878 triangles and a 2048 texture (about 2.7 MB); est., not yet in a level or measured on the phone.
 
 ## The tram's windows; the review renders only what changed (tools, review and docs)
 

@@ -1849,7 +1849,7 @@
    2.31,
    4.89
   ],
-  "tris": 3880,
+  "tris": 3878,
   "motions": [],
   "checks": [
    [
@@ -1873,14 +1873,14 @@
    [
     4,
     "Views the game sees",
-    "pass",
-    "every face takes its pixels from the view that faces it squarely and can see it (the solid says what hides what); the left side the right side's (no view of its own)"
+    "limit",
+    "its BACK draws the roof units where its FRONT and TOP have them, not mirrored: their far faces take the roof's pixels (seen only from the far side, above the roof line)"
    ],
    [
     5,
     "Size, triangles",
     "pass",
-    "12.00 x 2.31 x 4.89 m, 3880 triangles (its budget: 4,000), its own 2048 px texture"
+    "12.00 x 2.31 x 4.89 m, 3878 triangles (its budget: 4,000), its own 2048 px texture"
    ],
    [
     6,
@@ -1891,8 +1891,8 @@
    [
     7,
     "No holes",
-    "limit",
-    "its windows show the street its FRONT view was drawn with (houses and flowers through the glass), not the car's inside as its BACK does: a FRONT redo would give the inside"
+    "pass",
+    "its windows show the car's inside, the plain grey through the far windows (its FRONT redone)"
    ],
    [
     8,
