@@ -575,6 +575,18 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
 - *Rule:* a reference can be used for its style and not its face; say which. New characters match the game's own in
   realism. Ask for one view a picture when faces matter.
 
+**C25. The first-grade girl's skirt went see-through in Meshy's remesh, with nothing under it (KM-C02).**
+- *What:* remeshed to 15,000 quads, her pleated navy skirt broke into shreds and holes, and the legs showed bare where
+  the skirt should have been: "the kid skirt gone transparent and also found no inner wear is included".
+- *Why:* a flared, pleated skirt is a thin open cone with nothing inside. Image-to-3D makes it a paper-thin shell, and
+  a remesh at a fixed count drops thin shells first. The prompt said only "a navy pleated skirt".
+- *Fix:* the girl wears knee-length navy culottes (a divided skirt, made like wide shorts, closed all round), the boy
+  knee-length shorts, both shirts tucked in. Every character prompt says the clothes are solid and close to the body,
+  nothing loose, flared, floating or see-through. The model is checked before the remesh, and a thin part the remesh
+  breaks is remeshed again at 30,000 quads.
+- *Rule:* a character made into a 3D model wears solid clothes close to the body. No open skirts, capes, loose sleeves
+  or floating hems. Check the model before and after a remesh.
+
 ## D. Art direction and look
 
 **D1. A golden-hour haze hid the kid** (before v37).

@@ -2426,7 +2426,10 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
 - The user's first boy from Gemini came out anime; they want Mia's realism (C24). The prompts now attach Mia's four
   pictures for the style alone, faces described as Japanese, and ask for one view a picture: the front, then the back
   and both sides with the front attached, pushed as `1_front.png` to `4_right_side.png`. The page shows each child's
-  four prompts in order.
+  four prompts in order. Every prompt asks for an A-pose with the arms out at 45 degrees (Mia's pictures have hers down).
+- The girl's first model broke in Meshy's remesh: her pleated skirt went see-through with nothing under it (C25). The
+  prompts now ask for solid clothes close to the body, the girl in knee-length navy culottes, the shirts tucked in; and
+  the Meshy steps say to check the model before remeshing and remesh again at 30,000 quads if a thin part breaks.
 
 ## After Phase 8 (next steps)
 

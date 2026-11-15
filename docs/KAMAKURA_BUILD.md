@@ -227,7 +227,7 @@ can't be used:
 
 So two new passers-by (`LevelBuildKit.Passersby`, walked by `Pedestrian`), each with parts the game recolours so a line
 of five looks like five children: **KM-C01** a first-grade boy, **KM-C02** a first-grade girl. The cap stays yellow;
-the randoseru, the shirt and the shorts or skirt vary.
+the randoseru, the shirt and the shorts or culottes vary.
 
 The look is Mia's (the user: "the reality should be as Mia"): a realistic, detailed illustration of a real child,
 as in the four pictures her model was made from (front, back and both sides, one view a picture). They are attached to
@@ -240,7 +240,8 @@ ASSET KM-C01, a first-grade boy walking to school, FRONT view. Attach the four p
 both sides). A Japanese boy in his first year of primary school, about 6 years old and 1.15 m tall, with a natural Japanese child's face: dark brown eyes,
 short straight black hair, a gentle everyday look, true to life and respectful, not exaggerated or caricatured. He wears the round yellow
 school safety cap with its chin strap; a black leather randoseru school backpack with the yellow first-grader's safety
-cover over its flap; a plain white short-sleeved shirt; navy shorts; white socks and white trainers. No logos, no writing.
+cover over its flap; a plain white short-sleeved shirt, tucked in; knee-length navy shorts; white socks and white trainers. No logos, no writing. The picture is made into a 3D model, so every piece of clothing is solid and sits close to the
+body: nothing loose, flared, floating or see-through, and no gap between clothes and skin anywhere.
 STYLE: exactly the drawing style and realism of the attached pictures of Mia: a realistic, detailed illustration of a
 real child with natural proportions, true-to-life skin, hair and cloth, clean dark outlines and soft even shading. Not
 anime, not cartoon, not chibi. Copy only the style from her pictures, never her face, hair, clothes or shoes.
@@ -253,19 +254,19 @@ light, no shadow on the ground. Nothing else in the image.
 
 ```text
 ASSET KM-C01, BACK view. Attach the front view just made. The same boy exactly as in it: the same face, hair,
-cap, randoseru, clothes, shoes and drawing style, the same size and the same A-pose (arms straight and out at 45 degrees, well clear of the body), now seen straight from behind. One image, portrait 2:3, the same
+cap, randoseru, clothes (solid and close to the body), shoes and drawing style, the same size and the same A-pose (arms straight and out at 45 degrees, well clear of the body), now seen straight from behind. One image, portrait 2:3, the same
 plain flat mid-grey background (#808080) and soft studio light. Nothing else in the image.
 ```
 
 ```text
 ASSET KM-C01, LEFT SIDE view. Attach the front view just made. The same boy exactly as in it: the same face, hair,
-cap, randoseru, clothes, shoes and drawing style, the same size and the same A-pose (arms straight and out at 45 degrees, well clear of the body), now seen straight from his left side, a true side view with the face in profile looking left. One image, portrait 2:3, the same
+cap, randoseru, clothes (solid and close to the body), shoes and drawing style, the same size and the same A-pose (arms straight and out at 45 degrees, well clear of the body), now seen straight from his left side, a true side view with the face in profile looking left. One image, portrait 2:3, the same
 plain flat mid-grey background (#808080) and soft studio light. Nothing else in the image.
 ```
 
 ```text
 ASSET KM-C01, RIGHT SIDE view. Attach the front view just made. The same boy exactly as in it: the same face, hair,
-cap, randoseru, clothes, shoes and drawing style, the same size and the same A-pose (arms straight and out at 45 degrees, well clear of the body), now seen straight from his right side, a true side view with the face in profile looking right. One image, portrait 2:3, the same
+cap, randoseru, clothes (solid and close to the body), shoes and drawing style, the same size and the same A-pose (arms straight and out at 45 degrees, well clear of the body), now seen straight from his right side, a true side view with the face in profile looking right. One image, portrait 2:3, the same
 plain flat mid-grey background (#808080) and soft studio light. Nothing else in the image.
 ```
 
@@ -274,7 +275,8 @@ ASSET KM-C02, a first-grade girl walking to school, FRONT view. Attach the four 
 both sides). A Japanese girl in her first year of primary school, about 6 years old and 1.15 m tall, with a natural Japanese child's face: dark brown eyes,
 black hair in a bob, a gentle everyday look, true to life and respectful, not exaggerated or caricatured. She wears the round yellow
 school safety cap with its chin strap; a red leather randoseru school backpack with the yellow first-grader's safety
-cover over its flap; a plain white short-sleeved shirt; a navy pleated skirt; white socks and white trainers. No logos, no writing.
+cover over its flap; a plain white short-sleeved shirt, tucked in; knee-length navy culottes (a divided skirt: it looks like a skirt from the front but is made like wide shorts, one leg each side, closed all round); white socks and white trainers. No logos, no writing. The picture is made into a 3D model, so every piece of clothing is solid and sits close to the
+body: nothing loose, flared, floating or see-through, and no gap between clothes and skin anywhere.
 STYLE: exactly the drawing style and realism of the attached pictures of Mia: a realistic, detailed illustration of a
 real child with natural proportions, true-to-life skin, hair and cloth, clean dark outlines and soft even shading. Not
 anime, not cartoon, not chibi. Copy only the style from her pictures, never her face, hair, clothes or shoes.
@@ -287,19 +289,19 @@ light, no shadow on the ground. Nothing else in the image.
 
 ```text
 ASSET KM-C02, BACK view. Attach the front view just made. The same girl exactly as in it: the same face, hair,
-cap, randoseru, clothes, shoes and drawing style, the same size and the same A-pose (arms straight and out at 45 degrees, well clear of the body), now seen straight from behind. One image, portrait 2:3, the same
+cap, randoseru, clothes (solid and close to the body), shoes and drawing style, the same size and the same A-pose (arms straight and out at 45 degrees, well clear of the body), now seen straight from behind. One image, portrait 2:3, the same
 plain flat mid-grey background (#808080) and soft studio light. Nothing else in the image.
 ```
 
 ```text
 ASSET KM-C02, LEFT SIDE view. Attach the front view just made. The same girl exactly as in it: the same face, hair,
-cap, randoseru, clothes, shoes and drawing style, the same size and the same A-pose (arms straight and out at 45 degrees, well clear of the body), now seen straight from her left side, a true side view with the face in profile looking left. One image, portrait 2:3, the same
+cap, randoseru, clothes (solid and close to the body), shoes and drawing style, the same size and the same A-pose (arms straight and out at 45 degrees, well clear of the body), now seen straight from her left side, a true side view with the face in profile looking left. One image, portrait 2:3, the same
 plain flat mid-grey background (#808080) and soft studio light. Nothing else in the image.
 ```
 
 ```text
 ASSET KM-C02, RIGHT SIDE view. Attach the front view just made. The same girl exactly as in it: the same face, hair,
-cap, randoseru, clothes, shoes and drawing style, the same size and the same A-pose (arms straight and out at 45 degrees, well clear of the body), now seen straight from her right side, a true side view with the face in profile looking right. One image, portrait 2:3, the same
+cap, randoseru, clothes (solid and close to the body), shoes and drawing style, the same size and the same A-pose (arms straight and out at 45 degrees, well clear of the body), now seen straight from her right side, a true side view with the face in profile looking right. One image, portrait 2:3, the same
 plain flat mid-grey background (#808080) and soft studio light. Nothing else in the image.
 ```
 
@@ -320,7 +322,10 @@ as `1_front.png`, `2_back.png`, `3_left_side.png` and `4_right_side.png`. Then i
 2. **Remesh** before rigging: Target Polycount *Fixed*, *Custom*, Topology *Quad*. A passer-by (C01, C02): 15,000
    quads, about 30,000 triangles. A playable kid: 50,000 quads, about 100,000 triangles. These are what
    `meshy_rigged.py --tris` expects; `polish_all.py` then cuts them to 14,000 and 32,000 keeping the face, the hands,
-   the joints' loops and the print seams (C7). Don't go lower in Meshy: its cut can't protect those.
+   the joints' loops and the print seams (C7). Don't go lower in Meshy: its cut can't protect those. Look at the model
+   before you remesh: a part that is hollow, see-through or shredded there (a skirt, a brim) is in the pictures, so make
+   them again. If the remesh itself breaks a thin part, undo it and remesh at 30,000 quads (`meshy_rigged.py --tris
+   30000` cuts it down) rather than keep a broken one (C25).
 3. **Animate**: auto-rig as a humanoid (its skeleton is the Mixamo-style one `meshy_rigged.py` reads). Animations
    don't matter: the game moves every character's bones in code (`CharacterRig`, `WalkerAnimator`) and the importer
    drops the clip. If the download needs one, add one plain walk.
