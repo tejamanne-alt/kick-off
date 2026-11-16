@@ -1437,6 +1437,26 @@ views).**
   - The image tool's mark is painted out on plain backdrop only; in a scene the picture is redone, or the mark is kept
     out of whatever is built from it.
 
+**D32. Five of KM1-1's plants installed with holes and fins in their shells (found by the audit, November 2026).**
+- *What:*
+  - The black pine, the clipped garden pine, the persimmon, the pink hydrangea and the mossy stone went into the game with
+    review check 2 (a closed shell) failing: 10 to 44 edges with one face.
+  - They also had edges shared by three faces or more: a thin pad or limb collapsed into a fin. The check didn't count
+    those.
+  - The Toon shader culls back faces, so a hole shows as a gap from some angles (D17).
+- *Why:*
+  - The review was judged by its pictures. Its checks were written into it, but its failures were not read before
+    installing.
+  - The carver's decimation folds thin parts into fins. Its single hole fill can't close a hole that runs along a fin,
+    or two holes that touch at one point.
+- *Fix:*
+  - `km_views.close()` takes the faces round each remaining fault away and fills the holes again, until none is left (one
+    to four rounds). A clean surface is left as it is, so every reviewed model rebuilds the same.
+  - A collapse that still leaves faults is tried again a little harder.
+  - Check 2 now counts fins as well as holes.
+  - The five rebuilt, reviewed again, and installed.
+- *Rule:* before installing, read every check's result in `review.json`, not only the renders: any FAIL stops the install.
+
 ## E. Levels and world
 
 - **E1. Every level had chapter-1 scenery.** A new-scene call unloaded the level definition. *Rule:* pass data into scene builders explicitly; never hold asset references across a new-scene call.

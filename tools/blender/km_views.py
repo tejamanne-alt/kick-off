@@ -1549,26 +1549,77 @@ def decimate(o, budget, big=1_000_000):
         bpy.ops.object.modifier_apply(modifier=m2.name)
     tris = len(o.data.polygons)
     if tris > budget:
-        m = o.modifiers.new('Collapse', 'DECIMATE')
-        m.decimate_type = 'COLLAPSE'
-        m.use_collapse_triangulate = True
-        m.ratio = budget / tris * 0.97
-        with bpy.context.temp_override(object=o, active_object=o, selected_objects=[o]):
-            bpy.ops.object.modifier_apply(modifier=m.name)
+        # Collapsed to the budget, then closed. A collapse that leaves a fin or a hole the fill can't close is tried again
+        # a little harder (each try from the same mesh), and the first clean one kept, or else the one with fewest faults.
+        before = o.data.copy()
+        best = None
+        for k, f in enumerate((0.97, 0.94, 0.91, 0.88, 0.85)):
+            if k:
+                old = o.data
+                o.data = before.copy()
+                bpy.data.meshes.remove(old)
+            m = o.modifiers.new('Collapse', 'DECIMATE')
+            m.decimate_type = 'COLLAPSE'
+            m.use_collapse_triangulate = True
+            m.ratio = budget / tris * f
+            with bpy.context.temp_override(object=o, active_object=o, selected_objects=[o]):
+                bpy.ops.object.modifier_apply(modifier=m.name)
+            close(o)
+            faults = shell_faults(o)
+            if best is None or faults < best[0]:
+                if best is not None:
+                    bpy.data.meshes.remove(best[1])
+                best = (faults, o.data.copy())
+            if faults == 0:
+                break
+        if shell_faults(o) != best[0]:
+            old = o.data
+            o.data = best[1]
+            bpy.data.meshes.remove(old)
+        else:
+            bpy.data.meshes.remove(best[1])
+        bpy.data.meshes.remove(before)
+        return
     close(o)
 
 
 def close(o):
-    """Closes any hole the decimation opened (where the surface met itself at an edge), faces outward."""
+    """Closes any hole the decimation opened (where the surface met itself at an edge), faces outward. Where a thin part
+    collapsed into a fin (an edge with three or more faces, a hole along it that no fill can close: the trees' pads, D31's
+    audit), the fin's extra faces go first, the smallest; and edges and points left with no face."""
     import bmesh
     bm = bmesh.new()
     bm.from_mesh(o.data)
     bmesh.ops.dissolve_degenerate(bm, edges=bm.edges, dist=1e-6)
     bmesh.ops.holes_fill(bm, edges=[e for e in bm.edges if e.is_boundary], sides=0)
+    # What a fill can't close (a hole along a fin, or two holes touching at a point): the faces round each fault go, the
+    # holes they leave are filled, until none is left (one to four rounds closed KM1-1's trees, D31's audit; a clean
+    # surface is left as it is)
+    for _ in range(8):
+        bad = [e for e in bm.edges if len(e.link_faces) != 2]
+        if not bad:
+            break
+        ring = {f for e in bad for v in e.verts for f in v.link_faces}
+        bmesh.ops.delete(bm, geom=list(ring), context='FACES_ONLY')
+        bmesh.ops.delete(bm, geom=[e for e in bm.edges if e.is_wire], context='EDGES')
+        bmesh.ops.delete(bm, geom=[v for v in bm.verts if not v.link_faces], context='VERTS')
+        for v in [v for v in bm.verts if sum(1 for e in v.link_edges if e.is_boundary) > 2]:
+            bmesh.utils.vert_separate(v, [e for e in v.link_edges if e.is_boundary])
+        bmesh.ops.holes_fill(bm, edges=[e for e in bm.edges if e.is_boundary], sides=0)
+        bmesh.ops.triangulate(bm, faces=[f for f in bm.faces if len(f.verts) > 3])
     bmesh.ops.triangulate(bm, faces=[f for f in bm.faces if len(f.verts) > 3])
     bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
     bm.to_mesh(o.data)
     bm.free()
+
+
+def shell_faults(o):
+    """Edges with one face (a hole) or with three or more (a fin): asset_review's check 2 wants none."""
+    counts = {}
+    for poly in o.data.polygons:
+        for ek in poly.edge_keys:
+            counts[ek] = counts.get(ek, 0) + 1
+    return sum(1 for v in counts.values() if v != 2)
 
 
 def uv_unwrap(o, smooth_angle):

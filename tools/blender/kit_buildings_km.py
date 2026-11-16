@@ -909,16 +909,18 @@ def props_review(props, out_dir, only=None):
             im.convert('RGB').save(os.path.join(out_dir, 'rows', '%s_%d.jpg' % (name, i)), quality=90)
         # the checks
         tris = K.tree_tris(root)
-        open_edges = 0
+        open_edges = fins = 0
         for o in [root] + list(root.children_recursive):
             counts = {}
             for poly in o.data.polygons:
                 for ek in poly.edge_keys:
                     counts[ek] = counts.get(ek, 0) + 1
             open_edges += sum(1 for v in counts.values() if v == 1)
+            fins += sum(1 for v in counts.values() if v > 2)     # a thin part collapsed into a fin (D31's audit)
         default = {
             1: ('pass', 'one solid carved from its views: each part once, looked at in Top and Bottom'),
-            2: ('pass' if open_edges == 0 else 'FAIL', '%d edges with one face' % open_edges),
+            2: ('pass' if open_edges == 0 and fins == 0 else 'FAIL',
+                '%d edges with one face, %d with three or more' % (open_edges, fins)),
             3: ('pass', 'carved from its front, side and top views: each part as deep as its side and top show it'),
             4: ('pass', 'every face takes its pixels from the view that faces it squarely and can see it (the solid says '
                         'what hides what); the left side the right side\'s (no view of its own)'),

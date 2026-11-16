@@ -3689,7 +3689,7 @@
    1.33,
    1.2
   ],
-  "tris": 1378,
+  "tris": 1308,
   "motions": [],
   "checks": [
    [
@@ -3701,8 +3701,8 @@
    [
     2,
     "Closed shell",
-    "FAIL",
-    "22 edges with one face"
+    "pass",
+    "0 edges with one face, 0 with three or more"
    ],
    [
     3,
@@ -3720,7 +3720,7 @@
     5,
     "Size, triangles",
     "pass",
-    "1.33 x 1.33 x 1.20 m, 1378 triangles (its budget: 1,500), its own 1024 px texture"
+    "1.33 x 1.33 x 1.20 m, 1308 triangles (its budget: 1,500), its own 1024 px texture"
    ],
    [
     6,
@@ -4034,7 +4034,7 @@
    0.87,
    0.9
   ],
-  "tris": 1423,
+  "tris": 1340,
   "motions": [],
   "checks": [
    [
@@ -4046,8 +4046,8 @@
    [
     2,
     "Closed shell",
-    "FAIL",
-    "10 edges with one face"
+    "pass",
+    "0 edges with one face, 0 with three or more"
    ],
    [
     3,
@@ -4065,7 +4065,7 @@
     5,
     "Size, triangles",
     "pass",
-    "1.30 x 0.87 x 0.90 m, 1423 triangles (its budget: 1,500), its own 1024 px texture"
+    "1.30 x 0.87 x 0.90 m, 1340 triangles (its budget: 1,500), its own 1024 px texture"
    ],
    [
     6,
@@ -4149,7 +4149,7 @@
    1.98,
    5.0
   ],
-  "tris": 2516,
+  "tris": 2326,
   "motions": [],
   "checks": [
    [
@@ -4161,8 +4161,8 @@
    [
     2,
     "Closed shell",
-    "FAIL",
-    "44 edges with one face"
+    "pass",
+    "0 edges with one face, 0 with three or more"
    ],
    [
     3,
@@ -4180,7 +4180,7 @@
     5,
     "Size, triangles",
     "pass",
-    "3.79 x 1.98 x 5.00 m, 2516 triangles (its budget: 3,000), its own 2048 px texture"
+    "3.79 x 1.98 x 5.00 m, 2326 triangles (its budget: 3,000), its own 2048 px texture"
    ],
    [
     6,
@@ -4264,7 +4264,7 @@
    3.31,
    9.0
   ],
-  "tris": 2836,
+  "tris": 2634,
   "motions": [],
   "checks": [
    [
@@ -4276,8 +4276,8 @@
    [
     2,
     "Closed shell",
-    "FAIL",
-    "34 edges with one face"
+    "pass",
+    "0 edges with one face, 0 with three or more"
    ],
    [
     3,
@@ -4295,7 +4295,7 @@
     5,
     "Size, triangles",
     "pass",
-    "7.01 x 3.31 x 9.00 m, 2836 triangles (its budget: 3,000), its own 2048 px texture"
+    "7.01 x 3.31 x 9.00 m, 2634 triangles (its budget: 3,000), its own 2048 px texture"
    ],
    [
     6,
@@ -4379,7 +4379,7 @@
    1.57,
    3.5
   ],
-  "tris": 2882,
+  "tris": 2760,
   "motions": [],
   "checks": [
    [
@@ -4391,8 +4391,8 @@
    [
     2,
     "Closed shell",
-    "FAIL",
-    "13 edges with one face"
+    "pass",
+    "0 edges with one face, 0 with three or more"
    ],
    [
     3,
@@ -4410,7 +4410,7 @@
     5,
     "Size, triangles",
     "pass",
-    "2.73 x 1.57 x 3.50 m, 2882 triangles (its budget: 3,000), its own 2048 px texture"
+    "2.73 x 1.57 x 3.50 m, 2760 triangles (its budget: 3,000), its own 2048 px texture"
    ],
    [
     6,
@@ -4459,6 +4459,121 @@
     "Repairs listed",
     "pass",
     "none needed"
+   ],
+   [
+    14,
+    "Rig names",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    15,
+    "Joints overlap",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no feet"
+   ],
+   [
+    17,
+    "Each part only itself",
+    "n/a",
+    "one piece"
+   ]
+  ]
+ },
+ "KmHome": {
+  "id": "KM-B01",
+  "sheet": "photo/KM1-1 (left): the house, its entrance and its fence",
+  "size": [
+   11.19,
+   9.2,
+   6.78
+  ],
+  "tris": 77,
+  "motions": [],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "the house, its skirt roof and gable, its upper storey and roof, its two air conditioners and its fence: each once (looked at in Top and Bottom)"
+   ],
+   [
+    2,
+    "Closed shell",
+    "limit",
+    "47 edges with one face, 0 with three or more: built of boxes and roof faces without the faces no one can see (the walls' bottoms, the inside of the fence's boards), as approved; seen from the street and from above, no gap shows"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "pass",
+    "modelled from boxes and roof faces measured off the photographic KM1-1 (about 120 px to the metre)"
+   ],
+   [
+    4,
+    "Views the game sees",
+    "limit",
+    "the street side is the picture itself; its sides, back and roofs away from the street take KM-P3's photographic boards and tiles in the house's colours (no view of their own)"
+   ],
+   [
+    5,
+    "Size, triangles",
+    "pass",
+    "11.19 x 9.20 x 6.78 m, 77 triangles (its budget 1,500; a house's 5,000), the kit's 4096 atlas as its texture (to be cropped: docs/PERFORMANCE.md)"
+   ],
+   [
+    6,
+    "Outline whole",
+    "pass",
+    "its outline the picture's; the pots, plants and bicycle in front of the fence painted out of it and stood in front as their own models"
+   ],
+   [
+    7,
+    "No holes",
+    "pass",
+    "no holes in what the street sees"
+   ],
+   [
+    8,
+    "Own models before walls",
+    "pass",
+    "the pots, the persimmon, the bicycle, the letterbox and the outdoor unit are their own models"
+   ],
+   [
+    9,
+    "Look target",
+    "pass",
+    "the photographic KM1-1, in KM-0's look"
+   ],
+   [
+    10,
+    "Solid",
+    "pass",
+    "solid and whole"
+   ],
+   [
+    11,
+    "No brands",
+    "pass",
+    "no brand or logo"
+   ],
+   [
+    12,
+    "No wires or sky",
+    "pass",
+    "the power lines taken off its roof (dewire), no sky on its roof's edge (unsky)"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "the repairs: the garden painted out of the fence, the wires off the roof, the sky off the roof's edge"
    ],
    [
     14,

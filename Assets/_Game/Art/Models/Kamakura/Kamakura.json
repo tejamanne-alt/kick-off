@@ -978,7 +978,7 @@
     0.659,
     1.191
    ],
-   "tris": 1378,
+   "tris": 1308,
    "parts": {},
    "id": "KM-G19",
    "source": "sheets/KM-G19_pink_hydrangea (its views, made from KM1-1)",
@@ -1055,7 +1055,7 @@
   "KmMossyStone": {
    "size": [
     1.246,
-    0.83,
+    0.757,
     0.898
    ],
    "min": [
@@ -1065,10 +1065,10 @@
    ],
    "max": [
     0.616,
-    0.404,
+    0.331,
     0.902
    ],
-   "tris": 1423,
+   "tris": 1340,
    "parts": {},
    "id": "KM-G11",
    "source": "sheets/KM-G11_mossy_stone_ferns (its views, made from KM1-1)",
@@ -1098,7 +1098,7 @@
     0.957,
     4.972
    ],
-   "tris": 2516,
+   "tris": 2326,
    "parts": {},
    "id": "KM-G08",
    "source": "sheets/KM-G08_persimmon_tree (its views, made from KM1-1)",
@@ -1128,7 +1128,7 @@
     1.65,
     8.984
    ],
-   "tris": 2836,
+   "tris": 2634,
    "parts": {},
    "id": "KM-G01",
    "source": "sheets/KM-G01_japanese_black_pine (its views, made from KM1-1)",
@@ -1158,7 +1158,7 @@
     0.763,
     3.49
    ],
-   "tris": 2882,
+   "tris": 2760,
    "parts": {},
    "id": "KM-G15",
    "source": "sheets/KM-G15_clipped_garden_pine (its views, made from KM1-1)",

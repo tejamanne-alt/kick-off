@@ -2636,7 +2636,7 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
 - The level as built, through the game camera: `km_level_from_code.py` reads the layout's code into `built.json`, and
   `preview_km_level.py --game` renders it from the installed models.
   The page: https://claude.ai/artifact/GUCA4Q1gjJi9KVXCixhjx2 (`review/kamakura/levels/KM1-1/built/`).
-- Cost: 42 models, about 77,000 triangles, about 75 MB of textures (est.). The cuts are listed in PERFORMANCE.
+- Cost: 42 models, about 76,000 triangles, about 75 MB of textures (est.). The cuts are listed in PERFORMANCE.
 - LEARNINGS A19: an install of eight models started a rebuild of all 31.
 - The audit after it (E13): reading the level's code against what it reuses found two faults.
   - The barriers' arms came down toward the tracks, into the tram's path. Now each comes down away from them.
@@ -2645,6 +2645,15 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
   - Also: the mossy stone moved behind the footpath's edge, and the build note's model count was corrected.
   - The other walkers' choices are drawn in the same order as before. The API check passes and the compiler's errors
     match HEAD's in two symbol sets. The kit and level tests' conditions hold (checked in Python: they need Unity).
+  - The models (D32): five of the new plants had gone in with holes in their shells (check 2 failing, unread). They were
+    the black pine, garden pine, persimmon, pink hydrangea and mossy stone, which also had fins. `km_views.close()` now
+    closes what its fill couldn't, and check 2 counts fins too. The five were rebuilt clean, reviewed and reinstalled.
+  - The home (KM-B01) is on the strict review now, all eight views (`review_km_home.py`): 47 open edges by design (faces
+    no one sees), counted with the FBX's seams merged.
+  - An FBX round trip splits a clean mesh along its texture seams (120 "open" edges on a clean stone), so shells are
+    counted on the mesh before export, as the review does.
+  - The 31 models reviewed earlier were checked for holes only; fins are counted at their next rebuild.
+  - Props page v15.
 
 ## After Phase 8 (next steps)
 

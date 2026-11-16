@@ -733,6 +733,7 @@ blenv/bin/python kit_buildings.py -- $PWD/out/florida --kit Florida      # Flori
 cp out/florida/*.fbx out/florida/FloridaAtlas.png out/florida/Florida.json ../../Assets/_Game/Art/Models/Florida/
 blenv/bin/python kit_buildings_km.py -- $PWD/out/kamakura --board $PWD/../../review/kamakura/kit_proof_board.jpg   # Kamakura.json, KamakuraAtlas.png, Kamakura.blend, <Model>.fbx
 blenv/bin/python kit_buildings_km.py -- $PWD/out/kamakura --install-home $PWD/../../Assets/_Game/Art/Models/Kamakura   # the home alone (KM-B01), without its cut-out garden
+blenv/bin/python review_km_home.py -- $PWD/../../Assets/_Game/Art/Models/Kamakura $PWD/../../review/kamakura/props   # the installed home's strict review (eight views, checks)
 python3 km_level_from_code.py HaseLanes ../../review/kamakura/levels/KM1-1/layout.json ../../review/kamakura/levels/KM1-1/built.json   # a level as KamakuraLevels builds it
 blenv/bin/python preview_km_level.py -- $A/Kamakura $A/Kamakura/Kamakura.json $PWD/../../review/kamakura/levels/KM1-1/built.json $A <outdir> --game   # A=Assets/_Game/Art/Models: through the game camera
 blenv/bin/python kit_plants.py -- $PWD/out/plants                       # writes the FBXs, atlas, manifest and Plants.blend
