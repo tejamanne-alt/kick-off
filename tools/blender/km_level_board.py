@@ -45,12 +45,13 @@ ul { margin: 0; padding-left: 1.1em; display: flex; flex-direction: column; gap:
 '''
 
 w = []
-w.append('<title>%s layout</title>' % esc(lay['level']))
+stage = lay.get('stage', 'proposed layout')          # 'as built' for a level the game builds (km_level_from_code.py)
+w.append('<title>%s %s</title>' % (esc(lay['level']), 'as built' if stage == 'as built' else 'layout'))
 w.append('<meta name="claude:viewport-fit-sides" content="cover">')
 w.append('<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&'
          'family=Source+Sans+3:wght@400;600&family=Zen+Kaku+Gothic+New:wght@500;700&display=swap">')
 w.append('<style>%s</style><div class="wrap">' % STYLE)
-w.append('<header class="stack"><div class="eyebrow">Kamakura · route 1 · leg 1 · proposed layout</div>'
+w.append('<header class="stack"><div class="eyebrow">Kamakura · route 1 · leg 1 · %s</div>' % esc(stage) +
          '<h1>%s %s</h1>' % (esc(lay['level']), esc(lay['name'])))
 for para in notes['intro']:
     w.append('<p>%s</p>' % para)

@@ -1,0 +1,104 @@
+<title>KM1-1 as built</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Source+Sans+3:wght@400;600&family=Zen+Kaku+Gothic+New:wght@500;700&display=swap">
+<style>
+:root { --bg: #f1f2ef; --panel: #ffffff; --ink: #1f2522; --muted: #5d6762; --line: #d6dbd6; --accent: #b23a2e;
+  --strip: #2a2e2c; --note-bg: #f7f1e3; --note-ink: #6b4f12;
+  --display: "Zen Kaku Gothic New", "Hiragino Sans", "Segoe UI", system-ui, sans-serif;
+  --body: "Source Sans 3", "Segoe UI", system-ui, sans-serif; --mono: "JetBrains Mono", ui-monospace, Menlo, monospace; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #151816; --panel: #1d211f; --ink: #e6ebe7; --muted: #9ba8a1; --line: #2f3632; --accent: #ef8a7c;
+  --strip: #0f1110; --note-bg: #322a17; --note-ink: #ecc977; color-scheme: dark } }
+:root[data-theme="dark"] { --bg: #151816; --panel: #1d211f; --ink: #e6ebe7; --muted: #9ba8a1; --line: #2f3632;
+  --accent: #ef8a7c; --strip: #0f1110; --note-bg: #322a17; --note-ink: #ecc977; color-scheme: dark }
+body { background: var(--bg); color: var(--ink); font: 16px/1.55 var(--body); }
+.wrap { max-width: 1180px; margin: 0 auto; padding-block: 28px 64px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: flex; flex-direction: column; gap: 28px; }
+h1, h2 { font-family: var(--display); margin: 0; line-height: 1.2; text-wrap: balance; }
+h1 { font-size: 2rem; } h2 { font-size: 1.3rem; }
+p { margin: 0; max-width: 70ch; }
+.eyebrow { font: 600 0.75rem var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+section { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+figure { margin: 0; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+figcaption { font: 0.8rem var(--mono); color: var(--muted); }
+.scroll { overflow-x: auto; border-radius: 8px; background: var(--strip); }
+.scroll img { display: block; height: 320px; width: auto; max-width: none; }
+.full img { width: 100%; height: auto; border-radius: 8px; display: block; }
+table { border-collapse: collapse; width: 100%; font-size: 0.92rem; }
+td, th { border-top: 1px solid var(--line); padding: 7px 10px 7px 0; vertical-align: top; text-align: left; }
+th { font: 600 0.78rem var(--mono); color: var(--muted); }
+td.x { font: 0.85rem var(--mono); white-space: nowrap; font-variant-numeric: tabular-nums; width: 5em; }
+.table-box { overflow-x: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 4px 14px 10px; }
+ul { margin: 0; padding-left: 1.1em; display: flex; flex-direction: column; gap: 6px; max-width: 75ch; }
+.ask { background: var(--note-bg); color: var(--note-ink); border-radius: 8px; padding: 14px 16px; }
+.ask ul { color: var(--ink); }
+</style><div class="wrap">
+<header class="stack"><div class="eyebrow">Kamakura · route 1 · leg 1 · as built</div><h1>KM1-1 Hase Lanes</h1>
+<p>KM1-1 Hase Lanes as the game now builds it (Kamakura's own level, in its own scene, not yet shown to players): every model you approved, the sixteen plants and pots from your plant views, the home at the door and Hase Station at the stop, read from the level's code and rendered through the game camera. Where a picture is still to come, a plain box stands in: the lane's houses (from your lane pictures KM1-1a to e), the block wall and the wooden fence.</p>
+</header>
+<section><h2>The picture it comes from</h2><figure class="full"><img src="reference.jpg" alt="KM1-1 Hase Lanes, the reference picture"><figcaption>KM1-1 Hase Lanes, the photographic version the models were built from.</figcaption></figure></section>
+<section><h2>Through the game camera</h2><p>Screen by screen as the game camera frames it (about 10 m back, 3.1 m above and below the lane at 16:9). The pink post and the white cube are the kid and the ball, for scale. The shading is Blender's, not the game's toon look.</p><figure><div class="scroll"><img src="strip.jpg" alt="The layout through the game camera, screen by screen"></div><figcaption>Scroll sideways: each screen is what the camera shows as the kid walks on; the red figure is the kid (1.57 m) with the ball.</figcaption></figure></section>
+<section><h2>From above</h2><figure class="full"><img src="plan.jpg" alt="The level from above, each place labelled"><figcaption>The camera is below the picture; red lines mark the play beats.</figcaption></figure></section>
+<section><h2>The play</h2><div class="table-box"><table><thead><tr><th>x (m)</th><th>What happens</th></tr></thead><tbody>
+<tr><td class="x">-12</td><td>start: the front door</td></tr>
+<tr><td class="x">22</td><td>first-graders walking to school in a line</td></tr>
+<tr><td class="x">60</td><td>the level crossing</td></tr>
+<tr><td class="x">74</td><td>Hase Station: the stop</td></tr>
+</tbody></table></div></section>
+<section><h2>Where everything stands</h2><div class="table-box"><table><thead><tr><th>x (m)</th><th>Model</th><th>Why there</th></tr></thead><tbody>
+<tr><td class="x">-17.8</td><td>KmAirConditioner</td><td></td></tr>
+<tr><td class="x">-16.6</td><td>KmShrubPlanter</td><td></td></tr>
+<tr><td class="x">-15.6</td><td>KmHydrangeaPlanter</td><td></td></tr>
+<tr><td class="x">-14.8</td><td>KmPotPinkFlowers</td><td></td></tr>
+<tr><td class="x">-14.3</td><td>KmPotWhiteDaisies</td><td></td></tr>
+<tr><td class="x">-13.7</td><td>KmMorningGloryPot</td><td></td></tr>
+<tr><td class="x">-12.0</td><td>KmHome</td><td>the home at the door (StreetBuilder.HomeFrontKM)</td></tr>
+<tr><td class="x">-10.0</td><td>KmLetterbox</td><td></td></tr>
+<tr><td class="x">-9.2</td><td>KmBonsaiTerracotta</td><td></td></tr>
+<tr><td class="x">-8.4</td><td>KmBonsaiBlueBowl</td><td></td></tr>
+<tr><td class="x">-7.6</td><td>KmStoneStandFlowers</td><td></td></tr>
+<tr><td class="x">-4.4</td><td>KmBicycle</td><td></td></tr>
+<tr><td class="x">-0.8</td><td>KmPersimmonTree</td><td></td></tr>
+<tr><td class="x">0.6</td><td>KmHedgeClipped</td><td></td></tr>
+<tr><td class="x">3.0</td><td>KmPoleTransformer</td><td></td></tr>
+<tr><td class="x">5.0</td><td>KmMirror</td><td></td></tr>
+<tr><td class="x">6.7</td><td>KmVendingRed</td><td></td></tr>
+<tr><td class="x">7.8</td><td>KmVendingBlue</td><td></td></tr>
+<tr><td class="x">9.2</td><td>KmRecyclingBins</td><td></td></tr>
+<tr><td class="x">18.0</td><td>KmGardenPine</td><td></td></tr>
+<tr><td class="x">26.0</td><td>KmMossyStone</td><td></td></tr>
+<tr><td class="x">36.0</td><td>KmToriiSmall</td><td></td></tr>
+<tr><td class="x">36.0</td><td>KmShrineSmall</td><td></td></tr>
+<tr><td class="x">45.0</td><td>KmScooter</td><td></td></tr>
+<tr><td class="x">49.0</td><td>KmHouseBeige</td><td></td></tr>
+<tr><td class="x">54.0</td><td>KmPolePlain</td><td></td></tr>
+<tr><td class="x">54.6</td><td>KmStreetLamp</td><td></td></tr>
+<tr><td class="x">57.2</td><td>KmControlCabinet</td><td></td></tr>
+<tr><td class="x">58.4</td><td>KmCrossingSignal</td><td>the bells and lamps, this side</td></tr>
+<tr><td class="x">59.4</td><td>KmCrossingBarrier</td><td>its barrier</td></tr>
+<tr><td class="x">63.0</td><td>KmWireGantry</td><td></td></tr>
+<tr><td class="x">63.0</td><td>KmTram</td><td>the tram coming down the tracks (the crossing&#x27;s traffic)</td></tr>
+<tr><td class="x">66.6</td><td>KmCrossingBarrier</td><td>the far barrier</td></tr>
+<tr><td class="x">67.6</td><td>KmCrossingSignal</td><td>the far bells and lamps</td></tr>
+<tr><td class="x">70.0</td><td>KmPolePlain</td><td></td></tr>
+<tr><td class="x">71.6</td><td>KmHydrangeaBlue</td><td></td></tr>
+<tr><td class="x">73.6</td><td>KmTicketGate</td><td>Hase&#x27;s ticket gate: the stop</td></tr>
+<tr><td class="x">79.0</td><td>KmStationPlatform</td><td></td></tr>
+<tr><td class="x">85.0</td><td>KmStationSign</td><td></td></tr>
+<tr><td class="x">87.0</td><td>KmHydrangeaPink</td><td></td></tr>
+<tr><td class="x">88.6</td><td>KmHydrangeaViolet</td><td></td></tr>
+<tr><td class="x">91.0</td><td>KmBlackPine</td><td></td></tr>
+<tr><td class="x">15.5</td><td>(to come)</td><td>house to come</td></tr>
+<tr><td class="x">15.5</td><td>(to come)</td><td>its roof</td></tr>
+<tr><td class="x">21.0</td><td>(to come)</td><td>BlockWall</td></tr>
+<tr><td class="x">27.0</td><td>(to come)</td><td>house to come</td></tr>
+<tr><td class="x">27.0</td><td>(to come)</td><td>its roof</td></tr>
+<tr><td class="x">42.0</td><td>(to come)</td><td>house to come</td></tr>
+<tr><td class="x">42.0</td><td>(to come)</td><td>its roof</td></tr>
+<tr><td class="x">49.0</td><td>(to come)</td><td>WoodenFence</td></tr>
+<tr><td class="x">63.0</td><td>(to come)</td><td>rails</td></tr>
+</tbody></table></div></section>
+<section><h2>Decided for now</h2><ul><li>The level is <b>its own scene</b>, KM1-1_HaseLanes_KM, beside the original town's 23 levels, and not in the menus yet: Kamakura's routes are switched on together (BUILD KM-L99).</li><li>Everything beside the lane stands <b>0.75 m further back</b> than in the proposed layout: the game's footpath, where the kid plays, is 1.5 m either side of the lane, the layout's green strip 0.75 m. Nothing tall stands in front of the lane (LEARNINGS E10).</li><li>The <b>first-graders</b> walk in a loose line, slower than the kid, each its own short stretch: solid to the ball, the kid slips past.</li><li>The <b>level crossing</b>: the bells and lamps, the barriers coming down along the lane behind it (never toward the camera), and the tram coming down the tracks toward the camera and on over the road. On the rails while they flash, the ball is lost: "Ding ding! Wait for the barriers to go up".</li><li>The <b>cat on the block wall</b> is the game's cat until Kamakura's own animals (the ginger cat, the sparrows, the swallows, the crow) are put in the game.</li></ul></section>
+<section class="ask"><h2>For you</h2><ul><li><b>Redo when you can:</b> the garden pine's TOP (KM-G15: its tree is built from its front and side meanwhile), and KM1-1c's corrugated house (its stand-in is a box).</li><li><b>Anything to move or change</b> in the level: a model's place, the play, the length, the stand-ins' colours.</li></ul></section>
+</div>

@@ -86,7 +86,7 @@ for line in body.split('\n'):
 model('KmHome', -12.0, 1.6, note='the home at the door (StreetBuilder.HomeFrontKM)')
 play.insert(0, dict(x=-12.0, what='start: the front door'))
 
-built = dict(level=lay['level'], name=lay['name'],
+built = dict(level=lay['level'], name=lay['name'], stage='as built',
              about='KM1-1 as the game builds it (KamakuraLevels.' + method + ', read by tools/blender/km_level_from_code.py): '
                    'the game\'s footpath 1.5 m either side of the lane, every model 0.75 m further back than the proposed '
                    'layout\'s front.',

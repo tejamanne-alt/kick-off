@@ -1,6 +1,7 @@
 {
  "level": "KM1-1",
  "name": "Hase Lanes",
+ "stage": "as built",
  "about": "KM1-1 as the game builds it (KamakuraLevels.HaseLanes, read by tools/blender/km_level_from_code.py): the game's footpath 1.5 m either side of the lane, every model 0.75 m further back than the proposed layout's front.",
  "length": [
   -20,

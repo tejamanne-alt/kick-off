@@ -2635,6 +2635,7 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
   - Not run here: LevelFeasibility and the scene itself. Both need Unity.
 - The level as built, through the game camera: `km_level_from_code.py` reads the layout's code into `built.json`, and
   `preview_km_level.py --game` renders it from the installed models.
+  The page: https://claude.ai/artifact/GUCA4Q1gjJi9KVXCixhjx2 (`review/kamakura/levels/KM1-1/built/`).
 - Cost: 42 models, about 77,000 triangles, about 75 MB of textures (est.). The cuts are listed in PERFORMANCE.
 - LEARNINGS A19: an install of eight models started a rebuild of all 31.
 
