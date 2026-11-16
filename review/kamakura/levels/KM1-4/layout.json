@@ -75,133 +75,166 @@
    "model": "KmShrineWall",
    "x": -7.0,
    "front": 1.5,
-   "note": "the shrine's low stone wall"
+   "note": "the shrine's low stone wall",
+   "label": "the shrine's stone wall, to x 46"
   },
   {
    "model": "KmShrineWallB",
    "x": -4.39,
    "front": 1.5,
-   "note": "the shrine's low stone wall (mirrored)"
+   "note": "the shrine's low stone wall (mirrored)",
+   "label": "-"
   },
   {
    "model": "KmShrineWall",
    "x": -1.78,
    "front": 1.5,
-   "note": "the shrine's low stone wall"
+   "note": "the shrine's low stone wall",
+   "label": "-"
   },
   {
    "model": "KmShrineWallB",
    "x": 0.83,
    "front": 1.5,
-   "note": "the shrine's low stone wall (mirrored)"
+   "note": "the shrine's low stone wall (mirrored)",
+   "label": "-"
   },
   {
    "model": "KmShrineWall",
    "x": 3.44,
    "front": 1.5,
-   "note": "the shrine's low stone wall"
+   "note": "the shrine's low stone wall",
+   "label": "-"
   },
   {
    "model": "KmShrineWallB",
    "x": 6.05,
    "front": 1.5,
-   "note": "the shrine's low stone wall (mirrored)"
+   "note": "the shrine's low stone wall (mirrored)",
+   "label": "-"
   },
   {
    "model": "KmShrineWall",
    "x": 8.66,
    "front": 1.5,
-   "note": "the shrine's low stone wall"
+   "note": "the shrine's low stone wall",
+   "label": "-"
   },
   {
    "model": "KmShrineWallB",
    "x": 11.27,
    "front": 1.5,
-   "note": "the shrine's low stone wall (mirrored)"
+   "note": "the shrine's low stone wall (mirrored)",
+   "label": "-"
   },
   {
    "model": "KmShrineWall",
    "x": 13.88,
    "front": 1.5,
-   "note": "the shrine's low stone wall"
+   "note": "the shrine's low stone wall",
+   "label": "-"
   },
   {
    "model": "KmShrineWallB",
    "x": 16.49,
    "front": 1.5,
-   "note": "the shrine's low stone wall (mirrored)"
+   "note": "the shrine's low stone wall (mirrored)",
+   "label": "-"
   },
   {
    "model": "KmShrineWall",
    "x": 19.1,
    "front": 1.5,
-   "note": "the shrine's low stone wall"
+   "note": "the shrine's low stone wall",
+   "label": "-"
   },
   {
    "model": "KmShrineWallB",
    "x": 21.71,
    "front": 1.5,
-   "note": "the shrine's low stone wall (mirrored)"
+   "note": "the shrine's low stone wall (mirrored)",
+   "label": "-"
   },
   {
    "model": "KmShrineWall",
    "x": 24.32,
    "front": 1.5,
-   "note": "the shrine's low stone wall"
+   "note": "the shrine's low stone wall",
+   "label": "-"
   },
   {
    "model": "KmShrineWallB",
    "x": 26.93,
    "front": 1.5,
-   "note": "the shrine's low stone wall (mirrored)"
+   "note": "the shrine's low stone wall (mirrored)",
+   "label": "-"
   },
   {
    "model": "KmShrineWall",
    "x": 29.54,
    "front": 1.5,
-   "note": "the shrine's low stone wall"
+   "note": "the shrine's low stone wall",
+   "label": "-"
   },
   {
    "model": "KmShrineWallB",
    "x": 32.15,
    "front": 1.5,
-   "note": "the shrine's low stone wall (mirrored)"
+   "note": "the shrine's low stone wall (mirrored)",
+   "label": "-"
   },
   {
    "model": "KmShrineWall",
    "x": 34.76,
    "front": 1.5,
-   "note": "the shrine's low stone wall"
+   "note": "the shrine's low stone wall",
+   "label": "-"
   },
   {
    "model": "KmShrineWallB",
    "x": 37.37,
    "front": 1.5,
-   "note": "the shrine's low stone wall (mirrored)"
+   "note": "the shrine's low stone wall (mirrored)",
+   "label": "-"
   },
   {
    "model": "KmShrineWall",
    "x": 39.98,
    "front": 1.5,
-   "note": "the shrine's low stone wall"
+   "note": "the shrine's low stone wall",
+   "label": "-"
   },
   {
    "model": "KmShrineWallB",
    "x": 42.59,
    "front": 1.5,
-   "note": "the shrine's low stone wall (mirrored)"
+   "note": "the shrine's low stone wall (mirrored)",
+   "label": "-"
   },
   {
    "model": "KmShrineWall",
    "x": 45.2,
    "front": 1.5,
-   "note": "the shrine's low stone wall"
+   "note": "the shrine's low stone wall",
+   "label": "-"
   },
   {
    "model": "KmGinkgoBig",
-   "x": -2.0,
+   "x": 31.0,
    "front": -3.0,
-   "note": "the big old ginkgo leaning over the wall (KM-G12), its trunk 4 m behind the lane"
+   "note": "a big old ginkgo over the wall by the steps (KM-G12, carved from its views), its trunk 4 m behind the lane"
+  },
+  {
+   "model": "KmBlackPine",
+   "x": -20.0,
+   "front": 4.0,
+   "note": "a black pine behind the start (the kit's, until KM1-4a)"
+  },
+  {
+   "model": "KmBlackPine",
+   "x": -4.0,
+   "front": 3.0,
+   "note": "a black pine over the wall between the gate and the grounds (the kit's, until KM1-4a)"
   },
   {
    "model": "KmTemizuya",
@@ -296,10 +329,23 @@
  ],
  "markers": [
   {
-   "what": "camphor trees and cherries along the steps, the hall on its wooded hill (KM1-4c)",
-   "x": 34.5,
+   "what": "stone lanterns over the wall (KM1-4a)",
+   "x": -3.0,
+   "front": 2.6,
+   "w": 6.0,
+   "d": 1.0,
+   "h": 2.0,
+   "rgb": [
+    0.62,
+    0.61,
+    0.57
+   ]
+  },
+  {
+   "what": "camphor trees and cherries along the steps (KM1-4c)",
+   "x": 40.0,
    "front": 4.0,
-   "w": 20.0,
+   "w": 11.0,
    "d": 8.0,
    "h": 9.0,
    "rgb": [
@@ -348,7 +394,8 @@
     0.93,
     0.9
    ],
-   "solid": true
+   "solid": true,
+   "label": "-"
   },
   {
    "what": "zebra stripe",
@@ -362,7 +409,8 @@
     0.93,
     0.9
    ],
-   "solid": true
+   "solid": true,
+   "label": "-"
   },
   {
    "what": "zebra stripe",
@@ -376,7 +424,8 @@
     0.93,
     0.9
    ],
-   "solid": true
+   "solid": true,
+   "label": "-"
   },
   {
    "what": "zebra stripe",
@@ -390,7 +439,8 @@
     0.93,
     0.9
    ],
-   "solid": true
+   "solid": true,
+   "label": "-"
   },
   {
    "what": "zebra stripe",
@@ -404,7 +454,8 @@
     0.93,
     0.9
    ],
-   "solid": true
+   "solid": true,
+   "label": "-"
   },
   {
    "what": "zebra stripe",
@@ -418,7 +469,8 @@
     0.93,
     0.9
    ],
-   "solid": true
+   "solid": true,
+   "label": "-"
   },
   {
    "what": "zebra stripe",
@@ -432,7 +484,8 @@
     0.93,
     0.9
    ],
-   "solid": true
+   "solid": true,
+   "label": "-"
   },
   {
    "what": "pedestrian signal, this side (green and red figures)",

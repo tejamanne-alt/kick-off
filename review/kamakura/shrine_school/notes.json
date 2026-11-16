@@ -6,6 +6,7 @@
  "limits": [
   "Seen from the street they are your picture. From the side and the back they take the part's own colour, since the picture shows no other side (check 4).",
   "The pond, the grounds and the fences are flat layers. Their depth comes from where they stand, 2 to 8 m behind the lane, not from their own shape (check 3).",
+  "The layers are scaled about the game camera's eye level (2.45 m up), so they line up as in the picture from where the camera stands. Each meets the ground at its own row of the picture; what the picture draws below that row is nearer ground, which the street and the layers in front stand for.",
   "The pavilion's roof carries its gable end and its right slope on its front, as the picture draws them from a little to its right.",
   "The school building is far back (33 m), at 40 px to the metre: it is a background, its sides and roof in its concrete's colour.",
   "Where a layer stood in front of another in the picture, it is painted out of the one behind: the pavilion out of the grounds (the fence and stone wall carried on from the left, the trees from above), the cherry out of the school's face (its window bays carried on). Turned a little, those places show the carried-on fence, leaves and windows."

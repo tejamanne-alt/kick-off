@@ -165,6 +165,7 @@ S.world = bpy.data.worlds.new('w'); S.world.use_nodes = True
 S.world.node_tree.nodes['Background'].inputs['Color'].default_value = (0.42, 0.62, 0.88, 1)
 S.world.node_tree.nodes['Background'].inputs['Strength'].default_value = 0.55
 S.render.engine = 'BLENDER_EEVEE'
+S.eevee.taa_render_samples = 16          # a board's frames: enough to judge places and sizes, a quarter of the time
 S.view_settings.view_transform = 'Standard'
 S.render.resolution_x, S.render.resolution_y = 1280, 720
 

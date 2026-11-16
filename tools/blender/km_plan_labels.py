@@ -29,7 +29,8 @@ def label(lay, plan_path, out_path, rows=8):
     py = lambda z: (21.0 - z) / 30.0 * H
     d = ImageDraw.Draw(plan)
     fs = ImageFont.truetype(FONT, 13) if os.path.exists(FONT) else ImageFont.load_default()
-    items = sorted(lay['placements'] + lay['markers'], key=lambda it: it['x'])
+    # a place labelled '-' is one of a run already named (a wall's segments after the first, a crossing's stripes)
+    items = sorted([it for it in lay['placements'] + lay['markers'] if it.get('label') != '-'], key=lambda it: it['x'])
     base = py(0.75) + 8                      # under the lane's far edge
     for n, it in enumerate(items):
         x, z = it['x'], it['front']

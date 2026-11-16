@@ -235,7 +235,7 @@
   "size": [
    3.89,
    2.7,
-   3.39
+   3.22
   ],
   "tris": 110,
   "motions": [],
@@ -268,7 +268,7 @@
     5,
     "Size, triangles",
     "pass",
-    "3.89 x 2.70 x 3.39 m, 110 triangles (its budget 1500), the shared 4096 x 2048 KmShrineSchoolAtlas"
+    "3.89 x 2.70 x 3.22 m, 110 triangles (its budget 1500), the shared 4096 x 2048 KmShrineSchoolAtlas"
    ],
    [
     6,
@@ -350,7 +350,7 @@
   "size": [
    11.53,
    4.5,
-   1.91
+   1.47
   ],
   "tris": 6,
   "motions": [],
@@ -383,7 +383,7 @@
     5,
     "Size, triangles",
     "pass",
-    "11.53 x 4.50 x 1.91 m, 6 triangles (its budget 100), the shared 4096 x 2048 KmShrineSchoolAtlas"
+    "11.53 x 4.50 x 1.47 m, 6 triangles (its budget 100), the shared 4096 x 2048 KmShrineSchoolAtlas"
    ],
    [
     6,
@@ -465,7 +465,7 @@
   "size": [
    22.52,
    6.2,
-   9.41
+   8.01
   ],
   "tris": 4,
   "motions": [],
@@ -498,7 +498,7 @@
     5,
     "Size, triangles",
     "pass",
-    "22.52 x 6.20 x 9.41 m, 4 triangles (its budget 100), the shared 4096 x 2048 KmShrineSchoolAtlas"
+    "22.52 x 6.20 x 8.01 m, 4 triangles (its budget 100), the shared 4096 x 2048 KmShrineSchoolAtlas"
    ],
    [
     6,
@@ -695,7 +695,7 @@
   "size": [
    1.14,
    0.01,
-   4.21
+   4.08
   ],
   "tris": 4,
   "motions": [],
@@ -728,7 +728,7 @@
     5,
     "Size, triangles",
     "pass",
-    "1.14 x 0.01 x 4.21 m, 4 triangles (its budget 100), the shared 4096 x 2048 KmShrineSchoolAtlas"
+    "1.14 x 0.01 x 4.08 m, 4 triangles (its budget 100), the shared 4096 x 2048 KmShrineSchoolAtlas"
    ],
    [
     6,
@@ -810,7 +810,7 @@
   "size": [
    1.77,
    0.01,
-   4.99
+   4.86
   ],
   "tris": 4,
   "motions": [],
@@ -843,7 +843,7 @@
     5,
     "Size, triangles",
     "pass",
-    "1.77 x 0.01 x 4.99 m, 4 triangles (its budget 100), the shared 4096 x 2048 KmShrineSchoolAtlas"
+    "1.77 x 0.01 x 4.86 m, 4 triangles (its budget 100), the shared 4096 x 2048 KmShrineSchoolAtlas"
    ],
    [
     6,

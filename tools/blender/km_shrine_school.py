@@ -4,7 +4,12 @@
 # the hall, the school stands across its sports ground. So it is built in layers, each at its own depth and at the
 # scale that makes it line up with the picture from the game camera: the camera stands about 10.1 m in front of the
 # lane (CameraFollow2D), and a layer `front` metres behind the lane shows WALL_S * 11.6 / (10.1 + front) px to the
-# metre, the walls along the street 150 (the stone wall's stones, the school gate's 1.9 m pillars).
+# metre, the walls along the street 150 (the stone wall's stones, the school gate's 1.9 m pillars). Each layer is
+# scaled about the camera's eye level, not about its foot: the camera is 2.45 m up (its focus 1.75 m over the lane,
+# tilted 4 degrees), so the picture's row EYE_ROW stands at 2.45 m in every layer, and a layer meets the ground at
+# ground_row(front) = EYE_ROW + 2.45 x its px to the metre; the picture below that row is nearer ground, left out.
+# (Scaled about their feet, the layers lined up only for a camera on the ground: from the game's, a strip of sky
+# showed between the pond and the grounds behind it.)
 #   - the shrine's low stone wall along the pavement (two copies, one mirrored, to be laid in turn);
 #   - the purification pavilion (KM-B13) just behind it: its posts, beam, basin and roof;
 #   - the lotus pond with the arched bridge (a cut-out), with the water under it;
@@ -45,6 +50,15 @@ DENS = 80.0
 def scale_at(front):
     """The picture's px to the metre for a layer `front` metres behind the lane (the walls at 1.5: WALL_S)."""
     return WALL_S * (CAM + 1.5) / (CAM + front)
+
+
+CAM_H = 2.45                     # the game camera's height: CameraFollow2D's focus 1.75 m up, 10.1 m back, tilted 4 degrees
+EYE_ROW = 902.0 - CAM_H * WALL_S  # the picture's row at the camera's height, where the street's wall (its foot at 902) is
+
+
+def ground_row(front):
+    """The picture's row where a layer `front` metres behind the lane meets the ground, seen from the game camera."""
+    return EYE_ROW + CAM_H * scale_at(front)
 
 
 FRONT = dict(pavilion=2.2, pond=3.5, grounds=8.0, fence=2.0, gate=1.5, building=33.0)
@@ -169,7 +183,7 @@ def pavilion(atlas, img):
     """KM-B13, the purification pavilion: four posts on stone feet, the beam with its paper streamers, the stone basin
     with its ladles, and its tiled roof (the picture sees it from the front and a little from its right, so the roof's
     front slope carries its gable end and its right slope as the picture draws them)."""
-    s, gy, cx = scale_at(FRONT['pavilion']), 905.0, 517.0
+    s, gy, cx = scale_at(FRONT['pavilion']), ground_row(FRONT['pavilion']), 517.0
     crop = (300, 410, 875, 910)
     pos = atlas.place(img.crop(crop))
     fmap = lambda co: (cx + co.x * s - crop[0], gy - co.z * s - crop[1])
@@ -205,8 +219,8 @@ def pavilion(atlas, img):
 def pond(atlas, img, src, mask):
     """The lotus pond with the arched bridge over it, cut out of the picture, upright at the pond's near edge; behind
     it the water, flat, in its own dark green."""
-    s, gy, cx = scale_at(FRONT['pond']), 905.0, 1175.0
-    crop = (690, 660, 2165, 905)
+    s, gy, cx = scale_at(FRONT['pond']), ground_row(FRONT['pond']), 1175.0
+    crop = (690, 660, 2165, int(gy))
     a = np.asarray(img.convert('RGB'))[crop[1]:crop[3], crop[0]:crop[2]]
     m = mask[crop[1]:crop[3], crop[0]:crop[2]]
     pos = atlas.place(Image.fromarray(np.dstack([a, m * 255]), 'RGBA'))
@@ -227,14 +241,13 @@ def grounds(atlas, img, mask):
     the stairs up to the vermilion hall, the fortune racks, the trees; the overcast sky not drawn; under the pond's
     outline nothing (the pond stands in front, and the gravel and the water lie flat between them). In front of it,
     the gravel, flat, in its own colour."""
-    s, gy, cx = scale_at(FRONT['grounds']), 905.0, 1175.0
-    crop = (0, 0, 2165, 905)
+    s, gy, cx = scale_at(FRONT['grounds']), ground_row(FRONT['grounds']), 1175.0
+    crop = (0, 0, 2165, int(gy))
     a = np.asarray(img.convert('RGB'))[crop[1]:crop[3], crop[0]:crop[2]].copy()
     keep = ~LK.overcast_mask(a, below=420)
     m = mask[crop[1]:crop[3], crop[0]:crop[2]].astype(bool)
     under = np.maximum.accumulate(m, axis=0)            # each column, from the pond's top down
     keep &= ~cv2.dilate(under.astype(np.uint8), np.ones((5, 5), np.uint8)).astype(bool)
-    keep[870:, 860:1475] = False                        # the paved path to the bridge: the ground in front
     keep = cv2.morphologyEx(keep.astype(np.uint8), cv2.MORPH_OPEN, np.ones((3, 3), np.uint8))
     pos = atlas.place(Image.fromarray(np.dstack([a, keep * 255]), 'RGBA'))
     b = KB.Builder(atlas, None, None, None, None)
@@ -288,7 +301,8 @@ def fence(atlas, img, name, crop, cx, feet, crown=None, behind=()):
     2.5 m up and 10 m in front, a 1.55 m wall half a metre in front hides the fence up to about 1.5 m. feet: [(x0, x1,
     y)], nothing from y down in those columns. crown: the box where the cherry's blossom and branches cross it (the
     cherry is its own model in front). behind: boxes where its mesh shows what is its own model behind it."""
-    s, gy = scale_at(FRONT['fence']), 905.0
+    s, gy = scale_at(FRONT['fence']), ground_row(FRONT['fence'])
+    crop = (crop[0], crop[1], crop[2], int(gy))
     a = np.asarray(img.convert('RGB'))[crop[1]:crop[3], crop[0]:crop[2]].copy()
     keep = ~LK.overcast_mask(a)
     for x0, x1, yf in feet:
@@ -317,6 +331,8 @@ def building(atlas, img):
     """The school far back across its sports ground: the clock block with the basketball hoop and the goal in front of
     it, the main block with its rows of windows and its entrance canopy, the wing whose side the picture sees on the
     left, the rooftop units; and the sandy ground from the gate to its face, flat."""
+    # on the ground, its foot at the picture's row 667 (seen from the game camera, 2.45 m up, it stands a little
+    # higher than the picture draws it: ground_row(33) is about 632; its foot is behind the gate's wall)
     s, gy, cx = 40.0, 667.0, 3172.0
     crop = (2440, 195, 3905, 672)
     im = KB.unsky(img, (2440, 190, 3905, 300), pale=True)
@@ -366,8 +382,10 @@ def build_all():
 
 
 BOXES = dict(KmShrineWall=(0, 738, 392, 902), KmShrineWallB=(0, 738, 392, 902), KmTemizuya=(300, 410, 875, 910),
-             KmShrinePond=(690, 660, 2165, 905), KmShrineGrounds=(0, 0, 2165, 905), KmSchoolGate=(2165, 585, 4128, 912),
-             KmSchoolFenceL=(2250, 300, 2414, 905), KmSchoolFenceR=(3873, 188, 4128, 905),
+             KmShrinePond=(690, 660, 2165, int(ground_row(FRONT['pond']))),
+             KmShrineGrounds=(0, 0, 2165, int(ground_row(FRONT['grounds']))), KmSchoolGate=(2165, 585, 4128, 912),
+             KmSchoolFenceL=(2250, 300, 2414, int(ground_row(FRONT['fence']))),
+             KmSchoolFenceR=(3873, 188, 4128, int(ground_row(FRONT['fence']))),
              KmSchoolBuilding=(2440, 195, 3905, 672))
 CARDS = ('KmShrinePond', 'KmShrineGrounds', 'KmSchoolFenceL', 'KmSchoolFenceR')
 

@@ -1562,6 +1562,19 @@ views).**
   - *Rule:* as E12, look at the plan's labels at full size before showing a board. A board with many places is
     labelled by its places' order along the level, not by the layout's list.
 
+- **E15. KM1-4's first board: a strip of sky between the pond and the shrine's grounds (fixed before it was shown,
+  November 2026).** KM1-4's picture is built in layers at their own depths, each scaled so it lines up with the
+  picture from the game camera (`km_shrine_school.py`).
+  - *What:* through the game camera, a band of sky showed between the pond's top and the grounds behind it.
+  - *Why:* each layer was scaled about its foot on the ground. Layers scaled that way line up only for a camera on the
+    ground. The game camera is 2.45 m up (its focus 1.75 m over the lane, tilted 4 degrees), so the nearer layer came
+    out lower than the one behind it.
+  - *Fix:* each layer is scaled about the camera's eye level. The picture's row at 2.45 m is the same in every layer
+    (`EYE_ROW`), and a layer meets the ground at `ground_row(front)`; the picture below that row is nearer ground and
+    is left out.
+  - *Rule:* a picture split into layers lines up only about the viewer's eye. Scale the layers about the game camera's
+    height, and look at the board through the game camera before showing it.
+
 ## F. UI and menus
 
 - **F1. The anchor and pivot trap** caused overlaps in the credits, results, guides and pause menu. *Rule:* lay screens out top down by explicit edges; check 4:3, 16:9 and 21:9 in both languages.
