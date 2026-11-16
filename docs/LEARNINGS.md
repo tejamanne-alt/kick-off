@@ -1457,6 +1457,33 @@ views).**
   - The five rebuilt, reviewed again, and installed.
 - *Rule:* before installing, read every check's result in `review.json`, not only the renders: any FAIL stops the install.
 
+**D33. KM1-3's set pieces from one street picture: sky and trees on roof corners, a smear, and a gate drawn twice
+(found in their first review, November 2026).**
+- *What:* the first build of KM1-3's set pieces (`km_komachi.py`, projection-modelled from the photographic KM1-3 as the
+  home was) showed four faults in its eight views:
+  - The roofs' front slopes were rectangles, but the picture's roofs narrow toward the ridge. So the rectangles' top
+    corners carried the sky (the shops) or the trees (the souvenir shop, the side gate) onto the roof.
+  - The gateway's black cap rises toward its ends. As a box, its top was the sky's colour (its colour sample took the
+    sky over the cap's middle).
+  - The rickshaw was painted out of the whole picture in one go. A 330 x 270 px hole filled from what is round it came out
+    a grey smear over the fence.
+  - The shrine's yard, a cut-out behind the gate, still had the gate and its fence in it. Seen at an angle, there were two
+    gates.
+- *Why:* the shapes were taken as boxes, and the picture as a backdrop, without checking each outline and what each
+  pixel is used for.
+- *Fix:*
+  - A roof whose ridge is shorter than its eaves in the picture is a trapezoid (`hip_roof`, the ridge's ends measured).
+    `unsky` is run on the roof bands.
+  - The cap's top is measured column by column (the first dark pixel), in 16 segments, with its black from the cap
+    itself.
+  - Only what a model uses is painted. The rickshaw's thin shafts cross the souvenir shop, and only they are painted
+    from round them. The side gate's fence and the yard start past its wheel.
+  - The gate's parts are painted out of the yard before it is cut out, and the yard's clouds are cut out with its sky.
+- *Rule:*
+  - For a model projected from a street picture, check its outline against the picture's at every edge: a corner of a
+    face that is not the thing shows what is behind it.
+  - Paint out only the pixels a model uses, and never leave a thing in a backdrop that also stands in front of it.
+
 ## E. Levels and world
 
 - **E1. Every level had chapter-1 scenery.** A new-scene call unloaded the level definition. *Rule:* pass data into scene builders explicitly; never hold asset references across a new-scene call.
@@ -1495,6 +1522,15 @@ views).**
     - When a level reuses a hazard or a moving part, read what it does with the new numbers: lengths against the paths
       of what moves past it, a walker's direction, pace and gestures against who it is now.
     - Check the clearance of everything that moves through a crossing against everything that moves at it.
+
+- **E14. KM1-3's first layout board: labels on top of each other (fixed before it was shown, November 2026).** KM1-3's
+  board has 55 places, against KM1-1's 37. Its plan from above put their full descriptions in five rows, in the
+  layout's order, so neighbours shared a row and the labels ran over each other.
+  - *Fix:* `km_plan_labels.py` gives each place a short name, sorts the places along the level, and takes eight rows in
+    turn, so no two neighbours share a row. The preview script uses it.
+  - *Rule:* as E12, look at the plan's labels at full size before showing a board. A board with many places is
+    labelled by its places' order along the level, not by the layout's list.
+
 ## F. UI and menus
 
 - **F1. The anchor and pivot trap** caused overlaps in the credits, results, guides and pause menu. *Rule:* lay screens out top down by explicit edges; check 4:3, 16:9 and 21:9 in both languages.

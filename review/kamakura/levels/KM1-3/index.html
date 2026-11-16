@@ -1,0 +1,118 @@
+<title>KM1-3 layout</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Source+Sans+3:wght@400;600&family=Zen+Kaku+Gothic+New:wght@500;700&display=swap">
+<style>
+:root { --bg: #f1f2ef; --panel: #ffffff; --ink: #1f2522; --muted: #5d6762; --line: #d6dbd6; --accent: #b23a2e;
+  --strip: #2a2e2c; --note-bg: #f7f1e3; --note-ink: #6b4f12;
+  --display: "Zen Kaku Gothic New", "Hiragino Sans", "Segoe UI", system-ui, sans-serif;
+  --body: "Source Sans 3", "Segoe UI", system-ui, sans-serif; --mono: "JetBrains Mono", ui-monospace, Menlo, monospace; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #151816; --panel: #1d211f; --ink: #e6ebe7; --muted: #9ba8a1; --line: #2f3632; --accent: #ef8a7c;
+  --strip: #0f1110; --note-bg: #322a17; --note-ink: #ecc977; color-scheme: dark } }
+:root[data-theme="dark"] { --bg: #151816; --panel: #1d211f; --ink: #e6ebe7; --muted: #9ba8a1; --line: #2f3632;
+  --accent: #ef8a7c; --strip: #0f1110; --note-bg: #322a17; --note-ink: #ecc977; color-scheme: dark }
+body { background: var(--bg); color: var(--ink); font: 16px/1.55 var(--body); }
+.wrap { max-width: 1180px; margin: 0 auto; padding-block: 28px 64px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: flex; flex-direction: column; gap: 28px; }
+h1, h2 { font-family: var(--display); margin: 0; line-height: 1.2; text-wrap: balance; }
+h1 { font-size: 2rem; } h2 { font-size: 1.3rem; }
+p { margin: 0; max-width: 70ch; }
+.eyebrow { font: 600 0.75rem var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+section { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+figure { margin: 0; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+figcaption { font: 0.8rem var(--mono); color: var(--muted); }
+.scroll { overflow-x: auto; border-radius: 8px; background: var(--strip); }
+.scroll img { display: block; height: 320px; width: auto; max-width: none; }
+.full img { width: 100%; height: auto; border-radius: 8px; display: block; }
+table { border-collapse: collapse; width: 100%; font-size: 0.92rem; }
+td, th { border-top: 1px solid var(--line); padding: 7px 10px 7px 0; vertical-align: top; text-align: left; }
+th { font: 600 0.78rem var(--mono); color: var(--muted); }
+td.x { font: 0.85rem var(--mono); white-space: nowrap; font-variant-numeric: tabular-nums; width: 5em; }
+.table-box { overflow-x: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 4px 14px 10px; }
+ul { margin: 0; padding-left: 1.1em; display: flex; flex-direction: column; gap: 6px; max-width: 75ch; }
+li ul { margin: 6px 0; gap: 4px; }
+.ask { background: var(--note-bg); color: var(--note-ink); border-radius: 8px; padding: 14px 16px; }
+.ask ul { color: var(--ink); }
+</style><div class="wrap">
+<header class="stack"><div class="eyebrow">Kamakura · route 1 · leg 3 · proposed layout</div><h1>KM1-3 Komachi-dori</h1>
+<p>The third leg of route 1, from Kamakura Station's east exit (where KM1-2's tram ride ends) up Komachi-dori to the shrine's side gate, laid out from your KM1-3 picture. This is the layout before any level code is written: approve it, or tell me what to move, and its set pieces are built next.</p>
+<p>About 95 m of street from the exit's door to the gate. The picture's ensemble is about 34 m wide, so it is spread along the street in the order of the five lane pictures (KM1-3a to e), about 20 m each, with the play between them.</p>
+<p>Most of this leg is still to come, so most of it is see-through boxes. The kit already has the bicycles, the poles, the mirror, the street lamp, the bins, a planter and the pines. The gateway, the four shops, the side gate and the props in front of the shops are built next from your picture, as the home was. The shops between them come from the lane pictures.</p>
+</header>
+<section><h2>The picture it comes from</h2><figure class="full"><img src="reference.jpg" alt="KM1-3 Komachi-dori, the reference picture"><figcaption>KM1-3 Komachi-dori, the photographic version: the station square, the red gateway, the soft-serve stand, the croquette, rice-cracker and souvenir shops, the kite sign, the rickshaw and the shrine&#x27;s side gate.</figcaption></figure></section>
+<section><h2>Through the game camera</h2><p>Each model at its real size and place, seen through the game camera as the game frames it, the play lane at the front. See-through boxes are what is still to come. The sightseers are the game's grown-up passers-by at their height. The shading is Blender's, not the game's toon look: judge the places, sizes, order and gaps.</p><figure><div class="scroll"><img src="strip.jpg" alt="The layout through the game camera, screen by screen"></div><figcaption>Scroll sideways: each screen is what the camera shows as the kid walks on; the red figure is the kid (1.57 m) with the ball.</figcaption></figure></section>
+<section><h2>From above</h2><figure class="full"><img src="plan.jpg" alt="The level from above, each place labelled"><figcaption>The camera is below the picture; red lines mark the play beats.</figcaption></figure></section>
+<section><h2>The play</h2><div class="table-box"><table><thead><tr><th>x (m)</th><th>What happens</th></tr></thead><tbody>
+<tr><td class="x">-12</td><td>start: out of Kamakura Station&#x27;s east exit (the stop KM1-2&#x27;s tram ride ended at)</td></tr>
+<tr><td class="x">-3</td><td>pigeons on the station square (KM-N07, GroundBird): they burst up as the ball comes</td></tr>
+<tr><td class="x">12</td><td>past the red gateway into Komachi-dori: the sightseers start</td></tr>
+<tr><td class="x">14</td><td>sightseers, dense, both ways, some stopping at the shops, to x 62 (the game&#x27;s passers-by, Pedestrian): get through without the ball touching one</td></tr>
+<tr><td class="x">22</td><td>sparrows under the soft-serve stand&#x27;s stools (KM-N08, GroundBird)</td></tr>
+<tr><td class="x">34</td><td>coins over the croquette shop&#x27;s chalkboard and stools</td></tr>
+<tr><td class="x">46</td><td>a delivery&#x27;s crates on the paving by the gap (CrateStack): hop over</td></tr>
+<tr><td class="x">51</td><td>a calico cat asleep on the rice-cracker shop&#x27;s step (KM-N21)</td></tr>
+<tr><td class="x">59</td><td>the black kite (KM-N05) dives at the kid past the kite sign, to x 66 (the Seagull dive: duck or time it), the Animals kit&#x27;s gull until the kite is in the game</td></tr>
+<tr><td class="x">71</td><td>the rickshaw (KM-V04) pulls out by the pickle shop and goes on ahead at a walk, filling the lane: stay behind it until it turns off at the gate (a slow moving obstacle)</td></tr>
+<tr><td class="x">82</td><td>the shrine&#x27;s side gate: the stop (the leg ends; KM1-4 goes on up the street to school)</td></tr>
+</tbody></table></div></section>
+<section><h2>Where everything stands</h2><div class="table-box"><table><thead><tr><th>x (m)</th><th>Model</th><th>Why there</th></tr></thead><tbody>
+<tr><td class="x">1.0</td><td>KmBicycle</td><td>the bicycles parked on the square (KM1-3, KM-A27&#x27;s rack)</td></tr>
+<tr><td class="x">2.0</td><td>KmBicycle</td><td>the second bicycle, further back</td></tr>
+<tr><td class="x">3.3</td><td>KmBicycle</td><td>the third</td></tr>
+<tr><td class="x">4.3</td><td>KmBicycle</td><td>the fourth</td></tr>
+<tr><td class="x">6.4</td><td>KmPolePlain</td><td>a plain pole with a street lamp (KM-A26)</td></tr>
+<tr><td class="x">7.0</td><td>KmStreetLamp</td><td>the street lamp on it</td></tr>
+<tr><td class="x">15.6</td><td>KmPoleTransformer</td><td>the pole with its transformers, behind (KM1-3)</td></tr>
+<tr><td class="x">16.8</td><td>KmMirror</td><td>the convex mirror on its orange pole at the corner</td></tr>
+<tr><td class="x">17.6</td><td>KmPolePlain</td><td>the concrete pole with its signs</td></tr>
+<tr><td class="x">18.9</td><td>KmRecyclingBins</td><td>the bins at the corner (KM-A20)</td></tr>
+<tr><td class="x">37.4</td><td>KmShrubPlanter</td><td>a planter at the tea shop&#x27;s door</td></tr>
+<tr><td class="x">77.5</td><td>KmBlackPine</td><td>the big pine over the fence (KM1-3)</td></tr>
+<tr><td class="x">88.0</td><td>KmGardenPine</td><td>a pine inside the fence</td></tr>
+<tr><td class="x">-16.0</td><td>(to come)</td><td>Kamakura Station&#x27;s east exit (KM1-3a; the stop the leg starts from: the kid comes out of its door at -12)</td></tr>
+<tr><td class="x">-7.5</td><td>(to come)</td><td>taxi sign on its post (KM1-3)</td></tr>
+<tr><td class="x">-5.6</td><td>(to come)</td><td>concrete barrier (KM1-3)</td></tr>
+<tr><td class="x">-3.8</td><td>(to come)</td><td>concrete barrier (KM1-3)</td></tr>
+<tr><td class="x">-1.4</td><td>(to come)</td><td>green phone box (KM-A21)</td></tr>
+<tr><td class="x">11.5</td><td>(to come)</td><td>the red gateway over the street&#x27;s entrance (KM-B08), face-on behind the lane</td></tr>
+<tr><td class="x">21.0</td><td>(to come)</td><td>stool (KM-A32)</td></tr>
+<tr><td class="x">21.9</td><td>(to come)</td><td>stool (KM-A32)</td></tr>
+<tr><td class="x">22.6</td><td>(to come)</td><td>soft-serve stand (KM-B11, first of two): rusty corrugated roof</td></tr>
+<tr><td class="x">23.4</td><td>(to come)</td><td>stool (KM-A32)</td></tr>
+<tr><td class="x">24.1</td><td>(to come)</td><td>soft-serve display case</td></tr>
+<tr><td class="x">25.4</td><td>(to come)</td><td>yellow nobori flag (KM-A31)</td></tr>
+<tr><td class="x">28.0</td><td>(to come)</td><td>sweets shop with its noren curtain (KM1-3b)</td></tr>
+<tr><td class="x">32.6</td><td>(to come)</td><td>chalkboard menu (KM-A32)</td></tr>
+<tr><td class="x">33.6</td><td>(to come)</td><td>stool (KM-A32)</td></tr>
+<tr><td class="x">34.0</td><td>(to come)</td><td>croquette shop (KM-B09)</td></tr>
+<tr><td class="x">34.4</td><td>(to come)</td><td>stool (KM-A32)</td></tr>
+<tr><td class="x">36.2</td><td>(to come)</td><td>pink nobori flag (KM-A31)</td></tr>
+<tr><td class="x">39.2</td><td>(to come)</td><td>tea shop, paper lanterns under its eaves (KM1-3c)</td></tr>
+<tr><td class="x">41.8</td><td>(to come)</td><td>nobori flag (KM-A31)</td></tr>
+<tr><td class="x">44.8</td><td>(to come)</td><td>shop front to come (KM1-3c)</td></tr>
+<tr><td class="x">48.1</td><td>(to come)</td><td>wooden crates stacked in the gap (KM-A34)</td></tr>
+<tr><td class="x">50.0</td><td>(to come)</td><td>the cracker grill</td></tr>
+<tr><td class="x">50.9</td><td>(to come)</td><td>rice-cracker shop (KM-B10): its &quot;senbei&quot; board</td></tr>
+<tr><td class="x">51.6</td><td>(to come)</td><td>the jars of crackers on their stand</td></tr>
+<tr><td class="x">53.2</td><td>(to come)</td><td>teal nobori flag (KM-A31)</td></tr>
+<tr><td class="x">54.6</td><td>(to come)</td><td>souvenir rack of chopsticks and fans (KM-A33)</td></tr>
+<tr><td class="x">56.1</td><td>(to come)</td><td>souvenir shop (KM-B11, second of two): gabled, rusty tin over its door</td></tr>
+<tr><td class="x">57.0</td><td>(to come)</td><td>hanging goods rack (KM-A33)</td></tr>
+<tr><td class="x">58.8</td><td>(to come)</td><td>&quot;beware of black kites&quot; sign on its post (KM-A30)</td></tr>
+<tr><td class="x">62.0</td><td>(to come)</td><td>shop front to come (KM1-3d): the street&#x27;s last shop</td></tr>
+<tr><td class="x">67.2</td><td>(to come)</td><td>pickle barrels</td></tr>
+<tr><td class="x">68.4</td><td>(to come)</td><td>pickle shop, wooden barrels at its front (KM1-3e)</td></tr>
+<tr><td class="x">72.5</td><td>(to come)</td><td>rickshaw (KM-V04): black hood, red seat</td></tr>
+<tr><td class="x">77.2</td><td>(to come)</td><td>the shrine&#x27;s wooden fence (KM1-3)</td></tr>
+<tr><td class="x">79.8</td><td>(to come)</td><td>stone marker (KM1-3)</td></tr>
+<tr><td class="x">80.9</td><td>(to come)</td><td>stone lantern inside the gate (KM1-3)</td></tr>
+<tr><td class="x">82.5</td><td>(to come)</td><td>the shrine&#x27;s side gate (KM-B12): moss on its tiled roof; the stop</td></tr>
+<tr><td class="x">84.0</td><td>(to come)</td><td>the shrine&#x27;s woods behind the gate (trees of the plants kit)</td></tr>
+<tr><td class="x">84.2</td><td>(to come)</td><td>stone lantern inside the gate (KM1-3)</td></tr>
+<tr><td class="x">85.4</td><td>(to come)</td><td>stone marker (KM1-3)</td></tr>
+<tr><td class="x">89.0</td><td>(to come)</td><td>the shrine&#x27;s wooden fence (KM1-3)</td></tr>
+</tbody></table></div></section>
+<section><h2>Decided for now</h2><ul><li>The <b>red gateway</b> stands face-on behind the lane, as in the picture, not across it. Seen from the side, a gateway over the street would put a 6 m post between the camera and the kid (LEARNINGS E10).</li><li><b>Sizes are the picture's</b>, at about 120 px to the metre at the shop fronts:<ul><li>the shops are 3.8 to 4.9 m wide and 6.2 to 7.2 m tall (the build plan's 6 m width was a guess);</li><li>the side gate is 4.7 m tall and 5.3 m across its roof, its posts 2.8 m apart;</li><li>the rickshaw is 3.1 m long with its shafts.</li></ul>Two signs are made smaller than the picture's. The kite sign is 3 m tall with a 1.1 m board: the picture's stands 4.8 m with a 1.8 m board, across the shop's upper floor. The taxi sign is 3.2 m (3.5 m in the picture).</li><li>The <b>rickshaw</b> moves, as the build plan has it. It pulls out by the pickle shop and jogs on ahead to the gate, and the kid stays behind it. It needs a puller (a grown-up from the game's walkers) and turning wheels. In the picture it stands parked; parked, it would be an obstacle to dribble round, like KM1-1's scooter.</li><li>The <b>sightseers</b> are the game's grown-up passers-by for now, in the original town's clothes. The <b>black kite</b> dives as the game's seagull does (the Animals kit's gull) until the kite (KM-N05) is in the game. The pigeons, the sparrows and the calico cat also wait for Kamakura's animals.</li><li>There is <b>no road</b>: Komachi-dori is a pedestrian street, its pale stone paving across the whole width (KM-T08, still to come).</li><li>Some shops are named in the lane prompts but are not in the picture: the sweets shop, the tea shop, the pickle shop and two more shop fronts. They stay boxes until the lane pictures come.</li><li><b>Cost (est., docs/PERFORMANCE.md):</b><ul><li>The kit's 13 models: about 21,000 triangles and about 18 MB of textures, 11 of it the two pines.</li><li>The buildings, projection-modelled as the home was: a few hundred triangles each, one 4096 x 2048 atlas per picture (about 5.6 MB each in ETC2).</li><li>The props: about 1,500 triangles each.</li><li>The rickshaw: about 4,000 triangles.</li></ul>In all, about 45,000 triangles standing (the walkers on top, 14,000 each, two or three on a screen) and about 60 to 65 MB of textures, near KM1-1's 75 MB. It is to come down with KM1-1's cuts (cropped atlases, smaller textures for what stands back).</li></ul></section>
+<section class="ask"><h2>For you</h2><ul><li><b>The lane pictures:</b> KM1-3a to e are on the city prompts page, and none has arrived yet. Save them in review/kamakura/refs/photo under the names on their cards, and the shops between the set pieces are built from them. Until then, the gateway, the four shops, the side gate and the props are built from the photographic KM1-3.</li><li><b>The rickshaw:</b> should it jog ahead of the kid (as now), or stand parked to dribble round?</li><li><b>Anything to move:</b> a place, the order, the length or the play beats.</li></ul></section>
+</div>

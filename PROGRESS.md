@@ -2673,6 +2673,27 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
 - Next: Kamakura's switch to its legs (the map screen, the leg table, menus and saves), each leg's layout board as its
   pictures come in, texture sizes by screen size.
 
+## KM1-3 Komachi-dori: its layout and its set pieces from its picture (tools, review and docs)
+
+- The 50 lane pictures were not in the session: nothing had been attached or pushed. Their cards stay on the city prompts
+  page, saved by name into `review/kamakura/refs/photo`, and each leg is laid out from its own picture meanwhile.
+- KM1-3's proposed layout (`review/kamakura/levels/KM1-3`):
+  - the photographic KM1-3 measured at about 120 px to the metre, about 95 m from Kamakura Station's east exit to the
+    shrine's side gate, in the order of its five lane pictures;
+  - its play: pigeons on the station square, dense sightseers, a crate stack to hop, the black kite's dive past its
+    sign, the rickshaw ahead of the kid, and the side gate as the stop;
+  - the board is through the game camera, with the plan from above and the questions (whether the rickshaw moves or
+    stands, and the lane pictures).
+- Its set pieces were projection-modelled from the picture, as the home was (`tools/blender/km_komachi.py`):
+  - the red gateway, the soft-serve stand, the croquette, rice-cracker and souvenir shops, the side gate with its fence,
+    and the shrine's yard behind it;
+  - a stool, the chalkboard and the rickshaw as cut-outs until their views come;
+  - 520 triangles in all, one shared 4096 x 2048 texture;
+  - their strict review is in `review/kamakura/komachi` (eight views, sources, checks: none fails).
+- Their first review found sky and trees on the roofs' corners, a smeared paint-out and the gate drawn twice; all were
+  fixed before they were shown (LEARNINGS D33). The board's first plan had its labels on top of each other (E14).
+- Not in the game yet: KM1-3's level code and the install wait for the board's approval.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

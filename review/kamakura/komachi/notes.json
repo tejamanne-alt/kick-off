@@ -1,0 +1,16 @@
+{
+ "intro": [
+  "KM1-3 Komachi-dori's set pieces, projection-modelled from your photographic KM1-3 as the home was from KM1-1: boxes and roofs measured off the picture (about 120 px to the metre at the shop fronts; the gateway, further back, 86). Seen from the street, each shows the picture's own pixels; the faces it doesn't show take KM-P3's boards and tiles in the street's colours.",
+  "Ten models in all: the red gateway, the soft-serve stand, the croquette, rice-cracker and souvenir shops, the shrine's side gate with its fence, the shrine's yard behind it, a stool, the chalkboard and the rickshaw. They share one 4096 x 2048 texture and come to 520 triangles together."
+ ],
+ "limits": [
+  "Seen from the street they are your picture. From the side and the back they are KM-P3's boards and tiles, since the picture shows no other side (check 4).",
+  "The stool, the chalkboard and the rickshaw are flat cut-outs from the picture until their own views come (KM-A32, KM-V04). Under the rickshaw's hood the fence showed through its struts, so that area is kept and darkened as the hood's shade.",
+  "The nobori flags and the kite sign stay on the shop fronts they hang against until their views come (KM-A30, A31).",
+  "The yard is a cut-out 1.6 m behind the gate. Where the gate and fence stood in it, it shows leaves taken from the trees above the roof; the posts and fence were filled from round them. From straight on the gate covers all of it; turned a little, leaves show where the roof was."
+ ],
+ "pending": [
+  "The shops between these (the sweets, tea and pickle shops and two more shop fronts) come from the lane pictures KM1-3a to e, none of which has arrived yet.",
+  "Not installed in the game yet: they go in with KM1-3's level, once you approve its layout board."
+ ]
+}

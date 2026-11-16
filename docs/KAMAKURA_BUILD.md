@@ -1295,6 +1295,14 @@ nobori flags (KM-A31), the chalkboard and stools (KM-A32), the souvenir rack (KM
 roofs in rusty corrugated iron (KM-T16). Animals: pigeons in the station square (KM-N07, GroundBird: they burst up as
 the ball comes), a calico cat asleep on a shop's step (KM-N21), sparrows under the stools (KM-N08). Same checks as
 KM-L11.
+(Laid out and its set pieces built, November 2026: review/kamakura/levels/KM1-3 is its proposed layout, about
+95 m in the order of its five lane pictures, for the user's approval. tools/blender/km_komachi.py projection-models
+the gateway (KM-B08), the soft-serve stand and the souvenir shop (KM-B11), the croquette shop (KM-B09) and the
+rice-cracker shop (KM-B10, the picture's one two-shop building parted left of the pink flag), the side gate and its
+fence (KM-B12) with the shrine's yard behind it, and a stool, the chalkboard and the rickshaw as cut-outs until
+KM-A32's and KM-V04's views come; the nobori and the kite sign stay on the fronts they hang against (KM-A30, A31).
+Their review: review/kamakura/komachi. Still to do: the shops between them from KM1-3a to e, the station's exit,
+the level's code and the install.)
 ```
 
 ```text

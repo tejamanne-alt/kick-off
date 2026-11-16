@@ -40,6 +40,7 @@ th { font: 600 0.78rem var(--mono); color: var(--muted); }
 td.x { font: 0.85rem var(--mono); white-space: nowrap; font-variant-numeric: tabular-nums; width: 5em; }
 .table-box { overflow-x: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 4px 14px 10px; }
 ul { margin: 0; padding-left: 1.1em; display: flex; flex-direction: column; gap: 6px; max-width: 75ch; }
+li ul { margin: 6px 0; gap: 4px; }
 .ask { background: var(--note-bg); color: var(--note-ink); border-radius: 8px; padding: 14px 16px; }
 .ask ul { color: var(--ink); }
 '''
@@ -51,13 +52,14 @@ w.append('<meta name="claude:viewport-fit-sides" content="cover">')
 w.append('<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&'
          'family=Source+Sans+3:wght@400;600&family=Zen+Kaku+Gothic+New:wght@500;700&display=swap">')
 w.append('<style>%s</style><div class="wrap">' % STYLE)
-w.append('<header class="stack"><div class="eyebrow">Kamakura · route 1 · leg 1 · %s</div>' % esc(stage) +
+route, leg = lay['level'][2:].split('-')            # KM1-3: route 1, leg 3
+w.append('<header class="stack"><div class="eyebrow">Kamakura · route %s · leg %s · %s</div>' % (route, leg, esc(stage)) +
          '<h1>%s %s</h1>' % (esc(lay['level']), esc(lay['name'])))
 for para in notes['intro']:
     w.append('<p>%s</p>' % para)
 w.append('</header>')
-w.append('<section><h2>The picture it comes from</h2><figure class="full"><img src="reference.jpg" alt="KM1-1 Hase Lanes, '
-         'the reference picture"><figcaption>%s</figcaption></figure></section>' % esc(notes['reference']))
+w.append('<section><h2>The picture it comes from</h2><figure class="full"><img src="reference.jpg" alt="%s %s, '
+         'the reference picture"><figcaption>%s</figcaption></figure></section>' % (esc(lay['level']), esc(lay['name']), esc(notes['reference'])))
 w.append('<section><h2>Through the game camera</h2><p>%s</p><figure><div class="scroll"><img src="strip.jpg" alt="The layout '
          'through the game camera, screen by screen"></div><figcaption>Scroll sideways: each screen is what the camera '
          'shows as the kid walks on; the red figure is the kid (1.57 m) with the ball.</figcaption></figure></section>'

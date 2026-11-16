@@ -15,6 +15,8 @@ import bpy, sys, os, json, math
 import numpy as np
 from mathutils import Vector
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
 argv = sys.argv[sys.argv.index('--') + 1:]
 KIT_BLEND, KIT_JSON, LAYOUT, MODELS, OUT = argv[:5]
 GAME = '--game' in argv
@@ -130,7 +132,8 @@ for k in lay['markers']:          # what is still to come: half see-through, so 
     except Exception: m.blend_method = 'BLEND'
     o.visible_shadow = False
 
-# the first-graders at their game height (neck 1.04 against the kid's 1.3: about 1.25 m to the kid's 1.57), on the lane
+# the people on the lane: the first-graders at their game height (neck 1.04 against the kid's 1.3: about 1.25 m to the
+# kid's 1.57), a grown-up at the height its entry gives
 people = []
 for p in lay.get('people', []):
     before = set(bpy.data.objects)
@@ -147,9 +150,10 @@ for p in lay.get('people', []):
     kid.data.materials.clear(); kid.data.materials.append(mat)
     bpy.context.view_layer.update()
     zs = [(kid.matrix_world @ v.co).z for v in kid.data.vertices]
-    k = 1.25 / (max(zs) - min(zs))
+    k = p.get('h', 1.25) / (max(zs) - min(zs))      # a grown-up sightseer at their own height (h), a first-grader at 1.25
     rig.scale = rig.scale * k
-    rig.rotation_euler = (rig.rotation_euler[0], rig.rotation_euler[1], math.radians(-66))   # walking toward +x, a little toward us
+    # walking toward +x (dir 1) or toward -x (dir -1), a little toward us
+    rig.rotation_euler = (rig.rotation_euler[0], rig.rotation_euler[1], math.radians(-66 * p.get('dir', 1)))
     rig.location = (p['x'], 0.0, -min(zs) * k)
     people.append(rig)
 
@@ -206,22 +210,6 @@ for i, (im, (cx, _)) in enumerate(zip(ims, frames)):
     strip.paste(im, (640 * i, 40))
     d.text((640 * i + 8, 8), 'x %.0f to %.0f m' % (cx - step / 2, cx + step / 2), font=f, fill=(235, 235, 240))
 strip.save(os.path.join(OUT, 'strip.jpg'), quality=86)
-plan = Image.open(os.path.join(OUT, 'plan.png')).convert('RGB')
-W, H = plan.size
-span = (X1 - X0) + 4
-px = lambda x: (x - (X0 - 2)) / span * W
-py = lambda z: (21.0 - z) / 30.0 * H
-d = ImageDraw.Draw(plan)
-fs = ImageFont.truetype(font, 14) if os.path.exists(font) else f
-for n, it in enumerate(lay['placements'] + lay['markers']):
-    x, z = it['x'], it['front']
-    label = it.get('model') or it['what']
-    yy = py(z) + 10 + (n % 5) * 19
-    d.line([(px(x), py(z)), (px(x), yy)], fill=(20, 20, 20), width=1)
-    d.text((px(x) + 2, yy), label, font=fs, fill=(10, 10, 10), stroke_width=2, stroke_fill=(250, 250, 250))
-for it in lay['play']:
-    d.line([(px(it['x']), 0), (px(it['x']), H)], fill=(200, 40, 40), width=2)
-for x in range(int(X0) // 10 * 10, int(X1) + 1, 10):
-    d.text((px(x) + 2, H - 22), '%d m' % x, font=fs, fill=(250, 250, 250), stroke_width=2, stroke_fill=(20, 20, 20))
-plan.save(os.path.join(OUT, 'plan_labelled.jpg'), quality=86)
+import km_plan_labels                 # each place's short name, in rows taken in turn (E12)
+km_plan_labels.label(lay, os.path.join(OUT, 'plan.png'), os.path.join(OUT, 'plan_labelled.jpg'))
 print('done', len(frames), 'frames')
