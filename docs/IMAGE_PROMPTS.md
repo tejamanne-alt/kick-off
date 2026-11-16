@@ -355,6 +355,200 @@ Every building whole. The green walking strip runs the whole width to the platfo
 animals.
 ```
 
+#### KM1-2 Ride the Enoden, the ride's set in three pictures
+
+The pictures KM1-2's mini-game set is built from. Make them in the chat that made KM1-2, in the same tool. Attach to
+each: KM-0 (the look) and the photographic KM1-2 (`refs/photo/KM1-2_ride_the_enoden.png`). Check each: a photograph, not
+a painting; the same things as in KM1-2; invented names only (station names are real places); no mark from the image
+tool in any corner (D31); no people or animals. Save them beside the photographic KM1-2, as
+`review/kamakura/refs/photo/KM1-2a_the_car.png`, `review/kamakura/refs/photo/KM1-2b_passing_town.png` and
+`review/kamakura/refs/photo/KM1-2c_the_stations.png`.
+
+```text
+LEVEL KM1-2a, Ride the Enoden 1 of 3: the car. Follow the base prompt and the Kamakura block, but the camera is inside.
+The inside of KM1-2's small old commuter tram car, the same car (copy it), seen straight across the aisle at standing
+eye height, its whole length from door to door: the long bench seats of green moquette, hanging straps and grab poles,
+the route map above the windows, the next-stop display, the stop button, the sliding door at the right. The windows'
+glass a plain, even mid-grey (#808080), nothing seen through it: the town passing outside is its own picture, set behind
+the windows in the game. Empty: no passengers.
+```
+
+```text
+LEVEL KM1-2b, Ride the Enoden 2 of 3: the town passing. Follow the base prompt and the Kamakura block. What the tram's
+windows show, a metre or two away, as one long strip seen straight on: house walls and fences, hedges and garden trees,
+a small level crossing, a gap where the sea shows bright, more houses; low and close, as from a tram's window. Its left
+and right edges meet, so it can repeat. No people, no tram, no animals.
+```
+
+```text
+LEVEL KM1-2c, Ride the Enoden 3 of 3: the stations. Follow the base prompt and the Kamakura block. Three small open
+platforms side by side, each seen straight on as through a tram's open door, a plain grey gap between them: Yuigahama,
+Wadazuka and Kamakura, each with its name board (its real name, in Japanese and in English), a bench and a ticket gate.
+No people, no tram.
+```
+
+#### KM1-3 Komachi-dori, its lane in five pictures
+
+Five pictures that together are KM1-3's whole lane, from Kamakura Station's east exit to the shrine's side gate, each
+about 25 m of stone-paved shopping street, so every building, wall, fence and set piece along the way can be built (its
+play is laid out on them, as KM1-1's was). Make them in the chat that made KM1-3, in the same tool. Attach to each: KM-0
+(the look), the photographic KM1-3 (`refs/photo/KM1-3_komachi_dori.png`: the set pieces to copy) and the picture before
+it (to continue from). Check each before the next: the same camera and scale as KM1-1's lane pictures (a 2 m doorway a
+little over a quarter of the picture's height); its left edge picks up the last picture's right edge; every building and
+structure whole, both ends and its top in view, solid and sharp, nothing doubled or smeared (KM1-1c's corrugated house
+came out smeared); a set piece the same as in KM1-3; a photograph, not a painting; invented names only, no real brand
+(KM1-1b's vending machines came with one); no mark from the image tool in any corner (D31); no people or animals. Save
+them beside the photographic KM1-3, as `review/kamakura/refs/photo/KM1-3a_station_square.png`,
+`review/kamakura/refs/photo/KM1-3b_the_gateway.png`, `review/kamakura/refs/photo/KM1-3c_croquette_shop.png`,
+`review/kamakura/refs/photo/KM1-3d_rice_crackers.png` and `review/kamakura/refs/photo/KM1-3e_side_gate.png`.
+
+```text
+LEVEL KM1-3a, Komachi-dori 1 of 5: out of the station. Follow the base prompt and the Kamakura block. The first of five
+pictures that together are KM1-3's lane, left to right, from Kamakura Station's east exit to the shrine's side gate. A
+photograph in the look of the attached KM-0, at the same camera and scale as KM1-1's lane pictures: the lane along the
+bottom, a 2 m doorway a little over a quarter of the picture's height. Left: Kamakura Station's east exit as in KM1-3:
+its plain station building, the ticket gates seen through its glass doors, its name board. Then the station square: a
+taxi sign on a post with low steel barriers along the kerb, a green phone box, a bicycle rack with four bicycles, each
+apart, a street lamp. Right edge: the left post of the red torii-shaped gateway over the shopping street's entrance
+(copy KM1-3); the next picture starts under it. Every building and structure (a house, a shop, a hut, a tower, a bridge,
+a gate) whole and standing apart: both its ends and its whole top in view, a gap, a wall or a fence between it and the
+next; everything solid and sharp, nothing doubled or smeared. The pedestrian street's pale stone paving runs the whole
+width, empty. No people, no animals. Invented names and labels only: no real brand or logo anywhere, the vending
+machines' drinks included.
+```
+
+```text
+LEVEL KM1-3b, Komachi-dori 2 of 5: under the gateway. Follow the base prompt and the Kamakura block. The second of five
+pictures of KM1-3's lane. A photograph in the look of KM-0, at the same camera and scale as the pictures before it. Its
+left edge continues the first picture's right edge: it starts with the gateway's left post. The red gateway over the
+street, whole, its sign with an invented name. Then a convex mirror on its orange pole at the corner and a concrete
+utility pole; the first two-storey shopfronts, some with tin roofs of rusty corrugated iron: a soft-serve stand with a
+counter window and a big plastic cone sign, recycling bins beside it, a sweets shop with a noren curtain. Right edge:
+the mouth of a narrow alley between two shops. Every building and structure (a house, a shop, a hut, a tower, a bridge,
+a gate) whole and standing apart: both its ends and its whole top in view, a gap, a wall or a fence between it and the
+next; everything solid and sharp, nothing doubled or smeared. The pedestrian street's pale stone paving runs the whole
+width, empty. No people, no animals. Invented names and labels only: no real brand or logo anywhere, the vending
+machines' drinks included.
+```
+
+```text
+LEVEL KM1-3c, Komachi-dori 3 of 5: the croquette shop. Follow the base prompt and the Kamakura block. The third of five
+pictures of KM1-3's lane. A photograph in the look of KM-0, at the same camera and scale as the pictures before it. Its
+left edge continues the second picture's right edge: it starts with the narrow alley's mouth. A whitebait croquette shop
+with a fryer at its open window, a chalkboard menu and two stools in front; a tea shop with tins on its shelves; paper
+lanterns under the eaves; nobori banner flags on poles in front of each shop, each apart. Right edge: a gap between
+shops with a stack of wooden crates. Every building and structure (a house, a shop, a hut, a tower, a bridge, a gate)
+whole and standing apart: both its ends and its whole top in view, a gap, a wall or a fence between it and the next;
+everything solid and sharp, nothing doubled or smeared. The pedestrian street's pale stone paving runs the whole width,
+empty. No people, no animals. Invented names and labels only: no real brand or logo anywhere, the vending machines'
+drinks included.
+```
+
+```text
+LEVEL KM1-3d, Komachi-dori 4 of 5: the rice crackers. Follow the base prompt and the Kamakura block. The fourth of five
+pictures of KM1-3's lane. A photograph in the look of KM-0, at the same camera and scale as the pictures before it. Its
+left edge continues the third picture's right edge: it starts with the stack of crates. A rice-cracker shop grilling
+crackers over charcoal at its front; a souvenir shop with racks of chopsticks, fans and folded hand towels outside and
+banners over its door; the "beware of black kites" sign on its post, a bird drawn on it, its words in Japanese. Right
+edge: the corner of the street's last shop. Every building and structure (a house, a shop, a hut, a tower, a bridge, a
+gate) whole and standing apart: both its ends and its whole top in view, a gap, a wall or a fence between it and the
+next; everything solid and sharp, nothing doubled or smeared. The pedestrian street's pale stone paving runs the whole
+width, empty. No people, no animals. Invented names and labels only: no real brand or logo anywhere, the vending
+machines' drinks included.
+```
+
+```text
+LEVEL KM1-3e, Komachi-dori 5 of 5: the shrine's side gate. Follow the base prompt and the Kamakura block. The fifth of
+five pictures of KM1-3's lane. A photograph in the look of KM-0, at the same camera and scale as the pictures before it.
+Its left edge continues the fourth picture's right edge: it starts with the last shop's corner. A pickle shop with
+wooden barrels at its front and a rickshaw parked beside it, its black hood up, its shafts resting on the paving. Then
+the street ends at the shrine's side gate as in KM1-3: a low mossy stone wall and a plain wooden gate under tall trees,
+the shrine's gravel beyond. Right edge: the gate: the end of the level. Every building and structure (a house, a shop, a
+hut, a tower, a bridge, a gate) whole and standing apart: both its ends and its whole top in view, a gap, a wall or a
+fence between it and the next; everything solid and sharp, nothing doubled or smeared. The pedestrian street's pale
+stone paving runs the whole width, empty. No people, no animals. Invented names and labels only: no real brand or logo
+anywhere, the vending machines' drinks included.
+```
+
+#### KM1-4 The Shrine Bridge, its lane in five pictures
+
+Five pictures that together are KM1-4's whole lane, from the shrine's side gate along the shrine's east side to the
+school gate, each about 25 m of pavement, so every building, wall, fence and set piece along the way can be built (its
+play is laid out on them, as KM1-1's was). Make them in the chat that made KM1-4, in the same tool. Attach to each: KM-0
+(the look), the photographic KM1-4 (`refs/photo/KM1-4_the_shrine_bridge.png`: the set pieces to copy) and the picture
+before it (to continue from). Check each before the next: the same camera and scale as KM1-1's lane pictures (a 2 m
+doorway a little over a quarter of the picture's height); its left edge picks up the last picture's right edge; every
+building and structure whole, both ends and its top in view, solid and sharp, nothing doubled or smeared (KM1-1c's
+corrugated house came out smeared); a set piece the same as in KM1-4; a photograph, not a painting; invented names only,
+no real brand (KM1-1b's vending machines came with one); no mark from the image tool in any corner (D31); no people or
+animals. Save them beside the photographic KM1-4, as `review/kamakura/refs/photo/KM1-4a_along_the_wall.png`,
+`review/kamakura/refs/photo/KM1-4b_the_bridge.png`, `review/kamakura/refs/photo/KM1-4c_the_hall.png`,
+`review/kamakura/refs/photo/KM1-4d_the_crossing.png` and `review/kamakura/refs/photo/KM1-4e_school_gate.png`.
+
+```text
+LEVEL KM1-4a, The Shrine Bridge 1 of 5: along the shrine's wall. Follow the base prompt and the Kamakura block. The
+first of five pictures that together are KM1-4's lane, left to right, from the shrine's side gate along the shrine's
+east side to the school gate. A photograph in the look of the attached KM-0, at the same camera and scale as KM1-1's
+lane pictures: the lane along the bottom, a 2 m doorway a little over a quarter of the picture's height. Left: the
+shrine's side gate, as at the end of KM1-3, seen from the street. Then the pavement runs along the shrine's low wall of
+mossy stone; over the wall the pale gravel, the purification pavilion with its stone basin and bamboo ladles under a
+small tiled roof, a row of stone lanterns. A big old ginkgo leans over the wall. Right edge: a stone lantern just over
+the wall. Every building and structure (a house, a shop, a hut, a tower, a bridge, a gate) whole and standing apart:
+both its ends and its whole top in view, a gap, a wall or a fence between it and the next; everything solid and sharp,
+nothing doubled or smeared. The street's pale pavement runs the whole width, empty. No people, no animals. Invented
+names and labels only: no real brand or logo anywhere, the vending machines' drinks included.
+```
+
+```text
+LEVEL KM1-4b, The Shrine Bridge 2 of 5: the bridge. Follow the base prompt and the Kamakura block. The second of five
+pictures of KM1-4's lane. A photograph in the look of KM-0, at the same camera and scale as the pictures before it. Its
+left edge continues the first picture's right edge: it starts with the stone lantern over the wall. Over the wall: the
+steeply arched stone bridge over the lotus pond, the lotus's round leaves and pink flowers on the water, racks of white
+paper fortunes tied in rows. On the pavement side, a street lamp. Right edge: the pond's far bank. Every building and
+structure (a house, a shop, a hut, a tower, a bridge, a gate) whole and standing apart: both its ends and its whole top
+in view, a gap, a wall or a fence between it and the next; everything solid and sharp, nothing doubled or smeared. The
+street's pale pavement runs the whole width, empty. No people, no animals. Invented names and labels only: no real brand
+or logo anywhere, the vending machines' drinks included.
+```
+
+```text
+LEVEL KM1-4c, The Shrine Bridge 3 of 5: the hall. Follow the base prompt and the Kamakura block. The third of five
+pictures of KM1-4's lane. A photograph in the look of KM-0, at the same camera and scale as the pictures before it. Its
+left edge continues the second picture's right edge: it starts with the pond's far bank. Over the wall: the broad flight
+of stone steps rising to the vermilion main hall on its wooded hill, far and small, camphor trees and cherries in green
+leaf along the steps. Right edge: the corner where the shrine's wall ends at a side road. Every building and structure
+(a house, a shop, a hut, a tower, a bridge, a gate) whole and standing apart: both its ends and its whole top in view, a
+gap, a wall or a fence between it and the next; everything solid and sharp, nothing doubled or smeared. The street's
+pale pavement runs the whole width, empty. No people, no animals. Invented names and labels only: no real brand or logo
+anywhere, the vending machines' drinks included.
+```
+
+```text
+LEVEL KM1-4d, The Shrine Bridge 4 of 5: the crossing. Follow the base prompt and the Kamakura block. The fourth of five
+pictures of KM1-4's lane. A photograph in the look of KM-0, at the same camera and scale as the pictures before it. Its
+left edge continues the third picture's right edge: it starts with the wall's end at the corner. The side road across
+the pavement: a zebra crossing with a pedestrian signal on a pole each side (the green and red figures in their
+housings), a road sign. Beyond it, a small stationery shop and a two-storey house in pale siding, the pavement going on
+toward the school. Right edge: a clipped hedge starting along the school's fence. Every building and structure (a house,
+a shop, a hut, a tower, a bridge, a gate) whole and standing apart: both its ends and its whole top in view, a gap, a
+wall or a fence between it and the next; everything solid and sharp, nothing doubled or smeared. The street's pale
+pavement runs the whole width, empty. No people, no animals. Invented names and labels only: no real brand or logo
+anywhere, the vending machines' drinks included.
+```
+
+```text
+LEVEL KM1-4e, The Shrine Bridge 5 of 5: the school gate. Follow the base prompt and the Kamakura block. The fifth of
+five pictures of KM1-4's lane. A photograph in the look of KM-0, at the same camera and scale as the pictures before it.
+Its left edge continues the fourth picture's right edge: it starts with the school's clipped hedge. The school: a
+three-storey white concrete building with a clock on its face, behind a green mesh fence and the clipped hedge, its
+sandy sports ground; a cherry tree in blossom by the gate; the gate's two pillars with the school's name board (an
+invented name). Right edge: the gate: the end of the level, and of every Kamakura route. Every building and structure (a
+house, a shop, a hut, a tower, a bridge, a gate) whole and standing apart: both its ends and its whole top in view, a
+gap, a wall or a fence between it and the next; everything solid and sharp, nothing doubled or smeared. The street's
+pale pavement runs the whole width, empty. No people, no animals. Invented names and labels only: no real brand or logo
+anywhere, the vending machines' drinks included.
+```
+
 #### KM2 The Shonan Coast
 
 ```text
@@ -400,6 +594,338 @@ pedestrian crossing with a yellow "crossing volunteer" flag in a holder on a pol
 the avenue, and beside it the school's gate and its cherry tree.
 ```
 
+#### KM2-1 Down to Yuigahama, its lane in five pictures
+
+Five pictures that together are KM2-1's whole lane, from the kid's home to the boardwalk onto the sand, each about 25 m
+of lane, tunnel and boardwalk, so every building, wall, fence and set piece along the way can be built (its play is laid
+out on them, as KM1-1's was). Make them in the chat that made KM2-1, in the same tool. Attach to each: KM-0 (the look),
+the photographic KM2-1 (`refs/photo/KM2-1_down_to_yuigahama.png`: the set pieces to copy) and the picture before it (to
+continue from). Check each before the next: the same camera and scale as KM1-1's lane pictures (a 2 m doorway a little
+over a quarter of the picture's height); its left edge picks up the last picture's right edge; every building and
+structure whole, both ends and its top in view, solid and sharp, nothing doubled or smeared (KM1-1c's corrugated house
+came out smeared); a set piece the same as in KM2-1; a photograph, not a painting; invented names only, no real brand
+(KM1-1b's vending machines came with one); no mark from the image tool in any corner (D31); no people or animals. Save
+them beside the photographic KM2-1, as `review/kamakura/refs/photo/KM2-1a_home_lane.png`,
+`review/kamakura/refs/photo/KM2-1b_surf_houses.png`, `review/kamakura/refs/photo/KM2-1c_surf_shop.png`,
+`review/kamakura/refs/photo/KM2-1d_the_tunnel.png` and `review/kamakura/refs/photo/KM2-1e_the_boardwalk.png`.
+
+```text
+LEVEL KM2-1a, Down to Yuigahama 1 of 5: the home lane. Follow the base prompt and the Kamakura block. The first of five
+pictures that together are KM2-1's lane, left to right, from the kid's home to the boardwalk onto the sand. A photograph
+in the look of the attached KM-0, at the same camera and scale as KM1-1's lane pictures: the lane along the bottom, a 2
+m doorway a little over a quarter of the picture's height. Left: the kid's home exactly as in KM1-1, seen from its other
+side (the same house: copy it). Then a lane of low houses: a neighbour's two-storey house in pale ceramic siding with a
+letterbox at its gate, a surfboard leaning by its door and a wetsuit on a hanger under its eave. Right edge: a concrete
+block wall with a garden pine leaning over it. Every building and structure (a house, a shop, a hut, a tower, a bridge,
+a gate) whole and standing apart: both its ends and its whole top in view, a gap, a wall or a fence between it and the
+next; everything solid and sharp, nothing doubled or smeared. The lane's green walking strip, then the tunnel's floor
+and the boardwalk, runs the whole width, empty. No people, no animals. Invented names and labels only: no real brand or
+logo anywhere, the vending machines' drinks included.
+```
+
+```text
+LEVEL KM2-1b, Down to Yuigahama 2 of 5: the surfers' houses. Follow the base prompt and the Kamakura block. The second
+of five pictures of KM2-1's lane. A photograph in the look of KM-0, at the same camera and scale as the pictures before
+it. Its left edge continues the first picture's right edge: it starts with the block wall and the garden pine. More low
+houses in ceramic siding and mortar, each with its letterbox, surfboards leaning by the doors, wetsuits drying; a
+bicycle with a board carrier in a rack by a gate. Right edge: the lane bending toward the coast road's grassy
+embankment. Every building and structure (a house, a shop, a hut, a tower, a bridge, a gate) whole and standing apart:
+both its ends and its whole top in view, a gap, a wall or a fence between it and the next; everything solid and sharp,
+nothing doubled or smeared. The lane's green walking strip, then the tunnel's floor and the boardwalk, runs the whole
+width, empty. No people, no animals. Invented names and labels only: no real brand or logo anywhere, the vending
+machines' drinks included.
+```
+
+```text
+LEVEL KM2-1c, Down to Yuigahama 3 of 5: the surf shop. Follow the base prompt and the Kamakura block. The third of five
+pictures of KM2-1's lane. A photograph in the look of KM-0, at the same camera and scale as the pictures before it. Its
+left edge continues the second picture's right edge: it starts with the embankment's foot. A one-storey surf shop of
+silver-grey timber with surfboards on racks and wetsuits hanging in front, an outdoor shower on a post, a signboard with
+an invented name. Right edge: the embankment rising toward the coast road. Every building and structure (a house, a
+shop, a hut, a tower, a bridge, a gate) whole and standing apart: both its ends and its whole top in view, a gap, a wall
+or a fence between it and the next; everything solid and sharp, nothing doubled or smeared. The lane's green walking
+strip, then the tunnel's floor and the boardwalk, runs the whole width, empty. No people, no animals. Invented names and
+labels only: no real brand or logo anywhere, the vending machines' drinks included.
+```
+
+```text
+LEVEL KM2-1d, Down to Yuigahama 4 of 5: the tunnel. Follow the base prompt and the Kamakura block. The fourth of five
+pictures of KM2-1's lane. A photograph in the look of KM-0, at the same camera and scale as the pictures before it. Its
+left edge continues the third picture's right edge: it starts with the embankment. The pedestrian tunnel under the coast
+road: a short, low tunnel through the embankment, its mouth framed in streaked concrete with a "beach" sign over it,
+tiled walls inside, dim, a lamp in its ceiling; above it the embankment's guard rail along the empty coast road. Right
+edge: the tunnel's far mouth, daylight and sand beyond. Every building and structure (a house, a shop, a hut, a tower, a
+bridge, a gate) whole and standing apart: both its ends and its whole top in view, a gap, a wall or a fence between it
+and the next; everything solid and sharp, nothing doubled or smeared. The lane's green walking strip, then the tunnel's
+floor and the boardwalk, runs the whole width, empty. No people, no animals. Invented names and labels only: no real
+brand or logo anywhere, the vending machines' drinks included.
+```
+
+```text
+LEVEL KM2-1e, Down to Yuigahama 5 of 5: the boardwalk. Follow the base prompt and the Kamakura block. The fifth of five
+pictures of KM2-1's lane. A photograph in the look of KM-0, at the same camera and scale as the pictures before it. Its
+left edge continues the fourth picture's right edge: it starts with the tunnel's far mouth. A surf rental hut of
+silver-grey timber with boards stacked in racks, then a boardwalk of grey timber running out onto the sand, sand
+drifting over its boards, dune grass at its end, the sea and the island of Enoshima far off. Right edge: the boardwalk's
+end on the sand: the end of the level. Every building and structure (a house, a shop, a hut, a tower, a bridge, a gate)
+whole and standing apart: both its ends and its whole top in view, a gap, a wall or a fence between it and the next;
+everything solid and sharp, nothing doubled or smeared. The lane's green walking strip, then the tunnel's floor and the
+boardwalk, runs the whole width, empty. No people, no animals. Invented names and labels only: no real brand or logo
+anywhere, the vending machines' drinks included.
+```
+
+#### KM2-2 Yuigahama Morning, its lane in five pictures
+
+Five pictures that together are KM2-2's whole lane, along Yuigahama beach from the boardwalk to the beach road, each
+about 25 m of beach, so every building, wall, fence and set piece along the way can be built (its play is laid out on
+them, as KM1-1's was). Make them in the chat that made KM2-2, in the same tool. Attach to each: KM-0 (the look), the
+photographic KM2-2 (`refs/photo/KM2-2_yuigahama_morning.png`: the set pieces to copy) and the picture before it (to
+continue from). Check each before the next: the same camera and scale as KM1-1's lane pictures (a 2 m doorway a little
+over a quarter of the picture's height); its left edge picks up the last picture's right edge; every building and
+structure whole, both ends and its top in view, solid and sharp, nothing doubled or smeared (KM1-1c's corrugated house
+came out smeared); a set piece the same as in KM2-2; a photograph, not a painting; invented names only, no real brand
+(KM1-1b's vending machines came with one); no mark from the image tool in any corner (D31); no people or animals. Save
+them beside the photographic KM2-2, as `review/kamakura/refs/photo/KM2-2a_the_surfboards.png`,
+`review/kamakura/refs/photo/KM2-2b_fishing_boats.png`, `review/kamakura/refs/photo/KM2-2c_lifeguard_tower.png`,
+`review/kamakura/refs/photo/KM2-2d_sea_wall.png` and `review/kamakura/refs/photo/KM2-2e_beach_road.png`.
+
+```text
+LEVEL KM2-2a, Yuigahama Morning 1 of 5: the surfboards. Follow the base prompt and the Kamakura block. The first of five
+pictures that together are KM2-2's lane, left to right, along Yuigahama beach from the boardwalk to the beach road. A
+photograph in the look of the attached KM-0, at the same camera and scale as KM1-1's lane pictures: the lane along the
+bottom, a 2 m doorway a little over a quarter of the picture's height. Left: the boardwalk's end on the sand, as at the
+end of KM2-1. Then the beach as in KM2-2, the sea and its low waves behind: dark grey-brown volcanic sand going pale
+where dry, a tide line of seaweed and shells, surfboards stuck upright in the sand in a loose row, each apart. Right
+edge: the first fishing boat's bow. Every building and structure (a house, a shop, a hut, a tower, a bridge, a gate)
+whole and standing apart: both its ends and its whole top in view, a gap, a wall or a fence between it and the next;
+everything solid and sharp, nothing doubled or smeared. The firm wet sand along the tide line runs the whole width,
+empty. No people, no animals. Invented names and labels only: no real brand or logo anywhere, the vending machines'
+drinks included.
+```
+
+```text
+LEVEL KM2-2b, Yuigahama Morning 2 of 5: the fishing boats. Follow the base prompt and the Kamakura block. The second of
+five pictures of KM2-2's lane. A photograph in the look of KM-0, at the same camera and scale as the pictures before it.
+Its left edge continues the first picture's right edge: it starts with the fishing boat's bow. Two small fishing boats
+pulled up on wooden rollers, each whole and apart, nets heaped beside them, crab traps and stacked fish boxes. Right
+edge: the lifeguard tower's left leg. Every building and structure (a house, a shop, a hut, a tower, a bridge, a gate)
+whole and standing apart: both its ends and its whole top in view, a gap, a wall or a fence between it and the next;
+everything solid and sharp, nothing doubled or smeared. The firm wet sand along the tide line runs the whole width,
+empty. No people, no animals. Invented names and labels only: no real brand or logo anywhere, the vending machines'
+drinks included.
+```
+
+```text
+LEVEL KM2-2c, Yuigahama Morning 3 of 5: the lifeguard tower. Follow the base prompt and the Kamakura block. The third of
+five pictures of KM2-2's lane. A photograph in the look of KM-0, at the same camera and scale as the pictures before it.
+Its left edge continues the second picture's right edge: it starts with the lifeguard tower's left leg. The lifeguard
+tower on its legs with its ladder and flag, white sacks of collected litter tied at the top in a row, a wooden beach
+bench. Right edge: the foot of the sea wall. Every building and structure (a house, a shop, a hut, a tower, a bridge, a
+gate) whole and standing apart: both its ends and its whole top in view, a gap, a wall or a fence between it and the
+next; everything solid and sharp, nothing doubled or smeared. The firm wet sand along the tide line runs the whole
+width, empty. No people, no animals. Invented names and labels only: no real brand or logo anywhere, the vending
+machines' drinks included.
+```
+
+```text
+LEVEL KM2-2d, Yuigahama Morning 4 of 5: the sea wall. Follow the base prompt and the Kamakura block. The fourth of five
+pictures of KM2-2's lane. A photograph in the look of KM-0, at the same camera and scale as the pictures before it. Its
+left edge continues the third picture's right edge: it starts with the sea wall's foot. The sea wall of streaked
+concrete with steps up it, dune grass at its foot, beach houses and leaning black pines above it. Right edge: the steps
+up to the beach road. Every building and structure (a house, a shop, a hut, a tower, a bridge, a gate) whole and
+standing apart: both its ends and its whole top in view, a gap, a wall or a fence between it and the next; everything
+solid and sharp, nothing doubled or smeared. The firm wet sand along the tide line runs the whole width, empty. No
+people, no animals. Invented names and labels only: no real brand or logo anywhere, the vending machines' drinks
+included.
+```
+
+```text
+LEVEL KM2-2e, Yuigahama Morning 5 of 5: the beach road. Follow the base prompt and the Kamakura block. The fifth of five
+pictures of KM2-2's lane. A photograph in the look of KM-0, at the same camera and scale as the pictures before it. Its
+left edge continues the fourth picture's right edge: it starts with the steps. Up the steps, the beach road and
+Grandma's whitebait shop as in KM2-3, seen from the side as the lane comes to it: the two-storey timber house with the
+shop on its ground floor, racks of bamboo trays of drying whitebait in front, polystyrene boxes stacked. Right edge: the
+shop's front: the end of the level. Every building and structure (a house, a shop, a hut, a tower, a bridge, a gate)
+whole and standing apart: both its ends and its whole top in view, a gap, a wall or a fence between it and the next;
+everything solid and sharp, nothing doubled or smeared. The firm wet sand along the tide line runs the whole width,
+empty. No people, no animals. Invented names and labels only: no real brand or logo anywhere, the vending machines'
+drinks included.
+```
+
+#### KM2-3 Grandma's Whitebait Shop, the errand's set in two pictures
+
+The pictures KM2-3's mini-game set is built from. Make them in the chat that made KM2-3, in the same tool. Attach to
+each: KM-0 (the look) and the photographic KM2-3 (`refs/photo/KM2-3_grandmas_whitebait_shop.png`). Check each: a
+photograph, not a painting; the same things as in KM2-3; invented names only (station names are real places); no mark
+from the image tool in any corner (D31); no people or animals. Save them beside the photographic KM2-3, as
+`review/kamakura/refs/photo/KM2-3a_shop_counter.png` and `review/kamakura/refs/photo/KM2-3b_furoshiki_folds.png`.
+
+```text
+LEVEL KM2-3a, Grandma's Whitebait Shop 1 of 2: the counter. Follow the base prompt and the Kamakura block. The shop's
+counter from KM2-3, closer, straight on at a child's eye height: the glass counter with whitebait in trays, the noren
+curtain above, the hand-painted sign (an invented name), and on the counter, centred and whole, the lacquered bento box
+on the furoshiki laid out flat, its four corners spread. Nobody at the counter.
+```
+
+```text
+LEVEL KM2-3b, Grandma's Whitebait Shop 2 of 2: the folds. Follow the base prompt and the Kamakura block. The same bento
+and furoshiki from straight above, five times in a row on the counter's wood, each apart: laid out flat with its corners
+spread; the near corner folded over the box; the far corner folded over it; the left and right corners brought up; tied
+in a knot on top. The same cloth and box in all five.
+```
+
+#### KM2-4 The Kite Thief, its lane in five pictures
+
+Five pictures that together are KM2-4's whole lane, from Grandma's shop along the rocks to the great wooden torii, each
+about 25 m of rock shelves, so every building, wall, fence and set piece along the way can be built (its play is laid
+out on them, as KM1-1's was). Make them in the chat that made KM2-4, in the same tool. Attach to each: KM-0 (the look),
+the photographic KM2-4 (`refs/photo/KM2-4_the_kite_thief.png`: the set pieces to copy) and the picture before it (to
+continue from). Check each before the next: the same camera and scale as KM1-1's lane pictures (a 2 m doorway a little
+over a quarter of the picture's height); its left edge picks up the last picture's right edge; every building and
+structure whole, both ends and its top in view, solid and sharp, nothing doubled or smeared (KM1-1c's corrugated house
+came out smeared); a set piece the same as in KM2-4; a photograph, not a painting; invented names only, no real brand
+(KM1-1b's vending machines came with one); no mark from the image tool in any corner (D31); no people or animals. Save
+them beside the photographic KM2-4, as `review/kamakura/refs/photo/KM2-4a_beach_end.png`,
+`review/kamakura/refs/photo/KM2-4b_rock_shelves.png`, `review/kamakura/refs/photo/KM2-4c_tide_pools.png`,
+`review/kamakura/refs/photo/KM2-4d_the_pine.png` and `review/kamakura/refs/photo/KM2-4e_the_torii.png`.
+
+```text
+LEVEL KM2-4a, The Kite Thief 1 of 5: the beach's end. Follow the base prompt and the Kamakura block. The first of five
+pictures that together are KM2-4's lane, left to right, from Grandma's shop along the rocks to the great wooden torii. A
+photograph in the look of the attached KM-0, at the same camera and scale as KM1-1's lane pictures: the lane along the
+bottom, a 2 m doorway a little over a quarter of the picture's height. Left: the beach road below Grandma's shop, the
+sand narrowing toward the headland. Then the first dark wave-cut rock shelves, barnacles and seaweed on them, low waves
+washing over the lowest. Right edge: the start of the path of worn steps along the shelves' top. Every building and
+structure (a house, a shop, a hut, a tower, a bridge, a gate) whole and standing apart: both its ends and its whole top
+in view, a gap, a wall or a fence between it and the next; everything solid and sharp, nothing doubled or smeared. The
+path of worn steps along the rock shelves' top runs the whole width, empty. No people, no animals. Invented names and
+labels only: no real brand or logo anywhere, the vending machines' drinks included.
+```
+
+```text
+LEVEL KM2-4b, The Kite Thief 2 of 5: the rock shelves. Follow the base prompt and the Kamakura block. The second of five
+pictures of KM2-4's lane. A photograph in the look of KM-0, at the same camera and scale as the pictures before it. Its
+left edge continues the first picture's right edge: it starts with the path of worn steps. The path of worn stone steps
+along the dark rock shelves' top, tide pools in the hollows below, seaweed. Right edge: a big dry rock in the middle of
+the shelves. Every building and structure (a house, a shop, a hut, a tower, a bridge, a gate) whole and standing apart:
+both its ends and its whole top in view, a gap, a wall or a fence between it and the next; everything solid and sharp,
+nothing doubled or smeared. The path of worn steps along the rock shelves' top runs the whole width, empty. No people,
+no animals. Invented names and labels only: no real brand or logo anywhere, the vending machines' drinks included.
+```
+
+```text
+LEVEL KM2-4c, The Kite Thief 3 of 5: the tide pools. Follow the base prompt and the Kamakura block. The third of five
+pictures of KM2-4's lane. A photograph in the look of KM-0, at the same camera and scale as the pictures before it. Its
+left edge continues the second picture's right edge: it starts with the big dry rock. The big dry rock, bare (in the
+game the kite drops the rice ball here), wider tide pools round it with clear water, a flat rock beside them, bare (a
+cormorant dries its wings there in the game). Right edge: a leaning black pine's trunk on the headland. Every building
+and structure (a house, a shop, a hut, a tower, a bridge, a gate) whole and standing apart: both its ends and its whole
+top in view, a gap, a wall or a fence between it and the next; everything solid and sharp, nothing doubled or smeared.
+The path of worn steps along the rock shelves' top runs the whole width, empty. No people, no animals. Invented names
+and labels only: no real brand or logo anywhere, the vending machines' drinks included.
+```
+
+```text
+LEVEL KM2-4d, The Kite Thief 4 of 5: the pine. Follow the base prompt and the Kamakura block. The fourth of five
+pictures of KM2-4's lane. A photograph in the look of KM-0, at the same camera and scale as the pictures before it. Its
+left edge continues the third picture's right edge: it starts with the leaning pine's trunk. The leaning black pine on
+the headland, dune grass round its foot, a bare branch reaching over the path (the kite's perch in the game), the
+shelves stepping down toward the beach again. Right edge: sand beyond the last shelf. Every building and structure (a
+house, a shop, a hut, a tower, a bridge, a gate) whole and standing apart: both its ends and its whole top in view, a
+gap, a wall or a fence between it and the next; everything solid and sharp, nothing doubled or smeared. The path of worn
+steps along the rock shelves' top runs the whole width, empty. No people, no animals. Invented names and labels only: no
+real brand or logo anywhere, the vending machines' drinks included.
+```
+
+```text
+LEVEL KM2-4e, The Kite Thief 5 of 5: the torii. Follow the base prompt and the Kamakura block. The fifth of five
+pictures of KM2-4's lane. A photograph in the look of KM-0, at the same camera and scale as the pictures before it. Its
+left edge continues the fourth picture's right edge: it starts with the sand beyond the shelves. The beach again, then
+the great wooden torii at the start of the straight avenue inland, as in KM2-4: whole, both posts and both crossbeams in
+view. Right edge: the torii: the end of the level. Every building and structure (a house, a shop, a hut, a tower, a
+bridge, a gate) whole and standing apart: both its ends and its whole top in view, a gap, a wall or a fence between it
+and the next; everything solid and sharp, nothing doubled or smeared. The path of worn steps along the rock shelves' top
+runs the whole width, empty. No people, no animals. Invented names and labels only: no real brand or logo anywhere, the
+vending machines' drinks included.
+```
+
+#### KM2-5 Wakamiya-oji, its lane in five pictures
+
+Five pictures that together are KM2-5's whole lane, along the raised footpath from the great wooden torii to the school
+gate, each about 25 m of raised footpath, so every building, wall, fence and set piece along the way can be built (its
+play is laid out on them, as KM1-1's was). Make them in the chat that made KM2-5, in the same tool. Attach to each: KM-0
+(the look), the photographic KM2-5 (`refs/photo/KM2-5_wakamiya_oji.png`: the set pieces to copy) and the picture before
+it (to continue from). Check each before the next: the same camera and scale as KM1-1's lane pictures (a 2 m doorway a
+little over a quarter of the picture's height); its left edge picks up the last picture's right edge; every building and
+structure whole, both ends and its top in view, solid and sharp, nothing doubled or smeared (KM1-1c's corrugated house
+came out smeared); a set piece the same as in KM2-5; a photograph, not a painting; invented names only, no real brand
+(KM1-1b's vending machines came with one); no mark from the image tool in any corner (D31); no people or animals. Save
+them beside the photographic KM2-5, as `review/kamakura/refs/photo/KM2-5a_raised_path.png`,
+`review/kamakura/refs/photo/KM2-5b_the_bakery.png`, `review/kamakura/refs/photo/KM2-5c_pottery_shop.png`,
+`review/kamakura/refs/photo/KM2-5d_the_crossing.png` and `review/kamakura/refs/photo/KM2-5e_red_torii.png`.
+
+```text
+LEVEL KM2-5a, Wakamiya-oji 1 of 5: the raised path. Follow the base prompt and the Kamakura block. The first of five
+pictures that together are KM2-5's lane, left to right, along the raised footpath from the great wooden torii to the
+school gate. A photograph in the look of the attached KM-0, at the same camera and scale as KM1-1's lane pictures: the
+lane along the bottom, a 2 m doorway a little over a quarter of the picture's height. Left: the great wooden torii from
+the end of KM2-4. Then the raised footpath down the avenue's middle, edged with stone, lined with stone lanterns and
+cherry trees in green leaf, each apart; beyond it the avenue's far side with its first two-storey buildings in ceramic
+siding. Right edge: a stone lantern. Every building and structure (a house, a shop, a hut, a tower, a bridge, a gate)
+whole and standing apart: both its ends and its whole top in view, a gap, a wall or a fence between it and the next;
+everything solid and sharp, nothing doubled or smeared. The raised footpath, edged with stone, runs the whole width,
+empty. No people, no animals. Invented names and labels only: no real brand or logo anywhere, the vending machines'
+drinks included.
+```
+
+```text
+LEVEL KM2-5b, Wakamiya-oji 2 of 5: the bakery. Follow the base prompt and the Kamakura block. The second of five
+pictures of KM2-5's lane. A photograph in the look of KM-0, at the same camera and scale as the pictures before it. Its
+left edge continues the first picture's right edge: it starts with the stone lantern. Along the far side: a bakery with
+its shutter half open and a chalkboard out front, nobori flags, a pair of vending machines with crates and bins beside
+them; lanterns and cherries along the raised path. Right edge: a cherry tree. Every building and structure (a house, a
+shop, a hut, a tower, a bridge, a gate) whole and standing apart: both its ends and its whole top in view, a gap, a wall
+or a fence between it and the next; everything solid and sharp, nothing doubled or smeared. The raised footpath, edged
+with stone, runs the whole width, empty. No people, no animals. Invented names and labels only: no real brand or logo
+anywhere, the vending machines' drinks included.
+```
+
+```text
+LEVEL KM2-5c, Wakamiya-oji 3 of 5: the pottery shop. Follow the base prompt and the Kamakura block. The third of five
+pictures of KM2-5's lane. A photograph in the look of KM-0, at the same camera and scale as the pictures before it. Its
+left edge continues the second picture's right edge: it starts with the cherry tree. A pottery shop with bowls on low
+tables in front and a sweets shop with a noren curtain, a street lamp, a small car parked on the far side of the road.
+Right edge: the junction's corner. Every building and structure (a house, a shop, a hut, a tower, a bridge, a gate)
+whole and standing apart: both its ends and its whole top in view, a gap, a wall or a fence between it and the next;
+everything solid and sharp, nothing doubled or smeared. The raised footpath, edged with stone, runs the whole width,
+empty. No people, no animals. Invented names and labels only: no real brand or logo anywhere, the vending machines'
+drinks included.
+```
+
+```text
+LEVEL KM2-5d, Wakamiya-oji 4 of 5: the crossing. Follow the base prompt and the Kamakura block. The fourth of five
+pictures of KM2-5's lane. A photograph in the look of KM-0, at the same camera and scale as the pictures before it. Its
+left edge continues the third picture's right edge: it starts with the junction's corner. The junction: a pedestrian
+crossing across the avenue with a yellow "crossing volunteer" flag in a holder on a pole, the raised path stepping down
+to it and up again beyond. Right edge: the great red torii's left post. Every building and structure (a house, a shop, a
+hut, a tower, a bridge, a gate) whole and standing apart: both its ends and its whole top in view, a gap, a wall or a
+fence between it and the next; everything solid and sharp, nothing doubled or smeared. The raised footpath, edged with
+stone, runs the whole width, empty. No people, no animals. Invented names and labels only: no real brand or logo
+anywhere, the vending machines' drinks included.
+```
+
+```text
+LEVEL KM2-5e, Wakamiya-oji 5 of 5: the red torii and the school. Follow the base prompt and the Kamakura block. The
+fifth of five pictures of KM2-5's lane. A photograph in the look of KM-0, at the same camera and scale as the pictures
+before it. Its left edge continues the fourth picture's right edge: it starts with the red torii's left post. The great
+vermilion torii across the avenue, whole, then the school approach to the school gate of KM1-4 with its cherry in
+blossom and its clipped hedge (copy KM1-4's school). Right edge: the gate: the end of the level. Every building and
+structure (a house, a shop, a hut, a tower, a bridge, a gate) whole and standing apart: both its ends and its whole top
+in view, a gap, a wall or a fence between it and the next; everything solid and sharp, nothing doubled or smeared. The
+raised footpath, edged with stone, runs the whole width, empty. No people, no animals. Invented names and labels only:
+no real brand or logo anywhere, the vending machines' drinks included.
+```
+
 #### KM3 The Temple Hills (June rain)
 
 ```text
@@ -428,6 +954,238 @@ Left: a hilltop park's lawn with a small bronze statue on a stone plinth (invent
 of tall green bamboo creaking in the wind, a temple bell tower with a big bronze bell under its tiled roof and the hanging
 log that strikes it, and stone steps down through the trees to the town. Right: the school's back gate in a hedge, the
 school's white wall and windows beyond.
+```
+
+#### KM3-1 Hydrangea Steps, its lane in five pictures
+
+Five pictures that together are KM3-1's whole lane, from the home's back gate up the temple hillside to the trail sign,
+each about 25 m of stone steps, so every building, wall, fence and set piece along the way can be built (its play is
+laid out on them, as KM1-1's was). Make them in the chat that made KM3-1, in the same tool. Attach to each: KM-0 (the
+look), the photographic KM3-1 (`refs/photo/KM3-1_hydrangea_steps.png`: the set pieces to copy) and the picture before it
+(to continue from). Check each before the next: the same camera and scale as KM1-1's lane pictures (a 2 m doorway a
+little over a quarter of the picture's height); its left edge picks up the last picture's right edge; every building and
+structure whole, both ends and its top in view, solid and sharp, nothing doubled or smeared (KM1-1c's corrugated house
+came out smeared); a set piece the same as in KM3-1; a photograph, not a painting; invented names only, no real brand
+(KM1-1b's vending machines came with one); no mark from the image tool in any corner (D31); no people or animals. Save
+them beside the photographic KM3-1, as `review/kamakura/refs/photo/KM3-1a_back_gate.png`,
+`review/kamakura/refs/photo/KM3-1b_first_flight.png`, `review/kamakura/refs/photo/KM3-1c_the_lantern.png`,
+`review/kamakura/refs/photo/KM3-1d_rest_hut.png` and `review/kamakura/refs/photo/KM3-1e_trail_sign.png`.
+
+```text
+LEVEL KM3-1a, Hydrangea Steps 1 of 5: the back gate. Follow the base prompt and the Kamakura block, with this light: a
+June morning in light drizzle, overcast, about 6,800 K, soft and shadowless, everything wet and glistening, mist in the
+trees (as in KM3-1). The first of five pictures that together are KM3-1's lane, left to right, from the home's back gate
+up the temple hillside to the trail sign. A photograph in the look of the attached KM-0, at the same camera and scale as
+KM1-1's lane pictures: the lane along the bottom, a 2 m doorway a little over a quarter of the picture's height. Left:
+the kid's home from behind (the same house as KM1-1: copy it), its back gate in a wall of mossy stone. Then the first
+stone steps climbing the hillside, banks of blue, pink and violet hydrangeas pressing in from both sides, moss on every
+step, puddles in the worn hollows. Right edge: a landing where the flight turns. Every building and structure (a house,
+a shop, a hut, a tower, a bridge, a gate) whole and standing apart: both its ends and its whole top in view, a gap, a
+wall or a fence between it and the next; everything solid and sharp, nothing doubled or smeared. The stone steps, mossy
+and wet, runs the whole width, empty. No people, no animals. Invented names and labels only: no real brand or logo
+anywhere, the vending machines' drinks included.
+```
+
+```text
+LEVEL KM3-1b, Hydrangea Steps 2 of 5: the first flight. Follow the base prompt and the Kamakura block, with this light:
+a June morning in light drizzle, overcast, about 6,800 K, soft and shadowless, everything wet and glistening, mist in
+the trees (as in KM3-1). The second of five pictures of KM3-1's lane. A photograph in the look of KM-0, at the same
+camera and scale as the pictures before it. Its left edge continues the first picture's right edge: it starts with the
+landing. A long flight of steps between hydrangea banks, each bank whole, ferns and mossy boulders among them, a view
+between the trees down to wet tiled roofs. Right edge: a stone lantern at a landing. Every building and structure (a
+house, a shop, a hut, a tower, a bridge, a gate) whole and standing apart: both its ends and its whole top in view, a
+gap, a wall or a fence between it and the next; everything solid and sharp, nothing doubled or smeared. The stone steps,
+mossy and wet, runs the whole width, empty. No people, no animals. Invented names and labels only: no real brand or logo
+anywhere, the vending machines' drinks included.
+```
+
+```text
+LEVEL KM3-1c, Hydrangea Steps 3 of 5: the lantern. Follow the base prompt and the Kamakura block, with this light: a
+June morning in light drizzle, overcast, about 6,800 K, soft and shadowless, everything wet and glistening, mist in the
+trees (as in KM3-1). The third of five pictures of KM3-1's lane. A photograph in the look of KM-0, at the same camera
+and scale as the pictures before it. Its left edge continues the second picture's right edge: it starts with the stone
+lantern. The stone lantern at the landing, whole, the steps climbing again between the hydrangeas. Right edge: the rest
+hut's eave. Every building and structure (a house, a shop, a hut, a tower, a bridge, a gate) whole and standing apart:
+both its ends and its whole top in view, a gap, a wall or a fence between it and the next; everything solid and sharp,
+nothing doubled or smeared. The stone steps, mossy and wet, runs the whole width, empty. No people, no animals. Invented
+names and labels only: no real brand or logo anywhere, the vending machines' drinks included.
+```
+
+```text
+LEVEL KM3-1d, Hydrangea Steps 4 of 5: the rest hut. Follow the base prompt and the Kamakura block, with this light: a
+June morning in light drizzle, overcast, about 6,800 K, soft and shadowless, everything wet and glistening, mist in the
+trees (as in KM3-1). The fourth of five pictures of KM3-1's lane. A photograph in the look of KM-0, at the same camera
+and scale as the pictures before it. Its left edge continues the third picture's right edge: it starts with the rest
+hut's eave. A small timber rest hut with a tiled roof and a bench inside, clear umbrellas in a stand by its post; the
+hydrangea banks thinning. Right edge: the woods' edge. Every building and structure (a house, a shop, a hut, a tower, a
+bridge, a gate) whole and standing apart: both its ends and its whole top in view, a gap, a wall or a fence between it
+and the next; everything solid and sharp, nothing doubled or smeared. The stone steps, mossy and wet, runs the whole
+width, empty. No people, no animals. Invented names and labels only: no real brand or logo anywhere, the vending
+machines' drinks included.
+```
+
+```text
+LEVEL KM3-1e, Hydrangea Steps 5 of 5: the trail sign. Follow the base prompt and the Kamakura block, with this light: a
+June morning in light drizzle, overcast, about 6,800 K, soft and shadowless, everything wet and glistening, mist in the
+trees (as in KM3-1). The fifth of five pictures of KM3-1's lane. A photograph in the look of KM-0, at the same camera
+and scale as the pictures before it. Its left edge continues the fourth picture's right edge: it starts with the woods'
+edge. The steps end at the woods' edge, at a wooden trail signpost with invented place names, ferns and cedar trunks
+beyond. Right edge: the signpost: the end of the level. Every building and structure (a house, a shop, a hut, a tower, a
+bridge, a gate) whole and standing apart: both its ends and its whole top in view, a gap, a wall or a fence between it
+and the next; everything solid and sharp, nothing doubled or smeared. The stone steps, mossy and wet, runs the whole
+width, empty. No people, no animals. Invented names and labels only: no real brand or logo anywhere, the vending
+machines' drinks included.
+```
+
+#### KM3-2 The Hiking Trail, its lane in five pictures
+
+Five pictures that together are KM3-2's whole lane, over the wooded ridge from the trail sign to Genjiyama park, each
+about 25 m of earth trail, so every building, wall, fence and set piece along the way can be built (its play is laid out
+on them, as KM1-1's was). Make them in the chat that made KM3-2, in the same tool. Attach to each: KM-0 (the look), the
+photographic KM3-2 (`refs/photo/KM3-2_the_hiking_trail.png`: the set pieces to copy) and the picture before it (to
+continue from). Check each before the next: the same camera and scale as KM1-1's lane pictures (a 2 m doorway a little
+over a quarter of the picture's height); its left edge picks up the last picture's right edge; every building and
+structure whole, both ends and its top in view, solid and sharp, nothing doubled or smeared (KM1-1c's corrugated house
+came out smeared); a set piece the same as in KM3-2; a photograph, not a painting; invented names only, no real brand
+(KM1-1b's vending machines came with one); no mark from the image tool in any corner (D31); no people or animals. Save
+them beside the photographic KM3-2, as `review/kamakura/refs/photo/KM3-2a_the_roots.png`,
+`review/kamakura/refs/photo/KM3-2b_footbridge.png`, `review/kamakura/refs/photo/KM3-2c_cave_tomb.png`,
+`review/kamakura/refs/photo/KM3-2d_rail_fence.png` and `review/kamakura/refs/photo/KM3-2e_genjiyama.png`.
+
+```text
+LEVEL KM3-2a, The Hiking Trail 1 of 5: the roots. Follow the base prompt and the Kamakura block, with KM3-1's drizzle
+and mist. The first of five pictures that together are KM3-2's lane, left to right, over the wooded ridge from the trail
+sign to Genjiyama park. A photograph in the look of the attached KM-0, at the same camera and scale as KM1-1's lane
+pictures: the lane along the bottom, a 2 m doorway a little over a quarter of the picture's height. Left: the trail
+signpost from the end of KM3-1. Then the narrow earth trail along the wooded ridge, tree roots crossing it like steps,
+Japanese cedars dripping, ferns and mossy boulders. Right edge: a gully opening ahead. Every building and structure (a
+house, a shop, a hut, a tower, a bridge, a gate) whole and standing apart: both its ends and its whole top in view, a
+gap, a wall or a fence between it and the next; everything solid and sharp, nothing doubled or smeared. The earth trail
+runs the whole width, empty. No people, no animals. Invented names and labels only: no real brand or logo anywhere, the
+vending machines' drinks included.
+```
+
+```text
+LEVEL KM3-2b, The Hiking Trail 2 of 5: the footbridge. Follow the base prompt and the Kamakura block, with KM3-1's
+drizzle and mist. The second of five pictures of KM3-2's lane. A photograph in the look of KM-0, at the same camera and
+scale as the pictures before it. Its left edge continues the first picture's right edge: it starts with the gully. A
+short wooden footbridge with a rail over the gully, a small stream below it among rocks and ferns. Right edge: the trail
+climbing toward a sandstone cliff. Every building and structure (a house, a shop, a hut, a tower, a bridge, a gate)
+whole and standing apart: both its ends and its whole top in view, a gap, a wall or a fence between it and the next;
+everything solid and sharp, nothing doubled or smeared. The earth trail runs the whole width, empty. No people, no
+animals. Invented names and labels only: no real brand or logo anywhere, the vending machines' drinks included.
+```
+
+```text
+LEVEL KM3-2c, The Hiking Trail 3 of 5: the cave tomb. Follow the base prompt and the Kamakura block, with KM3-1's
+drizzle and mist. The third of five pictures of KM3-2's lane. A photograph in the look of KM-0, at the same camera and
+scale as the pictures before it. Its left edge continues the second picture's right edge: it starts with the sandstone
+cliff. The sandstone cliff beside the trail with the dark square mouth of an old cave tomb cut into it, a moss-covered
+stone pagoda inside, cedars and camphors above. Right edge: the cliff's end. Every building and structure (a house, a
+shop, a hut, a tower, a bridge, a gate) whole and standing apart: both its ends and its whole top in view, a gap, a wall
+or a fence between it and the next; everything solid and sharp, nothing doubled or smeared. The earth trail runs the
+whole width, empty. No people, no animals. Invented names and labels only: no real brand or logo anywhere, the vending
+machines' drinks included.
+```
+
+```text
+LEVEL KM3-2d, The Hiking Trail 4 of 5: the rail fence. Follow the base prompt and the Kamakura block, with KM3-1's
+drizzle and mist. The fourth of five pictures of KM3-2's lane. A photograph in the look of KM-0, at the same camera and
+scale as the pictures before it. Its left edge continues the third picture's right edge: it starts with the cliff's end.
+The trail along a rough timber rail fence at the ridge's edge, cedar feet with their roots and ferns, a gap in the trees
+with mist over the valley. Right edge: the trees thinning. Every building and structure (a house, a shop, a hut, a
+tower, a bridge, a gate) whole and standing apart: both its ends and its whole top in view, a gap, a wall or a fence
+between it and the next; everything solid and sharp, nothing doubled or smeared. The earth trail runs the whole width,
+empty. No people, no animals. Invented names and labels only: no real brand or logo anywhere, the vending machines'
+drinks included.
+```
+
+```text
+LEVEL KM3-2e, The Hiking Trail 5 of 5: Genjiyama. Follow the base prompt and the Kamakura block, with KM3-1's drizzle
+and mist. The fifth of five pictures of KM3-2's lane. A photograph in the look of KM-0, at the same camera and scale as
+the pictures before it. Its left edge continues the fourth picture's right edge: it starts with the thinning trees. The
+trail coming out onto Genjiyama park's lawn at the hill's top, its first bench and a path sign. Right edge: the lawn:
+the end of the level. Every building and structure (a house, a shop, a hut, a tower, a bridge, a gate) whole and
+standing apart: both its ends and its whole top in view, a gap, a wall or a fence between it and the next; everything
+solid and sharp, nothing doubled or smeared. The earth trail runs the whole width, empty. No people, no animals.
+Invented names and labels only: no real brand or logo anywhere, the vending machines' drinks included.
+```
+
+#### KM3-3 Genjiyama Down to School, its lane in five pictures
+
+Five pictures that together are KM3-3's whole lane, from Genjiyama park down to the school gate, each about 25 m of park
+path, steps and pavement, so every building, wall, fence and set piece along the way can be built (its play is laid out
+on them, as KM1-1's was). Make them in the chat that made KM3-3, in the same tool. Attach to each: KM-0 (the look), the
+photographic KM3-3 (`refs/photo/KM3-3_genjiyama_down_to_school.png`: the set pieces to copy) and the picture before it
+(to continue from). Check each before the next: the same camera and scale as KM1-1's lane pictures (a 2 m doorway a
+little over a quarter of the picture's height); its left edge picks up the last picture's right edge; every building and
+structure whole, both ends and its top in view, solid and sharp, nothing doubled or smeared (KM1-1c's corrugated house
+came out smeared); a set piece the same as in KM3-3; a photograph, not a painting; invented names only, no real brand
+(KM1-1b's vending machines came with one); no mark from the image tool in any corner (D31); no people or animals. Save
+them beside the photographic KM3-3, as `review/kamakura/refs/photo/KM3-3a_the_lawn.png`,
+`review/kamakura/refs/photo/KM3-3b_bell_tower.png`, `review/kamakura/refs/photo/KM3-3c_bamboo_grove.png`,
+`review/kamakura/refs/photo/KM3-3d_the_steps.png` and `review/kamakura/refs/photo/KM3-3e_school_gate.png`.
+
+```text
+LEVEL KM3-3a, Genjiyama Down to School 1 of 5: the lawn. Follow the base prompt and the Kamakura block, with KM3-1's
+drizzle, lifting toward the last picture into brighter cloud. The first of five pictures that together are KM3-3's lane,
+left to right, from Genjiyama park down to the school gate. A photograph in the look of the attached KM-0, at the same
+camera and scale as KM1-1's lane pictures: the lane along the bottom, a 2 m doorway a little over a quarter of the
+picture's height. Left: Genjiyama's lawn from the end of KM3-2: a small bronze statue on a stone plinth (invented,
+unnamed), benches with bins beside them, zelkova trees and a maple, each apart. Right edge: the bell tower's base. Every
+building and structure (a house, a shop, a hut, a tower, a bridge, a gate) whole and standing apart: both its ends and
+its whole top in view, a gap, a wall or a fence between it and the next; everything solid and sharp, nothing doubled or
+smeared. The park's path, then the stone steps and the pavement, runs the whole width, empty. No people, no animals.
+Invented names and labels only: no real brand or logo anywhere, the vending machines' drinks included.
+```
+
+```text
+LEVEL KM3-3b, Genjiyama Down to School 2 of 5: the bell tower. Follow the base prompt and the Kamakura block, with
+KM3-1's drizzle, lifting toward the last picture into brighter cloud. The second of five pictures of KM3-3's lane. A
+photograph in the look of KM-0, at the same camera and scale as the pictures before it. Its left edge continues the
+first picture's right edge: it starts with the bell tower's base. A temple bell tower: a big bronze bell under its tiled
+roof on four posts, the hanging log that strikes it, a low stone fence round it. Right edge: the bamboo grove's edge.
+Every building and structure (a house, a shop, a hut, a tower, a bridge, a gate) whole and standing apart: both its ends
+and its whole top in view, a gap, a wall or a fence between it and the next; everything solid and sharp, nothing doubled
+or smeared. The park's path, then the stone steps and the pavement, runs the whole width, empty. No people, no animals.
+Invented names and labels only: no real brand or logo anywhere, the vending machines' drinks included.
+```
+
+```text
+LEVEL KM3-3c, Genjiyama Down to School 3 of 5: the bamboo grove. Follow the base prompt and the Kamakura block, with
+KM3-1's drizzle, lifting toward the last picture into brighter cloud. The third of five pictures of KM3-3's lane. A
+photograph in the look of KM-0, at the same camera and scale as the pictures before it. Its left edge continues the
+second picture's right edge: it starts with the bamboo grove's edge. A dense grove of tall green timber bamboo along the
+path, a low bamboo fence, mossy boulders. Right edge: the top of the stone steps. Every building and structure (a house,
+a shop, a hut, a tower, a bridge, a gate) whole and standing apart: both its ends and its whole top in view, a gap, a
+wall or a fence between it and the next; everything solid and sharp, nothing doubled or smeared. The park's path, then
+the stone steps and the pavement, runs the whole width, empty. No people, no animals. Invented names and labels only: no
+real brand or logo anywhere, the vending machines' drinks included.
+```
+
+```text
+LEVEL KM3-3d, Genjiyama Down to School 4 of 5: the steps. Follow the base prompt and the Kamakura block, with KM3-1's
+drizzle, lifting toward the last picture into brighter cloud. The fourth of five pictures of KM3-3's lane. A photograph
+in the look of KM-0, at the same camera and scale as the pictures before it. Its left edge continues the third picture's
+right edge: it starts with the top of the steps. Stone steps down through the trees toward the town, a hand rail, mossy
+boulders beside them, wet roofs below. Right edge: the steps' foot at a road. Every building and structure (a house, a
+shop, a hut, a tower, a bridge, a gate) whole and standing apart: both its ends and its whole top in view, a gap, a wall
+or a fence between it and the next; everything solid and sharp, nothing doubled or smeared. The park's path, then the
+stone steps and the pavement, runs the whole width, empty. No people, no animals. Invented names and labels only: no
+real brand or logo anywhere, the vending machines' drinks included.
+```
+
+```text
+LEVEL KM3-3e, Genjiyama Down to School 5 of 5: the school gate. Follow the base prompt and the Kamakura block, with
+KM3-1's drizzle, lifting toward the last picture into brighter cloud. The fifth of five pictures of KM3-3's lane. A
+photograph in the look of KM-0, at the same camera and scale as the pictures before it. Its left edge continues the
+fourth picture's right edge: it starts with the steps' foot. The road to the school, then the school's back gate in its
+clipped hedge, the school's white wall and windows beyond (KM1-4's school: copy it). Right edge: the gate: the end of
+the level. Every building and structure (a house, a shop, a hut, a tower, a bridge, a gate) whole and standing apart:
+both its ends and its whole top in view, a gap, a wall or a fence between it and the next; everything solid and sharp,
+nothing doubled or smeared. The park's path, then the stone steps and the pavement, runs the whole width, empty. No
+people, no animals. Invented names and labels only: no real brand or logo anywhere, the vending machines' drinks
+included.
 ```
 
 #### Kamakura sheets and plates

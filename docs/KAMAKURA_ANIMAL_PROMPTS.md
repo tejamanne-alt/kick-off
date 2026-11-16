@@ -7,6 +7,8 @@ game's own behaviours (`docs/ASSET_REVIEW.md`). So each animal gets its own view
 a pose that shows every part whole. Every rule below comes from something that went wrong before (`docs/LEARNINGS.md`,
 D14 to D22, quoted by number).
 
+These are Kamakura's own animals: each city has its own models and gets its own pages when its turn comes, Kamakura first (`docs/KAMAKURA_BUILD.md`, "The plan from November 2026"). Make them in the order of the legs that place them, KM1-1's first.
+
 ## How to use them
 
 1. **Make KM1-1's first:** its animals are the first group. Then the rest, group by group.

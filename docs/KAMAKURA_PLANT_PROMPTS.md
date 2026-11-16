@@ -5,6 +5,8 @@ file: `tools/prompts_page/gen_sheets.py`). A tree or bush is built by script (`t
 branches as solids, shaped from the plant's own views, dressed with leaf clusters cut out of a leaves picture and bark
 from a bark picture. Every rule below comes from something that went wrong before (`docs/LEARNINGS.md`, quoted by number).
 
+These are Kamakura's own plants: each city has its own models and gets its own pages when its turn comes, Kamakura first (`docs/KAMAKURA_BUILD.md`, "The plan from November 2026"). Make them in the order of the legs that place them, KM1-1's first.
+
 ## How to use them
 
 1. **Make KM1-1's first:** its plants are the first group. Then the routes in order.

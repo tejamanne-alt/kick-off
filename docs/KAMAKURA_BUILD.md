@@ -108,6 +108,27 @@ Claude cleans the GLB, sets its real size and projects the picture onto it like 
 free plan its models are CC BY 4.0 (Meshy must be credited); on a paid plan they are private, with full commercial use.
 For the stores, generate on a paid plan or credit Meshy in the game's credits.
 
+## The plan from November 2026: each city its own, Kamakura first
+
+The user's decisions (16 November 2026), after the app's size was projected (one city's photographic models about 180
+to 500 MB; five cities 1.8 to 2.5 GB as built so far, about 0.9 GB with textures sized to the screen):
+- **Each city keeps its own models**, built from its own pictures. Size is managed per city: every texture sized to how
+  large its model shows on the phone (a pot about 75 px tall needs 256 to 512 px, not 1024; houses keep 2048 in ASTC
+  8x8), and each city a download of its own (Play Asset Delivery, iOS on-demand resources), the base game alone in the
+  first download.
+- **Every leg is laid out anew** from its own pictures, as KM1-1 was: its lane in five pictures (KM1-1a to e, and now
+  each leg's on the city prompts page), then its layout board for approval, then its level. No leg reuses an old
+  level's layout.
+- **Kamakura first, end to end:** the original town becomes Kamakura's three routes and twelve legs on Kamakura's map
+  (BUILD KM-L99 brought forward), its own models, playable; the other four cities keep the original 23 levels in their
+  own light until each gets its turn, one by one, with its own prompt sheets.
+- **The city picker stays.**
+- **Saves start fresh** when Kamakura switches to its legs.
+
+For Kamakura that means, in order: the legs' pictures (the city prompts page: each leg's lane in five pictures, the
+ride's and the errand's sets), each leg's layout board, its assets' views (the build steps below, the plant and animal
+pages), then each leg in the game, the map screen (KM-L90) and the switch (KM-L99).
+
 ## The order
 
 0. **Your pictures in KM-0's look** (BASE KM-R0, then RESTYLE): the painted ones made again as photographs, KM1-1 first

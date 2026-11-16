@@ -2655,6 +2655,24 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
   - The 31 models reviewed earlier were checked for holes only; fins are counted at their next rebuild.
   - Props page v15.
 
+## A new direction: each city its own legs and models, Kamakura first (docs and prompts)
+
+- The size projection (one city 180 to 500 MB, five cities 1.8 to 2.5 GB as built so far) led to the user's decisions,
+  recorded in `docs/KAMAKURA_BUILD.md` ("The plan from November 2026"):
+  - each city keeps its own models;
+  - every leg is laid out anew from its own pictures;
+  - Kamakura goes first, end to end: the original town becomes Kamakura's 12 legs on its map;
+  - the city picker stays;
+  - saves start fresh.
+- The city prompts page has every Kamakura leg's pictures (`docs/IMAGE_PROMPTS.md`):
+  - each lane leg's lane in five pictures (KM1-3, KM1-4, KM2-1, KM2-2, KM2-4, KM2-5, KM3-1, KM3-2, KM3-3: 45);
+  - the ride's set (KM1-2: the car with its windows plain grey, the town passing, the stations);
+  - the errand's set (KM2-3: the counter, the furoshiki's folds).
+  - Each lane picture follows KM1-1's five, with what they taught: every building solid and never doubled (KM1-1c),
+    invented names only (KM1-1b's drink brand), no mark from the image tool (D31).
+- Next: Kamakura's switch to its legs (the map screen, the leg table, menus and saves), each leg's layout board as its
+  pictures come in, texture sizes by screen size.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.
