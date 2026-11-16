@@ -2593,6 +2593,19 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
   `gen_sheets.py` reads a "Redo:" line and finds a folder by its id. Both check lists name the mark and a true TOP.
 - The Blender tools' environment was installed again in this container (`bpy` 5.2.3, Pillow, OpenCV).
 
+## KM1-1's eight pots built from their views, for review (tools and review)
+
+- KM-G26 to G33 carved by `km_views.py` like the props: front, right side and top, every slice round in section
+  (`PLANT_ROUND`: a pot, a mound of leaves, each bonsai pad), a rectangular planter keeping its corners below its rim,
+  the gaps between leaves open in an RGBA texture. Real heights from the cards (0.4 to 0.9 m); 1,452 to 1,454
+  triangles, a 1024 texture each.
+- Straight on, each matches the user's view closely. At 45 degrees the leaves' edges show faint fringes and the round
+  shrub green streaks at its dome's sides; no view sees the pads' undersides or the pots' bottoms, which come out grey
+  and streaked. From the street a pot is about 55 px tall on a 720-line screen and the camera never sees those faces:
+  kept, and said on the review (checks 4 and 6).
+- On the props review page (version 13, https://claude.ai/artifact/R1Wd8b8vf1FUzKhEsmJF3R), waiting for the user's
+  approval before they go into the game, in place of the pots cut from the KM1-1 picture in front of the fence.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

@@ -1009,7 +1009,25 @@ def props():
                          dict(vox=0.02, budget=3000, tex=2048, cutout=True, hole_fill=0.2, round_z=[(0.0, 5.0)],
                               round_w=0.5)),
         'KmStationPlatform': ('KM-B06', 'KM-B06_hase_station_platform', 3.2, platform_b06()),
+        # KM1-1's pots in front of the home's fence (docs/KAMAKURA_PLANT_PROMPTS.md, KM-G26 to G33), from their own
+        # views (BASE KM-S3): each slice round in section (a pot, a mound of leaves, each bonsai pad), the leaves'
+        # gaps open in the texture's alpha; a rectangular planter keeps its corners (rounded only above its rim, at
+        # about a third of the height in its front view); the trellis's canes are left to the texture (D31)
+        'KmBonsaiTerracotta': ('KM-G26', 'KM-G26_bonsai_pine_terracotta', 0.55, PLANT_ROUND((0.0, 0.55))),
+        'KmBonsaiBlueBowl': ('KM-G27', 'KM-G27_bonsai_pine_dark_glazed_bowl', 0.7, PLANT_ROUND((0.0, 0.7))),
+        'KmShrubPlanter': ('KM-G28', 'KM-G28_round_shrub_terracotta_planter', 0.75, PLANT_ROUND((0.3, 0.75))),
+        'KmPotPinkFlowers': ('KM-G29', 'KM-G29_pink_flowers_grey_pot', 0.4, PLANT_ROUND((0.0, 0.4))),
+        'KmPotWhiteDaisies': ('KM-G30', 'KM-G30_white_flowers_terracotta_pot', 0.4, PLANT_ROUND((0.0, 0.4))),
+        'KmHydrangeaPlanter': ('KM-G31', 'KM-G31_hydrangea_white_planter', 0.65, PLANT_ROUND((0.22, 0.65))),
+        'KmMorningGloryPot': ('KM-G32', 'KM-G32_morning_glories_trellis', 0.9, PLANT_ROUND((0.0, 0.18))),
+        'KmStoneStandFlowers': ('KM-G33', 'KM-G33_pink_flowers_stone_stand', 0.75, PLANT_ROUND((0.0, 0.75))),
     }
+
+
+def PLANT_ROUND(*zs):
+    """A potted plant's build options: round in section in the heights zs (each piece of a slice an ellipse, up to 2.5
+    times as long as it is wide: a bonsai's pads), the leaves' small gaps filled in the solid but open in the alpha."""
+    return dict(round_z=list(zs), round_max=2.5, round_w=2.0, cutout=True, hole_fill=0.02)
 
 
 NOTES = {           # each prop's own check results (asset_review: the seventeen checks), beside the general ones
@@ -1135,6 +1153,23 @@ NOTES = {           # each prop's own check results (asset_review: the seventeen
         7: ('pass', 'the spokes and the basket\'s mesh open in its texture\'s alpha (the cut-out material)'),
     },
 }
+# KM1-1's pots (KM-G26 to G33): the same results for each, beside the general ones (D31)
+_POT = {
+    3: ('pass', 'carved from its front, side and top views, each slice round in section: the pot, the mound of leaves, '
+                'each bonsai pad; a rectangular planter keeps its corners'),
+    4: ('limit', 'no view sees the pads\' undersides or the pot\'s bottom: they take the nearest view\'s pixels and come '
+                 'out grey-edged and streaked. The game camera, about 1.9 m up and looking a little down at a pot under '
+                 'a metre tall, never sees them'),
+    6: ('limit', 'straight on its outline is the views\' own; at 45 degrees the leaves\' edges show faint fringes where '
+                 'two views\' cut-outs meet (the round shrub: green streaks at the sides of its dome). From the street it '
+                 'stands about 55 px tall on a 720-line screen and the camera turns at most about 30 degrees'),
+    9: ('pass', 'a photograph in KM-0\'s look, as its views are'),
+}
+for _name in ('KmBonsaiTerracotta', 'KmBonsaiBlueBowl', 'KmShrubPlanter', 'KmPotPinkFlowers', 'KmPotWhiteDaisies',
+              'KmHydrangeaPlanter', 'KmMorningGloryPot', 'KmStoneStandFlowers'):
+    NOTES[_name] = dict(_POT)
+NOTES['KmMorningGloryPot'][3] = ('pass', 'carved from its front, side and top views, the pot round in section; the '
+                                         'trellis as deep as its side shows it, the canes\' gaps open in the texture')
 
 
 # ---------------------------------------------------------------- in Blender
