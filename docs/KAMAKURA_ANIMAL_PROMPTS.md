@@ -38,6 +38,8 @@ frame shapes (1:1, 2:3 and 3:2).
   animal, between its legs, under its belly or between tail and back (D18: a squirrel's grey fur, a kite's wing and a
   heron's pale legs were cut away against a backdrop too near their colour).
 - Whiskers faint (D18: the backdrop between a cat's whiskers was taken in as fur).
+- No mark from the image tool: Gemini puts a small ✦ in the bottom right corner of some pictures. On the plain backdrop
+  it is painted out with the backdrop's colour; anywhere else the picture is made again (D31).
 - An insect's head to the right in every view from above (D18: insects drawn head-up were built with their wings along
   the body).
 - Nothing else in the picture: no branch, perch, wire, rock, leaf or water, unless the prompt asks for it.

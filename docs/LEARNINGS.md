@@ -1391,6 +1391,35 @@ views).**
   - Count a model's loose pieces before review; one piece unless it is meant to be several.
   - When one view disagrees with the others on positions, it paints and does not carve.
 
+**D31. The first plant views: a wrong tree, the image tool's mark, TOPs at three-quarters, and other folder names
+(found when they came in, November 2026).**
+- *What:* the user made all 45 plant cards' pictures and KM1-1's five lane pictures in one go. Checked one by one:
+  - KM-G14, the zelkova, is a cherry in pink blossom, and its RIGHT SIDE is missing.
+  - KM-G14, KM-G23 and all five lane pictures carry Gemini's ✦ mark in the bottom right corner. On G23's plain grey
+    it would have been cut out as part of the plant.
+  - The TOPs of KM-G09 and KM-G15 are high three-quarter views, not straight down.
+  - KM1-1c's corrugated house is smeared double. KM1-1b's vending machines carry a real drink brand.
+  - The hydrangeas' RIGHT SIDEs (G06, G19, G20) draw a narrow leaning bush where their TOPs draw a round one.
+  - 23 folders are named otherwise than their cards. The leaves and bark came as four versions each, named
+    `1_front` to `4_right`, so the page counted 30 of the 47 cards as not fully made (only G14 rightly).
+- *Why:*
+  - The check list didn't name the image tool's mark or what a true TOP looks like.
+  - A tree's prompt in a chat that has made another tree can drift to the earlier one: one chat per plant is the rule
+    for that reason.
+  - The page offered a "Copy path" but nothing found a folder saved under another name.
+- *Fix:*
+  - G23's mark is painted out with the backdrop's own grain; the sand beside it is untouched.
+  - The cards name the user's folders; the leaves and bark are `1_leaves.png` to `4_leaves.png` (or `_bark`), four
+    versions of one sheet.
+  - A "Redo:" line under a card puts it on the page in red with the reason: G14 (all of it), the TOPs of G09 and G15.
+  - `gen_sheets.py` finds a folder by its id when the name differs, and says so.
+  - Building the hydrangeas: their front and top set the shape; their sides only colour.
+- *Rule:*
+  - Check every picture as it comes in, against its card, before building from it; list what is redone and why.
+  - A TOP is straight down: a round pot's rim a full circle.
+  - The image tool's mark is painted out on plain backdrop only; in a scene the picture is redone, or the mark is kept
+    out of whatever is built from it.
+
 ## E. Levels and world
 
 - **E1. Every level had chapter-1 scenery.** A new-scene call unloaded the level definition. *Rule:* pass data into scene builders explicitly; never hold asset references across a new-scene call.

@@ -123,8 +123,9 @@ def prose(body):
 def items_of(body):
     """Each prompt in a section, with the folder (and files) its pictures are saved as."""
     items = []
-    for m in re.finditer(r'```text\n(.*?)\n```\n?(Save: `([^`]+)`(?: \(([^)]*)\))?)?', body, re.S):
+    for m in re.finditer(r'```text\n(.*?)\n```\n?(Save: `([^`]+)`(?: \(([^)]*)\))?)?(\nRedo: ((?:[^\n]+\n?)+))?', body, re.S):
         text, folder, files = m.group(1), m.group(3), m.group(4)
+        redo = inline(joined(m.group(6))) if m.group(6) else None      # pictures in that need making again, and why
         f = FIRST.match(joined(text))
         if not f:
             sys.exit('gen_sheets.py: a prompt does not start with its kind and id: ' + text[:60])
@@ -132,6 +133,14 @@ def items_of(body):
         base = re.search(r'Use BASE (KM-S\d+)', text)
         names = re.findall(r'`([^`]+)`', files or '')
         status = None
+        if folder and not os.path.isdir(os.path.join(REPO, folder)):
+            # saved under another name: the folder that starts with the prompt's id (D31)
+            parent = os.path.dirname(folder.rstrip('/'))
+            alt = [x for x in sorted(os.listdir(os.path.join(REPO, parent))) if x.startswith(pid + '_')] \
+                if os.path.isdir(os.path.join(REPO, parent)) else []
+            if alt:
+                print('gen_sheets.py: %s saved in %s, not %s: its Save line should name it' % (pid, alt[0], folder))
+                folder = parent + '/' + alt[0] + '/'
         if folder:
             d = os.path.join(REPO, folder)
             have = [n for n in names if os.path.exists(os.path.join(d, n))] if names else (os.listdir(d) if os.path.isdir(d) else [])
@@ -139,7 +148,7 @@ def items_of(body):
         flat = unwrapped(text)
         items.append(dict(kind=kind.lower(), badge=BADGES[kind], id=pid, title=title[:1].upper() + title[1:],
                           aside=aside, base=base.group(1) if base else None, folder=folder, files=names, status=status,
-                          attach=attachments(text), outputs=outputs(names),
+                          attach=attachments(text), outputs=outputs(names), redo=redo,
                           chat='new' if kind == 'VIEWS' else 'base', views=base_views(text) if kind == 'BASE' else None,
                           tools=dict(gemini=flat, chatgpt=chatgpt(flat))))
     return items
@@ -197,5 +206,5 @@ tpl = open(os.path.join(HERE, 'sheets.html')).read()
 open(out, 'w').write(tpl.replace('/*TITLE*/', html.escape(title))
                      .replace('/*DATA*/null', json.dumps(data, ensure_ascii=False).replace('</', '<\\/')))
 n = sum(len(g['items']) for g in data['groups'])
-made = sum(1 for g in data['groups'] for it in g['items'] if it['status'] and it['status']['have'] >= it['status']['of'] > 0)
+made = sum(1 for g in data['groups'] for it in g['items'] if not it['redo'] and it['status'] and it['status']['have'] >= it['status']['of'] > 0)
 print('wrote', out, len(data['bases']), 'bases,', n, 'prompts in', len(data['groups']), 'groups,', made, 'already in')

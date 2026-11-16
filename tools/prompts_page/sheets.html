@@ -138,6 +138,8 @@ button.ghost.done { color: var(--ok); border-color: var(--ok); }
 .status { font-size: 12px; font-weight: 600; border-radius: 999px; padding: 2px 9px; border: 1px solid var(--line); color: var(--muted); background: var(--sunk); white-space: nowrap; }
 .status.in { color: var(--ok); border-color: var(--ok); }
 .status.part { color: var(--city); border-color: var(--city); }
+.status.redo { color: #c0392b; border-color: #c0392b; }
+.redo { margin: 0; max-width: none; padding: 10px 14px; border-top: 1px solid var(--line); font-size: 13.5px; color: #c0392b; background: color-mix(in srgb, #c0392b 7%, transparent); }
 .basechip { font-family: var(--font-mono); font-size: 12px; color: var(--muted); white-space: nowrap; }
 .aside { color: var(--muted); font-weight: 400; }
 .files { font-family: var(--font-mono); font-size: 12px; color: var(--muted); word-break: break-word; }
@@ -229,7 +231,7 @@ function copyButton(getText, preEl, label, cls) {
 }
 
 const madeKey = it => 'made:' + DATA.source + ':' + it.id + ':' + it.title;
-function isIn(it) { return it.status && it.status.of > 0 && it.status.have >= it.status.of; }
+function isIn(it) { return !it.redo && it.status && it.status.of > 0 && it.status.have >= it.status.of; }
 
 function card(it, isBase) {
   const text = it.tools[tool];
@@ -241,21 +243,24 @@ function card(it, isBase) {
     el('span', { class: 'shot-title' }, it.title, it.aside ? el('span', { class: 'aside' }, ' (' + it.aside + ')') : null));
   const actions = el('div', { class: 'actions' });
   if (it.base) actions.append(el('span', { class: 'basechip' }, 'after BASE ' + it.base));
-  if (!isBase && it.status) {
+  if (!isBase && it.redo) actions.append(el('span', { class: 'status redo' }, 'Redo'));
+  else if (!isBase && it.status) {
     const st = it.status;
     actions.append(el('span', { class: 'status ' + (isIn(it) ? 'in' : st.have ? 'part' : '') },
       isIn(it) ? 'In the repository' : st.have ? st.have + ' of ' + st.of + ' in' : 'To make'));
   }
   if (!isBase) {
     const box = el('input', { type: 'checkbox' });
-    box.checked = !!store.get(madeKey(it)) || isIn(it);
+    box.checked = !it.redo && (!!store.get(madeKey(it)) || isIn(it));
     c.classList.toggle('is-made', box.checked);
     box.addEventListener('change', () => { store.set(madeKey(it), box.checked ? '1' : ''); c.classList.toggle('is-made', box.checked); progress(); });
     actions.append(el('label', { class: 'made' }, box, 'Made'));
   }
   actions.append(copyButton(() => it.tools[tool], pre));
   head.append(actions);
-  c.append(head, isBase ? baseSteps(it) : steps(it), pre);
+  c.append(head);
+  if (it.redo) c.append(el('p', { class: 'redo', html: '<b>Redo:</b> ' + it.redo.replace(/^redo:?\s*/i, '') }));
+  c.append(isBase ? baseSteps(it) : steps(it), pre);
   return c;
 }
 

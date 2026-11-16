@@ -2574,6 +2574,25 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
 - The pages: plants https://claude.ai/artifact/NfW8VQo9Hx8vopKBmDeWsJ, animals
   https://claude.ai/artifact/NKDgE6vywf7zo1iX9w52kv, city https://claude.ai/artifact/EwNU9FwNju6vseGkURd2NC.
 
+## The plant views and KM1-1's lane pictures came in, checked one by one (docs, tools and pictures)
+
+- The user made every plant card's pictures (KM-G01 to G33; the leaves and bark KM-F01, F03, F05 to F14) and KM1-1's
+  five lane pictures (`refs/photo/KM1-1a` to `KM1-1e`). Each was checked against its card and the check lists (D31):
+  - Usable: 44 of the 47 plant cards. KM1-1's eight pots (G26 to G33) are the cleanest: the same plant in every view,
+    true TOPs, every pot whole.
+  - Redo: KM-G14 (a cherry in blossom, not a zelkova; no RIGHT SIDE), the TOPs of KM-G09 and KM-G15 (high
+    three-quarter views). The page shows them in red.
+  - Fixed: KM-G23's ✦ mark painted out with the backdrop's grain.
+  - For building: the hydrangeas (G06, G19, G20) take their shape from front and top, their sides only colour; the
+    hedge (G21) is sized from its card, its views drawn at different scales; two bark strips have a knot that would show
+    when repeated (F05's pine, F13's cherry), so the knot-free version is used or the knot cloned out.
+  - The lane pictures continue one another and every house is whole and apart. KM1-1c's corrugated house is smeared
+    double (to redo, or built plain); KM1-1b's vending machines carry a real brand (they are built already, from
+    their own views, so nothing is taken from them); all five carry the ✦ mark, on the road.
+- The cards name the user's folders; the leaves and bark are four versions each (`1_leaves.png` to `4_leaves.png`).
+  `gen_sheets.py` reads a "Redo:" line and finds a folder by its id. Both check lists name the mark and a true TOP.
+- The Blender tools' environment was installed again in this container (`bpy` 5.2.3, Pillow, OpenCV).
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.
