@@ -6,28 +6,75 @@
 # ramp: judge the places, sizes, order and gaps, not the light.
 #   blenv/bin/python preview_km_level.py -- /abs/Kamakura.blend /abs/Kamakura.json /abs/layout.json /abs/Art/Models /abs/outdir
 #     -> outdir/frames/<n>.png, outdir/strip.jpg (the frames side by side), outdir/plan.png
+# The level as the game builds it: the installed models (the folder Art/Models/Kamakura in place of the .blend, its
+# Kamakura.json), the layout the code places (km_level_from_code.py's built.json), and --game for the game camera's own
+# framing (CameraFollow2D: 3.09 m half-height at the lane at 16:9, its focus 1.15 m over the kid's middle).
+#   blenv/bin/python preview_km_level.py -- /abs/Art/Models/Kamakura /abs/Art/Models/Kamakura/Kamakura.json
+#       /abs/review/kamakura/levels/KM1-1/built.json /abs/Art/Models /abs/outdir --game
 import bpy, sys, os, json, math
 import numpy as np
 from mathutils import Vector
 
 argv = sys.argv[sys.argv.index('--') + 1:]
 KIT_BLEND, KIT_JSON, LAYOUT, MODELS, OUT = argv[:5]
+GAME = '--game' in argv
+FROM_FBX = os.path.isdir(KIT_BLEND)                 # the installed models, each FBX with its own texture
 os.makedirs(os.path.join(OUT, 'frames'), exist_ok=True)
 lay = json.load(open(LAYOUT))
 manifest = json.load(open(KIT_JSON))['models']
 
 bpy.ops.wm.read_factory_settings(use_empty=True)
 S = bpy.context.scene
-with bpy.data.libraries.load(KIT_BLEND, link=False) as (src, dst):
-    dst.objects = [n for n in src.objects]
-roots = {o.name: o for o in dst.objects if o is not None and o.parent is None and o.name in manifest}
-print('kit roots', len(roots), sorted(roots))
+if FROM_FBX:
+    roots = {}
+else:
+    with bpy.data.libraries.load(KIT_BLEND, link=False) as (src, dst):
+        dst.objects = [n for n in src.objects]
+    roots = {o.name: o for o in dst.objects if o is not None and o.parent is None and o.name in manifest}
+    print('kit roots', len(roots), sorted(roots))
+
+
+def load_fbx(model):
+    """An installed model (FBX), in its own texture (its manifest's), cut out where it is a cut-out model; its Attach
+    markers left out. Its root, at the origin."""
+    info = manifest[model]
+    before = set(bpy.data.objects)
+    bpy.ops.import_scene.fbx(filepath=os.path.join(KIT_BLEND, model + '.fbx'))
+    new = [o for o in bpy.data.objects if o not in before]
+    for o in [o for o in new if o.name.startswith('Attach')]:
+        new.remove(o)
+        bpy.data.objects.remove(o)
+    m = bpy.data.materials.new(model)
+    m.use_nodes = True
+    nt = m.node_tree
+    tex = nt.nodes.new('ShaderNodeTexImage')
+    tex.image = bpy.data.images.load(os.path.join(KIT_BLEND, info['texture']), check_existing=True)
+    bsdf = nt.nodes['Principled BSDF']
+    nt.links.new(tex.outputs['Color'], bsdf.inputs['Base Color'])
+    bsdf.inputs['Roughness'].default_value = 0.9
+    if info.get('cutout'):
+        nt.links.new(tex.outputs['Alpha'], bsdf.inputs['Alpha'])
+        try:
+            m.surface_render_method = 'DITHERED'
+        except Exception:
+            m.blend_method = 'CLIP'
+    for o in new:
+        if o.type == 'MESH':
+            o.data.materials.clear()
+            o.data.materials.append(m)
+    root = next(o for o in new if o.parent is None)
+    for o in new:
+        for c in list(o.users_collection):
+            c.objects.unlink(o)
+    return root
 cols = {}
 
 
 def instance(model):
     """The kit model as a collection (its root at the origin), instanced once per placement."""
     if model not in cols:
+        if model not in roots and FROM_FBX:
+            roots[model] = load_fbx(model)
         root = roots[model]
         root.location = (0, 0, 0); root.rotation_euler = (0, 0, 0)
         col = bpy.data.collections.new(model)
@@ -61,7 +108,7 @@ for g in lay['ground']:
 missing = []
 for p in lay['placements']:
     m = p['model']
-    if m not in roots:
+    if m not in roots and not (FROM_FBX and os.path.exists(os.path.join(KIT_BLEND, m + '.fbx')) and m in manifest):
         missing.append(m); continue
     info = manifest[m]
     size, mn = info.get('size', [1, 1, 1]), info.get('min', [0, -0.5, 0])
@@ -73,7 +120,10 @@ for p in lay['placements']:
     else:
         e.location = (p['x'], p['front'] - mn[1], 0)
 for k in lay['markers']:          # what is still to come: half see-through, so it reads as a placeholder
-    o = box(k['what'], k['x'] - k['w'] / 2, k['x'] + k['w'] / 2, k['front'], k['front'] + k['d'], 0.0, k['h'], k['rgb'])
+    b0 = k.get('base', 0.0)
+    o = box(k['what'], k['x'] - k['w'] / 2, k['x'] + k['w'] / 2, k['front'], k['front'] + k['d'], b0, b0 + k['h'], k['rgb'])
+    if k.get('solid'):                # a stand-in the game builds: solid, as in the game
+        continue
     m = o.data.materials[0]
     m.node_tree.nodes['Principled BSDF'].inputs['Alpha'].default_value = 0.55
     try: m.surface_render_method = 'BLENDED'
@@ -120,13 +170,14 @@ ball = box('ball', -0.17, 0.17, -0.17, 0.17, 0.0, 0.34, (0.97, 0.97, 0.95))
 
 cam = bpy.data.objects.new('cam', bpy.data.cameras.new('cam')); S.collection.objects.link(cam); S.camera = cam
 cam.data.sensor_fit = 'VERTICAL'; cam.data.angle_y = math.radians(34); cam.data.clip_end = 3000
-pitch = math.radians(4); dist = 3.6 / math.tan(math.radians(17))
+half, focus_y = (3.09, 1.75) if GAME else (3.6, 1.9)           # the game camera's framing (CameraFollow2D), or the board's
+pitch = math.radians(4); dist = half / math.tan(math.radians(17))
 fwd = Vector((0, math.cos(pitch), -math.sin(pitch)))
-step = 7.2 * 16 / 9                       # one screen's width at the lane
+step = 2 * half * 16 / 9                  # one screen's width at the lane
 xs = list(np.arange(X0 + step / 2, X1, step))
 frames = []
 for i, cx in enumerate(xs):
-    focus = Vector((cx, 0, 1.9))
+    focus = Vector((cx, 0, focus_y))
     cam.location = focus - fwd * dist
     cam.rotation_euler = fwd.to_track_quat('-Z', 'Y').to_euler()
     kidm.location = (cx - 2.2, 0, 0); ball.location = (cx - 1.6, 0, 0)

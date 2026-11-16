@@ -719,6 +719,12 @@ namespace DribbleToSchool.EditorTools
                 SceneryWithSeam(track, root);
                 return;
             }
+            // A Kamakura level: its own street (StreetBuilder.Kamakura.cs); its layout places the kit's models itself.
+            if (KM)
+            {
+                KamakuraStreet(track, root);
+                return;
+            }
             int ch = LevelBuildKit.Chapter;
             // Every story level starts its street at the same x and many end at the same x, so seeds made only of the chapter
             // and those ends built the same background (tree bands, back rows, birds, poles and lamps) in every level of a

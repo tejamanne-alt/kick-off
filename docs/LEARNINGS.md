@@ -216,6 +216,23 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
   - Before publishing a prompts page, follow one card of each kind from a phone, as the user would.
   - Copy what will be pasted, not how the document wraps it.
 
+**A19. Installing eight models started a rebuild of all thirty-one, twice (caught while running, November 2026).**
+- *What:*
+  - To install the eight approved pots, `kit_buildings_km.py --install` began rebuilding all 31 Kamakura models, about an
+    hour of work. 23 of them were installed already and unchanged.
+  - Then the new `--install-home` returned only after `build_props()`, so it began the same rebuild again.
+  - Both runs were stopped part-way. Nothing they half-built reached the game.
+- *Why:*
+  - `--install` rebuilds everything by design, so the installed set always matches the review. Nobody read what the run
+    would build before starting it.
+  - The home's early return went where the atlas is saved, which comes after the props are built.
+- *Fix:*
+  - The pots and plants were installed as the review exported them: the reviewed FBX and textures, and their manifest
+    entries merged. So what is in the game is exactly what was reviewed.
+  - `--install-home` returns straight after `build_home`.
+- *Rule:* before a long run, read what it will build and how long it will take. An install of a few models takes the
+  reviewed files and doesn't rebuild the others.
+
 ## B. Performance and mobile
 
 **B1. 28 fps with uneven frames on a mid-range phone (November 2026).**

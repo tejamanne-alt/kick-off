@@ -136,8 +136,8 @@ namespace DribbleToSchool.EditorTools
             // what that needs of the definition now, before the new scene can unload it.
             bool leadIn = HasLeadIn(def);
             string routeName = leadIn ? RouteNameOf(def) : null;
-            Stop from = leadIn ? RouteTable.From(def.levelId) : null;
-            Stop to = leadIn ? RouteTable.To(def.levelId) : null;
+            Stop from = leadIn ? FromStop(def.levelId) : null;     // Kamakura's own stops while a Kamakura level is built
+            Stop to = leadIn ? ToStop(def.levelId) : null;
             EnsureFolder(Path.GetDirectoryName(scenePath).Replace('\\', '/'));
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             Chapter = Mathf.Clamp(chapter, 1, 5);

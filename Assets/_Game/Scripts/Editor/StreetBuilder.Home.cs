@@ -34,6 +34,7 @@ namespace DribbleToSchool.EditorTools
         public static void HomeFront(Transform parent, float gx, float gy)
         {
             if (FL && LevelBuildKit.HasKitModel("Florida", HomeInfoFL.HouseModel)) { HomeFrontFL(parent, gx, gy); return; }
+            if (KM && LevelBuildKit.HasKitModel("Kamakura", "KmHome")) { HomeFrontKM(parent, gx, gy); return; }
             var rng = new System.Random(2024);
             float wallZ = PropertyZ + 0.15f;                         // the property line, where the street's fences and walls stand
             float houseX = gx - HomeInfo.DoorFromMiddle;             // the front door is under the gate

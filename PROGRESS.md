@@ -2606,6 +2606,38 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
 - On the props review page (version 13, https://claude.ai/artifact/R1Wd8b8vf1FUzKhEsmJF3R), waiting for the user's
   approval before they go into the game, in place of the pots cut from the KM1-1 picture in front of the fence.
 
+## KM1-1 Hase Lanes built from the kit, with stand-ins (code, assets, review)
+
+- The user approved the pots and asked for the level with what there is: stand-ins where pictures are to be made again,
+  and the missing pieces built where possible.
+- In the game (`Art/Models/Kamakura`, 40 models):
+  - the eight pots, as reviewed;
+  - KM1-1's hydrangeas, hedge, mossy stone and three trees, carved from their views, reviewed (props page v14);
+  - the home alone (`--install-home`).
+- The level, in its own scene, `KM1-1_HaseLanes_KM`:
+  - It sits in `GeneratedContent.CityLevels`, not in the catalog, so nothing is shown to players yet. It is built with
+    `LevelBuildKit.Kamakura` set, so its stops and route are `CityRoutes.Kamakura`'s. The original town's 23 levels, and
+    every test that counts them, are untouched.
+  - `KamakuraLevels.HaseLanes` places the kit's models by `review/kamakura/levels/KM1-1/layout.json`, 0.75 m further
+    back than its fronts (`KamakuraDepth`: the game's footpath is 1.5 m either side of the lane, the layout's strip 0.75).
+  - Its street is `StreetBuilder.Kamakura`: the frontage, the hills, the cat on the block wall, the home at the door and
+    Hase Station at the stop (`CitySetPieces`).
+  - Its play: a kerb, `FirstGraderLine` (five first-graders, slower than the kid), coins up the shrine's steps, and
+    `LevelCrossing` with the tram as its traffic. Its barriers lower along the lane (`Hazards/CrossingArms`, E10). It
+    has its own rails list (E11) and "lose.tram" in en and es.
+  - Stand-ins: the lane's houses, the block wall and the wooden fence are plain boxes. The cat is the Animals kit's.
+- Checks:
+  - The coin audit: 20 coins, no problems.
+  - `unity_api_check` 6000.7 passes. The compiler's errors match the committed tree's, file by file, and a planted error
+    in the new layout was caught.
+  - `KamakuraLevelTests`: every model placed is installed, Hase has its set piece, the tram's message is in en and es.
+    `KamakuraKitTests`: the trees' 3,000 and the home's budget.
+  - Not run here: LevelFeasibility and the scene itself. Both need Unity.
+- The level as built, through the game camera: `km_level_from_code.py` reads the layout's code into `built.json`, and
+  `preview_km_level.py --game` renders it from the installed models.
+- Cost: 42 models, about 77,000 triangles, about 75 MB of textures (est.). The cuts are listed in PERFORMANCE.
+- LEARNINGS A19: an install of eight models started a rebuild of all 31.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.
