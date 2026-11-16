@@ -57,7 +57,7 @@ namespace DribbleToSchool.EditorTools
             // mossy stone at its foot, and the houses behind it (stand-ins until KM1-1a and b's houses are built).
             t.KmStandIn("BlockWall", 21f, 1.4f, 22f, 0.2f, 1.6f, BlockWall, true);
             t.KmModel("KmGardenPine", 18f, 2.2f);
-            t.KmModel("KmMossyStone", 26f, 0.7f);                // against the wall's foot, behind the footpath's edge
+            t.KmModel("KmMossyStone", 26f, 0.8f);                // against the wall's foot, just behind the footpath's edge (1.55 m)
             HouseStandIn(t, 15.5f, 5f, 9f, Mortar);
             HouseStandIn(t, 27f, 5f, 10f, Timber);
 
