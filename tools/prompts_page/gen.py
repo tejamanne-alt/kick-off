@@ -136,6 +136,16 @@ for c in CITIES:
     out.append(dict(c, block=city_block, look=dict(id=mm.group(1), title=mm.group(2), badge='Look target', kind='look', text=look),
                     groups=groups, sun=clim[c['key']][0], shade=clim[c['key']][1]))
 
+# every prompt as it is pasted: the document's line wraps joined (docs/LEARNINGS.md A18)
+sys.path.insert(0, HERE)
+from prompt_text import unwrapped
+bases = {t: unwrapped(b) for t, b in bases.items()}
+for c in out:
+    c['block'] = unwrapped(c['block'])
+    for it in [c['look']] + [i for g in c['groups'] for i in g['items']]:
+        it['text'] = unwrapped(it['text'])
+        if 'tools' in it:
+            it['tools'] = {t: unwrapped(v) for t, v in it['tools'].items()}
 data = dict(base=bases, formats=formats, cities=out)
 total = sum(len(g['items']) for c in out for g in c['groups']) + len(out)
 kinds = {}

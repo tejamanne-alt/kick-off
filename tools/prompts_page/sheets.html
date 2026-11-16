@@ -138,12 +138,30 @@ button.ghost.done { color: var(--ok); border-color: var(--ok); }
 .status { font-size: 12px; font-weight: 600; border-radius: 999px; padding: 2px 9px; border: 1px solid var(--line); color: var(--muted); background: var(--sunk); white-space: nowrap; }
 .status.in { color: var(--ok); border-color: var(--ok); }
 .status.part { color: var(--city); border-color: var(--city); }
-.basechip { font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
+.basechip { font-family: var(--font-mono); font-size: 12px; color: var(--muted); white-space: nowrap; }
 .aside { color: var(--muted); font-weight: 400; }
 .files { font-family: var(--font-mono); font-size: 12px; color: var(--muted); word-break: break-word; }
 .groupnote { display: grid; gap: 8px; }
 .shot.base { border-color: var(--city); box-shadow: 0 0 0 1px var(--city) inset; }
 .filters { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; font-size: 13px; color: var(--muted); }
+/* each card's steps: the base, this prompt and its pictures, then each picture as it comes and its file */
+ol.do { margin: 0; padding: 12px 14px 12px 36px; border-top: 1px solid var(--line); display: grid; gap: 12px; font-size: 13.5px; line-height: 1.45; }
+ol.do > li::marker { color: var(--city); font-weight: 700; }
+@media (max-width: 520px) { .basechip { display: none; } ol.do { padding-left: 30px; } }
+ol.do code { font-family: var(--font-mono); font-size: 12px; background: var(--sunk); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; word-break: break-all; }
+.att { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 7px; }
+.att figure { display: flex; gap: 9px; align-items: center; margin: 0; border: 1px solid var(--line); border-radius: 8px; padding: 4px 10px 4px 4px; background: var(--sunk); min-width: 0; max-width: 100%; }
+.att img { width: 72px; height: 48px; object-fit: cover; border-radius: 5px; flex: none; background: var(--line); }
+.att figcaption { display: grid; gap: 1px; min-width: 0; }
+.att figcaption b { font-family: var(--font-mono); font-size: 12.5px; }
+.att figcaption span { font-family: var(--font-mono); font-size: 11.5px; color: var(--muted); word-break: break-all; }
+.outs { list-style: none; padding: 0; margin: 7px 0 0; display: grid; gap: 6px; }
+.outs li { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.outs .msg { font-family: var(--font-mono); font-size: 12.5px; font-weight: 600; color: var(--ink); background: var(--surface); border: 1px solid var(--city); border-radius: 6px; padding: 2px 8px; }
+.outs .to { color: var(--muted); white-space: nowrap; }
+button.mini { font: 600 12px var(--font-body); color: var(--ink); background: var(--sunk); border: 1px solid var(--line); border-radius: 6px; padding: 3px 9px; cursor: pointer; }
+button.mini.done { color: var(--ok); border-color: var(--ok); }
+.do .hint { color: var(--muted); }
 </style>
 <header class="top">
   <div class="brandline">
@@ -196,7 +214,7 @@ function copyButton(getText, preEl, label, cls) {
   const b = el('button', { class: cls || 'copy', type: 'button' }, label || 'Copy');
   b.addEventListener('click', () => {
     const done = ok => {
-      b.textContent = ok ? 'Copied' : 'Selected: press copy';
+      b.textContent = ok ? 'Copied' : preEl ? 'Selected: press copy' : 'Could not copy';
       b.classList.toggle('done', ok);
       setTimeout(() => { b.textContent = label || 'Copy'; b.classList.remove('done'); }, 1600);
     };
@@ -222,7 +240,7 @@ function card(it, isBase) {
     el('span', { class: 'badge' }, it.badge),
     el('span', { class: 'shot-title' }, it.title, it.aside ? el('span', { class: 'aside' }, ' (' + it.aside + ')') : null));
   const actions = el('div', { class: 'actions' });
-  if (it.base) actions.append(el('span', { class: 'basechip' }, 'after ' + it.base));
+  if (it.base) actions.append(el('span', { class: 'basechip' }, 'after BASE ' + it.base));
   if (!isBase && it.status) {
     const st = it.status;
     actions.append(el('span', { class: 'status ' + (isIn(it) ? 'in' : st.have ? 'part' : '') },
@@ -237,13 +255,61 @@ function card(it, isBase) {
   }
   actions.append(copyButton(() => it.tools[tool], pre));
   head.append(actions);
-  c.append(head, pre);
+  c.append(head, isBase ? baseSteps(it) : steps(it), pre);
+  return c;
+}
+
+// The pictures to attach: each one small, with its name and where it is in the repository.
+function pictures(list) {
+  return el('div', { class: 'att' }, ...list.map(a => el('figure', null,
+    el('img', { src: DATA.thumbs[a.path], alt: a.id, loading: 'lazy' }),
+    el('figcaption', null, el('b', null, a.id + (a.path.includes('/photo/') ? ' (photographic version)' : '')), el('span', null, a.path)))));
+}
+const baseOf = id => DATA.bases.find(b => b.id === id);
+const viewWord = o => o.view ? 'the ' + o.view : 'the picture';
+
+// A prompt's steps: its base first (and in which chat), this prompt with the pictures it names, then each picture.
+function steps(it) {
+  const ol = el('ol', { class: 'do' });
+  const b = baseOf(it.base);
+  if (b) {
+    const copyBase = copyButton(() => b.tools[tool], null, 'Copy BASE ' + b.id, 'mini');
+    ol.append(it.chat === 'new'
+      ? el('li', null, el('b', null, 'New chat, just for this one. '),
+          'Paste BASE ' + b.id + ' first, with this attached: ', copyBase, pictures(it.base_attach))
+      : el('li', null, el('b', null, 'In your BASE ' + b.id + ' chat. '),
+          'Starting it? Paste BASE ' + b.id + ' first, with this attached: ', copyBase, pictures(it.base_attach),
+          el('div', { class: 'hint' }, 'Already pasted in this chat? Go straight to step 2.')));
+  } else {
+    ol.append(el('li', null, el('b', null, 'New chat. '), 'This prompt stands alone: no base prompt before it.'));
+  }
+  ol.append(it.attach.length
+    ? el('li', null, el('b', null, 'Paste the prompt below '), '(Copy, above it) with ' + (it.attach.length === 1 ? 'this' : 'these ' + it.attach.length) + ' attached:', pictures(it.attach))
+    : el('li', null, el('b', null, 'Paste the prompt below '), '(Copy, above it), with nothing attached.'));
   if (it.folder) {
     const path = el('code', null, it.folder);
-    c.append(el('div', { class: 'pathrow' }, 'Save in', path, it.files.length ? el('span', { class: 'files' }, it.files.join(' · ')) : null,
-      copyButton(() => it.folder, path, 'Copy path', 'ghost')));
+    const outs = el('ul', { class: 'outs' }, ...it.outputs.map((o, i) => {
+      const msg = o.send ? el('span', { class: 'msg' }, o.send) : el('span', null, i > 0 ? viewWord(o) : o.view ? 'Its reply, ' + viewWord(o) : 'Its reply');
+      return el('li', null, o.send ? copyButton(() => o.send, msg, 'Copy', 'mini') : null, msg,
+        el('span', { class: 'to' }, '\u2192 ', el('code', null, o.file)));
+    }));
+    ol.append(el('li', null, el('b', null, it.outputs.length > 1 ? 'Save each picture as it comes, ' : 'Save the picture, '), 'checking it first (the list on Start), in ', path, ' ',
+      copyButton(() => it.folder, path, 'Copy path', 'mini'),
+      it.outputs.length > 1 ? el('div', { class: 'hint' }, 'Send each message on its own, after the picture before it is saved.') : null, outs));
   }
-  return c;
+  return ol;
+}
+
+// A base's steps: where it goes, what to attach, and what follows it.
+function baseSteps(b) {
+  const users = DATA.groups.flatMap(g => g.items).filter(it => it.base === b.id);
+  const perItem = users.some(it => it.chat === 'new');
+  return el('ol', { class: 'do' },
+    el('li', null, el('b', null, 'New chat. '), 'Paste this with KM-0 attached:', pictures(b.attach)),
+    el('li', null, el('b', null, 'Then '), perItem
+      ? 'one of its ' + users.length + ' prompts. Each gets a chat of its own, starting with this base, so its views match.'
+      : 'its ' + users.length + ' prompts, one per message, in this same chat. Each card says what to attach.'),
+    b.views && b.views.length ? el('li', null, el('b', null, 'Its views, in this order: '), b.views.join(', ') + '. The first comes with the reply; ask for each next one with \u201cNext: ' + b.views[1] + '.\u201d and so on.') : null);
 }
 
 function counts() {

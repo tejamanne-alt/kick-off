@@ -10,8 +10,9 @@ from a bark picture. Every rule below comes from something that went wrong befor
 1. **Make KM1-1's first:** its plants are the first group. Then the routes in order.
 2. **A plant's views:** a new chat in Gemini (Nano Banana Pro) or ChatGPT, one chat per plant. Paste BASE KM-S3 with
    KM-0 attached (the look target, `review/kamakura/refs/KM-0_look_target.png`). Then paste the plant's VIEWS prompt with
-   the pictures it names attached. The tool makes the FRONT; then send "Next: RIGHT SIDE.", "Next: TOP." (and "Next:
-   BACK." where the prompt asks for it), one at a time.
+   the pictures it names attached. The tool makes the FRONT; then send "Next: RIGHT SIDE.", "Next: BACK." (only where
+   the prompt asks for it) and "Next: TOP.", one at a time. Each card on the page lists these steps with the files to
+   attach.
 3. **Leaves and bark:** a separate chat. Paste BASE KM-S4 with KM-0 attached, then one LEAVES or BARK prompt per
    message with the pictures it names.
 4. **Check each picture before the next** (the list below); redo one that fails rather than going on. A view that drifts
@@ -59,8 +60,8 @@ even when a reference is one.
 
 THE VIEWS
 One view per image, in this order, each when I ask for it: FRONT (the side that faces the street), RIGHT SIDE (from its
-right as you face its FRONT, a quarter turn round), TOP (looking straight down, FRONT at the bottom of the image), and
-BACK (the side opposite FRONT) when the plant's prompt asks for it. Every view:
+right as you face its FRONT, a quarter turn round), BACK (the side opposite FRONT: only when the plant's prompt asks for
+it), TOP (looking straight down, FRONT at the bottom of the image). Every view:
 - the same plant: the same lean, the same limbs, the same crown, the same flowers and fruit in the same places;
 - the whole plant, from where it meets the ground (or the foot of its pot) to its topmost leaf, centred, nothing
   cropped, filling about 85 % of the image's height or width, whichever it reaches first;
@@ -132,7 +133,7 @@ sides, hidden in KM1-1, are made from these. Attach the photographic KM1-1 (`ref
 KM-P6 (`refs/KM-P6_more_plants.png`) as each prompt says.
 
 ```text
-VIEWS KM-G26, the bonsai pine in its terracotta bowl. Attach KM-P6 and KM1-1. The first plant of KM-P6's bottom row: a
+VIEWS KM-G26, the bonsai pine in its terracotta bowl. Use BASE KM-S3. Attach KM-P6 and KM1-1. The first plant of KM-P6's bottom row: a
 small black pine bonsai, its trunk curving left then up, its foliage in flat cloud-like pads, in a shallow brown
 terracotta bowl with moss on the soil; it stands in front of the home's fence in KM1-1. Real size: 0.55 m tall, its bowl
 0.45 m long. Make BACK as well. Same rules as before.
@@ -140,82 +141,82 @@ terracotta bowl with moss on the soil; it stands in front of the home's fence in
 Save: `review/kamakura/sheets/KM-G26_bonsai_pine_terracotta/` (`1_front.png`, `2_right_side.png`, `3_back.png`, `4_top.png`)
 
 ```text
-VIEWS KM-G27, the bonsai in its dark glazed bowl. Attach KM-P6 and KM1-1. The second plant of KM-P6's bottom row: a
+VIEWS KM-G27, the bonsai in its dark glazed bowl. Use BASE KM-S3. Attach KM-P6 and KM1-1. The second plant of KM-P6's bottom row: a
 taller pine bonsai with a twisting trunk and spreading pads, in a dark blue glazed oval bowl. Real size: 0.7 m tall, its
 bowl 0.5 m long. Make BACK as well. Same rules as before.
 ```
 Save: `review/kamakura/sheets/KM-G27_bonsai_dark_bowl/` (`1_front.png`, `2_right_side.png`, `3_back.png`, `4_top.png`)
 
 ```text
-VIEWS KM-G28, the round shrub in its long planter. Attach KM-P6 and KM1-1. The third plant of KM-P6's bottom row: a dense
+VIEWS KM-G28, the round shrub in its long planter. Use BASE KM-S3. Attach KM-P6 and KM1-1. The third plant of KM-P6's bottom row: a dense
 clipped box shrub, round on top, in a long rectangular terracotta planter. Real size: 0.75 m tall, the planter 0.8 m
 long. Make BACK as well. Same rules as before.
 ```
 Save: `review/kamakura/sheets/KM-G28_round_shrub_planter/` (`1_front.png`, `2_right_side.png`, `3_back.png`, `4_top.png`)
 
 ```text
-VIEWS KM-G29, the pink flowers in a grey pot. Attach KM-P6 and KM1-1. The fourth plant of KM-P6's bottom row: a mound of
+VIEWS KM-G29, the pink flowers in a grey pot. Use BASE KM-S3. Attach KM-P6 and KM1-1. The fourth plant of KM-P6's bottom row: a mound of
 small pink flowers and fresh green leaves in a round grey ceramic pot. Real size: 0.4 m tall. Make BACK as well. Same
 rules as before.
 ```
 Save: `review/kamakura/sheets/KM-G29_pink_flowers_pot/` (`1_front.png`, `2_right_side.png`, `3_back.png`, `4_top.png`)
 
 ```text
-VIEWS KM-G30, the white flowers in a terracotta pot. Attach KM-P6 and KM1-1. The fifth plant of KM-P6's bottom row: a
+VIEWS KM-G30, the white flowers in a terracotta pot. Use BASE KM-S3. Attach KM-P6 and KM1-1. The fifth plant of KM-P6's bottom row: a
 mound of small white daisy-like flowers in a terracotta pot. Real size: 0.4 m tall. Make BACK as well. Same rules as
 before.
 ```
 Save: `review/kamakura/sheets/KM-G30_white_flowers_pot/` (`1_front.png`, `2_right_side.png`, `3_back.png`, `4_top.png`)
 
 ```text
-VIEWS KM-G31, the hydrangea in its white planter. Attach KM-P6 and KM1-1. The sixth plant of KM-P6's bottom row: a young
+VIEWS KM-G31, the hydrangea in its white planter. Use BASE KM-S3. Attach KM-P6 and KM1-1. The sixth plant of KM-P6's bottom row: a young
 hydrangea with pale green and white flower heads in a weathered white rectangular planter. Real size: 0.65 m tall, the
 planter 0.6 m long. Make BACK as well. Same rules as before.
 ```
 Save: `review/kamakura/sheets/KM-G31_hydrangea_planter/` (`1_front.png`, `2_right_side.png`, `3_back.png`, `4_top.png`)
 
 ```text
-VIEWS KM-G32, the morning glories on their pot trellis. Attach KM-P6, KM-P2 and KM1-1. The seventh plant of KM-P6's
+VIEWS KM-G32, the morning glories on their pot trellis. Use BASE KM-S3. Attach KM-P6, KM-P2 and KM1-1. The seventh plant of KM-P6's
 bottom row: blue and violet morning glories climbing a small bamboo trellis set in a black plastic pot, the vines
 twining round the canes, flowers open. Real size: 0.9 m tall. Make BACK as well. Same rules as before.
 ```
 Save: `review/kamakura/sheets/KM-G32_morning_glory_pot/` (`1_front.png`, `2_right_side.png`, `3_back.png`, `4_top.png`)
 
 ```text
-VIEWS KM-G33, the plant on its stone stand. Attach KM-P6 and KM1-1. The last plant of KM-P6's bottom row: a small pot of
+VIEWS KM-G33, the plant on its stone stand. Use BASE KM-S3. Attach KM-P6 and KM1-1. The last plant of KM-P6's bottom row: a small pot of
 pink flowers on a weathered mushroom-shaped stone stand with moss at its foot. Real size: 0.75 m tall. Make BACK as well.
 Same rules as before.
 ```
 Save: `review/kamakura/sheets/KM-G33_plant_stone_stand/` (`1_front.png`, `2_right_side.png`, `3_back.png`, `4_top.png`)
 
 ```text
-VIEWS KM-G08, the persimmon tree. Attach KM-P2 and KM1-1. The tree at the right end of KM-P2's top row, the persimmon
+VIEWS KM-G08, the persimmon tree. Use BASE KM-S3. Attach KM-P2 and KM1-1. The tree at the right end of KM-P2's top row, the persimmon
 that grows over the home's fence in KM1-1: a dark, deeply checkered trunk, a few spreading limbs, broad glossy green
 leaves and orange fruit hanging among them. Real size: 5 m tall, its crown 4 m across. Same rules as before.
 ```
 Save: `review/kamakura/sheets/KM-G08_persimmon_tree/` (`1_front.png`, `2_right_side.png`, `4_top.png`)
 
 ```text
-VIEWS KM-G06, the blue hydrangea bush. Attach KM-P2 and KM1-1. The hydrangea of KM-P2's top row: a rounded bush of big
+VIEWS KM-G06, the blue hydrangea bush. Use BASE KM-S3. Attach KM-P2 and KM1-1. The hydrangea of KM-P2's top row: a rounded bush of big
 blue mophead flower heads among broad serrated leaves, as the banks along Hase Station's fence in KM1-1. Real size: 1.2 m
 tall, 1.5 m across. Same rules as before.
 ```
 Save: `review/kamakura/sheets/KM-G06_blue_hydrangea/` (`1_front.png`, `2_right_side.png`, `4_top.png`)
 
 ```text
-VIEWS KM-G19, the pink hydrangea bush. Attach KM-P6 and KM1-1. The first plant of KM-P6's middle row: a rounded bush of
+VIEWS KM-G19, the pink hydrangea bush. Use BASE KM-S3. Attach KM-P6 and KM1-1. The first plant of KM-P6's middle row: a rounded bush of
 pale pink mophead flower heads among broad serrated leaves. Real size: 1.2 m tall, 1.4 m across. Same rules as before.
 ```
 Save: `review/kamakura/sheets/KM-G19_pink_hydrangea/` (`1_front.png`, `2_right_side.png`, `4_top.png`)
 
 ```text
-VIEWS KM-G20, the violet hydrangea bush. Attach KM-P6 and KM1-1. The second plant of KM-P6's middle row: a rounded bush of
+VIEWS KM-G20, the violet hydrangea bush. Use BASE KM-S3. Attach KM-P6 and KM1-1. The second plant of KM-P6's middle row: a rounded bush of
 deep violet-blue mophead flower heads. Real size: 1.2 m tall, 1.4 m across. Same rules as before.
 ```
 Save: `review/kamakura/sheets/KM-G20_violet_hydrangea/` (`1_front.png`, `2_right_side.png`, `4_top.png`)
 
 ```text
-VIEWS KM-G01, the Japanese black pine. Attach KM-P2 and KM1-1. The pine at the left of KM-P2's top row, as the pines
+VIEWS KM-G01, the Japanese black pine. Use BASE KM-S3. Attach KM-P2 and KM1-1. The pine at the left of KM-P2's top row, as the pines
 behind Hase Station in KM1-1: a trunk leaning and bending as a sea-wind pine does, reddish-grey plated bark, its foliage
 in flat horizontal pads of long dark green needles on bare upward limbs. Real size: 9 m tall, its crown 6 m across. Same
 rules as before.
@@ -223,21 +224,21 @@ rules as before.
 Save: `review/kamakura/sheets/KM-G01_black_pine/` (`1_front.png`, `2_right_side.png`, `4_top.png`)
 
 ```text
-VIEWS KM-G15, the clipped garden pine. Attach KM-P6. The fourth tree of KM-P6's top row: a pine trained in a garden, its
+VIEWS KM-G15, the clipped garden pine. Use BASE KM-S3. Attach KM-P6. The fourth tree of KM-P6's top row: a pine trained in a garden, its
 trunk bending, its needles clipped into separate rounded pads on bare limbs, as it leans over a block wall in KM1-1's
 lane. Real size: 3.5 m tall, 3 m across. Same rules as before.
 ```
 Save: `review/kamakura/sheets/KM-G15_clipped_garden_pine/` (`1_front.png`, `2_right_side.png`, `4_top.png`)
 
 ```text
-VIEWS KM-G21, the clipped hedge. Attach KM-P6. The third plant of KM-P6's middle row: a dense, square-clipped hedge of
+VIEWS KM-G21, the clipped hedge. Use BASE KM-S3. Attach KM-P6. The third plant of KM-P6's middle row: a dense, square-clipped hedge of
 small-leaved evergreen, its top and sides flat, a few new shoots standing out. Real size: 1.2 m tall, 2.4 m long, 0.6 m
 deep. Same rules as before.
 ```
 Save: `review/kamakura/sheets/KM-G21_clipped_hedge/` (`1_front.png`, `2_right_side.png`, `4_top.png`)
 
 ```text
-VIEWS KM-G11, the mossy stone with ferns. Attach KM-P2. The stone at the right end of KM-P2's bottom row: a rounded grey
+VIEWS KM-G11, the mossy stone with ferns. Use BASE KM-S3. Attach KM-P2. The stone at the right end of KM-P2's bottom row: a rounded grey
 stone thick with green moss on its top, small ferns growing at its foot. Real size: 0.9 m tall, 1.1 m across. Same rules
 as before.
 ```
@@ -248,55 +249,55 @@ Save: `review/kamakura/sheets/KM-G11_mossy_stone/` (`1_front.png`, `2_right_side
 The rest of route 1 (KM1-3 Komachi-dori, KM1-4 The Shrine Bridge) and the plants every route uses.
 
 ```text
-VIEWS KM-G02, the camphor tree. Attach KM-P2 and KM1-4. The broad tree second in KM-P2's top row: a thick, furrowed grey-
+VIEWS KM-G02, the camphor tree. Use BASE KM-S3. Attach KM-P2 and KM1-4. The broad tree second in KM-P2's top row: a thick, furrowed grey-
 brown trunk that splits low into heavy spreading limbs, a wide dome of small glossy light-green leaves. Real size: 12 m
 tall, its crown 14 m across. Same rules as before.
 ```
 Save: `review/kamakura/sheets/KM-G02_camphor/` (`1_front.png`, `2_right_side.png`, `4_top.png`)
 
 ```text
-VIEWS KM-G12, the big old ginkgo. Attach KM-P6 and KM1-4. The tree at the left of KM-P6's top row: a massive grey trunk,
+VIEWS KM-G12, the big old ginkgo. Use BASE KM-S3. Attach KM-P6 and KM1-4. The tree at the left of KM-P6's top row: a massive grey trunk,
 upswept limbs, fan-shaped leaves in dense green clusters. Real size: 20 m tall, its crown 12 m across. Same rules as
 before.
 ```
 Save: `review/kamakura/sheets/KM-G12_ginkgo/` (`1_front.png`, `2_right_side.png`, `4_top.png`)
 
 ```text
-VIEWS KM-G04, the cherry tree in green leaf. Attach KM-P2. The tree fourth in KM-P2's top row: a dark trunk with
+VIEWS KM-G04, the cherry tree in green leaf. Use BASE KM-S3. Attach KM-P2. The tree fourth in KM-P2's top row: a dark trunk with
 horizontal bands of lenticels (the dark band round it as there), spreading limbs, a rounded crown of fresh green leaves.
 Real size: 7 m tall, its crown 7 m across. Same rules as before.
 ```
 Save: `review/kamakura/sheets/KM-G04_cherry_green/` (`1_front.png`, `2_right_side.png`, `4_top.png`)
 
 ```text
-VIEWS KM-G13, the Japanese maple. Attach KM-P6. The small tree second in KM-P6's top row: a slender smooth grey trunk
+VIEWS KM-G13, the Japanese maple. Use BASE KM-S3. Attach KM-P6. The small tree second in KM-P6's top row: a slender smooth grey trunk
 dividing low, layered limbs, small finely cut green leaves in airy tiers. Real size: 5 m tall, 5 m across. Same rules as
 before.
 ```
 Save: `review/kamakura/sheets/KM-G13_japanese_maple/` (`1_front.png`, `2_right_side.png`, `4_top.png`)
 
 ```text
-VIEWS KM-G22, the lotus. Attach KM-P6 and KM1-4. The fourth plant of KM-P6's middle row: round blue-green lotus leaves on
+VIEWS KM-G22, the lotus. Use BASE KM-S3. Attach KM-P6 and KM1-4. The fourth plant of KM-P6's middle row: round blue-green lotus leaves on
 tall stalks standing out of the water, two pink flowers and a bud above them, as on the pond under the arched bridge.
 Real size: 1.2 m tall, a clump 1.5 m across, seen from the water's surface up. Same rules as before.
 ```
 Save: `review/kamakura/sheets/KM-G22_lotus/` (`1_front.png`, `2_right_side.png`, `4_top.png`)
 
 ```text
-VIEWS KM-G09, the potted bonsai pine. Attach KM-P2. The bonsai in KM-P2's bottom row: a black pine bonsai with a curving
+VIEWS KM-G09, the potted bonsai pine. Use BASE KM-S3. Attach KM-P2. The bonsai in KM-P2's bottom row: a black pine bonsai with a curving
 trunk and flat foliage pads in a shallow glazed bowl. Real size: 0.6 m tall. Make BACK as well. Same rules as before.
 ```
 Save: `review/kamakura/sheets/KM-G09_bonsai/` (`1_front.png`, `2_right_side.png`, `3_back.png`, `4_top.png`)
 
 ```text
-VIEWS KM-G10, the morning glory on its trellis. Attach KM-P2. The morning glory in KM-P2's bottom row: blue and violet
+VIEWS KM-G10, the morning glory on its trellis. Use BASE KM-S3. Attach KM-P2. The morning glory in KM-P2's bottom row: blue and violet
 morning glories climbing a square bamboo trellis tied with twine, standing on the ground. Real size: 1.5 m tall, 0.8 m
 wide. Make BACK as well. Same rules as before.
 ```
 Save: `review/kamakura/sheets/KM-G10_morning_glory_trellis/` (`1_front.png`, `2_right_side.png`, `3_back.png`, `4_top.png`)
 
 ```text
-VIEWS KM-G07, the azalea bush. Attach KM-P2. The azalea in KM-P2's top row: a low rounded bush covered in pink-red flowers
+VIEWS KM-G07, the azalea bush. Use BASE KM-S3. Attach KM-P2. The azalea in KM-P2's top row: a low rounded bush covered in pink-red flowers
 over small dark leaves. Real size: 1 m tall, 1.3 m across. Same rules as before.
 ```
 Save: `review/kamakura/sheets/KM-G07_azalea/` (`1_front.png`, `2_right_side.png`, `4_top.png`)
@@ -304,14 +305,14 @@ Save: `review/kamakura/sheets/KM-G07_azalea/` (`1_front.png`, `2_right_side.png`
 ## Route 2: the Shonan coast
 
 ```text
-VIEWS KM-G14, the zelkova park tree. Attach KM-P6 and KM2-5. The tree third in KM-P6's top row: a straight grey trunk
+VIEWS KM-G14, the zelkova park tree. Use BASE KM-S3. Attach KM-P6 and KM2-5. The tree third in KM-P6's top row: a straight grey trunk
 dividing into many upswept limbs, a vase-shaped crown of small serrated green leaves. Real size: 15 m tall, its crown
 10 m across. Same rules as before.
 ```
 Save: `review/kamakura/sheets/KM-G14_zelkova/` (`1_front.png`, `2_right_side.png`, `4_top.png`)
 
 ```text
-VIEWS KM-G23, the dune grass with a beach shrub. Attach KM-P6 and KM2-1. The fifth plant of KM-P6's middle row: a clump
+VIEWS KM-G23, the dune grass with a beach shrub. Use BASE KM-S3. Attach KM-P6 and KM2-1. The fifth plant of KM-P6's middle row: a clump
 of tall pale-green dune grass and a low grey-green beach shrub growing out of sand, the sand at its foot part of it.
 Real size: 0.8 m tall, 2 m across. Same rules as before.
 ```
@@ -320,47 +321,47 @@ Save: `review/kamakura/sheets/KM-G23_dune_grass/` (`1_front.png`, `2_right_side.
 ## Route 3: the temple hills
 
 ```text
-VIEWS KM-G03, the Japanese cedar. Attach KM-P2 and KM3-2. The tall conifer in the middle of KM-P2's top row: a straight
+VIEWS KM-G03, the Japanese cedar. Use BASE KM-S3. Attach KM-P2 and KM3-2. The tall conifer in the middle of KM-P2's top row: a straight
 red-brown trunk with long stringy bark, short branches all the way up, a narrow pointed crown of dark green sprays.
 Real size: 25 m tall, its crown 6 m across. Same rules as before.
 ```
 Save: `review/kamakura/sheets/KM-G03_japanese_cedar/` (`1_front.png`, `2_right_side.png`, `4_top.png`)
 
 ```text
-VIEWS KM-G18, the cedar's foot with its roots and ferns. Attach KM-P6 and KM3-2. The last plant of KM-P6's top row: the
+VIEWS KM-G18, the cedar's foot with its roots and ferns. Use BASE KM-S3. Attach KM-P6 and KM3-2. The last plant of KM-P6's top row: the
 lowest 4 m of an old cedar's trunk, its buttress roots spreading over the ground, ferns growing among them. Real size:
 4 m tall, its roots 3 m across. Same rules as before.
 ```
 Save: `review/kamakura/sheets/KM-G18_cedar_foot/` (`1_front.png`, `2_right_side.png`, `4_top.png`)
 
 ```text
-VIEWS KM-G05, the bamboo clump. Attach KM-P2 and KM3-3. The bamboo in KM-P2's top row: a dense clump of slender green
+VIEWS KM-G05, the bamboo clump. Use BASE KM-S3. Attach KM-P2 and KM3-3. The bamboo in KM-P2's top row: a dense clump of slender green
 culms with their nodes, leaf sprays at their tops leaning out. Real size: 8 m tall, the clump 2 m across. Same rules as
 before.
 ```
 Save: `review/kamakura/sheets/KM-G05_bamboo_clump/` (`1_front.png`, `2_right_side.png`, `4_top.png`)
 
 ```text
-VIEWS KM-G17, the tall timber bamboo. Attach KM-P6 and KM3-3. The bamboo sixth in KM-P6's top row: tall, thick green
+VIEWS KM-G17, the tall timber bamboo. Use BASE KM-S3. Attach KM-P6 and KM3-3. The bamboo sixth in KM-P6's top row: tall, thick green
 timber bamboo culms with pale rings at their nodes, sprays of narrow leaves high up. Real size: 12 m tall, the stand 3 m
 across. Same rules as before.
 ```
 Save: `review/kamakura/sheets/KM-G17_timber_bamboo/` (`1_front.png`, `2_right_side.png`, `4_top.png`)
 
 ```text
-VIEWS KM-G16, the cherry in pink blossom. Attach KM-P6. The tree fifth in KM-P6's top row: a dark banded trunk and limbs
+VIEWS KM-G16, the cherry in pink blossom. Use BASE KM-S3. Attach KM-P6. The tree fifth in KM-P6's top row: a dark banded trunk and limbs
 covered in pale pink blossom, few leaves. Real size: 7 m tall, its crown 7 m across. Same rules as before.
 ```
 Save: `review/kamakura/sheets/KM-G16_cherry_blossom/` (`1_front.png`, `2_right_side.png`, `4_top.png`)
 
 ```text
-VIEWS KM-G24, the clump of ferns. Attach KM-P6. The sixth plant of KM-P6's middle row: a round clump of arching green fern
+VIEWS KM-G24, the clump of ferns. Use BASE KM-S3. Attach KM-P6. The sixth plant of KM-P6's middle row: a round clump of arching green fern
 fronds. Real size: 0.8 m tall, 1.2 m across. Same rules as before.
 ```
 Save: `review/kamakura/sheets/KM-G24_ferns/` (`1_front.png`, `2_right_side.png`, `4_top.png`)
 
 ```text
-VIEWS KM-G25, the boulder with moss and ivy. Attach KM-P6. The last plant of KM-P6's middle row: a big grey boulder, moss
+VIEWS KM-G25, the boulder with moss and ivy. Use BASE KM-S3. Attach KM-P6. The last plant of KM-P6's middle row: a big grey boulder, moss
 on its top, ivy trailing down its side, ferns at its foot. Real size: 1.4 m tall, 1.8 m across. Same rules as before.
 ```
 Save: `review/kamakura/sheets/KM-G25_mossy_boulder/` (`1_front.png`, `2_right_side.png`, `4_top.png`)
@@ -389,7 +390,7 @@ the azalea in bloom, six morning-glory vines with flowers. Same colours, photogr
 Save: `review/kamakura/sheets/KM-F04_flowers/` (`1_sheet.png`)
 
 ```text
-LEAVES KM-F01, the black pine's needles. Attach KM-P2 and KM-P6. The needles of the Japanese black pine (KM-P2's top
+LEAVES KM-F01, the black pine's needles. Use BASE KM-S4. Attach KM-P2 and KM-P6. The needles of the Japanese black pine (KM-P2's top
 left): stiff dark green needles in pairs, about 12 cm long, in dense tufts at the ends of the twigs, each with a pale
 candle of new growth. Two single tufts below instead of single leaves. The same needles dress the clipped garden pine
 and the bonsai pines. Same rules as before.
@@ -397,72 +398,72 @@ and the bonsai pines. Same rules as before.
 Save: `review/kamakura/sheets/KM-F01_black_pine_needles/` (`1_leaves.png`)
 
 ```text
-LEAVES KM-F03, bamboo. Attach KM-P2 and KM-P6. The leaves of the bamboo (KM-P2's clump, KM-P6's timber bamboo): sprays of
+LEAVES KM-F03, bamboo. Use BASE KM-S4. Attach KM-P2 and KM-P6. The leaves of the bamboo (KM-P2's clump, KM-P6's timber bamboo): sprays of
 narrow pointed bright-green leaves fanning from thin side twigs. Instead of the single leaves, two straight 1.5 m lengths
 of green culm with their nodes, upright, side by side. Same rules as before.
 ```
 Save: `review/kamakura/sheets/KM-F03_bamboo/` (`1_leaves.png`)
 
 ```text
-LEAVES KM-F06, the Japanese cedar's sprays. Attach KM-P2. The foliage of the Japanese cedar (KM-P2's tall conifer): dense
+LEAVES KM-F06, the Japanese cedar's sprays. Use BASE KM-S4. Attach KM-P2. The foliage of the Japanese cedar (KM-P2's tall conifer): dense
 sprays of short, stiff, awl-shaped dark green needles spiralling round the shoots, drooping a little at the tips. Same
 rules as before.
 ```
 Save: `review/kamakura/sheets/KM-F06_cedar_sprays/` (`1_leaves.png`)
 
 ```text
-LEAVES KM-F07, the ginkgo's leaves. Attach KM-P6. The fan-shaped leaves of the ginkgo (KM-P6's top left), bright green,
+LEAVES KM-F07, the ginkgo's leaves. Use BASE KM-S4. Attach KM-P6. The fan-shaped leaves of the ginkgo (KM-P6's top left), bright green,
 in clusters on short spur shoots. Same rules as before.
 ```
 Save: `review/kamakura/sheets/KM-F07_ginkgo/` (`1_leaves.png`)
 
 ```text
-LEAVES KM-F08, the Japanese maple's leaves. Attach KM-P6. The small, deeply cut, seven-lobed green leaves of the Japanese
+LEAVES KM-F08, the Japanese maple's leaves. Use BASE KM-S4. Attach KM-P6. The small, deeply cut, seven-lobed green leaves of the Japanese
 maple (KM-P6's top row), on slender red-tinged twigs. Same rules as before.
 ```
 Save: `review/kamakura/sheets/KM-F08_japanese_maple/` (`1_leaves.png`)
 
 ```text
-LEAVES KM-F09, the zelkova's leaves. Attach KM-P6. The small, sharply serrated, pointed green leaves of the zelkova
+LEAVES KM-F09, the zelkova's leaves. Use BASE KM-S4. Attach KM-P6. The small, sharply serrated, pointed green leaves of the zelkova
 (KM-P6's top row), alternate along fine twigs. Same rules as before.
 ```
 Save: `review/kamakura/sheets/KM-F09_zelkova/` (`1_leaves.png`)
 
 ```text
-LEAVES KM-F10, cherry blossom. Attach KM-P6. Twigs of the cherry in full pale pink blossom (KM-P6's top row), five-petalled
+LEAVES KM-F10, cherry blossom. Use BASE KM-S4. Attach KM-P6. Twigs of the cherry in full pale pink blossom (KM-P6's top row), five-petalled
 flowers in clusters, a few new leaves among them. Instead of the single leaves, two single flower clusters. Same rules as
 before.
 ```
 Save: `review/kamakura/sheets/KM-F10_cherry_blossom/` (`1_leaves.png`)
 
 ```text
-LEAVES KM-F11, ferns, moss and ivy. Attach KM-P6. Six arching fern fronds (KM-P6's clump of ferns), then, instead of the
+LEAVES KM-F11, ferns, moss and ivy. Use BASE KM-S4. Attach KM-P6. Six arching fern fronds (KM-P6's clump of ferns), then, instead of the
 single leaves, two flat cushions of green moss and two trailing strands of ivy with their leaves. Same rules as before.
 ```
 Save: `review/kamakura/sheets/KM-F11_ferns_moss_ivy/` (`1_leaves.png`)
 
 ```text
-LEAVES KM-F12, lotus and dune grass. Attach KM-P6. Four lotus leaves on their stalks and two pink lotus flowers (KM-P6's
+LEAVES KM-F12, lotus and dune grass. Use BASE KM-S4. Attach KM-P6. Four lotus leaves on their stalks and two pink lotus flowers (KM-P6's
 lotus), then two tufts of the pale dune grass and two sprigs of the grey-green beach shrub. Same rules as before.
 ```
 Save: `review/kamakura/sheets/KM-F12_lotus_dune_grass/` (`1_leaves.png`)
 
 ```text
-BARK KM-F05, the bark of the pine, the camphor and the cedar. Attach KM-P2. Left to right: the Japanese black pine's
+BARK KM-F05, the bark of the pine, the camphor and the cedar. Use BASE KM-S4. Attach KM-P2. Left to right: the Japanese black pine's
 (reddish-grey, in thick irregular plates with dark fissures), the camphor's (grey-brown, finely furrowed in long ridges),
 the Japanese cedar's (red-brown, in long stringy vertical strips). Same rules as before.
 ```
 Save: `review/kamakura/sheets/KM-F05_bark_pine_camphor_cedar/` (`1_bark.png`)
 
 ```text
-BARK KM-F13, the bark of the cherry, the persimmon and the ginkgo. Attach KM-P2 and KM-P6. Left to right: the cherry's
+BARK KM-F13, the bark of the cherry, the persimmon and the ginkgo. Use BASE KM-S4. Attach KM-P2 and KM-P6. Left to right: the cherry's
 (dark purple-grey, smooth, with horizontal bands of lenticels), the persimmon's (dark grey, cracked into small square
 blocks), the ginkgo's (grey-brown, rough and deeply furrowed). Same rules as before.
 ```
 Save: `review/kamakura/sheets/KM-F13_bark_cherry_persimmon_ginkgo/` (`1_bark.png`)
 
 ```text
-BARK KM-F14, the bark of the maple and the zelkova, and a bamboo culm. Attach KM-P6. Left to right: the Japanese maple's
+BARK KM-F14, the bark of the maple and the zelkova, and a bamboo culm. Use BASE KM-S4. Attach KM-P6. Left to right: the Japanese maple's
 (smooth grey-green with faint pale streaks), the zelkova's (smooth grey, flaking in small patches to orange-brown), and a
 green bamboo culm's surface laid flat (glossy green, one node band across it). Same rules as before.
 ```

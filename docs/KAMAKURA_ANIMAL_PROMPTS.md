@@ -14,7 +14,7 @@ D14 to D22, quoted by number).
    target, `review/kamakura/refs/KM-0_look_target.png`), then one animal per message, with the sheet its prompt names
    attached (`refs/KM-P4_animals_sheet.png`, `refs/KM-P8_more_animals.png`).
 3. **The tool makes the first view; then ask for each next one** ("Next: LEFT SIDE.", and so on, in the order its base
-   lists them), one at a time.
+   lists them), one at a time. Each card on the page lists these steps with the files to attach.
 4. **Check each picture before the next** (the list below), and redo one that fails rather than going on.
 5. **Save** each picture in the folder its card names, with exactly those file names (rename a phone upload). Tick
    "Made" as you go: the page remembers.

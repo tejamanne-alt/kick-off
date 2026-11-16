@@ -2552,6 +2552,28 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
 - The build doc's Steps 4, 4b and 4c point to the pages. The KM1-1 board's notes are corrected: the foliage and the
   lane texture have been in since 15 November (A17).
 
+## Each prompt card says which base and which pictures it needs (docs and tools)
+
+- The user, on the plants page's KM-G26 card: "Update the prompts with which base prompt and images are required for
+  what". The copied prompts also broke mid-sentence (A18).
+- Every card on the plants and animals pages now has numbered steps:
+  1. The base to paste first, with KM-0, and in which chat: a new chat per plant for views, one shared chat per base for
+     leaves, bark and animals. A "Copy BASE KM-S#" button sits beside it.
+  2. This prompt, with a small picture of each attachment and its file: the photographic version when there is one
+     (KM1-1 is `refs/photo/KM1-1_hase_lanes.png`), D12.
+  3. Each picture in turn: the reply, then each "Next: ..." message with a Copy button, and the file each is saved as.
+- All 45 plant prompts now say "Use BASE KM-S3" or "Use BASE KM-S4" (none did). KM-S3 asks for the BACK third, as
+  its 10 prompts that want one number it (`3_back.png`), not after the TOP.
+- `gen_sheets.py` stops when:
+  - a named picture is missing;
+  - a base is unknown;
+  - a card saves a view its base doesn't list, or out of the base's order.
+- `tools/prompts_page/prompt_text.py` joins the document's wrapped lines for every copy. It keeps paragraphs, headings and
+  lists, and checks that the words are unchanged. It is used by the city page too: its KM1-1a to KM1-1e prompts broke
+  the same way.
+- The pages: plants https://claude.ai/artifact/NfW8VQo9Hx8vopKBmDeWsJ, animals
+  https://claude.ai/artifact/NKDgE6vywf7zo1iX9w52kv, city https://claude.ai/artifact/EwNU9FwNju6vseGkURd2NC.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

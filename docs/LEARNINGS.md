@@ -192,6 +192,30 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
 - *Rule:* before saying an input is missing, look for it where it would be (`ls review/<city>/sheets`, `git log`).
   Notes say what was planned; the repository says what is there.
 
+**A18. Prompt cards that said what to paste but not what goes with it, and copies broken mid-sentence (November 2026).**
+- *What:* on the plants page's KM-G26 card the user asked: "Update the prompts with which base prompt and images are
+  required for what".
+  - A card showed only its prompt and its folder.
+  - The base to paste first, the pictures to attach (and that "KM1-1" means its photographic version in `refs/photo/`)
+    and which "Next:" message makes which file were left to the how-to on the Start tab.
+  - None of the 45 plant prompts named its base. KM-S3 asked for the BACK last, after the TOP, while the 10 prompts
+    that want a BACK save it as `3_back.png`, before `4_top.png`.
+  - A copied prompt kept the document's 120-character line wraps, so in the chat box it broke mid-sentence. The city
+    page's prompts did the same, the new KM1-1a to KM1-1e among them.
+- *Why:* the pages were built to copy the documents' text, not to walk through the steps a person takes with it. Nobody
+  followed one card from start to finish as the user would.
+- *Fix:*
+  - Each card now has numbered steps: the base and its chat; this prompt with a small picture and the file of each
+    attachment; then each picture with the message that asks for it and the file it is saved as.
+  - `gen_sheets.py` resolves every picture a prompt names, photographic version first (D12). It stops on a missing
+    picture, an unknown base, or a view the base doesn't list in that order.
+  - `prompt_text.py` joins the wrapped lines for every page and checks the words are unchanged.
+- *Rule:*
+  - A prompt card carries everything needed to run it: the chat, the base, each picture with its file, each message
+    and the file it makes.
+  - Before publishing a prompts page, follow one card of each kind from a phone, as the user would.
+  - Copy what will be pasted, not how the document wraps it.
+
 ## B. Performance and mobile
 
 **B1. 28 fps with uneven frames on a mid-range phone (November 2026).**
