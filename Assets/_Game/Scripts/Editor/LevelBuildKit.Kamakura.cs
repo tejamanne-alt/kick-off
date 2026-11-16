@@ -100,19 +100,20 @@ namespace DribbleToSchool.EditorTools
             /// <summary>
             /// KM1-1's first-graders walking to school (docs/KAMAKURA_BUILD.md, KM-C01 and KM-C02): <paramref name="count"/> of them
             /// in a loose line from <paramref name="fromX"/> to <paramref name="toX"/>, boys and girls in turn, each dressed from the
-            /// first-graders' wardrobe (their yellow caps kept), slower than the kid, each walking its own short stretch of the
-            /// footpath (Hazards.Pedestrian): solid to the ball, the kid slips past them. Six-year-olds: a 1.25 m capsule
-            /// (FirstGraderNeck, docs/LEARNINGS.md C13).
+            /// first-graders' wardrobe (their yellow caps kept), walking to school ahead of the kid at one slow pace
+            /// (Hazards.Pedestrian.toSchool: always toward school, never stooped or at a phone, all setting off together as the
+            /// view comes near, so the kid catches up with the line): solid to the ball, the kid slips past them. Six-year-olds:
+            /// a 1.25 m capsule (FirstGraderNeck, docs/LEARNINGS.md C13).
             /// </summary>
             public void FirstGraderLine(float fromX, float toX, int count, float groundTop = 0f, float speed = 0.7f)
             {
                 Coaching.Mark("people", fromX, toX);
                 float step = (toX - fromX) / Mathf.Max(1, count);
                 for (int i = 0; i < count; i++)
-                    FirstGrader(fromX + i * step, fromX + i * step + step * 0.8f, FirstGraders[i % FirstGraders.Length], i, groundTop, speed);
+                    FirstGrader(fromX + i * step, fromX + i * step + step * 0.8f, fromX, FirstGraders[i % FirstGraders.Length], i, groundTop, speed);
             }
 
-            void FirstGrader(float minX, float maxX, Passerby who, int k, float groundTop, float speed)
+            void FirstGrader(float minX, float maxX, float lineFrom, Passerby who, int k, float groundTop, float speed)
             {
                 string bodyModel;
                 Material look;
@@ -143,6 +144,8 @@ namespace DribbleToSchool.EditorTools
                 p.minX = minX;
                 p.maxX = maxX;
                 p.walkSpeed = speed;
+                p.toSchool = true;
+                p.lineFrom = lineFrom;
                 p.visual = parts.visual;
                 p.seed = seed;
                 p.outfit = parts.outfit;
@@ -155,8 +158,8 @@ namespace DribbleToSchool.EditorTools
             /// <summary>
             /// A level crossing across the footpath from <paramref name="fromX"/> to <paramref name="toX"/> (KM1-1's, by Hase):
             /// the tracks run away from the camera, their rails across the lane; the bells and lamps either side (KmCrossingSignal),
-            /// the barriers (KmCrossingBarrier, their arms coming down along the lane behind it, never toward the camera:
-            /// docs/LEARNINGS.md E10), and the tram (KmTram) as the crossing's traffic, coming down the tracks toward the camera and
+            /// the barriers (KmCrossingBarrier, their arms coming down along the lane behind it, each away from the tracks, so
+            /// the tram passes clear of them, and never toward the camera: docs/LEARNINGS.md E10, E13), and the tram (KmTram) as the crossing's traffic, coming down the tracks toward the camera and
             /// on over the road. On the rails while the lamps flash, the kid or the ball loses the ball (Hazards.Crossing). The
             /// tracks are their own list (<see cref="Rails"/>, docs/LEARNINGS.md E11), not a side street's open area.
             /// </summary>
@@ -220,7 +223,9 @@ namespace DribbleToSchool.EditorTools
                     if (arm == null) continue;
                     arm.SetParent(go.transform, true);         // out of the street's static batch: it moves
                     arms.Add(arm);
-                    downs.Add(b == near ? -90f : 90f);           // each comes down toward the tracks, along the lane
+                    // each comes down along the lane, away from the tracks: an arm about 2.9 m long lowered toward them would
+                    // reach into the tram's path (docs/LEARNINGS.md E13)
+                    downs.Add(b == near ? 90f : -90f);
                 }
                 if (arms.Count > 0)
                 {

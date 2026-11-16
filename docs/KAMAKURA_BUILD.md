@@ -1254,9 +1254,10 @@ lane (KM-N09); a crow on the recycling bins (KM-N06). Then: the coin audit, Leve
 preview_street.py through the game camera against the reference.
 (Done in part, November 2026: GeneratedContent.CityLevels builds KM1-1 in its own scene, KM1-1_HaseLanes_KM, not in the
 catalog, with LevelBuildKit.Kamakura set: its stops and route are CityRoutes.Kamakura's, its street StreetBuilder.Kamakura's
-(the home KM-B01 at the door, Hase Station at the stop). KamakuraLevels.HaseLanes places the kit's 39 models by
+(the home KM-B01 at the door, Hase Station at the stop). The level places 39 of the kit's models (42 in all), by
 review/kamakura/levels/KM1-1/layout.json, 0.75 m further back than its fronts (the game's footpath is wider); the
-first-graders' line (FirstGraderLine), the level crossing with the tram and its barriers (LevelCrossing, CrossingArms);
+first-graders walking to school (FirstGraderLine, Pedestrian.toSchool), the level crossing with the tram and its
+barriers coming down away from the tracks (LevelCrossing, CrossingArms; LEARNINGS E13);
 the cat on the block wall is the Animals kit's cat. Still stand-ins: the lane's houses, the block wall and the wooden fence
 (plain boxes), and the green walking strip (the game's footpath). Still to do: the Kamakura animals (KM-N01, N06, N08, N09)
 in the game, the scooter's rider, the houses from KM1-1a to e, and LevelFeasibility and the scene in Unity.)

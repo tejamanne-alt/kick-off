@@ -5,14 +5,14 @@ namespace DribbleToSchool.Hazards
     /// <summary>
     /// A level crossing's barrier arms (the Kamakura kit's KmCrossingBarrier: its Arm, drawn raised, its origin at its pivot):
     /// they come down while their <see cref="Crossing"/> flashes (amber and red) and go back up on green. Each turns about its
-    /// pivot in the street's plane, coming down along the lane behind it, never toward the camera, where it would hide the
-    /// ball (docs/LEARNINGS.md E10).
+    /// pivot in the street's plane, coming down along the lane behind it, away from the tracks (toward them it would reach
+    /// into the tram's path: docs/LEARNINGS.md E13), never toward the camera, where it would hide the ball (E10).
     /// </summary>
     public class CrossingArms : MonoBehaviour
     {
         public Crossing crossing;
         public Transform[] arms;
-        /// <summary>Each arm's turn when down, degrees about the street's depth (negative: it comes down to the right).</summary>
+        /// <summary>Each arm's turn when down, degrees about the street's depth (positive: it comes down to the left).</summary>
         public float[] downAngles;
         /// <summary>How fast an arm comes down or goes up, degrees a second.</summary>
         public float speed = 60f;

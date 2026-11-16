@@ -45,6 +45,12 @@ namespace DribbleToSchool.Hazards
         public float asideZ = 1.1f;
         [Tooltip("Seed for this walker's choices (set by the level builder).")]
         public int seed = 1;
+        [Tooltip("A child walking to school (KM1-1's first-graders): always toward school (+x), at the line's even pace, never " +
+                 "stooped, never stopping, never at a phone; out once from their place in the line as the view nears it, and gone " +
+                 "once out of sight until the level is reset. The other children's beats don't shorten their walk.")]
+        public bool toSchool;
+        [Tooltip("For a child walking to school: where the line starts; all of it sets off when the view comes near it.")]
+        public float lineFrom;
         [Tooltip("Coats the next passers-by wear.")]
         public Color[] coats = new Color[0];
         [Tooltip("Their trousers, skirts or shorts (empty: each coat's own colour, darker).")]
@@ -130,17 +136,17 @@ namespace DribbleToSchool.Hazards
 
         // ---------------------------------------------------------------- lane claims
 
-        struct Claim { public Object owner; public float min, max; public bool walks; }
+        struct Claim { public Object owner; public float min, max; public bool walks, toSchool; }
         static readonly List<Claim> claims = new List<Claim>();
 
         /// <summary>
         /// Marks a stretch of the footpath as someone's (a pedestrian's beat, a dog's patch), so
         /// passers-by share the footpath out between them instead of walking through each other.
         /// </summary>
-        public static void ClaimLane(Object owner, float min, float max, bool walks = false)
+        public static void ClaimLane(Object owner, float min, float max, bool walks = false, bool toSchool = false)
         {
             ReleaseLane(owner);
-            claims.Add(new Claim { owner = owner, min = Mathf.Min(min, max), max = Mathf.Max(min, max), walks = walks });
+            claims.Add(new Claim { owner = owner, min = Mathf.Min(min, max), max = Mathf.Max(min, max), walks = walks, toSchool = toSchool });
         }
 
         public static void ReleaseLane(Object owner)
@@ -170,7 +176,7 @@ namespace DribbleToSchool.Hazards
             if (lead != null) leadRenderer = lead.GetComponent<Renderer>();
             rng ^= (uint)(seed * 747796405) + 1u;
             if (rng == 0) rng = 1;
-            ClaimLane(this, minX, maxX, true);
+            ClaimLane(this, minX, maxX, true, toSchool);
         }
 
         Player.KidController ignoredKid;
@@ -246,6 +252,8 @@ namespace DribbleToSchool.Hazards
             foreach (var c in claims)
             {
                 if (c.owner == this || c.owner == null) continue;
+                // Children walking to school walk on together: another child's beat doesn't end theirs.
+                if (toSchool && c.toSchool) continue;
                 // Another walker's beat: split the footpath between halfway; a dog's patch is its own.
                 if (c.max <= lo) leftLimit = Mathf.Max(leftLimit, c.walks ? (c.max + lo) * 0.5f + 0.6f : c.max + 1.5f);
                 else if (c.min >= hi) rightLimit = Mathf.Min(rightLimit, c.walks ? (hi + c.min) * 0.5f - 0.6f : c.min - 1.5f);
@@ -401,6 +409,15 @@ namespace DribbleToSchool.Hazards
             float lo = routeMin, hi = routeMax;
             if (hi - lo < 0.5f) { hiddenUntil = Time.time + 1f; return; }
             float z = visualBasePosition.z;
+            if (toSchool)
+            {
+                // A child walking to school: once, from its place in the line, when the view comes near the line (all of it
+                // together, so the line keeps its spacing), always toward school; the kid, faster, catches up and slips past.
+                if (!firstPass) { hiddenUntil = float.MaxValue; return; }
+                if (!AmbientView.Valid || AmbientView.RightEdge(z) + Margin + 2f < lineFrom) { hiddenUntil = Time.time + 0.25f; return; }
+                Spawn(Mathf.Clamp(minX, lo, hi), 1);
+                return;
+            }
             float px;
             int d;
             if (!AmbientView.Valid)
@@ -449,9 +466,9 @@ namespace DribbleToSchool.Hazards
             x = px;
             direction = d;
             // Who this is: their pace, maybe a little stooped, maybe in other clothes.
-            cruise = walkSpeed * Range(0.88f, 1.14f);
+            cruise = walkSpeed * (toSchool ? Range(0.97f, 1.03f) : Range(0.88f, 1.14f));    // a line keeps its pace
             stoop = 0f;
-            bool older = company != Company.Child && Rand01() < 0.18f;
+            bool older = !toSchool && company != Company.Child && Rand01() < 0.18f;
             if (older)
             {
                 cruise *= 0.78f;
@@ -465,12 +482,12 @@ namespace DribbleToSchool.Hazards
 
             // Some stop on the way for a moment.
             stopAt = float.NaN;
-            if (Rand01() < (company == Company.Friend ? 0.55f : 0.35f))
+            if (!toSchool && Rand01() < (company == Company.Friend ? 0.55f : 0.35f))
             {
                 float at = px + d * Range(2.5f, 8f);
                 if (at > routeMin + 0.5f && at < routeMax - 0.5f) stopAt = at;
             }
-            stopGesture = company == Company.Friend ? Gesture.Chat : Rand01() < 0.5f ? Gesture.Phone : Gesture.Look;
+            stopGesture = toSchool ? Gesture.Look : company == Company.Friend ? Gesture.Chat : Rand01() < 0.5f ? Gesture.Phone : Gesture.Look;
 
             state = State.Walking;
             speed = cruise;

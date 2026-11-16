@@ -2638,6 +2638,13 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
   The page: https://claude.ai/artifact/GUCA4Q1gjJi9KVXCixhjx2 (`review/kamakura/levels/KM1-1/built/`).
 - Cost: 42 models, about 77,000 triangles, about 75 MB of textures (est.). The cuts are listed in PERFORMANCE.
 - LEARNINGS A19: an install of eight models started a rebuild of all 31.
+- The audit after it (E13): reading the level's code against what it reuses found two faults.
+  - The barriers' arms came down toward the tracks, into the tram's path. Now each comes down away from them.
+  - The first-graders were ordinary passers-by: from either side, some stooped, some at a phone, each stopping 2 m on.
+    Now `Pedestrian.toSchool` sends them as a line toward school.
+  - Also: the mossy stone moved behind the footpath's edge, and the build note's model count was corrected.
+  - The other walkers' choices are drawn in the same order as before. The API check passes and the compiler's errors
+    match HEAD's in two symbol sets. The kit and level tests' conditions hold (checked in Python: they need Unity).
 
 ## After Phase 8 (next steps)
 

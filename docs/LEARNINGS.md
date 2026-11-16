@@ -1456,6 +1456,25 @@ views).**
   - *The gaps:* the picture's ensemble is 30 m and a leg about 105 m. Spread along the lane, the set pieces left stretches of nothing: the kit has only two houses for KM1-1. *Fix:* the board shows what is still to come as see-through placeholders (walls, fences, a house row behind) and asks the user whether to make lane-house sheets or reuse the two houses.
   - *Rule:* look at a board's every image before showing it, the plan as well as the views. A level picture is an ensemble, not the level's length: plan the frontage between its set pieces, and ask for what the kit lacks.
 
+- **E13. KM1-1's first build: barrier arms through the tram, and first-graders walking like passers-by (found by the audit
+  before it ran, November 2026).**
+  - *What:* reading the level's code against what it reuses found two faults no check could see:
+    - The barriers' arms came down along the lane toward the tracks. An arm is about 2.9 m long from its pivot at
+      x 59.4, so its tip reached x 62.3, inside the tram's path (x 61.8 to 64.2): the tram would drive through it.
+    - The first-graders were ordinary passers-by (`Hazards.Pedestrian`). A passer-by comes from either side, from ahead
+      always toward the kid, 18 % of them stooped as the old are, a third stopping, half of those at a phone. Each child's
+      walk also ended halfway to the next child's beat, so the line would have stood about 2 m apart and stepped aside.
+  - *Why:* both reused something built for another job (a road crossing's cars, the town's walkers), and the level was
+    checked by compiling and by pictures, not by reading what the reused code does with these numbers.
+  - *Fix:*
+    - Each arm comes down away from the tracks (`CrossingArms`).
+    - `Pedestrian.toSchool`: always toward school, the line's even pace, never stooped, never stopping, never at a phone.
+      The whole line sets off together as the view nears it, and the children's beats don't end each other's walks.
+    - The mossy stone moved back behind the footpath's edge.
+  - *Rule:*
+    - When a level reuses a hazard or a moving part, read what it does with the new numbers: lengths against the paths
+      of what moves past it, a walker's direction, pace and gestures against who it is now.
+    - Check the clearance of everything that moves through a crossing against everything that moves at it.
 ## F. UI and menus
 
 - **F1. The anchor and pivot trap** caused overlaps in the credits, results, guides and pause menu. *Rule:* lay screens out top down by explicit edges; check 4:3, 16:9 and 21:9 in both languages.
