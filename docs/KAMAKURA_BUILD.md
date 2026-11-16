@@ -1370,6 +1370,16 @@ circling (KM-N05). From the sheets: the boats in 3D (KM-B20), crab traps and net
 grass at the foot of the sea wall (KM-G23), the sea wall in streaked concrete (KM-T20). Animals: gulls standing on the
 sand and crossing over the sea (KM-N10), an egret wading at the water's edge (KM-N11), shore crabs at the tide line
 (KM-N27), a crow at the litter sacks (KM-N06). Same checks.
+
+(Laid out and its set pieces built, November 2026: review/kamakura/levels/KM2-2 is its proposed layout, about 105 m
+from the boardwalk's end to Grandma's shop, for the user's approval. tools/blender/km_beach.py builds them from the
+photographic KM2-2, each at its scale from its foot's distance below the picture's horizon: the two fishing boats on
+their rollers (KM-B20) and the near one's gear, its crab traps and net (KM-A37) with the fish boxes (KM-A35) and ropes;
+the lifeguard tower in boxes (KM-B21); the sea wall squared up (KM-B23, its steps to come from KM2-3's picture); the
+beach houses and pines above it (KM-B37, new, a cut-out); the litter sacks and their bamboo fence (KM-A41, new), three
+surfboards in the sand (KM-A36), the rules board (KM-A42, new) and Enoshima on the horizon (KM-B38, new), as
+cut-outs. Their review: review/kamakura/beach. Still to do: the close-ups from KM2-2a to e, the level's code and the
+install.)
 ```
 
 ```text

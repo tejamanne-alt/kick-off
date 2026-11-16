@@ -1,0 +1,23 @@
+{
+ "intro": [
+  "The second leg of route 2, the Shonan Coast: off the boardwalk and along the beach at Yuigahama, past the surfboards stuck in the sand, the fishing boats on their rollers, the lifeguard tower and the litter sacks, along the sea wall under the beach houses, up the steps to the beach road and Grandma's shop. It is laid out from your KM2-2 picture, in the order of its five lane pictures, for your approval.",
+  "About 105 m from the boardwalk's end to Grandma's door. Your picture shows the sea's horizon, so every piece takes its size from how far its foot stands below it: the boats come out 4.9 and 5.1 m long, the tower 4.7 m to its roof, the sea wall 1.75 m above its dune.",
+  "The see-through boxes are what is still to come: the steps up to the road and Grandma's shop come from KM2-3's picture, where the shop is."
+ ],
+ "reference": "KM2-2 Yuigahama Morning, the photographic version: the surfboards in the sand, the two fishing boats on their rollers with their traps, boxes and ropes, the lifeguard tower, the litter sacks by their bamboo fence, the sea wall under the beach houses and pines, the rules board by the steps, Enoshima across the bay.",
+ "strip": "Each model at its real size and place, seen through the game camera as the game frames it, the play lane at the front. See-through boxes are what is still to come. The shading is Blender's, not the game's toon look: judge the places, sizes, order and gaps.",
+ "decided": [
+  "<b>The sea is behind the lane</b> as far as the tower, as the game's Tide hazard has it: the wave runs up over the path from x 0 to 14. After the tower the route turns up the beach, and the sea wall with the houses above it stands behind the lane instead.",
+  "<b>The near boat and its gear</b> are two cut-outs: the boat on its rollers, and in front of it, nearer the lane, its crab traps and net, its fish boxes and its coiled ropes, as your picture heaps them against it.",
+  "<b>The lifeguard tower</b> is built in boxes from your picture: the roof, four posts, the cabin, the platform and four legs, the cross braces on the front legs and the far ones behind, the ladder leaning against the platform's end and the flag on its pole. It is painted out of the houses and pines behind it.",
+  "<b>The sea wall</b> is squared up out of your picture's perspective (14 m, two sections laid end to end), dune grass at its foot (KM-G23). The beach houses and pines stand above it as one cut-out.",
+  "<b>Enoshima</b> is a cut-out far back on the horizon. The rules board by the steps has made-up writing, no real words.",
+  "<b>Animals:</b> gulls on the sand and over the sea (KM-N10), an egret wading (KM-N11), shore crabs at the tide line (KM-N27), a black kite circling over the boats (KM-N05), a crow at the litter sacks (KM-N06).",
+  "<b>Cost (est., docs/PERFORMANCE.md):</b><ul><li>KM2-2's ten pieces from the picture: 184 triangles in all (the tower 144), one shared 4096 x 2048 texture (about 11 MB with mips in ETC2 with the cut-outs' alpha, about 5 MB in ASTC 6x6).</li><li>The dune grass (seven clumps) and the kit's pole: about 11,300 triangles.</li></ul>In all, about 11,500 triangles standing and about 25 MB of textures with what is still to come."
+ ],
+ "ask": [
+  "<b>The lane pictures:</b> KM2-2a to e are on the city prompts page, and none has arrived yet. They bring the beach close up: the boats' nets and floats, the tower's ladder, the sea wall's steps.",
+  "<b>The turn up the beach:</b> the sea behind the lane until the tower, then the sea wall behind it. Is that how you want the beach to read side-on?",
+  "<b>Anything to move:</b> a place, the order, the length or the play beats."
+ ]
+}

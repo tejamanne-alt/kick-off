@@ -4945,5 +4945,120 @@
     "one piece"
    ]
   ]
+ },
+ "KmHome": {
+  "id": "KM-B01",
+  "sheet": "photo/KM1-1 (left): the house, its entrance and its fence",
+  "size": [
+   11.19,
+   9.2,
+   6.78
+  ],
+  "tris": 77,
+  "motions": [],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "the house, its skirt roof and gable, its upper storey and roof, its two air conditioners and its fence: each once (looked at in Top and Bottom)"
+   ],
+   [
+    2,
+    "Closed shell",
+    "limit",
+    "47 edges with one face, 0 with three or more: built of boxes and roof faces without the faces no one can see (the walls' bottoms, the inside of the fence's boards), as approved; seen from the street and from above, no gap shows"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "pass",
+    "modelled from boxes and roof faces measured off the photographic KM1-1 (about 120 px to the metre)"
+   ],
+   [
+    4,
+    "Views the game sees",
+    "limit",
+    "the street side is the picture itself; its sides, back and roofs away from the street take KM-P3's photographic boards and tiles in the house's colours (no view of their own)"
+   ],
+   [
+    5,
+    "Size, triangles",
+    "pass",
+    "11.19 x 9.20 x 6.78 m, 77 triangles (its budget 1,500; a house's 5,000), the kit's 4096 atlas as its texture (to be cropped: docs/PERFORMANCE.md)"
+   ],
+   [
+    6,
+    "Outline whole",
+    "pass",
+    "its outline the picture's; the pots, plants and bicycle in front of the fence painted out of it and stood in front as their own models"
+   ],
+   [
+    7,
+    "No holes",
+    "pass",
+    "no holes in what the street sees"
+   ],
+   [
+    8,
+    "Own models before walls",
+    "pass",
+    "the pots, the persimmon, the bicycle, the letterbox and the outdoor unit are their own models"
+   ],
+   [
+    9,
+    "Look target",
+    "pass",
+    "the photographic KM1-1, in KM-0's look"
+   ],
+   [
+    10,
+    "Solid",
+    "pass",
+    "solid and whole"
+   ],
+   [
+    11,
+    "No brands",
+    "pass",
+    "no brand or logo"
+   ],
+   [
+    12,
+    "No wires or sky",
+    "pass",
+    "the power lines taken off its roof (dewire), no sky on its roof's edge (unsky)"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "the repairs: the garden painted out of the fence, the wires off the roof, the sky off the roof's edge"
+   ],
+   [
+    14,
+    "Rig names",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    15,
+    "Joints overlap",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no feet"
+   ],
+   [
+    17,
+    "Each part only itself",
+    "n/a",
+    "one piece"
+   ]
+  ]
  }
 }

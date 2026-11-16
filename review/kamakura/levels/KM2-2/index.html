@@ -1,0 +1,87 @@
+<title>KM2-2 layout</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Source+Sans+3:wght@400;600&family=Zen+Kaku+Gothic+New:wght@500;700&display=swap">
+<style>
+:root { --bg: #f1f2ef; --panel: #ffffff; --ink: #1f2522; --muted: #5d6762; --line: #d6dbd6; --accent: #b23a2e;
+  --strip: #2a2e2c; --note-bg: #f7f1e3; --note-ink: #6b4f12;
+  --display: "Zen Kaku Gothic New", "Hiragino Sans", "Segoe UI", system-ui, sans-serif;
+  --body: "Source Sans 3", "Segoe UI", system-ui, sans-serif; --mono: "JetBrains Mono", ui-monospace, Menlo, monospace; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #151816; --panel: #1d211f; --ink: #e6ebe7; --muted: #9ba8a1; --line: #2f3632; --accent: #ef8a7c;
+  --strip: #0f1110; --note-bg: #322a17; --note-ink: #ecc977; color-scheme: dark } }
+:root[data-theme="dark"] { --bg: #151816; --panel: #1d211f; --ink: #e6ebe7; --muted: #9ba8a1; --line: #2f3632;
+  --accent: #ef8a7c; --strip: #0f1110; --note-bg: #322a17; --note-ink: #ecc977; color-scheme: dark }
+body { background: var(--bg); color: var(--ink); font: 16px/1.55 var(--body); }
+.wrap { max-width: 1180px; margin: 0 auto; padding-block: 28px 64px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: flex; flex-direction: column; gap: 28px; }
+h1, h2 { font-family: var(--display); margin: 0; line-height: 1.2; text-wrap: balance; }
+h1 { font-size: 2rem; } h2 { font-size: 1.3rem; }
+p { margin: 0; max-width: 70ch; }
+.eyebrow { font: 600 0.75rem var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+section { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+figure { margin: 0; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+figcaption { font: 0.8rem var(--mono); color: var(--muted); }
+.scroll { overflow-x: auto; border-radius: 8px; background: var(--strip); }
+.scroll img { display: block; height: 320px; width: auto; max-width: none; }
+.full img { width: 100%; height: auto; border-radius: 8px; display: block; }
+table { border-collapse: collapse; width: 100%; font-size: 0.92rem; }
+td, th { border-top: 1px solid var(--line); padding: 7px 10px 7px 0; vertical-align: top; text-align: left; }
+th { font: 600 0.78rem var(--mono); color: var(--muted); }
+td.x { font: 0.85rem var(--mono); white-space: nowrap; font-variant-numeric: tabular-nums; width: 5em; }
+.table-box { overflow-x: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 4px 14px 10px; }
+ul { margin: 0; padding-left: 1.1em; display: flex; flex-direction: column; gap: 6px; max-width: 75ch; }
+li ul { margin: 6px 0; gap: 4px; }
+.ask { background: var(--note-bg); color: var(--note-ink); border-radius: 8px; padding: 14px 16px; }
+.ask ul { color: var(--ink); }
+</style><div class="wrap">
+<header class="stack"><div class="eyebrow">Kamakura · route 2 · leg 2 · proposed layout</div><h1>KM2-2 Yuigahama Morning</h1>
+<p>The second leg of route 2, the Shonan Coast: off the boardwalk and along the beach at Yuigahama, past the surfboards stuck in the sand, the fishing boats on their rollers, the lifeguard tower and the litter sacks, along the sea wall under the beach houses, up the steps to the beach road and Grandma's shop. It is laid out from your KM2-2 picture, in the order of its five lane pictures, for your approval.</p>
+<p>About 105 m from the boardwalk's end to Grandma's door. Your picture shows the sea's horizon, so every piece takes its size from how far its foot stands below it: the boats come out 4.9 and 5.1 m long, the tower 4.7 m to its roof, the sea wall 1.75 m above its dune.</p>
+<p>The see-through boxes are what is still to come: the steps up to the road and Grandma's shop come from KM2-3's picture, where the shop is.</p>
+</header>
+<section><h2>The picture it comes from</h2><figure class="full"><img src="reference.jpg" alt="KM2-2 Yuigahama Morning, the reference picture"><figcaption>KM2-2 Yuigahama Morning, the photographic version: the surfboards in the sand, the two fishing boats on their rollers with their traps, boxes and ropes, the lifeguard tower, the litter sacks by their bamboo fence, the sea wall under the beach houses and pines, the rules board by the steps, Enoshima across the bay.</figcaption></figure></section>
+<section><h2>Through the game camera</h2><p>Each model at its real size and place, seen through the game camera as the game frames it, the play lane at the front. See-through boxes are what is still to come. The shading is Blender's, not the game's toon look: judge the places, sizes, order and gaps.</p><figure><div class="scroll"><img src="strip.jpg" alt="The layout through the game camera, screen by screen"></div><figcaption>Scroll sideways: each screen is what the camera shows as the kid walks on; the red figure is the kid (1.57 m) with the ball.</figcaption></figure></section>
+<section><h2>From above</h2><figure class="full"><img src="plan.jpg" alt="The level from above, each place labelled"><figcaption>The camera is below the picture; red lines mark the play beats.</figcaption></figure></section>
+<section><h2>The play</h2><div class="table-box"><table><thead><tr><th>x (m)</th><th>What happens</th></tr></thead><tbody>
+<tr><td class="x">-12</td><td>start: off the boardwalk onto the sand (KM2-1 stops here)</td></tr>
+<tr><td class="x">0</td><td>the Tide: the wave runs up over the path from x 0 to 14; wait for it to draw back, or run</td></tr>
+<tr><td class="x">6</td><td>gulls standing on the sand (KM-N10), lifting off as the kid comes; one crosses over the sea</td></tr>
+<tr><td class="x">11</td><td>an egret wading at the water&#x27;s edge (KM-N11)</td></tr>
+<tr><td class="x">14</td><td>shore crabs at the tide line (KM-N27): they scuttle sideways from the ball</td></tr>
+<tr><td class="x">16</td><td>a black kite circling over the boats (KM-N05)</td></tr>
+<tr><td class="x">30</td><td>checkpoint</td></tr>
+<tr><td class="x">39</td><td>a crow at the litter sacks (KM-N06): it hops off, then back</td></tr>
+<tr><td class="x">60</td><td>checkpoint</td></tr>
+<tr><td class="x">74</td><td>up the steps to the beach road</td></tr>
+<tr><td class="x">93</td><td>Grandma&#x27;s whitebait shop: the stop (KM2-3 is the errand there)</td></tr>
+</tbody></table></div></section>
+<section><h2>Where everything stands</h2><div class="table-box"><table><thead><tr><th>x (m)</th><th>Model</th><th>Why there</th></tr></thead><tbody>
+<tr><td class="x">-9.0</td><td>KmDuneGrass</td><td>dune grass at the boardwalk&#x27;s end (KM-G23)</td></tr>
+<tr><td class="x">-5.5</td><td>KmDuneGrass</td><td>dune grass</td></tr>
+<tr><td class="x">2.0</td><td>KmBeachSurfboards</td><td>three surfboards stuck upright in the sand (KM-A36, cut-outs)</td></tr>
+<tr><td class="x">4.0</td><td>KmEnoshimaView</td><td>Enoshima and the hills beyond the bay, on the horizon (a cut-out, its foot at the game camera&#x27;s eye)</td></tr>
+<tr><td class="x">18.5</td><td>KmFishingBoat</td><td>the near fishing boat on its rollers (KM-B20, a cut-out)</td></tr>
+<tr><td class="x">19.3</td><td>KmBoatGear</td><td>its crab traps and net (KM-A37), fish boxes (KM-A35) and coiled ropes</td></tr>
+<tr><td class="x">23.0</td><td>KmFishingBoatFar</td><td>the far fishing boat on its rollers, its net (KM-B20, a cut-out)</td></tr>
+<tr><td class="x">36.0</td><td>KmLifeguardTower</td><td>the lifeguard tower with its ladder and flag (KM-B21)</td></tr>
+<tr><td class="x">39.6</td><td>KmLitterSacks</td><td>the sacks of collected litter and their bamboo fence: a crow at them (KM-N06)</td></tr>
+<tr><td class="x">47.0</td><td>KmDuneGrass</td><td>dune grass at the sea wall&#x27;s foot (KM-G23)</td></tr>
+<tr><td class="x">51.0</td><td>KmDuneGrass</td><td>dune grass at the sea wall&#x27;s foot (KM-G23)</td></tr>
+<tr><td class="x">52.0</td><td>KmSeaWall</td><td>the sea wall in streaked concrete (KM-B23)</td></tr>
+<tr><td class="x">56.5</td><td>KmDuneGrass</td><td>dune grass at the sea wall&#x27;s foot (KM-G23)</td></tr>
+<tr><td class="x">58.0</td><td>KmBeachHouses</td><td>the beach houses and black pines above the sea wall (a cut-out)</td></tr>
+<tr><td class="x">61.0</td><td>KmDuneGrass</td><td>dune grass at the sea wall&#x27;s foot (KM-G23)</td></tr>
+<tr><td class="x">64.0</td><td>KmDuneGrass</td><td>dune grass at the sea wall&#x27;s foot (KM-G23)</td></tr>
+<tr><td class="x">66.0</td><td>KmSeaWall</td><td>the sea wall</td></tr>
+<tr><td class="x">71.5</td><td>KmBeachSign</td><td>the beach&#x27;s rules board on its post, by the steps (a cut-out)</td></tr>
+<tr><td class="x">84.0</td><td>KmPoleTransformer</td><td>a pole by the road</td></tr>
+<tr><td class="x">7.0</td><td>(to come)</td><td>the wet sand the wave runs up over (the Tide hazard: x 0 to 14)</td></tr>
+<tr><td class="x">12.0</td><td>(to come)</td><td>the sea (the Tide hazard&#x27;s sea behind the lane), as far as the tower</td></tr>
+<tr><td class="x">74.5</td><td>(to come)</td><td>the steps up to the beach road (KM-B23&#x27;s steps, from KM2-3&#x27;s picture)</td></tr>
+<tr><td class="x">88.0</td><td>(to come)</td><td>the beach road along the top of the sea wall</td></tr>
+<tr><td class="x">93.0</td><td>(to come)</td><td>Grandma&#x27;s whitebait shop (KM-B22, from KM2-3&#x27;s picture): the stop</td></tr>
+</tbody></table></div></section>
+<section><h2>Decided for now</h2><ul><li><b>The sea is behind the lane</b> as far as the tower, as the game's Tide hazard has it: the wave runs up over the path from x 0 to 14. After the tower the route turns up the beach, and the sea wall with the houses above it stands behind the lane instead.</li><li><b>The near boat and its gear</b> are two cut-outs: the boat on its rollers, and in front of it, nearer the lane, its crab traps and net, its fish boxes and its coiled ropes, as your picture heaps them against it.</li><li><b>The lifeguard tower</b> is built in boxes from your picture: the roof, four posts, the cabin, the platform and four legs, the cross braces on the front legs and the far ones behind, the ladder leaning against the platform's end and the flag on its pole. It is painted out of the houses and pines behind it.</li><li><b>The sea wall</b> is squared up out of your picture's perspective (14 m, two sections laid end to end), dune grass at its foot (KM-G23). The beach houses and pines stand above it as one cut-out.</li><li><b>Enoshima</b> is a cut-out far back on the horizon. The rules board by the steps has made-up writing, no real words.</li><li><b>Animals:</b> gulls on the sand and over the sea (KM-N10), an egret wading (KM-N11), shore crabs at the tide line (KM-N27), a black kite circling over the boats (KM-N05), a crow at the litter sacks (KM-N06).</li><li><b>Cost (est., docs/PERFORMANCE.md):</b><ul><li>KM2-2's ten pieces from the picture: 184 triangles in all (the tower 144), one shared 4096 x 2048 texture (about 11 MB with mips in ETC2 with the cut-outs' alpha, about 5 MB in ASTC 6x6).</li><li>The dune grass (seven clumps) and the kit's pole: about 11,300 triangles.</li></ul>In all, about 11,500 triangles standing and about 25 MB of textures with what is still to come.</li></ul></section>
+<section class="ask"><h2>For you</h2><ul><li><b>The lane pictures:</b> KM2-2a to e are on the city prompts page, and none has arrived yet. They bring the beach close up: the boats' nets and floats, the tower's ladder, the sea wall's steps.</li><li><b>The turn up the beach:</b> the sea behind the lane until the tower, then the sea wall behind it. Is that how you want the beach to read side-on?</li><li><b>Anything to move:</b> a place, the order, the length or the play beats.</li></ul></section>
+</div>

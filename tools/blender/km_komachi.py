@@ -170,10 +170,12 @@ def gateway(atlas, img):
     for p0, p1 in ((602, 646), (911, 953)):
         xm, rr = (X(p0) + X(p1)) / 2, (X(p1) - X(p0)) / 2
         ring = [(xm + rr * math.cos(math.pi / 8 + k * math.pi / 4), rr * math.sin(math.pi / 8 + k * math.pi / 4)) for k in range(8)]
+        b.begin([Vector((xm, 0.0, 0.0)), Vector((xm, 0.0, Z(352)))])     # one part: its faces outward from its axis (D37)
         for k in range(8):
             (xa, ya), (xb, yb) = ring[k], ring[(k + 1) % 8]
             b.face([Vector((xb, yb, 0.0)), Vector((xa, ya, 0.0)), Vector((xa, ya, Z(352))), Vector((xb, yb, Z(352)))],
                    red_side)
+        b.end()
     b.box(X(560), X(995), -0.17, 0.17, Z(441), Z(411), side=red_side)          # the tie beam
     b.box(X(645), X(911), -0.1, 0.1, Z(414), Z(352), side=red_side)          # the signboard
     b.box(X(545), X(1012), -0.25, 0.25, Z(352), Z(326), side=red_side)       # the top beam

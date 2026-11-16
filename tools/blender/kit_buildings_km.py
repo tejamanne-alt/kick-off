@@ -67,6 +67,9 @@ class Atlas:
 
 
 # ---------------------------------------------------------------- geometry with projected UVs
+FACE_AUDIT = bool(os.environ.get('KM_FACE_AUDIT'))      # lists the faces the D37 fix keeps as built
+
+
 class Builder:
     """Faces added in metres (x along the street, y into the picture: -y faces the street, z up). A face facing the street
     takes the front picture's pixels by projection; any other face takes a sample region, stretched once across it."""
@@ -74,8 +77,21 @@ class Builder:
     def __init__(self, atlas, front_pos, front_map, side_pos, side_size):
         self.bm = bmesh.new()
         self.uv = self.bm.loops.layers.uv.new('UVMap')
+        # each face's part (a box, a roof): k its part's middle parts[k - 1]; -1 a face added on its own, kept as built
+        # (wound outward by whoever added it: a roof's eaves facing down, a cut-out's front and back); 0 a face made
+        # outside face() (turned outward from the model's middle, as before)
+        self.part = self.bm.faces.layers.int.new('part')
+        self.parts, self._part = [], -1
         self.atlas, self.front_pos, self.front_map = atlas, front_pos, front_map
         self.side_pos, self.side_size = side_pos, side_size
+
+    def begin(self, pts):
+        """The faces added until end() are one part, turned outward from the middle of pts."""
+        self.parts.append(sum((Vector(p) for p in pts), Vector()) / len(pts))
+        self._part = len(self.parts)
+
+    def end(self):
+        self._part = -1
 
     def face(self, pts, side=None, project=True):
         """pts: corners in order, counter-clockwise seen from outside. side: a sample for a non-front face: (pos, size),
@@ -83,6 +99,7 @@ class Builder:
         sample made big enough by tiled())."""
         vs = [self.bm.verts.new(p) for p in pts]
         f = self.bm.faces.new(vs)
+        f[self.part] = self._part
         f.normal_update()
         n = f.normal
         front = project and n.y < -0.25    # facing the street (walls, roof slopes toward it)
@@ -131,27 +148,33 @@ class Builder:
             'top': [P(x0, y0, z1), P(x1, y0, z1), P(x1, y1, z1), P(x0, y1, z1)],
             'bottom': [P(x0, y1, z0), P(x1, y1, z0), P(x1, y0, z0), P(x0, y0, z0)],
         }
+        self.begin([P(x0, y0, z0), P(x1, y1, z1)])
         for k, pts in faces.items():
             if k not in skip:
                 self.face(pts, side)
+        self.end()
 
     def gable_roof(self, x0, x1, y_eave_front, y_ridge, y_eave_back, z_eave, z_ridge, side=None):
         """A roof of two slopes: the front slope faces the street (projected), the back slope and the gable ends take the sample."""
         P = lambda x, y, z: Vector((x, y, z))
+        self.begin([P(x0, y_eave_front, z_eave), P(x1, y_eave_back, z_eave), P(x0, y_ridge, z_ridge), P(x1, y_ridge, z_ridge)])
         self.face([P(x0, y_eave_front, z_eave), P(x1, y_eave_front, z_eave), P(x1, y_ridge, z_ridge), P(x0, y_ridge, z_ridge)], side)
         self.face([P(x1, y_eave_back, z_eave), P(x0, y_eave_back, z_eave), P(x0, y_ridge, z_ridge), P(x1, y_ridge, z_ridge)], side)
         self.face([P(x0, y_eave_back, z_eave), P(x0, y_eave_front, z_eave), P(x0, y_ridge, z_ridge)], side)
         self.face([P(x1, y_eave_front, z_eave), P(x1, y_eave_back, z_eave), P(x1, y_ridge, z_ridge)], side)
         self.face([P(x0, y_eave_back, z_eave), P(x1, y_eave_back, z_eave), P(x1, y_eave_front, z_eave), P(x0, y_eave_front, z_eave)], side)
+        self.end()
 
     def hip_roof(self, x0, x1, xr0, xr1, y_eave_front, y_ridge, y_eave_back, z_eave, z_ridge, side=None, project=True):
         """A hipped roof: the ridge (xr0 to xr1) shorter than the eaves, a sloping triangle at each end."""
         P = lambda x, y, z: Vector((x, y, z))
+        self.begin([P(x0, y_eave_front, z_eave), P(x1, y_eave_back, z_eave), P(x0, y_ridge, z_ridge), P(x1, y_ridge, z_ridge)])
         self.face([P(x0, y_eave_front, z_eave), P(x1, y_eave_front, z_eave), P(xr1, y_ridge, z_ridge), P(xr0, y_ridge, z_ridge)], side, project)
         self.face([P(x1, y_eave_back, z_eave), P(x0, y_eave_back, z_eave), P(xr0, y_ridge, z_ridge), P(xr1, y_ridge, z_ridge)], side)
         self.face([P(x0, y_eave_back, z_eave), P(x0, y_eave_front, z_eave), P(xr0, y_ridge, z_ridge)], side)
         self.face([P(x1, y_eave_front, z_eave), P(x1, y_eave_back, z_eave), P(xr1, y_ridge, z_ridge)], side)
         self.face([P(x0, y_eave_back, z_eave), P(x1, y_eave_back, z_eave), P(x1, y_eave_front, z_eave), P(x0, y_eave_front, z_eave)], side)
+        self.end()
 
     def skirt(self, outer, inner, z_eave, side=None, project=True):
         """A ground-floor roof skirt (hisashi): four slopes from an eave rectangle up to the upper storey's walls.
@@ -161,18 +184,30 @@ class Builder:
         ix0, ix1, iy0, iy1, zl, zr = inner
         o = [P(ox0, oy0, z_eave), P(ox1, oy0, z_eave), P(ox1, oy1, z_eave), P(ox0, oy1, z_eave)]
         i = [P(ix0, iy0, zl), P(ix1, iy0, zr), P(ix1, iy1, zr), P(ix0, iy1, zl)]
+        self.begin(o + i)
         for k in range(4):
             self.face([o[k], o[(k + 1) % 4], i[(k + 1) % 4], i[k]], side, project)
+        self.end()
 
     def object(self, name, outward=True):
         # every face outward (Unity draws front faces only): turned round where it faces the model's middle; a cut-out
         # is built facing the street and kept so (outward=False)
+        # (from its own part's middle: from the whole model's, a roof's underside or a lower box's top, which face the
+        # model's middle, were turned inward and the game culled them; LEARNINGS D37)
         mid = sum((v.co for v in self.bm.verts), Vector()) / max(len(self.bm.verts), 1)
         for f in self.bm.faces:
             f.normal_update()
-            if outward and f.normal.dot(f.calc_center_median() - mid) < 0:
-                f.normal_flip()
-            if not outward and f.normal.y > 0:
+            k = f[self.part]
+            if k < 0:
+                if FACE_AUDIT and k == -1 and outward and f.normal.dot(f.calc_center_median() - mid) < 0:
+                    print('face audit: %s keeps a face the old rule turned: at (%.2f, %.2f, %.2f) facing (%.2f, %.2f, %.2f)'
+                          % ((name,) + tuple(f.calc_center_median()) + tuple(f.normal)))
+                continue
+            if outward:
+                ref = self.parts[k - 1] if k > 0 else mid
+                if f.normal.dot(f.calc_center_median() - ref) < 0:
+                    f.normal_flip()
+            elif f.normal.y > 0:
                 f.normal_flip()
         me = bpy.data.meshes.new(name)
         self.bm.to_mesh(me)
@@ -705,7 +740,8 @@ def unlit(atlas_path, cut=False):
     nt.links.new(em.outputs[0], out.inputs['Surface'])
     if cut:
         with_cutout(m, tex, em.outputs[0])
-    return m
+    m.use_backface_culling = True          # as the game draws them (ArtBaker: back faces culled), so a face turned the
+    return m                               # wrong way shows in the review
 
 
 def render(path, cam_loc, cam_target, ortho=None, fov=34.0, size=(1200, 900), only=None):
@@ -846,7 +882,7 @@ def props_review(props, out_dir, only=None):
     for sub in ('views', 'source', 'motion', 'tmp', 'rows'):
         os.makedirs(os.path.join(out_dir, sub), exist_ok=True)
     path = os.path.join(out_dir, 'review.json')
-    last = json.load(open(path)) if only and os.path.exists(path) else {}
+    last = json.load(open(path)) if os.path.exists(path) else {}
     for root, info in props:
         m = unlit(os.path.join(OUT, info['texture']), cut=info['cutout'])
         for o in [root] + list(root.children_recursive):
@@ -948,7 +984,9 @@ def props_review(props, out_dir, only=None):
     for name in KV.props():                  # not built this time (--only): as last reviewed
         if name not in review and name in last:
             review[name] = last[name]
-    review = {name: review[name] for name in KV.props() if name in review}
+    kept = {name: entry for name, entry in last.items() if name not in KV.props()}   # added by other tools (the home's,
+    review = {name: review[name] for name in KV.props() if name in review}            # review_km_home.py): kept
+    review.update(kept)
     json.dump(review, open(path, 'w'), indent=1, ensure_ascii=False)
     rows = []
     for name in review:

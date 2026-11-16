@@ -1,0 +1,17 @@
+{
+ "intro": [
+  "KM2-2 Yuigahama Morning's set pieces, from your photographic KM2-2. Your picture shows the sea's horizon, so each piece takes its size from how far its foot stands below it: the boats come out 4.9 and 5.1 m long, the tower 4.7 m to its roof, the surfboards 1.6 to 1.9 m above the sand.",
+  "Ten models: the near fishing boat and, as its own cut-out to stand in front of it, its crab traps, net, fish boxes and ropes; the far boat; the lifeguard tower in boxes with its ladder and flag; the sea wall, squared up out of your picture's perspective; the beach houses and pines above it; the litter sacks with their bamboo fence; three surfboards in the sand; the rules board; Enoshima on the horizon. They share one 4096 x 2048 texture, 184 triangles together."
+ ],
+ "limits": [
+  "The boats, their gear, the sacks, the surfboards, the board, the houses and Enoshima are flat cut-outs: seen from the lane they are your picture, and their depth is not modelled (check 3). The boats await their views (KM-P5 adds their 3D shape).",
+  "The tower's boxes show your picture from the lane. Their sides, backs and tops take the wood's own colour (check 4). Its two right-hand legs are hidden at the foot by the sacks and the fence in your picture, so they are carried on down to the sand.",
+  "The hull behind the near boat's traps and boxes is not in your picture: it is carried on along the hull's own lines from further back, and the gear stands in front of it.",
+  "Behind the tower, the houses and pines are painted from what is round them there, the tree line carried on across.",
+  "The sea wall's length is not in your picture: it is drawn 14 m long. Its steps come with KM2-3, where your picture shows them."
+ ],
+ "pending": [
+  "The close-ups come from the lane pictures KM2-2a to e, none of which has arrived yet.",
+  "Not installed in the game yet: they go in with KM2-2's level, once you approve its layout board."
+ ]
+}

@@ -53,6 +53,76 @@ def inpaint(a, mask, r=4):
     return cv2.inpaint(a, mask.astype(np.uint8), r, cv2.INPAINT_TELEA)
 
 
+def patch_fill(a, hole, patch=11, window=140, avoid=None):
+    """Fills hole by exemplar painting: from the hole's edge inward, each time the edge patch with the most known pixels
+    and the strongest line running into the hole takes the patch nearby (within window px) whose known pixels match it
+    best, and its missing pixels from it. Trees,
+    sky and boards behind a thing taken out stay trees, sky and boards, not a smear (TELEA) or a copied strip (D38).
+    avoid: pixels no source patch may touch (besides the hole)."""
+    hole = hole.astype(bool)
+    if not hole.any():
+        return a.copy()
+    out = a.copy()
+    H, W = hole.shape
+    ys, xs = np.nonzero(hole)
+    m = window + patch
+    Y0, Y1, X0, X1 = max(ys.min() - m, 0), min(ys.max() + m + 1, H), max(xs.min() - m, 0), min(xs.max() + m + 1, W)
+    sub = out[Y0:Y1, X0:X1].astype(np.float32)
+    hl = hole[Y0:Y1, X0:X1].copy()
+    bad = hl.copy() if avoid is None else (hl | avoid[Y0:Y1, X0:X1].astype(bool))
+    h = patch // 2
+    k3 = np.ones((3, 3), np.uint8)
+    sh, sw = hl.shape
+    while hl.any():
+        known = ~hl
+        edge = hl & (cv2.dilate(known.astype(np.uint8), k3) > 0)
+        ey, ex = np.nonzero(edge)
+        conf = cv2.boxFilter(known.astype(np.float32), -1, (patch, patch), borderType=cv2.BORDER_REPLICATE)
+        # first where a line (a tree line against the sky, a roof's edge) runs into the hole (Criminisi's data term),
+        # so it is carried on across it before what lies either side of it grows in
+        g = sub.mean(-1)
+        gx, gy = cv2.Sobel(g, cv2.CV_32F, 1, 0, ksize=3), cv2.Sobel(g, cv2.CV_32F, 0, 1, ksize=3)
+        near = cv2.dilate(hl.astype(np.uint8), k3) > 0
+        gx[near], gy[near] = 0, 0
+        gx, gy = cv2.boxFilter(gx, -1, (patch, patch)), cv2.boxFilter(gy, -1, (patch, patch))
+        hm = cv2.GaussianBlur(hl.astype(np.float32), (5, 5), 0)
+        nx, ny = cv2.Sobel(hm, cv2.CV_32F, 1, 0, ksize=3), cv2.Sobel(hm, cv2.CV_32F, 0, 1, ksize=3)
+        nn = np.sqrt(nx[ey, ex] ** 2 + ny[ey, ex] ** 2) + 1e-6
+        data = np.abs(-gy[ey, ex] * nx[ey, ex] + gx[ey, ex] * ny[ey, ex]) / nn / 255.0 + 0.001
+        i = int(np.argmax(conf[ey, ex] * data))
+        y, x = ey[i], ex[i]
+        y0, y1, x0, x1 = max(y - h, 0), min(y + h + 1, sh), max(x - h, 0), min(x + h + 1, sw)
+        tpl = sub[y0:y1, x0:x1]
+        tm = known[y0:y1, x0:x1].astype(np.float32)
+        sy0, sy1 = max(y0 - window, 0), min(y1 + window, sh)
+        sx0, sx1 = max(x0 - window, 0), min(x1 + window, sw)
+        res = cv2.matchTemplate(sub[sy0:sy1, sx0:sx1], tpl, cv2.TM_SQDIFF, mask=np.dstack([tm] * 3))
+        nb = cv2.boxFilter(bad[sy0:sy1, sx0:sx1].astype(np.float32), -1, (x1 - x0, y1 - y0), anchor=(0, 0),
+                           normalize=False, borderType=cv2.BORDER_CONSTANT)[:res.shape[0], :res.shape[1]]
+        res[nb > 0] = np.inf
+        ry, rx = np.unravel_index(int(np.argmin(res)), res.shape)
+        src = sub[sy0 + ry:sy0 + ry + (y1 - y0), sx0 + rx:sx0 + rx + (x1 - x0)]
+        fill = hl[y0:y1, x0:x1].copy()
+        sub[y0:y1, x0:x1][fill] = src[fill]
+        hl[y0:y1, x0:x1][fill] = False
+    out[Y0:Y1, X0:X1] = np.clip(sub, 0, 255).astype(out.dtype)
+    return out
+
+
+def trim_edges(mask, a, band=14, dist=30, ring=8):
+    """A measured outline trimmed of the ground caught along its edge: in the band px inside the outline, the pixels
+    within dist (RGB) of the ground just outside it (the median of a ring px wide round it) are let go."""
+    m = mask.astype(np.uint8)
+    out_ring = (cv2.dilate(m, np.ones((2 * ring + 1, 2 * ring + 1), np.uint8)) > 0) & ~m.astype(bool)
+    ground = np.median(a[out_ring][:, :3].astype(np.float32), 0)
+    edge = m.astype(bool) & ~(cv2.erode(m, np.ones((2 * band + 1, 2 * band + 1), np.uint8)) > 0)
+    near = np.linalg.norm(a[..., :3].astype(np.float32) - ground, axis=-1) < dist
+    m[edge & near] = 0
+    m = cv2.morphologyEx(m, cv2.MORPH_OPEN, np.ones((3, 3), np.uint8))
+    n, lab, stats, _ = cv2.connectedComponentsWithStats(m)
+    return np.isin(lab, [i for i in range(1, n) if stats[i, cv2.CC_STAT_AREA] >= 40]).astype(np.uint8)
+
+
 def colour_sample(img, box, size=(64, 64)):
     """A plain sample of a part's own colour (a post's red, a cap's black), its box shrunk to size."""
     return img.crop(box).convert('RGB').resize(size, Image.BILINEAR)
@@ -94,6 +164,7 @@ def card_faces(b, atlas, pos, crop, cx, gy, s, y, both=True):
         if back:
             pts = pts[::-1]
         f = b.bm.faces.new([b.bm.verts.new(Vector((px, y + (0.002 if back else 0.0), pz))) for px, pz in pts])
+        f[b.part] = -1                     # kept as built: the front toward the street, the back away from it (D37)
         for loop in f.loops:
             c = loop.vert.co
             loop[b.uv].uv = atlas.uv(pos, cx + c.x * s - x0, gy - c.z * s - y0)

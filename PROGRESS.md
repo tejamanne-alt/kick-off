@@ -2742,6 +2742,33 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
 - Their first review found faults, all fixed before they were shown (D36): a fence carried down in a grid, two bins,
   a ladder down the embankment wall, and a window stretched across a side wall.
 
+## KM2-2 Yuigahama Morning: its layout and its set pieces from its picture, and inward faces fixed in the kit
+
+- KM2-2's picture looks along the beach with the sea's horizon in it, so every set piece takes its scale from how far
+  its foot stands below the horizon (`tools/blender/km_beach.py`, on `km_leg_kit.py`):
+  - the two fishing boats on their rollers, and the near boat's gear (its crab traps and net, fish boxes and coiled
+    ropes) as its own cut-out in front of it, the hull behind the gear carried on along its own lines;
+  - the lifeguard tower in boxes from the picture (each box showing only its own part), the cross braces front and
+    back, the ladder against the platform and the flag;
+  - the sea wall squared up out of the picture's perspective, and the beach houses and pines above it as one cut-out;
+  - the litter sacks and their bamboo fence, three surfboards in the sand, the rules board, Enoshima on the horizon;
+  - 10 models, 184 triangles, one shared 4096 x 2048 texture; their strict review is in `review/kamakura/beach`.
+- New in the leg kit: `patch_fill` (exemplar painting, lines first) for a large paint-out, and `trim_edges`, which
+  drops the ground caught along a measured outline.
+- KM2-2's proposed layout (`review/kamakura/levels/KM2-2`) runs about 105 m, from the boardwalk's end to Grandma's
+  shop:
+  - the sea behind the lane as far as the tower, the Tide's wave over the path from x 0 to 14;
+  - then the sea wall and the houses behind it, up the steps to the beach road.
+- Their first review found faults, fixed before they were shown (D38):
+  - the tower painted out of the backdrop as a smear and a copied strip of pines;
+  - the tower's boxes showing the trees behind them;
+  - sand along the boats' edges and a notch in the hull behind the traps;
+  - scales guessed piece by piece.
+- The kit turned faces inward on every projection-modelled piece with more than one part: a roof's underside, a lower
+  box's top (D37). The game culls back faces, so those faces were not drawn. Fixed in `kit_buildings_km.Builder`
+  (each part's faces turned outward from its own middle, cut-outs kept as built), and the review material now culls
+  back faces as the game does. KM1-3's, KM1-4's and KM2-1's pieces were rebuilt, and the home rebuilt and reinstalled.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

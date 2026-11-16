@@ -1548,6 +1548,69 @@ its review, November 2026).**
 - *Rule:* a hidden face takes a flat colour, or a pattern with no feature of its own: no window, edge or object. Before
   copying pixels into a hole, look at what the source holds.
 
+**D37. Faces turned inside out on every projection-modelled piece with more than one part (found reviewing KM2-2's
+lifeguard tower, November 2026).**
+- *What:* the kit's `Builder.object` turned every face to point away from the middle of the whole model. A part away
+  from that middle had faces that point toward it: the underside of the tower's roof (the middle is below it), the top
+  of a lower box under an upper one, a roof's eaves. Those faces were turned inward. The game culls back faces on the
+  Kamakura models (ArtBaker's `AlphaClip`), so from the game camera, below the roof, its underside was not drawn.
+  - A test of two boxes, one above the other: two of their twelve faces were inward.
+  - The cut-outs' back faces were turned to face the street too, so "seen from behind" showed nothing in the game.
+  - Loose faces were turned the same way:
+    - the eaves of the basin pavilion and of the houses' gables (facing up);
+    - the home's soffit;
+    - the sand of the school's sports ground (facing down, unseen from above);
+    - the red gateway's two round posts, half of each post's eight faces.
+  - None of it showed in the reviews: their renders drew both sides of every face.
+- *Why:* the boxes were already built facing outward. The turn was a safety net that assumed a model is one convex
+  shape around its middle.
+- *Fix:*
+  - Each box, roof and skirt is a part, and its faces are turned outward from the part's own middle.
+  - A face added on its own is kept as built. An audit (`KM_FACE_AUDIT=1`) listed each one that the old rule had turned;
+    all were wound outward except the gateway's posts, which are now a part each. A cut-out's front and back are kept
+    as built.
+  - The review material culls back faces, as the game does.
+  - Every Builder model was rebuilt: KM1-3's, KM1-4's and KM2-1's pieces, and the home (reinstalled).
+- *Rule:* a face's outward is its own part's outward, never the whole model's. Wind a loose face outward, or put it in a
+  part. The review draws faces as the game does, so a face the game would not draw does not pass.
+
+**D38. KM2-2's first build: the lifeguard tower painted out as a smear and as a copied strip of pines (found in its
+review, November 2026).**
+- *What:* behind the tower stand the beach houses and the pines.
+  - Its left half was inpainted (TELEA): a pale smear 100 px wide down the backdrop.
+  - Its right half was copied from 140 px to its right: two of each pine trunk and of a hut, joined at a hard seam.
+  - The tower's first boxes showed whatever stood behind their parts (trees between the posts on the roof's box), and
+    the roof's underside and the far braces were not in its outline.
+  - The pieces' scales were first guessed one by one (105 to 120 px to the metre), so the boat, the wall and the
+    tower did not agree.
+  - The measured outlines of the boats and surfboards caught a strip of sand and foam along their edges. The near
+    boat had a notch where its traps were cut away to stand in front of it.
+  - On the first board, sky showed between the squared-up sea wall's level top and the houses above it, whose foot
+    followed the picture's sloping wall top.
+- *Why:* TELEA spreads the hole's edge colours inward. It suits a line 10 px wide, not a region 100 px wide. A copied
+  strip repeats whatever it holds. A rectified piece no longer shares the picture's lines with the pieces cut from it
+  unrectified.
+- *Fix:*
+  - `km_leg_kit.patch_fill`: exemplar painting. From the hole's edge inward, each patch is taken from the best-matching
+    patch nearby, lines first (Criminisi), so the tree line runs on across the hole and the sky stays sky.
+  - Each tower box shows only its own part of the picture (its outline as the texture's alpha). The roof's underside
+    and the far braces (the dark wood between the legs) are added, the braces on a face at the back legs.
+  - The picture shows the sea's horizon (row 456), so every piece takes its scale from how far its foot stands below
+    it: (foot - 456) / 2.64 px to the metre, the eye 2.64 m up (set by the tower, 4.7 m to its roof).
+  - `km_leg_kit.trim_edges` lets go of the ground caught along an outline. The surfboards' outlines are pulled in
+    2 px. The hull behind the traps is carried on along the hull's own lines.
+  - The houses' columns are let down so their foot meets the squared-up wall's level top, 8 px below it.
+- *Rule:* paint a large hole with `patch_fill`; keep TELEA for thin lines. When a picture shows its horizon, measure
+  every scale from it, not piece by piece. When one piece is squared up, bring the pieces that meet it into line with it.
+
+**D39. The home dropped out of the props review page (found rebuilding it for D37, November 2026).**
+- *What:* `review_km_home.py` adds the home's review to `review/kamakura/props/review.json`. The next props build
+  (KM1-4's plants, commit bcdeb0e) rewrote the file with its own models only, so the published props page had lost
+  the home's entry since then.
+- *Why:* `kit_buildings_km.props_review` kept only the props it builds, plus the last entries of those it skipped.
+- *Fix:* it keeps every entry it does not build itself. The home's review is back on the props page.
+- *Rule:* a tool that rewrites a shared review file keeps the entries other tools wrote.
+
 ## E. Levels and world
 
 - **E1. Every level had chapter-1 scenery.** A new-scene call unloaded the level definition. *Rule:* pass data into scene builders explicitly; never hold asset references across a new-scene call.
