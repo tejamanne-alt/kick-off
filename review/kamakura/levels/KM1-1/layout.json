@@ -229,7 +229,7 @@
  ],
  "markers": [
   {
-   "what": "persimmon (KM-F02 to come)",
+   "what": "persimmon (its leaves in: KM-F02)",
    "x": -0.8,
    "front": 2.6,
    "w": 2.6,
@@ -242,7 +242,7 @@
    ]
   },
   {
-   "what": "potted plants and morning glories (KM-F04 to come)",
+   "what": "potted plants and morning glories (their flowers in: KM-F04)",
    "x": -9.0,
    "front": 1.15,
    "w": 5.0,
@@ -294,7 +294,7 @@
    ]
   },
   {
-   "what": "hydrangeas, blue (KM-F04 to come)",
+   "what": "hydrangeas, blue (their flowers in: KM-F04)",
    "x": 71.4,
    "front": 1.3,
    "w": 2.0,
@@ -307,7 +307,7 @@
    ]
   },
   {
-   "what": "hydrangeas, pink and violet (KM-G19, G20; KM-F04 to come)",
+   "what": "hydrangeas, pink and violet (KM-G19, G20)",
    "x": 88.0,
    "front": 1.3,
    "w": 4.0,

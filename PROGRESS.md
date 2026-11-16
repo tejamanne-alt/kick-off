@@ -2526,10 +2526,31 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
   - The play beats: the cat on the wall, the first-graders' line, the parked scooter, the crossing with the tram, the
     stop.
   - Placeholders for what's still to come.
-  - Questions for the user: lane houses (new sheets, or the two repainted); the foliage (KM-F02, KM-F04) and the lane
-    (KM-T07) sheets.
+  - The question for the user: the lane's houses. (The foliage, KM-F02 and KM-F04, and the lane texture, KM-T07, have
+    been in since 15 November; this round first said they were missing: A17.)
   - A plan rendered four times too small was caught and fixed before showing (E12).
 - Checks: `unity_api_check` 6000.7 passes, and the compiler's errors match the committed tree's.
+
+## KM1-1's lane in five pictures; the plants and animals prompts on their own pages (docs and tools)
+
+- The user, holding KM1-1's layout: more houses, from five pictures a level that together are its lane to school, KM1-1
+  first, and the plants' and the animals' prompts on pages of their own, built on the learnings.
+- KM1-1a to KM1-1e on the city prompts page (`docs/IMAGE_PROMPTS.md`, "KM1-1 Hase Lanes, its lane in five pictures"):
+  - each about 27 m of street, continuing the last from its left edge;
+  - the set pieces copied from the photographic KM1-1;
+  - every new house whole and apart, so it can be built (D9, D12, D13, D23);
+  - at KM1-1's camera and scale, no people or animals.
+  - `gen.py` takes the letter suffix.
+- The plants page (`docs/KAMAKURA_PLANT_PROMPTS.md`) and the animals page (`docs/KAMAKURA_ANIMAL_PROMPTS.md`), made by
+  `tools/prompts_page/gen_sheets.py` (`sheets.html`):
+  - Plants: BASE KM-S3 (a plant's own views: front, right side, top, and back for a pot) and KM-S4 (one plant's leaves
+    a picture, three trees' bark a picture); 47 prompts, KM1-1's first.
+  - Animals: KM-S2 (standing, every leg whole) and KM-S1 (in flight), improved; new KM-S5 (fish, the turtle, the shore
+    animals) and KM-S6 (insects, the frog, the snail); 40 prompts, KM1-1's first. Each animal has a backdrop of a colour
+    it doesn't have (D18).
+  - Each card shows where its pictures are saved and whether they are in, read from the repository.
+- The build doc's Steps 4, 4b and 4c point to the pages. The KM1-1 board's notes are corrected: the foliage and the
+  lane texture have been in since 15 November (A17).
 
 ## After Phase 8 (next steps)
 

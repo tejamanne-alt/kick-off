@@ -182,6 +182,16 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
   - Before writing a new file, look at the path (`ls`, or `git ls-files`). A name already taken gets a new name.
   - Read `git status` before every commit: a tool you meant to add should show as `??`, not `M`.
 
+**A17. Three sheets reported missing that had been in the repository for a day (November 2026).**
+- *What:* writing up KM1-1's layout, I told the user twice that the level waited on three of their sheets: the
+  foliage (KM-F02, KM-F04) and the lane texture (KM-T07). They had been in `review/kamakura/sheets/` since 15 November,
+  pushed with KM1-1's last batch. PROGRESS said "Next: ... the foliage and the lane texture", meaning they were next to
+  build, and I read it as "not yet made".
+- *Why:* the claim came from a line of notes, not from looking at the folder.
+- *Fix:* the board and PROGRESS were corrected, and the user was told.
+- *Rule:* before saying an input is missing, look for it where it would be (`ls review/<city>/sheets`, `git log`).
+  Notes say what was planned; the repository says what is there.
+
 ## B. Performance and mobile
 
 **B1. 28 fps with uneven frames on a mid-range phone (November 2026).**

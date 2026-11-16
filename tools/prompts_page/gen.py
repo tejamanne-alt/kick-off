@@ -61,7 +61,7 @@ KINDS = {'LEVEL': 'level', 'LOOK TARGET': 'look', 'SHEET': 'sheet', 'PLATE': 'pl
          'BASE': 'base', 'TEXTURE': 'texture', 'ASSET': 'asset', 'FOLIAGE': 'foliage', 'BUILD': 'build', 'RESTYLE': 'restyle'}
 BADGES = {'SHEET': 'Sheet', 'PLATE': 'Plate', 'MAP': 'Map', 'BASE': 'Paste first', 'TEXTURE': 'Texture', 'ASSET': 'Model sheet',
           'FOLIAGE': 'Foliage', 'BUILD': 'Claude Code', 'RESTYLE': 'Restyle'}
-FIRST_LINE = re.compile(r'(LEVEL|SHEET|PLATE|LOOK TARGET|MAP|BASE|TEXTURE|ASSET|FOLIAGE|BUILD|RESTYLE) ([A-Z]{2}[0-9]?-[A-Za-z]*[0-9]*),? ([^.]+)\.')
+FIRST_LINE = re.compile(r'(LEVEL|SHEET|PLATE|LOOK TARGET|MAP|BASE|TEXTURE|ASSET|FOLIAGE|BUILD|RESTYLE) ([A-Z]{2}[0-9]?-[A-Za-z]*[0-9]*[a-e]?),? ([^.]+)\.')   # (KM1-1a: a level's lane, picture by picture)
 
 
 def chatgpt_formats(doc):
@@ -97,7 +97,7 @@ def prompt_groups(text, heading):
             if not mm:
                 sys.exit('gen.py: a prompt under "' + head + '" does not start with its kind and id: ' + b[:60])
             kind, sid, title = mm.group(1), mm.group(2), mm.group(3)
-            badge = legs.get(sid, (None, None))[1] if kind == 'LEVEL' else BADGES.get(kind)
+            badge = legs.get(sid.rstrip('abcde'), (None, None))[1] if kind == 'LEVEL' else BADGES.get(kind)
             items.append(dict(id=sid, title=title[:1].upper() + title[1:], badge=badge, kind=KINDS[kind], text=b))
         rid = head.split(' ', 1)[0]
         # A group's note: the paragraph between its heading and its first prompt (a city's map says what to attach).

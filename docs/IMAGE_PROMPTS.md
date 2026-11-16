@@ -272,6 +272,89 @@ cherry tree by the gate, a sign board at the gate with an invented school name. 
 the pavement to the gate.
 ```
 
+#### KM1-1 Hase Lanes, its lane in five pictures
+
+Five pictures that together are KM1-1's whole lane, from the home's door on the left of the first to the end of Hase Station's platform on the right of the last, each about 27 m of street, so every house, wall and fence along the way can be built (KM1-1's own picture packs the level's set pieces into 30 m; the level is about 130 m). Keep them in the chat that made KM1-1, in the same tool. Attach to each: KM-0 (the look), the photographic KM1-1 (`refs/photo/KM1-1_hase_lanes.png`: the set pieces to copy) and the picture before it (to continue from). Check each before the next: the same camera and scale as KM1-1 (a 1.83 m vending machine about a quarter of the picture's height); its left edge picks up the last picture's right edge; every house whole, both corners and its roofline in view, a gap, wall or gate between it and the next; nothing in front of a front hides more than its lowest third; a set piece the same as in KM1-1; a photograph, not a painting; no real brand; no people or animals. Save them as `review/kamakura/refs/KM1-1a_out_the_gate.png`, `KM1-1b_the_vending_corner.png`, `KM1-1c_the_little_shrine.png`, `KM1-1d_the_level_crossing.png` and `KM1-1e_hase_station.png`.
+
+```text
+LEVEL KM1-1a, Hase Lanes 1 of 5: out of the home's gate. Follow the base prompt and the Kamakura block.
+The first of five pictures that together are KM1-1's lane, left to right, from the kid's home to Hase Station. A
+photograph in the look of the attached KM-0, at the same camera and scale as the attached KM1-1: a 1.83 m vending
+machine is about a quarter of the picture's height.
+Left: the kid's home, exactly as in KM1-1 (the same house: copy it): the two-storey timber-and-mortar house behind its
+dark board fence with the entrance gate, the potted plants, bonsai and morning glories in front of the fence, each pot
+apart. Over the fence's right end, the persimmon tree with orange fruit, its crown clear of the house's roof edge. Then
+a neighbour's two-storey house of white mortar with a dark grey standing-seam roof and a small balcony with a futon
+rail, a carport of corrugated sheet on thin steel posts beside it with two bicycles under it, a low clipped hedge and a
+letterbox at its gate. Then an older two-storey house: dark-stained boards below, cream mortar above, a grey tiled
+roof, aluminium sliding windows with insect screens, a gas meter on its wall and an air-conditioner unit on a bracket.
+Right edge: a concrete utility pole with its transformer, at the start of a grey concrete block wall (the next picture
+starts with this pole).
+Every house whole and standing apart: both its corners and its whole roofline in view, a narrow gap or a low wall
+between it and the next. The lane's green walking strip and its white edge line run the whole width, empty. No people,
+no animals.
+```
+
+```text
+LEVEL KM1-1b, Hase Lanes 2 of 5: the vending corner. Follow the base prompt and the Kamakura block.
+The second of five pictures of KM1-1's lane. A photograph in the look of KM-0, at the same camera and scale as KM1-1 and
+the first picture. Its left edge continues the first picture's right edge: it starts with the same concrete utility pole
+and transformer.
+Then the corner exactly as in KM1-1: the convex mirror on its orange pole at the kerb, the red and the blue drink
+vending machines side by side (invented names and drinks, nothing like a real brand), the three recycling bins beside
+them, each apart. Then a long grey concrete block wall about 1.6 m high, with a row of pierced decorative blocks and a
+flat top, running about 12 m. Behind it a dark timber two-storey house with a heavy grey tiled roof, and a tiled-roof
+wooden gate set into the wall; a clipped garden pine leaning over the wall's top, its crown clear of the house's roof
+edge; a mossy stone at the wall's foot. Right edge: the wall ends at the mouth of a narrow side lane (the next picture
+starts with the wall's end).
+Every house whole: its corners and roofline in view. The green walking strip runs the whole width, empty. No people, no
+animals.
+```
+
+```text
+LEVEL KM1-1c, Hase Lanes 3 of 5: the little shrine. Follow the base prompt and the Kamakura block.
+The third of five pictures of KM1-1's lane. A photograph in the look of KM-0, at the same camera and scale as KM1-1 and
+the pictures before it. Its left edge continues the second picture's right edge: it starts with the block wall's end and
+the narrow side lane's mouth.
+Then two small houses with a gap between them: one clad in cream-painted corrugated metal with a tiny balcony and a
+futon rail; one of beige mortar with a small shop on its ground floor, its metal shutter down and a hand-painted
+wooden signboard above it (an invented rice shop: お米 and an invented family name). Then, set back up a short flight of
+stone steps behind a mossy stone retaining wall, the little shrine, its small vermilion torii at the foot of the steps
+and its stone lanterns, exactly as in KM1-1. Then a bamboo fence and a low hedge. Right edge: the first metre of the
+beige stucco house of KM1-1 (the next picture shows it whole).
+Every house whole and apart. The green walking strip runs the whole width, empty. No people, no animals.
+```
+
+```text
+LEVEL KM1-1d, Hase Lanes 4 of 5: the level crossing. Follow the base prompt and the Kamakura block.
+The fourth of five pictures of KM1-1's lane. A photograph in the look of KM-0, at the same camera and scale as KM1-1 and
+the pictures before it. Its left edge continues the third picture's right edge: it starts with the bamboo fence's end.
+Then the beige stucco two-storey house exactly as in KM1-1, its entrance door at the lane, and parked at the kerb in
+front of it, its side to the camera, a green-and-white step-through delivery scooter with a front wire basket and a
+white box on its rear rack, its stand down, empty. Then a grey roadside control cabinet and a concrete pole with a
+street lamp. Then the level crossing exactly as in KM1-1: the post with its bells, red lamps and crossbuck, the black-
+and-yellow barrier raised, the single track crossing the lane and running away from the camera between the houses, the
+tram's overhead wire on its steel lattice gantry above, a chain-link fence along the track beyond the crossing. Right
+edge: the crossing's far post (the next picture starts with it).
+Every house whole and apart. The green walking strip runs the whole width, across the crossing's boards too, empty. No
+tram, no people, no animals.
+```
+
+```text
+LEVEL KM1-1e, Hase Lanes 5 of 5: Hase Station. Follow the base prompt and the Kamakura block.
+The last of five pictures of KM1-1's lane. A photograph in the look of KM-0, at the same camera and scale as KM1-1 and
+the pictures before it. Its left edge continues the fourth picture's right edge: it starts with the level crossing's far
+post.
+Then a one-storey timber café with a pale noren over its sliding door and a hand-painted signboard (an invented name in
+Japanese), a bench under its eave; bicycle parking under a corrugated roof with four bicycles, each apart. Then Hase
+Station exactly as in KM1-1: the ticket gate with its IC card reader, the short open platform with its low corrugated
+canopy on steel posts, its benches and the station's name board (長谷, as there), banks of blue, pink and violet
+hydrangeas along its fence, leaning Japanese black pines behind. Right edge: the platform's end among the trees: the
+end of the level.
+Every building whole. The green walking strip runs the whole width to the platform, empty. No tram, no people, no
+animals.
+```
+
 #### KM2 The Shonan Coast
 
 ```text
