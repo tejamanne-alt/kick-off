@@ -1,0 +1,17 @@
+{
+ "intro": [
+  "KM1-4 The Shrine Bridge's set pieces, projection-modelled from your photographic KM1-4 as KM1-3's were. Your picture is drawn in depth, so the shrine is built in layers, each at its own depth and scale: they line up as in the picture from the game camera, and slide past one another as the kid walks.",
+  "Nine models: the shrine's low stone wall (and its mirrored copy, laid in turn), the purification pavilion, the lotus pond with the arched bridge, the shrine's grounds behind; the school's wall and gate with its notice board, its two green fences, and the school building with its sports ground. They share one 4096 x 2048 texture, 314 triangles together. The big ginkgo, the cherry and the lotus are carved from your views and reviewed with the props."
+ ],
+ "limits": [
+  "Seen from the street they are your picture. From the side and the back they take the part's own colour, since the picture shows no other side (check 4).",
+  "The pond, the grounds and the fences are flat layers. Their depth comes from where they stand, 2 to 8 m behind the lane, not from their own shape (check 3).",
+  "The pavilion's roof carries its gable end and its right slope on its front, as the picture draws them from a little to its right.",
+  "The school building is far back (33 m), at 40 px to the metre: it is a background, its sides and roof in its concrete's colour.",
+  "Where a layer stood in front of another in the picture, it is painted out of the one behind: the pavilion out of the grounds (the fence and stone wall carried on from the left, the trees from above), the cherry out of the school's face (its window bays carried on). Turned a little, those places show the carried-on fence, leaves and windows."
+ ],
+ "pending": [
+  "The trees along the steps, the crossing's signals, and the shop and house before the school come from the lane pictures KM1-4a to e, none of which has arrived yet.",
+  "Not installed in the game yet: they go in with KM1-4's level, once you approve its layout board."
+ ]
+}

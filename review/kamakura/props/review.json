@@ -4486,70 +4486,70 @@
    ]
   ]
  },
- "KmHome": {
-  "id": "KM-B01",
-  "sheet": "photo/KM1-1 (left): the house, its entrance and its fence",
+ "KmGinkgoBig": {
+  "id": "KM-G12",
+  "sheet": "sheets/KM-G12_big_old_ginkgo (its views, made from KM1-1)",
   "size": [
-   11.19,
-   9.2,
-   6.78
+   14.81,
+   14.07,
+   20.0
   ],
-  "tris": 77,
+  "tris": 2678,
   "motions": [],
   "checks": [
    [
     1,
     "Every part once",
     "pass",
-    "the house, its skirt roof and gable, its upper storey and roof, its two air conditioners and its fence: each once (looked at in Top and Bottom)"
+    "one solid carved from its views: each part once, looked at in Top and Bottom"
    ],
    [
     2,
     "Closed shell",
-    "limit",
-    "47 edges with one face, 0 with three or more: built of boxes and roof faces without the faces no one can see (the walls' bottoms, the inside of the fence's boards), as approved; seen from the street and from above, no gap shows"
+    "pass",
+    "0 edges with one face, 0 with three or more"
    ],
    [
     3,
     "Depth from each part's own width",
     "pass",
-    "modelled from boxes and roof faces measured off the photographic KM1-1 (about 120 px to the metre)"
+    "carved from its front, side and top, each slice round: its TOP is straight down"
    ],
    [
     4,
     "Views the game sees",
     "limit",
-    "the street side is the picture itself; its sides, back and roofs away from the street take KM-P3's photographic boards and tiles in the house's colours (no view of their own)"
+    "no view sees the limbs' undersides. 20 m tall over the shrine's wall: the game camera sees its trunk and the underside of its lower crown, a little from below, the rest above the screen"
    ],
    [
     5,
     "Size, triangles",
     "pass",
-    "11.19 x 9.20 x 6.78 m, 77 triangles (its budget 1,500; a house's 5,000), the kit's 4096 atlas as its texture (to be cropped: docs/PERFORMANCE.md)"
+    "14.81 x 14.07 x 20.00 m, 2678 triangles (its budget: 3,000), its own 2048 px texture"
    ],
    [
     6,
     "Outline whole",
-    "pass",
-    "its outline the picture's; the pots, plants and bicycle in front of the fence painted out of it and stood in front as their own models"
+    "limit",
+    "straight on its outline is the views' own; at 45 degrees the leaves' edges show faint fringes where two views' cut-outs meet (the round shrub: green streaks at the sides of its dome). From the street it stands about 55 px tall on a 720-line screen and the camera turns at most about 30 degrees"
    ],
    [
     7,
     "No holes",
     "pass",
-    "no holes in what the street sees"
+    "no holes; the gaps the views show (between bars, beams and pillars) stay open"
    ],
    [
     8,
     "Own models before walls",
     "pass",
-    "the pots, the persimmon, the bicycle, the letterbox and the outdoor unit are their own models"
+    "stands on its own, its own model"
    ],
    [
     9,
     "Look target",
     "pass",
-    "the photographic KM1-1, in KM-0's look"
+    "a photograph in KM-0's look, as its views are"
    ],
    [
     10,
@@ -4567,13 +4567,243 @@
     12,
     "No wires or sky",
     "pass",
-    "the power lines taken off its roof (dewire), no sky on its roof's edge (unsky)"
+    "no power line across it, no sky on its edges"
    ],
    [
     13,
     "Repairs listed",
     "pass",
-    "the repairs: the garden painted out of the fence, the wires off the roof, the sky off the roof's edge"
+    "none needed"
+   ],
+   [
+    14,
+    "Rig names",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    15,
+    "Joints overlap",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no feet"
+   ],
+   [
+    17,
+    "Each part only itself",
+    "n/a",
+    "one piece"
+   ]
+  ]
+ },
+ "KmCherryTree": {
+  "id": "KM-G16",
+  "sheet": "sheets/KM-G16_cherry_blossom (its views, made from KM1-1)",
+  "size": [
+   6.67,
+   5.74,
+   7.0
+  ],
+  "tris": 2830,
+  "motions": [],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "one solid carved from its views: each part once, looked at in Top and Bottom"
+   ],
+   [
+    2,
+    "Closed shell",
+    "pass",
+    "0 edges with one face, 0 with three or more"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "pass",
+    "carved from its front, side and top, each slice round: its TOP is straight down"
+   ],
+   [
+    4,
+    "Views the game sees",
+    "limit",
+    "no view sees the limbs' undersides: 7 m tall behind the school's wall, the camera sees its trunk and crown from a little below"
+   ],
+   [
+    5,
+    "Size, triangles",
+    "pass",
+    "6.67 x 5.74 x 7.00 m, 2830 triangles (its budget: 3,000), its own 2048 px texture"
+   ],
+   [
+    6,
+    "Outline whole",
+    "limit",
+    "straight on its outline is the views' own; at 45 degrees the leaves' edges show faint fringes where two views' cut-outs meet (the round shrub: green streaks at the sides of its dome). From the street it stands about 55 px tall on a 720-line screen and the camera turns at most about 30 degrees"
+   ],
+   [
+    7,
+    "No holes",
+    "pass",
+    "no holes; the gaps the views show (between bars, beams and pillars) stay open"
+   ],
+   [
+    8,
+    "Own models before walls",
+    "pass",
+    "stands on its own, its own model"
+   ],
+   [
+    9,
+    "Look target",
+    "pass",
+    "a photograph in KM-0's look, as its views are"
+   ],
+   [
+    10,
+    "Solid",
+    "pass",
+    "solid and whole"
+   ],
+   [
+    11,
+    "No brands",
+    "pass",
+    "no brand or logo"
+   ],
+   [
+    12,
+    "No wires or sky",
+    "pass",
+    "no power line across it, no sky on its edges"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "its trunk joined as a solid (0.4 m across, to 3 m, into the crown): the carving had lost its thin middle and left the crown floating"
+   ],
+   [
+    14,
+    "Rig names",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    15,
+    "Joints overlap",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no feet"
+   ],
+   [
+    17,
+    "Each part only itself",
+    "n/a",
+    "one piece"
+   ]
+  ]
+ },
+ "KmLotus": {
+  "id": "KM-G22",
+  "sheet": "sheets/KM-G22_lotus (its views, made from KM1-1)",
+  "size": [
+   1.54,
+   0.83,
+   1.2
+  ],
+  "tris": 1432,
+  "motions": [],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "one solid carved from its views: each part once, looked at in Top and Bottom"
+   ],
+   [
+    2,
+    "Closed shell",
+    "pass",
+    "0 edges with one face, 0 with three or more"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "pass",
+    "carved from its front, side and top, each slice round; the stalks' gaps open in the texture"
+   ],
+   [
+    4,
+    "Views the game sees",
+    "limit",
+    "no view sees the pads' undersides or the pot's bottom: they take the nearest view's pixels and come out grey-edged and streaked. The game camera, about 1.9 m up and looking a little down at a pot under a metre tall, never sees them"
+   ],
+   [
+    5,
+    "Size, triangles",
+    "pass",
+    "1.54 x 0.83 x 1.20 m, 1432 triangles (its budget: 1,500), its own 1024 px texture"
+   ],
+   [
+    6,
+    "Outline whole",
+    "limit",
+    "straight on its outline is the views' own; at 45 degrees the leaves' edges show faint fringes where two views' cut-outs meet (the round shrub: green streaks at the sides of its dome). From the street it stands about 55 px tall on a 720-line screen and the camera turns at most about 30 degrees"
+   ],
+   [
+    7,
+    "No holes",
+    "pass",
+    "no holes; the gaps the views show (between bars, beams and pillars) stay open"
+   ],
+   [
+    8,
+    "Own models before walls",
+    "pass",
+    "stands on its own, its own model"
+   ],
+   [
+    9,
+    "Look target",
+    "pass",
+    "a photograph in KM-0's look, as its views are"
+   ],
+   [
+    10,
+    "Solid",
+    "pass",
+    "solid and whole"
+   ],
+   [
+    11,
+    "No brands",
+    "pass",
+    "no brand or logo"
+   ],
+   [
+    12,
+    "No wires or sky",
+    "pass",
+    "no power line across it, no sky on its edges"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "none needed"
    ],
    [
     14,

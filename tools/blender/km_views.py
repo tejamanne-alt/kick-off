@@ -1041,6 +1041,17 @@ def props():
                         dict(PLANT_ROUND((0.0, 9.0)), vox=0.04, budget=3000, tex=2048, top=False)),
         'KmGardenPine': ('KM-G15', 'KM-G15_clipped_garden_pine', 3.5,
                          dict(PLANT_ROUND((0.0, 3.5)), vox=0.025, budget=3000, tex=2048, top=False)),
+        # KM1-4's: the big old ginkgo over the shrine's wall, the cherry at the school gate, and the lotus in the
+        # shrine's pond (their cards' real sizes), carved the same way, their TOPs straight down
+        'KmGinkgoBig': ('KM-G12', 'KM-G12_big_old_ginkgo', 20.0,
+                        dict(PLANT_ROUND((0.0, 20.0)), vox=0.08, budget=3000, tex=2048)),
+        # the cherry's trunk is 0.35 to 0.4 m across in its views, and the carving lost its middle: a trunk is joined,
+        # measured off the front and side views (at their middles, up into the crown)
+        'KmCherryTree': ('KM-G16', 'KM-G16_cherry_blossom', 7.0,
+                         dict(PLANT_ROUND((0.0, 7.0)), vox=0.04, budget=3000, tex=2048,
+                              shape=joined(lambda frame: frame.field,
+                                           solids(('box', -0.2, 0.2, -0.18, 0.18, 0.0, 3.0, 0.05))))),
+        'KmLotus': ('KM-G22', 'KM-G22_lotus', 1.2, dict(PLANT_ROUND((0.0, 1.2)), vox=0.015)),
     }
 
 
@@ -1192,19 +1203,29 @@ NOTES['KmMorningGloryPot'][3] = ('pass', 'carved from its front, side and top vi
                                          'trellis as deep as its side shows it, the canes\' gaps open in the texture')
 # KM1-1's bushes, hedge, stone and trees: the pots' results, with what is their own
 for _name in ('KmHydrangeaBlue', 'KmHydrangeaPink', 'KmHydrangeaViolet', 'KmHedgeClipped', 'KmMossyStone',
-              'KmPersimmonTree', 'KmBlackPine', 'KmGardenPine'):
+              'KmPersimmonTree', 'KmBlackPine', 'KmGardenPine', 'KmGinkgoBig', 'KmCherryTree', 'KmLotus'):
     NOTES[_name] = dict(_POT)
 for _name in ('KmHydrangeaBlue', 'KmHydrangeaPink', 'KmHydrangeaViolet'):
     NOTES[_name][3] = ('pass', 'its front stands in for its side, whose view draws a narrow bush leaning one way where its '
                                'top draws it round (D31): as deep as it is wide, 1.4 m, as its card says; each slice round')
 NOTES['KmHedgeClipped'][3] = ('pass', 'carved from its front, side and top: a clipped box, 2.4 m long, its corners kept')
-for _name in ('KmPersimmonTree', 'KmBlackPine', 'KmGardenPine'):
+for _name in ('KmPersimmonTree', 'KmBlackPine', 'KmGardenPine', 'KmGinkgoBig', 'KmCherryTree'):
     NOTES[_name][4] = ('limit', 'no view sees the pads\' and limbs\' undersides: grey-edged and streaked at 45 degrees and '
                                 'from below. Seen from the street it is the front view; the camera, about 1.9 m up, looks '
                                 'at a tree 3.5 to 9 m tall from below its crown only a little, behind the fence or the '
                                 'station')
 NOTES['KmPersimmonTree'][3] = ('pass', 'carved from its front and side, each slice round; its side view draws the crown '
                                        '2 m deep where its front draws it 3.8 m wide, so it is a little flat from the side')
+NOTES['KmGinkgoBig'][4] = ('limit', 'no view sees the limbs\' undersides. 20 m tall over the shrine\'s wall: the game camera '
+                                   'sees its trunk and the underside of its lower crown, a little from below, the rest '
+                                   'above the screen')
+NOTES['KmCherryTree'][4] = ('limit', 'no view sees the limbs\' undersides: 7 m tall behind the school\'s wall, the camera sees '
+                                    'its trunk and crown from a little below')
+for _name in ('KmGinkgoBig', 'KmCherryTree'):
+    NOTES[_name][3] = ('pass', 'carved from its front, side and top, each slice round: its TOP is straight down')
+NOTES['KmCherryTree'][13] = ('pass', 'its trunk joined as a solid (0.4 m across, to 3 m, into the crown): the carving had '
+                                     'lost its thin middle and left the crown floating')
+NOTES['KmLotus'][3] = ('pass', 'carved from its front, side and top, each slice round; the stalks\' gaps open in the texture')
 for _name in ('KmBlackPine', 'KmGardenPine'):
     NOTES[_name][3] = ('pass', 'carved from its front and side alone, each pad and limb round: its TOP is a high '
                                'three-quarter view, not straight down (D31; the garden pine\'s is to be made again)')

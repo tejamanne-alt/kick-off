@@ -7,15 +7,14 @@
 # chalkboard and the rickshaw. The goods against a shop front stand out from it as boxes of the shop. The nobori flags
 # and the kite sign stay on the fronts they hang against, until their own views come (KM-A30, A31).
 # All of them share one texture, KmKomachiAtlas.png (4096 x 2048); each model gets its own material in the game
-# (ArtBaker), cut out where its manifest says so.
+# (ArtBaker), cut out where its manifest says so. What every leg's builder shares (the texture, the paint-outs, the
+# cut-outs, the export, install and review) is in km_leg_kit.py.
 #   blenv/bin/python km_komachi.py -- /abs/outdir /abs/review/kamakura/komachi [--install /abs/Assets/_Game/Art/Models/Kamakura]
 # Writes into outdir <Model>.fbx, KmKomachiAtlas.png, Komachi.json and Komachi.blend. Into the review folder it writes
 # views/<Model>.jpg (the eight views), source/<Model>.jpg (its part of the picture), painted.jpg (the picture with what
 # became its own model painted out) and review.json (the checks).
-import json
 import math
 import os
-import shutil
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -29,9 +28,10 @@ import cv2                                     # noqa: E402
 import numpy as np                             # noqa: E402
 from mathutils import Vector                   # noqa: E402
 from PIL import Image                          # noqa: E402
-import asset_review as AR                      # noqa: E402
 import kit_buildings_km as KB                  # noqa: E402
 import kit_lib as K                            # noqa: E402
+import km_leg_kit as LK                        # noqa: E402
+from km_leg_kit import card, colour_sample, copy_patch, inpaint, sky_mask   # noqa: E402
 
 SRC = 'photo/KM1-3_komachi_dori.png'
 S, GY = 120.0, 888.0          # px to the metre at the shop fronts (a shop's 2.1 m door), the shop fronts' foot
@@ -39,42 +39,7 @@ ATLAS_W, ATLAS_H = 4096, 2048
 DENS = 80.0                   # the hidden faces' boards and tiles, px to the metre (the street sees them at a slant)
 
 
-class Atlas(KB.Atlas):
-    """The kit's atlas, 4096 wide and 2048 tall."""
-    def __init__(self, w, h):
-        super().__init__(w)
-        self.w, self.h = w, h
-        self.img = Image.new('RGBA', (w, h), (255, 255, 255, 255))
-
-    def place(self, im):
-        if self.x + im.width + 8 > self.w:
-            self.x, self.y, self.row = 8, self.y + self.row + 16, 8
-        if self.y + im.height + 8 > self.h:
-            raise SystemExit('km_komachi.py: the atlas is full')
-        pos = (self.x, self.y)
-        im = im.convert('RGBA')
-        pad = im.resize((im.width + 16, im.height + 16), Image.NEAREST)
-        self.img.paste(pad, (self.x - 8, self.y - 8))
-        self.img.paste(im, pos)
-        self.x += im.width + 16
-        self.row = max(self.row, im.height)
-        return pos
-
-    def uv(self, pos, px, py):
-        return ((pos[0] + px) / self.w, 1.0 - (pos[1] + py) / self.h)
-
-
 # ---------------------------------------------------------------- painting out what becomes its own model
-def copy_patch(a, box, dx=0, dy=0):
-    """Fills box with the pixels dx, dy away (the same wall's boards beside it, the paving's rows beside it)."""
-    x0, y0, x1, y1 = box
-    a[y0:y1, x0:x1] = a[y0 + dy:y1 + dy, x0 + dx:x1 + dx]
-
-
-def inpaint(a, mask, r=4):
-    return cv2.inpaint(a, mask.astype(np.uint8), r, cv2.INPAINT_TELEA)
-
-
 def stool_mask(shape):
     """The soft-serve stand's first stool, drawn from its measured parts (the wall's boards show between its legs, so
     no colour model can part them): its round seat, two front legs, two back legs and the curves where they meet the seat."""
@@ -173,12 +138,6 @@ def projector(atlas, img, crop, s=S, gy=GY, cx=None):
     pos = atlas.place(img.crop(crop))
     cx = (crop[0] + crop[2]) / 2 if cx is None else cx
     return pos, (lambda co: (cx + co.x * s - crop[0], gy - co.z * s - crop[1])), cx
-
-
-def colour_sample(img, box, size=(64, 64)):
-    """A plain sample of a part's own colour (a post's red, a cap's black), its mean over box, a little noise kept."""
-    c = img.crop(box).convert('RGB').resize(size, Image.BILINEAR)
-    return c
 
 
 def gateway(atlas, img):
@@ -371,31 +330,6 @@ GATE_BOXES = [(3500, 470, 3542, 870), (3824, 470, 3870, 870), (3488, 478, 3882, 
               (3318, 662, 3504, 870), (3866, 662, 4128, 870)]
 
 
-def sky_mask(a):
-    """The pale summer sky of the photographic pictures (as unsky's pale test), and its soft fringe."""
-    a = a.astype(np.int32)
-    sky = (a[..., 2] - a[..., 0] > 18) & (a[..., 2] - a[..., 1] > 4) & (a[..., 2] > 170)
-    return cv2.dilate(sky.astype(np.uint8), np.ones((3, 3), np.uint8)) > 0
-
-
-def card(atlas, rgba, crop, cx, gy, s, y, name, both=True):
-    """A cut-out standing upright at depth y: the picture exactly from the street, mirrored from behind."""
-    pos = atlas.place(Image.fromarray(rgba, 'RGBA'))
-    b = KB.Builder(atlas, None, None, None, None)
-    x0, y0, x1, y1 = crop
-    X = lambda px: (px - cx) / s
-    Z = lambda py: (gy - py) / s
-    for back in ((False, True) if both else (False,)):
-        pts = [(X(x0), Z(y1)), (X(x1), Z(y1)), (X(x1), Z(y0)), (X(x0), Z(y0))]
-        if back:
-            pts = pts[::-1]
-        f = b.bm.faces.new([b.bm.verts.new(Vector((px, y + (0.002 if back else 0.0), pz))) for px, pz in pts])
-        for loop in f.loops:
-            c = loop.vert.co
-            loop[b.uv].uv = atlas.uv(pos, cx + c.x * s - x0, gy - c.z * s - y0)
-    return b.object(name, outward=False)
-
-
 def yard(atlas, img):
     """The shrine's yard seen over the gate's fence and through its opening: the stone lanterns and markers, the hall up
     its steps, the bushes and the trees over them; one cut-out 1.6 m behind the gate, the sky not drawn."""
@@ -429,15 +363,6 @@ def yard(atlas, img):
                    round(gy / S, 2)], cutout=True, budget=500)
 
 
-def cutout_model(atlas, src, mask, box, name, info):
-    x0, y0, x1, y1 = box
-    a = np.asarray(src.convert('RGB'))[y0:y1, x0:x1]
-    m = mask[y0:y1, x0:x1]
-    o = card(atlas, np.dstack([a, m * 255]), box, (x0 + x1) / 2, float(y1), S, 0.0, name)
-    info.setdefault('real_size', [round((x1 - x0) / S, 2), 0.01, round((y1 - y0) / S, 2)])
-    return o, info
-
-
 def build_all():
     src, img, masks = painted_picture()
     # no sky on a roof's edge (a roof a few pixels off the drawn one shows tiles, not blue): the shops' and the gate's
@@ -445,115 +370,64 @@ def build_all():
         img = KB.unsky(img, box, pale=True)
     os.makedirs(REVIEW, exist_ok=True)
     img.save(os.path.join(REVIEW, 'painted.jpg'), quality=88)
-    atlas = Atlas(ATLAS_W, ATLAS_H)
+    atlas = LK.Atlas(ATLAS_W, ATLAS_H)
     models = build(atlas, img)
     models.append(side_gate(atlas, img))
     models.append(yard(atlas, img))
     ys, xs = np.nonzero(masks['stool'])
-    models.append(cutout_model(atlas, src, masks['stool'], (int(xs.min()), int(ys.min()), int(xs.max()) + 1, 899),
+    models.append(LK.cutout_model(atlas, src, masks['stool'], (int(xs.min()), int(ys.min()), int(xs.max()) + 1, 899),
                                'KmStool', dict(id='KM-A32', source='photo/KM1-3: the soft-serve stand\'s first stool '
-                                               '(a cut-out until KM-A32\'s views)', cutout=True, budget=100)))
-    models.append(cutout_model(atlas, src, masks['chalkboard'], (2103, 770, 2198, 910), 'KmChalkboard',
+                                               '(a cut-out until KM-A32\'s views)', cutout=True, budget=100), S))
+    models.append(LK.cutout_model(atlas, src, masks['chalkboard'], (2103, 770, 2198, 910), 'KmChalkboard',
                                dict(id='KM-A32', source='photo/KM1-3: the croquette shop\'s chalkboard menu (a cut-out '
-                                    'until KM-A32\'s views)', cutout=True, budget=100)))
-    models.append(cutout_model(atlas, masks['rickshaw_rgb'], masks['rickshaw'], RICKSHAW, 'KmRickshaw',
+                                    'until KM-A32\'s views)', cutout=True, budget=100), S))
+    models.append(LK.cutout_model(atlas, masks['rickshaw_rgb'], masks['rickshaw'], RICKSHAW, 'KmRickshaw',
                                dict(id='KM-V04', source='photo/KM1-3: the rickshaw by the souvenir shop (a cut-out '
-                                    'until KM-V04\'s views)', cutout=True, budget=100)))
+                                    'until KM-V04\'s views)', cutout=True, budget=100), S))
     return src, img, atlas, models
+
+
+BOXES = dict(KmKomachiGateway=(515, 285, 1040, 812), KmSoftServeStand=(1130, 105, 1845, 900),
+             KmCroquetteShop=(1795, 105, 2210, 900), KmSenbeiShop=(2202, 105, 2645, 900),
+             KmSouvenirShop=(2555, 50, 3175, 900), KmShrineSideGate=(3310, 280, 4128, 872),
+             KmShrineYard=(3318, 0, 4128, 868), KmStool=STOOLS[0], KmChalkboard=CHALKBOARD, KmRickshaw=RICKSHAW)
+
+
+def checks(o, info, oe, fins, tris):
+    """The seventeen checks of a KM1-3 set piece (docs/ASSET_REVIEW.md)."""
+    card_ = o.name in ('KmShrineYard', 'KmStool', 'KmChalkboard', 'KmRickshaw')
+    return {
+        1: ('pass', 'each part once (looked at in Top and Bottom)'),
+        2: ('limit' if oe or fins else 'pass',
+            '%d edges with one face, %d with three or more: %s' % (oe, fins, 'a cut-out card, front and back' if card_
+            else 'boxes and roof faces without the faces no one sees (their bottoms)')),
+        3: ('limit' if card_ else 'pass', 'a flat cut-out: its depth is not modelled' if card_ else
+            'boxes and roofs measured off the picture (about 120 px to the metre; the gateway 86)'),
+        4: ('limit', 'the street side is the picture itself; the sides, back and roofs away from the street take '
+                     'KM-P3\'s boards and tiles in the street\'s colours, or the part\'s own colour (no view of '
+                     'their own)'),
+        5: ('pass', '%.2f x %.2f x %.2f m, %d triangles (its budget %d), the shared 4096 x 2048 KmKomachiAtlas'
+            % (tuple(info['real_size']) + (tris, info.get('budget', 1500)))),
+        6: ('pass', 'its outline the picture\'s'),
+        7: ('pass', 'no holes in what the street sees'),
+        8: ('pass' if o.name not in ('KmSouvenirShop', 'KmSoftServeStand', 'KmSenbeiShop', 'KmCroquetteShop') else
+            'limit', 'the stools, the chalkboard and the rickshaw are their own models; the nobori flags and the '
+                     'kite sign stay on the fronts they hang against until their views come (KM-A30, A31)'),
+        9: ('pass', 'the photographic KM1-3, in KM-0\'s look'),
+        10: ('pass', 'solid and whole'),
+        11: ('pass', 'no brand or logo: the signs\' words are invented'),
+        12: ('pass', 'no wires on it; the sky cut out round the gateway and over the yard'),
+        13: ('pass', 'painted out: the stools, the chalkboard, the rickshaw, and the image tool\'s mark (D31)'),
+        14: ('n/a', 'no moving parts'), 15: ('n/a', 'no moving parts'), 16: ('n/a', 'no feet'),
+        17: ('n/a', 'one piece'),
+    }
 
 
 def main():
     os.makedirs(OUT, exist_ok=True)
     K.reset()
     src, img, atlas, models = build_all()
-    atlas_path = os.path.join(OUT, 'KmKomachiAtlas.png')
-    atlas.img.save(atlas_path)
-    manifest = K.Manifest('Kamakura', None)
-    review_mats = {False: KB.unlit(atlas_path), True: KB.unlit(atlas_path, cut=True)}
-    game_mats = {}
-    for o, info in models:
-        o.location = (0, 0, 0)
-        cut = bool(info.get('cutout'))
-        if cut not in game_mats:
-            game_mats[cut] = K.material('KmKomachi' + ('Cut' if cut else ''), atlas_path)
-        K.assign(o, game_mats[cut])
-        front = K.attach(o, 'Front', (0, -1, 0))
-        K.export_model(o, os.path.join(OUT, o.name + '.fbx'))
-        manifest.add(o, texture='KmKomachiAtlas.png', tex_px=ATLAS_W, **info)
-        bpy.data.objects.remove(front)
-        print('%-18s %5d triangles' % (o.name, K.tree_tris(o)))
-    manifest.save(os.path.join(OUT, 'Komachi.json'))
-    bpy.ops.wm.save_as_mainfile(filepath=os.path.join(OUT, 'Komachi.blend'))
-    review(models, review_mats, src)
-    if INSTALL:
-        installed_path = os.path.join(INSTALL, 'Kamakura.json')
-        installed = json.load(open(installed_path))
-        for o, info in models:
-            shutil.copy(os.path.join(OUT, o.name + '.fbx'), INSTALL)
-            installed['models'][o.name] = manifest.data['models'][o.name]
-        shutil.copy(atlas_path, INSTALL)
-        json.dump(installed, open(installed_path, 'w'), indent=1, ensure_ascii=False)
-        print('installed', len(models), 'models in', INSTALL)
-
-
-def shell_counts(o):
-    import bmesh
-    bm = bmesh.new()
-    bm.from_mesh(o.data)
-    bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=1e-5)
-    open_edges = sum(1 for e in bm.edges if e.is_boundary)
-    fins = sum(1 for e in bm.edges if len(e.link_faces) > 2)
-    bm.free()
-    return open_edges, fins
-
-
-def review(models, mats, src):
-    """The strict review (docs/ASSET_REVIEW.md): each model's eight views, its part of the picture, its checks."""
-    os.makedirs(os.path.join(REVIEW, 'views'), exist_ok=True)
-    os.makedirs(os.path.join(REVIEW, 'source'), exist_ok=True)
-    out = {}
-    names = KB.AR_CHECK_NAMES
-    boxes = dict(KmKomachiGateway=(515, 285, 1040, 812), KmSoftServeStand=(1130, 105, 1845, 900),
-                 KmCroquetteShop=(1795, 105, 2210, 900), KmSenbeiShop=(2202, 105, 2645, 900),
-                 KmSouvenirShop=(2555, 50, 3175, 900), KmShrineSideGate=(3310, 280, 4128, 872),
-                 KmShrineYard=(3318, 0, 4128, 868), KmStool=STOOLS[0], KmChalkboard=CHALKBOARD, KmRickshaw=RICKSHAW)
-    for o, info in models:
-        cut = bool(info.get('cutout'))
-        K.assign(o, mats[cut])
-        AR.eight_views(o, os.path.join(REVIEW, 'views', o.name + '.jpg'), KB.render, cell_px=360,
-                       title='%s: every side (Right is the street side, as the game sees it)' % o.name)
-        src.crop(boxes[o.name]).save(os.path.join(REVIEW, 'source', o.name + '.jpg'), quality=88)
-        oe, fins = shell_counts(o)
-        tris = K.tree_tris(o)
-        card_ = o.name in ('KmShrineYard', 'KmStool', 'KmChalkboard', 'KmRickshaw')
-        checks = {
-            1: ('pass', 'each part once (looked at in Top and Bottom)'),
-            2: ('limit' if oe or fins else 'pass',
-                '%d edges with one face, %d with three or more: %s' % (oe, fins, 'a cut-out card, front and back' if card_
-                else 'boxes and roof faces without the faces no one sees (their bottoms)')),
-            3: ('limit' if card_ else 'pass', 'a flat cut-out: its depth is not modelled' if card_ else
-                'boxes and roofs measured off the picture (about 120 px to the metre; the gateway 86)'),
-            4: ('limit', 'the street side is the picture itself; the sides, back and roofs away from the street take '
-                         'KM-P3\'s boards and tiles in the street\'s colours, or the part\'s own colour (no view of '
-                         'their own)'),
-            5: ('pass', '%.2f x %.2f x %.2f m, %d triangles (its budget %d), the shared 4096 x 2048 KmKomachiAtlas'
-                % (tuple(info['real_size']) + (tris, info.get('budget', 1500)))),
-            6: ('pass', 'its outline the picture\'s'),
-            7: ('pass', 'no holes in what the street sees'),
-            8: ('pass' if o.name not in ('KmSouvenirShop', 'KmSoftServeStand', 'KmSenbeiShop', 'KmCroquetteShop') else
-                'limit', 'the stools, the chalkboard and the rickshaw are their own models; the nobori flags and the '
-                         'kite sign stay on the fronts they hang against until their views come (KM-A30, A31)'),
-            9: ('pass', 'the photographic KM1-3, in KM-0\'s look'),
-            10: ('pass', 'solid and whole'),
-            11: ('pass', 'no brand or logo: the signs\' words are invented'),
-            12: ('pass', 'no wires on it; the sky cut out round the gateway and over the yard'),
-            13: ('pass', 'painted out: the stools, the chalkboard, the rickshaw, and the image tool\'s mark (D31)'),
-            14: ('n/a', 'no moving parts'), 15: ('n/a', 'no moving parts'), 16: ('n/a', 'no feet'),
-            17: ('n/a', 'one piece'),
-        }
-        out[o.name] = dict(id=info['id'], sheet=info['source'], size=info['real_size'], tris=tris, motions=[],
-                           checks=[[i, names[i - 1], checks[i][0], checks[i][1]] for i in range(1, 18)])
-    json.dump(out, open(os.path.join(REVIEW, 'review.json'), 'w'), indent=1, ensure_ascii=False)
+    LK.export(models, atlas, OUT, REVIEW, 'KmKomachiAtlas.png', 'Komachi', src, BOXES, checks, INSTALL)
 
 
 if __name__ == '__main__':

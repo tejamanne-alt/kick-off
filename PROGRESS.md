@@ -2694,6 +2694,33 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
   fixed before they were shown (LEARNINGS D33). The board's first plan had its labels on top of each other (E14).
 - Not in the game yet: KM1-3's level code and the install wait for the board's approval.
 
+## KM1-4 The Shrine Bridge: its layout, its set pieces in layers, and three plants (tools, review and docs)
+
+- The user's choices on KM1-3: the rickshaw jogs on ahead of the kid; the two-shop building is built as two.
+- KM1-4's picture is drawn in depth (the bridge runs away from the camera, the stairs climb to the hall), so its set
+  pieces are built in layers (`tools/blender/km_shrine_school.py`). Each layer stands at its own depth, at the scale
+  that lines it up with the picture from the game camera (150 px to the metre at the street's walls, less with depth):
+  - the shrine: its low stone wall along the pavement (and a mirrored copy), the purification pavilion, the lotus pond
+    with the arched bridge 3.5 m back, and the grounds 8 m back (the lanterns, the stairs to the hall, the fortune
+    racks, the trees);
+  - the school: its wall, gate pillars and notice board on the street, the green fences behind, the building 33 m back
+    across its sports ground;
+  - 314 triangles in all, one shared 4096 x 2048 texture; their strict review is in `review/kamakura/shrine_school`.
+- What a layer covers in the picture is painted out of the layer behind it, so nothing is drawn twice: the pavilion
+  out of the grounds, the cherry out of the school's face.
+- The helpers both legs share went into `tools/blender/km_leg_kit.py` (the texture, the paint-outs, the cut-outs, the
+  export, the install and the review); `km_komachi.py` uses them.
+- Carved from the user's views, for KM1-4: the big ginkgo (KM-G12, 2,678 triangles), the cherry (KM-G16, 2,830; its thin
+  trunk joined as a solid, D34) and the lotus (KM-G22, 1,432). They are reviewed with the props.
+- KM1-4's proposed layout (`review/kamakura/levels/KM1-4`) runs about 96 m from the side gate to the school gate:
+  - the shrine's wall with its layers behind it;
+  - the corner, then the zebra crossing over a side road (wait for the green man);
+  - first-graders walking ahead to the same school;
+  - the school gate: the end of route 1.
+- Their first review found faults, all fixed before they were shown (D35): a fence's foot copied down in bands, a court
+  line across the sports ground, the pond's water in the bridge's stone, and the school's windows through a fence.
+- Not in the game yet: KM1-3's and KM1-4's level code and installs wait for the boards' approval.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

@@ -1484,6 +1484,37 @@ views).**
     face that is not the thing shows what is behind it.
   - Paint out only the pixels a model uses, and never leave a thing in a backdrop that also stands in front of it.
 
+**D34. The cherry's crown floated over a stump (found in its first review, November 2026).**
+- *What:* KM1-4's cherry (KM-G16), carved from its views like KM1-1's trees, came out with its crown floating over a
+  small cone. The trunk between them was gone.
+- *Why:* its trunk is thin: 0.35 to 0.4 m across a 7 m tree, a few voxels of the carving's grid. Each slice is made
+  round from the front and side outlines, and cutting the mesh to its budget then took the thin column away. The
+  persimmon and the pines have thick trunks, so it hadn't shown before.
+- *Fix:* the trunk is joined to the carving as a solid, a box tapering to 3 m into the crown, measured off the front
+  and side views at their middles (`joined` and `solids`, as the scooter's handlebar). It is textured from the views
+  like the rest.
+- *Rule:* in a carved tree's eight views, follow its trunk from the ground into the crown. A thin trunk, stem or post
+  gets a measured solid joined before it is reviewed.
+
+**D35. KM1-4's first build: a fence with a house roof in bands, a line across a sports ground, and a pond of stone
+(found in its review, November 2026).**
+- *What:* KM1-4's set pieces (`km_shrine_school.py`), the first leg built in layers at their own depths, showed three
+  faults in their first views:
+  - The school's ball-stop fences had their feet carried down behind the wall from the mesh above them. The left one
+    repeated the shrine's wooden fence and a house's roof in bands, and the right one the notice board's legs.
+  - The sports ground and the pond's water took a stretched patch of the picture as their texture. One carried a white
+    court line across the whole ground, the other a curve of the bridge's stone.
+  - The right fence's mesh showed the school's windows and the cherry's blossom through it, and both are their own
+    models, behind and in front of it.
+- *Fix:*
+  - A fence's foot is not drawn: from the game camera, a 1.55 m wall half a metre in front hides it up to about 1.5 m.
+  - The large flat faces take one flat colour, the median of a clean patch (`km_leg_kit.flat_sample`).
+  - In the fence's cut-out, only its green posts are kept over the school's face, and the blossom and branches are left
+    out over the crown.
+- *Rule:* what is hidden from the game camera needs no pixels: work out what the camera sees before filling it in. A
+  big face takes a flat colour, never a stretched patch. In a layer, keep only what belongs to that layer, never what
+  another model stands for.
+
 ## E. Levels and world
 
 - **E1. Every level had chapter-1 scenery.** A new-scene call unloaded the level definition. *Rule:* pass data into scene builders explicitly; never hold asset references across a new-scene call.

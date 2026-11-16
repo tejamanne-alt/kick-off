@@ -1301,8 +1301,9 @@ the gateway (KM-B08), the soft-serve stand and the souvenir shop (KM-B11), the c
 rice-cracker shop (KM-B10, the picture's one two-shop building parted left of the pink flag), the side gate and its
 fence (KM-B12) with the shrine's yard behind it, and a stool, the chalkboard and the rickshaw as cut-outs until
 KM-A32's and KM-V04's views come; the nobori and the kite sign stay on the fronts they hang against (KM-A30, A31).
-Their review: review/kamakura/komachi. Still to do: the shops between them from KM1-3a to e, the station's exit,
-the level's code and the install.)
+Their review: review/kamakura/komachi. The user's choices: the rickshaw jogs on ahead of the kid; the two-shop
+building is built as two. Still to do: the shops between them from KM1-3a to e, the station's exit, the level's
+code and the install.)
 ```
 
 ```text
@@ -1317,6 +1318,18 @@ gate (KM-G16), a clipped hedge along the school (KM-G21). Animals: koi under the
 on a stone in the pond (KM-N14), a grey heron at the pond's edge (KM-N15: it lifts off slowly as the kid passes),
 pigeons and turtle doves on the pavement (KM-N07, N20: they burst up as the ball comes), a swallowtail and a red
 dragonfly over the lotus (KM-N25, N26), a white-eye in the cherry (KM-N18). Same checks.
+(Laid out and its set pieces built, November 2026: review/kamakura/levels/KM1-4 is its proposed layout, about 96 m
+from the side gate to the school gate, for the user's approval. The picture is drawn in depth, so
+tools/blender/km_shrine_school.py builds it in layers, each at its own depth and at the scale that lines it up
+with the picture from the game camera:
+- the shrine's low stone wall (KM-T19, from the picture), the purification pavilion (KM-B13), the pond with the
+  arched bridge (KM-B14) and the grounds behind (KM-B15);
+- the school's wall, gate and notice board (KM-B16), its green fences (KM-A35) and the building across its sports
+  ground (KM-B17);
+- the big ginkgo (KM-G12), the cherry (KM-G16) and the lotus (KM-G22), carved from their views.
+Their review: review/kamakura/shrine_school and review/kamakura/props. Still to do: the trees along the steps,
+the crossing's pedestrian signals and the shop and house past it from KM1-4a to e, the level's code and the
+install.)
 ```
 
 ```text
