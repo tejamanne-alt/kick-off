@@ -150,18 +150,6 @@
    "note": "its chalkboard menu (KM-A32)"
   },
   {
-   "model": "KmStool",
-   "x": 33.0,
-   "front": 1.3,
-   "note": "a stool at its counter"
-  },
-  {
-   "model": "KmStool",
-   "x": 33.8,
-   "front": 1.3,
-   "note": "a stool"
-  },
-  {
    "model": "KmShrubPlanter",
    "x": 37.4,
    "front": 1.1,
