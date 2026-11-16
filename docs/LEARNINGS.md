@@ -233,6 +233,20 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
 - *Rule:* before a long run, read what it will build and how long it will take. An install of a few models takes the
   reviewed files and doesn't rebuild the others.
 
+**A20. Ten new set pieces given ids the build plan had already given others (found starting KM2-2, November 2026).**
+- *What:* KM1-4's and KM2-1's set pieces were numbered on from the last id in use, not from the plan's list in
+  `docs/KAMAKURA_BUILD.md`. So the surf shop went in as KM-B20, which is the plan's fishing boat, and the tunnel as
+  KM-B21, the plan's lifeguard tower. Seven more clashed the same way.
+- *Why:* the ids were made up as each builder was written, without reading the plan's asset list.
+- *Fix:*
+  - Where the plan has the piece, it takes the plan's id: the surf shop KM-B17, the tunnel KM-B18, the surf hut KM-B19,
+    the block wall KM-T04, the shrine's grounds KM-B15 and B16.
+  - Where it hasn't, the piece takes a new number past the plan's last: the school gate KM-B33, the school building
+    KM-B34, the neighbour's house KM-B35, the alley KM-B36, the school's fences KM-A39, the bamboo fence KM-A40.
+  - The builders, manifests, reviews, layouts and the plan were corrected together.
+- *Rule:* before giving a new piece an id, look it up in the plan's asset list. Take its id there, or the next number
+  past the plan's last, and say in the plan that it is new.
+
 ## B. Performance and mobile
 
 **B1. 28 fps with uneven frames on a mid-range phone (November 2026).**

@@ -258,7 +258,7 @@ def grounds(atlas, img, mask):
     b.face([P(X(crop[0]), -depth, 0.01), P(X(crop[2]), -depth, 0.01), P(X(crop[2]), -0.02, 0.01),
             P(X(crop[0]), -0.02, 0.01)], gravel)
     o = b.object('KmShrineGrounds', outward=False)
-    return o, dict(id='KM-B15', source='photo/KM1-4: the shrine\'s grounds, lanterns, stairs, hall, fortune racks and '
+    return o, dict(id='KM-B15, B16', source='photo/KM1-4: the shrine\'s grounds, lanterns, stairs, hall, fortune racks and '
                    'trees (a cut-out), the gravel in front', real_size=[round((crop[2] - crop[0]) / s, 2),
                    round(depth, 2), round(gy / s, 2)], cutout=True, budget=100, px_centre=cx, px_per_m=s)
 
@@ -290,7 +290,7 @@ def school_gate(atlas, img):
     b.box(X(3722), X(3955), -0.42, -0.36, Z(805), Z(632), side=wood)
     b.box(X(3685), X(3990), -0.62, -0.18, Z(632), Z(590), side=wood)
     o = b.object('KmSchoolGate')
-    return o, dict(id='KM-B16', source='photo/KM1-4 (right): the school\'s wall, gate pillars, folded gate, cabinet and '
+    return o, dict(id='KM-B33', source='photo/KM1-4 (right): the school\'s wall, gate pillars, folded gate, cabinet and '
                    'notice board', real_size=[round((4128 - 2171) / s, 2), 1.17, round(Z(590), 2)], cutout=False,
                    budget=1500, px_centre=cx, px_per_m=s)
 
@@ -322,7 +322,7 @@ def fence(atlas, img, name, crop, cx, feet, crown=None, behind=()):
         keep[r0:r1, c0:c1] &= (f[..., 1] > f[..., 0] + 10) & (f[..., 1] > f[..., 2])
     keep = keep.astype(np.uint8)
     o = LK.card(atlas, np.dstack([a, keep * 255]), crop, cx, gy, s, 0.0, name)
-    return o, dict(id='KM-A35', source='photo/KM1-4 (right): the school\'s green ball-stop fence (a cut-out)',
+    return o, dict(id='KM-A39', source='photo/KM1-4 (right): the school\'s green ball-stop fence (a cut-out)',
                    real_size=[round((crop[2] - crop[0]) / s, 2), 0.01, round((gy - crop[1]) / s, 2)], cutout=True,
                    budget=100, px_centre=cx, px_per_m=s)
 
@@ -354,7 +354,7 @@ def building(atlas, img):
     b.box(X(2980), X(3220), -2.0, 0.0, Z(552), Z(520), side=conc)                     # the entrance canopy
     b.face([P(X(2165), -31.5, 0.01), P(X(4128), -31.5, 0.01), P(X(4128), -1.0, 0.01), P(X(2165), -1.0, 0.01)], sand)
     o = b.object('KmSchoolBuilding')
-    return o, dict(id='KM-B17', source='photo/KM1-4 (right): the school building across its sports ground, the '
+    return o, dict(id='KM-B34', source='photo/KM1-4 (right): the school building across its sports ground, the '
                    'cherry painted out of its face', real_size=[round((3905 - 2445) / s, 2), 43.5, round(Z(199), 2)],
                    cutout=False, budget=1500, px_centre=cx, px_per_m=s)
 

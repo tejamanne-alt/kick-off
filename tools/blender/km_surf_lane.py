@@ -132,7 +132,7 @@ def lane_house(atlas, img):
     gable_front(b, (X(200), Z(217)), (X(550), Z(24)), (X(911), Z(222)), 0.2, 6.8, tiles)
     b.box(X(222), X(989), -1.55, -1.42, 0.0, Z(639), side=wood, skip=('bottom',))       # the fence
     o = b.object('KmLaneHouse')
-    return o, dict(id='KM-B18', source='photo/KM2-1 (left): the neighbour\'s timber house and its board fence',
+    return o, dict(id='KM-B35', source='photo/KM2-1 (left): the neighbour\'s timber house and its board fence',
                    real_size=[round((989 - 172) / S, 2), 9.15, round(Z(24), 2)], cutout=False, budget=1500,
                    px_centre=cx, px_per_m=S)
 
@@ -146,7 +146,7 @@ def block_wall(atlas, img):
     b = KB.Builder(atlas, pos, fmap, conc[0], conc[1])
     b.box(X(0), X(222), 0.0, 0.15, 0.0, Z(646), side=conc, skip=('bottom',))
     o = b.object('KmBlockWall')
-    return o, dict(id='KM-T22', source='photo/KM2-1 (left): the concrete block wall and its bin',
+    return o, dict(id='KM-T04', source='photo/KM2-1 (left): the concrete block wall and its bin',
                    real_size=[round(222 / S, 2), 0.15, round(Z(646), 2)], cutout=False, budget=100, px_centre=cx,
                    px_per_m=S)
 
@@ -160,7 +160,7 @@ def alley(atlas, img):
     a = np.asarray(img.convert('RGB'))[crop[1]:crop[3], crop[0]:crop[2]]
     keep = (~LK.sky_mask(a)).astype(np.uint8)
     o = LK.card(atlas, np.dstack([a, keep * 255]), crop, cx, gy, s, 0.0, 'KmAlleyView', both=False)
-    return o, dict(id='KM-B19', source='photo/KM2-1: the narrow alley between the houses (a cut-out, 6 m back)',
+    return o, dict(id='KM-B36', source='photo/KM2-1: the narrow alley between the houses (a cut-out, 6 m back)',
                    real_size=[round((crop[2] - crop[0]) / s, 2), 0.01, round((gy - crop[1]) / s, 2)], cutout=True,
                    budget=100, px_centre=cx, px_per_m=s)
 
@@ -186,7 +186,7 @@ def surf_house(atlas, img):
     for p0, p1 in ((1518, 1534), (1834, 1850)):                                          # its posts
         b.box(X(p0), X(p1), -1.85, -1.7, Z(796), Z(550), side=plaster, skip=('bottom', 'top'))
     o = b.object('KmSurfHouse')
-    return o, dict(id='KM-B20', source='photo/KM2-1: the surf house, its porch, wetsuits and the long white board',
+    return o, dict(id='KM-B17', source='photo/KM2-1: the surf house, its porch, wetsuits and the long white board',
                    real_size=[round((1915 - 1195) / S, 2), 9.1, round(Z(160), 2)], cutout=False, budget=1500,
                    px_centre=cx, px_per_m=S)
 
@@ -221,7 +221,7 @@ def tunnel(atlas, img):
     # the tunnel's wall behind the lane, its tiles
     b.face([P(x0, 2.2, 0.0), P(x1, 2.2, 0.0), P(x1, 2.2, Z(498)), P(x0, 2.2, Z(498))], tiles, project=False)
     o = b.object('KmCoastTunnel', outward=False)
-    return o, dict(id='KM-B21', source='photo/KM2-1: the tunnel under the coast road: its portal top and sign as the '
+    return o, dict(id='KM-B18', source='photo/KM2-1: the tunnel under the coast road: its portal top and sign as the '
                    'deck\'s face, the guard rail, the tiled wall', real_size=[round((2462 - 1972) / S, 2), 3.9,
                    round(Z(262), 2)], cutout=True, budget=100, px_centre=cx, px_per_m=S)
 
@@ -272,7 +272,7 @@ def surf_hut(atlas, img):
     b.box(X(3420), X(3560), -0.6, 5.0, 0.0, Z(530), side=wood, skip=('bottom',))         # the lean-to
     b.box(X(2927), X(3187), -1.5, -1.0, 0.0, Z(827), side=wood, skip=('bottom',))         # the steps
     o = b.object('KmSurfHut')
-    return o, dict(id='KM-B22', source='photo/KM2-1 (right): the surf rental hut', real_size=[round((3560 - 2493) / S, 2),
+    return o, dict(id='KM-B19', source='photo/KM2-1 (right): the surf rental hut', real_size=[round((3560 - 2493) / S, 2),
                    8.8, round(Z(113), 2)], cutout=False, budget=1500, px_centre=cx, px_per_m=S)
 
 
@@ -321,7 +321,7 @@ def build_all():
                          dict(id='KM-A36', source='photo/KM2-1: the hut\'s rack of surfboards and folded chairs (a '
                               'cut-out)', cutout=True, budget=100)),
               card_model(atlas, src, ms['bamboo'], BAMBOO, 'KmBambooFence',
-                         dict(id='KM-T17', source='photo/KM2-1 (right): the bamboo fence by the boardwalk (a cut-out)',
+                         dict(id='KM-A40', source='photo/KM2-1 (right): the bamboo fence by the boardwalk (a cut-out)',
                               cutout=True, budget=100))]
     return src, img, atlas, models
 

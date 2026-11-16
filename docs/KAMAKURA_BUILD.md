@@ -1323,9 +1323,9 @@ from the side gate to the school gate, for the user's approval. The picture is d
 tools/blender/km_shrine_school.py builds it in layers, each at its own depth and at the scale that lines it up
 with the picture from the game camera:
 - the shrine's low stone wall (KM-T19, from the picture), the purification pavilion (KM-B13), the pond with the
-  arched bridge (KM-B14) and the grounds behind (KM-B15);
-- the school's wall, gate and notice board (KM-B16), its green fences (KM-A35) and the building across its sports
-  ground (KM-B17);
+  arched bridge (KM-B14) and the grounds behind with the fortune racks and the hall on its steps (KM-B15, B16);
+- the school's wall, gate and notice board (KM-B33), its green fences (KM-A39) and the building across its sports
+  ground (KM-B34): new ids, the school had none;
 - the big ginkgo (KM-G12), the cherry (KM-G16) and the lotus (KM-G22), carved from their views.
 Their review: review/kamakura/shrine_school and review/kamakura/props. Still to do: the trees along the steps,
 the crossing's pedestrian signals and the shop and house past it from KM1-4a to e, the level's code and the
@@ -1354,10 +1354,10 @@ tunnel (KM-N04, the Dog hazard: it noses a low ball back; chip it over), a black
 (KM-N22), sparrows and a wagtail on the boardwalk (KM-N08, N17). Same checks.
 (Laid out and its set pieces built, November 2026: review/kamakura/levels/KM2-1 is its proposed layout, about 98 m
 from the home's door to the boardwalk, for the user's approval. tools/blender/km_surf_lane.py projection-models
-the neighbour's house and fence (KM-B18), the block wall (KM-T22), the alley (KM-B19, a layer 6 m back), the surf
-shop (KM-B20), the tunnel as the game's side-on tunnel with the picture's portal and beach sign on its deck
-(KM-B21), the embankment wall (KM-T20) and the surf hut (KM-B22), with the surfboards, the surf rack (KM-A36)
-and the bamboo fence (KM-T17) as cut-outs; the dune grass (KM-G23) carved from its views. Their review:
+the neighbour's house and fence (KM-B35, new), the block wall (KM-T04), the alley (KM-B36, new; a layer 6 m back),
+the surf shop (KM-B17), the tunnel as the game's side-on tunnel with the picture's portal and beach sign on its deck
+(KM-B18), the embankment wall (KM-T20) and the surf hut (KM-B19), with the surfboards, the surf rack (KM-A36)
+and the bamboo fence (KM-A40, new) as cut-outs; the dune grass (KM-G23) carved from its views. Their review:
 review/kamakura/surf_lane and review/kamakura/props. Still to do: the surfers' houses from KM2-1a to e, the
 level's code and the install.)
 ```

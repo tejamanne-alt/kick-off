@@ -460,7 +460,7 @@
   ]
  },
  "KmShrineGrounds": {
-  "id": "KM-B15",
+  "id": "KM-B15, B16",
   "sheet": "photo/KM1-4: the shrine's grounds, lanterns, stairs, hall, fortune racks and trees (a cut-out), the gravel in front",
   "size": [
    22.52,
@@ -575,7 +575,7 @@
   ]
  },
  "KmSchoolGate": {
-  "id": "KM-B16",
+  "id": "KM-B33",
   "sheet": "photo/KM1-4 (right): the school's wall, gate pillars, folded gate, cabinet and notice board",
   "size": [
    13.05,
@@ -690,7 +690,7 @@
   ]
  },
  "KmSchoolFenceL": {
-  "id": "KM-A35",
+  "id": "KM-A39",
   "sheet": "photo/KM1-4 (right): the school's green ball-stop fence (a cut-out)",
   "size": [
    1.14,
@@ -805,7 +805,7 @@
   ]
  },
  "KmSchoolFenceR": {
-  "id": "KM-A35",
+  "id": "KM-A39",
   "sheet": "photo/KM1-4 (right): the school's green ball-stop fence (a cut-out)",
   "size": [
    1.77,
@@ -920,7 +920,7 @@
   ]
  },
  "KmSchoolBuilding": {
-  "id": "KM-B17",
+  "id": "KM-B34",
   "sheet": "photo/KM1-4 (right): the school building across its sports ground, the cherry painted out of its face",
   "size": [
    36.5,

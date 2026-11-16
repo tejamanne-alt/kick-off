@@ -99,7 +99,7 @@
    "model": "KmBlockWall",
    "x": -6.1,
    "front": 1.6,
-   "note": "the concrete block wall, its bin (KM-T22): the cat stretched out on it",
+   "note": "the concrete block wall, its bin (KM-T04): the cat stretched out on it",
    "label": "the block wall"
   },
   {
@@ -113,7 +113,7 @@
    "model": "KmLaneHouse",
    "x": 1.0,
    "front": 1.3,
-   "note": "the neighbour's timber house and its board fence (KM-B18)"
+   "note": "the neighbour's timber house and its board fence (KM-B35)"
   },
   {
    "model": "KmPotPinkFlowers",
@@ -171,7 +171,7 @@
    "model": "KmSurfHouse",
    "x": 36.0,
    "front": 0.9,
-   "note": "the surf shop: its porch, wetsuits and boards (KM-B20)"
+   "note": "the surf shop: its porch, wetsuits and boards (KM-B17)"
   },
   {
    "model": "KmSurfboards",
@@ -232,7 +232,7 @@
    "model": "KmCoastTunnel",
    "x": 54.1,
    "front": -1.7,
-   "note": "the tunnel under the coast road (KM-B21): its deck over the lane, the sign, the tiled wall"
+   "note": "the tunnel under the coast road (KM-B18): its deck over the lane, the sign, the tiled wall"
   },
   {
    "model": "KmEmbankmentWall",
@@ -252,7 +252,7 @@
    "model": "KmSurfHut",
    "x": 68.0,
    "front": 0.9,
-   "note": "the surf rental hut (KM-B22)"
+   "note": "the surf rental hut (KM-B19)"
   },
   {
    "model": "KmBicycle",
