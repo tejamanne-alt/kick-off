@@ -3565,5 +3565,925 @@
     "one piece"
    ]
   ]
+ },
+ "KmHydrangeaBlue": {
+  "id": "KM-G06",
+  "sheet": "sheets/KM-G06_blue_hydrangea (its views, made from KM1-1)",
+  "size": [
+   1.39,
+   1.39,
+   1.2
+  ],
+  "tris": 1454,
+  "motions": [],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "one solid carved from its views: each part once, looked at in Top and Bottom"
+   ],
+   [
+    2,
+    "Closed shell",
+    "pass",
+    "0 edges with one face"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "pass",
+    "its front stands in for its side, whose view draws a narrow bush leaning one way where its top draws it round (D31): as deep as it is wide, 1.4 m, as its card says; each slice round"
+   ],
+   [
+    4,
+    "Views the game sees",
+    "limit",
+    "no view sees the pads' undersides or the pot's bottom: they take the nearest view's pixels and come out grey-edged and streaked. The game camera, about 1.9 m up and looking a little down at a pot under a metre tall, never sees them"
+   ],
+   [
+    5,
+    "Size, triangles",
+    "pass",
+    "1.39 x 1.39 x 1.20 m, 1454 triangles (its budget: 1,500), its own 1024 px texture"
+   ],
+   [
+    6,
+    "Outline whole",
+    "limit",
+    "straight on its outline is the views' own; at 45 degrees the leaves' edges show faint fringes where two views' cut-outs meet (the round shrub: green streaks at the sides of its dome). From the street it stands about 55 px tall on a 720-line screen and the camera turns at most about 30 degrees"
+   ],
+   [
+    7,
+    "No holes",
+    "pass",
+    "no holes; the gaps the views show (between bars, beams and pillars) stay open"
+   ],
+   [
+    8,
+    "Own models before walls",
+    "pass",
+    "stands on its own, its own model"
+   ],
+   [
+    9,
+    "Look target",
+    "pass",
+    "a photograph in KM-0's look, as its views are"
+   ],
+   [
+    10,
+    "Solid",
+    "pass",
+    "solid and whole"
+   ],
+   [
+    11,
+    "No brands",
+    "pass",
+    "no brand or logo"
+   ],
+   [
+    12,
+    "No wires or sky",
+    "pass",
+    "no power line across it, no sky on its edges"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "none needed"
+   ],
+   [
+    14,
+    "Rig names",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    15,
+    "Joints overlap",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no feet"
+   ],
+   [
+    17,
+    "Each part only itself",
+    "n/a",
+    "one piece"
+   ]
+  ]
+ },
+ "KmHydrangeaPink": {
+  "id": "KM-G19",
+  "sheet": "sheets/KM-G19_pink_hydrangea (its views, made from KM1-1)",
+  "size": [
+   1.33,
+   1.33,
+   1.2
+  ],
+  "tris": 1378,
+  "motions": [],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "one solid carved from its views: each part once, looked at in Top and Bottom"
+   ],
+   [
+    2,
+    "Closed shell",
+    "FAIL",
+    "22 edges with one face"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "pass",
+    "its front stands in for its side, whose view draws a narrow bush leaning one way where its top draws it round (D31): as deep as it is wide, 1.4 m, as its card says; each slice round"
+   ],
+   [
+    4,
+    "Views the game sees",
+    "limit",
+    "no view sees the pads' undersides or the pot's bottom: they take the nearest view's pixels and come out grey-edged and streaked. The game camera, about 1.9 m up and looking a little down at a pot under a metre tall, never sees them"
+   ],
+   [
+    5,
+    "Size, triangles",
+    "pass",
+    "1.33 x 1.33 x 1.20 m, 1378 triangles (its budget: 1,500), its own 1024 px texture"
+   ],
+   [
+    6,
+    "Outline whole",
+    "limit",
+    "straight on its outline is the views' own; at 45 degrees the leaves' edges show faint fringes where two views' cut-outs meet (the round shrub: green streaks at the sides of its dome). From the street it stands about 55 px tall on a 720-line screen and the camera turns at most about 30 degrees"
+   ],
+   [
+    7,
+    "No holes",
+    "pass",
+    "no holes; the gaps the views show (between bars, beams and pillars) stay open"
+   ],
+   [
+    8,
+    "Own models before walls",
+    "pass",
+    "stands on its own, its own model"
+   ],
+   [
+    9,
+    "Look target",
+    "pass",
+    "a photograph in KM-0's look, as its views are"
+   ],
+   [
+    10,
+    "Solid",
+    "pass",
+    "solid and whole"
+   ],
+   [
+    11,
+    "No brands",
+    "pass",
+    "no brand or logo"
+   ],
+   [
+    12,
+    "No wires or sky",
+    "pass",
+    "no power line across it, no sky on its edges"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "none needed"
+   ],
+   [
+    14,
+    "Rig names",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    15,
+    "Joints overlap",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no feet"
+   ],
+   [
+    17,
+    "Each part only itself",
+    "n/a",
+    "one piece"
+   ]
+  ]
+ },
+ "KmHydrangeaViolet": {
+  "id": "KM-G20",
+  "sheet": "sheets/KM-G20_violet_hydrangea (its views, made from KM1-1)",
+  "size": [
+   1.41,
+   1.41,
+   1.2
+  ],
+  "tris": 1454,
+  "motions": [],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "one solid carved from its views: each part once, looked at in Top and Bottom"
+   ],
+   [
+    2,
+    "Closed shell",
+    "pass",
+    "0 edges with one face"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "pass",
+    "its front stands in for its side, whose view draws a narrow bush leaning one way where its top draws it round (D31): as deep as it is wide, 1.4 m, as its card says; each slice round"
+   ],
+   [
+    4,
+    "Views the game sees",
+    "limit",
+    "no view sees the pads' undersides or the pot's bottom: they take the nearest view's pixels and come out grey-edged and streaked. The game camera, about 1.9 m up and looking a little down at a pot under a metre tall, never sees them"
+   ],
+   [
+    5,
+    "Size, triangles",
+    "pass",
+    "1.41 x 1.41 x 1.20 m, 1454 triangles (its budget: 1,500), its own 1024 px texture"
+   ],
+   [
+    6,
+    "Outline whole",
+    "limit",
+    "straight on its outline is the views' own; at 45 degrees the leaves' edges show faint fringes where two views' cut-outs meet (the round shrub: green streaks at the sides of its dome). From the street it stands about 55 px tall on a 720-line screen and the camera turns at most about 30 degrees"
+   ],
+   [
+    7,
+    "No holes",
+    "pass",
+    "no holes; the gaps the views show (between bars, beams and pillars) stay open"
+   ],
+   [
+    8,
+    "Own models before walls",
+    "pass",
+    "stands on its own, its own model"
+   ],
+   [
+    9,
+    "Look target",
+    "pass",
+    "a photograph in KM-0's look, as its views are"
+   ],
+   [
+    10,
+    "Solid",
+    "pass",
+    "solid and whole"
+   ],
+   [
+    11,
+    "No brands",
+    "pass",
+    "no brand or logo"
+   ],
+   [
+    12,
+    "No wires or sky",
+    "pass",
+    "no power line across it, no sky on its edges"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "none needed"
+   ],
+   [
+    14,
+    "Rig names",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    15,
+    "Joints overlap",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no feet"
+   ],
+   [
+    17,
+    "Each part only itself",
+    "n/a",
+    "one piece"
+   ]
+  ]
+ },
+ "KmHedgeClipped": {
+  "id": "KM-G21",
+  "sheet": "sheets/KM-G21_clipped_hedge (its views, made from KM1-1)",
+  "size": [
+   2.4,
+   0.52,
+   1.11
+  ],
+  "tris": 1454,
+  "motions": [],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "one solid carved from its views: each part once, looked at in Top and Bottom"
+   ],
+   [
+    2,
+    "Closed shell",
+    "pass",
+    "0 edges with one face"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "pass",
+    "carved from its front, side and top: a clipped box, 2.4 m long, its corners kept"
+   ],
+   [
+    4,
+    "Views the game sees",
+    "limit",
+    "no view sees the pads' undersides or the pot's bottom: they take the nearest view's pixels and come out grey-edged and streaked. The game camera, about 1.9 m up and looking a little down at a pot under a metre tall, never sees them"
+   ],
+   [
+    5,
+    "Size, triangles",
+    "pass",
+    "2.40 x 0.52 x 1.11 m, 1454 triangles (its budget: 1,500), its own 1024 px texture"
+   ],
+   [
+    6,
+    "Outline whole",
+    "limit",
+    "straight on its outline is the views' own; at 45 degrees the leaves' edges show faint fringes where two views' cut-outs meet (the round shrub: green streaks at the sides of its dome). From the street it stands about 55 px tall on a 720-line screen and the camera turns at most about 30 degrees"
+   ],
+   [
+    7,
+    "No holes",
+    "pass",
+    "no holes; the gaps the views show (between bars, beams and pillars) stay open"
+   ],
+   [
+    8,
+    "Own models before walls",
+    "pass",
+    "stands on its own, its own model"
+   ],
+   [
+    9,
+    "Look target",
+    "pass",
+    "a photograph in KM-0's look, as its views are"
+   ],
+   [
+    10,
+    "Solid",
+    "pass",
+    "solid and whole"
+   ],
+   [
+    11,
+    "No brands",
+    "pass",
+    "no brand or logo"
+   ],
+   [
+    12,
+    "No wires or sky",
+    "pass",
+    "no power line across it, no sky on its edges"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "none needed"
+   ],
+   [
+    14,
+    "Rig names",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    15,
+    "Joints overlap",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no feet"
+   ],
+   [
+    17,
+    "Each part only itself",
+    "n/a",
+    "one piece"
+   ]
+  ]
+ },
+ "KmMossyStone": {
+  "id": "KM-G11",
+  "sheet": "sheets/KM-G11_mossy_stone_ferns (its views, made from KM1-1)",
+  "size": [
+   1.3,
+   0.87,
+   0.9
+  ],
+  "tris": 1423,
+  "motions": [],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "one solid carved from its views: each part once, looked at in Top and Bottom"
+   ],
+   [
+    2,
+    "Closed shell",
+    "FAIL",
+    "10 edges with one face"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "pass",
+    "carved from its front, side and top views, each slice round in section: the pot, the mound of leaves, each bonsai pad; a rectangular planter keeps its corners"
+   ],
+   [
+    4,
+    "Views the game sees",
+    "limit",
+    "no view sees the pads' undersides or the pot's bottom: they take the nearest view's pixels and come out grey-edged and streaked. The game camera, about 1.9 m up and looking a little down at a pot under a metre tall, never sees them"
+   ],
+   [
+    5,
+    "Size, triangles",
+    "pass",
+    "1.30 x 0.87 x 0.90 m, 1423 triangles (its budget: 1,500), its own 1024 px texture"
+   ],
+   [
+    6,
+    "Outline whole",
+    "limit",
+    "straight on its outline is the views' own; at 45 degrees the leaves' edges show faint fringes where two views' cut-outs meet (the round shrub: green streaks at the sides of its dome). From the street it stands about 55 px tall on a 720-line screen and the camera turns at most about 30 degrees"
+   ],
+   [
+    7,
+    "No holes",
+    "pass",
+    "no holes; the gaps the views show (between bars, beams and pillars) stay open"
+   ],
+   [
+    8,
+    "Own models before walls",
+    "pass",
+    "stands on its own, its own model"
+   ],
+   [
+    9,
+    "Look target",
+    "pass",
+    "a photograph in KM-0's look, as its views are"
+   ],
+   [
+    10,
+    "Solid",
+    "pass",
+    "solid and whole"
+   ],
+   [
+    11,
+    "No brands",
+    "pass",
+    "no brand or logo"
+   ],
+   [
+    12,
+    "No wires or sky",
+    "pass",
+    "no power line across it, no sky on its edges"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "none needed"
+   ],
+   [
+    14,
+    "Rig names",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    15,
+    "Joints overlap",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no feet"
+   ],
+   [
+    17,
+    "Each part only itself",
+    "n/a",
+    "one piece"
+   ]
+  ]
+ },
+ "KmPersimmonTree": {
+  "id": "KM-G08",
+  "sheet": "sheets/KM-G08_persimmon_tree (its views, made from KM1-1)",
+  "size": [
+   3.79,
+   1.98,
+   5.0
+  ],
+  "tris": 2516,
+  "motions": [],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "one solid carved from its views: each part once, looked at in Top and Bottom"
+   ],
+   [
+    2,
+    "Closed shell",
+    "FAIL",
+    "44 edges with one face"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "pass",
+    "carved from its front and side, each slice round; its side view draws the crown 2 m deep where its front draws it 3.8 m wide, so it is a little flat from the side"
+   ],
+   [
+    4,
+    "Views the game sees",
+    "limit",
+    "no view sees the pads' and limbs' undersides: grey-edged and streaked at 45 degrees and from below. Seen from the street it is the front view; the camera, about 1.9 m up, looks at a tree 3.5 to 9 m tall from below its crown only a little, behind the fence or the station"
+   ],
+   [
+    5,
+    "Size, triangles",
+    "pass",
+    "3.79 x 1.98 x 5.00 m, 2516 triangles (its budget: 3,000), its own 2048 px texture"
+   ],
+   [
+    6,
+    "Outline whole",
+    "limit",
+    "straight on its outline is the views' own; at 45 degrees the leaves' edges show faint fringes where two views' cut-outs meet (the round shrub: green streaks at the sides of its dome). From the street it stands about 55 px tall on a 720-line screen and the camera turns at most about 30 degrees"
+   ],
+   [
+    7,
+    "No holes",
+    "pass",
+    "no holes; the gaps the views show (between bars, beams and pillars) stay open"
+   ],
+   [
+    8,
+    "Own models before walls",
+    "pass",
+    "stands on its own, its own model"
+   ],
+   [
+    9,
+    "Look target",
+    "pass",
+    "a photograph in KM-0's look, as its views are"
+   ],
+   [
+    10,
+    "Solid",
+    "pass",
+    "solid and whole"
+   ],
+   [
+    11,
+    "No brands",
+    "pass",
+    "no brand or logo"
+   ],
+   [
+    12,
+    "No wires or sky",
+    "pass",
+    "no power line across it, no sky on its edges"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "none needed"
+   ],
+   [
+    14,
+    "Rig names",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    15,
+    "Joints overlap",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no feet"
+   ],
+   [
+    17,
+    "Each part only itself",
+    "n/a",
+    "one piece"
+   ]
+  ]
+ },
+ "KmBlackPine": {
+  "id": "KM-G01",
+  "sheet": "sheets/KM-G01_japanese_black_pine (its views, made from KM1-1)",
+  "size": [
+   7.01,
+   3.31,
+   9.0
+  ],
+  "tris": 2836,
+  "motions": [],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "one solid carved from its views: each part once, looked at in Top and Bottom"
+   ],
+   [
+    2,
+    "Closed shell",
+    "FAIL",
+    "34 edges with one face"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "pass",
+    "carved from its front and side alone, each pad and limb round: its TOP is a high three-quarter view, not straight down (D31; the garden pine's is to be made again)"
+   ],
+   [
+    4,
+    "Views the game sees",
+    "limit",
+    "no view sees the pads' and limbs' undersides: grey-edged and streaked at 45 degrees and from below. Seen from the street it is the front view; the camera, about 1.9 m up, looks at a tree 3.5 to 9 m tall from below its crown only a little, behind the fence or the station"
+   ],
+   [
+    5,
+    "Size, triangles",
+    "pass",
+    "7.01 x 3.31 x 9.00 m, 2836 triangles (its budget: 3,000), its own 2048 px texture"
+   ],
+   [
+    6,
+    "Outline whole",
+    "limit",
+    "straight on its outline is the views' own; at 45 degrees the leaves' edges show faint fringes where two views' cut-outs meet (the round shrub: green streaks at the sides of its dome). From the street it stands about 55 px tall on a 720-line screen and the camera turns at most about 30 degrees"
+   ],
+   [
+    7,
+    "No holes",
+    "pass",
+    "no holes; the gaps the views show (between bars, beams and pillars) stay open"
+   ],
+   [
+    8,
+    "Own models before walls",
+    "pass",
+    "stands on its own, its own model"
+   ],
+   [
+    9,
+    "Look target",
+    "pass",
+    "a photograph in KM-0's look, as its views are"
+   ],
+   [
+    10,
+    "Solid",
+    "pass",
+    "solid and whole"
+   ],
+   [
+    11,
+    "No brands",
+    "pass",
+    "no brand or logo"
+   ],
+   [
+    12,
+    "No wires or sky",
+    "pass",
+    "no power line across it, no sky on its edges"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "none needed"
+   ],
+   [
+    14,
+    "Rig names",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    15,
+    "Joints overlap",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no feet"
+   ],
+   [
+    17,
+    "Each part only itself",
+    "n/a",
+    "one piece"
+   ]
+  ]
+ },
+ "KmGardenPine": {
+  "id": "KM-G15",
+  "sheet": "sheets/KM-G15_clipped_garden_pine (its views, made from KM1-1)",
+  "size": [
+   2.73,
+   1.57,
+   3.5
+  ],
+  "tris": 2882,
+  "motions": [],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "one solid carved from its views: each part once, looked at in Top and Bottom"
+   ],
+   [
+    2,
+    "Closed shell",
+    "FAIL",
+    "13 edges with one face"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "pass",
+    "carved from its front and side alone, each pad and limb round: its TOP is a high three-quarter view, not straight down (D31; the garden pine's is to be made again)"
+   ],
+   [
+    4,
+    "Views the game sees",
+    "limit",
+    "no view sees the pads' and limbs' undersides: grey-edged and streaked at 45 degrees and from below. Seen from the street it is the front view; the camera, about 1.9 m up, looks at a tree 3.5 to 9 m tall from below its crown only a little, behind the fence or the station"
+   ],
+   [
+    5,
+    "Size, triangles",
+    "pass",
+    "2.73 x 1.57 x 3.50 m, 2882 triangles (its budget: 3,000), its own 2048 px texture"
+   ],
+   [
+    6,
+    "Outline whole",
+    "limit",
+    "straight on its outline is the views' own; at 45 degrees the leaves' edges show faint fringes where two views' cut-outs meet (the round shrub: green streaks at the sides of its dome). From the street it stands about 55 px tall on a 720-line screen and the camera turns at most about 30 degrees"
+   ],
+   [
+    7,
+    "No holes",
+    "pass",
+    "no holes; the gaps the views show (between bars, beams and pillars) stay open"
+   ],
+   [
+    8,
+    "Own models before walls",
+    "pass",
+    "stands on its own, its own model"
+   ],
+   [
+    9,
+    "Look target",
+    "pass",
+    "a photograph in KM-0's look, as its views are"
+   ],
+   [
+    10,
+    "Solid",
+    "pass",
+    "solid and whole"
+   ],
+   [
+    11,
+    "No brands",
+    "pass",
+    "no brand or logo"
+   ],
+   [
+    12,
+    "No wires or sky",
+    "pass",
+    "no power line across it, no sky on its edges"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "none needed"
+   ],
+   [
+    14,
+    "Rig names",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    15,
+    "Joints overlap",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no feet"
+   ],
+   [
+    17,
+    "Each part only itself",
+    "n/a",
+    "one piece"
+   ]
+  ]
  }
 }

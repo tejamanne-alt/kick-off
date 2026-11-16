@@ -8,17 +8,19 @@ namespace DribbleToSchool.Tests
 {
     /// <summary>
     /// The Kamakura kit (tools/blender/km_views.py, installed by kit_buildings_km.py --install): every model in its manifest
-    /// has its FBX and its own texture, and keeps its triangle budget (docs/PERFORMANCE.md: a street prop 1,500, a vehicle
-    /// or a set piece 4,000, a house 5,000).
+    /// has its FBX and its own texture, and keeps its triangle budget (docs/PERFORMANCE.md: a street prop or a potted plant
+    /// 1,500, a tree 3,000, a vehicle or a set piece 4,000, a house 5,000).
     /// </summary>
     public class KamakuraKitTests
     {
         const string Dir = "Assets/_Game/Art/Models/Kamakura/";
 
-        /// <summary>docs/PERFORMANCE.md: a house 5,000 triangles, a vehicle or a set piece 4,000, a street prop 1,500.</summary>
+        /// <summary>docs/PERFORMANCE.md: a house 5,000 triangles, a vehicle or a set piece 4,000, a tree 3,000, a street prop
+        /// or a potted plant 1,500.</summary>
         static int KindBudget(string model)
         {
-            if (model.StartsWith("KmHouse")) return 5000;
+            if (model.StartsWith("KmHouse") || model == "KmHome") return 5000;
+            if (model == "KmPersimmonTree" || model == "KmBlackPine" || model == "KmGardenPine") return 3000;
             if (model.StartsWith("KmTram") || model.StartsWith("KmScooter") || model.StartsWith("KmShrine") ||
                 model.StartsWith("KmStation") || model.StartsWith("KmWireGantry")) return 4000;
             return 1500;

@@ -28,6 +28,7 @@ BOARD = ARGS[ARGS.index('--board') + 1] if '--board' in ARGS else None
 PROPS_REVIEW = ARGS[ARGS.index('--props-review') + 1] if '--props-review' in ARGS else None
 ONLY = set(ARGS[ARGS.index('--only') + 1].split(',')) if '--only' in ARGS else None     # review just these models
 INSTALL = ARGS[ARGS.index('--install') + 1] if '--install' in ARGS else None   # the game's folder for the approved models
+INSTALL_HOME = ARGS[ARGS.index('--install-home') + 1] if '--install-home' in ARGS else None   # the home alone, into it
 REPO = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..'))
 REFS = os.path.join(REPO, 'review', 'kamakura', 'refs')
 ATLAS_SIZE = 4096
@@ -989,12 +990,46 @@ AR_CHECK_NAMES = ['Every part once', 'Closed shell', "Depth from each part's own
                   'Each part only itself']
 
 
+def install_home(home, info, mat, atlas_path):
+    """KM1-1's home into the game alone (--install-home <Art/Models/Kamakura>), beside the props: the house and its fence,
+    without the pots, plants and persimmon cut from the picture (KmHomeGarden, KmHomeTree), which stand in front of it as
+    their own models now (KM-G26 to G33, KM-G08); its Attach.Front for the game; its texture the kit's atlas, as
+    KmHomeAtlas.png; its entry merged into the installed manifest (the props' entries kept)."""
+    import json
+    import shutil
+    for c in list(home.children_recursive):
+        if c.name in CUTOUTS:
+            bpy.data.objects.remove(c, do_unlink=True)
+    K.assign(home, mat)
+    home.location = (0, 0, 0)
+    front = K.attach(home, 'Front', (0, -1, 0))
+    K.export_model(home, os.path.join(OUT, 'KmHome.fbx'))
+    one = K.Manifest('Kamakura', None)
+    one.add(home, id='KM-B01', source=info['source'].split('; in front of the fence')[0], real_size=info['real_size'],
+            texture='KmHomeAtlas.png', cutout=False, budget=1500, tex_px=Image.open(atlas_path).size[0])
+    bpy.data.objects.remove(front)
+    one.save(os.path.join(OUT, 'KmHome.json'))
+    os.makedirs(INSTALL_HOME, exist_ok=True)
+    shutil.copy(os.path.join(OUT, 'KmHome.fbx'), INSTALL_HOME)
+    shutil.copy(atlas_path, os.path.join(INSTALL_HOME, 'KmHomeAtlas.png'))
+    path = os.path.join(INSTALL_HOME, 'Kamakura.json')
+    installed = json.load(open(path))
+    installed['models']['KmHome'] = json.load(open(os.path.join(OUT, 'KmHome.json')))['models']['KmHome']
+    json.dump(installed, open(path, 'w'), indent=1, ensure_ascii=False)
+    print('installed KmHome, %d triangles, in %s' % (K.tree_tris(home), INSTALL_HOME))
+
+
 def main():
     os.makedirs(OUT, exist_ok=True)
     K.reset()
     atlas = Atlas(ATLAS_SIZE)
     home, trial, hinfo = build_home(atlas)
     home.location.x = 0
+    if INSTALL_HOME:                         # the home alone: its atlas holds only the home's pictures
+        atlas_path = os.path.join(OUT, 'KamakuraAtlas.png')
+        atlas.img.save(atlas_path)
+        install_home(home, hinfo, K.material('Kamakura', atlas_path), atlas_path)
+        return
     props = build_props()
     for k, (o, _) in enumerate(props):
         o.location.x = 11.0 + 3.0 * k

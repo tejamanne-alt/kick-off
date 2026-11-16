@@ -1021,13 +1021,33 @@ def props():
         'KmHydrangeaPlanter': ('KM-G31', 'KM-G31_hydrangea_white_planter', 0.65, PLANT_ROUND((0.22, 0.65))),
         'KmMorningGloryPot': ('KM-G32', 'KM-G32_morning_glories_trellis', 0.9, PLANT_ROUND((0.0, 0.18))),
         'KmStoneStandFlowers': ('KM-G33', 'KM-G33_pink_flowers_stone_stand', 0.75, PLANT_ROUND((0.0, 0.75))),
+        # KM1-1's bushes, hedge and stone, carved the same way. The hydrangeas' RIGHT SIDEs draw a narrow bush leaning one
+        # way where their TOPs draw it round (D31): their front stands in for their side (1.4 m across both ways, their
+        # cards say), the top rounds it
+        'KmHydrangeaBlue': ('KM-G06', 'KM-G06_blue_hydrangea', 1.2,
+                            dict(PLANT_ROUND((0.0, 1.2)), vox=0.015, copy_views={'right': 'front'})),
+        'KmHydrangeaPink': ('KM-G19', 'KM-G19_pink_hydrangea', 1.2,
+                            dict(PLANT_ROUND((0.0, 1.2)), vox=0.015, copy_views={'right': 'front'})),
+        'KmHydrangeaViolet': ('KM-G20', 'KM-G20_violet_hydrangea', 1.2,
+                              dict(PLANT_ROUND((0.0, 1.2)), vox=0.015, copy_views={'right': 'front'})),
+        'KmHedgeClipped': ('KM-G21', 'KM-G21_clipped_hedge', ('width', 2.4), dict(cutout=True, hole_fill=0.02, vox=0.015)),
+        'KmMossyStone': ('KM-G11', 'KM-G11_mossy_stone_ferns', 0.9, PLANT_ROUND((0.0, 0.9))),
+        # its trees: their crowns carved round piece by piece from front and side (each pad or limb's mass its own
+        # ellipse), the gaps between leaves open in the texture; the pines without their TOPs (G15's is to be made again,
+        # G01's is a high three-quarter view, D31). Seen from the street, 5 to 9 m tall: the vehicles' budget
+        'KmPersimmonTree': ('KM-G08', 'KM-G08_persimmon_tree', 5.0,
+                            dict(PLANT_ROUND((0.0, 5.0)), vox=0.03, budget=3000, tex=2048)),
+        'KmBlackPine': ('KM-G01', 'KM-G01_japanese_black_pine', 9.0,
+                        dict(PLANT_ROUND((0.0, 9.0)), vox=0.04, budget=3000, tex=2048, top=False)),
+        'KmGardenPine': ('KM-G15', 'KM-G15_clipped_garden_pine', 3.5,
+                         dict(PLANT_ROUND((0.0, 3.5)), vox=0.025, budget=3000, tex=2048, top=False)),
     }
 
 
 def PLANT_ROUND(*zs):
     """A potted plant's build options: round in section in the heights zs (each piece of a slice an ellipse, up to 2.5
     times as long as it is wide: a bonsai's pads), the leaves' small gaps filled in the solid but open in the alpha."""
-    return dict(round_z=list(zs), round_max=2.5, round_w=2.0, cutout=True, hole_fill=0.02)
+    return dict(round_z=list(zs), round_max=2.5, round_w=12.0, cutout=True, hole_fill=0.02)
 
 
 NOTES = {           # each prop's own check results (asset_review: the seventeen checks), beside the general ones
@@ -1170,12 +1190,30 @@ for _name in ('KmBonsaiTerracotta', 'KmBonsaiBlueBowl', 'KmShrubPlanter', 'KmPot
     NOTES[_name] = dict(_POT)
 NOTES['KmMorningGloryPot'][3] = ('pass', 'carved from its front, side and top views, the pot round in section; the '
                                          'trellis as deep as its side shows it, the canes\' gaps open in the texture')
+# KM1-1's bushes, hedge, stone and trees: the pots' results, with what is their own
+for _name in ('KmHydrangeaBlue', 'KmHydrangeaPink', 'KmHydrangeaViolet', 'KmHedgeClipped', 'KmMossyStone',
+              'KmPersimmonTree', 'KmBlackPine', 'KmGardenPine'):
+    NOTES[_name] = dict(_POT)
+for _name in ('KmHydrangeaBlue', 'KmHydrangeaPink', 'KmHydrangeaViolet'):
+    NOTES[_name][3] = ('pass', 'its front stands in for its side, whose view draws a narrow bush leaning one way where its '
+                               'top draws it round (D31): as deep as it is wide, 1.4 m, as its card says; each slice round')
+NOTES['KmHedgeClipped'][3] = ('pass', 'carved from its front, side and top: a clipped box, 2.4 m long, its corners kept')
+for _name in ('KmPersimmonTree', 'KmBlackPine', 'KmGardenPine'):
+    NOTES[_name][4] = ('limit', 'no view sees the pads\' and limbs\' undersides: grey-edged and streaked at 45 degrees and '
+                                'from below. Seen from the street it is the front view; the camera, about 1.9 m up, looks '
+                                'at a tree 3.5 to 9 m tall from below its crown only a little, behind the fence or the '
+                                'station')
+NOTES['KmPersimmonTree'][3] = ('pass', 'carved from its front and side, each slice round; its side view draws the crown '
+                                       '2 m deep where its front draws it 3.8 m wide, so it is a little flat from the side')
+for _name in ('KmBlackPine', 'KmGardenPine'):
+    NOTES[_name][3] = ('pass', 'carved from its front and side alone, each pad and limb round: its TOP is a high '
+                               'three-quarter view, not straight down (D31; the garden pine\'s is to be made again)')
 
 
 # ---------------------------------------------------------------- in Blender
 def build(name, folder, height, new_obj, budget=1500, vox=0.01, tex=1024, top='auto', round_z=(), round_max=1.6,
           round_w=0.3, hole_fill=0.004, view_map=None, cutout=False, thin=0.0, turn=None, flip=(), ignore=(),
-          shape=None, parts=None, smooth_angle=35.0, paint=(), clean=(), ends='mirror'):
+          shape=None, parts=None, smooth_angle=35.0, paint=(), clean=(), ends='mirror', copy_views=None):
     """The prop named name from the views in folder, height metres tall (or ('width', metres) for one measured along the
     street), its origin on the ground under its middle: its
     mesh (at most budget triangles), UVs and texture (tex x tex, RGBA). shape(frame) may change the carved field (a
@@ -1184,7 +1222,9 @@ def build(name, folder, height, new_obj, budget=1500, vox=0.01, tex=1024, top='a
     (see painted); clean: [(view, boxes)], that view's copy with the boxes painted out (Frame.paint_out). ends='sides':
     an end with no view of its own is not the other end's mirrored (a vehicle's nose is not its tail), and what its end
     view cannot see (the step-through behind the seat) takes the long sides' pictures, not that end's: a tail light
-    painted on the front fender and inside the step-through (D30). Returns (root, texture array, frame)."""
+    painted on the front fender and inside the step-through (D30). copy_views: {view: other}, the view taken from another
+    one, its own left out (a round bush whose side view draws it narrow and leaning: {'right': 'front'}, D31).
+    Returns (root, texture array, frame)."""
     import bpy
     import time
     t0 = time.time()
@@ -1192,6 +1232,8 @@ def build(name, folder, height, new_obj, budget=1500, vox=0.01, tex=1024, top='a
     def stage(what):
         print('  %s: %s %.0f s' % (name, what, time.time() - t0), flush=True)
     views = {k: v for k, v in read_views(folder).items() if k not in ignore}     # a view that shows something else
+    for k, other in (copy_views or {}).items():
+        views[k] = views[other]
     if isinstance(height, tuple):                       # ('width', metres) or ('length', metres): along the street
         x0, y0, x1, y1 = bbox(object_mask(views['front']))
         height = height[1] * (y1 - y0) / (x1 - x0)

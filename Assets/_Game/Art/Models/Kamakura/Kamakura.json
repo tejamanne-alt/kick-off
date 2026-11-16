@@ -691,6 +691,516 @@
    "cutout": true,
    "budget": 4000,
    "tex_px": 2048
+  },
+  "KmBonsaiTerracotta": {
+   "size": [
+    0.468,
+    0.282,
+    0.547
+   ],
+   "min": [
+    -0.236,
+    -0.138,
+    0.001
+   ],
+   "max": [
+    0.232,
+    0.143,
+    0.548
+   ],
+   "tris": 1454,
+   "parts": {},
+   "id": "KM-G26",
+   "source": "sheets/KM-G26_bonsai_pine_terracotta (its views, made from KM1-1)",
+   "real_size": [
+    0.48,
+    0.29,
+    0.55
+   ],
+   "texture": "KmBonsaiTerracottaAtlas.png",
+   "cutout": true,
+   "budget": 1500,
+   "tex_px": 1024
+  },
+  "KmBonsaiBlueBowl": {
+   "size": [
+    0.584,
+    0.377,
+    0.699
+   ],
+   "min": [
+    -0.294,
+    -0.189,
+    -0.001
+   ],
+   "max": [
+    0.29,
+    0.187,
+    0.699
+   ],
+   "tris": 1452,
+   "parts": {},
+   "id": "KM-G27",
+   "source": "sheets/KM-G27_bonsai_pine_dark_glazed_bowl (its views, made from KM1-1)",
+   "real_size": [
+    0.59,
+    0.39,
+    0.7
+   ],
+   "texture": "KmBonsaiBlueBowlAtlas.png",
+   "cutout": true,
+   "budget": 1500,
+   "tex_px": 1024
+  },
+  "KmShrubPlanter": {
+   "size": [
+    0.794,
+    0.501,
+    0.741
+   ],
+   "min": [
+    -0.396,
+    -0.25,
+    0.004
+   ],
+   "max": [
+    0.398,
+    0.251,
+    0.744
+   ],
+   "tris": 1454,
+   "parts": {},
+   "id": "KM-G28",
+   "source": "sheets/KM-G28_round_shrub_terracotta_planter (its views, made from KM1-1)",
+   "real_size": [
+    0.8,
+    0.52,
+    0.75
+   ],
+   "texture": "KmShrubPlanterAtlas.png",
+   "cutout": true,
+   "budget": 1500,
+   "tex_px": 1024
+  },
+  "KmPotPinkFlowers": {
+   "size": [
+    0.303,
+    0.209,
+    0.39
+   ],
+   "min": [
+    -0.152,
+    -0.105,
+    0.002
+   ],
+   "max": [
+    0.151,
+    0.105,
+    0.392
+   ],
+   "tris": 1452,
+   "parts": {},
+   "id": "KM-G29",
+   "source": "sheets/KM-G29_pink_flowers_grey_pot (its views, made from KM1-1)",
+   "real_size": [
+    0.31,
+    0.22,
+    0.4
+   ],
+   "texture": "KmPotPinkFlowersAtlas.png",
+   "cutout": true,
+   "budget": 1500,
+   "tex_px": 1024
+  },
+  "KmPotWhiteDaisies": {
+   "size": [
+    0.299,
+    0.226,
+    0.391
+   ],
+   "min": [
+    -0.151,
+    -0.111,
+    0.0
+   ],
+   "max": [
+    0.148,
+    0.115,
+    0.392
+   ],
+   "tris": 1454,
+   "parts": {},
+   "id": "KM-G30",
+   "source": "sheets/KM-G30_white_flowers_terracotta_pot (its views, made from KM1-1)",
+   "real_size": [
+    0.32,
+    0.24,
+    0.4
+   ],
+   "texture": "KmPotWhiteDaisiesAtlas.png",
+   "cutout": true,
+   "budget": 1500,
+   "tex_px": 1024
+  },
+  "KmHydrangeaPlanter": {
+   "size": [
+    0.523,
+    0.337,
+    0.645
+   ],
+   "min": [
+    -0.255,
+    -0.17,
+    0.003
+   ],
+   "max": [
+    0.268,
+    0.167,
+    0.647
+   ],
+   "tris": 1454,
+   "parts": {},
+   "id": "KM-G31",
+   "source": "sheets/KM-G31_hydrangea_white_planter (its views, made from KM1-1)",
+   "real_size": [
+    0.55,
+    0.35,
+    0.65
+   ],
+   "texture": "KmHydrangeaPlanterAtlas.png",
+   "cutout": true,
+   "budget": 1500,
+   "tex_px": 1024
+  },
+  "KmMorningGloryPot": {
+   "size": [
+    0.415,
+    0.227,
+    0.875
+   ],
+   "min": [
+    -0.208,
+    -0.117,
+    0.003
+   ],
+   "max": [
+    0.207,
+    0.11,
+    0.878
+   ],
+   "tris": 1454,
+   "parts": {},
+   "id": "KM-G32",
+   "source": "sheets/KM-G32_morning_glories_trellis (its views, made from KM1-1)",
+   "real_size": [
+    0.43,
+    0.25,
+    0.9
+   ],
+   "texture": "KmMorningGloryPotAtlas.png",
+   "cutout": true,
+   "budget": 1500,
+   "tex_px": 1024
+  },
+  "KmStoneStandFlowers": {
+   "size": [
+    0.384,
+    0.385,
+    0.746
+   ],
+   "min": [
+    -0.19,
+    -0.191,
+    0.004
+   ],
+   "max": [
+    0.194,
+    0.194,
+    0.749
+   ],
+   "tris": 1454,
+   "parts": {},
+   "id": "KM-G33",
+   "source": "sheets/KM-G33_pink_flowers_stone_stand (its views, made from KM1-1)",
+   "real_size": [
+    0.39,
+    0.39,
+    0.75
+   ],
+   "texture": "KmStoneStandFlowersAtlas.png",
+   "cutout": true,
+   "budget": 1500,
+   "tex_px": 1024
+  },
+  "KmHydrangeaBlue": {
+   "size": [
+    1.387,
+    1.372,
+    1.198
+   ],
+   "min": [
+    -0.688,
+    -0.685,
+    0.008
+   ],
+   "max": [
+    0.698,
+    0.687,
+    1.206
+   ],
+   "tris": 1454,
+   "parts": {},
+   "id": "KM-G06",
+   "source": "sheets/KM-G06_blue_hydrangea (its views, made from KM1-1)",
+   "real_size": [
+    1.39,
+    1.39,
+    1.2
+   ],
+   "texture": "KmHydrangeaBlueAtlas.png",
+   "cutout": true,
+   "budget": 1500,
+   "tex_px": 1024
+  },
+  "KmHydrangeaPink": {
+   "size": [
+    1.283,
+    1.309,
+    1.175
+   ],
+   "min": [
+    -0.64,
+    -0.65,
+    0.016
+   ],
+   "max": [
+    0.643,
+    0.659,
+    1.191
+   ],
+   "tris": 1378,
+   "parts": {},
+   "id": "KM-G19",
+   "source": "sheets/KM-G19_pink_hydrangea (its views, made from KM1-1)",
+   "real_size": [
+    1.33,
+    1.33,
+    1.2
+   ],
+   "texture": "KmHydrangeaPinkAtlas.png",
+   "cutout": true,
+   "budget": 1500,
+   "tex_px": 1024
+  },
+  "KmHydrangeaViolet": {
+   "size": [
+    1.384,
+    1.399,
+    1.199
+   ],
+   "min": [
+    -0.683,
+    -0.695,
+    0.002
+   ],
+   "max": [
+    0.701,
+    0.704,
+    1.201
+   ],
+   "tris": 1454,
+   "parts": {},
+   "id": "KM-G20",
+   "source": "sheets/KM-G20_violet_hydrangea (its views, made from KM1-1)",
+   "real_size": [
+    1.41,
+    1.41,
+    1.2
+   ],
+   "texture": "KmHydrangeaVioletAtlas.png",
+   "cutout": true,
+   "budget": 1500,
+   "tex_px": 1024
+  },
+  "KmHedgeClipped": {
+   "size": [
+    2.375,
+    0.504,
+    1.099
+   ],
+   "min": [
+    -1.183,
+    -0.253,
+    -0.001
+   ],
+   "max": [
+    1.192,
+    0.251,
+    1.098
+   ],
+   "tris": 1454,
+   "parts": {},
+   "id": "KM-G21",
+   "source": "sheets/KM-G21_clipped_hedge (its views, made from KM1-1)",
+   "real_size": [
+    2.4,
+    0.52,
+    1.11
+   ],
+   "texture": "KmHedgeClippedAtlas.png",
+   "cutout": true,
+   "budget": 1500,
+   "tex_px": 1024
+  },
+  "KmMossyStone": {
+   "size": [
+    1.246,
+    0.83,
+    0.898
+   ],
+   "min": [
+    -0.63,
+    -0.426,
+    0.004
+   ],
+   "max": [
+    0.616,
+    0.404,
+    0.902
+   ],
+   "tris": 1423,
+   "parts": {},
+   "id": "KM-G11",
+   "source": "sheets/KM-G11_mossy_stone_ferns (its views, made from KM1-1)",
+   "real_size": [
+    1.3,
+    0.87,
+    0.9
+   ],
+   "texture": "KmMossyStoneAtlas.png",
+   "cutout": true,
+   "budget": 1500,
+   "tex_px": 1024
+  },
+  "KmPersimmonTree": {
+   "size": [
+    3.748,
+    1.954,
+    4.93
+   ],
+   "min": [
+    -1.872,
+    -0.998,
+    0.042
+   ],
+   "max": [
+    1.876,
+    0.957,
+    4.972
+   ],
+   "tris": 2516,
+   "parts": {},
+   "id": "KM-G08",
+   "source": "sheets/KM-G08_persimmon_tree (its views, made from KM1-1)",
+   "real_size": [
+    3.79,
+    1.98,
+    5.0
+   ],
+   "texture": "KmPersimmonTreeAtlas.png",
+   "cutout": true,
+   "budget": 3000,
+   "tex_px": 2048
+  },
+  "KmBlackPine": {
+   "size": [
+    7.019,
+    3.285,
+    8.962
+   ],
+   "min": [
+    -3.491,
+    -1.635,
+    0.022
+   ],
+   "max": [
+    3.527,
+    1.65,
+    8.984
+   ],
+   "tris": 2836,
+   "parts": {},
+   "id": "KM-G01",
+   "source": "sheets/KM-G01_japanese_black_pine (its views, made from KM1-1)",
+   "real_size": [
+    7.01,
+    3.31,
+    9.0
+   ],
+   "texture": "KmBlackPineAtlas.png",
+   "cutout": true,
+   "budget": 3000,
+   "tex_px": 2048
+  },
+  "KmGardenPine": {
+   "size": [
+    2.725,
+    1.545,
+    3.486
+   ],
+   "min": [
+    -1.363,
+    -0.782,
+    0.004
+   ],
+   "max": [
+    1.363,
+    0.763,
+    3.49
+   ],
+   "tris": 2882,
+   "parts": {},
+   "id": "KM-G15",
+   "source": "sheets/KM-G15_clipped_garden_pine (its views, made from KM1-1)",
+   "real_size": [
+    2.73,
+    1.57,
+    3.5
+   ],
+   "texture": "KmGardenPineAtlas.png",
+   "cutout": true,
+   "budget": 3000,
+   "tex_px": 2048
+  },
+  "KmHome": {
+   "size": [
+    11.192,
+    9.2,
+    6.775
+   ],
+   "min": [
+    -6.425,
+    -4.6,
+    0.0
+   ],
+   "max": [
+    4.767,
+    4.6,
+    6.775
+   ],
+   "tris": 77,
+   "parts": {},
+   "id": "KM-B01",
+   "source": "photo/KM1-1 (left): the house, its entrance and its fence",
+   "real_size": [
+    11.19,
+    9.2,
+    6.78
+   ],
+   "texture": "KmHomeAtlas.png",
+   "cutout": false,
+   "budget": 1500,
+   "tex_px": 4096
   }
  }
 }
