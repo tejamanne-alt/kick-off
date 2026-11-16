@@ -1,0 +1,21 @@
+{
+ "intro": [
+  "The first leg of route 2, the Shonan Coast: from the kid's home down the neighbours' lane, past the surf shop at the coast road's embankment, through the tunnel under the road, to the boardwalk onto the sand at Yuigahama. It is laid out from your KM2-1 picture, in the order of its five lane pictures, for your approval.",
+  "About 98 m from the home's door to the boardwalk. Your picture's fronts are built as KM1-3's shops were: the neighbour's timber house with its fence, the block wall, the surf house, the embankment wall and the surf rental hut. The narrow alley between the houses is a layer 6 m back.",
+  "The see-through boxes are what is still to come from the lane pictures: the surfers' houses along the lane (KM2-1b)."
+ ],
+ "reference": "KM2-1 Down to Yuigahama, the photographic version: the neighbour's timber house and fence, the alley, the surf shop, the embankment and its tunnel with the beach sign, the surf rental hut, the boardwalk and the beach.",
+ "strip": "Each model at its real size and place, seen through the game camera as the game frames it, the play lane at the front. See-through boxes are what is still to come. The shading is Blender's, not the game's toon look: judge the places, sizes, order and gaps.",
+ "decided": [
+  "<b>The tunnel:</b> your picture shows its mouth face-on, but in the game the kid walks through it, so it is drawn as the game draws a tunnel side-on. A deck runs over the lane (the opening 2.5 m high, 4 m long), its face toward the camera your picture's portal top with the parapet and the rusty 砂浜 (beach) sign, the guard rail on its edge, and the tunnel's tiled wall behind the lane. Inside it is dark (DarkZone).",
+  "The <b>embankment wall</b> runs along the lane from the surf shop to the tunnel and a little past it, the coast road above it behind its guard rail.",
+  "The <b>pots</b> before the neighbour's fence, the <b>pole</b> at its end and the <b>bicycles</b> before the hut are the kit's models, standing where your picture has them; they are painted out of the fronts behind them. The <b>surfboards</b> by the surf shop and the hut's <b>surf rack</b> are their own cut-outs until their views come (KM-A36).",
+  "Beyond the tunnel the lane is <b>sand</b>, and the boardwalk of grey timber runs out onto it to the stop. The sea and Enoshima are far behind (a box for now: the game's own sea goes there).",
+  "Carved from your views: the <b>dune grass</b> (KM-G23), three clumps by the boardwalk. The black pines behind the hut are the kit's.",
+  "<b>Cost (est., docs/PERFORMANCE.md):</b><ul><li>KM2-1's ten pieces from the picture: 218 triangles in all, one shared 4096 x 2048 texture (about 11 MB with mips in ETC2 with the cut-outs' alpha, about 5 MB in ASTC 6x6).</li><li>The home and its garden from KM1-1, the kit's pots, poles, bicycles and pines, the dune grass: about 16,000 triangles.</li></ul>In all, about 16,000 triangles standing and about 40 MB of textures with what is still to come."
+ ],
+ "ask": [
+  "<b>The lane pictures:</b> KM2-1a to e are on the city prompts page, and none has arrived yet. They bring the surfers' houses along the lane, the bicycle with its board carrier, and the boardwalk's end.",
+  "<b>Anything to move:</b> a place, the order, the length or the play beats."
+ ]
+}

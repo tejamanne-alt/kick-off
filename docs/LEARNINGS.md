@@ -1515,6 +1515,25 @@ views).**
   big face takes a flat colour, never a stretched patch. In a layer, keep only what belongs to that layer, never what
   another model stands for.
 
+**D36. KM2-1's first build: a fence in a grid, two bins, a ladder down a wall, and a window on a side wall (found in
+its review, November 2026).**
+- *What:* KM2-1's set pieces (`km_surf_lane.py`) had four faults in their first views:
+  - Where the pots stood, the neighbour's fence was carried down from the rows above them. Those rows were the fence's
+    slatted section, so it came out in a grid.
+  - Carried on from its left instead, the copy took the bin standing there, so the fence had two.
+  - The embankment wall's hidden lower part was filled with a band of its parapet repeated, mirrored in turn. It came
+    out a ladder.
+  - The surf shop's side walls took a "plaster" sample that held a window and a roof's edge. Seen at an angle from
+    the game camera, a side wall was a stretched picture of a window, floating beside the house.
+- *Why:* D35's rule (a big face takes a flat colour) was applied to the ground and the water, not to the walls' sides.
+  The paint-outs copied from the nearest rows or columns without looking at what they held.
+- *Fix:*
+  - The fence is carried on from its plain section, past the bin.
+  - The wall's hidden part is the parapet's concrete stretched down (its rust streaks run down).
+  - The surf shop's sides are its plaster's flat colour.
+- *Rule:* a hidden face takes a flat colour, or a pattern with no feature of its own: no window, edge or object. Before
+  copying pixels into a hole, look at what the source holds.
+
 ## E. Levels and world
 
 - **E1. Every level had chapter-1 scenery.** A new-scene call unloaded the level definition. *Rule:* pass data into scene builders explicitly; never hold asset references across a new-scene call.

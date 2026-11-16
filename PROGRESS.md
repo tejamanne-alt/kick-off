@@ -2721,6 +2721,27 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
   line across the sports ground, the pond's water in the bridge's stone, and the school's windows through a fence.
 - Not in the game yet: KM1-3's and KM1-4's level code and installs wait for the boards' approval.
 
+## KM2-1 Down to Yuigahama: its layout and its set pieces from its picture (tools, review and docs)
+
+- KM2-1's picture is mostly fronts along the lane, so its set pieces are built as KM1-3's were
+  (`tools/blender/km_surf_lane.py`, at 120 px to the metre):
+  - the neighbour's timber house and fence, the concrete block wall (for KM1-1's wall too), the narrow alley between
+    the houses (a layer 6 m back), the surf shop with its porch;
+  - the tunnel under the coast road: your picture shows its mouth face-on, so it is drawn as the game draws a tunnel
+    side-on. A deck runs over the lane, its face your picture's portal top with the beach sign and the guard rail, and
+    the tunnel's tiled wall stands behind the lane;
+  - the embankment wall along the lane, the surf rental hut, the leaning surfboards, the surf rack and the bamboo fence
+    (the last three as cut-outs);
+  - 218 triangles in all, one shared 4096 x 2048 texture; their strict review is in `review/kamakura/surf_lane`.
+- The pots, the pole and the bicycles stand as the kit's models where the picture has them, painted out of the fronts
+  behind them. The dune grass (KM-G23) is carved from its views.
+- KM2-1's proposed layout (`review/kamakura/levels/KM2-1`) runs about 98 m:
+  - from the home's door along the neighbours' lane, past the surf shop and the embankment;
+  - a Shiba Inu on its patch before the tunnel, then through the dark tunnel;
+  - out onto the sand to the boardwalk: the stop.
+- Their first review found faults, all fixed before they were shown (D36): a fence carried down in a grid, two bins,
+  a ladder down the embankment wall, and a window stretched across a side wall.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

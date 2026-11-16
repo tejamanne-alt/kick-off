@@ -1052,6 +1052,8 @@ def props():
                               shape=joined(lambda frame: frame.field,
                                            solids(('box', -0.2, 0.2, -0.18, 0.18, 0.0, 3.0, 0.05))))),
         'KmLotus': ('KM-G22', 'KM-G22_lotus', 1.2, dict(PLANT_ROUND((0.0, 1.2)), vox=0.015)),
+        # KM2-1's: the dune grass with its beach shrub at the boardwalk's end, its sand foot part of it
+        'KmDuneGrass': ('KM-G23', 'KM-G23_dune_grass', 0.8, dict(PLANT_ROUND((0.0, 0.8)), vox=0.012)),
     }
 
 
@@ -1203,7 +1205,7 @@ NOTES['KmMorningGloryPot'][3] = ('pass', 'carved from its front, side and top vi
                                          'trellis as deep as its side shows it, the canes\' gaps open in the texture')
 # KM1-1's bushes, hedge, stone and trees: the pots' results, with what is their own
 for _name in ('KmHydrangeaBlue', 'KmHydrangeaPink', 'KmHydrangeaViolet', 'KmHedgeClipped', 'KmMossyStone',
-              'KmPersimmonTree', 'KmBlackPine', 'KmGardenPine', 'KmGinkgoBig', 'KmCherryTree', 'KmLotus'):
+              'KmPersimmonTree', 'KmBlackPine', 'KmGardenPine', 'KmGinkgoBig', 'KmCherryTree', 'KmLotus', 'KmDuneGrass'):
     NOTES[_name] = dict(_POT)
 for _name in ('KmHydrangeaBlue', 'KmHydrangeaPink', 'KmHydrangeaViolet'):
     NOTES[_name][3] = ('pass', 'its front stands in for its side, whose view draws a narrow bush leaning one way where its '
@@ -1225,6 +1227,8 @@ for _name in ('KmGinkgoBig', 'KmCherryTree'):
     NOTES[_name][3] = ('pass', 'carved from its front, side and top, each slice round: its TOP is straight down')
 NOTES['KmCherryTree'][13] = ('pass', 'its trunk joined as a solid (0.4 m across, to 3 m, into the crown): the carving had '
                                      'lost its thin middle and left the crown floating')
+NOTES['KmDuneGrass'][3] = ('pass', 'carved from its front, side and top, each slice round; the blades\' gaps open in the '
+                                   'texture')
 NOTES['KmLotus'][3] = ('pass', 'carved from its front, side and top, each slice round; the stalks\' gaps open in the texture')
 for _name in ('KmBlackPine', 'KmGardenPine'):
     NOTES[_name][3] = ('pass', 'carved from its front and side alone, each pad and limb round: its TOP is a high '

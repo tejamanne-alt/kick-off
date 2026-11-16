@@ -1352,6 +1352,14 @@ and the road's embankment in streaked concrete (KM-T20), the neighbours' houses 
 at the boardwalk's end (KM-G23), the garden pines (KM-G15). Animals: a Shiba Inu on its patch of the lane before the
 tunnel (KM-N04, the Dog hazard: it noses a low ball back; chip it over), a black-and-white cat stretched out on a wall
 (KM-N22), sparrows and a wagtail on the boardwalk (KM-N08, N17). Same checks.
+(Laid out and its set pieces built, November 2026: review/kamakura/levels/KM2-1 is its proposed layout, about 98 m
+from the home's door to the boardwalk, for the user's approval. tools/blender/km_surf_lane.py projection-models
+the neighbour's house and fence (KM-B18), the block wall (KM-T22), the alley (KM-B19, a layer 6 m back), the surf
+shop (KM-B20), the tunnel as the game's side-on tunnel with the picture's portal and beach sign on its deck
+(KM-B21), the embankment wall (KM-T20) and the surf hut (KM-B22), with the surfboards, the surf rack (KM-A36)
+and the bamboo fence (KM-T17) as cut-outs; the dune grass (KM-G23) carved from its views. Their review:
+review/kamakura/surf_lane and review/kamakura/props. Still to do: the surfers' houses from KM2-1a to e, the
+level's code and the install.)
 ```
 
 ```text

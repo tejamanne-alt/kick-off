@@ -1,0 +1,104 @@
+<title>KM2-1 layout</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Source+Sans+3:wght@400;600&family=Zen+Kaku+Gothic+New:wght@500;700&display=swap">
+<style>
+:root { --bg: #f1f2ef; --panel: #ffffff; --ink: #1f2522; --muted: #5d6762; --line: #d6dbd6; --accent: #b23a2e;
+  --strip: #2a2e2c; --note-bg: #f7f1e3; --note-ink: #6b4f12;
+  --display: "Zen Kaku Gothic New", "Hiragino Sans", "Segoe UI", system-ui, sans-serif;
+  --body: "Source Sans 3", "Segoe UI", system-ui, sans-serif; --mono: "JetBrains Mono", ui-monospace, Menlo, monospace; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #151816; --panel: #1d211f; --ink: #e6ebe7; --muted: #9ba8a1; --line: #2f3632; --accent: #ef8a7c;
+  --strip: #0f1110; --note-bg: #322a17; --note-ink: #ecc977; color-scheme: dark } }
+:root[data-theme="dark"] { --bg: #151816; --panel: #1d211f; --ink: #e6ebe7; --muted: #9ba8a1; --line: #2f3632;
+  --accent: #ef8a7c; --strip: #0f1110; --note-bg: #322a17; --note-ink: #ecc977; color-scheme: dark }
+body { background: var(--bg); color: var(--ink); font: 16px/1.55 var(--body); }
+.wrap { max-width: 1180px; margin: 0 auto; padding-block: 28px 64px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: flex; flex-direction: column; gap: 28px; }
+h1, h2 { font-family: var(--display); margin: 0; line-height: 1.2; text-wrap: balance; }
+h1 { font-size: 2rem; } h2 { font-size: 1.3rem; }
+p { margin: 0; max-width: 70ch; }
+.eyebrow { font: 600 0.75rem var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+section { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+figure { margin: 0; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+figcaption { font: 0.8rem var(--mono); color: var(--muted); }
+.scroll { overflow-x: auto; border-radius: 8px; background: var(--strip); }
+.scroll img { display: block; height: 320px; width: auto; max-width: none; }
+.full img { width: 100%; height: auto; border-radius: 8px; display: block; }
+table { border-collapse: collapse; width: 100%; font-size: 0.92rem; }
+td, th { border-top: 1px solid var(--line); padding: 7px 10px 7px 0; vertical-align: top; text-align: left; }
+th { font: 600 0.78rem var(--mono); color: var(--muted); }
+td.x { font: 0.85rem var(--mono); white-space: nowrap; font-variant-numeric: tabular-nums; width: 5em; }
+.table-box { overflow-x: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 4px 14px 10px; }
+ul { margin: 0; padding-left: 1.1em; display: flex; flex-direction: column; gap: 6px; max-width: 75ch; }
+li ul { margin: 6px 0; gap: 4px; }
+.ask { background: var(--note-bg); color: var(--note-ink); border-radius: 8px; padding: 14px 16px; }
+.ask ul { color: var(--ink); }
+</style><div class="wrap">
+<header class="stack"><div class="eyebrow">Kamakura · route 2 · leg 1 · proposed layout</div><h1>KM2-1 Down to Yuigahama</h1>
+<p>The first leg of route 2, the Shonan Coast: from the kid's home down the neighbours' lane, past the surf shop at the coast road's embankment, through the tunnel under the road, to the boardwalk onto the sand at Yuigahama. It is laid out from your KM2-1 picture, in the order of its five lane pictures, for your approval.</p>
+<p>About 98 m from the home's door to the boardwalk. Your picture's fronts are built as KM1-3's shops were: the neighbour's timber house with its fence, the block wall, the surf house, the embankment wall and the surf rental hut. The narrow alley between the houses is a layer 6 m back.</p>
+<p>The see-through boxes are what is still to come from the lane pictures: the surfers' houses along the lane (KM2-1b).</p>
+</header>
+<section><h2>The picture it comes from</h2><figure class="full"><img src="reference.jpg" alt="KM2-1 Down to Yuigahama, the reference picture"><figcaption>KM2-1 Down to Yuigahama, the photographic version: the neighbour&#x27;s timber house and fence, the alley, the surf shop, the embankment and its tunnel with the beach sign, the surf rental hut, the boardwalk and the beach.</figcaption></figure></section>
+<section><h2>Through the game camera</h2><p>Each model at its real size and place, seen through the game camera as the game frames it, the play lane at the front. See-through boxes are what is still to come. The shading is Blender's, not the game's toon look: judge the places, sizes, order and gaps.</p><figure><div class="scroll"><img src="strip.jpg" alt="The layout through the game camera, screen by screen"></div><figcaption>Scroll sideways: each screen is what the camera shows as the kid walks on; the red figure is the kid (1.57 m) with the ball.</figcaption></figure></section>
+<section><h2>From above</h2><figure class="full"><img src="plan.jpg" alt="The level from above, each place labelled"><figcaption>The camera is below the picture; red lines mark the play beats.</figcaption></figure></section>
+<section><h2>The play</h2><div class="table-box"><table><thead><tr><th>x (m)</th><th>What happens</th></tr></thead><tbody>
+<tr><td class="x">-12</td><td>start: out of the home&#x27;s door (the home stem)</td></tr>
+<tr><td class="x">-5</td><td>a black-and-white cat stretched out on the block wall (KM-N22): it swipes at a ball kicked high</td></tr>
+<tr><td class="x">14</td><td>the surfers&#x27; houses: boards by the doors, wetsuits drying (KM2-1b to come)</td></tr>
+<tr><td class="x">22</td><td>checkpoint</td></tr>
+<tr><td class="x">46</td><td>a Shiba Inu on its patch of the lane before the tunnel (KM-N04, the Dog hazard): it noses a low ball back; chip it over</td></tr>
+<tr><td class="x">50</td><td>checkpoint</td></tr>
+<tr><td class="x">54</td><td>the tunnel under the coast road: dark inside (DarkZone), 4 m</td></tr>
+<tr><td class="x">62</td><td>out onto the sand: sparrows and a wagtail on the boardwalk (KM-N08, N17)</td></tr>
+<tr><td class="x">86</td><td>the boardwalk onto the sand: the stop (KM2-2 goes on along the beach)</td></tr>
+</tbody></table></div></section>
+<section><h2>Where everything stands</h2><div class="table-box"><table><thead><tr><th>x (m)</th><th>Model</th><th>Why there</th></tr></thead><tbody>
+<tr><td class="x">-14.6</td><td>KmPotPinkFlowers</td><td>a pot by its fence</td></tr>
+<tr><td class="x">-12.0</td><td>KmHome</td><td>the kid&#x27;s home: the level starts at its door (the home stem)</td></tr>
+<tr><td class="x">-9.6</td><td>KmLetterbox</td><td>its letterbox by the gate</td></tr>
+<tr><td class="x">-9.0</td><td>KmBonsaiTerracotta</td><td>a bonsai by its gate</td></tr>
+<tr><td class="x">-6.1</td><td>KmBlockWall</td><td>the concrete block wall, its bin (KM-T22): the cat stretched out on it</td></tr>
+<tr><td class="x">-4.2</td><td>KmBlockWall</td><td>the wall</td></tr>
+<tr><td class="x">1.0</td><td>KmLaneHouse</td><td>the neighbour&#x27;s timber house and its board fence (KM-B18)</td></tr>
+<tr><td class="x">2.2</td><td>KmPotPinkFlowers</td><td>a pot before its fence (the kit&#x27;s, where the picture has them)</td></tr>
+<tr><td class="x">2.9</td><td>KmShrubPlanter</td><td>a pot before its fence (the kit&#x27;s, where the picture has them)</td></tr>
+<tr><td class="x">3.5</td><td>KmPotWhiteDaisies</td><td>a pot before its fence (the kit&#x27;s, where the picture has them)</td></tr>
+<tr><td class="x">4.0</td><td>KmStoneStandFlowers</td><td>a pot before its fence (the kit&#x27;s, where the picture has them)</td></tr>
+<tr><td class="x">4.2</td><td>KmPoleTransformer</td><td>the pole at its fence&#x27;s end</td></tr>
+<tr><td class="x">7.0</td><td>KmAlleyView</td><td>the narrow alley between the houses (a layer 6 m back)</td></tr>
+<tr><td class="x">18.8</td><td>KmBicycle</td><td>a bicycle in the rack by a gate (KM-A27: one with a board carrier to come)</td></tr>
+<tr><td class="x">19.8</td><td>KmBicycle</td><td>another</td></tr>
+<tr><td class="x">34.6</td><td>KmSurfboards</td><td>the surfboards leaning by its door (KM-A36, a cut-out)</td></tr>
+<tr><td class="x">36.0</td><td>KmSurfHouse</td><td>the surf shop: its porch, wetsuits and boards (KM-B20)</td></tr>
+<tr><td class="x">41.0</td><td>KmEmbankmentWall</td><td>the coast road&#x27;s embankment wall and guard rail (KM-T20)</td></tr>
+<tr><td class="x">42.7</td><td>KmEmbankmentWall</td><td>the coast road&#x27;s embankment wall and guard rail (KM-T20)</td></tr>
+<tr><td class="x">44.4</td><td>KmEmbankmentWall</td><td>the coast road&#x27;s embankment wall and guard rail (KM-T20)</td></tr>
+<tr><td class="x">46.0</td><td>KmEmbankmentWall</td><td>the coast road&#x27;s embankment wall and guard rail (KM-T20)</td></tr>
+<tr><td class="x">47.7</td><td>KmEmbankmentWall</td><td>the coast road&#x27;s embankment wall and guard rail (KM-T20)</td></tr>
+<tr><td class="x">49.4</td><td>KmEmbankmentWall</td><td>the coast road&#x27;s embankment wall and guard rail (KM-T20)</td></tr>
+<tr><td class="x">51.1</td><td>KmEmbankmentWall</td><td>the coast road&#x27;s embankment wall and guard rail (KM-T20)</td></tr>
+<tr><td class="x">54.1</td><td>KmCoastTunnel</td><td>the tunnel under the coast road (KM-B21): its deck over the lane, the sign, the tiled wall</td></tr>
+<tr><td class="x">57.0</td><td>KmEmbankmentWall</td><td>the embankment after the tunnel</td></tr>
+<tr><td class="x">58.7</td><td>KmEmbankmentWall</td><td>the embankment</td></tr>
+<tr><td class="x">65.0</td><td>KmBicycle</td><td>the hut&#x27;s bicycles in their rack (the kit&#x27;s, where the picture has them)</td></tr>
+<tr><td class="x">65.8</td><td>KmBicycle</td><td>another</td></tr>
+<tr><td class="x">66.6</td><td>KmBicycle</td><td>another</td></tr>
+<tr><td class="x">68.0</td><td>KmSurfHut</td><td>the surf rental hut (KM-B22)</td></tr>
+<tr><td class="x">70.6</td><td>KmSurfRack</td><td>its rack of surfboards and folded chairs (KM-A36, a cut-out)</td></tr>
+<tr><td class="x">71.5</td><td>KmBlackPine</td><td>a black pine behind the hut</td></tr>
+<tr><td class="x">73.4</td><td>KmBambooFence</td><td>the bamboo fence by the boardwalk (a cut-out)</td></tr>
+<tr><td class="x">75.0</td><td>KmBlackPine</td><td>another</td></tr>
+<tr><td class="x">76.5</td><td>KmDuneGrass</td><td>dune grass (KM-G23)</td></tr>
+<tr><td class="x">80.0</td><td>KmDuneGrass</td><td>dune grass</td></tr>
+<tr><td class="x">84.0</td><td>KmDuneGrass</td><td>dune grass</td></tr>
+<tr><td class="x">14.0</td><td>(to come)</td><td>low houses in ceramic siding, surfboards by the doors, wetsuits drying (KM2-1b)</td></tr>
+<tr><td class="x">23.5</td><td>(to come)</td><td>low houses in mortar (KM2-1b)</td></tr>
+<tr><td class="x">78.0</td><td>(to come)</td><td>the sand, from the tunnel&#x27;s far mouth</td></tr>
+<tr><td class="x">79.0</td><td>(to come)</td><td>the boardwalk of grey timber onto the sand</td></tr>
+<tr><td class="x">90.0</td><td>(to come)</td><td>the sea (Enoshima far off)</td></tr>
+</tbody></table></div></section>
+<section><h2>Decided for now</h2><ul><li><b>The tunnel:</b> your picture shows its mouth face-on, but in the game the kid walks through it, so it is drawn as the game draws a tunnel side-on. A deck runs over the lane (the opening 2.5 m high, 4 m long), its face toward the camera your picture's portal top with the parapet and the rusty 砂浜 (beach) sign, the guard rail on its edge, and the tunnel's tiled wall behind the lane. Inside it is dark (DarkZone).</li><li>The <b>embankment wall</b> runs along the lane from the surf shop to the tunnel and a little past it, the coast road above it behind its guard rail.</li><li>The <b>pots</b> before the neighbour's fence, the <b>pole</b> at its end and the <b>bicycles</b> before the hut are the kit's models, standing where your picture has them; they are painted out of the fronts behind them. The <b>surfboards</b> by the surf shop and the hut's <b>surf rack</b> are their own cut-outs until their views come (KM-A36).</li><li>Beyond the tunnel the lane is <b>sand</b>, and the boardwalk of grey timber runs out onto it to the stop. The sea and Enoshima are far behind (a box for now: the game's own sea goes there).</li><li>Carved from your views: the <b>dune grass</b> (KM-G23), three clumps by the boardwalk. The black pines behind the hut are the kit's.</li><li><b>Cost (est., docs/PERFORMANCE.md):</b><ul><li>KM2-1's ten pieces from the picture: 218 triangles in all, one shared 4096 x 2048 texture (about 11 MB with mips in ETC2 with the cut-outs' alpha, about 5 MB in ASTC 6x6).</li><li>The home and its garden from KM1-1, the kit's pots, poles, bicycles and pines, the dune grass: about 16,000 triangles.</li></ul>In all, about 16,000 triangles standing and about 40 MB of textures with what is still to come.</li></ul></section>
+<section class="ask"><h2>For you</h2><ul><li><b>The lane pictures:</b> KM2-1a to e are on the city prompts page, and none has arrived yet. They bring the surfers' houses along the lane, the bicycle with its board carrier, and the boardwalk's end.</li><li><b>Anything to move:</b> a place, the order, the length or the play beats.</li></ul></section>
+</div>

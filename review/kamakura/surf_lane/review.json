@@ -1,0 +1,1152 @@
+{
+ "KmLaneHouse": {
+  "id": "KM-B18",
+  "sheet": "photo/KM2-1 (left): the neighbour's timber house and its board fence",
+  "size": [
+   6.81,
+   9.15,
+   7.22
+  ],
+  "tris": 52,
+  "motions": [],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "each part once (looked at in Top and Bottom)"
+   ],
+   [
+    2,
+    "Closed shell",
+    "limit",
+    "22 edges with one face, 0 with three or more: boxes and roof faces without the faces no one sees (their bottoms)"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "pass",
+    "boxes and roofs measured off the picture at 120 px to the metre"
+   ],
+   [
+    4,
+    "Views the game sees",
+    "limit",
+    "the street side is the picture itself; the sides, back and roofs away from the street take the part's own colour (no view of their own)"
+   ],
+   [
+    5,
+    "Size, triangles",
+    "pass",
+    "6.81 x 9.15 x 7.22 m, 52 triangles (its budget 1500), the shared 4096 x 2048 KmSurfLaneAtlas"
+   ],
+   [
+    6,
+    "Outline whole",
+    "pass",
+    "its outline the picture's"
+   ],
+   [
+    7,
+    "No holes",
+    "pass",
+    "no holes in what the street sees"
+   ],
+   [
+    8,
+    "Own models before walls",
+    "pass",
+    "the pots, the pole and the bicycles are the kit's, the surfboards and the surf rack their own cut-outs: each painted out of what stood behind it"
+   ],
+   [
+    9,
+    "Look target",
+    "pass",
+    "the photographic KM2-1, in KM-0's look"
+   ],
+   [
+    10,
+    "Solid",
+    "pass",
+    "solid and whole"
+   ],
+   [
+    11,
+    "No brands",
+    "pass",
+    "no brand or logo: the signs' words are invented or generic (砂浜, beach)"
+   ],
+   [
+    12,
+    "No wires or sky",
+    "pass",
+    "the sky cut out round the guard rail and over the alley; the wires cross the sky above"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "painted out: the pots and the pole from the fence, the surfboards from the surf house, the bicycles and the surf rack from the hut, the image tool's mark (D31)"
+   ],
+   [
+    14,
+    "Rig names",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    15,
+    "Joints overlap",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no feet"
+   ],
+   [
+    17,
+    "Each part only itself",
+    "n/a",
+    "one piece"
+   ]
+  ]
+ },
+ "KmSurfHouse": {
+  "id": "KM-B20",
+  "sheet": "photo/KM2-1: the surf house, its porch, wetsuits and the long white board",
+  "size": [
+   6.0,
+   9.1,
+   6.0
+  ],
+  "tris": 66,
+  "motions": [],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "each part once (looked at in Top and Bottom)"
+   ],
+   [
+    2,
+    "Closed shell",
+    "limit",
+    "36 edges with one face, 0 with three or more: boxes and roof faces without the faces no one sees (their bottoms)"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "pass",
+    "boxes and roofs measured off the picture at 120 px to the metre"
+   ],
+   [
+    4,
+    "Views the game sees",
+    "limit",
+    "the street side is the picture itself; the sides, back and roofs away from the street take the part's own colour (no view of their own)"
+   ],
+   [
+    5,
+    "Size, triangles",
+    "pass",
+    "6.00 x 9.10 x 6.00 m, 66 triangles (its budget 1500), the shared 4096 x 2048 KmSurfLaneAtlas"
+   ],
+   [
+    6,
+    "Outline whole",
+    "pass",
+    "its outline the picture's"
+   ],
+   [
+    7,
+    "No holes",
+    "pass",
+    "no holes in what the street sees"
+   ],
+   [
+    8,
+    "Own models before walls",
+    "pass",
+    "the pots, the pole and the bicycles are the kit's, the surfboards and the surf rack their own cut-outs: each painted out of what stood behind it"
+   ],
+   [
+    9,
+    "Look target",
+    "pass",
+    "the photographic KM2-1, in KM-0's look"
+   ],
+   [
+    10,
+    "Solid",
+    "pass",
+    "solid and whole"
+   ],
+   [
+    11,
+    "No brands",
+    "pass",
+    "no brand or logo: the signs' words are invented or generic (砂浜, beach)"
+   ],
+   [
+    12,
+    "No wires or sky",
+    "pass",
+    "the sky cut out round the guard rail and over the alley; the wires cross the sky above"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "painted out: the pots and the pole from the fence, the surfboards from the surf house, the bicycles and the surf rack from the hut, the image tool's mark (D31)"
+   ],
+   [
+    14,
+    "Rig names",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    15,
+    "Joints overlap",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no feet"
+   ],
+   [
+    17,
+    "Each part only itself",
+    "n/a",
+    "one piece"
+   ]
+  ]
+ },
+ "KmSurfHut": {
+  "id": "KM-B22",
+  "sheet": "photo/KM2-1 (right): the surf rental hut",
+  "size": [
+   8.89,
+   8.8,
+   6.22
+  ],
+  "tris": 58,
+  "motions": [],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "each part once (looked at in Top and Bottom)"
+   ],
+   [
+    2,
+    "Closed shell",
+    "limit",
+    "20 edges with one face, 0 with three or more: boxes and roof faces without the faces no one sees (their bottoms)"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "pass",
+    "boxes and roofs measured off the picture at 120 px to the metre"
+   ],
+   [
+    4,
+    "Views the game sees",
+    "limit",
+    "the street side is the picture itself; the sides, back and roofs away from the street take the part's own colour (no view of their own)"
+   ],
+   [
+    5,
+    "Size, triangles",
+    "pass",
+    "8.89 x 8.80 x 6.22 m, 58 triangles (its budget 1500), the shared 4096 x 2048 KmSurfLaneAtlas"
+   ],
+   [
+    6,
+    "Outline whole",
+    "pass",
+    "its outline the picture's"
+   ],
+   [
+    7,
+    "No holes",
+    "pass",
+    "no holes in what the street sees"
+   ],
+   [
+    8,
+    "Own models before walls",
+    "pass",
+    "the pots, the pole and the bicycles are the kit's, the surfboards and the surf rack their own cut-outs: each painted out of what stood behind it"
+   ],
+   [
+    9,
+    "Look target",
+    "pass",
+    "the photographic KM2-1, in KM-0's look"
+   ],
+   [
+    10,
+    "Solid",
+    "pass",
+    "solid and whole"
+   ],
+   [
+    11,
+    "No brands",
+    "pass",
+    "no brand or logo: the signs' words are invented or generic (砂浜, beach)"
+   ],
+   [
+    12,
+    "No wires or sky",
+    "pass",
+    "the sky cut out round the guard rail and over the alley; the wires cross the sky above"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "painted out: the pots and the pole from the fence, the surfboards from the surf house, the bicycles and the surf rack from the hut, the image tool's mark (D31)"
+   ],
+   [
+    14,
+    "Rig names",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    15,
+    "Joints overlap",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no feet"
+   ],
+   [
+    17,
+    "Each part only itself",
+    "n/a",
+    "one piece"
+   ]
+  ]
+ },
+ "KmCoastTunnel": {
+  "id": "KM-B21",
+  "sheet": "photo/KM2-1: the tunnel under the coast road: its portal top and sign as the deck's face, the guard rail, the tiled wall",
+  "size": [
+   4.08,
+   3.9,
+   4.47
+  ],
+  "tris": 14,
+  "motions": [],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "each part once (looked at in Top and Bottom)"
+   ],
+   [
+    2,
+    "Closed shell",
+    "limit",
+    "10 edges with one face, 0 with three or more: faces only where the street or the camera sees them (the tunnel and the wall are open behind)"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "pass",
+    "boxes and roofs measured off the picture at 120 px to the metre"
+   ],
+   [
+    4,
+    "Views the game sees",
+    "limit",
+    "the street side is the picture itself; the sides, back and roofs away from the street take the part's own colour (no view of their own)"
+   ],
+   [
+    5,
+    "Size, triangles",
+    "pass",
+    "4.08 x 3.90 x 4.47 m, 14 triangles (its budget 100), the shared 4096 x 2048 KmSurfLaneAtlas"
+   ],
+   [
+    6,
+    "Outline whole",
+    "pass",
+    "its outline the picture's"
+   ],
+   [
+    7,
+    "No holes",
+    "pass",
+    "no holes in what the street sees"
+   ],
+   [
+    8,
+    "Own models before walls",
+    "pass",
+    "the pots, the pole and the bicycles are the kit's, the surfboards and the surf rack their own cut-outs: each painted out of what stood behind it"
+   ],
+   [
+    9,
+    "Look target",
+    "pass",
+    "the photographic KM2-1, in KM-0's look"
+   ],
+   [
+    10,
+    "Solid",
+    "pass",
+    "solid and whole"
+   ],
+   [
+    11,
+    "No brands",
+    "pass",
+    "no brand or logo: the signs' words are invented or generic (砂浜, beach)"
+   ],
+   [
+    12,
+    "No wires or sky",
+    "pass",
+    "the sky cut out round the guard rail and over the alley; the wires cross the sky above"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "painted out: the pots and the pole from the fence, the surfboards from the surf house, the bicycles and the surf rack from the hut, the image tool's mark (D31)"
+   ],
+   [
+    14,
+    "Rig names",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    15,
+    "Joints overlap",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no feet"
+   ],
+   [
+    17,
+    "Each part only itself",
+    "n/a",
+    "one piece"
+   ]
+  ]
+ },
+ "KmEmbankmentWall": {
+  "id": "KM-T20",
+  "sheet": "photo/KM2-1: the coast road's embankment wall and guard rail",
+  "size": [
+   1.67,
+   3.0,
+   4.65
+  ],
+  "tris": 4,
+  "motions": [],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "each part once (looked at in Top and Bottom)"
+   ],
+   [
+    2,
+    "Closed shell",
+    "limit",
+    "8 edges with one face, 0 with three or more: faces only where the street or the camera sees them (the tunnel and the wall are open behind)"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "pass",
+    "boxes and roofs measured off the picture at 120 px to the metre"
+   ],
+   [
+    4,
+    "Views the game sees",
+    "limit",
+    "the street side is the picture itself; the sides, back and roofs away from the street take the part's own colour (no view of their own)"
+   ],
+   [
+    5,
+    "Size, triangles",
+    "pass",
+    "1.67 x 3.00 x 4.65 m, 4 triangles (its budget 100), the shared 4096 x 2048 KmSurfLaneAtlas"
+   ],
+   [
+    6,
+    "Outline whole",
+    "pass",
+    "its outline the picture's"
+   ],
+   [
+    7,
+    "No holes",
+    "pass",
+    "no holes in what the street sees"
+   ],
+   [
+    8,
+    "Own models before walls",
+    "pass",
+    "the pots, the pole and the bicycles are the kit's, the surfboards and the surf rack their own cut-outs: each painted out of what stood behind it"
+   ],
+   [
+    9,
+    "Look target",
+    "pass",
+    "the photographic KM2-1, in KM-0's look"
+   ],
+   [
+    10,
+    "Solid",
+    "pass",
+    "solid and whole"
+   ],
+   [
+    11,
+    "No brands",
+    "pass",
+    "no brand or logo: the signs' words are invented or generic (砂浜, beach)"
+   ],
+   [
+    12,
+    "No wires or sky",
+    "pass",
+    "the sky cut out round the guard rail and over the alley; the wires cross the sky above"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "painted out: the pots and the pole from the fence, the surfboards from the surf house, the bicycles and the surf rack from the hut, the image tool's mark (D31)"
+   ],
+   [
+    14,
+    "Rig names",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    15,
+    "Joints overlap",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no feet"
+   ],
+   [
+    17,
+    "Each part only itself",
+    "n/a",
+    "one piece"
+   ]
+  ]
+ },
+ "KmBlockWall": {
+  "id": "KM-T22",
+  "sheet": "photo/KM2-1 (left): the concrete block wall and its bin",
+  "size": [
+   1.85,
+   0.15,
+   2.02
+  ],
+  "tris": 10,
+  "motions": [],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "each part once (looked at in Top and Bottom)"
+   ],
+   [
+    2,
+    "Closed shell",
+    "limit",
+    "4 edges with one face, 0 with three or more: boxes and roof faces without the faces no one sees (their bottoms)"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "pass",
+    "boxes and roofs measured off the picture at 120 px to the metre"
+   ],
+   [
+    4,
+    "Views the game sees",
+    "limit",
+    "the street side is the picture itself; the sides, back and roofs away from the street take the part's own colour (no view of their own)"
+   ],
+   [
+    5,
+    "Size, triangles",
+    "pass",
+    "1.85 x 0.15 x 2.02 m, 10 triangles (its budget 100), the shared 4096 x 2048 KmSurfLaneAtlas"
+   ],
+   [
+    6,
+    "Outline whole",
+    "pass",
+    "its outline the picture's"
+   ],
+   [
+    7,
+    "No holes",
+    "pass",
+    "no holes in what the street sees"
+   ],
+   [
+    8,
+    "Own models before walls",
+    "pass",
+    "the pots, the pole and the bicycles are the kit's, the surfboards and the surf rack their own cut-outs: each painted out of what stood behind it"
+   ],
+   [
+    9,
+    "Look target",
+    "pass",
+    "the photographic KM2-1, in KM-0's look"
+   ],
+   [
+    10,
+    "Solid",
+    "pass",
+    "solid and whole"
+   ],
+   [
+    11,
+    "No brands",
+    "pass",
+    "no brand or logo: the signs' words are invented or generic (砂浜, beach)"
+   ],
+   [
+    12,
+    "No wires or sky",
+    "pass",
+    "the sky cut out round the guard rail and over the alley; the wires cross the sky above"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "painted out: the pots and the pole from the fence, the surfboards from the surf house, the bicycles and the surf rack from the hut, the image tool's mark (D31)"
+   ],
+   [
+    14,
+    "Rig names",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    15,
+    "Joints overlap",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no feet"
+   ],
+   [
+    17,
+    "Each part only itself",
+    "n/a",
+    "one piece"
+   ]
+  ]
+ },
+ "KmAlleyView": {
+  "id": "KM-B19",
+  "sheet": "photo/KM2-1: the narrow alley between the houses (a cut-out, 6 m back)",
+  "size": [
+   3.09,
+   0.01,
+   6.1
+  ],
+  "tris": 2,
+  "motions": [],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "each part once (looked at in Top and Bottom)"
+   ],
+   [
+    2,
+    "Closed shell",
+    "limit",
+    "4 edges with one face, 0 with three or more: a cut-out card"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "limit",
+    "a flat cut-out: its depth is not modelled"
+   ],
+   [
+    4,
+    "Views the game sees",
+    "limit",
+    "the street side is the picture itself; the sides, back and roofs away from the street take the part's own colour (no view of their own)"
+   ],
+   [
+    5,
+    "Size, triangles",
+    "pass",
+    "3.09 x 0.01 x 6.10 m, 2 triangles (its budget 100), the shared 4096 x 2048 KmSurfLaneAtlas"
+   ],
+   [
+    6,
+    "Outline whole",
+    "pass",
+    "its outline the picture's"
+   ],
+   [
+    7,
+    "No holes",
+    "pass",
+    "no holes in what the street sees"
+   ],
+   [
+    8,
+    "Own models before walls",
+    "pass",
+    "the pots, the pole and the bicycles are the kit's, the surfboards and the surf rack their own cut-outs: each painted out of what stood behind it"
+   ],
+   [
+    9,
+    "Look target",
+    "pass",
+    "the photographic KM2-1, in KM-0's look"
+   ],
+   [
+    10,
+    "Solid",
+    "pass",
+    "solid and whole"
+   ],
+   [
+    11,
+    "No brands",
+    "pass",
+    "no brand or logo: the signs' words are invented or generic (砂浜, beach)"
+   ],
+   [
+    12,
+    "No wires or sky",
+    "pass",
+    "the sky cut out round the guard rail and over the alley; the wires cross the sky above"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "painted out: the pots and the pole from the fence, the surfboards from the surf house, the bicycles and the surf rack from the hut, the image tool's mark (D31)"
+   ],
+   [
+    14,
+    "Rig names",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    15,
+    "Joints overlap",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no feet"
+   ],
+   [
+    17,
+    "Each part only itself",
+    "n/a",
+    "one piece"
+   ]
+  ]
+ },
+ "KmSurfboards": {
+  "id": "KM-A36",
+  "sheet": "photo/KM2-1: the surfboards leaning by the surf house (a cut-out)",
+  "size": [
+   1.85,
+   0.01,
+   2.72
+  ],
+  "tris": 4,
+  "motions": [],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "each part once (looked at in Top and Bottom)"
+   ],
+   [
+    2,
+    "Closed shell",
+    "limit",
+    "8 edges with one face, 0 with three or more: a cut-out card"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "limit",
+    "a flat cut-out: its depth is not modelled"
+   ],
+   [
+    4,
+    "Views the game sees",
+    "limit",
+    "the street side is the picture itself; the sides, back and roofs away from the street take the part's own colour (no view of their own)"
+   ],
+   [
+    5,
+    "Size, triangles",
+    "pass",
+    "1.85 x 0.01 x 2.72 m, 4 triangles (its budget 100), the shared 4096 x 2048 KmSurfLaneAtlas"
+   ],
+   [
+    6,
+    "Outline whole",
+    "pass",
+    "its outline the picture's"
+   ],
+   [
+    7,
+    "No holes",
+    "pass",
+    "no holes in what the street sees"
+   ],
+   [
+    8,
+    "Own models before walls",
+    "pass",
+    "the pots, the pole and the bicycles are the kit's, the surfboards and the surf rack their own cut-outs: each painted out of what stood behind it"
+   ],
+   [
+    9,
+    "Look target",
+    "pass",
+    "the photographic KM2-1, in KM-0's look"
+   ],
+   [
+    10,
+    "Solid",
+    "pass",
+    "solid and whole"
+   ],
+   [
+    11,
+    "No brands",
+    "pass",
+    "no brand or logo: the signs' words are invented or generic (砂浜, beach)"
+   ],
+   [
+    12,
+    "No wires or sky",
+    "pass",
+    "the sky cut out round the guard rail and over the alley; the wires cross the sky above"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "painted out: the pots and the pole from the fence, the surfboards from the surf house, the bicycles and the surf rack from the hut, the image tool's mark (D31)"
+   ],
+   [
+    14,
+    "Rig names",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    15,
+    "Joints overlap",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no feet"
+   ],
+   [
+    17,
+    "Each part only itself",
+    "n/a",
+    "one piece"
+   ]
+  ]
+ },
+ "KmSurfRack": {
+  "id": "KM-A36",
+  "sheet": "photo/KM2-1: the hut's rack of surfboards and folded chairs (a cut-out)",
+  "size": [
+   2.58,
+   0.01,
+   2.66
+  ],
+  "tris": 4,
+  "motions": [],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "each part once (looked at in Top and Bottom)"
+   ],
+   [
+    2,
+    "Closed shell",
+    "limit",
+    "8 edges with one face, 0 with three or more: a cut-out card"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "limit",
+    "a flat cut-out: its depth is not modelled"
+   ],
+   [
+    4,
+    "Views the game sees",
+    "limit",
+    "the street side is the picture itself; the sides, back and roofs away from the street take the part's own colour (no view of their own)"
+   ],
+   [
+    5,
+    "Size, triangles",
+    "pass",
+    "2.58 x 0.01 x 2.66 m, 4 triangles (its budget 100), the shared 4096 x 2048 KmSurfLaneAtlas"
+   ],
+   [
+    6,
+    "Outline whole",
+    "pass",
+    "its outline the picture's"
+   ],
+   [
+    7,
+    "No holes",
+    "pass",
+    "no holes in what the street sees"
+   ],
+   [
+    8,
+    "Own models before walls",
+    "pass",
+    "the pots, the pole and the bicycles are the kit's, the surfboards and the surf rack their own cut-outs: each painted out of what stood behind it"
+   ],
+   [
+    9,
+    "Look target",
+    "pass",
+    "the photographic KM2-1, in KM-0's look"
+   ],
+   [
+    10,
+    "Solid",
+    "pass",
+    "solid and whole"
+   ],
+   [
+    11,
+    "No brands",
+    "pass",
+    "no brand or logo: the signs' words are invented or generic (砂浜, beach)"
+   ],
+   [
+    12,
+    "No wires or sky",
+    "pass",
+    "the sky cut out round the guard rail and over the alley; the wires cross the sky above"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "painted out: the pots and the pole from the fence, the surfboards from the surf house, the bicycles and the surf rack from the hut, the image tool's mark (D31)"
+   ],
+   [
+    14,
+    "Rig names",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    15,
+    "Joints overlap",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no feet"
+   ],
+   [
+    17,
+    "Each part only itself",
+    "n/a",
+    "one piece"
+   ]
+  ]
+ },
+ "KmBambooFence": {
+  "id": "KM-T17",
+  "sheet": "photo/KM2-1 (right): the bamboo fence by the boardwalk (a cut-out)",
+  "size": [
+   1.32,
+   0.01,
+   2.17
+  ],
+  "tris": 4,
+  "motions": [],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "each part once (looked at in Top and Bottom)"
+   ],
+   [
+    2,
+    "Closed shell",
+    "limit",
+    "8 edges with one face, 0 with three or more: a cut-out card"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "limit",
+    "a flat cut-out: its depth is not modelled"
+   ],
+   [
+    4,
+    "Views the game sees",
+    "limit",
+    "the street side is the picture itself; the sides, back and roofs away from the street take the part's own colour (no view of their own)"
+   ],
+   [
+    5,
+    "Size, triangles",
+    "pass",
+    "1.32 x 0.01 x 2.17 m, 4 triangles (its budget 100), the shared 4096 x 2048 KmSurfLaneAtlas"
+   ],
+   [
+    6,
+    "Outline whole",
+    "pass",
+    "its outline the picture's"
+   ],
+   [
+    7,
+    "No holes",
+    "pass",
+    "no holes in what the street sees"
+   ],
+   [
+    8,
+    "Own models before walls",
+    "pass",
+    "the pots, the pole and the bicycles are the kit's, the surfboards and the surf rack their own cut-outs: each painted out of what stood behind it"
+   ],
+   [
+    9,
+    "Look target",
+    "pass",
+    "the photographic KM2-1, in KM-0's look"
+   ],
+   [
+    10,
+    "Solid",
+    "pass",
+    "solid and whole"
+   ],
+   [
+    11,
+    "No brands",
+    "pass",
+    "no brand or logo: the signs' words are invented or generic (砂浜, beach)"
+   ],
+   [
+    12,
+    "No wires or sky",
+    "pass",
+    "the sky cut out round the guard rail and over the alley; the wires cross the sky above"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "painted out: the pots and the pole from the fence, the surfboards from the surf house, the bicycles and the surf rack from the hut, the image tool's mark (D31)"
+   ],
+   [
+    14,
+    "Rig names",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    15,
+    "Joints overlap",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no feet"
+   ],
+   [
+    17,
+    "Each part only itself",
+    "n/a",
+    "one piece"
+   ]
+  ]
+ }
+}

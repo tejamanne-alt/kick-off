@@ -1,0 +1,17 @@
+{
+ "intro": [
+  "KM2-1 Down to Yuigahama's set pieces, projection-modelled from your photographic KM2-1 as KM1-3's were: the fronts along the lane at 120 px to the metre, each face toward the street your picture's own pixels.",
+  "Ten models: the neighbour's timber house and fence, the concrete block wall, the alley between the houses (a layer 6 m back), the surf shop with its porch, the leaning surfboards, the tunnel under the coast road, the embankment wall, the surf rental hut, its surf rack and the bamboo fence. They share one 4096 x 2048 texture, 218 triangles together. The dune grass is carved from your views and reviewed with the props."
+ ],
+ "limits": [
+  "Seen from the street they are your picture. Their sides, backs and roofs take the part's own colour (check 4).",
+  "The tunnel is drawn as the game draws a tunnel side-on: a deck over the lane carrying your picture's portal top and sign, the tiled wall behind. Your picture's view through the tunnel to the beach is not used.",
+  "The embankment wall's lower part is hidden in your picture by the surf shop, so it takes the parapet's streaked concrete, stretched down.",
+  "Where the pots stood, the neighbour's fence is carried on from its plain section: above them your picture's fence is slatted, and its slats could not be carried down without a grid.",
+  "The surfboards and the surf rack are flat cut-outs until their views come (KM-A36)."
+ ],
+ "pending": [
+  "The surfers' houses along the lane come from the lane pictures KM2-1a to e, none of which has arrived yet.",
+  "Not installed in the game yet: they go in with KM2-1's level, once you approve its layout board."
+ ]
+}

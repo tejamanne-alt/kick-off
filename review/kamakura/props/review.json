@@ -4830,5 +4830,120 @@
     "one piece"
    ]
   ]
+ },
+ "KmDuneGrass": {
+  "id": "KM-G23",
+  "sheet": "sheets/KM-G23_dune_grass (its views, made from KM1-1)",
+  "size": [
+   1.29,
+   1.13,
+   0.8
+  ],
+  "tris": 1410,
+  "motions": [],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "one solid carved from its views: each part once, looked at in Top and Bottom"
+   ],
+   [
+    2,
+    "Closed shell",
+    "pass",
+    "0 edges with one face, 0 with three or more"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "pass",
+    "carved from its front, side and top, each slice round; the blades' gaps open in the texture"
+   ],
+   [
+    4,
+    "Views the game sees",
+    "limit",
+    "no view sees the pads' undersides or the pot's bottom: they take the nearest view's pixels and come out grey-edged and streaked. The game camera, about 1.9 m up and looking a little down at a pot under a metre tall, never sees them"
+   ],
+   [
+    5,
+    "Size, triangles",
+    "pass",
+    "1.29 x 1.13 x 0.80 m, 1410 triangles (its budget: 1,500), its own 1024 px texture"
+   ],
+   [
+    6,
+    "Outline whole",
+    "limit",
+    "straight on its outline is the views' own; at 45 degrees the leaves' edges show faint fringes where two views' cut-outs meet (the round shrub: green streaks at the sides of its dome). From the street it stands about 55 px tall on a 720-line screen and the camera turns at most about 30 degrees"
+   ],
+   [
+    7,
+    "No holes",
+    "pass",
+    "no holes; the gaps the views show (between bars, beams and pillars) stay open"
+   ],
+   [
+    8,
+    "Own models before walls",
+    "pass",
+    "stands on its own, its own model"
+   ],
+   [
+    9,
+    "Look target",
+    "pass",
+    "a photograph in KM-0's look, as its views are"
+   ],
+   [
+    10,
+    "Solid",
+    "pass",
+    "solid and whole"
+   ],
+   [
+    11,
+    "No brands",
+    "pass",
+    "no brand or logo"
+   ],
+   [
+    12,
+    "No wires or sky",
+    "pass",
+    "no power line across it, no sky on its edges"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "none needed"
+   ],
+   [
+    14,
+    "Rig names",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    15,
+    "Joints overlap",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no feet"
+   ],
+   [
+    17,
+    "Each part only itself",
+    "n/a",
+    "one piece"
+   ]
+  ]
  }
 }
