@@ -1,8 +1,8 @@
 using System.Collections.Generic;
-using DribbleToSchool.Core;
+using KickOffTales.Core;
 using UnityEngine;
 
-namespace DribbleToSchool.Localization
+namespace KickOffTales.Localization
 {
     /// <summary>
     /// Tiny string-table localization. Keys live in StringTables; missing keys

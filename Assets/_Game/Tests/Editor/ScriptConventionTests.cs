@@ -8,7 +8,7 @@ using System.Text.RegularExpressions;
 using NUnit.Framework;
 using UnityEngine;
 
-namespace DribbleToSchool.Tests
+namespace KickOffTales.Tests
 {
     /// <summary>
     /// Unity can only point a scene at a script whose file is named like its class. A MonoBehaviour in a
@@ -24,13 +24,13 @@ namespace DribbleToSchool.Tests
             Type[] types;
             try
             {
-                types = typeof(DribbleToSchool.Core.LevelManager).Assembly.GetTypes();
+                types = typeof(KickOffTales.Core.LevelManager).Assembly.GetTypes();
             }
             catch (ReflectionTypeLoadException e)
             {
                 types = e.Types.Where(t => t != null).ToArray();
             }
-            return types.Where(t => t.Namespace != null && t.Namespace.StartsWith("DribbleToSchool")
+            return types.Where(t => t.Namespace != null && t.Namespace.StartsWith("KickOffTales")
                 && !t.IsNested && !t.IsAbstract && !t.IsGenericTypeDefinition
                 && (typeof(MonoBehaviour).IsAssignableFrom(t) || typeof(ScriptableObject).IsAssignableFrom(t)));
         }

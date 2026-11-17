@@ -5,7 +5,7 @@ using UnityEditor;
 using UnityEditor.Callbacks;
 using UnityEditor.iOS.Xcode;
 
-namespace DribbleToSchool.EditorTools
+namespace KickOffTales.EditorTools
 {
     /// <summary>
     /// Finishes the exported Xcode project so uploads don't stall and Xcode builds without warnings:

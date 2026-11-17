@@ -37,16 +37,16 @@ UNITY="${UNITY:-$(find_unity || true)}"
 
 case "$MODE" in
   release)
-    METHOD=DribbleToSchool.EditorTools.BuildScripts.BuildAndroidRelease
-    OUT="$ROOT/Builds/Android/KickOff.aab"
+    METHOD=KickOffTales.EditorTools.BuildScripts.BuildAndroidRelease
+    OUT="$ROOT/Builds/Android/KickOffTales.aab"
     for var in DTS_KEYSTORE_PATH DTS_KEYSTORE_PASS DTS_KEY_ALIAS DTS_KEY_PASS; do
       [ -n "${!var:-}" ] || { echo "Set $var (the upload key: see docs/RELEASE.md, or make one with ci/android/make_upload_key.sh)."; exit 1; }
     done
     [ -f "$DTS_KEYSTORE_PATH" ] || { echo "No keystore at $DTS_KEYSTORE_PATH"; exit 1; }
     ;;
   dev)
-    METHOD=DribbleToSchool.EditorTools.BuildScripts.BuildAndroidDev
-    OUT="$ROOT/Builds/Android/KickOff-dev.apk"
+    METHOD=KickOffTales.EditorTools.BuildScripts.BuildAndroidDev
+    OUT="$ROOT/Builds/Android/KickOffTales-dev.apk"
     ;;
   *) echo "Mode must be release or dev"; exit 1 ;;
 esac

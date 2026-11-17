@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace DribbleToSchool.Coop
+namespace KickOffTales.Coop
 {
     /// <summary>Where a player is in the co-op race.</summary>
     public enum PlayerStatus : byte

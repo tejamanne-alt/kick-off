@@ -1,12 +1,12 @@
 using System.Collections.Generic;
-using DribbleToSchool.Core;
-using DribbleToSchool.Cosmetics;
-using DribbleToSchool.Localization;
-using DribbleToSchool.UI.Kit;
+using KickOffTales.Core;
+using KickOffTales.Cosmetics;
+using KickOffTales.Localization;
+using KickOffTales.UI.Kit;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace DribbleToSchool.UI
+namespace KickOffTales.UI
 {
     /// <summary>
     /// The celebration when stickers earn something: each new Locker Room item pops in on a card

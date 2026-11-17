@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using UnityEngine;
 
-namespace DribbleToSchool.Progression
+namespace KickOffTales.Progression
 {
     /// <summary>
     /// Local JSON save in persistentDataPath. Writes go to a temp file first and
@@ -87,7 +87,7 @@ namespace DribbleToSchool.Progression
             Own(d, d.equippedOutfit);
             Own(d, d.equippedTrail);
             // The bags every kid can wear from the start (Cosmetics/Bags): none, the Kick Off and the Race Car backpacks.
-            foreach (string bag in DribbleToSchool.Cosmetics.Bags.Starter) Own(d, bag);
+            foreach (string bag in KickOffTales.Cosmetics.Bags.Starter) Own(d, bag);
             if (d.bags == null) d.bags = new System.Collections.Generic.List<BagChoice>();
             // Version 2: the trips to school. Routes already finished count as walked on time.
             SchoolTrips.Upgrade(d);

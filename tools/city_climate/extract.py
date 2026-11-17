@@ -11,7 +11,7 @@ except ValueError:
 cities = re.findall(r'public static readonly City (\w+) = new City\((?:.|\n)*?(new CityClimate\([^;]*?\)|CityClimate\.Reference), new Color', s)
 if len(cities) < 5:
     sys.exit('extract.py: found %d cities\' climates, expected 5' % len(cities))
-text = 'using DribbleToSchool.Art;\nusing UnityEngine;\nnamespace DribbleToSchool.Progression\n{\n' + s[a:b] + '    public static class Climates\n    {\n'
+text = 'using KickOffTales.Art;\nusing UnityEngine;\nnamespace KickOffTales.Progression\n{\n' + s[a:b] + '    public static class Climates\n    {\n'
 text += ''.join('        public static CityClimate %s = %s;\n' % c for c in cities)
 text += '        public static CityClimate Get(string name)\n        {\n            switch (name)\n            {\n'
 text += ''.join('                case "%s": return %s;\n' % (c[0], c[0]) for c in cities)

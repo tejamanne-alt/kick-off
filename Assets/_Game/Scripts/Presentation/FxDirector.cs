@@ -1,12 +1,12 @@
 using System.Collections;
-using DribbleToSchool.CameraRig;
-using DribbleToSchool.Core;
-using DribbleToSchool.Holiday;
-using DribbleToSchool.Player;
-using DribbleToSchool.UI.Kit;
+using KickOffTales.CameraRig;
+using KickOffTales.Core;
+using KickOffTales.Holiday;
+using KickOffTales.Player;
+using KickOffTales.UI.Kit;
 using UnityEngine;
 
-namespace DribbleToSchool.Presentation
+namespace KickOffTales.Presentation
 {
     /// <summary>
     /// Turns gameplay events into visual feedback: dust, sparkles, splashes,

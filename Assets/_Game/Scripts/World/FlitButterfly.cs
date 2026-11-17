@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace DribbleToSchool.World
+namespace KickOffTales.World
 {
     /// <summary>
     /// A butterfly (Animals kit) flitting about a garden or the park lawn: it flies on a wandering,

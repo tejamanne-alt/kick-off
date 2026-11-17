@@ -1,11 +1,11 @@
 using System.Collections.Generic;
-using DribbleToSchool.Ball;
-using DribbleToSchool.Core;
-using DribbleToSchool.InputHandling;
-using DribbleToSchool.Tuning;
+using KickOffTales.Ball;
+using KickOffTales.Core;
+using KickOffTales.InputHandling;
+using KickOffTales.Tuning;
 using UnityEngine;
 
-namespace DribbleToSchool.Player
+namespace KickOffTales.Player
 {
     /// <summary>
     /// The kid walks back and forth with the arrow buttons and jumps (once more in the air: a

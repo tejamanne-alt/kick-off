@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace DribbleToSchool.UI.Kit
+namespace KickOffTales.UI.Kit
 {
     /// <summary>UI sprites drawn in code: rounded panels, circles, stars, coins, a padlock.</summary>
     public static class ProceduralSprites

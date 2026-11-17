@@ -1,10 +1,10 @@
 using System;
-using DribbleToSchool.Art;
-using DribbleToSchool.Levels;
-using DribbleToSchool.World;
+using KickOffTales.Art;
+using KickOffTales.Levels;
+using KickOffTales.World;
 using UnityEngine;
 
-namespace DribbleToSchool.EditorTools
+namespace KickOffTales.EditorTools
 {
     /// <summary>
     /// The stops on the way to school (Levels/RouteTable.Stops): where one level of a route ends and the next one starts

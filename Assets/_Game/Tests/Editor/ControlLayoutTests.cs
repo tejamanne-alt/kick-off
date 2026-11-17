@@ -1,10 +1,10 @@
 #if UNITY_INCLUDE_TESTS
-using DribbleToSchool.CameraRig;
-using DribbleToSchool.InputHandling;
+using KickOffTales.CameraRig;
+using KickOffTales.InputHandling;
 using NUnit.Framework;
 using UnityEngine;
 
-namespace DribbleToSchool.Tests
+namespace KickOffTales.Tests
 {
     /// <summary>
     /// The on-screen touch controls: the left thumb has one walk stick (push sideways to walk, pull down to slide, the

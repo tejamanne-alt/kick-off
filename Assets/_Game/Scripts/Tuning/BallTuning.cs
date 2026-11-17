@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace DribbleToSchool.Tuning
+namespace KickOffTales.Tuning
 {
     /// <summary>
     /// Every number that shapes how the ball feels. Edit the asset (or use the

@@ -1,7 +1,7 @@
-using DribbleToSchool.Ball;
+using KickOffTales.Ball;
 using UnityEngine;
 
-namespace DribbleToSchool.Presentation
+namespace KickOffTales.Presentation
 {
     /// <summary>
     /// Ball juice: squash-and-stretch along the velocity and on impacts (the

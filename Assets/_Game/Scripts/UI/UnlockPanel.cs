@@ -1,10 +1,10 @@
-using DribbleToSchool.Localization;
-using DribbleToSchool.Store;
-using DribbleToSchool.UI.Kit;
+using KickOffTales.Localization;
+using KickOffTales.Store;
+using KickOffTales.UI.Kit;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace DribbleToSchool.UI
+namespace KickOffTales.UI
 {
     /// <summary>"Unlock the full game" offer: what you get, the price, buy and restore.</summary>
     public static class UnlockPanel

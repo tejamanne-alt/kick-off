@@ -1,11 +1,11 @@
 using System.Collections.Generic;
-using DribbleToSchool.Core;
-using DribbleToSchool.Localization;
-using DribbleToSchool.UI.Kit;
+using KickOffTales.Core;
+using KickOffTales.Localization;
+using KickOffTales.UI.Kit;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace DribbleToSchool.UI
+namespace KickOffTales.UI
 {
     /// <summary>
     /// Who walks to school: a card for every kid of the <see cref="PlayerRoster"/>, in a row for

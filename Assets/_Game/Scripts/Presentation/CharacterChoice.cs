@@ -1,7 +1,7 @@
-using DribbleToSchool.Core;
+using KickOffTales.Core;
 using UnityEngine;
 
-namespace DribbleToSchool.Presentation
+namespace KickOffTales.Presentation
 {
     /// <summary>
     /// The player can be any kid of the <see cref="PlayerRoster"/> (Settings, the picker). All of

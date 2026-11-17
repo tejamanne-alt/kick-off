@@ -1,16 +1,16 @@
 using System.Collections.Generic;
-using DribbleToSchool.Core;
-using DribbleToSchool.Cosmetics;
-using DribbleToSchool.Levels;
-using DribbleToSchool.Localization;
-using DribbleToSchool.Progression;
-using DribbleToSchool.UI;
-using DribbleToSchool.UI.Kit;
+using KickOffTales.Core;
+using KickOffTales.Cosmetics;
+using KickOffTales.Levels;
+using KickOffTales.Localization;
+using KickOffTales.Progression;
+using KickOffTales.UI;
+using KickOffTales.UI.Kit;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-namespace DribbleToSchool.FrontEnd
+namespace KickOffTales.FrontEnd
 {
     public enum FrontEndScreenId { Title, Map, Shop, Album, Coop }
 
@@ -121,7 +121,7 @@ namespace DribbleToSchool.FrontEnd
 
         void Start()
         {
-            DribbleToSchool.Core.GraphicsQuality.ApplyFrameRate();   // 60, or what the device settled on (Core/GraphicsQuality)
+            KickOffTales.Core.GraphicsQuality.ApplyFrameRate();   // 60, or what the device settled on (Core/GraphicsQuality)
             Screen.sleepTimeout = SleepTimeout.SystemSetting;   // menus may dim; levels keep the screen on
             TimeControl.ResetTime();
 

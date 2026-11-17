@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace DribbleToSchool.Hazards
+namespace KickOffTales.Hazards
 {
     /// <summary>
     /// The sea washing up the beach and back over a stretch of sand. The lose-zone trigger

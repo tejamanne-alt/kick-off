@@ -79,7 +79,7 @@ echo "==> Exporting Xcode project with Unity $UNITY_VERSION"
 # Always export fresh: an Xcode project left over from an older Unity keeps the old app delegate.
 rm -rf "$ROOT/Builds/iOS"
 "$UNITY" -batchmode -quit -projectPath "$ROOT" -buildTarget iOS \
-  -executeMethod DribbleToSchool.EditorTools.BuildScripts.BuildIOS \
+  -executeMethod KickOffTales.EditorTools.BuildScripts.BuildIOS \
   -logFile "$ROOT/Builds/unity-ios.log"
 
 if ! grep -q UIApplicationSceneManifest "$ROOT/Builds/iOS/Info.plist"; then

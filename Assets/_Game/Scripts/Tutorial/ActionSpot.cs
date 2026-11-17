@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace DribbleToSchool.Tutorial
+namespace KickOffTales.Tutorial
 {
     /// <summary>
     /// A stretch of a level where something special has to be done (slide under, chip it over a wall, wait for the green

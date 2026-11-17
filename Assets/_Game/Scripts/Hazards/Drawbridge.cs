@@ -1,7 +1,7 @@
-using DribbleToSchool.Audio;
+using KickOffTales.Audio;
 using UnityEngine;
 
-namespace DribbleToSchool.Hazards
+namespace KickOffTales.Hazards
 {
     /// <summary>
     /// A bascule drawbridge over a canal (the Florida add-on's Home Street): two leaves hinged at the banks that tip up to let

@@ -1,8 +1,8 @@
-using DribbleToSchool.Progression;
+using KickOffTales.Progression;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace DribbleToSchool.UI.Kit
+namespace KickOffTales.UI.Kit
 {
     /// <summary>
     /// A UIKit button's look with the classic cartoon filter (Settings, Add-ons &amp; Filters): a warm-black ink rim round

@@ -1,11 +1,11 @@
 #if UNITY_INCLUDE_TESTS
 using System.Collections.Generic;
-using DribbleToSchool.EditorTools;
+using KickOffTales.EditorTools;
 using NUnit.Framework;
 using UnityEngine;
-using Track = DribbleToSchool.EditorTools.LevelBuildKit.TrackBuilder;
+using Track = KickOffTales.EditorTools.LevelBuildKit.TrackBuilder;
 
-namespace DribbleToSchool.Tests
+namespace KickOffTales.Tests
 {
     /// <summary>
     /// The rigged passers-by (LevelBuildKit.Passersby): each has a wardrobe to be dressed from, level by level, and stands a

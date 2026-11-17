@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using DribbleToSchool.Coop.Net;
+using KickOffTales.Coop.Net;
 
-namespace DribbleToSchool.Coop
+namespace KickOffTales.Coop
 {
     /// <summary>
     /// A player's side: joining (with retries), the clock sync, the reports to the host, the snapshots from it, and what to

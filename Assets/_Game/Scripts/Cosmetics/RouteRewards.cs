@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
-using DribbleToSchool.Levels;
-using DribbleToSchool.Progression;
+using KickOffTales.Levels;
+using KickOffTales.Progression;
 
-namespace DribbleToSchool.Cosmetics
+namespace KickOffTales.Cosmetics
 {
     /// <summary>
     /// What walking to school is worth. A route is walked when every story level on it is complete: the kid has gone from home

@@ -1,12 +1,12 @@
-using DribbleToSchool.Cosmetics;
-using DribbleToSchool.Levels;
-using DribbleToSchool.Localization;
-using DribbleToSchool.Progression;
-using DribbleToSchool.UI.Kit;
+using KickOffTales.Cosmetics;
+using KickOffTales.Levels;
+using KickOffTales.Localization;
+using KickOffTales.Progression;
+using KickOffTales.UI.Kit;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace DribbleToSchool.UI
+namespace KickOffTales.UI
 {
     /// <summary>
     /// A sticker up close, opened by tapping it in the album. Found: the big sticker tilting

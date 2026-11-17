@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace DribbleToSchool.Hazards
+namespace KickOffTales.Hazards
 {
     /// <summary>
     /// A solid gate opened by a switch. With a sliding panel it rolls the panel aside (by

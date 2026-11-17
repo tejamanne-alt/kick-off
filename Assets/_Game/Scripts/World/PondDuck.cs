@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace DribbleToSchool.World
+namespace KickOffTales.World
 {
     /// <summary>
     /// A duck on the park pond (Animals kit): it paddles round the pond in slow, loose loops, each

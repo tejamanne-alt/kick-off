@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace DribbleToSchool.World
+namespace KickOffTales.World
 {
     /// <summary>
     /// A summer cumulus cloud in the anime manner: a flat-bottomed bank of rounded puffs with towers

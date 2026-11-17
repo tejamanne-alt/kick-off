@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace DribbleToSchool.UI.Kit
+namespace KickOffTales.UI.Kit
 {
     /// <summary>
     /// Leans a graphic forward (a parallelogram for ribbons, tabs and speed lines), about the

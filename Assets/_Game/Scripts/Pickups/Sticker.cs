@@ -1,9 +1,9 @@
-using DribbleToSchool.Ball;
-using DribbleToSchool.Core;
-using DribbleToSchool.Player;
+using KickOffTales.Ball;
+using KickOffTales.Core;
+using KickOffTales.Player;
 using UnityEngine;
 
-namespace DribbleToSchool.Pickups
+namespace KickOffTales.Pickups
 {
     /// <summary>
     /// The level's hidden sticker for the album. Collected by the kid or the ball;

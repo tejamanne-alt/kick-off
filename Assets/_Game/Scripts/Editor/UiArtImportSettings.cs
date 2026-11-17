@@ -1,6 +1,6 @@
 using UnityEditor;
 
-namespace DribbleToSchool.EditorTools
+namespace KickOffTales.EditorTools
 {
     /// <summary>
     /// Import settings for pictures the menus load from Resources/UI: the teens' portraits (from

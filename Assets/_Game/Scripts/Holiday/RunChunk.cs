@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace DribbleToSchool.Holiday
+namespace KickOffTales.Holiday
 {
     /// <summary>
     /// The root of a stage's scene (inactive in the scene file; the streamer prepares it and switches

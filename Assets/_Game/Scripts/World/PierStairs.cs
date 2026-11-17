@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace DribbleToSchool.World
+namespace KickOffTales.World
 {
     /// <summary>
     /// The way up onto a seaside pier from the beach: a landing at deck height in front of the pier's first span, and

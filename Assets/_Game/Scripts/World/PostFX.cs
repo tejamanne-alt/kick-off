@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace DribbleToSchool.World
+namespace KickOffTales.World
 {
     /// <summary>
     /// The camera's finishing pass (Shaders/PostFX.shader): a faint bloom on the brightest
@@ -215,7 +215,7 @@ namespace DribbleToSchool.World
 
         void OnRenderImage(RenderTexture source, RenderTexture destination)
         {
-            if (shader == null) shader = Shader.Find("Hidden/DribbleToSchool/PostFX");
+            if (shader == null) shader = Shader.Find("Hidden/KickOffTales/PostFX");
             if (shader == null || !shader.isSupported) { Graphics.Blit(source, destination); return; }
             if (material == null) material = new Material(shader) { hideFlags = HideFlags.HideAndDontSave };
 

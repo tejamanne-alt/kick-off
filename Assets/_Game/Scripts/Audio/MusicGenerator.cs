@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace DribbleToSchool.Audio
+namespace KickOffTales.Audio
 {
     /// <summary>
     /// The music, in the style of the country the streets are in (<see cref="MusicCountry"/>): for the original

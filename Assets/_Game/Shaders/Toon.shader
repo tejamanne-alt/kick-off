@@ -16,7 +16,7 @@
 // the shadows. Alpha carries _FilterMask, what the filters (Shaders/PostFX) take this surface for: 1 the scenery,
 // 0.75 a cloud, 0.5 foliage (the plants kit), 0.125 a cel (a coin, an animal, a crate: drawn as the people are by the
 // classic cartoon filter).
-Shader "DribbleToSchool/Toon"
+Shader "KickOffTales/Toon"
 {
     Properties
     {

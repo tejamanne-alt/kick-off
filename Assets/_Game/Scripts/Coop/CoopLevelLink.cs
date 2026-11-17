@@ -1,9 +1,9 @@
 using System.Collections.Generic;
-using DribbleToSchool.Core;
-using DribbleToSchool.Presentation;
+using KickOffTales.Core;
+using KickOffTales.Presentation;
 using UnityEngine;
 
-namespace DribbleToSchool.Coop
+namespace KickOffTales.Coop
 {
     /// <summary>
     /// Hooks one leg's scene up to the co-op race (added by Coop/CoopService as the scene loads, before anything in it has

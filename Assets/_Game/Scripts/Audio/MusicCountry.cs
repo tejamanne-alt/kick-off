@@ -1,4 +1,4 @@
-namespace DribbleToSchool.Audio
+namespace KickOffTales.Audio
 {
     /// <summary>
     /// Whose music plays: the country the streets are in (Progression/Cities). Japan for Kamakura, Florida for Florida.

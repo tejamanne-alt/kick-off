@@ -6,7 +6,7 @@
 // - glints of sun that come and go;
 // - the shared light, shade and distance haze of the street (DtsLook.cginc), and the sun's shadows.
 // It works on any flat surface, a single quad included: all the motion is in the shading.
-Shader "DribbleToSchool/Water"
+Shader "KickOffTales/Water"
 {
     Properties
     {

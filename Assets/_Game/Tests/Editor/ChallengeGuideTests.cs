@@ -1,9 +1,9 @@
 using System.Collections.Generic;
-using DribbleToSchool.Localization;
-using DribbleToSchool.UI;
+using KickOffTales.Localization;
+using KickOffTales.UI;
 using NUnit.Framework;
 
-namespace DribbleToSchool.Tests
+namespace KickOffTales.Tests
 {
     /// <summary>Every challenge's guide has its goal, its tips and its other texts in every language.</summary>
     public class ChallengeGuideTests

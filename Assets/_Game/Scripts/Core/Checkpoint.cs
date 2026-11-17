@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace DribbleToSchool.Core
+namespace KickOffTales.Core
 {
     /// <summary>
     /// A respawn point. LevelManager activates it once the kid passes it with

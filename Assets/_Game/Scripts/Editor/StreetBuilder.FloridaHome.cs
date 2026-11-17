@@ -1,9 +1,9 @@
-using DribbleToSchool.Art;
-using DribbleToSchool.Levels;
-using DribbleToSchool.World;
+using KickOffTales.Art;
+using KickOffTales.Levels;
+using KickOffTales.World;
 using UnityEngine;
 
-namespace DribbleToSchool.EditorTools
+namespace KickOffTales.EditorTools
 {
     /// <summary>
     /// The Florida add-on's Home Street (chapter 1's &lt;scene&gt;_FL scenes, and the home street before every Florida level's seam),

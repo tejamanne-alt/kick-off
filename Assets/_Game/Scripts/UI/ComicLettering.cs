@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace DribbleToSchool.UI
+namespace KickOffTales.UI
 {
     /// <summary>
     /// Comic sound-effect lettering on a Text (UI/ComicPops): a hard drop shadow and a thick ink stroke

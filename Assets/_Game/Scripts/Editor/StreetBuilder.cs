@@ -1,10 +1,10 @@
 using System.Collections.Generic;
 using System.Linq;
-using DribbleToSchool.Art;
-using DribbleToSchool.World;
+using KickOffTales.Art;
+using KickOffTales.World;
 using UnityEngine;
 
-namespace DribbleToSchool.EditorTools
+namespace KickOffTales.EditorTools
 {
     /// <summary>
     /// Builds the 3D street around the 2D gameplay plane (z = 0): ground slabs with the

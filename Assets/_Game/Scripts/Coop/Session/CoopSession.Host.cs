@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using DribbleToSchool.Coop.Net;
+using KickOffTales.Coop.Net;
 
-namespace DribbleToSchool.Coop
+namespace KickOffTales.Coop
 {
     /// <summary>The host's side: the lobby, the race's phases, the players' reports, the snapshots and the motions relay.</summary>
     public sealed partial class CoopSession

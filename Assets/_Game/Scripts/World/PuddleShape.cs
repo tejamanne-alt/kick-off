@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace DribbleToSchool.World
+namespace KickOffTales.World
 {
     /// <summary>
     /// Rain puddles (or a patch of soft, loose sand) lying on the ground over an area: one big,

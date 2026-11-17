@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace DribbleToSchool.Tuning
+namespace KickOffTales.Tuning
 {
     /// <summary>
     /// Movement feel for the kid. Edit the asset (or use the in-game Tuning panel).

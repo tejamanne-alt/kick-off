@@ -4,7 +4,7 @@ using System.IO;
 using System.Text;
 using UnityEngine;
 
-namespace DribbleToSchool.Analytics
+namespace KickOffTales.Analytics
 {
     /// <summary>Somewhere analytics events go (local file, console, or a backend you add).</summary>
     public interface IAnalyticsSink

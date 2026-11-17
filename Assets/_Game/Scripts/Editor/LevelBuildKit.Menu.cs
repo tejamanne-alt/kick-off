@@ -1,14 +1,14 @@
-using DribbleToSchool.Art;
-using DribbleToSchool.Core;
-using DribbleToSchool.Cosmetics;
-using DribbleToSchool.FrontEnd;
-using DribbleToSchool.Presentation;
-using DribbleToSchool.World;
+using KickOffTales.Art;
+using KickOffTales.Core;
+using KickOffTales.Cosmetics;
+using KickOffTales.FrontEnd;
+using KickOffTales.Presentation;
+using KickOffTales.World;
 using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-namespace DribbleToSchool.EditorTools
+namespace KickOffTales.EditorTools
 {
     public static partial class LevelBuildKit
     {
@@ -59,7 +59,7 @@ namespace DribbleToSchool.EditorTools
             look.hazeStrength = mood.hazeStrength;
             look.Apply();
             var post = camGo.AddComponent<PostFX>();
-            post.shader = Shader.Find("Hidden/DribbleToSchool/PostFX");   // referenced, so builds include it
+            post.shader = Shader.Find("Hidden/KickOffTales/PostFX");   // referenced, so builds include it
             post.shadowTint = mood.shadowTint;
             post.balance = mood.balance;
             post.bloomTint = Color.Lerp(mood.glow, Color.white, 0.7f);

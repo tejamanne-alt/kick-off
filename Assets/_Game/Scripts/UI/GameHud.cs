@@ -1,18 +1,18 @@
 using System.Collections;
-using DribbleToSchool.Audio;
-using DribbleToSchool.Ball;
-using DribbleToSchool.Challenges;
-using DribbleToSchool.Core;
-using DribbleToSchool.InputHandling;
-using DribbleToSchool.Levels;
-using DribbleToSchool.Localization;
-using DribbleToSchool.Player;
-using DribbleToSchool.Tutorial;
-using DribbleToSchool.UI.Kit;
+using KickOffTales.Audio;
+using KickOffTales.Ball;
+using KickOffTales.Challenges;
+using KickOffTales.Core;
+using KickOffTales.InputHandling;
+using KickOffTales.Levels;
+using KickOffTales.Localization;
+using KickOffTales.Player;
+using KickOffTales.Tutorial;
+using KickOffTales.UI.Kit;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace DribbleToSchool.UI
+namespace KickOffTales.UI
 {
     /// <summary>
     /// The in-level HUD (uGUI, built from code): info card, pause button,

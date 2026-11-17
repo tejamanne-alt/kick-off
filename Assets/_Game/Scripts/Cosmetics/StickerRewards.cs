@@ -1,8 +1,8 @@
 using System.Collections.Generic;
-using DribbleToSchool.Levels;
-using DribbleToSchool.Progression;
+using KickOffTales.Levels;
+using KickOffTales.Progression;
 
-namespace DribbleToSchool.Cosmetics
+namespace KickOffTales.Cosmetics
 {
     /// <summary>
     /// What stickers are worth: Locker Room items coins can't buy. Finding every sticker in a

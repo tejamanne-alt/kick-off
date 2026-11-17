@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace DribbleToSchool.Presentation
+namespace KickOffTales.Presentation
 {
     /// <summary>
     /// One renderer's mesh and material, kept under a Resources folder (Resources/Cast/&lt;Model&gt;/&lt;Renderer&gt;) so

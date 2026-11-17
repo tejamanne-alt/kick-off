@@ -1,7 +1,7 @@
-using DribbleToSchool.Presentation;
+using KickOffTales.Presentation;
 using UnityEngine;
 
-namespace DribbleToSchool.Coop
+namespace KickOffTales.Coop
 {
     /// <summary>
     /// Another player's kid and ball in this phone's copy of the leg, drawn where their phone says they are (Coop/CoopLevelLink

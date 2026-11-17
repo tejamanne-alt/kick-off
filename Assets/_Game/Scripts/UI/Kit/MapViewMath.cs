@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace DribbleToSchool.UI.Kit
+namespace KickOffTales.UI.Kit
 {
     /// <summary>
     /// The arithmetic of a picture shown in a view that can be panned and zoomed (the town map, see <see cref="UIMapView"/>):

@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace DribbleToSchool.Presentation
+namespace KickOffTales.Presentation
 {
     /// <summary>
     /// Moves a background layer by a fraction of the camera's movement.

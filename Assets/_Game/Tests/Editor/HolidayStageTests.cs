@@ -1,11 +1,11 @@
 #if UNITY_INCLUDE_TESTS
 using System.Collections.Generic;
 using System.Linq;
-using DribbleToSchool.EditorTools;
-using DribbleToSchool.Holiday;
+using KickOffTales.EditorTools;
+using KickOffTales.Holiday;
 using NUnit.Framework;
 
-namespace DribbleToSchool.Tests
+namespace KickOffTales.Tests
 {
     /// <summary>
     /// The Holiday Run's world: one stage for each story level in story order, laid end to end, with a

@@ -1,9 +1,9 @@
 #if UNITY_INCLUDE_TESTS
 using System.Collections.Generic;
-using DribbleToSchool.EditorTools;
+using KickOffTales.EditorTools;
 using NUnit.Framework;
 
-namespace DribbleToSchool.Tests
+namespace KickOffTales.Tests
 {
     /// <summary>
     /// The build-time check that a level can be done (Editor/LevelFeasibility.cs): the holes, steps, walls, barriers and

@@ -1,21 +1,21 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using DribbleToSchool.Ball;
-using DribbleToSchool.CameraRig;
-using DribbleToSchool.Analytics;
-using DribbleToSchool.Core;
-using DribbleToSchool.FrontEnd;
-using DribbleToSchool.InputHandling;
-using DribbleToSchool.Localization;
-using DribbleToSchool.Pickups;
-using DribbleToSchool.Player;
-using DribbleToSchool.Progression;
-using DribbleToSchool.Tutorial;
-using DribbleToSchool.UI.Kit;
+using KickOffTales.Ball;
+using KickOffTales.CameraRig;
+using KickOffTales.Analytics;
+using KickOffTales.Core;
+using KickOffTales.FrontEnd;
+using KickOffTales.InputHandling;
+using KickOffTales.Localization;
+using KickOffTales.Pickups;
+using KickOffTales.Player;
+using KickOffTales.Progression;
+using KickOffTales.Tutorial;
+using KickOffTales.UI.Kit;
 using UnityEngine;
 
-namespace DribbleToSchool.Holiday
+namespace KickOffTales.Holiday
 {
     public enum RunPhase { Ready, Running, Paused, Crashed, Results }
 

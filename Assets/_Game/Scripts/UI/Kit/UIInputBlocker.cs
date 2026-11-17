@@ -1,7 +1,7 @@
-using DribbleToSchool.InputHandling;
+using KickOffTales.InputHandling;
 using UnityEngine;
 
-namespace DribbleToSchool.UI.Kit
+namespace KickOffTales.UI.Kit
 {
     /// <summary>
     /// Keeps game touches off a UI element while it is on screen: its rect joins GameInput.UIBlockers every frame (the HUDs

@@ -1,7 +1,7 @@
-using DribbleToSchool.Ball;
+using KickOffTales.Ball;
 using UnityEngine;
 
-namespace DribbleToSchool.Core
+namespace KickOffTales.Core
 {
     /// <summary>
     /// A surface the ball can land on but the kid can't climb to (the top of a gate, the deck

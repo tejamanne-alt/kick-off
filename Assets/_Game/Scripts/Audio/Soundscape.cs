@@ -1,4 +1,4 @@
-namespace DribbleToSchool.Audio
+namespace KickOffTales.Audio
 {
     /// <summary>
     /// Where the kid is, for the ears: each route to school has its own music and its own ambience

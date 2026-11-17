@@ -1,8 +1,8 @@
-using DribbleToSchool.UI.Kit;
+using KickOffTales.UI.Kit;
 using NUnit.Framework;
 using UnityEngine;
 
-namespace DribbleToSchool.Tests
+namespace KickOffTales.Tests
 {
     /// <summary>The text on a touch button (KICK's name and its "hold to control" line) stays inside the round disc.</summary>
     public class TouchButtonTests

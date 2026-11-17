@@ -1,11 +1,11 @@
 using System.Collections.Generic;
 using System.Linq;
-using DribbleToSchool.Localization;
-using DribbleToSchool.Tutorial;
-using DribbleToSchool.UI;
+using KickOffTales.Localization;
+using KickOffTales.Tutorial;
+using KickOffTales.UI;
 using NUnit.Framework;
 
-namespace DribbleToSchool.Tests
+namespace KickOffTales.Tests
 {
     /// <summary>The guided tour of the controls and the Controls page: what they cover and that every text is there.</summary>
     public class ControlsTourTests

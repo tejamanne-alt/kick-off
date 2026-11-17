@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace DribbleToSchool.World
+namespace KickOffTales.World
 {
     /// <summary>
     /// The sea washing up the beach and back: one sheet of sea from out under the open water, up the sand to a wavy front edge

@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace DribbleToSchool.UI.Kit
+namespace KickOffTales.UI.Kit
 {
     /// <summary>Makes an image glow on and off and swell a little: the halo round the map's next level, or its late one.</summary>
     [RequireComponent(typeof(Graphic))]

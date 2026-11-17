@@ -1,7 +1,7 @@
-using DribbleToSchool.Core;
+using KickOffTales.Core;
 using UnityEngine;
 
-namespace DribbleToSchool.Hazards
+namespace KickOffTales.Hazards
 {
     /// <summary>A playground swing seat on ropes: a pendulum platform that carries the kid.</summary>
     [RequireComponent(typeof(Rigidbody2D))]

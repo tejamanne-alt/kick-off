@@ -1,9 +1,9 @@
-using DribbleToSchool.Core;
-using DribbleToSchool.Cosmetics;
-using DribbleToSchool.Progression;
+using KickOffTales.Core;
+using KickOffTales.Cosmetics;
+using KickOffTales.Progression;
 using UnityEngine;
 
-namespace DribbleToSchool.Presentation
+namespace KickOffTales.Presentation
 {
     /// <summary>
     /// The Locker Room's bags on one kid (a kid modelled without a bag of their own: PlayerInfo.wearsBags). Each bag is a

@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace DribbleToSchool.Core
+namespace KickOffTales.Core
 {
     /// <summary>Which school a playable kid goes to: the picker shows the two groups apart.</summary>
     public enum SchoolLevel

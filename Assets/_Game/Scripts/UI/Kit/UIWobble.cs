@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace DribbleToSchool.UI.Kit
+namespace KickOffTales.UI.Kit
 {
     /// <summary>A gentle tilt back and forth with a slow breath of scale, like a sticker held up to the light. Runs while paused.</summary>
     public class UIWobble : MonoBehaviour

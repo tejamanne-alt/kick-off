@@ -1,11 +1,11 @@
-using DribbleToSchool.Core;
-using DribbleToSchool.Localization;
-using DribbleToSchool.UI;
-using DribbleToSchool.UI.Kit;
+using KickOffTales.Core;
+using KickOffTales.Localization;
+using KickOffTales.UI;
+using KickOffTales.UI.Kit;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace DribbleToSchool.FrontEnd
+namespace KickOffTales.FrontEnd
 {
     /// <summary>
     /// The launch screen. The left column holds the logo, PLAY, HOLIDAY RUN (the endless mode) beside CO-OP (racing friends

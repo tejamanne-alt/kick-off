@@ -1,6 +1,6 @@
 using System;
 
-namespace DribbleToSchool.Coop.Net
+namespace KickOffTales.Coop.Net
 {
     /// <summary>
     /// Estimates the host's clock from ping round trips, the way NTP does: a ping leaves at the local time t0, the host stamps

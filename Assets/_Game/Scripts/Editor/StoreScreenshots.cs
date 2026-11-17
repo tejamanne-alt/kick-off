@@ -1,8 +1,8 @@
-using DribbleToSchool.FrontEnd;
+using KickOffTales.FrontEnd;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 
-namespace DribbleToSchool.EditorTools
+namespace KickOffTales.EditorTools
 {
     /// <summary>
     /// Kick Off > Store Screenshots: the store screenshot tour (FrontEnd/ScreenshotTour) in Play

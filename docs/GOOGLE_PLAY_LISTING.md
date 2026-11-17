@@ -80,7 +80,7 @@ Welcome to Kick Off Tales, our first release!
 ```
 
 ## Releases
-1. **Internal testing** (Test and release > Testing > Internal testing): create a release, upload `Builds/Android/KickOff.aab`,
+1. **Internal testing** (Test and release > Testing > Internal testing): create a release, upload `Builds/Android/KickOffTales.aab`,
    add your own Google account as a tester, roll out, open the opt-in link on your Android phone and play through. No review,
    available in minutes.
 2. **Closed testing** (new personal developer accounts only): at least **12 testers opted in for 14 days in a row** before you can

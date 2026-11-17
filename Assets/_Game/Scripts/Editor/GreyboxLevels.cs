@@ -1,8 +1,8 @@
-using DribbleToSchool.Challenges;
+using KickOffTales.Challenges;
 using UnityEngine;
-using TrackBuilder = DribbleToSchool.EditorTools.LevelBuildKit.TrackBuilder;
+using TrackBuilder = KickOffTales.EditorTools.LevelBuildKit.TrackBuilder;
 
-namespace DribbleToSchool.EditorTools
+namespace KickOffTales.EditorTools
 {
     /// <summary>
     /// Grey-box layouts. Units are metres; the kid runs ~4.2 m/s, jumps ~1.4 m

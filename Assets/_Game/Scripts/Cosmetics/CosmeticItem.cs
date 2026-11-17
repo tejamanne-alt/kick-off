@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace DribbleToSchool.Cosmetics
+namespace KickOffTales.Cosmetics
 {
     /// <summary>(Added last: saved items store the category as a number.) Bag: a Locker Room bag, worn by each kid of their own choice (Cosmetics/Bags).</summary>
     public enum CosmeticCategory { Ball, Flag, Outfit, Trail, Bag }

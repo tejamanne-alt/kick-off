@@ -9,7 +9,7 @@ using UnityEditor.iOS.Xcode;
 #endif
 using Debug = UnityEngine.Debug;
 
-namespace DribbleToSchool.EditorTools
+namespace KickOffTales.EditorTools
 {
     /// <summary>
     /// The iOS signing every build gets, kept in code since Player Settings aren't in the repository:
@@ -28,7 +28,7 @@ namespace DribbleToSchool.EditorTools
         /// </summary>
         public const string TeamId = "";
 
-        const string NoTeamKey = "DribbleToSchool.AppleTeamNotFound";
+        const string NoTeamKey = "KickOffTales.AppleTeamNotFound";
 
         static AppleSigning()
         {

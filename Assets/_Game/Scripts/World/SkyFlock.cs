@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace DribbleToSchool.World
+namespace KickOffTales.World
 {
     /// <summary>
     /// A loose flock of birds crossing the sky (gulls over the beach, pigeons over the town): they

@@ -1,14 +1,14 @@
 using System.Collections.Generic;
-using DribbleToSchool.Core;
-using DribbleToSchool.Cosmetics;
-using DribbleToSchool.Localization;
-using DribbleToSchool.Progression;
-using DribbleToSchool.UI;
-using DribbleToSchool.UI.Kit;
+using KickOffTales.Core;
+using KickOffTales.Cosmetics;
+using KickOffTales.Localization;
+using KickOffTales.Progression;
+using KickOffTales.UI;
+using KickOffTales.UI.Kit;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace DribbleToSchool.FrontEnd
+namespace KickOffTales.FrontEnd
 {
     /// <summary>
     /// The Locker Room: on the left, the live teen in the street showcase wearing (or juggling)

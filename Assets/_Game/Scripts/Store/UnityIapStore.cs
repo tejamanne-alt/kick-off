@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.Purchasing;
 using UnityEngine.Purchasing.Extension;
 
-namespace DribbleToSchool.Store
+namespace KickOffTales.Store
 {
     /// <summary>
     /// Unity IAP (com.unity.purchasing 4.x) adapter. Enabled by adding the

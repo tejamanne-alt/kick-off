@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace DribbleToSchool.UI.Kit
+namespace KickOffTales.UI.Kit
 {
     /// <summary>
     /// Keeps a full-screen rect inside the screen's safe area (clear of a notch or rounded

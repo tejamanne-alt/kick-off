@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace DribbleToSchool.Hazards
+namespace KickOffTales.Hazards
 {
     /// <summary>
     /// Swoops across its stretch of beach on a wavy path every few seconds.

@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace DribbleToSchool.Levels
+namespace KickOffTales.Levels
 {
     /// <summary>
     /// The kid's house, the one every story level starts in front of (docs/WORLD_MAP.md, "Every level starts at home"). The

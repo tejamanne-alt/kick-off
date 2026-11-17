@@ -1,11 +1,11 @@
-using DribbleToSchool.Challenges;
-using DribbleToSchool.Core;
-using DribbleToSchool.Localization;
-using DribbleToSchool.UI.Kit;
+using KickOffTales.Challenges;
+using KickOffTales.Core;
+using KickOffTales.Localization;
+using KickOffTales.UI.Kit;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace DribbleToSchool.UI
+namespace KickOffTales.UI
 {
     /// <summary>
     /// How to play a challenge (the gold "!" levels): what to do (challenge.&lt;id&gt;.goal), what each star needs (from the

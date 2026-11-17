@@ -1,9 +1,9 @@
 using System.Collections.Generic;
-using DribbleToSchool.Art;
-using DribbleToSchool.World;
+using KickOffTales.Art;
+using KickOffTales.World;
 using UnityEngine;
 
-namespace DribbleToSchool.EditorTools
+namespace KickOffTales.EditorTools
 {
     /// <summary>
     /// The Florida add-on's beach (chapter 3 only, &lt;scene&gt;_FL scenes built with <see cref="LevelBuildKit.Florida"/> set): a Space

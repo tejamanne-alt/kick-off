@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace DribbleToSchool.UI.Kit
+namespace KickOffTales.UI.Kit
 {
     /// <summary>
     /// Keeps a block of UI that was laid out for a fixed height inside the room its parent really has:

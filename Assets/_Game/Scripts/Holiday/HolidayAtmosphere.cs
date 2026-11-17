@@ -1,8 +1,8 @@
-using DribbleToSchool.Art;
-using DribbleToSchool.World;
+using KickOffTales.Art;
+using KickOffTales.World;
 using UnityEngine;
 
-namespace DribbleToSchool.Holiday
+namespace KickOffTales.Holiday
 {
     /// <summary>
     /// Carries the light and the atmosphere from one chapter's mood to the next as the kid runs from

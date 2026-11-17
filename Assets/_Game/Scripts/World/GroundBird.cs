@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace DribbleToSchool.World
+namespace KickOffTales.World
 {
     /// <summary>
     /// A bird on the ground (Animals kit): a pigeon pecking about the pavement with its friends, or

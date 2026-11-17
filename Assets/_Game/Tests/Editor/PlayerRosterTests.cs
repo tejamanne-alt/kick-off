@@ -1,12 +1,12 @@
 #if UNITY_INCLUDE_TESTS
 using System.Collections.Generic;
 using System.IO;
-using DribbleToSchool.Core;
-using DribbleToSchool.Localization;
+using KickOffTales.Core;
+using KickOffTales.Localization;
 using NUnit.Framework;
 using UnityEngine;
 
-namespace DribbleToSchool.Tests
+namespace KickOffTales.Tests
 {
     /// <summary>The playable kids: the list that the picker, the level builders and the menu camera all read.</summary>
     public class PlayerRosterTests

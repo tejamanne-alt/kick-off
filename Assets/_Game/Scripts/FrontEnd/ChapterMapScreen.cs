@@ -1,13 +1,13 @@
 using System.Collections.Generic;
-using DribbleToSchool.Levels;
-using DribbleToSchool.Localization;
-using DribbleToSchool.Progression;
-using DribbleToSchool.UI;
-using DribbleToSchool.UI.Kit;
+using KickOffTales.Levels;
+using KickOffTales.Localization;
+using KickOffTales.Progression;
+using KickOffTales.UI;
+using KickOffTales.UI.Kit;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace DribbleToSchool.FrontEnd
+namespace KickOffTales.FrontEnd
 {
     /// <summary>
     /// The way to school: a rendered picture of the town (Resources/UI/TownMap.jpg, laid out by Resources/TownMapLayout.json,

@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace DribbleToSchool.World
+namespace KickOffTales.World
 {
     /// <summary>
     /// The shared light and atmosphere of the 3D street (Shaders/DtsLook.cginc): the sun's

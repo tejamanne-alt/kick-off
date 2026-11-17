@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace DribbleToSchool.Coop.Net
+namespace KickOffTales.Coop.Net
 {
     /// <summary>
     /// Reads the events the native Bluetooth plugins pack for the game (Plugins/iOS/DTSCoopBLE.mm and

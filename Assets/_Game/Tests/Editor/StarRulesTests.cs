@@ -1,8 +1,8 @@
-using DribbleToSchool.Localization;
-using DribbleToSchool.Progression;
+using KickOffTales.Localization;
+using KickOffTales.Progression;
 using NUnit.Framework;
 
-namespace DribbleToSchool.Tests
+namespace KickOffTales.Tests
 {
     /// <summary>A story level's stars: one per goal, the third for collecting every coin and the sticker.</summary>
     public class StarRulesTests

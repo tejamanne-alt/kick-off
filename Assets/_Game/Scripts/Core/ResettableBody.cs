@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace DribbleToSchool.Core
+namespace KickOffTales.Core
 {
     /// <summary>
     /// Puts a pushable physics object (crate, barrel) back where it started on restart, and when the kid goes back to a

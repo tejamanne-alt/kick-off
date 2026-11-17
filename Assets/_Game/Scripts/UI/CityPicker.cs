@@ -1,9 +1,9 @@
-using DribbleToSchool.Localization;
-using DribbleToSchool.Progression;
-using DribbleToSchool.UI.Kit;
+using KickOffTales.Localization;
+using KickOffTales.Progression;
+using KickOffTales.UI.Kit;
 using UnityEngine;
 
-namespace DribbleToSchool.UI
+namespace KickOffTales.UI
 {
     /// <summary>
     /// The city picker, after PLAY and HOLIDAY RUN on the title screen (docs/CITIES.md): the five cities as cards, each with its

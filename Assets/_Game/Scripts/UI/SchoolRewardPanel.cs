@@ -1,13 +1,13 @@
 using System.Collections.Generic;
-using DribbleToSchool.Core;
-using DribbleToSchool.Cosmetics;
-using DribbleToSchool.Levels;
-using DribbleToSchool.Localization;
-using DribbleToSchool.UI.Kit;
+using KickOffTales.Core;
+using KickOffTales.Cosmetics;
+using KickOffTales.Levels;
+using KickOffTales.Localization;
+using KickOffTales.UI.Kit;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace DribbleToSchool.UI
+namespace KickOffTales.UI
 {
     /// <summary>
     /// The celebration for walking to school (Cosmetics/RouteRewards), shown once by the menu: for a route newly walked all the

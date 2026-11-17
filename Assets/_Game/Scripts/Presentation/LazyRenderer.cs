@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace DribbleToSchool.Presentation
+namespace KickOffTales.Presentation
 {
     /// <summary>
     /// A renderer whose mesh and material are loaded only while it is shown (docs/PERFORMANCE.md, "Budgets").

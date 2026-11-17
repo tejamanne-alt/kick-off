@@ -1,9 +1,9 @@
-using DribbleToSchool.CameraRig;
-using DribbleToSchool.UI;
+using KickOffTales.CameraRig;
+using KickOffTales.UI;
 using NUnit.Framework;
 using UnityEngine;
 
-namespace DribbleToSchool.Tests
+namespace KickOffTales.Tests
 {
     /// <summary>
     /// The camera stays on the kid (CameraFollow2D): it leans only a little toward a ball close by, not at all toward one kicked

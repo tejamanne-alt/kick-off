@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace DribbleToSchool.UI.Kit
+namespace KickOffTales.UI.Kit
 {
     /// <summary>Turns a UI element slowly and bobs it up and down (the logo's ball). Runs while paused.</summary>
     public class UISpin : MonoBehaviour

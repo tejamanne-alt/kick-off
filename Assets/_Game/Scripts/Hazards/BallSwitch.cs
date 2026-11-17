@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace DribbleToSchool.Hazards
+namespace KickOffTales.Hazards
 {
     /// <summary>
     /// A target the ball must hit hard enough (a doorbell, a sign, a button).

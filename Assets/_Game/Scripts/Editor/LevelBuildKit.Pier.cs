@@ -1,8 +1,8 @@
 using System.Collections.Generic;
-using DribbleToSchool.World;
+using KickOffTales.World;
 using UnityEngine;
 
-namespace DribbleToSchool.EditorTools
+namespace KickOffTales.EditorTools
 {
     /// <summary>
     /// The pier on the course (California's beach): its stairs stand across the kid's lane, so the kid dribbles the ball up

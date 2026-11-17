@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace DribbleToSchool.Core
+namespace KickOffTales.Core
 {
     /// <summary>
     /// Single place that changes time scale, keeping physics steps in sync so

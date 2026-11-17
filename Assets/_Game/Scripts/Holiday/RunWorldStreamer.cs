@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace DribbleToSchool.Holiday
+namespace KickOffTales.Holiday
 {
     /// <summary>
     /// Keeps the stages near the kid loaded. Each stage is its own scene, built at its place in the

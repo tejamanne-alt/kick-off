@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace DribbleToSchool.Levels
+namespace KickOffTales.Levels
 {
     /// <summary>Data for one level: which scene, how long until the bell, star targets.</summary>
     [CreateAssetMenu(menuName = "Kick Off/Level Definition", fileName = "Level")]

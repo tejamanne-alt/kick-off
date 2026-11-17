@@ -1,4 +1,4 @@
-namespace DribbleToSchool.Core
+namespace KickOffTales.Core
 {
     /// <summary>
     /// Anything that must go back to its starting state when a level restarts

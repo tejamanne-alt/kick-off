@@ -1,12 +1,12 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using DribbleToSchool.Core;
-using DribbleToSchool.Holiday;
-using DribbleToSchool.Levels;
+using KickOffTales.Core;
+using KickOffTales.Holiday;
+using KickOffTales.Levels;
 using Unity.Profiling;
 using UnityEngine;
 
-namespace DribbleToSchool.Audio
+namespace KickOffTales.Audio
 {
     /// <summary>
     /// Plays the synthesized sound effects for gameplay events (with a little pitch variety), the

@@ -1,9 +1,9 @@
-using DribbleToSchool.Ball;
-using DribbleToSchool.InputHandling;
-using DribbleToSchool.Player;
+using KickOffTales.Ball;
+using KickOffTales.InputHandling;
+using KickOffTales.Player;
 using UnityEngine;
 
-namespace DribbleToSchool.UI
+namespace KickOffTales.UI
 {
     /// <summary>
     /// Developer-only live tuning sliders (IMGUI). Available in the editor and

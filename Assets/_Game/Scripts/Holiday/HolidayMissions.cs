@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using DribbleToSchool.Localization;
-using DribbleToSchool.Progression;
+using KickOffTales.Localization;
+using KickOffTales.Progression;
 using UnityEngine;
 
-namespace DribbleToSchool.Holiday
+namespace KickOffTales.Holiday
 {
     /// <summary>One mission as the screens show it.</summary>
     public struct MissionView

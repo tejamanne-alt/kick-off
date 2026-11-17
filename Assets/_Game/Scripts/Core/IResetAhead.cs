@@ -1,4 +1,4 @@
-namespace DribbleToSchool.Core
+namespace KickOffTales.Core
 {
     /// <summary>
     /// Something that also goes back to how it started when the kid is sent back to a checkpoint behind it (a crate knocked

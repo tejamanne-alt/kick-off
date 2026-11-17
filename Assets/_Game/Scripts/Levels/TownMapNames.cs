@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace DribbleToSchool.Levels
+namespace KickOffTales.Levels
 {
     /// <summary>Where a name goes on the town map, as the screen draws it.</summary>
     public struct MapName

@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace DribbleToSchool.World
+namespace KickOffTales.World
 {
     /// <summary>
     /// A dim ceiling lamp's light: a soft cone of light falling to the floor and a pool of light

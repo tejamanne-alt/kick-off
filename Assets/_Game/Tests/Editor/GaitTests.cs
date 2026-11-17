@@ -1,9 +1,9 @@
 #if UNITY_INCLUDE_TESTS
-using DribbleToSchool.Presentation;
+using KickOffTales.Presentation;
 using NUnit.Framework;
 using UnityEngine;
 
-namespace DribbleToSchool.Tests
+namespace KickOffTales.Tests
 {
     /// <summary>
     /// The kid's gait (KidAnimator.StrideRate, StrideSwing): the steps quicken with the pace, a walk keeping most of a run's

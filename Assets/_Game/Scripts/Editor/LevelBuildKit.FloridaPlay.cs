@@ -1,9 +1,9 @@
-using DribbleToSchool.Art;
-using DribbleToSchool.Core;
-using DribbleToSchool.World;
+using KickOffTales.Art;
+using KickOffTales.Core;
+using KickOffTales.World;
 using UnityEngine;
 
-namespace DribbleToSchool.EditorTools
+namespace KickOffTales.EditorTools
 {
     /// <summary>
     /// The Florida add-on's own set pieces (so its levels don't just repeat the original's in new streets; GreyboxLevels picks

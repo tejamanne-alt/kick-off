@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace DribbleToSchool.Coop.Net
+namespace KickOffTales.Coop.Net
 {
     /// <summary>
     /// A pretend Bluetooth for several "phones" in one process: the edit-mode tests and the editor's practice bots run real

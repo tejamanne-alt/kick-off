@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace DribbleToSchool.Hazards
+namespace KickOffTales.Hazards
 {
     /// <summary>
     /// The banksman's lollipop board at a building site's vehicle gate: GO (green) while walkers may cross, GO flashing just

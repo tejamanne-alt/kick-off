@@ -1,7 +1,7 @@
-using DribbleToSchool.Core;
+using KickOffTales.Core;
 using UnityEngine;
 
-namespace DribbleToSchool.Challenges
+namespace KickOffTales.Challenges
 {
     /// <summary>Keepy-uppy: the best juggling run before time is up. Hitting the 3-star mark ends it early.</summary>
     public class JuggleChallenge : ChallengeObjective

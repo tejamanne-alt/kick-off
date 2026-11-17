@@ -1,9 +1,9 @@
-using DribbleToSchool.Localization;
-using DribbleToSchool.Progression;
-using DribbleToSchool.UI.Kit;
+using KickOffTales.Localization;
+using KickOffTales.Progression;
+using KickOffTales.UI.Kit;
 using UnityEngine;
 
-namespace DribbleToSchool.UI
+namespace KickOffTales.UI
 {
     /// <summary>
     /// Filters (a button on the title screen, after Stickers, and in the pause menus): the looks over the whole picture, as cards to

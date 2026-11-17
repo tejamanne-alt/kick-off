@@ -2,14 +2,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using DribbleToSchool.EditorTools;
-using DribbleToSchool.Holiday;
-using DribbleToSchool.Levels;
-using DribbleToSchool.Localization;
+using KickOffTales.EditorTools;
+using KickOffTales.Holiday;
+using KickOffTales.Levels;
+using KickOffTales.Localization;
 using NUnit.Framework;
 using UnityEngine;
 
-namespace DribbleToSchool.Tests
+namespace KickOffTales.Tests
 {
     /// <summary>
     /// Every story level starts at a stop and walks a stretch of street before its own street begins: the first level of a route on

@@ -1,9 +1,9 @@
-using DribbleToSchool.UI;
-using DribbleToSchool.UI.Kit;
+using KickOffTales.UI;
+using KickOffTales.UI.Kit;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace DribbleToSchool.FrontEnd
+namespace KickOffTales.FrontEnd
 {
     /// <summary>First-launch splash: the Kick Off Tales logo pops in over the deep blue sky, then it all fades to the menu.</summary>
     public class Splash : MonoBehaviour

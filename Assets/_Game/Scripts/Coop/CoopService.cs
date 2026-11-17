@@ -1,13 +1,13 @@
 using System;
 using System.Collections.Generic;
-using DribbleToSchool.Coop.Net;
-using DribbleToSchool.Coop.Transport;
-using DribbleToSchool.Core;
-using DribbleToSchool.Levels;
+using KickOffTales.Coop.Net;
+using KickOffTales.Coop.Transport;
+using KickOffTales.Core;
+using KickOffTales.Levels;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace DribbleToSchool.Coop
+namespace KickOffTales.Coop
 {
     /// <summary>
     /// The co-op mode's one object that outlives scenes (DontDestroyOnLoad): it owns the radio (Bluetooth LE on a phone, a

@@ -1,8 +1,8 @@
-using DribbleToSchool.Core;
-using DribbleToSchool.Localization;
+using KickOffTales.Core;
+using KickOffTales.Localization;
 using UnityEngine;
 
-namespace DribbleToSchool.Coop
+namespace KickOffTales.Coop
 {
     /// <summary>
     /// Who this phone is in Co-op: the name the player typed for other phones, kept in PlayerPrefs (empty: the default

@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using DribbleToSchool.Levels;
+using KickOffTales.Levels;
 
-namespace DribbleToSchool.Progression
+namespace KickOffTales.Progression
 {
     /// <summary>What finishing one leg of a route did to the trip to school (<see cref="SchoolTrips.RecordLeg"/>).</summary>
     public enum TripVerdict

@@ -1717,8 +1717,24 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
   Bluetooth permission texts (en + es, and the iOS usage strings), the credits' version line, the store listings, the
   release guide, the privacy policy, the support site, the READMEs and the docs' titles. The app id (Android package name
   and iOS bundle identifier) is now `com.astradite.kickofftales` (`Editor/BuildScripts.cs`); Apple signing reads it from there.
-- **Unchanged:** code namespaces, shader names, the save file and its keys, the IAP product id (`kickoff.fullgame`), the
-  menu path "Kick Off > Build" and the build file names (`KickOff.aab`, `KickOff-test.apk`).
+- **Code names, renamed in a second pass:**
+  - the namespace `DribbleToSchool` is `KickOffTales` everywhere (scripts, tests, the CI scripts' `-executeMethod`, the
+    climate tool);
+  - the shaders are `KickOffTales/Toon`, `KickOffTales/ToonCharacter`, `KickOffTales/Sky`, `KickOffTales/Water`,
+    `KickOffTales/SpriteHaze` and `Hidden/KickOffTales/PostFX`, `CartoonPicture` and `ComicLettering`, with every
+    `Shader.Find` changed to match;
+  - the editor's session keys are `KickOffTales.*`;
+  - the IAP product id is `kickofftales.fullgame`;
+  - the builds write `KickOffTales.aab`, `KickOffTales-test.apk` and `KickOffTales-dev.apk`.
+  - Scenes and materials point at scripts and shaders by GUID, and nothing looks a type up by its name, so the scenes
+    and baked materials already on disk keep working. The new app needs its in-app product created in both stores under
+    the new id anyway.
+- **Unchanged:** the save file (`save.json`) and its keys, which never carried the name (`settings.music`, `coop.name`,
+  ...); the menu path "Kick Off > Build"; the short `DTS`/`Dts` prefix (the env vars `DTS_KEYSTORE_PATH` and the like,
+  the scripting defines `DTS_UNITY_IAP` and `DTS_SCREENSHOTS`, the native co-op and haptics plugins, the shaders' `_Dts*`
+  inputs and `DtsLook.cginc`).
+- **Checked:** `unity_api_check` 6000.7 clean; the compiler's errors under every `#if` set are the same as before the
+  rename (only the stand-ins' expected misses); `tools/city_climate/run.sh` passes.
 - **Still showing the old name:** the logo picture (`Resources/UI/KickOffLogo.png`, cut from the banner), the app icon and the
   store art letter "Kick OFF 2". The code-drawn fallback logo still draws a "2". They need the user's new artwork.
 - **Cost:** none at runtime (strings only).

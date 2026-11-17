@@ -1,7 +1,7 @@
 using System.IO;
 using UnityEditor.Android;
 
-namespace DribbleToSchool.EditorTools
+namespace KickOffTales.EditorTools
 {
     /// <summary>
     /// Adds the VIBRATE permission to the Android build's manifest, which the game's haptics

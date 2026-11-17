@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace DribbleToSchool.Coop.Net
+namespace KickOffTales.Coop.Net
 {
     /// <summary>
     /// Keeps late native events away from the session. The Bluetooth stacks answer on their own threads and in their own

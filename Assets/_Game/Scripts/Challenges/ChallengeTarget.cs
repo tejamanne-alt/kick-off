@@ -1,8 +1,8 @@
-using DribbleToSchool.Ball;
-using DribbleToSchool.Core;
+using KickOffTales.Ball;
+using KickOffTales.Core;
 using UnityEngine;
 
-namespace DribbleToSchool.Challenges
+namespace KickOffTales.Challenges
 {
     /// <summary>A target (window, tyre, bin lid) that pops when the ball hits it.</summary>
     [RequireComponent(typeof(Collider2D))]

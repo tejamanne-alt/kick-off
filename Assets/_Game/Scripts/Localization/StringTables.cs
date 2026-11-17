@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace DribbleToSchool.Localization
+namespace KickOffTales.Localization
 {
     /// <summary>
     /// All UI text. Add a language by adding a table here and its code to Loc.Languages.

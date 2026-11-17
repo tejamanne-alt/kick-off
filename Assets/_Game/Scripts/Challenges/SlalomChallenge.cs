@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace DribbleToSchool.Challenges
+namespace KickOffTales.Challenges
 {
     /// <summary>
     /// Dribble the course as fast as possible. Missed gates add a time penalty.

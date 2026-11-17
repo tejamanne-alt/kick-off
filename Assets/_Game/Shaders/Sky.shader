@@ -3,7 +3,7 @@
 // there, a faint bright band right at the horizon, and a soft glow and disc where the sun sits (high, so
 // usually only the glow shows). Colours come from the WorldLook globals, so the sky, the haze and
 // the light always agree.
-Shader "DribbleToSchool/Sky"
+Shader "KickOffTales/Sky"
 {
     SubShader
     {

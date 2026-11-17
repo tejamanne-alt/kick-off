@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace DribbleToSchool.Coop.Net
+namespace KickOffTales.Coop.Net
 {
     /// <summary>The first byte of every co-op message.</summary>
     public enum MsgType : byte

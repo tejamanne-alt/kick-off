@@ -1,13 +1,13 @@
 using System.Collections.Generic;
 using System.Linq;
-using DribbleToSchool.Cosmetics;
-using DribbleToSchool.EditorTools;
-using DribbleToSchool.Levels;
-using DribbleToSchool.Localization;
-using DribbleToSchool.UI;
+using KickOffTales.Cosmetics;
+using KickOffTales.EditorTools;
+using KickOffTales.Levels;
+using KickOffTales.Localization;
+using KickOffTales.UI;
 using NUnit.Framework;
 
-namespace DribbleToSchool.Tests
+namespace KickOffTales.Tests
 {
     /// <summary>
     /// Walking to school (Cosmetics/RouteRewards): a route counts once every story level on it is done, the Locker Room's prizes

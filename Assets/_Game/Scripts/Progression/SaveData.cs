@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace DribbleToSchool.Progression
+namespace KickOffTales.Progression
 {
     /// <summary>Best result for one level. JsonUtility-friendly (no dictionaries).</summary>
     [Serializable]

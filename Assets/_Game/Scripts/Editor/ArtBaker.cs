@@ -1,11 +1,11 @@
 using System.Collections.Generic;
 using System.IO;
-using DribbleToSchool.Art;
-using DribbleToSchool.Core;
+using KickOffTales.Art;
+using KickOffTales.Core;
 using UnityEditor;
 using UnityEngine;
 
-namespace DribbleToSchool.EditorTools
+namespace KickOffTales.EditorTools
 {
     /// <summary>
     /// Bakes the procedural anime-style art (Art/ProceduralArt.cs) into sprite
@@ -175,8 +175,8 @@ namespace DribbleToSchool.EditorTools
         static void BakeMaterials(ArtSet set)
         {
             LevelBuildKit.EnsureFolder(MaterialDir);
-            var toon = Shader.Find("DribbleToSchool/Toon");
-            var waterShader = Shader.Find("DribbleToSchool/Water");
+            var toon = Shader.Find("KickOffTales/Toon");
+            var waterShader = Shader.Find("KickOffTales/Water");
             foreach (ProceduralArt.Surface surface in System.Enum.GetValues(typeof(ProceduralArt.Surface)))
             {
                 // The sea (and every channel, stream and puddle) moves: drifting layers, rolling swells, glints.
@@ -234,7 +234,7 @@ namespace DribbleToSchool.EditorTools
             set.cloud.SetFloat("_Lighting", 0.25f);   // the clouds paint their own white and cyan shade (CloudShape); the sun only adds a little
             set.cloud.SetFloat("_FilterMask", 0.75f);  // the classic cartoon filter keeps the clouds white
 
-            var toonCharacter = Shader.Find("DribbleToSchool/ToonCharacter");
+            var toonCharacter = Shader.Find("KickOffTales/ToonCharacter");
             // The playable characters get the boldest line and rim, so they read clearly against the
             // street; pedestrians a lighter line.
             set.character = CharacterMaterial("Character", toonCharacter, null, false);
@@ -274,9 +274,9 @@ namespace DribbleToSchool.EditorTools
             set.ball.SetFloat("_ComicWorld", 0f);   // the comic filter keeps the ball as drawn (its own outline, light dots)
             EditorUtility.SetDirty(set.ball);
 
-            set.hazeSprite = LoadOrCreateMaterial("HazeSprite", Shader.Find("DribbleToSchool/SpriteHaze"));
+            set.hazeSprite = LoadOrCreateMaterial("HazeSprite", Shader.Find("KickOffTales/SpriteHaze"));
             set.glow = LoadOrCreateMaterial("Glow", Shader.Find("Legacy Shaders/Particles/Additive"));
-            set.skyDome = LoadOrCreateMaterial("SkyDome", Shader.Find("DribbleToSchool/Sky"));
+            set.skyDome = LoadOrCreateMaterial("SkyDome", Shader.Find("KickOffTales/Sky"));
             set.wire = LoadOrCreateMaterial("Wire", Shader.Find("Sprites/Default"));
             AssetDatabase.SaveAssets();
         }

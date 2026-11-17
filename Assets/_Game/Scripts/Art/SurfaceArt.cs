@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace DribbleToSchool.Art
+namespace KickOffTales.Art
 {
     /// <summary>
     /// Textures for the 3D street. Surfaces are tileable 512 x 512 squares covering 8 x 8 world

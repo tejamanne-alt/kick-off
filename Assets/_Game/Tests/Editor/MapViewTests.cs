@@ -1,9 +1,9 @@
 #if UNITY_INCLUDE_TESTS
-using DribbleToSchool.UI.Kit;
+using KickOffTales.UI.Kit;
 using NUnit.Framework;
 using UnityEngine;
 
-namespace DribbleToSchool.Tests
+namespace KickOffTales.Tests
 {
     /// <summary>
     /// The town map's pan and zoom (UI/Kit/MapViewMath, used by UIMapView): the fit, the mapping between the picture and the

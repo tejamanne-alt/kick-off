@@ -1,4 +1,4 @@
-namespace DribbleToSchool.Progression
+namespace KickOffTales.Progression
 {
     /// <summary>
     /// The filters: a look over the whole picture, drawn by World/PostFX, chosen in Filters (UI/FiltersPanel: on the title screen

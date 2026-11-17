@@ -1,9 +1,9 @@
-using DribbleToSchool.Ball;
-using DribbleToSchool.Core;
-using DribbleToSchool.Player;
+using KickOffTales.Ball;
+using KickOffTales.Core;
+using KickOffTales.Player;
 using UnityEngine;
 
-namespace DribbleToSchool.Pickups
+namespace KickOffTales.Pickups
 {
     /// <summary>
     /// A coin collected by the kid or the ball. Spins, bobs, and pops when taken.

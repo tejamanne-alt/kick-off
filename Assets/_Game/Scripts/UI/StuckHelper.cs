@@ -1,12 +1,12 @@
-using DribbleToSchool.Core;
-using DribbleToSchool.InputHandling;
-using DribbleToSchool.Localization;
-using DribbleToSchool.Player;
-using DribbleToSchool.UI.Kit;
+using KickOffTales.Core;
+using KickOffTales.InputHandling;
+using KickOffTales.Localization;
+using KickOffTales.Player;
+using KickOffTales.UI.Kit;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace DribbleToSchool.UI
+namespace KickOffTales.UI
 {
     /// <summary>
     /// A way out if the kid is ever wedged somewhere: when the player has been trying to move (the stick pushed, or the kid

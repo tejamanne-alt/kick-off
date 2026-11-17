@@ -1,12 +1,12 @@
 using System.Collections.Generic;
-using DribbleToSchool.Core;
-using DribbleToSchool.Levels;
-using DribbleToSchool.Presentation;
-using DribbleToSchool.World;
+using KickOffTales.Core;
+using KickOffTales.Levels;
+using KickOffTales.Presentation;
+using KickOffTales.World;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-namespace DribbleToSchool.EditorTools
+namespace KickOffTales.EditorTools
 {
     /// <summary>
     /// The stops' side of the track builder (docs/WORLD_MAP.md, "Every route is one trip, a level is a leg of it"): a level that

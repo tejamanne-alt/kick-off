@@ -27,7 +27,7 @@
 // The picture's alpha says what each pixel is (ToonCharacter's _ComicWorld, Toon's _FilterMask): 0 a person or the
 // ball, 0.125 a cel (a car, a coin, an animal, a crate, a cone...), 0.5 foliage, 0.75 a cloud, 1 the scenery. The comic
 // and sketch filters read it as alpha x 8 (0 a figure, anything else the street), as they always have.
-Shader "Hidden/DribbleToSchool/PostFX"
+Shader "Hidden/KickOffTales/PostFX"
 {
     Properties { _MainTex ("Source", 2D) = "white" {} }
 

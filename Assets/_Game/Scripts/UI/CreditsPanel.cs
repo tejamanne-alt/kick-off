@@ -1,8 +1,8 @@
-using DribbleToSchool.Localization;
-using DribbleToSchool.UI.Kit;
+using KickOffTales.Localization;
+using KickOffTales.UI.Kit;
 using UnityEngine;
 
-namespace DribbleToSchool.UI
+namespace KickOffTales.UI
 {
     /// <summary>Credits: the logo and "A game by Astradite", a line about the game, "Made with Unity", the version and the copyright.</summary>
     public static class CreditsPanel

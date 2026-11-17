@@ -1,8 +1,8 @@
 #if UNITY_INCLUDE_TESTS
-using DribbleToSchool.World;
+using KickOffTales.World;
 using NUnit.Framework;
 
-namespace DribbleToSchool.Tests
+namespace KickOffTales.Tests
 {
     /// <summary>
     /// The way up to the pier: how a flight of its stairs is laid out for the drop from the deck to the sand. Comfortable

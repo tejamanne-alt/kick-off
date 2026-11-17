@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace DribbleToSchool.Core
+namespace KickOffTales.Core
 {
     /// <summary>
     /// Player preferences that outlive a level, stored in PlayerPrefs.

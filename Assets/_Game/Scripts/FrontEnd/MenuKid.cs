@@ -1,7 +1,7 @@
-using DribbleToSchool.Presentation;
+using KickOffTales.Presentation;
 using UnityEngine;
 
-namespace DribbleToSchool.FrontEnd
+namespace KickOffTales.FrontEnd
 {
     /// <summary>
     /// The menu's teen doing keepy-uppy: the ball pops up off one foot, then the other, every

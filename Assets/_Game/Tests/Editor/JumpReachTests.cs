@@ -1,13 +1,13 @@
 #if UNITY_INCLUDE_TESTS
-using DribbleToSchool.Core;
-using DribbleToSchool.EditorTools;
-using DribbleToSchool.Hazards;
-using DribbleToSchool.Holiday;
-using DribbleToSchool.Tuning;
+using KickOffTales.Core;
+using KickOffTales.EditorTools;
+using KickOffTales.Hazards;
+using KickOffTales.Holiday;
+using KickOffTales.Tuning;
 using NUnit.Framework;
 using UnityEngine;
 
-namespace DribbleToSchool.Tests
+namespace KickOffTales.Tests
 {
     /// <summary>
     /// The Holiday Run's gaps and walls are held to what the kid can really do (Holiday/JumpReach.cs). These tests pin the

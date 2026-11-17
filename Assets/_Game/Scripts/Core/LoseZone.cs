@@ -1,8 +1,8 @@
-using DribbleToSchool.Ball;
-using DribbleToSchool.Player;
+using KickOffTales.Ball;
+using KickOffTales.Player;
 using UnityEngine;
 
-namespace DribbleToSchool.Core
+namespace KickOffTales.Core
 {
     /// <summary>
     /// Trigger that loses the ball: pits, water, traffic lanes. Touching it with

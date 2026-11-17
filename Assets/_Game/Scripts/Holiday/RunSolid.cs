@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace DribbleToSchool.Holiday
+namespace KickOffTales.Holiday
 {
     /// <summary>
     /// Marks something solid in the kid's way (put on the top-level object of a crate, a wall, a car,

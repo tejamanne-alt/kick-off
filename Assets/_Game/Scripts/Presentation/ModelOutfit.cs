@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace DribbleToSchool.Presentation
+namespace KickOffTales.Presentation
 {
     /// <summary>
     /// Recolours an imported character model for the shop's outfits. The model marks each

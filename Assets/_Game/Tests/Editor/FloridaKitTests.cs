@@ -1,9 +1,9 @@
 using System.IO;
 using System.Text.RegularExpressions;
-using DribbleToSchool.EditorTools;
+using KickOffTales.EditorTools;
 using NUnit.Framework;
 
-namespace DribbleToSchool.Tests
+namespace KickOffTales.Tests
 {
     /// <summary>
     /// The Florida add-on's streets need their kit: every model StreetBuilder.Florida(Home) and LevelBuildKit.Florida(Play) place

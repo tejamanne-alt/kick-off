@@ -1,11 +1,11 @@
 #if UNITY_INCLUDE_TESTS
 using System;
 using System.Collections.Generic;
-using DribbleToSchool.Coop;
-using DribbleToSchool.Coop.Net;
+using KickOffTales.Coop;
+using KickOffTales.Coop.Net;
 using NUnit.Framework;
 
-namespace DribbleToSchool.Tests
+namespace KickOffTales.Tests
 {
     /// <summary>
     /// Whole co-op lobbies and races between pretend phones on an in-memory radio (Coop/Net/InMemoryRadio): joining, the

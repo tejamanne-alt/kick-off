@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using DribbleToSchool.Holiday;
+using KickOffTales.Holiday;
 
-namespace DribbleToSchool.EditorTools
+namespace KickOffTales.EditorTools
 {
     /// <summary>
     /// Where a level's how-tos go (Tutorial/ActionSpot, shown by UI/ActionCoach as the kid comes up to each): the hazards the

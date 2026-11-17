@@ -1,16 +1,16 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using DribbleToSchool.Cosmetics;
-using DribbleToSchool.FrontEnd;
-using DribbleToSchool.Holiday;
-using DribbleToSchool.Levels;
+using KickOffTales.Cosmetics;
+using KickOffTales.FrontEnd;
+using KickOffTales.Holiday;
+using KickOffTales.Levels;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
-using TrackBuilder = DribbleToSchool.EditorTools.LevelBuildKit.TrackBuilder;
+using TrackBuilder = KickOffTales.EditorTools.LevelBuildKit.TrackBuilder;
 
-namespace DribbleToSchool.EditorTools
+namespace KickOffTales.EditorTools
 {
     /// <summary>
     /// Generates every grey-box scene, level definition and the level catalog.
@@ -30,7 +30,7 @@ namespace DribbleToSchool.EditorTools
         const string TestTrackScene = ScenesDir + "/Phase1_TestTrack.unity";
         const string FrontEndScene = ScenesDir + "/" + FrontEndController.SceneName + ".unity";
         const string CosmeticsDir = LevelBuildKit.Root + "/Cosmetics";
-        const string AutoBuildKey = "DribbleToSchool.AutoBuildChecked";
+        const string AutoBuildKey = "KickOffTales.AutoBuildChecked";
 
         struct LevelSpec
         {

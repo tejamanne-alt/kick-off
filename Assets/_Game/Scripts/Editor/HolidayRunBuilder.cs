@@ -1,16 +1,16 @@
 using System;
 using System.Collections.Generic;
-using DribbleToSchool.Art;
-using DribbleToSchool.Cosmetics;
-using DribbleToSchool.Holiday;
-using DribbleToSchool.Levels;
-using DribbleToSchool.World;
+using KickOffTales.Art;
+using KickOffTales.Cosmetics;
+using KickOffTales.Holiday;
+using KickOffTales.Levels;
+using KickOffTales.World;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
-using TrackBuilder = DribbleToSchool.EditorTools.LevelBuildKit.TrackBuilder;
+using TrackBuilder = KickOffTales.EditorTools.LevelBuildKit.TrackBuilder;
 
-namespace DribbleToSchool.EditorTools
+namespace KickOffTales.EditorTools
 {
     /// <summary>
     /// Builds the Holiday Run's scenes: the 23 stages (one scene each, at its final place along the lap) and

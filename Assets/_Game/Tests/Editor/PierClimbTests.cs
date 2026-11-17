@@ -1,13 +1,13 @@
 #if UNITY_INCLUDE_TESTS
 using System;
-using DribbleToSchool.EditorTools;
-using DribbleToSchool.Player;
-using DribbleToSchool.World;
+using KickOffTales.EditorTools;
+using KickOffTales.Player;
+using KickOffTales.World;
 using NUnit.Framework;
 using UnityEngine;
-using Climb = DribbleToSchool.EditorTools.LevelBuildKit.TrackBuilder;
+using Climb = KickOffTales.EditorTools.LevelBuildKit.TrackBuilder;
 
-namespace DribbleToSchool.Tests
+namespace KickOffTales.Tests
 {
     /// <summary>
     /// The pier the course climbs (Low Tide in California: TrackBuilder.PierClimb): its flights are as gentle as the beach's

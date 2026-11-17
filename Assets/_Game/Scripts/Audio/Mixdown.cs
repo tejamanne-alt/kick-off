@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace DribbleToSchool.Audio
+namespace KickOffTales.Audio
 {
     /// <summary>
     /// One instrument's part in a loop: a mono buffer as long as the loop (notes wrap round its end,

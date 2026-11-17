@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace DribbleToSchool.Art
+namespace KickOffTales.Art
 {
     /// <summary>Street furniture for the hazards: pedestrian signal figures and a fountain jet.</summary>
     public static partial class ProceduralArt

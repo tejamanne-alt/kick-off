@@ -1,11 +1,11 @@
 #if UNITY_INCLUDE_TESTS
 using System.Collections.Generic;
-using DribbleToSchool.EditorTools;
-using DribbleToSchool.Levels;
-using DribbleToSchool.Localization;
+using KickOffTales.EditorTools;
+using KickOffTales.Levels;
+using KickOffTales.Localization;
 using NUnit.Framework;
 
-namespace DribbleToSchool.Tests
+namespace KickOffTales.Tests
 {
     /// <summary>
     /// Every story level is one leg of a trip from home to school along exactly one of the six routes: the route's first level

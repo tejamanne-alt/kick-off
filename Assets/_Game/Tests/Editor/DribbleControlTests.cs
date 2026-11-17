@@ -1,9 +1,9 @@
 #if UNITY_INCLUDE_TESTS
-using DribbleToSchool.Ball;
-using DribbleToSchool.InputHandling;
+using KickOffTales.Ball;
+using KickOffTales.InputHandling;
 using NUnit.Framework;
 
-namespace DribbleToSchool.Tests
+namespace KickOffTales.Tests
 {
     /// <summary>
     /// Holding the ball like a real dribbler. The stick's push sets the pace (a little push jogs, a full push runs), and a

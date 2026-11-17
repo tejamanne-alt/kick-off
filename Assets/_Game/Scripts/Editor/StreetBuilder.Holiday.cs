@@ -1,11 +1,11 @@
 using System.Collections.Generic;
 using System.Linq;
-using DribbleToSchool.Art;
-using DribbleToSchool.Holiday;
-using DribbleToSchool.World;
+using KickOffTales.Art;
+using KickOffTales.Holiday;
+using KickOffTales.World;
 using UnityEngine;
 
-namespace DribbleToSchool.EditorTools
+namespace KickOffTales.EditorTools
 {
     /// <summary>
     /// The street scenery of a Holiday Run: one stage's 120 m at a time (<see cref="StageScenery"/>), laid

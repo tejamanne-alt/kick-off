@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace DribbleToSchool.Art
+namespace KickOffTales.Art
 {
     public enum EdgeStyle { Grass, Cobbles, Sand, Concrete, ParkPath, Road }
     public enum SceneryStyle { Houses, Market, Beach, City, Park }

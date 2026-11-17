@@ -1,10 +1,10 @@
 using System.Collections.Generic;
-using DribbleToSchool.Progression;
-using DribbleToSchool.World;
+using KickOffTales.Progression;
+using KickOffTales.World;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace DribbleToSchool.UI
+namespace KickOffTales.UI
 {
     /// <summary>
     /// A picture in the menus (a kid's card, a bag, a sticker, the logo, the town map) drawn in the classic cartoon

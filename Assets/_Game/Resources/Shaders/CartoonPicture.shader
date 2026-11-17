@@ -4,7 +4,7 @@
 // tones, a warm-black line where the colours meet, and an outline drawn outside the picture's shape (so nothing of it is
 // covered). Painted (_Painted 1: the town map): the scenery's warm, painted colour with darker strokes of its own colour.
 // A UI shader like UI/Default (stencil masks, rect clipping, alpha clip). In Resources so a build includes it.
-Shader "Hidden/DribbleToSchool/CartoonPicture"
+Shader "Hidden/KickOffTales/CartoonPicture"
 {
     Properties
     {

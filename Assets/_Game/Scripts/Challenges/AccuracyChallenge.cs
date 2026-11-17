@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace DribbleToSchool.Challenges
+namespace KickOffTales.Challenges
 {
     /// <summary>Hit as many targets as possible before time is up. Hitting them all ends it early.</summary>
     public class AccuracyChallenge : ChallengeObjective

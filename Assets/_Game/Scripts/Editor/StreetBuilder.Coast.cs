@@ -1,8 +1,8 @@
 using System.Collections.Generic;
-using DribbleToSchool.World;
+using KickOffTales.World;
 using UnityEngine;
 
-namespace DribbleToSchool.EditorTools
+namespace KickOffTales.EditorTools
 {
     /// <summary>
     /// The California skin of the streets (the Coast kit, tools/blender/kit_buildings_cal.py), built

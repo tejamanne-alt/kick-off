@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace DribbleToSchool.Cosmetics
+namespace KickOffTales.Cosmetics
 {
     /// <summary>
     /// Draws cosmetic sprites from their colours and pattern: hand-inked balls,

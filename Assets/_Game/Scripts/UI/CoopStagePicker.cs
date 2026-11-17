@@ -1,12 +1,12 @@
-using DribbleToSchool.Coop;
-using DribbleToSchool.Levels;
-using DribbleToSchool.Localization;
-using DribbleToSchool.Progression;
-using DribbleToSchool.UI.Kit;
+using KickOffTales.Coop;
+using KickOffTales.Levels;
+using KickOffTales.Localization;
+using KickOffTales.Progression;
+using KickOffTales.UI.Kit;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace DribbleToSchool.UI
+namespace KickOffTales.UI
 {
     /// <summary>
     /// The co-op lobby's stage select (from FrontEnd/CoopScreen): the six ways from home to school as cards (each with its

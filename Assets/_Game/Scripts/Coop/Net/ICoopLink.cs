@@ -1,4 +1,4 @@
-namespace DribbleToSchool.Coop.Net
+namespace KickOffTales.Coop.Net
 {
     /// <summary>The phone's Bluetooth, as far as the game is concerned.</summary>
     public enum RadioState : byte

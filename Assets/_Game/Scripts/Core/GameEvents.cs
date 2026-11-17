@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace DribbleToSchool.Core
+namespace KickOffTales.Core
 {
     public enum GameEventType
     {

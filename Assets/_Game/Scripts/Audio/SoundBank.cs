@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace DribbleToSchool.Audio
+namespace KickOffTales.Audio
 {
     public enum Sfx
     {

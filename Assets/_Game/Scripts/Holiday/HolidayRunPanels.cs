@@ -1,15 +1,15 @@
 using System.Collections;
 using System.Collections.Generic;
-using DribbleToSchool.Audio;
-using DribbleToSchool.Localization;
-using DribbleToSchool.Progression;
-using DribbleToSchool.UI;
-using DribbleToSchool.UI.Kit;
+using KickOffTales.Audio;
+using KickOffTales.Localization;
+using KickOffTales.Progression;
+using KickOffTales.UI;
+using KickOffTales.UI.Kit;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
 
-namespace DribbleToSchool.Holiday
+namespace KickOffTales.Holiday
 {
     /// <summary>
     /// The Holiday Run's two menus, opened by HolidayRunHud: the pause menu, and the results that follow a

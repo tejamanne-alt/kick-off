@@ -1,20 +1,20 @@
 using System;
 using System.IO;
 using System.Linq;
-using DribbleToSchool.Art;
+using KickOffTales.Art;
 using UnityEditor;
 using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
 using UnityEngine;
 
-namespace DribbleToSchool.EditorTools
+namespace KickOffTales.EditorTools
 {
     /// <summary>
     /// Store-ready player settings and one-click / CI builds.
     ///
     /// CI usage:
-    ///   Unity -batchmode -quit -projectPath . -executeMethod DribbleToSchool.EditorTools.BuildScripts.BuildAndroidRelease
-    ///   Unity -batchmode -quit -projectPath . -executeMethod DribbleToSchool.EditorTools.BuildScripts.BuildIOS
+    ///   Unity -batchmode -quit -projectPath . -executeMethod KickOffTales.EditorTools.BuildScripts.BuildAndroidRelease
+    ///   Unity -batchmode -quit -projectPath . -executeMethod KickOffTales.EditorTools.BuildScripts.BuildIOS
     ///
     /// Environment overrides: DTS_BUILD_NUMBER, DTS_VERSION,
     /// DTS_KEYSTORE_PATH / DTS_KEYSTORE_PASS / DTS_KEY_ALIAS / DTS_KEY_PASS (Android signing),
@@ -300,7 +300,7 @@ namespace DribbleToSchool.EditorTools
             ApplyPlayerSettings();
             if (!ConfigureAndroidSigning()) return;
             EditorUserBuildSettings.buildAppBundle = true;
-            Build(BuildTarget.Android, Path.Combine(BuildRoot, "Android", "KickOff.aab"), BuildOptions.None);
+            Build(BuildTarget.Android, Path.Combine(BuildRoot, "Android", "KickOffTales.aab"), BuildOptions.None);
         }
 
         /// <summary>
@@ -317,7 +317,7 @@ namespace DribbleToSchool.EditorTools
             EditorUserBuildSettings.buildAppBundle = false;
             bool custom = PlayerSettings.Android.useCustomKeystore;
             PlayerSettings.Android.useCustomKeystore = false;
-            try { WithTestVersionCode(() => Build(BuildTarget.Android, Path.Combine(BuildRoot, "Android", "KickOff-test.apk"), BuildOptions.AutoRunPlayer)); }
+            try { WithTestVersionCode(() => Build(BuildTarget.Android, Path.Combine(BuildRoot, "Android", "KickOffTales-test.apk"), BuildOptions.AutoRunPlayer)); }
             finally { PlayerSettings.Android.useCustomKeystore = custom; }
         }
 
@@ -326,7 +326,7 @@ namespace DribbleToSchool.EditorTools
         {
             ApplyPlayerSettings();
             EditorUserBuildSettings.buildAppBundle = false;
-            WithTestVersionCode(() => Build(BuildTarget.Android, Path.Combine(BuildRoot, "Android", "KickOff-dev.apk"),
+            WithTestVersionCode(() => Build(BuildTarget.Android, Path.Combine(BuildRoot, "Android", "KickOffTales-dev.apk"),
                 BuildOptions.Development | BuildOptions.AllowDebugging));
         }
 

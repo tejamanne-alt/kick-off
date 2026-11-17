@@ -1,12 +1,12 @@
-using DribbleToSchool.Core;
-using DribbleToSchool.InputHandling;
-using DribbleToSchool.Localization;
-using DribbleToSchool.Tutorial;
-using DribbleToSchool.UI.Kit;
+using KickOffTales.Core;
+using KickOffTales.InputHandling;
+using KickOffTales.Localization;
+using KickOffTales.Tutorial;
+using KickOffTales.UI.Kit;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace DribbleToSchool.UI
+namespace KickOffTales.UI
 {
     /// <summary>
     /// The guided tour of the touch controls, the first time a level starts (and again from the Controls page). It holds

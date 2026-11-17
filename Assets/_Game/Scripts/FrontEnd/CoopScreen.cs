@@ -1,16 +1,16 @@
 using System.Collections.Generic;
 using System.Text;
-using DribbleToSchool.Coop;
-using DribbleToSchool.Coop.Net;
-using DribbleToSchool.Core;
-using DribbleToSchool.Levels;
-using DribbleToSchool.Localization;
-using DribbleToSchool.UI;
-using DribbleToSchool.UI.Kit;
+using KickOffTales.Coop;
+using KickOffTales.Coop.Net;
+using KickOffTales.Core;
+using KickOffTales.Levels;
+using KickOffTales.Localization;
+using KickOffTales.UI;
+using KickOffTales.UI.Kit;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace DribbleToSchool.FrontEnd
+namespace KickOffTales.FrontEnd
 {
     /// <summary>
     /// Co-op, from the title screen: up to four phones nearby (iPhones and Android phones together, over Bluetooth LE) race

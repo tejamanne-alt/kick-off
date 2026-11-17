@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using DribbleToSchool.Coop.Net;
+using KickOffTales.Coop.Net;
 
-namespace DribbleToSchool.Coop
+namespace KickOffTales.Coop
 {
     public enum SessionRole : byte { None, Host, Client }
 

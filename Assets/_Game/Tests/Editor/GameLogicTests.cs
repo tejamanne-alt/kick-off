@@ -1,20 +1,20 @@
 #if UNITY_INCLUDE_TESTS
 using System.Collections.Generic;
 using System.Linq;
-using DribbleToSchool.Art;
-using DribbleToSchool.Audio;
-using DribbleToSchool.Challenges;
-using DribbleToSchool.Cosmetics;
-using DribbleToSchool.EditorTools;
-using DribbleToSchool.Holiday;
-using DribbleToSchool.Levels;
-using DribbleToSchool.Localization;
-using DribbleToSchool.Progression;
-using DribbleToSchool.Store;
+using KickOffTales.Art;
+using KickOffTales.Audio;
+using KickOffTales.Challenges;
+using KickOffTales.Cosmetics;
+using KickOffTales.EditorTools;
+using KickOffTales.Holiday;
+using KickOffTales.Levels;
+using KickOffTales.Localization;
+using KickOffTales.Progression;
+using KickOffTales.Store;
 using NUnit.Framework;
 using UnityEngine;
 
-namespace DribbleToSchool.Tests
+namespace KickOffTales.Tests
 {
     /// <summary>
     /// Edit-mode tests for logic and content integrity (Window > General > Test Runner > EditMode).

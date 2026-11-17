@@ -1,6 +1,6 @@
 using System;
 
-namespace DribbleToSchool.Audio
+namespace KickOffTales.Audio
 {
     /// <summary>
     /// Small offline synthesizer: oscillators, envelopes, filters and a

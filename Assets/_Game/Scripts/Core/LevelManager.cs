@@ -1,18 +1,18 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using DribbleToSchool.Ball;
-using DribbleToSchool.CameraRig;
-using DribbleToSchool.Challenges;
-using DribbleToSchool.InputHandling;
-using DribbleToSchool.Levels;
-using DribbleToSchool.Pickups;
-using DribbleToSchool.Player;
-using DribbleToSchool.Progression;
+using KickOffTales.Ball;
+using KickOffTales.CameraRig;
+using KickOffTales.Challenges;
+using KickOffTales.InputHandling;
+using KickOffTales.Levels;
+using KickOffTales.Pickups;
+using KickOffTales.Player;
+using KickOffTales.Progression;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace DribbleToSchool.Core
+namespace KickOffTales.Core
 {
     public enum LevelState { Intro, Playing, Respawning, Paused, Complete }
 

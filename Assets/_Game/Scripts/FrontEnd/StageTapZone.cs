@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace DribbleToSchool.FrontEnd
+namespace KickOffTales.FrontEnd
 {
     /// <summary>
     /// Keeps an invisible button over the menu's 3D teen (wherever the camera has them), so a

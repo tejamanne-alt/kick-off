@@ -1,8 +1,8 @@
-using DribbleToSchool.Audio;
+using KickOffTales.Audio;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace DribbleToSchool.UI.Kit
+namespace KickOffTales.UI.Kit
 {
     /// <summary>
     /// The look of the walk stick (GameInput reads it): a see-through ring of frosted glass with a knob on it, in the

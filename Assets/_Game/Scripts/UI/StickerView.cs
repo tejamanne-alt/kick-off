@@ -1,8 +1,8 @@
-using DribbleToSchool.UI.Kit;
+using KickOffTales.UI.Kit;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace DribbleToSchool.UI
+namespace KickOffTales.UI
 {
     /// <summary>
     /// One sticker on screen: the die-cut art over a crisp shadow, its name lettered on the art's

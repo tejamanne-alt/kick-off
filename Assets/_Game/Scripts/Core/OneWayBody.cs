@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace DribbleToSchool.Core
+namespace KickOffTales.Core
 {
     /// <summary>
     /// A pushable thing (a crate) that can be kicked or walked forward but never shoved back past where it started: a pipe

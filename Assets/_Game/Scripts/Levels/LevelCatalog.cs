@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace DribbleToSchool.Levels
+namespace KickOffTales.Levels
 {
     /// <summary>Display info for a chapter on the map.</summary>
     [Serializable]

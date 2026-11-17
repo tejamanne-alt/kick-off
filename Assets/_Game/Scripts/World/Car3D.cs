@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace DribbleToSchool.World
+namespace KickOffTales.World
 {
     /// <summary>
     /// A small hatchback built from a few shapes: a body, a glasshouse with a raked windscreen,

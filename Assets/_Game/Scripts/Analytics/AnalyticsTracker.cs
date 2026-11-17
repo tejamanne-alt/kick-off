@@ -1,8 +1,8 @@
-using DribbleToSchool.Core;
+using KickOffTales.Core;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace DribbleToSchool.Analytics
+namespace KickOffTales.Analytics
 {
     /// <summary>
     /// Hooks gameplay into analytics: level start / complete / quit, where the

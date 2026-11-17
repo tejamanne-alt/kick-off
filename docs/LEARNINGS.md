@@ -631,6 +631,10 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
   - Planted bad copies make the tests fail.
   - `LevelFeasibility`, the coin audit, the map check and the pose audit run after the relevant change.
   - Persisted ids, enum orders and save keys never change.
+- **H8. A rename done in two passes** (Kick Off Tales). The first pass changed only what players see and the app id, and
+  left the code namespace, the shader names, the IAP id and the build file names under the old names. The user then
+  asked for those too. *Rule:* a rename covers every place the name appears, in code and out. List any exception and its
+  reason in the same change.
 
 ## Standing preferences of the user
 

@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace DribbleToSchool.Levels
+namespace KickOffTales.Levels
 {
     // ------------------------------------------------------------------ the file's shape (read with JsonUtility: objects and arrays only)
 

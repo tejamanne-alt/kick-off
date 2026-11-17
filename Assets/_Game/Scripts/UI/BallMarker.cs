@@ -1,12 +1,12 @@
-using DribbleToSchool.Ball;
-using DribbleToSchool.Core;
-using DribbleToSchool.Localization;
-using DribbleToSchool.Player;
-using DribbleToSchool.UI.Kit;
+using KickOffTales.Ball;
+using KickOffTales.Core;
+using KickOffTales.Localization;
+using KickOffTales.Player;
+using KickOffTales.UI.Kit;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace DribbleToSchool.UI
+namespace KickOffTales.UI
 {
     /// <summary>
     /// Where the ball is when it is off the side of the screen: the camera stays on the kid (CameraFollow2D), so a ball kicked

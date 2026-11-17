@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace DribbleToSchool.Presentation
+namespace KickOffTales.Presentation
 {
     /// <summary>
     /// Remembers the outfit a character choice was last dressed in, so that a kid who was hidden

@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace DribbleToSchool.Art
+namespace KickOffTales.Art
 {
     /// <summary>
     /// Storybook art drawn in code: everything gets watercolour grain and a

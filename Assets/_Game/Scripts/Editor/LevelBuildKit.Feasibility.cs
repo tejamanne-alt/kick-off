@@ -1,8 +1,8 @@
 using System.Collections.Generic;
-using DribbleToSchool.Holiday;
+using KickOffTales.Holiday;
 using UnityEngine;
 
-namespace DribbleToSchool.EditorTools
+namespace KickOffTales.EditorTools
 {
     public static partial class LevelBuildKit
     {

@@ -1,8 +1,8 @@
 using System.Collections.Generic;
-using DribbleToSchool.World;
+using KickOffTales.World;
 using UnityEngine;
 
-namespace DribbleToSchool.Hazards
+namespace KickOffTales.Hazards
 {
     /// <summary>
     /// Someone out on the footpath, in the ball's way: the ball bounces off them (the kid slips

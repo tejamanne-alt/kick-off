@@ -1,13 +1,13 @@
 using System.Collections.Generic;
 using System.Linq;
-using DribbleToSchool.EditorTools;
-using DribbleToSchool.Holiday;
-using DribbleToSchool.Localization;
-using DribbleToSchool.UI;
+using KickOffTales.EditorTools;
+using KickOffTales.Holiday;
+using KickOffTales.Localization;
+using KickOffTales.UI;
 using NUnit.Framework;
 using UnityEngine;
 
-namespace DribbleToSchool.Tests
+namespace KickOffTales.Tests
 {
     /// <summary>
     /// The coach at the top of a level (UI/ActionCoach): every how-to and step it can show is written in every language and

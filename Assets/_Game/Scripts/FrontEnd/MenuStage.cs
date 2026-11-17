@@ -1,8 +1,8 @@
-using DribbleToSchool.Core;
-using DribbleToSchool.Cosmetics;
+using KickOffTales.Core;
+using KickOffTales.Cosmetics;
 using UnityEngine;
 
-namespace DribbleToSchool.FrontEnd
+namespace KickOffTales.FrontEnd
 {
     /// <summary>Where the menu's camera looks (see <see cref="MenuStage"/>).</summary>
     public enum MenuShot

@@ -1,4 +1,4 @@
-namespace DribbleToSchool.Core
+namespace KickOffTales.Core
 {
     /// <summary>
     /// A race other phones are running at the same time (Co-op, Coop/CoopRaceMode), as the level sees it. While one is set

@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace DribbleToSchool.World
+namespace KickOffTales.World
 {
     /// <summary>A beach parasol: a pole and an eight-panel canopy in two alternating colours.</summary>
     public class ParasolShape : ProceduralShape

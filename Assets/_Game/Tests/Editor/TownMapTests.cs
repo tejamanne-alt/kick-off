@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Text;
-using DribbleToSchool.EditorTools;
-using DribbleToSchool.Levels;
-using DribbleToSchool.Localization;
+using KickOffTales.EditorTools;
+using KickOffTales.Levels;
+using KickOffTales.Localization;
 using NUnit.Framework;
 using UnityEngine;
 
-namespace DribbleToSchool.Tests
+namespace KickOffTales.Tests
 {
     /// <summary>
     /// The town map's data (docs/WORLD_MAP.md): Resources/TownMapLayout.json, as written for the rendered picture

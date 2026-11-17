@@ -1,10 +1,10 @@
-using DribbleToSchool.Audio;
-using DribbleToSchool.Core;
+using KickOffTales.Audio;
+using KickOffTales.Core;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-namespace DribbleToSchool.UI.Kit
+namespace KickOffTales.UI.Kit
 {
     /// <summary>
     /// Press feedback for buttons and cards: the face pushes down onto its darker base

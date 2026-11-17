@@ -1,7 +1,7 @@
 using System;
 using System.Text;
 
-namespace DribbleToSchool.Coop.Net
+namespace KickOffTales.Coop.Net
 {
     /// <summary>
     /// Writes a co-op message into a byte buffer, little-endian. Strings are UTF-8 with a one-byte length and are cut at a

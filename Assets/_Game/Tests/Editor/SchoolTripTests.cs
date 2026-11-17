@@ -1,10 +1,10 @@
 #if UNITY_INCLUDE_TESTS
 using System.Collections.Generic;
-using DribbleToSchool.Levels;
-using DribbleToSchool.Progression;
+using KickOffTales.Levels;
+using KickOffTales.Progression;
 using NUnit.Framework;
 
-namespace DribbleToSchool.Tests
+namespace KickOffTales.Tests
 {
     /// <summary>
     /// The trips to school (Progression/SchoolTrips) and the unlock rule they feed (Progression/LevelUnlocks; docs/WORLD_MAP.md,

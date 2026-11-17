@@ -1,12 +1,12 @@
 using System;
-using DribbleToSchool.Core;
-using DribbleToSchool.InputHandling;
-using DribbleToSchool.Player;
-using DribbleToSchool.Tuning;
+using KickOffTales.Core;
+using KickOffTales.InputHandling;
+using KickOffTales.Player;
+using KickOffTales.Tuning;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
-namespace DribbleToSchool.Ball
+namespace KickOffTales.Ball
 {
     /// <summary>
     /// A real physics ball that the kid dribbles.

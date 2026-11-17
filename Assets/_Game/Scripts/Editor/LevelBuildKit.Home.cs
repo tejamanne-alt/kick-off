@@ -1,14 +1,14 @@
 using System;
 using System.Collections.Generic;
-using DribbleToSchool.Art;
-using DribbleToSchool.Levels;
-using DribbleToSchool.Localization;
-using DribbleToSchool.Presentation;
-using DribbleToSchool.World;
+using KickOffTales.Art;
+using KickOffTales.Levels;
+using KickOffTales.Localization;
+using KickOffTales.Presentation;
+using KickOffTales.World;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-namespace DribbleToSchool.EditorTools
+namespace KickOffTales.EditorTools
 {
     /// <summary>
     /// The home lead-in's side of the builder kit: every story level starts on the doorstep of the kid's house and walks

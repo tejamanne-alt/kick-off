@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace DribbleToSchool.World
+namespace KickOffTales.World
 {
     /// <summary>A traffic cone on its square base: orange with two reflective white bands.</summary>
     public class ConeShape : ProceduralShape

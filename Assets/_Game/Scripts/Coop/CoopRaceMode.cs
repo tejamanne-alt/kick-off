@@ -1,11 +1,11 @@
-using DribbleToSchool.Core;
-using DribbleToSchool.FrontEnd;
-using DribbleToSchool.Levels;
-using DribbleToSchool.Progression;
+using KickOffTales.Core;
+using KickOffTales.FrontEnd;
+using KickOffTales.Levels;
+using KickOffTales.Progression;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace DribbleToSchool.Coop
+namespace KickOffTales.Coop
 {
     /// <summary>
     /// This phone's run in a co-op race: the whole route from the front door to the school gate, one leg (one level) after

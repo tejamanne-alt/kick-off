@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace DribbleToSchool.Audio
+namespace KickOffTales.Audio
 {
     /// <summary>A sound of the place that comes now and then: a car going by, a gull, a reversing truck.</summary>
     public sealed class AmbientCue

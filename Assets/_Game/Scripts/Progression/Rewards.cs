@@ -1,4 +1,4 @@
-namespace DribbleToSchool.Progression
+namespace KickOffTales.Progression
 {
     /// <summary>Coin economy constants in one place so balancing is easy.</summary>
     public static class Rewards

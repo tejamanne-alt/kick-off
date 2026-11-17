@@ -1,8 +1,8 @@
-using DribbleToSchool.Audio;
+using KickOffTales.Audio;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace DribbleToSchool.UI.Kit
+namespace KickOffTales.UI.Kit
 {
     /// <summary>
     /// The look of an on-screen game control (kick, jump): a see-through disc of frosted glass

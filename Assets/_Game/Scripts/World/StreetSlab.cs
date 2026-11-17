@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace DribbleToSchool.World
+namespace KickOffTales.World
 {
     /// <summary>
     /// A stretch of street seen in 3D: a solid slab from <see cref="fromX"/> to <see cref="toX"/>

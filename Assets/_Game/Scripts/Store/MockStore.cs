@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace DribbleToSchool.Store
+namespace KickOffTales.Store
 {
     /// <summary>
     /// Stand-in store used until Unity IAP is enabled: purchases succeed

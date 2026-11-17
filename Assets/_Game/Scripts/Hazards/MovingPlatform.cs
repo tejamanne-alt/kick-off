@@ -1,7 +1,7 @@
-using DribbleToSchool.Core;
+using KickOffTales.Core;
 using UnityEngine;
 
-namespace DribbleToSchool.Hazards
+namespace KickOffTales.Hazards
 {
     /// <summary>
     /// Kinematic platform that travels between its start and an offset, pausing

@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace DribbleToSchool.Art
+namespace KickOffTales.Art
 {
     /// <summary>
     /// Painterly ground textures for the 3D street (docs/ART_DIRECTION.md): tileable in both

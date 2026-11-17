@@ -20,7 +20,7 @@
 // A texture whose alpha is below 1 marks a part that can be recoloured (a Locker Room bag's cloth: tools/blender/
 // meshy_bag.py): with _MaskTint's alpha up, those texels take _MaskTint's colour, as light or dark as they were
 // against _MaskBase (the part's own colour). Opaque textures (every other model) are drawn as they are.
-Shader "DribbleToSchool/ToonCharacter"
+Shader "KickOffTales/ToonCharacter"
 {
     Properties
     {

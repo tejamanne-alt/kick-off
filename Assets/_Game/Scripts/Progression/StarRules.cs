@@ -1,4 +1,4 @@
-namespace DribbleToSchool.Progression
+namespace KickOffTales.Progression
 {
     /// <summary>
     /// A story level's three stars, one per goal, each earned on its own: getting there with the ball, the time (the leg's

@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using DribbleToSchool.Tuning;
+using KickOffTales.Tuning;
 
-namespace DribbleToSchool.Holiday
+namespace KickOffTales.Holiday
 {
     /// <summary>
     /// How far and how high the kid really gets, worked out from the numbers that move them (PlayerTuning,

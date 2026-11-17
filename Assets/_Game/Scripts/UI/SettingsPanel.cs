@@ -1,11 +1,11 @@
-using DribbleToSchool.Core;
-using DribbleToSchool.Localization;
-using DribbleToSchool.Progression;
-using DribbleToSchool.UI.Kit;
+using KickOffTales.Core;
+using KickOffTales.Localization;
+using KickOffTales.Progression;
+using KickOffTales.UI.Kit;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace DribbleToSchool.UI
+namespace KickOffTales.UI
 {
     /// <summary>
     /// Settings modal used by the menu and the pause screen. Two columns of grouped rows, laid
@@ -184,16 +184,16 @@ namespace DribbleToSchool.UI
             swatches.anchorMax = Vector2.one;
             swatches.offsetMin = new Vector2(6f, 0f);
             swatches.offsetMax = new Vector2(-4f, 0f);
-            int count = DribbleToSchool.Cosmetics.Bags.Colours.Length;
+            int count = KickOffTales.Cosmetics.Bags.Colours.Length;
             var rings = new Image[count];
             // (the bags' own colours are shown by the bag the chosen kid wears: Kick Off's when they wear none of their choosing)
-            string shownBag = DribbleToSchool.Cosmetics.Bags.CanWear(GameSettings.Character) ? DribbleToSchool.Cosmetics.Bags.For(GameSettings.Character) : DribbleToSchool.Cosmetics.Bags.NoneId;
-            if (shownBag == DribbleToSchool.Cosmetics.Bags.NoneId) shownBag = DribbleToSchool.Cosmetics.Bags.DefaultId;
+            string shownBag = KickOffTales.Cosmetics.Bags.CanWear(GameSettings.Character) ? KickOffTales.Cosmetics.Bags.For(GameSettings.Character) : KickOffTales.Cosmetics.Bags.NoneId;
+            if (shownBag == KickOffTales.Cosmetics.Bags.NoneId) shownBag = KickOffTales.Cosmetics.Bags.DefaultId;
             var bagIcon = Resources.Load<Sprite>("UI/" + shownBag);
             for (int i = 0; i < count; i++)
             {
                 int index = i;
-                var swatch = DribbleToSchool.Cosmetics.Bags.Colours[i];
+                var swatch = KickOffTales.Cosmetics.Bags.Colours[i];
                 var cell = UIKit.Rect(swatches, "Swatch_" + swatch.name);
                 cell.anchorMin = new Vector2(i / (float)count, 0f);
                 cell.anchorMax = new Vector2((i + 1) / (float)count, 1f);

@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace DribbleToSchool.World
+namespace KickOffTales.World
 {
     /// <summary>
     /// Marks a placed asset-kit model (tools/blender kit_*.py). Its mesh is shared with every other

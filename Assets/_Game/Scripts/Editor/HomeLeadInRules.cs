@@ -1,7 +1,7 @@
 using System;
-using DribbleToSchool.Holiday;
+using KickOffTales.Holiday;
 
-namespace DribbleToSchool.EditorTools
+namespace KickOffTales.EditorTools
 {
     /// <summary>
     /// The rules of the lead-in: every story level starts at a stop on its route and walks <see cref="Length"/> metres

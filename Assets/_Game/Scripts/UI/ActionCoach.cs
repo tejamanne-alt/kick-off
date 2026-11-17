@@ -1,15 +1,15 @@
 using System.Collections.Generic;
-using DribbleToSchool.Ball;
-using DribbleToSchool.Challenges;
-using DribbleToSchool.Core;
-using DribbleToSchool.Localization;
-using DribbleToSchool.Player;
-using DribbleToSchool.Tutorial;
-using DribbleToSchool.UI.Kit;
+using KickOffTales.Ball;
+using KickOffTales.Challenges;
+using KickOffTales.Core;
+using KickOffTales.Localization;
+using KickOffTales.Player;
+using KickOffTales.Tutorial;
+using KickOffTales.UI.Kit;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace DribbleToSchool.UI
+namespace KickOffTales.UI
 {
     /// <summary>
     /// The coach: a card at the top of the HUD, between the info card and the pause button, that says how to do what comes

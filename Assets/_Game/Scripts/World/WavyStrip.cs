@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace DribbleToSchool.World
+namespace KickOffTales.World
 {
     /// <summary>
     /// A flat band on the ground with a wavy edge toward the camera (see <see cref="Shoreline"/>):

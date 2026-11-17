@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using DribbleToSchool.Levels;
+using KickOffTales.Levels;
 
-namespace DribbleToSchool.Progression
+namespace KickOffTales.Progression
 {
     /// <summary>
     /// Which levels can be played: the first one, and any story level whose predecessor is completed, as long as that predecessor

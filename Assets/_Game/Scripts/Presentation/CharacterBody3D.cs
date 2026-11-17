@@ -1,8 +1,8 @@
 using System.Collections.Generic;
-using DribbleToSchool.World;
+using KickOffTales.World;
 using UnityEngine;
 
-namespace DribbleToSchool.Presentation
+namespace KickOffTales.Presentation
 {
     /// <summary>
     /// The 3D body of a character, skinned to its CharacterRig: one smooth mesh from the

@@ -1,15 +1,15 @@
 using System;
 using System.Collections.Generic;
-using DribbleToSchool.Core;
-using DribbleToSchool.InputHandling;
-using DribbleToSchool.Localization;
-using DribbleToSchool.Progression;
-using DribbleToSchool.UI;
-using DribbleToSchool.UI.Kit;
+using KickOffTales.Core;
+using KickOffTales.InputHandling;
+using KickOffTales.Localization;
+using KickOffTales.Progression;
+using KickOffTales.UI;
+using KickOffTales.UI.Kit;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace DribbleToSchool.Holiday
+namespace KickOffTales.Holiday
 {
     /// <summary>
     /// The Holiday Run's screen (uGUI built from code, the sibling of the story levels' GameHud): the score

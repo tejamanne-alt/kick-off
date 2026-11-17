@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace DribbleToSchool.UI.Kit
+namespace KickOffTales.UI.Kit
 {
     /// <summary>Gentle breathing scale to draw the eye (next level, affordable item).</summary>
     public class UIPulse : MonoBehaviour

@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace DribbleToSchool.Core
+namespace KickOffTales.Core
 {
     /// <summary>How much the phone is asked to draw: Low, Medium or High (docs/PERFORMANCE.md).</summary>
     public enum GraphicsTier { Low = 0, Medium = 1, High = 2 }

@@ -1,7 +1,7 @@
-using DribbleToSchool.Progression;
+using KickOffTales.Progression;
 using UnityEngine;
 
-namespace DribbleToSchool.Cosmetics
+namespace KickOffTales.Cosmetics
 {
     /// <summary>
     /// Dresses the kid and the ball in the equipped cosmetics when a level starts

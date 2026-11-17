@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace DribbleToSchool.World
+namespace KickOffTales.World
 {
     /// <summary>
     /// A squirrel on the park lawn (Animals kit): it forages in little hops, sits up with its tail

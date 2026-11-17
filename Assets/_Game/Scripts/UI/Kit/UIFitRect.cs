@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace DribbleToSchool.UI.Kit
+namespace KickOffTales.UI.Kit
 {
     /// <summary>
     /// Scales a block of UI that was laid out at a fixed design size (the town map's picture is 3200 x 1800 pixels) so that a

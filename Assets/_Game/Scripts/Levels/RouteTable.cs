@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace DribbleToSchool.Levels
+namespace KickOffTales.Levels
 {
     /// <summary>What a stop on the way to school is, for the map's glyph and the level builder's set piece.</summary>
     public enum StopKind

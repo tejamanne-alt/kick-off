@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace DribbleToSchool.World
+namespace KickOffTales.World
 {
     /// <summary>
     /// The classic cartoon filter's look (Settings, Add-ons &amp; Filters): the values both its camera pass

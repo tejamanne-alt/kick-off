@@ -1,7 +1,7 @@
-using DribbleToSchool.Hazards;
+using KickOffTales.Hazards;
 using UnityEngine;
 
-namespace DribbleToSchool.Presentation
+namespace KickOffTales.Presentation
 {
     /// <summary>
     /// Stroll animation for pedestrians and the company they keep: the stride follows their

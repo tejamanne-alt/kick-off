@@ -1,9 +1,9 @@
-using DribbleToSchool.Localization;
-using DribbleToSchool.UI.Kit;
+using KickOffTales.Localization;
+using KickOffTales.UI.Kit;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace DribbleToSchool.UI
+namespace KickOffTales.UI
 {
     /// <summary>
     /// The game's logo: the "Kick OFF 2" lettering of the app icon and the store banner (white "Kick", red "OFF", a golden

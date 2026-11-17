@@ -1,6 +1,6 @@
 using System;
 
-namespace DribbleToSchool.Audio
+namespace KickOffTales.Audio
 {
     /// <summary>
     /// The band the music is played by, all synthesized and all soft-edged, for chill lo-fi beats: a

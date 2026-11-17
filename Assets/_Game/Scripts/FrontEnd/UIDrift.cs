@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace DribbleToSchool.FrontEnd
+namespace KickOffTales.FrontEnd
 {
     /// <summary>Slides a UI element sideways forever, wrapping around the screen (clouds).</summary>
     public class UIDrift : MonoBehaviour

@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using DribbleToSchool.Holiday;
+using KickOffTales.Holiday;
 
-namespace DribbleToSchool.EditorTools
+namespace KickOffTales.EditorTools
 {
     /// <summary>
     /// Checks a level's (or a Holiday Run stage's) ground and obstacles against what the kid can really do (JumpReach), so a

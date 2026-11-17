@@ -1,10 +1,10 @@
-using DribbleToSchool.Ball;
-using DribbleToSchool.Core;
-using DribbleToSchool.InputHandling;
-using DribbleToSchool.Player;
+using KickOffTales.Ball;
+using KickOffTales.Core;
+using KickOffTales.InputHandling;
+using KickOffTales.Player;
 using UnityEngine;
 
-namespace DribbleToSchool.CameraRig
+namespace KickOffTales.CameraRig
 {
     /// <summary>
     /// Side-scroller camera for the 3D street: a perspective camera looking along +z from a

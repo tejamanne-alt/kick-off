@@ -1,7 +1,7 @@
-using DribbleToSchool.Core;
+using KickOffTales.Core;
 using UnityEngine;
 
-namespace DribbleToSchool.Challenges
+namespace KickOffTales.Challenges
 {
     /// <summary>
     /// A slalom gate. Low gates: the ball must pass underneath the bar (keep it

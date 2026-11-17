@@ -1,11 +1,11 @@
 using System.Collections.Generic;
-using DribbleToSchool.Core;
+using KickOffTales.Core;
 using UnityEngine;
 #if ENABLE_INPUT_SYSTEM
 using UnityEngine.InputSystem;
 #endif
 
-namespace DribbleToSchool.InputHandling
+namespace KickOffTales.InputHandling
 {
     /// <summary>Where a round touch button sits, in screen heights (so it is the same physical size on any phone).</summary>
     [System.Serializable]
@@ -334,7 +334,7 @@ namespace DribbleToSchool.InputHandling
         readonly HashSet<int> ignored = new HashSet<int>();
 
         // (in the picture's pixels: the panel's dots per inch, scaled with the 3D picture's resolution; Core/GraphicsQuality)
-        float Dpi { get { return DribbleToSchool.Core.GraphicsQuality.TouchDpi; } }
+        float Dpi { get { return KickOffTales.Core.GraphicsQuality.TouchDpi; } }
 
         /// <summary>"No finger with this id this frame": made once, as a lambda that uses the instance would be a new delegate every frame.</summary>
         System.Predicate<int> notSampled;

@@ -1,6 +1,6 @@
 using System;
 
-namespace DribbleToSchool.Store
+namespace KickOffTales.Store
 {
     public enum PurchaseResult { Success, Cancelled, Failed, Unavailable }
 

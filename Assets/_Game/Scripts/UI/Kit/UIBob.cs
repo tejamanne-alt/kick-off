@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace DribbleToSchool.UI.Kit
+namespace KickOffTales.UI.Kit
 {
     /// <summary>Bobs a UI element gently up and down about where it was placed (the map's "PLAY" and "LATE!" tags).</summary>
     public class UIBob : MonoBehaviour

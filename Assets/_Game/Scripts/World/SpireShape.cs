@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace DribbleToSchool.World
+namespace KickOffTales.World
 {
     /// <summary>
     /// A pointed roof on a tower: a pyramid of <see cref="sides"/> faces (four for a church spire) standing on its base,

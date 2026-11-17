@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace DribbleToSchool.Cosmetics
+namespace KickOffTales.Cosmetics
 {
     /// <summary>Every cosmetic in the game, in shop order.</summary>
     [CreateAssetMenu(menuName = "Kick Off/Cosmetic Catalog", fileName = "CosmeticCatalog")]

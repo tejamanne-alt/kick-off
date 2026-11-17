@@ -1,14 +1,14 @@
 #if UNITY_INCLUDE_TESTS
 using System.IO;
 using System.Linq;
-using DribbleToSchool.Core;
-using DribbleToSchool.Cosmetics;
-using DribbleToSchool.EditorTools;
-using DribbleToSchool.Progression;
+using KickOffTales.Core;
+using KickOffTales.Cosmetics;
+using KickOffTales.EditorTools;
+using KickOffTales.Progression;
 using NUnit.Framework;
 using UnityEngine;
 
-namespace DribbleToSchool.Tests
+namespace KickOffTales.Tests
 {
     /// <summary>The Locker Room's bags (Cosmetics/Bags): optional, each kid's own choice, one colour from Settings.</summary>
     public class BagsTests

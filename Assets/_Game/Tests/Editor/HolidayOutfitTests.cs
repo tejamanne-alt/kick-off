@@ -1,10 +1,10 @@
 #if UNITY_INCLUDE_TESTS
 using System.Linq;
-using DribbleToSchool.Cosmetics;
-using DribbleToSchool.EditorTools;
+using KickOffTales.Cosmetics;
+using KickOffTales.EditorTools;
 using NUnit.Framework;
 
-namespace DribbleToSchool.Tests
+namespace KickOffTales.Tests
 {
     /// <summary>The Holiday Run's kid is not in school uniform unless they chose another outfit themselves.</summary>
     public class HolidayOutfitTests

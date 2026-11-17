@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
-using DribbleToSchool.Coop.Net;
+using KickOffTales.Coop.Net;
 using UnityEngine;
 
-namespace DribbleToSchool.Coop.Transport
+namespace KickOffTales.Coop.Transport
 {
     /// <summary>
     /// The co-op link on Android: android.bluetooth.le through Plugins/Android/DtsCoopBle.java (one handler thread; the game

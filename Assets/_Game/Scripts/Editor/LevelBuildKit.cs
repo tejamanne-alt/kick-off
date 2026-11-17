@@ -1,27 +1,27 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using DribbleToSchool.Art;
-using DribbleToSchool.Ball;
-using DribbleToSchool.CameraRig;
-using DribbleToSchool.Challenges;
-using DribbleToSchool.Core;
-using DribbleToSchool.Cosmetics;
-using DribbleToSchool.Hazards;
-using DribbleToSchool.World;
-using DribbleToSchool.InputHandling;
-using DribbleToSchool.Levels;
-using DribbleToSchool.Pickups;
-using DribbleToSchool.Player;
-using DribbleToSchool.Presentation;
-using DribbleToSchool.Tuning;
-using DribbleToSchool.UI;
+using KickOffTales.Art;
+using KickOffTales.Ball;
+using KickOffTales.CameraRig;
+using KickOffTales.Challenges;
+using KickOffTales.Core;
+using KickOffTales.Cosmetics;
+using KickOffTales.Hazards;
+using KickOffTales.World;
+using KickOffTales.InputHandling;
+using KickOffTales.Levels;
+using KickOffTales.Pickups;
+using KickOffTales.Player;
+using KickOffTales.Presentation;
+using KickOffTales.Tuning;
+using KickOffTales.UI;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-namespace DribbleToSchool.EditorTools
+namespace KickOffTales.EditorTools
 {
     /// <summary>
     /// Shared pieces for generating grey-box level scenes: placeholder sprites,
@@ -177,7 +177,7 @@ namespace DribbleToSchool.EditorTools
             look.hazeStrength = mood.hazeStrength;
             look.Apply();
             var post = camGo.AddComponent<PostFX>();
-            post.shader = Shader.Find("Hidden/DribbleToSchool/PostFX");   // referenced, so builds include it
+            post.shader = Shader.Find("Hidden/KickOffTales/PostFX");   // referenced, so builds include it
             post.shadowTint = mood.shadowTint;
             post.balance = mood.balance;
             post.bloomTint = Color.Lerp(mood.glow, Color.white, 0.7f);

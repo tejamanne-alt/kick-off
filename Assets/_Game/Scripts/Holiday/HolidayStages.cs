@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace DribbleToSchool.Holiday
+namespace KickOffTales.Holiday
 {
     /// <summary>
     /// What a stage's stretch of street has in it. The editor's Holiday Run builder turns these into

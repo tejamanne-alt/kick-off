@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace DribbleToSchool.UI.Kit
+namespace KickOffTales.UI.Kit
 {
     /// <summary>
     /// The two small pictures the map screen draws itself (the town is a rendered picture): a house for home and a flagged

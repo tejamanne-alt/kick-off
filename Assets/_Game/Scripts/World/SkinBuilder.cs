@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace DribbleToSchool.World
+namespace KickOffTales.World
 {
     /// <summary>
     /// Builds smooth, skinned meshes from tubes (limbs, a torso) and ellipsoids (heads,

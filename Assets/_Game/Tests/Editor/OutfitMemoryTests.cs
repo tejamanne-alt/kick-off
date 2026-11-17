@@ -1,10 +1,10 @@
 #if UNITY_INCLUDE_TESTS
 using System.Collections.Generic;
-using DribbleToSchool.Presentation;
+using KickOffTales.Presentation;
 using NUnit.Framework;
 using UnityEngine;
 
-namespace DribbleToSchool.Tests
+namespace KickOffTales.Tests
 {
     /// <summary>A kid who was hidden when the shop dressed the player comes out in the same clothes when shown.</summary>
     public class OutfitMemoryTests

@@ -2,11 +2,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using DribbleToSchool.EditorTools;
-using DribbleToSchool.Holiday;
+using KickOffTales.EditorTools;
+using KickOffTales.Holiday;
 using NUnit.Framework;
 
-namespace DribbleToSchool.Tests
+namespace KickOffTales.Tests
 {
     /// <summary>
     /// Edit-mode tests for the Holiday Run's obstacle layouts (Editor/HolidayPatterns.cs): the rules a fair

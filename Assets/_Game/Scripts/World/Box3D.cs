@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace DribbleToSchool.World
+namespace KickOffTales.World
 {
     /// <summary>A solid box centred on the object (crates, walls, platforms, steps, house parts).</summary>
     public class Box3D : ProceduralShape

@@ -1,8 +1,8 @@
 using System;
-using DribbleToSchool.Core;
+using KickOffTales.Core;
 using UnityEngine;
 
-namespace DribbleToSchool.Store
+namespace KickOffTales.Store
 {
     /// <summary>Entry point for purchases. Picks Unity IAP when enabled, the mock store otherwise.</summary>
     public static class StoreService

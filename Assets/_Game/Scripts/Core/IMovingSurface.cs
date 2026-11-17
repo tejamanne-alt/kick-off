@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace DribbleToSchool.Core
+namespace KickOffTales.Core
 {
     /// <summary>
     /// A surface that carries whoever stands on it (moving platforms, swings). It sits on the same object as the

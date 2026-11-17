@@ -2,7 +2,7 @@ using System.IO;
 using UnityEditor;
 using UnityEngine;
 
-namespace DribbleToSchool.EditorTools
+namespace KickOffTales.EditorTools
 {
     /// <summary>
     /// Player Settings, Active Input Handling: the Input System package only, set from code since ProjectSettings is not in
@@ -19,7 +19,7 @@ namespace DribbleToSchool.EditorTools
     {
         /// <summary>Player Settings' activeInputHandler: 0 the Input Manager (old), 1 the Input System package, 2 both.</summary>
         const int InputSystemOnly = 1;
-        const string AskedKey = "DribbleToSchool.InputHandlingRestartAsked";
+        const string AskedKey = "KickOffTales.InputHandlingRestartAsked";
 
         static InputHandling()
         {

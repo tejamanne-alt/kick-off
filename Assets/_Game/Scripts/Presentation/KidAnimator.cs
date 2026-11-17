@@ -1,8 +1,8 @@
-using DribbleToSchool.Core;
-using DribbleToSchool.Player;
+using KickOffTales.Core;
+using KickOffTales.Player;
 using UnityEngine;
 
-namespace DribbleToSchool.Presentation
+namespace KickOffTales.Presentation
 {
     /// <summary>
     /// Procedural animation for the kid with knees and elbows: a gait from a walk to a run whose steps quicken with the

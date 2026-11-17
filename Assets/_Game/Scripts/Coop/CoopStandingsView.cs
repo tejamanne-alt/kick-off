@@ -1,10 +1,10 @@
-using DribbleToSchool.Localization;
-using DribbleToSchool.UI;
-using DribbleToSchool.UI.Kit;
+using KickOffTales.Localization;
+using KickOffTales.UI;
+using KickOffTales.UI.Kit;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace DribbleToSchool.Coop
+namespace KickOffTales.Coop
 {
     /// <summary>
     /// The co-op standings as a list of cards (the results at the school gate, Coop/CoopHud, and the lobby while a race runs,

@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace DribbleToSchool.World
+namespace KickOffTales.World
 {
     /// <summary>
     /// Where a wave's front edge lies on the beach (z, toward the camera is smaller) at x: wavy,

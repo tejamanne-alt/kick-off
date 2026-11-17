@@ -1,7 +1,7 @@
 using System.IO;
 using UnityEditor.Android;
 
-namespace DribbleToSchool.EditorTools
+namespace KickOffTales.EditorTools
 {
     /// <summary>
     /// Readies the Android build for the co-op mode's Bluetooth (Plugins/Android/DtsCoopBle.java). The manifest gets what

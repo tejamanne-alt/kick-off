@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace DribbleToSchool.World
+namespace KickOffTales.World
 {
     /// <summary>
     /// Recolours a sprite or a 3D part the same way: a sprite's colour, or the tint of a

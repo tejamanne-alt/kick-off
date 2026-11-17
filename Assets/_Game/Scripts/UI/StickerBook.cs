@@ -1,8 +1,8 @@
 using System.Collections.Generic;
-using DribbleToSchool.Localization;
+using KickOffTales.Localization;
 using UnityEngine;
 
-namespace DribbleToSchool.UI
+namespace KickOffTales.UI
 {
     public enum StickerRarity { Normal, Holo, Gold }
 

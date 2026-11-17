@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace DribbleToSchool.UI.Kit
+namespace KickOffTales.UI.Kit
 {
     /// <summary>Counts a number up over time (coins earned). Works while paused.</summary>
     [RequireComponent(typeof(Text))]

@@ -1,12 +1,12 @@
 using System.Collections.Generic;
-using DribbleToSchool.Core;
-using DribbleToSchool.Localization;
-using DribbleToSchool.UI;
-using DribbleToSchool.UI.Kit;
+using KickOffTales.Core;
+using KickOffTales.Localization;
+using KickOffTales.UI;
+using KickOffTales.UI.Kit;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace DribbleToSchool.Coop
+namespace KickOffTales.Coop
 {
     /// <summary>
     /// The race's screen over the level's own HUD (Coop/CoopLevelLink makes it each leg): the standings under the pause button

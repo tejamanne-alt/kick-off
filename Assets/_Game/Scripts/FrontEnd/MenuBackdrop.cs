@@ -1,8 +1,8 @@
-using DribbleToSchool.UI.Kit;
+using KickOffTales.UI.Kit;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace DribbleToSchool.FrontEnd
+namespace KickOffTales.FrontEnd
 {
     /// <summary>
     /// What lies behind the menus. Normally the live 3D street (MenuStage) shows through, and this

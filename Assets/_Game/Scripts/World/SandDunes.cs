@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace DribbleToSchool.World
+namespace KickOffTales.World
 {
     /// <summary>
     /// One stretch of the beach's sand (see <see cref="SandField"/>) as a smooth mesh: a grid on a

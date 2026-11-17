@@ -41,7 +41,7 @@ SDK refuse to launch ("UIScene life cycle is required"). After changing Unity, d
 
 1. Install **In-App Purchasing** (`com.unity.purchasing`, version 4.x) from the Package Manager.
 2. Add the scripting define `DTS_UNITY_IAP` in Player Settings > Other Settings > Scripting Define Symbols, for both Android and iOS. This compiles `Store/UnityIapStore.cs`. Without it, the game uses `MockStore`: test purchases succeed in the editor and in development builds, and the store reports "unavailable" in release builds.
-3. Create a **non-consumable** product with the id `kickoff.fullgame` in App Store Connect and in Google Play Console (the `FullGameProductId` constant).
+3. Create a **non-consumable** product with the id `kickofftales.fullgame` in App Store Connect and in Google Play Console (the `FullGameProductId` constant).
 4. iOS needs a working Restore Purchases button. It's shown in the unlock panel, and in Settings whenever `RequireUnlock` is on.
 5. Test on device with sandbox testers (App Store) and license testers (Play).
 
@@ -70,7 +70,7 @@ Every Play Console field, the store graphics and the screenshot sizes are in [`G
 ### Build the App Bundle
 In Unity: **File > Build Profiles > Android > Switch Platform**, then in **Publishing Settings** tick **Custom Keystore**, pick the
 keystore and the `upload` key and type both passwords (Unity forgets them when it closes), then **Kick Off > Build > Android App
-Bundle (release)**. It writes `Builds/Android/KickOff.aab` and shows it in Finder. Without a key it stops and says what to set,
+Bundle (release)**. It writes `Builds/Android/KickOffTales.aab` and shows it in Finder. Without a key it stops and says what to set,
 rather than building a bundle Play would refuse. If Unity offers to update the Android SDK (target API 36), accept.
 The **Kick Off > Build** menu builds with LZ4HC compression (plain LZ4 for the development APK): on Android only an LZ4
 build streams textures and meshes to the GPU in the background (`docs/LEARNINGS.md` B8). Unity's own Build button uses
@@ -81,10 +81,10 @@ From Terminal instead (Unity closed):
 DTS_KEYSTORE_PATH=~/keys/kickofftales-upload.jks DTS_KEYSTORE_PASS='…' DTS_KEY_ALIAS=upload DTS_KEY_PASS='…' \
 ./ci/android/build_android.sh release
 ```
-For a quick test on your own phone: **Kick Off > Build > Android: Run on Connected Phone (USB)**, or **Kick Off > Build > Android APK (development)** and then `adb install -r Builds/Android/KickOff-dev.apk`. Every APK carries a version code that always goes up (minutes since 2025), however it is built, Unity's own Build button included (`Editor/AndroidApkVersionCode`), so APKs install over each other; the store build number stays as it is. An APK signed with another key than the copy on the phone (built on another computer, or with the release key) won't install over it: the phone only says "Installation failed". Uninstall that copy once (`adb uninstall com.astradite.kickofftales`; it loses the game's progress on that phone). `adb install -r <apk>` prints the exact reason (`INSTALL_FAILED_...`). `Builds/Android/BuildSize.txt` lists what the build is made of: the App Bundle's base must stay under Play's 200 MB.
+For a quick test on your own phone: **Kick Off > Build > Android: Run on Connected Phone (USB)**, or **Kick Off > Build > Android APK (development)** and then `adb install -r Builds/Android/KickOffTales-dev.apk`. Every APK carries a version code that always goes up (minutes since 2025), however it is built, Unity's own Build button included (`Editor/AndroidApkVersionCode`), so APKs install over each other; the store build number stays as it is. An APK signed with another key than the copy on the phone (built on another computer, or with the release key) won't install over it: the phone only says "Installation failed". Uninstall that copy once (`adb uninstall com.astradite.kickofftales`; it loses the game's progress on that phone). `adb install -r <apk>` prints the exact reason (`INSTALL_FAILED_...`). `Builds/Android/BuildSize.txt` lists what the build is made of: the App Bundle's base must stay under Play's 200 MB.
 
 ### Upload and release
-1. **Test and release > Testing > Internal testing** → create a release → upload `KickOff.aab` → add testers' emails → roll out.
+1. **Test and release > Testing > Internal testing** → create a release → upload `KickOffTales.aab` → add testers' emails → roll out.
    Install from the opt-in link and play through.
 2. **New personal developer accounts** (created after 13 November 2023) must run a **closed test with at least 12 testers who stay
    opted in for 14 days in a row** before they can apply for production access. Start this early. Organisation accounts are exempt:

@@ -1,8 +1,8 @@
-using DribbleToSchool.Ball;
-using DribbleToSchool.Player;
+using KickOffTales.Ball;
+using KickOffTales.Player;
 using UnityEngine;
 
-namespace DribbleToSchool.Core
+namespace KickOffTales.Core
 {
     /// <summary>
     /// The surface of a stretch of water (a flooded trench, a park stream, a tidal channel): the ball or the kid going in

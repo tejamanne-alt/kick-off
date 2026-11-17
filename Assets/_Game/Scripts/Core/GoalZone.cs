@@ -1,8 +1,8 @@
-using DribbleToSchool.Ball;
-using DribbleToSchool.Player;
+using KickOffTales.Ball;
+using KickOffTales.Player;
 using UnityEngine;
 
-namespace DribbleToSchool.Core
+namespace KickOffTales.Core
 {
     /// <summary>
     /// The school gate. Finishes the level once the kid and the ball are both through it

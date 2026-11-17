@@ -1,7 +1,7 @@
-using DribbleToSchool.Localization;
+using KickOffTales.Localization;
 using NUnit.Framework;
 
-namespace DribbleToSchool.Tests
+namespace KickOffTales.Tests
 {
     /// <summary>The map's tags (PLAY, TRY AGAIN, LATE!) and its late-trip banner have their texts in every language.</summary>
     public class MapIndicatorTests

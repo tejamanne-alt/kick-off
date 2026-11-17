@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace DribbleToSchool.UI.Kit
+namespace KickOffTales.UI.Kit
 {
     /// <summary>Springy scale-and-fade entrance when the element is enabled. Works while the game is paused.</summary>
     [RequireComponent(typeof(CanvasGroup))]

@@ -4,7 +4,7 @@ using UnityEditor;
 using UnityEditor.Android;
 using UnityEngine;
 
-namespace DribbleToSchool.EditorTools
+namespace KickOffTales.EditorTools
 {
     /// <summary>
     /// Every Android APK gets a version code newer than any APK before it (<see cref="BuildScripts.TestVersionCode"/>), however

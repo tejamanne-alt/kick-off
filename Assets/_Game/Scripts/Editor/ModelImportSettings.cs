@@ -1,6 +1,6 @@
 using UnityEditor;
 
-namespace DribbleToSchool.EditorTools
+namespace KickOffTales.EditorTools
 {
     /// <summary>
     /// Import settings for the models made in Blender (tools/blender: characters, cars and the

@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using DribbleToSchool.Coop.Net;
+using KickOffTales.Coop.Net;
 
-namespace DribbleToSchool.Coop.Transport
+namespace KickOffTales.Coop.Transport
 {
     /// <summary>
     /// The co-op link on an iPhone or iPad: CoreBluetooth through Plugins/iOS/DTSCoopBLE.mm. Creating it starts Bluetooth,

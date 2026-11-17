@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace DribbleToSchool.World
+namespace KickOffTales.World
 {
     /// <summary>A smooth sphere (the ball). Its UVs show a drawing of a ball on the side facing the camera.</summary>
     public class SphereShape : ProceduralShape

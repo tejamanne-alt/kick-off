@@ -1,8 +1,8 @@
-using DribbleToSchool.Core;
-using DribbleToSchool.InputHandling;
+using KickOffTales.Core;
+using KickOffTales.InputHandling;
 using UnityEngine;
 
-namespace DribbleToSchool.Ball
+namespace KickOffTales.Ball
 {
     /// <summary>
     /// Kick button aiming: drag from the kick button in the direction the ball

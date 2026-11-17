@@ -1,8 +1,8 @@
-using DribbleToSchool.Art;
-using DribbleToSchool.Levels;
+using KickOffTales.Art;
+using KickOffTales.Levels;
 using UnityEngine;
 
-namespace DribbleToSchool.Progression
+namespace KickOffTales.Progression
 {
     /// <summary>
     /// A city's weather and light, relative to Kamakura's (the game's measured look, docs/ART_DIRECTION.md): the colour

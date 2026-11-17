@@ -2,17 +2,17 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using DribbleToSchool.Core;
-using DribbleToSchool.Cosmetics;
-using DribbleToSchool.InputHandling;
-using DribbleToSchool.Levels;
-using DribbleToSchool.Localization;
-using DribbleToSchool.Progression;
-using DribbleToSchool.Tutorial;
+using KickOffTales.Core;
+using KickOffTales.Cosmetics;
+using KickOffTales.InputHandling;
+using KickOffTales.Levels;
+using KickOffTales.Localization;
+using KickOffTales.Progression;
+using KickOffTales.Tutorial;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace DribbleToSchool.FrontEnd
+namespace KickOffTales.FrontEnd
 {
     /// <summary>
     /// The store screenshot tour. It runs in the Editor from Kick Off > Store Screenshots (Play

@@ -1,8 +1,8 @@
 using System.Collections.Generic;
-using DribbleToSchool.Tuning;
+using KickOffTales.Tuning;
 using UnityEngine;
 
-namespace DribbleToSchool.Ball
+namespace KickOffTales.Ball
 {
     /// <summary>
     /// Dotted preview of the first part of a kick's flight.

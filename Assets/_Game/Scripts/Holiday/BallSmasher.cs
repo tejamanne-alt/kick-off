@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace DribbleToSchool.Holiday
+namespace KickOffTales.Holiday
 {
     /// <summary>
     /// On the ball of a Holiday Run: a kick that hits a crate, a sandcastle or a stack of cones hard

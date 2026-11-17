@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace DribbleToSchool.UI
+namespace KickOffTales.UI
 {
     /// <summary>
     /// What the coach at the top of the HUD (<see cref="ActionCoach"/>) can say: a how-to for each special action in the

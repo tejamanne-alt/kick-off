@@ -1,7 +1,7 @@
 using Unity.Profiling;
 using UnityEngine;
 
-namespace DribbleToSchool.Presentation
+namespace KickOffTales.Presentation
 {
     /// <summary>
     /// Lightweight pooled sprite particles (no ParticleSystem setup needed):

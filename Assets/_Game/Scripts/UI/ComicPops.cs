@@ -1,14 +1,14 @@
 using System.Collections.Generic;
-using DribbleToSchool.Ball;
-using DribbleToSchool.Core;
-using DribbleToSchool.Localization;
-using DribbleToSchool.Progression;
-using DribbleToSchool.UI.Kit;
+using KickOffTales.Ball;
+using KickOffTales.Core;
+using KickOffTales.Localization;
+using KickOffTales.Progression;
+using KickOffTales.UI.Kit;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-namespace DribbleToSchool.UI
+namespace KickOffTales.UI
 {
     /// <summary>
     /// The comic filter's sound-effect words: while the comic halftone or the pencil sketch filter is on

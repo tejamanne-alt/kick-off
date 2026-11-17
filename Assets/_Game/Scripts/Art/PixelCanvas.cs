@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace DribbleToSchool.Art
+namespace KickOffTales.Art
 {
     /// <summary>
     /// Tiny software rasterizer for procedural art: anti-aliased shapes, an

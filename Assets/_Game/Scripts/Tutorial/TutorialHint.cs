@@ -1,7 +1,7 @@
-using DribbleToSchool.Player;
+using KickOffTales.Player;
 using UnityEngine;
 
-namespace DribbleToSchool.Tutorial
+namespace KickOffTales.Tutorial
 {
     /// <summary>
     /// The first time the kid reaches this spot, the HUD shows a short hint card

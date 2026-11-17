@@ -4,7 +4,7 @@
 // part of the fill. uv1.x is how much of the dot screen a vertex takes, uv1.y is 1 on the fill and
 // 0 on the ink. The dots are in screen pixels (8 at 1080 lines), on a 45-degree screen like the
 // filter's own. With _Hatch (the pencil sketch filter) the lower part is pencil-hatched instead. In Resources so a build includes it (it is loaded by name).
-Shader "Hidden/DribbleToSchool/ComicLettering"
+Shader "Hidden/KickOffTales/ComicLettering"
 {
     Properties
     {

@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace DribbleToSchool.World
+namespace KickOffTales.World
 {
     /// <summary>
     /// A cat on a garden wall (the Animals kit's sitting cat): it sits looking about with its tail

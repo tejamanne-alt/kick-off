@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace DribbleToSchool.Hazards
+namespace KickOffTales.Hazards
 {
     /// <summary>
     /// Puddles, sand, mud: the ball drags and the kid wades. Not deadly, just slow.

@@ -1,7 +1,7 @@
 using System;
 using System.Text;
 
-namespace DribbleToSchool.Coop.Net
+namespace KickOffTales.Coop.Net
 {
     /// <summary>What a lobby is doing, as its host's advertisement says.</summary>
     public enum RoomPhase : byte

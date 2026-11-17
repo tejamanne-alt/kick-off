@@ -1,10 +1,10 @@
-using DribbleToSchool.Core;
+using KickOffTales.Core;
 using UnityEngine;
 #if UNITY_IOS && !UNITY_EDITOR
 using System.Runtime.InteropServices;
 #endif
 
-namespace DribbleToSchool.Audio
+namespace KickOffTales.Audio
 {
     /// <summary>
     /// Light taps for kicks, perfect touches and landings, and a crisp click when a

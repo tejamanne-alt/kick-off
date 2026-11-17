@@ -1,8 +1,8 @@
 using System.Collections.Generic;
-using DribbleToSchool.Coop.Net;
+using KickOffTales.Coop.Net;
 using UnityEngine;
 
-namespace DribbleToSchool.Coop
+namespace KickOffTales.Coop
 {
     /// <summary>
     /// Pretend phones for trying Co-op in the editor, where there is no Bluetooth: each bot is a real CoopSession on the

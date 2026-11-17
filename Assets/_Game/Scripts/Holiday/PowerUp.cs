@@ -1,8 +1,8 @@
-using DribbleToSchool.Player;
-using DribbleToSchool.UI.Kit;
+using KickOffTales.Player;
+using KickOffTales.UI.Kit;
 using UnityEngine;
 
-namespace DribbleToSchool.Holiday
+namespace KickOffTales.Holiday
 {
     /// <summary>The three pickups of a Holiday Run.</summary>
     public enum PowerUpKind { Magnet, Shield, Turbo }

@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace DribbleToSchool.Art
+namespace KickOffTales.Art
 {
     /// <summary>
     /// Backgrounds in a bright anime look: saturated blue skies, big cumulus clouds with

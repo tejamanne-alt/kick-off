@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using DribbleToSchool.Holiday;
+using KickOffTales.Holiday;
 
-namespace DribbleToSchool.EditorTools
+namespace KickOffTales.EditorTools
 {
     /// <summary>What a pattern item is. The furniture kinds are the same in all three layouts of a stage.</summary>
     public enum PatternKind

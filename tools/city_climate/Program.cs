@@ -1,7 +1,7 @@
 using System;
 using System.Globalization;
-using DribbleToSchool.Art;
-using DribbleToSchool.Progression;
+using KickOffTales.Art;
+using KickOffTales.Progression;
 using UnityEngine;
 
 // Runs the game's own CityClimate (Progression/Cities.cs) on the game's own chapter moods (Art/ChapterTheme.cs), checks what

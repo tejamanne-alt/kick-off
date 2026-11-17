@@ -1,10 +1,10 @@
 using System.Collections.Generic;
-using DribbleToSchool.Core;
-using DribbleToSchool.Presentation;
+using KickOffTales.Core;
+using KickOffTales.Presentation;
 using UnityEditor;
 using UnityEngine;
 
-namespace DribbleToSchool.EditorTools
+namespace KickOffTales.EditorTools
 {
     public static partial class LevelBuildKit
     {
@@ -52,7 +52,7 @@ namespace DribbleToSchool.EditorTools
                     wear.playerId = info.id;
                     wear.bags = parts.bags.ToArray();
                     wear.bagIds = new string[parts.bags.Count];
-                    for (int b = 0; b < parts.bags.Count; b++) wear.bagIds[b] = DribbleToSchool.Cosmetics.Bags.IdOfMesh(parts.bags[b].name);
+                    for (int b = 0; b < parts.bags.Count; b++) wear.bagIds[b] = KickOffTales.Cosmetics.Bags.IdOfMesh(parts.bags[b].name);
                     wear.onBag = parts.onBag != null ? parts.onBag.ToArray() : new GameObject[0];
                     // Saved hidden: BagWear shows the worn one as it starts, so the others never load their meshes.
                     foreach (var r in parts.bags) r.gameObject.SetActive(false);

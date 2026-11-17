@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
-using DribbleToSchool.Core;
-using DribbleToSchool.Progression;
+using KickOffTales.Core;
+using KickOffTales.Progression;
 using UnityEngine;
 
-namespace DribbleToSchool.Cosmetics
+namespace KickOffTales.Cosmetics
 {
     /// <summary>
     /// Which bag each kid wears (the Locker Room's Bags tab) and the colour bags are worn in (Settings). Bags are

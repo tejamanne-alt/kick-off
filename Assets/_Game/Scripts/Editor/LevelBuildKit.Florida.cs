@@ -1,8 +1,8 @@
-using DribbleToSchool.Core;
-using DribbleToSchool.World;
+using KickOffTales.Core;
+using KickOffTales.World;
 using UnityEngine;
 
-namespace DribbleToSchool.EditorTools
+namespace KickOffTales.EditorTools
 {
     /// <summary>
     /// The school at the end of Seaside Road in the Florida add-on (review/florida/refs, F3-6): Seagrove High, a Florida

@@ -1,7 +1,7 @@
-using DribbleToSchool.Core;
+using KickOffTales.Core;
 using UnityEngine;
 
-namespace DribbleToSchool.Holiday
+namespace KickOffTales.Holiday
 {
     /// <summary>
     /// Something a kicked ball bursts for coins (see BallSmasher): a crate, a sandcastle or a stack of cones, which bursts and
