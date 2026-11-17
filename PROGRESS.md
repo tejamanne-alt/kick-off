@@ -1748,6 +1748,33 @@ the reference. A first batch was built, to judge the look before more:
     lantern, hydrangeas;
   - then one level in Kamakura's look, end to end, played on the phone first (LEARNINGS E12).
 
+### After the user's first look (LEARNINGS E13)
+
+The user found the tram off its rails, the barrier arms swinging across the tracks, the tram standing at the crossing,
+trees that don't grow in Japan, and the shrine and torii too small. Fixed in the kit and the preview lane:
+- The tram's wheels run on the Enoden's 1,067 mm gauge (`GAUGE_C` either side of its middle, `Attach.Rails` on the
+  track's centre line). The preview's track is built from the same gauge, its rails' tops at one height through the
+  crossing and beyond it: a level crossing deck the road and footpaths ramp up to, ballast and sleepers beyond. The
+  tram is placed from the track's centre line, its treads on the rails' tops.
+- The barrier is now a machine with a hub (`CrossingBarrierKM`) and arms of their own, upright at rest with their
+  origin at the pivot: `CrossingArmKM` (3.5 m) closes the footpath from behind it, `CrossingArmRoadKM` (6.6 m) closes
+  the road from its near kerb. On both sides of the tracks, the arms lie across the footpath and the road, along the
+  tracks, never across them.
+- `preview_street.py --closed`: the crossing closed, its arms down and the tram going through it (the kid waits at
+  the barrier). Without it, the arms are up and the track is empty. Nothing stands on the tracks with the crossing
+  open.
+- The track has its overhead line (masts, the contact wire at the pantograph's height, the catenary wire), and Hase
+  station's low platform is beside the track, with its steps, the IC gate and the name board.
+- Kamakura's trees: the Plants kit gains a leaning Japanese black pine (2,328 triangles), a persimmon with its fruit
+  (2,860) and a tall ginkgo (3,747), each inside the 6,000-triangle tree budget. The lane uses these with the cherry
+  and the cloud-pruned garden pine; main's generic broadleaf trees and the forest strip's firs are gone from it.
+- The torii is 4 m tall (was 2.8 m wide). The shrine is a neighbourhood shrine at full size: its hall 3.7 x 3 m, its
+  walls 2.2 m on a floor 1.6 m up, on a stone base 8.6 m across, the lanterns standing on its upper tier.
+- Cost: the kit is 10,670 triangles for its twelve models (the arms 204 and 276). One crossing, as previewed, is about
+  5,000 triangles (four signals, four machines, four arms) plus the tram's 2,334. The atlas is unchanged (4096 x 1024,
+  rows 657 of 756 used). Still nothing in the game, so nothing measured on the Nord CE5.
+- Review: `review/kamakura_kit` (the kit sheet, the trees, the houses, the shrine, the crossing open and closed).
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

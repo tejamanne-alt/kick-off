@@ -79,10 +79,11 @@ def disc(B, c, r, normal, mat, n=12, depth=0.02):
     xform(pr, T(*c)); B.add(pr)
 
 
-def lantern_stone(B, x, y, s=1.0):
-    """A small stone lantern (a toro): base, post, the light box with its windows, a pyramid cap and a finial."""
-    def at(z): return z * s
-    B.add(cbox2((x - 0.2 * s, y - 0.2 * s, 0.0), (x + 0.2 * s, y + 0.2 * s, at(0.14)), 0.02, 'kmstone'))
+def lantern_stone(B, x, y, s=1.0, z0=0.0):
+    """A small stone lantern (a toro), standing at height z0: base, post, the light box with its windows, a pyramid cap and
+    a finial."""
+    def at(z): return z0 + z * s
+    B.add(cbox2((x - 0.2 * s, y - 0.2 * s, z0), (x + 0.2 * s, y + 0.2 * s, at(0.14)), 0.02, 'kmstone'))
     B.add(tube([(x, y, at(0.14)), (x, y, at(0.62))], 0.08 * s, 'kmstone', 8))
     B.add(cbox2((x - 0.17 * s, y - 0.17 * s, at(0.62)), (x + 0.17 * s, y + 0.17 * s, at(0.7)), 0.01, 'kmstone'))
     B.add(cbox2((x - 0.13 * s, y - 0.13 * s, at(0.7)), (x + 0.13 * s, y + 0.13 * s, at(0.92)), 0.01, 'kmstone'))
@@ -162,6 +163,7 @@ def house_km(B):
 
 
 # ================================================================ TramKM: the Enoden's green and cream car
+GAUGE_C = 0.5675        # half the distance between the rails' centres: 1,067 mm gauge plus a rail head
 def tram_km(B):
     """The Enoden's car (KM-V01): its lower body green, a cream band with the windows, a green line under the roof, the
     ends rounded off in plan with their two big windows, headlights and the destination sign; two pairs of doors a side,
@@ -211,14 +213,21 @@ def tram_km(B):
             disc(B, (ex, y, 1.3), 0.12, (sx, 0, 0), 'lamp')
             disc(B, (ex, y + (0.22 if y < 1 else -0.22), 1.3), 0.06, (sx, 0, 0), 'kmred')
         B.add(cbox2((ex - (0.0 if sx > 0 else 0.35), mid - 0.12, 0.62), (ex + (0.35 if sx > 0 else 0.0), mid + 0.12, 0.8), 0.02, 'metald'))
-    # the bogies under the ends, their wheels
+    # the bogies under the ends, their wheels on the Enoden's narrow gauge (1,067 mm between the rails: the treads run
+    # on the rails' centres, GAUGE_C either side of the car's middle), their side frames and axle boxes just outside
+    yc = Dp / 2
     for bx in (-3.9, 3.9):
-        B.add(cbox2((bx - 1.15, 0.28, 0.32), (bx + 1.15, Dp - 0.28, 0.62), 0.04, 'metald'))
-        for wx in (bx - 0.68, bx + 0.68):
-            for y in (0.2, Dp - 0.2):
-                B.add(tube([(wx, y - 0.06, 0.36), (wx, y + 0.06, 0.36)], 0.34, 'rubber', 12))
-                B.add(tube([(wx, y - 0.075 if y < 1 else y + 0.075, 0.36), (wx, y - 0.065 if y < 1 else y + 0.065, 0.36)], 0.12, 'metal', 8))
+        B.add(cbox2((bx - 1.1, yc - 0.42, 0.42), (bx + 1.1, yc + 0.42, 0.62), 0.04, 'metald'))
+        for sy in (-1, 1):
+            yf = yc + sy * (GAUGE_C + 0.16)
+            B.add(cbox2((bx - 1.15, yf - 0.05, 0.26), (bx + 1.15, yf + 0.05, 0.56), 0.03, 'metald'))
+            for wx in (bx - 0.68, bx + 0.68):
+                yw = yc + sy * GAUGE_C
+                B.add(tube([(wx, yw - 0.06, 0.36), (wx, yw + 0.06, 0.36)], 0.34, 'rubber', 12))
+                B.add(tube([(wx, yw - sy * 0.07, 0.36), (wx, yw - sy * 0.06, 0.36)], 0.37, 'metal', 12, caps=False))   # the flange
+                B.add(cbox2((wx - 0.12, yf + sy * 0.05, 0.28), (wx + 0.12, yf + sy * 0.12, 0.44), 0.02, 'black'))
         B.add(cbox2((bx - 0.25, 0.12, 0.42), (bx + 0.25, 0.3, 0.58), 0.02, 'black'))
+    B.attach.append(('Rails', (0.0, yc, 0.0)))        # (the track's centre line, under the car's middle)
     # on the roof: two equipment boxes, the pantograph's base, arms and pan
     B.add(cbox2((-3.0, 0.55, 3.42), (-1.5, Dp - 0.55, 3.66), 0.04, 'kmgrey'))
     B.add(cbox2((1.6, 0.6, 3.42), (2.8, Dp - 0.6, 3.62), 0.04, 'kmgrey'))
@@ -240,10 +249,35 @@ def tram_km(B):
 
 
 # ================================================================ ToriiKM: a small vermilion torii
+def scaled(B, k, build):
+    """Build a model at its design size and scale every piece by k as it is added (its real size from the row's width)."""
+    add = B.add
+
+    def add_scaled(bm, *a, **kw):
+        if bm is not None: xform(bm, S(k, k, k))
+        return add(bm, *a, **kw)
+    B.add = add_scaled
+    try:
+        return build(B) * k
+    finally:
+        del B.add
+
+
+TORII_W, SHRINE_W, SHRINE_D = 2.8, 5.4, 3.9     # the design sizes; the rows give the real ones
+
+
 def torii_km(B):
-    """A small vermilion torii (KM-A11): two round pillars on black bases, the tie beam through them, the upper lintel
-    with its black top sweeping up at both ends, and the tablet strut between them."""
-    W = B.W
+    return scaled(B, B.W / TORII_W, torii_design)
+
+
+def shrine_km(B):
+    return scaled(B, B.W / SHRINE_W, shrine_design)
+
+
+def torii_design(B):
+    """A vermilion torii (KM-A11): two round pillars on black bases, the tie beam through them, the upper lintel with its
+    black top sweeping up at both ends, and the tablet strut between them. Designed 2.8 m across, built at the row's size."""
+    W = TORII_W
     y = 0.16
     px = W / 2 - 0.42
     for sx in (-1, 1):
@@ -266,11 +300,12 @@ def torii_km(B):
 
 
 # ================================================================ ShrineKM: a little shrine on its stone base
-def shrine_km(B):
+def shrine_design(B):
     """A little roadside shrine (KM-B05): a stepped base of stone with steps up the middle, two stone lanterns, and on
     top the wooden shrine with its lattice doors under a copper roof (the crossed rafters at its ends, logs on its ridge),
-    a twisted straw rope with its white paper streamers across the front, and an offering box."""
-    W, D = B.W, B.D
+    a twisted straw rope with its white paper streamers across the front, and an offering box. Designed 5.4 m across, built at
+    the row's size."""
+    W, D = SHRINE_W, SHRINE_D
     # the base: a lower tier of stone and an upper one, a stair up the middle of the front
     B.add(cbox2((-W / 2, 0.0, 0.0), (W / 2, D, 0.62), 0.03, 'kmstone'))
     B.add(cbox2((-W / 2 + 0.02, -0.02, 0.0), (W / 2 - 0.02, D + 0.02, 0.1), 0.02, 'kmstoned'))
@@ -280,30 +315,31 @@ def shrine_km(B):
         x = -W / 2 + (0.2 if row % 2 else 0.0)
         while x < W / 2 - 0.1:
             w = float(rng.uniform(0.38, 0.62))
-            if abs(x + w / 2) > 0.95:
+            if abs(x + w / 2) > 1.12:
                 B.add(cbox2((x + 0.02, -0.025, z + 0.01), (min(x + w, W / 2) - 0.02, 0.0, z + 0.15), 0.015, 'kmstone' if rng.random() < 0.7 else 'kmstoned'))
             x += w
-    ux0, ux1, uy0, uy1 = -1.55, 1.55, 0.9, D - 0.25
+    ux0, ux1, uy0, uy1 = -2.1, 2.1, 0.9, D - 0.25
     B.add(cbox2((ux0, uy0, 0.62), (ux1, uy1, 1.02), 0.03, 'kmstone'))
     B.add(cbox2((ux0 - 0.06, uy0 - 0.06, 0.62), (ux1 + 0.06, uy1 + 0.06, 0.68), 0.02, 'kmmoss'))
     # the stair: from the street to the upper tier, between low stone cheeks
     n = 6
     for k in range(n):
         y0 = -0.9 + k * (uy0 + 0.9) / n
-        B.add(cbox2((-0.62, y0, 0.0), (0.62, uy0, (k + 1) * 1.02 / n), 0.015, 'kmstone' if k % 2 else 'kmstoned'))
+        B.add(cbox2((-0.8, y0, 0.0), (0.8, uy0, (k + 1) * 1.02 / n), 0.015, 'kmstone' if k % 2 else 'kmstoned'))
     for sx in (-1, 1):
-        xa, xb = sorted((sx * 0.62, sx * 0.78))
+        xa, xb = sorted((sx * 0.8, sx * 0.96))
         B.add(cbox2((xa, -0.9, 0.0), (xb, uy0, 0.25), 0.02, 'kmstoned'))
-    # the lanterns either side, on the upper tier
+    # the lanterns either side, on the upper tier, clear of the roof's eaves
     for sx in (-1, 1):
-        lantern_stone(B, sx * 1.22, uy0 + 0.4, s=1.35)
-    # the shrine: a raised floor on posts, the body, its doors, the roof
-    sx0, sx1, sy0, sy1, zf = -0.8, 0.8, uy0 + 0.6, uy0 + 1.95, 1.02
+        lantern_stone(B, sx * 1.78, uy0 + 0.35, s=1.1, z0=1.02)
+    # the shrine's hall: a raised floor on posts, the body, its doors, the roof (2.3 x 1.85 here: 3.7 x 3 m at the row's
+    # size, walls 2.2 m tall on a floor 1.6 m up, the size of a neighbourhood shrine's hall)
+    sx0, sx1, sy0, sy1, zf = -1.15, 1.15, uy0 + 0.75, uy1 - 0.15, 1.02
     for x in (sx0 + 0.06, sx1 - 0.06):
         for yy in (sy0 + 0.06, sy1 - 0.06):
             B.add(cbox2((x - 0.05, yy - 0.05, zf), (x + 0.05, yy + 0.05, zf + 0.3), 0.01, 'kmwoodd'))
     B.add(cbox2((sx0 - 0.12, sy0 - 0.2, zf + 0.3), (sx1 + 0.12, sy1 + 0.08, zf + 0.38), 0.01, 'kmwood'))
-    zb0, zb1 = zf + 0.38, zf + 1.55
+    zb0, zb1 = zf + 0.38, zf + 1.75
     B.add(cbox2((sx0, sy0, zb0), (sx1, sy1, zb1), 0.01, 'kmwood'))
     for x in (sx0, sx1):
         for yy in (sy0, sy1):
@@ -313,8 +349,8 @@ def shrine_km(B):
              lambda co: ((co.x - sx0 - 0.08) / (sx1 - sx0 - 0.16), (co.z - zb0 - 0.08) / (zb1 - zb0 - 0.2)))
     B.add(cbox2((sx0 - 0.04, sy0 - 0.06, zb1 - 0.12), (sx1 + 0.04, sy0, zb1 - 0.06), 0.01, 'kmwoodd'))
     # the roof: a gable along the depth, its front a deep overhang over the doors, copper green
-    ov = 0.35
-    rx0, rx1, ry0, ry1, ze, apex = sx0 - ov, sx1 + ov, sy0 - 0.75, sy1 + 0.3, zb1 + 0.04, zb1 + 0.62
+    ov = 0.4
+    rx0, rx1, ry0, ry1, ze, apex = sx0 - ov, sx1 + ov, sy0 - 0.75, sy1 + 0.3, zb1 + 0.04, zb1 + 0.85
     mb = MB()
     for side in (-1, 1):
         xe = rx0 if side < 0 else rx1
@@ -334,21 +370,21 @@ def shrine_km(B):
         B.add(tube([(0.0, yy - 0.05, apex + 0.12), (0.0, yy + 0.05, apex + 0.12)], 0.05, 'kmwood', 6))
     for yy in (ry0, ry1):                          # the crossed rafters (chigi) at both ends
         for sx in (-1, 1):
-            B.add(tube([(sx * 0.22, yy, apex - 0.22), (-sx * 0.12, yy, apex + 0.28)], 0.03, 'kmwoodd', 4))
+            B.add(tube([(sx * 0.3, yy, apex - 0.3), (-sx * 0.16, yy, apex + 0.36)], 0.035, 'kmwoodd', 4))
     # the rope across the front with its paper streamers, the offering box
     rope = [(sx0 - 0.25 + 0.0, sy0 - 0.62, zb1 - 0.1)] + [(x, sy0 - 0.62, zb1 - 0.1 - 0.1 * math.sin(math.pi * (x - sx0 + 0.25) / (sx1 - sx0 + 0.5)))
                                                           for x in np.linspace(sx0 - 0.15, sx1 + 0.15, 7)] + [(sx1 + 0.25, sy0 - 0.62, zb1 - 0.1)]
     B.add(tube(rope, 0.04, 'kmrope', 6))
-    for x in (-0.45, 0.0, 0.45):                   # the paper streamers (shide): slim white zigzags
+    for x in (-0.66, -0.22, 0.22, 0.66):           # the paper streamers (shide): slim white zigzags
         zt = zb1 - 0.2
         zig = [(x - 0.03, zt), (x + 0.03, zt - 0.05), (x - 0.03, zt - 0.1), (x + 0.03, zt - 0.15), (x - 0.02, zt - 0.2)]
         for (ax, az), (bx_, bz) in zip(zig[:-1], zig[1:]):
             mb2 = MB(); mb2.face([(ax - 0.015, sy0 - 0.63, az), (ax + 0.015, sy0 - 0.63, az), (bx_ + 0.015, sy0 - 0.63, bz), (bx_ - 0.015, sy0 - 0.63, bz)], 'kmpaper', (0, -1, 0), 1.0)
             mb2.face([(bx_ - 0.015, sy0 - 0.62, bz), (bx_ + 0.015, sy0 - 0.62, bz), (ax + 0.015, sy0 - 0.62, az), (ax - 0.015, sy0 - 0.62, az)], 'kmpaper', (0, 1, 0), 0.8)
             B.add(mb2.bm())
-    B.add(cbox2((-0.32, sy0 - 0.62, 1.02), (0.32, sy0 - 0.3, 1.32), 0.02, 'kmwoodd'))
-    for k in range(5):
-        B.add(box((-0.3 + 0.06 + k * 0.12 - 0.02, sy0 - 0.61, 1.321), (-0.3 + 0.06 + k * 0.12 + 0.02, sy0 - 0.31, 1.33), 'black'))
+    B.add(cbox2((-0.42, sy0 - 0.62, 1.02), (0.42, sy0 - 0.3, 1.34), 0.02, 'kmwoodd'))
+    for k in range(7):
+        B.add(box((-0.4 + 0.05 + k * 0.117 - 0.02, sy0 - 0.61, 1.341), (-0.4 + 0.05 + k * 0.117 + 0.02, sy0 - 0.31, 1.35), 'black'))
     return apex + 0.4
 
 
@@ -384,23 +420,32 @@ def crossing_signal(B):
 
 
 def crossing_barrier(B):
-    """The crossing's barrier (KM-A04): its machine in yellow and black stripes on a plinth, and the arm, striped, raised."""
+    """The crossing's barrier machine (KM-A04): striped yellow and black on a concrete plinth, the arm's hub on its street
+    face (Attach.Hub). The arm is its own model (CrossingArmKM for a footpath, CrossingArmRoadKM for a road), so the
+    game turns it down across the footpath or the road, and up again, on both sides of the tracks."""
     y = 0.3
     B.add(cbox2((-0.32, y - 0.26, 0.0), (0.32, y + 0.26, 0.1), 0.02, 'conc'))
     striped_box(B, (-0.22, y - 0.18, 0.1), (0.22, y + 0.18, 1.05), r=0.04)
     B.add(cbox2((-0.25, y - 0.2, 1.05), (0.25, y + 0.2, 1.12), 0.02, 'black'))
-    hub = Vector((0.0, y - 0.24, 0.95))
-    B.add(tube([(0.0, y - 0.18, 0.95), (0.0, y - 0.28, 0.95)], 0.08, 'black', 10))
-    # the arm, raised to about 80 degrees, in yellow and black segments, its counterweight behind the hub
-    ang = math.radians(80.0)
-    d = Vector((math.cos(ang), 0.0, math.sin(ang)))
-    L, n = 3.5, 10
+    hub = (0.0, y - 0.3, 0.95)
+    B.add(tube([(0.0, y - 0.18, 0.95), (0.0, y - 0.3, 0.95)], 0.08, 'black', 10))
+    B.attach.append(('Hub', hub))
+    return 1.15
+
+
+def crossing_arm(B):
+    """A crossing barrier's arm, upright at rest, its origin at the pivot (the machine's Attach.Hub): yellow and black
+    bands, a counterweight below the pivot, a red reflector at the tip. The game turns it down 90 degrees across the
+    footpath (CrossingArmKM, 3.5 m: from behind the footpath to the road's machine at its kerb) or the road
+    (CrossingArmRoadKM, 6.6 m: from the near kerb across a 6.4 m road to its far kerb)."""
+    L = B.H
+    n = int(round(L / 0.5))
     for k in range(n):
-        a = hub + d * (L * k / n); b = hub + d * (L * (k + 1) / n)
-        B.add(tube([tuple(a), tuple(b)], 0.04, ('kmyel', 'black')[k % 2], 6, caps=(k in (0, n - 1))))
-    B.add(cbox2(tuple(hub - d * 0.45 - Vector((0.09, 0.07, 0.09))), tuple(hub - d * 0.2 + Vector((0.09, 0.07, 0.09))), 0.02, 'black'))
-    B.attach.append(('Hub', tuple(hub)))
-    return float((hub + d * L).z) + 0.05
+        B.add(box((-0.04, -0.04, k * L / n), (0.04, 0.04, (k + 1) * L / n), 'kmyel' if k % 2 == 0 else 'black'))
+    B.add(cbox2((-0.09, -0.07, -0.42), (0.09, 0.07, -0.12), 0.02, 'black'))
+    B.add(cbox2((-0.03, -0.06, -0.12), (0.03, 0.06, 0.02), 0.01, 'black'))
+    disc(B, (0.0, -0.041, L - 0.15), 0.035, (0, -1, 0), 'kmred', n=8, depth=0.01)
+    return L + 0.02
 
 
 # ================================================================ street things
@@ -607,11 +652,14 @@ def pal_km(pal):
              frame=(0.80, 0.81, 0.82), soffit=(0.86, 0.84, 0.80)), 8.4, {'wall': 'stucco', 'ppm': 64}, {}),
         ('TramKM', 12.0, 3.4, 2.3, 0.0, tram_km,
          pal((0.20, 0.45, 0.31), (0.95, 0.90, 0.74), (0.58, 0.60, 0.62)), 5.0, {'ppm': 40}, {}),
-        ('ToriiKM', 2.8, 2.4, 0.32, 0.0, torii_km, pal((0.86, 0.27, 0.15), (0.12, 0.12, 0.13), (0.12, 0.12, 0.13)), 2.9, prop, {}),
-        ('ShrineKM', 5.4, 1.0, 3.9, 0.0, shrine_km,
-         pal((0.66, 0.64, 0.59), (0.58, 0.42, 0.29), (0.42, 0.62, 0.55)), 3.4, {'ppm': 32}, {}),
+        # a neighbourhood shrine's torii about 4 m tall, the shrine 2.6 m across on a stone base 8.6 m wide
+        ('ToriiKM', 4.06, 3.5, 0.46, 0.0, torii_km, pal((0.86, 0.27, 0.15), (0.12, 0.12, 0.13), (0.12, 0.12, 0.13)), 4.2, prop, {}),
+        ('ShrineKM', 8.64, 1.6, 6.24, 0.0, shrine_km,
+         pal((0.66, 0.64, 0.59), (0.58, 0.42, 0.29), (0.42, 0.62, 0.55)), 5.6, {'ppm': 24}, {}),
         ('CrossingSignalKM', 1.1, 3.6, 0.6, 0.0, crossing_signal, pal((0.98, 0.79, 0.12), (0.12, 0.12, 0.13), (0.56, 0.55, 0.54)), 3.8, prop, {}),
-        ('CrossingBarrierKM', 0.7, 1.1, 0.6, 0.0, crossing_barrier, pal((0.98, 0.79, 0.12), (0.12, 0.12, 0.13), (0.56, 0.55, 0.54)), 4.6, prop, {}),
+        ('CrossingBarrierKM', 0.7, 1.1, 0.6, 0.0, crossing_barrier, pal((0.98, 0.79, 0.12), (0.12, 0.12, 0.13), (0.56, 0.55, 0.54)), 1.3, prop, {}),
+        ('CrossingArmKM', 0.2, 3.5, 0.2, 0.0, crossing_arm, pal((0.98, 0.79, 0.12), (0.12, 0.12, 0.13), (0.56, 0.55, 0.54)), 3.7, prop, {}),
+        ('CrossingArmRoadKM', 0.2, 6.6, 0.2, 0.0, crossing_arm, pal((0.98, 0.79, 0.12), (0.12, 0.12, 0.13), (0.56, 0.55, 0.54)), 6.8, prop, {}),
         ('MirrorKM', 0.8, 3.8, 0.4, 0.0, mirror_km, pal((0.96, 0.47, 0.14), (0.96, 0.47, 0.14), (0.56, 0.55, 0.54)), 4.0, prop, {}),
         ('RecycleKM', 1.4, 1.0, 0.5, 0.0, recycle_km, pal((0.93, 0.91, 0.85), (0.19, 0.43, 0.76), (0.56, 0.55, 0.54)), 1.2, prop, {}),
         ('StationSignKM', 1.8, 2.1, 0.16, 0.0, station_sign, pal((0.97, 0.97, 0.96), (0.12, 0.50, 0.28), (0.56, 0.55, 0.54)), 2.3, prop, {}),

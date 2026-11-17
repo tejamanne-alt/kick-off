@@ -1126,6 +1126,84 @@ def build_flower_patch():
     return pieces, {0: G.hexc(FLOWERS[0][1]), 1: R_MEADOW.base, 2: base2}, {'kind': 'grass', 'flowerColorsVary': True}
 
 
+# ---------------------------------------------------------------- Kamakura's trees
+# The trees of Kamakura's streets, shrines and coast, after the views the user made for the cancelled Kamakura work (the
+# branch's KmBlackPine, KmPersimmonTree and KmGinkgoBig, in its history at f8ff5d1), in this kit's look. The cloud-pruned
+# GardenPine and the CherryBlossom above are Kamakura's too.
+R_BLACKPINE = G.Ramp('#0a211c', '#284f37', '#7fa45c')
+R_PERSIMMON = G.Ramp('#17321f', '#3e6c2e', '#a3c255')
+R_GINKGO = G.Ramp('#2b4b22', '#6d9a36', '#d8e66c')
+WOOD_BLACKPINE = '#4b3a32'
+WOOD_PERSIMMON = '#4a3b33'
+WOOD_GINKGO = '#5c4c42'
+
+
+def build_black_pine():
+    # a Japanese black pine (kuromatsu), as the coast and the shrines have them: a dark trunk that leans and bends as it
+    # rises, long bare limbs reaching out, each ending in a wide flat-bottomed pad of needle tufts; the crown one-sided
+    rng = RNG(97)
+    tr = 0.24
+    ctrl = [(0, 0, -0.1), (0.25, 0.0, 1.4), (0.75, 0.05, 2.8), (1.05, 0.0, 4.0), (0.9, -0.05, 5.2), (1.2, 0.0, 6.3)]
+    tpath = G.catmull(ctrl, 18)
+    # (height on the trunk, reach out from it, pad radius, direction)
+    pads = [(3.1, 2.2, 1.2, PI * 0.95), (3.9, 1.8, 1.1, 0.15), (4.7, 1.6, 1.0, PI * 0.7), (5.4, 1.4, 0.95, -0.4),
+            (6.0, 1.0, 0.85, PI * 0.35), (6.45, 0.4, 0.8, 0.0)]
+    masses = []
+    for z, reach, r, a in pads:
+        j = int(np.argmin(np.abs(tpath[:, 2] - z)))
+        c = tpath[j] + np.array((math.cos(a) * reach, math.sin(a) * reach * 0.7, 0.15))
+        masses.append(LV.Mass(c, (r * 1.3, r * 1.05, r * 0.42), under=0.3, bright=rng.uniform(-0.05, 0.05)))
+    pieces = [LV.leaf_cards(masses, rng, R_BLACKPINE, 1, 'pine', size=0.72, density=1.0, inner=0.25, open_under=0.0,
+                            nmix=(0.78, 0.1, 0.14), tilt=0.3, crease=0.15)]
+    pieces += LV.cores(masses, rng, R_BLACKPINE, 1, scale=0.66, s=(0.04, 0.18))
+    radii = tr * (1 - 0.7 * np.linspace(0, 1, len(tpath)) ** 0.9)
+    trunk = G.tube(tpath, radii, 8, twist=0.3, lobe=flare(tpath, 0.4, 0.6, 3, rng.uniform(0, 6)), uv=uvr('bark', 8.0))
+    wood_color(trunk, WOOD_BLACKPINE, ground=0.7)
+    sink_base(trunk)
+    pieces.append(LV.hidden_in(trunk, masses, 0.66))
+    for m in masses[:-1]:
+        j = int(np.argmin(np.abs(tpath[:, 2] - (m.c[2] - 0.5))))
+        p0 = tpath[j]
+        r0 = max(0.04, radii[j] * 0.5)
+        tgt = m.c - UP * m.r[2] * 0.2
+        mid = p0 + (tgt - p0) * 0.55 - UP * 0.25                  # a pine's limb sags, then lifts to its pad
+        b = branch(p0, tgt, r0, r0 * 0.45, rng, sides=5, segs=4, mid=mid)
+        wood_color(b, WOOD_BLACKPINE, ground=1.0)
+        pieces.append(LV.hidden_in(b, masses, 0.66))
+    return pieces, {0: G.hexc(WOOD_BLACKPINE), 1: R_BLACKPINE.base}, {'kind': 'tree', 'trunkRadius': tr}
+
+
+def build_persimmon():
+    # a persimmon (kaki) in a garden: a short trunk forking low, a round crown of glossy dark leaves, and the orange fruit
+    # hanging all over its outside, thickest on the sunny side
+    rng = RNG(131)
+    tr = 0.17
+    masses = LV.masses_from((0, 0, 3.3), (2.2, 2.0, 1.75), 8, rng, rf=(0.36, 0.5), shell=0.6, zlo=-0.6)
+    ctrl = [(0, 0, -0.1), (0.08, 0.0, 0.9), (-0.06, 0.04, 1.5), (0.05, 0.0, 2.5), (0.0, 0.03, 3.9)]
+    pieces = leaf_tree(131, masses, ctrl, tr, 1.3, R_PERSIMMON, wood=WOOD_PERSIMMON, open_under=0.35, rng=rng)
+    for k in range(24):
+        m = masses[int(rng.integers(len(masses)))]
+        d = G.unit(rng.normal(size=3) * np.array((1.0, 1.0, 0.6)) + np.array((0.0, -0.5, 0.25)))
+        c = m.c + d * m.r * 1.0
+        f = G.blob(c, (0.085, 0.085, 0.075), 1, rng, bumps=2, amp=0.03, flat=0.95)
+        f.color(G.hexc('#ea7728') * (0.72 + 0.32 * G.smoothstep(-1, 1, f.A['lz']))[:, None])
+        f.part(0)
+        pieces.append(f)
+    return pieces, {0: G.hexc(WOOD_PERSIMMON), 1: R_PERSIMMON.base}, {'kind': 'tree', 'trunkRadius': tr}
+
+
+def build_ginkgo():
+    # a shrine's ginkgo (as Tsurugaoka Hachimangu's): a tall straight trunk, short limbs swept up, a tall ovoid crown of
+    # fresh yellow-green fan leaves
+    rng = RNG(149)
+    tr = 0.3
+    masses = LV.masses_from((0, 0, 6.6), (2.5, 2.2, 4.3), 11, rng, rf=(0.34, 0.46), shell=0.62, zlo=-0.75, top=0.5)
+    ctrl = [(0, 0, -0.12), (0.04, 0.0, 2.0), (-0.03, 0.02, 4.4), (0.02, 0.0, 7.4), (0.0, 0.0, 10.0)]
+    pieces = leaf_tree(149, masses, ctrl, tr, 2.8, R_GINKGO, wood=WOOD_GINKGO, card=1.2, open_under=0.25, taper=0.72,
+                       fork_spread=0.45, rng=rng)
+    return pieces, {0: G.hexc(WOOD_GINKGO), 1: R_GINKGO.base}, {'kind': 'tree', 'trunkRadius': tr}
+
+
 # ---------------------------------------------------------------- assembly
 MODELS = [
     ('ConiferTall', build_conifer_tall), ('ConiferMid', build_conifer_mid), ('ConiferSmall', build_conifer_small),
@@ -1140,6 +1218,7 @@ MODELS = [
     ('PalmFan', build_palm_fan), ('PalmDate', build_palm_date),
     ('PalmSabal', build_palm_sabal), ('PalmSabalTall', build_palm_sabal_tall), ('SawPalmetto', build_saw_palmetto),
     ('LiveOak', build_live_oak),
+    ('BlackPine', build_black_pine), ('Persimmon', build_persimmon), ('Ginkgo', build_ginkgo),
 ]
 BUDGET = {'tree': 6000, 'bush': 1200, 'grass': 800, 'hedge': 600}
 

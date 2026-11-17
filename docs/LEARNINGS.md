@@ -624,6 +624,27 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
       a second.
     - A new look is judged in play, with the kid in front of it, not from renders and boards.
     - Flat photographs behind 3D play are not the game's look.
+- **E13. A level crossing that wasn't real (Kamakura's proof batch, bf86010, fixed after the user's look).**
+  - *What:* in the preview lane:
+    - the tram stood 0.65 m off its track, its wheels 1.9 m apart on rails 1.6 m apart (the Enoden's gauge is 1,067 mm);
+    - the barrier arms swung across the tracks, as if to stop the tram, not the road;
+    - the tram waited at the crossing with the barriers up;
+    - the trees were main's generic broadleaf trees and firs;
+    - the shrine's hall was 1.6 m wide and the torii 2.8 m across, toys beside a 1.55 m kid.
+  - *Why:* the models were sized from the user's views by eye, and the lane placed them by guessed coordinates. Nobody
+    wrote down the real thing's facts (gauge, which way an arm swings, when a tram is at a crossing, what grows in
+    Kamakura, how big a neighbourhood shrine is) or checked the model and its placement against them.
+  - *Fix:* the tram's wheels on the gauge, with an attach point on the track's centre line; the track built from the same
+    gauge, the rails' tops at one height through the crossing; the arms their own models, pivoting on the machine's hub,
+    lying across the footpath and the road on both sides of the tracks; the tram only shown going through, with the arms
+    down; the overhead line for its pantograph; Kamakura's own trees (black pine, ginkgo, persimmon, cherry, the
+    cloud-pruned pine); the shrine and torii at full size.
+  - *Rule:*
+    - Before modelling a real thing, write down its real facts (sizes, gauge, how it moves, what stands around it) and
+      check the model and its placement against them.
+    - Moving things (arms, trams, gates) are shown and checked in each of their states, and placed from their own
+      attach points, never by eye.
+    - A real city's scenery uses that city's plants and its buildings' real sizes, not another city's stand-ins.
 
 ## F. UI and menus
 
