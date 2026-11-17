@@ -1,12 +1,12 @@
-# Kick Off 2: Google Play listing
+# Kick Off Tales: Google Play listing
 
-Everything to enter in Play Console, field by field. App id (package name): **`com.astradite.kickoff2`**.
+Everything to enter in Play Console, field by field. App id (package name): **`com.astradite.kickofftales`**.
 
 ## Grow users > Store presence > Main store listing
 
 | Field | Value |
 |---|---|
-| App name (10 / 30) | `Kick Off 2` |
+| App name (14 / 30) | `Kick Off Tales` |
 | Short description (79 / 80) | `Dribble a football through town all the way to school. Collect all 23 stickers!` |
 | App icon (512 × 512) | `marketing/googleplay/icon_512.png` |
 | Feature graphic (1024 × 500) | `marketing/googleplay/feature_graphic_1024x500.png` (from the banner artwork, `marketing/source/banner_artwork.png`, by `tools/feature_graphic_from_image.py`) |
@@ -18,7 +18,7 @@ Everything to enter in Play Console, field by field. App id (package name): **`c
 ```
 Late for school? Grab your ball and kick off to school!
 
-Kick Off 2 is a football side-scroller in bright anime daylight. Keep the ball at your feet as you run through town: tap in rhythm for perfect touches, drag back to chip it over walls, slide under barriers, double jump over gaps, juggle it past dogs and wait for the green light before you cross.
+Kick Off Tales is a football side-scroller in bright anime daylight. Keep the ball at your feet as you run through town: tap in rhythm for perfect touches, drag back to chip it over walls, slide under barriers, double jump over gaps, juggle it past dogs and wait for the green light before you cross.
 
 THE WAY TO SCHOOL
 • 23 levels across 5 chapters: Home Street, the Market, the Beach, the Underpass and the Park
@@ -69,7 +69,7 @@ a Fixed Resolution of **1920 × 1080**, select it and run **Kick Off > Store Scr
 Release name: `1.0 (1)`. Paste the whole block, tags included, into **Release notes**:
 ```
 <en-US>
-Welcome to Kick Off 2, our first release!
+Welcome to Kick Off Tales, our first release!
 • Dribble all the way to school through 23 levels in 5 chapters: Home Street, the Market, the Beach, the Underpass and the Park
 • Play as one of six schoolkids: two high-schoolers and four primary-school kids
 • Slide under barriers and double jump over gaps

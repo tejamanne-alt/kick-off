@@ -1711,6 +1711,22 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
   shared row, the rebuild without `_CA` scenes, Florida's scenes in the new light (measure them against Florida's look target
   once the user has made it), and the APK size and frame rate on the phone.
 
+## Renamed Kick Off Tales, app id `com.astradite.kickofftales`
+
+- **What:** the product name (Player Settings, so the name under the icon on both platforms), the title string and the
+  Bluetooth permission texts (en + es, and the iOS usage strings), the credits' version line, the store listings, the
+  release guide, the privacy policy, the support site, the READMEs and the docs' titles. The app id (Android package name
+  and iOS bundle identifier) is now `com.astradite.kickofftales` (`Editor/BuildScripts.cs`); Apple signing reads it from there.
+- **Unchanged:** code namespaces, shader names, the save file and its keys, the IAP product id (`kickoff.fullgame`), the
+  menu path "Kick Off > Build" and the build file names (`KickOff.aab`, `KickOff-test.apk`).
+- **Still showing the old name:** the logo picture (`Resources/UI/KickOffLogo.png`, cut from the banner), the app icon and the
+  store art letter "Kick OFF 2". The code-drawn fallback logo still draws a "2". They need the user's new artwork.
+- **Cost:** none at runtime (strings only).
+- **What a new app id means:** on a phone it is a different app. A copy installed under `com.astradite.kickoff2` stays next to
+  the new one, with its own progress; uninstall it (`adb uninstall com.astradite.kickoff2`). In the stores it is a new app:
+  register the bundle id at developer.apple.com and create a new app in Play Console and App Store Connect.
+- **Not run in Unity or on the phone.**
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

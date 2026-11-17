@@ -1,6 +1,6 @@
 # Holiday Run
 
-The endless mode of Kick Off 2: **the campaign with no destination.** You play exactly as in the story
+The endless mode of Kick Off Tales: **the campaign with no destination.** You play exactly as in the story
 levels (walk with the stick, dribble, jump, slide, aim and kick) along one long street that is the whole
 story world laid end to end, and nothing ends the run until your balls do.
 

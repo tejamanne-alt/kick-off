@@ -1,4 +1,4 @@
-# Kick Off 2
+# Kick Off Tales
 
 A football side-scroller for iOS and Android, built in Unity 6: a schoolkid (one of six, from high school or primary school) dribbles a ball through clear-daylight anime streets all the way to school.
 The full game brief is in [`GAME_PROMPT.md`](GAME_PROMPT.md).
@@ -178,7 +178,7 @@ Selecting the Ball in the Scene view draws gizmos for the reach radius (yellow) 
 ## Test on a phone
 
 - **Android:** File > Build Profiles > Android > Switch Platform. Connect the phone with USB debugging on, then **Kick Off > Build > Android: Run on Connected Phone (USB)** (it builds, installs and starts the game). Test APKs get a version code that always goes up, so each one installs over the last and keeps the game's progress; the store build number isn't touched.
-  - `INSTALL_FAILED_VERSION_DOWNGRADE`: the phone has a copy with a higher version code than this build (one built before this fix, or with Build And Run). Uninstall it once (Settings > Apps > Kick Off 2 > Uninstall, or `adb uninstall com.astradite.kickoff2`); later test builds install over each other.
+  - `INSTALL_FAILED_VERSION_DOWNGRADE`: the phone has a copy with a higher version code than this build (one built before this fix, or with Build And Run). Uninstall it once (Settings > Apps > Kick Off Tales > Uninstall, or `adb uninstall com.astradite.kickofftales`); later test builds install over each other.
   - `INSTALL_FAILED_UPDATE_INCOMPATIBLE`: the copy on the phone was signed with another key (a Play Store copy, or a build from another computer). Uninstall it as above.
   - Every build writes `BuildSize.txt` beside it: what the build is made of, biggest first.
 - **iOS:** Switch to iOS, **Build**, open the generated Xcode project, set your signing team, then run it on the device.

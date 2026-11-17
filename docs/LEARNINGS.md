@@ -1,6 +1,6 @@
 # Learnings: every mistake, its cause, its fix, and the rule it taught
 
-Read this before changing anything. Each entry is something that went wrong, or nearly did, in building Kick Off 2. Every entry gives:
+Read this before changing anything. Each entry is something that went wrong, or nearly did, in building Kick Off Tales. Every entry gives:
 - **What happened**, with the version (`vN` is `GeneratedContent.Version`) or commit;
 - **Why**;
 - **The fix**;

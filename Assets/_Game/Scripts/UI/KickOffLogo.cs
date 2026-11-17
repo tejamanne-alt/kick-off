@@ -15,7 +15,7 @@ namespace DribbleToSchool.UI
     public static class KickOffLogo
     {
         /// <summary>The game's name. A brand: never translated.</summary>
-        public const string GameName = "Kick Off 2";
+        public const string GameName = "Kick Off Tales";
 
         /// <summary>The studio, as players see it ("A game by Astradite"). A brand: never translated.</summary>
         public const string Studio = "Astradite";

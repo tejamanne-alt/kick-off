@@ -1,4 +1,4 @@
-# Kick Off 2: ChatGPT Images prompts for the five cities
+# Kick Off Tales: ChatGPT Images prompts for the five cities
 
 Copy-paste prompts for the reference images each city is modelled and lit from. The cities, their routes and legs are
 designed in `docs/CITIES.md`. Every level here has its own prompt, under the same id (`KM1-1` is Kamakura, route 1,

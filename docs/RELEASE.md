@@ -1,8 +1,8 @@
 # Release Guide
 
-Everything needed to take Kick Off 2 from this repo to the App Store and Google Play.
+Everything needed to take Kick Off Tales from this repo to the App Store and Google Play.
 
-**The app's id is `com.astradite.kickoff2`** (iOS bundle identifier and Android package name, set in
+**The app's id is `com.astradite.kickofftales`** (iOS bundle identifier and Android package name, set in
 `Assets/_Game/Scripts/Editor/BuildScripts.cs`). It can never change once the app is uploaded to either store.
 
 ## 0. What you need
@@ -28,7 +28,7 @@ SDK refuse to launch ("UIScene life cycle is required"). After changing Unity, d
    - **Paid app:** leave `RequireUnlock = false` and set the price in the store consoles.
 3. Run **Kick Off > Build > Apply Store Player Settings** once to check everything is set:
    - the app id, version and build number, company "Astradite" (Unity's company name: also part of the save folder on desktop, so
-     it stays as it is), product "Kick Off 2";
+     it stays as it is), product "Kick Off Tales";
    - landscape only;
    - Android: minimum API 26, target API 36, ARM64 + IL2CPP;
    - iOS: 15.0+ (`BuildScripts.IosMinimumVersion`, applied when the editor loads and to every target of the exported Xcode project), automatic signing with your team (see `Editor/AppleSigning.cs`);
@@ -61,10 +61,10 @@ Every Play Console field, the store graphics and the screenshot sizes are in [`G
 ### Once
 1. Unity Hub: add **Android Build Support** to your Unity version, with **OpenJDK** and **Android SDK & NDK Tools**.
 2. The upload key, made in Unity: **Edit > Project Settings > Player > Android > Publishing Settings > Keystore Manager >
-   Keystore... > Create New > Anywhere**, saved outside the project (e.g. `~/keys/kickoff2-upload.keystore`), then **Add Key**:
+   Keystore... > Create New > Anywhere**, saved outside the project (e.g. `~/keys/kickofftales-upload.keystore`), then **Add Key**:
    alias `upload`, a password, validity 50 years. Back the file and both passwords up: every future update must be signed
-   with this key. (Or from Terminal: `./ci/android/make_upload_key.sh ~/keys/kickoff2-upload.jks`.)
-3. In Play Console: **Create app** → name "Kick Off 2", default language, Game, Free, accept the declarations.
+   with this key. (Or from Terminal: `./ci/android/make_upload_key.sh ~/keys/kickofftales-upload.jks`.)
+3. In Play Console: **Create app** → name "Kick Off Tales", default language, Game, Free, accept the declarations.
    Leave **Play App Signing** on (the default): Google keeps the app-signing key, your key only signs uploads.
 
 ### Build the App Bundle
@@ -78,10 +78,10 @@ the Build Profile's **Compression Method** instead: set it to **LZ4HC** there to
 
 From Terminal instead (Unity closed):
 ```
-DTS_KEYSTORE_PATH=~/keys/kickoff2-upload.jks DTS_KEYSTORE_PASS='…' DTS_KEY_ALIAS=upload DTS_KEY_PASS='…' \
+DTS_KEYSTORE_PATH=~/keys/kickofftales-upload.jks DTS_KEYSTORE_PASS='…' DTS_KEY_ALIAS=upload DTS_KEY_PASS='…' \
 ./ci/android/build_android.sh release
 ```
-For a quick test on your own phone: **Kick Off > Build > Android: Run on Connected Phone (USB)**, or **Kick Off > Build > Android APK (development)** and then `adb install -r Builds/Android/KickOff-dev.apk`. Every APK carries a version code that always goes up (minutes since 2025), however it is built, Unity's own Build button included (`Editor/AndroidApkVersionCode`), so APKs install over each other; the store build number stays as it is. An APK signed with another key than the copy on the phone (built on another computer, or with the release key) won't install over it: the phone only says "Installation failed". Uninstall that copy once (`adb uninstall com.astradite.kickoff2`; it loses the game's progress on that phone). `adb install -r <apk>` prints the exact reason (`INSTALL_FAILED_...`). `Builds/Android/BuildSize.txt` lists what the build is made of: the App Bundle's base must stay under Play's 200 MB.
+For a quick test on your own phone: **Kick Off > Build > Android: Run on Connected Phone (USB)**, or **Kick Off > Build > Android APK (development)** and then `adb install -r Builds/Android/KickOff-dev.apk`. Every APK carries a version code that always goes up (minutes since 2025), however it is built, Unity's own Build button included (`Editor/AndroidApkVersionCode`), so APKs install over each other; the store build number stays as it is. An APK signed with another key than the copy on the phone (built on another computer, or with the release key) won't install over it: the phone only says "Installation failed". Uninstall that copy once (`adb uninstall com.astradite.kickofftales`; it loses the game's progress on that phone). `adb install -r <apk>` prints the exact reason (`INSTALL_FAILED_...`). `Builds/Android/BuildSize.txt` lists what the build is made of: the App Bundle's base must stay under Play's 200 MB.
 
 ### Upload and release
 1. **Test and release > Testing > Internal testing** → create a release → upload `KickOff.aab` → add testers' emails → roll out.
@@ -99,9 +99,9 @@ For a quick test on your own phone: **Kick Off > Build > Android: Run on Connect
 ### Once
 1. Sign in to Xcode with your Apple ID (Xcode > Settings > Accounts) and note your **Team ID** (10 characters, shown there and on
    developer.apple.com > Membership).
-2. In [App Store Connect](https://appstoreconnect.apple.com): **Apps > + > New App** → iOS, name "Kick Off 2", primary language,
-   bundle ID `com.astradite.kickoff2` (if it isn't in the list yet, register it at developer.apple.com > Identifiers, or run one
-   build first: automatic signing registers it), SKU e.g. `kickoff2-ios`.
+2. In [App Store Connect](https://appstoreconnect.apple.com): **Apps > + > New App** → iOS, name "Kick Off Tales", primary language,
+   bundle ID `com.astradite.kickofftales` (if it isn't in the list yet, register it at developer.apple.com > Identifiers, or run one
+   build first: automatic signing registers it), SKU e.g. `kickofftales-ios`.
 
 ### Build and upload (on the Mac)
 ```
@@ -143,9 +143,7 @@ The game has no ads, no accounts, no network calls and no third-party SDKs (Unit
 The App Store version, field by field (with the screenshot sizes and how to take them), is in
 [`APP_STORE_LISTING.md`](APP_STORE_LISTING.md). The support and privacy pages it links to are in `site/`.
 
-**Name:** Kick Off 2
-
-The "2" reads as "to" (kick off to school), not a sequel: the tagline and the first lines of the description say so.
+**Name:** Kick Off Tales
 
 **Subtitle (iOS, 30 chars):** Dribble all the way to school
 **Short description (Play, 80 chars):** Dribble a football through town all the way to school. No rush (unless you like).
@@ -154,7 +152,7 @@ The "2" reads as "to" (kick off to school), not a sequel: the tagline and the fi
 
 > Late for school? Grab your ball and kick off to school!
 >
-> Kick Off 2 is a football side-scroller in bright anime daylight. Keep the ball at your feet as you run through town: tap in rhythm for perfect touches, drag back to chip it over walls, juggle it past dogs, and wait for the green light before you cross.
+> Kick Off Tales is a football side-scroller in bright anime daylight. Keep the ball at your feet as you run through town: tap in rhythm for perfect touches, drag back to chip it over walls, juggle it past dogs, and wait for the green light before you cross.
 >
 > - Play as one of six schoolkids: two high-schoolers and four primary-school kids
 > - 23 levels across 5 chapters: Home Street, the Market, the Beach, the Underpass and the Park
@@ -184,7 +182,7 @@ Record these on a device with the HUD visible. In the editor, the Tune button an
 
 ## 8. Pre-submission checklist
 
-- [ ] App id `com.astradite.kickoff2`, version and a new build number; icon present at every size (Unity generates them from `Art/Icon/AppIcon.png`; the Android adaptive icon from its two layers)
+- [ ] App id `com.astradite.kickofftales`, version and a new build number; icon present at every size (Unity generates them from `Art/Icon/AppIcon.png`; the Android adaptive icon from its two layers)
 - [ ] `RequireUnlock` and IAP settings match the chosen model, sandbox purchase and restore tested
 - [ ] Played every level on a mid-range Android phone and an older iPhone at 60 fps (use the Profiler markers `DTS.FxPool.Update` and `DTS.Audio.MusicUpload`)
 - [ ] Settings persist across restarts; Reset progress works; both languages checked

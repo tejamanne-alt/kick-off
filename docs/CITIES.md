@@ -1,4 +1,4 @@
-# Kick Off 2: the five cities
+# Kick Off Tales: the five cities
 
 The game is five cities, and each city is a chapter of its own: **Kamakura** (Japan), **Florida** (Miami, USA),
 **Madrid** (Spain), **New York** (USA) and **Mumbai** (India). PLAY asks which city to play, then opens that city's map.

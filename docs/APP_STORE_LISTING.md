@@ -1,4 +1,4 @@
-# Kick Off 2: App Store listing
+# Kick Off Tales: App Store listing
 
 Everything to type into App Store Connect for version 1.0, field by field. Character counts are within Apple's limits.
 
@@ -50,7 +50,7 @@ Kick off to school! Dribble through town, chip the ball over walls and slide und
 ```
 Late for school? Grab your ball and kick off to school!
 
-Kick Off 2 is a football side-scroller in bright anime daylight. Keep the ball at your feet as you run through town: tap in rhythm for perfect touches, drag back to chip it over walls, slide under barriers, double jump over gaps, juggle it past dogs and wait for the green light before you cross.
+Kick Off Tales is a football side-scroller in bright anime daylight. Keep the ball at your feet as you run through town: tap in rhythm for perfect touches, drag back to chip it over walls, slide under barriers, double jump over gaps, juggle it past dogs and wait for the green light before you cross.
 
 THE WAY TO SCHOOL
 • 23 levels across 5 chapters: Home Street, the Market, the Beach, the Underpass and the Park
@@ -110,7 +110,7 @@ It shows the title screen, choosing the player, the town map, playing a level (r
 The app has no account registration, login or account deletion, and no paid content or in-app purchases. The only thing a player can type is an optional name for local Co-op: it is shown only to the other phones in the same Co-op lobby, directly over Bluetooth (never online, never stored anywhere else), it is filtered (a word list; no special characters), there is no chat, and the lobby's host can remove a player (who then can't rejoin that lobby).
 
 2. PURPOSE AND AUDIENCE
-Kick Off 2 is a football (soccer) side-scrolling game for players of all ages, played alone or in local Co-op (up to four phones in the same room race each other to school over Bluetooth, iPhone and Android together, no internet). The player dribbles a ball through town streets to reach school, across 23 short skill-based levels in 5 chapters plus ball-skill challenges. It is a light, ad-free game that plays offline and rewards timing and ball control; a sticker hidden in each level unlocks cosmetic items.
+Kick Off Tales is a football (soccer) side-scrolling game for players of all ages, played alone or in local Co-op (up to four phones in the same room race each other to school over Bluetooth, iPhone and Android together, no internet). The player dribbles a ball through town streets to reach school, across 23 short skill-based levels in 5 chapters plus ball-skill challenges. It is a light, ad-free game that plays offline and rewards timing and ball control; a sticker hidden in each level unlocks cosmetic items.
 
 3. HOW TO USE IT
 No setup, login or sample files are needed. Launch the app, tap PLAY and choose a level on the town map: six routes from the kid's house to the school, each level a numbered stop on its route (levels unlock in order as each is finished).
@@ -131,7 +131,7 @@ Not applicable: the app is not in a regulated industry and contains no protected
 "Manually release this version" (so you choose the launch day), or "Automatically release" if you'd rather it goes live as soon as it's approved.
 
 ## App Information (left menu, General)
-- **Name:** `Kick Off 2`
+- **Name:** `Kick Off Tales`
 - **Subtitle (29 / 30):** `Dribble all the way to school`
 - **Category:** Primary **Games**, subcategories **Sports** and **Casual**. Secondary category: optional, e.g. Entertainment.
 - **Content Rights:** "No, it does not contain, show, or access third-party content".
