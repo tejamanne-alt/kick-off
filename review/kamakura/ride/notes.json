@@ -1,0 +1,15 @@
+{
+ "intro": [
+  "KM1-2 Ride the Enoden's set, from your three photographic set pictures KM1-2a to c. The ride is a fixed side-on camera inside the tram, so its set is the car's far wall across the aisle, the town passing behind its windows and the three stations seen through the door.",
+  "Five models: the car (its far wall your KM1-2a at 370 px to the metre, 11.2 m from bench to bench, its door 1.85 m; the windows' plain grey let go so the town shows through them; the benches standing out from the wall; the floor and the ceiling); the town passing (your KM1-2b whole, its ends meeting so the ride can repeat it); Yuigahama's, Wadazuka's and Kamakura's platforms, each cut from KM1-2c between its grey gaps. One 4096 x 2048 texture, the pictures at half their size, 30 triangles in all."
+ ],
+ "limits": [
+  "The car's wall is flat: its straps, poles, posters and route map are drawn on it, as your picture has them. Only the benches stand out.",
+  "The town and the platforms are flat cut-outs: the ride slides the town past the windows, and a platform stands outside the door at its stop.",
+  "The image tool's mark is painted out of each picture."
+ ],
+ "pending": [
+  "The ride itself (M1: the card reader, the sway, STOP at your stop) and the grandmother boarding at Yuigahama come with its build, after your approval.",
+  "Not installed in the game yet."
+ ]
+}

@@ -1,0 +1,1152 @@
+{
+ "KmGrandmaShop": {
+  "id": "KM-B22",
+  "sheet": "photo/KM2-3: Grandma's whitebait shop, its noren, its glass counter with the bento on its cloth, its signboard",
+  "size": [
+   6.61,
+   7.0,
+   4.85
+  ],
+  "tris": 56,
+  "motions": [],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "each part once (looked at in Top and Bottom)"
+   ],
+   [
+    2,
+    "Closed shell",
+    "limit",
+    "32 edges with one face, 0 with three or more: boxes without the faces no one sees, and single faces (a tray, a porch roof, a card)"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "pass",
+    "boxes and roofs measured off the picture at 215 px to the metre"
+   ],
+   [
+    4,
+    "Views the game sees",
+    "limit",
+    "the street side is the picture itself; the sides, backs and roofs take KM-P3's boards and tiles or the part's own colour (no view of their own)"
+   ],
+   [
+    5,
+    "Size, triangles",
+    "pass",
+    "6.61 x 7.00 x 4.85 m, 56 triangles (its budget 1500), the shared 4096 x 2048 KmWhitebaitAtlas"
+   ],
+   [
+    6,
+    "Outline whole",
+    "pass",
+    "its outline the picture's, measured"
+   ],
+   [
+    7,
+    "No holes",
+    "pass",
+    "no holes in what the street sees"
+   ],
+   [
+    8,
+    "Own models before walls",
+    "pass",
+    "what stood in front of it is its own model, painted out of it"
+   ],
+   [
+    9,
+    "Look target",
+    "pass",
+    "the photographic KM2-3, in KM-0's look"
+   ],
+   [
+    10,
+    "Solid",
+    "pass",
+    "solid and whole; above the picture's top edge its roof goes on in KM-P3's tiles"
+   ],
+   [
+    11,
+    "No brands",
+    "pass",
+    "no brand or logo: the shop's name and the boxes' labels are invented"
+   ],
+   [
+    12,
+    "No wires or sky",
+    "pass",
+    "the overcast sky let go round every edge"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "painted out: the rack, the boxes, the reel, the crates and the scooter from the shop; the pots and the pole from the fence and the houses"
+   ],
+   [
+    14,
+    "Rig names",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    15,
+    "Joints overlap",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no feet"
+   ],
+   [
+    17,
+    "Each part only itself",
+    "n/a",
+    "one piece"
+   ]
+  ]
+ },
+ "KmShopNeighbour": {
+  "id": "KM-B39",
+  "sheet": "photo/KM2-3: the neighbour's two houses and their board fence",
+  "size": [
+   6.6,
+   7.0,
+   5.15
+  ],
+  "tris": 49,
+  "motions": [],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "each part once (looked at in Top and Bottom)"
+   ],
+   [
+    2,
+    "Closed shell",
+    "limit",
+    "27 edges with one face, 0 with three or more: boxes without the faces no one sees, and single faces (a tray, a porch roof, a card)"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "pass",
+    "boxes and roofs measured off the picture at 215 px to the metre"
+   ],
+   [
+    4,
+    "Views the game sees",
+    "limit",
+    "the street side is the picture itself; the sides, backs and roofs take KM-P3's boards and tiles or the part's own colour (no view of their own)"
+   ],
+   [
+    5,
+    "Size, triangles",
+    "pass",
+    "6.60 x 7.00 x 5.15 m, 49 triangles (its budget 1500), the shared 4096 x 2048 KmWhitebaitAtlas"
+   ],
+   [
+    6,
+    "Outline whole",
+    "pass",
+    "its outline the picture's, measured"
+   ],
+   [
+    7,
+    "No holes",
+    "pass",
+    "no holes in what the street sees"
+   ],
+   [
+    8,
+    "Own models before walls",
+    "pass",
+    "what stood in front of it is its own model, painted out of it"
+   ],
+   [
+    9,
+    "Look target",
+    "pass",
+    "the photographic KM2-3, in KM-0's look"
+   ],
+   [
+    10,
+    "Solid",
+    "pass",
+    "solid and whole; above the picture's top edge its roof goes on in KM-P3's tiles"
+   ],
+   [
+    11,
+    "No brands",
+    "pass",
+    "no brand or logo: the shop's name and the boxes' labels are invented"
+   ],
+   [
+    12,
+    "No wires or sky",
+    "pass",
+    "the overcast sky let go round every edge"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "painted out: the rack, the boxes, the reel, the crates and the scooter from the shop; the pots and the pole from the fence and the houses"
+   ],
+   [
+    14,
+    "Rig names",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    15,
+    "Joints overlap",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no feet"
+   ],
+   [
+    17,
+    "Each part only itself",
+    "n/a",
+    "one piece"
+   ]
+  ]
+ },
+ "KmDryingRack": {
+  "id": "KM-A15",
+  "sheet": "photo/KM2-3: the whitebait drying rack with its trays",
+  "size": [
+   2.51,
+   0.8,
+   1.45
+  ],
+  "tris": 108,
+  "motions": [],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "each part once (looked at in Top and Bottom)"
+   ],
+   [
+    2,
+    "Closed shell",
+    "limit",
+    "24 edges with one face, 0 with three or more: boxes without the faces no one sees, and single faces (a tray, a porch roof, a card)"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "pass",
+    "boxes and roofs measured off the picture at 215 px to the metre"
+   ],
+   [
+    4,
+    "Views the game sees",
+    "limit",
+    "the street side is the picture itself; the sides, backs and roofs take KM-P3's boards and tiles or the part's own colour (no view of their own)"
+   ],
+   [
+    5,
+    "Size, triangles",
+    "pass",
+    "2.51 x 0.80 x 1.45 m, 108 triangles (its budget 500), the shared 4096 x 2048 KmWhitebaitAtlas"
+   ],
+   [
+    6,
+    "Outline whole",
+    "pass",
+    "its outline the picture's, measured"
+   ],
+   [
+    7,
+    "No holes",
+    "pass",
+    "no holes in what the street sees"
+   ],
+   [
+    8,
+    "Own models before walls",
+    "pass",
+    "what stood in front of it is its own model, painted out of it"
+   ],
+   [
+    9,
+    "Look target",
+    "pass",
+    "the photographic KM2-3, in KM-0's look"
+   ],
+   [
+    10,
+    "Solid",
+    "pass",
+    "solid and whole"
+   ],
+   [
+    11,
+    "No brands",
+    "pass",
+    "no brand or logo: the shop's name and the boxes' labels are invented"
+   ],
+   [
+    12,
+    "No wires or sky",
+    "pass",
+    "the overcast sky let go round every edge"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "painted out: the rack, the boxes, the reel, the crates and the scooter from the shop; the pots and the pole from the fence and the houses"
+   ],
+   [
+    14,
+    "Rig names",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    15,
+    "Joints overlap",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no feet"
+   ],
+   [
+    17,
+    "Each part only itself",
+    "n/a",
+    "one piece"
+   ]
+  ]
+ },
+ "KmFishBoxes": {
+  "id": "KM-A35",
+  "sheet": "photo/KM2-3: the fish boxes stacked by the shop's door and the hose reel",
+  "size": [
+   1.63,
+   0.45,
+   1.05
+  ],
+  "tris": 44,
+  "motions": [],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "each part once (looked at in Top and Bottom)"
+   ],
+   [
+    2,
+    "Closed shell",
+    "limit",
+    "24 edges with one face, 0 with three or more: boxes without the faces no one sees, and single faces (a tray, a porch roof, a card)"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "pass",
+    "boxes and roofs measured off the picture at 215 px to the metre"
+   ],
+   [
+    4,
+    "Views the game sees",
+    "limit",
+    "the street side is the picture itself; the sides, backs and roofs take KM-P3's boards and tiles or the part's own colour (no view of their own)"
+   ],
+   [
+    5,
+    "Size, triangles",
+    "pass",
+    "1.63 x 0.45 x 1.05 m, 44 triangles (its budget 300), the shared 4096 x 2048 KmWhitebaitAtlas"
+   ],
+   [
+    6,
+    "Outline whole",
+    "pass",
+    "its outline the picture's, measured"
+   ],
+   [
+    7,
+    "No holes",
+    "pass",
+    "no holes in what the street sees"
+   ],
+   [
+    8,
+    "Own models before walls",
+    "pass",
+    "what stood in front of it is its own model, painted out of it"
+   ],
+   [
+    9,
+    "Look target",
+    "pass",
+    "the photographic KM2-3, in KM-0's look"
+   ],
+   [
+    10,
+    "Solid",
+    "pass",
+    "solid and whole"
+   ],
+   [
+    11,
+    "No brands",
+    "pass",
+    "no brand or logo: the shop's name and the boxes' labels are invented"
+   ],
+   [
+    12,
+    "No wires or sky",
+    "pass",
+    "the overcast sky let go round every edge"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "painted out: the rack, the boxes, the reel, the crates and the scooter from the shop; the pots and the pole from the fence and the houses"
+   ],
+   [
+    14,
+    "Rig names",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    15,
+    "Joints overlap",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no feet"
+   ],
+   [
+    17,
+    "Each part only itself",
+    "n/a",
+    "one piece"
+   ]
+  ]
+ },
+ "KmCrates": {
+  "id": "KM-A34",
+  "sheet": "photo/KM2-3: the red crate, the tub and the yellow box at the shop's corner",
+  "size": [
+   0.5,
+   0.4,
+   0.97
+  ],
+  "tris": 36,
+  "motions": [],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "each part once (looked at in Top and Bottom)"
+   ],
+   [
+    2,
+    "Closed shell",
+    "pass",
+    "0 edges with one face, 0 with three or more: boxes without the faces no one sees, and single faces (a tray, a porch roof, a card)"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "pass",
+    "boxes and roofs measured off the picture at 215 px to the metre"
+   ],
+   [
+    4,
+    "Views the game sees",
+    "limit",
+    "the street side is the picture itself; the sides, backs and roofs take KM-P3's boards and tiles or the part's own colour (no view of their own)"
+   ],
+   [
+    5,
+    "Size, triangles",
+    "pass",
+    "0.50 x 0.40 x 0.97 m, 36 triangles (its budget 200), the shared 4096 x 2048 KmWhitebaitAtlas"
+   ],
+   [
+    6,
+    "Outline whole",
+    "pass",
+    "its outline the picture's, measured"
+   ],
+   [
+    7,
+    "No holes",
+    "pass",
+    "no holes in what the street sees"
+   ],
+   [
+    8,
+    "Own models before walls",
+    "pass",
+    "what stood in front of it is its own model, painted out of it"
+   ],
+   [
+    9,
+    "Look target",
+    "pass",
+    "the photographic KM2-3, in KM-0's look"
+   ],
+   [
+    10,
+    "Solid",
+    "pass",
+    "solid and whole"
+   ],
+   [
+    11,
+    "No brands",
+    "pass",
+    "no brand or logo: the shop's name and the boxes' labels are invented"
+   ],
+   [
+    12,
+    "No wires or sky",
+    "pass",
+    "the overcast sky let go round every edge"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "painted out: the rack, the boxes, the reel, the crates and the scooter from the shop; the pots and the pole from the fence and the houses"
+   ],
+   [
+    14,
+    "Rig names",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    15,
+    "Joints overlap",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no feet"
+   ],
+   [
+    17,
+    "Each part only itself",
+    "n/a",
+    "one piece"
+   ]
+  ]
+ },
+ "KmSeaWallSteps": {
+  "id": "KM-B23",
+  "sheet": "photo/KM2-3: the low sea wall along the beach road and its steps up to the promenade",
+  "size": [
+   4.53,
+   4.6,
+   0.65
+  ],
+  "tris": 44,
+  "motions": [],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "each part once (looked at in Top and Bottom)"
+   ],
+   [
+    2,
+    "Closed shell",
+    "limit",
+    "31 edges with one face, 1 with three or more: boxes without the faces no one sees, and single faces (a tray, a porch roof, a card)"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "pass",
+    "boxes and roofs measured off the picture at 215 px to the metre"
+   ],
+   [
+    4,
+    "Views the game sees",
+    "limit",
+    "the street side is the picture itself; the sides, backs and roofs take KM-P3's boards and tiles or the part's own colour (no view of their own)"
+   ],
+   [
+    5,
+    "Size, triangles",
+    "pass",
+    "4.53 x 4.60 x 0.65 m, 44 triangles (its budget 300), the shared 4096 x 2048 KmWhitebaitAtlas"
+   ],
+   [
+    6,
+    "Outline whole",
+    "pass",
+    "its outline the picture's, measured"
+   ],
+   [
+    7,
+    "No holes",
+    "pass",
+    "no holes in what the street sees"
+   ],
+   [
+    8,
+    "Own models before walls",
+    "pass",
+    "what stood in front of it is its own model, painted out of it"
+   ],
+   [
+    9,
+    "Look target",
+    "pass",
+    "the photographic KM2-3, in KM-0's look"
+   ],
+   [
+    10,
+    "Solid",
+    "pass",
+    "solid and whole"
+   ],
+   [
+    11,
+    "No brands",
+    "pass",
+    "no brand or logo: the shop's name and the boxes' labels are invented"
+   ],
+   [
+    12,
+    "No wires or sky",
+    "pass",
+    "the overcast sky let go round every edge"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "painted out: the rack, the boxes, the reel, the crates and the scooter from the shop; the pots and the pole from the fence and the houses"
+   ],
+   [
+    14,
+    "Rig names",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    15,
+    "Joints overlap",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no feet"
+   ],
+   [
+    17,
+    "Each part only itself",
+    "n/a",
+    "one piece"
+   ]
+  ]
+ },
+ "KmPromenadeView": {
+  "id": "KM-B40",
+  "sheet": "photo/KM2-3: the promenade's high wall, the dune and its pines beyond the steps (a cut-out)",
+  "size": [
+   15.87,
+   0.01,
+   5.56
+  ],
+  "tris": 2,
+  "motions": [],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "each part once (looked at in Top and Bottom)"
+   ],
+   [
+    2,
+    "Closed shell",
+    "limit",
+    "4 edges with one face, 0 with three or more: cut-out cards"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "limit",
+    "a flat cut-out: its depth is not modelled"
+   ],
+   [
+    4,
+    "Views the game sees",
+    "limit",
+    "the picture from the street, nothing behind"
+   ],
+   [
+    5,
+    "Size, triangles",
+    "pass",
+    "15.87 x 0.01 x 5.56 m, 2 triangles (its budget 100), the shared 4096 x 2048 KmWhitebaitAtlas"
+   ],
+   [
+    6,
+    "Outline whole",
+    "pass",
+    "its outline the picture's, measured"
+   ],
+   [
+    7,
+    "No holes",
+    "pass",
+    "no holes in what the street sees"
+   ],
+   [
+    8,
+    "Own models before walls",
+    "pass",
+    "what stood in front of it is its own model, painted out of it"
+   ],
+   [
+    9,
+    "Look target",
+    "pass",
+    "the photographic KM2-3, in KM-0's look"
+   ],
+   [
+    10,
+    "Solid",
+    "pass",
+    "solid and whole"
+   ],
+   [
+    11,
+    "No brands",
+    "pass",
+    "no brand or logo: the shop's name and the boxes' labels are invented"
+   ],
+   [
+    12,
+    "No wires or sky",
+    "pass",
+    "the overcast sky let go round every edge"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "painted out: the rack, the boxes, the reel, the crates and the scooter from the shop; the pots and the pole from the fence and the houses"
+   ],
+   [
+    14,
+    "Rig names",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    15,
+    "Joints overlap",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no feet"
+   ],
+   [
+    17,
+    "Each part only itself",
+    "n/a",
+    "one piece"
+   ]
+  ]
+ },
+ "KmShopPines": {
+  "id": "KM-B41",
+  "sheet": "photo/KM2-3: the pines behind the neighbour's houses (a cut-out)",
+  "size": [
+   8.75,
+   0.01,
+   5.83
+  ],
+  "tris": 2,
+  "motions": [],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "each part once (looked at in Top and Bottom)"
+   ],
+   [
+    2,
+    "Closed shell",
+    "limit",
+    "4 edges with one face, 0 with three or more: cut-out cards"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "limit",
+    "a flat cut-out: its depth is not modelled"
+   ],
+   [
+    4,
+    "Views the game sees",
+    "limit",
+    "the picture from the street, nothing behind"
+   ],
+   [
+    5,
+    "Size, triangles",
+    "pass",
+    "8.75 x 0.01 x 5.83 m, 2 triangles (its budget 100), the shared 4096 x 2048 KmWhitebaitAtlas"
+   ],
+   [
+    6,
+    "Outline whole",
+    "pass",
+    "its outline the picture's, measured"
+   ],
+   [
+    7,
+    "No holes",
+    "pass",
+    "no holes in what the street sees"
+   ],
+   [
+    8,
+    "Own models before walls",
+    "pass",
+    "what stood in front of it is its own model, painted out of it"
+   ],
+   [
+    9,
+    "Look target",
+    "pass",
+    "the photographic KM2-3, in KM-0's look"
+   ],
+   [
+    10,
+    "Solid",
+    "pass",
+    "solid and whole"
+   ],
+   [
+    11,
+    "No brands",
+    "pass",
+    "no brand or logo: the shop's name and the boxes' labels are invented"
+   ],
+   [
+    12,
+    "No wires or sky",
+    "pass",
+    "the overcast sky let go round every edge"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "painted out: the rack, the boxes, the reel, the crates and the scooter from the shop; the pots and the pole from the fence and the houses"
+   ],
+   [
+    14,
+    "Rig names",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    15,
+    "Joints overlap",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no feet"
+   ],
+   [
+    17,
+    "Each part only itself",
+    "n/a",
+    "one piece"
+   ]
+  ]
+ },
+ "KmNoParkingSign": {
+  "id": "KM-A43",
+  "sheet": "photo/KM2-3: the no-parking sign on its post (a cut-out)",
+  "size": [
+   0.4,
+   0.01,
+   2.47
+  ],
+  "tris": 4,
+  "motions": [],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "each part once (looked at in Top and Bottom)"
+   ],
+   [
+    2,
+    "Closed shell",
+    "limit",
+    "8 edges with one face, 0 with three or more: cut-out cards"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "limit",
+    "a flat cut-out: its depth is not modelled"
+   ],
+   [
+    4,
+    "Views the game sees",
+    "limit",
+    "the picture from the street, mirrored from behind"
+   ],
+   [
+    5,
+    "Size, triangles",
+    "pass",
+    "0.40 x 0.01 x 2.47 m, 4 triangles (its budget 100), the shared 4096 x 2048 KmWhitebaitAtlas"
+   ],
+   [
+    6,
+    "Outline whole",
+    "pass",
+    "its outline the picture's, measured"
+   ],
+   [
+    7,
+    "No holes",
+    "pass",
+    "no holes in what the street sees"
+   ],
+   [
+    8,
+    "Own models before walls",
+    "pass",
+    "what stood in front of it is its own model, painted out of it"
+   ],
+   [
+    9,
+    "Look target",
+    "pass",
+    "the photographic KM2-3, in KM-0's look"
+   ],
+   [
+    10,
+    "Solid",
+    "pass",
+    "solid and whole"
+   ],
+   [
+    11,
+    "No brands",
+    "pass",
+    "no brand or logo: the shop's name and the boxes' labels are invented"
+   ],
+   [
+    12,
+    "No wires or sky",
+    "pass",
+    "the overcast sky let go round every edge"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "painted out: the rack, the boxes, the reel, the crates and the scooter from the shop; the pots and the pole from the fence and the houses"
+   ],
+   [
+    14,
+    "Rig names",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    15,
+    "Joints overlap",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no feet"
+   ],
+   [
+    17,
+    "Each part only itself",
+    "n/a",
+    "one piece"
+   ]
+  ]
+ },
+ "KmBusStopSign": {
+  "id": "KM-A44",
+  "sheet": "photo/KM2-3: the bus stop's sign on its post (a cut-out)",
+  "size": [
+   0.35,
+   0.01,
+   1.95
+  ],
+  "tris": 4,
+  "motions": [],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "each part once (looked at in Top and Bottom)"
+   ],
+   [
+    2,
+    "Closed shell",
+    "limit",
+    "8 edges with one face, 0 with three or more: cut-out cards"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "limit",
+    "a flat cut-out: its depth is not modelled"
+   ],
+   [
+    4,
+    "Views the game sees",
+    "limit",
+    "the picture from the street, mirrored from behind"
+   ],
+   [
+    5,
+    "Size, triangles",
+    "pass",
+    "0.35 x 0.01 x 1.95 m, 4 triangles (its budget 100), the shared 4096 x 2048 KmWhitebaitAtlas"
+   ],
+   [
+    6,
+    "Outline whole",
+    "pass",
+    "its outline the picture's, measured"
+   ],
+   [
+    7,
+    "No holes",
+    "pass",
+    "no holes in what the street sees"
+   ],
+   [
+    8,
+    "Own models before walls",
+    "pass",
+    "what stood in front of it is its own model, painted out of it"
+   ],
+   [
+    9,
+    "Look target",
+    "pass",
+    "the photographic KM2-3, in KM-0's look"
+   ],
+   [
+    10,
+    "Solid",
+    "pass",
+    "solid and whole"
+   ],
+   [
+    11,
+    "No brands",
+    "pass",
+    "no brand or logo: the shop's name and the boxes' labels are invented"
+   ],
+   [
+    12,
+    "No wires or sky",
+    "pass",
+    "the overcast sky let go round every edge"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "painted out: the rack, the boxes, the reel, the crates and the scooter from the shop; the pots and the pole from the fence and the houses"
+   ],
+   [
+    14,
+    "Rig names",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    15,
+    "Joints overlap",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no feet"
+   ],
+   [
+    17,
+    "Each part only itself",
+    "n/a",
+    "one piece"
+   ]
+  ]
+ }
+}

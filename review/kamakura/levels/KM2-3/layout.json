@@ -1,0 +1,239 @@
+{
+ "level": "KM2-3",
+ "name": "Grandma's Whitebait Shop",
+ "route": 2,
+ "leg": 3,
+ "about": "A proposed layout for the user's approval before the level is built (docs/LEARNINGS.md A8): the photographic KM2-3_grandmas_whitebait_shop.png, face-on, at 215 px to the metre about the shop's middle (x = 0), its frontage laid along the beach road as the picture has it. A mini-game leg (docs/CITIES.md M2, the errand): the kid comes up the steps from the beach (KM2-2 stops there), wraps the bento with Grandma at her counter, and goes on along the promenade to the sand (KM2-4). Game axes: x along the lane (m), z away from the camera (the play lane at z = 0), front: the z of a model's street face.",
+ "length": [
+  -12,
+  18
+ ],
+ "ground": [
+  {
+   "what": "the beach road",
+   "z": [
+    -7.0,
+    -0.95
+   ],
+   "rgb": [
+    0.36,
+    0.37,
+    0.38
+   ]
+  },
+  {
+   "what": "its white edge line",
+   "z": [
+    -1.05,
+    -0.95
+   ],
+   "rgb": [
+    0.92,
+    0.92,
+    0.9
+   ]
+  },
+  {
+   "what": "the pavement (the play lane runs along it)",
+   "z": [
+    -0.95,
+    2.0
+   ],
+   "rgb": [
+    0.62,
+    0.61,
+    0.58
+   ]
+  },
+  {
+   "what": "the frontage",
+   "z": [
+    2.0,
+    40.0
+   ],
+   "rgb": [
+    0.58,
+    0.56,
+    0.52
+   ]
+  }
+ ],
+ "placements": [
+  {
+   "model": "KmShopPines",
+   "x": -5.09,
+   "front": 9.0,
+   "note": "the pines behind the neighbour's houses (a cut-out)"
+  },
+  {
+   "model": "KmPromenadeView",
+   "x": 6.34,
+   "front": 5.6,
+   "note": "the promenade's high wall, the dune and its pines beyond the steps (a cut-out)"
+  },
+  {
+   "model": "KmShopNeighbour",
+   "x": -6.28,
+   "front": 2.0,
+   "note": "the neighbour's two houses behind their board fence, the letterbox (KM-B39)"
+  },
+  {
+   "model": "KmPotPinkFlowers",
+   "x": -8.57,
+   "front": 1.7,
+   "note": "the neighbour's pots along the fence (the kit's, where the picture has them)",
+   "label": "pots"
+  },
+  {
+   "model": "KmHydrangeaPlanter",
+   "x": -8.01,
+   "front": 1.7,
+   "note": "the neighbour's pots along the fence (the kit's, where the picture has them)",
+   "label": "-"
+  },
+  {
+   "model": "KmHydrangeaPlanter",
+   "x": -7.47,
+   "front": 1.7,
+   "note": "the neighbour's pots along the fence (the kit's, where the picture has them)",
+   "label": "-"
+  },
+  {
+   "model": "KmHydrangeaPlanter",
+   "x": -6.77,
+   "front": 1.7,
+   "note": "the neighbour's pots along the fence (the kit's, where the picture has them)",
+   "label": "-"
+  },
+  {
+   "model": "KmPotWhiteDaisies",
+   "x": -6.29,
+   "front": 1.7,
+   "note": "the neighbour's pots along the fence (the kit's, where the picture has them)",
+   "label": "-"
+  },
+  {
+   "model": "KmBonsaiBlueBowl",
+   "x": -5.75,
+   "front": 1.7,
+   "note": "the neighbour's pots along the fence (the kit's, where the picture has them)",
+   "label": "-"
+  },
+  {
+   "model": "KmHydrangeaPlanter",
+   "x": -5.09,
+   "front": 1.7,
+   "note": "the neighbour's pots along the fence (the kit's, where the picture has them)",
+   "label": "-"
+  },
+  {
+   "model": "KmPoleTransformer",
+   "x": -4.47,
+   "front": 1.7,
+   "note": "the utility pole with its transformer"
+  },
+  {
+   "model": "KmDryingRack",
+   "x": -2.28,
+   "front": 1.2,
+   "note": "the whitebait drying rack, its trays tilted to the street (KM-A15)"
+  },
+  {
+   "model": "KmGrandmaShop",
+   "x": 0.0,
+   "front": 2.0,
+   "note": "Grandma's whitebait shop: the noren, the glass counter with the bento on its cloth (KM-B22)"
+  },
+  {
+   "model": "KmFishBoxes",
+   "x": 2.47,
+   "front": 2.0,
+   "note": "the fish boxes by the door and the hose reel (KM-A35)"
+  },
+  {
+   "model": "KmCrates",
+   "x": 3.1,
+   "front": 2.0,
+   "note": "the crates and tubs at the shop's corner (KM-A34)"
+  },
+  {
+   "model": "KmScooter",
+   "x": 4.23,
+   "front": 1.3,
+   "note": "Grandma's delivery scooter, its box on the back (the kit's, KM-V03)"
+  },
+  {
+   "model": "KmSeaWallSteps",
+   "x": 7.4,
+   "front": 2.3,
+   "note": "the low sea wall and its steps up to the promenade (KM-B23)"
+  },
+  {
+   "model": "KmNoParkingSign",
+   "x": 7.66,
+   "front": 1.2,
+   "note": "the no-parking sign (KM-A43, a cut-out)"
+  },
+  {
+   "model": "KmBusStopSign",
+   "x": 8.56,
+   "front": 1.2,
+   "note": "the bus stop's sign (KM-A44, a cut-out)"
+  }
+ ],
+ "markers": [
+  {
+   "what": "the promenade along the top of the wall, to the beach (KM2-4 goes down onto the sand from it)",
+   "x": 14.5,
+   "front": 2.3,
+   "w": 6.0,
+   "d": 3.4,
+   "h": 0.65,
+   "rgb": [
+    0.78,
+    0.76,
+    0.72
+   ]
+  }
+ ],
+ "people": [
+  {
+   "model": "Mom",
+   "x": 0.3,
+   "dir": -1,
+   "h": 1.5,
+   "front": 2.4,
+   "note": "Grandma behind her counter (her character to come)"
+  }
+ ],
+ "play": [
+  {
+   "x": 10.5,
+   "what": "start: up the steps from the beach (KM2-2 stops at their foot)"
+  },
+  {
+   "x": 4.5,
+   "what": "the scooter by the door: the kid stops the ball against its wheel"
+  },
+  {
+   "x": 1.6,
+   "what": "a calico cat on the shop's step, watching the drying whitebait (KM-N21)"
+  },
+  {
+   "x": 0.0,
+   "what": "the errand at the counter (M2): Grandma shows the order; fold the furoshiki's four corners in that order (four taps), tie the knot in two timed taps. Retry at once if a corner is wrong. The bento then rides on the backpack (the Delivered badge)"
+  },
+  {
+   "x": -0.8,
+   "what": "a swallow at its nest under the shop's eave (KM-N09), darting out over the road"
+  },
+  {
+   "x": 8.0,
+   "what": "a gull on the sea wall, eyeing the whitebait too (KM-N10)"
+  },
+  {
+   "x": 14.0,
+   "what": "out along the promenade toward the sand: KM2-4 The Kite Thief"
+  }
+ ]
+}

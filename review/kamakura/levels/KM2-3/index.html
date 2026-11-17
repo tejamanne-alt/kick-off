@@ -1,0 +1,79 @@
+<title>KM2-3 layout</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Source+Sans+3:wght@400;600&family=Zen+Kaku+Gothic+New:wght@500;700&display=swap">
+<style>
+:root { --bg: #f1f2ef; --panel: #ffffff; --ink: #1f2522; --muted: #5d6762; --line: #d6dbd6; --accent: #b23a2e;
+  --strip: #2a2e2c; --note-bg: #f7f1e3; --note-ink: #6b4f12;
+  --display: "Zen Kaku Gothic New", "Hiragino Sans", "Segoe UI", system-ui, sans-serif;
+  --body: "Source Sans 3", "Segoe UI", system-ui, sans-serif; --mono: "JetBrains Mono", ui-monospace, Menlo, monospace; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #151816; --panel: #1d211f; --ink: #e6ebe7; --muted: #9ba8a1; --line: #2f3632; --accent: #ef8a7c;
+  --strip: #0f1110; --note-bg: #322a17; --note-ink: #ecc977; color-scheme: dark } }
+:root[data-theme="dark"] { --bg: #151816; --panel: #1d211f; --ink: #e6ebe7; --muted: #9ba8a1; --line: #2f3632;
+  --accent: #ef8a7c; --strip: #0f1110; --note-bg: #322a17; --note-ink: #ecc977; color-scheme: dark }
+body { background: var(--bg); color: var(--ink); font: 16px/1.55 var(--body); }
+.wrap { max-width: 1180px; margin: 0 auto; padding-block: 28px 64px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: flex; flex-direction: column; gap: 28px; }
+h1, h2 { font-family: var(--display); margin: 0; line-height: 1.2; text-wrap: balance; }
+h1 { font-size: 2rem; } h2 { font-size: 1.3rem; }
+p { margin: 0; max-width: 70ch; }
+.eyebrow { font: 600 0.75rem var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+section { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+figure { margin: 0; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+figcaption { font: 0.8rem var(--mono); color: var(--muted); }
+.scroll { overflow-x: auto; border-radius: 8px; background: var(--strip); }
+.scroll img { display: block; height: 320px; width: auto; max-width: none; }
+.full img { width: 100%; height: auto; border-radius: 8px; display: block; }
+table { border-collapse: collapse; width: 100%; font-size: 0.92rem; }
+td, th { border-top: 1px solid var(--line); padding: 7px 10px 7px 0; vertical-align: top; text-align: left; }
+th { font: 600 0.78rem var(--mono); color: var(--muted); }
+td.x { font: 0.85rem var(--mono); white-space: nowrap; font-variant-numeric: tabular-nums; width: 5em; }
+.table-box { overflow-x: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 4px 14px 10px; }
+ul { margin: 0; padding-left: 1.1em; display: flex; flex-direction: column; gap: 6px; max-width: 75ch; }
+li ul { margin: 6px 0; gap: 4px; }
+.ask { background: var(--note-bg); color: var(--note-ink); border-radius: 8px; padding: 14px 16px; }
+.ask ul { color: var(--ink); }
+</style><div class="wrap">
+<header class="stack"><div class="eyebrow">Kamakura · route 2 · leg 3 · proposed layout</div><h1>KM2-3 Grandma&#x27;s Whitebait Shop</h1>
+<p>The third leg of route 2, the Shonan Coast, and its errand: up the steps from the beach to Grandma's whitebait shop on the beach road, where she shows the kid how to wrap the bento, then on along the promenade to the sand. It is laid out from your KM2-3 picture for your approval.</p>
+<p>Your picture looks straight at the frontage, so it is laid along the road just as it stands: the neighbour's houses and their pots, the pole, the drying rack, the shop with its counter, the fish boxes and crates, the scooter, the low sea wall with its steps and the two signs. About 30 m, the shop's middle at x = 0.</p>
+<p>A mini-game leg (the errand, M2): the play is at the counter, not a dribble.</p>
+</header>
+<section><h2>The picture it comes from</h2><figure class="full"><img src="reference.jpg" alt="KM2-3 Grandma&#x27;s Whitebait Shop, the reference picture"><figcaption>KM2-3 Grandma&#x27;s Whitebait Shop, the photographic version: the neighbour&#x27;s houses and their pots, the drying rack, the shop with its noren, its glass counter with the bento on its cloth, the fish boxes and the hose reel, the scooter, the sea wall&#x27;s steps, the no-parking and bus stop signs.</figcaption></figure></section>
+<section><h2>Through the game camera</h2><p>Each model at its real size and place, seen through the game camera as the game frames it, the play lane at the front. See-through boxes are what is still to come. The shading is Blender's, not the game's toon look: judge the places, sizes, order and gaps.</p><figure><div class="scroll"><img src="strip.jpg" alt="The layout through the game camera, screen by screen"></div><figcaption>Scroll sideways: each screen is what the camera shows as the kid walks on; the red figure is the kid (1.57 m) with the ball.</figcaption></figure></section>
+<section><h2>From above</h2><figure class="full"><img src="plan.jpg" alt="The level from above, each place labelled"><figcaption>The camera is below the picture; red lines mark the play beats.</figcaption></figure></section>
+<section><h2>The play</h2><div class="table-box"><table><thead><tr><th>x (m)</th><th>What happens</th></tr></thead><tbody>
+<tr><td class="x">10</td><td>start: up the steps from the beach (KM2-2 stops at their foot)</td></tr>
+<tr><td class="x">4</td><td>the scooter by the door: the kid stops the ball against its wheel</td></tr>
+<tr><td class="x">2</td><td>a calico cat on the shop&#x27;s step, watching the drying whitebait (KM-N21)</td></tr>
+<tr><td class="x">0</td><td>the errand at the counter (M2): Grandma shows the order; fold the furoshiki&#x27;s four corners in that order (four taps), tie the knot in two timed taps. Retry at once if a corner is wrong. The bento then rides on the backpack (the Delivered badge)</td></tr>
+<tr><td class="x">-1</td><td>a swallow at its nest under the shop&#x27;s eave (KM-N09), darting out over the road</td></tr>
+<tr><td class="x">8</td><td>a gull on the sea wall, eyeing the whitebait too (KM-N10)</td></tr>
+<tr><td class="x">14</td><td>out along the promenade toward the sand: KM2-4 The Kite Thief</td></tr>
+</tbody></table></div></section>
+<section><h2>Where everything stands</h2><div class="table-box"><table><thead><tr><th>x (m)</th><th>Model</th><th>Why there</th></tr></thead><tbody>
+<tr><td class="x">-8.6</td><td>KmPotPinkFlowers</td><td>the neighbour&#x27;s pots along the fence (the kit&#x27;s, where the picture has them)</td></tr>
+<tr><td class="x">-8.0</td><td>KmHydrangeaPlanter</td><td>the neighbour&#x27;s pots along the fence (the kit&#x27;s, where the picture has them)</td></tr>
+<tr><td class="x">-7.5</td><td>KmHydrangeaPlanter</td><td>the neighbour&#x27;s pots along the fence (the kit&#x27;s, where the picture has them)</td></tr>
+<tr><td class="x">-6.8</td><td>KmHydrangeaPlanter</td><td>the neighbour&#x27;s pots along the fence (the kit&#x27;s, where the picture has them)</td></tr>
+<tr><td class="x">-6.3</td><td>KmPotWhiteDaisies</td><td>the neighbour&#x27;s pots along the fence (the kit&#x27;s, where the picture has them)</td></tr>
+<tr><td class="x">-6.3</td><td>KmShopNeighbour</td><td>the neighbour&#x27;s two houses behind their board fence, the letterbox (KM-B39)</td></tr>
+<tr><td class="x">-5.8</td><td>KmBonsaiBlueBowl</td><td>the neighbour&#x27;s pots along the fence (the kit&#x27;s, where the picture has them)</td></tr>
+<tr><td class="x">-5.1</td><td>KmShopPines</td><td>the pines behind the neighbour&#x27;s houses (a cut-out)</td></tr>
+<tr><td class="x">-5.1</td><td>KmHydrangeaPlanter</td><td>the neighbour&#x27;s pots along the fence (the kit&#x27;s, where the picture has them)</td></tr>
+<tr><td class="x">-4.5</td><td>KmPoleTransformer</td><td>the utility pole with its transformer</td></tr>
+<tr><td class="x">-2.3</td><td>KmDryingRack</td><td>the whitebait drying rack, its trays tilted to the street (KM-A15)</td></tr>
+<tr><td class="x">0.0</td><td>KmGrandmaShop</td><td>Grandma&#x27;s whitebait shop: the noren, the glass counter with the bento on its cloth (KM-B22)</td></tr>
+<tr><td class="x">2.5</td><td>KmFishBoxes</td><td>the fish boxes by the door and the hose reel (KM-A35)</td></tr>
+<tr><td class="x">3.1</td><td>KmCrates</td><td>the crates and tubs at the shop&#x27;s corner (KM-A34)</td></tr>
+<tr><td class="x">4.2</td><td>KmScooter</td><td>Grandma&#x27;s delivery scooter, its box on the back (the kit&#x27;s, KM-V03)</td></tr>
+<tr><td class="x">6.3</td><td>KmPromenadeView</td><td>the promenade&#x27;s high wall, the dune and its pines beyond the steps (a cut-out)</td></tr>
+<tr><td class="x">7.4</td><td>KmSeaWallSteps</td><td>the low sea wall and its steps up to the promenade (KM-B23)</td></tr>
+<tr><td class="x">7.7</td><td>KmNoParkingSign</td><td>the no-parking sign (KM-A43, a cut-out)</td></tr>
+<tr><td class="x">8.6</td><td>KmBusStopSign</td><td>the bus stop&#x27;s sign (KM-A44, a cut-out)</td></tr>
+<tr><td class="x">14.5</td><td>(to come)</td><td>the promenade along the top of the wall, to the beach (KM2-4 goes down onto the sand from it)</td></tr>
+</tbody></table></div></section>
+<section><h2>Decided for now</h2><ul><li><b>The errand</b> (docs/CITIES.md, M2): at the counter Grandma shows the order of the furoshiki's four corners; the kid folds them in that order (four taps), then ties the knot in two timed taps. A wrong corner and she shows it again, at once. The bento then rides on the backpack for the rest of the route (the Delivered badge).</li><li><b>The start</b> is the foot of the steps from the beach, where KM2-2 stops; <b>the way on</b> is along the promenade to the sand, where KM2-4 starts.</li><li><b>Grandma</b> stands behind her counter (a stand-in figure here; her own character comes with the errand's build). The calico cat sits on the shop's step watching the whitebait, a swallow nests under the eave, a gull eyes the trays from the sea wall.</li><li><b>The neighbour's pots</b>, the <b>utility pole</b> and the <b>scooter</b> are the kit's models, standing where your picture has them, painted out of the fronts behind.</li><li><b>Cost (est., docs/PERFORMANCE.md):</b><ul><li>KM2-3's ten pieces from the picture: 349 triangles, one shared 4096 x 2048 texture (about 11 MB with mips in ETC2 with the cut-outs' alpha, about 5 MB in ASTC 6x6).</li><li>The kit's pots, pole and scooter: about 15,000 triangles.</li></ul>In all, about 15,000 triangles standing and about 25 MB of textures.</li></ul></section>
+<section class="ask"><h2>For you</h2><ul><li><b>The errand's play:</b> four corners in the order Grandma shows, then the knot in two timed taps. Is that the errand you want, or should it ask more (a time limit, a longer order)?</li><li><b>Anything to move:</b> a place, the order, the length or the play beats.</li></ul></section>
+</div>

@@ -120,7 +120,7 @@ for p in lay['placements']:
         e.rotation_euler = (0, 0, math.radians(90))
         e.location = (p['x'], p['front'] + size[0] / 2, 0)
     else:
-        e.location = (p['x'], p['front'] - mn[1], 0)
+        e.location = (p['x'], p['front'] - mn[1], p.get('lift', 0.0))   # lift: above or below the lane's ground
 for k in lay['markers']:          # what is still to come: half see-through, so it reads as a placeholder
     b0 = k.get('base', 0.0)
     o = box(k['what'], k['x'] - k['w'] / 2, k['x'] + k['w'] / 2, k['front'], k['front'] + k['d'], b0, b0 + k['h'], k['rgb'])
@@ -154,7 +154,7 @@ for p in lay.get('people', []):
     rig.scale = rig.scale * k
     # walking toward +x (dir 1) or toward -x (dir -1), a little toward us
     rig.rotation_euler = (rig.rotation_euler[0], rig.rotation_euler[1], math.radians(-66 * p.get('dir', 1)))
-    rig.location = (p['x'], 0.0, -min(zs) * k)
+    rig.location = (p['x'], p.get('front', 0.0), -min(zs) * k)     # on the lane, or where its entry puts it (behind a counter)
     people.append(rig)
 
 # the light: a clear May morning

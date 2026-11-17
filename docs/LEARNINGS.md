@@ -1611,6 +1611,30 @@ review, November 2026).**
 - *Fix:* it keeps every entry it does not build itself. The home's review is back on the props page.
 - *Rule:* a tool that rewrites a shared review file keeps the entries other tools wrote.
 
+**D40. KM2-3's first build: paint-outs that never ran, a wall read sideways, concrete taken for sky, and fills that
+copied clutter (found in its review, November 2026).**
+- *What:*
+  - The pots and the scooter stayed in the painted picture. Their boxes were written (x0, x1, y0, y1) and used as
+    (x0, y0, x1, y1), so each mask was empty and its fill did nothing.
+  - The sea wall's measurements were unpacked in the other order: it came out a thin pole 4 m tall.
+  - The promenade's pale concrete wall (about 190, 181, 166) passed `overcast_mask` and was cut away as sky.
+  - The exemplar fill (D38) copied what stood beside each hole: the rack's leftover rails as stairs, a bucket and a
+    hose reel three times over the scooter's place, the road's white lines onto the pavement. Copied bands of the
+    fence repeated its gaps in a grid.
+  - With its sources fenced off, `patch_fill` still copied the shop's clutter into the scooter's place: where no
+    allowed source lay in a patch's window, every match was infinite and `argmin` took the window's top-left corner.
+- *Why:* one module mixed two orders for its boxes. The sky test was tuned to KM1-4's grey sky, not this near-white
+  one. `patch_fill` takes the best match within its window, whatever that holds.
+- *Fix:*
+  - Every box in `km_whitebait.py` is (x0, y0, x1, y1), the order `poly_mask` reads.
+  - The sky test is the near-white sky's own: its darkest channel over 222, spread under 16.
+  - Vertical boards are stretched down, each board its own median colour. The rack's whole box is painted, the shop's
+    inside is carried across, and each fill's sources are fenced off (`avoid`) from clutter and the road.
+  - `patch_fill` searches the whole working area when its window holds no allowed source, and stops with an error if
+    nothing may be taken at all.
+- *Rule:* write every box in one order in a module, and check each mask is not empty before filling. Tune the sky test
+  on the picture at hand. Give `patch_fill` an `avoid` whenever anything beside the hole is an object, not a surface.
+
 ## E. Levels and world
 
 - **E1. Every level had chapter-1 scenery.** A new-scene call unloaded the level definition. *Rule:* pass data into scene builders explicitly; never hold asset references across a new-scene call.

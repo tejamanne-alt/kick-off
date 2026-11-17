@@ -2769,6 +2769,41 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
   (each part's faces turned outward from its own middle, cut-outs kept as built), and the review material now culls
   back faces as the game does. KM1-3's, KM1-4's and KM2-1's pieces were rebuilt, and the home rebuilt and reinstalled.
 
+## Ten new pictures checked, and KM2-3 Grandma's Whitebait Shop: its layout and its set pieces from its picture
+
+- The user pushed ten pictures: KM1-2a to c (the ride's car, the town passing, the stations), KM1-3a, b, a zoom of b
+  and d, and KM1-4a to c. Each was checked against its card (D31); the table is in `review/kamakura/refs/photo/README.md`:
+  - KM1-2a to c, KM1-3a and KM1-4a to c are photographs and usable. Their file names are kept; the table says which
+    card each answers (KM1-3b covers cards b and c, KM1-3d card e, KM1-4a cards a and b, KM1-4c cards d and e).
+  - KM1-3b, its zoom and KM1-3d are detailed paintings, not photographs: their shapes are usable, their look is not
+    KM-0's. KM1-3a's station board carries a real logo (to repaint as Kamakura Station where it is used).
+  - Every one carries the image tool's ✦ mark (KM1-4b two).
+- KM2-3's picture looks straight at the beach road's frontage, so its set pieces are built as KM1-3's shops were
+  (`tools/blender/km_whitebait.py`, 215 px to the metre):
+  - Grandma's shop with its noren, its glass counter standing out (the bento on its cloth) and its signboard;
+  - the neighbour's two houses and their fence; the whitebait drying rack in its parts (KM-A15); the fish boxes and
+    hose reel (KM-A35); the crates (KM-A34); the low sea wall and its steps (KM-B23);
+  - the promenade's wall, dune and pines and the pines behind the houses as cut-outs; the no-parking and bus stop
+    signs;
+  - the neighbour's pots, the pole and the scooter are the kit's, painted out of the fronts behind them;
+  - 10 models, 349 triangles, one 4096 x 2048 texture; their strict review is in `review/kamakura/whitebait`.
+- KM2-3's proposed layout (`review/kamakura/levels/KM2-3`): the frontage as it stands, about 30 m, up the steps from
+  the beach to the errand at Grandma's counter (fold the furoshiki's corners in her order, tie the knot in two timed
+  taps), then along the promenade to KM2-4. The board places a person off the lane now (Grandma behind her counter).
+- Their first review found faults, fixed before they were shown (D40):
+  - boxes written in two orders, so two paint-outs never ran and the sea wall came out a pole;
+  - pale concrete taken for sky;
+  - fills that copied clutter, the road's lines and the fence's gaps;
+  - `patch_fill` copying from its window's corner when no source was allowed.
+- KM1-2 Ride the Enoden's set from KM1-2a to c (`tools/blender/km_ride.py`), for the ride (mini-game M1):
+  - the car's far wall across the aisle at 370 px to the metre, its windows' grey let go;
+  - the benches standing out, the floor and the ceiling;
+  - the town passing behind the windows (its ends meet, so the ride repeats it);
+  - Yuigahama's, Wadazuka's and Kamakura's platforms seen through the door.
+  - Five models, 30 triangles, one texture; review in `review/kamakura/ride`, the set through the game camera in
+    `review/kamakura/levels/KM1-2`. The board can lift a model below the lane's ground now (`lift`: the street 1 m
+    under the car's floor).
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

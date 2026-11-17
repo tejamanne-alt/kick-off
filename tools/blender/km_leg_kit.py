@@ -94,12 +94,17 @@ def patch_fill(a, hole, patch=11, window=140, avoid=None):
         y0, y1, x0, x1 = max(y - h, 0), min(y + h + 1, sh), max(x - h, 0), min(x + h + 1, sw)
         tpl = sub[y0:y1, x0:x1]
         tm = known[y0:y1, x0:x1].astype(np.float32)
-        sy0, sy1 = max(y0 - window, 0), min(y1 + window, sh)
-        sx0, sx1 = max(x0 - window, 0), min(x1 + window, sw)
-        res = cv2.matchTemplate(sub[sy0:sy1, sx0:sx1], tpl, cv2.TM_SQDIFF, mask=np.dstack([tm] * 3))
-        nb = cv2.boxFilter(bad[sy0:sy1, sx0:sx1].astype(np.float32), -1, (x1 - x0, y1 - y0), anchor=(0, 0),
-                           normalize=False, borderType=cv2.BORDER_CONSTANT)[:res.shape[0], :res.shape[1]]
-        res[nb > 0] = np.inf
+        for w in (window, max(sh, sw)):          # within the window; if nothing there may be taken, anywhere in sub
+            sy0, sy1 = max(y0 - w, 0), min(y1 + w, sh)
+            sx0, sx1 = max(x0 - w, 0), min(x1 + w, sw)
+            res = cv2.matchTemplate(sub[sy0:sy1, sx0:sx1], tpl, cv2.TM_SQDIFF, mask=np.dstack([tm] * 3))
+            nb = cv2.boxFilter(bad[sy0:sy1, sx0:sx1].astype(np.float32), -1, (x1 - x0, y1 - y0), anchor=(0, 0),
+                               normalize=False, borderType=cv2.BORDER_CONSTANT)[:res.shape[0], :res.shape[1]]
+            res[nb > 0] = np.inf
+            if np.isfinite(res).any():
+                break
+        else:
+            raise SystemExit('km_leg_kit.patch_fill: nothing round the hole may be taken (its avoid covers it all)')
         ry, rx = np.unravel_index(int(np.argmin(res)), res.shape)
         src = sub[sy0 + ry:sy0 + ry + (y1 - y0), sx0 + rx:sx0 + rx + (x1 - x0)]
         fill = hl[y0:y1, x0:x1].copy()

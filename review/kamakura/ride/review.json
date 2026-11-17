@@ -1,0 +1,577 @@
+{
+ "KmTramCar": {
+  "id": "KM-B42",
+  "sheet": "photo/KM1-2a: the tram car's inside, its far wall across the aisle",
+  "size": [
+   11.16,
+   2.6,
+   2.41
+  ],
+  "tris": 22,
+  "motions": [],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "each part once (looked at in Top and Bottom)"
+   ],
+   [
+    2,
+    "Closed shell",
+    "limit",
+    "20 edges with one face, 0 with three or more: the wall, the floor and the ceiling as single faces, the benches as boxes without their backs"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "limit",
+    "the wall flat (its straps, poles and fittings drawn on it); the benches stand out"
+   ],
+   [
+    4,
+    "Views the game sees",
+    "limit",
+    "the picture from the aisle; the floor and the ceiling in their own colours"
+   ],
+   [
+    5,
+    "Size, triangles",
+    "pass",
+    "11.16 x 2.60 x 2.41 m, 22 triangles (its budget 300), the shared 4096 x 2048 KmRideAtlas at half the pictures' size"
+   ],
+   [
+    6,
+    "Outline whole",
+    "pass",
+    "its outline the picture's"
+   ],
+   [
+    7,
+    "No holes",
+    "pass",
+    "the windows let go on purpose: the town shows through them"
+   ],
+   [
+    8,
+    "Own models before walls",
+    "pass",
+    "nothing in front of it"
+   ],
+   [
+    9,
+    "Look target",
+    "pass",
+    "the photographic KM1-2 set, in KM-0's look"
+   ],
+   [
+    10,
+    "Solid",
+    "pass",
+    "solid and whole"
+   ],
+   [
+    11,
+    "No brands",
+    "pass",
+    "no brand or logo: the posters, the route map and the station boards are invented or real place names"
+   ],
+   [
+    12,
+    "No wires or sky",
+    "pass",
+    "the windows' grey let go"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "the image tool's mark painted out"
+   ],
+   [
+    14,
+    "Rig names",
+    "n/a",
+    "no moving parts (the ride slides the town past)"
+   ],
+   [
+    15,
+    "Joints overlap",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no feet"
+   ],
+   [
+    17,
+    "Each part only itself",
+    "n/a",
+    "one piece"
+   ]
+  ]
+ },
+ "KmTownPassing": {
+  "id": "KM-B43",
+  "sheet": "photo/KM1-2b: the town passing the tram's windows (a cut-out; its ends meet)",
+  "size": [
+   37.53,
+   0.01,
+   7.36
+  ],
+  "tris": 2,
+  "motions": [],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "each part once (looked at in Top and Bottom)"
+   ],
+   [
+    2,
+    "Closed shell",
+    "limit",
+    "4 edges with one face, 0 with three or more: a cut-out card"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "limit",
+    "a flat cut-out: its depth is not modelled"
+   ],
+   [
+    4,
+    "Views the game sees",
+    "limit",
+    "the picture from the aisle; nothing behind"
+   ],
+   [
+    5,
+    "Size, triangles",
+    "pass",
+    "37.53 x 0.01 x 7.36 m, 2 triangles (its budget 100), the shared 4096 x 2048 KmRideAtlas at half the pictures' size"
+   ],
+   [
+    6,
+    "Outline whole",
+    "pass",
+    "its outline the picture's"
+   ],
+   [
+    7,
+    "No holes",
+    "pass",
+    "no holes in what the ride sees"
+   ],
+   [
+    8,
+    "Own models before walls",
+    "pass",
+    "nothing in front of it"
+   ],
+   [
+    9,
+    "Look target",
+    "pass",
+    "the photographic KM1-2 set, in KM-0's look"
+   ],
+   [
+    10,
+    "Solid",
+    "pass",
+    "solid and whole"
+   ],
+   [
+    11,
+    "No brands",
+    "pass",
+    "no brand or logo: the posters, the route map and the station boards are invented or real place names"
+   ],
+   [
+    12,
+    "No wires or sky",
+    "pass",
+    "the sky let go"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "the image tool's mark painted out"
+   ],
+   [
+    14,
+    "Rig names",
+    "n/a",
+    "no moving parts (the ride slides the town past)"
+   ],
+   [
+    15,
+    "Joints overlap",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no feet"
+   ],
+   [
+    17,
+    "Each part only itself",
+    "n/a",
+    "one piece"
+   ]
+  ]
+ },
+ "KmPlatformYuigahama": {
+  "id": "KM-B44",
+  "sheet": "photo/KM1-2c: Yuigahama station's platform, seen through the door",
+  "size": [
+   5.67,
+   0.01,
+   3.74
+  ],
+  "tris": 2,
+  "motions": [],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "each part once (looked at in Top and Bottom)"
+   ],
+   [
+    2,
+    "Closed shell",
+    "limit",
+    "4 edges with one face, 0 with three or more: a cut-out card"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "limit",
+    "a flat cut-out: its depth is not modelled"
+   ],
+   [
+    4,
+    "Views the game sees",
+    "limit",
+    "the picture from the aisle; nothing behind"
+   ],
+   [
+    5,
+    "Size, triangles",
+    "pass",
+    "5.67 x 0.01 x 3.74 m, 2 triangles (its budget 100), the shared 4096 x 2048 KmRideAtlas at half the pictures' size"
+   ],
+   [
+    6,
+    "Outline whole",
+    "pass",
+    "its outline the picture's"
+   ],
+   [
+    7,
+    "No holes",
+    "pass",
+    "no holes in what the ride sees"
+   ],
+   [
+    8,
+    "Own models before walls",
+    "pass",
+    "nothing in front of it"
+   ],
+   [
+    9,
+    "Look target",
+    "pass",
+    "the photographic KM1-2 set, in KM-0's look"
+   ],
+   [
+    10,
+    "Solid",
+    "pass",
+    "solid and whole"
+   ],
+   [
+    11,
+    "No brands",
+    "pass",
+    "no brand or logo: the posters, the route map and the station boards are invented or real place names"
+   ],
+   [
+    12,
+    "No wires or sky",
+    "pass",
+    "the sky let go"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "the image tool's mark painted out"
+   ],
+   [
+    14,
+    "Rig names",
+    "n/a",
+    "no moving parts (the ride slides the town past)"
+   ],
+   [
+    15,
+    "Joints overlap",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no feet"
+   ],
+   [
+    17,
+    "Each part only itself",
+    "n/a",
+    "one piece"
+   ]
+  ]
+ },
+ "KmPlatformWadazuka": {
+  "id": "KM-B44",
+  "sheet": "photo/KM1-2c: Wadazuka station's platform, seen through the door",
+  "size": [
+   5.2,
+   0.01,
+   3.74
+  ],
+  "tris": 2,
+  "motions": [],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "each part once (looked at in Top and Bottom)"
+   ],
+   [
+    2,
+    "Closed shell",
+    "limit",
+    "4 edges with one face, 0 with three or more: a cut-out card"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "limit",
+    "a flat cut-out: its depth is not modelled"
+   ],
+   [
+    4,
+    "Views the game sees",
+    "limit",
+    "the picture from the aisle; nothing behind"
+   ],
+   [
+    5,
+    "Size, triangles",
+    "pass",
+    "5.20 x 0.01 x 3.74 m, 2 triangles (its budget 100), the shared 4096 x 2048 KmRideAtlas at half the pictures' size"
+   ],
+   [
+    6,
+    "Outline whole",
+    "pass",
+    "its outline the picture's"
+   ],
+   [
+    7,
+    "No holes",
+    "pass",
+    "no holes in what the ride sees"
+   ],
+   [
+    8,
+    "Own models before walls",
+    "pass",
+    "nothing in front of it"
+   ],
+   [
+    9,
+    "Look target",
+    "pass",
+    "the photographic KM1-2 set, in KM-0's look"
+   ],
+   [
+    10,
+    "Solid",
+    "pass",
+    "solid and whole"
+   ],
+   [
+    11,
+    "No brands",
+    "pass",
+    "no brand or logo: the posters, the route map and the station boards are invented or real place names"
+   ],
+   [
+    12,
+    "No wires or sky",
+    "pass",
+    "the sky let go"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "the image tool's mark painted out"
+   ],
+   [
+    14,
+    "Rig names",
+    "n/a",
+    "no moving parts (the ride slides the town past)"
+   ],
+   [
+    15,
+    "Joints overlap",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no feet"
+   ],
+   [
+    17,
+    "Each part only itself",
+    "n/a",
+    "one piece"
+   ]
+  ]
+ },
+ "KmPlatformKamakura": {
+  "id": "KM-B44",
+  "sheet": "photo/KM1-2c: Kamakura station's platform, seen through the door",
+  "size": [
+   5.68,
+   0.01,
+   3.74
+  ],
+  "tris": 2,
+  "motions": [],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "each part once (looked at in Top and Bottom)"
+   ],
+   [
+    2,
+    "Closed shell",
+    "limit",
+    "4 edges with one face, 0 with three or more: a cut-out card"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "limit",
+    "a flat cut-out: its depth is not modelled"
+   ],
+   [
+    4,
+    "Views the game sees",
+    "limit",
+    "the picture from the aisle; nothing behind"
+   ],
+   [
+    5,
+    "Size, triangles",
+    "pass",
+    "5.68 x 0.01 x 3.74 m, 2 triangles (its budget 100), the shared 4096 x 2048 KmRideAtlas at half the pictures' size"
+   ],
+   [
+    6,
+    "Outline whole",
+    "pass",
+    "its outline the picture's"
+   ],
+   [
+    7,
+    "No holes",
+    "pass",
+    "no holes in what the ride sees"
+   ],
+   [
+    8,
+    "Own models before walls",
+    "pass",
+    "nothing in front of it"
+   ],
+   [
+    9,
+    "Look target",
+    "pass",
+    "the photographic KM1-2 set, in KM-0's look"
+   ],
+   [
+    10,
+    "Solid",
+    "pass",
+    "solid and whole"
+   ],
+   [
+    11,
+    "No brands",
+    "pass",
+    "no brand or logo: the posters, the route map and the station boards are invented or real place names"
+   ],
+   [
+    12,
+    "No wires or sky",
+    "pass",
+    "the sky let go"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "the image tool's mark painted out"
+   ],
+   [
+    14,
+    "Rig names",
+    "n/a",
+    "no moving parts (the ride slides the town past)"
+   ],
+   [
+    15,
+    "Joints overlap",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no feet"
+   ],
+   [
+    17,
+    "Each part only itself",
+    "n/a",
+    "one piece"
+   ]
+  ]
+ }
+}

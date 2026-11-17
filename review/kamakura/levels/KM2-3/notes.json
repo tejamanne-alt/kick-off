@@ -1,0 +1,20 @@
+{
+ "intro": [
+  "The third leg of route 2, the Shonan Coast, and its errand: up the steps from the beach to Grandma's whitebait shop on the beach road, where she shows the kid how to wrap the bento, then on along the promenade to the sand. It is laid out from your KM2-3 picture for your approval.",
+  "Your picture looks straight at the frontage, so it is laid along the road just as it stands: the neighbour's houses and their pots, the pole, the drying rack, the shop with its counter, the fish boxes and crates, the scooter, the low sea wall with its steps and the two signs. About 30 m, the shop's middle at x = 0.",
+  "A mini-game leg (the errand, M2): the play is at the counter, not a dribble."
+ ],
+ "reference": "KM2-3 Grandma's Whitebait Shop, the photographic version: the neighbour's houses and their pots, the drying rack, the shop with its noren, its glass counter with the bento on its cloth, the fish boxes and the hose reel, the scooter, the sea wall's steps, the no-parking and bus stop signs.",
+ "strip": "Each model at its real size and place, seen through the game camera as the game frames it, the play lane at the front. See-through boxes are what is still to come. The shading is Blender's, not the game's toon look: judge the places, sizes, order and gaps.",
+ "decided": [
+  "<b>The errand</b> (docs/CITIES.md, M2): at the counter Grandma shows the order of the furoshiki's four corners; the kid folds them in that order (four taps), then ties the knot in two timed taps. A wrong corner and she shows it again, at once. The bento then rides on the backpack for the rest of the route (the Delivered badge).",
+  "<b>The start</b> is the foot of the steps from the beach, where KM2-2 stops; <b>the way on</b> is along the promenade to the sand, where KM2-4 starts.",
+  "<b>Grandma</b> stands behind her counter (a stand-in figure here; her own character comes with the errand's build). The calico cat sits on the shop's step watching the whitebait, a swallow nests under the eave, a gull eyes the trays from the sea wall.",
+  "<b>The neighbour's pots</b>, the <b>utility pole</b> and the <b>scooter</b> are the kit's models, standing where your picture has them, painted out of the fronts behind.",
+  "<b>Cost (est., docs/PERFORMANCE.md):</b><ul><li>KM2-3's ten pieces from the picture: 349 triangles, one shared 4096 x 2048 texture (about 11 MB with mips in ETC2 with the cut-outs' alpha, about 5 MB in ASTC 6x6).</li><li>The kit's pots, pole and scooter: about 15,000 triangles.</li></ul>In all, about 15,000 triangles standing and about 25 MB of textures."
+ ],
+ "ask": [
+  "<b>The errand's play:</b> four corners in the order Grandma shows, then the knot in two timed taps. Is that the errand you want, or should it ask more (a time limit, a longer order)?",
+  "<b>Anything to move:</b> a place, the order, the length or the play beats."
+ ]
+}

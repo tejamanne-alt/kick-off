@@ -1341,6 +1341,12 @@ next-stop display, stop button; the houses outside slide past as painted layers)
 Kamakura; the grandmother boarding at Yuigahama (give up your seat for a bonus). From the sheets: the stations seen
 through the doors at each stop with their ticket gates and name boards (KM-A28, A29); swallows on the wires and pigeons
 on the platforms (KM-N09, N07) in the passing layers. Tests for the ride's rules.
+
+(Its set built, November 2026, from the photographic KM1-2a to c: tools/blender/km_ride.py builds the car's inside
+(KM-B42, new: its far wall the picture's, the windows let go, the benches, floor and ceiling), the town passing behind
+the windows (KM-B43, new, its ends meeting) and the three stations seen through the door (KM-B44, new). Their review:
+review/kamakura/ride; the set through the game camera: review/kamakura/levels/KM1-2. Still to do, after approval: the
+ride's system and its tests, the grandmother, the animals in the passing layers, the install.)
 ```
 
 ```text
@@ -1389,6 +1395,14 @@ corners in the order shown, tie the knot in two timed taps; the bento then rides
 route (the Delivered badge). From the sheets: the fish boxes and hose reel (KM-A35), crates (KM-A34). Animals: a
 calico cat on the shop's step, watching the drying whitebait (KM-N21), a gull on the sea wall eyeing it too (KM-N10), a
 swallow at its nest under the shop's eave (KM-N09). Tests for the errand's rules.
+
+(Laid out and its set pieces built, November 2026: review/kamakura/levels/KM2-3 is its proposed layout, the frontage
+as the photographic KM2-3 has it, for the user's approval. tools/blender/km_whitebait.py builds Grandma's shop (KM-B22)
+with its glass counter and signboard, the neighbour's houses and fence (KM-B39, new), the drying rack (KM-A15), the
+fish boxes and hose reel (KM-A35), the crates (KM-A34), the low sea wall with its steps (KM-B23), the promenade's wall,
+dune and pines and the pines behind the houses (KM-B40, KM-B41, new, cut-outs), and the no-parking and bus stop signs
+(KM-A43, A44, new); the pots, the pole and the scooter are the kit's. Their review: review/kamakura/whitebait. Still to
+do, after approval: the errand's system and its tests, Grandma's character, the animals, the level and the install.)
 ```
 
 ```text
