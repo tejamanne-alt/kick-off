@@ -49,6 +49,3 @@ __pycache__/
 
 # Store screenshots taken by Kick Off > Store Screenshots
 Screenshots/
-
-# the Blender kits' build output (tools/blender/README.md): models and textures are installed from it, not kept
-tools/blender/out/

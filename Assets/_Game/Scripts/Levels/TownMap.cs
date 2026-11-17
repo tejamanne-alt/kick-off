@@ -15,8 +15,6 @@ namespace DribbleToSchool.Levels
     [Serializable] public class LayoutStreet { public string name; public float x; public float y; public float angle; }
     /// <summary>Where a stop between two levels is on the picture (Levels/RouteTable's stop id and route): a point on its route.</summary>
     [Serializable] public class LayoutStop { public string id; public string route; public float x; public float y; }
-    /// <summary>A stretch of a route ridden, not walked (Kamakura's tram from Hase to Kamakura Station, KM1-2): between two stops.</summary>
-    [Serializable] public class LayoutRide { public string route; public string from; public string to; }
 
     /// <summary>Resources/TownMapLayout.json: where everything is in the town picture (Resources/UI/TownMap.jpg), in its pixels.</summary>
     [Serializable]
@@ -33,8 +31,6 @@ namespace DribbleToSchool.Levels
         public LayoutStreet[] streets;
         /// <summary>The stops between the levels where the picture shows them (the station by the railway bridge, the surf school on the boardwalk...).</summary>
         public LayoutStop[] stops;
-        /// <summary>The stretches ridden (drawn as a railway on the route).</summary>
-        public LayoutRide[] rides;
         /// <summary>True in a stand-in layout made from abstract geometry (not from the real picture): some checks that need real roads are skipped for it.</summary>
         public bool placeholder;
     }
@@ -154,39 +150,23 @@ namespace DribbleToSchool.Levels
             Load();
         }
 
-        /// <summary>The layout in use (Resources path, no extension): the original town's unless the map screen asked for a city's.</summary>
-        public static string ActiveLayout { get { return activeLayout; } }
-        static string activeLayout = LayoutResource;
-
-        /// <summary>
-        /// Show the map whose layout is <paramref name="resource"/> (a city's own: Levels/Routes.MapLayout, Kamakura's
-        /// KamakuraMapLayout); the original town's by default. Reloads only when it changes.
-        /// </summary>
-        public static void UseLayout(string resource)
-        {
-            if (string.IsNullOrEmpty(resource)) resource = LayoutResource;
-            if (resource == activeLayout && layout != null) return;
-            activeLayout = resource;
-            Reload();
-        }
-
         static void Load()
         {
             string json = null;
             Source = "(none)";
             Problem = "";
-            var asset = Resources.Load<TextAsset>(activeLayout);
+            var asset = Resources.Load<TextAsset>(LayoutResource);
             if (asset != null)
             {
                 json = asset.text;
-                Source = "Resources/" + activeLayout;
+                Source = "Resources/" + LayoutResource;
             }
 #if UNITY_EDITOR
             if (json == null)
             {
                 try
                 {
-                    string path = Application.dataPath + "/_Game/Resources/" + activeLayout + ".json";
+                    string path = Application.dataPath + LayoutFile;
                     if (System.IO.File.Exists(path))
                     {
                         json = System.IO.File.ReadAllText(path);
@@ -197,7 +177,7 @@ namespace DribbleToSchool.Levels
             }
 #endif
             Apply(json != null ? Parse(json) : null);
-            if (json == null && Problem.Length == 0) Problem = activeLayout + ".json was not found";
+            if (json == null && Problem.Length == 0) Problem = "TownMapLayout.json was not found";
         }
 
         /// <summary>Read a layout from its JSON text (null, with <see cref="Problem"/> set, if it cannot be read).</summary>
@@ -333,8 +313,9 @@ namespace DribbleToSchool.Levels
         /// </summary>
         public static Vector2? StopPosition(string routeId, int index)
         {
-            var route = global::DribbleToSchool.Levels.Routes.ById(routeId);
-            if (route == null) return null;
+            int routeIndex = RouteTable.IndexOf(routeId);
+            if (routeIndex < 0) return null;
+            var route = RouteTable.All[routeIndex];
             if (index < 0 || route.stops == null || index >= route.stops.Length || index + 1 >= route.levels.Length) return null;
             var line = Route(routeId);
             if (line == null || line.points.Length < 2) return null;
@@ -461,39 +442,6 @@ namespace DribbleToSchool.Levels
                 at += len;
             }
             return bestAt;
-        }
-
-        /// <summary>
-        /// The stretch of <paramref name="routeId"/>'s line ridden rather than walked (the layout's rides: Kamakura's tram from
-        /// Hase to Kamakura Station), from the point nearest its first stop to the point nearest its last; null if none.
-        /// </summary>
-        public static Vector2[] RideSection(string routeId)
-        {
-            var line = Route(routeId);
-            if (line == null || layout.rides == null) return null;
-            foreach (var ride in layout.rides)
-            {
-                Vector2 from, to;
-                if (ride == null || ride.route != routeId || !StopPoint(ride.from, out from) || !StopPoint(ride.to, out to)) continue;
-                float a = DistanceAlong(line.points, from), b = DistanceAlong(line.points, to);
-                if (Mathf.Abs(b - a) < 1f) continue;
-                return Section(line.points, Mathf.Min(a, b), Mathf.Max(a, b));
-            }
-            return null;
-        }
-
-        /// <summary>The part of the line from <paramref name="from"/> to <paramref name="to"/> along it (its corners kept).</summary>
-        public static Vector2[] Section(Vector2[] line, float from, float to)
-        {
-            var pts = new List<Vector2> { At(line, from) };
-            float at = 0f;
-            for (int i = 0; i + 1 < line.Length; i++)
-            {
-                at += Vector2.Distance(line[i], line[i + 1]);
-                if (at > from && at < to) pts.Add(line[i + 1]);
-            }
-            pts.Add(At(line, to));
-            return pts.ToArray();
         }
 
         /// <summary>The distance from a point to a rectangle (0 inside it).</summary>

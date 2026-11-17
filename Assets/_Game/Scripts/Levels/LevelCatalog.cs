@@ -20,24 +20,6 @@ namespace DribbleToSchool.Levels
     {
         public List<ChapterInfo> chapters = new List<ChapterInfo>();
         public List<LevelDefinition> levels = new List<LevelDefinition>();
-        /// <summary>
-        /// Kamakura's own legs (docs/KAMAKURA_BUILD.md KM-L99), a catalog of their own, its chapters Kamakura's three routes:
-        /// the menus use it while Kamakura plays its own routes (<see cref="ForCity"/>).
-        /// </summary>
-        public LevelCatalog kamakura;
-
-        /// <summary>
-        /// The catalog the menus show for the city chosen: Kamakura's own legs while it plays its own routes (Levels/Routes),
-        /// else this one (the original town's, which the other cities play).
-        /// </summary>
-        public static LevelCatalog ForCity(LevelCatalog main)
-        {
-            if (main == null) return null;
-            var set = Routes.ActiveSet;
-            if (set != null && set.cityId == Progression.Cities.KamakuraId && main.kamakura != null && main.kamakura.levels.Count > 0)
-                return main.kamakura;
-            return main;
-        }
 
         public ChapterInfo Chapter(int number)
         {

@@ -39,72 +39,7 @@ def section(text, start, end_pat=r'\n## '):
     m = re.search(end_pat, text[i + len(start):])
     return text[i: i + len(start) + (m.start() if m else len(text))]
 
-base_section = blocks_in(section(P, '## The base prompt'))
-base = base_section[0]
-# The two tools' versions: the base prompt's FORMAT line (Gemini's is the second block in that section), and each kind of
-# shot's FORMAT line (the doc's "Format lines").
-fmt_line = re.search(r'- FORMAT:.*?use exactly that ratio\.', base, re.S)
-if not fmt_line or not base_section[1].startswith('- FORMAT:'):
-    sys.exit("gen.py: the base prompt's FORMAT line or Gemini's replacement has moved: update the generator")
-bases = {'chatgpt': base, 'gemini': base.replace(fmt_line.group(0), base_section[1].strip())}
-FORMAT_KEYS = {'ChatGPT, a street or set shot': ('chatgpt', 'level'), 'Gemini, a street or set shot': ('gemini', 'level'),
-               'Look target': ('both', 'look'), 'Sheet': ('both', 'sheet'), 'Plate': ('both', 'plate')}
-formats = {'chatgpt': {}, 'gemini': {}}
-for label, line in re.findall(r'^- ([^:`]+): `(FORMAT: [^`]+)`', P, re.M):
-    tool, kind = FORMAT_KEYS[label]
-    for t in (['chatgpt', 'gemini'] if tool == 'both' else [tool]):
-        formats[t][kind] = line
-for t in formats:
-    if sorted(formats[t]) != ['level', 'look', 'plate', 'sheet']:
-        sys.exit('gen.py: missing format lines for ' + t + ': ' + str(sorted(formats[t])))
-KINDS = {'LEVEL': 'level', 'LOOK TARGET': 'look', 'SHEET': 'sheet', 'PLATE': 'plate', 'MAP': 'map',
-         'BASE': 'base', 'TEXTURE': 'texture', 'ASSET': 'asset', 'FOLIAGE': 'foliage', 'BUILD': 'build', 'RESTYLE': 'restyle'}
-BADGES = {'SHEET': 'Sheet', 'PLATE': 'Plate', 'MAP': 'Map', 'BASE': 'Paste first', 'TEXTURE': 'Texture', 'ASSET': 'Model sheet',
-          'FOLIAGE': 'Foliage', 'BUILD': 'Claude Code', 'RESTYLE': 'Restyle'}
-FIRST_LINE = re.compile(r'(LEVEL|SHEET|PLATE|LOOK TARGET|MAP|BASE|TEXTURE|ASSET|FOLIAGE|BUILD|RESTYLE) ([A-Z]{2}[0-9]?-[A-Za-z]*[0-9]*[a-e]?),? ([^.]+)\.')   # (KM1-1a: a level's lane, picture by picture)
-
-
-def chatgpt_formats(doc):
-    """A build document's ChatGPT FORMAT lines (its "ChatGPT or Gemini" section): {prompt id: line}. Its prompts end with
-    Gemini's; in ChatGPT, which makes only 1:1, 2:3 and 3:2 and smaller images, these replace them."""
-    return dict(re.findall(r'^- `([A-Z]{2}-[A-Z]*\d+)`: `(FORMAT: [^`]+)`', doc, re.M))
-
-
-def with_tools(item, alt):
-    """item with a version per tool when alt has a ChatGPT FORMAT line for it: its own last FORMAT paragraph replaced, or
-    the line added after it when it has none (an ASSET prompt, which follows its base prompt's FORMAT)."""
-    line = alt.get(item['id'])
-    if not line:
-        return item
-    text = item['text']
-    m = list(re.finditer(r'FORMAT:.*?(?=\n\n|\Z)', text, re.S))       # its last FORMAT, to the end of that paragraph
-    if m:
-        k = m[-1]
-        chat = text[:k.start()] + line + text[k.end():]
-    else:                       # an ASSET prompt takes the base's FORMAT: ChatGPT's own line follows it (a pole in halves)
-        chat = text + '\n' + line
-    return dict(item, tools={'gemini': text, 'chatgpt': chat})
-
-
-def prompt_groups(text, heading):
-    """The prompt groups under each heading of this level ('#### ' in a city's section, '### ' in a build document)."""
-    groups = []
-    for m in re.finditer(r'\n' + heading + r' ([^\n]+)\n(.*?)(?=\n' + heading + r' |\Z)', text, re.S):
-        head, body = m.group(1), m.group(2)
-        items = []
-        for b in blocks_in(body):
-            mm = FIRST_LINE.match(b.split('\n', 1)[0])
-            if not mm:
-                sys.exit('gen.py: a prompt under "' + head + '" does not start with its kind and id: ' + b[:60])
-            kind, sid, title = mm.group(1), mm.group(2), mm.group(3)
-            badge = legs.get(sid.rstrip('abcde'), (None, None))[1] if kind == 'LEVEL' else BADGES.get(kind)
-            items.append(dict(id=sid, title=title[:1].upper() + title[1:], badge=badge, kind=KINDS[kind], text=b))
-        rid = head.split(' ', 1)[0]
-        # A group's note: the paragraph between its heading and its first prompt (a city's map says what to attach).
-        note = body.split('```text', 1)[0].strip().replace('`', '').replace('\n', ' ')
-        if items:
-            groups.append(dict(head=head, route=routes.get(rid), note=note or None, items=items))
-    return groups
+base = blocks_in(section(P, '## The base prompt'))[0]
 
 # --- legs from CITIES.md: id -> (title, kind)
 legs = {}
@@ -119,41 +54,26 @@ out = []
 for c in CITIES:
     sec = section(P, '## ' + c['h2'])
     city_block = blocks_in(section(sec, '### The ', r'\n### '))[0]
-    groups = prompt_groups(sec, '####')
-    # A city's build document (docs/<CITY>_BUILD.md: its assets and levels, in order), added at the end of its tab once written.
-    build = os.path.join(REPO, 'docs', c['name'].upper().replace(' ', '_') + '_BUILD.md')
-    if os.path.exists(build):
-        doc = open(build).read()
-        alt = chatgpt_formats(doc)
-        built = [dict(g, head='Build \u00b7 ' + g['head'], items=[with_tools(i, alt) for i in g['items']])
-                 for g in prompt_groups(section(doc, '## The prompts'), '###')]
-        missing = set(alt) - {i['id'] for g in built for i in g['items']}
-        if missing:
-            sys.exit('gen.py: ChatGPT FORMAT lines for prompts not found: ' + ', '.join(sorted(missing)))
-        groups += built
+    groups = []
+    for m in re.finditer(r'\n#### ([^\n]+)\n(.*?)(?=\n#### |\Z)', sec, re.S):
+        head, body = m.group(1), m.group(2)
+        items = []
+        for b in blocks_in(body):
+            first = b.split('\n', 1)[0]
+            mm = re.match(r'(LEVEL|SHEET|PLATE|LOOK TARGET) ([A-Z]{2}[0-9]?-?[P0-9]+),? ([^.]+)\.', first)
+            kind, sid, title = mm.group(1), mm.group(2), mm.group(3)
+            badge = legs.get(sid, (None, None))[1] if kind == 'LEVEL' else ('Sheet' if kind == 'SHEET' else 'Plate')
+            items.append(dict(id=sid, title=title, badge=badge, text=b))
+        rid = head.split(' ', 1)[0]
+        groups.append(dict(head=head, route=routes.get(rid), items=items))
     look = [b for b in blocks_in(sec) if b.startswith('LOOK TARGET')][0]
     mm = re.match(r'LOOK TARGET ([A-Z]{2}-0), ([^.]+)\.', look)
-    out.append(dict(c, block=city_block, look=dict(id=mm.group(1), title=mm.group(2), badge='Look target', kind='look', text=look),
+    out.append(dict(c, block=city_block, look=dict(id=mm.group(1), title=mm.group(2), badge='Look target', text=look),
                     groups=groups, sun=clim[c['key']][0], shade=clim[c['key']][1]))
 
-# every prompt as it is pasted: the document's line wraps joined (docs/LEARNINGS.md A18)
-sys.path.insert(0, HERE)
-from prompt_text import unwrapped
-bases = {t: unwrapped(b) for t, b in bases.items()}
-for c in out:
-    c['block'] = unwrapped(c['block'])
-    for it in [c['look']] + [i for g in c['groups'] for i in g['items']]:
-        it['text'] = unwrapped(it['text'])
-        if 'tools' in it:
-            it['tools'] = {t: unwrapped(v) for t, v in it['tools'].items()}
-data = dict(base=bases, formats=formats, cities=out)
+data = dict(base=base, cities=out)
 total = sum(len(g['items']) for c in out for g in c['groups']) + len(out)
-kinds = {}
-for c in out:
-    for g in c['groups']:
-        for i in g['items']:
-            kinds[i['kind']] = kinds.get(i['kind'], 0) + 1
-print('cities', len(out), 'prompts', total, kinds)
+print('cities', len(out), 'shots', total, 'levels', sum(1 for c in out for g in c['groups'] for i in g['items'] if i['badge'] not in ('Sheet', 'Plate')))
 tpl = open(os.path.join(HERE, 'template.html')).read()
 open(sys.argv[1], 'w').write(
     tpl.replace('/*DATA*/null', json.dumps(data, ensure_ascii=False).replace('</', '<\\/')))

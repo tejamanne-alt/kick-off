@@ -98,20 +98,6 @@ The targets and rewards are first guesses: none are calibrated against real play
 
 ## The world
 
-**Kamakura's run** (while Kamakura plays its own routes, `Levels/Routes.KamakuraOwnRoutes`): ten stages, one for each of
-its dribble legs in route order (`HolidayStages.Kamakura`, scenes `HolidayRun_KM_S01` to `S10`). The ride (KM1-2) and the
-errand (KM2-3) are mini-games, not streets, so they have no stage.
-- Each stage stands before its leg's lane pictures, fitted to the stage at one scale. KM1-1 has its own frontage, with
-  the home at the spawn.
-- Each is built in the look whose obstacles suit it:
-  - Home Street's: KM1-1, KM1-3, KM1-4, KM2-1 and KM2-5;
-  - the beach's: KM2-2 and KM2-4;
-  - the park's: KM3-1 to KM3-3, in the rain.
-- Its traits are ones the original run lays in that look.
-- The banner names the three routes. The day is 1.2 km where the original's is 2.76 km.
-
-The original town's run, below, is kept as `HolidayStages.Original` for the switch off.
-
 | Chapter | Stages (story levels) | Lives in the stage |
 |---|---|---|
 | 1 Home Street | Out the Door, Parked Cars, Up the Hill, Garden Gate, Puddle Lane | kerbs, garden steps, planters, parked cars, awnings, drain works, puddles, a stroller or two |

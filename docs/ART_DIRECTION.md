@@ -160,17 +160,12 @@ boats on their lifts, a No Wake sign on its pile.
   `Attach.<what>` mark attachment points (wire ends, lamp lights, hooks). Use `kit_lib.export_model`.
 - **Material:** one per kit, vertex colours times the kit atlas. Keep the atlas's plain white corner
   at UV (0.97, 0.03) for flat-coloured parts; paint wear, panel lines, windows and signs into the atlas.
-- **A kit projected from the user's pictures** (Kamakura: `docs/KAMAKURA_BUILD.md`) keeps the pictures' own light, so
-  its material is `Toon` with `_Lighting` 0.25 (as the clouds): the pictures' sun and shade as they are, a quarter of the
-  game's sun added. Its fronts are the pictures' pixels; its hidden faces are the city's photographic plates (KM-P3),
-  in the pictures' colours, at real size, assembled piece by piece so nothing repeats in a grid. The pictures are in
-  the city's look target's look (Kamakura's KM-0: a photograph), never a painted drift of it (D10).
 - **Recolourable parts:** UV channel 2, x = part id. 0 is fixed; 1 to 3 are tint groups (wall paint,
   foliage, fabric) the game can recolour at load, keeping each vertex's brightness relative to the
   part's base colour. The kit manifest records each part's base colour (sRGB).
 - **Normals:** smooth or custom split normals so light falls softly. Stylized flat planes are fine on
   rocks and cliffs, as long as they are intended.
 - **Budgets (triangles):** building 6,000; tree 6,000 (leaf-card crowns; 2,500 otherwise); bush 1,200; grass 800; street prop 1,500;
-  boulder 600; landscape strip 6,000; gameplay structure 5,000; animal 2,500 (the original kit's were 1,220 to 1,960).
+  boulder 600; landscape strip 6,000; gameplay structure 5,000.
 - **Review:** render every kit with `review_kit.py` and look at it critically before handing it over;
   check street layouts in daylight with `preview_street.py`.

@@ -1053,17 +1053,15 @@ namespace DribbleToSchool.Holiday
             {
                 bannerStripe.color = color;
                 bannerBand.color = Color.Lerp(color, UITheme.Navy, 0.45f);
-                // (Kamakura's run goes by its three routes: "Route 2", The Shonan Coast)
-                bannerCaption.text = Loc.F(HolidayStages.IsKamakura ? "holiday.routeN" : "holiday.chapterN", chapter);
-                bannerTitle.text = Loc.T(HolidayStages.IsKamakura ? "route.KM" + chapter : "chapter." + chapter).ToUpperInvariant();
+                bannerCaption.text = Loc.F("holiday.chapterN", chapter);
+                bannerTitle.text = Loc.T("chapter." + chapter).ToUpperInvariant();
                 bannerStart = now;
             }
         }
 
-        /// <summary>The stage's chapter in the original town's run, its route in Kamakura's (HolidayStages.Stage.route).</summary>
         static int ChapterOf(int stage)
         {
-            return Mathf.Clamp(HolidayStages.All[Mathf.Clamp(stage, 0, HolidayStages.Count - 1)].route, 1, ChapterColors.Length);
+            return Mathf.Clamp(HolidayStages.All[Mathf.Clamp(stage, 0, HolidayStages.Count - 1)].chapter, 1, ChapterColors.Length);
         }
 
         static string StageName(int stage)

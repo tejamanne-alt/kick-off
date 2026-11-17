@@ -148,9 +148,6 @@ namespace DribbleToSchool.EditorTools
                 R(DribbleToSchool.Cosmetics.Bags.DenimBowId, "Denim Bow Backpack", Bag, Common, 0, CosmeticPattern.Solid, C(0.42f, 0.57f, 0.72f), C(0.88f, 0.62f, 0.32f), white),
                 R(DribbleToSchool.Cosmetics.Bags.GoldenTrailId, "Golden Trail Backpack", Bag, Common, 0, CosmeticPattern.Solid, C(0.72f, 0.5f, 0.27f), C(0.2f, 0.2f, 0.22f), C(0.85f, 0.85f, 0.87f)),
                 R(DribbleToSchool.Cosmetics.Bags.RaceCarId, "Race Car Backpack", Bag, Common, 0, CosmeticPattern.Solid, C(0.86f, 0.04f, 0.06f), C(0.6f, 0.6f, 0.62f), C(1f, 0.85f, 0.25f)),
-                // The randoseru, Japan's school backpack, with the yellow cover a first-grader's wears (Kamakura).
-                R(DribbleToSchool.Cosmetics.Bags.RandoseruRedId, "Red Randoseru", Bag, Common, 0, CosmeticPattern.Solid, C(0.66f, 0.05f, 0.06f), C(1f, 0.86f, 0.1f), C(0.78f, 0.78f, 0.8f)),
-                R(DribbleToSchool.Cosmetics.Bags.RandoseruBlackId, "Black Randoseru", Bag, Common, 0, CosmeticPattern.Solid, C(0.1f, 0.1f, 0.11f), C(1f, 0.86f, 0.1f), C(0.78f, 0.78f, 0.8f)),
             };
         }
     }

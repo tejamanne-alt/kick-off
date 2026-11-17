@@ -80,13 +80,6 @@ namespace DribbleToSchool.EditorTools
             chunk = spec;
             try
             {
-                // Kamakura's run: Kamakura's own street (its ground, hills and animals; the stage's lane pictures are the
-                // builder's, HolidayRunBuilder.KamakuraStage), not the original town's chapters.
-                if (LevelBuildKit.Kamakura)
-                {
-                    KamakuraStreet(track, root);
-                    return;
-                }
                 var rng = new System.Random(spec.seed);
                 float x0 = spec.from, x1 = spec.to;
                 critters = new GameObject("Critters").transform;

@@ -20,8 +20,6 @@ namespace DribbleToSchool.Core
     public struct LevelResult
     {
         public float time;
-        /// <summary>An errand's bento got to school whole on this leg (Progression/Errands): the Delivered badge.</summary>
-        public bool delivered;
         /// <summary>The second star's timing: the leg's pace kept, or on a timed last leg the whole trip at school before the bell.</summary>
         public bool beforeBell;
         public int bestPerfectStreak;
@@ -282,17 +280,6 @@ namespace DribbleToSchool.Core
             CoinsCollected += coin.value;
         }
 
-        /// <summary>
-        /// Coins a mini-game pays (the ride's steady ball, the errand's neat folds, the rice ball saved from the wave):
-        /// <paramref name="earned"/> of the <paramref name="possible"/> it could pay, counted with the level's own.
-        /// </summary>
-        public void CollectBonus(int earned, int possible)
-        {
-            possible = Mathf.Max(0, possible);
-            TotalCoins += possible;
-            CoinsCollected += Mathf.Clamp(earned, 0, possible);
-        }
-
         public void CollectSticker()
         {
             StickerCollected = true;
@@ -330,8 +317,6 @@ namespace DribbleToSchool.Core
             StickerCollected = false;
             BellRung = false;
             SetUpTrip();
-            // A trip from home, or a leg off the errand's route, starts with nothing on the backpack (Progression/Errands).
-            if (level != null && !endless && Race == null && Errands.LegStarts(SaveSystem.Data, level.levelId)) SaveSystem.Save();
             RefreshTimers();
             FadeAmount = 0f;
             foreach (var r in resettables) r.ResetState();
@@ -358,7 +343,7 @@ namespace DribbleToSchool.Core
             if (level == null || endless || Objective != null || level.isChallenge) return;
 
             Route route;
-            int leg = Routes.LegIndex(level.levelId, out route);
+            int leg = RouteTable.LegIndex(level.levelId, out route);
             if (leg < 0)
             {
                 IsLastLeg = true;
@@ -670,12 +655,6 @@ namespace DribbleToSchool.Core
             result.collectedAll = StarRules.CollectedEverything(CoinsCollected, TotalCoins, HasSticker, StickerCollected);
             result.stars = StarRules.Stars(result.beforeBell, result.collectedAll);
             if (level != null) SaveResult(ref result);
-            // At school, the errand's bento is handed over; whole, it is Delivered (Progression/Errands).
-            if (level != null && Errands.LegEnds(SaveSystem.Data, level.levelId))
-            {
-                result.delivered = true;
-                SaveSystem.Save();
-            }
             // After a route's last leg, is the next stage still shut (a trip that has never got to school on time)?
             var next = result.onRoute && result.lastLeg && catalog != null ? catalog.NextAfter(level) : null;
             result.nextLocked = next != null && !LevelUnlocks.NotInTown(next) && !LevelUnlocks.StoryOpen(next.levelId, level.levelId, SaveSystem.Data, Cozy);

@@ -13,13 +13,9 @@ namespace DribbleToSchool.EditorTools
     {
         /// <summary>The town map's picture (Resources/UI/TownMap.jpg): the one picture here that is not a sprite.</summary>
         const string TownMapPath = "/_Game/Resources/UI/TownMap";
-        /// <summary>Kamakura's map (KM-L90), imported as the town's is.</summary>
-        const string KamakuraMapPath = "/_Game/Resources/UI/KamakuraMap";
-        /// <summary>Kamakura's mini-games' set pictures (MiniGames: the ride's car, town and stations; the errand's counter and folds).</summary>
-        const string KamakuraSetPath = "/_Game/Resources/UI/Kamakura/";
 
         // Bump to re-import the pictures when these settings change.
-        public override uint GetVersion() { return 3; }
+        public override uint GetVersion() { return 2; }
 
         void OnPreprocessTexture()
         {
@@ -27,24 +23,7 @@ namespace DribbleToSchool.EditorTools
             if (!path.Contains("/_Game/Resources/UI/")) return;
             var importer = (TextureImporter)assetImporter;
 
-            if (path.Contains(KamakuraSetPath))
-            {
-                // drawn whole across the screen (RawImage), the town strip repeated as it slides past the car's windows
-                importer.textureType = TextureImporterType.Default;
-                importer.textureShape = TextureImporterShape.Texture2D;
-                importer.alphaIsTransparency = true;
-                importer.mipmapEnabled = false;
-                importer.isReadable = false;
-                importer.sRGBTexture = true;
-                importer.wrapMode = UnityEngine.TextureWrapMode.Repeat;
-                importer.filterMode = UnityEngine.FilterMode.Bilinear;
-                importer.npotScale = TextureImporterNPOTScale.None;
-                importer.maxTextureSize = 2048;
-                importer.textureCompression = TextureImporterCompression.CompressedHQ;
-                return;
-            }
-
-            if (path.Contains(TownMapPath) || path.Contains(KamakuraMapPath))
+            if (path.Contains(TownMapPath))
             {
                 importer.textureType = TextureImporterType.Default;
                 importer.textureShape = TextureImporterShape.Texture2D;

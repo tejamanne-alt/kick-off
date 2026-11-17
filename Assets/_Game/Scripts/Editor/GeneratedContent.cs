@@ -22,7 +22,7 @@ namespace DribbleToSchool.EditorTools
     public static class GeneratedContent
     {
         /// <summary>Bump when layouts or the scene rig change so scenes regenerate.</summary>
-        public const int Version = 125;   // 125: Kamakura's own animals in its legs (Art/Models/KamakuraAnimals, each one skinned mesh moved by its review's behaviour: TrackBuilder.KmAnimals, the Shiba and the tanuki as the dog hazard, KM1-1's cat), the June rain over route 3 (World/RainFall), and Kamakura's Holiday Run: one stage for each of its ten dribble legs along its lane pictures (HolidayStages.Kamakura, scenes HolidayRun_KM_S01 to S10); 124: Kamakura plays its own three routes (Levels/Routes, KM-L99): its twelve legs (CityLevels), each laid from the user's lane pictures (KmLane*), the ride (M1), the errand (M2) and the kite thief (M4) as mini-games (MiniGames), Kamakura's own catalog (LevelCatalog.kamakura) and map (Resources/UI/KamakuraMap); 123: Kamakura's first level, KM1-1 Hase Lanes (CityLevels: its own scene, KM1-1_HaseLanes_KM, built from the Kamakura kit by KamakuraLevels while LevelBuildKit.Kamakura is set; not in the catalog, so nothing is shown to players yet); 122: the five cities (Progression/Cities): California's <scene>_CA scenes are no longer built (it is not one of the five), and Florida's scenes are built in Florida's climate (a warm 5,000 K sun, teal shade, humid air: CityClimate); 121: the Florida add-on's Home Street: chapter 1's levels each get a <scene>_FL scene (ranch houses and Old Florida cottages, live oaks with Spanish moss, the canal's drawbridge, the lawn sprinklers, the golf cart, the afternoon storm), and every Florida level's home street is Florida's; 120: a WaterSplash trigger at the surface of every trench, stream and tidal channel (the splash shows as things go in, not two metres under the water), the characters rebuilt (large two-colour triangles split, pale stripes and specks settled into their garment or the hair); 119: every model character's rig carries ground points measured from its mesh (CharacterRig keeps them above the ground: no foot or leg through the pavement in a slide, a kick or a crouch), the slide's back knee up with its foot planted, the low flower obstacle a raised bed with a stone kerb, and every character rebuilt with its outfit parts settled (no white or stray patches in a recoloured outfit); 118: the Fields, the Sea and the menu's field cast no shadows, and the distant hills and the clouds receive none (none of it could show: docs/LEARNINGS.md B8); 117: the Florida add-on: chapter 3's levels each get a <scene>_FL scene (the Florida kit's beach town on seawall terraces, Seagrove High at the end), the Coast and Florida kits' palms, Florida's music; 116: white tears at hems, belts and hairlines absorbed too (absorb_tears's second test); 115: the torso on the rig (Hips, Spine, Chest: CharacterRig.Torso turns, sways and breathes the middle of the body); 114: every character's head rigid on the Head bone (faces no longer fold as the head nods), the face shaded round, white tears absorbed into their garments, Mia's right eye mirrored from her left; 113: the kids keep their own scanned faces, with Max's finish (face_ink.py; the drawn faces of 111 were rejected); 112: the kids' and bags' meshes out of the scenes (Resources/Cast, LazyRenderer); 111: polished characters (welded, 32k / 14k triangles, illustrated kids' faces), cameras without HDR or MSAA, the player's thicker outline
+        public const int Version = 126;   // 126: Kamakura's own legs (built as 123 to 125 on a branch) cancelled at the user's request: the content is 122's again, and the bump makes an editor that built 123 to 125 rebuild it, so their scenes leave the build; 122: the five cities (Progression/Cities): California's <scene>_CA scenes are no longer built (it is not one of the five), and Florida's scenes are built in Florida's climate (a warm 5,000 K sun, teal shade, humid air: CityClimate); 121: the Florida add-on's Home Street: chapter 1's levels each get a <scene>_FL scene (ranch houses and Old Florida cottages, live oaks with Spanish moss, the canal's drawbridge, the lawn sprinklers, the golf cart, the afternoon storm), and every Florida level's home street is Florida's; 120: a WaterSplash trigger at the surface of every trench, stream and tidal channel (the splash shows as things go in, not two metres under the water), the characters rebuilt (large two-colour triangles split, pale stripes and specks settled into their garment or the hair); 119: every model character's rig carries ground points measured from its mesh (CharacterRig keeps them above the ground: no foot or leg through the pavement in a slide, a kick or a crouch), the slide's back knee up with its foot planted, the low flower obstacle a raised bed with a stone kerb, and every character rebuilt with its outfit parts settled (no white or stray patches in a recoloured outfit); 118: the Fields, the Sea and the menu's field cast no shadows, and the distant hills and the clouds receive none (none of it could show: docs/LEARNINGS.md B8); 117: the Florida add-on: chapter 3's levels each get a <scene>_FL scene (the Florida kit's beach town on seawall terraces, Seagrove High at the end), the Coast and Florida kits' palms, Florida's music; 116: white tears at hems, belts and hairlines absorbed too (absorb_tears's second test); 115: the torso on the rig (Hips, Spine, Chest: CharacterRig.Torso turns, sways and breathes the middle of the body); 114: every character's head rigid on the Head bone (faces no longer fold as the head nods), the face shaded round, white tears absorbed into their garments, Mia's right eye mirrored from her left; 113: the kids keep their own scanned faces, with Max's finish (face_ink.py; the drawn faces of 111 were rejected); 112: the kids' and bags' meshes out of the scenes (Resources/Cast, LazyRenderer); 111: polished characters (welded, 32k / 14k triangles, illustrated kids' faces), cameras without HDR or MSAA, the player's thicker outline
 
         const string ScenesDir = LevelBuildKit.Root + "/Scenes";
         const string LevelsDir = LevelBuildKit.Root + "/Levels";
@@ -39,13 +39,6 @@ namespace DribbleToSchool.EditorTools
             public float bell;
             public int streak;
             public bool challenge;
-            /// <summary>One of Kamakura's own levels (<see cref="CityLevels"/>): built with LevelBuildKit.Kamakura set, never in Florida.</summary>
-            public bool kamakura;
-            /// <summary>
-            /// A Kamakura level's street, as the builder's chapter (1 a street, 3 the beach's sand under the lane, which the tide
-            /// needs): apart from its <see cref="chapter"/> (its route, the menus' and the paywall's chapter).
-            /// </summary>
-            public int street;
             public Action<TrackBuilder> layout;
 
             public LevelSpec(int chapter, string id, string name, string scene, float bell, int streak, Action<TrackBuilder> layout)
@@ -53,18 +46,6 @@ namespace DribbleToSchool.EditorTools
                 this.chapter = chapter; this.id = id; this.name = name; this.scene = scene;
                 this.bell = bell; this.streak = streak; this.layout = layout;
                 challenge = false;
-                kamakura = false;
-                street = chapter;
-            }
-
-            /// <summary>One of Kamakura's own levels (docs/KAMAKURA_BUILD.md, Step 7).</summary>
-            public static LevelSpec InKamakura(int chapter, string id, string name, string scene, float bell, int streak, Action<TrackBuilder> layout,
-                int street = 1)
-            {
-                var spec = new LevelSpec(chapter, id, name, scene, bell, streak, layout);
-                spec.kamakura = true;
-                spec.street = street;
-                return spec;
             }
 
             /// <summary>An optional ball-skill challenge (no bell; the objective sets the stars).</summary>
@@ -79,7 +60,7 @@ namespace DribbleToSchool.EditorTools
             /// <summary>The level's Florida scene (the city of Florida: so far chapters 1 and 3 have one).</summary>
             public string FloridaPath { get { return ScenesDir + "/Levels/" + scene + Progression.Cities.FloridaSuffix + ".unity"; } }
             /// <summary>Florida's streets have this level's chapter (Progression/Cities.Florida).</summary>
-            public bool InFlorida { get { return !kamakura && Progression.Cities.Florida.HasChapter(chapter); } }
+            public bool InFlorida { get { return Progression.Cities.Florida.HasChapter(chapter); } }
         }
 
         /// <summary>
@@ -140,14 +121,6 @@ namespace DribbleToSchool.EditorTools
                 isChallenge.Add(spec.challenge);
                 scenes.Add(spec.scene);
             }
-            return list;
-        }
-
-        /// <summary>The cities' own levels' ids (<see cref="CityLevels"/>: Kamakura's legs), with their scenes. Used by tests.</summary>
-        public static List<KeyValuePair<string, string>> CityLevelTable()
-        {
-            var list = new List<KeyValuePair<string, string>>();
-            foreach (var spec in CityLevels) list.Add(new KeyValuePair<string, string>(spec.id, spec.scene));
             return list;
         }
 
@@ -264,38 +237,6 @@ namespace DribbleToSchool.EditorTools
             Progression.SaveSystem.Save();
         }
 
-        /// <summary>
-        /// The cities' own levels (docs/KAMAKURA_BUILD.md, Step 7), beside the original town's <see cref="Levels"/>: each has its
-        /// definition and its scene, in the build, but is not in the catalog the menus read, so nothing is shown to players until
-        /// the city switches to its routes (BUILD KM-L99). Their routes and stops are Levels/CityRoutes'.
-        /// </summary>
-        static readonly LevelSpec[] CityLevels =
-        {
-            // KM1 The Enoden
-            LevelSpec.InKamakura(1, "KM1-1", "Hase Lanes", "KM1-1_HaseLanes_KM", Bell(64f), 3, KamakuraLevels.HaseLanes),
-            LevelSpec.InKamakura(1, "KM1-2", "Ride the Enoden", "KM1-2_RideTheEnoden_KM", Bell(20f), 2, KamakuraLevels.RideTheEnoden),
-            LevelSpec.InKamakura(1, "KM1-3", "Komachi-dori", "KM1-3_KomachiDori_KM", Bell(65f), 4, KamakuraLevels.KomachiDori),
-            LevelSpec.InKamakura(1, "KM1-4", "The Shrine Bridge", "KM1-4_ShrineBridge_KM", Bell(70f), 4, KamakuraLevels.ShrineBridge),
-            // KM2 The Shonan Coast
-            LevelSpec.InKamakura(2, "KM2-1", "Down to Yuigahama", "KM2-1_DownToYuigahama_KM", Bell(115f), 4, KamakuraLevels.DownToYuigahama),
-            LevelSpec.InKamakura(2, "KM2-2", "Yuigahama Morning", "KM2-2_YuigahamaMorning_KM", Bell(105f), 5, KamakuraLevels.YuigahamaMorning, 3),
-            LevelSpec.InKamakura(2, "KM2-3", "Grandma's Whitebait Shop", "KM2-3_GrandmasShop_KM", Bell(30f), 2, KamakuraLevels.GrandmasShop),
-            LevelSpec.InKamakura(2, "KM2-4", "The Kite Thief", "KM2-4_KiteThief_KM", Bell(130f), 5, KamakuraLevels.KiteThief, 3),
-            LevelSpec.InKamakura(2, "KM2-5", "Wakamiya-oji", "KM2-5_WakamiyaOji_KM", Bell(105f), 5, KamakuraLevels.WakamiyaOji),
-            // KM3 The Temple Hills, in the June rain
-            LevelSpec.InKamakura(3, "KM3-1", "Hydrangea Steps", "KM3-1_HydrangeaSteps_KM", Bell(118f), 5, KamakuraLevels.HydrangeaSteps),
-            LevelSpec.InKamakura(3, "KM3-2", "The Hiking Trail", "KM3-2_HikingTrail_KM", Bell(105f), 5, KamakuraLevels.HikingTrail),
-            LevelSpec.InKamakura(3, "KM3-3", "Genjiyama Down to School", "KM3-3_GenjiyamaToSchool_KM", Bell(108f), 6, KamakuraLevels.GenjiyamaToSchool),
-        };
-
-        /// <summary>Kamakura's three routes as the menus' chapters (Levels/CityRoutes: KM1, KM2, KM3).</summary>
-        static readonly ChapterInfo[] KamakuraChapters =
-        {
-            new ChapterInfo { number = 1, title = "The Enoden", subtitle = "By tram to Kamakura", color = new Color(0.25f, 0.55f, 0.36f) },
-            new ChapterInfo { number = 2, title = "The Shonan Coast", subtitle = "Along the sea, with Grandma's bento", color = new Color(0.25f, 0.6f, 0.82f) },
-            new ChapterInfo { number = 3, title = "The Temple Hills", subtitle = "Over the hills in the June rain", color = new Color(0.55f, 0.45f, 0.75f) },
-        };
-
         static readonly ChapterInfo[] Chapters =
         {
             new ChapterInfo { number = 1, title = "Home Street", subtitle = "Out the door and down the road", color = new Color(0.97f, 0.55f, 0.27f) },
@@ -316,17 +257,8 @@ namespace DribbleToSchool.EditorTools
             var catalog = LevelBuildKit.LoadOrCreateAsset<LevelCatalog>(LevelsDir + "/LevelCatalog.asset");
             var defs = new List<LevelDefinition>();
             foreach (var spec in Levels) defs.Add(LoadOrCreateLevel(spec));
-            // Kamakura's own legs: a catalog of their own, which the menus show while Kamakura plays its own routes (Levels/Routes)
-            var kamakura = LevelBuildKit.LoadOrCreateAsset<LevelCatalog>(LevelsDir + "/KamakuraCatalog.asset");
-            var kmDefs = new List<LevelDefinition>();
-            foreach (var spec in CityLevels) kmDefs.Add(LoadOrCreateLevel(spec));
-            kamakura.levels = kmDefs;
-            kamakura.chapters = new List<ChapterInfo>(KamakuraChapters);
-            kamakura.kamakura = null;
-            EditorUtility.SetDirty(kamakura);
             catalog.levels = defs;
             catalog.chapters = new List<ChapterInfo>(Chapters);
-            catalog.kamakura = kamakura;
             EditorUtility.SetDirty(catalog);
             AssetDatabase.SaveAssets();
 
@@ -350,13 +282,6 @@ namespace DribbleToSchool.EditorTools
                     buildScenes.Add(new EditorBuildSettingsScene(Levels[i].FloridaPath, true));
                 }
             }
-            // Kamakura's own levels, each in its own scene, built from the Kamakura kit (LevelBuildKit.Kamakura set while it is built).
-            foreach (var spec in CityLevels)
-            {
-                BuildKamakura(spec);
-                buildScenes.Add(new EditorBuildSettingsScene(spec.ScenePath, true));
-            }
-            catalog = AssetDatabase.LoadAssetAtPath<LevelCatalog>(LevelsDir + "/LevelCatalog.asset");
             LevelBuildKit.BuildScene(TestTrackScene, null, catalog, GreyboxLevels.TestTrack);
             buildScenes.Add(new EditorBuildSettingsScene(TestTrackScene, true));
 
@@ -462,19 +387,6 @@ namespace DribbleToSchool.EditorTools
             finally { LevelBuildKit.Florida = false; }
         }
 
-        /// <summary>One of Kamakura's own levels (LevelBuildKit.Kamakura set only while it is built).</summary>
-        static void BuildKamakura(LevelSpec spec)
-        {
-            var def = AssetDatabase.LoadAssetAtPath<LevelDefinition>(LevelsDir + "/" + spec.id + ".asset");
-            // its Next and its trip are Kamakura's own legs (its catalog), its street the leg's (a street, or the beach)
-            var catalog = AssetDatabase.LoadAssetAtPath<LevelCatalog>(LevelsDir + "/KamakuraCatalog.asset")
-                ?? AssetDatabase.LoadAssetAtPath<LevelCatalog>(LevelsDir + "/LevelCatalog.asset");
-            LevelBuildKit.Cosmetics = AssetDatabase.LoadAssetAtPath<CosmeticCatalog>(CosmeticsDir + "/CosmeticCatalog.asset");
-            LevelBuildKit.Kamakura = true;
-            try { LevelBuildKit.BuildScene(spec.ScenePath, def, catalog, spec.layout, spec.street); }
-            finally { LevelBuildKit.Kamakura = false; }
-        }
-
         /// <summary>Remove generated level scenes that are no longer in the Levels table.</summary>
         static void DeleteStaleScenes()
         {
@@ -484,7 +396,6 @@ namespace DribbleToSchool.EditorTools
                 keep.Add(spec.ScenePath);
                 if (spec.InFlorida) keep.Add(spec.FloridaPath);
             }
-            foreach (var spec in CityLevels) keep.Add(spec.ScenePath);
             foreach (string guid in AssetDatabase.FindAssets("t:Scene", new[] { ScenesDir + "/Levels" }))
             {
                 string path = AssetDatabase.GUIDToAssetPath(guid);
@@ -501,8 +412,6 @@ namespace DribbleToSchool.EditorTools
                 if (AssetDatabase.LoadAssetAtPath<SceneAsset>(spec.ScenePath) == null) return false;
                 if (spec.InFlorida && AssetDatabase.LoadAssetAtPath<SceneAsset>(spec.FloridaPath) == null) return false;
             }
-            foreach (var spec in CityLevels)
-                if (AssetDatabase.LoadAssetAtPath<SceneAsset>(spec.ScenePath) == null) return false;
             return HolidayRunBuilder.AllScenesExist();
         }
 

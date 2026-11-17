@@ -2,7 +2,7 @@
 # keeping its skeleton, skin weights, outfit parts, vertex colours, bags and atlas layout exactly as the game expects:
 #
 #   blenv/bin/python polish_character.py -- <in.fbx> <in atlas.png> <out dir> [--name Name] [--tris 60000] [--bag-tris 12000]
-#                                            [--merge 0.002] [--face-lean 0.85] [--no-face] [--part-edges 0.15]
+#                                            [--merge 0.002] [--face-lean 0.85] [--no-face]
 #     -> out dir/<Name>.fbx, <Name>Atlas.png (the atlas with its gaps filled), <Name>_polish.json (what was done)
 #
 # Why (docs/LEARNINGS.md, "The characters looked low quality"): the AI-made models came apart in ways the game's toon
@@ -52,7 +52,6 @@ BAG_TRIS = opt('--bag-tris', 12000)
 MERGE = opt('--merge', 0.002)
 FACE_LEAN = opt('--face-lean', 0.85)
 FACE = '--no-face' not in argv
-PART_KEEP = opt('--part-edges', -1.0)    # (>= 0: hold back where outfit parts meet, polish_lib.protect_group)
 os.makedirs(OUT, exist_ok=True)
 log = lambda *a: print('[polish]', *a, flush=True)
 
@@ -68,7 +67,7 @@ for o in [o for o in bpy.data.objects if o.type == 'MESH']:
     r['merged'] = pl.clean(o, MERGE)
     body = o.name == 'Kid'
     if body:
-        g = pl.protect_group(o, {'Head', 'Hand.L', 'Hand.R'}, keep=0.3, part_keep=PART_KEEP if PART_KEEP >= 0 else None)
+        g = pl.protect_group(o, {'Head', 'Hand.L', 'Hand.R'}, keep=0.3)
         pl.decimate(o, KID_TRIS, g)
     else:
         pl.decimate(o, BAG_TRIS, pl.protect_group(o, set(), keep=1.0))

@@ -183,12 +183,6 @@ namespace DribbleToSchool.FrontEnd
             foreach (var kv in screens) kv.Value.OnDestroyed();
         }
 
-        /// <summary>Rebuild every screen and show the current one again (another city chosen: its own map and levels).</summary>
-        public void RebuildScreens()
-        {
-            OnLanguageChanged();
-        }
-
         /// <summary>Rebuild every screen so text appears in the new language.</summary>
         void OnLanguageChanged()
         {

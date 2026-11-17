@@ -34,11 +34,7 @@
 #   plaid     Kai (PrimaryBoy): a primary-school boy in an A-pose; short black hair, a red plaid flannel shirt over a
 #             white hood, light-blue cargo jeans, chunky black-and-white sneakers (meshy_teen's colour rules for him).
 #
-#   firstgrader_boy, firstgrader_girl  FirstGraderBoy, FirstGraderGirl (passers-by in KM1-1): six-year-olds in an A-pose
-#             in yellow caps, a white shirt or blouse, navy shorts or culottes, white socks and shoes, a randoseru (black,
-#             red) with its yellow cover; Meshy's newer rig (Spine02, Spine01, Spine, neck, head_end: C26) (--tris 30000)
-#
-#   blenv/bin/python meshy_rigged.py -- /abs/rigged.fbx /abs/outdir [--profile awesome|plaid|rainbow|explorer|varsity|denim|jogger|mom|office|courier|shopkeeper|grandad|firstgrader_boy|firstgrader_girl] [--name <Name>] [--tris 100000]
+#   blenv/bin/python meshy_rigged.py -- /abs/rigged.fbx /abs/outdir [--profile awesome|plaid|rainbow|explorer|varsity|denim|jogger|mom|office|courier|shopkeeper|grandad] [--name <Name>] [--tris 100000]
 #     -> outdir/<Name>.fbx, <Name>.blend, <Name>.json, <Name>Atlas.png
 import bpy, sys, os, json
 import numpy as np
@@ -60,15 +56,14 @@ argv = _argv
 SRC, OUT = argv[0], argv[1]
 TRIS = int(argv[argv.index('--tris') + 1]) if '--tris' in argv else 100000
 NAME = argv[argv.index('--name') + 1] if '--name' in argv else {'awesome': 'PrimaryBoy2', 'plaid': 'PrimaryBoy', 'rainbow': 'PrimaryGirl2', 'explorer': 'PrimaryGirl', 'varsity': 'Girl', 'denim': 'BackpackBoy', 'jogger': 'Jogger', 'mom': 'Mom',
-        'office': 'OfficeWorker', 'courier': 'Courier', 'shopkeeper': 'Shopkeeper', 'grandad': 'Grandad',
-        'firstgrader_boy': 'FirstGraderBoy', 'firstgrader_girl': 'FirstGraderGirl'}[PROFILE_NAME]
+        'office': 'OfficeWorker', 'courier': 'Courier', 'shopkeeper': 'Shopkeeper', 'grandad': 'Grandad'}[PROFILE_NAME]
 os.makedirs(OUT, exist_ok=True)
 C = bpy.context
 mb.log = lambda *a: print('[meshy_rigged]', *a, flush=True)
 log = mb.log
 
 # The model's bones -> the game's (anything else: the bone of its nearest named ancestor in this table).
-GAME_BONE = {'Hips': 'Hips', 'Spine': 'Hips', 'Spine1': 'Spine', 'Spine2': 'Chest', 'Neck': 'Neck', 'neck': 'Neck', 'Head': 'Head',
+GAME_BONE = {'Hips': 'Hips', 'Spine': 'Hips', 'Spine1': 'Spine', 'Spine2': 'Chest', 'Neck': 'Neck', 'Head': 'Head',
              'HeadTop_End': 'Head', 'headfront': 'Head',
              'LeftShoulder': 'Chest', 'RightShoulder': 'Chest',
              'LeftArm': 'UpperArm.L', 'LeftForeArm': 'LowerArm.L', 'LeftHand': 'Hand.L',
@@ -83,20 +78,8 @@ def short(name): return name.split(':')[-1]
 PARENT = {}               # each of the model's bones' parent (load): an extra bone goes with its nearest named ancestor
 
 
-def spine_rank(s):
-    """How many spine bones lie between this one and the hips: the spine's bones mapped by their place in the chain,
-    not their names. Mixamo's run Spine, Spine1, Spine2 upward; Meshy's newer rig runs Spine02, Spine01, Spine (its
-    'Spine' is the chest), so a table by name made the chest the hips."""
-    n, p = 0, PARENT.get(s)
-    while p is not None and short(p).startswith('Spine'):
-        n, p = n + 1, PARENT.get(short(p))
-    return n
-
-
 def game_bone(name):
     s = short(name)
-    if s.startswith('Spine') and s in PARENT:
-        return ('Hips', 'Spine', 'Chest')[min(spine_rank(s), 2)]
     while s is not None:
         if s in GAME_BONE: return GAME_BONE[s]
         for side, n in (('Left', 'L'), ('Right', 'R')):        # the fingers
@@ -192,12 +175,8 @@ def joints(bones):
     """The game's joints (meshy_boy.bone_list) from the skeleton's."""
     h = lambda n: bones[n][0].copy()
     t = lambda n: bones[n][1].copy()
-    # the spine by its place in the chain (Mixamo's Spine, Spine1, Spine2; Meshy's newer Spine02, Spine01, Spine), the
-    # neck and the head's top by either rig's name ('Neck' or 'neck', 'HeadTop_End' or 'head_end')
-    spine = {spine_rank(n): n for n in bones if n.startswith('Spine') and n in PARENT}
-    one = lambda *names: next(n for n in names if n in bones)
-    J = {'pelvis': h('Hips'), 'spine': h(spine[1]), 'chest': h(spine[2]), 'neck0': h(one('Neck', 'neck')),
-         'neck1': h('Head'), 'headtop': h(one('HeadTop_End', 'head_end'))}
+    J = {'pelvis': h('Hips'), 'spine': h('Spine1'), 'chest': h('Spine2'), 'neck0': h('Neck'), 'neck1': h('Head'),
+         'headtop': h('HeadTop_End')}
     J['pelvis'][0] = J['spine'][0] = J['chest'][0] = J['neck0'][0] = J['neck1'][0] = J['headtop'][0] = \
         (h('Head')[0] + h('Hips')[0]) / 2                        # (the spine straight up the middle)
     for side, n in (('Left', 'L'), ('Right', 'R')):
@@ -205,8 +184,7 @@ def joints(bones):
         J['toe' + n] = t(side + 'ToeBase')
         J['shoulder' + n], J['elbow' + n], J['wrist' + n] = h(side + 'Arm'), h(side + 'ForeArm'), h(side + 'Hand')
         tip = side + 'HandMiddle3'
-        J['tip' + n] = (t(tip) if tip in bones else h(side + 'Hand_End') if side + 'Hand_End' in bones   # (Meshy's: the
-                        else h(side + 'Hand') + 2.2 * (t(side + 'Hand') - h(side + 'Hand')))         # fingertips)
+        J['tip' + n] = t(tip) if tip in bones else h(side + 'Hand') + 2.2 * (t(side + 'Hand') - h(side + 'Hand'))
     return J
 
 
@@ -433,36 +411,6 @@ def parts_grandad(o, px):
     return f.done('grandad', ('cardigan', 'trousers', 'cap'))
 
 
-def parts_firstgrader(randoseru):
-    """A first-grader's parts (KM1-1's line of them walking to school, docs/KAMAKURA_BUILD.md KM-C01, C02): 1 the white
-    shirt or blouse, 2 the navy shorts or culottes, 3 the randoseru's body (its colour the one each child chose);
-    0 the skin, the black hair, the yellow cap (every first-grader's), the randoseru's yellow cover, the white socks
-    and the white shoes."""
-    def parts(o, px):
-        f = Faces(o, px); h, s, v = f.h, f.s, f.v
-        f.top((s < 0.16) & (v > 0.62) & (f.z > f.hip - 0.02))                    # (not the socks and shoes, below)
-        f.legwear((h > 200) & (h < 255) & (s > 0.2) & (v < 0.45), 0.1)
-        f.third(randoseru(h, s, v) & (f.skull < 0.5) & (f.z > f.hip - 0.1) & (f.hand < 0.5), 0.1)
-        # the randoseru's small islands of its own colour that the big pieces left out (black on its black, invisible
-        # until it is dressed in another colour: C22): joined where the randoseru is most of what is round them
-        join = randoseru(h, s, v) & (f.FP == 0) & (f.skull < 0.5) & (f.hand < 0.5)
-        for _ in range(4):
-            near = np.zeros((f.nv, 2)); np.add.at(near, f.tri.ravel(), np.repeat(np.stack([f.FP == 3, f.FP != 3], 1), 3, 0))
-            share = (near[:, 0] / np.maximum(near.sum(1), 1))[f.tri].mean(1)
-            take = join & (f.FP == 0) & (share > 0.5)
-            if not take.any(): break
-            f.FP[take] = 3
-        log('randoseru islands joined: %d faces' % (f.FP[join] == 3).sum())
-        # the waistband (the shorts' or culottes' own, as dark as their navy but greyer): with the legwear, else in any
-        # other colour it stays navy as a belt (docs/LEARNINGS.md C22, Max's waistband; the first-graders' audit)
-        band = ((v < 0.3) & (f.FP == 0) & (f.z > f.hip - 0.02) & (f.z < f.hip + 0.3) & (f.legs > 0.3) & (f.head < 0.3)
-                & (f.hand < 0.5) & (f.foot < 0.3) & ((h > 190) | (s < 0.35)))
-        f.FP[band] = 2
-        log('waistband with the legwear: %d faces' % band.sum())
-        return f.done('first-grader', ('shirt', 'shorts', 'randoseru'))
-    return parts
-
-
 PROFILES = {'awesome': {'parts': parts_awesome, 'stands': 1.32},
             'plaid': {'parts': lambda o, px: mt.parts_plaid(o, px), 'stands': 1.30},
             'rainbow': {'parts': lambda o, px: parts_without_pack(mt.parts_rainbow, o, px), 'stands': 1.29},
@@ -474,14 +422,7 @@ PROFILES = {'awesome': {'parts': parts_awesome, 'stands': 1.32},
             'office': {'parts': parts_office, 'stands': 1.80},
             'courier': {'parts': parts_courier, 'stands': 1.72},
             'shopkeeper': {'parts': parts_shopkeeper, 'stands': 1.60},
-            'grandad': {'parts': parts_grandad, 'stands': 1.70},
-            # KM1-1's first-graders (passers-by), six or seven years old: the boy's randoseru black, the girl's red
-            # (even: the randoseru's light kept to this spread, its glossy leather otherwise mottled in any colour but its
-            # own: the first-graders' audit, C22)
-            'firstgrader_boy': {'parts': parts_firstgrader(lambda h, s, v: (v < 0.2) & (s < 0.5)), 'stands': 1.17,
-                                'even': {3: 0.22}, 'plain_cover': True},
-            'firstgrader_girl': {'parts': parts_firstgrader(lambda h, s, v: ((h < 15) | (h > 340)) & (s > 0.5) & (v > 0.2)),
-                                 'stands': 1.15, 'even': {3: 0.22}}}
+            'grandad': {'parts': parts_grandad, 'stands': 1.70}}
 PROFILE = PROFILES[PROFILE_NAME]
 
 
@@ -495,78 +436,10 @@ def parts_without_pack(parts, o, px):
         mt.pack_faces = find
 
 
-def even_parts(o, png, spreads):
-    """A part's texels' light (the atlas holds each garment's light against its colour) pressed toward their median until
-    the 5th to the 95th percentile span `spread`: a glossy black leather's highlights and near-black creases, times any
-    other colour, read as camouflage. The median stays, so the default colour does."""
-    import cv2
-    me = o.data
-    im = cv2.imread(png, cv2.IMREAD_UNCHANGED); H, W = im.shape[:2]
-    uv = np.zeros(len(me.loops) * 2); me.uv_layers[0].data.foreach_get('uv', uv); uv = uv.reshape(-1, 2)
-    u2 = np.zeros(len(me.loops) * 2); me.uv_layers[1].data.foreach_get('uv', u2); part = np.round(u2.reshape(-1, 2)[:, 0])
-    for p, spread in spreads.items():
-        mask = np.zeros((H, W), np.uint8)
-        for poly in me.polygons:
-            li = list(poly.loop_indices)
-            if part[li[0]] != p: continue
-            cv2.fillPoly(mask, [np.round(np.stack([uv[li, 0] * W, (1 - uv[li, 1]) * H], 1)).astype(np.int32)], 1)
-        m = mask > 0
-        if not m.any(): continue
-        rgb = im[..., :3][m].astype(np.float32)
-        L = rgb.mean(1)
-        lo, med, hi = np.percentile(L, [5, 50, 95])
-        k = min(1.0, spread * 255 / max(hi - lo, 1e-3))
-        L2 = np.clip(med + (L - med) * k, 0, 255)
-        im[..., :3][m] = np.clip(rgb * (L2 / np.maximum(L, 1.0))[:, None], 0, 255).astype(np.uint8)
-        log('part %d evened: light %d..%d (median %d) pressed by %.2f' % (p, lo, hi, med, k))
-    cv2.imwrite(png, im)
-
-
-def plain_cover(o, png, below, middle=(0.62, 0.84)):
-    """The randoseru's yellow cover as the user's picture draws it: meshy.ai painted a buckle in its middle with folds
-    round it, which no view of the first-grade boy has (the first-graders' audit). The cover is the yellow faces turned to
-    the back (+y) below the shoulders (`below`: the cap's back is yellow and turned back too, and took the hair under it
-    into the cover's box); the faces over its middle (`middle`: the share of its width and height), whatever their
-    colour, take the cover's median yellow. Its rivets, near the corners, stay."""
-    import cv2
-    me = o.data
-    im = cv2.imread(png, cv2.IMREAD_UNCHANGED); H, W = im.shape[:2]
-    uv = np.zeros(len(me.loops) * 2); me.uv_layers[0].data.foreach_get('uv', uv); uv = uv.reshape(-1, 2)
-    nf = len(me.polygons)
-    cen = np.zeros(nf * 3); me.polygons.foreach_get('center', cen); cen = cen.reshape(-1, 3)
-    nrm = np.zeros(nf * 3); me.polygons.foreach_get('normal', nrm); nrm = nrm.reshape(-1, 3)
-    polys = [list(p.loop_indices) for p in me.polygons]
-    def texels(li):
-        m = np.zeros((H, W), np.uint8)
-        cv2.fillPoly(m, [np.round(np.stack([uv[li, 0] * W, (1 - uv[li, 1]) * H], 1)).astype(np.int32)], 1)
-        return m > 0
-    fc = np.array([im[..., :3][texels(li)].reshape(-1, 3).mean(0) if texels(li).any() else (0, 0, 0) for li in polys])[:, ::-1] / 255.0
-    h, sat, v = hsv(fc)
-    yellow = (h > 38) & (h < 64) & (sat > 0.45) & (v > 0.45) & (nrm[:, 1] > 0.6) & (cen[:, 2] < below)
-    if yellow.sum() < 20: log('plain cover: no cover found'); return
-    x0, x1 = np.percentile(cen[yellow, 0], [2, 98]); z0, z1 = np.percentile(cen[yellow, 2], [2, 98])
-    yb = np.percentile(cen[yellow, 1], 50)
-    mx, mz = (x0 + x1) / 2, (z0 + z1) / 2
-    inner = ((np.abs(cen[:, 0] - mx) < (x1 - x0) * middle[0] / 2) & (np.abs(cen[:, 2] - mz) < (z1 - z0) * middle[1] / 2)
-             & (nrm[:, 1] > 0.3) & (np.abs(cen[:, 1] - yb) < 0.06 * (z1 - z0) / 0.4) & (cen[:, 2] < below))
-    allm = np.zeros((H, W), bool)
-    for i in np.flatnonzero(yellow): allm |= texels(polys[i])
-    med = np.median(im[..., :3][allm].reshape(-1, 3), axis=0)
-    n = 0
-    for i in np.flatnonzero(inner):
-        m = texels(polys[i]); im[..., :3][m] = med; n += 1
-    cv2.imwrite(png, im)
-    log('plain cover: %d faces over its middle painted its yellow %s (the cover %d faces)' % (n, med[::-1], yellow.sum()))
-
-
 def finish(o, rig, img, px):
     png = os.path.join(OUT, NAME + 'Atlas.png')
     mb.face_parts = PROFILE['parts']
     refs = mb.paint(o, img, px, png, plain_last=True)
-    if PROFILE.get('even'): even_parts(o, png, PROFILE['even'])
-    if PROFILE.get('plain_cover'):            # (below the shoulders: halfway from the chest joint to the neck's)
-        B = rig.data.bones
-        plain_cover(o, png, (B['Chest'].head_local.z + B['Neck'].head_local.z) / 2 + 0.25 * (B['Neck'].head_local.z - B['Chest'].head_local.z))
     o.data.materials.clear(); o.data.materials.append(atlas_material('Kid', png))
     o.name = 'Kid'; o.data.name = 'Kid'
     tris = sum(len(p.vertices) - 2 for p in o.data.polygons)

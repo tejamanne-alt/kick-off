@@ -63,36 +63,25 @@ namespace DribbleToSchool.Holiday
     {
         public struct Stage
         {
-            /// <summary>The story level it stands for ("L01", "KM1-3"): its name is the localization key level.L01.</summary>
+            /// <summary>The story level it stands for ("L01"): its name is the localization key level.L01.</summary>
             public string levelId;
-            /// <summary>The look its street is built in (1 Home Street ... 5 the Park): the kit, the obstacles and the mood.</summary>
             public int chapter;
             public StageTraits traits;
             /// <summary>How crowded the stage is with obstacles, 0 (relaxed) to 1 (packed): the lap's difficulty curve.</summary>
             public float density;
-            /// <summary>The route it is on, for the banner and colours: the chapter in the original town, a Kamakura route (1 to 3).</summary>
-            public int route;
 
-            public Stage(string levelId, int chapter, StageTraits traits, float density, int route = 0)
+            public Stage(string levelId, int chapter, StageTraits traits, float density)
             {
                 this.levelId = levelId;
                 this.chapter = chapter;
                 this.traits = traits;
                 this.density = density;
-                this.route = route > 0 ? route : chapter;
             }
 
             public bool Has(StageTraits t) { return (traits & t) == t; }
         }
 
-        /// <summary>The stages of the run in play: Kamakura's own while it plays its own routes (Levels/Routes.KamakuraOwnRoutes), else the original town's.</summary>
-        public static Stage[] All { get { return IsKamakura ? Kamakura : Original; } }
-
-        /// <summary>How many stages a day has.</summary>
-        public static int Count { get { return All.Length; } }
-
-        /// <summary>The run is Kamakura's own (one stage for each of its dribble legs, along its lane pictures).</summary>
-        public static bool IsKamakura { get { return global::DribbleToSchool.Levels.Routes.KamakuraOwnRoutes; } }
+        public const int Count = 23;
 
         /// <summary>Metres of footpath in each stage.</summary>
         public const float StageLength = 120f;
@@ -108,11 +97,8 @@ namespace DribbleToSchool.Holiday
 
         public const string CoreSceneName = "HolidayRun";
         public const string StageScenePrefix = "HolidayRun_S";
-        /// <summary>Kamakura's run's stage scenes (HolidayRun_KM_S01 ...), beside the original town's.</summary>
-        public const string KamakuraScenePrefix = "HolidayRun_KM_S";
 
-        /// <summary>The original town's run: one stage for each of its 23 story levels.</summary>
-        public static readonly Stage[] Original =
+        public static readonly Stage[] All =
         {
             // Chapter 1: Home Street
             new Stage("L01", 1, StageTraits.Steps | StageTraits.Crates, 0.28f),
@@ -144,30 +130,6 @@ namespace DribbleToSchool.Holiday
             new Stage("L23", 5, StageTraits.School | StageTraits.Crates | StageTraits.Awnings, 1f),
         };
 
-        /// <summary>
-        /// Kamakura's run (docs/CITIES.md, "The Holiday Run in each city": the city's dribble legs strung into stages): one stage
-        /// for each dribble leg in route order (the ride KM1-2 and the errand KM2-3 are mini-games, not streets), each in
-        /// front of its leg's lane pictures (KM1-1 its own frontage). Each is built in the look whose obstacles suit it (Home
-        /// Street's for the lanes and avenues, the beach's for the sand and rocks, the park's for the temple hills), with
-        /// traits the original run already lays in that look, and the difficulty climbs as there.
-        /// </summary>
-        public static readonly Stage[] Kamakura =
-        {
-            // Route 1: the Enoden
-            new Stage("KM1-1", 1, StageTraits.Steps | StageTraits.Crates | StageTraits.Pedestrians, 0.28f, 1),
-            new Stage("KM1-3", 1, StageTraits.Crates | StageTraits.Awnings | StageTraits.Pedestrians, 0.38f, 1),
-            new Stage("KM1-4", 1, StageTraits.Steps | StageTraits.Gaps | StageTraits.Crates, 0.46f, 1),
-            // Route 2: the Shonan Coast
-            new Stage("KM2-1", 1, StageTraits.Puddles | StageTraits.Gaps | StageTraits.Crates, 0.52f, 2),
-            new Stage("KM2-2", 3, StageTraits.Tide | StageTraits.SoftSand | StageTraits.Gaps, 0.6f, 2),
-            new Stage("KM2-4", 3, StageTraits.Seagulls | StageTraits.SoftSand | StageTraits.Awnings, 0.66f, 2),
-            new Stage("KM2-5", 1, StageTraits.Cars | StageTraits.Awnings | StageTraits.Steps, 0.72f, 2),
-            // Route 3: the temple hills, in the June rain
-            new Stage("KM3-1", 5, StageTraits.Crates | StageTraits.Dogs | StageTraits.Awnings, 0.8f, 3),
-            new Stage("KM3-2", 5, StageTraits.Gaps | StageTraits.Crates | StageTraits.Dogs, 0.88f, 3),
-            new Stage("KM3-3", 5, StageTraits.School | StageTraits.Crates | StageTraits.Awnings, 1f, 3),
-        };
-
         /// <summary>The length of one day, from the start of stage 0 to the end of the last stage.</summary>
         public static float LapLength { get { return Count * StageLength; } }
 
@@ -189,13 +151,10 @@ namespace DribbleToSchool.Holiday
             return Mathf.Clamp01((x - FirstStageX) / LapLength);
         }
 
-        /// <summary>Scene name of a stage: HolidayRun_S01 ... HolidayRun_S23 (Kamakura's: HolidayRun_KM_S01 ... S10).</summary>
+        /// <summary>Scene name of a stage: HolidayRun_S01 ... HolidayRun_S23.</summary>
         public static string SceneName(int stage)
         {
-            return ScenePrefix + (stage + 1).ToString("00");
+            return StageScenePrefix + (stage + 1).ToString("00");
         }
-
-        /// <summary>The stage scenes' prefix of the run in play.</summary>
-        public static string ScenePrefix { get { return IsKamakura ? KamakuraScenePrefix : StageScenePrefix; } }
     }
 }

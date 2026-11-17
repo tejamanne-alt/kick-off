@@ -15,12 +15,6 @@ This is the design. What is built so far, and what each city still needs, is at 
 - **Each route is three to five levels**, and each level is one leg of the trip, from one stop to the next (as the
   original town's routes are: `docs/WORLD_MAP.md`). The level that ends at a stop and the next one, which starts there,
   build the same stop.
-- **Routes share their two ends, as real school runs do.** The first 5 to 15% of every route is the same stretch from the
-  front door (the **home stem**), and the last 5 to 15% the same approach to the school gate (the **school approach**). The
-  middle 70 to 90% is each route's own streets: no two routes share a street there (crossing another route at a junction or
-  a level crossing is fine, as it is in a real town). So every route's first leg starts along
-  the home stem and its last leg ends along the school approach. Each city's map is drawn this way (`docs/IMAGE_PROMPTS.md`,
-  "The map prompt"), and the levels are built from the map: one layout is the source of truth (`docs/LEARNINGS.md` E8).
 - **Three kinds of leg:**
   - **A dribble.** The game as it plays now: a street with its hazards, coins, stickers and a target time, ending at a stop.
   - **A ride, between legs** (three-leg routes only). When a route takes a bus, tram or ferry between two dribbles,
@@ -167,9 +161,8 @@ raised path down its middle. Hiking trails cross the wooded hills between temple
 3. **KM1-3 Komachi-dori** (dribble). The shopping street from the station: shop curtains (*noren*), a sweet-potato ice
    cream stand, a whitebait croquette shop, sightseers (dense pedestrians), a rickshaw puller (a slow moving obstacle
    to ride behind), and a black kite diving at a sightseer's snack (a gull-style hazard). "Beware of kites" signs.
-4. **KM1-4 The Shrine Bridge** (dribble). From the shrine's side gate straight on up the street along the shrine's
-   wall: over it the arched stone bridge across the lotus pond, the big stone steps and the vermilion gate; pigeons
-   on the pavement, a zebra crossing at the top (M5), then right to the school's gate on the hill beside.
+4. **KM1-4 The Shrine Bridge** (dribble). Into the shrine's grounds: the steep arched stone bridge over the lotus pond
+   (a hump to jump), pigeons, the big stone steps, the vermilion gate, then the school's gate on the hill beside.
 
 ### KM2 The Shonan Coast (5 legs)
 1. **KM2-1 Down to Yuigahama** (dribble). Home, under the coast road through a dim pedestrian tunnel (`DarkZone`), out
@@ -409,9 +402,7 @@ the waves burst over the sea wall, the streets run with water, and between showe
 ## The Holiday Run in each city
 
 The endless run strings the city's dribble legs into stages, in the city's own light, with its own hazards and music.
-Kamakura's run follows its own legs now: one stage for each of its ten dribble legs, along their lane pictures
-(`Holiday/HolidayStages.Kamakura`; the original town's 23 stages stay as `HolidayStages.Original`). Each other city gets
-its own once its streets are built.
+Kamakura's run exists now (the original town's 23 stages). Each other city gets its own once its streets are built.
 Until then the HOLIDAY RUN picker shows it as coming soon.
 
 ## Where we are

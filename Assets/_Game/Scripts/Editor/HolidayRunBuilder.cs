@@ -65,10 +65,6 @@ namespace DribbleToSchool.EditorTools
                     {
                         Debug.LogError("[Kick Off] Couldn't build Holiday Run stage " + (i + 1) + ": " + e);
                     }
-                    finally
-                    {
-                        LevelBuildKit.Kamakura = false;
-                    }
                 }
                 EditorUtility.DisplayProgressBar("Kick Off: Holiday Run", "The core scene", HolidayStages.Count / (float)(HolidayStages.Count + 1));
                 // Building the stages may have unloaded assets nothing references: load them again.
@@ -127,11 +123,7 @@ namespace DribbleToSchool.EditorTools
             bool first = i == 0, last = i == HolidayStages.Count - 1;
             int prevChapter = first ? 0 : HolidayStages.All[i - 1].chapter;
             int nextChapter = last ? 0 : HolidayStages.All[i + 1].chapter;
-            // Kamakura's run (HolidayStages.Kamakura): its own street, each stage in front of its leg's lane pictures, no side
-            // streets of the original town's blocks.
-            bool km = HolidayStages.IsKamakura;
-            LevelBuildKit.Kamakura = km;
-            bool urban = st.chapter != 3 && !km;
+            bool urban = st.chapter != 3;
 
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             LevelBuildKit.Chapter = st.chapter;
@@ -193,9 +185,7 @@ namespace DribbleToSchool.EditorTools
                     Debug.LogWarning("[Kick Off] Holiday Run stage " + (i + 1) + ": couldn't build " + f.kind + " at " + f.x + ": " + e.Message);
                 }
             }
-            // (Kamakura's school gate is in KM3-3's last picture: no gate model, which there would also leave a goal zone)
-            if (st.Has(StageTraits.School) && !km) Attempt(i, "the school gate", () => t.RunSchoolGate(HolidayStages.GateX));
-            if (km) Attempt(i, "Kamakura's street", () => KamakuraStage(t, st, i, from, to));
+            if (st.Has(StageTraits.School)) Attempt(i, "the school gate", () => t.RunSchoolGate(HolidayStages.GateX));
 
             // The lap starts at the kid's own front door: the house every story level starts in front of (its plot is in the
             // first 14 m, where nothing else stands, and the street's own lots keep out of it).
@@ -265,21 +255,6 @@ namespace DribbleToSchool.EditorTools
             }
             stage.SetActive(false);
             EditorSceneManager.SaveScene(scene, StagePath(i));
-        }
-
-        /// <summary>
-        /// What stands beside a stage of Kamakura's run: its leg's lane pictures fitted to the stage (TrackBuilder.KmLaneFitted),
-        /// KM1-1's frontage on the first (its home at the spawn, as in the leg: the door 12 m before where the kid sets off),
-        /// a few of Kamakura's own birds on the strip before the pictures, and the June rain over the temple hills (route 3).
-        /// </summary>
-        static void KamakuraStage(TrackBuilder t, HolidayStages.Stage st, int i, float from, float to)
-        {
-            if (i == 0 || !t.KmLaneFitted(st.levelId, from, to))
-                KamakuraLevels.HaseFrontage(t, HolidayStages.SpawnX + 12f);
-            if (st.chapter == 3) t.KmAnimals("KmGullStanding", from + 30f, from + 70f, 2);
-            else if (st.route == 3) t.KmAnimals("KmCrowStanding", from + 40f, from + 60f, 1);
-            else t.KmAnimals("KmSparrowHopping", from + 36f, from + 60f, 2);
-            if (st.route == 3) t.Rain(from, to);
         }
 
         /// <summary>Runs one step of a stage's build; if it fails the stage still gets saved, without it, and the problem is logged.</summary>

@@ -136,8 +136,8 @@ namespace DribbleToSchool.EditorTools
             // what that needs of the definition now, before the new scene can unload it.
             bool leadIn = HasLeadIn(def);
             string routeName = leadIn ? RouteNameOf(def) : null;
-            Stop from = leadIn ? FromStop(def.levelId) : null;     // Kamakura's own stops while a Kamakura level is built
-            Stop to = leadIn ? ToStop(def.levelId) : null;
+            Stop from = leadIn ? RouteTable.From(def.levelId) : null;
+            Stop to = leadIn ? RouteTable.To(def.levelId) : null;
             EnsureFolder(Path.GetDirectoryName(scenePath).Replace('\\', '/'));
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             Chapter = Mathf.Clamp(chapter, 1, 5);
@@ -669,12 +669,8 @@ namespace DribbleToSchool.EditorTools
 
         // ---------- Asset kits (tools/blender/kit_*.py, docs/ART_DIRECTION.md) ----------
 
-        /// <summary>
-        /// The asset kits made in Blender, each in Art/Models/&lt;kit&gt;/ with its atlas and manifest. The Kamakura kit's
-        /// models (tools/blender/km_views.py, each carved from its own views) each have their own texture instead, named
-        /// in the manifest ("texture"), and so their own material (ArtBaker: Kit&lt;kit&gt;_&lt;model&gt;).
-        /// </summary>
-        public static readonly string[] Kits = { "Plants", "Buildings", "Street", "Terrain", "Leisure", "Works", "Animals", "Barriers", "Coast", "Florida", "Kamakura", "KamakuraAnimals" };
+        /// <summary>The asset kits made in Blender, each in Art/Models/&lt;kit&gt;/ with its atlas and manifest.</summary>
+        public static readonly string[] Kits = { "Plants", "Buildings", "Street", "Terrain", "Leisure", "Works", "Animals", "Barriers", "Coast", "Florida" };
 
         static readonly Dictionary<string, Dictionary<string, object>> kitManifests = new Dictionary<string, Dictionary<string, object>>();
 
@@ -695,15 +691,6 @@ namespace DribbleToSchool.EditorTools
             }
             object entry;
             return models != null && models.TryGetValue(model, out entry) ? entry as Dictionary<string, object> : null;
-        }
-
-        /// <summary>The models in a kit's manifest (none if it has no manifest).</summary>
-        public static IEnumerable<string> KitModelNames(string kit)
-        {
-            KitInfo(kit, "");   // reads the manifest into the cache
-            Dictionary<string, object> models;
-            if (kitManifests.TryGetValue(kit, out models) && models != null) return models.Keys;
-            return new string[0];
         }
 
         /// <summary>A kit model's size from its manifest: x across, y up, z deep (Unity axes), or zero if unknown.</summary>
@@ -817,45 +804,10 @@ namespace DribbleToSchool.EditorTools
         /// <summary>The rigged passers-by's model files (ArtBaker makes each its material).</summary>
         public static readonly string[] PasserbyModels = Array.ConvertAll(Passersby, p => p.model);
 
-        /// <summary>A first-grader's neck height (game units): four-fifths of the kid's 1.3, two-thirds of a grown-up's (docs/LEARNINGS.md C13).</summary>
-        public const float FirstGraderNeck = 1.04f;
-
-        // The first-graders' wardrobe: light shirts and blouses, dark shorts and culottes, and the randoseru each chose.
-        static readonly Color[] SchoolTops =
-        {
-            new Color(0.97f, 0.97f, 0.99f), new Color(0.78f, 0.86f, 0.95f), new Color(0.98f, 0.94f, 0.76f), new Color(0.97f, 0.84f, 0.86f),
-            new Color(0.8f, 0.92f, 0.84f), new Color(0.86f, 0.87f, 0.88f),
-        };
-        static readonly Color[] SchoolLegwears =
-        {
-            new Color(0.12f, 0.15f, 0.28f), new Color(0.25f, 0.25f, 0.27f), new Color(0.62f, 0.55f, 0.4f), new Color(0.1f, 0.1f, 0.11f),
-            new Color(0.24f, 0.33f, 0.5f),
-        };
-        static readonly Color[] Randoseru =
-        {
-            new Color(0.08f, 0.08f, 0.09f), new Color(0.66f, 0.05f, 0.06f), new Color(0.36f, 0.2f, 0.12f), new Color(0.1f, 0.14f, 0.32f),
-            new Color(0.9f, 0.55f, 0.66f), new Color(0.6f, 0.5f, 0.78f), new Color(0.12f, 0.3f, 0.22f), new Color(0.7f, 0.52f, 0.3f),
-        };
-
-        /// <summary>
-        /// KM1-1's first-graders (docs/KAMAKURA_BUILD.md, KM-C01 and KM-C02): six-year-olds walking to school in a line in their
-        /// yellow caps, a randoseru on their backs. Not walkers of the footpath (<see cref="Passersby"/>, which every level draws
-        /// from): they appear only where a level places them. Each is dressed from these (the third part is the randoseru); the
-        /// yellow cap and its cover stay.
-        /// </summary>
-        public static readonly Passerby[] FirstGraders =
-        {
-            new Passerby("FirstGraderBoy", FirstGraderNeck, SchoolTops, SchoolLegwears, Randoseru),
-            new Passerby("FirstGraderGirl", FirstGraderNeck, SchoolTops, SchoolLegwears, Randoseru),
-        };
-
-        /// <summary>The first-graders' model files (ArtBaker makes each its material, as for the passers-by).</summary>
-        public static readonly string[] FirstGraderModels = Array.ConvertAll(FirstGraders, p => p.model);
-
-        /// <summary>The rigged passer-by or first-grader of that model file (null if there is none).</summary>
+        /// <summary>The rigged passer-by of that model file (null if there is none).</summary>
         public static Passerby PasserbyNamed(string model)
         {
-            return Array.Find(Passersby, p => p.model == model) ?? Array.Find(FirstGraders, p => p.model == model);
+            return Array.Find(Passersby, p => p.model == model);
         }
 
         /// <summary>
@@ -892,19 +844,14 @@ namespace DribbleToSchool.EditorTools
             Color? tint1 = null, Color? tint2 = null, Color? tint3 = null, bool castShadows = true)
         {
             var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(ModelsDir + "/" + kit + "/" + model + ".fbx");
-            if (prefab == null || Art == null) return null;
-            // A model with its own texture (the Kamakura kit's) wears its own material; the others their kit's.
             Material material;
-            if (!Art.kits.TryGetValue(kit + "/" + model, out material) || material == null)
-            {
-                if (!Art.kits.TryGetValue(kit, out material) || material == null) return null;
-                // The California skin's shops have English signs: the same atlas layout, its own texture.
-                Material skin;
-                if ((California || Florida) && Art.kits.TryGetValue(kit + "CA", out skin) && skin != null) material = skin;
-                // A model the kid plays with is a cel for the classic cartoon filter (its kit's "Cel" copy).
-                Material cel;
-                if (celModels.Contains(kit + "/" + model) && Art.kits.TryGetValue(kit + "Cel", out cel) && cel != null) material = cel;
-            }
+            if (prefab == null || Art == null || !Art.kits.TryGetValue(kit, out material) || material == null) return null;
+            // The California skin's shops have English signs: the same atlas layout, its own texture.
+            Material skin;
+            if ((California || Florida) && Art.kits.TryGetValue(kit + "CA", out skin) && skin != null) material = skin;
+            // A model the kid plays with is a cel for the classic cartoon filter (its kit's "Cel" copy).
+            Material cel;
+            if (celModels.Contains(kit + "/" + model) && Art.kits.TryGetValue(kit + "Cel", out cel) && cel != null) material = cel;
             var go = new GameObject(model);
             go.transform.SetParent(parent, false);
             go.transform.position = position;
@@ -928,8 +875,7 @@ namespace DribbleToSchool.EditorTools
             var bases = KitPartColors(KitInfo(kit, model));
             var tints = new[] { tint1 ?? Color.clear, tint2 ?? Color.clear, tint3 ?? Color.clear };
             bool tinted = tint1.HasValue || tint2.HasValue || tint3.HasValue;
-            // (a Kamakura animal is one skinned mesh on its bones: its renderer is a SkinnedMeshRenderer)
-            foreach (var r in inst.GetComponentsInChildren<Renderer>())
+            foreach (var r in inst.GetComponentsInChildren<MeshRenderer>())
             {
                 r.sharedMaterial = material;
                 r.shadowCastingMode = castShadows ? UnityEngine.Rendering.ShadowCastingMode.On : UnityEngine.Rendering.ShadowCastingMode.Off;
@@ -1780,11 +1726,8 @@ namespace DribbleToSchool.EditorTools
                 crossing.greenFigure.transform.position = new Vector3(poleX, pave + 2.22f, poleZ - 0.27f);
             }
 
-            /// <summary>
-            /// A playful dog that patrols minX..maxX and noses low balls back: the Animals kit's dog in <paramref name="fur"/>, or
-            /// one of Kamakura's own animals (<paramref name="kamakuraModel"/>: the Shiba, the tanuki) where its kit has it.
-            /// </summary>
-            public void Dog(float minX, float maxX, Color fur, float groundTop = 0f, string kamakuraModel = null)
+            /// <summary>A playful dog that patrols minX..maxX and noses low balls back.</summary>
+            public void Dog(float minX, float maxX, Color fur, float groundTop = 0f)
             {
                 Coaching.Mark("dog", minX, maxX);
                 var go = new GameObject("Dog");
@@ -1793,7 +1736,6 @@ namespace DribbleToSchool.EditorTools
                 var visual = new GameObject("Visual").transform;
                 visual.SetParent(go.transform, false);
                 visual.localPosition = new Vector3(0f, 0f, 0.55f);   // trots beside the kid's line, not through it
-                if (kamakuraModel != null && KamakuraDog(go, visual, minX, maxX, kamakuraModel)) return;
                 var kitDog = KitModel(visual, "Animals", "Dog", visual.position + Vector3.down * 0.3f, 0f, 1f, fur);
                 if (kitDog != null)
                 {
@@ -3865,12 +3807,6 @@ namespace DribbleToSchool.EditorTools
                 if (!EndsAtSchool)
                 {
                     StopGoal(x, groundTop);
-                    return;
-                }
-                // A Kamakura leg: its lane picture shows the school's gate (LevelBuildKit.Kamakura).
-                if (Kamakura)
-                {
-                    KamakuraSchoolGoal(x, groundTop);
                     return;
                 }
                 var school = new GameObject("School").transform;

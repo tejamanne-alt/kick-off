@@ -157,7 +157,7 @@ namespace DribbleToSchool.Progression
         public static bool HoldsBack(SaveData data, string levelId)
         {
             Route route;
-            int leg = Routes.LegIndex(levelId, out route);
+            int leg = RouteTable.LegIndex(levelId, out route);
             return leg >= 0 && leg == route.levels.Length - 1 && !OnTime(data, route.id);
         }
 

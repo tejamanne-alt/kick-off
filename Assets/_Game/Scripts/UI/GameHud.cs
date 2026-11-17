@@ -194,8 +194,8 @@ namespace DribbleToSchool.UI
         /// <summary>"Granny's house » Church": where a story level starts and where it ends (Levels/RouteTable), or null if it is on no route.</summary>
         static string LegOf(string levelId)
         {
-            var from = Routes.From(levelId);
-            var to = Routes.To(levelId);
+            var from = RouteTable.From(levelId);
+            var to = RouteTable.To(levelId);
             if (from == null || to == null) return null;
             return Loc.F("leg.fromTo", Loc.T(from.NameKey), Loc.T(to.NameKey));
         }
@@ -205,7 +205,7 @@ namespace DribbleToSchool.UI
         {
             get
             {
-                var to = level.level != null && !level.level.isChallenge ? Routes.To(level.level.levelId) : null;
+                var to = level.level != null && !level.level.isChallenge ? RouteTable.To(level.level.levelId) : null;
                 return to != null && !to.IsSchool ? to : null;
             }
         }
@@ -574,7 +574,7 @@ namespace DribbleToSchool.UI
         /// </summary>
         string MedalWaiting()
         {
-            var route = level.level != null ? Routes.Of(level.level.levelId) : null;
+            var route = level.level != null ? RouteTable.Of(level.level.levelId) : null;
             var data = Progression.SaveSystem.Data;
             if (route == null || !Cosmetics.RouteRewards.IsWalked(route) || data.schoolMedals.Contains(route.id)) return null;
             return Loc.T(Cosmetics.RouteRewards.AllWalked() && !data.schoolTrophy ? "results.allWalked" : "results.medal");
@@ -729,8 +729,6 @@ namespace DribbleToSchool.UI
                 // This leg finished the whole route to school: its medal (or, the last of the six, the trophy) waits on the map.
                 string medal = MedalWaiting();
                 if (medal != null) extras = medal;
-                // The errand's bento got to school whole (Progression/Errands): the trip's Delivered badge.
-                if (r.delivered) extras = Loc.T("mini.delivered");
                 var ex = UIKit.Label(card.transform, "Extras", extras, 32, new Color(0.8f, 0.35f, 0.55f), TextAnchor.MiddleCenter, true);
                 UIKit.Place(ex.rectTransform, new Vector2(0.5f, 0f), new Vector2(0f, 210f), new Vector2(1050f, 44f));   // (clear of the buttons' tops at 195)
                 UIKit.Fit(ex, 22);

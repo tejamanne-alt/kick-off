@@ -404,7 +404,7 @@ namespace DribbleToSchool.Coop
             if (!between) return;
             var stop = race.ReachedStop;
             bigStop.text = stop != null && stop.ToKey != null ? Loc.F("coop.stop.made", Loc.T(stop.ToKey)) : Loc.T("coop.stop.onward");
-            var nextTo = race.Route != null && race.Leg + 1 < race.LegCount ? Levels.Routes.To(race.Route.levels[race.Leg + 1]) : null;
+            var nextTo = race.Route != null && race.Leg + 1 < race.LegCount ? Levels.RouteTable.To(race.Route.levels[race.Leg + 1]) : null;
             smallStop.text = nextTo != null ? Loc.F("coop.stop.next", Loc.T(nextTo.NameKey), race.Leg + 2, race.LegCount) : "";
         }
 

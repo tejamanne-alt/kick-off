@@ -36,14 +36,14 @@ namespace DribbleToSchool.EditorTools
         public static bool StartsAtHome(LevelDefinition def)
         {
             if (!HasLeadIn(def)) return false;
-            var from = FromStop(def.levelId);
+            var from = RouteTable.From(def.levelId);
             return from == null || from.IsHome;
         }
 
         /// <summary>The English name of the route a level is on ("Seaside Road"), or null if it is on none.</summary>
         public static string RouteNameOf(LevelDefinition def)
         {
-            var route = def != null ? RouteOfLevel(def.levelId) : null;
+            var route = def != null ? RouteTable.Of(def.levelId) : null;
             string name;
             return route != null && StringTables.For("en").TryGetValue(route.NameKey, out name) ? name : null;
         }

@@ -117,12 +117,6 @@ namespace DribbleToSchool.EditorTools
                 case "bandstand": Bandstand(parent, gx, gy, rng); break;
                 case "boathouse": Boathouse(parent, gx, gy, rng); break;
                 case "allotment": Allotment(parent, gx, gy, rng); break;
-                case "hase": HaseStation(parent, gx, gy); break;          // Kamakura's (StreetBuilder.Kamakura.cs)
-                // Kamakura's other stops: each leg's lane pictures show the stop itself (the station, the shrine's side gate, the
-                // boardwalk, Grandma's shop, the tower, the great torii, the trail sign, the park), so nothing more is built.
-                case "kamakuraStation": case "shrineSideGate": case "boardwalk": case "grandmasShop":
-                case "lifeguardTower": case "greatTorii": case "trailSign": case "genjiyama":
-                    break;
                 default:
                     Debug.LogWarning("[Kick Off] No set piece for the stop \"" + stop.id + "\": only its sign is built.");
                     PostBoard(parent, stop.signName.ToUpperInvariant(), gx - 1.2f, gy, 2.3f, 0.07f, new Color(0.25f, 0.3f, 0.4f), Color.white);

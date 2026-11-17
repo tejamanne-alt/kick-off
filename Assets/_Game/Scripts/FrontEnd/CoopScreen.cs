@@ -522,8 +522,8 @@ namespace DribbleToSchool.FrontEnd
             var stage = Panel(body, "Stage", new Vector2(1f, 1f), new Vector2(-40f, 0f), new Vector2(right, 470f));
             UIKit.SectionLabel(UIKit.Row(stage.transform, "Label", 20f, 46f, 26f, 26f), Loc.T("coop.stage"));
             var sel = s.Selection;
-            bool randomRoute = sel.route == CoopSelection.Random || sel.route >= CoopRoutes.All.Length;
-            var route = randomRoute ? null : CoopRoutes.All[sel.route];
+            bool randomRoute = sel.route == CoopSelection.Random || sel.route >= RouteTable.All.Length;
+            var route = randomRoute ? null : RouteTable.All[sel.route];
             var title = UIKit.Label(stage.transform, "Route", randomRoute ? Loc.T("coop.random.route") : Loc.T(route.NameKey), 50, UITheme.Navy, TextAnchor.MiddleLeft, true);
             UIKit.Place(title.rectTransform, new Vector2(0f, 1f), new Vector2(30f, -76f), new Vector2(right - 60f, 66f), new Vector2(0f, 1f));
             UIKit.Fit(title, 30);
@@ -567,7 +567,7 @@ namespace DribbleToSchool.FrontEnd
             var sb = new StringBuilder(Loc.T(RouteTable.Home.NameKey));
             foreach (string id in route.stops)
             {
-                var stop = Routes.StopById(id);
+                var stop = RouteTable.StopById(id);
                 if (stop != null) sb.Append(" » ").Append(Loc.T(stop.NameKey));
             }
             sb.Append(" » ").Append(Loc.T(RouteTable.School.NameKey));

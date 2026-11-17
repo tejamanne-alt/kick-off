@@ -6,8 +6,6 @@
 #           [--hue 255,320] [--sat 0.3]   the cloth's hue band (degrees; lo > hi wraps through red's 0) and least saturation
 #           [--size-by panel]   size it on the kid by its back panel's width, not its widest point (the Race Car's
 #                               wheels and mirrors stand out beyond its body)
-#           [--even]            measure it by points spread over its surface (a bag built from views, bag_views.py)
-#           [--sat 2]           no recolourable cloth: the bag keeps its own colours (the black randoseru)
 #           -> outdir/Bag<Id>.blend (the bag facing the wearer on -y, its back panel's top middle at the origin, its body
 #              one unit tall), outdir/Bag<Id>Atlas.png, outdir/Bag<Id>.json
 #   icon  blenv/bin/python meshy_bag.py -- icon /abs/Bag<Id>.blend /abs/bag_<id>.png [--size 256]
@@ -41,26 +39,6 @@ log = mb.log
 CLOTH_HUE = (255.0, 320.0)
 CLOTH_SAT = 0.3
 SIZE_BY = 'widest'          # (--size-by panel: by the back panel's width)
-EVEN = False                # (--even: measure the bag by points spread evenly over its surface, not by its vertices:
-                            # for a bag built from flat sides, bag_views.py, whose flat flap and back panel keep no
-                            # vertices inside them once decimated; a Meshy model's vertices are spread evenly anyway)
-
-
-def stat_points(o, n=40000, seed=0):
-    """The points the bag is measured by: its vertices, or (EVEN) n points spread over its surface by area."""
-    if not EVEN:
-        return verts_np(o)
-    me = o.data
-    me.calc_loop_triangles()
-    co = np.array([v.co for v in me.vertices], np.float64)
-    tri = np.array([t.vertices[:] for t in me.loop_triangles])
-    a, b, c = co[tri[:, 0]], co[tri[:, 1]], co[tri[:, 2]]
-    area = 0.5 * np.linalg.norm(np.cross(b - a, c - a), axis=1)
-    rng = np.random.default_rng(seed)
-    pick = rng.choice(len(tri), n, p=area / area.sum())
-    r1, r2 = rng.random(n), rng.random(n)
-    s = np.sqrt(r1)
-    return a[pick] * (1 - s)[:, None] + b[pick] * (s * (1 - r2))[:, None] + c[pick] * (s * r2)[:, None]
 
 
 def cloth_mask(rgb):
@@ -92,7 +70,7 @@ def prep(src, out, bag_id, tris, size):
     # Which side the straps are on: the side where the whole bag reaches furthest beyond its middle column (the
     # straps' "D" stands off the back panel with nothing between the two straps; a pocket, lights or a number plate on
     # the front sit in the middle).
-    V = stat_points(o)
+    V = verts_np(o)
     mid = (V[:, 2] > np.percentile(V[:, 2], 40)) & (V[:, 2] < np.percentile(V[:, 2], 75))
     centre = mid & (np.abs(V[:, 0]) < 0.1 * np.ptp(V[:, 0]))
     ys, yc = V[mid, 1], V[centre, 1]
@@ -100,11 +78,10 @@ def prep(src, out, bag_id, tris, size):
     plus = gap_plus > gap_minus
     if plus:                                                    # the straps toward -y: the wearer's side
         o.data.transform(Matrix.Rotation(math.pi, 4, 'Z')); o.data.update()
-    V = stat_points(o)
+    V = verts_np(o)
     # the back panel: the wearer's side of the middle column (no straps there), at the body's middle heights
     zlo, zhi = V[:, 2].min(), V[:, 2].max()
-    narrow = 0.04 if EVEN else 0.08     # (a randoseru's straps come in to the handle: the middle column kept clear of them)
-    band = (V[:, 2] > zlo + 0.45 * (zhi - zlo)) & (V[:, 2] < zlo + 0.75 * (zhi - zlo)) & (np.abs(V[:, 0]) < narrow * np.ptp(V[:, 0]))
+    band = (V[:, 2] > zlo + 0.45 * (zhi - zlo)) & (V[:, 2] < zlo + 0.75 * (zhi - zlo)) & (np.abs(V[:, 0]) < 0.08 * np.ptp(V[:, 0]))
     yb = np.percentile(V[band, 1], 1)
     # the body's top: the highest point of the back panel's middle, but never above the highest level where the bag is
     # still at least half its full width (a carry handle standing right over the panel, as the Unicorn's does, is a
@@ -121,7 +98,7 @@ def prep(src, out, bag_id, tris, size):
     body_h = top - zlo
     k = 1.0 / body_h
     o.data.transform(Matrix.Diagonal((k, k, k, 1)) @ Matrix.Translation((0, -yb, -top))); o.data.update()
-    V = stat_points(o)
+    V = verts_np(o)
     strap = V[:, 1] < -0.02
     width = np.ptp(V[(V[:, 2] > -0.6) & (V[:, 2] < -0.3) & ~strap, 0])
     log('prep: straps were on %s y; back panel y %.3f, body %.3f tall, %d of %d vertices in the straps, body %.3f wide' % (
@@ -140,11 +117,8 @@ def prep(src, out, bag_id, tris, size):
     im = im_rgb.copy(); im.putalpha(im_a)
     png = os.path.join(out, 'Bag%sAtlas.png' % bag_id); im.save(png)
     cloth = rgb[m > 0.9]
-    if len(cloth):
-        lum = float(np.median(cloth @ np.array([0.299, 0.587, 0.114])))
-        base = np.median(cloth, 0)
-    else:                                       # (no recolourable cloth, --sat 2: the bag keeps its own colours)
-        lum, base = 0.05, np.array([0.05, 0.05, 0.05])
+    lum = float(np.median(cloth @ np.array([0.299, 0.587, 0.114])))
+    base = np.median(cloth, 0)
     log('prep: cloth %.1f%% of the texture, its colour sRGB %s, luminance %.3f' % (100 * (m > 0.5).mean(), np.round(base, 3), lum))
 
     me = o.data
@@ -347,7 +321,6 @@ if __name__ == '__main__':
         if '--hue' in argv: CLOTH_HUE = tuple(float(x) for x in argv[argv.index('--hue') + 1].split(','))
         if '--sat' in argv: CLOTH_SAT = float(argv[argv.index('--sat') + 1])
         if '--size-by' in argv: SIZE_BY = argv[argv.index('--size-by') + 1]
-        EVEN = '--even' in argv
         prep(argv[1], argv[2], bag_id, tris, size)
     elif argv[0] == 'icon':
         icon(argv[1], argv[2], int(argv[argv.index('--size') + 1]) if '--size' in argv else 256)

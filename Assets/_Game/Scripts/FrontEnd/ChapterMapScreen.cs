@@ -123,12 +123,8 @@ namespace DribbleToSchool.FrontEnd
 
         // ------------------------------------------------------------------ building
 
-        /// <summary>The levels of the city chosen (Kamakura's own legs while it plays its own routes: Levels/Routes).</summary>
-        LevelCatalog CityLevels { get { return LevelCatalog.ForCity(Controller.levels); } }
-
         protected override void Build(RectTransform root)
         {
-            TownMap.UseLayout(Routes.MapLayout);         // the chosen city's map (Kamakura's own, or the original town's)
             // The mat: the colour round the picture, over the whole screen (and beyond the safe area).
             var mat = UIKit.Rect(root, "Mat");
             mat.anchorMin = Vector2.zero;
@@ -201,7 +197,7 @@ namespace DribbleToSchool.FrontEnd
 
         void PlayLateFromHome()
         {
-            var catalog = CityLevels;
+            var catalog = Controller.levels;
             var first = lateRoute != null && catalog != null ? catalog.FindById(lateRoute.levels[0]) : null;
             if (first != null) Controller.PlayLevel(first);
         }
@@ -288,7 +284,7 @@ namespace DribbleToSchool.FrontEnd
                     foreach (var other in TownMap.Nodes)
                     {
                         if (other == node || !drawn(other.levelId)) continue;
-                        float r = TownMap.NodeRadius * (Routes.Of(other.levelId) == focusRoute ? 1f : TownMapNames.OtherNodeScale) + 8f;
+                        float r = TownMap.NodeRadius * (RouteTable.Of(other.levelId) == focusRoute ? 1f : TownMapNames.OtherNodeScale) + 8f;
                         float ox = Mathf.Max(0f, Mathf.Min(box.xMax, other.pos.x + r) - Mathf.Max(box.xMin, other.pos.x - r));
                         float oy = Mathf.Max(0f, Mathf.Min(box.yMax, other.pos.y + r) - Mathf.Max(box.yMin, other.pos.y - r));
                         cover += ox * oy;
@@ -484,7 +480,7 @@ namespace DribbleToSchool.FrontEnd
             if (Mathf.Abs(s - itemScale) <= itemScale * 0.02f && !(s == 1f && itemScale != 1f)) return;
             itemScale = s;
             foreach (var item in items) Apply(item);
-            if (focus != null) DrawRoutes(CityLevels);
+            if (focus != null) DrawRoutes(Controller.levels);
             DrawMarkers();
             UpdateStopLabels();
             UpdateZoomDetail();
@@ -524,7 +520,7 @@ namespace DribbleToSchool.FrontEnd
             foreach (var node in TownMap.Nodes)
             {
                 if (!Drawn(node.levelId, focusRoute)) continue;
-                bool focused = Routes.Of(node.levelId) == focusRoute;
+                bool focused = RouteTable.Of(node.levelId) == focusRoute;
                 float r = TownMap.NodeRadius * (focused ? 1f : TownMapNames.OtherNodeScale);
                 taken.Add(new Rect(node.pos.x - r - 6f, node.pos.y - r - 6f, 2f * r + 12f, 2f * r + (focused ? 40f : 12f)));
             }
@@ -542,7 +538,7 @@ namespace DribbleToSchool.FrontEnd
                 var node = TownMap.Node(def.levelId);
                 Beacon beacon = BeaconFor(def, LevelUnlocks.IsUnlocked(catalog, def));
                 if (node == null || beacon == Beacon.None) continue;
-                float scale = Routes.Of(def.levelId) == focusRoute ? 1f : TownMapNames.OtherNodeScale;
+                float scale = RouteTable.Of(def.levelId) == focusRoute ? 1f : TownMapNames.OtherNodeScale;
                 Vector2 size = TagSize(beacon, scale);
                 float shift = TagShift(node, size, TagLift(scale), focusRoute, id => Drawn(id, focusRoute));
                 tagShift[def.levelId] = shift;
@@ -632,7 +628,7 @@ namespace DribbleToSchool.FrontEnd
             }
             for (int i = 0; i < focusRoute.stops.Length; i++)
             {
-                var stop = Routes.StopById(focusRoute.stops[i]);
+                var stop = RouteTable.StopById(focusRoute.stops[i]);
                 Vector2? marker = TownMap.StopPosition(focusRoute.id, i);
                 if (stop != null && marker != null) BuildStopLabel(focusRoute, stop, marker.Value);
             }
@@ -722,7 +718,7 @@ namespace DribbleToSchool.FrontEnd
         /// </summary>
         bool Drawn(string levelId, Route focusRoute)
         {
-            if (Routes.Of(levelId) == focusRoute) return true;
+            if (RouteTable.Of(levelId) == focusRoute) return true;
             if (focusRoute != null && levelId == focusRoute.challenge) return true;
             return (nextLevel != null && nextLevel.levelId == levelId) || (heldBack != null && heldBack.levelId == levelId);
         }
@@ -814,10 +810,10 @@ namespace DribbleToSchool.FrontEnd
             float side = SideMargin + ExtraSide();
             row.offsetMin = new Vector2(side, ChipBottom);
             row.offsetMax = new Vector2(-side, ChipBottom + ChipHeight);
-            int count = Routes.All.Length;
+            int count = RouteTable.All.Length;
             for (int i = 0; i < count; i++)
             {
-                var route = Routes.All[i];
+                var route = RouteTable.All[i];
                 var cell = UIKit.Rect(row, "Cell_" + route.id);
                 cell.anchorMin = new Vector2(i / (float)count, 0f);
                 cell.anchorMax = new Vector2((i + 1) / (float)count, 1f);
@@ -892,36 +888,29 @@ namespace DribbleToSchool.FrontEnd
 
         public override void OnShow()
         {
-            // Another city chosen since the map was built: build every screen again for its map and its levels.
-            if (TownMap.ActiveLayout != Routes.MapLayout)
-            {
-                TownMap.UseLayout(Routes.MapLayout);
-                Controller.RebuildScreens();
-                return;
-            }
             EnsurePicture();
             firstShow = true;
-            Survey(CityLevels);            // the banner (if a late trip holds a level back) takes room above the map
+            Survey(Controller.levels);            // the banner (if a late trip holds a level back) takes room above the map
             if (view != null) view.Fit(true);
             int requested = FrontEndController.RequestedChapter;
             FrontEndController.RequestedChapter = 0;
-            var catalog = CityLevels;
+            var catalog = Controller.levels;
             LevelDefinition next = catalog != null ? LevelUnlocks.NextToPlay(catalog) : null;
             string id = null;
             if (requested > 0)
             {
                 // The route of the chapter just played that holds the next level (chapter 4 has two), else its first.
-                if (next != null && next.chapter == requested && Routes.Of(next.levelId) != null) id = Routes.Of(next.levelId).id;
+                if (next != null && next.chapter == requested && RouteTable.Of(next.levelId) != null) id = RouteTable.Of(next.levelId).id;
                 else
                 {
-                    var routes = Routes.InChapter(requested);
+                    var routes = RouteTable.InChapter(requested);
                     if (routes.Count > 0) id = routes[0].id;
                 }
             }
             if (id == null)
             {
-                var r = next != null ? Routes.Of(next.levelId) : null;
-                id = r != null ? r.id : Routes.All[0].id;
+                var r = next != null ? RouteTable.Of(next.levelId) : null;
+                id = r != null ? r.id : RouteTable.All[0].id;
             }
             ShowRoute(id);
         }
@@ -987,11 +976,11 @@ namespace DribbleToSchool.FrontEnd
 
         void ShowRoute(string id)
         {
-            var catalog = CityLevels;
+            var catalog = Controller.levels;
             focus = id;
             popIn = firstShow;
             firstShow = false;
-            var focusRoute = Routes.All[Routes.IndexOf(id)];
+            var focusRoute = RouteTable.All[RouteTable.IndexOf(id)];
             Survey(catalog);
             for (int i = nodeLayer.childCount - 1; i >= 0; i--) Object.Destroy(nodeLayer.GetChild(i).gameObject);
             for (int i = stripRoot.childCount - 1; i >= 0; i--) Object.Destroy(stripRoot.GetChild(i).gameObject);
@@ -1000,7 +989,7 @@ namespace DribbleToSchool.FrontEnd
             DrawRoutes(catalog);
             BuildTexts(focusRoute, catalog);       // the names for this focus (the level names among them)
 
-            foreach (var route in Routes.All)
+            foreach (var route in RouteTable.All)
             {
                 bool on = route.id == id;
                 Color c = ColourOf(catalog, route);
@@ -1011,7 +1000,7 @@ namespace DribbleToSchool.FrontEnd
                 chipMedals[route.id].gameObject.SetActive(walked);
                 if (walked) UI.SchoolRewardPanel.TintMedal(chipMedals[route.id], c, true);
                 // A badge on the chip of the route that was late (a clock) or that holds the next level (play).
-                var nextRoute = nextLevel != null ? Routes.Of(nextLevel.levelId) : null;
+                var nextRoute = nextLevel != null ? RouteTable.Of(nextLevel.levelId) : null;
                 Beacon badge = route == lateRoute ? Beacon.Late
                     : route == nextRoute && BeaconFor(nextLevel, catalog != null && LevelUnlocks.IsUnlocked(catalog, nextLevel)) == Beacon.Play ? Beacon.Play : Beacon.None;
                 chipBadges[route.id].gameObject.SetActive(badge != Beacon.None);
@@ -1034,7 +1023,7 @@ namespace DribbleToSchool.FrontEnd
 
             // The nodes: the other routes' first (smaller), the focused route's last (on top), its levels named.
             int index = 0;
-            foreach (var route in Routes.All)
+            foreach (var route in RouteTable.All)
             {
                 if (route.id == id) continue;
                 BuildNodes(catalog, route, next, false, ref index);
@@ -1069,7 +1058,7 @@ namespace DribbleToSchool.FrontEnd
         void DrawRoutes(LevelCatalog catalog)
         {
             int order = 0;
-            foreach (var route in Routes.All)
+            foreach (var route in RouteTable.All)
             {
                 var line = TownMap.Route(route.id);
                 if (line == null) continue;
@@ -1093,14 +1082,6 @@ namespace DribbleToSchool.FrontEnd
                 painter.Stroke(line.points, width + casing * 2f, Color.white, false, true);
                 painter.Stroke(line.points, width, core, false, true);
                 painter.Dashed(line.points, 7f * k, 24f * k, 34f * k, new Color(1f, 1f, 1f, 0.85f));
-                // A stretch ridden, not walked (Kamakura's tram, KM1-2: TownMap.RideSection), drawn as a railway: ties across
-                // the line in ink, the route's colour along them.
-                var ride = TownMap.RideSection(route.id);
-                if (ride != null)
-                {
-                    painter.Dashed(ride, width * 1.8f, 5f * k, 13f * k, MapGlyphs.Ink);
-                    painter.Stroke(ride, width * 0.6f, core, false, true);
-                }
                 // The dotted branch from the route to its challenge's node.
                 if (route.challenge != null)
                 {
@@ -1323,7 +1304,7 @@ namespace DribbleToSchool.FrontEnd
             var addOn = Cities.Active;
             Route there = null;
             var names = new List<string>();
-            foreach (var route in Routes.All)
+            foreach (var route in RouteTable.All)
                 if (addOn.HasChapter(route.chapter))
                 {
                     if (there == null) there = route;

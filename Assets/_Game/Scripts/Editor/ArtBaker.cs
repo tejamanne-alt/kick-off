@@ -194,35 +194,16 @@ namespace DribbleToSchool.EditorTools
             set.crateMaterial.SetFloat("_FilterMask", 0.125f);   // a crate is pushed about: a cel for the classic cartoon filter
             foreach (var kit in LevelBuildKit.Kits)
             {
-                // A model with its own texture (the Kamakura kit's, each carved from its own views): its own material,
-                // Kit<kit>_<model>, cut out where the texture's alpha is (the bicycle's spokes and basket).
-                foreach (string model in LevelBuildKit.KitModelNames(kit))
-                {
-                    var info = LevelBuildKit.KitInfo(kit, model);
-                    object texture, cutout;
-                    if (info == null || !info.TryGetValue("texture", out texture) || !(texture is string)) continue;
-                    var own = AssetDatabase.LoadAssetAtPath<Texture2D>(LevelBuildKit.ModelsDir + "/" + kit + "/" + (string)texture);
-                    if (own == null) continue;
-                    var om = ToonMaterial("Kit" + kit + "_" + model, toon, own, false);
-                    AlphaClip(om, info.TryGetValue("cutout", out cutout) && cutout is bool && (bool)cutout);
-                    om.SetColor("_ShadowColor", DefaultShadowTint);
-                    om.SetFloat("_FilterMask", 1f);   // scenery, for the filters
-                    om.enableInstancing = true;
-                    EditorUtility.SetDirty(om);
-                    set.kits[kit + "/" + model] = om;
-                }
                 var atlas = AssetDatabase.LoadAssetAtPath<Texture2D>(LevelBuildKit.ModelsDir + "/" + kit + "/" + kit + "Atlas.png");
                 if (atlas == null) continue;
                 var m = ToonMaterial("Kit" + kit, toon, atlas, false);
                 m.SetFloat("_Wind", kit == "Plants" ? 0.1f : 0f);   // trees and grass sway; their alpha is a wind weight
                 LeafCards(m, kit == "Plants" || kit == "Barriers");   // leaf-card foliage (the boughs over the path too)
-                // Kamakura's animals are cut out of their photographs: each is clipped at its outline (alpha 0.5).
-                if (kit == "KamakuraAnimals") AlphaClip(m, true);
                 // The shade inside a crown is a cool, nearly neutral dark, as in the reference shots (docs/ART_DIRECTION.md).
                 m.SetColor("_ShadowColor", kit == "Plants" ? new Color(0.728f, 0.006f, 2f) : DefaultShadowTint);
                 // What the filters take it for (Shaders/PostFX): the plants are foliage, the animals kit (the animals,
                 // and the coins, stars and stickers the kid collects) cels, every other kit scenery.
-                m.SetFloat("_FilterMask", kit == "Plants" ? 0.5f : kit == "Animals" || kit == "KamakuraAnimals" ? 0.125f : 1f);
+                m.SetFloat("_FilterMask", kit == "Plants" ? 0.5f : kit == "Animals" ? 0.125f : 1f);
                 m.enableInstancing = true;                          // repeats of a kit model draw together
                 set.kits[kit] = m;
                 // The kit's models the kid plays with (LevelBuildKit.HasCelModels: swing seats, targets, flags...) wear a
@@ -262,10 +243,6 @@ namespace DribbleToSchool.EditorTools
             foreach (string passerby in LevelBuildKit.PasserbyModels)
                 if (AssetDatabase.LoadAssetAtPath<GameObject>(LevelBuildKit.ModelsDir + "/" + passerby + ".fbx") != null)
                     set.passersby[passerby] = CharacterMaterial(passerby, toonCharacter, passerby + "Atlas", false);
-            // (KM1-1's first-graders, placed by their level: the same pedestrians' line and rim)
-            foreach (string child in LevelBuildKit.FirstGraderModels)
-                if (AssetDatabase.LoadAssetAtPath<GameObject>(LevelBuildKit.ModelsDir + "/" + child + ".fbx") != null)
-                    set.passersby[child] = CharacterMaterial(child, toonCharacter, child + "Atlas", false);
             foreach (var player in PlayerRoster.All)
             {
                 // A kid whose model is not in the project yet is left out (LevelBuildKit.BuildCast says so).
@@ -318,23 +295,6 @@ namespace DribbleToSchool.EditorTools
             m.SetFloat("_EdgeFade", on ? 1f : 0f);
             m.SetFloat("_LeafShadow", on ? 0.685f : 1f);   // deep shade inside the crowns, as in the references
             m.SetFloat("_Cull", (float)(on ? UnityEngine.Rendering.CullMode.Off : UnityEngine.Rendering.CullMode.Back));
-            if (on) m.EnableKeyword("_ALPHATEST_ON");
-            else m.DisableKeyword("_ALPHATEST_ON");
-            m.SetOverrideTag("RenderType", on ? "TransparentCutout" : "");
-            m.renderQueue = on ? (int)UnityEngine.Rendering.RenderQueue.AlphaTest : -1;
-        }
-
-        /// <summary>
-        /// A solid model cut out where its texture's alpha is under 0.5 (the Kamakura bicycle's spokes and basket mesh): its
-        /// back faces still culled (it is a closed solid, so through a gap the far side shows), no edge fade, plain shadows.
-        /// </summary>
-        static void AlphaClip(Material m, bool on)
-        {
-            m.SetFloat("_AlphaClip", on ? 1f : 0f);
-            m.SetFloat("_Cutoff", 0.5f);
-            m.SetFloat("_EdgeFade", 0f);
-            m.SetFloat("_LeafShadow", 1f);
-            m.SetFloat("_Cull", (float)UnityEngine.Rendering.CullMode.Back);
             if (on) m.EnableKeyword("_ALPHATEST_ON");
             else m.DisableKeyword("_ALPHATEST_ON");
             m.SetOverrideTag("RenderType", on ? "TransparentCutout" : "");

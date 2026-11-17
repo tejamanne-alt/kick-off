@@ -250,14 +250,7 @@ namespace DribbleToSchool.Coop
                 // A random route in a chosen location: one of the routes it has (Florida: the beach).
                 if (anyRoute) s.route = (byte)PickFitting(RouteCount, r => anyPlace || LocationFits(r, s.addOn));
                 if (anyPlace) s.addOn = (byte)PickFitting(AddOnCount, a => LocationFits(s.route, a));
-                else if (!LocationFits(s.route, s.addOn))
-                {
-                    // (a stale choice: the first location that has the route; a city's own routes are that city's alone)
-                    byte first = 0;
-                    for (int a = 0; a < AddOnCount; a++)
-                        if (LocationFits(s.route, a)) { first = (byte)a; break; }
-                    s.addOn = first;
-                }
+                else if (!LocationFits(s.route, s.addOn)) s.addOn = 0;
             }
             RaceSelection = s;
             RaceId = (byte)(RaceId == 255 ? 1 : RaceId + 1);

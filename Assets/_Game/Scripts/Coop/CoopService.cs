@@ -60,7 +60,7 @@ namespace DribbleToSchool.Coop
             Instance = this;
             link = CreateLink();
             Session = new CoopSession(link, clock, CoopProfile.Uid, CoopProfile.Name, CoopProfile.Character, 0, CoopProfile.TagSeed);
-            Session.RouteCount = CoopRoutes.All.Length;
+            Session.RouteCount = RouteTable.All.Length;
             Session.AddOnCount = CoopLocations.Count;
             Session.LocationFits = CoopLocations.Fits;
             Session.ContentHash = ContentHash();
@@ -146,7 +146,7 @@ namespace DribbleToSchool.Coop
         {
             uint h = 2166136261u;
             foreach (var kid in PlayerRoster.All) h = Fnv(h, kid.id);
-            foreach (var route in CoopRoutes.All)
+            foreach (var route in RouteTable.All)
             {
                 h = Fnv(h, route.id);
                 foreach (string level in route.levels) h = Fnv(h, level);
@@ -330,62 +330,6 @@ namespace DribbleToSchool.Coop
         public void Shutdown() { }
     }
 
-    /// <summary>
-    /// The routes a race can run, by index on the wire (the same list on every phone, whatever city each has chosen: never
-    /// Levels/Routes.All, which follows this phone's city). Kamakura's own three first while it plays them
-    /// (Levels/Routes.KamakuraOwnRoutes), then the original town's routes another location still has (Florida's street and
-    /// beach); with the switch off, the original six as before. The host's default (0) is Kamakura's first route in Kamakura.
-    /// </summary>
-    public static class CoopRoutes
-    {
-        static Route[] all;
-
-        public static Route[] All
-        {
-            get
-            {
-                if (all == null)
-                {
-                    var list = new List<Route>();
-                    if (Routes.KamakuraOwnRoutes) list.AddRange(CityRoutes.Kamakura.routes);
-                    foreach (var r in RouteTable.All)
-                        if (!Routes.KamakuraOwnRoutes || SomeOtherCityHas(r)) list.Add(r);
-                    all = list.ToArray();
-                }
-                return all;
-            }
-        }
-
-        /// <summary>The route is a city's own (one of Levels/CityRoutes), not the original town's.</summary>
-        public static bool IsCityRoute(Route route)
-        {
-            return route != null && System.Array.IndexOf(RouteTable.All, route) < 0;
-        }
-
-        static bool SomeOtherCityHas(Route r)
-        {
-            for (int i = 0; i < CoopLocations.Count; i++)
-            {
-                var city = CoopLocations.At(i);
-                if (CityRoutes.For(city.id) == null && city.HasChapter(r.chapter)) return true;
-            }
-            return false;
-        }
-
-        /// <summary>A level of a race's route, from the main catalog or Kamakura's own (LevelCatalog.kamakura).</summary>
-        public static LevelDefinition Find(LevelCatalog main, string levelId)
-        {
-            if (main == null) return null;
-            return main.FindById(levelId) ?? (main.kamakura != null ? main.kamakura.FindById(levelId) : null);
-        }
-
-        /// <summary>The catalog whose chapters colour a route: Kamakura's for its own, else the main one.</summary>
-        public static LevelCatalog CatalogOf(LevelCatalog main, Route route)
-        {
-            return main != null && main.kamakura != null && IsCityRoute(route) ? main.kamakura : main;
-        }
-    }
-
     /// <summary>The locations a race can run in: the cities whose streets can be played (Progression/Cities), by index on the wire.</summary>
     public static class CoopLocations
     {
@@ -411,20 +355,11 @@ namespace DribbleToSchool.Coop
             return index >= 0 && index < List.Count ? List[index] : Progression.Cities.Kamakura;
         }
 
-        /// <summary>
-        /// The location (by index) has the route (by index in <see cref="CoopRoutes.All"/>): a city's own routes are that city's
-        /// alone (Kamakura's three), and an original route runs where the city still has its streets (Florida: the street and the
-        /// beach; not Kamakura while it plays its own).
-        /// </summary>
+        /// <summary>The location (by index) has the route's streets (by index in RouteTable.All): Florida has only the beach so far.</summary>
         public static bool Fits(int route, int location)
         {
-            if (route < 0 || route >= CoopRoutes.All.Length) return true;
-            var r = CoopRoutes.All[route];
-            var city = At(location);
-            var own = CityRoutes.For(city.id);
-            if (CoopRoutes.IsCityRoute(r)) return own != null && System.Array.IndexOf(own.routes, r) >= 0;
-            if (own != null && Routes.KamakuraOwnRoutes) return false;
-            return city.HasChapter(r.chapter);
+            if (route < 0 || route >= RouteTable.All.Length) return true;
+            return At(location).HasChapter(RouteTable.All[route].chapter);
         }
 
         public static int IndexOf(Progression.City a)

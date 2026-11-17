@@ -142,7 +142,7 @@ namespace DribbleToSchool.Progression
         public static Route HeldBackBy(string levelId, string previousStoryId, SaveData data, bool cozy)
         {
             if (previousStoryId == null || cozy || data.IsCompleted(levelId) || !data.IsCompleted(previousStoryId)) return null;
-            return SchoolTrips.HoldsBack(data, previousStoryId) ? Routes.Of(previousStoryId) : null;
+            return SchoolTrips.HoldsBack(data, previousStoryId) ? RouteTable.Of(previousStoryId) : null;
         }
 
         /// <summary>

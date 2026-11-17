@@ -113,9 +113,7 @@ namespace DribbleToSchool.World
 
         // ---------------------------------------------------------------- parts
 
-        /// <summary>A model part swung from its rest pose (kit parts' axes are the model's). A part in links (Tail with
-        /// Tail2 and Tail3 under it, WingL with WingL2: the Kamakura kit's) bends link by link (PartChain); one without
-        /// moves whole, as before.</summary>
+        /// <summary>A model part swung from its rest pose (kit parts' axes are the model's).</summary>
         [System.Serializable]
         public struct Part
         {
@@ -124,7 +122,6 @@ namespace DribbleToSchool.World
             [System.NonSerialized] public Quaternion rest;
             [System.NonSerialized] public Vector3 restPosition;
             [System.NonSerialized] public bool ready;
-            [System.NonSerialized] public PartChain chain;
 
             public Part(Transform transform, Vector3 axis)
             {
@@ -133,7 +130,6 @@ namespace DribbleToSchool.World
                 rest = transform != null ? transform.localRotation : Quaternion.identity;
                 restPosition = transform != null ? transform.localPosition : Vector3.zero;
                 ready = transform != null;
-                chain = Linked(transform, axis);
             }
 
             public void Capture()
@@ -142,31 +138,11 @@ namespace DribbleToSchool.World
                 if (!ready) return;
                 rest = transform.localRotation;
                 restPosition = transform.localPosition;
-                chain = Linked(transform, axis);
-            }
-
-            static PartChain Linked(Transform t, Vector3 axis)
-            {
-                if (t == null) return null;
-                var c = PartChain.Find(t, axis);
-                return c.Links > 1 ? c : null;
             }
 
             public void Set(float degrees)
             {
-                if (!ready) return;
-                if (chain != null) chain.Set(degrees, Time.deltaTime);
-                else transform.localRotation = rest * Quaternion.AngleAxis(degrees, axis);
-            }
-
-            /// <summary>A wing beaten as a real one is (WingStroke, D21): flapped up by flap about its axis, swept back by
-            /// sweep about sweepAxis (in its own space), and, a wing in links, folded at the wrist by fold (its outer
-            /// links turned the other way). A wing with no links flaps and sweeps whole.</summary>
-            public void SetWing(float flap, float fold, float sweep, Vector3 sweepAxis)
-            {
-                if (!ready) return;
-                if (chain != null) chain.SetWing(flap, fold, sweep, sweepAxis);
-                else transform.localRotation = rest * Quaternion.AngleAxis(sweep, sweepAxis) * Quaternion.AngleAxis(flap, axis);
+                if (ready) transform.localRotation = rest * Quaternion.AngleAxis(degrees, axis);
             }
 
             /// <summary>Rotate about a second axis as well (in the part's own space).</summary>

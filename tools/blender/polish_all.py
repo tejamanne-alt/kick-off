@@ -11,10 +11,8 @@
 #     or moved), then polish_character.py (welded, smoothed normals, the inner face leaned forward, 32k triangles, each
 #     Locker Room bag 8k, the atlas' gaps filled). (face_paint.py's drawn faces were rejected: docs/LEARNINGS.md, C14.)
 #   Hana and Max: polish_character.py the same way (their painted faces are kept);
-#   the six passers-by: polish_character.py at 14k triangles; the extra passers-by (EXTRA_WALKERS: KM1-1's
-#     first-graders) imported from their Meshy models by meshy_rigged.py first;
-#   the extra bags (EXTRA_BAGS: the two randoseru, built from the user's views) fitted onto each kid's original first;
-#   the Locker Room bags' shared atlases (RGBA: the alpha marks the recolourable cloth): the gaps filled;
+#   the six passers-by: polish_character.py at 14k triangles;
+#   the five Locker Room bags' shared atlases (RGBA: the alpha marks the recolourable cloth): the gaps filled;
 #   every <Name>.json's "tris" updated.
 import argparse, json, os, shutil, subprocess, sys
 
@@ -25,16 +23,6 @@ KIDS = ['PrimaryBoy', 'PrimaryBoy2', 'PrimaryGirl', 'PrimaryGirl2']
 TEENS = ['Girl', 'BackpackBoy']
 WALKERS = ['Jogger', 'Mom', 'OfficeWorker', 'Courier', 'Shopkeeper', 'Grandad']
 BAGS = ['KickOff', 'RaceCar', 'Unicorn', 'DenimBow', 'GoldenTrail']
-# Bags added after the source commit, so in none of the originals: each built from the user's views (bag_views.py),
-# prepared (meshy_bag.py prep, with its own colour arguments), and fitted onto every kid's original before its polish.
-EXTRA_BAGS = [('RandoseruRed', ['--hue', '340,18', '--sat', '0.5']),     # its red body recolourable
-              ('RandoseruBlack', ['--sat', '2'])]                       # its own colours (black stays black)
-# Passers-by added after the source commit: imported from the user's Meshy model (meshy_rigged.py, its profile) at
-# 30k triangles, then polished as the others are. KM1-1's first-graders (docs/KAMAKURA_BUILD.md, KM-C01, C02).
-EXTRA_WALKERS = [('FirstGraderBoy', 'review/kamakura/characters/KM-C01_first_grade_boy/KM-C01_first_grade_boy.fbx',
-                  'firstgrader_boy'),
-                 ('FirstGraderGirl', 'review/kamakura/characters/KM-C02_first_grade_girl/KM-C02_first_grade_girl.fbx',
-                  'firstgrader_girl')]
 PLAYER_TRIS, BAG_TRIS, WALKER_TRIS = 32000, 8000, 14000
 
 ap = argparse.ArgumentParser()
@@ -73,31 +61,6 @@ def blender(script, *args):
 def want(n): return not a.only or n in a.only
 
 
-# the extra bags, built and prepared once (and their Locker Room pictures)
-BAGDIR = os.path.join(OUT, '_bags')
-os.makedirs(BAGDIR, exist_ok=True)
-for bag, args in EXTRA_BAGS:
-    if not os.path.exists(os.path.join(BAGDIR, 'Bag%s.blend' % bag)):
-        blender('bag_views.py', bag, BAGDIR)
-        blender('meshy_bag.py', 'prep', os.path.join(BAGDIR, bag + '.fbx'), BAGDIR, '--id', bag, '--tris', 12000, '--even', *args)
-        blender('meshy_bag.py', 'icon', os.path.join(BAGDIR, 'Bag%s.blend' % bag), os.path.join(OUT, 'bag_%s.png' % bag.lower()))
-    for f in ('Bag%sAtlas.png' % bag, 'Bag%s.json' % bag):
-        shutil.copy2(os.path.join(BAGDIR, f), os.path.join(SRC if f.endswith('.png') else OUT, f))
-
-
-def with_extra_bags(n):
-    """The kid's original with the extra bags fitted on (the FBX polish_character.py then takes)."""
-    if not EXTRA_BAGS:
-        return original(n + '.fbx')
-    work = os.path.join(SRC, 'fit_' + n)
-    os.makedirs(work, exist_ok=True)
-    blend = os.path.join(work, n + '.blend')
-    blender('fit_source_blend.py', original(n + '.fbx'), blend)
-    for bag, _ in EXTRA_BAGS:
-        blender('meshy_bag.py', 'fit', blend, os.path.join(BAGDIR, 'Bag%s.blend' % bag), work)
-    return os.path.join(work, n + '.fbx')
-
-
 for n in KIDS:
     if not want(n): continue
     atlas = original(n + 'Atlas.png')
@@ -105,34 +68,23 @@ for n in KIDS:
         inked = os.path.join(SRC, n + 'Atlas_inked.png')
         blender('face_ink.py', n, original(n + '.fbx'), atlas, inked, '--review', os.path.join(OUT, n + '_face.png'))
         atlas = inked
-    blender('polish_character.py', with_extra_bags(n), atlas, OUT, '--name', n, '--tris', PLAYER_TRIS, '--bag-tris', BAG_TRIS, '--face-lean', 0.95)
+    blender('polish_character.py', original(n + '.fbx'), atlas, OUT, '--name', n, '--tris', PLAYER_TRIS, '--bag-tris', BAG_TRIS, '--face-lean', 0.95)
 for n in TEENS:
     if not want(n): continue
-    blender('polish_character.py', with_extra_bags(n), original(n + 'Atlas.png'), OUT, '--name', n, '--tris', PLAYER_TRIS, '--bag-tris', BAG_TRIS, '--face-lean', 0.85)
+    blender('polish_character.py', original(n + '.fbx'), original(n + 'Atlas.png'), OUT, '--name', n, '--tris', PLAYER_TRIS, '--bag-tris', BAG_TRIS, '--face-lean', 0.85)
 for n in WALKERS:
     if not want(n): continue
     blender('polish_character.py', original(n + '.fbx'), original(n + 'Atlas.png'), OUT, '--name', n, '--tris', WALKER_TRIS, '--face-lean', 0.85)
-for n, fbx, profile in EXTRA_WALKERS:
-    if not want(n): continue
-    blender('meshy_rigged.py', os.path.join(REPO, fbx), SRC, '--profile', profile, '--name', n, '--tris', 30000)
-    # (their hems held where the outfit parts meet, C28; cut to 1,000 under the budget, which splitting their
-    # two-coloured faces brings to about 13,400)
-    blender('polish_character.py', os.path.join(SRC, n + '.fbx'), os.path.join(SRC, n + 'Atlas.png'), OUT, '--name', n,
-            '--tris', WALKER_TRIS - 1000, '--face-lean', 0.85, '--part-edges', 0.15)
 if want('bags'):
     for b in BAGS: original('Bag%sAtlas.png' % b)
-    # (the islands from a kid who has every bag: the extra bags are only in the fitted copy)
-    girl = os.path.join(SRC, 'fit_Girl', 'Girl.fbx')
-    if EXTRA_BAGS and not os.path.exists(girl): girl = with_extra_bags('Girl')
-    blender('polish_bags.py', girl if EXTRA_BAGS else original('Girl.fbx'), SRC, OUT, *(BAGS + [b for b, _ in EXTRA_BAGS]))
+    blender('polish_bags.py', original('Girl.fbx'), SRC, OUT, *BAGS)
 
 # the json files: the original's colours, the new triangle count
-for n in KIDS + TEENS + WALKERS + [w for w, _, _ in EXTRA_WALKERS]:
+for n in KIDS + TEENS + WALKERS:
     if not want(n): continue
     rep = os.path.join(OUT, n + '_polish.json')
     if not os.path.exists(rep): continue
-    src = os.path.join(SRC, n + '.json')                    # (an extra walker's: from its import)
-    with open(src if os.path.exists(src) else original(n + '.json')) as f: data = json.load(f)
+    with open(original(n + '.json')) as f: data = json.load(f)
     with open(rep) as f: data['tris'] = json.load(f)['meshes']['Kid']['tris_out']
     with open(os.path.join(OUT, n + '.json'), 'w') as f: json.dump(data, f)
 
@@ -141,7 +93,4 @@ if a.install:
     for f in sorted(os.listdir(OUT)):
         if f.endswith('.fbx') or f.endswith('Atlas.png') or (f.endswith('.json') and not f.endswith('_polish.json')):
             shutil.copy2(os.path.join(OUT, f), os.path.join(dst, f))
-            print('installed', f)
-        elif f.startswith('bag_') and f.endswith('.png'):      # an extra bag's Locker Room picture
-            shutil.copy2(os.path.join(OUT, f), os.path.join(REPO, 'Assets/_Game/Resources/UI', f))
             print('installed', f)

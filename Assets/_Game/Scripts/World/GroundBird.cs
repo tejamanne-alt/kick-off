@@ -8,10 +8,6 @@ namespace DribbleToSchool.World
     /// hopping), turns, pecks, and when the kid runs close it takes off: the standing model gives
     /// way to the flying one, which flaps up and away from the kid in an arc until it is out of
     /// sight. A while later, once its spot is out of sight too, it is back there on the ground.
-    ///
-    /// A model with jointed legs (LegR, LegL, each with a Shin and a Foot: the Kamakura kit's) steps them as it walks,
-    /// crouches, springs and lands on them as it hops, and keeps its feet planted while a peck tips its body forward
-    /// (World/LegGait; the asset review renders the same).
     /// </summary>
     public class GroundBird : AmbientAgent
     {
@@ -23,16 +19,6 @@ namespace DribbleToSchool.World
         public Part head;
         [Tooltip("The flying model's wings, flapped about their axis (the first one mirrored).")]
         public Part wingA, wingB;
-        [Tooltip("A real bird's beat (WingStroke, D21): the wing raised wingUp above level and beaten wingDown below it, folded " +
-                 "wingFold at the wrist and swept wingSweep back on the upstroke, about wingSweepAxis (the wing's own space). " +
-                 "wingFold and wingSweep 0: the original kit's even beat of 40 degrees.")]
-        public float wingUp = 40f, wingDown = 40f, wingFold, wingSweep;
-        public Vector3 wingSweepAxis = Vector3.up;
-        [Tooltip("Optional: the flying model's tail, tilted with each beat (degrees at its fullest).")]
-        public Part flyingTail;
-        public float flyingTailTilt = 6f;
-        [Tooltip("How far the body rises on each downstroke (metres).")]
-        public float flyBob = 0.01f;
         [Tooltip("Ground height where there is no baked ground strip.")]
         public float baseY;
         public float homeX, homeZ;
@@ -42,19 +28,6 @@ namespace DribbleToSchool.World
         public float walkSpeed = 0.3f;
         [Tooltip("Gulls hop; pigeons walk nodding their heads.")]
         public bool hopper;
-        [Tooltip("How far the head thrusts forward and holds with each step (metres; the original kit's pigeon: 0.018): it " +
-                 "holds still in the air while the body walks under it, then thrusts forward (HeadBob).")]
-        public float headSlide = 0.018f;
-        [Tooltip("How far the head nods forward and back with each step (degrees): a photo cut-out's head nods, as one that slides shows its cut edge.")]
-        public float headNod;
-        [Tooltip("A peck: the head's turn beak-down (degrees) and the body's tip forward on its feet (degrees). The original kit's: 62 and 0; a photo cut-out's: 25 and 30, so the neck never folds.")]
-        public float peckTurn = 62f, peckTip;
-        [Tooltip("Optional: a tail that pumps up and down all the while it is on the ground (a wagtail's; in links, so the pump runs down it).")]
-        public Part tail;
-        [Tooltip("Optional: a crest's long plumes (an egret's), hanging from the head: turned back by most of the head's and the body's turn, as plumes hang.")]
-        public Part plume;
-        [Tooltip("The tail's pump either side (degrees) and pumps per second.")]
-        public float tailPump = 14f, tailPumpRate = 3f;
         [Tooltip("The kid this close (metres) makes it fly off.")]
         public float startle = 2.6f;
         public float flightSpeed = 3.5f;
@@ -68,11 +41,10 @@ namespace DribbleToSchool.World
         float x, y, z, tx, tz;
         float speed;
         float yaw, yawVelocity, targetYaw;
-        float phase, flap, pitch, flyRise;
+        float phase, flap, pitch;
         float peckStart = -10f, nextPeck;
         float flownAt;
         Vector3 velocity;
-        LegGait.Rig rig;        // jointed legs (LegR, LegL with ShinR.. and FootR..): stepped, hopped and planted
 
         protected override float Reach { get { return roam + 1f; } }
 
@@ -82,14 +54,6 @@ namespace DribbleToSchool.World
             head.Capture();
             wingA.Capture();
             wingB.Capture();
-            flyingTail.Capture();
-            tail.Capture();
-            plume.Capture();
-            if (standing != null)
-            {
-                rig = LegGait.Rig.Find(standing, transform);
-                if (rig.Count == 0) rig = null;
-            }
             yaw = targetYaw = transform.eulerAngles.y;
             Land(homeX, homeZ);
             until = Time.time + Range(0.5f, 3f);
@@ -164,8 +128,7 @@ namespace DribbleToSchool.World
                     z += dz / dist * step;
                     targetYaw = SideYaw(dx, dz, 10f);
                 }
-                // a hopper's lift is |sin| (two hops a turn); with jointed legs, one crouch-spring-land a turn, so twice as fast
-                phase += dt * (hopper ? (rig != null ? 18f : 9f) : 15f) * Mathf.Clamp01(speed / Mathf.Max(0.05f, walkSpeed) + 0.2f);
+                phase += dt * (hopper ? 9f : 15f) * Mathf.Clamp01(speed / Mathf.Max(0.05f, walkSpeed) + 0.2f);
                 if (dist <= 0.005f)
                 {
                     speed = 0f;
@@ -186,19 +149,6 @@ namespace DribbleToSchool.World
                 if (Time.time >= until) Decide();
             }
             y = GroundY(x, baseY);
-        }
-
-        /// <summary>A walking bird's head against its body at walk phase phase (radians; a step every 2 pi), -1 back to
-        /// +1 forward (D21): for most of the step it holds still in the air, so it slides back as the body walks under
-        /// it, then thrusts forward in a quick eased move early in the next foot's swing. The asset review moves the same
-        /// (tools/blender/asset_review.py: head_bob).</summary>
-        public static float HeadBob(float phase)
-        {
-            float u = phase / (2f * Mathf.PI);
-            u -= Mathf.Floor(u);
-            float v = u - 0.45f;
-            v -= Mathf.Floor(v);
-            return v < 0.7f ? 1f - 2f * v / 0.7f : -1f + 2f * Ease((v - 0.7f) / 0.3f);
         }
 
         void Decide()
@@ -249,72 +199,34 @@ namespace DribbleToSchool.World
             pitch = Mathf.Lerp(pitch, Mathf.Atan2(velocity.y, Mathf.Abs(velocity.x) + Mathf.Abs(velocity.z)) * Mathf.Rad2Deg * 0.6f, 4f * dt);
             float age = Time.time - flownAt;
             flap += dt * Mathf.Lerp(19f, 12f, Mathf.Clamp01(age / 1.5f));
-            if (wingFold > 0f || wingSweep > 0f)
-            {
-                // spread on the way down, folded at the wrist and swept back on the way up (WingStroke)
-                Vector4 st = WingStroke.At(flap, wingUp, wingDown, wingFold, wingSweep);
-                wingA.SetWing(-st.x, -st.y, -st.z, wingSweepAxis);
-                wingB.SetWing(st.x, st.y, st.z, wingSweepAxis);
-                flyingTail.Set(-st.w * flyingTailTilt);      // dipped as the body rises (positive turns it up)
-                flyRise = st.w * flyBob;
-            }
-            else
-            {
-                float a = Mathf.Sin(flap) * 40f;
-                wingA.Set(-a);
-                wingB.Set(a);
-                flyRise = 0f;
-            }
+            float a = Mathf.Sin(flap) * 40f;
+            wingA.Set(-a);
+            wingB.Set(a);
             if ((age > 0.5f && !AmbientView.InView(x, y, z, 1.5f)) || age > 8f) Hide();
         }
 
         void Apply()
         {
             yaw = Mathf.SmoothDampAngle(yaw, targetYaw, ref yawVelocity, state == State.Fly ? 0.12f : 0.18f);
-            float lift = state == State.Fly ? flyRise : 0f, tip = 0f;
-            float pace = Mathf.Clamp01(speed / Mathf.Max(0.05f, walkSpeed));
-            float k = (Time.time - peckStart) / 0.22f;
-            float peck = state == State.Idle && k >= 0f && k <= 1f ? Mathf.Sin(k * Mathf.PI) : 0f;
+            float lift = 0f;
             if (state == State.Walk)
             {
-                if (hopper && rig != null)
-                {
-                    // crouch, spring, tuck the feet, land (the review's hop): up 5 cm, down into the heels between
-                    float sh = Mathf.Sin(phase);
-                    lift = (sh > 0f ? 0.05f * sh : LegGait.HopCrouch * rig.Length * sh) * pace;
-                }
-                else if (hopper) lift = Mathf.Abs(Mathf.Sin(phase)) * 0.05f * pace;
-                else if (rig != null)       // two nods a stride; the body as low as a foot needs to reach the ground
-                    lift = rig.Pose(phase / (4f * Mathf.PI), 0f, pace, rig.BodyLift(phase / (4f * Mathf.PI), LegGait.Kind.Step) * pace);
+                if (hopper) lift = Mathf.Abs(Mathf.Sin(phase)) * 0.05f * Mathf.Clamp01(speed / Mathf.Max(0.05f, walkSpeed));
                 else lift = Mathf.Abs(Mathf.Sin(phase)) * 0.006f;
             }
-            else if (state == State.Idle)
-            {
-                tip = peckTip * peck;
-                // no further than the legs can keep both feet planted
-                if (rig != null) tip = -rig.Reach(-tip * Mathf.Deg2Rad) * Mathf.Rad2Deg;
-            }
-            // A peck tips the body forward on its feet (nose down: a negative turn about the model's side axis).
-            transform.SetPositionAndRotation(new Vector3(x, y + lift, z), Quaternion.Euler(0f, yaw, pitch - tip));
-            if (rig != null && state != State.Fly && state != State.Gone)
-            {
-                if (state == State.Walk && hopper) rig.HopLoop(phase / (2f * Mathf.PI), pace, lift);
-                else if (state != State.Walk) rig.Plant(-tip * Mathf.Deg2Rad);
-            }
-            if (state != State.Fly && state != State.Gone) tail.Set(Mathf.Sin((Time.time + seed) * tailPumpRate * Mathf.PI * 2f) * tailPump);
+            transform.SetPositionAndRotation(new Vector3(x, y + lift, z), Quaternion.Euler(0f, yaw, pitch));
             if (state == State.Fly || !head.ready) return;
-            // The head: nodding back and forth as it walks, quick pecks when it stops.
+            // The pigeon's head: nodding back and forth as it walks, quick pecks when it stops.
             if (state == State.Walk)
             {
-                head.Set(6f + headNod * Mathf.Sin(phase));
-                head.Slide(new Vector3(HeadBob(phase) * headSlide, 0f, 0f));
-                plume.Set(-0.8f * headNod * Mathf.Sin(phase));
+                head.Set(6f);
+                head.Slide(new Vector3(Mathf.Sin(phase) * 0.018f, 0f, 0f));
                 return;
             }
-            float look = Mathf.Sin(Time.time * 1.3f + seed) * 6f;
-            head.Set(8f + peckTurn * peck + look);
+            float k = (Time.time - peckStart) / 0.22f;
+            float peck = k >= 0f && k <= 1f ? Mathf.Sin(k * Mathf.PI) * 62f : 0f;
+            head.Set(8f + peck + Mathf.Sin(Time.time * 1.3f + seed) * 6f);
             head.Slide(Vector3.zero);
-            plume.Set(-0.8f * (peckTurn * peck + look + tip));
         }
     }
 }

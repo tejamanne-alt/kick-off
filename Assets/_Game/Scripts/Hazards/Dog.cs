@@ -27,7 +27,7 @@ namespace DribbleToSchool.Hazards
         public Vector2 stealVelocity = new Vector2(-4.5f, 3.5f);
         public float stealCooldown = 1.2f;
         public Transform visual;
-        [Tooltip("Leg pivots (at the hips and shoulders), swung whole while trotting; a model with jointed legs (ShinFR.., FootFR.. under them) walks them with planted feet instead (World/LegGait).")]
+        [Tooltip("Leg pivots (at the hips and shoulders), swung while trotting.")]
         public Transform[] legs;
         [Tooltip("The axis, in each leg's own space, the legs swing about (the kit's dog: up).")]
         public Vector3 legAxis = Vector3.forward;
@@ -54,9 +54,6 @@ namespace DribbleToSchool.Hazards
         Quaternion[] legRest;
         Quaternion tailRest, headRest;
         float stride, wagPhase;
-        World.LegGait.Rig rig;      // jointed legs (LegFR.. with ShinFR.. and FootFR..): walked with planted feet
-        World.PartChain tailChain;  // a tail in links (Tail, Tail2, Tail3): wagged link by link
-        float legPhase, gaitWeight, bodyPitch;
 
         Mode mode;
         float modeUntil, targetX, targetZ, depth;
@@ -76,20 +73,8 @@ namespace DribbleToSchool.Hazards
             // Swing each part from its rest pose (model parts may come in rotated).
             legRest = new Quaternion[legs != null ? legs.Length : 0];
             for (int i = 0; i < legRest.Length; i++) legRest[i] = legs[i] != null ? legs[i].localRotation : Quaternion.identity;
-            if (tail != null)
-            {
-                tailRest = tail.localRotation;
-                tailChain = World.PartChain.Find(tail, tailAxis);
-                if (tailChain.Links < 2) tailChain = null;
-            }
+            if (tail != null) tailRest = tail.localRotation;
             if (head != null) headRest = head.localRotation;
-            // A model with jointed legs (the Kamakura kit's) walks them with its feet planted (World/LegGait); the
-            // original kit's dog, legs in one piece, swings them whole as before.
-            if (visual != null)
-            {
-                rig = World.LegGait.Rig.Find(visual, visual);
-                if (rig.Count == 0) rig = null;
-            }
             rng ^= (uint)Mathf.Abs(Mathf.RoundToInt(minX * 131f + maxX * 17f)) + 1u;
             Pedestrian.ClaimLane(this, minX, maxX);
             ResetState();
@@ -232,41 +217,18 @@ namespace DribbleToSchool.Hazards
             float run = IsChasing ? chaseSpeed : speed;
             float gait = Mathf.Clamp01(run / 0.6f);
             stride += dt * run * 9f;
-            if (rig != null)
-            {
-                // A walk, turning into a trot from 1 to 1.8 m/s. The cycle runs as fast as the feet must step for the
-                // planted ones not to skate: the body covers stride / duty of a leg's length each cycle.
-                float trot = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(1f, 1.8f, run));
-                float duty = Mathf.Lerp(World.LegGait.Duty(World.LegGait.Kind.Walk), World.LegGait.Duty(World.LegGait.Kind.Trot), trot);
-                float reach = Mathf.Lerp(World.LegGait.Stride(World.LegGait.Kind.Walk), World.LegGait.Stride(World.LegGait.Kind.Trot), trot) * rig.Length;
-                legPhase += dt * run * duty / Mathf.Max(0.01f, reach);
-                legPhase -= Mathf.Floor(legPhase);
-                gaitWeight = Mathf.MoveTowards(gaitWeight, gait, 4f * dt);
-                float lift = gaitWeight * Mathf.Lerp(rig.BodyLift(legPhase, World.LegGait.Kind.Walk), rig.BodyLift(legPhase, World.LegGait.Kind.Trot), trot);
-                // lowered where a foot must reach the ground, the back tilting as the front and hind legs reach (D21)
-                float pitch;
-                lift = rig.Pose(legPhase, trot, gaitWeight, lift, out pitch);
-                bodyPitch = pitch * Mathf.Rad2Deg;
-                visual.localRotation = Quaternion.Euler(0f, yaw, 0f) * Quaternion.AngleAxis(bodyPitch, rig.Side);
-                visual.localPosition = new Vector3(visualBase.x, visualBase.y + lift * visualBaseScale.y, depth);
-                visual.localScale = visualBaseScale;
-            }
-            else
-            {
-                Vector3 s = visualBaseScale;
-                s.y = visualBaseScale.y * (1f + Mathf.Sin(stride * 2f) * 0.04f * gait);
-                visual.localScale = s;
-            }
-            if (rig == null && legs != null)
+            Vector3 s = visualBaseScale;
+            s.y = visualBaseScale.y * (1f + Mathf.Sin(stride * 2f) * 0.04f * gait);
+            visual.localScale = s;
+            if (legs != null)
                 for (int i = 0; i < legs.Length && i < legRest.Length; i++)
                     if (legs[i] != null)
                         legs[i].localRotation = legRest[i] * Quaternion.AngleAxis(Mathf.Sin(stride + (i == 0 || i == 3 ? 0f : Mathf.PI)) * 28f * gait, legAxis);
 
             // The tail: always going, faster when it plays.
             wagPhase += dt * (IsChasing ? 16f : mode == Mode.Dash ? 13f : mode == Mode.Sniff ? 5f : 8f);
-            float wag = Mathf.Sin(wagPhase) * (mode == Mode.Sniff && !IsChasing ? 14f : 25f);
-            if (tailChain != null) tailChain.Set(wag, dt);
-            else if (tail != null) tail.localRotation = tailRest * Quaternion.AngleAxis(wag, tailAxis);
+            if (tail != null)
+                tail.localRotation = tailRest * Quaternion.AngleAxis(Mathf.Sin(wagPhase) * (mode == Mode.Sniff && !IsChasing ? 14f : 25f), tailAxis);
 
             if (head == null) return;
             // Nose down to sniff, glancing about when it stops to look, up when chasing.
@@ -274,9 +236,7 @@ namespace DribbleToSchool.Hazards
             float wantTurn = !IsChasing && mode == Mode.Look ? Mathf.Sin(Time.time * 0.9f + minX) * 32f : 0f;
             nod = Mathf.MoveTowards(nod, wantNod, 90f * dt);
             turn = Mathf.MoveTowards(turn, wantTurn, 70f * dt);
-            // the head held steady as the back tilts (a positive nod is nose down; the body's pitch is nose up)
-            float steady = rig != null ? bodyPitch : 0f;
-            head.localRotation = headRest * Quaternion.AngleAxis(nod + steady, headNodAxis) * Quaternion.AngleAxis(turn, headTurnAxis);
+            head.localRotation = headRest * Quaternion.AngleAxis(nod, headNodAxis) * Quaternion.AngleAxis(turn, headTurnAxis);
         }
 
         void Steal(Ball.BallController ball)

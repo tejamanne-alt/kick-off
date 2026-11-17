@@ -11,18 +11,12 @@ namespace DribbleToSchool.World
     public class FlitButterfly : AmbientAgent
     {
         public Part wingL, wingR;
-        [Tooltip("Optional: hind wings that beat apart from the forewings (a dragonfly's), hindLead radians ahead of them.")]
-        public Part hindL, hindR;
-        public float hindLead = 1.6f;
         public float homeX, homeY, homeZ;
         [Tooltip("How far it wanders from home along the street, and in height.")]
         public float roam = 2.5f, rise = 0.6f;
         [Tooltip("Depths it keeps between (clear of the footpath, in front of the hedges or walls).")]
         public float zMin = 2.3f, zMax = 3.6f;
         public float speed = 0.7f;
-        [Tooltip("The wingbeat, degrees: beatMid + beatSwing sin. A butterfly claps its wings from flat to 76 up (38, 38); " +
-                 "a dragonfly beats them about flat (4, 24). The asset review renders the same (tools/blender/asset_review.py fly).")]
-        public float beatMid = 38f, beatSwing = 38f;
 
         float x, y, z, heading, turn, turnTarget, nextSwerve;
         float flap, hover, nextHover, climb;
@@ -35,8 +29,6 @@ namespace DribbleToSchool.World
             base.Awake();
             wingL.Capture();
             wingR.Capture();
-            hindL.Capture();
-            hindR.Capture();
             x = homeX + Range(-roam, roam) * 0.5f;
             y = homeY;
             z = Mathf.Clamp(homeZ, zMin, zMax);
@@ -88,14 +80,10 @@ namespace DribbleToSchool.World
             yaw = Mathf.SmoothDampAngle(yaw, wantYaw, ref yawVelocity, 0.12f);
             // Banking into its turns, the body pitching a little with each beat.
             transform.SetPositionAndRotation(new Vector3(x, y, z), Quaternion.Euler(Mathf.Clamp(-turn * 7f, -16f, 16f), yaw, Mathf.Sin(flap * 0.5f) * 5f));
-            // Wings: a butterfly's from flat to 76 degrees up, fast; a dragonfly's about flat (beatMid, beatSwing).
-            float beat = beatMid + beatSwing * Mathf.Sin(flap);
+            // Wings: 0 (flat) to 80 degrees up, fast.
+            float beat = 38f + 38f * Mathf.Sin(flap);
             wingL.Set(beat);
             wingR.Set(-beat);
-            // a dragonfly's hind wings lead its forewings, so its four wings never move as one (D21)
-            float hind = beatMid + beatSwing * Mathf.Sin(flap + hindLead);
-            hindL.Set(hind);
-            hindR.Set(-hind);
         }
     }
 }
