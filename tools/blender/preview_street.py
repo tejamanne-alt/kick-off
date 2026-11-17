@@ -616,8 +616,8 @@ def poles():
     if chapter in (2, 3, 5) or not has('Street', 'UtilityPole'):
         return
     xs = [x for x in np.arange(X0 - 21, X1 + 21, 21.0) if not in_canal(x - .5, x + .5) and not in_home(x - .5, x + .5)]
-    if kamakura:      # (Kamakura's poles on a fixed 21 m grid, whatever the camera: clear of the shrine and the crossing)
-        xs = [x for x in np.arange(math.floor((X0 - 21 - 12) / 21) * 21 + 12, X1 + 21, 21.0) if abs(x - TRACK_X) > 5.0]
+    if kamakura:      # (Kamakura's poles on a fixed 21 m grid, whatever the camera: none in the layout's quiet areas)
+        xs = [x for x in np.arange(math.floor((X0 - 21 - 12) / 21) * 21 + 12, X1 + 21, 21.0) if not any(q0 - 1 < x < q1 + 1 for q0, q1 in KM_CLEAR)]
     anchors = attach_points('Street', 'UtilityPole', 'Attach.Wire')
     yaw = 90.0
     R = Matrix.Rotation(-math.radians(yaw), 3, 'Z')
@@ -1194,172 +1194,167 @@ def park():
     distant((.44, .54, .32), None)
 
 
-# --kamakura (chapter 1): a Kamakura lane from the Kamakura kit (kit_buildings.py --kit Kamakura) among the town's own kits:
-# its houses behind block walls, a vending corner with its bins and the corner mirror, a shrine and its torii, a level
-# crossing on the Enoden's narrow-gauge track, and the station's name board and gate; Kamakura's trees (the Plants kit's
-# BlackPine, Persimmon, Ginkgo, GardenPine, CherryBlossom). Not yet how StreetBuilder lays a street out: a fixed
-# arrangement, to judge the kit's look in the game camera (--cam picks the stretch: 0 houses and the vending corner, 27 the
-# shrine, 53 the crossing). --closed: the crossing closed, its arms down across the footpath and the road on both sides of
-# the tracks, the tram passing; without it the crossing is open and the track empty.
+# --kamakura (chapter 1): Kamakura's L01 as the game builds it (StreetBuilder.Kamakura, LevelBuildKit.Kamakura, the layout's
+# GreyboxLevels.OutTheDoor): the Kamakura kit's houses behind block walls, board fences and bamboo fences, Kamakura's trees,
+# the vending corner (x 6), the shrine (x 46), the Enoden's level crossing (its track at x 73) before the bus stop (x 85).
+# The lots are drawn as StreetBuilder.KamakuraSuburb draws them (its own random draws, so not the same lots as the game's).
+# --cam picks the stretch (6 the vending corner, 46 the shrine, 69.6 the crossing with the kid waiting before it); --closed:
+# the crossing closed, its arms down across the footpath and the road on both sides of the tracks, the tram going through.
 kamakura = '--kamakura' in args
 closed = '--closed' in args
-KM_HOUSE = [((.91, .85, .72), (.40, .30, .24), (.34, .36, .40)), ((.95, .94, .91), (.30, .32, .36), (.30, .32, .36)),
-            ((.82, .85, .86), (.42, .34, .28), (.38, .40, .44)), ((.93, .88, .78), (.55, .28, .22), (.32, .33, .36))]
-KM_TREES = ['BlackPine', 'Ginkgo', 'CherryBlossom', 'Persimmon', 'BlackPine', 'Ginkgo']
-TRACK_X = 53.2                    # the track's centre line, across the street
-KM_CLEAR = [(-0.5, 5.0), (21.5, 32.5), (47.0, 60.0)]   # (no street lamp in the side lane, before the shrine, at the crossing)
+KM_STUCCO = [(.91, .85, .72), (.95, .94, .91), (.82, .85, .86), (.93, .88, .78)]
+KM_DOORS = [(.40, .30, .24), (.30, .32, .36), (.55, .28, .22), (.42, .34, .28)]
+KM_BOARDS = [(.34, .25, .19), (.30, .23, .18), (.40, .30, .22), (.36, .29, .24)]
+KM_WHITE = [(.95, .95, .93), (.88, .88, .86), (.90, .87, .82)]
+KM_METAL = [(.30, .31, .33), (.26, .33, .40), (.40, .26, .22)]
+KM_HOUSES = ['HouseKM', 'HomeOldKM', 'HouseWoodKM', 'HouseWhiteKM', 'HouseKM', 'HouseWoodKM']
+KM_BACK = ['HouseKM', 'HouseWoodKM', 'HouseWhiteKM', 'HomeOldKM', 'HouseKM', 'HouseWhiteKM']
+KM_TREES = ['BlackPine', 'Ginkgo', 'Persimmon', 'BlackPine', 'CherryBlossom', 'Ginkgo']
+TRACK_X = 73.0                    # the track's centre line, across the street (RailCrossing(73))
+KM_CLEAR = [(2.8, 9.4), (41.2, 50.8), (66.5, 79.5), (80.4, 92.6)]   # the layout's quiet areas: vending corner, shrine, crossing, bus stop
 GAUGE_C = 0.5675                  # half the distance between the rails' centres (1,067 mm gauge)
+RAIL_TOP = 0.03                   # the rails' tops (TrackBuilder.RailTop), the same through the street and beyond it
 
 
 def km(model, x, z, yaw=0.0, scale=1.0, tints=None, y=0.0):
     return place('Kamakura', model, x, y, z, yaw, scale, tints)
 
 
-def km_tree(x, z, scale=1.0):
-    plant(rng.choice(KM_TREES), x, 0, z, scale * rng.uniform(.9, 1.1))
+def km_house(model, x, z):
+    tints = None
+    if model == 'HouseKM': tints = [rng.choice(KM_STUCCO), rng.choice(KM_DOORS), None]
+    elif model in ('HomeOldKM', 'HouseWoodKM'): tints = [rng.choice(KM_BOARDS), None, None]
+    elif model == 'HouseWhiteKM': tints = [rng.choice(KM_WHITE), None, rng.choice(KM_METAL)]
+    km(model, x, z, 0, 1, tints)
+    return size('Kamakura', model).x / 2 if has('Kamakura', model) else 0.0
 
 
-def km_lot(x0, x1, house_z, k, gate=None):
-    """A house lot: a block wall along the front with its pillars and gate, the house set back, a garden pine."""
-    gate = gate if gate is not None else x0 + (x1 - x0) * (0.7 if k % 2 else 0.3)
-    for a, b in ((x0 + .1, gate - .6), (gate + .6, x1 - .1)):
-        if b - a > .4 and row('Street', 'BlockWall2', a, b, 0, PROP + .15):
-            place('Street', 'WallPillar', a, 0, PROP + .15); place('Street', 'WallPillar', b, 0, PROP + .15)
-    cx = (x0 + x1) / 2
-    if k % 3 == 2 and has('Buildings', 'HouseLeanTo'):
-        town_house('HouseLeanTo', cx, house_z)
-    else:
-        km('HouseKM', cx, house_z, 0, 1, list(KM_HOUSE[k % len(KM_HOUSE)]))
-    if has('Plants', 'GardenPine'):
-        plant('GardenPine', x0 + 1.1 if k % 2 else x1 - 1.1, 0, PROP + 1.0, rng.uniform(.8, 1.0))
-    if rng.random() < .5: place('Street', 'PotGroup', gate + 1.0, 0, PROP + .5, rng.uniform(-20, 20), 1, [rng.choice(PETALS), None, None])
+def km_setback(model):
+    mn = kits['Kamakura']['models'][model].get('min', [0, 0, 0])
+    return PROP + 1.2 + max(0.0, -mn[1]) + rng.uniform(0, 1)
 
 
-def km_lots(a, b, z, k):
-    """House lots of about 11 m filling [a, b] exactly (none runs into what stands beyond b)."""
-    n = max(1, int(round((b - a) / 11.0)))
-    for i in range(n):
-        km_lot(a + (b - a) * i / n, a + (b - a) * (i + 1) / n, z, k + i)
-    return k + n
+def km_quiet(a, b):
+    return any(b > q0 - .6 and a < q1 + .6 for q0, q1 in KM_CLEAR)
 
 
-def km_barrier(x, z, arm, toward, down):
-    """A barrier machine at (x, z) and its arm on the machine's hub: turned to face -z (toward = -1: behind the footpath, or
-    at the road's near kerb) or +z (toward = 1: at the road's far kerb). Down, the arm lies flat across the footpath or
-    its half of the road, along the tracks; up, it stands upright, leaning a little toward the street."""
-    if km('CrossingBarrierKM', x, z, 0.0 if toward < 0 else 180.0) is None:
-        return
-    hub = (attach_points('Kamakura', 'CrossingBarrierKM', 'Attach.Hub') or [Vector((0, 0, 0.95))])[0]
-    f = 1 if toward < 0 else -1                       # (turned 180 degrees, the machine's local x and y run the other way)
-    e = km(arm, x + f * hub.x, z + f * hub.y, 0.0, 1.0, None, y=hub.z)
-    if e is not None:
-        e.rotation_euler = (math.radians(90.0 if down else 8.0) * f, 0.0, 0.0)
+def km_lots(x0, x1):
+    """StreetBuilder.KamakuraSuburb's lots: walls or fences, the house, its carport, pots or a bicycle, its trees."""
+    x, rice = x0, False
+    while x < x1:
+        lot = rng.uniform(9.5, 13)
+        hit = [q for q in KM_CLEAR if x + lot > q[0] - .6 and x < q[1] + .6]
+        if hit:
+            if hit[0][0] - .6 - x > .6 and row('Street', 'BlockWall2', x + .1, hit[0][0] - .7, 0, PROP + .15): pass
+            x = hit[0][1] + .8; continue
+        cx = x + lot / 2
+        gate = rng.uniform(x + 2, x + lot - 4)
+        f = rng.random()
+        if f < .55:
+            for a, b in ((x + .1, gate), (gate + 2.2, x + lot - .1)):
+                if b - a > .4 and row('Street', 'BlockWall2', a, b, 0, PROP + .15):
+                    place('Street', 'WallPillar', a, 0, PROP + .15); place('Street', 'WallPillar', b, 0, PROP + .15)
+        else:
+            fence = 'FenceBoardKM' if f < .8 else 'FenceBambooKM'
+            if gate - x > 1.2: row('Kamakura', fence, x + .1, gate, 0, PROP + .15)
+            if x + lot - gate > 2.8: row('Kamakura', fence, gate + 1.6, x + lot - .1, 0, PROP + .15)
+        life = rng.random()
+        if life < .22 and gate - x > 3.4: place('Street', 'Bicycle', rng.uniform(x + 1.2, gate - 1), 0, PROP - .32, 180 + rng.uniform(-6, 6), 1, [rng.choice(BIKES), None, None])
+        elif life < .6: place('Street', 'PotGroup', gate + .55, 0, PROP + .6, rng.uniform(-20, 20), 1, [rng.choice(PETALS), None, None])
+        house = None
+        if not rice and rng.random() < .2 and size('Kamakura', 'RiceShopKM').x <= lot - .8: house, rice = 'RiceShopKM', True
+        if house is None:
+            fits = [m for m in KM_HOUSES if size('Kamakura', m).x <= lot - .8]
+            house = rng.choice(fits) if fits else None
+        if house:
+            z = km_setback(house)
+            half = km_house(house, cx, z)
+            if house == 'HouseWhiteKM' and x + lot - (cx + half) > 3.3: km('CarportKM', cx + half + 1.65, z + .4)
+            if rng.random() < .75: plant(rng.choice(KM_TREES), cx + rng.uniform(-half, half), 0, z + 9 + rng.uniform(0, 3), rng.uniform(.85, 1.15))
+            gap = (cx - half) - x
+            if gap > 1.8 and rng.random() < .6: plant('GardenPine' if rng.random() < .6 else 'Persimmon', x + gap / 2, 0, PROP + 1.4 + rng.uniform(0, 1.2), rng.uniform(.7, .9))
+        x += lot
 
 
-RAIL_TOP = 0.12                   # the rails' tops, the same through the street and beyond it
-
-
-def km_wedge(x_lo, x_hi, y_lo, y_hi, z0, z1, base, rgb, surface, name='ramp'):
-    """A ramp across z0..z1 rising from y_lo at x_lo to y_hi at x_hi, closed down to base at its sides and its high end."""
-    faces = [[(x_lo, y_lo, z0), (x_hi, y_hi, z0), (x_hi, y_hi, z1), (x_lo, y_lo, z1)],
-             [(x_lo, base, z0), (x_hi, base, z0), (x_hi, y_hi, z0), (x_lo, y_lo, z0)],
-             [(x_lo, base, z1), (x_hi, base, z1), (x_hi, y_hi, z1), (x_lo, y_lo, z1)]]
-    patches(name, faces, rgb, surface)
+def km_barrier(x, z, arm, down):
+    """CrossingBarrierKM at (x, z) facing the camera, its arm on the hub 0.95 m up: down, flat toward -z; up, upright."""
+    if km('CrossingBarrierKM', x, z) is None: return
+    e = km(arm, x, z, 0.0, 1.0, None, y=0.95)
+    if e is not None and down: e.rotation_euler = (math.radians(90.0), 0.0, 0.0)
 
 
 def km_track():
-    """The Enoden's track across the street, its rails 1,067 mm apart and their tops at one height all along: through the
-    street on a level crossing deck (the road and the footpaths ramp up to it, as they do at a real crossing), beyond it on
-    ballast and sleepers."""
+    """TrackBuilder.RailCrossing's track: a deck level with the footpaths through the street (the road ramps up to it), the
+    ballast and sleepers beyond, the rails end to end with their tops at RAIL_TOP."""
     a, b = TRACK_X - 1.6, TRACK_X + 1.6
-    street0, street1 = -16.0, PROP + .6
-    deck = RAIL_TOP - .02
-    box(a, b, -0.2, deck, street0, street1, (.3, .3, .31), 'crossing deck')
-    for z0, z1, ground in ((street0, -8.1, 0.0), (-8.1, -1.7, -0.14), (-1.7, street1, 0.0)):
-        km_wedge(a - 1.6, a, ground, deck, z0, z1, -0.2, W, 'Asphalt' if ground < 0 else 'Paving')
-        km_wedge(b + 1.6, b, ground, deck, z0, z1, -0.2, W, 'Asphalt' if ground < 0 else 'Paving')
-    for zz0, zz1 in ((street1, 140.0), (-60.0, street0)):
-        box(a - .3, b + .3, -0.1, 0.03, zz0, zz1, (.56, .53, .49), 'ballast')
-        z = zz0 + .35
-        while z < zz1 - .2:
-            box(TRACK_X - 1.0, TRACK_X + 1.0, 0.0, RAIL_TOP - .06, z - .1, z + .1, (.42, .38, .34), 'sleeper'); z += .62
-    for sx in (-1, 1):
-        rx = TRACK_X + sx * GAUGE_C
-        box(rx - .035, rx + .035, deck - .04, RAIL_TOP, street0, street1, (.66, .66, .68), 'rail (in the deck)')
-        for zz0, zz1 in ((street1, 140.0), (-60.0, street0)):
-            box(rx - .035, rx + .035, RAIL_TOP - .06, RAIL_TOP, zz0, zz1, (.62, .62, .64), 'rail')
+    front, behind, far = -16.0, PROP + .6, 160.0
+    box(a, b, -0.192, 0.008, front, behind, (.36, .36, .37), 'crossing deck')
+    for s_ in (-1, 1):
+        e0 = TRACK_X + s_ * 1.6
+        patches('road ramp', [[(e0, 0.008, -8.1), (e0 + s_ * 1.5, -0.14, -8.1), (e0 + s_ * 1.5, -0.14, -1.7), (e0, 0.008, -1.7)]], (.5, .5, .52), 'Asphalt')
+    box(TRACK_X - 1.9, TRACK_X + 1.9, 0.0, 0.006, behind, far, (.58, .55, .5), 'ballast')
+    z = behind + .35
+    while z < 46:
+        box(TRACK_X - 1.0, TRACK_X + 1.0, 0.002, 0.022, z - .1, z + .1, (.44, .4, .36), 'sleeper'); z += .65
+    for s_ in (-1, 1):
+        rx = TRACK_X + s_ * GAUGE_C
+        box(rx - .035, rx + .035, RAIL_TOP - .08, RAIL_TOP, front - 30, far, (.68, .68, .7), 'rail')
 
 
 def kamakura_lane():
-    k = km_lots(X0 - 4, -4.6, PROP + 2.2, 0)          # houses up to the vending corner
-    # the vending corner: a red and a blue machine and the bins against a garden wall, the corner mirror where the side
-    # lane comes out
-    row('Street', 'BlockWall2', -4.6, 0.4, 0, PROP + 1.3)
-    place('Street', 'VendingRed', -3.6, 0, PROP + .5); place('Street', 'VendingBlue', -2.5, 0, PROP + .5)
-    km('RecycleKM', -1.0, PROP + .6)
-    box(0.6, 4.2, -0.02, 0.0, PROP - .2, 30, (.55, .55, .56), 'side lane')
-    km('MirrorKM', 0.2, POLE_Z + .1)
-    k = km_lots(4.6, 22.2, PROP + 2.0, k)
-    # the shrine up its steps, its torii at their foot, a ginkgo and black pines in its grounds
-    km('ShrineKM', 27.0, PROP + 1.6)
-    km('ToriiKM', 27.0, PROP + .05)
-    plant('Ginkgo', 23.0, 0, 11.5, 1.0); plant('BlackPine', 31.6, 0, 10.5, 1.0)
-    plant('BlackPine', 25.2, 0, 13.5, .9); plant('Ginkgo', 29.6, 0, 14.5, .95)
-    k = km_lots(31.8, 48.2, PROP + 2.0, k)
-    # the level crossing: the track, the warning signals behind the footpath on both sides, the barriers on both sides of
-    # the tracks closing the footpath (from behind it) and the road (from both its kerbs), the tram passing when closed
+    km_lots(X0 - 20, X1 + 20)
+    # the vending corner (TrackBuilder.VendingCorner(6))
+    vx = 6.0
+    row('Street', 'BlockWall2', vx - 3.0, vx + 3.2, 0, PROP + 1.3)
+    place('Street', 'VendingRed', vx - 1.7, 0, PROP + .5); place('Street', 'VendingBlue', vx - .6, 0, PROP + .5)
+    km('RecycleKM', vx + .9, PROP + .6); km('MirrorKM', vx + 2.6, POLE_Z + .1)
+    place('Plants', 'GardenPine', vx + 1.6, 0, PROP + 3.2, 30, .9)
+    # the shrine (TrackBuilder.KamakuraShrine(46))
+    sx = 46.0
+    km('ShrineKM', sx, PROP + 1.6); km('ToriiKM', sx, PROP + .05)
+    place('Plants', 'Ginkgo', sx - 4.0, 0, 11.5, 40, 1.0); place('Plants', 'BlackPine', sx + 4.6, 0, 10.5, 200, 1.0)
+    place('Plants', 'BlackPine', sx - 1.8, 0, 13.5, 110, .9); place('Plants', 'Ginkgo', sx + 2.6, 0, 14.5, 300, .95)
+    # the level crossing (TrackBuilder.RailCrossing(73))
     km_track()
     w, e = TRACK_X - 2.6, TRACK_X + 2.6
-    # the warning signals at the corners, turned toward their road's traffic (and the camera)
     km('CrossingSignalKM', w - 1.6, PROP + .3, 45); km('CrossingSignalKM', e + 1.6, PROP + .3, -45)
-    km('CrossingSignalKM', w - 3.0, -9.0, 135); km('CrossingSignalKM', e + 3.0, -9.0, 225)
-    # the barriers, on both sides of the tracks: one behind the footpath whose arm closes it to the road's near kerb, and
-    # one at that kerb whose arm closes the whole road to its far kerb
     for x in (w, e):
-        km_barrier(x, PROP + .75, 'CrossingArmKM', -1, closed)
-        km_barrier(x, -1.55, 'CrossingArmRoadKM', -1, closed)
-    # the overhead line the tram's pantograph runs on: masts beside the track (away from the platform) with their arms
-    # over it, the contact wire at the pan's height and the catenary wire above it, all along the track and over the street
-    wire_y = RAIL_TOP - .02 + 4.86                # (the pan's top is 4.86 m above the car's origin)
-    for z in (-40.0, -20.0, 8.0, 30.0, 52.0, 74.0, 96.0):
+        km_barrier(x, PROP + .75, 'CrossingArmKM', closed)
+        km_barrier(x, -1.55, 'CrossingArmRoadKM', closed)
+    wire_y = RAIL_TOP - .03 + 4.86                # (the pan's top is 4.86 m above the car's origin)
+    for z in np.arange(8.0, 160.0, 22.0):
         mx = TRACK_X - 2.3
-        box(mx - .11, mx + .11, 0.0, wire_y + 1.2, z - .11, z + .11, (.55, .57, .58), 'mast')
-        box(mx, TRACK_X + .25, wire_y + .9, wire_y + .98, z - .04, z + .04, (.5, .52, .53), 'mast arm')
-        box(TRACK_X - .02, TRACK_X + .02, wire_y, wire_y + .9, z - .02, z + .02, (.4, .4, .42), 'hanger')
-    box(TRACK_X - .012, TRACK_X + .012, wire_y, wire_y + .024, -60.0, 140.0, (.25, .22, .2), 'contact wire')
-    box(TRACK_X - .01, TRACK_X + .01, wire_y + .9, wire_y + .92, -60.0, 140.0, (.25, .22, .2), 'catenary wire')
-    if closed:
-        # the car going through the crossing (its front over the road's kerb), its middle on the track's centre line,
-        # its wheels' treads on the rails' tops (they are 0.02 m above the car's origin), its pan on the contact wire
-        km('TramKM', TRACK_X - 1.15, 4.6, 90, y=RAIL_TOP - .02)
-    # Hase station just beyond the crossing: its low platform along the track (its edge 0.1 m from the car's side), steps
-    # up from the lane with the IC gate at their top, the name board facing the street
-    p0, p1, top = TRACK_X + 1.25, TRACK_X + 4.8, RAIL_TOP + .8
-    box(p0, p1, 0.0, top, 4.6, 60.0, (.78, .76, .72), 'platform')
-    box(p0, p0 + .3, top - .01, top + .005, 4.6, 60.0, (.96, .86, .3), 'platform edge')
+        box(mx - .11, mx + .11, 0.0, wire_y + 1.2, z - .11, z + .11, (.56, .58, .6), 'mast')
+        box(mx, TRACK_X + .25, wire_y + .9, wire_y + .98, z - .04, z + .04, (.56, .58, .6), 'mast arm')
+        box(TRACK_X - .02, TRACK_X + .02, wire_y, wire_y + .9, z - .02, z + .02, (.22, .2, .19), 'hanger')
+    box(TRACK_X - .012, TRACK_X + .012, wire_y, wire_y + .024, -46.0, 160.0, (.22, .2, .19), 'contact wire')
+    box(TRACK_X - .01, TRACK_X + .01, wire_y + .9, wire_y + .92, -46.0, 160.0, (.22, .2, .19), 'catenary wire')
+    p0, p1, top = TRACK_X + 1.25, TRACK_X + 4.8, RAIL_TOP + .82
+    box(p0, p1, 0.0, top, 4.6, 60.0, (.8, .78, .74), 'platform')
+    box(p0 + .05, p0 + .35, top, top + .01, 4.6, 60.0, (.96, .84, .26), 'platform edge')
     for n in range(4):
-        box(p1 - 1.7, p1, 0.0, top * (n + 1) / 4, 3.4 + .3 * n, 4.6, (.74, .72, .68), 'steps')
+        box(p1 - 1.7, p1, 0.0, top * (n + 1) / 4, 3.4 + .3 * n, 4.6, (.76, .74, .7), 'steps')
     km('TicketGateKM', p1 - .85, 4.9, 0, 1, None, y=top)
     km('StationSignKM', p0 + 1.2, 7.2, 0, 1, None, y=top)
-    k = km_lots(p1 + .6, X1 + 14, PROP + 2.0, k)
-    # the street behind: more houses and Kamakura's trees, the hills
+    if closed:
+        # the car going through (its front over the road's near kerb), its wheels' treads on the rails' tops
+        km('TramKM', TRACK_X - 1.15, 4.6, 90, y=RAIL_TOP - .03)
+    # the row behind and the next street over, Kamakura's trees, the hills
     x = X0 - 20
     while x < X1 + 20:
-        if not (TRACK_X - 6 < x < TRACK_X + 6):
-            if rng.random() < .55: km('HouseKM', x, rng.uniform(16, 22), 0, 1, list(rng.choice(KM_HOUSE)))
-            else: town_house(rng.choice(['HouseFlat', 'HouseLeanTo', 'HouseCarport']), x, rng.uniform(16, 22))
-        x += rng.uniform(10, 13)
-    x = X0 - 20
-    while x < X1 + 20:
-        if not (TRACK_X - 3 < x < TRACK_X + 3):
-            km_tree(x, rng.uniform(26, 40), 1.1)
-        x += rng.uniform(4, 7)
-    # (Kamakura's wooded hills, not the forest strip's firs: a far row of its own trees)
-    x = X0 - 60
-    while x < X1 + 60:
-        if not (TRACK_X - 3 < x < TRACK_X + 3):
-            km_tree(x, rng.uniform(55, 75), 1.3)
-        x += rng.uniform(5, 9)
+        m = rng.choice(KM_BACK); half = size('Kamakura', m).x / 2 + .3
+        if not (TRACK_X - 3 - .6 < x + half and x - half < TRACK_X + 5.5 + .6): km_house(m, x, rng.uniform(20, 24))
+        x += rng.uniform(11, 14)
+    for z0, z1, s0, s1 in ((30, 37, 4.5, 8), (56, 70, 4, 8)):
+        x = X0 - 40
+        while x < X1 + 40:
+            if not (TRACK_X - 3 - 2.6 < x < TRACK_X + 5.5 + 2.6): plant(rng.choice(KM_TREES), x, 0, rng.uniform(z0, z1), rng.uniform(.9, 1.35))
+            x += rng.uniform(s0, s1)
+    x = X0 - 40
+    while x < X1 + 40:
+        m = rng.choice(KM_BACK); half = size('Kamakura', m).x / 2 + .3
+        if not (TRACK_X - 3 - .6 < x + half and x - half < TRACK_X + 5.5 + .6): km_house(m, x, rng.uniform(40, 46))
+        x += rng.uniform(12, 16)
     distant((.44, .54, .32), None, forest=False)
 
 

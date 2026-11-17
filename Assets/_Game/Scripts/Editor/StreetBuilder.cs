@@ -301,7 +301,7 @@ namespace DribbleToSchool.EditorTools
         /// </summary>
         static bool OverlapsBackRow(LevelBuildKit.TrackBuilder track, float a, float b)
         {
-            if (AcrossSeam(track, a, b)) return true;
+            if (AcrossSeam(track, a, b) || OnRailway(track, a, b)) return true;
             foreach (var area in track.OpenAreas.Concat(track.Canals))
                 if (b > area.x - 0.6f && a < area.y + 0.6f) return true;
             float goal = track.GoalX;
@@ -500,7 +500,7 @@ namespace DribbleToSchool.EditorTools
         /// </summary>
         static void Plant(Transform parent, string model, Sprite fallback, float x, float groundY, float z, float scale, float spriteScale, int order, System.Random rng)
         {
-            model = FloridaPalm(model);
+            model = KamakuraTree(FloridaPalm(model), x, z);
             Color? leaves = null;
             bool leafy = model.StartsWith("Broadleaf") || model == "Birch" || model.StartsWith("Bush");
             if (leafy) leaves = SummerLeaves[rng.Next(SummerLeaves.Length)];
@@ -736,7 +736,10 @@ namespace DribbleToSchool.EditorTools
                 case 3: Beach(track, root, rng, x0, x1); break;
                 case 4: City(track, root, rng, x0, x1); break;
                 case 5: Park(track, root, rng, x0, x1); break;
-                default: Suburb(track, root, rng, x0, x1); break;
+                default:
+                    if (KM) KamakuraSuburb(track, root, rng, x0, x1);      // (Kamakura's first level: StreetBuilder.Kamakura)
+                    else Suburb(track, root, rng, x0, x1);
+                    break;
             }
             if (ch != 3) Poles(track, root, x0, x1);
             if (ch != 3) CanopyShadows(track, root, new System.Random(ch * 173 + Mathf.RoundToInt(x0) + levelSalt), x0, x1);
@@ -989,6 +992,7 @@ namespace DribbleToSchool.EditorTools
                     if (CA) PalmSkyline(track, root, rng, x0, x1, 66f, 100f, 14f, 30f);
                     break;
                 default:
+                    if (KM) { KamakuraDepth(track, root, rng, x0, x1); break; }
                     TreeBand(track, root, rng, x0, x1, 34f, 37f, green, 5f, 10f);
                     // The next street over: stucco villas under tile roofs (the kit's gabled houses without the Coast kit; Florida's
                     // ranches and cottages in Florida).
@@ -1069,7 +1073,7 @@ namespace DribbleToSchool.EditorTools
         /// <summary>Does [a, b] run into a side street (they run 70 units back from the footpath)?</summary>
         static bool OnSideStreetRange(LevelBuildKit.TrackBuilder track, float a, float b)
         {
-            if (AcrossSeam(track, a, b)) return true;
+            if (AcrossSeam(track, a, b) || OnRailway(track, a, b)) return true;
             foreach (var area in track.OpenAreas.Concat(track.Canals))
                 if (b > area.x - 0.6f && a < area.y + 0.6f) return true;
             return false;

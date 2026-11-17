@@ -670,7 +670,7 @@ namespace DribbleToSchool.EditorTools
         // ---------- Asset kits (tools/blender/kit_*.py, docs/ART_DIRECTION.md) ----------
 
         /// <summary>The asset kits made in Blender, each in Art/Models/&lt;kit&gt;/ with its atlas and manifest.</summary>
-        public static readonly string[] Kits = { "Plants", "Buildings", "Street", "Terrain", "Leisure", "Works", "Animals", "Barriers", "Coast", "Florida" };
+        public static readonly string[] Kits = { "Plants", "Buildings", "Street", "Terrain", "Leisure", "Works", "Animals", "Barriers", "Coast", "Florida", "Kamakura" };
 
         static readonly Dictionary<string, Dictionary<string, object>> kitManifests = new Dictionary<string, Dictionary<string, object>>();
 

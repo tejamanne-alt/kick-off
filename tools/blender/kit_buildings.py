@@ -28,9 +28,9 @@ import sys, os, math
 # The Florida kit (kit_buildings_fl.py) the same, on its own 4096 x 4096 atlas.
 if '--kit' in sys.argv and sys.argv[sys.argv.index('--kit') + 1] in ('Coast', 'Florida'):
     os.environ['KIT_ATLAS'] = '4096x4096'
-# The Kamakura kit (kit_buildings_kamakura.py) at the same density, on a 4096 x 1024 atlas while it is this small.
+# The Kamakura kit (kit_buildings_kamakura.py) at the same density, on a 4096 x 2048 atlas (its houses, street things and set pieces).
 if '--kit' in sys.argv and sys.argv[sys.argv.index('--kit') + 1] == 'Kamakura':
-    os.environ['KIT_ATLAS'] = '4096x1024'
+    os.environ['KIT_ATLAS'] = '4096x2048'
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import bpy
 import numpy as np

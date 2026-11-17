@@ -55,6 +55,8 @@ namespace DribbleToSchool.UI
             new Entry("drawbridge", ControlsGuide.Picture.Wait),
             new Entry("sprinkler", ControlsGuide.Picture.Walk),
             new Entry("golfcart", ControlsGuide.Picture.Jump),
+            // Kamakura's own (LevelBuildKit.Kamakura)
+            new Entry("railcrossing", ControlsGuide.Picture.Wait),
         };
 
         /// <summary>The challenges' steps: what to do now, shown all the way through a challenge.</summary>

@@ -569,9 +569,10 @@ def roof_map(B, mp='roof'):
                     jt = np.minimum(fq, 1 - fq) * j
                     shade = shade * (1 - 0.4 * _ss(1.3 / ppm, 0.3 / ppm, jt))
                     sub = np.where(m[..., None], sub * shade[..., None], sub)
-                moss = (n2 > 0.74) * (n1 > 0.45)
-                sub = _mul(sub, moss.astype(np.float32), (0.86, 0.92, 0.62), 0.5)
-                sub = _mul(sub, (n2 < 0.12).astype(np.float32), (0.8, 0.78, 0.76), 0.4)
+                if not kw.get('kawara'):        # (kawara stays an even grey: no moss or pale spots, LEARNINGS E13)
+                    moss = (n2 > 0.74) * (n1 > 0.45)
+                    sub = _mul(sub, moss.astype(np.float32), (0.86, 0.92, 0.62), 0.5)
+                    sub = _mul(sub, (n2 < 0.12).astype(np.float32), (0.8, 0.78, 0.76), 0.4)
             elif kind == 'hip':
                 # Spanish barrel tiles on a hipped roof seen from above: rounded tiles running down
                 # each slope (across X on the front and back slopes, across Y on the hips' ends),

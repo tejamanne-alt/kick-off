@@ -645,6 +645,9 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
     - Moving things (arms, trams, gates) are shown and checked in each of their states, and placed from their own
       attach points, never by eye.
     - A real city's scenery uses that city's plants and its buildings' real sizes, not another city's stand-ins.
+  - *Also (v127, caught in review before it reached the user):* the tiled-roof painter laid its moss and pale spots over the
+    whole roof map, so a house with a tiled skirt roof grew green patches on its kawara hip too. Kawara slopes now skip
+    them (`kawara_pitched`; the `tiles` painter reads the flag as the `hip` painter does).
 
 ## F. UI and menus
 

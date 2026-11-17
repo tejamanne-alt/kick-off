@@ -60,6 +60,7 @@ It ignores the first 6 s after a scene loads, and the time after resuming from t
 | Character atlas | 2048 (kids), 1024 (bags), gaps filled for every mip | as listed |
 | Skinned renderers drawn | 1 kid + 1 bag + passers-by on screen | as listed |
 | Character meshes in memory per scene | the chosen kid and the bag they wear | about 46k vertices, ~7 MB, plus 2 atlases (was 545k vertices, ~83 MB, plus 11 atlases, since every kid and bag was saved into every scene) |
+| Kamakura kit (L01's street, v127) | one atlas, kit models instanced, the track's still parts batched | 4096 x 2048 atlas (about 5 MB in ASTC 6x6, 11 MB in ETC2, with mipmaps); houses 1.8k to 3k triangles each, the shrine 2.7k, the tram 2.3k; the crossing about 3.2k (two signals, four barrier machines, four arms) plus its track, wire and platform (about 90 boxes, batched); three new trees 2.3k to 3.7k. Not yet measured on the Nord CE5 |
 | Full-screen passes, Original look | grade only (bloom on High) | 1 to 8 |
 | Full-screen passes, filters | comic 2, sketch 1, classic 3, plus DepthNormals | unchanged; scaled by the render scale |
 

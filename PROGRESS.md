@@ -1775,6 +1775,51 @@ trees that don't grow in Japan, and the shrine and torii too small. Fixed in the
   rows 657 of 756 used). Still nothing in the game, so nothing measured on the Nord CE5.
 - Review: `review/kamakura_kit` (the kit sheet, the trees, the houses, the shrine, the crossing open and closed).
 
+## L01 in Kamakura's look (generated content v127)
+
+The user asked for the Kamakura models in a level, L01, with the Kamakura houses in the game's own look. The original
+town's L01 (not its Florida scene) is now the lane of the user's KM1-1 pictures:
+- **The houses** (`tools/blender/kit_buildings_kamakura_houses.py`, in the Kamakura kit): the old wooden home (KmHome in
+  the cancelled branch), a wooden house with big windows, a newer white house with its carport, the rice shop, and the
+  beige stucco house already made, with 2 m runs of a dark board fence and a bamboo fence. They are built from the kit's
+  parts, as the game's other houses are. The street repaints each within its own range (stucco colours, dark boards,
+  metal roofs).
+- **The street** (`StreetBuilder.Kamakura`, while `LevelBuildKit.KamakuraLane` is set): the lane's lots behind block
+  walls, board fences or bamboo fences, the row behind and the next street over in the same houses. Every tree planted
+  in L01 is one of Kamakura's (`KamakuraTree`): black pine, ginkgo, persimmon, cherry, the clipped garden pine.
+- **The set pieces** (`LevelBuildKit.Kamakura`, from the layout):
+  - the vending corner at x 6;
+  - the shrine and its torii at x 46;
+  - the Enoden's level crossing at x 73, before the bus stop:
+    - the track: 1,067 mm gauge, the rails' tops at one height all along, on a deck level with the footpaths
+      through the street, on ballast and sleepers beyond, under its overhead line;
+    - Hase's platform beside the track, its steps, its IC gate and name board;
+    - the two signals behind the footpath, their lamps flashing;
+    - on both sides of the tracks, a barrier closing the footpath and another closing the road.
+- **The crossing** (`Hazards/LevelCrossing`):
+  - As the kid comes within 9 m, the bells ring, the lamps flash and the arms come down.
+  - An invisible barrier a step back from the arm stops the kid and the ball, so the kid waits about 6 s.
+  - The tram comes from far up the track in the haze, braking to 45 km/h. It goes through the crossing without stopping
+    and on past the camera, and then the arms go up.
+  - It closes once per approach, and never on a kid, or a ball, already over.
+  - Coaching: `railcrossing`, in English and Spanish.
+  - Tests (`KamakuraKitTests`):
+    - the tram is only in the street with the arms all the way down;
+    - it never stops;
+    - it is through before the arms rise;
+    - every model the lane places is in its kit.
+- **The level** is 15 m longer (its bus stop at x 85), and its target is 63 s (was 53): the trip bell of Home Street
+  is 5:50. The kid's own house stays the one every level starts at and the map draws.
+- **Installed:** `Art/Models/Kamakura` (19 models, its 4096 x 2048 atlas) and the Plants kit's three new trees (its atlas
+  and every other plant unchanged). `LevelBuildKit.Kits` has Kamakura.
+- **Checks:**
+  - The Unity API check passes on 6000.6 and 6000.7.
+  - The compiler finds the same expected stand-in misses as the committed tree, and none in the new code.
+  - The coin audit is clean.
+  - `preview_street.py --kamakura` renders the lane as the game builds it, through the game camera
+    (`review/kamakura_l01`).
+  - Nothing has been run in Unity or on the Nord CE5 yet: the user builds L01 and plays it first (LEARNINGS E12).
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

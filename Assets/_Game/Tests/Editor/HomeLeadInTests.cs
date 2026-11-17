@@ -23,7 +23,7 @@ namespace DribbleToSchool.Tests
         // The seconds each story level's street takes, as the Levels table had them before the lead-in: the bell is these plus the walk from the door.
         static readonly Dictionary<string, float> StreetSeconds = new Dictionary<string, float>
         {
-            { "L01", 50f }, { "L02", 55f }, { "L03", 80f }, { "L04", 60f }, { "L05", 80f },
+            { "L01", 60f }, { "L02", 55f }, { "L03", 80f }, { "L04", 60f }, { "L05", 80f },
             { "L06", 60f }, { "L07", 70f }, { "L08", 70f }, { "L09", 75f }, { "L10", 95f },
             { "L11", 70f }, { "L12", 75f }, { "L13", 80f }, { "L14", 95f },
             { "L15", 65f }, { "L16", 80f }, { "L17", 85f }, { "L18", 105f },

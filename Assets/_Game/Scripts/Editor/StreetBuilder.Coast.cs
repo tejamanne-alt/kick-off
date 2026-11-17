@@ -28,10 +28,11 @@ namespace DribbleToSchool.EditorTools
             "VillaStucco", "VillaRanch", "CraftsmanPorch", "BeachCondo", "ShopBeach", "ShopMission", "PierSpan", "PierEnd",
         };
 
-        /// <summary>The kit a building model lives in: the Coast kit's California models, else the Buildings kit.</summary>
+        /// <summary>The kit a building model lives in: Florida's and Kamakura's houses theirs, the Coast kit's California models, else the Buildings kit.</summary>
         public static string KitOf(string model)
         {
             if (model != null && FloridaHouses.Contains(model)) return "Florida";
+            if (model != null && model.EndsWith("KM")) return "Kamakura";      // (the Kamakura kit's models all end in KM)
             return model != null && CoastModels.Contains(model) ? "Coast" : "Buildings";
         }
 

@@ -78,10 +78,13 @@ namespace DribbleToSchool.EditorTools
 
         // ===================== Chapter 1: Home Street =====================
 
-        /// <summary>L01: tutorial. One idea at a time, generous bell.</summary>
+        /// <summary>L01: tutorial. One idea at a time, generous bell. In Kamakura (the original town) the lane of the user's KM1-1:
+        /// past the vending corner and the shrine to the Enoden's level crossing, where the kid waits for the tram.</summary>
         public static void OutTheDoor(TrackBuilder t)
         {
-            t.Walls(-8f, 78f);
+            bool km = t.InKamakuraLane;     // (literal numbers in both branches: tools/coin_audit.py reads them)
+            if (km) t.Walls(-8f, 93f);
+            else t.Walls(-8f, 78f);
             t.Start(0f);
             // (Every story level starts at the front door, 12 m before the layout's x = 0, see HomeLeadInRules: the first lesson is
             // moved back with it, to 1.5 m and 4 m from the doorstep as it was from the old start.)
@@ -104,7 +107,8 @@ namespace DribbleToSchool.EditorTools
             t.Checkpoint(45f);
             t.Pit(52f, 53.5f);
             t.Sign("Chip it across,\nthen jump after it", new Vector2(50f, 3f));
-            t.Ground(53.5f, 78f);
+            if (km) t.Ground(53.5f, 93f);
+            else t.Ground(53.5f, 78f);
 
             t.Hint(55.5f, "slide");
             t.Sign("Duck under it:\ntap SLIDE or swipe down", new Vector2(57.6f, 3.4f));
@@ -122,8 +126,19 @@ namespace DribbleToSchool.EditorTools
                 t.Sign("Sprinkler! Dribble\nthrough the spray", new Vector2(64.5f, 3.6f));
                 t.CoinArc(64.6f, 66.4f, 2.7f, 0.6f, 3);
             }
+            if (km)
+            {
+                // Kamakura: the vending corner and the shrine along the lane, then the level crossing before the bus stop. As the
+                // kid comes up to it the bells ring and the arms come down; the kid waits for the tram to go through.
+                t.VendingCorner(6f);
+                t.KamakuraShrine(46f);
+                t.Sign("Level crossing! When the\nbells ring, stop and wait\nfor the tram to pass", new Vector2(65.5f, 3.4f));
+                t.RailCrossing(73f);
+                t.CoinRow(78f, 82f, 0.5f, 3);
+            }
             t.Sticker(new Vector2(41f, 3.2f));
-            t.Goal(70f);
+            if (km) t.Goal(85f);
+            else t.Goal(70f);
         }
 
         /// <summary>L02: parked cars to hop onto and chip over.</summary>

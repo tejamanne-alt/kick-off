@@ -18,6 +18,7 @@ from kit_buildings_bits import *
 from kit_buildings_town import decal, amado
 from kit_buildings_cal import hip
 import kit_buildings_signs as SG
+import kit_buildings_kamakura_houses as KH
 
 # ---------------------------------------------------------------- the kit's own colours
 # (appended to the shared table, so every other kit's material ids stay as they are)
@@ -33,6 +34,7 @@ KM_MAT = {
     'kmblue': (0, (0.19, 0.43, 0.76), 'white', 0.05), 'kmcab': (0, (0.46, 0.38, 0.33), 'white', 0.15),
     'kmgrey': (0, (0.58, 0.60, 0.62), 'white', 0.1), 'kmgreyd': (0, (0.30, 0.31, 0.33), 'white', 0.1),
     'kmpaper': (0, (0.98, 0.98, 0.96), 'white', 0.0), 'kmrope': (0, (0.86, 0.78, 0.56), 'white', 0.1),
+    'kmbamboo': (0, (0.80, 0.70, 0.45), 'white', 0.15), 'kmpoly': (0, (0.84, 0.89, 0.90), 'white', 0.0),
 }
 for _k, _v in KM_MAT.items():
     if _k not in MAT:
@@ -43,7 +45,7 @@ for _k, _v in KM_MAT.items():
 TILES = [
     ('km_stripe', 256, 256), ('km_station', 768, 320), ('km_bin_can', 160, 224), ('km_bin_pet', 160, 224),
     ('km_bin_glass', 160, 224), ('km_dest', 384, 96), ('km_ic', 128, 128), ('km_mirror', 192, 192), ('km_lattice', 192, 192),
-    ('km_arrow', 160, 96),
+    ('km_arrow', 160, 96), ('km_boards', 256, 256), ('km_bamboo', 256, 256), ('km_rice', 512, 128),
 ]
 
 
@@ -639,6 +641,9 @@ def paint(img, put):
     pp(img, 'km_mirror', t_mirror, (0.66, 0.73, 0.79))
     pp(img, 'km_lattice', t_lattice, (0.93, 0.90, 0.80))
     pp(img, 'km_arrow', t_arrow, (0.06, 0.06, 0.07))
+    pp(img, 'km_boards', lambda dr, w, h, k: KH.t_boards(dr, w, h, k, _c), (0.30, 0.22, 0.17))
+    pp(img, 'km_bamboo', lambda dr, w, h, k: KH.t_bamboo(dr, w, h, k, _c), (0.80, 0.70, 0.45))
+    pp(img, 'km_rice', lambda dr, w, h, k: KH.t_rice(dr, w, h, k, _c, _label, KANA, BOLD), (0.95, 0.92, 0.84))
 
 
 # ================================================================ the kit's rows
@@ -650,6 +655,22 @@ def pal_km(pal):
         ('HouseKM', 8.2, 5.8, 7.4, 1.75, house_km,
          pal((0.91, 0.85, 0.72), (0.40, 0.30, 0.24), (0.34, 0.36, 0.40), trim=(0.88, 0.86, 0.82), conc=(0.74, 0.72, 0.68),
              frame=(0.80, 0.81, 0.82), soffit=(0.86, 0.84, 0.80)), 8.4, {'wall': 'stucco', 'ppm': 64}, {}),
+        # the houses of KM1-1's lane (kit_buildings_kamakura_houses.py): walls, doors and roofs repaintable within their own ranges
+        ('HomeOldKM', 9.6, 2.9, 8.0, 1.75, KH.home_old_km,
+         pal((0.34, 0.25, 0.19), (0.33, 0.24, 0.18), (0.36, 0.37, 0.40), trim=(0.88, 0.86, 0.82), conc=(0.72, 0.70, 0.66),
+             frame=(0.80, 0.81, 0.82), soffit=(0.36, 0.28, 0.22)), 8.4, {'wall': 'siding', 'ppm': 56}, {}),
+        ('HouseWoodKM', 8.4, 5.7, 7.4, 1.65, KH.house_wood_km,
+         pal((0.37, 0.28, 0.21), (0.55, 0.42, 0.30), (0.36, 0.37, 0.40), trim=(0.88, 0.86, 0.82), conc=(0.72, 0.70, 0.66),
+             frame=(0.80, 0.81, 0.82), soffit=(0.40, 0.31, 0.24)), 8.0, {'wall': 'siding', 'ppm': 56}, {}),
+        ('HouseWhiteKM', 6.6, 5.6, 8.0, 0.0, KH.house_white_km,
+         pal((0.95, 0.95, 0.93), (0.36, 0.30, 0.26), (0.30, 0.31, 0.33), trim=(0.90, 0.90, 0.88), conc=(0.74, 0.72, 0.68),
+             frame=(0.80, 0.81, 0.82), soffit=(0.88, 0.88, 0.86)), 7.4, {'wall': 'stucco', 'ppm': 56}, {}),
+        ('RiceShopKM', 6.8, 5.6, 8.0, 1.55, KH.rice_shop_km,
+         pal((0.90, 0.84, 0.72), (0.70, 0.72, 0.74), (0.36, 0.37, 0.40), trim=(0.92, 0.90, 0.85), conc=(0.72, 0.70, 0.66),
+             frame=(0.80, 0.81, 0.82), soffit=(0.86, 0.84, 0.80)), 7.6, {'wall': 'stucco', 'ppm': 56}, {}),
+        ('CarportKM', 2.8, 2.5, 5.0, 0.0, KH.carport_km, pal((0.80, 0.81, 0.82), (0.84, 0.89, 0.90), (0.80, 0.81, 0.82)), 2.8, prop, {}),
+        ('FenceBoardKM', 2.0, 1.8, 0.12, 0.0, KH.fence_board_km, pal((0.33, 0.24, 0.18), (0.33, 0.24, 0.18), (0.33, 0.24, 0.18)), 2.0, prop, {}),
+        ('FenceBambooKM', 2.0, 1.5, 0.12, 0.0, KH.fence_bamboo_km, pal((0.80, 0.70, 0.45), (0.33, 0.24, 0.18), (0.80, 0.70, 0.45)), 1.7, prop, {}),
         ('TramKM', 12.0, 3.4, 2.3, 0.0, tram_km,
          pal((0.20, 0.45, 0.31), (0.95, 0.90, 0.74), (0.58, 0.60, 0.62)), 5.0, {'ppm': 40}, {}),
         # a neighbourhood shrine's torii about 4 m tall, the shrine 2.6 m across on a stone base 8.6 m wide

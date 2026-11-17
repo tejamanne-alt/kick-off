@@ -31,7 +31,7 @@ namespace DribbleToSchool.EditorTools
         {
             "slide", "kerb", "stepup", "chip", "chiphigh", "gap", "gapdouble", "crates", "car", "highwall", "springboard", "bounce",
             "platform", "lift", "swing", "gate", "crossing", "siteexit", "tide", "dog", "people", "seagull", "fountain",
-            "drawbridge", "sprinkler", "golfcart",
+            "drawbridge", "sprinkler", "golfcart", "railcrossing",
         };
 
         /// <summary>Spots of the same action closer than this (m) are one.</summary>
