@@ -22,6 +22,17 @@ namespace DribbleToSchool.EditorTools
             get { return LevelId == "L01" && !Florida && !California && HasKitModel("Kamakura", "HouseKM"); }
         }
 
+        /// <summary>
+        /// Says in the Console whether the original town's L01 is being built as Kamakura's lane, and if not, which of the Kamakura
+        /// kit's models the asset database hasn't got (a build that ran before the kit imported made the usual street: LEARNINGS E14).
+        /// </summary>
+        public static void ReportKamakuraLane()
+        {
+            if (LevelId != "L01" || Florida || California) return;
+            if (KamakuraLane) { Debug.Log("[Kick Off] L01: Kamakura's lane (the Kamakura kit's houses, the shrine, the level crossing)."); return; }
+            Debug.LogWarning("[Kick Off] L01 built as the usual street: " + ModelsDir + "/Kamakura/HouseKM.fbx is not imported. Rebuild the levels (Kick Off > Rebuild All Levels) once it is.");
+        }
+
         public partial class TrackBuilder
         {
             /// <summary>True while Kamakura's lane is built: the layout adds its set pieces.</summary>

@@ -22,7 +22,7 @@ namespace DribbleToSchool.EditorTools
     public static class GeneratedContent
     {
         /// <summary>Bump when layouts or the scene rig change so scenes regenerate.</summary>
-        public const int Version = 127;   // 127: L01 in Kamakura's look (LevelBuildKit.KamakuraLane, StreetBuilder.Kamakura): the Kamakura kit's houses and Kamakura's trees along the lane, the vending corner, the shrine, and the Enoden's level crossing where the kid waits for the tram (Hazards/LevelCrossing); 126: Kamakura's own legs (built as 123 to 125 on a branch) cancelled at the user's request: the content is 122's again, and the bump makes an editor that built 123 to 125 rebuild it, so their scenes leave the build; 122: the five cities (Progression/Cities): California's <scene>_CA scenes are no longer built (it is not one of the five), and Florida's scenes are built in Florida's climate (a warm 5,000 K sun, teal shade, humid air: CityClimate); 121: the Florida add-on's Home Street: chapter 1's levels each get a <scene>_FL scene (ranch houses and Old Florida cottages, live oaks with Spanish moss, the canal's drawbridge, the lawn sprinklers, the golf cart, the afternoon storm), and every Florida level's home street is Florida's; 120: a WaterSplash trigger at the surface of every trench, stream and tidal channel (the splash shows as things go in, not two metres under the water), the characters rebuilt (large two-colour triangles split, pale stripes and specks settled into their garment or the hair); 119: every model character's rig carries ground points measured from its mesh (CharacterRig keeps them above the ground: no foot or leg through the pavement in a slide, a kick or a crouch), the slide's back knee up with its foot planted, the low flower obstacle a raised bed with a stone kerb, and every character rebuilt with its outfit parts settled (no white or stray patches in a recoloured outfit); 118: the Fields, the Sea and the menu's field cast no shadows, and the distant hills and the clouds receive none (none of it could show: docs/LEARNINGS.md B8); 117: the Florida add-on: chapter 3's levels each get a <scene>_FL scene (the Florida kit's beach town on seawall terraces, Seagrove High at the end), the Coast and Florida kits' palms, Florida's music; 116: white tears at hems, belts and hairlines absorbed too (absorb_tears's second test); 115: the torso on the rig (Hips, Spine, Chest: CharacterRig.Torso turns, sways and breathes the middle of the body); 114: every character's head rigid on the Head bone (faces no longer fold as the head nods), the face shaded round, white tears absorbed into their garments, Mia's right eye mirrored from her left; 113: the kids keep their own scanned faces, with Max's finish (face_ink.py; the drawn faces of 111 were rejected); 112: the kids' and bags' meshes out of the scenes (Resources/Cast, LazyRenderer); 111: polished characters (welded, 32k / 14k triangles, illustrated kids' faces), cameras without HDR or MSAA, the player's thicker outline
+        public const int Version = 128;   // 128: 127 again, built only once every kit model is imported (an editor that built 127 while the Kamakura kit was still importing made L01 without it: docs/LEARNINGS.md E14); 127: L01 in Kamakura's look (LevelBuildKit.KamakuraLane, StreetBuilder.Kamakura): the Kamakura kit's houses and Kamakura's trees along the lane, the vending corner, the shrine, and the Enoden's level crossing where the kid waits for the tram (Hazards/LevelCrossing); 126: Kamakura's own legs (built as 123 to 125 on a branch) cancelled at the user's request: the content is 122's again, and the bump makes an editor that built 123 to 125 rebuild it, so their scenes leave the build; 122: the five cities (Progression/Cities): California's <scene>_CA scenes are no longer built (it is not one of the five), and Florida's scenes are built in Florida's climate (a warm 5,000 K sun, teal shade, humid air: CityClimate); 121: the Florida add-on's Home Street: chapter 1's levels each get a <scene>_FL scene (ranch houses and Old Florida cottages, live oaks with Spanish moss, the canal's drawbridge, the lawn sprinklers, the golf cart, the afternoon storm), and every Florida level's home street is Florida's; 120: a WaterSplash trigger at the surface of every trench, stream and tidal channel (the splash shows as things go in, not two metres under the water), the characters rebuilt (large two-colour triangles split, pale stripes and specks settled into their garment or the hair); 119: every model character's rig carries ground points measured from its mesh (CharacterRig keeps them above the ground: no foot or leg through the pavement in a slide, a kick or a crouch), the slide's back knee up with its foot planted, the low flower obstacle a raised bed with a stone kerb, and every character rebuilt with its outfit parts settled (no white or stray patches in a recoloured outfit); 118: the Fields, the Sea and the menu's field cast no shadows, and the distant hills and the clouds receive none (none of it could show: docs/LEARNINGS.md B8); 117: the Florida add-on: chapter 3's levels each get a <scene>_FL scene (the Florida kit's beach town on seawall terraces, Seagrove High at the end), the Coast and Florida kits' palms, Florida's music; 116: white tears at hems, belts and hairlines absorbed too (absorb_tears's second test); 115: the torso on the rig (Hips, Spine, Chest: CharacterRig.Torso turns, sways and breathes the middle of the body); 114: every character's head rigid on the Head bone (faces no longer fold as the head nods), the face shaded round, white tears absorbed into their garments, Mia's right eye mirrored from her left; 113: the kids keep their own scanned faces, with Max's finish (face_ink.py; the drawn faces of 111 were rejected); 112: the kids' and bags' meshes out of the scenes (Resources/Cast, LazyRenderer); 111: polished characters (welded, 32k / 14k triangles, illustrated kids' faces), cameras without HDR or MSAA, the player's thicker outline
 
         const string ScenesDir = LevelBuildKit.Root + "/Scenes";
         const string LevelsDir = LevelBuildKit.Root + "/Levels";
@@ -146,9 +146,24 @@ namespace DribbleToSchool.EditorTools
             EditorApplication.delayCall += AutoBuild;
         }
 
+        /// <summary>Editor ticks the automatic build has waited for the asset database (it gives up waiting after about a minute).</summary>
+        static int autoBuildWaits;
+
         static void AutoBuild()
         {
             if (SessionState.GetBool(AutoBuildKey, false)) return;
+            // Not while scripts compile or assets import: a level built then can't see the kit models still on their way in
+            // (LevelBuildKit.HasKitModel is false for them), and is built without them (docs/LEARNINGS.md E14).
+            string waiting = null;
+            if (EditorApplication.isCompiling || EditorApplication.isUpdating || (waiting = KitModelNotImported()) != null)
+            {
+                if (++autoBuildWaits < 3600)
+                {
+                    EditorApplication.delayCall += AutoBuild;
+                    return;
+                }
+                Debug.LogWarning("[Kick Off] Building levels although " + (waiting ?? "the asset database") + " is not imported yet: rebuild them (Kick Off > Rebuild All Levels) once it is.");
+            }
             SessionState.SetBool(AutoBuildKey, true);
             if (EditorApplication.isPlayingOrWillChangePlaymode) return;
             if (ReadVersion() >= Version && AllScenesExist()) return;
@@ -161,7 +176,28 @@ namespace DribbleToSchool.EditorTools
         static void RebuildFromMenu()
         {
             if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
+            string waiting = KitModelNotImported();
+            if (waiting != null && !EditorUtility.DisplayDialog("Kick Off", waiting + " is not imported yet, so the levels would be built without it. Build anyway?", "Build anyway", "Wait"))
+                return;
             BuildAll();
+        }
+
+        /// <summary>The first kit model on disk the asset database hasn't imported yet (Art/Models/&lt;kit&gt;/*.fbx), or null when all are in.</summary>
+        static string KitModelNotImported()
+        {
+            foreach (string kit in LevelBuildKit.Kits)
+            {
+                string dir = LevelBuildKit.ModelsDir + "/" + kit;
+                if (!Directory.Exists(FullPath(dir))) continue;
+                foreach (string file in Directory.GetFiles(FullPath(dir), "*.fbx"))
+                {
+                    string asset = dir + "/" + Path.GetFileName(file);
+                    // (cheap checks, run every editor tick while waiting: neither loads the model)
+                    if (string.IsNullOrEmpty(AssetDatabase.AssetPathToGUID(asset)) || AssetDatabase.GetMainAssetTypeAtPath(asset) == null)
+                        return asset;
+                }
+            }
+            return null;
         }
 
         [MenuItem("Kick Off/Open Level 1")]

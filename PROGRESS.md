@@ -1819,6 +1819,9 @@ town's L01 (not its Florida scene) is now the lane of the user's KM1-1 pictures:
   - `preview_street.py --kamakura` renders the lane as the game builds it, through the game camera
     (`review/kamakura_l01`).
   - Nothing has been run in Unity or on the Nord CE5 yet: the user builds L01 and plays it first (LEARNINGS E12).
+- **v128 (LEARNINGS E14):** the user's editor rebuilt the levels for v127 before the Kamakura kit had imported, and L01
+  came out as the usual street. The automatic build now waits for every kit model to import, the menu's rebuild asks if
+  one isn't, and building L01 says in the Console whether it is Kamakura's lane.
 
 ## After Phase 8 (next steps)
 

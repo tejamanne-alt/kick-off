@@ -83,6 +83,7 @@ namespace DribbleToSchool.EditorTools
         public static void OutTheDoor(TrackBuilder t)
         {
             bool km = t.InKamakuraLane;     // (literal numbers in both branches: tools/coin_audit.py reads them)
+            LevelBuildKit.ReportKamakuraLane();
             if (km) t.Walls(-8f, 93f);
             else t.Walls(-8f, 78f);
             t.Start(0f);

@@ -648,6 +648,16 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
   - *Also (v127, caught in review before it reached the user):* the tiled-roof painter laid its moss and pale spots over the
     whole roof map, so a house with a tiled skirt roof grew green patches on its kawara hip too. Kawara slopes now skip
     them (`kawara_pitched`; the `tiles` painter reads the flag as the `hip` painter does).
+- **E14. L01 built without the kit it needed (v127).** The user switched to the branch, the editor rebuilt the levels by
+  itself, and L01 came out as the usual street: the new target time and the old 16 coins, no Kamakura houses.
+  - *Why:* the automatic build (`GeneratedContent.AutoBuild`, on the editor's first tick after scripts load) can run while
+    new assets are still importing. `LevelBuildKit.HasKitModel` was false for the Kamakura kit's models, so
+    `KamakuraLane` was off, and the version stamp said the content was up to date.
+  - *Fix:* the automatic build waits until no scripts compile, the asset database isn't updating and every kit's FBX is
+    in it (`KitModelNotImported`); the menu's rebuild asks first if one isn't. Building L01 says in the Console
+    whether it is Kamakura's lane (`ReportKamakuraLane`). Content version 128 rebuilds it.
+  - *Rule:* a build that depends on new assets checks they are imported before it runs, and says what it built. A
+    change that adds a kit is checked in the editor's Console after the rebuild, not just by its version stamp.
 
 ## F. UI and menus
 
