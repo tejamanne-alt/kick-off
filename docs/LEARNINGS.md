@@ -1744,12 +1744,49 @@ fronts standing at the lane's back edge, with the ground before them (`tools/ble
     - Before adding a static class, look for a member of that name in the classes that will call it.
     - What a mini-game shows and what it saves change together, in one rule that the tests cover.
 
+- **E17. The rest of Kamakura: what reading caught before it ran (November 2026).** Kamakura's animals went into its
+  legs, the rain onto route 3, its own Holiday Run and co-op onto its routes.
+  - *What:*
+    - The next city (Florida) opened only when all 23 original levels were finished. Kamakura no longer plays them,
+      so a new player could never open it.
+    - `KitModel` gave its material only to `MeshRenderer`s. Kamakura's animals are each one skinned mesh
+      (`SkinnedMeshRenderer`, D21), so they would have stood unpainted.
+    - Kamakura's street pads its ground and hills 50 to 200 m past a level's ends. Two Holiday Run stages are loaded
+      side by side, so their padded hills would have overlapped in one place and flickered.
+    - Every route-3 stage carries its own rain, which follows the camera. With two stages loaded, the rain would have
+      fallen twice as thick.
+    - A Holiday Run test asked for "more than 10 gaps" in a day. That is true of a 23-stage day, but not of Kamakura's
+      ten stages, even though they have more gaps per stage.
+    - Co-op exchanges route numbers. `Routes.All` follows each phone's own chosen city, so two phones in one race
+      could have read one number as two routes.
+  - *Fix:*
+    - `Cities.EveryLevelFinished` counts either set: Kamakura's twelve legs or the original 23.
+    - `KitModel` paints every `Renderer`.
+    - A Holiday Run stage's Kamakura street covers exactly its own stretch.
+    - A rain falls only while the camera is over its own stage (`RainFall.fromX`, `toX`).
+    - The test's threshold scales with the number of stages.
+    - Co-op has one fixed list, `CoopRoutes.All`: Kamakura's three routes, then the original routes Florida has.
+  - *Rule:*
+    - When a set of levels is replaced, look for everything that counts the old set: unlocks, missions, tests.
+    - Anything a stage builds runs side by side with its neighbour's. It covers only its own stretch, or acts only
+      while the camera is over it.
+    - What two phones exchange by index comes from a list that is the same on every phone.
+    - A test about how much a table holds scales with the table's size.
+
 ## F. UI and menus
 
 - **F1. The anchor and pivot trap** caused overlaps in the credits, results, guides and pause menu. *Rule:* lay screens out top down by explicit edges; check 4:3, 16:9 and 21:9 in both languages.
 - **F2. Full screens.** The Settings card's two columns are full (718 of 724 units on the left), so a new row overflows. *Rule:* measure the column before adding a row. Graphics quality is automatic for this reason.
 - **F3. Map labels too small for Spanish; a test rule stricter than the screen.** *Rule:* measure text with the real font in every language; test rules mirror what is drawn.
 - **F4. Wrong instruction text** ("tap KICK" is a pass). *Rule:* check every how-to string against the real input.
+- **F5. Kamakura's mini-games laid out for 16:9 only (found by measuring, November 2026).** The overlays keep a height
+  of 1080, so a 4:3 screen is 1440 wide (x from -720 to 720) and 21:9 is 2520. The ride's left key (x -800), its STOP
+  key (790) and both coin counters (820) were off the screen at 4:3. Two messages were wider than the screen, and the
+  keys at 21:9 stood far from the thumbs. *Fix:* the keys are placed from the screen's bottom corners, the coins from
+  its top-right corner, the messages are 1300 wide and shrink to fit, and key labels shrink inside their discs. A
+  check of every element's extent at 4:3, 16:9 and 21:9 finds none off the screen and no keys overlapping. *Rule:* as
+  F1. Place what a thumb uses from the screen's edge, and measure every element at 4:3 and 21:9 before calling a screen
+  done.
 
 ## G. Audio
 

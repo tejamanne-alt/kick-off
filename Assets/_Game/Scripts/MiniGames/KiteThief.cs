@@ -180,7 +180,8 @@ namespace DribbleToSchool.MiniGames
                 canvas = UIKit.CreateCanvas("KiteThief", 20);
                 var root = UIKit.Stretch(UIKit.Rect(canvas.transform, "Root"));
                 banner = UIKit.Label(root, "Banner", "", 46, Color.white, TextAnchor.MiddleCenter, true);
-                UIKit.Place(banner.rectTransform, new Vector2(0.5f, 1f), new Vector2(0f, -190f), new Vector2(1500f, 70f));
+                UIKit.Place(banner.rectTransform, new Vector2(0.5f, 1f), new Vector2(0f, -190f), new Vector2(1300f, 70f));   // within 4:3's 1440
+                UIKit.Fit(banner, 28);
                 var outline = banner.gameObject.AddComponent<Outline>();
                 outline.effectColor = new Color(0.05f, 0.07f, 0.16f, 0.9f);
                 outline.effectDistance = new Vector2(3f, -3f);

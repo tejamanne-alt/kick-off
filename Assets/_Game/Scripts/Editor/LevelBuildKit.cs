@@ -674,7 +674,7 @@ namespace DribbleToSchool.EditorTools
         /// models (tools/blender/km_views.py, each carved from its own views) each have their own texture instead, named
         /// in the manifest ("texture"), and so their own material (ArtBaker: Kit&lt;kit&gt;_&lt;model&gt;).
         /// </summary>
-        public static readonly string[] Kits = { "Plants", "Buildings", "Street", "Terrain", "Leisure", "Works", "Animals", "Barriers", "Coast", "Florida", "Kamakura" };
+        public static readonly string[] Kits = { "Plants", "Buildings", "Street", "Terrain", "Leisure", "Works", "Animals", "Barriers", "Coast", "Florida", "Kamakura", "KamakuraAnimals" };
 
         static readonly Dictionary<string, Dictionary<string, object>> kitManifests = new Dictionary<string, Dictionary<string, object>>();
 
@@ -928,7 +928,8 @@ namespace DribbleToSchool.EditorTools
             var bases = KitPartColors(KitInfo(kit, model));
             var tints = new[] { tint1 ?? Color.clear, tint2 ?? Color.clear, tint3 ?? Color.clear };
             bool tinted = tint1.HasValue || tint2.HasValue || tint3.HasValue;
-            foreach (var r in inst.GetComponentsInChildren<MeshRenderer>())
+            // (a Kamakura animal is one skinned mesh on its bones: its renderer is a SkinnedMeshRenderer)
+            foreach (var r in inst.GetComponentsInChildren<Renderer>())
             {
                 r.sharedMaterial = material;
                 r.shadowCastingMode = castShadows ? UnityEngine.Rendering.ShadowCastingMode.On : UnityEngine.Rendering.ShadowCastingMode.Off;
@@ -1779,8 +1780,11 @@ namespace DribbleToSchool.EditorTools
                 crossing.greenFigure.transform.position = new Vector3(poleX, pave + 2.22f, poleZ - 0.27f);
             }
 
-            /// <summary>A playful dog that patrols minX..maxX and noses low balls back.</summary>
-            public void Dog(float minX, float maxX, Color fur, float groundTop = 0f)
+            /// <summary>
+            /// A playful dog that patrols minX..maxX and noses low balls back: the Animals kit's dog in <paramref name="fur"/>, or
+            /// one of Kamakura's own animals (<paramref name="kamakuraModel"/>: the Shiba, the tanuki) where its kit has it.
+            /// </summary>
+            public void Dog(float minX, float maxX, Color fur, float groundTop = 0f, string kamakuraModel = null)
             {
                 Coaching.Mark("dog", minX, maxX);
                 var go = new GameObject("Dog");
@@ -1789,6 +1793,7 @@ namespace DribbleToSchool.EditorTools
                 var visual = new GameObject("Visual").transform;
                 visual.SetParent(go.transform, false);
                 visual.localPosition = new Vector3(0f, 0f, 0.55f);   // trots beside the kid's line, not through it
+                if (kamakuraModel != null && KamakuraDog(go, visual, minX, maxX, kamakuraModel)) return;
                 var kitDog = KitModel(visual, "Animals", "Dog", visual.position + Vector3.down * 0.3f, 0f, 1f, fur);
                 if (kitDog != null)
                 {

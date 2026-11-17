@@ -53,6 +53,56 @@ namespace DribbleToSchool.EditorTools
             return front + KamakuraDepth - KitMin("Kamakura", model).z;
         }
 
+        // ------------------------------------------------------------------ Kamakura's animals (Art/Models/KamakuraAnimals)
+
+        /// <summary>Kamakura's animals (tools/blender/kit_animals_km.py, KM-N01 to N28): each one skinned mesh on its bones.</summary>
+        public const string KmAnimalsKit = "KamakuraAnimals";
+
+        /// <summary>
+        /// An axis as a Kamakura animal's manifest names it ("side", "long", "up"), in the model's own axes as the kit's FBX
+        /// brings every part and bone (along the body x, across it y, up z): the axes the Animals kit's behaviours already use
+        /// (a dog's legs swing about y, a gull's wings beat about x, a head looks about z).
+        /// </summary>
+        public static Vector3 KmAxis(string name)
+        {
+            switch (name)
+            {
+                case "long": return Vector3.right;
+                case "up": return Vector3.forward;
+                default: return Vector3.up;
+            }
+        }
+
+        /// <summary>How the game moves a Kamakura animal: its manifest's "game" entry (its behaviour and settings, as its review played them), or null.</summary>
+        public static Dictionary<string, object> KmGame(string model)
+        {
+            var info = KitInfo(KmAnimalsKit, model);
+            object g;
+            return info != null && info.TryGetValue("game", out g) ? g as Dictionary<string, object> : null;
+        }
+
+        /// <summary>A text setting of a Kamakura animal's "game" entry, or null.</summary>
+        public static string KmText(Dictionary<string, object> game, string key)
+        {
+            object v;
+            return game != null && game.TryGetValue(key, out v) ? v as string : null;
+        }
+
+        /// <summary>A number setting of a Kamakura animal's "game" entry, or <paramref name="fallback"/>.</summary>
+        public static float KmNumber(Dictionary<string, object> game, string key, float fallback)
+        {
+            object v;
+            if (game == null || !game.TryGetValue(key, out v) || v == null || v is string || v is bool) return fallback;
+            return System.Convert.ToSingle(v);
+        }
+
+        /// <summary>A yes-or-no setting of a Kamakura animal's "game" entry.</summary>
+        public static bool KmFlag(Dictionary<string, object> game, string key)
+        {
+            object v;
+            return game != null && game.TryGetValue(key, out v) && v is bool && (bool)v;
+        }
+
         public partial class TrackBuilder
         {
             Transform kamakuraScenery;
@@ -97,6 +147,62 @@ namespace DribbleToSchool.EditorTools
 
             /// <summary>Walls a cat may sit on (from x, to x, their top, their z), for StreetBuilder.Kamakura's wildlife.</summary>
             public readonly List<Vector4> KamakuraWalls = new List<Vector4>();
+
+            /// <summary>Some of Kamakura's animals a leg asks for (<see cref="KmAnimals"/>).</summary>
+            public struct KmCritter
+            {
+                public string model;
+                public float fromX, toX;
+                public int count;
+            }
+
+            /// <summary>The animals the leg asks for, placed by StreetBuilder.Kamakura.</summary>
+            public readonly List<KmCritter> KamakuraCritters = new List<KmCritter>();
+
+            /// <summary>
+            /// <paramref name="count"/> of a Kamakura animal (<paramref name="model"/>, KamakuraAnimals) spread from
+            /// <paramref name="fromX"/> to <paramref name="toX"/> on the ground between the footpath and the lane's pictures, each
+            /// moved by the behaviour its manifest names (GroundBird, CritterIdle, FlitButterfly; still if none), as its review
+            /// played it. Left out when the kit hasn't got it.
+            /// </summary>
+            public void KmAnimals(string model, float fromX, float toX, int count = 1)
+            {
+                if (!HasKitModel(KmAnimalsKit, model)) return;
+                KamakuraCritters.Add(new KmCritter { model = model, fromX = fromX, toX = toX, count = count });
+            }
+
+            /// <summary>
+            /// A Kamakura animal as the dog hazard (the Shiba KM-N04, the tanuki KM-N02): its jointed legs walked by World/LegGait,
+            /// its tail and head moved about the axes its manifest gives. False if the kit hasn't got it.
+            /// </summary>
+            bool KamakuraDog(GameObject go, Transform visual, float minX, float maxX, string model)
+            {
+                var game = KmGame(model);
+                if (game == null || KmText(game, "component") != "Dog") return false;
+                var kit = KitModel(visual, KmAnimalsKit, model, visual.position + Vector3.down * 0.3f);
+                if (kit == null) return false;
+                string[] legNames = { "LegFR", "LegFL", "LegBR", "LegBL" };
+                var legs = new Transform[legNames.Length];
+                for (int i = 0; i < legNames.Length; i++)
+                    if ((legs[i] = FindDeep(kit, legNames[i])) == null)
+                    {
+                        Object.DestroyImmediate(kit.gameObject);
+                        return false;
+                    }
+                var hound = go.AddComponent<Hazards.Dog>();
+                hound.minX = minX;
+                hound.maxX = maxX;
+                hound.visual = visual;
+                hound.legs = legs;
+                hound.legAxis = KmAxis("side");
+                string tail = KmText(game, "tail"), head = KmText(game, "head");
+                hound.tail = tail != null ? FindDeep(kit, tail) : null;
+                hound.tailAxis = KmAxis(KmText(game, "tailAxis"));     // the Shiba's curled tail about its length (D20)
+                hound.head = head != null ? FindDeep(kit, head) : null;
+                hound.headNodAxis = KmAxis("side");
+                hound.headTurnAxis = KmAxis("up");
+                return true;
+            }
 
             /// <summary>
             /// KM1-1's first-graders walking to school (docs/KAMAKURA_BUILD.md, KM-C01 and KM-C02): <paramref name="count"/> of them
@@ -262,6 +368,51 @@ namespace DribbleToSchool.EditorTools
                     x += w;
                 }
                 return x;
+            }
+
+            /// <summary>
+            /// The June rain over the leg (World/RainFall: KM3's three legs, whose pictures are wet), in front of its pictures;
+            /// in a Holiday Run stage only while the camera is over it (<paramref name="fromX"/> to <paramref name="toX"/>).
+            /// </summary>
+            public void Rain(float fromX = float.NegativeInfinity, float toX = float.PositiveInfinity)
+            {
+                var go = new GameObject("Rain");
+                go.transform.SetParent(root, false);
+                go.AddComponent<MeshFilter>();
+                var r = go.AddComponent<MeshRenderer>();
+                r.sharedMaterial = Art != null ? Art.wire : null;     // Sprites/Default: unlit, vertex colour, blended
+                var rain = go.AddComponent<RainFall>();
+                rain.fromX = fromX;
+                rain.toX = toX;
+            }
+
+            /// <summary>
+            /// A leg's lane pictures fitted into the stretch from <paramref name="from"/> to <paramref name="to"/> (a Holiday Run
+            /// stage, HolidayRunBuilder): side by side, each scaled alike in height and length (a photograph keeps its
+            /// proportions), the ground's near edge on the footpath's back edge as in the leg. False if the kit hasn't got them.
+            /// </summary>
+            public bool KmLaneFitted(string leg, float from, float to)
+            {
+                string stem = "KmLane" + leg.Replace("-", "");
+                var models = new List<string>();
+                float total = 0f;
+                for (char c = 'A'; c <= 'H'; c++)
+                {
+                    string model = stem + c;
+                    if (!HasKitModel("Kamakura", model)) break;
+                    models.Add(model);
+                    total += KitSize("Kamakura", model).x;
+                }
+                if (models.Count == 0 || total <= 0f) return false;
+                float s = (to - from) / total, x = from;
+                foreach (string model in models)
+                {
+                    float w = KitSize("Kamakura", model).x * s;
+                    float z = StreetBuilder.PathHalf - KitMin("Kamakura", model).z * s;
+                    KitModel(KamakuraScenery(), "Kamakura", model, new Vector3(x + w * 0.5f, 0.01f, z), 0f, s);
+                    x += w;
+                }
+                return true;
             }
 
             // ------------------------------------------------------------------ the mini-games and the errand (MiniGames)

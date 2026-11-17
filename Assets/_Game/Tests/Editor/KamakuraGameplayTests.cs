@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
+using DribbleToSchool.Coop;
 using DribbleToSchool.EditorTools;
 using DribbleToSchool.Levels;
 using DribbleToSchool.Localization;
@@ -246,6 +248,73 @@ namespace DribbleToSchool.Tests
             }
             Assert.AreEqual(ErrandRules.PossibleCoins, ErrandRules.Pay(0, 0));
             Assert.AreEqual(1, ErrandRules.Pay(10, 10), "never nothing: the bento is wrapped");
+        }
+
+        // ------------------------------------------------------------------ the animals, the map's ride, co-op
+
+        [Test]
+        public void EveryAnimalALegAsksForIsInstalledWithItsBehaviour()
+        {
+            string code = File.ReadAllText("Assets/_Game/Scripts/Editor/KamakuraLevels.cs")
+                + File.ReadAllText("Assets/_Game/Scripts/Editor/HolidayRunBuilder.cs");
+            var asked = Regex.Matches(code, "KmAnimals\\(\"(Km[A-Za-z]+)\"").Cast<Match>().Select(m => m.Groups[1].Value)
+                .Concat(Regex.Matches(code, "\"(Km[A-Za-z]+(Standing|Walking))\"\\)").Cast<Match>().Select(m => m.Groups[1].Value))
+                .Distinct().ToList();
+            Assert.Greater(asked.Count, 10);
+            var still = new[] { "KmCormorantDrying", "KmCalicoAsleep", "KmTurtleBasking", "KmSwallowPerched" };
+            foreach (string model in asked)
+            {
+                Assert.IsTrue(File.Exists("Assets/_Game/Art/Models/" + LevelBuildKit.KmAnimalsKit + "/" + model + ".fbx"), model + " is not installed");
+                var game = LevelBuildKit.KmGame(model);
+                Assert.IsNotNull(game, model + " has no game entry in its manifest");
+                if (!still.Contains(model)) Assert.IsNotNull(LevelBuildKit.KmText(game, "component"), model + " has no behaviour");
+            }
+        }
+
+        [Test]
+        public void AKamakuraAnimalsAxesAreTheKitsOwn()
+        {
+            Assert.AreEqual(UnityEngine.Vector3.up, LevelBuildKit.KmAxis("side"), "across the body: a leg's swing");
+            Assert.AreEqual(UnityEngine.Vector3.right, LevelBuildKit.KmAxis("long"), "along the body: a wingbeat");
+            Assert.AreEqual(UnityEngine.Vector3.forward, LevelBuildKit.KmAxis("up"), "up: a head looking about");
+        }
+
+        [Test]
+        public void TheTramRideIsDrawnBetweenHaseAndKamakuraStation()
+        {
+            string before = TownMap.ActiveLayout;
+            try
+            {
+                TownMap.UseLayout(CityRoutes.Kamakura.layoutResource);
+                var ride = TownMap.RideSection("KM1");
+                Assert.IsNotNull(ride, "the ride on the map");
+                UnityEngine.Vector2 hase, station;
+                Assert.IsTrue(TownMap.StopPoint("hase", out hase));
+                Assert.IsTrue(TownMap.StopPoint("kamakuraStation", out station));
+                Assert.Less(UnityEngine.Vector2.Distance(ride[0], hase), 20f, "it starts at Hase");
+                Assert.Less(UnityEngine.Vector2.Distance(ride[ride.Length - 1], station), 20f, "and ends at Kamakura Station");
+                Assert.IsNull(TownMap.RideSection("KM2"), "the coast is walked");
+            }
+            finally
+            {
+                TownMap.UseLayout(string.IsNullOrEmpty(before) ? TownMap.LayoutResource : before);
+            }
+        }
+
+        [Test]
+        public void CoopRacesKamakurasRoutesInKamakuraAndTheOriginalStreetsInFlorida()
+        {
+            var all = CoopRoutes.All;
+            CollectionAssert.AreEqual(new[] { "KM1", "KM2", "KM3", "street", "beach" }, all.Select(r => r.id).ToArray());
+            int kamakura = CoopLocations.IndexOf(Cities.Kamakura), florida = CoopLocations.IndexOf(Cities.Florida);
+            Assert.AreEqual(0, kamakura, "the host's default (route 0, location 0) is a race that can run");
+            for (int r = 0; r < all.Length; r++)
+            {
+                bool own = all[r].id.StartsWith("KM");
+                Assert.AreEqual(own, CoopLocations.Fits(r, kamakura), all[r].id + " in Kamakura");
+                Assert.AreEqual(!own, CoopLocations.Fits(r, florida), all[r].id + " in Florida");
+                Assert.AreEqual(own, CoopRoutes.IsCityRoute(all[r]));
+            }
         }
 
         // ------------------------------------------------------------------ the kite thief (M4)

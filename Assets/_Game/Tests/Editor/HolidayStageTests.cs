@@ -20,21 +20,48 @@ namespace DribbleToSchool.Tests
             List<string> scenes;
             var table = GeneratedContent.LevelTable(out challenge, out scenes);
             var story = table.Where((l, i) => !challenge[i]).ToList();
+            var original = HolidayStages.Original;
 
-            Assert.AreEqual(story.Count, HolidayStages.Count, "stage count");
-            Assert.AreEqual(HolidayStages.Count, HolidayStages.All.Length, "table length");
-            for (int i = 0; i < HolidayStages.Count; i++)
+            Assert.AreEqual(story.Count, original.Length, "stage count");
+            for (int i = 0; i < original.Length; i++)
             {
-                Assert.AreEqual(story[i].Key, HolidayStages.All[i].levelId, "level of stage " + i);
-                Assert.AreEqual(story[i].Value, HolidayStages.All[i].chapter, "chapter of stage " + i);
+                Assert.AreEqual(story[i].Key, original[i].levelId, "level of stage " + i);
+                Assert.AreEqual(story[i].Value, original[i].chapter, "chapter of stage " + i);
+                Assert.AreEqual(original[i].chapter, original[i].route, "an original stage's route is its chapter");
             }
+            Assert.AreEqual(HolidayStages.Count, HolidayStages.All.Length, "table length");
+            Assert.AreSame(HolidayStages.IsKamakura ? HolidayStages.Kamakura : HolidayStages.Original, HolidayStages.All, "the run in play");
+        }
+
+        [Test]
+        public void KamakurasRunHasOneStageForEachOfItsDribbleLegs()
+        {
+            // its legs in route order, less the ride (M1) and the errand (M2), which are mini-games, not streets
+            var legs = Levels.CityRoutes.Kamakura.Levels
+                .Where(id => { var leg = Levels.Routes.LegOf(id); return leg == null || (leg.game != "M1" && leg.game != "M2"); })
+                .ToList();
+            var km = HolidayStages.Kamakura;
+            CollectionAssert.AreEqual(legs, km.Select(s => s.levelId).ToList());
+            int previous = 1;
+            foreach (var stage in km)
+            {
+                Assert.AreEqual(Levels.Routes.Of(stage.levelId).id, "KM" + stage.route, stage.levelId + " is on its route");
+                Assert.GreaterOrEqual(stage.route, previous, stage.levelId + " goes back a route");
+                previous = stage.route;
+                // built in a look whose obstacles the original run already lays: Home Street's, the beach's or the park's
+                CollectionAssert.Contains(new[] { 1, 3, 5 }, stage.chapter, stage.levelId + "'s look");
+                var sameLook = HolidayStages.Original.Where(o => o.chapter == stage.chapter).Aggregate(StageTraits.None, (a, o) => a | o.traits);
+                Assert.AreEqual(stage.traits & ~StageTraits.School, stage.traits & sameLook & ~StageTraits.School,
+                    stage.levelId + " asks for a trait its look never had in the original run");
+            }
+            Assert.AreEqual(3, previous, "the day ends on the third route, at school");
         }
 
         [Test]
         public void ChaptersFollowOneAnother()
         {
             int previous = 1;
-            foreach (var stage in HolidayStages.All)
+            foreach (var stage in HolidayStages.Original)
             {
                 Assert.GreaterOrEqual(stage.chapter, previous, stage.levelId + " goes back a chapter");
                 Assert.LessOrEqual(stage.chapter, previous + 1, stage.levelId + " skips a chapter");
@@ -64,8 +91,8 @@ namespace DribbleToSchool.Tests
             var names = new List<string>();
             for (int i = 0; i < HolidayStages.Count; i++) names.Add(HolidayStages.SceneName(i));
             Assert.AreEqual(names.Count, names.Distinct().Count(), "duplicate stage scene names");
-            Assert.AreEqual("HolidayRun_S01", names[0]);
-            Assert.AreEqual("HolidayRun_S23", names[HolidayStages.Count - 1]);
+            Assert.AreEqual(HolidayStages.ScenePrefix + "01", names[0]);
+            Assert.AreEqual(HolidayStages.ScenePrefix + HolidayStages.Count.ToString("00"), names[HolidayStages.Count - 1]);
             Assert.IsFalse(names.Contains(HolidayStages.CoreSceneName), "a stage is named like the core scene");
         }
 

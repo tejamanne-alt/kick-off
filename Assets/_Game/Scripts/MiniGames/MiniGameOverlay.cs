@@ -84,6 +84,7 @@ namespace DribbleToSchool.MiniGames
         {
             var t = UIKit.Label(parent, name, text, size, colour, TextAnchor.MiddleCenter, true);
             UIKit.Place(t.rectTransform, new Vector2(0.5f, 0.5f), position, box);
+            UIKit.Fit(t, Mathf.RoundToInt(size * 0.6f));     // a longer translation shrinks rather than runs off
             var outline = t.gameObject.AddComponent<Outline>();
             outline.effectColor = new Color(0.05f, 0.07f, 0.16f, 0.85f);
             outline.effectDistance = new Vector2(3f, -3f);
@@ -93,8 +94,18 @@ namespace DribbleToSchool.MiniGames
         /// <summary>A round key in the layer that is pressed while a finger is on it (<see cref="HoldKey.Held"/>), and taps.</summary>
         protected HoldKey Key(Transform parent, string name, string label, Color colour, Vector2 position, float size)
         {
+            return Key(parent, name, label, colour, new Vector2(0.5f, 0.5f), position, size);
+        }
+
+        /// <summary>
+        /// A round key placed from a point of the screen (<paramref name="anchor"/>: (0, 0) its bottom-left corner, (1, 0) its
+        /// bottom-right), its middle <paramref name="position"/> from there: the keys a thumb holds stay by the screen's edges
+        /// at 4:3 as at 21:9 (the layer is 1080 high, so 1440 wide at 4:3 and 2520 at 21:9).
+        /// </summary>
+        protected HoldKey Key(Transform parent, string name, string label, Color colour, Vector2 anchor, Vector2 position, float size)
+        {
             var rt = UIKit.Rect(parent, name);
-            UIKit.Place(rt, new Vector2(0.5f, 0.5f), position, new Vector2(size, size));
+            UIKit.Place(rt, anchor, position, new Vector2(size, size), new Vector2(0.5f, 0.5f));
             var disc = rt.gameObject.AddComponent<Image>();
             disc.sprite = ProceduralSprites.Circle;
             disc.color = colour;
@@ -102,7 +113,8 @@ namespace DribbleToSchool.MiniGames
             key.face = disc;
             key.colour = colour;
             var t = UIKit.Label(rt, "Label", label, Mathf.RoundToInt(size * 0.24f), Color.white, TextAnchor.MiddleCenter, true);
-            UIKit.Stretch(t.rectTransform);
+            UIKit.Stretch(t.rectTransform, size * 0.12f);   // inside the disc
+            UIKit.Fit(t, 16);
             return key;
         }
     }

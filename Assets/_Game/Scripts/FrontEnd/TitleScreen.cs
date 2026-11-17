@@ -135,7 +135,7 @@ namespace DribbleToSchool.FrontEnd
         /// </summary>
         void StartHolidayRun()
         {
-            int lastChapter = Holiday.HolidayStages.All[Holiday.HolidayStages.Count - 1].chapter;
+            int lastChapter = Holiday.HolidayStages.All[Holiday.HolidayStages.Count - 1].route;   // (a Kamakura route's chapter is its number)
             if (!Store.Monetization.IsChapterUnlocked(lastChapter))
             {
                 UI.UnlockPanel.Open(Controller.CanvasRoot, FrontEndController.OpenHolidayRun);

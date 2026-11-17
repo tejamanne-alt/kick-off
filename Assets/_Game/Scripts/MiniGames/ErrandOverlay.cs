@@ -53,8 +53,9 @@ namespace DribbleToSchool.MiniGames
                 corners[i] = Key(root, "Corner" + i, Loc.T(CornerKey[i]), new Color(0.75f, 0.2f, 0.16f), CornerAt[i], 150f);
                 corners[i].Tapped += () => Fold((ErrandRules.Corner)c);
             }
-            message = Words(root, "Message", "", 44, new Vector2(0f, 430f), new Vector2(1600f, 70f), Color.white);
-            coinsText = Words(root, "Coins", "", 34, new Vector2(820f, 470f), new Vector2(240f, 50f), UITheme.Gold);
+            message = Words(root, "Message", "", 44, new Vector2(0f, 430f), new Vector2(1300f, 70f), Color.white);
+            coinsText = Words(root, "Coins", "", 34, Vector2.zero, new Vector2(240f, 50f), UITheme.Gold);
+            UIKit.Place(coinsText.rectTransform, new Vector2(1f, 1f), new Vector2(-150f, -70f), new Vector2(240f, 50f), new Vector2(0.5f, 0.5f));
 
             // the knot: a bar with its gold middle and a marker sweeping across it, and the key to pull
             knotBar = UIKit.Panel(root, "KnotBar", new Color(1f, 1f, 1f, 0.25f)).rectTransform;
@@ -64,7 +65,7 @@ namespace DribbleToSchool.MiniGames
                 new Vector2(700f * (ErrandRules.KnotTo - ErrandRules.KnotFrom), 34f));
             knotMarker = UIKit.Panel(knotBar, "Marker", Color.white).rectTransform;
             UIKit.Place(knotMarker, new Vector2(0f, 0.5f), Vector2.zero, new Vector2(14f, 64f));
-            pullKey = Key(root, "Pull", Loc.T("mini.errand.pull"), UITheme.Accent, new Vector2(620f, -330f), 190f);
+            pullKey = Key(root, "Pull", Loc.T("mini.errand.pull"), UITheme.Accent, new Vector2(1f, 0.5f), new Vector2(-170f, -330f), 190f);
             pullKey.Tapped += Pull;
             knotBar.gameObject.SetActive(false);
             pullKey.gameObject.SetActive(false);

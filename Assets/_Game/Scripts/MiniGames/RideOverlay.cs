@@ -65,8 +65,9 @@ namespace DribbleToSchool.MiniGames
             UIKit.Place(board.rectTransform, new Vector2(0.5f, 1f), new Vector2(0f, -70f), new Vector2(760f, 84f));
             display = UIKit.Label(board.transform, "Text", "", 40, new Color(1f, 0.62f, 0.15f), TextAnchor.MiddleCenter, true);
             UIKit.Stretch(display.rectTransform);
-            message = Words(root, "Message", "", 40, new Vector2(0f, 330f), new Vector2(1500f, 60f), Color.white);
-            coinsText = Words(root, "Coins", "", 34, new Vector2(820f, 470f), new Vector2(240f, 50f), UITheme.Gold);
+            message = Words(root, "Message", "", 40, new Vector2(0f, 330f), new Vector2(1300f, 60f), Color.white);
+            coinsText = Words(root, "Coins", "", 34, Vector2.zero, new Vector2(240f, 50f), UITheme.Gold);
+            UIKit.Place(coinsText.rectTransform, new Vector2(1f, 1f), new Vector2(-150f, -70f), new Vector2(240f, 50f), new Vector2(0.5f, 0.5f));
 
             // the ball at the kid's feet and its steady zone along the aisle's floor
             var zone = UIKit.Panel(root, "Zone", new Color(1f, 1f, 1f, 0.18f));
@@ -78,10 +79,11 @@ namespace DribbleToSchool.MiniGames
 
             // the keys: lean left and right (or the stick), brace (or KICK), STOP and the seat
             rideKeys = UIKit.Rect(root, "Keys").gameObject;
-            leftKey = Key(rideKeys.transform, "Left", "<", UITheme.Blue, new Vector2(-800f, -420f), 150f);
-            rightKey = Key(rideKeys.transform, "Right", ">", UITheme.Blue, new Vector2(-610f, -420f), 150f);
-            braceKey = Key(rideKeys.transform, "Brace", Loc.T("mini.ride.brace"), UITheme.Accent, new Vector2(560f, -420f), 170f);
-            stopKey = Key(rideKeys.transform, "Stop", Loc.T("mini.ride.stop"), UITheme.Red, new Vector2(790f, -400f), 210f);
+            // (from the screen's bottom corners, where the thumbs are, at any width: MiniGameOverlay.Key)
+            leftKey = Key(rideKeys.transform, "Left", "<", UITheme.Blue, new Vector2(0f, 0f), new Vector2(130f, 125f), 150f);
+            rightKey = Key(rideKeys.transform, "Right", ">", UITheme.Blue, new Vector2(0f, 0f), new Vector2(320f, 125f), 150f);
+            braceKey = Key(rideKeys.transform, "Brace", Loc.T("mini.ride.brace"), UITheme.Accent, new Vector2(1f, 0f), new Vector2(-360f, 125f), 170f);
+            stopKey = Key(rideKeys.transform, "Stop", Loc.T("mini.ride.stop"), UITheme.Red, new Vector2(1f, 0f), new Vector2(-140f, 145f), 210f);
             stopKey.Tapped += PressStop;
             seatKey = Key(root, "Seat", Loc.T("mini.ride.seat"), UITheme.Green, new Vector2(0f, -420f), 220f);
             seatKey.Tapped += GiveSeat;

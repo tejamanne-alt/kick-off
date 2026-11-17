@@ -2877,6 +2877,68 @@ the best for the game.
   - There is no rain effect (the KM3 pictures are rainy themselves).
   - The animals (KM-N) are not in the legs; a Shiba, a gull and a raccoon dog stand in as the game's existing hazards.
 
+## The rest of Kamakura: its animals, the rain, the ride on the map, co-op, its Holiday Run (code, assets and docs)
+
+The user asked to finish everything left in Kamakura.
+- **Kamakura's animals in its legs.** The 43 reviewed animals (KM-N01 to N28, `kit_animals_km.py`) are installed as their
+  own kit, `Art/Models/KamakuraAnimals`, by `install_km_animals.py`.
+  - Each is one skinned mesh. Its texture is shared, 2048 square, cut out at its outline.
+  - Each manifest entry says which behaviour moves the animal and with which settings, as its review played it
+    (`LevelBuildKit.KmGame`, `KmAxis`): GroundBird, CritterIdle or FlitButterfly; a few are still.
+  - A leg asks for its animals with `TrackBuilder.KmAnimals`. The street builder spreads them over the strip between the
+    footpath and the lane's pictures.
+  - KM1-1: a crow by the bins, sparrows on the pavement, and its wall cat (now KM-N01).
+  - KM1-3: pigeons on the station square, sparrows by the pickle shop.
+  - KM1-4: a heron at the lotus pond, a red dragonfly, a swallowtail, turtle doves, a wagtail.
+  - KM2-1: the Shiba (KM-N04), a swallowtail, sparrows, a crow.
+  - KM2-2: gulls, an egret, a crow. KM2-3: sparrows, a gull. KM2-4: a black kite watching from the rocks, an egret, a
+    cormorant drying its wings, gulls.
+  - KM2-5: pigeons, sparrows, a wagtail. KM3-1: a calico asleep under the rest hut, a crow.
+  - KM3-2: the tanuki (KM-N02), a crow. KM3-3: doves on the lawn, sparrows, a wagtail.
+  - The Shiba and the tanuki are the dog hazard, walked on their jointed legs. A bird without a flying model of its own
+    flies off as the Animals kit's gull in its colours.
+- **The June rain** over route 3 (`World/RainFall`): one mesh of streaks between the camera and the pictures, built once
+  and moved whole, one draw call, half as many streaks on the Low tier.
+- **The tram ride on the map:** `TownMap.RideSection` reads the layout's rides. The map screen draws Hase to Kamakura
+  Station as a railway, ties across the route's line, exactly along the Enoden on the picture.
+- **Co-op** races Kamakura's routes.
+  - `CoopRoutes.All` is the same list on every phone: KM1, KM2 and KM3, then the original street and beach that Florida
+    still has.
+  - Kamakura's routes run only in Kamakura, the original ones only in Florida (`CoopLocations.Fits`).
+  - The legs are found in Kamakura's catalog. The host's fallback for a stale choice is the first location that has the
+    route.
+  - The content fingerprint changes, so an older version is turned away, as intended.
+- **Kamakura's Holiday Run** (`HolidayStages.Kamakura`, scenes `HolidayRun_KM_S01` to `S10`): one 120 m stage for each of
+  its ten dribble legs, in route order.
+  - The ride and the errand are left out: they are mini-games.
+  - Each stage stands before its leg's lane pictures, fitted to the stage at one scale (KM1-1 has its own frontage and
+    the home at the spawn). Route 3's stages have the rain.
+  - Each is built in the look whose obstacles suit it: Home Street's, the beach's or the park's. Its traits are ones the
+    original run lays in that look, and the difficulty climbs.
+  - The banner names the routes ("ROUTE 2", The Shonan Coast).
+  - The original 23-stage run is kept, as `HolidayStages.Original`, for the switch off.
+- **The next city opens** once either Kamakura's twelve legs or the original 23 levels are all finished
+  (`Cities.EveryLevelFinished`), so nobody loses an unlock and new players can earn one.
+- **The mini-games at every screen shape:**
+  - The keys are placed from the screen's bottom corners, the coins from its top-right corner.
+  - The messages fit 4:3, and labels shrink for longer Spanish text.
+  - Measured at 4:3, 16:9 and 21:9: nothing off the screen, no keys overlapping (F5).
+- **Checks:**
+  - Every script compiles under every symbol set, with no new errors or warnings.
+  - `run.sh` passes on 6000.6 and 6000.7.
+  - Run outside Unity: the 16 rule tests, and all the Holiday Run's pattern and stage tests on Kamakura's run (21; the
+    slide-look test needs the editor).
+  - New tests in `KamakuraGameplayTests` cover the animals, the axes, the ride on the map and co-op's routes.
+  - The Holiday Run tests now check both tables.
+  - Found by reading before it ran (E17): unpainted skinned animals, overlapping stage hills, doubled rain, a gap test
+    sized for 23 stages, and the next city's unlock.
+- **Not done:**
+  - Nothing has run in Unity or on the Nord CE5.
+  - The large birds in flight (heron, egret, gull, kite) wait for their four-view sheets (BASE KM-S1), so they fly
+    off as the kit's gull.
+  - The frog, the snail, the crab and the starfish need cut-outs.
+  - The rain has no sound.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

@@ -743,6 +743,7 @@ blenv/bin/python kit_buildings_km.py -- $PWD/out/kamakura --install-home $PWD/..
 blenv/bin/python review_km_home.py -- $PWD/../../Assets/_Game/Art/Models/Kamakura $PWD/../../review/kamakura/props   # the installed home's strict review (eight views, checks)
 blenv/bin/python km_ride.py -- $PWD/out/ride $PWD/../../review/kamakura/ride [--install $PWD/../../Assets/_Game/Art/Models/Kamakura]   # KM1-2's ride set and its review
 blenv/bin/python km_whitebait.py -- $PWD/out/whitebait $PWD/../../review/kamakura/whitebait [--install $PWD/../../Assets/_Game/Art/Models/Kamakura]   # KM2-3's set pieces and their review
+blenv/bin/python install_km_animals.py $PWD/out_km_animals   # Kamakura's animals into the game (Art/Models/KamakuraAnimals: the FBXs, the manifest, the texture at 2048 with its edge bled)
 blenv/bin/python km_lanes.py -- $PWD/out/lanes $PWD/../../review/kamakura/lanes [--legs KM2-2,KM2-4] [--install $PWD/../../Assets/_Game/Art/Models/Kamakura]   # every leg's lane fronts and their review (save the textures RGB)
 blenv/bin/python km_beach.py -- $PWD/out/beach $PWD/../../review/kamakura/beach [--install $PWD/../../Assets/_Game/Art/Models/Kamakura]   # KM2-2's set pieces and their review
 blenv/bin/python km_surf_lane.py -- $PWD/out/surf_lane $PWD/../../review/kamakura/surf_lane [--install $PWD/../../Assets/_Game/Art/Models/Kamakura]   # KM2-1's set pieces and their review

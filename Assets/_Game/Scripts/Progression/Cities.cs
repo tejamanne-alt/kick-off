@@ -200,16 +200,25 @@ namespace DribbleToSchool.Progression
         /// <summary>In the order the picker lists them.</summary>
         public static readonly City[] All = { Kamakura, Florida, Madrid, NewYork, Mumbai };
 
-        /// <summary>Every one of Kamakura's story levels finished at least once (every leg of every route to school).</summary>
+        /// <summary>
+        /// Every one of Kamakura's story levels finished at least once (every leg of every route to school): its own twelve
+        /// legs while it plays them (Levels/Routes.KamakuraOwnRoutes), or the original town's 23, so a city already opened
+        /// by finishing those stays open. (Not through Routes.All, which asks which city is active, and so this.)
+        /// </summary>
         public static bool EveryLevelFinished
         {
             get
             {
-                foreach (var route in RouteTable.All)
-                    foreach (string id in route.levels)
-                        if (!SaveSystem.IsCompleted(id)) return false;
-                return true;
+                return AllFinished(RouteTable.All) || (global::DribbleToSchool.Levels.Routes.KamakuraOwnRoutes && AllFinished(CityRoutes.Kamakura.routes));
             }
+        }
+
+        static bool AllFinished(Route[] routes)
+        {
+            foreach (var route in routes)
+                foreach (string id in route.levels)
+                    if (!SaveSystem.IsCompleted(id)) return false;
+            return true;
         }
 
         public static City ById(string id)

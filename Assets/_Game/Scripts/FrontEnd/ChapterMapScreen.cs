@@ -1093,6 +1093,14 @@ namespace DribbleToSchool.FrontEnd
                 painter.Stroke(line.points, width + casing * 2f, Color.white, false, true);
                 painter.Stroke(line.points, width, core, false, true);
                 painter.Dashed(line.points, 7f * k, 24f * k, 34f * k, new Color(1f, 1f, 1f, 0.85f));
+                // A stretch ridden, not walked (Kamakura's tram, KM1-2: TownMap.RideSection), drawn as a railway: ties across
+                // the line in ink, the route's colour along them.
+                var ride = TownMap.RideSection(route.id);
+                if (ride != null)
+                {
+                    painter.Dashed(ride, width * 1.8f, 5f * k, 13f * k, MapGlyphs.Ink);
+                    painter.Stroke(ride, width * 0.6f, core, false, true);
+                }
                 // The dotted branch from the route to its challenge's node.
                 if (route.challenge != null)
                 {

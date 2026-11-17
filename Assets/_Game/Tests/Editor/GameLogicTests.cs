@@ -391,7 +391,9 @@ namespace DribbleToSchool.Tests
         [Test]
         public void HolidayStagesFollowTheStoryInOrder()
         {
-            Assert.AreEqual(23, HolidayStages.Count);
+            // (the original town's run; Kamakura's own is HolidayStageTests.KamakurasRunHasOneStageForEachOfItsDribbleLegs)
+            var original = HolidayStages.Original;
+            Assert.AreEqual(23, original.Length);
             Assert.AreEqual(HolidayStages.Count, HolidayStages.All.Length, "the table and the count agree");
 
             // One stage for each story level, in story order, in the chapter the level table puts it in.
@@ -399,9 +401,9 @@ namespace DribbleToSchool.Tests
             List<string> scenes;
             var levels = GeneratedContent.LevelTable(out challenge, out scenes);
             int previousChapter = 1;
-            for (int i = 0; i < HolidayStages.Count; i++)
+            for (int i = 0; i < original.Length; i++)
             {
-                var stage = HolidayStages.All[i];
+                var stage = original[i];
                 Assert.AreEqual("L" + (i + 1).ToString("00"), stage.levelId, "stage " + i + " stands for the story level of that number");
                 int at = levels.FindIndex(l => l.Key == stage.levelId);
                 Assert.GreaterOrEqual(at, 0, stage.levelId + " is in the level table");
@@ -412,13 +414,13 @@ namespace DribbleToSchool.Tests
                 Assert.GreaterOrEqual(stage.density, 0f, stage.levelId + " density");
                 Assert.LessOrEqual(stage.density, 1f, stage.levelId + " density");
             }
-            Assert.AreEqual(HolidayStages.Count, HolidayStages.All.Select(s => s.levelId).Distinct().Count(), "duplicate level ids");
-            Assert.AreEqual(1, HolidayStages.All[0].chapter, "the day starts in chapter 1");
-            Assert.AreEqual(5, HolidayStages.All[HolidayStages.Count - 1].chapter, "and ends in chapter 5");
+            Assert.AreEqual(original.Length, original.Select(s => s.levelId).Distinct().Count(), "duplicate level ids");
+            Assert.AreEqual(1, original[0].chapter, "the day starts in chapter 1");
+            Assert.AreEqual(5, original[original.Length - 1].chapter, "and ends in chapter 5");
             for (int chapter = 1; chapter <= 5; chapter++)
             {
                 int c = chapter;
-                Assert.IsTrue(HolidayStages.All.Any(s => s.chapter == c), "a stage in chapter " + chapter);
+                Assert.IsTrue(original.Any(s => s.chapter == c), "a stage in chapter " + chapter);
             }
         }
 
@@ -433,8 +435,8 @@ namespace DribbleToSchool.Tests
             for (int i = 0; i < HolidayStages.Count; i++)
             {
                 string name = HolidayStages.SceneName(i);
-                Assert.IsTrue(name.StartsWith(HolidayStages.StageScenePrefix), name + " has the stage prefix");
-                string number = name.Substring(HolidayStages.StageScenePrefix.Length);
+                Assert.IsTrue(name.StartsWith(HolidayStages.ScenePrefix), name + " has the stage prefix");
+                string number = name.Substring(HolidayStages.ScenePrefix.Length);
                 Assert.AreEqual(2, number.Length, name + " ends in two digits");
                 Assert.AreEqual(i + 1, int.Parse(number), name + " counts from one");
                 Assert.IsFalse(scenes.Contains(name), name + " is also a story scene name");

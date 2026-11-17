@@ -13,7 +13,7 @@ namespace DribbleToSchool.EditorTools
     public class ModelImportSettings : AssetPostprocessor
     {
         // Bump to re-import the models when these settings change.
-        public override uint GetVersion() { return 8; }
+        public override uint GetVersion() { return 9; }
 
         void OnPreprocessModel()
         {
@@ -23,7 +23,11 @@ namespace DribbleToSchool.EditorTools
             importer.globalScale = 1f;
             importer.materialImportMode = ModelImporterMaterialImportMode.None;
             importer.importAnimation = false;
-            importer.animationType = InKit(assetPath) ? ModelImporterAnimationType.None : ModelImporterAnimationType.Generic;
+            // A kit's models are rigid parts, but Kamakura's animals are each one skinned mesh on its bones (docs/LEARNINGS.md
+            // D21): imported Generic, as the characters are, so their skin and bones come in for the behaviours to pose.
+            string p = assetPath.Replace('\\', '/');
+            importer.animationType = InKit(assetPath) && !p.Contains("/Art/Models/KamakuraAnimals/")
+                ? ModelImporterAnimationType.None : ModelImporterAnimationType.Generic;
             importer.optimizeGameObjects = false;   // keep the bones as transforms the game can pose
             importer.isReadable = true;
             importer.importBlendShapes = false;
@@ -59,7 +63,8 @@ namespace DribbleToSchool.EditorTools
             // colour under the transparent texels.
             // The same for a Kamakura model's own texture that has an alpha (the bicycle's spokes and basket, cut out).
             if (path.EndsWith("/PlantsAtlas.png") || path.EndsWith("/BarriersAtlas.png") ||
-                (path.Contains("/Art/Models/Kamakura/") && importer.DoesSourceTextureHaveAlpha()))
+                (path.Contains("/Art/Models/Kamakura/") && importer.DoesSourceTextureHaveAlpha()) ||
+                path.EndsWith("/KamakuraAnimalsAtlas.png"))
             {
                 importer.alphaIsTransparency = true;
                 importer.mipMapsPreserveCoverage = true;

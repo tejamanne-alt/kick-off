@@ -56,7 +56,8 @@ namespace DribbleToSchool.Tests
                     // However the kid takes it, the longest jump there is (a double jump pressed late) covers it with room.
                     Assert.Less(w, JumpReach.LongestJump(Reach).distance, where);
                 }
-            Assert.Greater(gaps, 10, "the plans have gaps");
+            // more than 10 in the original town's 23-stage day; as many for each stage in a shorter one (Kamakura's ten)
+            Assert.Greater(gaps, HolidayStages.Count * 10 / 23, "the plans have gaps");
         }
 
         [Test]

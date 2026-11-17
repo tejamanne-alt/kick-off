@@ -30,18 +30,19 @@ namespace DribbleToSchool.UI
             float y = -90f;
             UIKit.SectionLabel(UIKit.Row(face.transform, "StagesLabel", -y, 46f, 50f, 50f), Loc.T("coop.pick.stages"));
             y -= 60f;
-            int count = RouteTable.All.Length + 1;
+            var routes = CoopRoutes.All;
+            int count = routes.Length + 1;
             // The chosen location, unless it is random: a route its streets don't have yet (Florida: only the beach) is shut.
             bool anyPlace = sel.addOn >= CoopLocations.Count;
             for (int i = 0; i < count; i++)
             {
-                bool random = i == RouteTable.All.Length;
-                var route = random ? null : RouteTable.All[i];
+                bool random = i == routes.Length;
+                var route = random ? null : routes[i];
                 byte value = random ? CoopSelection.Random : (byte)i;
                 bool fits = random || anyPlace || CoopLocations.Fits(i, sel.addOn);
                 bool open = random || (Store.Monetization.IsChapterUnlocked(route.chapter) && fits);
-                bool chosen = sel.route == value || (random && sel.route >= RouteTable.All.Length);
-                Color colour = random ? UITheme.Gold : ChapterColour(catalog, route.chapter);
+                bool chosen = sel.route == value || (random && sel.route >= routes.Length);
+                Color colour = random ? UITheme.Gold : ChapterColour(CoopRoutes.CatalogOf(catalog, route), route.chapter);
                 string title = random ? Loc.T("coop.random.route") : Loc.T(route.NameKey);
                 string line = random ? Loc.T("coop.random.routeShort") : !fits ? Loc.F("coop.route.notIn", Loc.T(CoopLocations.At(sel.addOn).nameKey))
                     : Loc.F("coop.legs", route.levels.Length);
@@ -63,7 +64,7 @@ namespace DribbleToSchool.UI
                 var place = random ? null : CoopLocations.At(i);
                 byte value = random ? CoopSelection.Random : (byte)i;
                 // A location with only some routes (Florida: the beach) is shut while the chosen route isn't one of them.
-                bool anyRoute = sel.route >= RouteTable.All.Length;
+                bool anyRoute = sel.route >= CoopRoutes.All.Length;
                 bool fits = random || anyRoute || CoopLocations.Fits(sel.route, i);
                 bool open = random || (place.Unlocked && fits);
                 bool chosen = sel.addOn == value || (random && sel.addOn >= CoopLocations.Count);
@@ -95,8 +96,9 @@ namespace DribbleToSchool.UI
         static string OnlyRoutes(Progression.City place)
         {
             var names = new System.Collections.Generic.List<string>();
-            foreach (var route in RouteTable.All)
-                if (place.HasChapter(route.chapter)) names.Add(Loc.T(route.NameKey));
+            int at = CoopLocations.IndexOf(place);
+            for (int r = 0; r < CoopRoutes.All.Length; r++)
+                if (CoopLocations.Fits(r, at)) names.Add(Loc.T(CoopRoutes.All[r].NameKey));
             return string.Join(", ", names.ToArray());
         }
 

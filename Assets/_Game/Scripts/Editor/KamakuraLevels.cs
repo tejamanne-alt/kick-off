@@ -17,6 +17,69 @@ namespace DribbleToSchool.EditorTools
         static readonly Color Tiles = new Color(0.32f, 0.33f, 0.35f);
 
         /// <summary>
+        /// KM1-1's frontage, from its home's garden to Hase Station's pines (everything beside the lane, not the play), moved
+        /// along by <paramref name="dx"/>: in KM1-1 itself, and along the first stage of Kamakura's Holiday Run (its home at
+        /// the run's spawn, HolidayRunBuilder).
+        /// </summary>
+        public static void HaseFrontage(TrackBuilder t, float dx)
+        {
+            // The home's garden (the home itself is built at the door, -12: StreetBuilder.HomeFrontKM): the pots in front of its
+            // fence either side of the gate (KM-G26 to G33), the air conditioner's outdoor unit, the letterbox by the gate, the
+            // bicycle, the persimmon over the fence's end and the neighbour's clipped hedge.
+            t.KmModel("KmAirConditioner", -17.8f + dx, 1.2f);
+            t.KmModel("KmShrubPlanter", -16.6f + dx, 1.1f);
+            t.KmModel("KmHydrangeaPlanter", -15.6f + dx, 1.1f);
+            t.KmModel("KmPotPinkFlowers", -14.8f + dx, 1.1f);
+            t.KmModel("KmPotWhiteDaisies", -14.3f + dx, 1.1f);
+            t.KmModel("KmMorningGloryPot", -13.7f + dx, 1.1f);
+            t.KmModel("KmLetterbox", -10.0f + dx, 1.15f);
+            t.KmModel("KmBonsaiTerracotta", -9.2f + dx, 1.1f);
+            t.KmModel("KmBonsaiBlueBowl", -8.4f + dx, 1.1f);
+            t.KmModel("KmStoneStandFlowers", -7.6f + dx, 1.1f);
+            t.KmModel("KmBicycle", -4.4f + dx, 1.1f);
+            t.KmModel("KmPersimmonTree", -0.8f + dx, 2.6f);
+            t.KmModel("KmHedgeClipped", 0.6f + dx, 1.3f);
+
+            // The vending corner: the transformer pole, the convex mirror at the kerb, the red and the blue machines, the bins.
+            t.KmModel("KmPoleTransformer", 3f + dx, 1.15f);
+            t.KmModel("KmMirror", 5f + dx, 0.85f);
+            t.KmModel("KmVendingRed", 6.7f + dx, 1.25f);
+            t.KmModel("KmVendingBlue", 7.8f + dx, 1.25f);
+            t.KmModel("KmRecyclingBins", 9.2f + dx, 1.3f);
+            t.KmAnimals("KmCrowStanding", 11f + dx, 11f + dx);              // a crow by the bins (KM-N06)
+            t.KmAnimals("KmSparrowHopping", 13f + dx, 16.5f + dx, 2);        // sparrows on the pavement (KM-N08)
+
+            // The block wall the cat sits on (a stand-in until its KM-T plate is built), the garden pine leaning over it, the
+            // mossy stone at its foot, and the houses behind it (stand-ins until KM1-1a and b's houses are built).
+            t.KmStandIn("BlockWall", 21f + dx, 1.4f, 22f, 0.2f, 1.6f, BlockWall, true);
+            t.KmModel("KmGardenPine", 18f + dx, 2.2f);
+            t.KmModel("KmMossyStone", 26f + dx, 0.8f);                // against the wall's foot, just behind the footpath's edge (1.55 m)
+            HouseStandIn(t, 15.5f + dx, 5f, 9f, Mortar);
+            HouseStandIn(t, 27f + dx, 5f, 10f, Timber);
+
+            // The little shrine up its steps and its torii, the house behind its lane (a stand-in), the parked scooter.
+            t.KmModel("KmToriiSmall", 36f + dx, 2.4f);
+            t.KmModel("KmShrineSmall", 36f + dx, 4.2f);
+            HouseStandIn(t, 42f + dx, 9f, 6f, Cream);
+            t.KmModel("KmScooter", 45f + dx, 0.95f);
+
+            // The beige house and its fence (a stand-in), the plain pole with its street lamp, the crossing's control cabinet.
+            t.KmModel("KmHouseBeige", 49f + dx, 3.4f);
+            t.KmStandIn("WoodenFence", 49f + dx, 1.4f, 6f, 0.12f, 1.7f, Boards);
+            t.KmModel("KmPolePlain", 54f + dx, 1.15f);
+            t.KmModel("KmStreetLamp", 54.6f + dx, 1.1f);
+            t.KmModel("KmControlCabinet", 57.2f + dx, 1.4f);
+
+            // The wire gantry over the tracks, the pole by the station, the hydrangeas along the station's fence, the pines behind.
+            t.KmModel("KmWireGantry", 63f + dx, 4.5f);
+            t.KmModel("KmPolePlain", 70f + dx, 1.15f);
+            t.KmModel("KmHydrangeaBlue", 71.6f + dx, 1.3f);
+            t.KmModel("KmHydrangeaPink", 87f + dx, 1.3f);
+            t.KmModel("KmHydrangeaViolet", 88.6f + dx, 1.3f);
+            t.KmModel("KmBlackPine", 91f + dx, 4f);
+        }
+
+        /// <summary>
         /// KM1-1 Hase Lanes (dribble; docs/KAMAKURA_BUILD.md, BUILD KM-L11): out of the home's gate past its pots and the
         /// persimmon, the vending corner, the block wall with the cat on it, the first-graders walking to school, the little
         /// shrine up its steps, the parked delivery scooter, the level crossing (the bells, the barriers, the tram), and Hase
@@ -29,58 +92,8 @@ namespace DribbleToSchool.EditorTools
             t.Start(0f);
             t.Ground(-8f, 84f);
 
-            // The home's garden (the home itself is built at the door, -12: StreetBuilder.HomeFrontKM): the pots in front of its
-            // fence either side of the gate (KM-G26 to G33), the air conditioner's outdoor unit, the letterbox by the gate, the
-            // bicycle, the persimmon over the fence's end and the neighbour's clipped hedge.
-            t.KmModel("KmAirConditioner", -17.8f, 1.2f);
-            t.KmModel("KmShrubPlanter", -16.6f, 1.1f);
-            t.KmModel("KmHydrangeaPlanter", -15.6f, 1.1f);
-            t.KmModel("KmPotPinkFlowers", -14.8f, 1.1f);
-            t.KmModel("KmPotWhiteDaisies", -14.3f, 1.1f);
-            t.KmModel("KmMorningGloryPot", -13.7f, 1.1f);
-            t.KmModel("KmLetterbox", -10.0f, 1.15f);
-            t.KmModel("KmBonsaiTerracotta", -9.2f, 1.1f);
-            t.KmModel("KmBonsaiBlueBowl", -8.4f, 1.1f);
-            t.KmModel("KmStoneStandFlowers", -7.6f, 1.1f);
-            t.KmModel("KmBicycle", -4.4f, 1.1f);
-            t.KmModel("KmPersimmonTree", -0.8f, 2.6f);
-            t.KmModel("KmHedgeClipped", 0.6f, 1.3f);
+            HaseFrontage(t, 0f);
 
-            // The vending corner: the transformer pole, the convex mirror at the kerb, the red and the blue machines, the bins.
-            t.KmModel("KmPoleTransformer", 3f, 1.15f);
-            t.KmModel("KmMirror", 5f, 0.85f);
-            t.KmModel("KmVendingRed", 6.7f, 1.25f);
-            t.KmModel("KmVendingBlue", 7.8f, 1.25f);
-            t.KmModel("KmRecyclingBins", 9.2f, 1.3f);
-
-            // The block wall the cat sits on (a stand-in until its KM-T plate is built), the garden pine leaning over it, the
-            // mossy stone at its foot, and the houses behind it (stand-ins until KM1-1a and b's houses are built).
-            t.KmStandIn("BlockWall", 21f, 1.4f, 22f, 0.2f, 1.6f, BlockWall, true);
-            t.KmModel("KmGardenPine", 18f, 2.2f);
-            t.KmModel("KmMossyStone", 26f, 0.8f);                // against the wall's foot, just behind the footpath's edge (1.55 m)
-            HouseStandIn(t, 15.5f, 5f, 9f, Mortar);
-            HouseStandIn(t, 27f, 5f, 10f, Timber);
-
-            // The little shrine up its steps and its torii, the house behind its lane (a stand-in), the parked scooter.
-            t.KmModel("KmToriiSmall", 36f, 2.4f);
-            t.KmModel("KmShrineSmall", 36f, 4.2f);
-            HouseStandIn(t, 42f, 9f, 6f, Cream);
-            t.KmModel("KmScooter", 45f, 0.95f);
-
-            // The beige house and its fence (a stand-in), the plain pole with its street lamp, the crossing's control cabinet.
-            t.KmModel("KmHouseBeige", 49f, 3.4f);
-            t.KmStandIn("WoodenFence", 49f, 1.4f, 6f, 0.12f, 1.7f, Boards);
-            t.KmModel("KmPolePlain", 54f, 1.15f);
-            t.KmModel("KmStreetLamp", 54.6f, 1.1f);
-            t.KmModel("KmControlCabinet", 57.2f, 1.4f);
-
-            // The wire gantry over the tracks, the pole by the station, the hydrangeas along the station's fence, the pines behind.
-            t.KmModel("KmWireGantry", 63f, 4.5f);
-            t.KmModel("KmPolePlain", 70f, 1.15f);
-            t.KmModel("KmHydrangeaBlue", 71.6f, 1.3f);
-            t.KmModel("KmHydrangeaPink", 87f, 1.3f);
-            t.KmModel("KmHydrangeaViolet", 88.6f, 1.3f);
-            t.KmModel("KmBlackPine", 91f, 4f);
 
             // The play: a kerb where the side lane comes out by the vending corner, the first-graders walking to school in a
             // line (get past them without the ball touching one), coins up the shrine's steps, the level crossing (wait for the
@@ -135,6 +148,9 @@ namespace DribbleToSchool.EditorTools
             t.Start(0f);
             t.Ground(-8f, 75f);
             t.KmLane("KM1-3", -20f);
+            t.KmAnimals("KmPigeonStanding", 1f, 8f, 2);           // pigeons on the station square (KM-N07)
+            t.KmAnimals("KmPigeonPecking", 3f, 6f);
+            t.KmAnimals("KmSparrowHopping", 46f, 52f, 2);         // sparrows by the pickle shop (KM-N08)
 
             t.CoinRow(1f, 6f, 0.5f, 4);
             t.Checkpoint(10f);
@@ -163,6 +179,11 @@ namespace DribbleToSchool.EditorTools
             t.Start(0f);
             t.Ground(-8f, 80f);
             t.KmLane("KM1-4", -16f);
+            t.KmAnimals("KmHeronStanding", 6f, 8f);               // a grey heron at the lotus pond's edge (KM-N15)
+            t.KmAnimals("KmDragonfly", 3f, 11f);                  // a red dragonfly over the pond (KM-N26)
+            t.KmAnimals("KmSwallowtail", 20f, 30f);               // a swallowtail in the shrine's garden (KM-N25)
+            t.KmAnimals("KmDoveStanding", 30f, 38f, 2);           // turtle doves under the steps (KM-N20)
+            t.KmAnimals("KmWagtail", 62f, 66f);                   // a wagtail by the school's fence (KM-N17)
 
             t.CoinRow(0f, 4f, 0.5f, 4);
             t.CoinArc(5f, 11f, 0.6f, 1.6f, 4);           // past the pond's arched bridge
@@ -189,6 +210,9 @@ namespace DribbleToSchool.EditorTools
             t.KmModel("KmPotPinkFlowers", -14.8f, 1.1f);
             t.KmModel("KmBonsaiTerracotta", -9.2f, 1.1f);
             t.KmLane("KM2-1", -6f);
+            t.KmAnimals("KmSwallowtail", 4f, 12f);                // over the gardens (KM-N25)
+            t.KmAnimals("KmSparrowHopping", 36f, 44f, 2);
+            t.KmAnimals("KmCrowStanding", 100f, 104f);            // at the surf hut
 
             t.CoinRow(2f, 7f, 0.5f, 4);
             t.Checkpoint(20f);
@@ -196,7 +220,7 @@ namespace DribbleToSchool.EditorTools
             t.CoinArc(42f, 46f, 0.6f, 1.3f, 3);
             t.Checkpoint(50f);
             t.CoinRow(55f, 61f, 0.5f, 4);
-            t.Dog(70f, 80f, ShibaTan);                     // the Shiba on its patch: chip the ball over
+            t.Dog(70f, 80f, ShibaTan, 0f, "KmShibaStanding");   // the Shiba (KM-N04) on its patch: chip the ball over
             t.Checkpoint(84f);
             t.Tunnel(86.5f, 95.5f);                        // under the coast road, dark inside
             t.CoinRow(87.5f, 94.5f, 0.5f, 5);
@@ -216,6 +240,9 @@ namespace DribbleToSchool.EditorTools
             t.Start(0f);
             t.Ground(-8f, 122f);
             t.KmLane("KM2-2", -16f);
+            t.KmAnimals("KmGullStanding", 40f, 52f, 3);           // black-tailed gulls on the sand (KM-N10)
+            t.KmAnimals("KmEgretStanding", 84f, 88f);             // a little egret at the water's edge (KM-N11)
+            t.KmAnimals("KmCrowHopping", 104f, 108f);
 
             t.CoinRow(0f, 3f, 0.5f, 3);
             t.Tide(4f, 16f, 6f, 0f);                       // the wave washes up over the path: wait for it, or run
@@ -263,6 +290,8 @@ namespace DribbleToSchool.EditorTools
             t.KmModel("KmSeaWallSteps", 7.4f + dx, 2.3f);
             t.KmModel("KmNoParkingSign", 7.66f + dx, 1.2f);
             t.KmModel("KmBusStopSign", 8.56f + dx, 1.2f);
+            t.KmAnimals("KmSparrowHopping", -7f + dx, -3f + dx, 2);  // sparrows by the neighbour's pots
+            t.KmAnimals("KmGullStanding", 11f, 13f);              // a gull on the promenade, after the whitebait
 
             t.CoinRow(-6f, -1f, 0.5f, 4);
             t.ErrandCounter(0f + dx);
@@ -283,6 +312,10 @@ namespace DribbleToSchool.EditorTools
             t.Start(0f);
             t.Ground(-8f, 122f);
             t.KmLane("KM2-4", -16f);
+            t.KmAnimals("KmKitePerched", 10f, 12f);               // a black kite on the rocks, watching (KM-N05)
+            t.KmAnimals("KmEgretStanding", 30f, 34f);             // at the tide pools
+            t.KmAnimals("KmCormorantDrying", 84f, 86f);           // a cormorant drying its wings on a rock (KM-N16)
+            t.KmAnimals("KmGullStanding", 92f, 100f, 2);
 
             t.CoinRow(1f, 6f, 0.5f, 4);
             t.Checkpoint(20f);
@@ -309,6 +342,10 @@ namespace DribbleToSchool.EditorTools
             t.Start(0f);
             t.Ground(-8f, 124f);
             t.KmLane("KM2-5", -16f);
+            t.KmAnimals("KmPigeonStanding", 30f, 40f, 2);         // pigeons on the avenue's paving
+            t.KmAnimals("KmPigeonPecking", 32f, 38f);
+            t.KmAnimals("KmSparrowHopping", 88f, 94f, 2);
+            t.KmAnimals("KmWagtail", 106f, 110f);                 // a wagtail at the school's gate
 
             t.CoinRow(0f, 5f, 0.5f, 4);
             t.Checkpoint(12f);
@@ -339,6 +376,9 @@ namespace DribbleToSchool.EditorTools
             t.KmModel("KmLetterbox", -10f, 1.15f);
             t.KmModel("KmHydrangeaBlue", -16.2f, 1.3f);
             t.KmLane("KM3-1", -6f);
+            t.Rain();                                      // the June rain (World/RainFall)
+            t.KmAnimals("KmCalicoAsleep", 82f, 84f);              // a calico asleep under the rest hut's eaves (KM-N21)
+            t.KmAnimals("KmCrowStanding", 88f, 92f);              // a crow under the cedars
 
             t.CoinRow(2f, 6f, 0.5f, 4);
             t.Puddle(8f, 10f);
@@ -368,6 +408,8 @@ namespace DribbleToSchool.EditorTools
             t.Start(0f);
             t.Ground(-8f, 122f);
             t.KmLane("KM3-2", -16f);
+            t.Rain();                                      // the June rain (World/RainFall)
+            t.KmAnimals("KmCrowStanding", 18f, 22f);
 
             t.CoinRow(0f, 3f, 0.5f, 3);
             t.Wall(5f, 0.25f, 0f, 0.5f);                    // a root across the path
@@ -377,7 +419,7 @@ namespace DribbleToSchool.EditorTools
             t.Wall(30f, 0.3f, 0f, 0.5f);
             t.Checkpoint(36f);
             t.Puddle(40f, 42f);
-            t.Dog(56f, 64f, TanukiBrown);                  // the raccoon dog crossing the path
+            t.Dog(56f, 64f, TanukiBrown, 0f, "KmTanukiWalking");   // the raccoon dog (KM-N02) crossing the path
             t.Checkpoint(68f);
             t.Wall(72f, 0.25f, 0f, 0.5f);
             t.CoinRow(76f, 82f, 0.5f, 4);
@@ -398,6 +440,10 @@ namespace DribbleToSchool.EditorTools
             t.Start(0f);
             t.Ground(-8f, 124f);
             t.KmLane("KM3-3", -16f);
+            t.Rain();                                      // the June rain (World/RainFall)
+            t.KmAnimals("KmDoveStanding", 2f, 10f, 2);            // turtle doves on the park's lawn (KM-N20)
+            t.KmAnimals("KmSparrowHopping", 76f, 82f, 2);
+            t.KmAnimals("KmWagtail", 100f, 106f);                 // a wagtail in the school's yard (KM-N17)
 
             t.CoinRow(0f, 5f, 0.5f, 4);
             t.Checkpoint(10f);

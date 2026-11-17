@@ -216,11 +216,13 @@ namespace DribbleToSchool.EditorTools
                 var m = ToonMaterial("Kit" + kit, toon, atlas, false);
                 m.SetFloat("_Wind", kit == "Plants" ? 0.1f : 0f);   // trees and grass sway; their alpha is a wind weight
                 LeafCards(m, kit == "Plants" || kit == "Barriers");   // leaf-card foliage (the boughs over the path too)
+                // Kamakura's animals are cut out of their photographs: each is clipped at its outline (alpha 0.5).
+                if (kit == "KamakuraAnimals") AlphaClip(m, true);
                 // The shade inside a crown is a cool, nearly neutral dark, as in the reference shots (docs/ART_DIRECTION.md).
                 m.SetColor("_ShadowColor", kit == "Plants" ? new Color(0.728f, 0.006f, 2f) : DefaultShadowTint);
                 // What the filters take it for (Shaders/PostFX): the plants are foliage, the animals kit (the animals,
                 // and the coins, stars and stickers the kid collects) cels, every other kit scenery.
-                m.SetFloat("_FilterMask", kit == "Plants" ? 0.5f : kit == "Animals" ? 0.125f : 1f);
+                m.SetFloat("_FilterMask", kit == "Plants" ? 0.5f : kit == "Animals" || kit == "KamakuraAnimals" ? 0.125f : 1f);
                 m.enableInstancing = true;                          // repeats of a kit model draw together
                 set.kits[kit] = m;
                 // The kit's models the kid plays with (LevelBuildKit.HasCelModels: swing seats, targets, flags...) wear a

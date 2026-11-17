@@ -409,7 +409,9 @@ the waves burst over the sea wall, the streets run with water, and between showe
 ## The Holiday Run in each city
 
 The endless run strings the city's dribble legs into stages, in the city's own light, with its own hazards and music.
-Kamakura's run exists now (the original town's 23 stages). Each other city gets its own once its streets are built.
+Kamakura's run follows its own legs now: one stage for each of its ten dribble legs, along their lane pictures
+(`Holiday/HolidayStages.Kamakura`; the original town's 23 stages stay as `HolidayStages.Original`). Each other city gets
+its own once its streets are built.
 Until then the HOLIDAY RUN picker shows it as coming soon.
 
 ## Where we are

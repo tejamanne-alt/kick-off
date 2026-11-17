@@ -90,7 +90,7 @@ namespace DribbleToSchool.Coop
             if (Route == null) return;
             if (Leg + 1 < LegCount)
             {
-                ReachedStop = RouteTable.To(Route.levels[Leg]);
+                ReachedStop = Routes.To(Route.levels[Leg]);
                 Session.ReportLeg(Leg + 1, (Leg + 1f) / LegCount);
                 nextLegAt = Time.unscaledTime + StopPause;
                 return;
@@ -122,7 +122,7 @@ namespace DribbleToSchool.Coop
         {
             if (raceId == RaceId && Route != null) return;   // (a repeat: already on it)
             RaceId = raceId;
-            Route = RouteTable.All[Mathf.Clamp(selection.route, 0, RouteTable.All.Length - 1)];
+            Route = CoopRoutes.All[Mathf.Clamp(selection.route, 0, CoopRoutes.All.Length - 1)];
             Location = CoopLocations.At(selection.addOn);
             Leg = 0;
             Finished = false;
@@ -154,7 +154,7 @@ namespace DribbleToSchool.Coop
         {
             Leg = Mathf.Clamp(leg, 0, LegCount - 1);
             var catalog = service.Catalog;
-            var def = catalog != null ? catalog.FindById(Route.levels[Leg]) : null;
+            var def = CoopRoutes.Find(catalog, Route.levels[Leg]);   // (Kamakura's own legs are in its own catalog)
             string scene = def != null ? Cities.SceneFor(def.sceneName, Location) : null;
             if (scene == null || !Application.CanStreamedLevelBeLoaded(scene))
             {
