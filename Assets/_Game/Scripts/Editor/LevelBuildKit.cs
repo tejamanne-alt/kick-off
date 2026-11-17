@@ -3862,6 +3862,12 @@ namespace DribbleToSchool.EditorTools
                     StopGoal(x, groundTop);
                     return;
                 }
+                // A Kamakura leg: its lane picture shows the school's gate (LevelBuildKit.Kamakura).
+                if (Kamakura)
+                {
+                    KamakuraSchoolGoal(x, groundTop);
+                    return;
+                }
                 var school = new GameObject("School").transform;
                 school.SetParent(root, false);
                 GoalX = x;

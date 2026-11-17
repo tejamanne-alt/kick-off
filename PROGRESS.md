@@ -2804,6 +2804,79 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
     `review/kamakura/levels/KM1-2`. The board can lift a model below the lane's ground now (`lift`: the street 1 m
     under the car's floor).
 
+## Kamakura plays as its own city: twelve legs, three mini-games, its map and the switch (code, assets and docs)
+
+The user added the lane pictures for every remaining leg and asked for the whole of Kamakura's gameplay. Their answers:
+use KM1-3's pictures as they are; the errand's design was left to us, for the best experience; on the beach, assume
+the best for the game.
+- **The lanes** (`tools/blender/km_lanes.py`, KM-L lanes): each lane picture is one model, `KmLane<leg><A..E>`.
+  - It has an upright front at the lane's back edge (the picture above its foot row, its own sky kept) and the
+    picture's ground band below the foot row, laid flat for 0.85 m toward the lane.
+  - Nine legs are built this way: KM1-3 and KM1-4 from three pictures each, the rest from five. That is 41 models of 4
+    triangles. Each leg has one texture (4096 x 2048 RGB; KM1-4's 4096 x 1024).
+  - The image tool's mark and KM1-3a's railway logo are painted out.
+  - Each model has its strict review in `review/kamakura/lanes/<leg>`.
+  - First-build faults, fixed before install (D41): textures twice the size the camera can use, one foot row for
+    pictures taken at three heights, and the logo.
+- **The legs** (`Editor/KamakuraLevels.cs`, `GeneratedContent.CityLevels`): all twelve are built into their own scenes,
+  `<id>_<Name>_KM`, in `KamakuraCatalog.asset`.
+  - Each leg's lane is laid with `TrackBuilder.KmLane`, with its hazards along it:
+    - KM1-3: sightseers, the kite at the snacks, the slow rickshaw.
+    - KM1-4: the zebra crossing.
+    - KM2-1: the Shiba, and the dark tunnel under the coast road.
+    - KM2-2 and KM2-4 stand on sand (street chapter 3, `LevelSpec.street`). KM2-2 has the tide over the path twice.
+    - KM2-5: two crossings, the volunteer's flag the second.
+    - KM3-1: puddles and umbrellas.
+    - KM3-2: roots across the path, and a raccoon dog crossing it.
+    - KM3-3: the bell's gust and the wind in the bamboo.
+  - KM2-3 stands on its own set pieces (it has no lane pictures). KM1-1 is unchanged.
+  - A Kamakura stop builds no set piece of its own (the pictures show it). Its school goal is a goal zone only.
+  - Coin audit: 184 coins, no problems.
+- **The mini-games** (`Scripts/MiniGames`), each a layer over the level built in code like the HUD. Each holds the run
+  while it plays (`LevelManager.Hold`) and draws on the user's set pictures (`Resources/UI/Kamakura`). The rules are kept
+  apart (`MiniGameRules`), so they are tested without a scene.
+  - **M1, the ride** (KM1-2): tap the IC card while the reader's ring is green, then keep the ball steady at your feet
+    against the car's sway (lean with the stick; hold KICK through the hard brakes). Give your seat to the grandmother
+    who boards at Yuigahama, and press STOP when the display says Kamakura. The town slides past the windows (KM1-2b),
+    and each station's platform shows at its stop (KM1-2c). Reaching Kamakura ends the leg.
+  - **M2, the errand** (KM2-3), at Grandma's counter. She shows the order of the furoshiki's four corners; tap them in
+    that order (near and far first, then the sides, as a real one is wrapped). A wrong corner and she shows it again;
+    there is never a fail. Then tie the knot in two taps, each while the marker is in the gold. The cloth is drawn at
+    each of its five stages (KM2-3b).
+  - **M4, the kite thief** (KM2-4): past the tide pools a black kite takes the rice ball off the bento and drops it on
+    the rocks behind. Dribble back to it before the wave comes in over it.
+- **The errand rides along** (`Progression/Errands`):
+  - Once wrapped, the bento is carried on the backpack (`BentoOnBack`) along the Shonan Coast to school. It is saved as
+    `SaveData.carrying`.
+  - Getting it there whole earns the Delivered badge (`SaveData.badges`). The result screen says so. The badge is never
+    needed to finish.
+  - A rice ball lost to the wave can be won back on a replay of KM2-4.
+  - A trip from home, or a leg off the coast route, starts with nothing carried.
+- **The map** (KM-L90): `Resources/UI/KamakuraMap.jpg` (KM-MAP3 with KM-MAP2_clean over its middle, the mark painted
+  out) and `Resources/KamakuraMapLayout.json`. `TownMap.UseLayout` loads a city's own layout, and the map screen
+  rebuilds when the city changes.
+- **The switch** (KM-L99): `Routes.KamakuraOwnRoutes`, on.
+  - `Levels/Routes` looks up a leg or route by its id in either table, the original town's or a city's own.
+  - Every runtime caller of `RouteTable` goes through it: the HUD, unlocks, trips, audio and the map's names.
+  - Kamakura's menus and map use its catalog (`LevelCatalog.ForCity`). The other four cities keep the original 23 levels.
+- **Saves:** Kamakura's legs have their own ids (KM1-1 to KM3-3), so its progress starts fresh, as the user decided.
+  Nothing already earned is deleted: the original levels' stars, coins and stickers stay in the save under their ids.
+- **Checks:**
+  - `KamakuraGameplayTests` covers the legs' scenes, the routes facade, the resources, the mini-games' words in every
+    language, the errand's carrying rules and each mini-game's rules.
+  - `KamakuraLevelTests` checks that every lane a leg lays is installed.
+  - The 16 rule and routes tests were run outside Unity (dotnet, the rule files with Unity 2021's `UnityEngine.dll`)
+    and pass. The other two, the scene table and the resource files, were checked by hand.
+  - Every script compiles under every symbol set, with no new errors against HEAD's scripts. Two errors were fixed
+    (E16). `run.sh` passes on 6000.6 and 6000.7.
+- **Not yet done:**
+  - Nothing has run in Unity or on the Nord CE5. That includes the scenes, the overlays' layout at 4:3, 16:9 and 21:9,
+    and the frame rate with a lane's texture.
+  - Co-op and the Holiday Run still use the original routes.
+  - The ride is not drawn differently on the map.
+  - There is no rain effect (the KM3 pictures are rainy themselves).
+  - The animals (KM-N) are not in the legs; a Shiba, a gull and a raccoon dog stand in as the game's existing hazards.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

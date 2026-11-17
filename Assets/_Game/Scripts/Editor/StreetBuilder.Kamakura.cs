@@ -18,7 +18,11 @@ namespace DribbleToSchool.EditorTools
         static bool KM { get { return LevelBuildKit.Kamakura; } }
 
         /// <summary>The stops of the cities' routes (Levels/CityRoutes) that <see cref="StopFront"/> has a set piece for, beside <see cref="SetPieces"/> (the original town's).</summary>
-        public static readonly string[] CitySetPieces = { "hase" };
+        public static readonly string[] CitySetPieces =
+        {
+            "hase", "kamakuraStation", "shrineSideGate", "boardwalk", "grandmasShop", "lifeguardTower", "greatTorii", "trailSign",
+            "genjiyama",
+        };
 
         /// <summary>The street of a Kamakura level, in place of the chapter's (see <see cref="Scenery"/>).</summary>
         static void KamakuraStreet(LevelBuildKit.TrackBuilder track, Transform root)

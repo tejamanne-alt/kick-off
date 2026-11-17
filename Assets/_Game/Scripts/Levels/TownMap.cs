@@ -150,23 +150,39 @@ namespace DribbleToSchool.Levels
             Load();
         }
 
+        /// <summary>The layout in use (Resources path, no extension): the original town's unless the map screen asked for a city's.</summary>
+        public static string ActiveLayout { get { return activeLayout; } }
+        static string activeLayout = LayoutResource;
+
+        /// <summary>
+        /// Show the map whose layout is <paramref name="resource"/> (a city's own: Levels/Routes.MapLayout, Kamakura's
+        /// KamakuraMapLayout); the original town's by default. Reloads only when it changes.
+        /// </summary>
+        public static void UseLayout(string resource)
+        {
+            if (string.IsNullOrEmpty(resource)) resource = LayoutResource;
+            if (resource == activeLayout && layout != null) return;
+            activeLayout = resource;
+            Reload();
+        }
+
         static void Load()
         {
             string json = null;
             Source = "(none)";
             Problem = "";
-            var asset = Resources.Load<TextAsset>(LayoutResource);
+            var asset = Resources.Load<TextAsset>(activeLayout);
             if (asset != null)
             {
                 json = asset.text;
-                Source = "Resources/" + LayoutResource;
+                Source = "Resources/" + activeLayout;
             }
 #if UNITY_EDITOR
             if (json == null)
             {
                 try
                 {
-                    string path = Application.dataPath + LayoutFile;
+                    string path = Application.dataPath + "/_Game/Resources/" + activeLayout + ".json";
                     if (System.IO.File.Exists(path))
                     {
                         json = System.IO.File.ReadAllText(path);
@@ -177,7 +193,7 @@ namespace DribbleToSchool.Levels
             }
 #endif
             Apply(json != null ? Parse(json) : null);
-            if (json == null && Problem.Length == 0) Problem = "TownMapLayout.json was not found";
+            if (json == null && Problem.Length == 0) Problem = activeLayout + ".json was not found";
         }
 
         /// <summary>Read a layout from its JSON text (null, with <see cref="Problem"/> set, if it cannot be read).</summary>
@@ -313,9 +329,8 @@ namespace DribbleToSchool.Levels
         /// </summary>
         public static Vector2? StopPosition(string routeId, int index)
         {
-            int routeIndex = RouteTable.IndexOf(routeId);
-            if (routeIndex < 0) return null;
-            var route = RouteTable.All[routeIndex];
+            var route = global::DribbleToSchool.Levels.Routes.ById(routeId);
+            if (route == null) return null;
             if (index < 0 || route.stops == null || index >= route.stops.Length || index + 1 >= route.levels.Length) return null;
             var line = Route(routeId);
             if (line == null || line.points.Length < 2) return null;

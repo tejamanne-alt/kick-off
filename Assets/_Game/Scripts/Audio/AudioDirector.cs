@@ -187,12 +187,12 @@ namespace DribbleToSchool.Audio
                 if (run != null)
                 {
                     var stage = HolidayStages.All[Mathf.Clamp(run.StageIndex, 0, HolidayStages.Count - 1)];
-                    var stageRoute = RouteTable.Of(stage.levelId);
+                    var stageRoute = Routes.Of(stage.levelId);
                     return Soundscapes.For(stageRoute != null ? stageRoute.id : null, stage.chapter);
                 }
             }
             if (level.level == null) return Soundscape.Street;
-            var route = RouteTable.Of(level.level.levelId);
+            var route = Routes.Of(level.level.levelId);
             return Soundscapes.For(route != null ? route.id : null, Mathf.Clamp(level.level.chapter, 1, 5));
         }
 

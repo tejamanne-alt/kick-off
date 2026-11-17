@@ -1472,6 +1472,17 @@ three new routes instead of the original 23 levels; a save upgrade keeps every s
 (persisted ids never change: docs/LEARNINGS.md H7); the Holiday Run's Kamakura stages follow the new streets.
 ```
 
+Status (17 November 2026), brought forward at the user's request ("build the whole Kamakura City gameplay"), before any
+leg has run on the Nord CE5 (PROGRESS.md, "Kamakura plays as its own city"):
+- KM-L90 is built: the picture and layout are in Resources, and the map screen loads the active city's layout
+  (`TownMap.UseLayout`). The ride is not yet drawn dashed.
+- KM-L99's switch is on (`Routes.KamakuraOwnRoutes`), and every leg is built from its lane pictures (`km_lanes.py`).
+  - To go back to the original 23 levels for Kamakura, set the switch to false.
+  - The saves follow the user's later decision ("saves start fresh", 16 November), not the upgrade above. Kamakura's
+    legs have their own ids, so its progress starts fresh. Nothing earned on the original levels is deleted, and no id
+    changes.
+- Not yet followed: co-op and the Holiday Run's Kamakura stages still use the original routes.
+
 ## Cost (est., none generated)
 
 - **Generation:** the 20 texture and foliage sheets in Gemini; a model sheet only where Claude asks for one; one Meshy

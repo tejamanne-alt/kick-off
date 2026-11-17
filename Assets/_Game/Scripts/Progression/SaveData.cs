@@ -59,6 +59,11 @@ namespace DribbleToSchool.Progression
 
         /// <summary>The city chosen in the city picker (Progression/Cities: "original" is Kamakura, "florida"...); empty in older saves. (Its name is from the add-ons, before the cities.)</summary>
         public string addOn = "";
+        /// <summary>What an errand gave the kid to carry on this trip, riding on the backpack (Progression/Errands: "bento", or
+        /// "bento-norice" once the kite has taken its rice ball); "" for nothing.</summary>
+        public string carrying = "";
+        /// <summary>Errands delivered to school unharmed (Progression/Errands: "delivered.KM2"), each once.</summary>
+        public List<string> badges = new List<string>();
         /// <summary>The filter chosen in Filters (Progression/Filters).</summary>
         public string filter = "original";
         /// <summary>Older saves' California switch (before the add-ons). California is not a city: Cities.Select clears it.</summary>

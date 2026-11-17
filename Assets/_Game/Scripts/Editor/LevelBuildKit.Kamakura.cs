@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using DribbleToSchool.Core;
 using DribbleToSchool.Hazards;
 using DribbleToSchool.Levels;
 using DribbleToSchool.Presentation;
@@ -238,6 +239,144 @@ namespace DribbleToSchool.EditorTools
 
             /// <summary>Where tracks cross the street (<see cref="LevelCrossing"/>): the street keeps its houses and walls out of them.</summary>
             public readonly List<Vector2> Rails = new List<Vector2>();
+
+            // ------------------------------------------------------------------ the lanes from the user's lane pictures
+
+            /// <summary>
+            /// A leg's lane from its lane pictures (tools/blender/km_lanes.py: KmLane&lt;leg&gt;A, B, C...): each picture's front
+            /// upright behind the footpath, its ground laid from the footpath's back edge to it, side by side from
+            /// <paramref name="x0"/> (the first picture's left edge), as the pictures continue one another. Returns the x where
+            /// the last ends. A leg whose pictures aren't in the kit is built without them.
+            /// </summary>
+            public float KmLane(string leg, float x0)
+            {
+                string stem = "KmLane" + leg.Replace("-", "");
+                float x = x0;
+                for (char c = 'A'; c <= 'H'; c++)
+                {
+                    string model = stem + c;
+                    if (!HasKitModel("Kamakura", model)) break;
+                    float w = KitSize("Kamakura", model).x;
+                    // its ground's near edge on the footpath's back edge (front 0.75, moved back by KamakuraDepth), a centimetre up
+                    KmModel(model, x + w * 0.5f, StreetBuilder.PathHalf - KamakuraDepth, 0f, 0.01f);
+                    x += w;
+                }
+                return x;
+            }
+
+            // ------------------------------------------------------------------ the mini-games and the errand (MiniGames)
+
+            /// <summary>A trigger across the lane at <paramref name="x"/>, <paramref name="width"/> wide, with a mini-game's component on it.</summary>
+            T LaneTrigger<T>(string name, float x, float width, float groundTop) where T : Component
+            {
+                var go = new GameObject(name);
+                go.transform.SetParent(root, false);
+                go.transform.position = new Vector2(x, groundTop + 1.25f);
+                var box = go.AddComponent<BoxCollider2D>();
+                box.isTrigger = true;
+                box.size = new Vector2(width, 2.5f);
+                return go.AddComponent<T>();
+            }
+
+            /// <summary>
+            /// KM1-2's ride (docs/CITIES.md M1): at Hase's ticket gate (<paramref name="x"/>) the ride opens over the level
+            /// (MiniGames/TramRide, from the user's set pictures KM1-2a to c in Resources/UI/Kamakura); at Kamakura the leg is done.
+            /// </summary>
+            public void RideGate(float x, float groundTop = 0f)
+            {
+                Coaching.Mark("people", x - 1f, x + 1f);
+                LaneTrigger<MiniGames.TramRide>("TramRide", x, 1.2f, groundTop);
+            }
+
+            /// <summary>
+            /// KM2-3's errand (docs/CITIES.md M2): at Grandma's counter (<paramref name="x"/>) the errand opens over the level
+            /// (MiniGames/BentoErrand); once the bento is wrapped it rides on the backpack (Progression/Errands).
+            /// </summary>
+            public void ErrandCounter(float x, float groundTop = 0f)
+            {
+                LaneTrigger<MiniGames.BentoErrand>("BentoErrand", x, 1.2f, groundTop);
+            }
+
+            /// <summary>
+            /// The bento on the kid's backpack while the trip carries it (MiniGames/BentoOnBack): a lacquered box wrapped in its
+            /// navy furoshiki, the knot on top and the rice ball beside it, built hidden, put on the kid's bag when carried.
+            /// </summary>
+            public void BentoOnBack()
+            {
+                var holder = new GameObject("BentoOnBack").transform;
+                holder.SetParent(root, false);
+                var bento = new GameObject("Bento").transform;
+                bento.SetParent(holder, false);
+                Color cloth = new Color(0.17f, 0.2f, 0.36f), band = new Color(0.72f, 0.36f, 0.24f), rice = new Color(0.96f, 0.95f, 0.9f);
+                Blobs(bento, "Wrapped", Vector3.zero,
+                    new BlobShape.Blob(Vector3.zero, new Vector3(0.13f, 0.07f, 0.1f), cloth),
+                    new BlobShape.Blob(new Vector3(0f, 0.065f, 0f), new Vector3(0.05f, 0.03f, 0.04f), band),
+                    new BlobShape.Blob(new Vector3(-0.045f, 0.075f, 0f), new Vector3(0.035f, 0.022f, 0.02f), band),
+                    new BlobShape.Blob(new Vector3(0.045f, 0.075f, 0f), new Vector3(0.035f, 0.022f, 0.02f), band));
+                var riceBall = Blobs(bento, "RiceBall", new Vector3(0.1f, 0.06f, 0f),
+                    new BlobShape.Blob(Vector3.zero, new Vector3(0.045f, 0.04f, 0.035f), rice),
+                    new BlobShape.Blob(new Vector3(0f, -0.018f, 0f), new Vector3(0.047f, 0.016f, 0.037f), new Color(0.1f, 0.14f, 0.1f)));
+                bento.gameObject.SetActive(false);
+                var on = holder.gameObject.AddComponent<MiniGames.BentoOnBack>();
+                on.bento = bento.gameObject;
+                on.riceBall = riceBall.gameObject;
+            }
+
+            /// <summary>
+            /// KM2-4's twist (docs/CITIES.md M4): past <paramref name="triggerX"/> a black kite takes the rice ball off the bento and
+            /// drops it on the rocks at <paramref name="dropX"/> behind; the wave comes in over it unless the kid gets back in time
+            /// (MiniGames/KiteThief). The kite is the gull's shape in a black kite's browns; the wave a sheet of sea water.
+            /// </summary>
+            public void KiteThief(float triggerX, float dropX, float groundTop = 0f)
+            {
+                Coaching.Mark("seagull", dropX, triggerX);
+                var go = new GameObject("KiteThief");
+                go.transform.SetParent(root, false);
+                var kite = new GameObject("Kite").transform;
+                kite.SetParent(go.transform, false);
+                Color brown = new Color(0.36f, 0.27f, 0.2f), pale = new Color(0.62f, 0.52f, 0.42f), dark = new Color(0.16f, 0.12f, 0.1f);
+                Blobs(kite, "Body", Vector3.zero,
+                    new BlobShape.Blob(Vector3.zero, new Vector3(0.3f, 0.1f, 0.1f), brown),
+                    new BlobShape.Blob(new Vector3(0.26f, 0.06f, 0f), new Vector3(0.09f, 0.08f, 0.075f), pale),
+                    new BlobShape.Blob(new Vector3(0.36f, 0.04f, 0f), new Vector3(0.05f, 0.025f, 0.02f), dark),
+                    new BlobShape.Blob(new Vector3(-0.34f, 0.01f, 0f), new Vector3(0.14f, 0.025f, 0.09f), brown));
+                var wings = new List<Transform>();
+                foreach (float side in new[] { -1f, 1f })
+                    wings.Add(Blobs(kite, "Wing", new Vector3(0f, 0.04f, side * 0.07f),
+                        new BlobShape.Blob(new Vector3(-0.02f, 0f, side * 0.3f), new Vector3(0.16f, 0.02f, 0.3f), brown),
+                        new BlobShape.Blob(new Vector3(-0.08f, 0f, side * 0.56f), new Vector3(0.1f, 0.016f, 0.1f), dark)).transform);
+                var rice = Blobs(go.transform, "RiceBall", Vector3.zero,
+                    new BlobShape.Blob(Vector3.zero, new Vector3(0.09f, 0.08f, 0.07f), new Color(0.96f, 0.95f, 0.9f)),
+                    new BlobShape.Blob(new Vector3(0f, -0.035f, 0f), new Vector3(0.094f, 0.03f, 0.074f), new Color(0.1f, 0.14f, 0.1f))).transform;
+                var wave = StreetBuilder.Solid(go.transform, "Wave", new Vector3(dropX, groundTop + 0.025f, 9f), new Vector3(5f, 0.05f, 4f),
+                    new Color(0.42f, 0.68f, 0.78f)).transform;
+                var thief = go.AddComponent<MiniGames.KiteThief>();
+                thief.triggerX = triggerX;
+                thief.dropX = dropX;
+                thief.groundY = groundTop;
+                thief.kite = kite;
+                thief.wings = wings.ToArray();
+                thief.rice = rice;
+                thief.wave = wave;
+            }
+
+            /// <summary>
+            /// A Kamakura leg that ends at school: the user's lane picture shows the school's gate there, so the goal is only the
+            /// zone past the gate's line (the kid and the ball both through it), the street kept quiet beyond.
+            /// </summary>
+            void KamakuraSchoolGoal(float x, float groundTop)
+            {
+                GoalX = x;
+                QuietAreas.Add(new Vector2(x - 1f, x + 200f));
+                const float grounds = 40f;
+                var goalGo = new GameObject("GoalZone");
+                goalGo.transform.SetParent(root, false);
+                goalGo.transform.position = new Vector3(x + 0.4f + grounds * 0.5f, groundTop + 8f, 0f);
+                var trigger = goalGo.AddComponent<BoxCollider2D>();
+                trigger.isTrigger = true;
+                trigger.size = new Vector2(grounds, 20f);
+                goalGo.AddComponent<GoalZone>();
+            }
         }
     }
 }

@@ -1635,6 +1635,28 @@ copied clutter (found in its review, November 2026).**
 - *Rule:* write every box in one order in a module, and check each mask is not empty before filling. Tune the sky test
   on the picture at hand. Give `patch_fill` an `avoid` whenever anything beside the hole is an object, not a surface.
 
+**D41. The lanes' first build: textures twice the size the camera can use, one foot row for pictures taken at three
+heights, and a real logo (found in their review, November 2026).** Every leg's lane is built from its lane pictures as
+fronts standing at the lane's back edge, with the ground before them (`tools/blender/km_lanes.py`, KM-L lanes).
+- *What:*
+  - Each leg's texture came out 4096 x 4096 and RGBA: the pictures at their full width, with the ground band as tall
+    as the picture allowed. That is about 22 MB with mips in ETC2 and 10 MB in ASTC 6x6 for each leg. The alpha was
+    empty (the pictures are opaque), but an alpha makes `ModelImportSettings` import a Kamakura texture as a cut-out.
+  - KM1-3's and KM1-4's pictures were taken at different heights, so one foot row for the leg cut a shop's foot off in
+    one picture and kept a strip of road under a wall in the next.
+  - KM1-3a's station board carries a railway's real logo.
+- *Why:* the build kept what each picture had, not what the game camera shows. At the lane the camera sees about 70 to
+  75 px to the metre, and the ground before the fronts is never more than 0.85 m deep.
+- *Fix:*
+  - Each picture is scaled to 2032 px wide (two to a 4096 row, about 75 px to the metre at the lane) and its ground band
+    is capped at the picture's row 690. Every leg's texture is 4096 x 2048 (KM1-4's 4096 x 1024), saved RGB: about 5 MB
+    with mips in ASTC 6x6 or 5.6 MB in ETC2, one leg loaded at a time.
+  - Each picture has its own foot row (`LEGS[...]['foot']`).
+  - The logo is painted over with the board's own white (`FIXES`), as the image tool's mark is (`unmark`).
+- *Rule:* size a texture from the pixels the game camera gives it, not from the source picture. Save an opaque picture
+  RGB, so the import does not treat it as a cut-out. Measure each picture's own foot row. Look at every picture for real
+  brands before building from it (D31).
+
 ## E. Levels and world
 
 - **E1. Every level had chapter-1 scenery.** A new-scene call unloaded the level definition. *Rule:* pass data into scene builders explicitly; never hold asset references across a new-scene call.
@@ -1694,6 +1716,33 @@ copied clutter (found in its review, November 2026).**
     is left out.
   - *Rule:* a picture split into layers lines up only about the viewer's eye. Scale the layers about the game camera's
     height, and look at the board through the game camera before showing it.
+
+- **E16. Kamakura's gameplay code: what reading and the compile check caught before it ran (November 2026).** Kamakura
+  plays as its own city: twelve legs, the ride, the errand, the kite thief, its map and the switch (`Levels/Routes`,
+  `MiniGames/`, `Progression/Errands`).
+  - *What:*
+    - `run.sh` passed (exit 0), but the compiler's errors were never looked at. Two were real:
+      - `TownMap` has its own `Routes` property, which hid the new `Levels.Routes` class (CS1061);
+      - the Kamakura goal used `GoalZone` without `using DribbleToSchool.Core`.
+    - Found by reading:
+      - The mini-games' first draft read the keyboard with the legacy `Input.GetKey`. The project reads input through the
+        Input System (`GameInput`), so they would have thrown errors in a player built with the Input System only.
+      - Four components shared files (`HoldKey`, `RideOverlay`, `ErrandOverlay`, `BentoOnBack`): E2's rule again.
+      - The switch as a `const bool` would have made the original routes' branch unreachable code (CS0162).
+      - Saving the kite's rice ball on a replay showed it back in the bento, but the save kept the bento without it.
+  - *Why:* `run.sh` fails only on syntax and the obsolete list. Its compiler errors are printed only with `ERRORS=1`,
+    and they include the stand-ins' expected misses, so they have to be compared with a clean tree's.
+  - *Fix:*
+    - The call is `global::DribbleToSchool.Levels.Routes.ById`, and the using was added.
+    - The overlays read `GameInput.MoveAxis` and `GameInput.KickHeld`.
+    - Each component has its own file.
+    - The switch is `static readonly` (`Routes.KamakuraOwnRoutes`).
+    - `Errands.SavedRiceBall` makes a carried bento whole again, and a test checks it.
+  - *Rule:*
+    - After a script change, compile with `ERRORS=1` for every symbol set, against `git archive HEAD`'s scripts. Diff the
+      two, leaving out line numbers. Any new error is real.
+    - Before adding a static class, look for a member of that name in the classes that will call it.
+    - What a mini-game shows and what it saves change together, in one rule that the tests cover.
 
 ## F. UI and menus
 

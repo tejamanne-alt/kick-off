@@ -1,4 +1,5 @@
 using DribbleToSchool.Core;
+using DribbleToSchool.Levels;
 using DribbleToSchool.Localization;
 using DribbleToSchool.UI;
 using DribbleToSchool.UI.Kit;
@@ -238,7 +239,7 @@ namespace DribbleToSchool.FrontEnd
 
         public override void OnShow()
         {
-            var catalog = Controller.levels;
+            var catalog = LevelCatalog.ForCity(Controller.levels);
             int total = catalog != null ? catalog.levels.Count * 3 : 0;
             int got = catalog != null ? Progression.LevelUnlocks.TotalStars(catalog) : 0;
             starsLabel.text = Loc.F("menu.stars", got, total);

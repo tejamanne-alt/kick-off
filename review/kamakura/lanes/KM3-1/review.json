@@ -1,0 +1,577 @@
+{
+ "KmLaneKM31A": {
+  "id": "KM-L31",
+  "sheet": "photo/KM3-1a_the_back_gate.png: KM3-1's lane, picture 1 of 5 (the front and the ground before it)",
+  "size": [
+   27.15,
+   0.85,
+   7.75
+  ],
+  "tris": 4,
+  "motions": [],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "its front and its ground, each once"
+   ],
+   [
+    2,
+    "Closed shell",
+    "limit",
+    "6 edges with one face: a front and a ground, single faces"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "limit",
+    "the picture's fronts are flat: their depth is not modelled (the leg's set pieces stand before it)"
+   ],
+   [
+    4,
+    "Views the game sees",
+    "limit",
+    "the picture from the lane; nothing behind (no one sees behind it)"
+   ],
+   [
+    5,
+    "Size, triangles",
+    "pass",
+    "27.1 x 0.8 x 7.8 m at 75 px to the metre, 4 triangles, its leg's shared texture"
+   ],
+   [
+    6,
+    "Outline whole",
+    "pass",
+    "its edges meet the pictures before and after it"
+   ],
+   [
+    7,
+    "No holes",
+    "pass",
+    "no holes"
+   ],
+   [
+    8,
+    "Own models before walls",
+    "pass",
+    "nothing in front of it is part of it"
+   ],
+   [
+    9,
+    "Look target",
+    "pass",
+    "the user's lane picture as it is"
+   ],
+   [
+    10,
+    "Solid",
+    "pass",
+    "whole"
+   ],
+   [
+    11,
+    "No brands",
+    "pass",
+    "invented names; real place names only"
+   ],
+   [
+    12,
+    "No wires or sky",
+    "pass",
+    "its own sky, kept (the camera never sees over it)"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "the image tool's mark painted out"
+   ],
+   [
+    14,
+    "Rig names",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    15,
+    "Joints overlap",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no feet"
+   ],
+   [
+    17,
+    "Each part only itself",
+    "n/a",
+    "one piece"
+   ]
+  ]
+ },
+ "KmLaneKM31B": {
+  "id": "KM-L31",
+  "sheet": "photo/KM3-1b_the_first_flight.png: KM3-1's lane, picture 2 of 5 (the front and the ground before it)",
+  "size": [
+   27.15,
+   0.85,
+   7.75
+  ],
+  "tris": 4,
+  "motions": [],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "its front and its ground, each once"
+   ],
+   [
+    2,
+    "Closed shell",
+    "limit",
+    "6 edges with one face: a front and a ground, single faces"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "limit",
+    "the picture's fronts are flat: their depth is not modelled (the leg's set pieces stand before it)"
+   ],
+   [
+    4,
+    "Views the game sees",
+    "limit",
+    "the picture from the lane; nothing behind (no one sees behind it)"
+   ],
+   [
+    5,
+    "Size, triangles",
+    "pass",
+    "27.1 x 0.8 x 7.8 m at 75 px to the metre, 4 triangles, its leg's shared texture"
+   ],
+   [
+    6,
+    "Outline whole",
+    "pass",
+    "its edges meet the pictures before and after it"
+   ],
+   [
+    7,
+    "No holes",
+    "pass",
+    "no holes"
+   ],
+   [
+    8,
+    "Own models before walls",
+    "pass",
+    "nothing in front of it is part of it"
+   ],
+   [
+    9,
+    "Look target",
+    "pass",
+    "the user's lane picture as it is"
+   ],
+   [
+    10,
+    "Solid",
+    "pass",
+    "whole"
+   ],
+   [
+    11,
+    "No brands",
+    "pass",
+    "invented names; real place names only"
+   ],
+   [
+    12,
+    "No wires or sky",
+    "pass",
+    "its own sky, kept (the camera never sees over it)"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "the image tool's mark painted out"
+   ],
+   [
+    14,
+    "Rig names",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    15,
+    "Joints overlap",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no feet"
+   ],
+   [
+    17,
+    "Each part only itself",
+    "n/a",
+    "one piece"
+   ]
+  ]
+ },
+ "KmLaneKM31C": {
+  "id": "KM-L31",
+  "sheet": "photo/KM3-1c_the_lantern.png: KM3-1's lane, picture 3 of 5 (the front and the ground before it)",
+  "size": [
+   27.15,
+   0.85,
+   7.75
+  ],
+  "tris": 4,
+  "motions": [],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "its front and its ground, each once"
+   ],
+   [
+    2,
+    "Closed shell",
+    "limit",
+    "6 edges with one face: a front and a ground, single faces"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "limit",
+    "the picture's fronts are flat: their depth is not modelled (the leg's set pieces stand before it)"
+   ],
+   [
+    4,
+    "Views the game sees",
+    "limit",
+    "the picture from the lane; nothing behind (no one sees behind it)"
+   ],
+   [
+    5,
+    "Size, triangles",
+    "pass",
+    "27.1 x 0.8 x 7.8 m at 75 px to the metre, 4 triangles, its leg's shared texture"
+   ],
+   [
+    6,
+    "Outline whole",
+    "pass",
+    "its edges meet the pictures before and after it"
+   ],
+   [
+    7,
+    "No holes",
+    "pass",
+    "no holes"
+   ],
+   [
+    8,
+    "Own models before walls",
+    "pass",
+    "nothing in front of it is part of it"
+   ],
+   [
+    9,
+    "Look target",
+    "pass",
+    "the user's lane picture as it is"
+   ],
+   [
+    10,
+    "Solid",
+    "pass",
+    "whole"
+   ],
+   [
+    11,
+    "No brands",
+    "pass",
+    "invented names; real place names only"
+   ],
+   [
+    12,
+    "No wires or sky",
+    "pass",
+    "its own sky, kept (the camera never sees over it)"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "the image tool's mark painted out"
+   ],
+   [
+    14,
+    "Rig names",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    15,
+    "Joints overlap",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no feet"
+   ],
+   [
+    17,
+    "Each part only itself",
+    "n/a",
+    "one piece"
+   ]
+  ]
+ },
+ "KmLaneKM31D": {
+  "id": "KM-L31",
+  "sheet": "photo/KM3-1d_the_rest_hut.png: KM3-1's lane, picture 4 of 5 (the front and the ground before it)",
+  "size": [
+   27.15,
+   0.85,
+   7.75
+  ],
+  "tris": 4,
+  "motions": [],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "its front and its ground, each once"
+   ],
+   [
+    2,
+    "Closed shell",
+    "limit",
+    "6 edges with one face: a front and a ground, single faces"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "limit",
+    "the picture's fronts are flat: their depth is not modelled (the leg's set pieces stand before it)"
+   ],
+   [
+    4,
+    "Views the game sees",
+    "limit",
+    "the picture from the lane; nothing behind (no one sees behind it)"
+   ],
+   [
+    5,
+    "Size, triangles",
+    "pass",
+    "27.1 x 0.8 x 7.8 m at 75 px to the metre, 4 triangles, its leg's shared texture"
+   ],
+   [
+    6,
+    "Outline whole",
+    "pass",
+    "its edges meet the pictures before and after it"
+   ],
+   [
+    7,
+    "No holes",
+    "pass",
+    "no holes"
+   ],
+   [
+    8,
+    "Own models before walls",
+    "pass",
+    "nothing in front of it is part of it"
+   ],
+   [
+    9,
+    "Look target",
+    "pass",
+    "the user's lane picture as it is"
+   ],
+   [
+    10,
+    "Solid",
+    "pass",
+    "whole"
+   ],
+   [
+    11,
+    "No brands",
+    "pass",
+    "invented names; real place names only"
+   ],
+   [
+    12,
+    "No wires or sky",
+    "pass",
+    "its own sky, kept (the camera never sees over it)"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "the image tool's mark painted out"
+   ],
+   [
+    14,
+    "Rig names",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    15,
+    "Joints overlap",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no feet"
+   ],
+   [
+    17,
+    "Each part only itself",
+    "n/a",
+    "one piece"
+   ]
+  ]
+ },
+ "KmLaneKM31E": {
+  "id": "KM-L31",
+  "sheet": "photo/KM3-1e_the_trail_sign.png: KM3-1's lane, picture 5 of 5 (the front and the ground before it)",
+  "size": [
+   27.15,
+   0.85,
+   7.75
+  ],
+  "tris": 4,
+  "motions": [],
+  "checks": [
+   [
+    1,
+    "Every part once",
+    "pass",
+    "its front and its ground, each once"
+   ],
+   [
+    2,
+    "Closed shell",
+    "limit",
+    "6 edges with one face: a front and a ground, single faces"
+   ],
+   [
+    3,
+    "Depth from each part's own width",
+    "limit",
+    "the picture's fronts are flat: their depth is not modelled (the leg's set pieces stand before it)"
+   ],
+   [
+    4,
+    "Views the game sees",
+    "limit",
+    "the picture from the lane; nothing behind (no one sees behind it)"
+   ],
+   [
+    5,
+    "Size, triangles",
+    "pass",
+    "27.1 x 0.8 x 7.8 m at 75 px to the metre, 4 triangles, its leg's shared texture"
+   ],
+   [
+    6,
+    "Outline whole",
+    "pass",
+    "its edges meet the pictures before and after it"
+   ],
+   [
+    7,
+    "No holes",
+    "pass",
+    "no holes"
+   ],
+   [
+    8,
+    "Own models before walls",
+    "pass",
+    "nothing in front of it is part of it"
+   ],
+   [
+    9,
+    "Look target",
+    "pass",
+    "the user's lane picture as it is"
+   ],
+   [
+    10,
+    "Solid",
+    "pass",
+    "whole"
+   ],
+   [
+    11,
+    "No brands",
+    "pass",
+    "invented names; real place names only"
+   ],
+   [
+    12,
+    "No wires or sky",
+    "pass",
+    "its own sky, kept (the camera never sees over it)"
+   ],
+   [
+    13,
+    "Repairs listed",
+    "pass",
+    "the image tool's mark painted out"
+   ],
+   [
+    14,
+    "Rig names",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    15,
+    "Joints overlap",
+    "n/a",
+    "no moving parts"
+   ],
+   [
+    16,
+    "Feet planted",
+    "n/a",
+    "no feet"
+   ],
+   [
+    17,
+    "Each part only itself",
+    "n/a",
+    "one piece"
+   ]
+  ]
+ }
+}

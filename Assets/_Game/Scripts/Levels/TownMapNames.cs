@@ -199,7 +199,7 @@ namespace DribbleToSchool.Levels
             Rect core = TownMap.Core;
             // The route's stop markers, on its line between its nodes: a name keeps off them as it keeps off its nodes.
             var stops = new List<Vector2>();
-            var route = ids.Count > 0 ? RouteTable.Of(ids[0]) : null;
+            var route = ids.Count > 0 ? Routes.Of(ids[0]) : null;
             if (route != null && route.stops != null)
                 for (int i = 0; i < route.stops.Length; i++)
                 {
