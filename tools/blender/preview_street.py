@@ -1192,7 +1192,91 @@ def park():
     distant((.44, .54, .32), None)
 
 
-{1: suburb, 2: market, 3: beach, 4: city, 5: park}[chapter]()
+# --kamakura (chapter 1): a Kamakura lane from the Kamakura kit (kit_buildings.py --kit Kamakura) among the town's own kits:
+# its houses behind block walls, a vending corner with its bins and the corner mirror, a little shrine and its torii, a
+# level crossing with the Enoden waiting, and the station's name board and gate. Not yet how StreetBuilder lays a street
+# out: a fixed arrangement, to judge the kit's look in the game camera (--cam picks the stretch: 0 houses and the
+# vending corner, 26 the shrine, 54 the crossing and the station).
+kamakura = '--kamakura' in args
+KM_HOUSE = [((.91, .85, .72), (.40, .30, .24), (.34, .36, .40)), ((.95, .94, .91), (.30, .32, .36), (.30, .32, .36)),
+            ((.82, .85, .86), (.42, .34, .28), (.38, .40, .44)), ((.93, .88, .78), (.55, .28, .22), (.32, .33, .36))]
+
+
+def km(model, x, z, yaw=0.0, scale=1.0, tints=None):
+    return place('Kamakura', model, x, 0, z, yaw, scale, tints)
+
+
+def km_lot(x0, x1, house_z, k, gate=None):
+    """A house lot: a block wall along the front with its pillars and gate, the house set back, a garden pine."""
+    gate = gate if gate is not None else x0 + (x1 - x0) * (0.7 if k % 2 else 0.3)
+    for a, b in ((x0 + .1, gate - .6), (gate + .6, x1 - .1)):
+        if b - a > .4 and row('Street', 'BlockWall2', a, b, 0, PROP + .15):
+            place('Street', 'WallPillar', a, 0, PROP + .15); place('Street', 'WallPillar', b, 0, PROP + .15)
+    cx = (x0 + x1) / 2
+    if k % 3 == 2 and has('Buildings', 'HouseLeanTo'):
+        town_house('HouseLeanTo', cx, house_z)
+    else:
+        km('HouseKM', cx, house_z, 0, 1, list(KM_HOUSE[k % len(KM_HOUSE)]))
+    if has('Plants', 'GardenPine'):
+        plant('GardenPine', x0 + 1.1 if k % 2 else x1 - 1.1, 0, PROP + 1.0, rng.uniform(.8, 1.0))
+    if rng.random() < .5: place('Street', 'PotGroup', gate + 1.0, 0, PROP + .5, rng.uniform(-20, 20), 1, [rng.choice(PETALS), None, None])
+
+
+def km_lots(a, b, z, k):
+    """House lots of about 11 m filling [a, b] exactly (none runs into what stands beyond b)."""
+    n = max(1, int(round((b - a) / 11.0)))
+    for i in range(n):
+        km_lot(a + (b - a) * i / n, a + (b - a) * (i + 1) / n, z, k + i)
+    return k + n
+
+
+def kamakura_lane():
+    k = km_lots(X0 - 4, -4.6, PROP + 2.2, 0)          # houses up to the vending corner
+    # the vending corner: a red and a blue machine and the bins against a garden wall, the corner mirror where the side
+    # lane comes out
+    row('Street', 'BlockWall2', -4.6, 0.4, 0, PROP + 1.3)
+    place('Street', 'VendingRed', -3.6, 0, PROP + .5); place('Street', 'VendingBlue', -2.5, 0, PROP + .5)
+    km('RecycleKM', -1.0, PROP + .6)
+    box(0.6, 4.2, -0.02, 0.0, PROP - .2, 30, (.55, .55, .56), 'side lane')
+    km('MirrorKM', 0.2, POLE_Z + .1)
+    k = km_lots(4.6, 23.2, PROP + 2.0, k)
+    # the little shrine up its steps, its torii at the foot of them, the cedars behind
+    km('ShrineKM', 27.0, PROP + 1.2)
+    km('ToriiKM', 27.0, PROP + .1)
+    for tx in (22.5, 24.5, 29.5, 31.5):
+        plant(rng.choice(['ConiferTall', 'ConiferMid', 'BroadleafLarge']), tx, 0, PROP + 7 + rng.uniform(0, 3), rng.uniform(.9, 1.2))
+    k = km_lots(30.8, 49.0, PROP + 2.0, k)
+    # the level crossing: the tracks across the street, signals and barriers either side, the tram waiting beyond
+    tx0, tx1 = 51.4, 55.0
+    box(tx0, tx1, -0.03, 0.01, -16.0, 120, (.30, .28, .27), 'track bed')
+    for rz in (52.4, 54.0):
+        box(rz - .04, rz + .04, 0.01, 0.13, -16.0, 120, (.55, .55, .58), 'rail')
+    km('CrossingSignalKM', tx0 - 1.0, POLE_Z, 0)
+    km('CrossingSignalKM', tx1 + 1.0, POLE_Z, 0)
+    km('CrossingBarrierKM', tx0 - .3, PROP + .2, 0)
+    km('CrossingBarrierKM', tx1 + .3, PROP + .2, 180)
+    km('TramKM', 53.2, 16.0, 90)
+    # the station: the platform's edge along the tracks, the name board, the IC gate
+    box(56.2, 66, 0.0, 0.9, PROP + 3.0, 22, (.78, .76, .72), 'platform')
+    km('StationSignKM', 59.5, PROP + .4)
+    km('TicketGateKM', 62.5, PROP + .5)
+    k = km_lots(66.0, X1 + 14, PROP + 2.0, k)
+    # the street behind: more houses, trees, the hills
+    x = X0 - 20
+    while x < X1 + 20:
+        if not (tx0 - 6 < x < tx1 + 6):
+            if rng.random() < .55: km('HouseKM', x, rng.uniform(16, 22), 0, 1, list(rng.choice(KM_HOUSE)))
+            else: town_house(rng.choice(['HouseFlat', 'HouseLeanTo', 'HouseCarport']), x, rng.uniform(16, 22))
+        x += rng.uniform(10, 13)
+    x = X0 - 20
+    while x < X1 + 20:
+        plant(rng.choice(['BroadleafLarge', 'Broadleaf', 'ConiferTall', 'CherryBlossom', 'BroadleafWide']), x, .04, rng.uniform(26, 40), rng.uniform(.95, 1.35))
+        x += rng.uniform(4, 7)
+    distant((.44, .54, .32), None)
+
+
+if kamakura: kamakura_lane()
+else: {1: suburb, 2: market, 3: beach, 4: city, 5: park}[chapter]()
 poles()
 
 # A kid-sized marker on the footpath for scale (1.55 m), where the player would stand, and the ball

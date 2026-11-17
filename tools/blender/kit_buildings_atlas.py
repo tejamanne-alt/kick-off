@@ -600,6 +600,11 @@ def roof_map(B, mp='roof'):
                     shade = shade * (1 - 0.25 * _ss(1.2, 0.0, d) * (0.5 + 0.5 * n2))
                     lich = ((n2 > 0.82) & (n1 > 0.55)).astype(np.float32) * (np.sin(pq * 31.7 + rq * 17.3) > 0.2)
                     warm = warm * (1 - lich[..., None] * (1 - np.array((0.92, 0.94, 0.8))) * 0.8)
+                if kw.get('kawara'):
+                    # Japanese kawara (a hip feature marked kawara): fired an even silver-grey, no burnt or pale clay
+                    # and no lichen; only each tile's tone and the courses' shading vary
+                    g = 0.93 + 0.14 * tone
+                    warm = np.stack([g, g, g * 1.02], -1)
                 val = sub * shade[..., None] * warm
                 sub = np.where(inside[..., None], val, sub)
                 sub = _mul(sub, (inside & (n2 > 0.8)).astype(np.float32), (0.86, 0.84, 0.8), 0.45)

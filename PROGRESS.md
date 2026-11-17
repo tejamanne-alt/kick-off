@@ -1723,6 +1723,31 @@ whole Kamakura rebuild: "revert all the changes we did for Kamakura city, back t
 - Nothing is lost: the work is in this branch's history up to f8ff5d1.
 - LEARNINGS E12 says what went wrong in the process.
 
+## Kamakura's assets in main's style: a proof batch (tools and review only)
+
+The user asked whether Kamakura's assets could be made with main's level of detail, using the cancelled branch's assets as
+the reference. A first batch was built, to judge the look before more:
+- `tools/blender/kit_buildings_kamakura.py`, built by `kit_buildings.py --kit Kamakura` as Florida's kit is. Each model's
+  shape, size and colours come from the user's views in the branch's history (f8ff5d1). The ten models:
+  - a two-storey stucco house under a kawara hip roof (HouseKM; its walls, door and roof can be repainted);
+  - the Enoden tram;
+  - a small vermilion torii, and a little shrine on its stone base with two stone lanterns;
+  - the level crossing's signal and barrier;
+  - a convex corner mirror, recycling bins (カン, ペット, ビン);
+  - Hase's station name board and its IC gate.
+- The shared barrel-tile roof painter takes a `kawara` flag: an even silver-grey, without the Spanish clay's blend. Every
+  other roof paints as before.
+- The kit costs 10,050 triangles in all (196 to 2,784 a model) and one 4096 x 1024 texture (about 2.5 MB in ASTC 6x6,
+  5.6 MB in ETC2, with mipmaps).
+- `preview_street.py --kamakura` lays a Kamakura lane out among the town's own kits and renders it through the game
+  camera. The lane is a fixed arrangement for judging the look, not yet StreetBuilder's.
+- Review: `review/kamakura_kit` (the kit sheet and three stretches of the lane), shown to the user for a decision.
+- Not in the game: nothing installed, no level changed, nothing run on the Nord CE5. The next steps wait for the user's
+  approval of the look:
+  - a second batch: the old wooden home, the station platform and gantry, a transformer pole, the scooter, a stone
+    lantern, hydrangeas;
+  - then one level in Kamakura's look, end to end, played on the phone first (LEARNINGS E12).
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

@@ -28,6 +28,9 @@ import sys, os, math
 # The Florida kit (kit_buildings_fl.py) the same, on its own 4096 x 4096 atlas.
 if '--kit' in sys.argv and sys.argv[sys.argv.index('--kit') + 1] in ('Coast', 'Florida'):
     os.environ['KIT_ATLAS'] = '4096x4096'
+# The Kamakura kit (kit_buildings_kamakura.py) at the same density, on a 4096 x 1024 atlas while it is this small.
+if '--kit' in sys.argv and sys.argv[sys.argv.index('--kit') + 1] == 'Kamakura':
+    os.environ['KIT_ATLAS'] = '4096x1024'
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import bpy
 import numpy as np
@@ -899,6 +902,11 @@ FL = None
 if KIT == 'Florida':
     import kit_buildings_fl as FL
     SPECS = FL.pal_fl(pal)
+# --kit Kamakura: Kamakura's street things and buildings (kit_buildings_kamakura.py), built as Florida's are (FL below
+# stands for the kit's own module: its tiles, its painter, its own texel densities).
+if KIT == 'Kamakura':
+    import kit_buildings_kamakura as FL
+    SPECS = FL.pal_km(pal)
 
 
 def main():
@@ -912,7 +920,7 @@ def main():
     bottom = [('wood', 256, 128), ('crate', 128, 128), ('p_orange', 128, 128), ('p_apple', 128, 128), ('p_lemon', 128, 128),
               ('p_green', 128, 128), ('p_tomato', 128, 128), ('p_plum', 128, 128), ('melon', 128, 128), ('ac', 192, 128),
               ('white', 128, 128)]
-    hi = KIT in ('Coast', 'Florida')
+    hi = KIT in ('Coast', 'Florida', 'Kamakura')
     if hi:
         # Only the tiles the Coast models use, at twice the size (the town's other signs and
         # interiors are left out: their painters skip a tile that has no region).
@@ -946,7 +954,7 @@ def main():
         B.total = fn(B)
         buildings.append(B)
     atlas = os.path.join(OUT, KIT + 'Atlas.png')
-    ATL.HI = KIT in ('Coast', 'Florida')
+    ATL.HI = KIT in ('Coast', 'Florida', 'Kamakura')
     ATL.EXTRA = FL.paint if FL else None
     ATL.paint(atlas, buildings)
     if KIT == 'Buildings' and os.environ.get('KIT_SIGNS') == 'CA':
