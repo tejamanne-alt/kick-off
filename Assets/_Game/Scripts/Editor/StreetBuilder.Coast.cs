@@ -31,6 +31,7 @@ namespace DribbleToSchool.EditorTools
         /// <summary>The kit a building model lives in: the Coast kit's California models, else the Buildings kit.</summary>
         public static string KitOf(string model)
         {
+            if (IsKM(model)) return KamakuraKitOf(model);      // Kamakura's own (StreetBuilder.Kamakura)
             if (model != null && FloridaHouses.Contains(model)) return "Florida";
             return model != null && CoastModels.Contains(model) ? "Coast" : "Buildings";
         }

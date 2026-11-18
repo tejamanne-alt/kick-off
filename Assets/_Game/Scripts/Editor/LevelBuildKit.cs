@@ -673,7 +673,7 @@ namespace DribbleToSchool.EditorTools
         // ---------- Asset kits (tools/blender/kit_*.py, docs/ART_DIRECTION.md) ----------
 
         /// <summary>The asset kits made in Blender, each in Art/Models/&lt;kit&gt;/ with its atlas and manifest.</summary>
-        public static readonly string[] Kits = { "Plants", "Buildings", "Street", "Terrain", "Leisure", "Works", "Animals", "Barriers", "Coast", "Florida", "Miami" };
+        public static readonly string[] Kits = { "Plants", "Buildings", "Street", "Terrain", "Leisure", "Works", "Animals", "Barriers", "Coast", "Florida", "Miami", "Kamakura", "KamakuraStreet" };
 
         static readonly Dictionary<string, Dictionary<string, object>> kitManifests = new Dictionary<string, Dictionary<string, object>>();
 
@@ -2283,7 +2283,8 @@ namespace DribbleToSchool.EditorTools
             /// <summary>A seagull that swoops from fromX to toX (right to left = toward the kid).</summary>
             public void Seagull(float fromX, float toX, float baseY, float phaseOffset = 0f)
             {
-                Seagull(fromX, toX, baseY, phaseOffset, "Seagull");
+                // (Kamakura's beach is the black kites': they swoop at whatever the kid carries, as the gulls do elsewhere)
+                Seagull(fromX, toX, baseY, phaseOffset, StreetBuilder.KM && HasKitModel("Animals", "BlackKite") ? "BlackKite" : "Seagull");
             }
 
             /// <summary>The swooping bird with the Animals kit's <paramref name="model"/> (the gull, or Florida's pelican: the same rig).</summary>
