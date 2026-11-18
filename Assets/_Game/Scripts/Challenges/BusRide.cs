@@ -16,7 +16,10 @@ namespace DribbleToSchool.Challenges
     /// 3. **Get off.** The sign over the aisle names the next stop. Tap STOP while it says yours (Brickell Avenue), and walk off
     ///    with the ball when the doors open. Miss it and you get off at the one after: the walk back is added to your time.
     /// Stars: off the bus with the ball; at your own stop; and the ball never rolled away from you in the sway.
-    /// The bus stands still and the street outside slides past its windows; the sway is pushed onto the ball and the kid.
+    /// The bus stands still and the street outside slides past its windows; the sway is pushed onto the ball and the kid. It pulls in
+    /// from the road and out into it (<see cref="pullOutZ"/>), so it never drives through the kid at the stop, and its near side
+    /// (<see cref="nearSide"/>) is taken away as the kid comes to the door, so the inside shows (nothing tall between the camera and
+    /// the kid: docs/LEARNINGS.md E10).
     /// </summary>
     public class BusRide : MiniGameObjective
     {
@@ -26,9 +29,15 @@ namespace DribbleToSchool.Challenges
         public float driveOffset = 30f;
         [Tooltip("The bus's floor and walls: there only while the bus is at the stop or riding.")]
         public Collider2D[] busColliders;
-        [Tooltip("Shut while the bus rides: the doorway at the bus's left end.")]
+        [Tooltip("Shut while the bus rides: the doorway.")]
         public Collider2D door;
         public float doorX = 4.6f, readerX = 3.8f;
+        [Tooltip("Which way from the doorway the inside is: +1 the bus stands right of its door (it pulls in from the right), -1 left.")]
+        public float inward = 1f;
+        [Tooltip("The bus's near side (its windows and doors toward the camera): hidden while the kid is at the door or aboard.")]
+        public GameObject nearSide;
+        [Tooltip("How far toward the camera the bus is out in the road as it pulls in and out (0: along the kerb).")]
+        public float pullOutZ;
         public Renderer readerLight;
         [Tooltip("The street seen through the windows, slid left as the bus drives (wrapping every stripLength metres).")]
         public Transform street;
@@ -85,8 +94,8 @@ namespace DribbleToSchool.Challenges
             if (next == Phase.Riding) segmentTime = 0f;
         }
 
-        bool KidInside { get { return Level != null && Level.kid != null && Level.kid.transform.position.x > doorX + 0.6f; } }
-        bool BallInside { get { return Level != null && Level.ball != null && Level.ball.transform.position.x > doorX + 0.3f; } }
+        bool KidInside { get { return Level != null && Level.kid != null && Across(Level.kid.transform.position.x) > 0.6f; } }
+        bool BallInside { get { return Level != null && Level.ball != null && Across(Level.ball.transform.position.x) > 0.3f; } }
 
         protected override void Update()
         {
@@ -98,7 +107,8 @@ namespace DribbleToSchool.Challenges
             {
                 case Phase.Arriving:
                     Say("mini.bus.coming");
-                    PlaceBus(Mathf.Lerp(driveOffset, 0f, Ease(phaseTime / 2.5f)));
+                    PlaceBus(Mathf.Lerp(inward * driveOffset, 0f, Ease(phaseTime / 2.5f)),
+                        Mathf.Lerp(pullOutZ, 0f, Ease((phaseTime - 1.2f) / 1.3f)));
                     if (phaseTime >= 2.5f) { paid = false; Enter(Phase.Boarding); }
                     break;
                 case Phase.Boarding:
@@ -106,7 +116,8 @@ namespace DribbleToSchool.Challenges
                     break;
                 case Phase.Leaving:
                     Say("mini.bus.missed");
-                    PlaceBus(Mathf.Lerp(0f, -driveOffset, Ease(phaseTime / 2.5f)));
+                    // Out into the road first, then away: past the kid at the stop, not through them.
+                    PlaceBus(Mathf.Lerp(0f, -inward * driveOffset, Ease(phaseTime / 2.5f)), Mathf.Lerp(0f, pullOutZ, Ease(phaseTime / 0.6f)));
                     if (phaseTime >= 5f) Enter(Phase.Arriving);     // the next bus along
                     break;
                 case Phase.Riding:
@@ -121,7 +132,7 @@ namespace DribbleToSchool.Challenges
                     Say(missedStop ? "mini.bus.walkBack" : "mini.bus.off");
                     var kid = Level.kid.transform.position;
                     var ball = Level.ball.transform.position;
-                    if (kid.x < doorX - 0.8f && ball.x < doorX && Mathf.Abs(ball.x - kid.x) < 2.5f)
+                    if (Across(kid.x) < -0.8f && Across(ball.x) < 0f && Mathf.Abs(ball.x - kid.x) < 2.5f)
                     {
                         phase = Phase.Done;
                         Pass(1 + (missedStop ? 0 : 1) + (wobbled ? 0 : 1));
@@ -129,12 +140,25 @@ namespace DribbleToSchool.Challenges
                     break;
             }
             ScrollStreet(dt);
+            ShowNearSide();
             RefreshHud();
         }
 
+        /// <summary>The near side is there while the bus pulls in or away, and while the kid is well short of the door.</summary>
+        void ShowNearSide()
+        {
+            if (nearSide == null || Level == null || Level.kid == null) return;
+            bool atStop = phase != Phase.Arriving && phase != Phase.Leaving;
+            bool show = !atStop || Across(Level.kid.transform.position.x) < -2.5f;
+            if (nearSide.activeSelf != show) nearSide.SetActive(show);
+        }
+
+        /// <summary>How far past the doorway into the bus x is (negative: outside, at the stop).</summary>
+        float Across(float x) { return (x - doorX) * Mathf.Sign(inward); }
+
         void Boarding()
         {
-            PlaceBus(0f);
+            PlaceBus(0f, 0f);
             bool green = Mathf.Repeat(phaseTime, 1.8f) < 0.75f;
             if (readerLight != null) World.Tint.Set(readerLight, paid ? Green : green ? Green : Red);
             if (!paid)
@@ -241,11 +265,11 @@ namespace DribbleToSchool.Challenges
             else if (wobbling && off < 0.8f) wobbling = false;
         }
 
-        void PlaceBus(float dx)
+        void PlaceBus(float dx, float dz = 0f)
         {
             if (busBody == null) return;
             var p = busBody.localPosition;
-            busBody.localPosition = new Vector3(dx, p.y, p.z);
+            busBody.localPosition = new Vector3(dx, p.y, dz);
         }
 
         void ScrollStreet(float dt)

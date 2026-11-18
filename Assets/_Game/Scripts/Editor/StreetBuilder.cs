@@ -62,6 +62,8 @@ namespace DribbleToSchool.EditorTools
 
         static List<StripSpec> StripsFor(int chapter)
         {
+            var miami = MiamiStrips();      // a Florida leg's own ground (StreetBuilder.Miami)
+            if (miami != null) return miami;
             var white = Color.white;
             var s = new List<StripSpec>();
             switch (chapter)
@@ -729,6 +731,11 @@ namespace DribbleToSchool.EditorTools
             // The animals live outside the street root: its static batching would freeze their moving parts.
             critters = new GameObject("Critters").transform;
             wallTops.Clear();
+            if (MiamiLeg)
+            {
+                MiamiScenery(track, root, x0, x1, ch * 173 + Mathf.RoundToInt(x0) + levelSalt);
+                return;
+            }
 
             switch (ch)
             {

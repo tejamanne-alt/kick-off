@@ -75,12 +75,13 @@ namespace DribbleToSchool.EditorTools
         /// <summary>FL1-2: the Metrobus from Calle Ocho to Brickell Avenue (M1, Challenges/BusRide).</summary>
         public static void Metrobus(TrackBuilder t)
         {
-            t.Walls(-8f, 17f);
+            // The bus pulls in on the kid's left, facing on along Calle Ocho: its front door is at -4.5, its back end at -14.85 (the
+            // stop's own shelter and sign stand by the kid: LevelBuildKit.Metrobus).
+            t.Walls(-14.6f, 8f);
             t.Start(0f);
-            t.Ground(-8f, 17f);
-            t.Sign("Calle Ocho bus stop", new Vector2(-2.5f, 3.2f));
-            t.Metrobus(4.4f);
-            t.CoinRow(-4f, -1f, 0.5f, 3);
+            t.Ground(-16f, 8f);
+            t.Metrobus(-4.5f);
+            t.CoinRow(-2.4f, -0.6f, 0.5f, 3);
         }
 
         /// <summary>FL1-3: Brickell Avenue, from the bus stop between the towers to the river's drawbridge and the bayfront.</summary>

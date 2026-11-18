@@ -84,6 +84,11 @@ namespace DribbleToSchool.EditorTools
                 float x0 = spec.from, x1 = spec.to;
                 critters = new GameObject("Critters").transform;
                 wallTops.Clear();
+                if (MiamiLeg)
+                {
+                    MiamiScenery(track, root, x0, x1, spec.seed);
+                    return;
+                }
                 switch (ch)
                 {
                     case 2: Market(track, root, rng, x0, x1); break;

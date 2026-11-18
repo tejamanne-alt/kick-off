@@ -5,6 +5,7 @@
 # Blender's, not the game's toon ramp, so judge layout, scale, silhouettes and colour, not shading.
 #   blenv/bin/python preview_street.py -- <kits dir> <out.png> [--chapter 1..5] [--seed N] [--wide] [--haze-end M] [--surfaces DIR] [--samples N]
 #       [--mood-json FILE] (a city's light: see --mood-json below)
+#       [--miami FL1-1 --plan MiamiDistricts.json] (one of Florida's own legs, from the plan the game builds it from)
 # <kits dir> holds one folder per kit with <Kit>.blend and <Kit>.json inside (any folder names).
 # --surfaces: a folder of the game's ground textures (Surface_<Name>.png, 8 x 8 units each), e.g.
 # exported from ProceduralArt.SurfaceTexture; without it the ground is flat colour.
@@ -471,7 +472,9 @@ def beach_ground(sand):
             x += r_.uniform(.7, 2)
 
 
-if chapter == 3:
+if '--miami' in args:
+    pass          # a Florida leg's own ground (miami() below)
+elif chapter == 3:
     SAND = Sand(spans_arg or [(X0 - 600, X1 + 600, 0.0)])
     beach_ground(SAND)
     box(X0 - 1500, X1 + 1500, SAND.base - 0.5, SAND.base - 0.3, 9, 1000, W, 'sea', 'Sea')
@@ -1192,8 +1195,51 @@ def park():
     distant((.44, .54, .32), None)
 
 
-{1: suburb, 2: market, 3: beach, 4: city, 5: park}[chapter]()
-poles()
+def miami(leg, plan_path):
+    """Florida's own legs (docs/CITIES.md): the ground strips, the water and every placement of the leg's district, read from
+    the plan the game builds from (tools/blender/miami_plan.py, MiamiDistricts.json: StreetBuilder.Miami)."""
+    plan = json.load(open(plan_path))['legs'][leg]
+    kind = plan['strips']
+    pave, conc, asph, kerb, grass = (.86, .85, .82), (.82, .81, .78), (.42, .43, .45), (.9, .9, .88), (.5, .64, .34)
+    if kind in ('street', 'havana'):
+        strip(-16.0, -8.3, conc, 0.0, 0.0, "Concrete"); strip(-8.3, -8.1, kerb, 0.0, 0.0, 'Kerb')
+        strip(-8.1, -1.7, asph, -0.14, 0.0, 'Asphalt'); strip(-1.7, -1.5, kerb, 0.0, 0.0, 'Kerb')
+        strip(-1.5, PATH, conc, 0.0, 0.0, 'Concrete'); strip(PATH, PROP + 0.6, conc, 0.0, 0.0, 'Concrete')
+        strip(PROP + 0.6, 90.0, grass if kind == 'havana' else conc, 0.0, 0.0, 'Grass' if kind == 'havana' else 'Concrete')
+        for zl in (-2.0, -7.8):
+            box(X0 - 600, X1 + 600, -0.14, -0.13, zl - .06, zl + .06, (.95, .95, .93), 'line')
+        for xl in range(int(X0) - 60, int(X1) + 60, 6):
+            box(xl, xl + 3, -0.14, -0.128, -4.96, -4.84, (.98, .82, .25), 'dash')
+    elif kind == 'promenade':
+        strip(-16.0, -1.5, grass, 0.04, 0.0, "Grass"); strip(-1.5, PATH, pave, 0.0, 0.0, 'Paving')
+        strip(PATH, plan.get('water', {}).get('z', 4.6), pave, 0.0, 0.0, 'Paving')
+    else:
+        strip(-16.0, -1.5, grass, 0.04, 0.0, "Grass"); strip(-1.5, PATH, pave, 0.0, 0.0, 'Paving')
+        strip(PATH, plan.get('water', {}).get('z', 90.0), grass, 0.04, 0.0, 'Grass')
+    w = plan.get('water')
+    if w:
+        box(w['from'], w['to'], w['y'] - 0.1, w['y'], w['z'], 1200, (1, 1, 1), 'water', 'Sea')
+        box(w['from'], w['to'], w['y'] - 0.4, 0.0, w['z'] - 0.35, w['z'], (.8, .79, .76), 'seawall', 'Concrete')
+    for l in plan.get('land', []):
+        box(l['from'], l['to'], -0.2, 0.0, l['z0'], l['z1'], grass, 'land', 'Grass')
+    for it in plan['items']:
+        kit, model, x, z, yaw, scale = it[:6]
+        y = it[6] if len(it) > 6 else 0.0
+        if abs(x - CAM_X) > 400 and z < 100: continue
+        place(kit, model, x, y, z, yaw, scale)
+
+
+if '--miami' in args:
+    miami(args[args.index('--miami') + 1], args[args.index('--plan') + 1])
+    # set pieces the game's builder places (the Metrobus, the dock's boat...): --extra kit:model:x:y:z[:yaw[:scale]],...
+    if '--extra' in args:
+        for spec in args[args.index('--extra') + 1].split(','):
+            f = spec.split(':')
+            v = [float(t) for t in f[2:]]
+            place(f[0], f[1], v[0], v[1], v[2], v[3] if len(v) > 3 else 0.0, v[4] if len(v) > 4 else 1.0)
+else:
+    {1: suburb, 2: market, 3: beach, 4: city, 5: park}[chapter]()
+    poles()
 
 # A kid-sized marker on the footpath for scale (1.55 m), where the player would stand, and the ball
 # (34 cm across, a little larger than life, as in the game) at their feet.
@@ -1246,5 +1292,7 @@ for m in bpy.data.materials:
     t.links.new(mix.outputs['Shader'], outn.inputs['Surface'])
 
 S.render.filepath = out
+if '--save' in args:          # the scene as a .blend, to look into (no render)
+    bpy.ops.wm.save_as_mainfile(filepath=args[args.index('--save') + 1]); sys.exit(0)
 bpy.ops.render.render(write_still=True)
 print('preview', out, len(placed), 'models placed')

@@ -597,6 +597,25 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
 - *Rule:* a new place brings new play: its own routes, how people there get around, and what a child there does on the way.
   A reskin is not a city. When a request reads either way ("the rest of Florida's levels"), build it to the city's design.
 
+**D9. A city's own routes in another city's streets, with grey boxes for its things (v123, redone in v124).**
+- *What:* Florida's twelve legs had their own play but were built in a Kamakura chapter's street ("the look chapter"):
+  Kamakura's houses, poles, hills, train station and bandstand under Florida's light, its obstacles Kamakura's bins, crates
+  and (on the Riverwalk, built as the beach) boulders. Its own things were boxes: the scooters were a flat teal deck on the
+  footpath, the arcades slabs on posts, the Metrobus a white wall with boxes sliding past behind it. The map was a flat
+  drawing of rectangles. The user, from the phone: the bus level "not at all understandable", "green flat objects on the
+  footpath. Don't understand what they are", the levels "naive and repeatable and redundant to Kamakura".
+- *Why:* v123 shipped the play first and left the look "until Florida's own kit is modelled". A stand-in that is only a
+  colour and a size doesn't read as anything, and a borrowed street makes a new city look like the old one, whatever its
+  play.
+- *Fix:* the Miami kit (`kit_buildings_mia.py`: 41 models, Little Havana to the bay), royal palms and banyans, and a plan per
+  leg (`tools/blender/miami_plan.py`, `MiamiDistricts.json`) that the game builds (`StreetBuilder.Miami`) and the preview
+  renders, so the preview is the game. The Metrobus is the kit's bus, its near side taken away as the kid boards, the
+  district's street sliding past its windows. Every grey box became its model; the stops, the obstacles and the map are
+  Miami's.
+- *Rule:* a place ships with its own things modelled. Nothing goes to the user as a coloured box standing for an object,
+  and no city borrows another city's street, stops or obstacles. Render every leg through the game camera
+  (`preview_street.py --miami`) before it goes in.
+
 ## E. Levels and world
 
 - **E1. Every level had chapter-1 scenery.** A new-scene call unloaded the level definition. *Rule:* pass data into scene builders explicitly; never hold asset references across a new-scene call.

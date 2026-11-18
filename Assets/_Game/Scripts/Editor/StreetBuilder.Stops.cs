@@ -24,8 +24,7 @@ namespace DribbleToSchool.EditorTools
         {
             "busStop", "granny", "church", "samsHouse", "bakery", "postOffice", "florist", "library", "surfSchool", "lifeguard", "beachCafe",
             "station", "siteOffice", "bandstand", "parkCafe", "boathouse", "allotment",
-            // Florida's (Miami's): until its own kit is modelled from the references, the nearest of the pieces above, in Florida's
-            // streets (the bus shelters are Florida's aluminium ones).
+            // Florida's (Miami's): the Miami kit's (StreetBuilder.MiamiStop), else the nearest of the pieces above.
             "calleOcho", "brickell", "bayfront", "reysDock", "drugstore", "underline", "biscayne", "museumPark",
         };
 
@@ -60,6 +59,7 @@ namespace DribbleToSchool.EditorTools
         public static void StopFront(LevelBuildKit.TrackBuilder track, Transform parent, Stop stop, float gx, float gy)
         {
             if (stop == null) return;
+            if (MiamiStop(parent, stop.id, gx, gy)) return;     // Florida's own (StreetBuilder.Miami)
             var rng = new System.Random(Seed(stop.id));
             Func<float, float, float> ground = (x, z) => LevelBuildKit.Chapter == 3 ? GroundAt(track, x, z) : gy;
             switch (stop.id)

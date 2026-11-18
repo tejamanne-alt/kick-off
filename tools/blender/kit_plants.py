@@ -668,6 +668,76 @@ def build_palm_date():
     return pieces, {0: G.hexc(WOOD_PALM), 1: R_PALM.base}, {'kind': 'tree', 'trunkRadius': 0.55}
 
 
+# ---------------------------------------------------------------- Miami's royal palm and banyan
+R_ROYAL = G.Ramp('#1f4a32', '#5a9a40', '#cfe476')      # the royal palm's fronds: a bright, glossy green
+WOOD_ROYAL = '#c9c6bc'                                 # its trunk: smooth, pale concrete grey
+
+
+def build_palm_royal():
+    # Miami's royal palm, the boulevard and bayfront palm: a tall, smooth, pale grey column swelling a little at its middle,
+    # a glossy green crownshaft on top of it, and a crown of long arching fronds whose leaflets hang down.
+    rng = RNG(417)
+    H = 13.5
+    path = np.array([(0.0, 0.0, -0.15 + H * t) + np.array((0.04 * math.sin(t * 3), 0.0, 0.0)) for t in np.linspace(0, 1, 18)])
+    radii = np.array([0.34 - 0.08 * t + 0.07 * math.sin(math.pi * min(1.0, t * 1.4)) for t in np.linspace(0, 1, 18)])
+    u0, v0, u1, v1 = AT.REG['palm']; m = AT.MARGIN
+    trunk = G.tube(path, radii, 10, uv=(u0 + m, v0 + m, u1 - m, v1 - m, lambda s_, i: (i % 3) / 3.0))
+    z = trunk.V[:, 2]
+    trunk.color(G.hexc(WOOD_ROYAL)[None, :] * (0.78 + 0.22 * G.smoothstep(0.0, 3.0, z))[:, None]); trunk.part(0)
+    sink_base(trunk, -0.2)
+    top = path[-1]
+    shaft_path = np.array([top + np.array((0.0, 0.0, 2.3 * t)) for t in np.linspace(0, 1, 6)])
+    shaft = G.tube(shaft_path, np.array([0.27, 0.29, 0.28, 0.25, 0.2, 0.12]), 10, uv=(u0 + m, v0 + m, u1 - m, v1 - m, lambda s_, i: 0.5))
+    shaft.color(G.hexc('#4f8a3a')[None, :] * (0.8 + 0.25 * G.smoothstep(top[2], top[2] + 2.3, shaft.V[:, 2]))[:, None]); shaft.part(1)
+    pieces = [trunk, shaft]
+    crown = top + np.array((0.0, 0.0, 2.2))
+    ga = PI * (3 - 5 ** 0.5)
+    n = 22
+    for k in range(n):
+        az = ga * k * 1.0 + rng.normal(0, 0.1)
+        f = k / (n - 1)
+        el = 1.0 - 1.35 * f + rng.normal(0, 0.05)
+        base = crown + np.array((math.cos(az), math.sin(az), 0)) * 0.15
+        pieces.append(frond(base, az, el, 4.6 * rng.uniform(0.88, 1.06), 0.62, rng, rows=17, droop=1.0 * (1.15 - 0.35 * el), fold=0.7,
+                            ramp=R_ROYAL, age=0.5 * f * (f > 0.82)))
+    return pieces, {0: G.hexc(WOOD_ROYAL), 1: R_ROYAL.base}, {'kind': 'tree', 'trunkRadius': 0.34}
+
+
+def build_banyan():
+    # A banyan in Miami's parks: a broad, low, dark crown far wider than it is tall, its trunk a cluster of fused stems, and
+    # aerial roots hanging from its limbs, the oldest grown down into new trunks (pillars the kid can see the park through).
+    rng = RNG(733)
+    tr = 0.6
+    masses = LV.masses_from((0, 0.0, 6.2), (8.0, 5.0, 2.4), 16, rng, rf=(0.26, 0.33), shell=0.7, zlo=-0.4, top=0.3)
+    for mm in masses:
+        mm.c[2] -= 0.4 * (abs(mm.c[0]) / 7.0) ** 2 * 2.0
+    ctrl = [(0, 0, -0.14), (0.1, 0.0, 1.0), (-0.05, 0.05, 2.0), (0.04, 0.0, 3.4), (0.0, 0.05, 5.4)]
+    pieces = leaf_tree(733, masses, ctrl, tr, 1.8, R_OAK, card=1.5, limb_r=(0.6, 0.75), flare_amt=0.9, rng=rng,
+                       limb_end=0.12, groups=5, fork_spread=0.85)
+    # the fused stems round the main trunk
+    for k in range(5):
+        a = k * 2 * PI / 5 + rng.normal(0, 0.2)
+        r = 0.55
+        p0 = np.array((math.cos(a) * r, math.sin(a) * r, -0.15))
+        stem = G.tube(np.array([p0, p0 * 0.8 + np.array((0, 0, 1.6)), np.array((0.0, 0.0, 3.2))]), np.array([0.22, 0.18, 0.12]), 6, uv=uvr('bark', 6.0))
+        wood_color(stem, WOOD, shade_z=4.0)
+        pieces.append(stem)
+    # aerial roots: thin ones hanging free, a few thick ones grown into pillars
+    for k in range(28):
+        mm = masses[rng.integers(len(masses))]
+        x, y = mm.c[0] + rng.uniform(-1.0, 1.0), mm.c[1] + rng.uniform(-0.8, 0.8)
+        if abs(x) < 1.2 and abs(y) < 1.2: continue
+        top = mm.c[2] - mm.r[2] * 0.6
+        pillar = k % 4 == 0
+        bottom = -0.15 if pillar else top - rng.uniform(1.0, 2.6)
+        rad = 0.14 if pillar else 0.025
+        root = G.tube(np.array([(x, y, top), (x + rng.normal(0, 0.05), y, (top + bottom) / 2), (x, y, bottom)]),
+                      np.array([rad * 0.8, rad, rad * 1.2]), 5 if pillar else 3, uv=uvr('bark', 6.0))
+        wood_color(root, WOOD, shade_z=top)
+        pieces.append(root)
+    return pieces, {0: G.hexc(WOOD), 1: R_OAK.base}, {'kind': 'tree', 'trunkRadius': tr}
+
+
 # ---------------------------------------------------------------- Florida's fan palms
 R_SABAL = G.Ramp('#1d4636', '#4a8448', '#a6c46c')     # the sabal's leaves: a deep, slightly blue green
 WOOD_SABAL = '#8d877b'                                 # its trunk: weathered grey
@@ -1140,8 +1210,9 @@ MODELS = [
     ('PalmFan', build_palm_fan), ('PalmDate', build_palm_date),
     ('PalmSabal', build_palm_sabal), ('PalmSabalTall', build_palm_sabal_tall), ('SawPalmetto', build_saw_palmetto),
     ('LiveOak', build_live_oak),
+    ('PalmRoyal', build_palm_royal), ('Banyan', build_banyan),
 ]
-BUDGET = {'tree': 6000, 'bush': 1200, 'grass': 800, 'hedge': 600}
+BUDGET = {'tree': 7000, 'bush': 1200, 'grass': 800, 'hedge': 600}
 
 
 def main():

@@ -206,6 +206,15 @@ drawbridge, sabal palms) carries over to it.
 | **FL2 The River Way** | 5 | Home -> the river -> Uncle Rey's boat -> the Riverwalk -> the drugstore -> School, in a downpour |
 | **FL3 Under the Line** | 3 | Home -> the linear park under the elevated railway -> *(the people mover)* -> Biscayne Boulevard -> Museum Park -> School |
 
+**How it is built (v124).** Each leg is its own district of Miami, not a Kamakura chapter's street: the Miami kit
+(`tools/blender/kit_buildings_mia.py`) with Florida's and the Plants kit's (royal palms, banyans, live oaks), placed by a plan
+per leg (`tools/blender/miami_plan.py` -> `Art/Models/Miami/MiamiDistricts.json`) that the game builds (`StreetBuilder.Miami`)
+and `preview_street.py --miami <leg>` renders through the game camera. The districts: Little Havana (FL1-1, FL3-1's houses),
+the bus's Calle Ocho into Brickell (FL1-2), Brickell (FL1-3), the bayfront (FL1-4), the river's docks and the Riverwalk (FL2-2,
+FL2-3), the drugstore's aisle (FL2-4), downtown's Deco arcades (FL2-5), the Underline under the Metrorail (FL3-1), Biscayne
+Boulevard (FL3-2), Museum Park (FL3-3). FL2-1 keeps Florida's Home Street. The leg's look chapter only sets its light and
+ground rules (no leg is the beach's). The map is rendered from the same kits (`tools/blender/miami_map_render.py`).
+
 ### FL1 Calle Ocho Bus (4 legs)
 1. **FL1-1 Little Havana Morning** (dribble). Home to the bus stop. Roosters and hens crossing (they flutter up when
    the ball comes), a walk-up cafe window, dominoes tables in the little park, mural walls, a fruit cart with mangoes,
@@ -423,12 +432,11 @@ Until then the HOLIDAY RUN picker shows it as coming soon.
   spoiled by the downpour, the Delivered bonus at school). Florida's map is its own picture and layout (`tools/miami_map`,
   a flat stand-in until the kit exists). Florida's earlier nine levels (the original town's Home Street and beach in
   Florida's streets, v117 to v122) are gone; their drawbridge, sprinklers, golf cart and storm live on in Florida's legs.
-- **Still to do for Florida:** its kit, modelled from the user's reference images (`docs/IMAGE_PROMPTS.md`, Florida: FL-0,
-  FL1-1 to FL3-3, FL-P1 to FL-P3) into `tools/blender/kit_buildings_fl.py`, then each leg's own district in
-  `StreetBuilder` (Little Havana, Brickell, the bayfront, the Riverwalk, downtown's arcades, the Underline, Biscayne, Museum
-  Park, Bayside Elementary) in place of the borrowed streets; the bus's interior, Uncle Rey and the drugstore from FL1-2,
-  FL2-2 and FL2-4's references; the map rendered from the kit; a Holiday Run in Miami; co-op races on Florida's routes
-  (races run Kamakura's routes only for now); M4 (drop and come back) for the routes that use it.
+- **Done for Florida in v124:** the Miami kit and each leg's own district (`StreetBuilder.Miami`), the bus with its inside,
+  Uncle Rey's boat and the drugstore as models, Miami's stops and obstacles, the map rendered from the kits.
+- **Still to do for Florida:** Bayside Elementary's own building (the school is the Florida kit's), a Holiday Run in Miami;
+  co-op races on Florida's routes (races run Kamakura's routes only for now); M4 (drop and come back) for the routes that use
+  it; the user's reference images (`docs/IMAGE_PROMPTS.md`) to check the districts against, when they come.
 - California (Santa Monica) is not one of the five: it left the picker, and its scenes are no longer built.
 - Each playable city's light follows its climate here (`Progression/Cities`, `CityClimate`).
 

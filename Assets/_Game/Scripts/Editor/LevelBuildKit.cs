@@ -673,7 +673,7 @@ namespace DribbleToSchool.EditorTools
         // ---------- Asset kits (tools/blender/kit_*.py, docs/ART_DIRECTION.md) ----------
 
         /// <summary>The asset kits made in Blender, each in Art/Models/&lt;kit&gt;/ with its atlas and manifest.</summary>
-        public static readonly string[] Kits = { "Plants", "Buildings", "Street", "Terrain", "Leisure", "Works", "Animals", "Barriers", "Coast", "Florida" };
+        public static readonly string[] Kits = { "Plants", "Buildings", "Street", "Terrain", "Leisure", "Works", "Animals", "Barriers", "Coast", "Florida", "Miami" };
 
         static readonly Dictionary<string, Dictionary<string, object>> kitManifests = new Dictionary<string, Dictionary<string, object>>();
 
@@ -2963,13 +2963,25 @@ namespace DribbleToSchool.EditorTools
             /// chapter has a few looks, picked by the obstacle's place and the level (so the same spot in two levels differs):
             /// a boulder or two on the beach; on the home street a planter, the wheelie bins out for collection or (low) a
             /// flower bed's edging; at the market a planter, a stack of fruit crates or drinks crates, or (low) two pallets;
-            /// in the park a clipped hedge or an old block wall; on the building site pallets or the stone step. False if the
-            /// kit hasn't got the model, or for the looks drawn procedurally (the low stone step).
+            /// in the park a clipped hedge or an old block wall; on the building site pallets or the stone step. Florida's are Miami's
+            /// (bollards, hydrants, planters). False if the kit hasn't got the model, or for the looks drawn procedurally (the low stone step).
             /// </summary>
             bool ObstacleModel(Transform parent, Vector2 center, Vector2 size, int seed)
             {
                 float h = size.y, w = size.x;
                 int pick = Mathf.Abs(seed + StreetBuilder.LevelSalt(AuditName));
+                if (Florida && Chapter != 3 && HasKitModel("Miami", "BollardMIA"))
+                {
+                    // Miami's own street things, not Kamakura's bins and crates: a pair of iron bollards (on the river and the bay,
+                    // mooring bollards), a hydrant or a concrete planter; a park's are its clipped hedges, as anywhere.
+                    if (h < 0.4f) return false;     // the low concrete kerb (procedural)
+                    if (h <= 0.6f) return FillWith(parent, "Miami", "BollardMIA", center, size, 1f, 2, 1, 0f, null);
+                    if (h <= 1.1f && Chapter != 5)
+                    {
+                        if (pick % 2 == 0 && w <= 0.7f && Stretch(parent, "Florida", "HydrantFL", center, size, 0.5f, 1.25f, 0f, null, 1)) return true;
+                        return Stretch(parent, "Street", w > 1.4f ? "Planter2" : "Planter1", center, size, 1.1f, 1f, 0f, null, 1);
+                    }
+                }
                 if (Chapter == 3)
                 {
                     string rock = h > 1.3f ? "Boulder4" : h > 0.8f ? "Boulder3" : (pick % 2 == 0 ? "Boulder2" : "Boulder1");

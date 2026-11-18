@@ -1,16 +1,18 @@
 """Florida's map: a top-down picture of Miami (3200 x 1800, its core the central 2400 x 1350) and its layout file, made from
 one plan so they agree (the same contract as the town's map: docs/WORLD_MAP.md, Levels/TownMap.cs).
 
-    python3 tools/miami_map/miami_map.py            # writes Assets/_Game/Resources/UI/MiamiMap.jpg and MiamiMapLayout.json
+    python3 tools/miami_map/miami_map.py            # writes Assets/_Game/Resources/MiamiMapLayout.json
+    cd tools/blender && blenv/bin/python miami_map_render.py     # renders the picture, Resources/UI/MiamiMap.jpg, on it
 
-The picture is a stand-in drawn flat (land, the bay, the Miami River, parks, the street grid, the blocks of each district),
-until Florida's kit exists and the map can be rendered from it in Blender as the town's is (tools/blender/town_map.py).
-It carries no text, route lines, nodes or markers: the game draws those. The layout is marked "placeholder".
+The picture is rendered in Blender from the game's kits (tools/blender/miami_map_render.py: Little Havana, the river, Brickell,
+downtown, the parks, the bay and Miami Beach) on this file's plan (its routes, home, school, river); `--flat` still writes the old
+flat drawing. It carries no text, route lines, nodes or markers: the game draws those. The layout is marked "placeholder" (its
+nodes are spread along the routes rather than measured from the legs).
 The routes follow the trips of docs/CITIES.md: FL1 east along Calle Ocho, the bus to Brickell, over the river's drawbridge to
 the bayfront; FL2 north to the river, along the Riverwalk, the drugstore downtown; FL3 south to the Underline, the people
 mover round to Biscayne, north to Museum Park; all from the ranch house in Little Havana to Bayside Elementary.
 Needs Pillow."""
-import json, math, os, random
+import json, math, os, random, sys
 from PIL import Image, ImageDraw, ImageFilter
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -130,7 +132,8 @@ def on_route(p, line):
 
 def main():
     rng = random.Random(305)
-    draw(rng).save(OUT_IMAGE, quality=88)
+    if "--flat" in sys.argv:
+        draw(rng).save(OUT_IMAGE, quality=88)
     for nid, pos, _ in NODES:
         route = "fl" + nid[2]
         assert on_route(pos, ROUTES[route]) < 1.0, nid
@@ -148,7 +151,7 @@ def main():
     }
     with open(OUT_LAYOUT, "w") as f:
         json.dump(layout, f, indent=1)
-    print("wrote", OUT_IMAGE, "and", OUT_LAYOUT)
+    print("wrote", OUT_LAYOUT + (" and " + OUT_IMAGE if "--flat" in sys.argv else ""))
 
 
 if __name__ == "__main__":

@@ -155,8 +155,10 @@ def audit(name, body, line0):
             x0, x1, gt = g(0), g(1), g(2)
             tops.append((x0, x1, gt + 1.2, 'street sweeper'))
         elif fn == 'Arcade':
+            # the Miami kit's Deco block: its canvas arcade is 10 m, centred on the stretch asked for, at 3.05 to 3.2 m
             x0, x1, gt = g(0), g(1), g(2)
-            solid(x0, x1, gt + 3.06, gt + 3.24, 'arcade roof', stand=False)
+            cx = (x0 + x1) / 2
+            solid(cx - 5.0, cx + 5.0, gt + 3.05, gt + 3.2, 'arcade roof', stand=False)
         elif fn == 'Springboard':
             springs.append(g(0))
         elif fn == 'Coin':

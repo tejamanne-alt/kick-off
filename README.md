@@ -45,8 +45,10 @@ school, three to five levels each, with its own transit, errands and mini-games,
 | FL3 Under the Line | FL3-1 The Underline, *(the people mover, a ride)*, FL3-2 Biscayne Boulevard, FL3-3 Museum Park to School | Fitness stations, the dog run, cyclists, the street sweeper to ride, the banyans' roots, skateboarders, kite fliers' wind |
 
 The legs are laid out in `Editor/FloridaLevels.cs`, the mini-games are `Challenges/BusRide`, `MooringLine` and
-`DrugstoreShopping`, and the map is Miami's own (`tools/miami_map`). Until Florida's kit is modelled from the reference
-images, its new things are grey boxes and its streets borrow the nearest of the original town's, in Florida's light.
+`DrugstoreShopping`. Each leg is its own district of Miami, built from the Miami kit (`tools/blender/kit_buildings_mia.py`) by a
+plan per leg (`tools/blender/miami_plan.py`, read by `Editor/StreetBuilder.Miami.cs`): Little Havana, Calle Ocho from the bus,
+Brickell, the bayfront, the river, downtown's arcades, the Underline, Biscayne Boulevard and Museum Park. The map is Miami's
+own, rendered from the same kits (`tools/blender/miami_map_render.py` on `tools/miami_map`'s layout).
 
 ## Levels
 

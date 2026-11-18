@@ -13,8 +13,8 @@ namespace DribbleToSchool.EditorTools
     /// Florida's own play (docs/CITIES.md, "Florida (Miami), USA"), for the city's own routes (Editor/FloridaLevels): Little
     /// Havana's roosters and hens, the iguanas on the seawalls, the rental scooters left across the sidewalk, the pelicans, the
     /// downtown arcades and the downpour, the street sweeper, and the sets of the three mini-games (the Metrobus, Uncle Rey's boat
-    /// at his dock, the corner drugstore). Until Florida's own kit is modelled from the user's references (review/florida/refs),
-    /// the new things are grey boxes in Florida's colours, and the street round them is the look chapter's in Florida's streets.
+    /// at his dock, the corner drugstore), on the Miami kit (tools/blender/kit_buildings_mia.py). Each thing falls back to a
+    /// stand-in of boxes in Florida's colours only when the kit isn't imported (the tests check the kit has every model).
     /// </summary>
     public static partial class LevelBuildKit
     {
@@ -48,6 +48,8 @@ namespace DribbleToSchool.EditorTools
                 visual.localPosition = new Vector3(0f, 0f, 0.35f);
                 Color feathers = hen ? new Color(0.72f, 0.45f, 0.24f) : new Color(0.62f, 0.2f, 0.12f);
                 Color tail = hen ? new Color(0.55f, 0.32f, 0.16f) : new Color(0.08f, 0.22f, 0.18f);
+                // (the visual is turned by the hazard so its +z leads: the kit's birds head toward +x, so a quarter turn)
+                if (KitModel(visual, "Miami", hen ? "HenMIA" : "RoosterMIA", visual.position, -90f) == null)
                 Blobs(visual, "Bird", Vector3.zero,
                     new BlobShape.Blob(new Vector3(0f, 0.24f, 0f), new Vector3(0.17f, 0.12f, 0.1f), feathers),
                     new BlobShape.Blob(new Vector3(0f, 0.42f, 0.12f), new Vector3(0.06f, 0.07f, 0.06f), feathers),
@@ -80,6 +82,7 @@ namespace DribbleToSchool.EditorTools
                 visual.SetParent(go.transform, false);
                 visual.localPosition = new Vector3(0f, 0f, 0.5f);
                 Color green = new Color(0.36f, 0.6f, 0.25f), dark = new Color(0.2f, 0.38f, 0.16f);
+                if (KitModel(visual, "Miami", "IguanaMIA", visual.position, -90f) == null)
                 Blobs(visual, "Lizard", Vector3.zero,
                     new BlobShape.Blob(new Vector3(0f, 0.09f, 0f), new Vector3(0.07f, 0.06f, 0.22f), green),
                     new BlobShape.Blob(new Vector3(0f, 0.11f, 0.26f), new Vector3(0.05f, 0.05f, 0.07f), green),
@@ -120,6 +123,13 @@ namespace DribbleToSchool.EditorTools
                 Audit.AddWall(x, w, h, "scooter");
                 var go = Block("Scooter", new Vector2(x, groundTop + h * 0.5f), new Vector2(w, h), Teal, GroundMat, false);
                 var t = go.transform;
+                // The kit's rental scooter, lying on its side across the sidewalk or up on its kickstand (its handlebar's end stands
+                // a little over the collider: a thin bar the ball may clip).
+                if (KitModel(t, "Miami", standing ? "ScooterUpMIA" : "ScooterMIA", new Vector3(x, groundTop, standing ? 0.1f : 0f), standing ? 15f : 0f) != null)
+                {
+                    go.AddComponent<StaticBatcher>();
+                    return;
+                }
                 if (standing)
                 {
                     Part(t, "Stem", new Vector3(0f, 0f, 0f), new Vector3(0.06f, 0.9f, 0.06f), new Color(0.15f, 0.16f, 0.18f));
@@ -144,6 +154,8 @@ namespace DribbleToSchool.EditorTools
                 var t = new GameObject("DominoTable").transform;
                 t.SetParent(root, false);
                 t.position = new Vector3(x, groundTop, 0f);
+                // The kit's concrete table with its game laid out and its stools (no pergola: the domino park stands behind).
+                if (KitModel(t, "Miami", "DominoTableMIA", t.position) != null) return;
                 Part(t, "Leg", new Vector3(0f, 0.35f, 0f), new Vector3(0.12f, 0.7f, 0.12f), new Color(0.3f, 0.3f, 0.32f));
                 foreach (float dx in new[] { -1f, 1f })
                     Part(t, "Stool", new Vector3(dx * 0.95f, 0.22f, 0.4f), new Vector3(0.3f, 0.44f, 0.3f), Coral);
@@ -159,6 +171,23 @@ namespace DribbleToSchool.EditorTools
             /// </summary>
             public void Arcade(float fromX, float toX, float groundTop = 0f, Color? colour = null)
             {
+                // The Miami kit's Deco block with its canvas arcade over the sidewalk (cantilevered from its front wall, which stands
+                // just behind the lane): the shelter is the model's 10 m, centred on the stretch asked for.
+                string deco = shelters.Count % 2 == 0 ? "DecoArcade2MIA" : "DecoArcadeMIA";
+                if (HasKitModel("Miami", deco))
+                {
+                    const float wide = 10f;
+                    float cx = (fromX + toX) * 0.5f;
+                    shelters.Add(new Vector2(cx - wide * 0.5f, cx + wide * 0.5f));
+                    Audit.AddRoof(cx - wide * 0.5f, cx + wide * 0.5f, groundTop + 3.05f);
+                    var block = KitModel(root, "Miami", deco, new Vector3(cx, groundTop, StreetBuilder.PathHalf + 0.05f));
+                    if (block != null)
+                    {
+                        float native = KitSize("Miami", deco).x;
+                        if (native > 1f) block.localScale = new Vector3(wide / native, 1f, 1f);
+                        return;
+                    }
+                }
                 shelters.Add(new Vector2(fromX, toX));
                 Audit.AddRoof(fromX, toX, groundTop + 3.1f);
                 var t = new GameObject("Arcade").transform;
@@ -225,6 +254,8 @@ namespace DribbleToSchool.EditorTools
                 mp.travel = new Vector2(toX - fromX - width, 0f);
                 mp.speed = speed;
                 mp.waitTime = 1.5f;
+                // The kit's sweeper truck: its hopper's flat top is the 1.2 m back the kid rides, its cab over the front.
+                if (KitModel(go.transform, "Miami", "SweeperMIA", new Vector3(center.x, groundTop, 0.1f)) != null) return;
                 Color white = new Color(0.95f, 0.95f, 0.93f);
                 // (local to the block's middle, 0.75 m up: the body down to the wheels, the cab over the front, the brush under it)
                 Part(go.transform, "Body", new Vector3(0f, -0.1f, 0.1f), new Vector3(width, 1.1f, 1.9f), white);
@@ -243,81 +274,66 @@ namespace DribbleToSchool.EditorTools
             // ------------------------------------------------------------------ the mini-games' sets
 
             /// <summary>
-            /// FL1-2's Metrobus at its stop on Calle Ocho (Challenges/BusRide): a 12 m city bus from <paramref name="busX"/>,
-            /// cut away on the near side (only its far wall with the windows, its roof and its ends show: nothing tall between the
-            /// camera and the lane, LEARNINGS E10), its doorway at its left end, the card reader inside the door, the seats and the
-            /// pull cord along the windows, and the street outside on a strip that slides past as it drives.
+            /// FL1-2's Metrobus at its stop on Calle Ocho (Challenges/BusRide): the Miami kit's 12 m city bus (its far side with the
+            /// windows, the seats, the poles and the stop cord, the next-stop sign, the card reader by the driver), facing on along
+            /// the street with its front door's middle at <paramref name="doorX"/> and the stop to its right, where the kid waits. Its
+            /// near side (BusNearMIA: the doors and the windows toward the camera) is a separate model the ride takes away as the kid
+            /// comes to the door, so the inside shows (nothing tall between the camera and the kid, LEARNINGS E10). It kneels at the
+            /// stop (its floor at the footpath). Outside, the leg's district from the Miami plan (Calle Ocho's shops, then Brickell's
+            /// towers) on a strip that slides past the windows as it drives, with the stop's shelter and sign, which it leaves behind.
             /// </summary>
-            public BusRide Metrobus(float busX)
+            public BusRide Metrobus(float doorX)
             {
-                const float length = 12f, height = 3f, far = 1.35f;
+                const float length = 12f, kneel = 0.3f, stripFrom = -60f, stripLength = 310f;   // (tools/blender/miami_plan.py: BUS_STRIP)
+                float nose = doorX + 1.65f, mid = nose - length * 0.5f;
                 var ride = Challenge<BusRide>("The Metrobus", "Tap your card, ride with the ball at your feet, and pull the cord at your stop.", 0f, 1, 2, 3);
                 var bus = new GameObject("Bus").transform;
                 bus.SetParent(root, false);
-                bus.position = new Vector3(busX, 0f, 0f);
                 var body = new GameObject("Body").transform;
                 body.SetParent(bus, false);
-                Color livery = new Color(0.93f, 0.94f, 0.92f), band = Teal, seat = new Color(0.2f, 0.36f, 0.7f), bar = new Color(0.95f, 0.8f, 0.2f);
-                float mid = length * 0.5f;
-                // The far wall: under the windows, over them, and the pillars between.
-                Part(body, "WallLow", new Vector3(mid, 0.55f, far), new Vector3(length, 1.1f, 0.12f), livery);
-                Part(body, "WallHigh", new Vector3(mid, 2.75f, far), new Vector3(length, 0.5f, 0.12f), livery);
-                Part(body, "Band", new Vector3(mid, 1.05f, far - 0.07f), new Vector3(length, 0.12f, 0.02f), band);
-                for (float x = 1.3f; x < length; x += 1.7f)
-                    Part(body, "Pillar", new Vector3(x, 1.8f, far), new Vector3(0.14f, 1.1f, 0.12f), livery);
-                Part(body, "Roof", new Vector3(mid, height + 0.05f, 0f), new Vector3(length + 0.2f, 0.12f, far * 2f + 0.2f), livery);
-                Part(body, "Floor", new Vector3(mid, 0.02f, 0f), new Vector3(length, 0.04f, far * 2f), new Color(0.35f, 0.36f, 0.38f));
-                Part(body, "Front", new Vector3(length + 0.05f, height * 0.5f, 0f), new Vector3(0.12f, height, far * 2f), livery);
-                Part(body, "Back", new Vector3(-0.05f, 2.4f, 0f), new Vector3(0.12f, 1.2f, far * 2f), livery);
-                // Seats along the far wall, the grab rail and the cord over them.
-                for (float x = 2.2f; x < length - 1f; x += 1.7f)
-                {
-                    Part(body, "Seat", new Vector3(x, 0.45f, far - 0.35f), new Vector3(0.9f, 0.12f, 0.5f), seat);
-                    Part(body, "SeatBack", new Vector3(x, 0.8f, far - 0.12f), new Vector3(0.9f, 0.6f, 0.08f), seat);
-                }
-                Part(body, "Rail", new Vector3(mid, 2.25f, far - 0.25f), new Vector3(length - 0.6f, 0.04f, 0.04f), bar);
-                Part(body, "Cord", new Vector3(mid, 2.1f, far - 0.12f), new Vector3(length - 0.8f, 0.015f, 0.015f), new Color(0.15f, 0.15f, 0.15f));
-                // The reader by the door, its light switched by the ride.
-                Part(body, "ReaderPost", new Vector3(0.9f, 0.55f, 0.9f), new Vector3(0.1f, 1.1f, 0.1f), Steel);
+                var shell = KitModel(body, "Miami", "BusMIA", new Vector3(mid, -kneel, 0f));
+                var near = KitModel(body, "Miami", "BusNearMIA", new Vector3(mid, -kneel, 0f));
+                if (shell == null || near == null) Debug.LogWarning("[Kick Off] FL1-2: the Miami kit's bus is missing (Art/Models/Miami); the ride has no bus.");
+                // The reader's screen (on the model by the driver), lit by the ride: red, then green when a card can be tapped.
+                float readerX = nose - 0.86f;
                 var light = new GameObject("ReaderLight");
                 light.transform.SetParent(body, false);
-                light.transform.localPosition = new Vector3(0.9f, 1.2f, 0.84f);
+                light.transform.localPosition = new Vector3(readerX, 1.315f - kneel, -0.885f);
                 var box = light.AddComponent<Box3D>();
-                box.size = new Vector3(0.3f, 0.22f, 0.08f);
+                box.size = new Vector3(0.18f, 0.15f, 0.02f);
                 box.color = Color.white;
                 light.GetComponent<MeshRenderer>().sharedMaterial = Art.solid;
                 box.Rebuild();
 
-                // The doorway's own wall (shut while the bus rides) and the bus's end beyond the kid.
-                var door = Block("BusDoor", new Vector2(busX - 0.1f, 1.5f), new Vector2(0.2f, 3f), livery, GroundMat, false);
+                // The doorway, shut while the bus rides (a collider only: the bus's own doors are its near side's).
+                var door = new GameObject("BusDoor");
+                door.transform.SetParent(root, false);
+                door.transform.position = new Vector3(doorX + 0.25f, 1.5f, 0f);
+                door.AddComponent<BoxCollider2D>().size = new Vector2(0.2f, 3f);
 
-                // The street outside, sliding past the windows: shopfronts, palms and a tower or two, twice over so it wraps.
+                // The street outside: the plan's Calle Ocho and Brickell on a strip that wraps, and the stop the bus leaves.
                 var strip = new GameObject("Outside").transform;
                 strip.SetParent(root, false);
-                strip.position = new Vector3(0f, 0f, 0f);
-                var rng = new System.Random(812);
+                int placed = StreetBuilder.MiamiStreetStrip(strip, stripFrom, stripLength, 0f);
                 for (int copy = 0; copy < 2; copy++)
-                    for (float x = -20f; x < 40f; x += 4f + (float)rng.NextDouble() * 3f)
-                    {
-                        float sx = x + copy * 60f;
-                        float h = 2.5f + (float)rng.NextDouble() * 4f;
-                        Color c = Color.Lerp(Stucco, rng.NextDouble() < 0.5 ? Coral : Seafoam, (float)rng.NextDouble() * 0.6f);
-                        Part(strip, "Front", new Vector3(sx, h * 0.5f, 4.2f), new Vector3(3.4f, h, 0.6f), c);
-                        if (rng.NextDouble() < 0.5)
-                        {
-                            Part(strip, "PalmTrunk", new Vector3(sx + 2f, 2.2f, 2.8f), new Vector3(0.22f, 4.4f, 0.22f), new Color(0.55f, 0.45f, 0.35f));
-                            Part(strip, "PalmHead", new Vector3(sx + 2f, 4.5f, 2.8f), new Vector3(1.8f, 0.6f, 1.2f), new Color(0.25f, 0.5f, 0.25f));
-                        }
-                    }
+                {
+                    float dx = copy * stripLength;
+                    StreetBuilder.Model(strip, "Florida", "BusShelterFL", doorX + 4.4f + dx, 0f, 2.7f);
+                    StreetBuilder.Model(strip, "Miami", "StopSignMIA", doorX + 2.6f + dx, 0f, 1.75f);
+                }
+                if (placed == 0) Debug.LogWarning("[Kick Off] FL1-2: no street outside the bus (is Art/Models/Miami/MiamiDistricts.json there?)");
 
                 ride.busBody = body;
                 ride.busColliders = new Collider2D[0];
                 ride.door = door.GetComponent<Collider2D>();
-                ride.doorX = busX;
-                ride.readerX = busX + 0.9f;
+                ride.doorX = doorX;
+                ride.readerX = readerX;
                 ride.readerLight = light.GetComponent<MeshRenderer>();
+                ride.inward = -1f;
+                ride.nearSide = near != null ? near.gameObject : null;
+                ride.pullOutZ = -4.6f;
                 ride.street = strip;
-                ride.stripLength = 60f;
+                ride.stripLength = stripLength;
                 return ride;
             }
 
@@ -351,7 +367,9 @@ namespace DribbleToSchool.EditorTools
                 var bollardGo = new GameObject("Bollard");
                 bollardGo.transform.SetParent(dock, false);
                 bollardGo.transform.position = new Vector3(dockEnd - 3.5f, 0.45f, 0.6f);
-                Part(bollardGo.transform, "Post", new Vector3(0f, -0.2f, 0f), new Vector3(0.3f, 0.5f, 0.3f), new Color(0.2f, 0.2f, 0.22f));
+                if (KitModel(bollardGo.transform, "Miami", "BollardMIA", new Vector3(dockEnd - 3.5f, 0f, 0.6f)) == null)
+                    Part(bollardGo.transform, "Post", new Vector3(0f, -0.2f, 0f), new Vector3(0.3f, 0.5f, 0.3f), new Color(0.2f, 0.2f, 0.22f));
+                KitModel(dock, "Miami", "LineCoilMIA", new Vector3(dockEnd - 5.2f, 0f, 1.0f), 30f);
 
                 // The boat: a kinematic body drifting off the dock, its deck and wheelhouse, its cleats at bow and stern.
                 var boatGo = new GameObject("Boat");
@@ -363,13 +381,24 @@ namespace DribbleToSchool.EditorTools
                 deck.size = new Vector2(5.2f, 0.25f);
                 deck.sharedMaterial = GroundMat;
                 var bt = boatGo.transform;
-                Part(bt, "Hull", new Vector3(0f, -0.35f, 0.4f), new Vector3(5.6f, 0.8f, 2f), hull);
-                Part(bt, "Stripe", new Vector3(0f, -0.2f, -0.61f), new Vector3(5.6f, 0.14f, 0.02f), stripe);
-                Part(bt, "Cabin", new Vector3(-0.4f, 0.75f, 0.9f), new Vector3(1.8f, 1.3f, 1.2f), hull);
-                Part(bt, "Outrigger", new Vector3(-0.4f, 2.2f, 1.2f), new Vector3(0.06f, 2.2f, 0.06f), Steel);
+                // The kit's fishing boat: its deck (0.95 m over its keel) level with the deck collider's top, so it draws 0.28 m;
+                // its cabin forward of the open deck, outriggers up. The science project rides on the cabin's roof.
+                float cabinX = -0.4f, roofY = 1.48f;
+                if (KitModel(bt, "Miami", "FishingBoatMIA", boatGo.transform.position + new Vector3(0f, 0.125f - 0.95f, 0.4f)) != null)
+                {
+                    cabinX = 0.25f;
+                    roofY = 0.125f + 1.3f + 0.04f;
+                }
+                else
+                {
+                    Part(bt, "Hull", new Vector3(0f, -0.35f, 0.4f), new Vector3(5.6f, 0.8f, 2f), hull);
+                    Part(bt, "Stripe", new Vector3(0f, -0.2f, -0.61f), new Vector3(5.6f, 0.14f, 0.02f), stripe);
+                    Part(bt, "Cabin", new Vector3(-0.4f, 0.75f, 0.9f), new Vector3(1.8f, 1.3f, 1.2f), hull);
+                    Part(bt, "Outrigger", new Vector3(-0.4f, 2.2f, 1.2f), new Vector3(0.06f, 2.2f, 0.06f), Steel);
+                }
                 var project = new GameObject("Project");
                 project.transform.SetParent(bt, false);
-                project.transform.localPosition = new Vector3(-0.4f, 1.48f, 0.9f);
+                project.transform.localPosition = new Vector3(cabinX, roofY, 0.4f);
                 Part(project.transform, "Board", Vector3.zero, new Vector3(1f, 0.06f, 0.7f), new Color(0.9f, 0.88f, 0.8f));
                 Part(project.transform, "Marsh", new Vector3(0f, 0.07f, 0f), new Vector3(0.8f, 0.08f, 0.5f), new Color(0.45f, 0.62f, 0.3f));
                 Part(project.transform, "Water", new Vector3(0.15f, 0.08f, 0.05f), new Vector3(0.35f, 0.07f, 0.3f), new Color(0.3f, 0.6f, 0.75f));
@@ -384,6 +413,7 @@ namespace DribbleToSchool.EditorTools
                     trigger.radius = 0.42f;
                     var face = new GameObject("Face");
                     face.transform.SetParent(cleat.transform, false);
+                    face.transform.localPosition = new Vector3(0f, -0.08f, -0.5f);     // on the gunwale toward the camera
                     var shape = face.AddComponent<Box3D>();
                     shape.size = new Vector3(0.45f, 0.14f, 0.18f);
                     shape.color = Color.white;
@@ -394,14 +424,20 @@ namespace DribbleToSchool.EditorTools
                     target.idleColor = new Color(1f, 0.82f, 0.25f);
                     cleats.Add(target);
                 }
-                // Uncle Rey at the wheelhouse door (a stand-in figure until the cast has him).
+                // Uncle Rey on deck by the wheelhouse: the cast's grown-up in his fishing shirt and cap (a stand-in figure without it).
                 var uncle = new GameObject("UncleRey").transform;
                 uncle.SetParent(bt, false);
                 uncle.localPosition = new Vector3(1f, 0.1f, 0.9f);
+                if (PasserbyNamed("Courier") != null)
+                    Person(bt, "UncleReyFigure", "Courier", boatX + 1.3f, boatGo.transform.position.y + 0.125f, 0.9f, -60f,
+                        new Color(0.95f, 0.6f, 0.45f), new Color(0.25f, 0.3f, 0.4f), new Color(0.1f, 0.25f, 0.5f), 1f);
+                else
+                {
                 Part(uncle, "Legs", new Vector3(0f, 0.45f, 0f), new Vector3(0.32f, 0.9f, 0.25f), new Color(0.25f, 0.3f, 0.4f));
                 Part(uncle, "Shirt", new Vector3(0f, 1.2f, 0f), new Vector3(0.45f, 0.6f, 0.3f), new Color(0.95f, 0.6f, 0.45f));
                 Part(uncle, "Head", new Vector3(0f, 1.66f, 0f), new Vector3(0.24f, 0.28f, 0.24f), new Color(0.72f, 0.52f, 0.38f));
                 Part(uncle, "Cap", new Vector3(0f, 1.83f, 0f), new Vector3(0.28f, 0.08f, 0.3f), new Color(0.1f, 0.25f, 0.5f));
+                }
 
                 // The line: a rope from the bollard to the knot at its end.
                 var rope = line.gameObject.AddComponent<LineRenderer>();
@@ -447,6 +483,15 @@ namespace DribbleToSchool.EditorTools
                 var t = new GameObject("Drugstore").transform;
                 t.SetParent(root, false);
                 float w = toX - fromX, cx = (fromX + toX) * 0.5f;
+                // The kit's aisle (22 m: its shelves of painted goods along the back wall, the counter and till at the right end, the
+                // terrazzo floor, the strip lights, the bright door), its front at the camera's side of the lane.
+                var aisle = KitModel(t, "Miami", "DrugstoreAisleMIA", new Vector3(cx, 0f, -0.6f));
+                if (aisle != null)
+                {
+                    float native = KitSize("Miami", "DrugstoreAisleMIA").x;
+                    if (native > 1f) aisle.localScale = new Vector3(w / native, 1f, 1f);
+                    return shop;
+                }
                 Part(t, "BackWall", new Vector3(cx, 1.6f, 2.6f), new Vector3(w, 3.2f, 0.2f), new Color(0.93f, 0.94f, 0.92f));
                 Part(t, "Ceiling", new Vector3(cx, 3.25f, 0.8f), new Vector3(w, 0.1f, 3.8f), new Color(0.96f, 0.96f, 0.95f));
                 for (float x = fromX + 1f; x < toX - 1f; x += 3f)

@@ -1789,7 +1789,62 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
 - **Not run in Unity:** building the twelve legs and the ride (LevelFeasibility runs as they are built), every new hazard
   and mini-game, the map screen for Florida, the results and guide cards for mini-games, the frame rate on the phone.
 - **Next:** the reference images, then Florida's kit and each leg's own district (`docs/CITIES.md`, "Still to do for
-  Florida").
+  Florida"). (Done in v124, below.)
+
+## Florida in Miami's own streets: a real bus, real things, a rendered map (generated content v124)
+
+- **Why.** The user, from the phone, on v123: the bus level was "not at all understandable", "green flat objects on the
+  footpath" nobody could name, and the Florida levels "naive and repeatable and redundant to Kamakura"; they should show
+  "the real Florida things and aesthetics" and be "a visual feast". v123 had built Florida's legs in Kamakura chapters'
+  streets with grey boxes for its own things (LEARNINGS D9).
+- **The Miami kit** (`tools/blender/kit_buildings_mia.py`, `kit_buildings.py --kit Miami`, its own 4096 atlas): 41 models.
+  Little Havana (the ventanita cafe window, the tabaqueria, the fruteria, mural walls, the domino park and its tables, a
+  fruit cart, roosters, hens, iguanas), Brickell (glass condo and office towers and their podiums, a site fence, a coffee
+  kiosk), downtown (two Deco blocks with canvas arcades over the sidewalk, a Mediterranean Revival building, the Spanish
+  tower), the river and the bay (a freighter, a tug, Uncle Rey's fishing boat, bollards, coiled line, the Riverwalk's and the
+  bay's rails, a cruise ship, pelicans on their pilings), the Underline (the Metrorail guideway with its mural piers,
+  fitness bars), Museum Park's museum, and the trip's things (the city bus and its near side, a stop sign for route 8, the
+  pharmacy and the drugstore's aisle, rental scooters lying and standing, a street sweeper). Largest: 5.5k triangles (a
+  condo tower). The Plants kit gains the royal palm (3.3k) and the banyan (6.2k).
+- **Each leg its own district** (`tools/blender/miami_plan.py` writes `Art/Models/Miami/MiamiDistricts.json`; the game builds
+  it in `StreetBuilder.Miami`; `preview_street.py --miami <leg>` renders the same plan through the game camera): the plan
+  gives each leg its ground (a street with its asphalt and kerbs, Little Havana's yards, a promenade to a seawall, a park),
+  its water and land, and every model's place. Palms stand only between buildings or behind the lane (E10). A leg with a
+  plan builds none of the chapters' streets, poles, hills or side-street ends; its look chapter only sets the light and the
+  ground's rules: FL1-1 and FL3-1 look as the home street does (no seam into another chapter's street), FL2-3 is no longer
+  the beach (its sand, tides and boulders), FL3-2 is the city's. FL2-1 keeps Florida's Home Street. The generator refuses a
+  plan with anything standing in open water.
+- **The Metrobus** (`LevelBuildKit.Metrobus`, `Challenges/BusRide`): the kit's 12 m bus kneels at the stop on the kid's
+  left, its front door toward the kid; its near side (`BusNearMIA`: the doors, the windows, the near wheels) is taken away as
+  the kid comes to the door, so the inside shows: blue seats over the wheel housings, yellow poles, the stop cord, the next-stop
+  sign, the reader's light by the driver. It pulls in from the road and out into it, never through the kid. Outside, the
+  plan's Calle Ocho and then Brickell (310 m, so the ride goes from one into the other once) slide past the windows with the
+  stop's shelter and sign. `BusRide` gains `inward` (which side of the door the inside is), `nearSide` and `pullOutZ`.
+- **No more grey boxes:** the scooters (the "green flat objects"), the roosters, hens and iguanas (their hazards unchanged),
+  the domino table, the arcades (the Deco blocks: a shelter is now the model's 10 m, centred on the stretch), the sweeper,
+  Uncle Rey's boat (the fishing boat, its bollard and line, Uncle Rey a cast figure) and the drugstore's aisle. Each falls back
+  to its old stand-in only without the kit. Florida's stops are Miami's (`StreetBuilder.MiamiStop`: route 8's shelter and
+  sign, the bayfront's coffee kiosk, the dock, the pharmacy, the Metrorail and Metromover signs, Museum Park's palms), not
+  Kamakura's station, bandstand and kiosk; Florida's obstacles are bollards, hydrants and planters, not bins and crates.
+- **Miami's map** is rendered in Blender from the kits (`tools/blender/miami_map_render.py`), an aerial view from the south
+  at 42 degrees on `miami_map.py`'s layout (unchanged, so the routes and nodes land where they did): Little Havana's
+  ranch houses under palms and live oaks with Calle Ocho's coloured shops and the 8 bus, the river and its docks, Brickell's
+  towers, downtown and the Mediterranean Revival tower, the guideways, Bayfront and Museum Parks, the port with a cruise
+  ship, Miami Beach's strip. `miami_map.py --flat` still draws the old picture.
+- **Cost** (estimates against `docs/PERFORMANCE.md`, not measured):
+  - Draws: a leg places 50 to 140 plan models (the town's levels place more), all on the Miami, Florida and Plants atlases;
+    the chapters' streets, pole lines and hills are not built for them. The Metrobus's strip is about 550 models on one moving
+    transform (two copies of 310 m), almost all off screen and culled; one transform moves a frame.
+  - Triangles on screen: the towers are 3 to 5.5k each, a royal palm 3.3k; a Brickell shot shows about 4 towers and 6 palms.
+  - Memory: the Miami atlas, 4096 x 4096 (as the Florida and Coast kits'), loaded only in Florida's legs; the map picture is
+    1.1 MB as JPEG, 3200 x 1800 like the town's.
+  - It must be checked on the Nord CE5: Brickell (FL1-3) and the Metrobus first.
+- **Checked:** compile (no new error kinds in any `#if` set), `unity_api_check` 6000.6 and 6000.7, the coin audit (596
+  coins, 0 problems), the plan's water check, `MiamiKitTests` (every model the game and the plan place is in its kit, the plan
+  covers the legs, nothing on the ground in open water) checked by the same rules in Python; every leg, the bus inside and out
+  and the map rendered and looked at.
+- **Not run in Unity:** building the legs (LevelFeasibility), the bus ride's near side and pull-out, the kit models' facing
+  in the game (the review renders use the kit's own axes), the frame rate on the phone.
 
 ## After Phase 8 (next steps)
 
