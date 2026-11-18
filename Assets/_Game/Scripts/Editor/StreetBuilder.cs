@@ -170,7 +170,7 @@ namespace DribbleToSchool.EditorTools
             if (HasRoadLines(ch) && part == Part.Front)
             {
                 // White edge lines along the road, a dashed centre line, and the odd manhole.
-                float road = top - 0.14f;
+                float road = KM && ch == 1 ? top : top - 0.14f;   // (Kamakura's lane is flush: its road is not sunk)
                 Color paint = new Color(0.95f, 0.95f, 0.93f);
                 foreach (float z in new[] { RoadNear - 0.3f, RoadFar + 0.3f })
                     Patch(go.transform, "EdgeLine", fromX + lineInset, toX - lineInset, road, z - 0.06f, z + 0.06f, paint);

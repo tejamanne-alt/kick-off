@@ -1928,6 +1928,20 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
 - **Still to do:** a Kamakura lifeguard tower for the beach (the shared one is still there), the site's warehouses, the
   remaining Victorian park lamps, placing mirrors, bus poles, manholes and tactile strips; the black pine could lean more.
 
+## The Kamakura audit (generated content v127)
+
+- **Why.** The user: "Run an audit across all levels in Kamakura city". Written up in `docs/KAMAKURA_AUDIT.md`: every track piece
+  each of the 23 levels and 5 challenges calls, the streets, the stops, home and school, the people, animals, sounds and words,
+  against `docs/KAMAKURA_BRIEF.md`, with a per-level list and the fixes ranked.
+- **Found:** v126 reached the streets but not the play. Only the swooping bird has a Kamakura branch among the track pieces.
+  The stops (St Mary's, the bus shelter, the brick station, the bandstand, the allotments), the kid's picket-fenced home and
+  the brick school have none. The walkers, the English town's birdsong and church bell, "Seagull Bay" and every English board
+  are the shared town's. Six Kamakura street models (rickshaw, kei truck, convex mirror, manhole, tactile strip, bus-stop pole)
+  are never placed.
+- **Fixed now:** the home street's road lines, drains and manholes sat 14 cm under Kamakura's flush road (LEARNINGS E13).
+- **Cost:** none (the markings move up 14 cm).
+- **Checked:** compile (no new error kinds), `unity_api_check` 6000.7. Not run in Unity.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.
