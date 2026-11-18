@@ -267,8 +267,8 @@ def ped_signal_mia(B):
     for z in (2.24, 2.64):
         B.add(cbox2((-0.15, -0.33, z - 0.16), (0.15, -0.32, z + 0.16), 0.01, 'dark'))
         B.add(cbox2((-0.17, -0.38, z + 0.15), (0.17, -0.32, z + 0.18), 0.01, 'black'))   # the visor
-    B.attach.append(('Attach.Red', (0.0, -0.35, 2.64)))
-    B.attach.append(('Attach.Green', (0.0, -0.35, 2.24)))
+    B.attach.append(('Red', (0.0, -0.35, 2.64)))
+    B.attach.append(('Green', (0.0, -0.35, 2.24)))
     B.add(cbox2((-0.08, -0.12, 1.0), (0.08, -0.05, 1.2), 0.01, 'yellow'))
     B.add(blob((0.0, -0.13, 1.1), (0.03, 0.01, 0.03), 'black', 5, 2, 1, 0.0))
     # the name blade, in front of the pole's top (the pole must not cut through the name)

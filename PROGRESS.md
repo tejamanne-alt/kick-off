@@ -1889,6 +1889,45 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
 - **Not run in Unity:** building the legs and the ride, the new pieces' facing and solids in play, the stops' people, hearing the
   soundscapes, the frame rate on the phone.
 
+## Kamakura as Kamakura: its own homes, shops, temples, tram, trees and birds (generated content v126)
+
+- **Why.** The user: "update the Kamakura assets appropriately and realistically wrt houses, animals, trees, objects and
+  other assets", with a brief for the city (`docs/KAMAKURA_BRIEF.md`, kept word for word). The original town was built from
+  shared kits that read as no city in particular: picket fences, post boxes and garages, a bodega, Victorian lamps, spruce
+  forests, palms and gulls (LEARNINGS D11).
+- **Homes** (`Kamakura` kit, `kit_buildings_kmhouse.py`): two-storey timber-and-mortar houses with kawara or standing-seam roofs,
+  aluminium sliders with screens, futon rails, sliding entrance doors, name plates, AC units, gas meters and pipes
+  (HouseTileKM, HouseMetalKM, HouseOldKM, HouseShedKM, HouseCarportKM with a kei car under it, BungalowKM, ApartmentKM);
+  block walls, dark board fences and gates in front of them; plant shelves, laundry poles, corrugated sheds, hydrangeas and
+  azaleas in the front gardens. No picket fences, post boxes or garages in Kamakura.
+- **Shops** (`kit_buildings_kmshop.py`): low shopfronts with noren, wooden signboards, lanterns and tables of goods, each with an
+  invented, correctly written name: 汐見堂 (sembei), そば処 小波, 若葉庵 (wagashi), 鎌倉みやげ すずなり, 鮮魚 かもめ屋, 純喫茶 灯台,
+  日本茶 緑風園; nobori banners, vending machines with invented drinks, a green phone, scooters and bicycles out front.
+- **Temples, street and tram** (`KamakuraStreet` kit, `kit_buildings_kamst.py`): a vermilion torii (若潮神社), a timber temple
+  gate with a heavy tiled roof, a shrine hall, stone lanterns and steps, moss-covered stone walls and an ema rack, set as a
+  temple ground in the park (`KamakuraTempleGrounds`); the two-car green-and-cream tram on its single track, with its wire
+  poles and a level crossing (black-and-yellow bar, red lamps) on the site's street; kei trucks and cars, a scooter and a
+  rickshaw. Also modelled: convex mirrors, a bus-stop pole, tactile strips and decorated manholes (not yet placed).
+- **Lanes:** no raised kerb in Kamakura's home street: a flush lane, a white edge line and the green walking strip.
+- **Trees and birds:** black pines (on the beach in place of palms), camphor, cedar, cherry in full leaf, bamboo, hydrangea,
+  azalea and persimmon (Plants kit; existing models untouched); black kites over the coast and crows on the roofs (Animals
+  kit, the gull's and the pigeon's rigs). Kamakura's far hills are rolling layers in the sea haze, no spruce band.
+- **Florida:** the US walk signal's lamps now light (its attach points were named `Attach.Attach.Red`: LEARNINGS A16).
+- **Tests** (`KamakuraKitTests`): every model name `StreetBuilder.Kamakura` uses is in its kit; both kits are in
+  `LevelBuildKit.Kits`; the kite has its wings and the crow its head.
+- **Cost** (estimates, not measured): two more 4096 atlases loaded in Kamakura's scenes (about 9 to 11 MB each with mips once
+  compressed for the phone, as Miami's); 15 MB + 5.6 MB of FBX in the project. Houses and shops are 2.1k to 6k triangles
+  (median 2.8k), close to the shared kit's they replace; the street pieces 0.2k to 5.9k (median 1k; the shrine hall and the tram
+  the heaviest, one each in a level); the temple ground adds about 15 to 25 models in the park, the tram line a track row and a
+  pole every 30 m. Check on the Nord CE5: the park's first temple ground and chapter 4 with the tram.
+- **Checked:** compile (no new error kinds in any `#if` set), `unity_api_check` 6000.6 and 6000.7, the coin audit (596 coins,
+  no problems; no layout changed), the new tests' rules in Python, review sheets of every new model, and all five chapters
+  through the game camera before and after (`preview_street.py --kamakura`; `review/kamakura/`).
+- **Not run in Unity:** building the levels with the new kits, the models' facing and the green strip in the engine, the tram's
+  and crossing's placement in play, the frame rate on the phone.
+- **Still to do:** a Kamakura lifeguard tower for the beach (the shared one is still there), the site's warehouses, the
+  remaining Victorian park lamps, placing mirrors, bus poles, manholes and tactile strips; the black pine could lean more.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

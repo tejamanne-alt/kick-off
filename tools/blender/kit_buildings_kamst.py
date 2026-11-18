@@ -1955,7 +1955,7 @@ def tram_pole(B):
     # the hanger and the clamp at the wire
     B.add(tube([(0.0, -1.8, zb), (0.0, -1.8, WIRE_Z + 0.05)], 0.012, 'ktgalv', 4))
     B.add(cbox2((-0.12, -1.83, WIRE_Z - 0.01), (0.12, -1.77, WIRE_Z + 0.05), 0.01, 'ktgalv'))
-    B.attach.append(('Attach.Wire', (0.0, -1.8, WIRE_Z)))
+    B.attach.append(('Wire', (0.0, -1.8, WIRE_Z)))
     # the number plate
     B.add(box((-0.1, -0.135, 2.4), (0.1, -0.12, 2.65), 'white'))
     B.add(box((-0.07, -0.136, 2.45), (0.07, -0.135, 2.6), 'ktblk'))
@@ -2011,8 +2011,8 @@ def crossing_signal(B):
         back = hood.copy()
         for f in back.faces: f.normal_flip()
         B.add(hood); B.add(back)
-    B.attach.append(('Attach.LampL', (-0.33, -0.11, 2.6)))
-    B.attach.append(('Attach.LampR', (0.33, -0.11, 2.6)))
+    B.attach.append(('LampL', (-0.33, -0.11, 2.6)))
+    B.attach.append(('LampR', (0.33, -0.11, 2.6)))
     # the crossbuck: two striped boards crossing in an X
     for sgn in (-1, 1):
         bm = box((-0.62, -0.03, -0.075), (0.62, 0.0, 0.075), 'kttex')
@@ -2040,7 +2040,7 @@ def crossing_bar(B):
     hub, _ = lathe([(0.0, 0.0), (0.09, 0.0), (0.09, 0.1), (0.0, 0.1)], 10, 'ktgreyd')
     B.add(xform(hub, T(0.2, 0.0, 1.0) @ R(math.pi / 2, 'Y')))
     px = 0.34
-    B.attach.append(('Attach.Pivot', (px, 0.0, 1.0)))
+    B.attach.append(('Pivot', (px, 0.0, 1.0)))
     _stripe_box(B, (px - 0.04, -4.0, 0.955), (px + 0.04, 0.0, 1.045), 'kt_stripe', axis=1)
     B.add(bx((px - 0.05, 0.0, 0.94), (px + 0.05, 0.5, 1.06), 'ktgreyd'))
     B.add(cbox2((px - 0.08, 0.35, 0.86), (px + 0.08, 0.6, 1.1), 0.02, 'ktgreyd'))
@@ -2081,7 +2081,7 @@ def track(B):
             mat = 'ktchrome' if (za == 0.145 and zb == 0.145) else 'ktrail'
             mb.face([(-Lh, yc + ya, zr + za), (-Lh, yc + yb, zr + zb), (Lh, yc + yb, zr + zb), (Lh, yc + ya, zr + za)], mat, None)
         B.add(mb.bm())
-    B.attach.append(('Attach.RailTop', (0.0, 0.0, zr + 0.145)))
+    B.attach.append(('RailTop', (0.0, 0.0, zr + 0.145)))
     return zr + 0.145
 
 # ================================================================ VEHICLES
@@ -2141,7 +2141,7 @@ def kei_truck(B):
         B.add(box((0.69, y - 0.002 if sgn < 0 else y - 0.001, 0.62), (0.7, y + 0.001 if sgn < 0 else y + 0.002, 1.75), 'ktbumper'))
         B.add(bx((1.1, y - 0.01, 1.0), (1.22, y + 0.01, 1.03), 'ktbumper'))
         B.add(tube([(1.58, sgn * 0.74, 1.25), (1.62, sgn * 0.86, 1.32)], 0.012, 'ktblk', 4))
-        B.add(cbox2((1.56, sgn * 0.86 - 0.05, 1.26), (1.62, sgn * 0.86 + 0.05, 1.42), 0.015, 'ktblk'))
+        B.add(bx((1.56, sgn * 0.86 - 0.05, 1.26), (1.62, sgn * 0.86 + 0.05, 1.42), 'ktblk'))
     # the windscreen, the grille, the lamps, the bumper and plate
     mb = MB()
     mb.face([(1.706, -0.66, 1.06), (1.706, 0.66, 1.06), (1.595, 0.62, 1.6), (1.595, -0.62, 1.6)], 'ktglassd', (1, 0, 0.2))
@@ -2175,8 +2175,8 @@ def kei_truck(B):
         B.add(bx((-1.76, yy - 0.08, 0.46), (-1.7, yy + 0.08, 0.64), 'ktred'))
     # the guard frame behind the cab
     for yy in (-0.66, 0.66):
-        B.add(cbox2((0.44, yy - 0.025, 0.72), (0.49, yy + 0.025, 1.76), 0.008, 'ktkeiw'))
-    B.add(cbox2((0.44, -0.69, 1.7), (0.49, 0.69, 1.76), 0.008, 'ktkeiw'))
+        B.add(bx((0.44, yy - 0.025, 0.72), (0.49, yy + 0.025, 1.76), 'ktkeiw'))
+    B.add(bx((0.44, -0.69, 1.7), (0.49, 0.69, 1.76), 'ktkeiw'))
     for k in range(5):
         yy = -0.5 + 0.25 * k
         B.add(bx((0.45, yy - 0.012, 1.04), (0.48, yy + 0.012, 1.7), 'ktkeiw'))

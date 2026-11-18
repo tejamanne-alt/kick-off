@@ -16,6 +16,22 @@ namespace DribbleToSchool.EditorTools
     /// </summary>
     public static partial class StreetBuilder
     {
+        /// <summary>Every model Kamakura's look places, by kit (the tests check each kit has them).</summary>
+        public static readonly string[] KamakuraModelsUsed =
+        {
+            "HouseTileKM", "HouseMetalKM", "HouseOldKM", "HouseShedKM", "HouseCarportKM", "BungalowKM", "ApartmentKM", "BoardFenceKM",
+            "BlockWallKM", "GateKM", "ShopSembeiKM", "ShopSobaKM", "ShopWagashiKM", "ShopSouvenirKM", "ShopFishKM", "ShopKissaKM",
+            "ShopTeaKM", "NoboriKM",
+        };
+        public static readonly string[] KamakuraStreetModelsUsed =
+        {
+            "ToriiKM", "TempleGateKM", "StoneLanternKM", "StoneStepsKM", "MossWallKM", "EmaRackKM", "ShrineHallKM", "PhoneBoothKM",
+            "VendingKM", "VendingKM2", "PotShelfKM", "LaundryPoleKM", "CorrugatedShedKM", "TramKM", "TramPoleKM", "CrossingSignalKM",
+            "CrossingBarKM", "TrackKM", "KeiCarKM", "ScooterKM",
+        };
+        public static readonly string[] KamakuraPlantsUsed = { "BlackPine", "Camphor", "Cedar", "CherryLeaf", "Bamboo", "Hydrangea", "Azalea", "Persimmon", "GardenPine" };
+        public static readonly string[] KamakuraAnimalsUsed = { "BlackKite", "Crow" };
+
         /// <summary>Kamakura's own look is on: the original town's streets (not Florida's) with the Kamakura kit imported.</summary>
         public static bool KM
         {
@@ -247,11 +263,11 @@ namespace DribbleToSchool.EditorTools
             float a = Lo(x0, 20f), b = Hi(x1, 20f);
             Row(line, "KamakuraStreet", "TrackKM", a, b, GroundAt(track, (a + b) * 0.5f), z);
             for (float x = Mathf.Ceil(a / 30f) * 30f; x < b; x += 30f)
-                Model(line, "KamakuraStreet", "TramPoleKM", x, GroundAt(track, x), z + 2.2f);
+                Model(line, "KamakuraStreet", "TramPoleKM", x, GroundAt(track, x), z + 1.8f);   // (its bracket reaches 1.8 m over the track)
             if (rng.NextDouble() < 0.7)
             {
                 float tx = a + (b - a) * Rand(rng, 0.25f, 0.75f);
-                Model(line, "KamakuraStreet", "TramKM", tx, GroundAt(track, tx), z);
+                Model(line, "KamakuraStreet", "TramKM", tx, GroundAt(track, tx) + 0.32f, z);   // (on the rails: TrackKM's Attach.RailTop)
             }
         }
 

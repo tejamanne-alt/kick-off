@@ -160,6 +160,14 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
   - Add a row to `package_minimums.py` for every package a Unity release breaks.
   - Say only what was checked. "Unity upgrades it" was a guess.
 
+**A16. An attach point that the game never found (v125, fixed in v126).**
+- *What:* Miami's walk signal was built with `B.attach.append(('Attach.Red', ...))`; `kit_lib.attach` adds the `Attach.`
+  prefix itself, so the FBX held `Attach.Attach.Red` and the crossing's lamps were never lit. Nothing failed: the builder
+  skips a missing attach point quietly.
+- *Fix:* the names without the prefix; the rebuilt `PedSignalMIA.fbx` has `Attach.Red` and `Attach.Green`.
+- *Rule:* pass attach names bare (`'Red'`), never `'Attach.Red'`. After a kit build, list each model's `Attach.` empties in
+  the review sheet's log and compare them with what the builder looks up.
+
 ## B. Performance and mobile
 
 **B1. 28 fps with uneven frames on a mid-range phone (November 2026).**
@@ -633,6 +641,26 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
 - *Rule:* when a city gets its own look, audit every track piece its layouts call (`grep -o "t\.[A-Z][A-Za-z]*(" ...`) and
   what each builds for that city, not only the scenery; then hold it with a test. What may be shared: the kid, the ball, coins,
   stickers, the cast's bodies (dressed for the city), dogs and pigeons, the sky.
+
+**D11. Kamakura, the original town, was a generic town (v126).**
+- *What:* Kamakura's streets were built from the shared kits, which had grown toward no city in particular: picket
+  fences, American post boxes and garages, a bodega-style "KOTORI MART" and a striped fruit awning, Victorian lamps, spruce
+  forests on the hills, palms on the beach, sea gulls. Next to Florida's own districts it read as "anywhere". The user asked
+  for Kamakura to be made as real as Florida and gave a brief (`docs/KAMAKURA_BRIEF.md`).
+- *Why:* the first city's look came before there was a second city to tell it apart from; nothing ever asked "is this
+  Japanese?" of a shared model.
+- *Fix:* Kamakura's own kits, taken point by point from the brief: homes with kawara and standing-seam roofs, block walls,
+  board fences and gates (`Kamakura`, `kit_buildings_kmhouse.py`); shops with noren, signboards and lanterns and invented,
+  correctly written names (`kit_buildings_kmshop.py`); torii, temple gate, shrine hall, stone lanterns and steps, moss walls,
+  ema, mirrors, phones, vending machines, the tram, its poles, track and crossing, kei vehicles, a scooter and a rickshaw
+  (`KamakuraStreet`, `kit_buildings_kamst.py`); black pine, camphor, cedar, cherry in leaf, bamboo, hydrangea, azalea and
+  persimmon; black kites and crows. `StreetBuilder.Kamakura` uses them when the kit is present (`StreetBuilder.KM`), with a
+  flush lane and a green walking strip in place of the raised kerb. `KamakuraKitTests` fail if a name the builder uses is
+  missing from its kit.
+- *Still to do:* the beach's lifeguard tower and the building site's warehouses are still the shared ones; some park lamps
+  are still the Victorian lamp; mirrors, bus poles, manholes and tactile strips are modelled but not yet placed.
+- *Rule:* every city, the first one included, is checked against its own brief: a shared model stays only if it would be
+  normal in that city's street. When a new city gets its own look, look again at the old ones beside it.
 
 ## E. Levels and world
 

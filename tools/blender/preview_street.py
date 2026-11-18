@@ -1334,8 +1334,8 @@ def kamakura_extras():
         row('KamakuraStreet', 'TrackKM', X0 - 20, X1 + 20, 0, 12.5)
         x = math.ceil((X0 - 20) / 30.0) * 30.0
         while x < X1 + 20:
-            place('KamakuraStreet', 'TramPoleKM', x, 0, 14.7); x += 30.0
-        place('KamakuraStreet', 'TramKM', CAM_X + 6, 0, 12.5)
+            place('KamakuraStreet', 'TramPoleKM', x, 0, 14.3); x += 30.0
+        place('KamakuraStreet', 'TramKM', CAM_X + 6, 0.32, 12.5)
     if chapter == 5 and has('KamakuraStreet', 'ToriiKM'):
         x = CAM_X + 4
         place('KamakuraStreet', 'ToriiKM', x, 0, PROP + 2.2)
