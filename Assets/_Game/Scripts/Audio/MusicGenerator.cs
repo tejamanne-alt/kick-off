@@ -40,6 +40,8 @@ namespace DribbleToSchool.Audio
         /// <summary>The loop for a place, in the style of the country its streets are in.</summary>
         public static float[] Generate(Soundscape scape, MusicCountry country)
         {
+            // Florida's own places play the music of the kind of place they are (Soundscapes.MusicOf).
+            scape = Soundscapes.MusicOf(scape);
             // (the mix's work buffers are reused as it renders: Mixdown's Scratch)
             Scratch.Begin();
             try

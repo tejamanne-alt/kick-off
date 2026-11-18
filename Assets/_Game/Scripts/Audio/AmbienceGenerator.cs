@@ -36,8 +36,14 @@ namespace DribbleToSchool.Audio
     /// and then over it (car horns, bicycle bells, a church bell, dogs; a shop's door bell, a clock, a cart on
     /// the cobbles; gulls, a buoy's bell, a ship; dripping water, a train overhead, footsteps; a reversing
     /// truck, a jackhammer, hammering, a digger, a drill, an air brake, dropped pipes; robins, tits, a
-    /// blackbird, wood pigeons, ducks and a woodpecker). Played well under the music (AudioDirector).
-    /// Pure C#: safe on a worker thread.
+    /// blackbird, wood pigeons, ducks and a woodpecker). Florida's places have their own, nothing shared with
+    /// Kamakura's: Little Havana (a lively street, a cafe's radio playing a son, dominoes, roosters, hens, a moped),
+    /// the Miami River (water on the seawall, halyards, an outboard, a tug's horn, the drawbridge's bell, laughing
+    /// gulls), the bay (small waves, palms in the sea breeze, a cruise ship's horn, laughing gulls, a pelican diving),
+    /// downtown (traffic, air conditioners, buses' air brakes, a crane's beeps, a jackhammer far off, wild parrots, a
+    /// horn), the Underline (the Metrorail overhead, bicycle bells, joggers, cicadas, a mockingbird) and Museum Park
+    /// (palms and banyans, small waves, children far off, a mockingbird, grackles, a sprinkler). Played well under the
+    /// music (AudioDirector). Pure C#: safe on a worker thread.
     /// </summary>
     public static class AmbienceGenerator
     {
@@ -46,7 +52,9 @@ namespace DribbleToSchool.Audio
         /// Each place's bed loudness (RMS), well under the music's <see cref="MusicGenerator.Loudness"/> and in
         /// proportion to how loud the place really is: the surf and the building site's generators the
         /// loudest, a road of passing cars and the echoing underpass next, then a quiet residential street,
-        /// a small market square with a few people about, and the park and the menu quietest.
+        /// a small market square with a few people about, and the park and the menu quietest. Florida's: downtown's
+        /// traffic between the towers and the waves on the bay's seawall loudest, the Underline's highway and trains
+        /// next, then the river and Little Havana's busy street, and Museum Park quietest.
         /// </summary>
         public static float BedLoudness(Soundscape scape)
         {
@@ -58,6 +66,12 @@ namespace DribbleToSchool.Audio
                 case Soundscape.Street: return 0.045f;
                 case Soundscape.Market: return 0.035f;
                 case Soundscape.Park: return 0.035f;
+                case Soundscape.Downtown: return 0.05f;
+                case Soundscape.Bay: return 0.05f;
+                case Soundscape.Underline: return 0.045f;
+                case Soundscape.MiamiRiver: return 0.042f;
+                case Soundscape.Havana: return 0.04f;
+                case Soundscape.MuseumPark: return 0.037f;
                 default: return 0.03f;
             }
         }
@@ -83,6 +97,12 @@ namespace DribbleToSchool.Audio
                 case Soundscape.Underpass: UnderpassCues(cues); break;
                 case Soundscape.Site: SiteCues(cues); break;
                 case Soundscape.Park: ParkCues(cues); break;
+                case Soundscape.Havana: HavanaCues(cues); break;
+                case Soundscape.MiamiRiver: MiamiRiverCues(cues); break;
+                case Soundscape.Bay: BayCues(cues); break;
+                case Soundscape.Downtown: DowntownCues(cues); break;
+                case Soundscape.Underline: UnderlineCues(cues); break;
+                case Soundscape.MuseumPark: MuseumParkCues(cues); break;
                 default: MenuCues(cues); break;
             }
             // The cues follow their place's loudness (a little less steeply, so a quiet place's birdsong
@@ -105,6 +125,12 @@ namespace DribbleToSchool.Audio
                 case Soundscape.Underpass: return UnderpassBed();
                 case Soundscape.Site: return SiteBed();
                 case Soundscape.Park: return ParkBed();
+                case Soundscape.Havana: return HavanaBed();
+                case Soundscape.MiamiRiver: return MiamiRiverBed();
+                case Soundscape.Bay: return BayBed();
+                case Soundscape.Downtown: return DowntownBed();
+                case Soundscape.Underline: return UnderlineBed();
+                case Soundscape.MuseumPark: return MuseumParkBed();
                 default: return MenuBed();
             }
         }
@@ -308,6 +334,246 @@ namespace DribbleToSchool.Audio
             return Finish(mix, Soundscape.Park);
         }
 
+        // ---------- Florida's places (Miami): their own beds, nothing shared with Kamakura's ----------
+
+        static float[] HavanaBed()
+        {
+            var mix = new Mixdown(BedLength) { roomSize = 0.55f, damping = 0.55f, wet = 0.22f };
+            // A warm street of low houses, cafes and shops: the town's hum and a light breeze under it all.
+            Rumble(mix.Add(-0.6f, 0.1f, 0.6f), 801, 190, 0.06, 0.4f);
+            Rumble(mix.Add(0.6f, 0.1f, 0.6f), 802, 210, 0.07, 0.4f);
+            Airy(mix.Add(0f, 0f, 0.3f), 803, 750, 0.5, 0.1, 0.3f, 4);
+            // A lively murmur along the pavement and at the cafe's window counter: more people about than in
+            // Kamakura's market, talking over each other, still too far off to make out a word.
+            var rng = new Random(804);
+            for (int v = 0; v < 5; v++)
+            {
+                float pan = (float)(rng.NextDouble() * 1.8 - 0.9);
+                var voice = mix.Add(pan, 0.5f, (float)(0.18 + rng.NextDouble() * 0.12));
+                Voices.Chatter(voice, 810 + v * 7, 105 + rng.NextDouble() * 150);
+            }
+            // The cafe's radio through its window: a son, quiet and muffled.
+            CafeRadio(mix.Add(0.45f, 0.3f, 0.5f), 820);
+            // The old men's dominoes on a table along the pavement: a tile clicked down now and then, or slammed.
+            var table = mix.Add(-0.35f, 0.25f, 0.45f);
+            for (double t = 0.8; t < BedSeconds - 1; t += 1.8 + rng.NextDouble() * 3.5) Things.Domino(table, t, rng);
+            return Finish(mix, Soundscape.Havana);
+        }
+
+        /// <summary>
+        /// A son on a radio inside a cafe, heard through its window: the tres's guajeo (its doubled strings an octave
+        /// apart), the bass's tumbao, the 3-2 son clave, the bongos' martillo and the conga's open tones, through a small
+        /// speaker and the wall (only the middle of the sound gets out). At 96 beats a minute a bar is 2.5 seconds, so
+        /// twelve bars fill the loop exactly and it never jumps.
+        /// </summary>
+        static void CafeRadio(Track into, int seed)
+        {
+            double beat = 60.0 / 96, eighth = beat / 2, bar = beat * 4;
+            int bars = (int)Math.Round(BedSeconds / bar);
+            var rng = new Random(seed);
+            var band = new Track(into.Length, 0f, 0f, 1f);
+            // C, F, G7, F: the son's I-IV-V-IV, a chord a bar, voiced as the tres plays them.
+            int[][] chords = { new[] { 60, 64, 67 }, new[] { 60, 65, 69 }, new[] { 59, 62, 65 }, new[] { 60, 65, 69 } };
+            int[] roots = { 48, 53, 43, 53 };
+            // The guajeo's eighths: it skips the downbeat and its last note pushes into the next bar's chord.
+            bool[] tres = { false, true, true, false, true, true, false, true };
+            bool[] bongoHigh = { true, true, true, false, true, true, true, false };
+            for (int b = 0; b < bars; b++)
+            {
+                double t0 = b * bar;
+                int c = b % 4, next = (b + 1) % 4;
+                for (int e = 0; e < 8; e++)
+                {
+                    double t = t0 + e * eighth;
+                    if (tres[e])
+                    {
+                        var notes = e == 7 ? chords[next] : chords[c];
+                        double f = Synth.MidiToHz(notes[(e + b) % 3] + 12);
+                        float vel = (float)(0.3 + rng.NextDouble() * 0.1);
+                        Instruments.Pluck(band, t, f, eighth * 0.9, vel, rng.Next(), 0.6f, 0.993f);
+                        Instruments.Pluck(band, t + 0.008, f * 2, eighth * 0.8, vel * 0.5f, rng.Next(), 0.6f, 0.99f);
+                    }
+                    Instruments.Bongo(band, t, (float)((e % 2 == 0 ? 0.3 : 0.18) + rng.NextDouble() * 0.06), bongoHigh[e], rng.Next());
+                }
+                // The tumbao: the fifth on the "and" of two, then the next chord's root on four, ahead of its bar.
+                Instruments.UprightBass(band, t0 + 3 * eighth, Synth.MidiToHz(roots[c] + 7), beat * 1.4, 0.5f, rng.Next());
+                Instruments.UprightBass(band, t0 + 6 * eighth, Synth.MidiToHz(roots[next]), beat * 1.9, 0.55f, rng.Next());
+                // The conga's open tones on four and its "and".
+                Instruments.Conga(band, t0 + 6 * eighth, 0.35f, false);
+                Instruments.Conga(band, t0 + 7 * eighth, 0.3f, true);
+                // The 3-2 son clave over each pair of bars: three strokes in the first (one, the "and" of two, four),
+                // two in the second (two, three).
+                if (b % 2 == 0) { Instruments.Clave(band, t0, 0.35f); Instruments.Clave(band, t0 + 3 * eighth, 0.35f); Instruments.Clave(band, t0 + 6 * eighth, 0.35f); }
+                else { Instruments.Clave(band, t0 + 2 * eighth, 0.35f); Instruments.Clave(band, t0 + 4 * eighth, 0.35f); }
+            }
+            // Through the radio's small speaker and the wall: no deep bass and no sparkle. Filtered twice round the
+            // loop, so the filters start settled and the loop stays seamless.
+            var src = band.buf;
+            var dst = into.buf;
+            var hp = new Svf();
+            var lp = new Svf();
+            var wall = new Svf();
+            for (int pass = 0; pass < 2; pass++)
+                for (int i = 0; i < src.Length; i++)
+                {
+                    hp.Process(src[i], 320, 0.7);
+                    lp.Process(hp.high, 1900, 0.9);
+                    wall.Process(lp.low, 2300, 0.6);
+                    if (pass == 1) dst[i] += wall.low;
+                }
+            Scratch.Return(src);
+        }
+
+        static float[] MiamiRiverBed()
+        {
+            var mix = new Mixdown(BedLength) { roomSize = 0.6f, damping = 0.5f, wet = 0.2f };
+            // The river between its seawalls, never still: the water slopping against the wall below, and its body
+            // rocking under it.
+            Rumble(mix.Add(-0.3f, 0.15f, 0.45f), 831, 260, 0.5, 0.6f, false);
+            Lapping(mix.Add(-0.45f, 0.2f, 1.8f), 832, 1.0, 1f);
+            Lapping(mix.Add(0.4f, 0.2f, 1.5f), 833, 0.9, 1f);
+            // The city across the water, a low hum, and the breeze down the river.
+            Rumble(mix.Add(0.3f, 0.1f, 0.3f), 834, 170, 0.05, 0.4f);
+            Airy(mix.Add(0f, 0f, 0.3f), 835, 650, 0.5, 0.09, 0.3f, 4);
+            // The boats tied up along the wall: a halyard tinking on a mast now and then.
+            var masts = mix.Add(0.5f, 0.3f, 0.25f);
+            var rng = new Random(836);
+            for (double t = 2; t < BedSeconds - 1; t += 3 + rng.NextDouble() * 5) Things.Halyard(masts, t, rng, 1 + rng.Next(2));
+            return Finish(mix, Soundscape.MiamiRiver);
+        }
+
+        static float[] BayBed()
+        {
+            var mix = new Mixdown(BedLength) { roomSize = 0.65f, damping = 0.55f, wet = 0.14f };
+            // The bay's small waves: a soft wash of chop further out, and the waves slapping the seawall one by one
+            // (a sheltered bay: no surf breaking, as on Kamakura's beach).
+            Rumble(mix.Add(-0.5f, 0.1f, 0.6f), 851, 300, 0.12, 0.5f, false);
+            Rumble(mix.Add(0.5f, 0.1f, 0.6f), 852, 330, 0.1, 0.5f, false);
+            Lapping(mix.Add(-0.3f, 0.15f, 1.4f), 853, 0.8, 1.3f);
+            Lapping(mix.Add(0.35f, 0.15f, 1.4f), 854, 0.7, 1.3f);
+            // The sea breeze in the palms along Bayfront: their fronds' dry rattle, swelling with each gust.
+            Palms(mix.Add(-0.55f, 0.1f, 0.35f), 855, 0.09);
+            Palms(mix.Add(0.6f, 0.1f, 0.3f), 856, 0.08);
+            Airy(mix.Add(0f, 0f, 0.3f), 857, 520, 0.5, 0.08, 0.3f, 4);
+            return Finish(mix, Soundscape.Bay);
+        }
+
+        static float[] DowntownBed()
+        {
+            var mix = new Mixdown(BedLength) { roomSize = 0.7f, damping = 0.45f, wet = 0.24f };
+            // The city's traffic between the towers: a steady hum, busier and more echoing than Kamakura's street.
+            Rumble(mix.Add(-0.7f, 0.15f), 871, 190, 0.07, 0.45f);
+            Rumble(mix.Add(0.7f, 0.15f), 872, 210, 0.06, 0.45f);
+            Rumble(mix.Add(0f, 0.3f, 0.4f), 873, 700, 0.1, 0.4f, false);
+            // The air conditioners' condensers on the walls and the roofs.
+            Condenser(mix.Add(0.45f, 0.25f, 0.12f), 874);
+            // Cars and a bus going by on the avenue.
+            var cars = mix.Add(0f, 0.3f, 0.6f);
+            double[] at = { 1.5, 6.5, 12, 17.5, 23, 27 };
+            for (int i = 0; i < at.Length; i++) Vehicle.Pass(cars, at[i], 4.5 + i % 3, 0.35f, 875 + i, i == 3 ? 0.45 : 0.75);
+            return Finish(mix, Soundscape.Downtown);
+        }
+
+        static float[] UnderlineBed()
+        {
+            var mix = new Mixdown(BedLength) { roomSize = 0.6f, damping = 0.5f, wet = 0.2f };
+            // A path and gardens under the Metrorail's guideway, beside the highway: traffic beyond the trees, the breeze.
+            Rumble(mix.Add(-0.6f, 0.1f, 0.7f), 891, 180, 0.06, 0.4f);
+            Rumble(mix.Add(0.6f, 0.1f, 0.6f), 892, 200, 0.07, 0.4f);
+            Airy(mix.Add(0f, 0f, 0.35f), 893, 900, 0.6, 0.08, 0.25f, 3.5);
+            // Cicadas in the trees in the heat, coming and going, soft (a loud, high buzz would drown the music).
+            Cicadas(mix.Add(0.4f, 0.15f, 0.2f), 894);
+            var cars = mix.Add(-0.3f, 0.3f, 0.4f);
+            for (int i = 0; i < 4; i++) Vehicle.Pass(cars, 2 + i * 7.5, 5.5, 0.3f, 895 + i, 0.7);
+            return Finish(mix, Soundscape.Underline);
+        }
+
+        static float[] MuseumParkBed()
+        {
+            var mix = new Mixdown(BedLength) { roomSize = 0.6f, damping = 0.5f, wet = 0.2f };
+            // A park on the bay: the breeze in the palms and the big banyans, soft (the old park's bright hiss drowned
+            // the music, LEARNINGS G2).
+            Palms(mix.Add(-0.6f, 0.1f, 0.4f), 911, 0.07);
+            Airy(mix.Add(0.6f, 0f, 0.3f), 912, 1100, 0.7, 0.07, 0.2f, 3);
+            // Small waves on the bay's edge beyond the lawn, and the city's hum behind.
+            Lapping(mix.Add(0.5f, 0.25f, 0.9f), 913, 0.6, 0.8f);
+            Rumble(mix.Add(0f, 0.1f, 0.35f), 914, 180, 0.05, 0.4f);
+            // Children playing far across the lawn.
+            var rng = new Random(915);
+            for (int v = 0; v < 2; v++)
+                Voices.Chatter(mix.Add((float)(rng.NextDouble() * 1.2 - 0.6), 0.75f, 0.05f), 916 + v * 7, 290 + rng.NextDouble() * 60);
+            return Finish(mix, Soundscape.MuseumPark);
+        }
+
+        /// <summary>A seawall's water for the whole loop: a slap every one to three seconds (fewer at a lower rate), each its own size.</summary>
+        static void Lapping(Track t, int seed, double rate, float size)
+        {
+            var r = new Random(seed);
+            for (double at = r.NextDouble(); at < BedSeconds; at += (0.8 + r.NextDouble() * 1.7) / rate)
+                Things.Slap(t, at, size * (float)(0.45 + r.NextDouble() * 0.55), r);
+        }
+
+        /// <summary>
+        /// Palm fronds in the breeze: their stiff leaflets knocking together, a scatter of dry clicks that thickens
+        /// with each gust, over a soft swish. Sparse clicks rather than a steady hiss, so it stays behind the music.
+        /// </summary>
+        static void Palms(Track t, int seed, double gustHz)
+        {
+            var n = new NoiseSource(seed);
+            var gust = new Drift(seed + 1, gustHz);
+            var flutter = new Drift(seed + 2, 6);
+            var rattle = new Svf();
+            var swish = new Svf();
+            float tick = 0f;
+            Layer(t, i =>
+            {
+                float g = gust.Next(), gg = g * g;
+                if (n.Value() < 0.001 + 0.012 * gg * gg) tick = (float)(0.4 + 0.6 * n.Value());
+                tick *= 0.93f;
+                rattle.Process(n.White() * tick, 2200, 1.4);
+                swish.Process(n.Pink(), 800 + 400 * g, 0.8);
+                return rattle.band * (0.5f + 0.5f * flutter.Next()) + swish.band * (0.1f + 0.5f * gg);
+            });
+        }
+
+        /// <summary>
+        /// Air-conditioner condensers on the walls: the compressors' hum at 120 Hz (twice America's 60 Hz mains) and
+        /// its harmonics, and their fans' low whoosh beating with the blades. Every frequency is a whole number of
+        /// cycles in the loop, so it folds seamlessly.
+        /// </summary>
+        static void Condenser(Track t, int seed)
+        {
+            var n = new NoiseSource(seed);
+            var fan = new Svf();
+            var d = new Drift(seed + 1, 0.2);
+            Layer(t, i =>
+            {
+                double tt = i / (double)Sr;
+                double hum = Math.Sin(TwoPi * 120 * tt) + 0.6 * Math.Sin(TwoPi * 180 * tt) + 0.35 * Math.Sin(TwoPi * 240 * tt) + 0.2 * Math.Sin(TwoPi * 360 * tt);
+                fan.Process(n.Pink(), 450, 0.7);
+                double blades = 1 - 0.3 * (0.5 + 0.5 * Math.Sin(TwoPi * 17 * tt));
+                return (float)(hum * 0.25 + fan.band * 1.2 * blades) * (0.85f + 0.15f * d.Next());
+            });
+        }
+
+        /// <summary>Cicadas in the trees: a soft buzz of tymbal clicks that swells and fades as they take it up and leave off.</summary>
+        static void Cicadas(Track t, int seed)
+        {
+            var n = new NoiseSource(seed);
+            var f = new Svf();
+            var swell = new Drift(seed + 1, 0.06);
+            var pulse = new Drift(seed + 2, 5);
+            double ph = 0;
+            Layer(t, i =>
+            {
+                float s = 0.25f + 0.75f * swell.Next();
+                ph += (170 + 40 * s) / Sr;
+                double p = ph - Math.Floor(ph);
+                f.Process(n.White() * (float)Math.Exp(-p * 10), 3900, 3);
+                return f.band * s * s * (0.6f + 0.4f * pulse.Next());
+            });
+        }
+
         // ================= Cues =================
 
         /// <summary>Render a one-shot through a small mix (a touch of the place's reverb), padded for its tail.</summary>
@@ -409,6 +675,65 @@ namespace DribbleToSchool.Audio
             c.Add(Cue("woodpecker", 1.4, 0.35f, 0.7f, (t, r) => Birds.Woodpecker(t, 0.05, r), 706, 30, 60, 0.18f, -0.5f, 0.4f, 0.06f));
             c.Add(Cue("dog", 1.5, 0.35f, 0.6f, (t, r) => Animals.Bark(t, 0.1, r, 1 + r.Next(2)), 707, 25, 50, 0.16f, 0f, 0.8f, 0.1f));
             c.Add(Cue("bicycle", 1.4, 0.2f, 0.5f, (t, r) => Things.BicycleBell(t, 0.05), 708, 30, 60, 0.2f, 0f, 0.8f));
+        }
+
+        // ---------- Florida's places ----------
+
+        static void HavanaCues(List<AmbientCue> c)
+        {
+            c.Add(Cue("rooster", 2.0, 0.3f, 0.6f, (t, r) => Birds.Rooster(t, 0.05, r), 1101, 30, 60, 0.22f, -0.5f, 0.4f, 0.05f));
+            c.Add(Cue("hens", 2.4, 0.2f, 0.5f, (t, r) => Birds.Hen(t, 0.05, r), 1102, 12, 26, 0.22f, 0f, 0.8f, 0.08f));
+            c.Add(Cue("dominoes", 2.6, 0.2f, 0.5f, (t, r) => Things.DominoShuffle(t, 0.05, 2.2, r), 1103, 20, 40, 0.28f, -0.35f, 0.3f, 0.04f));
+            c.Add(Cue("moped", 6, 0.15f, 0.5f, (t, r) => Vehicle.Moped(t, 0, 5.5, r), 1104, 20, 40, 0.35f, 0f, 0f, 0.08f, true));
+            c.Add(Cue("car", 7, 0.15f, 0.5f, (t, r) => Vehicle.Pass(t, 0, 6.5, 1f, r.Next(), 0.9), 1105, 14, 28, 0.45f, 0f, 0f, 0.06f, true));
+            c.Add(Cue("call", 1.0, 0.35f, 0.6f, (t, r) => Voices.Call(t, 0.05, r), 1106, 30, 60, 0.1f, 0f, 0.8f, 0.1f));
+        }
+
+        static void MiamiRiverCues(List<AmbientCue> c)
+        {
+            c.Add(Cue("outboard", 10, 0.15f, 0.6f, (t, r) => Vehicle.Outboard(t, 0, 9, r), 1201, 22, 45, 0.4f, 0f, 0f, 0.06f, true));
+            c.Add(Cue("tugHorn", 4, 0.5f, 0.9f, (t, r) => Things.TugHorn(t, 0.1), 1202, 60, 120, 0.14f, 0.5f, 0.3f, 0.03f));
+            c.Add(Cue("bridgeBell", 7, 0.35f, 0.8f, (t, r) => Things.BridgeBell(t, 0.05, 6), 1203, 70, 130, 0.14f, -0.5f, 0.3f, 0.01f));
+            c.Add(Cue("halyard", 2.5, 0.25f, 0.6f, (t, r) => Things.Halyard(t, 0.05, r, 3 + r.Next(3)), 1204, 9, 20, 0.2f, 0f, 0.8f, 0.08f));
+            c.Add(Cue("laughingGull", 3.2, 0.2f, 0.6f, (t, r) => Birds.LaughingGull(t, 0.05, r), 1205, 8, 18, 0.28f, 0f, 0.8f, 0.06f));
+            c.Add(Cue("laughingGullFar", 3.2, 0.45f, 0.8f, (t, r) => Birds.LaughingGull(t, 0.05, r), 1206, 10, 22, 0.13f, 0f, 0.9f, 0.08f));
+        }
+
+        static void BayCues(List<AmbientCue> c)
+        {
+            c.Add(Cue("laughingGull", 3.2, 0.2f, 0.6f, (t, r) => Birds.LaughingGull(t, 0.05, r), 1301, 6, 14, 0.28f, 0f, 0.8f, 0.06f));
+            c.Add(Cue("laughingGullFar", 3.2, 0.45f, 0.8f, (t, r) => Birds.LaughingGull(t, 0.05, r), 1302, 8, 16, 0.13f, 0f, 0.9f, 0.08f));
+            c.Add(Cue("cruiseHorn", 5.5, 0.5f, 0.9f, (t, r) => Things.CruiseHorn(t, 0.1), 1303, 80, 140, 0.14f, 0.5f, 0.3f, 0.02f));
+            c.Add(Cue("pelican", 2, 0.15f, 0.5f, (t, r) => Things.PelicanDive(t, 0.05, r), 1304, 18, 36, 0.2f, 0f, 0.8f, 0.06f));
+            c.Add(Cue("seawall", 1.8, 0.2f, 0.5f, (t, r) => { Things.Slap(t, 0.05, 1f, r); Things.Slap(t, 0.6, 0.6f, r); }, 1305, 8, 16, 0.26f, 0f, 0.6f, 0.06f));
+        }
+
+        static void DowntownCues(List<AmbientCue> c)
+        {
+            c.Add(Cue("car", 6, 0.2f, 0.6f, (t, r) => Vehicle.Pass(t, 0, 5.5, 1f, r.Next(), 0.9), 1401, 6, 14, 0.5f, 0f, 0f, 0.08f, true));
+            c.Add(Cue("busBrakes", 2.6, 0.3f, 0.7f, (t, r) => Vehicle.BusBrakes(t, 0.05, r), 1402, 18, 36, 0.2f, 0f, 0.8f, 0.04f));
+            c.Add(Cue("horn", 1.2, 0.35f, 0.7f, (t, r) => Vehicle.Horn(t, 0.1, r), 1403, 18, 40, 0.2f, 0f, 0.8f));
+            c.Add(Cue("crane", 4.2, 0.45f, 0.85f, (t, r) => Machines.CraneBeeps(t, 0.05, 6 + r.Next(5)), 1404, 30, 60, 0.13f, 0.5f, 0.4f, 0.02f));
+            c.Add(Cue("jackhammerFar", 3, 0.5f, 0.85f, (t, r) => Machines.Jackhammer(t, 0.05, 1.4 + r.NextDouble() * 1.4, r), 1405, 22, 45, 0.15f, -0.5f, 0.4f, 0.05f));
+            c.Add(Cue("parrots", 5, 0.25f, 0.7f, (t, r) => Birds.Parrots(t, 0.05, r), 1406, 35, 70, 0.26f, 0f, 0f, 0.06f, true));
+        }
+
+        static void UnderlineCues(List<AmbientCue> c)
+        {
+            c.Add(Cue("metrorail", 12, 0.35f, 0.8f, (t, r) => Vehicle.Metrorail(t, 0.1, 11.5, r), 1501, 35, 60, 0.5f, 0f, 0f, 0.03f, true));
+            c.Add(Cue("bicycle", 1.8, 0.2f, 0.5f, (t, r) => Things.RingBell(t, 0.05, r), 1502, 16, 32, 0.2f, 0f, 0.8f));
+            c.Add(Cue("jogger", 5, 0.15f, 0.5f, (t, r) => Things.Jogger(t, 0.1, 12, r), 1503, 14, 28, 0.24f, 0f, 0f, 0.05f, true));
+            c.Add(Cue("cicada", 8, 0.2f, 0.6f, (t, r) => Animals.Cicada(t, 0.1, 7.5, r), 1504, 20, 40, 0.14f, 0f, 0.8f, 0.05f));
+            c.Add(Cue("mockingbird", 5, 0.2f, 0.6f, (t, r) => Birds.Mockingbird(t, 0.1, r), 1505, 8, 16, 0.26f, 0f, 0.9f, 0.04f));
+        }
+
+        static void MuseumParkCues(List<AmbientCue> c)
+        {
+            c.Add(Cue("mockingbird", 5, 0.2f, 0.6f, (t, r) => Birds.Mockingbird(t, 0.1, r), 1601, 6, 14, 0.28f, 0f, 0.9f, 0.04f));
+            c.Add(Cue("grackle", 2.4, 0.2f, 0.6f, (t, r) => Birds.Grackle(t, 0.05, r), 1602, 10, 22, 0.22f, 0f, 0.9f, 0.05f));
+            c.Add(Cue("sprinkler", 8, 0.15f, 0.5f, (t, r) => Things.Sprinkler(t, 0.05, 7.5, r), 1603, 25, 50, 0.22f, 0.5f, 0.4f, 0.03f));
+            c.Add(Cue("kids", 2.5, 0.45f, 0.8f, (t, r) => Voices.Kids(t, 0.05, r), 1604, 15, 30, 0.1f, 0f, 0.8f, 0.08f));
+            c.Add(Cue("laughingGullFar", 3.2, 0.45f, 0.8f, (t, r) => Birds.LaughingGull(t, 0.05, r), 1605, 12, 25, 0.13f, 0f, 0.9f, 0.08f));
         }
 
         // ================= Sound makers =================
@@ -593,6 +918,122 @@ namespace DribbleToSchool.Audio
                     gap *= 1.02;
                 }
             }
+
+            /// <summary>A rooster crowing from a yard (Little Havana's roosters roam its streets): "cock-a-doodle-doooo",
+            /// three short syllables climbing, then the long call that rises, holds and falls away.</summary>
+            public static void Rooster(Track t, double at, Random r)
+            {
+                double f = 520 + r.NextDouble() * 120;
+                Formant(t, at, 0.13, u => f * (0.9 + 0.2 * u), 1100, 2400, 0.5f, 0.25, r.Next(), 0.01, 1.0, 0.4);
+                Formant(t, at + 0.17, 0.1, u => f * 1.05, 1200, 2500, 0.45f, 0.25, r.Next(), 0.01, 1.0, 0.4);
+                Formant(t, at + 0.31, 0.2, u => f * (1.1 + 0.15 * Math.Sin(Math.PI * u)), 1300, 2600, 0.55f, 0.25, r.Next(), 0.01, 0.8, 0.4);
+                Formant(t, at + 0.56, 0.95, u => f * (1.25 + 0.15 * Math.Sin(Math.PI * Math.Min(1, u * 1.6)) - 0.45 * u * u), 1250, 2500, 0.6f, 0.3, r.Next(), 0.04, 0.35, 0.45);
+            }
+
+            /// <summary>A hen clucking about a yard: "buk, buk, buk", and now and then a "ba-GAWK".</summary>
+            public static void Hen(Track t, double at, Random r)
+            {
+                int clucks = 3 + r.Next(4);
+                double time = at, f = 330 + r.NextDouble() * 80;
+                for (int i = 0; i < clucks; i++)
+                {
+                    Formant(t, time, 0.07, u => f * (1.1 - 0.2 * u), 800, 1900, 0.5f, 0.3, r.Next(), 0.005, 1.5, 0.3);
+                    time += 0.16 + r.NextDouble() * 0.12;
+                }
+                if (r.NextDouble() < 0.5)
+                    Formant(t, time + 0.05, 0.3, u => f * (1.3 + 0.5 * Math.Sin(Math.PI * u)), 1000, 2300, 0.55f, 0.3, r.Next(), 0.02, 1.2, 0.35);
+            }
+
+            /// <summary>A laughing gull, Florida's commonest gull: a long, nasal "kee-ah" or two, then a run of "ha"s,
+            /// quick at first, slowing and falling as it laughs itself out (Kamakura's herring gulls cry "kyow").</summary>
+            public static void LaughingGull(Track t, double at, Random r)
+            {
+                double f = 900 + r.NextDouble() * 200, time = at;
+                int longs = 1 + r.Next(2);
+                for (int i = 0; i < longs; i++)
+                {
+                    Formant(t, time, 0.32, u => f * (u < 0.3 ? 1.1 + u : 1.4 - 0.5 * (u - 0.3)), 1500, 2900, 0.55f, 0.12, r.Next(), 0.02, 0.9, 0.25);
+                    time += 0.42;
+                }
+                int has = 6 + r.Next(5);
+                double gap = 0.13, d = 0.08;
+                for (int i = 0; i < has; i++)
+                {
+                    double ff = f * (1.25 - i * 0.025);
+                    Formant(t, time, d, u => ff * (u < 0.3 ? 0.9 + u : 1.2 - 0.3 * u), 1500, 2900, 0.5f, 0.12, r.Next(), 0.008, 1.1, 0.25);
+                    time += gap;
+                    gap *= 1.09;
+                    d *= 1.08;
+                }
+            }
+
+            /// <summary>A flock of wild parrots (Miami's conures and parakeets) flying over: harsh, screeching squawks
+            /// from several birds at once, calling over each other.</summary>
+            public static void Parrots(Track t, double at, Random r)
+            {
+                int birds = 4 + r.Next(4);
+                for (int b = 0; b < birds; b++)
+                {
+                    double f = 1000 + r.NextDouble() * 500, time = at + r.NextDouble() * 0.6;
+                    int calls = 3 + r.Next(4);
+                    for (int i = 0; i < calls && time < at + 4.2; i++)
+                    {
+                        double d = 0.1 + r.NextDouble() * 0.14, ff = f * (0.9 + r.NextDouble() * 0.2);
+                        Formant(t, time, d, u => ff * (1 + 0.25 * Math.Sin(Math.PI * u)) * (1 + 0.06 * Math.Sin(TwoPi * 30 * u * d)), 2100, 3400, 0.4f, 0.3, r.Next(), 0.005, 1.0, 0.5);
+                        time += d + 0.12 + r.NextDouble() * 0.35;
+                    }
+                }
+            }
+
+            /// <summary>A northern mockingbird singing from a lamp post: a phrase repeated two to four times, then
+            /// another, each made up fresh (a slide, a quick triplet, a trill or a harsh "chek").</summary>
+            public static void Mockingbird(Track t, double at, Random r)
+            {
+                double time = at;
+                int phrases = 2 + r.Next(2);
+                for (int p = 0; p < phrases && time < at + 3.6; p++)
+                {
+                    int kind = r.Next(4), reps = 2 + r.Next(3);
+                    double f = 1800 + r.NextDouble() * 2400, f2 = f * (0.6 + r.NextDouble() * 0.9), d = 0.06 + r.NextDouble() * 0.1;
+                    for (int k = 0; k < reps && time < at + 4.2; k++)
+                    {
+                        switch (kind)
+                        {
+                            case 0:
+                                Whistle(t, time, d, f, f2, 0.45f);
+                                time += d;
+                                break;
+                            case 1:
+                                for (int j = 0; j < 3; j++) Whistle(t, time + j * 0.055, 0.04, f, f * 1.1, 0.4f);
+                                time += 0.17;
+                                break;
+                            case 2:
+                                Whistle(t, time, d + 0.08, f, f, 0.4f, 38, 0.08);
+                                time += d + 0.08;
+                                break;
+                            default:
+                                Formant(t, time, 0.07, u => 1100, 2200, 3600, 0.45f, 0.4, r.Next(), 0.003, 1.2, 0.3);
+                                time += 0.07;
+                                break;
+                        }
+                        time += 0.06;
+                    }
+                    time += 0.2 + r.NextDouble() * 0.2;
+                }
+            }
+
+            /// <summary>A boat-tailed grackle: a couple of "chuck"s, a dry rattle, then its creaking, rising squeal,
+            /// like a rusty gate.</summary>
+            public static void Grackle(Track t, double at, Random r)
+            {
+                for (int i = 0; i < 2; i++)
+                    Formant(t, at + i * 0.18, 0.06, u => 700, 1500, 2700, 0.4f, 0.35, r.Next(), 0.002, 1.5, 0.3);
+                double time = at + 0.45;
+                for (int j = 0; j < 8; j++) NoiseBurst(t, time + j * 0.035, 0.03, 1800, 2.5, 0.3f, r.Next(), 0.0005, 120);
+                time += 0.35;
+                Whistle(t, time, 0.5, 1200, 5200, 0.4f, 55, 0.05, 2.0);
+                Whistle(t, time + 0.62, 0.22, 2400, 4600, 0.3f, 70, 0.04, 1.5);
+            }
         }
 
         static class Animals
@@ -622,6 +1063,26 @@ namespace DribbleToSchool.Audio
                 int flaps = 7 + r.Next(4);
                 for (int i = 0; i < flaps; i++)
                     NoiseBurst(t, at + i * 0.1, 0.09, 900 + r.NextDouble() * 500, 0.8, (float)(0.6 * Math.Pow(0.9, i)), r.Next(), 0.01, 28);
+            }
+
+            /// <summary>A cicada in a tree, buzzing in the heat: a rattle of tymbal clicks that swells up, holds and winds down.</summary>
+            public static void Cicada(Track t, double at, double dur, Random r)
+            {
+                int s = At(at), n = At(dur);
+                var ns = new NoiseSource(r.Next());
+                var f = new Svf();
+                double ph = 0, centre = 3600 + r.NextDouble() * 600;
+                for (int i = 0; i < n; i++)
+                {
+                    double u = i / (double)n, tt = i / (double)Sr;
+                    double rise = Math.Min(1, u / 0.3);
+                    double env = rise * rise * Math.Min(1, (1 - u) / 0.25);
+                    ph += (160 + 60 * env) / Sr;
+                    double p = ph - Math.Floor(ph);
+                    f.Process((float)(ns.White() * Math.Exp(-p * 10)), centre * (0.9 + 0.1 * env), 3);
+                    double am = 0.7 + 0.3 * Math.Sin(TwoPi * 7 * tt);
+                    t.Add(s + i, (float)(f.band * env * am) * 0.5f);
+                }
             }
         }
 
@@ -691,6 +1152,28 @@ namespace DribbleToSchool.Audio
                 {
                     double ff = f * (1.1 - i * 0.04);
                     Formant(t, at + i * 0.15, 0.1, u => ff, 750, 1250, 0.6f, 0.4, r.Next(), 0.01, 1.2);
+                }
+            }
+
+            /// <summary>A neighbour calling out across the street: "o-YE!", a man's voice or a woman's.</summary>
+            public static void Call(Track t, double at, Random r)
+            {
+                double f = r.NextDouble() < 0.5 ? 140 + r.NextDouble() * 40 : 230 + r.NextDouble() * 50;
+                Formant(t, at, 0.16, u => f * (1 + 0.1 * u), 500, 900, 0.5f, 0.1, r.Next(), 0.02, 0.5);
+                Formant(t, at + 0.17, 0.42, u => f * (1.35 + 0.15 * Math.Sin(Math.PI * u) - 0.3 * u), 600, 1900, 0.6f, 0.1, r.Next(), 0.02, 0.9);
+            }
+
+            /// <summary>Children playing far off: two or three shouts and calls, rising or falling, one after another.</summary>
+            public static void Kids(Track t, double at, Random r)
+            {
+                int calls = 2 + r.Next(2);
+                double time = at;
+                for (int i = 0; i < calls; i++)
+                {
+                    double f = 300 + r.NextDouble() * 160, d = 0.25 + r.NextDouble() * 0.25;
+                    bool rise = r.NextDouble() < 0.5;
+                    Formant(t, time, d, u => f * (rise ? 1 + 0.35 * Math.Sin(Math.PI * u * 0.8) : 1.25 - 0.3 * u), 850 + r.NextDouble() * 300, 2200 + r.NextDouble() * 500, 0.5f, 0.15, r.Next(), 0.03, 0.8);
+                    time += d + 0.1 + r.NextDouble() * 0.25;
                 }
             }
         }
@@ -767,6 +1250,95 @@ namespace DribbleToSchool.Audio
                     NoiseBurst(t, time, 0.08, 600, 1.5, g, r.Next(), 0.001, 45);
                     NoiseBurst(t, time + 0.13, 0.08, 560, 1.5, g * 0.9f, r.Next(), 0.001, 45);
                     time += 0.85 + r.NextDouble() * 0.1;
+                }
+            }
+
+            /// <summary>A moped buzzing by: a small two-stroke's high, rasping note through its little exhaust,
+            /// wavering with the throttle and dropping as it passes.</summary>
+            public static void Moped(Track t, double at, double dur, Random r)
+            {
+                int s = At(at), n = At(dur);
+                var ns = new NoiseSource(r.Next());
+                var exhaust = new Svf();
+                var tyres = new Svf();
+                var rev = new Drift(r.Next(), 1.5);
+                double ph = 0, baseHz = 105 + r.NextDouble() * 25;
+                for (int i = 0; i < n; i++)
+                {
+                    double u = i / (double)n, x = (u - 0.5) * 6;
+                    double near = 1.0 / (1 + x * x);
+                    double doppler = 1 + 0.07 * Math.Tanh(-x * 1.5);
+                    ph += baseHz * doppler * (0.94 + 0.12 * rev.Next()) / Sr;
+                    double p = ph - Math.Floor(ph);
+                    double pulse = Math.Exp(-p * 7) - 0.15 + ns.White() * 0.08;
+                    exhaust.Process((float)pulse, 650 + 900 * near, 2.2);
+                    double tyre = tyres.Process(ns.Pink(), 400 + 900 * near, 0.6);
+                    double env = near * Math.Min(1, u * 8) * Math.Min(1, (1 - u) * 8);
+                    t.Add(s + i, (float)((exhaust.band + exhaust.low * 0.5 + tyre * 0.2) * env));
+                }
+            }
+
+            /// <summary>An outboard motor going by on the river: the engine's buzz and its gears' whine, dropping as it
+            /// passes, over the hull's hiss through the water; then its wake slaps the seawall.</summary>
+            public static void Outboard(Track t, double at, double dur, Random r)
+            {
+                int s = At(at), n = At(dur * 0.8);
+                var ns = new NoiseSource(r.Next());
+                var eng = new Svf();
+                var hull = new Svf();
+                double ph = 0, wph = 0, baseHz = 78 + r.NextDouble() * 18;
+                for (int i = 0; i < n; i++)
+                {
+                    double u = i / (double)n, x = (u - 0.5) * 5;
+                    double near = 1.0 / (1 + x * x);
+                    double doppler = 1 + 0.06 * Math.Tanh(-x * 1.5);
+                    ph += baseHz * doppler / Sr;
+                    wph += baseHz * doppler * 7 / Sr;
+                    double p = ph - Math.Floor(ph);
+                    double e = eng.Process((float)((p < 0.25 ? 1 : -0.33) + ns.White() * 0.2), 400 + 900 * near, 1.4);
+                    hull.Process(ns.Pink(), 900 + 1200 * near, 0.6);
+                    double env = near * Math.Min(1, u * 6) * Math.Min(1, (1 - u) * 6);
+                    t.Add(s + i, (float)((e * 0.7 + Math.Sin(TwoPi * wph) * 0.08 * near + hull.band * 0.9) * env));
+                }
+                for (int i = 0; i < 3; i++) Things.Slap(t, at + dur * 0.8 + i * (0.5 + r.NextDouble() * 0.2), 0.5f - i * 0.1f, r);
+            }
+
+            /// <summary>A Metrobus pulling in at a stop: its brakes' squeal, the air brakes' hiss as they set, and the
+            /// sigh as it kneels to the kerb.</summary>
+            public static void BusBrakes(Track t, double at, Random r)
+            {
+                Whistle(t, at, 0.5, 2300 + r.NextDouble() * 300, 2150, 0.12f, 6, 0.01);
+                NoiseBurst(t, at + 0.45, 0.6, 3300, 0.6, 0.5f, r.Next(), 0.004, 5, true);
+                NoiseBurst(t, at + 1.15, 1.2, 1300, 0.7, 0.3f, r.Next(), 0.06, 2.5);
+            }
+
+            /// <summary>The Metrorail going over on its concrete guideway: the deck's deep rumble, the wheels' hiss on
+            /// the welded rail, a soft knock at each expansion joint, and the motors' whine rising as it pulls away from
+            /// a station (or falling as it slows into one).</summary>
+            public static void Metrorail(Track t, double at, double dur, Random r)
+            {
+                int s = At(at), n = At(dur);
+                var ns = new NoiseSource(r.Next());
+                var deck = new Svf();
+                var rail = new Svf();
+                bool pulling = r.NextDouble() < 0.5;
+                double ph = 0;
+                for (int i = 0; i < n; i++)
+                {
+                    double u = i / (double)n;
+                    double env = Math.Pow(Math.Sin(Math.PI * u), 0.9);
+                    double rumble = deck.Process(ns.Brown(), 95, 0.9) * 1.8;
+                    rail.Process(ns.Pink(), 1100 + 600 * env, 0.8);
+                    double k = pulling ? u : 1 - u;
+                    ph += (420 + 700 * k * k) / Sr;
+                    double whine = (Math.Sin(TwoPi * ph) + 0.4 * Math.Sin(TwoPi * 2 * ph)) * 0.3;
+                    t.Add(s + i, (float)((rumble + rail.band * 0.5 + whine) * env) * 0.8f);
+                }
+                for (double time = at + 0.8; time < at + dur - 0.5; time += 1.2 + r.NextDouble() * 0.2)
+                {
+                    float g = (float)Math.Pow(Math.Sin(Math.PI * (time - at) / dur), 1.2) * 0.5f;
+                    NoiseBurst(t, time, 0.1, 300, 1.2, g, r.Next(), 0.002, 30);
+                    NoiseBurst(t, time + 0.11, 0.1, 280, 1.2, g * 0.8f, r.Next(), 0.002, 30);
                 }
             }
         }
@@ -879,6 +1451,157 @@ namespace DribbleToSchool.Audio
                     NoiseBurst(t, s, 0.08, 250, 1.0, 0.6f * g, r.Next(), 0.002, 50);
                     NoiseBurst(t, s + 0.07, 0.04, 1500, 1.2, 0.25f * g, r.Next(), 0.001, 100);
                 }
+            }
+
+            /// <summary>Water slopping against a seawall: a hollow clop, the slap on the stone and the water running back off it.</summary>
+            public static void Slap(Track t, double at, float size, Random r)
+            {
+                NoiseBurst(t, at, 0.3, 200 + r.NextDouble() * 180, 2.2, 0.9f * size, r.Next(), 0.012, 12);
+                NoiseBurst(t, at + 0.015, 0.14, 850 + r.NextDouble() * 500, 1.1, 0.35f * size, r.Next(), 0.004, 28);
+                NoiseBurst(t, at + 0.1, 0.8, 1300 + r.NextDouble() * 700, 0.8, 0.1f * size, r.Next(), 0.12, 5);
+                if (r.NextDouble() < 0.35) Whistle(t, at + 0.06, 0.07, 260 + r.NextDouble() * 120, 480 + r.NextDouble() * 200, 0.2f * size);
+            }
+
+            /// <summary>A domino played on a cafe table: the tile clicked down, or slammed with a knock on the wood.</summary>
+            public static void Domino(Track t, double at, Random r)
+            {
+                bool slam = r.NextDouble() < 0.35;
+                NoiseBurst(t, at, 0.04, 3000 + r.NextDouble() * 800, 2.0, slam ? 0.55f : 0.35f, r.Next(), 0.0004, 160);
+                NoiseBurst(t, at, 0.1, 550 + r.NextDouble() * 200, 1.6, slam ? 0.7f : 0.25f, r.Next(), 0.0008, 50);
+                if (!slam && r.NextDouble() < 0.5) NoiseBurst(t, at + 0.06 + r.NextDouble() * 0.03, 0.03, 3200, 2.0, 0.18f, r.Next(), 0.0004, 180);
+            }
+
+            /// <summary>The dominoes washed face down on the table before a game: a long clatter of tiles knocking together.</summary>
+            public static void DominoShuffle(Track t, double at, double dur, Random r)
+            {
+                for (double time = at; time < at + dur; time += 0.025 + r.NextDouble() * 0.07)
+                {
+                    float g = (float)Math.Sin(Math.PI * (time - at) / dur);
+                    NoiseBurst(t, time, 0.03, 2600 + r.NextDouble() * 1400, 1.8, g * (0.2f + (float)r.NextDouble() * 0.3f), r.Next(), 0.0004, 170);
+                    if (r.NextDouble() < 0.2) NoiseBurst(t, time, 0.06, 600 + r.NextDouble() * 200, 1.4, g * 0.25f, r.Next(), 0.0008, 60);
+                }
+            }
+
+            /// <summary>A halyard slapping a boat's aluminium mast in the breeze: a few hollow tinks, never in time.</summary>
+            public static void Halyard(Track t, double at, Random r, int tinks)
+            {
+                double time = at, f = 1500 + r.NextDouble() * 700;
+                for (int i = 0; i < tinks; i++)
+                {
+                    float g = (float)(0.6 + r.NextDouble() * 0.4);
+                    Strike(t, time, f * (0.98 + r.NextDouble() * 0.04), new[] { 1.0, 2.45, 4.1 }, new[] { 1.0, 0.45, 0.2 }, 9, 0.22f * g, 0.5);
+                    NoiseBurst(t, time, 0.02, 1200, 1.0, 0.15f * g, r.Next(), 0.0004, 150);
+                    time += 0.25 + r.NextDouble() * 0.5;
+                }
+            }
+
+            /// <summary>A tugboat's air horn down the river: a long blast and a short one, two notes a third apart.</summary>
+            public static void TugHorn(Track t, double at)
+            {
+                double[] start = { 0, 2.4 };
+                double[] len = { 1.9, 0.9 };
+                for (int b = 0; b < 2; b++)
+                {
+                    int s = At(at + start[b]), n = At(len[b]);
+                    double p1 = 0, p2 = 0;
+                    var f = new Svf();
+                    for (int i = 0; i < n; i++)
+                    {
+                        double tt = i / (double)Sr;
+                        double bend = 1 - 0.04 * Math.Exp(-tt * 6);
+                        p1 += 172 * bend / Sr;
+                        p2 += 172 * 1.26 * bend / Sr;
+                        double saw = (2 * (p1 - Math.Floor(p1)) - 1) + 0.8 * (2 * (p2 - Math.Floor(p2)) - 1);
+                        double env = Math.Min(1, tt / 0.12) * Math.Min(1, (n - i) / (0.25 * Sr));
+                        t.Add(s + i, f.Process((float)saw, 750, 0.9) * (float)env * 0.5f);
+                    }
+                }
+            }
+
+            /// <summary>The drawbridge's warning bell as its gates come down to raise the bridge: quick, steady strokes, three a second.</summary>
+            public static void BridgeBell(Track t, double at, double seconds)
+            {
+                for (double time = at; time < at + seconds - 0.9; time += 0.3)
+                    Strike(t, time, 1180, new[] { 1.0, 2.0, 2.76, 4.1 }, new[] { 1.0, 0.4, 0.3, 0.15 }, 3.5, 0.3f, 0.9);
+            }
+
+            /// <summary>A cruise ship's horn far across the bay, leaving the port: a deep, long chord that swells and dies away.</summary>
+            public static void CruiseHorn(Track t, double at)
+            {
+                int s = At(at), n = At(4.8);
+                double p = 0, q = 0;
+                var f = new Svf();
+                for (int i = 0; i < n; i++)
+                {
+                    double tt = i / (double)Sr;
+                    p += 73.0 / Sr;
+                    q += 110.0 / Sr;
+                    double saw = (2 * (p - Math.Floor(p)) - 1) + 0.6 * (2 * (q - Math.Floor(q)) - 1);
+                    double env = Math.Min(1, tt / 0.5) * Math.Min(1, (n - i) / (0.9 * Sr));
+                    t.Add(s + i, f.Process((float)saw, 380, 1.1) * (float)env * 0.5f);
+                }
+            }
+
+            /// <summary>A brown pelican diving for fish: the rush of its fall, a heavy plunge, the spray and the drops falling back.</summary>
+            public static void PelicanDive(Track t, double at, Random r)
+            {
+                int s = At(at), n = At(0.35);
+                var ns = new NoiseSource(r.Next());
+                var f = new Svf();
+                for (int i = 0; i < n; i++)
+                {
+                    double u = i / (double)n;
+                    f.Process(ns.White(), 500 + 1300 * u, 1.2);
+                    t.Add(s + i, f.band * (float)(u * u) * 0.25f);
+                }
+                double hit = at + 0.35;
+                int s2 = At(hit), n2 = At(0.25);
+                double ph = 0;
+                for (int i = 0; i < n2; i++)
+                {
+                    double tt = i / (double)Sr;
+                    ph += (150 * Math.Exp(-tt * 9) + 55) / Sr;
+                    t.Add(s2 + i, (float)(Math.Sin(TwoPi * ph) * Math.Exp(-tt * 14) * Math.Min(1, tt / 0.003)) * 0.7f);
+                }
+                NoiseBurst(t, hit, 0.9, 1100, 0.5, 0.55f, r.Next(), 0.004, 5);
+                for (int i = 0; i < 7; i++)
+                    Whistle(t, hit + 0.15 + i * 0.07 + r.NextDouble() * 0.05, 0.035, 800 + r.NextDouble() * 800, 1600 + r.NextDouble() * 900, 0.15f);
+            }
+
+            /// <summary>A bicycle's ringing bell: its clapper whirring against the dome, "brrring", once or twice.</summary>
+            public static void RingBell(Track t, double at, Random r)
+            {
+                int rings = 1 + r.Next(2);
+                for (int k = 0; k < rings; k++)
+                    for (int j = 0; j < 10; j++)
+                        Strike(t, at + k * 0.7 + j * 0.045, 2300, new[] { 1.0, 1.52, 2.73 }, new[] { 1.0, 0.5, 0.25 }, 6, 0.18f, 0.6);
+            }
+
+            /// <summary>A jogger running by on the path: light, quick steps and a breath out every other one.</summary>
+            public static void Jogger(Track t, double at, int steps, Random r)
+            {
+                for (int i = 0; i < steps; i++)
+                {
+                    double s = at + i * (0.36 + r.NextDouble() * 0.02);
+                    float g = (float)Math.Sin(Math.PI * (i + 0.5) / steps);
+                    NoiseBurst(t, s, 0.04, 1800, 1.0, 0.35f * g, r.Next(), 0.0008, 110);
+                    NoiseBurst(t, s, 0.07, 200, 1.0, 0.5f * g, r.Next(), 0.002, 60);
+                    if (i % 2 == 0) NoiseBurst(t, s + 0.05, 0.18, 1000, 0.7, 0.12f * g, r.Next(), 0.03, 14);
+                }
+            }
+
+            /// <summary>An impact sprinkler on the lawn: "tch, tch, tch" as it steps round its arc, then the quick
+            /// rattle as it swings back.</summary>
+            public static void Sprinkler(Track t, double at, double dur, Random r)
+            {
+                double back = at + dur - 1.1, time = at;
+                for (; time < back; time += 0.15 + r.NextDouble() * 0.02)
+                {
+                    NoiseBurst(t, time, 0.05, 2000 + r.NextDouble() * 300, 1.5, 0.35f, r.Next(), 0.0005, 90);
+                    NoiseBurst(t, time + 0.005, 0.12, 3200, 0.7, 0.1f, r.Next(), 0.002, 25);
+                }
+                for (; time < at + dur; time += 0.04)
+                    NoiseBurst(t, time, 0.04, 2100, 1.5, 0.22f, r.Next(), 0.0005, 110);
             }
         }
 
@@ -1020,6 +1743,24 @@ namespace DribbleToSchool.Audio
                     NoiseBurst(t, time, 0.03, 2000, 1.0, 0.3f * (float)Math.Pow(0.85, i), r.Next(), 0.0005, 120);
                     time += gap * (0.6 + r.NextDouble() * 0.6);
                     gap *= 0.85;
+                }
+            }
+
+            /// <summary>A tower crane's warning as it swings its load over the street: quick, high beeps, far up.</summary>
+            public static void CraneBeeps(Track t, double at, int beeps)
+            {
+                for (int b = 0; b < beeps; b++)
+                {
+                    int s = At(at + b * 0.4), n = At(0.2);
+                    double p = 0;
+                    for (int i = 0; i < n; i++)
+                    {
+                        double tt = i / (double)Sr;
+                        p += 1450.0 / Sr;
+                        double sq = (p - Math.Floor(p)) < 0.5 ? 1 : -1;
+                        double env = Math.Min(1, tt / 0.008) * Math.Min(1, (n - i) / (0.008 * Sr));
+                        t.Add(s + i, (float)(sq * 0.15 + Math.Sin(TwoPi * p) * 0.5) * (float)env * 0.6f);
+                    }
                 }
             }
         }

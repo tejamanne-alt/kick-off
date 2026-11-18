@@ -29,7 +29,7 @@ This file is the resume point. A new session should read it first. All eight pha
 - **Progress** is saved to `persistentDataPath/save.json` by `Progression/SaveSystem.cs` (atomic write, corrupt files backed up). Coin economy constants are in `Progression/Rewards.cs`.
 - **Art is code.** `Art/ProceduralArt.cs` draws everything on `Art/PixelCanvas.cs` (anti-aliased shapes, ink outline, watercolour grain, wrap-aware tiling). `Editor/ArtBaker.cs` bakes it to `Assets/_Game/Art/Generated` (FullRect meshes, 9-slice borders). Chapter palettes are in `Art/ChapterTheme.cs`.
 - **Previewing art and audio without Unity.** The scratchpad harnesses compile ProceduralArt/Synth against tiny Unity stubs (a Color/Vector2/Mathf/Perlin reimplementation) and render PNG/WAV. Use them to eyeball changes before committing.
-- **Audio is code.** `Audio/Synth.cs`, `SoundBank.cs` (29 SFX), `Mixdown.cs` (stereo tracks, reverb, filters, noise), `Instruments.cs`, `MusicGenerator.cs` (7 loops) and `AmbienceGenerator.cs` (7 beds and their cues) are pure C#. `AudioDirector` (auto-booted, DontDestroyOnLoad) maps GameEvents to SFX and haptics, and crossfades the music and ambience of the place (`Soundscape`, by route).
+- **Audio is code.** `Audio/Synth.cs`, `SoundBank.cs` (29 SFX), `Mixdown.cs` (stereo tracks, reverb, filters, noise), `Instruments.cs`, `MusicGenerator.cs` (7 loops) and `AmbienceGenerator.cs` (13 beds and their cues: Kamakura's seven, Miami's six) are pure C#. `AudioDirector` (auto-booted, DontDestroyOnLoad) maps GameEvents to SFX and haptics, and crossfades the music and ambience of the place (`Soundscape`, by route).
 - **All UI text goes through `Localization/Loc.T(key)`.** Tables live in `Localization/StringTables.cs` (en, es). Lose reasons are keys (`lose.*`); level names are `level.<id>`.
 - No Cinemachine yet: `CameraRig/CameraFollow2D.cs` covers look-ahead, the dead zone and bounds.
 
@@ -1845,6 +1845,49 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
   and the map rendered and looked at.
 - **Not run in Unity:** building the legs (LevelFeasibility), the bus ride's near side and pull-out, the kit models' facing
   in the game (the review renders use the kit's own axes), the frame rate on the phone.
+
+## Nothing of Kamakura's in Florida (generated content v125)
+
+- **Why.** The user: "Get even most out of Florida... make sure nothing overlaps between Kamakura and Florida." An audit of
+  every track piece Florida's layouts call found the original town's looks still built by chapter in Florida's legs
+  (LEARNINGS D10).
+- **Florida's own play pieces** (`tools/blender/kit_buildings_mia_play.py`, 20 more Miami kit models; `TrackBuilder.MiamiLook`):
+  - The slide-unders a Florida leg uses, each with its look's own solid and play (`<Look>MIA`): a Cuban fruit stand under a
+    striped awning (FL1-1), a sidewalk shed under a building site (FL1-3), a fishing boat on its stands (FL1-4, FL2-3), a mango
+    bough (FL2-1), a mural-painted roll shutter (FL2-5), the Underline's gym rig (FL3-1), a garage boom gate (FL3-2), a
+    banyan's roots (FL3-3).
+  - A work zone's barricades and drums at the pits, crates of mangoes, the US walk signal (hand over walking man, the SW 8 ST
+    blade) with Miami's pickups, SUVs and vans in Florida paint at the crossings, white-and-teal signboards, Art Deco checkpoint
+    poles, the bayfront's splash fountain, coral keystone ledges, the road's shade from live oaks and royal palms.
+  - The Animals kit's brown pelican (the gull's rig, 1.4 m) for the pelicans.
+  - Walkers in Miami's summer clothes; people at every Florida stop (an abuelo waiting for the 8, a commuter, the coffee window's
+    lady, a neighbour fishing off the dock, a jogger, a painter).
+- **The plan:** Riverside Street (FL2-1) is now a district (ranch houses, cottages, live oaks, mailboxes on posts, the river's
+  freighter and crane beyond); white ibises on the lawns; forecourts on Brickell and Biscayne (royal palms, benches, coffee
+  kiosks, fruit carts, scooters) and Biscayne's kerb; a Miami tower crane (`CraneMIA`); only Florida's own trees.
+- **The people mover's ride** (`RideBuilder`): the Metromover's car on the kit's guideway, the bayfront's balustrade, royal palms
+  and banyans, a cruise ship, a freighter, a tug and Brickell's towers.
+- **The school** reads Bayside Elementary on its marquee and wall (the Florida kit, repainted). The map drops the shared trees
+  and the town's hatchbacks, and gains Brickell's cranes.
+- **Miami's soundscapes** (`Audio/AmbienceGenerator`, `Soundscape`: Havana, MiamiRiver, Bay, Downtown, Underline, MuseumPark,
+  appended so Kamakura's keep their numbers): a cafe radio's son through a wall, roosters, hens and dominoes; the river's
+  seawall slaps, outboards, a tug's horn, the drawbridge's bell, halyards and laughing gulls; the bay's chop, palm rattle, a
+  cruise ship's horn and pelicans diving; downtown's traffic, AC hum, bus brakes, crane beeps and flocks of parrots; the
+  Metrorail overhead, bicycle bells and cicadas; Museum Park's mockingbirds, grackles and sprinklers. Their levels sit with
+  Kamakura's (beds 0.037 to 0.05; no cue louder than the existing loudest; no hiss: LEARNINGS G2). Music by place
+  (`Soundscapes.MusicOf`) keeps ten legs' music; FL2-1 now plays the Beach's soca and FL1-3 the Street's son.
+- **Tests** (`MiamiKitTests`): the plan places only Florida's own models; every slide-under look in `FloridaLevels` has its
+  Miami model; every Florida stop has its Miami set piece; the pelican is in the Animals kit; no Florida leg plays a Kamakura
+  soundscape. `tools/audio_hash/expected.txt`: the 102 existing clips unchanged, 57 new.
+- **Cost** (estimates, not measured): the new models are 0.2k to 3.5k triangles (the crane about 3k, far off); a leg places
+  some 10 to 30 more plan models (ibises, forecourts); the ride scene's kit models replace its boxes. Each Miami soundscape
+  takes about 0.45 to 0.9 s and 53 to 75 MB to generate on the desktop, as Kamakura's do (Havana the heaviest, as Market is).
+  Check on the Nord CE5: FL1-1's soundscape generation and FL1-3.
+- **Checked:** compile (no new error kinds in any `#if` set), `unity_api_check` 6000.7, the coin audit, the plan's checks and
+  the new tests' rules in Python, the audio harness (no NaN, levels), review renders of every new model and of the legs with
+  their new pieces.
+- **Not run in Unity:** building the legs and the ride, the new pieces' facing and solids in play, the stops' people, hearing the
+  soundscapes, the frame rate on the phone.
 
 ## After Phase 8 (next steps)
 

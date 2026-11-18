@@ -3,8 +3,10 @@ namespace DribbleToSchool.Audio
     /// <summary>
     /// Where the kid is, for the ears: each route to school has its own music and its own ambience
     /// (MusicGenerator, AmbienceGenerator). Chapter 4 has two: the railway underpass and the building site.
+    /// Florida has its own places, after Kamakura's (new values go at the end, so the old ones keep their numbers):
+    /// Little Havana, the Miami River, the bay, downtown, the Underline and Museum Park.
     /// </summary>
-    public enum Soundscape { Menu, Street, Market, Beach, Underpass, Site, Park }
+    public enum Soundscape { Menu, Street, Market, Beach, Underpass, Site, Park, Havana, MiamiRiver, Bay, Downtown, Underline, MuseumPark }
 
     public static class Soundscapes
     {
@@ -12,30 +14,52 @@ namespace DribbleToSchool.Audio
         {
             Soundscape.Menu, Soundscape.Street, Soundscape.Market, Soundscape.Beach,
             Soundscape.Underpass, Soundscape.Site, Soundscape.Park,
+            Soundscape.Havana, Soundscape.MiamiRiver, Soundscape.Bay, Soundscape.Downtown, Soundscape.Underline, Soundscape.MuseumPark,
         };
 
         /// <summary>
-        /// The soundscape of one of Florida's legs (its routes cross several kinds of place): Little Havana's shops, the bus, Brickell's
-        /// towers and cranes, the bay, the ranch street, the river, the drugstore, the downpour downtown, the line overhead, the
-        /// boulevard, the park. Menu for a level that isn't Florida's.
+        /// The soundscape of one of Florida's legs (its routes cross several kinds of place), all of them Florida's own,
+        /// none shared with Kamakura: Little Havana's street and the drugstore on it, the river (its street, Uncle Rey's
+        /// boat, the Riverwalk), the bay at Bayfront, downtown (the bus, Brickell's towers, the downpour downtown, the
+        /// boulevard), the Underline under the line overhead, and Museum Park. Menu for a level that isn't Florida's.
         /// </summary>
         public static Soundscape ForFloridaLeg(string levelId)
         {
             switch (levelId)
             {
-                case "FL1-1": return Soundscape.Market;
-                case "FL1-2": return Soundscape.Street;
-                case "FL1-3": return Soundscape.Site;
-                case "FL1-4": return Soundscape.Beach;
-                case "FL2-1": return Soundscape.Street;
-                case "FL2-2": return Soundscape.Beach;
-                case "FL2-3": return Soundscape.Beach;
-                case "FL2-4": return Soundscape.Market;
-                case "FL2-5": return Soundscape.Street;
-                case "FL3-1": return Soundscape.Underpass;
-                case "FL3-2": return Soundscape.Street;
-                case "FL3-3": return Soundscape.Park;
+                case "FL1-1": return Soundscape.Havana;
+                case "FL1-2": return Soundscape.Downtown;
+                case "FL1-3": return Soundscape.Downtown;
+                case "FL1-4": return Soundscape.Bay;
+                case "FL2-1": return Soundscape.MiamiRiver;
+                case "FL2-2": return Soundscape.MiamiRiver;
+                case "FL2-3": return Soundscape.MiamiRiver;
+                case "FL2-4": return Soundscape.Havana;
+                case "FL2-5": return Soundscape.Downtown;
+                case "FL3-1": return Soundscape.Underline;
+                case "FL3-2": return Soundscape.Downtown;
+                case "FL3-3": return Soundscape.MuseumPark;
                 default: return Soundscape.Menu;
+            }
+        }
+
+        /// <summary>
+        /// The place whose music loop plays in a soundscape. Florida's own places have their own ambience, but play
+        /// Florida's music for the kind of place they are: Little Havana the market's salsa, the river and the bay the
+        /// beach's soca, downtown the street's son, the Underline the underpass's night groove, Museum Park the park's
+        /// one-drop. Kamakura's places are their own.
+        /// </summary>
+        public static Soundscape MusicOf(Soundscape scape)
+        {
+            switch (scape)
+            {
+                case Soundscape.Havana: return Soundscape.Market;
+                case Soundscape.MiamiRiver: return Soundscape.Beach;
+                case Soundscape.Bay: return Soundscape.Beach;
+                case Soundscape.Downtown: return Soundscape.Street;
+                case Soundscape.Underline: return Soundscape.Underpass;
+                case Soundscape.MuseumPark: return Soundscape.Park;
+                default: return scape;
             }
         }
 
