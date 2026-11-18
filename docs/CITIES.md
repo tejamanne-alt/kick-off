@@ -212,7 +212,9 @@ per leg (`tools/blender/miami_plan.py` -> `Art/Models/Miami/MiamiDistricts.json`
 and `preview_street.py --miami <leg>` renders through the game camera. The districts: Little Havana (FL1-1, FL3-1's houses),
 the bus's Calle Ocho into Brickell (FL1-2), Brickell (FL1-3), the bayfront (FL1-4), the river's docks and the Riverwalk (FL2-2,
 FL2-3), the drugstore's aisle (FL2-4), downtown's Deco arcades (FL2-5), the Underline under the Metrorail (FL3-1), Biscayne
-Boulevard (FL3-2), Museum Park (FL3-3). FL2-1 keeps Florida's Home Street. The leg's look chapter only sets its light and
+Boulevard (FL3-2), Museum Park (FL3-3), Riverside Street's ranch houses and live oaks (FL2-1, since v125). Every play piece a
+leg uses is Miami's too (v125: the slide-unders, the work zone, crates, the crossing, signs, checkpoints, the fountain, the
+pelican, the stops and their people, Miami's soundscapes): nothing of Kamakura's. The leg's look chapter only sets its light and
 ground rules (no leg is the beach's). The map is rendered from the same kits (`tools/blender/miami_map_render.py`).
 
 ### FL1 Calle Ocho Bus (4 legs)

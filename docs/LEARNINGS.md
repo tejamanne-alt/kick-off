@@ -616,6 +616,24 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
   and no city borrows another city's street, stops or obstacles. Render every leg through the game camera
   (`preview_street.py --miami`) before it goes in.
 
+**D10. What the first pass at a city's own look missed (v124, finished in v125).**
+- *What:* v124 gave Florida's legs their own districts, but the play pieces were still built by chapter from the original
+  town's kits: the slide-unders (Kamakura's market stall, scaffold, boat on trestles, apple bough, roll shutter, pipe rack,
+  boom barrier, oak bough), the pit's cones and barrier, the produce crates, the crossing's signal and its little cars, the
+  wooden notice boards, the checkpoint flags, the park fountain, the pelican (a gull scaled up), the building site's crane in
+  the plan, Kamakura's trees and shrubs, the walkers' wardrobes, the shade on the road. Riverside Street (FL2-1) still had the
+  suburb's street; the people mover's ride was boxes; the school was signed "Seagrove High"; every leg played one of Kamakura's
+  ambience beds. The user: "make sure nothing overlaps between Kamakura and Florida".
+- *Why:* the v124 audit looked at the scenery a leg places, not at what each track piece builds; a piece picks its look by
+  chapter, and a Florida leg is built as a chapter.
+- *Fix:* Miami versions of every piece a Florida leg uses (same solids and play: `<Look>MIA` for the slide-unders), chosen by
+  `TrackBuilder.MiamiLook`; the Animals kit's pelican; FL2-1 in the plan; the ride from the kit; Miami's soundscapes.
+  `MiamiKitTests` now fail if the plan places anything but Florida's own models, if a Florida leg uses a slide-under look
+  without its Miami model, or if a Florida stop has no Miami set piece.
+- *Rule:* when a city gets its own look, audit every track piece its layouts call (`grep -o "t\.[A-Z][A-Za-z]*(" ...`) and
+  what each builds for that city, not only the scenery; then hold it with a test. What may be shared: the kid, the ball, coins,
+  stickers, the cast's bodies (dressed for the city), dogs and pigeons, the sky.
+
 ## E. Levels and world
 
 - **E1. Every level had chapter-1 scenery.** A new-scene call unloaded the level definition. *Rule:* pass data into scene builders explicitly; never hold asset references across a new-scene call.

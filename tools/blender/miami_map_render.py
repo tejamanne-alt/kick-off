@@ -298,7 +298,7 @@ SHOPS = ['VentanitaMIA', 'TabaqueriaMIA', 'FruteriaMIA', 'MuralWallMIA', 'MuralS
 HOUSES = [('Florida', 'RanchFL'), ('Florida', 'RanchSmallFL'), ('Florida', 'CottageFL')]
 ROOFS = [(0.80, 0.44, 0.32), (0.86, 0.52, 0.38), (0.95, 0.94, 0.90), (0.72, 0.80, 0.86), (0.80, 0.44, 0.32)]   # barrel tile, white, metal
 HOUSE_TINTS = [(0.70, 0.86, 0.82), (0.98, 0.86, 0.62), (0.96, 0.72, 0.70), (0.98, 0.96, 0.90), (0.80, 0.84, 0.96)]
-TREES = [('Plants', 'PalmRoyal', 0.9), ('Plants', 'PalmSabalTall', 1.0), ('Plants', 'LiveOak', 0.9), ('Plants', 'BroadleafWide', 1.0),
+TREES = [('Plants', 'PalmRoyal', 0.9), ('Plants', 'PalmSabalTall', 1.0), ('Plants', 'LiveOak', 0.9), ('Plants', 'Banyan', 0.8),
          ('Plants', 'PalmSabal', 1.0)]
 
 
@@ -359,7 +359,7 @@ def tower_block(b, downtown):
                 put('Miami', 'TowerPodiumMIA', cx, y1 - 6, 180.0, scale=(0.9, 0.9, 1.0))
     for _ in range(int((x1 - x0) * (y1 - y0) / 9000)):
         tree(rng.uniform(x0 + 8, x1 - 8), rng.uniform(y0 + 8, y1 - 8),
-             [('Plants', 'PalmRoyal', 0.85), ('Plants', 'BroadleafWide', 1.0), ('Plants', 'Banyan', 0.7)])
+             [('Plants', 'PalmRoyal', 0.85), ('Plants', 'LiveOak', 0.9), ('Plants', 'Banyan', 0.7)])
     for x in range(int(x0) + 10, int(x1) - 6, 26):
         put('Plants', 'PalmRoyal', x, y1 - 2, rng.uniform(0, 360), 0.8)
 
@@ -379,7 +379,7 @@ def guideway(points, scale=1.0):
 
 
 def cars_on(axis, at, span, n, bus=0):
-    kinds = ['Hatch', 'Fourby', 'Pickup', 'Van']
+    kinds = ['Fourby', 'Pickup', 'Van']            # (Miami's pickups, SUVs and vans: the town's hatchbacks stay the town's)
     for k in range(n + bus):
         p = rng.uniform(*span)
         lane = rng.choice([-1, 1])
@@ -413,6 +413,9 @@ def build():
         put('Florida', 'FenceAluFL', x, sy + 20, 180.0, scale=(0.42, 1, 1))
     # Freedom Tower's cousin by the boulevard, the museum, the parks' palms and banyans
     put('Miami', 'SpanishTowerMIA', 2400, 520, 180.0, scale=(1.0, 1.0, 0.7))
+    # Brickell going up: two tower cranes over its building sites
+    for p in [(1800, 1180), (2230, 1100)]:
+        put('Miami', 'CraneMIA', p[0], p[1], 180.0 + rng.uniform(-40, 40), scale=(0.7, 0.7, 0.55), where='land')
     put('Miami', 'MuseumMIA', 2560, 410, 180.0, where='land')
     for b in PARKS[:2]:
         for x in range(int(b[0]) + 16, int(b[2]) - 10, 34):
@@ -431,7 +434,7 @@ def build():
     # the Underline's park and the guideways (the Metrorail over the Underline and up Brickell, the Metromover's loop)
     for x in range(720, 1750, 40):
         if rng.random() < 0.6:
-            tree(x, 1290 + rng.uniform(-6, 8), [('Plants', 'PalmRoyal', 0.85), ('Plants', 'BushWide', 1.4), ('Plants', 'ShrubFlowering', 1.4)])
+            tree(x, 1290 + rng.uniform(-6, 8), [('Plants', 'PalmRoyal', 0.85), ('Plants', 'SawPalmetto', 1.4), ('Plants', 'PalmSabal', 1.0)])
     guideway([(700, 1250), (1750, 1250), (1950, 1000), (1950, 420)])
     guideway([(1750, 1250), (2600, 960), (2600, 420)], 0.7)
     # the river: Uncle Rey's dock and boats along the Riverwalk, a tug and a freighter by the mouth

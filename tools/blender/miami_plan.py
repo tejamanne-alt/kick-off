@@ -47,6 +47,7 @@ LEGS = {
     'FL1-2': ('Metrobus', 'bus', 'street', False, False),
     'FL1-3': ('BrickellAvenue', 'brickell', 'street', False, False),
     'FL1-4': ('Bayfront', 'bayfront', 'promenade', False, True),
+    'FL2-1': ('RiversideStreet', 'riverside', 'havana', True, False),
     'FL2-2': ('UncleReysBoat', 'dock', 'promenade', False, False),
     'FL2-3': ('Riverwalk', 'riverwalk', 'promenade', False, False),
     'FL2-4': ('Drugstore', 'interior', 'street', False, False),
@@ -189,6 +190,16 @@ class Plan:
                 self.put('Plants', model, x, self.r(z0, z1), self.r(0, 360), self.r(*scale))
             x += self.r(*step)
 
+    def ibises(self, z0, z1, n_per_100=4):
+        """White ibises probing the lawns (Miami's everyday bird), in little groups."""
+        x = self.x0 + self.r(5, 30)
+        while x < self.x1:
+            for k in range(self.rng.randrange(1, 4)):
+                xx = x + self.r(-1.5, 1.5)
+                if self.free(xx - 0.4, xx + 0.4):
+                    self.put('Miami', 'IbisMIA', xx, self.r(z0, z1), self.r(0, 360))
+            x += 100.0 / n_per_100 * self.r(0.6, 1.4)
+
     def far_shore(self, z0, z1):
         """The barrier island across the bay (Miami Beach), under its towers."""
         self.land.append({'from': round(self.x0 - 260, 2), 'to': round(self.x1 + 260, 2), 'z0': z0, 'z1': z1})
@@ -256,10 +267,11 @@ def little_havana(plan, x_to=None, x_from=None):
     plan.street_things(havana_things(plan), step=(4.5, 8.0))
     # behind: a second row of low buildings and yards, mango and live oak trees, sabals; Brickell's towers far off
     plan.deep_row([('Florida', 'RanchFL', 12), ('Miami', 'MuralShedMIA', 12), ('Miami', 'TabaqueriaMIA', 8), ('Florida', 'CottageFL', 8)], 17, 22)
-    plan.deep_row([('Plants', 'LiveOak', 10), ('Plants', 'BroadleafWide', 9), ('Plants', 'PalmSabalTall', 4), ('Plants', 'PalmRoyal', 4)], 11, 15,
+    plan.deep_row([('Plants', 'LiveOak', 10), ('Plants', 'Banyan', 12), ('Plants', 'PalmSabalTall', 4), ('Plants', 'PalmRoyal', 4)], 11, 15,
                   step=(6, 12))
     plan.deep_row([('Florida', 'RanchFL', 12), ('Florida', 'RanchSmallFL', 9), ('Plants', 'LiveOak', 10)], 34, 46, step=(9, 16))
     plan.palms(26, 40, step=(9, 18), model='PalmSabalTall')
+    plan.ibises(3.2, 5.5, n_per_100=2)
     plan.skyline(380, 520, n_per_100=2, scale=(1.0, 1.3))
 
 
@@ -278,7 +290,7 @@ def brickell(plan, x_from=None, x_to=None):
             if plan.free(x, x + w):
                 plan.put('Miami', 'SiteFenceMIA', x + 4.2, PROPERTY_Z + 0.6)
                 plan.put('Miami', 'SiteFenceMIA', x + 12.6, PROPERTY_Z + 0.6)
-                plan.put('Works', 'TowerCrane', x + 9.0, 18.0, 90.0, 1.4)
+                plan.put('Miami', 'CraneMIA', x + 9.0, 18.0, 0.0, 1.0)
                 plan.put('Miami', 'CondoTower2MIA', x + 8.5, 16.0, 0.0, 0.55)
                 x += w + plan.r(0.5, 2)
                 continue
@@ -289,6 +301,7 @@ def brickell(plan, x_from=None, x_to=None):
         plan.put(kit, m, x + w / 2, PROPERTY_Z + (0.5 if m != 'TowerPodiumMIA' else 3.8))
         if m == 'TowerPodiumMIA':
             plan.put('Miami', plan.rng.choice(['CondoTowerMIA', 'OfficeTowerMIA', 'CondoTower2MIA']), x + w / 2, 15.0, 0.0, plan.r(0.95, 1.1))
+            forecourt(plan, x, w)
         g = plan.r(1.4, 3.4)
         if plan.free(x + w, x + w + g):
             plan.put('Plants', 'PalmRoyal', x + w + g / 2, 2.6, plan.r(0, 360), plan.r(0.9, 1.05))
@@ -303,6 +316,18 @@ def brickell(plan, x_from=None, x_to=None):
     plan.street_things(things, step=(5.0, 9.0))
     plan.skyline(60, 120, n_per_100=6, scale=(0.9, 1.2))
     plan.skyline(150, 260, n_per_100=5, scale=(1.0, 1.4))
+
+
+def forecourt(plan, x, w):
+    """A tower's forecourt between the sidewalk and its glass lobby: royal palms in their planters at the corners, a bench,
+    now and then a coffee kiosk or a fruit cart, a valet's scooter."""
+    for px in (x + 2.2, x + w - 2.2):
+        plan.put('Plants', 'PalmRoyal', px, PROPERTY_Z + 1.6, plan.r(0, 360), plan.r(0.85, 1.0))
+    c = plan.rng.random()
+    if c < 0.35: plan.put('Miami', 'CoffeeKioskMIA', x + w / 2 + plan.r(-3, 3), PROPERTY_Z + 1.5)
+    elif c < 0.6: plan.put('Miami', 'FruitCartMIA', x + w / 2 + plan.r(-3, 3), PROPERTY_Z + 1.4)
+    else: plan.put('Florida', 'BenchFL', x + w / 2 + plan.r(-3, 3), PROPERTY_Z + 1.2)
+    if plan.rng.random() < 0.5: plan.put('Miami', 'ScooterUpMIA', x + plan.r(4, w - 4), PROPERTY_Z + 0.3, plan.r(-20, 20))
 
 
 def bayfront(plan):
@@ -331,7 +356,7 @@ def bayfront(plan):
     plan.far_shore(690, 960)
     if li['school']:
         # (on the school's land only: the bay is open water)
-        plan.deep_row([('Plants', 'PalmRoyal', 4), ('Plants', 'BroadleafWide', 9)], 30, 50, step=(6, 10), x_from=land_from + 2.0)
+        plan.deep_row([('Plants', 'PalmRoyal', 4), ('Plants', 'LiveOak', 10)], 30, 50, step=(6, 10), x_from=land_from + 2.0)
 
 
 def river(plan, rail='RiverRailMIA'):
@@ -394,12 +419,13 @@ def underline(plan):
             c = plan.rng.random()
             if c < 0.25: plan.put('Miami', 'FitnessBarsMIA', x, 3.6)
             elif c < 0.55: plan.put('Plants', 'PalmRoyal', x, plan.r(3.0, 4.0), plan.r(0, 360), plan.r(0.8, 1.0))
-            elif c < 0.8: plan.put('Plants', plan.rng.choice(['BushWide', 'BushRound', 'SawPalmetto', 'ShrubFlowering']), x, plan.r(2.6, 4.2), plan.r(0, 360))
+            elif c < 0.8: plan.put('Plants', plan.rng.choice(['SawPalmetto', 'PalmSabal']), x, plan.r(2.6, 4.2), plan.r(0, 360))
             else: plan.put('Florida', 'BenchFL', x, 2.4)
         x += plan.r(3.5, 7.0)
     houses = make_deck(plan, ['RanchFL', 'RanchSmallFL', 'CottageFL', 'MuralShedMIA'])
     plan.front_row(houses, 12.0, W, gap=(2.0, 5.0))
     plan.deep_row([('Plants', 'LiveOak', 10), ('Plants', 'PalmSabalTall', 4)], 22, 30, step=(7, 14))
+    plan.ibises(2.6, 4.4, n_per_100=3)
     plan.skyline(300, 450, n_per_100=2, scale=(1.0, 1.3))
 
 
@@ -416,10 +442,19 @@ def biscayne(plan):
         plan.put(kit, m, x + w / 2, PROPERTY_Z + (3.8 if m == 'TowerPodiumMIA' else 0.5))
         if m == 'TowerPodiumMIA':
             plan.put('Miami', plan.rng.choice(['CondoTowerMIA', 'OfficeTowerMIA']), x + w / 2, 15.0, 0.0, plan.r(0.95, 1.15))
+            forecourt(plan, x, w)
         g = plan.r(2.0, 5.0)
         if plan.free(x + w, x + w + g):
             plan.put('Plants', 'PalmRoyal', x + w + g / 2, 2.6, plan.r(0, 360), plan.r(0.9, 1.1))
         x += w + g
+    def things(xx):
+        c = plan.rng.random()
+        if c < 0.45: return ('Florida', 'LampFL', 0.0)
+        if c < 0.65: return ('Plants', 'PalmRoyal', -0.6)
+        if c < 0.8: return ('Miami', 'ScooterUpMIA', 0.3)
+        if c < 0.9: return ('Florida', 'BenchFL', 0.4)
+        return ('Florida', 'TrashFL', 0.1)
+    plan.street_things(things, step=(5.0, 8.0))
     plan.put('Miami', 'SpanishTowerMIA', (plan.x0 + plan.x1) / 2 + plan.r(-20, 20), 40.0, 0.0, 1.0)
     x = plan.x0 + 10
     while x < plan.x1:
@@ -442,15 +477,41 @@ def museum_park(plan):
             c = plan.rng.random()
             if c < 0.35: plan.put('Plants', 'Banyan', x, plan.r(5.5, 8.0), plan.r(0, 360), plan.r(0.85, 1.05))
             elif c < 0.7: plan.put('Plants', 'PalmRoyal', x, plan.r(2.6, 4.0), plan.r(0, 360), plan.r(0.85, 1.05))
-            else: plan.put('Plants', plan.rng.choice(['BushWide', 'ShrubFlowering', 'BushRound']), x, plan.r(2.5, 4.5), plan.r(0, 360))
+            else: plan.put('Plants', plan.rng.choice(['SawPalmetto', 'PalmSabal']), x, plan.r(2.5, 4.5), plan.r(0, 360))
         x += plan.r(6.0, 11.0)
     x = plan.x0
     while x < land_from:
         plan.put('Miami', 'BayRailMIA', x + 2.0, 25.6)
         x += 4.0
     plan.put('Miami', 'CruiseShipMIA', (plan.x0 + plan.x1) / 2, 300.0, 0.0, 1.0, y=WATER_Y)
+    plan.ibises(9.0, 22.0, n_per_100=4)
     plan.skyline(650, 850, n_per_100=4, scale=(0.8, 1.2))
     plan.far_shore(640, 900)
+
+
+def riverside(plan):
+    """FL2-1 Riverside Street: from the ranch house down to the Miami River through a street of ranch houses and Old Florida
+    cottages in their yards, live oaks hung with moss, sabals and royal palms, mailboxes on posts, wooden poles; the river's
+    freighters and cranes beyond the roofs toward the end."""
+    li = plan.li
+    houses = make_deck(plan, ['RanchFL', 'RanchSmallFL', 'CottageFL', 'RanchFL', 'RanchSmallFL'])
+    plan.front_row(houses, PROPERTY_Z + 2.6, W, gap=(2.0, 4.5))
+    def things(x):
+        c = plan.rng.random()
+        if c < 0.3: return ('Street', 'UtilityPoleWood', 0.05)
+        if c < 0.55: return ('Florida', 'MailboxPostFL', 0.1)
+        if c < 0.8: return ('Plants', 'PalmSabalTall', -0.6)
+        return ('Florida', 'HydrantFL', 0.1)
+    plan.street_things(things, step=(6.0, 10.0))
+    plan.deep_row([('Plants', 'LiveOak', 10), ('Plants', 'PalmSabalTall', 4), ('Plants', 'PalmRoyal', 4), ('Plants', 'Banyan', 12)], 13, 18,
+                  step=(7, 13))
+    plan.deep_row([('Florida', 'RanchFL', 12), ('Florida', 'CottageFL', 8), ('Florida', 'RanchSmallFL', 9)], 24, 30, step=(10, 16))
+    plan.deep_row([('Plants', 'LiveOak', 10), ('Plants', 'PalmRoyal', 4)], 34, 44, step=(8, 15))
+    plan.ibises(3.0, 5.0, n_per_100=3)
+    end = li['goal']
+    plan.put('Miami', 'FreighterMIA', end - 10.0, 70.0, 0.0, 1.0)
+    plan.put('Miami', 'CraneMIA', end + 20.0, 85.0, 0.0, 0.9)
+    plan.skyline(260, 380, n_per_100=2, scale=(1.0, 1.3))
 
 
 def bus_route(plan):
@@ -468,7 +529,7 @@ def interior(plan):
     pass
 
 
-DISTRICTS = {'littleHavana': little_havana, 'bus': bus_route, 'brickell': brickell, 'bayfront': bayfront, 'dock': river,
+DISTRICTS = {'riverside': riverside, 'littleHavana': little_havana, 'bus': bus_route, 'brickell': brickell, 'bayfront': bayfront, 'dock': river,
              'riverwalk': river, 'downtown': downtown, 'underline': underline, 'biscayne': biscayne, 'museumPark': museum_park,
              'interior': interior}
 

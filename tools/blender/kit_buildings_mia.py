@@ -1168,6 +1168,7 @@ def t_hotel(dr, w, h, k):
 def paint(img, put):
     """The Miami kit's tiles (kit_buildings_atlas.paint calls this through EXTRA)."""
     pp = SG.put_pil
+    PLAY.paint(img, pp)
     pp(img, 'fl_glassblock', FL.t_glassblock, (0.84, 0.86, 0.84))
     pp(img, 'fl_breeze', FL.t_breeze, (0.93, 0.93, 0.91))
     pp(img, 'fl_chain', FL.t_chain, (0.5, 0.54, 0.5))
@@ -1266,4 +1267,9 @@ def pal_mia(pal):
         ('PharmacyMIA', 11.0, 3.6, 9.0, 0.0, pharmacy,
          gl((0.97, 0.97, 0.95), (0.14, 0.50, 0.53), (0.56, 0.55, 0.54), trim=(0.97, 0.96, 0.94)), 5.0, shop, {}),
         ('DrugstoreAisleMIA', 22.0, 3.3, 3.2, 0.0, drugstore_aisle, gl((0.97, 0.94, 0.86), (0.42, 0.78, 0.78), (0.56, 0.55, 0.54)), 3.6, {'ppm': 24}, {}),
-    ]
+    ] + PLAY.rows(gl, prop)
+
+
+# the play pieces (kit_buildings_mia_play.py: imported last, as it builds on this module's helpers)
+import kit_buildings_mia_play as PLAY
+TILES += PLAY.TILES

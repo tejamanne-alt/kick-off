@@ -9,7 +9,7 @@ namespace DribbleToSchool.Tests
     /// <summary>
     /// Florida's own districts need their kit and their plan: every Miami model the game places is in the Miami kit (its FBX and
     /// its manifest entry); every model the plan (Art/Models/Miami/MiamiDistricts.json, tools/blender/miami_plan.py) places is in
-    /// its kit; the plan dresses every Florida leg but Riverside Street; and nothing that stands on the ground stands in open water.
+    /// its kit; the plan dresses every Florida leg with Florida's own models only; and nothing that stands on the ground stands in open water.
     /// </summary>
     public class MiamiKitTests
     {
@@ -53,12 +53,11 @@ namespace DribbleToSchool.Tests
         }
 
         [Test]
-        public void ThePlanDressesEveryFloridaLegButRiversideStreet()
+        public void ThePlanDressesEveryFloridaLeg()
         {
             var legs = Legs();
-            foreach (string leg in new[] { "FL1-1", "FL1-2", "FL1-3", "FL1-4", "FL2-2", "FL2-3", "FL2-4", "FL2-5", "FL3-1", "FL3-2", "FL3-3" })
+            foreach (string leg in new[] { "FL1-1", "FL1-2", "FL1-3", "FL1-4", "FL2-1", "FL2-2", "FL2-3", "FL2-4", "FL2-5", "FL3-1", "FL3-2", "FL3-3" })
                 Assert.IsTrue(legs.ContainsKey(leg), leg + " is not in the plan");
-            Assert.IsFalse(legs.ContainsKey("FL2-1"), "FL2-1 keeps Florida's Home Street");
         }
 
         [Test]
@@ -94,6 +93,50 @@ namespace DribbleToSchool.Tests
         {
             foreach (string model in new[] { "PalmRoyal", "Banyan" })
                 Assert.IsTrue(InKit("Plants", model), model + " is not in the Plants kit");
+        }
+
+        [Test]
+        public void ThePlanPlacesOnlyFloridasOwnModels()
+        {
+            // Nothing of the original town's in a Florida leg (docs/LEARNINGS.md D9): the Miami and Florida kits, Florida's own trees,
+            // and the wooden utility pole (the coast's; the town's poles are concrete).
+            var foreign = new HashSet<string>();
+            foreach (var leg in Legs())
+                foreach (var item in (List<object>)((Dictionary<string, object>)leg.Value)["items"])
+                {
+                    var it = (List<object>)item;
+                    string kit = (string)it[0], model = (string)it[1];
+                    bool own = kit == "Miami" || kit == "Florida" ||
+                               kit == "Plants" && System.Array.IndexOf(StreetBuilder.FloridaPlants, model) >= 0 ||
+                               kit == "Street" && model == "UtilityPoleWood";
+                    if (!own) foreign.Add(leg.Key + ": " + kit + "/" + model);
+                }
+            CollectionAssert.IsEmpty(foreign, "the plan places models that aren't Florida's own");
+        }
+
+        [Test]
+        public void EverySlideUnderInAFloridaLegHasItsMiamiLook()
+        {
+            // LevelBuildKit.SlideUnder builds a Florida leg's slide-under as <look>MIA from the Miami kit, with the look's own solid.
+            string layouts = File.ReadAllText("Assets/_Game/Scripts/Editor/FloridaLevels.cs");
+            var looks = new HashSet<string>();
+            foreach (Match m in Regex.Matches(layouts, @"SlideLook\.(\w+)")) looks.Add(m.Groups[1].Value);
+            Assert.IsNotEmpty(looks, "no slide-unders found in FloridaLevels.cs");
+            foreach (string look in looks)
+                Assert.IsTrue(InKit("Miami", look + "MIA"), "FloridaLevels uses SlideLook." + look + " but the Miami kit has no " + look + "MIA");
+        }
+
+        [Test]
+        public void EveryFloridaStopHasItsMiamiSetPiece()
+        {
+            foreach (var stop in Levels.RouteTable.FloridaStops)
+                CollectionAssert.Contains(StreetBuilder.MiamiStops, stop.id, stop.id + " has no Miami set piece (StreetBuilder.MiamiStop)");
+        }
+
+        [Test]
+        public void ThePelicanIsInTheAnimalsKit()
+        {
+            Assert.IsTrue(InKit("Animals", "Pelican"), "Florida's pelicans fly the Animals kit's Pelican (with its WingL and WingR)");
         }
 
         [Test]

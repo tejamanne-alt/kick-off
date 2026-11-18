@@ -794,6 +794,9 @@ namespace DribbleToSchool.EditorTools
         static void CanopyShadows(LevelBuildKit.TrackBuilder track, Transform root, System.Random rng, float x0, float x1)
         {
             string[] models = { "BroadleafWide", "BroadleafLarge", "Broadleaf" };
+            // (Florida's shade is its own trees': live oaks and royal palms)
+            if (MiamiLeg && LevelBuildKit.HasKitModel("Plants", "LiveOak") && LevelBuildKit.HasKitModel("Plants", "PalmRoyal"))
+                models = new[] { "LiveOak", "PalmRoyal", "LiveOak" };
             if (!LevelBuildKit.HasKitModel("Plants", models[0]) && !LevelBuildKit.HasKitModel("Plants", models[2])) return;
             Vector3 sun = (lightSun ?? LevelBuildKit.Theme.mood.sunDirection).normalized;
             if (sun.y < 0.2f || sun.z > -0.05f) return;   // the shade would not fall toward the camera

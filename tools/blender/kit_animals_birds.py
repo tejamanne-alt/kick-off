@@ -150,6 +150,81 @@ def build_seagull():
                    attach={'Beak': ((0.27, 0, 0.022), 'Body')})
 
 
+# ================================================================ brown pelican (flying), for Florida
+PELICAN = {
+    'body': hexc('#8a8378'),      # grey-brown back and wings (part 1)
+    'under': hexc('#a59e92'),
+    'neck': hexc('#5a3a2a'),      # chestnut back of the neck
+    'head': hexc('#f3ead2'),      # white head, a yellow crown
+    'crown': hexc('#f1d27a'),
+    'bill': hexc('#c9a46a'),      # part 2
+    'pouch': hexc('#4c4a46'),
+    'tip': hexc('#2a2622'),
+    'leg': hexc('#3a3834'),
+}
+
+
+def build_pelican():
+    """Florida's brown pelican flying as it does along the bay, its head drawn back on its shoulders and the long bill
+    resting on its chest, broad grey-brown wings with dark tips: the Seagull's rig (Body, WingL, WingR at the shoulders,
+    head toward +X), 1.4 m across, so the hazard's swoop flies it as it flies the gull."""
+    HC = np.array((0.2, 0, 0.07))
+    chest = G.ellipsoid((0.03, 0, 0.0), (0.2, 0.1, 0.095))
+    rear = G.round_cone((-0.05, 0, 0.0), (-0.26, 0, 0.02), 0.085, 0.03)
+    tail = G.ellipsoid((-0.29, 0, 0.02), (0.06, 0.06, 0.012))
+    neck = G.round_cone((0.12, 0, 0.03), (0.2, 0, 0.07), 0.07, 0.055)
+    head = G.ellipsoid(HC, (0.06, 0.05, 0.05))
+    billf = G.round_cone((0.24, 0, 0.065), (0.52, 0, 0.0), 0.022, 0.012)
+    pouchf = G.round_cone((0.24, 0, 0.04), (0.47, 0, -0.01), 0.03, 0.012)
+    feet = G.mirror_y(G.ellipsoid((-0.22, 0.03, -0.06), (0.04, 0.016, 0.01), G.rot((0, 1, 0), math.radians(-12))))
+    body = G.blend(chest, (rear, 0.06), (tail, 0.03), (neck, 0.05), (head, 0.04), (billf, 0.012), (pouchf, 0.015))
+    bill = K.neg(G.ellipsoid((0.38, 0, 0.035), (0.15, 0.03, 0.03)))
+    pouch = K.neg(G.ellipsoid((0.36, 0, 0.005), (0.13, 0.025, 0.025)))
+    headr = K.neg(G.ellipsoid(HC + np.array((0.0, 0, 0.0)), (0.07, 0.06, 0.06)))
+    crown = K.neg(G.ellipsoid(HC + np.array((0.0, 0, 0.04)), (0.045, 0.035, 0.02)))
+    neckr = K.neg(G.ellipsoid((0.1, 0, 0.06), (0.07, 0.05, 0.045)))
+    allf = G.union(body, feet)
+    sb = G.Surface(body, (-0.37, -0.13, -0.13), (0.56, 0.13, 0.15), 0.004, 520, sym=True,
+                   weight=lambda P: G.smoothstep(0.2, 0.28, P[:, 0]))
+    pcs = sb.pieces([('pouch', pouch), ('bill', bill), ('crown', crown), ('head', headr), ('neck', neckr)],
+                    {'base': K.painter(PELICAN['body'], 1, -0.08, 0.09, dark=0.8, light=1.05),
+                     'neck': K.painter(PELICAN['neck'], 0, -0.02, 0.1, dark=0.85, light=1.05),
+                     'head': K.painter(PELICAN['head'], 0, 0.02, 0.12, dark=0.85, light=1.0),
+                     'crown': K.flat_painter(PELICAN['crown'], 0, 1.0),
+                     'bill': K.painter(PELICAN['bill'], 2, -0.02, 0.08, dark=0.82, light=1.05),
+                     'pouch': K.painter(PELICAN['pouch'], 0, -0.04, 0.03, dark=0.85, light=1.0)}, ao_field=allf, ao_scale=0.025)
+    sf = G.Surface(feet, (-0.29, -0.06, -0.08), (-0.16, 0.06, -0.04), 0.003, 60, sym=True)
+    pcs += sf.pieces([], {'base': K.painter(PELICAN['leg'], 0, -0.08, -0.05, dark=0.85, light=1.0)}, ao_field=allf, ao_scale=0.01)
+    for s_ in (1, -1):
+        e, _, _ = K.eye(body, HC, (0.235, s_ * 0.045, 0.085), 0.011, n=8, rings=2)
+        pcs.append(e)
+
+    # The wings: the gull's airfoil, broader and longer, painted grey-brown with dark primaries.
+    root_y, tip_y = 0.02, 0.7
+    wing, s_of, c_of = gull_wing(root_y, tip_y)
+    wing.V = wing.V * np.array((1.6, 1.0, 1.3))
+    tip = lambda P: (s_of(P) + 0.25 * (c_of(P) - 0.5) - 0.72) * 0.4
+
+    def upper(V, N, U, Aocc):
+        t = G.smoothstep(-0.35, 0.35, N[:, 2])
+        k = (0.92 + 0.1 * t) * (0.85 + 0.15 * Aocc)
+        col = G.l2s(PELICAN['under'])[None] * (1 - t[:, None]) + G.l2s(PELICAN['body'])[None] * t[:, None]
+        return G.s2l(np.clip(col * k[:, None], 0, 1)), 1
+
+    def dark(V, N, U, Aocc):
+        k = 0.85 + 0.25 * G.smoothstep(-0.4, 0.5, N[:, 2])
+        return G.shade_srgb(PELICAN['tip'], k), 0
+    wl = G.paint_piece(wing, [('tip', tip)], {'base': upper, 'tip': dark})
+    wr = [p.mirrored_y() for p in wl]
+    piv = 0.05
+    parts = [K.Part('Body', (0, 0, 0), pcs),
+             K.Part('WingL', (0.0, piv, 0.03), wl, motion='flap about X (the body axis), -40..+40 deg'),
+             K.Part('WingR', (0.0, -piv, 0.03), wr, motion='flap about X (mirror of WingL)')]
+    return K.Model('Pelican', parts, {1: PELICAN['body'], 2: PELICAN['bill']}, 2400,
+                   extra={'origin': 'body centre (flying)', 'head': '+X', 'wingspan': 1.4},
+                   attach={'Beak': ((0.52, 0, 0.0), 'Body')})
+
+
 # ================================================================ seagull (standing, static)
 def build_seagull_standing():
     HC = np.array((0.118, 0, 0.312))

@@ -99,10 +99,11 @@ namespace DribbleToSchool.EditorTools
                 lizard.visual = visual;
             }
 
-            /// <summary>A brown pelican: a gull's swoop (Hazards/Seagull), bigger, browner and slower.</summary>
+            /// <summary>A brown pelican: a gull's swoop (Hazards/Seagull) on the Animals kit's pelican, bigger and slower.</summary>
             public void Pelican(float fromX, float toX, float baseY, float phaseOffset = 0f)
             {
-                Seagull(fromX, toX, baseY, phaseOffset);
+                bool own = HasKitModel("Animals", "Pelican");
+                Seagull(fromX, toX, baseY, phaseOffset, "Pelican");
                 var go = root.GetChild(root.childCount - 1);
                 go.name = "Pelican";
                 var gull = go.GetComponent<Hazards.Seagull>();
@@ -110,7 +111,8 @@ namespace DribbleToSchool.EditorTools
                 {
                     gull.flightTime *= 1.35f;
                     gull.knockVelocity = new Vector2(-3.5f, 4.5f);
-                    if (gull.visual != null) gull.visual.localScale = Vector3.one * 1.6f;
+                    // (its own model is pelican-sized, 1.4 m across; the gull stand-in is scaled up)
+                    if (gull.visual != null) gull.visual.localScale = Vector3.one * (own ? 1.15f : 1.6f);
                 }
             }
 

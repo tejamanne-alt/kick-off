@@ -135,6 +135,31 @@ namespace DribbleToSchool.EditorTools
                         // (Mom's model, off on a trip: a sand-coloured jumper, grey trousers)
                         Person(parent, "Traveller", "Mom", gx - 2.2f, groundTop, 2.4f, 25f, new Color(0.85f, 0.75f, 0.55f), new Color(0.3f, 0.3f, 0.36f), new Color(0.15f, 0.1f, 0.08f), 1f);
                         break;
+                    // Florida's stops (StreetBuilder.MiamiStop), their people in Miami's clothes.
+                    case "calleOcho":
+                        // An abuelo waiting for the 8 in a white guayabera and a straw-coloured cap.
+                        Person(parent, "Abuelo", "Grandad", gx + 3.3f, groundTop, 2.35f, 30f, new Color(0.96f, 0.95f, 0.9f), new Color(0.42f, 0.38f, 0.32f), new Color(0.86f, 0.78f, 0.56f), 0.98f);
+                        break;
+                    case "brickell":
+                        // An office worker off the bus: a pale blue shirt, navy trousers.
+                        Person(parent, "Commuter", "OfficeWorker", gx + 3.4f, groundTop, 2.4f, 40f, new Color(0.62f, 0.78f, 0.92f), new Color(0.14f, 0.18f, 0.32f), new Color(0.18f, 0.12f, 0.08f), 1f);
+                        break;
+                    case "bayfront":
+                        // The coffee window's lady in a coral blouse and white trousers.
+                        Person(parent, "CafeLady", "Shopkeeper", gx + 0.2f, groundTop, StreetBuilder.PropertyZ + 0.6f, 70f, new Color(0.95f, 0.52f, 0.42f), new Color(0.95f, 0.94f, 0.9f), new Color(0.2f, 0.14f, 0.1f), 1f);
+                        break;
+                    case "reysDock":
+                        // A neighbour fishing off the dock (Uncle Rey himself is on his boat: LevelBuildKit.ReysDock): a yellow fishing
+                        // shirt, khaki shorts, a white cap.
+                        Person(parent, "Fisherman", "Courier", gx + 0.6f, groundTop, 2.6f, 60f, new Color(0.98f, 0.82f, 0.3f), new Color(0.76f, 0.68f, 0.5f), new Color(0.95f, 0.95f, 0.93f), 1f);
+                        break;
+                    case "underline":
+                        // A jogger stretching by the line: a lime running top, black leggings.
+                        Person(parent, "Jogger", "Mom", gx + 3.0f, groundTop, 2.5f, 20f, new Color(0.62f, 0.86f, 0.3f), new Color(0.12f, 0.12f, 0.14f), new Color(0.3f, 0.18f, 0.1f), 1f);
+                        break;
+                    case "museumPark":
+                        Person(parent, "Painter", "Grandad", gx + 3.6f, groundTop, 2.6f, 50f, new Color(0.98f, 0.86f, 0.52f), new Color(0.3f, 0.36f, 0.5f), new Color(0.95f, 0.95f, 0.92f), 0.98f);
+                        break;
                 }
             }
 

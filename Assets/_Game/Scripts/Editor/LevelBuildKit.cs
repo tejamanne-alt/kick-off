@@ -1290,7 +1290,9 @@ namespace DribbleToSchool.EditorTools
                     {
                         float bank;
                         if (!GroundTopAt(x, out bank)) continue;
-                        if (StreetBuilder.Model(root, "Street", "TrafficCone", x, bank, z, (x * 53f + z * 31f) % 360f) != null) continue;
+                        // (in Miami a work zone's orange drums, not the town's cones)
+                        if (MiamiLook && StreetBuilder.Model(root, "Miami", "DrumMIA", x, bank, z, (x * 53f + z * 31f) % 360f, 0.75f) != null) continue;
+                        if (!MiamiLook && StreetBuilder.Model(root, "Street", "TrafficCone", x, bank, z, (x * 53f + z * 31f) % 360f) != null) continue;
                         var cone = new GameObject("Cone");
                         cone.transform.SetParent(root, false);
                         cone.transform.position = new Vector3(x, bank, z);
@@ -1303,7 +1305,7 @@ namespace DribbleToSchool.EditorTools
                 bool levelLeft = GroundTopAt(fromX - 0.25f, out leftTop) && Mathf.Abs(leftTop - top) < 0.05f;
                 bool levelRight = GroundTopAt(toX + 0.25f, out rightTop) && Mathf.Abs(rightTop - top) < 0.05f;
                 float a = levelLeft ? fromX - 0.25f : fromX + 0.05f, b = levelRight ? toX + 0.25f : toX - 0.05f;
-                if (StreetBuilder.Row(root, "Street", "RoadBarrier", a, b, top, bz)) return;
+                if (MiamiLook ? StreetBuilder.Row(root, "Miami", "BarricadeMIA", a, b, top, bz) : StreetBuilder.Row(root, "Street", "RoadBarrier", a, b, top, bz)) return;
                 foreach (float x in new[] { a + 0.1f, b - 0.1f })
                     StreetBuilder.Solid(root, "BarrierLeg", new Vector3(x, top + 0.45f, bz), new Vector3(0.06f, 0.9f, 0.3f), new Color(0.3f, 0.3f, 0.32f));
                 int n = Mathf.Max(2, Mathf.RoundToInt((b - a) / 0.3f));
@@ -1319,14 +1321,16 @@ namespace DribbleToSchool.EditorTools
                 // street, a plastic crate on the building site, the Street kit's wooden crate elsewhere; else a box with the
                 // painted crate.
                 string look = Chapter == 1 ? "BoxCardboard" : Chapter == 4 ? "CratePlastic" : "Crate";
-                if (!HasKitModel("Street", look)) look = "Crate";
-                Vector3 native = KitSize("Street", look);
-                bool model = native.y > 0.05f && HasKitModel("Street", look);
+                string crateKit = MiamiLook ? "Miami" : "Street";     // Miami's is a field crate of mangoes
+                if (MiamiLook) look = "CrateMIA";
+                else if (!HasKitModel("Street", look)) look = "Crate";
+                Vector3 native = KitSize(crateKit, look);
+                bool model = native.y > 0.05f && HasKitModel(crateKit, look);
                 var go = Block("Crate", new Vector2(x, y), new Vector2(0.7f, 0.7f), Color.white, CrateMat, !model, 0.7f, Art.crateMaterial);
                 if (model)
                 {
                     Color? tint = look == "CratePlastic" ? PlasticCrates[Mathf.Abs(Mathf.RoundToInt(x * 3f + y * 7f)) % PlasticCrates.Length] : (Color?)null;
-                    var t = KitModel(go.transform, "Street", look, new Vector3(x, y - 0.35f, 0f), 0f, 1f, tint);
+                    var t = KitModel(go.transform, crateKit, look, new Vector3(x, y - 0.35f, 0f), 0f, 1f, tint);
                     if (t != null) t.localScale = new Vector3(0.7f / native.x, 0.7f / native.y, 0.7f / Mathf.Max(0.05f, native.z));
                 }
                 var body = go.AddComponent<Rigidbody2D>();
@@ -1502,6 +1506,16 @@ namespace DribbleToSchool.EditorTools
             }
 
             /// <summary>The passer-by of <see cref="Pedestrian"/>; a <paramref name="builder"/> wears hi-vis and a hard hat, keeps them on, and walks alone.</summary>
+            static readonly Color[] MiamiTops =
+            {
+                new Color(0.97f, 0.96f, 0.92f), new Color(0.95f, 0.52f, 0.42f), new Color(0.62f, 0.86f, 0.76f), new Color(0.98f, 0.86f, 0.52f),
+                new Color(0.96f, 0.62f, 0.7f), new Color(0.13f, 0.6f, 0.6f), new Color(0.55f, 0.75f, 0.95f),
+            };
+            static readonly Color[] MiamiLegwear =
+            {
+                new Color(0.76f, 0.68f, 0.5f), new Color(0.95f, 0.94f, 0.9f), new Color(0.3f, 0.42f, 0.62f), new Color(0.2f, 0.22f, 0.26f),
+            };
+
             Hazards.Pedestrian Walker(float minX, float maxX, Color coat, float groundTop, float speed, bool builder)
             {
                 Coaching.Mark("people", minX, maxX);
@@ -1540,6 +1554,13 @@ namespace DribbleToSchool.EditorTools
                     coat = who.tops[(mix / 3) % who.tops.Length];
                     trousers = who.legwears[(mix / 7) % who.legwears.Length];
                     hair = who.thirds[(mix / 11) % who.thirds.Length];
+                    if (MiamiLook)
+                    {
+                        // Miami's summer clothes, not the town's: guayabera white, coral, mint, butter, flamingo and teal tops over
+                        // khaki, white or denim.
+                        coat = MiamiTops[(mix / 3) % MiamiTops.Length];
+                        trousers = MiamiLegwear[(mix / 7) % MiamiLegwear.Length];
+                    }
                 }
                 var parts = BuildModelCharacter(go.transform, bodyModel, look, neck, new Vector3(0f, -0.925f + 0.6f * neck / 1.3f, 0.75f), false);
                 if (parts.rig != null)
@@ -1676,7 +1697,9 @@ namespace DribbleToSchool.EditorTools
                 // Pedestrian signal on the far pavement at the kerb, facing the kid:
                 // red standing man above, green walking man below.
                 float poleX = fromX - 1.2f, poleZ = StreetBuilder.PathHalf + 0.15f, pave = groundTop;
-                var signal = StreetBuilder.Model(root, "Street", "PedSignal", poleX, pave, poleZ);
+                // (Miami's: the US walk signal, the hand over the walking man, the street's green name blade on top)
+                var signal = MiamiLook ? StreetBuilder.Model(root, "Miami", "PedSignalMIA", poleX, pave, poleZ)
+                                       : StreetBuilder.Model(root, "Street", "PedSignal", poleX, pave, poleZ);
                 if (signal != null)
                 {
                     // The kit's signal: the red and green men light up on its lamp faces.
@@ -1703,10 +1726,16 @@ namespace DribbleToSchool.EditorTools
                 // Side-street traffic driving toward the camera; the Crossing script moves it in depth.
                 // A mix of everyday traffic: vans, estates, small trucks, an off-roader, in their own paint.
                 string[] traffic = { "Van", "Fourby", "Pickup", "Wagon", "Hatch" };
+                // Miami's traffic: pickups, SUVs and vans in Florida's paint (a taxi's yellow, a white, a teal, a coral), not the town's
+                // little hatchbacks and estates in theirs.
+                string[] miamiTraffic = { "Pickup", "Fourby", "Van" };
+                Color[] miamiPaint = { new Color(0.98f, 0.8f, 0.16f), new Color(0.95f, 0.95f, 0.93f), new Color(0.13f, 0.6f, 0.6f), new Color(0.95f, 0.52f, 0.42f) };
                 int first = Mathf.Abs(Mathf.RoundToInt(fromX)) % traffic.Length;
                 crossing.cars = new Transform[2];
                 for (int i = 0; i < crossing.cars.Length; i++)
-                    crossing.cars[i] = Car(go.transform, "Car" + i, new Vector3(center, groundTop, 30f), 90f, null, traffic[(first + i * 2) % traffic.Length]);   // placed by Crossing
+                    crossing.cars[i] = MiamiLook
+                        ? Car(go.transform, "Car" + i, new Vector3(center, groundTop, 30f), 90f, miamiPaint[(first + i) % miamiPaint.Length], miamiTraffic[(first + i) % miamiTraffic.Length])
+                        : Car(go.transform, "Car" + i, new Vector3(center, groundTop, 30f), 90f, null, traffic[(first + i * 2) % traffic.Length]);   // placed by Crossing
                 crossing.groundY = groundTop;
                 crossing.stopLineZ = StreetBuilder.PathHalf + 3.05f;   // front bumper at the stop line
             }
@@ -2254,6 +2283,12 @@ namespace DribbleToSchool.EditorTools
             /// <summary>A seagull that swoops from fromX to toX (right to left = toward the kid).</summary>
             public void Seagull(float fromX, float toX, float baseY, float phaseOffset = 0f)
             {
+                Seagull(fromX, toX, baseY, phaseOffset, "Seagull");
+            }
+
+            /// <summary>The swooping bird with the Animals kit's <paramref name="model"/> (the gull, or Florida's pelican: the same rig).</summary>
+            void Seagull(float fromX, float toX, float baseY, float phaseOffset, string model)
+            {
                 Coaching.Mark("seagull", fromX, toX);
                 var go = new GameObject("Seagull");
                 go.transform.SetParent(root, false);
@@ -2264,7 +2299,7 @@ namespace DribbleToSchool.EditorTools
                 col.radius = 0.4f;
                 var visual = new GameObject("Visual").transform;
                 visual.SetParent(go.transform, false);
-                var kitGull = KitModel(visual, "Animals", "Seagull", visual.position);
+                var kitGull = KitModel(visual, "Animals", HasKitModel("Animals", model) ? model : "Seagull", visual.position);
                 Transform wingL = kitGull != null ? FindDeep(kitGull, "WingL") : null, wingR = kitGull != null ? FindDeep(kitGull, "WingR") : null;
                 if (wingL != null && wingR != null)
                 {
@@ -2610,6 +2645,8 @@ namespace DribbleToSchool.EditorTools
                 StreetBuilder.Patch(root, "WetPaving", x - 1.8f, x + 1.8f, groundTop, -StreetBuilder.PathHalf, StreetBuilder.PathHalf, new Color(0.55f, 0.6f, 0.62f));
                 // (Florida's lawn sprinkler: the same jets from a pop-up head on the verge; LevelBuildKit.Florida.Sprinkler)
                 if (sprinklerLook && KitModel(root, "Florida", "SprinklerFL", new Vector3(x, groundTop, StreetBuilder.PathHalf + 0.35f)) != null) { }
+                // (Miami's: the bayfront plaza's splash fountain, keystone and tile rings round three bronze jets)
+                else if (MiamiLook && KitModel(root, "Miami", "FountainMIA", new Vector3(x, groundTop, 0f)) != null) { }
                 else if (KitModel(root, "Leisure", "Fountain", new Vector3(x, groundTop, 0f)) == null)   // a stone-kerbed grate, jets at x 0 and +-0.45
                 {
                     StreetBuilder.Patch(root, "Grate", x - 0.75f, x + 0.75f, groundTop, -0.75f, 0.75f, new Color(0.3f, 0.32f, 0.36f), null, 0.02f);
@@ -3199,6 +3236,36 @@ namespace DribbleToSchool.EditorTools
                 string model = look.ToString();
                 Audit.AddBarrier(x, HolidayPatterns.SlideLengthAny(model), SlideGap, model);
                 var spec = Spec(look);
+                // Florida's own: the same solid in the Miami kit's look (a Cuban fruit stand, a sidewalk shed, a boat on its stands,
+                // a mango bough, a mural shutter, the Underline's gym rig, a garage's boom gate, a banyan's roots).
+                if (Florida && Chapter != 3 && HasKitModel("Miami", model + "MIA"))
+                {
+                    var fl = new GameObject("SlideUnder_" + model).transform;
+                    fl.SetParent(root, false);
+                    fl.position = new Vector3(x, groundTop, 0f);
+                    KitModel(fl, "Miami", model + "MIA", fl.position);
+                    if (spec.radius > 0f)
+                    {
+                        var round = new GameObject("SlideBarrier");
+                        round.transform.SetParent(fl, false);
+                        round.transform.localPosition = new Vector3(0f, spec.centre, 0f);
+                        var circle = round.AddComponent<CircleCollider2D>();
+                        circle.radius = spec.radius;
+                        circle.sharedMaterial = GroundMat;
+                    }
+                    else
+                    {
+                        var solidFl = SlideSolid(fl, spec.half * 2f, spec.top);
+                        if (spec.trap) solidFl.AddComponent<BallTrap>();
+                    }
+                    if (look == SlideLook.StallAwning)
+                    {
+                        var canopyFl = Block("StallCanopy", new Vector2(x, groundTop + (2.13f + 2.495f) * 0.5f), new Vector2(2.7f, 2.495f - 2.13f), BouncyColor, BouncyMat, false);
+                        canopyFl.transform.SetParent(fl, true);
+                        canopyFl.AddComponent<BallTrap>();
+                    }
+                    return;
+                }
                 if (!HasKitModel("Barriers", model))
                 {
                     ProceduralSlideUnder(x, spec.fallbackWidth, groundTop, spec.fallback);
@@ -3705,13 +3772,19 @@ namespace DribbleToSchool.EditorTools
                 StreetBuilder.Model(holder, "Plants", "GrassTuft", p.x + 0.5f, p.y, 1.35f, seed % 70f);
             }
 
-            /// <summary>A raised slab standing on the ground.</summary>
+            /// <summary>
+            /// A Florida leg is being built in Miami's own look (the Miami kit is there and the leg isn't the old beach's): its play
+            /// pieces are Miami's, never the original town's (docs/LEARNINGS.md D9).
+            /// </summary>
+            bool MiamiLook { get { return Florida && Chapter != 3 && HasKitModel("Miami", "CrateMIA"); } }
+
+            /// <summary>A raised slab standing on the ground (in Miami, a ledge of coral keystone).</summary>
             public void Platform(float fromX, float toX, float top, float groundTop = 0f)
             {
                 Audit.AddLedge(fromX, toX, top, groundTop);
                 bool beach = Chapter == 3;
                 Block("Platform", new Vector2((fromX + toX) * 0.5f, (top + groundTop) * 0.5f),
-                    new Vector2(toX - fromX, top - groundTop), PlatformColor, GroundMat, !beach);
+                    new Vector2(toX - fromX, top - groundTop), MiamiLook ? new Color(0.9f, 0.84f, 0.7f) : PlatformColor, GroundMat, !beach);
                 if (beach) BeachDeck(fromX, toX, top, groundTop);
             }
 
@@ -3794,6 +3867,19 @@ namespace DribbleToSchool.EditorTools
                 {
                     // Flags stand at the far kerb, beside the line the kid crosses.
                     float flagZ = StreetBuilder.PathHalf - 0.15f;
+                    if (MiamiLook)
+                    {
+                        // Miami's: an Art Deco pole in teal and coral, its swallowtail flag the part the checkpoint paints.
+                        KitModel(go.transform, "Miami", "CheckpointPoleMIA", new Vector3(x, groundTop, flagZ));
+                        var miFlag = KitModel(go.transform, "Miami", "CheckpointFlagMIA", new Vector3(x, groundTop, flagZ));
+                        var miRenderer = miFlag != null ? miFlag.GetComponentInChildren<MeshRenderer>() : null;
+                        if (miRenderer != null)
+                        {
+                            cp.flag = miRenderer;
+                            checkpoints.Add(cp);
+                            return cp;
+                        }
+                    }
                     var flagModel = KitModel(go.transform, "Leisure", "CheckpointFlag", new Vector3(x, groundTop, flagZ));
                     Transform pennant = flagModel != null ? FindDeep(flagModel, "Flag") : null;
                     if (pennant != null && pennant.GetComponent<MeshRenderer>() != null)
@@ -4353,6 +4439,18 @@ namespace DribbleToSchool.EditorTools
                 int longest = 0;
                 foreach (var l in lines) longest = Mathf.Max(longest, l.Length);
                 boardSize = new Vector2(longest * 0.135f + 0.6f, lines.Length * 0.3f + 0.35f);
+                if (MiamiLook && HasKitModel("Miami", "SignBoardMIA"))
+                {
+                    // Miami's: a white enamel board in a teal Art Deco frame, on teal posts (PlantSign stretches the posts).
+                    var miStretch = new GameObject("BoardStretch").transform;
+                    miStretch.SetParent(go.transform, false);
+                    miStretch.localPosition = new Vector3(0f, 0f, 0.03f);
+                    KitModel(miStretch, "Miami", "SignBoardMIA", go.transform.position + new Vector3(0f, -1.45f, 0.03f));
+                    miStretch.localScale = new Vector3(boardSize.x / 1.8f, boardSize.y / 0.9f, 1f);
+                    var posts = KitModel(go.transform, "Miami", "SignPostsMIA", go.transform.position + new Vector3(0f, -1.45f, 0.03f));
+                    if (posts != null) posts.name = "Posts";
+                    return go;
+                }
                 if (HasKitModel("Leisure", "SignBoard"))
                 {
                     // The Leisure kit's wooden notice board (1.8 x 0.9 m, its middle 1.45 m above the

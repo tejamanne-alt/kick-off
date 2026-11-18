@@ -14,7 +14,7 @@ namespace DribbleToSchool.EditorTools
     /// (preview_street.py --miami), so the preview is the game. The plan gives each leg its ground (a street of concrete
     /// sidewalks and an asphalt road, a promenade with water behind its seawall, or a park's lawns), its water and any land the
     /// school stands on, and every model with its place. Nothing of another city's streets is built in a Florida leg.
-    /// A leg the plan doesn't list (Riverside Street, FL2-1) keeps Florida's Home Street (StreetBuilder.FloridaHome).
+    /// Every Florida leg is in the plan (Riverside Street, FL2-1, too: its ranch houses and live oaks down to the river).
     /// </summary>
     public static partial class StreetBuilder
     {
@@ -25,7 +25,19 @@ namespace DribbleToSchool.EditorTools
             // LevelBuildKit.FloridaCity: the animals, the scooters, the domino table, the arcades, the sweeper, the mini-games' sets
             "RoosterMIA", "HenMIA", "IguanaMIA", "ScooterMIA", "ScooterUpMIA", "DominoTableMIA", "DecoArcadeMIA", "DecoArcade2MIA",
             "SweeperMIA", "BusMIA", "BusNearMIA", "FishingBoatMIA", "DrugstoreAisleMIA",
+            // LevelBuildKit: the slide-unders' Miami looks, the work zone, the crate, the crossing's signal, the signs, the
+            // checkpoints, the fountain; RideBuilder: the Metromover on its guideway over the bay
+            "StallAwningMIA", "ScaffoldGantryMIA", "BoatTrestlesMIA", "AppleBoughMIA", "RollShutterMIA", "PipeRackMIA", "BoomBarrierMIA",
+            "OakBoughMIA", "BarricadeMIA", "DrumMIA", "CrateMIA", "PedSignalMIA", "SignBoardMIA", "SignPostsMIA", "CheckpointPoleMIA",
+            "CheckpointFlagMIA", "FountainMIA", "MetromoverMIA", "GuidewayMIA", "BayRailMIA", "CruiseShipMIA", "FreighterMIA", "TugMIA",
+            "CondoTowerMIA", "OfficeTowerMIA", "CondoTower2MIA",
         };
+
+        /// <summary>The Plants kit's trees the plan may place in Florida: Florida's own (the tests hold the plan to these).</summary>
+        public static readonly string[] FloridaPlants = { "PalmRoyal", "PalmSabal", "PalmSabalTall", "LiveOak", "Banyan", "SawPalmetto" };
+
+        /// <summary>The stops <see cref="MiamiStop"/> builds from the Miami kit (all of Florida's: the tests check it).</summary>
+        public static readonly string[] MiamiStops = { "calleOcho", "brickell", "bayfront", "reysDock", "drugstore", "underline", "biscayne", "museumPark" };
 
         /// <summary>The plan, beside the Miami kit.</summary>
         public const string MiamiPlanFile = LevelBuildKit.ModelsDir + "/Miami/MiamiDistricts.json";

@@ -32,6 +32,7 @@
 #                    honey-ginger mutt with cream socks, muzzle, chest and brows, a red collar and tag
 #   Seagull          [Body, WingL, WingR (shoulders)] flying, wings spread flat, 0.9 m span
 #   SeagullStanding  static, standing on the ground
+#   Pelican          [Body, WingL, WingR (shoulders)] Florida's brown pelican flying, 1.4 m span (the Seagull's rig)
 #   Pigeon           [Body, Head (neck base)] blue-grey with a green-purple neck sheen
 #   Duck             [Body, Head (neck)] a mallard drake, floating
 #   Cat              [Body, Tail] a ginger tabby sitting (for a 1.6 m garden wall), blue collar, bell
@@ -63,6 +64,7 @@ MODELS = [
     ('Dog', BEASTS.build_dog),
     ('Seagull', BIRDS.build_seagull),
     ('SeagullStanding', BIRDS.build_seagull_standing),
+    ('Pelican', BIRDS.build_pelican),
     ('Pigeon', BIRDS.build_pigeon),
     ('Duck', BIRDS.build_duck),
     ('Cat', BEASTS.build_cat),

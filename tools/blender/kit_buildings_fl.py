@@ -4,7 +4,7 @@
 # painted lifeguard stand, a dune crossover), a chrome 1950s diner and its pole sign, a two-storey Miami Modern
 # motel with its sign and pool, a rental shop, five Art Deco shops, the school-zone beacon, a bus shelter, the
 # street's small things (signs, lamps, bins, a hydrant, a mailbox, a concrete pole with its mast-arm signal, a
-# chain-link fence and a goal), and the school (Seagrove High: cream and teal, covered walkways, a marquee, the
+# chain-link fence and a goal), and the school (Bayside Elementary, once Seagrove High: cream and teal, covered walkways, a marquee, the
 # flags, an aluminium picket fence and gate, portable classrooms).
 #
 # Same contract as the rest of the kit (kit_buildings.py): metres, Z up, the origin at the centre of the front
@@ -1810,8 +1810,9 @@ def t_school(dr, w, h, k):
     dr.rectangle([0, 0, w, h], fill=_c(teal))
     b = h * 0.05
     dr.rectangle([b, b, w - b, h - b], outline=_c(WHITE), width=max(1, int(b * 0.5)))
-    _label(dr, w, h, 'SEAGROVE', BOLD, 0.3, WHITE, cx=0.42, cy=0.33, maxw=0.62, spacing=int(h * 0.02))
-    _label(dr, w, h, 'HIGH SCHOOL', BOLD, 0.24, WHITE, cx=0.42, cy=0.68, maxw=0.62, spacing=int(h * 0.02))
+    # (Bayside Elementary, the school at the end of Florida's routes: docs/CITIES.md; it was the old beach add-on's Seagrove High)
+    _label(dr, w, h, 'BAYSIDE', BOLD, 0.3, WHITE, cx=0.42, cy=0.33, maxw=0.62, spacing=int(h * 0.02))
+    _label(dr, w, h, 'ELEMENTARY', BOLD, 0.22, WHITE, cx=0.42, cy=0.68, maxw=0.62, spacing=int(h * 0.02))
     cx, cy, r = w * 0.85, h * 0.5, h * 0.32
     dr.ellipse([cx - r, cy - r, cx + r, cy + r], fill=_c(WHITE))
     dr.chord([cx - r, cy - r, cx + r, cy + r], 20, 160, fill=_c((0.20, 0.52, 0.78)))
@@ -1885,7 +1886,7 @@ def paint(img, put):
     pp(img, 'sg_bait', t_name('Bait & Tackle', (0.10, 0.24, 0.50), (0.98, 0.89, 0.58), paths=BOLD, frac=0.56), (0.98, 0.89, 0.58))
     pp(img, 'sg_icecream', t_name('Ocean Ice Cream', (0.14, 0.26, 0.58), (0.82, 0.76, 0.94), frac=0.66), (0.82, 0.76, 0.94))
     pp(img, 'sg_school', t_school, (0.10, 0.50, 0.54))
-    pp(img, 'sg_schoolwall', t_name('SEAGROVE HIGH SCHOOL', (0.10, 0.44, 0.48), (0.92, 0.88, 0.77), paths=BOLD, frac=0.55), (0.92, 0.88, 0.77))
+    pp(img, 'sg_schoolwall', t_name('BAYSIDE ELEMENTARY SCHOOL', (0.10, 0.44, 0.48), (0.92, 0.88, 0.77), paths=BOLD, frac=0.55), (0.92, 0.88, 0.77))
     pp(img, 'sg_schoolzone', t_schoolzone, (0.86, 0.94, 0.20))
     pp(img, 'sg_arrow', t_arrow, (0.86, 0.94, 0.20))
     pp(img, 'sg_menu', t_menu, (0.16, 0.18, 0.17))
