@@ -42,6 +42,7 @@ import kit_lib as K
 import kit_plants_geo as G
 import kit_plants_atlas as AT
 import kit_plants_leaves as LV
+import kit_plants_jp as JP
 
 ARGS = sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else []
 OUT = os.path.abspath(ARGS[0]) if ARGS and not ARGS[0].startswith('--') else os.path.abspath('plants_out')
@@ -1211,6 +1212,9 @@ MODELS = [
     ('PalmSabal', build_palm_sabal), ('PalmSabalTall', build_palm_sabal_tall), ('SawPalmetto', build_saw_palmetto),
     ('LiveOak', build_live_oak),
     ('PalmRoyal', build_palm_royal), ('Banyan', build_banyan),
+    ('BlackPine', JP.build_black_pine), ('Camphor', JP.build_camphor), ('Cedar', JP.build_cedar),
+    ('CherryLeaf', JP.build_cherry_leaf), ('Bamboo', JP.build_bamboo), ('Hydrangea', JP.build_hydrangea),
+    ('Azalea', JP.build_azalea), ('Persimmon', JP.build_persimmon),
 ]
 BUDGET = {'tree': 7000, 'bush': 1200, 'grass': 800, 'hedge': 600}
 
