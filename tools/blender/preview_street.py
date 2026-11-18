@@ -668,7 +668,7 @@ def distant(fields, grass):
         while x < b + tile:
             place('Terrain', model, x, y, z, 0, scale, [grass, None, None] if grass else None)
             x += tile
-    layer('ForestStrip', X0 - 250, X1 + 250, -0.3, 70, 1.0, 0)
+    if not kamakura_mode: layer('ForestStrip', X0 - 250, X1 + 250, -0.3, 70, 1.0, 0)
     if florida: return          # (Florida is flat: StreetBuilder.DistantHills)
     if kamakura_mode:           # (Kamakura's low wooded hills, no snowy ranges: StreetBuilder.DistantHills)
         layer('HillsRolling', X0 - 450, X1 + 450, -0.4, 230, 1.0, 0)
@@ -1255,7 +1255,7 @@ def kamakura_home():
     asph, pave, grass = (.42, .43, .45), (.8, .79, .77), (.5, .64, .34)
     strip(-16.0, -8.3, pave, 0.0, 0.0, 'Paving'); strip(-8.3, -8.1, (.9, .9, .88), 0.0, 0.0, 'Kerb')
     strip(-8.1, -1.38, asph, 0.0, 0.0, 'Asphalt'); strip(-1.38, -1.26, (.96, .96, .94), 0.0, 0.0, 'Paving')
-    strip(-1.26, 1.2, (.36, .55, .38), 0.0, 0.0, 'Asphalt'); strip(1.2, PROP + 0.6, asph, 0.0, 0.0, 'Asphalt')
+    strip(-1.26, 1.2, (.44, .66, .45), 0.0, 0.0, 'Paving'); strip(1.2, PROP + 0.6, asph, 0.0, 0.0, 'Asphalt')
     strip(PROP + 0.6, 90.0, grass, 0.0, 0.0, 'Grass')
     houses = Deck(['HouseTileKM', 'HouseMetalKM', 'HouseOldKM', 'HouseShedKM', 'HouseCarportKM', 'BungalowKM', 'ApartmentKM'])
     walls = [(.86, .8, .68), (.92, .91, .88), (.78, .77, .74), (.88, .84, .76)]

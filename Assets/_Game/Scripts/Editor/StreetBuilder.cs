@@ -94,7 +94,7 @@ namespace DribbleToSchool.EditorTools
                     s.Add(new StripSpec(RoadFar, -PathHalf, 0f, ProceduralArt.Surface.Asphalt, white));
                     s.Add(new StripSpec(-PathHalf, -1.38f, 0f, ProceduralArt.Surface.Asphalt, white));
                     s.Add(new StripSpec(-1.38f, -1.26f, 0f, ProceduralArt.Surface.Paving, new Color(1.25f, 1.25f, 1.25f)));
-                    s.Add(new StripSpec(-1.26f, 1.2f, 0f, ProceduralArt.Surface.Asphalt, new Color(0.62f, 0.86f, 0.62f)));
+                    s.Add(new StripSpec(-1.26f, 1.2f, 0f, ProceduralArt.Surface.Paving, new Color(0.5f, 0.8f, 0.52f)));   // (paint on the light paving: a fresh green)
                     s.Add(new StripSpec(1.2f, PathHalf, 0f, ProceduralArt.Surface.Asphalt, white));
                     s.Add(new StripSpec(PathHalf, PropertyZ + 0.6f, 0f, ProceduralArt.Surface.Asphalt, new Color(0.98f, 0.98f, 0.98f)));
                     s.Add(new StripSpec(PropertyZ + 0.6f, BackZ, 0f, ProceduralArt.Surface.Grass, new Color(0.96f, 0.97f, 0.92f)));
@@ -2702,7 +2702,7 @@ namespace DribbleToSchool.EditorTools
                 // row's roofs, leaving sky for the clouds.
                 // Each level sees its own stretch of them (the rows are world-anchored: without this, the same skyline everywhere).
                 float shift = (levelSalt % 997) / 997f;
-                Layer(root, "ForestStrip", x0 - 250f, x1 + 250f, y - 0.3f, 70f, 1f, shift, null);
+                if (!KM) Layer(root, "ForestStrip", x0 - 250f, x1 + 250f, y - 0.3f, 70f, 1f, shift, null);   // (its spruces aren't Kamakura's hills)
                 if (FL) return;     // (Florida is flat: only the pine flatwoods' tree line on the horizon, under a big sky)
                 Layer(root, "HillsRolling", x0 - 450f, x1 + 450f, y - 0.4f, 230f, 1f, (shift * 3.7f) % 1f, grass);
                 if (KM)
