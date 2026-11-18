@@ -454,12 +454,22 @@ def _jfit(dr, s, size, maxw):
     return size
 
 
+SMALL_KANA = set('ぁぃぅぇぉっゃゅょァィゥェォッャュョヮ')
+
+
 def _jv(dr, cx, y0, y1, s, ink, maxw, stroke=0):
-    """Vertical lettering from y0 to y1, centred on cx."""
+    """Vertical lettering from y0 to y1, centred on cx, as Japanese is set top to bottom: the long-vowel mark ー turned
+    upright, small kana set up and to the right in their cell."""
     n = len(s)
     size = min((y1 - y0) / n * 0.92, maxw)
     for i, ch in enumerate(s):
-        _jt(dr, cx, y0 + (i + 0.5) * (y1 - y0) / n, ch, size, ink, stroke=stroke)
+        cy = y0 + (i + 0.5) * (y1 - y0) / n
+        if ch in 'ー－—':
+            dr.line([(cx, cy - size * 0.36), (cx, cy + size * 0.36)], fill=_c(ink), width=max(1, int(size * 0.09)))
+        elif ch in SMALL_KANA:
+            _jt(dr, cx + size * 0.14, cy - size * 0.12, ch, size, ink, stroke=stroke)
+        else:
+            _jt(dr, cx, cy, ch, size, ink, stroke=stroke)
 
 
 def p_plaque(name):
@@ -469,6 +479,16 @@ def p_plaque(name):
         dr.rectangle([w * 0.06, w * 0.06, w * 0.94, h - w * 0.06], fill=_c((0.72, 0.56, 0.26)))
         dr.rectangle([w * 0.14, w * 0.14, w * 0.86, h - w * 0.14], fill=_c((0.08, 0.075, 0.07)))
         _jv(dr, w / 2, w * 0.24, h - w * 0.24, name, (0.86, 0.70, 0.36), w * 0.62, stroke=2 * k)
+    return f
+
+
+def p_plaqueh(name):
+    """A horizontal plaque for the front beam: a black board in a gilt frame, the name in gold, read left to right."""
+    def f(dr, w, h, k):
+        dr.rectangle([0, 0, w, h], fill=_c((0.42, 0.33, 0.18)))
+        dr.rectangle([h * 0.07, h * 0.07, w - h * 0.07, h * 0.93], fill=_c((0.72, 0.56, 0.26)))
+        dr.rectangle([h * 0.16, h * 0.16, w - h * 0.16, h * 0.84], fill=_c((0.08, 0.075, 0.07)))
+        _jt(dr, w / 2, h / 2, name, _jfit(dr, name, h * 0.52, w * 0.8), (0.86, 0.70, 0.36), stroke=2 * k)
     return f
 
 
@@ -855,7 +875,7 @@ TILES = [
     ('kt_tuff', 384, 384), ('kt_tuffwall', 2048, 720), ('kt_kawara', 1536, 512), ('kt_kawara2', 384, 384),
     ('kt_copper', 1024, 640), ('kt_corr', 768, 384), ('kt_ballast', 512, 426),
     # signs and painted faces (PIL)
-    ('kt_plaque', 128, 300), ('kt_plaque2', 128, 300), ('kt_ema', 960, 384), ('kt_koshi', 768, 336), ('kt_saisen', 240, 96),
+    ('kt_plaque', 128, 300), ('kt_plaque2', 128, 300), ('kt_plaqueh', 384, 112), ('kt_ema', 960, 384), ('kt_koshi', 768, 336), ('kt_saisen', 240, 96),
     ('kt_timetable', 320, 560), ('kt_busround', 256, 256), ('kt_phonelabel', 256, 54), ('kt_phone', 128, 170),
     ('kt_vend1', 512, 936), ('kt_vend2', 512, 936), ('kt_bin', 160, 160), ('kt_mirror', 256, 256), ('kt_manhole', 512, 512),
     ('kt_fumikiri', 256, 150), ('kt_stripe', 768, 48), ('kt_stripev', 48, 512), ('kt_direction', 128, 64),
@@ -874,6 +894,7 @@ def paint(img, put):
     put(img, 'kt_corr', t_corr); put(img, 'kt_ballast', t_ballast)
     pp(img, 'kt_plaque', p_plaque('若潮神社'), (0.42, 0.33, 0.18))
     pp(img, 'kt_plaque2', p_plaque('海光山'), (0.42, 0.33, 0.18))
+    pp(img, 'kt_plaqueh', p_plaqueh('若潮神社'), (0.42, 0.33, 0.18))
     pp(img, 'kt_ema', p_ema, (0.86, 0.72, 0.5))
     pp(img, 'kt_koshi', p_koshi, (0.1, 0.08, 0.07))
     pp(img, 'kt_saisen', p_saisen, (0.30, 0.22, 0.15))
@@ -1347,8 +1368,8 @@ def shrine_hall(B):
         tadd(B, mb.bm(), 'kt_grain')
     ridge(B, X0 + 0.15, X1 - 0.15, 0.6, zr, h=0.36, w=0.36, mat='ktcopper', cap='ktcopper')
     # the plaque, the offering box, the bell and its rope
-    B.add(bx((-0.24, -1.66, 3.4), (0.24, -1.59, 4.36), 'ktdarkw'))
-    yquad(B, -0.22, 0.22, 3.42, 4.34, -1.662, 'kt_plaque')
+    B.add(bx((-0.5, -3.25, 2.9), (0.5, -3.2, 3.24), 'ktdarkw'))
+    yquad(B, -0.48, 0.48, 2.91, 3.23, -3.252, 'kt_plaqueh')
     tadd(B, cbox2((-0.62, -2.3, zf), (0.62, -1.75, zf + 0.55), 0.015, 'ktdarkw'), 'kt_grain')
     yquad(B, -0.58, 0.58, zf + 0.06, zf + 0.5, -2.305, 'kt_saisen')
     for k in range(6):
@@ -1469,7 +1490,6 @@ def bus_stop_pole(B):
         if sgn < 0: plane_uv(d, 'kt_busround', 0, 2, lo, hi)
         else: plane_uv(d, 'kt_busround', 0, 2, (hi[0], lo[1]), (lo[0], hi[1]))
         B.add(d)
-    B.add(cyl(x, 0, 2.2, 2.2, 0.0, 'ktgalv', 4)) if False else None
     rim, _ = lathe([(0.255, -0.014), (0.265, -0.014), (0.265, 0.014), (0.255, 0.014)], 20, 'ktgalv')
     B.add(xform(rim, T(x, 0, 2.2) @ R(math.pi / 2, 'X')))
     # the timetable
@@ -1643,14 +1663,15 @@ def laundry_pole(B):
         B.add(cbox2((x - 0.18, -0.24, 0.0), (x + 0.18, 0.24, 0.1), 0.03, 'ktconc'))
         B.add(cyl(x, 0, 0.1, 1.82, 0.022, 'ktgalv', 8))
         B.add(cyl(x, 0, 0.1, 0.25, 0.04, 'ktgalv', 8))
-        for z, ya in ((1.36, 0.26), (1.76, 0.3)):
-            for s in (-1, 1):
-                B.add(tube([(x, 0, z - 0.12), (x, s * ya * 0.6, z - 0.02), (x, s * ya, z + 0.05)], 0.012, 'ktgalv', 4))
-    poles = ((-0.24, 1.78), (0.2, 1.38))
+        # the cross bar at the top, a hook turned up at each end for a pole, a lower bar for a second height
+        for z, ya in ((1.76, 0.3), (1.36, 0.26)):
+            B.add(tube([(x, -ya, z), (x, ya, z)], 0.014, 'ktgalv', 5))
+            for sgn in (-1, 1):
+                B.add(tube([(x, sgn * (ya - 0.05), z), (x, sgn * ya, z + 0.01), (x, sgn * (ya + 0.012), z + 0.07)], 0.009, 'ktgalv', 4))
+        B.add(tube([(x, -0.3, 1.76), (x, 0.0, 1.6), (x, 0.3, 1.76)], 0.008, 'ktgalv', 4, caps=False))
+    poles = ((-0.27, 1.79), (0.27, 1.79))
     for y, z in poles:
         B.add(tube([(-1.3, y, z), (1.3, y, z)], 0.017, 'ktwire', 8))
-        for x in (-1.3, 1.3):
-            B.add(cyl(x, y, z - 0.02, z + 0.02, 0.0, 'ktwire', 4)) if False else None
     yp, zp = poles[0]
     for k, x in enumerate((-0.7, -0.55, -0.4, 0.55)):
         top = (x, yp, zp + 0.02)
@@ -2142,7 +2163,8 @@ def kei_truck(B):
         for x in (-1.2, -0.5, 0.2):
             B.add(box((x, min(y, y + sgn * 0.012), 0.66), (x + 0.07, max(y, y + sgn * 0.012), 0.74), 'ktbumper'))
             B.add(box((x - 0.04, min(y, y + sgn * 0.008), 0.73), (x + 0.11, max(y, y + sgn * 0.008), 0.77), 'ktrustp'))
-        B.add(box((-1.7, min(y, y + sgn * 0.007), 1.0), (0.48, max(y, y + sgn * 0.007), 1.045), 'ktrustp'))
+        for (xa, xb) in ((-1.7, -1.52), (-0.9, -0.78), (0.3, 0.48)):
+            B.add(box((xa, min(y, y + sgn * 0.007), 1.015), (xb, max(y, y + sgn * 0.007), 1.045), 'ktrustp'))
         # the rear wheel arch: the bed's skirt stops round the wheel
         B.add(box((rx - 0.36, min(y - sgn * 0.12, y), 0.55), (rx + 0.36, max(y - sgn * 0.12, y), 0.62), 'ktblk'))
     B.add(box((-1.73, -Wd / 2, 0.66), (-1.7, Wd / 2, 1.04), 'ktkeiw'))
@@ -2160,7 +2182,7 @@ def kei_truck(B):
         B.add(bx((0.45, yy - 0.012, 1.04), (0.48, yy + 0.012, 1.7), 'ktkeiw'))
     for x in (fx, rx):
         for yy in (-ry, ry):
-            wheel(B, x, yy, rw, rw, 0.16, n=12)
+            wheel(B, x, yy, rw, rw, 0.16, hub='ktgrey', n=12, hub_r=0.48)
     return 1.8
 
 
@@ -2204,7 +2226,7 @@ def kei_car(B):
     xquad(B, -0.17, 0.17, 0.62, 0.78, -1.721, 'kt_plate', facing=-1)
     for x in (fx, rx):
         for yy in (-0.62, 0.62):
-            wheel(B, x, yy, rw, rw, 0.17, n=12)
+            wheel(B, x, yy, rw, rw, 0.17, hub='ktgrey', n=12, hub_r=0.5)
     return 1.7
 
 
