@@ -127,6 +127,17 @@ A stop's point is where the picture shows the place (the bus stop's shelter, the
 
 `tools/blender/town_map.py` builds the town from the art kits (the same houses, shops, school, trees, cars, site machinery and beach props as the levels) and renders it top-down in Blender (Eevee), with the layout file written from the same plan: `venv_bpy/bin/python tools/blender/town_map.py -- <out dir> [--debug]` (about 5.5 minutes; deterministic). `tools/blender/town_map_check.py` validates an installed layout against `RouteTable.cs` and `StringTables.cs`: the contract above, the name rules, the street names, the trip (the stops on their routes between their levels, every node on its own leg near its start), and what the JSON cannot hold (each story node in its level's area and each stop in its own, and each route's railway crossings: street 0, market 0, beach 0, underpass 2, site 0, park 1, always under the line). `tools/blender/README.md` ("The town map", "Level and map") describes the generator and lists what the picture shows at each of the 28 nodes. A layout marked `"placeholder": true` (the stand-in this replaced) skips the names' room and street-name tests.
 
+### Each city's map
+
+Each city has its own map of its own routes (`TownMap.Use(cityId)`, `TownMap.CityRoutes`): Kamakura's is the town above
+(`TownMapLayout.json`, `UI/TownMap.jpg`); Florida's is Miami (`MiamiMapLayout.json`, `UI/MiamiMap.jpg`, written together by
+`tools/miami_map/miami_map.py` from one plan: Little Havana, the Miami River, Brickell, downtown, the bayfront and Museum
+Park). Miami's picture is a flat stand-in (`"placeholder": true`) until it can be rendered from Florida's kit. The map screen
+is built for the city chosen after PLAY and built again when another is chosen (`FrontEndScreen.Stale`); a leg's node shows
+its number along its route ("FL2-3" shows 3: `RouteTable.NodeNumber`). `FloridaRoutesTests` checks Miami's layout: its
+routes in RouteTable's order from home to the school, every leg's node on its route in playing order and 190 px from every
+other, every stop drawn, every string in both languages.
+
 ## The map screen (`FrontEnd/ChapterMapScreen.cs`, data in `Levels/TownMap.cs`)
 
 - **The picture fills the screen and pans and zooms** (`UI/Kit/UIMapView`, its arithmetic in `UI/Kit/MapViewMath`). It is a `RawImage` in a 3200 x 1800 block inside a view the size of the whole screen; the header and the bars at the bottom lie over it. At zoom 1 (the fit) the part that matters, every node with its stars, both pins and every route with a 40 px margin (about 2355 x 1231 px), fits the room between the header and the strip and left of the zoom buttons, up to 5 % bigger if that makes the picture cover the screen to its edges: 0.6 canvas units per picture pixel at 16:9 (was 0.48 with the old title row and the core fitted), 0.58 at 4:3. **One finger** (or the mouse) drags it, **two fingers** pinch-zoom about their middle, the **mouse wheel** zooms about the pointer, and the **+ / - / fit buttons** at the right glide in, out (x1.6) and back to the fit. It zooms from the fit to 3x (never past 1.6 canvas units a pixel, where the picture would go soft), a fling drifts to a stop, and the picture never slides off a side of the screen it covers. A drag that starts on a node moves the map and does not play the level; a tap plays it. Zoomed in, choosing another route glides to its levels. Opening the map fits it again.

@@ -9,7 +9,7 @@ awnings, slide-under barriers, gates, tunnel and walkway roofs) and the surfaces
              within a sideways jump of it (1.2 m) (JumpReach.HighestCoin 3.55 m; 4.73 m within reach of a
              springboard's throw); a coin in a fountain's jet, no higher than the jet, is the ball's
 
-    python3 tools/coin_audit.py [Assets/_Game/Scripts/Editor/GreyboxLevels.cs]
+    python3 tools/coin_audit.py [Assets/_Game/Scripts/Editor/GreyboxLevels.cs ...]   (default: the original town's and Florida's)
 
 Exits 1 when it finds a problem. The numbers come from LevelBuildKit (collider sizes) and JumpReach
 (the reach), as of generated content v72."""
@@ -141,6 +141,22 @@ def audit(name, body, line0):
             tops.append((x0, x1, gt + 0.95, 'golf cart'))
         elif fn == 'Drawbridge':
             solid(g(0), g(1), g(2) - 0.3, g(2), 'drawbridge')
+        # Florida's own streets (LevelBuildKit.FloridaCity): domino tables (0.75 m tops), scooters (low walls, or 0.9 m standing),
+        # the street sweeper's back (1.2 m up, riding to and fro), the arcades' roofs (3.1 m up, not stood on).
+        elif fn == 'DominoTable':
+            x, gt = g(0), g(1)
+            solid(x - 0.6, x + 0.6, gt + 0.6, gt + 0.75, 'domino table')
+        elif fn == 'Scooter':
+            x, gt = g(0), g(1)
+            standing = len(a) > 2 and a[2] is True
+            h, w = (0.9, 0.35) if standing else (0.32, 1.1)
+            solid(x - w / 2, x + w / 2, gt, gt + h, 'scooter')
+        elif fn == 'Sweeper':
+            x0, x1, gt = g(0), g(1), g(2)
+            tops.append((x0, x1, gt + 1.2, 'street sweeper'))
+        elif fn == 'Arcade':
+            x0, x1, gt = g(0), g(1), g(2)
+            solid(x0, x1, gt + 3.06, gt + 3.24, 'arcade roof', stand=False)
         elif fn == 'Springboard':
             springs.append(g(0))
         elif fn == 'Coin':
@@ -192,13 +208,14 @@ def audit(name, body, line0):
 
 
 def main():
-    path = sys.argv[1] if len(sys.argv) > 1 else 'Assets/_Game/Scripts/Editor/GreyboxLevels.cs'
-    src = open(path).read()
+    paths = sys.argv[1:] or ['Assets/_Game/Scripts/Editor/GreyboxLevels.cs', 'Assets/_Game/Scripts/Editor/FloridaLevels.cs']
     total, found = 0, []
-    for name, body, line0 in levels(src):
-        n, probs = audit(name, body, line0)
-        total += n
-        found += probs
+    for path in paths:
+        src = open(path).read()
+        for name, body, line0 in levels(src):
+            n, probs = audit(name, body, line0)
+            total += n
+            found += probs
     for p in found:
         print(p)
     print('%d coins checked, %d problems' % (total, len(found)))

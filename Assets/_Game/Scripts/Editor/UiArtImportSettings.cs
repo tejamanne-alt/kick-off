@@ -13,9 +13,11 @@ namespace DribbleToSchool.EditorTools
     {
         /// <summary>The town map's picture (Resources/UI/TownMap.jpg): the one picture here that is not a sprite.</summary>
         const string TownMapPath = "/_Game/Resources/UI/TownMap";
+        /// <summary>Florida's map (Resources/UI/MiamiMap.jpg, tools/miami_map): imported like the town's.</summary>
+        const string MiamiMapPath = "/_Game/Resources/UI/MiamiMap";
 
         // Bump to re-import the pictures when these settings change.
-        public override uint GetVersion() { return 2; }
+        public override uint GetVersion() { return 3; }
 
         void OnPreprocessTexture()
         {
@@ -23,7 +25,7 @@ namespace DribbleToSchool.EditorTools
             if (!path.Contains("/_Game/Resources/UI/")) return;
             var importer = (TextureImporter)assetImporter;
 
-            if (path.Contains(TownMapPath))
+            if (path.Contains(TownMapPath) || path.Contains(MiamiMapPath))
             {
                 importer.textureType = TextureImporterType.Default;
                 importer.textureShape = TextureImporterShape.Texture2D;

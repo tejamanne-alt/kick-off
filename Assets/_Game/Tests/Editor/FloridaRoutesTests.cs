@@ -150,6 +150,52 @@ namespace DribbleToSchool.Tests
         }
 
         [Test]
+        public void FloridasMapHasItsRoutesFromHomeToSchoolWithEveryLegAndStopOnThem()
+        {
+            try
+            {
+                TownMap.Use(Cities.FloridaId);
+                Assert.IsTrue(TownMap.Available, "MiamiMapLayout.json: " + TownMap.Problem);
+                Assert.AreEqual("UI/MiamiMap", TownMap.Image);
+                Assert.AreEqual(RouteTable.Florida.Length, TownMap.Routes.Length);
+                var core = TownMap.Core;
+                var nodes = new List<TownNode>();
+                for (int r = 0; r < RouteTable.Florida.Length; r++)
+                {
+                    var route = RouteTable.Florida[r];
+                    var line = TownMap.Routes[r];
+                    Assert.AreEqual(route.id, line.id, "the map's routes in RouteTable's order");
+                    Assert.Less(UnityEngine.Vector2.Distance(line.points[0], TownMap.Home), 25f, route.id + " starts at home");
+                    Assert.Less(UnityEngine.Vector2.Distance(line.points[line.points.Length - 1], TownMap.School), 25f, route.id + " ends at school");
+                    float along = -1f;
+                    foreach (string id in route.levels)
+                    {
+                        var node = TownMap.Node(id);
+                        Assert.IsNotNull(node, id + " has a node");
+                        Assert.Less(TownMap.DistanceTo(line.points, node.pos), 12f, id + " is on its route");
+                        float at = TownMap.DistanceAlong(line.points, node.pos);
+                        Assert.Greater(at, along, id + " follows the leg before it along the route");
+                        along = at;
+                        Assert.IsTrue(core.Contains(node.pos), id + " is inside the picture's core");
+                        nodes.Add(node);
+                    }
+                    for (int i = 0; i < route.stops.Length; i++)
+                        Assert.IsNotNull(TownMap.StopPosition(route.id, i), route.id + "'s stop " + route.stops[i] + " is drawn");
+                }
+                for (int i = 0; i < nodes.Count; i++)
+                    for (int j = i + 1; j < nodes.Count; j++)
+                        Assert.GreaterOrEqual(UnityEngine.Vector2.Distance(nodes[i].pos, nodes[j].pos), 190f, nodes[i].levelId + " and " + nodes[j].levelId);
+                foreach (string code in Loc.Languages)
+                    foreach (string key in TownMap.LocKeys())
+                        Assert.IsTrue(StringTables.For(code).ContainsKey(key), code + ": " + key);
+            }
+            finally
+            {
+                TownMap.Use(Cities.KamakuraId);   // (the other tests read the town's map)
+            }
+        }
+
+        [Test]
         public void TheMapNumbersALegByItsPlaceOnItsRoute()
         {
             Assert.AreEqual("3", RouteTable.NodeNumber("FL2-3"));

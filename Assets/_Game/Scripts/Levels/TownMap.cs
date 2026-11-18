@@ -384,6 +384,10 @@ namespace DribbleToSchool.Levels
             {
                 case "underpass": return Color.Lerp(chapterColor, new Color(0.18f, 0.14f, 0.42f), 0.38f);
                 case "site": return Color.Lerp(chapterColor, new Color(0.95f, 0.6f, 0.9f), 0.45f);
+                // Florida's three routes share Miami's teal: coral for the bus, deep blue for the river, green for the line.
+                case "fl1": return Color.Lerp(chapterColor, new Color(0.95f, 0.42f, 0.28f), 0.85f);
+                case "fl2": return Color.Lerp(chapterColor, new Color(0.12f, 0.3f, 0.75f), 0.55f);
+                case "fl3": return Color.Lerp(chapterColor, new Color(0.25f, 0.62f, 0.25f), 0.5f);
                 default: return chapterColor;
             }
         }

@@ -947,6 +947,7 @@ namespace DribbleToSchool.FrontEnd
         {
             // (one under way, or done and still in memory: a scene change unloads it)
             if (preload != null && (!preload.isDone || preload.asset != null)) return;
+            TownMap.Use(Cities.Active.id);       // (the chosen city's map: each city has its own picture)
             preload = Resources.LoadAsync<Texture2D>(TownMap.Image);
         }
 

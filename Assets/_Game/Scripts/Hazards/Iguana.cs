@@ -51,14 +51,13 @@ namespace DribbleToSchool.Hazards
                 dashing = true;
                 to = atA ? spotB : spotA;
             }
-            if (dashing)
+            // Basking, it is still: it is placed only while it runs and as it stops (docs/LEARNINGS.md B8).
+            if (!dashing) return;
+            x = Mathf.MoveTowards(x, to, dashSpeed * Time.deltaTime);
+            if (Mathf.Abs(x - to) < 0.01f)
             {
-                x = Mathf.MoveTowards(x, to, dashSpeed * Time.deltaTime);
-                if (Mathf.Abs(x - to) < 0.01f)
-                {
-                    dashing = false;
-                    atA = !atA;
-                }
+                dashing = false;
+                atA = !atA;
             }
             Place();
         }

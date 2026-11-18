@@ -1711,6 +1711,86 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
   shared row, the rebuild without `_CA` scenes, Florida's scenes in the new light (measure them against Florida's look target
   once the user has made it), and the APK size and frame rate on the phone.
 
+## Florida's own routes: by bus, by the river, under the line (generated content v123)
+
+- **Why.** The user asked to "implement all the levels from Florida". Since v122 a city is not a reskin of the original
+  town's levels (LEARNINGS D8, the user's own rule), so Florida gets the three routes designed in `docs/CITIES.md` rather
+  than `_FL` copies of chapters 2, 4 and 5. The user offered reference images from ChatGPT; the 16 Florida prompts
+  (`docs/IMAGE_PROMPTS.md`: FL-0, FL1-1 to FL3-3, FL-P1 to FL-P3) were asked for, and the routes, the play and the
+  mini-games were built first, as none of them needs a picture.
+- **City-owned routes** (`Levels/RouteTable`): `RouteTable.Florida` (FL1 Calle Ocho Bus, FL2 The River Way, FL3 Under the
+  Line), its eight stops (`FloridaStops`, `StopKind.Dock` new), Florida's own chapter (6, "Miami"), and for a route: its
+  city, and where a ride takes the kid between two legs (`arrive`, `rides`). `RouteTable.All` stays Kamakura's; lookups by
+  level id search `Every`; `ForCity`, `ById`, `RideBefore`, `NodeNumber` are new. Level ids are the route's and the leg's
+  (`FL2-3`), never reused. `LevelDefinition` gains `city` and `isMiniGame` (and `HasStickerSlot`).
+- **The cities' levels are their own:** `Cities.Has(level)` / `InTown(level)` lock another city's levels;
+  `LevelUnlocks.PreviousStory` stops at a city's edge (Florida's first leg doesn't wait on Kamakura's last), and
+  `NextToPlay` reads the chosen city's story only. The level table builds Florida's legs in Florida's streets and light
+  (`LevelSpec.Florida`, `look`: the chapter whose street it borrows until Florida's districts exist), and no longer builds
+  the original town's `_FL` copies (`DeleteStaleScenes` removes them). The Florida branches in `GreyboxLevels` are gone, so
+  the original levels are exactly what Kamakura always built.
+- **The twelve legs** (`Editor/FloridaLevels.cs`, set pieces in `LevelBuildKit.FloridaCity`):
+  - FL1-1 Little Havana Morning: roosters and hens (`Hazards/Rooster`: a fast ball makes them flutter up out of the way, a
+    slow one bounces off), a sprinkler, the domino park's tables under a pergola, a fruit stall's awning, the cafecito queue.
+  - FL1-2 The Metrobus (M1, `Challenges/BusRide`): the bus pulls in; tap CARD at the reader on green, board with the ball
+    before the doors shut (or the next bus comes); ride with the sway pushed onto the ball (a balance bar; KICK held keeps it
+    at your feet through the hard brakes at the lights); the stop sign names each stop, tap STOP for Brickell Avenue; miss it
+    and the walk back adds 15 s (`LevelManager.AddPenalty`). Stars: off with the ball, at your stop, never a wobble.
+  - FL1-3 Brickell Avenue: rental scooters across the sidewalk (lying and standing), the bay wind between the towers, a
+    construction gantry, the Miami River's drawbridge (6 m).
+  - FL1-4 Bayfront to School: pelicans (a bigger, slower gull swoop), the fountain plaza's jets, an iguana, the crossing
+    guard's crossing, Bayside Elementary.
+  - FL2-1 Riverside Street: iguanas (`Hazards/Iguana`: they bolt along the path when the kid comes near), sprinklers, the
+    golf cart, a mango bough.
+  - FL2-2 Uncle Rey's Boat (M2, `Challenges/MooringLine`): his boat drifts and bobs off the dock; throw the line (the ball
+    becomes its knot, the rope pays out from a bollard) onto both cleats with KICK's aim; tied, he hands over the science
+    project. Stars: tied, in five throws, in two.
+  - FL2-3 The Riverwalk: three drawbridges over the river's slips, bollards, crates, an iguana.
+  - FL2-4 The Drugstore (M3, `Challenges/DrugstoreShopping`): poster board, a glue stick and markers from a shelf of eight
+    things, paid in dollars and cents from a wallet (fewest pieces for the exact $6.77 is the third star), the change
+    checked if you paid too much; 75 s.
+  - FL2-5 Downpour to School: bursts of tropical rain (`Hazards/Downpour`, warned 1.6 s ahead) to wait out under the arcades
+    (`TrackBuilder.Arcade`), flooded gutters, gusts. Out in a burst the science project gets wet; soaked, no Delivered bonus
+    (`Progression/Errands`: carried from FL2-2, dropped when a trip starts again from home, 60 coins at school if dry).
+  - FL3-1 The Underline: fitness stations to climb, pull-up bars to slide under, the dog run, cyclists, a ditch.
+  - The people mover (`Levels/Rides`, `Core/RideCutscene`, built by `Editor/RideBuilder`): 15 s along the guideway over the
+    bay, skippable; played only when the trip goes on from FL3-1 (Next), not from the map.
+  - FL3-2 Biscayne Boulevard: pelicans on the lamps, the street sweeper (`TrackBuilder.Sweeper`, a moving truck to ride),
+    a crossing, a boom barrier.
+  - FL3-3 Museum Park to School: the banyans' roots as steps and an arch, skateboarders, a sprinkler, the kite fliers' wind.
+  - Coach cards for the chickens, the iguanas, the downpour and the sweeper; stickers for the nine street legs; every
+    string in English and Spanish (`Localization/StringTables.Florida.cs`).
+- **Mini-games as legs** (`Challenges/MiniGameObjective`): a challenge objective with `IsRouteLeg`, so the trip runs through
+  it (its time counts, the bell judges a last leg), its stars come from what it asks (`StarText`, shown in the guide and the
+  results), and a failed one offers Retry, not Next. The challenge guide has tips for each (`ChallengeGuide.Kind` Ride,
+  Throw, Shop).
+- **Florida's map** (`tools/miami_map/miami_map.py`): its own picture and layout from one plan (the river, the bay,
+  Little Havana, Brickell, downtown, Museum Park), a flat stand-in until it can be rendered from Florida's kit.
+  `TownMap.Use(city)` picks a city's map; the map screen is built again when another city is chosen; a leg's node shows its
+  number along its route.
+- **Also city-aware:** Florida's music on its legs and a soundscape per leg (`Soundscapes.ForFloridaLeg`); the album and the
+  sticker counts skip mini-game legs; co-op races run Kamakura's routes only (Florida's are not raceable yet).
+- **Cost** (estimates, not measured):
+  - Scenes: the 11 Florida copies (L01 to L05, C01, L11 to L14, C03) go; 12 legs and the ride scene come: two more scenes.
+  - Per frame: the chickens and the iguanas are a few lines each, idle off screen or at rest (B8); the downpour toggles two
+    sheets of thin rain streaks (about 300 sprites over the street, some 60 on screen, each 0.03 x 0.9 m: little overdraw)
+    and rewrites its pill only on change; the mini-games run only in their own scenes.
+  - Memory: Miami's map picture is 3200 x 1800 like the town's, loaded only while the map shows Florida (the town's is not).
+  - Everything new is grey boxes on the shared materials: no new textures in the levels.
+  - It must be checked on the Nord CE5, first FL2-5's rain and the bus's sway.
+- **Checked:**
+  - compile: no new error kinds in any `#if` set against the clean tree; three planted errors caught;
+    `unity_api_check` 6000.6 and 6000.7 (see below);
+  - logic outside Unity: the routes, stops, rides, node numbers, every Florida string in both languages, the coach cards'
+    lengths, the errand and the drugstore's money (a `dotnet` harness over the game's own files); `FloridaRoutesTests`
+    holds the same checks, and Miami's map layout, for Unity's test runner;
+  - the coin audit (`tools/coin_audit.py`, now over both layout files): 596 coins, 0 problems;
+  - Miami's map: every node and stop on its route (the generator asserts it), viewed with the routes drawn over it.
+- **Not run in Unity:** building the twelve legs and the ride (LevelFeasibility runs as they are built), every new hazard
+  and mini-game, the map screen for Florida, the results and guide cards for mini-games, the frame rate on the phone.
+- **Next:** the reference images, then Florida's kit and each leg's own district (`docs/CITIES.md`, "Still to do for
+  Florida").
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

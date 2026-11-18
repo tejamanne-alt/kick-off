@@ -140,7 +140,7 @@ namespace DribbleToSchool.EditorTools
             t.Sign("The fountain plaza:\nride the jets", new Vector2(31f, 3.6f));
             t.Fountain(34f, 0f, 2.8f, 16f);
             t.Fountain(38f, 0f, 3.2f, 18f);
-            t.CoinArc(33f, 39f, 2.6f, 1f, 5);
+            t.CoinArc(33.5f, 38.5f, 2.4f, 0.8f, 5);
             t.Sticker(new Vector2(38f, 4.6f));
             t.SlideUnder(45f, TrackBuilder.SlideLook.BoatTrestles);
 

@@ -51,6 +51,9 @@ namespace DribbleToSchool.Hazards
             if (!IsLive) return;
             float dt = Time.deltaTime;
             time += dt;
+            // Far off screen it stays where it is (docs/LEARNINGS.md B8): nothing to see, nothing to write.
+            var kid = Kid;
+            if (kid != null && Mathf.Abs(kid.transform.position.x - x) > 24f && !IsFluttering) return;
             var ball = Ball;
             if (!IsFluttering && ball != null)
             {

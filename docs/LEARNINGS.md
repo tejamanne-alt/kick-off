@@ -590,8 +590,12 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
   restarted), so the recommended option was taken: it left the picker and its `_CA` scenes are no longer built; its Coast
   kit and builder code stay, since Florida shares them. To bring it back: add it to `Cities.All` and build its scenes again
   in `GeneratedContent`. Don't re-add it unasked.
+- *Then (v123):* the user asked for "all the levels from Florida". Making Florida's remaining chapters into more `_FL` copies
+  would have broken this rule again; Florida got the three routes of `docs/CITIES.md` instead (twelve legs, three of them
+  mini-games), and its nine interim copies were dropped. Their own play (the drawbridge, the sprinklers, the golf cart, the
+  storm) moved into Florida's legs.
 - *Rule:* a new place brings new play: its own routes, how people there get around, and what a child there does on the way.
-  A reskin is not a city.
+  A reskin is not a city. When a request reads either way ("the rest of Florida's levels"), build it to the city's design.
 
 ## E. Levels and world
 
@@ -606,6 +610,7 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
 - **E9. A flower obstacle that looked painted on the floor (fixed in v119).** Chapter 1's low obstacle was sometimes three of the Plants kit's flower patches standing straight on the paving, their leaves flat on it, with nothing to say what blocks the way. *Fix:* a raised bed: a stone kerb, soil and the patches growing out of it (`FlowerBed`). *Rule:* an obstacle reads as solid from the side: give soft things (plants, cloth) a hard base or container.
 - **E10. A bridge rail that would have hidden the ball (caught in preview, v121).** Florida's canal balustrade was first put on the road's edge, between the camera and the lane: at 1.15 m, 1.65 m in front of the kid, it would have hidden the ball and the kid's legs all the way across the drawbridge. *Fix:* the balustrades stand along the canal's banks behind the street, and the leaves keep their own rail behind the lane. *Rule:* nothing taller than about 0.4 m stands between the camera and the lane (z < -1.5) where the kid plays; check every new set piece in `preview_street.py` through the game camera before it goes in.
 - **E11. Water across the street is not a side street.** A canal added as an `OpenArea` would get a side street's road paved over it (`SideStreetEnd`), and the verge behind the lane bridges every gap. *Fix:* `TrackBuilder.Canals`, which the back rows, far rows and the verge's slabs keep out of, plus a `QuietArea` for the front lots. *Rule:* a feature that crosses the street's depth gets its own list; don't overload `OpenAreas`.
+- **E12. One set of routes was assumed everywhere (found in v123).** Giving Florida routes of its own touched the map (one picture, one layout, `RouteTable.All` in every loop), unlocks (a city's first leg waited on the other city's last), Next and the album (mini-game legs with no sticker), the music (chosen by the scene's suffix), co-op (location by chapter), tests (23 story levels counted) and the stops' set pieces. *Fix:* routes, maps and the story order are per city (`RouteTable.ForCity`, `TownMap.Use`, `Cities.Has(level)`, `LevelUnlocks.PreviousStory` stops at a city's edge); lookups by level id search every city (`RouteTable.Every`); `GeneratedContent.LevelTable` stays Kamakura's for its tests and `CityLevelTable` gives another city's. *Rule:* where the city matters, never loop over `RouteTable.All` (that is Kamakura's): ask the city for its routes. A level id is unique across cities.
 
 ## F. UI and menus
 

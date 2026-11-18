@@ -30,10 +30,23 @@ Generated scenes are rebuilt from code, so edits made directly in those scenes g
 ## Cities
 
 PLAY and HOLIDAY RUN first ask which city (`UI/CityPicker`, `Progression/Cities`). **Kamakura**, Japan, the original town,
-has every level below and the Holiday Run. **Florida** has Home Street and the beach in its own streets, unlocked by
-finishing Kamakura's levels. **Madrid**, **New York** and **Mumbai** are designed and coming: each city gets two or three
-routes of its own from home to school, three to five levels each, with its own transit, errands and mini-games, and its own
-light and climate (`docs/CITIES.md`). The reference images for each city come from `docs/IMAGE_PROMPTS.md`.
+has every level below and the Holiday Run. **Florida** (Miami), unlocked by finishing Kamakura's levels, has three routes of
+its own, twelve legs from the ranch house in Little Havana to Bayside Elementary (see "Florida's routes" below).
+**Madrid**, **New York** and **Mumbai** are designed and coming: each city gets two or three routes of its own from home to
+school, three to five levels each, with its own transit, errands and mini-games, and its own light and climate
+(`docs/CITIES.md`). The reference images for each city come from `docs/IMAGE_PROMPTS.md`.
+
+### Florida's routes
+
+| Route | Legs | Its own play |
+|---|---|---|
+| FL1 Calle Ocho Bus | FL1-1 Little Havana Morning, FL1-2 The Metrobus *(mini-game)*, FL1-3 Brickell Avenue, FL1-4 Bayfront to School | Roosters and hens, domino tables, the bus (tap your card, keep the ball through the sway, pull the cord at your stop), scooters across the sidewalk, the bay wind, the river's drawbridge, pelicans, the fountain plaza |
+| FL2 The River Way | FL2-1 Riverside Street, FL2-2 Uncle Rey's Boat *(mini-game)*, FL2-3 The Riverwalk, FL2-4 The Drugstore *(mini-game)*, FL2-5 Downpour to School | Iguanas, sprinklers, the golf cart, throwing the mooring line, three drawbridges, shopping in dollars and cents, a cloudburst to shelter from: the science project on your backpack has to get to school dry (the Delivered bonus) |
+| FL3 Under the Line | FL3-1 The Underline, *(the people mover, a ride)*, FL3-2 Biscayne Boulevard, FL3-3 Museum Park to School | Fitness stations, the dog run, cyclists, the street sweeper to ride, the banyans' roots, skateboarders, kite fliers' wind |
+
+The legs are laid out in `Editor/FloridaLevels.cs`, the mini-games are `Challenges/BusRide`, `MooringLine` and
+`DrugstoreShopping`, and the map is Miami's own (`tools/miami_map`). Until Florida's kit is modelled from the reference
+images, its new things are grey boxes and its streets borrow the nearest of the original town's, in Florida's light.
 
 ## Levels
 

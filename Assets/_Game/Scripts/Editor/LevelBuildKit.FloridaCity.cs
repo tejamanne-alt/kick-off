@@ -213,11 +213,12 @@ namespace DribbleToSchool.EditorTools
             /// </summary>
             public void Sweeper(float fromX, float toX, float groundTop = 0f, float speed = 1f)
             {
-                const float width = 3.4f, bed = 1.3f;
-                var center = new Vector2(fromX + width * 0.5f, groundTop + bed - 0.15f);
-                Audit.AddSliding(center.x, center.y, width, toX - fromX - width, 0f);
+                // Solid from 0.3 m up to its flat back at 1.2 m (a jump reaches it): it can't be walked through, only ridden or waited for.
+                const float width = 3.4f, bed = 1.2f, bottom = 0.3f;
+                var center = new Vector2(fromX + width * 0.5f, groundTop + (bed + bottom) * 0.5f);
+                Audit.AddSliding(center.x, groundTop + bed - 0.175f, width, toX - fromX - width, 0f);
                 Coaching.Mark("sweeper", fromX, toX);
-                var go = Block("Sweeper", center, new Vector2(width, 0.3f), PlatformColor, GroundMat, false);
+                var go = Block("Sweeper", center, new Vector2(width, bed - bottom), PlatformColor, GroundMat, false);
                 var body = go.AddComponent<Rigidbody2D>();
                 body.bodyType = RigidbodyType2D.Kinematic;
                 var mp = go.AddComponent<Hazards.MovingPlatform>();
@@ -225,10 +226,11 @@ namespace DribbleToSchool.EditorTools
                 mp.speed = speed;
                 mp.waitTime = 1.5f;
                 Color white = new Color(0.95f, 0.95f, 0.93f);
-                Part(go.transform, "Body", new Vector3(0f, -0.65f, 0.1f), new Vector3(width, 1f, 1.9f), white);
-                Part(go.transform, "Cab", new Vector3(width * 0.5f - 0.45f, 0.35f, 0.1f), new Vector3(0.9f, 1f, 1.9f), white);
-                Part(go.transform, "Stripe", new Vector3(0f, -0.55f, -0.86f), new Vector3(width, 0.12f, 0.02f), new Color(0.95f, 0.6f, 0.1f));
-                Part(go.transform, "Brush", new Vector3(-width * 0.3f, -1.1f, -0.6f), new Vector3(0.6f, 0.3f, 0.6f), new Color(0.3f, 0.3f, 0.32f));
+                // (local to the block's middle, 0.75 m up: the body down to the wheels, the cab over the front, the brush under it)
+                Part(go.transform, "Body", new Vector3(0f, -0.1f, 0.1f), new Vector3(width, 1.1f, 1.9f), white);
+                Part(go.transform, "Cab", new Vector3(width * 0.5f - 0.45f, 0.95f, 0.1f), new Vector3(0.9f, 1.1f, 1.9f), white);
+                Part(go.transform, "Stripe", new Vector3(0f, 0f, -0.86f), new Vector3(width, 0.12f, 0.02f), new Color(0.95f, 0.6f, 0.1f));
+                Part(go.transform, "Brush", new Vector3(-width * 0.3f, -0.6f, -0.6f), new Vector3(0.6f, 0.3f, 0.6f), new Color(0.3f, 0.3f, 0.32f));
             }
 
             /// <summary>The finishing touches a Florida layout asks for once it has laid everything (the downpour's shelters).</summary>

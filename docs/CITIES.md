@@ -412,8 +412,23 @@ Until then the HOLIDAY RUN picker shows it as coming soon.
 - The Add-ons & Filters button and screen are now **Filters** only (`UI/FiltersPanel`), also reachable from the pause
   menu.
 - The cities are `Progression/Cities`. **Kamakura** plays the original town's 23 levels (its routes in this document
-  replace them once built). **Florida** plays its 9 levels so far (Home Street and the beach in Florida's streets).
-  **Madrid**, **New York** and **Mumbai** show as coming soon.
+  replace them once built). **Florida** plays its own three routes (v123, below). **Madrid**, **New York** and **Mumbai**
+  show as coming soon.
+- **Florida's routes (v123):** FL1, FL2 and FL3 as designed above, in `Levels/RouteTable.Florida` (Florida's own chapter, 6,
+  and stops), twelve legs in the level table and `Editor/FloridaLevels.cs`. The mini-game systems built so far: **M1** the
+  ride (`Challenges/BusRide`, the Metrobus), **M2** the errand (`Challenges/MooringLine`, Uncle Rey's boat), **M3**
+  shopping (`Challenges/DrugstoreShopping`, the drugstore), all on `Challenges/MiniGameObjective` (a leg whose time counts
+  in the trip). **M5** is the existing `Drawbridge` and `Crossing`. The ride between legs is `Levels/Rides` and
+  `Core/RideCutscene` (the people mover). What an errand gives rides along: `Progression/Errands` (FL2's science project,
+  spoiled by the downpour, the Delivered bonus at school). Florida's map is its own picture and layout (`tools/miami_map`,
+  a flat stand-in until the kit exists). Florida's earlier nine levels (the original town's Home Street and beach in
+  Florida's streets, v117 to v122) are gone; their drawbridge, sprinklers, golf cart and storm live on in Florida's legs.
+- **Still to do for Florida:** its kit, modelled from the user's reference images (`docs/IMAGE_PROMPTS.md`, Florida: FL-0,
+  FL1-1 to FL3-3, FL-P1 to FL-P3) into `tools/blender/kit_buildings_fl.py`, then each leg's own district in
+  `StreetBuilder` (Little Havana, Brickell, the bayfront, the Riverwalk, downtown's arcades, the Underline, Biscayne, Museum
+  Park, Bayside Elementary) in place of the borrowed streets; the bus's interior, Uncle Rey and the drugstore from FL1-2,
+  FL2-2 and FL2-4's references; the map rendered from the kit; a Holiday Run in Miami; co-op races on Florida's routes
+  (races run Kamakura's routes only for now); M4 (drop and come back) for the routes that use it.
 - California (Santa Monica) is not one of the five: it left the picker, and its scenes are no longer built.
 - Each playable city's light follows its climate here (`Progression/Cities`, `CityClimate`).
 
