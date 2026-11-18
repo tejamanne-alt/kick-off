@@ -122,19 +122,21 @@ def boat_trestles_mia(B):
 
 
 def apple_bough_mia(B):
-    """A mango tree's low bough over the sidewalk (AppleBough: solid from 0.85 to 1.09 over 1.7 m): the trunk in a yard
-    behind the lane, its limb reaching across the sidewalk with long dark leaves and mangoes hanging on their stalks."""
-    B.add(tube([(0.0, 2.4, 0.0), (0.0, 2.3, 1.6), (0.2, 2.1, 2.6)], 0.2, 'woodd', 8))
-    _leaves(B, (0.2, 2.2, 3.4), (1.4, 1.0, 0.9), 3, 8)
-    B.add(tube([(0.0, 2.25, 1.5), (0.0, 1.0, 1.2), (0.05, -0.6, 1.05), (0.1, -1.5, 1.15)], 0.08, 'woodd', 7))
-    for k, y in enumerate(np.linspace(1.4, -1.4, 7)):
-        _leaves(B, (0.0, y, 1.2), (0.8, 0.34, 0.3), 10 + k, 5)
+    """A mango tree's low bough over the sidewalk (AppleBough: solid from 0.85 to 1.09 over 1.7 m): the tree in a yard behind
+    the lane, its limb reaching out over the sidewalk at head height, heavy with long dark leaves and mangoes hanging below it
+    on their stalks down to just over a sliding kid."""
+    B.add(tube([(0.0, 2.6, 0.0), (0.0, 2.5, 2.0), (0.3, 2.4, 3.4)], 0.22, 'woodd', 8))
+    _leaves(B, (0.2, 2.6, 4.6), (2.0, 1.4, 1.2), 3, 9)
+    B.add(tube([(0.0, 2.45, 2.2), (0.0, 1.2, 1.75), (0.05, -0.4, 1.5), (0.1, -1.5, 1.55)], 0.1, 'woodd', 7))
+    for k, y in enumerate(np.linspace(1.6, -1.5, 8)):
+        _leaves(B, (0.0, y, 1.62), (0.85, 0.36, 0.32), 10 + k, 5)
     rng = np.random.default_rng(5)
-    for k in range(9):
-        x, y = rng.uniform(-0.65, 0.65), rng.uniform(-1.3, 1.3)
-        B.add(tube([(x, y, 1.1), (x, y, 0.98)], 0.006, 'woodd', 3))
-        B.add(blob((x, y, 0.92), (0.05, 0.04, 0.07), 'mango' if k % 3 else 'mangog', 6, 2, k, 0.03))
-    return 4.3
+    for k in range(14):
+        x, y = rng.uniform(-0.65, 0.65), rng.uniform(-1.4, 1.4)
+        z = rng.uniform(0.98, 1.2)
+        B.add(tube([(x, y, 1.45), (x, y, z + 0.06)], 0.006, 'woodd', 3))
+        B.add(blob((x, y, z), (0.05, 0.04, 0.07), 'mango' if k % 3 else 'mangog', 6, 2, k, 0.03))
+    return 5.8
 
 
 def roll_shutter_mia(B):
@@ -269,11 +271,13 @@ def ped_signal_mia(B):
     B.attach.append(('Attach.Green', (0.0, -0.35, 2.24)))
     B.add(cbox2((-0.08, -0.12, 1.0), (0.08, -0.05, 1.2), 0.01, 'yellow'))
     B.add(blob((0.0, -0.13, 1.1), (0.03, 0.01, 0.03), 'black', 5, 2, 1, 0.0))
+    # the name blade, in front of the pole's top (the pole must not cut through the name)
     mb = MB()
-    mb.face([(-0.6, -0.02, 3.2), (0.6, -0.02, 3.2), (0.6, -0.02, 3.4), (-0.6, -0.02, 3.4)], 'tex', (0, -1, 0), 1.0,
+    mb.face([(-0.6, -0.1, 3.2), (0.6, -0.1, 3.2), (0.6, -0.1, 3.4), (-0.6, -0.1, 3.4)], 'tex', (0, -1, 0), 1.0,
             lambda co: reg_uv('mi_street', (co.x + 0.6) / 1.2, (co.z - 3.2) / 0.2, 0.0))
     B.add(mb.bm())
-    B.add(box((-0.6, 0.0, 3.2), (0.6, 0.02, 3.4), 'green'))
+    B.add(box((-0.6, -0.09, 3.2), (0.6, -0.07, 3.4), 'green'))
+    B.add(cbox2((-0.05, -0.08, 3.25), (0.05, -0.05, 3.35), 0.005, 'metald'))
     return 3.4
 
 
@@ -432,7 +436,7 @@ def rows(gl, prop):
         ('StallAwningMIA', 2.7, 2.5, 1.8, 0.0, stall_awning_mia, p, 2.6, {'ppm': 32}, {}),
         ('ScaffoldGantryMIA', 2.9, 4.4, 2.6, 0.0, scaffold_gantry_mia, p, 4.5, big, {}),
         ('BoatTrestlesMIA', 4.2, 3.0, 1.6, 0.0, boat_trestles_mia, p, 3.1, big, {}),
-        ('AppleBoughMIA', 3.0, 4.3, 5.0, 0.0, apple_bough_mia, p, 4.4, big, {}),
+        ('AppleBoughMIA', 3.0, 5.8, 5.4, 0.0, apple_bough_mia, p, 5.9, big, {}),
         ('RollShutterMIA', 0.3, 3.15, 4.0, 0.0, roll_shutter_mia, p, 3.2, big, {}),
         ('PipeRackMIA', 4.5, 2.1, 1.8, 0.0, pipe_rack_mia, p, 2.2, big, {}),
         ('BoomBarrierMIA', 1.0, 1.4, 4.2, 0.0, boom_barrier_mia, p, 1.5, big, {}),
