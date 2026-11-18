@@ -424,3 +424,246 @@ def build_duck():
     return K.Model('Duck', parts, {1: DUCK['body'], 2: DUCK['bill']}, 1500,
                    extra={'origin': 'centre of the waterline (z = 0 is the water surface)', 'head': '+X'},
                    attach={'Bill': ((0.266, 0, 0.167), 'Head')})
+
+
+# ================================================================ black kite (flying), for Kamakura's beach
+KITE = {
+    'body': hexc('#3f2f26'),      # dark brown mantle and upper wing (part 1)
+    'under': hexc('#523629'),     # rufous-brown underparts, streaked
+    'head': hexc('#7a6858'),      # a paler, greyish-brown head
+    'mask': hexc('#2e221c'),      # the dark patch behind the eye
+    'bar': hexc('#87705a'),       # the pale bar across the upper wing coverts
+    'prim': hexc('#221b18'),      # dark primaries and fingers
+    'window': hexc('#d8c4a2'),    # the pale "window" under the base of the primaries
+    'bill': hexc('#b8ac7e'),      # yellow-grey bill and cere (part 2)
+    'hook': hexc('#3a3836'),      # the dark hooked tip
+    'feet': hexc('#d2b24e'),
+}
+# The kite's wing planform, (span s 0 at the shoulder .. 0.82 where the fingers part): leading edge, trailing edge
+# (x, metres: the head is +X) and thickness. Broad and blunt, the wrist pushed forward, unlike the gull's pointed wing.
+_KWING = {
+    's':  [0.0, 0.15, 0.38, 0.58, 0.72, 0.82],
+    'le': [0.10, 0.118, 0.132, 0.122, 0.104, 0.088],
+    'te': [-0.17, -0.185, -0.178, -0.15, -0.118, -0.086],
+    'th': [0.05, 0.04, 0.028, 0.02, 0.014, 0.01],
+}
+_KFINGERS = [(0.074, 0.92), (0.046, 0.98), (0.018, 1.0), (-0.01, 0.98), (-0.038, 0.945), (-0.064, 0.9)]
+
+
+def kite_wing(root_y, tip_y, stations=12):
+    """The left wing (+Y) of a gliding kite, as Pieces: a broad airfoil loft to the hand, its hand drooping a little,
+    and six separate fingered primaries fanned out beyond it, their tips turned up. Painted dark brown, a pale bar
+    across the upper coverts, and the pale window under the base of the primaries."""
+    span = tip_y - root_y
+    s_end = _KWING['s'][-1]
+    u = np.linspace(0, 1, stations)
+    S = s_end * (1 - (1 - u) ** 1.25)
+    le = np.interp(S, _KWING['s'], _KWING['le']); te = np.interp(S, _KWING['s'], _KWING['te'])
+    th = np.interp(S, _KWING['s'], _KWING['th'])
+    zc = lambda s: 0.02 * np.sin(math.pi * np.minimum(s, 1.0) * 0.9) - 0.045 * np.asarray(s) ** 2
+    f = lambda c: 2.598 * np.sqrt(c) * (1 - c)
+    reg = A.inset('feather', 0.006)
+    rings = []; UV = []
+    for i, s in enumerate(S):
+        y = root_y + s * span
+        ring = []
+        for c, top in zip(_C, _TOP):
+            x = le[i] + c * (te[i] - le[i])
+            z = zc(s) + (0.75 if top else -0.25) * th[i] * f(c)
+            ring.append((x, y, z))
+            UV.append((reg[0] + (reg[2] - reg[0]) * c, reg[1] + (reg[3] - reg[1]) * s / s_end * 0.8))
+        rings.append(ring)
+    p = G.loft(rings, True, True)
+    UV.append((reg[0] + (reg[2] - reg[0]) * 0.4, reg[1])); UV.append((reg[0] + (reg[2] - reg[0]) * 0.4, reg[1] + (reg[3] - reg[1]) * 0.8))
+    p.U = np.array(UV)
+    G.outward(p)
+    p.N = G.vnormals(p.V, p.T)
+    s_of = lambda P: (np.abs(P[:, 1]) - root_y) / span
+
+    def c_of(P):
+        s = np.clip(s_of(P), 0, s_end)
+        l = np.interp(s, _KWING['s'], _KWING['le']); t = np.interp(s, _KWING['s'], _KWING['te'])
+        return (l - P[:, 0]) / np.maximum(l - t, 1e-4)
+
+    def paint(V, N, U, Aocc):
+        s = s_of(V); c = c_of(V)
+        up = G.smoothstep(-0.3, 0.3, N[:, 2])[:, None]
+        top = G.l2s(KITE['body'])[None] * np.ones((len(V), 1))
+        bar = (G.smoothstep(0.1, 0.2, c) * G.smoothstep(0.46, 0.36, c - 0.25 * s) * G.smoothstep(0.08, 0.18, s)
+               * G.smoothstep(0.6, 0.48, s))[:, None]
+        top = top * (1 - 0.8 * bar) + G.l2s(KITE['bar'])[None] * 0.8 * bar
+        prim = G.smoothstep(0.55, 0.72, s + 0.15 * (c - 0.5))[:, None]
+        top = top * (1 - prim) + G.l2s(KITE['prim'])[None] * prim
+        und = G.l2s(KITE['under'])[None] * np.ones((len(V), 1))
+        win = (G.smoothstep(0.52, 0.64, s) * G.smoothstep(0.18, 0.32, c))[:, None]
+        und = und * (1 - win) + G.l2s(KITE['window'])[None] * win
+        dark = (G.smoothstep(0.85, 1.0, c) * G.smoothstep(0.3, 0.5, s))[:, None] * 0.7     # the dark trailing edge
+        und = und * (1 - dark) + G.l2s(KITE['prim'])[None] * dark
+        col = und * (1 - up) + top * up
+        k = (0.9 + 0.12 * up[:, 0]) * (0.85 + 0.15 * Aocc)
+        return G.s2l(np.clip(col * k[:, None], 0, 1)), 1
+    pieces = G.paint_piece(p, [], {'base': paint})
+    # the fingers: separate primaries from inside the hand out to the tip, fanned and turned up at their ends
+    y0 = root_y + 0.74 * span
+    for k, (xb, ls) in enumerate(_KFINGERS):
+        yt = root_y + ls * span
+        base = np.array((xb, y0, float(zc(0.74))))
+        tip = np.array((xb * 1.55 - 0.012, yt, float(zc(0.82)) + 0.03))
+        mid = base + (tip - base) * 0.55 + np.array((0, 0, -0.004))
+        w = 0.029 if k not in (0, 5) else 0.024
+        fp = K.ribbon([base, mid, tip], [w, w * 0.9, w * 0.3], [0.004, 0.0032, 0.0015],
+                      lambda t, q, tg: (0, 0, 1), n=5, sides=6)
+        t = np.clip((fp.V[:, 1] - y0) / (yt - y0), 0, 1)
+        up = G.smoothstep(-0.3, 0.3, fp.N[:, 2])[:, None]
+        win = G.smoothstep(0.42, 0.2, t)[:, None] * (1 - up)
+        col = G.l2s(KITE['prim'])[None] * (1 - win) + G.l2s(KITE['window'])[None] * win
+        fp.color(G.s2l(np.clip(col * (0.9 + 0.15 * up), 0, 1))); fp.part(0)
+        pieces.append(fp)
+    return pieces
+
+
+def build_black_kite():
+    """Kamakura's black kite (tobi) gliding over the beach, the bird that swoops to snatch food: dark brown, a paler,
+    greyish head, broad wings with six fingered primaries and a pale window under their base, a pale bar across the upper
+    wing, a long, shallowly forked tail and a hooked yellow-grey bill: the Seagull's rig (Body, WingL, WingR at the
+    shoulders, head toward +X, origin at the body's centre), 1.5 m across."""
+    HC = np.array((0.15, 0, 0.032))
+    chest = G.ellipsoid((0.02, 0, 0.0), (0.13, 0.075, 0.068))
+    rear = G.round_cone((-0.03, 0, 0.0), (-0.16, 0, 0.01), 0.064, 0.03)
+    neck = G.round_cone((0.07, 0, 0.008), (0.135, 0, 0.026), 0.058, 0.044)
+    head = G.ellipsoid(HC, (0.052, 0.042, 0.043))
+    brow = G.ellipsoid(HC + np.array((0.01, 0, 0.018)), (0.04, 0.036, 0.02))
+    billf = G.tube([(0.178, 0, 0.034), (0.2, 0, 0.035), (0.216, 0, 0.026), (0.219, 0, 0.01)], [0.0135, 0.01, 0.0065, 0.002])
+    lower = G.round_cone((0.18, 0, 0.022), (0.205, 0, 0.018), 0.009, 0.004)
+
+    def tailf(P):
+        """A long tail, widening to its end and forked: a slab whose end is cut back in a shallow V."""
+        x0, x1, z0 = -0.13, -0.39, 0.008
+        tt = np.clip((x0 - P[:, 0]) / (x0 - x1), 0, 1)
+        w = 0.038 + 0.062 * tt
+        th = 0.012 - 0.004 * tt
+        xend = x1 + 0.05 * np.clip(1 - np.abs(P[:, 1]) / 0.08, 0, 1)
+        return np.maximum.reduce([np.abs(P[:, 2] - z0) - th, np.abs(P[:, 1]) - w, P[:, 0] - x0, xend - P[:, 0]])
+    feet = G.mirror_y(G.ellipsoid((-0.09, 0.026, -0.05), (0.032, 0.014, 0.01), G.rot((0, 1, 0), math.radians(-10))))
+    body = G.blend(chest, (rear, 0.05), (tailf, 0.02), (neck, 0.04), (head, 0.03), (brow, 0.015), (billf, 0.008), (lower, 0.006))
+    allf = G.union(body, feet)
+    bill = lambda P: 0.0016 - G.union(billf, lower)(P)
+    hook = K.both(bill, lambda P: P[:, 0] - 0.205)
+    cere = lambda P: 0.012 - np.linalg.norm((P - np.array((0.181, 0, 0.038))) * np.array((1.0, 0.8, 1.2)), axis=1)
+    headr = lambda P: 0.065 - np.linalg.norm((P - HC) * np.array((0.85, 1.0, 1.0)), axis=1)
+    mask = K.both(K.side_ellipse(0.13, 0.028, 0.03, 0.011, math.radians(-8)), lambda P: np.abs(P[:, 1]) - 0.025)
+    tail = lambda P: -0.14 - P[:, 0]
+
+    def plumage(V, N, Aocc):
+        up = G.smoothstep(-0.5, 0.6, N[:, 2])[:, None]
+        streak = 1 - 0.1 * (0.5 + 0.5 * np.sin(V[:, 1] * 260 + V[:, 0] * 40))[:, None] * (1 - up)
+        col = (G.l2s(KITE['under'])[None] * streak) * (1 - up) + G.l2s(KITE['body'])[None] * up
+        k = K.soft_shade(V, N, Aocc, -0.05, 0.06, dark=0.82, light=1.08)
+        return G.s2l(np.clip(col * k[:, None], 0, 1)), 1
+
+    def tail_paint(V, N, Aocc):
+        bars = 1 - 0.13 * (0.5 + 0.5 * np.cos((V[:, 0] + 0.14) * 2 * math.pi / 0.034))
+        k = K.soft_shade(V, N, Aocc, -0.02, 0.03, dark=0.85, light=1.06) * bars
+        base = G.lerp(KITE['under'], KITE['body'], G.smoothstep(-0.4, 0.4, N[:, 2]))
+        return G.s2l(np.clip(G.l2s(base) * k[:, None], 0, 1)), 1
+    sb = G.Surface(body, (-0.42, -0.11, -0.09), (0.24, 0.11, 0.1), 0.0034, 760, sym=True,
+                   weight=lambda P: G.smoothstep(0.12, 0.18, P[:, 0]))
+    pcs = sb.pieces([('hook', hook), ('cere', cere), ('bill', bill), ('mask', mask), ('head', headr), ('tail', tail)],
+                    {'base': plumage, 'tail': tail_paint,
+                     'head': K.painter(KITE['head'], 0, -0.01, 0.07, dark=0.82, light=1.06),
+                     'mask': K.painter(KITE['mask'], 0, -0.01, 0.07, dark=0.85, light=1.05),
+                     'bill': K.painter(KITE['bill'], 2, 0.0, 0.045, dark=0.82, light=1.06),
+                     'cere': K.painter(KITE['bill'], 2, 0.0, 0.045, dark=0.9, light=1.08),
+                     'hook': K.painter(KITE['hook'], 0, 0.0, 0.04, dark=0.85, light=1.2)}, ao_field=allf, ao_scale=0.02)
+    sf = G.Surface(feet, (-0.14, -0.05, -0.07), (-0.05, 0.05, -0.03), 0.003, 50, sym=True)
+    pcs += sf.pieces([], {'base': K.painter(KITE['feet'], 0, -0.065, -0.04, dark=0.85, light=1.0)}, ao_field=allf, ao_scale=0.01)
+    for s_ in (1, -1):
+        e, _, _ = K.eye(body, HC, (0.178, s_ * 0.04, 0.05), 0.0095, n=8, rings=2)
+        pcs.append(e)
+    root_y, tip_y = 0.025, 0.75
+    wl = kite_wing(root_y, tip_y)
+    wr = [p.mirrored_y() for p in wl]
+    piv = 0.045
+    parts = [K.Part('Body', (0, 0, 0), pcs),
+             K.Part('WingL', (0.0, piv, 0.02), wl, motion='flap about X (the body axis), -40..+40 deg'),
+             K.Part('WingR', (0.0, -piv, 0.02), wr, motion='flap about X (mirror of WingL)')]
+    return K.Model('BlackKite', parts, {1: KITE['body'], 2: KITE['bill']}, 2400,
+                   extra={'origin': 'body centre (flying)', 'head': '+X', 'wingspan': 1.5},
+                   attach={'Beak': ((0.22, 0, 0.012), 'Body'), 'Talons': ((-0.09, 0, -0.06), 'Body')})
+
+
+# ================================================================ jungle crow (standing)
+CROW = {
+    'black': hexc('#161619'),      # glossy black plumage (part 1)
+    'sheen': hexc('#2d2f3e'),      # the blue-violet gloss where the light catches it
+    'bill': hexc('#151517'),       # part 2
+    'leg': hexc('#1d1d20'),
+}
+
+
+def build_crow():
+    """A jungle crow (large-billed crow), the crow of every Kamakura street: glossy black all over with a blue-violet
+    sheen, a heavy, arched bill and a steep, domed forehead, a long tail past the folded wings, standing on strong black
+    legs: the Pigeon's rig (Body, Head at the neck's base, origin on the ground, head toward +X), 0.55 m long."""
+    pitch = G.rot((0, 1, 0), math.radians(-22))
+    body0 = G.ellipsoid((-0.03, 0, 0.21), (0.135, 0.08, 0.082), pitch)
+    breast = G.ellipsoid((0.04, 0, 0.215), (0.085, 0.076, 0.088))
+    belly = G.ellipsoid((-0.03, 0, 0.165), (0.09, 0.066, 0.05))
+    rear = G.round_cone((-0.1, 0, 0.185), (-0.21, 0, 0.142), 0.06, 0.03)
+    # a long, rounded tail held in line with the back: wide and flat, thickest at its root
+    tail = G.ellipsoid((-0.27, 0, 0.134), (0.11, 0.044, 0.016), G.rot((0, 1, 0), math.radians(19)))
+    wingf = G.mirror_y(G.ellipsoid((-0.07, 0.058, 0.212), (0.16, 0.027, 0.068), G.rot((0, 1, 0), math.radians(19))))
+    prim = G.mirror_y(G.round_cone((-0.15, 0.04, 0.182), (-0.265, 0.02, 0.15), 0.03, 0.012))
+    thigh = G.mirror_y(G.ellipsoid((-0.005, 0.04, 0.14), (0.04, 0.025, 0.04)))
+    body = G.blend(body0, (breast, 0.05), (belly, 0.04), (rear, 0.045), (tail, 0.03), (wingf, 0.016), (prim, 0.02),
+                   (thigh, 0.03))
+    NECK = np.array((0.07, 0, 0.255))
+    HC = np.array((0.135, 0, 0.335))
+    neck = G.round_cone((0.04, 0, 0.23), (0.12, 0, 0.315), 0.062, 0.046)
+    throat = G.ellipsoid((0.115, 0, 0.29), (0.045, 0.04, 0.04))
+    head = G.ellipsoid(HC, (0.052, 0.045, 0.047))
+    crown = G.ellipsoid(HC + np.array((0.008, 0, 0.022)), (0.044, 0.04, 0.034))     # the steep, domed forehead
+    culmen = G.tube([(0.165, 0, 0.346), (0.2, 0, 0.347), (0.235, 0, 0.336), (0.258, 0, 0.318)], [0.019, 0.014, 0.008, 0.0025])
+    mand = G.round_cone((0.168, 0, 0.322), (0.245, 0, 0.317), 0.015, 0.0035)
+    headf = G.blend(head, (crown, 0.03), (neck, 0.035), (throat, 0.02), (culmen, 0.01), (mand, 0.008))
+
+    def legs_f():
+        fs = []
+        for s in (1, -1):
+            y = s * 0.034
+            leg = G.round_cone((0.0, y, 0.14), (0.01, y, 0.014), 0.011, 0.0075)
+            toes = [G.round_cone((0.01, y, 0.007), (0.062, y + s * 0.006, 0.005), 0.006, 0.0042),
+                    G.round_cone((0.01, y, 0.007), (0.05, y + s * 0.03, 0.005), 0.0055, 0.004),
+                    G.round_cone((0.01, y, 0.007), (0.05, y - s * 0.016, 0.005), 0.0055, 0.004),
+                    G.round_cone((0.01, y, 0.007), (-0.035, y, 0.005), 0.0058, 0.004)]
+            fs.append(G.blend(leg, *[(t, 0.007) for t in toes]))
+        return G.union(*fs)
+    legs = legs_f()
+    allf = G.union(body, headf, legs)
+
+    def glossy(z0, z1):
+        def fn(V, N, Aocc):
+            k = K.soft_shade(V, N, Aocc, z0, z1, dark=0.8, light=1.1)
+            sh = (G.smoothstep(0.2, 0.9, N[:, 2]) * 0.6 + 0.2 * G.smoothstep(0.5, 0.95, np.abs(N[:, 1])))[:, None]
+            col = G.l2s(CROW['black'])[None] * (1 - sh) + G.l2s(CROW['sheen'])[None] * sh
+            return G.s2l(np.clip(col * k[:, None], 0, 1)), 1
+        return fn
+    wing_m = K.side_ellipse(-0.08, 0.205, 0.15, 0.055, math.radians(18), ymin=0.035)
+    sb = G.Surface(body, (-0.4, -0.11, 0.05), (0.16, 0.11, 0.32), 0.0034, 560, sym=True)
+    pcs = sb.pieces([('wing', wing_m)], {'base': glossy(0.1, 0.28), 'wing': glossy(0.12, 0.27)}, ao_field=allf, ao_scale=0.025)
+    sl = G.Surface(legs, (-0.05, -0.08, -0.006), (0.08, 0.08, 0.16), 0.0018, 170, sym=True)
+    pcs += sl.pieces([], {'base': K.painter(CROW['leg'], 0, 0.0, 0.14, dark=0.85, light=1.25)}, ao_field=allf, ao_scale=0.012)
+    bill_m = lambda P: 0.0014 - G.union(culmen, mand)(P)
+    sh = G.Surface(headf, (-0.04, -0.09, 0.15), (0.28, 0.09, 0.41), 0.0024, 440, sym=True,
+                   weight=lambda P: G.smoothstep(0.13, 0.17, P[:, 0]))
+    hp = sh.pieces([('bill', bill_m)], {'base': glossy(0.24, 0.38),
+                                        'bill': K.painter(CROW['bill'], 2, 0.31, 0.35, dark=0.85, light=1.5)},
+                   ao_field=allf, ao_scale=0.015)
+    for s in (1, -1):
+        e, _, _ = K.eye(headf, HC, (0.16, s * 0.042, 0.35), 0.0095, n=8, rings=2)
+        hp.append(e)
+    parts = [K.Part('Body', (0, 0, 0), pcs),
+             K.Part('Head', NECK, hp, motion='peck: pitch about Y, 0..70 deg nose-down; bob: slide along X')]
+    model = K.Model('Crow', parts, {1: CROW['black'], 2: CROW['bill']}, 1700,
+                    extra={'origin': 'on the ground', 'head': '+X'}, attach={'Beak': ((0.258, 0, 0.318), 'Head')})
+    return K.scaled(model, 0.87)          # modelled a little large: 0.55 m from bill to tail

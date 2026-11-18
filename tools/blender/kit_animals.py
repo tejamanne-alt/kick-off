@@ -74,6 +74,8 @@ MODELS = [
     ('Coin', ITEMS.build_coin),
     ('Sticker', ITEMS.build_sticker),
     ('Star', ITEMS.build_star),
+    ('BlackKite', BIRDS.build_black_kite),
+    ('Crow', BIRDS.build_crow),
 ]
 
 

@@ -34,8 +34,8 @@ RNG = lambda seed: np.random.default_rng(seed)
 
 # ---------------------------------------------------------------- palette (sRGB hex): (deep shade, base, sunlit top)
 R_KURO = G.Ramp('#0a1f1d', '#24493d', '#73985f')        # black pine needles: dark blue-green
-R_KUSU = G.Ramp('#14361f', '#4a8a30', '#c3df62')        # camphor: glossy bright green
-R_KUSU_NEW = G.Ramp('#4a5c24', '#a8c24c', '#eef2a4')    # camphor's May flush: light yellow-green
+R_KUSU = G.Ramp('#11321c', '#3f7f2c', '#b9d95e')        # camphor: glossy bright green
+R_KUSU_NEW = G.Ramp('#4a5c24', '#a3c048', '#dfea92')    # camphor's May flush: light yellow-green
 R_SUGI = G.Ramp('#0a1c15', '#26452d', '#6c8c50')        # cedar: dark green
 R_SAKURA = G.Ramp('#18361f', '#548a36', '#bcd96a')      # cherry leaves in May
 R_TAKE = G.Ramp('#1d361d', '#5b8a38', '#c4dc74')        # bamboo leaves
@@ -185,66 +185,76 @@ def hanging_cards(masses, rng, ramp, sprite, size, density=1.0, inner=0.3, spin=
 
 # ================================================================ Japanese black pine
 def build_black_pine():
-    # A kuromatsu from the sea wall: the trunk crooks and leans away from the sea (+X), its long limbs run out low and
-    # level, sagging and turning up at their ends into flat-bottomed pads of needle tufts, more and longer downwind,
-    # stacked in irregular layers; the top is a wide, flat, wind-pressed pad.
+    # A kuromatsu of the sea front: a long, bare, crooked trunk leaning away from the sea (+X), one long low limb reaching
+    # downwind, and above it a few layers of broad, flat-bottomed plates of needle tufts on level limbs that sag and turn
+    # up at their ends, with sky between the layers; the top is a wide, flat, wind-pressed plate.
     rng = RNG(907)
-    tr = 0.27
-    ctrl = [(0, 0, -0.15), (0.12, 0.0, 1.1), (0.5, 0.06, 2.2), (0.68, -0.04, 3.1), (1.2, 0.05, 4.1), (1.42, -0.02, 5.0),
-            (2.0, 0.06, 5.9), (2.35, 0.0, 6.7)]
-    tpath = G.catmull(ctrl, 22)
-    radii = tr * (1 - 0.72 * np.linspace(0, 1, len(tpath)) ** 0.8)
+    tr = 0.28
+    ctrl = [(0, 0, -0.15), (0.14, 0.0, 1.2), (0.55, 0.06, 2.4), (0.78, -0.04, 3.4), (1.32, 0.05, 4.4), (1.6, -0.02, 5.3),
+            (2.2, 0.05, 6.2), (2.6, 0.0, 6.85)]
+    tpath = G.catmull(ctrl, 24)
+    radii = tr * (1 - 0.7 * np.linspace(0, 1, len(tpath)) ** 0.8)
 
     def trunk_at(z):
         j = int(np.argmin(np.abs(tpath[:, 2] - z)))
         return j, tpath[j]
-    # (height on the trunk, azimuth (0 = +X, downwind), reach, pad radii (x, y, z), lobes)
-    spec = [(2.7, 0.15, 2.6, (1.25, 0.95, 0.36), 3), (3.1, 2.7, 1.3, (0.85, 0.7, 0.3), 2),
-            (3.6, -1.35, 1.5, (0.95, 0.8, 0.32), 2), (4.0, 1.25, 1.7, (1.0, 0.85, 0.33), 2),
-            (4.5, -0.35, 2.3, (1.2, 0.9, 0.36), 3), (5.0, 3.4, 0.9, (0.7, 0.62, 0.28), 2),
-            (5.4, 0.7, 1.9, (1.05, 0.85, 0.34), 3), (5.85, -1.0, 1.3, (0.85, 0.72, 0.3), 2)]
-    masses = []; limbs = []
-    for (z, az, reach, r, lobes) in spec:
-        j, p0 = trunk_at(z)
-        d = np.array((math.cos(az), math.sin(az) * 0.85, 0.0))
-        c = p0 + d * reach + UP * rng.uniform(0.0, 0.25)
-        main = LV.Mass(c, r, under=0.3, bright=rng.uniform(-0.05, 0.05))
-        masses.append(main)
+
+    def plate(c, d, R, n):
+        """A broad, flat plate of n needle pads round c, spread across the limb's direction d."""
         side = np.array((-d[1], d[0], 0.0))
-        for k in range(lobes - 1):          # smaller pads beside and under the main one: a cloud, not a disc
-            off = d * rng.uniform(-0.55, 0.45) * r[0] + side * rng.choice((-1, 1)) * rng.uniform(0.45, 0.8) * r[1]
-            masses.append(LV.Mass(c + off + UP * rng.uniform(-0.28, 0.1), np.array(r) * rng.uniform(0.55, 0.72),
-                                  under=0.3, bright=rng.uniform(-0.06, 0.04)))
-        limbs.append((j, p0, c, reach))
-    # the wind-pressed top: a wide, flat pad leaning downwind, a smaller one beside it
+        out = [LV.Mass(c, (R, R * 0.8, R * 0.3), under=0.3, bright=rng.uniform(-0.04, 0.05))]
+        for k in range(n - 1):
+            off = (side * (1 if k % 2 else -1) * rng.uniform(0.55, 0.85) * R
+                   + d * rng.uniform(-0.45, 0.55) * R + UP * rng.uniform(-0.18, 0.12))
+            rr = R * rng.uniform(0.58, 0.75)
+            out.append(LV.Mass(c + off, (rr, rr * 0.85, rr * 0.36), under=0.3, bright=rng.uniform(-0.07, 0.03)))
+        return out
+    # (height on the trunk, [(azimuth (0 = +X, downwind), reach, plate radius, pads)])
+    layers = [(3.0, [(0.12, 2.9, 1.0, 3)]),
+              (4.3, [(2.75, 1.1, 0.75, 2), (1.5, 1.4, 0.85, 3), (-1.3, 1.5, 0.85, 3), (0.35, 2.3, 0.95, 3)]),
+              (5.4, [(2.4, 0.9, 0.7, 2), (0.95, 1.6, 0.85, 3), (-0.7, 1.7, 0.85, 3)])]
+    masses = []; limbs = []
+    for z, arms in layers:
+        for az, reach, R, n in arms:
+            az += rng.normal(0, 0.12)
+            j, p0 = trunk_at(z + rng.uniform(-0.2, 0.2))
+            d = np.array((math.cos(az), math.sin(az) * 0.85, 0.0))
+            c = p0 + d * reach + UP * rng.uniform(0.0, 0.2)
+            pl = plate(c, G.unit(d), R, n)
+            masses += pl
+            limbs.append((j, p0, c, pl))
+    # the wind-pressed top: one wide, flat plate over the trunk's head, longer downwind
     top = tpath[-1]
-    masses.append(LV.Mass(top + np.array((0.45, 0.0, 0.3)), (1.45, 1.1, 0.42), under=0.3, bright=0.04))
-    masses.append(LV.Mass(top + np.array((-0.45, 0.35, 0.12)), (0.8, 0.7, 0.3), under=0.3))
-    masses.append(LV.Mass(top + np.array((1.4, -0.3, 0.05)), (0.75, 0.65, 0.28), under=0.3))
-    pieces = [LV.leaf_cards(masses, rng, R_KURO, 1, 'pine', size=0.66, density=0.95, inner=0.25, open_under=0.0,
+    pl = [LV.Mass(top + np.array((0.35, 0.0, 0.32)), (1.35, 1.05, 0.4), under=0.3, bright=0.05),
+          LV.Mass(top + np.array((-0.75, 0.3, 0.12)), (0.75, 0.65, 0.3), under=0.3),
+          LV.Mass(top + np.array((1.55, -0.25, 0.1)), (0.8, 0.7, 0.3), under=0.3, bright=0.02),
+          LV.Mass(top + np.array((0.4, 0.85, 0.15)), (0.7, 0.6, 0.28), under=0.3),
+          LV.Mass(top + np.array((0.6, -0.85, 0.12)), (0.7, 0.6, 0.28), under=0.3)]
+    masses += pl
+    limbs.append((len(tpath) - 1, top, top, pl))
+    pieces = [LV.leaf_cards(masses, rng, R_KURO, 1, 'pine', size=0.72, density=0.85, inner=0.22, open_under=0.0,
                             nmix=(0.78, 0.1, 0.14), tilt=0.3, crease=0.15)]
-    pieces += LV.cores(masses, rng, R_KURO, 1, scale=0.66, s=(0.02, 0.14))
+    pieces += LV.cores(masses, rng, R_KURO, 1, scale=0.64, s=(0.02, 0.14))
     trunk = G.tube(tpath, radii, 9, twist=0.3, lobe=flare(tpath, 0.4, 0.6, 3, rng.uniform(0, 6), ripple=0.06),
                    uv=uvr('bark', 8.0))
     wood_color(trunk, WOOD_KURO, ground=0.72)
     sink_base(trunk)
-    pieces.append(LV.hidden_in(trunk, masses, 0.66))
-    for (j, p0, c, reach) in limbs:
-        r0 = max(0.05, radii[j] * 0.5)
-        end = c - UP * 0.12
-        path = limb_path(p0, end, rng, sag=0.12, rise=0.1, n=7)
-        b = G.tube(path, np.linspace(r0, r0 * 0.35, len(path)), 6, twist=0.3, uv=uvr('bark', 8.0, p0[2]))
+    pieces.append(LV.hidden_in(trunk, masses, 0.64))
+
+    def wood(path, r0, r1, sides, z0):
+        b = G.tube(path, np.linspace(r0, r1, len(path)), sides, twist=0.3, uv=uvr('bark', 8.0, z0))
         wood_color(b, WOOD_KURO, ground=1.0)
-        pieces.append(LV.hidden_in(b, masses, 0.66))
-        # a crooked side branch up into a pad beside the main one
-        q0 = path[int(rng.integers(3, 6))]
-        near = min(masses, key=lambda m: np.linalg.norm(m.c - q0) if m.c[2] > q0[2] - 0.3 else 99.0)
-        q1 = near.c - UP * near.r[2] * 0.2
-        if np.linalg.norm(q1 - q0) > 0.4:
-            bp = limb_path(q0, q1, rng, sag=0.05, rise=0.12, n=5)
-            b = G.tube(bp, np.linspace(r0 * 0.45, r0 * 0.2, len(bp)), 5, uv=uvr('bark', 8.0, q0[2]))
-            wood_color(b, WOOD_KURO, ground=1.0)
-            pieces.append(LV.hidden_in(b, masses, 0.66))
+        pieces.append(LV.hidden_in(b, masses, 0.64))
+    for (j, p0, c, pl) in limbs:
+        r0 = max(0.05, radii[j] * 0.55)
+        if np.linalg.norm(c - p0) > 0.3:          # the limb: out level, sagging, turning up into its plate
+            path = limb_path(p0, c - UP * 0.15, rng, sag=0.1, rise=0.12, n=7)
+            wood(path, r0, r0 * 0.4, 6, p0[2])
+            q = path[-2]
+        else:
+            q = p0
+        for m in pl[1:]:                          # short crooked branches out to each pad of the plate
+            wood(limb_path(q, m.c - UP * m.r[2] * 0.3, rng, sag=0.04, rise=0.1, n=4), r0 * 0.4, r0 * 0.18, 4, q[2])
     return pieces, {0: G.hexc(WOOD_KURO), 1: R_KURO.base}, {'kind': 'tree', 'trunkRadius': tr, 'lean': '+X (away from the sea)'}
 
 
@@ -261,7 +271,7 @@ def build_camphor():
                                limb_end=0.22, twig_r=0.06, rng=rng)
     # the flush: light cards scattered over the sunlit top of the crown
     top = [m for m in masses if m.c[2] > C0[2] - 0.3]
-    pieces.append(LV.leaf_cards(top, rng, R_KUSU_NEW, 1, 'leaf', size=1.3, density=0.22, inner=0.0, C0=C0, Rc=Rc,
+    pieces.append(LV.leaf_cards(top, rng, R_KUSU_NEW, 1, 'leaf', size=1.0, density=0.3, inner=0.0, C0=C0, Rc=Rc,
                                 rho=(0.96, 1.07), open_under=1.0, nmix=(0.7, 0.22, 0.15), crease=0.2))
     return pieces, {0: G.hexc(WOOD_KUSU), 1: R_KUSU.base}, {'kind': 'tree', 'trunkRadius': tr}
 
@@ -288,7 +298,7 @@ def build_cedar():
         f = (k + 0.5) / n
         z = zb + 0.55 + (H - 1.5 - zb) * f ** 1.05
         R = R_at(z)
-        a = a0 + ga * k * 1.3
+        a = a0 + ga * k
         out = R * rng.uniform(0.42, 0.6)
         c = np.array((math.cos(a) * out, math.sin(a) * out, z + rng.uniform(-0.1, 0.1)))
         rr = max(0.42, R * 0.58)
@@ -332,15 +342,15 @@ def build_cherry_leaf():
     # A Somei-yoshino in May: the dark, lenticel-banded trunk forks low into a few wide, rising limbs that spread a
     # broad, rather flat-topped crown of fresh green leaves (the blossom is long gone).
     rng = RNG(613)
-    tr = 0.26
-    masses = LV.masses_from((0.0, 0.05, 4.85), (3.5, 2.7, 1.85), 12, rng, rf=(0.33, 0.41), shell=0.66, zlo=-0.45,
+    tr = 0.34
+    masses = LV.masses_from((0.0, 0.05, 4.7), (4.2, 3.1, 1.85), 13, rng, rf=(0.31, 0.39), shell=0.68, zlo=-0.45,
                             top=0.32)
     for m in masses:                                     # the crown flattens and droops a little at its rim
-        m.c[2] -= 0.3 * (abs(m.c[0]) / 3.2) ** 2
-    ctrl = [(0, 0, -0.12), (0.16, 0.0, 0.8), (-0.08, 0.05, 1.45), (0.04, 0.0, 2.1), (0.0, 0.05, 3.6)]
-    pieces, C0, Rc = leaf_tree(613, masses, ctrl, tr, 1.55, R_SAKURA, WOOD_SAKURA, card=1.3, density=0.95,
-                               region='cherry', limb_r=(0.55, 0.68), flare_amt=0.45, taper=0.7, open_under=0.35,
-                               groups=5, fork_spread=0.45, limb_end=0.18, twigs=3, twig_r=0.045, rng=rng)
+        m.c[2] -= 0.35 * (abs(m.c[0]) / 3.6) ** 2
+    ctrl = [(0, 0, -0.12), (0.16, 0.0, 0.7), (-0.08, 0.05, 1.3), (0.04, 0.0, 1.9), (0.0, 0.05, 3.4)]
+    pieces, C0, Rc = leaf_tree(613, masses, ctrl, tr, 1.35, R_SAKURA, WOOD_SAKURA, card=1.3, density=0.95,
+                               region='cherry', limb_r=(0.62, 0.75), flare_amt=0.5, taper=0.72, open_under=0.35,
+                               groups=5, fork_spread=0.4, limb_end=0.25, twigs=3, twig_r=0.05, rng=rng)
     return pieces, {0: G.hexc(WOOD_SAKURA), 1: R_SAKURA.base}, {'kind': 'tree', 'trunkRadius': tr}
 
 
@@ -360,37 +370,36 @@ def build_persimmon():
 
 
 # ================================================================ bamboo
-def culm(base, out, H, r0, rng, old=False, sides=5):
-    """One culm: it rises almost straight, leaning a little outward, and its top quarter arches over (out). Below the
-    leafy top it is a stack of internodes, each mapped once over the palm-ring tile: the tile's dark groove at the
-    bottom of an internode and its pale lip at the top read as the node's ring with the pale waxy band under it."""
+def culm(base, out, H, r0, rng, lean, arch, old=False, sides=5):
+    """One culm: it rises almost straight, leaning outward by `lean` per metre, and its top arches over (out) by `arch`
+    metres. Below the leafy top it is a stack of internodes, each mapped once over the palm-ring tile: the tile's dark
+    groove at the bottom of an internode and its pale lip at the top read as the node's ring with the pale waxy band
+    under it."""
     base = np.asarray(base, float); out = G.unit(np.asarray(out, float))
-    lean = rng.uniform(0.025, 0.07)
-    arch = rng.uniform(0.9, 1.6)
-    ctrl = [base - UP * 0.12, base + out * lean * H * 0.3 + UP * H * 0.32,
-            base + out * lean * H * 0.62 + UP * H * 0.62,
-            base + out * (lean * H * 0.85 + arch * 0.35) + UP * H * 0.86,
-            base + out * (lean * H + arch) + UP * (H - arch * 0.55)]
+    ctrl = [base - UP * 0.12, base + out * lean * H * 0.3 + UP * H * 0.3,
+            base + out * lean * H * 0.58 + UP * H * 0.58,
+            base + out * (lean * H * 0.8 + arch * 0.3) + UP * (H * 0.82 - arch * 0.05),
+            base + out * (lean * H * 0.9 + arch) + UP * (H - arch * 0.75)]
     path = G.catmull(ctrl, 60)
     L = G.arclen(path)
     total = L[-1]
     col = G.hexc(CULM_OLD if old else CULM)
     u0, v0, u1, v1 = AT.REG['palm']; m = AT.MARGIN
     pieces = []
-    s = 0.0; k = 0
-    node_end = total * 0.6
+    s = 0.0
+    node_end = total * 0.55
     nodes = []
     while s < node_end:
-        ln = 0.22 + 0.2 * min(1.0, s / 3.0)                  # short internodes low down, longer above
+        ln = 0.24 + 0.2 * min(1.0, s / 3.0)                  # short internodes low down, longer above
         a = np.array([np.interp(s, L, path[:, i]) for i in range(3)])
         b = np.array([np.interp(min(s + ln, total), L, path[:, i]) for i in range(3)])
-        ra = r0 * (1 - 0.55 * s / total); rb = r0 * (1 - 0.55 * (s + ln) / total)
-        seg = G.tube(np.array([a, b]), [ra, rb * 1.05], sides, uv=(u0 + m, v0 + m, u1 - m, v1 - m, lambda s_, i: float(i)))
+        ra = r0 * (1 - 0.5 * s / total); rb = r0 * (1 - 0.5 * (s + ln) / total)
+        seg = G.tube(np.array([a, b]), [ra, rb * 1.06], sides, uv=(u0 + m, v0 + m, u1 - m, v1 - m, lambda s_, i: float(i)))
         z = seg.V[:, 2]
-        seg.color(col[None, :] * (0.7 + 0.3 * G.smoothstep(0.0, 2.5, z))[:, None]); seg.part(0)
+        seg.color(col[None, :] * (0.72 + 0.28 * G.smoothstep(0.0, 2.5, z))[:, None]); seg.part(0)
         pieces.append(seg)
         nodes.append((s + ln, b))
-        s += ln; k += 1
+        s += ln
     # the leafy top: one smooth tapering tube to the tip
     i0 = int(np.searchsorted(L, s - 1e-6))
     top = [nodes[-1][1]]
@@ -398,47 +407,52 @@ def culm(base, out, H, r0, rng, old=False, sides=5):
         if np.linalg.norm(q - top[-1]) > 0.15:
             top.append(q)
     top = np.array(top)
-    rt = r0 * (1 - 0.55 * s / total)
-    tt = G.tube(top, np.linspace(rt, rt * 0.15, len(top)), 4, tip=True, uv=(u0 + m, v0 + m, u1 - m, v1 - m, lambda s_, i: 0.55))
+    rt = r0 * (1 - 0.5 * s / total)
+    tt = G.tube(top, np.linspace(rt, rt * 0.12, len(top)), 4, tip=True, uv=(u0 + m, v0 + m, u1 - m, v1 - m, lambda s_, i: 0.55))
     tt.color(col * 0.95); tt.part(0)
     pieces.append(tt)
-    return pieces, path, L, nodes
+    return pieces, path, L
 
 
 def build_bamboo():
-    # A clump of bamboo by a temple path: a dozen slender culms, some older and yellower, rising from a tight clump and
-    # leaning a little outward, their tops arching over under feathery sprays of narrow hanging leaves.
+    # A clump of bamboo by a temple path: a dozen slender culms, a few older and yellower, rising close together and
+    # fanning out a little, their tops arching over under feathery sprays of narrow hanging leaves that run down the
+    # upper half of each culm, with sky between the culms' sprays.
     rng = RNG(829)
-    pieces = []; masses = []; branch_jobs = []
+    pieces = []; masses = []; twigs = []
     n = 12
     ga = PI * (3 - 5 ** 0.5)
     for k in range(n):
-        rr = 0.85 * math.sqrt((k + 0.5) / n)
+        f = math.sqrt((k + 0.5) / n)
         a = ga * k + rng.normal(0, 0.2)
-        base = np.array((math.cos(a) * rr * 1.25, math.sin(a) * rr * 0.8, 0.0))
-        outward = np.array((math.cos(a), math.sin(a), 0.0)) * (0.4 + rr) + np.array((0.25, 0.0, 0.0)) + rng.normal(0, 0.3, 3) * np.array((1, 1, 0))
-        H = rng.uniform(8.2, 9.8) if k > 1 else rng.uniform(7.2, 8.0)
-        r0 = rng.uniform(0.038, 0.052) if k > 1 else 0.032
-        cp, path, L, nodes = culm(base, outward, H, r0, rng, old=(k % 4 == 3))
+        base = np.array((math.cos(a) * f * 0.8, math.sin(a) * f * 0.55, 0.0))
+        outward = np.array((math.cos(a), math.sin(a) * 0.8, 0.0)) + np.array((0.2, 0.0, 0.0)) + rng.normal(0, 0.25, 3) * np.array((1, 1, 0))
+        H = rng.uniform(8.4, 9.8) - 1.2 * (k % 5 == 4)
+        r0 = rng.uniform(0.04, 0.052)
+        lean = 0.06 + 0.1 * f + rng.uniform(-0.01, 0.02)
+        arch = rng.uniform(1.8, 2.8)
+        cp, path, L = culm(base, outward, H, r0, rng, lean, arch, old=(k % 4 == 3))
         pieces += cp
-        # leaf sprays along the upper culm, alternating sides, lower ones smaller
         total = L[-1]
+        dirn = G.unit(path[-1] - path[len(path) // 2])
         side = G.unit(np.cross(UP, G.unit(outward)))
-        for j, f in enumerate((0.6, 0.7, 0.79, 0.88, 0.97)):
-            s = f * total
-            q = np.array([np.interp(s, L, path[:, i]) for i in range(3)])
+        tone = rng.uniform(-0.06, 0.06)
+        for j, t in enumerate(np.linspace(0.46, 0.98, 8)):
+            sp = t * total
+            q = np.array([np.interp(sp, L, path[:, i]) for i in range(3)])
             sd = side * (1 if j % 2 else -1)
-            r = (0.55 + 0.25 * f) * rng.uniform(0.85, 1.1)
-            c = q + sd * r * 0.55 + UP * -0.15 + G.unit(outward) * 0.15
-            masses.append(LV.Mass(c, (r, r * 0.9, r * 0.62), bright=rng.uniform(-0.05, 0.05)))
-            branch_jobs.append((q, c, r))
+            r = (0.26 + 0.2 * t) * rng.uniform(0.85, 1.15)
+            c = q + sd * r * 0.7 - UP * r * 0.45
+            masses.append(LV.Mass(c, (r * 1.1, r, r * 0.7), bright=tone + rng.uniform(-0.04, 0.04)))
+            twigs.append((q, c, r))
     lo = np.min([m.c - m.r for m in masses], axis=0); hi = np.max([m.c + m.r for m in masses], axis=0)
     C0 = (lo + hi) / 2; Rc = (hi - lo) / 2
-    pieces.append(hanging_cards(masses, rng, R_TAKE, 'bamboo', 0.62, density=0.62, inner=0.3, spin=0.3, C0=C0, Rc=Rc))
+    pieces.append(hanging_cards(masses, rng, R_TAKE, 'bamboo', 0.5, density=0.45, inner=0.2, spin=0.3, C0=C0, Rc=Rc,
+                                rho=(0.55, 1.0), crease=0.15))
     # the branchlets out to the sprays: thin, dark green
-    for (q, c, r) in branch_jobs:
-        p1 = c + rng.normal(0, 0.1, 3) * r
-        b = G.tube(limb_path(q, p1, rng, sag=0.05, rise=0.05, n=4, wob=0.05), np.linspace(0.012, 0.006, 4), 3)
+    for (q, c, r) in twigs:
+        p1 = c + rng.normal(0, 0.12, 3) * r
+        b = G.tube(limb_path(q, p1, rng, sag=0.08, rise=0.0, n=3, wob=0.05), np.linspace(0.011, 0.005, 3), 3)
         b.color(G.hexc('#4f6a32') * 0.85); b.part(0)
         pieces.append(b)
     return pieces, {0: G.hexc(CULM), 1: R_TAKE.base}, {'kind': 'tree', 'trunkRadius': 0.05, 'culms': n}
@@ -468,19 +482,19 @@ def build_hydrangea():
     spec = [((0, 0.0, 0.62), (0.62, 0.55, 0.5)), ((-0.48, -0.06, 0.45), 0.42), ((0.5, -0.02, 0.48), 0.43),
             ((0.05, -0.4, 0.44), 0.4), ((-0.08, 0.38, 0.46), 0.38), ((0.22, -0.12, 0.9), 0.38),
             ((-0.28, 0.04, 0.86), 0.35)]
-    pieces, masses, rng = card_bush(37, spec, R_AJISAI, 1.2, card=0.6, density=1.1, inner=0.25)
+    pieces, masses, rng = card_bush(37, spec, R_AJISAI, 1.2, card=0.66, density=0.97, inner=0.2)
     heads = []
     lo = np.min([m.c - m.r for m in masses], axis=0); hi = np.max([m.c + m.r for m in masses], axis=0)
     C0 = (lo + hi) / 2
     tries = 0
-    while len(heads) < 15 and tries < 400:
+    while len(heads) < 18 and tries < 600:
         tries += 1
         m = masses[int(rng.integers(len(masses)))]
         d = G.unit(rng.normal(size=3) + np.array((0, -0.35, 0.55)))
         if d[2] < -0.05: continue
         p = m.point(d, rng.uniform(0.9, 1.02))
         if min(o.e(p)[0] for o in masses if o is not m) < 0.9: continue
-        r = rng.uniform(0.1, 0.135)
+        r = rng.uniform(0.12, 0.155)
         if any(np.linalg.norm(p - h[0]) < (r + h[1]) * 1.05 for h in heads): continue
         heads.append((p, r, int(rng.integers(len(HYDRANGEA)))))
     for (p, r, ci) in heads:
@@ -519,8 +533,8 @@ def build_azalea():
     # thickly covered in pink-magenta flowers that the leaves show only in its shade.
     spec = [((0, 0.0, 0.5), (0.95, 0.75, 0.62)), ((-0.55, 0.05, 0.36), (0.5, 0.5, 0.42)),
             ((0.58, -0.02, 0.38), (0.5, 0.5, 0.42))]
-    flowers = (R_TSUTSUJI, 1.05, 'blossom', 0.4, (0.93, 1.03))
-    pieces, masses, rng = card_bush(41, spec, R_TSUTSUJI_L, 0.9, card=0.42, density=1.0, inner=0.2, rho=(0.84, 1.0),
+    flowers = (R_TSUTSUJI, 1.5, 'blossom', 0.42, (0.93, 1.03))
+    pieces, masses, rng = card_bush(41, spec, R_TSUTSUJI_L, 0.9, card=0.44, density=0.7, inner=0.15, rho=(0.84, 1.0),
                                     tilt=0.4, core=0.7, flowers=flowers)
     pieces = ground(pieces, 0.9)
     return pieces, {1: R_TSUTSUJI_L.base, 2: R_TSUTSUJI.base}, {'kind': 'bush'}
