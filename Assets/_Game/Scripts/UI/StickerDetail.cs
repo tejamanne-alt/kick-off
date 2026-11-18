@@ -137,7 +137,7 @@ namespace DribbleToSchool.UI
             int n = 0;
             foreach (var l in levels.levels)
             {
-                if (l == null || l.isChallenge) continue;
+                if (l == null || !l.HasStickerSlot) continue;
                 n++;
                 if (l == level) return n;
             }

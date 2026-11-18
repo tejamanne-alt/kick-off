@@ -14,6 +14,31 @@ namespace DribbleToSchool.Audio
             Soundscape.Underpass, Soundscape.Site, Soundscape.Park,
         };
 
+        /// <summary>
+        /// The soundscape of one of Florida's legs (its routes cross several kinds of place): Little Havana's shops, the bus, Brickell's
+        /// towers and cranes, the bay, the ranch street, the river, the drugstore, the downpour downtown, the line overhead, the
+        /// boulevard, the park. Menu for a level that isn't Florida's.
+        /// </summary>
+        public static Soundscape ForFloridaLeg(string levelId)
+        {
+            switch (levelId)
+            {
+                case "FL1-1": return Soundscape.Market;
+                case "FL1-2": return Soundscape.Street;
+                case "FL1-3": return Soundscape.Site;
+                case "FL1-4": return Soundscape.Beach;
+                case "FL2-1": return Soundscape.Street;
+                case "FL2-2": return Soundscape.Beach;
+                case "FL2-3": return Soundscape.Beach;
+                case "FL2-4": return Soundscape.Market;
+                case "FL2-5": return Soundscape.Street;
+                case "FL3-1": return Soundscape.Underpass;
+                case "FL3-2": return Soundscape.Street;
+                case "FL3-3": return Soundscape.Park;
+                default: return Soundscape.Menu;
+            }
+        }
+
         /// <summary>The soundscape of a route (Levels/RouteTable ids), or of a chapter when the route is unknown.</summary>
         public static Soundscape For(string routeId, int chapter)
         {

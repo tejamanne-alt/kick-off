@@ -55,6 +55,10 @@ namespace DribbleToSchool.UI
             new Entry("drawbridge", ControlsGuide.Picture.Wait),
             new Entry("sprinkler", ControlsGuide.Picture.Walk),
             new Entry("golfcart", ControlsGuide.Picture.Jump),
+            new Entry("chickens", ControlsGuide.Picture.Walk),
+            new Entry("iguana", ControlsGuide.Picture.Kick),
+            new Entry("downpour", ControlsGuide.Picture.Walk),
+            new Entry("sweeper", ControlsGuide.Picture.Jump),
         };
 
         /// <summary>The challenges' steps: what to do now, shown all the way through a challenge.</summary>

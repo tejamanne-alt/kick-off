@@ -69,6 +69,10 @@ namespace DribbleToSchool.Core
         public bool tripOnTime;
         /// <summary>The next story level is still locked (a stage whose trip has never been on time).</summary>
         public bool nextLocked;
+        /// <summary>At school with an errand's item unharmed (Progression/Errands): the Delivered badge and its coins.</summary>
+        public bool delivered;
+        /// <summary>At school with the errand's item harmed on the way (the project wet in the downpour).</summary>
+        public bool spoiled;
     }
 
     /// <summary>
@@ -164,7 +168,10 @@ namespace DribbleToSchool.Core
         /// <summary>The trip from home so far, this leg's time included (meaningful when <see cref="TripContinuous"/>).</summary>
         public float TripTime { get { return TripBefore + ElapsedTime; } }
         /// <summary>The HUD shows the trip so far: a later leg of a trip walked from home without a break, outside cozy mode.</summary>
-        public bool ShowsTrip { get { return TripRoute != null && LegIndex > 0 && TripContinuous && !Cozy && Objective == null && Race == null; } }
+        public bool ShowsTrip { get { return TripRoute != null && LegIndex > 0 && TripContinuous && !Cozy && !ChallengeOnly && Race == null; } }
+
+        /// <summary>An optional challenge's objective runs this level (not a mini-game leg of a route, whose trip goes on through it).</summary>
+        bool ChallengeOnly { get { return Objective != null && !Objective.IsRouteLeg; } }
 
         /// <summary>
         /// Where Next goes: the next leg of this route when it can be played (in chapter 4 the two routes' levels alternate in the
@@ -340,7 +347,7 @@ namespace DribbleToSchool.Core
             TripBefore = 0f;
             TripBell = 0f;
             TripTarget = 0f;
-            if (level == null || endless || Objective != null || level.isChallenge) return;
+            if (level == null || endless || ChallengeOnly || level.isChallenge) return;
 
             Route route;
             int leg = RouteTable.LegIndex(level.levelId, out route);
@@ -353,6 +360,8 @@ namespace DribbleToSchool.Core
             }
             TripRoute = route;
             LegIndex = leg;
+            // A trip started again from home carries nothing yet (an errand's item is picked up on the way).
+            if (leg == 0) Errands.Drop(SaveSystem.Data);
             IsLastLeg = leg == route.levels.Length - 1;
             Func<string, float> bellOf = BellOf;
             TripBell = SchoolTrips.TripBell(route, bellOf);
@@ -377,7 +386,7 @@ namespace DribbleToSchool.Core
         void RefreshTimers()
         {
             Cozy = !GameSettings.BellTimerEnabled;
-            bool timing = !Cozy && Objective == null && !endless && Race == null;
+            bool timing = !Cozy && !ChallengeOnly && !endless && Race == null;
             BellEnabled = timing && IsLastLeg && TripContinuous && TripBell > 0f;
             PaceEnabled = timing && !BellEnabled && TripRoute != null && PaceTarget > 0f;
         }
@@ -583,6 +592,15 @@ namespace DribbleToSchool.Core
         /// <summary>How many checkpoints the level has, start included.</summary>
         public int CheckpointCount { get { return checkpoints.Count; } }
 
+        /// <summary>
+        /// Adds to this leg's time (a mini-game's walk back from the wrong stop): the trip's clock and the leg's pace count it as
+        /// time spent.
+        /// </summary>
+        public void AddPenalty(float seconds)
+        {
+            if (seconds > 0f && (State == LevelState.Playing || State == LevelState.Respawning)) ElapsedTime += seconds;
+        }
+
         /// <summary>Kid and ball back at the checkpoint to go back to (without losing the ball: a new day, or the first moments of a run).</summary>
         public void PlaceAtActiveCheckpoint() { PlaceAtCheckpoint(); }
 
@@ -648,6 +666,7 @@ namespace DribbleToSchool.Core
                 stickerFound = StickerCollected,
             };
             RecordTrip(ref result);
+            DeliverErrand(ref result);
             // The second star: the leg's pace, or on a timed last leg the whole trip before the bell. The third: every coin and
             // the level's sticker. Each goal is a star of its own (Progression/StarRules).
             result.beforeBell = result.timedTrip ? result.tripOnTime : result.paceMet;
@@ -676,6 +695,11 @@ namespace DribbleToSchool.Core
                 FadeAmount = 0f;
             }
 
+            if (objective.IsRouteLeg)
+            {
+                CompleteLeg(objective);
+                return;
+            }
             int score = objective.Score;
             var result = new LevelResult
             {
@@ -698,6 +722,46 @@ namespace DribbleToSchool.Core
 
             SetState(LevelState.Complete);
             GameEvents.Raise(GameEventType.Goal, ball.transform.position, result.stars / 3f);
+            if (Completed != null) Completed(result);
+        }
+
+        /// <summary>
+        /// A mini-game leg of a route is done (the bus ride, the boat tied, the shopping paid for): its objective's score gives the
+        /// stars (one for doing it, two and three for doing it well), and the trip to school goes on as after a street leg: the leg's
+        /// time is recorded, the bell judges a last leg, and Next goes on to the next leg. A mini-game that wasn't passed (no stars)
+        /// is retried at once and records nothing.
+        /// </summary>
+        void CompleteLeg(ChallengeObjective objective)
+        {
+            int score = objective.Score;
+            int stars = objective.StarsFor(score);
+            var result = new LevelResult
+            {
+                isChallenge = true,
+                score = score,
+                scoreText = objective.FormatScore(score),
+                time = ElapsedTime,
+                bestPerfectStreak = BestPerfectStreak,
+                ballsLost = BallsLost,
+                coins = CoinsCollected,
+                totalCoins = TotalCoins,
+                allCoins = CoinsCollected >= TotalCoins,
+                perfectTouches = PerfectTouches,
+                stickerFound = StickerCollected,
+                stars = stars,
+            };
+            if (stars > 0)
+            {
+                RecordTrip(ref result);
+                result.beforeBell = result.timedTrip ? result.tripOnTime : result.paceMet;
+                if (level != null) SaveResult(ref result);
+                var next = result.onRoute && result.lastLeg && catalog != null ? catalog.NextAfter(level) : null;
+                result.nextLocked = next != null && !LevelUnlocks.NotInTown(next) && !LevelUnlocks.StoryOpen(next.levelId, level.levelId, SaveSystem.Data, Cozy);
+            }
+            Result = result;
+
+            SetState(LevelState.Complete);
+            GameEvents.Raise(GameEventType.Goal, ball.transform.position, stars / 3f);
             if (Completed != null) Completed(result);
         }
 
@@ -733,6 +797,19 @@ namespace DribbleToSchool.Core
             if (r.timedTrip) r.tripOnTime = verdict == TripVerdict.OnTime;
         }
 
+        /// <summary>
+        /// At school at the end of a route with an errand (Progression/Errands: FL2's science project), the item carried since the
+        /// errand is delivered if it is unharmed (its coins are added with the rest).
+        /// </summary>
+        void DeliverErrand(ref LevelResult r)
+        {
+            if (TripRoute == null || !IsLastLeg || Errands.ItemOf(TripRoute.id) == null) return;
+            var data = SaveSystem.Data;
+            bool carried = data.carrying == Errands.ItemOf(TripRoute.id);
+            r.spoiled = carried && data.carryingSpoiled;
+            r.delivered = Errands.Arrive(data, TripRoute.id);
+        }
+
         /// <summary>Persist the run and work out the coin rewards.</summary>
         void SaveResult(ref LevelResult result)
         {
@@ -743,7 +820,8 @@ namespace DribbleToSchool.Core
                 + result.perfectTouches * Rewards.PerPerfectTouch
                 + result.newStars * Rewards.PerNewStar
                 + (result.stickerIsNew ? Rewards.NewSticker : 0)
-                + (result.allCoins && result.totalCoins > 0 ? Rewards.AllCoinsBonus : 0);
+                + (result.allCoins && result.totalCoins > 0 ? Rewards.AllCoinsBonus : 0)
+                + (result.delivered ? Errands.DeliveredBonus : 0);
             SaveSystem.AddCoins(result.coinsEarned);
 
             var data = SaveSystem.Data;
@@ -777,6 +855,13 @@ namespace DribbleToSchool.Core
         {
             LevelDefinition next = NextLevel;
             if (next == null) QuitToMap();
+            else if (TripRoute != null && RouteTable.Of(next.levelId) == TripRoute && RouteTable.RideBefore(next.levelId) != null)
+            {
+                // The trip goes on by the city's transit (Florida's people mover): the ride plays, then loads the next leg.
+                TimeControl.ResetTime();
+                RideCutscene.Then(Progression.Cities.SceneFor(next.sceneName));
+                SceneManager.LoadScene(Rides.SceneOf(RouteTable.RideBefore(next.levelId)));
+            }
             else LoadLevel(next);
         }
 
@@ -800,7 +885,7 @@ namespace DribbleToSchool.Core
             // A level the chosen add-on's streets don't have yet stays locked (the map and Next never offer one): back to the map.
             if (LevelUnlocks.NotInTown(def))
             {
-                Debug.LogWarning("[Levels] " + def.levelId + " isn't in " + Progression.Cities.Active.id + "'s streets yet: back to the map.");
+                Debug.LogWarning("[Levels] " + def.levelId + " is another city's than " + Progression.Cities.Active.id + ": back to the map.");
                 FrontEnd.FrontEndController.Open(FrontEnd.FrontEndScreenId.Map, def.chapter);
                 return;
             }

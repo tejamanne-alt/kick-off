@@ -32,6 +32,8 @@ namespace DribbleToSchool.EditorTools
             "slide", "kerb", "stepup", "chip", "chiphigh", "gap", "gapdouble", "crates", "car", "highwall", "springboard", "bounce",
             "platform", "lift", "swing", "gate", "crossing", "siteexit", "tide", "dog", "people", "seagull", "fountain",
             "drawbridge", "sprinkler", "golfcart",
+            // Florida's own streets (docs/CITIES.md): Little Havana's chickens, the iguanas, the downpour's shelters, the street sweeper.
+            "chickens", "iguana", "downpour", "sweeper",
         };
 
         /// <summary>Spots of the same action closer than this (m) are one.</summary>

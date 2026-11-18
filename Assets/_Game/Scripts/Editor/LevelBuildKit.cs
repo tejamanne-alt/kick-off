@@ -333,6 +333,9 @@ namespace DribbleToSchool.EditorTools
             hud.aimer = aimer;
             hud.tuning = tuningPanel;
 
+            // A layout that dresses the kid or the ball for itself (Florida's mooring line: the ball as the line's knot).
+            if (track.AfterRig != null) track.AfterRig(kid, ball, shell.GetComponent<MeshRenderer>());
+
             EditorSceneManager.SaveScene(scene, scenePath);
         }
 
@@ -1131,6 +1134,9 @@ namespace DribbleToSchool.EditorTools
 
             // Ground and pit fills reach well below the lowest camera view, so no sky shows under the level.
             static float FillDepth(float top) { return Mathf.Max(4f, top + 12f); }
+
+            /// <summary>Called once the kid and the ball exist (after the layout): a layout that dresses them for itself sets it.</summary>
+            public System.Action<KidController, BallController, MeshRenderer> AfterRig;
 
             public TrackBuilder(Transform root)
             {

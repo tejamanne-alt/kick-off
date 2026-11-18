@@ -53,19 +53,22 @@ namespace DribbleToSchool.Tests
         }
 
         [Test]
-        public void FloridaHasHomeStreetAndTheBeachSoFarAndItsOwnMusic()
+        public void FloridaHasItsOwnRoutesInItsOwnChapterAndItsOwnMusic()
         {
             var fl = Cities.Florida;
             Assert.IsTrue(fl.story);
             Assert.IsFalse(fl.holidayRun, "the Holiday Run has no Florida stages yet");
             Assert.IsTrue(fl.needsEveryLevel, "Florida is unlocked by finishing every one of Kamakura's levels");
             Assert.AreEqual(MusicCountry.Florida, fl.music);
-            Assert.IsTrue(fl.Partial);
+            Assert.AreSame(RouteTable.Florida, fl.Routes, "Florida's own routes, not the original town's");
+            Assert.AreSame(RouteTable.All, Cities.Kamakura.Routes);
             for (int chapter = 1; chapter <= 5; chapter++)
-                Assert.AreEqual(chapter == 1 || chapter == 3, fl.HasChapter(chapter), "chapter " + chapter);
-            for (int chapter = 1; chapter <= 5; chapter++)
+            {
+                Assert.IsFalse(fl.HasChapter(chapter), "Florida doesn't re-dress the original town's chapter " + chapter);
                 Assert.IsTrue(Cities.Kamakura.HasChapter(chapter));
-            Assert.IsFalse(Cities.Kamakura.Partial);
+            }
+            Assert.IsTrue(fl.HasChapter(RouteTable.FloridaChapter));
+            Assert.IsFalse(Cities.Kamakura.HasChapter(RouteTable.FloridaChapter));
         }
 
         [Test]

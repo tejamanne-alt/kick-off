@@ -33,6 +33,8 @@ namespace DribbleToSchool.FrontEnd
         /// <summary>The screen is being thrown away (rebuilt in another language): unhook events.</summary>
         public virtual void OnDestroyed() { }
         public virtual string Title { get { return ""; } }
+        /// <summary>The screen was built for something that has since changed (the map, for another city): it is built again before it shows.</summary>
+        public virtual bool Stale { get { return false; } }
         /// <summary>Called every frame while the screen shows (after the stage is framed).</summary>
         public virtual void Tick() { }
         /// <summary>The header's back button: true when the screen dealt with it (asked first, say), else back to the title.</summary>
@@ -169,11 +171,19 @@ namespace DribbleToSchool.FrontEnd
 
         void CreateScreens()
         {
-            screens[FrontEndScreenId.Title] = new TitleScreen();
-            screens[FrontEndScreenId.Map] = new ChapterMapScreen();
-            screens[FrontEndScreenId.Shop] = new ShopScreen();
-            screens[FrontEndScreenId.Album] = new AlbumScreen();
-            screens[FrontEndScreenId.Coop] = new CoopScreen();
+            foreach (FrontEndScreenId id in System.Enum.GetValues(typeof(FrontEndScreenId))) screens[id] = NewScreen(id);
+        }
+
+        static FrontEndScreen NewScreen(FrontEndScreenId id)
+        {
+            switch (id)
+            {
+                case FrontEndScreenId.Map: return new ChapterMapScreen();
+                case FrontEndScreenId.Shop: return new ShopScreen();
+                case FrontEndScreenId.Album: return new AlbumScreen();
+                case FrontEndScreenId.Coop: return new CoopScreen();
+                default: return new TitleScreen();
+            }
         }
 
         void OnDestroy()
@@ -232,6 +242,13 @@ namespace DribbleToSchool.FrontEnd
             }
 
             var screen = screens[id];
+            if (screen.Root != null && screen.Stale)
+            {
+                // Built for another city (the map): thrown away and built again for the one chosen now.
+                screen.OnDestroyed();
+                Destroy(screen.Root.gameObject);
+                screen = screens[id] = NewScreen(id);
+            }
             if (screen.Root == null) screen.Create(this, screenLayer, id.ToString());
             screen.Root.gameObject.SetActive(true);
             screen.OnShow();

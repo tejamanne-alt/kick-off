@@ -127,7 +127,7 @@ namespace DribbleToSchool.Tests
                     Assert.IsTrue(table.ContainsKey(stop.ToKey) && !string.IsNullOrEmpty(table[stop.ToKey]), code + ": " + stop.ToKey);
                 }
             }
-            Assert.AreEqual(RouteTable.Stops.Length, StreetBuilder.SetPieces.Length, "a set piece for a stop that is on no route");
+            Assert.AreEqual(RouteTable.Stops.Length + RouteTable.FloridaStops.Length, StreetBuilder.SetPieces.Length, "a set piece for a stop that is on no route");
             Assert.AreEqual("place.home", RouteTable.Home.NameKey);
             Assert.AreEqual("place.school", RouteTable.School.NameKey);
             foreach (string code in Loc.Languages)

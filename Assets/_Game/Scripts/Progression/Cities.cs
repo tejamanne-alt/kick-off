@@ -128,8 +128,9 @@ namespace DribbleToSchool.Progression
         /// <summary>Unlocked by finishing every one of Kamakura's story levels (Kamakura needs nothing).</summary>
         public readonly bool needsEveryLevel;
         /// <summary>
-        /// The chapters its streets have so far (null: every one). While it is the active city, the other chapters' levels stay
-        /// locked (LevelUnlocks.NotInTown): Florida has Home Street and the beach.
+        /// The chapters its levels are in (null: Kamakura's five). Each city has its own levels on its own routes
+        /// (Levels/RouteTable.ForCity): Florida's are all in its own chapter (RouteTable.FloridaChapter). While a city is the active
+        /// one, every other city's levels stay locked (LevelUnlocks.NotInTown).
         /// </summary>
         public readonly int[] chapters;
         /// <summary>Its light and weather (applied when its scenes are built).</summary>
@@ -156,19 +157,30 @@ namespace DribbleToSchool.Progression
 
         public bool Unlocked { get { return story && (!needsEveryLevel || Cities.EveryLevelFinished); } }
 
-        /// <summary>Its streets have this chapter's levels (every chapter when it lists none).</summary>
-        public bool HasChapter(int chapter) { return chapters == null || System.Array.IndexOf(chapters, chapter) >= 0; }
+        /// <summary>Its levels include this chapter's (Kamakura's: chapters 1 to 5; Florida's: its own chapter).</summary>
+        public bool HasChapter(int chapter)
+        {
+            if (chapters == null) return chapter >= 1 && chapter <= 5;
+            return System.Array.IndexOf(chapters, chapter) >= 0;
+        }
 
-        /// <summary>It has only some of the chapters (the map says the others are still to come).</summary>
-        public bool Partial { get { return chapters != null; } }
+        /// <summary>Its own routes from its home to its school (Levels/RouteTable.ForCity).</summary>
+        public Route[] Routes { get { return RouteTable.ForCity(id); } }
+
+        /// <summary>The level is one of this city's own (LevelDefinition.city; a level saved before the cities is Kamakura's).</summary>
+        public bool Has(LevelDefinition level)
+        {
+            if (level == null) return false;
+            string c = string.IsNullOrEmpty(level.city) ? Cities.KamakuraId : level.city;
+            return c == id;
+        }
     }
 
     /// <summary>
     /// The five cities (docs/CITIES.md). PLAY and HOLIDAY RUN each ask which city to play in (UI/CityPicker).
     /// - Kamakura, Japan, the original town: every level, and the Holiday Run.
-    /// - Florida (Miami), unlocked by finishing every one of Kamakura's story levels. So far it has chapters 1 and 3 in its
-    ///   own streets (&lt;scene&gt;_FL, Editor/StreetBuilder.Florida and FloridaHome): while it is chosen, the other chapters'
-    ///   levels are locked.
+    /// - Florida (Miami), unlocked by finishing every one of Kamakura's story levels: its own three routes and twelve legs
+    ///   (Levels/RouteTable.Florida, FL1-1 to FL3-3), in its own chapter.
     /// - Madrid, New York and Mumbai: designed, listed as coming soon.
     /// California (Santa Monica, &lt;scene&gt;_CA) was an add-on before the cities and is not one of them: a save that chose
     /// it plays Kamakura. The filters are Progression/Filters.
@@ -177,10 +189,13 @@ namespace DribbleToSchool.Progression
     {
         public const string KamakuraId = "original";
         public const string FloridaId = "florida";
-        /// <summary>What a level's Florida scene adds to its scene's name.</summary>
+        /// <summary>
+        /// What a level's Florida copy added to its scene's name, when Florida re-dressed the original town's levels (v117 to v122,
+        /// before it had routes of its own). No such scene is built any more; the suffix still tells a Florida scene's music.
+        /// </summary>
         public const string FloridaSuffix = "_FL";
-        /// <summary>The chapters Florida's streets have so far: Home Street (a canal suburb) and the beach (Seaside Road).</summary>
-        public static readonly int[] FloridaChapters = { 1, 3 };
+        /// <summary>Florida's levels' chapter: its own (Levels/RouteTable.FloridaChapter).</summary>
+        public static readonly int[] FloridaChapters = { RouteTable.FloridaChapter };
 
         public static readonly City Kamakura = new City(KamakuraId, "", true, true, Audio.MusicCountry.Japan, false, null,
             CityClimate.Reference, new Color(0.84f, 0.27f, 0.22f));
@@ -235,8 +250,18 @@ namespace DribbleToSchool.Progression
             }
         }
 
-        /// <summary>The active city's streets have this chapter's levels.</summary>
+        /// <summary>The active city's levels include this chapter's.</summary>
         public static bool InTown(int chapter) { return Active.HasChapter(chapter); }
+
+        /// <summary>The level is one of the active city's own.</summary>
+        public static bool InTown(LevelDefinition level) { return Active.Has(level); }
+
+        /// <summary>The city whose level this is (Kamakura for a level saved before the cities or an unknown id).</summary>
+        public static City Of(LevelDefinition level)
+        {
+            if (level == null || string.IsNullOrEmpty(level.city)) return Kamakura;
+            return ById(level.city) ?? Kamakura;
+        }
 
         /// <summary>Choose a city (only one that can be played is kept); saves.</summary>
         public static void Select(City city)

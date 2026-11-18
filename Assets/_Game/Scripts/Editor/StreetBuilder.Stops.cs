@@ -24,6 +24,9 @@ namespace DribbleToSchool.EditorTools
         {
             "busStop", "granny", "church", "samsHouse", "bakery", "postOffice", "florist", "library", "surfSchool", "lifeguard", "beachCafe",
             "station", "siteOffice", "bandstand", "parkCafe", "boathouse", "allotment",
+            // Florida's (Miami's): until its own kit is modelled from the references, the nearest of the pieces above, in Florida's
+            // streets (the bus shelters are Florida's aluminium ones).
+            "calleOcho", "brickell", "bayfront", "reysDock", "drugstore", "underline", "biscayne", "museumPark",
         };
 
         /// <summary>The plot a stop's set piece fills, from its door: the street's own lots keep out of it (a QuietArea).</summary>
@@ -117,6 +120,25 @@ namespace DribbleToSchool.EditorTools
                 case "bandstand": Bandstand(parent, gx, gy, rng); break;
                 case "boathouse": Boathouse(parent, gx, gy, rng); break;
                 case "allotment": Allotment(parent, gx, gy, rng); break;
+                // Florida's stops.
+                case "calleOcho":
+                case "brickell": BusStop(parent, gx, gy, rng); break;
+                case "bayfront":
+                    BeachKiosk(parent, gx, ground);
+                    CafeTables(parent, gx, ground, rng, true);
+                    break;
+                case "reysDock":
+                    if (Model(parent, "Florida", "DockFL", gx + 1.5f, gy - 0.9f, PropertyZ + 2f) == null)
+                        Solid(parent, "Dock", new Vector3(gx + 1.5f, gy - 0.1f, PropertyZ + 2f), new Vector3(3f, 0.2f, 4f), new Color(0.55f, 0.42f, 0.3f));
+                    PostBoard(parent, "UNCLE REY'S DOCK", gx - 1.2f, gy, 2.3f, 0.06f, new Color(0.15f, 0.35f, 0.7f), Color.white);
+                    break;
+                case "drugstore":
+                    ShopStop(parent, stop, gx, ground, "ShopCafe", 1.925f, new Color(0.97f, 0.96f, 0.93f), new Color(0.13f, 0.6f, 0.6f), new Color(0.34f, 0.36f, 0.4f),
+                        "DRUGSTORE", new Color(0.13f, 0.6f, 0.6f), Color.white);
+                    break;
+                case "underline":
+                case "biscayne": Station(parent, gx, gy); break;
+                case "museumPark": Bandstand(parent, gx, gy, rng); break;
                 default:
                     Debug.LogWarning("[Kick Off] No set piece for the stop \"" + stop.id + "\": only its sign is built.");
                     PostBoard(parent, stop.signName.ToUpperInvariant(), gx - 1.2f, gy, 2.3f, 0.07f, new Color(0.25f, 0.3f, 0.4f), Color.white);

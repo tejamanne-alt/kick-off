@@ -71,6 +71,15 @@ namespace DribbleToSchool.Progression
         /// <summary>The bag each kid wears (Cosmetics/Bags; a kid with no entry wears the default one). Older saves have none.</summary>
         public List<BagChoice> bags = new List<BagChoice>();
 
+        /// <summary>
+        /// What the kid carries on the trip being walked (Progression/Errands: an errand's item, "" when nothing), whether it is
+        /// still unharmed, and the errands whose item has been delivered to school unharmed at least once (the Delivered badge).
+        /// Saves from before the cities have none.
+        /// </summary>
+        public string carrying = "";
+        public bool carryingSpoiled;
+        public List<string> delivered = new List<string>();
+
         /// <summary>The saved result of a level, or null if it has never been finished.</summary>
         public LevelRecord Level(string levelId)
         {

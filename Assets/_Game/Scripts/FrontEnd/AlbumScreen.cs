@@ -53,7 +53,7 @@ namespace DribbleToSchool.FrontEnd
             int sheen = 0;
             foreach (var chapter in levels.chapters)
             {
-                var stories = levels.LevelsInChapter(chapter.number).FindAll(l => !l.isChallenge);
+                var stories = levels.LevelsInChapter(chapter.number).FindAll(l => l.HasStickerSlot);
                 if (stories.Count == 0) continue;
                 y = ChapterSection(levels, cosmetics, chapter, stories, y, ref sheen);
             }

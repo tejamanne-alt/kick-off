@@ -6,14 +6,21 @@ namespace DribbleToSchool.Localization
     /// All UI text. Add a language by adding a table here and its code to Loc.Languages.
     /// Level layouts (signs) stay in English for now; level names are translated.
     /// </summary>
-    public static class StringTables
+    public static partial class StringTables
     {
         static Dictionary<string, string> en, es;
 
         public static Dictionary<string, string> For(string code)
         {
-            if (code == "es") return es ?? (es = Spanish());
-            return en ?? (en = English());
+            if (code == "es") return es ?? (es = With(Spanish(), FloridaSpanish()));
+            return en ?? (en = With(English(), FloridaEnglish()));
+        }
+
+        /// <summary>A table with another's entries added (a city's own strings: StringTables.Florida).</summary>
+        static Dictionary<string, string> With(Dictionary<string, string> table, Dictionary<string, string> more)
+        {
+            foreach (var kv in more) table[kv.Key] = kv.Value;
+            return table;
         }
 
         static Dictionary<string, string> English()

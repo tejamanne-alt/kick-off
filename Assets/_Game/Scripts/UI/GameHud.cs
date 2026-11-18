@@ -612,9 +612,11 @@ namespace DribbleToSchool.UI
                 heading = Loc.T(r.stars > 0 ? "results.challengeDone" : "results.challengeFail");
                 var o = level.Objective;
                 texts[count] = Loc.F("results.score", r.scoreText); dones[count++] = true;
+                var mini = o as Challenges.MiniGameObjective;
                 for (int i = 0; o != null && i < o.starThresholds.Length && i < 3; i++)
                 {
-                    string need = Loc.F(o.lowerIsBetter ? "results.under" : "results.reach", o.FormatScore(o.starThresholds[i]));
+                    string need = mini != null ? mini.StarText(i + 1)
+                        : Loc.F(o.lowerIsBetter ? "results.under" : "results.reach", o.FormatScore(o.starThresholds[i]));
                     texts[count] = new string('*', i + 1) + "  " + need; dones[count++] = r.stars > i;
                 }
             }
@@ -729,6 +731,9 @@ namespace DribbleToSchool.UI
                 // This leg finished the whole route to school: its medal (or, the last of the six, the trophy) waits on the map.
                 string medal = MedalWaiting();
                 if (medal != null) extras = medal;
+                // An errand's item got to school unharmed (Progression/Errands): the Delivered badge.
+                if (r.delivered) extras = Loc.F("results.delivered", Progression.Errands.DeliveredBonus);
+                else if (r.spoiled) extras = Loc.T("results.spoiled");
                 var ex = UIKit.Label(card.transform, "Extras", extras, 32, new Color(0.8f, 0.35f, 0.55f), TextAnchor.MiddleCenter, true);
                 UIKit.Place(ex.rectTransform, new Vector2(0.5f, 0f), new Vector2(0f, 210f), new Vector2(1050f, 44f));   // (clear of the buttons' tops at 195)
                 UIKit.Fit(ex, 22);
@@ -739,6 +744,7 @@ namespace DribbleToSchool.UI
             bool fromHome = !r.isChallenge && r.onRoute && r.lastLeg && !r.cozy && (late || r.nextLocked) && level.TripStart != null;
             var nextLevel = level.NextLevel;
             bool showNext = !fromHome || (!r.nextLocked && nextLevel != null);
+            if (r.isChallenge && r.stars == 0) showNext = false;      // a mini-game leg not passed: Retry, not on to the next leg
             int buttons = 2 + (fromHome ? 1 : 0) + (showNext ? 1 : 0);
             float width = buttons > 3 ? 250f : 300f, step = buttons > 3 ? 270f : 340f;
             int slot = 0;

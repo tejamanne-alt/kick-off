@@ -95,6 +95,8 @@ namespace DribbleToSchool.Audio
             var level = LevelManager.Current;
             if (level == null) return Progression.Cities.Active.music;
             if (level.endless) return MusicCountry.Japan;
+            // A city's own level plays its music (Florida's legs); else the streets the scene is in.
+            if (level.level != null && Progression.Cities.Of(level.level) != Progression.Cities.Kamakura) return Progression.Cities.Of(level.level).music;
             return Progression.Cities.OfScene(level.gameObject.scene.name).music;
         }
         Ambience playingAmbience;
@@ -192,6 +194,8 @@ namespace DribbleToSchool.Audio
                 }
             }
             if (level.level == null) return Soundscape.Street;
+            var florida = Soundscapes.ForFloridaLeg(level.level.levelId);
+            if (florida != Soundscape.Menu) return florida;
             var route = RouteTable.Of(level.level.levelId);
             return Soundscapes.For(route != null ? route.id : null, Mathf.Clamp(level.level.chapter, 1, 5));
         }

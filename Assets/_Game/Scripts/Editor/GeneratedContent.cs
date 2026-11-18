@@ -40,13 +40,44 @@ namespace DribbleToSchool.EditorTools
             public int streak;
             public bool challenge;
             public Action<TrackBuilder> layout;
+            /// <summary>The city whose level it is (Progression.Cities' id).</summary>
+            public string city;
+            /// <summary>The street look (1 to 5: the chapter whose street, mood and kit the builder dresses it in).</summary>
+            public int look;
+            /// <summary>A leg played as a mini-game (its objective decides the stars; its time counts in the trip).</summary>
+            public bool miniGame;
 
             public LevelSpec(int chapter, string id, string name, string scene, float bell, int streak, Action<TrackBuilder> layout)
             {
                 this.chapter = chapter; this.id = id; this.name = name; this.scene = scene;
                 this.bell = bell; this.streak = streak; this.layout = layout;
                 challenge = false;
+                city = Progression.Cities.KamakuraId;
+                look = chapter;
+                miniGame = false;
             }
+
+            /// <summary>
+            /// One of Florida's own legs (docs/CITIES.md: FL1-1...), built in Florida's streets and light (LevelBuildKit.Florida set) in
+            /// the look of chapter <paramref name="look"/>'s street until Florida's own districts are built from the references.
+            /// </summary>
+            public static LevelSpec Florida(string id, string name, string scene, int look, float bell, int streak, Action<TrackBuilder> layout)
+            {
+                var spec = new LevelSpec(RouteTable.FloridaChapter, id, name, scene, bell, streak, layout);
+                spec.city = Progression.Cities.FloridaId;
+                spec.look = look;
+                return spec;
+            }
+
+            /// <summary>One of Florida's legs played as a mini-game: <paramref name="bell"/> is its target time, as a street leg's is.</summary>
+            public static LevelSpec FloridaMiniGame(string id, string name, string scene, int look, float bell, Action<TrackBuilder> layout)
+            {
+                var spec = Florida(id, name, scene, look, bell, 0, layout);
+                spec.miniGame = true;
+                return spec;
+            }
+
+            public bool IsFlorida { get { return city == Progression.Cities.FloridaId; } }
 
             /// <summary>An optional ball-skill challenge (no bell; the objective sets the stars).</summary>
             public static LevelSpec Challenge(int chapter, string id, string name, string scene, Action<TrackBuilder> layout)
@@ -57,10 +88,6 @@ namespace DribbleToSchool.EditorTools
             }
 
             public string ScenePath { get { return ScenesDir + "/Levels/" + scene + ".unity"; } }
-            /// <summary>The level's Florida scene (the city of Florida: so far chapters 1 and 3 have one).</summary>
-            public string FloridaPath { get { return ScenesDir + "/Levels/" + scene + Progression.Cities.FloridaSuffix + ".unity"; } }
-            /// <summary>Florida's streets have this level's chapter (Progression/Cities.Florida).</summary>
-            public bool InFlorida { get { return Progression.Cities.Florida.HasChapter(chapter); } }
         }
 
         /// <summary>
@@ -107,16 +134,43 @@ namespace DribbleToSchool.EditorTools
             new LevelSpec(5, "L22", "Duck Pond", "L22_DuckPond", Bell(80f), 6, GreyboxLevels.DuckPond),
             new LevelSpec(5, "L23", "The Final Bell", "L23_TheFinalBell", Bell(120f), 7, GreyboxLevels.TheFinalBell),
             LevelSpec.Challenge(5, "C05", "Juggle Champion", "C05_JuggleChampion", GreyboxLevels.JuggleChampion),
+
+            // Florida (Miami): the city's own three routes, from the ranch house in Little Havana to Bayside Elementary (docs/CITIES.md).
+            // FL1 Calle Ocho Bus
+            LevelSpec.Florida("FL1-1", "Little Havana Morning", "FL1-1_LittleHavana", 2, Bell(70f), 4, FloridaLevels.LittleHavana),
+            LevelSpec.FloridaMiniGame("FL1-2", "The Metrobus", "FL1-2_Metrobus", 2, 60f, FloridaLevels.Metrobus),
+            LevelSpec.Florida("FL1-3", "Brickell Avenue", "FL1-3_BrickellAvenue", 4, Bell(80f), 5, FloridaLevels.BrickellAvenue),
+            LevelSpec.Florida("FL1-4", "Bayfront to School", "FL1-4_Bayfront", 5, Bell(80f), 5, FloridaLevels.Bayfront),
+            // FL2 The River Way
+            LevelSpec.Florida("FL2-1", "Riverside Street", "FL2-1_RiversideStreet", 1, Bell(70f), 4, FloridaLevels.RiversideStreet),
+            LevelSpec.FloridaMiniGame("FL2-2", "Uncle Rey's Boat", "FL2-2_UncleReysBoat", 1, 50f, FloridaLevels.UncleReysBoat),
+            LevelSpec.Florida("FL2-3", "The Riverwalk", "FL2-3_Riverwalk", 3, Bell(85f), 5, FloridaLevels.Riverwalk),
+            LevelSpec.FloridaMiniGame("FL2-4", "The Drugstore", "FL2-4_Drugstore", 2, 60f, FloridaLevels.Drugstore),
+            LevelSpec.Florida("FL2-5", "Downpour to School", "FL2-5_Downpour", 2, Bell(90f), 6, FloridaLevels.Downpour),
+            // FL3 Under the Line (the people mover between its first two legs: Levels/Rides)
+            LevelSpec.Florida("FL3-1", "The Underline", "FL3-1_Underline", 4, Bell(75f), 5, FloridaLevels.Underline),
+            LevelSpec.Florida("FL3-2", "Biscayne Boulevard", "FL3-2_BiscayneBoulevard", 2, Bell(75f), 5, FloridaLevels.BiscayneBoulevard),
+            LevelSpec.Florida("FL3-3", "Museum Park to School", "FL3-3_MuseumPark", 5, Bell(85f), 6, FloridaLevels.MuseumPark),
         };
 
-        /// <summary>(id, chapter, isChallenge, scene name) for each entry of the level table. Used by tests.</summary>
+        /// <summary>
+        /// (id, chapter, isChallenge, scene name) for each of Kamakura's entries of the level table (the original town's 23 levels
+        /// and 5 challenges). Used by tests; Florida's are <see cref="CityLevelTable"/>.
+        /// </summary>
         public static List<KeyValuePair<string, int>> LevelTable(out List<bool> isChallenge, out List<string> scenes)
+        {
+            return CityLevelTable(Progression.Cities.KamakuraId, out isChallenge, out scenes);
+        }
+
+        /// <summary>The level table's entries of one city (its id as Progression.Cities has it), in story order. Used by tests.</summary>
+        public static List<KeyValuePair<string, int>> CityLevelTable(string city, out List<bool> isChallenge, out List<string> scenes)
         {
             var list = new List<KeyValuePair<string, int>>();
             isChallenge = new List<bool>();
             scenes = new List<string>();
             foreach (var spec in Levels)
             {
+                if (spec.city != city) continue;
                 list.Add(new KeyValuePair<string, int>(spec.id, spec.chapter));
                 isChallenge.Add(spec.challenge);
                 scenes.Add(spec.scene);
@@ -132,11 +186,19 @@ namespace DribbleToSchool.EditorTools
             return -1f;
         }
 
+        /// <summary>Is this level of the table a mini-game leg (its objective decides the stars)? Used by tests.</summary>
+        public static bool IsMiniGame(string id)
+        {
+            foreach (var spec in Levels)
+                if (spec.id == id) return spec.miniGame;
+            return false;
+        }
+
         /// <summary>Does this level of the table start at a stop with a lead-in (home or a stop on its route)? Every story level does; a challenge does not. Used by tests.</summary>
         public static bool HasLeadIn(string id)
         {
             foreach (var spec in Levels)
-                if (spec.id == id) return HomeLeadInRules.HasLeadIn(true, spec.challenge);
+                if (spec.id == id) return HomeLeadInRules.HasLeadIn(true, spec.challenge || spec.miniGame);
             return false;
         }
 
@@ -244,6 +306,7 @@ namespace DribbleToSchool.EditorTools
             new ChapterInfo { number = 3, title = "The Beach", subtitle = "Sand, waves and seagulls", color = new Color(0.3f, 0.68f, 0.85f) },
             new ChapterInfo { number = 4, title = "Underpass", subtitle = "Tunnels, pipes and building sites", color = new Color(0.55f, 0.48f, 0.72f) },
             new ChapterInfo { number = 5, title = "Park & School", subtitle = "Dogs, fountains and the final bell", color = new Color(0.42f, 0.7f, 0.4f) },
+            new ChapterInfo { number = RouteTable.FloridaChapter, title = "Miami", subtitle = "Buses, boats and a downpour", color = new Color(0.13f, 0.7f, 0.68f) },
         };
 
         public static void BuildAll()
@@ -272,15 +335,22 @@ namespace DribbleToSchool.EditorTools
                 var def = AssetDatabase.LoadAssetAtPath<LevelDefinition>(LevelsDir + "/" + Levels[i].id + ".asset");
                 catalog = AssetDatabase.LoadAssetAtPath<LevelCatalog>(LevelsDir + "/LevelCatalog.asset");
                 LevelBuildKit.Cosmetics = AssetDatabase.LoadAssetAtPath<CosmeticCatalog>(CosmeticsDir + "/CosmeticCatalog.asset");
-                LevelBuildKit.BuildScene(Levels[i].ScenePath, def, catalog, Levels[i].layout, Levels[i].chapter);
+                // A city's own level is built in its streets and light (Florida's: LevelBuildKit.Florida set while it is built). The
+                // original town's levels no longer get a Florida copy (<scene>_FL): Florida has its own routes (docs/CITIES.md), and
+                // California's and Florida's old copies are removed by DeleteStaleScenes.
+                LevelBuildKit.Florida = Levels[i].IsFlorida;
+                try { LevelBuildKit.BuildScene(Levels[i].ScenePath, def, catalog, Levels[i].layout, Levels[i].look); }
+                finally { LevelBuildKit.Florida = false; }
                 buildScenes.Add(new EditorBuildSettingsScene(Levels[i].ScenePath, true));
-                // And, for Home Street and the beach so far, its scene in Florida's streets (the city of Florida). California's
-                // scenes (an add-on before the cities, not one of the five) are no longer built: DeleteStaleScenes removes them.
-                if (Levels[i].InFlorida)
-                {
-                    BuildFlorida(Levels[i], catalog);
-                    buildScenes.Add(new EditorBuildSettingsScene(Levels[i].FloridaPath, true));
-                }
+            }
+            // The rides between legs (Florida's people mover), each a short scene of its own.
+            foreach (string ride in Rides.All)
+            {
+                string path = ScenesDir + "/Levels/" + Rides.SceneOf(ride) + ".unity";
+                LevelBuildKit.Florida = true;
+                try { RideBuilder.Build(path, ride); }
+                finally { LevelBuildKit.Florida = false; }
+                buildScenes.Add(new EditorBuildSettingsScene(path, true));
             }
             LevelBuildKit.BuildScene(TestTrackScene, null, catalog, GreyboxLevels.TestTrack);
             buildScenes.Add(new EditorBuildSettingsScene(TestTrackScene, true));
@@ -295,7 +365,7 @@ namespace DribbleToSchool.EditorTools
             AssetDatabase.SaveAssets();
 
             EditorSceneManager.OpenScene(FrontEndScene);
-            Debug.Log("[Kick Off] Built the menu, " + Levels.Length + " levels (Home Street's and the beach's with their Florida scenes too), the test track and the Holiday Run (its core scene and " + HolidayStages.Count + " stages). The menu is open - press Play.");
+            Debug.Log("[Kick Off] Built the menu, " + Levels.Length + " levels (Kamakura's and Florida's), " + Rides.All.Length + " ride(s), the test track and the Holiday Run (its core scene and " + HolidayStages.Count + " stages). The menu is open - press Play.");
         }
 
         static CosmeticCatalog BuildCosmetics()
@@ -372,30 +442,18 @@ namespace DribbleToSchool.EditorTools
             def.sceneName = spec.scene;
             def.chapter = spec.chapter;
             def.isChallenge = spec.challenge;
+            def.city = spec.city;
+            def.isMiniGame = spec.miniGame;
             EditorUtility.SetDirty(def);
             return def;
-        }
-
-        /// <summary>A level's Florida scene (LevelBuildKit.Florida set only while it is built).</summary>
-        static void BuildFlorida(LevelSpec spec, LevelCatalog catalog)
-        {
-            var def = AssetDatabase.LoadAssetAtPath<LevelDefinition>(LevelsDir + "/" + spec.id + ".asset");
-            catalog = AssetDatabase.LoadAssetAtPath<LevelCatalog>(LevelsDir + "/LevelCatalog.asset");
-            LevelBuildKit.Cosmetics = AssetDatabase.LoadAssetAtPath<CosmeticCatalog>(CosmeticsDir + "/CosmeticCatalog.asset");
-            LevelBuildKit.Florida = true;
-            try { LevelBuildKit.BuildScene(spec.FloridaPath, def, catalog, spec.layout, spec.chapter); }
-            finally { LevelBuildKit.Florida = false; }
         }
 
         /// <summary>Remove generated level scenes that are no longer in the Levels table.</summary>
         static void DeleteStaleScenes()
         {
             var keep = new HashSet<string>();
-            foreach (var spec in Levels)
-            {
-                keep.Add(spec.ScenePath);
-                if (spec.InFlorida) keep.Add(spec.FloridaPath);
-            }
+            foreach (var spec in Levels) keep.Add(spec.ScenePath);
+            foreach (string ride in Rides.All) keep.Add(ScenesDir + "/Levels/" + Rides.SceneOf(ride) + ".unity");
             foreach (string guid in AssetDatabase.FindAssets("t:Scene", new[] { ScenesDir + "/Levels" }))
             {
                 string path = AssetDatabase.GUIDToAssetPath(guid);
@@ -408,10 +466,9 @@ namespace DribbleToSchool.EditorTools
             if (AssetDatabase.LoadAssetAtPath<SceneAsset>(TestTrackScene) == null) return false;
             if (AssetDatabase.LoadAssetAtPath<SceneAsset>(FrontEndScene) == null) return false;
             foreach (var spec in Levels)
-            {
                 if (AssetDatabase.LoadAssetAtPath<SceneAsset>(spec.ScenePath) == null) return false;
-                if (spec.InFlorida && AssetDatabase.LoadAssetAtPath<SceneAsset>(spec.FloridaPath) == null) return false;
-            }
+            foreach (string ride in Rides.All)
+                if (AssetDatabase.LoadAssetAtPath<SceneAsset>(ScenesDir + "/Levels/" + Rides.SceneOf(ride) + ".unity") == null) return false;
             return HolidayRunBuilder.AllScenesExist();
         }
 

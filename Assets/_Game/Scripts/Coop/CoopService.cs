@@ -330,7 +330,10 @@ namespace DribbleToSchool.Coop
         public void Shutdown() { }
     }
 
-    /// <summary>The locations a race can run in: the cities whose streets can be played (Progression/Cities), by index on the wire.</summary>
+    /// <summary>
+    /// The locations a race can run in, by index on the wire: the cities whose levels are on the routes a race picks from
+    /// (Levels/RouteTable.All, Kamakura's). Florida has routes of its own now, with mini-game legs, and races don't run them yet.
+    /// </summary>
     public static class CoopLocations
     {
         static List<Progression.City> list;
@@ -342,7 +345,7 @@ namespace DribbleToSchool.Coop
                 if (list == null)
                 {
                     list = new List<Progression.City>();
-                    foreach (var a in Progression.Cities.All) if (a.story) list.Add(a);
+                    foreach (var a in Progression.Cities.All) if (a.story && a.Routes == RouteTable.All) list.Add(a);
                 }
                 return list;
             }
@@ -355,7 +358,7 @@ namespace DribbleToSchool.Coop
             return index >= 0 && index < List.Count ? List[index] : Progression.Cities.Kamakura;
         }
 
-        /// <summary>The location (by index) has the route's streets (by index in RouteTable.All): Florida has only the beach so far.</summary>
+        /// <summary>The location (by index) has the route's streets (by index in RouteTable.All).</summary>
         public static bool Fits(int route, int location)
         {
             if (route < 0 || route >= RouteTable.All.Length) return true;

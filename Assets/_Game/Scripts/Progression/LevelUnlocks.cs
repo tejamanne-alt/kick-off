@@ -18,7 +18,7 @@ namespace DribbleToSchool.Progression
         public static bool IsUnlocked(LevelCatalog catalog, LevelDefinition level)
         {
             if (!Store.Monetization.IsChapterUnlocked(level.chapter)) return false;
-            // An add-on with only some chapters built (Florida: the beach) keeps the others' levels locked.
+            // Another city's levels stay locked while this one is chosen (each city has its own routes).
             if (NotInTown(level)) return false;
             if (level.isChallenge)
             {
@@ -33,12 +33,12 @@ namespace DribbleToSchool.Progression
         }
 
         /// <summary>
-        /// The level's chapter isn't in the active add-on's streets yet (Florida has only the beach): it stays locked while that
-        /// add-on is chosen, and the map says so when it is tapped.
+        /// The level is another city's than the active one (each city has its own routes and levels: docs/CITIES.md): it stays
+        /// locked while this city is chosen, and Next never goes into it.
         /// </summary>
         public static bool NotInTown(LevelDefinition level)
         {
-            return level != null && !Cities.InTown(level.chapter);
+            return level != null && !Cities.InTown(level);
         }
 
         /// <summary>
@@ -72,29 +72,16 @@ namespace DribbleToSchool.Progression
         /// <summary>The story level the player should play next: the first unlocked, uncompleted one, or the start of a stage to walk again.</summary>
         public static LevelDefinition NextToPlay(LevelCatalog catalog)
         {
+            // The active city's own story levels, in catalog order: each city's story runs on its own.
             var story = new List<string>();
             foreach (var l in catalog.levels)
-                if (l != null && !l.isChallenge) story.Add(l.levelId);
+                if (l != null && !l.isChallenge && !NotInTown(l)) story.Add(l.levelId);
             string id = NextToPlay(story, SaveSystem.Data, Cozy, levelId =>
             {
                 var def = catalog.FindById(levelId);
-                return def != null && Store.Monetization.IsChapterUnlocked(def.chapter) && Cities.InTown(def.chapter);
+                return def != null && Store.Monetization.IsChapterUnlocked(def.chapter);
             });
-            var next = id != null ? catalog.FindById(id) : null;
-            // Everything done (an add-on needs every level finished) and the last level isn't in this add-on's streets:
-            // the first of its levels still short of three stars, or else its first.
-            if (next != null && NotInTown(next))
-            {
-                var inTown = new List<string>();
-                foreach (string s in story)
-                {
-                    var def = catalog.FindById(s);
-                    if (def != null && !NotInTown(def)) inTown.Add(s);
-                }
-                string pick = FirstShortOfStars(inTown, SaveSystem.StarsFor);
-                next = pick != null ? catalog.FindById(pick) : null;
-            }
-            return next;
+            return id != null ? catalog.FindById(id) : null;
         }
 
         /// <summary>The first of <paramref name="levels"/> with fewer than three stars, else the first; null if there are none.</summary>
@@ -108,14 +95,19 @@ namespace DribbleToSchool.Progression
         /// <summary>Cozy mode (the school bell turned off): stages open without an on-time trip.</summary>
         static bool Cozy { get { return !Core.GameSettings.BellTimerEnabled; } }
 
-        /// <summary>The story level before <paramref name="level"/> in the catalog (challenges skipped), or null for the first.</summary>
+        /// <summary>
+        /// The story level before <paramref name="level"/> in the catalog (challenges skipped), or null for the first of its city's
+        /// (each city's story starts open: Florida's first leg doesn't wait on Kamakura's last).
+        /// </summary>
         static LevelDefinition PreviousStory(LevelCatalog catalog, LevelDefinition level)
         {
             int index = catalog.levels.IndexOf(level);
+            var city = Cities.Of(level);
             for (int i = index - 1; i >= 0; i--)
             {
                 var prev = catalog.levels[i];
-                if (prev != null && !prev.isChallenge) return prev;
+                if (prev == null || prev.isChallenge) continue;
+                return Cities.Of(prev) == city ? prev : null;
             }
             return null;
         }

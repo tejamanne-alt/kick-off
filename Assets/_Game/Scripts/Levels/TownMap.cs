@@ -85,12 +85,36 @@ namespace DribbleToSchool.Levels
     /// </summary>
     public static class TownMap
     {
-        /// <summary>The layout's Resources path (no extension).</summary>
+        /// <summary>The layout's Resources path (no extension): Kamakura's town.</summary>
         public const string LayoutResource = "TownMapLayout";
         /// <summary>The same file's place under Application.dataPath, for edit-mode tests.</summary>
         public const string LayoutFile = "/_Game/Resources/TownMapLayout.json";
         /// <summary>The picture's Resources path (no extension).</summary>
         public const string ImageResource = "UI/TownMap";
+
+        /// <summary>Florida's map: Miami from Little Havana to the bay (its own layout and picture, same shape as the town's).</summary>
+        public const string MiamiLayoutResource = "MiamiMapLayout";
+        public const string MiamiLayoutFile = "/_Game/Resources/MiamiMapLayout.json";
+        public const string MiamiImageResource = "UI/MiamiMap";
+
+        /// <summary>The city whose map is loaded (Progression.Cities' id): each city has its own map of its own routes.</summary>
+        public static string City { get; private set; }
+
+        /// <summary>Show <paramref name="cityId"/>'s map (Kamakura's for any city without one yet); reloads only when it changes.</summary>
+        public static void Use(string cityId)
+        {
+            string c = cityId == RouteTable.FloridaId ? RouteTable.FloridaId : RouteTable.KamakuraIdOfTown;
+            if (c == City && layout != null) return;
+            City = c;
+            layout = null;
+            Load();
+        }
+
+        static string CityOrDefault { get { return string.IsNullOrEmpty(City) ? RouteTable.KamakuraIdOfTown : City; } }
+        static bool Miami { get { return CityOrDefault == RouteTable.FloridaId; } }
+
+        /// <summary>The routes this map draws: its city's (RouteTable.ForCity).</summary>
+        public static Route[] CityRoutes { get { return RouteTable.ForCity(CityOrDefault); } }
 
         /// <summary>The picture is this big, and its core is this part of it.</summary>
         public const int ImageWidth = 3200, ImageHeight = 1800;
@@ -155,18 +179,19 @@ namespace DribbleToSchool.Levels
             string json = null;
             Source = "(none)";
             Problem = "";
-            var asset = Resources.Load<TextAsset>(LayoutResource);
+            string resource = Miami ? MiamiLayoutResource : LayoutResource, file = Miami ? MiamiLayoutFile : LayoutFile;
+            var asset = Resources.Load<TextAsset>(resource);
             if (asset != null)
             {
                 json = asset.text;
-                Source = "Resources/" + LayoutResource;
+                Source = "Resources/" + resource;
             }
 #if UNITY_EDITOR
             if (json == null)
             {
                 try
                 {
-                    string path = Application.dataPath + LayoutFile;
+                    string path = Application.dataPath + file;
                     if (System.IO.File.Exists(path))
                     {
                         json = System.IO.File.ReadAllText(path);
@@ -177,7 +202,7 @@ namespace DribbleToSchool.Levels
             }
 #endif
             Apply(json != null ? Parse(json) : null);
-            if (json == null && Problem.Length == 0) Problem = "TownMapLayout.json was not found";
+            if (json == null && Problem.Length == 0) Problem = resource + ".json was not found";
         }
 
         /// <summary>Read a layout from its JSON text (null, with <see cref="Problem"/> set, if it cannot be read).</summary>
@@ -252,7 +277,7 @@ namespace DribbleToSchool.Levels
         // ------------------------------------------------------------------ the data
 
         /// <summary>The picture's Resources path as the layout names it.</summary>
-        public static string Image { get { return string.IsNullOrEmpty(Layout.image) ? ImageResource : Layout.image; } }
+        public static string Image { get { return string.IsNullOrEmpty(Layout.image) ? (Miami ? MiamiImageResource : ImageResource) : Layout.image; } }
 
         /// <summary>The picture's size in pixels (the layout's own width and height).</summary>
         public static Vector2 FrameSize { get { return new Vector2(Layout.width > 0 ? Layout.width : ImageWidth, Layout.height > 0 ? Layout.height : ImageHeight); } }
@@ -271,7 +296,7 @@ namespace DribbleToSchool.Levels
         public static Vector2 Home { get { return Place("home"); } }
         public static Vector2 School { get { return Place("school"); } }
 
-        /// <summary>The six routes, in the order of the file (RouteTable's order).</summary>
+        /// <summary>The city's routes, in the order of the file (RouteTable's order).</summary>
         public static TownRoute[] Routes { get { if (layout == null) Load(); return routes; } }
 
         /// <summary>A route by its id (RouteTable's), or null.</summary>
@@ -313,9 +338,8 @@ namespace DribbleToSchool.Levels
         /// </summary>
         public static Vector2? StopPosition(string routeId, int index)
         {
-            int routeIndex = RouteTable.IndexOf(routeId);
-            if (routeIndex < 0) return null;
-            var route = RouteTable.All[routeIndex];
+            var route = RouteTable.ById(routeId);
+            if (route == null) return null;
             if (index < 0 || route.stops == null || index >= route.stops.Length || index + 1 >= route.levels.Length) return null;
             var line = Route(routeId);
             if (line == null || line.points.Length < 2) return null;
@@ -369,8 +393,11 @@ namespace DribbleToSchool.Levels
         {
             var keys = new List<string>(ScreenKeys);
             foreach (var d in Districts) keys.Add(d.NameKey);
-            foreach (var r in RouteTable.All) keys.Add(r.NameKey);
-            foreach (var stop in RouteTable.Stops) keys.Add(stop.NameKey);
+            foreach (var r in CityRoutes)
+            {
+                keys.Add(r.NameKey);
+                foreach (string id in r.stops) keys.Add(RouteTable.StopById(id).NameKey);
+            }
             foreach (var n in Nodes) keys.Add("level." + n.levelId);
             return keys;
         }
