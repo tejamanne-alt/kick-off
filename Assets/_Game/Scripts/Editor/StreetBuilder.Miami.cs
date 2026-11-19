@@ -73,6 +73,20 @@ namespace DribbleToSchool.EditorTools
             }
         }
 
+        /// <summary>Is <paramref name="levelId"/> in the plan, and the Miami kit imported, so its district can be built?</summary>
+        public static bool HasMiamiDistrict(string levelId)
+        {
+            if (string.IsNullOrEmpty(levelId) || !LevelBuildKit.HasKitModel("Miami", "VentanitaMIA") || !File.Exists(MiamiPlanFile)) return false;
+            try
+            {
+                var root = MiniJson.Parse(File.ReadAllText(MiamiPlanFile)) as Dictionary<string, object>;
+                object legs;
+                return root != null && root.TryGetValue("legs", out legs) && legs is Dictionary<string, object>
+                    && ((Dictionary<string, object>)legs).ContainsKey(levelId);
+            }
+            catch (Exception) { return false; }
+        }
+
         /// <summary>The leg being built is one of Florida's own, dressed from the plan (and the Miami kit is there).</summary>
         public static bool MiamiLeg { get { return MiamiPlan != null && LevelBuildKit.HasKitModel("Miami", "VentanitaMIA"); } }
 

@@ -4,17 +4,20 @@ namespace DribbleToSchool.World
 {
     /// <summary>
     /// Rain puddles (or a patch of soft, loose sand) lying on the ground over an area: one big,
-    /// irregular puddle with a darker wet rim and a pale streak of reflected sky, and a few
-    /// smaller ones scattered round it. Flat, a hair above the ground. Built in world space
-    /// (keep the object at the origin).
+    /// irregular puddle with a soft wet edge and a band of reflected sky along its far side, and a
+    /// few smaller ones scattered round it. Flat, a hair above the ground. Built in world space
+    /// (keep the object at the origin). The water is the deep slate of the street it mirrors, not
+    /// a pale blue: with a dark ring round a pale fill a puddle read as a sticker on the paving
+    /// (docs/LEARNINGS.md E15).
     /// </summary>
     public class PuddleShape : ProceduralShape
     {
         public float fromX, toX = 4f, zFrom = -1.2f, zTo = 1.2f, groundY;
         public int seed = 1;
-        public Color water = new Color(0.56f, 0.68f, 0.82f);
-        public Color sky = new Color(0.8f, 0.88f, 0.96f);
-        public Color rim = new Color(0.5f, 0.5f, 0.53f);
+        public Color water = new Color(0.36f, 0.43f, 0.51f);
+        public Color sky = new Color(0.64f, 0.74f, 0.86f);
+        [Tooltip("The wet edge: a little darker than dry paving, so it reads as damp, not as an outline.")]
+        public Color rim = new Color(0.62f, 0.62f, 0.63f);
         [Tooltip("Off: no sky reflection (for soft sand).")]
         public bool reflective = true;
 
@@ -45,13 +48,15 @@ namespace DribbleToSchool.World
                 float a = i / (float)n * Mathf.PI * 2f;
                 outline[i] = 1f + 0.13f * Mathf.Sin(3f * a + p1) + 0.08f * Mathf.Sin(5f * a + p2) + 0.05f * Mathf.Sin(9f * a + p3);
             }
-            Fan(b, c, rx * 1.1f + 0.08f, rz * 1.12f + 0.06f, outline, groundY + 0.004f, rim);   // wet edge
+            Fan(b, c, rx * 1.06f + 0.05f, rz * 1.08f + 0.04f, outline, groundY + 0.004f, rim);   // wet edge
             Fan(b, c, rx, rz, outline, groundY + 0.008f, water);
             if (reflective)
             {
-                // Sky caught in the far half of the puddle.
-                Vector2 hc = c + new Vector2(-rx * 0.15f, rz * 0.3f);
-                Fan(b, hc, rx * 0.55f, rz * 0.32f * size, outline, groundY + 0.011f, sky);
+                // The sky caught along the far side (seen low across the water, it is the sky beyond that shows), and a
+                // fainter glint nearer the middle.
+                Vector2 hc = c + new Vector2(-rx * 0.1f, rz * 0.5f);
+                Fan(b, hc, rx * 0.72f, rz * 0.26f * size, outline, groundY + 0.011f, sky);
+                Fan(b, c + new Vector2(rx * 0.2f, rz * 0.05f), rx * 0.3f, rz * 0.1f * size, outline, groundY + 0.012f, Color.Lerp(water, sky, 0.5f));
             }
         }
 

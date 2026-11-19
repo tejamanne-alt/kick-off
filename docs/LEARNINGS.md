@@ -168,6 +168,23 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
 - *Rule:* pass attach names bare (`'Red'`), never `'Attach.Red'`. After a kit build, list each model's `Attach.` empties in
   the review sheet's log and compare them with what the builder looks up.
 
+**A17. The phone got levels several versions old (found November 2026, fixed in v129).**
+- *What:* the user's screenshots of FL2-3 Downpour to School and FL2-2 The Riverwalk showed the v123 streets: the market's
+  English shops and nobori banners, Kamakura's park trees, a red slab for an arcade, "Project: soaked" (removed in v128). The
+  code was v128; the levels on the phone were not.
+- *Why:*
+  - The generated levels were rebuilt only on the first script load of an editor session (`SessionState` bool). A pull with
+    Unity open recompiles the scripts, but the levels stayed as they were.
+  - `BuildScripts` rebuilt them only when there were no scenes at all, and Unity's own Build button checks nothing.
+  - A Florida leg whose Miami kit or plan couldn't be found fell back to a Kamakura chapter's street without a word.
+- *Fix:*
+  - `GeneratedContent.AutoBuild` checks once per *version* in a session, so a recompile with a newer `Version` rebuilds.
+  - `BuildScripts` rebuilds stale levels before building.
+  - `GeneratedContentBuildCheck` (an `IPreprocessBuildWithReport`) fails any other build while `GeneratedContent.OutOfDate`.
+  - A Florida leg built without its district logs an error and leaves the levels out of date, so they can't ship.
+- *Rule:* generated content must say which version built it, and every way to a player build must refuse an older one.
+  When the user reports something from the phone, first check which version their levels were built by.
+
 ## B. Performance and mobile
 
 **B1. 28 fps with uneven frames on a mid-range phone (November 2026).**
@@ -680,6 +697,21 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
 - **E12. One set of routes was assumed everywhere (found in v123).** Giving Florida routes of its own touched the map (one picture, one layout, `RouteTable.All` in every loop), unlocks (a city's first leg waited on the other city's last), Next and the album (mini-game legs with no sticker), the music (chosen by the scene's suffix), co-op (location by chapter), tests (23 story levels counted) and the stops' set pieces. *Fix:* routes, maps and the story order are per city (`RouteTable.ForCity`, `TownMap.Use`, `Cities.Has(level)`, `LevelUnlocks.PreviousStory` stops at a city's edge); lookups by level id search every city (`RouteTable.Every`); `GeneratedContent.LevelTable` stays Kamakura's for its tests and `CityLevelTable` gives another city's. *Rule:* where the city matters, never loop over `RouteTable.All` (that is Kamakura's): ask the city for its routes. A level id is unique across cities.
 - **E13. Road markings under the road (v126, fixed in v127).** v126 laid Kamakura's home street flush (the road strip at lift 0), but the edge lines, centre dashes, drains and manholes were still placed at the old sunken road's height (`top - 0.14`), 14 cm under the asphalt. Found by the Kamakura audit, not by a render: the preview draws its own road. *Fix:* `StreetBuilder.Slab` puts them on Kamakura's flush road. *Rule:* when a strip's height changes, grep for everything placed at the old height (`- 0.14f`, `RoadNear`, `RoadFar`).
 - **E14. The mini-games removed (v128).** The user: "remove the mini games completely and do not replace them with anything else in both Kamakura and Florida". Florida's three mini-game legs (FL1-2 The Metrobus, FL2-2 Uncle Rey's Boat, FL2-4 The Drugstore, v123 to v125) had grown hooks well beyond their own scripts: the HUD's and the guide's star lines, a route-leg path through `LevelManager`, the level definition's flag, the errand they handed over (the science project, its Delivered badge, the downpour's stake), the plan's districts and the bus's moving street strip, two kit models, the map's nodes, strings in both languages, and the leg numbers of every leg after them. Kamakura's two were only in the design (`docs/CITIES.md`). *Fix:* all of it out, using the commits that added them (`git show --stat 7122d16`, `64840b0`) as the checklist; the legs after them renumbered so each route's legs are 1, 2, 3 again, with save version 3 (`Progression/FloridaLegs`) moving a player's records, stickers and trip times with their legs; the plan's districts seeded by their old ids so the reviewed streets stay identical; `FloridaRoutesTests.TheMiniGamesAreGoneForGood` holds it. *Rule:* to remove a feature, walk the diffs that added it file by file rather than grepping its name: the hooks that matter don't carry it (a `HasStickerSlot`, an `AfterRig`, a "Retry, not Next" line). Renumbering persisted ids needs a save upgrade in the same change (H7).
+- **E15. Gates that stopped nothing, rain that hung in the air, gulls at chest height (v129, from the user's screenshots).**
+  - **Gates:** the drawbridge's arms fell *along* the street behind the lane, so they read as a fence the kid walked in front
+    of. Nothing held the kid back, so they could stand at the hinge while the leaf rose through them. *Fix:* the arms fall
+    across the path toward the camera, cut to end at the lane's front edge (E10). While an arm is down, a one-way blocker at
+    its post, 2.4 m back from the hinge, stops the kid and the ball coming toward the water; it never traps someone already over.
+  - **Rain:** static streak quads, built once and toggled, read as scratches on the screen. The downpour's only stake was the
+    removed errand (E14). *Fix:* `World/RainCurtain`, falling streaks round the camera with splashes and puddle ripples, none
+    under the arcades, in one mesh. The light dims with each burst through `WorldLook`, and a burst out in the open slows
+    the kid's run. Its warning pill sits under the HUD card, not across its edge.
+  - **Birds:** startled pigeons and the sky's pigeon and crow flocks flew on the gull's rig. The gull's body can't be
+    painted, so they flew as white gulls, some at chest height. *Fix:* they fly on the black kite's rig, painted all over.
+  - **The low kerb** in Florida was a bare grey block. It is now a raised planting bed (E9).
+  - **Puddles** were a pale blue fill inside a dark ring, a sticker. They now mirror the street, with a soft wet edge.
+  - *Rule:* in a side view, something that crosses the path (a gate, a barrier) must fall across it toward the camera and
+    must physically stop what it stops. Weather moves. A model standing in for an animal must be paintable all over.
 
 ## F. UI and menus
 

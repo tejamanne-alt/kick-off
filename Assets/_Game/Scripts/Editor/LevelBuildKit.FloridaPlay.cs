@@ -104,11 +104,16 @@ namespace DribbleToSchool.EditorTools
                 Rigidbody2D left = Leaf("LeafLeft", fromX, top, leafLen, 1f);
                 Rigidbody2D right = Leaf("LeafRight", toX, top, leafLen, -1f);
 
-                // The control towers on the banks behind the street, their lights; the footpath's gates at the back of the lane, their
-                // arms swinging down along the street away from the canal (behind the kid: nothing tall between the camera and the
-                // lane, docs/LEARNINGS.md E10).
+                // The control towers on the banks behind the street, their lights; the footpath's gates a little back from each bank,
+                // their posts at the back of the lane and their arms swinging down ACROSS the path, toward the camera, as a real
+                // bridge's gates cross the road (they used to fall along the street behind the kid, so they read as a fence the kid
+                // walked in front of, and stopped nothing: docs/LEARNINGS.md E15). An arm ends at the lane's front edge (nothing tall
+                // between the camera and the lane, E10), and while it is down a blocker at its post holds the kid and the ball back
+                // from the hinge, where the rising leaf would pass through them.
                 var lights = new System.Collections.Generic.List<Renderer>();
                 var arms = new System.Collections.Generic.List<Transform>();
+                var blocks = new System.Collections.Generic.List<Collider2D>();
+                float armLength = StreetBuilder.PathHalf * 2f + 0.4f;
                 foreach (float bank in new[] { fromX - 1.6f, toX + 1.6f })
                 {
                     if (KitModel(canal, "Florida", "DrawTowerFL", new Vector3(bank, top, StreetBuilder.PathHalf + 1.4f)) == null)
@@ -119,13 +124,31 @@ namespace DribbleToSchool.EditorTools
                     var post = new Vector3(bank + (bank < cx ? -0.8f : 0.8f), top, StreetBuilder.PathHalf + 0.3f);
                     if (KitModel(canal, "Florida", "GatePostFL", post) == null)
                         StreetBuilder.Solid(canal, "GatePost", post + new Vector3(0f, 0.45f, 0f), new Vector3(0.36f, 0.9f, 0.36f), new Color(0.35f, 0.36f, 0.38f));
+                    // (Upright at rest; the drawbridge turns it about its own x, which sends its tip toward the camera, -z.)
                     var armRoot = new GameObject("GateArm");
                     armRoot.transform.SetParent(canal, false);
                     armRoot.transform.position = post + new Vector3(0f, 0.9f, 0f);
-                    armRoot.transform.rotation = Quaternion.Euler(0f, bank < cx ? 90f : -90f, 0f);
-                    if (KitModel(armRoot.transform, "Florida", "GateArmFL", armRoot.transform.position) == null)
-                        Part(armRoot.transform, "Arm", new Vector3(0f, 2.2f, 0f), new Vector3(0.12f, 4.4f, 0.12f), new Color(0.95f, 0.95f, 0.93f));
+                    armRoot.transform.rotation = Quaternion.identity;
+                    float native = KitSize("Florida", "GateArmFL").y;
+                    if (KitModel(armRoot.transform, "Florida", "GateArmFL", armRoot.transform.position, 0f, native > 1f ? armLength / native : 1f) == null)
+                        Part(armRoot.transform, "Arm", new Vector3(0f, armLength * 0.5f, 0f), new Vector3(0.12f, armLength, 0.12f), new Color(0.95f, 0.95f, 0.93f));
                     arms.Add(armRoot.transform);
+                    // The blocker: taller than a double jump reaches, so the way on while the lights flash is to wait. One-way: it
+                    // stops what comes toward the canal from its own side, never what is leaving the bridge (a kid already over when
+                    // the arms fall walks out past the far gate).
+                    var block = new GameObject("GateBlock");
+                    block.transform.SetParent(canal, false);
+                    block.transform.position = new Vector2(post.x, top + 1.3f);
+                    var wallCol = block.AddComponent<BoxCollider2D>();
+                    wallCol.size = new Vector2(0.24f, 2.6f);
+                    wallCol.sharedMaterial = GroundMat;
+                    wallCol.usedByEffector = true;
+                    var oneWay = block.AddComponent<PlatformEffector2D>();
+                    oneWay.useOneWay = true;
+                    oneWay.surfaceArc = 160f;
+                    oneWay.rotationalOffset = bank < cx ? 90f : -90f;     // its face toward the street it guards (left gate: the left)
+                    wallCol.enabled = false;
+                    blocks.Add(wallCol);
                 }
 
                 var bridgeGo = new GameObject("Drawbridge");
@@ -135,6 +158,7 @@ namespace DribbleToSchool.EditorTools
                 bridge.leftLeaf = left;
                 bridge.rightLeaf = right;
                 bridge.arms = arms.ToArray();
+                bridge.gateBlocks = blocks.ToArray();
                 bridge.lights = lights.ToArray();
                 bridge.phaseOffset = phase;
             }
@@ -151,9 +175,11 @@ namespace DribbleToSchool.EditorTools
                 col.size = new Vector2(length, 0.3f);
                 col.offset = new Vector2(toward * length * 0.5f, -0.15f);
                 col.sharedMaterial = GroundMat;
-                // Its deck (the kit's leaf, 2.5 m long, scaled to fit; the right one turned round), or a plain slab.
-                var leaf = KitModel(go.transform, "Florida", "DrawLeafFL", new Vector3(hingeX, top, 0f), toward > 0f ? 0f : 180f);
-                if (leaf != null) leaf.localScale = new Vector3(length / 2.5f, 1f, 1f);
+                // Its deck (the kit's leaf, 2.5 m long, scaled to fit), or a plain slab. The right one is mirrored along its length,
+                // not turned round: turned, its railing came round to the front of the deck, between the camera and the kid
+                // (docs/LEARNINGS.md E10, E15).
+                var leaf = KitModel(go.transform, "Florida", "DrawLeafFL", new Vector3(hingeX, top, 0f));
+                if (leaf != null) leaf.localScale = new Vector3(toward * length / 2.5f, 1f, 1f);
                 else Part(go.transform, "Deck", new Vector3(toward * length * 0.5f, -0.15f, 0f), new Vector3(length, 0.3f, 3.6f), new Color(0.62f, 0.64f, 0.66f));
                 return body;
             }

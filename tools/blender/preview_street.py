@@ -920,16 +920,20 @@ def drawbridge(a, b):
     place('Florida', 'CanalRailFL', a - .35, 0, 8.6, -90); place('Florida', 'CanalRailFL', b + .35, 0, 8.6, 90)
     L = w / 2 - .03
     for hinge, sgn in ((a, 1), (b, -1)):
-        e = place('Florida', 'DrawLeafFL', hinge, 0, 0, 0 if sgn > 0 else 180, stretch=(L / 2.5, 1, 1))
-        if e is not None:       # (both tip up about the hinge: the right one is turned round first)
-            e.rotation_euler = (0, -math.radians(lift), 0 if sgn > 0 else math.pi)
+        e = place('Florida', 'DrawLeafFL', hinge, 0, 0, 0, stretch=(sgn * L / 2.5, 1, 1))
+        if e is not None:       # (both tip up about the hinge: the right one mirrored along its length, its railing still behind)
+            e.rotation_euler = (0, -sgn * math.radians(lift), 0)
     up = lift > 0.5
     for bank in (a - 1.6, b + 1.6):
         place('Florida', 'DrawTowerFL', bank, 0, PATH + 1.4)
         post = bank + (-.8 if bank < cx else .8)
         place('Florida', 'GatePostFL', post, 0, PATH + .3)
-        arm = place('Florida', 'GateArmFL', post, .9, PATH + .3)
-        if arm is not None and up: arm.rotation_euler = (0, math.radians(-90 if bank < cx else 90), 0)
+        # (LevelBuildKit.Drawbridge since v129: the arm falls ACROSS the path toward the camera, cut to end at the lane's front
+        # edge; it used to fall along the street behind the kid)
+        arm_len = PATH * 2 + .4
+        arm_h = size('Florida', 'GateArmFL').z if has('Florida', 'GateArmFL') else 4.2
+        arm = place('Florida', 'GateArmFL', post, .9, PATH + .3, 0, arm_len / max(arm_h, 1.0))
+        if arm is not None and up: arm.rotation_euler = (math.radians(90), 0, 0)
     if w >= 4:
         place('Florida', 'DockFL', a + 1.5, water + .3, 12)
         place('Florida', 'DockFL', b - 1.5, water + .3, 24, 180)
@@ -1349,6 +1353,7 @@ def kamakura_extras():
 
 if '--miami' in args:
     miami(args[args.index('--miami') + 1], args[args.index('--plan') + 1])
+    if canal: drawbridge(*canal)      # (a leg's drawbridge: --canal a:b [--lift degrees], as LevelBuildKit.Drawbridge builds it)
     # set pieces the game's builder places (the arcades, the sweeper...): --extra kit:model:x:y:z[:yaw[:scale]],...
     if '--extra' in args:
         for spec in args[args.index('--extra') + 1].split(','):

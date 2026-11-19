@@ -473,7 +473,8 @@ namespace DribbleToSchool.EditorTools
         static void Build(BuildTarget target, string location, BuildOptions options, string[] extraDefines = null)
         {
             string[] scenes = EditorBuildSettings.scenes.Where(s => s.enabled).Select(s => s.path).ToArray();
-            if (scenes.Length == 0)
+            // Levels built by an older version of the code are rebuilt first: a build must never ship them (LEARNINGS A17).
+            if (scenes.Length == 0 || GeneratedContent.OutOfDate)
             {
                 GeneratedContent.BuildAll();
                 scenes = EditorBuildSettings.scenes.Where(s => s.enabled).Select(s => s.path).ToArray();

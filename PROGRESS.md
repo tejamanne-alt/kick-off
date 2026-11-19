@@ -1991,6 +1991,48 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
 - **Not run in Unity:** rebuilding the levels (the generated content's version is 128, so it rebuilds on open and deletes the
   three old scenes and the renamed ones' old copies), the save upgrade on a real save, the map screen.
 
+## The phone's Florida levels: stale builds stopped, gates, rain, birds, kerbs, puddles (generated content v129)
+
+- **Why.** The user's screenshots of Downpour to School and The Riverwalk: "Lots of issues wrt gates, rain and everything. Run
+  an audit and fix all the issues." (LEARNINGS A17, E15.)
+- **First finding: the phone ran old levels.** "Project: soaked" (removed in v128), the market's English shops, Kamakura's park
+  trees and a red slab for an arcade are the v123 streets. The generated levels were rebuilt only on an editor session's first
+  script load, so a pull with Unity open never rebuilt them, and nothing stopped a build shipping them. Now:
+  - `GeneratedContent.AutoBuild` rebuilds when the code's version is newer, on any script load.
+  - `BuildScripts` rebuilds stale levels first.
+  - `GeneratedContentBuildCheck` fails any other player build while the levels are out of date.
+  - A Florida leg that can't find its Miami district logs an error and keeps the levels out of date.
+- **Gates** (`LevelBuildKit.Drawbridge`, `Hazards/Drawbridge`):
+  - The arms fall across the path toward the camera, ending at the lane's front edge, instead of along the street behind the kid.
+  - While an arm is down, a one-way blocker at its post (2.4 m back from the hinge) stops the kid and the ball coming toward
+    the water. It never shuts in a kid already over.
+  - The right-hand leaf is mirrored, not turned round: turned, its railing stood in front of the lane on every drawbridge.
+  - The coach says to wait at the gate.
+- **Rain** (`World/RainCurtain`, `Hazards/Downpour`):
+  - Streaks fall round the camera, slanted by the wind, splashing on the paving and rippling the puddles, with none under the
+    arcades. It is one mesh, steady between bursts and heavy in them, replacing still streaks that hung in the air.
+  - The light greys and the shadows soften as a burst comes (`WorldLook`).
+  - Out in a burst, the kid runs at 80%: the shelters matter again.
+  - The warning pill sits under the HUD card instead of across it.
+- **Birds:** startled pigeons and the pigeon and crow flocks fly on the black kite's rig painted all over (on the gull's they
+  flew as white gulls). Kamakura's beach flocks are kites.
+- **Florida's low kerbs** (six levels) are raised planting beds, not bare grey blocks.
+- **Puddles** (every city) mirror the street: deep slate water, a sky band on the far side, a soft wet edge.
+- **Cost** (estimates, not measured):
+  - The rain is one draw call of up to about 2,100 vertices rewritten each frame (about 0.1 ms on the CPU) and thin alpha
+    streaks (little overdraw).
+  - The storm light rewrites a dozen shader globals while it changes.
+  - The gates' blockers are two colliders per bridge.
+  - Check on the Nord CE5: Downpour to School in a burst.
+- **Checked:**
+  - compile (no new error kinds in any `#if` set);
+  - `unity_api_check` 6000.6 and 6000.7;
+  - the coin audit;
+  - the drawbridge through the game camera with its leaves down and up (`preview_street.py --miami FL2-2 --canal 20:25
+    --lift 70`).
+- **Not run in Unity:** the rain, the storm light and the gates in play, the build check, the phone. Rebuild the levels in
+  Unity (it now does so by itself when it sees v129) and build again.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

@@ -58,7 +58,7 @@ namespace DribbleToSchool.Localization
                 { "coach.iguana.title", "Iguana: let it run" },
                 { "coach.iguana.text", "Come close and the iguana dashes off along the path. Wait for it to go, or chip the ball over it." },
                 { "coach.downpour.title", "Cloudburst: take cover" },
-                { "coach.downpour.text", "When the warning shows, get under an arcade or an awning until the burst passes." },
+                { "coach.downpour.text", "When the warning shows, get under an arcade or an awning until the burst passes: out in it, the rain slows you down." },
                 { "coach.sweeper.title", "Street sweeper: ride its back" },
                 { "coach.sweeper.text", "Chip the ball onto the sweeper's flat back (drag up from KICK), JUMP on after it and ride. Or let it pass." },
             };
@@ -114,7 +114,7 @@ namespace DribbleToSchool.Localization
                 { "coach.iguana.title", "Iguana: déjala correr" },
                 { "coach.iguana.text", "Al acercarte, la iguana sale corriendo por el camino. Espera a que se vaya o pasa el balón por encima." },
                 { "coach.downpour.title", "Aguacero: a cubierto" },
-                { "coach.downpour.text", "Cuando salga el aviso, ponte bajo un soportal o un toldo hasta que pase." },
+                { "coach.downpour.text", "Cuando salga el aviso, ponte bajo un soportal o un toldo hasta que pase: bajo la lluvia vas más lento." },
                 { "coach.sweeper.title", "Barredora: súbete detrás" },
                 { "coach.sweeper.text", "Pasa el balón a la parte plana de la barredora (arrastra hacia arriba desde CHUTA), SALTA detrás y viaja. O déjala pasar." },
             };

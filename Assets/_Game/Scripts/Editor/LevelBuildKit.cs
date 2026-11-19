@@ -1820,9 +1820,13 @@ namespace DribbleToSchool.EditorTools
                 dog.legs = legs.ToArray();
             }
 
+            /// <summary>The puddles laid so far (x from, x to): the rain ripples them (World/RainCurtain).</summary>
+            public readonly List<Vector2> PuddleSpans = new List<Vector2>();
+
             /// <summary>A puddle: the ball drags, the kid wades.</summary>
             public void Puddle(float fromX, float toX, float groundTop = 0f)
             {
+                PuddleSpans.Add(new Vector2(fromX, toX));
                 SlowArea("Puddle", fromX, toX, groundTop, new Color(0.45f, 0.65f, 0.9f, 0.85f), 2.5f, 0.6f);
             }
 
@@ -2996,7 +3000,7 @@ namespace DribbleToSchool.EditorTools
             /// a boulder or two on the beach; on the home street a planter, the wheelie bins out for collection or (low) a
             /// flower bed's edging; at the market a planter, a stack of fruit crates or drinks crates, or (low) two pallets;
             /// in the park a clipped hedge or an old block wall; on the building site pallets or the stone step. Florida's are Miami's
-            /// (bollards, hydrants, planters). False if the kit hasn't got the model, or for the looks drawn procedurally (the low stone step).
+            /// (bollards, hydrants, planters; a low one a raised planting bed). False if the kit hasn't got the model, or for the looks drawn procedurally (the low stone step).
             /// </summary>
             bool ObstacleModel(Transform parent, Vector2 center, Vector2 size, int seed)
             {
@@ -3006,7 +3010,9 @@ namespace DribbleToSchool.EditorTools
                 {
                     // Miami's own street things, not Kamakura's bins and crates: a pair of iron bollards (on the river and the bay,
                     // mooring bollards), a hydrant or a concrete planter; a park's are its clipped hedges, as anywhere.
-                    if (h < 0.4f) return false;     // the low concrete kerb (procedural)
+                    // A low one is a raised planting bed's concrete kerb, its flowers growing out of it (it was a bare grey block on
+                    // the sidewalk the coach called a kerb: docs/LEARNINGS.md E15).
+                    if (h < 0.4f) return FlowerBed(parent, center, size);
                     if (h <= 0.6f) return FillWith(parent, "Miami", "BollardMIA", center, size, 1f, 2, 1, 0f, null);
                     if (h <= 1.1f && Chapter != 5)
                     {

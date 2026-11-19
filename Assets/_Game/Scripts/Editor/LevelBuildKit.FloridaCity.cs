@@ -211,28 +211,22 @@ namespace DribbleToSchool.EditorTools
                 var rain = go.AddComponent<Hazards.Downpour>();
                 rain.clearsAtX = clearsAtX;
                 rain.phaseOffset = phase;
-                rain.heavyRain = RainSheet(go.transform, "HeavyRain", fromX, clearsAtX, 0.55f, 0.5f);
-                rain.lightRain = RainSheet(go.transform, "LightRain", fromX, clearsAtX, 0.25f, 1.4f);
+                // The rain: streaks falling round the camera, splashes and puddle ripples, in one mesh (World/RainCurtain).
+                var curtainGo = new GameObject("Rain");
+                curtainGo.transform.SetParent(go.transform, false);
+                var curtain = curtainGo.AddComponent<World.RainCurtain>();
+                curtain.groundY = 0f;
+                curtain.clearsAtX = clearsAtX;
+                curtain.zNear = StreetBuilder.RoadNear - 0.9f;      // (from the road's near half back: closer streaks would be blurs)
+                curtain.zFar = StreetBuilder.PathHalf + 0.25f;
+                curtain.shelterZFrom = -StreetBuilder.PathHalf - 0.2f;
+                curtain.puddleZ = StreetBuilder.PathHalf - 0.15f;
+                curtainGo.GetComponent<MeshRenderer>().sharedMaterial = Art.wire;
+                rain.rain = curtain;
                 pendingDownpour = rain;
             }
 
             Hazards.Downpour pendingDownpour;
-
-            /// <summary>Streaks of rain over a stretch of street: thin see-through quads, slanted by the wind.</summary>
-            GameObject RainSheet(Transform parent, string name, float fromX, float toX, float alpha, float spacing)
-            {
-                var sheet = new GameObject(name);
-                sheet.transform.SetParent(parent, false);
-                var rng = new System.Random(Mathf.RoundToInt(fromX * 7f) + name.Length);
-                for (float x = fromX; x < toX; x += spacing)
-                {
-                    float y = 1f + (float)rng.NextDouble() * 5f;
-                    var streak = FlatDecor("Streak", new Vector2(x + (float)rng.NextDouble() * spacing, y), new Vector2(0.03f, 0.9f), new Color(0.82f, 0.88f, 0.95f, alpha));
-                    streak.transform.SetParent(sheet.transform, true);
-                    streak.transform.rotation = Quaternion.Euler(0f, 0f, -12f);
-                }
-                return sheet;
-            }
 
             /// <summary>
             /// A street sweeper truck working slowly up and down the kerb lane from <paramref name="fromX"/> to <paramref name="toX"/>:
@@ -262,10 +256,18 @@ namespace DribbleToSchool.EditorTools
                 Part(go.transform, "Brush", new Vector3(-width * 0.3f, -0.6f, -0.6f), new Vector3(0.6f, 0.3f, 0.6f), new Color(0.3f, 0.3f, 0.32f));
             }
 
-            /// <summary>The finishing touches a Florida layout asks for once it has laid everything (the downpour's shelters).</summary>
+            /// <summary>The finishing touches a Florida layout asks for once it has laid everything (the downpour's shelters and puddles).</summary>
             public void FloridaDone()
             {
-                if (pendingDownpour != null) pendingDownpour.shelters = shelters.ToArray();
+                if (pendingDownpour != null)
+                {
+                    pendingDownpour.shelters = shelters.ToArray();
+                    if (pendingDownpour.rain != null)
+                    {
+                        pendingDownpour.rain.shelters = shelters.ToArray();
+                        pendingDownpour.rain.puddles = PuddleSpans.ToArray();
+                    }
+                }
                 pendingDownpour = null;
             }
         }

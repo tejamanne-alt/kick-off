@@ -22,7 +22,7 @@ namespace DribbleToSchool.EditorTools
     public static class GeneratedContent
     {
         /// <summary>Bump when layouts or the scene rig change so scenes regenerate.</summary>
-        public const int Version = 128;   // 128: no mini-games: Florida's Metrobus, Uncle Rey's Boat and Drugstore legs removed (and the science project's errand with them), its routes three dribbles each, the legs after them renumbered (FL1-3 Brickell Avenue is FL1-2, FL1-4 FL1-3, FL2-3 The Riverwalk FL2-2, FL2-5 Downpour FL2-3: their scenes renamed); 127: Kamakura's home street: the road's lines, drains and manholes on its flush road, not 14 cm under it (docs/LEARNINGS.md E13); 126: Kamakura's own look (the user's brief, docs/KAMAKURA_BRIEF.md: StreetBuilder.Kamakura, the Kamakura and KamakuraStreet kits, Japan's trees, the black kite and the crow): timber-and-mortar homes behind block walls and board fences, chapter 1's green walking strip, the shop lane's noren and lanterns, black pines on the beach, the tram line in chapter 4, the park as a temple ground, low wooded hills; the Florida walk signal's lights found; 125: nothing of Kamakura's in Florida's legs: the slide-unders, the work zone, the crates, the crossing, the signs, the checkpoints, the fountain and the pelican are the Miami kit's (and the Animals kit's Pelican), Riverside Street (FL2-1) is a district of the plan, the people mover's ride is built from the kit, the walkers wear Miami's clothes, Florida's stops have their people, the school is Bayside Elementary; 124: Florida's legs in Miami's own districts (StreetBuilder.Miami from Art/Models/Miami/MiamiDistricts.json, the Miami kit): Little Havana, Brickell, the bayfront, the river, downtown's arcades, the Underline, Biscayne, Museum Park; the Metrobus is the kit's bus with its near side cut away as the kid boards, the street sliding past from Calle Ocho into Brickell; the scooters, chickens, iguanas, domino table, arcades, sweeper, Uncle Rey's boat and the drugstore are kit models; Florida's stops and obstacles are Miami's; the legs' looks moved off the beach and the home seam; 123: Florida's own routes (docs/CITIES.md): FL1 Calle Ocho Bus, FL2 The River Way, FL3 Under the Line, twelve legs FL1-1 to FL3-3 (nine streets with Florida's own play: chickens, iguanas, scooters, pelicans, arcades in a downpour, the street sweeper; three mini-games: the Metrobus, Uncle Rey's boat, the drugstore) and the people mover's ride scene (Ride_peopleMover); the original town's <scene>_FL copies are no longer built, and its layouts lose their Florida branches; 122: the five cities (Progression/Cities): California's <scene>_CA scenes are no longer built (it is not one of the five), and Florida's scenes are built in Florida's climate (a warm 5,000 K sun, teal shade, humid air: CityClimate); 121: the Florida add-on's Home Street: chapter 1's levels each get a <scene>_FL scene (ranch houses and Old Florida cottages, live oaks with Spanish moss, the canal's drawbridge, the lawn sprinklers, the golf cart, the afternoon storm), and every Florida level's home street is Florida's; 120: a WaterSplash trigger at the surface of every trench, stream and tidal channel (the splash shows as things go in, not two metres under the water), the characters rebuilt (large two-colour triangles split, pale stripes and specks settled into their garment or the hair); 119: every model character's rig carries ground points measured from its mesh (CharacterRig keeps them above the ground: no foot or leg through the pavement in a slide, a kick or a crouch), the slide's back knee up with its foot planted, the low flower obstacle a raised bed with a stone kerb, and every character rebuilt with its outfit parts settled (no white or stray patches in a recoloured outfit); 118: the Fields, the Sea and the menu's field cast no shadows, and the distant hills and the clouds receive none (none of it could show: docs/LEARNINGS.md B8); 117: the Florida add-on: chapter 3's levels each get a <scene>_FL scene (the Florida kit's beach town on seawall terraces, Seagrove High at the end), the Coast and Florida kits' palms, Florida's music; 116: white tears at hems, belts and hairlines absorbed too (absorb_tears's second test); 115: the torso on the rig (Hips, Spine, Chest: CharacterRig.Torso turns, sways and breathes the middle of the body); 114: every character's head rigid on the Head bone (faces no longer fold as the head nods), the face shaded round, white tears absorbed into their garments, Mia's right eye mirrored from her left; 113: the kids keep their own scanned faces, with Max's finish (face_ink.py; the drawn faces of 111 were rejected); 112: the kids' and bags' meshes out of the scenes (Resources/Cast, LazyRenderer); 111: polished characters (welded, 32k / 14k triangles, illustrated kids' faces), cameras without HDR or MSAA, the player's thicker outline
+        public const int Version = 129;   // 129: the drawbridges' gates fall across the path and stop the kid and the ball (one-way, away from the hinge); the downpour's rain falls (World/RainCurtain: streaks, splashes, puddle ripples, nothing under the arcades), the light darkens with each burst and the kid runs slower out in one; pigeons and crows fly as themselves (the kite's rig, painted), and Kamakura's beach flocks are kites; Florida's low kerbs are planting beds; puddles mirror the street; 128: no mini-games: Florida's Metrobus, Uncle Rey's Boat and Drugstore legs removed (and the science project's errand with them), its routes three dribbles each, the legs after them renumbered (FL1-3 Brickell Avenue is FL1-2, FL1-4 FL1-3, FL2-3 The Riverwalk FL2-2, FL2-5 Downpour FL2-3: their scenes renamed); 127: Kamakura's home street: the road's lines, drains and manholes on its flush road, not 14 cm under it (docs/LEARNINGS.md E13); 126: Kamakura's own look (the user's brief, docs/KAMAKURA_BRIEF.md: StreetBuilder.Kamakura, the Kamakura and KamakuraStreet kits, Japan's trees, the black kite and the crow): timber-and-mortar homes behind block walls and board fences, chapter 1's green walking strip, the shop lane's noren and lanterns, black pines on the beach, the tram line in chapter 4, the park as a temple ground, low wooded hills; the Florida walk signal's lights found; 125: nothing of Kamakura's in Florida's legs: the slide-unders, the work zone, the crates, the crossing, the signs, the checkpoints, the fountain and the pelican are the Miami kit's (and the Animals kit's Pelican), Riverside Street (FL2-1) is a district of the plan, the people mover's ride is built from the kit, the walkers wear Miami's clothes, Florida's stops have their people, the school is Bayside Elementary; 124: Florida's legs in Miami's own districts (StreetBuilder.Miami from Art/Models/Miami/MiamiDistricts.json, the Miami kit): Little Havana, Brickell, the bayfront, the river, downtown's arcades, the Underline, Biscayne, Museum Park; the Metrobus is the kit's bus with its near side cut away as the kid boards, the street sliding past from Calle Ocho into Brickell; the scooters, chickens, iguanas, domino table, arcades, sweeper, Uncle Rey's boat and the drugstore are kit models; Florida's stops and obstacles are Miami's; the legs' looks moved off the beach and the home seam; 123: Florida's own routes (docs/CITIES.md): FL1 Calle Ocho Bus, FL2 The River Way, FL3 Under the Line, twelve legs FL1-1 to FL3-3 (nine streets with Florida's own play: chickens, iguanas, scooters, pelicans, arcades in a downpour, the street sweeper; three mini-games: the Metrobus, Uncle Rey's boat, the drugstore) and the people mover's ride scene (Ride_peopleMover); the original town's <scene>_FL copies are no longer built, and its layouts lose their Florida branches; 122: the five cities (Progression/Cities): California's <scene>_CA scenes are no longer built (it is not one of the five), and Florida's scenes are built in Florida's climate (a warm 5,000 K sun, teal shade, humid air: CityClimate); 121: the Florida add-on's Home Street: chapter 1's levels each get a <scene>_FL scene (ranch houses and Old Florida cottages, live oaks with Spanish moss, the canal's drawbridge, the lawn sprinklers, the golf cart, the afternoon storm), and every Florida level's home street is Florida's; 120: a WaterSplash trigger at the surface of every trench, stream and tidal channel (the splash shows as things go in, not two metres under the water), the characters rebuilt (large two-colour triangles split, pale stripes and specks settled into their garment or the hair); 119: every model character's rig carries ground points measured from its mesh (CharacterRig keeps them above the ground: no foot or leg through the pavement in a slide, a kick or a crouch), the slide's back knee up with its foot planted, the low flower obstacle a raised bed with a stone kerb, and every character rebuilt with its outfit parts settled (no white or stray patches in a recoloured outfit); 118: the Fields, the Sea and the menu's field cast no shadows, and the distant hills and the clouds receive none (none of it could show: docs/LEARNINGS.md B8); 117: the Florida add-on: chapter 3's levels each get a <scene>_FL scene (the Florida kit's beach town on seawall terraces, Seagrove High at the end), the Coast and Florida kits' palms, Florida's music; 116: white tears at hems, belts and hairlines absorbed too (absorb_tears's second test); 115: the torso on the rig (Hips, Spine, Chest: CharacterRig.Torso turns, sways and breathes the middle of the body); 114: every character's head rigid on the Head bone (faces no longer fold as the head nods), the face shaded round, white tears absorbed into their garments, Mia's right eye mirrored from her left; 113: the kids keep their own scanned faces, with Max's finish (face_ink.py; the drawn faces of 111 were rejected); 112: the kids' and bags' meshes out of the scenes (Resources/Cast, LazyRenderer); 111: polished characters (welded, 32k / 14k triangles, illustrated kids' faces), cameras without HDR or MSAA, the player's thicker outline
 
         const string ScenesDir = LevelBuildKit.Root + "/Scenes";
         const string LevelsDir = LevelBuildKit.Root + "/Levels";
@@ -30,7 +30,8 @@ namespace DribbleToSchool.EditorTools
         const string TestTrackScene = ScenesDir + "/Phase1_TestTrack.unity";
         const string FrontEndScene = ScenesDir + "/" + FrontEndController.SceneName + ".unity";
         const string CosmeticsDir = LevelBuildKit.Root + "/Cosmetics";
-        const string AutoBuildKey = "DribbleToSchool.AutoBuildChecked";
+        /// <summary>The generated content's version this editor session last checked (and built, if it had to).</summary>
+        const string AutoBuildKey = "DribbleToSchool.AutoBuildCheckedVersion";
 
         struct LevelSpec
         {
@@ -190,14 +191,30 @@ namespace DribbleToSchool.EditorTools
 
         static void AutoBuild()
         {
-            if (SessionState.GetBool(AutoBuildKey, false)) return;
-            SessionState.SetBool(AutoBuildKey, true);
-            if (EditorApplication.isPlayingOrWillChangePlaymode) return;
-            if (ReadVersion() >= Version && AllScenesExist()) return;
+            // Once per version in an editor session, not once per session: a pull with the editor open recompiles the scripts
+            // and comes back here with a newer Version, and the levels must be rebuilt then. Checked only on the first load,
+            // the phone was built from levels several versions old (docs/LEARNINGS.md A17).
+            if (SessionState.GetInt(AutoBuildKey, 0) >= Version) return;
+            if (EditorApplication.isPlayingOrWillChangePlaymode || EditorApplication.isCompiling || EditorApplication.isUpdating)
+            {
+                EditorApplication.delayCall += AutoBuild;
+                return;
+            }
+            SessionState.SetInt(AutoBuildKey, Version);
+            if (!OutOfDate) return;
 
-            Debug.Log("[Kick Off] Generated content is missing or out of date (v" + Version + "). Building levels...");
+            Debug.Log("[Kick Off] Generated content is missing or out of date (built v" + ReadVersion() + ", the code is v" + Version + "). Building levels...");
             BuildAll();
         }
+
+        /// <summary>
+        /// The levels on disk were built by an older version of this code (or some are missing): a player built now would ship
+        /// them as they were. BuildScripts rebuilds them first, and Unity's own Build button refuses (GeneratedContentBuildCheck).
+        /// </summary>
+        public static bool OutOfDate { get { return ReadVersion() < Version || !AllScenesExist(); } }
+
+        /// <summary>The version the levels on disk were built by (0 if never).</summary>
+        public static int BuiltVersion { get { return ReadVersion(); } }
 
         [MenuItem("Kick Off/Rebuild All Levels")]
         static void RebuildFromMenu()
@@ -343,7 +360,15 @@ namespace DribbleToSchool.EditorTools
 
             EditorBuildSettings.scenes = buildScenes.ToArray();
             BuildScripts.ApplyPlayerSettings();
-            WriteVersion();
+            // A Florida leg can only be built in its own district (the Miami kit and its plan): without them it would be dressed
+            // in a Kamakura chapter's street. Such a build is not finished, so it stays out of date (and can't ship) until the
+            // kit is imported and the levels are built again (docs/LEARNINGS.md A17).
+            var bare = new List<string>();
+            foreach (var spec in Levels)
+                if (spec.IsFlorida && !StreetBuilder.HasMiamiDistrict(spec.id)) bare.Add(spec.id);
+            if (bare.Count == 0) WriteVersion();
+            else Debug.LogError("[Kick Off] " + string.Join(", ", bare.ToArray()) + " built without their Miami district (is the Miami kit imported, and "
+                + StreetBuilder.MiamiPlanFile + " there?). The levels stay out of date: fix that and rebuild (Kick Off > Rebuild All Levels).");
             AssetDatabase.SaveAssets();
 
             EditorSceneManager.OpenScene(FrontEndScene);

@@ -750,6 +750,9 @@ namespace DribbleToSchool.EditorTools
                 MiamiScenery(track, root, x0, x1, ch * 173 + Mathf.RoundToInt(x0) + levelSalt);
                 return;
             }
+            if (LevelBuildKit.Florida)
+                Debug.LogError("[Kick Off] " + LevelBuildKit.LevelId + " is one of Florida's legs but its Miami district can't be built (the Miami kit or "
+                    + MiamiPlanFile + " is missing): it falls back to a Kamakura street.");
 
             switch (ch)
             {
@@ -1249,7 +1252,6 @@ namespace DribbleToSchool.EditorTools
             if (!LevelBuildKit.HasKitModel("Animals", "Pigeon")) return;
             int ch = LevelBuildKit.Chapter;
             float skip;
-            Color pigeonWing = new Color(0.55f, 0.58f, 0.66f), pigeonBeak = new Color(0.32f, 0.3f, 0.32f);
             if (KM) KamakuraCrows(track, new System.Random(Mathf.RoundToInt(x0 * 3f) + 433), x0, x1, ch);
             switch (ch)
             {
@@ -1266,7 +1268,7 @@ namespace DribbleToSchool.EditorTools
                             // On the footpath: only where there is footpath (not over a hole in it).
                             Vector3 span;
                             if (!SpanAt(track, px, out span)) continue;
-                            var pigeon = Bird("Pigeon", 1f, 0.7f, pigeonWing, pigeonBeak, px, span.z, pz, yaw, rng);
+                            var pigeon = FlyingPigeon(px, span.z, pz, yaw, rng);
                             if (pigeon == null) continue;
                             pigeon.roam = 0.7f;
                             pigeon.zMin = 0.85f;
@@ -1446,24 +1448,47 @@ namespace DribbleToSchool.EditorTools
         static void SkyFlocks(System.Random rng)
         {
             int ch = LevelBuildKit.Chapter;
+            bool kite = LevelBuildKit.HasKitModel("Animals", "BlackKite");
             if (ch == 3)
             {
-                Flock("GullFlock", rng, Rand(rng, 3f, 6f), 1f, null, null, 6f, 20f, 0.25f, 0.7f, 3f, 5f, 4f, 14f, 1.6f);
-                Flock("GullFlock", rng, Rand(rng, 2f, 4f), 1f, null, null, 12f, 28f, 0.45f, 0.85f, 2.5f, 4f, 8f, 20f, 1.8f);
+                // Kamakura's coast is the black kites' (wheeling high); anywhere else, gulls.
+                string bird = KM && kite ? "BlackKite" : "Seagull";
+                Flock("GullFlock", rng, Rand(rng, 3f, 6f), 1f, null, null, 6f, 20f, 0.25f, 0.7f, 3f, 5f, 4f, 14f, 1.6f, bird);
+                Flock("GullFlock", rng, Rand(rng, 2f, 4f), 1f, null, null, 12f, 28f, 0.45f, 0.85f, 2.5f, 4f, 8f, 20f, 1.8f, bird);
                 return;
             }
             // Over the footpath and the road, in front of the shopfronts and houses (they start at
-            // PropertyZ), the poles' wires and the park's trees, high in the view.
-            Color pigeon = new Color(0.55f, 0.58f, 0.66f), crow = new Color(0.2f, 0.2f, 0.24f), beak = new Color(0.3f, 0.28f, 0.3f);
+            // PropertyZ), the poles' wires and the park's trees, high in the view. Pigeons and crows fly on the kite's rig, its whole
+            // body painted (the gull's body is white whatever its wings are painted: they flew as gulls, docs/LEARNINGS.md E15).
             bool park = ch == 5;
+            if (kite)
+            {
+                Flock("PigeonFlock", rng, Rand(rng, 4f, 7f), PigeonKiteScale, PigeonBody, PigeonPale, park ? 1f : -1.2f, park ? 3f : 1.2f, 0.6f, 0.88f, 4f, 6.5f, 6f, 18f, 0.9f, "BlackKite");
+                Flock("CrowFlock", rng, Rand(rng, 2f, 4f), 0.5f, CrowBody, CrowBody, park ? 1.5f : -0.8f, park ? 3.5f : 1.4f, 0.68f, 0.92f, 3f, 4.5f, 12f, 28f, 1.3f, "BlackKite");
+                return;
+            }
+            Color pigeon = new Color(0.55f, 0.58f, 0.66f), crow = new Color(0.2f, 0.2f, 0.24f), beak = new Color(0.3f, 0.28f, 0.3f);
             Flock("PigeonFlock", rng, Rand(rng, 4f, 7f), 0.7f, pigeon, beak, park ? 1f : -1.2f, park ? 3f : 1.2f, 0.6f, 0.88f, 4f, 6.5f, 6f, 18f, 0.9f);
             Flock("CrowFlock", rng, Rand(rng, 2f, 4f), 0.85f, crow, crow, park ? 1.5f : -0.8f, park ? 3.5f : 1.4f, 0.68f, 0.92f, 3f, 4.5f, 12f, 28f, 1.3f);
         }
 
-        static void Flock(string name, System.Random rng, float birds, float scale, Color? wing, Color? beak, float zMin, float zMax,
-            float heightMin, float heightMax, float speedMin, float speedMax, float gapMin, float gapMax, float spacing)
+        // A pigeon in flight on the kite's rig: blue-grey all over, paler on the wing, about a pigeon's 65 cm span.
+        static readonly Color PigeonBody = new Color(0.47f, 0.5f, 0.57f), PigeonPale = new Color(0.66f, 0.68f, 0.73f);
+        static readonly Color CrowBody = new Color(0.09f, 0.09f, 0.11f);
+        const float PigeonKiteScale = 0.43f;
+
+        /// <summary>A pigeon on the footpath that flies off as a grey pigeon (the kite's rig), or on the gull's without the kite.</summary>
+        static GroundBird FlyingPigeon(float x, float y, float z, float yaw, System.Random rng)
         {
-            if (!LevelBuildKit.HasKitModel("Animals", "Seagull")) return;
+            if (LevelBuildKit.HasKitModel("Animals", "BlackKite"))
+                return Bird("Pigeon", 1f, PigeonKiteScale, PigeonBody, PigeonPale, x, y, z, yaw, rng, "BlackKite");
+            return Bird("Pigeon", 1f, 0.7f, new Color(0.55f, 0.58f, 0.66f), new Color(0.32f, 0.3f, 0.32f), x, y, z, yaw, rng);
+        }
+
+        static void Flock(string name, System.Random rng, float birds, float scale, Color? wing, Color? beak, float zMin, float zMax,
+            float heightMin, float heightMax, float speedMin, float speedMax, float gapMin, float gapMax, float spacing, string model = "Seagull")
+        {
+            if (!LevelBuildKit.HasKitModel("Animals", model)) return;
             var root = new GameObject(name).transform;
             root.SetParent(critters, false);
             int n = Mathf.Max(1, Mathf.RoundToInt(birds));
@@ -1471,7 +1496,7 @@ namespace DribbleToSchool.EditorTools
             var wings = new List<AmbientAgent.Part>();
             for (int i = 0; i < n; i++)
             {
-                var bird = LevelBuildKit.KitModel(root, "Animals", "Seagull", new Vector3(0f, -100f, 0f), 0f, scale * Rand(rng, 0.9f, 1.1f), wing, beak, null, false);
+                var bird = LevelBuildKit.KitModel(root, "Animals", model, new Vector3(0f, -100f, 0f), 0f, scale * Rand(rng, 0.9f, 1.1f), wing, beak, null, false);
                 if (bird == null) continue;
                 bird.gameObject.SetActive(false);
                 models.Add(bird);
