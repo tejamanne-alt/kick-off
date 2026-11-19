@@ -22,7 +22,7 @@ namespace DribbleToSchool.EditorTools
     public static class GeneratedContent
     {
         /// <summary>Bump when layouts or the scene rig change so scenes regenerate.</summary>
-        public const int Version = 127;   // 127: Kamakura's home street: the road's lines, drains and manholes on its flush road, not 14 cm under it (docs/LEARNINGS.md E13); 126: Kamakura's own look (the user's brief, docs/KAMAKURA_BRIEF.md: StreetBuilder.Kamakura, the Kamakura and KamakuraStreet kits, Japan's trees, the black kite and the crow): timber-and-mortar homes behind block walls and board fences, chapter 1's green walking strip, the shop lane's noren and lanterns, black pines on the beach, the tram line in chapter 4, the park as a temple ground, low wooded hills; the Florida walk signal's lights found; 125: nothing of Kamakura's in Florida's legs: the slide-unders, the work zone, the crates, the crossing, the signs, the checkpoints, the fountain and the pelican are the Miami kit's (and the Animals kit's Pelican), Riverside Street (FL2-1) is a district of the plan, the people mover's ride is built from the kit, the walkers wear Miami's clothes, Florida's stops have their people, the school is Bayside Elementary; 124: Florida's legs in Miami's own districts (StreetBuilder.Miami from Art/Models/Miami/MiamiDistricts.json, the Miami kit): Little Havana, Brickell, the bayfront, the river, downtown's arcades, the Underline, Biscayne, Museum Park; the Metrobus is the kit's bus with its near side cut away as the kid boards, the street sliding past from Calle Ocho into Brickell; the scooters, chickens, iguanas, domino table, arcades, sweeper, Uncle Rey's boat and the drugstore are kit models; Florida's stops and obstacles are Miami's; the legs' looks moved off the beach and the home seam; 123: Florida's own routes (docs/CITIES.md): FL1 Calle Ocho Bus, FL2 The River Way, FL3 Under the Line, twelve legs FL1-1 to FL3-3 (nine streets with Florida's own play: chickens, iguanas, scooters, pelicans, arcades in a downpour, the street sweeper; three mini-games: the Metrobus, Uncle Rey's boat, the drugstore) and the people mover's ride scene (Ride_peopleMover); the original town's <scene>_FL copies are no longer built, and its layouts lose their Florida branches; 122: the five cities (Progression/Cities): California's <scene>_CA scenes are no longer built (it is not one of the five), and Florida's scenes are built in Florida's climate (a warm 5,000 K sun, teal shade, humid air: CityClimate); 121: the Florida add-on's Home Street: chapter 1's levels each get a <scene>_FL scene (ranch houses and Old Florida cottages, live oaks with Spanish moss, the canal's drawbridge, the lawn sprinklers, the golf cart, the afternoon storm), and every Florida level's home street is Florida's; 120: a WaterSplash trigger at the surface of every trench, stream and tidal channel (the splash shows as things go in, not two metres under the water), the characters rebuilt (large two-colour triangles split, pale stripes and specks settled into their garment or the hair); 119: every model character's rig carries ground points measured from its mesh (CharacterRig keeps them above the ground: no foot or leg through the pavement in a slide, a kick or a crouch), the slide's back knee up with its foot planted, the low flower obstacle a raised bed with a stone kerb, and every character rebuilt with its outfit parts settled (no white or stray patches in a recoloured outfit); 118: the Fields, the Sea and the menu's field cast no shadows, and the distant hills and the clouds receive none (none of it could show: docs/LEARNINGS.md B8); 117: the Florida add-on: chapter 3's levels each get a <scene>_FL scene (the Florida kit's beach town on seawall terraces, Seagrove High at the end), the Coast and Florida kits' palms, Florida's music; 116: white tears at hems, belts and hairlines absorbed too (absorb_tears's second test); 115: the torso on the rig (Hips, Spine, Chest: CharacterRig.Torso turns, sways and breathes the middle of the body); 114: every character's head rigid on the Head bone (faces no longer fold as the head nods), the face shaded round, white tears absorbed into their garments, Mia's right eye mirrored from her left; 113: the kids keep their own scanned faces, with Max's finish (face_ink.py; the drawn faces of 111 were rejected); 112: the kids' and bags' meshes out of the scenes (Resources/Cast, LazyRenderer); 111: polished characters (welded, 32k / 14k triangles, illustrated kids' faces), cameras without HDR or MSAA, the player's thicker outline
+        public const int Version = 128;   // 128: no mini-games: Florida's Metrobus, Uncle Rey's Boat and Drugstore legs removed (and the science project's errand with them), its routes three dribbles each, the legs after them renumbered (FL1-3 Brickell Avenue is FL1-2, FL1-4 FL1-3, FL2-3 The Riverwalk FL2-2, FL2-5 Downpour FL2-3: their scenes renamed); 127: Kamakura's home street: the road's lines, drains and manholes on its flush road, not 14 cm under it (docs/LEARNINGS.md E13); 126: Kamakura's own look (the user's brief, docs/KAMAKURA_BRIEF.md: StreetBuilder.Kamakura, the Kamakura and KamakuraStreet kits, Japan's trees, the black kite and the crow): timber-and-mortar homes behind block walls and board fences, chapter 1's green walking strip, the shop lane's noren and lanterns, black pines on the beach, the tram line in chapter 4, the park as a temple ground, low wooded hills; the Florida walk signal's lights found; 125: nothing of Kamakura's in Florida's legs: the slide-unders, the work zone, the crates, the crossing, the signs, the checkpoints, the fountain and the pelican are the Miami kit's (and the Animals kit's Pelican), Riverside Street (FL2-1) is a district of the plan, the people mover's ride is built from the kit, the walkers wear Miami's clothes, Florida's stops have their people, the school is Bayside Elementary; 124: Florida's legs in Miami's own districts (StreetBuilder.Miami from Art/Models/Miami/MiamiDistricts.json, the Miami kit): Little Havana, Brickell, the bayfront, the river, downtown's arcades, the Underline, Biscayne, Museum Park; the Metrobus is the kit's bus with its near side cut away as the kid boards, the street sliding past from Calle Ocho into Brickell; the scooters, chickens, iguanas, domino table, arcades, sweeper, Uncle Rey's boat and the drugstore are kit models; Florida's stops and obstacles are Miami's; the legs' looks moved off the beach and the home seam; 123: Florida's own routes (docs/CITIES.md): FL1 Calle Ocho Bus, FL2 The River Way, FL3 Under the Line, twelve legs FL1-1 to FL3-3 (nine streets with Florida's own play: chickens, iguanas, scooters, pelicans, arcades in a downpour, the street sweeper; three mini-games: the Metrobus, Uncle Rey's boat, the drugstore) and the people mover's ride scene (Ride_peopleMover); the original town's <scene>_FL copies are no longer built, and its layouts lose their Florida branches; 122: the five cities (Progression/Cities): California's <scene>_CA scenes are no longer built (it is not one of the five), and Florida's scenes are built in Florida's climate (a warm 5,000 K sun, teal shade, humid air: CityClimate); 121: the Florida add-on's Home Street: chapter 1's levels each get a <scene>_FL scene (ranch houses and Old Florida cottages, live oaks with Spanish moss, the canal's drawbridge, the lawn sprinklers, the golf cart, the afternoon storm), and every Florida level's home street is Florida's; 120: a WaterSplash trigger at the surface of every trench, stream and tidal channel (the splash shows as things go in, not two metres under the water), the characters rebuilt (large two-colour triangles split, pale stripes and specks settled into their garment or the hair); 119: every model character's rig carries ground points measured from its mesh (CharacterRig keeps them above the ground: no foot or leg through the pavement in a slide, a kick or a crouch), the slide's back knee up with its foot planted, the low flower obstacle a raised bed with a stone kerb, and every character rebuilt with its outfit parts settled (no white or stray patches in a recoloured outfit); 118: the Fields, the Sea and the menu's field cast no shadows, and the distant hills and the clouds receive none (none of it could show: docs/LEARNINGS.md B8); 117: the Florida add-on: chapter 3's levels each get a <scene>_FL scene (the Florida kit's beach town on seawall terraces, Seagrove High at the end), the Coast and Florida kits' palms, Florida's music; 116: white tears at hems, belts and hairlines absorbed too (absorb_tears's second test); 115: the torso on the rig (Hips, Spine, Chest: CharacterRig.Torso turns, sways and breathes the middle of the body); 114: every character's head rigid on the Head bone (faces no longer fold as the head nods), the face shaded round, white tears absorbed into their garments, Mia's right eye mirrored from her left; 113: the kids keep their own scanned faces, with Max's finish (face_ink.py; the drawn faces of 111 were rejected); 112: the kids' and bags' meshes out of the scenes (Resources/Cast, LazyRenderer); 111: polished characters (welded, 32k / 14k triangles, illustrated kids' faces), cameras without HDR or MSAA, the player's thicker outline
 
         const string ScenesDir = LevelBuildKit.Root + "/Scenes";
         const string LevelsDir = LevelBuildKit.Root + "/Levels";
@@ -44,8 +44,6 @@ namespace DribbleToSchool.EditorTools
             public string city;
             /// <summary>The street look (1 to 5: the chapter whose street, mood and kit the builder dresses it in).</summary>
             public int look;
-            /// <summary>A leg played as a mini-game (its objective decides the stars; its time counts in the trip).</summary>
-            public bool miniGame;
 
             public LevelSpec(int chapter, string id, string name, string scene, float bell, int streak, Action<TrackBuilder> layout)
             {
@@ -54,7 +52,6 @@ namespace DribbleToSchool.EditorTools
                 challenge = false;
                 city = Progression.Cities.KamakuraId;
                 look = chapter;
-                miniGame = false;
             }
 
             /// <summary>
@@ -66,14 +63,6 @@ namespace DribbleToSchool.EditorTools
                 var spec = new LevelSpec(RouteTable.FloridaChapter, id, name, scene, bell, streak, layout);
                 spec.city = Progression.Cities.FloridaId;
                 spec.look = look;
-                return spec;
-            }
-
-            /// <summary>One of Florida's legs played as a mini-game: <paramref name="bell"/> is its target time, as a street leg's is.</summary>
-            public static LevelSpec FloridaMiniGame(string id, string name, string scene, int look, float bell, Action<TrackBuilder> layout)
-            {
-                var spec = Florida(id, name, scene, look, bell, 0, layout);
-                spec.miniGame = true;
                 return spec;
             }
 
@@ -139,17 +128,14 @@ namespace DribbleToSchool.EditorTools
             // Each leg's street is its own district (StreetBuilder.Miami, from Art/Models/Miami/MiamiDistricts.json); the look is only
             // the light and the ground's rules: the legs that start at home look as the home street does (no seam into another
             // chapter's street), and none is the beach's (its sand and tides are not Miami's river or bay).
-            // FL1 Calle Ocho Bus
+            // FL1 Calle Ocho Bus (the bus from Calle Ocho to Brickell Avenue is not played: FL1-2 starts at the stop where it's left)
             LevelSpec.Florida("FL1-1", "Little Havana Morning", "FL1-1_LittleHavana", 1, Bell(70f), 4, FloridaLevels.LittleHavana),
-            LevelSpec.FloridaMiniGame("FL1-2", "The Metrobus", "FL1-2_Metrobus", 1, 60f, FloridaLevels.Metrobus),
-            LevelSpec.Florida("FL1-3", "Brickell Avenue", "FL1-3_BrickellAvenue", 4, Bell(80f), 5, FloridaLevels.BrickellAvenue),
-            LevelSpec.Florida("FL1-4", "Bayfront to School", "FL1-4_Bayfront", 5, Bell(80f), 5, FloridaLevels.Bayfront),
+            LevelSpec.Florida("FL1-2", "Brickell Avenue", "FL1-2_BrickellAvenue", 4, Bell(80f), 5, FloridaLevels.BrickellAvenue),
+            LevelSpec.Florida("FL1-3", "Bayfront to School", "FL1-3_Bayfront", 5, Bell(80f), 5, FloridaLevels.Bayfront),
             // FL2 The River Way
             LevelSpec.Florida("FL2-1", "Riverside Street", "FL2-1_RiversideStreet", 1, Bell(70f), 4, FloridaLevels.RiversideStreet),
-            LevelSpec.FloridaMiniGame("FL2-2", "Uncle Rey's Boat", "FL2-2_UncleReysBoat", 1, 50f, FloridaLevels.UncleReysBoat),
-            LevelSpec.Florida("FL2-3", "The Riverwalk", "FL2-3_Riverwalk", 5, Bell(85f), 5, FloridaLevels.Riverwalk),
-            LevelSpec.FloridaMiniGame("FL2-4", "The Drugstore", "FL2-4_Drugstore", 1, 60f, FloridaLevels.Drugstore),
-            LevelSpec.Florida("FL2-5", "Downpour to School", "FL2-5_Downpour", 2, Bell(90f), 6, FloridaLevels.Downpour),
+            LevelSpec.Florida("FL2-2", "The Riverwalk", "FL2-2_Riverwalk", 5, Bell(85f), 5, FloridaLevels.Riverwalk),
+            LevelSpec.Florida("FL2-3", "Downpour to School", "FL2-3_Downpour", 2, Bell(90f), 6, FloridaLevels.Downpour),
             // FL3 Under the Line (the people mover between its first two legs: Levels/Rides)
             LevelSpec.Florida("FL3-1", "The Underline", "FL3-1_Underline", 1, Bell(75f), 5, FloridaLevels.Underline),
             LevelSpec.Florida("FL3-2", "Biscayne Boulevard", "FL3-2_BiscayneBoulevard", 4, Bell(75f), 5, FloridaLevels.BiscayneBoulevard),
@@ -189,19 +175,11 @@ namespace DribbleToSchool.EditorTools
             return -1f;
         }
 
-        /// <summary>Is this level of the table a mini-game leg (its objective decides the stars)? Used by tests.</summary>
-        public static bool IsMiniGame(string id)
-        {
-            foreach (var spec in Levels)
-                if (spec.id == id) return spec.miniGame;
-            return false;
-        }
-
         /// <summary>Does this level of the table start at a stop with a lead-in (home or a stop on its route)? Every story level does; a challenge does not. Used by tests.</summary>
         public static bool HasLeadIn(string id)
         {
             foreach (var spec in Levels)
-                if (spec.id == id) return HomeLeadInRules.HasLeadIn(true, spec.challenge || spec.miniGame);
+                if (spec.id == id) return HomeLeadInRules.HasLeadIn(true, spec.challenge);
             return false;
         }
 
@@ -309,7 +287,7 @@ namespace DribbleToSchool.EditorTools
             new ChapterInfo { number = 3, title = "The Beach", subtitle = "Sand, waves and seagulls", color = new Color(0.3f, 0.68f, 0.85f) },
             new ChapterInfo { number = 4, title = "Underpass", subtitle = "Tunnels, pipes and building sites", color = new Color(0.55f, 0.48f, 0.72f) },
             new ChapterInfo { number = 5, title = "Park & School", subtitle = "Dogs, fountains and the final bell", color = new Color(0.42f, 0.7f, 0.4f) },
-            new ChapterInfo { number = RouteTable.FloridaChapter, title = "Miami", subtitle = "Buses, boats and a downpour", color = new Color(0.13f, 0.7f, 0.68f) },
+            new ChapterInfo { number = RouteTable.FloridaChapter, title = "Miami", subtitle = "Calle Ocho, the river and the bay", color = new Color(0.13f, 0.7f, 0.68f) },
         };
 
         public static void BuildAll()
@@ -329,6 +307,7 @@ namespace DribbleToSchool.EditorTools
             AssetDatabase.SaveAssets();
 
             DeleteStaleScenes();
+            DeleteStaleDefinitions();
 
             BuildFrontEndScene(catalog, cosmetics);
             var buildScenes = new List<EditorBuildSettingsScene> { new EditorBuildSettingsScene(FrontEndScene, true) };
@@ -446,7 +425,6 @@ namespace DribbleToSchool.EditorTools
             def.chapter = spec.chapter;
             def.isChallenge = spec.challenge;
             def.city = spec.city;
-            def.isMiniGame = spec.miniGame;
             EditorUtility.SetDirty(def);
             return def;
         }
@@ -458,6 +436,21 @@ namespace DribbleToSchool.EditorTools
             foreach (var spec in Levels) keep.Add(spec.ScenePath);
             foreach (string ride in Rides.All) keep.Add(ScenesDir + "/Levels/" + Rides.SceneOf(ride) + ".unity");
             foreach (string guid in AssetDatabase.FindAssets("t:Scene", new[] { ScenesDir + "/Levels" }))
+            {
+                string path = AssetDatabase.GUIDToAssetPath(guid);
+                if (!keep.Contains(path)) AssetDatabase.DeleteAsset(path);
+            }
+        }
+
+        /// <summary>
+        /// Remove level definitions that are no longer in the Levels table (a removed leg's, or one whose id moved: v128's
+        /// Florida legs). Nothing else in the folder is touched.
+        /// </summary>
+        static void DeleteStaleDefinitions()
+        {
+            var keep = new HashSet<string>();
+            foreach (var spec in Levels) keep.Add(LevelsDir + "/" + spec.id + ".asset");
+            foreach (string guid in AssetDatabase.FindAssets("t:" + typeof(LevelDefinition).Name, new[] { LevelsDir }))
             {
                 string path = AssetDatabase.GUIDToAssetPath(guid);
                 if (!keep.Contains(path)) AssetDatabase.DeleteAsset(path);

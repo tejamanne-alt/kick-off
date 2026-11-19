@@ -22,9 +22,9 @@ namespace DribbleToSchool.EditorTools
         public static readonly string[] MiamiModelsUsed =
         {
             "VentanitaMIA", "StopSignMIA", "CoffeeKioskMIA", "BollardMIA", "LineCoilMIA", "PharmacyMIA",
-            // LevelBuildKit.FloridaCity: the animals, the scooters, the domino table, the arcades, the sweeper, the mini-games' sets
+            // LevelBuildKit.FloridaCity: the animals, the scooters, the domino table, the arcades, the sweeper
             "RoosterMIA", "HenMIA", "IguanaMIA", "ScooterMIA", "ScooterUpMIA", "DominoTableMIA", "DecoArcadeMIA", "DecoArcade2MIA",
-            "SweeperMIA", "BusMIA", "BusNearMIA", "FishingBoatMIA", "DrugstoreAisleMIA",
+            "SweeperMIA",
             // LevelBuildKit: the slide-unders' Miami looks, the work zone, the crate, the crossing's signal, the signs, the
             // checkpoints, the fountain; RideBuilder: the Metromover on its guideway over the bay
             "StallAwningMIA", "ScaffoldGantryMIA", "BoatTrestlesMIA", "AppleBoughMIA", "RollShutterMIA", "PipeRackMIA", "BoomBarrierMIA",
@@ -149,8 +149,6 @@ namespace DribbleToSchool.EditorTools
         /// </summary>
         static void MiamiScenery(LevelBuildKit.TrackBuilder track, Transform root, float x0, float x1, int seed)
         {
-            // The Metrobus's street slides past its windows: the bus builds it on its own moving strip (MiamiStreetStrip).
-            if (MiamiStr(MiamiPlan, "district", "") == "bus") return;
             Miami(track, root, x0, x1);
             string kind = MiamiStr(MiamiPlan, "strips", "street");
             if (kind == "street" || kind == "havana") CanopyShadows(track, root, new System.Random(seed + 173), x0, x1);
@@ -158,7 +156,7 @@ namespace DribbleToSchool.EditorTools
         }
 
         /// <summary>
-        /// Florida's stops from the Miami kit, with the door (or the sign) at <paramref name="gx"/>: the Metrobus stops (the aluminium
+        /// Florida's stops from the Miami kit, with the door (or the sign) at <paramref name="gx"/>: the bus stops (the aluminium
         /// shelter, the route's sign on its pole, a bench), the coffee window on the bayfront, Uncle Rey's dock (its bollard and a coil
         /// of line), the corner pharmacy, the Metrorail's and the Metromover's station signs (the district's guideway runs overhead),
         /// Museum Park's gate of royal palms. False for any other stop, or without the kit (the caller builds the stand-in).
@@ -208,33 +206,6 @@ namespace DribbleToSchool.EditorTools
                 default:
                     return false;
             }
-        }
-
-        /// <summary>
-        /// The leg's district on a strip that moves (the street past the Metrobus's windows): the plan's models from
-        /// <paramref name="from"/> for <paramref name="length"/> metres, twice over end to end so the strip can wrap, leaving out any
-        /// that would stand across either end (it would overlap its own copy). Not static: the whole strip slides. Returns how many
-        /// were placed (0: no plan, or the kit isn't there).
-        /// </summary>
-        public static int MiamiStreetStrip(Transform strip, float from, float length, float groundY)
-        {
-            var plan = MiamiPlan;
-            object o;
-            if (plan == null || !plan.TryGetValue("items", out o) || !(o is List<object>)) return 0;
-            int placed = 0;
-            foreach (var item in (List<object>)o)
-            {
-                var it = item as List<object>;
-                if (it == null || it.Count < 6) continue;
-                string kit = (string)it[0], model = (string)it[1];
-                float x = (float)(double)it[2], z = (float)(double)it[3], yaw = (float)(double)it[4], scale = (float)(double)it[5];
-                float half = LevelBuildKit.KitSize(kit, model).x * 0.5f * scale;
-                if (x - half < from || x + half > from + length) continue;
-                float y = it.Count > 6 ? (float)(double)it[6] : groundY;
-                for (int copy = 0; copy < 2; copy++)
-                    if (Model(strip, kit, model, x + copy * length, y, z, yaw, scale) != null) placed++;
-            }
-            return placed;
         }
 
         /// <summary>

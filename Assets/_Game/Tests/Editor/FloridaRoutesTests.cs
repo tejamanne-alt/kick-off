@@ -10,9 +10,9 @@ using NUnit.Framework;
 namespace DribbleToSchool.Tests
 {
     /// <summary>
-    /// Florida's own routes (docs/CITIES.md, "Florida (Miami), USA"): three routes of 4, 5 and 3 legs from the ranch house in Little
-    /// Havana to Bayside Elementary, its own level ids (FL1-1...), its stops, the people mover between FL3's first two legs, the
-    /// three mini-game legs, and everything a player reads about them in both languages.
+    /// Florida's own routes (docs/CITIES.md, "Florida (Miami), USA"): three routes of three legs from the ranch house in Little
+    /// Havana to Bayside Elementary, its own level ids (FL1-1...), its stops, the people mover between FL3's first two legs, no
+    /// mini-games (removed in v128), older saves moved onto the renumbered legs, and everything a player reads in both languages.
     /// </summary>
     public class FloridaRoutesTests
     {
@@ -23,11 +23,11 @@ namespace DribbleToSchool.Tests
         }
 
         [Test]
-        public void FloridaHasThreeRoutesOfFourFiveAndThreeLegs()
+        public void FloridaHasThreeRoutesOfThreeLegs()
         {
             Assert.AreEqual(3, RouteTable.Florida.Length);
             Assert.AreEqual(new[] { "fl1", "fl2", "fl3" }, new[] { RouteTable.Florida[0].id, RouteTable.Florida[1].id, RouteTable.Florida[2].id });
-            Assert.AreEqual(new[] { 4, 5, 3 }, new[] { RouteTable.Florida[0].levels.Length, RouteTable.Florida[1].levels.Length, RouteTable.Florida[2].levels.Length });
+            Assert.AreEqual(new[] { 3, 3, 3 }, new[] { RouteTable.Florida[0].levels.Length, RouteTable.Florida[1].levels.Length, RouteTable.Florida[2].levels.Length });
             foreach (var route in RouteTable.Florida)
             {
                 Assert.AreEqual(RouteTable.FloridaId, route.city);
@@ -60,35 +60,51 @@ namespace DribbleToSchool.Tests
         }
 
         [Test]
-        public void EveryRouteOfFourOrFiveLegsHasAMiniGameAndTheMiniGamesAreTheDesignsThree()
+        public void EveryFloridaLegIsADribbleFromItsStop()
         {
-            var mini = new List<string>();
             foreach (var route in RouteTable.Florida)
-            {
-                int count = 0;
                 foreach (string id in route.levels)
-                    if (GeneratedContent.IsMiniGame(id)) { count++; mini.Add(id); }
-                if (route.levels.Length >= 4) Assert.GreaterOrEqual(count, 1, route.id + ": a route longer than three legs has a mini-game");
-                Assert.IsFalse(GeneratedContent.IsMiniGame(route.levels[0]), route.id + ": a trip starts with a walk from home");
-                Assert.IsFalse(GeneratedContent.IsMiniGame(route.levels[route.levels.Length - 1]), route.id + ": and ends with one to school");
-            }
-            Assert.AreEqual(new[] { "FL1-2", "FL2-2", "FL2-4" }, mini.ToArray());
-            foreach (string id in mini) Assert.IsFalse(GeneratedContent.HasLeadIn(id), id + ": a mini-game is played at its stop");
+                {
+                    Assert.IsTrue(GeneratedContent.HasLeadIn(id), id + ": a leg starts with the walk from home or its stop");
+                    Assert.IsTrue(GeneratedContent.BellTime(id) > HomeLeadInRules.BellSeconds, id + ": a street of its own after the walk");
+                }
+        }
+
+        [Test]
+        public void TheMiniGamesAreGoneForGood()
+        {
+            // The user's decision (v128): no mini-games in Kamakura or Florida, and nothing in their place.
+            var assembly = typeof(ChallengeObjective).Assembly;
+            foreach (string type in new[] { "MiniGameObjective", "BusRide", "MooringLine", "DrugstoreShopping" })
+                Assert.IsNull(assembly.GetType("DribbleToSchool.Challenges." + type), type + " is back");
+            Assert.IsNull(assembly.GetType("DribbleToSchool.Progression.Errands"), "the errand (the science project) was the boat's");
+            foreach (string code in Loc.Languages)
+                foreach (string key in StringTables.For(code).Keys)
+                    Assert.IsFalse(key.StartsWith("mini.") || key.StartsWith("guide.ride.") || key.StartsWith("guide.throw.") || key.StartsWith("guide.shop."),
+                        code + ": " + key + " belongs to a mini-game");
+            foreach (string title in new[] { "The Metrobus", "Uncle Rey's Boat", "The Drugstore" })
+                foreach (var route in RouteTable.Florida)
+                    foreach (string id in route.levels)
+                        Assert.AreNotEqual(title, StringTables.For("en")["level." + id], id);
         }
 
         [Test]
         public void TheLegsMeetAtTheirStopsAndThePeopleMoverTakesFL3OnToBiscayne()
         {
+            // FL1: Little Havana ends at the bus stop on Calle Ocho; the bus isn't played, so Brickell Avenue starts at its stop there.
             Assert.AreSame(RouteTable.Home, RouteTable.From("FL1-1"));
             Assert.AreEqual("calleOcho", RouteTable.To("FL1-1").id);
-            Assert.AreEqual("calleOcho", RouteTable.From("FL1-2").id);
-            Assert.AreEqual("brickell", RouteTable.To("FL1-2").id);
-            Assert.AreSame(RouteTable.School, RouteTable.To("FL1-4"));
-            // The mini-games of FL2 are played at their stops: Uncle Rey's dock, the drugstore.
+            Assert.AreEqual("brickell", RouteTable.From("FL1-2").id);
+            Assert.IsNull(RouteTable.RideBefore("FL1-2"), "no ride, no mini-game: the next leg simply starts there");
+            Assert.AreEqual("bayfront", RouteTable.To("FL1-2").id);
+            Assert.AreEqual("bayfront", RouteTable.From("FL1-3").id);
+            Assert.AreSame(RouteTable.School, RouteTable.To("FL1-3"));
+            // FL2: Riverside Street to Uncle Rey's dock, the Riverwalk to the drugstore, the downpour to school.
+            Assert.AreEqual("reysDock", RouteTable.To("FL2-1").id);
             Assert.AreEqual("reysDock", RouteTable.From("FL2-2").id);
-            Assert.AreEqual("reysDock", RouteTable.To("FL2-2").id);
-            Assert.AreEqual("drugstore", RouteTable.From("FL2-4").id);
-            Assert.AreEqual("drugstore", RouteTable.To("FL2-4").id);
+            Assert.AreEqual("drugstore", RouteTable.To("FL2-2").id);
+            Assert.AreEqual("drugstore", RouteTable.From("FL2-3").id);
+            Assert.AreSame(RouteTable.School, RouteTable.To("FL2-3"));
             // FL3: the Underline ends at the station, the people mover arrives on Biscayne, where FL3-2 starts.
             Assert.AreEqual("underline", RouteTable.To("FL3-1").id);
             Assert.AreEqual(Rides.PeopleMover, RouteTable.RideBefore("FL3-2"));
@@ -120,7 +136,7 @@ namespace DribbleToSchool.Tests
         [Test]
         public void EverythingFloridaShowsIsInEveryLanguage()
         {
-            var keys = new List<string> { "chapter.6", "ride.skip", "mini.score", "results.delivered", "results.spoiled" };
+            var keys = new List<string> { "chapter.6", "ride.skip" };
             foreach (string ride in Rides.All) keys.Add(Rides.NameKey(ride));
             foreach (var route in RouteTable.Florida)
             {
@@ -128,8 +144,7 @@ namespace DribbleToSchool.Tests
                 foreach (string id in route.levels)
                 {
                     keys.Add("level." + id);
-                    if (GeneratedContent.IsMiniGame(id)) keys.Add("challenge." + id + ".goal");
-                    else { keys.Add("sticker." + id); keys.Add("sticker." + id + ".text"); keys.Add("sticker." + id + ".hint"); }
+                    keys.Add("sticker." + id); keys.Add("sticker." + id + ".text"); keys.Add("sticker." + id + ".hint");
                 }
             }
             foreach (string action in new[] { "chickens", "iguana", "downpour", "sweeper" })
@@ -206,39 +221,35 @@ namespace DribbleToSchool.Tests
         }
 
         [Test]
-        public void TheScienceProjectRidesToSchoolAndIsDeliveredOnlyUnharmed()
+        public void AnOlderSavesFloridaRecordsFollowTheirLegsToTheirNewNumbers()
         {
-            var data = new SaveData();
-            Assert.AreEqual(Errands.ScienceProject, Errands.ItemOf("fl2"));
-            Assert.IsNull(Errands.ItemOf("fl1"));
-            Errands.Pick(data, Errands.ScienceProject);
-            Assert.IsTrue(Errands.CarryingUnharmed(data, Errands.ScienceProject));
-            Assert.IsTrue(Errands.Arrive(data, "fl2"));
-            Assert.Contains(Errands.ScienceProject, data.delivered);
-            Assert.AreEqual("", data.carrying, "put down at school");
+            var data = new SaveData { version = 2 };
+            foreach (string id in new[] { "FL1-1", "FL1-2", "FL1-3", "FL1-4", "FL2-2", "FL2-3", "FL2-4", "FL2-5", "FL3-2", "L07" })
+                data.levels.Add(new LevelRecord { levelId = id, completed = true, bestStars = id == "FL1-4" ? 3 : 1 });
+            data.stickers.AddRange(new[] { "FL1-3", "FL2-5", "L07" });
+            data.trips.Add(new TripRecord { routeId = "fl1", legTimes = new List<float> { 70f, 50f, 80f, 75f } });
+            data.trips.Add(new TripRecord { routeId = "fl2", legTimes = new List<float> { 71f, 40f, 85f, 55f, 90f } });
+            data.trips.Add(new TripRecord { routeId = "street", legTimes = new List<float> { 1f, 2f, 3f, 4f, 5f } });
 
-            Errands.Pick(data, Errands.ScienceProject);
-            Errands.Spoil(data);
-            Assert.IsFalse(Errands.Arrive(data, "fl2"), "soaked in the downpour: no badge");
-            Assert.AreEqual("", data.carrying);
+            FloridaLegs.Upgrade(data);
 
-            Errands.Pick(data, Errands.ScienceProject);
-            Errands.Drop(data);
-            Assert.IsFalse(Errands.Arrive(data, "fl2"), "a trip started again from home carries nothing");
-        }
+            var ids = new List<string>();
+            foreach (var record in data.levels) ids.Add(record.levelId);
+            Assert.AreEqual(new[] { "FL1-1", "FL1-2", "FL1-3", "FL2-2", "FL2-3", "FL3-2", "L07" }, ids.ToArray(),
+                "the mini-games' records dropped, the legs after them renumbered, the rest untouched");
+            Assert.AreEqual(3, data.Level("FL1-3").bestStars, "Bayfront's record (FL1-4 before) moved with it");
+            Assert.AreEqual(new[] { "FL1-2", "FL2-3", "L07" }, data.stickers.ToArray());
+            Assert.AreEqual(new[] { 70f, 80f, 75f }, SchoolTrips.Find(data, "fl1").legTimes.ToArray());
+            Assert.AreEqual(new[] { 71f, 85f, 90f }, SchoolTrips.Find(data, "fl2").legTimes.ToArray());
+            Assert.AreEqual(5, SchoolTrips.Find(data, "street").legTimes.Count, "Kamakura's trips are left alone");
 
-        [Test]
-        public void TheDrugstoreCountsMoneyInCentsAndStarsTheFewestPieces()
-        {
-            Assert.AreEqual(7, DrugstoreShopping.Fewest(677));      // $5, $1, three quarters, two pennies
-            Assert.AreEqual(1, DrugstoreShopping.Fewest(1000));
-            Assert.AreEqual(0, DrugstoreShopping.Fewest(0));
-            Assert.AreEqual("$6.77", DrugstoreShopping.Dollars(677));
-            Assert.AreEqual("$0.05", DrugstoreShopping.Dollars(5));
-            Assert.AreEqual(3, DrugstoreShopping.StarsFor(0, 677, 7, 677));
-            Assert.AreEqual(2, DrugstoreShopping.StarsFor(0, 700, 7, 677), "paid too much: change, no third star");
-            Assert.AreEqual(2, DrugstoreShopping.StarsFor(1, 677, 7, 677), "a slip");
-            Assert.AreEqual(1, DrugstoreShopping.StarsFor(2, 1000, 1, 677));
+            // A save already at version 3 is never moved again.
+            data.version = SaveData.CurrentVersion;
+            FloridaLegs.Upgrade(data);
+            Assert.AreEqual(3, data.Level("FL1-3").bestStars);
+            Assert.IsNull(FloridaLegs.NewId("FL2-4"));
+            Assert.AreEqual("FL2-3", FloridaLegs.NewId("FL2-5"));
+            Assert.AreEqual("FL3-1", FloridaLegs.NewId("FL3-1"));
         }
     }
 }

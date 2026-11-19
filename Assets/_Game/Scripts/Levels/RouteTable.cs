@@ -188,8 +188,8 @@ namespace DribbleToSchool.Levels
         };
 
         /// <summary>
-        /// Florida's stops (Miami: docs/CITIES.md, "Florida (Miami), USA"). A mini-game leg is played at one stop, so it starts and
-        /// ends there (Uncle Rey's dock, the drugstore); the people mover takes the kid from the Underline's station to Biscayne
+        /// Florida's stops (Miami: docs/CITIES.md, "Florida (Miami), USA"). FL1's bus from Calle Ocho to Brickell Avenue is not
+        /// played: the next leg starts at the Brickell stop. The people mover takes the kid from the Underline's station to Biscayne
         /// Boulevard between two legs.
         /// </summary>
         public static readonly Stop[] FloridaStops =
@@ -198,7 +198,7 @@ namespace DribbleToSchool.Levels
             new Stop("calleOcho", StopKind.Bus, "Calle Ocho bus stop"),
             new Stop("brickell", StopKind.Bus, "Brickell Avenue"),
             new Stop("bayfront", StopKind.Park, "Bayfront Park"),
-            // FL2 The River Way: Uncle Rey's dock on the Miami River, the corner drugstore downtown.
+            // FL2 The River Way: Uncle Rey's dock on the Miami River, the corner drugstore downtown (stops on the way, no more).
             new Stop("reysDock", StopKind.Dock, "Uncle Rey's dock"),
             new Stop("drugstore", StopKind.Shop, "Drugstore"),
             // FL3 Under the Line: the station on the elevated line, the people mover's stop on Biscayne Boulevard, Museum Park.
@@ -213,17 +213,18 @@ namespace DribbleToSchool.Levels
         public const string KamakuraIdOfTown = Route.KamakuraId;
 
         /// <summary>
-        /// Florida's three routes from the ranch house in Little Havana to Bayside Elementary downtown (docs/CITIES.md): FL1 by the
-        /// Metrobus along Calle Ocho, FL2 along the Miami River (Uncle Rey's boat, the drugstore, a downpour), FL3 under the
-        /// elevated line and round the bay on the people mover. Their levels are the city's own (FL1-1...), not the original town's.
+        /// Florida's three routes from the ranch house in Little Havana to Bayside Elementary downtown (docs/CITIES.md): FL1 along
+        /// Calle Ocho, then (after the bus, not played) Brickell Avenue and the bayfront; FL2 along the Miami River, the Riverwalk and
+        /// downtown in a downpour; FL3 under the elevated line and round the bay on the people mover. Three legs each, all dribbles
+        /// (the mini-game legs were removed in v128). Their levels are the city's own (FL1-1...), not the original town's.
         /// The chapter is the city's: every Florida level is chapter <see cref="FloridaChapter"/>.
         /// </summary>
         public static readonly Route[] Florida =
         {
-            new Route("fl1", FloridaChapter, new[] { "FL1-1", "FL1-2", "FL1-3", "FL1-4" }, null,
-                new[] { "calleOcho", "brickell", "bayfront" }, FloridaId, null, null),
-            new Route("fl2", FloridaChapter, new[] { "FL2-1", "FL2-2", "FL2-3", "FL2-4", "FL2-5" }, null,
-                new[] { "reysDock", "reysDock", "drugstore", "drugstore" }, FloridaId, null, null),
+            new Route("fl1", FloridaChapter, new[] { "FL1-1", "FL1-2", "FL1-3" }, null,
+                new[] { "calleOcho", "bayfront" }, FloridaId, new[] { "brickell", null }, null),
+            new Route("fl2", FloridaChapter, new[] { "FL2-1", "FL2-2", "FL2-3" }, null,
+                new[] { "reysDock", "drugstore" }, FloridaId, null, null),
             new Route("fl3", FloridaChapter, new[] { "FL3-1", "FL3-2", "FL3-3" }, null,
                 new[] { "underline", "museumPark" }, FloridaId, new[] { "biscayne", null }, new[] { Rides.PeopleMover, null }),
         };

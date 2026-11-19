@@ -56,7 +56,7 @@ namespace DribbleToSchool.Tests
         public void ThePlanDressesEveryFloridaLeg()
         {
             var legs = Legs();
-            foreach (string leg in new[] { "FL1-1", "FL1-2", "FL1-3", "FL1-4", "FL2-1", "FL2-2", "FL2-3", "FL2-4", "FL2-5", "FL3-1", "FL3-2", "FL3-3" })
+            foreach (string leg in new[] { "FL1-1", "FL1-2", "FL1-3", "FL2-1", "FL2-2", "FL2-3", "FL3-1", "FL3-2", "FL3-3" })
                 Assert.IsTrue(legs.ContainsKey(leg), leg + " is not in the plan");
         }
 
@@ -145,7 +145,7 @@ namespace DribbleToSchool.Tests
             // Florida's six places (Havana, MiamiRiver, Bay, Downtown, Underline, MuseumPark), never one of Kamakura's beds.
             var kamakura = new[] { Audio.Soundscape.Menu, Audio.Soundscape.Street, Audio.Soundscape.Market, Audio.Soundscape.Beach,
                                    Audio.Soundscape.Underpass, Audio.Soundscape.Site, Audio.Soundscape.Park };
-            foreach (string leg in new[] { "FL1-1", "FL1-2", "FL1-3", "FL1-4", "FL2-1", "FL2-2", "FL2-3", "FL2-4", "FL2-5", "FL3-1", "FL3-2", "FL3-3" })
+            foreach (string leg in new[] { "FL1-1", "FL1-2", "FL1-3", "FL2-1", "FL2-2", "FL2-3", "FL3-1", "FL3-2", "FL3-3" })
                 CollectionAssert.DoesNotContain(kamakura, Audio.Soundscapes.ForFloridaLeg(leg), leg + " plays one of Kamakura's soundscapes");
         }
 

@@ -5,7 +5,7 @@ using UnityEngine;
 namespace DribbleToSchool.Hazards
 {
     /// <summary>
-    /// A green iguana basking on a seawall or a warm kerb (FL2-1, FL1-4: they sun themselves all along Miami's waterways). When
+    /// A green iguana basking on a seawall or a warm kerb (FL2-1, FL1-3: they sun themselves all along Miami's waterways). When
     /// the kid comes near it scuttles off along the footpath to its other spot, fast and low, and a ball in its way is knocked
     /// back. Then it basks there until the kid comes near again. Wait a moment for it to go, or chip the ball over it.
     /// </summary>

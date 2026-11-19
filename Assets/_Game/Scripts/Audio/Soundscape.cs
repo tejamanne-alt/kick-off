@@ -19,9 +19,9 @@ namespace DribbleToSchool.Audio
 
         /// <summary>
         /// The soundscape of one of Florida's legs (its routes cross several kinds of place), all of them Florida's own,
-        /// none shared with Kamakura: Little Havana's street and the drugstore on it, the river (its street, Uncle Rey's
-        /// boat, the Riverwalk), the bay at Bayfront, downtown (the bus, Brickell's towers, the downpour downtown, the
-        /// boulevard), the Underline under the line overhead, and Museum Park. Menu for a level that isn't Florida's.
+        /// none shared with Kamakura: Little Havana's street, the river (its street, the Riverwalk), the bay at Bayfront,
+        /// downtown (Brickell's towers, the downpour downtown, the boulevard), the Underline under the line overhead, and Museum
+        /// Park. Menu for a level that isn't Florida's.
         /// </summary>
         public static Soundscape ForFloridaLeg(string levelId)
         {
@@ -29,13 +29,10 @@ namespace DribbleToSchool.Audio
             {
                 case "FL1-1": return Soundscape.Havana;
                 case "FL1-2": return Soundscape.Downtown;
-                case "FL1-3": return Soundscape.Downtown;
-                case "FL1-4": return Soundscape.Bay;
+                case "FL1-3": return Soundscape.Bay;
                 case "FL2-1": return Soundscape.MiamiRiver;
                 case "FL2-2": return Soundscape.MiamiRiver;
-                case "FL2-3": return Soundscape.MiamiRiver;
-                case "FL2-4": return Soundscape.Havana;
-                case "FL2-5": return Soundscape.Downtown;
+                case "FL2-3": return Soundscape.Downtown;
                 case "FL3-1": return Soundscape.Underline;
                 case "FL3-2": return Soundscape.Downtown;
                 case "FL3-3": return Soundscape.MuseumPark;

@@ -31,23 +31,23 @@ Generated scenes are rebuilt from code, so edits made directly in those scenes g
 
 PLAY and HOLIDAY RUN first ask which city (`UI/CityPicker`, `Progression/Cities`). **Kamakura**, Japan, the original town,
 has every level below and the Holiday Run. **Florida** (Miami), unlocked by finishing Kamakura's levels, has three routes of
-its own, twelve legs from the ranch house in Little Havana to Bayside Elementary (see "Florida's routes" below).
+its own, nine legs from the ranch house in Little Havana to Bayside Elementary (see "Florida's routes" below).
+Neither Kamakura nor Florida has mini-games (removed in v128): every leg is a dribble.
 **Madrid**, **New York** and **Mumbai** are designed and coming: each city gets two or three routes of its own from home to
-school, three to five levels each, with its own transit, errands and mini-games, and its own light and climate
+school, three to five levels each, with its own transit and errands, and its own light and climate
 (`docs/CITIES.md`). The reference images for each city come from `docs/IMAGE_PROMPTS.md`.
 
 ### Florida's routes
 
 | Route | Legs | Its own play |
 |---|---|---|
-| FL1 Calle Ocho Bus | FL1-1 Little Havana Morning, FL1-2 The Metrobus *(mini-game)*, FL1-3 Brickell Avenue, FL1-4 Bayfront to School | Roosters and hens, domino tables, the bus (tap your card, keep the ball through the sway, pull the cord at your stop), scooters across the sidewalk, the bay wind, the river's drawbridge, pelicans, the fountain plaza |
-| FL2 The River Way | FL2-1 Riverside Street, FL2-2 Uncle Rey's Boat *(mini-game)*, FL2-3 The Riverwalk, FL2-4 The Drugstore *(mini-game)*, FL2-5 Downpour to School | Iguanas, sprinklers, the golf cart, throwing the mooring line, three drawbridges, shopping in dollars and cents, a cloudburst to shelter from: the science project on your backpack has to get to school dry (the Delivered bonus) |
+| FL1 Calle Ocho Bus | FL1-1 Little Havana Morning, *(the bus, not played)*, FL1-2 Brickell Avenue, FL1-3 Bayfront to School | Roosters and hens, domino tables, scooters across the sidewalk, the bay wind, the river's drawbridge, pelicans, the fountain plaza |
+| FL2 The River Way | FL2-1 Riverside Street, FL2-2 The Riverwalk, FL2-3 Downpour to School | Iguanas, sprinklers, the golf cart, three drawbridges, a cloudburst to shelter from under the arcades |
 | FL3 Under the Line | FL3-1 The Underline, *(the people mover, a ride)*, FL3-2 Biscayne Boulevard, FL3-3 Museum Park to School | Fitness stations, the dog run, cyclists, the street sweeper to ride, the banyans' roots, skateboarders, kite fliers' wind |
 
-The legs are laid out in `Editor/FloridaLevels.cs`, the mini-games are `Challenges/BusRide`, `MooringLine` and
-`DrugstoreShopping`. Each leg is its own district of Miami, built from the Miami kit (`tools/blender/kit_buildings_mia.py`) by a
-plan per leg (`tools/blender/miami_plan.py`, read by `Editor/StreetBuilder.Miami.cs`): Little Havana, Calle Ocho from the bus,
-Brickell, the bayfront, the river, downtown's arcades, the Underline, Biscayne Boulevard and Museum Park. The map is Miami's
+The legs are laid out in `Editor/FloridaLevels.cs`. Each leg is its own district of Miami, built from the Miami kit
+(`tools/blender/kit_buildings_mia.py`) by a plan per leg (`tools/blender/miami_plan.py`, read by `Editor/StreetBuilder.Miami.cs`):
+Little Havana, Brickell, the bayfront, the river, downtown's arcades, the Underline, Biscayne Boulevard and Museum Park. The map is Miami's
 own, rendered from the same kits (`tools/blender/miami_map_render.py` on `tools/miami_map`'s layout).
 
 ## Levels

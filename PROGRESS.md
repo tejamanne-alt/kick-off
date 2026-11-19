@@ -1942,6 +1942,55 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
 - **Cost:** none (the markings move up 14 cm).
 - **Checked:** compile (no new error kinds), `unity_api_check` 6000.7. Not run in Unity.
 
+## No mini-games (generated content v128)
+
+- **Why.** The user: "remove the mini games completely and do not replace them with anything else in both Kamakura and
+  Florida." (LEARNINGS E14; a standing preference now.)
+- **Florida:**
+  - Its three mini-game legs are gone: FL1-2 The Metrobus, FL2-2 Uncle Rey's Boat and FL2-4 The Drugstore. Each route is now
+    three dribbles: FL1 Little Havana Morning, Brickell Avenue and Bayfront to School (the bus between Calle Ocho and Brickell
+    is not shown; FL1-2 starts at the Brickell stop); FL2 Riverside Street, The Riverwalk and Downpour to School.
+  - The legs after them took their numbers: FL1-3 is now FL1-2, FL1-4 FL1-3, FL2-3 FL2-2, FL2-5 FL2-3. Their scenes, strings,
+    stickers, soundscapes, plan districts and map nodes moved with them. Each district is seeded by its old id, so every street
+    is the one reviewed in v125 (checked: identical).
+  - Save version 3 (`Progression/FloridaLegs`) moves an older save's records, stickers and trip times onto the new numbers
+    and drops the removed legs' records.
+- **Removed with them:**
+  - The code: `Challenges/MiniGameObjective`, `BusRide`, `MooringLine`, `DrugstoreShopping`, and the route-leg path through
+    `LevelManager` (`IsRouteLeg`, `CompleteLeg`, `AddPenalty`).
+  - The HUD's and the guide's mini-game star lines and Ride, Throw and Shop tips, and the level definition's `isMiniGame`.
+  - The errand they handed over: `Progression/Errands`, the science project, its Delivered badge and coins, and the save's
+    `carrying` fields.
+  - The downpour's stake: it now only warns and sends the kid for cover.
+  - The track builder's `AfterRig`, and the Metrobus's moving street strip (`MiamiStreetStrip`) with the plan's bus, dock and
+    interior districts.
+  - Two kit models: the bus's cut-away near side and the drugstore's aisle, with their tiles in the kit source. The full bus
+    and the fishing boat stay: the map's picture uses them.
+  - Every mini-game string in both languages. The chapter's subtitle is now "Calle Ocho, the river and the bay".
+  - Nothing replaces any of it.
+- **Kamakura:** its two designed mini-games (KM1-2 Ride the Enoden, KM2-3 Grandma's Whitebait Shop) are out of its routes in
+  `docs/CITIES.md` and their reference prompts are out of `docs/IMAGE_PROMPTS.md`. The legs after them are renumbered there,
+  and the Kite Thief's rice ball is now the kid's own lunch. No Kamakura level in the game had a mini-game.
+- **Not changed:** the people mover's ride between FL3's legs (a scene that plays by itself, not a mini-game), Kamakura's
+  five skill challenges, and Madrid's, New York's and Mumbai's designs (still with their mini-games, pending the user).
+- **Tests** (`FloridaRoutesTests`):
+  - three routes of three legs, every leg a dribble from its stop;
+  - the legs meet at their stops;
+  - `TheMiniGamesAreGoneForGood`: no mini-game type, errand or string comes back;
+  - the save upgrade.
+  `MiamiKitTests` list the nine legs.
+- **Cost:** it saves. Three fewer level scenes, the heaviest among them (the bus's strip was about 550 models on one moving
+  root); 1,660 fewer lines of scripts; two FBX (72 KB) out of the project. The atlas keeps the two models' tiles until the
+  Miami kit is next rebuilt.
+- **Checked:**
+  - compile: no new error kinds in any `#if` set;
+  - `unity_api_check` 6000.6 and 6000.7;
+  - the coin audit: 590 coins, no problems; 6 fewer, the bus's and the boat's;
+  - the route, string, plan, map and kit rules of the changed tests, in Python;
+  - the upgrade's expected values, by hand.
+- **Not run in Unity:** rebuilding the levels (the generated content's version is 128, so it rebuilds on open and deletes the
+  three old scenes and the renamed ones' old copies), the save upgrade on a real save, the map screen.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

@@ -179,7 +179,7 @@ namespace DribbleToSchool.Progression
     /// <summary>
     /// The five cities (docs/CITIES.md). PLAY and HOLIDAY RUN each ask which city to play in (UI/CityPicker).
     /// - Kamakura, Japan, the original town: every level, and the Holiday Run.
-    /// - Florida (Miami), unlocked by finishing every one of Kamakura's story levels: its own three routes and twelve legs
+    /// - Florida (Miami), unlocked by finishing every one of Kamakura's story levels: its own three routes and nine legs
     ///   (Levels/RouteTable.Florida, FL1-1 to FL3-3), in its own chapter.
     /// - Madrid, New York and Mumbai: designed, listed as coming soon.
     /// California (Santa Monica, &lt;scene&gt;_CA) was an add-on before the cities and is not one of them: a save that chose

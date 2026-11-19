@@ -12,20 +12,18 @@ E10): every building, tree and pole here is behind it.
 The districts, as a child walking to school in Miami would see them:
   littleHavana  FL1-1   one- and two-storey shops of Calle Ocho (the walk-up café, the cigar shop, the fruit shop, mural
                         walls), ranch houses near home, the domino park, royal palms, wooden poles, and downtown's towers far off
-  bus           FL1-2   the Metrobus's route: Little Havana's shops, then Brickell's towers as the bus nears the river
-  brickell      FL1-3   tower podiums with their valet canopies under glass condo towers, a construction site with its crane,
+  brickell      FL1-2   tower podiums with their valet canopies under glass condo towers, a construction site with its crane,
                         a coffee kiosk, royal palms in grates; the skyline crowding the sky
-  bayfront      FL1-4   a promenade by the bay: its balustrade, pelicans on their pilings, the water, a tug, a cruise ship far
+  bayfront      FL1-3   a promenade by the bay: its balustrade, pelicans on their pilings, the water, a tug, a cruise ship far
                         off and the towers across the water; the school on its own land at the end
-  dock          FL2-2   Uncle Rey's dock on the Miami River: the river, freighters and a tug moored across it, the far bank
-  riverwalk     FL2-3   the Riverwalk: its rail and bollards, coiled lines, freighters moored along it, towers across the river
-  downtown      FL2-5   old downtown: Art Deco and Mediterranean Revival blocks with arcades, the pharmacy, the skyline
+  riverwalk     FL2-2   the Riverwalk: its rail and bollards, coiled lines, freighters moored along it, towers across the river
+  downtown      FL2-3   old downtown: Art Deco and Mediterranean Revival blocks with arcades, the pharmacy, the skyline
   underline     FL3-1   the linear park under the elevated railway: the guideway overhead on its painted piers, fitness bars,
                         palms and planting, Little Havana's houses behind
   biscayne      FL3-2   the boulevard: royal palms, tower podiums, the Spanish-style tower, the people mover's guideway
   museumPark    FL3-3   the park by the bay: banyans, lawns, the museum under its hanging gardens, the bay behind; the school
-  interior      FL2-4   the drugstore: nothing outside (the aisle is the leg's own set)
-FL2-1 (Riverside Street) keeps Florida's Home Street (StreetBuilder.FloridaHome: the canal suburb), which is Miami's already.
+FL2-1 is Riverside Street (riverside). The mini-game legs (the Metrobus, Uncle Rey's boat, the drugstore) and their districts
+were removed in v128; the legs after them took their numbers.
 """
 import json, math, os, random, re
 
@@ -44,20 +42,17 @@ WATER_Z, WATER_Y = 4.6, -0.9         # where the promenade's seawall stands, and
 # leg id -> (layout method, district, strips, starts at home, ends at school)
 LEGS = {
     'FL1-1': ('LittleHavana', 'littleHavana', 'havana', True, False),
-    'FL1-2': ('Metrobus', 'bus', 'street', False, False),
-    'FL1-3': ('BrickellAvenue', 'brickell', 'street', False, False),
-    'FL1-4': ('Bayfront', 'bayfront', 'promenade', False, True),
+    'FL1-2': ('BrickellAvenue', 'brickell', 'street', False, False),
+    'FL1-3': ('Bayfront', 'bayfront', 'promenade', False, True),
     'FL2-1': ('RiversideStreet', 'riverside', 'havana', True, False),
-    'FL2-2': ('UncleReysBoat', 'dock', 'promenade', False, False),
-    'FL2-3': ('Riverwalk', 'riverwalk', 'promenade', False, False),
-    'FL2-4': ('Drugstore', 'interior', 'street', False, False),
-    'FL2-5': ('Downpour', 'downtown', 'street', False, True),
+    'FL2-2': ('Riverwalk', 'riverwalk', 'promenade', False, False),
+    'FL2-3': ('Downpour', 'downtown', 'street', False, True),
     'FL3-1': ('Underline', 'underline', 'havana', True, False),
     'FL3-2': ('BiscayneBoulevard', 'biscayne', 'street', False, False),
     'FL3-3': ('MuseumPark', 'museumPark', 'park', False, True),
 }
-BUS_STRIP = (-60.0, 310.0)                    # LevelBuildKit.Metrobus: the strip's start and length
-NO_LEAD_IN = {'FL1-2', 'FL2-2', 'FL2-4'}     # the mini-games are played at their stop
+# The legs renumbered in v128 keep the streets they were reviewed with: each district's random draw is seeded by its id before.
+SEED_ID = {'FL1-2': 'FL1-3', 'FL1-3': 'FL1-4', 'FL2-2': 'FL2-3', 'FL2-3': 'FL2-5'}
 
 
 # ---------------------------------------------------------------- reading the layouts
@@ -85,13 +80,12 @@ def leg_info(src):
         b = bodies[method]
         walls = calls(b, 'Walls')[0]
         goal = calls(b, 'Goal')[0][0] if calls(b, 'Goal') else walls[1] - 4.0
-        lead = 0.0 if leg in NO_LEAD_IN else LEAD_IN
+        lead = LEAD_IN
         info[leg] = dict(
             district=district, strips=strips, home=home, school=school,
             minX=walls[0] - lead, maxX=walls[1], start=-lead, goal=goal,
             canals=[(c[0], c[1]) for c in calls(b, 'Drawbridge')],
-            arcades=[(c[0], c[1]) for c in calls(b, 'Arcade')],
-            bus=calls(b, 'Metrobus'), dock=calls(b, 'ReysDock'))
+            arcades=[(c[0], c[1]) for c in calls(b, 'Arcade')])
     return info
 
 
@@ -100,7 +94,8 @@ class Plan:
     def __init__(self, leg, li):
         self.leg, self.li = leg, li
         self.items = []
-        self.rng = random.Random(sum(ord(c) * (i + 7) for i, c in enumerate(leg)))
+        seed = SEED_ID.get(leg, leg)
+        self.rng = random.Random(sum(ord(c) * (i + 7) for i, c in enumerate(seed)))
         self.x0, self.x1 = li['minX'] - 50.0, li['maxX'] + 50.0
         # where the front row keeps out: the stops' plots (or home's), the school, the canals and the arcades (whose buildings
         # the arcades place themselves)
@@ -514,24 +509,8 @@ def riverside(plan):
     plan.skyline(260, 380, n_per_100=2, scale=(1.0, 1.3))
 
 
-def bus_route(plan):
-    """The Metrobus's route, all of it seen from the bus: Calle Ocho's shops for the first stretch, then Brickell's towers."""
-    li = plan.li
-    # The strip the bus builds runs BUS_STRIP metres from x0 (LevelBuildKit.Metrobus); the ride goes about 200 m, so it is long
-    # enough to go from Calle Ocho into Brickell once rather than round and round.
-    plan.x0, plan.x1 = BUS_STRIP[0], BUS_STRIP[0] + BUS_STRIP[1]
-    split = plan.x0 + 125.0
-    little_havana(plan, x_to=split)
-    brickell(plan, x_from=split + 2.0)
-
-
-def interior(plan):
-    pass
-
-
-DISTRICTS = {'riverside': riverside, 'littleHavana': little_havana, 'bus': bus_route, 'brickell': brickell, 'bayfront': bayfront, 'dock': river,
-             'riverwalk': river, 'downtown': downtown, 'underline': underline, 'biscayne': biscayne, 'museumPark': museum_park,
-             'interior': interior}
+DISTRICTS = {'riverside': riverside, 'littleHavana': little_havana, 'brickell': brickell, 'bayfront': bayfront,
+             'riverwalk': river, 'downtown': downtown, 'underline': underline, 'biscayne': biscayne, 'museumPark': museum_park}
 
 
 def check(leg, d):

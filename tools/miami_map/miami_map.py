@@ -8,8 +8,8 @@ The picture is rendered in Blender from the game's kits (tools/blender/miami_map
 downtown, the parks, the bay and Miami Beach) on this file's plan (its routes, home, school, river); `--flat` still writes the old
 flat drawing. It carries no text, route lines, nodes or markers: the game draws those. The layout is marked "placeholder" (its
 nodes are spread along the routes rather than measured from the legs).
-The routes follow the trips of docs/CITIES.md: FL1 east along Calle Ocho, the bus to Brickell, over the river's drawbridge to
-the bayfront; FL2 north to the river, along the Riverwalk, the drugstore downtown; FL3 south to the Underline, the people
+The routes follow the trips of docs/CITIES.md: FL1 east along Calle Ocho, the bus to Brickell (not played: no node or stop on
+it), over the river's drawbridge to the bayfront; FL2 north to the river, along the Riverwalk, past the drugstore downtown; FL3 south to the Underline, the people
 mover round to Biscayne, north to Museum Park; all from the ranch house in Little Havana to Bayside Elementary.
 Needs Pillow."""
 import json, math, os, random, sys
@@ -31,14 +31,13 @@ ROUTES = {
 }
 # Each leg's node, near the start of its leg (after home or the stop it starts at), and the side its name goes.
 NODES = [
-    ("FL1-1", (930, 1000), "below"), ("FL1-2", (1380, 1000), "below"), ("FL1-3", (1950, 920), "right"), ("FL1-4", (2350, 800), "below"),
-    ("FL2-1", (700, 820), "left"), ("FL2-2", (1120, 640), "above"), ("FL2-3", (1340, 640), "above"), ("FL2-4", (1880, 592), "above"),
-    ("FL2-5", (2150, 560), "above"),
+    ("FL1-1", (930, 1000), "below"), ("FL1-2", (1950, 920), "right"), ("FL1-3", (2350, 800), "below"),
+    ("FL2-1", (700, 820), "left"), ("FL2-2", (1340, 640), "above"), ("FL2-3", (2150, 560), "above"),
     ("FL3-1", (930, 1250), "below"), ("FL3-2", (2600, 780), "right"), ("FL3-3", (2600, 420), "right"),
 ]
 # The stops between the legs where the picture shows them (Levels/RouteTable.FloridaStops), on their routes.
 STOPS = [
-    ("calleOcho", "fl1", (1160, 1000)), ("brickell", "fl1", (1720, 1000)), ("bayfront", "fl1", (2190, 800)),
+    ("calleOcho", "fl1", (1160, 1000)), ("bayfront", "fl1", (2190, 800)),
     ("reysDock", "fl2", (1000, 640)), ("drugstore", "fl2", (1760, 624)),
     ("underline", "fl3", (1750, 1250)), ("museumPark", "fl3", (2600, 570)),
 ]

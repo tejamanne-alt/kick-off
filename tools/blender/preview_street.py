@@ -1349,7 +1349,7 @@ def kamakura_extras():
 
 if '--miami' in args:
     miami(args[args.index('--miami') + 1], args[args.index('--plan') + 1])
-    # set pieces the game's builder places (the Metrobus, the dock's boat...): --extra kit:model:x:y:z[:yaw[:scale]],...
+    # set pieces the game's builder places (the arcades, the sweeper...): --extra kit:model:x:y:z[:yaw[:scale]],...
     if '--extra' in args:
         for spec in args[args.index('--extra') + 1].split(','):
             f = spec.split(':')

@@ -8,12 +8,12 @@ namespace DribbleToSchool.EditorTools
     /// Bayside Elementary downtown, each leg one stretch of the real trip with play of its own. The same units and rules as the
     /// original town's (GreyboxLevels: metres, the kid runs about 4.2 m/s, plain gaps up to 2 m, a double jump about 3.6 m far
     /// and 2.2 m up; x = 0 is where the leg's own street begins, 12 m after the stop it starts at).
-    /// - FL1 Calle Ocho Bus: Little Havana Morning (roosters and hens, the domino park, a sprinkler), the Metrobus (M1), Brickell
-    ///   Avenue (scooters across the sidewalk, the bay wind between the towers, the river's drawbridge), Bayfront to School
-    ///   (pelicans off the posts, the fountain plaza, the crossing guard's corner).
-    /// - FL2 The River Way: Riverside Street (iguanas on the seawall, sprinklers, the golf cart), Uncle Rey's Boat (M2), the
-    ///   Riverwalk (three drawbridges over the river's slips), the Drugstore (M3), Downpour to School (bursts of rain to shelter
-    ///   from under the arcades, flooded gutters, gusts).
+    /// - FL1 Calle Ocho Bus: Little Havana Morning (roosters and hens, the domino park, a sprinkler), then from the stop where the
+    ///   bus is left (not played) Brickell Avenue (scooters across the sidewalk, the bay wind between the towers, the river's
+    ///   drawbridge), Bayfront to School (pelicans off the posts, the fountain plaza, the crossing guard's corner).
+    /// - FL2 The River Way: Riverside Street (iguanas on the seawall, sprinklers, the golf cart), the Riverwalk (three drawbridges
+    ///   over the river's slips), Downpour to School (bursts of rain to shelter from under the arcades, flooded gutters, gusts).
+    /// Every leg is a dribble: the mini-game legs (the Metrobus, Uncle Rey's Boat, the Drugstore) were removed in v128.
     /// - FL3 Under the Line: the Underline (fitness stations, the dog run, cyclists on the bike path), the people mover between
     ///   (Levels/Rides), Biscayne Boulevard (pelicans on the lamps, the street sweeper), Museum Park to School (the banyans' roots,
     ///   skateboarders, the kite fliers' wind off the bay).
@@ -72,19 +72,7 @@ namespace DribbleToSchool.EditorTools
             t.Goal(104f);
         }
 
-        /// <summary>FL1-2: the Metrobus from Calle Ocho to Brickell Avenue (M1, Challenges/BusRide).</summary>
-        public static void Metrobus(TrackBuilder t)
-        {
-            // The bus pulls in on the kid's left, facing on along Calle Ocho: its front door is at -4.5, its back end at -14.85 (the
-            // stop's own shelter and sign stand by the kid: LevelBuildKit.Metrobus).
-            t.Walls(-14.6f, 8f);
-            t.Start(0f);
-            t.Ground(-16f, 8f);
-            t.Metrobus(-4.5f);
-            t.CoinRow(-2.4f, -0.6f, 0.5f, 3);
-        }
-
-        /// <summary>FL1-3: Brickell Avenue, from the bus stop between the towers to the river's drawbridge and the bayfront.</summary>
+        /// <summary>FL1-2: Brickell Avenue, from the bus stop between the towers to the river's drawbridge and the bayfront.</summary>
         public static void BrickellAvenue(TrackBuilder t)
         {
             t.Walls(-8f, 128f);
@@ -125,7 +113,7 @@ namespace DribbleToSchool.EditorTools
             t.Goal(118f);
         }
 
-        /// <summary>FL1-4: along the bayfront to Bayside Elementary.</summary>
+        /// <summary>FL1-3: along the bayfront to Bayside Elementary.</summary>
         public static void Bayfront(TrackBuilder t)
         {
             t.Walls(-8f, 116f);
@@ -192,18 +180,7 @@ namespace DribbleToSchool.EditorTools
             t.Goal(90f);
         }
 
-        /// <summary>FL2-2: Uncle Rey's boat drifts in: throw it the line (M2, Challenges/MooringLine).</summary>
-        public static void UncleReysBoat(TrackBuilder t)
-        {
-            t.Walls(-8f, 26f);
-            t.Start(0f);
-            t.Ground(-8f, 10f);
-            t.Sign("Uncle Rey's boat!\nThrow the line to both cleats", new Vector2(2f, 3.4f));
-            t.ReysDock(10f, 26f, 15f);
-            t.CoinRow(-4f, -1f, 0.5f, 3);
-        }
-
-        /// <summary>FL2-3: the Riverwalk, under the drawbridges over the river's slips, to the drugstore.</summary>
+        /// <summary>FL2-2: the Riverwalk, under the drawbridges over the river's slips, to the drugstore.</summary>
         public static void Riverwalk(TrackBuilder t)
         {
             t.Walls(-8f, 124f);
@@ -239,16 +216,7 @@ namespace DribbleToSchool.EditorTools
             t.Goal(114f);
         }
 
-        /// <summary>FL2-4: the corner drugstore: poster board, glue and markers for the project's sign (M3, Challenges/DrugstoreShopping).</summary>
-        public static void Drugstore(TrackBuilder t)
-        {
-            t.Walls(-6f, 16f);
-            t.Start(0f);
-            t.Ground(-6f, 16f);
-            t.Drugstore(-6f, 16f);
-        }
-
-        /// <summary>FL2-5: downtown in a tropical cloudburst, from arcade to arcade, to the school.</summary>
+        /// <summary>FL2-3: downtown in a tropical cloudburst, from arcade to arcade, to the school.</summary>
         public static void Downpour(TrackBuilder t)
         {
             t.Walls(-8f, 128f);

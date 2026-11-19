@@ -332,7 +332,7 @@ namespace DribbleToSchool.Coop
 
     /// <summary>
     /// The locations a race can run in, by index on the wire: the cities whose levels are on the routes a race picks from
-    /// (Levels/RouteTable.All, Kamakura's). Florida has routes of its own now, with mini-game legs, and races don't run them yet.
+    /// (Levels/RouteTable.All, Kamakura's). Florida has routes of its own now, and races don't run them yet.
     /// </summary>
     public static class CoopLocations
     {

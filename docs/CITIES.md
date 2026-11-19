@@ -24,38 +24,37 @@ This is the design. What is built so far, and what each city still needs, is at 
     activity instead of a dribble: riding the transit yourself, an errand for an aunt, an uncle or a grandparent, shopping for classwork,
     or a city-specific task. Doing it opens the next leg. A mini-game is short (30 to 60 s), can be retried at once,
     and is played with the same controls as the game (the stick, KICK and its hold, jump, slide, and taps).
+    **Not in Kamakura or Florida:** the user removed their mini-games (v128) and nothing replaces them; their routes are
+    dribbles only, and a transit leg that was played (the Enoden, the Metrobus) is simply not shown: the next leg starts where
+    the ride would have ended. Madrid's, New York's and Mumbai's designs below still have theirs until the user decides.
 - **Twist legs.** Some dribbles carry a story beat that changes how they play: something is dropped and the kid must
   go back for it, a downpour hits, or the kid carries something that must arrive dry. These keep the trip from feeling
   like the same street every time.
-- **What an errand gives you rides along.** The bento, the science project or the poster board sits on the kid's
-  backpack for the rest of the trip. Getting it to school unharmed is the trip's **Delivered** badge (a sticker). It is
+- **What an errand gives you rides along** (the cities with mini-games). The basket's lunch or the poster board sits on the
+  kid's backpack for the rest of the trip. Getting it to school unharmed is the trip's **Delivered** badge (a sticker). It is
   never needed to finish.
 
-## The mini-games: five systems, skinned per city
+## The mini-games and the twists: five systems, skinned per city
 
-Each is one system in code, dressed differently by each city. That way five cities cost five mini-games, not fifteen.
+Each is one system in code, dressed differently by each city. M1 to M3 are the mini-games (Madrid, New York and Mumbai only:
+Kamakura and Florida have none since v128); M4 and M5 are twists inside ordinary dribble legs, in every city.
 
 ### M1. The ride: tram, bus, metro, subway, local train, people mover
 1. **Board.** The card reader turns green: tap it in time (the gate opens). Board before the door chime ends.
 2. **Ride.** The car sways round bends, brakes and pulls away. Keep the ball still under your foot: push the stick
    against the sway (a balance bar), and hold KICK through a hard brake (KICK's hold to control, which the game already
-   has). Each city adds a moment of real etiquette: give your seat to an elderly passenger (Kamakura), make room for a
-   stroller (New York), work your way to the door before your stop (Mumbai).
+   has). Each city adds a moment of real etiquette: make room for a stroller (New York), work your way to the door before
+   your stop (Mumbai).
 3. **Get off.** The next-stop display and the announcement name each stop. Tap STOP (the bell, the cord, the door
    button) at yours. Miss it, and you get off at the next one: the next leg starts further back and is longer, while
    the trip's clock runs on.
 - **Passed:** off at the right stop with the ball. Coins for a smooth ride; a star for never wobbling.
-- Some rides add a **choice**: express or local (New York), change lines by following the right colour (Madrid), or
-  change loops (Miami).
+- Some rides add a **choice**: express or local (New York), or change lines by following the right colour (Madrid).
 
 ### M2. The errand: an aunt, an uncle or a grandparent
 A short physical task with the relative, who then hands the item over:
 - **The basket from the balcony** (Madrid): an aunt lowers a wicker basket from her third floor. The wind swings it.
   Stay under it and catch it, keeping the ball off the wet street with keepy-uppies while you wait.
-- **Throw the line** (Florida): the uncle's boat drifts in to the dock. Aim the mooring line at the cleat with KICK's
-  drag-aim, the same as aiming a kick, and throw. Two hits and the boat is tied.
-- **Wrap the bento** (Kamakura): grandma shows the order. Fold the furoshiki's four corners, then tie the knot in
-  two timed taps.
 - **The pretzel cart rush** (New York): the uncle's cart has three morning customers. Each order shows in a bubble;
   tap the right items before each customer walks off.
 - **The tiffin sort** (Mumbai): the uncle is a dabbawala. Sort the tiffins by their painted codes into the right
@@ -65,7 +64,7 @@ A short physical task with the relative, who then hands the item over:
 A list of three or four items (poster board, a glue stick, a compass, markers). Find them on the shelves (tap), then
 pay at the counter: pick coins and notes that add up, the fewest you can, and check the change. Each city has its own
 shop, money and things on the list: a Madrid *papelería* in euros, a New York art store in dollars with sales tax added,
-a Mumbai stationery-and-photocopy shop in rupees, a Miami drugstore in dollars.
+a Mumbai stationery-and-photocopy shop in rupees.
 
 ### M4. Drop and come back (a twist leg)
 Halfway, something is lost: a kite (the bird) snatches a snack and drops it on the rocks, or the wind blows the
@@ -146,37 +145,32 @@ raised path down its middle. Hiking trails cross the wooded hills between temple
 
 | Route | Legs | The trip |
 |---|---|---|
-| **KM1 The Enoden** | 4 | Home -> Hase Station -> *(ride the tram)* -> Kamakura Station -> Komachi-dori -> School |
-| **KM2 The Shonan Coast** | 5 | Home -> Yuigahama beach -> Grandma's whitebait shop -> along the sand -> Wakamiya-oji -> School |
+| **KM1 The Enoden** | 3 | Home -> Hase Station -> *(the tram, not played)* -> Kamakura Station -> Komachi-dori -> School |
+| **KM2 The Shonan Coast** | 4 | Home -> Yuigahama beach -> along the sand -> Wakamiya-oji -> School |
 | **KM3 The Temple Hills** (June rain) | 3 | Home -> hydrangea temple steps -> the hiking trail over the hills -> down through Genjiyama park -> School |
 
-### KM1 The Enoden (4 legs)
+### KM1 The Enoden (3 legs)
 1. **KM1-1 Hase Lanes** (dribble). Home to Hase Station. Narrow lanes between block walls, a vending machine corner, a
    small shrine gate. An Enoden level crossing (bells and bars, the tram passing a metre from the walls: M5). A line
    of first-graders in yellow caps walking to school: don't bump them. A delivery scooter. Ends at Hase Station's
    short platform.
-2. **KM1-2 Ride the Enoden** (mini-game M1). Tap the IC card, board before the chime ends, ride three stops
-   (Yuigahama, Wadazuka, Kamakura) as the car sways between houses. Give your seat to the grandmother who boards at
-   Yuigahama for a bonus. Get off at Kamakura, the end of the line.
-3. **KM1-3 Komachi-dori** (dribble). The shopping street from the station: shop curtains (*noren*), a sweet-potato ice
+2. **KM1-2 Komachi-dori** (dribble). The shopping street from Kamakura Station (the tram ride there is not played): shop curtains (*noren*), a sweet-potato ice
    cream stand, a whitebait croquette shop, sightseers (dense pedestrians), a rickshaw puller (a slow moving obstacle
    to ride behind), and a black kite diving at a sightseer's snack (a gull-style hazard). "Beware of kites" signs.
-4. **KM1-4 The Shrine Bridge** (dribble). Into the shrine's grounds: the steep arched stone bridge over the lotus pond
+3. **KM1-3 The Shrine Bridge** (dribble). Into the shrine's grounds: the steep arched stone bridge over the lotus pond
    (a hump to jump), pigeons, the big stone steps, the vermilion gate, then the school's gate on the hill beside.
 
-### KM2 The Shonan Coast (5 legs)
+### KM2 The Shonan Coast (4 legs)
 1. **KM2-1 Down to Yuigahama** (dribble). Home, under the coast road through a dim pedestrian tunnel (`DarkZone`), out
    past surf shops with boards on racks and beach showers, onto the boardwalk.
 2. **KM2-2 Yuigahama Morning** (dribble). The beach: surfers' boards on the sand, the tide (`Tide`), fishing boats
-   pulled up on rollers, beach-cleaning sacks, a kite circling. Ends at Grandma's shop on the beach road.
-3. **KM2-3 Grandma's Whitebait Shop** (mini-game M2, the bento). Her shop's whitebait trays drying on racks out front.
-   Fold the furoshiki's corners in the order she shows, tie the knot in time: the bento rides on your backpack.
-4. **KM2-4 The Kite Thief** (twist M4). A black kite snatches the rice ball off the bento and drops it on the rocks
+   pulled up on rollers, beach-cleaning sacks, a kite circling. Ends by the whitebait shops on the beach road.
+3. **KM2-3 The Kite Thief** (twist M4). A black kite snatches the rice ball from the kid's lunch and drops it on the rocks
    behind you as the tide comes in. Dribble back for it before a wave covers it, then on along the sand to the
    avenue's first gate.
-5. **KM2-5 Wakamiya-oji** (dribble). Up the avenue from the beach: the raised path between stone lanterns and cherry
+4. **KM2-4 Wakamiya-oji** (dribble). Up the avenue from the beach: the raised path between stone lanterns and cherry
    trees in full leaf, a crossing volunteer with a yellow flag at each junction (M5), shops waking up on both sides, and
-   the second and third shrine gates. Then the school. Deliver the bento for the badge.
+   the second and third shrine gates. Then the school.
 
 ### KM3 The Temple Hills, in the June rain (3 legs)
 1. **KM3-1 Hydrangea Steps** (dribble). Up a temple's hillside path: stone steps between banks of blue and violet
@@ -202,43 +196,37 @@ drawbridge, sabal palms) carries over to it.
 
 | Route | Legs | The trip |
 |---|---|---|
-| **FL1 Calle Ocho Bus** | 4 | Home -> the bus stop on Calle Ocho -> *(ride the bus)* -> Brickell Avenue -> Bayfront Park -> School |
-| **FL2 The River Way** | 5 | Home -> the river -> Uncle Rey's boat -> the Riverwalk -> the drugstore -> School, in a downpour |
+| **FL1 Calle Ocho Bus** | 3 | Home -> the bus stop on Calle Ocho -> *(the bus, not played)* -> Brickell Avenue -> Bayfront Park -> School |
+| **FL2 The River Way** | 3 | Home -> the river by Uncle Rey's dock -> the Riverwalk -> past the drugstore -> School, in a downpour |
 | **FL3 Under the Line** | 3 | Home -> the linear park under the elevated railway -> *(the people mover)* -> Biscayne Boulevard -> Museum Park -> School |
 
 **How it is built (v124).** Each leg is its own district of Miami, not a Kamakura chapter's street: the Miami kit
 (`tools/blender/kit_buildings_mia.py`) with Florida's and the Plants kit's (royal palms, banyans, live oaks), placed by a plan
 per leg (`tools/blender/miami_plan.py` -> `Art/Models/Miami/MiamiDistricts.json`) that the game builds (`StreetBuilder.Miami`)
 and `preview_street.py --miami <leg>` renders through the game camera. The districts: Little Havana (FL1-1, FL3-1's houses),
-the bus's Calle Ocho into Brickell (FL1-2), Brickell (FL1-3), the bayfront (FL1-4), the river's docks and the Riverwalk (FL2-2,
-FL2-3), the drugstore's aisle (FL2-4), downtown's Deco arcades (FL2-5), the Underline under the Metrorail (FL3-1), Biscayne
-Boulevard (FL3-2), Museum Park (FL3-3), Riverside Street's ranch houses and live oaks (FL2-1, since v125). Every play piece a
+Brickell (FL1-2), the bayfront (FL1-3), the Riverwalk (FL2-2), downtown's Deco arcades (FL2-3), the Underline under the
+Metrorail (FL3-1), Biscayne Boulevard (FL3-2), Museum Park (FL3-3), Riverside Street's ranch houses and live oaks (FL2-1, since
+v125). (Leg numbers since v128, when the mini-game legs were removed and the legs after them took their numbers.) Every play piece a
 leg uses is Miami's too (v125: the slide-unders, the work zone, crates, the crossing, signs, checkpoints, the fountain, the
 pelican, the stops and their people, Miami's soundscapes): nothing of Kamakura's. The leg's look chapter only sets its light and
 ground rules (no leg is the beach's). The map is rendered from the same kits (`tools/blender/miami_map_render.py`).
 
-### FL1 Calle Ocho Bus (4 legs)
+### FL1 Calle Ocho Bus (3 legs)
 1. **FL1-1 Little Havana Morning** (dribble). Home to the bus stop. Roosters and hens crossing (they flutter up when
    the ball comes), a walk-up cafe window, dominoes tables in the little park, mural walls, a fruit cart with mangoes,
    lawn sprinklers (Florida's existing `Sprinkler`).
-2. **FL1-2 The Metrobus** (mini-game M1). Wave the bus down, tap the transit card, find a spot. The bus brakes hard at
-   the lights (hold KICK). Pull the cord at Brickell Avenue: miss it and walk back from the next stop.
-3. **FL1-3 Brickell Avenue** (dribble). Glass towers, a valet loop, rental scooters left across the sidewalk, a crane
+2. **FL1-2 Brickell Avenue** (dribble). From the stop where the bus is left (the ride is not played). Glass towers, a valet loop, rental scooters left across the sidewalk, a crane
    overhead, the bay wind between towers (`WindArea`), then the river's drawbridge rising for a tug (`Drawbridge`, M5).
-4. **FL1-4 Bayfront to School** (dribble). The bay walk: royal palms, pelicans taking off from the posts, a fountain
+3. **FL1-3 Bayfront to School** (dribble). The bay walk: royal palms, pelicans taking off from the posts, a fountain
    plaza, cruise ships across the water, the crossing guard's corner, the school.
 
-### FL2 The River Way (5 legs)
+### FL2 The River Way (3 legs)
 1. **FL2-1 Riverside Street** (dribble). Home down to the Miami River: ranch houses, iguanas sunning on a seawall that
    scuttle across your path, sprinklers, a golf cart.
-2. **FL2-2 Uncle Rey's Boat** (mini-game M2, the science project). His fishing boat drifts in. Throw the line onto the
-   cleats with KICK's aim. He hands over your science project, a model of the Everglades, which rides on your backpack.
-3. **FL2-3 The Riverwalk** (dribble). The boardwalk along the river under three bascule bridges, each rising in turn for
+2. **FL2-2 The Riverwalk** (dribble). From Uncle Rey's dock. The boardwalk along the river under three bascule bridges, each rising in turn for
    a freighter or a tug. Mooring bollards, coiled lines, crates.
-4. **FL2-4 The Drugstore** (mini-game M3). Poster board, glue and markers for the project's sign, paid in dollars at a
-   corner drugstore.
-5. **FL2-5 Downpour to School** (twist). Downtown, the sky turns: a tropical cloudburst. Shelter under arcades and
-   awnings at the heaviest bursts, or the project gets wet (the Delivered badge is lost). Flooded gutters slow you
+3. **FL2-3 Downpour to School** (twist). From the corner drugstore, downtown, the sky turns: a tropical cloudburst. Shelter
+   under arcades and awnings at the heaviest bursts. Flooded gutters slow you
    (`SlowZone`), lightning flashes, gusts (`WindArea`). Then the sun and the steam rising off the street, and the
    school.
 
@@ -426,16 +414,19 @@ Until then the HOLIDAY RUN picker shows it as coming soon.
   replace them once built). **Florida** plays its own three routes (v123, below). **Madrid**, **New York** and **Mumbai**
   show as coming soon.
 - **Florida's routes (v123):** FL1, FL2 and FL3 as designed above, in `Levels/RouteTable.Florida` (Florida's own chapter, 6,
-  and stops), twelve legs in the level table and `Editor/FloridaLevels.cs`. The mini-game systems built so far: **M1** the
-  ride (`Challenges/BusRide`, the Metrobus), **M2** the errand (`Challenges/MooringLine`, Uncle Rey's boat), **M3**
-  shopping (`Challenges/DrugstoreShopping`, the drugstore), all on `Challenges/MiniGameObjective` (a leg whose time counts
-  in the trip). **M5** is the existing `Drawbridge` and `Crossing`. The ride between legs is `Levels/Rides` and
-  `Core/RideCutscene` (the people mover). What an errand gives rides along: `Progression/Errands` (FL2's science project,
-  spoiled by the downpour, the Delivered bonus at school). Florida's map is its own picture and layout (`tools/miami_map`,
-  a flat stand-in until the kit exists). Florida's earlier nine levels (the original town's Home Street and beach in
+  and stops), nine legs in the level table and `Editor/FloridaLevels.cs`, every one a dribble. **M5** is the existing
+  `Drawbridge` and `Crossing`. The ride between legs is `Levels/Rides` and `Core/RideCutscene` (the people mover).
+  Florida's map is its own picture and layout (`tools/miami_map`).
+- **Mini-games removed (v128, the user's decision):** Florida's three (FL1-2 The Metrobus, FL2-2 Uncle Rey's Boat, FL2-4 The
+  Drugstore), their code (`Challenges/MiniGameObjective`, `BusRide`, `MooringLine`, `DrugstoreShopping`), the errand they gave
+  (`Progression/Errands`: the science project and its Delivered badge; the downpour now only sends the kid for cover) and
+  their models (the bus's cut-away near side, the drugstore's aisle). Nothing replaces them. The legs after them took their
+  numbers (FL1-3 became FL1-2, FL1-4 FL1-3, FL2-3 FL2-2, FL2-5 FL2-3); save version 3 moves a player's records with them
+  (`Progression/FloridaLegs`). Kamakura's designed mini-games (KM1-2 Ride the Enoden, KM2-3 Grandma's Whitebait Shop) are
+  out of its routes above. Florida's earlier nine levels (the original town's Home Street and beach in
   Florida's streets, v117 to v122) are gone; their drawbridge, sprinklers, golf cart and storm live on in Florida's legs.
-- **Done for Florida in v124:** the Miami kit and each leg's own district (`StreetBuilder.Miami`), the bus with its inside,
-  Uncle Rey's boat and the drugstore as models, Miami's stops and obstacles, the map rendered from the kits.
+- **Done for Florida in v124:** the Miami kit and each leg's own district (`StreetBuilder.Miami`), Miami's stops and
+  obstacles, the map rendered from the kits.
 - **Still to do for Florida:** Bayside Elementary's own building (the school is the Florida kit's), a Holiday Run in Miami;
   co-op races on Florida's routes (races run Kamakura's routes only for now); M4 (drop and come back) for the routes that use
   it; the user's reference images (`docs/IMAGE_PROMPTS.md`) to check the districts against, when they come.
@@ -447,7 +438,8 @@ Until then the HOLIDAY RUN picker shows it as coming soon.
    in `review/<city>/refs`.
 2. **The kit:** about 40 to 60 models a city (`tools/blender/kit_buildings_<city>.py`), within the budgets in
    `docs/ART_DIRECTION.md`, with weathering and ambient occlusion baked in, and reviewed in all four looks.
-3. **The mechanics:** the five mini-game systems (M1 to M5) once, then each city's dressing and hazards.
+3. **The mechanics:** the twists (M4, M5) and, for the cities that keep them, the mini-game systems (M1 to M3) once, then
+   each city's dressing and hazards.
 4. **The levels:** each route's legs in `Editor/GeneratedContent.cs` and `Editor/GreyboxLevels.cs`, with the stops in
    `Levels/RouteTable.cs`. Level ids are the route's id and leg (`KM1-1`), never reused.
 5. **Music** for the three new countries.
@@ -456,5 +448,5 @@ Until then the HOLIDAY RUN picker shows it as coming soon.
 
 **Cost per new city** (est., none built): one building kit and its 4096 x 4096 atlas (about 16 MB in memory
 uncompressed, a quarter of that compressed), loaded only in that city's scenes; 12 levels' scenes; models within the
-kit budgets. Mini-games are small scenes with a fixed camera and few objects, lighter than a street. Each city must
+kit budgets. Each city must
 be checked on the Nord CE5 before it ships.

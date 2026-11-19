@@ -28,7 +28,7 @@ namespace DribbleToSchool.UI
             }
         }
 
-        public enum Kind { Juggle, Targets, Slalom, Ride, Throw, Shop }
+        public enum Kind { Juggle, Targets, Slalom }
 
         /// <summary>The tips for each kind of challenge, in order.</summary>
         public static Tip[] TipsFor(Kind kind)
@@ -49,27 +49,6 @@ namespace DribbleToSchool.UI
                         new Tip(ControlsGuide.Picture.Walk, "guide.targets.walk"),
                         new Tip(ControlsGuide.Picture.Jump, "guide.targets.jump"),
                     };
-                case Kind.Ride:
-                    return new[]
-                    {
-                        new Tip(ControlsGuide.Picture.Touch, "guide.ride.card"),
-                        new Tip(ControlsGuide.Picture.Walk, "guide.ride.walk"),
-                        new Tip(ControlsGuide.Picture.Kick, "guide.ride.hold"),
-                    };
-                case Kind.Throw:
-                    return new[]
-                    {
-                        new Tip(ControlsGuide.Picture.Kick, "guide.throw.kick"),
-                        new Tip(ControlsGuide.Picture.Walk, "guide.throw.walk"),
-                        new Tip(ControlsGuide.Picture.Touch, "guide.throw.time"),
-                    };
-                case Kind.Shop:
-                    return new[]
-                    {
-                        new Tip(ControlsGuide.Picture.Touch, "guide.shop.list"),
-                        new Tip(ControlsGuide.Picture.Touch, "guide.shop.pay"),
-                        new Tip(ControlsGuide.Picture.Touch, "guide.shop.change"),
-                    };
                 default:
                     return new[]
                     {
@@ -84,9 +63,6 @@ namespace DribbleToSchool.UI
         {
             if (objective is JuggleChallenge) return Kind.Juggle;
             if (objective is SlalomChallenge) return Kind.Slalom;
-            if (objective is BusRide) return Kind.Ride;
-            if (objective is MooringLine) return Kind.Throw;
-            if (objective is DrugstoreShopping) return Kind.Shop;
             return Kind.Targets;
         }
 
@@ -131,9 +107,7 @@ namespace DribbleToSchool.UI
                     cell.offsetMin = cell.offsetMax = Vector2.zero;
                     var row = UIKit.Stars(cell, "Icons", i + 1, 30f, 2f);
                     UIKit.Place(row, new Vector2(0.5f, 0.5f), new Vector2(-row.sizeDelta.x * 0.5f - 6f, 0f), row.sizeDelta, new Vector2(0.5f, 0.5f));
-                    var mini = objective as MiniGameObjective;
-                    string need = mini != null ? mini.StarText(i + 1)
-                        : Loc.F(objective.lowerIsBetter ? "results.under" : "results.reach", objective.FormatScore(objective.starThresholds[i]));
+                    string need = Loc.F(objective.lowerIsBetter ? "results.under" : "results.reach", objective.FormatScore(objective.starThresholds[i]));
                     var text = UIKit.Label(cell, "Need", need, 28, UITheme.Ink, TextAnchor.MiddleLeft, true);
                     UIKit.Place(text.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(110f, 0f), new Vector2(220f, 50f), new Vector2(0.5f, 0.5f));
                     UIKit.Fit(text, 20);

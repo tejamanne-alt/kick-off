@@ -7,7 +7,8 @@ leg 1).
 There are three layers, pasted in order:
 1. **The base prompt:** the same for every city.
 2. **The city block:** the place, its buildings, materials, plants, street, vehicles, and its own light and climate.
-3. **One shot per message:** a level (its street from start to end), a mini-game's set, the city's look target, or an
+3. **One shot per message:** a level (its street from start to end), a mini-game's set (Madrid, New York and Mumbai only:
+   Kamakura and Florida have none), the city's look target, or an
    asset sheet.
 
 ## What the images are for
@@ -168,16 +169,7 @@ strip.
 ```
 
 ```text
-LEVEL KM1-2, Ride the Enoden (mini-game set). Follow the base prompt and the Kamakura block, but the camera is inside.
-Inside a small, old commuter tram car, seen straight across the aisle at standing eye height, side-on to the far wall:
-a long bench seat of green moquette, wide windows showing house walls and gardens passing a metre away, hanging straps
-and grab poles, a priority-seat sticker, a route map above the windows with five invented station names, a next-stop
-display, a stop button, a sliding door at the right with a door chime speaker. Warm morning sun through the windows in
-bright patches on the floor. Empty: no passengers.
-```
-
-```text
-LEVEL KM1-3, Komachi-dori: Kamakura Station to the shrine end. Follow the base prompt and the Kamakura block.
+LEVEL KM1-2, Komachi-dori: Kamakura Station to the shrine end. Follow the base prompt and the Kamakura block.
 Left: the station square's red torii-shaped gateway sign (invented name) and a taxi rank. Then the shopping street:
 two-storey shopfronts with noren curtains, hand-painted signboards, paper lanterns, a sweet-potato ice cream stand, a
 whitebait croquette shop with a fryer at the window, a rice cracker shop with crackers grilling, a souvenir shop with
@@ -187,7 +179,7 @@ gate onto the shrine's grounds.
 ```
 
 ```text
-LEVEL KM1-4, The Shrine Bridge: through the shrine to school. Follow the base prompt and the Kamakura block.
+LEVEL KM1-3, The Shrine Bridge: through the shrine to school. Follow the base prompt and the Kamakura block.
 Left: the shrine grounds' pale gravel path. A steeply arched stone bridge over a lotus pond, a stone basin with ladles
 under a small roof, rows of stone lanterns, white-paper fortunes tied to a rack, big old ginkgo and camphor trees, a
 broad flight of stone steps rising behind to a vermilion hall (far, small). Right: beside the shrine's wooded hill, the
@@ -212,20 +204,11 @@ A long sandy beach seen side-on, the sea behind: dark grey-brown volcanic sand g
 seaweed and shells, a few surfboards stuck upright in the sand, two small fishing boats pulled up on wooden rollers with
 nets heaped beside them, a lifeguard tower, white sacks of collected litter tied at the top, low waves breaking, a black
 kite (the one animal) gliding above. Behind the sand, a row of leaning black pines and beach houses. Right: the beach road
-with Grandma's whitebait shop (next shot). The play lane is firm wet sand.
+with its whitebait shops, their trays drying on racks. The play lane is firm wet sand.
 ```
 
 ```text
-LEVEL KM2-3, Grandma's Whitebait Shop (mini-game set). Follow the base prompt and the Kamakura block.
-The front of a small family whitebait shop on the beach road, straight on: a two-storey timber house with the shop on
-the ground floor, an open front with a glass counter, a hand-painted wooden sign (invented name) and a noren curtain,
-wooden racks of shallow bamboo trays with tiny white fish drying in the sun, polystyrene boxes stacked, a hose reel, a
-scooter with a delivery box. On the counter, centred, a lacquered bento box on a square of patterned cloth (a furoshiki)
-laid out flat, its four corners spread. Nobody at the counter.
-```
-
-```text
-LEVEL KM2-4, The Kite Thief: along the rocks. Follow the base prompt and the Kamakura block.
+LEVEL KM2-3, The Kite Thief: along the rocks. Follow the base prompt and the Kamakura block.
 Continue the beach from the previous image (attached). The sand gives way to a low headland of dark, wave-cut rock shelves
 with tide pools, barnacles and seaweed, a path of worn steps along their top, waves washing over the lowest shelf. On a
 dry rock in the middle, a single rice ball in its wrapper, dropped. A black kite on a pine branch above. Right: the beach
@@ -233,7 +216,7 @@ continues to a large wooden gateway (a torii) standing at the start of a straigh
 ```
 
 ```text
-LEVEL KM2-5, Wakamiya-oji: the avenue to school. Follow the base prompt and the Kamakura block.
+LEVEL KM2-4, Wakamiya-oji: the avenue to school. Follow the base prompt and the Kamakura block.
 A wide, straight avenue seen side-on along its length: down its middle a raised footpath edged with stone and lined with
 stone lanterns and cherry trees in green leaf (this path is the play lane, raised about 60 cm above the road). Along the
 far side, shops waking up: a bakery, a pottery shop, a sweet shop, shutters half open. At a junction in the middle, a
@@ -367,15 +350,7 @@ on the main street, a bench, a shelter, a route sign.
 ```
 
 ```text
-LEVEL FL1-2, The Metrobus (mini-game set). Follow the base prompt and the Florida block, but the camera is inside.
-Inside a city bus, seen straight across the aisle, side-on to the far row of windows: blue plastic seats, yellow grab
-bars and a pull cord running along the windows, a next-stop LED display, a route map with invented stop names, a ticket
-reader by the front door at the left, the street passing in the windows (palms, pastel shops, a tower). Warm sun slanting
-in. Empty: no driver, no passengers.
-```
-
-```text
-LEVEL FL1-3, Brickell Avenue: the towers to the river. Follow the base prompt and the Florida block.
+LEVEL FL1-2, Brickell Avenue: the towers to the river. Follow the base prompt and the Florida block.
 Left: a bus stop at the foot of a glass condo tower with a palm-lined valet loop. Then a wide avenue sidewalk under glass
 and concrete towers, a construction site behind printed mesh fencing with a tower crane above, three rental scooters left
 across the sidewalk, a coffee kiosk, royal palms in tree grates. Right: the Miami River and a bascule drawbridge with its
@@ -383,7 +358,7 @@ operator's tower, gates and warning lights; a tug moored below.
 ```
 
 ```text
-LEVEL FL1-4, Bayfront to School. Follow the base prompt and the Florida block.
+LEVEL FL1-3, Bayfront to School. Follow the base prompt and the Florida block.
 Left: the drawbridge's far end. Then a bayfront promenade: royal palms in rows, wooden posts with pelicans on them (the
 only animals), a fountain plaza with jets, the turquoise bay and a moored cruise ship far across the water. Right: the
 school: a cream-and-teal concrete school with covered walkways on metal posts, a palm-lined bus loop with a parked, empty
@@ -401,34 +376,19 @@ Wake" sign. Right: a small timber dock with a cleat at its edge, an empty berth.
 ```
 
 ```text
-LEVEL FL2-2, Uncle Rey's Boat (mini-game set). Follow the base prompt and the Florida block.
-A working dock on the Miami River seen side-on: a weathered white fishing boat with a blue hull stripe, outriggers and a
-small cabin, drifting a metre off the dock; two steel cleats on the dock's edge, a coiled mooring line on the boat's
-bow, fenders hanging, crates and a cooler on deck, and on the cabin roof a big school science project: a model of the
-Everglades on a board. Mangroves and another dock behind. No people on board.
-```
-
-```text
-LEVEL FL2-3, The Riverwalk: under the bridges. Follow the base prompt and the Florida block.
+LEVEL FL2-2, The Riverwalk: under the bridges. Follow the base prompt and the Florida block.
 A concrete-and-timber riverwalk along the Miami River, side-on: three bascule drawbridges crossing overhead in turn,
 the nearest with its leaves partly raised; bollards and coiled lines; crates; moored small freighters with rust streaks;
 a tugboat; towers behind; railings along the water's edge. The play lane is the riverwalk.
 ```
 
 ```text
-LEVEL FL2-4, The Drugstore (mini-game set). Follow the base prompt and the Florida block, but the camera is inside.
-Inside a small corner drugstore, straight-on to one long aisle of shelves: poster boards in white and colours, glue
-sticks, packs of markers, rulers, notebooks, snacks; price tags in dollars; and at the right end a counter with a till and
-a card reader. Fluorescent light with warm sun from the door. Invented brand-free packaging. Nobody at all.
-```
-
-```text
-LEVEL FL2-5, Downpour to School. Follow the base prompt and the Florida block, with this light: a sudden tropical
+LEVEL FL2-3, Downpour to School. Follow the base prompt and the Florida block, with this light: a sudden tropical
 cloudburst. Dark blue-grey storm cloud overhead, heavy rain streaks, sheets of water on the street, gutters overflowing,
 light about 6,500 K and flat, a bright break of sun at the far right with steam rising.
 Left: downtown's older street: Art Deco and Mediterranean Revival buildings with deep arcades and canvas awnings, a
 flooded crosswalk, rain pouring off awning edges in sheets, a bus shelter. Right: the storm breaking, wet palms shining,
-the school's covered walkway and gate (the school from FL1-4).
+the school's covered walkway and gate (the school from FL1-3).
 ```
 
 #### FL3 Under the Line
@@ -451,7 +411,7 @@ truck, bus shelters, the elevated people-mover's track crossing above on slim pi
 ```text
 LEVEL FL3-3, Museum Park to School. Follow the base prompt and the Florida block.
 A bayside park, side-on: two huge banyan trees whose aerial roots form arches and low steps, a lawn with sprinklers,
-skateboard ledges, a kite-flier's kite tied to a bench (no person), the bay behind. Right: the school (as FL1-4).
+skateboard ledges, a kite-flier's kite tied to a bench (no person), the bay behind. Right: the school (as FL1-3).
 ```
 
 #### Florida sheets and plates

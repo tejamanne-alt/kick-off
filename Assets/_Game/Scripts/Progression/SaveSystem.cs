@@ -91,6 +91,8 @@ namespace DribbleToSchool.Progression
             if (d.bags == null) d.bags = new System.Collections.Generic.List<BagChoice>();
             // Version 2: the trips to school. Routes already finished count as walked on time.
             SchoolTrips.Upgrade(d);
+            // Version 3: Florida's legs renumbered after its mini-games were removed.
+            FloridaLegs.Upgrade(d);
             if (d.schoolMedals == null) d.schoolMedals = new System.Collections.Generic.List<string>();
             d.version = SaveData.CurrentVersion;
         }

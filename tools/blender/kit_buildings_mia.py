@@ -3,19 +3,18 @@
 #
 #   Little Havana (FL1-1, FL2-1's corner): a walk-up café with its ventanita, a two-storey cigar shop with an iron balcony,
 #     a fruit shop with its crates, mural walls, the domino park's pergola, its tables, a fruit cart, roosters and hens.
-#   Brickell and downtown (FL1-3, FL2-5, FL3-2): glass condo and office towers, a tower podium with its valet canopy, the
+#   Brickell and downtown (FL1-2, FL2-3, FL3-2): glass condo and office towers, a tower podium with its valet canopy, the
 #     construction site's printed mesh fence, a coffee kiosk, rental scooters; Art Deco blocks with deep arcades and canvas
 #     canopies, a Mediterranean Revival building with its loggia, a Spanish-style tower with a cupola (invented).
-#   The river and the bay (FL1-4, FL2-2, FL2-3): a small river freighter, a tug, Uncle Rey's fishing boat, the riverwalk's
+#   The river and the bay (FL1-3, FL2-1, FL2-2): a small river freighter, a tug, a fishing boat, the riverwalk's
 #     rail and bollards, a coiled line, pelicans on their pilings, a cruise ship far off.
 #   The Underline and Museum Park (FL3-1, FL3-3): the elevated railway's guideway on round piers painted with murals, outdoor
 #     fitness bars, a museum under a canopy of hanging gardens (invented).
-#   The trip itself: the city bus (its near side a separate model, so the game can cut it away once the kid is aboard), a
-#     stop's route sign, the corner drugstore's front and its aisle.
+#   The trip itself: the city bus (seen on the map), a stop's route sign, the corner drugstore's front.
 #
 # Same contract as the rest of the buildings kit (kit_buildings.py): metres, Z up, the origin at the centre of the front's
 # base, the street face looking along -Y, parts 1 wall / 2 accent / 3 roof. Every name on a sign is invented; no landmark,
-# brand or logo is copied. The kit's own tiles (signs, murals, the mesh banner, the shelves' goods, the bus livery) are
+# brand or logo is copied. The kit's own tiles (signs, murals, the mesh banner) are
 # painted here (paint(), through kit_buildings_atlas.EXTRA), with the Florida kit's patterns where they are shared.
 import math
 import numpy as np
@@ -49,7 +48,7 @@ MIA_MAT = {
     'domino': (0, (0.97, 0.96, 0.92), 'white', 0.0), 'felt': (0, (0.16, 0.42, 0.30), 'white', 0.0),
     'seat': (0, (0.18, 0.40, 0.72), 'white', 0.05), 'grab': (0, (0.98, 0.78, 0.18), 'white', 0.0),
     'floorb': (0, (0.36, 0.37, 0.40), 'white', 0.0), 'busw': (0, (0.95, 0.95, 0.93), 'white', 0.05),
-    'led': (0, (0.98, 0.62, 0.12), 'white', 0.0), 'shelf': (0, (0.86, 0.87, 0.88), 'white', 0.1),
+    'led': (0, (0.98, 0.62, 0.12), 'white', 0.0),
     'terrazzo': (0, (0.90, 0.88, 0.84), 'white', 0.0), 'planterg': (0, (0.30, 0.52, 0.30), 'white', 0.35),
     'umbrella': (0, (0.96, 0.84, 0.32), 'white', 0.1), 'cream2': (0, (0.97, 0.93, 0.84), 'white', 0.05),
 }
@@ -64,7 +63,7 @@ TILES = [
     # Miami's own
     ('mi_ventanita', 768, 150), ('mi_cafemenu', 256, 320), ('mi_tabacos', 640, 140), ('mi_fruteria', 768, 140),
     ('mi_mural1', 1024, 640), ('mi_mural2', 512, 1024), ('mi_mural3', 640, 640), ('mi_mesh', 1024, 256),
-    ('mi_kiosk', 384, 96), ('mi_pharmacy', 768, 150), ('mi_goods', 512, 512), ('mi_goods2', 512, 512), ('mi_livery', 1024, 160),
+    ('mi_kiosk', 384, 96), ('mi_pharmacy', 768, 150),
     ('mi_led', 512, 64), ('mi_route', 192, 256), ('mi_deco1', 640, 120), ('mi_deco2', 640, 120), ('mi_hotel', 256, 640),
     ('mi_museum', 768, 96), ('mi_containers', 512, 256), ('mi_tower', 256, 256), ('mi_towerb', 256, 256),
     ('mi_domino', 128, 128), ('mi_scoot', 128, 64), ('mi_shutter', 256, 256),
@@ -791,36 +790,16 @@ def museum(B):
 BUS_L, BUS_W, BUS_H = 12.0, 2.6, 3.2
 
 
-def bus_shell(B, near):
-    """The city bus (invented livery): `near` builds only its near side (the -Y face the camera sees), which the game cuts
-    away once the kid is aboard; otherwise everything else: the far side with its windows, the roof and its AC pods, the
-    front with its raked windscreen and destination sign, the back, the wheels, and the inside (blue seats, yellow grab rails
-    and poles, the stop cord, the next-stop sign, the card reader by the front door). Its front is toward +X."""
+def bus_shell(B):
+    """The city bus (invented livery), as the map shows it: the far side with its windows, the roof and its AC pods, the front
+    with its raked windscreen and destination sign, the back, the wheels and the inside. Its front is toward +X. (Its near side
+    was a separate model the bus mini-game cut away; the mini-games were removed in v128.)"""
     L, Wd, H = BUS_L, BUS_W, BUS_H
     y0, y1 = -Wd / 2, Wd / 2
     zf = 0.35                                   # the floor
     win = [(x, x + 1.45, 1.2, 2.45) for x in np.arange(-L / 2 + 1.0, L / 2 - 2.6, 1.7)]
-    door_f = (L / 2 - 2.3, L / 2 - 1.0, zf, 2.75)
     door_m = (-0.6, 0.7, zf, 2.75)
-    if near:
-        wf = WF((0, y0, 0), (1, 0, 0), 'front')
-        ops = [w for w in win if not (w[1] > door_m[0] and w[0] < door_m[1])] + [door_f, door_m]
-        wall(B, wf, -L / 2, L / 2, H, ops, v0=0.18, mat='busw')
-        for w in ops[:-2]:
-            window(B, wf, *w, depth=0.06, fw=0.05, cols=1, frame='black', glass='glass0', sill='black', head=None, cheap=True, register=False,
-                   seed=int(w[0] * 7) % 91)
-        for d in (door_f, door_m):
-            window(B, wf, d[0], d[1], d[2] + 0.15, d[3], depth=0.05, fw=0.06, cols=2, frame='black', glass='glass0', sill='black', head=None,
-                   cheap=True, register=False, seed=3)
-        mb = MB()
-        mb.face([(-L / 2 + 0.3, 0.55, 0.012), (L / 2 - 0.3, 0.55, 0.012), (L / 2 - 0.3, 1.1, 0.012), (-L / 2 + 0.3, 1.1, 0.012)], 'tex',
-                (0, 0, 1), 1.0, lambda co: reg_uv('mi_livery', (co.x + L / 2 - 0.3) / (L - 0.6), (co.y - 0.55) / 0.55, 0.0))
-        put(B, wf, mb.bm())
-        for x in (-L / 2 + 2.3, L / 2 - 3.4):
-            put(B, wf, fbox((x - 0.62, 0.18, -0.02), (x + 0.62, 0.95, 0.04), 0.03, 'black'))
-            bus_wheel(B, x, y0 + 0.15)            # (the near wheels go with the near side: nothing stays in front of the kid)
-        return H
-    # the far side (seen through the near side's windows from outside, and from inside)
+    # the far side
     far = WF((0, y1, 0), (-1, 0, 0), 'back')
     wall(B, far, -L / 2, L / 2, H, [(-w[1], -w[0], w[2], w[3]) for w in win], v0=0.18, mat='busw')
     for w in win:
@@ -924,8 +903,7 @@ def sweeper(B):
     return 2.43
 
 
-def bus(B): return bus_shell(B, False)
-def bus_near(B): return bus_shell(B, True)
+def bus(B): return bus_shell(B)
 
 
 def stop_sign(B):
@@ -958,38 +936,6 @@ def pharmacy(B):
     put(B, gc, fbox((-0.35, H + 0.25, -0.02), (0.35, H + 0.55, 0.04), 0.01, 'green'))
     B.feat('front', 'ao', a0=-W / 2, a1=W / 2, b=2.7, length=0.5, k=0.3)
     return H + pp + 0.2
-
-
-def drugstore_aisle(B):
-    """Inside the drugstore, side-on to one long aisle: the back wall's shelves stocked with poster boards, glue, markers,
-    notebooks, sunscreen and snacks (painted goods), price strips, the counter and its till at the right end, a terrazzo
-    floor, strip lights, a sun-bright door at the far right."""
-    W, H, D = B.W, B.H, B.D
-    B.add(box((-W / 2, 0.0, -0.02), (W / 2, D, 0.0), 'terrazzo'))
-    B.add(box((-W / 2, D - 0.1, 0.0), (W / 2, D, H), 'cream2'))
-    B.add(box((-W / 2, 0.0, H), (W / 2, D, H + 0.08), 'white'))
-    for x in np.arange(-W / 2 + 1.5, W / 2 - 1.5, 3.0):
-        B.add(box((x - 0.9, 0.6, H - 0.03), (x + 0.9, 0.9, H), 'lamp'))
-    x = -W / 2 + 0.3
-    k = 0
-    while x < W / 2 - 4.5:
-        x1 = x + 2.4
-        B.add(cbox2((x, D - 0.75, 0.0), (x1, D - 0.1, 2.3), 0.02, 'shelf'))
-        mb = MB()
-        reg = 'mi_goods' if k % 2 == 0 else 'mi_goods2'
-        mb.face([(x + 0.05, D - 0.76, 0.15), (x1 - 0.05, D - 0.76, 0.15), (x1 - 0.05, D - 0.76, 2.2), (x + 0.05, D - 0.76, 2.2)], 'tex',
-                (0, -1, 0), 1.0, lambda co, x=x, x1=x1, reg=reg: reg_uv(reg, (co.x - x - 0.05) / (x1 - x - 0.1), (co.z - 0.15) / 2.05, 0.0))
-        B.add(mb.bm())
-        for z in (0.15, 0.65, 1.15, 1.65):
-            B.add(box((x, D - 0.8, z - 0.03), (x1, D - 0.75, z), 'aqua'))
-        x = x1 + 0.1; k += 1
-    cx = W / 2 - 2.6
-    B.add(cbox2((cx - 1.4, 0.4, 0.0), (cx + 1.4, 1.2, 1.0), 0.03, 'woodc'))
-    B.add(cbox2((cx - 1.45, 0.35, 1.0), (cx + 1.45, 1.25, 1.05), 0.02, 'white'))
-    B.add(cbox2((cx - 0.3, 0.6, 1.05), (cx + 0.3, 1.0, 1.35), 0.02, 'black'))
-    B.add(box((cx - 0.25, 0.59, 1.15), (cx + 0.25, 0.6, 1.3), 'neonb'))
-    B.add(box((W / 2 - 0.1, 0.0, 0.0), (W / 2, D, H), 'lamp'))
-    return H + 0.1
 
 
 # ================================================================ the kit's tiles
@@ -1084,38 +1030,6 @@ def t_mesh(dr, w, h, k):
     _label(dr, w, h, 'Living above the bay - coming soon', SG.LATIN_SOFT, 0.1, (0.10, 0.20, 0.38), cx=0.32, cy=0.55, maxw=0.5)
 
 
-def t_goods(seed):
-    """Goods on a drugstore's shelves, in rows: poster boards, glue sticks, marker packs, notebooks, sunscreen, snacks."""
-    def f(dr, w, h, k):
-        rng = np.random.default_rng(seed)
-        dr.rectangle([0, 0, w, h], fill=_c((0.86, 0.87, 0.88)))
-        rows = 4
-        cols = [(0.92, 0.28, 0.26), (0.98, 0.84, 0.30), (0.26, 0.52, 0.86), (0.98, 0.98, 0.96), (0.40, 0.74, 0.40), (0.96, 0.56, 0.20),
-                (0.78, 0.46, 0.86), (0.98, 0.70, 0.76)]
-        for r in range(rows):
-            y1 = h - r * h / rows - 6 * k; y0 = y1 - h / rows * rng.uniform(0.55, 0.85)
-            x = 4 * k
-            while x < w - 10 * k:
-                bw = w * rng.uniform(0.04, 0.12)
-                top = y0 + (y1 - y0) * rng.uniform(0.0, 0.35)
-                c = cols[rng.integers(len(cols))]
-                dr.rectangle([x, top, x + bw, y1], fill=_c(c), outline=_c((0.2, 0.2, 0.22)), width=max(1, int(k)))
-                dr.rectangle([x + bw * 0.15, top + (y1 - top) * 0.3, x + bw * 0.85, top + (y1 - top) * 0.45], fill=_c((0.98, 0.98, 0.96)))
-                x += bw + 2 * k
-            dr.rectangle([0, y1 + 1, w, y1 + 5 * k], fill=_c((0.96, 0.85, 0.30)))
-    return f
-
-
-def t_livery(dr, w, h, k):
-    """The city bus's livery band (invented): a teal-to-orange sweep with the operator's name and the route."""
-    for x in range(int(w)):
-        t = x / w
-        c = (0.08 + 0.85 * t * t, 0.55 - 0.05 * t, 0.58 - 0.45 * t)
-        dr.line([(x, 0), (x, h)], fill=_c(c))
-    _label(dr, w, h, 'BAYLINE', BOLD, 0.6, WHITE, cx=0.25, cy=0.5, maxw=0.35, spacing=int(h * 0.05))
-    _label(dr, w, h, 'Route 8  Calle Ocho', SG.LATIN_SOFT, 0.42, WHITE, cx=0.72, cy=0.5, maxw=0.45)
-
-
 def t_led(dr, w, h, k):
     dr.rectangle([0, 0, w, h], fill=_c((0.05, 0.05, 0.05)))
     _label(dr, w, h, '8  BRICKELL', BOLD, 0.66, (1.0, 0.62, 0.12), maxw=0.92, spacing=int(h * 0.08))
@@ -1186,9 +1100,6 @@ def paint(img, put):
     pp(img, 'mi_mesh', t_mesh, (0.60, 0.75, 0.90))
     pp(img, 'mi_kiosk', t_shopname('Bay Brew Coffee', WHITE, (0.14, 0.50, 0.53), paths=BOLD, frac=0.55), (0.14, 0.50, 0.53))
     pp(img, 'mi_pharmacy', t_shopname('Corner Pharmacy', WHITE, (0.10, 0.48, 0.50), paths=BOLD, frac=0.55), (0.10, 0.48, 0.50))
-    pp(img, 'mi_goods', t_goods(1), (0.86, 0.87, 0.88))
-    pp(img, 'mi_goods2', t_goods(2), (0.86, 0.87, 0.88))
-    pp(img, 'mi_livery', t_livery, (0.1, 0.55, 0.58))
     pp(img, 'mi_led', t_led, (0.05, 0.05, 0.05))
     pp(img, 'mi_route', t_route, (0.10, 0.30, 0.60))
     pp(img, 'mi_deco1', t_shopname('Flagler Shoes', (0.10, 0.34, 0.50), (0.97, 0.94, 0.86), frac=0.62), (0.97, 0.94, 0.86))
@@ -1261,12 +1172,10 @@ def pal_mia(pal):
         ('MuseumMIA', 40.0, 9.0, 18.0, 0.0, museum, gl((0.92, 0.92, 0.90), (0.6, 0.6, 0.6), (0.56, 0.55, 0.54)), 10.0, {'ppm': 12}, {}),
         # the trip: the bus, a stop's sign, the drugstore
         ('BusMIA', BUS_L, BUS_H, BUS_W, 0.0, bus, gl((0.95, 0.95, 0.93), (0.98, 0.78, 0.18), (0.56, 0.55, 0.54)), 3.8, {'ppm': 32}, {}),
-        ('BusNearMIA', BUS_L, BUS_H, BUS_W, 0.0, bus_near, gl((0.95, 0.95, 0.93), (0.98, 0.78, 0.18), (0.56, 0.55, 0.54)), 3.8, {'ppm': 32}, {}),
         ('SweeperMIA', 3.4, 2.4, 1.9, 0.0, sweeper, gl((0.95, 0.95, 0.93), (0.98, 0.62, 0.18), (0.56, 0.55, 0.54)), 2.5, {'ppm': 24}, {}),
         ('StopSignMIA', 0.7, 3.0, 0.2, 0.0, stop_sign, gl((0.74, 0.76, 0.77), (0.10, 0.30, 0.60), (0.56, 0.55, 0.54)), 3.2, prop, {}),
         ('PharmacyMIA', 11.0, 3.6, 9.0, 0.0, pharmacy,
          gl((0.97, 0.97, 0.95), (0.14, 0.50, 0.53), (0.56, 0.55, 0.54), trim=(0.97, 0.96, 0.94)), 5.0, shop, {}),
-        ('DrugstoreAisleMIA', 22.0, 3.3, 3.2, 0.0, drugstore_aisle, gl((0.97, 0.94, 0.86), (0.42, 0.78, 0.78), (0.56, 0.55, 0.54)), 3.6, {'ppm': 24}, {}),
     ] + PLAY.rows(gl, prop)
 
 

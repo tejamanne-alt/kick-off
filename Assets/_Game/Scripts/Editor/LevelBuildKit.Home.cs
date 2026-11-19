@@ -29,8 +29,7 @@ namespace DribbleToSchool.EditorTools
         /// </summary>
         public static bool HasLeadIn(LevelDefinition def)
         {
-            // (A mini-game leg is played at its stop, in its own set: no walk from the stop before it.)
-            return HomeLeadInRules.HasLeadIn(def != null, def != null && (def.isChallenge || def.isMiniGame));
+            return HomeLeadInRules.HasLeadIn(def != null, def != null && def.isChallenge);
         }
 
         /// <summary>Does this level start on the kid's doorstep (the first level of its route)?</summary>

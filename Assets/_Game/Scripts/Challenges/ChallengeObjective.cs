@@ -29,12 +29,6 @@ namespace DribbleToSchool.Challenges
         /// <summary>How the score reads on the results screen.</summary>
         public virtual string FormatScore(int score) { return score.ToString(); }
 
-        /// <summary>
-        /// A leg of a route played as a mini-game (MiniGame: the bus ride, Uncle Rey's boat, the drugstore) rather than an optional
-        /// challenge: the trip to school runs through it, its time counts in the trip, and passing it opens the next leg.
-        /// </summary>
-        public virtual bool IsRouteLeg { get { return false; } }
-
         // The HUD reads StatusText ten times a second; the line is built again only when a number in it, or the language,
         // has changed (each build boxed its numbers and made a new string).
         string status, statusKey, statusLanguage;
