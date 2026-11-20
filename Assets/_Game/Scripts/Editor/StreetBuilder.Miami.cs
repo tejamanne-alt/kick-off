@@ -43,7 +43,33 @@ namespace DribbleToSchool.EditorTools
         public const string MiamiPlanFile = LevelBuildKit.ModelsDir + "/Miami/MiamiDistricts.json";
 
         static Dictionary<string, object> miamiLegs;
-        static string miamiLegsSource;
+        static DateTime miamiLegsStamp;
+
+        /// <summary>The plan's legs (empty if the plan is missing or unreadable), read again whenever the file changes.</summary>
+        static Dictionary<string, object> MiamiLegs
+        {
+            get
+            {
+                // (From the project's own folder, not the process's working directory.)
+                string path = Path.Combine(Directory.GetParent(Application.dataPath).FullName, MiamiPlanFile);
+                DateTime stamp = File.Exists(path) ? File.GetLastWriteTimeUtc(path) : DateTime.MinValue;
+                if (miamiLegs != null && stamp == miamiLegsStamp && stamp != DateTime.MinValue) return miamiLegs;
+                miamiLegsStamp = stamp;
+                miamiLegs = new Dictionary<string, object>();
+                try
+                {
+                    if (stamp != DateTime.MinValue)
+                    {
+                        var root = MiniJson.Parse(File.ReadAllText(path)) as Dictionary<string, object>;
+                        object legs;
+                        if (root != null && root.TryGetValue("legs", out legs) && legs is Dictionary<string, object>)
+                            miamiLegs = (Dictionary<string, object>)legs;
+                    }
+                }
+                catch (Exception e) { Debug.LogWarning("[Kick Off] " + MiamiPlanFile + " could not be read: " + e.Message); }
+                return miamiLegs;
+            }
+        }
 
         /// <summary>The plan of the Florida leg being built, or null (not Florida's, not in the plan, or the plan is missing).</summary>
         static Dictionary<string, object> MiamiPlan
@@ -52,39 +78,28 @@ namespace DribbleToSchool.EditorTools
             {
                 string leg = LevelBuildKit.LevelId;
                 if (!LevelBuildKit.Florida || string.IsNullOrEmpty(leg)) return null;
-                if (miamiLegs == null || miamiLegsSource != MiamiPlanFile)
-                {
-                    miamiLegsSource = MiamiPlanFile;
-                    miamiLegs = new Dictionary<string, object>();
-                    try
-                    {
-                        if (File.Exists(MiamiPlanFile))
-                        {
-                            var root = MiniJson.Parse(File.ReadAllText(MiamiPlanFile)) as Dictionary<string, object>;
-                            object legs;
-                            if (root != null && root.TryGetValue("legs", out legs) && legs is Dictionary<string, object>)
-                                miamiLegs = (Dictionary<string, object>)legs;
-                        }
-                    }
-                    catch (Exception e) { Debug.LogWarning("[Kick Off] " + MiamiPlanFile + " could not be read: " + e.Message); }
-                }
                 object plan;
-                return miamiLegs.TryGetValue(leg, out plan) ? plan as Dictionary<string, object> : null;
+                return MiamiLegs.TryGetValue(leg, out plan) ? plan as Dictionary<string, object> : null;
             }
+        }
+
+        /// <summary>The Florida legs whose district was really built in this build of the levels (GeneratedContent checks every one).</summary>
+        public static readonly HashSet<string> MiamiDistrictsBuilt = new HashSet<string>();
+
+        /// <summary>Why the leg being built can't have its district: each thing it needs, and whether it has it (for the error).</summary>
+        public static string MiamiDiagnosis()
+        {
+            string leg = LevelBuildKit.LevelId;
+            string path = Path.Combine(Directory.GetParent(Application.dataPath).FullName, MiamiPlanFile);
+            return "Florida=" + LevelBuildKit.Florida + ", level id=" + (leg ?? "(none)") + ", plan file " + path
+                + (File.Exists(path) ? " found" : " NOT FOUND") + ", legs in it: " + string.Join(" ", new List<string>(MiamiLegs.Keys).ToArray())
+                + ", Miami kit (VentanitaMIA) " + (LevelBuildKit.HasKitModel("Miami", "VentanitaMIA") ? "imported" : "NOT IMPORTED");
         }
 
         /// <summary>Is <paramref name="levelId"/> in the plan, and the Miami kit imported, so its district can be built?</summary>
         public static bool HasMiamiDistrict(string levelId)
         {
-            if (string.IsNullOrEmpty(levelId) || !LevelBuildKit.HasKitModel("Miami", "VentanitaMIA") || !File.Exists(MiamiPlanFile)) return false;
-            try
-            {
-                var root = MiniJson.Parse(File.ReadAllText(MiamiPlanFile)) as Dictionary<string, object>;
-                object legs;
-                return root != null && root.TryGetValue("legs", out legs) && legs is Dictionary<string, object>
-                    && ((Dictionary<string, object>)legs).ContainsKey(levelId);
-            }
-            catch (Exception) { return false; }
+            return !string.IsNullOrEmpty(levelId) && LevelBuildKit.HasKitModel("Miami", "VentanitaMIA") && MiamiLegs.ContainsKey(levelId);
         }
 
         /// <summary>The leg being built is one of Florida's own, dressed from the plan (and the Miami kit is there).</summary>
@@ -163,6 +178,7 @@ namespace DribbleToSchool.EditorTools
         /// </summary>
         static void MiamiScenery(LevelBuildKit.TrackBuilder track, Transform root, float x0, float x1, int seed)
         {
+            if (!string.IsNullOrEmpty(LevelBuildKit.LevelId)) MiamiDistrictsBuilt.Add(LevelBuildKit.LevelId);
             Miami(track, root, x0, x1);
             string kind = MiamiStr(MiamiPlan, "strips", "street");
             if (kind == "street" || kind == "havana") CanopyShadows(track, root, new System.Random(seed + 173), x0, x1);

@@ -118,8 +118,22 @@ namespace DribbleToSchool.EditorTools
                 {
                     if (KitModel(canal, "Florida", "DrawTowerFL", new Vector3(bank, top, StreetBuilder.PathHalf + 1.4f)) == null)
                         StreetBuilder.Solid(canal, "Tower", new Vector3(bank, top + 2f, StreetBuilder.PathHalf + 2.4f), new Vector3(2.2f, 4f, 2.2f), new Color(0.92f, 0.9f, 0.84f));
-                    foreach (float dz in new[] { -0.18f, 0.18f })
-                        lights.Add(Lamp(canal, new Vector3(bank + (bank < cx ? 0.45f : -0.45f), top + 2.3f, StreetBuilder.PathHalf + 0.6f + dz)));
+                    // The traffic signal for the path: a mast just before the gate (on the side the kid comes from), its black head
+                    // with two red lamps side by side facing the street, which flash in turn while the bridge is not down. (The
+                    // lamps used to be loose red discs on the tender's tower wall.)
+                    float side = bank < cx ? -1f : 1f;
+                    float mastX = bank + side * 1.35f, mastZ = StreetBuilder.PathHalf + 0.35f;
+                    Color black = new Color(0.08f, 0.08f, 0.09f), steel = new Color(0.42f, 0.43f, 0.45f);
+                    StreetBuilder.Solid(canal, "SignalMast", new Vector3(mastX, top + 1.45f, mastZ), new Vector3(0.1f, 2.9f, 0.1f), steel);
+                    StreetBuilder.Solid(canal, "SignalHead", new Vector3(mastX, top + 2.7f, mastZ - 0.1f), new Vector3(0.66f, 0.34f, 0.18f), black);
+                    StreetBuilder.Solid(canal, "SignalBackplate", new Vector3(mastX, top + 2.7f, mastZ - 0.01f), new Vector3(0.86f, 0.5f, 0.03f), black);
+                    foreach (float dx in new[] { -0.16f, 0.16f })
+                    {
+                        var lens = new Vector3(mastX + dx, top + 2.7f, mastZ - 0.2f);
+                        StreetBuilder.Solid(canal, "SignalVisor", lens + new Vector3(0f, 0.12f, -0.07f), new Vector3(0.24f, 0.03f, 0.16f), black);
+                        Lens(canal, lens + new Vector3(0f, 0f, 0.004f), new Color(0.28f, 0.06f, 0.05f), true);
+                        lights.Add(Lens(canal, lens, new Color(1f, 0.22f, 0.18f), false));
+                    }
                     // The gate's post, and its arm pivoting at the post's top (turned so that its fall, about its own x, is along the street).
                     var post = new Vector3(bank + (bank < cx ? -0.8f : 0.8f), top, StreetBuilder.PathHalf + 0.3f);
                     if (KitModel(canal, "Florida", "GatePostFL", post) == null)
@@ -184,22 +198,26 @@ namespace DribbleToSchool.EditorTools
                 return body;
             }
 
-            /// <summary>A red warning light facing the street (switched on and off by the drawbridge).</summary>
-            static Renderer Lamp(Transform parent, Vector3 at)
+            /// <summary>
+            /// A signal lens facing the street: the dark one is always there (the lamp when off); the lit one is switched on and off by
+            /// the drawbridge.
+            /// </summary>
+            static Renderer Lens(Transform parent, Vector3 at, Color color, bool on)
             {
-                var go = new GameObject("WarningLight");
+                var go = new GameObject(on ? "SignalLens" : "WarningLight");
                 go.transform.SetParent(parent, false);
                 go.transform.position = at;
                 var shape = go.AddComponent<CylinderShape>();
                 shape.axis = Vector3.forward;
-                shape.radius = 0.13f;
-                shape.length = 0.05f;
-                shape.sideColor = shape.endColor = new Color(1f, 0.22f, 0.18f);
+                shape.radius = 0.1f;
+                shape.length = 0.03f;
+                shape.sideColor = shape.endColor = color;
                 shape.segments = 14;
                 var r = go.GetComponent<MeshRenderer>();
-                r.sharedMaterial = Art.solid;
+                // (The lit lens is unlit, Sprites/Default with the lens's own colour: a lamp, not a red plastic disc in the shade.)
+                r.sharedMaterial = on ? Art.solid : (Art.wire != null ? Art.wire : Art.solid);
                 shape.Rebuild();
-                r.enabled = false;
+                r.enabled = on;
                 return r;
             }
         }

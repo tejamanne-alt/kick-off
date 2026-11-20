@@ -207,6 +207,11 @@ namespace DribbleToSchool.Core
 
         [Tooltip("How long the ball must stay out of the kid's reach before the run goes back to the checkpoint.")]
         public float strandedDelay = 1.2f;
+        [Tooltip("A ball at rest higher than this above the feet of the kid standing near it is out of reach (past a double jump).")]
+        public float reachHeight = 2.4f;
+        [Tooltip("How long a resting ball may stay out of reach, with the kid near and below it, before the run goes back to the checkpoint.")]
+        public float outOfReachDelay = 3.5f;
+        float outOfReachFor;
 
         [Header("Endless mode (Holiday Run)")]
         [Tooltip("The campaign with no destination: the same rules (losing the ball sends you back to the last checkpoint), " +
@@ -494,8 +499,27 @@ namespace DribbleToSchool.Core
                 LoseBall("lose.offStart");
             else if (maxBallBehindDistance > 0f && kid.transform.position.x - ball.transform.position.x > maxBallBehindDistance)
                 LoseBall("lose.behind");
-            else if (BallStranded())
+            else if (BallStranded() || BallOutOfReach())
                 LoseBall("lose.unreachable");
+        }
+
+        /// <summary>
+        /// True once the ball has rested out of the kid's reach for <see cref="outOfReachDelay"/> seconds: on anything (an awning, a
+        /// canopy, a stall, a ledge) higher than <see cref="reachHeight"/> above the feet of the kid standing within a few metres of it.
+        /// The surfaces known to strand it say so themselves (<see cref="IBallStrander"/>); this catches every other one, so a ball
+        /// stuck up high never needs the level restarted (docs/LEARNINGS.md E16). The HUD says why, and the run goes back to the
+        /// last checkpoint.
+        /// </summary>
+        bool BallOutOfReach()
+        {
+            var body = ball.Body;
+            Vector2 b = ball.transform.position, feet = kid.FeetPosition;
+            bool resting = body != null && body.linearVelocity.sqrMagnitude < 0.09f;
+            bool now = resting && kid.IsGrounded && Mathf.Abs(b.x - feet.x) < 6f && b.y - ball.Radius - feet.y > reachHeight;
+            outOfReachFor = now ? outOfReachFor + Time.deltaTime : 0f;
+            if (outOfReachFor < outOfReachDelay) return false;
+            outOfReachFor = 0f;
+            return true;
         }
 
         /// <summary>True once the ball has been somewhere the kid can't reach (over a closed

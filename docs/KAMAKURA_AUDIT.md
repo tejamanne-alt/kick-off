@@ -85,8 +85,8 @@ The people at the stops (`LevelBuildKit.Stops.cs:93-160`) are W/G:
 | Crossing | L07 ×3, L09, L10 ×3, L23 | cobbled side street (chapter 2); stop line on the left half (right-hand traffic); yellow centre dashes; vans, 4×4s and pickups crossing (`StreetBuilder.cs:238-267`, `LevelBuildKit.cs:1728`) | W | asphalt; stop line on the right half; white dashes; cars offset for driving on the left; `KeiCarKM`, `KeiTruckKM`, `ScooterKM` |
 | SiteExit | L16 ×2 | brick pillars; a banksman with an English STOP/GO board (a British custom); a pickup (`Site.cs:65-87`) | W | a traffic guard (交通誘導員) in navy and a white helmet with a red flag; `KeiTruckKM` |
 | Builder | L16 | courier model in hi-vis polo, shorts and a cap | W | long work trousers, white helmet, mesh vest |
-| Awning | L06 L08 L09 ×2 L10 | a red box on a grey post | B | a faded shop canvas awning or eave (to model) |
-| Platform, Ramp | L03 L08 L09 L15 L16 L17 L18 L21 L23 C04 | concrete boxes ("Shop steps", "stall roof", "School steps!") | B | stone steps, a shop's step, site staging, school steps |
+| Awning | L06 L08 L09 ×2 L10 | ~~a red box on a grey post~~ v130: a striped canvas canopy on two poles, a `BallTrap` | done | |
+| Platform, Ramp | L03 L08 L09 L15 L16 L17 L18 L21 L23 C04 | ~~concrete boxes~~ v130: retaining walls with a coping and a lawn, paved or concrete top; ramps solid wedges | done (procedural) | stone steps, a shop's step, school steps as models |
 | Water (park) | L20 L21 L22 L23 | a stream with traffic cones and a road barrier | B/mismatch | a stone-edged stream with stepping stones, no cones |
 | Tunnel | L18 ×2, L23 | red-train plates | G | the tram's green and cream |
 | Checkpoint | all story levels | white pennant on a steel pole | G | `NoboriKM` banner |

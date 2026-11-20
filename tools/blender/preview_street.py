@@ -927,6 +927,13 @@ def drawbridge(a, b):
     for bank in (a - 1.6, b + 1.6):
         place('Florida', 'DrawTowerFL', bank, 0, PATH + 1.4)
         post = bank + (-.8 if bank < cx else .8)
+        # the path's traffic signal (LevelBuildKit.Drawbridge since v130): a mast before the gate, a black head, two red lamps
+        mx, mz = bank + (-1.35 if bank < cx else 1.35), PATH + .35
+        box(mx - .05, mx + .05, 0, 2.9, mz - .05, mz + .05, (.42, .43, .45), 'mast')
+        box(mx - .33, mx + .33, 2.53, 2.87, mz - .19, mz - .01, (.08, .08, .09), 'head')
+        box(mx - .43, mx + .43, 2.45, 2.95, mz - .025, mz + .005, (.08, .08, .09), 'backplate')
+        for dx in (-.16, .16):
+            box(mx + dx - .09, mx + dx + .09, 2.61, 2.79, mz - .215, mz - .19, (1, .22, .18) if lift > 0.5 else (.28, .06, .05), 'lens')
         place('Florida', 'GatePostFL', post, 0, PATH + .3)
         # (LevelBuildKit.Drawbridge since v129: the arm falls ACROSS the path toward the camera, cut to end at the lane's front
         # edge; it used to fall along the street behind the kid)
@@ -1259,7 +1266,7 @@ def kamakura_home():
     asph, pave, grass = (.42, .43, .45), (.8, .79, .77), (.5, .64, .34)
     strip(-16.0, -8.3, pave, 0.0, 0.0, 'Paving'); strip(-8.3, -8.1, (.9, .9, .88), 0.0, 0.0, 'Kerb')
     strip(-8.1, -1.38, asph, 0.0, 0.0, 'Asphalt'); strip(-1.38, -1.26, (.96, .96, .94), 0.0, 0.0, 'Paving')
-    strip(-1.26, 1.2, (.44, .66, .45), 0.0, 0.0, 'Paving'); strip(1.2, PROP + 0.6, asph, 0.0, 0.0, 'Asphalt')
+    strip(-1.26, 0.3, tuple(v * t for v, t in zip(asph, (.62, 1.0, .7))), 0.0, 0.0, 'Asphalt'); strip(0.3, PROP + 0.6, asph, 0.0, 0.0, 'Asphalt')   # (green paint on the asphalt, v130)
     strip(PROP + 0.6, 90.0, grass, 0.0, 0.0, 'Grass')
     houses = Deck(['HouseTileKM', 'HouseMetalKM', 'HouseOldKM', 'HouseShedKM', 'HouseCarportKM', 'BungalowKM', 'ApartmentKM'])
     walls = [(.86, .8, .68), (.92, .91, .88), (.78, .77, .74), (.88, .84, .76)]

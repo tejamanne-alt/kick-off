@@ -183,11 +183,13 @@ namespace DribbleToSchool.EditorTools
                     {
                         float native = KitSize("Miami", deco).x;
                         if (native > 1f) block.localScale = new Vector3(wide / native, 1f, 1f);
+                        CanopyCollider("ArcadeCanopy", cx - wide * 0.5f, cx + wide * 0.5f, groundTop + 3.05f);
                         return;
                     }
                 }
                 shelters.Add(new Vector2(fromX, toX));
                 Audit.AddRoof(fromX, toX, groundTop + 3.1f);
+                CanopyCollider("ArcadeRoof", fromX, toX, groundTop + 3.1f);
                 var t = new GameObject("Arcade").transform;
                 t.SetParent(root, false);
                 t.position = new Vector3((fromX + toX) * 0.5f, groundTop, 0f);
@@ -197,6 +199,21 @@ namespace DribbleToSchool.EditorTools
                 Part(t, "Fascia", new Vector3(0f, 2.95f, -StreetBuilder.PathHalf - 0.35f), new Vector3(w, 0.3f, 0.08f), Color.Lerp(c, Coral, 0.4f));
                 for (float x = -w * 0.5f; x <= w * 0.5f + 0.01f; x += Mathf.Max(1.5f, w / Mathf.Max(1, Mathf.Round(w / 2.6f))))
                     Part(t, "Column", new Vector3(x, 1.5f, StreetBuilder.PathHalf + 0.3f), new Vector3(0.28f, 3f, 0.28f), c);
+            }
+
+            /// <summary>
+            /// The canopy over the footpath, as the ball meets it: kicked up into it from below the ball bounces back down (it went
+            /// through the canvas), and one landing on top rolls off an end (a low ridge along it) instead of staying there out of
+            /// reach (docs/LEARNINGS.md E16). Its underside is the roof the feasibility audit already counts.
+            /// </summary>
+            void CanopyCollider(string name, float fromX, float toX, float underside)
+            {
+                var go = new GameObject(name);
+                go.transform.SetParent(root, false);
+                var edge = go.AddComponent<EdgeCollider2D>();
+                float mid = (fromX + toX) * 0.5f, rise = Mathf.Clamp((toX - fromX) * 0.05f, 0.15f, 0.35f);
+                edge.points = new[] { new Vector2(fromX, underside), new Vector2(mid, underside + rise), new Vector2(toX, underside) };
+                edge.sharedMaterial = GroundMat;
             }
 
             /// <summary>

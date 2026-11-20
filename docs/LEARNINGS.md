@@ -185,6 +185,22 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
 - *Rule:* generated content must say which version built it, and every way to a player build must refuse an older one.
   When the user reports something from the phone, first check which version their levels were built by.
 
+**A18. The v129 check passed while every Florida leg was on a Kamakura street (found November 2026, fixed in v130).**
+- *What:* after v129 the phone's Florida legs were still on Kamakura's market and park streets. Downpour to School, for
+  example, had Kamakura market shops, crates and sacks, with Miami's arcade, flower-bed kerbs and grey pigeons placed on top.
+  The new build check passed anyway.
+- *Why:* the check asked a separate question ("are the plan file, its leg and the kit there?") instead of looking at what the
+  builder had done. The builder used a plan cache made once per editor session from a path relative to the working
+  directory, so an empty first read stayed empty. Whatever the exact trigger on the user's machine, the two answers could
+  differ.
+- *Fix:*
+  - The builder records each Florida leg whose district it really built (`StreetBuilder.MiamiDistrictsBuilt`), and
+    `GeneratedContent.BuildAll` checks that list. A leg missing from it leaves the levels out of date and shows a dialog.
+  - The plan is read from the project folder and read again whenever it changes.
+  - The fallback's error names each input: the Florida flag, the level id, the plan file, its legs and the kit.
+- *Rule:* verify what was built, not a model of it. A guard that recomputes the inputs can agree with itself and still be
+  wrong.
+
 ## B. Performance and mobile
 
 **B1. 28 fps with uneven frames on a mid-range phone (November 2026).**
@@ -712,6 +728,24 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
   - **Puddles** were a pale blue fill inside a dark ring, a sticker. They now mirror the street, with a soft wet edge.
   - *Rule:* in a side view, something that crosses the path (a gate, a barrier) must fall across it toward the camera and
     must physically stop what it stops. Weather moves. A model standing in for an animal must be paintable all over.
+- **E16. Brown blocks, a ball stuck on the awnings, green tiles and a stray red light (v130, from the user's screenshots and
+  screen recording).**
+  - **Platforms** were a plain box in the chapter's colour (sand-brown in Miami's parks: "what are those brown blocks?"), and
+    ramps a tilted slab in the air. *Fix:* `LevelBuildKit.Dressing` builds a retaining wall with its coping. In a park it has
+    a lawn top and shrubs along the back (Kamakura granite, Miami coral keystone); in a street a paved top; on a site
+    concrete with a safety edge. A ramp is a solid wedge under its slope.
+  - **Stranded balls:** the market's bouncy awnings (2.6 to 3.2 m) let a ball settle out of reach with no way back but a
+    restart, and Miami's arcade canopies let it pass through the canvas.
+    - The awnings are striped canopies on poles, marked `BallTrap`.
+    - The arcade canopies are a low-ridged collider: a ball kicked into one bounces back, and one landing on top rolls off.
+    - `LevelManager.BallOutOfReach` catches any other resting ball more than 2.4 m above a nearby kid's feet for 3.5 s,
+      with the alert "The ball can't be reached - back to the checkpoint".
+  - **The green strip** in Kamakura was 2.5 m of green paving slabs, which read as tiles. It is now about 1.5 m of green
+    paint on the asphalt.
+  - **The drawbridge's red lamps** were discs on the tender's tower wall. They are now a two-lamp signal head on a mast
+    before each gate.
+  - *Rule:* every collider the ball can land on must either be reachable or say it strands the ball. Anything the camera
+    sees across the lane must answer the ball the way it looks (a canopy stops it).
 
 ## F. UI and menus
 

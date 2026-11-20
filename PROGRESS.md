@@ -2033,6 +2033,47 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
 - **Not run in Unity:** the rain, the storm light and the gates in play, the build check, the phone. Rebuild the levels in
   Unity (it now does so by itself when it sees v129) and build again.
 
+## No brown blocks, no stranded balls, Florida's streets made to stick (generated content v130)
+
+- **Why.** The user, with screenshots and a recording: "what are those brown blocks? Are they any placeholder?"; at the bridge
+  "the red light is just somewhere at random place"; "why the green tails in Kamakura?"; the ball "penetrates through the
+  sheds" or "stays on top of the sheds and have to restart the level": "show alert that ball cannot be retrieved and restart
+  from last checkpoint". Across all the levels. (LEARNINGS A18, E16.)
+- **Florida's streets:** the recording showed every Florida leg still on Kamakura's streets after v129, while v129's check
+  passed.
+  - The builder now records each leg whose Miami district it really built; any leg missing from that record fails the
+    rebuild of the levels with a dialog, and the build check refuses them.
+  - The plan is read from the project folder, again whenever it changes.
+  - The fallback's error names the missing input.
+  - *Rebuild the levels in Unity. If the dialog appears, the Console's first error says which part was missing.*
+- **Platforms and ramps** (`LevelBuildKit.Dressing`; 32 uses across both cities):
+  - Platforms are retaining walls with their coping. In a park: a lawn bed with shrubs along its back (Kamakura's granite,
+    Miami's coral keystone). In a street: a paved terrace. On a site: concrete with a safety edge.
+  - Ramps are solid wedges under their slope.
+  - The colliders are unchanged.
+- **Stranded balls:**
+  - Kamakura's market awnings (L06 to L10) are striped canopies on two poles (it was a red box), in the city's colours, and a
+    ball on one goes back to the checkpoint (`BallTrap`).
+  - Miami's arcade canopies stop the ball from below and shed it from above (a low ridge).
+  - Anywhere else, a ball resting more than 2.4 m above the feet of a kid standing near it for 3.5 s gives the alert "The
+    ball can't be reached - back to the checkpoint" and the run goes back to the last checkpoint (`LevelManager.BallOutOfReach`).
+- **The drawbridge's lamps:** a black two-lamp signal head on a mast before each gate, dark red lenses that light in turn.
+  They were loose discs on the tower wall.
+- **Kamakura's green strip** (expected: the green walking strip painted along Japanese lanes) is now green paint on the
+  asphalt, about 1.5 m wide, not 2.5 m of green paving slabs that read as tiles.
+- **Cost:**
+  - A platform is 3 to 4 boxes and a few small shrubs in parks, about 2 to 3k triangles at most.
+  - A ramp is two small meshes.
+  - An awning is about 20 boxes, less than 1k triangles.
+  - The reach check is a few comparisons a frame.
+- **Checked:**
+  - compile (no new error kinds in any `#if` set);
+  - `unity_api_check` 6000.6 and 6000.7;
+  - the coin audit;
+  - the drawbridge's signals through the game camera (`preview_street.py --canal`).
+- **Not run in Unity:** the new looks in the game, the canopies' and awnings' physics with the real ball, the reach check's
+  timing, the phone.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

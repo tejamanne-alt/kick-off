@@ -2903,8 +2903,9 @@ namespace DribbleToSchool.EditorTools
                 float angle = Mathf.Atan2(along.y, along.x) * Mathf.Rad2Deg;
                 Vector2 normal = new Vector2(-along.normalized.y, along.normalized.x);
                 Vector2 center = (a + b) * 0.5f - normal * (thickness * 0.5f);
-                var go = Block("Ramp", center, new Vector2(along.magnitude + 0.2f, thickness), GroundColor, GroundMat);
+                var go = Block("Ramp", center, new Vector2(along.magnitude + 0.2f, thickness), GroundColor, GroundMat, false);
                 go.transform.rotation = Quaternion.Euler(0f, 0f, angle);
+                DressRamp(a, b);     // (a solid wedge under the slope, not a slab in the air)
             }
 
             /// <summary>A short obstacle: jump it, chip the ball over. Drawn as something that really stands on a footpath.</summary>
@@ -3779,14 +3780,17 @@ namespace DribbleToSchool.EditorTools
             /// </summary>
             bool MiamiLook { get { return Florida && Chapter != 3 && HasKitModel("Miami", "CrateMIA"); } }
 
-            /// <summary>A raised slab standing on the ground (in Miami, a ledge of coral keystone).</summary>
+            /// <summary>
+            /// A raised slab standing on the ground: on the beach a lookout deck, elsewhere a retaining wall with its coping and a lawn,
+            /// paved or concrete top (LevelBuildKit.Dressing; in Miami of coral keystone).
+            /// </summary>
             public void Platform(float fromX, float toX, float top, float groundTop = 0f)
             {
                 Audit.AddLedge(fromX, toX, top, groundTop);
-                bool beach = Chapter == 3;
                 Block("Platform", new Vector2((fromX + toX) * 0.5f, (top + groundTop) * 0.5f),
-                    new Vector2(toX - fromX, top - groundTop), MiamiLook ? new Color(0.9f, 0.84f, 0.7f) : PlatformColor, GroundMat, !beach);
-                if (beach) BeachDeck(fromX, toX, top, groundTop);
+                    new Vector2(toX - fromX, top - groundTop), PlatformColor, GroundMat, false);
+                if (Chapter == 3) BeachDeck(fromX, toX, top, groundTop);
+                else DressPlatform(fromX, toX, top, groundTop);
             }
 
             /// <summary>On the beach a raised platform is a wooden lookout deck on posts, not a block of sand.</summary>
@@ -3820,11 +3824,38 @@ namespace DribbleToSchool.EditorTools
                 Obstacle("HighWall", new Vector2(x + 1.25f, groundTop + 0.9f), new Vector2(0.5f, 1.8f));
             }
 
-            /// <summary>A bouncy awning the ball can be kicked off.</summary>
+            /// <summary>
+            /// A bouncy awning the ball can be kicked off: a market trader's canvas canopy on its two poles, striped in the city's
+            /// colours (it was a red box on a grey post). A ball that settles on top is out of reach, so the canopy is a
+            /// <see cref="BallTrap"/>: the run goes back to the checkpoint and the HUD says why (docs/LEARNINGS.md E16).
+            /// </summary>
             public void Awning(float x, float height, float groundTop = 0f)
             {
-                Block("Awning", new Vector2(x, groundTop + height), new Vector2(2.2f, 0.2f), BouncyColor, BouncyMat);
-                Decor("AwningPost", new Vector2(x + 1f, groundTop + height * 0.5f), new Vector2(0.12f, height), ObstacleColor, -1f, 0.7f);
+                var canopy = Block("Awning", new Vector2(x, groundTop + height), new Vector2(2.2f, 0.2f), BouncyColor, BouncyMat, false);
+                canopy.AddComponent<BallTrap>();
+                Color a, b;
+                if (MiamiLook) { a = new Color(0.13f, 0.6f, 0.6f); b = new Color(0.97f, 0.94f, 0.86f); }
+                else if (StreetBuilder.KM) { a = new Color(0.16f, 0.24f, 0.45f); b = new Color(0.93f, 0.9f, 0.82f); }
+                else { a = new Color(0.82f, 0.22f, 0.2f); b = new Color(0.97f, 0.94f, 0.86f); }
+                var look = new GameObject("AwningLook").transform;
+                look.SetParent(root, false);
+                look.position = new Vector3(x, groundTop + height, 0f);
+                // The canvas: stripes across it, the whole tipped a little toward the camera, with its scalloped valance in front.
+                const int stripes = 8;
+                const float w = 2.3f, d = 1.5f;
+                for (int i = 0; i < stripes; i++)
+                {
+                    var strip = StreetBuilder.Solid(look, "Canvas", Vector3.zero, new Vector3(w / stripes + 0.002f, 0.05f, d), i % 2 == 0 ? a : b);
+                    strip.transform.localPosition = new Vector3(-w * 0.5f + (i + 0.5f) * w / stripes, 0.08f, 0.05f);
+                    strip.transform.localRotation = Quaternion.Euler(-9f, 0f, 0f);
+                    var flap = StreetBuilder.Solid(look, "Valance", Vector3.zero, new Vector3(w / stripes + 0.002f, 0.2f, 0.03f), i % 2 == 0 ? a : b);
+                    flap.transform.localPosition = new Vector3(-w * 0.5f + (i + 0.5f) * w / stripes, -0.05f, -d * 0.5f - 0.05f);
+                }
+                // The frame's two poles, at the back corners (clear of the kid's lane in front) and the front bar they hold.
+                Color steel = new Color(0.32f, 0.33f, 0.35f);
+                foreach (float px in new[] { -w * 0.5f + 0.08f, w * 0.5f - 0.08f })
+                    StreetBuilder.Solid(look, "Pole", new Vector3(x + px, groundTop + height * 0.5f, 0.68f), new Vector3(0.06f, height, 0.06f), steel);
+                StreetBuilder.Solid(look, "FrontBar", new Vector3(x, groundTop + height - 0.04f, -d * 0.5f), new Vector3(w, 0.04f, 0.04f), steel);
             }
 
             /// <summary>

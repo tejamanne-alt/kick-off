@@ -94,8 +94,10 @@ namespace DribbleToSchool.EditorTools
                     s.Add(new StripSpec(RoadFar, -PathHalf, 0f, ProceduralArt.Surface.Asphalt, white));
                     s.Add(new StripSpec(-PathHalf, -1.38f, 0f, ProceduralArt.Surface.Asphalt, white));
                     s.Add(new StripSpec(-1.38f, -1.26f, 0f, ProceduralArt.Surface.Paving, new Color(1.25f, 1.25f, 1.25f)));
-                    s.Add(new StripSpec(-1.26f, 1.2f, 0f, ProceduralArt.Surface.Paving, new Color(0.5f, 0.8f, 0.52f)));   // (paint on the light paving: a fresh green)
-                    s.Add(new StripSpec(1.2f, PathHalf, 0f, ProceduralArt.Surface.Asphalt, white));
+                    // The green walking strip (a Japanese lane's green belt): green paint on the asphalt beside the edge line, the
+                    // asphalt's grain showing through. It was 2.5 m of green paving slabs and read as green tiles (LEARNINGS E16).
+                    s.Add(new StripSpec(-1.26f, 0.3f, 0f, ProceduralArt.Surface.Asphalt, new Color(0.62f, 1f, 0.7f)));
+                    s.Add(new StripSpec(0.3f, PathHalf, 0f, ProceduralArt.Surface.Asphalt, white));
                     s.Add(new StripSpec(PathHalf, PropertyZ + 0.6f, 0f, ProceduralArt.Surface.Asphalt, new Color(0.98f, 0.98f, 0.98f)));
                     s.Add(new StripSpec(PropertyZ + 0.6f, BackZ, 0f, ProceduralArt.Surface.Grass, new Color(0.96f, 0.97f, 0.92f)));
                     break;
@@ -751,8 +753,8 @@ namespace DribbleToSchool.EditorTools
                 return;
             }
             if (LevelBuildKit.Florida)
-                Debug.LogError("[Kick Off] " + LevelBuildKit.LevelId + " is one of Florida's legs but its Miami district can't be built (the Miami kit or "
-                    + MiamiPlanFile + " is missing): it falls back to a Kamakura street.");
+                Debug.LogError("[Kick Off] " + LevelBuildKit.LevelId + " is one of Florida's legs but its Miami district can't be built, so it falls back to a "
+                    + "Kamakura street (" + MiamiDiagnosis() + ").");
 
             switch (ch)
             {
