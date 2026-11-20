@@ -2074,6 +2074,23 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
 - **Not run in Unity:** the new looks in the game, the canopies' and awnings' physics with the real ball, the reach check's
   timing, the phone.
 
+## Florida in its own streets at last (generated content v131)
+
+- **Why.** v130's check stopped the build, and its error said why: "level id=(none)". `LevelBuildKit.BuildScene` read the level's
+  id after making the new scene, which unloads the level's definition, so it was always empty. No Florida leg ever found its
+  Miami district: every one was built on a Kamakura street from v124 on, while the Blender previews showed the districts
+  (LEARNINGS A19).
+- **Fixed:**
+  - The id is read before the new scene; a test holds it.
+  - Miami's arcade canopies are raised to 3.4 m, clear of a double jump's head (LevelFeasibility flagged five in Downpour to
+    School).
+  - The feasibility check counts a step up from one platform to the next (Museum Park's 1.9 m platform after the 1.0 m one).
+- **Also seen:** Unity's "Input Manager is marked for deprecation" warning lasts until the editor restarts after
+  `EditorTools/InputHandling` switches the project to the Input System (it offers to restart).
+- **Checked:** compile (no new error kinds), `unity_api_check` 6000.6 and 6000.7, the coin audit.
+- **Not run in Unity:** the Miami districts in a built scene for the first time. They were previewed in Blender from the same
+  plan; look at each Florida leg once.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

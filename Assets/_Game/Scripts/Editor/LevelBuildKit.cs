@@ -138,11 +138,14 @@ namespace DribbleToSchool.EditorTools
             string routeName = leadIn ? RouteNameOf(def) : null;
             Stop from = leadIn ? RouteTable.From(def.levelId) : null;
             Stop to = leadIn ? RouteTable.To(def.levelId) : null;
+            // The level's id too: read after the new scene, def was already unloaded (it compares equal to null), so LevelId was
+            // always empty and no Florida leg ever found its Miami district (docs/LEARNINGS.md A19).
+            string levelId = def != null ? def.levelId : null;
             EnsureFolder(Path.GetDirectoryName(scenePath).Replace('\\', '/'));
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             Chapter = Mathf.Clamp(chapter, 1, 5);
             Theme = ThemeFor(Chapter);
-            LevelId = def != null ? def.levelId : null;
+            LevelId = levelId;
 
             var camGo = new GameObject("Main Camera");
             camGo.tag = "MainCamera";

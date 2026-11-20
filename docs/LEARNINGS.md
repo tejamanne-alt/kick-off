@@ -201,6 +201,17 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
 - *Rule:* verify what was built, not a model of it. A guard that recomputes the inputs can agree with itself and still be
   wrong.
 
+**A19. No Florida leg was ever built in its Miami district (v124 to v130; found by v130's diagnosis).**
+- *What:* every Florida leg in Unity was dressed in a Kamakura chapter's street, though the Blender previews showed the
+  districts. v130's error named it: "level id=(none)".
+- *Why:* `LevelBuildKit.BuildScene` set `LevelId` from the definition *after* `EditorSceneManager.NewScene`, which unloads a
+  definition nothing references. It then compares equal to null, so `LevelId` was always empty and the Miami plan, keyed by
+  it, was never found. The function's own remarks warned about this (and E1 before it), and the lines above it read the
+  route the right way.
+- *Fix:* the id is read with the rest, before the new scene. `MiamiKitTests` fails if it moves after it again.
+- *Rule:* in `BuildScene`, read everything the definition holds before `NewScene`. A preview that renders the plan is not
+  proof the game builds it: check a built scene, or a check that sees the build's outcome (A18).
+
 ## B. Performance and mobile
 
 **B1. 28 fps with uneven frames on a mid-range phone (November 2026).**

@@ -154,5 +154,21 @@ namespace DribbleToSchool.Tests
         {
             CollectionAssert.Contains(LevelBuildKit.Kits, "Miami");
         }
+
+        [Test]
+        public void TheLevelIdIsReadBeforeTheNewSceneUnloadsTheDefinition()
+        {
+            // Read after EditorSceneManager.NewScene, the definition had been unloaded and LevelId was always empty: no Florida leg
+            // ever found its district, v124 to v130 (docs/LEARNINGS.md A19).
+            string src = File.ReadAllText(Path.Combine(UnityEngine.Application.dataPath, "_Game/Scripts/Editor/LevelBuildKit.cs"));
+            int build = src.IndexOf("public static void BuildScene(");
+            Assert.Greater(build, 0, "BuildScene not found");
+            int newScene = src.IndexOf("EditorSceneManager.NewScene(", build);
+            int read = src.IndexOf("def.levelId", build);
+            Assert.Greater(newScene, 0);
+            Assert.Greater(read, 0);
+            Assert.Less(read, newScene, "BuildScene must read the definition's level id before it makes the new scene");
+            Assert.IsFalse(Regex.IsMatch(src.Substring(newScene, 2000), @"LevelId\s*=\s*def\b"), "LevelId set from def after the new scene");
+        }
     }
 }

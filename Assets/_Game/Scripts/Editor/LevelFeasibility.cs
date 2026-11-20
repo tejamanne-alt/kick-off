@@ -198,6 +198,19 @@ namespace DribbleToSchool.EditorTools
                             ok = true;
                             if (doubleJumps != null) doubleJumps.Add(where + " is reached by the trampoline at " + p.x.ToString("0.0") + " and the air jump it gives back");
                         }
+                // A step up from a lower slab just before it (a jump's gap, a jump's climb, or a double jump's): a flight of them.
+                // (Each slab is checked in turn, so a flight is only as reachable as its first.)
+                foreach (var o in ledges)
+                {
+                    if (ok || o.to > l.from + Eps || l.from - o.to > plain + Eps || o.top >= l.top) continue;
+                    float rise = l.top - o.top;
+                    if (rise <= mid + Eps) ok = true;
+                    else if (rise <= tall + Eps)
+                    {
+                        ok = true;
+                        if (doubleJumps != null) doubleJumps.Add(where + " wants a double jump from the platform before it");
+                    }
+                }
                 if (!ok && height <= tall + Eps) { ok = true; if (doubleJumps != null) doubleJumps.Add(where + " wants a double jump"); }
                 if (!ok) problems.Add(where + " has no ramp up and no trampoline whose throw lands on it");
             }

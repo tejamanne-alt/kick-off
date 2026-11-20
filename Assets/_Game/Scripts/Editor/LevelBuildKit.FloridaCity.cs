@@ -22,6 +22,9 @@ namespace DribbleToSchool.EditorTools
             static readonly Color Teal = new Color(0.13f, 0.6f, 0.6f);
             static readonly Color Steel = new Color(0.62f, 0.64f, 0.67f);
 
+            /// <summary>The underside of an arcade's canopy: clear of a double jump's head (3.3 m, LevelFeasibility's roof check).</summary>
+            const float ArcadeCanopy = 3.4f;
+
             /// <summary>The roofed stretches laid so far (Arcade): the downpour's shelters.</summary>
             readonly List<Vector2> shelters = new List<Vector2>();
 
@@ -177,28 +180,29 @@ namespace DribbleToSchool.EditorTools
                     const float wide = 10f;
                     float cx = (fromX + toX) * 0.5f;
                     shelters.Add(new Vector2(cx - wide * 0.5f, cx + wide * 0.5f));
-                    Audit.AddRoof(cx - wide * 0.5f, cx + wide * 0.5f, groundTop + 3.05f);
+                    Audit.AddRoof(cx - wide * 0.5f, cx + wide * 0.5f, groundTop + ArcadeCanopy);
                     var block = KitModel(root, "Miami", deco, new Vector3(cx, groundTop, StreetBuilder.PathHalf + 0.05f));
                     if (block != null)
                     {
                         float native = KitSize("Miami", deco).x;
-                        if (native > 1f) block.localScale = new Vector3(wide / native, 1f, 1f);
-                        CanopyCollider("ArcadeCanopy", cx - wide * 0.5f, cx + wide * 0.5f, groundTop + 3.05f);
+                        // (Raised a little: the model's canopy is at 3.05 m, under a double jump's head, LevelFeasibility.)
+                        if (native > 1f) block.localScale = new Vector3(wide / native, ArcadeCanopy / 3.05f, 1f);
+                        CanopyCollider("ArcadeCanopy", cx - wide * 0.5f, cx + wide * 0.5f, groundTop + ArcadeCanopy);
                         return;
                     }
                 }
                 shelters.Add(new Vector2(fromX, toX));
-                Audit.AddRoof(fromX, toX, groundTop + 3.1f);
-                CanopyCollider("ArcadeRoof", fromX, toX, groundTop + 3.1f);
+                Audit.AddRoof(fromX, toX, groundTop + ArcadeCanopy);
+                CanopyCollider("ArcadeRoof", fromX, toX, groundTop + ArcadeCanopy);
                 var t = new GameObject("Arcade").transform;
                 t.SetParent(root, false);
                 t.position = new Vector3((fromX + toX) * 0.5f, groundTop, 0f);
                 float w = toX - fromX, zc = 0.4f;
                 Color c = colour ?? Stucco;
-                Part(t, "Roof", new Vector3(0f, 3.15f, zc), new Vector3(w, 0.18f, StreetBuilder.PathHalf * 2f + 0.8f), c);
-                Part(t, "Fascia", new Vector3(0f, 2.95f, -StreetBuilder.PathHalf - 0.35f), new Vector3(w, 0.3f, 0.08f), Color.Lerp(c, Coral, 0.4f));
+                Part(t, "Roof", new Vector3(0f, ArcadeCanopy + 0.09f, zc), new Vector3(w, 0.18f, StreetBuilder.PathHalf * 2f + 0.8f), c);
+                Part(t, "Fascia", new Vector3(0f, ArcadeCanopy - 0.11f, -StreetBuilder.PathHalf - 0.35f), new Vector3(w, 0.3f, 0.08f), Color.Lerp(c, Coral, 0.4f));
                 for (float x = -w * 0.5f; x <= w * 0.5f + 0.01f; x += Mathf.Max(1.5f, w / Mathf.Max(1, Mathf.Round(w / 2.6f))))
-                    Part(t, "Column", new Vector3(x, 1.5f, StreetBuilder.PathHalf + 0.3f), new Vector3(0.28f, 3f, 0.28f), c);
+                    Part(t, "Column", new Vector3(x, ArcadeCanopy * 0.5f, StreetBuilder.PathHalf + 0.3f), new Vector3(0.28f, ArcadeCanopy, 0.28f), c);
             }
 
             /// <summary>
