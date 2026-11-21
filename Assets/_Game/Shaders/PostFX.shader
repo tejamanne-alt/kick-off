@@ -14,15 +14,15 @@
 // ink line draws no creases across them (a nose, a cheek, the edge of an eye would cross the painted
 // face) and the plates slip half as far: their outlines come from the depth jump and their own ink hull.
 //
-// The pencil sketch filter (pass 6) draws it on warm paper instead: a faint wash of the colour (the
-// figures keep theirs, so the kid is easy to find), pencil hatching for the tone, the sky left open, and
-// the outline drawn twice with a wandering offset, from the same depth and normals and figure mask.
+// The pencil sketch filter (pass 6) draws it in black and white on white paper instead: a faint grey wash of the
+// tone (a little more on the figures, so the kid is easy to find), pencil hatching for the tone, the sky left open,
+// and the outline drawn twice with a wandering offset, from the same depth and normals and figure mask.
 //
 // The classic cartoon filter (passes 7 to 9; the look of the classic theatrical cartoons: inked cels over a painted
 // background) grades the picture (7), smooths and colours it (8: Shaders/DtsCartoon.cginc) and inks it (9): the
-// people, the ball and the things the kid plays with become cels (flat tones, a bold warm-black outline drawn only
-// outside them, so it never covers a face); the scenery is painted (no black lines: warm, saturated colour, faint brush
-// streaks, darker strokes of its own colour between forms); the sky is a flat turquoise; a faint grain and vignette.
+// people, the ball and the things the kid plays with become cels (flat tones, a bold black outline drawn only
+// outside them, so it never covers a face); the scenery is painted (no black lines: its own natural colour, faint brush
+// streaks, darker strokes of its own colour between forms); the sky a flat natural blue; a faint grain and vignette.
 //
 // The picture's alpha says what each pixel is (ToonCharacter's _ComicWorld, Toon's _FilterMask): 0 a person or the
 // ball, 0.125 a cel (a car, a coin, an animal, a crate, a cone...), 0.5 foliage, 0.75 a cloud, 1 the scenery. The comic
@@ -328,9 +328,11 @@ Shader "Hidden/DribbleToSchool/PostFX"
             }
             ENDCG
         }
-        // 6: pencil sketch: the grade, then paper, a wash of the colour (the figures keep theirs), pencil
-        //    hatching by tone (one way, crossed, then a dense third set), the sky left open, and the outline
-        //    drawn twice with a wandering offset from the depth and normals (no creases across a figure).
+        // 6: pencil sketch, in black and white only (v134, at the user's request): the grade's brightness, then white paper,
+        //    a grey wash of the tone (a little stronger on the figures, so the kid is easy to find), pencil hatching by
+        //    tone (one way, crossed, then a dense third set), the sky left open, and the outline drawn twice with a
+        //    wandering offset from the depth and normals (no creases across a figure). Whatever colours the paper and the
+        //    graphite are given, the result is grey.
         Pass
         {
             CGPROGRAM
@@ -351,9 +353,9 @@ Shader "Hidden/DribbleToSchool/PostFX"
                 float wob = Noise(px, 60.0 * scale, 3);
                 float blot = Noise(px, 90.0 * scale, 4);
 
-                // Paper, and the wash on it.
-                half3 paper = _Paper.rgb * (1 - 0.05 * fibre);
-                half3 soft = 0.32 + 0.68 * (tone + (c - tone) * 0.85);
+                // Paper, and the wash of the tone on it (no colour).
+                half3 paper = dot(_Paper.rgb, lum) * (1 - 0.05 * fibre);
+                half3 soft = 0.32 + 0.68 * tone;
                 half amount = lerp(max(_SketchWash, _FigureWash), _SketchWash, world) * (0.75 + 0.5 * blot);
                 half3 col = paper * (1 + (soft - 1) * amount);
 
@@ -370,7 +372,8 @@ Shader "Hidden/DribbleToSchool/PostFX"
                 hat = max(hat, Hatch(px, -45, sp, tone, 0.52, grain, wob, 23));
                 hat = max(hat, Hatch(px, 12, sp * 0.7, tone, 0.3, grain, wob, 37));
                 hat *= (0.55 + 0.45 * world) * step(d0, 0.999);
-                col = lerp(col, _Graphite.rgb, hat * _SketchHatch);
+                half3 graphite = dot(_Graphite.rgb, lum);
+                col = lerp(col, graphite, hat * _SketchHatch);
 
                 // The doubled, wandering outline.
                 float j1 = (Noise(px, 40.0 * scale, 5) - 0.5) * _LineJitter * scale;
@@ -379,12 +382,13 @@ Shader "Hidden/DribbleToSchool/PostFX"
                 half e1 = InkLine(uvDN + float2(-j2, -j1) * t, world);
                 half e2 = InkLine(uvDN + float2(j1, j2) * 0.8 * t, world);
                 half outline = saturate(max(e1 * 0.9, e2 * 0.55)) * (0.7 + 0.3 * grain);
-                col = lerp(col, _Graphite.rgb, outline * _SketchLine);
+                col = lerp(col, graphite, outline * _SketchLine);
 
                 // The paper's edge.
                 float2 p = i.uv - 0.5;
                 col *= 1 - 0.1 * smoothstep(0.3, 0.9, dot(p, p) * 2.2);
-                return half4(saturate(col), 1);
+                half grey = saturate(dot(col, lum));
+                return half4(grey, grey, grey, 1);
             }
             ENDCG
         }
@@ -402,7 +406,7 @@ Shader "Hidden/DribbleToSchool/PostFX"
             ENDCG
         }
         // 8: classic cartoon: the cored smoothing (25 reads), then the cels' colour or the painted scenery's, the clouds
-        //    white, the sky a flat turquoise. Reads pass 7's picture; keeps the code in alpha for pass 9.
+        //    white, the sky a flat blue (ClassicLook). Reads pass 7's picture; keeps the code in alpha for pass 9.
         Pass
         {
             CGPROGRAM
@@ -438,7 +442,7 @@ Shader "Hidden/DribbleToSchool/PostFX"
                 half l = dot(c, cartoonLum);
                 half3 white = (1 - (1 - l) * 0.9) * pow(_CloudShade.rgb, 1 - smoothstep(0.75, 0.95, l));
                 o = lerp(o, saturate(white), cloud);
-                // The sky: a flat turquoise, pale toward the horizon (uvDN.y is up the screen).
+                // The sky: a flat blue, pale toward the horizon (uvDN.y is up the screen).
                 half3 skyColour = lerp(_SkyTop.rgb, _SkyLow.rgb, pow(saturate(1 - uvDN.y), 1.4));
                 o = lerp(o, skyColour, sky);
                 return half4(o, s.a);

@@ -20,14 +20,14 @@ namespace DribbleToSchool.World
     /// creases across them (only their outline), and their plates slip half as far. The depth and normals
     /// texture is asked for only while the filter is on (an extra pass over the opaque scene).
     ///
-    /// The pencil sketch filter (pass 6, one full-screen pass) draws the picture on warm paper instead: a faint
-    /// wash of its colour (the people and the ball keep theirs), pencil hatching by tone, the sky left open, and
-    /// the outline drawn twice with a wandering offset, from the same depth, normals and figure mask.
+    /// The pencil sketch filter (pass 6, one full-screen pass) draws the picture in black and white on white paper
+    /// instead: a faint grey wash of its tone (a little more on the people and the ball), pencil hatching by tone, the sky
+    /// left open, and the outline drawn twice with a wandering offset, from the same depth, normals and figure mask.
     ///
     /// The classic cartoon filter (passes 7, 8 and 9: three full-screen passes; the look in <see cref="ClassicLook"/>)
     /// draws the people, the ball and the things the kid plays with as inked cels and the scenery as a painted
     /// background: the grade, then a cored smoothing and the cartoon colour, then the strokes, the cels' outline
-    /// (outside them only), the turquoise sky and a faint grain. It reads what each pixel is from the picture's alpha
+    /// (outside them only), a natural blue sky and a faint grain. It reads what each pixel is from the picture's alpha
     /// (0 a person or the ball, 0.125 a cel, 0.5 foliage, 0.75 a cloud, 1 the scenery: ToonCharacter's _ComicWorld and
     /// Toon's _FilterMask).
     /// </summary>
@@ -99,17 +99,18 @@ namespace DribbleToSchool.World
         [Header("Pencil sketch filter (sizes in pixels at 1080 lines)")]
         [Tooltip("Force the sketch on here whatever Settings say (for looking at it in the editor).")]
         public bool forceSketch;
-        [Tooltip("How much of the picture's colour is washed onto the paper (0.12 pencil, 0.6 coloured pencil).")]
+        [Tooltip("How much of the picture's tone is washed onto the paper, in grey (the sketch is black and white).")]
         [Range(0f, 1f)] public float sketchWash = 0.12f;
-        [Tooltip("The people and the ball keep this much of their colour, so the kid is easy to find.")]
-        [Range(0f, 1f)] public float figureWash = 0.75f;
+        [Tooltip("The people and the ball get this much of their tone, in grey, so the kid is easy to find.")]
+        [Range(0f, 1f)] public float figureWash = 0.5f;
         [Range(3f, 16f)] public float hatchSpacing = 7f;
         [Range(0f, 1f)] public float sketchHatch = 0.62f;
         [Tooltip("How far the doubled outline wanders.")]
         [Range(0f, 8f)] public float lineJitter = 3.2f;
         [Range(0f, 1f)] public float sketchLine = 0.92f;
-        public Color graphite = new Color(0.17f, 0.17f, 0.2f);
-        public Color sketchPaper = new Color(0.965f, 0.945f, 0.9f);
+        public Color graphite = new Color(0.16f, 0.16f, 0.16f);
+        [Tooltip("The paper's brightness (the shader takes its grey: the sketch is black and white).")]
+        public Color sketchPaper = new Color(0.96f, 0.96f, 0.96f);
 
         Material material;
         Camera cam;

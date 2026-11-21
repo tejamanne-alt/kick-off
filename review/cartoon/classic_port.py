@@ -38,28 +38,27 @@ CLASSIC = dict(
     coreFrom=0.035, coreTo=0.09, sharpen=0.55, finish=0.35,
     # the cels
     # (the cels keep only strong detail: eyes, brows, mouths, seams; the painted shading's patches are smoothed away)
-    celFlatten=1.5, celCoreFrom=0.08, celCoreTo=0.16, celBands=3.0, celBandSoft=0.22, celBandMix=0.6, celSat=1.3,
-    celLine=3.4, celLineFar=1.5, inkWarm=np.array([0.11, 0.06, 0.045]),   # (drawn outside the silhouette)
+    celFlatten=1.5, celCoreFrom=0.08, celCoreTo=0.16, celBands=3.0, celBandSoft=0.22, celBandMix=0.6, celSat=1.12,
+    celLine=3.4, celLineFar=1.5, inkWarm=np.array([0.07, 0.07, 0.08]),   # (drawn outside the silhouette; v134: a neutral black)
     # the painted background
-    bgFlatten=2.5, bgSat=1.35, bgVibrance=1.8, bgBands=4.0, bgBandSoft=0.32, bgBandMix=0.6,
-    warm=np.array([1.1, 0.97, 0.8]),                  # warm colours pushed toward orange (blues and greens stay)
-    shadowWarm=np.array([1.05, 0.86, 0.72]),          # dark tones pushed to rich warm browns and reds
+    bgFlatten=2.5, bgSat=1.1, bgVibrance=0.35, bgBands=4.0, bgBandSoft=0.32, bgBandMix=0.6,
+    warm=np.array([1.0, 1.0, 1.0]),                   # (v134: natural colour; it pushed warm colours toward orange)
+    shadowWarm=np.array([1.0, 1.0, 1.0]),             # (v134: neutral shadows; they were pushed to warm browns)
     shadowReach=0.45,
     strokeEdge=0.16, strokeDark=0.6, strokeWidth=1.0, strokeStrength=0.75,   # darker strokes of the region's own colour
     formEdge=0.05, formDark=0.62, formStrength=0.8,    # where a nearer form overlaps a farther one (from the depth)
     brush=0.025, brushLength=26.0,                    # brush streaks along the surfaces (faint: they blur detail)
     rescueFrom=0.24,
     # the sky
-    skyTop=np.array([62, 190, 222]) / 255.0, skyLow=np.array([168, 228, 236]) / 255.0, cloudShade=np.array([0.86, 0.9, 0.95]),
+    skyTop=np.array([88, 160, 222]) / 255.0, skyLow=np.array([186, 216, 238]) / 255.0, cloudShade=np.array([0.86, 0.9, 0.95]),
     # the print
     grain=0.012, vignette=0.2,
 )
 
 # The calmer setting: the same cels and painted scenery, with gentler colour (less saturation, less orange, softer
 # warm shadows, a paler sky) and a lighter vignette.
-CALM = dict(CLASSIC, celSat=1.2, bgSat=1.22, bgVibrance=1.15, warm=np.array([1.07, 0.98, 0.86]),
-            shadowWarm=np.array([1.03, 0.9, 0.8]), skyTop=np.array([78, 186, 222]) / 255.0,
-            skyLow=np.array([176, 228, 237]) / 255.0, vignette=0.15)
+CALM = dict(CLASSIC, celSat=1.05, bgSat=1.02, bgVibrance=0.2, skyTop=np.array([100, 166, 222]) / 255.0,
+            skyLow=np.array([194, 220, 238]) / 255.0, vignette=0.15)
 
 
 def noise_streaks(h, w, along, length, seed=3):

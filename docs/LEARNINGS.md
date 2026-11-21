@@ -708,6 +708,17 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
 - *Rule:* every city, the first one included, is checked against its own brief: a shared model stays only if it would be
   normal in that city's street. When a new city gets its own look, look again at the old ones beside it.
 
+**D12. The cartoon filter's orange cast; a sketch that was not black and white (v134, from the user's screenshot).** The
+classic cartoon was matched to 1950s desert cartoons: warm colours multiplied toward orange (`ClassicLook.warm`),
+shadows toward brown (`shadowWarm`), quiet colours lifted hard (`vibrance` 1.8: beige to ochre, sand to gold). Over
+Miami's cream stucco and concrete, already warm in Florida's 5,000 K sun, the whole street went orange: "a yellow/
+orangish tint". The pencil sketch kept a colour wash and the figures 75% of their colour, on cream paper. *Fix:* the
+cartoon keeps each thing's own hue (warm and shadowWarm 1, vibrance 0.35, saturation 1.1, a neutral black outline, a
+natural blue sky); the sketch pass returns grey whatever its colours are set to, and its comic words are grey.
+`FilterLookTests` holds both. *Rule:* a grade matched to one reference (a desert palette) must be checked on every
+city's own colours, not only the reference's; "black and white" is enforced in the pass, not left to a colour
+setting a scene might have saved.
+
 ## E. Levels and world
 
 - **E1. Every level had chapter-1 scenery.** A new-scene call unloaded the level definition. *Rule:* pass data into scene builders explicitly; never hold asset references across a new-scene call.
@@ -839,6 +850,7 @@ Never re-propose what is rejected here.
   dribble. A transit hop between two legs is simply not shown (the next leg starts where it would have ended). Don't
   re-propose the bus, boat or shop mini-games, or errands that depend on them (E14).
 - **Filters:** easy to reach: on the title screen and in every pause menu.
+  The pencil sketch is black and white only; the classic cartoon keeps natural colour, nothing tinted orange (v134, D12).
 - **Store art:** use the user's own artwork for the app icon.
 
 ## How to add an entry

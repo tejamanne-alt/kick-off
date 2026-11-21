@@ -5,9 +5,10 @@
 //
 // Two treatments, as an animation cel over a painted background:
 //   the cels (the people, the ball, and the things the kid plays with) - flat colour in a few soft-edged tones,
-//     saturated, outlined in a warm black by the caller;
-//   the painted scenery - warm colours pushed to orange and gold (blues and greens keep their hue), quiet colours
-//     lifted, rich warm shadows (never grey), in broad soft tones; the caller adds the darker strokes between forms.
+//     a little saturated, outlined in black by the caller;
+//   the painted scenery - in broad soft tones, quiet colours lifted a little and shadows a touch richer; the caller adds
+//     the darker strokes between forms. _Warm and _ShadowWarm could still push warm colours and shadows toward orange,
+//     but since v134 both are 1: the colour stays natural (it read as "a yellow/orangish tint", docs/LEARNINGS.md D12).
 // Both start from an edge-keeping smoothing (a soft four-sector Kuwahara) that is "cored": of what it takes away, weak
 // texture (stains, noise) stays away and anything with real contrast (a window frame, a letter, a spoke) comes back
 // exactly as drawn, so the detail stays crisp.

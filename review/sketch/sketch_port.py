@@ -2,9 +2,10 @@
 camera's depth and normals and the figure mask in alpha, plus a noise texture), run over render_street.py's
 renders of the game's own models:
 
-  paper   - warm drawing paper with a fibre grain; the vignette as a paper edge
-  wash    - the picture's colour laid on softly (coloured pencil) or barely (graphite), patchy like a wash;
-            the figures keep their colour even on the graphite page, so the kid is easy to find
+  black and white only (v134, the user's request: "make the sketch filter completely black and white"):
+  paper   - white drawing paper with a fibre grain; the vignette as a paper edge
+  wash    - the picture's tone laid on in grey, softly or barely, patchy like a wash; a little more on the figures,
+            so the kid is easy to find
   sky     - left open (a wash, no hatching)
   hatch   - pencil hatching for the tone: one direction below 0.78, crossed below 0.52, a third, denser
             set below 0.3; strokes of finite length with gaps, a wobble, and pencil grain on them
@@ -20,8 +21,8 @@ from PIL import Image
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'filter'))
 import shader_port as sp
 
-GRAPHITE = np.array([0.17, 0.17, 0.2])
-PAPER = np.array([0.965, 0.945, 0.9])
+GRAPHITE = np.array([0.16, 0.16, 0.16])
+PAPER = np.array([0.96, 0.96, 0.96])
 FAR = 300.0
 
 
@@ -88,9 +89,9 @@ def sketch(colour, alpha, depth01, normal, wash_amount):
 
     # paper, and the wash on it
     paper = PAPER * (1 - 0.05 * fibre[..., None])
-    soft = 0.32 + 0.68 * (tone[..., None] + (c - tone[..., None]) * 0.85)
-    # the figures (the kids, passers-by, the ball) keep their colour even on a pencil page: the kid stays easy to find
-    figure_wash = np.maximum(wash_amount, 0.75)
+    soft = 0.32 + 0.68 * tone[..., None]
+    # the figures (the kids, passers-by, the ball) get more of their tone: the kid stays easy to find
+    figure_wash = np.maximum(wash_amount, 0.5)
     amount = (wash_amount + (figure_wash - wash_amount) * (1 - world))[..., None] * (0.75 + 0.5 * blot)[..., None]
     out = paper * (1 + (soft - 1) * amount)
 
@@ -115,7 +116,8 @@ def sketch(colour, alpha, depth01, normal, wash_amount):
     # the paper's edge
     p = uv - 0.5
     out = out * (1 - 0.1 * sp.smoothstep(0.3, 0.9, (p * p).sum(-1)[..., None] * 2.2))
-    return sp.saturate(out)
+    grey = (sp.saturate(out) * sp.LUM).sum(-1, keepdims=True)
+    return np.repeat(grey, 3, axis=-1)
 
 
 def load(src, name):

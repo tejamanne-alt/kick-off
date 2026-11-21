@@ -198,14 +198,15 @@ namespace DribbleToSchool.UI
             var lettering = tgo.AddComponent<ComicLettering>();
             if (pencil)
             {
-                // Pencil lettering: paper white into a soft coloured-pencil wash, a graphite line drawn twice, hatching.
+                // Pencil lettering, black and white like the sketch itself (v134): paper white into a soft grey wash, a
+                // graphite line drawn twice, hatching. The styles differ only in how deep the wash goes.
                 lettering.sketch = true;
                 lettering.ink = Graphite;
                 lettering.stroke = 0.05f;
                 lettering.shadow = 1.8f;
-                lettering.top = new Color(1f, 0.985f, 0.95f);
-                lettering.bottom = style == Style.Cool ? new Color(0.66f, 0.86f, 0.93f)
-                    : style == Style.Ouch ? new Color(0.98f, 0.7f, 0.77f) : new Color(1f, 0.8f, 0.52f);
+                lettering.top = new Color(0.98f, 0.98f, 0.98f);
+                float wash = style == Style.Cool ? 0.8f : style == Style.Ouch ? 0.66f : 0.72f;
+                lettering.bottom = new Color(wash, wash, wash);
             }
             else
             {
@@ -361,8 +362,8 @@ namespace DribbleToSchool.UI
             return true;
         }
 
-        /// <summary>The pencil sketch filter's graphite (World/PostFX.graphite).</summary>
-        static readonly Color Graphite = new Color(0.17f, 0.17f, 0.2f);
+        /// <summary>The pencil sketch filter's graphite (World/PostFX.graphite): a neutral grey, the sketch is black and white.</summary>
+        static readonly Color Graphite = new Color(0.16f, 0.16f, 0.16f);
 
         /// <summary>The lettering's material: halftone dots in the style's ink, or (pencil) graphite hatching.</summary>
         Material Material(Style style, bool pencil)
@@ -387,7 +388,7 @@ namespace DribbleToSchool.UI
         /// <summary>
         /// An ink starburst: a star polygon of 14 straight spikes of uneven length (straight edges from tip to
         /// notch, sharp points), a yellow fill with a thin ink edge, and the same star at half size as a pale heart.
-        /// The <paramref name="pencil"/> one (the sketch filter): the same star drawn in pencil, a soft yellow wash
+        /// The <paramref name="pencil"/> one (the sketch filter): the same star drawn in pencil, a soft grey wash
         /// hatched across its spikes, a thin graphite edge and a second, slightly turned outline. Each drawn once.
         /// </summary>
         Sprite BurstSprite(bool pencil)
@@ -413,7 +414,7 @@ namespace DribbleToSchool.UI
                 for (int i = 0; i < pts.Length; i++)
                     second[i] = new Vector2(pts[i].x * cos - pts[i].y * sin, pts[i].x * sin + pts[i].y * cos) * 1.03f;
                 var rngGrain = new System.Random(5);
-                Color32 lead = new Color32(43, 43, 51, 255), wash = new Color32(255, 236, 176, 235), paper = new Color32(255, 251, 238, 240);
+                Color32 lead = new Color32(41, 41, 41, 255), wash = new Color32(214, 214, 214, 235), paper = new Color32(248, 248, 248, 240);
                 float edge = 2.6f / half;
                 for (int y = 0; y < N; y++)
                     for (int x = 0; x < N; x++)

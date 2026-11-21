@@ -2165,6 +2165,33 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
   - `unity_api_check` 6000.6 and 6000.7.
 - **Not run in Unity:** the rebuilt FL3-2 and FL2-3 with the ball, and the new tunes on the phone.
 
+## The sketch in black and white, the cartoon in natural colour (v134; no generated content changes)
+
+- **Why.** The user, with a screenshot of Biscayne Boulevard in the classic cartoon filter: "Make the sketch filter completely
+  black and white. The cartoon filter has yellow/orange tint. Instead make the colors more natural." (And: "Now the music is
+  good for Florida.") LEARNINGS D12.
+- **The pencil sketch** (`Shaders/PostFX.shader` pass 6, `World/PostFX`):
+  - Black and white only: white paper, a grey wash of the tone (a little deeper on the kids and the ball, so the kid stands
+    out), neutral graphite.
+  - The pass returns grey whatever paper and graphite colours a scene saved.
+  - The comic words drawn with it (`UI/ComicPops`) are grey too: the lettering's wash, the star's wash and the graphite.
+  - Its line in Filters reads "Black-and-white pencil lines and hatching".
+- **The classic cartoon** (`World/ClassicLook`, which the camera's passes and the menus' pictures share):
+  - The scenery keeps its own hues. Warm colours are no longer pushed toward orange, shadows no longer browned, and beige and
+    sand no longer lifted to ochre and gold (vibrance 1.8 to 0.35, saturation 1.35 to 1.1).
+  - The outline is a neutral black, and the sky a natural blue instead of turquoise.
+  - The calmer setting follows.
+  - The cels, the strokes, the brush and the crisp detail are unchanged.
+- **Previews** through the filters' Python ports, on Blender renders of the home street and the beach:
+  `review/cartoon/7_natural_colour_v134.jpg` and `review/sketch/6_black_and_white_v134.jpg` (before on the left).
+  - The ports (`classic_port.py`, `sketch_port.py`) carry the new values.
+  - The new sketch has no colour in any pixel.
+- **Tests:** `FilterLookTests` checks that the cartoon has no warm push, neutral ink and a blue sky, and that the sketch has
+  neutral paper and graphite and a pass that returns grey.
+- **Cost:** none. The same passes with different numbers; the sketch adds three dot products a pixel.
+- **Not run in Unity:** the shader change has not been compiled here (no Unity). Look at a street in each filter once on
+  the phone.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

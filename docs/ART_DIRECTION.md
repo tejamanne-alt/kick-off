@@ -83,12 +83,12 @@ Previews of the real models through a numpy port of the shader are in `review/fi
 
 ## The pencil sketch filter
 
-An optional look (Filters, pass 6 of `Shaders/PostFX.shader`): warm drawing paper, a faint
-wash of the colour, pencil hatching for the tone in up to three directions as it darkens, the sky left
-open, and the outline drawn twice with a wandering offset from the depth and normals. The figures
-keep their colour (75 percent) and get no creases, so the kid stands out on the page and the painted
-eyes stay clean. Raising `sketchWash` from 0.12 to about 0.6 turns it into coloured pencil. Previews
-are in `review/sketch/`.
+An optional look (Filters, pass 6 of `Shaders/PostFX.shader`), in black and white only since v134 (the user's
+request): white drawing paper, a faint grey wash of the tone, pencil hatching for the tone in up to three directions as
+it darkens, the sky left open, and the outline drawn twice with a wandering offset from the depth and normals. The
+figures get a deeper wash (50 percent) and no creases, so the kid stands out on the page and the painted eyes stay
+clean. The pass returns grey whatever colours a scene saved for the paper or the graphite, and the comic words drawn
+with it are grey too. Previews are in `review/sketch/`.
 
 ## How it applies to our game
 

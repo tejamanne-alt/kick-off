@@ -8,8 +8,11 @@ namespace DribbleToSchool.World
     /// the street and the UI match. Matched to the classic Road Runner shorts the review sent (review/cartoon: the boards
     /// and classic_port.py, the reference these numbers come from): inked cels over a painted background.
     ///
-    /// Two settings were reviewed: <see cref="Classic"/> (shipped) and <see cref="CalmerLook"/> (gentler colour: less
-    /// saturation and orange, softer warm shadows, a paler sky). <see cref="Calmer"/> switches between them everywhere.
+    /// Two settings were reviewed: <see cref="Classic"/> (shipped) and <see cref="CalmerLook"/> (gentler colour still).
+    /// <see cref="Calmer"/> switches between them everywhere. Since v134 the colour is natural: the scenery was warmed toward
+    /// orange and gold, its shadows browned and its beiges lifted to ochre, and the user saw "a yellow/orangish tint" over
+    /// everything (docs/LEARNINGS.md D12). Now the hues stay as they are, the lift is gentle, the shadows neutral, the
+    /// outline a neutral black and the sky a natural blue.
     /// Colours are display (gamma) values, set as plain vectors (never colour-space converted).
     /// </summary>
     public sealed class ClassicLook
@@ -20,19 +23,19 @@ namespace DribbleToSchool.World
         // crisp detail: of what the smoothing takes away, weak texture goes and strong detail comes back
         public float coreFrom = 0.035f, coreTo = 0.09f, sharpen = 0.55f, finish = 0.35f;
         // the cels (the people, the ball, the things the kid plays with)
-        public float celCoreFrom = 0.08f, celCoreTo = 0.16f, celBands = 3f, celBandSoft = 0.22f, celBandMix = 0.6f, celSaturation = 1.3f;
+        public float celCoreFrom = 0.08f, celCoreTo = 0.16f, celBands = 3f, celBandSoft = 0.22f, celBandMix = 0.6f, celSaturation = 1.12f;
         public float celLine = 3.4f, celLineFar = 1.5f;
-        public Vector4 celInk = new Vector4(0.11f, 0.06f, 0.045f, 1f);
-        // the painted scenery
-        public float saturation = 1.35f, vibrance = 1.8f, bands = 4f, bandSoft = 0.32f, bandMix = 0.6f, shadowReach = 0.45f;
-        public Vector4 warm = new Vector4(1.1f, 0.97f, 0.8f, 1f);
-        public Vector4 shadowWarm = new Vector4(1.05f, 0.86f, 0.72f, 1f);
+        public Vector4 celInk = new Vector4(0.07f, 0.07f, 0.08f, 1f);
+        // the painted scenery: its own hues (warm 1, shadowWarm 1: nothing pushed toward orange), a gentle lift
+        public float saturation = 1.1f, vibrance = 0.35f, bands = 4f, bandSoft = 0.32f, bandMix = 0.6f, shadowReach = 0.45f;
+        public Vector4 warm = new Vector4(1f, 1f, 1f, 1f);
+        public Vector4 shadowWarm = new Vector4(1f, 1f, 1f, 1f);
         public float strokeEdge = 0.16f, strokeDark = 0.6f, strokeStrength = 0.75f;
         public float formEdge = 0.05f, formDark = 0.62f, formStrength = 0.8f;
         public float brush = 0.025f, brushLength = 26f;
         // the sky, the clouds, the print
-        public Vector4 skyTop = new Vector4(62f / 255f, 190f / 255f, 222f / 255f, 1f);
-        public Vector4 skyLow = new Vector4(168f / 255f, 228f / 255f, 236f / 255f, 1f);
+        public Vector4 skyTop = new Vector4(88f / 255f, 160f / 255f, 222f / 255f, 1f);
+        public Vector4 skyLow = new Vector4(186f / 255f, 216f / 255f, 238f / 255f, 1f);
         public Vector4 cloudShade = new Vector4(0.86f, 0.9f, 0.95f, 1f);
         public float grain = 0.012f, vignette = 0.2f;
 
@@ -42,9 +45,8 @@ namespace DribbleToSchool.World
         /// <summary>The calmer setting: the same cels and painted scenery, gentler colour.</summary>
         public static readonly ClassicLook CalmerLook = new ClassicLook
         {
-            celSaturation = 1.2f, saturation = 1.22f, vibrance = 1.15f,
-            warm = new Vector4(1.07f, 0.98f, 0.86f, 1f), shadowWarm = new Vector4(1.03f, 0.9f, 0.8f, 1f),
-            skyTop = new Vector4(78f / 255f, 186f / 255f, 222f / 255f, 1f), skyLow = new Vector4(176f / 255f, 228f / 255f, 237f / 255f, 1f),
+            celSaturation = 1.05f, saturation = 1.02f, vibrance = 0.2f,
+            skyTop = new Vector4(100f / 255f, 166f / 255f, 222f / 255f, 1f), skyLow = new Vector4(194f / 255f, 220f / 255f, 238f / 255f, 1f),
             vignette = 0.15f,
         };
 
