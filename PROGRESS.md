@@ -2126,6 +2126,45 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
   - `unity_api_check` 6000.6 and 6000.7.
 - **Not heard on the phone yet:** play a Florida leg and the menu once with the default volumes, against the Miami beds.
 
+## No canopy over the ball, and Florida's tunes written (generated content v133)
+
+- **Why.** The user's recording of Biscayne Boulevard (FL3-2): the ball kicked up went through a shop's teal canopy and fell
+  back through it, after v130's fix. And "still the BG music is bad for Florida. The background beats are good enough."
+  (LEARNINGS E17, G4.)
+- **The canopy.** It was the Miami district's Deco block ("Flagler Shoes"), placed as scenery with its 3 m canvas arcade
+  hanging 0.7 m in front of the ball's plane and no collider (only the level's own arcades had one, v130).
+  - Nothing that stands behind the lane may now reach over the ball. `StreetBuilder.Model` places every street model in both
+    cities, and `tools/blender/miami_plan.py` writes the Miami plan. Both push such a model back until its front is 0.45 m
+    behind the ball (`StreetBuilder.ClearOfTheBall`), and the Unity console says what moved.
+  - The district's three Deco arcades (Biscayne Boulevard twice, downtown once) now stand at 3.5 m instead of 2.35 m. The
+    street lamps moved back 13 cm, and nothing else in the plan changed (diffed).
+  - Kamakura's streets: the shops and homes, the original town's buildings, the parasols and the site's machines all keep at
+    least 0.65 m behind the ball, so the rule moves nothing there; it guards against the next one.
+  - A test runs the rule over the whole plan.
+  - Checked from the game camera (`preview_street.py`, FL3-2 at x 29, with a crate in the ball's plane at 2.9 m): before, the
+    canvas hid the crate; after, the crate is in front of it.
+- **Florida's tunes.** The drums and bass are as they were. Everything melodic is new:
+  - Each loop is two four-bar chord cycles under two written hooks, in place of v132's random tunes: a bouncing riff down
+    D - A/C# - Bm7 - G on Home Street, octave chops on F major's I and ii-V in the market, a beach anthem in A, a stabbing
+    repeated-note riff on the site, dreamy lines on the menu's E major sevenths, a riff rocking Cmaj7 - Fmaj7 in the park,
+    a laid-back climb in F under the underpass.
+  - The synths hold their pitch: a glide only between tied notes, no vibrato on the electro lead, no tape wow. A new bright
+    synth pluck plays the riffs. The chord stabs are less resonant and less driven, their filter opening from 1.6 kHz.
+  - `tools/music_hooks/check.py` reads the hooks from the code and fails if a note on a strong beat is off its chord, or out
+    of range. All seven pass, and a planted wrong note fails it.
+  - MP3 previews of all seven went to the user. Only Florida's 13 music lines changed in `tools/audio_hash`.
+- **Cost:**
+  - Music: 360 to 457 ms and 38 to 43 MB to make each loop, as v132.
+  - Canopies: no new objects; three models stand further back.
+- **Checked:**
+  - `tools/audio_hash` and `tools/music_hooks/check.py`;
+  - loudness and peaks (RMS 0.135 to 0.141, peaks under 0.51);
+  - the hook's pitches in a spectrogram (steady, as written);
+  - the Miami plan diff and the before-and-after render;
+  - compile (no new error kinds);
+  - `unity_api_check` 6000.6 and 6000.7.
+- **Not run in Unity:** the rebuilt FL3-2 and FL2-3 with the ball, and the new tunes on the phone.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

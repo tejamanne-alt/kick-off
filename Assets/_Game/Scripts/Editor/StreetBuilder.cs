@@ -375,11 +375,44 @@ namespace DribbleToSchool.EditorTools
 
         // ---------------------------------------------------------------- kit models
 
-        /// <summary>A kit model standing at (x, groundY, z) facing the camera, or null if the kit hasn't got it.</summary>
+        /// <summary>
+        /// A kit model standing at (x, groundY, z) facing the camera, or null if the kit hasn't got it. Street dressing that stands
+        /// behind the lane is kept from reaching over the ball (<see cref="ClearOfTheBall"/>).
+        /// </summary>
         public static Transform Model(Transform parent, string kit, string model, float x, float groundY, float z, float yaw = 0f, float scale = 1f,
             Color? tint1 = null, Color? tint2 = null, Color? tint3 = null, bool castShadows = true)
         {
+            if (kit != "Plants" && kit != "Animals" && kit != "Terrain")
+            {
+                float clear = ClearOfTheBall(z, LevelBuildKit.KitMin(kit, model), LevelBuildKit.KitMax(kit, model), yaw, scale);
+                if (clear != z && Mathf.Abs(clear - z) > 0.3f)
+                    Debug.Log("[Kick Off] " + LevelBuildKit.LevelId + ": " + model + " at x " + x.ToString("F1") + " moved back " + (clear - z).ToString("F2")
+                        + " m, clear of the ball's lane");
+                z = clear;
+            }
             return LevelBuildKit.KitModel(parent, kit, model, new Vector3(x, groundY, z), yaw, scale, tint1, tint2, tint3, castShadows);
+        }
+
+        /// <summary>How far behind the ball's plane (z 0) the front of anything standing behind the lane must stay.</summary>
+        public const float BallClear = 0.45f;
+
+        /// <summary>
+        /// Where a model standing behind the lane at <paramref name="z"/> must go so nothing of it above 1.2 m reaches over the ball's
+        /// plane: a Miami Deco block's 3 m canvas arcade, set with its wall at 2.35 m, hung 0.7 m in front of the ball, which flew
+        /// up through it with nothing to stop it (docs/LEARNINGS.md E17). Pushed back until its front edge is <see cref="BallClear"/>
+        /// behind the ball; unchanged if it stands at the kerb (in front of z 0.6), is low, or its bounds are unknown.
+        /// <paramref name="min"/> and <paramref name="max"/> are its manifest's bounds in Unity axes (z negative toward the camera).
+        /// The same rule as tools/blender/miami_plan.py's clear_of_the_ball.
+        /// </summary>
+        public static float ClearOfTheBall(float z, Vector3 min, Vector3 max, float yaw, float scale)
+        {
+            if (z < 0.6f || max.y * scale < 1.2f || (min == Vector3.zero && max == Vector3.zero)) return z;
+            float a = yaw * Mathf.Deg2Rad, s = Mathf.Sin(a), c = Mathf.Cos(a);
+            float front = float.MaxValue;
+            foreach (float px in new[] { min.x * scale, max.x * scale })
+                foreach (float pz in new[] { min.z * scale, max.z * scale })
+                    front = Mathf.Min(front, -px * s + pz * c);
+            return z + front < BallClear ? BallClear - front : z;
         }
 
         /// <summary>

@@ -59,7 +59,7 @@ namespace DribbleToSchool.Audio
         // ================= Styles =================
 
         enum Comp { None, Jangle, Acoustic, Fingerpick, Palm, Funk, Rhodes, RhodesHeld, Organ, Skank, Montuno, OrganBubble, Chop, Pulse, Phaser }
-        enum Lead { Surf, Whistle, Glock, Guitar, Acoustic, Rhodes, Koto, Flute, SteelPan, Marimba, Vibes, Saw, Psych }
+        enum Lead { Surf, Whistle, Glock, Guitar, Acoustic, Rhodes, Koto, Flute, SteelPan, Marimba, Vibes, Saw, Psych, Pluck }
         enum Kit { Pop, Surf, Funk, WestCoast, Folk, Calypso, Son, OneDrop, Electro, Psych }
         enum Bass { Pick, Sub, Upright, Electro, Fuzz }
 
@@ -85,6 +85,11 @@ namespace DribbleToSchool.Audio
             public float drive = 0.08f, wow;
             /// <summary>The first half's tune on the dance rhythms (quavers, repeated notes) rather than the bouncy pop ones.</summary>
             public bool dance;
+            /// <summary>
+            /// A written tune instead of a made-up one: four bars each, sixteen semiquaver steps a bar ("A4", "C#5": a note
+            /// starts; "_" holds it; "." rests). The first half plays <see cref="hookA"/> twice, the second <see cref="hookB"/> twice.
+            /// </summary>
+            public string[] hookA, hookB;
         }
 
         /// <summary>
@@ -265,102 +270,199 @@ namespace DribbleToSchool.Audio
         }
 
         /// <summary>
-        /// The Florida add-on's music (v132): bright, driving Miami dance music in two flavours, all of it original. French
-        /// electro and filter house (in the spirit of Justice) on the busy streets: four on the floor with a kick that
-        /// pumps the whole mix, a growling saw bass on rolling octaves, chopped disco chord stabs whose filter opens over
-        /// the first half, pumping quaver chords, a gliding saw lead, crunchy snares and claps, the open hat on every
-        /// off-beat. Psychedelic synth-pop (in the spirit of Tame Impala) in the calmer places: a lush phased pad on
-        /// warm major-seventh chords, a fuzzy melodic bass, big squashed laid-back drums with a tambourine, a dreamy
-        /// gliding lead, tape wobble and a long reverb. Major and Mixolydian keys, Dorian for the night; 112 to 126 BPM.
-        /// (It replaced v122's Caribbean styles, which the user found sad: docs/LEARNINGS.md G3.)
+        /// The Florida add-on's music (v133): bright, driving Miami dance music in two flavours, all of it original. French
+        /// electro and filter house (in the spirit of Justice) on the busy streets: four on the floor with a kick that pumps
+        /// the mix, a growling bass on rolling octaves, filtered disco chord stabs and pumping quaver chords. Psychedelic
+        /// synth-pop (in the spirit of Tame Impala) in the calmer places: a phased pad on warm major-seventh chords, a fuzzy
+        /// melodic bass, big laid-back drums with a tambourine. Every loop is two four-bar chord cycles under a written hook
+        /// (<see cref="Style.hookA"/>, <see cref="Style.hookB"/>): a riff that repeats, its strong beats on the chord's own
+        /// notes, on synths that hold their pitch. All in major keys, 112 to 126 BPM. (v132's random tunes on gliding,
+        /// wobbling leads were "still bad", and v122's Caribbean styles "sad": docs/LEARNINGS.md G3, G4.)
         /// </summary>
         static Style FloridaStyleOf(Soundscape scape)
         {
             switch (scape)
             {
                 case Soundscape.Street:
-                    // Home Street, filter house on a sunny morning: the stabs open up over the first half, pumping chords
-                    // join in the second; the saw lead's riff, then the dreamy lead over it.
+                    // Home Street, filter house on a sunny morning: a bouncing riff down the chords over a falling bass, the
+                    // stabs opening up; then a sing-along line over the pumping chords.
                     return new Style
                     {
-                        bpm = 122, swing = 0, key = 62, mode = Mode.Mixolydian, seed = 311,
-                        chords = new[] { "D", "C", "G", "D", "D", "C", "G", "A7sus4",
-                                         "Bm7", "G", "D", "A7sus4", "Bm7", "G", "Em7", "A7sus4" },
-                        comp = Comp.Chop, comp2 = Comp.Pulse, comp2OnlyInB = true, leadA = Lead.Saw, leadB = Lead.Psych,
-                        leadLo = 66, leadHi = 81, leadSend = 0.3f, bass = Bass.Electro, kit = Kit.Electro, claps = true, dance = true,
-                        room = 0.5f, wet = 0.18f, tone = 9000, pump = 0.5f, bassPump = 0.3f, drive = 0.2f,
+                        bpm = 122, swing = 0, key = 62, mode = Mode.Major, seed = 311,
+                        chords = new[] { "D", "A/C#", "Bm7", "G", "D", "A/C#", "Bm7", "G",
+                                         "G", "A", "Bm7", "D", "G", "A", "Bm7", "D" },
+                        hookA = new[]
+                        {
+                            "A4 _ _ D5 _ _ F#5 _ _ E5 _ _ D5 _ A4 _",
+                            "A4 _ _ C#5 _ _ E5 _ _ D5 _ _ C#5 _ A4 _",
+                            "B4 _ _ D5 _ _ F#5 _ _ E5 _ _ D5 _ B4 _",
+                            "B4 _ _ D5 _ _ G5 _ _ F#5 _ _ E5 _ D5 _",
+                        },
+                        hookB = new[]
+                        {
+                            "D5 _ _ _ _ _ B4 _ D5 _ E5 _ _ _ D5 _",
+                            "C#5 _ _ _ _ _ A4 _ C#5 _ E5 _ _ _ C#5 _",
+                            "D5 _ _ _ _ _ B4 _ D5 _ F#5 _ _ _ E5 _",
+                            "D5 _ _ _ _ _ _ _ A4 _ _ _ . . . .",
+                        },
+                        comp = Comp.Chop, comp2 = Comp.Pulse, comp2OnlyInB = true, leadA = Lead.Pluck, leadB = Lead.Saw,
+                        leadSend = 0.3f, bass = Bass.Electro, kit = Kit.Electro, claps = true,
+                        room = 0.5f, wet = 0.18f, tone = 9000, pump = 0.4f, bassPump = 0.3f, drive = 0.2f,
                     };
                 case Soundscape.Market:
-                    // Disco-funk in the market: filter-house chops, guitar chops in the second half, a Dorian groove;
-                    // the dreamy lead first, then the saw.
+                    // Disco-funk in the market: a chopped octave riff on I and ii-V, guitar chops in the second half under a
+                    // long, climbing line.
                     return new Style
                     {
-                        bpm = 118, swing = 0.03, key = 64, mode = Mode.Dorian, seed = 322,
-                        chords = new[] { "Em7", "A7", "Em7", "A7", "Gmaj7", "A7", "Bm7", "A7",
-                                         "Gmaj7", "D", "A7", "Bm7", "Gmaj7", "D", "F#m7", "A7sus4" },
-                        comp = Comp.Chop, comp2 = Comp.Funk, comp2OnlyInB = true, leadA = Lead.Psych, leadB = Lead.Saw,
-                        leadLo = 64, leadHi = 79, leadSend = 0.3f, bass = Bass.Electro, kit = Kit.Electro, claps = true, dance = true,
-                        room = 0.45f, wet = 0.16f, tone = 9000, pump = 0.45f, bassPump = 0.25f, drive = 0.18f,
+                        bpm = 118, swing = 0.03, key = 65, mode = Mode.Major, seed = 322,
+                        chords = new[] { "Fmaj7", "Gm7 C", "Fmaj7", "Gm7 C", "Fmaj7", "Gm7 C", "Fmaj7", "Gm7 C",
+                                         "Bbmaj7", "C", "Am7", "Dm7", "Bbmaj7", "C", "Am7", "Dm7" },
+                        hookA = new[]
+                        {
+                            "C5 _ . C5 . A4 . C5 _ . D5 . C5 _ A4 _",
+                            "Bb4 _ . Bb4 . G4 . Bb4 _ . C5 . E5 _ C5 _",
+                            "C5 _ . C5 . A4 . C5 _ . D5 . C5 _ A4 _",
+                            "Bb4 _ . Bb4 . G4 . Bb4 _ . C5 _ _ _ . .",
+                        },
+                        hookB = new[]
+                        {
+                            "D5 _ _ _ F5 _ _ _ A5 _ _ _ F5 _ D5 _",
+                            "E5 _ _ _ G5 _ _ _ E5 _ _ _ D5 _ C5 _",
+                            "C5 _ _ _ E5 _ _ _ A5 _ _ _ G5 _ E5 _",
+                            "F5 _ _ _ _ _ _ _ D5 _ _ _ C5 _ A4 _",
+                        },
+                        comp = Comp.Chop, comp2 = Comp.Funk, comp2OnlyInB = true, leadA = Lead.Pluck, leadB = Lead.Saw,
+                        leadSend = 0.3f, bass = Bass.Electro, kit = Kit.Electro, claps = true,
+                        room = 0.45f, wet = 0.16f, tone = 9000, pump = 0.4f, bassPump = 0.25f, drive = 0.18f,
                     };
                 case Soundscape.Beach:
-                    // A beach anthem: pumping chords from the start, the filtered stabs and a choir of "ooh"s in the
-                    // second half, the saw lead all the way.
+                    // A beach anthem: a bouncing riff over pumping chords and "ooh"s, then a soaring line with the stabs.
                     return new Style
                     {
                         bpm = 124, swing = 0, key = 69, mode = Mode.Major, seed = 333,
-                        chords = new[] { "A", "E", "F#m7", "D", "A", "E", "D", "E",
-                                         "D", "E", "C#m7", "F#m7", "D", "E", "Bm7", "E7sus4" },
-                        comp = Comp.Pulse, comp2 = Comp.Chop, comp2OnlyInB = true, leadA = Lead.Saw, leadB = Lead.Saw,
-                        leadLo = 64, leadHi = 81, leadSend = 0.35f, bass = Bass.Electro, kit = Kit.Electro, claps = true, oohs = true, dance = true,
-                        room = 0.6f, wet = 0.2f, tone = 9500, pump = 0.55f, bassPump = 0.3f, drive = 0.18f,
+                        chords = new[] { "A", "E", "F#m7", "D", "A", "E", "F#m7", "D",
+                                         "D", "E", "C#m7 F#m7", "E", "D", "E", "C#m7 F#m7", "E" },
+                        hookA = new[]
+                        {
+                            "E5 _ . E5 . C#5 _ . A4 _ . B4 C#5 _ E5 _",
+                            "E5 _ . E5 . B4 _ . G#4 _ . A4 B4 _ E5 _",
+                            "F#5 _ . F#5 . C#5 _ . A4 _ . B4 C#5 _ E5 _",
+                            "F#5 _ . F#5 . D5 _ . A4 _ . B4 C#5 _ D5 _",
+                        },
+                        hookB = new[]
+                        {
+                            "A5 _ _ _ _ _ F#5 _ _ _ D5 _ E5 _ F#5 _",
+                            "G#5 _ _ _ _ _ E5 _ _ _ B4 _ C#5 _ E5 _",
+                            "E5 _ _ _ G#5 _ _ _ A5 _ _ _ F#5 _ E5 _",
+                            "E5 _ _ _ _ _ _ _ B4 _ _ _ . . . .",
+                        },
+                        comp = Comp.Pulse, comp2 = Comp.Chop, comp2OnlyInB = true, leadA = Lead.Pluck, leadB = Lead.Saw,
+                        leadSend = 0.35f, bass = Bass.Electro, kit = Kit.Electro, claps = true, oohs = true,
+                        room = 0.6f, wet = 0.2f, tone = 9500, pump = 0.45f, bassPump = 0.3f, drive = 0.18f,
                     };
                 case Soundscape.Site:
-                    // The building site, the hardest of them: two chords a bar in places, the stabs and the pump, the
-                    // most drive; the saw lead, then the dreamy one.
+                    // The building site, the hardest of them: a stabbing repeated-note riff, then a line falling through the
+                    // chords over the pump.
                     return new Style
                     {
                         bpm = 126, swing = 0, key = 67, mode = Mode.Major, seed = 355,
-                        chords = new[] { "G", "G D/F#", "Em7", "C", "G", "G D/F#", "C", "D",
-                                         "Am7", "C", "G", "D", "Am7", "C", "Em7 D", "D7sus4" },
-                        comp = Comp.Chop, comp2 = Comp.Pulse, comp2OnlyInB = true, leadA = Lead.Saw, leadB = Lead.Psych,
-                        leadLo = 64, leadHi = 79, leadSend = 0.3f, bass = Bass.Electro, kit = Kit.Electro, claps = true, dance = true,
-                        room = 0.45f, wet = 0.16f, tone = 9000, pump = 0.55f, bassPump = 0.35f, drive = 0.24f,
+                        chords = new[] { "G", "G/F#", "Em7", "C", "G", "G/F#", "Em7", "C",
+                                         "Am7", "C", "G", "D", "Am7", "C", "G", "D" },
+                        hookA = new[]
+                        {
+                            "D5 . D5 . B4 . D5 . G5 _ . D5 . B4 . .",
+                            "D5 . D5 . B4 . D5 . G5 _ . F#5 . D5 . .",
+                            "E5 . E5 . B4 . E5 . G5 _ . E5 . D5 . .",
+                            "E5 . E5 . C5 . E5 . G5 _ . E5 . D5 . .",
+                        },
+                        hookB = new[]
+                        {
+                            "C5 _ _ _ E5 _ _ _ A5 _ _ _ G5 _ E5 _",
+                            "G5 _ _ _ E5 _ _ _ C5 _ _ _ D5 _ E5 _",
+                            "D5 _ _ _ B4 _ _ _ G4 _ _ _ A4 _ B4 _",
+                            "A4 _ _ _ _ _ _ _ D5 _ _ _ F#5 _ _ _",
+                        },
+                        comp = Comp.Chop, comp2 = Comp.Pulse, comp2OnlyInB = true, leadA = Lead.Pluck, leadB = Lead.Saw,
+                        leadSend = 0.3f, bass = Bass.Electro, kit = Kit.Electro, claps = true,
+                        room = 0.45f, wet = 0.16f, tone = 9000, pump = 0.45f, bassPump = 0.35f, drive = 0.24f,
                     };
                 case Soundscape.Underpass:
-                    // The tunnel at night, a psychedelic disco groove in Dorian: the phased pad, guitar chops in the
-                    // second half, the fuzzy bass; the dreamy lead, then the saw, in the tunnel's long echo.
+                    // The tunnel at night, a psychedelic disco groove: a laid-back riff climbing each chord, guitar chops in
+                    // the second half under a smooth line, in the tunnel's long echo.
                     return new Style
                     {
-                        bpm = 116, swing = 0.02, key = 62, mode = Mode.Dorian, seed = 344,
-                        chords = new[] { "Dm9", "G", "Dm9", "G", "Fmaj7", "C", "Em7", "A7sus4",
-                                         "Fmaj7", "G", "Am7", "Dm9", "Fmaj7", "G", "Em7", "A7sus4" },
+                        bpm = 116, swing = 0.02, key = 65, mode = Mode.Major, seed = 344,
+                        chords = new[] { "Fmaj7", "Am7", "Bbmaj7", "C", "Fmaj7", "Am7", "Bbmaj7", "C",
+                                         "Gm7", "C", "Am7", "Bbmaj7 C", "Gm7", "C", "Am7", "Bbmaj7 C" },
+                        hookA = new[]
+                        {
+                            "C5 _ _ C5 _ _ A4 _ _ _ C5 _ E5 _ F5 _",
+                            "E5 _ _ E5 _ _ C5 _ _ _ E5 _ G5 _ A5 _",
+                            "D5 _ _ D5 _ _ Bb4 _ _ _ D5 _ F5 _ A5 _",
+                            "G5 _ _ _ _ _ E5 _ _ _ C5 _ D5 _ E5 _",
+                        },
+                        hookB = new[]
+                        {
+                            "Bb4 _ _ _ D5 _ _ _ F5 _ _ _ D5 _ Bb4 _",
+                            "C5 _ _ _ E5 _ _ _ G5 _ _ _ E5 _ C5 _",
+                            "C5 _ _ _ E5 _ _ _ A5 _ _ _ G5 _ E5 _",
+                            "D5 _ _ _ F5 _ _ _ E5 _ _ _ G5 _ _ _",
+                        },
                         comp = Comp.Phaser, comp2 = Comp.Funk, comp2OnlyInB = true, leadA = Lead.Psych, leadB = Lead.Saw,
-                        leadLo = 67, leadHi = 82, leadSend = 0.5f, bass = Bass.Fuzz, kit = Kit.Psych, claps = true, tambourine = true,
-                        room = 0.85f, wet = 0.28f, tone = 7500, pump = 0.3f, bassPump = 0.1f, drive = 0.14f, wow = 6f,
+                        leadSend = 0.45f, bass = Bass.Fuzz, kit = Kit.Psych, claps = true, tambourine = true,
+                        room = 0.8f, wet = 0.26f, tone = 7500, pump = 0.25f, bassPump = 0.1f, drive = 0.14f,
                     };
                 case Soundscape.Park:
-                    // An afternoon under the live oaks, psychedelic synth-pop: the phased pad on warm sevenths, jangly
-                    // guitars in the second half, the tambourine; the dreamy lead, then a glockenspiel.
+                    // An afternoon under the live oaks, psychedelic synth-pop: a bouncing riff rocking between Cmaj7 and
+                    // Fmaj7, then a singing line over jangly guitars.
                     return new Style
                     {
-                        bpm = 114, swing = 0.02, key = 62, mode = Mode.Major, seed = 366,
-                        chords = new[] { "Dmaj7", "F#m7", "Gmaj7", "A", "Dmaj7", "F#m7", "Em7", "A7sus4",
-                                         "Bm7", "Gmaj7", "Dmaj7", "A", "Bm7", "Gmaj7", "Em7", "A7" },
-                        comp = Comp.Phaser, comp2 = Comp.Jangle, comp2OnlyInB = true, leadA = Lead.Psych, leadB = Lead.Glock,
-                        leadLo = 67, leadHi = 83, leadSend = 0.45f, bass = Bass.Fuzz, kit = Kit.Psych, tambourine = true,
-                        room = 0.75f, wet = 0.26f, tone = 8000, pump = 0.3f, bassPump = 0.1f, drive = 0.12f, wow = 5f,
+                        bpm = 114, swing = 0.02, key = 60, mode = Mode.Major, seed = 366,
+                        chords = new[] { "Cmaj7", "Fmaj7", "Cmaj7", "Fmaj7", "Cmaj7", "Fmaj7", "Cmaj7", "Fmaj7",
+                                         "Am7", "D7", "Fmaj7", "G", "Am7", "D7", "Fmaj7", "G" },
+                        hookA = new[]
+                        {
+                            "G4 _ . C5 . E5 _ . G5 _ . E5 . D5 _ .",
+                            "A4 _ . C5 . F5 _ . A5 _ . G5 . E5 _ .",
+                            "G4 _ . C5 . E5 _ . G5 _ . E5 . D5 _ .",
+                            "A4 _ . C5 . F5 _ . E5 _ _ _ C5 _ _ _",
+                        },
+                        hookB = new[]
+                        {
+                            "E5 _ _ _ _ _ C5 _ E5 _ _ _ G5 _ _ _",
+                            "F#5 _ _ _ _ _ D5 _ A4 _ _ _ C5 _ _ _",
+                            "A5 _ _ _ _ _ F5 _ C5 _ _ _ E5 _ _ _",
+                            "D5 _ _ _ _ _ _ _ B4 _ _ _ G4 _ _ _",
+                        },
+                        comp = Comp.Phaser, comp2 = Comp.Jangle, comp2OnlyInB = true, leadA = Lead.Pluck, leadB = Lead.Psych,
+                        leadSend = 0.4f, bass = Bass.Fuzz, kit = Kit.Psych, tambourine = true,
+                        room = 0.7f, wet = 0.24f, tone = 8000, pump = 0.25f, bassPump = 0.1f, drive = 0.12f,
                     };
                 default:
-                    // The menu, a warm sunset over the Atlantic: the phased pad on major sevenths, a Rhodes in the second
-                    // half, the fuzzy bass's tune under it; the dreamy lead, then the saw, softly.
+                    // The menu, a warm sunset over the Atlantic: a dreamy line on the phased pad's major sevenths, then a
+                    // higher one with a Rhodes.
                     return new Style
                     {
                         bpm = 112, swing = 0.02, key = 64, mode = Mode.Major, seed = 307,
-                        chords = new[] { "Emaj7", "G#m7", "C#m7", "Amaj7", "Emaj7", "G#m7", "Amaj7", "B7sus4",
-                                         "Amaj7", "B", "G#m7", "C#m7", "Amaj7", "B", "Emaj7", "B7sus4" },
-                        comp = Comp.Phaser, comp2 = Comp.Rhodes, comp2OnlyInB = true, leadA = Lead.Psych, leadB = Lead.Saw,
-                        leadLo = 66, leadHi = 81, leadSend = 0.45f, bass = Bass.Fuzz, kit = Kit.Psych, tambourine = true,
-                        room = 0.8f, wet = 0.28f, tone = 7500, pump = 0.3f, bassPump = 0.1f, drive = 0.12f, wow = 5f,
+                        chords = new[] { "Emaj7", "C#m7", "Amaj7", "B", "Emaj7", "C#m7", "Amaj7", "B",
+                                         "Amaj7", "B", "G#m7 C#m7", "B7sus4", "Amaj7", "B", "G#m7 C#m7", "B7sus4" },
+                        hookA = new[]
+                        {
+                            "B4 _ _ _ _ _ D#5 _ E5 _ _ _ F#5 _ G#5 _",
+                            "G#5 _ _ _ _ _ E5 _ _ _ _ _ C#5 _ B4 _",
+                            "C#5 _ _ _ _ _ E5 _ G#5 _ _ _ F#5 _ E5 _",
+                            "D#5 _ _ _ _ _ _ _ F#5 _ _ _ D#5 _ B4 _",
+                        },
+                        hookB = new[]
+                        {
+                            "E5 _ _ _ G#5 _ _ _ A5 _ _ _ G#5 _ E5 _",
+                            "F#5 _ _ _ D#5 _ _ _ B4 _ _ _ C#5 _ D#5 _",
+                            "D#5 _ _ _ B4 _ _ _ E5 _ _ _ G#5 _ _ _",
+                            "F#5 _ _ _ _ _ _ _ E5 _ _ _ . . . .",
+                        },
+                        comp = Comp.Phaser, comp2 = Comp.Rhodes, comp2OnlyInB = true, leadA = Lead.Psych, leadB = Lead.Psych,
+                        leadSend = 0.45f, bass = Bass.Fuzz, kit = Kit.Psych, tambourine = true,
+                        room = 0.75f, wet = 0.26f, tone = 7500, pump = 0.25f, bassPump = 0.1f, drive = 0.12f,
                     };
             }
         }
@@ -407,11 +509,63 @@ namespace DribbleToSchool.Audio
             if (st.vinyl > 0f) Instruments.Vinyl(vinyl, 1f, st.seed);
 
             double prev = Synth.MidiToHz(st.leadLo + 5);
+            if (st.hookA != null && st.hookB != null)
+            {
+                // A written hook: each half's riff twice; a note glides only from one it is tied to.
+                double prevEnd = -1;
+                foreach (var half in new[] { Hook(st.hookA, 0), Hook(st.hookB, Bars / 2) })
+                    foreach (var n in half)
+                    {
+                        bool legato = Math.Abs(n.beat - prevEnd) < 1e-6;
+                        prev = PlayLead(n.beat < Bars * 2 ? st.leadA : st.leadB, lead, s, n, legato ? prev : 0);
+                        prevEnd = n.beat + n.len;
+                    }
+                return mix.Render(Loudness);
+            }
             foreach (var n in s.Melody(0, st.leadLo, st.leadHi, new Random(st.seed * 10), st.dance ? Rhythms.Dance : Rhythms.Bouncy))
                 prev = PlayLead(st.leadA, lead, s, n, prev);
             foreach (var n in s.Melody(8, st.leadLo + 2, st.leadHi + 2, new Random(st.seed * 10 + 1), Rhythms.Singing))
                 prev = PlayLead(st.leadB, lead, s, n, prev);
             return mix.Render(Loudness);
+        }
+
+        /// <summary>
+        /// A written four-bar hook, played twice from <paramref name="firstBar"/>: each bar sixteen semiquaver steps, a note name
+        /// ("A4", "C#5", "Bb4") starting a note, "_" holding it, "." a rest. A step's downbeat is accented.
+        /// </summary>
+        static List<Note> Hook(string[] bars, int firstBar)
+        {
+            var notes = new List<Note>();
+            for (int rep = 0; rep < 2; rep++)
+            {
+                int current = -1;
+                for (int b = 0; b < bars.Length; b++)
+                {
+                    var steps = bars[b].Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                    for (int i = 0; i < steps.Length; i++)
+                    {
+                        string t = steps[i];
+                        if (t == "_")
+                        {
+                            if (current >= 0) { var n = notes[current]; n.len += 0.25; notes[current] = n; }
+                            continue;
+                        }
+                        if (t == ".") { current = -1; continue; }
+                        double beat = (firstBar + rep * bars.Length + b) * 4 + i * 0.25;
+                        notes.Add(new Note { beat = beat, len = 0.25, midi = NoteNumber(t), vel = i % 4 == 0 ? 0.9f : i % 2 == 0 ? 0.78f : 0.7f });
+                        current = notes.Count - 1;
+                    }
+                }
+            }
+            return notes;
+        }
+
+        /// <summary>A note's MIDI number from its name and octave ("A4" is 69, "C#5" 73, "Bb4" 70).</summary>
+        static int NoteNumber(string name)
+        {
+            int used;
+            int pc = Chord.PitchClassOf(name, out used);
+            return 12 * (int.Parse(name.Substring(used)) + 1) + pc;
         }
 
         /// <summary>The organ's own track takes the organ's parts (its chords and its reggae bubble).</summary>
@@ -613,7 +767,7 @@ namespace DribbleToSchool.Audio
                     // half, wide open in the second.
                     var v = ch.chord.Voice(57, 76, 4);
                     double sweep = bar < Bars / 2 ? (bar + ch.beat / 4.0) / (Bars / 2) : 1.0;
-                    double cutoff = 700 + 4300 * sweep * sweep;
+                    double cutoff = 1600 + 3400 * sweep;   // (from 1.6 kHz: v132 began at 0.7 kHz, muffled)
                     double[] at = bar % 2 == 0 ? new[] { 0, 0.75, 1.5, 2.5, 3.25 } : new[] { 0.5, 1.25, 2, 2.75, 3.5 };
                     for (int k = 0; k < at.Length; k++)
                         if (at[k] < span)
@@ -675,6 +829,7 @@ namespace DribbleToSchool.Audio
                 // Florida's synths: the electro saw lead and the dreamy psychedelic one, both gliding from the last note.
                 case Lead.Saw: Instruments.SawLead(tr, t, f, prevFreq, d * 0.92, v * 0.95f); break;
                 case Lead.Psych: Instruments.PsychLead(tr, t, f, prevFreq, d * 0.95, v * 0.9f); break;
+                case Lead.Pluck: Instruments.SynthPluck(tr, t, f, d, v); break;
                 default: Instruments.Rhodes(tr, t, f, d, v * 0.65f); break;
             }
             return f;
@@ -962,6 +1117,8 @@ namespace DribbleToSchool.Audio
                 int dummy;
                 bass = bassName != null ? PitchClass(bassName, out dummy) : root;
             }
+
+            public static int PitchClassOf(string s, out int used) { return PitchClass(s, out used); }
 
             static int PitchClass(string s, out int used)
             {

@@ -757,6 +757,15 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
     before each gate.
   - *Rule:* every collider the ball can land on must either be reachable or say it strands the ball. Anything the camera
     sees across the lane must answer the ball the way it looks (a canopy stops it).
+- **E17. The ball still went through a shop canopy (v133, from the user's recording of Biscayne Boulevard).** v130 gave the
+  level's own arcades a canopy collider, but the Miami district placed the same Deco block as scenery, its wall at 2.35 m and
+  its 3 m canvas hanging 0.7 m in front of the ball's plane (z 0), with no collider: the ball flew up behind the canvas and
+  fell back through it. Downtown had one too. v130's fix looked at the play pieces only, not at the scenery made of the same
+  models. *Fix:* nothing that stands behind the lane may reach over the ball: `StreetBuilder.Model` (every street model in
+  both cities) and `miami_plan.py` push such a model back until its front is 0.45 m behind the ball
+  (`StreetBuilder.ClearOfTheBall`, a test over the whole plan). The district's arcades now stand at 3.5 m; nothing in
+  Kamakura's streets came closer than 0.65 m. *Rule:* a rule about how a model meets the ball holds wherever the model is
+  placed; audit the scenery against the ball's plane, not only the play pieces.
 
 ## F. UI and menus
 
@@ -779,6 +788,15 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
   went to the user as MP3s before the commit was called done. *Rule:* G1 again: for a new country's music, ask for
   reference artists and the mood first; energy (tempo, four on the floor, a major key) is what reads as happy, not the
   instruments' "local" colour.
+- **G4. Florida's music "still bad" after the redo (v132, redone in v133); "the background beats are good enough".** v132
+  kept the old random tune-maker (a melody walking the scale from a seed) and put it on new synths that glided into every
+  note, wobbled (vibrato, and 5 to 6 cents of tape wow on the whole mix) and honked (resonant, overdriven stabs, the filter
+  starting at 700 Hz). Nobody listened before it shipped: the checks were loudness, peaks and a spectrogram, none of which
+  hears a tune. *Fix:* the drums and bass kept; every loop now has two written four-bar hooks over simple four-bar chord
+  cycles, on synths that hold their pitch (a glide only between tied notes, no wow, a bright pluck for the riffs), and calmer
+  stabs. `tools/music_hooks/check.py` fails if a strong beat of a hook is off its chord. *Rule:* a tune is written, not
+  generated, when the user is listening for it; check what can be checked (notes against chords, pitch held), and say plainly
+  that taste can only be judged by ear: send the previews and ask what is wrong in their words before a third take.
 
 ## H. Co-op, store, release and testing
 
@@ -812,7 +830,8 @@ Never re-propose what is rejected here.
   user's request, with their designs, prompts and strings; don't re-add them or list cities as coming soon. Each city has its
   own colour temperature and climate. No reskins of another city's levels (D8).
 - **Florida's music (v132):** upbeat and original, in the spirit of Justice (French electro, filter house) and Tame Impala
-  (psychedelic synth-pop). Not Caribbean or sad (G3).
+  (psychedelic synth-pop). Not Caribbean or sad (G3). The user likes its beats (drums and bass, v132): keep them; the
+  tunes are written hooks on steady synths (G4).
 - **The look:** the user's bar is a recent big-budget open-world game's look and feel (warm sun against cool shade, haze,
   weathered, dense streets), reached through light, grade and baked texture within the phone's budget, never by copying
   that game's content. The filters must keep working in every city.

@@ -706,6 +706,16 @@ namespace DribbleToSchool.EditorTools
             return v != null && v.Count >= 3 ? new Vector3(Convert.ToSingle(v[0]), Convert.ToSingle(v[2]), Convert.ToSingle(v[1])) : Vector3.zero;
         }
 
+        /// <summary>The far-top-right corner of a kit model's bounds from its manifest (Unity axes), or zero if unknown.</summary>
+        public static Vector3 KitMax(string kit, string model)
+        {
+            var info = KitInfo(kit, model);
+            object max;
+            if (info == null || !info.TryGetValue("max", out max)) return Vector3.zero;
+            var v = max as List<object>;
+            return v != null && v.Count >= 3 ? new Vector3(Convert.ToSingle(v[0]), Convert.ToSingle(v[2]), Convert.ToSingle(v[1])) : Vector3.zero;
+        }
+
         /// <summary>The near-bottom-left corner of a kit model's bounds from its manifest (Unity axes: z is how far it comes forward of its origin, negative), or zero if unknown.</summary>
         public static Vector3 KitMin(string kit, string model)
         {

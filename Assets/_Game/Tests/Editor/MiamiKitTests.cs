@@ -156,6 +156,31 @@ namespace DribbleToSchool.Tests
         }
 
         [Test]
+        public void NothingBehindTheLaneReachesOverTheBall()
+        {
+            // A Deco block's 3 m canvas arcade, set with its wall at 2.35 m, hung 0.7 m in front of the ball on Biscayne Boulevard
+            // and downtown, and the ball flew up through it (docs/LEARNINGS.md E17). The plan keeps every model clear, and the
+            // builder's guard would move it if not.
+            UnityEngine.Vector3 min = LevelBuildKit.KitMin("Miami", "DecoArcadeMIA"), max = LevelBuildKit.KitMax("Miami", "DecoArcadeMIA");
+            Assert.Less(min.z, -2.5f, "the arcade's canvas reaches about 3 m forward of its wall");
+            float moved = StreetBuilder.ClearOfTheBall(2.35f, min, max, 0f, 1f);
+            Assert.AreEqual(StreetBuilder.BallClear - min.z, moved, 1e-3f, "pushed back until its canopy is clear of the ball");
+            Assert.AreEqual(StreetBuilder.BallClear + max.z, StreetBuilder.ClearOfTheBall(2.35f, min, max, 180f, 1f), 1e-3f, "turned round, its back is what comes forward");
+            Assert.AreEqual(-1.6f, StreetBuilder.ClearOfTheBall(-1.6f, min, max, 0f, 1f), "at the kerb (a lamp, a signal) it is left where it is");
+
+            foreach (var leg in Legs())
+                foreach (var item in (List<object>)((Dictionary<string, object>)leg.Value)["items"])
+                {
+                    var it = (List<object>)item;
+                    string kit = (string)it[0], model = (string)it[1];
+                    if (kit == "Plants" || kit == "Animals" || kit == "Terrain") continue;
+                    float z = (float)(double)it[3];
+                    float clear = StreetBuilder.ClearOfTheBall(z, LevelBuildKit.KitMin(kit, model), LevelBuildKit.KitMax(kit, model), (float)(double)it[4], (float)(double)it[5]);
+                    Assert.AreEqual(z, clear, 0.01f, leg.Key + ": " + model + " at x " + it[2] + " reaches over the ball's lane: run tools/blender/miami_plan.py");
+                }
+        }
+
+        [Test]
         public void TheLevelIdIsReadBeforeTheNewSceneUnloadsTheDefinition()
         {
             // Read after EditorSceneManager.NewScene, the definition had been unloaded and LevelId was always empty: no Florida leg

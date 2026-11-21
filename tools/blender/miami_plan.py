@@ -32,6 +32,40 @@ REPO = os.path.abspath(os.path.join(HERE, '..', '..'))
 LAYOUTS = os.path.join(REPO, 'Assets/_Game/Scripts/Editor/FloridaLevels.cs')
 OUT = os.path.join(REPO, 'Assets/_Game/Art/Models/Miami/MiamiDistricts.json')
 
+# Nothing that stands behind the lane may reach forward over the ball's plane (z 0) above the ground: a Deco block's canvas
+# arcade (3 m deep) placed with its front wall at 2.35 hung 0.7 m in front of the ball, and the ball flew up through it with no
+# collider to stop it (docs/LEARNINGS.md E17). Such a model is pushed back until its front edge is LANE_CLEAR behind the ball.
+# The game's builder applies the same rule to every street model (StreetBuilder.ClearOfTheBall).
+LANE_CLEAR = 0.45
+_MANIFESTS = {}
+
+
+def _model_info(kit, model):
+    if kit not in _MANIFESTS:
+        path = os.path.join(REPO, 'Assets/_Game/Art/Models', kit, kit + '.json')
+        try:
+            _MANIFESTS[kit] = json.load(open(path)).get('models', {})
+        except (OSError, ValueError):
+            _MANIFESTS[kit] = {}
+    return _MANIFESTS[kit].get(model)
+
+
+def clear_of_the_ball(kit, model, z, yaw, scale):
+    """z, pushed back if the model (standing behind the lane) would reach over the ball's plane above 1.2 m."""
+    if kit in ('Plants', 'Animals', 'Terrain') or z < 0.6:
+        return z
+    info = _model_info(kit, model)
+    if not info or 'min' not in info or info['max'][2] * scale < 1.2:
+        return z
+    a = math.radians(yaw)
+    # the footprint's corners (x across, forward = -y in the manifest's Blender axes), turned as Unity turns the model
+    xs = (info['min'][0] * scale, info['max'][0] * scale)
+    fs = (info['min'][1] * scale, info['max'][1] * scale)
+    front = min(-x * math.sin(a) + f * math.cos(a) for x in xs for f in fs)
+    if z + front < LANE_CLEAR:
+        z = LANE_CLEAR - front
+    return z
+
 LEAD_IN = 12.0                       # HomeLeadInRules.Length: a leg starts 12 m before its own street, at its stop's door
 STOP_PLOT = (-4.6 - 0.6, 7.6 + 0.6)  # StreetBuilder.StopPlot (and a margin), round a stop's door
 HOME_PLOT = (-5.6 - 0.6, 7.8 + 0.6)  # StreetBuilder.HomePlotFL
@@ -112,6 +146,7 @@ class Plan:
 
     def put(self, kit, model, x, z, yaw=0.0, scale=1.0, y=None):
         if x < self.x0 or x > self.x1: return
+        z = clear_of_the_ball(kit, model, z, yaw, scale)
         it = [kit, model, round(x, 3), round(z, 3), round(yaw, 1), round(scale, 3)]
         if y is not None: it.append(round(y, 3))
         self.items.append(it)
