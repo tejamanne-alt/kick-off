@@ -108,9 +108,9 @@ around them has real depth.
 **The cities.** The original streets above are Kamakura, Japan: a seaside town south of Tokyo (Japanese shop names,
 concrete poles, block walls, the railway). Since v126 it is built from its own kits, after the user's brief
 (`docs/KAMAKURA_BRIEF.md`): kawara-roofed timber-and-mortar homes behind block walls, noren shopfronts, a temple ground,
-the green-and-cream tram, black pines, camphors and cedars, kites and crows. The game is now five cities, each a chapter of its own with its own streets,
-light and play, chosen after PLAY (`Progression/Cities`, `UI/CityPicker`; the design is `docs/CITIES.md`): Kamakura,
-Florida (Miami), Madrid, New York and Mumbai. The add-ons, which put the same levels in another country's streets, are gone.
+the green-and-cream tram, black pines, camphors and cedars, kites and crows. The game is now two cities, each a chapter of its own with its own streets,
+light and play, chosen after PLAY (`Progression/Cities`, `UI/CityPicker`; the design is `docs/CITIES.md`): Kamakura and
+Florida (Miami); Madrid, New York and Mumbai were removed in v132. The add-ons, which put the same levels in another country's streets, are gone.
 **Each city's light** is Kamakura's measured look shifted by the city's climate (`CityClimate`): the colour temperature of
 its direct sun and of its shade, and how humid its air is (a milky horizon and nearer haze, or a deeper sky and crisper
 distance). It is applied to a city's scenes as they are built, so it costs nothing at runtime, and every filter reads it.

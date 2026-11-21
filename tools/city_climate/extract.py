@@ -5,12 +5,12 @@ src, out = sys.argv[1], sys.argv[2]
 s = open(src).read()
 try:
     a = s.index('    /// <summary>\n    /// A city\'s weather and light')
-    b = s.index('    /// <summary>One of the five cities')
+    b = s.index('    /// <summary>One of the cities')
 except ValueError:
     sys.exit('extract.py: CityClimate is no longer where this expects it in ' + src + ': update the harness')
 cities = re.findall(r'public static readonly City (\w+) = new City\((?:.|\n)*?(new CityClimate\([^;]*?\)|CityClimate\.Reference), new Color', s)
-if len(cities) < 5:
-    sys.exit('extract.py: found %d cities\' climates, expected 5' % len(cities))
+if len(cities) < 2:
+    sys.exit('extract.py: found %d cities\' climates, expected 2 (Kamakura and Florida)' % len(cities))
 text = 'using DribbleToSchool.Art;\nusing UnityEngine;\nnamespace DribbleToSchool.Progression\n{\n' + s[a:b] + '    public static class Climates\n    {\n'
 text += ''.join('        public static CityClimate %s = %s;\n' % c for c in cities)
 text += '        public static CityClimate Get(string name)\n        {\n            switch (name)\n            {\n'

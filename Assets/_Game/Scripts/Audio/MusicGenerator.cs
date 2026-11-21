@@ -58,10 +58,10 @@ namespace DribbleToSchool.Audio
 
         // ================= Styles =================
 
-        enum Comp { None, Jangle, Acoustic, Fingerpick, Palm, Funk, Rhodes, RhodesHeld, Organ, Skank, Montuno, OrganBubble }
-        enum Lead { Surf, Whistle, Glock, Guitar, Acoustic, Rhodes, Koto, Flute, SteelPan, Marimba, Vibes }
-        enum Kit { Pop, Surf, Funk, WestCoast, Folk, Calypso, Son, OneDrop }
-        enum Bass { Pick, Sub, Upright }
+        enum Comp { None, Jangle, Acoustic, Fingerpick, Palm, Funk, Rhodes, RhodesHeld, Organ, Skank, Montuno, OrganBubble, Chop, Pulse, Phaser }
+        enum Lead { Surf, Whistle, Glock, Guitar, Acoustic, Rhodes, Koto, Flute, SteelPan, Marimba, Vibes, Saw, Psych }
+        enum Kit { Pop, Surf, Funk, WestCoast, Folk, Calypso, Son, OneDrop, Electro, Psych }
+        enum Bass { Pick, Sub, Upright, Electro, Fuzz }
 
         sealed class Style
         {
@@ -79,6 +79,12 @@ namespace DribbleToSchool.Audio
             public bool oohs, claps, tambourine;
             public float room = 0.55f, wet = 0.22f, vinyl;
             public double tone = 7000;
+            /// <summary>How far the chords (and the bass) dip under each kick: the sidechain "pump" of dance music.</summary>
+            public float pump = 0.15f, bassPump;
+            /// <summary>The master's tape drive, and its wow (cents).</summary>
+            public float drive = 0.08f, wow;
+            /// <summary>The first half's tune on the dance rhythms (quavers, repeated notes) rather than the bouncy pop ones.</summary>
+            public bool dance;
         }
 
         /// <summary>
@@ -259,99 +265,102 @@ namespace DribbleToSchool.Audio
         }
 
         /// <summary>
-        /// The Florida add-on's music: the sounds of a Florida beach town, from the Caribbean and Cuba up the
-        /// coast. Steel pans and marimba over calypso and soca on the beach, a Cuban son on Home Street (a marimba
-        /// montuno, an upright bass's tumbao, clave, bongos, congas and a guiro), Miami salsa in the market, a
-        /// neon Miami night groove in the underpass, a calypso drive on the building site, a laid-back one-drop
-        /// in the park, and a sunset trop-rock for the menu (a fingerpicked acoustic and a steel pan).
+        /// The Florida add-on's music (v132): bright, driving Miami dance music in two flavours, all of it original. French
+        /// electro and filter house (in the spirit of Justice) on the busy streets: four on the floor with a kick that
+        /// pumps the whole mix, a growling saw bass on rolling octaves, chopped disco chord stabs whose filter opens over
+        /// the first half, pumping quaver chords, a gliding saw lead, crunchy snares and claps, the open hat on every
+        /// off-beat. Psychedelic synth-pop (in the spirit of Tame Impala) in the calmer places: a lush phased pad on
+        /// warm major-seventh chords, a fuzzy melodic bass, big squashed laid-back drums with a tambourine, a dreamy
+        /// gliding lead, tape wobble and a long reverb. Major and Mixolydian keys, Dorian for the night; 112 to 126 BPM.
+        /// (It replaced v122's Caribbean styles, which the user found sad: docs/LEARNINGS.md G3.)
         /// </summary>
         static Style FloridaStyleOf(Soundscape scape)
         {
             switch (scape)
             {
                 case Soundscape.Street:
-                    // A Cuban son on a sunny morning: a marimba montuno, a strummed acoustic like a tres, the upright's
-                    // tumbao, the clave with bongos, congas and the guiro; vibes sing the tune, then the steel pan.
+                    // Home Street, filter house on a sunny morning: the stabs open up over the first half, pumping chords
+                    // join in the second; the saw lead's riff, then the dreamy lead over it.
                     return new Style
                     {
-                        bpm = 104, swing = 0, key = 67, mode = Mode.Major, seed = 211,
-                        chords = new[] { "G", "C", "D7", "C", "G", "C", "D7", "G",
-                                         "Em", "C", "D7", "G", "Em", "Am7", "D7", "D7" },
-                        comp = Comp.Montuno, comp2 = Comp.Acoustic, comp2OnlyInB = true, leadA = Lead.Vibes, leadB = Lead.SteelPan,
-                        leadLo = 67, leadHi = 83, bass = Bass.Upright, kit = Kit.Son,
-                        room = 0.5f, wet = 0.2f,
+                        bpm = 122, swing = 0, key = 62, mode = Mode.Mixolydian, seed = 311,
+                        chords = new[] { "D", "C", "G", "D", "D", "C", "G", "A7sus4",
+                                         "Bm7", "G", "D", "A7sus4", "Bm7", "G", "Em7", "A7sus4" },
+                        comp = Comp.Chop, comp2 = Comp.Pulse, comp2OnlyInB = true, leadA = Lead.Saw, leadB = Lead.Psych,
+                        leadLo = 66, leadHi = 81, leadSend = 0.3f, bass = Bass.Electro, kit = Kit.Electro, claps = true, dance = true,
+                        room = 0.5f, wet = 0.18f, tone = 9000, pump = 0.5f, bassPump = 0.3f, drive = 0.2f,
                     };
                 case Soundscape.Market:
-                    // Miami salsa: a minor montuno on the marimba over a Rhodes, the tumbao, clave and bongos, claps on
-                    // the second half; a nylon-string guitar's tune, then the flute.
+                    // Disco-funk in the market: filter-house chops, guitar chops in the second half, a Dorian groove;
+                    // the dreamy lead first, then the saw.
                     return new Style
                     {
-                        bpm = 112, swing = 0, key = 57, mode = Mode.Minor, seed = 222,
-                        chords = new[] { "Am", "Dm7", "E7", "Am", "Am", "Dm7", "G7", "Cmaj7",
-                                         "Fmaj7", "Dm7", "E7", "Am", "Fmaj7", "Bm7b5", "E7", "E7" },
-                        comp = Comp.Montuno, comp2 = Comp.Rhodes, leadA = Lead.Guitar, leadB = Lead.Flute,
-                        leadLo = 64, leadHi = 81, bass = Bass.Upright, kit = Kit.Son, claps = true,
-                        room = 0.45f, wet = 0.18f,
+                        bpm = 118, swing = 0.03, key = 64, mode = Mode.Dorian, seed = 322,
+                        chords = new[] { "Em7", "A7", "Em7", "A7", "Gmaj7", "A7", "Bm7", "A7",
+                                         "Gmaj7", "D", "A7", "Bm7", "Gmaj7", "D", "F#m7", "A7sus4" },
+                        comp = Comp.Chop, comp2 = Comp.Funk, comp2OnlyInB = true, leadA = Lead.Psych, leadB = Lead.Saw,
+                        leadLo = 64, leadHi = 79, leadSend = 0.3f, bass = Bass.Electro, kit = Kit.Electro, claps = true, dance = true,
+                        room = 0.45f, wet = 0.16f, tone = 9000, pump = 0.45f, bassPump = 0.25f, drive = 0.18f,
                     };
                 case Soundscape.Beach:
-                    // Soca on the sand: the guitar's off-beat skank, a bright strum in the second half, a bouncing bass,
-                    // four on the floor with claps, congas and a tambourine; the steel pan's tune, then the marimba's.
+                    // A beach anthem: pumping chords from the start, the filtered stabs and a choir of "ooh"s in the
+                    // second half, the saw lead all the way.
                     return new Style
                     {
-                        bpm = 124, swing = 0, key = 65, mode = Mode.Major, seed = 233,
-                        chords = new[] { "F", "Bb", "C7", "F", "F", "Bb", "C7", "F",
-                                         "Dm", "Bb", "C7", "F", "Bb", "C7", "F", "C7" },
-                        comp = Comp.Skank, comp2 = Comp.Acoustic, comp2OnlyInB = true, leadA = Lead.SteelPan, leadB = Lead.Marimba,
-                        leadLo = 65, leadHi = 84, leadSend = 0.4f, bass = Bass.Pick, kit = Kit.Calypso, claps = true, tambourine = true,
-                        room = 0.65f, wet = 0.22f,
-                    };
-                case Soundscape.Underpass:
-                    // A neon Miami night: held Rhodes chords, funk chops in the second half, a deep sub, swung sixteenth
-                    // hats; a gliding synth whistle, then the vibes, in the tunnel's echo.
-                    return new Style
-                    {
-                        bpm = 100, swing = 0.06, key = 62, mode = Mode.Dorian, seed = 244,
-                        chords = new[] { "Dm9", "Dm9", "G13", "G13", "Dm9", "Em9", "Fmaj9", "A7",
-                                         "Bbmaj7", "Am9", "Gm7", "A7", "Dm9", "G13", "Bbmaj7", "A7" },
-                        comp = Comp.RhodesHeld, comp2 = Comp.Funk, comp2OnlyInB = true, leadA = Lead.Whistle, leadB = Lead.Vibes,
-                        leadLo = 69, leadHi = 84, leadSend = 0.45f, bass = Bass.Sub, kit = Kit.WestCoast, claps = true,
-                        room = 0.85f, wet = 0.3f, tone = 6000, vinyl = 0.3f,
+                        bpm = 124, swing = 0, key = 69, mode = Mode.Major, seed = 333,
+                        chords = new[] { "A", "E", "F#m7", "D", "A", "E", "D", "E",
+                                         "D", "E", "C#m7", "F#m7", "D", "E", "Bm7", "E7sus4" },
+                        comp = Comp.Pulse, comp2 = Comp.Chop, comp2OnlyInB = true, leadA = Lead.Saw, leadB = Lead.Saw,
+                        leadLo = 64, leadHi = 81, leadSend = 0.35f, bass = Bass.Electro, kit = Kit.Electro, claps = true, oohs = true, dance = true,
+                        room = 0.6f, wet = 0.2f, tone = 9500, pump = 0.55f, bassPump = 0.3f, drive = 0.18f,
                     };
                 case Soundscape.Site:
-                    // A calypso drive for the building site: the skank, a combo organ in the second half, the soca kit;
-                    // a clean guitar's tune, then the steel pan.
+                    // The building site, the hardest of them: two chords a bar in places, the stabs and the pump, the
+                    // most drive; the saw lead, then the dreamy one.
                     return new Style
                     {
-                        bpm = 126, swing = 0, key = 70, mode = Mode.Mixolydian, seed = 255,
-                        chords = new[] { "Bb", "Eb", "F7", "Bb", "Bb", "Eb", "F7", "Bb",
-                                         "Gm", "Eb", "F7", "Bb", "Gm", "Cm7", "F7", "F7" },
-                        comp = Comp.Skank, comp2 = Comp.Organ, comp2OnlyInB = true, leadA = Lead.Guitar, leadB = Lead.SteelPan,
-                        leadLo = 65, leadHi = 82, leadSend = 0.45f, bass = Bass.Pick, kit = Kit.Calypso, claps = true,
-                        room = 0.6f, wet = 0.22f,
+                        bpm = 126, swing = 0, key = 67, mode = Mode.Major, seed = 355,
+                        chords = new[] { "G", "G D/F#", "Em7", "C", "G", "G D/F#", "C", "D",
+                                         "Am7", "C", "G", "D", "Am7", "C", "Em7 D", "D7sus4" },
+                        comp = Comp.Chop, comp2 = Comp.Pulse, comp2OnlyInB = true, leadA = Lead.Saw, leadB = Lead.Psych,
+                        leadLo = 64, leadHi = 79, leadSend = 0.3f, bass = Bass.Electro, kit = Kit.Electro, claps = true, dance = true,
+                        room = 0.45f, wet = 0.16f, tone = 9000, pump = 0.55f, bassPump = 0.35f, drive = 0.24f,
+                    };
+                case Soundscape.Underpass:
+                    // The tunnel at night, a psychedelic disco groove in Dorian: the phased pad, guitar chops in the
+                    // second half, the fuzzy bass; the dreamy lead, then the saw, in the tunnel's long echo.
+                    return new Style
+                    {
+                        bpm = 116, swing = 0.02, key = 62, mode = Mode.Dorian, seed = 344,
+                        chords = new[] { "Dm9", "G", "Dm9", "G", "Fmaj7", "C", "Em7", "A7sus4",
+                                         "Fmaj7", "G", "Am7", "Dm9", "Fmaj7", "G", "Em7", "A7sus4" },
+                        comp = Comp.Phaser, comp2 = Comp.Funk, comp2OnlyInB = true, leadA = Lead.Psych, leadB = Lead.Saw,
+                        leadLo = 67, leadHi = 82, leadSend = 0.5f, bass = Bass.Fuzz, kit = Kit.Psych, claps = true, tambourine = true,
+                        room = 0.85f, wet = 0.28f, tone = 7500, pump = 0.3f, bassPump = 0.1f, drive = 0.14f, wow = 6f,
                     };
                 case Soundscape.Park:
-                    // A lazy one-drop afternoon under the live oaks: the skank, an organ's bubble in the second half,
-                    // a round bass; the marimba's tune, then the steel pan.
+                    // An afternoon under the live oaks, psychedelic synth-pop: the phased pad on warm sevenths, jangly
+                    // guitars in the second half, the tambourine; the dreamy lead, then a glockenspiel.
                     return new Style
                     {
-                        bpm = 86, swing = 0.08, key = 60, mode = Mode.Major, seed = 266,
-                        chords = new[] { "C", "F", "G", "C", "Am", "F", "G", "G",
-                                         "F", "G", "Em", "Am", "F", "G", "C", "G" },
-                        comp = Comp.Skank, comp2 = Comp.OrganBubble, comp2OnlyInB = true, leadA = Lead.Marimba, leadB = Lead.SteelPan,
-                        leadLo = 67, leadHi = 84, bass = Bass.Pick, kit = Kit.OneDrop,
-                        room = 0.6f, wet = 0.24f,
+                        bpm = 114, swing = 0.02, key = 62, mode = Mode.Major, seed = 366,
+                        chords = new[] { "Dmaj7", "F#m7", "Gmaj7", "A", "Dmaj7", "F#m7", "Em7", "A7sus4",
+                                         "Bm7", "Gmaj7", "Dmaj7", "A", "Bm7", "Gmaj7", "Em7", "A7" },
+                        comp = Comp.Phaser, comp2 = Comp.Jangle, comp2OnlyInB = true, leadA = Lead.Psych, leadB = Lead.Glock,
+                        leadLo = 67, leadHi = 83, leadSend = 0.45f, bass = Bass.Fuzz, kit = Kit.Psych, tambourine = true,
+                        room = 0.75f, wet = 0.26f, tone = 8000, pump = 0.3f, bassPump = 0.1f, drive = 0.12f, wow = 5f,
                     };
                 default:
-                    // The menu: a sunset over the Atlantic. A fingerpicked acoustic, a marimba montuno in the second
-                    // half, a gentle one-drop; the steel pan's tune, then the vibes.
+                    // The menu, a warm sunset over the Atlantic: the phased pad on major sevenths, a Rhodes in the second
+                    // half, the fuzzy bass's tune under it; the dreamy lead, then the saw, softly.
                     return new Style
                     {
-                        bpm = 92, swing = 0.06, key = 62, mode = Mode.Major, seed = 207,
-                        chords = new[] { "D", "G", "A7", "D", "Bm", "G", "A7", "A7",
-                                         "G", "A7", "F#m", "Bm", "Em7", "A7", "D", "A7" },
-                        comp = Comp.Fingerpick, comp2 = Comp.Montuno, comp2OnlyInB = true, leadA = Lead.SteelPan, leadB = Lead.Vibes,
-                        leadLo = 67, leadHi = 83, bass = Bass.Pick, kit = Kit.OneDrop,
-                        room = 0.65f, wet = 0.26f, tone = 6500,
+                        bpm = 112, swing = 0.02, key = 64, mode = Mode.Major, seed = 307,
+                        chords = new[] { "Emaj7", "G#m7", "C#m7", "Amaj7", "Emaj7", "G#m7", "Amaj7", "B7sus4",
+                                         "Amaj7", "B", "G#m7", "C#m7", "Amaj7", "B", "Emaj7", "B7sus4" },
+                        comp = Comp.Phaser, comp2 = Comp.Rhodes, comp2OnlyInB = true, leadA = Lead.Psych, leadB = Lead.Saw,
+                        leadLo = 66, leadHi = 81, leadSend = 0.45f, bass = Bass.Fuzz, kit = Kit.Psych, tambourine = true,
+                        room = 0.8f, wet = 0.28f, tone = 7500, pump = 0.3f, bassPump = 0.1f, drive = 0.12f, wow = 5f,
                     };
             }
         }
@@ -364,7 +373,7 @@ namespace DribbleToSchool.Audio
             var rng = new Random(st.seed * 31);
             var mix = new Mixdown(s.Length)
             {
-                roomSize = st.room, damping = 0.55f, wet = st.wet, tone = st.tone, drive = 0.08f,
+                roomSize = st.room, damping = 0.55f, wet = st.wet, tone = st.tone, drive = st.drive, wowCents = st.wow,
             };
             var gtr = mix.Add(-0.4f, 0.3f, 0.7f);
             var gtr2 = mix.Add(0.42f, 0.3f, 0.55f);
@@ -377,7 +386,8 @@ namespace DribbleToSchool.Audio
             var hats = mix.Add(0.3f, 0.06f, 0.3f);
             var perc = mix.Add(-0.45f, 0.12f, 0.35f);
             var vinyl = mix.Add(0f, 0f, 0.5f * st.vinyl);
-            gtr.duck = gtr2.duck = organ.duck = oohs.duck = 0.15f;
+            gtr.duck = gtr2.duck = organ.duck = oohs.duck = st.pump;
+            bass.duck = st.bassPump;
 
             for (int bar = 0; bar < Bars; bar++)
             {
@@ -397,7 +407,7 @@ namespace DribbleToSchool.Audio
             if (st.vinyl > 0f) Instruments.Vinyl(vinyl, 1f, st.seed);
 
             double prev = Synth.MidiToHz(st.leadLo + 5);
-            foreach (var n in s.Melody(0, st.leadLo, st.leadHi, new Random(st.seed * 10), Rhythms.Bouncy))
+            foreach (var n in s.Melody(0, st.leadLo, st.leadHi, new Random(st.seed * 10), st.dance ? Rhythms.Dance : Rhythms.Bouncy))
                 prev = PlayLead(st.leadA, lead, s, n, prev);
             foreach (var n in s.Melody(8, st.leadLo + 2, st.leadHi + 2, new Random(st.seed * 10 + 1), Rhythms.Singing))
                 prev = PlayLead(st.leadB, lead, s, n, prev);
@@ -411,6 +421,8 @@ namespace DribbleToSchool.Audio
         {
             if (st.bass == Bass.Sub) Instruments.SubBass(bass, s.T(bar, beat), Synth.MidiToHz(midi), s.Beats(beats), vel);
             else if (st.bass == Bass.Upright) Instruments.UprightBass(bass, s.T(bar, beat), Synth.MidiToHz(midi), s.Beats(beats), vel, seed);
+            else if (st.bass == Bass.Electro) Instruments.ElectroBass(bass, s.T(bar, beat), Synth.MidiToHz(midi), s.Beats(beats), vel);
+            else if (st.bass == Bass.Fuzz) Instruments.FuzzBass(bass, s.T(bar, beat), Synth.MidiToHz(midi), s.Beats(beats), vel);
             else Instruments.PickBass(bass, s.T(bar, beat), Synth.MidiToHz(midi), s.Beats(beats), vel, seed);
         }
 
@@ -448,6 +460,23 @@ namespace DribbleToSchool.Audio
                     line = new[] { root, root, root + 7, root + 12, root + 7, root };
                     len = 0.4;
                     break;
+                case Kit.Electro:
+                    // French electro's rolling octaves: the root on the beat, the octave on every "and", a fifth pushing
+                    // into the next beat; short, so the pump breathes between them.
+                    at = new[] { 0, 0.5, 1, 1.5, 1.75, 2, 2.5, 3, 3.5, 3.75 };
+                    line = new[] { root, root + 12, root, root + 12, root + 7, root, root + 12, root, root + 12, root + 7 };
+                    len = 0.22;
+                    break;
+                case Kit.Psych:
+                {
+                    // A melodic, syncopated line that sings over the chord: root, octave, fifth, then up through the
+                    // chord's third and back.
+                    int third = ch.chord.tones.Length > 1 ? ch.chord.tones[1] : 7;
+                    at = new[] { 0, 0.75, 1.5, 2.5, 3, 3.5 };
+                    line = new[] { root, root + 12, root + 7, root, root + 12 + third, root + 7 };
+                    len = 0.42;
+                    break;
+                }
                 case Kit.OneDrop:
                     // A round reggae line, leaving space: the root held, a lift to the fifth, an octave pickup.
                     at = new[] { 0, 1.5, 2.5, 3 };
@@ -578,6 +607,34 @@ namespace DribbleToSchool.Audio
                     }
                     break;
                 }
+                case Comp.Chop:
+                {
+                    // Filter house: chopped disco chord stabs on a syncopated figure, the filter opening over the first
+                    // half, wide open in the second.
+                    var v = ch.chord.Voice(57, 76, 4);
+                    double sweep = bar < Bars / 2 ? (bar + ch.beat / 4.0) / (Bars / 2) : 1.0;
+                    double cutoff = 700 + 4300 * sweep * sweep;
+                    double[] at = bar % 2 == 0 ? new[] { 0, 0.75, 1.5, 2.5, 3.25 } : new[] { 0.5, 1.25, 2, 2.75, 3.5 };
+                    for (int k = 0; k < at.Length; k++)
+                        if (at[k] < span)
+                            Instruments.SawStab(tr, s.T(bar, ch.beat + at[k]), v, s.Beats(0.3), (k == 0 ? 0.62f : 0.5f) * level, cutoff, bar * 70 + k);
+                    break;
+                }
+                case Comp.Pulse:
+                {
+                    // Pumping synth chords on every quaver, the off-beats leaning in (the sidechain does the rest).
+                    var v = ch.chord.Voice(60, 76, 3);
+                    for (double b = 0; b < span; b += 0.5)
+                    {
+                        bool off = Math.Abs(b - Math.Floor(b) - 0.5) < 1e-6;
+                        Instruments.SawStab(tr, s.T(bar, ch.beat + b), v, s.Beats(0.32), (off ? 0.48f : 0.32f) * level, 2600, bar * 80 + (int)(b * 2));
+                    }
+                    break;
+                }
+                case Comp.Phaser:
+                    // A lush phased pad held through the chord, its sweep turning once every two bars.
+                    Instruments.PhaserPad(tr, s.T(bar, ch.beat), ch.chord.Voice(55, 74, 4), s.Beats(span - 0.05), 0.5f * level, s.Beats(8), bar * 90 + (int)ch.beat);
+                    break;
                 case Comp.OrganBubble:
                 {
                     // Reggae's organ "bubble": short chords on the off-beats, the "and" of each beat pushed by a ghost.
@@ -615,6 +672,9 @@ namespace DribbleToSchool.Audio
                         Instruments.Marimba(tr, s.T(n) + s.Beats(r), f, v * 0.55f);
                     break;
                 case Lead.Vibes: Instruments.Vibes(tr, t, f, d, v * 1.05f); break;
+                // Florida's synths: the electro saw lead and the dreamy psychedelic one, both gliding from the last note.
+                case Lead.Saw: Instruments.SawLead(tr, t, f, prevFreq, d * 0.92, v * 0.95f); break;
+                case Lead.Psych: Instruments.PsychLead(tr, t, f, prevFreq, d * 0.95, v * 0.9f); break;
                 default: Instruments.Rhodes(tr, t, f, d, v * 0.65f); break;
             }
             return f;
@@ -632,6 +692,11 @@ namespace DribbleToSchool.Audio
             if (st.kit == Kit.Calypso || st.kit == Kit.Son || st.kit == Kit.OneDrop)
             {
                 TropicalDrums(st, s, mix, kick, snare, hats, perc, bar, inB, fill, rng);
+                return;
+            }
+            if (st.kit == Kit.Electro || st.kit == Kit.Psych)
+            {
+                SynthDrums(st, s, mix, kick, snare, hats, perc, bar, inB, fill, rng);
                 return;
             }
             double[] kicks;
@@ -768,6 +833,57 @@ namespace DribbleToSchool.Audio
             if (fill)
                 for (int k = 0; k < 4; k++) Instruments.Conga(perc, s.T(bar, 3 + k * 0.25), 0.6f, k < 2);
             if (bar == 0 || bar == Bars / 2) Instruments.Crash(hats, s.T(bar, 0), 0.6f, bar);
+        }
+
+        /// <summary>
+        /// Florida's dance kits (v132). Electro: French filter house, four on the floor with a hard kick that pumps the
+        /// whole mix, a crunchy snare and claps on the backbeat, the open hat on every off-beat, sixteenth hats, a
+        /// shaker in the second half, and a snare roll building into each half. Psych: big, squashed, laid-back
+        /// psychedelic-pop drums, a syncopated kick, the fat snare on the backbeat, quaver hats, a tambourine on the
+        /// sixteenths in the second half and a rolling tom fill; it pumps too, but gently.
+        /// </summary>
+        static void SynthDrums(Style st, Song s, Mixdown mix, Track kick, Track snare, Track hats, Track perc, int bar, bool inB, bool fill, Random rng)
+        {
+            bool electro = st.kit == Kit.Electro;
+            double[] kicks = electro ? new[] { 0.0, 1, 2, 3 } : bar % 2 == 0 ? new[] { 0.0, 1.5, 2.5 } : new[] { 0.0, 0.75, 2, 2.75 };
+            foreach (double k in kicks)
+            {
+                if (fill && k >= 3 && !electro) continue;
+                double t = s.T(bar, k);
+                Instruments.PunchKick(kick, t, electro ? (k == 0 ? 1f : 0.92f) : (k == 0 ? 0.95f : 0.78f));
+                mix.Duck(t, electro ? 1f : 0.6f, electro ? 0.13 : 0.11);
+            }
+            foreach (double b in new[] { 1.0, 3.0 })
+            {
+                if (fill && b >= 3) continue;
+                double t = s.T(bar, b);
+                Instruments.CrunchSnare(snare, t, electro ? 0.72f : 0.82f, bar * 4 + (int)b);
+                if (st.claps) Instruments.Clap(perc, t + 0.003, electro ? 0.6f : 0.4f, bar * 4 + (int)b);
+            }
+            if (fill)
+            {
+                if (electro)
+                    for (int k = 0; k < 8; k++) Instruments.CrunchSnare(snare, s.T(bar, 3 + k * 0.125), 0.22f + k * 0.07f, 1300 + bar * 8 + k);
+                else
+                    for (int k = 0; k < 6; k++) Instruments.Tom(perc, s.T(bar, 3 + k * 1.0 / 6), 190 - k * 18, 0.6f + k * 0.04f);
+            }
+            if (bar == 0 || bar == Bars / 2) Instruments.Crash(hats, s.T(bar, 0), 0.65f, bar);
+
+            int steps = electro ? 16 : 8;
+            for (int e = 0; e < steps; e++)
+            {
+                double b = e * 4.0 / steps;
+                if (fill && b >= 3) break;
+                bool onBeat = Math.Abs(b - Math.Round(b)) < 1e-6;
+                bool offEighth = !onBeat && Math.Abs(b * 2 - Math.Round(b * 2)) < 1e-6;
+                float jitter = (float)(0.85 + rng.NextDouble() * 0.3);
+                if (electro && offEighth) Instruments.OpenHat(hats, s.T(bar, b), 0.5f, bar * 16 + e);
+                else Instruments.Hat(hats, s.T(bar, b), (onBeat ? 0.42f : electro ? 0.22f : 0.34f) * jitter, bar * 16 + e);
+                if (inB && electro && !onBeat) Instruments.Shaker(perc, s.T(bar, b), 0.22f, bar * 16 + e);
+            }
+            if (!electro && st.tambourine && inB && !fill)
+                for (double b = 0.25; b < 4; b += 0.5) Instruments.Tambourine(perc, s.T(bar, b), 0.28f, bar * 16 + (int)(b * 4));
+            if (!electro && inB && !fill) Instruments.OpenHat(hats, s.T(bar, 3.5), 0.4f, bar);
         }
 
         /// <summary>The highest <paramref name="count"/> notes of a voicing (an up-strum catches the top strings).</summary>

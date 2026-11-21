@@ -769,6 +769,16 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
 
 - **G1. Music redone four times on taste.** *Rule:* get reference tracks and adjectives first, then short A/B previews.
 - **G2. A park hiss that drowned the music; every bed at the same loudness; coin and whistle too loud.** *Rule:* check spectra and loudness per place, and mix against the music at default volumes.
+- **G3. Florida's music "looks sad" (redone in v132).** v122's Florida loops were Caribbean and Cuban styles (son, salsa,
+  soca, calypso, one-drop) at 86 to 126 BPM, with steel pan, marimba and vibes; two were minor or Dorian, the menu and park
+  were slow, and the soft mallet leads over sparse hand drums read as wistful, not sunny. The style was chosen from the
+  place ("Florida = Caribbean") without asking the user what they wanted to feel. *Fix:* the user named the references
+  (Justice, Tame Impala): Florida now plays original French electro (four on the floor, a pumping sidechain, a growling saw
+  bass, filtered disco stabs, a gliding saw lead) and psychedelic synth-pop (a phased pad on major sevenths, a fuzzy
+  melodic bass, big squashed drums, tape wobble), all in major, Mixolydian or a bright Dorian at 112 to 126 BPM. Previews
+  went to the user as MP3s before the commit was called done. *Rule:* G1 again: for a new country's music, ask for
+  reference artists and the mood first; energy (tempo, four on the floor, a major key) is what reads as happy, not the
+  instruments' "local" colour.
 
 ## H. Co-op, store, release and testing
 
@@ -797,9 +807,12 @@ Never re-propose what is rejected here.
   - nothing inside the stick's ring;
   - a ball icon on the KICK button, not a boot;
   - no auto-run.
-- **Cities, not add-ons (v122):** five cities, each a chapter with its own routes and play, picked after PLAY and HOLIDAY RUN:
-  Kamakura (the original town, still first), Florida, Madrid, New York, Mumbai. Each has its own colour temperature and
-  climate. No reskins of another city's levels (D8).
+- **Cities, not add-ons (v122):** each city a chapter with its own routes and play, picked after PLAY and HOLIDAY RUN.
+  **Only Kamakura (the original town, still first) and Florida (v132):** Madrid, New York and Mumbai were removed at the
+  user's request, with their designs, prompts and strings; don't re-add them or list cities as coming soon. Each city has its
+  own colour temperature and climate. No reskins of another city's levels (D8).
+- **Florida's music (v132):** upbeat and original, in the spirit of Justice (French electro, filter house) and Tame Impala
+  (psychedelic synth-pop). Not Caribbean or sad (G3).
 - **The look:** the user's bar is a recent big-budget open-world game's look and feel (warm sun against cool shade, haze,
   weathered, dense streets), reached through light, grade and baked texture within the phone's budget, never by copying
   that game's content. The filters must keep working in every city.

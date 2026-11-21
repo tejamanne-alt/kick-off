@@ -1,4 +1,4 @@
-// Prints a hash of every clip the game synthesizes (all 95: the music of each place in each country, each place's bed
+// Prints a hash of every clip the game synthesizes (all of them: the music of each place in each country, each place's bed
 // and cues, the sound effects), or what each generation allocates. See README.md.
 using System;
 using System.Diagnostics;

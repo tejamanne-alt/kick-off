@@ -32,10 +32,11 @@ Generated scenes are rebuilt from code, so edits made directly in those scenes g
 PLAY and HOLIDAY RUN first ask which city (`UI/CityPicker`, `Progression/Cities`). **Kamakura**, Japan, the original town,
 has every level below and the Holiday Run. **Florida** (Miami), unlocked by finishing Kamakura's levels, has three routes of
 its own, nine legs from the ranch house in Little Havana to Bayside Elementary (see "Florida's routes" below).
-Neither Kamakura nor Florida has mini-games (removed in v128): every leg is a dribble.
-**Madrid**, **New York** and **Mumbai** are designed and coming: each city gets two or three routes of its own from home to
-school, three to five levels each, with its own transit and errands, and its own light and climate
-(`docs/CITIES.md`). The reference images for each city come from `docs/IMAGE_PROMPTS.md`.
+Neither Kamakura nor Florida has mini-games (removed in v128): every leg is a dribble. These two are the game's cities
+(Madrid, New York and Mumbai, once listed as coming soon, were removed in v132); each has its own light and climate
+(`docs/CITIES.md`), and the reference images for each come from `docs/IMAGE_PROMPTS.md`. Florida's music is its own (v132):
+bright French electro on the busy streets and psychedelic synth-pop in the calmer places, inspired by Justice and Tame
+Impala, every tune original.
 
 ### Florida's routes
 

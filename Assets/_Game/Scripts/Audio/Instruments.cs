@@ -703,6 +703,266 @@ namespace DribbleToSchool.Audio
             }
         }
 
+        // ---------- Florida's synths (v132): French electro and psychedelic synth-pop ----------
+
+        /// <summary>A band-limited sawtooth (PolyBLEP: the step at each wrap smoothed), -1 to 1; <paramref name="dt"/> is the phase step per sample.</summary>
+        static double BlepSaw(double p, double dt)
+        {
+            p -= Math.Floor(p);
+            double v = 2.0 * p - 1.0;
+            if (p < dt) { double x = p / dt; v -= x + x - x * x - 1.0; }
+            else if (p > 1.0 - dt) { double x = (p - 1.0) / dt; v -= x * x + x + x + 1.0; }
+            return v;
+        }
+
+        /// <summary>A band-limited pulse of the given duty: one saw minus another shifted along by the duty.</summary>
+        static double BlepPulse(double p, double dt, double duty)
+        {
+            return 0.5 * (BlepSaw(p, dt) - BlepSaw(p + duty, dt));
+        }
+
+        /// <summary>
+        /// A filtered disco chord stab, the French electro way: two detuned saws a note through a resonant low-pass that
+        /// snaps open at the front and closes behind, then driven hard so the chord crunches. Short; the arranger sweeps
+        /// <paramref name="cutoff"/> over the bars (the filter house "opening up").
+        /// </summary>
+        public static void SawStab(Track tr, double time, int[] midi, double dur, float vel, double cutoff, int seed)
+        {
+            if (midi.Length == 0) return;
+            int start = Index(time);
+            double rel = 0.05;
+            int n = (int)((dur + rel) * Sr);
+            var rng = new Random(seed);
+            int voices = midi.Length * 2;
+            var ph = new double[voices];
+            var step = new double[voices];
+            for (int v = 0; v < voices; v++)
+            {
+                double f = Synth.MidiToHz(midi[v / 2]) * (v % 2 == 0 ? 1.0 - 0.004 : 1.0 + 0.004);
+                ph[v] = rng.NextDouble();
+                step[v] = f / Sr;
+            }
+            var flt = new Svf();
+            for (int i = 0; i < n; i++)
+            {
+                double t = i / (double)Sr;
+                double s = 0;
+                for (int v = 0; v < voices; v++) { s += BlepSaw(ph[v], step[v]); ph[v] += step[v]; }
+                s /= voices;
+                double fc = cutoff * (1.0 + 1.6 * Math.Exp(-t * 28));
+                float y = flt.Process((float)s, fc, 1.6);
+                y = (float)Math.Tanh(y * 2.2) * 0.62f;
+                tr.Add(start + i, y * Adr(t, dur, 0.002, 1.8, rel) * vel);
+            }
+        }
+
+        /// <summary>
+        /// A psychedelic synth pad: two detuned saws a note, warm under a low-pass, swelling in quickly, through a
+        /// four-stage phaser whose notches sweep up and down once every <paramref name="period"/> seconds. The sweep
+        /// follows the loop's clock, not the note's, so chord after chord it carries on where it was.
+        /// </summary>
+        public static void PhaserPad(Track tr, double time, int[] midi, double dur, float vel, double period, int seed)
+        {
+            if (midi.Length == 0) return;
+            int start = Index(time);
+            double rel = 0.45, attack = 0.05;
+            int n = (int)((dur + rel) * Sr);
+            var rng = new Random(seed);
+            int voices = midi.Length * 2;
+            var ph = new double[voices];
+            var step = new double[voices];
+            for (int v = 0; v < voices; v++)
+            {
+                double f = Synth.MidiToHz(midi[v / 2]) * (v % 2 == 0 ? 1.0 - 0.0035 : 1.0 + 0.0035);
+                ph[v] = rng.NextDouble();
+                step[v] = f / Sr;
+            }
+            var lp = new Svf();
+            var apX = new double[4];
+            var apY = new double[4];
+            double a = 0, fb = 0;
+            for (int i = 0; i < n; i++)
+            {
+                double t = i / (double)Sr;
+                double s = 0;
+                for (int v = 0; v < voices; v++) { s += BlepSaw(ph[v], step[v]); ph[v] += step[v]; }
+                s /= voices;
+                float x = lp.Process((float)s, 2400, 0.7);
+                if ((i & 31) == 0)
+                {
+                    double lfo = 0.5 - 0.5 * Math.Cos(TwoPi * (time + t) / period);
+                    double fc = 260 * Math.Pow(11.0, lfo);
+                    double g = Math.Tan(Math.PI * fc / Sr);
+                    a = (g - 1) / (g + 1);
+                }
+                double y = x + fb * 0.55;
+                for (int k = 0; k < 4; k++)
+                {
+                    double o = a * y + apX[k] - a * apY[k];
+                    apX[k] = y;
+                    apY[k] = o;
+                    y = o;
+                }
+                fb = y;
+                double outV = 0.5 * (x + y);
+                float env = (float)(Math.Min(1.0, t / attack) * (t > dur ? Math.Max(0, 1 - (t - dur) / rel) : 1.0));
+                tr.Add(start + i, (float)outV * env * vel * 2.2f / (float)Math.Sqrt(midi.Length));
+            }
+        }
+
+        /// <summary>
+        /// The electro lead: two detuned saws and a square an octave down, gliding from the last note, a low-pass that
+        /// opens with each note, a little drive, and a vibrato that creeps in on the long notes.
+        /// </summary>
+        public static void SawLead(Track tr, double time, double freq, double fromFreq, double dur, float vel)
+        {
+            int start = Index(time);
+            double rel = 0.08;
+            int n = (int)((dur + rel) * Sr);
+            if (fromFreq <= 0 || fromFreq > freq * 2.2 || fromFreq < freq / 2.2) fromFreq = freq;
+            double p1 = 0, p2 = 0.37, p3 = 0.71;
+            var flt = new Svf();
+            for (int i = 0; i < n; i++)
+            {
+                double t = i / (double)Sr;
+                double glide = 1 - Math.Exp(-t / 0.018);
+                double f = fromFreq * Math.Pow(freq / fromFreq, glide);
+                f *= 1 + 0.006 * Math.Sin(TwoPi * 5.6 * t) * Math.Max(0, Math.Min(1, (t - 0.22) / 0.3));
+                double d = f / Sr;
+                double s = BlepSaw(p1, d * 0.996) + BlepSaw(p2, d * 1.004) + 0.7 * BlepPulse(p3, d * 0.5, 0.5);
+                p1 += d * 0.996; p2 += d * 1.004; p3 += d * 0.5;
+                double fc = freq * 4 + 2200 * Math.Exp(-t * 7);
+                float y = flt.Process((float)(s / 2.7), fc, 0.9);
+                y = (float)Math.Tanh(y * 1.8) * 0.6f;
+                tr.Add(start + i, y * Adr(t, dur, 0.004, 0.35, rel) * vel);
+            }
+        }
+
+        /// <summary>
+        /// The psychedelic lead: a soft, hollow pulse doubled a hair sharp, gliding lazily into each note, with a
+        /// tape-like wobble and a sine an octave up for shine; dreamy in the reverb.
+        /// </summary>
+        public static void PsychLead(Track tr, double time, double freq, double fromFreq, double dur, float vel)
+        {
+            int start = Index(time);
+            double rel = 0.18;
+            int n = (int)((dur + rel) * Sr);
+            if (fromFreq <= 0 || fromFreq > freq * 2.2 || fromFreq < freq / 2.2) fromFreq = freq;
+            double p1 = 0, p2 = 0.5, p3 = 0;
+            var flt = new Svf();
+            for (int i = 0; i < n; i++)
+            {
+                double t = i / (double)Sr;
+                double glide = 1 - Math.Exp(-t / 0.035);
+                double f = fromFreq * Math.Pow(freq / fromFreq, glide);
+                f *= 1 + 0.007 * Math.Sin(TwoPi * 4.6 * t) * Math.Min(1, t / 0.35);
+                double d = f / Sr;
+                double s = BlepPulse(p1, d, 0.32) + BlepPulse(p2, d * 1.005, 0.32) + 0.25 * Math.Sin(TwoPi * p3);
+                p1 += d; p2 += d * 1.005; p3 += d * 2;
+                float y = flt.Process((float)(s * 0.55), 2800, 0.7);
+                float env = (float)(Math.Min(1, t / 0.02) * (t > dur ? Math.Max(0, 1 - (t - dur) / rel) : 1.0));
+                tr.Add(start + i, y * env * vel * 0.9f);
+            }
+        }
+
+        /// <summary>
+        /// The electro bass: a saw and a square through a resonant low-pass that bites at the front of each note,
+        /// overdriven till it growls, with a clean sine underneath to keep the weight.
+        /// </summary>
+        public static void ElectroBass(Track tr, double time, double freq, double dur, float vel)
+        {
+            int start = Index(time);
+            double rel = 0.03;
+            int n = (int)((dur + rel) * Sr);
+            double p1 = 0, p2 = 0.25, p3 = 0;
+            var flt = new Svf();
+            double d = freq / Sr;
+            for (int i = 0; i < n; i++)
+            {
+                double t = i / (double)Sr;
+                double s = BlepSaw(p1, d) + 0.8 * BlepPulse(p2, d, 0.5);
+                p1 += d; p2 += d; p3 += d;
+                double fc = 220 + 1500 * Math.Exp(-t * 16);
+                float y = flt.Process((float)(s * 0.6), fc, 1.8);
+                double v = Math.Tanh(y * 2.8) * 0.5 + 0.55 * Math.Sin(TwoPi * p3);
+                tr.Add(start + i, (float)v * Adr(t, dur, 0.003, 0.6, rel) * vel);
+            }
+        }
+
+        /// <summary>A warm, fuzzy melodic bass: a saw under a low-pass, gently overdriven, round on top of a sine, plucked.</summary>
+        public static void FuzzBass(Track tr, double time, double freq, double dur, float vel)
+        {
+            int start = Index(time);
+            double rel = 0.06;
+            int n = (int)((dur + rel) * Sr);
+            double p1 = 0, p2 = 0;
+            var flt = new Svf();
+            double d = freq / Sr;
+            for (int i = 0; i < n; i++)
+            {
+                double t = i / (double)Sr;
+                double s = BlepSaw(p1, d);
+                p1 += d; p2 += d;
+                float y = flt.Process((float)s, 520 + 900 * Math.Exp(-t * 10), 0.8);
+                double v = Math.Tanh(y * 1.7) * 0.45 + 0.7 * Math.Sin(TwoPi * p2);
+                tr.Add(start + i, (float)v * Adr(t, dur, 0.004, 1.1, rel) * vel);
+            }
+        }
+
+        /// <summary>A punchy dance kick: a hard click and a pitch drop into a tight, round boom, a little driven.</summary>
+        public static void PunchKick(Track tr, double time, float vel)
+        {
+            int start = Index(time);
+            int n = (int)(0.36 * Sr);
+            double ph = 0;
+            var click = new Svf();
+            var noise = new NoiseSource(start + 5);
+            for (int i = 0; i < n; i++)
+            {
+                double t = i / (double)Sr;
+                double f = 50 + 160 * Math.Exp(-t * 42);
+                ph += f / Sr;
+                click.Process(noise.White(), 3200, 0.7);
+                double v = Math.Sin(TwoPi * ph) * Math.Exp(-t * 8) * Math.Min(1, t / 0.0015) + click.band * 0.6 * Math.Exp(-t * 220);
+                tr.Add(start + i, (float)Math.Tanh(v * 1.7) * 0.78f * vel * Tail(i, n));
+            }
+        }
+
+        /// <summary>A big, crunchy snare: a fat body and bright wires, squashed and driven like a compressed record.</summary>
+        public static void CrunchSnare(Track tr, double time, float vel, int seed)
+        {
+            int start = Index(time);
+            int n = (int)(0.34 * Sr);
+            double p1 = 0;
+            var noise = new NoiseSource(seed + 31);
+            var wires = new Svf();
+            for (int i = 0; i < n; i++)
+            {
+                double t = i / (double)Sr;
+                p1 += (180 + 40 * Math.Exp(-t * 45)) / Sr;
+                double body = Math.Sin(TwoPi * p1) * Math.Exp(-t * 16) * 0.7;
+                wires.Process(noise.White(), 2600, 0.7);
+                double w = (wires.band + wires.high * 0.6) * Math.Exp(-t * 10);
+                double v = (body + w * 1.1) * Math.Min(1, t / 0.001);
+                tr.Add(start + i, (float)Math.Tanh(v * 2.4) * 0.55f * vel * Tail(i, n));
+            }
+        }
+
+        /// <summary>A tom: a skin that drops a little in pitch, for the big rolling fills.</summary>
+        public static void Tom(Track tr, double time, double freq, float vel)
+        {
+            int start = Index(time);
+            int n = (int)(0.4 * Sr);
+            double ph = 0;
+            for (int i = 0; i < n; i++)
+            {
+                double t = i / (double)Sr;
+                ph += freq * (1 + 0.35 * Math.Exp(-t * 20)) / Sr;
+                double v = Math.Sin(TwoPi * ph) * Math.Exp(-t * 7) * Math.Min(1, t / 0.002);
+                tr.Add(start + i, (float)Math.Tanh(v * 1.5) * 0.7f * vel * Tail(i, n));
+            }
+        }
+
         /// <summary>A picked electric bass: a round string with a little pick at the front.</summary>
         public static void PickBass(Track tr, double time, double freq, double dur, float vel, int seed)
         {

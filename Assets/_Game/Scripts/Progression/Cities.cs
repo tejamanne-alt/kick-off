@@ -110,7 +110,7 @@ namespace DribbleToSchool.Progression
         }
     }
 
-    /// <summary>One of the five cities: a chapter of its own, with its own streets, light and music (docs/CITIES.md).</summary>
+    /// <summary>One of the cities: a chapter of its own, with its own streets, light and music (docs/CITIES.md).</summary>
     public sealed class City
     {
         /// <summary>Saved (SaveData.addOn) and sent in co-op: never change one. Kamakura's is "original", from before the cities.</summary>
@@ -177,11 +177,12 @@ namespace DribbleToSchool.Progression
     }
 
     /// <summary>
-    /// The five cities (docs/CITIES.md). PLAY and HOLIDAY RUN each ask which city to play in (UI/CityPicker).
+    /// The two cities (docs/CITIES.md). PLAY and HOLIDAY RUN each ask which city to play in (UI/CityPicker).
     /// - Kamakura, Japan, the original town: every level, and the Holiday Run.
     /// - Florida (Miami), unlocked by finishing every one of Kamakura's story levels: its own three routes and nine legs
     ///   (Levels/RouteTable.Florida, FL1-1 to FL3-3), in its own chapter.
-    /// - Madrid, New York and Mumbai: designed, listed as coming soon.
+    /// Madrid, New York and Mumbai were designed as coming soon and removed at the user's request (v132): a save that chose one
+    /// plays Kamakura, like California.
     /// California (Santa Monica, &lt;scene&gt;_CA) was an add-on before the cities and is not one of them: a save that chose
     /// it plays Kamakura. The filters are Progression/Filters.
     /// </summary>
@@ -202,18 +203,8 @@ namespace DribbleToSchool.Progression
         // A hot, humid late-summer morning: a warm 5,000 K sun, teal shade, a milky horizon.
         public static readonly City Florida = new City(FloridaId, FloridaSuffix, true, false, Audio.MusicCountry.Florida, true, FloridaChapters,
             new CityClimate(5000f, 8500f, 0.6f, new Color(-0.004f, 0.002f, 0.006f)), new Color(0.13f, 0.7f, 0.68f));
-        // Just after Madrid's late sunrise in early October: a golden 4,200 K sun, clear blue shade, very dry air.
-        public static readonly City Madrid = new City("madrid", "_MD", false, false, Audio.MusicCountry.Japan, true, null,
-            new CityClimate(4200f, 9500f, -0.8f, new Color(0f, 0f, 0.008f)), new Color(0.86f, 0.5f, 0.16f));
-        // A cold, clear late-October morning: a low 4,000 K sun down the cross streets, deep blue canyons.
-        public static readonly City NewYork = new City("newyork", "_NY", false, false, Audio.MusicCountry.Japan, true, null,
-            new CityClimate(4000f, 10000f, -0.3f, new Color(0f, 0.002f, 0.01f)), new Color(0.95f, 0.75f, 0.12f));
-        // The monsoon: an overcast 6,800 K sky, everything wet, sea mist.
-        public static readonly City Mumbai = new City("mumbai", "_MB", false, false, Audio.MusicCountry.Japan, true, null,
-            new CityClimate(6800f, 7500f, 1f, Color.clear), new Color(0.55f, 0.3f, 0.75f));
-
         /// <summary>In the order the picker lists them.</summary>
-        public static readonly City[] All = { Kamakura, Florida, Madrid, NewYork, Mumbai };
+        public static readonly City[] All = { Kamakura, Florida };
 
         /// <summary>Every one of Kamakura's story levels finished at least once (every leg of every route to school).</summary>
         public static bool EveryLevelFinished

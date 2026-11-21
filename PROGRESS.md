@@ -2091,6 +2091,41 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
 - **Not run in Unity:** the Miami districts in a built scene for the first time. They were previewed in Blender from the same
   plan; look at each Florida leg once.
 
+## Florida's new music, and only two cities (v132; no generated content changes)
+
+- **Florida's music, redone ("it looks sad").** The user asked for music inspired by Justice and Tame Impala. Every one of
+  Florida's seven loops is new and original (`Audio/MusicGenerator.FloridaStyleOf`):
+  - **French electro, filter house** on Home Street (122 BPM, D Mixolydian), the market (118, E Dorian disco-funk), the
+    beach (124, A major, with a choir of "ooh"s) and the building site (126, G major, the hardest). Four on the floor with a
+    punchy kick that pumps the whole mix (a deep sidechain duck), a growling overdriven saw bass on rolling octaves, chopped
+    disco chord stabs whose resonant filter opens over the first half, pumping quaver chords, a gliding saw lead, crunchy
+    snares, claps, the open hat on every off-beat and a snare roll into each half.
+  - **Psychedelic synth-pop** for the menu (112, E major sevenths), the park (114, D major) and the underpass (116, D Dorian
+    night groove). A lush pad through a four-stage phaser sweeping every two bars, a fuzzy melodic bass, big squashed
+    laid-back drums with a tambourine and rolling tom fills, a dreamy hollow lead, tape wobble and a long reverb.
+  - New in `Audio/Instruments` (band-limited PolyBLEP oscillators): `SawStab`, `PhaserPad`, `SawLead`, `PsychLead`,
+    `ElectroBass`, `FuzzBass`, `PunchKick`, `CrunchSnare` and `Tom`. A style's pump, master drive, tape wow and dance rhythms
+    are now its own settings; their defaults are the old fixed values, so Kamakura's and California's music is unchanged,
+    sample for sample (`tools/audio_hash`: only Florida's 13 music lines changed).
+  - MP3 previews of all seven went to the user. LEARNINGS G3.
+- **Cost** (`docs/PERFORMANCE.md`; desktop .NET 8, per loop): 362 to 512 ms and 38 to 43 MB of garbage to make, against 355 to
+  585 ms and 38 to 56 MB for the old Florida loops; same loop length and memory once made. No frame-time cost: it is made on
+  the worker thread as before.
+- **Madrid, New York and Mumbai removed** (the user's request). `Progression/Cities.All` is Kamakura and Florida. Their
+  names and lines are gone from both languages, and the city picker sizes itself to its rows. A save that chose one of them
+  plays Kamakura (as California's does), and a test holds that. Their designs and ChatGPT prompts are out of
+  `docs/CITIES.md` and `docs/IMAGE_PROMPTS.md`, and the mini-game systems with them (M1 to M3; no city has mini-games). The
+  prompts page generator and the climate harness list the two cities. Florida's picker line now reads "Three ways to school
+  through Miami".
+- **Checked:**
+  - `tools/audio_hash`: only Florida's music changed; new `expected.txt`.
+  - Loudness and peaks per loop: RMS 0.136 to 0.140 (the target), peaks under 0.52.
+  - Spectrograms: the pump and the glides as meant, aliasing below -80 dB.
+  - `tools/city_climate` and `tools/prompts_page`.
+  - Compile: no new error kinds.
+  - `unity_api_check` 6000.6 and 6000.7.
+- **Not heard on the phone yet:** play a Florida leg and the menu once with the default volumes, against the Miami beds.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

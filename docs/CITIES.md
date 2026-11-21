@@ -1,7 +1,8 @@
-# Kick Off 2: the five cities
+# Kick Off 2: the cities
 
-The game is five cities, and each city is a chapter of its own: **Kamakura** (Japan), **Florida** (Miami, USA),
-**Madrid** (Spain), **New York** (USA) and **Mumbai** (India). PLAY asks which city to play, then opens that city's map.
+The game is two cities, and each city is a chapter of its own: **Kamakura** (Japan) and **Florida** (Miami, USA). PLAY
+asks which city to play, then opens that city's map. (Madrid, New York and Mumbai were designed here too, as coming soon;
+the user removed them in v132, with their designs, prompts and strings.)
 HOLIDAY RUN asks the same, then runs endlessly through that city's streets. The add-ons are gone: a city is not a reskin
 of another city's levels. Each has its own streets, its own light, its own way of getting to school and its own play.
 
@@ -20,51 +21,16 @@ This is the design. What is built so far, and what each city still needs, is at 
   - **A ride, between legs** (three-leg routes only). When a route takes a bus, tram or ferry between two dribbles,
     the ride is a short scene that plays by itself (12 to 20 s, skippable): the kid boards, the city slides past the
     window, the kid gets off where the next leg starts.
-  - **A mini-game** (routes of four or five legs). At least one leg, and two on most five-leg routes, is a realistic
-    activity instead of a dribble: riding the transit yourself, an errand for an aunt, an uncle or a grandparent, shopping for classwork,
-    or a city-specific task. Doing it opens the next leg. A mini-game is short (30 to 60 s), can be retried at once,
-    and is played with the same controls as the game (the stick, KICK and its hold, jump, slide, and taps).
-    **Not in Kamakura or Florida:** the user removed their mini-games (v128) and nothing replaces them; their routes are
-    dribbles only, and a transit leg that was played (the Enoden, the Metrobus) is simply not shown: the next leg starts where
-    the ride would have ended. Madrid's, New York's and Mumbai's designs below still have theirs until the user decides.
+  - **No mini-games.** The user removed them (v128) and nothing replaces them: the routes are dribbles only, and a transit
+    leg that was played (the Enoden, the Metrobus) is simply not shown: the next leg starts where the ride would have ended.
 - **Twist legs.** Some dribbles carry a story beat that changes how they play: something is dropped and the kid must
   go back for it, a downpour hits, or the kid carries something that must arrive dry. These keep the trip from feeling
   like the same street every time.
-- **What an errand gives you rides along** (the cities with mini-games). The basket's lunch or the poster board sits on the
-  kid's backpack for the rest of the trip. Getting it to school unharmed is the trip's **Delivered** badge (a sticker). It is
-  never needed to finish.
 
-## The mini-games and the twists: five systems, skinned per city
+## The twists: two systems, skinned per city
 
-Each is one system in code, dressed differently by each city. M1 to M3 are the mini-games (Madrid, New York and Mumbai only:
-Kamakura and Florida have none since v128); M4 and M5 are twists inside ordinary dribble legs, in every city.
-
-### M1. The ride: tram, bus, metro, subway, local train, people mover
-1. **Board.** The card reader turns green: tap it in time (the gate opens). Board before the door chime ends.
-2. **Ride.** The car sways round bends, brakes and pulls away. Keep the ball still under your foot: push the stick
-   against the sway (a balance bar), and hold KICK through a hard brake (KICK's hold to control, which the game already
-   has). Each city adds a moment of real etiquette: make room for a stroller (New York), work your way to the door before
-   your stop (Mumbai).
-3. **Get off.** The next-stop display and the announcement name each stop. Tap STOP (the bell, the cord, the door
-   button) at yours. Miss it, and you get off at the next one: the next leg starts further back and is longer, while
-   the trip's clock runs on.
-- **Passed:** off at the right stop with the ball. Coins for a smooth ride; a star for never wobbling.
-- Some rides add a **choice**: express or local (New York), or change lines by following the right colour (Madrid).
-
-### M2. The errand: an aunt, an uncle or a grandparent
-A short physical task with the relative, who then hands the item over:
-- **The basket from the balcony** (Madrid): an aunt lowers a wicker basket from her third floor. The wind swings it.
-  Stay under it and catch it, keeping the ball off the wet street with keepy-uppies while you wait.
-- **The pretzel cart rush** (New York): the uncle's cart has three morning customers. Each order shows in a bubble;
-  tap the right items before each customer walks off.
-- **The tiffin sort** (Mumbai): the uncle is a dabbawala. Sort the tiffins by their painted codes into the right
-  crates before the train leaves, and find your own.
-
-### M3. Shopping for classwork
-A list of three or four items (poster board, a glue stick, a compass, markers). Find them on the shelves (tap), then
-pay at the counter: pick coins and notes that add up, the fewest you can, and check the change. Each city has its own
-shop, money and things on the list: a Madrid *papelería* in euros, a New York art store in dollars with sales tax added,
-a Mumbai stationery-and-photocopy shop in rupees.
+Each is one system in code, dressed differently by each city, inside ordinary dribble legs. (M1 to M3 were the mini-games:
+removed in v128.)
 
 ### M4. Drop and come back (a twist leg)
 Halfway, something is lost: a kite (the bird) snatches a snack and drops it on the rocks, or the wind blows the
@@ -74,9 +40,7 @@ sweeper, a dog), then forward again with the time you lost. The camera's look-ah
 ### M5. Wait, then cross
 The city's own way of crossing is a short timing moment, built from the existing `Crossing` and `Drawbridge`:
 - the Enoden's level-crossing bells and bars, and the crossing volunteer's flag (Kamakura);
-- the drawbridges (Miami);
-- WALK and DON'T WALK with its countdown (New York);
-- the traffic police's whistle at a roundabout (Madrid, Mumbai).
+- the drawbridges (Miami).
 
 ## The look: cinematic, in each city's own light
 
@@ -126,9 +90,6 @@ The other cities are set *relative* to it, so the measured look stays the anchor
 |---|---|---|---|---|---|---|
 | **Kamakura** | May, 7:45 (route 3: June rains) | ~5,400 K, 40° up, a hair warm | ~9,000 K, cool blue-grey | Deep cobalt over a soft sea haze; distant hills go blue | Clear; route 3 in a light June drizzle (~6,800 K, no hard shadows) | Dark-stained timber, grey roof tiles, white plaster, moss, vermilion torii, hydrangea blue |
 | **Florida** (Miami) | Late August, 7:50 | ~5,000 K, 30° up, warm | ~8,500 K, teal-blue | Humid: a pale, milky horizon under a deep zenith; towering cumulus; warm glow round the sun | Hot and clear, then a sudden tropical downpour on one leg | Faded pastels (seafoam, coral, flamingo pink, butter yellow), white stucco, palm greens, turquoise water |
-| **Madrid** | Early October, 8:30, just after sunrise | ~4,200 K, 12° up: low and golden, long shadows | ~9,500 K, clear blue | Very dry high-plateau air: almost no haze, a saturated deep blue sky, crisp edges | Dry and bright; plane-tree and chestnut leaves falling | Ochre, terracotta, cream and salmon facades, green shutters, black wrought iron, grey granite, slate and zinc roofs |
-| **New York** | Late October, 7:50 | ~4,000 K, 15° up, raking down the cross streets | ~10,000 K: the avenues' canyons in deep blue shade | Crisp and clear; shafts of sun across the streets; steam from vents and stacks | Cold clear morning, wind on the bridge and the river | Brownstone chocolate, red brick, cast-iron cream and grey, black fire escapes, taxi yellow, ginkgo gold, pumpkin orange |
-| **Mumbai** | July (the monsoon), 11:15 (the afternoon school shift) | Overcast ~6,800 K, soft, no hard shadows (route 3: a break in the clouds, ~5,600 K, steamy) | ~7,500 K | Low grey cloud and sea mist; dark rain bands over the sea; everything wet and reflective | Showers come and go; puddles, flooded gutters, waves over the sea wall | Wet black asphalt, rain-stained colonial stone, painted chawls (blue, pink, green), red buses, black-and-yellow taxis, marigold orange, blue tarpaulins |
 
 ## Kamakura, Japan
 
@@ -240,164 +201,6 @@ ground rules (no leg is the beach's). The map is rendered from the same kits (`t
 4. **FL3-3 Museum Park to School** (dribble). Banyans whose aerial roots make platforms, skateboarders, kite-fliers'
    lines in the bay wind, sprinklers on the lawn, the school.
 
-## Madrid, Spain
-
-**The place.** The old centre of Madrid on a dry, bright October morning. The sun rises late here (about 8:10), so the
-walk to a 9:00 school runs in the first low golden light, with long shadows down streets of ochre and terracotta
-buildings and their iron balconies. Street-cleaning trucks hose the cobbles at dawn. The Metro's colour-coded lines,
-the plazas' arcades and pigeons, El Retiro's lake and chestnut kiosks.
-- **Home:** a 19th-century apartment building in **Lavapies**: wrought-iron balconies with geraniums, green wooden
-  shutters, laundry on lines, a ground-floor bar with its metal shutter half up.
-- **School:** *Colegio Publico Los Tilos* (invented name), in the streets east of El Retiro: a red-brick school with
-  tall windows, a walled playground with a football cage, lime trees at the gate.
-- **Signature:** balconies and the aunt's basket, the Metro, plazas, the park, the low sun.
-- **Music:** to make (`MusicCountry` entry): rumba and flamenco-pop guitars, a chotis organ for the plazas.
-
-| Route | Legs | The trip |
-|---|---|---|
-| **MD1 The Metro** | 4 | Home -> Lavapies station -> *(ride line 3, change at Sol to line 2)* -> El Retiro -> School |
-| **MD2 Tia Carmen** | 5 | Home -> La Latina -> Tia Carmen's balcony -> Plaza Mayor -> the stationery shop -> Paseo del Prado -> School |
-| **MD3 The Book Hill** | 3 | Home -> the Atocha roundabout -> the hill of book stalls -> El Retiro's rose garden -> School |
-
-### MD1 The Metro (4 legs)
-1. **MD1-1 Lavapies Morning** (dribble). Home to the Metro. The street-cleaning truck's hose jets sweep across the
-   cobbles (they push the ball: time your pass), bar shutters rolling up, a fruit shop's crates on the pavement,
-   scaffolding over a facade (a walkway to climb), the plaza's benches.
-2. **MD1-2 Change at Sol** (mini-game M1, with a choice). Tap the card at the gate. Line 3 (yellow) to Sol, then
-   change: follow the red line 2 signs through the tiled corridors (pick the right turn three times), board toward the
-   right end of the line, and get off at Retiro, three stops on (Sevilla, Banco de Espana, Retiro).
-3. **MD1-3 El Retiro** (dribble). Out of the Metro by the park's gate: the lake with rowing boats, a puppet theatre's
-   striped booth, a chestnut roaster's kiosk with smoke, roller skaters, falling leaves that hide puddles.
-4. **MD1-4 To School by the Lime Trees** (dribble). Out of the park's east gate: a crossing with a municipal policeman's
-   whistle (M5), a kiosk, the school's gate.
-
-### MD2 Tia Carmen (5 legs)
-1. **MD2-1 To La Latina** (dribble). Home through steep lanes of old taverns with their shutters down, a delivery van
-   unloading bread, the dome of a big church at the end of the street.
-2. **MD2-2 The Basket** (mini-game M2, lunch and the forgotten homework). Tia Carmen lowers a wicker basket on a
-   rope from her third-floor balcony. The wind swings it. Stay under it and catch it, keeping the ball up with
-   keepy-uppies off the freshly hosed street.
-3. **MD2-3 Plaza Mayor** (dribble). Through an archway into the great arcaded square: the arcades' columns as cover,
-   pigeons that burst up as the ball comes (`Seagull`), cafe terraces' chairs and parasols, the painted facade.
-4. **MD2-4 The Papeleria** (mini-game M3). A stationery shop off Sol: poster board (*cartulina*), a compass and
-   coloured pencils for maths, paid in euros.
-5. **MD2-5 Paseo del Prado** (dribble). The boulevard's plane trees, the botanic garden's railings, a great fountain on
-   a roundabout (crossing with the policeman's whistle), then up beside the park's fence to school.
-
-### MD3 The Book Hill (3 legs)
-1. **MD3-1 The Atocha Roundabout** (dribble). Home past the old railway station's iron-and-glass hall with palms
-   inside, round the big roundabout's crossings.
-2. **MD3-2 Cuesta de Moyano** (dribble). The steep street lined with wooden book stalls: the ball rolls back down if you
-   stop (a slope), open stall shutters as platforms, leaves blowing down the hill.
-3. **MD3-3 The Rose Garden to School** (dribble). Into El Retiro from the south: the rose garden's arches, a fountain,
-   the chestnut kiosk, out to the school.
-
-## New York, USA
-
-**The place.** New York in late October: a cold, clear morning, the low sun raking down the cross streets in golden
-shafts while the avenues lie in deep blue shade, steam rising from the street. Pumpkins on brownstone stoops. The kid
-lives in Brooklyn and goes to school in Lower Manhattan, and the three routes are the three ways across the East River:
-walking the bridge, the subway under it, the ferry over it.
-- **Home:** a brownstone in **Brooklyn Heights**: a high stoop with iron railings, pumpkins and a cardboard skeleton for
-  Halloween, a cellar door in the sidewalk, a ginkgo tree turning gold.
-- **School:** *P.S. 412, the Chambers Street School* (invented name), in Tribeca: a five-storey red-brick and limestone
-  school with a fenced rooftop yard and a playground, a WALK signal at the corner.
-- **Signature:** the river crossings, the subway, steam, stoops, crowds and signals.
-- **Music:** to make (`MusicCountry` entry): a boom-bap beat with jazz horns, a Latin boogaloo for the bodegas.
-
-| Route | Legs | The trip |
-|---|---|---|
-| **NY1 The Brooklyn Bridge** | 4 | Home -> the bridge's ramp -> over the bridge -> Uncle Sal's cart at City Hall -> School |
-| **NY2 The Subway** | 5 | Home -> Borough Hall station -> *(the express or the local)* -> Tribeca -> the art store -> the river park -> School |
-| **NY3 The Ferry** | 3 | Home -> DUMBO's landing -> *(the ferry across)* -> the Wall Street pier -> the Financial District -> School |
-
-### NY1 The Brooklyn Bridge (4 legs)
-1. **NY1-1 Brownstone Stoops** (dribble). Home through Brooklyn Heights: stoops, an open steel cellar door in the
-   sidewalk (a gap), black garbage bags piled at the curb (soft obstacles), a dog walker with six dogs on leashes
-   (`Dog`), a scaffolding sidewalk shed (a low roof and a walkway on top).
-2. **NY1-2 The Bridge** (dribble). The elevated wooden promenade: the granite towers' arches, steel cables in a web
-   overhead, the bike lane beside you (cyclists ringing their bells: a lane hazard), gusts off the river (`WindArea`),
-   and the whole skyline ahead.
-3. **NY1-3 Uncle Sal's Cart** (mini-game M2). Uncle Sal's pretzel and coffee cart by City Hall Park: help with the
-   morning rush (three orders in time), and he hands over a bag of bagels for your class.
-4. **NY1-4 City Hall Park to School** (dribble). The park's fountain, gas-style lamps, squirrels (`TreeSquirrel`),
-   pigeons, then west along the street to the WALK signal (M5) and the school.
-
-### NY2 The Subway (5 legs)
-1. **NY2-1 Court Street** (dribble). Home to Borough Hall: a subway entrance with its green globe lamps, a newsstand,
-   a halal cart, a striped steam chimney from a street repair, a crosswalk with its countdown.
-2. **NY2-2 Express or Local** (mini-game M1, with a choice). Tap at the turnstile. Down on the platform the board says
-   which train comes next: the express skips your stop, the local stops there. Pick the right train, "stand clear of
-   the closing doors", hold the pole through the curves under the river, make room for a stroller, get off at
-   Chambers Street.
-3. **NY2-3 Tribeca Cobbles** (dribble). Cobbled streets, cast-iron facades, loading docks with steel canopies (raised
-   platforms), steam from a vent that lifts the ball (a springboard), a film crew's equipment cases.
-4. **NY2-4 The Art Store** (mini-game M3). Canvas board, acrylic paints and a brush for art class, paid in dollars, sales
-   tax added at the till.
-5. **NY2-5 Hudson River Park to School** (dribble). The river greenway: piers, a skate park, joggers, wind off the
-   river, the school.
-
-### NY3 The Ferry (3 legs)
-1. **NY3-1 DUMBO Cobbles** (dribble). Home down to the old waterfront: cobbles with old rail tracks set in them, the
-   steel bridge overhead with trains rumbling across (the screen shakes), a glass-boxed carousel, the ferry landing.
-2. *(Ride: the ferry across the East River, spray and gulls and the skyline.)*
-3. **NY3-2 The Wall Street Pier** (dribble). Off the ferry onto the pier: the elevated highway's shadow, bollards, a
-   narrow cobbled lane of old buildings.
-4. **NY3-3 The Financial District to School** (dribble). Narrow canyons between towers, security bollards and planters,
-   an old church's graveyard railings, then north to the school.
-
-## Mumbai, India
-
-**The place.** South Mumbai in the monsoon. The kid goes on the afternoon school shift, so leaves home at 11:00, when the
-city is fully awake and the dabbawalas are sorting the lunch tiffins at the stations. Rain comes in bands off the sea,
-the waves burst over the sea wall, the streets run with water, and between showers everything shines.
-- **Home:** an old two-storey wooden house in **Girgaon**, in a lane of houses with carved verandahs and painted
-  balconies (a heritage village of the old city): potted tulsi, a scooter under a blue tarpaulin, a cat.
-- **School:** *Fort Public School* (invented name), by the big cricket ground: a stone Victorian building with arched
-  verandahs, a gate with a guard's booth, a playground of red earth.
-- **Signature:** the monsoon, the sea wall, the local train, the dabbawalas, cricket.
-- **Music:** to make (`MusicCountry` entry): a filmi brass band, tabla and dholak, a Koli fishing-song lilt for the sea.
-
-| Route | Legs | The trip |
-|---|---|---|
-| **MB1 Marine Drive** | 4 | Home -> Girgaon Chowpatty -> along the sea wall -> the dabbawalas at Churchgate -> across the cricket ground -> School |
-| **MB2 The Local Train** | 5 | Home -> Charni Road station -> *(the fast local)* -> Churchgate's underground market -> the stationery shop -> Kala Ghoda -> School |
-| **MB3 The Red Bus** (a break in the rain) | 3 | Home -> Girgaon's main road -> *(the red bus)* -> the old market -> the arcaded road -> School |
-
-### MB1 Marine Drive (4 legs)
-1. **MB1-1 Wadi Lanes and Chowpatty** (dribble). Home through the lanes of wooden houses, out onto Girgaon Chowpatty
-   beach: snack carts under tarpaulins (shut till evening), monsoon waves on the sand (`Tide`), crows.
-2. **MB1-2 The Sea Wall** (dribble). Marine Drive's promenade: tetrapods below the wall, waves bursting over it in
-   timed sprays that soak and push (a fountain-style hazard, M5's timing), the Art Deco apartment fronts across the
-   road, umbrellas, a sweet-corn roaster's cart.
-3. **MB1-3 The Tiffin Sort** (mini-game M2). Uncle is a dabbawala at Churchgate. Sort the tiffins by the colour and
-   letter codes painted on their lids into the right crates before the train leaves, and find your own lunch.
-4. **MB1-4 Across the Maidan to School** (dribble). The cricket ground in the rain: a dozen matches at once, and their
-   balls fly across your path (dodge them, or kick one back for a bonus), the Gothic and Art Deco fronts on either
-   side, then the school.
-
-### MB2 The Local Train (5 legs)
-1. **MB2-1 To Charni Road** (dribble). Home to the station: a chai stall, a cobbler under an umbrella, handcarts loaded
-   with sacks (moving obstacles), stray dogs, the footbridge's steps over the tracks.
-2. **MB2-2 The Fast Local** (mini-game M1). The platform crowd surges as the train comes in, and it doesn't wait:
-   board in the gap before it moves, find a place inside away from the open door, keep the ball through the sway, work
-   to the door before Churchgate, step off.
-3. **MB2-3 Churchgate Subway** (dribble). The underground walkway packed with stalls: hanging bags, phone covers and
-   umbrellas as low obstacles, dim stretches (`DarkZone`), steps up into the rain.
-4. **MB2-4 The Stationery Shop** (mini-game M3). Chart paper, a geometry box and glue at a stationery-and-photocopy shop,
-   paid in rupees. Keep the chart paper rolled and dry from here on for the badge.
-5. **MB2-5 Kala Ghoda to School** (dribble). The art district's lanes: flooded gutters (`SlowZone`), puddles, a
-   painted wall, a stone library's portico as shelter from a burst of rain, the school.
-
-### MB3 The Red Bus, in a break in the rain (3 legs)
-1. **MB3-1 Girgaon Road** (dribble). Home to the bus stop on the main road: black-and-yellow taxis, a festival
-   pavilion being built of bamboo (scaffold platforms), handcarts, a flower seller's marigolds.
-2. *(Ride: the red double-decker bus along the road past the great Gothic railway terminus.)*
-3. **MB3-2 The Old Market** (dribble). The covered market's clock tower and its fruit stalls: crates of mangoes and
-   bananas, porters with baskets on their heads (moving obstacles), pigeons.
-4. **MB3-3 The Arcaded Road to School** (dribble). Under the arcades of the old Fort's stone buildings, past a fountain
-   on a busy roundabout (the traffic policeman's whistle), to the school.
-
 ## The Holiday Run in each city
 
 The endless run strings the city's dribble legs into stages, in the city's own light, with its own hazards and music.
@@ -411,8 +214,8 @@ Until then the HOLIDAY RUN picker shows it as coming soon.
 - The Add-ons & Filters button and screen are now **Filters** only (`UI/FiltersPanel`), also reachable from the pause
   menu.
 - The cities are `Progression/Cities`. **Kamakura** plays the original town's 23 levels (its routes in this document
-  replace them once built). **Florida** plays its own three routes (v123, below). **Madrid**, **New York** and **Mumbai**
-  show as coming soon.
+  replace them once built). **Florida** plays its own three routes (v123, below). Madrid, New York and Mumbai, listed as
+  coming soon until v132, are removed.
 - **Florida's routes (v123):** FL1, FL2 and FL3 as designed above, in `Levels/RouteTable.Florida` (Florida's own chapter, 6,
   and stops), nine legs in the level table and `Editor/FloridaLevels.cs`, every one a dribble. **M5** is the existing
   `Drawbridge` and `Crossing`. The ride between legs is `Levels/Rides` and `Core/RideCutscene` (the people mover).
@@ -430,23 +233,16 @@ Until then the HOLIDAY RUN picker shows it as coming soon.
 - **Still to do for Florida:** Bayside Elementary's own building (the school is the Florida kit's), a Holiday Run in Miami;
   co-op races on Florida's routes (races run Kamakura's routes only for now); M4 (drop and come back) for the routes that use
   it; the user's reference images (`docs/IMAGE_PROMPTS.md`) to check the districts against, when they come.
-- California (Santa Monica) is not one of the five: it left the picker, and its scenes are no longer built.
+- California (Santa Monica) is not one of the cities: it left the picker, and its scenes are no longer built.
 - Each playable city's light follows its climate here (`Progression/Cities`, `CityClimate`).
 
-**To build, city by city:**
+**To build, for each city:**
 1. **References:** the user makes them with `docs/IMAGE_PROMPTS.md` (one city and one level at a time) and saves them
    in `review/<city>/refs`.
 2. **The kit:** about 40 to 60 models a city (`tools/blender/kit_buildings_<city>.py`), within the budgets in
    `docs/ART_DIRECTION.md`, with weathering and ambient occlusion baked in, and reviewed in all four looks.
-3. **The mechanics:** the twists (M4, M5) and, for the cities that keep them, the mini-game systems (M1 to M3) once, then
-   each city's dressing and hazards.
+3. **The mechanics:** the twists (M4, M5), then each city's dressing and hazards.
 4. **The levels:** each route's legs in `Editor/GeneratedContent.cs` and `Editor/GreyboxLevels.cs`, with the stops in
    `Levels/RouteTable.cs`. Level ids are the route's id and leg (`KM1-1`), never reused.
-5. **Music** for the three new countries.
-6. **Kamakura's new routes** replace the original 23 levels last, with a save upgrade that keeps every sticker and coin
+5. **Kamakura's new routes** replace the original 23 levels last, with a save upgrade that keeps every sticker and coin
    already earned (persisted ids never change: `docs/LEARNINGS.md` H7).
-
-**Cost per new city** (est., none built): one building kit and its 4096 x 4096 atlas (about 16 MB in memory
-uncompressed, a quarter of that compressed), loaded only in that city's scenes; 12 levels' scenes; models within the
-kit budgets. Each city must
-be checked on the Nord CE5 before it ships.

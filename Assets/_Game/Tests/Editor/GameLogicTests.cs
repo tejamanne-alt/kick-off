@@ -29,7 +29,7 @@ namespace DribbleToSchool.Tests
         {
             var ids = new HashSet<string>();
             var suffixes = new HashSet<string>();
-            Assert.AreEqual(5, Cities.All.Length, "Kamakura, Florida, Madrid, New York, Mumbai (docs/CITIES.md)");
+            Assert.AreEqual(2, Cities.All.Length, "Kamakura and Florida (docs/CITIES.md)");
             foreach (var c in Cities.All)
             {
                 Assert.IsTrue(ids.Add(c.id), c.id + " is listed twice");
@@ -46,10 +46,17 @@ namespace DribbleToSchool.Tests
             Assert.AreSame(Cities.Florida, Cities.ById(Cities.FloridaId));
             Assert.AreSame(Cities.Florida, Cities.OfScene("L12_LowTide" + Cities.FloridaSuffix));
             Assert.AreSame(Cities.Kamakura, Cities.OfScene("L12_LowTide_CA"), "California's scenes are Kamakura's music, not a city");
-            Assert.IsNull(Cities.ById("california"), "California is not one of the five cities");
+            Assert.IsNull(Cities.ById("california"), "California is not one of the cities");
             Assert.IsTrue(Cities.Kamakura.story && Cities.Kamakura.holidayRun);
-            foreach (var c in new[] { Cities.Madrid, Cities.NewYork, Cities.Mumbai })
-                Assert.IsFalse(c.story || c.holidayRun, c.id + " is still to build: listed as coming soon");
+            foreach (var c in Cities.All)
+                Assert.IsTrue(c.story, c.id + " can be played: no city is listed as coming soon");
+            // Madrid, New York and Mumbai were removed (v132): a save that chose one plays Kamakura, like California.
+            foreach (string gone in new[] { "madrid", "newyork", "mumbai" })
+            {
+                Assert.IsNull(Cities.ById(gone), gone + " is not a city any more");
+                foreach (string lang in new[] { "en", "es" })
+                    Assert.IsFalse(StringTables.For(lang).ContainsKey("city." + gone), lang + ": city." + gone + " is left over");
+            }
         }
 
         [Test]
@@ -72,7 +79,7 @@ namespace DribbleToSchool.Tests
         }
 
         [Test]
-        public void KamakurasClimateChangesNothingAndTheOthersFollowTheirColourTemperature()
+        public void KamakurasClimateChangesNothingAndFloridasFollowsItsColourTemperature()
         {
             var mood = ChapterTheme.For(3).mood;
             var same = Cities.Kamakura.climate.Apply(mood);
@@ -94,12 +101,6 @@ namespace DribbleToSchool.Tests
             Assert.Less(fl.hazeStart, mood.hazeStart);
             Assert.Greater(fl.hazeStrength, mood.hazeStrength);
             Assert.Less(fl.hazeStrength, 0.8f + 1e-4f, "the haze never hides the street");
-
-            // Madrid: a golden low sun in dry air, the haze thinner and further off.
-            var md = Cities.Madrid.climate.Apply(mood);
-            Assert.Greater(md.sun.r / md.sun.b, fl.sun.r / fl.sun.b);
-            Assert.Less(md.hazeStrength, mood.hazeStrength);
-            Assert.Greater(md.hazeStart, mood.hazeStart);
         }
 
         [Test]
