@@ -55,7 +55,7 @@ characters or murals copied from it.
 - **Density:** wires and poles, signs, billboards, parked vehicles, litter, puddles that mirror the sky.
 - **Skies with character:** big cumulus, high cirrus, and at dusk pink and violet cloud lit from below.
 
-**How we get it on a phone, and keep every filter working.** The filters (comic, sketch, classic cartoon) read the
+**How we get it on a phone, and keep every filter working.** The filters (the comic halftone; the sketch and the classic cartoon were removed in v141) read the
 lit picture, the camera's depth and normals, and the figure mask in alpha. So everything below lives in the stages
 that come *before* them, and every filter works in every city with no per-city filter work:
 1. **The city's light** (`World/WorldLook`, its globals): the sun's colour from its colour temperature, its height,

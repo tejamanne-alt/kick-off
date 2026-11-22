@@ -81,15 +81,6 @@ and an ink starburst behind the loudest. They sit above the action, clear of the
 
 Previews of the real models through a numpy port of the shader are in `review/filter/`.
 
-## The pencil sketch filter
-
-An optional look (Filters, pass 6 of `Shaders/PostFX.shader`), in black and white only since v134 (the user's
-request): white drawing paper, a faint grey wash of the tone, pencil hatching for the tone in up to three directions as
-it darkens, the sky left open, and the outline drawn twice with a wandering offset from the depth and normals. The
-figures get a deeper wash (50 percent) and no creases, so the kid stands out on the page and the painted eyes stay
-clean. The pass returns grey whatever colours a scene saved for the paper or the graphite, and the comic words drawn
-with it are grey too. Previews are in `review/sketch/`.
-
 ## How it applies to our game
 
 The game is a side view of a street, so the camera sees the front of everything. Assets are judged

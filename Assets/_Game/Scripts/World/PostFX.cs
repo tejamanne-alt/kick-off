@@ -19,17 +19,6 @@ namespace DribbleToSchool.World
     /// painted eyes stay clear: ToonCharacter marks them in the picture's alpha, and the ink line draws no
     /// creases across them (only their outline), and their plates slip half as far. The depth and normals
     /// texture is asked for only while the filter is on (an extra pass over the opaque scene).
-    ///
-    /// The pencil sketch filter (pass 6, one full-screen pass) draws the picture in black and white on white paper
-    /// instead: a faint grey wash of its tone (a little more on the people and the ball), pencil hatching by tone, the sky
-    /// left open, and the outline drawn twice with a wandering offset, from the same depth, normals and figure mask.
-    ///
-    /// The classic cartoon filter (passes 7, 8 and 9: three full-screen passes; the look in <see cref="ClassicLook"/>)
-    /// draws the people, the ball and the things the kid plays with as inked cels and the scenery as a painted
-    /// background: the grade, then a cored smoothing and the cartoon colour, then the strokes, the cels' outline
-    /// (outside them only), a natural blue sky and a faint grain. It reads what each pixel is from the picture's alpha
-    /// (0 a person or the ball, 0.125 a cel, 0.5 foliage, 0.75 a cloud, 1 the scenery: ToonCharacter's _ComicWorld and
-    /// Toon's _FilterMask).
     /// </summary>
     [RequireComponent(typeof(Camera))]
     public class PostFX : MonoBehaviour
@@ -92,34 +81,12 @@ namespace DribbleToSchool.World
         public Color paper = new Color(0.88f, 0.75f, 0.5f, 0.04f);
         [Range(0f, 0.1f)] public float grain = 0.04f;
 
-        [Header("Classic cartoon filter (its look: World/ClassicLook)")]
-        [Tooltip("Force the classic cartoon on here whatever Settings say (for looking at it in the editor).")]
-        public bool forceClassic;
-
-        [Header("Pencil sketch filter (sizes in pixels at 1080 lines)")]
-        [Tooltip("Force the sketch on here whatever Settings say (for looking at it in the editor).")]
-        public bool forceSketch;
-        [Tooltip("How much of the picture's tone is washed onto the paper, in grey (the sketch is black and white).")]
-        [Range(0f, 1f)] public float sketchWash = 0.12f;
-        [Tooltip("The people and the ball get this much of their tone, in grey, so the kid is easy to find.")]
-        [Range(0f, 1f)] public float figureWash = 0.5f;
-        [Range(3f, 16f)] public float hatchSpacing = 7f;
-        [Range(0f, 1f)] public float sketchHatch = 0.62f;
-        [Tooltip("How far the doubled outline wanders.")]
-        [Range(0f, 8f)] public float lineJitter = 3.2f;
-        [Range(0f, 1f)] public float sketchLine = 0.92f;
-        public Color graphite = new Color(0.16f, 0.16f, 0.16f);
-        [Tooltip("The paper's brightness (the shader takes its grey: the sketch is black and white).")]
-        public Color sketchPaper = new Color(0.96f, 0.96f, 0.96f);
-
         Material material;
         Camera cam;
         bool askedForNormals;
         bool warmed;
         const int Levels = 4;
-        const int GradePass = 3, ComicPass = 4, PrintPass = 5, SketchPass = 6;
-        const int ClassicGradePass = 7, ClassicFlatPass = 8, ClassicInkPass = 9;
-        static Texture2D noise;
+        const int GradePass = 3, ComicPass = 4, PrintPass = 5;
         readonly RenderTexture[] chain = new RenderTexture[Levels];
 
         static readonly int ThresholdId = Shader.PropertyToID("_Threshold");
@@ -159,25 +126,9 @@ namespace DribbleToSchool.World
         static readonly int SlipEdgeId = Shader.PropertyToID("_SlipEdge");
         static readonly int PaperColorId = Shader.PropertyToID("_PaperColor");
         static readonly int GrainId = Shader.PropertyToID("_Grain");
-        static readonly int NoiseTexId = Shader.PropertyToID("_NoiseTex");
-        static readonly int SketchWashId = Shader.PropertyToID("_SketchWash");
-        static readonly int FigureWashId = Shader.PropertyToID("_FigureWash");
-        static readonly int HatchSpacingId = Shader.PropertyToID("_HatchSpacing");
-        static readonly int SketchHatchId = Shader.PropertyToID("_SketchHatch");
-        static readonly int LineJitterId = Shader.PropertyToID("_LineJitter");
-        static readonly int SketchLineId = Shader.PropertyToID("_SketchLine");
-        static readonly int GraphiteId = Shader.PropertyToID("_Graphite");
-        static readonly int SketchPaperId = Shader.PropertyToID("_Paper");
-        static readonly int ClassicScaleId = Shader.PropertyToID("_ClassicScale");
 
         /// <summary>The comic halftone filter is on: chosen in Filters, or forced here.</summary>
-        public bool ComicOn { get { return !forceSketch && !forceClassic && (forceComic || Progression.Filters.Chosen == Progression.Filters.Comic); } }
-
-        /// <summary>The pencil sketch filter is on: chosen in Filters, or forced here.</summary>
-        public bool SketchOn { get { return !forceClassic && (forceSketch || (!forceComic && Progression.Filters.Chosen == Progression.Filters.Sketch)); } }
-
-        /// <summary>The classic cartoon filter is on: chosen in Filters, or forced here.</summary>
-        public bool ClassicOn { get { return forceClassic || (!forceComic && !forceSketch && Progression.Filters.Chosen == Progression.Filters.Classic); } }
+        public bool ComicOn { get { return forceComic || Progression.Filters.Chosen == Progression.Filters.Comic; } }
 
         void OnEnable()
         {
@@ -188,12 +139,12 @@ namespace DribbleToSchool.World
             warmed = false;
         }
 
-        // The filters' lines need the camera's depth and normals; asked for only while one is on,
+        // The comic filter's ink line needs the camera's depth and normals; asked for only while it is on,
         // and only the flag this script added is taken back.
         void LateUpdate()
         {
             if (cam == null) cam = GetComponent<Camera>();
-            bool want = ComicOn || SketchOn || ClassicOn;
+            bool want = ComicOn;
             if (want && (cam.depthTextureMode & DepthTextureMode.DepthNormals) == 0)
             {
                 cam.depthTextureMode |= DepthTextureMode.DepthNormals;
@@ -268,28 +219,6 @@ namespace DribbleToSchool.World
                 Graphics.Blit(comic, destination, material, PrintPass);
                 RenderTexture.ReleaseTemporary(comic);
             }
-            else if (SketchOn && HasNormals())
-            {
-                SetComic(source);    // the mask, and the ink line's sizes and thresholds the outline shares
-                SetSketch(source);
-                Graphics.Blit(source, destination, material, SketchPass);
-            }
-            else if (ClassicOn && HasNormals())
-            {
-                SetComic(source);    // the mask
-                SetClassic(source);
-                // Two pictures between the passes, with alpha (the code of what each pixel is), never colour-converted.
-                var format = HasAlpha(source.format) ? source.format : RenderTextureFormat.ARGB32;
-                var graded = RenderTexture.GetTemporary(source.width, source.height, 0, format, RenderTextureReadWrite.Linear);
-                var flat = RenderTexture.GetTemporary(source.width, source.height, 0, format, RenderTextureReadWrite.Linear);
-                graded.filterMode = FilterMode.Bilinear;
-                flat.filterMode = FilterMode.Bilinear;
-                Graphics.Blit(source, graded, material, ClassicGradePass);
-                Graphics.Blit(graded, flat, material, ClassicFlatPass);
-                Graphics.Blit(flat, destination, material, ClassicInkPass);
-                RenderTexture.ReleaseTemporary(graded);
-                RenderTexture.ReleaseTemporary(flat);
-            }
             else
             {
                 Graphics.Blit(source, destination, material, GradePass);
@@ -314,51 +243,6 @@ namespace DribbleToSchool.World
             for (int p = 0; p < material.passCount; p++) Graphics.Blit(a, b, material, p);
             RenderTexture.ReleaseTemporary(a);
             RenderTexture.ReleaseTemporary(b);
-        }
-
-        // The depth and normals are drawn from the frame after the flag is set: until then, the plain grade.
-        void SetSketch(RenderTexture source)
-        {
-            material.SetTexture(NoiseTexId, Noise());
-            material.SetFloat(InkStrengthId, 1f);
-            material.SetFloat(SketchWashId, sketchWash);
-            material.SetFloat(FigureWashId, figureWash);
-            material.SetFloat(HatchSpacingId, hatchSpacing);
-            material.SetFloat(SketchHatchId, sketchHatch);
-            material.SetFloat(LineJitterId, lineJitter);
-            material.SetFloat(SketchLineId, sketchLine);
-            material.SetVector(GraphiteId, graphite);
-            material.SetVector(SketchPaperId, sketchPaper);
-        }
-
-        /// <summary>The sketch's noise: 256 x 256 random values, filtered and repeating (value noise when sampled), made once.</summary>
-        static Texture2D Noise()
-        {
-            if (noise != null) return noise;
-            const int N = 256;
-            noise = new Texture2D(N, N, TextureFormat.RGBA32, false, true)
-            {
-                wrapMode = TextureWrapMode.Repeat, filterMode = FilterMode.Bilinear, hideFlags = HideFlags.HideAndDontSave, name = "SketchNoise",
-            };
-            var rng = new System.Random(1234);
-            var px = new Color32[N * N];
-            for (int i = 0; i < px.Length; i++)
-            {
-                byte v = (byte)rng.Next(256);
-                px[i] = new Color32(v, v, v, 255);
-            }
-            noise.SetPixels32(px);
-            noise.Apply(false, true);
-            return noise;
-        }
-
-        /// <summary>The classic cartoon's look (the classic or the calmer setting), its noise, and its sizes for this picture.</summary>
-        void SetClassic(RenderTexture source)
-        {
-            ClassicLook.Active.Apply(material);
-            material.SetTexture(NoiseTexId, Noise());
-            // Sizes are tuned at 1080 lines; a smaller picture keeps them at least three quarters as big.
-            material.SetFloat(ClassicScaleId, Mathf.Max(0.75f, source.height / 1080f));
         }
 
         static bool HasAlpha(RenderTextureFormat format)

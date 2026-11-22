@@ -824,8 +824,9 @@ namespace DribbleToSchool.EditorTools
         }
 
         /// <summary>
-        /// Kit models the classic cartoon filter draws as cels (inked, as the people are) rather than as painted
-        /// scenery: the things the kid plays with or that move. The whole Animals kit is cels (its material is marked so:
+        /// Kit models the classic cartoon filter drew as cels (inked, as the people are) rather than as painted
+        /// scenery: the things the kid plays with or that move. (That filter was removed in v141; the comic reads a cel as
+        /// the street, so the "Cel" copies now only cost their own batch: docs/LEARNINGS.md D13.) The whole Animals kit is cels (its material is marked so:
         /// ArtBaker), the animals and the coins, stars and stickers; these are the rest, each wearing its kit's "Cel" copy.
         /// </summary>
         static readonly HashSet<string> celModels = new HashSet<string>
@@ -862,7 +863,7 @@ namespace DribbleToSchool.EditorTools
             // The California skin's shops have English signs: the same atlas layout, its own texture.
             Material skin;
             if ((California || Florida) && Art.kits.TryGetValue(kit + "CA", out skin) && skin != null) material = skin;
-            // A model the kid plays with is a cel for the classic cartoon filter (its kit's "Cel" copy).
+            // A model the kid plays with wears its kit's "Cel" copy (it was a cel for the classic cartoon filter, removed in v141).
             Material cel;
             if (celModels.Contains(kit + "/" + model) && Art.kits.TryGetValue(kit + "Cel", out cel) && cel != null) material = cel;
             var go = new GameObject(model);

@@ -22,7 +22,7 @@ namespace DribbleToSchool.FrontEnd
     ///   (any player may change them, as in a fighting game's stage select: the last choice wins and everyone readies again),
     ///   READY, and the countdown once everyone is ready.
     /// - Race: back from the school gate while the others run, or after the race: the standings, and for the host NEW RACE.
-    /// The filters (comic, sketch) stay each phone's own choice, from Add-ons and Filters on the title screen.
+    /// The filter (original or comic) stays each phone's own choice, from Add-ons and Filters on the title screen.
     /// </summary>
     public class CoopScreen : FrontEndScreen
     {
@@ -179,7 +179,7 @@ namespace DribbleToSchool.FrontEnd
             var mask = UIKit.Rect(kid.transform.Find("Face"), "Mask");
             UIKit.Stretch(mask, 6f);
             mask.gameObject.AddComponent<RectMask2D>();
-            kidPortrait = CartoonPicture.On(UIKit.Icon(mask, "Portrait", null, Color.white, 90f));
+            kidPortrait = UIKit.Icon(mask, "Portrait", null, Color.white, 90f);
             kidPortrait.rectTransform.anchorMin = Vector2.zero;
             kidPortrait.rectTransform.anchorMax = Vector2.one;
             kidPortrait.rectTransform.offsetMin = new Vector2(-6f, -10f);
@@ -482,7 +482,7 @@ namespace DribbleToSchool.FrontEnd
                 var mask = UIKit.Rect(ring.transform, "Mask");
                 UIKit.Stretch(mask, 6f);
                 mask.gameObject.AddComponent<RectMask2D>();
-                var img = CartoonPicture.On(UIKit.Icon(mask, "Kid", portrait, Color.white, 84f));
+                var img = UIKit.Icon(mask, "Kid", portrait, Color.white, 84f);
                 img.rectTransform.anchorMin = Vector2.zero;
                 img.rectTransform.anchorMax = Vector2.one;
                 img.rectTransform.offsetMin = new Vector2(-6f, -10f);

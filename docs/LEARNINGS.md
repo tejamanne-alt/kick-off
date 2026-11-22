@@ -719,6 +719,23 @@ natural blue sky); the sketch pass returns grey whatever its colours are set to,
 city's own colours, not only the reference's; "black and white" is enforced in the pass, not left to a colour
 setting a scene might have saved.
 
+**D13. The pencil sketch and the classic cartoon filters removed (v141, the user's request).** After two rounds of
+fixes (D12), the user asked for both to go: "Remove the Sketch and Cartoon filters."
+- *What went:*
+  - their camera passes (PostFX passes 6 to 9) and the cartoon colour (`DtsCartoon.cginc`, `World/ClassicLook`);
+  - the cartoon's menu pictures and buttons (`UI/CartoonPicture`, `Resources/Shaders/CartoonPicture`,
+    `UI/Kit/CartoonButton` and every button's hidden ink rim);
+  - the pencil comic words (ComicPops' pencil lettering and starburst, ComicLettering's sketch mode and the
+    lettering shader's hatching);
+  - their cards and strings.
+- *What stays:* the original look and the comic halftone, unchanged. An old save naming either filter reads as the
+  original (`Filters.Chosen`).
+- *Left in place:* the scene's finer alpha codes (`_FilterMask`, `_ComicWorld` 0.125 on cels) and the kits' "Cel"
+  material copies. The comic reads every code above 0 as the street, so they change nothing on screen. The Cel copies
+  still cost a batch of their own and can go in a later clean-up (it touches ArtBaker and every kit's materials).
+- *Rule:* a feature the user asks to remove goes completely, its shader passes, assets, strings, tests and docs too.
+  Remove the code, not just the menu card. Never reuse a removed filter's saved id.
+
 ## E. Levels and world
 
 - **E1. Every level had chapter-1 scenery.** A new-scene call unloaded the level definition. *Rule:* pass data into scene builders explicitly; never hold asset references across a new-scene call.
@@ -933,8 +950,8 @@ Never re-propose what is rejected here.
 - **No mini-games (v128):** none in Kamakura or Florida, and nothing put in their place: every leg of a route is a
   dribble. A transit hop between two legs is simply not shown (the next leg starts where it would have ended). Don't
   re-propose the bus, boat or shop mini-games, or errands that depend on them (E14).
-- **Filters:** easy to reach: on the title screen and in every pause menu.
-  The pencil sketch is black and white only; the classic cartoon keeps natural colour, nothing tinted orange (v134, D12).
+- **Filters:** easy to reach: on the title screen and in every pause menu. Only the original look and the comic
+  halftone (v141): the pencil sketch and the classic cartoon were removed at the user's request (D13). Don't bring them back.
 - **Store art:** use the user's own artwork for the app icon.
 
 ## How to add an entry

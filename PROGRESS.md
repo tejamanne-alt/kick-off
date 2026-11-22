@@ -2419,6 +2419,40 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
     stop you).
   - On Bayfront: look up the side street.
 
+## The Sketch and Cartoon filters removed (generated content v141)
+
+- **Why.** The user: "Remove the Sketch and Cartoon filters." (LEARNINGS D13.)
+- **What's left:** Filters offers the original look and the comic halftone, as one row of cards. Both are as they were.
+  A save that had the sketch or the classic cartoon chosen opens in the original look.
+- **Removed:**
+  - `World/PostFX`: the sketch (pass 6) and the classic cartoon (passes 7 to 9), their settings and the noise texture
+    they shared.
+  - `Shaders/PostFX.shader`: those passes and their helpers. `Shaders/DtsCartoon.cginc` and `World/ClassicLook.cs` are
+    deleted.
+  - The menus:
+    - `UI/CartoonPicture` and `Resources/Shaders/CartoonPicture` are deleted. The player cards, Locker Room items,
+      stickers, logo and town map are drawn as themselves; they always were, unless the cartoon was chosen.
+    - `UI/Kit/CartoonButton` is deleted, and so is every UIKit button's hidden ink rim (one image fewer per button).
+  - The comic words: their pencil version (`ComicPops`' pencil lettering and starburst, `ComicLettering.sketch`, the
+    lettering shader's hatching). They now pop with the comic filter only.
+  - The cards' strings (English and Spanish).
+  - `FilterLookTests`, replaced by `FilterRemovalTests`. `GameLogicTests` holds the two saved ids.
+  - README, ART_DIRECTION, PERFORMANCE and CITIES no longer describe them.
+- **Kept on purpose:**
+  - The scene's alpha codes for cels, foliage and clouds, and the kits' "Cel" material copies: they change nothing on
+    screen now (LEARNINGS D13).
+  - `review/sketch` and `review/cartoon`: the boards and ports they were approved from. `review/cartoon/render_scenes.py`
+    is also one of ToonCharacter's Blender mirrors.
+- **Cost:** less.
+  - The PostFX shader has 6 passes instead of 10, so fewer to build at warm-up.
+  - Every UI button has one image fewer.
+  - The ComicPops pencil starburst (a 256 x 256 texture) is no longer drawn at boot.
+- **Version 141:** generated scenes are rebuilt, so none keeps a button with the removed component.
+- **Checked:**
+  - compile (no new error kinds);
+  - `unity_api_check` 6000.6 and 6000.7.
+- **Not run in Unity:** open Filters (two cards), and switch between the original and the comic in a level.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

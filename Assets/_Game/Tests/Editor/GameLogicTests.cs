@@ -108,7 +108,9 @@ namespace DribbleToSchool.Tests
         [Test]
         public void TheFiltersKeepTheirSavedIds()
         {
-            CollectionAssert.AreEqual(new[] { "original", "comic", "sketch", "classic" }, Filters.All, "saved by id (SaveData.filter): never rename one");
+            // (The pencil sketch and the classic cartoon were removed in v141 at the user's request: an old save naming one
+            // reads as the original. Never reuse their ids.)
+            CollectionAssert.AreEqual(new[] { "original", "comic" }, Filters.All, "saved by id (SaveData.filter): never rename one");
             var en = StringTables.For("en");
             foreach (string f in Filters.All)
             {

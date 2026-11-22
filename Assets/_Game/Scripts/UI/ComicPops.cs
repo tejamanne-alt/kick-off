@@ -11,7 +11,7 @@ using UnityEngine.UI;
 namespace DribbleToSchool.UI
 {
     /// <summary>
-    /// The comic filter's sound-effect words: while the comic halftone or the pencil sketch filter is on
+    /// The comic filter's sound-effect words: while the comic halftone filter is on
     /// (Add-ons &amp; Filters on the title screen), the big moments pop up as comic lettering by where they happen: THWACK! on a hard kick,
     /// NICE TOUCH! on a perfect touch, BOINK! on a juggle (and "10 IN A ROW!" every fifth), WHOOSH! on a
     /// double jump, SKRRT! on a slide, BOING! on a springboard, SPLASH!, SQUAWK! (a gull), WOOF! (a dog),
@@ -24,9 +24,7 @@ namespace DribbleToSchool.UI
     /// kept inside the middle of the screen. Few at once: a quieter word gives way to a louder one that
     /// has just popped, the same word doesn't repeat back to back, and at most three show together.
     /// The words are in the string tables (pop.*); the lettering is UI/ComicLettering on Bangers
-    /// (UITheme.Comic) with Resources/Shaders/ComicLettering's halftone. On the pencil sketch filter they are
-    /// drawn in pencil instead: a doubled graphite line, a paper-to-coloured-pencil fill with hatching, and a
-    /// pencil starburst.
+    /// (UITheme.Comic) with Resources/Shaders/ComicLettering's halftone.
     /// </summary>
     public class ComicPops : MonoBehaviour
     {
@@ -47,7 +45,7 @@ namespace DribbleToSchool.UI
         Canvas rootCanvas;
         readonly List<Pop> live = new List<Pop>();
         Material[] materials;
-        Sprite burstSprite, sketchBurstSprite;
+        Sprite burstSprite;
         BallController ball;
         string lastWord;
         float lastWordAt = -10f;
@@ -55,8 +53,8 @@ namespace DribbleToSchool.UI
 
         const int MaxLive = 3;
 
-        /// <summary>The words show: the comic filter or the pencil sketch is chosen.</summary>
-        public static bool On { get { string f = Filters.Chosen; return f == Filters.Comic || f == Filters.Sketch; } }
+        /// <summary>The words show: the comic filter is chosen.</summary>
+        public static bool On { get { return Filters.Chosen == Filters.Comic; } }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void Boot()
@@ -69,7 +67,7 @@ namespace DribbleToSchool.UI
 
         // The starburst is drawn now, at boot, not on the first THWACK! (a frame's work on a phone). The words'
         // letters too (the first scene loaded before ComicPops was listening for scene loads).
-        void Start() { BurstSprite(false); BurstSprite(true); QueuePrewarm(); }
+        void Start() { BurstSprite(); QueuePrewarm(); }
 
         void OnEnable()
         {
@@ -154,7 +152,6 @@ namespace DribbleToSchool.UI
             if (!EnsureCanvas()) return;
             while (live.Count >= MaxLive) Remove(0);
 
-            bool pencil = Filters.Chosen == Filters.Sketch;   // pencil lettering on the sketch filter
             float fontSize = FontSize(size);
             var go = new GameObject("Pop", typeof(RectTransform));
             var rect = (RectTransform)go.transform;
@@ -176,7 +173,7 @@ namespace DribbleToSchool.UI
                 burst.sizeDelta = new Vector2(r, r);
                 burst.anchoredPosition = new Vector2(-fontSize * 0.15f, -fontSize * 0.05f);
                 var img = bgo.AddComponent<Image>();
-                img.sprite = BurstSprite(pencil);
+                img.sprite = BurstSprite();
                 img.raycastTarget = false;
             }
 
@@ -193,32 +190,17 @@ namespace DribbleToSchool.UI
             text.raycastTarget = false;
             text.color = Color.white;
             text.text = word;
-            var mat = Material(style, pencil);
+            var mat = Material(style);
             if (mat != null) text.material = mat;
             var lettering = tgo.AddComponent<ComicLettering>();
-            if (pencil)
+            switch (style)
             {
-                // Pencil lettering, black and white like the sketch itself (v134): paper white into a soft grey wash, a
-                // graphite line drawn twice, hatching. The styles differ only in how deep the wash goes.
-                lettering.sketch = true;
-                lettering.ink = Graphite;
-                lettering.stroke = 0.05f;
-                lettering.shadow = 1.8f;
-                lettering.top = new Color(0.98f, 0.98f, 0.98f);
-                float wash = style == Style.Cool ? 0.8f : style == Style.Ouch ? 0.66f : 0.72f;
-                lettering.bottom = new Color(wash, wash, wash);
-            }
-            else
-            {
-                switch (style)
-                {
-                    case Style.Cool:
-                        lettering.top = new Color(1f, 0.99f, 0.93f); lettering.bottom = new Color(0.43f, 0.82f, 0.9f);
-                        break;
-                    case Style.Ouch:
-                        lettering.top = new Color(1f, 0.97f, 0.92f); lettering.bottom = new Color(0.96f, 0.45f, 0.6f);
-                        break;
-                }
+                case Style.Cool:
+                    lettering.top = new Color(1f, 0.99f, 0.93f); lettering.bottom = new Color(0.43f, 0.82f, 0.9f);
+                    break;
+                case Style.Ouch:
+                    lettering.top = new Color(1f, 0.97f, 0.92f); lettering.bottom = new Color(0.96f, 0.45f, 0.6f);
+                    break;
             }
 
             live.Add(new Pop
@@ -239,7 +221,7 @@ namespace DribbleToSchool.UI
         // The words' letters are drawn into the font's texture when a scene loads, not by a word's first pop in the
         // middle of a run: the comic font is a dynamic one, which rasterizes each new letter at each new size on the
         // main thread when it is first asked for (several to tens of milliseconds at these sizes on a phone). Only
-        // while the words show at all (the comic or sketch filter on); two frames later, so it is not in the load itself
+        // while the words show at all (the comic filter on); two frames later, so it is not in the load itself
         // and the overlay's scale is the new one when the resolution was set as the scene loaded (Screen.SetResolution
         // lands at the end of that frame, and the scaler picks it up as the next frame's canvases render).
         void QueuePrewarm()
@@ -362,39 +344,32 @@ namespace DribbleToSchool.UI
             return true;
         }
 
-        /// <summary>The pencil sketch filter's graphite (World/PostFX.graphite): a neutral grey, the sketch is black and white.</summary>
-        static readonly Color Graphite = new Color(0.16f, 0.16f, 0.16f);
-
-        /// <summary>The lettering's material: halftone dots in the style's ink, or (pencil) graphite hatching.</summary>
-        Material Material(Style style, bool pencil)
+        /// <summary>The lettering's material: halftone dots in the style's ink.</summary>
+        Material Material(Style style)
         {
             if (materials == null)
             {
-                materials = new Material[6];
+                materials = new Material[3];
                 var shader = Resources.Load<Shader>("Shaders/ComicLettering");
                 if (shader == null || !shader.isSupported) return null;   // plain gradient letters, no dots
                 Color[] dots = { new Color(0.84f, 0.16f, 0.12f), new Color(0.16f, 0.47f, 0.78f), new Color(0.82f, 0.13f, 0.4f) };
-                for (int i = 0; i < 6; i++)
+                for (int i = 0; i < 3; i++)
                 {
                     materials[i] = new Material(shader) { hideFlags = HideFlags.HideAndDontSave };
-                    materials[i].SetColor("_DotColor", i < 3 ? dots[i] : Graphite);
-                    materials[i].SetFloat("_Hatch", i < 3 ? 0f : 1f);
-                    if (i >= 3) materials[i].SetFloat("_DotPeriod", 6f);
+                    materials[i].SetColor("_DotColor", dots[i]);
                 }
             }
-            return materials[(int)style + (pencil ? 3 : 0)];
+            return materials[(int)style];
         }
 
         /// <summary>
         /// An ink starburst: a star polygon of 14 straight spikes of uneven length (straight edges from tip to
         /// notch, sharp points), a yellow fill with a thin ink edge, and the same star at half size as a pale heart.
-        /// The <paramref name="pencil"/> one (the sketch filter): the same star drawn in pencil, a soft grey wash
-        /// hatched across its spikes, a thin graphite edge and a second, slightly turned outline. Each drawn once.
+        /// Drawn once.
         /// </summary>
-        Sprite BurstSprite(bool pencil)
+        Sprite BurstSprite()
         {
-            if (pencil && sketchBurstSprite != null) return sketchBurstSprite;
-            if (!pencil && burstSprite != null) return burstSprite;
+            if (burstSprite != null) return burstSprite;
             const int N = 256, Spikes = 14;
             var rng = new System.Random(11);
             var pts = new Vector2[Spikes * 2];
@@ -406,63 +381,23 @@ namespace DribbleToSchool.UI
             }
             var px = new Color32[N * N];
             float half = N * 0.5f, aa = 1.2f / half;
-            if (pencil)
-            {
-                // The second go at the outline: the star turned a little and a touch bigger.
-                var second = new Vector2[pts.Length];
-                float turn = 0.045f, cos = Mathf.Cos(turn), sin = Mathf.Sin(turn);
-                for (int i = 0; i < pts.Length; i++)
-                    second[i] = new Vector2(pts[i].x * cos - pts[i].y * sin, pts[i].x * sin + pts[i].y * cos) * 1.03f;
-                var rngGrain = new System.Random(5);
-                Color32 lead = new Color32(41, 41, 41, 255), wash = new Color32(214, 214, 214, 235), paper = new Color32(248, 248, 248, 240);
-                float edge = 2.6f / half;
-                for (int y = 0; y < N; y++)
-                    for (int x = 0; x < N; x++)
-                    {
-                        var p = new Vector2((x + 0.5f - half) / half, (y + 0.5f - half) / half);
-                        float d = Distance(pts, p, 1f);
-                        float d2 = Distance(second, p, 1f);
-                        float grain = 0.6f + 0.4f * (float)rngGrain.NextDouble();
-                        Color32 c = new Color32(0, 0, 0, 0);
-                        if (d > -aa)
-                        {
-                            bool heart = Distance(pts, p, 0.5f) > 0f;
-                            c = heart ? paper : wash;
-                            // hatching across the spikes, 45 degrees
-                            if (!heart && Mathf.Abs(Mathf.Repeat((x + y) / 9f, 1f) - 0.5f) * 9f < 0.8f)
-                                c = Color32.Lerp(c, lead, 0.45f * grain);
-                            if (d < edge) c = Color32.Lerp(c, lead, grain);
-                            c.a = (byte)(c.a * Mathf.Clamp01((d + aa) / aa));
-                        }
-                        // the second outline, fainter, inside or out
-                        if (Mathf.Abs(d2) < 1.4f / half)
-                        {
-                            byte a2 = (byte)(150 * grain);
-                            c = c.a == 0 ? new Color32(lead.r, lead.g, lead.b, a2) : Color32.Lerp(c, lead, 0.55f * grain);
-                        }
-                        px[y * N + x] = c;
-                    }
-            }
-            else
-            {
-                Color32 ink = new Color32(23, 13, 41, 255), gold = new Color32(255, 214, 58, 255), heart = new Color32(255, 248, 214, 255);
-                float edge = 4f / half;
-                for (int y = 0; y < N; y++)
-                    for (int x = 0; x < N; x++)
-                    {
-                        var p = new Vector2((x + 0.5f - half) / half, (y + 0.5f - half) / half);
-                        float d = Distance(pts, p, 1f);                // signed: > 0 inside the star
-                        if (d <= -aa) { px[y * N + x] = new Color32(0, 0, 0, 0); continue; }
-                        Color32 c = d < edge ? ink : (Distance(pts, p, 0.5f) > 0f ? heart : gold);
-                        c.a = (byte)(255 * Mathf.Clamp01((d + aa) / aa));
-                        px[y * N + x] = c;
-                    }
-            }
+            Color32 ink = new Color32(23, 13, 41, 255), gold = new Color32(255, 214, 58, 255), heart = new Color32(255, 248, 214, 255);
+            float edge = 4f / half;
+            for (int y = 0; y < N; y++)
+                for (int x = 0; x < N; x++)
+                {
+                    var p = new Vector2((x + 0.5f - half) / half, (y + 0.5f - half) / half);
+                    float d = Distance(pts, p, 1f);                // signed: > 0 inside the star
+                    if (d <= -aa) { px[y * N + x] = new Color32(0, 0, 0, 0); continue; }
+                    Color32 c = d < edge ? ink : (Distance(pts, p, 0.5f) > 0f ? heart : gold);
+                    c.a = (byte)(255 * Mathf.Clamp01((d + aa) / aa));
+                    px[y * N + x] = c;
+                }
             var tex = new Texture2D(N, N, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp, hideFlags = HideFlags.HideAndDontSave };
             tex.SetPixels32(px);
             tex.Apply(false, true);
             var sprite = Sprite.Create(tex, new Rect(0, 0, N, N), new Vector2(0.5f, 0.5f), 100f);
-            if (pencil) sketchBurstSprite = sprite; else burstSprite = sprite;
+            burstSprite = sprite;
             return sprite;
         }
 
