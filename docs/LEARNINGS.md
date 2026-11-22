@@ -825,6 +825,22 @@ setting a scene might have saved.
   generated, when the user is listening for it; check what can be checked (notes against chords, pitch held), and say plainly
   that taste can only be judged by ear: send the previews and ask what is wrong in their words before a third take.
 
+- **G5. Florida's music "still bad", a fourth time (v138).** Asked what was wrong, the user ticked every answer: too
+  repetitive, some places' tunes, the synth sound grating over a whole level, too loud and distracting. Each earlier take
+  fixed one axis (style, then tunes) and was checked by loudness, peaks, spectrograms and chord tones, none of which
+  measures fatigue. The loops were 31 s of the same four bars twice, at the same loudness as Kamakura's mellower music but
+  brighter, with saw stabs and leads, a deep sidechain pump and an open hat on every off-beat. Under Little Havana (now the
+  first level played) a cafe radio also ran a second song, in another key, under the music the whole time, and downtown's
+  air conditioners droned a chord half a semitone off. *Fix:*
+  - 64 s loops in four sections (an opening, the groove, the lift, a breakdown with the kick out and the hook an octave
+    down on a Rhodes);
+  - Rhodes and soft plucks in place of the saw stabs and the saw lead;
+  - a shallow pump, softer hats and claps, less drive, a darker tone;
+  - Florida's loudness 0.11 to 0.115 against the others' 0.14;
+  - no radio and no pitched hum in any bed.
+  - *Rule:* ask early which of repetition, tune, timbre and level is wrong (a multiple-choice question works); check a
+    loop's length against how long a level lasts; nothing pitched may play under the music unless it is the music.
+
 ## H. Co-op, store, release and testing
 
 - **H1. A design that punished the player who stayed connected.** *Rule:* design for reconnection.
@@ -862,7 +878,8 @@ Never re-propose what is rejected here.
   levels.
 - **Florida's music (v132):** upbeat and original, in the spirit of Justice (French electro, filter house) and Tame Impala
   (psychedelic synth-pop). Not Caribbean or sad (G3). The user likes its beats (drums and bass, v132): keep them; the
-  tunes are written hooks on steady synths (G4).
+  tunes are written hooks on steady synths (G4); it must not tire over a whole level: long loops that change, soft
+  timbres, sitting back (G5).
 - **The look:** the user's bar is a recent big-budget open-world game's look and feel (warm sun against cool shade, haze,
   weathered, dense streets), reached through light, grade and baked texture within the phone's budget, never by copying
   that game's content. The filters must keep working in every city.

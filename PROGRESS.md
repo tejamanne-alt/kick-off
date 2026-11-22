@@ -2281,6 +2281,43 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
     starts fresh.
 - **Cost:** none.
 
+## Florida's music: longer, softer, quieter; nothing tuned under it (v138; no generated content changes)
+
+- **Why.** "Still the background continuous music is bad in Florida." Asked what was wrong (too repetitive, a place's tune,
+  the sound, too loud), the user answered all of them. (LEARNINGS G5.)
+- **Longer, and it changes** (`MusicGenerator.ArrangeFlorida`): every Florida loop is 32 bars, 61 to 69 s (was 31 s), in
+  four sections:
+  1. an opening (chords, bass, a light groove, the first hook once, four bars to breathe);
+  2. the groove (the full kit, the second comp, the first hook twice);
+  3. the lift (the second chord cycle and hook);
+  4. a breakdown (the kick out, the bass holding, the first hook an octave down on a Rhodes), building back with a fill
+     into the loop's start.
+- **Softer:**
+  - Rhodes chords in place of the saw stabs on the busy streets (the stabs remain only on the site, softened).
+  - The saw lead is gone: soft plucks, a warm hollow lead, vibes.
+  - Rounder bass, a less squashed snare, a darker phased pad.
+  - The pump is about half as deep. The hats, open hats and claps are softer, and the shaker and tambourine come in only
+    in the full sections.
+  - Master drive 0.08 to 0.12 (was up to 0.24), tone 6.5 to 7.5 kHz (was up to 9.5).
+- **Quieter:** Florida's loops are mixed to an RMS of 0.11 to 0.115, against 0.14 for the other countries' music.
+- **Nothing tuned under the music:**
+  - Little Havana's bed (FL1-1, now the first level played) had a cafe radio playing a son in another key all the way
+    through. It is gone.
+  - Downtown's air conditioners (FL1-2, FL2-3, FL3-2) keep their fan but lose a 120 Hz hum chord that was half a semitone
+    off the music's notes.
+- **Checked:**
+  - `tools/audio_hash`: only Florida's music and those two beds changed.
+  - `tools/music_hooks/check.py`: the hooks still fit their chords.
+  - The sections show in the spectrogram as planned.
+  - Previews of four legs as heard in game (music and bed at the default volumes) went to the user.
+- **Cost** (desktop .NET 8, per Florida place, once a session):
+  - 0.8 to 1.6 s of worker time and 81 to 91 MB of garbage to make a loop (was 0.4 to 0.5 s and 38 to 43 MB). It is made
+    off the main thread as the place is entered, while the last music plays on.
+  - On the phone the new loop may come in a few seconds after a level starts, the first time each place is entered.
+  - A clip now holds about 11 MB (was about 5.7).
+  - Baking the music offline (`docs/PERFORMANCE.md`, "Still to do" 1) would remove all of it.
+- **Not heard on the phone yet.**
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

@@ -749,9 +749,9 @@ namespace DribbleToSchool.Audio
                 double s = 0;
                 for (int v = 0; v < voices; v++) { s += BlepSaw(ph[v], step[v]); ph[v] += step[v]; }
                 s /= voices;
-                double fc = Math.Min(8000, cutoff * (1.0 + 1.2 * Math.Exp(-t * 24)));
-                float y = flt.Process((float)s, fc, 0.95);
-                y = (float)Math.Tanh(y * 1.4) * 0.8f;
+                double fc = Math.Min(5000, cutoff * (1.0 + 0.8 * Math.Exp(-t * 24)));
+                float y = flt.Process((float)s, fc, 0.8);
+                y = (float)Math.Tanh(y * 1.1) * 0.85f;   // (v138: hardly driven: it grated)
                 tr.Add(start + i, y * Adr(t, dur, 0.002, 1.8, rel) * vel);
             }
         }
@@ -787,7 +787,7 @@ namespace DribbleToSchool.Audio
                 double s = 0;
                 for (int v = 0; v < voices; v++) { s += BlepSaw(ph[v], step[v]); ph[v] += step[v]; }
                 s /= voices;
-                float x = lp.Process((float)s, 2400, 0.7);
+                float x = lp.Process((float)s, 1800, 0.7);   // (v138: darker)
                 if ((i & 31) == 0)
                 {
                     double lfo = 0.5 - 0.5 * Math.Cos(TwoPi * (time + t) / period);
@@ -860,7 +860,7 @@ namespace DribbleToSchool.Audio
                 double d = f / Sr;
                 double v = BlepPulse(p1, d, 0.4) + 0.6 * BlepSaw(p2, d * 1.003) + 0.2 * Math.Sin(TwoPi * p3);
                 p1 += d; p2 += d * 1.003; p3 += d * 2;
-                float y = flt.Process((float)(v * 0.5), 3000, 0.7);
+                float y = flt.Process((float)(v * 0.5), 2300, 0.7);   // (v138: warmer)
                 float env = (float)(Math.Min(1, t / 0.015) * (t > dur ? Math.Max(0, 1 - (t - dur) / rel) : 1.0));
                 tr.Add(start + i, y * env * vel * 0.95f);
             }
@@ -882,10 +882,12 @@ namespace DribbleToSchool.Audio
                 double t = i / (double)Sr;
                 double v = BlepSaw(p1, d * 0.997) + BlepSaw(p2, d * 1.003) + 0.6 * BlepPulse(p3, d * 0.5, 0.5);
                 p1 += d * 0.997; p2 += d * 1.003; p3 += d * 0.5;
-                double fc = Math.Min(8000, freq * 1.5 + 5000 * Math.Exp(-t * 14));
-                float y = flt.Process((float)(v / 2.6), fc, 0.9);
-                double env = Math.Min(1, t / 0.002) * (0.35 + 0.65 * Math.Exp(-t * 7)) * Math.Exp(-Math.Max(0, t - dur) * 14);
-                tr.Add(start + i, (float)Math.Tanh(y * 1.3) * 0.8f * (float)env * vel * Tail(i, n));
+                // (v138: softer: the filter opens less and closes sooner, a sine body under it: it chimed too brightly)
+                double fc = Math.Min(4500, freq * 1.3 + 2400 * Math.Exp(-t * 16));
+                float y = flt.Process((float)(v / 2.6), fc, 0.75);
+                double body = 0.45 * Math.Sin(TwoPi * freq * t);
+                double env = Math.Min(1, t / 0.003) * (0.3 + 0.7 * Math.Exp(-t * 8)) * Math.Exp(-Math.Max(0, t - dur) * 14);
+                tr.Add(start + i, (float)(y * 0.95 + body * 0.5) * 0.8f * (float)env * vel * Tail(i, n));
             }
         }
 
@@ -906,9 +908,9 @@ namespace DribbleToSchool.Audio
                 double t = i / (double)Sr;
                 double s = BlepSaw(p1, d) + 0.8 * BlepPulse(p2, d, 0.5);
                 p1 += d; p2 += d; p3 += d;
-                double fc = 220 + 1500 * Math.Exp(-t * 16);
-                float y = flt.Process((float)(s * 0.6), fc, 1.8);
-                double v = Math.Tanh(y * 2.8) * 0.5 + 0.55 * Math.Sin(TwoPi * p3);
+                double fc = 200 + 700 * Math.Exp(-t * 16);
+                float y = flt.Process((float)(s * 0.6), fc, 1.0);
+                double v = Math.Tanh(y * 1.8) * 0.4 + 0.7 * Math.Sin(TwoPi * p3);   // (v138: rounder, less growl)
                 tr.Add(start + i, (float)v * Adr(t, dur, 0.003, 0.6, rel) * vel);
             }
         }
@@ -968,7 +970,7 @@ namespace DribbleToSchool.Audio
                 wires.Process(noise.White(), 2600, 0.7);
                 double w = (wires.band + wires.high * 0.6) * Math.Exp(-t * 10);
                 double v = (body + w * 1.1) * Math.Min(1, t / 0.001);
-                tr.Add(start + i, (float)Math.Tanh(v * 2.4) * 0.55f * vel * Tail(i, n));
+                tr.Add(start + i, (float)Math.Tanh(v * 1.7) * 0.6f * vel * Tail(i, n));   // (v138: less squashed)
             }
         }
 

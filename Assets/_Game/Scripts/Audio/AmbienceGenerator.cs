@@ -37,7 +37,7 @@ namespace DribbleToSchool.Audio
     /// the cobbles; gulls, a buoy's bell, a ship; dripping water, a train overhead, footsteps; a reversing
     /// truck, a jackhammer, hammering, a digger, a drill, an air brake, dropped pipes; robins, tits, a
     /// blackbird, wood pigeons, ducks and a woodpecker). Florida's places have their own, nothing shared with
-    /// Kamakura's: Little Havana (a lively street, a cafe's radio playing a son, dominoes, roosters, hens, a moped),
+    /// Kamakura's: Little Havana (a lively street, dominoes, roosters, hens, a moped; no radio: nothing tuned plays under the music),
     /// the Miami River (water on the seawall, halyards, an outboard, a tug's horn, the drawbridge's bell, laughing
     /// gulls), the bay (small waves, palms in the sea breeze, a cruise ship's horn, laughing gulls, a pelican diving),
     /// downtown (traffic, air conditioners, buses' air brakes, a crane's beeps, a jackhammer far off, wild parrots, a
@@ -352,76 +352,12 @@ namespace DribbleToSchool.Audio
                 var voice = mix.Add(pan, 0.5f, (float)(0.18 + rng.NextDouble() * 0.12));
                 Voices.Chatter(voice, 810 + v * 7, 105 + rng.NextDouble() * 150);
             }
-            // The cafe's radio through its window: a son, quiet and muffled.
-            CafeRadio(mix.Add(0.45f, 0.3f, 0.5f), 820);
+            // (No cafe radio: a son playing under the level's own music, in another key and tempo, was a second song
+            // running through the whole level, docs/LEARNINGS.md G5. The street's life is its people, dominoes and birds.)
             // The old men's dominoes on a table along the pavement: a tile clicked down now and then, or slammed.
             var table = mix.Add(-0.35f, 0.25f, 0.45f);
             for (double t = 0.8; t < BedSeconds - 1; t += 1.8 + rng.NextDouble() * 3.5) Things.Domino(table, t, rng);
             return Finish(mix, Soundscape.Havana);
-        }
-
-        /// <summary>
-        /// A son on a radio inside a cafe, heard through its window: the tres's guajeo (its doubled strings an octave
-        /// apart), the bass's tumbao, the 3-2 son clave, the bongos' martillo and the conga's open tones, through a small
-        /// speaker and the wall (only the middle of the sound gets out). At 96 beats a minute a bar is 2.5 seconds, so
-        /// twelve bars fill the loop exactly and it never jumps.
-        /// </summary>
-        static void CafeRadio(Track into, int seed)
-        {
-            double beat = 60.0 / 96, eighth = beat / 2, bar = beat * 4;
-            int bars = (int)Math.Round(BedSeconds / bar);
-            var rng = new Random(seed);
-            var band = new Track(into.Length, 0f, 0f, 1f);
-            // C, F, G7, F: the son's I-IV-V-IV, a chord a bar, voiced as the tres plays them.
-            int[][] chords = { new[] { 60, 64, 67 }, new[] { 60, 65, 69 }, new[] { 59, 62, 65 }, new[] { 60, 65, 69 } };
-            int[] roots = { 48, 53, 43, 53 };
-            // The guajeo's eighths: it skips the downbeat and its last note pushes into the next bar's chord.
-            bool[] tres = { false, true, true, false, true, true, false, true };
-            bool[] bongoHigh = { true, true, true, false, true, true, true, false };
-            for (int b = 0; b < bars; b++)
-            {
-                double t0 = b * bar;
-                int c = b % 4, next = (b + 1) % 4;
-                for (int e = 0; e < 8; e++)
-                {
-                    double t = t0 + e * eighth;
-                    if (tres[e])
-                    {
-                        var notes = e == 7 ? chords[next] : chords[c];
-                        double f = Synth.MidiToHz(notes[(e + b) % 3] + 12);
-                        float vel = (float)(0.3 + rng.NextDouble() * 0.1);
-                        Instruments.Pluck(band, t, f, eighth * 0.9, vel, rng.Next(), 0.6f, 0.993f);
-                        Instruments.Pluck(band, t + 0.008, f * 2, eighth * 0.8, vel * 0.5f, rng.Next(), 0.6f, 0.99f);
-                    }
-                    Instruments.Bongo(band, t, (float)((e % 2 == 0 ? 0.3 : 0.18) + rng.NextDouble() * 0.06), bongoHigh[e], rng.Next());
-                }
-                // The tumbao: the fifth on the "and" of two, then the next chord's root on four, ahead of its bar.
-                Instruments.UprightBass(band, t0 + 3 * eighth, Synth.MidiToHz(roots[c] + 7), beat * 1.4, 0.5f, rng.Next());
-                Instruments.UprightBass(band, t0 + 6 * eighth, Synth.MidiToHz(roots[next]), beat * 1.9, 0.55f, rng.Next());
-                // The conga's open tones on four and its "and".
-                Instruments.Conga(band, t0 + 6 * eighth, 0.35f, false);
-                Instruments.Conga(band, t0 + 7 * eighth, 0.3f, true);
-                // The 3-2 son clave over each pair of bars: three strokes in the first (one, the "and" of two, four),
-                // two in the second (two, three).
-                if (b % 2 == 0) { Instruments.Clave(band, t0, 0.35f); Instruments.Clave(band, t0 + 3 * eighth, 0.35f); Instruments.Clave(band, t0 + 6 * eighth, 0.35f); }
-                else { Instruments.Clave(band, t0 + 2 * eighth, 0.35f); Instruments.Clave(band, t0 + 4 * eighth, 0.35f); }
-            }
-            // Through the radio's small speaker and the wall: no deep bass and no sparkle. Filtered twice round the
-            // loop, so the filters start settled and the loop stays seamless.
-            var src = band.buf;
-            var dst = into.buf;
-            var hp = new Svf();
-            var lp = new Svf();
-            var wall = new Svf();
-            for (int pass = 0; pass < 2; pass++)
-                for (int i = 0; i < src.Length; i++)
-                {
-                    hp.Process(src[i], 320, 0.7);
-                    lp.Process(hp.high, 1900, 0.9);
-                    wall.Process(lp.low, 2300, 0.6);
-                    if (pass == 1) dst[i] += wall.low;
-                }
-            Scratch.Return(src);
         }
 
         static float[] MiamiRiverBed()
@@ -549,10 +485,11 @@ namespace DribbleToSchool.Audio
             Layer(t, i =>
             {
                 double tt = i / (double)Sr;
-                double hum = Math.Sin(TwoPi * 120 * tt) + 0.6 * Math.Sin(TwoPi * 180 * tt) + 0.35 * Math.Sin(TwoPi * 240 * tt) + 0.2 * Math.Sin(TwoPi * 360 * tt);
+                // Only the fan's whoosh and its blades' beat: the motors' 120 Hz hum and its overtones were a pitched chord
+                // droning under the music, half a semitone off its notes (docs/LEARNINGS.md G5).
                 fan.Process(n.Pink(), 450, 0.7);
                 double blades = 1 - 0.3 * (0.5 + 0.5 * Math.Sin(TwoPi * 17 * tt));
-                return (float)(hum * 0.25 + fan.band * 1.2 * blades) * (0.85f + 0.15f * d.Next());
+                return (float)(fan.band * 1.35 * blades) * (0.85f + 0.15f * d.Next());
             });
         }
 
