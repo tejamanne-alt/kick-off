@@ -2318,6 +2318,60 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
   - Baking the music offline (`docs/PERFORMANCE.md`, "Still to do" 1) would remove all of it.
 - **Not heard on the phone yet.**
 
+## Side streets clear, nothing hanging in the air, Florida's music on a new band (generated content v139)
+
+- **Why.** The user's screenshots: "In Florida the road crossings are positioned in wrong places. At one place they are
+  coming from building and shop. Another place the road is from the ocean and the load is filled with green grass. Also
+  in some places the poles are floating in the air with no base. Analyze and look for these issues across all levels in
+  all cities. Also change Florida music. Only the background beat is good." (LEARNINGS E19, G6.)
+- **Side streets** (Florida's two crossings: Bayfront FL1-3, Biscayne Boulevard FL3-2; Kamakura's were already clear):
+  - `miami_plan.py` reads each leg's crossings. It keeps its rows out of them, refuses any model that would stand in a side
+    street (from the lane back to its end, 72 m), and on the bayfront starts the land 4 m before a crossing. The bay now
+    ends at x 73.2, not 78.
+  - `StreetBuilder.Miami` leaves out any plan model still in a side street, with a warning, and cuts the district's land
+    round each, so the road's asphalt shows.
+  - The other seven districts are unchanged. The two with crossings are re-laid in the same style: stepping past a side
+    street moves the rows' random picks after it.
+  - A test parses each crossing from FloridaLevels and checks the plan: no model in the street, no water under it.
+  - Before and after: `review/florida/crossings_v139.jpg`.
+- **Nothing hanging** (`tools/model_support/support.py`, every kit model of both cities: a piece must reach the ground
+  through the pieces it touches):
+  - `MuseumMIA`: the canopy's nine columns went from 1.2 m (the plinth's height, 3 m in front of the plinth) to the ground,
+    and the hanging gardens now reach their canopy.
+  - `DockFL`: the boat lift has its cradle, cross beams and bunks under the hull.
+  - The rest it lists are by design:
+    - the flag and the sign board, which stand on their own post models;
+    - the bus's inside;
+    - wall lamps, signs, a shutter rail and a lantern, 11 to 23 cm off their walls;
+    - the tram on its bogies;
+    - the church's bell;
+    - an apartment's roof railing;
+    - the portable's step.
+  - Left as it is: potted plants by four Kamakura doors sit a few cm over their pots. That would need the Kamakura kit
+    rebuilt.
+  - The museum came from the v125 kit script with the fix applied: its rebuilt atlas is byte-identical to the committed
+    one. Today's script packs a different layout since v128 removed two models (LEARNINGS E19).
+- **Florida's music:**
+  - The drums are as they were. Everything else is new: sunny pop-funk on guitars (funk chops, jangle, palm-muted chords,
+    a clean guitar tune), Rhodes, organ, glockenspiel, vibes and the whistle, with a picked bass.
+  - New chord cycles in major keys and 14 new written hooks, all passing `tools/music_hooks/check.py`.
+  - Each tune voice and comp is levelled against the others: the guitar's tune had measured 17 dB under the Rhodes chords.
+  - The whistle no longer slides up from 0 Hz on a note that isn't tied to the one before.
+  - Loudness 0.109 to 0.116 RMS, peaks under 0.5. Previews of four legs, as heard in game, went to the user.
+  - Only Florida's music changed in `tools/audio_hash`.
+- **Cost:**
+  - The district: a few models fewer, and the land in a few more pieces.
+  - The museum's columns: about 60 triangles more.
+  - The dock's cradle: 4 boxes.
+  - The music: as v138.
+- **Checked:**
+  - the plan diff;
+  - the before-and-after renders from the game camera;
+  - the support check;
+  - compile (no new error kinds);
+  - `unity_api_check` 6000.6 and 6000.7.
+- **Not run in Unity:** rebuild the levels, then look at Bayfront's and Biscayne's crossings and the museum.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

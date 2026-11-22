@@ -181,6 +181,43 @@ namespace DribbleToSchool.Tests
         }
 
         [Test]
+        public void NothingOfADistrictStandsInOrCoversASideStreet()
+        {
+            // A coffee kiosk and a tower's podium stood across Biscayne Boulevard's side street, and Bayfront's came out of the bay
+            // under the school's lawn (v139, docs/LEARNINGS.md E19).
+            var cut = StreetBuilder.Without(0f, 100f, new List<UnityEngine.Vector2> { new UnityEngine.Vector2(40f, 46f) });
+            Assert.AreEqual(2, cut.Count, "the land in two pieces round the street");
+            Assert.AreEqual(40f, cut[0].y, 1e-4f);
+            Assert.AreEqual(46f, cut[1].x, 1e-4f);
+
+            string levels = File.ReadAllText(Path.Combine(UnityEngine.Application.dataPath, "_Game/Scripts/Editor/FloridaLevels.cs"));
+            var legs = Legs();
+            foreach (var leg in new[] { new[] { "FL1-3", "Bayfront" }, new[] { "FL3-2", "BiscayneBoulevard" } })
+            {
+                int at = levels.IndexOf("public static void " + leg[1] + "(");
+                Assert.Greater(at, 0, leg[1]);
+                int end = levels.IndexOf("public static void ", at + 10);
+                var m = Regex.Match(levels.Substring(at, (end > 0 ? end : levels.Length) - at), @"t\.Crossing\((-?[\d.]+)f, (-?[\d.]+)f");
+                Assert.IsTrue(m.Success, leg[1] + " has its crossing");
+                var street = new UnityEngine.Vector2(float.Parse(m.Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture) - 0.8f, float.Parse(m.Groups[2].Value, System.Globalization.CultureInfo.InvariantCulture) + 0.8f);
+                var streets = new List<UnityEngine.Vector2> { street };
+                var plan = (Dictionary<string, object>)legs[leg[0]];
+                foreach (var item in (List<object>)plan["items"])
+                {
+                    var it = (List<object>)item;
+                    Assert.IsFalse(StreetBuilder.InSideStreet(streets, (string)it[0], (string)it[1], (float)(double)it[2], (float)(double)it[3], (float)(double)it[5]),
+                        leg[0] + ": " + it[1] + " at x " + it[2] + " stands in the side street");
+                }
+                object w;
+                if (plan.TryGetValue("water", out w))
+                {
+                    var water = (Dictionary<string, object>)w;
+                    Assert.IsFalse((double)water["to"] > street.x && (double)water["from"] < street.y, leg[0] + ": the side street runs into the water");
+                }
+            }
+        }
+
+        [Test]
         public void TheLevelIdIsReadBeforeTheNewSceneUnloadsTheDefinition()
         {
             // Read after EditorSceneManager.NewScene, the definition had been unloaded and LevelId was always empty: no Florida leg

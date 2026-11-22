@@ -794,6 +794,26 @@ setting a scene might have saved.
   - *Rule:* a collider drawn by hand is checked against what the player sees, by code, every build. Where the kid's play
     needs a smaller collider than the model, the ball still gets the model's.
 
+- **E19. Road crossings into a shop and out of the sea, and columns in the air (v139, from the user's screenshots).** The
+  Miami plan (`miami_plan.py`) kept its buildings out of the stops, the school, the canals and the arcades, but nobody told
+  it where the side streets were. So a coffee kiosk, a bench and a tower's podium stood across Biscayne Boulevard's, and on
+  Bayfront the bay ran right up to the crossing while the school's lawn was laid over its road. The museum's canopy columns
+  stood 3 m in front of its plinth but started at the plinth's height, 1.2 m, so they hung over the lawn; its hanging gardens
+  stopped short of the canopy, and the canal dock's boat hung in its lift with no cradle.
+  - *Fix:*
+    - The plan keeps every side street clear (`crossings` from the layouts, `in_street`), and on the waterfront the land
+      starts before a crossing.
+    - The builder leaves out any district model still in one and cuts the district's land round it
+      (`StreetBuilder.InSideStreet`, `Without`).
+    - The three models are fixed.
+    - `tools/model_support/support.py` checks every kit model for pieces that touch nothing on the way to the ground.
+  - *Then:* Kamakura's streets were already clear: their dressing asks `Blocked` and `OnSideStreet` at every placement.
+  - *Rule:* a generator that places scenery must be given every corridor the play uses (stops, canals, side streets), and a
+    model's every piece must reach the ground through the pieces it touches.
+  - *And:* a single model may be copied out of a kit's rebuild only when the rebuild's atlas is byte-identical to the
+    committed one. The Miami atlas predates v128's removal of two models from the script, so today's script packs a
+    different layout; the museum was rebuilt from the v125 script with the fix applied, and its atlas matched exactly.
+
 ## F. UI and menus
 
 - **F1. The anchor and pivot trap** caused overlaps in the credits, results, guides and pause menu. *Rule:* lay screens out top down by explicit edges; check 4:3, 16:9 and 21:9 in both languages.
@@ -840,6 +860,15 @@ setting a scene might have saved.
   - no radio and no pitched hum in any bed.
   - *Rule:* ask early which of repetition, tune, timbre and level is wrong (a multiple-choice question works); check a
     loop's length against how long a level lasts; nothing pitched may play under the music unless it is the music.
+
+- **G6. "Only the background beat is good" (v139).** Each Florida take had changed the synths, the tunes or the arrangement
+  but kept one voice family: synths (electro, psych, then softer synths). The one part the user always kept was the drums.
+  *Fix:* the drums as they were; everything else is on the band Kamakura's and California's music uses and the user never
+  minded (guitars, Rhodes, organ, glockenspiel, vibes, whistle, a picked bass), in sunny pop-funk with new chords and
+  tunes. Measured per note, the voices differ by up to 17 dB (a clean guitar's note at 0.033 RMS against a Rhodes chord's
+  0.23), so the arranger now levels each tune voice and comp (`LeadLevel`, `CompLevel`). The tune shows over the chords in
+  the spectrogram. *Rule:* when a user keeps rejecting one family of sounds, change the family, keep what they named as
+  good, and measure the voices' levels against each other before mixing.
 
 ## H. Co-op, store, release and testing
 

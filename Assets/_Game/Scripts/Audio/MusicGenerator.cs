@@ -272,199 +272,192 @@ namespace DribbleToSchool.Audio
         }
 
         /// <summary>
-        /// The Florida add-on's music (v133): bright, driving Miami dance music in two flavours, all of it original. French
-        /// electro and filter house (in the spirit of Justice) on the busy streets: four on the floor with a kick that pumps
-        /// the mix, a growling bass on rolling octaves, filtered disco chord stabs and pumping quaver chords. Psychedelic
-        /// synth-pop (in the spirit of Tame Impala) in the calmer places: a phased pad on warm major-seventh chords, a fuzzy
-        /// melodic bass, big laid-back drums with a tambourine. Every loop is two four-bar chord cycles under a written hook
-        /// (<see cref="Style.hookA"/>, <see cref="Style.hookB"/>): a riff that repeats, its strong beats on the chord's own
-        /// notes, on synths that hold their pitch. All in major keys, 112 to 126 BPM. (v132's random tunes on gliding,
-        /// wobbling leads were "still bad", and v122's Caribbean styles "sad": docs/LEARNINGS.md G3, G4.)
+        /// The Florida add-on's music (v139): sunny Miami pop-funk on the band the user has never minded (Kamakura's and
+        /// California's): clean, jangly and palm-muted guitars, funk chops, a Rhodes, an organ, the glockenspiel, the vibes and
+        /// the whistle, with a picked bass. Under it the drums are v132's (Kit.Electro's four on the floor on the busy streets,
+        /// Kit.Psych's laid-back groove in the calm places), the one thing the user kept liking ("only the background beat is
+        /// good"). Each place has two four-bar chord cycles in a major key and two written hooks; ArrangeFlorida lays them out
+        /// over a minute in four sections. (v122's Caribbean was "sad"; v132's electro, v133's hooks on synths and v138's
+        /// softer synths were each "bad": docs/LEARNINGS.md G3 to G6.)
         /// </summary>
         static Style FloridaStyleOf(Soundscape scape)
         {
             switch (scape)
             {
                 case Soundscape.Street:
-                    // Home Street, filter house on a sunny morning: a bouncing riff down the chords over a falling bass, the
-                    // stabs opening up; then a sing-along line over the pumping chords.
+                    // Home Street, sunny funk-pop: muted funk guitar chops, a Rhodes in the groove, a whistled tune falling in thirds down I-vi-IV-V; then a glockenspiel line.
                     return new Style
                     {
-                        bpm = 122, swing = 0, key = 62, mode = Mode.Major, seed = 311,
-                        chords = new[] { "D", "A/C#", "Bm7", "G", "D", "A/C#", "Bm7", "G",
-                                         "G", "A", "Bm7", "D", "G", "A", "Bm7", "D" },
+                        bpm = 122, swing = 0, key = 62, mode = Mode.Major, seed = 411,
+                        chords = new[] { "D", "Bm", "G", "A", "D", "Bm", "G", "A",
+                                         "G", "A", "F#m7 Bm7", "Em7 A", "G", "A", "F#m7 Bm7", "Em7 A" },
                         hookA = new[]
                         {
-                            "A4 _ _ D5 _ _ F#5 _ _ E5 _ _ D5 _ A4 _",
-                            "A4 _ _ C#5 _ _ E5 _ _ D5 _ _ C#5 _ A4 _",
-                            "B4 _ _ D5 _ _ F#5 _ _ E5 _ _ D5 _ B4 _",
-                            "B4 _ _ D5 _ _ G5 _ _ F#5 _ _ E5 _ D5 _",
+                            "F#5 _ . A5 . F#5 _ . D5 _ . E5 . F#5 _ .",
+                            "D5 _ . F#5 . D5 _ . B4 _ _ _ . . . .",
+                            "B4 _ . D5 . B4 _ . G4 _ . A4 . B4 _ .",
+                            "C#5 _ _ _ E5 _ _ _ A4 _ _ _ . . . .",
                         },
                         hookB = new[]
                         {
-                            "D5 _ _ _ _ _ B4 _ D5 _ E5 _ _ _ D5 _",
-                            "C#5 _ _ _ _ _ A4 _ C#5 _ E5 _ _ _ C#5 _",
-                            "D5 _ _ _ _ _ B4 _ D5 _ F#5 _ _ _ E5 _",
-                            "D5 _ _ _ _ _ _ _ A4 _ _ _ . . . .",
+                            "B5 _ _ _ A5 _ G5 _ D5 _ _ _ G5 _ _ _",
+                            "C#6 _ _ _ B5 _ A5 _ E5 _ _ _ A5 _ _ _",
+                            "A5 _ _ _ F#5 _ _ _ F#5 _ _ _ D5 _ _ _",
+                            "E5 _ _ _ G5 _ _ _ A5 _ _ _ _ _ _ _",
                         },
-                        comp = Comp.Rhodes, comp2 = Comp.Pulse, comp2OnlyInB = true, leadA = Lead.Pluck, leadB = Lead.Psych,
-                        leadSend = 0.35f, bass = Bass.Electro, kit = Kit.Electro, claps = true,
-                        room = 0.55f, wet = 0.22f, tone = 7000, pump = 0.22f, bassPump = 0.12f, drive = 0.1f, loudness = 0.115f,
+                        comp = Comp.Funk, comp2 = Comp.Rhodes, comp2OnlyInB = true, leadA = Lead.Whistle, leadB = Lead.Glock,
+                        leadSend = 0.35f, bass = Bass.Pick, kit = Kit.Electro, claps = true,
+                        room = 0.5f, wet = 0.2f, tone = 7500, pump = 0.15f, bassPump = 0.08f, drive = 0.08f, loudness = 0.115f,
                     };
                 case Soundscape.Market:
-                    // Disco-funk in the market: a chopped octave riff on I and ii-V, guitar chops in the second half under a
-                    // long, climbing line.
+                    // Market day, a bright guitar riff over Rhodes chords and funk chops; then the whistle on top.
                     return new Style
                     {
-                        bpm = 118, swing = 0.03, key = 65, mode = Mode.Major, seed = 322,
-                        chords = new[] { "Fmaj7", "Gm7 C", "Fmaj7", "Gm7 C", "Fmaj7", "Gm7 C", "Fmaj7", "Gm7 C",
-                                         "Bbmaj7", "C", "Am7", "Dm7", "Bbmaj7", "C", "Am7", "Dm7" },
+                        bpm = 118, swing = 0, key = 65, mode = Mode.Major, seed = 422,
+                        chords = new[] { "F", "C/E", "Dm7", "Bb", "F", "C/E", "Dm7", "Bb",
+                                         "Bbmaj7", "C", "Am7 Dm7", "Gm7 C", "Bbmaj7", "C", "Am7 Dm7", "Gm7 C" },
                         hookA = new[]
                         {
-                            "C5 _ . C5 . A4 . C5 _ . D5 . C5 _ A4 _",
-                            "Bb4 _ . Bb4 . G4 . Bb4 _ . C5 . E5 _ C5 _",
-                            "C5 _ . C5 . A4 . C5 _ . D5 . C5 _ A4 _",
-                            "Bb4 _ . Bb4 . G4 . Bb4 _ . C5 _ _ _ . .",
+                            "C5 _ . C5 . D5 _ . C5 _ . A4 . F4 _ .",
+                            "E5 _ . E5 . F5 _ . E5 _ . C5 . G4 _ .",
+                            "F5 _ . F5 . G5 _ . F5 _ . D5 . A4 _ .",
+                            "D5 _ _ _ C5 _ _ _ Bb4 _ _ _ . . . .",
                         },
                         hookB = new[]
                         {
-                            "D5 _ _ _ F5 _ _ _ A5 _ _ _ F5 _ D5 _",
-                            "E5 _ _ _ G5 _ _ _ E5 _ _ _ D5 _ C5 _",
-                            "C5 _ _ _ E5 _ _ _ A5 _ _ _ G5 _ E5 _",
-                            "F5 _ _ _ _ _ _ _ D5 _ _ _ C5 _ A4 _",
+                            "F5 _ _ _ _ _ D5 _ F5 _ A5 _ _ _ G5 _",
+                            "G5 _ _ _ _ _ E5 _ G5 _ C6 _ _ _ A5 _",
+                            "A5 _ _ _ E5 _ _ _ F5 _ _ _ A5 _ _ _",
+                            "G5 _ _ _ D5 _ _ _ E5 _ _ _ _ _ _ _",
                         },
-                        comp = Comp.Rhodes, comp2 = Comp.Funk, comp2OnlyInB = true, leadA = Lead.Pluck, leadB = Lead.Psych,
-                        leadSend = 0.35f, bass = Bass.Electro, kit = Kit.Electro, claps = true,
-                        room = 0.5f, wet = 0.2f, tone = 7000, pump = 0.2f, bassPump = 0.12f, drive = 0.1f, loudness = 0.115f,
+                        comp = Comp.Rhodes, comp2 = Comp.Funk, comp2OnlyInB = true, leadA = Lead.Guitar, leadB = Lead.Whistle,
+                        leadSend = 0.35f, bass = Bass.Pick, kit = Kit.Electro, claps = true,
+                        room = 0.5f, wet = 0.2f, tone = 7500, pump = 0.15f, bassPump = 0.08f, drive = 0.08f, loudness = 0.115f,
                     };
                 case Soundscape.Beach:
-                    // A beach anthem: a bouncing riff over pumping chords and "ooh"s, then a soaring line with the stabs.
+                    // The beach, jangly summer guitars and an off-beat skank, a clean guitar tune and "ooh"s; then the glockenspiel.
                     return new Style
                     {
-                        bpm = 124, swing = 0, key = 69, mode = Mode.Major, seed = 333,
-                        chords = new[] { "A", "E", "F#m7", "D", "A", "E", "F#m7", "D",
-                                         "D", "E", "C#m7 F#m7", "E", "D", "E", "C#m7 F#m7", "E" },
+                        bpm = 124, swing = 0, key = 69, mode = Mode.Major, seed = 433,
+                        chords = new[] { "A", "E", "F#m", "D", "A", "E", "F#m", "D",
+                                         "D", "E", "C#m7 F#m7", "Bm7 E", "D", "E", "C#m7 F#m7", "Bm7 E" },
                         hookA = new[]
                         {
-                            "E5 _ . E5 . C#5 _ . A4 _ . B4 C#5 _ E5 _",
-                            "E5 _ . E5 . B4 _ . G#4 _ . A4 B4 _ E5 _",
-                            "F#5 _ . F#5 . C#5 _ . A4 _ . B4 C#5 _ E5 _",
-                            "F#5 _ . F#5 . D5 _ . A4 _ . B4 C#5 _ D5 _",
+                            "E5 _ . E5 . C#5 _ . E5 _ . F#5 . E5 _ .",
+                            "B4 _ . B4 . G#4 _ . B4 _ . C#5 . B4 _ .",
+                            "C#5 _ . C#5 . A4 _ . C#5 _ . E5 . C#5 _ .",
+                            "A4 _ _ _ D5 _ _ _ F#5 _ _ _ . . . .",
                         },
                         hookB = new[]
                         {
-                            "A5 _ _ _ _ _ F#5 _ _ _ D5 _ E5 _ F#5 _",
-                            "G#5 _ _ _ _ _ E5 _ _ _ B4 _ C#5 _ E5 _",
-                            "E5 _ _ _ G#5 _ _ _ A5 _ _ _ F#5 _ E5 _",
-                            "E5 _ _ _ _ _ _ _ B4 _ _ _ . . . .",
+                            "F#5 _ _ _ A5 _ _ _ D6 _ _ _ A5 _ _ _",
+                            "G#5 _ _ _ B5 _ _ _ E5 _ _ _ G#5 _ _ _",
+                            "E5 _ _ _ G#5 _ _ _ A5 _ _ _ C#6 _ _ _",
+                            "B5 _ _ _ F#5 _ _ _ G#5 _ _ _ _ _ _ _",
                         },
-                        comp = Comp.Rhodes, comp2 = Comp.Pulse, comp2OnlyInB = true, leadA = Lead.Pluck, leadB = Lead.Psych,
-                        leadSend = 0.4f, bass = Bass.Electro, kit = Kit.Electro, claps = true, oohs = true,
-                        room = 0.65f, wet = 0.24f, tone = 7500, pump = 0.22f, bassPump = 0.12f, drive = 0.1f, loudness = 0.115f,
+                        comp = Comp.Jangle, comp2 = Comp.Skank, comp2OnlyInB = true, leadA = Lead.Guitar, leadB = Lead.Glock,
+                        leadSend = 0.35f, bass = Bass.Pick, kit = Kit.Electro, claps = true, oohs = true,
+                        room = 0.6f, wet = 0.22f, tone = 7500, pump = 0.15f, bassPump = 0.08f, drive = 0.08f, loudness = 0.115f,
                     };
                 case Soundscape.Site:
-                    // The building site, the hardest of them: a stabbing repeated-note riff, then a line falling through the
-                    // chords over the pump.
+                    // The building site, the hardest: palm-muted power chords and an organ, a repeated-note guitar riff; then the whistle.
                     return new Style
                     {
-                        bpm = 126, swing = 0, key = 67, mode = Mode.Major, seed = 355,
-                        chords = new[] { "G", "G/F#", "Em7", "C", "G", "G/F#", "Em7", "C",
-                                         "Am7", "C", "G", "D", "Am7", "C", "G", "D" },
+                        bpm = 126, swing = 0, key = 67, mode = Mode.Major, seed = 455,
+                        chords = new[] { "G", "D", "Em", "C", "G", "D", "Em", "C",
+                                         "C", "D", "Bm7 Em7", "Am7 D", "C", "D", "Bm7 Em7", "Am7 D" },
                         hookA = new[]
                         {
-                            "D5 . D5 . B4 . D5 . G5 _ . D5 . B4 . .",
-                            "D5 . D5 . B4 . D5 . G5 _ . F#5 . D5 . .",
-                            "E5 . E5 . B4 . E5 . G5 _ . E5 . D5 . .",
-                            "E5 . E5 . C5 . E5 . G5 _ . E5 . D5 . .",
+                            "D5 . D5 . D5 _ B4 _ G4 _ . . A4 _ B4 _",
+                            "A4 . A4 . A4 _ F#4 _ D4 _ . . E4 _ F#4 _",
+                            "B4 . B4 . B4 _ G4 _ E4 _ . . F#4 _ G4 _",
+                            "E5 _ _ _ D5 _ _ _ C5 _ _ _ . . . .",
                         },
                         hookB = new[]
                         {
-                            "C5 _ _ _ E5 _ _ _ A5 _ _ _ G5 _ E5 _",
-                            "G5 _ _ _ E5 _ _ _ C5 _ _ _ D5 _ E5 _",
-                            "D5 _ _ _ B4 _ _ _ G4 _ _ _ A4 _ B4 _",
-                            "A4 _ _ _ _ _ _ _ D5 _ _ _ F#5 _ _ _",
+                            "E5 _ _ _ G5 _ _ _ C6 _ _ _ G5 _ _ _",
+                            "F#5 _ _ _ A5 _ _ _ D6 _ _ _ A5 _ _ _",
+                            "B5 _ _ _ F#5 _ _ _ G5 _ _ _ E5 _ _ _",
+                            "E5 _ _ _ C5 _ _ _ D5 _ _ _ _ _ _ _",
                         },
-                        comp = Comp.Chop, comp2 = Comp.Rhodes, comp2OnlyInB = true, leadA = Lead.Pluck, leadB = Lead.Psych,
-                        leadSend = 0.35f, bass = Bass.Electro, kit = Kit.Electro, claps = true,
-                        room = 0.5f, wet = 0.2f, tone = 7000, pump = 0.25f, bassPump = 0.15f, drive = 0.12f, loudness = 0.115f,
+                        comp = Comp.Palm, comp2 = Comp.Organ, comp2OnlyInB = true, leadA = Lead.Guitar, leadB = Lead.Whistle,
+                        leadSend = 0.35f, bass = Bass.Pick, kit = Kit.Electro, claps = true,
+                        room = 0.5f, wet = 0.2f, tone = 7500, pump = 0.15f, bassPump = 0.08f, drive = 0.08f, loudness = 0.115f,
                     };
                 case Soundscape.Underpass:
-                    // The tunnel at night, a psychedelic disco groove: a laid-back riff climbing each chord, guitar chops in
-                    // the second half under a smooth line, in the tunnel's long echo.
+                    // The tunnel at night, a smooth groove on ii-V-I-vi: held Rhodes chords and funk chops, the vibes' tune; then the whistle, in the long echo.
                     return new Style
                     {
-                        bpm = 116, swing = 0.02, key = 65, mode = Mode.Major, seed = 344,
-                        chords = new[] { "Fmaj7", "Am7", "Bbmaj7", "C", "Fmaj7", "Am7", "Bbmaj7", "C",
-                                         "Gm7", "C", "Am7", "Bbmaj7 C", "Gm7", "C", "Am7", "Bbmaj7 C" },
+                        bpm = 116, swing = 0.02, key = 60, mode = Mode.Major, seed = 444,
+                        chords = new[] { "Dm7", "G7", "Cmaj7", "Am7", "Dm7", "G7", "Cmaj7", "Am7",
+                                         "Fmaj7", "G7", "Em7 Am7", "Dm7 G7", "Fmaj7", "G7", "Em7 Am7", "Dm7 G7" },
                         hookA = new[]
                         {
-                            "C5 _ _ C5 _ _ A4 _ _ _ C5 _ E5 _ F5 _",
-                            "E5 _ _ E5 _ _ C5 _ _ _ E5 _ G5 _ A5 _",
-                            "D5 _ _ D5 _ _ Bb4 _ _ _ D5 _ F5 _ A5 _",
-                            "G5 _ _ _ _ _ E5 _ _ _ C5 _ D5 _ E5 _",
+                            "A4 _ _ C5 _ _ D5 _ F5 _ _ _ E5 _ D5 _",
+                            "D5 _ _ _ _ _ B4 _ G4 _ _ _ . . . .",
+                            "G4 _ _ B4 _ _ C5 _ E5 _ _ _ D5 _ C5 _",
+                            "C5 _ _ _ _ _ A4 _ E5 _ _ _ . . . .",
                         },
                         hookB = new[]
                         {
-                            "Bb4 _ _ _ D5 _ _ _ F5 _ _ _ D5 _ Bb4 _",
-                            "C5 _ _ _ E5 _ _ _ G5 _ _ _ E5 _ C5 _",
-                            "C5 _ _ _ E5 _ _ _ A5 _ _ _ G5 _ E5 _",
-                            "D5 _ _ _ F5 _ _ _ E5 _ _ _ G5 _ _ _",
+                            "A5 _ _ _ G5 _ F5 _ E5 _ _ _ C5 _ _ _",
+                            "B5 _ _ _ A5 _ G5 _ F5 _ _ _ D5 _ _ _",
+                            "G5 _ _ _ E5 _ _ _ C5 _ _ _ E5 _ _ _",
+                            "F5 _ _ _ D5 _ _ _ B4 _ _ _ _ _ _ _",
                         },
-                        comp = Comp.Phaser, comp2 = Comp.Funk, comp2OnlyInB = true, leadA = Lead.Psych, leadB = Lead.Pluck,
-                        leadSend = 0.45f, bass = Bass.Fuzz, kit = Kit.Psych, claps = true, tambourine = true,
-                        room = 0.8f, wet = 0.28f, tone = 6500, pump = 0.15f, bassPump = 0.06f, drive = 0.08f, loudness = 0.11f,
+                        comp = Comp.RhodesHeld, comp2 = Comp.Funk, comp2OnlyInB = true, leadA = Lead.Vibes, leadB = Lead.Whistle,
+                        leadSend = 0.35f, bass = Bass.Pick, kit = Kit.Psych, claps = true, tambourine = true,
+                        room = 0.75f, wet = 0.26f, tone = 7500, pump = 0.15f, bassPump = 0.08f, drive = 0.08f, loudness = 0.11f,
                     };
                 case Soundscape.Park:
-                    // An afternoon under the live oaks, psychedelic synth-pop: a bouncing riff rocking between Cmaj7 and
-                    // Fmaj7, then a singing line over jangly guitars.
+                    // An afternoon under the live oaks: strummed acoustic and jangly guitars, a whistled tune climbing each chord; then the glockenspiel.
                     return new Style
                     {
-                        bpm = 114, swing = 0.02, key = 60, mode = Mode.Major, seed = 366,
-                        chords = new[] { "Cmaj7", "Fmaj7", "Cmaj7", "Fmaj7", "Cmaj7", "Fmaj7", "Cmaj7", "Fmaj7",
-                                         "Am7", "D7", "Fmaj7", "G", "Am7", "D7", "Fmaj7", "G" },
+                        bpm = 114, swing = 0.02, key = 60, mode = Mode.Major, seed = 466,
+                        chords = new[] { "C", "Am", "F", "G", "C", "Am", "F", "G",
+                                         "F", "G", "Em7 Am7", "Dm7 G", "F", "G", "Em7 Am7", "Dm7 G" },
                         hookA = new[]
                         {
-                            "G4 _ . C5 . E5 _ . G5 _ . E5 . D5 _ .",
-                            "A4 _ . C5 . F5 _ . A5 _ . G5 . E5 _ .",
-                            "G4 _ . C5 . E5 _ . G5 _ . E5 . D5 _ .",
-                            "A4 _ . C5 . F5 _ . E5 _ _ _ C5 _ _ _",
+                            "G4 _ C5 _ E5 _ G5 _ E5 _ _ _ D5 _ C5 _",
+                            "C5 _ _ _ A4 _ _ _ E5 _ _ _ . . . .",
+                            "A4 _ C5 _ F5 _ A5 _ F5 _ _ _ E5 _ C5 _",
+                            "D5 _ _ _ B4 _ _ _ G4 _ _ _ . . . .",
                         },
                         hookB = new[]
                         {
-                            "E5 _ _ _ _ _ C5 _ E5 _ _ _ G5 _ _ _",
-                            "F#5 _ _ _ _ _ D5 _ A4 _ _ _ C5 _ _ _",
-                            "A5 _ _ _ _ _ F5 _ C5 _ _ _ E5 _ _ _",
-                            "D5 _ _ _ _ _ _ _ B4 _ _ _ G4 _ _ _",
+                            "C6 _ _ _ A5 _ _ _ F5 _ _ _ A5 _ _ _",
+                            "B5 _ _ _ G5 _ _ _ D5 _ _ _ G5 _ _ _",
+                            "B5 _ _ _ G5 _ _ _ A5 _ _ _ E5 _ _ _",
+                            "F5 _ _ _ A5 _ _ _ G5 _ _ _ _ _ _ _",
                         },
-                        comp = Comp.Phaser, comp2 = Comp.Jangle, comp2OnlyInB = true, leadA = Lead.Pluck, leadB = Lead.Psych,
-                        leadSend = 0.4f, bass = Bass.Fuzz, kit = Kit.Psych, tambourine = true,
-                        room = 0.7f, wet = 0.26f, tone = 7000, pump = 0.15f, bassPump = 0.06f, drive = 0.08f, loudness = 0.11f,
+                        comp = Comp.Acoustic, comp2 = Comp.Jangle, comp2OnlyInB = true, leadA = Lead.Whistle, leadB = Lead.Glock,
+                        leadSend = 0.35f, bass = Bass.Pick, kit = Kit.Psych, tambourine = true,
+                        room = 0.65f, wet = 0.24f, tone = 7500, pump = 0.15f, bassPump = 0.08f, drive = 0.08f, loudness = 0.11f,
                     };
                 default:
-                    // The menu, a warm sunset over the Atlantic: a dreamy line on the phased pad's major sevenths, then a
-                    // higher one with a Rhodes.
+                    // The menu, a warm sunset over the Atlantic: a fingerpicked guitar and a Rhodes, the vibes' tune; then the whistle.
                     return new Style
                     {
-                        bpm = 112, swing = 0.02, key = 64, mode = Mode.Major, seed = 307,
-                        chords = new[] { "Emaj7", "C#m7", "Amaj7", "B", "Emaj7", "C#m7", "Amaj7", "B",
-                                         "Amaj7", "B", "G#m7 C#m7", "B7sus4", "Amaj7", "B", "G#m7 C#m7", "B7sus4" },
+                        bpm = 112, swing = 0.02, key = 64, mode = Mode.Major, seed = 407,
+                        chords = new[] { "E", "C#m", "A", "B", "E", "C#m", "A", "B",
+                                         "A", "B", "G#m7 C#m7", "F#m7 B", "A", "B", "G#m7 C#m7", "F#m7 B" },
                         hookA = new[]
                         {
-                            "B4 _ _ _ _ _ D#5 _ E5 _ _ _ F#5 _ G#5 _",
-                            "G#5 _ _ _ _ _ E5 _ _ _ _ _ C#5 _ B4 _",
-                            "C#5 _ _ _ _ _ E5 _ G#5 _ _ _ F#5 _ E5 _",
-                            "D#5 _ _ _ _ _ _ _ F#5 _ _ _ D#5 _ B4 _",
+                            "G#4 _ _ B4 _ _ E5 _ G#5 _ _ _ F#5 _ E5 _",
+                            "E5 _ _ _ _ _ C#5 _ G#4 _ _ _ . . . .",
+                            "A4 _ _ C#5 _ _ E5 _ A5 _ _ _ G#5 _ E5 _",
+                            "F#5 _ _ _ D#5 _ _ _ B4 _ _ _ . . . .",
                         },
                         hookB = new[]
                         {
-                            "E5 _ _ _ G#5 _ _ _ A5 _ _ _ G#5 _ E5 _",
-                            "F#5 _ _ _ D#5 _ _ _ B4 _ _ _ C#5 _ D#5 _",
-                            "D#5 _ _ _ B4 _ _ _ E5 _ _ _ G#5 _ _ _",
-                            "F#5 _ _ _ _ _ _ _ E5 _ _ _ . . . .",
+                            "C#6 _ _ _ B5 _ A5 _ E5 _ _ _ A5 _ _ _",
+                            "B5 _ _ _ F#5 _ D#5 _ F#5 _ _ _ B5 _ _ _",
+                            "G#5 _ _ _ D#5 _ _ _ E5 _ _ _ G#5 _ _ _",
+                            "A5 _ _ _ F#5 _ _ _ F#5 _ _ _ _ _ _ _",
                         },
-                        comp = Comp.Phaser, comp2 = Comp.Rhodes, comp2OnlyInB = true, leadA = Lead.Psych, leadB = Lead.Vibes,
-                        leadSend = 0.45f, bass = Bass.Fuzz, kit = Kit.Psych, tambourine = true,
-                        room = 0.75f, wet = 0.28f, tone = 6500, pump = 0.15f, bassPump = 0.06f, drive = 0.08f, loudness = 0.11f,
+                        comp = Comp.Fingerpick, comp2 = Comp.Rhodes, comp2OnlyInB = true, leadA = Lead.Vibes, leadB = Lead.Whistle,
+                        leadSend = 0.35f, bass = Bass.Pick, kit = Kit.Psych, tambourine = true,
+                        room = 0.7f, wet = 0.26f, tone = 7500, pump = 0.15f, bassPump = 0.08f, drive = 0.08f, loudness = 0.11f,
                     };
             }
         }
@@ -556,12 +549,13 @@ namespace DribbleToSchool.Audio
             {
                 roomSize = st.room, damping = 0.6f, wet = st.wet, tone = st.tone, drive = st.drive, wowCents = st.wow,
             };
-            var gtr = mix.Add(-0.4f, 0.3f, 0.6f);
-            var gtr2 = mix.Add(0.42f, 0.3f, 0.45f);
-            var organ = mix.Add(0.15f, 0.35f, 0.45f);
-            var oohs = mix.Add(0f, 0.55f, 0.35f);
+            // (v139: the tune sits over the chords: the comps lower, the lead higher, so a level's music has a melody you hear)
+            var gtr = mix.Add(-0.4f, 0.3f, 0.45f);
+            var gtr2 = mix.Add(0.42f, 0.3f, 0.34f);
+            var organ = mix.Add(0.15f, 0.35f, 0.36f);
+            var oohs = mix.Add(0f, 0.55f, 0.32f);
             var bass = mix.Add(0f, 0.04f, 0.85f);
-            var lead = mix.Add(0.12f, st.leadSend, 0.42f);
+            var lead = mix.Add(0.12f, st.leadSend, 0.7f);
             var keys = mix.Add(-0.2f, 0.45f, 0.4f);
             var kick = mix.Add(0f, 0.04f, 0.9f);
             var snare = mix.Add(0.04f, 0.2f, 0.6f);
@@ -579,9 +573,9 @@ namespace DribbleToSchool.Audio
                 bool second = section == 1 || section == 2;
                 foreach (var ch in s.ChordsIn(bar))
                 {
-                    Play(st.comp, OnOrgan(st.comp) ? organ : gtr, s, bar, ch, rng, breakdown ? 0.7f : 1f);
+                    Play(st.comp, OnOrgan(st.comp) ? organ : gtr, s, bar, ch, rng, CompLevel(st.comp) * (breakdown ? 0.7f : 1f));
                     if (st.comp2 != Comp.None && second)
-                        Play(st.comp2, OnOrgan(st.comp2) ? organ : gtr2, s, bar, ch, rng, 0.7f);
+                        Play(st.comp2, OnOrgan(st.comp2) ? organ : gtr2, s, bar, ch, rng, CompLevel(st.comp2) * 0.7f);
                     if (st.oohs && second)
                         Instruments.Oohs(oohs, s.T(bar, ch.beat), ch.chord.Voice(60, 72, 3), s.Beats(ch.length), 0.55f, bar * 7 + 1);
                     if (breakdown)
@@ -600,9 +594,9 @@ namespace DribbleToSchool.Audio
             // octave down on the Rhodes in the breakdown. A note glides only from one it is tied to.
             var parts = new List<KeyValuePair<Lead, List<Note>>>
             {
-                new KeyValuePair<Lead, List<Note>>(st.leadA, Hook(st.hookA, 0, 1, 0, 0.85f)),
-                new KeyValuePair<Lead, List<Note>>(st.leadA, Hook(st.hookA, 8, 2)),
-                new KeyValuePair<Lead, List<Note>>(st.leadB, Hook(st.hookB, 16, 2)),
+                new KeyValuePair<Lead, List<Note>>(st.leadA, Hook(st.hookA, 0, 1, 0, 0.85f * LeadLevel(st.leadA))),
+                new KeyValuePair<Lead, List<Note>>(st.leadA, Hook(st.hookA, 8, 2, 0, LeadLevel(st.leadA))),
+                new KeyValuePair<Lead, List<Note>>(st.leadB, Hook(st.hookB, 16, 2, 0, LeadLevel(st.leadB))),
                 new KeyValuePair<Lead, List<Note>>(Lead.Rhodes, Hook(st.hookA, 24, 1, -12, 0.8f)),
             };
             foreach (var part in parts)
@@ -617,6 +611,33 @@ namespace DribbleToSchool.Audio
                 }
             }
             return mix.Render(st.loudness);
+        }
+
+        /// <summary>
+        /// Florida's tune voices brought to one loudness (v139: a note's level measured on its own, RMS: the whistle 0.117, the
+        /// vibes 0.128, the glockenspiel 0.058, the clean guitar 0.033, so the guitar's tunes were lost under the chords).
+        /// </summary>
+        static float LeadLevel(Lead lead)
+        {
+            switch (lead)
+            {
+                case Lead.Guitar: return 2.6f;
+                case Lead.Glock: return 1.7f;
+                case Lead.Vibes: return 0.9f;
+                default: return 1f;
+            }
+        }
+
+        /// <summary>Florida's comps brought under the tune (a Rhodes chord measures 0.23 RMS, a funk chop 0.008).</summary>
+        static float CompLevel(Comp comp)
+        {
+            switch (comp)
+            {
+                case Comp.Rhodes: case Comp.RhodesHeld: return 0.55f;
+                case Comp.Organ: return 0.7f;
+                case Comp.Jangle: case Comp.Acoustic: case Comp.Fingerpick: case Comp.Palm: return 0.85f;
+                default: return 1f;
+            }
         }
 
         /// <summary>
@@ -900,7 +921,8 @@ namespace DribbleToSchool.Audio
             switch (lead)
             {
                 case Lead.Surf: Instruments.SurfLead(tr, t, f, d, v, n.midi * 5 + (int)(n.beat * 4)); break;
-                case Lead.Whistle: Instruments.Whistle(tr, t, f, prevFreq, d * 0.95, v * 0.85f); break;
+                // (a written hook passes 0 for a note not tied to the last: it starts on its own pitch, not a slide up from 0 Hz)
+                case Lead.Whistle: Instruments.Whistle(tr, t, f, prevFreq > 0 ? prevFreq : f, d * 0.95, v * 0.85f); break;
                 case Lead.Glock: Instruments.Glock(tr, t, f, v * 0.9f); break;
                 case Lead.Guitar: Instruments.CleanGuitar(tr, t, f, d + 0.1, v * 0.9f, n.midi * 3 + (int)(n.beat * 4)); break;
                 case Lead.Acoustic: Instruments.Pluck(tr, t, f, d + 0.2, v * 0.75f, n.midi * 3, 0.45f); break;

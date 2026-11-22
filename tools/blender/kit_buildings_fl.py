@@ -1571,6 +1571,12 @@ def dock(B):
         for x in (bx - 1.1, bx + 1.1):
             B.add(tube([(x, y, -1.5), (x, y, 2.6)], 0.08, 'white', 6))
     B.add(cbox2((bx - 1.25, 0.4, 2.55), (bx + 1.25, D - 0.4, 2.65), 0.02, 'white'))
+    # The lift's cradle: a cross beam between each pair of posts and two bunks along it, the hull resting on them (v139: the
+    # boat hung between the posts on nothing, tools/model_support/support.py).
+    for y in (0.6, D - 0.6):
+        B.add(box((bx - 1.18, y - 0.06, 0.2), (bx + 1.18, y + 0.06, 0.3), 'white'))
+    for x in (bx - 0.5, bx + 0.5):
+        B.add(box((x - 0.07, 0.54, 0.3), (x + 0.07, D - 0.54, 0.36), 'woodg'))
     hull = [(bx + 0.9 * math.cos(a) * (0.6 if math.sin(a) > 0.95 else 1.0), 1.0 + (D - 2.0) * (0.5 + 0.5 * math.sin(a))) for a in np.linspace(0, 2 * math.pi, 18)[:-1]]
     hb = extrude_poly(hull, 0.75, 'white', side_mat='white', back=True)
     xform(hb, T(0, 0, 0.35)); B.add(hb)

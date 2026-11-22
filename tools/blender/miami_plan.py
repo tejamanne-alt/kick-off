@@ -37,6 +37,8 @@ OUT = os.path.join(REPO, 'Assets/_Game/Art/Models/Miami/MiamiDistricts.json')
 # collider to stop it (docs/LEARNINGS.md E17). Such a model is pushed back until its front edge is LANE_CLEAR behind the ball.
 # The game's builder applies the same rule to every street model (StreetBuilder.ClearOfTheBall).
 LANE_CLEAR = 0.45
+# How far back a side street runs (StreetBuilder.CrossingStreet: to z 70), and a little more.
+SIDE_STREET_END = 72.0
 _MANIFESTS = {}
 
 
@@ -119,6 +121,8 @@ def leg_info(src):
             district=district, strips=strips, home=home, school=school,
             minX=walls[0] - lead, maxX=walls[1], start=-lead, goal=goal,
             canals=[(c[0], c[1]) for c in calls(b, 'Drawbridge')],
+            # the side streets that cross the lane (LevelBuildKit.Crossing opens fromX - 0.8 to toX + 0.8)
+            crossings=[(c[0] - 0.8, c[1] + 0.8) for c in calls(b, 'Crossing')],
             arcades=[(c[0], c[1]) for c in calls(b, 'Arcade')])
     return info
 
@@ -140,6 +144,10 @@ class Plan:
         self.canals = [(a - 3.0, b + 3.0) for a, b in li['canals']]
         self.keep_out += self.canals
         self.keep_out += [((a + b) / 2 - 5.5, (a + b) / 2 + 5.5) for a, b in li['arcades']]     # the 10 m Deco block (LevelBuildKit.Arcade)
+        # The side streets: nothing of the district stands in one, from the lane back to its end (v139: a kiosk and a tower's
+        # podium stood across Biscayne Boulevard's; StreetBuilder.Miami leaves out anything that still would).
+        self.streets = [(a - 0.3, b + 0.3) for a, b in li['crossings']]
+        self.keep_out += self.streets
         self.water = None
         self.land = []
         self.gap_trees = ['PalmRoyal', 'PalmRoyal', 'PalmSabalTall']
@@ -147,9 +155,18 @@ class Plan:
     def put(self, kit, model, x, z, yaw=0.0, scale=1.0, y=None):
         if x < self.x0 or x > self.x1: return
         z = clear_of_the_ball(kit, model, z, yaw, scale)
+        if self.in_street(kit, model, x, z, scale): return
         it = [kit, model, round(x, 3), round(z, 3), round(yaw, 1), round(scale, 3)]
         if y is not None: it.append(round(y, 3))
         self.items.append(it)
+
+    def in_street(self, kit, model, x, z, scale):
+        """Would this model, at x and depth z, stand in a side street (as StreetBuilder.InSideStreet decides)?"""
+        if not self.streets: return False
+        info = _model_info(kit, model)
+        half = max(info['size'][0], info['size'][1]) * scale / 2 if info and 'size' in info else 1.0
+        if z - half > SIDE_STREET_END: return False
+        return any(x + half > a - 0.3 and x - half < b + 0.3 for a, b in self.streets)
 
     def free(self, a, b, deep=False):
         """Is [a, b] clear of the stops, the school, the canals and the arcades (deep rows: only of the canals)?"""
@@ -364,8 +381,12 @@ def bayfront(plan):
     li = plan.li
     goal = li['goal']
     land_from = goal - 26.0 if li['school'] else plan.x1
+    # A side street runs back from the lane on land, never into the bay (v139: Bayfront's crossing came out of the water, and
+    # the school's lawn covered its road): the land starts 4 m before the first crossing.
+    for a, b in li['crossings']:
+        land_from = min(land_from, a - 4.0)
     plan.set_water(until=land_from)
-    if li['school']:
+    if li['school'] or li['crossings']:
         plan.land.append({'from': round(land_from, 2), 'to': round(plan.x1 + 60, 2), 'z0': WATER_Z - 0.4, 'z1': 120.0})
     x = plan.x0
     while x < land_from:

@@ -266,6 +266,18 @@ namespace DribbleToSchool.EditorTools
                         new Color(0.82f, 0.81f, 0.78f), Art.surfaces[ProceduralArt.Surface.Concrete]);
                 }
             }
+            // The side streets (a crossing's, a site's exit road): they run from the lane back to SideStreetDepth, and nothing of the
+            // district may stand in them or cover them (v139: a coffee kiosk and a tower's podium stood across Biscayne
+            // Boulevard's, and the school's lawn covered Bayfront's, docs/LEARNINGS.md E19).
+            var streets = new List<Vector2>(track.OpenAreas);
+            if (plan.TryGetValue("water", out o))
+            {
+                var w = o as Dictionary<string, object>;
+                foreach (var st in streets)
+                    if (st.y > MiamiNum(w, "from", x0) && st.x < MiamiNum(w, "to", x1))
+                        Debug.LogError("[Kick Off] " + LevelBuildKit.LevelId + ": the side street at x " + st.x.ToString("F1") + " runs into the "
+                            + "district's water: run tools/blender/miami_plan.py (it keeps side streets on land)");
+            }
             if (plan.TryGetValue("land", out o) && o is List<object>)
                 foreach (var item in (List<object>)o)
                 {
@@ -273,12 +285,18 @@ namespace DribbleToSchool.EditorTools
                     float a = Mathf.Max(MiamiNum(l, "from", x0), ClipLo), b = Mathf.Min(MiamiNum(l, "to", x1), ClipHi);
                     float z0 = MiamiNum(l, "z0", 4.6f), z1 = MiamiNum(l, "z1", 120f);
                     if (b <= a) continue;
-                    var land = Solid(group, "Land", new Vector3((a + b) * 0.5f, -0.1f, (z0 + z1) * 0.5f), new Vector3(b - a, 0.2f, z1 - z0),
-                        new Color(0.95f, 0.98f, 0.9f), Art.surfaces[ProceduralArt.Surface.Grass]);
-                    land.faces = MeshBuilder.Faces.Top;
-                    land.Rebuild();
+                    // The land in pieces round each side street (its asphalt shows), and on behind the street's end.
+                    float cut = Mathf.Min(z1, SideStreetDepth);
+                    foreach (var span in Without(a, b, z0 < cut ? streets : new List<Vector2>()))
+                        Land(group, span.x, span.y, z0, z1);
+                    if (z0 < cut && z1 > cut)
+                        foreach (var st in streets)
+                        {
+                            float sa = Mathf.Max(a, st.x), sb = Mathf.Min(b, st.y);
+                            if (sb > sa) Land(group, sa, sb, cut, z1);
+                        }
                 }
-            int placed = 0;
+            int placed = 0, skipped = 0;
             if (plan.TryGetValue("items", out o) && o is List<object>)
                 foreach (var item in (List<object>)o)
                 {
@@ -288,10 +306,62 @@ namespace DribbleToSchool.EditorTools
                     if (x < x0 || x > x1 || x < ClipLo || x > ClipHi) continue;
                     float z = (float)(double)it[3], yaw = (float)(double)it[4], scale = (float)(double)it[5];
                     float y = it.Count > 6 ? (float)(double)it[6] : GroundAt(track, x);
+                    if (InSideStreet(streets, (string)it[0], (string)it[1], x, z, scale)) { skipped++; continue; }
                     if (Model(group, (string)it[0], (string)it[1], x, y, z, yaw, scale) != null) placed++;
                 }
             group.gameObject.AddComponent<StaticBatcher>();
+            if (skipped > 0)
+                Debug.LogWarning("[Kick Off] " + LevelBuildKit.LevelId + ": " + skipped + " of the district's models stood in a side street and were left out "
+                    + "(run tools/blender/miami_plan.py: it keeps them out)");
             if (placed == 0) Debug.LogWarning("[Kick Off] " + LevelBuildKit.LevelId + ": nothing of its district was placed (is the Miami kit imported?)");
+        }
+
+        /// <summary>How far back a side street runs from the lane (StreetBuilder.CrossingStreet: to z 70), with a little beyond it.</summary>
+        const float SideStreetDepth = 72f;
+
+        /// <summary>The district's land: a lawn at the street's level from <paramref name="a"/> to <paramref name="b"/>, z0 to z1.</summary>
+        static void Land(Transform group, float a, float b, float z0, float z1)
+        {
+            if (b - a < 0.05f || z1 - z0 < 0.05f) return;
+            var land = Solid(group, "Land", new Vector3((a + b) * 0.5f, -0.1f, (z0 + z1) * 0.5f), new Vector3(b - a, 0.2f, z1 - z0),
+                new Color(0.95f, 0.98f, 0.9f), Art.surfaces[ProceduralArt.Surface.Grass]);
+            land.faces = MeshBuilder.Faces.Top;
+            land.Rebuild();
+        }
+
+        /// <summary>The stretch from a to b without the side streets in it, as (from, to) pieces.</summary>
+        public static List<Vector2> Without(float a, float b, List<Vector2> streets)
+        {
+            var pieces = new List<Vector2> { new Vector2(a, b) };
+            foreach (var st in streets)
+            {
+                var next = new List<Vector2>();
+                foreach (var p in pieces)
+                {
+                    if (st.y <= p.x || st.x >= p.y) { next.Add(p); continue; }
+                    if (st.x > p.x) next.Add(new Vector2(p.x, st.x));
+                    if (st.y < p.y) next.Add(new Vector2(st.y, p.y));
+                }
+                pieces = next;
+            }
+            return pieces;
+        }
+
+        /// <summary>
+        /// Would this plan model, at x and depth z, stand in a side street? Its width from the kit's manifest (the larger of its two
+        /// sides, whatever it is turned to), with 0.3 m to spare; only within the street's length (a skyline tower far behind it
+        /// stays). The side streets are the level's open areas.
+        /// </summary>
+        public static bool InSideStreet(List<Vector2> streets, string kit, string model, float x, float z, float scale)
+        {
+            if (streets.Count == 0) return false;
+            Vector3 size = LevelBuildKit.KitSize(kit, model) * scale;
+            float half = Mathf.Max(size.x, size.z) * 0.5f;
+            if (half <= 0f) half = 1f;
+            if (z - half > SideStreetDepth) return false;
+            foreach (var st in streets)
+                if (x + half > st.x - 0.3f && x - half < st.y + 0.3f) return true;
+            return false;
         }
     }
 }

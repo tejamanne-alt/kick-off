@@ -773,12 +773,15 @@ def museum(B):
            sill='conc', head=None, cheap=True, register=False, seed=71)
     B.add(box((-W / 2 + 4.0, 3.0, 1.2), (W / 2 - 4.0, D - 2.0, H - 0.4), 'interior'))
     B.add(cbox2((-W / 2 - 3.0, -4.0, H), (W / 2 + 3.0, D + 2.0, H + 0.8), 0.1, 'slab'))
+    # The canopy's columns stand 3 m in front of the plinth, so they go down to the ground (v139: they started at the plinth's
+    # height, 1.2 m, and hung in the air over the lawn: tools/model_support/support.py).
     for x in np.linspace(-W / 2 - 1.5, W / 2 + 1.5, 9):
-        B.add(tube([(x, -3.0, 1.2), (x, -3.0, H)], 0.18, 'slab', 8))
+        B.add(tube([(x, -3.0, 0.0), (x, -3.0, H)], 0.18, 'slab', 8))
     rng = np.random.default_rng(31)
     for x in np.arange(-W / 2 - 2.5, W / 2 + 2.5, 1.1):
         L = rng.uniform(2.0, 4.5)
-        B.add(blob((x, -3.7, H - L / 2), (0.35, 0.3, L / 2), 'leafd' if rng.random() < 0.5 else 'leaf', 6, 3, int(x * 10) % 97, 0.3))
+        # (hung from the canopy: each garden's top sinks 0.2 m into its underside, v139; it stopped short and hung in the air)
+        B.add(blob((x, -3.7, H - L / 2 + 0.2), (0.35, 0.3, L / 2), 'leafd' if rng.random() < 0.5 else 'leaf', 6, 3, int(x * 10) % 97, 0.3))
     mb = MB()
     mb.face([(-5.0, -0.02, 0.3), (5.0, -0.02, 0.3), (5.0, -0.02, 1.0), (-5.0, -0.02, 1.0)], 'tex', (0, -1, 0), 1.0,
             lambda co: reg_uv('mi_museum', (co.x + 5.0) / 10.0, (co.z - 0.3) / 0.7, 0.0))
