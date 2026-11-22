@@ -6,16 +6,20 @@ using UnityEngine.UI;
 namespace DribbleToSchool.UI
 {
     /// <summary>
-    /// The game's logo: the "Kick OFF 2" lettering of the app icon and the store banner (white "Kick", red "OFF", a golden
-    /// "2", a navy outline and a yellow swoosh), cut out of the banner artwork into Resources/UI/KickOffLogo.png by
-    /// tools/logo_from_banner.py, over the tagline on a slanted navy ribbon. If that picture is missing, the logo drawn in
+    /// The game's logo, "Kick Off 2 School": the "Kick OFF 2" lettering of the app icon and the store banner (white "Kick", red
+    /// "OFF", a golden "2", a navy outline and a yellow swoosh), cut out of the banner artwork into Resources/UI/KickOffLogo.png
+    /// by tools/logo_from_banner.py, over "SCHOOL" on a slanted navy ribbon (the name's last word since v137; the ribbon had
+    /// the tagline, "Dribble all the way to school"). If that picture is missing, the logo drawn in
     /// code instead: "KICK OFF" in chunky Lilita One leaning forward (UILogoText) and a sunny "2" on a badge of mown turf
     /// with the centre circle chalked on it, a football flying in on chalk speed lines.
     /// </summary>
     public static class KickOffLogo
     {
         /// <summary>The game's name. A brand: never translated.</summary>
-        public const string GameName = "Kick Off 2";
+        public const string GameName = "Kick Off 2 School";
+
+        /// <summary>The name's last word, on the ribbon under the "Kick OFF 2" lettering (v137). A brand: never translated.</summary>
+        public const string RibbonWord = "SCHOOL";
 
         /// <summary>The studio, as players see it ("A game by Astradite"). A brand: never translated.</summary>
         public const string Studio = "Astradite";
@@ -116,7 +120,8 @@ namespace DribbleToSchool.UI
             UIKit.Stretch(band.rectTransform);
             band.gameObject.AddComponent<UISkew>().skew = 0.3f;
             band.raycastTarget = false;
-            var text = UIKit.Label(band.transform, "Text", Loc.T("menu.tagline").ToUpperInvariant(), 30, Color.white, TextAnchor.MiddleCenter, true);
+            // The name's last word, spaced out like a badge's lettering (a brand: the same in every language).
+            var text = UIKit.Label(band.transform, "Text", string.Join(" ", RibbonWord.ToCharArray()), 44, Color.white, TextAnchor.MiddleCenter, true);
             UIKit.Stretch(text.rectTransform);
             text.rectTransform.offsetMin = new Vector2(30f, 2f);
             text.rectTransform.offsetMax = new Vector2(-30f, -2f);

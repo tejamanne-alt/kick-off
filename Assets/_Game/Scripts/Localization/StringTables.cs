@@ -28,7 +28,7 @@ namespace DribbleToSchool.Localization
             return new Dictionary<string, string>
             {
                 // Menus
-                { "menu.title", "Kick Off 2" },
+                { "menu.title", "Kick Off 2 School" },
                 { "menu.tagline", "Dribble all the way to school" },
                 { "menu.play", "PLAY" },
                 { "menu.holiday", "HOLIDAY RUN" }, { "menu.holiday.best", "Best {0} m" },
@@ -446,7 +446,7 @@ namespace DribbleToSchool.Localization
                 { "coop.radio.editor", "Editor: practice bots stand in for the other phones." },
                 { "coop.radio.off", "Bluetooth is off. Switch it on to race your friends." },
                 { "coop.radio.openBluetooth", "Settings" },
-                { "coop.radio.unauthorized", "Kick Off 2 needs permission to use Bluetooth (nearby devices) to find your friends." },
+                { "coop.radio.unauthorized", "Kick Off 2 School needs permission to use Bluetooth (nearby devices) to find your friends." },
                 { "coop.radio.allow", "Allow" },
                 { "coop.radio.unsupported", "This device can't use Bluetooth LE, so Co-op isn't available on it." },
                 { "coop.radio.starting", "Starting Bluetooth..." },
@@ -530,7 +530,7 @@ namespace DribbleToSchool.Localization
         {
             return new Dictionary<string, string>
             {
-                { "menu.title", "Kick Off 2" },
+                { "menu.title", "Kick Off 2 School" },
                 { "menu.tagline", "Regatea hasta el cole" },
                 { "menu.play", "JUGAR" },
                 { "menu.holiday", "CARRERA DE VACACIONES" }, { "menu.holiday.best", "Récord {0} m" },
@@ -931,7 +931,7 @@ namespace DribbleToSchool.Localization
                 { "coop.radio.editor", "Editor: unos bots de práctica hacen de los otros móviles." },
                 { "coop.radio.off", "El Bluetooth está apagado. Actívalo para correr con tus amigos." },
                 { "coop.radio.openBluetooth", "Ajustes" },
-                { "coop.radio.unauthorized", "Kick Off 2 necesita permiso para usar el Bluetooth (dispositivos cercanos) y encontrar a tus amigos." },
+                { "coop.radio.unauthorized", "Kick Off 2 School necesita permiso para usar el Bluetooth (dispositivos cercanos) y encontrar a tus amigos." },
                 { "coop.radio.allow", "Permitir" },
                 { "coop.radio.unsupported", "Este dispositivo no tiene Bluetooth LE: el modo cooperativo no está disponible." },
                 { "coop.radio.starting", "Iniciando el Bluetooth..." },

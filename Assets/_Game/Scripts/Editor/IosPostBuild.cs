@@ -41,9 +41,9 @@ namespace DribbleToSchool.EditorTools
         const string XcodeVersion = "2600";
 
         /// <summary>What iOS shows when it asks the player to allow Bluetooth (the co-op mode's first use).</summary>
-        const string BluetoothUsage = "Kick Off 2 uses Bluetooth to find friends' phones nearby and race them to school in Co-op.";
+        const string BluetoothUsage = "Kick Off 2 School uses Bluetooth to find friends' phones nearby and race them to school in Co-op.";
         /// <summary>The same in Spanish, the game's other language (es.lproj/InfoPlist.strings).</summary>
-        const string BluetoothUsageEs = "Kick Off 2 usa el Bluetooth para encontrar los móviles de tus amigos cerca y echar carreras hasta el cole en Cooperativo.";
+        const string BluetoothUsageEs = "Kick Off 2 School usa el Bluetooth para encontrar los móviles de tus amigos cerca y echar carreras hasta el cole en Cooperativo.";
         /// <summary>The languages the game speaks (Localization/StringTables), declared so iOS uses them for its own text too.</summary>
         static readonly string[] Languages = { "en", "es" };
 

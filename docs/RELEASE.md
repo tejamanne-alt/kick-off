@@ -1,6 +1,6 @@
 # Release Guide
 
-Everything needed to take Kick Off 2 from this repo to the App Store and Google Play.
+Everything needed to take Kick Off 2 School from this repo to the App Store and Google Play.
 
 **The app's id is `com.astradite.kickoff2`** (iOS bundle identifier and Android package name, set in
 `Assets/_Game/Scripts/Editor/BuildScripts.cs`). It can never change once the app is uploaded to either store.
@@ -28,7 +28,7 @@ SDK refuse to launch ("UIScene life cycle is required"). After changing Unity, d
    - **Paid app:** leave `RequireUnlock = false` and set the price in the store consoles.
 3. Run **Kick Off > Build > Apply Store Player Settings** once to check everything is set:
    - the app id, version and build number, company "Astradite" (Unity's company name: also part of the save folder on desktop, so
-     it stays as it is), product "Kick Off 2";
+     it stays as it is), product "Kick Off 2 School";
    - landscape only;
    - Android: minimum API 26, target API 36, ARM64 + IL2CPP;
    - iOS: 15.0+ (`BuildScripts.IosMinimumVersion`, applied when the editor loads and to every target of the exported Xcode project), automatic signing with your team (see `Editor/AppleSigning.cs`);
@@ -64,7 +64,7 @@ Every Play Console field, the store graphics and the screenshot sizes are in [`G
    Keystore... > Create New > Anywhere**, saved outside the project (e.g. `~/keys/kickoff2-upload.keystore`), then **Add Key**:
    alias `upload`, a password, validity 50 years. Back the file and both passwords up: every future update must be signed
    with this key. (Or from Terminal: `./ci/android/make_upload_key.sh ~/keys/kickoff2-upload.jks`.)
-3. In Play Console: **Create app** → name "Kick Off 2", default language, Game, Free, accept the declarations.
+3. In Play Console: **Create app** → name "Kick Off 2 School", default language, Game, Free, accept the declarations.
    Leave **Play App Signing** on (the default): Google keeps the app-signing key, your key only signs uploads.
 
 ### Build the App Bundle
@@ -99,7 +99,7 @@ For a quick test on your own phone: **Kick Off > Build > Android: Run on Connect
 ### Once
 1. Sign in to Xcode with your Apple ID (Xcode > Settings > Accounts) and note your **Team ID** (10 characters, shown there and on
    developer.apple.com > Membership).
-2. In [App Store Connect](https://appstoreconnect.apple.com): **Apps > + > New App** → iOS, name "Kick Off 2", primary language,
+2. In [App Store Connect](https://appstoreconnect.apple.com): **Apps > + > New App** → iOS, name "Kick Off 2 School", primary language,
    bundle ID `com.astradite.kickoff2` (if it isn't in the list yet, register it at developer.apple.com > Identifiers, or run one
    build first: automatic signing registers it), SKU e.g. `kickoff2-ios`.
 
@@ -143,7 +143,7 @@ The game has no ads, no accounts, no network calls and no third-party SDKs (Unit
 The App Store version, field by field (with the screenshot sizes and how to take them), is in
 [`APP_STORE_LISTING.md`](APP_STORE_LISTING.md). The support and privacy pages it links to are in `site/`.
 
-**Name:** Kick Off 2
+**Name:** Kick Off 2 School
 
 The "2" reads as "to" (kick off to school), not a sequel: the tagline and the first lines of the description say so.
 
@@ -154,7 +154,7 @@ The "2" reads as "to" (kick off to school), not a sequel: the tagline and the fi
 
 > Late for school? Grab your ball and kick off to school!
 >
-> Kick Off 2 is a football side-scroller in bright anime daylight. Keep the ball at your feet as you run through town: tap in rhythm for perfect touches, drag back to chip it over walls, juggle it past dogs, and wait for the green light before you cross.
+> Kick Off 2 School is a football side-scroller in bright anime daylight. Keep the ball at your feet as you run through town: tap in rhythm for perfect touches, drag back to chip it over walls, juggle it past dogs, and wait for the green light before you cross.
 >
 > - Play as one of six schoolkids: two high-schoolers and four primary-school kids
 > - 23 levels across 5 chapters: Home Street, the Market, the Beach, the Underpass and the Park

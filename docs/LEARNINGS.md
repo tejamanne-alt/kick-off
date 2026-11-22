@@ -856,6 +856,8 @@ Never re-propose what is rejected here.
   **Only Kamakura (the original town, still first) and Florida (v132):** Madrid, New York and Mumbai were removed at the
   user's request, with their designs, prompts and strings; don't re-add them or list cities as coming soon. Each city has its
   own colour temperature and climate. No reskins of another city's levels (D8).
+- **The name is Kick Off 2 School (v137):** in every player-facing text; the logo is the "Kick OFF 2" artwork over a
+  "SCHOOL" ribbon; the app ID stays `com.astradite.kickoff2`.
 - **Both cities open from the start (v135):** Florida listed first, then Kamakura; Florida no longer waits for Kamakura's
   levels.
 - **Florida's music (v132):** upbeat and original, in the spirit of Justice (French electro, filter house) and Tame Impala

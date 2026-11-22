@@ -1,4 +1,4 @@
-# Kick Off 2: notes for anyone working on this repo
+# Kick Off 2 School: notes for anyone working on this repo
 
 - **Before changing anything,** read `docs/LEARNINGS.md`: every past mistake, its cause and the rule it set. Add an entry there whenever something has to be fixed, reverted or redone.
 - **Performance budgets and device tiers** are in `docs/PERFORMANCE.md`. Every change states its cost against them. Nothing is "done" until it has run on the reference phone (OnePlus Nord CE5).

@@ -1,4 +1,4 @@
-# Kick Off 2: the cities
+# Kick Off 2 School: the cities
 
 The game is two cities, and each city is a chapter of its own: **Kamakura** (Japan) and **Florida** (Miami, USA). PLAY
 asks which city to play, then opens that city's map. (Madrid, New York and Mumbai were designed here too, as coming soon;

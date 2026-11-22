@@ -2254,6 +2254,33 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
   Rebuild the levels and read each level's "ball shells" line in the Console. Then chip the ball onto the sweeper on
   Biscayne Boulevard: it should stop at the cab.
 
+## The game is Kick Off 2 School (v137; no generated content changes)
+
+- **Why.** The user: "Rename the game to Kick Off 2 School".
+- **Everywhere players see it:**
+  - The built app's name (`BuildScripts.ProductName`), so the home screen, Settings > Apps and the stores read "Kick Off 2
+    School".
+  - The title (`menu.title`) and the credits' version line (`KickOffLogo.GameName`).
+  - The Bluetooth permission prompts (Android's in-game line, iOS's usage strings, both languages) and the iOS privacy
+    manifest.
+  - The support and privacy pages (`site/`), the store listings, the privacy policy and the release guide.
+- **The logo:** the "Kick OFF 2" lettering is the user's banner artwork, so it is unchanged. The slanted navy ribbon under it
+  now reads **S C H O O L** (`KickOffLogo.RibbonWord`, a brand, the same in Spanish) where it had the tagline "Dribble all
+  the way to school". So the logo reads "Kick Off 2 School", at the same size: the title screen, splash and credits lay out
+  as before.
+- **Unchanged on purpose:**
+  - The app ID `com.astradite.kickoff2`: fixed once uploaded, and phones keep their saves under it.
+  - The company, Astradite.
+  - The code's namespace.
+  - The history in PROGRESS and LEARNINGS.
+- **Still the old name in pictures:**
+  - The app icon and the store banner and key art carry the "Kick OFF 2" lettering, from the user's artwork.
+  - New artwork with "School" in it would replace them (and `Resources/UI/KickOffLogo.png`, through
+    `tools/logo_from_banner.py`).
+  - In the editor (not on phones), a build's new product name moves `persistentDataPath`, so the editor's own test save
+    starts fresh.
+- **Cost:** none.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.
