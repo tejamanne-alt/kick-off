@@ -840,6 +840,8 @@ Never re-propose what is rejected here.
   **Only Kamakura (the original town, still first) and Florida (v132):** Madrid, New York and Mumbai were removed at the
   user's request, with their designs, prompts and strings; don't re-add them or list cities as coming soon. Each city has its
   own colour temperature and climate. No reskins of another city's levels (D8).
+- **Both cities open from the start (v135):** Florida listed first, then Kamakura; Florida no longer waits for Kamakura's
+  levels.
 - **Florida's music (v132):** upbeat and original, in the spirit of Justice (French electro, filter house) and Tame Impala
   (psychedelic synth-pop). Not Caribbean or sad (G3). The user likes its beats (drums and bass, v132): keep them; the
   tunes are written hooks on steady synths (G4).

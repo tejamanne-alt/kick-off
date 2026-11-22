@@ -177,10 +177,10 @@ namespace DribbleToSchool.Progression
     }
 
     /// <summary>
-    /// The two cities (docs/CITIES.md). PLAY and HOLIDAY RUN each ask which city to play in (UI/CityPicker).
+    /// The two cities (docs/CITIES.md), both open from the start and listed Florida first (v135, the user's request; until then
+    /// Florida waited for every one of Kamakura's levels). PLAY and HOLIDAY RUN each ask which city to play in (UI/CityPicker).
+    /// - Florida (Miami): its own three routes and nine legs (Levels/RouteTable.Florida, FL1-1 to FL3-3), in its own chapter.
     /// - Kamakura, Japan, the original town: every level, and the Holiday Run.
-    /// - Florida (Miami), unlocked by finishing every one of Kamakura's story levels: its own three routes and nine legs
-    ///   (Levels/RouteTable.Florida, FL1-1 to FL3-3), in its own chapter.
     /// Madrid, New York and Mumbai were designed as coming soon and removed at the user's request (v132): a save that chose one
     /// plays Kamakura, like California.
     /// California (Santa Monica, &lt;scene&gt;_CA) was an add-on before the cities and is not one of them: a save that chose
@@ -201,10 +201,10 @@ namespace DribbleToSchool.Progression
         public static readonly City Kamakura = new City(KamakuraId, "", true, true, Audio.MusicCountry.Japan, false, null,
             CityClimate.Reference, new Color(0.84f, 0.27f, 0.22f));
         // A hot, humid late-summer morning: a warm 5,000 K sun, teal shade, a milky horizon.
-        public static readonly City Florida = new City(FloridaId, FloridaSuffix, true, false, Audio.MusicCountry.Florida, true, FloridaChapters,
+        public static readonly City Florida = new City(FloridaId, FloridaSuffix, true, false, Audio.MusicCountry.Florida, false, FloridaChapters,
             new CityClimate(5000f, 8500f, 0.6f, new Color(-0.004f, 0.002f, 0.006f)), new Color(0.13f, 0.7f, 0.68f));
-        /// <summary>In the order the picker lists them.</summary>
-        public static readonly City[] All = { Kamakura, Florida };
+        /// <summary>In the order the picker lists them: Florida first, then Kamakura (v135).</summary>
+        public static readonly City[] All = { Florida, Kamakura };
 
         /// <summary>Every one of Kamakura's story levels finished at least once (every leg of every route to school).</summary>
         public static bool EveryLevelFinished

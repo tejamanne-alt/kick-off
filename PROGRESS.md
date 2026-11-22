@@ -2192,6 +2192,22 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
 - **Not run in Unity:** the shader change has not been compiled here (no Unity). Look at a street in each filter once on
   the phone.
 
+## Both cities open, Florida first (v135; no generated content changes)
+
+- **Why.** The user: "by default make both Florida and Kamakura cities open for play. Put Florida first and then Kamakura."
+- `Progression/Cities`: Florida no longer waits for every Kamakura level (`needsEveryLevel` off), and `Cities.All` (the
+  picker's order) is Florida, then Kamakura.
+  - Florida's first leg of each route was already open on its own (`LevelUnlocks.PreviousStory` stops at a city's edge).
+  - The store's chapter paywall is off (`Monetization.RequireUnlock`). If it is ever turned on, Florida's chapter 6 would
+    sit behind the Full Game purchase.
+- **Unchanged:**
+  - A new player with no saved choice still has Kamakura selected until they pick (`Cities.Selected`). The picker asks on
+    every PLAY.
+  - The Holiday Run is Kamakura's only, and co-op races run Kamakura's routes.
+  - Co-op's location list (cities on Kamakura's routes) is the same on every phone.
+- **Tests:** the picker's order, and both cities open from the start (`GameLogicTests`).
+- **Cost:** none.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

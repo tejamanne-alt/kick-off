@@ -42,7 +42,8 @@ namespace DribbleToSchool.Tests
                 }
             }
             Assert.AreEqual("original", Cities.Kamakura.id, "a saved id never changes: Kamakura keeps the original town's");
-            Assert.AreSame(Cities.Kamakura, Cities.All[0]);
+            Assert.AreSame(Cities.Florida, Cities.All[0], "Florida is listed first, then Kamakura (v135)");
+            Assert.AreSame(Cities.Kamakura, Cities.All[1]);
             Assert.AreSame(Cities.Florida, Cities.ById(Cities.FloridaId));
             Assert.AreSame(Cities.Florida, Cities.OfScene("L12_LowTide" + Cities.FloridaSuffix));
             Assert.AreSame(Cities.Kamakura, Cities.OfScene("L12_LowTide_CA"), "California's scenes are Kamakura's music, not a city");
@@ -65,7 +66,8 @@ namespace DribbleToSchool.Tests
             var fl = Cities.Florida;
             Assert.IsTrue(fl.story);
             Assert.IsFalse(fl.holidayRun, "the Holiday Run has no Florida stages yet");
-            Assert.IsTrue(fl.needsEveryLevel, "Florida is unlocked by finishing every one of Kamakura's levels");
+            Assert.IsFalse(fl.needsEveryLevel, "Florida is open from the start, not after Kamakura's levels (v135)");
+            Assert.IsTrue(fl.Unlocked && Cities.Kamakura.Unlocked, "both cities can be played from the start");
             Assert.AreEqual(MusicCountry.Florida, fl.music);
             Assert.AreSame(RouteTable.Florida, fl.Routes, "Florida's own routes, not the original town's");
             Assert.AreSame(RouteTable.All, Cities.Kamakura.Routes);

@@ -129,7 +129,7 @@ timber pier on concrete piles running out from the beach, and English shop signs
 (`BuildingsCAAtlas.png`). A fan palm is 16.5 m tall, and the camera's top edge sits at about
 2.4 m + 0.23 x the distance, so grown fan palms stand 60 m or more back (StreetBuilder.PalmSkyline),
 where their crowns show over the roofs; near the street they are young ones or date palms.
-**Florida**, unlocked by finishing every one of Kamakura's story levels (its streets so far are a Space Coast beach town, Cocoa Beach on the A1A, and a canal suburb; its new routes in `docs/CITIES.md` are set in Miami and reuse this kit), so far has chapter 1, Home Street, and chapter 3, the beach: each of their levels has a
+**Florida**, open from the start since v135 (until then unlocked by finishing every one of Kamakura's story levels; its streets so far are a Space Coast beach town, Cocoa Beach on the A1A, and a canal suburb; its new routes in `docs/CITIES.md` are set in Miami and reuse this kit), so far has chapter 1, Home Street, and chapter 3, the beach: each of their levels has a
 `<scene>_FL` scene (`LevelBuildKit.Florida`, `StreetBuilder.Florida`, the Florida kit `tools/blender/kit_buildings_fl.py`),
 after the user's photographic references in `review/florida/refs` (F3-1 to F3-6, made with `docs/IMAGE_PROMPTS.md`). The kid's
 beach is unchanged (the sand, the tides, the channels, the dunes and the sea about 9.6 m behind the lane: the tide's wash, the
