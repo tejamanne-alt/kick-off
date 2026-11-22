@@ -1246,8 +1246,48 @@ def miami(leg, plan_path):
     if w:
         box(w['from'], w['to'], w['y'] - 0.1, w['y'], w['z'], 1200, (1, 1, 1), 'water', 'Sea')
         box(w['from'], w['to'], w['y'] - 0.4, 0.0, w['z'] - 0.35, w['z'], (.8, .79, .76), 'seawall', 'Concrete')
+    # The side streets (StreetBuilder.CrossingStreet: asphalt from the footpath back to z 70) and the land round them
+    # (StreetBuilder.Miami cuts the land for each up to SideStreetDepth, z 72).
+    streets = [(a, b) for a, b in fl_open]
+    for a, b in streets:
+        box(a, b, -0.2, 0.004, -PATH, 70.0, asph, 'sidestreet', 'Asphalt')
     for l in plan.get('land', []):
-        box(l['from'], l['to'], -0.2, 0.0, l['z0'], l['z1'], grass, 'land', 'Grass')
+        surf = l.get('surface', 'Grass')
+        rgb = conc if surf == 'Concrete' else grass
+        pieces = [(l['from'], l['to'])]
+        if l['z0'] < 72.0:
+            for a, b in streets:
+                nxt = []
+                for p0, p1 in pieces:
+                    if b <= p0 or a >= p1: nxt.append((p0, p1)); continue
+                    if a > p0: nxt.append((p0, a))
+                    if b < p1: nxt.append((b, p1))
+                pieces = nxt
+            for a, b in streets:
+                sa, sb = max(l['from'], a), min(l['to'], b)
+                if sb > sa and l['z1'] > 72.0: box(sa, sb, -0.2, 0.0, 72.0, l['z1'], rgb, 'land', surf)
+        for p0, p1 in pieces:
+            box(p0, p1, -0.2, 0.0, l['z0'], l['z1'], rgb, 'land', surf)
+    # Built shapes (the port, v140: StreetBuilder.Miami builds the same from the plan), turned rz degrees about the z axis.
+    for bx in plan.get('boxes', []):
+        cx, cy, cz = bx['c']; sx, sy, sz = bx['s']
+        a = math.radians(bx.get('rz', 0.0)); ca, sa_ = math.cos(a), math.sin(a)
+        me = bpy.data.meshes.new(bx['n'])
+        v = []
+        for dx in (-sx / 2, sx / 2):
+            for dy in (-sy / 2, sy / 2):
+                for dz in (-sz / 2, sz / 2):
+                    v.append(tuple(B(cx + dx * ca - dy * sa_, cy + dx * sa_ + dy * ca, cz + dz)))
+        f = [(0, 1, 3, 2), (4, 6, 7, 5), (0, 4, 5, 1), (2, 3, 7, 6), (0, 2, 6, 4), (1, 5, 7, 3)]
+        me.from_pydata(v, [], f); me.materials.append(flat_mat(tuple(bx['rgb']), bx.get('surf')))
+        bm = bmesh.new(); bm.from_mesh(me); bmesh.ops.recalc_face_normals(bm, faces=bm.faces); bm.to_mesh(me); bm.free()
+        o = bpy.data.objects.new(bx['n'], me); S.collection.objects.link(o)
+    for lb in plan.get('labels', []):
+        cu = bpy.data.curves.new('label', 'FONT'); cu.body = lb['t']; cu.align_x = 'CENTER'; cu.align_y = 'CENTER'
+        cu.size = lb['size'] * 4.8      # (TextMesh: characterSize x fontSize 48 / 10)
+        o = bpy.data.objects.new('label', cu); S.collection.objects.link(o)
+        o.location = B(*lb['c']); o.rotation_euler = (math.radians(90), 0, 0)
+        o.data.materials.append(flat_mat(tuple(lb['rgb'])))
     for it in plan['items']:
         kit, model, x, z, yaw, scale = it[:6]
         y = it[6] if len(it) > 6 else 0.0

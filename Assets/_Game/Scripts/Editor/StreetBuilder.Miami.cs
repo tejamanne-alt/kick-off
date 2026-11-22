@@ -285,16 +285,54 @@ namespace DribbleToSchool.EditorTools
                     float a = Mathf.Max(MiamiNum(l, "from", x0), ClipLo), b = Mathf.Min(MiamiNum(l, "to", x1), ClipHi);
                     float z0 = MiamiNum(l, "z0", 4.6f), z1 = MiamiNum(l, "z1", 120f);
                     if (b <= a) continue;
+                    // A lawn, or concrete (the port's quay and yard, v140).
+                    bool concrete = MiamiStr(l, "surface", "Grass") == "Concrete";
                     // The land in pieces round each side street (its asphalt shows), and on behind the street's end.
                     float cut = Mathf.Min(z1, SideStreetDepth);
                     foreach (var span in Without(a, b, z0 < cut ? streets : new List<Vector2>()))
-                        Land(group, span.x, span.y, z0, z1);
+                        Land(group, span.x, span.y, z0, z1, concrete);
                     if (z0 < cut && z1 > cut)
                         foreach (var st in streets)
                         {
                             float sa = Mathf.Max(a, st.x), sb = Mathf.Min(b, st.y);
-                            if (sb > sa) Land(group, sa, sb, cut, z1);
+                            if (sb > sa) Land(group, sa, sb, cut, z1, concrete);
                         }
+                }
+            // Built shapes (v140: Bayfront's port behind its side street, the quay, cranes, gate, fence and container stacks), and
+            // their lettering: the plan gives each box, so the preview builds the same.
+            int shapes = 0;
+            if (plan.TryGetValue("boxes", out o) && o is List<object>)
+            {
+                var port = new GameObject("Shapes").transform;
+                port.SetParent(group, false);
+                foreach (var item in (List<object>)o)
+                {
+                    var bx = item as Dictionary<string, object>;
+                    if (bx == null) continue;
+                    Vector3 c = MiamiVec(bx, "c"), size = MiamiVec(bx, "s");
+                    if (c.x < ClipLo - 60f || c.x > ClipHi + 60f) continue;
+                    if (ShapeInSideStreet(streets, c, size))
+                    {
+                        Debug.LogError("[Kick Off] " + LevelBuildKit.LevelId + ": the plan's " + MiamiStr(bx, "n", "shape") + " at x " + c.x.ToString("F1")
+                            + " stands in a side street: run tools/blender/miami_plan.py");
+                        continue;
+                    }
+                    Vector3 rgb = MiamiVec(bx, "rgb");
+                    string surf = MiamiStr(bx, "surf", "");
+                    var shape = Solid(port, MiamiStr(bx, "n", "Shape"), c, size, new Color(rgb.x, rgb.y, rgb.z),
+                        surf == "Concrete" ? Art.surfaces[ProceduralArt.Surface.Concrete] : null);
+                    float rz = MiamiNum(bx, "rz", 0f);
+                    if (rz != 0f) shape.transform.rotation = Quaternion.Euler(0f, 0f, rz);
+                    shapes++;
+                }
+            }
+            if (plan.TryGetValue("labels", out o) && o is List<object>)
+                foreach (var item in (List<object>)o)
+                {
+                    var lb = item as Dictionary<string, object>;
+                    if (lb == null) continue;
+                    Vector3 rgb = MiamiVec(lb, "rgb");
+                    Lettering(group, MiamiStr(lb, "t", ""), MiamiVec(lb, "c"), MiamiNum(lb, "size", 0.1f), new Color(rgb.x, rgb.y, rgb.z));
                 }
             int placed = 0, skipped = 0;
             if (plan.TryGetValue("items", out o) && o is List<object>)
@@ -306,7 +344,7 @@ namespace DribbleToSchool.EditorTools
                     if (x < x0 || x > x1 || x < ClipLo || x > ClipHi) continue;
                     float z = (float)(double)it[3], yaw = (float)(double)it[4], scale = (float)(double)it[5];
                     float y = it.Count > 6 ? (float)(double)it[6] : GroundAt(track, x);
-                    if (InSideStreet(streets, (string)it[0], (string)it[1], x, z, scale)) { skipped++; continue; }
+                    if (InSideStreet(streets, (string)it[0], (string)it[1], x, z, scale, yaw)) { skipped++; continue; }
                     if (Model(group, (string)it[0], (string)it[1], x, y, z, yaw, scale) != null) placed++;
                 }
             group.gameObject.AddComponent<StaticBatcher>();
@@ -319,12 +357,16 @@ namespace DribbleToSchool.EditorTools
         /// <summary>How far back a side street runs from the lane (StreetBuilder.CrossingStreet: to z 70), with a little beyond it.</summary>
         const float SideStreetDepth = 72f;
 
-        /// <summary>The district's land: a lawn at the street's level from <paramref name="a"/> to <paramref name="b"/>, z0 to z1.</summary>
-        static void Land(Transform group, float a, float b, float z0, float z1)
+        /// <summary>
+        /// The district's land at the street's level from <paramref name="a"/> to <paramref name="b"/>, z0 to z1: a lawn, or
+        /// concrete (a port's quay and yard).
+        /// </summary>
+        static void Land(Transform group, float a, float b, float z0, float z1, bool concrete = false)
         {
             if (b - a < 0.05f || z1 - z0 < 0.05f) return;
-            var land = Solid(group, "Land", new Vector3((a + b) * 0.5f, -0.1f, (z0 + z1) * 0.5f), new Vector3(b - a, 0.2f, z1 - z0),
-                new Color(0.95f, 0.98f, 0.9f), Art.surfaces[ProceduralArt.Surface.Grass]);
+            var land = Solid(group, concrete ? "Yard" : "Land", new Vector3((a + b) * 0.5f, -0.1f, (z0 + z1) * 0.5f), new Vector3(b - a, 0.2f, z1 - z0),
+                concrete ? new Color(0.92f, 0.91f, 0.88f) : new Color(0.95f, 0.98f, 0.9f),
+                Art.surfaces[concrete ? ProceduralArt.Surface.Concrete : ProceduralArt.Surface.Grass]);
             land.faces = MeshBuilder.Faces.Top;
             land.Rebuild();
         }
@@ -352,16 +394,39 @@ namespace DribbleToSchool.EditorTools
         /// sides, whatever it is turned to), with 0.3 m to spare; only within the street's length (a skyline tower far behind it
         /// stays). The side streets are the level's open areas.
         /// </summary>
-        public static bool InSideStreet(List<Vector2> streets, string kit, string model, float x, float z, float scale)
+        public static bool InSideStreet(List<Vector2> streets, string kit, string model, float x, float z, float scale, float yaw = 0f)
         {
             if (streets.Count == 0) return false;
             Vector3 size = LevelBuildKit.KitSize(kit, model) * scale;
-            float half = Mathf.Max(size.x, size.z) * 0.5f;
-            if (half <= 0f) half = 1f;
-            if (z - half > SideStreetDepth) return false;
+            if (size.x <= 0f) size = new Vector3(2f, 2f, 2f);
+            // its footprint as it stands (v140: a freighter moored along the port's quay, end on to the street, is 7 m wide, not 30)
+            float c = Mathf.Abs(Mathf.Cos(yaw * Mathf.Deg2Rad)), s = Mathf.Abs(Mathf.Sin(yaw * Mathf.Deg2Rad));
+            float halfX = Mathf.Max((c * size.x + s * size.z) * 0.5f, 0.5f), halfZ = Mathf.Max((s * size.x + c * size.z) * 0.5f, 0.5f);
+            if (z - halfZ > SideStreetDepth) return false;
             foreach (var st in streets)
-                if (x + half > st.x - 0.3f && x - half < st.y + 0.3f) return true;
+                if (x + halfX > st.x - 0.3f && x - halfX < st.y + 0.3f) return true;
             return false;
+        }
+
+        /// <summary>
+        /// Would a plan's built shape (centre and size) stand in a side street? Only what reaches below 4.5 m counts: a gate's sign
+        /// over the street is clear of it.
+        /// </summary>
+        public static bool ShapeInSideStreet(List<Vector2> streets, Vector3 c, Vector3 size)
+        {
+            if (c.y - size.y * 0.5f > 4.5f || c.z - size.z * 0.5f > SideStreetDepth) return false;
+            foreach (var st in streets)
+                if (c.x + size.x * 0.5f > st.x && c.x - size.x * 0.5f < st.y) return true;
+            return false;
+        }
+
+        /// <summary>A plan entry's [x, y, z] (zero if it is missing).</summary>
+        static Vector3 MiamiVec(Dictionary<string, object> d, string key)
+        {
+            object o;
+            var v = d != null && d.TryGetValue(key, out o) ? o as List<object> : null;
+            if (v == null || v.Count < 3) return Vector3.zero;
+            return new Vector3(Convert.ToSingle(v[0]), Convert.ToSingle(v[1]), Convert.ToSingle(v[2]));
         }
     }
 }

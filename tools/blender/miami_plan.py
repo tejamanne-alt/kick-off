@@ -52,6 +52,16 @@ def _model_info(kit, model):
     return _MANIFESTS[kit].get(model)
 
 
+def street_halves(kit, model, scale, yaw):
+    """Half a model's footprint along the street and across it, turned as it stands (StreetBuilder.InSideStreet the same)."""
+    info = _model_info(kit, model)
+    if not info or 'size' not in info: return 1.0, 1.0
+    a = math.radians(yaw)
+    c, s = abs(math.cos(a)), abs(math.sin(a))
+    w, d = info['size'][0] * scale, info['size'][1] * scale
+    return max((c * w + s * d) / 2, 0.5), max((s * w + c * d) / 2, 0.5)
+
+
 def clear_of_the_ball(kit, model, z, yaw, scale):
     """z, pushed back if the model (standing behind the lane) would reach over the ball's plane above 1.2 m."""
     if kit in ('Plants', 'Animals', 'Terrain') or z < 0.6:
@@ -150,23 +160,25 @@ class Plan:
         self.keep_out += self.streets
         self.water = None
         self.land = []
+        self.boxes = []      # built shapes (the port's quay, cranes, gate and containers): game and preview build the same
+        self.labels = []
         self.gap_trees = ['PalmRoyal', 'PalmRoyal', 'PalmSabalTall']
 
     def put(self, kit, model, x, z, yaw=0.0, scale=1.0, y=None):
         if x < self.x0 or x > self.x1: return
         z = clear_of_the_ball(kit, model, z, yaw, scale)
-        if self.in_street(kit, model, x, z, scale): return
+        if self.in_street(kit, model, x, z, scale, yaw): return
         it = [kit, model, round(x, 3), round(z, 3), round(yaw, 1), round(scale, 3)]
         if y is not None: it.append(round(y, 3))
         self.items.append(it)
 
-    def in_street(self, kit, model, x, z, scale):
-        """Would this model, at x and depth z, stand in a side street (as StreetBuilder.InSideStreet decides)?"""
+    def in_street(self, kit, model, x, z, scale, yaw=0.0):
+        """Would this model, at x and depth z, stand in a side street (as StreetBuilder.InSideStreet decides)? Its footprint
+        turned as it stands (v140: a freighter moored along the port's quay, end on to the street, is 7 m wide, not 30)."""
         if not self.streets: return False
-        info = _model_info(kit, model)
-        half = max(info['size'][0], info['size'][1]) * scale / 2 if info and 'size' in info else 1.0
-        if z - half > SIDE_STREET_END: return False
-        return any(x + half > a - 0.3 and x - half < b + 0.3 for a, b in self.streets)
+        hx, hz = street_halves(kit, model, scale, yaw)
+        if z - hz > SIDE_STREET_END: return False
+        return any(x + hx > a - 0.3 and x - hx < b + 0.3 for a, b in self.streets)
 
     def free(self, a, b, deep=False):
         """Is [a, b] clear of the stops, the school, the canals and the arcades (deep rows: only of the canals)?"""
@@ -261,7 +273,24 @@ class Plan:
         d = {'district': li['district'], 'strips': li['strips'], 'items': self.items}
         if self.water: d['water'] = self.water
         if self.land: d['land'] = self.land
+        if self.boxes: d['boxes'] = self.boxes
+        if self.labels: d['labels'] = self.labels
         return d
+
+    def box(self, name, x0, x1, y0, y1, z0, z1, rgb, surface=None, rz=0.0):
+        """A built shape from (x0, y0, z0) to (x1, y1, z1) in game axes, turned rz degrees round the z axis about its middle."""
+        b = {'n': name, 'c': [round((x0 + x1) / 2, 3), round((y0 + y1) / 2, 3), round((z0 + z1) / 2, 3)],
+             's': [round(abs(x1 - x0), 3), round(abs(y1 - y0), 3), round(abs(z1 - z0), 3)], 'rgb': [round(v, 3) for v in rgb]}
+        if surface: b['surf'] = surface
+        if rz: b['rz'] = round(rz, 2)
+        self.boxes.append(b)
+
+    def beam(self, name, x0, y0, x1, y1, z, thick, rgb):
+        """A straight member from (x0, y0) to (x1, y1) at depth z: a stay, a brace."""
+        length = math.hypot(x1 - x0, y1 - y0)
+        cx, cy = (x0 + x1) / 2, (y0 + y1) / 2
+        self.box(name, cx - length / 2, cx + length / 2, cy - thick / 2, cy + thick / 2, z - thick / 2, z + thick / 2, rgb,
+                 rz=math.degrees(math.atan2(y1 - y0, x1 - x0)))
 
 
 W = {   # the front row's widths along the street (the models' own, with their eaves and awnings)
@@ -386,7 +415,11 @@ def bayfront(plan):
     for a, b in li['crossings']:
         land_from = min(land_from, a - 4.0)
     plan.set_water(until=land_from)
-    if li['school'] or li['crossings']:
+    if li['crossings']:
+        # The side street leads into the port (v140: on land it still read as a road out of the bay): its gate across the
+        # street's far end, the quay along the water's edge beside it, cranes, ships alongside, the container yard.
+        port(plan, land_from, li['crossings'][0])
+    elif li['school']:
         plan.land.append({'from': round(land_from, 2), 'to': round(plan.x1 + 60, 2), 'z0': WATER_Z - 0.4, 'z1': 120.0})
     x = plan.x0
     while x < land_from:
@@ -408,6 +441,121 @@ def bayfront(plan):
     if li['school']:
         # (on the school's land only: the bay is open water)
         plan.deep_row([('Plants', 'PalmRoyal', 4), ('Plants', 'LiveOak', 10)], 30, 50, step=(6, 10), x_from=land_from + 2.0)
+
+
+PORT_GATE_Z = 62.0           # the port's fence and gate, across the side street before its end (StreetBuilder: z 70)
+PORT_BACK_Z = 150.0          # the yard's far side
+PORT_CRANE_RED, PORT_WHITE = (0.78, 0.2, 0.15), (0.92, 0.92, 0.89)
+CONTAINER_COLOURS = [(0.16, 0.4, 0.68), (0.72, 0.2, 0.15), (0.2, 0.48, 0.32), (0.88, 0.52, 0.16), (0.56, 0.58, 0.6),
+                     (0.9, 0.9, 0.87), (0.1, 0.52, 0.58), (0.52, 0.26, 0.16), (0.92, 0.78, 0.22), (0.2, 0.22, 0.4)]
+
+
+def port(plan, quay, crossing):
+    """The port behind Bayfront's side street (v140): the street runs back between the quay and the school's lawn to the
+    port's gate; past the fence the yard, its ship-to-shore cranes on the quay with a freighter under them, another
+    freighter alongside the quay by the street, a tug, and the container stacks. All on land: the water stays left of
+    the quay (x < quay)."""
+    road_a, road_b = crossing                  # TrackBuilder.Crossing's open area (leg_info widens it): the street's asphalt
+    yard_to = road_b + 95.0
+    rgb_conc, rgb_fence = (0.8, 0.79, 0.76), (0.42, 0.44, 0.45)
+    end = plan.x1 + 60
+    # the ground: the quay's apron beside the street, the lawn on its other side to the fence, the yard past the fence
+    plan.land.append({'from': round(quay, 2), 'to': round(road_a, 2), 'z0': WATER_Z - 0.4, 'z1': PORT_GATE_Z, 'surface': 'Concrete'})
+    plan.land.append({'from': round(road_a, 2), 'to': round(end, 2), 'z0': WATER_Z - 0.4, 'z1': PORT_GATE_Z})
+    plan.land.append({'from': round(quay, 2), 'to': round(yard_to, 2), 'z0': PORT_GATE_Z, 'z1': PORT_BACK_Z, 'surface': 'Concrete'})
+    if end > yard_to: plan.land.append({'from': round(yard_to, 2), 'to': round(end, 2), 'z0': PORT_GATE_Z, 'z1': 120.0})
+    # the quay's face down into the water, its fenders, the yellow line along its edge, bollards
+    plan.box('QuayWall', quay - 0.3, quay, WATER_Y - 0.5, 0.0, WATER_Z - 0.34, PORT_BACK_Z, (0.74, 0.73, 0.7), 'Concrete')
+    z = WATER_Z + 4.0
+    while z < PORT_BACK_Z - 2:
+        plan.box('Fender', quay - 0.55, quay - 0.3, WATER_Y - 0.2, -0.15, z - 0.4, z + 0.4, (0.13, 0.13, 0.14))
+        z += 9.0
+    plan.box('QuayLine', quay + 0.35, quay + 0.5, 0.0, 0.015, WATER_Z + 0.4, PORT_BACK_Z, (0.95, 0.8, 0.2))
+    z = WATER_Z + 6.0
+    while z < PORT_BACK_Z - 2:
+        plan.put('Miami', 'BollardMIA', quay + 0.6, z)
+        if plan.rng.random() < 0.3: plan.put('Miami', 'LineCoilMIA', quay + 1.3, z + 0.8, plan.r(0, 360))
+        z += 11.0
+    # alongside: a freighter by the street, another under the cranes, a tug between
+    plan.put('Miami', 'FreighterMIA', quay - 4.7, 34.0, 90.0, 1.0, y=WATER_Y + 0.2)
+    plan.put('Miami', 'FreighterMIA', quay - 4.7, 118.0, 270.0, 1.0, y=WATER_Y + 0.2)
+    plan.put('Miami', 'TugMIA', quay - 9.0, 78.0, 90.0, 1.0, y=WATER_Y + 0.3)
+    # the ship-to-shore cranes: legs on rails along the quay, the boom out over the water, the A-frame and its stays
+    for cz in (98.0, 122.0, 140.0):
+        sea, land = quay + 1.4, quay + 17.4
+        for lx in (sea, land):
+            for dz in (-5.5, 5.5):
+                plan.box('CraneLeg', lx - 0.5, lx + 0.5, 0.0, 28.0, cz + dz - 0.5, cz + dz + 0.5, PORT_CRANE_RED)
+            plan.box('CraneSill', lx - 0.45, lx + 0.45, 9.0, 9.8, cz - 5.5, cz + 5.5, PORT_CRANE_RED)
+            plan.box('CraneHead', lx - 0.55, lx + 0.55, 27.0, 28.4, cz - 6.0, cz + 6.0, PORT_CRANE_RED)
+        for dz in (-5.5, 5.5):
+            plan.box('CranePortal', sea - 0.5, land + 0.5, 27.2, 28.4, cz + dz - 0.5, cz + dz + 0.5, PORT_CRANE_RED)
+        tip, back = quay - 30.0, quay + 27.0
+        plan.box('CraneBoom', tip, back, 28.4, 30.2, cz - 1.7, cz + 1.7, PORT_WHITE)
+        plan.box('CraneHouse', back - 6.5, back - 0.5, 30.2, 33.4, cz - 2.6, cz + 2.6, PORT_WHITE)
+        plan.box('CraneCab', quay - 1.2, quay + 0.8, 26.6, 28.4, cz + 1.0, cz + 2.6, (0.3, 0.36, 0.42))
+        apex = quay + 9.0
+        for dz in (-1.5, 1.5):
+            plan.box('CraneTower', apex - 0.4, apex + 0.4, 30.2, 43.0, cz + dz - 0.4, cz + dz + 0.4, PORT_CRANE_RED)
+            plan.beam('CraneStay', apex, 42.6, tip + 1.0, 30.0, cz + dz, 0.3, PORT_WHITE)
+            plan.beam('CraneStay', apex, 42.6, back - 1.0, 30.0, cz + dz, 0.3, PORT_WHITE)
+        plan.box('CraneTowerTop', apex - 0.4, apex + 0.4, 42.6, 43.4, cz - 1.9, cz + 1.9, PORT_CRANE_RED)
+        trolley = quay - plan.r(3.0, 9.0)
+        plan.box('CraneTrolley', trolley - 1.5, trolley + 1.5, 27.4, 28.4, cz - 1.6, cz + 1.6, (0.3, 0.32, 0.34))
+        hang = plan.r(14.0, 20.0)
+        for dx in (-0.9, 0.9):
+            plan.box('CraneRope', trolley + dx - 0.04, trolley + dx + 0.04, hang + 0.4, 27.4, cz - 0.04, cz + 0.04, (0.2, 0.2, 0.2))
+        plan.box('CraneSpreader', trolley - 3.0, trolley + 3.0, hang, hang + 0.4, cz - 1.2, cz + 1.2, (0.9, 0.72, 0.18))
+    # the fence along the gate's line (open for the street), and down the yard's far end
+    def fence_x(a, b, z):
+        n = max(1, int(round((b - a) / 3.0)))
+        for i in range(n + 1):
+            x = a + (b - a) * i / n
+            plan.box('FencePost', x - 0.05, x + 0.05, 0.0, 2.5, z - 0.05, z + 0.05, rgb_fence)
+        for y in (0.15, 1.3, 2.4):
+            plan.box('FenceRail', a, b, y - 0.03, y + 0.03, z - 0.03, z + 0.03, rgb_fence)
+    def fence_z(x, a, b):
+        n = max(1, int(round((b - a) / 3.0)))
+        for i in range(n + 1):
+            z = a + (b - a) * i / n
+            plan.box('FencePost', x - 0.05, x + 0.05, 0.0, 2.5, z - 0.05, z + 0.05, rgb_fence)
+        for y in (0.15, 1.3, 2.4):
+            plan.box('FenceRail', x - 0.03, x + 0.03, y - 0.03, y + 0.03, a, b, rgb_fence)
+    fence_x(quay + 0.8, road_a - 2.0, PORT_GATE_Z)
+    fence_x(road_b + 2.0, yard_to, PORT_GATE_Z)
+    fence_z(yard_to, PORT_GATE_Z, PORT_BACK_Z)
+    # the gate: its booths either side of the street, the sign gantry over it (clear 5 m up), the barriers raised
+    for bx in (road_a - 1.2, road_b + 1.2):
+        plan.box('GateBooth', bx - 0.8, bx + 0.8, 0.0, 2.5, PORT_GATE_Z - 1.0, PORT_GATE_Z + 1.0, PORT_WHITE)
+        plan.box('GateBoothRoof', bx - 1.0, bx + 1.0, 2.5, 2.7, PORT_GATE_Z - 1.2, PORT_GATE_Z + 1.2, (0.16, 0.36, 0.6))
+        plan.box('GatePost', bx - 0.2, bx + 0.2, 2.7, 6.8, PORT_GATE_Z - 0.2, PORT_GATE_Z + 0.2, (0.6, 0.62, 0.64))
+    plan.box('GateSign', road_a - 1.4, road_b + 1.4, 5.0, 6.6, PORT_GATE_Z - 0.15, PORT_GATE_Z + 0.15, (0.16, 0.36, 0.6))
+    plan.labels.append({'t': 'PORT  GATE 3', 'c': [round((road_a + road_b) / 2, 3), 5.8, round(PORT_GATE_Z - 0.2, 3)], 'size': 0.16,
+                        'rgb': [1.0, 1.0, 1.0]})
+    for bx in (road_a - 0.25, road_b + 0.25):          # (beside the street, clear of its asphalt)
+        plan.box('GateArm', bx - 0.06, bx + 0.06, 1.0, 4.6, PORT_GATE_Z - 0.06, PORT_GATE_Z + 0.06, (0.92, 0.25, 0.2))
+    # light masts over the yard
+    for lx, lz in ((road_b + 4.0, PORT_GATE_Z + 6.0), (road_b + 52.0, PORT_GATE_Z + 6.0), (road_b + 4.0, PORT_BACK_Z - 8.0)):
+        plan.box('LightMast', lx - 0.25, lx + 0.25, 0.0, 24.0, lz - 0.25, lz + 0.25, (0.6, 0.62, 0.64))
+        plan.box('LightHead', lx - 1.4, lx + 1.4, 24.0, 24.7, lz - 0.6, lz + 0.6, (0.3, 0.32, 0.34))
+    # the container stacks, in blocks: 12.2 m boxes end to end along the street, rows behind each other, one to four high
+    for bz in (PORT_GATE_Z + 12.0, PORT_GATE_Z + 34.0, PORT_GATE_Z + 56.0):
+        for bx0, bays in ((road_b + 8.0, 3), (road_b + 8.0 + 3 * 12.6 + 5.0, 3)):
+            for row in range(5):
+                z0 = bz + row * 2.74
+                for bay in range(bays):
+                    x0 = bx0 + bay * 12.6
+                    if x0 + 12.2 > yard_to - 2.0: continue
+                    high = plan.rng.choice([0, 1, 2, 2, 3, 3, 3, 4])
+                    for k in range(high):
+                        plan.box('Container', x0, x0 + 12.2, k * 2.6, k * 2.6 + 2.56, z0, z0 + 2.44, plan.rng.choice(CONTAINER_COLOURS))
+    # trucks waiting on the apron under the cranes, a container on each
+    for tz in (PORT_GATE_Z + 26.0, PORT_GATE_Z + 50.0):
+        tx = quay + plan.r(6.0, 12.0)
+        colour = plan.rng.choice(CONTAINER_COLOURS)
+        plan.box('TruckCab', tx - 1.25, tx + 1.25, 0.5, 3.4, tz - 2.4, tz, (0.85, 0.85, 0.82))
+        plan.box('TruckChassis', tx - 1.2, tx + 1.2, 0.5, 1.3, tz, tz + 12.6, (0.2, 0.2, 0.22))
+        plan.box('TruckBox', tx - 1.22, tx + 1.22, 1.3, 3.86, tz + 0.2, tz + 12.4, colour)
 
 
 def river(plan, rail='RiverRailMIA'):

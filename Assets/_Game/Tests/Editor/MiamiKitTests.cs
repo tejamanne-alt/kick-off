@@ -181,6 +181,76 @@ namespace DribbleToSchool.Tests
         }
 
         [Test]
+        public void BayfrontsSideStreetLeadsIntoThePort()
+        {
+            // v140: on land, the side street still read as a road out of the bay. It leads to the port's gate now: the quay along the
+            // water's edge beside it, cranes, ships alongside, the container yard past the fence (docs/LEARNINGS.md E20).
+            var plan = (Dictionary<string, object>)Legs()["FL1-3"];
+            Assert.IsTrue(plan.ContainsKey("boxes"), "FL1-3's plan builds its port");
+            var names = new Dictionary<string, int>();
+            var street = new List<UnityEngine.Vector2> { new UnityEngine.Vector2(77.2f, 84.8f) };   // Crossing(78, 84), widened 0.8 m
+            float quayFace = float.NaN, gateZ = float.NaN, gateBottom = 0f;
+            foreach (var item in (List<object>)plan["boxes"])
+            {
+                var bx = (Dictionary<string, object>)item;
+                string n = (string)bx["n"];
+                int k;
+                names[n] = names.TryGetValue(n, out k) ? k + 1 : 1;
+                var c = Vec(bx["c"]);
+                var size = Vec(bx["s"]);
+                Assert.IsFalse(StreetBuilder.ShapeInSideStreet(street, c, size), "FL1-3: the port's " + n + " at x " + c.x + " stands in the side street");
+                if (n == "QuayWall") quayFace = c.x + size.x * 0.5f;
+                if (n == "GateSign") { gateZ = c.z; gateBottom = c.y - size.y * 0.5f; }
+            }
+            foreach (var part in new[] { "QuayWall", "CraneBoom", "CraneLeg", "Container", "GateSign", "GateBooth", "FencePost" })
+                Assert.IsTrue(names.ContainsKey(part), "the port has its " + part);
+            Assert.GreaterOrEqual(names["CraneBoom"], 2, "cranes along the quay");
+            Assert.GreaterOrEqual(names["Container"], 60, "a yard of container stacks");
+            var water = (Dictionary<string, object>)plan["water"];
+            Assert.AreEqual((double)water["to"], quayFace, 0.05, "the quay's face is the water's edge");
+            Assert.Less(gateZ, 70f, "the gate stands across the side street before its end (StreetBuilder.CrossingStreet: z 70)");
+            Assert.GreaterOrEqual(gateBottom, 4.5f, "the gate's sign is clear over the street");
+            int alongside = 0;
+            foreach (var item in (List<object>)plan["items"])
+            {
+                var it = (List<object>)item;
+                if ((string)it[1] == "FreighterMIA" && (double)it[2] < (double)water["to"] && (double)it[3] < 72.0) alongside++;
+            }
+            Assert.Greater(alongside, 0, "a freighter moored at the quay beside the street");
+            bool yard = false;
+            foreach (var item in (List<object>)plan["land"])
+            {
+                var l = (Dictionary<string, object>)item;
+                object surf;
+                if (l.TryGetValue("surface", out surf) && (string)surf == "Concrete") yard = true;
+            }
+            Assert.IsTrue(yard, "the quay and the yard are concrete, not lawn");
+        }
+
+        static UnityEngine.Vector3 Vec(object o)
+        {
+            var v = (List<object>)o;
+            return new UnityEngine.Vector3((float)(double)v[0], (float)(double)v[1], (float)(double)v[2]);
+        }
+
+        [Test]
+        public void TheSweepersCabIsSolidForTheKidAndADoubleJumpClearsIt()
+        {
+            // v140: the ball shells (E18) are the ball's only, and the kid walked from the sweeper's back into its cab.
+            var size = LevelBuildKit.KitSize("Miami", "SweeperMIA");
+            Assert.AreEqual(size.y, LevelBuildKit.TrackBuilder.SweeperCabTop, 0.03f, "the cab's collider reaches the kit cab's roof");
+            string src = File.ReadAllText(Path.Combine(UnityEngine.Application.dataPath, "_Game/Scripts/Editor/LevelBuildKit.FloridaCity.cs"));
+            int at = src.IndexOf("public void Sweeper(");
+            Assert.Greater(at, 0);
+            string body = src.Substring(at, src.IndexOf("\n            }", at) - at);
+            StringAssert.Contains("AddComponent<BoxCollider2D>()", body, "the cab has a collider of its own on the sweeper's body");
+            StringAssert.Contains("SweeperCabTop", body);
+            // From the 1.2 m back the kid double-jumps over the cab (the way past it); from the street it is too tall.
+            var reach = Holiday.JumpReach.Defaults;
+            Assert.Greater(Holiday.JumpReach.DoubleJump(reach).apex, LevelBuildKit.TrackBuilder.SweeperCabTop - 1.2f + 0.3f, "a double jump from the back clears the cab");
+        }
+
+        [Test]
         public void NothingOfADistrictStandsInOrCoversASideStreet()
         {
             // A coffee kiosk and a tower's podium stood across Biscayne Boulevard's side street, and Bayfront's came out of the bay
@@ -205,7 +275,7 @@ namespace DribbleToSchool.Tests
                 foreach (var item in (List<object>)plan["items"])
                 {
                     var it = (List<object>)item;
-                    Assert.IsFalse(StreetBuilder.InSideStreet(streets, (string)it[0], (string)it[1], (float)(double)it[2], (float)(double)it[3], (float)(double)it[5]),
+                    Assert.IsFalse(StreetBuilder.InSideStreet(streets, (string)it[0], (string)it[1], (float)(double)it[2], (float)(double)it[3], (float)(double)it[5], (float)(double)it[4]),
                         leg[0] + ": " + it[1] + " at x " + it[2] + " stands in the side street");
                 }
                 object w;

@@ -253,6 +253,9 @@ namespace DribbleToSchool.EditorTools
             /// A street sweeper truck working slowly up and down the kerb lane from <paramref name="fromX"/> to <paramref name="toX"/>:
             /// a moving platform (its flat back 1.3 m up) to ride, or to wait for.
             /// </summary>
+            /// <summary>The kit sweeper's cab (SweeperMIA, from the middle of its 3.4 m back, and up from the street): x and its roof.</summary>
+            public const float SweeperCabFrom = 0.92f, SweeperCabTo = 1.86f, SweeperCabTop = 2.43f;
+
             public void Sweeper(float fromX, float toX, float groundTop = 0f, float speed = 1f)
             {
                 // Solid from 0.3 m up to its flat back at 1.2 m (a jump reaches it): it can't be walked through, only ridden or waited for.
@@ -268,7 +271,18 @@ namespace DribbleToSchool.EditorTools
                 mp.speed = speed;
                 mp.waitTime = 1.5f;
                 // The kit's sweeper truck: its hopper's flat top is the 1.2 m back the kid rides, its cab over the front.
-                if (KitModel(go.transform, "Miami", "SweeperMIA", new Vector3(center.x, groundTop, 0.1f)) != null) return;
+                bool kit = KitModel(go.transform, "Miami", "SweeperMIA", new Vector3(center.x, groundTop, 0.1f)) != null;
+                // The cab is solid for the kid too, up to its roof (v140: the kid walked from the back into the cab; the ball shells,
+                // docs/LEARNINGS.md E18, are the ball's only). From the 1.2 m back a double jump clears it (2.07 m against its
+                // 1.23 m); from the street it is too tall, so the way past is up onto the back and over the cab (E20).
+                var cab = go.AddComponent<BoxCollider2D>();
+                cab.sharedMaterial = GroundMat;
+                // (local to the block's middle, 0.75 m up: the kit's cab from x 0.92 to 1.86 and up to 2.43 m; the stand-in's below)
+                float cabFrom = kit ? SweeperCabFrom : width * 0.5f - 0.9f, cabTo = kit ? SweeperCabTo : width * 0.5f;
+                float cabTop = kit ? SweeperCabTop : 2.25f;
+                cab.offset = new Vector2((cabFrom + cabTo) * 0.5f, (bottom + cabTop) * 0.5f - (bed + bottom) * 0.5f);
+                cab.size = new Vector2(cabTo - cabFrom, cabTop - bottom);
+                if (kit) return;
                 Color white = new Color(0.95f, 0.95f, 0.93f);
                 // (local to the block's middle, 0.75 m up: the body down to the wheels, the cab over the front, the brush under it)
                 Part(go.transform, "Body", new Vector3(0f, -0.1f, 0.1f), new Vector3(width, 1.1f, 1.9f), white);

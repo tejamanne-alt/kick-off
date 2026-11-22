@@ -2372,6 +2372,53 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
   - `unity_api_check` 6000.6 and 6000.7.
 - **Not run in Unity:** rebuild the levels, then look at Bayfront's and Biscayne's crossings and the museum.
 
+## The sweeper's cab is solid, and Bayfront's side street leads to a port (generated content v140)
+
+- **Why.** The user's screenshots: "Now the kid is able to pass through the sweeping machine. Also still the road is from
+  the ocean. Instead add a port behind the scene." (LEARNINGS E20.)
+- **The sweeper** (`LevelBuildKit.Sweeper`, Biscayne Boulevard FL3-2):
+  - The cab has its own collider on the sweeper's moving body, x 0.92 to 1.86 from the truck's middle and up to its
+    2.43 m roof (`SweeperCabFrom`, `SweeperCabTo`, `SweeperCabTop`). The kit-less stand-in gets one round its own cab.
+  - The way past: jump onto the 1.2 m back, then double-jump over the cab (2.07 m against 1.23 m). From the street the cab
+    is too tall.
+  - The ball shells are as they were: the cab's collider now covers what the ball saw too.
+- **The port** (Bayfront FL1-3, behind its crossing at x 78 to 84):
+  - `miami_plan.py` lays it out, and the plan carries it as built shapes (`boxes`, `labels`). `StreetBuilder.Miami` and
+    `preview_street.py` build the same.
+  - The road runs back between the quay and the school's lawn to the port's gate at z 62: booths either side, raised
+    barriers, and a "PORT GATE 3" sign gantry 5 m over the street. A fence runs either side of the gate.
+  - The quay runs along the water's edge (x 73.2) on concrete, with its wall, fenders, a yellow edge line, bollards and
+    line coils.
+  - Alongside the quay: a freighter beside the street, another under the cranes, and a tug.
+  - Three ship-to-shore cranes stand on the quay: legs, portal, boom out over the water, A-frame with its stays, trolley and
+    spreader.
+  - Past the fence: a concrete yard, with 191 containers in stacks one to four high, light masts, and two trucks waiting
+    under the cranes.
+  - Nothing low stands in the street: the builder refuses any plan shape below 4.5 m in a side street, with an error.
+  - A model's footprint is now turned as it stands when checked against a side street (`InSideStreet`, `in_street`): a
+    freighter moored end on is 7 m wide, not 30. The other eight districts' plans are unchanged.
+  - FL1-3's other picks moved: the port draws on the leg's random numbers.
+  - Before and after: `review/florida/port_v140.jpg`.
+- **Tests** (`MiamiKitTests`):
+  - The port: quay at the water's edge, cranes, containers, the gate before the street's end and clear over it, a
+    freighter alongside, concrete ground, nothing in the street.
+  - The sweeper: the cab's collider reaches the kit cab's roof, and a double jump from the back clears it.
+- **Cost** (`docs/PERFORMANCE.md`), Bayfront only:
+  - 375 static boxes (12 triangles each, about 4,500 triangles) and one text mesh, combined by the district's
+    `StaticBatcher` into a few draw calls (flat colours, plus the concrete surface for the quay's wall).
+  - Two freighters, a tug, bollards and line coils from the kit (15 models more).
+  - The sweeper: one more box collider on a body that already moves.
+- **Checked:**
+  - the plan diff;
+  - renders from the game camera (before and after) and a wide shot;
+  - compile (no new error kinds);
+  - `unity_api_check` 6000.6 and 6000.7.
+- **Not run in Unity:**
+  - Rebuild the levels.
+  - On Biscayne Boulevard: get onto the sweeper's back and over its cab, and walk into the cab from the back (it should
+    stop you).
+  - On Bayfront: look up the side street.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

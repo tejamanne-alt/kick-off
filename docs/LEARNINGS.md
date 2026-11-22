@@ -814,6 +814,24 @@ setting a scene might have saved.
     committed one. The Miami atlas predates v128's removal of two models from the script, so today's script packs a
     different layout; the museum was rebuilt from the v125 script with the fix applied, and its atlas matched exactly.
 
+- **E20. The kid walked into the sweeper's cab, and Bayfront's side street still came out of the bay (v140, from the user's
+  screenshots).**
+  - *Sweeper:* the v136 ball shells covered the cab for the ball only, on purpose: they ignore the kid so no tuned jump
+    changes. But the sweeper's designed collider was only its back (0.3 to 1.2 m). Nothing stopped the kid walking from the
+    back into the cab, so the cab was a ghost for the kid.
+  - *Bayfront:* v139 moved the bay's end 4 m before the crossing and put land under the road. From the game camera the road
+    still ran back along the water's edge into an empty lawn, so it read as a road out of the bay.
+  - *Fix:*
+    - The cab has its own collider on the sweeper's body, up to its 2.43 m roof. The way past is up onto the back and over
+      the cab with a double jump (it peaks 2.07 m up against the cab's 1.23 m).
+    - The side street now leads to a port: the quay along the water's edge, cranes, freighters alongside, the gate across the
+      street before its end, and the container yard on concrete. The plan carries the port as built shapes, which the game
+      and the preview build alike.
+  - *Rule:* a ball-only collider is not a fix for something the kid can see. When a model is bigger than its designed
+    collider, the kid's collider must follow it too, or the level must be designed around it.
+  - *Rule:* a road must lead somewhere. Moving the water off the road is not enough: put something at the end of it that
+    explains it (a gate, a building, a junction), and look at it from the game's camera.
+
 ## F. UI and menus
 
 - **F1. The anchor and pivot trap** caused overlaps in the credits, results, guides and pause menu. *Rule:* lay screens out top down by explicit edges; check 4:3, 16:9 and 21:9 in both languages.
