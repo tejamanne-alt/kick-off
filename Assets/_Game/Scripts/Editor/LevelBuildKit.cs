@@ -4160,6 +4160,8 @@ namespace DribbleToSchool.EditorTools
                 BuildCoachSpots();
                 BuildStreetSlabs();
                 BuildPendingStops();
+                // Last, once every piece and collider is laid: the ball meets what it sees (docs/LEARNINGS.md E18).
+                Attempt("the ball shells", BuildBallShells);
             }
 
             /// <summary>

@@ -778,6 +778,22 @@ setting a scene might have saved.
   Kamakura's streets came closer than 0.65 m. *Rule:* a rule about how a model meets the ball holds wherever the model is
   placed; audit the scenery against the ball's plane, not only the play pieces.
 
+- **E18. The ball through the street sweeper's cab, after two canopy fixes (v136, from the user's recording; "run a strict
+  audit for this pass-through across all levels and cities").** The sweeper's only collider was a box from 0.3 m to its flat
+  back at 1.2 m; the kit's truck stands 2.43 m with its cab over the front, so a ball chipped onto the back rolled into the
+  cab and out of its front. The same shape of bug as E16 and E17: a piece's collider is drawn by hand for the kid's play
+  (the part to ride, jump or slide under), its model is the kit's, and nothing checks one against the other. Measuring every
+  in-lane model where it crosses the ball's plane (`tools/ball_solidity/silhouette.py`, Blender) showed the same gap on the
+  golf cart's body, the domino table's stools, the arcade canopies' thickness, a standing scooter's handlebar, the crane
+  load's beams, the slide-unders' posts above their gaps. Fixing them one by one is how it kept coming back.
+  - *Fix:* every level's build ends with `LevelBuildKit.BallShells`. It finds every mesh surface crossing the ball's plane
+    (|z| <= 0.17 m) that is not on a collider and adds ball-only colliders there (`World/BallShell` ignores the kid's
+    colliders, as pedestrians do, so no jump, slide or ride changes). They go on the piece's own moving body, so the cab rides
+    with the sweeper. Pickups, zones, animals, plants, people, water, lips under 12 cm and anything that moves without a
+    body are left alone. Each level's build logs what it shelled and what it left out.
+  - *Rule:* a collider drawn by hand is checked against what the player sees, by code, every build. Where the kid's play
+    needs a smaller collider than the model, the ball still gets the model's.
+
 ## F. UI and menus
 
 - **F1. The anchor and pivot trap** caused overlaps in the credits, results, guides and pause menu. *Rule:* lay screens out top down by explicit edges; check 4:3, 16:9 and 21:9 in both languages.

@@ -2208,6 +2208,52 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
 - **Tests:** the picker's order, and both cities open from the start (`GameLogicTests`).
 - **Cost:** none.
 
+## The ball meets what it sees, in every level (generated content v136)
+
+- **Why.** The user's recording of Biscayne Boulevard (FL3-2): a ball chipped onto the street sweeper's back rolled into its
+  cab and out through its front. "Run a strict audit for this pass-through issue across all levels and cities and fix the
+  issue effectively." (LEARNINGS E18.)
+- **The cause.** The sweeper's collider was the part the kid rides: a box from 0.3 m to its flat back at 1.2 m. The kit's
+  truck is 2.43 m tall with its cab over the front. Every play piece is built that way, a hand-drawn collider for the kid's
+  play under the kit's model, and nothing compared the two.
+- **The audit.** `tools/ball_solidity/silhouette.py` (Blender) measures every model a level piece places, set as the piece
+  sets it, where its surfaces cross the ball's plane (|z| <= 0.17 m: the ball's radius and a margin), on a 4 cm grid.
+  - 69 models were measured: vehicles, slide-unders, obstacles, crates, signs, the crane, the hoist, the raft, the gates, the
+    swing, fountains, targets, the school arches, the bollards.
+  - Beyond their colliders: the sweeper's cab; the golf cart's body; the domino table's stools; the arcade canopies'
+    thickness; a standing scooter's handlebar; the crane load's beams and hook; the posts above the slide-unders' gaps; the
+    tunnel lamps; the hanging "SCHOOL" banner.
+  - Already clear of the plane: the signs (planted at z 1.55), the checkpoint flags (z 1.35), the drawbridge gates' posts
+    and raised arms (z 1.8), the slalom poles (z +-0.9), the stops' dressing, the street's dressing (E17).
+- **The fix, every level, both cities** (`LevelBuildKit.BallShells`, run at the end of every level's build):
+  - Each mesh's triangles are clipped to the ball's plane and drawn onto a 5 cm grid (`BallShellGeometry`).
+  - Where a surface is not already on a collider (within 6 cm), thin box colliders are added for the ball only
+    (`World/BallShell` ignores the kid's colliders, again after each slide, as pedestrians do). No jump, slide, ride or
+    feasibility check changes.
+  - Merged into as few boxes as the shape allows: 14 for the sweeper in the offline check.
+  - They go on the piece's moving body when it has one: the sweeper's cab rides with it, and a drawbridge leaf's turn with it.
+  - Left alone:
+    - pickups and zones (a trigger is their only collider);
+    - animals, plants, people, water and rain, the street's slabs;
+    - a surface lying under 12 cm above a collider (a lip the ball rolls over);
+    - anything that moves without a body of its own (a crossing's bars, the crane's trolley);
+    - the builder's own decoration with no collider, unless it is a kit model.
+  - Each level's build logs the pieces it shelled and anything it left out. That is the audit's record in the Console, every
+    rebuild.
+  - Offline check with the sweeper's real mesh, its box and the ground, by the same rules: the cab's outline (front, roof
+    and back, 1.2 to 2.43 m) and the brush under it get shells; nothing that was already solid gets one.
+- **Tests:** `BallShellTests` covers the slab clipping, an edge-on surface still marking its line, the merged boxes covering
+  exactly their cells, and every level's build ending with the shells (ball only). The geometry also ran outside Unity
+  against stand-ins: all its checks passed.
+- **Cost** (`docs/PERFORMANCE.md`):
+  - Static thin boxes, only where a surface lacked a collider (tens to a few hundred a level, see the Console).
+  - On a moving piece, a few more shapes on its body.
+  - No new renderers. Box2D's broadphase handles static boxes cheaply.
+  - Build time: one pass over the meshes in the ball's plane.
+- **Not run in Unity:** the pass itself (2D physics queries in the editor), the shells with the real ball, and the phone.
+  Rebuild the levels and read each level's "ball shells" line in the Console. Then chip the ball onto the sweeper on
+  Biscayne Boulevard: it should stop at the cab.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.
