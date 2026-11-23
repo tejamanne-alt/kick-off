@@ -989,6 +989,122 @@ namespace DribbleToSchool.Audio
             }
         }
 
+        // ---------- Florida's Latin pop band (v143) ----------
+
+        /// <summary>
+        /// A bright acoustic piano, for the montuno and the tunes in octaves: eight partials, each a touch sharp of the harmonic
+        /// as a real string is (inharmonicity), the high ones dying first, the first three doubled a cent apart (a piano's two
+        /// strings beating), a felt hammer's thump at the front, and the damper closing at the note's end. The partials run on
+        /// rotating phasors (no Math.Sin per sample), and none goes past 9.5 kHz.
+        /// </summary>
+        public static void Piano(Track tr, double time, double freq, double dur, float vel)
+        {
+            int start = Index(time);
+            const double rel = 0.12;
+            const int Partials = 8;
+            double decay = 2.2 + freq / 260.0;              // high notes die faster
+            int n = (int)(Math.Min(dur + rel, 6.0 / decay + rel) * Sr);
+            var re = new double[Partials * 2];
+            var im = new double[Partials * 2];
+            var cr = new double[Partials * 2];
+            var ci = new double[Partials * 2];
+            var amp = new double[Partials * 2];
+            var dk = new double[Partials * 2];
+            double bright = 0.55 + 0.45 * vel;
+            int used = 0;
+            for (int k = 1; k <= Partials; k++)
+            {
+                double fk = freq * k * Math.Sqrt(1 + 0.0004 * k * k);
+                if (fk > 9500) break;
+                for (int d = 0; d < (k <= 3 ? 2 : 1); d++)
+                {
+                    double f = fk * (d == 0 ? 1.0 : 1.0006);
+                    double w = TwoPi * f / Sr;
+                    re[used] = 0; im[used] = 1; cr[used] = Math.Cos(w); ci[used] = Math.Sin(w);
+                    amp[used] = Math.Pow(bright, k - 1) / Math.Pow(k, 0.9) * (k <= 3 ? 0.5 : 1.0);
+                    dk[used] = Math.Exp(-decay * (1 + 0.45 * (k - 1)) / Sr);
+                    used++;
+                }
+            }
+            var thump = new Svf();
+            var noise = new NoiseSource((int)(freq * 7) + start);
+            for (int i = 0; i < n; i++)
+            {
+                double t = i / (double)Sr;
+                double v = 0;
+                for (int j = 0; j < used; j++)
+                {
+                    double r = re[j] * cr[j] - im[j] * ci[j];
+                    im[j] = re[j] * ci[j] + im[j] * cr[j];
+                    re[j] = r;
+                    v += im[j] * amp[j];
+                    amp[j] *= dk[j];
+                }
+                if ((i & 1023) == 0)   // keep the phasors on the unit circle
+                    for (int j = 0; j < used; j++) { double m = Math.Sqrt(re[j] * re[j] + im[j] * im[j]); re[j] /= m; im[j] /= m; }
+                if (t < 0.03) { thump.Process(noise.White(), freq * 2 + 300, 0.7); v += thump.band * 0.5 * Math.Exp(-t * 160); }
+                double env = Math.Min(1, t / 0.002);
+                if (t > dur) env *= Math.Max(0, 1 - (t - dur) / rel);
+                tr.Add(start + i, (float)(v * env) * vel * 0.32f * Tail(i, n));
+            }
+        }
+
+        /// <summary>
+        /// A brass voice, the horn section's (trumpets and saxes playing Florida's hooks and hits): two saws a few cents apart
+        /// through a low-pass that blooms open as the note speaks (the "blat" of a horn) and settles warm, a breath of air at
+        /// the front, a gentle saturation. Its pitch holds (a 25 ms scoop only from a tied note), and only a long note gets a
+        /// slight, late vibrato (docs/LEARNINGS.md G4).
+        /// </summary>
+        public static void Brass(Track tr, double time, double freq, double fromFreq, double dur, float vel, int seed)
+        {
+            int start = Index(time);
+            const double rel = 0.06;
+            int n = (int)((dur + rel) * Sr);
+            if (fromFreq <= 0 || fromFreq > freq * 1.5 || fromFreq < freq / 1.5) fromFreq = freq;
+            double p1 = (seed % 97) / 97.0, p2 = (seed % 53) / 53.0;
+            var flt = new Svf();
+            var flt2 = new Svf();
+            var air = new NoiseSource(seed);
+            var airFlt = new Svf();
+            for (int i = 0; i < n; i++)
+            {
+                double t = i / (double)Sr;
+                double f = fromFreq * Math.Pow(freq / fromFreq, Math.Min(1.0, t / 0.025));
+                if (dur > 0.45 && t > 0.3) f *= 1 + 0.0035 * Math.Min(1, (t - 0.3) / 0.2) * Math.Sin(TwoPi * 5.2 * t);
+                double d = f / Sr;
+                double v = BlepSaw(p1, d * 0.9985) + BlepSaw(p2, d * 1.0015);
+                p1 += d * 0.9985; p2 += d * 1.0015;
+                // the bloom: the filter opens over the first 40 ms, overshoots a little, and settles
+                double bloom = Math.Min(1, t / 0.04) * (0.75 + 0.35 * Math.Exp(-t * 9));
+                double fc = Math.Min(5200, freq * (1.2 + 3.2 * bloom * (0.6 + 0.4 * vel)) + 400);
+                float y = flt.Process((float)(v * 0.45), fc, 0.6);
+                y = flt2.Process(y, fc * 1.4, 0.55);
+                airFlt.Process(air.White(), 2400, 0.8);
+                double breath = airFlt.band * 0.12 * Math.Exp(-t * 30);
+                double env = t < 0.018 ? t / 0.018 : 0.82 + 0.18 * Math.Exp(-(t - 0.018) * 10);
+                if (t > dur) env *= Math.Max(0, 1 - (t - dur) / rel);
+                tr.Add(start + i, (float)((Math.Tanh(y * 1.4) * 0.8 + breath) * env) * vel);
+            }
+        }
+
+        /// <summary>The campana: a hand-held cowbell struck on its mouth, two square tones a fifth-ish apart, dry and bright.</summary>
+        public static void Cowbell(Track tr, double time, float vel)
+        {
+            int start = Index(time);
+            int n = (int)(0.22 * Sr);
+            double p1 = 0, p2 = 0;
+            var flt = new Svf();
+            for (int i = 0; i < n; i++)
+            {
+                double t = i / (double)Sr;
+                p1 += 562.0 / Sr; p2 += 845.0 / Sr;
+                double sq = (p1 % 1.0 < 0.5 ? 1 : -1) + (p2 % 1.0 < 0.5 ? 1 : -1);
+                flt.Process((float)sq, 900, 1.6);
+                double env = Math.Exp(-t * (t < 0.03 ? 30 : 16)) * Math.Min(1, t / 0.0008);
+                tr.Add(start + i, flt.band * (float)env * vel * 0.35f * Tail(i, n));
+            }
+        }
+
         /// <summary>A picked electric bass: a round string with a little pick at the front.</summary>
         public static void PickBass(Track tr, double time, double freq, double dur, float vel, int seed)
         {

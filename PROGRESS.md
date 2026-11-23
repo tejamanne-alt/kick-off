@@ -2513,6 +2513,56 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
   - `unity_api_check` 6000.6 and 6000.7.
 - **Not run in Unity:** rebuild the levels and look along each leg's skyline and both new port roads.
 
+## Florida's music, new: Miami Latin pop (v143)
+
+- **Why.** The user: "Create a fresh new music for Florida by scraping the existing one." Asked first, they chose Latin pop
+  / Miami from four directions, and to keep the drums (LEARNINGS G7).
+- **What's new** (everything over the kit; `MusicGenerator.FloridaStyleOf`, `ArrangeFlorida`):
+  - **Instruments** (`Instruments`):
+    - `Piano`: a bright acoustic piano. Eight partials, a touch sharp as a real string's, the high ones dying first, the
+      low ones doubled a cent apart, a hammer thump, and the damper at the note's end. It runs on rotating phasors, with
+      nothing above 9.5 kHz.
+    - `Brass`: a horn voice. Two saws through a filter that blooms open as the note speaks and settles warm, a breath of
+      air, and a held pitch (a late, slight vibrato only on long notes).
+    - `Cowbell`: the campana.
+  - **The band:**
+    - a piano montuno and a tres montuno: syncopated two-bar figures in octaves, the eighth before a chord change already
+      on the next chord;
+    - a pop tumbao bass that anticipates each chord on the "and" of four;
+    - the horn section, a trumpet with a sax an octave under, on the hooks, plus their hits after the opening hook on the
+      busy streets;
+    - the congas' tumbao all through, the son clave (2-3) in the groove and the lift, the cowbell on the beat in the busy
+      streets' lift, a guiro in the calm places, and the bongos' martillo in the breakdown;
+    - "ooh"s in the lift.
+  - **The seven places,** each with new chords and two new written hooks (14 in all, all passing
+    `tools/music_hooks/check.py`):
+    - **Street** (Calle Ocho): F major, 122 BPM, the classic I-IV-V-IV montuno, horns on both hooks.
+    - **Market:** C major, 118 BPM, a cha-cha I-vi-IV-V; marimba, then piano, then horns.
+    - **Beach:** G major, 124 BPM; horns, then the piano over "ooh"s, with an off-beat guitar.
+    - **Site:** D major, 126 BPM; repeated-note horn riffs.
+    - **Underpass:** Bb major, 116 BPM, Latin jazz-pop; a flute, then the piano, over held Rhodes chords.
+    - **Park:** D major, 114 BPM; marimba, then flute.
+    - **Menu:** E major, 112 BPM; the piano, then soft horns.
+- **Kept:**
+  - the drums, exactly (`SynthDrums`: Kit.Electro on the busy streets, Kit.Psych in the calm places);
+  - the 32-bar, four-section form (opening, groove, lift, breakdown);
+  - the loudness (0.11 to 0.115 RMS, peaks 0.44 to 0.56).
+- **Levels:** each tune voice measured on its own per note (RMS) and levelled to the horns (0.17):
+  - the piano in octaves x1.35;
+  - the tres x7 (it measured 0.02);
+  - the tres montuno x1.5 against the piano's.
+- **Checked:**
+  - `check.py`;
+  - `tools/audio_hash`: only Florida's music changed, and the new `expected.txt` is in the commit;
+  - a spectrogram of Calle Ocho (the four sections, the tune over the montuno);
+  - compile with no warnings;
+  - `unity_api_check` 6000.6 and 6000.7.
+  - Previews of all seven places (MP3) went to the user.
+- **Cost:** 0.8 to 1.1 s of worker time and 98 to 108 MB of garbage to make a loop, once per place a session (v139: 0.8
+  to 1.6 s and 81 to 91 MB). It is off the main thread, as before. Baking the music offline (`docs/PERFORMANCE.md`,
+  "Still to do" 1) would remove it all.
+- **Not heard in game yet:** how it sits under each district's bed on the phone.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

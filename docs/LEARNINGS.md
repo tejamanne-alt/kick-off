@@ -928,6 +928,22 @@ fixes (D12), the user asked for both to go: "Remove the Sketch and Cartoon filte
   the spectrogram. *Rule:* when a user keeps rejecting one family of sounds, change the family, keep what they named as
   good, and measure the voices' levels against each other before mixing.
 
+- **G7. "Create a fresh new music for Florida, scrapping the existing one" (v143).** Five takes in, with no reference
+  given this time, a sixth guess would have repeated G1 and G3.
+  - *What was done:* before writing a note, the user was asked to pick a direction from four concrete ones, each with
+    reference artists (Latin pop / Miami, tropical house, 80s Miami synth, upbeat kids' adventure), and whether the drums
+    they had liked should stay. They chose Latin pop and to keep the drums.
+  - *What changed:* everything over the kit is new:
+    - new instruments: an acoustic piano (inharmonic partials on phasors), a horn section, a cowbell;
+    - piano and tres montunos with the anticipated chord;
+    - a pop tumbao bass;
+    - congas, son clave, cowbell, guiro and bongos;
+    - new chords and 14 new hooks, all passing `check.py`.
+  - *Levels:* each tune voice was measured per note and levelled to the horns, as G6 asks. The tres measured a tenth of
+    the horns and would have been lost.
+  - *Rule:* when the user asks for something "fresh" with no reference, ask for the direction as a multiple choice of
+    concrete styles with reference artists, and ask what to keep. Never pick the style from the place alone.
+
 ## H. Co-op, store, release and testing
 
 - **H1. A design that punished the player who stayed connected.** *Rule:* design for reconnection.
@@ -963,10 +979,11 @@ Never re-propose what is rejected here.
   "SCHOOL" ribbon; the app ID stays `com.astradite.kickoff2`.
 - **Both cities open from the start (v135):** Florida listed first, then Kamakura; Florida no longer waits for Kamakura's
   levels.
-- **Florida's music (v132):** upbeat and original, in the spirit of Justice (French electro, filter house) and Tame Impala
-  (psychedelic synth-pop). Not Caribbean or sad (G3). The user likes its beats (drums and bass, v132): keep them; the
-  tunes are written hooks on steady synths (G4); it must not tire over a whole level: long loops that change, soft
-  timbres, sitting back (G5).
+- **Florida's music (v143):** Miami Latin pop, the user's pick from four directions (Latin pop, tropical house, 80s synth,
+  kids' adventure): a piano and tres montuno, horns on the hooks, a tumbao bass, congas, clave, cowbell, guiro, in major
+  keys. Keep the drums, the one part the user has liked through every take (v132's kits; "keep the drums" again in v143).
+  The tunes are written hooks (G4). It must not tire over a whole level: long loops that change, sitting back (G5). The
+  earlier directions (Caribbean, electro and psych, pop-funk) were each rejected (G3 to G7).
 - **The look:** the user's bar is a recent big-budget open-world game's look and feel (warm sun against cool shade, haze,
   weathered, dense streets), reached through light, grade and baked texture within the phone's budget, never by copying
   that game's content. The filters must keep working in every city.
