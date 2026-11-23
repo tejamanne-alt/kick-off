@@ -1231,7 +1231,7 @@ def miami(leg, plan_path):
         strip(-16.0, -8.3, conc, 0.0, 0.0, "Concrete"); strip(-8.3, -8.1, kerb, 0.0, 0.0, 'Kerb')
         strip(-8.1, -1.7, asph, -0.14, 0.0, 'Asphalt'); strip(-1.7, -1.5, kerb, 0.0, 0.0, 'Kerb')
         strip(-1.5, PATH, conc, 0.0, 0.0, 'Concrete'); strip(PATH, PROP + 0.6, conc, 0.0, 0.0, 'Concrete')
-        strip(PROP + 0.6, 90.0, grass if kind == 'havana' else conc, 0.0, 0.0, 'Grass' if kind == 'havana' else 'Concrete')
+        strip(PROP + 0.6, plan.get('back', 90.0), grass if kind == 'havana' else conc, 0.0, 0.0, 'Grass' if kind == 'havana' else 'Concrete')
         for zl in (-2.0, -7.8):
             box(X0 - 600, X1 + 600, -0.14, -0.13, zl - .06, zl + .06, (.95, .95, .93), 'line')
         for xl in range(int(X0) - 60, int(X1) + 60, 6):
@@ -1244,7 +1244,7 @@ def miami(leg, plan_path):
         strip(PATH, plan.get('water', {}).get('z', 90.0), grass, 0.04, 0.0, 'Grass')
     w = plan.get('water')
     if w:
-        box(w['from'], w['to'], w['y'] - 0.1, w['y'], w['z'], 1200, (1, 1, 1), 'water', 'Sea')
+        box(w['from'], w['to'], w['y'] - 0.1, w['y'], w['z'], w.get('z1', w['z'] + 1200), (1, 1, 1), 'water', 'Sea')
         box(w['from'], w['to'], w['y'] - 0.4, 0.0, w['z'] - 0.35, w['z'], (.8, .79, .76), 'seawall', 'Concrete')
     # The side streets (StreetBuilder.CrossingStreet: asphalt from the footpath back to z 70) and the land round them
     # (StreetBuilder.Miami cuts the land for each up to SideStreetDepth, z 72).
@@ -1432,6 +1432,9 @@ focus = Vector((CAM_X, 0, 1.9))            # Blender coords: (x, depth, up)
 fwd = Vector((0, math.cos(pitch), -math.sin(pitch)))
 cam.location = focus - fwd * dist
 cam.rotation_euler = fwd.to_track_quat('-Z', 'Y').to_euler()
+if '--camup' in args:      # a look from above the street at its far ground (a check, not the game's view)
+    cam.location.z += float(args[args.index('--camup') + 1])
+    cam.rotation_euler = (Vector((CAM_X, 300.0, 0.0)) - cam.location).to_track_quat('-Z', 'Y').to_euler()
 
 # Distance haze like DtsHaze, in every material: toward the haze colour by an eased-out ramp of the
 # distance from the camera between haze_start and haze_end, times the strength. The sky stays clear.

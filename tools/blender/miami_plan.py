@@ -84,6 +84,12 @@ HOME_PLOT = (-5.6 - 0.6, 7.8 + 0.6)  # StreetBuilder.HomePlotFL
 SCHOOL_PLOT = (-8.0, 60.0)           # LevelBuildKit.FloridaSchool: the gate a little before the goal, the grounds after it
 PROPERTY_Z, POLE_Z = 1.85, 1.55      # StreetBuilder.PropertyZ, PoleZ
 WATER_Z, WATER_Y = 4.6, -0.9         # where the promenade's seawall stands, and the water's surface
+STRIP_BACK = 90.0                    # StreetBuilder.BackZ: how far back a street's own strips run (a plan's 'back' can say less)
+# v142: the ground reaches the horizon (the camera sees 2,500 m: LevelBuildKit's farClipPlane, 34 degrees high, about 2.2
+# wide on a phone) so no tower stands on the sky: everything from the strips' back to FAR_Z, and SIDE either side of the leg,
+# is land or water.
+FAR_Z, SIDE = 2400.0, 1700.0
+CITY_Z0, CITY_Z1 = 200.0, 650.0      # the band of low city blocks behind every street (Plan.city)
 
 # leg id -> (layout method, district, strips, starts at home, ends at school)
 LEGS = {
@@ -159,6 +165,8 @@ class Plan:
         self.streets = [(a - 0.3, b + 0.3) for a, b in li['crossings']]
         self.keep_out += self.streets
         self.water = None
+        self.back = None     # where the street's own strips end, when not StreetBuilder.BackZ (a basin or river behind)
+        self.fill = 'Grass'  # the ground the plan lays out to the horizon behind everything else
         self.land = []
         self.boxes = []      # built shapes (the port's quay, cranes, gate and containers): game and preview build the same
         self.labels = []
@@ -259,19 +267,126 @@ class Plan:
                     self.put('Miami', 'IbisMIA', xx, self.r(z0, z1), self.r(0, 360))
             x += 100.0 / n_per_100 * self.r(0.6, 1.4)
 
-    def far_shore(self, z0, z1):
-        """The barrier island across the bay (Miami Beach), under its towers."""
-        self.land.append({'from': round(self.x0 - 260, 2), 'to': round(self.x1 + 260, 2), 'z0': z0, 'z1': z1})
+    def far_shore(self, z0, z1=None):
+        """The barrier island across the bay (Miami Beach), under its towers, out to the horizon (v142: it was a strip 0.9 m
+        over the water, a hairline from the street, and its towers stood on the water): its seawall's face, and a waterfront
+        of low buildings and palms along it, so the towers rise from a city."""
+        self.land.append({'from': round(self.x0 - SIDE, 2), 'to': round(self.x1 + SIDE, 2), 'z0': z0, 'z1': FAR_Z})
+        self.box('ShoreWall', self.x0 - SIDE, self.x1 + SIDE, WATER_Y - 0.4, 0.0, z0 - 0.6, z0, (0.8, 0.78, 0.74), 'Concrete')
+        x = self.x0 - 900
+        while x < self.x1 + 900:
+            w = self.r(18, 46)
+            h = self.r(7, 24) if self.rng.random() < 0.8 else self.r(26, 40)
+            d = self.r(12, 22)
+            self.box('Waterfront', x, x + w, 0.0, h, z0 + 4.0, z0 + 4.0 + d, self.rng.choice(SHORE_COLOURS))
+            x += w + self.r(4, 16)
 
-    def set_water(self, z=WATER_Z, until=None, start=None):
+    def plazas(self):
+        """A paved plaza under each tower standing out on the plan's own ground (v142: they stood on bare lawn)."""
+        for it in self.items:
+            if len(it) > 6 or it[1] not in TOWERS: continue
+            x, z, sc = it[2], it[3], it[5]
+            if z < self.strip_back() + 2: continue
+            info = _model_info(it[0], it[1])
+            half = info['size'][0] * sc / 2 + 6.0
+            self.box('Plaza', x - half, x + half, -0.05, 0.03, z - 1.4 * sc - 6.0, z + info['max'][1] * sc + 6.0, (0.84, 0.83, 0.8), 'Concrete')
+
+    def city(self, z0=CITY_Z0, z1=CITY_Z1):
+        """The city between the street and its skyline (v142: the towers stood alone on a lawn): rows of low blocks, 5 to 24 m,
+        with streets between, on the plan's own ground only (never in the water, the port or a park the district laid), clear
+        of the towers' plazas, across the width the camera sees at each distance. Plain boxes: from 200 m back they read as
+        a city's roofs and walls in the haze."""
+        fills = [l for l in self.land if l.get('fill')]
+        plazas = [(b['c'][0] - b['s'][0] / 2 - 4, b['c'][0] + b['s'][0] / 2 + 4, b['c'][2] - b['s'][2] / 2 - 4, b['c'][2] + b['s'][2] / 2 + 4)
+                  for b in self.boxes if b['n'] == 'Plaza']
+        def ok(a, b, c, d):
+            if not any(l['from'] <= a and b <= l['to'] and l['z0'] <= c and d <= l['z1'] for l in fills): return False
+            return not any(b > p0 and a < p1 and d > q0 and c < q1 for p0, p1, q0, q1 in plazas)
+        z = max(z0, self.strip_back() + 40.0)
+        while z < z1:
+            depth = self.r(16, 30) if z < 300 else self.r(24, 45)
+            half = 0.7 * (z + 10.0)
+            x = self.x0 - half + self.r(0, 20)
+            while x < self.x1 + half:
+                w = self.r(22, 55) if z < 300 else self.r(35, 80)
+                # (low in front, so from the street they are distant roofs over the houses, not walls)
+                h = self.r(5, 11) if z < 300 else (self.r(6, 16) if self.rng.random() < 0.75 else self.r(16, 24))
+                if ok(x, x + w, z, z + depth):
+                    self.box('Block', x, x + w, 0.0, h, z, z + depth, self.rng.choice(SHORE_COLOURS))
+                x += w + self.r(8, 20)
+            z += depth + (self.r(10, 18) if z < 300 else self.r(18, 40))
+
+    def strip_back(self):
+        """Where the street's own strips end (StreetBuilder.MiamiStrips)."""
+        if self.back is not None: return self.back
+        kind = self.li['strips']
+        if kind == 'promenade' and self.water: return self.water['z']
+        if kind == 'park' and self.water: return min(self.water['z'], STRIP_BACK)
+        return STRIP_BACK
+
+    def ground(self):
+        """The ground out to the horizon (v142): the water out to the horizon and to the sides where it reaches the leg's ends,
+        then land on everything that is neither water nor land already, from the strips' back to FAR_Z and SIDE either side."""
+        X0, X1 = self.x0 - SIDE, self.x1 + SIDE
+        rects = [(l['from'], l['to'], l['z0'], l['z1']) for l in self.land]
+        if self.water:
+            w = self.water
+            if w['from'] <= self.x0 + 0.5: w['from'] = round(X0, 2)
+            if w['to'] >= self.x1 - 0.5: w['to'] = round(X1, 2)
+            w.setdefault('z1', FAR_Z)
+            rects.append((w['from'], w['to'], w['z'], w['z1']))
+        zb = self.strip_back()
+        xs = sorted(set([X0, X1] + [v for r in rects for v in r[:2] if X0 < v < X1]))
+        zs = sorted(set([zb, FAR_Z] + [v for r in rects for v in r[2:] if zb < v < FAR_Z]))
+        free = {}
+        for i in range(len(xs) - 1):
+            for j in range(len(zs) - 1):
+                cx, cz = (xs[i] + xs[i + 1]) / 2, (zs[j] + zs[j + 1]) / 2
+                free[i, j] = not any(a <= cx <= b and c <= cz <= d for a, b, c, d in rects)
+        # merge: runs along x in each row, then rows with the same run stacked
+        runs = {}
+        for j in range(len(zs) - 1):
+            i = 0
+            while i < len(xs) - 1:
+                if not free[i, j]: i += 1; continue
+                k = i
+                while k + 1 < len(xs) - 1 and free[k + 1, j]: k += 1
+                runs.setdefault((xs[i], xs[k + 1]), []).append(j)
+                i = k + 1
+        for (a, b), rows in runs.items():
+            rows.sort()
+            start = prev = rows[0]
+            for j in rows[1:] + [None]:
+                if j is not None and j == prev + 1: prev = j; continue
+                l = {'from': round(a, 2), 'to': round(b, 2), 'z0': round(zs[start], 2), 'z1': round(zs[prev + 1], 2), 'fill': True}
+                if self.fill != 'Grass': l['surface'] = self.fill
+                self.land.append(l)
+                if j is not None: start = prev = j
+        # nothing grounded stands in the water unless it is on land there
+        kept, dropped = [], []
+        for it in self.items:
+            if len(it) <= 6 and self.wet(it[2], it[3]): dropped.append(it[1])
+            else: kept.append(it)
+        self.items = kept
+        return dropped
+
+    def wet(self, x, z):
+        """Is (x, z) open water (no land drawn over it)?"""
+        w = self.water
+        if not w or not (w['from'] <= x <= w['to'] and w['z'] + 0.2 < z < w.get('z1', FAR_Z)): return False
+        return not any(l['from'] <= x <= l['to'] and l['z0'] <= z <= l['z1'] for l in self.land)
+
+    def set_water(self, z=WATER_Z, until=None, start=None, z1=None):
         a = self.x0 if start is None else start
         b = self.x1 if until is None else until
         self.water = {'from': round(a, 2), 'to': round(b, 2), 'z': z, 'y': WATER_Y}
+        if z1 is not None: self.water['z1'] = z1
 
     def to_json(self):
         li = self.li
         d = {'district': li['district'], 'strips': li['strips'], 'items': self.items}
         if self.water: d['water'] = self.water
+        if self.back is not None: d['back'] = self.back
         if self.land: d['land'] = self.land
         if self.boxes: d['boxes'] = self.boxes
         if self.labels: d['labels'] = self.labels
@@ -418,7 +533,7 @@ def bayfront(plan):
     if li['crossings']:
         # The side street leads into the port (v140: on land it still read as a road out of the bay): its gate across the
         # street's far end, the quay along the water's edge beside it, cranes, ships alongside, the container yard.
-        port(plan, land_from, li['crossings'][0])
+        port(plan, land_from, li['crossings'][0], WATER_Z)
     elif li['school']:
         plan.land.append({'from': round(land_from, 2), 'to': round(plan.x1 + 60, 2), 'z0': WATER_Z - 0.4, 'z1': 120.0})
     x = plan.x0
@@ -434,15 +549,18 @@ def bayfront(plan):
     plan.palms(2.4, 3.4, step=(11.0, 17.0))
     # on the water: a tug, a moored freighter far, the cruise ship; across the bay the barrier islands' towers
     plan.put('Miami', 'TugMIA', plan.x0 + plan.r(40, 80), 45.0, 180.0, 1.0, y=WATER_Y + 0.3)
-    plan.put('Miami', 'CruiseShipMIA', (plan.x0 + plan.x1) / 2 + plan.r(-30, 30), 340.0, 0.0, 1.0, y=WATER_Y)
+    # (the cruise ship clear of the land beside the bay: v142's ground reaches the horizon there)
+    plan.put('Miami', 'CruiseShipMIA', min((plan.x0 + plan.x1) / 2 + plan.r(-30, 30), land_from - 75.0), 340.0, 0.0, 1.0, y=WATER_Y)
     plan.put('Miami', 'FreighterMIA', plan.x0 + plan.r(10, 40), 120.0, 0.0, 1.0, y=WATER_Y + 0.2)
-    plan.skyline(700, 900, n_per_100=5, scale=(0.8, 1.2))
-    plan.far_shore(690, 960)
+    plan.skyline(725, 900, n_per_100=5, scale=(0.8, 1.2))
+    plan.far_shore(690)
     if li['school']:
         # (on the school's land only: the bay is open water)
         plan.deep_row([('Plants', 'PalmRoyal', 4), ('Plants', 'LiveOak', 10)], 30, 50, step=(6, 10), x_from=land_from + 2.0)
 
 
+TOWERS = {'CondoTowerMIA', 'CondoTower2MIA', 'OfficeTowerMIA', 'SpanishTowerMIA'}
+SHORE_COLOURS = [(0.95, 0.94, 0.9), (0.93, 0.88, 0.78), (0.94, 0.82, 0.8), (0.78, 0.86, 0.9), (0.86, 0.9, 0.84), (0.9, 0.9, 0.92)]
 PORT_GATE_Z = 62.0           # the port's fence and gate, across the side street before its end (StreetBuilder: z 70)
 PORT_BACK_Z = 150.0          # the yard's far side
 PORT_CRANE_RED, PORT_WHITE = (0.78, 0.2, 0.15), (0.92, 0.92, 0.89)
@@ -450,34 +568,42 @@ CONTAINER_COLOURS = [(0.16, 0.4, 0.68), (0.72, 0.2, 0.15), (0.2, 0.48, 0.32), (0
                      (0.9, 0.9, 0.87), (0.1, 0.52, 0.58), (0.52, 0.26, 0.16), (0.92, 0.78, 0.22), (0.2, 0.22, 0.4)]
 
 
-def port(plan, quay, crossing):
+def port(plan, quay, crossing, front=WATER_Z, side='Grass'):
     """The port behind Bayfront's side street (v140): the street runs back between the quay and the school's lawn to the
     port's gate; past the fence the yard, its ship-to-shore cranes on the quay with a freighter under them, another
     freighter alongside the quay by the street, a tug, and the container stacks. All on land: the water stays left of
-    the quay (x < quay)."""
+    the quay (x < quay), from `front` back (the promenade's seawall on Bayfront, the park's or the downtown basin's edge).
+    The land on the street's other side, to the gate, is `side` (the school's lawn, or downtown's paving). Built at the
+    end of a district, it clears whatever the district stood where the port now is (v142: Downpour and Museum Park)."""
     road_a, road_b = crossing                  # TrackBuilder.Crossing's open area (leg_info widens it): the street's asphalt
     yard_to = road_b + 95.0
     rgb_conc, rgb_fence = (0.8, 0.79, 0.76), (0.42, 0.44, 0.45)
     end = plan.x1 + 60
-    # the ground: the quay's apron beside the street, the lawn on its other side to the fence, the yard past the fence
-    plan.land.append({'from': round(quay, 2), 'to': round(road_a, 2), 'z0': WATER_Z - 0.4, 'z1': PORT_GATE_Z, 'surface': 'Concrete'})
-    plan.land.append({'from': round(road_a, 2), 'to': round(end, 2), 'z0': WATER_Z - 0.4, 'z1': PORT_GATE_Z})
+    z0 = front - 0.4 if front < 10 else front      # (a promenade's strip ends at its seawall; a park's or a street's at `front`)
+    # whatever the district stood where the port now is goes (the quay, the yard, the street's far side)
+    plan.items = [it for it in plan.items if len(it) > 6 or not (quay - 2 <= it[2] <= yard_to + 2 and front <= it[3] <= PORT_BACK_Z + 4)]
+    # the ground: the quay's apron beside the street, the land on its other side to the fence, the yard past the fence
+    # (the rest, out to the horizon, is the plan's ground: Plan.ground)
+    plan.land.append({'from': round(quay, 2), 'to': round(road_a, 2), 'z0': round(z0, 2), 'z1': PORT_GATE_Z, 'surface': 'Concrete'})
+    l = {'from': round(road_a, 2), 'to': round(end, 2), 'z0': round(z0, 2), 'z1': PORT_GATE_Z}
+    if side != 'Grass': l['surface'] = side
+    plan.land.append(l)
     plan.land.append({'from': round(quay, 2), 'to': round(yard_to, 2), 'z0': PORT_GATE_Z, 'z1': PORT_BACK_Z, 'surface': 'Concrete'})
-    if end > yard_to: plan.land.append({'from': round(yard_to, 2), 'to': round(end, 2), 'z0': PORT_GATE_Z, 'z1': 120.0})
-    # the quay's face down into the water, its fenders, the yellow line along its edge, bollards
-    plan.box('QuayWall', quay - 0.3, quay, WATER_Y - 0.5, 0.0, WATER_Z - 0.34, PORT_BACK_Z, (0.74, 0.73, 0.7), 'Concrete')
-    z = WATER_Z + 4.0
+    # the quay's face down into the water (out to the horizon, where the land beside the water goes on), its fenders, the
+    # yellow line along its edge, bollards
+    plan.box('QuayWall', quay - 0.3, quay, WATER_Y - 0.5, 0.0, front - 0.34, FAR_Z, (0.74, 0.73, 0.7), 'Concrete')
+    z = front + 4.0
     while z < PORT_BACK_Z - 2:
         plan.box('Fender', quay - 0.55, quay - 0.3, WATER_Y - 0.2, -0.15, z - 0.4, z + 0.4, (0.13, 0.13, 0.14))
         z += 9.0
-    plan.box('QuayLine', quay + 0.35, quay + 0.5, 0.0, 0.015, WATER_Z + 0.4, PORT_BACK_Z, (0.95, 0.8, 0.2))
-    z = WATER_Z + 6.0
+    plan.box('QuayLine', quay + 0.35, quay + 0.5, 0.0, 0.015, front + 0.4, PORT_BACK_Z, (0.95, 0.8, 0.2))
+    z = front + 6.0
     while z < PORT_BACK_Z - 2:
         plan.put('Miami', 'BollardMIA', quay + 0.6, z)
         if plan.rng.random() < 0.3: plan.put('Miami', 'LineCoilMIA', quay + 1.3, z + 0.8, plan.r(0, 360))
         z += 11.0
     # alongside: a freighter by the street, another under the cranes, a tug between
-    plan.put('Miami', 'FreighterMIA', quay - 4.7, 34.0, 90.0, 1.0, y=WATER_Y + 0.2)
+    plan.put('Miami', 'FreighterMIA', quay - 4.7, max(34.0, front + 18.0), 90.0, 1.0, y=WATER_Y + 0.2)
     plan.put('Miami', 'FreighterMIA', quay - 4.7, 118.0, 270.0, 1.0, y=WATER_Y + 0.2)
     plan.put('Miami', 'TugMIA', quay - 9.0, 78.0, 90.0, 1.0, y=WATER_Y + 0.3)
     # the ship-to-shore cranes: legs on rails along the quay, the boom out over the water, the A-frame and its stays
@@ -580,7 +706,9 @@ def river(plan, rail='RiverRailMIA'):
             if kind < 0.6: plan.put('Miami', 'FreighterMIA', x, 16.0, 0.0, 1.0, y=WATER_Y + 0.2)
             else: plan.put('Miami', 'TugMIA', x, 13.0, 0.0, 1.0, y=WATER_Y + 0.3)
         x += plan.r(36, 60)
-    plan.land.append({'from': round(plan.x0 - 60, 2), 'to': round(plan.x1 + 60, 2), 'z0': 34.0, 'z1': 400.0})
+    plan.water['z1'] = 34.0
+    plan.land.append({'from': round(plan.x0 - SIDE, 2), 'to': round(plan.x1 + SIDE, 2), 'z0': 34.0, 'z1': FAR_Z, 'fill': True})
+    plan.box('RiverBank', plan.x0 - SIDE, plan.x1 + SIDE, WATER_Y - 0.4, 0.0, 34.0, 34.4, (0.74, 0.73, 0.7), 'Concrete')
     plan.deep_row([('Miami', 'MuralShedMIA', 12), ('Miami', 'MedRevivalMIA', 15), ('Miami', 'TowerPodiumMIA', 24)], 38, 44, step=(14, 26))
     plan.palms(36, 40, step=(8, 14))
     plan.skyline(60, 110, n_per_100=6)
@@ -602,6 +730,19 @@ def downtown(plan):
     plan.deep_row([('Miami', 'SpanishTowerMIA', 14)], 70, 90, step=(120, 200), scale=(0.9, 1.0))
     plan.skyline(45, 90, n_per_100=6)
     plan.skyline(130, 220, n_per_100=4, scale=(1.0, 1.4))
+    if li['crossings'] and li['school']:
+        # v142: the port beside the school, as on Bayfront. Downtown meets the bay here: a basin of it behind the blocks, 60 m
+        # wide, from behind the deep row (z 34) out to the horizon, its quay along the port road. The street's own paving
+        # ends at the basin's edge; downtown's other blocks keep their towers.
+        cr = li['crossings'][0]
+        quay = cr[0] - 4.0
+        plan.back = BASIN_Z
+        plan.set_water(z=BASIN_Z, start=quay - 60.0, until=quay)
+        plan.box('BasinWall', quay - 60.3, quay - 60.0, WATER_Y - 0.5, 0.0, BASIN_Z - 0.34, FAR_Z, (0.74, 0.73, 0.7), 'Concrete')
+        port(plan, quay, cr, BASIN_Z, side='Concrete')
+
+
+BASIN_Z = 34.0      # downtown's bay basin starts behind its deep row
 
 
 def underline(plan):
@@ -666,9 +807,9 @@ def biscayne(plan):
 def museum_park(plan):
     li = plan.li
     goal = li['goal']
-    land_from = goal - 26.0
+    # v142: the port beside the school, as on Bayfront: the bay ends at the quay, 4 m before the port road (its crossing)
+    land_from = li['crossings'][0][0] - 4.0 if li['crossings'] else goal - 26.0
     plan.set_water(z=26.0, until=land_from)
-    plan.land.append({'from': round(land_from, 2), 'to': round(plan.x1 + 60, 2), 'z0': 25.0, 'z1': 120.0})
     plan.put('Miami', 'MuseumMIA', li['start'] + 40.0, 9.0)
     x = plan.x0 + 5
     while x < plan.x1:
@@ -682,10 +823,15 @@ def museum_park(plan):
     while x < land_from:
         plan.put('Miami', 'BayRailMIA', x + 2.0, 25.6)
         x += 4.0
-    plan.put('Miami', 'CruiseShipMIA', (plan.x0 + plan.x1) / 2, 300.0, 0.0, 1.0, y=WATER_Y)
+    plan.put('Miami', 'CruiseShipMIA', min((plan.x0 + plan.x1) / 2, land_from - 75.0), 300.0, 0.0, 1.0, y=WATER_Y)
     plan.ibises(9.0, 22.0, n_per_100=4)
-    plan.skyline(650, 850, n_per_100=4, scale=(0.8, 1.2))
-    plan.far_shore(640, 900)
+    plan.skyline(675, 850, n_per_100=4, scale=(0.8, 1.2))
+    plan.far_shore(640)
+    if li['crossings']: port(plan, land_from, li['crossings'][0], 26.0)
+    else: plan.land.append({'from': round(land_from, 2), 'to': round(plan.x1 + 60, 2), 'z0': 25.0, 'z1': 120.0})
+
+
+RIVER_NEAR, RIVER_FAR = 56.0, 96.0      # Riverside Street's river behind the yards
 
 
 def riverside(plan):
@@ -708,8 +854,13 @@ def riverside(plan):
     plan.deep_row([('Plants', 'LiveOak', 10), ('Plants', 'PalmRoyal', 4)], 34, 44, step=(8, 15))
     plan.ibises(3.0, 5.0, n_per_100=3)
     end = li['goal']
-    plan.put('Miami', 'FreighterMIA', end - 10.0, 70.0, 0.0, 1.0)
-    plan.put('Miami', 'CraneMIA', end + 20.0, 85.0, 0.0, 0.9)
+    # v142: the Miami River runs behind the yards (the freighter stood on the lawn): the street's own ground ends at its
+    # near bank, the freighter is moored on it, the crane and the skyline stand on the far bank.
+    plan.back = RIVER_NEAR
+    plan.set_water(z=RIVER_NEAR, z1=RIVER_FAR)
+    plan.box('RiverBank', plan.x0 - SIDE, plan.x1 + SIDE, WATER_Y - 0.4, 0.0, RIVER_FAR, RIVER_FAR + 0.4, (0.74, 0.73, 0.7), 'Concrete')
+    plan.put('Miami', 'FreighterMIA', end - 10.0, 72.0, 0.0, 1.0, y=WATER_Y + 0.2)
+    plan.put('Miami', 'CraneMIA', end + 20.0, RIVER_FAR + 6.0, 0.0, 0.9)
     plan.skyline(260, 380, n_per_100=2, scale=(1.0, 1.3))
 
 
@@ -717,19 +868,40 @@ DISTRICTS = {'riverside': riverside, 'littleHavana': little_havana, 'brickell': 
              'riverwalk': river, 'downtown': downtown, 'underline': underline, 'biscayne': biscayne, 'museumPark': museum_park}
 
 
-def check(leg, d):
-    """Nothing that stands on the ground stands in open water (an item with its own height floats or stands on a piling)."""
+def check(leg, d, plan):
+    """What the camera sees stands on something (v142):
+    - nothing that stands on the ground stands in open water or beyond the ground (an item with its own height floats or
+      stands on a piling);
+    - every boat floats on open water, over no land;
+    - from the street's strips out to the horizon, across the whole width the camera sees at each distance, every point
+      is land or water: no tower on the sky."""
     w = d.get('water')
-    if not w: return
+    lands = d.get('land', [])
+    back = plan.strip_back()
+    def on_land(x, z): return any(l['from'] <= x <= l['to'] and l['z0'] <= z <= l['z1'] for l in lands)
+    def wet(x, z):
+        return bool(w) and w['from'] <= x <= w['to'] and w['z'] + 0.2 < z < w.get('z1', FAR_Z) and not on_land(x, z)
     bad = []
     for it in d['items']:
-        if len(it) > 6: continue
         kit, model, x, z = it[0], it[1], it[2], it[3]
-        if not (w['from'] <= x <= w['to'] and z > w['z'] + 0.2): continue
-        if any(l['from'] <= x <= l['to'] and l['z0'] <= z <= l['z1'] for l in d.get('land', [])): continue
-        bad.append('%s at x %.1f z %.1f' % (model, x, z))
+        if len(it) > 6:
+            if it[6] < -0.3 and not wet(x, z): bad.append('%s afloat off the water at x %.1f z %.1f' % (model, x, z))
+            continue
+        if wet(x, z): bad.append('%s in the water at x %.1f z %.1f' % (model, x, z))
+        elif z > back + 0.5 and not on_land(x, z): bad.append('%s off the ground at x %.1f z %.1f' % (model, x, z))
+    # the ground under the camera's view: 0.7 of the distance either side (34 degrees high on a 2.2:1 screen: 0.67)
+    z = back + 1.0
+    while z < FAR_Z - 1.0:
+        half = 0.7 * (z + 10.0)
+        x = plan.x0 - half
+        while x <= plan.x1 + half:
+            if not (on_land(x, z) or (w and w['from'] <= x <= w['to'] and w['z'] <= z <= w.get('z1', FAR_Z))):
+                bad.append('no ground at x %.0f z %.0f' % (x, z))
+                break
+            x += 25.0
+        z += 25.0 if z < 300 else 100.0
     if bad:
-        raise SystemExit('%s: in the water: %s' % (leg, ', '.join(bad[:8])))
+        raise SystemExit('%s: %s' % (leg, '; '.join(bad[:8])))
 
 
 def main():
@@ -739,8 +911,12 @@ def main():
     for leg, li in sorted(info.items()):
         plan = Plan(leg, li)
         DISTRICTS[li['district']](plan)
+        dropped = plan.ground()
+        plan.plazas()
+        plan.city()
+        if dropped: print('  %s: %d left out of the water: %s' % (leg, len(dropped), ', '.join(sorted(set(dropped)))))
         legs[leg] = plan.to_json()
-        check(leg, legs[leg])
+        check(leg, legs[leg], plan)
         print('%-6s %-12s %4d items  x %.0f..%.0f' % (leg, li['district'], len(plan.items), plan.x0, plan.x1))
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     with open(OUT, 'w') as f:

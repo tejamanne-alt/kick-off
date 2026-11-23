@@ -180,15 +180,29 @@ namespace DribbleToSchool.Tests
                 }
         }
 
-        [Test]
-        public void BayfrontsSideStreetLeadsIntoThePort()
+        /// <summary>The legs that end at the school (the last of each route), with their crossing's open area beside the school.</summary>
+        static readonly Dictionary<string, UnityEngine.Vector2> SchoolCrossings = new Dictionary<string, UnityEngine.Vector2>
         {
-            // v140: on land, the side street still read as a road out of the bay. It leads to the port's gate now: the quay along the
-            // water's edge beside it, cranes, ships alongside, the container yard past the fence (docs/LEARNINGS.md E20).
-            var plan = (Dictionary<string, object>)Legs()["FL1-3"];
-            Assert.IsTrue(plan.ContainsKey("boxes"), "FL1-3's plan builds its port");
+            { "FL1-3", new UnityEngine.Vector2(77.2f, 84.8f) },    // Bayfront: Crossing(78, 84), widened 0.8 m
+            { "FL2-3", new UnityEngine.Vector2(99.2f, 106.8f) },   // Downpour: Crossing(100, 106)
+            { "FL3-3", new UnityEngine.Vector2(88.2f, 95.8f) },    // Museum Park: Crossing(89, 95)
+        };
+
+        [Test]
+        public void EveryRoutesLastLegHasThePortRoadBesideTheSchool()
+        {
+            // v140: on land, Bayfront's side street still read as a road out of the bay; it leads to the port's gate: the quay along
+            // the water's edge beside it, cranes, ships alongside, the container yard past the fence (docs/LEARNINGS.md E20). v142:
+            // every route's last leg has it, as Bayfront does (E21).
+            foreach (var kv in SchoolCrossings) PortBesideTheSchool(kv.Key, kv.Value);
+        }
+
+        static void PortBesideTheSchool(string leg, UnityEngine.Vector2 road)
+        {
+            var plan = (Dictionary<string, object>)Legs()[leg];
+            Assert.IsTrue(plan.ContainsKey("boxes"), leg + "'s plan builds its port");
             var names = new Dictionary<string, int>();
-            var street = new List<UnityEngine.Vector2> { new UnityEngine.Vector2(77.2f, 84.8f) };   // Crossing(78, 84), widened 0.8 m
+            var street = new List<UnityEngine.Vector2> { road };
             float quayFace = float.NaN, gateZ = float.NaN, gateBottom = 0f;
             foreach (var item in (List<object>)plan["boxes"])
             {
@@ -198,25 +212,26 @@ namespace DribbleToSchool.Tests
                 names[n] = names.TryGetValue(n, out k) ? k + 1 : 1;
                 var c = Vec(bx["c"]);
                 var size = Vec(bx["s"]);
-                Assert.IsFalse(StreetBuilder.ShapeInSideStreet(street, c, size), "FL1-3: the port's " + n + " at x " + c.x + " stands in the side street");
+                Assert.IsFalse(StreetBuilder.ShapeInSideStreet(street, c, size), leg + ": the port's " + n + " at x " + c.x + " stands in the side street");
                 if (n == "QuayWall") quayFace = c.x + size.x * 0.5f;
                 if (n == "GateSign") { gateZ = c.z; gateBottom = c.y - size.y * 0.5f; }
             }
             foreach (var part in new[] { "QuayWall", "CraneBoom", "CraneLeg", "Container", "GateSign", "GateBooth", "FencePost" })
-                Assert.IsTrue(names.ContainsKey(part), "the port has its " + part);
-            Assert.GreaterOrEqual(names["CraneBoom"], 2, "cranes along the quay");
-            Assert.GreaterOrEqual(names["Container"], 60, "a yard of container stacks");
+                Assert.IsTrue(names.ContainsKey(part), leg + ": the port has its " + part);
+            Assert.GreaterOrEqual(names["CraneBoom"], 2, leg + ": cranes along the quay");
+            Assert.GreaterOrEqual(names["Container"], 60, leg + ": a yard of container stacks");
             var water = (Dictionary<string, object>)plan["water"];
-            Assert.AreEqual((double)water["to"], quayFace, 0.05, "the quay's face is the water's edge");
-            Assert.Less(gateZ, 70f, "the gate stands across the side street before its end (StreetBuilder.CrossingStreet: z 70)");
-            Assert.GreaterOrEqual(gateBottom, 4.5f, "the gate's sign is clear over the street");
+            Assert.AreEqual((double)water["to"], quayFace, 0.05, leg + ": the quay's face is the water's edge");
+            Assert.Less(quayFace, road.x, leg + ": the quay is beside the road, the water on its far side");
+            Assert.Less(gateZ, 70f, leg + ": the gate stands across the side street before its end (StreetBuilder.CrossingStreet: z 70)");
+            Assert.GreaterOrEqual(gateBottom, 4.5f, leg + ": the gate's sign is clear over the street");
             int alongside = 0;
             foreach (var item in (List<object>)plan["items"])
             {
                 var it = (List<object>)item;
                 if ((string)it[1] == "FreighterMIA" && (double)it[2] < (double)water["to"] && (double)it[3] < 72.0) alongside++;
             }
-            Assert.Greater(alongside, 0, "a freighter moored at the quay beside the street");
+            Assert.Greater(alongside, 0, leg + ": a freighter moored at the quay beside the street");
             bool yard = false;
             foreach (var item in (List<object>)plan["land"])
             {
@@ -224,7 +239,52 @@ namespace DribbleToSchool.Tests
                 object surf;
                 if (l.TryGetValue("surface", out surf) && (string)surf == "Concrete") yard = true;
             }
-            Assert.IsTrue(yard, "the quay and the yard are concrete, not lawn");
+            Assert.IsTrue(yard, leg + ": the quay and the yard are concrete, not lawn");
+        }
+
+        [Test]
+        public void TheGroundReachesTheHorizonUnderEveryTower()
+        {
+            // v142: the street's own ground ended 90 m back and the towers stood up to 490 m back on the sky; across the bay the far
+            // shore was a hairline 0.9 m over the water. From the strips' back to 2,400 m, across the width the camera sees at each
+            // distance (0.7 of it either side), every point is land or water, and nothing standing is off the ground (E21).
+            foreach (var kv in Legs())
+            {
+                string leg = kv.Key;
+                var plan = (Dictionary<string, object>)kv.Value;
+                var lands = new List<float[]>();
+                object o;
+                if (plan.TryGetValue("land", out o))
+                    foreach (var item in (List<object>)o)
+                    {
+                        var l = (Dictionary<string, object>)item;
+                        lands.Add(new[] { (float)(double)l["from"], (float)(double)l["to"], (float)(double)l["z0"], (float)(double)l["z1"] });
+                    }
+                float[] water = null;
+                if (plan.TryGetValue("water", out o))
+                {
+                    var w = (Dictionary<string, object>)o;
+                    water = new[] { (float)(double)w["from"], (float)(double)w["to"], (float)(double)w["z"], w.ContainsKey("z1") ? (float)(double)w["z1"] : 2400f };
+                }
+                System.Func<float, float, bool> onLand = (x, z) => lands.Exists(l => l[0] <= x && x <= l[1] && l[2] <= z && z <= l[3]);
+                System.Func<float, float, bool> inWater = (x, z) => water != null && water[0] <= x && x <= water[1] && water[2] <= z && z <= water[3];
+                float back = plan.ContainsKey("back") ? (float)(double)plan["back"] : StreetBuilder.BackZ;
+                string strips = (string)plan["strips"];
+                if (water != null && (strips == "promenade" || strips == "park")) back = UnityEngine.Mathf.Min(water[2], back);
+                for (float z = back + 1f; z < 2399f; z += z < 300f ? 25f : 100f)
+                {
+                    float half = 0.7f * (z + 10f);
+                    for (float x = -70f - half; x <= 150f + half; x += 25f)   // (every leg runs from -70 to at least 150)
+                        Assert.IsTrue(onLand(x, z) || inWater(x, z), leg + ": no ground at x " + x + " z " + z);
+                }
+                foreach (var item in (List<object>)plan["items"])
+                {
+                    var it = (List<object>)item;
+                    if (it.Count > 6) continue;
+                    float x = (float)(double)it[2], z = (float)(double)it[3];
+                    if (z > back + 0.5f) Assert.IsTrue(onLand(x, z), leg + ": " + it[1] + " at x " + x + " z " + z + " stands off the ground");
+                }
+            }
         }
 
         static UnityEngine.Vector3 Vec(object o)
@@ -262,7 +322,7 @@ namespace DribbleToSchool.Tests
 
             string levels = File.ReadAllText(Path.Combine(UnityEngine.Application.dataPath, "_Game/Scripts/Editor/FloridaLevels.cs"));
             var legs = Legs();
-            foreach (var leg in new[] { new[] { "FL1-3", "Bayfront" }, new[] { "FL3-2", "BiscayneBoulevard" } })
+            foreach (var leg in new[] { new[] { "FL1-3", "Bayfront" }, new[] { "FL3-2", "BiscayneBoulevard" }, new[] { "FL2-3", "Downpour" }, new[] { "FL3-3", "MuseumPark" } })
             {
                 int at = levels.IndexOf("public static void " + leg[1] + "(");
                 Assert.Greater(at, 0, leg[1]);

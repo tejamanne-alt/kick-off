@@ -849,6 +849,29 @@ fixes (D12), the user asked for both to go: "Remove the Sketch and Cartoon filte
   - *Rule:* a road must lead somewhere. Moving the water off the road is not enough: put something at the end of it that
     explains it (a gate, a building, a junction), and look at it from the game's camera.
 
+- **E21. Towers on the sky and on the water; one route with a port (v142, from the user's screenshots).** "The tall
+  buildings seem to float on water or void in all levels."
+  - *Why:* a street's own ground (its strips) ran 90 m back, and the plan's land only went as far as the things near the
+    lane needed. The skylines stood 80 to 490 m back, with nothing under them but the sky's colour. Across the bay, the far
+    shore was a strip 0.9 m over the water: at 700 m that is a pixel, so its towers stood on the water. Riverside's
+    freighter stood on a lawn. Only Bayfront, of the three routes' last legs, had the port road beside the school.
+  - *Fix:*
+    - **The plan lays the ground out to the horizon** (`Plan.ground`). The water runs to 2,400 m and to the sides
+      wherever it reaches the leg's ends. Land covers everything else from the strips' back, 1,700 m either side (what
+      the 34-degree camera sees on a 2.2:1 screen). The plan's checks sample that whole wedge and fail on any hole, on
+      anything standing off the ground, and on any boat off the water. `MiamiKitTests` holds the same.
+    - **Realistic ground:**
+      - a band of low city blocks behind every street (from 200 m, low in front);
+      - a paved plaza under each tower;
+      - a seawall face and a waterfront of low buildings along the far shores;
+      - a river with its banks behind Riverside's yards.
+    - **Ports at every school:** Downpour (FL2-3) and Museum Park (FL3-3) get Bayfront's port road, each with its crossing
+      (one `port()` for the three). Downtown meets the bay in a 60 m basin behind its blocks; the towers that stood where
+      it now is are left out.
+  - *Rule:* every distance the camera reaches is part of the scene. Check the ground over the camera's whole view, out to
+    its far plane, not just the strip by the lane. A thing that stands must have ground under it, and a far shore must
+    rise far enough to be seen.
+
 ## F. UI and menus
 
 - **F1. The anchor and pivot trap** caused overlaps in the credits, results, guides and pause menu. *Rule:* lay screens out top down by explicit edges; check 4:3, 16:9 and 21:9 in both languages.

@@ -248,9 +248,10 @@ namespace DribbleToSchool.EditorTools
             t.Wall(86f, 0.8f);
             t.CoinArc(84.8f, 87.2f, 1.2f, 1.2f, 3);
             t.Arcade(89f, 96f);
-            t.Pedestrian(98f, 104f, CoatB);
-            t.Sign("The sun's back!", new Vector2(106f, 3.4f));
-            t.CoinRow(106f, 114f, 0.5f, 4);
+            // The port road by the school, as on Bayfront (v142): the sun is back as the kid waits for the green man.
+            t.Sign("The sun's back!\nWait for the green man", new Vector2(97.5f, 3.6f));
+            t.Crossing(100f, 106f);
+            t.CoinRow(108f, 114f, 0.5f, 4);
             t.Goal(118f);
             t.FloridaDone();
         }
@@ -353,8 +354,10 @@ namespace DribbleToSchool.EditorTools
             t.CoinRow(81f, 83f, 2.6f, 3);
             t.Sticker(new Vector2(82f, 4.2f));
             t.Checkpoint(86f);
-            t.Wall(90f, 0.3f, 0f, 0.6f);
-            t.CoinRow(92f, 100f, 0.5f, 4);
+            // The port road by the school, as on Bayfront (v142).
+            t.Sign("The port road:\nwait for the green man", new Vector2(84.6f, 3.6f));
+            t.Crossing(89f, 95f);
+            t.CoinRow(97f, 102f, 0.5f, 3);
             t.Goal(106f);
         }
     }

@@ -164,7 +164,8 @@ namespace DribbleToSchool.EditorTools
                     s.Add(new StripSpec(RoadNear, -PathHalf, 0f, ProceduralArt.Surface.Kerb, white));
                     s.Add(new StripSpec(-PathHalf, PathHalf, 0f, ProceduralArt.Surface.Concrete, new Color(1f, 0.99f, 0.97f)));
                     s.Add(new StripSpec(PathHalf, PropertyZ + 0.6f, 0f, ProceduralArt.Surface.Concrete, white));
-                    s.Add(new StripSpec(PropertyZ + 0.6f, BackZ, 0f, kind == "havana" ? ProceduralArt.Surface.Grass : ProceduralArt.Surface.Concrete,
+                    // (to BackZ, or to the plan's own back: Riverside's river, downtown's bay basin, v142)
+                    s.Add(new StripSpec(PropertyZ + 0.6f, MiamiNum(MiamiPlan, "back", BackZ), 0f, kind == "havana" ? ProceduralArt.Surface.Grass : ProceduralArt.Surface.Concrete,
                         kind == "havana" ? new Color(0.96f, 0.97f, 0.9f) : new Color(0.92f, 0.91f, 0.89f)));
                     break;
             }
@@ -254,9 +255,11 @@ namespace DribbleToSchool.EditorTools
                 var w = o as Dictionary<string, object>;
                 float a = Mathf.Max(MiamiNum(w, "from", x0), ClipLo), b = Mathf.Min(MiamiNum(w, "to", x1), ClipHi);
                 float z = MiamiNum(w, "z", 4.6f), y = MiamiNum(w, "y", -0.9f);
+                // (out to the horizon, or to a river's far bank: the plan's z1)
+                float z1 = Mathf.Max(MiamiNum(w, "z1", z + 1200f), z + 1f);
                 if (b > a)
                 {
-                    var water = Solid(group, "Water", new Vector3((a + b) * 0.5f, y - 0.05f, z + 600f), new Vector3(b - a, 0.1f, 1200f), Color.white,
+                    var water = Solid(group, "Water", new Vector3((a + b) * 0.5f, y - 0.05f, (z + z1) * 0.5f), new Vector3(b - a, 0.1f, z1 - z), Color.white,
                         Art.surfaces[ProceduralArt.Surface.Sea]);
                     water.faces = MeshBuilder.Faces.Top;
                     NoShadowCast(water);

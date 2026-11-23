@@ -2453,6 +2453,66 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
   - `unity_api_check` 6000.6 and 6000.7.
 - **Not run in Unity:** open Filters (two cards), and switch between the original and the comic in a level.
 
+## Ground to the horizon, and the port road at every route's school (generated content v142)
+
+- **Why.** The user's screenshots: "The tall buildings seem to float on water or void in all levels. Add the realistic
+  grounds. Also add the port and road beside school in the last level of all routes. One of the levels has it right."
+  (LEARNINGS E21.)
+- **The ground** (`miami_plan.py`: `Plan.ground`, `city`, `plazas`, `far_shore`), every Florida leg:
+  - Land or water from the street's own strips out to 2,400 m, and 1,700 m either side of the leg. The water runs to the
+    horizon and to the sides where it reaches a leg's ends; land fills the rest.
+  - A city of low blocks (5 to 24 m, Miami's pale colours) from 200 m back. The first rows are low, so from the street
+    they are roofs over the houses.
+  - A paved plaza under each tower.
+  - The far shores across the bay (Bayfront, Museum Park): a seawall face, and a waterfront of low buildings and some
+    taller ones, which the towers rise behind.
+  - Riverside Street (FL2-1): the Miami River behind the yards, with its banks. The freighter is moored on it (it stood on
+    a lawn), and the crane stands on the far bank.
+  - The Riverwalk (FL2-2): its far bank runs to the horizon, with a bank face, and the city behind its towers.
+  - The plan's checks sample the camera's whole view for holes, and fail on anything standing off the ground and any
+    boat off the water. `MiamiKitTests.TheGroundReachesTheHorizonUnderEveryTower` holds the same.
+- **The port road beside the school on every route's last leg** (Bayfront FL1-3 already had it):
+  - **Downpour (FL2-3):** Crossing(100, 106) before the school; the sign reads "The sun's back! Wait for the green man".
+    The walker at 98 to 104 is gone. Downtown meets the bay in a 60 m basin behind its blocks, with its quay along the
+    port road; seven towers that stood where the basin is are left out. The street's own paving ends at the basin (the
+    plan's `back`).
+  - **Museum Park (FL3-3):** Crossing(89, 95) after the last checkpoint (the low wall at 90 is gone; coins at 97 to 102).
+    The bay ends at the quay, 4 m before the road.
+  - One `port()` builds all three: the quay, its wall out to the horizon, cranes, freighters, gate, fence, yard and
+    containers. It clears whatever the district stood where the port now is.
+  - The cruise ships keep clear of the land now beside the bays.
+- **Builder** (`StreetBuilder.Miami`):
+  - the water's far edge (`z1`);
+  - the strips' depth (`back`).
+  - Everything else is the plan's land and shapes, built as in v140.
+- **Preview:** water to `z1`, strips to `back`. `--camup H` looks from H m above the street at its far ground (a check
+  only, not the game's view).
+- **Before and after:** `review/florida/ground_ports_v142.jpg`. From the top:
+  - Museum Park's school;
+  - Downpour's school;
+  - Bayfront's far shore;
+  - the Underline from above, where the towers stood on the sky.
+- **Tests** (`MiamiKitTests`):
+  - the port road at all three schools;
+  - the side streets clear in all four legs with a crossing;
+  - the ground to the horizon in all nine legs.
+- **Cost** (`docs/PERFORMANCE.md`), per leg:
+  - 50 to 125 city blocks and 4 to 27 plazas: static boxes of 12 triangles, under 2,000 triangles, combined by the
+    district's `StaticBatcher`;
+  - on the far shores, about 50 waterfront boxes;
+  - 2 to 7 more land quads.
+  - Downpour and Museum Park gain the port: about 400 boxes, as Bayfront's (about 4,500 triangles), and 15 models.
+  - No new materials: flat colours and the concrete and grass surfaces.
+  - Overdraw: the blocks stand where the sky was; the haze covers them.
+- **Play:** Downpour and Museum Park each have one more crossing to wait at. Their target times are as they were. Check
+  them on the phone.
+- **Checked:**
+  - the plan's checks;
+  - renders from the game camera, before and after, and from above;
+  - compile (no new error kinds);
+  - `unity_api_check` 6000.6 and 6000.7.
+- **Not run in Unity:** rebuild the levels and look along each leg's skyline and both new port roads.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.
