@@ -1,4 +1,4 @@
-"""Checks Florida's written hooks (Audio/MusicGenerator.FloridaStyleOf) against their chords, as the music is made, since
+"""Checks Florida's and Kamakura's written hooks (Audio/MusicGenerator.FloridaStyleOf, KamakuraStyleOf) against their chords, as the music is made, since
 nobody can listen in a check: every note on a strong beat (beats 1 and 3 of a bar, or any note a beat long or more) must be a
 tone of the chord under it (a major chord's 6th or 9th, and a minor one's 9th, count too), each bar is sixteen steps, each
 hook four bars, each loop sixteen chords, and every note is between G3 and D6. Exits 1 on any problem (docs/LEARNINGS.md G4).
@@ -31,11 +31,19 @@ def chord(name):
 
 
 def styles(src):
-    body = src[src.index('static Style FloridaStyleOf'):src.index('// ================= The arranger')]
+    # Florida's styles and, since v145, Kamakura's (both written hooks over their chords)
+    for fn in ('FloridaStyleOf', 'KamakuraStyleOf'):
+        start = src.index('static Style ' + fn)
+        body = src[start:src.index('\n        static ', start + 10)]
+        for item in styles_in(body, fn):
+            yield item
+
+
+def styles_in(body, fn):
     for block in re.split(r'case Soundscape\.|default:', body)[1:]:
         ch = re.search(r'chords = new\[\] \{(.*?)\}', block, re.S)
         if not ch: continue
-        name = block.split(':')[0].strip() if block.split('\n')[0].strip().endswith(':') else 'Menu'
+        name = fn[:-7] + ' ' + (block.split(':')[0].strip() if block.split('\n')[0].strip().endswith(':') else 'Menu')
         hooks = [re.findall(r'"([^"]+)"', re.search(k + r' = new\[\]\s*\{(.*?)\}', block, re.S).group(1)) for k in ('hookA', 'hookB')]
         yield name, re.findall(r'"([^"]+)"', ch.group(1)), hooks
 
@@ -81,4 +89,4 @@ if __name__ == '__main__':
     n, problems = check(open(SRC).read())
     for p in problems: print(p)
     print('%d styles, %d problems' % (n, len(problems)))
-    sys.exit(1 if problems or n != 7 else 0)
+    sys.exit(1 if problems or n != 14 else 0)

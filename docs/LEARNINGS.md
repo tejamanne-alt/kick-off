@@ -961,6 +961,17 @@ fixes (D12), the user asked for both to go: "Remove the Sketch and Cartoon filte
   - *Rule:* when a user's word for an instrument family is loose ("string music"), ask how far it reaches before removing
     things. And when a take is rejected with no reason, ask about direction and what to keep, not just "what's wrong".
 
+- **G9. "Update the Kamakura music too with same bass, cozy music but in Japanese style" (v145).** "Same bass" could have
+  meant the bass, the beat and bass, or Florida's whole base; and Japanese style usually means the koto, a string sound,
+  which the user had just banned for Florida. Both were asked first: the bass only, and no strings.
+  - *What changed:* Kamakura's J-pop on guitars and a koto-like pluck was replaced:
+    - new instruments: a sho-like mouth-organ pad, a woodblock, a temple bowl, wind chimes;
+    - its own swung kit;
+    - 14 new hooks, checked by `check.py` (which now reads both cities' styles);
+    - each voice measured and levelled as in G6.
+  - *Rule:* when a user carries something over from one place to another ("same bass"), ask which part. When a style's
+    usual instrument breaks a rule the user set elsewhere, ask whether the rule applies there too.
+
 ## H. Co-op, store, release and testing
 
 - **H1. A design that punished the player who stayed connected.** *Rule:* design for reconnection.
@@ -1006,6 +1017,10 @@ Never re-propose what is rejected here.
   - v138's softer synths;
   - v139's pop-funk;
   - v143's Latin pop.
+- **Kamakura's music (v145):** cozy, in a Japanese style, with no string sounds (no koto, guitar, piano or string pad). It
+  shares only Florida's synth bass ("bass only"); its drums are its own, gentle and swung. The tunes are on the yonanuki
+  pentatonic over the royal road, on bamboo flutes, kalimba and music box, with a sho-like pad, wind chimes and a temple
+  bowl (G9).
 - **The look:** the user's bar is a recent big-budget open-world game's look and feel (warm sun against cool shade, haze,
   weathered, dense streets), reached through light, grade and baked texture within the phone's budget, never by copying
   that game's content. The filters must keep working in every city.

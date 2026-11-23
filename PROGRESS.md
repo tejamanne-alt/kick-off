@@ -2607,6 +2607,55 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
   v143).
 - **Not heard in game yet.**
 
+## Kamakura's music, new: cozy Japanese, Florida's synth bass, no strings (v145)
+
+- **Why.** The user: "Update the Kamakura music too with same bass, cozy music but in Japanese style." Asked first, they
+  chose the bass only (Florida's `SynthBass`; Kamakura keeps its own gentler drums) and no string sounds (LEARNINGS G9).
+  The J-pop it replaces had guitars and a koto-like pluck.
+- **New instruments** (`Instruments`):
+  - `ShoPad`: the Japanese mouth organ's held reed chord, slow to swell, breathing;
+  - `Woodblock`: the temple's mokugyo;
+  - `TempleBowl`: the rin, ringing for seconds;
+  - `WindChime`: the summer furin.
+- **The band** (`KamakuraStyleOf`, `ArrangeKamakura`):
+  - the sho's chords;
+  - the synth bass, laid back (`CozyBass`);
+  - an arpeggio on the kalimba or the music box;
+  - the tunes on the shakuhachi (`Flute`), the shinobue (`PanFlute`, high), the kalimba, the music box (`Glock`), the vibes
+    and the marimba;
+  - "ooh"s in some places' lift;
+  - a temple bowl at the opening and the rest, and wind chimes at every section's turn;
+  - a little vinyl.
+- **The kit** (`CozyDrums`, its own): the boomy kick on the one and the "and" of three, a soft snare with a side-stick on two
+  and four, swung hats, a shaker in the lift, a woodblock, soft taiko into the loop. In the rest, only the woodblock and
+  quiet hats.
+- **The form:** 32 bars in four sections (opening, groove, lift, rest), loops of 77 to 91 s.
+- **The seven places,** written on the yonanuki pentatonic (no fourth, no seventh) over the royal road and ii-V-I-vi (14
+  hooks, all passing `tools/music_hooks/check.py`, which now checks both cities):
+  - **Street:** D major, 92 BPM; music box, then shinobue.
+  - **Market:** F major, 96 BPM; kalimba, then shinobue.
+  - **Beach:** G major, 94 BPM; shinobue, then music box.
+  - **Site:** C major, 100 BPM; marimba, then shinobue.
+  - **Underpass:** Eb major, 86 BPM; shakuhachi, then vibes.
+  - **Park:** E major, 88 BPM; shakuhachi, then shinobue.
+  - **Menu:** Bb major, 84 BPM; kalimba, then shakuhachi.
+- **Levels:**
+  - the shakuhachi levelled to the other tunes (x1.35, it measured 0.17);
+  - the sho's chord to Florida's pad's level (0.14 RMS);
+  - the loops at 0.118 to 0.121 RMS (was 0.14), peaks 0.51 to 0.61.
+- **Checked:**
+  - `check.py`;
+  - `tools/audio_hash`: only Kamakura's music changed, and the new `expected.txt` is in the commit;
+  - a spectrogram of the Street loop;
+  - compile with no warnings;
+  - `unity_api_check` 6000.6 and 6000.7.
+  - Previews of all seven went to the user.
+- **Cost:** 1.0 to 1.5 s and 120 to 139 MB of garbage to make a loop (longer loops and more parts than the old J-pop's
+  16 bars), once per place a session, off the main thread. This is the heaviest music yet. Baking the music offline
+  (`docs/PERFORMANCE.md`, "Still to do" 1) would remove it all. Check it on the phone, for a hitch as Kamakura's places
+  change.
+- **Not heard in game yet.**
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

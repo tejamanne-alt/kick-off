@@ -5,9 +5,9 @@ namespace DribbleToSchool.Audio
 {
     /// <summary>
     /// The music, in the style of the country the streets are in (<see cref="MusicCountry"/>): for the original
-    /// town (Kamakura, Japan) bright Japanese city pop and J-pop on the "royal road" chords, with pentatonic
-    /// (yonanuki) tunes on a koto-like pluck, a breathy bamboo flute, Rhodes and a glockenspiel (see
-    /// <see cref="JapanStyleOf"/>); for the California add-on the sunny, upbeat Californian West Coast styles
+    /// town (Kamakura, Japan) cozy Japanese music on the "royal road" chords, with pentatonic (yonanuki) tunes on
+    /// bamboo flutes, a kalimba and a music box, and no string sounds (see <see cref="KamakuraStyleOf"/>); for
+    /// Florida tropical house (<see cref="FloridaStyleOf"/>); for the California add-on the sunny, upbeat Californian West Coast styles
     /// below. One 16-bar loop for each soundscape, every one original. Jangly clean electric guitars and strummed acoustics, a twangy surf guitar through spring
     /// reverb, a combo organ, Rhodes, the West Coast synth whistle, soft "ooh" harmonies, a picked bass, and
     /// live-feeling drums with claps, tambourine and a crash to open each half. Per place: a laid-back
@@ -50,7 +50,7 @@ namespace DribbleToSchool.Audio
                 {
                     case MusicCountry.California: return Arrange(StyleOf(scape));
                     case MusicCountry.Florida: return ArrangeFlorida(FloridaStyleOf(scape));
-                    default: return Arrange(JapanStyleOf(scape));
+                    default: return ArrangeKamakura(KamakuraStyleOf(scape));
                 }
             }
             finally { Scratch.End(); }
@@ -97,89 +97,185 @@ namespace DribbleToSchool.Audio
         }
 
         /// <summary>
-        /// The original town's music (Kamakura, a seaside town south of Tokyo): Japanese city pop and J-pop.
-        /// Most of it turns on the "royal road" (IVmaj7 - V7 - iiim7 - vim7) and its relatives, with
-        /// pentatonic yonanuki tunes (no fourth, no seventh) on a koto-like pluck or a breathy bamboo flute.
+        /// Kamakura's music (v145): cozy Japanese, the user's brief ("cozy music but in Japanese style"), with no string sounds
+        /// (no koto, guitar, piano or string pad) and Florida's round synth bass, the one thing it shares with Florida's music.
+        /// Its own gentle kit (a soft swung groove, a side-stick, a woodblock, soft taiko in the fills, a little vinyl), a sho-like
+        /// mouth-organ chord breathing under it, wind chimes and a temple bowl at the sections' turns, and the tunes on the
+        /// shakuhachi, the shinobue (a high bamboo flute), the kalimba, a music box, the vibes and the marimba, written on the
+        /// yonanuki pentatonic (no fourth, no seventh) over the "royal road" (IVmaj7-V7-iiim7-vim7) and ii-V-I-vi, at 84 to 100
+        /// BPM. ArrangeKamakura lays each place's two hooks out over a minute and more (tools/music_hooks/check.py checks them).
         /// </summary>
-        static Style JapanStyleOf(Soundscape scape)
+        static Style KamakuraStyleOf(Soundscape scape)
         {
             switch (scape)
             {
                 case Soundscape.Street:
-                    // A bright J-pop morning: jangly guitars on the royal road, a koto tune, then a glockenspiel over "ooh"s.
+                    // The home street in the morning: a music-box tune in D on the royal road (IV-V-iii-vi), the shinobue's chorus; a kalimba to open.
                     return new Style
                     {
-                        bpm = 122, swing = 0, key = 62, mode = Mode.Yona, seed = 111,
-                        chords = new[] { "Gmaj7", "A7", "F#m7", "Bm7", "Gmaj7", "A7", "D", "D",
-                                         "Gmaj7", "A7", "F#m7", "Bm7", "Em7", "F#m7", "Gmaj7", "A7sus4" },
-                        comp = Comp.Jangle, comp2 = Comp.Rhodes, comp2OnlyInB = true, leadA = Lead.Koto, leadB = Lead.Glock,
-                        leadLo = 69, leadHi = 86, bass = Bass.Pick, kit = Kit.Pop, oohs = true, claps = true, tambourine = true,
+                        bpm = 92, swing = 0.06, key = 62, mode = Mode.Yona, seed = 711,
+                        chords = new[] { "Gmaj7", "A7", "F#m7", "Bm7", "Gmaj7", "A7", "F#m7", "Bm7",
+                                         "Gmaj7", "A7", "F#m7 Bm7", "Em7 A7", "Gmaj7", "A7", "F#m7 Bm7", "Em7 A7" },
+                        hookA = new[]
+                        {
+                            "D5 _ B4 _ A4 _ F#4 _ A4 _ _ _ B4 _ D5 _",
+                            "E5 _ D5 _ B4 _ A4 _ A4 _ _ _ . . E4 _",
+                            "F#5 _ E5 _ D5 _ B4 _ A4 _ _ _ F#4 _ A4 _",
+                            "B4 _ _ _ A4 _ F#4 _ D4 _ _ _ . . . .",
+                        },
+                        hookB = new[]
+                        {
+                            "B5 . A5 . F#5 _ E5 _ D5 _ _ _ B4 _ A4 _",
+                            "A4 _ _ _ B4 _ D5 _ E5 _ _ _ D5 _ B4 _",
+                            "F#5 _ _ _ E5 _ D5 _ D5 _ _ _ B4 _ A4 _",
+                            "E5 _ _ _ D5 _ B4 _ A4 _ _ _ _ _ _ _",
+                        },
+                        leadSoft = Lead.Kalimba, leadA = Lead.Glock, leadB = Lead.PanFlute, arp = Lead.Kalimba, oohs = true,
+                        leadSend = 0.38f, room = 0.6f, wet = 0.24f, tone = 6500, pump = 0.12f, bassPump = 0.1f, drive = 0.05f, vinyl = 0.25f, loudness = 0.12f,
                     };
                 case Soundscape.Market:
-                    // Shopping-street city pop: Rhodes and sixteenth guitar chops, a slinky bass, a synth lead.
+                    // The shop lane: a bouncy kalimba tune in F, the shinobue's chorus on ii-V-I-vi; a music box to open.
                     return new Style
                     {
-                        bpm = 112, swing = 0.04, key = 65, mode = Mode.Yona, seed = 122,
-                        chords = new[] { "Bbmaj7", "A7", "Dm7", "Dm7", "Bbmaj7", "C7", "Am7", "Dm7",
-                                         "Gm7", "C7", "Fmaj7", "Dm7", "Bbmaj7", "C7", "Am7", "A7" },
-                        comp = Comp.Rhodes, comp2 = Comp.Funk, leadA = Lead.Koto, leadB = Lead.Whistle,
-                        leadLo = 67, leadHi = 84, bass = Bass.Pick, kit = Kit.Funk, claps = true,
-                        room = 0.45f, wet = 0.18f,
+                        bpm = 96, swing = 0.06, key = 65, mode = Mode.Yona, seed = 722,
+                        chords = new[] { "Bbmaj7", "C7", "Am7", "Dm7", "Bbmaj7", "C7", "Am7", "Dm7",
+                                         "Gm7", "C7", "Fmaj7", "Dm7", "Gm7", "C7", "Fmaj7", "Dm7" },
+                        hookA = new[]
+                        {
+                            "C5 . D5 . F5 . D5 . C5 . A4 . C5 _ . .",
+                            "C5 . D5 . G5 . F5 . G5 . D5 . C5 _ . .",
+                            "A4 . C5 . D5 . C5 . A4 . G4 . A4 _ . .",
+                            "F4 _ _ _ A4 _ _ _ D5 _ _ _ . . . .",
+                        },
+                        hookB = new[]
+                        {
+                            "D5 _ _ _ F5 _ G5 _ A5 _ _ _ G5 _ F5 _",
+                            "G5 _ _ _ F5 _ D5 _ C5 _ _ _ D5 _ C5 _",
+                            "A4 _ _ _ C5 _ D5 _ F5 _ _ _ D5 _ C5 _",
+                            "D5 _ _ _ C5 _ A4 _ F4 _ _ _ _ _ _ _",
+                        },
+                        leadSoft = Lead.Glock, leadA = Lead.Kalimba, leadB = Lead.PanFlute, arp = Lead.Glock, oohs = false,
+                        leadSend = 0.38f, room = 0.55f, wet = 0.22f, tone = 6500, pump = 0.12f, bassPump = 0.1f, drive = 0.05f, vinyl = 0.25f, loudness = 0.12f,
                     };
                 case Soundscape.Beach:
-                    // Shonan summer: a driving beach pop on the royal road, an organ in the second half, guitar then flute.
+                    // Shonan's beach: the shinobue's tune in G, a music box's chorus over "ooh"s; vibes to open.
                     return new Style
                     {
-                        bpm = 130, swing = 0, key = 64, mode = Mode.Yona, seed = 133,
-                        chords = new[] { "Amaj7", "B7", "G#m7", "C#m7", "Amaj7", "B7", "E", "E",
-                                         "Amaj7", "B7", "G#m7", "C#m7", "F#m7", "B7", "E", "B7" },
-                        comp = Comp.Jangle, comp2 = Comp.Organ, comp2OnlyInB = true, leadA = Lead.Guitar, leadB = Lead.Flute,
-                        leadLo = 66, leadHi = 83, leadSend = 0.5f, bass = Bass.Pick, kit = Kit.Pop, tambourine = true, claps = true,
-                        room = 0.7f, wet = 0.24f,
-                    };
-                case Soundscape.Underpass:
-                    // Night city pop under the railway: held Rhodes, a deep sub, a gliding synth then the flute, the tunnel's echo.
-                    return new Style
-                    {
-                        bpm = 96, swing = 0.06, key = 57, mode = Mode.YonaMinor, seed = 144,
-                        chords = new[] { "Fmaj9", "E7", "Am9", "Am9", "Dm9", "G13", "Cmaj9", "E7",
-                                         "Fmaj9", "E7", "Am9", "Gm7", "Fmaj9", "Em9", "Dm9", "E7" },
-                        comp = Comp.RhodesHeld, comp2 = Comp.Funk, comp2OnlyInB = true, leadA = Lead.Whistle, leadB = Lead.Flute,
-                        leadLo = 69, leadHi = 84, leadSend = 0.45f, bass = Bass.Sub, kit = Kit.WestCoast, claps = true,
-                        room = 0.85f, wet = 0.3f, tone = 6000, vinyl = 0.4f,
+                        bpm = 94, swing = 0.05, key = 67, mode = Mode.Yona, seed = 733,
+                        chords = new[] { "Cmaj7", "D7", "Bm7", "Em7", "Cmaj7", "D7", "Bm7", "Em7",
+                                         "Am7", "D7", "Gmaj7", "Em7", "Am7", "D7", "Gmaj7", "Em7" },
+                        hookA = new[]
+                        {
+                            "B5 _ _ _ A5 _ G5 _ E5 _ _ _ D5 _ E5 _",
+                            "D5 _ _ _ . . E5 _ A5 _ _ _ G5 _ E5 _",
+                            "D5 _ _ _ B4 _ A4 _ B4 _ _ _ D5 _ E5 _",
+                            "E5 _ _ _ _ _ D5 _ B4 _ _ _ . . . .",
+                        },
+                        hookB = new[]
+                        {
+                            "G5 . A5 . B5 _ . A5 . G5 . E5 _ . D5 .",
+                            "A5 . G5 . E5 _ . D5 . E5 . A5 _ . G5 .",
+                            "B5 . A5 . G5 _ . E5 . D5 . E5 _ . G5 .",
+                            "E5 _ _ _ D5 _ _ _ E5 _ _ _ _ _ _ _",
+                        },
+                        leadSoft = Lead.Vibes, leadA = Lead.PanFlute, leadB = Lead.Glock, arp = Lead.Kalimba, oohs = true,
+                        leadSend = 0.38f, room = 0.65f, wet = 0.26f, tone = 6500, pump = 0.12f, bassPump = 0.1f, drive = 0.05f, vinyl = 0.25f, loudness = 0.12f,
                     };
                 case Soundscape.Site:
-                    // Busy and upbeat: palm-muted eighths, an organ, a twangy guitar tune then the koto.
+                    // The building site, the liveliest: a marimba tune in C with repeated notes, the shinobue's chorus; a kalimba to open.
                     return new Style
                     {
-                        bpm = 126, swing = 0, key = 62, mode = Mode.Yona, seed = 155,
-                        chords = new[] { "Bm7", "Gmaj7", "A7", "D", "Bm7", "Gmaj7", "Em7", "A7",
-                                         "Gmaj7", "A7", "F#m7", "Bm7", "Gmaj7", "A7", "D", "A7" },
-                        comp = Comp.Palm, comp2 = Comp.Organ, comp2OnlyInB = true, leadA = Lead.Guitar, leadB = Lead.Koto,
-                        leadLo = 66, leadHi = 83, leadSend = 0.5f, bass = Bass.Pick, kit = Kit.Surf, claps = true,
-                        room = 0.6f, wet = 0.22f,
+                        bpm = 100, swing = 0.04, key = 60, mode = Mode.Yona, seed = 755,
+                        chords = new[] { "Fmaj7", "G7", "Em7", "Am7", "Fmaj7", "G7", "Em7", "Am7",
+                                         "Dm7", "G7", "Cmaj7", "Am7", "Dm7", "G7", "Cmaj7", "Am7" },
+                        hookA = new[]
+                        {
+                            "C5 . C5 . A4 . G4 . A4 . C5 . D5 _ . .",
+                            "D5 . D5 . C5 . A4 . G4 . A4 . G4 _ . .",
+                            "E5 . E5 . D5 . C5 . D5 . E5 . G5 _ . .",
+                            "A4 _ _ _ G4 _ _ _ E4 _ _ _ . . . .",
+                        },
+                        hookB = new[]
+                        {
+                            "D5 _ _ _ E5 _ D5 _ C5 _ _ _ A4 _ _ _",
+                            "G4 _ _ _ A4 _ G4 _ D4 _ _ _ G4 _ _ _",
+                            "E5 _ _ _ G5 _ E5 _ D5 _ _ _ C5 _ _ _",
+                            "C5 _ _ _ A4 _ _ _ A4 _ _ _ _ _ _ _",
+                        },
+                        leadSoft = Lead.Kalimba, leadA = Lead.Marimba, leadB = Lead.PanFlute, arp = Lead.Kalimba, oohs = true,
+                        leadSend = 0.38f, room = 0.55f, wet = 0.22f, tone = 6500, pump = 0.12f, bassPump = 0.1f, drive = 0.05f, vinyl = 0.25f, loudness = 0.12f,
+                    };
+                case Soundscape.Underpass:
+                    // The tunnel at night, the slowest: the shakuhachi's tune in Eb, long notes in the echo, then the vibes; a music box to open.
+                    return new Style
+                    {
+                        bpm = 86, swing = 0.08, key = 63, mode = Mode.Yona, seed = 744,
+                        chords = new[] { "Abmaj7", "Bb7", "Gm7", "Cm7", "Abmaj7", "Bb7", "Gm7", "Cm7",
+                                         "Fm7", "Bb7", "Ebmaj7", "Cm7", "Fm7", "Bb7", "Ebmaj7", "Cm7" },
+                        hookA = new[]
+                        {
+                            "Bb4 _ _ _ _ _ G4 _ F4 _ _ _ Eb4 _ _ _",
+                            "F4 _ _ _ _ _ Eb4 _ Bb3 _ _ _ . . . .",
+                            "G4 _ _ _ Bb4 _ C5 _ Bb4 _ _ _ G4 _ _ _",
+                            "C5 _ _ _ _ _ Bb4 _ G4 _ _ _ . . . .",
+                        },
+                        hookB = new[]
+                        {
+                            "Eb5 _ _ _ C5 _ _ _ F5 _ _ _ Eb5 _ _ _",
+                            "F5 _ _ _ _ _ Eb5 _ Bb4 _ _ _ F5 _ _ _",
+                            "G5 _ _ _ F5 _ Eb5 _ C5 _ _ _ Bb4 _ _ _",
+                            "Bb4 _ _ _ G4 _ _ _ Eb4 _ _ _ _ _ _ _",
+                        },
+                        leadSoft = Lead.Glock, leadA = Lead.Flute, leadB = Lead.Vibes, arp = Lead.Glock, oohs = false,
+                        leadSend = 0.38f, room = 0.8f, wet = 0.3f, tone = 6500, pump = 0.12f, bassPump = 0.1f, drive = 0.05f, vinyl = 0.25f, loudness = 0.12f,
                     };
                 case Soundscape.Park:
-                    // A gentle J-pop afternoon: strummed acoustic, the flute's tune then the koto, "ooh"s, claps and a shaker.
+                    // The temple ground: the shakuhachi's tune in E, the shinobue's chorus over "ooh"s; a kalimba to open.
                     return new Style
                     {
-                        bpm = 104, swing = 0, key = 67, mode = Mode.Yona, seed = 166,
-                        chords = new[] { "Cmaj7", "D7", "Bm7", "Em7", "Cmaj7", "D7", "G", "G",
-                                         "Am7", "Bm7", "Cmaj7", "D7", "Cmaj7", "D7", "G", "D7sus4" },
-                        comp = Comp.Acoustic, comp2 = Comp.Fingerpick, comp2OnlyInB = true, leadA = Lead.Flute, leadB = Lead.Koto,
-                        leadLo = 69, leadHi = 86, bass = Bass.Pick, kit = Kit.Folk, oohs = true, claps = true, tambourine = true,
-                        room = 0.6f, wet = 0.24f,
+                        bpm = 88, swing = 0.06, key = 64, mode = Mode.Yona, seed = 766,
+                        chords = new[] { "Amaj7", "B7", "G#m7", "C#m7", "Amaj7", "B7", "G#m7", "C#m7",
+                                         "F#m7", "B7", "Emaj7", "C#m7", "F#m7", "B7", "Emaj7", "C#m7" },
+                        hookA = new[]
+                        {
+                            "C#5 _ _ _ B4 _ C#5 _ E5 _ _ _ C#5 _ B4 _",
+                            "B4 _ _ _ F#5 _ E5 _ F#5 _ _ _ . . . .",
+                            "G#5 _ _ _ F#5 _ E5 _ F#5 _ _ _ G#5 _ B5 _",
+                            "C#5 _ _ _ _ _ _ _ B4 _ _ _ . . . .",
+                        },
+                        hookB = new[]
+                        {
+                            "G#5 . F#5 . E5 _ _ . C#5 . E5 . F#5 _ _ .",
+                            "F#5 . E5 . C#5 _ _ . B4 . C#5 . B4 _ _ .",
+                            "E5 . F#5 . G#5 _ _ . B5 . G#5 . F#5 _ _ .",
+                            "E5 _ _ _ C#5 _ _ _ B4 _ _ _ _ _ _ _",
+                        },
+                        leadSoft = Lead.Kalimba, leadA = Lead.Flute, leadB = Lead.PanFlute, arp = Lead.Kalimba, oohs = true,
+                        leadSend = 0.38f, room = 0.75f, wet = 0.28f, tone = 6500, pump = 0.12f, bassPump = 0.1f, drive = 0.05f, vinyl = 0.25f, loudness = 0.12f,
                     };
                 default:
-                    // The menu: evening by the sea in Kamakura. Fingerpicked guitar and Rhodes, a laid-back beat, the koto then the flute.
+                    // The menu, a lullaby in Bb: the kalimba's tune, then the shakuhachi's; vibes to open.
                     return new Style
                     {
-                        bpm = 92, swing = 0.06, key = 57, mode = Mode.Yona, seed = 107,
-                        chords = new[] { "Dmaj7", "E7", "C#m7", "F#m7", "Dmaj7", "E7", "A", "A",
-                                         "Bm7", "C#m7", "Dmaj7", "E7", "Dmaj7", "C#m7", "Bm7", "E7sus4" },
-                        comp = Comp.Fingerpick, comp2 = Comp.RhodesHeld, leadA = Lead.Koto, leadB = Lead.Flute,
-                        leadLo = 69, leadHi = 84, bass = Bass.Pick, kit = Kit.Folk, oohs = true,
-                        room = 0.65f, wet = 0.26f, tone = 6500,
+                        bpm = 84, swing = 0.06, key = 70, mode = Mode.Yona, seed = 707,
+                        chords = new[] { "Ebmaj7", "F7", "Dm7", "Gm7", "Ebmaj7", "F7", "Dm7", "Gm7",
+                                         "Cm7", "F7", "Bbmaj7", "Gm7", "Cm7", "F7", "Bbmaj7", "Gm7" },
+                        hookA = new[]
+                        {
+                            "D5 _ F5 _ G5 _ F5 _ D5 _ _ _ C5 _ Bb4 _",
+                            "C5 _ _ _ F4 _ _ _ C5 _ _ _ . . . .",
+                            "D5 _ F5 _ G5 _ F5 _ F5 _ _ _ D5 _ C5 _",
+                            "Bb4 _ _ _ G4 _ _ _ F4 _ _ _ . . . .",
+                        },
+                        hookB = new[]
+                        {
+                            "G5 _ _ _ F5 _ D5 _ C5 _ _ _ Bb4 _ _ _",
+                            "C5 _ _ _ _ _ D5 _ F5 _ _ _ _ _ _ _",
+                            "G5 _ _ _ F5 _ D5 _ F5 _ _ _ G5 _ Bb5 _",
+                            "Bb5 _ _ _ G5 _ _ _ F5 _ _ _ _ _ _ _",
+                        },
+                        leadSoft = Lead.Vibes, leadA = Lead.Kalimba, leadB = Lead.Flute, arp = Lead.Glock, oohs = false,
+                        leadSend = 0.38f, room = 0.75f, wet = 0.3f, tone = 6500, pump = 0.12f, bassPump = 0.1f, drive = 0.05f, vinyl = 0.25f, loudness = 0.12f,
                     };
             }
         }
@@ -684,7 +780,7 @@ namespace DribbleToSchool.Audio
         static float LeadLevel(Lead lead)
         {
             // (per half-second note, RMS: the steel pan 0.23, the vibes 0.22, the marimba and the kalimba 0.18, the
-            // glockenspiel and the synth pluck 0.11, the pan flute 0.25)
+            // glockenspiel and the synth pluck 0.11, the pan flute 0.25, the shakuhachi 0.17); Florida's and Kamakura's tunes
             switch (lead)
             {
                 case Lead.Marimba: return 1.25f;
@@ -693,12 +789,158 @@ namespace DribbleToSchool.Audio
                 case Lead.Glock: return 2.1f;
                 case Lead.Pluck: return 2.1f;
                 case Lead.PanFlute: return 0.92f;
+                case Lead.Flute: return 1.35f;     // (Kamakura's shakuhachi, v145: 0.17)
                 default: return 1f;
             }
         }
 
         /// <summary>The arpeggio's voice, levelled as the tunes are (its track sits under the tune's).</summary>
         static float ArpLevel(Lead voice) { return LeadLevel(voice); }
+
+        /// <summary>
+        /// Kamakura's arranger (v145, cozy Japanese): a 32-bar loop in four sections of eight, so it develops through a level.
+        ///   1. Bars 1-8, the opening: a temple bowl and wind chimes, the sho's chords, the synth bass, the light groove; the first
+        ///      hook once on the soft voice, then the arpeggio for four bars.
+        ///   2. Bars 9-16, the groove: the full kit and the arpeggio; the first hook twice.
+        ///   3. Bars 17-24, the lift: the second chord cycle, the second hook twice, chimes, "ooh"s (some places), the shaker.
+        ///   4. Bars 25-32, the rest: the bowl again, the kit out but the woodblock, the bass held, the first hook on the soft
+        ///      voice; the groove comes back for the last four bars and soft taiko lead into the loop's start.
+        /// No string sound plays; the bass is Florida's synth bass. The style's 16 chords are its two cycles twice (A A B B).
+        /// </summary>
+        static float[] ArrangeKamakura(Style st)
+        {
+            const int KmBars = 32;
+            var chords = new string[KmBars];
+            for (int b = 0; b < KmBars; b++)
+                chords[b] = st.chords[(b / 8 == 2 ? 8 : 0) + b % 8];
+            var s = new Song(st.bpm, st.swing, st.key, st.mode, st.seed, chords);
+            var rng = new Random(st.seed * 31);
+            var mix = new Mixdown(s.Length)
+            {
+                roomSize = st.room, damping = 0.65f, wet = st.wet, tone = st.tone, drive = st.drive, wowCents = st.wow,
+            };
+            var sho = mix.Add(0f, 0.45f, 0.45f);
+            var oohs = mix.Add(0f, 0.55f, 0.28f);
+            var arp = mix.Add(0.3f, 0.35f, 0.3f);
+            var bass = mix.Add(0f, 0.04f, 0.8f);
+            var lead = mix.Add(0.08f, st.leadSend, 0.62f);
+            var soft = mix.Add(-0.15f, 0.42f, 0.55f);
+            var bells = mix.Add(-0.3f, 0.6f, 0.35f);     // the bowl and the chimes
+            var kick = mix.Add(0f, 0.04f, 0.75f);
+            var snare = mix.Add(0.05f, 0.2f, 0.5f);
+            var hats = mix.Add(0.3f, 0.08f, 0.2f);
+            var perc = mix.Add(-0.35f, 0.18f, 0.38f);
+            var vinyl = mix.Add(0f, 0f, 0.5f * st.vinyl);
+            sho.duck = oohs.duck = arp.duck = st.pump;
+            bass.duck = st.bassPump;
+
+            for (int bar = 0; bar < KmBars; bar++)
+            {
+                int section = bar / 8, inSection = bar % 8;
+                bool fill = bar == KmBars - 1;
+                bool rest = section == 3 && inSection < 4;
+                int level = section == 0 || (section == 3 && !rest) ? 1 : rest ? 0 : 2;
+                foreach (var ch in s.ChordsIn(bar))
+                {
+                    Instruments.ShoPad(sho, s.T(bar, ch.beat), ch.chord.Voice(60, 76, 4), s.Beats(ch.length - 0.05), rest ? 0.6f : 0.5f);
+                    if (st.oohs && section == 2)
+                        Instruments.Oohs(oohs, s.T(bar, ch.beat), ch.chord.Voice(60, 72, 3), s.Beats(ch.length), 0.5f, bar * 7 + 1);
+                    if (rest)
+                    {
+                        int root = ch.chord.Bass(36);
+                        if (root > 43) root -= 12;
+                        Instruments.SynthBass(bass, s.T(bar, ch.beat), Synth.MidiToHz(root), s.Beats(ch.length - 0.2), 0.6f);
+                    }
+                    else CozyBass(bass, s, bar, ch);
+                }
+                bool arpHere = (section == 0 && inSection >= 4) || section == 1 || section == 2 || (section == 3 && !rest);
+                if (arpHere) Arpeggio(st.arp, arp, s, bar, 0.8f * ArpLevel(st.arp));
+                if (inSection == 0)
+                {
+                    // a temple bowl at the opening and the rest (on the key's root), wind chimes at every section's turn
+                    if (section == 0 || section == 3) Instruments.TempleBowl(bells, s.T(bar, 0), Synth.MidiToHz(st.key + 12), 0.55f);
+                    int[] penta = { 0, 2, 4, 7, 9 };
+                    for (int k = 0; k < 5; k++)
+                        Instruments.WindChime(bells, s.T(bar, 0.5 + k * 0.37 + rng.NextDouble() * 0.15),
+                            Synth.MidiToHz(st.key + 24 + penta[rng.Next(penta.Length)] + (rng.NextDouble() < 0.4 ? 12 : 0)), 0.3f - k * 0.04f);
+                }
+                CozyDrums(s, mix, kick, snare, hats, perc, bar, section, level, fill, rng);
+            }
+            if (st.vinyl > 0f) Instruments.Vinyl(vinyl, 1f, st.seed);
+
+            var parts = new List<KeyValuePair<Lead, List<Note>>>
+            {
+                new KeyValuePair<Lead, List<Note>>(st.leadSoft, Hook(st.hookA, 0, 1, 0, 0.85f * LeadLevel(st.leadSoft))),
+                new KeyValuePair<Lead, List<Note>>(st.leadA, Hook(st.hookA, 8, 2, 0, LeadLevel(st.leadA))),
+                new KeyValuePair<Lead, List<Note>>(st.leadB, Hook(st.hookB, 16, 2, 0, LeadLevel(st.leadB))),
+                new KeyValuePair<Lead, List<Note>>(st.leadSoft, Hook(st.hookA, 24, 1, 0, 0.8f * LeadLevel(st.leadSoft))),
+            };
+            for (int p = 0; p < parts.Count; p++)
+            {
+                double prev = 0, prevEnd = -1;
+                var into = p == 0 || p == 3 ? soft : lead;
+                foreach (var n in parts[p].Value)
+                {
+                    bool legato = Math.Abs(n.beat - prevEnd) < 1e-6;
+                    prev = PlayLead(parts[p].Key, into, s, n, legato ? prev : 0);
+                    prevEnd = n.beat + n.len;
+                }
+            }
+            return mix.Render(st.loudness);
+        }
+
+        /// <summary>Kamakura's bass line (Florida's synth bass, played laid back): the root held, a push on the "and" of two, the fifth on three.</summary>
+        static void CozyBass(Track bass, Song s, int bar, ChordAt ch)
+        {
+            int root = ch.chord.Bass(36);
+            if (root > 43) root -= 12;
+            double[] at = ch.length >= 4 ? new[] { 0, 1.75, 2.5 } : new[] { 0, 1.5 };
+            int[] line = ch.length >= 4 ? new[] { root, root, root + 7 } : new[] { root, root + 7 };
+            double[] len = ch.length >= 4 ? new[] { 1.5, 0.5, 1.2 } : new[] { 1.3, 0.4 };
+            for (int k = 0; k < at.Length; k++)
+                if (at[k] < ch.length)
+                    Instruments.SynthBass(bass, s.T(bar, ch.beat + at[k]), Synth.MidiToHz(line[k]), s.Beats(len[k]), k == 0 ? 0.8f : 0.65f);
+        }
+
+        /// <summary>
+        /// Kamakura's cozy kit (v145, its own): a soft, swung groove. The boomy kick on the one and the "and" of three (and two's
+        /// "and" every other bar), a soft snare with a side-stick on two and four, swung hats, the shaker in the lift, a woodblock
+        /// (the temple's mokugyo) on the last "and" of every other bar; in the rest only the woodblock on two and four and quiet
+        /// hats; soft taiko in the loop's last bar.
+        /// </summary>
+        static void CozyDrums(Song s, Mixdown mix, Track kick, Track snare, Track hats, Track perc, int bar, int section, int level, bool fill, Random rng)
+        {
+            if (level >= 1)
+            {
+                double[] kicks = bar % 2 == 0 ? new[] { 0, 2.5 } : new[] { 0, 1.5, 2.5 };
+                foreach (double k in kicks)
+                {
+                    double t = s.T(bar, k);
+                    Instruments.Kick(kick, t, (k == 0 ? 0.85f : 0.7f) * (level == 1 ? 0.85f : 1f));
+                    mix.Duck(t, 0.3f, 0.12);
+                }
+                foreach (double b in new[] { 1.0, 3.0 })
+                {
+                    if (fill && b >= 3) continue;
+                    if (level == 2) Instruments.Snare(snare, s.T(bar, b), 0.45f, bar * 4 + (int)b);
+                    Instruments.Rim(snare, s.T(bar, b), level == 2 ? 0.35f : 0.5f);
+                }
+            }
+            else
+                foreach (double b in new[] { 1.0, 3.0 }) Instruments.Woodblock(perc, s.T(bar, b), 0.4f, b == 1.0);
+            for (int e = 0; e < 8; e++)
+            {
+                double b = e * 0.5;
+                if (fill && b >= 3) break;
+                float jitter = (float)(0.85 + rng.NextDouble() * 0.3);
+                Instruments.Hat(hats, s.T(bar, b), (e % 2 == 0 ? 0.3f : 0.2f) * jitter * (level == 0 ? 0.6f : 1f), bar * 8 + e);
+            }
+            if (section == 2)
+                for (double b = 0.25; b < 4; b += 0.5) Instruments.Shaker(perc, s.T(bar, b), 0.16f, bar * 16 + (int)(b * 4));
+            if (level >= 1 && bar % 2 == 1 && !fill) Instruments.Woodblock(perc, s.T(bar, 3.5), 0.35f, true);
+            if (fill)
+                for (int k = 0; k < 4; k++) Instruments.Tom(perc, s.T(bar, 3 + k * 0.25), 120 - k * 10, 0.45f + k * 0.08f);
+        }
 
         /// <summary>
         /// A written four-bar hook, played twice from <paramref name="firstBar"/>: each bar sixteen semiquaver steps, a note name

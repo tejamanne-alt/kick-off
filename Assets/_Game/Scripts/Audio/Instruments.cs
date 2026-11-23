@@ -1120,6 +1120,106 @@ namespace DribbleToSchool.Audio
             }
         }
 
+        // ---------- Kamakura's cozy Japanese band (v145: no string sounds; the synth bass is Florida's) ----------
+
+        /// <summary>
+        /// A shō-like chord: the Japanese mouth organ's held reed tone, each note bright but soft (harmonics falling as 1/k, up
+        /// to the sixth), swelling in slowly, breathing a little as it is held, fading slowly. Rotating phasors.
+        /// </summary>
+        public static void ShoPad(Track tr, double time, int[] midi, double dur, float vel)
+        {
+            int start = Index(time);
+            const double rel = 0.6, attack = 0.35;
+            int n = (int)((dur + rel) * Sr);
+            const int H = 6;
+            int voices = midi.Length * H;
+            var re = new double[voices]; var im = new double[voices]; var cr = new double[voices]; var ci = new double[voices]; var am = new double[voices];
+            int u = 0;
+            for (int m = 0; m < midi.Length; m++)
+                for (int h = 1; h <= H; h++)
+                {
+                    double f = Synth.MidiToHz(midi[m]) * h * (1 + 0.0007 * m);
+                    if (f > 8000) continue;
+                    double w = TwoPi * f / Sr;
+                    re[u] = Math.Cos(m * 2.1 + h); im[u] = Math.Sin(m * 2.1 + h); cr[u] = Math.Cos(w); ci[u] = Math.Sin(w);
+                    am[u] = (1.0 / h) * (h % 2 == 0 ? 0.6 : 1.0) / midi.Length;
+                    u++;
+                }
+            double phase = (midi.Length > 0 ? midi[0] : 0) * 0.37;
+            for (int i = 0; i < n; i++)
+            {
+                double t = i / (double)Sr;
+                double v = 0;
+                for (int j = 0; j < u; j++)
+                {
+                    double r = re[j] * cr[j] - im[j] * ci[j];
+                    im[j] = re[j] * ci[j] + im[j] * cr[j];
+                    re[j] = r;
+                    v += im[j] * am[j];
+                }
+                if ((i & 1023) == 0)
+                    for (int j = 0; j < u; j++) { double mm = Math.Sqrt(re[j] * re[j] + im[j] * im[j]); re[j] /= mm; im[j] /= mm; }
+                double env = (t < attack ? t / attack : 1.0) * (0.9 + 0.1 * Math.Sin(TwoPi * (0.6 * t + phase)));
+                if (t > dur) env *= Math.Max(0, 1 - (t - dur) / rel);
+                tr.Add(start + i, (float)(v * env) * vel * 0.8f);   // (a chord at 0.14 RMS, as Florida's pad)
+            }
+        }
+
+        /// <summary>A woodblock (the temple's mokugyo, a hollow wooden knock): a short, round tone with a dry click.</summary>
+        public static void Woodblock(Track tr, double time, float vel, bool high)
+        {
+            int start = Index(time);
+            int n = (int)(0.12 * Sr);
+            double ph = 0, f0 = high ? 1050 : 760;
+            for (int i = 0; i < n; i++)
+            {
+                double t = i / (double)Sr;
+                ph += f0 * (1 + 0.05 * Math.Exp(-t * 200)) / Sr;
+                double v = Math.Sin(TwoPi * ph) * Math.Exp(-t * 45) + (t < 0.001 ? 0.4 * (1 - t / 0.001) : 0);
+                tr.Add(start + i, (float)v * vel * 0.55f * Tail(i, n));
+            }
+        }
+
+        /// <summary>A temple bowl (the rin), struck softly: inharmonic partials ringing for seconds, the high ones dying first.</summary>
+        public static void TempleBowl(Track tr, double time, double freq, float vel)
+        {
+            int start = Index(time);
+            int n = (int)(4.5 * Sr);
+            double[] ratio = { 1.0, 2.71, 5.15, 8.4 };
+            double[] amp = { 1.0, 0.5, 0.25, 0.12 };
+            double[] decay = { 0.9, 1.5, 2.6, 4.0 };
+            var ph = new double[ratio.Length];
+            for (int i = 0; i < n; i++)
+            {
+                double t = i / (double)Sr;
+                double v = 0;
+                for (int k = 0; k < ratio.Length; k++)
+                {
+                    double f = freq * ratio[k];
+                    if (f > 9500) continue;
+                    ph[k] += f * (1 + 0.0015 * Math.Sin(TwoPi * 1.3 * t)) / Sr;
+                    v += Math.Sin(TwoPi * ph[k]) * amp[k] * Math.Exp(-t * decay[k]);
+                }
+                tr.Add(start + i, (float)(v * Math.Min(1, t / 0.004)) * vel * 0.3f * Tail(i, n));
+            }
+        }
+
+        /// <summary>A wind chime (the summer furin): a glassy tone, a bright partial over it, a quick strike and a short ring.</summary>
+        public static void WindChime(Track tr, double time, double freq, float vel)
+        {
+            int start = Index(time);
+            int n = (int)(1.4 * Sr);
+            double p1 = 0, p2 = 0;
+            for (int i = 0; i < n; i++)
+            {
+                double t = i / (double)Sr;
+                p1 += freq / Sr;
+                p2 += Math.Min(freq * 2.76, 9500) / Sr;
+                double v = Math.Sin(TwoPi * p1) * Math.Exp(-t * 3.5) + 0.35 * Math.Sin(TwoPi * p2) * Math.Exp(-t * 9);
+                tr.Add(start + i, (float)(v * Math.Min(1, t / 0.0015)) * vel * 0.3f * Tail(i, n));
+            }
+        }
+
         /// <summary>A picked electric bass: a round string with a little pick at the front.</summary>
         public static void PickBass(Track tr, double time, double freq, double dur, float vel, int seed)
         {
