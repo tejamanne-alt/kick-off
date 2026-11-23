@@ -2536,8 +2536,8 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
     - "ooh"s in the lift.
   - **The seven places,** each with new chords and two new written hooks (14 in all, all passing
     `tools/music_hooks/check.py`):
-    - **Street** (Calle Ocho): F major, 122 BPM, the classic I-IV-V-IV montuno, horns on both hooks.
-    - **Market:** C major, 118 BPM, a cha-cha I-vi-IV-V; marimba, then piano, then horns.
+    - **Street** (downtown: Brickell, Biscayne, the Downpour): F major, 122 BPM, the classic I-IV-V-IV montuno, horns on both hooks.
+    - **Market** (Little Havana): C major, 118 BPM, a cha-cha I-vi-IV-V; marimba, then piano, then horns.
     - **Beach:** G major, 124 BPM; horns, then the piano over "ooh"s, with an off-beat guitar.
     - **Site:** D major, 126 BPM; repeated-note horn riffs.
     - **Underpass:** Bb major, 116 BPM, Latin jazz-pop; a flute, then the piano, over held Rhodes chords.
@@ -2554,7 +2554,7 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
 - **Checked:**
   - `check.py`;
   - `tools/audio_hash`: only Florida's music changed, and the new `expected.txt` is in the commit;
-  - a spectrogram of Calle Ocho (the four sections, the tune over the montuno);
+  - a spectrogram of the Street loop (the four sections, the tune over the montuno);
   - compile with no warnings;
   - `unity_api_check` 6000.6 and 6000.7.
   - Previews of all seven places (MP3) went to the user.

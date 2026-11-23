@@ -290,7 +290,7 @@ namespace DribbleToSchool.Audio
             switch (scape)
             {
                 case Soundscape.Street:
-                    // Calle Ocho in the morning: the classic montuno (I-IV-V-IV) on the piano, the horns' riff, then their chorus
+                    // Downtown (Brickell, Biscayne, the Downpour): the classic montuno (I-IV-V-IV) on the piano, the horns' riff, then their chorus
                     // over "ooh"s; a cowbell in the lift.
                     return new Style
                     {
@@ -316,7 +316,7 @@ namespace DribbleToSchool.Audio
                         room = 0.5f, wet = 0.2f, tone = 7500, pump = 0.1f, bassPump = 0.06f, drive = 0.08f, loudness = 0.115f,
                     };
                 case Soundscape.Market:
-                    // Market day, a cha-cha's I-vi-IV-V: the tres montuno, the piano's tune in octaves, then the horns; marimba first.
+                    // Little Havana (and market day), a cha-cha's I-vi-IV-V: the tres montuno, the piano's tune in octaves, then the horns; marimba first.
                     return new Style
                     {
                         bpm = 118, swing = 0, key = 60, mode = Mode.Major, seed = 522,
