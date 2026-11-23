@@ -19,8 +19,11 @@ namespace DribbleToSchool.Progression
     [Serializable]
     public class SaveData
     {
-        /// <summary>2: the trips to school (<see cref="trips"/>); older saves are upgraded by <see cref="SchoolTrips.Upgrade"/>.</summary>
-        public const int CurrentVersion = 2;
+        /// <summary>
+        /// 2: the trips to school (<see cref="trips"/>); older saves are upgraded by <see cref="SchoolTrips.Upgrade"/>. 3: Florida's
+        /// legs renumbered when its mini-games were removed (<see cref="FloridaLegs.Upgrade"/>).
+        /// </summary>
+        public const int CurrentVersion = 3;
 
         public int version = CurrentVersion;
         public int coins;

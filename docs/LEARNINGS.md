@@ -160,6 +160,58 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
   - Add a row to `package_minimums.py` for every package a Unity release breaks.
   - Say only what was checked. "Unity upgrades it" was a guess.
 
+**A16. An attach point that the game never found (v125, fixed in v126).**
+- *What:* Miami's walk signal was built with `B.attach.append(('Attach.Red', ...))`; `kit_lib.attach` adds the `Attach.`
+  prefix itself, so the FBX held `Attach.Attach.Red` and the crossing's lamps were never lit. Nothing failed: the builder
+  skips a missing attach point quietly.
+- *Fix:* the names without the prefix; the rebuilt `PedSignalMIA.fbx` has `Attach.Red` and `Attach.Green`.
+- *Rule:* pass attach names bare (`'Red'`), never `'Attach.Red'`. After a kit build, list each model's `Attach.` empties in
+  the review sheet's log and compare them with what the builder looks up.
+
+**A17. The phone got levels several versions old (found November 2026, fixed in v129).**
+- *What:* the user's screenshots of FL2-3 Downpour to School and FL2-2 The Riverwalk showed the v123 streets: the market's
+  English shops and nobori banners, Kamakura's park trees, a red slab for an arcade, "Project: soaked" (removed in v128). The
+  code was v128; the levels on the phone were not.
+- *Why:*
+  - The generated levels were rebuilt only on the first script load of an editor session (`SessionState` bool). A pull with
+    Unity open recompiles the scripts, but the levels stayed as they were.
+  - `BuildScripts` rebuilt them only when there were no scenes at all, and Unity's own Build button checks nothing.
+  - A Florida leg whose Miami kit or plan couldn't be found fell back to a Kamakura chapter's street without a word.
+- *Fix:*
+  - `GeneratedContent.AutoBuild` checks once per *version* in a session, so a recompile with a newer `Version` rebuilds.
+  - `BuildScripts` rebuilds stale levels before building.
+  - `GeneratedContentBuildCheck` (an `IPreprocessBuildWithReport`) fails any other build while `GeneratedContent.OutOfDate`.
+  - A Florida leg built without its district logs an error and leaves the levels out of date, so they can't ship.
+- *Rule:* generated content must say which version built it, and every way to a player build must refuse an older one.
+  When the user reports something from the phone, first check which version their levels were built by.
+
+**A18. The v129 check passed while every Florida leg was on a Kamakura street (found November 2026, fixed in v130).**
+- *What:* after v129 the phone's Florida legs were still on Kamakura's market and park streets. Downpour to School, for
+  example, had Kamakura market shops, crates and sacks, with Miami's arcade, flower-bed kerbs and grey pigeons placed on top.
+  The new build check passed anyway.
+- *Why:* the check asked a separate question ("are the plan file, its leg and the kit there?") instead of looking at what the
+  builder had done. The builder used a plan cache made once per editor session from a path relative to the working
+  directory, so an empty first read stayed empty. Whatever the exact trigger on the user's machine, the two answers could
+  differ.
+- *Fix:*
+  - The builder records each Florida leg whose district it really built (`StreetBuilder.MiamiDistrictsBuilt`), and
+    `GeneratedContent.BuildAll` checks that list. A leg missing from it leaves the levels out of date and shows a dialog.
+  - The plan is read from the project folder and read again whenever it changes.
+  - The fallback's error names each input: the Florida flag, the level id, the plan file, its legs and the kit.
+- *Rule:* verify what was built, not a model of it. A guard that recomputes the inputs can agree with itself and still be
+  wrong.
+
+**A19. No Florida leg was ever built in its Miami district (v124 to v130; found by v130's diagnosis).**
+- *What:* every Florida leg in Unity was dressed in a Kamakura chapter's street, though the Blender previews showed the
+  districts. v130's error named it: "level id=(none)".
+- *Why:* `LevelBuildKit.BuildScene` set `LevelId` from the definition *after* `EditorSceneManager.NewScene`, which unloads a
+  definition nothing references. It then compares equal to null, so `LevelId` was always empty and the Miami plan, keyed by
+  it, was never found. The function's own remarks warned about this (and E1 before it), and the lines above it read the
+  route the right way.
+- *Fix:* the id is read with the rest, before the new scene. `MiamiKitTests` fails if it moves after it again.
+- *Rule:* in `BuildScene`, read everything the definition holds before `NewScene`. A preview that renders the plan is not
+  proof the game builds it: check a built scene, or a check that sees the build's outcome (A18).
+
 ## B. Performance and mobile
 
 **B1. 28 fps with uneven frames on a mid-range phone (November 2026).**
@@ -590,8 +642,99 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
   restarted), so the recommended option was taken: it left the picker and its `_CA` scenes are no longer built; its Coast
   kit and builder code stay, since Florida shares them. To bring it back: add it to `Cities.All` and build its scenes again
   in `GeneratedContent`. Don't re-add it unasked.
+- *Then (v123):* the user asked for "all the levels from Florida". Making Florida's remaining chapters into more `_FL` copies
+  would have broken this rule again; Florida got the three routes of `docs/CITIES.md` instead (twelve legs, three of them
+  mini-games), and its nine interim copies were dropped. Their own play (the drawbridge, the sprinklers, the golf cart, the
+  storm) moved into Florida's legs.
 - *Rule:* a new place brings new play: its own routes, how people there get around, and what a child there does on the way.
-  A reskin is not a city.
+  A reskin is not a city. When a request reads either way ("the rest of Florida's levels"), build it to the city's design.
+
+**D9. A city's own routes in another city's streets, with grey boxes for its things (v123, redone in v124).**
+- *What:* Florida's twelve legs had their own play but were built in a Kamakura chapter's street ("the look chapter"):
+  Kamakura's houses, poles, hills, train station and bandstand under Florida's light, its obstacles Kamakura's bins, crates
+  and (on the Riverwalk, built as the beach) boulders. Its own things were boxes: the scooters were a flat teal deck on the
+  footpath, the arcades slabs on posts, the Metrobus a white wall with boxes sliding past behind it. The map was a flat
+  drawing of rectangles. The user, from the phone: the bus level "not at all understandable", "green flat objects on the
+  footpath. Don't understand what they are", the levels "naive and repeatable and redundant to Kamakura".
+- *Why:* v123 shipped the play first and left the look "until Florida's own kit is modelled". A stand-in that is only a
+  colour and a size doesn't read as anything, and a borrowed street makes a new city look like the old one, whatever its
+  play.
+- *Fix:* the Miami kit (`kit_buildings_mia.py`: 41 models, Little Havana to the bay), royal palms and banyans, and a plan per
+  leg (`tools/blender/miami_plan.py`, `MiamiDistricts.json`) that the game builds (`StreetBuilder.Miami`) and the preview
+  renders, so the preview is the game. The Metrobus is the kit's bus, its near side taken away as the kid boards, the
+  district's street sliding past its windows. Every grey box became its model; the stops, the obstacles and the map are
+  Miami's.
+- *Rule:* a place ships with its own things modelled. Nothing goes to the user as a coloured box standing for an object,
+  and no city borrows another city's street, stops or obstacles. Render every leg through the game camera
+  (`preview_street.py --miami`) before it goes in.
+
+**D10. What the first pass at a city's own look missed (v124, finished in v125).**
+- *What:* v124 gave Florida's legs their own districts, but the play pieces were still built by chapter from the original
+  town's kits: the slide-unders (Kamakura's market stall, scaffold, boat on trestles, apple bough, roll shutter, pipe rack,
+  boom barrier, oak bough), the pit's cones and barrier, the produce crates, the crossing's signal and its little cars, the
+  wooden notice boards, the checkpoint flags, the park fountain, the pelican (a gull scaled up), the building site's crane in
+  the plan, Kamakura's trees and shrubs, the walkers' wardrobes, the shade on the road. Riverside Street (FL2-1) still had the
+  suburb's street; the people mover's ride was boxes; the school was signed "Seagrove High"; every leg played one of Kamakura's
+  ambience beds. The user: "make sure nothing overlaps between Kamakura and Florida".
+- *Why:* the v124 audit looked at the scenery a leg places, not at what each track piece builds; a piece picks its look by
+  chapter, and a Florida leg is built as a chapter.
+- *Fix:* Miami versions of every piece a Florida leg uses (same solids and play: `<Look>MIA` for the slide-unders), chosen by
+  `TrackBuilder.MiamiLook`; the Animals kit's pelican; FL2-1 in the plan; the ride from the kit; Miami's soundscapes.
+  `MiamiKitTests` now fail if the plan places anything but Florida's own models, if a Florida leg uses a slide-under look
+  without its Miami model, or if a Florida stop has no Miami set piece.
+- *Rule:* when a city gets its own look, audit every track piece its layouts call (`grep -o "t\.[A-Z][A-Za-z]*(" ...`) and
+  what each builds for that city, not only the scenery; then hold it with a test. What may be shared: the kid, the ball, coins,
+  stickers, the cast's bodies (dressed for the city), dogs and pigeons, the sky.
+
+**D11. Kamakura, the original town, was a generic town (v126).**
+- *What:* Kamakura's streets were built from the shared kits, which had grown toward no city in particular: picket
+  fences, American post boxes and garages, a bodega-style "KOTORI MART" and a striped fruit awning, Victorian lamps, spruce
+  forests on the hills, palms on the beach, sea gulls. Next to Florida's own districts it read as "anywhere". The user asked
+  for Kamakura to be made as real as Florida and gave a brief (`docs/KAMAKURA_BRIEF.md`).
+- *Why:* the first city's look came before there was a second city to tell it apart from; nothing ever asked "is this
+  Japanese?" of a shared model.
+- *Fix:* Kamakura's own kits, taken point by point from the brief: homes with kawara and standing-seam roofs, block walls,
+  board fences and gates (`Kamakura`, `kit_buildings_kmhouse.py`); shops with noren, signboards and lanterns and invented,
+  correctly written names (`kit_buildings_kmshop.py`); torii, temple gate, shrine hall, stone lanterns and steps, moss walls,
+  ema, mirrors, phones, vending machines, the tram, its poles, track and crossing, kei vehicles, a scooter and a rickshaw
+  (`KamakuraStreet`, `kit_buildings_kamst.py`); black pine, camphor, cedar, cherry in leaf, bamboo, hydrangea, azalea and
+  persimmon; black kites and crows. `StreetBuilder.Kamakura` uses them when the kit is present (`StreetBuilder.KM`), with a
+  flush lane and a green walking strip in place of the raised kerb. `KamakuraKitTests` fail if a name the builder uses is
+  missing from its kit.
+- *Still to do:* the beach's lifeguard tower and the building site's warehouses are still the shared ones; some park lamps
+  are still the Victorian lamp; mirrors, bus poles, manholes and tactile strips are modelled but not yet placed.
+- *Then:* the audit after it (`docs/KAMAKURA_AUDIT.md`) found that v126 reached the streets but not the play: the track
+  pieces, the stops, home and school, the walkers, sounds and words were still the shared town's. Same lesson as D10.
+- *Rule:* every city, the first one included, is checked against its own brief: a shared model stays only if it would be
+  normal in that city's street. When a new city gets its own look, look again at the old ones beside it.
+
+**D12. The cartoon filter's orange cast; a sketch that was not black and white (v134, from the user's screenshot).** The
+classic cartoon was matched to 1950s desert cartoons: warm colours multiplied toward orange (`ClassicLook.warm`),
+shadows toward brown (`shadowWarm`), quiet colours lifted hard (`vibrance` 1.8: beige to ochre, sand to gold). Over
+Miami's cream stucco and concrete, already warm in Florida's 5,000 K sun, the whole street went orange: "a yellow/
+orangish tint". The pencil sketch kept a colour wash and the figures 75% of their colour, on cream paper. *Fix:* the
+cartoon keeps each thing's own hue (warm and shadowWarm 1, vibrance 0.35, saturation 1.1, a neutral black outline, a
+natural blue sky); the sketch pass returns grey whatever its colours are set to, and its comic words are grey.
+`FilterLookTests` holds both. *Rule:* a grade matched to one reference (a desert palette) must be checked on every
+city's own colours, not only the reference's; "black and white" is enforced in the pass, not left to a colour
+setting a scene might have saved.
+
+**D13. The pencil sketch and the classic cartoon filters removed (v141, the user's request).** After two rounds of
+fixes (D12), the user asked for both to go: "Remove the Sketch and Cartoon filters."
+- *What went:*
+  - their camera passes (PostFX passes 6 to 9) and the cartoon colour (`DtsCartoon.cginc`, `World/ClassicLook`);
+  - the cartoon's menu pictures and buttons (`UI/CartoonPicture`, `Resources/Shaders/CartoonPicture`,
+    `UI/Kit/CartoonButton` and every button's hidden ink rim);
+  - the pencil comic words (ComicPops' pencil lettering and starburst, ComicLettering's sketch mode and the
+    lettering shader's hatching);
+  - their cards and strings.
+- *What stays:* the original look and the comic halftone, unchanged. An old save naming either filter reads as the
+  original (`Filters.Chosen`).
+- *Left in place:* the scene's finer alpha codes (`_FilterMask`, `_ComicWorld` 0.125 on cels) and the kits' "Cel"
+  material copies. The comic reads every code above 0 as the street, so they change nothing on screen. The Cel copies
+  still cost a batch of their own and can go in a later clean-up (it touches ArtBaker and every kit's materials).
+- *Rule:* a feature the user asks to remove goes completely, its shader passes, assets, strings, tests and docs too.
+  Remove the code, not just the menu card. Never reuse a removed filter's saved id.
 
 ## E. Levels and world
 
@@ -606,6 +749,128 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
 - **E9. A flower obstacle that looked painted on the floor (fixed in v119).** Chapter 1's low obstacle was sometimes three of the Plants kit's flower patches standing straight on the paving, their leaves flat on it, with nothing to say what blocks the way. *Fix:* a raised bed: a stone kerb, soil and the patches growing out of it (`FlowerBed`). *Rule:* an obstacle reads as solid from the side: give soft things (plants, cloth) a hard base or container.
 - **E10. A bridge rail that would have hidden the ball (caught in preview, v121).** Florida's canal balustrade was first put on the road's edge, between the camera and the lane: at 1.15 m, 1.65 m in front of the kid, it would have hidden the ball and the kid's legs all the way across the drawbridge. *Fix:* the balustrades stand along the canal's banks behind the street, and the leaves keep their own rail behind the lane. *Rule:* nothing taller than about 0.4 m stands between the camera and the lane (z < -1.5) where the kid plays; check every new set piece in `preview_street.py` through the game camera before it goes in.
 - **E11. Water across the street is not a side street.** A canal added as an `OpenArea` would get a side street's road paved over it (`SideStreetEnd`), and the verge behind the lane bridges every gap. *Fix:* `TrackBuilder.Canals`, which the back rows, far rows and the verge's slabs keep out of, plus a `QuietArea` for the front lots. *Rule:* a feature that crosses the street's depth gets its own list; don't overload `OpenAreas`.
+- **E12. One set of routes was assumed everywhere (found in v123).** Giving Florida routes of its own touched the map (one picture, one layout, `RouteTable.All` in every loop), unlocks (a city's first leg waited on the other city's last), Next and the album (mini-game legs with no sticker), the music (chosen by the scene's suffix), co-op (location by chapter), tests (23 story levels counted) and the stops' set pieces. *Fix:* routes, maps and the story order are per city (`RouteTable.ForCity`, `TownMap.Use`, `Cities.Has(level)`, `LevelUnlocks.PreviousStory` stops at a city's edge); lookups by level id search every city (`RouteTable.Every`); `GeneratedContent.LevelTable` stays Kamakura's for its tests and `CityLevelTable` gives another city's. *Rule:* where the city matters, never loop over `RouteTable.All` (that is Kamakura's): ask the city for its routes. A level id is unique across cities.
+- **E13. Road markings under the road (v126, fixed in v127).** v126 laid Kamakura's home street flush (the road strip at lift 0), but the edge lines, centre dashes, drains and manholes were still placed at the old sunken road's height (`top - 0.14`), 14 cm under the asphalt. Found by the Kamakura audit, not by a render: the preview draws its own road. *Fix:* `StreetBuilder.Slab` puts them on Kamakura's flush road. *Rule:* when a strip's height changes, grep for everything placed at the old height (`- 0.14f`, `RoadNear`, `RoadFar`).
+- **E14. The mini-games removed (v128).** The user: "remove the mini games completely and do not replace them with anything else in both Kamakura and Florida". Florida's three mini-game legs (FL1-2 The Metrobus, FL2-2 Uncle Rey's Boat, FL2-4 The Drugstore, v123 to v125) had grown hooks well beyond their own scripts: the HUD's and the guide's star lines, a route-leg path through `LevelManager`, the level definition's flag, the errand they handed over (the science project, its Delivered badge, the downpour's stake), the plan's districts and the bus's moving street strip, two kit models, the map's nodes, strings in both languages, and the leg numbers of every leg after them. Kamakura's two were only in the design (`docs/CITIES.md`). *Fix:* all of it out, using the commits that added them (`git show --stat 7122d16`, `64840b0`) as the checklist; the legs after them renumbered so each route's legs are 1, 2, 3 again, with save version 3 (`Progression/FloridaLegs`) moving a player's records, stickers and trip times with their legs; the plan's districts seeded by their old ids so the reviewed streets stay identical; `FloridaRoutesTests.TheMiniGamesAreGoneForGood` holds it. *Rule:* to remove a feature, walk the diffs that added it file by file rather than grepping its name: the hooks that matter don't carry it (a `HasStickerSlot`, an `AfterRig`, a "Retry, not Next" line). Renumbering persisted ids needs a save upgrade in the same change (H7).
+- **E15. Gates that stopped nothing, rain that hung in the air, gulls at chest height (v129, from the user's screenshots).**
+  - **Gates:** the drawbridge's arms fell *along* the street behind the lane, so they read as a fence the kid walked in front
+    of. Nothing held the kid back, so they could stand at the hinge while the leaf rose through them. *Fix:* the arms fall
+    across the path toward the camera, cut to end at the lane's front edge (E10). While an arm is down, a one-way blocker at
+    its post, 2.4 m back from the hinge, stops the kid and the ball coming toward the water; it never traps someone already over.
+  - **Rain:** static streak quads, built once and toggled, read as scratches on the screen. The downpour's only stake was the
+    removed errand (E14). *Fix:* `World/RainCurtain`, falling streaks round the camera with splashes and puddle ripples, none
+    under the arcades, in one mesh. The light dims with each burst through `WorldLook`, and a burst out in the open slows
+    the kid's run. Its warning pill sits under the HUD card, not across its edge.
+  - **Birds:** startled pigeons and the sky's pigeon and crow flocks flew on the gull's rig. The gull's body can't be
+    painted, so they flew as white gulls, some at chest height. *Fix:* they fly on the black kite's rig, painted all over.
+  - **The low kerb** in Florida was a bare grey block. It is now a raised planting bed (E9).
+  - **Puddles** were a pale blue fill inside a dark ring, a sticker. They now mirror the street, with a soft wet edge.
+  - *Rule:* in a side view, something that crosses the path (a gate, a barrier) must fall across it toward the camera and
+    must physically stop what it stops. Weather moves. A model standing in for an animal must be paintable all over.
+- **E16. Brown blocks, a ball stuck on the awnings, green tiles and a stray red light (v130, from the user's screenshots and
+  screen recording).**
+  - **Platforms** were a plain box in the chapter's colour (sand-brown in Miami's parks: "what are those brown blocks?"), and
+    ramps a tilted slab in the air. *Fix:* `LevelBuildKit.Dressing` builds a retaining wall with its coping. In a park it has
+    a lawn top and shrubs along the back (Kamakura granite, Miami coral keystone); in a street a paved top; on a site
+    concrete with a safety edge. A ramp is a solid wedge under its slope.
+  - **Stranded balls:** the market's bouncy awnings (2.6 to 3.2 m) let a ball settle out of reach with no way back but a
+    restart, and Miami's arcade canopies let it pass through the canvas.
+    - The awnings are striped canopies on poles, marked `BallTrap`.
+    - The arcade canopies are a low-ridged collider: a ball kicked into one bounces back, and one landing on top rolls off.
+    - `LevelManager.BallOutOfReach` catches any other resting ball more than 2.4 m above a nearby kid's feet for 3.5 s,
+      with the alert "The ball can't be reached - back to the checkpoint".
+  - **The green strip** in Kamakura was 2.5 m of green paving slabs, which read as tiles. It is now about 1.5 m of green
+    paint on the asphalt.
+  - **The drawbridge's red lamps** were discs on the tender's tower wall. They are now a two-lamp signal head on a mast
+    before each gate.
+  - *Rule:* every collider the ball can land on must either be reachable or say it strands the ball. Anything the camera
+    sees across the lane must answer the ball the way it looks (a canopy stops it).
+- **E17. The ball still went through a shop canopy (v133, from the user's recording of Biscayne Boulevard).** v130 gave the
+  level's own arcades a canopy collider, but the Miami district placed the same Deco block as scenery, its wall at 2.35 m and
+  its 3 m canvas hanging 0.7 m in front of the ball's plane (z 0), with no collider: the ball flew up behind the canvas and
+  fell back through it. Downtown had one too. v130's fix looked at the play pieces only, not at the scenery made of the same
+  models. *Fix:* nothing that stands behind the lane may reach over the ball: `StreetBuilder.Model` (every street model in
+  both cities) and `miami_plan.py` push such a model back until its front is 0.45 m behind the ball
+  (`StreetBuilder.ClearOfTheBall`, a test over the whole plan). The district's arcades now stand at 3.5 m; nothing in
+  Kamakura's streets came closer than 0.65 m. *Rule:* a rule about how a model meets the ball holds wherever the model is
+  placed; audit the scenery against the ball's plane, not only the play pieces.
+
+- **E18. The ball through the street sweeper's cab, after two canopy fixes (v136, from the user's recording; "run a strict
+  audit for this pass-through across all levels and cities").** The sweeper's only collider was a box from 0.3 m to its flat
+  back at 1.2 m; the kit's truck stands 2.43 m with its cab over the front, so a ball chipped onto the back rolled into the
+  cab and out of its front. The same shape of bug as E16 and E17: a piece's collider is drawn by hand for the kid's play
+  (the part to ride, jump or slide under), its model is the kit's, and nothing checks one against the other. Measuring every
+  in-lane model where it crosses the ball's plane (`tools/ball_solidity/silhouette.py`, Blender) showed the same gap on the
+  golf cart's body, the domino table's stools, the arcade canopies' thickness, a standing scooter's handlebar, the crane
+  load's beams, the slide-unders' posts above their gaps. Fixing them one by one is how it kept coming back.
+  - *Fix:* every level's build ends with `LevelBuildKit.BallShells`. It finds every mesh surface crossing the ball's plane
+    (|z| <= 0.17 m) that is not on a collider and adds ball-only colliders there (`World/BallShell` ignores the kid's
+    colliders, as pedestrians do, so no jump, slide or ride changes). They go on the piece's own moving body, so the cab rides
+    with the sweeper. Pickups, zones, animals, plants, people, water, lips under 12 cm and anything that moves without a
+    body are left alone. Each level's build logs what it shelled and what it left out.
+  - *Rule:* a collider drawn by hand is checked against what the player sees, by code, every build. Where the kid's play
+    needs a smaller collider than the model, the ball still gets the model's.
+
+- **E19. Road crossings into a shop and out of the sea, and columns in the air (v139, from the user's screenshots).** The
+  Miami plan (`miami_plan.py`) kept its buildings out of the stops, the school, the canals and the arcades, but nobody told
+  it where the side streets were. So a coffee kiosk, a bench and a tower's podium stood across Biscayne Boulevard's, and on
+  Bayfront the bay ran right up to the crossing while the school's lawn was laid over its road. The museum's canopy columns
+  stood 3 m in front of its plinth but started at the plinth's height, 1.2 m, so they hung over the lawn; its hanging gardens
+  stopped short of the canopy, and the canal dock's boat hung in its lift with no cradle.
+  - *Fix:*
+    - The plan keeps every side street clear (`crossings` from the layouts, `in_street`), and on the waterfront the land
+      starts before a crossing.
+    - The builder leaves out any district model still in one and cuts the district's land round it
+      (`StreetBuilder.InSideStreet`, `Without`).
+    - The three models are fixed.
+    - `tools/model_support/support.py` checks every kit model for pieces that touch nothing on the way to the ground.
+  - *Then:* Kamakura's streets were already clear: their dressing asks `Blocked` and `OnSideStreet` at every placement.
+  - *Rule:* a generator that places scenery must be given every corridor the play uses (stops, canals, side streets), and a
+    model's every piece must reach the ground through the pieces it touches.
+  - *And:* a single model may be copied out of a kit's rebuild only when the rebuild's atlas is byte-identical to the
+    committed one. The Miami atlas predates v128's removal of two models from the script, so today's script packs a
+    different layout; the museum was rebuilt from the v125 script with the fix applied, and its atlas matched exactly.
+
+- **E20. The kid walked into the sweeper's cab, and Bayfront's side street still came out of the bay (v140, from the user's
+  screenshots).**
+  - *Sweeper:* the v136 ball shells covered the cab for the ball only, on purpose: they ignore the kid so no tuned jump
+    changes. But the sweeper's designed collider was only its back (0.3 to 1.2 m). Nothing stopped the kid walking from the
+    back into the cab, so the cab was a ghost for the kid.
+  - *Bayfront:* v139 moved the bay's end 4 m before the crossing and put land under the road. From the game camera the road
+    still ran back along the water's edge into an empty lawn, so it read as a road out of the bay.
+  - *Fix:*
+    - The cab has its own collider on the sweeper's body, up to its 2.43 m roof. The way past is up onto the back and over
+      the cab with a double jump (it peaks 2.07 m up against the cab's 1.23 m).
+    - The side street now leads to a port: the quay along the water's edge, cranes, freighters alongside, the gate across the
+      street before its end, and the container yard on concrete. The plan carries the port as built shapes, which the game
+      and the preview build alike.
+  - *Rule:* a ball-only collider is not a fix for something the kid can see. When a model is bigger than its designed
+    collider, the kid's collider must follow it too, or the level must be designed around it.
+  - *Rule:* a road must lead somewhere. Moving the water off the road is not enough: put something at the end of it that
+    explains it (a gate, a building, a junction), and look at it from the game's camera.
+
+- **E21. Towers on the sky and on the water; one route with a port (v142, from the user's screenshots).** "The tall
+  buildings seem to float on water or void in all levels."
+  - *Why:* a street's own ground (its strips) ran 90 m back, and the plan's land only went as far as the things near the
+    lane needed. The skylines stood 80 to 490 m back, with nothing under them but the sky's colour. Across the bay, the far
+    shore was a strip 0.9 m over the water: at 700 m that is a pixel, so its towers stood on the water. Riverside's
+    freighter stood on a lawn. Only Bayfront, of the three routes' last legs, had the port road beside the school.
+  - *Fix:*
+    - **The plan lays the ground out to the horizon** (`Plan.ground`). The water runs to 2,400 m and to the sides
+      wherever it reaches the leg's ends. Land covers everything else from the strips' back, 1,700 m either side (what
+      the 34-degree camera sees on a 2.2:1 screen). The plan's checks sample that whole wedge and fail on any hole, on
+      anything standing off the ground, and on any boat off the water. `MiamiKitTests` holds the same.
+    - **Realistic ground:**
+      - a band of low city blocks behind every street (from 200 m, low in front);
+      - a paved plaza under each tower;
+      - a seawall face and a waterfront of low buildings along the far shores;
+      - a river with its banks behind Riverside's yards.
+    - **Ports at every school:** Downpour (FL2-3) and Museum Park (FL3-3) get Bayfront's port road, each with its crossing
+      (one `port()` for the three). Downtown meets the bay in a 60 m basin behind its blocks; the towers that stood where
+      it now is are left out.
+  - *Rule:* every distance the camera reaches is part of the scene. Check the ground over the camera's whole view, out to
+    its far plane, not just the strip by the lane. A thing that stands must have ground under it, and a far shore must
+    rise far enough to be seen.
 
 ## F. UI and menus
 
@@ -618,6 +883,101 @@ Add a new entry whenever something has to be fixed, reverted or redone, in the s
 
 - **G1. Music redone four times on taste.** *Rule:* get reference tracks and adjectives first, then short A/B previews.
 - **G2. A park hiss that drowned the music; every bed at the same loudness; coin and whistle too loud.** *Rule:* check spectra and loudness per place, and mix against the music at default volumes.
+- **G3. Florida's music "looks sad" (redone in v132).** v122's Florida loops were Caribbean and Cuban styles (son, salsa,
+  soca, calypso, one-drop) at 86 to 126 BPM, with steel pan, marimba and vibes; two were minor or Dorian, the menu and park
+  were slow, and the soft mallet leads over sparse hand drums read as wistful, not sunny. The style was chosen from the
+  place ("Florida = Caribbean") without asking the user what they wanted to feel. *Fix:* the user named the references
+  (Justice, Tame Impala): Florida now plays original French electro (four on the floor, a pumping sidechain, a growling saw
+  bass, filtered disco stabs, a gliding saw lead) and psychedelic synth-pop (a phased pad on major sevenths, a fuzzy
+  melodic bass, big squashed drums, tape wobble), all in major, Mixolydian or a bright Dorian at 112 to 126 BPM. Previews
+  went to the user as MP3s before the commit was called done. *Rule:* G1 again: for a new country's music, ask for
+  reference artists and the mood first; energy (tempo, four on the floor, a major key) is what reads as happy, not the
+  instruments' "local" colour.
+- **G4. Florida's music "still bad" after the redo (v132, redone in v133); "the background beats are good enough".** v132
+  kept the old random tune-maker (a melody walking the scale from a seed) and put it on new synths that glided into every
+  note, wobbled (vibrato, and 5 to 6 cents of tape wow on the whole mix) and honked (resonant, overdriven stabs, the filter
+  starting at 700 Hz). Nobody listened before it shipped: the checks were loudness, peaks and a spectrogram, none of which
+  hears a tune. *Fix:* the drums and bass kept; every loop now has two written four-bar hooks over simple four-bar chord
+  cycles, on synths that hold their pitch (a glide only between tied notes, no wow, a bright pluck for the riffs), and calmer
+  stabs. `tools/music_hooks/check.py` fails if a strong beat of a hook is off its chord. *Rule:* a tune is written, not
+  generated, when the user is listening for it; check what can be checked (notes against chords, pitch held), and say plainly
+  that taste can only be judged by ear: send the previews and ask what is wrong in their words before a third take.
+
+- **G5. Florida's music "still bad", a fourth time (v138).** Asked what was wrong, the user ticked every answer: too
+  repetitive, some places' tunes, the synth sound grating over a whole level, too loud and distracting. Each earlier take
+  fixed one axis (style, then tunes) and was checked by loudness, peaks, spectrograms and chord tones, none of which
+  measures fatigue. The loops were 31 s of the same four bars twice, at the same loudness as Kamakura's mellower music but
+  brighter, with saw stabs and leads, a deep sidechain pump and an open hat on every off-beat. Under Little Havana (now the
+  first level played) a cafe radio also ran a second song, in another key, under the music the whole time, and downtown's
+  air conditioners droned a chord half a semitone off. *Fix:*
+  - 64 s loops in four sections (an opening, the groove, the lift, a breakdown with the kick out and the hook an octave
+    down on a Rhodes);
+  - Rhodes and soft plucks in place of the saw stabs and the saw lead;
+  - a shallow pump, softer hats and claps, less drive, a darker tone;
+  - Florida's loudness 0.11 to 0.115 against the others' 0.14;
+  - no radio and no pitched hum in any bed.
+  - *Rule:* ask early which of repetition, tune, timbre and level is wrong (a multiple-choice question works); check a
+    loop's length against how long a level lasts; nothing pitched may play under the music unless it is the music.
+
+- **G6. "Only the background beat is good" (v139).** Each Florida take had changed the synths, the tunes or the arrangement
+  but kept one voice family: synths (electro, psych, then softer synths). The one part the user always kept was the drums.
+  *Fix:* the drums as they were; everything else is on the band Kamakura's and California's music uses and the user never
+  minded (guitars, Rhodes, organ, glockenspiel, vibes, whistle, a picked bass), in sunny pop-funk with new chords and
+  tunes. Measured per note, the voices differ by up to 17 dB (a clean guitar's note at 0.033 RMS against a Rhodes chord's
+  0.23), so the arranger now levels each tune voice and comp (`LeadLevel`, `CompLevel`). The tune shows over the chords in
+  the spectrogram. *Rule:* when a user keeps rejecting one family of sounds, change the family, keep what they named as
+  good, and measure the voices' levels against each other before mixing.
+
+- **G7. "Create a fresh new music for Florida, scrapping the existing one" (v143).** Five takes in, with no reference
+  given this time, a sixth guess would have repeated G1 and G3.
+  - *What was done:* before writing a note, the user was asked to pick a direction from four concrete ones, each with
+    reference artists (Latin pop / Miami, tropical house, 80s Miami synth, upbeat kids' adventure), and whether the drums
+    they had liked should stay. They chose Latin pop and to keep the drums.
+  - *What changed:* everything over the kit is new:
+    - new instruments: an acoustic piano (inharmonic partials on phasors), a horn section, a cowbell;
+    - piano and tres montunos with the anticipated chord;
+    - a pop tumbao bass;
+    - congas, son clave, cowbell, guiro and bongos;
+    - new chords and 14 new hooks, all passing `check.py`.
+  - *Levels:* each tune voice was measured per note and levelled to the horns, as G6 asks. The tres measured a tenth of
+    the horns and would have been lost.
+  - *Rule:* when the user asks for something "fresh" with no reference, ask for the direction as a multiple choice of
+    concrete styles with reference artists, and ask what to keep. Never pick the style from the place alone.
+
+- **G8. "Still not good. Scrap it and create a new one. Don't include the string music." (v144)**
+  - *What was done:* asked again before writing:
+    - the direction: they chose tropical house;
+    - what "string music" means: every string sound, so no guitar, tres, piano, string-like pad or plucked bass;
+    - the drums: new ones too.
+  - v143's piano, horns and cowbell were removed, and so was everything Latin in the arranger.
+  - *New:*
+    - a pan flute, a soft synth pad (triangle-like tones on phasors), a round synth bass with its upper harmonics (so a
+      phone's speaker carries it), a soft kick and a finger snap;
+    - a new kit: four on the floor, snaps, shaker, off-beat hats, a 3-3-2 rim, a clap roll into the loop;
+    - arpeggios;
+    - new chords and 14 new hooks.
+  - *Levels:* each tune voice measured per note and levelled to the steel pan. The glockenspiel and the synth pluck had
+    measured half of it.
+  - *Rule:* when a user's word for an instrument family is loose ("string music"), ask how far it reaches before removing
+    things. And when a take is rejected with no reason, ask about direction and what to keep, not just "what's wrong".
+
+- **G9. "Update the Kamakura music too with same bass, cozy music but in Japanese style" (v145).** "Same bass" could have
+  meant the bass, the beat and bass, or Florida's whole base; and Japanese style usually means the koto, a string sound,
+  which the user had just banned for Florida. Both were asked first: the bass only, and no strings.
+  - *What changed:* Kamakura's J-pop on guitars and a koto-like pluck was replaced:
+    - new instruments: a sho-like mouth-organ pad, a woodblock, a temple bowl, wind chimes;
+    - its own swung kit;
+    - 14 new hooks, checked by `check.py` (which now reads both cities' styles);
+    - each voice measured and levelled as in G6.
+  - *Rule:* when a user carries something over from one place to another ("same bass"), ask which part. When a style's
+    usual instrument breaks a rule the user set elsewhere, ask whether the rule applies there too.
+
+- **G10. "Remove that continuous background music from all music" (v146).** "Continuous background" could have been the
+  music's held pads, the vinyl, the "ooh"s or the places' ambience; asked, the user named the ambience beds.
+  - *What changed:* `AudioDirector.AmbienceOn` is false, so no place's bed or cues are synthesized or played, and the
+    Settings slider is hidden. The generator is kept.
+  - *Result:* less work as well: a place's ambience had cost 40 to 118 MB of garbage and a worker's time to make.
+  - *Rule:* when a user names a sound loosely, ask which layer they mean (by what it sounds like) before removing one.
 
 ## H. Co-op, store, release and testing
 
@@ -646,13 +1006,37 @@ Never re-propose what is rejected here.
   - nothing inside the stick's ring;
   - a ball icon on the KICK button, not a boot;
   - no auto-run.
-- **Cities, not add-ons (v122):** five cities, each a chapter with its own routes and play, picked after PLAY and HOLIDAY RUN:
-  Kamakura (the original town, still first), Florida, Madrid, New York, Mumbai. Each has its own colour temperature and
-  climate. No reskins of another city's levels (D8).
+- **Cities, not add-ons (v122):** each city a chapter with its own routes and play, picked after PLAY and HOLIDAY RUN.
+  **Only Kamakura (the original town, still first) and Florida (v132):** Madrid, New York and Mumbai were removed at the
+  user's request, with their designs, prompts and strings; don't re-add them or list cities as coming soon. Each city has its
+  own colour temperature and climate. No reskins of another city's levels (D8).
+- **The name is Kick Off 2 School (v137):** in every player-facing text; the logo is the "Kick OFF 2" artwork over a
+  "SCHOOL" ribbon; the app ID stays `com.astradite.kickoff2`.
+- **Both cities open from the start (v135):** Florida listed first, then Kamakura; Florida no longer waits for Kamakura's
+  levels.
+- **Florida's music (v144):** tropical house (the user's pick of four directions), with **no string sounds at all**: no
+  guitar, tres, piano, string pad or plucked bass. The drums are its own (a soft kit), and the user approved replacing them
+  this time. The tunes are written hooks (G4). It must not tire over a whole level: long loops that change, sitting back
+  (G5). Rejected so far, all of them (G3 to G8):
+  - v122's Caribbean;
+  - v132's electro and psych;
+  - v133's hooks on synths;
+  - v138's softer synths;
+  - v139's pop-funk;
+  - v143's Latin pop.
+- **Kamakura's music (v147):** the same as Florida's (the user: "use the same Florida music for Kamakura too"). The two
+  cities share one loop for each kind of place (`MusicGenerator.PlayedAs`). Kamakura's own cozy Japanese take (v145) was
+  removed; it is in git history (G9).
+- **No ambience (v146):** the places' background sounds (each place's looping bed and its cues: traffic, waves, birds,
+  a crowd) are off in both cities, and Settings has no Ambience slider (G10). Don't turn them back on unasked.
 - **The look:** the user's bar is a recent big-budget open-world game's look and feel (warm sun against cool shade, haze,
   weathered, dense streets), reached through light, grade and baked texture within the phone's budget, never by copying
   that game's content. The filters must keep working in every city.
-- **Filters:** easy to reach: on the title screen and in every pause menu.
+- **No mini-games (v128):** none in Kamakura or Florida, and nothing put in their place: every leg of a route is a
+  dribble. A transit hop between two legs is simply not shown (the next leg starts where it would have ended). Don't
+  re-propose the bus, boat or shop mini-games, or errands that depend on them (E14).
+- **Filters:** easy to reach: on the title screen and in every pause menu. Only the original look and the comic
+  halftone (v141): the pencil sketch and the classic cartoon were removed at the user's request (D13). Don't bring them back.
 - **Store art:** use the user's own artwork for the app icon.
 
 ## How to add an entry

@@ -61,7 +61,7 @@ It ignores the first 6 s after a scene loads, and the time after resuming from t
 | Skinned renderers drawn | 1 kid + 1 bag + passers-by on screen | as listed |
 | Character meshes in memory per scene | the chosen kid and the bag they wear | about 46k vertices, ~7 MB, plus 2 atlases (was 545k vertices, ~83 MB, plus 11 atlases, since every kid and bag was saved into every scene) |
 | Full-screen passes, Original look | grade only (bloom on High) | 1 to 8 |
-| Full-screen passes, filters | comic 2, sketch 1, classic 3, plus DepthNormals | unchanged; scaled by the render scale |
+| Full-screen passes, filters | comic 2, plus DepthNormals (the sketch and the classic cartoon were removed in v141) | unchanged; scaled by the render scale |
 
 **Loading only what is shown.** Every scene still contains all six kids and their bags (`CharacterChoice` and `BagWear` switch them), but the builder saves their renderers empty. A `LazyRenderer` loads the mesh and material from `Resources/Cast/<Model>/<Renderer>` (a `CastPart`) while the object is shown and lets them go when it is hidden. So only the chosen kid and the bag they wear are in memory. When the menu switches kids, it frees the old one a second after the last switch (the sweep was a hitch on every tap). Co-op ghosts load their kid as they appear.
 
@@ -93,16 +93,15 @@ None of these changes what is drawn, played or how the game plays (`docs/LEARNIN
 the fix and the risk of each) are summarised in PROGRESS "The audit: work nobody sees".
 1. **Bake the music and ambience offline.** Runtime synthesis still makes 80–115 MB of garbage at each new place, and 0.8–1.2 s of worker time. The output is deterministic, so a bake plays the same samples; Vorbis needs a listening A/B against PCM on the phone first.
 2. **Holiday Run stage wake.** A stage wakes in one frame and combines its street in the next, every ~30 s of running (est. 10–50 ms). Measure (`ProfilerMarker`s), then spread the wake over frames or batch at build time.
-3. **Cheaper filter normals.** The DepthNormals pass draws every opaque renderer again. Rebuilding normals from depth only pays when the filters read the main pass's own depth buffer (1–3 ms render thread). Classic needs only the centre normal (low risk); comic and sketch creases need a visual check.
-4. **Classic cartoon, the same output for less** (1–2 ms): skip pass 8's smoothing on the sky, drop its `pow`s (the figure mask is 0 or 1), and in pass 9 read depths only where a cel is near. Needs a shader compile and a screenshot diff.
-5. **Synchronous scene loads** freeze 1–3 s with nothing on screen: one async loader with an overlay.
-6. **Menu canvas animations:** the looping pulses and bobs re-batch the whole menu canvas every frame (0.2–1 ms). Give each its own nested canvas, with a raycaster where it holds a button, and test every button.
-7. **Title screen draws** (about 300 renderers): cull distances can't hide anything unseen; baked occlusion culling can. About 47 m of the menu street never shows in any shot.
-8. **Readable meshes:** every FBX is imported readable for runtime tinting (5–15 MB per scene). Recolour in the shader (outfits, kits, cars), then turn readability off.
-9. **Ground and water noise** (0.35–0.5 ms): 12 hashes a pixel could be a baked texture, but only within 1/255, so it needs a look.
-10. **Co-op and haptics JNI:** cache the method IDs; decode only what each event needs.
-11. **Unpinned settings:** "Optimize Mesh Data" (it could strip the UV1 that tints read), graphics APIs, ASTC, the quality level, and iOS's tier settings (iOS still has screen-space shadows: a look change, so decide first).
-12. **Shader variant warm-up** (a ShaderVariantCollection recorded in the editor). PostFX already warms its own passes.
+3. **Cheaper filter normals.** The DepthNormals pass draws every opaque renderer again. Rebuilding normals from depth only pays when the filters read the main pass's own depth buffer (1–3 ms render thread). The comic's creases need a visual check.
+4. **Synchronous scene loads** freeze 1–3 s with nothing on screen: one async loader with an overlay.
+5. **Menu canvas animations:** the looping pulses and bobs re-batch the whole menu canvas every frame (0.2–1 ms). Give each its own nested canvas, with a raycaster where it holds a button, and test every button.
+6. **Title screen draws** (about 300 renderers): cull distances can't hide anything unseen; baked occlusion culling can. About 47 m of the menu street never shows in any shot.
+7. **Readable meshes:** every FBX is imported readable for runtime tinting (5–15 MB per scene). Recolour in the shader (outfits, kits, cars), then turn readability off.
+8. **Ground and water noise** (0.35–0.5 ms): 12 hashes a pixel could be a baked texture, but only within 1/255, so it needs a look.
+9. **Co-op and haptics JNI:** cache the method IDs; decode only what each event needs.
+10. **Unpinned settings:** "Optimize Mesh Data" (it could strip the UV1 that tints read), graphics APIs, ASTC, the quality level, and iOS's tier settings (iOS still has screen-space shadows: a look change, so decide first).
+11. **Shader variant warm-up** (a ShaderVariantCollection recorded in the editor). PostFX already warms its own passes.
 
 ## Check on the phone
 

@@ -123,8 +123,19 @@ namespace DribbleToSchool.FrontEnd
 
         // ------------------------------------------------------------------ building
 
+        /// <summary>The city whose map this was built for (each city has its own map and routes: Levels/TownMap.Use).</summary>
+        string builtCity;
+
+        /// <summary>The city chosen since this map was built is another: the controller builds the map again for it.</summary>
+        public override bool Stale { get { return builtCity != null && builtCity != Cities.Active.id; } }
+
+        /// <summary>The routes this map shows: the chosen city's own.</summary>
+        static Route[] Routes { get { return TownMap.CityRoutes; } }
+
         protected override void Build(RectTransform root)
         {
+            builtCity = Cities.Active.id;
+            TownMap.Use(builtCity);
             // The mat: the colour round the picture, over the whole screen (and beyond the safe area).
             var mat = UIKit.Rect(root, "Mat");
             mat.anchorMin = Vector2.zero;
@@ -215,7 +226,7 @@ namespace DribbleToSchool.FrontEnd
             banner.gameObject.SetActive(show);
             if (show)
             {
-                string number = heldBack.levelId.TrimStart('L').TrimStart('0');
+                string number = RouteTable.NodeNumber(heldBack.levelId);
                 bannerText.text = Loc.F("map.lateBanner", Loc.T(lateRoute.NameKey), number);
                 bannerButton.GetComponentInChildren<Text>().text = Loc.T("results.fromHome");
             }
@@ -329,7 +340,6 @@ namespace DribbleToSchool.FrontEnd
             var pictureRect = UIKit.Stretch(UIKit.Rect(map, "Picture"));
             picture = pictureRect.gameObject.AddComponent<RawImage>();
             picture.raycastTarget = false;
-            CartoonPicture.On(picture, CartoonPicture.Kind.Painted);   // the town, painted like the streets with the classic cartoon filter
             picture.enabled = false;
             BuildFades(frame);
             var washRect = UIKit.Stretch(UIKit.Rect(map, "Wash"));
@@ -810,10 +820,10 @@ namespace DribbleToSchool.FrontEnd
             float side = SideMargin + ExtraSide();
             row.offsetMin = new Vector2(side, ChipBottom);
             row.offsetMax = new Vector2(-side, ChipBottom + ChipHeight);
-            int count = RouteTable.All.Length;
+            int count = Routes.Length;
             for (int i = 0; i < count; i++)
             {
-                var route = RouteTable.All[i];
+                var route = Routes[i];
                 var cell = UIKit.Rect(row, "Cell_" + route.id);
                 cell.anchorMin = new Vector2(i / (float)count, 0f);
                 cell.anchorMax = new Vector2((i + 1) / (float)count, 1f);
@@ -910,7 +920,7 @@ namespace DribbleToSchool.FrontEnd
             if (id == null)
             {
                 var r = next != null ? RouteTable.Of(next.levelId) : null;
-                id = r != null ? r.id : RouteTable.All[0].id;
+                id = r != null && System.Array.IndexOf(Routes, r) >= 0 ? r.id : Routes[0].id;
             }
             ShowRoute(id);
         }
@@ -936,6 +946,7 @@ namespace DribbleToSchool.FrontEnd
         {
             // (one under way, or done and still in memory: a scene change unloads it)
             if (preload != null && (!preload.isDone || preload.asset != null)) return;
+            TownMap.Use(Cities.Active.id);       // (the chosen city's map: each city has its own picture)
             preload = Resources.LoadAsync<Texture2D>(TownMap.Image);
         }
 
@@ -980,7 +991,10 @@ namespace DribbleToSchool.FrontEnd
             focus = id;
             popIn = firstShow;
             firstShow = false;
-            var focusRoute = RouteTable.All[RouteTable.IndexOf(id)];
+            TownMap.Use(builtCity);
+            var focusRoute = RouteTable.ById(id);
+            if (focusRoute == null || System.Array.IndexOf(Routes, focusRoute) < 0) focusRoute = Routes[0];
+            id = focusRoute.id;
             Survey(catalog);
             for (int i = nodeLayer.childCount - 1; i >= 0; i--) Object.Destroy(nodeLayer.GetChild(i).gameObject);
             for (int i = stripRoot.childCount - 1; i >= 0; i--) Object.Destroy(stripRoot.GetChild(i).gameObject);
@@ -989,7 +1003,7 @@ namespace DribbleToSchool.FrontEnd
             DrawRoutes(catalog);
             BuildTexts(focusRoute, catalog);       // the names for this focus (the level names among them)
 
-            foreach (var route in RouteTable.All)
+            foreach (var route in Routes)
             {
                 bool on = route.id == id;
                 Color c = ColourOf(catalog, route);
@@ -1023,7 +1037,7 @@ namespace DribbleToSchool.FrontEnd
 
             // The nodes: the other routes' first (smaller), the focused route's last (on top), its levels named.
             int index = 0;
-            foreach (var route in RouteTable.All)
+            foreach (var route in Routes)
             {
                 if (route.id == id) continue;
                 BuildNodes(catalog, route, next, false, ref index);
@@ -1058,7 +1072,7 @@ namespace DribbleToSchool.FrontEnd
         void DrawRoutes(LevelCatalog catalog)
         {
             int order = 0;
-            foreach (var route in RouteTable.All)
+            foreach (var route in Routes)
             {
                 var line = TownMap.Route(route.id);
                 if (line == null) continue;
@@ -1167,7 +1181,7 @@ namespace DribbleToSchool.FrontEnd
 
             if (unlocked)
             {
-                string number = def.isChallenge ? "!" : def.levelId.TrimStart('L').TrimStart('0');
+                string number = def.isChallenge ? "!" : RouteTable.NodeNumber(def.levelId);
                 var label = UIKit.Title(button.transform.Find("Face"), "Number", number, Mathf.RoundToInt(78 * scale), Color.white);
                 UIKit.Stretch(label.rectTransform);
             }
@@ -1304,7 +1318,7 @@ namespace DribbleToSchool.FrontEnd
             var addOn = Cities.Active;
             Route there = null;
             var names = new List<string>();
-            foreach (var route in RouteTable.All)
+            foreach (var route in Routes)
                 if (addOn.HasChapter(route.chapter))
                 {
                     if (there == null) there = route;
@@ -1417,7 +1431,7 @@ namespace DribbleToSchool.FrontEnd
                 bool unlocked = LevelUnlocks.IsUnlocked(catalog, def);
                 int stars = SaveSystem.StarsFor(levelId);
                 Color face = def.isChallenge ? UITheme.Gold : colour;
-                string number = def.isChallenge ? "!" : def.levelId.TrimStart('L').TrimStart('0');
+                string number = def.isChallenge ? "!" : RouteTable.NodeNumber(def.levelId);
                 var late = unlocked ? null : LevelUnlocks.HeldBackBy(catalog, def);
                 Beacon beacon = BeaconFor(def, unlocked);
                 var button = UIKit.Button(stripRoot, "Level_" + levelId, unlocked ? number : "", unlocked ? face : late != null ? LateRed : UITheme.Locked, () => Tap(catalog, def, late), 36);

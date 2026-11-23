@@ -7,9 +7,9 @@ namespace DribbleToSchool.UI
 {
     /// <summary>
     /// Filters (a button on the title screen, after Stickers, and in the pause menus): the looks over the whole picture, as cards to
-    /// choose from: the original, the comic halftone, the pencil sketch and the classic cartoon. A choice applies at once, in
-    /// every scene and every city (World/PostFX reads it each frame; the menus' pictures and buttons follow Filters.Changed), so it
-    /// can be tried from the pause menu over the level itself. Progression/Filters has the list. (This was Add-ons and Filters
+    /// choose from: the original and the comic halftone (the pencil sketch and the classic cartoon were removed in v141). A
+    /// choice applies at once, in every scene and every city (World/PostFX reads it each frame), so it can be tried from the
+    /// pause menu over the level itself. Progression/Filters has the list. (This was Add-ons and Filters
     /// before the cities: a city is now chosen after PLAY, UI/CityPicker.)
     /// </summary>
     public static class FiltersPanel
@@ -36,7 +36,7 @@ namespace DribbleToSchool.UI
         public static GameObject Open(Transform canvas, System.Action onClose)
         {
             GameObject root;
-            var card = UIKit.Modal(canvas, "Filters", new Vector2(1240f, 720f), out root);
+            var card = UIKit.Modal(canvas, "Filters", new Vector2(1240f, 560f), out root);   // one row of cards
             UIKit.Header(card.transform, Loc.T("filters.title"), 560f);
 
             // Two cards a row.

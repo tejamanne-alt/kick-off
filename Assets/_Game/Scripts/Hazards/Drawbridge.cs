@@ -4,9 +4,10 @@ using UnityEngine;
 namespace DribbleToSchool.Hazards
 {
     /// <summary>
-    /// A bascule drawbridge over a canal (the Florida add-on's Home Street): two leaves hinged at the banks that tip up to let
+    /// A bascule drawbridge over a canal or the river's slips (Florida's legs): two leaves hinged at the banks that tip up to let
     /// the boats through, on a cycle the kid learns to time. Down; then a warning (the bells, the flashing lights, the gate arms
-    /// swinging down across the way); the leaves rise, stay up a moment, and come down again, the arms lifting after them. The
+    /// swinging down across the path, a little back from each bank, where they stop the kid and the ball: <see cref="gateBlocks"/>);
+    /// the leaves rise, stay up a moment, and come down again, the arms lifting after them. The
     /// canal under it is too wide to jump, so the way over is to wait for the bridge. A kid or a ball on a leaf as it rises
     /// slides back down it to its own bank (the leaf tips up from the middle), never into the water; what does fall goes in the
     /// canal's lose zone and back to the checkpoint. Each leaf is a kinematic body turned about its hinge, so the kid and the ball
@@ -30,6 +31,10 @@ namespace DribbleToSchool.Hazards
         [Tooltip("The footpath's gate arms: each turns down from upright (about its own x) by armDrop degrees while the bridge is not down.")]
         public Transform[] arms;
         public float armDrop = 90f;
+        [Tooltip("A wall at each gate's post, on while its arm is (nearly) down: the kid and the ball wait there, clear of the leaf.")]
+        public Collider2D[] gateBlocks;
+        [Tooltip("How far down (0 to 1) an arm must be before its gate stops the way.")]
+        public float blockFrom = 0.6f;
         [Tooltip("The warning lights, flashed in turn while the bridge is not down.")]
         public Renderer[] lights;
         [Tooltip("How near (m, along the street) the camera's kid must be to hear the bells.")]
@@ -104,6 +109,10 @@ namespace DribbleToSchool.Hazards
             if (arms != null && armRest != null)
                 for (int i = 0; i < arms.Length; i++)
                     if (arms[i] != null) arms[i].localRotation = armRest[i] * Quaternion.Euler(-armDrop * arm, 0f, 0f);
+            bool shut = arm >= blockFrom;
+            if (gateBlocks != null)
+                for (int i = 0; i < gateBlocks.Length; i++)
+                    if (gateBlocks[i] != null && gateBlocks[i].enabled != shut) gateBlocks[i].enabled = shut;
 
             // The lights flash in turn while the bridge isn't down; the bells ring with them (when the kid is near enough to hear).
             int flash = warning ? (Mathf.FloorToInt(time * 2.5f) % 2) : -1;

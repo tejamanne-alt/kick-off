@@ -14,7 +14,7 @@ for name, args in re.findall(r'public static readonly City (\w+) = new City\([^;
     nums = re.findall(r'([0-9.]+)f', args)
     clim[name] = (int(float(nums[0])), int(float(nums[1])))
 clim['Kamakura'] = (5400, 9000)   # CityClimate.Reference (ReferenceSunKelvin, ReferenceShadeKelvin)
-for c in ('Kamakura', 'Florida', 'Madrid', 'NewYork', 'Mumbai'):
+for c in ('Kamakura', 'Florida'):
     if c not in clim:
         sys.exit('gen.py: no climate for ' + c + ' in Cities.cs')
 
@@ -23,12 +23,6 @@ CITIES = [
          when='A clear May morning, 7:45', air='Soft sea haze; route 3 in June drizzle', code='KM'),
     dict(key='Florida', hash='florida', h2='Florida (Miami), USA', name='Florida', country='Miami, USA', accent='#1fa6a0',
          when='A hot late-August morning, 7:50', air='Humid: a milky horizon, then a downpour', code='FL'),
-    dict(key='Madrid', hash='madrid', h2='Madrid, Spain', name='Madrid', country='Spain', accent='#d27a22',
-         when='Early October, 8:30, just after sunrise', air='Very dry high-plateau air, crisp to the horizon', code='MD'),
-    dict(key='NewYork', hash='new-york', h2='New York, USA', name='New York', country='USA', accent='#c99a06',
-         when='A cold late-October morning, 7:50', air='Crisp; sun shafts down the cross streets, steam', code='NY'),
-    dict(key='Mumbai', hash='mumbai', h2='Mumbai, India', name='Mumbai', country='India', accent='#8a4cc0',
-         when='The July monsoon, 11:15', air='Overcast and wet, sea mist; route 3 in a break', code='MB'),
 ]
 
 def blocks_in(text):

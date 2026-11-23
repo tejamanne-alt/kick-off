@@ -1,6 +1,6 @@
 # The town, the routes and the way to school
 
-This is Kamakura's town, the original. The game's five cities, each with its own home, school and routes, are designed in
+This is Kamakura's town, the original. The game's cities (Kamakura and Florida), each with its own home, school and routes, are designed in
 `docs/CITIES.md`; Kamakura's new routes there will replace the six below once built.
 
 One home, one school, six ways between them. **Every route is one trip from the front door to the school gate, and each story level is one leg of it**: the route's first level starts on the home front, its last level ends at the school's arch, and every level in between runs from one stop on the way to the next (the bus stop, granny's house, the church, the station...). The level that ends at a stop and the next one on the same route, which starts there, build the same stop, so the legs join up. The map shows the town with the six routes drawn from the house to the school, every stop at its own place in the town (the station at the foot of the railway bridge, the surf school on the boardwalk where the beach begins...), and each level's node on its own leg near where the level starts: a route's first node just past the streets it shares with other routes outside the house, every later node shortly after the stop it starts from.
@@ -126,6 +126,17 @@ A stop's point is where the picture shows the place (the bus stop's shelter, the
 ### The picture
 
 `tools/blender/town_map.py` builds the town from the art kits (the same houses, shops, school, trees, cars, site machinery and beach props as the levels) and renders it top-down in Blender (Eevee), with the layout file written from the same plan: `venv_bpy/bin/python tools/blender/town_map.py -- <out dir> [--debug]` (about 5.5 minutes; deterministic). `tools/blender/town_map_check.py` validates an installed layout against `RouteTable.cs` and `StringTables.cs`: the contract above, the name rules, the street names, the trip (the stops on their routes between their levels, every node on its own leg near its start), and what the JSON cannot hold (each story node in its level's area and each stop in its own, and each route's railway crossings: street 0, market 0, beach 0, underpass 2, site 0, park 1, always under the line). `tools/blender/README.md` ("The town map", "Level and map") describes the generator and lists what the picture shows at each of the 28 nodes. A layout marked `"placeholder": true` (the stand-in this replaced) skips the names' room and street-name tests.
+
+### Each city's map
+
+Each city has its own map of its own routes (`TownMap.Use(cityId)`, `TownMap.CityRoutes`): Kamakura's is the town above
+(`TownMapLayout.json`, `UI/TownMap.jpg`); Florida's is Miami (`MiamiMapLayout.json`, `UI/MiamiMap.jpg`, written together by
+`tools/miami_map/miami_map.py` from one plan: Little Havana, the Miami River, Brickell, downtown, the bayfront and Museum
+Park). Miami's picture is a flat stand-in (`"placeholder": true`) until it can be rendered from Florida's kit. The map screen
+is built for the city chosen after PLAY and built again when another is chosen (`FrontEndScreen.Stale`); a leg's node shows
+its number along its route ("FL2-3" shows 3: `RouteTable.NodeNumber`). `FloridaRoutesTests` checks Miami's layout: its
+routes in RouteTable's order from home to the school, every leg's node on its route in playing order and 190 px from every
+other, every stop drawn, every string in both languages.
 
 ## The map screen (`FrontEnd/ChapterMapScreen.cs`, data in `Levels/TownMap.cs`)
 

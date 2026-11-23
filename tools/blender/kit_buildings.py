@@ -2,6 +2,7 @@
 # modelled by script in Blender (read docs/ART_DIRECTION.md first).
 #   blenv/bin/python kit_buildings.py -- /abs/outdir [--only HouseGable,School]
 #   blenv/bin/python kit_buildings.py -- /abs/outdir --kit Coast     (the California models: Coast.json, CoastAtlas.png)
+#   blenv/bin/python kit_buildings.py -- /abs/outdir --kit Miami     (Florida's own routes: Miami.json, MiamiAtlas.png)
 #   KIT_SIGNS=CA blenv/bin/python kit_buildings.py -- /abs/outdir    (only BuildingsCAAtlas.png: the California skin's English signs)
 # Writes into outdir: <Model>.fbx per model, BuildingsAtlas.png, Buildings.json, Buildings.blend.
 # Review: blenv/bin/python review_kit.py -- /abs/outdir/Buildings.blend /abs/outdir/sheet.png
@@ -26,7 +27,7 @@ import sys, os, math
 # The Coast kit is painted at about 2.8 x the Buildings kit's texel density (a building's front some
 # 1100 to 1300 pixels across, glass, wood and signs at twice the size) on a 4096 x 4096 atlas.
 # The Florida kit (kit_buildings_fl.py) the same, on its own 4096 x 4096 atlas.
-if '--kit' in sys.argv and sys.argv[sys.argv.index('--kit') + 1] in ('Coast', 'Florida'):
+if '--kit' in sys.argv and sys.argv[sys.argv.index('--kit') + 1] in ('Coast', 'Florida', 'Miami', 'Kamakura', 'KamakuraStreet'):
     os.environ['KIT_ATLAS'] = '4096x4096'
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import bpy
@@ -899,6 +900,20 @@ FL = None
 if KIT == 'Florida':
     import kit_buildings_fl as FL
     SPECS = FL.pal_fl(pal)
+# --kit Miami: Florida's own routes (kit_buildings_mia.py), the same way as the Florida kit (its tiles and painter stand in
+# for the Florida kit's below).
+if KIT == 'Miami':
+    import kit_buildings_mia as FL
+    SPECS = FL.pal_mia(pal)
+# --kit Kamakura: Kamakura's own homes and shops (kit_buildings_kam.py: the Shonan coast's timber-and-mortar houses, shops with
+# noren and lanterns); --kit KamakuraStreet: its temples and shrines, street things, the tram and the little vehicles
+# (kit_buildings_kamst.py). Each on its own 4096 x 4096 atlas, as the Florida kits.
+if KIT == 'Kamakura':
+    import kit_buildings_kam as FL
+    SPECS = FL.pal_kam(pal)
+if KIT == 'KamakuraStreet':
+    import kit_buildings_kamst as FL
+    SPECS = FL.pal_kamst(pal)
 
 
 def main():
@@ -912,7 +927,7 @@ def main():
     bottom = [('wood', 256, 128), ('crate', 128, 128), ('p_orange', 128, 128), ('p_apple', 128, 128), ('p_lemon', 128, 128),
               ('p_green', 128, 128), ('p_tomato', 128, 128), ('p_plum', 128, 128), ('melon', 128, 128), ('ac', 192, 128),
               ('white', 128, 128)]
-    hi = KIT in ('Coast', 'Florida')
+    hi = KIT in ('Coast', 'Florida', 'Miami', 'Kamakura', 'KamakuraStreet')
     if hi:
         # Only the tiles the Coast models use, at twice the size (the town's other signs and
         # interiors are left out: their painters skip a tile that has no region).
@@ -946,7 +961,7 @@ def main():
         B.total = fn(B)
         buildings.append(B)
     atlas = os.path.join(OUT, KIT + 'Atlas.png')
-    ATL.HI = KIT in ('Coast', 'Florida')
+    ATL.HI = KIT in ('Coast', 'Florida', 'Miami', 'Kamakura', 'KamakuraStreet')
     ATL.EXTRA = FL.paint if FL else None
     ATL.paint(atlas, buildings)
     if KIT == 'Buildings' and os.environ.get('KIT_SIGNS') == 'CA':

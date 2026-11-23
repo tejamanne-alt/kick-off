@@ -6,14 +6,21 @@ namespace DribbleToSchool.Localization
     /// All UI text. Add a language by adding a table here and its code to Loc.Languages.
     /// Level layouts (signs) stay in English for now; level names are translated.
     /// </summary>
-    public static class StringTables
+    public static partial class StringTables
     {
         static Dictionary<string, string> en, es;
 
         public static Dictionary<string, string> For(string code)
         {
-            if (code == "es") return es ?? (es = Spanish());
-            return en ?? (en = English());
+            if (code == "es") return es ?? (es = With(Spanish(), FloridaSpanish()));
+            return en ?? (en = With(English(), FloridaEnglish()));
+        }
+
+        /// <summary>A table with another's entries added (a city's own strings: StringTables.Florida).</summary>
+        static Dictionary<string, string> With(Dictionary<string, string> table, Dictionary<string, string> more)
+        {
+            foreach (var kv in more) table[kv.Key] = kv.Value;
+            return table;
         }
 
         static Dictionary<string, string> English()
@@ -21,7 +28,7 @@ namespace DribbleToSchool.Localization
             return new Dictionary<string, string>
             {
                 // Menus
-                { "menu.title", "Kick Off 2" },
+                { "menu.title", "Kick Off 2 School" },
                 { "menu.tagline", "Dribble all the way to school" },
                 { "menu.play", "PLAY" },
                 { "menu.holiday", "HOLIDAY RUN" }, { "menu.holiday.best", "Best {0} m" },
@@ -229,14 +236,9 @@ namespace DribbleToSchool.Localization
                 { "city.pick.holidaySoon", "Its Holiday Run is coming soon" },
                 { "city.pick.note", "Each city has its own streets, its own light and its own music." },
                 { "city.original", "Kamakura" }, { "city.original.country", "Japan" }, { "city.original.about", "Six ways to school in the seaside town" },
-                { "city.florida", "Florida" }, { "city.florida.country", "Miami, USA" }, { "city.florida.about", "Home Street and the beach so far" },
-                { "city.madrid", "Madrid" }, { "city.madrid.country", "Spain" }, { "city.madrid.about", "The Metro, an aunt's balcony, the hill of books" },
-                { "city.newyork", "New York" }, { "city.newyork.country", "USA" }, { "city.newyork.about", "Over the bridge, under the river, or by ferry" },
-                { "city.mumbai", "Mumbai" }, { "city.mumbai.country", "India" }, { "city.mumbai.about", "The monsoon, the sea wall, the local train" },
+                { "city.florida", "Florida" }, { "city.florida.country", "Miami, USA" }, { "city.florida.about", "Three ways to school through Miami" },
                 { "filter.original", "Original" }, { "filter.original.about", "The game's own look" },
                 { "filter.comic", "Comic halftone" }, { "filter.comic.about", "Ink lines, halftone dots, printed paper" },
-                { "filter.sketch", "Pencil sketch" }, { "filter.sketch.about", "Pencil lines and hatching on paper" },
-                { "filter.classic", "Classic cartoon" }, { "filter.classic.about", "Inked characters, painted scenery" },
                 // The comic filter's sound-effect words (UI/ComicPops).
                 { "pop.thwack", "THWACK!" }, { "pop.thump", "THUMP!" }, { "pop.nice", "NICE TOUCH!" }, { "pop.niceN", "NICE x{0}!" },
                 { "pop.boink", "BOINK!" }, { "pop.boinkN", "{0} IN A ROW!" }, { "pop.whoosh", "WHOOSH!" }, { "pop.skrrt", "SKRRT!" },
@@ -290,7 +292,7 @@ namespace DribbleToSchool.Localization
                 { "coach.seagull.title", "Seagulls: keep it low" },
                 { "coach.seagull.text", "Gulls swoop at the ball. Keep it low and close as you dribble, and kick only once a gull has flown past." },
                 { "coach.drawbridge.title", "Drawbridge: wait for it to come down" },
-                { "coach.drawbridge.text", "When the bells ring and the lights flash, the bridge is lifting for the boats. Stop at the bank and wait: cross when it's all the way down." },
+                { "coach.drawbridge.text", "When the bells ring and the lights flash, the gates come down and the bridge lifts for the boats. Wait at the gate: cross when it's down." },
                 { "coach.sprinkler.title", "Sprinkler: dribble through the spray" },
                 { "coach.sprinkler.text", "Dribble the ball into the sprinkler's spray: the water throws it up. Catch the coins up there, then go after it." },
                 { "coach.golfcart.title", "Golf cart: hop on and ride" },
@@ -442,7 +444,7 @@ namespace DribbleToSchool.Localization
                 { "coop.radio.editor", "Editor: practice bots stand in for the other phones." },
                 { "coop.radio.off", "Bluetooth is off. Switch it on to race your friends." },
                 { "coop.radio.openBluetooth", "Settings" },
-                { "coop.radio.unauthorized", "Kick Off 2 needs permission to use Bluetooth (nearby devices) to find your friends." },
+                { "coop.radio.unauthorized", "Kick Off 2 School needs permission to use Bluetooth (nearby devices) to find your friends." },
                 { "coop.radio.allow", "Allow" },
                 { "coop.radio.unsupported", "This device can't use Bluetooth LE, so Co-op isn't available on it." },
                 { "coop.radio.starting", "Starting Bluetooth..." },
@@ -526,7 +528,7 @@ namespace DribbleToSchool.Localization
         {
             return new Dictionary<string, string>
             {
-                { "menu.title", "Kick Off 2" },
+                { "menu.title", "Kick Off 2 School" },
                 { "menu.tagline", "Regatea hasta el cole" },
                 { "menu.play", "JUGAR" },
                 { "menu.holiday", "CARRERA DE VACACIONES" }, { "menu.holiday.best", "Récord {0} m" },
@@ -724,14 +726,9 @@ namespace DribbleToSchool.Localization
                 { "city.pick.holidaySoon", "Su carrera de vacaciones llegará muy pronto" },
                 { "city.pick.note", "Cada ciudad tiene sus calles, su luz y su música." },
                 { "city.original", "Kamakura" }, { "city.original.country", "Japón" }, { "city.original.about", "Seis caminos al cole en el pueblo del mar" },
-                { "city.florida", "Florida" }, { "city.florida.country", "Miami, EE. UU." }, { "city.florida.about", "Mi calle y la playa, por ahora" },
-                { "city.madrid", "Madrid" }, { "city.madrid.country", "España" }, { "city.madrid.about", "El metro, el balcón de la tía, la cuesta de los libros" },
-                { "city.newyork", "Nueva York" }, { "city.newyork.country", "EE. UU." }, { "city.newyork.about", "Por el puente, bajo el río o en ferri" },
-                { "city.mumbai", "Bombay" }, { "city.mumbai.country", "India" }, { "city.mumbai.about", "El monzón, el malecón, el tren de cercanías" },
+                { "city.florida", "Florida" }, { "city.florida.country", "Miami, EE. UU." }, { "city.florida.about", "Tres caminos al cole por Miami" },
                 { "filter.original", "Original" }, { "filter.original.about", "El aspecto propio del juego" },
                 { "filter.comic", "Cómic de trama" }, { "filter.comic.about", "Tinta, puntos de trama, papel impreso" },
-                { "filter.sketch", "Boceto a lápiz" }, { "filter.sketch.about", "Líneas y sombreado a lápiz sobre papel" },
-                { "filter.classic", "Dibujos clásicos" }, { "filter.classic.about", "Personajes entintados, fondos pintados" },
                 { "pop.thwack", "¡ZAS!" }, { "pop.thump", "¡PUM!" }, { "pop.nice", "¡QUÉ TOQUE!" }, { "pop.niceN", "¡TOQUE x{0}!" },
                 { "pop.boink", "¡BOP!" }, { "pop.boinkN", "¡{0} SEGUIDOS!" }, { "pop.whoosh", "¡FIUUU!" }, { "pop.skrrt", "¡ZIIIP!" },
                 { "pop.boing", "¡BOING!" }, { "pop.splash", "¡CHOF!" }, { "pop.squawk", "¡CUAC!" }, { "pop.woof", "¡GUAU!" },
@@ -784,7 +781,7 @@ namespace DribbleToSchool.Localization
                 { "coach.seagull.title", "Gaviotas: llévalo bajo" },
                 { "coach.seagull.text", "Las gaviotas atacan el balón. Llévalo bajo y cerca, y chuta solo cuando haya pasado la gaviota." },
                 { "coach.drawbridge.title", "Puente levadizo: espera a que baje" },
-                { "coach.drawbridge.text", "Cuando suenan las campanas y parpadean las luces, el puente sube para los barcos. Espera en la orilla y cruza cuando esté abajo del todo." },
+                { "coach.drawbridge.text", "Cuando suenan las campanas y parpadean las luces, bajan las barreras y el puente sube. Espera en la barrera y cruza cuando esté abajo." },
                 { "coach.sprinkler.title", "Aspersor: pasa por el chorro" },
                 { "coach.sprinkler.text", "Lleva el balón al chorro del aspersor: el agua lo lanza hacia arriba. Coge las monedas de arriba y ve detrás." },
                 { "coach.golfcart.title", "Carrito de golf: súbete" },
@@ -930,7 +927,7 @@ namespace DribbleToSchool.Localization
                 { "coop.radio.editor", "Editor: unos bots de práctica hacen de los otros móviles." },
                 { "coop.radio.off", "El Bluetooth está apagado. Actívalo para correr con tus amigos." },
                 { "coop.radio.openBluetooth", "Ajustes" },
-                { "coop.radio.unauthorized", "Kick Off 2 necesita permiso para usar el Bluetooth (dispositivos cercanos) y encontrar a tus amigos." },
+                { "coop.radio.unauthorized", "Kick Off 2 School necesita permiso para usar el Bluetooth (dispositivos cercanos) y encontrar a tus amigos." },
                 { "coop.radio.allow", "Permitir" },
                 { "coop.radio.unsupported", "Este dispositivo no tiene Bluetooth LE: el modo cooperativo no está disponible." },
                 { "coop.radio.starting", "Iniciando el Bluetooth..." },

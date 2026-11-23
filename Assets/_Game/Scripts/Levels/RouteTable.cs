@@ -25,6 +25,8 @@ namespace DribbleToSchool.Levels
         Site,
         /// <summary>Something in the park: the bandstand, the boathouse, the allotments.</summary>
         Park,
+        /// <summary>A dock on the water: a timber jetty with its cleats and bollards (Florida's river).</summary>
+        Dock,
     }
 
     /// <summary>
@@ -92,14 +94,53 @@ namespace DribbleToSchool.Levels
         /// and levels[i + 1] starts there. Home comes before the first level and the school after the last.
         /// </summary>
         public readonly string[] stops;
+        /// <summary>
+        /// The city whose route this is (Progression.Cities' ids: "original" for Kamakura, "florida"...). Each city has its own
+        /// routes from its own home to its own school (docs/CITIES.md).
+        /// </summary>
+        public readonly string city;
+        /// <summary>
+        /// Where the leg after each stop starts, when a ride takes the kid on from that stop (one per stop, null where the next leg
+        /// starts at the stop itself), or null when no leg of the route has a ride before it.
+        /// </summary>
+        public readonly string[] arrive;
+        /// <summary>
+        /// The ride played between a stop and the next leg (one per stop: a Rides id, or null), or null when the route has none:
+        /// a short scene that plays by itself (docs/CITIES.md, "A ride, between legs").
+        /// </summary>
+        public readonly string[] rides;
 
         public Route(string id, int chapter, string[] levels, string challenge, string[] stops)
+            : this(id, chapter, levels, challenge, stops, KamakuraId, null, null) { }
+
+        public Route(string id, int chapter, string[] levels, string challenge, string[] stops, string city, string[] arrive, string[] rides)
         {
             this.id = id;
             this.chapter = chapter;
             this.levels = levels;
             this.challenge = challenge;
             this.stops = stops;
+            this.city = city;
+            this.arrive = arrive;
+            this.rides = rides;
+        }
+
+        /// <summary>Kamakura's id (Progression.Cities.KamakuraId: the original town's, from before the cities).</summary>
+        public const string KamakuraId = "original";
+
+        /// <summary>The stop leg <paramref name="leg"/> starts at (0: home): the stop before it, or where a ride from there arrives.</summary>
+        public string StartOf(int leg)
+        {
+            if (leg <= 0) return null;
+            if (arrive != null && leg - 1 < arrive.Length && !string.IsNullOrEmpty(arrive[leg - 1])) return arrive[leg - 1];
+            return stops[leg - 1];
+        }
+
+        /// <summary>The ride played before leg <paramref name="leg"/> (between the stop before it and its start), or null.</summary>
+        public string RideBefore(int leg)
+        {
+            if (leg <= 0 || rides == null || leg - 1 >= rides.Length) return null;
+            return string.IsNullOrEmpty(rides[leg - 1]) ? null : rides[leg - 1];
         }
 
         /// <summary>The string-table key of the route's name ("route.beach").</summary>
@@ -146,7 +187,69 @@ namespace DribbleToSchool.Levels
             new Stop("allotment", StopKind.Park, "Grandpa's garden"),
         };
 
-        /// <summary>In the order the story unlocks them (chapter 4's levels alternate: the underpass has L15 and L18, the site L16 and L17).</summary>
+        /// <summary>
+        /// Florida's stops (Miami: docs/CITIES.md, "Florida (Miami), USA"). FL1's bus from Calle Ocho to Brickell Avenue is not
+        /// played: the next leg starts at the Brickell stop. The people mover takes the kid from the Underline's station to Biscayne
+        /// Boulevard between two legs.
+        /// </summary>
+        public static readonly Stop[] FloridaStops =
+        {
+            // FL1 Calle Ocho Bus: the bus stop on Calle Ocho, the stop on Brickell Avenue where the bus is left, Bayfront Park.
+            new Stop("calleOcho", StopKind.Bus, "Calle Ocho bus stop"),
+            new Stop("brickell", StopKind.Bus, "Brickell Avenue"),
+            new Stop("bayfront", StopKind.Park, "Bayfront Park"),
+            // FL2 The River Way: Uncle Rey's dock on the Miami River, the corner drugstore downtown (stops on the way, no more).
+            new Stop("reysDock", StopKind.Dock, "Uncle Rey's dock"),
+            new Stop("drugstore", StopKind.Shop, "Drugstore"),
+            // FL3 Under the Line: the station on the elevated line, the people mover's stop on Biscayne Boulevard, Museum Park.
+            new Stop("underline", StopKind.Station, "Underline station"),
+            new Stop("biscayne", StopKind.Station, "Biscayne station"),
+            new Stop("museumPark", StopKind.Park, "Museum Park"),
+        };
+
+        /// <summary>Florida's id (Progression.Cities.FloridaId).</summary>
+        public const string FloridaId = "florida";
+        /// <summary>Kamakura's id (Progression.Cities.KamakuraId).</summary>
+        public const string KamakuraIdOfTown = Route.KamakuraId;
+
+        /// <summary>
+        /// Florida's three routes from the ranch house in Little Havana to Bayside Elementary downtown (docs/CITIES.md): FL1 along
+        /// Calle Ocho, then (after the bus, not played) Brickell Avenue and the bayfront; FL2 along the Miami River, the Riverwalk and
+        /// downtown in a downpour; FL3 under the elevated line and round the bay on the people mover. Three legs each, all dribbles
+        /// (the mini-game legs were removed in v128). Their levels are the city's own (FL1-1...), not the original town's.
+        /// The chapter is the city's: every Florida level is chapter <see cref="FloridaChapter"/>.
+        /// </summary>
+        public static readonly Route[] Florida =
+        {
+            new Route("fl1", FloridaChapter, new[] { "FL1-1", "FL1-2", "FL1-3" }, null,
+                new[] { "calleOcho", "bayfront" }, FloridaId, new[] { "brickell", null }, null),
+            new Route("fl2", FloridaChapter, new[] { "FL2-1", "FL2-2", "FL2-3" }, null,
+                new[] { "reysDock", "drugstore" }, FloridaId, null, null),
+            new Route("fl3", FloridaChapter, new[] { "FL3-1", "FL3-2", "FL3-3" }, null,
+                new[] { "underline", "museumPark" }, FloridaId, new[] { "biscayne", null }, new[] { Rides.PeopleMover, null }),
+        };
+
+        /// <summary>The chapter number of Florida's levels (after Kamakura's five): the paywall's and the catalog's unit.</summary>
+        public const int FloridaChapter = 6;
+
+        /// <summary>A city's routes (its id as Progression.Cities has it): Kamakura's for an unknown id.</summary>
+        public static Route[] ForCity(string cityId)
+        {
+            return cityId == FloridaId ? Florida : All;
+        }
+
+        static Route[] Concat(Route[] a, Route[] b)
+        {
+            var list = new Route[a.Length + b.Length];
+            a.CopyTo(list, 0);
+            b.CopyTo(list, a.Length);
+            return list;
+        }
+
+        /// <summary>
+        /// Kamakura's routes (the original town's), in the order the story unlocks them (chapter 4's levels alternate: the underpass has
+        /// L15 and L18, the site L16 and L17). Other cities' are in <see cref="Florida"/>; <see cref="Every"/> has them all.
+        /// </summary>
         public static readonly Route[] All =
         {
             new Route("street", 1, new[] { "L01", "L02", "L03", "L04", "L05" }, "C01", new[] { "busStop", "granny", "church", "samsHouse" }),
@@ -157,12 +260,17 @@ namespace DribbleToSchool.Levels
             new Route("park", 5, new[] { "L19", "L20", "L21", "L22", "L23" }, "C05", new[] { "bandstand", "parkCafe", "boathouse", "allotment" }),
         };
 
+        /// <summary>Every city's routes, Kamakura's first (after <see cref="All"/> and <see cref="Florida"/>: static fields start in order).</summary>
+        public static readonly Route[] Every = Concat(All, Florida);
+
         /// <summary>The stop called <paramref name="id"/> (home and the school included), or null.</summary>
         public static Stop StopById(string id)
         {
             if (id == Home.id) return Home;
             if (id == School.id) return School;
             foreach (var stop in Stops)
+                if (stop.id == id) return stop;
+            foreach (var stop in FloridaStops)
                 if (stop.id == id) return stop;
             return null;
         }
@@ -173,7 +281,7 @@ namespace DribbleToSchool.Levels
             Route route;
             int i = LegIndex(levelId, out route);
             if (i < 0) return null;
-            return i == 0 ? Home : StopById(route.stops[i - 1]);
+            return i == 0 ? Home : StopById(route.StartOf(i));
         }
 
         /// <summary>Where a story level ends: the school for the last level of its route, else the stop the next level starts at. Null for a challenge or an unknown id.</summary>
@@ -188,7 +296,7 @@ namespace DribbleToSchool.Levels
         /// <summary>The position of a story level along its route (0 for the first), or -1 for a challenge or an unknown id.</summary>
         public static int LegIndex(string levelId, out Route route)
         {
-            foreach (var r in All)
+            foreach (var r in Every)
                 for (int i = 0; i < r.levels.Length; i++)
                     if (r.levels[i] == levelId)
                     {
@@ -202,7 +310,7 @@ namespace DribbleToSchool.Levels
         /// <summary>The route a level (a story level or a challenge) is on, or null for an unknown id.</summary>
         public static Route Of(string levelId)
         {
-            foreach (var route in All)
+            foreach (var route in Every)
             {
                 if (route.challenge == levelId) return route;
                 foreach (string id in route.levels)
@@ -211,16 +319,45 @@ namespace DribbleToSchool.Levels
             return null;
         }
 
-        /// <summary>The routes of one chapter (chapter 4 has two).</summary>
+        /// <summary>The routes of one chapter (chapter 4 has two; Florida's chapter has its three).</summary>
         public static List<Route> InChapter(int chapter)
         {
             var list = new List<Route>();
-            foreach (var route in All)
+            foreach (var route in Every)
                 if (route.chapter == chapter) list.Add(route);
             return list;
         }
 
-        /// <summary>The position of the route in <see cref="All"/>, or -1.</summary>
+        /// <summary>The ride played before a story level (a Rides id: the route's ride from the stop before it), or null.</summary>
+        public static string RideBefore(string levelId)
+        {
+            Route route;
+            int i = LegIndex(levelId, out route);
+            return i > 0 ? route.RideBefore(i) : null;
+        }
+
+        /// <summary>A route of any city by its id, or null.</summary>
+        public static Route ById(string routeId)
+        {
+            foreach (var route in Every)
+                if (route.id == routeId) return route;
+            return null;
+        }
+
+        /// <summary>
+        /// The number a level's node shows on the map: its leg along its route for a city's own levels ("FL2-3": 3), the original
+        /// town's number otherwise ("L07": 7); "!" for a challenge.
+        /// </summary>
+        public static string NodeNumber(string levelId)
+        {
+            if (string.IsNullOrEmpty(levelId)) return "";
+            if (levelId[0] == 'C') return "!";
+            int dash = levelId.LastIndexOf('-');
+            if (dash >= 0 && dash + 1 < levelId.Length) return levelId.Substring(dash + 1);
+            return levelId.TrimStart('L').TrimStart('0');
+        }
+
+        /// <summary>The position of the route in <see cref="All"/> (Kamakura's), or -1.</summary>
         public static int IndexOf(string routeId)
         {
             for (int i = 0; i < All.Length; i++)
@@ -229,3 +366,4 @@ namespace DribbleToSchool.Levels
         }
     }
 }
+

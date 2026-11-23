@@ -1,10 +1,16 @@
-music Japan Menu: E242A4E9D29C9E0D
-music Japan Street: 6997219478CEC36D
-music Japan Market: 067B042183877FC2
-music Japan Beach: 867E9ABC3EBB97BC
-music Japan Underpass: 0D7B59F7A07D74FC
-music Japan Site: CD5D34227C0C996D
-music Japan Park: 6FBCBC9D97402803
+music Japan Menu: B1A8334A70B5ADFA
+music Japan Street: F4F30B1B3797E7AE
+music Japan Market: 76AC038C6E0299C9
+music Japan Beach: 8F828FF1E54975CE
+music Japan Underpass: FC1A7472432BFDBB
+music Japan Site: 1262B4BB6E68CFE2
+music Japan Park: 411CCC701865AF8A
+music Japan Havana: 76AC038C6E0299C9
+music Japan MiamiRiver: 8F828FF1E54975CE
+music Japan Bay: 8F828FF1E54975CE
+music Japan Downtown: F4F30B1B3797E7AE
+music Japan Underline: FC1A7472432BFDBB
+music Japan MuseumPark: 411CCC701865AF8A
 music California Menu: B1C86B65979453A5
 music California Street: 3A82349AD3EF78FF
 music California Market: 025496D0BA20BCA3
@@ -12,13 +18,25 @@ music California Beach: F4DAB54C4ACFADE7
 music California Underpass: 172C261437E33E57
 music California Site: 7365A32D283E768D
 music California Park: 7D84203AB6990690
-music Florida Menu: D7150A0961DCC6DA
-music Florida Street: 22E2A6798D156E6B
-music Florida Market: 4C619A685B0DD5C8
-music Florida Beach: 8B7340EFDBEB10E7
-music Florida Underpass: 29944770BBEA28DB
-music Florida Site: 275A9B1E8FC2DFC0
-music Florida Park: F1B737780DC1803F
+music California Havana: 025496D0BA20BCA3
+music California MiamiRiver: F4DAB54C4ACFADE7
+music California Bay: F4DAB54C4ACFADE7
+music California Downtown: 3A82349AD3EF78FF
+music California Underline: 172C261437E33E57
+music California MuseumPark: 7D84203AB6990690
+music Florida Menu: B1A8334A70B5ADFA
+music Florida Street: F4F30B1B3797E7AE
+music Florida Market: 76AC038C6E0299C9
+music Florida Beach: 8F828FF1E54975CE
+music Florida Underpass: FC1A7472432BFDBB
+music Florida Site: 1262B4BB6E68CFE2
+music Florida Park: 411CCC701865AF8A
+music Florida Havana: 76AC038C6E0299C9
+music Florida MiamiRiver: 8F828FF1E54975CE
+music Florida Bay: 8F828FF1E54975CE
+music Florida Downtown: F4F30B1B3797E7AE
+music Florida Underline: FC1A7472432BFDBB
+music Florida MuseumPark: 411CCC701865AF8A
 bed Menu: 7489AEBF2D30AD77
 cue Menu 0 robin gap 7-16 volume 0.20238577 pan 0.3 0.6 pitch 0.06 sweep False: C9AC62E390EDF2DF
 cue Menu 1 tit gap 10-22 volume 0.16443843 pan -0.3 0.6 pitch 0.06 sweep False: 24125D5AB44698EB
@@ -71,6 +89,45 @@ cue Park 4 ducks gap 15-30 volume 0.1639512 pan 0.5 0.4 pitch 0.08 sweep False: 
 cue Park 5 woodpecker gap 30-60 volume 0.122963406 pan -0.5 0.4 pitch 0.06 sweep False: 5D96E865CF2BDD04
 cue Park 6 dog gap 25-50 volume 0.1093008 pan 0 0.8 pitch 0.1 sweep False: 139D9BA45EFE6DC7
 cue Park 7 bicycle gap 30-60 volume 0.136626 pan 0 0.8 pitch 0.06 sweep False: 2F5CE7AA75387434
+bed Havana: 0C4DB79C66313C54
+cue Havana 0 rooster gap 30-60 volume 0.16066527 pan -0.5 0.4 pitch 0.05 sweep False: A6CA0E546D685669
+cue Havana 1 hens gap 12-26 volume 0.16066527 pan 0 0.8 pitch 0.08 sweep False: 25DDAFCDF406CF5F
+cue Havana 2 dominoes gap 20-40 volume 0.20448309 pan -0.35 0.3 pitch 0.04 sweep False: 5A81DF51B55FACCC
+cue Havana 3 moped gap 20-40 volume 0.25560385 pan 0 0 pitch 0.08 sweep True: 0CB4DF89EE71EF2B
+cue Havana 4 car gap 14-28 volume 0.32863352 pan 0 0 pitch 0.06 sweep True: A75280EFE4AA1997
+cue Havana 5 call gap 30-60 volume 0.073029675 pan 0 0.8 pitch 0.1 sweep False: 357456BCE7E1CB3D
+bed MiamiRiver: F35F1404D5AAA05C
+cue MiamiRiver 0 outboard gap 22-45 volume 0.2993326 pan 0 0 pitch 0.06 sweep True: 776962C4158F0AF4
+cue MiamiRiver 1 tugHorn gap 60-120 volume 0.104766406 pan 0.5 0.3 pitch 0.03 sweep False: FFBC784C230F35E1
+cue MiamiRiver 2 bridgeBell gap 70-130 volume 0.104766406 pan -0.5 0.3 pitch 0.01 sweep False: 06AC218D696AF78F
+cue MiamiRiver 3 halyard gap 9-20 volume 0.1496663 pan 0 0.8 pitch 0.08 sweep False: 6322F0BE3574ADF8
+cue MiamiRiver 4 laughingGull gap 8-18 volume 0.20953281 pan 0 0.8 pitch 0.06 sweep False: B986C39A56194BC1
+cue MiamiRiver 5 laughingGullFar gap 10-22 volume 0.09728309 pan 0 0.9 pitch 0.08 sweep False: 2BEADC59907BE533
+bed Bay: F2222150ED79194D
+cue Bay 0 laughingGull gap 6-14 volume 0.22861905 pan 0 0.8 pitch 0.06 sweep False: 2536BF446EE75BBD
+cue Bay 1 laughingGullFar gap 8-16 volume 0.106144555 pan 0 0.9 pitch 0.08 sweep False: B700A73847EC0B2D
+cue Bay 2 cruiseHorn gap 80-140 volume 0.11430953 pan 0.5 0.3 pitch 0.02 sweep False: 9BF2AC2768B42560
+cue Bay 3 pelican gap 18-36 volume 0.16329932 pan 0 0.8 pitch 0.06 sweep False: 0E5D56B42A8BADAB
+cue Bay 4 seawall gap 8-16 volume 0.21228911 pan 0 0.6 pitch 0.06 sweep False: 5385CEE152BE56A9
+bed Downtown: 5F04047B05C1C48E
+cue Downtown 0 car gap 6-14 volume 0.4082483 pan 0 0 pitch 0.08 sweep True: 38972A744C41B3A7
+cue Downtown 1 busBrakes gap 18-36 volume 0.16329932 pan 0 0.8 pitch 0.04 sweep False: D67C64029FCF1850
+cue Downtown 2 horn gap 18-40 volume 0.16329932 pan 0 0.8 pitch 0.06 sweep False: BFC0B398316A92C1
+cue Downtown 3 crane gap 30-60 volume 0.106144555 pan 0.5 0.4 pitch 0.02 sweep False: F7A84E0D1AB28129
+cue Downtown 4 jackhammerFar gap 22-45 volume 0.1224745 pan -0.5 0.4 pitch 0.05 sweep False: EE477FDB51DA514F
+cue Downtown 5 parrots gap 35-70 volume 0.21228911 pan 0 0 pitch 0.06 sweep True: 80265017FE374FE1
+bed Underline: EC89DC1267757023
+cue Underline 0 metrorail gap 35-60 volume 0.38729835 pan 0 0 pitch 0.03 sweep True: 236927C1A0063D13
+cue Underline 1 bicycle gap 16-32 volume 0.15491934 pan 0 0.8 pitch 0.06 sweep False: E81784BD065D4575
+cue Underline 2 jogger gap 14-28 volume 0.1859032 pan 0 0 pitch 0.05 sweep True: B7C1F9F520A71176
+cue Underline 3 cicada gap 20-40 volume 0.108443536 pan 0 0.8 pitch 0.05 sweep False: 57C12857A4CEBD3E
+cue Underline 4 mockingbird gap 8-16 volume 0.20139514 pan 0 0.9 pitch 0.04 sweep False: D66B783970912AFF
+bed MuseumPark: FA04A9D22989E066
+cue MuseumPark 0 mockingbird gap 6-14 volume 0.19666554 pan 0 0.9 pitch 0.04 sweep False: 19728E57CA0D7F20
+cue MuseumPark 1 grackle gap 10-22 volume 0.15452291 pan 0 0.9 pitch 0.05 sweep False: CEF7ABC336EF808B
+cue MuseumPark 2 sprinkler gap 25-50 volume 0.15452291 pan 0.5 0.4 pitch 0.03 sweep False: 24FA23013582E3F4
+cue MuseumPark 3 kids gap 15-30 volume 0.07023769 pan 0 0.8 pitch 0.08 sweep False: B46F2057D6DE8DE9
+cue MuseumPark 4 laughingGullFar gap 12-25 volume 0.091308996 pan 0 0.9 pitch 0.08 sweep False: C9D864CCF2F92E9D
 sfx Kick: 8873DDE70965429C
 sfx Touch: 54CE0B9F93A6663E
 sfx Perfect: C5477F752A8B35BA

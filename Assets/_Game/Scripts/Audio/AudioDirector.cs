@@ -16,6 +16,10 @@ namespace DribbleToSchool.Audio
     /// over it at random times, places and pitches (a car going by, a gull, a reversing truck...), mixed
     /// well under the music. Music, ambience and sound effects each have a volume in Settings; all are
     /// turned down in the pause menu. Lives across scenes.
+    ///
+    /// Since v146 the ambience is off (<see cref="AmbienceOn"/>, the user's request: "remove that continuous background
+    /// from all music"): no place's bed or cues are made or played, in either city, and Settings has no Ambience slider.
+    /// The music and the sound effects play as before.
     /// </summary>
     public class AudioDirector : MonoBehaviour
     {
@@ -25,6 +29,11 @@ namespace DribbleToSchool.Audio
         const float AmbienceFadeTime = 2f;
         /// <summary>Overall levels at full volume: the music on top, the place's sounds under it.</summary>
         const float MusicGain = 0.6f, AmbienceGain = 0.45f;
+        /// <summary>
+        /// Whether the places' ambience (beds and cues) is made and played at all. Off since v146 at the user's request
+        /// (docs/LEARNINGS.md G10); AmbienceGenerator is kept, so turning this back on is all it takes.
+        /// </summary>
+        public static readonly bool AmbienceOn = false;
         /// <summary>How many soundscapes' music and ambience to keep ready (the rest are let go).</summary>
         const int Keep = 3;
 
@@ -92,9 +101,17 @@ namespace DribbleToSchool.Audio
         /// </summary>
         static MusicCountry WantedCountry()
         {
+            // (Kamakura plays Florida's music since v147: one loop each place, made and kept once for both cities)
+            return MusicGenerator.PlayedAs(WantedCountryOfStreets());
+        }
+
+        static MusicCountry WantedCountryOfStreets()
+        {
             var level = LevelManager.Current;
             if (level == null) return Progression.Cities.Active.music;
             if (level.endless) return MusicCountry.Japan;
+            // A city's own level plays its music (Florida's legs); else the streets the scene is in.
+            if (level.level != null && Progression.Cities.Of(level.level) != Progression.Cities.Kamakura) return Progression.Cities.Of(level.level).music;
             return Progression.Cities.OfScene(level.gameObject.scene.name).music;
         }
         Ambience playingAmbience;
@@ -192,6 +209,8 @@ namespace DribbleToSchool.Audio
                 }
             }
             if (level.level == null) return Soundscape.Street;
+            var florida = Soundscapes.ForFloridaLeg(level.level.levelId);
+            if (florida != Soundscape.Menu) return florida;
             var route = RouteTable.Of(level.level.levelId);
             return Soundscapes.For(route != null ? route.id : null, Mathf.Clamp(level.level.chapter, 1, 5));
         }
@@ -206,7 +225,8 @@ namespace DribbleToSchool.Audio
             // Synthesizing takes a second or so: do it off the main thread.
             if (!musicClips.ContainsKey(key) && !musicJobs.ContainsKey(key))
                 musicJobs[key] = Task.Run(() => MusicGenerator.Generate(scape, country));
-            if (!ambiences.ContainsKey(scape) && !ambienceJobs.ContainsKey(scape))
+            // (the ambience only when it is on: none since v146, and nothing synthesized for it)
+            if (AmbienceOn && !ambiences.ContainsKey(scape) && !ambienceJobs.ContainsKey(scape))
                 ambienceJobs[scape] = Task.Run(() => AmbienceGenerator.Generate(scape));
         }
 

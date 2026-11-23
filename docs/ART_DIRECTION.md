@@ -1,4 +1,4 @@
-# Kick Off 2: art direction
+# Kick Off 2 School: art direction
 
 The look is clear anime daylight over a believable everyday town: a deep blue sky with big white
 cumulus, clean neutral streets and buildings, fresh greens, and characters drawn so they stand
@@ -81,15 +81,6 @@ and an ink starburst behind the loudest. They sit above the action, clear of the
 
 Previews of the real models through a numpy port of the shader are in `review/filter/`.
 
-## The pencil sketch filter
-
-An optional look (Filters, pass 6 of `Shaders/PostFX.shader`): warm drawing paper, a faint
-wash of the colour, pencil hatching for the tone in up to three directions as it darkens, the sky left
-open, and the outline drawn twice with a wandering offset from the depth and normals. The figures
-keep their colour (75 percent) and get no creases, so the kid stands out on the page and the painted
-eyes stay clean. Raising `sketchWash` from 0.12 to about 0.6 turns it into coloured pencil. Previews
-are in `review/sketch/`.
-
 ## How it applies to our game
 
 The game is a side view of a street, so the camera sees the front of everything. Assets are judged
@@ -106,9 +97,11 @@ around them has real depth.
 | 5 Park and school | Summer afternoon | Clear, a touch warmer | Green trees, a few blossoms, birches, hedges, pond, school |
 
 **The cities.** The original streets above are Kamakura, Japan: a seaside town south of Tokyo (Japanese shop names,
-concrete poles, block walls, the railway). The game is now five cities, each a chapter of its own with its own streets,
-light and play, chosen after PLAY (`Progression/Cities`, `UI/CityPicker`; the design is `docs/CITIES.md`): Kamakura,
-Florida (Miami), Madrid, New York and Mumbai. The add-ons, which put the same levels in another country's streets, are gone.
+concrete poles, block walls, the railway). Since v126 it is built from its own kits, after the user's brief
+(`docs/KAMAKURA_BRIEF.md`): kawara-roofed timber-and-mortar homes behind block walls, noren shopfronts, a temple ground,
+the green-and-cream tram, black pines, camphors and cedars, kites and crows. The game is now two cities, each a chapter of its own with its own streets,
+light and play, chosen after PLAY (`Progression/Cities`, `UI/CityPicker`; the design is `docs/CITIES.md`): Kamakura and
+Florida (Miami); Madrid, New York and Mumbai were removed in v132. The add-ons, which put the same levels in another country's streets, are gone.
 **Each city's light** is Kamakura's measured look shifted by the city's climate (`CityClimate`): the colour temperature of
 its direct sun and of its shade, and how humid its air is (a milky horizon and nearer haze, or a deeper sky and crisper
 distance). It is applied to a city's scenes as they are built, so it costs nothing at runtime, and every filter reads it.
@@ -127,7 +120,7 @@ timber pier on concrete piles running out from the beach, and English shop signs
 (`BuildingsCAAtlas.png`). A fan palm is 16.5 m tall, and the camera's top edge sits at about
 2.4 m + 0.23 x the distance, so grown fan palms stand 60 m or more back (StreetBuilder.PalmSkyline),
 where their crowns show over the roofs; near the street they are young ones or date palms.
-**Florida**, unlocked by finishing every one of Kamakura's story levels (its streets so far are a Space Coast beach town, Cocoa Beach on the A1A, and a canal suburb; its new routes in `docs/CITIES.md` are set in Miami and reuse this kit), so far has chapter 1, Home Street, and chapter 3, the beach: each of their levels has a
+**Florida**, open from the start since v135 (until then unlocked by finishing every one of Kamakura's story levels; its streets so far are a Space Coast beach town, Cocoa Beach on the A1A, and a canal suburb; its new routes in `docs/CITIES.md` are set in Miami and reuse this kit), so far has chapter 1, Home Street, and chapter 3, the beach: each of their levels has a
 `<scene>_FL` scene (`LevelBuildKit.Florida`, `StreetBuilder.Florida`, the Florida kit `tools/blender/kit_buildings_fl.py`),
 after the user's photographic references in `review/florida/refs` (F3-1 to F3-6, made with `docs/IMAGE_PROMPTS.md`). The kid's
 beach is unchanged (the sand, the tides, the channels, the dunes and the sea about 9.6 m behind the lane: the tide's wash, the

@@ -5,6 +5,7 @@
 # Blender's, not the game's toon ramp, so judge layout, scale, silhouettes and colour, not shading.
 #   blenv/bin/python preview_street.py -- <kits dir> <out.png> [--chapter 1..5] [--seed N] [--wide] [--haze-end M] [--surfaces DIR] [--samples N]
 #       [--mood-json FILE] (a city's light: see --mood-json below)
+#       [--miami FL1-1 --plan MiamiDistricts.json] (one of Florida's own legs, from the plan the game builds it from)
 # <kits dir> holds one folder per kit with <Kit>.blend and <Kit>.json inside (any folder names).
 # --surfaces: a folder of the game's ground textures (Surface_<Name>.png, 8 x 8 units each), e.g.
 # exported from ProceduralArt.SurfaceTexture; without it the ground is flat colour.
@@ -25,6 +26,8 @@ cam_x = float(args[args.index('--cam') + 1]) if '--cam' in args else 0.0
 # --florida (chapter 3): the Florida add-on's beach town on its seawall terraces (StreetBuilder.Florida); --level L11..L14
 # picks where the strip starts; --open a:b,... are stretches left as open beach (the level's tides, channels, dunes, stops).
 florida = '--florida' in args
+# --kamakura: Kamakura's own look (StreetBuilder.Kamakura: the Kamakura and KamakuraStreet kits, Japan's trees).
+kamakura_mode = '--kamakura' in args
 fl_level = args[args.index('--level') + 1] if '--level' in args else 'L11'
 fl_open = [tuple(float(v) for v in t.split(':')) for t in args[args.index('--open') + 1].split(',')] if '--open' in args else []
 # --florida with --chapter 1: Florida's Home Street (StreetBuilder.FloridaHome); --canal a:b a canal under a drawbridge
@@ -471,7 +474,9 @@ def beach_ground(sand):
             x += r_.uniform(.7, 2)
 
 
-if chapter == 3:
+if '--miami' in args:
+    pass          # a Florida leg's own ground (miami() below)
+elif chapter == 3:
     SAND = Sand(spans_arg or [(X0 - 600, X1 + 600, 0.0)])
     beach_ground(SAND)
     box(X0 - 1500, X1 + 1500, SAND.base - 0.5, SAND.base - 0.3, 9, 1000, W, 'sea', 'Sea')
@@ -529,6 +534,7 @@ COTTAGE = [((.95, .78, .80), (.95, .95, .92), (.80, .81, .80)), ((.78, .88, .80)
 
 
 def kit_of(model):
+    if model and model.endswith('KM'): return km_kit(model)
     return 'Florida' if model in FLH else 'Coast' if model in COAST else 'Buildings'
 
 
@@ -599,7 +605,15 @@ def building(model, x, z, schemes):
     return True
 
 
+KM_TREES = {'Palm': 'BlackPine', 'PalmShort': 'BlackPine', 'PalmDate': 'GardenPine', 'PalmFan': 'BlackPine', 'Broadleaf': 'Camphor',
+            'BroadleafLarge': 'Camphor', 'BroadleafWide': 'CherryLeaf', 'BroadleafSmall': 'Persimmon', 'BroadleafYoung': 'Persimmon',
+            'ConiferTall': 'Cedar', 'ConiferMid': 'Cedar', 'ConiferSmall': 'GardenPine', 'Birch': 'CherryLeaf', 'CherryBlossom': 'CherryLeaf',
+            'BushRound': 'Azalea', 'BushWide': 'Hydrangea', 'ShrubFlowering': 'Hydrangea'}   # (StreetBuilder.Kamakura's lists)
+
+
 def plant(model, x, y, z, scale):
+    if kamakura_mode and has('Plants', KM_TREES.get(model, model)):
+        model = KM_TREES.get(model, model)
     if florida and has('Plants', 'PalmSabal'):        # StreetBuilder.FloridaPalm
         model = {'PalmDate': 'PalmSabal', 'PalmFan': 'PalmSabalTall'}.get(model, model)
     leaves = None
@@ -654,8 +668,12 @@ def distant(fields, grass):
         while x < b + tile:
             place('Terrain', model, x, y, z, 0, scale, [grass, None, None] if grass else None)
             x += tile
-    layer('ForestStrip', X0 - 250, X1 + 250, -0.3, 70, 1.0, 0)
+    if not kamakura_mode: layer('ForestStrip', X0 - 250, X1 + 250, -0.3, 70, 1.0, 0)
     if florida: return          # (Florida is flat: StreetBuilder.DistantHills)
+    if kamakura_mode:           # (Kamakura's low wooded hills, no snowy ranges: StreetBuilder.DistantHills)
+        layer('HillsRolling', X0 - 450, X1 + 450, -0.4, 230, 1.0, 0)
+        layer('HillsRolling', X0 - 700, X1 + 700, -0.6, 420, 1.25, 0.5)
+        return
     layer('HillsRolling', X0 - 450, X1 + 450, -0.4, 230, 1.0, 0)
     layer('MountainRange1', X0 - 700, X1 + 700, -0.8, 440, 0.75, 0)
     layer('MountainRange2', X0 - 900, X1 + 900, -0.8, 640, 1.0, 0.5)
@@ -902,16 +920,27 @@ def drawbridge(a, b):
     place('Florida', 'CanalRailFL', a - .35, 0, 8.6, -90); place('Florida', 'CanalRailFL', b + .35, 0, 8.6, 90)
     L = w / 2 - .03
     for hinge, sgn in ((a, 1), (b, -1)):
-        e = place('Florida', 'DrawLeafFL', hinge, 0, 0, 0 if sgn > 0 else 180, stretch=(L / 2.5, 1, 1))
-        if e is not None:       # (both tip up about the hinge: the right one is turned round first)
-            e.rotation_euler = (0, -math.radians(lift), 0 if sgn > 0 else math.pi)
+        e = place('Florida', 'DrawLeafFL', hinge, 0, 0, 0, stretch=(sgn * L / 2.5, 1, 1))
+        if e is not None:       # (both tip up about the hinge: the right one mirrored along its length, its railing still behind)
+            e.rotation_euler = (0, -sgn * math.radians(lift), 0)
     up = lift > 0.5
     for bank in (a - 1.6, b + 1.6):
         place('Florida', 'DrawTowerFL', bank, 0, PATH + 1.4)
         post = bank + (-.8 if bank < cx else .8)
+        # the path's traffic signal (LevelBuildKit.Drawbridge since v130): a mast before the gate, a black head, two red lamps
+        mx, mz = bank + (-1.35 if bank < cx else 1.35), PATH + .35
+        box(mx - .05, mx + .05, 0, 2.9, mz - .05, mz + .05, (.42, .43, .45), 'mast')
+        box(mx - .33, mx + .33, 2.53, 2.87, mz - .19, mz - .01, (.08, .08, .09), 'head')
+        box(mx - .43, mx + .43, 2.45, 2.95, mz - .025, mz + .005, (.08, .08, .09), 'backplate')
+        for dx in (-.16, .16):
+            box(mx + dx - .09, mx + dx + .09, 2.61, 2.79, mz - .215, mz - .19, (1, .22, .18) if lift > 0.5 else (.28, .06, .05), 'lens')
         place('Florida', 'GatePostFL', post, 0, PATH + .3)
-        arm = place('Florida', 'GateArmFL', post, .9, PATH + .3)
-        if arm is not None and up: arm.rotation_euler = (0, math.radians(-90 if bank < cx else 90), 0)
+        # (LevelBuildKit.Drawbridge since v129: the arm falls ACROSS the path toward the camera, cut to end at the lane's front
+        # edge; it used to fall along the street behind the kid)
+        arm_len = PATH * 2 + .4
+        arm_h = size('Florida', 'GateArmFL').z if has('Florida', 'GateArmFL') else 4.2
+        arm = place('Florida', 'GateArmFL', post, .9, PATH + .3, 0, arm_len / max(arm_h, 1.0))
+        if arm is not None and up: arm.rotation_euler = (math.radians(90), 0, 0)
     if w >= 4:
         place('Florida', 'DockFL', a + 1.5, water + .3, 12)
         place('Florida', 'DockFL', b - 1.5, water + .3, 24, 180)
@@ -1192,8 +1221,199 @@ def park():
     distant((.44, .54, .32), None)
 
 
-{1: suburb, 2: market, 3: beach, 4: city, 5: park}[chapter]()
-poles()
+def miami(leg, plan_path):
+    """Florida's own legs (docs/CITIES.md): the ground strips, the water and every placement of the leg's district, read from
+    the plan the game builds from (tools/blender/miami_plan.py, MiamiDistricts.json: StreetBuilder.Miami)."""
+    plan = json.load(open(plan_path))['legs'][leg]
+    kind = plan['strips']
+    pave, conc, asph, kerb, grass = (.86, .85, .82), (.82, .81, .78), (.42, .43, .45), (.9, .9, .88), (.5, .64, .34)
+    if kind in ('street', 'havana'):
+        strip(-16.0, -8.3, conc, 0.0, 0.0, "Concrete"); strip(-8.3, -8.1, kerb, 0.0, 0.0, 'Kerb')
+        strip(-8.1, -1.7, asph, -0.14, 0.0, 'Asphalt'); strip(-1.7, -1.5, kerb, 0.0, 0.0, 'Kerb')
+        strip(-1.5, PATH, conc, 0.0, 0.0, 'Concrete'); strip(PATH, PROP + 0.6, conc, 0.0, 0.0, 'Concrete')
+        strip(PROP + 0.6, plan.get('back', 90.0), grass if kind == 'havana' else conc, 0.0, 0.0, 'Grass' if kind == 'havana' else 'Concrete')
+        for zl in (-2.0, -7.8):
+            box(X0 - 600, X1 + 600, -0.14, -0.13, zl - .06, zl + .06, (.95, .95, .93), 'line')
+        for xl in range(int(X0) - 60, int(X1) + 60, 6):
+            box(xl, xl + 3, -0.14, -0.128, -4.96, -4.84, (.98, .82, .25), 'dash')
+    elif kind == 'promenade':
+        strip(-16.0, -1.5, grass, 0.04, 0.0, "Grass"); strip(-1.5, PATH, pave, 0.0, 0.0, 'Paving')
+        strip(PATH, plan.get('water', {}).get('z', 4.6), pave, 0.0, 0.0, 'Paving')
+    else:
+        strip(-16.0, -1.5, grass, 0.04, 0.0, "Grass"); strip(-1.5, PATH, pave, 0.0, 0.0, 'Paving')
+        strip(PATH, plan.get('water', {}).get('z', 90.0), grass, 0.04, 0.0, 'Grass')
+    w = plan.get('water')
+    if w:
+        box(w['from'], w['to'], w['y'] - 0.1, w['y'], w['z'], w.get('z1', w['z'] + 1200), (1, 1, 1), 'water', 'Sea')
+        box(w['from'], w['to'], w['y'] - 0.4, 0.0, w['z'] - 0.35, w['z'], (.8, .79, .76), 'seawall', 'Concrete')
+    # The side streets (StreetBuilder.CrossingStreet: asphalt from the footpath back to z 70) and the land round them
+    # (StreetBuilder.Miami cuts the land for each up to SideStreetDepth, z 72).
+    streets = [(a, b) for a, b in fl_open]
+    for a, b in streets:
+        box(a, b, -0.2, 0.004, -PATH, 70.0, asph, 'sidestreet', 'Asphalt')
+    for l in plan.get('land', []):
+        surf = l.get('surface', 'Grass')
+        rgb = conc if surf == 'Concrete' else grass
+        pieces = [(l['from'], l['to'])]
+        if l['z0'] < 72.0:
+            for a, b in streets:
+                nxt = []
+                for p0, p1 in pieces:
+                    if b <= p0 or a >= p1: nxt.append((p0, p1)); continue
+                    if a > p0: nxt.append((p0, a))
+                    if b < p1: nxt.append((b, p1))
+                pieces = nxt
+            for a, b in streets:
+                sa, sb = max(l['from'], a), min(l['to'], b)
+                if sb > sa and l['z1'] > 72.0: box(sa, sb, -0.2, 0.0, 72.0, l['z1'], rgb, 'land', surf)
+        for p0, p1 in pieces:
+            box(p0, p1, -0.2, 0.0, l['z0'], l['z1'], rgb, 'land', surf)
+    # Built shapes (the port, v140: StreetBuilder.Miami builds the same from the plan), turned rz degrees about the z axis.
+    for bx in plan.get('boxes', []):
+        cx, cy, cz = bx['c']; sx, sy, sz = bx['s']
+        a = math.radians(bx.get('rz', 0.0)); ca, sa_ = math.cos(a), math.sin(a)
+        me = bpy.data.meshes.new(bx['n'])
+        v = []
+        for dx in (-sx / 2, sx / 2):
+            for dy in (-sy / 2, sy / 2):
+                for dz in (-sz / 2, sz / 2):
+                    v.append(tuple(B(cx + dx * ca - dy * sa_, cy + dx * sa_ + dy * ca, cz + dz)))
+        f = [(0, 1, 3, 2), (4, 6, 7, 5), (0, 4, 5, 1), (2, 3, 7, 6), (0, 2, 6, 4), (1, 5, 7, 3)]
+        me.from_pydata(v, [], f); me.materials.append(flat_mat(tuple(bx['rgb']), bx.get('surf')))
+        bm = bmesh.new(); bm.from_mesh(me); bmesh.ops.recalc_face_normals(bm, faces=bm.faces); bm.to_mesh(me); bm.free()
+        o = bpy.data.objects.new(bx['n'], me); S.collection.objects.link(o)
+    for lb in plan.get('labels', []):
+        cu = bpy.data.curves.new('label', 'FONT'); cu.body = lb['t']; cu.align_x = 'CENTER'; cu.align_y = 'CENTER'
+        cu.size = lb['size'] * 4.8      # (TextMesh: characterSize x fontSize 48 / 10)
+        o = bpy.data.objects.new('label', cu); S.collection.objects.link(o)
+        o.location = B(*lb['c']); o.rotation_euler = (math.radians(90), 0, 0)
+        o.data.materials.append(flat_mat(tuple(lb['rgb'])))
+    for it in plan['items']:
+        kit, model, x, z, yaw, scale = it[:6]
+        y = it[6] if len(it) > 6 else 0.0
+        if abs(x - CAM_X) > 400 and z < 100: continue
+        place(kit, model, x, y, z, yaw, scale)
+
+
+def km_kit(m):
+    return 'Kamakura' if has('Kamakura', m) else 'KamakuraStreet'
+
+
+def kamakura_home():
+    """StreetBuilder.Suburb in Kamakura (StreetBuilder.Kamakura): the flush lane with its green walking strip, block walls,
+    board fences and hedges with their gates, the timber-and-mortar homes, pots and bonsai at the gates, laundry poles and
+    sheds, hydrangeas and azaleas, persimmons, cherries, camphors and black pines behind, a back row of homes."""
+    asph, pave, grass = (.42, .43, .45), (.8, .79, .77), (.5, .64, .34)
+    strip(-16.0, -8.3, pave, 0.0, 0.0, 'Paving'); strip(-8.3, -8.1, (.9, .9, .88), 0.0, 0.0, 'Kerb')
+    strip(-8.1, -1.38, asph, 0.0, 0.0, 'Asphalt'); strip(-1.38, -1.26, (.96, .96, .94), 0.0, 0.0, 'Paving')
+    strip(-1.26, 0.3, tuple(v * t for v, t in zip(asph, (.62, 1.0, .7))), 0.0, 0.0, 'Asphalt'); strip(0.3, PROP + 0.6, asph, 0.0, 0.0, 'Asphalt')   # (green paint on the asphalt, v130)
+    strip(PROP + 0.6, 90.0, grass, 0.0, 0.0, 'Grass')
+    houses = Deck(['HouseTileKM', 'HouseMetalKM', 'HouseOldKM', 'HouseShedKM', 'HouseCarportKM', 'BungalowKM', 'ApartmentKM'])
+    walls = [(.86, .8, .68), (.92, .91, .88), (.78, .77, .74), (.88, .84, .76)]
+    back = [t for t in ['Persimmon', 'CherryLeaf', 'Camphor', 'BlackPine', 'CherryLeaf', 'Bamboo'] if has('Plants', t)]
+    x = X0 - 12
+    while x < X1 + 12:
+        lot = rng.uniform(9, 13)
+        gate = rng.uniform(x + 2, x + lot - 4)
+        f = rng.random()
+        wall = 'BlockWallKM' if f < 0.55 else 'BoardFenceKM' if f < 0.85 else None
+        if wall:
+            row('Kamakura', wall, x + 0.1, gate, 0, PROP + 0.15); row('Kamakura', wall, gate + 1.8, x + lot - 0.1, 0, PROP + 0.15)
+        else:
+            row('Plants', 'HedgeBlock2', x + 0.3, gate - 0.2, 0, PROP + 0.4); row('Plants', 'HedgeBlock2', gate + 1.6, x + lot - 0.3, 0, PROP + 0.4)
+        place('Kamakura', 'GateKM', gate + 0.9, 0, PROP + 0.15)
+        m = houses.next(lambda m: size('Kamakura', m).x <= lot - 0.8)
+        cx = x + lot / 2
+        z = PROP + 1.6 + rng.uniform(0, 1.4)
+        half = size('Kamakura', m).x / 2 if m else 3.5
+        if m: place('Kamakura', m, cx, 0, z, 0, 1, [rng.choice(walls), None, None])
+        if rng.random() < 0.6: place('KamakuraStreet', 'PotShelfKM', gate + 0.9, 0, PROP + 0.75, rng.uniform(-8, 8))
+        yard = x + lot - (cx + half)
+        if yard > 2.6 and rng.random() < 0.5:
+            place('KamakuraStreet', rng.choice(['LaundryPoleKM', 'CorrugatedShedKM']), x + lot - yard / 2, 0, z + 1.2, rng.uniform(-5, 5))
+        side = (cx - half) - x
+        if side > 2.2 and rng.random() < 0.5: plant(rng.choice(['Hydrangea', 'Azalea']), x + side / 2, 0, PROP + 0.9, rng.uniform(0.9, 1.2))
+        if m == 'HouseCarportKM': place('KamakuraStreet', 'KeiCarKM', cx + half - 1.7, 0, z - 0.4)
+        if rng.random() < 0.25 and gate - x > 3.4: place('Street', 'Bicycle', rng.uniform(x + 1.2, gate - 1), 0, PROP - 0.32, 180, 1, [rng.choice(BIKES), None, None])
+        if back and rng.random() < 0.7: plant(rng.choice(back), cx + rng.uniform(-half, half), 0, z + 8 + rng.uniform(0, 3), rng.uniform(0.9, 1.2))
+        x += lot
+    deck = Deck(['HouseTileKM', 'HouseMetalKM', 'HouseOldKM', 'ApartmentKM', 'HouseShedKM'])
+    x = X0 - 20
+    while x < X1 + 20:
+        m = deck.next()
+        if m: place('Kamakura', m, x, 0, rng.uniform(20, 24), 0, 1, [rng.choice(walls), None, None])
+        x += rng.uniform(10, 14)
+    distant((.44, .54, .32), None)
+
+
+def kamakura_market():
+    """StreetBuilder.Market in Kamakura: the shops with noren and lanterns at the back of the footpath, nobori banners, drinks
+    machines and a green phone in the gaps, scooters and bicycles; homes behind."""
+    strip(-16.0, -1.5, (.62, .6, .58), -0.06, 0.0, 'Cobbles'); strip(-1.5, PROP + 0.6, (.86, .85, .83), 0.0, 0.0, 'Paving')
+    strip(PROP + 0.6, 90.0, (.8, .79, .77), 0.0, 0.0, 'Paving')
+    shops = Deck(['ShopSembeiKM', 'ShopSobaKM', 'ShopWagashiKM', 'ShopSouvenirKM', 'ShopFishKM', 'ShopKissaKM', 'ShopTeaKM', 'ShopSouvenirKM'])
+    x = X0 - 12
+    while x < X1 + 12:
+        m = shops.next()
+        if not m: break
+        w = size('Kamakura', m).x
+        cx = x + w / 2
+        place('Kamakura', m, cx, 0, PROP + 0.6)
+        d = rng.random()
+        if d < 0.35: place('Kamakura', 'NoboriKM', cx - w / 2 + 0.5, 0, PROP + 0.25, rng.uniform(-10, 10))
+        elif d < 0.55: place('KamakuraStreet', rng.choice(['VendingKM', 'VendingKM2']), cx + w / 2 - 0.6, 0, PROP + 0.45)
+        elif d < 0.7: place('KamakuraStreet', 'ScooterKM', cx + w / 2 - 0.9, 0, PROP + 0.35, 180)
+        x += w
+        if rng.random() < 0.28:
+            place('KamakuraStreet', 'VendingKM', x + 0.7, 0, PROP + 0.2)
+            place('KamakuraStreet', 'PhoneBoothKM' if rng.random() < 0.5 else 'VendingKM2', x + 1.8, 0, PROP + 0.3)
+            x += 2.6
+    walls = [(.86, .8, .68), (.92, .91, .88), (.78, .77, .74)]
+    deck = Deck(['HouseTileKM', 'HouseMetalKM', 'HouseOldKM', 'ApartmentKM'])
+    x = X0 - 20
+    while x < X1 + 20:
+        m = deck.next()
+        if m: place('Kamakura', m, x, 0, rng.uniform(16, 20), 0, 1, [rng.choice(walls), None, None])
+        x += rng.uniform(9, 13)
+    distant((.44, .54, .32), None)
+
+
+def kamakura_extras():
+    """Chapter 4's tram line behind the street (StreetBuilder.KamakuraTramLine) and chapter 5's temple ground
+    (StreetBuilder.KamakuraTempleGrounds), on top of the chapter's own street."""
+    if chapter == 4 and has('KamakuraStreet', 'TrackKM'):
+        row('KamakuraStreet', 'TrackKM', X0 - 20, X1 + 20, 0, 12.5)
+        x = math.ceil((X0 - 20) / 30.0) * 30.0
+        while x < X1 + 20:
+            place('KamakuraStreet', 'TramPoleKM', x, 0, 14.3); x += 30.0
+        place('KamakuraStreet', 'TramKM', CAM_X + 6, 0.32, 12.5)
+    if chapter == 5 and has('KamakuraStreet', 'ToriiKM'):
+        x = CAM_X + 4
+        place('KamakuraStreet', 'ToriiKM', x, 0, PROP + 2.2)
+        for sg in (-1, 1):
+            place('KamakuraStreet', 'StoneLanternKM', x + sg * 3.4, 0, PROP + 1.6)
+            for k in range(2): place('KamakuraStreet', 'MossWallKM', x + sg * (5.4 + k * 4), 0, PROP + 3.9)
+        place('KamakuraStreet', 'StoneStepsKM', x, 0, PROP + 3.4)
+        place('KamakuraStreet', 'TempleGateKM', x, 0, 16)
+        place('KamakuraStreet', 'EmaRackKM', x + 7.5, 0, PROP + 2.4)
+
+
+if '--miami' in args:
+    miami(args[args.index('--miami') + 1], args[args.index('--plan') + 1])
+    if canal: drawbridge(*canal)      # (a leg's drawbridge: --canal a:b [--lift degrees], as LevelBuildKit.Drawbridge builds it)
+    # set pieces the game's builder places (the arcades, the sweeper...): --extra kit:model:x:y:z[:yaw[:scale]],...
+    if '--extra' in args:
+        for spec in args[args.index('--extra') + 1].split(','):
+            f = spec.split(':')
+            v = [float(t) for t in f[2:]]
+            place(f[0], f[1], v[0], v[1], v[2], v[3] if len(v) > 3 else 0.0, v[4] if len(v) > 4 else 1.0)
+elif kamakura_mode and chapter in (1, 2):
+    {1: kamakura_home, 2: kamakura_market}[chapter]()
+    poles()
+else:
+    {1: suburb, 2: market, 3: beach, 4: city, 5: park}[chapter]()
+    poles()
+    if kamakura_mode: kamakura_extras()
 
 # A kid-sized marker on the footpath for scale (1.55 m), where the player would stand, and the ball
 # (34 cm across, a little larger than life, as in the game) at their feet.
@@ -1212,6 +1432,9 @@ focus = Vector((CAM_X, 0, 1.9))            # Blender coords: (x, depth, up)
 fwd = Vector((0, math.cos(pitch), -math.sin(pitch)))
 cam.location = focus - fwd * dist
 cam.rotation_euler = fwd.to_track_quat('-Z', 'Y').to_euler()
+if '--camup' in args:      # a look from above the street at its far ground (a check, not the game's view)
+    cam.location.z += float(args[args.index('--camup') + 1])
+    cam.rotation_euler = (Vector((CAM_X, 300.0, 0.0)) - cam.location).to_track_quat('-Z', 'Y').to_euler()
 
 # Distance haze like DtsHaze, in every material: toward the haze colour by an eased-out ramp of the
 # distance from the camera between haze_start and haze_end, times the strength. The sky stays clear.
@@ -1246,5 +1469,7 @@ for m in bpy.data.materials:
     t.links.new(mix.outputs['Shader'], outn.inputs['Surface'])
 
 S.render.filepath = out
+if '--save' in args:          # the scene as a .blend, to look into (no render)
+    bpy.ops.wm.save_as_mainfile(filepath=args[args.index('--save') + 1]); sys.exit(0)
 bpy.ops.render.render(write_still=True)
 print('preview', out, len(placed), 'models placed')

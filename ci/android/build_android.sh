@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build Kick Off 2 for Google Play end to end: Unity batch build -> signed Android App Bundle (.aab).
+# Build Kick Off 2 School for Google Play end to end: Unity batch build -> signed Android App Bundle (.aab).
 #
 # Usage (release, for Play):
 #   DTS_KEYSTORE_PATH=~/keys/kickoff2-upload.jks DTS_KEYSTORE_PASS=... DTS_KEY_ALIAS=upload DTS_KEY_PASS=... \

@@ -5,8 +5,8 @@ using UnityEngine;
 namespace DribbleToSchool.EditorTools
 {
     /// <summary>
-    /// The school at the end of Seaside Road in the Florida add-on (review/florida/refs, F3-6): Seagrove High, a Florida
-    /// public high school of cream and teal concrete block, its front to the street, behind a white aluminium fence and an
+    /// The school at the end of Florida's routes: Bayside Elementary (docs/CITIES.md; modelled as the old beach add-on's Seagrove
+    /// High, review/florida/refs F3-6, and renamed on its marquee and its wall), a Florida public school of cream and teal concrete block, its front to the street, behind a white aluminium fence and an
     /// open gate between stucco piers, its marquee by the way in, the US and Florida flags, a covered walkway in to its doors
     /// and a portable classroom beyond. The way through the gate and the goal are the same as every school end's.
     /// </summary>

@@ -6,7 +6,7 @@ using UnityEngine;
 namespace DribbleToSchool.UI
 {
     /// <summary>
-    /// The city picker, after PLAY and HOLIDAY RUN on the title screen (docs/CITIES.md): the five cities as cards, each with its
+    /// The city picker, after PLAY and HOLIDAY RUN on the title screen (docs/CITIES.md): the cities (Kamakura and Florida) as cards, each with its
     /// colour, its country, a line about its way to school and whether it can be played yet. After PLAY, a city that can be
     /// played is chosen (Progression/Cities.Select: the levels load in its streets) and the map opens; the city played last is
     /// blue. After HOLIDAY RUN, only a city with its own Holiday Run can be tapped (Kamakura, so far), and the story's choice is
@@ -21,7 +21,10 @@ namespace DribbleToSchool.UI
         public static GameObject Open(Transform canvas, Mode mode, System.Action onChosen)
         {
             GameObject root;
-            var card = UIKit.Modal(canvas, "Cities", new Vector2(1400f, 960f), out root);
+            // As tall as its rows of cards need (two a row), between the header and the note along the bottom.
+            int rows = (Cities.All.Length + 1) / 2;
+            float height = Mathf.Max(600f, 330f + rows * (CardHeight + Gap));
+            var card = UIKit.Modal(canvas, "Cities", new Vector2(1400f, height), out root);
             UIKit.Header(card.transform, Loc.T(mode == Mode.Story ? "city.pick.story" : "city.pick.holiday"), 820f);
 
             // Two cards a row, in the order of Cities.All.

@@ -39,13 +39,21 @@ CELL = 0.125
 _CELLS = [(0.75, 0.375), (0.875, 0.375), (0.75, 0.25), (0.875, 0.25), (0.75, 0.125), (0.875, 0.125), (0.75, 0.0),
           (0.375, 0.875), (0.375, 0.75), (0.375, 0.625), (0.375, 0.5), (0.375, 0.375), (0.375, 0.25)]
 SPRITES = {'leaf': _CELLS[0:7], 'birch': _CELLS[7:9], 'blossom': _CELLS[9:11], 'pine': _CELLS[11:13]}
+# Half-size cells (0.0625) in the three free quarters of the white corner's cell, for the Japanese plants
+# (kit_plants_jp.py): bamboo leaf sprays and hydrangea florets. Added after every other sprite, so the
+# cells above and the order they are painted in (one random stream) stay exactly as they were.
+SMALL_CELL = 0.0625
+_SMALL_CELLS = [(0.875, 0.0), (0.875, 0.0625), (0.9375, 0.0625)]
+SPRITES.update({'bamboo': _SMALL_CELLS[0:2], 'floret': _SMALL_CELLS[2:3]})
+SPRITE_CELL = {'bamboo': SMALL_CELL, 'floret': SMALL_CELL}       # every other kind: CELL
 LEAF_ALPHA = 0.9          # the most opaque a sprite texel gets (solid regions are 1.0)
 
 
 def sprite_uv(kind, index, s, t, inset=2.0 / 1024):
     """(s, t) in [0, 1] across a leaf sprite cell -> atlas UV."""
     u0, v0 = SPRITES[kind][index % len(SPRITES[kind])]
-    return np.stack([u0 + inset + np.asarray(s) * (CELL - 2 * inset), v0 + inset + np.asarray(t) * (CELL - 2 * inset)], axis=-1)
+    cell = SPRITE_CELL.get(kind, CELL)
+    return np.stack([u0 + inset + np.asarray(s) * (cell - 2 * inset), v0 + inset + np.asarray(t) * (cell - 2 * inset)], axis=-1)
 
 
 def region_uv(name, s, t, margin=MARGIN):
@@ -245,6 +253,21 @@ def small_leaf(x, y, R, rot):
     return [(x + c * 0.38 * R, y + s * 0.38 * R, 0.7 * R), (x - c * 0.3 * R, y - s * 0.3 * R, 0.62 * R)]
 
 
+def lance(x, y, L, W, rot, bend=0.0):
+    """A narrow lanceolate leaf (bamboo) hanging from its base (x, y): discs along a gently bending
+    axis, widest a third of the way out, tapering to a long point."""
+    out = []
+    n = 26
+    for k in range(n):
+        t = (k + 0.5) / n
+        a = rot + bend * t
+        px = x + L * t * math.cos(a)
+        py = y + L * t * math.sin(a)
+        w = W * (min(1.0, t / 0.3) ** 0.6) * (1 - max(0.0, t - 0.3) / 0.7) ** 1.1
+        out.append((px, py, max(w, 0.004)))
+    return out
+
+
 def blossom(x, y, R, rot):
     """A five-petal flower."""
     out = [(x, y, 0.42 * R)]
@@ -287,6 +310,23 @@ def paint_sprite(rng, kind, px=128, ss=4, ramp_px=7.0 * PXS):
         pts = _scatter(rng, int(rng.integers(11, 15)), 0.43, 0.1, 0.14, sep=0.85, tries=1200)
         shapes = [tuft(x, y, R, rng.uniform(0, 2 * math.pi), int(rng.integers(20, 28))) for x, y, R in pts]
         lo, hi = 0.55, 1.0
+    elif kind == 'bamboo':
+        # a spray of narrow leaves fanning down and out from the twig tips near the cell's top
+        shapes = []
+        for f in range(int(rng.integers(6, 8))):
+            bx, by = rng.uniform(0.18, 0.82), rng.uniform(0.08, 0.5)       # row 0 is the top (y down)
+            base_a = math.pi / 2 + rng.normal(0, 0.45)                     # hanging: +y is down the cell
+            for k in range(int(rng.integers(4, 7))):
+                a = base_a + rng.uniform(-1.0, 1.0)
+                L = rng.uniform(0.26, 0.42); W = rng.uniform(0.034, 0.046)
+                shapes.append(lance(bx, by, L, W, a, rng.normal(0, 0.25)))
+        shapes = [[(min(max(x, 0.05), 0.95), min(max(y, 0.04), 0.96), r) for x, y, r in sh] for sh in shapes]
+        lo, hi = 0.62, 1.0
+    elif kind == 'floret':
+        # a hydrangea mophead seen close: many four-sepal florets packed edge to edge
+        pts = _scatter(rng, int(rng.integers(30, 38)), 0.46, 0.07, 0.095, sep=0.72, tries=4000)
+        shapes = [clover(x, y, R, rng.uniform(0, 2 * math.pi), 4) for x, y, R in pts]
+        lo, hi = 0.66, 1.0
     else:                                       # blossom
         pts = _scatter(rng, int(rng.integers(20, 27)), 0.45, 0.06, 0.085, sep=1.05)
         shapes = [blossom(x, y, R, rng.uniform(0, 2 * math.pi)) for x, y, R in pts]
@@ -308,8 +348,8 @@ def paint_sprite(rng, kind, px=128, ss=4, ramp_px=7.0 * PXS):
         val = np.where(covered & (ds < 0) & (d >= 0), val * 0.8, val)
         cx, cy, R = _centre(sh)
         shade = b * (1.0 + 0.07 * np.clip((cy - P[:, 1]) / (R * 1.6), -1, 1))     # lit a little toward its top
-        if kind == 'blossom':
-            eye = np.hypot(P[:, 0] - cx, P[:, 1] - cy) < sh[0][2] * 0.42
+        if kind in ('blossom', 'floret'):
+            eye = np.hypot(P[:, 0] - cx, P[:, 1] - cy) < sh[0][2] * (0.42 if kind == 'blossom' else 0.3)
             shade = np.where(eye, shade * 0.62, shade)
         elif kind == 'pine':                                 # needle strokes radiating from the heart
             ang = np.arctan2(P[:, 1] - cy, P[:, 0] - cx)
@@ -329,9 +369,10 @@ def paint_sprite(rng, kind, px=128, ss=4, ramp_px=7.0 * PXS):
 
 def paint_sprites(img, alpha, rng):
     for kind, cells in SPRITES.items():
+        cell = SPRITE_CELL.get(kind, CELL)
         for (u0, v0) in cells:
-            x0 = int(round(u0 * AT)); y0 = int(round((1 - v0 - CELL) * AT)); n = int(round(CELL * AT))
-            v, a = paint_sprite(rng, kind, n)
+            x0 = int(round(u0 * AT)); y0 = int(round((1 - v0 - cell) * AT)); n = int(round(cell * AT))
+            v, a = paint_sprite(rng, kind, n, ramp_px=7.0 * PXS * cell / CELL)
             img[y0:y0 + n, x0:x0 + n] = v
             alpha[y0:y0 + n, x0:x0 + n] = a
 

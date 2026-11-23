@@ -13,6 +13,10 @@ namespace DribbleToSchool.Levels
         public string sceneName = "L01_OutTheDoor";
         [Tooltip("Optional ball-skill challenge: unlocked by the chapter's first level, skipped by Next level.")]
         public bool isChallenge;
+        [Tooltip("The city whose level this is (Progression.Cities' id: \"original\" for Kamakura). Each city has its own routes and levels.")]
+        public string city = "original";
+        /// <summary>The level has a sticker to find (and a slot in the album): every story level; not a challenge.</summary>
+        public bool HasStickerSlot { get { return !isChallenge; } }
 
         [Header("Bell")]
         [Tooltip("Seconds until the school bell rings. Finishing before it earns a star.")]

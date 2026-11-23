@@ -164,7 +164,10 @@ namespace DribbleToSchool.Core
         /// <summary>The trip from home so far, this leg's time included (meaningful when <see cref="TripContinuous"/>).</summary>
         public float TripTime { get { return TripBefore + ElapsedTime; } }
         /// <summary>The HUD shows the trip so far: a later leg of a trip walked from home without a break, outside cozy mode.</summary>
-        public bool ShowsTrip { get { return TripRoute != null && LegIndex > 0 && TripContinuous && !Cozy && Objective == null && Race == null; } }
+        public bool ShowsTrip { get { return TripRoute != null && LegIndex > 0 && TripContinuous && !Cozy && !ChallengeOnly && Race == null; } }
+
+        /// <summary>An optional challenge's objective runs this level.</summary>
+        bool ChallengeOnly { get { return Objective != null; } }
 
         /// <summary>
         /// Where Next goes: the next leg of this route when it can be played (in chapter 4 the two routes' levels alternate in the
@@ -204,6 +207,11 @@ namespace DribbleToSchool.Core
 
         [Tooltip("How long the ball must stay out of the kid's reach before the run goes back to the checkpoint.")]
         public float strandedDelay = 1.2f;
+        [Tooltip("A ball at rest higher than this above the feet of the kid standing near it is out of reach (past a double jump).")]
+        public float reachHeight = 2.4f;
+        [Tooltip("How long a resting ball may stay out of reach, with the kid near and below it, before the run goes back to the checkpoint.")]
+        public float outOfReachDelay = 3.5f;
+        float outOfReachFor;
 
         [Header("Endless mode (Holiday Run)")]
         [Tooltip("The campaign with no destination: the same rules (losing the ball sends you back to the last checkpoint), " +
@@ -340,7 +348,7 @@ namespace DribbleToSchool.Core
             TripBefore = 0f;
             TripBell = 0f;
             TripTarget = 0f;
-            if (level == null || endless || Objective != null || level.isChallenge) return;
+            if (level == null || endless || ChallengeOnly || level.isChallenge) return;
 
             Route route;
             int leg = RouteTable.LegIndex(level.levelId, out route);
@@ -377,7 +385,7 @@ namespace DribbleToSchool.Core
         void RefreshTimers()
         {
             Cozy = !GameSettings.BellTimerEnabled;
-            bool timing = !Cozy && Objective == null && !endless && Race == null;
+            bool timing = !Cozy && !ChallengeOnly && !endless && Race == null;
             BellEnabled = timing && IsLastLeg && TripContinuous && TripBell > 0f;
             PaceEnabled = timing && !BellEnabled && TripRoute != null && PaceTarget > 0f;
         }
@@ -491,8 +499,27 @@ namespace DribbleToSchool.Core
                 LoseBall("lose.offStart");
             else if (maxBallBehindDistance > 0f && kid.transform.position.x - ball.transform.position.x > maxBallBehindDistance)
                 LoseBall("lose.behind");
-            else if (BallStranded())
+            else if (BallStranded() || BallOutOfReach())
                 LoseBall("lose.unreachable");
+        }
+
+        /// <summary>
+        /// True once the ball has rested out of the kid's reach for <see cref="outOfReachDelay"/> seconds: on anything (an awning, a
+        /// canopy, a stall, a ledge) higher than <see cref="reachHeight"/> above the feet of the kid standing within a few metres of it.
+        /// The surfaces known to strand it say so themselves (<see cref="IBallStrander"/>); this catches every other one, so a ball
+        /// stuck up high never needs the level restarted (docs/LEARNINGS.md E16). The HUD says why, and the run goes back to the
+        /// last checkpoint.
+        /// </summary>
+        bool BallOutOfReach()
+        {
+            var body = ball.Body;
+            Vector2 b = ball.transform.position, feet = kid.FeetPosition;
+            bool resting = body != null && body.linearVelocity.sqrMagnitude < 0.09f;
+            bool now = resting && kid.IsGrounded && Mathf.Abs(b.x - feet.x) < 6f && b.y - ball.Radius - feet.y > reachHeight;
+            outOfReachFor = now ? outOfReachFor + Time.deltaTime : 0f;
+            if (outOfReachFor < outOfReachDelay) return false;
+            outOfReachFor = 0f;
+            return true;
         }
 
         /// <summary>True once the ball has been somewhere the kid can't reach (over a closed
@@ -777,6 +804,13 @@ namespace DribbleToSchool.Core
         {
             LevelDefinition next = NextLevel;
             if (next == null) QuitToMap();
+            else if (TripRoute != null && RouteTable.Of(next.levelId) == TripRoute && RouteTable.RideBefore(next.levelId) != null)
+            {
+                // The trip goes on by the city's transit (Florida's people mover): the ride plays, then loads the next leg.
+                TimeControl.ResetTime();
+                RideCutscene.Then(Progression.Cities.SceneFor(next.sceneName));
+                SceneManager.LoadScene(Rides.SceneOf(RouteTable.RideBefore(next.levelId)));
+            }
             else LoadLevel(next);
         }
 
@@ -800,7 +834,7 @@ namespace DribbleToSchool.Core
             // A level the chosen add-on's streets don't have yet stays locked (the map and Next never offer one): back to the map.
             if (LevelUnlocks.NotInTown(def))
             {
-                Debug.LogWarning("[Levels] " + def.levelId + " isn't in " + Progression.Cities.Active.id + "'s streets yet: back to the map.");
+                Debug.LogWarning("[Levels] " + def.levelId + " is another city's than " + Progression.Cities.Active.id + ": back to the map.");
                 FrontEnd.FrontEndController.Open(FrontEnd.FrontEndScreenId.Map, def.chapter);
                 return;
             }

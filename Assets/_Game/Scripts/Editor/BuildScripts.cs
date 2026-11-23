@@ -23,8 +23,11 @@ namespace DribbleToSchool.EditorTools
     public static class BuildScripts
     {
         public const string CompanyName = "Astradite";
-        public const string ProductName = "Kick Off 2";
-        /// <summary>The app's bundle identifier (iOS) and package name (Android). Fixed for good once the app is uploaded.</summary>
+        public const string ProductName = "Kick Off 2 School";
+        /// <summary>
+        /// The app's bundle identifier (iOS) and package name (Android). Fixed for good once the app is uploaded: it stayed
+        /// "kickoff2" when the game was renamed Kick Off 2 School (v137), so the store listing and every player's save carry on.
+        /// </summary>
         public const string ApplicationId = "com.astradite.kickoff2";
         /// <summary>Google Play's target API level for new apps and updates (Android 16, from 31 August 2026).</summary>
         public const int AndroidTargetApi = 36;
@@ -473,7 +476,8 @@ namespace DribbleToSchool.EditorTools
         static void Build(BuildTarget target, string location, BuildOptions options, string[] extraDefines = null)
         {
             string[] scenes = EditorBuildSettings.scenes.Where(s => s.enabled).Select(s => s.path).ToArray();
-            if (scenes.Length == 0)
+            // Levels built by an older version of the code are rebuilt first: a build must never ship them (LEARNINGS A17).
+            if (scenes.Length == 0 || GeneratedContent.OutOfDate)
             {
                 GeneratedContent.BuildAll();
                 scenes = EditorBuildSettings.scenes.Where(s => s.enabled).Select(s => s.path).ToArray();

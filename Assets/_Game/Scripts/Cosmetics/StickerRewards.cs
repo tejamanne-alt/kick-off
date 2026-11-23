@@ -18,7 +18,7 @@ namespace DribbleToSchool.Cosmetics
         {
             int n = 0;
             if (levels == null) return 0;
-            foreach (var l in levels.levels) if (l != null && !l.isChallenge) n++;
+            foreach (var l in levels.levels) if (l != null && l.HasStickerSlot) n++;
             return n;
         }
 
@@ -27,7 +27,7 @@ namespace DribbleToSchool.Cosmetics
             int n = 0;
             if (levels == null) return 0;
             foreach (var l in levels.levels)
-                if (l != null && !l.isChallenge && SaveSystem.HasSticker(l.levelId)) n++;
+                if (l != null && l.HasStickerSlot && SaveSystem.HasSticker(l.levelId)) n++;
             return n;
         }
 
@@ -39,7 +39,7 @@ namespace DribbleToSchool.Cosmetics
             if (levels == null) return 0;
             foreach (var l in levels.LevelsInChapter(chapter))
             {
-                if (l.isChallenge) continue;
+                if (!l.HasStickerSlot) continue;
                 total++;
                 if (SaveSystem.HasSticker(l.levelId)) n++;
             }

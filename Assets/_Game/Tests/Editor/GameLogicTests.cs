@@ -29,7 +29,7 @@ namespace DribbleToSchool.Tests
         {
             var ids = new HashSet<string>();
             var suffixes = new HashSet<string>();
-            Assert.AreEqual(5, Cities.All.Length, "Kamakura, Florida, Madrid, New York, Mumbai (docs/CITIES.md)");
+            Assert.AreEqual(2, Cities.All.Length, "Kamakura and Florida (docs/CITIES.md)");
             foreach (var c in Cities.All)
             {
                 Assert.IsTrue(ids.Add(c.id), c.id + " is listed twice");
@@ -42,34 +42,46 @@ namespace DribbleToSchool.Tests
                 }
             }
             Assert.AreEqual("original", Cities.Kamakura.id, "a saved id never changes: Kamakura keeps the original town's");
-            Assert.AreSame(Cities.Kamakura, Cities.All[0]);
+            Assert.AreSame(Cities.Florida, Cities.All[0], "Florida is listed first, then Kamakura (v135)");
+            Assert.AreSame(Cities.Kamakura, Cities.All[1]);
             Assert.AreSame(Cities.Florida, Cities.ById(Cities.FloridaId));
             Assert.AreSame(Cities.Florida, Cities.OfScene("L12_LowTide" + Cities.FloridaSuffix));
             Assert.AreSame(Cities.Kamakura, Cities.OfScene("L12_LowTide_CA"), "California's scenes are Kamakura's music, not a city");
-            Assert.IsNull(Cities.ById("california"), "California is not one of the five cities");
+            Assert.IsNull(Cities.ById("california"), "California is not one of the cities");
             Assert.IsTrue(Cities.Kamakura.story && Cities.Kamakura.holidayRun);
-            foreach (var c in new[] { Cities.Madrid, Cities.NewYork, Cities.Mumbai })
-                Assert.IsFalse(c.story || c.holidayRun, c.id + " is still to build: listed as coming soon");
+            foreach (var c in Cities.All)
+                Assert.IsTrue(c.story, c.id + " can be played: no city is listed as coming soon");
+            // Madrid, New York and Mumbai were removed (v132): a save that chose one plays Kamakura, like California.
+            foreach (string gone in new[] { "madrid", "newyork", "mumbai" })
+            {
+                Assert.IsNull(Cities.ById(gone), gone + " is not a city any more");
+                foreach (string lang in new[] { "en", "es" })
+                    Assert.IsFalse(StringTables.For(lang).ContainsKey("city." + gone), lang + ": city." + gone + " is left over");
+            }
         }
 
         [Test]
-        public void FloridaHasHomeStreetAndTheBeachSoFarAndItsOwnMusic()
+        public void FloridaHasItsOwnRoutesInItsOwnChapterAndItsOwnMusic()
         {
             var fl = Cities.Florida;
             Assert.IsTrue(fl.story);
             Assert.IsFalse(fl.holidayRun, "the Holiday Run has no Florida stages yet");
-            Assert.IsTrue(fl.needsEveryLevel, "Florida is unlocked by finishing every one of Kamakura's levels");
+            Assert.IsFalse(fl.needsEveryLevel, "Florida is open from the start, not after Kamakura's levels (v135)");
+            Assert.IsTrue(fl.Unlocked && Cities.Kamakura.Unlocked, "both cities can be played from the start");
             Assert.AreEqual(MusicCountry.Florida, fl.music);
-            Assert.IsTrue(fl.Partial);
+            Assert.AreSame(RouteTable.Florida, fl.Routes, "Florida's own routes, not the original town's");
+            Assert.AreSame(RouteTable.All, Cities.Kamakura.Routes);
             for (int chapter = 1; chapter <= 5; chapter++)
-                Assert.AreEqual(chapter == 1 || chapter == 3, fl.HasChapter(chapter), "chapter " + chapter);
-            for (int chapter = 1; chapter <= 5; chapter++)
+            {
+                Assert.IsFalse(fl.HasChapter(chapter), "Florida doesn't re-dress the original town's chapter " + chapter);
                 Assert.IsTrue(Cities.Kamakura.HasChapter(chapter));
-            Assert.IsFalse(Cities.Kamakura.Partial);
+            }
+            Assert.IsTrue(fl.HasChapter(RouteTable.FloridaChapter));
+            Assert.IsFalse(Cities.Kamakura.HasChapter(RouteTable.FloridaChapter));
         }
 
         [Test]
-        public void KamakurasClimateChangesNothingAndTheOthersFollowTheirColourTemperature()
+        public void KamakurasClimateChangesNothingAndFloridasFollowsItsColourTemperature()
         {
             var mood = ChapterTheme.For(3).mood;
             var same = Cities.Kamakura.climate.Apply(mood);
@@ -91,18 +103,14 @@ namespace DribbleToSchool.Tests
             Assert.Less(fl.hazeStart, mood.hazeStart);
             Assert.Greater(fl.hazeStrength, mood.hazeStrength);
             Assert.Less(fl.hazeStrength, 0.8f + 1e-4f, "the haze never hides the street");
-
-            // Madrid: a golden low sun in dry air, the haze thinner and further off.
-            var md = Cities.Madrid.climate.Apply(mood);
-            Assert.Greater(md.sun.r / md.sun.b, fl.sun.r / fl.sun.b);
-            Assert.Less(md.hazeStrength, mood.hazeStrength);
-            Assert.Greater(md.hazeStart, mood.hazeStart);
         }
 
         [Test]
         public void TheFiltersKeepTheirSavedIds()
         {
-            CollectionAssert.AreEqual(new[] { "original", "comic", "sketch", "classic" }, Filters.All, "saved by id (SaveData.filter): never rename one");
+            // (The pencil sketch and the classic cartoon were removed in v141 at the user's request: an old save naming one
+            // reads as the original. Never reuse their ids.)
+            CollectionAssert.AreEqual(new[] { "original", "comic" }, Filters.All, "saved by id (SaveData.filter): never rename one");
             var en = StringTables.For("en");
             foreach (string f in Filters.All)
             {
@@ -114,12 +122,14 @@ namespace DribbleToSchool.Tests
         [Test]
         public void EveryCountrysMusicIsItsOwn()
         {
-            // The loops differ by country: Florida's beach isn't California's surf rock or the original's J-pop.
+            // The loops differ by country: Florida's beach isn't California's surf rock. Kamakura plays Florida's music since
+            // v147 (the user's word), the same samples, and the director keeps one loop for both.
             var fl = MusicGenerator.Generate(Soundscape.Beach, MusicCountry.Florida);
             var ca = MusicGenerator.Generate(Soundscape.Beach, MusicCountry.California);
             var jp = MusicGenerator.Generate(Soundscape.Beach, MusicCountry.Japan);
             Assert.AreNotEqual(fl.Length, ca.Length);
-            Assert.AreNotEqual(fl.Length, jp.Length);
+            CollectionAssert.AreEqual(fl, jp, "Kamakura plays Florida's music");
+            Assert.AreEqual(MusicCountry.Florida, MusicGenerator.PlayedAs(MusicCountry.Japan));
         }
 
         [Test]
@@ -310,6 +320,18 @@ namespace DribbleToSchool.Tests
                 Assert.AreNotEqual(Soundscape.Menu, scape, route.id);
                 Assert.IsTrue(seen.Add(scape), route.id + " shares its soundscape with another route");
             }
+        }
+
+        [Test]
+        public void ThePlacesAmbienceIsOff()
+        {
+            // v146, the user: "remove that continuous background from all music" (the places' beds and cues, both cities,
+            // docs/LEARNINGS.md G10). Nothing is made or played for it, and Settings offers no slider for it.
+            Assert.IsFalse(AudioDirector.AmbienceOn, "the places' ambience stays off");
+            string director = System.IO.File.ReadAllText(System.IO.Path.Combine(Application.dataPath, "_Game/Scripts/Audio/AudioDirector.cs"));
+            StringAssert.Contains("if (AmbienceOn && !ambiences.ContainsKey(scape)", director, "no bed is synthesized while it is off");
+            string settings = System.IO.File.ReadAllText(System.IO.Path.Combine(Application.dataPath, "_Game/Scripts/UI/SettingsPanel.cs"));
+            StringAssert.Contains("if (Audio.AudioDirector.AmbienceOn)", settings, "no Ambience slider while it is off");
         }
 
         [Test]
