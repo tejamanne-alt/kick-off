@@ -1,4 +1,4 @@
-"""Checks Florida's and Kamakura's written hooks (Audio/MusicGenerator.FloridaStyleOf, KamakuraStyleOf) against their chords, as the music is made, since
+"""Checks Florida's written hooks (Audio/MusicGenerator.FloridaStyleOf; Kamakura plays the same music since v147) against their chords, as the music is made, since
 nobody can listen in a check: every note on a strong beat (beats 1 and 3 of a bar, or any note a beat long or more) must be a
 tone of the chord under it (a major chord's 6th or 9th, and a minor one's 9th, count too), each bar is sixteen steps, each
 hook four bars, each loop sixteen chords, and every note is between G3 and D6. Exits 1 on any problem (docs/LEARNINGS.md G4).
@@ -31,8 +31,8 @@ def chord(name):
 
 
 def styles(src):
-    # Florida's styles and, since v145, Kamakura's (both written hooks over their chords)
-    for fn in ('FloridaStyleOf', 'KamakuraStyleOf'):
+    # Florida's styles (Kamakura's own, v145, were removed in v147: it plays Florida's)
+    for fn in ('FloridaStyleOf',):
         start = src.index('static Style ' + fn)
         body = src[start:src.index('\n        static ', start + 10)]
         for item in styles_in(body, fn):
@@ -89,4 +89,4 @@ if __name__ == '__main__':
     n, problems = check(open(SRC).read())
     for p in problems: print(p)
     print('%d styles, %d problems' % (n, len(problems)))
-    sys.exit(1 if problems or n != 14 else 0)
+    sys.exit(1 if problems or n != 7 else 0)

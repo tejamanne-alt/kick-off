@@ -101,6 +101,12 @@ namespace DribbleToSchool.Audio
         /// </summary>
         static MusicCountry WantedCountry()
         {
+            // (Kamakura plays Florida's music since v147: one loop each place, made and kept once for both cities)
+            return MusicGenerator.PlayedAs(WantedCountryOfStreets());
+        }
+
+        static MusicCountry WantedCountryOfStreets()
+        {
             var level = LevelManager.Current;
             if (level == null) return Progression.Cities.Active.music;
             if (level.endless) return MusicCountry.Japan;

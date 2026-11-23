@@ -2674,6 +2674,26 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
   - `unity_api_check` 6000.6 and 6000.7.
 - **Not run in Unity:** play a level of each city: the music only, and the sound effects.
 
+## Kamakura plays Florida's music (v147)
+
+- **Why.** The user: "Use the same Florida music for Kamakura too."
+- **Changed:**
+  - `MusicGenerator.Generate` plays Florida's styles and arranger for Kamakura (`MusicCountry.Japan`), so the two cities'
+    loops are the same samples.
+  - `AudioDirector` asks for Florida's music in Kamakura (`MusicGenerator.PlayedAs`), so a loop is made and kept once for
+    both cities.
+  - Kamakura's own music from v145 is removed: `KamakuraStyleOf`, `ArrangeKamakura`, `CozyBass`, `CozyDrums`, and the
+    sho pad, woodblock, temple bowl and wind chime. Git history has them.
+  - `tools/music_hooks/check.py` checks Florida's seven styles again.
+- **Test:** `GameLogicTests.EveryCountrysMusicIsItsOwn` now checks that Kamakura's loop equals Florida's (and that
+  California's still differs).
+- **Cost:** less. Kamakura's loops no longer cost their own synthesis: v145's were 1.0 to 1.5 s and 120 to 139 MB each.
+  Moving between the cities reuses a loop already made.
+- **Checked:**
+  - `tools/audio_hash`: every Kamakura music line now equals Florida's, and nothing else changed;
+  - compile with no warnings;
+  - `unity_api_check` 6000.6 and 6000.7.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

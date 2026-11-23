@@ -1024,10 +1024,9 @@ Never re-propose what is rejected here.
   - v138's softer synths;
   - v139's pop-funk;
   - v143's Latin pop.
-- **Kamakura's music (v145):** cozy, in a Japanese style, with no string sounds (no koto, guitar, piano or string pad). It
-  shares only Florida's synth bass ("bass only"); its drums are its own, gentle and swung. The tunes are on the yonanuki
-  pentatonic over the royal road, on bamboo flutes, kalimba and music box, with a sho-like pad, wind chimes and a temple
-  bowl (G9).
+- **Kamakura's music (v147):** the same as Florida's (the user: "use the same Florida music for Kamakura too"). The two
+  cities share one loop for each kind of place (`MusicGenerator.PlayedAs`). Kamakura's own cozy Japanese take (v145) was
+  removed; it is in git history (G9).
 - **No ambience (v146):** the places' background sounds (each place's looping bed and its cues: traffic, waves, birds,
   a crowd) are off in both cities, and Settings has no Ambience slider (G10). Don't turn them back on unasked.
 - **The look:** the user's bar is a recent big-budget open-world game's look and feel (warm sun against cool shade, haze,

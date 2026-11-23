@@ -122,12 +122,14 @@ namespace DribbleToSchool.Tests
         [Test]
         public void EveryCountrysMusicIsItsOwn()
         {
-            // The loops differ by country: Florida's beach isn't California's surf rock or the original's J-pop.
+            // The loops differ by country: Florida's beach isn't California's surf rock. Kamakura plays Florida's music since
+            // v147 (the user's word), the same samples, and the director keeps one loop for both.
             var fl = MusicGenerator.Generate(Soundscape.Beach, MusicCountry.Florida);
             var ca = MusicGenerator.Generate(Soundscape.Beach, MusicCountry.California);
             var jp = MusicGenerator.Generate(Soundscape.Beach, MusicCountry.Japan);
             Assert.AreNotEqual(fl.Length, ca.Length);
-            Assert.AreNotEqual(fl.Length, jp.Length);
+            CollectionAssert.AreEqual(fl, jp, "Kamakura plays Florida's music");
+            Assert.AreEqual(MusicCountry.Florida, MusicGenerator.PlayedAs(MusicCountry.Japan));
         }
 
         [Test]
