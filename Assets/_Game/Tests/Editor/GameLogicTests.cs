@@ -321,6 +321,18 @@ namespace DribbleToSchool.Tests
         }
 
         [Test]
+        public void ThePlacesAmbienceIsOff()
+        {
+            // v146, the user: "remove that continuous background from all music" (the places' beds and cues, both cities,
+            // docs/LEARNINGS.md G10). Nothing is made or played for it, and Settings offers no slider for it.
+            Assert.IsFalse(AudioDirector.AmbienceOn, "the places' ambience stays off");
+            string director = System.IO.File.ReadAllText(System.IO.Path.Combine(Application.dataPath, "_Game/Scripts/Audio/AudioDirector.cs"));
+            StringAssert.Contains("if (AmbienceOn && !ambiences.ContainsKey(scape)", director, "no bed is synthesized while it is off");
+            string settings = System.IO.File.ReadAllText(System.IO.Path.Combine(Application.dataPath, "_Game/Scripts/UI/SettingsPanel.cs"));
+            StringAssert.Contains("if (Audio.AudioDirector.AmbienceOn)", settings, "no Ambience slider while it is off");
+        }
+
+        [Test]
         public void AmbienceSitsUnderTheMusicAndNeverClips()
         {
             foreach (var scape in Soundscapes.All)

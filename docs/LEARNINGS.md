@@ -972,6 +972,13 @@ fixes (D12), the user asked for both to go: "Remove the Sketch and Cartoon filte
   - *Rule:* when a user carries something over from one place to another ("same bass"), ask which part. When a style's
     usual instrument breaks a rule the user set elsewhere, ask whether the rule applies there too.
 
+- **G10. "Remove that continuous background music from all music" (v146).** "Continuous background" could have been the
+  music's held pads, the vinyl, the "ooh"s or the places' ambience; asked, the user named the ambience beds.
+  - *What changed:* `AudioDirector.AmbienceOn` is false, so no place's bed or cues are synthesized or played, and the
+    Settings slider is hidden. The generator is kept.
+  - *Result:* less work as well: a place's ambience had cost 40 to 118 MB of garbage and a worker's time to make.
+  - *Rule:* when a user names a sound loosely, ask which layer they mean (by what it sounds like) before removing one.
+
 ## H. Co-op, store, release and testing
 
 - **H1. A design that punished the player who stayed connected.** *Rule:* design for reconnection.
@@ -1021,6 +1028,8 @@ Never re-propose what is rejected here.
   shares only Florida's synth bass ("bass only"); its drums are its own, gentle and swung. The tunes are on the yonanuki
   pentatonic over the royal road, on bamboo flutes, kalimba and music box, with a sho-like pad, wind chimes and a temple
   bowl (G9).
+- **No ambience (v146):** the places' background sounds (each place's looping bed and its cues: traffic, waves, birds,
+  a crowd) are off in both cities, and Settings has no Ambience slider (G10). Don't turn them back on unasked.
 - **The look:** the user's bar is a recent big-budget open-world game's look and feel (warm sun against cool shade, haze,
   weathered, dense streets), reached through light, grade and baked texture within the phone's budget, never by copying
   that game's content. The filters must keep working in every city.

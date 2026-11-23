@@ -36,7 +36,9 @@ namespace DribbleToSchool.UI
             float y = 0f;
             Section(left, ref y, "settings.audio");
             SliderRow(left, ref y, "settings.music", GameSettings.MusicVolume, v => GameSettings.MusicVolume = v);
-            SliderRow(left, ref y, "settings.ambience", GameSettings.AmbienceVolume, v => GameSettings.AmbienceVolume = v);
+            // (the Ambience slider only while the places' ambience plays: none since v146, AudioDirector.AmbienceOn)
+            if (Audio.AudioDirector.AmbienceOn)
+                SliderRow(left, ref y, "settings.ambience", GameSettings.AmbienceVolume, v => GameSettings.AmbienceVolume = v);
             SliderRow(left, ref y, "settings.sfx", GameSettings.SfxVolume, v => GameSettings.SfxVolume = v);
             y += 6f;
 

@@ -2656,6 +2656,24 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
   change.
 - **Not heard in game yet.**
 
+## The places' ambience off (v146)
+
+- **Why.** The user: "Remove that continuous background music from all music". Asked which layer, they named the places'
+  ambience beds (LEARNINGS G10).
+- **Changed:**
+  - `AudioDirector.AmbienceOn` is false. No place's bed (traffic, waves, crowd...) or cues (a car going by, a gull...)
+    are synthesized or played, in Florida or Kamakura.
+  - The music and the sound effects play as before.
+  - Settings hides the Ambience slider while it is off.
+  - `AmbienceGenerator` is kept (its tests still run): setting the flag back to true brings everything back.
+- **Test:** `GameLogicTests.ThePlacesAmbienceIsOff`.
+- **Cost:** less. No bed synthesis at each new place (it had cost 40 to 118 MB of garbage and up to a second of worker
+  time), no bed or cue clips in memory (up to 8 MB a place), and two fewer playing audio sources.
+- **Checked:**
+  - compile (no new error kinds);
+  - `unity_api_check` 6000.6 and 6000.7.
+- **Not run in Unity:** play a level of each city: the music only, and the sound effects.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.
