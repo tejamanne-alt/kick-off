@@ -65,19 +65,57 @@ a Fixed Resolution of **1920 × 1080**, select it and run **Kick Off > Store Scr
 | News app | No |
 | Advertising ID | No, it doesn't use the advertising ID |
 
-## Release notes (version 1.0, 438 / 500 characters)
-Release name: `1.0 (1)`. Paste the whole block, tags included, into **Release notes**:
+## Release notes (version 1.0.0, the first production release)
+English 492 / 500 characters, Spanish 498 / 500. The Spanish uses the game's own names for the modes ("Carrera de
+vacaciones", "Cooperativo"). Release name: `1.0.0 (<build number>)`. Paste the whole block, tags included, into **Release
+notes**. Play keeps only the languages the listing has, so drop `<es-ES>` or `<es-419>` if one of them isn't added.
 ```
 <en-US>
 Welcome to Kick Off 2 School, our first release!
-• Dribble all the way to school through 23 levels in 5 chapters: Home Street, the Market, the Beach, the Underpass and the Park
-• Play as one of six schoolkids: two high-schoolers and four primary-school kids
-• Slide under barriers and double jump over gaps
-• Find the sticker hidden in every level to unlock exclusive balls, outfits, flags and trails
-• Ball-skill challenges: keepy-uppy, target practice and a beach slalom
-• No ads, plays offline
+• Dribble a football to school in two cities: Miami and Kamakura, Japan
+• 3 Miami routes and 23 Kamakura levels, each hiding a sticker
+• Holiday Run: an endless run through Kamakura, a new lap every day
+• Co-op: race up to 4 friends on nearby phones over Bluetooth
+• 5 ball-skill challenges and 6 kids to play
+• Earn coins for balls, outfits, flags and trails
+• Left-handed and colour-blind options
+• No ads, no in-app purchases, plays offline
 </en-US>
+<es-ES>
+¡Bienvenido a Kick Off 2 School, nuestro primer lanzamiento!
+• Lleva el balón al colegio en dos ciudades: Miami y Kamakura (Japón)
+• 3 rutas en Miami y 23 niveles en Kamakura, cada uno con su pegatina
+• Carrera de vacaciones: sin fin por Kamakura, una vuelta nueva cada día
+• Cooperativo: juega con hasta 4 amigos cerca por Bluetooth
+• 5 retos de habilidad y 6 chicos
+• Monedas para balones, ropa, banderas y estelas
+• Opciones para zurdos y daltónicos
+• Sin anuncios ni compras, juega sin conexión
+</es-ES>
+<es-419>
+¡Bienvenido a Kick Off 2 School, nuestro primer lanzamiento!
+• Lleva el balón al colegio en dos ciudades: Miami y Kamakura (Japón)
+• 3 rutas en Miami y 23 niveles en Kamakura, cada uno con su pegatina
+• Carrera de vacaciones: sin fin por Kamakura, una vuelta nueva cada día
+• Cooperativo: juega con hasta 4 amigos cerca por Bluetooth
+• 5 retos de habilidad y 6 chicos
+• Monedas para balones, ropa, banderas y estelas
+• Opciones para zurdos y daltónicos
+• Sin anuncios ni compras, juega sin conexión
+</es-419>
 ```
+What the notes claim, as the game ships:
+- two cities, Miami and Kamakura;
+- Florida's 3 routes (9 legs) and Kamakura's 23 levels in 5 chapters, a sticker in each;
+- the Holiday Run, Kamakura's only;
+- Co-op for up to 4 phones over Bluetooth LE;
+- 5 ball-skill challenges and 6 kids;
+- the Locker Room's balls, outfits, flags and trails, bought with coins earned in play;
+- left-handed controls and colour-blind aim colours;
+- no ads, and no in-app purchases (`Monetization.RequireUnlock` is false and `DTS_UNITY_IAP` isn't defined);
+- it plays offline.
+
+Change the notes if any of these change before release.
 
 ## Releases
 1. **Internal testing** (Test and release > Testing > Internal testing): create a release, upload `Builds/Android/KickOff.aab`,
