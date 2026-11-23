@@ -944,6 +944,23 @@ fixes (D12), the user asked for both to go: "Remove the Sketch and Cartoon filte
   - *Rule:* when the user asks for something "fresh" with no reference, ask for the direction as a multiple choice of
     concrete styles with reference artists, and ask what to keep. Never pick the style from the place alone.
 
+- **G8. "Still not good. Scrap it and create a new one. Don't include the string music." (v144)**
+  - *What was done:* asked again before writing:
+    - the direction: they chose tropical house;
+    - what "string music" means: every string sound, so no guitar, tres, piano, string-like pad or plucked bass;
+    - the drums: new ones too.
+  - v143's piano, horns and cowbell were removed, and so was everything Latin in the arranger.
+  - *New:*
+    - a pan flute, a soft synth pad (triangle-like tones on phasors), a round synth bass with its upper harmonics (so a
+      phone's speaker carries it), a soft kick and a finger snap;
+    - a new kit: four on the floor, snaps, shaker, off-beat hats, a 3-3-2 rim, a clap roll into the loop;
+    - arpeggios;
+    - new chords and 14 new hooks.
+  - *Levels:* each tune voice measured per note and levelled to the steel pan. The glockenspiel and the synth pluck had
+    measured half of it.
+  - *Rule:* when a user's word for an instrument family is loose ("string music"), ask how far it reaches before removing
+    things. And when a take is rejected with no reason, ask about direction and what to keep, not just "what's wrong".
+
 ## H. Co-op, store, release and testing
 
 - **H1. A design that punished the player who stayed connected.** *Rule:* design for reconnection.
@@ -979,11 +996,16 @@ Never re-propose what is rejected here.
   "SCHOOL" ribbon; the app ID stays `com.astradite.kickoff2`.
 - **Both cities open from the start (v135):** Florida listed first, then Kamakura; Florida no longer waits for Kamakura's
   levels.
-- **Florida's music (v143):** Miami Latin pop, the user's pick from four directions (Latin pop, tropical house, 80s synth,
-  kids' adventure): a piano and tres montuno, horns on the hooks, a tumbao bass, congas, clave, cowbell, guiro, in major
-  keys. Keep the drums, the one part the user has liked through every take (v132's kits; "keep the drums" again in v143).
-  The tunes are written hooks (G4). It must not tire over a whole level: long loops that change, sitting back (G5). The
-  earlier directions (Caribbean, electro and psych, pop-funk) were each rejected (G3 to G7).
+- **Florida's music (v144):** tropical house (the user's pick of four directions), with **no string sounds at all**: no
+  guitar, tres, piano, string pad or plucked bass. The drums are its own (a soft kit), and the user approved replacing them
+  this time. The tunes are written hooks (G4). It must not tire over a whole level: long loops that change, sitting back
+  (G5). Rejected so far, all of them (G3 to G8):
+  - v122's Caribbean;
+  - v132's electro and psych;
+  - v133's hooks on synths;
+  - v138's softer synths;
+  - v139's pop-funk;
+  - v143's Latin pop.
 - **The look:** the user's bar is a recent big-budget open-world game's look and feel (warm sun against cool shade, haze,
   weathered, dense streets), reached through light, grade and baked texture within the phone's budget, never by copying
   that game's content. The filters must keep working in every city.

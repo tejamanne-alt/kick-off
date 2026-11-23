@@ -989,119 +989,134 @@ namespace DribbleToSchool.Audio
             }
         }
 
-        // ---------- Florida's Latin pop band (v143) ----------
+        // ---------- Florida's tropical house (v144: no string sounds at all, the user's word) ----------
 
         /// <summary>
-        /// A bright acoustic piano, for the montuno and the tunes in octaves: eight partials, each a touch sharp of the harmonic
-        /// as a real string is (inharmonicity), the high ones dying first, the first three doubled a cent apart (a piano's two
-        /// strings beating), a felt hammer's thump at the front, and the damper closing at the note's end. The partials run on
-        /// rotating phasors (no Math.Sin per sample), and none goes past 9.5 kHz.
+        /// A pan flute, the tropical-house lead: a round tone (a sine with a little second and third harmonic), a puff of
+        /// breath at the front (the "chiff") and a soft breath under the note, a gentle swell in, and only a faint, late
+        /// vibrato on the long notes (docs/LEARNINGS.md G4: its pitch holds).
         /// </summary>
-        public static void Piano(Track tr, double time, double freq, double dur, float vel)
+        public static void PanFlute(Track tr, double time, double freq, double dur, float vel, int seed)
         {
             int start = Index(time);
             const double rel = 0.12;
-            const int Partials = 8;
-            double decay = 2.2 + freq / 260.0;              // high notes die faster
-            int n = (int)(Math.Min(dur + rel, 6.0 / decay + rel) * Sr);
-            var re = new double[Partials * 2];
-            var im = new double[Partials * 2];
-            var cr = new double[Partials * 2];
-            var ci = new double[Partials * 2];
-            var amp = new double[Partials * 2];
-            var dk = new double[Partials * 2];
-            double bright = 0.55 + 0.45 * vel;
-            int used = 0;
-            for (int k = 1; k <= Partials; k++)
+            int n = (int)((dur + rel) * Sr);
+            double ph = 0;
+            var noise = new NoiseSource(seed);
+            var chiff = new Svf();
+            var breath = new Svf();
+            for (int i = 0; i < n; i++)
             {
-                double fk = freq * k * Math.Sqrt(1 + 0.0004 * k * k);
-                if (fk > 9500) break;
-                for (int d = 0; d < (k <= 3 ? 2 : 1); d++)
-                {
-                    double f = fk * (d == 0 ? 1.0 : 1.0006);
-                    double w = TwoPi * f / Sr;
-                    re[used] = 0; im[used] = 1; cr[used] = Math.Cos(w); ci[used] = Math.Sin(w);
-                    amp[used] = Math.Pow(bright, k - 1) / Math.Pow(k, 0.9) * (k <= 3 ? 0.5 : 1.0);
-                    dk[used] = Math.Exp(-decay * (1 + 0.45 * (k - 1)) / Sr);
-                    used++;
-                }
+                double t = i / (double)Sr;
+                double f = freq;
+                if (dur > 0.4 && t > 0.25) f *= 1 + 0.003 * Math.Min(1, (t - 0.25) / 0.2) * Math.Sin(TwoPi * 5 * t);
+                ph += f / Sr;
+                double tone = Math.Sin(TwoPi * ph) + 0.16 * Math.Sin(TwoPi * ph * 2) + 0.06 * Math.Sin(TwoPi * ph * 3);
+                float w = noise.White();
+                chiff.Process(w, Math.Min(9000, freq * 2.5), 1.4);
+                breath.Process(w, Math.Min(9000, freq * 1.5), 2.5);
+                double v = tone + chiff.band * 0.9 * Math.Exp(-t * 40) + breath.band * 0.18;
+                double env = t < 0.035 ? t / 0.035 : 0.85 + 0.15 * Math.Exp(-(t - 0.035) * 6);
+                if (t > dur) env *= Math.Max(0, 1 - (t - dur) / rel);
+                tr.Add(start + i, (float)(v * env) * vel * 0.5f);
             }
-            var thump = new Svf();
-            var noise = new NoiseSource((int)(freq * 7) + start);
+        }
+
+        /// <summary>
+        /// The tropical pad: a soft synth chord (no strings), each note a triangle-like tone (odd harmonics falling fast) with
+        /// a twin a few cents up for width, slow to swell, slow to fade; it breathes under the kick by its track's duck.
+        /// Rotating phasors, not Math.Sin per sample.
+        /// </summary>
+        public static void SoftPad(Track tr, double time, int[] midi, double dur, float vel)
+        {
+            int start = Index(time);
+            const double rel = 0.4, attack = 0.14;
+            int n = (int)((dur + rel) * Sr);
+            int[] harm = { 1, 3, 5 };
+            double[] amp = { 1.0, 1.0 / 9, 1.0 / 25 };
+            int voices = midi.Length * 2 * harm.Length;
+            var re = new double[voices]; var im = new double[voices]; var cr = new double[voices]; var ci = new double[voices]; var am = new double[voices];
+            int u = 0;
+            for (int m = 0; m < midi.Length; m++)
+                for (int d = 0; d < 2; d++)
+                    for (int h = 0; h < harm.Length; h++)
+                    {
+                        double f = Synth.MidiToHz(midi[m]) * (d == 0 ? 1.0 : 1.0025) * harm[h];
+                        if (f > 9000) continue;
+                        double w = TwoPi * f / Sr;
+                        re[u] = Math.Cos(m * 1.7 + d); im[u] = Math.Sin(m * 1.7 + d); cr[u] = Math.Cos(w); ci[u] = Math.Sin(w);
+                        am[u] = amp[h] * (h == 0 ? 1 : (h % 2 == 1 ? -1 : 1)) / midi.Length;
+                        u++;
+                    }
             for (int i = 0; i < n; i++)
             {
                 double t = i / (double)Sr;
                 double v = 0;
-                for (int j = 0; j < used; j++)
+                for (int j = 0; j < u; j++)
                 {
                     double r = re[j] * cr[j] - im[j] * ci[j];
                     im[j] = re[j] * ci[j] + im[j] * cr[j];
                     re[j] = r;
-                    v += im[j] * amp[j];
-                    amp[j] *= dk[j];
+                    v += im[j] * am[j];
                 }
-                if ((i & 1023) == 0)   // keep the phasors on the unit circle
-                    for (int j = 0; j < used; j++) { double m = Math.Sqrt(re[j] * re[j] + im[j] * im[j]); re[j] /= m; im[j] /= m; }
-                if (t < 0.03) { thump.Process(noise.White(), freq * 2 + 300, 0.7); v += thump.band * 0.5 * Math.Exp(-t * 160); }
-                double env = Math.Min(1, t / 0.002);
+                if ((i & 1023) == 0)
+                    for (int j = 0; j < u; j++) { double mm = Math.Sqrt(re[j] * re[j] + im[j] * im[j]); re[j] /= mm; im[j] /= mm; }
+                double env = t < attack ? t / attack : 1.0;
                 if (t > dur) env *= Math.Max(0, 1 - (t - dur) / rel);
-                tr.Add(start + i, (float)(v * env) * vel * 0.32f * Tail(i, n));
+                tr.Add(start + i, (float)(v * env) * vel * 0.6f);
             }
         }
 
         /// <summary>
-        /// A brass voice, the horn section's (trumpets and saxes playing Florida's hooks and hits): two saws a few cents apart
-        /// through a low-pass that blooms open as the note speaks (the "blat" of a horn) and settles warm, a breath of air at
-        /// the front, a gentle saturation. Its pitch holds (a 25 ms scoop only from a tied note), and only a long note gets a
-        /// slight, late vibrato (docs/LEARNINGS.md G4).
+        /// The tropical bass: a round synth bass (a sine, with its second and third harmonics so a phone's small speaker still
+        /// carries the line), softly saturated, short to breathe under the kick.
         /// </summary>
-        public static void Brass(Track tr, double time, double freq, double fromFreq, double dur, float vel, int seed)
+        public static void SynthBass(Track tr, double time, double freq, double dur, float vel)
         {
             int start = Index(time);
-            const double rel = 0.06;
+            const double rel = 0.05;
             int n = (int)((dur + rel) * Sr);
-            if (fromFreq <= 0 || fromFreq > freq * 1.5 || fromFreq < freq / 1.5) fromFreq = freq;
-            double p1 = (seed % 97) / 97.0, p2 = (seed % 53) / 53.0;
-            var flt = new Svf();
-            var flt2 = new Svf();
-            var air = new NoiseSource(seed);
-            var airFlt = new Svf();
+            double ph = 0;
             for (int i = 0; i < n; i++)
             {
                 double t = i / (double)Sr;
-                double f = fromFreq * Math.Pow(freq / fromFreq, Math.Min(1.0, t / 0.025));
-                if (dur > 0.45 && t > 0.3) f *= 1 + 0.0035 * Math.Min(1, (t - 0.3) / 0.2) * Math.Sin(TwoPi * 5.2 * t);
-                double d = f / Sr;
-                double v = BlepSaw(p1, d * 0.9985) + BlepSaw(p2, d * 1.0015);
-                p1 += d * 0.9985; p2 += d * 1.0015;
-                // the bloom: the filter opens over the first 40 ms, overshoots a little, and settles
-                double bloom = Math.Min(1, t / 0.04) * (0.75 + 0.35 * Math.Exp(-t * 9));
-                double fc = Math.Min(5200, freq * (1.2 + 3.2 * bloom * (0.6 + 0.4 * vel)) + 400);
-                float y = flt.Process((float)(v * 0.45), fc, 0.6);
-                y = flt2.Process(y, fc * 1.4, 0.55);
-                airFlt.Process(air.White(), 2400, 0.8);
-                double breath = airFlt.band * 0.12 * Math.Exp(-t * 30);
-                double env = t < 0.018 ? t / 0.018 : 0.82 + 0.18 * Math.Exp(-(t - 0.018) * 10);
-                if (t > dur) env *= Math.Max(0, 1 - (t - dur) / rel);
-                tr.Add(start + i, (float)((Math.Tanh(y * 1.4) * 0.8 + breath) * env) * vel);
+                ph += freq / Sr;
+                double v = Math.Sin(TwoPi * ph) + 0.32 * Math.Sin(TwoPi * ph * 2) + 0.14 * Math.Sin(TwoPi * ph * 3) * Math.Exp(-t * 5);
+                v = Math.Tanh(v * 1.1);
+                float env = Adr(t, dur, 0.006, 1.2, rel);
+                tr.Add(start + i, (float)v * env * vel * 0.8f);
             }
         }
 
-        /// <summary>The campana: a hand-held cowbell struck on its mouth, two square tones a fifth-ish apart, dry and bright.</summary>
-        public static void Cowbell(Track tr, double time, float vel)
+        /// <summary>The tropical kick: soft and round, a sine falling from 110 Hz to 48 Hz with a short click, not a punch.</summary>
+        public static void SoftKick(Track tr, double time, float vel)
         {
             int start = Index(time);
-            int n = (int)(0.22 * Sr);
-            double p1 = 0, p2 = 0;
+            int n = (int)(0.38 * Sr);
+            double ph = 0;
+            for (int i = 0; i < n; i++)
+            {
+                double t = i / (double)Sr;
+                double f = 48 + 62 * Math.Exp(-t * 28);
+                ph += f / Sr;
+                double v = Math.Sin(TwoPi * ph) * Math.Exp(-t * 7.5) + (t < 0.002 ? 0.3 * (1 - t / 0.002) : 0);
+                tr.Add(start + i, (float)v * vel * 0.9f * Tail(i, n));
+            }
+        }
+
+        /// <summary>A finger snap: two quick bright bursts of noise a few milliseconds apart, dry.</summary>
+        public static void Snap(Track tr, double time, float vel, int seed)
+        {
+            int start = Index(time);
+            int n = (int)(0.14 * Sr);
+            var noise = new NoiseSource(seed);
             var flt = new Svf();
             for (int i = 0; i < n; i++)
             {
                 double t = i / (double)Sr;
-                p1 += 562.0 / Sr; p2 += 845.0 / Sr;
-                double sq = (p1 % 1.0 < 0.5 ? 1 : -1) + (p2 % 1.0 < 0.5 ? 1 : -1);
-                flt.Process((float)sq, 900, 1.6);
-                double env = Math.Exp(-t * (t < 0.03 ? 30 : 16)) * Math.Min(1, t / 0.0008);
-                tr.Add(start + i, flt.band * (float)env * vel * 0.35f * Tail(i, n));
+                flt.Process(noise.White(), 2100, 1.3);
+                double env = Math.Exp(-t * 55) + 0.5 * (t > 0.007 ? Math.Exp(-(t - 0.007) * 70) : 0);
+                tr.Add(start + i, flt.band * (float)(env * Math.Min(1, t / 0.0005)) * vel * 0.9f * Tail(i, n));
             }
         }
 

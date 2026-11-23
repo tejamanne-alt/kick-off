@@ -2563,6 +2563,50 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
   "Still to do" 1) would remove it all.
 - **Not heard in game yet:** how it sits under each district's bed on the phone.
 
+## Florida's music, new again: tropical house, no string sounds (v144)
+
+- **Why.** The user: "Still not good. Scrap it and create a new one. Don't include the string music." Asked first, they
+  chose tropical house, no string sound of any kind, and new drums (LEARNINGS G8). v143's Latin pop is gone (its piano,
+  horns and cowbell instruments and its arranger).
+- **The new instruments** (`Instruments`):
+  - `PanFlute`: a round tone, a breath chiff and a held pitch;
+  - `SoftPad`: a soft synth chord, triangle-like, not strings, on rotating phasors;
+  - `SynthBass`: a round bass with its 2nd and 3rd harmonics, for small speakers;
+  - `SoftKick`: soft and round;
+  - `Snap`: a finger snap.
+- **The band:**
+  - the pad breathing under the kick;
+  - the synth bass, which pushes the root on the "and"s and lifts an octave on four;
+  - an arpeggio in eighths on a marimba, kalimba or synth pluck;
+  - the tunes on marimba, steel pan, kalimba, vibes, glockenspiel, synth pluck and pan flute;
+  - "ooh"s in the drop.
+- **The kit** (`TropicalDrums`, new): a soft four-on-the-floor kick the mix breathes under, snaps on two and four (with
+  claps in the drop), a shaker on the sixteenths, off-beat hats (open in the drop), a rim on the 3-3-2, and a clap roll in
+  the last bar.
+- **The form** stays v138's 32 bars in four sections. The third is now a drop, with the second hook, "ooh"s, claps and
+  open hats.
+- **The seven places,** each with new chords and two new hooks (14, all passing `tools/music_hooks/check.py`):
+  - **Street** (downtown): A major, 116 BPM, I-V-vi-IV; a pluck riff, then the pan flute.
+  - **Market** (Little Havana): C major, 112 BPM, vi-IV-I-V; marimba, then steel pan.
+  - **Beach** (the bay, the river): G major, 110 BPM; steel pan, then pan flute.
+  - **Site:** D major, 118 BPM; pluck, then steel pan.
+  - **Underpass** (the Underline): F major, 108 BPM; pan flute, then vibes.
+  - **Park** (Museum Park): E major, 106 BPM; marimba, then pan flute.
+  - **Menu:** Bb major, 100 BPM; kalimba, then pan flute.
+- **Levels:**
+  - Each tune voice was measured on its own per note and levelled to the steel pan (0.23 RMS for a half-second note).
+  - The loops sit at 0.103 to 0.109 RMS, peaks 0.42 to 0.49, a touch under v143.
+- **Checked:**
+  - `check.py`;
+  - `tools/audio_hash`: only Florida's music changed, and the new `expected.txt` is in the commit;
+  - a spectrogram of the Beach loop (the sections, the tune over the arpeggio and pad);
+  - compile with no warnings;
+  - `unity_api_check` 6000.6 and 6000.7.
+  - Previews of all seven places went to the user.
+- **Cost:** 0.9 to 1.05 s and 91 to 103 MB of garbage to make a loop, off the main thread, once per place a session (as
+  v143).
+- **Not heard in game yet.**
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

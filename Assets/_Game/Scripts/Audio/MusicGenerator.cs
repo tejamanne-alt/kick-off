@@ -58,8 +58,8 @@ namespace DribbleToSchool.Audio
 
         // ================= Styles =================
 
-        enum Comp { None, Jangle, Acoustic, Fingerpick, Palm, Funk, Rhodes, RhodesHeld, Organ, Skank, Montuno, OrganBubble, Chop, Pulse, Phaser, PianoMontuno, TresMontuno }
-        enum Lead { Surf, Whistle, Glock, Guitar, Acoustic, Rhodes, Koto, Flute, SteelPan, Marimba, Vibes, Saw, Psych, Pluck, Brass, PianoOct, Tres }
+        enum Comp { None, Jangle, Acoustic, Fingerpick, Palm, Funk, Rhodes, RhodesHeld, Organ, Skank, Montuno, OrganBubble, Chop, Pulse, Phaser }
+        enum Lead { Surf, Whistle, Glock, Guitar, Acoustic, Rhodes, Koto, Flute, SteelPan, Marimba, Vibes, Saw, Psych, Pluck, Kalimba, PanFlute }
         enum Kit { Pop, Surf, Funk, WestCoast, Folk, Calypso, Son, OneDrop, Electro, Psych }
         enum Bass { Pick, Sub, Upright, Electro, Fuzz }
 
@@ -72,11 +72,8 @@ namespace DribbleToSchool.Audio
             public Comp comp, comp2;
             public bool comp2OnlyInB;
             public Lead leadA, leadB;
-            /// <summary>Florida's (v143): the voice of the opening's and the breakdown's quieter hook.</summary>
-            public Lead leadSoft = Lead.Rhodes;
-            /// <summary>Florida's Latin percussion over the kit (v143): the horns' hits after the opening hook, a cowbell in the
-            /// lift, a guiro in the groove and the lift.</summary>
-            public bool hits, cowbell, guiro;
+            /// <summary>Florida's (v144): the voice of the opening's and the breakdown's quieter hook, and of the arpeggio.</summary>
+            public Lead leadSoft = Lead.Marimba, arp = Lead.Marimba;
             public int leadLo = 69, leadHi = 83;
             public float leadSend = 0.35f;
             public Bass bass;
@@ -277,195 +274,185 @@ namespace DribbleToSchool.Audio
         }
 
         /// <summary>
-        /// The Florida add-on's music (v143): Miami Latin pop, written fresh (the user's choice of style after five takes:
-        /// docs/LEARNINGS.md G3 to G7). A piano montuno and a tres-guitar montuno over an anticipated tumbao bass, a horn section
-        /// playing the hooks, congas, the son clave, a cowbell, a guiro, "ooh"s in the lift, all in major keys at 112 to 126 BPM.
-        /// Under it the drums are as they were (Kit.Electro's four on the floor on the busy streets, Kit.Psych's laid-back
-        /// groove in the calm places), the one part the user has always kept. Each place has two four-bar chord cycles and two
-        /// written hooks; ArrangeFlorida lays them out over a minute in four sections. Every hook's strong beats are on its
-        /// chords (tools/music_hooks/check.py).
+        /// The Florida add-on's music (v144): tropical house, the user's pick (docs/LEARNINGS.md G8), with no string sounds at
+        /// all (no guitar, tres, piano, string pad or plucked bass) and its own new drums. A soft four-on-the-floor kit with
+        /// finger snaps, shakers and off-beat hats; a warm synth pad breathing under the kick; a round synth bass; marimba,
+        /// steel pan, kalimba, vibes, glockenspiel, a synth pluck and a pan flute on the tunes; an arpeggio under the groove and
+        /// vocal "ooh"s in the drop; sunny major keys at 100 to 118 BPM. Each place has two four-bar chord cycles and two written
+        /// hooks (tools/music_hooks/check.py); ArrangeFlorida lays them out over a minute in four sections.
         /// </summary>
         static Style FloridaStyleOf(Soundscape scape)
         {
             switch (scape)
             {
                 case Soundscape.Street:
-                    // Downtown (Brickell, Biscayne, the Downpour): the classic montuno (I-IV-V-IV) on the piano, the horns' riff, then their chorus
-                    // over "ooh"s; a cowbell in the lift.
+                    // Downtown (Brickell, Biscayne, the Downpour), the busiest: a pluck riff in A over I-V-vi-IV, the pan flute's
+                    // chorus in the drop.
                     return new Style
                     {
-                        bpm = 122, swing = 0, key = 65, mode = Mode.Major, seed = 511,
-                        chords = new[] { "F Bb", "C Bb", "F Bb", "C", "F Bb", "C Bb", "F Bb", "C",
-                                         "Bb", "C", "Am7 Dm7", "Gm7 C", "Bb", "C", "Am7 Dm7", "Gm7 C" },
+                        bpm = 116, swing = 0, key = 69, mode = Mode.Major, seed = 611,
+                        chords = new[] { "A", "E", "F#m", "D", "A", "E", "F#m", "D",
+                                         "D", "E", "C#m F#m", "Bm E", "D", "E", "C#m F#m", "Bm E" },
                         hookA = new[]
                         {
-                            "C5 . A4 C5 . F5 . . F5 _ . D5 . F5 . .",
-                            "E5 _ . C5 . G5 . . F5 _ . D5 . Bb4 . .",
-                            "C5 . A4 C5 . F5 . . F5 _ . D5 . F5 . G5",
-                            "E5 _ _ _ . . C5 _ G4 _ _ _ . . . .",
+                            "E5 . . C#5 . . A4 . C#5 . E5 . . F#5 E5 .",
+                            "E5 . . B4 . . G#4 . B4 . E5 . . F#5 E5 .",
+                            "C#5 . . A4 . . F#4 . A4 . C#5 . . E5 C#5 .",
+                            "D5 . . F#5 . . A5 _ _ _ _ _ . . . .",
                         },
                         hookB = new[]
                         {
-                            "D5 _ _ _ F5 _ _ _ Bb5 _ _ _ A5 _ F5 _",
-                            "G5 _ _ _ E5 _ _ _ C5 _ _ _ E5 _ G5 _",
-                            "A5 _ _ _ G5 _ E5 _ F5 _ _ _ A5 _ _ _",
-                            "Bb5 _ _ _ G5 _ _ _ G5 _ _ _ _ _ _ _",
+                            "F#5 _ . A5 _ . D6 _ . A5 _ . F#5 _ A5 _",
+                            "G#5 _ . B5 _ . E5 _ . B5 _ . G#5 _ B5 _",
+                            "C#6 _ _ _ B5 _ G#5 _ A5 _ _ _ F#5 _ C#5 _",
+                            "B5 _ _ _ F#5 _ D5 _ E5 _ _ _ _ _ _ _",
                         },
-                        comp = Comp.PianoMontuno, comp2 = Comp.TresMontuno, leadSoft = Lead.PianoOct, leadA = Lead.Brass, leadB = Lead.Brass,
-                        leadSend = 0.3f, bass = Bass.Pick, kit = Kit.Electro, claps = true, oohs = true, hits = true, cowbell = true,
-                        room = 0.5f, wet = 0.2f, tone = 7500, pump = 0.1f, bassPump = 0.06f, drive = 0.08f, loudness = 0.115f,
+                        leadSoft = Lead.Marimba, leadA = Lead.Pluck, leadB = Lead.PanFlute, arp = Lead.Marimba, oohs = true,
+                        leadSend = 0.35f, room = 0.6f, wet = 0.24f, tone = 7500, pump = 0.3f, bassPump = 0.25f, drive = 0.06f, loudness = 0.11f,
                     };
                 case Soundscape.Market:
-                    // Little Havana (and market day), a cha-cha's I-vi-IV-V: the tres montuno, the piano's tune in octaves, then the horns; marimba first.
+                    // Little Havana: a bouncy marimba tune in C (vi-IV-I-V), the steel pan's chorus; a kalimba to open.
                     return new Style
                     {
-                        bpm = 118, swing = 0, key = 60, mode = Mode.Major, seed = 522,
-                        chords = new[] { "C Am", "F G", "C Am", "Dm7 G", "C Am", "F G", "C Am", "Dm7 G",
-                                         "F G", "Em7 Am7", "Dm7 G", "C", "F G", "Em7 Am7", "Dm7 G", "C" },
+                        bpm = 112, swing = 0, key = 60, mode = Mode.Major, seed = 622,
+                        chords = new[] { "Am", "F", "C", "G", "Am", "F", "C", "G",
+                                         "F", "G", "Em7 Am7", "Dm7 G", "F", "G", "Em7 Am7", "Dm7 G" },
                         hookA = new[]
                         {
-                            "E5 . G5 . E5 . C5 . C5 _ . A4 . C5 . E5",
-                            "F5 . A5 . F5 . C5 . D5 _ . B4 . G4 . .",
-                            "E5 . G5 . E5 . C5 . E5 _ . C5 . A4 . .",
-                            "D5 _ _ _ F5 _ A5 _ G5 _ _ _ . . . .",
+                            "A5 . E5 . C5 . E5 . A5 . . G5 . E5 . .",
+                            "A5 . F5 . C5 . F5 . A5 . . G5 . F5 . .",
+                            "G5 . E5 . C5 . E5 . G5 . . A5 . G5 . .",
+                            "B5 _ _ _ D6 _ _ _ B5 _ _ _ . . . .",
                         },
                         hookB = new[]
                         {
-                            "A5 _ _ _ C6 _ A5 _ G5 _ _ _ B5 _ D6 _",
-                            "B5 _ _ _ G5 _ E5 _ E5 _ _ _ C5 _ E5 _",
-                            "F5 _ _ _ A5 _ F5 _ D5 _ _ _ B4 _ D5 _",
-                            "C5 _ _ _ E5 _ G5 _ C6 _ _ _ _ _ _ _",
+                            "C6 _ . A5 . F5 _ . A5 _ . C6 . A5 _ .",
+                            "D6 _ . B5 . G5 _ . B5 _ . D6 . B5 _ .",
+                            "B5 _ _ _ G5 _ E5 _ C6 _ _ _ A5 _ E5 _",
+                            "A5 _ _ _ F5 _ D5 _ D5 _ _ _ _ _ _ _",
                         },
-                        comp = Comp.TresMontuno, comp2 = Comp.PianoMontuno, leadSoft = Lead.Marimba, leadA = Lead.PianoOct, leadB = Lead.Brass,
-                        leadSend = 0.3f, bass = Bass.Pick, kit = Kit.Electro, claps = true, hits = true, cowbell = true,
-                        room = 0.5f, wet = 0.2f, tone = 7500, pump = 0.1f, bassPump = 0.06f, drive = 0.08f, loudness = 0.115f,
+                        leadSoft = Lead.Kalimba, leadA = Lead.Marimba, leadB = Lead.SteelPan, arp = Lead.Pluck,
+                        leadSend = 0.35f, room = 0.6f, wet = 0.24f, tone = 7500, pump = 0.3f, bassPump = 0.25f, drive = 0.06f, loudness = 0.11f,
                     };
                 case Soundscape.Beach:
-                    // South Beach: a bright I-IV-V-IV in G, the piano montuno and an off-beat guitar, the horns' riff, the piano's
-                    // chorus over "ooh"s.
+                    // The bay and the river: a steel pan tune in G, the pan flute's chorus over "ooh"s; marimba arpeggios.
                     return new Style
                     {
-                        bpm = 124, swing = 0, key = 67, mode = Mode.Major, seed = 533,
-                        chords = new[] { "G", "C", "D", "C", "G", "C", "D", "C",
-                                         "Em7", "Cmaj7", "Am7 D", "G", "Em7", "Cmaj7", "Am7 D", "G" },
+                        bpm = 110, swing = 0, key = 67, mode = Mode.Major, seed = 633,
+                        chords = new[] { "G", "C", "Em", "D", "G", "C", "Em", "D",
+                                         "C", "D", "G/B Em", "Am7 D", "C", "D", "G/B Em", "Am7 D" },
                         hookA = new[]
                         {
-                            "D5 . B4 D5 . G5 . . G5 _ . F#5 . G5 . A5",
-                            "G5 _ . E5 . C5 . . E5 _ . D5 . C5 . .",
-                            "F#5 . D5 F#5 . A5 . . A5 _ . G5 . F#5 . E5",
-                            "E5 _ _ _ . . C5 _ G4 _ _ _ . . . .",
+                            "D5 . . G5 . . B5 . D6 . B5 . . G5 . .",
+                            "E5 . . G5 . . C6 . G5 . E5 . . C5 . .",
+                            "B4 . . E5 . . G5 . B5 . G5 . . E5 . .",
+                            "F#5 _ _ _ A5 _ _ _ D5 _ _ _ . . . .",
                         },
                         hookB = new[]
                         {
-                            "B5 _ _ _ G5 _ _ _ E5 _ _ _ G5 _ B5 _",
-                            "C6 _ _ _ B5 _ G5 _ E5 _ _ _ G5 _ _ _",
-                            "A5 _ _ _ C6 _ A5 _ F#5 _ _ _ A5 _ D6 _",
-                            "B5 _ _ _ A5 _ G5 _ D5 _ _ _ _ _ _ _",
+                            "G5 _ _ _ E5 _ G5 _ C6 _ _ _ G5 _ E5 _",
+                            "A5 _ _ _ F#5 _ A5 _ D6 _ _ _ A5 _ F#5 _",
+                            "B5 _ _ _ D6 _ B5 _ G5 _ _ _ E5 _ B4 _",
+                            "C6 _ _ _ A5 _ _ _ A5 _ _ _ _ _ _ _",
                         },
-                        comp = Comp.PianoMontuno, comp2 = Comp.Skank, leadSoft = Lead.Marimba, leadA = Lead.Brass, leadB = Lead.PianoOct,
-                        leadSend = 0.3f, bass = Bass.Pick, kit = Kit.Electro, claps = true, oohs = true, hits = true, cowbell = true,
-                        room = 0.6f, wet = 0.22f, tone = 7500, pump = 0.1f, bassPump = 0.06f, drive = 0.08f, loudness = 0.115f,
+                        leadSoft = Lead.Marimba, leadA = Lead.SteelPan, leadB = Lead.PanFlute, arp = Lead.Marimba, oohs = true,
+                        leadSend = 0.4f, room = 0.65f, wet = 0.26f, tone = 7500, pump = 0.3f, bassPump = 0.25f, drive = 0.06f, loudness = 0.11f,
                     };
                 case Soundscape.Site:
-                    // The building site, the hardest push: repeated-note horn riffs in D, the piano montuno, an off-beat guitar.
+                    // The building site, the liveliest: a bright pluck riff in D, the steel pan's chorus; vibes to open.
                     return new Style
                     {
-                        bpm = 126, swing = 0, key = 62, mode = Mode.Major, seed = 555,
-                        chords = new[] { "D", "Bm7", "G", "A7", "D", "Bm7", "G", "A7",
-                                         "G", "A", "F#m7 Bm7", "Em7 A7", "G", "A", "F#m7 Bm7", "Em7 A7" },
+                        bpm = 118, swing = 0, key = 62, mode = Mode.Major, seed = 655,
+                        chords = new[] { "D", "A", "Bm", "G", "D", "A", "Bm", "G",
+                                         "G", "D/F#", "Em7", "A", "G", "D/F#", "Em7", "A" },
                         hookA = new[]
                         {
-                            "A5 . A5 . F#5 . D5 . D5 . F#5 . A5 _ . .",
-                            "B5 . B5 . F#5 . D5 . D5 . F#5 . B4 _ . .",
-                            "B5 . B5 . G5 . D5 . D5 . G5 . B5 _ . .",
-                            "C#6 _ _ _ A5 _ _ _ E5 _ _ _ . . . .",
+                            "F#5 . A5 . D6 . A5 . F#5 . . A5 . D6 . .",
+                            "E5 . A5 . C#6 . A5 . E5 . . A5 . C#6 . .",
+                            "F#5 . B5 . D6 . B5 . F#5 . . B5 . D6 . .",
+                            "G5 _ _ _ B5 _ _ _ D6 _ _ _ . . . .",
                         },
                         hookB = new[]
                         {
-                            "G5 _ _ _ B5 _ _ _ D6 _ _ _ B5 _ G5 _",
-                            "A5 _ _ _ C#6 _ _ _ E5 _ _ _ A5 _ C#6 _",
-                            "C#6 _ _ _ A5 _ F#5 _ F#5 _ _ _ D5 _ F#5 _",
-                            "G5 _ _ _ E5 _ _ _ E5 _ _ _ _ _ _ _",
+                            "B5 _ _ _ A5 _ G5 _ D5 _ _ _ G5 _ _ _",
+                            "A5 _ _ _ F#5 _ _ _ D5 _ _ _ F#5 _ A5 _",
+                            "G5 _ _ _ E5 _ _ _ B4 _ _ _ D5 _ E5 _",
+                            "C#6 _ _ _ A5 _ _ _ E5 _ _ _ _ _ _ _",
                         },
-                        comp = Comp.PianoMontuno, comp2 = Comp.Skank, leadSoft = Lead.PianoOct, leadA = Lead.Brass, leadB = Lead.Brass,
-                        leadSend = 0.3f, bass = Bass.Pick, kit = Kit.Electro, claps = true, hits = true, cowbell = true,
-                        room = 0.5f, wet = 0.2f, tone = 7500, pump = 0.1f, bassPump = 0.06f, drive = 0.08f, loudness = 0.115f,
+                        leadSoft = Lead.Vibes, leadA = Lead.Pluck, leadB = Lead.SteelPan, arp = Lead.Pluck, oohs = true,
+                        leadSend = 0.35f, room = 0.55f, wet = 0.22f, tone = 7500, pump = 0.3f, bassPump = 0.25f, drive = 0.06f, loudness = 0.11f,
                     };
                 case Soundscape.Underpass:
-                    // Under the Metrorail, Latin jazz-pop in Bb (IV-iii-ii-V): the tres montuno and held Rhodes chords, a flute's
-                    // tune, then the piano's; a guiro.
+                    // The Underline, mellow: the pan flute's tune in F over vi-IV-I-V, the vibes' chorus; a kalimba to open.
                     return new Style
                     {
-                        bpm = 116, swing = 0.02, key = 70, mode = Mode.Major, seed = 544,
-                        chords = new[] { "Ebmaj7", "Dm7", "Cm7", "F7", "Ebmaj7", "Dm7", "Cm7", "F7",
-                                         "Bbmaj7", "Gm7", "Cm7", "F7", "Bbmaj7", "Gm7", "Cm7", "F7" },
+                        bpm = 108, swing = 0, key = 65, mode = Mode.Major, seed = 644,
+                        chords = new[] { "Dm", "Bb", "F", "C", "Dm", "Bb", "F", "C",
+                                         "Bb", "C", "F/A Dm", "Gm7 C", "Bb", "C", "F/A Dm", "Gm7 C" },
                         hookA = new[]
                         {
-                            "G5 _ _ _ _ _ F5 _ D5 _ _ _ Bb4 _ _ _",
-                            "A4 _ _ C5 _ _ D5 _ F5 _ _ _ E5 _ D5 _",
-                            "Eb5 _ _ _ _ _ D5 _ C5 _ _ _ G4 _ _ _",
-                            "A4 _ _ _ C5 _ _ _ F5 _ _ _ . . . .",
+                            "A5 _ _ _ _ _ F5 _ D5 _ _ _ F5 _ _ _",
+                            "D5 _ _ _ _ _ F5 _ Bb5 _ _ _ F5 _ _ _",
+                            "C6 _ _ _ _ _ A5 _ F5 _ _ _ A5 _ _ _",
+                            "G5 _ _ _ E5 _ _ _ C5 _ _ _ . . . .",
                         },
                         hookB = new[]
                         {
-                            "D6 _ _ _ C6 _ Bb5 _ A5 _ _ _ F5 _ _ _",
-                            "Bb5 _ _ _ A5 _ G5 _ D5 _ _ _ F5 _ _ _",
-                            "G5 _ _ _ F5 _ Eb5 _ C5 _ _ _ Eb5 _ _ _",
-                            "F5 _ _ _ Eb5 _ _ _ C5 _ _ _ _ _ _ _",
+                            "F5 . Bb5 . D6 _ . Bb5 . F5 . Bb5 _ . D5 .",
+                            "E5 . G5 . C6 _ . G5 . E5 . G5 _ . C5 .",
+                            "A5 _ _ _ C6 _ A5 _ F5 _ _ _ D5 _ F5 _",
+                            "Bb5 _ _ _ G5 _ _ _ G5 _ _ _ _ _ _ _",
                         },
-                        comp = Comp.TresMontuno, comp2 = Comp.RhodesHeld, leadSoft = Lead.Tres, leadA = Lead.Flute, leadB = Lead.PianoOct,
-                        leadSend = 0.38f, bass = Bass.Pick, kit = Kit.Psych, claps = true, tambourine = true, guiro = true,
-                        room = 0.75f, wet = 0.26f, tone = 7500, pump = 0.1f, bassPump = 0.06f, drive = 0.08f, loudness = 0.11f,
+                        leadSoft = Lead.Kalimba, leadA = Lead.PanFlute, leadB = Lead.Vibes, arp = Lead.Kalimba,
+                        leadSend = 0.42f, room = 0.75f, wet = 0.28f, tone = 7500, pump = 0.3f, bassPump = 0.25f, drive = 0.06f, loudness = 0.105f,
                     };
                 case Soundscape.Park:
-                    // Bayfront's lawns in D: a bouncy marimba tune over the tres and the piano, the flute's chorus over "ooh"s; a guiro.
+                    // Museum Park's lawns: a marimba climbing the chords in E, the pan flute's chorus over "ooh"s; a glockenspiel to open.
                     return new Style
                     {
-                        bpm = 114, swing = 0.02, key = 62, mode = Mode.Major, seed = 566,
-                        chords = new[] { "D", "A/C#", "Bm7", "G", "D", "A/C#", "Bm7", "G",
-                                         "Em7", "A", "F#m7 Bm7", "Em7 A", "Em7", "A", "F#m7 Bm7", "Em7 A" },
+                        bpm = 106, swing = 0, key = 64, mode = Mode.Major, seed = 666,
+                        chords = new[] { "E", "G#m", "A", "B", "E", "G#m", "A", "B",
+                                         "C#m", "A", "E", "B", "C#m", "A", "E", "B" },
                         hookA = new[]
                         {
-                            "F#5 _ . A5 . D6 _ . A5 _ . F#5 . D5 _ .",
-                            "E5 _ . A5 . C#6 _ . A5 _ . E5 . C#5 _ .",
-                            "D5 _ . F#5 . B5 _ . A5 _ . F#5 . D5 _ .",
-                            "B4 _ _ _ D5 _ _ _ G5 _ _ _ . . . .",
+                            "E5 . G#5 . B5 . G#5 . E5 . G#5 . B5 . . .",
+                            "D#5 . G#5 . B5 . G#5 . D#5 . G#5 . B5 . . .",
+                            "C#5 . E5 . A5 . E5 . C#5 . E5 . A5 . . .",
+                            "D#5 _ _ _ F#5 _ _ _ B5 _ _ _ . . . .",
                         },
                         hookB = new[]
                         {
-                            "G5 _ _ _ B5 _ _ _ E5 _ _ _ D5 _ E5 _",
-                            "C#6 _ _ _ A5 _ _ _ E5 _ _ _ A5 _ _ _",
-                            "A5 _ _ _ F#5 _ _ _ D5 _ _ _ F#5 _ _ _",
-                            "B5 _ _ _ G5 _ _ _ C#6 _ _ _ _ _ _ _",
+                            "E5 _ _ _ G#5 _ _ _ C#6 _ _ _ B5 _ G#5 _",
+                            "A5 _ _ _ E5 _ _ _ C#5 _ _ _ E5 _ A5 _",
+                            "G#5 _ _ _ B5 _ _ _ E5 _ _ _ G#5 _ B5 _",
+                            "B5 _ _ _ F#5 _ _ _ D#5 _ _ _ _ _ _ _",
                         },
-                        comp = Comp.TresMontuno, comp2 = Comp.PianoMontuno, leadSoft = Lead.Tres, leadA = Lead.Marimba, leadB = Lead.Flute,
-                        leadSend = 0.35f, bass = Bass.Pick, kit = Kit.Psych, tambourine = true, oohs = true, guiro = true,
-                        room = 0.65f, wet = 0.24f, tone = 7500, pump = 0.1f, bassPump = 0.06f, drive = 0.08f, loudness = 0.11f,
+                        leadSoft = Lead.Glock, leadA = Lead.Marimba, leadB = Lead.PanFlute, arp = Lead.Kalimba, oohs = true,
+                        leadSend = 0.4f, room = 0.7f, wet = 0.26f, tone = 7500, pump = 0.3f, bassPump = 0.25f, drive = 0.06f, loudness = 0.105f,
                     };
                 default:
-                    // The menu, a warm evening on the bay in E: the tres and held Rhodes chords, the piano's tune, then soft horns.
+                    // The menu, a warm evening on the bay: the kalimba's tune in Bb, the pan flute's chorus; vibes to open.
                     return new Style
                     {
-                        bpm = 112, swing = 0.02, key = 64, mode = Mode.Major, seed = 507,
-                        chords = new[] { "E", "C#m7", "A", "B7", "E", "C#m7", "A", "B7",
-                                         "A", "B", "G#m7 C#m7", "F#m7 B", "A", "B", "G#m7 C#m7", "F#m7 B" },
+                        bpm = 100, swing = 0, key = 70, mode = Mode.Major, seed = 607,
+                        chords = new[] { "Bb", "Gm", "Eb", "F", "Bb", "Gm", "Eb", "F",
+                                         "Eb", "F", "Dm Gm", "Cm7 F", "Eb", "F", "Dm Gm", "Cm7 F" },
                         hookA = new[]
                         {
-                            "B4 _ . E5 . G#5 _ . B5 _ _ _ G#5 _ E5 _",
-                            "G#5 _ _ _ E5 _ C#5 _ E5 _ _ _ . . . .",
-                            "A4 _ . C#5 . E5 _ . A5 _ _ _ G#5 _ E5 _",
-                            "F#5 _ _ _ D#5 _ _ _ B4 _ _ _ . . . .",
+                            "D5 . F5 . Bb5 _ _ . F5 . D5 . Bb4 _ _ .",
+                            "D5 . G5 . Bb5 _ _ . G5 . D5 . G4 _ _ .",
+                            "Eb5 . G5 . Bb5 _ _ . G5 . Eb5 . Bb4 _ _ .",
+                            "C5 _ _ _ F5 _ _ _ A5 _ _ _ . . . .",
                         },
                         hookB = new[]
                         {
-                            "C#6 _ _ _ B5 _ A5 _ E5 _ _ _ A5 _ _ _",
-                            "B5 _ _ _ F#5 _ D#5 _ F#5 _ _ _ B5 _ _ _",
-                            "B5 _ _ _ G#5 _ _ _ E5 _ _ _ G#5 _ _ _",
-                            "A5 _ _ _ F#5 _ _ _ F#5 _ _ _ _ _ _ _",
+                            "G5 _ _ _ Bb5 _ G5 _ Eb5 _ _ _ G5 _ _ _",
+                            "A5 _ _ _ C6 _ A5 _ F5 _ _ _ A5 _ _ _",
+                            "F5 _ _ _ A5 _ F5 _ G5 _ _ _ Bb5 _ _ _",
+                            "Eb5 _ _ _ G5 _ _ _ F5 _ _ _ _ _ _ _",
                         },
-                        comp = Comp.TresMontuno, comp2 = Comp.RhodesHeld, leadSoft = Lead.Tres, leadA = Lead.PianoOct, leadB = Lead.Brass,
-                        leadSend = 0.38f, bass = Bass.Pick, kit = Kit.Psych, tambourine = true, guiro = true,
-                        room = 0.7f, wet = 0.26f, tone = 7500, pump = 0.1f, bassPump = 0.06f, drive = 0.08f, loudness = 0.11f,
+                        leadSoft = Lead.Vibes, leadA = Lead.Kalimba, leadB = Lead.PanFlute, arp = Lead.Marimba,
+                        leadSend = 0.42f, room = 0.75f, wet = 0.28f, tone = 7500, pump = 0.3f, bassPump = 0.25f, drive = 0.06f, loudness = 0.105f,
                     };
             }
         }
@@ -533,16 +520,15 @@ namespace DribbleToSchool.Audio
         }
 
         /// <summary>
-        /// Florida's arranger (v143, Latin pop; the four sections are v138's, so the music develops through a level and sits
-        /// back behind the play): a 32-bar loop in four sections of eight.
-        ///   1. Bars 1-8, the opening: the montuno, the bass, the congas and a light groove; the first hook once on the soft
-        ///      voice, then (on the busy streets) the horns' hits for four bars.
-        ///   2. Bars 9-16, the groove: the full kit, the second montuno, the clave; the first hook twice.
-        ///   3. Bars 17-24, the lift: the second chord cycle and the second hook twice, "ooh"s, the cowbell.
-        ///   4. Bars 25-32, the breakdown: the kick drops out, the bongos play, the bass holds, the first hook once on the soft
-        ///      voice; the light groove comes back for the last four bars and the kit's fill leads into the loop's start.
-        /// The drums are SynthDrums as before (v139's kit, kept at the user's word); everything over them is new. The style's
-        /// 16 chords are its two four-bar cycles twice (A A B B); the sections use A, A, B, A.
+        /// Florida's arranger (v144, tropical house; the four sections are v138's, so the music develops through a level and
+        /// sits back behind the play): a 32-bar loop in four sections of eight.
+        ///   1. Bars 1-8, the opening: the pad, the bass, the soft kick, snaps and shaker; the first hook once on the soft voice,
+        ///      then the arpeggio for four bars.
+        ///   2. Bars 9-16, the groove: the full kit, the arpeggio; the first hook twice.
+        ///   3. Bars 17-24, the drop: the second chord cycle, the second hook twice, "ooh"s, claps, open hats.
+        ///   4. Bars 25-32, the breakdown: the kick out, the pad and the first hook on the soft voice; the groove comes back for
+        ///      the last four bars and a clap roll leads into the loop's start.
+        /// The style's 16 chords are its two four-bar cycles twice (A A B B); the sections use A, A, B, A. No string sound plays.
         /// </summary>
         static float[] ArrangeFlorida(Style st)
         {
@@ -559,60 +545,45 @@ namespace DribbleToSchool.Audio
             {
                 roomSize = st.room, damping = 0.6f, wet = st.wet, tone = st.tone, drive = st.drive, wowCents = st.wow,
             };
-            var montuno = mix.Add(-0.25f, 0.28f, 0.42f);
-            var montuno2 = mix.Add(0.35f, 0.28f, 0.38f);
-            var rhodes = mix.Add(0.1f, 0.4f, 0.32f);
+            var pad = mix.Add(0f, 0.45f, 0.5f);
             var oohs = mix.Add(0f, 0.55f, 0.3f);
-            var bass = mix.Add(0f, 0.04f, 0.85f);
-            var lead = mix.Add(0.1f, st.leadSend, 0.62f);
-            var soft = mix.Add(-0.12f, 0.4f, 0.55f);
-            var hits = mix.Add(0.18f, 0.3f, 0.4f);
-            var congas = mix.Add(-0.45f, 0.14f, 0.42f);
-            var small = mix.Add(0.42f, 0.12f, 0.3f);      // clave, cowbell, guiro, bongos
-            // the kit's tracks, as v139's
-            var kick = mix.Add(0f, 0.04f, 0.9f);
-            var snare = mix.Add(0.04f, 0.2f, 0.6f);
-            var hats = mix.Add(0.3f, 0.08f, 0.22f);
-            var perc = mix.Add(-0.45f, 0.14f, 0.28f);
-            montuno.duck = montuno2.duck = rhodes.duck = oohs.duck = st.pump;
+            var arp = mix.Add(0.3f, 0.35f, 0.32f);
+            var bass = mix.Add(0f, 0.04f, 0.8f);
+            var lead = mix.Add(0.08f, st.leadSend, 0.62f);
+            var soft = mix.Add(-0.15f, 0.42f, 0.55f);
+            var kick = mix.Add(0f, 0.04f, 0.85f);
+            var snaps = mix.Add(0.08f, 0.22f, 0.45f);
+            var hats = mix.Add(0.32f, 0.08f, 0.2f);
+            var perc = mix.Add(-0.4f, 0.14f, 0.3f);
+            pad.duck = oohs.duck = arp.duck = st.pump;
             bass.duck = st.bassPump;
 
             for (int bar = 0; bar < FlBars; bar++)
             {
                 int section = bar / 8, inSection = bar % 8;
-                bool fill = inSection == 7;
+                bool fill = bar == FlBars - 1;
                 bool breakdown = section == 3 && inSection < 4;
                 int level = section == 0 || (section == 3 && !breakdown) ? 1 : breakdown ? 0 : 2;
-                bool second = section == 1 || section == 2;
-
-                Montuno(st.comp, OnTres(st.comp) ? montuno2 : montuno, s, bar, (breakdown ? 0.8f : 1f) * CompLevel(st.comp));
-                if (second)
-                {
-                    if (st.comp2 == Comp.PianoMontuno || st.comp2 == Comp.TresMontuno)
-                        Montuno(st.comp2, OnTres(st.comp2) ? montuno2 : montuno, s, bar + 1, 0.7f * CompLevel(st.comp2));   // (the other bar's figure, so the two interlock)
-                    else
-                        foreach (var ch in s.ChordsIn(bar))
-                            Play(st.comp2, st.comp2 == Comp.RhodesHeld ? rhodes : montuno2, s, bar, ch, rng, 0.7f * CompLevel(st.comp2));
-                }
                 foreach (var ch in s.ChordsIn(bar))
                 {
+                    Instruments.SoftPad(pad, s.T(bar, ch.beat), ch.chord.Voice(57, 72, 4), s.Beats(ch.length - 0.05), breakdown ? 0.6f : 0.5f);
                     if (st.oohs && section == 2)
-                        Instruments.Oohs(oohs, s.T(bar, ch.beat), ch.chord.Voice(60, 72, 3), s.Beats(ch.length), 0.55f, bar * 7 + 1);
+                        Instruments.Oohs(oohs, s.T(bar, ch.beat), ch.chord.Voice(60, 72, 3), s.Beats(ch.length), 0.5f, bar * 7 + 1);
                     if (breakdown)
                     {
                         int root = ch.chord.Bass(36);
                         if (root > 43) root -= 12;
-                        BassNote(st, bass, s, bar, ch.beat, root, ch.length - 0.1, 0.75f, bar * 8);
+                        Instruments.SynthBass(bass, s.T(bar, ch.beat), Synth.MidiToHz(root), s.Beats(ch.length - 0.2), 0.6f);
                     }
-                    else TumbaoBass(st, bass, s, bar, ch, fill);
+                    else TropicalBass(bass, s, bar, ch);
                 }
-                if (st.hits && section == 0 && inSection >= 4 && inSection < 7) HornHits(hits, s, bar);
-                LatinPercussion(st, s, congas, small, bar, section, inSection, breakdown);
-                SynthDrums(st, s, mix, kick, snare, hats, perc, bar, section >= 1, fill, rng, level, bar == 8 || bar == 16);
+                bool arpHere = (section == 0 && inSection >= 4) || section == 1 || section == 2 || (section == 3 && !breakdown);
+                if (arpHere) Arpeggio(st.arp, arp, s, bar, ArpLevel(st.arp) * (section == 2 ? 0.8f : 1f));
+                TropicalDrums(s, mix, kick, snaps, hats, perc, bar, section, level, fill, rng);
             }
 
             // The tunes: the first hook once on the soft voice in the opening, twice in the groove; the second hook twice in the
-            // lift; the first once more on the soft voice in the breakdown. A note glides only from one it is tied to.
+            // drop; the first once more on the soft voice in the breakdown. A note glides only from one it is tied to.
             var parts = new List<KeyValuePair<Lead, List<Note>>>
             {
                 new KeyValuePair<Lead, List<Note>>(st.leadSoft, Hook(st.hookA, 0, 1, 0, 0.85f * LeadLevel(st.leadSoft))),
@@ -634,181 +605,100 @@ namespace DribbleToSchool.Audio
             return mix.Render(st.loudness);
         }
 
-        static bool OnTres(Comp comp) { return comp == Comp.TresMontuno; }
-
-        /// <summary>
-        /// A montuno over one bar: the chord broken into a syncopated figure of eighths, two bars long (the bars alternate), each
-        /// hit the chord's top note in octaves with a chord tone between (on the piano) or a pair of notes doubled at the octave
-        /// (on the tres, a Cuban guitar's doubled strings). The last eighth before a chord change already plays the next chord:
-        /// the anticipation that makes it Latin. The top note walks up and down the chord.
-        /// </summary>
-        static void Montuno(Comp comp, Track tr, Song s, int bar, float level)
-        {
-            bool piano = comp == Comp.PianoMontuno;
-            int[] eighths = piano ? (bar % 2 == 0 ? new[] { 0, 2, 3, 5, 6 } : new[] { 1, 2, 4, 5, 7 })
-                                  : (bar % 2 == 0 ? new[] { 0, 1, 3, 4, 6 } : new[] { 1, 2, 4, 6, 7 });
-            var here = s.ChordsIn(bar);
-            var next = s.ChordsIn(bar + 1)[0];
-            int[] walk = { 0, 1, 2, 1, 2, 3, 2, 1 };
-            for (int k = 0; k < eighths.Length; k++)
-            {
-                double beat = eighths[k] * 0.5;
-                Chord chord = null;
-                for (int c = 0; c < here.Count; c++)
-                {
-                    double end = here[c].beat + here[c].length;
-                    if (beat >= here[c].beat - 1e-6 && beat < end - 1e-6)
-                    {
-                        // the anticipation: the eighth just before the change plays the chord to come
-                        bool last = Math.Abs(beat + 0.5 - end) < 1e-6;
-                        chord = last ? (c + 1 < here.Count ? here[c + 1].chord : next.chord) : here[c].chord;
-                        break;
-                    }
-                }
-                if (chord == null) continue;
-                var v = chord.Voice(piano ? 67 : 62, piano ? 81 : 76, 3);
-                if (v.Length == 0) continue;
-                int top = v[walk[(bar * 5 + k) % walk.Length] % v.Length];
-                bool accent = eighths[k] % 2 == 0;
-                double t = s.T(bar, beat), d = s.Beats(piano ? 0.42 : 0.38);
-                if (piano)
-                {
-                    float vel = (accent ? 0.62f : 0.5f) * level;
-                    Instruments.Piano(tr, t, Synth.MidiToHz(top), d, vel);
-                    Instruments.Piano(tr, t, Synth.MidiToHz(top - 12), d, vel * 0.75f);
-                    int mid = v[(walk[(bar * 5 + k) % walk.Length] + 1) % v.Length] - 12;
-                    if (mid > top - 12 && mid < top) Instruments.Piano(tr, t, Synth.MidiToHz(mid), d, vel * 0.5f);
-                }
-                else
-                {
-                    float vel = (accent ? 0.6f : 0.48f) * level;
-                    int low = v[(walk[(bar * 5 + k) % walk.Length] + 2) % v.Length];
-                    if (low >= top) low -= 12;
-                    foreach (int m in new[] { top, low })
-                    {
-                        Instruments.Pluck(tr, t, Synth.MidiToHz(m), d, vel, bar * 64 + k * 4 + m, 0.62f, 0.993f);
-                        Instruments.Pluck(tr, t + 0.004, Synth.MidiToHz(m) * 1.002, d, vel * 0.55f, bar * 64 + k * 4 + m + 1, 0.7f, 0.992f);
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// The bass under Latin pop: a pop tumbao. On a whole-bar chord the root, the fifth on the "and" of two, the octave and
-        /// the fifth, then the next chord's root anticipated on the "and" of four; on a half-bar chord the root, the fifth, and
-        /// the next root pushed in early.
-        /// </summary>
-        static void TumbaoBass(Style st, Track bass, Song s, int bar, ChordAt ch, bool fill)
+        /// <summary>The tropical bass: the root on the one, pushed on the "and" of two and of three, the octave lifting on four.</summary>
+        static void TropicalBass(Track bass, Song s, int bar, ChordAt ch)
         {
             int root = ch.chord.Bass(36);
             if (root > 43) root -= 12;
-            // the chord after this one (in this bar or the next)
-            var inBar = s.ChordsIn(bar);
-            int idx = inBar.FindIndex(c => Math.Abs(c.beat - ch.beat) < 1e-6);
-            var after = idx + 1 < inBar.Count ? inBar[idx + 1] : s.ChordsIn(bar + 1)[0];
-            int nextRoot = after.chord.Bass(36);
-            if (nextRoot > 43) nextRoot -= 12;
-            double[] at; int[] line; double[] len;
-            if (ch.length >= 4)
-            {
-                at = new[] { 0, 1.5, 2.5, 3, 3.5 };
-                line = new[] { root, root + 7, root + 12, root + 7, nextRoot };
-                len = new[] { 1.2, 0.8, 0.4, 0.4, 0.6 };
-            }
-            else
-            {
-                at = new[] { 0, 1, 1.5 };
-                line = new[] { root, root + 7, nextRoot };
-                len = new[] { 0.8, 0.4, 0.6 };
-            }
+            double[] at = ch.length >= 4 ? new[] { 0, 1.5, 2.5, 3 } : new[] { 0, 1.5 };
+            int[] line = ch.length >= 4 ? new[] { root, root, root + 7, root + 12 } : new[] { root, root + 12 };
+            double[] len = ch.length >= 4 ? new[] { 1.2, 0.6, 0.4, 0.8 } : new[] { 1.2, 0.4 };
             for (int k = 0; k < at.Length; k++)
-            {
-                if (at[k] >= ch.length) break;
-                if (fill && ch.beat + at[k] >= 3.5) break;
-                BassNote(st, bass, s, bar, ch.beat + at[k], line[k], len[k], k == 0 ? 0.88f : 0.72f, bar * 8 + k);
-            }
+                if (at[k] < ch.length)
+                    Instruments.SynthBass(bass, s.T(bar, ch.beat + at[k]), Synth.MidiToHz(line[k]), s.Beats(len[k]), k == 0 ? 0.85f : 0.7f);
         }
 
-        /// <summary>The horn section's hits after the opening hook: short chords on the "and" of two and on four, pushed.</summary>
-        static void HornHits(Track tr, Song s, int bar)
+        /// <summary>The arpeggio under the groove: the chord's tones up and back in eighths, soft, on the style's mallet or pluck.</summary>
+        static void Arpeggio(Lead voice, Track tr, Song s, int bar, float level)
         {
-            var chords = s.ChordsIn(bar);
-            foreach (double beat in new[] { 1.5, 3.0, 3.5 })
+            foreach (var ch in s.ChordsIn(bar))
             {
-                Chord chord = chords[0].chord;
-                foreach (var c in chords) if (beat >= c.beat - 1e-6) chord = c.chord;
-                foreach (int m in chord.Voice(62, 77, 3))
-                    Instruments.Brass(tr, s.T(bar, beat), Synth.MidiToHz(m), 0, s.Beats(beat == 3.0 ? 0.3 : 0.2), beat == 3.5 ? 0.42f : 0.36f, bar * 31 + m);
+                var v = ch.chord.Voice(64, 81, 4);
+                if (v.Length == 0) continue;
+                int[] order = { 0, 1, 2, 3, 2, 1, 2, 3 };
+                for (int e = 0; e < ch.length * 2; e++)
+                {
+                    int m = v[order[e % order.Length] % v.Length];
+                    float vel = (e % 2 == 0 ? 0.5f : 0.38f) * level;
+                    var n = new Note { beat = bar * 4 + ch.beat + e * 0.5, len = 0.45, midi = m, vel = vel };
+                    PlayLead(voice, tr, s, n, 0);
+                }
             }
         }
 
         /// <summary>
-        /// The Latin percussion over the kit: the congas' tumbao (the slap on two, the open tones on four and its "and"), the
-        /// son clave (2-3) through the groove and the lift, the cowbell on the beat in the lift (the busy streets), a guiro
-        /// (the calm places), and in the breakdown the bongos' martillo in place of the kick.
+        /// Florida's tropical-house kit (v144, new): a soft round kick four to the floor that the pad and bass breathe under, finger
+        /// snaps on two and four (with claps in the drop), a shaker on the sixteenths, closed hats on the off-beats (open ones in
+        /// the drop), and a rim on the 3-3-2 of the groove. level 0 the shaker and soft snaps alone, 1 a light groove, 2 the full
+        /// kit; the last bar's clap roll leads into the loop's start.
         /// </summary>
-        static void LatinPercussion(Style st, Song s, Track congas, Track small, int bar, int section, int inSection, bool breakdown)
+        static void TropicalDrums(Song s, Mixdown mix, Track kick, Track snaps, Track hats, Track perc, int bar, int section, int level, bool fill, Random rng)
         {
-            float lv = section == 0 ? 0.75f : 1f;
-            Instruments.Conga(congas, s.T(bar, 0), 0.18f * lv, true);
-            Instruments.Conga(congas, s.T(bar, 1), 0.5f * lv, true);
-            Instruments.Conga(congas, s.T(bar, 2), 0.18f * lv, true);
-            Instruments.Conga(congas, s.T(bar, 3), 0.55f * lv, false);
-            Instruments.Conga(congas, s.T(bar, 3.5), 0.5f * lv, false);
-            if (section == 1 || section == 2)
+            if (level >= 1)
+                for (int b = 0; b < 4; b++)
+                {
+                    double t = s.T(bar, b);
+                    Instruments.SoftKick(kick, t, (b == 0 ? 0.95f : 0.85f) * (level == 1 ? 0.85f : 1f));
+                    mix.Duck(t, 0.55f, 0.16);
+                }
+            foreach (double b in new[] { 1.0, 3.0 })
             {
-                double[] clave = bar % 2 == 0 ? new[] { 1.0, 2.0 } : new[] { 0.0, 1.5, 3.0 };
-                foreach (double b in clave) Instruments.Clave(small, s.T(bar, b), 0.5f);
+                if (fill && b >= 3) continue;
+                Instruments.Snap(snaps, s.T(bar, b), level == 0 ? 0.35f : level == 1 ? 0.5f : 0.6f, bar * 4 + (int)b);
+                if (section == 2) Instruments.Clap(snaps, s.T(bar, b) + 0.004, 0.32f, bar * 4 + (int)b + 1);
             }
-            if (st.cowbell && section == 2)
-                for (int b = 0; b < 4; b++) Instruments.Cowbell(small, s.T(bar, b), b == 0 ? 0.42f : 0.3f);
-            if (st.guiro && (section == 1 || section == 2))
+            for (int e = 0; e < 16; e++)
             {
-                Instruments.Guiro(small, s.T(bar, 0), s.Beats(0.45), 0.32f, bar * 4);
-                Instruments.Guiro(small, s.T(bar, 1.5), s.Beats(0.12), 0.22f, bar * 4 + 1);
-                Instruments.Guiro(small, s.T(bar, 2), s.Beats(0.45), 0.32f, bar * 4 + 2);
-                Instruments.Guiro(small, s.T(bar, 3.5), s.Beats(0.12), 0.22f, bar * 4 + 3);
+                double b = e * 0.25;
+                if (fill && b >= 3) break;
+                float jitter = (float)(0.85 + rng.NextDouble() * 0.3);
+                Instruments.Shaker(perc, s.T(bar, b), (e % 2 == 1 ? 0.2f : 0.12f) * jitter * (level == 0 ? 0.7f : 1f), bar * 16 + e);
+                if (level == 2 && e % 4 == 2)
+                {
+                    if (section == 2) Instruments.OpenHat(hats, s.T(bar, b), 0.22f, bar * 16 + e);
+                    else Instruments.Hat(hats, s.T(bar, b), 0.3f * jitter, bar * 16 + e);
+                }
             }
-            if (breakdown)
-                for (int e = 0; e < 8; e++)
-                    Instruments.Bongo(small, s.T(bar, e * 0.5), e % 4 == 0 ? 0.5f : 0.34f, e % 4 != 3, bar * 8 + e);
+            if (level == 2 && !fill)
+                foreach (double b in new[] { 0.75, 1.5, 2.5 })
+                    Instruments.Rim(perc, s.T(bar, b), 0.3f);
+            if (fill)
+                for (int k = 0; k < 8; k++) Instruments.Clap(snaps, s.T(bar, 3 + k * 0.125), 0.12f + k * 0.05f, 1700 + k);
+            if (bar == 16) Instruments.Crash(hats, s.T(bar, 0), 0.32f, bar);
         }
 
         /// <summary>
-        /// Florida's tune voices brought to one loudness (v143: a note's level measured on its own, RMS, against the whistle's
-        /// 0.117), so each place's tune sits over its montunos.
+        /// Florida's tune voices brought to one loudness (a note's level measured on its own, RMS, against the steel pan's): set
+        /// from the measurements in docs/LEARNINGS.md G8.
         /// </summary>
         static float LeadLevel(Lead lead)
         {
+            // (per half-second note, RMS: the steel pan 0.23, the vibes 0.22, the marimba and the kalimba 0.18, the
+            // glockenspiel and the synth pluck 0.11, the pan flute 0.25)
             switch (lead)
             {
-                // (per note, RMS, before these: the horns 0.16 to 0.19, the piano in octaves 0.12 to 0.14, the tres 0.015 to 0.03,
-                // the marimba 0.18, the flute 0.17)
-                case Lead.Brass: return 1f;
-                case Lead.PianoOct: return 1.35f;
-                case Lead.Tres: return 7f;
-                case Lead.Marimba: return 0.95f;
-                case Lead.Flute: return 1f;
-                case Lead.Guitar: return 2.6f;
-                case Lead.Glock: return 1.7f;
-                case Lead.Vibes: return 0.9f;
+                case Lead.Marimba: return 1.25f;
+                case Lead.Kalimba: return 1.25f;
+                case Lead.Vibes: return 1.05f;
+                case Lead.Glock: return 2.1f;
+                case Lead.Pluck: return 2.1f;
+                case Lead.PanFlute: return 0.92f;
                 default: return 1f;
             }
         }
 
-        /// <summary>Florida's comps brought under the tune.</summary>
-        static float CompLevel(Comp comp)
-        {
-            switch (comp)
-            {
-                // (a hit, RMS: the piano's 0.15, the tres's 0.1)
-                case Comp.PianoMontuno: return 1f;
-                case Comp.TresMontuno: return 1.5f;
-                case Comp.Rhodes: case Comp.RhodesHeld: return 0.55f;
-                case Comp.Skank: return 1f;
-                default: return 1f;
-            }
-        }
+        /// <summary>The arpeggio's voice, levelled as the tunes are (its track sits under the tune's).</summary>
+        static float ArpLevel(Lead voice) { return LeadLevel(voice); }
 
         /// <summary>
         /// A written four-bar hook, played twice from <paramref name="firstBar"/>: each bar sixteen semiquaver steps, a note name
@@ -1112,20 +1002,9 @@ namespace DribbleToSchool.Audio
                 case Lead.Saw: Instruments.SawLead(tr, t, f, prevFreq, d * 0.92, v * 0.95f); break;
                 case Lead.Psych: Instruments.PsychLead(tr, t, f, prevFreq, d * 0.95, v * 0.9f); break;
                 case Lead.Pluck: Instruments.SynthPluck(tr, t, f, d, v); break;
-                // Florida's Latin pop (v143): the horn section (a trumpet and, an octave under, a sax), the piano in octaves,
-                // the tres (a Cuban guitar's doubled strings).
-                case Lead.Brass:
-                    Instruments.Brass(tr, t, f, prevFreq, d * 0.92, v * 0.8f, n.midi * 5 + (int)(n.beat * 4));
-                    Instruments.Brass(tr, t + 0.006, f * 0.5, prevFreq * 0.5, d * 0.92, v * 0.4f, n.midi * 7 + (int)(n.beat * 4) + 1);
-                    break;
-                case Lead.PianoOct:
-                    Instruments.Piano(tr, t, f, d + 0.1, v);
-                    Instruments.Piano(tr, t, f * 0.5, d + 0.1, v * 0.7f);
-                    break;
-                case Lead.Tres:
-                    Instruments.Pluck(tr, t, f, d + 0.25, v * 0.8f, n.midi * 3 + (int)(n.beat * 4), 0.62f, 0.994f);
-                    Instruments.Pluck(tr, t + 0.005, f * 1.002, d + 0.25, v * 0.45f, n.midi * 3 + (int)(n.beat * 4) + 1, 0.7f, 0.993f);
-                    break;
+                // Florida's tropical house (v144): the kalimba and the pan flute.
+                case Lead.Kalimba: Instruments.Kalimba(tr, t, f, v); break;
+                case Lead.PanFlute: Instruments.PanFlute(tr, t, f, d * 0.95, v, n.midi * 5 + (int)(n.beat * 4)); break;
                 default: Instruments.Rhodes(tr, t, f, d, v * 0.65f); break;
             }
             return f;
