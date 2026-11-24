@@ -47,6 +47,8 @@ namespace DribbleToSchool.EditorTools
             /// (fields and hills, the sea and its headlands, the site's cranes), across the whole level as a level does.
             /// </summary>
             public bool level;
+            /// <summary>A stage of Florida's lap: the part of its leg's Miami district it builds, and where (StreetBuilder.MiamiWindow).</summary>
+            public MiamiWindow? miami;
         }
 
         /// <summary>Non-null while a stage's scenery is being built.</summary>
@@ -86,7 +88,7 @@ namespace DribbleToSchool.EditorTools
                 wallTops.Clear();
                 if (MiamiLeg)
                 {
-                    MiamiScenery(track, root, x0, x1, spec.seed);
+                    MiamiScenery(track, root, x0, x1, spec.seed, spec.miami);
                     return;
                 }
                 switch (ch)

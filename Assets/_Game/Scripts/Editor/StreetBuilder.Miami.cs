@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using DribbleToSchool.Art;
+using DribbleToSchool.Holiday;
 using DribbleToSchool.World;
 using UnityEngine;
 
@@ -175,15 +176,92 @@ namespace DribbleToSchool.EditorTools
         /// <summary>
         /// Everything beside a Florida leg's lane: its district from the plan, the dappled shade of the near street trees on a street
         /// (not on a promenade, whose foreground is the open lawn), and the pigeons. None of the chapters' own streets, pole lines,
-        /// distant hills or side-street ends: the plan has its own poles, palms and skyline.
+        /// distant hills or side-street ends: the plan has its own poles, palms and skyline. A Holiday Run stage of Florida's lap
+        /// (v148) builds the near part of its leg's district, moved along to the stage (<paramref name="window"/>).
         /// </summary>
-        static void MiamiScenery(LevelBuildKit.TrackBuilder track, Transform root, float x0, float x1, int seed)
+        static void MiamiScenery(LevelBuildKit.TrackBuilder track, Transform root, float x0, float x1, int seed, MiamiWindow? window = null)
         {
             if (!string.IsNullOrEmpty(LevelBuildKit.LevelId)) MiamiDistrictsBuilt.Add(LevelBuildKit.LevelId);
-            Miami(track, root, x0, x1);
+            Miami(track, root, x0, x1, window ?? MiamiWindow.Whole(ClipLo, ClipHi));
             string kind = MiamiStr(MiamiPlan, "strips", "street");
             if (kind == "street" || kind == "havana") CanopyShadows(track, root, new System.Random(seed + 173), x0, x1);
             Wildlife(track, root, new System.Random(seed + 389), x0, x1);
+        }
+
+        /// <summary>
+        /// What of a district's plan one pass builds, and where. A story leg builds all of it, where the plan has it. Florida's
+        /// Holiday Run (v148) lays its legs end to end, 120 m of each: a stage builds the near part of its leg's plan (in front of
+        /// <see cref="FarZ"/>) moved along x by <see cref="shift"/> (world x = the plan's x + shift) and cut to its own stretch
+        /// [<see cref="lo"/>, <see cref="hi"/>]; the core scene builds each stage's far part (the ground and water out to the horizon,
+        /// the skyline) cut to the same stretch, so the distance never comes and goes as the stages stream in and out.
+        /// </summary>
+        public struct MiamiWindow
+        {
+            public float shift, lo, hi;
+            public bool near, far;
+
+            /// <summary>Everything, where the plan has it (a story leg), within the clip of the scenery pass.</summary>
+            public static MiamiWindow Whole(float lo, float hi) { return new MiamiWindow { shift = 0f, lo = lo, hi = hi, near = true, far = true }; }
+
+            /// <summary>A Holiday Run stage's: the near part, moved along by <paramref name="shift"/> and cut to [lo, hi].</summary>
+            public static MiamiWindow Stage(float shift, float lo, float hi) { return new MiamiWindow { shift = shift, lo = lo, hi = hi, near = true, far = false }; }
+
+            /// <summary>The core scene's for one stage: the far part, moved along and cut the same way.</summary>
+            public static MiamiWindow Distance(float shift, float lo, float hi) { return new MiamiWindow { shift = shift, lo = lo, hi = hi, near = false, far = true }; }
+
+            /// <summary>Cut to a stretch of the world (a Holiday Run's), rather than the whole of a leg.</summary>
+            public bool Cut { get { return !float.IsNegativeInfinity(lo) || !float.IsPositiveInfinity(hi); } }
+
+            /// <summary>Something at depth z belongs to this pass.</summary>
+            public bool Takes(float z) { return z < FarZ ? near : far; }
+
+            /// <summary>The part of [z0, z1] this pass builds (false: none of it).</summary>
+            public bool Band(ref float z0, ref float z1)
+            {
+                if (!near) z0 = Mathf.Max(z0, FarZ);
+                if (!far) z1 = Mathf.Min(z1, FarZ);
+                return z1 > z0;
+            }
+        }
+
+        /// <summary>
+        /// Where a Holiday Run stage's part of a district ends and the core scene's begins: the back strips' end (BackZ), as Kamakura's
+        /// far land begins there. Nearer than it, a stage streamed out of sight leaves nothing missing on the screen (the streamer keeps
+        /// 80 m behind the kid; the view at this depth is about 75 m to each side).
+        /// </summary>
+        public const float FarZ = BackZ;
+
+        /// <summary>
+        /// Florida's Holiday Run, for the core scene: each stage's far part of its leg's district (the land and water to the horizon,
+        /// the far city's blocks and plazas, the far shore's wall, the skyline's towers), cut to the stage's stretch, the first and last
+        /// running on 2.6 km past the lap's ends. In place of Kamakura's fields and hills (<see cref="FarLand"/>).
+        /// </summary>
+        public static void MiamiFarLand(Transform root)
+        {
+            bool savedFlorida = LevelBuildKit.Florida;
+            string savedLeg = LevelBuildKit.LevelId;
+            LevelBuildKit.Florida = true;
+            try
+            {
+                for (int i = 0; i < HolidayStages.Count; i++)
+                {
+                    LevelBuildKit.LevelId = HolidayStages.All[i].levelId;
+                    if (!MiamiLeg)
+                    {
+                        Debug.LogError("[Kick Off] Florida's Holiday Run: the far land of " + LevelBuildKit.LevelId + " can't be built (" + MiamiDiagnosis() + ").");
+                        continue;
+                    }
+                    float lo = i == 0 ? HolidayStages.StartOf(i) - 2600f : HolidayStages.StartOf(i);
+                    float hi = i == HolidayStages.Count - 1 ? HolidayStages.EndOf(i) + 2600f : HolidayStages.EndOf(i);
+                    var window = MiamiWindow.Distance(HolidayStages.StartOf(i) - HolidayRunBuilder.FloridaPlanStart(i), lo, hi);
+                    Miami(null, root, lo, hi, window);
+                }
+            }
+            finally
+            {
+                LevelBuildKit.Florida = savedFlorida;
+                LevelBuildKit.LevelId = savedLeg;
+            }
         }
 
         /// <summary>
@@ -242,42 +320,47 @@ namespace DribbleToSchool.EditorTools
         /// <summary>
         /// A Florida leg's scenery from its plan, between x0 and x1: the water behind the seawall (and the seawall), the land the
         /// school stands on, then every model of the district at its place (on the ground there, or at the height the plan gives:
-        /// boats on the water, pelicans on their pilings).
+        /// boats on the water, pelicans on their pilings). <paramref name="win"/> says which part of the plan, and where (a story leg:
+        /// all of it, where the plan has it); <paramref name="track"/> is null in the core scene (no lane, no side streets: the ground
+        /// is at 0).
         /// </summary>
-        static void Miami(LevelBuildKit.TrackBuilder track, Transform root, float x0, float x1)
+        static void Miami(LevelBuildKit.TrackBuilder track, Transform root, float x0, float x1, MiamiWindow win)
         {
             var plan = MiamiPlan;
-            var group = new GameObject("Miami_" + MiamiStr(plan, "district", "district")).transform;
+            float shift = win.shift, lo = win.lo, hi = win.hi;
+            var group = new GameObject("Miami_" + MiamiStr(plan, "district", "district") + (win.near ? "" : "_Far")).transform;
             group.SetParent(root, false);
             object o;
             if (plan.TryGetValue("water", out o))
             {
                 var w = o as Dictionary<string, object>;
-                float a = Mathf.Max(MiamiNum(w, "from", x0), ClipLo), b = Mathf.Min(MiamiNum(w, "to", x1), ClipHi);
+                float a = Mathf.Max(MiamiNum(w, "from", x0 - shift) + shift, lo), b = Mathf.Min(MiamiNum(w, "to", x1 - shift) + shift, hi);
                 float z = MiamiNum(w, "z", 4.6f), y = MiamiNum(w, "y", -0.9f);
                 // (out to the horizon, or to a river's far bank: the plan's z1)
                 float z1 = Mathf.Max(MiamiNum(w, "z1", z + 1200f), z + 1f);
-                if (b > a)
+                float wz0 = z, wz1 = z1;
+                if (b > a && win.Band(ref wz0, ref wz1))
                 {
-                    var water = Solid(group, "Water", new Vector3((a + b) * 0.5f, y - 0.05f, (z + z1) * 0.5f), new Vector3(b - a, 0.1f, z1 - z), Color.white,
+                    var water = Solid(group, "Water", new Vector3((a + b) * 0.5f, y - 0.05f, (wz0 + wz1) * 0.5f), new Vector3(b - a, 0.1f, wz1 - wz0), Color.white,
                         Art.surfaces[ProceduralArt.Surface.Sea]);
                     water.faces = MeshBuilder.Faces.Top;
                     NoShadowCast(water);
                     water.Rebuild();
                     // The seawall: the promenade's edge, its concrete face down into the water.
-                    Solid(group, "Seawall", new Vector3((a + b) * 0.5f, (y - 0.4f) * 0.5f, z - 0.17f), new Vector3(b - a, -(y - 0.4f), 0.34f),
-                        new Color(0.82f, 0.81f, 0.78f), Art.surfaces[ProceduralArt.Surface.Concrete]);
+                    if (win.Takes(z))
+                        Solid(group, "Seawall", new Vector3((a + b) * 0.5f, (y - 0.4f) * 0.5f, z - 0.17f), new Vector3(b - a, -(y - 0.4f), 0.34f),
+                            new Color(0.82f, 0.81f, 0.78f), Art.surfaces[ProceduralArt.Surface.Concrete]);
                 }
             }
             // The side streets (a crossing's, a site's exit road): they run from the lane back to SideStreetDepth, and nothing of the
             // district may stand in them or cover them (v139: a coffee kiosk and a tower's podium stood across Biscayne
             // Boulevard's, and the school's lawn covered Bayfront's, docs/LEARNINGS.md E19).
-            var streets = new List<Vector2>(track.OpenAreas);
+            var streets = track != null ? new List<Vector2>(track.OpenAreas) : new List<Vector2>();
             if (plan.TryGetValue("water", out o))
             {
                 var w = o as Dictionary<string, object>;
                 foreach (var st in streets)
-                    if (st.y > MiamiNum(w, "from", x0) && st.x < MiamiNum(w, "to", x1))
+                    if (st.y > MiamiNum(w, "from", x0 - shift) + shift && st.x < MiamiNum(w, "to", x1 - shift) + shift)
                         Debug.LogError("[Kick Off] " + LevelBuildKit.LevelId + ": the side street at x " + st.x.ToString("F1") + " runs into the "
                             + "district's water: run tools/blender/miami_plan.py (it keeps side streets on land)");
             }
@@ -285,9 +368,9 @@ namespace DribbleToSchool.EditorTools
                 foreach (var item in (List<object>)o)
                 {
                     var l = item as Dictionary<string, object>;
-                    float a = Mathf.Max(MiamiNum(l, "from", x0), ClipLo), b = Mathf.Min(MiamiNum(l, "to", x1), ClipHi);
+                    float a = Mathf.Max(MiamiNum(l, "from", x0 - shift) + shift, lo), b = Mathf.Min(MiamiNum(l, "to", x1 - shift) + shift, hi);
                     float z0 = MiamiNum(l, "z0", 4.6f), z1 = MiamiNum(l, "z1", 120f);
-                    if (b <= a) continue;
+                    if (b <= a || !win.Band(ref z0, ref z1)) continue;
                     // A lawn, or concrete (the port's quay and yard, v140).
                     bool concrete = MiamiStr(l, "surface", "Grass") == "Concrete";
                     // The land in pieces round each side street (its asphalt shows), and on behind the street's end.
@@ -313,7 +396,22 @@ namespace DribbleToSchool.EditorTools
                     var bx = item as Dictionary<string, object>;
                     if (bx == null) continue;
                     Vector3 c = MiamiVec(bx, "c"), size = MiamiVec(bx, "s");
-                    if (c.x < ClipLo - 60f || c.x > ClipHi + 60f) continue;
+                    c.x += shift;
+                    if (!win.Takes(c.z)) continue;
+                    float rz = MiamiNum(bx, "rz", 0f);
+                    if (win.Cut)
+                    {
+                        // A Holiday Run's stretch: a level box is cut to it (the far shore's wall, a plaza across the seam), a turned
+                        // one belongs to the stretch its middle is in.
+                        if (rz != 0f) { if (c.x < lo || c.x >= hi) continue; }
+                        else
+                        {
+                            float l = Mathf.Max(c.x - size.x * 0.5f, lo), r = Mathf.Min(c.x + size.x * 0.5f, hi);
+                            if (r - l < 0.05f) continue;
+                            c.x = (l + r) * 0.5f;
+                            size.x = r - l;
+                        }
+                    }
                     if (ShapeInSideStreet(streets, c, size))
                     {
                         Debug.LogError("[Kick Off] " + LevelBuildKit.LevelId + ": the plan's " + MiamiStr(bx, "n", "shape") + " at x " + c.x.ToString("F1")
@@ -324,7 +422,6 @@ namespace DribbleToSchool.EditorTools
                     string surf = MiamiStr(bx, "surf", "");
                     var shape = Solid(port, MiamiStr(bx, "n", "Shape"), c, size, new Color(rgb.x, rgb.y, rgb.z),
                         surf == "Concrete" ? Art.surfaces[ProceduralArt.Surface.Concrete] : null);
-                    float rz = MiamiNum(bx, "rz", 0f);
                     if (rz != 0f) shape.transform.rotation = Quaternion.Euler(0f, 0f, rz);
                     shapes++;
                 }
@@ -334,8 +431,11 @@ namespace DribbleToSchool.EditorTools
                 {
                     var lb = item as Dictionary<string, object>;
                     if (lb == null) continue;
+                    Vector3 at = MiamiVec(lb, "c");
+                    at.x += shift;
+                    if (!win.Takes(at.z) || (win.Cut && (at.x < lo || at.x >= hi))) continue;
                     Vector3 rgb = MiamiVec(lb, "rgb");
-                    Lettering(group, MiamiStr(lb, "t", ""), MiamiVec(lb, "c"), MiamiNum(lb, "size", 0.1f), new Color(rgb.x, rgb.y, rgb.z));
+                    Lettering(group, MiamiStr(lb, "t", ""), at, MiamiNum(lb, "size", 0.1f), new Color(rgb.x, rgb.y, rgb.z));
                 }
             int placed = 0, skipped = 0;
             if (plan.TryGetValue("items", out o) && o is List<object>)
@@ -343,10 +443,11 @@ namespace DribbleToSchool.EditorTools
                 {
                     var it = item as List<object>;
                     if (it == null || it.Count < 6) continue;
-                    float x = (float)(double)it[2];
-                    if (x < x0 || x > x1 || x < ClipLo || x > ClipHi) continue;
+                    float x = (float)(double)it[2] + shift;
+                    if (x < x0 || x > x1 || x < lo || x > hi || (win.Cut && x >= hi)) continue;
                     float z = (float)(double)it[3], yaw = (float)(double)it[4], scale = (float)(double)it[5];
-                    float y = it.Count > 6 ? (float)(double)it[6] : GroundAt(track, x);
+                    if (!win.Takes(z)) continue;
+                    float y = it.Count > 6 ? (float)(double)it[6] : track != null ? GroundAt(track, x) : 0f;
                     if (InSideStreet(streets, (string)it[0], (string)it[1], x, z, scale, yaw)) { skipped++; continue; }
                     if (Model(group, (string)it[0], (string)it[1], x, y, z, yaw, scale) != null) placed++;
                 }
@@ -354,7 +455,7 @@ namespace DribbleToSchool.EditorTools
             if (skipped > 0)
                 Debug.LogWarning("[Kick Off] " + LevelBuildKit.LevelId + ": " + skipped + " of the district's models stood in a side street and were left out "
                     + "(run tools/blender/miami_plan.py: it keeps them out)");
-            if (placed == 0) Debug.LogWarning("[Kick Off] " + LevelBuildKit.LevelId + ": nothing of its district was placed (is the Miami kit imported?)");
+            if (placed == 0 && win.near) Debug.LogWarning("[Kick Off] " + LevelBuildKit.LevelId + ": nothing of its district was placed (is the Miami kit imported?)");
         }
 
         /// <summary>How far back a side street runs from the lane (StreetBuilder.CrossingStreet: to z 70), with a little beyond it.</summary>

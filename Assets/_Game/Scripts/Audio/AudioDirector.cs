@@ -97,7 +97,7 @@ namespace DribbleToSchool.Audio
 
         /// <summary>
         /// Whose music: in a level, the country of the streets on screen (the loaded scene's add-on); in the
-        /// menu, the add-on chosen in Settings. The Holiday Run is the original town.
+        /// menu, the add-on chosen in Settings. The Holiday Run is its lap's city (HolidayStages.Active).
         /// </summary>
         static MusicCountry WantedCountry()
         {
@@ -109,7 +109,7 @@ namespace DribbleToSchool.Audio
         {
             var level = LevelManager.Current;
             if (level == null) return Progression.Cities.Active.music;
-            if (level.endless) return MusicCountry.Japan;
+            if (level.endless) return HolidayStages.IsFlorida ? MusicCountry.Florida : MusicCountry.Japan;
             // A city's own level plays its music (Florida's legs); else the streets the scene is in.
             if (level.level != null && Progression.Cities.Of(level.level) != Progression.Cities.Kamakura) return Progression.Cities.Of(level.level).music;
             return Progression.Cities.OfScene(level.gameObject.scene.name).music;
@@ -204,6 +204,9 @@ namespace DribbleToSchool.Audio
                 if (run != null)
                 {
                     var stage = HolidayStages.All[Mathf.Clamp(run.StageIndex, 0, HolidayStages.Count - 1)];
+                    // (Florida's lap: each stage sounds as its leg does, v148.)
+                    var floridaStage = Soundscapes.ForFloridaLeg(stage.levelId);
+                    if (floridaStage != Soundscape.Menu) return floridaStage;
                     var stageRoute = RouteTable.Of(stage.levelId);
                     return Soundscapes.For(stageRoute != null ? stageRoute.id : null, stage.chapter);
                 }

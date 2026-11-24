@@ -65,7 +65,7 @@ namespace DribbleToSchool.Tests
         {
             var fl = Cities.Florida;
             Assert.IsTrue(fl.story);
-            Assert.IsFalse(fl.holidayRun, "the Holiday Run has no Florida stages yet");
+            Assert.IsTrue(fl.holidayRun, "Florida has its own Holiday Run (v148)");
             Assert.IsFalse(fl.needsEveryLevel, "Florida is open from the start, not after Kamakura's levels (v135)");
             Assert.IsTrue(fl.Unlocked && Cities.Kamakura.Unlocked, "both cities can be played from the start");
             Assert.AreEqual(MusicCountry.Florida, fl.music);
@@ -498,7 +498,7 @@ namespace DribbleToSchool.Tests
             {
                 "menu.holiday", "menu.holiday.best", "lose.crash", "hud.ready", "hud.go", "hud.jump", "hud.kick",
                 "pause.title", "pause.resume", "pause.settings",
-                "holiday.nearMiss", "holiday.smash", "holiday.multiplier", "holiday.shieldSaved", "holiday.revived", "holiday.dayDone",
+                "holiday.nearMiss", "holiday.smash", "holiday.multiplier", "holiday.revived", "holiday.dayDone",
             };
             foreach (PowerUpKind kind in System.Enum.GetValues(typeof(PowerUpKind)))
                 keys.Add("holiday.powerup." + kind.ToString().ToLowerInvariant());

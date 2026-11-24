@@ -63,6 +63,8 @@ namespace DribbleToSchool.Holiday
         public static HolidayRunDirector Current { get; private set; }
 
         [Header("Scene wiring (set by the editor's builder)")]
+        [Tooltip("The city whose lap this core scene runs (HolidayStages.Laps): its stages are the ones streamed.")]
+        public string lapCity = Progression.Cities.KamakuraId;
         public LevelManager level;
         public KidController kid;
         public BallController ball;
@@ -118,7 +120,6 @@ namespace DribbleToSchool.Holiday
         /// <summary>This run is already past the best score (so far).</summary>
         public bool NewBest { get { return Score > BestScore; } }
         public float MagnetLeft { get; private set; }
-        public float ShieldLeft { get; private set; }
         public float TurboLeft { get; private set; }
         public RunStats Stats { get { var s = stats; s.coins = Coins; s.distance = (int)Distance; s.score = Score; return s; } }
         public RunResult Result { get; private set; }
@@ -169,14 +170,13 @@ namespace DribbleToSchool.Holiday
         readonly Collider2D[] hits = new Collider2D[48];
         ContactFilter2D triggerFilter;
         float magnetScan;
-        SpriteRenderer shieldAura, turboAura, magnetAura;
+        SpriteRenderer turboAura, magnetAura;
 
         /// <summary>How long a power-up lasts, in seconds.</summary>
         public static float Duration(PowerUpKind kind)
         {
             switch (kind)
             {
-                case PowerUpKind.Shield: return 15f;
                 case PowerUpKind.Turbo: return 5.5f;
                 default: return 9f;
             }
@@ -185,6 +185,9 @@ namespace DribbleToSchool.Holiday
         void Awake()
         {
             Current = this;
+            // (The city picker chose it before the scene loaded; this is for a core scene opened by itself, and runs before any
+            // other of the run's components wakes: their order is after this one's.)
+            HolidayStages.Active = HolidayStages.LapOf(lapCity) ?? HolidayStages.Kamakura;
             triggerFilter = new ContactFilter2D();
             triggerFilter.useTriggers = true;
         }
@@ -266,7 +269,7 @@ namespace DribbleToSchool.Holiday
             Day = 1;
             StageIndex = 0;
             StageProgress = 0f;
-            MagnetLeft = ShieldLeft = TurboLeft = 0f;
+            MagnetLeft = TurboLeft = 0f;
             kid.RemoveSpeedModifier(this);
             BallsLeft = ballsPerRun;
             committed = false;
@@ -457,7 +460,6 @@ namespace DribbleToSchool.Holiday
         void UpdateTimers(float dt)
         {
             MagnetLeft = Mathf.Max(0f, MagnetLeft - dt);
-            ShieldLeft = Mathf.Max(0f, ShieldLeft - dt);
             TurboLeft = Mathf.Max(0f, TurboLeft - dt);
         }
 
@@ -564,7 +566,7 @@ namespace DribbleToSchool.Holiday
             solids.Remove(solid);
         }
 
-        /// <summary>A crate or target was smashed (by the ball, the shield or the turbo).</summary>
+        /// <summary>A crate or target was smashed (by the ball or the turbo).</summary>
         public void OnSmashed(RunBreakable crate, Vector2 point)
         {
             stats.smashes++;
@@ -581,7 +583,6 @@ namespace DribbleToSchool.Holiday
             switch (kind)
             {
                 case PowerUpKind.Magnet: MagnetLeft = seconds; break;
-                case PowerUpKind.Shield: ShieldLeft = seconds; break;
                 default: TurboLeft = seconds; break;
             }
             stats.powerUps++;
@@ -609,7 +610,7 @@ namespace DribbleToSchool.Holiday
 
         /// <summary>
         /// A ball was lost (the level manager is about to send the kid back to the last checkpoint, or end the run).
-        /// A shield pays for it; otherwise it is one ball fewer. The combo starts again.
+        /// It is one ball fewer (there is no shield since v148), and the combo starts again.
         /// </summary>
         void OnBallLost(string reason)
         {
@@ -617,12 +618,6 @@ namespace DribbleToSchool.Holiday
             streak = 0;
             // What happened, as in a level ("Into the hole!", "Splash!").
             if (Toast != null) Toast(Loc.T(reason), Late);
-            if (ShieldLeft > 0f)
-            {
-                ShieldLeft = 0f;
-                if (Toast != null) Toast(Loc.T("holiday.shieldSaved"), PowerUp.ColorOf(PowerUpKind.Shield));
-                return;
-            }
             if (ballsPerRun <= 0) return;
             BallsLeft = Mathf.Max(0, BallsLeft - 1);
             if (Toast != null && BallsLeft > 0)
@@ -730,7 +725,7 @@ namespace DribbleToSchool.Holiday
             }
         }
 
-        /// <summary>Spend coins to carry on: one more ball, back at the last checkpoint, with a moment of shield.</summary>
+        /// <summary>Spend coins to carry on: one more ball, back at the last checkpoint.</summary>
         public void Revive()
         {
             if ((Phase != RunPhase.Results && Phase != RunPhase.Crashed) || !CanRevive) return;
@@ -742,7 +737,6 @@ namespace DribbleToSchool.Holiday
 
             BallsLeft = 1;
             streak = 0;
-            ShieldLeft = Mathf.Max(ShieldLeft, 3f);
             level.ResumeAfterCrash();   // back at the last checkpoint with the ball, and playing again
             furthestX = Mathf.Max(furthestX, kid.transform.position.x);
             if (cameraFollow != null) cameraFollow.SnapToTarget();
@@ -827,15 +821,12 @@ namespace DribbleToSchool.Holiday
 
         // ================================================================ power-up auras
 
-        /// <summary>Soft glows round the kid while a shield, the turbo or the magnet is on.</summary>
+        /// <summary>Soft glows round the kid while the turbo or the magnet is on.</summary>
         void UpdateAuras()
         {
             bool live = Phase == RunPhase.Running || Phase == RunPhase.Paused;
             Vector3 centre = kid != null ? kid.transform.position + new Vector3(0f, 0.05f, -0.35f) : Vector3.zero;
 
-            // The shield blinks over its last three seconds.
-            float shield = live && ShieldLeft > 0f ? (ShieldLeft > 3f || Mathf.Repeat(Time.time * 6f, 1f) > 0.35f ? 1f : 0.25f) : 0f;
-            Aura(ref shieldAura, "ShieldAura", ProceduralSprites.SoftEdgeDisc, PowerUp.ColorOf(PowerUpKind.Shield), 2.5f, 0.5f * shield, centre, 0f);
             Aura(ref turboAura, "TurboAura", ProceduralSprites.SoftDisc, PowerUp.ColorOf(PowerUpKind.Turbo), 3.1f, live && TurboLeft > 0f ? 0.6f : 0f, centre + new Vector3(0f, 0f, 0.1f), 0.1f);
             float pulse = 1f + Mathf.Repeat(Time.time * 1.6f, 1f) * 0.5f;
             Aura(ref magnetAura, "MagnetAura", ProceduralSprites.Ring, PowerUp.ColorOf(PowerUpKind.Magnet), magnetRadius * 0.9f * pulse * 0.5f,

@@ -2694,6 +2694,56 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
   - compile with no warnings;
   - `unity_api_check` 6000.6 and 6000.7.
 
+## Florida's Holiday Run, and no shield (generated content v148)
+
+- **Why.** The user: "Build the holiday run level for Florida. Also remove the shield power. It's of no use in this game."
+- **Florida's lap** (`Holiday/HolidayStages.Florida`, `docs/HOLIDAY_RUN.md` "Florida's lap"):
+  - its nine legs end to end, FL1-1 to FL3-3, 120 m each, from the ranch house in Little Havana to Bayside Elementary's
+    gate; the density climbs from 0.3 to 1.0;
+  - each stage is in its leg's look chapter and Florida's climate, and the leg's own Miami district is moved along to the
+    stage (`StreetBuilder.MiamiWindow`, `HolidayRunBuilder.FloridaPlanStart`: the home where the first leg has it, the gate
+    at Museum Park's goal);
+  - the district's part beyond z 90 (land and water to the horizon, the far city, the far shore's wall, the skyline) is
+    in the core scene `HolidayRun_FL`, stage by stage (`StreetBuilder.MiamiFarLand`);
+  - no cross streets or crossings at the seams (they would cut the plan's buildings, E19), and none of Kamakura's own
+    furniture; the eight Miami barriers (`HolidayPatterns.FloridaSlides`), balloons as the floating targets.
+- **Choosing a lap:**
+  - `HolidayStages.Lap` holds Kamakura's 23 stages and Florida's 9; `Active` is the lap being played.
+  - The city picker after HOLIDAY RUN sets `Active` (`Cities.Florida.holidayRun` is now true). The core scene's director
+    sets it again as it wakes (`lapCity`). The builder builds both laps.
+  - The HUD makes its stage bar in `Start`, and sizes its numbers for `MaxCount`. It colours and announces by route in
+    Florida ("ROUTE 2", The River Way); `holiday.routeN` is new, in English and Spanish.
+  - The atmosphere puts Florida's climate on the moods. The soundscape is each leg's (`Soundscapes.ForFloridaLeg`), and
+    the music is Florida's.
+  - Bests, missions and coins are shared between the laps.
+- **The shield is gone:**
+  - `PowerUpKind` is Magnet and Turbo (the value 1 is retired);
+  - no free ball, no aura, no "moment of shield" after a revive, no shield icon or strings;
+  - the stages' power-ups alternate magnet and turbo (a gap ahead no longer asks for a shield).
+- **Scenes:** `HolidayRun_FL.unity` and `HolidayRun_FL_S01..S09.unity`, in the build settings after Kamakura's.
+  `GeneratedContent.Version` 148 rebuilds everything on the next open.
+- **Tests:**
+  - `FloridaHolidayRunTests` checks:
+    - a lap for each city with a run;
+    - the legs in route order, in their looks;
+    - the lap's own scenes, with both laps built;
+    - none of Kamakura's furniture, and the school at the end;
+    - every layout fair, and Miami barriers only;
+    - the home and the gate where the legs have them;
+    - the near and far split.
+  - `GameLogicTests`: Florida has its Holiday Run.
+- **Cost** (estimated against `docs/PERFORMANCE.md`; not measured, and not yet run on the reference phone):
+  - A Florida stage draws less of its district than a leg does: 120 m of the near part instead of the whole leg.
+  - The core's far land is about 900 flat boxes and about 90 skyline models, static-batched: about what one Florida leg
+    draws beyond z 90.
+  - Ten more scenes to build and ship.
+  - The planner (run outside Unity) lays out all nine stages with no rule broken; FL3-2 is the busiest (relaxed to 0.4).
+- **Checked:**
+  - compile (no new errors);
+  - `unity_api_check` 6000.6 and 6000.7;
+  - the patterns harness, on both laps, with 0 problems;
+  - `tools/audio_hash` unchanged.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

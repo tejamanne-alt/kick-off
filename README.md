@@ -152,12 +152,12 @@ Holiday Run uses exactly these controls.
 
 ## Holiday Run
 
-The campaign with no destination, from the title screen: the same controls, the same ball and the same hazards, along one long street made of all 23 story levels end to end (Home Street, the Market, the Beach, the Underpass and building site, then the Park and the school gate). Nothing runs by itself and there is no bell and no finish: you dribble, jump, slide and kick on. Reaching the school gate ends the day and the street starts again at home. Along the way:
+The campaign with no destination, from the title screen: the same controls, the same ball and the same hazards, along one long street made of all 23 story levels end to end (Home Street, the Market, the Beach, the Underpass and building site, then the Park and the school gate). Nothing runs by itself and there is no bell and no finish: you dribble, jump, slide and kick on. Reaching the school gate ends the day and the street starts again at home. Each city has its own run: after HOLIDAY RUN, pick Kamakura (its 23 levels) or Florida (its nine legs, from Little Havana to Bayside Elementary, each stage in its leg's Miami district). Along the way:
 
 - Obstacles use the same kit models and hazards as the story levels, in three random layouts per stage, so no two days play the same. Light, haze and music change gradually from one chapter to the next.
 - You have three balls: losing one sends you back to the stage's checkpoint, as in a level, and the last one ends the run.
 - Score is new ground, coins and a multiplier that climbs with every obstacle passed in a row; close shaves score bonuses, and a hard kick smashes crates and sandcastles for coins.
-- Magnet, Shield and Turbo power-ups; three missions at a time that pay coins; spend coins to revive with one more ball (the coins of a run are banked when it ends).
+- Magnet and Turbo power-ups; three missions at a time that pay coins; spend coins to revive with one more ball (the coins of a run are banked when it ends).
 - Stages stream in as additive scenes, so only about three exist at a time however long the run.
 
 Design, scoring, tuning knobs, the streaming contract and a first-run checklist are in [`docs/HOLIDAY_RUN.md`](docs/HOLIDAY_RUN.md).

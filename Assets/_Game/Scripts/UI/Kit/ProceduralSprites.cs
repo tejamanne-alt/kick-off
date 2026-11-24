@@ -8,7 +8,7 @@ namespace DribbleToSchool.UI.Kit
         static Sprite rounded, roundedSmall, circle, star, coin, lockIcon, gradient, arrow, pause, ring, softDisc, softEdgeDisc, ballIcon;
         static Sprite trophy, medal, medalRibbon;
         static Sprite roundedRim;
-        static Sprite roundedEdge, roundedEdgeSmall, circleEdge, check, pitchBadge, holoSheen, goldSheen, stickerIcon, streak, bolt, shield, magnet;
+        static Sprite roundedEdge, roundedEdgeSmall, circleEdge, check, pitchBadge, holoSheen, goldSheen, stickerIcon, streak, bolt, magnet;
         static Sprite jumpIcon, spotHole, thinRing, clock, play, retry;
 
         /// <summary>A lightning bolt (the turbo power-up).</summary>
@@ -23,24 +23,6 @@ namespace DribbleToSchool.UI.Kit
                     new Vector2(-0.2f, -0.95f), new Vector2(0.52f, 0.14f), new Vector2(0.06f, 0.14f),
                 };
                 return bolt = MakeShape(96, (u, v) => InPolygon(u, v, pts) ? 1f : 0f);
-            }
-        }
-
-        /// <summary>A heater shield with a bold chevron cut out of it (the shield power-up).</summary>
-        public static Sprite Shield
-        {
-            get
-            {
-                return shield != null ? shield : (shield = MakeShape(96, (u, v) =>
-                {
-                    if (v > 0.88f || v < -0.95f) return 0f;
-                    // Flat top, straight sides to the middle, then curving in to a point at the bottom.
-                    float half = v >= 0f ? 0.72f : 0.72f * Mathf.Cos(Mathf.Clamp01(-v / 0.95f) * Mathf.PI * 0.5f);
-                    if (Mathf.Abs(u) > half) return 0f;
-                    // A chevron cut out of it: two slanted bars meeting on the middle line.
-                    bool cut = Mathf.Abs(v - (0.1f - Mathf.Abs(u) * 0.85f)) < 0.09f && Mathf.Abs(u) < 0.48f;
-                    return cut ? 0f : 1f;
-                }));
             }
         }
 

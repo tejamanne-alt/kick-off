@@ -872,6 +872,25 @@ fixes (D12), the user asked for both to go: "Remove the Sketch and Cartoon filte
     its far plane, not just the strip by the lane. A thing that stands must have ground under it, and a far shore must
     rise far enough to be seen.
 
+- **E22. A Holiday Run for a second city (v148, "Build the holiday run level for Florida").** The run had been written
+  for one lap: its table was a constant 23 stages, its scene names fixed, and the HUD sized its stage bar and numbers
+  from the count as its fields were made. A Florida leg's district is also longer than a stage (its plan runs from x -70
+  to 170, out to 2,400 m deep), and the stage builder ends every block on a cross street. Three things would have gone
+  wrong:
+  - A second lap chosen after the HUD was made would have kept Kamakura's 23 segments, so the HUD now makes them in
+    `Start`.
+  - Cross streets at a stage's seams would have cut through the plan's buildings (the side-street check fails the build
+    on that, E19), so Florida's stages have none and no crossings.
+  - A stage that built its whole district would have drawn the horizon as a 120 m wedge that comes and goes with the
+    stage.
+  - *Fix:* `HolidayStages.Lap` (Kamakura's and Florida's), chosen in the city picker and set again by the core's director
+    as it wakes. Every table is sized for `MaxCount` or made once the lap is chosen. `StreetBuilder.MiamiWindow` moves a
+    leg's plan along to its stage, cuts it to the stage's stretch, and splits it at z 90: the near part goes in the
+    stage, the far part in the core scene, so the distance is always there.
+  - *Rule:* nothing in the run may assume Kamakura's lap. Size from `HolidayStages.MaxCount` or after the director's
+    `Awake`. Anything a stage builds beyond z 90 belongs in the core scene, because the camera sees far wider than a
+    stage at depth.
+
 ## F. UI and menus
 
 - **F1. The anchor and pivot trap** caused overlaps in the credits, results, guides and pause menu. *Rule:* lay screens out top down by explicit edges; check 4:3, 16:9 and 21:9 in both languages.
@@ -1038,6 +1057,10 @@ Never re-propose what is rejected here.
 - **Filters:** easy to reach: on the title screen and in every pause menu. Only the original look and the comic
   halftone (v141): the pencil sketch and the classic cartoon were removed at the user's request (D13). Don't bring them back.
 - **Store art:** use the user's own artwork for the app icon.
+- **No shield power-up (v148):** "It's of no use in this game." The Holiday Run's power-ups are the magnet and the
+  turbo, and a revive has no moment of shield. Don't bring it back, or another "free ball" pickup in its place.
+- **Each city its own Holiday Run (v148):** Florida's runs its own nine legs in their Miami districts, not Kamakura's
+  streets in Florida's light.
 
 ## How to add an entry
 

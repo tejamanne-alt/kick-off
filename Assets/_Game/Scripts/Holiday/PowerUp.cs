@@ -4,11 +4,14 @@ using UnityEngine;
 
 namespace DribbleToSchool.Holiday
 {
-    /// <summary>The three pickups of a Holiday Run.</summary>
-    public enum PowerUpKind { Magnet, Shield, Turbo }
+    /// <summary>
+    /// The pickups of a Holiday Run: the magnet and the turbo. (The shield, 1, was removed in v148 at the user's word: "of no use
+    /// in this game". The others keep their numbers, which the stage scenes store.)
+    /// </summary>
+    public enum PowerUpKind { Magnet = 0, Turbo = 2 }
 
     /// <summary>
-    /// A magnet, shield or turbo floating in the path: a glass orb with its icon, bobbing. The kid
+    /// A magnet or a turbo floating in the path: a glass orb with its icon, bobbing. The kid
     /// (or the ball) running into it takes it.
     /// </summary>
     [RequireComponent(typeof(Collider2D))]
@@ -20,7 +23,6 @@ namespace DribbleToSchool.Holiday
         {
             switch (kind)
             {
-                case PowerUpKind.Shield: return new Color(0.3f, 0.75f, 1f);
                 case PowerUpKind.Turbo: return new Color(1f, 0.62f, 0.15f);
                 default: return new Color(0.95f, 0.3f, 0.45f);
             }
@@ -30,7 +32,6 @@ namespace DribbleToSchool.Holiday
         {
             switch (kind)
             {
-                case PowerUpKind.Shield: return ProceduralSprites.Shield;
                 case PowerUpKind.Turbo: return ProceduralSprites.Bolt;
                 default: return ProceduralSprites.Magnet;
             }

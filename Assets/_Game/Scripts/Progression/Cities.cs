@@ -201,7 +201,8 @@ namespace DribbleToSchool.Progression
         public static readonly City Kamakura = new City(KamakuraId, "", true, true, Audio.MusicCountry.Japan, false, null,
             CityClimate.Reference, new Color(0.84f, 0.27f, 0.22f));
         // A hot, humid late-summer morning: a warm 5,000 K sun, teal shade, a milky horizon.
-        public static readonly City Florida = new City(FloridaId, FloridaSuffix, true, false, Audio.MusicCountry.Florida, false, FloridaChapters,
+        // (Its Holiday Run, from v148: its nine legs as one lap, Holiday/HolidayStages.Florida.)
+        public static readonly City Florida = new City(FloridaId, FloridaSuffix, true, true, Audio.MusicCountry.Florida, false, FloridaChapters,
             new CityClimate(5000f, 8500f, 0.6f, new Color(-0.004f, 0.002f, 0.006f)), new Color(0.13f, 0.7f, 0.68f));
         /// <summary>In the order the picker lists them: Florida first, then Kamakura (v135).</summary>
         public static readonly City[] All = { Florida, Kamakura };

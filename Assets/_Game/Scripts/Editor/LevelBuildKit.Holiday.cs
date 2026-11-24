@@ -445,7 +445,7 @@ namespace DribbleToSchool.EditorTools
                 }
             }
 
-            /// <summary>A magnet, shield or turbo floating in the path (a glass orb that builds its own look when the stage loads).</summary>
+            /// <summary>A magnet or a turbo floating in the path (a glass orb that builds its own look when the stage loads).</summary>
             public GameObject RunPowerUp(float x, float y, PowerUpKind kind)
             {
                 var go = new GameObject("PowerUp_" + kind);
@@ -474,7 +474,7 @@ namespace DribbleToSchool.EditorTools
             EnsureFolder(Path.GetDirectoryName(scenePath).Replace('\\', '/'));
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             Chapter = 1;
-            Theme = ChapterTheme.For(1);
+            Theme = ThemeFor(1);   // (Florida's climate in Florida's lap: LevelBuildKit.Florida is set while it is built)
 
             var camGo = new GameObject("Main Camera");
             camGo.tag = "MainCamera";
@@ -618,7 +618,8 @@ namespace DribbleToSchool.EditorTools
             skyBounds.SetBounds(HolidayStages.FirstStageX, HolidayStages.FirstStageX + HolidayStages.LapLength, 0f);
             BuildSky(skyBounds, cam);
             var far = new GameObject("FarLand");
-            StreetBuilder.FarLand(far.transform);
+            if (HolidayStages.IsFlorida) StreetBuilder.MiamiFarLand(far.transform);
+            else StreetBuilder.FarLand(far.transform);
             far.AddComponent<StaticBatcher>();
 
             var fxGo = new GameObject("FX");
@@ -660,6 +661,7 @@ namespace DribbleToSchool.EditorTools
             atmosphere.look = look;
             atmosphere.follow = kidGo.transform;
             var director = new GameObject("HolidayRunDirector").AddComponent<HolidayRunDirector>();
+            director.lapCity = HolidayStages.Active.cityId;
             director.level = manager;
             director.kid = kid;
             director.ball = ball;

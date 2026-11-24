@@ -24,7 +24,13 @@ namespace DribbleToSchool.Holiday
 
         void Awake()
         {
-            for (int chapter = 1; chapter <= 5; chapter++) moods[chapter] = ChapterTheme.For(chapter).mood;
+            // (Florida's lap in Florida's climate, as its legs are built: Progression/Cities, CityClimate. The director, which
+            // chooses the lap, wakes first.)
+            for (int chapter = 1; chapter <= 5; chapter++)
+            {
+                var mood = ChapterTheme.For(chapter).mood;
+                moods[chapter] = HolidayStages.IsFlorida ? Progression.Cities.Florida.climate.Apply(mood) : mood;
+            }
         }
 
         void Start()

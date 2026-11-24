@@ -18,6 +18,8 @@ story world laid end to end, and nothing ends the run until your balls do.
   street scenery and animals as the story level, with the traits that level introduced: gaps in the
   boardwalk, awnings to slide under, soft sand, gulls, the tide. Crossing from one chapter to the next the
   light, the haze and the music change gradually (the same moods the story chapters use).
+- **Each city has its own lap (v148).** After HOLIDAY RUN the city picker chooses whose streets you run: Kamakura's 23 stages
+  (below), or **Florida's**, its nine legs end to end (see "Florida's lap").
 
 ## Controls
 
@@ -46,7 +48,7 @@ Ready (GET READY ... GO!) -> Running -> last ball lost -> Results -> Revive (coi
   point reached, 40 m behind (`walkBackLimit`), and never ahead of the checkpoint a lost ball goes back to, so the
   kid can't be put down behind it. The ball passes through it.
 - **Revive.** Spend coins (40, then 80, then 120; at most three times a run) to carry on with one more ball
-  from the last checkpoint, with a moment of shield. The coins you collected in the run count: they are banked
+  from the last checkpoint. The coins you collected in the run count: they are banked
   as soon as the run ends.
 - **Day done.** Reaching the school gate pays 40 coins and 500 points times the day number, plays a fade,
   and the street starts again at the front door. The combo is kept half.
@@ -64,12 +66,12 @@ Ready (GET READY ... GO!) -> Running -> last ball lost -> Results -> Revive (coi
 
 ### Power-ups
 
-Found along the street in glowing bubbles. Each is a different colour and has a timer ring on the screen.
+Found along the street in glowing bubbles. Each is a different colour and has a timer ring on the screen. (The shield, which
+made the next lost ball free, was removed in v148: it did nothing a player noticed.)
 
 | Power-up | Lasts | Does |
 |---|---|---|
 | Magnet (pink) | 9 s | Pulls every coin within 6 m to the kid |
-| Shield (blue) | 15 s | The next ball you lose is free (it still goes back to the checkpoint) |
 | Turbo (orange) | 5.5 s | The kid walks 35% faster and the distance points count double |
 
 ### Missions
@@ -110,6 +112,44 @@ Every stage also has, whatever its traits: something to smash (crates, a sandcas
 a pile of crates), people strolling and dogs, floating targets (balloons, paper lanterns, beach balls) that burst into coins when
 the ball flies into them, a trail of coins, and a middle checkpoint. The beach has more gulls than the story's.
 
+### Florida's lap
+
+Florida's Holiday Run (v148, `HolidayStages.Florida`) is its three routes' nine legs end to end, in route order: Little Havana
+Morning, Brickell Avenue, Bayfront to School (FL1 Calle Ocho Bus), Riverside Street, the Riverwalk, Downpour to School (FL2 The River
+Way), the Underline, Biscayne Boulevard, Museum Park to School (FL3 Under the Line), 120 m each, from the ranch house in Little Havana
+to Bayside Elementary's gate. Its density climbs from 0.3 to 1.0.
+
+- **Each stage is 120 m of its leg's own street**: its Miami district (`StreetBuilder.Miami`, from the leg's plan in
+  `Art/Models/Miami/MiamiDistricts.json`) moved along to the stage (`StreetBuilder.MiamiWindow`): from 8 m before the leg's street
+  begins, on the first stage so the house stands where the leg has it (the kid starts at its gate), on the last so the school gate
+  stands at Museum Park's goal (`HolidayRunBuilder.FloridaPlanStart`). Florida's ground strips, the Miami kit's barriers, crates,
+  bollards, pits and checkpoints, Miami's walkers, Florida's climate on each leg's look chapter.
+- **Near and far**: a stage builds its district in front of z 90 (the back strips' end, where Kamakura's far land begins too); the
+  rest (the land and water to the horizon, the far city's blocks and plazas, the far shore's wall, the skyline's towers) is built,
+  stage by stage, into the core scene `HolidayRun_FL` (`StreetBuilder.MiamiFarLand`), so the distance stays while stages stream in
+  and out. The first and last stages' far parts run on 2.6 km past the lap's ends.
+- **None of Kamakura's own furniture**: no tide, soft sand, gulls, tunnel, cranes, swings or pond, no parked cars, and no crossings or
+  block-end cross streets (a district's side streets are where its plan has them, and its buildings stand across the stages' seams).
+  The barriers are the eight with Miami models (`HolidayPatterns.FloridaSlides`), the floating targets balloons.
+- **The HUD** colours and announces by route ("ROUTE 2", The River Way), not by look chapter, which changes from leg to leg. The
+  soundscape is each leg's (`Soundscapes.ForFloridaLeg`), the music Florida's.
+- The scenes are `HolidayRun_FL.unity` and `HolidayRun_FL_S01..S09.unity`. The bests, missions and coins are shared with Kamakura's
+  lap.
+
+| Stage | Leg | Look | Traits |
+|---|---|---|---|
+| 1 | FL1-1 Little Havana Morning | 1 | steps, crates |
+| 2 | FL1-2 Brickell Avenue | 4 | crates, barriers, pedestrians |
+| 3 | FL1-3 Bayfront to School | 5 | crates, barriers, springboards, dogs |
+| 4 | FL2-1 Riverside Street | 1 | puddles, gaps, crates |
+| 5 | FL2-2 The Riverwalk | 5 | gaps, barriers, dogs |
+| 6 | FL2-3 Downpour to School | 2 | barriers, crates, pedestrians, puddles |
+| 7 | FL3-1 The Underline | 1 | steps, crates, pedestrians, springboards |
+| 8 | FL3-2 Biscayne Boulevard | 4 | crates, barriers, gaps, puddles |
+| 9 | FL3-3 Museum Park to School | 5 | the school, crates, barriers, dogs |
+
+### The stage table
+
 The table with every stage's traits and difficulty (`density`, from 0.28 in the first stage to 1.0 at the
 school) is `Holiday/HolidayStages.cs`. The first 22 m of a day, the first 14 m of every stage and the last 8 m have
 no obstacles, street life or targets in them (only the trail of coins, and the first checkpoint 8 m in): time to get going, and to
@@ -126,7 +166,7 @@ Scripts/Holiday/
                           limits for gaps and walls that follow from it; pure arithmetic, no Unity objects
   RunSolid.cs, RunBreakable.cs   obstacles the director counts (passed, close shave); a smashable crate; or (floating)
                           a balloon, lantern or beach ball that is no obstacle and bursts when the ball flies into it
-  PowerUp.cs              the magnet, shield and turbo pickups
+  PowerUp.cs              the magnet and turbo pickups
   RunWorldStreamer.cs     loads the stages near the kid as additive scenes, wakes them one a frame, unloads
                           what is behind
   HolidayRunDirector.cs   the rules: balls, score, combo, power-ups, revive, days, saving
@@ -198,10 +238,10 @@ overwritten. Change the stage table, the patterns or the rig and rebuild:
 
 - **Kick Off > Rebuild All Levels** also rebuilds the Holiday Run (it is part of the generated content;
   `GeneratedContent.Version` is 52 for it), and it runs by itself on the first open.
-- **Kick Off > Rebuild Holiday Run** rebuilds only the Holiday Run (its core scene and 23 stages) and swaps its
+- **Kick Off > Rebuild Holiday Run** rebuilds only the Holiday Run (both laps: each its core scene and stages) and swaps its
   entries in the build settings, leaving the levels and the menu alone.
-- The scenes are `Assets/_Game/Scenes/Holiday/HolidayRun.unity` (the core) and `HolidayRun_S01..S23.unity`, all in
-  the build settings after the story levels. If a build lacks them, the title button logs an error and stays on
+- The scenes are `Assets/_Game/Scenes/Holiday/HolidayRun.unity` (Kamakura's core) and `HolidayRun_S01..S23.unity`, then
+  `HolidayRun_FL.unity` and `HolidayRun_FL_S01..S09.unity` (Florida's), all in the build settings after the story levels. If a build lacks them, the title button logs an error and stays on
   the menu.
 - The first open builds 24 more scenes than before; expect a few extra minutes (not measured).
 
@@ -265,8 +305,8 @@ a gap over its limit, a wall too high, too little run-up or landing, or street l
   at the top (nothing else is in the way). A broken crate pays 3 coins, a pile 6, a balloon 5. About 70 coins a stage (the old
   stages had 29), so the **Collect coins** mission was raised to 70 / 180 / 400.
 - **Power-ups**: every layout of every second stage (the first, the third...) has one, so there is one in any two consecutive
-  stages whichever layouts load; the others have one about one time in two. A shield when a gap is coming within 30 m, else a magnet
-  or a turbo, 1.0 to 1.6 m up, 3 m from any obstacle.
+  stages whichever layouts load; the others have one about one time in two. A magnet or a turbo, by turns, 1.0 to 1.6 m up, 3 m from
+  any obstacle.
 - **A checkpoint in the middle**: besides the one 8 m in, a flag near the middle of the open ground (with 4 m clear before it
   and 6 m after: the kid is put down there with the ball a metre ahead), so a lost ball costs half a stage of walking, not a whole
   one. A stage too full to spare the ground goes without (Tunnel Run).

@@ -13,8 +13,11 @@ using TrackBuilder = DribbleToSchool.EditorTools.LevelBuildKit.TrackBuilder;
 namespace DribbleToSchool.EditorTools
 {
     /// <summary>
-    /// Builds the Holiday Run's scenes: the 23 stages (one scene each, at its final place along the lap) and
-    /// the core scene they are loaded into (LevelBuildKit.BuildHolidayCore).
+    /// Builds the Holiday Run's scenes, for each city's lap (HolidayStages.Laps: Kamakura's 23 stages, Florida's 9): its stages (one
+    /// scene each, at its final place along the lap) and the core scene they are loaded into (LevelBuildKit.BuildHolidayCore).
+    /// A Florida stage is built as its leg is, in Florida's streets and climate (LevelBuildKit.Florida, LevelId): its own Miami
+    /// district, from the leg's plan moved along to the stage (StreetBuilder.MiamiWindow), the Miami kit's barriers, crates and
+    /// checkpoints; the district's distant ground, water and skyline go in the core scene (StreetBuilder.MiamiFarLand).
     ///
     /// A stage scene has exactly one root object, <c>Stage</c>, with a <see cref="RunChunk"/>, inactive in the
     /// file (the world streamer prepares it and switches it on). Under it: the ground and its gaps, the 3D
@@ -26,15 +29,37 @@ namespace DribbleToSchool.EditorTools
     {
         public const string Dir = LevelBuildKit.Root + "/Scenes/Holiday";
 
+        /// <summary>The active lap's core scene, and one of its stages.</summary>
         public static string CorePath { get { return Dir + "/" + HolidayStages.CoreSceneName + ".unity"; } }
         public static string StagePath(int stage) { return Dir + "/" + HolidayStages.SceneName(stage) + ".unity"; }
 
-        /// <summary>The core scene, then the stages in order: the order they go into the build settings.</summary>
+        /// <summary>For each lap, its core scene, then its stages in order: the order they go into the build settings.</summary>
         public static List<string> ScenePaths()
         {
-            var paths = new List<string> { CorePath };
-            for (int i = 0; i < HolidayStages.Count; i++) paths.Add(StagePath(i));
+            var paths = new List<string>();
+            ForEachLap(lap =>
+            {
+                paths.Add(CorePath);
+                for (int i = 0; i < HolidayStages.Count; i++) paths.Add(StagePath(i));
+            });
             return paths;
+        }
+
+        /// <summary>Runs <paramref name="step"/> with each lap active in turn (Kamakura's lap is active again afterwards).</summary>
+        static void ForEachLap(Action<HolidayStages.Lap> step)
+        {
+            try
+            {
+                foreach (var lap in HolidayStages.Laps)
+                {
+                    HolidayStages.Active = lap;
+                    step(lap);
+                }
+            }
+            finally
+            {
+                HolidayStages.Active = HolidayStages.Kamakura;
+            }
         }
 
         public static bool AllScenesExist()
@@ -45,7 +70,7 @@ namespace DribbleToSchool.EditorTools
         }
 
         /// <summary>
-        /// Builds the 23 stages and the core scene and returns their paths in build order. The shared assets must
+        /// Builds every lap's stages and core scene and returns their paths in build order. The shared assets must
         /// be loaded (LevelBuildKit.LoadShared). A stage that fails to build is logged and skipped, so one bad
         /// stage doesn't cost the rest.
         /// </summary>
@@ -54,22 +79,28 @@ namespace DribbleToSchool.EditorTools
             LevelBuildKit.EnsureFolder(Dir);
             try
             {
-                for (int i = 0; i < HolidayStages.Count; i++)
+                ForEachLap(lap =>
                 {
-                    EditorUtility.DisplayProgressBar("Kick Off: Holiday Run", "Stage " + (i + 1) + " of " + HolidayStages.Count + " (" + HolidayStages.All[i].levelId + ")", i / (float)(HolidayStages.Count + 1));
-                    try
+                    string city = lap.florida ? "Florida" : "Kamakura";
+                    for (int i = 0; i < HolidayStages.Count; i++)
                     {
-                        BuildStage(i);
+                        EditorUtility.DisplayProgressBar("Kick Off: Holiday Run (" + city + ")", "Stage " + (i + 1) + " of " + HolidayStages.Count + " (" + HolidayStages.All[i].levelId + ")", i / (float)(HolidayStages.Count + 1));
+                        try
+                        {
+                            BuildStage(i);
+                        }
+                        catch (Exception e)
+                        {
+                            Debug.LogError("[Kick Off] Couldn't build " + city + "'s Holiday Run stage " + (i + 1) + ": " + e);
+                        }
                     }
-                    catch (Exception e)
-                    {
-                        Debug.LogError("[Kick Off] Couldn't build Holiday Run stage " + (i + 1) + ": " + e);
-                    }
-                }
-                EditorUtility.DisplayProgressBar("Kick Off: Holiday Run", "The core scene", HolidayStages.Count / (float)(HolidayStages.Count + 1));
-                // Building the stages may have unloaded assets nothing references: load them again.
-                LevelBuildKit.Cosmetics = cosmetics();
-                LevelBuildKit.BuildHolidayCore(CorePath, catalog());
+                    EditorUtility.DisplayProgressBar("Kick Off: Holiday Run (" + city + ")", "The core scene", HolidayStages.Count / (float)(HolidayStages.Count + 1));
+                    // Building the stages may have unloaded assets nothing references: load them again.
+                    LevelBuildKit.Cosmetics = cosmetics();
+                    LevelBuildKit.Florida = lap.florida;
+                    try { LevelBuildKit.BuildHolidayCore(CorePath, catalog()); }
+                    finally { LevelBuildKit.Florida = false; LevelBuildKit.LevelId = null; }
+                });
             }
             finally
             {
@@ -110,10 +141,20 @@ namespace DribbleToSchool.EditorTools
 
         // ---------------------------------------------------------------- one stage
 
-        /// <summary>Builds and saves the scene of one stage (0 to 22).</summary>
+        /// <summary>Builds and saves the scene of one stage of the active lap (Kamakura's 0 to 22, Florida's 0 to 8).</summary>
         public static void BuildStage(int i)
         {
+            // A Florida stage is built in its leg's streets and light, as the leg is (GeneratedContent's build of the levels).
+            LevelBuildKit.Florida = HolidayStages.IsFlorida;
+            LevelBuildKit.LevelId = HolidayStages.IsFlorida ? HolidayStages.All[i].levelId : null;
+            try { BuildStageScene(i); }
+            finally { LevelBuildKit.Florida = false; LevelBuildKit.LevelId = null; }
+        }
+
+        static void BuildStageScene(int i)
+        {
             var st = HolidayStages.All[i];
+            bool florida = HolidayStages.IsFlorida;
             var plan = HolidayPatterns.Plan(i);
             for (int v = 0; v < HolidayPatterns.Variants; v++)
                 foreach (string problem in HolidayPatterns.Validate(plan, v))
@@ -124,10 +165,11 @@ namespace DribbleToSchool.EditorTools
             int prevChapter = first ? 0 : HolidayStages.All[i - 1].chapter;
             int nextChapter = last ? 0 : HolidayStages.All[i + 1].chapter;
             bool urban = st.chapter != 3;
+            string where = (florida ? "Florida's " : "") + "Holiday Run stage " + (i + 1) + " (" + st.levelId + ")";
 
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             LevelBuildKit.Chapter = st.chapter;
-            LevelBuildKit.Theme = ChapterTheme.For(st.chapter);
+            LevelBuildKit.Theme = LevelBuildKit.ThemeFor(st.chapter);   // (with Florida's climate in a Florida stage)
 
             var stage = new GameObject("Stage");
             var chunk = stage.AddComponent<RunChunk>();
@@ -136,17 +178,18 @@ namespace DribbleToSchool.EditorTools
             chunk.endX = to;
 
             var t = new TrackBuilder(stage.transform);
-            t.AuditName = "Holiday Run stage " + (i + 1) + " (" + st.levelId + ")";
+            t.AuditName = where;
             t.Coaching.Enabled = false;   // the run has its own first-run tips, not the levels' coach
             // The slabs and sand cover exactly the stage's stretch, padded only at the ends of the world.
             t.SetChunk(first ? from - 70f : from, last ? to + 70f : to,
                 !first && prevChapter != st.chapter, !last && nextChapter != st.chapter);
 
             // Every urban stage ends on a cross street, like a real block; the first after the beach starts on one.
-            // The previous stage's street is only kept clear (its far end is built by that stage).
+            // The previous stage's street is only kept clear (its far end is built by that stage). Not in Florida: a Miami
+            // district's side streets are where its plan has them, and its buildings stand in the stage's seams.
             float firstLotX = from;
             float endStreetFrom = to;
-            Attempt(i, "the streets", () =>
+            if (!florida) Attempt(i, "the streets", () =>
             {
                 if (urban && !last)
                 {
@@ -217,13 +260,21 @@ namespace DribbleToSchool.EditorTools
                 clipLo = prevChapter == 3 ? from : float.NegativeInfinity,
                 clipHi = nextChapter == 3 ? to : float.PositiveInfinity,
             };
+            if (florida)
+            {
+                // The district keeps to its stage's own stretch (the world's ends padded), and its near part only: the far
+                // ground, water and skyline are the core scene's.
+                spec.clipLo = first ? from - 70f : from;
+                spec.clipHi = last ? to + 70f : to;
+                spec.miami = StreetBuilder.MiamiWindow.Stage(from - FloridaPlanStart(i), spec.clipLo, spec.clipHi);
+            }
             try
             {
                 StreetBuilder.StageScenery(t, street.transform, spec);
             }
             catch (Exception e)
             {
-                Debug.LogError("[Kick Off] Holiday Run stage " + (i + 1) + ": the scenery failed: " + e);
+                Debug.LogError("[Kick Off] " + where + ": the scenery failed: " + e);
             }
             street.AddComponent<StaticBatcher>();
             // The animals live outside the street's static batch; they belong to the stage too.
@@ -237,7 +288,7 @@ namespace DribbleToSchool.EditorTools
                 layout.transform.SetParent(stage.transform, false);
                 var layoutBuilder = new TrackBuilder(layout.transform);
                 layoutBuilder.Coaching.Enabled = false;
-                layoutBuilder.AuditName = "Holiday Run stage " + (i + 1) + " (" + st.levelId + ") layout " + (char)('A' + v);
+                layoutBuilder.AuditName = where + " layout " + (char)('A' + v);
                 BuildLayout(layoutBuilder, plan.layouts[v], i);
                 // The layout's walls, barriers and trampolines against what the kid can do (the stage's own builder checked its ground and gaps).
                 layoutBuilder.ReportFeasibility();
@@ -256,6 +307,22 @@ namespace DribbleToSchool.EditorTools
             stage.SetActive(false);
             EditorSceneManager.SaveScene(scene, StagePath(i));
         }
+
+        /// <summary>
+        /// Where in its leg's plan (the leg's own x, StreetBuilder.Miami) a Florida stage's 120 m begin: 8 m before the leg's street
+        /// (where its walls start: FloridaLevels), so the stage shows the leg's own street; on the first stage 4 m before it, so the
+        /// home stands where the leg has it (the kid starts at HolidayStages.SpawnX, the leg's x 0); on the last, so the school gate
+        /// (HolidayStages.GateX) stands where the leg's goal is (Museum Park's, at 106), with the port beside it.
+        /// </summary>
+        public static float FloridaPlanStart(int stage)
+        {
+            if (stage == 0) return -HolidayStages.SpawnX;
+            if (stage == HolidayStages.Count - 1) return MuseumParkGoal - (HolidayStages.GateX - HolidayStages.StartOf(stage));
+            return -8f;
+        }
+
+        /// <summary>Where FloridaLevels.MuseumPark (FL3-3, Florida's last leg) has its goal.</summary>
+        const float MuseumParkGoal = 106f;
 
         /// <summary>Runs one step of a stage's build; if it fails the stage still gets saved, without it, and the problem is logged.</summary>
         static void Attempt(int stage, string what, Action step)
@@ -322,7 +389,7 @@ namespace DribbleToSchool.EditorTools
                         case PatternKind.Coin: t.Coin(new Vector2(it.x, it.y)); break;
                         case PatternKind.CoinRow: t.CoinRow(it.x0, it.x1, it.y, it.count); break;
                         case PatternKind.CoinArc: t.CoinArc(it.x0, it.x1, it.y, it.rise, it.count); break;
-                        case PatternKind.PowerUp: t.RunPowerUp(it.x, it.y, (PowerUpKind)(it.style % 3)); break;
+                        case PatternKind.PowerUp: t.RunPowerUp(it.x, it.y, it.style == (int)PowerUpKind.Turbo ? PowerUpKind.Turbo : PowerUpKind.Magnet); break;
                     }
                 }
                 catch (Exception e)

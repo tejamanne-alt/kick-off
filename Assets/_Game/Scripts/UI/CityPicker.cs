@@ -9,8 +9,8 @@ namespace DribbleToSchool.UI
     /// The city picker, after PLAY and HOLIDAY RUN on the title screen (docs/CITIES.md): the cities (Kamakura and Florida) as cards, each with its
     /// colour, its country, a line about its way to school and whether it can be played yet. After PLAY, a city that can be
     /// played is chosen (Progression/Cities.Select: the levels load in its streets) and the map opens; the city played last is
-    /// blue. After HOLIDAY RUN, only a city with its own Holiday Run can be tapped (Kamakura, so far), and the story's choice is
-    /// left as it was. Cities still to build are listed as coming soon.
+    /// blue. After HOLIDAY RUN, only a city with its own Holiday Run can be tapped (both, from v148), and choosing one chooses its lap
+    /// (Holiday/HolidayStages.Active: Kamakura's 23 stages or Florida's 9), leaving the story's choice as it was. Cities still to build are listed as coming soon.
     /// </summary>
     public static class CityPicker
     {
@@ -43,6 +43,7 @@ namespace DribbleToSchool.UI
                 Card(cell, city, Status(city, mode, chosen), chosen, open, () =>
                 {
                     if (mode == Mode.Story) Cities.Select(city);
+                    else Holiday.HolidayStages.Active = Holiday.HolidayStages.LapOf(city.id);
                     Object.Destroy(root);
                     if (onChosen != null) onChosen();
                 });

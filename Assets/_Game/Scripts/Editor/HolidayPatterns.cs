@@ -162,6 +162,26 @@ namespace DribbleToSchool.EditorTools
                     new SlideSpec("WobbleBridge", 2.4f, 0.97f, false) },
         };
 
+        /// <summary>
+        /// Florida's lap's barriers, whatever the leg's look chapter: the eight the Miami kit has its own of (TrackBuilder.SlideUnder
+        /// builds the <c>MIA</c> model: a Cuban fruit stand, a sidewalk shed, a boat on its stands, a mango bough, a mural shutter, the
+        /// Underline's gym rig, a garage's boom gate, a banyan's roots), with the same solids as Kamakura's.
+        /// </summary>
+        static readonly SlideSpec[] FloridaSlides =
+        {
+            new SlideSpec("StallAwning", 2.2f, 2.5f, false), new SlideSpec("ScaffoldGantry", 2.7f, 4.25f, false), new SlideSpec("BoatTrestles", 3.4f, 1.53f, false),
+            new SlideSpec("AppleBough", 1.7f, 1.09f, false), new SlideSpec("RollShutter", 1.4f, 3.15f, false), new SlideSpec("PipeRack", 4.1f, 2.04f, true),
+            new SlideSpec("BoomBarrier", 1.2f, 0.95f, false), new SlideSpec("OakBough", 2.1f, 1.19f, false),
+        };
+
+        /// <summary>The slide looks of Florida's lap, as TrackBuilder.SlideLook names.</summary>
+        public static string[] FloridaSlideLooks()
+        {
+            var names = new string[FloridaSlides.Length];
+            for (int i = 0; i < names.Length; i++) names[i] = FloridaSlides[i].name;
+            return names;
+        }
+
         /// <summary>The slide looks of a chapter (1 to 5), as TrackBuilder.SlideLook names.</summary>
         public static string[] SlideLooks(int chapter)
         {
@@ -251,7 +271,7 @@ namespace DribbleToSchool.EditorTools
             return new Span { x0 = x0, x1 = x1, zone = true };
         }
 
-        static int StageSeed(int stage) { return 0x5EED + stage * 7919; }
+        static int StageSeed(int stage) { return 0x5EED + stage * 7919 + (HolidayStages.IsFlorida ? 104729 : 0); }
 
         // ----------------------------------------------------------------------------------------------- the plan
 
@@ -905,7 +925,7 @@ namespace DribbleToSchool.EditorTools
         static Group MakeSlide(HolidayStages.Stage st, Random rng)
         {
             var g = new Group { kind = PatternKind.Slide, demand = Demand.Slide, extra = ExtraFor(PatternKind.Slide) };
-            var options = Slides[st.chapter - 1];
+            var options = HolidayStages.IsFlorida ? FloridaSlides : Slides[st.chapter - 1];
             SlideSpec spec = options[rng.Next(options.Length)];
             // The tunnel's deck is low: only the low barriers fit under it.
             if (st.Has(StageTraits.Tunnel))
@@ -1044,8 +1064,11 @@ namespace DribbleToSchool.EditorTools
 
         // ----------------------------------------------------------------------------------------------- targets
 
-        /// <summary>What hangs in the air for a chapter: balloons at home and on the site, paper lanterns in the market and the park, beach balls on the beach.</summary>
-        static int BalloonStyle(int chapter) { return chapter == 2 || chapter == 5 ? 1 : chapter == 3 ? 2 : 0; }
+        /// <summary>
+        /// What hangs in the air for a chapter: balloons at home and on the site, paper lanterns in the market and the park, beach balls
+        /// on the beach. Balloons all along Florida's lap (Kamakura's paper lanterns are not Miami's).
+        /// </summary>
+        static int BalloonStyle(int chapter) { return HolidayStages.IsFlorida ? 0 : chapter == 2 || chapter == 5 ? 1 : chapter == 3 ? 2 : 0; }
 
         /// <summary>The floating targets: each in the middle of the barest open stretch, 2.3 to 3.4 m up, where a chip kick reaches.</summary>
         static bool AddBalloons(StagePlan plan, List<PatternItem> items, HolidayStages.Stage st, float a, float b, Random rng)
@@ -1113,7 +1136,7 @@ namespace DribbleToSchool.EditorTools
 
         /// <summary>
         /// A power-up floating in the widest open stretch: in every layout of every second stage (so at least one in any two
-        /// stages, whichever layouts load), and in about one in two of the others. A shield when a gap is coming, else a magnet or a turbo.
+        /// stages, whichever layouts load), and in about one in two of the others. A magnet or a turbo (no shield since v148).
         /// </summary>
         static void AddPowerUp(StagePlan plan, List<PatternItem> items, float a, float b, Random rng, int variant)
         {
@@ -1132,15 +1155,13 @@ namespace DribbleToSchool.EditorTools
                 bestLen = len; at = mid;
             }
             if (bestLen < 0.5f) return;
-            bool gapAhead = false;
-            foreach (var f in plan.furniture)
-                if (f.kind == PatternKind.Gap && f.x0 > at && f.x0 < at + 30f) gapAhead = true;
-            int kind = gapAhead ? (int)PowerUpShield : (plan.stage + variant + pick) % 2 == 0 ? (int)PowerUpMagnet : (int)PowerUpTurbo;
+            // (a magnet or a turbo: the shield, which the gaps once had, was removed in v148)
+            int kind = (plan.stage + variant + pick) % 2 == 0 ? (int)PowerUpMagnet : (int)PowerUpTurbo;
             items.Add(new PatternItem { kind = PatternKind.PowerUp, x = at, x0 = at, x1 = at, y = height, style = kind });
         }
 
-        // PowerUpKind values (Magnet, Shield, Turbo), repeated here so this file stays free of the runtime types.
-        const int PowerUpMagnet = 0, PowerUpShield = 1, PowerUpTurbo = 2;
+        // PowerUpKind values (Magnet 0, Turbo 2; the shield's 1 is gone), repeated here so this file stays free of the runtime types.
+        const int PowerUpMagnet = 0, PowerUpTurbo = 2;
 
         /// <summary>
         /// An occasional bonus detour: an arc of coins up where only a double jump gets, with a star at the top. The arc follows a

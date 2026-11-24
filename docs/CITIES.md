@@ -204,8 +204,10 @@ ground rules (no leg is the beach's). The map is rendered from the same kits (`t
 ## The Holiday Run in each city
 
 The endless run strings the city's dribble legs into stages, in the city's own light, with its own hazards and music.
-Kamakura's run exists now (the original town's 23 stages). Each other city gets its own once its streets are built.
-Until then the HOLIDAY RUN picker shows it as coming soon.
+Kamakura's run is the original town's 23 stages. **Florida's (v148)** is its nine legs end to end, FL1-1 to FL3-3, each
+stage 120 m of its leg's own Miami district, from the ranch house to Bayside Elementary's gate (`Holiday/HolidayStages.Florida`,
+`docs/HOLIDAY_RUN.md` "Florida's lap"). A city added later gets its own once its streets are built; until then the HOLIDAY
+RUN picker shows it as coming soon.
 
 ## Where we are
 
@@ -230,7 +232,8 @@ Until then the HOLIDAY RUN picker shows it as coming soon.
   Florida's streets, v117 to v122) are gone; their drawbridge, sprinklers, golf cart and storm live on in Florida's legs.
 - **Done for Florida in v124:** the Miami kit and each leg's own district (`StreetBuilder.Miami`), Miami's stops and
   obstacles, the map rendered from the kits.
-- **Still to do for Florida:** Bayside Elementary's own building (the school is the Florida kit's), a Holiday Run in Miami;
+- **Done for Florida in v148:** its Holiday Run (above).
+- **Still to do for Florida:** Bayside Elementary's own building (the school is the Florida kit's);
   co-op races on Florida's routes (races run Kamakura's routes only for now); M4 (drop and come back) for the routes that use
   it; the user's reference images (`docs/IMAGE_PROMPTS.md`) to check the districts against, when they come.
 - California (Santa Monica) is not one of the cities: it left the picker, and its scenes are no longer built.

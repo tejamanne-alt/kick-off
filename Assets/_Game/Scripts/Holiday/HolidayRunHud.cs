@@ -44,7 +44,7 @@ namespace DribbleToSchool.Holiday
         };
 
         static readonly string[] ComboLabels = { "x1", "x2", "x3", "x4", "x5" };
-        static readonly string[] StageNumbers = Numbers(HolidayStages.Count);
+        static readonly string[] StageNumbers = Numbers(HolidayStages.MaxCount);
 
         static readonly Color KickReady = new Color(0.3f, 0.82f, 0.42f);
         static readonly Color BestGold = new Color(1f, 0.78f, 0.3f);
@@ -130,7 +130,8 @@ namespace DribbleToSchool.Holiday
         Image tagCard, tagDayChip, ribbonBand, ribbonStripe, bannerBand, bannerStripe;
         Text tagNumber, tagName, tagDay, ribbonNumber, ribbonStage, ribbonName, bannerCaption, bannerTitle, splashTitle, splashSub;
         CanvasGroup ribbonGroup, bannerGroup;
-        readonly Image[] segments = new Image[HolidayStages.Count];
+        // (One for each stage of the lap being played: made in Start, once the director has chosen the lap.)
+        Image[] segments = new Image[0];
 
         // messages
         readonly Text[] toastTexts = new Text[ToastLines];
@@ -389,7 +390,7 @@ namespace DribbleToSchool.Holiday
         /// <summary>The three timers under the pause button, side by side from the right, and only while their power-up is on.</summary>
         void BuildPowerUps()
         {
-            var kinds = new[] { PowerUpKind.Magnet, PowerUpKind.Shield, PowerUpKind.Turbo };
+            var kinds = new[] { PowerUpKind.Magnet, PowerUpKind.Turbo };
             for (int i = 0; i < kinds.Length; i++)
             {
                 var chip = new PowerChip { kind = kinds[i], duration = Mathf.Max(0.1f, HolidayRunDirector.Duration(kinds[i])) };
@@ -492,6 +493,7 @@ namespace DribbleToSchool.Holiday
             UIKit.Stretch(track);
             track.offsetMin = new Vector2(8f, 6f);
             track.offsetMax = new Vector2(-44f, -6f);
+            segments = new Image[HolidayStages.Count];
             for (int i = 0; i < segments.Length; i++)
             {
                 var segment = UIKit.Icon(track, "Stage" + i, null, Color.white, 10f);
@@ -957,9 +959,7 @@ namespace DribbleToSchool.Holiday
                 }
                 if (!on) continue;
                 chip.fill.fillAmount = Mathf.Clamp01(left / chip.duration);
-                // The shield flickers over its last three seconds, like the glow round the kid.
-                bool flicker = chip.kind == PowerUpKind.Shield && left <= 3f && Mathf.Repeat(now * 6f, 1f) < 0.35f;
-                chip.group.alpha = flicker ? 0.3f : 1f;
+                chip.group.alpha = 1f;
                 SetScale(chip.root, 1f + 0.35f * (1f - Ease(Since(chip.popStart, 0.35f))));
             }
             if (mask != chipMask)
@@ -979,7 +979,6 @@ namespace DribbleToSchool.Holiday
         {
             switch (kind)
             {
-                case PowerUpKind.Shield: return director.ShieldLeft;
                 case PowerUpKind.Turbo: return director.TurboLeft;
                 default: return director.MagnetLeft;
             }
@@ -1032,7 +1031,7 @@ namespace DribbleToSchool.Holiday
             }
         }
 
-        /// <summary>Show the ribbon for this stage, and the chapter's banner when it is the first stage of a chapter.</summary>
+        /// <summary>Show the ribbon for this stage, and the chapter's banner (a route's in Florida) when it is the first stage of one.</summary>
         void Announce(int stage, int day, float now)
         {
             if (stage < 0 || stage >= HolidayStages.Count) return;
@@ -1053,15 +1052,30 @@ namespace DribbleToSchool.Holiday
             {
                 bannerStripe.color = color;
                 bannerBand.color = Color.Lerp(color, UITheme.Navy, 0.45f);
-                bannerCaption.text = Loc.F("holiday.chapterN", chapter);
-                bannerTitle.text = Loc.T("chapter." + chapter).ToUpperInvariant();
+                int route = RouteOf(stage);
+                bannerCaption.text = route > 0 ? Loc.F("holiday.routeN", route) : Loc.F("holiday.chapterN", chapter);
+                bannerTitle.text = (route > 0 ? Loc.T("route.fl" + route) : Loc.T("chapter." + chapter)).ToUpperInvariant();
                 bannerStart = now;
             }
         }
 
+        /// <summary>
+        /// What the stage's colour and banner go by: its chapter in Kamakura, its route (1 to 3) in Florida, whose legs' look
+        /// chapters change from leg to leg (FL1-1 is chapter 1's light, FL1-2 chapter 4's).
+        /// </summary>
         static int ChapterOf(int stage)
         {
+            int route = RouteOf(stage);
+            if (route > 0) return Mathf.Clamp(route, 1, ChapterColors.Length);
             return Mathf.Clamp(HolidayStages.All[Mathf.Clamp(stage, 0, HolidayStages.Count - 1)].chapter, 1, ChapterColors.Length);
+        }
+
+        /// <summary>The Florida route the stage's leg is on ("FL2-3": 2), or 0 (a Kamakura stage).</summary>
+        static int RouteOf(int stage)
+        {
+            if (!HolidayStages.IsFlorida) return 0;
+            string id = HolidayStages.All[Mathf.Clamp(stage, 0, HolidayStages.Count - 1)].levelId;
+            return id != null && id.Length > 2 && id.StartsWith("FL") && char.IsDigit(id[2]) ? id[2] - '0' : 0;
         }
 
         static string StageName(int stage)
