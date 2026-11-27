@@ -1,6 +1,6 @@
 # Kick Off 2 School: App Store listing
 
-Everything to type into App Store Connect for version 1.0, field by field. Character counts are within Apple's limits.
+Everything to type into App Store Connect for version 1.0.1, field by field. Character counts are within Apple's limits.
 
 **Never name another platform or store** (Android, Google Play) in any field here, the review notes included, or in text
 the iOS app shows. App Review rejected 1.0 (7) for it under Guideline 2.3.10 (Accurate Metadata), even though Co-op really
@@ -90,7 +90,8 @@ The web address where you publish `site/index.html` (the support page).
 Leave empty (optional).
 
 ### Version
-`1.0`
+`1.0.1` (`BuildScripts.AppVersion`). The rejected version record was `1.0`: change its version number on the version page
+to `1.0.1` before choosing the build, as App Store Connect only offers builds whose version matches.
 
 ### Copyright
 ```
@@ -98,8 +99,8 @@ Leave empty (optional).
 ```
 
 ### Build
-Pick the newest build uploaded from Xcode. After the 2.3.10 rejection of 1.0 (7) that is build 8 or later: build 7's Co-op
-screen still says "iPhone and Android alike".
+Pick the newest build uploaded from Xcode: 1.0.1, build 8 or later. Build 1.0 (7), rejected under 2.3.10, still says
+"iPhone and Android alike" on its Co-op screen.
 
 ### Game Center
 Off.

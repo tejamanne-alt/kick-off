@@ -3,7 +3,7 @@
 #
 # Usage (release, for Play):
 #   DTS_KEYSTORE_PATH=~/keys/kickoff2-upload.jks DTS_KEYSTORE_PASS=... DTS_KEY_ALIAS=upload DTS_KEY_PASS=... \
-#   DTS_VERSION=1.0.0 DTS_BUILD_NUMBER=1 ./ci/android/build_android.sh release
+#   DTS_VERSION=1.0.1 DTS_BUILD_NUMBER=1 ./ci/android/build_android.sh release
 # Usage (a development .apk to install on your own phone):
 #   ./ci/android/build_android.sh dev
 #

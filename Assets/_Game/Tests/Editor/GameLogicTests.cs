@@ -164,6 +164,18 @@ namespace DribbleToSchool.Tests
         }
 
         [Test]
+        public void TheAppVersionOnlyGoesUp()
+        {
+            // BuildScripts.ApplyVersion raises Player Settings to AppVersion and keeps a higher one.
+            Assert.IsTrue(BuildScripts.OlderThan("1.0.0", BuildScripts.AppVersion), "1.0.0 was rejected as iOS 1.0 (7)");
+            Assert.IsTrue(BuildScripts.OlderThan("0.1", BuildScripts.AppVersion), "a fresh project's version");
+            Assert.IsTrue(BuildScripts.OlderThan("", BuildScripts.AppVersion));
+            Assert.IsFalse(BuildScripts.OlderThan(BuildScripts.AppVersion, BuildScripts.AppVersion));
+            Assert.IsFalse(BuildScripts.OlderThan("1.1.0", "1.0.1"), "a higher version is kept");
+            Assert.IsFalse(BuildScripts.OlderThan("1.0.10", "1.0.9"), "compared as numbers, not text");
+        }
+
+        [Test]
         public void UnknownKeyFallsBack()
         {
             Assert.AreEqual("fallback", Loc.T("no.such.key", "fallback"));

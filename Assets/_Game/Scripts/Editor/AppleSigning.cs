@@ -15,7 +15,8 @@ namespace DribbleToSchool.EditorTools
     /// The iOS signing every build gets, kept in code since Player Settings aren't in the repository:
     /// Xcode manages signing automatically, for the app's bundle identifier
     /// (<see cref="BuildScripts.ApplicationId"/>), with the Apple developer team. Applied to Player
-    /// Settings whenever the editor loads (with the minimum iOS version, <see cref="BuildScripts.IosMinimumVersion"/>),
+    /// Settings whenever the editor loads (with the minimum iOS version, <see cref="BuildScripts.IosMinimumVersion"/>, and the
+    /// app's version, <see cref="BuildScripts.AppVersion"/>),
     /// and written into the exported Xcode project after each iOS build, so Xcode opens ready to sign and run.
     /// </summary>
     [InitializeOnLoad]
@@ -42,6 +43,7 @@ namespace DribbleToSchool.EditorTools
             // (here too, not only in BuildScripts.ApplyPlayerSettings: a build from Unity's own Build button skips that, and
             // kept Unity's older default, which Xcode's libc++ warns about on every file)
             BuildScripts.ApplyIosMinimum();
+            BuildScripts.ApplyVersion();   // (for the same reason: Player Settings' version is at least BuildScripts.AppVersion)
             PlayerSettings.iOS.appleEnableAutomaticSigning = true;
             string team = Team();
             if (team.Length > 0 && PlayerSettings.iOS.appleDeveloperTeamID != team)

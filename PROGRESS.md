@@ -2711,6 +2711,21 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
   resubmit. The Google Play listing is unchanged.
 - **Not run in Unity:** open Co-op on an iPhone and read "How it works".
 
+## Version 1.0.1
+
+- **Why.** The user: "bump the version from 1.0.0 to 1.0.1", for the App Store resubmission after the 2.3.10 rejection.
+- **Changed:**
+  - `BuildScripts.AppVersion` (was `DefaultVersion`, `1.0.0`) is `1.0.1`, and it now decides the version. Player Settings
+    aren't in git, so before, the version stayed whatever each machine's Player Settings had. `BuildScripts.ApplyVersion`
+    raises Player Settings > Version to it whenever the editor loads (`AppleSigning.Apply`) and before every scripted
+    build, and never lowers a higher one. `DTS_VERSION` still overrides it.
+  - `docs/RELEASE.md` (section 3), `docs/APP_STORE_LISTING.md` (Version `1.0.1`; rename the rejected `1.0` record in App
+    Store Connect to match), the Android build script's usage line.
+- **Test:** `GameLogicTests.TheAppVersionOnlyGoesUp`.
+- **Cost:** none (editor only).
+- **Checked:** `unity_api_check` 6000.7; compile errors match a clean tree's (iOS and Android editor sets, tests included).
+- **Not run in Unity:** open the editor and check that Player Settings > Version reads 1.0.1.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

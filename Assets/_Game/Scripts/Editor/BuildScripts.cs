@@ -31,7 +31,13 @@ namespace DribbleToSchool.EditorTools
         public const string ApplicationId = "com.astradite.kickoff2";
         /// <summary>Google Play's target API level for new apps and updates (Android 16, from 31 August 2026).</summary>
         public const int AndroidTargetApi = 36;
-        public const string DefaultVersion = "1.0.0";
+        /// <summary>
+        /// The version players see (iOS's CFBundleShortVersionString, Android's versionName). Raise it here for a new release:
+        /// Player Settings aren't in the repository (docs/LEARNINGS.md A10), so <see cref="ApplyVersion"/> raises them to it
+        /// whenever the editor loads and before every scripted build, and never lowers a higher one. DTS_VERSION overrides it.
+        /// 1.0.1 since iOS 1.0 (7) was rejected under Guideline 2.3.10 (LEARNINGS H8).
+        /// </summary>
+        public const string AppVersion = "1.0.1";
         /// <summary>
         /// The oldest iOS the game runs on. Xcode's C++ library no longer supports anything older: a target below it compiles
         /// with "The selected platform is no longer supported by libc++" on every IL2CPP file (docs/LEARNINGS.md A13).
@@ -45,6 +51,21 @@ namespace DribbleToSchool.EditorTools
             if (!System.Version.TryParse(WithMinor(a), out va)) return true;
             if (!System.Version.TryParse(WithMinor(b), out vb)) return false;
             return va < vb;
+        }
+
+        /// <summary>
+        /// Sets Player Settings' version to DTS_VERSION if set, else raises it to <see cref="AppVersion"/> (a fresh project's
+        /// "0.1" included) and never lowers a higher one. Returns the version builds will carry.
+        /// </summary>
+        public static string ApplyVersion()
+        {
+            string version = Env("DTS_VERSION", OlderThan(PlayerSettings.bundleVersion, AppVersion) ? AppVersion : PlayerSettings.bundleVersion);
+            if (PlayerSettings.bundleVersion != version)
+            {
+                Debug.Log("[Build] Version " + PlayerSettings.bundleVersion + " -> " + version + ".");
+                PlayerSettings.bundleVersion = version;
+            }
+            return version;
         }
 
         static string WithMinor(string v)
@@ -75,15 +96,14 @@ namespace DribbleToSchool.EditorTools
         [MenuItem("Kick Off/Build/Apply Store Player Settings")]
         public static void ApplyPlayerSettings()
         {
-            // The version and build number stay as they are (Player Settings, or Bump Build Number
-            // below) unless DTS_VERSION / DTS_BUILD_NUMBER say otherwise; a fresh project starts at
-            // 1.0.0 (1). Both stores refuse a build number they have already seen.
-            string version = Env("DTS_VERSION", string.IsNullOrEmpty(PlayerSettings.bundleVersion) || PlayerSettings.bundleVersion == "0.1" ? DefaultVersion : PlayerSettings.bundleVersion);
+            // The version is at least AppVersion; the build number stays as it is (Player Settings, or Bump Build Number
+            // below) unless DTS_BUILD_NUMBER says otherwise, and a fresh project starts at build 1. Both stores refuse a
+            // build number they have already seen.
+            string version = ApplyVersion();
             int buildNumber = int.Parse(Env("DTS_BUILD_NUMBER", CurrentBuildNumber().ToString()));
 
             PlayerSettings.companyName = CompanyName;
             PlayerSettings.productName = ProductName;
-            PlayerSettings.bundleVersion = version;
 
             // Landscape only.
             PlayerSettings.defaultInterfaceOrientation = UIOrientation.AutoRotation;
