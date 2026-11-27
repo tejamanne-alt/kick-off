@@ -991,6 +991,20 @@ fixes (D12), the user asked for both to go: "Remove the Sketch and Cartoon filte
   - Planted bad copies make the tests fail.
   - `LevelFeasibility`, the coin audit, the map check and the pose audit run after the relevant change.
   - Persisted ids, enum orders and save keys never change.
+- **H8. App Review rejected 1.0 (7) for naming Android (Guideline 2.3.10, Accurate Metadata; 27 November 2026).**
+  - *What:* "Revise the app's description to remove Android references." The App Review notes said Co-op races "iPhone
+    and Android together", and the app's own Co-op screen ("How it works", English and Spanish) said "iPhone and Android
+    alike". Both are true (Co-op does work across the two), but Apple doesn't allow other platforms' names in an iOS app or
+    its metadata without approved, interactive functionality for them.
+  - *Why:* the store text and the in-game text were written for both stores at once, and nothing checked the iOS side
+    for another platform's name.
+  - *Fix:* both now say "phones" only. `GameLogicTests.NoTextOnIosNamesAnotherPlatform` fails on "Android", "Google" or
+    "Play Store" in any string except `coop.radio.location`, which only Android shows (`CoopService.LocationOff`). It was
+    checked against the old text, which it catches. A new build (1.0 build 8 or later) is needed, since build 7 has the old
+    text.
+  - *Rule:* nothing an iOS player or App Review reads names Android or Google Play: not the description, promotional text,
+    keywords, review notes or screenshots, and not any text the iOS build shows. Android-only text stays behind an
+    Android-only check and on the test's list. Say "phones nearby", never "iPhone and Android".
 
 ## Standing preferences of the user
 

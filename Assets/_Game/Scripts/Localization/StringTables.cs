@@ -438,7 +438,7 @@ namespace DribbleToSchool.Localization
                 { "coop.host.button", "HOST A RACE" }, { "coop.host.about", "Friends nearby join your lobby" },
                 { "coop.join.button", "JOIN A RACE" }, { "coop.join.about", "Find a lobby nearby" },
                 { "coop.how.title", "How it works" },
-                { "coop.how.text", "Up to 4 players on phones close together, iPhone and Android alike, over Bluetooth.\n\nEveryone runs the whole way from home to school on the stage and in the place one of you picks. The first to the school gate wins; the others carry on to finish.\n\nStay close: a player out of touch for more than 20 seconds is listed last, and is back in the race as soon as they reconnect (before the next race). If only one player is left, the race goes on. A finish always counts, even if you leave afterwards.\n\nFilters are your own choice, from Filters on the title screen or in the pause menu." },
+                { "coop.how.text", "Up to 4 players on phones close together, over Bluetooth.\n\nEveryone runs the whole way from home to school on the stage and in the place one of you picks. The first to the school gate wins; the others carry on to finish.\n\nStay close: a player out of touch for more than 20 seconds is listed last, and is back in the race as soon as they reconnect (before the next race). If only one player is left, the race goes on. A finish always counts, even if you leave afterwards.\n\nFilters are your own choice, from Filters on the title screen or in the pause menu." },
                 { "coop.stats", "Races finished: {0} · Won: {1}" },
                 { "coop.radio.on", "Bluetooth is on: ready to race." },
                 { "coop.radio.editor", "Editor: practice bots stand in for the other phones." },
@@ -448,6 +448,8 @@ namespace DribbleToSchool.Localization
                 { "coop.radio.allow", "Allow" },
                 { "coop.radio.unsupported", "This device can't use Bluetooth LE, so Co-op isn't available on it." },
                 { "coop.radio.starting", "Starting Bluetooth..." },
+                // Shown only on Android (CoopService.LocationOff): App Review rejects iOS text that names another platform
+                // (Guideline 2.3.10), so no other string may (GameLogicTests.NoTextOnIosNamesAnotherPlatform).
                 { "coop.radio.location", "Switch Location on: older Android phones need it to find others over Bluetooth." },
                 { "coop.radio.offIos", "Bluetooth is off. Switch it on in Control Center (swipe down from the top-right corner) or in Settings > Bluetooth." },
                 { "coop.banner.listedOut", "Out of touch: the others list you last for now. Keep running: you're back in the race when you reconnect." },
@@ -921,7 +923,7 @@ namespace DribbleToSchool.Localization
                 { "coop.host.button", "CREAR CARRERA" }, { "coop.host.about", "Tus amigos cerca se unen a tu sala" },
                 { "coop.join.button", "UNIRSE" }, { "coop.join.about", "Busca una sala cerca" },
                 { "coop.how.title", "Cómo funciona" },
-                { "coop.how.text", "Hasta 4 jugadores con los móviles cerca, iPhone y Android juntos, por Bluetooth.\n\nTodos corren desde casa hasta el cole en la ruta y el lugar que elija uno de vosotros. Gana el primero en llegar a la puerta del cole; los demás siguen hasta terminar.\n\nNo os alejéis: quien pierda la conexión más de 20 segundos aparece al final, y vuelve a la carrera en cuanto se reconecta (antes de la siguiente). Si solo queda un jugador, la carrera sigue. Una llegada siempre cuenta, aunque te vayas después.\n\nLos filtros los elige cada uno, en Filtros, en la pantalla de inicio o en la pausa." },
+                { "coop.how.text", "Hasta 4 jugadores con los móviles cerca, por Bluetooth.\n\nTodos corren desde casa hasta el cole en la ruta y el lugar que elija uno de vosotros. Gana el primero en llegar a la puerta del cole; los demás siguen hasta terminar.\n\nNo os alejéis: quien pierda la conexión más de 20 segundos aparece al final, y vuelve a la carrera en cuanto se reconecta (antes de la siguiente). Si solo queda un jugador, la carrera sigue. Una llegada siempre cuenta, aunque te vayas después.\n\nLos filtros los elige cada uno, en Filtros, en la pantalla de inicio o en la pausa." },
                 { "coop.stats", "Carreras terminadas: {0} · Ganadas: {1}" },
                 { "coop.radio.on", "Bluetooth activado: listo para correr." },
                 { "coop.radio.editor", "Editor: unos bots de práctica hacen de los otros móviles." },

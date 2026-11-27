@@ -147,6 +147,23 @@ namespace DribbleToSchool.Tests
         }
 
         [Test]
+        public void NoTextOnIosNamesAnotherPlatform()
+        {
+            // App Review rejected 1.0 (7) under Guideline 2.3.10 for naming Android (the Co-op help said "iPhone and Android
+            // alike"). Only text the game shows on Android alone may name it (LEARNINGS H8).
+            var androidOnly = new HashSet<string> { "coop.radio.location" };
+            string[] names = { "android", "google", "play store" };
+            foreach (string code in Loc.Languages)
+                foreach (var kv in StringTables.For(code))
+                {
+                    if (androidOnly.Contains(kv.Key)) continue;
+                    string text = kv.Value.ToLowerInvariant();
+                    foreach (string name in names)
+                        Assert.IsFalse(text.Contains(name), code + ": " + kv.Key + " names \"" + name + "\", which iOS players see");
+                }
+        }
+
+        [Test]
         public void UnknownKeyFallsBack()
         {
             Assert.AreEqual("fallback", Loc.T("no.such.key", "fallback"));

@@ -2694,6 +2694,23 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
   - compile with no warnings;
   - `unity_api_check` 6000.6 and 6000.7.
 
+## App Review 2.3.10: no Android in the iOS app or its store text
+
+- **Why.** App Review rejected iOS 1.0 (7) on 27 November 2026 under Guideline 2.3.10 (Accurate Metadata): "Revise the
+  app's description to remove Android references." (`docs/LEARNINGS.md` H8.)
+- **Changed:**
+  - `StringTables`: Co-op's "How it works" no longer says "iPhone and Android alike" (English) or "iPhone y Android
+    juntos" (Spanish). The Android-only Location tip (`coop.radio.location`) keeps its wording: iOS never shows it.
+  - `docs/APP_STORE_LISTING.md`: the App Review notes no longer say "iPhone and Android together"; a rule at the top
+    against naming other platforms; the Build field now says to pick the newest build (8 or later).
+- **Test:** `GameLogicTests.NoTextOnIosNamesAnotherPlatform`: no string but the Android-only one names Android, Google or
+  the Play Store. Checked against the old tables, where it catches both languages' Co-op text.
+- **Cost:** none (two shorter strings).
+- **To do (the user):** upload a new iOS build (1.0, build 8 or later), paste the corrected review notes into App Store
+  Connect, check the live description, promotional text and keywords for "Android" or "Google", pick the new build and
+  resubmit. The Google Play listing is unchanged.
+- **Not run in Unity:** open Co-op on an iPhone and read "How it works".
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

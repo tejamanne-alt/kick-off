@@ -2,6 +2,10 @@
 
 Everything to type into App Store Connect for version 1.0, field by field. Character counts are within Apple's limits.
 
+**Never name another platform or store** (Android, Google Play) in any field here, the review notes included, or in text
+the iOS app shows. App Review rejected 1.0 (7) for it under Guideline 2.3.10 (Accurate Metadata), even though Co-op really
+does work between iPhone and Android: say "phones nearby" instead (`docs/LEARNINGS.md` H8).
+
 ## Distribution > iOS App > 1.0 (version page)
 
 ### App icon
@@ -94,7 +98,8 @@ Leave empty (optional).
 ```
 
 ### Build
-Pick build **1** (the one uploaded from Xcode).
+Pick the newest build uploaded from Xcode. After the 2.3.10 rejection of 1.0 (7) that is build 8 or later: build 7's Co-op
+screen still says "iPhone and Android alike".
 
 ### Game Center
 Off.
@@ -110,7 +115,7 @@ It shows the title screen, choosing the player, the town map, playing a level (r
 The app has no account registration, login or account deletion, and no paid content or in-app purchases. The only thing a player can type is an optional name for local Co-op: it is shown only to the other phones in the same Co-op lobby, directly over Bluetooth (never online, never stored anywhere else), it is filtered (a word list; no special characters), there is no chat, and the lobby's host can remove a player (who then can't rejoin that lobby).
 
 2. PURPOSE AND AUDIENCE
-Kick Off 2 School is a football (soccer) side-scrolling game for players of all ages, played alone or in local Co-op (up to four phones in the same room race each other to school over Bluetooth, iPhone and Android together, no internet). The player dribbles a ball through town streets to reach school, across 23 short skill-based levels in 5 chapters plus ball-skill challenges. It is a light, ad-free game that plays offline and rewards timing and ball control; a sticker hidden in each level unlocks cosmetic items.
+Kick Off 2 School is a football (soccer) side-scrolling game for players of all ages, played alone or in local Co-op (up to four phones in the same room race each other to school over Bluetooth, no internet). The player dribbles a ball through town streets to reach school, across 23 short skill-based levels in 5 chapters plus ball-skill challenges. It is a light, ad-free game that plays offline and rewards timing and ball control; a sticker hidden in each level unlocks cosmetic items.
 
 3. HOW TO USE IT
 No setup, login or sample files are needed. Launch the app, tap PLAY and choose a level on the town map: six routes from the kid's house to the school, each level a numbered stop on its route (levels unlock in order as each is finished).
