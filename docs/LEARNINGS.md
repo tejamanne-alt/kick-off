@@ -878,6 +878,11 @@ fixes (D12), the user asked for both to go: "Remove the Sketch and Cartoon filte
 - **F2. Full screens.** The Settings card's two columns are full (718 of 724 units on the left), so a new row overflows. *Rule:* measure the column before adding a row. Graphics quality is automatic for this reason.
 - **F3. Map labels too small for Spanish; a test rule stricter than the screen.** *Rule:* measure text with the real font in every language; test rules mirror what is drawn.
 - **F4. Wrong instruction text** ("tap KICK" is a pass). *Rule:* check every how-to string against the real input.
+- **F5. Outfit names that promised clothes the kid never wears** (renamed in generated content v148). "Yellow Raincoat"
+  and "Cosy Hoodie" only recolour the kid's own shirt and shorts, as every outfit does; the user spotted it in the Locker
+  Room. *Fix:* Lemon Zest and Slate Grey, named for their colours like Orange Pop and Royal Purple; the ids stay
+  (`outfit_raincoat`, `outfit_hoodie`), since saves name them. *Rule:* name a cosmetic for what the game draws. Rename by
+  display name only, never by id.
 
 ## G. Audio
 

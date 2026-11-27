@@ -2726,6 +2726,19 @@ water showed only the word "Splash!"; in a slide one leg vibrated (`docs/LEARNIN
 - **Checked:** `unity_api_check` 6000.7; compile errors match a clean tree's (iOS and Android editor sets, tests included).
 - **Not run in Unity:** open the editor and check that Player Settings > Version reads 1.0.1.
 
+## Two outfits named for their colours (generated content v148)
+
+- **Why.** The user: "rename the outfits Yellow Rain Coat and Cozy hoodie to just some other names like orange pop, royal
+  purple etc. because they are not either raincoats or hoodies. We just change color of existing outfit." (LEARNINGS F5.)
+- **Changed:** `CosmeticsTable`: "Yellow Raincoat" is **Lemon Zest** and "Cosy Hoodie" is **Slate Grey**. Colours, prices
+  and ids (`outfit_raincoat`, `outfit_hoodie`) are unchanged, so saves that own or wear them carry on.
+- **Generated content v148** (143 to 147 were music only and changed no generated content), so the editor rebuilds the
+  levels and the cosmetics catalog it shows the names from.
+- **Cost:** none at runtime.
+- **Checked:** compile errors match a clean tree's; `unity_api_check` 6000.7.
+- **Not run in Unity:** open the Locker Room's Outfits tab and read the two names. The App Store's Locker Room screenshot
+  (`08_locker_room`) shows the old names if it shows these outfits: take it again with the screenshot tour.
+
 ## After Phase 8 (next steps)
 
 1. Open in Unity 6 and fix any compile differences from the 2021 reference DLLs. Likely candidates are deprecated-API warnings for the `BuildTargetGroup` overloads in `BuildScripts`. The shaders (`DtsLook.cginc`, `Toon`, `ToonCharacter`, `Sky`, `PostFX`) haven't been compiled yet; check the Console. Check once in the editor that the dog's legs and the gulls' wings swing the right way. The kit parts' axes were derived from the FBX conversion, not seen.

@@ -116,8 +116,10 @@ namespace DribbleToSchool.EditorTools
                 R("outfit_red", "Red Kit", Outfit, Common, 120, CosmeticPattern.Solid, C(0.88f, 0.25f, 0.25f), white, white),
                 R("outfit_blue", "Blue Kit", Outfit, Common, 120, CosmeticPattern.Solid, C(0.2f, 0.4f, 0.85f), white, white),
                 R("outfit_hoops", "Green Hoops", Outfit, Common, 180, CosmeticPattern.Stripes, C(0.25f, 0.65f, 0.35f), ink, white),
-                R("outfit_raincoat", "Yellow Raincoat", Outfit, Common, 160, CosmeticPattern.Solid, C(1f, 0.85f, 0.25f), C(0.2f, 0.3f, 0.55f), C(1f, 0.95f, 0.6f)),
-                R("outfit_hoodie", "Cosy Hoodie", Outfit, Common, 140, CosmeticPattern.Solid, C(0.6f, 0.62f, 0.66f), C(0.25f, 0.27f, 0.32f), white),
+                // An outfit recolours the kid's own clothes, so it is named for its colours, never a garment the kid doesn't wear
+                // (LEARNINGS F5). These two were "Yellow Raincoat" and "Cosy Hoodie": their ids stay, as saves name them.
+                R("outfit_raincoat", "Lemon Zest", Outfit, Common, 160, CosmeticPattern.Solid, C(1f, 0.85f, 0.25f), C(0.2f, 0.3f, 0.55f), C(1f, 0.95f, 0.6f)),
+                R("outfit_hoodie", "Slate Grey", Outfit, Common, 140, CosmeticPattern.Solid, C(0.6f, 0.62f, 0.66f), C(0.25f, 0.27f, 0.32f), white),
                 R("outfit_orange", "Orange Pop", Outfit, Rare, 240, CosmeticPattern.Stripes, C(1f, 0.55f, 0.2f), white, white),
                 R("outfit_royal", "Royal Purple", Outfit, Rare, 320, CosmeticPattern.Solid, C(0.5f, 0.3f, 0.75f), C(1f, 0.8f, 0.3f), C(1f, 0.8f, 0.3f)),
                 R("outfit_gold", "Champion Gold", Outfit, Epic, 700, CosmeticPattern.Solid, C(1f, 0.8f, 0.3f), white, white),
