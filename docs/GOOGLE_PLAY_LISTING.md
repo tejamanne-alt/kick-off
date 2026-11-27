@@ -65,15 +65,18 @@ a Fixed Resolution of **1920 × 1080**, select it and run **Kick Off > Store Scr
 | News app | No |
 | Advertising ID | No, it doesn't use the advertising ID |
 
-## Release notes (version 1.0, 438 / 500 characters)
-Release name: `1.0 (1)`. Paste the whole block, tags included, into **Release notes**:
+## Release notes (version 1.0.1, 479 / 500 characters)
+Release name: `1.0.1 (8)` (the version and build number of the bundle you upload). Paste the whole block, tags included,
+into **Release notes**. They are written as a first release: if 1.0 is already live on Play, write what changed since it
+instead. Don't name iPhone or the App Store in them (Co-op works with any phone nearby).
 ```
 <en-US>
 Welcome to Kick Off 2 School, our first release!
-• Dribble all the way to school through 23 levels in 5 chapters: Home Street, the Market, the Beach, the Underpass and the Park
-• Play as one of six schoolkids: two high-schoolers and four primary-school kids
-• Slide under barriers and double jump over gaps
-• Find the sticker hidden in every level to unlock exclusive balls, outfits, flags and trails
+• Dribble to school in two cities: 23 levels in Kamakura, Japan, and three routes through Miami, Florida
+• Play as one of six schoolkids
+• Co-op: race up to three friends nearby over Bluetooth, no internet needed
+• Holiday Run: keep running as far as you can
+• Find hidden stickers to unlock exclusive balls, outfits, flags and trails
 • Ball-skill challenges: keepy-uppy, target practice and a beach slalom
 • No ads, plays offline
 </en-US>

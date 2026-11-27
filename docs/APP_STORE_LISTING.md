@@ -77,6 +77,20 @@ FOR EVERYONE
 • No ads, no accounts and no data collected
 ```
 
+### What's New in This Version
+App Store Connect shows no such field for an app's first version, and 1.0.1 is the first (1.0 was never released). If it
+asks anyway, paste the Google Play release notes without their tags (`docs/GOOGLE_PLAY_LISTING.md`, 479 characters):
+```
+Welcome to Kick Off 2 School, our first release!
+• Dribble to school in two cities: 23 levels in Kamakura, Japan, and three routes through Miami, Florida
+• Play as one of six schoolkids
+• Co-op: race up to three friends nearby over Bluetooth, no internet needed
+• Holiday Run: keep running as far as you can
+• Find hidden stickers to unlock exclusive balls, outfits, flags and trails
+• Ball-skill challenges: keepy-uppy, target practice and a beach slalom
+• No ads, plays offline
+```
+
 ### Keywords (98 / 100)
 ```
 football,soccer,dribble,ball,runner,platformer,school,street,skills,kids,stickers,keepy uppy,anime
